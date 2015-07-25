@@ -40,7 +40,7 @@
 
 #include <lama/exception/LAMAAssert.hpp>
 
-using namespace boost;
+using namespace common;
 
 namespace lama
 {

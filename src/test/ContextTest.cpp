@@ -44,7 +44,6 @@
 #include <lama/task/TaskSyncToken.hpp>
 #include <lama/exception/LAMAAssert.hpp>
 
-using namespace boost;
 using namespace lama;
 
 /* --------------------------------------------------------------------- */

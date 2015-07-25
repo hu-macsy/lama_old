@@ -45,6 +45,8 @@
 // macros
 #include <lama/macros/unused.hpp>
 
+#include <boost/preprocessor.hpp>
+
 using namespace tasking;
 using namespace memory;
 using common::getScalarType;

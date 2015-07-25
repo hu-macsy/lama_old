@@ -47,7 +47,7 @@
 #include <logging/logging.hpp>
 
 // boost
-#include <boost/shared_ptr.hpp>
+#include <common/shared_ptr.hpp>
 
 #include <ostream>
 
@@ -58,7 +58,7 @@ class IterativeSolver;
 
 class Criterion;
 
-typedef boost::shared_ptr<Criterion> CriterionPtr;
+typedef common::shared_ptr<Criterion> CriterionPtr;
 
 /**
  * @brief The class Criterion is the base class for all stopping criterions

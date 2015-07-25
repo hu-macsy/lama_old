@@ -41,7 +41,6 @@
 
 #include <test/Configuration.hpp>
 
-using namespace boost;
 using namespace lama;
 
 /* --------------------------------------------------------------------- */

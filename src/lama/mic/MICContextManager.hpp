@@ -43,7 +43,7 @@
 #include <lama/Context.hpp>
 
 // boost
-#include <boost/weak_ptr.hpp>
+#include <common/weak_ptr.hpp>
 
 #include <string>
 

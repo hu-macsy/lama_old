@@ -56,20 +56,20 @@
 #include <tracing/tracing.hpp>
 
 // tracing
-#include <boost/bind.hpp>
+#include <common/bind.hpp>
 #include <boost/preprocessor.hpp>
 
 namespace lama
 {
 
-using boost::shared_ptr;
+using common::shared_ptr;
 
 LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, SparseMatrix<ValueType>::logger, "Matrix.SparseMatrix" )
 
 /* ---------------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-SparseMatrix<ValueType>::SparseMatrix( boost::shared_ptr<MatrixStorage<ValueType> > storage )
+SparseMatrix<ValueType>::SparseMatrix( common::shared_ptr<MatrixStorage<ValueType> > storage )
     :
 
     CRTPMatrix<SparseMatrix<ValueType>,ValueType>( storage->getNumRows(), storage->getNumColumns() )
@@ -82,7 +82,7 @@ SparseMatrix<ValueType>::SparseMatrix( boost::shared_ptr<MatrixStorage<ValueType
 /* ---------------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-SparseMatrix<ValueType>::SparseMatrix( boost::shared_ptr<MatrixStorage<ValueType> > storage, DistributionPtr rowDist )
+SparseMatrix<ValueType>::SparseMatrix( common::shared_ptr<MatrixStorage<ValueType> > storage, DistributionPtr rowDist )
     :
 
     CRTPMatrix<SparseMatrix<ValueType>,ValueType>(
@@ -112,7 +112,7 @@ SparseMatrix<ValueType>::SparseMatrix( boost::shared_ptr<MatrixStorage<ValueType
 
 template<typename ValueType>
 SparseMatrix<ValueType>::SparseMatrix(
-    boost::shared_ptr<MatrixStorage<ValueType> > localData,
+    common::shared_ptr<MatrixStorage<ValueType> > localData,
     DistributionPtr rowDist,
     DistributionPtr colDist )
     :
@@ -148,8 +148,8 @@ SparseMatrix<ValueType>::SparseMatrix(
 
 template<typename ValueType>
 SparseMatrix<ValueType>::SparseMatrix(
-    boost::shared_ptr<MatrixStorage<ValueType> > localData,
-    boost::shared_ptr<MatrixStorage<ValueType> > haloData,
+    common::shared_ptr<MatrixStorage<ValueType> > localData,
+    common::shared_ptr<MatrixStorage<ValueType> > haloData,
     const Halo& halo,
     DistributionPtr rowDist,
     DistributionPtr colDist )
@@ -641,7 +641,7 @@ void SparseMatrix<ValueType>::buildLocalStorage( _MatrixStorage& storage ) const
 
         bool keepDiagonalProperty = true;
 
-        boost::shared_ptr<MatrixStorage<ValueType> > tmp( mLocalData->clone() );
+        common::shared_ptr<MatrixStorage<ValueType> > tmp( mLocalData->clone() );
         tmp->joinHalo( *mLocalData, *mHaloData, mHalo, getColDistribution(), keepDiagonalProperty );
         storage = *tmp;
     }
@@ -1189,12 +1189,12 @@ void SparseMatrix<ValueType>::haloOperationSync(
     LAMAArray<ValueType>& localResult,
     const LAMAArray<ValueType>& localX,
     LAMAArray<ValueType>& haloX,
-    boost::function<
+    common::function<
     void(
         const MatrixStorage<ValueType>* localMatrix,
         LAMAArray<ValueType>& localResult,
         const LAMAArray<ValueType>& localX )> localF,
-    boost::function<
+    common::function<
     void(
         const MatrixStorage<ValueType>* haloMatrix,
         LAMAArray<ValueType>& localResult,
@@ -1278,12 +1278,12 @@ void SparseMatrix<ValueType>::vectorHaloOperationSync(
     LAMAArray<ValueType>& localResult,
     const LAMAArray<ValueType>& localX,
     const LAMAArray<ValueType>& localY,
-    boost::function<
+    common::function<
     void(
         const MatrixStorage<ValueType>* localMatrix,
         LAMAArray<ValueType>& localResult,
         const LAMAArray<ValueType>& localX )> calcF,
-    boost::function<
+    common::function<
     void(
         LAMAArray<ValueType>& localResult,
         const LAMAArray<ValueType>& localX,
@@ -1418,12 +1418,12 @@ void SparseMatrix<ValueType>::haloOperationAsync(
     LAMAArray<ValueType>& localResult,
     const LAMAArray<ValueType>& localX,
     LAMAArray<ValueType>& haloX,
-    boost::function<
+    common::function<
     SyncToken*(
         const MatrixStorage<ValueType>* localMatrix,
         LAMAArray<ValueType>& localResult,
         const LAMAArray<ValueType>& localX )> localAsyncF,
-    boost::function<
+    common::function<
     void(
         const MatrixStorage<ValueType>* haloMatrix,
         LAMAArray<ValueType>& localResult,
@@ -1520,12 +1520,12 @@ void SparseMatrix<ValueType>::vectorHaloOperationAsync(
     LAMAArray<ValueType>& localResult,
     const LAMAArray<ValueType>& localX,
     const LAMAArray<ValueType>& localY,
-    boost::function<
+    common::function<
     SyncToken*(
         const MatrixStorage<ValueType>* localMatrix,
         LAMAArray<ValueType>& localResult,
         const LAMAArray<ValueType>& localX )> calcF,
-    boost::function<
+    common::function<
     /*SyncToken**/void(
         LAMAArray<ValueType>& localResult,
         const LAMAArray<ValueType>& localX,
@@ -1700,9 +1700,7 @@ void SparseMatrix<ValueType>::matrixTimesVectorImpl(
     ValueType one = 1;
 
     // routine for halo matrix is same for sync and async version
-    using boost::function;
-    using boost::bind;
-    using boost::cref;
+    using namespace common;
 
     function<
     void(
@@ -1799,8 +1797,7 @@ void SparseMatrix<ValueType>::vectorTimesMatrixImpl(
     // todo: think about this if its useful to upload the vector (again)
     ContextPtr hostContext = Context::getContextPtr( context::Host );
 
-    using boost::function;
-    using boost::bind;
+    using namespace common;
 
     if( Matrix::SYNCHRONOUS == getCommunicationKind() )
     {

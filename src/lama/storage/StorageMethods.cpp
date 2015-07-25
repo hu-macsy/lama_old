@@ -50,6 +50,8 @@
 // boost
 #include <boost/preprocessor.hpp>
 
+#include <algorithm>
+
 using namespace memory;
 
 namespace lama

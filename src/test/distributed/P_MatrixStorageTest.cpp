@@ -52,7 +52,6 @@
 
 #include <logging/logging.hpp>
 
-using namespace boost;
 using namespace lama;
 
 /* ------------------------------------------------------------------------- */
@@ -92,7 +91,7 @@ typedef boost::mpl::list< CSRStorage<float>,
 
 /* ------------------------------------------------------------------------- */
 
-using boost::shared_ptr;
+using common::shared_ptr;
 
 /* ------------------------------------------------------------------------- */
 

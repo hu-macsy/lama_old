@@ -48,7 +48,7 @@
 #include <logging/logging.hpp>
 
 // boost
-#include <boost/shared_ptr.hpp>
+#include <common/shared_ptr.hpp>
 
 #include <map>
 #include <utility>
@@ -56,7 +56,7 @@
 namespace lama
 {
 
-typedef boost::shared_ptr<const class Distribution> DistributionPtr;
+typedef common::shared_ptr<const class Distribution> DistributionPtr;
 
 class Matrix;
 // Forward declaration

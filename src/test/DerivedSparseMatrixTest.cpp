@@ -42,7 +42,6 @@
 
 #include <test/SparseMatrixTest.hpp>
 
-using namespace boost;
 using namespace lama;
 
 /* ------------------------------------------------------------------------- */

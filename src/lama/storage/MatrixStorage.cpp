@@ -60,7 +60,7 @@
 #include <lama/LAMATypes.hpp>
 
 // boost
-#include <boost/bind.hpp>
+#include <common/bind.hpp>
 #include <boost/preprocessor.hpp>
 #include <boost/assign/list_of.hpp>
 #include <boost/unordered_map.hpp>
@@ -875,9 +875,9 @@ SyncToken* MatrixStorage<ValueType>::matrixTimesVectorAsync(
         const ValueType,
         const LAMAArray<ValueType>& ) const
     = &MatrixStorage<ValueType>::matrixTimesVector;
-    using boost::bind;
-    using boost::ref;
-    using boost::cref;
+    using common::bind;
+    using common::ref;
+    using common::cref;
     return new TaskSyncToken( bind( pf, this, ref( result ), alpha, cref( x ), beta, cref( y ) ) );
 }
 
@@ -900,9 +900,9 @@ SyncToken* MatrixStorage<ValueType>::vectorTimesMatrixAsync(
         const ValueType,
         const LAMAArray<ValueType>& ) const
     = &MatrixStorage<ValueType>::vectorTimesMatrix;
-    using boost::bind;
-    using boost::ref;
-    using boost::cref;
+    using common::bind;
+    using common::ref;
+    using common::cref;
     return new TaskSyncToken( bind( pf, this, ref( result ), alpha, cref( x ), beta, cref( y ) ) );
 }
 
@@ -936,9 +936,9 @@ SyncToken* MatrixStorage<ValueType>::jacobiIterateAsync(
         const LAMAArray<ValueType>&,
         const ValueType ) const
     = &MatrixStorage<ValueType>::jacobiIterate;
-    using boost::bind;
-    using boost::cref;
-    using boost::ref;
+    using common::bind;
+    using common::cref;
+    using common::ref;
     return new TaskSyncToken( bind( pf, this, ref( solution ), cref( oldSolution ), cref( rhs ), omega ) );
 }
 

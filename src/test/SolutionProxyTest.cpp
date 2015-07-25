@@ -37,7 +37,6 @@
 #include <lama/Scalar.hpp>
 #include <lama/solver/SolutionProxy.hpp>
 
-using namespace boost;
 using namespace lama;
 
 typedef Vector VectorType;

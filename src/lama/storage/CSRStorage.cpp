@@ -53,7 +53,7 @@
 #include <lama/exception/LAMAAssert.hpp>
 
 // boost
-#include <boost/bind.hpp>
+#include <common/bind.hpp>
 #include <boost/preprocessor.hpp>
 #include <tracing/tracing.hpp>
 
@@ -64,7 +64,7 @@ namespace lama
 
 using std::abs;
 using std::auto_ptr;
-using boost::shared_ptr;
+using common::shared_ptr;
 
 using tasking::TaskSyncToken;
 
@@ -1493,9 +1493,9 @@ SyncToken* CSRStorage<ValueType>::matrixTimesVectorAsync(
 
             = &CSRStorage<ValueType>::matrixTimesVector;
 
-        using boost::bind;
-        using boost::ref;
-        using boost::cref;
+        using common::bind;
+        using common::ref;
+        using common::cref;
 
         LAMA_LOG_INFO( logger, *this << ": matrixTimesVectorAsync on Host by own thread" )
 
@@ -1615,9 +1615,9 @@ SyncToken* CSRStorage<ValueType>::vectorTimesMatrixAsync(
 
             = &CSRStorage<ValueType>::vectorTimesMatrix;
 
-        using boost::bind;
-        using boost::ref;
-        using boost::cref;
+        using common::bind;
+        using common::ref;
+        using common::cref;
 
         LAMA_LOG_INFO( logger, *this << ": vectorTimesMatrixAsync on Host by own thread" )
 
@@ -1890,8 +1890,8 @@ void CSRStorage<ValueType>::matrixPlusMatrix(
 
     // Define shared pointers in case we need temporaries
 
-    boost::shared_ptr<CSRStorage<ValueType> > tmpA;
-    boost::shared_ptr<CSRStorage<ValueType> > tmpB;
+    common::shared_ptr<CSRStorage<ValueType> > tmpA;
+    common::shared_ptr<CSRStorage<ValueType> > tmpB;
 
     if( a.getFormat() == Format::CSR )
     {
@@ -1901,7 +1901,7 @@ void CSRStorage<ValueType>::matrixPlusMatrix(
     else
     {
         LAMA_UNSUPPORTED( a << ": will be converted to CSR for matrix multiply" )
-        tmpA = boost::shared_ptr<CSRStorage<ValueType> >( new CSRStorage<ValueType>( a ) );
+        tmpA = common::shared_ptr<CSRStorage<ValueType> >( new CSRStorage<ValueType>( a ) );
         csrA = tmpA.get();
     }
 
@@ -1913,7 +1913,7 @@ void CSRStorage<ValueType>::matrixPlusMatrix(
     else
     {
         LAMA_UNSUPPORTED( b << ": will be converted to CSR for matrix multiply" )
-        tmpB = boost::shared_ptr<CSRStorage<ValueType> >( new CSRStorage<ValueType>( b ) );
+        tmpB = common::shared_ptr<CSRStorage<ValueType> >( new CSRStorage<ValueType>( b ) );
         csrB = tmpB.get();
     }
 
@@ -1947,9 +1947,9 @@ void CSRStorage<ValueType>::matrixTimesMatrix(
 
     // Define two shared pointers in case we need temporaries
 
-    boost::shared_ptr<CSRStorage<ValueType> > tmpA;
-    boost::shared_ptr<CSRStorage<ValueType> > tmpB;
-    boost::shared_ptr<CSRStorage<ValueType> > tmpC;
+    common::shared_ptr<CSRStorage<ValueType> > tmpA;
+    common::shared_ptr<CSRStorage<ValueType> > tmpB;
+    common::shared_ptr<CSRStorage<ValueType> > tmpC;
 
     if( a.getFormat() == Format::CSR )
     {
@@ -1959,7 +1959,7 @@ void CSRStorage<ValueType>::matrixTimesMatrix(
     else
     {
         LAMA_UNSUPPORTED( a << ": will be converted to CSR for matrix multiply" )
-        tmpA = boost::shared_ptr<CSRStorage<ValueType> >( new CSRStorage<ValueType>( a ) );
+        tmpA = common::shared_ptr<CSRStorage<ValueType> >( new CSRStorage<ValueType>( a ) );
         csrA = tmpA.get();
     }
 
@@ -1971,7 +1971,7 @@ void CSRStorage<ValueType>::matrixTimesMatrix(
     else
     {
         LAMA_UNSUPPORTED( b << ": will be converted to CSR for matrix multiply" )
-        tmpB = boost::shared_ptr<CSRStorage<ValueType> >( new CSRStorage<ValueType>( b ) );
+        tmpB = common::shared_ptr<CSRStorage<ValueType> >( new CSRStorage<ValueType>( b ) );
         csrB = tmpB.get();
     }
 
@@ -1987,7 +1987,7 @@ void CSRStorage<ValueType>::matrixTimesMatrix(
         else
         {
             LAMA_UNSUPPORTED( c << ": CSR temporary required for matrix add" )
-            tmpC = boost::shared_ptr<CSRStorage<ValueType> >( new CSRStorage<ValueType>( c ) );
+            tmpC = common::shared_ptr<CSRStorage<ValueType> >( new CSRStorage<ValueType>( c ) );
             csrC = tmpC.get();
         }
 
@@ -2252,7 +2252,7 @@ ValueType CSRStorage<ValueType>::maxDiffNorm( const MatrixStorage<ValueType>& ot
 
     LAMA_LOG_INFO( logger, *this << ": maxDiffNorm( " << other << " )" )
 
-    boost::shared_ptr<CSRStorage<ValueType> > tmpOtherCSR;
+    common::shared_ptr<CSRStorage<ValueType> > tmpOtherCSR;
 
     const CSRStorage<ValueType>* otherCSR;
 

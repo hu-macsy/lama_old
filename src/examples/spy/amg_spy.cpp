@@ -84,7 +84,7 @@ int main( int argc, char** argv )
                    LoggerWriteBehaviour::toConsoleOnly,
                    std::auto_ptr<Timer>( new Timer() ) ) );
 
-    boost::shared_ptr<SimpleAMG> amgSolver( new SimpleAMG( "SimpleAMG solver", amgLogger ) );
+    common::shared_ptr<SimpleAMG> amgSolver( new SimpleAMG( "SimpleAMG solver", amgLogger ) );
 
     amgSolver->setHostOnlyLevel( 4 );
     amgSolver->setReplicatedLevel( 5 );

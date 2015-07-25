@@ -48,10 +48,10 @@
 
 #include <tracing/tracing.hpp>
 #include <boost/preprocessor.hpp>
-#include <boost/bind.hpp>
+#include <common/bind.hpp>
 
 using std::auto_ptr;
-using boost::shared_ptr;
+using common::shared_ptr;
 
 namespace lama
 {
@@ -995,11 +995,10 @@ SyncToken* COOStorage<ValueType>::vectorTimesMatrixAsync(
 
             = &COOStorage<ValueType>::vectorTimesMatrix;
 
-        using boost::bind;
-
         LAMA_LOG_INFO( logger, *this << ": vectorTimesMatrixAsync on Host by own thread" )
 
-        using boost::ref;
+        using common::bind;
+        using common::ref;
 
         return new TaskSyncToken( bind( pf, this, ref( result ), alpha, ref( x ), beta, ref( y ) ) );
     }

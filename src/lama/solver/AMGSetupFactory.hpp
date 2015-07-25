@@ -49,7 +49,7 @@
 #include <logging/logging.hpp>
 
 // boost
-#include <boost/shared_ptr.hpp>
+#include <common/shared_ptr.hpp>
 
 #include <map>
 
@@ -76,7 +76,7 @@ class COMMON_DLL_IMPORTEXPORT AMGSetupFactory: common::NonCopyable
 {
 public:
 
-    typedef std::map<std::string,boost::shared_ptr<AMGSetupManager> > AMGSetupToManagerMap;
+    typedef std::map<std::string,common::shared_ptr<AMGSetupManager> > AMGSetupToManagerMap;
 
     /** Get an AMGSetup of a certain type from the factory.
      *
@@ -102,7 +102,7 @@ public:
      *  @param type is the name of the needed AMG setup.
      *  @returns pointer to the desired AMG setup, the default one if not found
      */
-    boost::shared_ptr<AMGSetupManager> getAMGSetupManager( const std::string& type );
+    common::shared_ptr<AMGSetupManager> getAMGSetupManager( const std::string& type );
 
     /**
      *  Releases all communication managers registered in the AMG setup factory instance.
@@ -119,7 +119,7 @@ public:
      * The factory takes ownership of the manager, i.e. the manager will be deleted if it is replaced or
      * if the factory is destroyed or released.
      */
-    void addAMGSetupManager( const std::string& type, boost::shared_ptr<AMGSetupManager> manager );
+    void addAMGSetupManager( const std::string& type, common::shared_ptr<AMGSetupManager> manager );
 
     /** Query routine for the default AMG setup type. */
 

@@ -45,6 +45,8 @@
 
 #include <lama/cblas.hpp>
 
+#include <boost/preprocessor.hpp>
+
 namespace lama
 {
 

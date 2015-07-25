@@ -51,14 +51,14 @@
 
 // boost
 #include <boost/scoped_array.hpp>
-#include <boost/bind.hpp>
+#include <common/bind.hpp>
 
 namespace lama
 {
 
-// Allow for shared_ptr<ValueType> instead of boost::shared_ptr<ValueType>
+// Allow for shared_ptr<ValueType> instead of common::shared_ptr<ValueType>
 
-using boost::shared_ptr;
+using common::shared_ptr;
 
 /* --------------------------------------------------------------------------- */
 
@@ -1013,9 +1013,9 @@ SyncToken* DIAStorage<ValueType>::matrixTimesVectorAsync(
 
             = &DIAStorage<ValueType>::matrixTimesVector;
 
-        using boost::bind;
-        using boost::ref;
-        using boost::cref;
+        using common::bind;
+        using common::ref;
+        using common::cref;
 
         return new TaskSyncToken( bind( mv, this, ref( result ), alpha, cref( x ), beta, cref( y ) ) );
     }
@@ -1115,9 +1115,9 @@ SyncToken* DIAStorage<ValueType>::vectorTimesMatrixAsync(
 
             = &DIAStorage<ValueType>::vectorTimesMatrix;
 
-        using boost::bind;
-        using boost::ref;
-        using boost::cref;
+        using common::bind;
+        using common::ref;
+        using common::cref;
 
         LAMA_LOG_INFO( logger, *this << ": vectorTimesMatrixAsync on Host by own thread" )
 

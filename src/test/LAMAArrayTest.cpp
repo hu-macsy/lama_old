@@ -38,7 +38,6 @@
 
 #include <memory/memory.hpp>
 
-using namespace boost;
 using namespace lama;
 using namespace memory;
 

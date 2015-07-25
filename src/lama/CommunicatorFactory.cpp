@@ -42,7 +42,7 @@
 #include <logging/logging.hpp>
 
 // boost
-#include <boost/shared_ptr.hpp>
+#include <common/shared_ptr.hpp>
 
 using namespace std;
 using namespace boost;
@@ -142,7 +142,7 @@ const std::string& CommunicatorFactory::getDefaultCommunicatorType() const
     return mDefaultCommunicatorType;
 }
 
-boost::shared_ptr<CommunicatorManager> CommunicatorFactory::getCommunicatorManager( const std::string& type )
+common::shared_ptr<CommunicatorManager> CommunicatorFactory::getCommunicatorManager( const std::string& type )
 {
     LAMA_ASSERT( mCommunicatorToManagerMap.find( type ) != mCommunicatorToManagerMap.end(),
                  "Communicator for " << type << " not supported, no manager registered" )
@@ -208,7 +208,7 @@ CommunicatorFactory::~CommunicatorFactory()
 
 void CommunicatorFactory::addCommunicatorManager(
     const std::string& type,
-    boost::shared_ptr<CommunicatorManager> commManager )
+    common::shared_ptr<CommunicatorManager> commManager )
 {
     // be careful about logging, method might be called during static initialization
 

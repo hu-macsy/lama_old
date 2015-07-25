@@ -38,7 +38,7 @@
 
 // base classes
 #include <lama/Context.hpp>
-#include <boost/enable_shared_from_this.hpp>
+#include <common/enable_shared_from_this.hpp>
 
 #include <logging/logging.hpp>
 

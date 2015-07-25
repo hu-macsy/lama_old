@@ -51,7 +51,7 @@
 #include<map>
 #include<ostream>
 
-using namespace boost;
+using namespace common;
 
 namespace lama
 {
@@ -253,12 +253,12 @@ Vector& Vector::operator=( const Expression_SMV_SV& expression )
 
     Vector* resultPtr = this;
 
-    boost::shared_ptr<Vector> tmpResult;
+    common::shared_ptr<Vector> tmpResult;
 
     if( &vectorX == this )
     {
         LAMA_LOG_DEBUG( logger, "Temporary for X required" )
-        tmpResult = boost::shared_ptr<Vector>( this->clone( getDistributionPtr() ) );
+        tmpResult = common::shared_ptr<Vector>( this->clone( getDistributionPtr() ) );
         resultPtr = tmpResult.get();
     }
 
@@ -290,12 +290,12 @@ Vector& Vector::operator=( const Expression_SVM_SV& expression )
 
     Vector* resultPtr = this;
 
-    boost::shared_ptr<Vector> tmpResult;
+    common::shared_ptr<Vector> tmpResult;
 
     if( &vectorX == this )
     {
         LAMA_LOG_DEBUG( logger, "Temporary for X required" )
-        tmpResult = boost::shared_ptr<Vector>( this->clone( getDistributionPtr() ) );
+        tmpResult = common::shared_ptr<Vector>( this->clone( getDistributionPtr() ) );
         resultPtr = tmpResult.get();
     }
 

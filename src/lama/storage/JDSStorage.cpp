@@ -45,11 +45,11 @@
 
 // boost
 #include <boost/preprocessor.hpp>
-#include <boost/bind.hpp>
+#include <common/bind.hpp>
 
 namespace lama
 {
-// Allow for shared_ptr<ValueType> instead of boost::shared_ptr<ValueType>
+// Allow for shared_ptr<ValueType> instead of common::shared_ptr<ValueType>
 
 using common::shared_ptr;
 using namespace::tasking;
@@ -1041,9 +1041,9 @@ SyncToken* JDSStorage<ValueType>::matrixTimesVectorAsync(
 
             = &JDSStorage<ValueType>::matrixTimesVector;
 
-        using boost::bind;
-        using boost::ref;
-        using boost::cref;
+        using common::bind;
+        using common::ref;
+        using common::cref;
 
         return new TaskSyncToken( bind( mv, this, ref( result ), alpha, cref( x ), beta, cref( y ) ) );
     }
@@ -1132,7 +1132,7 @@ SyncToken* JDSStorage<ValueType>::vectorTimesMatrixAsync(
 
     if ( loc->getType() == context::Host )
     {
-        // workaround as boost::bind has limited number of arguments and cannot be
+        // workaround as common::bind has limited number of arguments and cannot be
         // used later in OpenMP to generate a TaskSyncToken
 
         void (JDSStorage::*vm)(
@@ -1144,9 +1144,9 @@ SyncToken* JDSStorage<ValueType>::vectorTimesMatrixAsync(
 
             = &JDSStorage<ValueType>::vectorTimesMatrix;
 
-        using boost::bind;
-        using boost::ref;
-        using boost::cref;
+        using common::bind;
+        using common::ref;
+        using common::cref;
 
         return new TaskSyncToken( bind( vm, this, ref( result ), alpha, cref( x ), beta, cref( y ) ) );
     }
@@ -1294,9 +1294,9 @@ SyncToken* JDSStorage<ValueType>::jacobiIterateAsync(
 
             = &JDSStorage<ValueType>::jacobiIterate;
 
-        using boost::bind;
-        using boost::ref;
-        using boost::cref;
+        using common::bind;
+        using common::ref;
+        using common::cref;
 
         return new TaskSyncToken( bind( jb, this, ref( solution ), cref( oldSolution ), cref( rhs ), omega ) );
     }

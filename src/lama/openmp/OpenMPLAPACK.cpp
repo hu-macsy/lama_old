@@ -41,6 +41,7 @@
 #include <lama/BLASInterface.hpp>
 #include <tracing/tracing.hpp>
 #include <boost/scoped_array.hpp>
+#include <boost/preprocessor.hpp>
 
 // macros
 #include <lama/macros/unused.hpp>

@@ -46,7 +46,7 @@
 
 // boost
 #include <boost/scoped_array.hpp>
-#include <boost/bind.hpp>
+#include <common/bind.hpp>
 #include <boost/preprocessor.hpp>
 
 #include <iostream>
@@ -55,7 +55,7 @@
 #include <mpi.h>
 
 using namespace std;
-using boost::shared_ptr;
+using common::shared_ptr;
 
 namespace lama
 {

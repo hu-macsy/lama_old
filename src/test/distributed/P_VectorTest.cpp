@@ -63,9 +63,9 @@
 
 #include <test/TestMacros.hpp>
 
-using namespace boost;
+using namespace common;
 using namespace lama;
-using common::Exception;
+using boost::scoped_array;
 
 typedef boost::mpl::list<float, double> test_types;
 

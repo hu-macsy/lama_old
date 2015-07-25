@@ -49,7 +49,6 @@ inline void usleep( int t )
 #include <unistd.h>
 #endif
 
-using namespace boost;
 using namespace lama;
 using common::Exception;
 

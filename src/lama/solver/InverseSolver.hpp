@@ -105,7 +105,7 @@ public:
         InverseSolverRuntime();
         virtual ~InverseSolverRuntime();
 
-        boost::shared_ptr<Matrix> mInverse;
+        common::shared_ptr<Matrix> mInverse;
     };
 
     virtual SolverPtr copy();

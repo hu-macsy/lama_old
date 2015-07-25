@@ -96,11 +96,11 @@ public:
         CGSRuntime();
         virtual ~CGSRuntime();
 
-        boost::shared_ptr<Vector> mRes0;
-        boost::shared_ptr<Vector> mVecP;
-        boost::shared_ptr<Vector> mVecQ;
-        boost::shared_ptr<Vector> mVecU;
-        boost::shared_ptr<Vector> mVecT;
+        common::shared_ptr<Vector> mRes0;
+        common::shared_ptr<Vector> mVecP;
+        common::shared_ptr<Vector> mVecQ;
+        common::shared_ptr<Vector> mVecU;
+        common::shared_ptr<Vector> mVecT;
 
         Scalar mEps;
         Scalar mNormRes;

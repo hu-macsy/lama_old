@@ -39,7 +39,6 @@
 #include <lama/matrix/DIASparseMatrix.hpp>
 #include <test/TestMacros.hpp>
 
-using namespace boost;
 using namespace lama;
 
 extern bool base_test_case;

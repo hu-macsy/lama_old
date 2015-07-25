@@ -128,7 +128,7 @@ private:
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 };
 
-typedef boost::shared_ptr<GeneralDistribution> GeneralDistributionPtr;
+typedef common::shared_ptr<GeneralDistribution> GeneralDistributionPtr;
 
 }
 

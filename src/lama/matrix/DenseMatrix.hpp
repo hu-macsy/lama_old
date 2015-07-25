@@ -46,11 +46,7 @@
 
 //boost
 #include <boost/lexical_cast.hpp>
-#include <boost/shared_ptr.hpp>
-
-//boost
-#include <boost/lexical_cast.hpp>
-#include <boost/shared_ptr.hpp>
+#include <common/shared_ptr.hpp>
 
 namespace lama
 {
@@ -80,7 +76,7 @@ public:
 
     typedef ValueType MatrixValueType; //!< This is the type of the matrix values.
 
-    typedef boost::shared_ptr<DenseStorage<ValueType> > DenseStoragePtr;
+    typedef common::shared_ptr<DenseStorage<ValueType> > DenseStoragePtr;
 
     /** Getter for the type name of the class. */
 
@@ -555,7 +551,7 @@ public:
 
     /** local data is allocated in chunks according to column distribution */
 
-    std::vector<boost::shared_ptr<DenseStorage<ValueType> > > mData;
+    std::vector<common::shared_ptr<DenseStorage<ValueType> > > mData;
 
     using CRTPMatrix<DenseMatrix<ValueType>,ValueType>::getNumRows;
     using CRTPMatrix<DenseMatrix<ValueType>,ValueType>::getNumColumns;
@@ -611,7 +607,7 @@ private:
      */
     static void joinColumnData(
         DenseStorage<ValueType>& result,
-        const std::vector<boost::shared_ptr<DenseStorage<ValueType> > >& chunks,
+        const std::vector<common::shared_ptr<DenseStorage<ValueType> > >& chunks,
         const std::vector<IndexType>& columnOwners );
 
     /** Split dense storage data according to a distribution into chunks.
@@ -622,7 +618,7 @@ private:
      *  @param[in]   columnOwners  owner for each column
      */
     static void splitColumnData(
-        std::vector<boost::shared_ptr<DenseStorage<ValueType> > >& chunks,
+        std::vector<common::shared_ptr<DenseStorage<ValueType> > >& chunks,
         const DenseStorage<ValueType>& columnData,
         const PartitionId numChunks,
         const std::vector<IndexType>& columnOwners );

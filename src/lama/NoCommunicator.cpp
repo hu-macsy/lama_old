@@ -41,6 +41,8 @@
 // assert
 #include <lama/exception/LAMAAssert.hpp>
 
+#include <common/weak_ptr.hpp>
+
 using namespace std;
 
 namespace lama
@@ -287,11 +289,11 @@ void NoCommunicator::writeAt( std::ostream& stream ) const
 
 /* --------------------------------------------------------------- */
 
-static boost::weak_ptr<class NoCommunicator> theNoCommunicatorInstance;
+static common::weak_ptr<class NoCommunicator> theNoCommunicatorInstance;
 
 CommunicatorPtr NoCommunicator::create()
 {
-    boost::shared_ptr<NoCommunicator> communicator;
+    common::shared_ptr<NoCommunicator> communicator;
 
     // use the last communicatorInstance if it is still valid
 
@@ -299,7 +301,7 @@ CommunicatorPtr NoCommunicator::create()
     {
         // create a new instance of NoCommunicator and keep it for further uses
 
-        communicator = boost::shared_ptr<NoCommunicator>( new NoCommunicator() );
+        communicator = common::shared_ptr<NoCommunicator>( new NoCommunicator() );
 
         theNoCommunicatorInstance = communicator;
     }

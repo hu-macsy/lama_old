@@ -60,7 +60,6 @@
 #include <test/TestMacros.hpp>
 
 
-using namespace boost;
 using namespace lama;
 
 typedef boost::mpl::list<float> test_types;

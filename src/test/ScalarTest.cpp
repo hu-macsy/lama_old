@@ -43,7 +43,6 @@
 
 using namespace lama;
 using namespace common;
-using namespace boost;
 
 // Scalar can be tested for all LAMA arithmetic types even if LAMA matrices
 // and vectors have not been instantiated for these types

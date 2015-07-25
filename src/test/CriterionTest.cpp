@@ -39,7 +39,6 @@
 
 #include <test/TestMacros.hpp>
 
-using namespace boost;
 using namespace lama;
 
 /* --------------------------------------------------------------------- */

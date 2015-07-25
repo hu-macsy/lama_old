@@ -43,10 +43,10 @@
 #include <logging/logging.hpp>
 
 // boost
-#include <boost/shared_ptr.hpp>
+#include <common/shared_ptr.hpp>
 
 using namespace std;
-using namespace boost;
+using namespace common;
 
 /** String for the default AMG Setup. */
 
@@ -134,7 +134,7 @@ const std::string& AMGSetupFactory::getDefaultAMGSetupType() const
     return mDefaultAMGSetupType;
 }
 
-boost::shared_ptr<AMGSetupManager> AMGSetupFactory::getAMGSetupManager( const std::string& type )
+common::shared_ptr<AMGSetupManager> AMGSetupFactory::getAMGSetupManager( const std::string& type )
 {
     LAMA_ASSERT( mAMGSetupToManagerMap.find( type ) != mAMGSetupToManagerMap.end(),
                  "AMGSetup for " << type << " not supported, no manager registered" )
@@ -198,7 +198,7 @@ AMGSetupFactory::~AMGSetupFactory()
 
 /* ---- AMGSetupFactory methods  ----------------------------------------------- */
 
-void AMGSetupFactory::addAMGSetupManager( const std::string& type, boost::shared_ptr<AMGSetupManager> commManager )
+void AMGSetupFactory::addAMGSetupManager( const std::string& type, common::shared_ptr<AMGSetupManager> commManager )
 {
     // be careful about logging, method might be called during static initialization
 

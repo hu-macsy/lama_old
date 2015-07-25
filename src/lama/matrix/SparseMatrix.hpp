@@ -45,7 +45,7 @@
 
 #include <lama/DenseVector.hpp>
 
-#include <boost/function.hpp>
+#include <common/function.hpp>
 
 using tasking::SyncToken;
 
@@ -120,20 +120,20 @@ public:
      * Note: this constructor will not create a copy of the storage data.
      *       but just join the ownership
      */
-    SparseMatrix( boost::shared_ptr<MatrixStorage<ValueType> > storage );
+    SparseMatrix( common::shared_ptr<MatrixStorage<ValueType> > storage );
 
-    SparseMatrix( boost::shared_ptr<MatrixStorage<ValueType> > storage, DistributionPtr rowDist );
+    SparseMatrix( common::shared_ptr<MatrixStorage<ValueType> > storage, DistributionPtr rowDist );
 
     SparseMatrix(
-        boost::shared_ptr<MatrixStorage<ValueType> > storage,
+        common::shared_ptr<MatrixStorage<ValueType> > storage,
         DistributionPtr rowDist,
         DistributionPtr colDist );
 
     /** Constructor of a sparse matrix with local and halo data available. */
 
     SparseMatrix(
-        boost::shared_ptr<MatrixStorage<ValueType> > localData,
-        boost::shared_ptr<MatrixStorage<ValueType> > haloData,
+        common::shared_ptr<MatrixStorage<ValueType> > localData,
+        common::shared_ptr<MatrixStorage<ValueType> > haloData,
         const Halo& halo,
         DistributionPtr rowDist,
         DistributionPtr colDist );
@@ -377,12 +377,12 @@ public:
         LAMAArray<ValueType>& localResult,
         const LAMAArray<ValueType>& localX,
         LAMAArray<ValueType>& haloX,
-        boost::function<
+        common::function<
         void(
             const MatrixStorage<ValueType>* localMatrix,
             LAMAArray<ValueType>& localResult,
             const LAMAArray<ValueType>& localX )> localF,
-        boost::function<
+        common::function<
         void(
             const MatrixStorage<ValueType>* haloMatrix,
             LAMAArray<ValueType>& localResult,
@@ -398,12 +398,12 @@ public:
         LAMAArray<ValueType>& localResult,
         const LAMAArray<ValueType>& localX,
         LAMAArray<ValueType>& haloX,
-        boost::function<
+        common::function<
         SyncToken*(
             const MatrixStorage<ValueType>* localMatrix,
             LAMAArray<ValueType>& localResult,
             const LAMAArray<ValueType>& localX )> localAsyncF,
-        boost::function<
+        common::function<
         void(
             const MatrixStorage<ValueType>* haloMatrix,
             LAMAArray<ValueType>& localResult,
@@ -413,12 +413,12 @@ public:
         LAMAArray<ValueType>& localResult,
         const LAMAArray<ValueType>& localX,
         const LAMAArray<ValueType>& localY,
-        boost::function<
+        common::function<
         void(
             const MatrixStorage<ValueType>* localMatrix,
             LAMAArray<ValueType>& localResult,
             const LAMAArray<ValueType>& localX )> calcF,
-        boost::function<
+        common::function<
         void(
             LAMAArray<ValueType>& localResult,
             const LAMAArray<ValueType>& localX,
@@ -428,12 +428,12 @@ public:
         LAMAArray<ValueType>& localResult,
         const LAMAArray<ValueType>& localX,
         const LAMAArray<ValueType>& localY,
-        boost::function<
+        common::function<
         SyncToken*(
             const MatrixStorage<ValueType>* localMatrix,
             LAMAArray<ValueType>& localResult,
             const LAMAArray<ValueType>& localX )> calcF,
-        boost::function<
+        common::function<
         /*SyncToken**/void(
             LAMAArray<ValueType>& localResult,
             const LAMAArray<ValueType>& localX,
@@ -606,9 +606,9 @@ protected:
 
     void checkSettings();
 
-    boost::shared_ptr<MatrixStorage<ValueType> > mLocalData; //!< local columns of sparse matrix
+    common::shared_ptr<MatrixStorage<ValueType> > mLocalData; //!< local columns of sparse matrix
 
-    boost::shared_ptr<MatrixStorage<ValueType> > mHaloData; //!< local columns of sparse matrix
+    common::shared_ptr<MatrixStorage<ValueType> > mHaloData; //!< local columns of sparse matrix
 
     Halo mHalo; //!< Exchange plans for halo part due to column distribution
 

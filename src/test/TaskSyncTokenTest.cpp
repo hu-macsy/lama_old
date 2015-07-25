@@ -37,9 +37,10 @@
 #include <tasking/TaskSyncToken.hpp>
 
 #include <test/TestMacros.hpp>
+#include <common/bind.hpp>
 
-using namespace boost;
 using namespace tasking;
+using namespace common;
 
 /* --------------------------------------------------------------------- */
 

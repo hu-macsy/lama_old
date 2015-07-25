@@ -40,7 +40,6 @@
 
 #include <test/NormTest.hpp>
 
-using namespace boost;
 using namespace lama;
 
 extern bool base_test_case;

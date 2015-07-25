@@ -47,7 +47,7 @@ namespace lama
 {
 
 class OmegaSolver;
-typedef boost::shared_ptr<OmegaSolver> OldSolutionHandlerPtr;
+typedef common::shared_ptr<OmegaSolver> OldSolutionHandlerPtr;
 
 /**
  * @brief The OldSolutionHandler class only manages the omega parameter

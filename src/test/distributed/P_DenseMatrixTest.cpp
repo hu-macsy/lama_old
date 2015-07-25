@@ -35,7 +35,7 @@
 #include <boost/mpl/list.hpp>
 
 #include <boost/scoped_array.hpp>
-#include <boost/shared_ptr.hpp>
+#include <common/shared_ptr.hpp>
 
 #include <lama/matrix/DenseMatrix.hpp>
 
@@ -52,8 +52,9 @@
 #include <test/TestSparseMatrices.hpp>
 #include <test/TestMacros.hpp>
 
-using namespace boost;
+using namespace common;
 using namespace lama;
+using boost::scoped_array;
 
 typedef boost::mpl::list<double, float> test_types;
 
@@ -140,7 +141,7 @@ void cyclicMultVectorTest( const IndexType chunkSize, const IndexType n )
 
     DenseMatrix<float> repMatrix;
     repMatrix.setRawDenseData( n, n, values.get() );
-    boost::shared_ptr<Distribution> dist( new CyclicDistribution( n, chunkSize, comm ) );
+    common::shared_ptr<Distribution> dist( new CyclicDistribution( n, chunkSize, comm ) );
     DenseMatrix<float> distMatrix( repMatrix, dist, dist );
     distMatrix.setCommunicationKind( Matrix::ASYNCHRONOUS );
     DenseVector<float> x( dist, 1.0f );
@@ -410,7 +411,7 @@ void cyclicDistTestImpl( const IndexType chunkSize, const IndexType n )
 
     DenseMatrix<float> repMatrix;
     repMatrix.setRawDenseData( n, n, values.get() );
-    boost::shared_ptr<Distribution> dist( new CyclicDistribution( n, chunkSize, comm ) );
+    common::shared_ptr<Distribution> dist( new CyclicDistribution( n, chunkSize, comm ) );
     DenseMatrix<float> distMatrix( repMatrix, dist, dist );
 
     for ( IndexType i = 0; i < n; i++ )

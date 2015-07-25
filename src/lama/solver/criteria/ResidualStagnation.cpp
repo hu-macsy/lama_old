@@ -38,6 +38,7 @@
 #include <lama/solver/IterativeSolver.hpp>
 
 #include <iostream>
+#include <algorithm>
 
 namespace lama
 {

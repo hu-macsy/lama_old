@@ -46,7 +46,6 @@
 #include <lama/expression/MatrixExpressions.hpp>
 #include <lama/expression/all.hpp>
 
-using namespace boost;
 using namespace lama;
 
 namespace lama

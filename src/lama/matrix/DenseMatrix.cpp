@@ -167,7 +167,7 @@ DenseMatrix<ValueType>::DenseMatrix(
     LAMA_LOG_TRACE( logger, "colDist: " << colDist )
     LAMA_LOG_TRACE( logger, "colDist.comm: " << colDist.getCommunicator() )
 
-    boost::shared_ptr<DenseStorage<ValueType> > otherData = matrix.mData[0];
+    common::shared_ptr<DenseStorage<ValueType> > otherData = matrix.mData[0];
 
     if( rowDist.getNumPartitions() > 1 )
     {
@@ -234,7 +234,7 @@ DenseMatrix<ValueType>::DenseMatrix( const std::string& fileName )
 {
     LAMA_LOG_INFO( logger, "DenseMatrix( (fileName = " << fileName )
 
-    boost::shared_ptr<DenseStorage<ValueType> > denseStorage( new DenseStorage<ValueType>() );
+    common::shared_ptr<DenseStorage<ValueType> > denseStorage( new DenseStorage<ValueType>() );
 
     denseStorage->readFromFile( fileName );
 
@@ -255,7 +255,7 @@ void DenseMatrix<ValueType>::readFromFile( const std::string& fileName )
 {
     LAMA_LOG_INFO( logger, "set dense matrix with values from input file " << fileName )
 
-    boost::shared_ptr<DenseStorage<ValueType> > denseStorage( new DenseStorage<ValueType>() );
+    common::shared_ptr<DenseStorage<ValueType> > denseStorage( new DenseStorage<ValueType>() );
 
     denseStorage->readFromFile( fileName );
 
@@ -964,7 +964,7 @@ LAMA_LOG_INFO( logger, "buildLocalStorage( " << *this << " ) = " << storage )
 template<typename ValueType>
 void DenseMatrix<ValueType>::joinColumnData(
     DenseStorage<ValueType>& result,
-    const std::vector<boost::shared_ptr<DenseStorage<ValueType> > >& chunks,
+    const std::vector<common::shared_ptr<DenseStorage<ValueType> > >& chunks,
     const std::vector<IndexType>& columnOwners )
 {
 // Note: this is a static method, no member variables are used
@@ -978,7 +978,7 @@ LAMA_ASSERT_EQUAL_ERROR( static_cast<IndexType>( columnOwners.size() ), numColum
 
 const PartitionId numColPartitions = static_cast<PartitionId>( chunks.size() );
 
-typedef boost::shared_ptr<ReadAccess<ValueType> > ReadAccessPtr;
+typedef common::shared_ptr<ReadAccess<ValueType> > ReadAccessPtr;
 
 std::vector<ReadAccessPtr> chunkRead( numColPartitions );
 
@@ -1069,7 +1069,7 @@ mData[p].reset( new DenseStorage<ValueType>( numRows, numColsPartition[p] ) );
 
 template<typename ValueType>
 void DenseMatrix<ValueType>::splitColumnData(
-    std::vector<boost::shared_ptr<DenseStorage<ValueType> > >& chunks,
+    std::vector<common::shared_ptr<DenseStorage<ValueType> > >& chunks,
     const DenseStorage<ValueType>& columnData,
     const PartitionId numChunks,
     const std::vector<IndexType>& columnOwners )
@@ -1094,7 +1094,7 @@ LAMA_ASSERT_DEBUG( columnOwners[i] < numChunks, "owner out of range" )
 chunks.clear();
 chunks.resize( numChunks );
 
-typedef boost::shared_ptr<WriteAccess<ValueType> > WriteAccessPtr;
+typedef common::shared_ptr<WriteAccess<ValueType> > WriteAccessPtr;
 
 std::vector<WriteAccessPtr> chunkWrite( numChunks );
 
@@ -1152,7 +1152,7 @@ if( getColDistribution().getNumPartitions() != 1 )
 const IndexType numCols = getNumColumns();
 const IndexType numLocalRows = getDistribution().getLocalSize();
 
-boost::shared_ptr<DenseStorage<ValueType> > colData;
+common::shared_ptr<DenseStorage<ValueType> > colData;
 colData.reset( new DenseStorage<ValueType>( numLocalRows, numCols ) );
 joinColumnData( *colData, mData, mOwners );
 
@@ -1171,7 +1171,7 @@ void DenseMatrix<ValueType>::splitColumns( DistributionPtr colDistribution )
 {
 LAMA_ASSERT_EQUAL_ERROR( 1, getColDistribution().getNumPartitions() )
 
-boost::shared_ptr<DenseStorage<ValueType> > oldStorage = mData[0];
+common::shared_ptr<DenseStorage<ValueType> > oldStorage = mData[0];
 
 Matrix::setDistributedMatrix( getDistributionPtr(), colDistribution );
 

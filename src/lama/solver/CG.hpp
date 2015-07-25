@@ -86,9 +86,9 @@ public:
         CGRuntime();
         virtual ~CGRuntime();
 
-        boost::shared_ptr<Vector> mP;
-        boost::shared_ptr<Vector> mQ;
-        boost::shared_ptr<Vector> mZ;
+        common::shared_ptr<Vector> mP;
+        common::shared_ptr<Vector> mQ;
+        common::shared_ptr<Vector> mZ;
         Scalar mPScalar;
     };
 

@@ -52,7 +52,7 @@
 #include <common/Factory.hpp>
 
 // boost
-#include <boost/shared_ptr.hpp>
+#include <common/shared_ptr.hpp>
 #include <boost/preprocessor.hpp>
 
 #include <memory>
@@ -75,7 +75,7 @@ class Halo;
 
 class Communicator;
 
-typedef boost::shared_ptr<const Communicator> CommunicatorPtr;
+typedef common::shared_ptr<const Communicator> CommunicatorPtr;
 
 /**
  * @brief Base and interface class for communicators used in LAMA
@@ -802,14 +802,14 @@ tasking::SyncToken* Communicator::exchangeByPlanAsync(
 
     LAMA_LOG_DEBUG( logger, *this << ": exchangeByPlanAsync, comCtx = " << *comCtx )
 
-    boost::shared_ptr<ReadAccess<ValueType> > sendData( new ReadAccess<ValueType>( sendArray, comCtx ) );
-    boost::shared_ptr<WriteAccess<ValueType> > recvData(
+    common::shared_ptr<ReadAccess<ValueType> > sendData( new ReadAccess<ValueType>( sendArray, comCtx ) );
+    common::shared_ptr<WriteAccess<ValueType> > recvData(
                     new WriteOnlyAccess<ValueType>( recvArray, comCtx, recvSize ) );
 
     tasking::SyncToken* token( exchangeByPlanAsync( recvData->get(), recvPlan, sendData->get(), sendPlan ) );
 
     // Add the read and write access to the sync token to get it freed after successful wait
-    // conversion boost::shared_ptr<HostWriteAccess<ValueType> > -> boost::shared_ptr<BaseAccess> supported
+    // conversion common::shared_ptr<HostWriteAccess<ValueType> > -> common::shared_ptr<BaseAccess> supported
 
     token->pushToken( recvData );
     token->pushToken( sendData );

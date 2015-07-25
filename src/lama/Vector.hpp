@@ -62,7 +62,7 @@ class Matrix;
 
 /** Pointer class for a vector, always use of a shared pointer. */
 
-typedef boost::shared_ptr<class Vector> VectorPtr;
+typedef common::shared_ptr<class Vector> VectorPtr;
 
 class Vector;
 

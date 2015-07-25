@@ -40,7 +40,6 @@
 #include <lama/LAMAArrayUtils.hpp>
 #include <lama/storage/ELLStorage.hpp>
 
-using namespace boost;
 using namespace lama;
 using common::Exception;
 

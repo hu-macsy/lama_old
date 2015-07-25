@@ -46,7 +46,6 @@
 #include <string>
 #include <map>
 
-using namespace boost;
 
 bool base_test_case = false;
 std::string testcase;
@@ -250,6 +249,6 @@ int main( int argc, char* argv[] )
 
     /* Call main() from boost with new arguments */
     /* it is just allowed to invoke this method once */
-    result = ::unit_test::unit_test_main( &init_unit_test_suite, argc, argv );
+    result = boost::unit_test::unit_test_main( &init_unit_test_suite, argc, argv );
     return result;
 }

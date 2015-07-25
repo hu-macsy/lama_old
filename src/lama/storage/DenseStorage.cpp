@@ -51,7 +51,7 @@ namespace lama
 using std::abs;
 // so we can use abs for float and double and own abs for Complex
 
-using boost::shared_ptr;
+using common::shared_ptr;
 
 /* --------------------------------------------------------------------------- */
 
@@ -772,8 +772,8 @@ void DenseStorageView<ValueType>::matrixTimesMatrixDense(
     const DenseStorageView<ValueType>* ptrA = &a;
     const DenseStorageView<ValueType>* ptrB = &b;
 
-    boost::shared_ptr<DenseStorage<ValueType> > tmpA;
-    boost::shared_ptr<DenseStorage<ValueType> > tmpB;
+    common::shared_ptr<DenseStorage<ValueType> > tmpA;
+    common::shared_ptr<DenseStorage<ValueType> > tmpB;
 
     LAMA_LOG_INFO( logger,
                    "matrixTimesMatrixDense: " << alpha << " * a * b + " << beta << " * c, with a = " << a << ", b = " << b << ", c = " << c )
@@ -781,7 +781,7 @@ void DenseStorageView<ValueType>::matrixTimesMatrixDense(
     if( &a == this )
     {
         LAMA_LOG_INFO( logger, "temporary for A in A * B ( dense storages) needed" )
-        tmpA = boost::shared_ptr<DenseStorage<ValueType> >( new DenseStorage<ValueType>( a ) );
+        tmpA = common::shared_ptr<DenseStorage<ValueType> >( new DenseStorage<ValueType>( a ) );
         ptrA = tmpA.get();
     }
 
@@ -798,7 +798,7 @@ void DenseStorageView<ValueType>::matrixTimesMatrixDense(
         else
         {
             LAMA_LOG_INFO( logger, "temporary for B in A * B ( dense storages) needed" )
-            tmpB = boost::shared_ptr<DenseStorage<ValueType> >( new DenseStorage<ValueType>( b ) );
+            tmpB = common::shared_ptr<DenseStorage<ValueType> >( new DenseStorage<ValueType>( b ) );
             ptrB = tmpB.get();
         }
     }
@@ -957,7 +957,7 @@ ValueType DenseStorageView<ValueType>::maxDiffNorm( const MatrixStorage<ValueTyp
     LAMA_ASSERT_EQUAL_ERROR( mNumRows, other.getNumRows() )
     LAMA_ASSERT_EQUAL_ERROR( mNumColumns, other.getNumColumns() )
 
-    boost::shared_ptr<DenseStorage<ValueType> > tmpOtherDense;
+    common::shared_ptr<DenseStorage<ValueType> > tmpOtherDense;
 
     const DenseStorageView<ValueType>* otherDense;
 

@@ -44,7 +44,6 @@
 #include <test/TestMacros.hpp>
 
 using namespace lama;
-using namespace boost;
 
 typedef boost::mpl::list<double, float> test_types;
 

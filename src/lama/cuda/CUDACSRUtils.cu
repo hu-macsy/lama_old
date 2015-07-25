@@ -75,7 +75,7 @@
 #include <thrust/reduce.h>
 
 // boost
-#include <boost/bind.hpp>
+#include <common/bind.hpp>
 #include <boost/preprocessor.hpp>
 
 // Parameters for Matrix Multiplication

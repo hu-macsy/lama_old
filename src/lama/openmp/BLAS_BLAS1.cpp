@@ -47,6 +47,8 @@
 #include <tracing/tracing.hpp>
 #include <lama/cblas.hpp>
 
+#include <boost/preprocessor.hpp>
+
 #include <cmath>
 
 namespace lama

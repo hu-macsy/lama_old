@@ -64,7 +64,7 @@
 #include <thrust/transform_reduce.h>
 #include <thrust/tuple.h>
 
-#include <boost/bind.hpp>
+#include <common/bind.hpp>
 
 using namespace memory;
 using namespace tasking;

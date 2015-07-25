@@ -35,7 +35,6 @@
 
 #include <lama/exception/Exception.hpp>
 
-using namespace boost;
 using namespace lama;
 using common::Exception;
 

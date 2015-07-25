@@ -45,7 +45,6 @@
 #include <iostream>
 #include <fstream>
 
-using namespace boost;
 using namespace lama;
 
 /* ------------------------------------------------------------------------- */
@@ -1024,7 +1023,7 @@ LAMA_LOG_INFO( logger, "jacobiHaloTest: matrix = " << mMatrixStorage
 
 setDenseHalo( mMatrixStorage );
 
-boost::shared_ptr<MatrixStorage<ValueType> > local( mMatrixStorage.clone() );
+common::shared_ptr<MatrixStorage<ValueType> > local( mMatrixStorage.clone() );
 
 setDenseLocal( *local );
 
@@ -1090,10 +1089,10 @@ LAMA_LOG_INFO( logger, "inverseTest for " << mMatrixStorage.getTypeName() )
 setDenseRandom( mMatrixStorage );
 
 // create storage of same type for the inverse
-boost::shared_ptr<MatrixStorage<ValueType> > inverse( mMatrixStorage.clone() );
+common::shared_ptr<MatrixStorage<ValueType> > inverse( mMatrixStorage.clone() );
 
 // create storage of same type for compare matrix
-boost::shared_ptr<MatrixStorage<ValueType> > compare( mMatrixStorage.clone() );
+common::shared_ptr<MatrixStorage<ValueType> > compare( mMatrixStorage.clone() );
 
 inverse->invert( mMatrixStorage );
 setDenseRandomInverse( *compare );

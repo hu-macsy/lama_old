@@ -49,7 +49,7 @@
 #include <thrust/sort.h>
 
 // boost
-#include <boost/bind.hpp>
+#include <common/bind.hpp>
 #include <boost/preprocessor.hpp>
 
 using common::getScalarType;

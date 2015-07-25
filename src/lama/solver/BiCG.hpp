@@ -85,10 +85,10 @@ public:
         BiCGRuntime();
         virtual ~BiCGRuntime();
 
-        boost::shared_ptr<Matrix> mTransposeA;
-        boost::shared_ptr<Vector> mP2;
-        boost::shared_ptr<Vector> mQ2;
-        boost::shared_ptr<Vector> mZ2;
+        common::shared_ptr<Matrix> mTransposeA;
+        common::shared_ptr<Vector> mP2;
+        common::shared_ptr<Vector> mQ2;
+        common::shared_ptr<Vector> mZ2;
         Scalar mPScalar2;
         mutable std::auto_ptr<Vector> mResidual2;
     };

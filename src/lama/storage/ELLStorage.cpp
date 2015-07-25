@@ -45,13 +45,13 @@
 
 // boost
 #include <boost/preprocessor.hpp>
-#include <boost/bind.hpp>
+#include <common/bind.hpp>
 
 namespace lama
 {
 
 using std::auto_ptr;
-using boost::shared_ptr;
+using common::shared_ptr;
 using namespace tasking;
 
 /* --------------------------------------------------------------------------- */
@@ -1146,9 +1146,9 @@ SyncToken* ELLStorage<ValueType>::matrixTimesVectorAsync(
 
             = &ELLStorage<ValueType>::matrixTimesVector;
 
-        using boost::bind;
-        using boost::ref;
-        using boost::cref;
+        using common::bind;
+        using common::ref;
+        using common::cref;
 
         LAMA_LOG_INFO( logger, *this << ": matrixTimesVectorAsync on Host by own thread" )
 
@@ -1274,9 +1274,9 @@ SyncToken* ELLStorage<ValueType>::vectorTimesMatrixAsync(
 
             = &ELLStorage<ValueType>::vectorTimesMatrix;
 
-        using boost::bind;
-        using boost::ref;
-        using boost::cref;
+        using common::bind;
+        using common::ref;
+        using common::cref;
 
         LAMA_LOG_INFO( logger, *this << ": vectorTimesMatrixAsync on Host by own thread" )
 
@@ -1430,9 +1430,9 @@ SyncToken* ELLStorage<ValueType>::jacobiIterateAsync(
 
             = &ELLStorage<ValueType>::jacobiIterate;
 
-        using boost::bind;
-        using boost::cref;
-        using boost::ref;
+        using common::bind;
+        using common::cref;
+        using common::ref;
 
         return new TaskSyncToken( bind( jb, this, ref( solution ), cref( oldSolution ), cref( rhs ), omega ) );
     }
@@ -1504,7 +1504,7 @@ void ELLStorage<ValueType>::jacobiIterateHalo(
 
     // might be we need a temporary LAMA array for the local diagonal
 
-    boost::shared_ptr<LAMAArray<ValueType> > tmpLocalDiagonal;
+    common::shared_ptr<LAMAArray<ValueType> > tmpLocalDiagonal;
 
     if( localStorage.getFormat() == Format::ELL )
     {
@@ -1520,7 +1520,7 @@ void ELLStorage<ValueType>::jacobiIterateHalo(
 
         LAMA_LOG_WARN( logger, "local stroage is not ELL, temorary needed for diagonal" )
 
-        tmpLocalDiagonal = boost::shared_ptr<LAMAArray<ValueType> >( new LAMAArray<ValueType>() );
+        tmpLocalDiagonal = common::shared_ptr<LAMAArray<ValueType> >( new LAMAArray<ValueType>() );
         localStorage.getDiagonal( *tmpLocalDiagonal );
         localDiagonal = tmpLocalDiagonal.get();
 
@@ -1673,9 +1673,9 @@ void ELLStorage<ValueType>::matrixTimesMatrix(
     const ELLStorage<ValueType>* ellB = NULL;
     const ELLStorage<ValueType>* ellC = NULL;
 
-    //    boost::shared_ptr<CSRStorage<ValueType> > tmpA;
-    //    boost::shared_ptr<CSRStorage<ValueType> > tmpB;
-    boost::shared_ptr<ELLStorage<ValueType> > tmpC;
+    //    common::shared_ptr<CSRStorage<ValueType> > tmpA;
+    //    common::shared_ptr<CSRStorage<ValueType> > tmpB;
+    common::shared_ptr<ELLStorage<ValueType> > tmpC;
 
     if( a.getFormat() == Format::ELL )
     {
@@ -1715,7 +1715,7 @@ void ELLStorage<ValueType>::matrixTimesMatrix(
         else
         {
             LAMA_UNSUPPORTED( c << ": ELL temporary required for matrix add" )
-            tmpC = boost::shared_ptr<ELLStorage<ValueType> >( new ELLStorage<ValueType>( c ) );
+            tmpC = common::shared_ptr<ELLStorage<ValueType> >( new ELLStorage<ValueType>( c ) );
             ellC = tmpC.get();
         }
 

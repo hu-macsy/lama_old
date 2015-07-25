@@ -46,7 +46,6 @@
 
 #include <lama/storage/SparseAssemblyStorage.hpp>
 
-using namespace boost;
 using namespace lama;
 using namespace memory;
 

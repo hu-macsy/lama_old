@@ -95,12 +95,12 @@ public:
         TFQMRRuntime();
         virtual ~TFQMRRuntime();        
 
-	boost::shared_ptr<Vector> mVecD;
-	boost::shared_ptr<Vector> mInitialR;
-	boost::shared_ptr<Vector> mVecVEven;
-	boost::shared_ptr<Vector> mVecVOdd;
-	boost::shared_ptr<Vector> mVecW;
-	boost::shared_ptr<Vector> mVecZ;
+	common::shared_ptr<Vector> mVecD;
+	common::shared_ptr<Vector> mInitialR;
+	common::shared_ptr<Vector> mVecVEven;
+	common::shared_ptr<Vector> mVecVOdd;
+	common::shared_ptr<Vector> mVecW;
+	common::shared_ptr<Vector> mVecZ;
 
     Scalar mEps;
 	Scalar mAlpha;

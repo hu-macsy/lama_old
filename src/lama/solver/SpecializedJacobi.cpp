@@ -41,7 +41,7 @@
 // tracing
 #include <tracing/tracing.hpp>
 
-#include <boost/bind.hpp>
+#include <common/bind.hpp>
 #include <boost/preprocessor.hpp>
 
 using tasking::SyncToken;
@@ -286,9 +286,7 @@ void SpecializedJacobi::iterateTyped( const SparseMatrix<ValueType>& coefficient
 
         const LAMAArray<ValueType>* diagonal = dynamic_cast<const LAMAArray<ValueType>*>( getRuntime().mDiagonal.get() );
 
-        using boost::function;
-        using boost::bind;
-        using boost::cref;
+        using namespace common;  // placeholders are also needed
 
         void (lama::MatrixStorage<ValueType>::*jacobiIterateHalo)(
             LAMAArray<ValueType>& localSolution,

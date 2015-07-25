@@ -46,7 +46,7 @@ namespace lama
 
 class Norm;
 
-typedef boost::shared_ptr<Norm> NormPtr;
+typedef common::shared_ptr<Norm> NormPtr;
 
 /**
  * @brief Norm is a abstract functor to calculate the norms for the passed values.

@@ -138,13 +138,13 @@ ContextPtr MICContextManager::getInstance( int deviceNr )
             "device = " << micDeviceNr << " out of range" << ", max supported device = " << LAMA_MAX_MIC_DEVICES )
     }
 
-    boost::shared_ptr<MICContext> context = boost::shared_ptr<MICContext>();
+    common::shared_ptr<MICContext> context = common::shared_ptr<MICContext>();
 
     if( mMICContext[micDeviceNr].expired() )
     {
         // create a new context for the device and return the shared pointer
 
-        context = boost::shared_ptr<MICContext>( new MICContext( micDeviceNr ) );
+        context = common::shared_ptr<MICContext>( new MICContext( micDeviceNr ) );
 
         // we keep a weak pointer so that we can return
 

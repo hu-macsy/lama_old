@@ -47,7 +47,7 @@
 #include <thrust/device_ptr.h>
 #include <thrust/sort.h>
 
-#include <boost/bind.hpp>
+#include <common/bind.hpp>
 
 using namespace memory;
 using namespace tasking;

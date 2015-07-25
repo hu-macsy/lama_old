@@ -40,7 +40,6 @@
 #include <test/TestMacros.hpp>
 #include <lama/LAMAArrayUtils.hpp>
 
-using namespace boost;
 using namespace lama;
 using namespace memory;
 using common::Exception;

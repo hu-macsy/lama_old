@@ -60,7 +60,6 @@
 #include <lama/expression/VectorExpressions.hpp>
 #include <lama/expression/MatrixVectorExpressions.hpp>
 
-using namespace boost;
 using namespace lama;
 
 typedef boost::mpl::list<float, double> test_types;

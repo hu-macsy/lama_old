@@ -44,7 +44,6 @@
 
 #include <test/TestMacros.hpp>
 
-using namespace boost;
 using namespace lama;
 using namespace memory;
 

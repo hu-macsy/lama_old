@@ -41,7 +41,6 @@
 #include <test/TestMacros.hpp>
 #include <test/Configuration.hpp>
 
-using namespace boost;
 using namespace lama;
 using common::Exception;
 

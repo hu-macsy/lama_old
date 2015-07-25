@@ -88,12 +88,12 @@ public:
         MINRESRuntime();
         virtual ~MINRESRuntime();        
 
-    boost::shared_ptr<Vector> mVecV;
-	boost::shared_ptr<Vector> mVecVOld;
-    boost::shared_ptr<Vector> mVecVNew;
-    boost::shared_ptr<Vector> mVecP;
-    boost::shared_ptr<Vector> mVecPOld;
-    boost::shared_ptr<Vector> mVecPNew;
+    common::shared_ptr<Vector> mVecV;
+	common::shared_ptr<Vector> mVecVOld;
+    common::shared_ptr<Vector> mVecVNew;
+    common::shared_ptr<Vector> mVecP;
+    common::shared_ptr<Vector> mVecPOld;
+    common::shared_ptr<Vector> mVecPNew;
 
     Scalar mAlpha;
     Scalar mBetaNew;

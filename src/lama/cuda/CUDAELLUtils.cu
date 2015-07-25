@@ -64,7 +64,7 @@
 #include <thrust/transform.h>
 #include <thrust/transform_reduce.h>
 
-#include <boost/bind.hpp>
+#include <common/bind.hpp>
 
 using namespace memory;
 

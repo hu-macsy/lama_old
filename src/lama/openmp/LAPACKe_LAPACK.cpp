@@ -44,6 +44,8 @@
 
 #include <mkl_lapacke.h>
 
+#include <boost/preprocessor.hpp>
+
 namespace lama
 {
 

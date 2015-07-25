@@ -93,11 +93,11 @@ public:
         BiCGstabRuntime();
         virtual ~BiCGstabRuntime();
 
-        boost::shared_ptr<Vector> mRes0;
-        boost::shared_ptr<Vector> mVecV;
-        boost::shared_ptr<Vector> mVecP;
-        boost::shared_ptr<Vector> mVecS;
-        boost::shared_ptr<Vector> mVecT;
+        common::shared_ptr<Vector> mRes0;
+        common::shared_ptr<Vector> mVecV;
+        common::shared_ptr<Vector> mVecP;
+        common::shared_ptr<Vector> mVecS;
+        common::shared_ptr<Vector> mVecT;
 
         Scalar mEps;
         Scalar mResNorm;

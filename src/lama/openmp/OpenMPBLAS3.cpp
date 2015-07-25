@@ -41,6 +41,8 @@
 // macros
 #include <lama/macros/unused.hpp>
 
+#include <boost/preprocessor.hpp>
+
 namespace lama
 {
 

@@ -45,7 +45,6 @@
 
 #include <boost/scoped_array.hpp>
 
-using namespace boost;
 using namespace lama;
 using namespace memory;
 using namespace tasking;

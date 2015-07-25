@@ -36,7 +36,7 @@
 // boost
 #include <boost/preprocessor.hpp>
 
-using boost::shared_ptr;
+using common::shared_ptr;
 
 namespace lama
 {
@@ -49,13 +49,13 @@ LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, ELLSparseMatrix<Valu
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-boost::shared_ptr<MatrixStorage<ValueType> > ELLSparseMatrix<ValueType>::createStorage()
+common::shared_ptr<MatrixStorage<ValueType> > ELLSparseMatrix<ValueType>::createStorage()
 {
     return shared_ptr<MatrixStorage<ValueType> >( new StorageType() );
 }
 
 template<typename ValueType>
-boost::shared_ptr<MatrixStorage<ValueType> > ELLSparseMatrix<ValueType>::createStorage(
+common::shared_ptr<MatrixStorage<ValueType> > ELLSparseMatrix<ValueType>::createStorage(
     const IndexType numRows,
     const IndexType numColumns )
 {

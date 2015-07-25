@@ -38,7 +38,6 @@
 #include <lama/LAMAInterfaceRegistry.hpp>
 #include <lama/ContextFactory.hpp>
 
-using namespace boost;
 using namespace lama;
 
 typedef boost::mpl::list<double, float> test_types;

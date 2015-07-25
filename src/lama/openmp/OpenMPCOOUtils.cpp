@@ -42,6 +42,8 @@
 
 #include <lama/openmp/OpenMP.hpp>
 
+#include <boost/preprocessor.hpp>
+
 using common::getScalarType;
 
 namespace lama

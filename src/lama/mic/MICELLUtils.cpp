@@ -49,7 +49,7 @@
 #include <tracing/tracing.hpp>
 
 // boost
-#include <boost/bind.hpp>
+#include <common/bind.hpp>
 
 // stl
 #include <set>

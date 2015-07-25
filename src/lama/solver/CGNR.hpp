@@ -97,9 +97,9 @@ public:
         CGNRRuntime();
         virtual ~CGNRRuntime();
 
-	boost::shared_ptr<Vector> mVecD;
-    boost::shared_ptr<Vector> mVecW;
-    boost::shared_ptr<Vector> mVecZ;
+	common::shared_ptr<Vector> mVecD;
+    common::shared_ptr<Vector> mVecW;
+    common::shared_ptr<Vector> mVecZ;
 
     Scalar mEps;
     Scalar mNormVecZ;

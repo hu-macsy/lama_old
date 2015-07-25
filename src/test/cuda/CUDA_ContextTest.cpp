@@ -55,7 +55,6 @@
 #include <lama/cuda/CUDABLAS1.hpp>
 #include <test/cuda/CUDAContext.hpp>
 
-using namespace boost;
 using namespace lama;
 using tasking::Task;
 
@@ -208,11 +207,11 @@ BOOST_AUTO_TEST_CASE( asyncTest )
     const float value = 1.4;
     const float alpha = 0.5;
     LAMAArray<float> vector( n, value );
-    boost::shared_ptr<WriteAccess<float> > cudaV( new WriteAccess<float>( vector, cudaContext ) );
+    common::shared_ptr<WriteAccess<float> > cudaV( new WriteAccess<float>( vector, cudaContext ) );
     //CUDAContext* cuda = dynamic_cast<const CUDAContext*>( cudaContext.get() );
     const CUDAContext* cuda = ( CUDAContext* ) cudaContext.get();
     LAMA_ASSERT_ERROR( cuda, "dynamic cast for CUDAContext failed" );
-    boost::shared_ptr<CUDAStreamSyncToken> token( cuda->getComputeSyncToken() );
+    common::shared_ptr<CUDAStreamSyncToken> token( cuda->getComputeSyncToken() );
     {
         LAMA_INTERFACE_FN_t( scal, cudaContext, BLAS, BLAS1, float )
         LAMA_CONTEXT_ACCESS( cudaContext )

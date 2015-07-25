@@ -68,7 +68,6 @@
 
 #include <typeinfo>
 
-using namespace boost;
 using namespace lama;
 
 typedef boost::mpl::list<double, float> test_types;

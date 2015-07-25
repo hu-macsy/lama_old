@@ -42,7 +42,6 @@
 #include <lama/storage/DenseStorage.hpp>
 #include <lama/storage/SparseAssemblyStorage.hpp>
 
-using namespace boost;
 using namespace lama;
 
 template<typename ValueType>
@@ -165,7 +164,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( CreateTest, StorageType, StorageTypes )
     typedef typename StorageType::StorageValueType ValueType;
     StorageType storage;
     setCSRStorage<ValueType>( storage );
-    boost::shared_ptr<_MatrixStorage> storage1( storage.clone() );
+    common::shared_ptr<_MatrixStorage> storage1( storage.clone() );
 // check for same format and value type
     BOOST_CHECK_EQUAL( storage1->getFormat(), storage.getFormat() );
     BOOST_CHECK_EQUAL( storage1->getValueType(), storage.getValueType() );
@@ -179,7 +178,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( CopyTest, StorageType, StorageTypes )
     typedef typename StorageType::StorageValueType ValueType;
     StorageType storage;
     setCSRStorage<ValueType>( storage );
-    boost::shared_ptr<MatrixStorage<ValueType> > storage1( storage.copy() );
+    common::shared_ptr<MatrixStorage<ValueType> > storage1( storage.copy() );
 // check for same format and value type
     BOOST_CHECK_EQUAL( storage1->getFormat(), storage.getFormat() );
     BOOST_CHECK_EQUAL( storage1->getValueType(), storage.getValueType() );

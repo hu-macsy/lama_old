@@ -411,8 +411,8 @@ SyncToken* Communicator::shiftAsync(
 
     recvArray.clear(); // do not keep any old data, keep capacities
 
-    boost::shared_ptr<WriteAccess<ValueType> > recvData( new WriteAccess<ValueType>( recvArray ) );
-    boost::shared_ptr<ReadAccess<ValueType> > sendData( new ReadAccess<ValueType>( sendArray ) );
+    common::shared_ptr<WriteAccess<ValueType> > recvData( new WriteAccess<ValueType>( recvArray ) );
+    common::shared_ptr<ReadAccess<ValueType> > sendData( new ReadAccess<ValueType>( sendArray ) );
 
     IndexType numElems = sendData->size();
 
@@ -500,7 +500,7 @@ LAMA_REGION( "Communicator.updateHaloAsync" )
 
     IndexType numSendValues = providesPlan.totalQuantity();
 
-    boost::shared_ptr<LAMAArray<ValueType> > sendValues( new LAMAArray<ValueType>( numSendValues ) );
+    common::shared_ptr<LAMAArray<ValueType> > sendValues( new LAMAArray<ValueType>( numSendValues ) );
 
     // put together the (send) values to provide for other partitions
 

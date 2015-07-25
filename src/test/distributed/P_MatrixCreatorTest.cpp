@@ -39,7 +39,6 @@
 #include <lama/distribution/BlockDistribution.hpp>
 #include <lama/matutils/MatrixCreator.hpp>
 
-using namespace boost;
 using namespace lama;
 using common::Exception;
 

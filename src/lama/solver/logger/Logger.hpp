@@ -56,7 +56,7 @@ namespace lama
 class Solver;
 class Logger;
 
-typedef boost::shared_ptr<Logger> LoggerPtr;
+typedef common::shared_ptr<Logger> LoggerPtr;
 
 /**
  * @brief A logger abstraction.

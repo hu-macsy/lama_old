@@ -45,7 +45,6 @@
 
 #include <test/cuda/CUDAContext.hpp>
 
-using namespace boost;
 using namespace lama;
 
 typedef boost::mpl::list<double, float> test_types;

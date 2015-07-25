@@ -41,7 +41,6 @@
 #include <test/NormTest.hpp>
 #include <test/TestMacros.hpp>
 
-using namespace boost;
 using namespace lama;
 
 extern bool base_test_case;

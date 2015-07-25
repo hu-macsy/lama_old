@@ -59,7 +59,7 @@ namespace lama
 {
 
 class Solver;
-typedef boost::shared_ptr<Solver> SolverPtr;
+typedef common::shared_ptr<Solver> SolverPtr;
 
 /**
  * @brief Superclass for all solvers.

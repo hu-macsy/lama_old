@@ -38,12 +38,12 @@
 #include <lama/mic/MICContext.hpp>
 
 // boost
-#include <boost/shared_ptr.hpp>
+#include <common/shared_ptr.hpp>
 
 namespace lama
 {
 
-typedef boost::shared_ptr<const MICContext> MICContextPtr;
+typedef common::shared_ptr<const MICContext> MICContextPtr;
 
 /** Class that sycnchronizes with a MIC offload transfer or computation. */
 

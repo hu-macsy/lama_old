@@ -61,7 +61,7 @@ namespace lama
 
 /** Pointer class for a matrix, always use of a shared pointer. */
 
-typedef boost::shared_ptr<class Matrix> MatrixPtr;
+typedef common::shared_ptr<class Matrix> MatrixPtr;
 
 /** For convenience: add the key type used for the Matrix factory. */
 

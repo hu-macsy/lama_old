@@ -236,9 +236,9 @@ private:
 
     /** This private routine provides empty ELL storage for a ELLSparseMatrix. */
 
-    boost::shared_ptr<MatrixStorage<ValueType> > createStorage();
+    common::shared_ptr<MatrixStorage<ValueType> > createStorage();
 
-    boost::shared_ptr<MatrixStorage<ValueType> > createStorage( const IndexType numRows, const IndexType numColumns );
+    common::shared_ptr<MatrixStorage<ValueType> > createStorage( const IndexType numRows, const IndexType numColumns );
 
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
