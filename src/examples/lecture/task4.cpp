@@ -10,7 +10,6 @@
 #include <lama/solver/CG.hpp>
 #include <lama/solver/criteria/IterationCount.hpp>
 
-#include <lama/CommunicatorFactory.hpp>
 #include <lama/distribution/BlockDistribution.hpp>
 
 #include <tracing/tracing.hpp>
@@ -31,12 +30,12 @@ int main( int argc, char* argv[] )
     std::cout << "Read matrix m : " << m << std::endl;
     IndexType size = m.getNumRows();
 
-    CommunicatorPtr comm( CommunicatorFactory::get( "MPI" ) );
+    CommunicatorPtr comm( Communicator::get( "MPI" ) );
     DistributionPtr dist( new BlockDistribution( size, comm ) );
     m.redistribute( dist, dist );
 
     DenseVector<double> rhs( size , 0.0 );
-    HostWriteAccess<double> hwarhs( rhs.getLocalValues() );
+    WriteAccess<double> hwarhs( rhs.getLocalValues() );
 
     for ( IndexType i = 0; i < size; ++i )
     {

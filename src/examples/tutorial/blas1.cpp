@@ -48,7 +48,7 @@
 #include <lama/DenseVector.hpp>
 
 //include for using different Contexts (e.g. CUDA, default: Host)
-#include <lama/Context.hpp>
+#include <memory/Context.hpp>
 
 //include for using the NoDistribution
 #include <lama/distribution/NoDistribution.hpp>
@@ -136,13 +136,13 @@ int main()
   // Define the vectors to be used on GPU (CUDA context on device 0) and upload them
   //
   lama::ContextPtr cudaContext;
-  if ( lama::ContextFactory::hasContext( lama::Context::CUDA ) )
+  if ( memory::Context::canCreate( context::CUDA ) )
   {
-      cudaContext = lama::ContextFactory::getContext( lama::Context::CUDA, 0 );
+      cudaContext = memory::Context::getContextPtr( context::CUDA, 0 );
   }
   else
   {
-      cudaContext = lama::ContextFactory::getContext( lama::Context::Host );
+      cudaContext = memory::Context::getContextPtr( context::Host );
   }
   lama_vec1.setContext( cudaContext );
   lama_vec2.setContext( cudaContext );

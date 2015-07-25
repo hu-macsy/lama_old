@@ -51,7 +51,7 @@ static bool verboseFlag = false;
 
 static void bench( Matrix& b, Matrix& a )
 {
-    ContextPtr host = ContextFactory::getContext( Context::Host );
+    ContextPtr host = Context::getContextPtr( context::Host );
 
     a.setContext( host );
     b.setContext( host );
@@ -70,7 +70,7 @@ static void bench( Matrix& b, Matrix& a )
 
     timeHost = Walltime::get() - timeHost;
 
-    ContextPtr gpu = ContextFactory::getContext( Context::CUDA );
+    ContextPtr gpu = Context::getContextPtr( context::CUDA );
 
     a.setContext( gpu );
     b.setContext( gpu );

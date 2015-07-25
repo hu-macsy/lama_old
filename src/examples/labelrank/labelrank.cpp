@@ -3,7 +3,7 @@
 #include <lama/matrix/all.hpp>
 #include <lama/storage/CSRStorage.hpp>
 #include <lama/storage/DenseStorage.hpp>
-#include <lama/CommunicatorFactory.hpp>
+#include <lama/Communicator.hpp>
 #include <lama/expression/all.hpp>
 #include <common/Walltime.hpp>
 
@@ -51,7 +51,7 @@ static void getEvidence( std::vector<IndexType>& evidenceVector, const DenseStor
     const IndexType numRows = labelsMatrix.getNumRows();
     const IndexType numCols = labelsMatrix.getNumColumns();
 
-    HostReadAccess<ValueType> dense( labelsMatrix.getData() );
+    ReadAccess<ValueType> dense( labelsMatrix.getData() );
 
     // if labelsMatrix[i,:] has entry, we add row index i
 
@@ -91,7 +91,7 @@ static void getEvidence( std::vector<IndexType>& evidenceVector, const CSRStorag
     const IndexType numRows = labelsMatrix.getNumRows();
     const IndexType numCols = labelsMatrix.getNumColumns();
 
-    HostReadAccess<IndexType> csrIA( labelsMatrix.getIA() );
+    ReadAccess<IndexType> csrIA( labelsMatrix.getIA() );
 
     // if labelsMatrix[i,:] has entry, we add row index i
 
@@ -118,7 +118,7 @@ static void update( DenseStorage<ValueType>& affinityMatrix, const std::vector<I
     const IndexType numRows = affinityMatrix.getNumRows();
     const IndexType numCols = affinityMatrix.getNumColumns();
 
-    HostWriteAccess<ValueType> affinityDense( affinityMatrix.getData() );
+    WriteAccess<ValueType> affinityDense( affinityMatrix.getData() );
 
     // if labelsMatrix[i,:] has entry, we set affinityMatrix[i,:] = [0, ..., 1 ... ]
     // so labelsMatrix[i,:] remains unchanged for affinityMatrix * labelsMatrix
@@ -149,9 +149,9 @@ static void update( CSRStorage<ValueType>& affinityMatrix, const std::vector<Ind
 
     const IndexType size = evidenceVector.size();
 
-    HostReadAccess<IndexType> csrIA( affinityMatrix.getIA() );
-    HostWriteAccess<IndexType> csrJA( affinityMatrix.getJA() );
-    HostWriteAccess<ValueType> csrValues( affinityMatrix.getValues() );
+    ReadAccess<IndexType> csrIA( affinityMatrix.getIA() );
+    WriteAccess<IndexType> csrJA( affinityMatrix.getJA() );
+    WriteAccess<ValueType> csrValues( affinityMatrix.getValues() );
 
     // if labelsMatrix[i,:] has entry, we set affinityMatrix[i,:] = [0, ..., 1 ... ]
     // so labelsMatrix[i,:] remains unchanged for affinityMatrix * labelsMatrix

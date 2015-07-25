@@ -28,7 +28,7 @@ int main( int argc, char* argv[] )
     std::cout << "Read matrix m : " << m << std::endl;
     IndexType size = m.getNumRows();
     DenseVector<double> rhs( size , 0.0 );
-    HostWriteAccess<double> hwarhs( rhs.getLocalValues() );
+    WriteAccess<double> hwarhs( rhs.getLocalValues() );
 
     for ( IndexType i = 0; i < size; ++i )
     {
@@ -47,7 +47,7 @@ int main( int argc, char* argv[] )
     cgSolver.initialize( m );
     cgSolver.solve( solution, rhs );
     std::cout << "The solution is: ";
-    HostReadAccess<double> hra( solution.getLocalValues() );
+    ReadAccess<double> hra( solution.getLocalValues() );
 
     for ( int i = 0; i < solution.size(); i++ )
     {

@@ -8,7 +8,7 @@
 #include <lama/matrix/CSRSparseMatrix.hpp>
 
 #include <lama/DenseVector.hpp>
-#include <lama/CommunicatorFactory.hpp>
+#include <lama/Communicator.hpp>
 
 #include <lama/solver/CG.hpp>
 #include <lama/solver/criteria/IterationCount.hpp>
@@ -31,11 +31,11 @@ int main( int argc, char* argv[] )
     std::cout << "Read matrix m : " << m << std::endl;
     IndexType size = m.getNumRows();
 
-    lama::ContextPtr cudaContext = ContextFactory::getContext( Context::CUDA, 0 ); 
+    lama::ContextPtr cudaContext = Context::getContextPtr( context::CUDA, 0 ); 
     m.setContext( cudaContext );
 
     DenseVector<double> rhs( size , 0.0 );
-    HostWriteAccess<double> hwarhs( rhs.getLocalValues() );
+    WriteAccess<double> hwarhs( rhs.getLocalValues() );
 
     for ( IndexType i = 0; i < size; ++i )
     {

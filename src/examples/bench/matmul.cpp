@@ -52,7 +52,7 @@ static bool verboseFlag = false;
 template<typename ValueType>
 static void bench( IndexType size, double fillRate )
 {
-    ContextPtr host = ContextFactory::getContext( Context::Host );
+    ContextPtr host = Context::getContextPtr( context::Host );
 
     CSRSparseMatrix<ValueType> a( size, size );
     CSRSparseMatrix<ValueType> b( size, size );
@@ -76,7 +76,7 @@ static void bench( IndexType size, double fillRate )
 
     timeHost = Walltime::get() - timeHost;
 
-    ContextPtr gpu = ContextFactory::getContext( Context::CUDA );
+    ContextPtr gpu = Context::getContextPtr( context::CUDA );
 
     a.setContext( gpu );
     b.setContext( gpu );

@@ -9,10 +9,10 @@
 
 #include <lama.hpp>
 
-#include <lama/Context.hpp>
+#include <memory/Context.hpp>
 #include <common/Printable.hpp>
 #include <lama/matrix/Matrix.hpp>
-#include <lama/CommunicatorFactory.hpp>
+#include <lama/Communicator.hpp>
 
 #include <cstring>
 
@@ -28,8 +28,8 @@ public:
         // overlap communication with local computation
 
         mCommunicationKind = lama::Matrix::SYNCHRONOUS;
-        mComm              = lama::CommunicatorFactory::get();
-        mContext           = lama::ContextFactory::getContext( lama::Context::Host );
+        mComm              = lama::Communicator::get();
+        mContext           = memory::Context::getContextPtr( memory::context::Host );
         mMaxIters          = 1000;
     }
 
@@ -60,13 +60,13 @@ public:
         }
         else if ( "HOST" == val )
         { 
-            mContext = lama::ContextFactory::getContext( lama::Context::Host );
+            mContext = memory::Context::getContextPtr( memory::context::Host );
         }
         else if ( ( "CUDA" == val ) || ( "GPU" == val ) )
         { 
             // int device = mComm->getNodeRank();
             int device = 0;
-            mContext = lama::ContextFactory::getContext( lama::Context::CUDA, device );
+            mContext = memory::Context::getContextPtr( memory::context::CUDA, device );
         }
         else if ( "SYNC" == val )
         {
@@ -92,7 +92,7 @@ public:
         {
             // choose default format by context: Host -> CSR, CUDA -> ELL
 
-            if ( mContext->getType() == lama::Context::CUDA )
+            if ( mContext->getType() == memory::context::CUDA )
             {
                 return "ELL";
             }
@@ -107,12 +107,12 @@ public:
         }
     }
 
-    lama::ContextPtr getContextPtr() const
+    memory::ContextPtr getContextPtr() const
     {
         return mContext;
     }
 
-    const lama::Context& getContext() const
+    const memory::Context& getContext() const
     {
         return *mContext;
     }
@@ -128,7 +128,7 @@ public:
     }
 
     std::string            mMatrixFormat;
-    lama::ContextPtr       mContext;
+    memory::ContextPtr     mContext;
     lama::Matrix::SyncKind mCommunicationKind;
     int                    mMaxIters;
 

@@ -33,7 +33,7 @@ int main()
     CSRSparseMatrix<double> m ( sas );
 
     DenseVector<double> rhs( size , 0.0 );
-    HostWriteAccess<double> hwarhs( rhs.getLocalValues() );	
+    WriteAccess<double> hwarhs( rhs.getLocalValues() );	
     for ( IndexType i = 0; i < size; i++ )
     {
     	hwarhs[i] = i + 1.0;
