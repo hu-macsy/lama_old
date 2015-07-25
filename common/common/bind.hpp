@@ -45,6 +45,7 @@ namespace common
     using std::bind;
     using std::ref;
     using std::cref;
+    using namespace std::placeholders;
 #else
     using boost::bind;
     using boost::ref;
