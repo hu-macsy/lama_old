@@ -62,19 +62,13 @@ LAMA_LOG_DEF_LOGGER( Vector::logger, "Vector" )
 /*    Factory to create a vector                                                          */
 /* ---------------------------------------------------------------------------------------*/
 
-// stream output for key values of creator routine required
-
-static std::ostream& operator<<( std::ostream& stream, const std::pair<VectorKind, common::ScalarType>& key )
-{
-    stream << "<" << key.first << ", " << key.second << ">";
-    return stream;
-}
-
 Vector* Vector::getVector( const VectorKind kind, common::ScalarType type )
 {
+    VectorCreateKeyType key( kind, type );
+
     // get it from the factory by building a pair as key the creator fn
 
-    return create( std::pair<VectorKind, common::ScalarType>( kind, type ) );
+    return create( key );
 }
 
 Vector* Vector::createVector( const common::ScalarType valueType, DistributionPtr distribution )

@@ -37,7 +37,7 @@
 #include <lama/matrix/all.hpp>
 
 #include <lama/DenseVector.hpp>
-#include <lama/CommunicatorFactory.hpp>
+#include <lama/Communicator.hpp>
 #include <lama/distribution/GenBlockDistribution.hpp>
 
 #include <lama/solver/CG.hpp>
@@ -120,7 +120,7 @@ int main( int argc, char* argv[] )
 
     // for solutin create vector with same format/type as rhs, size = numRows, init = 0.0
 
-    auto_ptr<Vector> solutionPtr( rhs.create( rhs.getDistributionPtr() ) );
+    auto_ptr<Vector> solutionPtr( rhs.clone( rhs.getDistributionPtr() ) );
     Vector& solution = *solutionPtr;
 
     int numRows = matrix.getNumRows();

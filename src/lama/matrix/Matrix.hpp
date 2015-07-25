@@ -63,6 +63,10 @@ namespace lama
 
 typedef boost::shared_ptr<class Matrix> MatrixPtr;
 
+/** For convenience: add the key type used for the Matrix factory. */
+
+typedef std::pair<MatrixStorageFormat, common::ScalarType> MatrixCreateKeyType;
+
 /**
  * @brief The class Matrix is a abstract type that represents a distributed 2D real or complex matrix.
  *
@@ -71,7 +75,7 @@ typedef boost::shared_ptr<class Matrix> MatrixPtr;
  */
 class COMMON_DLL_IMPORTEXPORT Matrix: 
 
-    public common::Factory<std::pair<MatrixStorageFormat, common::ScalarType>, Matrix*>,
+    public common::Factory<MatrixCreateKeyType, Matrix*>,
     public Distributed
 
 {
@@ -1035,22 +1039,32 @@ inline std::ostream& operator<<( std::ostream& stream, const Matrix::SyncKind& k
     return stream;
 }
 
+/** @brief  stream output for key values of creator  */
+
+inline std::ostream& operator<<( std::ostream& stream, const lama::MatrixCreateKeyType& key )
+{
+    stream << "<" << key.first << ", " << key.second << ">";
+    return stream;
+}
+
+} // namespace
+
 /** This function prints a MatrixKind on an output stream.
  *
  *  \param stream   is the reference to the output stream
  *  \param kind      is the enum value that is printed
  */
-inline std::ostream& operator<<( std::ostream& stream, const Matrix::MatrixKind& kind )
+inline std::ostream& operator<<( std::ostream& stream, const lama::Matrix::MatrixKind& kind )
 {
     switch( kind )
     {
-        case Matrix::DENSE:
+        case lama::Matrix::DENSE:
         {
             stream << "DENSE";
             break;
         }
 
-        case Matrix::SPARSE:
+        case lama::Matrix::SPARSE:
         {
             stream << "SPARSE";
             break;
@@ -1064,7 +1078,5 @@ inline std::ostream& operator<<( std::ostream& stream, const Matrix::MatrixKind&
     }
 
     return stream;
-}
-
 }
 

@@ -30,8 +30,7 @@
  * @date 22.02.2011
  * $Id$
  */
-#ifndef LAMA_VECTOR_HPP_
-#define LAMA_VECTOR_HPP_
+#pragma once
 
 // for dll_import
 #include <common/config.hpp>
@@ -77,6 +76,10 @@ typedef enum
 
 } VectorKind;
 
+/** For convenience: add the key type used for the Vector factory. */
+
+typedef std::pair<VectorKind, common::ScalarType> VectorCreateKeyType;
+
 /**
  * @brief The class Vector is a abstract type that represents a distributed 1D real or complex vector.
  *
@@ -95,7 +98,7 @@ typedef enum
  */
 class COMMON_DLL_IMPORTEXPORT Vector: 
 
-     public common::Factory<std::pair<VectorKind, common::ScalarType>, Vector*>,
+     public common::Factory<VectorCreateKeyType, Vector*>,
      public Distributed
 
 {
@@ -530,6 +533,13 @@ ContextPtr Vector::getContext() const
     return mContext;
 }
 
+}  // namespace
+
+/** @brief  stream output for key values of creator  */
+
+inline std::ostream& operator<<( std::ostream& stream, const lama::VectorCreateKeyType& key )
+{
+    stream << "<" << key.first << ", " << key.second << ">";
+    return stream;
 }
 
-#endif // LAMA_VECTOR_HPP_

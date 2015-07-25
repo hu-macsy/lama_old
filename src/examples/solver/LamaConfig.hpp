@@ -38,7 +38,6 @@
 #include <memory/Context.hpp>
 #include <common/Printable.hpp>
 #include <lama/matrix/all.hpp>
-#include <lama/CommunicatorFactory.hpp>
 #include <lama/solver/logger/LogLevel.hpp>
 #include <omp.h>
 
@@ -210,7 +209,7 @@ private:
 LamaConfig::LamaConfig()
 {
     mCommunicationKind = lama::Matrix::SYNCHRONOUS;
-    mComm              = lama::CommunicatorFactory::get();
+    mComm              = lama::Communicator::get();
     mContextType       = memory::context::Host;
     mMaxIter           = lama::nIndex;
     mValueType         = common::scalar::DOUBLE;

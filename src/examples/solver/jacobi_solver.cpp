@@ -36,7 +36,7 @@
 #include <lama/matrix/all.hpp>
 
 #include <lama/DenseVector.hpp>
-#include <lama/CommunicatorFactory.hpp>
+#include <lama/Communicator.hpp>
 #include <lama/distribution/BlockDistribution.hpp>
 #include <lama/distribution/NoDistribution.hpp>
 
@@ -125,7 +125,7 @@ int main( int argc, char* argv[] )
 
     // for solutin create vector with same format/type as rhs, size = numRows, init = 0.0
 
-    auto_ptr<Vector> solutionPtr( rhs.create( rhs.getDistributionPtr() ) );
+    auto_ptr<Vector> solutionPtr( rhs.clone( rhs.getDistributionPtr() ) );
     Vector& solution = *solutionPtr;
 
     solution = 0.0;   // intialize of a vector

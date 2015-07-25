@@ -51,17 +51,9 @@ LAMA_LOG_DEF_LOGGER( Matrix::logger, "Matrix" )
 /*    Factory to create a matrix                                                          */
 /* ---------------------------------------------------------------------------------------*/
 
-// stream output for key values of creator routine required
-
-static std::ostream& operator<<( std::ostream& stream, const std::pair<MatrixStorageFormat, common::ScalarType>& key )
-{
-    stream << "<" << key.first << ", " << key.second << ">";
-    return stream;
-}
-
 Matrix* Matrix::getMatrix( const MatrixStorageFormat format, common::ScalarType type )
 {
-    std::pair<MatrixStorageFormat, common::ScalarType> val( format, type );
+    MatrixCreateKeyType val( format, type );
     LAMA_LOG_INFO( logger, "getMatrix uses Factory::create " << val )
     return create( val );
 }

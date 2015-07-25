@@ -48,14 +48,7 @@ mark_as_advanced( cudamem_LIBRARY cudamem_INCLUDE_DIR )
 
 set ( CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/../CMake/Modules" )
 
-# Set default build type to RELEASE, can be changed via ccmake
-
-if ( NOT CMAKE_BUILD_TYPE )
-   set ( CMAKE_BUILD_TYPE RELEASE 
-        CACHE STRING "Choose the type of build, options are: None Debug Release."
-        FORCE)
-endif ( NOT CMAKE_BUILD_TYPE )
-
+include ( SetBuildFlags )
 include ( SetCPPFlags )
 
 ### Source files for cudamem library

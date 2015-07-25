@@ -38,7 +38,6 @@
 #include <lama/DenseVector.hpp>
 #include <lama/Scalar.hpp>
 #include <lama/expression/all.hpp>
-#include <lama/CommunicatorFactory.hpp>
 #include <lama/matrix/CSRSparseMatrix.hpp>
 #include <lama/matutils/MatrixCreator.hpp>
 
@@ -49,7 +48,7 @@ using namespace std;
 
 int main( int argc, char* argv[] )
 {
-    CommunicatorPtr comm = CommunicatorFactory::get();
+    CommunicatorPtr comm = Communicator::get();
 
     int myRank = comm->getRank();
 

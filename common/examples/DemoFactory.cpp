@@ -175,7 +175,7 @@ int main()
 
     Base::getCreateValues( values );
 
-    cout << "Factory of Base: " << endl;
+    cout << "Factory of Base: " << values.size() << " entries" << endl;
 
     for ( size_t i = 0; i < values.size(); ++i )
     {

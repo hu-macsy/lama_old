@@ -69,6 +69,7 @@ set ( CLASSES
 #        LAMAArrayView
         LAMAInterface
         LAMAInterfaceRegistry
+        NoCommunicator
         Scalar
         Settings
         StorageIO
@@ -80,6 +81,7 @@ set ( HEADERS
         TypeTraits
         BLASInterface
         UtilsInterface
+        CRTPCommunicator
     )
 
 lama_classes ( ${CLASSES} )

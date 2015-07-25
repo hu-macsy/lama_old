@@ -31,10 +31,10 @@
  */
 
 // hpp
+
 #include <common/ScalarType.hpp>
 
-namespace common
-{
+using namespace common;
 
 std::ostream& operator<<( std::ostream& stream, const ScalarType& object )
 {
@@ -83,4 +83,3 @@ std::ostream& operator<<( std::ostream& stream, const ScalarType& object )
     return stream;
 }
 
-} //namespace 
