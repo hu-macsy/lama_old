@@ -75,7 +75,7 @@ SpecializedJacobi::SpecializedJacobi( const SpecializedJacobi& other )
 }
 
 SpecializedJacobi::SpecializedJacobiRuntime::SpecializedJacobiRuntime()
-    : OmegaSolverRuntime(), mOldSolution( NULL ), mDiagonal( NULL )
+    : OmegaSolverRuntime(), mOldSolution(), mDiagonal()
 {
 }
 

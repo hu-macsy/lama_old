@@ -890,7 +890,7 @@ void COOStorage<ValueType>::vectorTimesMatrix(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-unique_ptr<SyncToken> COOStorage<ValueType>::matrixTimesVectorAsyncToDo(
+SyncToken* COOStorage<ValueType>::matrixTimesVectorAsync(
     LAMAArray<ValueType>& result,
     const ValueType alpha,
     const LAMAArray<ValueType>& x,
@@ -957,7 +957,7 @@ unique_ptr<SyncToken> COOStorage<ValueType>::matrixTimesVectorAsyncToDo(
     syncToken->pushToken( cooValues );
     syncToken->pushToken( rX );
 
-    return syncToken;
+    return syncToken.release();
 }
 
 /* --------------------------------------------------------------------------- */

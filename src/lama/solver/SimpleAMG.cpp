@@ -75,7 +75,7 @@ SimpleAMG::SimpleAMG( const SimpleAMG& other )
 }
 
 SimpleAMG::SimpleAMGRuntime::SimpleAMGRuntime()
-    : IterativeSolverRuntime(), mSetup( 0 ), mCurrentLevel( 0 ), mLibHandle( 0 ), mHostOnlyLevel(
+    : IterativeSolverRuntime(), mSetup(), mCurrentLevel( 0 ), mLibHandle( 0 ), mHostOnlyLevel(
           std::numeric_limits<IndexType>::max() ), mHostOnlyVars( 0 ), mReplicatedLevel(
           std::numeric_limits<IndexType>::max() )
 {

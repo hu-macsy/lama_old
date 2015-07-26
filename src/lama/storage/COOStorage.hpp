@@ -285,7 +285,7 @@ public:
 
     /** Implementation of MatrixStorage::matrixTimesVectorAsync for COO */
 
-    virtual common::unique_ptr<SyncToken> matrixTimesVectorAsyncToDo(
+    virtual SyncToken* matrixTimesVectorAsync(
         LAMAArray<ValueType>& result,
         const ValueType alpha,
         const LAMAArray<ValueType>& x,

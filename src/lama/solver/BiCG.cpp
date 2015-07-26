@@ -68,7 +68,7 @@ BiCG::~BiCG()
 }
 
 BiCG::BiCGRuntime::BiCGRuntime()
-    : CGRuntime(), mPScalar2( 0.0 ), mResidual2( 0 )
+    : CGRuntime(), mPScalar2( 0.0 ), mResidual2()
 {
 }
 

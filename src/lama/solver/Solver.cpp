@@ -70,7 +70,7 @@ Solver::Solver( const Solver& other )
 }
 
 Solver::SolverRuntime::SolverRuntime()
-    : mCoefficients( 0 ), mRhs( 0 ), mResidual( 0 ), mInitialized( false ), mSolveInit( false )
+    : mCoefficients( 0 ), mRhs( 0 ), mResidual(), mInitialized( false ), mSolveInit( false )
 {
 }
 

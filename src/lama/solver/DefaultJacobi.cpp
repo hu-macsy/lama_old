@@ -72,7 +72,7 @@ DefaultJacobi::DefaultJacobi( const DefaultJacobi& other )
 }
 
 DefaultJacobi::DefaultJacobiRuntime::DefaultJacobiRuntime()
-    : OmegaSolverRuntime(), mDiagonalTimesLU( NULL ), mDiagonalTimesRhs( NULL ), mOldSolution( NULL )
+    : OmegaSolverRuntime(), mDiagonalTimesLU(), mDiagonalTimesRhs(), mOldSolution()
 {
 }
 
