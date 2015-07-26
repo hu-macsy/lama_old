@@ -1030,7 +1030,7 @@ SyncToken* JDSStorage<ValueType>::matrixTimesVectorAsync(
 
     if ( loc->getType() == context::Host )
     {
-        // workaround as boost::bind has limited number of arguments and cannot be
+        // workaround as common::bind has limited number of arguments and cannot be
         // used later in OpenMP to generate a TaskSyncToken
 
         void (JDSStorage::*mv)(

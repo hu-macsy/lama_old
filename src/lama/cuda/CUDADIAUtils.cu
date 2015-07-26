@@ -705,11 +705,11 @@ namespace lama
                 void ( *unbindV ) ( const ValueType* ) = &vectorUnbindTexture;
                 void ( *unbindI ) ( const IndexType* ) = &vectorUnbindTexture;
 
-                syncToken->pushRoutine( boost::bind( unbindV, x ) );
+                syncToken->pushRoutine( common::bind( unbindV, x ) );
 
                 if ( !useSharedMem )
                 {
-                    syncToken->pushRoutine( boost::bind( unbindI, diaOffsets ) );
+                    syncToken->pushRoutine( common::bind( unbindI, diaOffsets ) );
                 }
             }
         }
@@ -875,11 +875,11 @@ namespace lama
                 void ( *unbindV ) ( const ValueType* ) = &vectorUnbindTexture;
                 void ( *unbindI ) ( const IndexType* ) = &vectorUnbindTexture;
 
-                syncToken->pushRoutine( boost::bind( unbindV, x ) );
+                syncToken->pushRoutine( common::bind( unbindV, x ) );
 
                 if ( !useSharedMem )
                 {
-                    syncToken->pushRoutine( boost::bind( unbindI, diaOffsets ) );
+                    syncToken->pushRoutine( common::bind( unbindI, diaOffsets ) );
                 }
             }
         }

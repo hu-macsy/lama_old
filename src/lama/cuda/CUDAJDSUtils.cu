@@ -950,11 +950,11 @@ namespace lama
                 void ( *unbindV ) ( const ValueType* ) = &vectorUnbindTexture;
                 void ( *unbindI ) ( const IndexType* ) = &vectorUnbindTexture;
 
-                syncToken->pushRoutine( boost::bind( unbindV, oldSolution ) );
+                syncToken->pushRoutine( common::bind( unbindV, oldSolution ) );
 
                 if ( !useSharedMem )
                 {
-                    syncToken->pushRoutine( boost::bind( unbindI, jdsDLG ) );
+                    syncToken->pushRoutine( common::bind( unbindI, jdsDLG ) );
                 }
             }
         }
@@ -1813,11 +1813,11 @@ namespace lama
                 void ( *unbindV ) ( const ValueType* ) = &vectorUnbindTexture;
                 void ( *unbindI ) ( const IndexType* ) = &vectorUnbindTexture;
 
-                syncToken->pushRoutine( boost::bind( unbindV, x ) );
+                syncToken->pushRoutine( common::bind( unbindV, x ) );
 
                 if ( !useSharedMem )
                 {
-                    syncToken->pushRoutine( boost::bind( unbindI, jdsDLG ) );
+                    syncToken->pushRoutine( common::bind( unbindI, jdsDLG ) );
                 }
             }
         }
@@ -2477,11 +2477,11 @@ namespace lama
                 void ( *unbindV ) ( const ValueType* ) = &vectorUnbindTexture;
                 void ( *unbindI ) ( const IndexType* ) = &vectorUnbindTexture;
 
-                syncToken->pushRoutine( boost::bind( unbindV, x ) );
+                syncToken->pushRoutine( common::bind( unbindV, x ) );
 
                 if ( !useSharedMem )
                 {
-                    syncToken->pushRoutine( boost::bind( unbindI, jdsDLG ) );
+                    syncToken->pushRoutine( common::bind( unbindI, jdsDLG ) );
                 }
             }
         }
@@ -2676,10 +2676,10 @@ namespace lama
 
                 if ( !useSharedMem )
                 {
-                    syncToken->pushRoutine( boost::bind( unbindI, jdsDLG ) );
+                    syncToken->pushRoutine( common::bind( unbindI, jdsDLG ) );
                 }
 
-                syncToken->pushRoutine( boost::bind( unbindV, x ) );
+                syncToken->pushRoutine( common::bind( unbindV, x ) );
             }
         }
         else // no use of Texture cache
@@ -2804,10 +2804,10 @@ namespace lama
 
                 if ( !useSharedMem )
                 {
-                    syncToken->pushRoutine( boost::bind( unbindI, jdsDLG ) );
+                    syncToken->pushRoutine( common::bind( unbindI, jdsDLG ) );
                 }
 
-                syncToken->pushRoutine( boost::bind( unbindV, x ) );
+                syncToken->pushRoutine( common::bind( unbindV, x ) );
             }
         }
         else // no use of Texture cache

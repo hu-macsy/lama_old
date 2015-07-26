@@ -33,7 +33,7 @@
 
 #include <boost/test/unit_test.hpp>
 #include <boost/mpl/list.hpp>
-#include <boost/bind.hpp>
+#include <common/bind.hpp>
 
 #include <lama/ContextFactory.hpp>
 #include <lama/WriteAccess.hpp>
@@ -306,8 +306,8 @@ BOOST_AUTO_TEST_CASE( threadTest )
         }
     }
     vector = vectorOrig;
-    boost::function<void()> sscalCUDA = boost::bind( callSSCAL, ref( vector ), alpha, cudaContext );
-    boost::function<void()> sscalHOST = boost::bind( callSSCAL, ref( vector ), alpha, hostContext );
+    common::function<void()> sscalCUDA = common::bind( callSSCAL, ref( vector ), alpha, cudaContext );
+    common::function<void()> sscalHOST = common::bind( callSSCAL, ref( vector ), alpha, hostContext );
     //CUDA Asynchronous Simple
     {
         Task asyncCall( sscalCUDA );

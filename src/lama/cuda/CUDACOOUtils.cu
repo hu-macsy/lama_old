@@ -353,7 +353,7 @@ namespace lama
             {
                 void ( *unbind ) ( const ValueType* ) = &vectorUnbindTexture;
 
-                syncToken->pushRoutine( boost::bind( unbind, x ) );
+                syncToken->pushRoutine( common::bind( unbind, x ) );
             }
         }
     }
@@ -471,7 +471,7 @@ namespace lama
             {
                 void ( *unbind ) ( const ValueType* ) = &vectorUnbindTexture;
 
-                syncToken->pushRoutine( boost::bind( unbind, x ) );
+                syncToken->pushRoutine( common::bind( unbind, x ) );
             }
         }
     }

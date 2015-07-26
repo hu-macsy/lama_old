@@ -104,12 +104,12 @@ public:
 
     static common::unique_ptr<SyncToken> theMemcpyAsync( void* dst, const void* src, const size_t size )
     {
-        return common::unique_ptr < SyncToken > ( new TaskSyncToken( boost::bind( &::memcpy, dst, src, size ) ) );
+        return common::unique_ptr < SyncToken > ( new TaskSyncToken( common::bind( &::memcpy, dst, src, size ) ) );
     }
 
     virtual common::unique_ptr<SyncToken> memcpyAsync( void* dst, const void* src, const size_t size ) const
     {
-        return common::unique_ptr < SyncToken > ( new TaskSyncToken( boost::bind( &::memcpy, dst, src, size ) ) );
+        return common::unique_ptr < SyncToken > ( new TaskSyncToken( common::bind( &::memcpy, dst, src, size ) ) );
     }
 
     virtual bool cancpy( const ContextData& dst, const ContextData& src ) const
@@ -378,8 +378,8 @@ BOOST_AUTO_TEST_CASE( threadSafetyTest )
     for ( IndexType k = 0; k < ITER; k++ )
     {
         // run this process + two additional threads
-        boost::thread t1( boost::bind( sumit, boost::ref( sum1 ), boost::ref( data ) ) );
-        boost::thread t2( boost::bind( sumit, boost::ref( sum2 ), boost::ref( data ) ) );
+        boost::thread t1( common::bind( sumit, common::ref( sum1 ), common::ref( data ) ) );
+        boost::thread t2( common::bind( sumit, common::ref( sum2 ), common::ref( data ) ) );
         sumit( sum3, data );
         t1.join();
         t2.join();
