@@ -185,7 +185,7 @@ void MICELLUtils::scaleValue(
     const OtherValueType values[] )
 {
     LAMA_LOG_INFO( logger,
-                   "scaleValue<" << Scalar::getType<ValueType>() << ", " << Scalar::getType<OtherValueType>() << ">" << ", #numRows = " << numRows )
+                   "scaleValue<" << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << ">" << ", #numRows = " << numRows )
 
     void* ellValuesPtr = ellValues;
     const void* ellSizesPtr = ellSizes;
@@ -426,7 +426,7 @@ void MICELLUtils::getCSRValues(
     const ELLValueType ellValues[] )
 {
     LAMA_LOG_INFO( logger,
-                   "get CSRValues<" << Scalar::getType<ELLValueType>() << ", " << Scalar::getType<CSRValueType>() << ">" << ", #rows = " << numRows )
+                   "get CSRValues<" << common::getScalarType<ELLValueType>() << ", " << common::getScalarType<CSRValueType>() << ">" << ", #rows = " << numRows )
 
     LAMA_REGION( "MIC.ELL->CSR_values" )
 
@@ -489,7 +489,7 @@ void MICELLUtils::setCSRValues(
     LAMA_REGION( "MIC.ELL<-CSR_values" )
 
     LAMA_LOG_INFO( logger,
-                   "set CSRValues<" << Scalar::getType<ELLValueType>() << ", " << Scalar::getType<CSRValueType>() << ">" << ", #rows = " << numRows << ", #values/row = " << numValuesPerRow )
+                   "set CSRValues<" << common::getScalarType<ELLValueType>() << ", " << common::getScalarType<CSRValueType>() << ">" << ", #rows = " << numRows << ", #values/row = " << numValuesPerRow )
 
     const void* ellSizesPtr = ellSizes;
     void* ellJAPtr = ellJA;
@@ -899,7 +899,7 @@ void MICELLUtils::jacobi(
     LAMA_REGION( "MIC.ELL.jacobi" )
 
     LAMA_LOG_INFO( logger,
-                   "jacobi<" << Scalar::getType<ValueType>() << ">" << ", #rows = " << numRows << ", omega = " << omega )
+                   "jacobi<" << common::getScalarType<ValueType>() << ">" << ", #rows = " << numRows << ", omega = " << omega )
 
     if( syncToken )
     {
@@ -1051,7 +1051,7 @@ void MICELLUtils::normalGEMV(
     SyncToken* syncToken )
 {
     LAMA_LOG_INFO( logger,
-                   "normalGEMV<" << Scalar::getType<ValueType>() << ">, result[" << numRows << "] = " << alpha << " * A( ell, #maxNZ/row = " << numNonZerosPerRow << " ) * x + " << beta << " * y " )
+                   "normalGEMV<" << common::getScalarType<ValueType>() << ">, result[" << numRows << "] = " << alpha << " * A( ell, #maxNZ/row = " << numNonZerosPerRow << " ) * x + " << beta << " * y " )
 
     if( numNonZerosPerRow == 0 )
     {
@@ -1146,7 +1146,7 @@ void MICELLUtils::sparseGEMV(
     LAMA_REGION( "MIC.ELL.sparseGEMV" )
 
     LAMA_LOG_INFO( logger,
-                   "sparseGEMV<" << Scalar::getType<ValueType>() << ">, n = " << numRows << ", nonZeroRows = " << numNonZeroRows << ", alpha = " << alpha )
+                   "sparseGEMV<" << common::getScalarType<ValueType>() << ">, n = " << numRows << ", nonZeroRows = " << numNonZeroRows << ", alpha = " << alpha )
 
     // conversion of pointer to void* to cheat offload
 

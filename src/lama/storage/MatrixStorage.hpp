@@ -31,8 +31,7 @@
  * @since 1.0.0
  */
 
-#ifndef LAMA_MATRIX_STORAGE_HPP_
-#define LAMA_MATRIX_STORAGE_HPP_
+#pragma once
 
 #include <ostream>
 
@@ -1095,4 +1094,3 @@ void MatrixStorage<ValueType>::setRawCSRData(
 
 } // namespace lama
 
-#endif // LAMA_MATRIX_STORAGE_HPP_

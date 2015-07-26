@@ -216,7 +216,7 @@ void StorageIO<ValueType>::readCSRFromBinaryFile(
     const IndexType numRows )
 {
     LAMA_LOG_INFO( logger,
-                   "read CSR<" << Scalar::getType<ValueType>() << "> storage from binary file " << fileName << ", #rows = " << numRows )
+                   "read CSR<" << common::getScalarType<ValueType>() << "> storage from binary file " << fileName << ", #rows = " << numRows )
 
     LAMA_REGION( "StorageIO.readCSRFromBinaryFile" )
 

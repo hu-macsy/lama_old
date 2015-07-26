@@ -30,8 +30,6 @@
  * @date 27.04.2011
  * @since 1.0.0
  */
-#ifndef LAMA_DENSESTORAGE_HPP_
-#define LAMA_DENSESTORAGE_HPP_
 
 // for dll_import
 #include <common/config.hpp>
@@ -438,5 +436,3 @@ private:
 };
 
 }
-
-#endif // LAMA_DENSESTORAGE_HPP_

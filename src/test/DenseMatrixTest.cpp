@@ -574,7 +574,7 @@ void getMemoryUsageTest( )
     size_t size_float = 77;
     size_t size_double = 141;
     std::ostringstream omsg;
-    omsg << Scalar::getType<ValueType>();
+    omsg << common::getScalarType<ValueType>();
 
     if ( std::string( "double" ).compare( omsg.str() ) == 0 )
     {
@@ -669,7 +669,7 @@ void gemmTest( ContextPtr loc )
     // This test needs less precision eps for float than for double
     ValueType eps;
     std::ostringstream omsg;
-    omsg << Scalar::getType<ValueType>();
+    omsg << common::getScalarType<ValueType>();
 
     if ( std::string( "double" ).compare( omsg.str() ) == 0 )
     {

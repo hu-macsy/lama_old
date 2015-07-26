@@ -95,7 +95,7 @@ typedef scalar::ScalarType ScalarType;
  * @param[in] type    the given ScalarType.
  * @return            the size of the given ScalarType.
  */
-inline size_t getTypeSize( const ScalarType type )
+inline size_t getScalarTypeSize( const ScalarType type )
 {
     size_t typeSize = 0;
 

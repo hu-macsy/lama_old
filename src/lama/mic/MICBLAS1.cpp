@@ -63,7 +63,7 @@ void MICBLAS1::scal(
     SyncToken* syncToken )
 {
     LAMA_LOG_DEBUG( logger,
-                    "scal<" << Scalar::getType<ValueType>() << ">, n = " << n << ", alpha = " << alpha << ", x = " << x << ", incX = " << incX )
+                    "scal<" << common::getScalarType<ValueType>() << ">, n = " << n << ", alpha = " << alpha << ", x = " << x << ", incX = " << incX )
 
     if( n < 1 || incX < 1 )
     {
@@ -96,7 +96,7 @@ template<typename ValueType>
 ValueType MICBLAS1::asum( const IndexType n, const ValueType* x, const IndexType incX, SyncToken* syncToken )
 {
     LAMA_LOG_DEBUG( logger,
-                    "asum<" << Scalar::getType<ValueType>() << ">, n = " << n << ", x = " << x << ", incX = " << incX )
+                    "asum<" << common::getScalarType<ValueType>() << ">, n = " << n << ", x = " << x << ", incX = " << incX )
 
     if( syncToken )
     {
@@ -135,7 +135,7 @@ template<typename ValueType>
 IndexType MICBLAS1::iamax( const IndexType n, const ValueType* x, const IndexType incX, SyncToken* syncToken )
 {
     LAMA_LOG_INFO( logger,
-                   "iamax<" << Scalar::getType<ValueType>() << " >, n = " << n << ", x = " << x << ", incX = " << incX )
+                   "iamax<" << common::getScalarType<ValueType>() << " >, n = " << n << ", x = " << x << ", incX = " << incX )
 
     if( syncToken )
     {
@@ -244,7 +244,7 @@ void MICBLAS1::swap(
 template<typename ValueType>
 ValueType MICBLAS1::nrm2( const IndexType n, const ValueType* x, const IndexType incX, SyncToken* syncToken )
 {
-    LAMA_LOG_INFO( logger, "nrm2<" << Scalar::getType<ValueType>() << ">( n = " << n << " )" )
+    LAMA_LOG_INFO( logger, "nrm2<" << common::getScalarType<ValueType>() << ">( n = " << n << " )" )
 
     if( syncToken )
     {
@@ -291,7 +291,7 @@ void MICBLAS1::copy(
     SyncToken* syncToken )
 {
     LAMA_LOG_DEBUG( logger,
-                    "copy<" << Scalar::getType<ValueType>() << ">, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
+                    "copy<" << common::getScalarType<ValueType>() << ">, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
 
     if( syncToken )
     {
@@ -339,7 +339,7 @@ void MICBLAS1::axpy(
     LAMA_REGION( "MIC.BLAS1.axpy" )
 
     LAMA_LOG_INFO( logger,
-                   "axpy<" << Scalar::getType<ValueType>() << ",  n = " << n << ", alpha = " << alpha << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
+                   "axpy<" << common::getScalarType<ValueType>() << ",  n = " << n << ", alpha = " << alpha << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
 
     if( syncToken )
     {
@@ -383,7 +383,7 @@ ValueType MICBLAS1::dot(
 {
     LAMA_REGION( "MIC.BLAS1.dot" )
 
-    LAMA_LOG_INFO( logger, "dot<" << Scalar::getType<ValueType>() << ">, n = " << n );
+    LAMA_LOG_INFO( logger, "dot<" << common::getScalarType<ValueType>() << ">, n = " << n );
 
     if( syncToken )
     {
@@ -431,7 +431,7 @@ void MICBLAS1::sum(
     SyncToken* syncToken )
 {
     LAMA_LOG_DEBUG( logger,
-                    "sum<" << Scalar::getType<ValueType>() << ">, n = " << n << ", alpha = " << alpha << ", x = " << x << ", beta = " << beta << ", y = " << y << ", z = " << z )
+                    "sum<" << common::getScalarType<ValueType>() << ">, n = " << n << ", alpha = " << alpha << ", x = " << x << ", beta = " << beta << ", y = " << y << ", z = " << z )
 
     if( syncToken )
     {

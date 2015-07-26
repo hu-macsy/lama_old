@@ -28,10 +28,8 @@
  * @brief Class providing static routines for matrix storage
  * @author Thomas Brandes
  * @date 27.04.2011
- * @since 1.0.0
  */
-#ifndef LAMA_STORAGE_METHODS_HPP_
-#define LAMA_STORAGE_METHODS_HPP_
+#pragma once
 
 // for dll_import
 #include <common/config.hpp>
@@ -198,4 +196,3 @@ public:
 /* -------------------------------------------------------------------------- */
 
 }
-#endif // LAMA_CSRSTORAGE_HPP_

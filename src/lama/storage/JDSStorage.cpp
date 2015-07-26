@@ -672,7 +672,7 @@ void JDSStorage<ValueType>::buildCSR(
     LAMA_REGION( "Storage.JDS->CSR" )
 
     LAMA_LOG_INFO( logger,
-                   "buildCSR<" << Scalar::getType<OtherValueType>() << ">" << " from JDS<" << Scalar::getType<ValueType>() << ">" << " on " << *loc )
+                   "buildCSR<" << common::getScalarType<OtherValueType>() << ">" << " from JDS<" << common::getScalarType<ValueType>() << ">" << " on " << *loc )
 
     LAMA_INTERFACE_FN_TT( setScatter, loc, Utils, Copy, IndexType, IndexType )
     LAMA_INTERFACE_FN_TT( getCSRValues, loc, JDSUtils, Conversions, ValueType, OtherValueType )
@@ -734,7 +734,7 @@ void JDSStorage<ValueType>::setCSRDataImpl(
     LAMA_REGION( "Storage.JDS<-CSR" )
 
     LAMA_LOG_INFO( logger,
-                   "setCSRDataImpl<" << Scalar::getType<ValueType>() << "," << Scalar::getType<OtherValueType>() << ">" << ", shape is " << numRows << " x " << numColumns << ", #values for CSR = " << numValues )
+                   "setCSRDataImpl<" << common::getScalarType<ValueType>() << "," << common::getScalarType<OtherValueType>() << ">" << ", shape is " << numRows << " x " << numColumns << ", #values for CSR = " << numValues )
 
     ContextPtr loc = getContextPtr();
 

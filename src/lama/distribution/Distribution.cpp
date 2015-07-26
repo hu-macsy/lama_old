@@ -182,7 +182,7 @@ void Distribution::replicate( T1* allValues, const T2* localValues ) const
     IndexType maxLocalSize = comm.max( currentSize );
 
     LAMA_LOG_INFO( logger,
-                   comm << ": replicate localValues<" << Scalar::getType<T2>() << ">[ " << currentSize << ", max = " << maxLocalSize << " ] " << " to allValues<" << Scalar::getType<T1>() << ">[ " << getGlobalSize() << " ]" )
+                   comm << ": replicate localValues<" << common::getScalarType<T2>() << ">[ " << currentSize << ", max = " << maxLocalSize << " ] " << " to allValues<" << common::getScalarType<T1>() << ">[ " << getGlobalSize() << " ]" )
 
     // Only allocate the needed size of the Arrays
 
@@ -289,7 +289,7 @@ void Distribution::replicateN( T1* allValues, const T2* localValues, const Index
     IndexType maxLocalSize = comm.max( currentSize );
 
     LAMA_LOG_INFO( logger,
-                   comm << ": replicateN, n = " << n << ", localValues<" << Scalar::getType<T2>() << ">[ " << currentSize << ", max = " << maxLocalSize << " ] " << " to allValues<" << Scalar::getType<T1>() << ">[ " << getGlobalSize() << " ]" )
+                   comm << ": replicateN, n = " << n << ", localValues<" << common::getScalarType<T2>() << ">[ " << currentSize << ", max = " << maxLocalSize << " ] " << " to allValues<" << common::getScalarType<T1>() << ">[ " << getGlobalSize() << " ]" )
 
     // Only allocate the needed size of the Arrays
 
@@ -476,7 +476,7 @@ void Distribution::replicateRagged(
     LAMA_LOG_DEBUG( logger, "maximal data size for exchange = " << maxLocalDataSize )
 
     LAMA_LOG_INFO( logger,
-                   comm << ": replicateRagged<" << Scalar::getType<ValueType>() << ">, localValues[ " << currentDataSize << ", max = " << maxLocalDataSize << " ] " << " to allValues [ allOffsets[ " << getGlobalSize() << " ] ]" )
+                   comm << ": replicateRagged<" << common::getScalarType<ValueType>() << ">, localValues[ " << currentDataSize << ", max = " << maxLocalDataSize << " ] " << " to allValues [ allOffsets[ " << getGlobalSize() << " ] ]" )
 
     LAMAArray<ValueType> valuesSend;
     LAMAArray<ValueType> valuesReceive;

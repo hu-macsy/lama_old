@@ -351,7 +351,7 @@ void ELLStorage<ValueType>::buildCSR(
     LAMA_REGION( "Storage.ELL->CSR" )
 
     LAMA_LOG_INFO( logger,
-                   "buildCSR<" << Scalar::getType<OtherValueType>() << ">" << " from ELL<" << Scalar::getType<ValueType>() << ">" << " on " << *loc )
+                   "buildCSR<" << common::getScalarType<OtherValueType>() << ">" << " from ELL<" << common::getScalarType<ValueType>() << ">" << " on " << *loc )
 
     LAMA_INTERFACE_FN( sizes2offsets, loc, CSRUtils, Offsets )
     LAMA_INTERFACE_FN_TT( set, loc, Utils, Copy, IndexType, IndexType )
@@ -800,7 +800,7 @@ void ELLStorage<ValueType>::allocate( IndexType numRows, IndexType numColumns )
 template<typename ValueType>
 void ELLStorage<ValueType>::writeAt( std::ostream& stream ) const
 {
-    stream << "ELLStorage<" << Scalar::getType<ValueType>() << ">( rows=" << mNumRows << ", cols=" << mNumColumns
+    stream << "ELLStorage<" << common::getScalarType<ValueType>() << ">( rows=" << mNumRows << ", cols=" << mNumColumns
            << ", nnr=" << mNumValuesPerRow << ", threshold = " << mCompressThreshold << " )";
 }
 

@@ -332,7 +332,7 @@ DenseVector<ValueType>& DenseVector<ValueType>::operator=( const Scalar value )
 template<typename ValueType>
 memory::ScalarType DenseVector<ValueType>::getValueType() const
 {
-    return Scalar::getType<ValueType>();
+    return common::getScalarType<ValueType>();
 }
 
 template<typename ValueType>
@@ -1565,7 +1565,7 @@ void DenseVector<ValueType>::readVectorDataFromBinaryFile( std::fstream &inFile,
     IndexType n = size();
 
     LAMA_LOG_INFO( logger,
-                   "read DenseVector<" << Scalar::getType<ValueType>() << "> from binary file, size = " << n << ", dataType = " << ( ( memory::ScalarType ) type ) )
+                   "read DenseVector<" << common::getScalarType<ValueType>() << "> from binary file, size = " << n << ", dataType = " << ( ( memory::ScalarType ) type ) )
 
     WriteOnlyAccess<ValueType> writeData( mLocalValues, n );
 

@@ -518,7 +518,7 @@ void MICJDSUtils::getCSRValues(
     const JDSValueType jdsValues[] )
 {
     LAMA_LOG_INFO( logger,
-                   "get CSRValues<" << Scalar::getType<JDSValueType>() << ", " << Scalar::getType<CSRValueType>() << ">" << ", #rows = " << numRows )
+                   "get CSRValues<" << common::getScalarType<JDSValueType>() << ", " << common::getScalarType<CSRValueType>() << ">" << ", #rows = " << numRows )
 
     LAMA_REGION( "MIC.JDS->CSR_values" )
 
@@ -582,7 +582,7 @@ void MICJDSUtils::setCSRValues(
     const CSRValueType csrValues[] )
 {
     LAMA_LOG_INFO( logger,
-                   "set CSRValues<" << Scalar::getType<JDSValueType>() << ", " << Scalar::getType<CSRValueType>() << ">" << ", #rows = " << numRows )
+                   "set CSRValues<" << common::getScalarType<JDSValueType>() << ", " << common::getScalarType<CSRValueType>() << ">" << ", #rows = " << numRows )
 
     LAMA_REGION( "MIC.JDS<-CSR_values" )
 
@@ -646,7 +646,7 @@ void MICJDSUtils::normalGEMV(
     class SyncToken* /* syncToken */)
 {
     LAMA_LOG_INFO( logger,
-                   "normalGEMV<" << Scalar::getType<ValueType>() << ">, result[" << numRows << "] = " << alpha << " * A( jds, ndlg = " << ndlg << " ) * x + " << beta << " * y " )
+                   "normalGEMV<" << common::getScalarType<ValueType>() << ">, result[" << numRows << "] = " << alpha << " * A( jds, ndlg = " << ndlg << " ) * x + " << beta << " * y " )
 
     if( beta == 0 )
     {
@@ -745,7 +745,7 @@ void MICJDSUtils::jacobi(
     LAMA_REGION( "MIC.JDS.jacobi" )
 
     LAMA_LOG_INFO( logger,
-                   "jacobi<" << Scalar::getType<ValueType>() << ">" << ", #rows = " << numRows << ", omega = " << omega )
+                   "jacobi<" << common::getScalarType<ValueType>() << ">" << ", #rows = " << numRows << ", omega = " << omega )
 
     if( syncToken )
     {
@@ -828,7 +828,7 @@ void MICJDSUtils::jacobiHalo(
     class SyncToken* syncToken )
 {
     LAMA_LOG_INFO( logger,
-                   "jacobiHalo<" << Scalar::getType<ValueType>() << ">" << ", #rows = " << numRows << ", omega = " << omega )
+                   "jacobiHalo<" << common::getScalarType<ValueType>() << ">" << ", #rows = " << numRows << ", omega = " << omega )
 
     LAMA_REGION( "MIC.JDS.jacobiHalo" )
 

@@ -78,14 +78,14 @@ public:
 
     DenseVector();
 
-    DenseVector( ContextPtr context );
+    explicit DenseVector( ContextPtr context );
 
     /**
      * @brief creates a not initialized distributed DenseVector of the passed global size.
      *
      * @param[in] distribution  the distribution to use for the new vector.
      */
-    DenseVector( DistributionPtr distribution );
+    explicit DenseVector( DistributionPtr distribution );
 
     /**
      * @brief creates a replicated DenseVector of the passed size initialized to the passed value.

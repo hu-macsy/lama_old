@@ -28,10 +28,8 @@
  * @brief SparseAssemblyStorage.hpp
  * @author Jiri Kraus
  * @date 07.11.2011
- * @since 1.0.0
  */
-#ifndef LAMA_SPARSEASSEMBLYSTORAGE_HPP_
-#define LAMA_SPARSEASSEMBLYSTORAGE_HPP_
+#pragma once
 
 // for dll_import
 #include <common/config.hpp>
@@ -396,7 +394,5 @@ private:
     static    std::string theTypeName;
 };
 
-}
-//namespace lama
+}  //namespace lama
 
-#endif // LAMA_SPARSEASSEMBLYSTORAGE_HPP_

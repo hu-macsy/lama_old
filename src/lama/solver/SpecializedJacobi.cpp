@@ -132,10 +132,10 @@ void SpecializedJacobi::initialize( const Matrix& coefficients )
                 dynamic_cast<const SparseMatrix<ARITHMETIC_TYPE##I>*>( runtime.mCoefficients );                   \
         if ( sparseTypeCoefficients )                                                                         \
         {                                                                                                     \
-            LAMA_LOG_DEBUG( logger, "Creating " << Scalar::getType<ARITHMETIC_TYPE##I>() << " diagonal. " )   \
+            LAMA_LOG_DEBUG( logger, "Creating " << common::getScalarType<ARITHMETIC_TYPE##I>() << " diagonal. " )   \
             if ( !runtime.mDiagonal.get() )                                                                   \
             {                                                                                                 \
-                runtime.mDiagonal.reset( ContextArray::create( Scalar::getType<ARITHMETIC_TYPE##I>() ) );     \
+                runtime.mDiagonal.reset( ContextArray::create( common::getScalarType<ARITHMETIC_TYPE##I>() ) );     \
             }                                                                                                 \
             sparseTypeCoefficients->getLocalStorage().getDiagonal( *runtime.mDiagonal );                      \
             return;                                                                                           \

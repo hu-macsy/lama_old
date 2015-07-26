@@ -193,7 +193,7 @@ public:
      * @return      value of enum type ScalarType that represents the C++ type.
      */
     template<typename ValueType>
-    inline static ScalarType getType();
+    inline static ScalarType getTypeWeg();
 
     /**
      * @brief Returns the size of the given ScalarType.
@@ -318,49 +318,49 @@ inline void Scalar::writeAt( std::ostream& stream ) const
 }
 
 template<typename ValueType>
-inline ScalarType Scalar::getType()
+inline ScalarType Scalar::getTypeWeg()
 {
     return UNKNOWN;
 }
 
 template<>
-inline ScalarType Scalar::getType<IndexType>()
+inline ScalarType Scalar::getTypeWeg<IndexType>()
 {
     return INDEX_TYPE;
 }
 
 template<>
-inline ScalarType Scalar::getType<float>()
+inline ScalarType Scalar::getTypeWeg<float>()
 {
     return FLOAT;
 }
 
 template<>
-inline ScalarType Scalar::getType<double>()
+inline ScalarType Scalar::getTypeWeg<double>()
 {
     return DOUBLE;
 }
 
 template<>
-inline ScalarType Scalar::getType<LongDouble>()
+inline ScalarType Scalar::getTypeWeg<LongDouble>()
 {
     return LONG_DOUBLE;
 }
 
 template<>
-inline ScalarType Scalar::getType<ComplexFloat>()
+inline ScalarType Scalar::getTypeWeg<ComplexFloat>()
 {
     return COMPLEX;
 }
 
 template<>
-inline ScalarType Scalar::getType<ComplexDouble>()
+inline ScalarType Scalar::getTypeWeg<ComplexDouble>()
 {
     return DOUBLE_COMPLEX;
 }
 
 template<>
-inline ScalarType Scalar::getType<ComplexLongDouble>()
+inline ScalarType Scalar::getTypeWeg<ComplexLongDouble>()
 {
     return LONG_DOUBLE_COMPLEX;
 }

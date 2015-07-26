@@ -1913,13 +1913,13 @@ void SparseMatrix<ValueType>::matrixTimesVector(
     const DenseVector<ValueType>* denseY = dynamic_cast<const DenseVector<ValueType>*>( &y );
     DenseVector<ValueType>* denseResult = dynamic_cast<DenseVector<ValueType>*>( &result );
 
-    LAMA_ASSERT( denseX, x << ": must be DenseVector<" << Scalar::getType<ValueType>() << ">" )
+    LAMA_ASSERT( denseX, x << ": must be DenseVector<" << common::getScalarType<ValueType>() << ">" )
 
     // Note: in case of beta == 0, we might skip this test
 
-    LAMA_ASSERT( denseY, y << ": must be DenseVector<" << Scalar::getType<ValueType>() << ">" )
+    LAMA_ASSERT( denseY, y << ": must be DenseVector<" << common::getScalarType<ValueType>() << ">" )
 
-    LAMA_ASSERT( denseResult, result << ": must be DenseVector<" << Scalar::getType<ValueType>() << ">" )
+    LAMA_ASSERT( denseResult, result << ": must be DenseVector<" << common::getScalarType<ValueType>() << ">" )
 
     matrixTimesVectorImpl( *denseResult, alpha.getValue<ValueType>(), *denseX, beta.getValue<ValueType>(), *denseY );
 }
@@ -1960,13 +1960,13 @@ void SparseMatrix<ValueType>::vectorTimesMatrix(
     const DenseVector<ValueType>* denseY = dynamic_cast<const DenseVector<ValueType>*>( &y );
     DenseVector<ValueType>* denseResult = dynamic_cast<DenseVector<ValueType>*>( &result );
 
-    LAMA_ASSERT( denseX, x << ": must be DenseVector<" << Scalar::getType<ValueType>() << ">" )
+    LAMA_ASSERT( denseX, x << ": must be DenseVector<" << common::getScalarType<ValueType>() << ">" )
 
     // Note: in case of beta == 0, we might skip this test
 
-    LAMA_ASSERT( denseY, y << ": must be DenseVector<" << Scalar::getType<ValueType>() << ">" )
+    LAMA_ASSERT( denseY, y << ": must be DenseVector<" << common::getScalarType<ValueType>() << ">" )
 
-    LAMA_ASSERT( denseResult, result << ": must be DenseVector<" << Scalar::getType<ValueType>() << ">" )
+    LAMA_ASSERT( denseResult, result << ": must be DenseVector<" << common::getScalarType<ValueType>() << ">" )
 
     vectorTimesMatrixImpl( *denseResult, alpha.getValue<ValueType>(), *denseX, beta.getValue<ValueType>(), *denseY );
 }
@@ -2250,7 +2250,7 @@ void SparseMatrix<ValueType>::resetDiagonalProperty()
 template<typename ValueType>
 memory::ScalarType SparseMatrix<ValueType>::getValueType() const
 {
-    return Scalar::getType<ValueType>();
+    return common::getScalarType<ValueType>();
 }
 
 /* ------------------------------------------------------------------------- */

@@ -30,8 +30,8 @@
  * @date 11.06.2011
  * @since 1.0.0
  */
-#ifndef LAMA_JDSSTORAGE_HPP_
-#define LAMA_JDSSTORAGE_HPP_
+
+#pragma once
 
 // for dll_import
 #include <common/config.hpp>
@@ -414,5 +414,3 @@ private:
 
 }
 // namespace lama
-
-#endif // LAMA_JDSSTORAGE_HPP_

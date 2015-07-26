@@ -28,7 +28,6 @@
  * @brief Implementation of static routines for matrix storage
  * @author Thomas Brandes
  * @date 27.04.2011
- * @since 1.0.0
  */
 
 // hpp

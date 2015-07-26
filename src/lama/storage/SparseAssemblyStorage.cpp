@@ -836,7 +836,7 @@ void SparseAssemblyStorage<ValueType>::scaleImpl( const LAMAArray<OtherValueType
 template<typename ValueType>
 void SparseAssemblyStorage<ValueType>::writeAt( std::ostream& stream ) const
 {
-    stream << "SparseAssemblyStorage<" << Scalar::getType<ValueType>() << ">: (" << mNumRows << " x " << mNumColumns
+    stream << "SparseAssemblyStorage<" << common::getScalarType<ValueType>() << ">: (" << mNumRows << " x " << mNumColumns
            << ", #values = " << mNumValues << ", diag = " << mDiagonalProperty << " )";
 }
 
@@ -846,7 +846,7 @@ template<typename ValueType>
 const char* SparseAssemblyStorage<ValueType>::typeName()
 {
     std::ostringstream name;
-    name << "SparseAssemblyStorage<" << Scalar::getType<ValueType>() << ">";
+    name << "SparseAssemblyStorage<" << common::getScalarType<ValueType>() << ">";
 
     return name.str().c_str();
 }

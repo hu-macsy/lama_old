@@ -663,7 +663,7 @@ inline memory::ContextType mapEnvContexttoContextType( std::string contextname )
     {                                                                                                                  \
         std::string lama_common_testcase_method = #methodname;                                                         \
         std::ostringstream omsg;                                                                                       \
-        omsg << Scalar::getType<templatename>();                                                                       \
+        omsg << common::getScalarType<templatename>();                                                                       \
         std::string lama_common_testcase_template = omsg.str();                                                        \
         if ( loglevel_argument == "test_suite" )                                                                       \
         {                                                                                                              \

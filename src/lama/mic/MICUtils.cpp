@@ -162,7 +162,7 @@ ValueType MICUtils::sum( const ValueType array[], const IndexType n )
 template<typename ValueType>
 void MICUtils::setVal( ValueType array[], const IndexType n, const ValueType val )
 {
-    LAMA_LOG_DEBUG( logger, "setVal<" << Scalar::getType<ValueType>() << ">: " << "array[" << n << "] = " << val )
+    LAMA_LOG_DEBUG( logger, "setVal<" << common::getScalarType<ValueType>() << ">: " << "array[" << n << "] = " << val )
 
     int device = MICContext::getCurrentDevice();
 
@@ -187,7 +187,7 @@ template<typename ValueType>
 void MICUtils::setOrder( ValueType array[], const IndexType n )
 {
     LAMA_LOG_DEBUG( logger,
-                    "setOrder<" << Scalar::getType<ValueType>() << ">: " << "array[" << n << "] = 0, 1, 2, ..., " << ( n - 1 ) )
+                    "setOrder<" << common::getScalarType<ValueType>() << ">: " << "array[" << n << "] = 0, 1, 2, ..., " << ( n - 1 ) )
 
     void* arrayPtr = array;
 
@@ -211,7 +211,7 @@ void MICUtils::setOrder( ValueType array[], const IndexType n )
 template<typename ValueType>
 ValueType MICUtils::getValue( const ValueType* array, const IndexType i )
 {
-    LAMA_LOG_DEBUG( logger, "getValue<" << Scalar::getType<ValueType>() << ">: i = " << i )
+    LAMA_LOG_DEBUG( logger, "getValue<" << common::getScalarType<ValueType>() << ">: i = " << i )
 
     ValueType val = 0;
 
@@ -232,7 +232,7 @@ ValueType MICUtils::getValue( const ValueType* array, const IndexType i )
 template<typename ValueType>
 ValueType MICUtils::maxval( const ValueType array[], const IndexType n )
 {
-    LAMA_LOG_INFO( logger, "maxval<" << Scalar::getType<ValueType>() << ">: " << "array[" << n << "]" )
+    LAMA_LOG_INFO( logger, "maxval<" << common::getScalarType<ValueType>() << ">: " << "array[" << n << "]" )
 
     ValueType val = 0;
 
@@ -283,7 +283,7 @@ ValueType MICUtils::maxval( const ValueType array[], const IndexType n )
 template<typename ValueType>
 ValueType MICUtils::absMaxVal( const ValueType array[], const IndexType n )
 {
-    LAMA_LOG_INFO( logger, "absMaxVal<" << Scalar::getType<ValueType>() << ">: " << "array[" << n << "]" )
+    LAMA_LOG_INFO( logger, "absMaxVal<" << common::getScalarType<ValueType>() << ">: " << "array[" << n << "]" )
     LAMA_LOG_INFO( logger, "array = " << array )
 
     ValueType val = 0;
@@ -332,7 +332,7 @@ ValueType MICUtils::absMaxVal( const ValueType array[], const IndexType n )
 template<typename ValueType>
 ValueType MICUtils::absMaxDiffVal( const ValueType array1[], const ValueType array2[], const IndexType n )
 {
-    LAMA_LOG_DEBUG( logger, "absMaxDiffVal<" << Scalar::getType<ValueType>() << ">: " << "array[" << n << "]" )
+    LAMA_LOG_DEBUG( logger, "absMaxDiffVal<" << common::getScalarType<ValueType>() << ">: " << "array[" << n << "]" )
 
     ValueType val = 0;
 
@@ -372,7 +372,7 @@ template<typename ValueType>
 bool MICUtils::isSorted( const ValueType array[], const IndexType n, bool ascending )
 {
     LAMA_LOG_INFO( logger,
-                   "isSorted<" << Scalar::getType<ValueType>() << ">, n = " << n << ", ascending = " << ascending )
+                   "isSorted<" << common::getScalarType<ValueType>() << ">, n = " << n << ", ascending = " << ascending )
 
     bool sorted = true; //!< will be set to false at violations
 
@@ -421,7 +421,7 @@ template<typename ValueType1,typename ValueType2>
 void MICUtils::set( ValueType1 out[], const ValueType2 in[], const IndexType n )
 {
     LAMA_LOG_INFO( logger,
-                   "set: out<" << Scalar::getType<ValueType1>() << "[" << n << "]" << " = in<" << Scalar::getType<ValueType2>() << ">[" << n << "]" )
+                   "set: out<" << common::getScalarType<ValueType1>() << "[" << n << "]" << " = in<" << common::getScalarType<ValueType2>() << ">[" << n << "]" )
 
     void* outPtr = out;
     const void* inPtr = in;
@@ -478,7 +478,7 @@ template<typename ValueType1,typename ValueType2>
 void MICUtils::setGather( ValueType1 out[], const ValueType2 in[], const IndexType indexes[], const IndexType n )
 {
     LAMA_LOG_DEBUG( logger,
-                    "setGather: out<" << Scalar::getType<ValueType1>() << ">[" << n << "]" << " = in<" << Scalar::getType<ValueType2>() << ">[ indexes[" << n << "] ]" )
+                    "setGather: out<" << common::getScalarType<ValueType1>() << ">[" << n << "]" << " = in<" << common::getScalarType<ValueType2>() << ">[ indexes[" << n << "] ]" )
 
     void* outPtr = out;
     const void* inPtr = in;
@@ -508,7 +508,7 @@ template<typename ValueType1,typename ValueType2>
 void MICUtils::setScatter( ValueType1 out[], const IndexType indexes[], const ValueType2 in[], const IndexType n )
 {
     LAMA_LOG_DEBUG( logger,
-                    "setScatter: out<" << Scalar::getType<ValueType1>() << ">" << "[ indexes[" << n << "] ]" << " = in<" << Scalar::getType<ValueType2>() << ">[" << n << "]" )
+                    "setScatter: out<" << common::getScalarType<ValueType1>() << ">" << "[ indexes[" << n << "] ]" << " = in<" << common::getScalarType<ValueType2>() << ">[" << n << "]" )
 
     void* outPtr = out;
     const void* indexesPtr = indexes;

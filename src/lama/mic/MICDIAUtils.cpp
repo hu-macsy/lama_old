@@ -127,7 +127,7 @@ void MICDIAUtils::getCSRValues(
     const DIAValueType eps )
 {
     LAMA_LOG_INFO( logger,
-                   "get CSRValues<" << Scalar::getType<DIAValueType>() << ", " << Scalar::getType<CSRValueType>() << ">" << ", #rows = " << numRows << ", #diagonals = " << numDiagonals << ", #non-zero values = " << csrIA[numRows] << ", diagonalFlag = " << diagonalFlag )
+                   "get CSRValues<" << common::getScalarType<DIAValueType>() << ", " << common::getScalarType<CSRValueType>() << ">" << ", #rows = " << numRows << ", #diagonals = " << numDiagonals << ", #non-zero values = " << csrIA[numRows] << ", diagonalFlag = " << diagonalFlag )
 
     // we cannot check for correct sizes, but at least for valid pointers
 
@@ -243,7 +243,7 @@ void MICDIAUtils::getCSRSizes(
     const DIAValueType eps )
 {
     LAMA_LOG_INFO( logger,
-                   "get CSRSizes<" << Scalar::getType<DIAValueType>() << "> for DIA matrix " << numRows << " x " << numColumns << ", #diagonals = " << numDiagonals << ", eps = " << eps << ", diagonalFlag = " << diagonalFlag )
+                   "get CSRSizes<" << common::getScalarType<DIAValueType>() << "> for DIA matrix " << numRows << " x " << numColumns << ", #diagonals = " << numDiagonals << ", eps = " << eps << ", diagonalFlag = " << diagonalFlag )
 
     #pragma omp parallel for
 
@@ -306,7 +306,7 @@ void MICDIAUtils::normalGEMV(
     SyncToken* syncToken )
 {
     LAMA_LOG_INFO( logger,
-                   "normalGEMV<" << Scalar::getType<ValueType>() << ">, result[" << numRows << "] = " << alpha << " * A( dia, #diags = " << numDiagonals << " ) * x + " << beta << " * y " )
+                   "normalGEMV<" << common::getScalarType<ValueType>() << ">, result[" << numRows << "] = " << alpha << " * A( dia, #diags = " << numDiagonals << " ) * x + " << beta << " * y " )
 
     // result := alpha * A * x + beta * y -> result:= beta * y; result += alpha * A
 
@@ -374,7 +374,7 @@ void MICDIAUtils::jacobi(
     LAMA_REGION( "MIC.DIA.Jacobi" )
 
     LAMA_LOG_INFO( logger,
-                   "jacobi<" << Scalar::getType<ValueType>() << ">" << ", #rows = " << numRows << ", #cols = " << numColumns << ", #diagonals = " << numDiagonals << ", omega = " << omega )
+                   "jacobi<" << common::getScalarType<ValueType>() << ">" << ", #rows = " << numRows << ", #cols = " << numColumns << ", #diagonals = " << numDiagonals << ", omega = " << omega )
 
     // main diagonal must be first
 

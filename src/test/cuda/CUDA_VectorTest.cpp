@@ -404,7 +404,7 @@ BOOST_AUTO_TEST_CASE( dotProductTest )
 //with different contexts (e.g. CUDA)
 BOOST_AUTO_TEST_CASE_TEMPLATE( scaleVectorTest, ValueType, test_types )
 {
-    LAMA_LOG_INFO( logger, "scaleVectorTest<" << Scalar::getType<ValueType>() << ">" )
+    LAMA_LOG_INFO( logger, "scaleVectorTest<" << common::getScalarType<ValueType>() << ">" )
     IndexType n = 4;
     DenseVector<ValueType> vec1( n, 1.0 );
     DenseVector<ValueType> vec2( n, 0.25 );

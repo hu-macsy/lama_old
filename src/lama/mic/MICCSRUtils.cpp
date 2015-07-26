@@ -559,7 +559,7 @@ void MICCSRUtils::normalGEMV(
     SyncToken* syncToken )
 {
     LAMA_LOG_INFO( logger,
-                   "normalGEMV<" << Scalar::getType<ValueType>() << ">, result[" << numRows << "] = " << alpha << " * A * x + " << beta << " * y " )
+                   "normalGEMV<" << common::getScalarType<ValueType>() << ">, result[" << numRows << "] = " << alpha << " * A * x + " << beta << " * y " )
 
     if( syncToken )
     {
@@ -696,7 +696,7 @@ void MICCSRUtils::gemm(
     SyncToken* syncToken )
 {
     LAMA_LOG_INFO( logger,
-                   "gemm<" << Scalar::getType<ValueType>() << ">, " << " result " << m << " x " << n << " CSR " << m << " x " << p )
+                   "gemm<" << common::getScalarType<ValueType>() << ">, " << " result " << m << " x " << n << " CSR " << m << " x " << p )
 
     if( syncToken )
     {
@@ -769,7 +769,7 @@ void MICCSRUtils::jacobi(
     class SyncToken* syncToken )
 {
     LAMA_LOG_INFO( logger,
-                   "jacobi<" << Scalar::getType<ValueType>() << ">" << ", #rows = " << numRows << ", omega = " << omega )
+                   "jacobi<" << common::getScalarType<ValueType>() << ">" << ", #rows = " << numRows << ", omega = " << omega )
 
     if( syncToken )
     {
@@ -847,7 +847,7 @@ void MICCSRUtils::jacobiHalo(
     const IndexType numNonEmptyRows )
 {
     LAMA_LOG_INFO( logger,
-                   "jacobiHalo<" << Scalar::getType<ValueType>() << ">" << ", #rows (not empty) = " << numNonEmptyRows << ", omega = " << omega );
+                   "jacobiHalo<" << common::getScalarType<ValueType>() << ">" << ", #rows (not empty) = " << numNonEmptyRows << ", omega = " << omega );
 
     LAMA_REGION( "MIC.CSR.jacabiHalo" )
 
@@ -920,7 +920,7 @@ void MICCSRUtils::jacobiHaloWithDiag(
     const IndexType numNonEmptyRows )
 {
     LAMA_LOG_INFO( logger,
-                   "jacobiHaloWithDiag<" << Scalar::getType<ValueType>() << ">" << ", #rows (not empty) = " << numNonEmptyRows << ", omega = " << omega );
+                   "jacobiHaloWithDiag<" << common::getScalarType<ValueType>() << ">" << ", #rows (not empty) = " << numNonEmptyRows << ", omega = " << omega );
 
     LAMA_REGION( "MIC.CSR.jacabiHaloWithDiag" )
 
@@ -1797,7 +1797,7 @@ ValueType MICCSRUtils::absMaxDiffVal(
     const ValueType csrValues2[] )
 {
     LAMA_LOG_INFO( logger,
-                   "absMaxDiffVal<" << Scalar::getType<ValueType>() << ">: " << "csr[" << numRows << "], sorted = " << sortedRows )
+                   "absMaxDiffVal<" << common::getScalarType<ValueType>() << ">: " << "csr[" << numRows << "], sorted = " << sortedRows )
 
     ValueType val = 0;
 

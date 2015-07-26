@@ -28,10 +28,9 @@
  * @brief Definition of a structure for a (non-distributed) DIA sparse matrix.
  * @author Thomas Brandes
  * @date 11.06.2011
- * @since 1.0.0
  */
-#ifndef LAMA_DIASTORAGE_HPP_
-#define LAMA_DIASTORAGE_HPP_
+
+#pragma once
 
 // for dll_import
 #include <common/config.hpp>
@@ -224,7 +223,6 @@ public:
         const LAMAArray<ValueType>& y ) const;
 
     /** Implementation of MatrixStorage::vectorTimesMatrixAsync for DIA */
-    /** since 1.0.1 */
 
     virtual SyncToken* vectorTimesMatrixAsync(
         LAMAArray<ValueType>& result,
@@ -392,5 +390,3 @@ private:
 
 }
 // namespace lama
-
-#endif // LAMA_DIASTORAGE_HPP_

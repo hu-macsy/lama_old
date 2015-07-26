@@ -2159,7 +2159,7 @@ void DenseMatrix<ValueType>::resetDiagonalProperty()
 template<typename ValueType>
 void DenseMatrix<ValueType>::writeAt( std::ostream& stream ) const
 {
-stream << "DenseMatrix<" << Scalar::getType<ValueType>() << ">(" << mNumRows << "x" << mNumColumns << ", rowdist = "
+stream << "DenseMatrix<" << common::getScalarType<ValueType>() << ">(" << mNumRows << "x" << mNumColumns << ", rowdist = "
        << getDistribution() << ", coldist = " << getColDistribution() << ")";
 }
 

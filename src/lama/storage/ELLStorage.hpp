@@ -28,11 +28,7 @@
  * @brief Definition of a structure for a (non-distributed) ELL sparse matrix.
  * @author Lauretta Schubert
  * @date 25.05.2011
- * @since 1.0.0
  */
-
-#ifndef LAMA_ELLSTORAGE_HPP_
-#define LAMA_ELLSTORAGE_HPP_
 
 // for dll_import
 #include <common/config.hpp>
@@ -483,7 +479,4 @@ private:
 
 };
 
-}
-// namespace lama
-
-#endif // LAMA_ELLSTORAGE_HPP_
+}  // namespace lama

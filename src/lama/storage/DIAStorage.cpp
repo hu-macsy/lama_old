@@ -474,7 +474,7 @@ void DIAStorage<ValueType>::buildCSR(
     // TODO all done on host, so loc is unused
 
     LAMA_LOG_INFO( logger,
-                   "buildTypedCSRData<" << Scalar::getType<OtherValueType>() << ">" << " from DIA<" << Scalar::getType<ValueType>() << "> = " << *this << ", diagonal property = " << mDiagonalProperty )
+                   "buildTypedCSRData<" << common::getScalarType<OtherValueType>() << ">" << " from DIA<" << common::getScalarType<ValueType>() << "> = " << *this << ", diagonal property = " << mDiagonalProperty )
 
     ReadAccess<IndexType> diaOffsets( mOffset );
     ReadAccess<ValueType> diaValues( mValues );

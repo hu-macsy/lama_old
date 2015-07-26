@@ -36,6 +36,7 @@
 
 #include <lama/Scalar.hpp>
 #include <lama/Complex.hpp>
+#include <common/ScalarType.hpp>
 
 #include <test/TestMacros.hpp>
 
@@ -62,24 +63,16 @@ LAMA_LOG_DEF_LOGGER( logger, "Test.ScalarTest" )
 
 BOOST_AUTO_TEST_CASE( ScalarGetTypeTest )
 {
-    float value_s = 2.0;
-    Scalar s( value_s );
-    BOOST_CHECK_EQUAL( s.getType<float>(), scalar::FLOAT );
-    double value_t = 2.0;
-    Scalar t( value_t );
-    BOOST_CHECK_EQUAL( t.getType<double>(), scalar::DOUBLE );
-    LongDouble value_u = 2.0;
-    Scalar u( value_u );
-    BOOST_CHECK_EQUAL( u.getType<LongDouble>(), scalar::LONG_DOUBLE );
-    ComplexFloat value_c_v( 2.0, 1.0 );
-    Scalar v( value_c_v );
-    BOOST_CHECK_EQUAL( v.getType<ComplexFloat>(), scalar::COMPLEX );
-    ComplexDouble value_c_w( 2.0, 1.0 );
-    Scalar w( value_c_w );
-    BOOST_CHECK_EQUAL( w.getType<ComplexDouble>(), scalar::DOUBLE_COMPLEX );
-    ComplexLongDouble value_c_x( 2.0, 1.0 );
-    Scalar x( value_c_x );
-    BOOST_CHECK_EQUAL( x.getType<ComplexLongDouble>(), scalar::LONG_DOUBLE_COMPLEX );
+    // Challenge: some of these types were not defined in module common but later in lama
+
+    using namespace common;
+
+    BOOST_CHECK_EQUAL( getScalarType<float>(), scalar::FLOAT );
+    BOOST_CHECK_EQUAL( getScalarType<double>(), scalar::DOUBLE );
+    BOOST_CHECK_EQUAL( getScalarType<LongDouble>(), scalar::LONG_DOUBLE );
+    BOOST_CHECK_EQUAL( getScalarType<ComplexFloat>(), scalar::COMPLEX );
+    BOOST_CHECK_EQUAL( getScalarType<ComplexDouble>(), scalar::DOUBLE_COMPLEX );
+    BOOST_CHECK_EQUAL( getScalarType<ComplexLongDouble>(), scalar::LONG_DOUBLE_COMPLEX );
 }
 
 /* --------------------------------------------------------------------- */

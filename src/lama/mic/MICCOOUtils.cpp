@@ -121,7 +121,7 @@ void MICCOOUtils::getCSRValues(
     const COOValueType cooValues[] )
 {
     LAMA_LOG_ERROR( logger,
-                    "get CSRValues<" << Scalar::getType<COOValueType>() << ", " << Scalar::getType<CSRValueType>() << ">" << ", #rows = " << numRows << ", #values = " << numValues )
+                    "get CSRValues<" << common::getScalarType<COOValueType>() << ", " << common::getScalarType<CSRValueType>() << ">" << ", #rows = " << numRows << ", #values = " << numValues )
 
     void* csrJAPtr = csrJA;
     void* csrValuesPtr = csrValues;
@@ -291,7 +291,7 @@ void MICCOOUtils::normalGEMV(
     LAMA_REGION( "MIC.COO.normalGEMV" )
 
     LAMA_LOG_INFO( logger,
-                   "normalGEMV<" << Scalar::getType<ValueType>() << ">, result[" << numRows << "] = " << alpha << " * A( coo, #vals = " << numValues << " ) * x + " << beta << " * y " )
+                   "normalGEMV<" << common::getScalarType<ValueType>() << ">, result[" << numRows << "] = " << alpha << " * A( coo, #vals = " << numValues << " ) * x + " << beta << " * y " )
 
     if( syncToken )
     {
@@ -356,7 +356,7 @@ void MICCOOUtils::jacobi(
     LAMA_REGION( "MIC.COO.jacobi" )
 
     LAMA_LOG_INFO( logger,
-                   "jacobi<" << Scalar::getType<ValueType>() << ">" << ", #rows = " << numRows << ", omega = " << omega )
+                   "jacobi<" << common::getScalarType<ValueType>() << ">" << ", #rows = " << numRows << ", omega = " << omega )
 
     if( syncToken )
     {

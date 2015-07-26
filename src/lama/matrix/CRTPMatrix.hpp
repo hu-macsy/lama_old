@@ -129,13 +129,13 @@ public:
         const DenseVector<ValueType>* denseY = dynamic_cast<const DenseVector<ValueType>*>( &y );
         DenseVector<ValueType>* denseResult = dynamic_cast<DenseVector<ValueType>*>( &result );
 
-        LAMA_ASSERT( denseX, x << ": must be DenseVector<" << Scalar::getType<ValueType>() << ">" )
+        LAMA_ASSERT( denseX, x << ": must be DenseVector<" << common::getScalarType<ValueType>() << ">" )
 
         // Note: in case of beta == 0, we might skip this test
 
-        LAMA_ASSERT( denseY, y << ": must be DenseVector<" << Scalar::getType<ValueType>() << ">" )
+        LAMA_ASSERT( denseY, y << ": must be DenseVector<" << common::getScalarType<ValueType>() << ">" )
 
-        LAMA_ASSERT( denseResult, result << ": must be DenseVector<" << Scalar::getType<ValueType>() << ">" )
+        LAMA_ASSERT( denseResult, result << ": must be DenseVector<" << common::getScalarType<ValueType>() << ">" )
 
         static_cast<const Derived*>( this )->matrixTimesVectorImpl( *denseResult, alpha.getValue<ValueType>(), *denseX,
                 beta.getValue<ValueType>(), *denseY );
@@ -176,13 +176,13 @@ public:
         const DenseVector<ValueType>* denseY = dynamic_cast<const DenseVector<ValueType>*>( &y );
         DenseVector<ValueType>* denseResult = dynamic_cast<DenseVector<ValueType>*>( &result );
 
-        LAMA_ASSERT( denseX, x << ": must be DenseVector<" << Scalar::getType<ValueType>() << ">" )
+        LAMA_ASSERT( denseX, x << ": must be DenseVector<" << common::getScalarType<ValueType>() << ">" )
 
         // Note: in case of beta == 0, we might skip this test
 
-        LAMA_ASSERT( denseY, y << ": must be DenseVector<" << Scalar::getType<ValueType>() << ">" )
+        LAMA_ASSERT( denseY, y << ": must be DenseVector<" << common::getScalarType<ValueType>() << ">" )
 
-        LAMA_ASSERT( denseResult, result << ": must be DenseVector<" << Scalar::getType<ValueType>() << ">" )
+        LAMA_ASSERT( denseResult, result << ": must be DenseVector<" << common::getScalarType<ValueType>() << ">" )
 
         static_cast<const Derived*>( this )->vectorTimesMatrixImpl( *denseResult, alpha.getValue<ValueType>(), *denseX,
                 beta.getValue<ValueType>(), *denseY );

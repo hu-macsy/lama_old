@@ -404,7 +404,7 @@ void OpenMPJDSUtils::getCSRValues(
     const JDSValueType jdsValues[] )
 {
     LAMA_LOG_INFO( logger,
-                   "get CSRValues<" << Scalar::getType<JDSValueType>() << ", " << Scalar::getType<CSRValueType>() << ">" << ", #rows = " << numRows << ", #values = " << csrIA[numRows] )
+                   "get CSRValues<" << common::getScalarType<JDSValueType>() << ", " << common::getScalarType<CSRValueType>() << ">" << ", #rows = " << numRows << ", #values = " << csrIA[numRows] )
 
     #pragma omp parallel
     {
@@ -447,7 +447,7 @@ void OpenMPJDSUtils::setCSRValues(
     const CSRValueType csrValues[] )
 {
     LAMA_LOG_INFO( logger,
-                   "set CSRValues<" << Scalar::getType<JDSValueType>() << ", " << Scalar::getType<CSRValueType>() << ">" << ", #rows = " << numRows << ", #values = " << csrIA[numRows] )
+                   "set CSRValues<" << common::getScalarType<JDSValueType>() << ", " << common::getScalarType<CSRValueType>() << ">" << ", #rows = " << numRows << ", #values = " << csrIA[numRows] )
 
     // parallelization possible as offset array csrIA is available
 
@@ -491,7 +491,7 @@ void OpenMPJDSUtils::normalGEMV(
     class SyncToken* /* syncToken */)
 {
     LAMA_LOG_INFO( logger,
-                   "normalGEMV<" << Scalar::getType<ValueType>() << ", #threads = " << omp_get_max_threads() << ">, result[" << numRows << "] = " << alpha << " * A( jds, ndlg = " << ndlg << " ) * x + " << beta << " * y " )
+                   "normalGEMV<" << common::getScalarType<ValueType>() << ", #threads = " << omp_get_max_threads() << ">, result[" << numRows << "] = " << alpha << " * A( jds, ndlg = " << ndlg << " ) * x + " << beta << " * y " )
 
     if( beta == 0.0 )
     {
@@ -593,7 +593,7 @@ void OpenMPJDSUtils::normalGEVM(
     class SyncToken* UNUSED( syncToken ) )
 {
     LAMA_LOG_INFO( logger,
-                   "normalGEVM<" << Scalar::getType<ValueType>() << ", #threads = " << omp_get_max_threads() << ">, result[" << numColumns << "] = " << alpha << " * A( jds, ndlg = " << ndlg << " ) * x + " << beta << " * y " )
+                   "normalGEVM<" << common::getScalarType<ValueType>() << ", #threads = " << omp_get_max_threads() << ">, result[" << numColumns << "] = " << alpha << " * A( jds, ndlg = " << ndlg << " ) * x + " << beta << " * y " )
 
     if( beta == 0.0 )
     {
@@ -703,7 +703,7 @@ void OpenMPJDSUtils::jacobi(
     class SyncToken* syncToken )
 {
     LAMA_LOG_INFO( logger,
-                   "jacobi<" << Scalar::getType<ValueType>() << ">" << ", #rows = " << numRows << ", omega = " << omega )
+                   "jacobi<" << common::getScalarType<ValueType>() << ">" << ", #rows = " << numRows << ", omega = " << omega )
 
     if( syncToken != NULL )
     {
@@ -766,7 +766,7 @@ void OpenMPJDSUtils::jacobiHalo(
     class SyncToken* syncToken )
 {
     LAMA_LOG_INFO( logger,
-                   "jacobiHalo<" << Scalar::getType<ValueType>() << ">" << ", #rows = " << numRows << ", omega = " << omega )
+                   "jacobiHalo<" << common::getScalarType<ValueType>() << ">" << ", #rows = " << numRows << ", omega = " << omega )
 
     if( syncToken != NULL )
     {

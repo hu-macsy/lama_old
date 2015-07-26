@@ -541,7 +541,7 @@ void SimpleAMG::logSetupDetails()
         // Vector
         if( i == 0 )
         {
-            sizeVector += 2 * Scalar::getTypeSize( getRuntime().mSetup->getGalerkin( 0 ).getValueType() )
+            sizeVector += 2 * common::getScalarTypeSize( getRuntime().mSetup->getGalerkin( 0 ).getValueType() )
                           * getRuntime().mSetup->getGalerkin( 0 ).getNumRows();
         }
         else
@@ -565,7 +565,7 @@ void SimpleAMG::logSetupDetails()
 
                 IndexType numValueInterpolationCSR = getRuntime().mSetup->getInterpolation( i ).getNumValues();
 
-                size_t interpolationSizeType = Scalar::getTypeSize(
+                size_t interpolationSizeType = common::getScalarTypeSize(
                                                    getRuntime().mSetup->getInterpolation( i ).getValueType() );
 
                 sizeInterpolationCSR += numValueInterpolationCSR * interpolationSizeType;
@@ -580,7 +580,7 @@ void SimpleAMG::logSetupDetails()
 
                 sizeRestrictionCSR += numIndexRestrictionCSR * sizeof(IndexType);
 
-                size_t restrictionSizeType = Scalar::getTypeSize(
+                size_t restrictionSizeType = common::getScalarTypeSize(
                                                  getRuntime().mSetup->getRestriction( i ).getValueType() );
 
                 IndexType numValueRestrictionCSR = getRuntime().mSetup->getRestriction( i ).getNumValues();
@@ -596,7 +596,7 @@ void SimpleAMG::logSetupDetails()
                                             + getRuntime().mSetup->getGalerkin( i ).getNumRows();
             sizeGalerkinCSR += numIndexGalerkinCSR * sizeof(IndexType);
 
-            size_t galerkinSizeType = Scalar::getTypeSize( getRuntime().mSetup->getGalerkin( i ).getValueType() );
+            size_t galerkinSizeType = common::getScalarTypeSize( getRuntime().mSetup->getGalerkin( i ).getValueType() );
 
             IndexType numValueGalerkinCSR = getRuntime().mSetup->getGalerkin( i ).getNumValues();
 
@@ -610,7 +610,7 @@ void SimpleAMG::logSetupDetails()
     int overhead = static_cast<int>( 100 * ( sizeInterpolation + sizeRestriction + sizeGalerkin )
                                      / ( sizeInterpolationCSR + sizeRestrictionCSR + sizeGalerkinCSR ) ) - 100;
 
-    size_t cgSolverValueTypeSize = Scalar::getTypeSize(
+    size_t cgSolverValueTypeSize = common::getScalarTypeSize(
                                        getRuntime().mSetup->getGalerkin( getRuntime().mSetup->getNumLevels() - 1 ).getValueType() );
 
     double sizeCGSolver = static_cast<double>( cgSolverValueTypeSize
