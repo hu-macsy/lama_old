@@ -28,15 +28,13 @@
  * @brief TestSparseMatrices.hpp
  * @author Jiri Kraus
  * @date 06.04.2011
- * @since 1.0.0
  */
 
-#ifndef LAMA_TEST_SPARSE_MATRICES_HPP_
-#define LAMA_TEST_SPARSE_MATRICES_HPP_
+#pragma once
 
 #include <memory>
 #include <lama/matrix/CSRSparseMatrix.hpp>
-#include <boost/scoped_array.hpp>
+#include <common/unique_ptr.hpp>
 
 using namespace lama;
 
@@ -362,7 +360,7 @@ CSRSparseMatrix<ValueType> TestSparseMatrices::n4m4IdentityMatrix()
 template<typename ValueType>
 CSRSparseMatrix<ValueType> TestSparseMatrices::nnIdentityMatrix( IndexType n )
 {
-    boost::scoped_array<ValueType> identityValues( new ValueType[n * n] );
+    common::unique_ptr<ValueType[]> identityValues( new ValueType[n * n] );
 
     for ( int i = 1; i <= n * n; ++i )
     {
@@ -677,4 +675,3 @@ CSRSparseMatrix<ValueType> TestSparseMatrices::n4m4Galerkin()
     return matrix;
 }
 
-#endif // LAMA_TEST_SPARSE_MATRICES_HPP_

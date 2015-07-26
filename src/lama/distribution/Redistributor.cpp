@@ -28,7 +28,6 @@
  * @brief Implementation of methods for Redistributor class.
  * @author Thomas Brandes
  * @date 08.10.2011
- * @since 1.0.0
  */
 
 // hpp
@@ -39,8 +38,9 @@
 
 #include <lama/exception/LAMAAssert.hpp>
 
-// boost
-#include <boost/scoped_array.hpp>
+#include <common/unique_ptr.hpp>
+
+using common::unique_ptr;
 
 namespace lama
 {
@@ -216,8 +216,8 @@ void Redistributor::buildVPlans( const IndexType haloSourceSizes[], const IndexT
 
     // calculate number of provided and required values by summing up the corresponding quantities
 
-    boost::scoped_array<IndexType> provideQuantities( new IndexType[numProvides] );
-    boost::scoped_array<IndexType> requiredQuantities( new IndexType[numRequired] );
+    unique_ptr<IndexType[]> provideQuantities( new IndexType[numProvides] );
+    unique_ptr<IndexType[]> requiredQuantities( new IndexType[numRequired] );
 
     // For building the new schedule we need the sizes, can be calculated by the offsets
 
@@ -253,8 +253,8 @@ void Redistributor::buildRowPlans(
 
     // calculate number of provided and required values by summing up the corresponding quantities
 
-    boost::scoped_array<IndexType> provideQuantities( new IndexType[numProvides] );
-    boost::scoped_array<IndexType> requiredQuantities( new IndexType[numRequired] );
+    unique_ptr<IndexType[]> provideQuantities( new IndexType[numProvides] );
+    unique_ptr<IndexType[]> requiredQuantities( new IndexType[numRequired] );
 
     // For building the new schedule we need the sizes, can be calculated by the offsets
 

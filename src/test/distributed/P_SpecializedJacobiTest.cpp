@@ -72,13 +72,13 @@ struct P_SpecializedJacobiTestConfig
     P_SpecializedJacobiTestConfig()
     {
         Timer* timerD = new Timer();
-        std::auto_ptr<Timer> autoTimerD( timerD );
+        common::unique_ptr<Timer> autoTimerD( timerD );
         Timer* timerF = new Timer();
-        std::auto_ptr<Timer> autoTimerF( timerF );
+        common::unique_ptr<Timer> autoTimerF( timerF );
         LoggerPtr loggerD(
             new CommonLogger( "<Jacobi>: ", lama::LogLevel::completeInformation,
                               lama::LoggerWriteBehaviour::toConsoleOnly,
-                              std::auto_ptr<Timer>( new Timer() ) ) );
+                              common::unique_ptr<Timer>( new Timer() ) ) );
         mJacobiDouble = new SpecializedJacobi( "SpecializedJacobiTest double solver", loggerD );
         mJacobiFloat = new SpecializedJacobi( "SpecializedJacobiTest float solver", loggerD );
         comm = Communicator::get( "MPI" );
@@ -120,7 +120,7 @@ void testSolveMethod( ContextPtr loc )
 //                        loggerName.str(),
 //                        LogLevel::solverInformation, //solverInformation, //noLogging,
 //                        LoggerWriteBehaviour::toConsoleOnly,
-//                        std::auto_ptr<Timer>( new Timer() ) ) );
+//                        common::unique_ptr<Timer>( new Timer() ) ) );
     SpecializedJacobi jacobiSolver( "SpecializedJacobiTest"/*, slogger */ );
     DenseVector<ValueType> solution( dist, 1.0 );
     DenseVector<ValueType> exactSolution( solution );

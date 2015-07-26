@@ -34,6 +34,7 @@
 
 // for dll_import
 #include <common/config.hpp>
+#include <common/unique_ptr.hpp>
 
 // base classes
 #include <lama/storage/CRTPMatrixStorage.hpp>
@@ -284,7 +285,7 @@ public:
 
     /** Implementation of MatrixStorage::matrixTimesVectorAsync for COO */
 
-    virtual std::auto_ptr<SyncToken> matrixTimesVectorAsyncToDo(
+    virtual common::unique_ptr<SyncToken> matrixTimesVectorAsyncToDo(
         LAMAArray<ValueType>& result,
         const ValueType alpha,
         const LAMAArray<ValueType>& x,

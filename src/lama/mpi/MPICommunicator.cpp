@@ -45,8 +45,9 @@
 #include <tracing/tracing.hpp>
 
 // boost
-#include <boost/scoped_array.hpp>
+#include <common/unique_ptr.hpp>
 #include <common/bind.hpp>
+#include <common/unique_ptr.hpp>
 #include <boost/preprocessor.hpp>
 
 #include <iostream>
@@ -56,6 +57,7 @@
 
 using namespace std;
 using common::shared_ptr;
+using common::unique_ptr;
 
 namespace lama
 {
@@ -483,7 +485,7 @@ void MPICommunicator::exchangeByPlanImpl(
     int noReceives = 0; // will be incremented
     ValueType* recvDataForMe = NULL;
     IndexType recvDataForMeSize = 0;
-    boost::scoped_array<MPI_Request> commRequest( new MPI_Request[maxReceives] );
+    unique_ptr<MPI_Request[]> commRequest( new MPI_Request[maxReceives] );
 
     // setup receives for each entry in receive plan
 
@@ -536,7 +538,7 @@ void MPICommunicator::exchangeByPlanImpl(
     }
 
     // wait for completion of receives
-    boost::scoped_array<MPI_Status> statuses( new MPI_Status[noReceives] );
+    unique_ptr<MPI_Status[]> statuses( new MPI_Status[noReceives] );
     LAMA_MPICALL( logger, MPI_Waitall( noReceives, commRequest.get(), statuses.get() ), "MPI_Waitall" )
     // ToDo: check for correct sizes, was done in earlier version, but is now redundant
 }
@@ -710,7 +712,7 @@ SyncToken* MPICommunicator::shiftAsyncImpl(
 
     // need an MPI communicator with 2 requests, no clean up needed
 
-    auto_ptr<MPISyncToken> pSyncToken( new MPISyncToken( 2 ) );
+    unique_ptr<MPISyncToken> pSyncToken( new MPISyncToken( 2 ) );
 
     pSyncToken->pushRequest( startrecv( recvVals, size, source ) );
     pSyncToken->pushRequest( startsend( sendVals, size, dest ) );
@@ -821,8 +823,8 @@ void MPICommunicator::scatterVImpl(
     {
         void* sendbuf = const_cast<ValueType*>( allvals );
         PartitionId np = getSize();
-        boost::scoped_array<int> counts( new int[np] );
-        boost::scoped_array<int> displs( new int[np] );
+        unique_ptr<int[]> counts( new int[np] );
+        unique_ptr<int[]> displs( new int[np] );
         int displacement = 0;
 
         for( PartitionId i = 0; i < np; i++ )
@@ -844,7 +846,7 @@ void MPICommunicator::scatterVImpl(
         // VampirTrace: requires valid counts array, even if values will be ignored
 
         PartitionId np = getSize();
-        boost::scoped_array<int> counts( new int[np] );
+        unique_ptr<int[]> counts( new int[np] );
 
         for( PartitionId i = 0; i < np; i++ )
         {
@@ -901,8 +903,8 @@ void MPICommunicator::gatherVImpl(
     if( root == getRank() )
     {
         PartitionId np = getSize();
-        boost::scoped_array<int> counts( new int[np] );
-        boost::scoped_array<int> displs( new int[np] );
+        unique_ptr<int[]> counts( new int[np] );
+        unique_ptr<int[]> displs( new int[np] );
         int displacement = 0;
 
         for( PartitionId i = 0; i < np; i++ )
@@ -924,7 +926,7 @@ void MPICommunicator::gatherVImpl(
         // VampirTrace: requires valid counts array, even if values will be ignored
 
         PartitionId np = getSize();
-        boost::scoped_array<int> counts( new int[np] );
+        unique_ptr<int[]> counts( new int[np] );
 
         for( PartitionId i = 0; i < np; i++ )
         {
@@ -980,7 +982,7 @@ void MPICommunicator::swapImpl( ValueType val[], const IndexType n, PartitionId 
         return;
     }
 
-    boost::scoped_array<ValueType> tmp( new ValueType[n] );
+    unique_ptr<ValueType[]> tmp( new ValueType[n] );
 
     for( IndexType i = 0; i < n; i++ )
     {

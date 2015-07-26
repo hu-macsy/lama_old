@@ -1450,7 +1450,7 @@ void SparseMatrix<ValueType>::haloOperationAsync(
         mTempSendValues.prefetch( comm.getCommunicationContext( mTempSendValues ) );
     }
 
-    std::auto_ptr<SyncToken> localComputation;
+    common::unique_ptr<SyncToken> localComputation;
 
     {
         LAMA_REGION( "Mat.Sp.asyncLocal" )
@@ -1596,7 +1596,7 @@ void SparseMatrix<ValueType>::vectorHaloOperationAsync(
         }
     }
 
-    std::auto_ptr<SyncToken> localComputation;
+    common::unique_ptr<SyncToken> localComputation;
 
     // calc local vector parts
     {
@@ -2264,7 +2264,7 @@ SparseMatrix<ValueType>* SparseMatrix<ValueType>::clone() const
 
     // use auto pointer for new sparse matrix to get data freed in case of Exception
 
-    std::auto_ptr<SparseMatrix<ValueType> > newSparseMatrix( new SparseMatrix<ValueType>( newLocalData ) );
+    common::unique_ptr<SparseMatrix<ValueType> > newSparseMatrix( new SparseMatrix<ValueType>( newLocalData ) );
 
     // inherit the context for local and halo storage
 

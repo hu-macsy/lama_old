@@ -102,14 +102,14 @@ public:
         ::memcpy( target, source, size );
     }
 
-    static std::auto_ptr<SyncToken> theMemcpyAsync( void* dst, const void* src, const size_t size )
+    static common::unique_ptr<SyncToken> theMemcpyAsync( void* dst, const void* src, const size_t size )
     {
-        return std::auto_ptr < SyncToken > ( new TaskSyncToken( boost::bind( &::memcpy, dst, src, size ) ) );
+        return common::unique_ptr < SyncToken > ( new TaskSyncToken( boost::bind( &::memcpy, dst, src, size ) ) );
     }
 
-    virtual std::auto_ptr<SyncToken> memcpyAsync( void* dst, const void* src, const size_t size ) const
+    virtual common::unique_ptr<SyncToken> memcpyAsync( void* dst, const void* src, const size_t size ) const
     {
-        return std::auto_ptr < SyncToken > ( new TaskSyncToken( boost::bind( &::memcpy, dst, src, size ) ) );
+        return common::unique_ptr < SyncToken > ( new TaskSyncToken( boost::bind( &::memcpy, dst, src, size ) ) );
     }
 
     virtual bool cancpy( const ContextData& dst, const ContextData& src ) const
@@ -126,15 +126,15 @@ public:
         memcpy( dst.pointer, src.pointer, size );
     }
 
-    virtual std::auto_ptr<SyncToken> memcpyAsync( ContextData& dst, const ContextData& src, const size_t size ) const
+    virtual common::unique_ptr<SyncToken> memcpyAsync( ContextData& dst, const ContextData& src, const size_t size ) const
     {
         LAMA_ASSERT_ERROR( cancpy( dst, src ), "Can not copy from " << * ( src.context ) << " to " << * ( dst.context ) );
         return memcpyAsync( dst.pointer, src.pointer, size );
     }
 
-    virtual std::auto_ptr<SyncToken> getSyncToken() const
+    virtual common::unique_ptr<SyncToken> getSyncToken() const
     {
-        return std::auto_ptr < SyncToken > ( new TaskSyncToken() );
+        return common::unique_ptr < SyncToken > ( new TaskSyncToken() );
     }
 
 private:

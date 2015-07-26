@@ -65,7 +65,7 @@ AMGSetupFactory& AMGSetupFactory::getFactory()
 {
     // construct on first use idiom
 
-    static std::auto_ptr<AMGSetupFactory> theAMGSetupFactory;
+    static common::unique_ptr<AMGSetupFactory> theAMGSetupFactory;
 
     // Note: using the auto_ptr guarantees that the instance will be freed at end of the program
 
@@ -73,7 +73,7 @@ AMGSetupFactory& AMGSetupFactory::getFactory()
     {
         // printf("create the AMGSetup factory instance\n");
 
-        theAMGSetupFactory = std::auto_ptr<AMGSetupFactory>( new AMGSetupFactory() );
+        theAMGSetupFactory = common::unique_ptr<AMGSetupFactory>( new AMGSetupFactory() );
     }
 
     // printf("get the factory\n");

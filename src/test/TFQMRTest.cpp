@@ -43,7 +43,7 @@ BOOST_AUTO_TEST_CASE( CtorTest )
 {
     LoggerPtr slogger(
         new CommonLogger( "<TFQMR>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly,
-                          std::auto_ptr<Timer>( new Timer() ) ) );
+                          common::unique_ptr<Timer>( new Timer() ) ) );
 
     TFQMR TFQMRSolver( "TFQMRTestSolver", slogger );
     BOOST_CHECK_EQUAL( TFQMRSolver.getId(), "TFQMRTestSolver" );
@@ -100,7 +100,7 @@ void testSolveWithPreconditionmethod( ContextPtr context )
 
     LoggerPtr slogger(
         new CommonLogger( "<TFQMR>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly,
-                          std::auto_ptr<Timer>( new Timer() ) ) );
+                          common::unique_ptr<Timer>( new Timer() ) ) );
 
     TFQMR TFQMRSolver( "TFQMRTestSolver", slogger );
 
@@ -168,7 +168,7 @@ void testSolveWithoutPreconditionmethod( ContextPtr context )
 
         LoggerPtr slogger(
         new CommonLogger( "<TFQMR>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly,
-                          std::auto_ptr<Timer>( new Timer() ) ) );
+                          common::unique_ptr<Timer>( new Timer() ) ) );
 
     TFQMR TFQMRSolver( "TFQMRTestSolver", slogger );
 

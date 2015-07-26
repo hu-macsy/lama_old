@@ -70,13 +70,13 @@ struct SpecializedJacobiTestConfig
     SpecializedJacobiTestConfig()
     {
         Timer* timerD = new Timer();
-        std::auto_ptr<Timer> autoTimerD( timerD );
+        common::unique_ptr<Timer> autoTimerD( timerD );
         Timer* timerF = new Timer();
-        std::auto_ptr<Timer> autoTimerF( timerF );
+        common::unique_ptr<Timer> autoTimerF( timerF );
         LoggerPtr loggerD(
             new CommonLogger( "<Jacobi>: ", lama::LogLevel::completeInformation,
                               lama::LoggerWriteBehaviour::toConsoleOnly,
-                              std::auto_ptr<Timer>( new Timer() ) ) );
+                              common::unique_ptr<Timer>( new Timer() ) ) );
         mJacobiDouble = new SpecializedJacobi( "SpecializedJacobiTest double solver", loggerD );
         mJacobiFloat = new SpecializedJacobi( "SpecializedJacobiTest float solver", loggerD );
     }
@@ -109,7 +109,7 @@ BOOST_AUTO_TEST_CASE( CtorTest )
 {
     LoggerPtr slogger(
         new CommonLogger( "<SJ>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly,
-                          std::auto_ptr<Timer>( new Timer() ) ) );
+                          common::unique_ptr<Timer>( new Timer() ) ) );
     SpecializedJacobi sjSolver( "SJTestSolver", slogger );
     BOOST_CHECK_EQUAL( sjSolver.getId(), "SJTestSolver" );
     SpecializedJacobi sjSolver2( "SJTestSolver2" );
@@ -168,7 +168,7 @@ void testSolveMethod( std::string solverId, ContextPtr context )
     std::string id = solverId;
     LoggerPtr slogger(
         new CommonLogger( solverId, LogLevel::solverInformation, LoggerWriteBehaviour::toConsoleOnly,
-                          std::auto_ptr<Timer>( new Timer() ) ) );
+                          common::unique_ptr<Timer>( new Timer() ) ) );
     SpecializedJacobi jacobiSolver( "JacobiTest"/*, slogger*/ );
     EquationHelper::EquationSystem<ValueType> system = EquationHelper::get3x3SystemA<ValueType>();
     CSRSparseMatrix<ValueType> matrix( system.coefficients );

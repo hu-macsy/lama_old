@@ -36,6 +36,7 @@
 
 // for dll_import
 #include <common/config.hpp>
+#include <common/unique_ptr.hpp>
 
 // others
 #include <lama/Vector.hpp>
@@ -129,7 +130,7 @@ public:
      */
     Vector& getReference();
 
-    std::auto_ptr<Vector> create();
+    common::unique_ptr<Vector> create();
 
     void swap( Vector*& other );
 

@@ -238,7 +238,7 @@ public:
         /**
          * @brief The residual.
          */
-        mutable std::auto_ptr<Vector> mResidual;
+        mutable common::shared_ptr<Vector> mResidual;
 
         /**
          * @brief Flag for initialization status of solver.

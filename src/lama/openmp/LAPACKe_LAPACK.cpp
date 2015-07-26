@@ -40,11 +40,13 @@
 #include <lama/BLASInterface.hpp>
 #include <lama/LAMAInterfaceRegistry.hpp>
 #include <lama/openmp/BLASHelper.hpp>
-#include <boost/scoped_array.hpp>
+#include <common/unique_ptr.hpp>
 
 #include <mkl_lapacke.h>
 
 #include <boost/preprocessor.hpp>
+
+using common::unique_ptr;
 
 namespace lama
 {
@@ -240,9 +242,9 @@ void LAPACKe_LAPACK::getinv( const IndexType n, float* a, const IndexType lda )
 {
     int info = 0;
 
-    // scoped array, will also be freed in case of exception
+    // unique_ptr, will also be freed in case of exception
 
-    boost::scoped_array<IndexType> ipiv( new IndexType[n] );
+    unique_ptr<IndexType[]> ipiv( new IndexType[n] );
 
     LAMA_LOG_INFO( logger, "getinv<float> for " << n << " x " << n << " matrix, uses MKL" )
 
@@ -272,7 +274,7 @@ void LAPACKe_LAPACK::getinv( const IndexType n, double* a, const IndexType lda )
 {
     int info = 0;
 
-    boost::scoped_array<IndexType> ipiv( new IndexType[n] );
+    unique_ptr<IndexType[]> ipiv( new IndexType[n] );
 
     LAMA_LOG_INFO( logger, "getinv<double> for " << n << " x " << n << " matrix, uses MKL" )
 
@@ -304,9 +306,9 @@ void LAPACKe_LAPACK::getinv( const IndexType n, ComplexFloat* a, const IndexType
 {
     int info = 0;
 
-    // scoped array, will also be freed in case of exception
+    // unique_ptr: delete by destructor, works also for exceptions
 
-    boost::scoped_array<IndexType> ipiv( new IndexType[n] );
+    unique_ptr<IndexType[]> ipiv( new IndexType[n] );
 
     LAMA_LOG_INFO( logger, "getinv<ComplexFloat> for " << n << " x " << n << " matrix, uses MKL" )
 
@@ -347,9 +349,7 @@ void LAPACKe_LAPACK::getinv( const IndexType n, ComplexDouble* a, const IndexTyp
 {
     int info = 0;
 
-    // scoped array, will also be freed in case of exception
-
-    boost::scoped_array<IndexType> ipiv( new IndexType[n] );
+    unique_ptr<IndexType[]> ipiv( new IndexType[n] );
 
     LAMA_LOG_INFO( logger, "getinv<ComplexDouble> for " << n << " x " << n << " matrix, uses MKL" )
 

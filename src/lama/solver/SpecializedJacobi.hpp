@@ -73,9 +73,9 @@ public:
         virtual ~SpecializedJacobiRuntime();
 
         //TODO: LAMAArray?
-        std::auto_ptr<Vector> mOldSolution;
+        common::shared_ptr<Vector> mOldSolution;
         SolutionProxy mProxyOldSolution;
-        std::auto_ptr<ContextArray> mDiagonal;
+        common::shared_ptr<ContextArray> mDiagonal;
     };
 
     /**

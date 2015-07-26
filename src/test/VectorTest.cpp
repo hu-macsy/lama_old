@@ -33,7 +33,6 @@
 
 #include <boost/test/unit_test.hpp>
 #include <boost/mpl/list.hpp>
-#include <boost/scoped_array.hpp>
 
 #include <lama/DenseVector.hpp>
 #include <lama/Scalar.hpp>

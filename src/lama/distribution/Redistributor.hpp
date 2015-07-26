@@ -39,6 +39,7 @@
 
 // base classes
 #include <common/Printable.hpp>
+#include <common/unique_ptr.hpp>
 
 // others
 #include <lama/distribution/Distribution.hpp>
@@ -370,8 +371,8 @@ private:
 
     Halo mHalo; // Halo structure for exchanging non-local values
 
-    mutable std::auto_ptr<CommunicationPlan> mProvidesPlan;
-    mutable std::auto_ptr<CommunicationPlan> mRequiredPlan;
+    mutable common::unique_ptr<CommunicationPlan> mProvidesPlan;
+    mutable common::unique_ptr<CommunicationPlan> mRequiredPlan;
 
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 };

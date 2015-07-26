@@ -34,8 +34,8 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/mpl/list.hpp>
 
-#include <boost/scoped_array.hpp>
 #include <common/shared_ptr.hpp>
+#include <common/unique_ptr.hpp>
 
 #include <lama/matrix/DenseMatrix.hpp>
 
@@ -54,7 +54,6 @@
 
 using namespace common;
 using namespace lama;
-using boost::scoped_array;
 
 typedef boost::mpl::list<double, float> test_types;
 
@@ -86,7 +85,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( buildTest, ValueType, test_types )
     PartitionId size = comm->getSize();
     int numRows = 3 * size;
     int numCols = 5 * size;
-    scoped_array<ValueType> values( new ValueType[ numRows * numCols ] );
+    unique_ptr<ValueType[]> values( new ValueType[ numRows * numCols ] );
 
     for ( IndexType i = 0; i < numRows; ++i )
     {
@@ -129,7 +128,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( buildTest, ValueType, test_types )
 
 void cyclicMultVectorTest( const IndexType chunkSize, const IndexType n )
 {
-    boost::scoped_array<float> values( new float[n * n] );
+    unique_ptr<float[]> values( new float[n * n] );
 
     for ( IndexType i = 0; i < n; ++i )
     {
@@ -231,9 +230,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( multVectorTest, ValueType, test_types )
     int numRows = 20;
     int numCols = 31;
     // definition of raw data for setup and comparison
-    scoped_array<ValueType> valuesA( new ValueType[numRows * numCols] );
-    scoped_array<ValueType> valuesX( new ValueType[numCols] );
-    scoped_array<ValueType> valuesY( new ValueType[numRows] );
+    unique_ptr<ValueType[]> valuesA( new ValueType[numRows * numCols] );
+    unique_ptr<ValueType[]> valuesX( new ValueType[numCols] );
+    unique_ptr<ValueType[]> valuesY( new ValueType[numRows] );
 
     // intialise data for the matrix
 
@@ -341,7 +340,7 @@ BOOST_AUTO_TEST_CASE( buildSquareTest )
     PartitionId size = comm->getSize();
     int numRows = 3 * size;
     int numCols = 3 * size;
-    scoped_array<double> values( new double[numRows * numCols] );
+    unique_ptr<double[]> values( new double[numRows * numCols] );
 
     for ( IndexType i = 0; i < numRows; ++i )
     {
@@ -399,7 +398,7 @@ BOOST_AUTO_TEST_CASE( buildSquareTest )
 
 void cyclicDistTestImpl( const IndexType chunkSize, const IndexType n )
 {
-    boost::scoped_array<float> values( new float[n * n] );
+    unique_ptr<float[]> values( new float[n * n] );
 
     for ( IndexType i = 0; i < n; ++i )
     {

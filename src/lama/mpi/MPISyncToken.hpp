@@ -28,10 +28,8 @@
  * @brief MPISyncToken.hpp
  * @author Thomas Brandes, Jiri Kraus
  * @date 23.03.2011
- * @since 1.0.0
  */
-#ifndef LAMA_MPI_SYNC_TOKEN_HPP_
-#define LAMA_MPI_SYNC_TOKEN_HPP_
+#pragma once
 
 #include <mpi.h>
 
@@ -44,8 +42,7 @@
 // others
 #include <lama/LAMATypes.hpp>
 
-// boost
-#include <boost/scoped_array.hpp>
+#include <common/unique_ptr.hpp>
 
 namespace lama
 {
@@ -88,10 +85,8 @@ private:
     PartitionId mNRequests; // allocated size
     PartitionId mUsedRequests; // used size
 
-    boost::scoped_array<MPI_Request> mRequests;
-    boost::scoped_array<MPI_Status> mStatuses;
+    common::unique_ptr<MPI_Request[]> mRequests;
+    common::unique_ptr<MPI_Status[]> mStatuses;
 };
 
-}
-
-#endif // LAMA_MPI_SYNC_TOKEN_HPP_
+}  // namespace

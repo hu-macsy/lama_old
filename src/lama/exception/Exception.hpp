@@ -62,13 +62,6 @@ public:
     };
 
     /**
-     *  @brief Method that prints the current call stack in an output stream.
-     *
-     *  Very useful utility for identification of bugs, only supported for GNU compiler.
-     */
-    static void addCallStack( std::ostringstream& output );
-
-    /**
      * @brief The default constructor creates an Exception with no message.
      */
     Exception1();
@@ -102,8 +95,6 @@ protected:
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
 private    :
-
-    static std::string demangle( const char* string );
 
     static UnsupportedType unsupportedSetting;
 };

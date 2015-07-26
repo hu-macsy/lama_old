@@ -50,7 +50,7 @@
 #include <boost/preprocessor.hpp>
 #include <common/bind.hpp>
 
-using std::auto_ptr;
+using common::unique_ptr;
 using common::shared_ptr;
 
 namespace lama
@@ -890,7 +890,7 @@ void COOStorage<ValueType>::vectorTimesMatrix(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-auto_ptr<SyncToken> COOStorage<ValueType>::matrixTimesVectorAsyncToDo(
+unique_ptr<SyncToken> COOStorage<ValueType>::matrixTimesVectorAsyncToDo(
     LAMAArray<ValueType>& result,
     const ValueType alpha,
     const LAMAArray<ValueType>& x,
@@ -911,7 +911,7 @@ auto_ptr<SyncToken> COOStorage<ValueType>::matrixTimesVectorAsyncToDo(
 
     LAMA_INTERFACE_FN_T( normalGEMV, loc, COOUtils, Mult, ValueType )
 
-    auto_ptr<SyncToken> syncToken( loc->getSyncToken() );
+    unique_ptr<SyncToken> syncToken( loc->getSyncToken() );
 
     // all accesses will be pushed to the sync token as LAMA arrays have to be protected up
     // to the end of the computations.
@@ -1013,7 +1013,7 @@ SyncToken* COOStorage<ValueType>::vectorTimesMatrixAsync(
 
     LAMA_INTERFACE_FN_T( normalGEVM, loc, COOUtils, Mult, ValueType )
 
-    auto_ptr<SyncToken> syncToken( loc->getSyncToken() );
+    unique_ptr<SyncToken> syncToken( loc->getSyncToken() );
 
     // all accesses will be pushed to the sync token as LAMA arrays have to be protected up
     // to the end of the computations.

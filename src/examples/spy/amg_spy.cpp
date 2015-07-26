@@ -82,7 +82,7 @@ int main( int argc, char** argv )
 
     LoggerPtr amgLogger( new CommonLogger ( loggerName, lama::LogLevel::completeInformation,
                    LoggerWriteBehaviour::toConsoleOnly,
-                   std::auto_ptr<Timer>( new Timer() ) ) );
+                   common::unique_ptr<Timer>( new Timer() ) ) );
 
     common::shared_ptr<SimpleAMG> amgSolver( new SimpleAMG( "SimpleAMG solver", amgLogger ) );
 

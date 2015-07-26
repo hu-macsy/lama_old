@@ -52,7 +52,7 @@ Solver::Solver( const std::string& id )
     : mId( id ), mLogger(
           new CommonLogger( "dummyLog", lama::LogLevel::noLogging,
                             lama::LoggerWriteBehaviour::toConsoleOnly,
-                            std::auto_ptr<Timer>( new Timer() ) ) )
+                            common::shared_ptr<Timer>( new Timer() ) ) )
 {
     LAMA_LOG_INFO( Solver::logger, "Solver id = " << mId << " created, dummy log" )
 }

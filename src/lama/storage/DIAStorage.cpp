@@ -49,9 +49,11 @@
 // tracing
 #include <tracing/tracing.hpp>
 
-// boost
-#include <boost/scoped_array.hpp>
+// common
 #include <common/bind.hpp>
+#include <common/unique_ptr.hpp>
+
+using common::unique_ptr;
 
 namespace lama
 {
@@ -532,8 +534,8 @@ void DIAStorage<ValueType>::setCSRDataImpl(
 
     IndexType maxNumDiagonals = std::max( mNumRows, mNumColumns );
 
-    boost::scoped_array<bool> upperDiagonalUsed( new bool[maxNumDiagonals] );
-    boost::scoped_array<bool> lowerDiagonalUsed( new bool[maxNumDiagonals] );
+    unique_ptr<bool[]> upperDiagonalUsed( new bool[maxNumDiagonals] );
+    unique_ptr<bool[]> lowerDiagonalUsed( new bool[maxNumDiagonals] );
 
     for( IndexType i = 0; i < maxNumDiagonals; i++ )
     {
@@ -1028,7 +1030,7 @@ SyncToken* DIAStorage<ValueType>::matrixTimesVectorAsync(
     LAMA_ASSERT_EQUAL_ERROR( x.size(), mNumColumns )
     LAMA_ASSERT_EQUAL_ERROR( y.size(), mNumRows )
 
-    std::auto_ptr<SyncToken> syncToken( loc->getSyncToken() );
+    common::unique_ptr<SyncToken> syncToken( loc->getSyncToken() );
 
     // all accesses will be pushed to the sync token as LAMA arrays have to be protected up
     // to the end of the computations.
@@ -1134,7 +1136,7 @@ SyncToken* DIAStorage<ValueType>::vectorTimesMatrixAsync(
 
     LAMA_INTERFACE_FN_T( normalGEVM, loc, DIAUtils, Mult, ValueType )
 
-    std::auto_ptr<SyncToken> syncToken( loc->getSyncToken() );
+    common::unique_ptr<SyncToken> syncToken( loc->getSyncToken() );
 
     // all accesses will be pushed to the sync token as LAMA arrays have to be protected up
     // to the end of the computations.

@@ -76,7 +76,7 @@ BOOST_AUTO_TEST_CASE( CtorTest )
 {
     LoggerPtr slogger(
         new CommonLogger( "<BiCGstab>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly,
-                          std::auto_ptr<Timer>( new Timer() ) ) );
+                          common::unique_ptr<Timer>( new Timer() ) ) );
 
     BiCGstab BiCGstabSolver( "BiCGstabTestSolver", slogger );
     BOOST_CHECK_EQUAL( BiCGstabSolver.getId(), "BiCGstabTestSolver" );
@@ -133,7 +133,7 @@ void testSolveWithPreconditionmethod( ContextPtr context )
 
     LoggerPtr slogger(
         new CommonLogger( "<BiCGstab>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly,
-                          std::auto_ptr<Timer>( new Timer() ) ) );
+                          common::unique_ptr<Timer>( new Timer() ) ) );
 
     BiCGstab BiCGstabSolver( "BiCGstabTestSolver", slogger );
 
@@ -201,7 +201,7 @@ void testSolveWithoutPreconditionmethod( ContextPtr context )
 
         LoggerPtr slogger(
         new CommonLogger( "<BiCGstab>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly,
-                          std::auto_ptr<Timer>( new Timer() ) ) );
+                          common::unique_ptr<Timer>( new Timer() ) ) );
 
     BiCGstab BiCGstabSolver( "BiCGstabTestSolver", slogger );
 

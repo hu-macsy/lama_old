@@ -47,13 +47,13 @@
 #include <tracing/tracing.hpp>
 
 // boost
-#include <boost/scoped_array.hpp>
+#include <common/unique_ptr.hpp>
 #include <boost/preprocessor.hpp>
+
+using common::unique_ptr;
 
 namespace lama
 {
-
-using boost::scoped_array;
 
 #define VERSION_ID 22
 
@@ -173,7 +173,7 @@ static void writeBinaryData( std::fstream& outFile, const DataType data[], const
 
     // allocate buffer for type conversion and/or adding offset
 
-    scoped_array<FileType> buffer( new FileType[n] );
+    unique_ptr<FileType[]> buffer( new FileType[n] );
 
     for( IndexType i = 0; i < n; i++ )
     {

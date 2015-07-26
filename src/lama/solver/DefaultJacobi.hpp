@@ -94,10 +94,10 @@ public:
         DefaultJacobiRuntime();
         virtual ~DefaultJacobiRuntime();
 
-        std::auto_ptr<Matrix> mDiagonalTimesLU;
-        std::auto_ptr<Matrix> mDiagonalInverted;
-        std::auto_ptr<Vector> mDiagonalTimesRhs;
-        std::auto_ptr<Vector> mOldSolution;
+        common::shared_ptr<Matrix> mDiagonalTimesLU;
+        common::shared_ptr<Matrix> mDiagonalInverted;
+        common::shared_ptr<Vector> mDiagonalTimesRhs;
+        common::shared_ptr<Vector> mOldSolution;
         SolutionProxy mProxyOldSolution;
     };
 

@@ -46,11 +46,12 @@
 // boost
 #include <boost/preprocessor.hpp>
 #include <common/bind.hpp>
+#include <common/unique_ptr.hpp>
 
 namespace lama
 {
 
-using std::auto_ptr;
+using common::unique_ptr;
 using common::shared_ptr;
 using namespace tasking;
 
@@ -1172,7 +1173,7 @@ SyncToken* ELLStorage<ValueType>::matrixTimesVectorAsync(
     LAMA_INTERFACE_FN_T( sparseGEMV, loc, ELLUtils, Mult, ValueType )
     LAMA_INTERFACE_FN_T( normalGEMV, loc, ELLUtils, Mult, ValueType )
 
-    std::auto_ptr<SyncToken> syncToken( loc->getSyncToken() );
+    common::unique_ptr<SyncToken> syncToken( loc->getSyncToken() );
 
     // all accesses will be pushed to the sync token as LAMA arrays have to be protected up
     // to the end of the computations.
@@ -1294,7 +1295,7 @@ SyncToken* ELLStorage<ValueType>::vectorTimesMatrixAsync(
     LAMA_INTERFACE_FN_T( sparseGEVM, loc, ELLUtils, Mult, ValueType )
     LAMA_INTERFACE_FN_T( normalGEVM, loc, ELLUtils, Mult, ValueType )
 
-    auto_ptr<SyncToken> syncToken( loc->getSyncToken() );
+    unique_ptr<SyncToken> syncToken( loc->getSyncToken() );
 
     // all accesses will be pushed to the sync token as LAMA arrays have to be protected up
     // to the end of the computations.
@@ -1455,7 +1456,7 @@ SyncToken* ELLStorage<ValueType>::jacobiIterateAsync(
 
     LAMA_INTERFACE_FN_T( jacobi, loc, ELLUtils, Solver, ValueType )
 
-    std::auto_ptr<SyncToken> syncToken( loc->getSyncToken() );
+    common::unique_ptr<SyncToken> syncToken( loc->getSyncToken() );
 
     // make all needed data available at loc
 

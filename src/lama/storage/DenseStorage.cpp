@@ -42,9 +42,6 @@
 #include <lama/openmp/OpenMPCSRUtils.hpp>
 #include <lama/openmp/OpenMPUtils.hpp>
 
-// boost
-#include <boost/scoped_array.hpp>
-
 namespace lama
 {
 

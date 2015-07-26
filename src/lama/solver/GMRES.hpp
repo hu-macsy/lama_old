@@ -40,7 +40,7 @@
 #include <lama/solver/IterativeSolver.hpp>
 
 // boost
-#include <boost/scoped_array.hpp>
+#include <common/unique_ptr.hpp>
 
 namespace lama
 {
@@ -93,19 +93,19 @@ public:
         virtual ~GMRESRuntime();
 
         // arrays to store rotations
-        boost::scoped_array<double> mCC;
-        boost::scoped_array<double> mSS;
+        common::unique_ptr<double[]> mCC;
+        common::unique_ptr<double[]> mSS;
 
         // array for Hessenberg equation
         // H*y=g
-        boost::scoped_array<double> mG;
-        boost::scoped_array<double> mY;
+        common::unique_ptr<double[]> mG;
+        common::unique_ptr<double[]> mY;
 
         // Hessenberg matrix
         // mH:  Upper triangular (columnwise)
         // mHd: diagonal band h(i+1,i)
-        boost::scoped_array<double> mH;
-        boost::scoped_array<double> mHd;
+        common::unique_ptr<double[]> mH;
+        common::unique_ptr<double[]> mHd;
 
         // krylov space
         std::vector<Vector*> *mV;

@@ -43,12 +43,13 @@
 #include <lama/distribution/GeneralDistribution.hpp>
 #include <lama/distribution/BlockDistribution.hpp>
 
-#include <boost/scoped_array.hpp>
+#include <common/unique_ptr.hpp>
 
 using namespace lama;
 using namespace memory;
 using namespace tasking;
 using common::Exception;
+using common::unique_ptr;
 
 LAMA_LOG_DEF_LOGGER( logger, "Test.CommunicatorTest" )
 
@@ -403,7 +404,7 @@ LAMA_COMMON_TEST_CASE_TM( CommunicatorTest, ValueType, shiftASyncTest )
         sbuffer[ 1 ] = static_cast<ValueType>( comm->getNeighbor( 1 ) );
     }
     // if we do not keep the token, it will be synchronized immeadiately
-    std::auto_ptr<SyncToken> token1( comm->shiftAsync( recvBuffer, sendBuffer, 1 ) );
+    unique_ptr<SyncToken> token1( comm->shiftAsync( recvBuffer, sendBuffer, 1 ) );
     LAMA_LOG_INFO( logger, "token for shiftAsync before wait : " << *token1 );
     token1->wait();
     LAMA_LOG_INFO( logger, "token for shiftAsync after wait : " << *token1 );
@@ -428,7 +429,7 @@ LAMA_COMMON_TEST_CASE_TM( CommunicatorTest, ValueType, shiftASyncTest )
     // We also verify that the exception is thrown before changing the send Buffer
     BOOST_CHECK_EQUAL( 2, sendBuffer.size() );
     LAMA_LOG_INFO( logger, "async shift : try to access send / receive buffer before synchronization" );
-    std::auto_ptr<SyncToken> token( comm->shiftAsync( recvBuffer, sendBuffer, 1 ) );
+    unique_ptr<SyncToken> token( comm->shiftAsync( recvBuffer, sendBuffer, 1 ) );
     // read access on send buffer should be possible
     {
         ReadAccess<ValueType> sbuffer( sendBuffer );
@@ -473,7 +474,7 @@ LAMA_COMMON_TEST_CASE_TM( CommunicatorTest, ValueType, bcastTest )
     LAMA_LOG_INFO( logger, "bcastTest<" << common::getScalarType<ValueType>() << ">" )
     IndexType N = 5;
     ValueType dummyVal = 13;
-    boost::scoped_array<ValueType> vector( new ValueType[N + 1] );
+    unique_ptr<ValueType[]> vector( new ValueType[N + 1] );
     vector[N] = dummyVal;
 
     for ( PartitionId p = 0; p < size; p++ )
@@ -517,8 +518,8 @@ LAMA_COMMON_TEST_CASE_TM( CommunicatorTest, ValueType, scatterTest )
     }
 
     ValueType dummyVal = 13;
-    boost::scoped_array<ValueType> myvals( new ValueType[n + 1] );
-    boost::scoped_array<ValueType> allvals( new ValueType[allN] );
+    unique_ptr<ValueType[]> myvals( new ValueType[n + 1] );
+    unique_ptr<ValueType[]> allvals( new ValueType[allN] );
     myvals[0] = 0;
     myvals[1] = 1;
     myvals[2] = size + dummyVal;
@@ -555,9 +556,9 @@ LAMA_COMMON_TEST_CASE_TM( CommunicatorTest, ValueType, scatterVTest )
     }
 
     ValueType dummyVal = 13;
-    boost::scoped_array<ValueType> myvals( new ValueType[n + 1] );
-    boost::scoped_array<ValueType> allvals( new ValueType[allN] );
-    boost::scoped_array<int> sizes( new int[size] );
+    unique_ptr<ValueType[]> myvals( new ValueType[n + 1] );
+    unique_ptr<ValueType[]> allvals( new ValueType[allN] );
+    unique_ptr<int[]> sizes( new int[size] );
 
     for ( int i = 0; i <= n; i++ )
     {
@@ -606,8 +607,8 @@ LAMA_COMMON_TEST_CASE_TM( CommunicatorTest, ValueType, gatherTest )
     }
 
     ValueType dummyVal = -1;
-    boost::scoped_array<ValueType> myvals( new ValueType[2] );
-    boost::scoped_array<ValueType> allvals( new ValueType[allN] );
+    unique_ptr<ValueType[]> myvals( new ValueType[2] );
+    unique_ptr<ValueType[]> allvals( new ValueType[allN] );
 
     if ( rank == root )
     {
@@ -647,9 +648,9 @@ LAMA_COMMON_TEST_CASE_TM( CommunicatorTest, ValueType, gatherVTest )
     }
 
     ValueType dummyVal = 13;
-    boost::scoped_array<ValueType> myvals( new ValueType[n + 1] );
-    boost::scoped_array<ValueType> allvals( new ValueType[allN] );
-    boost::scoped_array<int> sizes( new int[size] );
+    unique_ptr<ValueType[]> myvals( new ValueType[n + 1] );
+    unique_ptr<ValueType[]> allvals( new ValueType[allN] );
+    unique_ptr<int[]> sizes( new int[size] );
 
     for ( int i = 0; i < n; i++ )
     {
@@ -698,7 +699,7 @@ LAMA_COMMON_TEST_CASE_TM_END();
 LAMA_COMMON_TEST_CASE_TM( CommunicatorTest, ValueType, swapTest )
 {
     int n = 10;
-    boost::scoped_array<ValueType> vector( new ValueType[n] );
+    unique_ptr<ValueType[]> vector( new ValueType[n] );
 
     // initialize vector individually for each processor
 

@@ -47,8 +47,10 @@
 #include <lama/distribution/Redistributor.hpp>
 
 // boost
-#include <boost/scoped_array.hpp>
+#include <common/unique_ptr.hpp>
 #include <boost/preprocessor.hpp>
+
+using common::unique_ptr;
 
 namespace lama
 {
@@ -349,7 +351,7 @@ DenseMatrix<ValueType>::DenseMatrix( DistributionPtr distribution )
         const int n = dist.getNumPartitions();
         const int numLocalRows = dist.getLocalSize();
         computeOwners();
-        boost::scoped_array<int> numCols( new int[n] );
+        unique_ptr<int[]> numCols( new int[n] );
 
         for( int i = 0; i < n; ++i )
         {
@@ -1044,7 +1046,7 @@ mData[0].reset( new DenseStorage<ValueType>( numRows, mNumColumns ) );
 return;
 }
 
-boost::scoped_array<PartitionId> numColsPartition( new PartitionId[numChunks] );
+unique_ptr<PartitionId[]> numColsPartition( new PartitionId[numChunks] );
 
 for( PartitionId p = 0; p < numChunks; ++p )
 {
@@ -1667,7 +1669,7 @@ LAMA_LOG_INFO( logger, comm << ": asynchronous communication" )
 
 // asynchronous communication always requires same sizes of arrays, might shift some more data
 
-std::auto_ptr<SyncToken> st( comm.shiftAsync( *recvValues, *sendValues, COMM_DIRECTION ) );
+common::unique_ptr<SyncToken> st( comm.shiftAsync( *recvValues, *sendValues, COMM_DIRECTION ) );
 
 LAMA_LOG_INFO( logger,
                comm << ": matrixTimesVector, my dense block = " << *mData[rank] << ", localX = " << localX << ", localY = " << localY << ", localResult = " << localResult )

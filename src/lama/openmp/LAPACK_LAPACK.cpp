@@ -40,7 +40,7 @@
 #include <lama/LAMAInterfaceRegistry.hpp>
 #include <lama/BLASInterface.hpp>
 #include <tracing/tracing.hpp>
-#include <boost/scoped_array.hpp>
+#include <common/unique_ptr.hpp>
 
 // macros
 #include <lama/macros/unused.hpp>
@@ -152,6 +152,9 @@ int F77_dlaswp(
 #ifdef __cplusplus
 } /*extern "C"*/
 #endif /*__cplusplus*/
+
+
+using common::unique_ptr;
 
 namespace lama
 {
@@ -319,9 +322,9 @@ void LAPACK_LAPACK::getinv( const IndexType n, float* a, const IndexType lda )
 
     int info = 0;
 
-    // scoped array, will also be freed in case of exception
+    // unique_ptr, delete by destructor, also done in case of exception
 
-    boost::scoped_array<IndexType> ipiv( new IndexType[n] );
+    unique_ptr<IndexType[]> ipiv( new IndexType[n] );
 
 #ifdef F77_INT
     F77_INT F77_N = n, F77_lda = lda, F77_info = info;
@@ -340,7 +343,7 @@ void LAPACK_LAPACK::getinv( const IndexType n, float* a, const IndexType lda )
         COMMON_THROWEXCEPTION( "LAPACK sgetrf failed, info = " << F77_info )
     }
 
-    boost::scoped_array<float> work( new float[n] );
+    unique_ptr<float[]> work( new float[n] );
 
     F77_sgetri( &F77_N, a, &F77_lda, ipiv.get(), work.get(), &F77_N, &F77_info );
 
@@ -361,7 +364,7 @@ void LAPACK_LAPACK::getinv( const IndexType n, double* a, const IndexType lda )
 
     int info = 0;
 
-    boost::scoped_array<IndexType> ipiv( new IndexType[n] );
+    unique_ptr<IndexType[]> ipiv( new IndexType[n] );
 
 #ifdef F77_INT
     F77_INT F77_N = n, F77_lda = lda, F77_info = info;
@@ -380,7 +383,7 @@ void LAPACK_LAPACK::getinv( const IndexType n, double* a, const IndexType lda )
         COMMON_THROWEXCEPTION( "LAPACK dgetrf failed, info = " << F77_info )
     }
 
-    boost::scoped_array<double> work( new double[n] );
+    unique_ptr<double[]> work( new double[n] );
 
     F77_dgetri( &F77_N, a, &F77_lda, ipiv.get(), work.get(), &F77_N, &F77_info );
 
@@ -436,7 +439,7 @@ int LAPACK_LAPACK::getri( const CBLAS_ORDER order, const int n, float* const a, 
 #define F77_info info
 #endif
 
-    boost::scoped_array<float> work( new float[n] );
+    unique_ptr<float[]> work( new float[n] );
 
     F77_sgetri( &F77_N, a, &F77_lda, ipiv, work.get(), &F77_N, &F77_info );
 
@@ -511,7 +514,7 @@ int LAPACK_LAPACK::getri( const CBLAS_ORDER order, const int n, double* const a,
 #define F77_info info
 #endif
 
-    boost::scoped_array<double> work( new double[n] );
+    unique_ptr<double[]> work( new double[n] );
 
     F77_dgetri( &F77_N, a, &F77_lda, ipiv, work.get(), &F77_N, &F77_info );
 

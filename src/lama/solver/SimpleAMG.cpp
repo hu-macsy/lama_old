@@ -87,7 +87,7 @@ SimpleAMG::~SimpleAMG()
 
 SimpleAMG::SimpleAMGRuntime::~SimpleAMGRuntime()
 {
-    std::auto_ptr<AMGSetup>& amgSetup = mSetup;
+    common::shared_ptr<AMGSetup>& amgSetup = mSetup;
 
     if( mLibHandle != 0 )
     {
@@ -99,7 +99,7 @@ SimpleAMG::SimpleAMGRuntime::~SimpleAMGRuntime()
 
         if( funcHandle )
         {
-            funcHandle( amgSetup.release() );
+            funcHandle( amgSetup.get() );
         }
         else
         {
@@ -128,7 +128,7 @@ void SimpleAMG::initialize( const Matrix& coefficients )
 
     SimpleAMGRuntime& runtime = getRuntime();
 
-    std::auto_ptr<AMGSetup>& amgSetup = runtime.mSetup;
+    common::shared_ptr<AMGSetup>& amgSetup = runtime.mSetup;
 
     if( amgSetup.get() == 0 )
     {
@@ -318,7 +318,7 @@ void SimpleAMG::cycle()
     LAMA_REGION_N( "Solver.SimpleAMG.cycle", runtime.mCurrentLevel )
 
     // dereferences to current level solution + rhs
-    std::auto_ptr<AMGSetup>& amgSetup = runtime.mSetup;
+    common::shared_ptr<AMGSetup>& amgSetup = runtime.mSetup;
 
     const Vector* curRhsPtr = runtime.mRhs;
     Vector* curSolutionPtr = 0;

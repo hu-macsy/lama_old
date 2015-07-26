@@ -28,10 +28,8 @@
  * @brief Class providing IO routines for matrix storage
  * @author Thomas Brandes
  * @date 31.07.2012
- * @since 1.0.0
  */
-#ifndef LAMA_FILE_IO_HPP_
-#define LAMA_FILE_IO_HPP_
+#pragma once
 
 // for dll_import
 #include <common/config.hpp>
@@ -39,7 +37,7 @@
 #include <lama/LAMATypes.hpp>
 #include <lama/Scalar.hpp>
 
-#include <boost/scoped_array.hpp>
+#include <common/unique_ptr.hpp>
 #include <fstream>
 #include <typeinfo>
 
@@ -87,7 +85,7 @@ void FileIO::readBinaryData( std::fstream& inFile, UserDataType data[], const In
     {
         // allocate buffer with file data for type conversion
 
-        boost::scoped_array<FileDataType> buffer( new FileDataType[n] );
+        common::unique_ptr<FileDataType[]> buffer( new FileDataType[n] );
 
         inFile.read( reinterpret_cast<char*>( buffer.get() ), sizeof(FileDataType) * n );
 
@@ -109,7 +107,7 @@ void FileIO::readBinaryData( std::fstream& inFile, UserDataType data[], const In
 
     // allocate buffer for type conversion and/or adding offset
 
-    boost::scoped_array<FileDataType> buffer( new FileDataType[n] );
+    common::unique_ptr<FileDataType[]> buffer( new FileDataType[n] );
 
     inFile.read( reinterpret_cast<char*>( buffer.get() ), sizeof(FileDataType) * n );
 
@@ -120,4 +118,3 @@ void FileIO::readBinaryData( std::fstream& inFile, UserDataType data[], const In
 }
 
 }
-#endif // LAMA_FILE_IO_HPP_

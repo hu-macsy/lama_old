@@ -34,6 +34,7 @@
 // hpp
 #include <lama/distribution/GenBlockDistribution.hpp>
 #include <lama/matrix/Matrix.hpp>
+#include <common/unique_ptr.hpp>
 
 #include <fstream>
 
@@ -71,7 +72,7 @@ void GenBlockDistribution::setOffsets(
 
 void GenBlockDistribution::setOffsets( const IndexType rank, const IndexType numPartitions, const IndexType mySize )
 {
-    boost::scoped_array<IndexType> localSizes( new IndexType[numPartitions] );
+    common::unique_ptr<IndexType[]> localSizes( new IndexType[numPartitions] );
 
     const PartitionId root = 0;
     mCommunicator->gather( localSizes.get(), 1, root, &mySize );

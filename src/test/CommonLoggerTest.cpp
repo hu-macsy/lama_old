@@ -40,6 +40,7 @@
 #include <lama/solver/logger/LoggerWriteBehaviour.hpp>
 
 #include <test/Configuration.hpp>
+#include <common/unique_ptr.hpp>
 
 using namespace lama;
 
@@ -64,7 +65,7 @@ BOOST_AUTO_TEST_CASE( LoggerIdTest )
 BOOST_AUTO_TEST_CASE( setAndGetLogLevelTest )
 {
     CommonLogger consoleLogger( "<CommonLoggerTest>: ", LogLevel::convergenceHistory,
-                                LoggerWriteBehaviour::toConsoleOnly, std::auto_ptr<Timer>( new Timer() ) );
+                                LoggerWriteBehaviour::toConsoleOnly, common::unique_ptr<Timer>( new Timer() ) );
     BOOST_CHECK_EQUAL( consoleLogger.getLogLevel(), LogLevel::convergenceHistory );
     consoleLogger.setLogLevel( LogLevel::completeInformation );
     BOOST_CHECK_EQUAL( consoleLogger.getLogLevel(), LogLevel::completeInformation );
@@ -76,7 +77,7 @@ void logMessageTest( std::string logFileName, LoggerWriteBehaviour::LoggerWriteB
 {
     LAMA_LOG_DEBUG( logger, "CommonLoggerTest with LoggerWriteBehaviour: " << lwb );
     CommonLogger consoleAndFileLogger( "<CommonLoggerTest>: ", LogLevel::noLogging, lwb, logFileName,
-                                       std::auto_ptr<Timer>( new Timer() ) );
+                                       common::unique_ptr<Timer>( new Timer() ) );
     FileLogger::getFileLogger().setLogFile( logFileName );
     consoleAndFileLogger.logMessage( LogLevel::completeInformation, std::string( "OmittedMessage\n" ) );
     FileLogger::getFileLogger().closeLogFile();

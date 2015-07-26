@@ -46,6 +46,8 @@
 
 #include <omp.h>
 
+using common::unique_ptr;
+
 namespace lama
 {
 
@@ -67,7 +69,7 @@ GMRES::GMRES( const GMRES& other )
 }
 
 GMRES::GMRESRuntime::GMRESRuntime()
-    : IterativeSolverRuntime(), mCC( 0 ), mSS( 0 ), mG( 0 ), mY( 0 ), mH( 0 ), mHd( 0 ), mV( 0 ), mW( 0 ), mT(
+    : IterativeSolverRuntime(), mCC(), mSS(), mG(), mY(), mH(), mHd(), mV( 0 ), mW( 0 ), mT(
           0 ), mX0( 0 )
 {
 }
@@ -162,12 +164,12 @@ void GMRES::initialize( const Matrix& coefficients )
 
     runtime.mX0 = 0;
 
-    boost::scoped_array<double>& mCC = runtime.mCC;
-    boost::scoped_array<double>& mSS = runtime.mSS;
-    boost::scoped_array<double>& mG = runtime.mG;
-    boost::scoped_array<double>& mY = runtime.mY;
-    boost::scoped_array<double>& mH = runtime.mH;
-    boost::scoped_array<double>& mHd = runtime.mHd;
+    unique_ptr<double[]>& mCC = runtime.mCC;
+    unique_ptr<double[]>& mSS = runtime.mSS;
+    unique_ptr<double[]>& mG = runtime.mG;
+    unique_ptr<double[]>& mY = runtime.mY;
+    unique_ptr<double[]>& mH = runtime.mH;
+    unique_ptr<double[]>& mHd = runtime.mHd;
 
     mCC.reset( new double[mKrylovDim + 1] );
     mSS.reset( new double[mKrylovDim + 1] );

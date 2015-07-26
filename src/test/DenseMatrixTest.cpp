@@ -47,6 +47,7 @@
 #include <lama/expression/all.hpp>
 
 using namespace lama;
+using common::unique_ptr;
 
 namespace lama
 {
@@ -113,14 +114,14 @@ void GEMMTestImpl( const int n, const int m, const int k, ValueType eps, Context
     int maxdim = std::max( n, m );
     // mainly for the very big example matrices the single values have to be chosen small
     // for the result not becoming too big for float!!!
-    boost::scoped_array<ValueType> values( new ValueType[maxdim * k] );
+    unique_ptr<ValueType[]> values( new ValueType[maxdim * k] );
 
     for ( int i = 0; i < maxdim * k; i++ )
     {
         values[i] = i * static_cast<ValueType>( 1e-5 ) + 1;
     }
 
-    boost::scoped_array<ValueType> valuesC( new ValueType[m * n] );
+    unique_ptr<ValueType[]> valuesC( new ValueType[m * n] );
     ValueType help;
 
     for ( int i = 0; i < m; i++ )

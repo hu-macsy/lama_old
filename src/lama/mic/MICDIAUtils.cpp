@@ -45,9 +45,6 @@
 // assert
 #include <lama/exception/LAMAAssert.hpp>
 
-// boost
-#include <boost/scoped_array.hpp>
-
 #include <cmath>
 
 namespace lama

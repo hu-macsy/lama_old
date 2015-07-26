@@ -38,6 +38,7 @@
 
 // base classes
 #include <common/NonCopyable.hpp>
+#include <common/shared_ptr.hpp>
 
 // others
 #include <lama/solver/logger/LogLevel.hpp>
@@ -122,7 +123,7 @@ public:
         const std::string& id,
         LogLevel::LogLevel level,
         LoggerWriteBehaviour::LoggerWriteBehaviour writeBehaviour,
-        std::auto_ptr<Timer> timer,
+        common::shared_ptr<Timer> timer,
         bool ignoreRank = false );
 
     /**
@@ -155,7 +156,7 @@ public:
         LogLevel::LogLevel level,
         LoggerWriteBehaviour::LoggerWriteBehaviour writeBehaviour,
         const std::string& logFileName,
-        std::auto_ptr<Timer> timer,
+        common::shared_ptr<Timer> timer,
         bool ignoreRank = false );
 
     /**
@@ -291,7 +292,7 @@ protected:
     /**
      * @brief Timer used for timings.
      */
-    std::auto_ptr<Timer> mTimer;
+    common::shared_ptr<Timer> mTimer;
 
     std::string mId;
 

@@ -40,7 +40,7 @@
 #include <lama/LAMAInterfaceRegistry.hpp>
 #include <lama/BLASInterface.hpp>
 #include <tracing/tracing.hpp>
-#include <boost/scoped_array.hpp>
+#include <common/unique_ptr.hpp>
 #include <boost/preprocessor.hpp>
 
 // macros
@@ -188,14 +188,12 @@ void OpenMPLAPACK::getinv( const IndexType n, ValueType* a, const IndexType lda 
     LAMA_LOG_INFO( logger,
                    "getinv<" << getScalarType<ValueType>()<< "> for " << n << " x " << n << " matrix, uses openmp" )
 
-    //boost::scoped_array<IndexType> ipiv( new IndexType[n] );
-    int* ipiv;
-    ipiv = new int[n];
-    getrf( CblasRowMajor, n, n, a, lda, ipiv );
+    // temporary array for pivot indexes needed, deleted by destructor
 
-    getri( CblasRowMajor, n, a, lda, ipiv );
+    common::unique_ptr<int[]> ipiv( new int[n] );
 
-    delete[] ipiv;
+    getrf( CblasRowMajor, n, n, a, lda, ipiv.get() );
+    getri( CblasRowMajor, n, a, lda, ipiv.get() );
 }
 
 /* ------------------------------------------------------------------------- */

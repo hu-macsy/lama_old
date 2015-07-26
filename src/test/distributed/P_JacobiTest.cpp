@@ -146,7 +146,7 @@ void testSolveWithPreconditionMethod( ContextPtr loc )
 //        "<SOR>: ",
 //        lama::LogLevel::solverInformation,
 //        lama::LoggerWriteBehaviour::toConsoleOnly,
-//        std::auto_ptr<Timer>( new Timer() ) ) );
+//        common::unique_ptr<Timer>( new Timer() ) ) );
     DefaultJacobi jacobiSolver( "JacobiTestSolver"/*, slogger */ );
     const IndexType N1 = 4;
     const IndexType N2 = 4;

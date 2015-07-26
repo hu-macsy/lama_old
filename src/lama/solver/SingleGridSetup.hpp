@@ -104,11 +104,11 @@ private:
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 
     SolverPtr    mSolver;
-    std::auto_ptr<Matrix> mIdentity;
+    common::unique_ptr<Matrix> mIdentity;
 
-    std::auto_ptr<Vector> mSolutionVector;
-    std::auto_ptr<Vector> mRhsVector;
-    std::auto_ptr<Vector> mTmpResVector;
+    common::unique_ptr<Vector> mSolutionVector;
+    common::unique_ptr<Vector> mRhsVector;
+    common::unique_ptr<Vector> mTmpResVector;
 
 };
 

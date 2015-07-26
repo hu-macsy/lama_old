@@ -39,8 +39,7 @@
 // base classes
 #include <lama/distribution/Distribution.hpp>
 
-// boost
-#include <boost/scoped_array.hpp>
+#include <common/unique_ptr.hpp>
 
 namespace lama
 {
@@ -168,7 +167,7 @@ private    :
 
     GenBlockDistribution(); // disable default destructor
 
-    boost::scoped_array<IndexType> mOffsets;//!< offset for each partition
+    common::unique_ptr<IndexType[]> mOffsets;//!< offset for each partition
 
     IndexType mLB, mUB;//!< local range of full size in global values
 

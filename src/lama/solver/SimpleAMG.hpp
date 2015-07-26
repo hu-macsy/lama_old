@@ -99,7 +99,7 @@ public:
         SimpleAMGRuntime();
         virtual ~SimpleAMGRuntime();
 
-        std::auto_ptr<AMGSetup> mSetup;
+        common::shared_ptr<AMGSetup> mSetup;
         unsigned int mCurrentLevel;
         void* mLibHandle;
         IndexType mHostOnlyLevel;

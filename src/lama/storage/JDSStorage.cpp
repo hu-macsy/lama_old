@@ -46,6 +46,7 @@
 // boost
 #include <boost/preprocessor.hpp>
 #include <common/bind.hpp>
+#include <common/unique_ptr.hpp>
 
 namespace lama
 {
@@ -1062,7 +1063,7 @@ SyncToken* JDSStorage<ValueType>::matrixTimesVectorAsync(
 
     LAMA_INTERFACE_FN_T( normalGEMV, loc, JDSUtils, Mult, ValueType )
 
-    std::auto_ptr<SyncToken> syncToken( loc->getSyncToken() );
+    common::unique_ptr<SyncToken> syncToken( loc->getSyncToken() );
 
     // all accesses will be pushed to the sync token as LAMA arrays have to be protected up
     // to the end of the computations.
@@ -1165,7 +1166,7 @@ SyncToken* JDSStorage<ValueType>::vectorTimesMatrixAsync(
 
     LAMA_INTERFACE_FN_T( normalGEVM, loc, JDSUtils, Mult, ValueType )
 
-    std::auto_ptr<SyncToken> syncToken( loc->getSyncToken() );
+    common::unique_ptr<SyncToken> syncToken( loc->getSyncToken() );
 
     // all accesses will be pushed to the sync token as LAMA arrays have to be protected up
     // to the end of the computations.
@@ -1319,7 +1320,7 @@ SyncToken* JDSStorage<ValueType>::jacobiIterateAsync(
     LAMA_ASSERT_EQUAL_DEBUG( mNumRows, mNumColumns )
     // matrix must be square
 
-    std::auto_ptr<SyncToken> syncToken( loc->getSyncToken() );
+    common::unique_ptr<SyncToken> syncToken( loc->getSyncToken() );
 
     shared_ptr<WriteAccess<ValueType> > wSolution( new WriteAccess<ValueType>( solution, loc ) );
     syncToken->pushToken( wSolution );

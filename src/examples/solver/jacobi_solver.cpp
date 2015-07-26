@@ -188,7 +188,7 @@ int main( int argc, char* argv[] )
 
     LoggerPtr logger( new CommonLogger ( loggerName.str(), lamaconf.getLogLevel(),
                    LoggerWriteBehaviour::toConsoleOnly,
-                   std::auto_ptr<Timer>( new Timer() ) ) );
+                   common::unique_ptr<Timer>( new Timer() ) ) );
 
     SpecializedJacobi mySolver( "SpecializedJacobi", logger );
 

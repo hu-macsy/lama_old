@@ -90,7 +90,7 @@ public:
         common::shared_ptr<Vector> mQ2;
         common::shared_ptr<Vector> mZ2;
         Scalar mPScalar2;
-        mutable std::auto_ptr<Vector> mResidual2;
+        mutable common::shared_ptr<Vector> mResidual2;
     };
 
     const Vector& getResidual2() const;

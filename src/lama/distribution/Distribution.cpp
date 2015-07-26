@@ -28,7 +28,6 @@
  * @brief Implementation of methods for base class Distribution.
  * @author Jiri Kraus
  * @date 22.02.2011
- * @since 1.0.0
  */
 
 // hpp
@@ -42,8 +41,10 @@
 // tracing
 #include <tracing/tracing.hpp>
 
+// 
+#include <common/unique_ptr.hpp>
+
 // boost
-#include <boost/scoped_array.hpp>
 #include <boost/preprocessor.hpp>
 
 using namespace memory;
@@ -440,9 +441,6 @@ void Distribution::replicateRagged(
     LAMAArray<IndexType> indexesSend;
     LAMAArray<IndexType> indexesReceive;
 
-    // boost::scoped_array<IndexType> indexesSend( new IndexType[maxLocalSize] );
-    // boost::scoped_array<IndexType> indexesReceive( new IndexType[maxLocalElemSize] );
-
     ContextPtr commContext = comm.getCommunicationContext( indexesSend );
 
     indexesReceive.reserve( commContext, maxLocalSize );
@@ -548,11 +546,11 @@ void Distribution::replicateRagged(
  */
 Distribution::CreatorMap& Distribution::getFactory()
 {
-    static std::auto_ptr<CreatorMap> factory;
+    static common::unique_ptr<CreatorMap> factory;
 
     if( !factory.get() )
     {
-        factory = std::auto_ptr<CreatorMap>( new CreatorMap() );
+        factory = common::unique_ptr<CreatorMap>( new CreatorMap() );
     }
 
     return *factory;

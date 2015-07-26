@@ -44,9 +44,6 @@
 
 #include <lama/expression/MatrixVectorExpressions.hpp>
 
-// boost
-#include <boost/scoped_array.hpp>
-
 #include <sstream>
 
 namespace lama

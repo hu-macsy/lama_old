@@ -33,7 +33,6 @@
 
 #include <boost/test/unit_test.hpp>
 #include <boost/mpl/list.hpp>
-#include <boost/scoped_array.hpp>
 #include <boost/bind.hpp>
 
 #include <lama/ContextFactory.hpp>
@@ -216,7 +215,7 @@ BOOST_AUTO_TEST_CASE( asyncTest )
         LAMA_INTERFACE_FN_t( scal, cudaContext, BLAS, BLAS1, float )
         LAMA_CONTEXT_ACCESS( cudaContext )
         // test: should be async!!!
-        std::auto_ptr<SyncToken> token( cudaContext->getSyncToken() );
+        common::unique_ptr<SyncToken> token( cudaContext->getSyncToken() );
         scal( n, alpha, cudaV->get(), 1, token.get() );
         token->pushAccess( cudaV );
         token->wait();
@@ -245,7 +244,7 @@ BOOST_AUTO_TEST_CASE( syncTest )
         LAMA_INTERFACE_FN_t( scal, cudaContext, BLAS, BLAS1, float );
         WriteAccess<float> cudaV( vector, cudaContext );
         LAMA_CONTEXT_ACCESS( cudaContext );
-        std::auto_ptr<SyncToken> token( cudaContext->getSyncToken() );
+        common::unique_ptr<SyncToken> token( cudaContext->getSyncToken() );
         scal( n, alpha, cudaV.get(), 1, token.get() );
         // synchronize on token at end of this scope
     }
@@ -268,7 +267,7 @@ static void callSSCAL( LAMAArray<float>& vector, const float alpha, ContextPtr c
     LAMA_INTERFACE_FN_t( scal, context, BLAS, BLAS1, float );
     WriteAccess<float> vectorAccess( vector, context );
     LAMA_CONTEXT_ACCESS( context );
-    std::auto_ptr<SyncToken> token( context->getSyncToken() );
+    common::unique_ptr<SyncToken> token( context->getSyncToken() );
     scal( vector.size(), alpha, vectorAccess.get(), 1, token.get() );
     // syncronize on token is done here at end of scope where token will be destroyed
 }

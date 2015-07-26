@@ -46,9 +46,7 @@
 // trace
 #include <tracing/tracing.hpp>
 
-// boost
 #include <common/bind.hpp>
-#include <boost/scoped_array.hpp>
 
 namespace lama
 {

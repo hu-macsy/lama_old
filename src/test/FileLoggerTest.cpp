@@ -32,7 +32,6 @@
  */
 
 #include <boost/test/unit_test.hpp>
-#include <boost/scoped_array.hpp>
 
 #include <lama/solver/logger/FileLogger.hpp>
 
@@ -40,9 +39,11 @@
 
 #include <test/TestMacros.hpp>
 #include <test/Configuration.hpp>
+#include <common/unique_ptr.hpp>
 
 using namespace lama;
 using common::Exception;
+using common::unique_ptr;
 
 /* --------------------------------------------------------------------- */
 
@@ -69,7 +70,7 @@ BOOST_AUTO_TEST_CASE( LoggingTest )
     LAMA_CHECK_THROW( flogger.setLogFile( logFileName + "1" ), Exception );
     flogger.logMessage( testMessage );
     flogger.closeLogFile();
-    boost::scoped_array<char> fileInput( new char[testMessage.length()] );
+    unique_ptr<char[]> fileInput( new char[testMessage.length()] );
     std::fstream fileStream;
     fileStream.open( logFileName.c_str(), std::fstream::in );
     fileStream.read( fileInput.get(), testMessage.length() );

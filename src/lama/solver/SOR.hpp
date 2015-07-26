@@ -96,7 +96,7 @@ private:
     template<typename ValueType>
     void iterateImpl();
 
-    std::auto_ptr<const Matrix> mIterationMatrix;
+    common::unique_ptr<const Matrix> mIterationMatrix;
 
     LAMA_LOG_DECL_STATIC_LOGGER( logger )
 };

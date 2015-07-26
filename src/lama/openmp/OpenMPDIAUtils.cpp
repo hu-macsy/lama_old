@@ -46,7 +46,6 @@
 #include <lama/exception/LAMAAssert.hpp>
 
 // boost
-#include <boost/scoped_array.hpp>
 #include <boost/preprocessor.hpp>
 
 #include <cmath>

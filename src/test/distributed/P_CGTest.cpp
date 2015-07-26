@@ -159,7 +159,7 @@ void testSolveWithPreconditionmethod( ContextPtr loc )
                                "<SOR>: ",
                                lama::LogLevel::solverInformation,
                                lama::LoggerWriteBehaviour::toConsoleOnly,
-                               std::auto_ptr<Timer>( new Timer() ) ) );
+                               common::unique_ptr<Timer>( new Timer() ) ) );
         cgSolver.setLogger( slogger );
     }
 

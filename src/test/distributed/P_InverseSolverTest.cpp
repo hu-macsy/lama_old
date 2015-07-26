@@ -79,7 +79,7 @@ void testSolveMethod( ContextPtr loc )
     LoggerPtr loggerD(
         new CommonLogger( "<InverseSolver>: ", LogLevel::noLogging,
                           LoggerWriteBehaviour::toConsoleOnly,
-                          std::auto_ptr<Timer>( new Timer() ) ) );
+                          common::unique_ptr<Timer>( new Timer() ) ) );
     InverseSolver inverseSolver( "InverseTestSolver", loggerD );
     LAMA_LOG_DEBUG( logger, "inverseSolver created" )
     CSRSparseMatrix<ValueType> helpcoefficients;

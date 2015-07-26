@@ -35,9 +35,6 @@
 #include <lama/exception/Exception.hpp>
 #include <lama/Settings.hpp>
 
-// boost
-#include <boost/scoped_array.hpp>
-
 #include <cstdio>
 #include <sstream>
 
@@ -119,98 +116,6 @@ const char* Exception1::what() const throw ()
 {
     return mMessage.c_str();
 }
-
-#ifdef __GNUC__
-
-void Exception1::addCallStack( std::ostringstream& output )
-{
-    const size_t maxDepth = 20;
-
-    void *stackAddrs[maxDepth];
-
-    size_t stackDepth = backtrace( stackAddrs, maxDepth );
-    char** stackStrings = backtrace_symbols( stackAddrs, stackDepth );
-
-    for( size_t i = 1; i < stackDepth; i++ )
-    {
-        output << "   stack[" << i << "] : " << demangle( stackStrings[i] ) << std::endl;
-    }
-
-    free( stackStrings ); // malloc()ed by backtrace_symbols
-}
-
-std::string Exception1::demangle( const char* functionName )
-{
-    boost::scoped_array<char> stringManager( new char[std::strlen( functionName ) + 1] );
-    char* string = stringManager.get();
-    std::strcpy( string, functionName );
-    std::string demangledString;
-
-    char* begin = 0;
-    char* end = 0;
-
-    // find the parentheses and address offset surrounding the mangled name
-    for( char *j = string; *j; ++j )
-    {
-        if( *j == '(' )
-        {
-            begin = j;
-        }
-        else if( *j == '+' )
-        {
-            end = j;
-        }
-    }
-
-    if( begin && end )
-    {
-        begin++;
-        *end = '\0';
-        // found our mangled name, now in [begin, end)
-
-        int status;
-        char *ret = abi::__cxa_demangle( begin, 0, 0, &status );
-
-        if( status == 0 )
-        {
-            // return value may be a realloc() of the input
-            demangledString = ret;
-        }
-        else
-        {
-            // demangling failed, just pretend it's a C function with no args
-            //std::strncpy(function, begin, sz);
-            //std::strncat(function, "()", sz);
-            //function[sz-1] = ' ';
-            demangledString = string;
-        }
-
-        if( ret )
-        {
-            free( ret );
-        }
-    }
-    else
-    {
-        // didn't find the mangled name, just print the whole line
-        demangledString = string;
-    }
-
-    return demangledString;
-}
-
-#else
-
-void Exception1::addCallStack( std::ostringstream& )
-{
-}
-
-std::string Exception1::demangle( const char* functionName )
-{
-    return functionName;
-}
-
-#endif
 
 }
 //namespace lama

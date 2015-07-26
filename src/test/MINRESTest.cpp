@@ -45,7 +45,7 @@ BOOST_AUTO_TEST_CASE( CtorTest )
 {
     LoggerPtr slogger(
         new CommonLogger( "<MINRES>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly,
-                          std::auto_ptr<Timer>( new Timer() ) ) );
+                          common::unique_ptr<Timer>( new Timer() ) ) );
 
     MINRES MINRESSolver( "MINRESTestSolver", slogger );
     BOOST_CHECK_EQUAL( MINRESSolver.getId(), "MINRESTestSolver" );
@@ -102,7 +102,7 @@ void testSolveWithPreconditionmethod( ContextPtr context )
 
     LoggerPtr slogger(
         new CommonLogger( "<MINRES>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly,
-                          std::auto_ptr<Timer>( new Timer() ) ) );
+                          common::unique_ptr<Timer>( new Timer() ) ) );
 
     MINRES MINRESSolver( "MINRESTestSolver", slogger );
 
@@ -170,7 +170,7 @@ void testSolveWithoutPreconditionmethod( ContextPtr context )
 
         LoggerPtr slogger(
         new CommonLogger( "<MINRES>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly,
-                          std::auto_ptr<Timer>( new Timer() ) ) );
+                          common::unique_ptr<Timer>( new Timer() ) ) );
 
     MINRES MINRESSolver( "MINRESTestSolver", slogger );
 

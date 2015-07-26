@@ -76,7 +76,7 @@ BOOST_AUTO_TEST_CASE( CtorTest )
 {
     LoggerPtr slogger(
         new CommonLogger( "<SOR>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly,
-                          std::auto_ptr<Timer>( new Timer() ) ) );
+                          common::unique_ptr<Timer>( new Timer() ) ) );
     SOR sorSolver( "SORTestSolver", slogger );
     BOOST_CHECK_EQUAL( sorSolver.getId(), "SORTestSolver" );
     SOR sorSolver2( "SORTestSolver2" );
@@ -117,10 +117,10 @@ void testSolveOmegaMethod( Scalar omega )
 {
     typedef typename MatrixType::MatrixValueType ValueType;
     Timer* timer = new Timer();
-    std::auto_ptr<Timer> autoTimer( timer );
+    common::unique_ptr<Timer> autoTimer( timer );
     LoggerPtr loggerD(
         new CommonLogger( "<SOR>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly,
-                          std::auto_ptr<Timer>( new Timer() ) ) );
+                          common::unique_ptr<Timer>( new Timer() ) ) );
     SOR sor( "SORTest", omega, loggerD );
     EquationHelper::EquationSystem<ValueType> system = EquationHelper::get8x8SystemA<ValueType>();
     IndexType n = system.rhs.size();

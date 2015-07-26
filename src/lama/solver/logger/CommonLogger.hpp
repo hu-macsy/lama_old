@@ -93,7 +93,7 @@ public:
         const std::string& id,
         LogLevel::LogLevel level,
         LoggerWriteBehaviour::LoggerWriteBehaviour writeBehaviour,
-        std::auto_ptr<Timer> timer,
+        common::shared_ptr<Timer> timer,
         bool ignoreRank = false );
 
     /**
@@ -122,7 +122,7 @@ public:
         LogLevel::LogLevel level,
         LoggerWriteBehaviour::LoggerWriteBehaviour writeBehaviour,
         const std::string& logFileName,
-        std::auto_ptr<Timer> timer,
+        common::shared_ptr<Timer> timer,
         bool ignoreRank = false );
 
     /**

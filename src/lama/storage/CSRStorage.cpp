@@ -63,7 +63,7 @@ namespace lama
 {
 
 using std::abs;
-using std::auto_ptr;
+using common::unique_ptr;
 using common::shared_ptr;
 
 using tasking::TaskSyncToken;
@@ -1513,7 +1513,7 @@ SyncToken* CSRStorage<ValueType>::matrixTimesVectorAsync(
     LAMA_INTERFACE_FN_T( sparseGEMV, loc, CSRUtils, Mult, ValueType )
     LAMA_INTERFACE_FN_T( normalGEMV, loc, CSRUtils, Mult, ValueType )
 
-    auto_ptr<SyncToken> syncToken( loc->getSyncToken() );
+    unique_ptr<SyncToken> syncToken( loc->getSyncToken() );
 
     // all accesses will be pushed to the sync token as LAMA arrays have to be protected up
     // to the end of the computations.
@@ -1635,7 +1635,7 @@ SyncToken* CSRStorage<ValueType>::vectorTimesMatrixAsync(
     LAMA_INTERFACE_FN_T( sparseGEVM, loc, CSRUtils, Mult, ValueType )
     LAMA_INTERFACE_FN_T( normalGEVM, loc, CSRUtils, Mult, ValueType )
 
-    auto_ptr<SyncToken> syncToken( loc->getSyncToken() );
+    unique_ptr<SyncToken> syncToken( loc->getSyncToken() );
 
     // all accesses will be pushed to the sync token as LAMA arrays have to be protected up
     // to the end of the computations.

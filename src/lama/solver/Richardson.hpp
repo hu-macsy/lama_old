@@ -99,7 +99,7 @@ public:
         RichardsonRuntime();
         virtual ~RichardsonRuntime();
 
-        std::auto_ptr<Vector> mOldSolution;
+        common::unique_ptr<Vector> mOldSolution;
         SolutionProxy mProxyOldSolution;
     };
     /**

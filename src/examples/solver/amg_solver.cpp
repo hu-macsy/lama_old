@@ -277,7 +277,7 @@ int main( int argc, char* argv[] )
 
     LoggerPtr logger( new CommonLogger ( loggerName.str(), lama::LogLevel::advancedInformation,
                    LoggerWriteBehaviour::toConsoleOnly,
-                   std::auto_ptr<Timer>( new Timer() ) ) );
+                   common::unique_ptr<Timer>( new Timer() ) ) );
 
     CG mySolver( "CGSolver", logger );
 
@@ -305,7 +305,7 @@ int main( int argc, char* argv[] )
 
     LoggerPtr amgLogger( new CommonLogger ( loggerName.str(), lama::LogLevel::solverInformation,
                    LoggerWriteBehaviour::toConsoleOnly,
-                   std::auto_ptr<Timer>( new Timer() ) ) );
+                   common::unique_ptr<Timer>( new Timer() ) ) );
 
     common::shared_ptr<SimpleAMG> amgSolver( new SimpleAMG( "SimpleAMG solver", amgLogger ) );
  
