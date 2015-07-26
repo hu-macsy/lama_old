@@ -51,6 +51,8 @@
 #include <thrust/transform.h>
 #include <thrust/transform_reduce.h>
 
+#include <boost/preprocessor.hpp>
+
 using namespace common;
 using namespace tasking;
 using namespace memory;

@@ -31,10 +31,11 @@
  * @since 1.0.0
  */
 
+#include <memory/memory.hpp>
+
 #include <boost/test/unit_test.hpp>
 #include <boost/mpl/list.hpp>
 
-#include <memory/memory.hpp>
 #include <lama/LAMAInterface.hpp>
 
 #include <test/TestMacros.hpp>

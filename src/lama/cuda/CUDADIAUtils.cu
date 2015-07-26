@@ -48,6 +48,7 @@
 #include <thrust/sort.h>
 
 #include <common/bind.hpp>
+#include <boost/preprocessor.hpp>
 
 using namespace memory;
 using namespace tasking;

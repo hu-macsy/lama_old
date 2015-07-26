@@ -65,6 +65,7 @@
 #include <thrust/transform_reduce.h>
 
 #include <common/bind.hpp>
+#include <boost/preprocessor.hpp>
 
 using namespace memory;
 

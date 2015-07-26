@@ -69,7 +69,7 @@ if ( CMAKE_COMPILER_IS_GNUCXX )
         set ( LAMA_WARNING_FLAGS "${LAMA_WARNING_FLAGS} -Wno-unknown-pragmas" )
     endif ( NOT OPENMP_FOUND )
     
-    set ( LAMA_CXX_RELEASE_FLAGS "-ffast-math -msse4a " )
+    set ( LAMA_CXX_FLAGS_RELEASE "-ffast-math -msse4a " )
 
 endif ( CMAKE_COMPILER_IS_GNUCXX )
 
@@ -99,7 +99,7 @@ if ( CMAKE_CXX_COMPILER_ID MATCHES Intel )
         set ( LAMA_WARNING_FLAGS "${LAMA_WARNING_FLAGS} -Wno-unknown-pragmas" )
     endif ( NOT OPENMP_FOUND )
     
-    set ( LAMA_CXX_RELEASE_FLAGS "-ipo -no-prec-div -xHost " )
+    set ( LAMA_CXX_FLAGS_RELEASE "-ipo -no-prec-div -xHost " )
 
 endif ( CMAKE_CXX_COMPILER_ID MATCHES Intel )
 
@@ -113,7 +113,7 @@ if ( CMAKE_CXX_COMPILER_ID MATCHES PGI )
 
     set ( LAMA_WARNING_FLAGS "--display_error_number --diag_suppress1097 " )
     
-    set ( LAMA_CXX_RELEASE_FLAGS "-fast " )
+    set ( LAMA_CXX_FLAGS_RELEASE "-fast " )
 
 endif ( CMAKE_CXX_COMPILER_ID MATCHES PGI )
 
@@ -122,16 +122,16 @@ endif ( CMAKE_CXX_COMPILER_ID MATCHES PGI )
 
 set ( ADDITIONAL_CXX_FLAGS "${LAMA_CXX_FLAGS}" CACHE STRING "additional flags for cxx compile and link" )
 set ( ADDITIONAL_WARNING_FLAGS "${LAMA_WARNING_FLAGS}" CACHE STRING "compilation flags concerning warnings" )
-set ( ADDITIONAL_CXX_RELEASE_FLAGS "${LAMA_CXX_RELEASE_FLAGS}" CACHE STRING "addtional cxx compiler flags for release optimizations" )
+set ( ADDITIONAL_CXX_FLAGS_RELEASE "${LAMA_CXX_FLAGS_RELEASE}" CACHE STRING "addtional cxx compiler flags for release optimizations" )
 set ( ADDITIONAL_LINKER_FLAGS "${LAMA_LINKER_FLAGS}" CACHE STRING "additional linker flags" )
 
-mark_as_advanced ( ADDITIONAL_CXX_FLAGS ADDITIONAL_WARNING_FLAGS ADDITIONAL_CXX_RELEASE_FLAGS ADDITIONAL_LINKER_FLAGS )
+mark_as_advanced ( ADDITIONAL_CXX_FLAGS ADDITIONAL_WARNING_FLAGS ADDITIONAL_CXX_FLAGS_RELEASE ADDITIONAL_LINKER_FLAGS )
 
 #### concluding all defined compiler flags to CMAKE_..._FLAGS ####
 
 add_definitions( ${ADDITIONAL_WARNING_FLAGS} )
 
 set ( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${ADDITIONAL_CXX_FLAGS}")
-set ( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${ADDITIONAL_CXX_RELEASE_FLAGS} " )
+set ( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${ADDITIONAL_CXX_FLAGS_RELEASE} " )
 set ( CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${ADDITIONAL_LINKER_FLAGS} " )
 set ( CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${ADDITIONAL_LINKER_FLAGS} " )

@@ -31,12 +31,12 @@
  * @since 1.0.0
  **/
 
-#include <boost/test/unit_test.hpp>
-#include <boost/mpl/list.hpp>
-
 #include <test/TestMacros.hpp>
 
 #include <memory/memory.hpp>
+
+#include <boost/test/unit_test.hpp>
+#include <boost/mpl/list.hpp>
 
 using namespace lama;
 using namespace memory;

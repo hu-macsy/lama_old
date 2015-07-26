@@ -133,23 +133,23 @@ add_library ( ama ${LAMA_LIBRARY_TYPE} ${CXX_SOURCES} ${HEADERS} )
 ### set target link libraries ###
 
 set ( LAMA_LINK_LIBRARIES ${logging_LIBRARY} )
-set ( ADDITIONAL_LINKER_FLAGS "-Wl,--whole-archive -L\${LAMA_ROOT}/lib -lama -llogging" )
+set ( LAMA_USER_LINK_LIBRARIES "-L\${LAMA_ROOT}/lib -lama -llogging" )
 
 set ( LAMA_LINK_LIBRARIES ${LAMA_LINK_LIBRARIES} ${tasking_LIBRARY} )
-set ( ADDITIONAL_LINKER_FLAGS "${ADDITIONAL_LINKER_FLAGS} -ltasking" )
+set ( LAMA_USER_LINK_LIBRARIES "${LAMA_USER_LINK_LIBRARIES} -ltasking" )
 
 set ( LAMA_LINK_LIBRARIES ${LAMA_LINK_LIBRARIES} ${memory_LIBRARY} )
-set ( ADDITIONAL_LINKER_FLAGS "${ADDITIONAL_LINKER_FLAGS} -lmemory" )
+set ( LAMA_USER_LINK_LIBRARIES "${LAMA_USER_LINK_LIBRARIES} -lmemory" )
 
 if ( LAMA_TRACE_LEVEL STREQUAL "ON" )
     set( LAMA_LINK_LIBRARIES ${LAMA_LINK_LIBRARIES} ${tracing_LIBRARY} )
-    set ( ADDITIONAL_LINKER_FLAGS "${ADDITIONAL_LINKER_FLAGS} -lscaitrace" )
+    set ( LAMA_USER_LINK_LIBRARIES "${LAMA_USER_LINK_LIBRARIES} -lscaitrace" )
 endif ( )
 
 # amacuda
 if ( CUDA_FOUND AND LAMA_USE_CUDA AND CUDA_HAVE_GPU )
     set ( LAMA_LINK_LIBRARIES ${LAMA_LINK_LIBRARIES} amacuda )
-    set ( ADDITIONAL_LINKER_FLAGS "${ADDITIONAL_LINKER_FLAGS} -lamacuda" )
+    set ( LAMA_USER_LINK_LIBRARIES "${LAMA_USER_LINK_LIBRARIES} -lamacuda" )
     set ( ADDITIONAL_EXTERNAL_LINKER_FLAGS ${ADDITIONAL_EXTERNAL_LINKER_FLAGS}  ${CUDA_cusparse_LIBRARY}
                                                                                 ${CUDA_cublas_LIBRARY} 
                                                                                 ${CUDA_CUDART_LIBRARY}
@@ -159,24 +159,24 @@ endif ( CUDA_FOUND AND LAMA_USE_CUDA AND CUDA_HAVE_GPU )
 # amamic
 if ( LAMA_USE_MIC )
     set ( LAMA_LINK_LIBRARIES ${LAMA_LINK_LIBRARIES} amamic )
-    set ( ADDITIONAL_LINKER_FLAGS "${ADDITIONAL_LINKER_FLAGS} -lamamic" )
+    set ( LAMA_USER_LINK_LIBRARIES "${LAMA_USER_LINK_LIBRARIES} -lamamic" )
 endif ( LAMA_USE_MIC )
 
 # amampi
 if ( MPI_FOUND AND LAMA_USE_MPI )
     set ( LAMA_LINK_LIBRARIES ${LAMA_LINK_LIBRARIES} amampi )
-    set ( ADDITIONAL_LINKER_FLAGS "${ADDITIONAL_LINKER_FLAGS} -lamampi" )
+    set ( LAMA_USER_LINK_LIBRARIES "${LAMA_USER_LINK_LIBRARIES} -lamampi" )
     set ( ADDITIONAL_EXTERNAL_LINKER_FLAGS ${ADDITIONAL_EXTERNAL_LINKER_FLAGS} ${MPI_LIBRARIES} )
 endif ( MPI_FOUND AND LAMA_USE_MPI )
 
 # amagpi
 if ( GPI2_FOUND AND IBVERBS_FOUND AND LAMA_USE_GPI2 )
     set ( LAMA_LINK_LIBRARIES ${LAMA_LINK_LIBRARIES} amagpi )
-    set ( ADDITIONAL_LINKER_FLAGS "${ADDITIONAL_LINKER_FLAGS} -lamagpi" )
+    set ( LAMA_USER_LINK_LIBRARIES "${LAMA_USER_LINK_LIBRARIES} -lamagpi" )
     set ( ADDITIONAL_EXTERNAL_LINKER_FLAGS ${ADDITIONAL_EXTERNAL_LINKER_FLAGS} ${GPI2_LIBRARIES} ${IBVERBS_LIBRARIES} )
 endif ( GPI2_FOUND AND IBVERBS_FOUND AND LAMA_USE_GPI2 )
 
-set ( ADDITIONAL_LINKER_FLAGS "${ADDITIONAL_LINKER_FLAGS} -Wl,--no-whole-archive" )
+set ( LAMA_USER_LINK_FLAGS "-Wl,--whole-archive ${LAMA_USER_LINK_LIBRARIES} -Wl,--no-whole-archive" )
 
 # blas lapack 
 if ( SCALAPACK_FOUND AND MPI_FOUND AND LAMA_USE_MPI )
@@ -215,38 +215,26 @@ foreach ( lib ${ADDITIONAL_EXTERNAL_LINKER_FLAGS} )
     get_filename_component ( libext ${lib} EXT )
     
     if ( NOT ${libpath} STREQUAL "" )        
-        list_contains(contains "-L${libpath}" "${ADDITIONAL_LINKER_FLAGS}")
+        list_contains(contains "-L${libpath}" "${LAMA_USER_LINK_FLAGS}")
         if ( NOT contains )
-          set ( ADDITIONAL_LINKER_FLAGS "${ADDITIONAL_LINKER_FLAGS} -L${libpath}" )
+          set ( LAMA_USER_LINK_FLAGS "${LAMA_USER_LINK_FLAGS} -L${libpath}" )
         endif ( NOT contains )
     endif ( NOT ${libpath} STREQUAL "" )
     
     if ( "${libext}" STREQUAL "" )
-        set ( ADDITIONAL_LINKER_FLAGS "${ADDITIONAL_LINKER_FLAGS} -l${libname}" )
+        set ( LAMA_USER_LINK_FLAGS "${LAMA_USER_LINK_FLAGS} -l${libname}" )
     else ( "${libext}" STREQUAL "" )
         string ( LENGTH ${libname} namelength )
         math ( EXPR namelength ${namelength}-3 )
         string ( SUBSTRING ${libname} 3 ${namelength} libname )
-        set ( ADDITIONAL_LINKER_FLAGS "${ADDITIONAL_LINKER_FLAGS} -l${libname}" )
+        set ( LAMA_USER_LINK_FLAGS "${LAMA_USER_LINK_FLAGS} -l${libname}" )
     endif ( "${libext}" STREQUAL "" )
 endforeach ( lib ${LAMAPP_LINK_LIBRARIES} )
 
 # override the linker flags if lama is build SHARED
 if ( NOT ${LAMA_LIBRARY_TYPE} STREQUAL STATIC )
-    set ( ADDITIONAL_LINKER_FLAGS "-ldl -L\${LAMA_ROOT}/lib -lama" )
-    # if boost system is found, add it to the linker flaggs
-    if ( Boost_SYSTEM_LIBRARY )
-        foreach ( LIBRARY_DIR ${Boost_LIBRARY_DIRS} )
-            set ( ADDITIONAL_LINKER_FLAGS "${ADDITIONAL_LINKER_FLAGS} -L${LIBRARY_DIR}" )
-        endforeach ( LIBRARY_DIR )
-        set ( ADDITIONAL_LINKER_FLAGS "${ADDITIONAL_LINKER_FLAGS} -lboost_system" )
-    endif( Boost_SYSTEM_LIBRARY )  
+    set ( LAMA_USER_LINK_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${ADDITIONAL_CXX_FLAGS} ${ADDITIONAL_LINKER_FLAGS} -ldl ${LAMA_USER_LINK_LIBRARIES}" )
 endif ( NOT ${LAMA_LIBRARY_TYPE} STREQUAL STATIC )
-
-# add openmp flag if openmp is available
-if ( OPENMP_FOUND )
-    set ( ADDITIONAL_LINKER_FLAGS "${OpenMP_CXX_FLAGS} ${ADDITIONAL_LINKER_FLAGS}" )
-endif( OPENMP_FOUND )
 
 # generate file make.inc + install it
 configure_file ( "${CMAKE_SOURCE_DIR}/examples/make.inc.in" "${PROJECT_BINARY_DIR}/examples/make.inc" )

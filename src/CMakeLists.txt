@@ -90,7 +90,10 @@ setAndCheckCache ( "CUDA" )
 include(CUDAComputeCapability)
 
 ### Include Compiler Flags, after all packages are found ###
-include ( CompilerFlags )
+# TB: removed, now already done by other packages: include ( CompilerFlags )
+# TB: only flags concerning NVCC are used ( not required by other projects)
+include ( SetCPPFlags )
+include ( SetNVCCFlags )
 
 ## OPENMP
 if ( NOT LAMA_OMP_SCHEDULE )
@@ -100,10 +103,6 @@ endif ( NOT LAMA_OMP_SCHEDULE )
 # TODO: SUMMARY
 #message ( STATUS "OpenMP schedule set to " ${LAMA_OMP_SCHEDULE} )
 add_definitions ( -DLAMA_OMP_SCHEDULE=${LAMA_OMP_SCHEDULE} )
-
-if ( OPENMP_FOUND )
-    set ( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}" )
-endif( OPENMP_FOUND )
 
 # MKL FOUND
 if ( LAMA_BLAS_NAME STREQUAL "MKL" )
