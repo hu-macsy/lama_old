@@ -54,7 +54,7 @@ namespace common
     /** C++11: here we can use unique_ptr for a scoped array */
 
     template<typename T>
-    class scoped_array public std::unique_ptr<T[]>
+    class scoped_array : public std::unique_ptr<T[]>
     {
     public:
         scoped_array( T* ptr ) : std::unique_ptr<T[]>( ptr )

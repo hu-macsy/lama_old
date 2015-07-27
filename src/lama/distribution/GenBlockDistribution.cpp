@@ -88,7 +88,7 @@ GenBlockDistribution::GenBlockDistribution(
     const std::vector<IndexType>& localSizes,
     const CommunicatorPtr communicator )
 
-    : Distribution( globalSize, communicator )
+    : Distribution( globalSize, communicator ), mOffsets( new IndexType[mCommunicator->getSize()] ) 
 {
     PartitionId size = mCommunicator->getSize();
     PartitionId rank = mCommunicator->getRank();
@@ -108,7 +108,7 @@ GenBlockDistribution::GenBlockDistribution(
     const IndexType lastGlobalIdx,
     const CommunicatorPtr communicator )
 
-    : Distribution( globalSize, communicator )
+    : Distribution( globalSize, communicator ), mOffsets( new IndexType[mCommunicator->getSize()] ) 
 {
     PartitionId size = mCommunicator->getSize();
     PartitionId rank = mCommunicator->getRank();
@@ -125,7 +125,7 @@ GenBlockDistribution::GenBlockDistribution(
     const IndexType globalSize,
     const IndexType localSize,
     const CommunicatorPtr communicator )
-    : Distribution( globalSize, communicator )
+    : Distribution( globalSize, communicator ), mOffsets( new IndexType[mCommunicator->getSize()] ) 
 {
     int size = mCommunicator->getSize();
     int rank = mCommunicator->getRank();
@@ -138,7 +138,7 @@ GenBlockDistribution::GenBlockDistribution(
     const float weight,
     const CommunicatorPtr communicator )
 
-    : Distribution( globalSize, communicator )
+    : Distribution( globalSize, communicator ), mOffsets( new IndexType[mCommunicator->getSize()] ) 
 {
     int size = mCommunicator->getSize();
     int rank = mCommunicator->getRank();
