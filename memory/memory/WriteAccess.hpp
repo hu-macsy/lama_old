@@ -139,19 +139,19 @@ public:
      * for all other locations this is done lazy.
      *
      */
-    void resize( const IndexType newSize );
+    void resize( const common::IndexType newSize );
 
     /**
      * @brief Reserves storage for the wrapped LAMAArray at the associated location.
      *
      * @param[in] capacity  the number of elements that should fit into the new storage
      */
-    void reserve( const IndexType capacity );
+    void reserve( const common::IndexType capacity );
 
     /**
      *  @brief Queries the capacity of the array on the reserved context.
      */
-    IndexType capacity() const;
+    common::IndexType capacity() const;
 
     /**
      * @brief Releases the WriteAccess on the associated LAMAArray.
@@ -168,7 +168,7 @@ public:
      *
      * @return  the size of the wrapped LAMAArray
      */
-    inline IndexType size() const;
+    inline common::IndexType size() const;
 
 protected:
 
@@ -239,7 +239,7 @@ WriteAccess<ValueType>::operator ValueType*()
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-inline IndexType WriteAccess<ValueType>::size() const
+inline common::IndexType WriteAccess<ValueType>::size() const
 {
     if ( mArray )
     {
@@ -265,7 +265,7 @@ void WriteAccess<ValueType>::clear()
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void WriteAccess<ValueType>::resize( const IndexType newSize )
+void WriteAccess<ValueType>::resize( const common::IndexType newSize )
 {
     COMMON_ASSERT( mArray, "WriteAccess has already been released." )
     // do not log before check of mArray
@@ -277,7 +277,7 @@ void WriteAccess<ValueType>::resize( const IndexType newSize )
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void WriteAccess<ValueType>::reserve( const IndexType capacity )
+void WriteAccess<ValueType>::reserve( const common::IndexType capacity )
 {
     COMMON_ASSERT( mArray, "WriteAccess has already been released." )
     LAMA_LOG_DEBUG( logger, "reserve " << *mArray << " to new capacity " << capacity )
@@ -288,7 +288,7 @@ void WriteAccess<ValueType>::reserve( const IndexType capacity )
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-IndexType WriteAccess<ValueType>::capacity() const
+common::IndexType WriteAccess<ValueType>::capacity() const
 {
     COMMON_ASSERT( mArray, "WriteAccess has already been released." )
     return mArray->capacity( mContextDataIndex );

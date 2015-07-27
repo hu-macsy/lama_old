@@ -30,9 +30,7 @@
  * @date 14.04.2010
  * @since 1.0.0
  */
-
-#ifndef TYPETRAITS_HPP_
-#define TYPETRAITS_HPP_
+#pragma once
 
 #include <lama/LAMATypes.hpp>
 
@@ -140,4 +138,3 @@ public:
 
 } //namespace lama
 
-#endif // TYPETRAITS_HPP_

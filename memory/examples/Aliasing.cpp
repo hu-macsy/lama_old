@@ -42,6 +42,7 @@ using namespace memory;
 LAMA_LOG_DEF_LOGGER( logger, "ContextTest" )
 
 using namespace memory;
+using common::IndexType;
 
 typedef LAMAArray<double> Array;
 

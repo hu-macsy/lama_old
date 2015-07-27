@@ -522,7 +522,7 @@ public:
 
     /* Implementation of pure method of class Matrix. */
 
-    virtual memory::ScalarType getValueType() const;
+    virtual common::ScalarType getValueType() const;
 
     /** Method writes dense matrix to a file.
      *

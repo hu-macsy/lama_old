@@ -2248,7 +2248,7 @@ void SparseMatrix<ValueType>::resetDiagonalProperty()
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-memory::ScalarType SparseMatrix<ValueType>::getValueType() const
+common::ScalarType SparseMatrix<ValueType>::getValueType() const
 {
     return common::getScalarType<ValueType>();
 }

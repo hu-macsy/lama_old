@@ -80,7 +80,7 @@ void LAMAArrayUtils::assignImpl(
 template<typename ValueType>
 void LAMAArrayUtils::assignImpl1( LAMAArray<ValueType>& target, const ContextArray& source, const ContextPtr loc )
 {
-    memory::ScalarType sourceType = source.getValueType();
+    common::ScalarType sourceType = source.getValueType();
 
     if( sourceType == target.getValueType() )
     {
@@ -200,7 +200,7 @@ void LAMAArrayUtils::assignScalar( LAMAArray<ValueType>& target, const Scalar& v
 
 void LAMAArrayUtils::assignScalar( ContextArray& target, const Scalar& value, ContextPtr context )
 {
-    memory::ScalarType arrayType = target.getValueType();
+    common::ScalarType arrayType = target.getValueType();
 
     switch( arrayType )
     {

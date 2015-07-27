@@ -524,7 +524,7 @@ public:
 
     /* Implementation of pure method of class Matrix. */
 
-    virtual memory::ScalarType getValueType() const;
+    virtual common::ScalarType getValueType() const;
 
     /* Implementation of pure method Matrix::create with covariant return type */
 

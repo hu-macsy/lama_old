@@ -132,7 +132,7 @@ public:
 
     /** Objects of this class should give info about their value type. */
 
-    virtual memory::ScalarType getValueType() const = 0;
+    virtual common::ScalarType getValueType() const = 0;
 
     /** Clear the matrix storage, resets size to 0 x 0.
      *
@@ -548,7 +548,7 @@ public:
 
     /** Implementation of pure method. */
 
-    virtual memory::ScalarType getValueType() const;
+    virtual common::ScalarType getValueType() const;
 
     /** Construct a matrix from a dense matrix in row-major order (C-style).
      *  Values of the matrix will be considered as zero if their absolute value is smaller than eps.

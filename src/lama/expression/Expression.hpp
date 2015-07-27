@@ -30,8 +30,7 @@
  * @date 28.03.2011
  * @since 1.0.0
  */
-#ifndef LAMA_EXPRESSION_HPP_
-#define LAMA_EXPRESSION_HPP_
+#pragma once
 
 /**
  * @brief The namespace lama holds everything of the LAMA Library.
@@ -161,4 +160,3 @@ typedef Expression<Expression_SMM,Expression_SM,Plus> Expression_SMM_SM;
 
 } //namespace lama
 
-#endif // LAMA_EXPRESSION_HPP_

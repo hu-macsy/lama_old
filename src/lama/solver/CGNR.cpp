@@ -74,7 +74,7 @@ void CGNR::initialize( const Matrix& coefficients ){
     Solver::initialize(coefficients);
  	CGNRRuntime& runtime = getRuntime();
 
-    memory::ScalarType type = coefficients.getValueType();
+    common::ScalarType type = coefficients.getValueType();
     runtime.mEps = std::numeric_limits<double>::epsilon()*3;   //CAREFUL: No abstract type 
 
 

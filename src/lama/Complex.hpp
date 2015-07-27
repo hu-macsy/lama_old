@@ -31,8 +31,7 @@
  * @since 1.1.0
  */
 
-#ifndef COMPLEX_H_
-#define COMPLEX_H_
+#pragma once
 
 #ifdef __CUDACC__
 #define CUDA_CALLABLE_MEMBER __device__ __host__
@@ -916,4 +915,3 @@ operator>>( std::basic_istream<InputType1,InputType2>& input, Complex<ValueType>
 #undef COMPLEX_OPERATOR_NONMEMBER_CUDA
 #undef COMPLEX_OPERATOR_NONMEMBER_NONCUDA
 
-#endif /* COMPLEX_H_ */

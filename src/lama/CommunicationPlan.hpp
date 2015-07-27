@@ -30,8 +30,7 @@
  * @date 10.03.2011
  * @since 1.0.0
  */
-#ifndef LAMA_COMMUNICATION_PLAN_HPP_
-#define LAMA_COMMUNICATION_PLAN_HPP_
+#pragma once
 
 // for dll_import
 #include <common/config.hpp>
@@ -264,6 +263,4 @@ IndexType CommunicationPlan::totalQuantity() const
     return mQuantity;
 }
 
-}
-
-#endif // LAMA_COMMUNICATION_PLAN_HPP_
+}  // namespace

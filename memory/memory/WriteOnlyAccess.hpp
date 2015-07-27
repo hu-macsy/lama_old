@@ -90,7 +90,7 @@ public:
      *
      * Attention: this kind of write access assumes that the array is completely new written.
      */
-    WriteOnlyAccess( LAMAArray<ValueType>& array, ContextPtr context, const IndexType size )
+    WriteOnlyAccess( LAMAArray<ValueType>& array, ContextPtr context, const common::IndexType size )
         : WriteAccess<ValueType>( array, context, false )
     {
         this->resize( 0 );      // invalidates all data before resize
@@ -99,7 +99,7 @@ public:
         LAMA_LOG_DEBUG( logger, "WriteOnlyAccess<" << common::getScalarType<ValueType>() << ">: " << *mArray )
     }
 
-    WriteOnlyAccess( LAMAArray<ValueType>& array, const IndexType size )
+    WriteOnlyAccess( LAMAArray<ValueType>& array, const common::IndexType size )
         : WriteAccess<ValueType>( array, false )
     {
         this->resize( 0 );      // invalidates all data before resize

@@ -47,8 +47,11 @@
 #include <lama/solver/criteria/IterationCount.hpp>
 #include <lama/norm/L2Norm.hpp>
 
+#include <common/unique_ptr.hpp>
+
 using namespace std;
 using namespace lama;
+using common::unique_ptr;
 
 int main( int argc, char* argv[] )
 {
@@ -83,8 +86,8 @@ int main( int argc, char* argv[] )
 
     // use auto pointer so that matrix will be deleted at program exit
 
-    auto_ptr<Matrix> matrixPtr;
-    auto_ptr<Vector> rhsPtr;
+    unique_ptr<Matrix> matrixPtr;
+    unique_ptr<Vector> rhsPtr;
 
     if ( lamaconf.getValueType() == common::scalar::FLOAT )
     {
@@ -122,7 +125,7 @@ int main( int argc, char* argv[] )
 
     // for solutin create vector with same format/type as rhs, size = numRows, init = 0.0
 
-    auto_ptr<Vector> solutionPtr( rhs.clone( rhs.getDistributionPtr() ) );
+    unique_ptr<Vector> solutionPtr( rhs.clone( rhs.getDistributionPtr() ) );
     Vector& solution = *solutionPtr;
 
     int numRows = inMatrix.getNumRows();

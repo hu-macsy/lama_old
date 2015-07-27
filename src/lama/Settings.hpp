@@ -30,8 +30,7 @@
  * @date 19.06.2013
  * @since 1.0.1
  */
-#ifndef LAMA_SETTINGS_HPP_
-#define LAMA_SETTINGS_HPP_
+#pragma once
 
 #include <logging/logging.hpp>
 
@@ -111,7 +110,6 @@ static    bool convertYesNoString( bool& flag, const char* value );
     static bool init();
 };
 
-}
-// namespace
+} // namespace
 
-#endif //  LAMA_SETTINGS_HPP_
+

@@ -30,8 +30,7 @@
  * @date 28.03.2011
  * @since 1.0.0
  */
-#ifndef LAMA_MATRIX_VECTOR_EXPRESSIONS_HPP_
-#define LAMA_MATRIX_VECTOR_EXPRESSIONS_HPP_
+#pragma once
 
 #include <lama/matrix/Matrix.hpp>
 
@@ -358,4 +357,3 @@ inline Expression_SVM_SV operator+( const Expression_SVM& exp1, const Expression
 
 }
 
-#endif // LAMA_MATRIX_VECTOR_EXPRESSIONS_HPP_

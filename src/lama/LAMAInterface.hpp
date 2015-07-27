@@ -30,8 +30,7 @@
  * @date 27.04.2011
  * @since 1.0.0
  */
-#ifndef LAMA_LAMA_INTERFACE_HPP_
-#define LAMA_LAMA_INTERFACE_HPP_
+#pragma once
 
 // for dll_import
 #include <common/config.hpp>
@@ -163,4 +162,3 @@ protected:
         COMMON_THROWEXCEPTION( "Method " #module "::" #function " not available on " << *loc ); \
     }
 
-#endif // LAMA_LAMA_INTERFACE_HPP_

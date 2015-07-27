@@ -85,7 +85,7 @@ void BiCG::initialize( const Matrix& coefficients )
     runtime.mPScalar2 = 0.0;
     runtime.mTransposeA.reset( coefficients.clone() );
 
-    memory::ScalarType type = coefficients.getValueType();
+    common::ScalarType type = coefficients.getValueType();
 
     runtime.mP2.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
     runtime.mQ2.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );

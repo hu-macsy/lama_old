@@ -30,8 +30,7 @@
  * @date 22.02.2011
  * @since 1.0.0
  */
-#ifndef LAMA_SCALAR_HPP_
-#define LAMA_SCALAR_HPP_
+#pragma once
 
 // for dll_import
 #include <common/config.hpp>
@@ -521,4 +520,3 @@ inline Scalar min( const Scalar a, const Scalar b )
 
 } //namespace lama
 
-#endif // LAMA_SCALAR_HPP_

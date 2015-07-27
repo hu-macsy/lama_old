@@ -30,8 +30,8 @@
  * @date 10.10.2011
  * @since 1.0.0
  */
-#ifndef LAMA_LAMA_ARRAY_UTILS_HPP_
-#define LAMA_LAMA_ARRAY_UTILS_HPP_
+#pragma once
+
 // for dll_import
 #include <common/config.hpp>
 
@@ -118,7 +118,5 @@ private:
 
     LAMA_LOG_DECL_STATIC_LOGGER( logger )};
 
-}
-// namespace
+}  // namespace
 
-#endif // LAMA_LAMA_ARRAY_UTILS_HPP_

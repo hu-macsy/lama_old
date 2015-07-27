@@ -91,7 +91,7 @@ public:
         const LAMAArray<IndexType>& ja,
         const ContextArray& values )
     {
-        memory::ScalarType arrayType = values.getValueType();
+        common::ScalarType arrayType = values.getValueType();
 
         switch ( arrayType )
         {
@@ -133,7 +133,7 @@ case common::scalar::SCALAR_ARITHMETIC_TYPE##I:                                 
 
     void buildCSRData( LAMAArray<IndexType>& csrIA, LAMAArray<IndexType>& csrJA, ContextArray& csrValues ) const
     {
-        memory::ScalarType arrayType = csrValues.getValueType();
+        common::ScalarType arrayType = csrValues.getValueType();
 
         switch ( arrayType )
         {
@@ -164,7 +164,7 @@ case common::scalar::SCALAR_ARITHMETIC_TYPE##I:                               \
 
     void getRow( ContextArray& row, const IndexType irow ) const
     {
-        common::scalar::ScalarType arrayType = row.getValueType();
+        common::ScalarType arrayType = row.getValueType();
 
         switch ( arrayType )
         {
@@ -196,7 +196,7 @@ case common::scalar::SCALAR_ARITHMETIC_TYPE##I:                                \
             COMMON_THROWEXCEPTION( *this << ": has not diagonal property, cannot get diagonal" )
         }
 
-        memory::ScalarType arrayType = diagonal.getValueType();
+        common::ScalarType arrayType = diagonal.getValueType();
 
         switch ( arrayType )
         {
@@ -243,7 +243,7 @@ case common::scalar::SCALAR_ARITHMETIC_TYPE##I:                                 
             COMMON_THROWEXCEPTION( *this << ": has not diagonal property, cannot set diagonal" )
         }
 
-        memory::ScalarType arrayType = diagonal.getValueType();
+        common::ScalarType arrayType = diagonal.getValueType();
 
         switch ( arrayType )
         {
@@ -276,7 +276,7 @@ case common::scalar::SCALAR_ARITHMETIC_TYPE##I:                                 
     {
         LAMA_ASSERT_EQUAL_ERROR( this->getNumRows(), diagonal.size() )
 
-        memory::ScalarType arrayType = diagonal.getValueType();
+        common::ScalarType arrayType = diagonal.getValueType();
 
         switch ( arrayType )
         {

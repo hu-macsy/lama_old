@@ -30,8 +30,7 @@
  * @date 31.07.2012
  * @since 1.0.0
  */
-#ifndef LAMA_STORAGE_IO_HPP_
-#define LAMA_STORAGE_IO_HPP_
+#pragma once
 
 // for dll_import
 #include <common/config.hpp>
@@ -304,4 +303,3 @@ public:
 /* -------------------------------------------------------------------------- */
 
 }
-#endif // LAMA_CSRSTORAGE_HPP_

@@ -31,8 +31,7 @@
  * @since 1.0.0
  */
 
-#ifndef LAMA_LAMA_INTERFACE_REGISTRY_HPP_
-#define LAMA_LAMA_INTERFACE_REGISTRY_HPP_
+#pragma once
 
 // for dll_import
 #include <common/config.hpp>
@@ -111,4 +110,3 @@ private:
 
 } // namespace
 
-#endif // LAMA_LAMA_INTERFACE_REGISTRY_HPP_

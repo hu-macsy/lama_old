@@ -30,8 +30,7 @@
  * @date 03.04.2013
  * @since 1.0.0
  */
-#ifndef LAMA_UTILS_INTERFACE_HPP_
-#define LAMA_UTILS_INTERFACE_HPP_
+#pragma once
 
 // for dll_import
 #include <common/config.hpp>
@@ -2011,7 +2010,5 @@ struct COOUtilsInterface
     COOUtilsInterface ();
 };
 
-}
-//namespace lama
+} //namespace lama
 
-#endif // LAMA_UTILS_INTERFACE_HPP_

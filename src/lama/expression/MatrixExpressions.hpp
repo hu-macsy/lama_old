@@ -30,8 +30,7 @@
  * @date 28.03.2011
  * @since 1.0.0
  */
-#ifndef LAMA_MATRIX_EXPRESSIONS_HPP_
-#define LAMA_MATRIX_EXPRESSIONS_HPP_
+#pragma once
 
 #include <lama/matrix/Matrix.hpp>
 
@@ -426,4 +425,3 @@ inline Expression_SM_SM operator-( const Expression_SM& exp, const Matrix& matri
 
 } // namespace LAMA
 
-#endif // LAMA_MATRIX_EXPRESSIONS_HPP_

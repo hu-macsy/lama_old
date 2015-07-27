@@ -30,6 +30,8 @@
  * @date 25.05.2011
  */
 
+#pragma once
+
 // for dll_import
 #include <common/config.hpp>
 

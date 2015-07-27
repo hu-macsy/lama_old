@@ -63,14 +63,6 @@
 namespace memory
 {
 
-// common::IndexType will be used for indexing 
-
-using common::IndexType;
-
-// common::ScalarType will be used for Factory
-
-using common::ScalarType;
-
 // Forward declaration of friend classes.
 
 template<typename ValueType>
@@ -88,14 +80,14 @@ class COMMON_DLL_IMPORTEXPORT ContextArray:
 
     public Printable, 
     public tasking::SyncTokenMember,
-    public common::Factory<ScalarType, ContextArray*>
+    public common::Factory<common::ScalarType, ContextArray*>
 {
     // Member variables of this class
 
 protected:
 
-    IndexType mSize;        //!< number of entries for the context array, common for all contexts
-    IndexType mValueSize;   //!< number of bytes needed for one data element
+    common::IndexType mSize;        //!< number of entries for the context array, common for all contexts
+    common::IndexType mValueSize;   //!< number of bytes needed for one data element
 
     bool constFlag;         //!< if true the array cannot be written
 
@@ -110,9 +102,9 @@ public:
     /**
      * @brief Query the value type of the array elements, e.g. DOUBLE or FLOAT.
      */
-    virtual ScalarType getValueType() const = 0;
+    virtual common::ScalarType getValueType() const = 0;
 
-    using common::Factory<ScalarType, ContextArray*>::create;
+    using common::Factory<common::ScalarType, ContextArray*>::create;
 
     /**
      *  Each derived class must provide a clone function. This will
@@ -131,7 +123,7 @@ public:
      *
      * @return the number of entries of the array.
      */
-    inline IndexType size() const;
+    inline common::IndexType size() const;
 
     /**
      * @brief Gets the first context where the data of this LAMAArray is available.
@@ -169,7 +161,7 @@ public:
     /**
      * @brief Query the capacity ( in number of elements ) at a certain context.
      */
-    IndexType capacity( ContextPtr context ) const;
+    common::IndexType capacity( ContextPtr context ) const;
     
     /**
      * @brief Query if data is valid in a certain context
@@ -182,7 +174,7 @@ public:
      * Changes the size of the array. No memory is freed if the size becomes smaller.
      * Reserves additional memory on all valid locations.
      */
-    void resize( IndexType size );
+    void resize( common::IndexType size );
 
     /**
      * @brief clear of an array is the same as resize 0 
@@ -200,7 +192,7 @@ public:
 
 protected:
 
-    explicit ContextArray( const IndexType n, const IndexType size ) : 
+    explicit ContextArray( const common::IndexType n, const common::IndexType size ) : 
 
         mSize( n ), 
         mValueSize( size ), 
@@ -243,7 +235,7 @@ protected:
      *  @param[in] index is the reference to the context data as the result of an acquired access.
      */
 
-    IndexType capacity( ContextDataIndex index ) const;
+    common::IndexType capacity( ContextDataIndex index ) const;
 };
 
 /* ---------------------------------------------------------------------------------*/
@@ -252,7 +244,7 @@ typedef ContextArray _LAMAArray;
 
 /* ---------------------------------------------------------------------------------*/
 
-inline IndexType ContextArray::size() const
+inline common::IndexType ContextArray::size() const
 {
     return mSize;
 }
@@ -273,7 +265,7 @@ inline bool ContextArray::isValid( ContextPtr context ) const
 
 /* ---------------------------------------------------------------------------------*/
 
-inline void ContextArray::resize( IndexType size )
+inline void ContextArray::resize( common::IndexType size )
 {
     // resize on all valid locations
 
@@ -293,7 +285,7 @@ inline void ContextArray::clear()
 
 /* ---------------------------------------------------------------------------------*/
 
-inline IndexType ContextArray::capacity( ContextPtr context ) const
+inline common::IndexType ContextArray::capacity( ContextPtr context ) const
 {
     // will return 0 if no data is available at the specified context
 
@@ -302,11 +294,11 @@ inline IndexType ContextArray::capacity( ContextPtr context ) const
 
 /* ---------------------------------------------------------------------------------*/
 
-inline IndexType ContextArray::capacity( ContextDataIndex index ) const
+inline common::IndexType ContextArray::capacity( ContextDataIndex index ) const
 {
     const ContextData& entry = mContextDataManager[index];
 
-    return static_cast<IndexType>( entry.capacity() / mValueSize );
+    return static_cast<common::IndexType>( entry.capacity() / mValueSize );
 }
 
 /* ---------------------------------------------------------------------------------*/

@@ -132,8 +132,13 @@ add_library ( ama ${LAMA_LIBRARY_TYPE} ${CXX_SOURCES} ${HEADERS} )
 
 ### set target link libraries ###
 
+set ( LAMA_USER_LINK_LIBRARIES "-L\${LAMA_ROOT}/lib -lama" )
+
+set ( LAMA_LINK_LIBRARIES ${common_LIBRARY} )
+set ( LAMA_USER_LINK_LIBRARIES "${LAMA_USER_LINK_LIBRARIES} -lcommon" )
+
 set ( LAMA_LINK_LIBRARIES ${logging_LIBRARY} )
-set ( LAMA_USER_LINK_LIBRARIES "-L\${LAMA_ROOT}/lib -lama -llogging" )
+set ( LAMA_USER_LINK_LIBRARIES "${LAMA_USER_LINK_LIBRARIES} -llogging" )
 
 set ( LAMA_LINK_LIBRARIES ${LAMA_LINK_LIBRARIES} ${tasking_LIBRARY} )
 set ( LAMA_USER_LINK_LIBRARIES "${LAMA_USER_LINK_LIBRARIES} -ltasking" )
@@ -143,7 +148,7 @@ set ( LAMA_USER_LINK_LIBRARIES "${LAMA_USER_LINK_LIBRARIES} -lmemory" )
 
 if ( LAMA_TRACE_LEVEL STREQUAL "ON" )
     set( LAMA_LINK_LIBRARIES ${LAMA_LINK_LIBRARIES} ${tracing_LIBRARY} )
-    set ( LAMA_USER_LINK_LIBRARIES "${LAMA_USER_LINK_LIBRARIES} -lscaitrace" )
+    set ( LAMA_USER_LINK_LIBRARIES "${LAMA_USER_LINK_LIBRARIES} -ltracing" )
 endif ( )
 
 # amacuda

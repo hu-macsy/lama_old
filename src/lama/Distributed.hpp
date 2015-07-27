@@ -30,8 +30,7 @@
  * @date 22.02.2011
  * @since 1.0.0
  */
-#ifndef LAMA_DISTRIBUTED_HPP_
-#define LAMA_DISTRIBUTED_HPP_
+#pragma once
 
 // for dll_import
 #include <common/config.hpp>
@@ -90,5 +89,3 @@ DistributionPtr Distributed::getDistributionPtr() const
 }
 
 }
-
-#endif // LAMA_DISTRIBUTED_HPP_

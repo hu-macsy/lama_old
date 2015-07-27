@@ -31,6 +31,8 @@
  * @since 1.0.0
  */
 
+#pragma once
+
 // for dll_import
 #include <common/config.hpp>
 
@@ -101,7 +103,7 @@ public:
 
     /** Getter routine for the data type of the elements. */
 
-    virtual memory::ScalarType getValueType() const;
+    virtual common::ScalarType getValueType() const;
 
     /** Getter routine for the enum value that stands for this format. */
 

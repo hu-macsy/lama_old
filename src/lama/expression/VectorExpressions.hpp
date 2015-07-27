@@ -30,8 +30,7 @@
  * @date 01.06.2011
  * @since 1.0.0
  */
-#ifndef LAMA_VECTOREXPRESSIONS_HPP_
-#define LAMA_VECTOREXPRESSIONS_HPP_
+#pragma once 
 
 #include <lama/Scalar.hpp>
 #include <lama/Vector.hpp>
@@ -203,4 +202,3 @@ inline Expression_SV_SV operator-( const Expression_SV& exp1, const Expression_S
 
 }
 
-#endif // LAMA_VECTOREXPRESSIONS_HPP_
