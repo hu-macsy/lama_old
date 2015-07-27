@@ -74,7 +74,7 @@ void solverTestMethod( ContextPtr context )
     typedef typename MatrixType::MatrixValueType ValueType;
     LoggerPtr consoleLogger(
         new CommonLogger( "<SimpleAMG>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly,
-                          common::unique_ptr<Timer>( new Timer() ) ) );
+                          new Timer() ) );
     EquationHelper::EquationSystem<ValueType> system = EquationHelper::get8x8SystemA<ValueType>();
     DenseVector<ValueType> solution( system.coefficients.getNumRows(), 0.0 );
     const DenseVector<ValueType> rhs( system.rhs );

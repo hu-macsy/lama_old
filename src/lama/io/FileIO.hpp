@@ -85,7 +85,7 @@ void FileIO::readBinaryData( std::fstream& inFile, UserDataType data[], const In
     {
         // allocate buffer with file data for type conversion
 
-        common::unique_ptr<FileDataType[]> buffer( new FileDataType[n] );
+        common::scoped_array<FileDataType> buffer( new FileDataType[n] );
 
         inFile.read( reinterpret_cast<char*>( buffer.get() ), sizeof(FileDataType) * n );
 
@@ -107,7 +107,7 @@ void FileIO::readBinaryData( std::fstream& inFile, UserDataType data[], const In
 
     // allocate buffer for type conversion and/or adding offset
 
-    common::unique_ptr<FileDataType[]> buffer( new FileDataType[n] );
+    common::scoped_array<FileDataType> buffer( new FileDataType[n] );
 
     inFile.read( reinterpret_cast<char*>( buffer.get() ), sizeof(FileDataType) * n );
 

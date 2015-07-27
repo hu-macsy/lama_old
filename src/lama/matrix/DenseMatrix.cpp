@@ -52,6 +52,7 @@
 #include <boost/preprocessor.hpp>
 
 using common::unique_ptr;
+using common::scoped_array;
 
 namespace lama
 {
@@ -354,7 +355,7 @@ DenseMatrix<ValueType>::DenseMatrix( DistributionPtr distribution )
         const int n = dist.getNumPartitions();
         const int numLocalRows = dist.getLocalSize();
         computeOwners();
-        unique_ptr<int[]> numCols( new int[n] );
+        scoped_array<int> numCols( new int[n] );
 
         for ( int i = 0; i < n; ++i )
         {
@@ -1049,7 +1050,7 @@ void DenseMatrix<ValueType>::allocateData()
         return;
     }
 
-    unique_ptr<PartitionId[]> numColsPartition( new PartitionId[numChunks] );
+    scoped_array<PartitionId> numColsPartition( new PartitionId[numChunks] );
 
     for ( PartitionId p = 0; p < numChunks; ++p )
     {

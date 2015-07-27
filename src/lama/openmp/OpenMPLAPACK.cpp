@@ -190,7 +190,7 @@ void OpenMPLAPACK::getinv( const IndexType n, ValueType* a, const IndexType lda 
 
     // temporary array for pivot indexes needed, deleted by destructor
 
-    common::unique_ptr<int[]> ipiv( new int[n] );
+    common::scoped_array<int> ipiv( new int[n] );
 
     getrf( CblasRowMajor, n, n, a, lda, ipiv.get() );
     getri( CblasRowMajor, n, a, lda, ipiv.get() );

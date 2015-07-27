@@ -46,7 +46,7 @@
 
 #include <boost/preprocessor.hpp>
 
-using common::unique_ptr;
+using common::scoped_array;
 
 namespace lama
 {
@@ -242,9 +242,9 @@ void LAPACKe_LAPACK::getinv( const IndexType n, float* a, const IndexType lda )
 {
     int info = 0;
 
-    // unique_ptr, will also be freed in case of exception
+    // scoped_array, will also be freed in case of exception
 
-    unique_ptr<IndexType[]> ipiv( new IndexType[n] );
+    scoped_array<IndexType> ipiv( new IndexType[n] );
 
     LAMA_LOG_INFO( logger, "getinv<float> for " << n << " x " << n << " matrix, uses MKL" )
 
@@ -274,7 +274,7 @@ void LAPACKe_LAPACK::getinv( const IndexType n, double* a, const IndexType lda )
 {
     int info = 0;
 
-    unique_ptr<IndexType[]> ipiv( new IndexType[n] );
+    scoped_array<IndexType> ipiv( new IndexType[n] );
 
     LAMA_LOG_INFO( logger, "getinv<double> for " << n << " x " << n << " matrix, uses MKL" )
 
@@ -306,9 +306,9 @@ void LAPACKe_LAPACK::getinv( const IndexType n, ComplexFloat* a, const IndexType
 {
     int info = 0;
 
-    // unique_ptr: delete by destructor, works also for exceptions
+    // scoped_array: delete by destructor, works also for exceptions
 
-    unique_ptr<IndexType[]> ipiv( new IndexType[n] );
+    scoped_array<IndexType> ipiv( new IndexType[n] );
 
     LAMA_LOG_INFO( logger, "getinv<ComplexFloat> for " << n << " x " << n << " matrix, uses MKL" )
 
@@ -349,7 +349,7 @@ void LAPACKe_LAPACK::getinv( const IndexType n, ComplexDouble* a, const IndexTyp
 {
     int info = 0;
 
-    unique_ptr<IndexType[]> ipiv( new IndexType[n] );
+    scoped_array<IndexType> ipiv( new IndexType[n] );
 
     LAMA_LOG_INFO( logger, "getinv<ComplexDouble> for " << n << " x " << n << " matrix, uses MKL" )
 

@@ -80,7 +80,7 @@ void testSolveWithPreconditionmethod()
 //        "<GMRES>: ",
 //        lama::LogLevel::solverInformation,
 //        lama::LoggerWriteBehaviour::toConsoleOnly,
-//        common::unique_ptr<Timer>( new Timer() ) ) );
+//        new Timer() ) );
     GMRES gmresSolver( "GMRESTestSolver"/*, slogger*/ );
     const IndexType N1 = 4;
     const IndexType N2 = 4;
@@ -133,7 +133,7 @@ void testSolveWithoutPreconditionmethod()
 //        "<GMRES>: ",
 //        lama::LogLevel::solverInformation,
 //        lama::LoggerWriteBehaviour::toConsoleOnly,
-//        common::unique_ptr<Timer>( new Timer() ) ) );
+//        new Timer() ) );
     GMRES gmresSolver( "GMRESTestSolver"/*, slogger */ );
     CSRSparseMatrix<ValueType> helpcoefficients;
     MatrixCreator<ValueType>::buildPoisson2D( helpcoefficients, 9, N1, N2 );

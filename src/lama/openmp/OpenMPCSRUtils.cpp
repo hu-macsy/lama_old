@@ -53,7 +53,7 @@
 #include <lama/macros/unused.hpp>
 #include <vector>
 
-using common::unique_ptr;
+using common::scoped_array;
 
 namespace lama
 {
@@ -99,7 +99,7 @@ IndexType OpenMPCSRUtils::scanParallel( PartitionId numThreads, IndexType array[
     // For more threads, we do it in parallel
     // Attention: MUST USE schedule(static)
 
-    unique_ptr<IndexType[]> threadCounter( new IndexType[numThreads] );
+    scoped_array<IndexType> threadCounter( new IndexType[numThreads] );
 
     LAMA_LOG_DEBUG( logger, "scanParallel: " << numValues << " entries for " << numThreads << " threads" )
 
@@ -1009,7 +1009,7 @@ IndexType OpenMPCSRUtils::matrixAddSizes(
 
     #pragma omp parallel
     {
-        unique_ptr<IndexType[]> indexList( new IndexType[numColumns] );
+        scoped_array<IndexType> indexList( new IndexType[numColumns] );
 
         for( IndexType j = 0; j < numColumns; j++ )
         {
@@ -1134,7 +1134,7 @@ IndexType OpenMPCSRUtils::matrixMultiplySizes(
 
     #pragma omp parallel reduction( + : newElems, doubleElems )
     {
-        unique_ptr<IndexType[]> indexList( new IndexType[n] );
+        scoped_array<IndexType> indexList( new IndexType[n] );
 
         for( IndexType j = 0; j < n; j++ )
         {
@@ -1259,8 +1259,8 @@ void OpenMPCSRUtils::matrixAdd(
 
     #pragma omp parallel
     {
-        unique_ptr<IndexType[]> indexList( new IndexType[numColumns] );
-        unique_ptr<ValueType[]> valueList( new ValueType[numColumns] );
+        scoped_array<IndexType> indexList( new IndexType[numColumns] );
+        scoped_array<ValueType> valueList( new ValueType[numColumns] );
 
         for( IndexType j = 0; j < numColumns; j++ )
         {
@@ -1392,7 +1392,7 @@ void OpenMPCSRUtils::matrixMultiplyJA(
 
     #pragma omp parallel
     {
-        unique_ptr<IndexType[]> indexList( new IndexType[numColumns] );
+        scoped_array<IndexType> indexList( new IndexType[numColumns] );
 
         for( IndexType j = 0; j < numColumns; j++ )
         {
@@ -1565,7 +1565,7 @@ void OpenMPCSRUtils::matrixMultiply(
     // determine the number of entries in output matrix
     #pragma omp parallel
     {
-        unique_ptr<IndexType[]> indexList( new IndexType[n] );
+        scoped_array<IndexType> indexList( new IndexType[n] );
 
         for( IndexType j = 0; j < n; j++ )
         {

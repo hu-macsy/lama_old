@@ -73,7 +73,7 @@ AMGSetupFactory& AMGSetupFactory::getFactory()
     {
         // printf("create the AMGSetup factory instance\n");
 
-        theAMGSetupFactory = common::unique_ptr<AMGSetupFactory>( new AMGSetupFactory() );
+        theAMGSetupFactory.reset( new AMGSetupFactory() );
     }
 
     // printf("get the factory\n");

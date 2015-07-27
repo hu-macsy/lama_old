@@ -85,8 +85,8 @@ private:
     PartitionId mNRequests; // allocated size
     PartitionId mUsedRequests; // used size
 
-    common::unique_ptr<MPI_Request[]> mRequests;
-    common::unique_ptr<MPI_Status[]> mStatuses;
+    common::scoped_array<MPI_Request> mRequests;
+    common::scoped_array<MPI_Status> mStatuses;
 };
 
 }  // namespace

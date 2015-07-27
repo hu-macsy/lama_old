@@ -93,19 +93,19 @@ public:
         virtual ~GMRESRuntime();
 
         // arrays to store rotations
-        common::unique_ptr<double[]> mCC;
-        common::unique_ptr<double[]> mSS;
+        common::scoped_array<double> mCC;
+        common::scoped_array<double> mSS;
 
         // array for Hessenberg equation
         // H*y=g
-        common::unique_ptr<double[]> mG;
-        common::unique_ptr<double[]> mY;
+        common::scoped_array<double> mG;
+        common::scoped_array<double> mY;
 
         // Hessenberg matrix
         // mH:  Upper triangular (columnwise)
         // mHd: diagonal band h(i+1,i)
-        common::unique_ptr<double[]> mH;
-        common::unique_ptr<double[]> mHd;
+        common::scoped_array<double> mH;
+        common::scoped_array<double> mHd;
 
         // krylov space
         std::vector<Vector*> *mV;

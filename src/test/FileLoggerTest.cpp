@@ -44,6 +44,7 @@
 using namespace lama;
 using common::Exception;
 using common::unique_ptr;
+using common::scoped_array;
 
 /* --------------------------------------------------------------------- */
 
@@ -70,7 +71,7 @@ BOOST_AUTO_TEST_CASE( LoggingTest )
     LAMA_CHECK_THROW( flogger.setLogFile( logFileName + "1" ), Exception );
     flogger.logMessage( testMessage );
     flogger.closeLogFile();
-    unique_ptr<char[]> fileInput( new char[testMessage.length()] );
+    scoped_array<char> fileInput( new char[testMessage.length()] );
     std::fstream fileStream;
     fileStream.open( logFileName.c_str(), std::fstream::in );
     fileStream.read( fileInput.get(), testMessage.length() );

@@ -183,7 +183,7 @@ LAMA_COMMON_TEST_CASE_TEMPLATE( P_SparseMatrixTest, MatrixType, transposeTest )
     typedef typename MatrixType::MatrixValueType ValueType;
     const IndexType N1 = 2;
     const IndexType N2 = 3;
-    common::unique_ptr<ValueType[]> rawDense( new ValueType[ N1 * N2 ] );
+    common::scoped_array<ValueType> rawDense( new ValueType[ N1 * N2 ] );
 
 // Initialize matrix with some data
 

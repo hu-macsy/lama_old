@@ -36,6 +36,7 @@
     #include <memory>
 #else
     #include <boost/interprocess/smart_ptr/unique_ptr.hpp>
+    #include <boost/scoped_array.hpp>
 #endif
 
 namespace common
@@ -43,6 +44,18 @@ namespace common
 #if __cplusplus > 199711L
     using std::unique_ptr;
 #else
-    using boost::interprocess::unique_ptr;
+    using boost::scoped_array;
+
+    template<typename T>
+    class unique_ptr : public std::auto_ptr<T>
+    {
+    public:
+        unique_ptr( T* ptr ) : std::auto_ptr<T>( ptr ) 
+        {
+        }
+        unique_ptr() : std::auto_ptr<T>() 
+        {
+        }
+    };
 #endif
 }

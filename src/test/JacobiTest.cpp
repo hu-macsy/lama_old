@@ -68,14 +68,10 @@ struct JacobiTestConfig
 {
     JacobiTestConfig()
     {
-        Timer* timerD = new Timer();
-        common::unique_ptr<Timer> autoTimerD( timerD );
-        Timer* timerF = new Timer();
-        common::unique_ptr<Timer> autoTimerF( timerF );
         LoggerPtr loggerD(
             new CommonLogger( "<Jacobi>: ", LogLevel::completeInformation,
                               LoggerWriteBehaviour::toConsoleOnly,
-                              common::unique_ptr<Timer>( new Timer() ) ) );
+                              new Timer() ) );
         mJacobiDouble = new DefaultJacobi( "JacobiTest double solver", loggerD );
         mJacobiFloat = new DefaultJacobi( "JacobiTest float solver", loggerD );
     }
@@ -137,7 +133,7 @@ void testSolveMethod( std::string solverId, ContextPtr context )
     std::string id = solverId;
     LoggerPtr slogger(
         new CommonLogger( solverId, LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly,
-                          common::unique_ptr<Timer>( new Timer() ) ) );
+                          new Timer() ) );
     DefaultJacobi jacobiSolver( "JacobiTest", slogger );
     EquationHelper::EquationSystem<ValueType> system = EquationHelper::get3x3SystemA<ValueType>();
     CSRSparseMatrix<ValueType> matrix( system.coefficients );

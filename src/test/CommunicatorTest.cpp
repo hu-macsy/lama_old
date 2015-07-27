@@ -50,6 +50,7 @@ using namespace memory;
 using namespace tasking;
 using common::Exception;
 using common::unique_ptr;
+using common::scoped_array;
 
 LAMA_LOG_DEF_LOGGER( logger, "Test.CommunicatorTest" )
 
@@ -474,7 +475,7 @@ LAMA_COMMON_TEST_CASE_TM( CommunicatorTest, ValueType, bcastTest )
     LAMA_LOG_INFO( logger, "bcastTest<" << common::getScalarType<ValueType>() << ">" )
     IndexType N = 5;
     ValueType dummyVal = 13;
-    unique_ptr<ValueType[]> vector( new ValueType[N + 1] );
+    scoped_array<ValueType> vector( new ValueType[N + 1] );
     vector[N] = dummyVal;
 
     for ( PartitionId p = 0; p < size; p++ )
@@ -518,8 +519,8 @@ LAMA_COMMON_TEST_CASE_TM( CommunicatorTest, ValueType, scatterTest )
     }
 
     ValueType dummyVal = 13;
-    unique_ptr<ValueType[]> myvals( new ValueType[n + 1] );
-    unique_ptr<ValueType[]> allvals( new ValueType[allN] );
+    scoped_array<ValueType> myvals( new ValueType[n + 1] );
+    scoped_array<ValueType> allvals( new ValueType[allN] );
     myvals[0] = 0;
     myvals[1] = 1;
     myvals[2] = size + dummyVal;
@@ -556,9 +557,9 @@ LAMA_COMMON_TEST_CASE_TM( CommunicatorTest, ValueType, scatterVTest )
     }
 
     ValueType dummyVal = 13;
-    unique_ptr<ValueType[]> myvals( new ValueType[n + 1] );
-    unique_ptr<ValueType[]> allvals( new ValueType[allN] );
-    unique_ptr<int[]> sizes( new int[size] );
+    scoped_array<ValueType> myvals( new ValueType[n + 1] );
+    scoped_array<ValueType> allvals( new ValueType[allN] );
+    scoped_array<int> sizes( new int[size] );
 
     for ( int i = 0; i <= n; i++ )
     {
@@ -607,8 +608,8 @@ LAMA_COMMON_TEST_CASE_TM( CommunicatorTest, ValueType, gatherTest )
     }
 
     ValueType dummyVal = -1;
-    unique_ptr<ValueType[]> myvals( new ValueType[2] );
-    unique_ptr<ValueType[]> allvals( new ValueType[allN] );
+    scoped_array<ValueType> myvals( new ValueType[2] );
+    scoped_array<ValueType> allvals( new ValueType[allN] );
 
     if ( rank == root )
     {
@@ -648,9 +649,9 @@ LAMA_COMMON_TEST_CASE_TM( CommunicatorTest, ValueType, gatherVTest )
     }
 
     ValueType dummyVal = 13;
-    unique_ptr<ValueType[]> myvals( new ValueType[n + 1] );
-    unique_ptr<ValueType[]> allvals( new ValueType[allN] );
-    unique_ptr<int[]> sizes( new int[size] );
+    scoped_array<ValueType> myvals( new ValueType[n + 1] );
+    scoped_array<ValueType> allvals( new ValueType[allN] );
+    scoped_array<int> sizes( new int[size] );
 
     for ( int i = 0; i < n; i++ )
     {
@@ -699,7 +700,7 @@ LAMA_COMMON_TEST_CASE_TM_END();
 LAMA_COMMON_TEST_CASE_TM( CommunicatorTest, ValueType, swapTest )
 {
     int n = 10;
-    unique_ptr<ValueType[]> vector( new ValueType[n] );
+    scoped_array<ValueType> vector( new ValueType[n] );
 
     // initialize vector individually for each processor
 

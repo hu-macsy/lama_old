@@ -130,7 +130,7 @@ public:
      */
     Vector& getReference();
 
-    common::unique_ptr<Vector> create();
+    Vector* create();
 
     void swap( Vector*& other );
 

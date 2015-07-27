@@ -76,7 +76,7 @@ BOOST_AUTO_TEST_CASE( CtorTest )
 {
     LoggerPtr slogger(
         new CommonLogger( "<Richardson>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly,
-                          common::unique_ptr<Timer>( new Timer() ) ) );
+                          new Timer() ) );
 
     Richardson rSolver( "RichardsonTestSolver", slogger );
     BOOST_CHECK_EQUAL( rSolver.getId(), "RichardsonTestSolver" );
@@ -111,7 +111,7 @@ void testSolveWithPreconditionmethod( ContextPtr context )
 
     LoggerPtr slogger(
         new CommonLogger( "<Richardson>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly,
-                          common::unique_ptr<Timer>( new Timer() ) ) );
+                          new Timer() ) );
 
     
 
@@ -193,7 +193,7 @@ void testSolveWithoutPreconditionmethod( ContextPtr context )
 
     LoggerPtr slogger(
         new CommonLogger( "<Richardson>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly,
-                          common::unique_ptr<Timer>( new Timer() ) ) );
+                          new Timer() ) );
 
 
 

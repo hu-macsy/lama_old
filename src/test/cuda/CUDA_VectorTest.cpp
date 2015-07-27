@@ -168,7 +168,7 @@ void matrixTimesVectorTestImpl()
     int numCols = 4 * size;
     DenseVector<ValueType> denseCorrectResult2( dist, 0.0 );
     LAMAArray<ValueType>& localDenseCorrectResult2 = denseCorrectResult2.getLocalValues();
-    unique_ptr<ValueType[]> values( new ValueType[numRows * numCols] );
+    scoped_array<ValueType> values( new ValueType[numRows * numCols] );
     {
         HostWriteAccess<ValueType> localDenseCorrectResult2Access( localDenseCorrectResult2 );
 
@@ -295,7 +295,7 @@ void vectorTimesMatrixTestImpl()
     int numCols = 4 * size;
     DenseVector<ValueType> denseCorrectResult2( dist, 0.0 );
     LAMAArray<ValueType>& localDenseCorrectResult2 = denseCorrectResult2.getLocalValues();
-    unique_ptr<ValueType[]> values( new ValueType[numRows * numCols] );
+    scoped_array<ValueType> values( new ValueType[numRows * numCols] );
     {
         HostWriteAccess<ValueType> localDenseCorrectResult2Access( localDenseCorrectResult2 );
 

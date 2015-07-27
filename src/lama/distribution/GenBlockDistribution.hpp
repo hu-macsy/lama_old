@@ -167,7 +167,7 @@ private    :
 
     GenBlockDistribution(); // disable default destructor
 
-    common::unique_ptr<IndexType[]> mOffsets;//!< offset for each partition
+    common::scoped_array<IndexType> mOffsets;//!< offset for each partition
 
     IndexType mLB, mUB;//!< local range of full size in global values
 

@@ -65,6 +65,7 @@
 
 using namespace lama;
 using common::unique_ptr;
+using common::scoped_array;
 using common::shared_ptr;
 using common::Exception;
 
@@ -195,7 +196,7 @@ BOOST_AUTO_TEST_CASE( buildTest )
     typedef DenseVector<double> DoubleVector;
     PartitionId size = comm->getSize();
     IndexType vectorSize = 3 * size;
-    unique_ptr<double[]> values( new double[vectorSize] );
+    scoped_array<double> values( new double[vectorSize] );
 
     for ( IndexType i = 0; i < vectorSize; ++i )
     {
@@ -250,7 +251,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( vectorTimesMatrixTest, ValueType, test_types )
     DenseVector<ValueType> denseCorrectResult2( dist, 0.0 );
     LAMAArray<ValueType>& localDenseCorrectResult2 =
         denseCorrectResult2.getLocalValues();
-    unique_ptr<ValueType[]> values( new ValueType[ numRows * numCols ] );
+    scoped_array<ValueType> values( new ValueType[ numRows * numCols ] );
     {
         WriteAccess<ValueType> localDenseCorrectResult2Access ( localDenseCorrectResult2 );
 
@@ -338,7 +339,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matrixTimesVectorTest, ValueType, test_types )
     DenseVector<ValueType> denseCorrectResult2( dist, 0.0 );
     LAMAArray<ValueType>& localDenseCorrectResult2 =
         denseCorrectResult2.getLocalValues();
-    unique_ptr<ValueType[]> values( new ValueType[ numRows * numCols ] );
+    scoped_array<ValueType> values( new ValueType[ numRows * numCols ] );
     {
         WriteAccess<ValueType> localDenseCorrectResult2Access ( localDenseCorrectResult2 );
 
@@ -467,7 +468,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( redistributeTest, ValueType, test_types )
     const IndexType chunkSize = 3;// used for cyclic distribution
     shared_ptr<Distribution> dist1 ( new BlockDistribution( vectorSize, comm ) );
     shared_ptr<Distribution> dist2 ( new CyclicDistribution( vectorSize, chunkSize, comm ) );
-    unique_ptr<ValueType[]> vectorData ( new ValueType[vectorSize] );
+    scoped_array<ValueType> vectorData ( new ValueType[vectorSize] );
 
     for ( IndexType i = 0; i < vectorSize; i++ )
     {
@@ -538,7 +539,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gatherTest, ValueType, test_types )
     const IndexType vectorSize = 4 * size;
     shared_ptr<Distribution> dist ( new BlockDistribution( vectorSize, comm ) );
     shared_ptr<Distribution> rep ( new NoDistribution( vectorSize ) );
-    unique_ptr<ValueType[]> vectorData ( new ValueType[vectorSize] );
+    scoped_array<ValueType> vectorData ( new ValueType[vectorSize] );
 
     for ( IndexType i = 0; i < vectorSize; i++ )
     {

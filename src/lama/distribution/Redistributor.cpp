@@ -41,6 +41,7 @@
 #include <common/unique_ptr.hpp>
 
 using common::unique_ptr;
+using common::scoped_array;
 
 namespace lama
 {
@@ -216,8 +217,8 @@ void Redistributor::buildVPlans( const IndexType haloSourceSizes[], const IndexT
 
     // calculate number of provided and required values by summing up the corresponding quantities
 
-    unique_ptr<IndexType[]> provideQuantities( new IndexType[numProvides] );
-    unique_ptr<IndexType[]> requiredQuantities( new IndexType[numRequired] );
+    scoped_array<IndexType> provideQuantities( new IndexType[numProvides] );
+    scoped_array<IndexType> requiredQuantities( new IndexType[numRequired] );
 
     // For building the new schedule we need the sizes, can be calculated by the offsets
 
@@ -253,8 +254,8 @@ void Redistributor::buildRowPlans(
 
     // calculate number of provided and required values by summing up the corresponding quantities
 
-    unique_ptr<IndexType[]> provideQuantities( new IndexType[numProvides] );
-    unique_ptr<IndexType[]> requiredQuantities( new IndexType[numRequired] );
+    scoped_array<IndexType> provideQuantities( new IndexType[numProvides] );
+    scoped_array<IndexType> requiredQuantities( new IndexType[numRequired] );
 
     // For building the new schedule we need the sizes, can be calculated by the offsets
 

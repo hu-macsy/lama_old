@@ -43,7 +43,7 @@ BOOST_AUTO_TEST_CASE( CtorTest )
 {
     LoggerPtr slogger(
         new CommonLogger( "<CGNR>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly,
-                          common::unique_ptr<Timer>( new Timer() ) ) );
+                          new Timer() ) );
 
     CGNR CGNRSolver( "CGNRTestSolver", slogger );
     BOOST_CHECK_EQUAL( CGNRSolver.getId(), "CGNRTestSolver" );
@@ -100,7 +100,7 @@ void testSolveWithPreconditionmethod( ContextPtr context )
 
     LoggerPtr slogger(
         new CommonLogger( "<CGNR>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly,
-                          common::unique_ptr<Timer>( new Timer() ) ) );
+                          new Timer() ) );
 
     CGNR CGNRSolver( "CGNRTestSolver", slogger );
 
@@ -168,7 +168,7 @@ void testSolveWithoutPreconditionmethod( ContextPtr context )
 
         LoggerPtr slogger(
         new CommonLogger( "<CGNR>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly,
-                          common::unique_ptr<Timer>( new Timer() ) ) );
+                          new Timer() ) );
 
     CGNR CGNRSolver( "CGNRTestSolver", slogger );
 

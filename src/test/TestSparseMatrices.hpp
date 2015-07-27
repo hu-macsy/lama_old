@@ -360,7 +360,7 @@ CSRSparseMatrix<ValueType> TestSparseMatrices::n4m4IdentityMatrix()
 template<typename ValueType>
 CSRSparseMatrix<ValueType> TestSparseMatrices::nnIdentityMatrix( IndexType n )
 {
-    common::unique_ptr<ValueType[]> identityValues( new ValueType[n * n] );
+    common::scoped_array<ValueType> identityValues( new ValueType[n * n] );
 
     for ( int i = 1; i <= n * n; ++i )
     {

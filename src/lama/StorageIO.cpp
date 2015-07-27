@@ -51,6 +51,7 @@
 #include <boost/preprocessor.hpp>
 
 using common::unique_ptr;
+using common::scoped_array;
 
 namespace lama
 {
@@ -173,7 +174,7 @@ static void writeBinaryData( std::fstream& outFile, const DataType data[], const
 
     // allocate buffer for type conversion and/or adding offset
 
-    unique_ptr<FileType[]> buffer( new FileType[n] );
+    scoped_array<FileType> buffer( new FileType[n] );
 
     for( IndexType i = 0; i < n; i++ )
     {

@@ -197,7 +197,7 @@ int main( int argc, char* argv[] )
 
     LoggerPtr logger( new CommonLogger ( loggerName.str(), lamaconf.getLogLevel(),
                    LoggerWriteBehaviour::toConsoleOnly,
-                   common::unique_ptr<Timer>( new Timer() ) ) );
+                   new Timer() ) );
 
     GMRES mySolver( "GMResSolver", logger );
     mySolver.setKrylovDim( 30 );

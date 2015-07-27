@@ -166,7 +166,7 @@ void testSolvePoissonMethod()
 //            "<SOR>: ",
 //            lama::LogLevel::solverInformation,
 //            lama::LoggerWriteBehaviour::toConsoleOnly,
-//            common::unique_ptr<Timer>( new Timer() ) ) );
+//            new Timer() ) );
         SOR sor( "SORTest", omega /*, slogger*/ );
         // create Poisson2D matrix, only for CSR format available
         CSRSparseMatrix<ValueType> csrCoefficients;

@@ -71,14 +71,10 @@ struct P_SpecializedJacobiTestConfig
 {
     P_SpecializedJacobiTestConfig()
     {
-        Timer* timerD = new Timer();
-        common::unique_ptr<Timer> autoTimerD( timerD );
-        Timer* timerF = new Timer();
-        common::unique_ptr<Timer> autoTimerF( timerF );
         LoggerPtr loggerD(
             new CommonLogger( "<Jacobi>: ", lama::LogLevel::completeInformation,
                               lama::LoggerWriteBehaviour::toConsoleOnly,
-                              common::unique_ptr<Timer>( new Timer() ) ) );
+                              new Timer() ) );
         mJacobiDouble = new SpecializedJacobi( "SpecializedJacobiTest double solver", loggerD );
         mJacobiFloat = new SpecializedJacobi( "SpecializedJacobiTest float solver", loggerD );
         comm = Communicator::get( "MPI" );

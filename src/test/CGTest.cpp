@@ -76,7 +76,7 @@ BOOST_AUTO_TEST_CASE( CtorTest )
 {
     LoggerPtr slogger(
         new CommonLogger( "<CG>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly,
-                          common::unique_ptr<Timer>( new Timer() ) ) );
+                          new Timer() ) );
     CG cgSolver( "CGTestSolver", slogger );
     BOOST_CHECK_EQUAL( cgSolver.getId(), "CGTestSolver" );
     CG cgSolver2( "CGTestSolver2" );
@@ -102,7 +102,7 @@ void testSolveWithPreconditionmethod( ContextPtr context )
     typedef typename MatrixType::MatrixValueType ValueType;
     LoggerPtr slogger(
         new CommonLogger( "<CG>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly,
-                          common::unique_ptr<Timer>( new Timer() ) ) );
+                          new Timer() ) );
     CG cgSolver( "CGTestSolver", slogger );
     const IndexType N1 = 4;
     const IndexType N2 = 4;

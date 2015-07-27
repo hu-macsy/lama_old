@@ -72,7 +72,7 @@ void GenBlockDistribution::setOffsets(
 
 void GenBlockDistribution::setOffsets( const IndexType rank, const IndexType numPartitions, const IndexType mySize )
 {
-    common::unique_ptr<IndexType[]> localSizes( new IndexType[numPartitions] );
+    common::scoped_array<IndexType> localSizes( new IndexType[numPartitions] );
 
     const PartitionId root = 0;
     mCommunicator->gather( localSizes.get(), 1, root, &mySize );

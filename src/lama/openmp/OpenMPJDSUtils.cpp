@@ -54,7 +54,7 @@
 #include <common/unique_ptr.hpp>
 #include <boost/preprocessor.hpp>
 
-using common::unique_ptr;
+using common::scoped_array;
 
 namespace lama
 {
@@ -257,7 +257,7 @@ void OpenMPJDSUtils::sortRows( IndexType ilg[], IndexType perm[], const IndexTyp
 {
     // Help array needed, because bucket sort cannot be done in-place
 
-    unique_ptr<IndexType[]> input( new IndexType[n] );
+    scoped_array<IndexType> input( new IndexType[n] );
 
     // Open: can this routine be called where perm is a valid permutation as input
 
@@ -276,7 +276,7 @@ void OpenMPJDSUtils::sortRows( IndexType ilg[], IndexType perm[], const IndexTyp
 
     // longest row = maxBucket, but rows with length 0 is possible too!
 
-    unique_ptr<IndexType[]> bucket( new IndexType[maxBucket + 1] );
+    scoped_array<IndexType> bucket( new IndexType[maxBucket + 1] );
 
     for( IndexType i = 0; i <= maxBucket; i++ )
     {

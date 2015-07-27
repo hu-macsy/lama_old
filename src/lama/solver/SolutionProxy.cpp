@@ -80,12 +80,12 @@ void SolutionProxy::setDirty( bool isDirty )
 Vector& SolutionProxy::getReference()
 {
     setDirty( true );
-    return ( *mSolution );
+    return *mSolution;
 }
 
-common::unique_ptr<Vector> SolutionProxy::create()
+Vector* SolutionProxy::create()
 {
-    return common::unique_ptr<Vector>( mSolution->clone() );
+    return mSolution->clone();
 }
 
 void SolutionProxy::swap( Vector*& other )

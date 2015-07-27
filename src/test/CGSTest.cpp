@@ -45,7 +45,7 @@ BOOST_AUTO_TEST_CASE( CtorTest )
 {
     LoggerPtr slogger(
         new CommonLogger( "<CGS>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly,
-                          common::unique_ptr<Timer>( new Timer() ) ) );
+                          new Timer() ) );
 
     CGS CGSSolver( "CGSTestSolver", slogger );
     BOOST_CHECK_EQUAL( CGSSolver.getId(), "CGSTestSolver" );
@@ -102,7 +102,7 @@ void testSolveWithPreconditionmethod( ContextPtr context )
 
     LoggerPtr slogger(
         new CommonLogger( "<CGS>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly,
-                          common::unique_ptr<Timer>( new Timer() ) ) );
+                          new Timer() ) );
 
     CGS CGSSolver( "CGSTestSolver", slogger );
 
@@ -170,7 +170,7 @@ void testSolveWithoutPreconditionmethod( ContextPtr context )
 
         LoggerPtr slogger(
         new CommonLogger( "<CGS>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly,
-                          common::unique_ptr<Timer>( new Timer() ) ) );
+                          new Timer() ) );
 
     CGS CGSSolver( "CGSTestSolver", slogger );
 

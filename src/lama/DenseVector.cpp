@@ -1264,7 +1264,7 @@ static void writeDataToXDRFile( XDRFileStream& outFile, const DataType* data, co
 
     // so user data has to be converted in file type data
 
-    unique_ptr<FileType[]> buffer( new FileType[n] );
+    scoped_array<FileType> buffer( new FileType[n] );
 
     for( IndexType i = 0; i < n; i++ )
     {
@@ -1342,7 +1342,7 @@ static void writeBinaryData( std::fstream& outFile, const DataType data[], const
 
     // allocate buffer for type conversion
 
-    unique_ptr<FileType[]> buffer( new FileType[n] );
+    scoped_array<FileType> buffer( new FileType[n] );
 
     for( IndexType i = 0; i < n; i++ )
     {
@@ -1457,7 +1457,7 @@ static void readXDRData( XDRFileStream& inFile, UserDataType data[], const Index
 
     // allocate a temporary buffer for n values of FileDataType to read the data
 
-    unique_ptr<FileDataType[]> buffer( new FileDataType[n] );
+    scoped_array<FileDataType> buffer( new FileDataType[n] );
 
     inFile.read( buffer.get(), n );
 

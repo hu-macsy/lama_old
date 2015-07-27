@@ -550,7 +550,7 @@ Distribution::CreatorMap& Distribution::getFactory()
 
     if( !factory.get() )
     {
-        factory = common::unique_ptr<CreatorMap>( new CreatorMap() );
+        factory.reset( new CreatorMap() );
     }
 
     return *factory;

@@ -47,6 +47,7 @@
 #include <omp.h>
 
 using common::unique_ptr;
+using common::scoped_array;
 
 namespace lama
 {
@@ -164,12 +165,12 @@ void GMRES::initialize( const Matrix& coefficients )
 
     runtime.mX0 = 0;
 
-    unique_ptr<double[]>& mCC = runtime.mCC;
-    unique_ptr<double[]>& mSS = runtime.mSS;
-    unique_ptr<double[]>& mG = runtime.mG;
-    unique_ptr<double[]>& mY = runtime.mY;
-    unique_ptr<double[]>& mH = runtime.mH;
-    unique_ptr<double[]>& mHd = runtime.mHd;
+    scoped_array<double>& mCC = runtime.mCC;
+    scoped_array<double>& mSS = runtime.mSS;
+    scoped_array<double>& mG = runtime.mG;
+    scoped_array<double>& mY = runtime.mY;
+    scoped_array<double>& mH = runtime.mH;
+    scoped_array<double>& mHd = runtime.mHd;
 
     mCC.reset( new double[mKrylovDim + 1] );
     mSS.reset( new double[mKrylovDim + 1] );

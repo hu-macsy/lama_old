@@ -53,7 +53,7 @@
 #include <common/bind.hpp>
 #include <common/unique_ptr.hpp>
 
-using common::unique_ptr;
+using common::scoped_array;
 
 namespace lama
 {
@@ -534,8 +534,8 @@ void DIAStorage<ValueType>::setCSRDataImpl(
 
     IndexType maxNumDiagonals = std::max( mNumRows, mNumColumns );
 
-    unique_ptr<bool[]> upperDiagonalUsed( new bool[maxNumDiagonals] );
-    unique_ptr<bool[]> lowerDiagonalUsed( new bool[maxNumDiagonals] );
+    scoped_array<bool> upperDiagonalUsed( new bool[maxNumDiagonals] );
+    scoped_array<bool> lowerDiagonalUsed( new bool[maxNumDiagonals] );
 
     for( IndexType i = 0; i < maxNumDiagonals; i++ )
     {
