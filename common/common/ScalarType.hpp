@@ -90,33 +90,6 @@ namespace scalar
 typedef scalar::ScalarType ScalarType;
 
 /**
- * @brief Returns the size of the given ScalarType.
- *
- * @param[in] type    the given ScalarType.
- * @return            the size of the given ScalarType.
- */
-inline size_t getScalarTypeSize( const ScalarType type )
-{
-    size_t typeSize = 0;
-
-    switch( type )
-    {
-        case scalar::FLOAT:
-            typeSize = sizeof( float );
-            break;
-
-        case scalar::DOUBLE:
-            typeSize = sizeof( double );
-            break;
-
-        default:
-            typeSize = 0;
-    }
-
-    return typeSize;
-}
-
-/**
  * @brief Conversion of a C type into value of enum ScalarType.
  *
  * @tparam ValueType    C++ type that should be converted

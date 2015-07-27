@@ -2180,6 +2180,12 @@ common::ScalarType DenseMatrix<ValueType>::getValueType() const
 }
 
 template<typename ValueType>
+size_t DenseMatrix<ValueType>::getValueTypeSize() const
+{
+    return sizeof( ValueType );
+}
+
+template<typename ValueType>
 size_t DenseMatrix<ValueType>::getMemoryUsage() const
 {
     size_t memoryUsage = 0;

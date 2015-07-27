@@ -524,6 +524,8 @@ public:
 
     virtual common::ScalarType getValueType() const;
 
+    virtual size_t getValueTypeSize() const;
+
     /** Method writes dense matrix to a file.
      *
      *  Writing is only supported for a replicated matrix.

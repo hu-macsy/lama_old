@@ -526,6 +526,8 @@ public:
 
     virtual common::ScalarType getValueType() const;
 
+    virtual size_t getValueTypeSize() const;
+
     /* Implementation of pure method Matrix::create with covariant return type */
 
     virtual SparseMatrix<ValueType>* clone() const;

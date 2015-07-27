@@ -824,6 +824,11 @@ public:
      */
     virtual common::ScalarType getValueType() const = 0;
 
+    /**
+     * @brief Query the size of one matrix element
+     */
+    virtual size_t getValueTypeSize() const = 0;
+
     /** Returns the diagonalProperty of the local storage.
      *
      * @return if the diagonal property is full filled.

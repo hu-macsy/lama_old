@@ -35,15 +35,35 @@
 #if __cplusplus > 199711L
     #include <memory>
 #else
-    #include <boost/interprocess/smart_ptr/unique_ptr.hpp>
+ 
+    // Boost 1.57 and higher provides same unique_ptr as C++
+    // but unfortunately not the previous versions
+    // #include <boost/interprocess/smart_ptr/unique_ptr.hpp>
+
     #include <boost/scoped_array.hpp>
+    #include <memory>
+
 #endif
 
 namespace common
 {
 #if __cplusplus > 199711L
+
     using std::unique_ptr;
+
+    /** C++11: here we can use unique_ptr for a scoped array */
+
+    template<typename T>
+    class scoped_array public std::unique_ptr<T[]>
+    {
+    public:
+        scoped_array( T* ptr ) : std::unique_ptr<T[]>( ptr )
+        {
+        }
+    };
+
 #else
+
     using boost::scoped_array;
 
     template<typename T>

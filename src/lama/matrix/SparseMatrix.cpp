@@ -2256,6 +2256,14 @@ common::ScalarType SparseMatrix<ValueType>::getValueType() const
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
+size_t SparseMatrix<ValueType>::getValueTypeSize() const
+{
+    return sizeof( ValueType );
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
 SparseMatrix<ValueType>* SparseMatrix<ValueType>::clone() const
 {
     LAMA_LOG_INFO( logger, "SparseMatrix<ValueType>::create" )
