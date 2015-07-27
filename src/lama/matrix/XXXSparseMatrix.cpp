@@ -380,18 +380,23 @@ std::pair<MatrixStorageFormat, common::ScalarType> XXXSparseMatrix<ValueType>::c
 /*       Template specializations and nstantiations                          */
 /* ========================================================================= */
 
-#define LAMA_XXX_SPARSE_MATRIX_INSTANTIATE(z, I, _)                        \
-    \
-    template<>                                                                 \
-    const char* XXXSparseMatrix<ARITHMETIC_TYPE##I>::typeName()                \
-    {                                                                          \
-        return "XXXSparseMatrix<ARITHMETIC_TYPE##I>";                          \
-    }                                                                          \
-    \
+#define tmp_xstr(s) tmp_str(s)
+#define tmp_str(s) #s
+
+#define LAMA_XXX_SPARSE_MATRIX_INSTANTIATE(z, I, _)                             \
+                                                                                \
+    template<>                                                                  \
+    const char* XXXSparseMatrix<ARITHMETIC_TYPE##I>::typeName()                 \
+    {                                                                           \
+        return "XXXSparseMatrix<" tmp_xstr(ARITHMETIC_TYPE##I) ">";             \
+    }                                                                           \
+                                                                                \
     template class COMMON_DLL_IMPORTEXPORT XXXSparseMatrix<ARITHMETIC_TYPE##I> ;
 
 BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_XXX_SPARSE_MATRIX_INSTANTIATE, _ )
 
 #undef LAMA_XXX_SPARSE_MATRIX_INSTANTIATE
+#undef tmp_xstr
+#undef tmp_str
 
 }

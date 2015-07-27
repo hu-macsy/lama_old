@@ -380,18 +380,23 @@ std::pair<MatrixStorageFormat, common::ScalarType> COOSparseMatrix<ValueType>::c
 /*       Template specializations and nstantiations                          */
 /* ========================================================================= */
 
-#define LAMA_COO_SPARSE_MATRIX_INSTANTIATE(z, I, _)                        \
-    \
-    template<>                                                                 \
-    const char* COOSparseMatrix<ARITHMETIC_TYPE##I>::typeName()                \
-    {                                                                          \
-        return "COOSparseMatrix<ARITHMETIC_TYPE##I>";                          \
-    }                                                                          \
-    \
+#define tmp_xstr(s) tmp_str(s)
+#define tmp_str(s) #s
+
+#define LAMA_COO_SPARSE_MATRIX_INSTANTIATE(z, I, _)                             \
+                                                                                \
+    template<>                                                                  \
+    const char* COOSparseMatrix<ARITHMETIC_TYPE##I>::typeName()                 \
+    {                                                                           \
+        return "COOSparseMatrix<" tmp_xstr(ARITHMETIC_TYPE##I) ">";             \
+    }                                                                           \
+                                                                                \
     template class COMMON_DLL_IMPORTEXPORT COOSparseMatrix<ARITHMETIC_TYPE##I> ;
 
 BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_COO_SPARSE_MATRIX_INSTANTIATE, _ )
 
 #undef LAMA_COO_SPARSE_MATRIX_INSTANTIATE
+#undef tmp_xstr
+#undef tmp_str
 
 }

@@ -380,18 +380,23 @@ std::pair<MatrixStorageFormat, common::ScalarType> JDSSparseMatrix<ValueType>::c
 /*       Template specializations and nstantiations                          */
 /* ========================================================================= */
 
-#define LAMA_JDS_SPARSE_MATRIX_INSTANTIATE(z, I, _)                        \
-    \
-    template<>                                                                 \
-    const char* JDSSparseMatrix<ARITHMETIC_TYPE##I>::typeName()                \
-    {                                                                          \
-        return "JDSSparseMatrix<ARITHMETIC_TYPE##I>";                          \
-    }                                                                          \
-    \
+#define tmp_xstr(s) tmp_str(s)
+#define tmp_str(s) #s
+
+#define LAMA_JDS_SPARSE_MATRIX_INSTANTIATE(z, I, _)                             \
+                                                                                \
+    template<>                                                                  \
+    const char* JDSSparseMatrix<ARITHMETIC_TYPE##I>::typeName()                 \
+    {                                                                           \
+        return "JDSSparseMatrix<" tmp_xstr(ARITHMETIC_TYPE##I) ">";             \
+    }                                                                           \
+                                                                                \
     template class COMMON_DLL_IMPORTEXPORT JDSSparseMatrix<ARITHMETIC_TYPE##I> ;
 
 BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_JDS_SPARSE_MATRIX_INSTANTIATE, _ )
 
 #undef LAMA_JDS_SPARSE_MATRIX_INSTANTIATE
+#undef tmp_xstr
+#undef tmp_str
 
 }
