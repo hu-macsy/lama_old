@@ -79,6 +79,12 @@ LAMAInterface:
  * Not one large interface, but many ones, extendible
  * each application might use its own interface
 
+LAMAConfiguratin:
+
+ * one lamarc file with all relevant configurations
+ * general strategy
+ * should also contain section for logging configuration
+
 LAMA_CONTEXT:
 
   * context is set globally
@@ -91,4 +97,11 @@ LAMA_CONTEXT:
 ScaLAPack:
 
   * This should be done by LAMA
+
+ToDos:
+
+  * Working test suite
+  * Test that will copy from CUDAHostContext to Context
+  * lama info example update
+  * solver example should run
 

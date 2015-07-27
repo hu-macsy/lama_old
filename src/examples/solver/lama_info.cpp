@@ -114,10 +114,31 @@ void matrixInfo()
     }
 }
 
+void vectorInfo()
+{
+    using namespace lama;
+
+    vector<VectorCreateKeyType> keys;
+
+    Vector::getCreateValues( keys );
+
+    cout << "Factory of Vector: " << keys.size() << " entries" << endl;
+
+    for ( size_t i = 0; i < keys.size(); ++i )
+    {
+        cout << "   Registered values[" << i << "] = " << keys[i].first << ", " << keys[i].second << endl;
+
+        common::shared_ptr<Vector> vector ( Vector::create( keys[i] ) );
+
+        cout << "Vector : " << *vector << endl;
+    }
+}
+
 int main( int argc, char* argv[] )
 {
     communicatorInfo();
     contextInfo();
+    vectorInfo();
     matrixInfo();
 }
 
