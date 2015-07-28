@@ -439,16 +439,18 @@ LAMA_COMMON_TEST_CASE_TM( CommunicatorTest, ValueType, shiftASyncTest )
     }
     LAMA_LOG_INFO( logger, *token << ": test for correct locks" );
 
+    // Note: multiple accesses on LAMAArray are possible, the following exceptions  are no more thrown
+
     if ( !token->isSynchronized() )
     {
         // write access on send buffer should be locked
-        LAMA_CHECK_THROW( WriteAccess<ValueType> sbuffer( sendBuffer ), Exception );
+        // LAMA_CHECK_THROW( WriteAccess<ValueType> sbuffer( sendBuffer ), Exception );
     }
 
     if ( !token->isSynchronized() )
     {
         // read access on recv buffer should be locked if communication is not finished yet
-        LAMA_CHECK_THROW( ReadAccess<ValueType> recvBufferAccess( recvBuffer ), Exception );
+        // LAMA_CHECK_THROW( ReadAccess<ValueType> recvBufferAccess( recvBuffer ), Exception );
     }
 
     token->wait();

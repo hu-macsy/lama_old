@@ -1714,10 +1714,12 @@ void DenseMatrix<ValueType>::matrixTimesVectorImpl(
             {
                 ContextPtr loc = getContextPtr();
 
+                LAMA_INTERFACE_FN_DEFAULT_T( copy, loc, BLAS, BLAS1, ValueType );
+
+                LAMA_CONTEXT_ACCESS( loc )
+
                 ReadAccess<ValueType> readSend( *sendValues, loc );
                 WriteAccess<ValueType> writeX( x, loc );
-
-                LAMA_INTERFACE_FN_DEFAULT_T( copy, loc, BLAS, BLAS1, ValueType );
 
                 copy( mData[actualPartition]->getNumColumns(), readSend.get(), 1, writeX.get(), 1, NULL );
             }

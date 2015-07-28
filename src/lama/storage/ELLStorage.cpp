@@ -801,8 +801,10 @@ void ELLStorage<ValueType>::allocate( IndexType numRows, IndexType numColumns )
 template<typename ValueType>
 void ELLStorage<ValueType>::writeAt( std::ostream& stream ) const
 {
-    stream << "ELLStorage<" << common::getScalarType<ValueType>() << ">( rows=" << mNumRows << ", cols=" << mNumColumns
-           << ", nnr=" << mNumValuesPerRow << ", threshold = " << mCompressThreshold << " )";
+    using ::operator<<;   // ToDo: still other operators in this namespace
+    stream << "ELLStorage<" << common::getScalarType<ValueType>() 
+           << ">( size = " << mNumRows << " x " << mNumColumns
+           << ", nnr = " << mNumValuesPerRow << ", threshold = " << mCompressThreshold << " )";
 }
 
 /* --------------------------------------------------------------------------- */
