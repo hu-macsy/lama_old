@@ -83,7 +83,8 @@ public:
      * @param[in] numColumns    the number of columns of the matrix
      * @param[in] con           the context type where conversion should be done
      */
-    ELLStorage( const IndexType numRows, const IndexType numColumns, const ContextType con = context::Host );
+    ELLStorage( const IndexType numRows, const IndexType numColumns, 
+                const memory::ContextType con = memory::context::Host );
 
     /** Constructor for ELL storage by corresponding arrays.
      *
@@ -321,7 +322,7 @@ public:
 
     /** Implementation of MatrixStorage::matrixTimesVectorAsync for ELL */
 
-    virtual SyncToken* matrixTimesVectorAsync(
+    virtual tasking::SyncToken* matrixTimesVectorAsync(
         LAMAArray<ValueType>& result,
         const ValueType alpha,
         const LAMAArray<ValueType>& x,
@@ -331,7 +332,7 @@ public:
     /** Implementation of MatrixStorage::vectorTimesMatrixAsync for ELL */
     /** since 1.0.1 */
 
-    virtual SyncToken* vectorTimesMatrixAsync(
+    virtual tasking::SyncToken* vectorTimesMatrixAsync(
         LAMAArray<ValueType>& result,
         const ValueType alpha,
         const LAMAArray<ValueType>& x,
@@ -348,7 +349,7 @@ public:
 
     /** Implementation of MatrixStorage::jacobiIterateAsync for ELL */
 
-    virtual SyncToken* jacobiIterateAsync(
+    virtual tasking::SyncToken* jacobiIterateAsync(
         LAMAArray<ValueType>& solution,
         const LAMAArray<ValueType>& oldSolution,
         const LAMAArray<ValueType>& rhs,

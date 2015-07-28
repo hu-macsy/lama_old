@@ -48,6 +48,7 @@
 #include <fstream>
 
 using namespace lama;
+using namespace memory;
 
 /* ------------------------------------------------------------------------- */
 

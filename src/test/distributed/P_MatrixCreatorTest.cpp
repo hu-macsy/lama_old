@@ -40,6 +40,7 @@
 #include <lama/matutils/MatrixCreator.hpp>
 
 using namespace lama;
+using namespace memory;
 using common::Exception;
 
 typedef boost::mpl::list<double, float> test_types;

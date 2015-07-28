@@ -33,6 +33,7 @@
 
 // include LAMA
 #include <lama/Complex.hpp>
+#include <common/ScalarType.hpp>
 #include <memory/LAMAArray.hpp>
 
 #include <cstring>
@@ -95,6 +96,40 @@ typedef int PartitionId;
 static const PartitionId nPartition = std::numeric_limits<PartitionId>::max();
 
 } // namespace lama
+
+/***************************************************************************
+ *
+ * Template specializatin of getScalarType now possible for new LAMA types
+ *
+ ***************************************************************************/
+namespace common
+{
+
+template<>
+inline ScalarType getScalarType<lama::LongDouble>()
+{
+    return scalar::LONG_DOUBLE;
+}
+
+template<>
+inline ScalarType getScalarType<lama::ComplexFloat>()
+{
+    return scalar::COMPLEX;
+}
+
+template<>
+inline ScalarType getScalarType<lama::ComplexDouble>()
+{
+    return scalar::DOUBLE_COMPLEX;
+}
+
+template<>
+inline ScalarType getScalarType<lama::ComplexLongDouble>()
+{
+    return scalar::LONG_DOUBLE_COMPLEX;
+}
+
+}
 
 // Number of supported arithmetic types, maximal number is currently 4
 

@@ -50,6 +50,7 @@ inline void usleep( int t )
 #endif
 
 using namespace lama;
+using namespace memory;
 using common::Exception;
 
 /* --------------------------------------------------------------------- */

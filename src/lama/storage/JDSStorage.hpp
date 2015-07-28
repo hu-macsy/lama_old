@@ -218,7 +218,7 @@ public:
 
     /** Implementation of MatrixStorage::matrixTimesVectorAsync for JDS */
 
-    virtual SyncToken* matrixTimesVectorAsync(
+    virtual tasking::SyncToken* matrixTimesVectorAsync(
         LAMAArray<ValueType>& result,
         const ValueType alpha,
         const LAMAArray<ValueType>& x,
@@ -228,7 +228,7 @@ public:
     /** Implementation of MatrixStorage::vectorTimesMatrixAsync for JDS */
     /** since 1.0.1 */
 
-    virtual SyncToken* vectorTimesMatrixAsync(
+    virtual tasking::SyncToken* vectorTimesMatrixAsync(
         LAMAArray<ValueType>& result,
         const ValueType alpha,
         const LAMAArray<ValueType>& x,
@@ -245,7 +245,7 @@ public:
 
     /** Implementation of MatrixStorage::jacobiIterateAsync for JDS */
 
-    virtual SyncToken* jacobiIterateAsync(
+    virtual tasking::SyncToken* jacobiIterateAsync(
         LAMAArray<ValueType>& solution,
         const LAMAArray<ValueType>& oldSolution,
         const LAMAArray<ValueType>& rhs,

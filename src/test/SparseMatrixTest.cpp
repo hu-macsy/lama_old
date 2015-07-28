@@ -59,6 +59,7 @@
 #include <test/SameMatrixHelper.hpp>
 
 using namespace lama;
+using namespace memory;
 
 LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename MatrixType>, SparseMatrixTest<MatrixType>::logger,
                               "Test.SparseMatrixTest" )

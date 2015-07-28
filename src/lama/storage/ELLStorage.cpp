@@ -51,9 +51,9 @@
 namespace lama
 {
 
-using common::unique_ptr;
 using common::shared_ptr;
 using namespace tasking;
+using namespace memory;
 
 /* --------------------------------------------------------------------------- */
 
@@ -801,8 +801,10 @@ void ELLStorage<ValueType>::allocate( IndexType numRows, IndexType numColumns )
 template<typename ValueType>
 void ELLStorage<ValueType>::writeAt( std::ostream& stream ) const
 {
-    stream << "ELLStorage<" << common::getScalarType<ValueType>() << ">( rows=" << mNumRows << ", cols=" << mNumColumns
-           << ", nnr=" << mNumValuesPerRow << ", threshold = " << mCompressThreshold << " )";
+    using ::operator<<;   // ToDo: still other operators in this namespace
+    stream << "ELLStorage<" << common::getScalarType<ValueType>() 
+           << ">( size = " << mNumRows << " x " << mNumColumns
+           << ", nnr = " << mNumValuesPerRow << ", threshold = " << mCompressThreshold << " )";
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1295,7 +1297,7 @@ SyncToken* ELLStorage<ValueType>::vectorTimesMatrixAsync(
     LAMA_INTERFACE_FN_T( sparseGEVM, loc, ELLUtils, Mult, ValueType )
     LAMA_INTERFACE_FN_T( normalGEVM, loc, ELLUtils, Mult, ValueType )
 
-    unique_ptr<SyncToken> syncToken( loc->getSyncToken() );
+    common::unique_ptr<SyncToken> syncToken( loc->getSyncToken() );
 
     // all accesses will be pushed to the sync token as LAMA arrays have to be protected up
     // to the end of the computations.

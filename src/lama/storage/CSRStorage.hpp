@@ -425,7 +425,7 @@ public:
 
     /** Implementation of MatrixStorage::matrixTimesVectorAsync for CSR */
 
-    virtual SyncToken* matrixTimesVectorAsync(
+    virtual tasking::SyncToken* matrixTimesVectorAsync(
         LAMAArray<ValueType>& result,
         const ValueType alpha,
         const LAMAArray<ValueType>& x,
@@ -435,7 +435,7 @@ public:
     /** Implementation of MatrixStorage::vectorTimesMatrixAsync for CSR */
     /** since 1.0.1 */
 
-    virtual SyncToken* vectorTimesMatrixAsync(
+    virtual tasking::SyncToken* vectorTimesMatrixAsync(
         LAMAArray<ValueType>& result,
         const ValueType alpha,
         const LAMAArray<ValueType>& x,

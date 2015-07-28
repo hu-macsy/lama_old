@@ -61,6 +61,7 @@
 
 
 using namespace lama;
+using namespace memory;
 
 typedef boost::mpl::list<float> test_types;
 

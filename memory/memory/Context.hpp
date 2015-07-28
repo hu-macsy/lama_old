@@ -246,13 +246,15 @@ inline bool Context::hasContext( const ContextType type )
     return canCreate( type );
 }
 
-/** Make ContextType visible in namespace, but not the different enumeration values. */
+}
 
-COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const ContextType& type );
+// NOTE: operator<< should never be defined within a namespace 
+
+/** Output of context type in stream. */
+
+COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const memory::ContextType& type );
 
 /** Output of AccessKind in stream is supported and very useful.  */
 
-COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const AccessKind& kind );
-
-}
+COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const memory::AccessKind& kind );
 

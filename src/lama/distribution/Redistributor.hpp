@@ -31,8 +31,7 @@
  * @since 1.0.0
  */
 
-#ifndef LAMA_REDISTRIBUTOR_HPP_
-#define LAMA_REDISTRIBUTOR_HPP_
+#pragma once
 
 // for dll_import
 #include <common/config.hpp>
@@ -50,6 +49,7 @@
 #include <tasking/SyncToken.hpp>
 
 using namespace tasking;
+using memory::LAMAArray;
 
 namespace lama
 {
@@ -137,6 +137,8 @@ public:
         const LAMAArray<ValueType>& sourceArray,
         const LAMAArray<IndexType>& sourceIndexes )
     {
+        using namespace memory;
+
         WriteAccess<ValueType> target( targetArray );
         ReadAccess<ValueType> source( sourceArray );
         ReadAccess<IndexType> indexes( sourceIndexes );
@@ -156,6 +158,8 @@ public:
         const LAMAArray<IndexType>& sourceIndexes,
         const IndexType n )
     {
+        using namespace memory;
+
         WriteAccess<ValueType> target( targetArray );
         ReadAccess<ValueType> source( sourceArray );
         ReadAccess<IndexType> indexes( sourceIndexes );
@@ -187,6 +191,8 @@ public:
         const LAMAArray<IndexType>& targetIndexes,
         const LAMAArray<ValueType>& sourceArray )
     {
+        using namespace memory;
+
         WriteAccess<ValueType> target( targetArray );
         ReadAccess<IndexType> indexes( targetIndexes );
         ReadAccess<ValueType> source( sourceArray );
@@ -206,6 +212,8 @@ public:
         const LAMAArray<ValueType>& sourceArray,
         const IndexType n )
     {
+        using namespace memory;
+
         WriteAccess<ValueType> target( targetArray );
         ReadAccess<IndexType> indexes( targetIndexes );
         ReadAccess<ValueType> source( sourceArray );
@@ -238,6 +246,7 @@ public:
         const LAMAArray<ValueType>& sourceArray,
         const LAMAArray<IndexType>& sourceIndexes )
     {
+        using namespace memory;
         WriteAccess<ValueType> target( targetArray );
         ReadAccess<ValueType> source( sourceArray );
         ReadAccess<IndexType> tindexes( targetIndexes );
@@ -262,6 +271,7 @@ public:
         const LAMAArray<IndexType>& sourceIndexes,
         IndexType n )
     {
+        using namespace memory;
         WriteAccess<ValueType> target( targetArray );
         ReadAccess<ValueType> source( sourceArray );
         ReadAccess<IndexType> tindexes( targetIndexes );
@@ -382,6 +392,8 @@ private:
 template<typename ValueType>
 void Redistributor::redistribute( LAMAArray<ValueType>& targetArray, const LAMAArray<ValueType>& sourceArray ) const
 {
+    using namespace memory;
+
     LAMA_REGION( "Redistributor.redistribute" )
 
     {
@@ -418,6 +430,8 @@ void Redistributor::redistributeN(
     const LAMAArray<ValueType>& sourceArray,
     IndexType n ) const
 {
+    using namespace memory;
+
     LAMA_REGION( "Redistributor.redistributeN" )
 
     {
@@ -481,6 +495,8 @@ void Redistributor::gatherV(
     const LAMAArray<IndexType>& sourceOffsets,
     const LAMAArray<IndexType>& sourceIndexes )
 {
+    using namespace memory;
+
     const IndexType n = sourceIndexes.size();
 
     WriteAccess<ValueType> wTargetArray( targetArray );
@@ -512,6 +528,8 @@ void Redistributor::scatterV(
     const LAMAArray<IndexType>& targetIndexes,
     const LAMAArray<ValueType>& sourceArray )
 {
+    using namespace memory;
+
     const IndexType n = targetIndexes.size();
 
     WriteAccess<ValueType> wTargetArray( targetArray );
@@ -545,6 +563,8 @@ void Redistributor::copyV(
     const LAMAArray<IndexType>& sourceOffsets,
     const LAMAArray<IndexType>& sourceIndexes )
 {
+    using namespace memory;
+
     LAMA_ASSERT_EQUAL_ERROR( targetIndexes.size(), sourceIndexes.size() )
 
     const IndexType n = targetIndexes.size();
@@ -637,4 +657,3 @@ void Redistributor::exchangeVHalo( LAMAArray<ValueType>& targetHalo, const LAMAA
 
 } // namespace
 
-#endif // LAMA_REDISTRIBUTOR_HPP_

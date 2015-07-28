@@ -68,6 +68,8 @@
 using tasking::SyncToken;
 using tasking::TaskSyncToken;
 
+using namespace memory;
+
 namespace lama
 {
 
@@ -227,12 +229,6 @@ MatrixStorageFormat str2Format( const char* str )
     }
 
     return Format::UNDEFINED;
-}
-
-std::ostream& operator<<( std::ostream& stream, const MatrixStorageFormat storageFormat )
-{
-    stream << format2Str( storageFormat );
-    return stream;
 }
 
 /* ---------------------------------------------------------------------------------- */
@@ -1405,5 +1401,11 @@ BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_MATRIX_STORAGE_INSTANTIATE, _ )
 #undef LAMA_MATRIX_STORAGE_INSTANTIATE
 #undef LAMA_MATRIX_STORAGE2_INSTANTIATE
 
-}// namespace LAMA
+} // namespace LAMA
+
+std::ostream& operator<<( std::ostream& stream, const lama::MatrixStorageFormat storageFormat )
+{
+    stream << lama::format2Str( storageFormat );
+    return stream;
+}
 

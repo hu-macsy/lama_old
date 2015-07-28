@@ -56,6 +56,7 @@
 #include <ostream>
 
 using namespace common;
+using namespace memory;
 
 namespace lama
 {
@@ -601,6 +602,8 @@ void DenseVector<ValueType>::swap( Vector& other )
 template<typename ValueType>
 void DenseVector<ValueType>::writeAt( std::ostream& stream ) const
 {
+    using ::operator<<;
+
     stream << "DenseVector<" << getValueType() << ">" << "( size = " << size() << ", local = " << mLocalValues.size()
                     << ", dist = " << getDistribution() << ", loc  = " << *getContext() << " )";
 }

@@ -52,6 +52,7 @@
 
 using common::unique_ptr;
 using common::shared_ptr;
+using namespace memory;
 
 namespace lama
 {
@@ -467,7 +468,11 @@ void COOStorage<ValueType>::allocate( IndexType numRows, IndexType numColumns )
 template<typename ValueType>
 void COOStorage<ValueType>::writeAt( std::ostream& stream ) const
 {
-    stream << "COO(rows=" << mNumRows << ",cols=" << mNumColumns << ")";
+    using ::operator<<;   // ToDo: still other operators in this namespace, so for ScalarType not used
+
+    stream << "COOStorage<" << common::getScalarType<ValueType>()
+           << ">( size = " << mNumRows << " x " << mNumColumns
+           << ", nnz = " << mNumValues << " )" ;
 }
 
 /* --------------------------------------------------------------------------- */
@@ -900,12 +905,34 @@ SyncToken* COOStorage<ValueType>::matrixTimesVectorAsync(
     LAMA_LOG_DEBUG( logger,
                     "Computing z = alpha * A * x + beta * y, with A = " << *this << ", x = " << x << ", y = " << y << ", z = " << result )
 
-    LAMA_ASSERT_EQUAL_ERROR( x.size(), mNumRows )
+    LAMA_ASSERT_EQUAL_ERROR( x.size(), mNumColumns )
     LAMA_ASSERT_EQUAL_ERROR( y.size(), mNumRows )
 
     // not yet available on other devices, so we take Host
 
     ContextPtr loc = Context::getContextPtr( context::Host );
+
+    if ( loc->getType() == context::Host )
+    {
+        // execution as separate thread
+
+        void (COOStorage::*pf)(
+            LAMAArray<ValueType>&,
+            const ValueType,
+            const LAMAArray<ValueType>&,
+            const ValueType,
+            const LAMAArray<ValueType>& ) const
+
+            = &COOStorage<ValueType>::matrixTimesVector;
+
+        using common::bind;
+        using common::ref;
+        using common::cref;
+
+        LAMA_LOG_INFO( logger, *this << ": matrixTimesVectorAsync on Host by own thread" )
+
+        return new TaskSyncToken( bind( pf, this, ref( result ), alpha, cref( x ), beta, cref( y ) ) );
+    }
 
     LAMA_LOG_INFO( logger, *this << ": matrixTimesVectorAsync on " << *loc )
 

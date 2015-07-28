@@ -48,6 +48,8 @@
 #include <cstdlib>
 #include <iomanip>
 
+using namespace memory;
+
 namespace lama
 {
 

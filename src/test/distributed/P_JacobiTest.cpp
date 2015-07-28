@@ -58,6 +58,7 @@
 #include <test/TestMacros.hpp>
 
 using namespace lama;
+using namespace memory;
 
 typedef boost::mpl::list<float, double> test_types;
 

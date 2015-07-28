@@ -43,6 +43,7 @@
 #include <complex>
 
 using namespace lama;
+using namespace memory;
 using namespace common;
 
 // Scalar can be tested for all LAMA arithmetic types even if LAMA matrices

@@ -40,6 +40,7 @@
 #include "Configuration.hpp"
 
 using namespace lama;
+using namespace memory;
 
 /* ------------------------------------------------------------------------- */
 

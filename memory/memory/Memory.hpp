@@ -222,9 +222,12 @@ inline MemoryType Memory::getType() const
     return mMemoryType;
 }
 
-/** This method make is possible to use enum values of MemoryType in output streams. */
+}  // namespace
 
-COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const MemoryType& type );
+/** This method make is possible to use enum values of MemoryType in output streams. 
+ *
+ *  Note: It should not be defined in a namespace.
+ */
 
-}
+COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const memory::MemoryType& type );
 

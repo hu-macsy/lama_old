@@ -38,6 +38,7 @@
 #include <lama/solver/SolutionProxy.hpp>
 
 using namespace lama;
+using namespace memory;
 
 typedef Vector VectorType;
 typedef SolutionProxy ProxyType;

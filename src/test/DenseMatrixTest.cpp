@@ -47,6 +47,7 @@
 #include <lama/expression/all.hpp>
 
 using namespace lama;
+using namespace memory;
 using common::unique_ptr;
 using common::scoped_array;
 
@@ -576,6 +577,9 @@ void getMemoryUsageTest( )
     size_t size_float = 77;
     size_t size_double = 141;
     std::ostringstream omsg;
+ 
+    using ::operator<<;
+
     omsg << common::getScalarType<ValueType>();
 
     if ( std::string( "double" ).compare( omsg.str() ) == 0 )

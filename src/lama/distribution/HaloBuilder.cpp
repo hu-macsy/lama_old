@@ -40,6 +40,8 @@
 // tracing
 #include <tracing/tracing.hpp>
 
+using namespace memory;
+
 namespace lama
 {
 

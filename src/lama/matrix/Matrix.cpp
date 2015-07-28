@@ -53,6 +53,8 @@ LAMA_LOG_DEF_LOGGER( Matrix::logger, "Matrix" )
 
 Matrix* Matrix::getMatrix( const MatrixStorageFormat format, common::ScalarType type )
 {
+    using ::operator<<;   // important to make operator<< outside this namespace available
+
     MatrixCreateKeyType val( format, type );
     LAMA_LOG_INFO( logger, "getMatrix uses Factory::create " << val )
     return create( val );
@@ -60,16 +62,26 @@ Matrix* Matrix::getMatrix( const MatrixStorageFormat format, common::ScalarType 
 
 /* ----------------------------------------------------------------------- */
 
-Matrix::Matrix( const Matrix& other )
-                : Distributed( other ), mColDistribution( other.mColDistribution ), mNumRows( other.mNumRows ), mNumColumns(
-                                other.mNumColumns ), mCommunicationKind( other.mCommunicationKind )
+Matrix::Matrix( const Matrix& other ) : 
+
+    Distributed( other ), 
+    mColDistribution( other.mColDistribution ), 
+    mNumRows( other.mNumRows ), 
+    mNumColumns( other.mNumColumns ), 
+    mCommunicationKind( other.mCommunicationKind )
 {
     LAMA_LOG_INFO( logger, "Creating copy of " << other << " with same distributions." )
 }
 
-Matrix::Matrix( const Matrix& other, DistributionPtr rowDist, DistributionPtr colDist )
-                : Distributed( rowDist ), mColDistribution( colDist ), mNumRows( other.mNumRows ), mNumColumns(
-                                other.mNumColumns ), mCommunicationKind( other.mCommunicationKind )
+/* ----------------------------------------------------------------------- */
+
+Matrix::Matrix( const Matrix& other, DistributionPtr rowDist, DistributionPtr colDist ) :
+
+    Distributed( rowDist ),
+    mColDistribution( colDist ),
+    mNumRows( other.mNumRows ),
+    mNumColumns( other.mNumColumns ),
+    mCommunicationKind( other.mCommunicationKind )
 {
     // Very important: here we check that new distributions fit the matrix
 
@@ -81,10 +93,12 @@ Matrix::Matrix( const Matrix& other, DistributionPtr rowDist, DistributionPtr co
 
 /* ----------------------------------------------------------------------- */
 
-Matrix::Matrix( const IndexType numRows, const IndexType numColumns )
-                : Distributed( DistributionPtr( new NoDistribution( numRows ) ) ), mColDistribution(
-                                DistributionPtr( new NoDistribution( numColumns ) ) ), mNumRows( numRows ), mNumColumns(
-                                numColumns )
+Matrix::Matrix( const IndexType numRows, const IndexType numColumns ) :
+
+    Distributed( DistributionPtr( new NoDistribution( numRows ) ) ),
+    mColDistribution( DistributionPtr( new NoDistribution( numColumns ) ) ),
+    mNumRows( numRows ),
+    mNumColumns( numColumns )
 {
     setDefaultKind();
 
@@ -104,28 +118,28 @@ void Matrix::setIdentity( const IndexType n )
 
 void Matrix::checkSettings() const
 {
-    if( !mColDistribution )
+    if ( !mColDistribution )
     {
         COMMON_THROWEXCEPTION( "NULL pointer for column distribution" )
     }
 
-    if( mNumRows != getDistribution().getGlobalSize() )
+    if ( mNumRows != getDistribution().getGlobalSize() )
     {
         COMMON_THROWEXCEPTION(
-                        "row distribution " << getDistribution() << ": global size mismatches #rows = " << mNumRows );
+            "row distribution " << getDistribution() << ": global size mismatches #rows = " << mNumRows );
     }
 
-    if( mNumColumns != getColDistribution().getGlobalSize() )
+    if ( mNumColumns != getColDistribution().getGlobalSize() )
     {
         COMMON_THROWEXCEPTION(
-                        "col distribution " << getColDistribution() << ": global size mismatches #columns = " << mNumColumns );
+            "col distribution " << getColDistribution() << ": global size mismatches #columns = " << mNumColumns );
     }
 }
 
 /* ----------------------------------------------------------------------- */
 
 Matrix::Matrix( DistributionPtr rowDistribution, DistributionPtr colDistribution )
-                : Distributed( rowDistribution )
+    : Distributed( rowDistribution )
 {
     setDistributedMatrix( rowDistribution, colDistribution );
 
@@ -138,7 +152,7 @@ Matrix::Matrix( DistributionPtr rowDistribution, DistributionPtr colDistribution
 }
 
 Matrix::Matrix( DistributionPtr distribution )
-                : Distributed( distribution )
+    : Distributed( distribution )
 {
     setDistributedMatrix( distribution, distribution );
 
@@ -149,8 +163,8 @@ Matrix::Matrix( DistributionPtr distribution )
 }
 
 Matrix::Matrix()
-                : Distributed( DistributionPtr( new NoDistribution( 0 ) ) ), mColDistribution(
-                                DistributionPtr( new NoDistribution( 0 ) ) ), mNumRows( 0 ), mNumColumns( 0 )
+    : Distributed( DistributionPtr( new NoDistribution( 0 ) ) ), mColDistribution(
+        DistributionPtr( new NoDistribution( 0 ) ) ), mNumRows( 0 ), mNumColumns( 0 )
 {
     setDefaultKind();
 }
@@ -183,7 +197,7 @@ void Matrix::setReplicatedMatrix( const IndexType numRows, const IndexType numCo
 {
     DistributionPtr rowDist( new NoDistribution( numRows ) );
 
-    if( numRows == numColumns )
+    if ( numRows == numColumns )
     {
         setDistributedMatrix( rowDist, rowDist );
     }
@@ -210,7 +224,7 @@ Vector* Matrix::createDenseVector( DistributionPtr distribution, const Scalar va
 
     LAMA_LOG_INFO( logger, "create vector of type " << matrixValueType )
 
-    switch( matrixValueType )
+    switch ( matrixValueType )
     {
         case common::scalar::DOUBLE:
             return new DenseVector<double>( distribution, value.getValue<double>() );
@@ -246,7 +260,7 @@ void Matrix::setContext( ContextPtr localContext, ContextPtr haloContext )
 
     // default implementation for matrices that do not support halo context
 
-    if( localContext.get() != haloContext.get() )
+    if ( localContext.get() != haloContext.get() )
     {
         LAMA_LOG_WARN( logger, *this << ": halo context = " << *haloContext << " ignored" )
     }
@@ -381,7 +395,7 @@ void Matrix::swapMatrix( Matrix& other )
 
 double Matrix::getSparsityRate() const
 {
-    return (double) getNumValues() / mNumRows / mNumColumns;
+    return ( double ) getNumValues() / mNumRows / mNumColumns;
 }
 
 /* ---------------------------------------------------------------------------------*/
@@ -391,16 +405,16 @@ bool Matrix::checkSymmetry() const
     // check symmetry of matrix
     IndexType n = getNumRows();
 
-    if( n != getNumColumns() )
+    if ( n != getNumColumns() )
     {
         return false;
     }
 
-    for( IndexType i = 0; i < n; ++i )
+    for ( IndexType i = 0; i < n; ++i )
     {
-        for( IndexType j = 0; j < i; ++j )
+        for ( IndexType j = 0; j < i; ++j )
         {
-            if( getValue( i, j ) != getValue( j, i ) )
+            if ( getValue( i, j ) != getValue( j, i ) )
             {
                 return false;
             }
@@ -412,7 +426,7 @@ bool Matrix::checkSymmetry() const
 
 /* ---------------------------------------------------------------------------------*/
 
-void Matrix::sanityCheck( const Expression<Matrix,Matrix,Times>& exp )
+void Matrix::sanityCheck( const Expression<Matrix, Matrix, Times>& exp )
 {
     // check sanity of matrix product exp = A * B
 
@@ -422,14 +436,14 @@ void Matrix::sanityCheck( const Expression<Matrix,Matrix,Times>& exp )
     const Distribution& colDistA = A.getColDistribution();
     const Distribution& rowDistB = B.getDistribution();
 
-    if( colDistA != rowDistB )
+    if ( colDistA != rowDistB )
     {
         COMMON_THROWEXCEPTION(
-                        "A * B with A = " << A << ", B = " << B << std::endl << "col size/distribution of A  = " << A.getColDistribution() << " does not match row/size distribution of B = " << B.getDistribution() );
+            "A * B with A = " << A << ", B = " << B << std::endl << "col size/distribution of A  = " << A.getColDistribution() << " does not match row/size distribution of B = " << B.getDistribution() );
     }
 }
 
-void Matrix::sanityCheck( const Expression<Matrix,Matrix,Times>& exp, const Matrix& C )
+void Matrix::sanityCheck( const Expression<Matrix, Matrix, Times>& exp, const Matrix& C )
 {
     sanityCheck( exp ); // verify the sanity of the matrix product
 
@@ -444,12 +458,12 @@ void Matrix::sanityCheck( const Expression<Matrix,Matrix,Times>& exp, const Matr
     const Distribution& rowDistC = C.getDistribution();
     const Distribution& colDistC = C.getColDistribution();
 
-    if( rowDistA != rowDistC )
+    if ( rowDistA != rowDistC )
     {
         COMMON_THROWEXCEPTION( "Size/distribution of rows do not match: " << "ARG1 = " << A << ", ARG2 = " << C )
     }
 
-    if( colDistB != colDistC )
+    if ( colDistB != colDistC )
     {
         COMMON_THROWEXCEPTION( "Size/distribution of cols do not match: " << "ARG1 = " << B << ", ARG2 = " << C )
     }
@@ -465,12 +479,12 @@ void Matrix::sanityCheck( const Matrix& A, const Matrix& B )
     const Distribution& rowDistB = B.getDistribution();
     const Distribution& colDistB = B.getColDistribution();
 
-    if( rowDistA != rowDistB )
+    if ( rowDistA != rowDistB )
     {
         COMMON_THROWEXCEPTION( "Size/distribution of rows do not match: " << "ARG1 = " << A << ", ARG2 = " << B )
     }
 
-    if( colDistA != colDistB )
+    if ( colDistA != colDistB )
     {
         COMMON_THROWEXCEPTION( "Size/distribution of cols do not match: " << "ARG1 = " << A << ", ARG2 = " << B )
     }
@@ -498,13 +512,13 @@ Matrix& Matrix::operator=( const Expression_SMM_SM& exp )
 
     const Scalar zero( 0 );
 
-    if( beta == zero )
+    if ( beta == zero )
     {
-        sanityCheck( Expression<Matrix,Matrix,Times>( A, B ) );
+        sanityCheck( Expression<Matrix, Matrix, Times>( A, B ) );
     }
     else
     {
-        sanityCheck( Expression<Matrix,Matrix,Times>( A, B ), C );
+        sanityCheck( Expression<Matrix, Matrix, Times>( A, B ), C );
     }
 
     LAMA_LOG_INFO( logger, "Context of this before matrixTimesMatrix = " << this->getContext() )
@@ -533,14 +547,14 @@ Matrix& Matrix::operator=( const Expression_SM_SM& exp )
     const Scalar& beta = exp.getArg2().getArg1();
     const Scalar zero( 0.0 );
 
-    if( beta == zero )
+    if ( beta == zero )
     {
         // second summand not needed
         this->matrixTimesScalar( A, alpha );
         return *this;
     }
 
-    if( alpha == zero )
+    if ( alpha == zero )
     {
         // first summand not needed
         this->matrixTimesScalar( B, beta );

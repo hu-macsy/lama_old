@@ -138,23 +138,27 @@ tasking::SyncToken* Memory::memcpyToAsync( const Memory& dstMemory, void* dst, c
 
 /* ---------------------------------------------------------------------------------*/
 
-std::ostream& operator<<( std::ostream& stream, const MemoryType& type )
+}  // namespace
+
+/* ---------------------------------------------------------------------------------*/
+
+std::ostream& operator<<( std::ostream& stream, const memory::MemoryType& type )
 {
     switch ( type )
     {
-        case memtype::HostMemory :
+        case memory::memtype::HostMemory :
             stream << "HostMemory";
             break;
 
-        case memtype::CUDAMemory :
+        case memory::memtype::CUDAMemory :
             stream << "CUDAMemory";
             break;
 
-        case memtype::CUDAHostMemory :
+        case memory::memtype::CUDAHostMemory :
             stream << "CUDAHostMemory";
             break;
 
-        case memtype::UserMemory :
+        case memory::memtype::UserMemory :
             stream << "UserMemory";
             break;
 
@@ -165,6 +169,3 @@ std::ostream& operator<<( std::ostream& stream, const MemoryType& type )
     return stream;
 }
 
-/* ---------------------------------------------------------------------------------*/
-
-}  // namespace

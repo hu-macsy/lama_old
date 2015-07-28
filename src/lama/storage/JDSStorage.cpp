@@ -48,12 +48,14 @@
 #include <common/bind.hpp>
 #include <common/unique_ptr.hpp>
 
+using common::shared_ptr;
+using namespace::tasking;
+using namespace::memory;
+
 namespace lama
 {
 // Allow for shared_ptr<ValueType> instead of common::shared_ptr<ValueType>
 
-using common::shared_ptr;
-using namespace::tasking;
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
@@ -860,16 +862,19 @@ void JDSStorage<ValueType>::allocate( IndexType numRows, IndexType numColumns )
 template<typename ValueType>
 void JDSStorage<ValueType>::writeAt( std::ostream& stream ) const
 {
-    stream << "JDS( rows = " << mNumRows << ", cols = " << mNumColumns << ", jd = " << mNumDiagonals << ", values = "
-           << mNumValues;
+    using ::operator<<;   // ToDo: still other operators in this namespace
 
-    if( Printable::extended )
+    stream << "JDSStorage<" << common::getScalarType<ValueType>()
+           << ">( size = " << mNumRows << " x " << mNumColumns
+           << ", jd = " << mNumDiagonals << ", nnz = " << mNumValues;
+
+    if ( Printable::extended )
     {
         stream << ", context = " << getContext() << ", dlg = " << mDlg << ", ilg = " << mIlg << ", perm = " << mPerm
                << ", ja = " << mJa << ", vales = " << mValues;
     }
 
-    stream << std::endl;
+    stream << " )";
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

@@ -153,5 +153,91 @@ ContextPtr CUDAHostMemory::getContextPtr() const
     return host;
 }
 
+/* ----------------------------------------------------------------------------- */
+
+bool CUDAHostMemory::canCopyFrom( const Memory& other ) const
+{
+    bool supported = false;
+
+    MemoryType otherType = other.getType();
+
+    if ( otherType == memtype::HostMemory )
+    {
+        // CUDHostMem -> Host is supported
+
+        supported = true;
+    }
+    else if ( otherType == memtype::CUDAHostMemory )
+    {
+        supported = true;
+    }
+
+    return supported;
+}
+
+bool CUDAHostMemory::canCopyTo( const Memory& other ) const
+{
+    bool supported = false;
+
+    MemoryType otherType = other.getType();
+
+    if ( otherType == memtype::HostMemory )
+    {
+        // CUDHostMem -> Host is supported
+
+        supported = true;
+    }
+    else if ( otherType == memtype::CUDAHostMemory )
+    {
+        supported = true;
+    }
+
+    return supported;
+}
+
+/* ----------------------------------------------------------------------------- */
+
+void CUDAHostMemory::memcpyFrom( void* dst, const Memory& srcMemory, const void* src, size_t size ) const
+{
+    // all kind of Host <-> CUDAHost is supported
+
+    if ( srcMemory.getType() == memtype::HostMemory )
+    {
+        ::memcpy( dst, src, size );
+    }
+    else if ( srcMemory.getType() == memtype::CUDAHostMemory )
+    {
+        ::memcpy( dst, src, size );
+    }
+    else
+    {
+        LAMA_LOG_ERROR( logger, "copy from " << srcMemory << " to " << *this << " not supported" )
+        COMMON_THROWEXCEPTION( "copy from " << srcMemory << " to " << *this << " not supported" )
+    }
+}
+
+/* ----------------------------------------------------------------------------- */
+
+void CUDAHostMemory::memcpyTo( const Memory& dstMemory, void* dst, const void* src, size_t size ) const
+{
+    // all kind of Host <-> CUDAHost is supported
+
+    if ( dstMemory.getType() == memtype::HostMemory )
+    {
+        ::memcpy( dst, src, size );
+    }
+    else if ( dstMemory.getType() == memtype::CUDAHostMemory )
+    {
+        ::memcpy( dst, src, size );
+    }
+    else
+    {
+        LAMA_LOG_ERROR( logger, "copy to " << dstMemory << " from " << *this << " not supported" )
+        COMMON_THROWEXCEPTION( "copy to " << dstMemory << " from " << *this << " not supported" )
+    }
+}
+
+/* ----------------------------------------------------------------------------- */
+
 } // namespace
 

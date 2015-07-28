@@ -51,6 +51,8 @@
 #include <common/ScalarType.hpp>
 #include <boost/preprocessor.hpp>
 
+using namespace memory;
+
 using common::unique_ptr;
 using common::scoped_array;
 
@@ -1712,10 +1714,12 @@ void DenseMatrix<ValueType>::matrixTimesVectorImpl(
             {
                 ContextPtr loc = getContextPtr();
 
+                LAMA_INTERFACE_FN_DEFAULT_T( copy, loc, BLAS, BLAS1, ValueType );
+
+                LAMA_CONTEXT_ACCESS( loc )
+
                 ReadAccess<ValueType> readSend( *sendValues, loc );
                 WriteAccess<ValueType> writeX( x, loc );
-
-                LAMA_INTERFACE_FN_DEFAULT_T( copy, loc, BLAS, BLAS1, ValueType );
 
                 copy( mData[actualPartition]->getNumColumns(), readSend.get(), 1, writeX.get(), 1, NULL );
             }
@@ -2066,7 +2070,7 @@ void DenseMatrix<ValueType>::prefetch() const
 }
 
 template<typename ValueType>
-void DenseMatrix<ValueType>::prefetch( lama::ContextPtr loc ) const
+void DenseMatrix<ValueType>::prefetch( ContextPtr loc ) const
 {
     for ( unsigned int i = 0; i < mData.size(); ++i )
     {
@@ -2167,9 +2171,10 @@ void DenseMatrix<ValueType>::resetDiagonalProperty()
 template<typename ValueType>
 void DenseMatrix<ValueType>::writeAt( std::ostream& stream ) const
 {
+    using ::operator<<;   // make enum output operators visible here
+
     common::ScalarType type = common::getScalarType<ValueType>();
-    LAMA_LOG_ERROR( logger, "writeAt: " << type );
-    stream << "DenseMatrix<" << type << ">( " << mNumRows << " x " << mNumColumns << ", rowdist = "
+    stream << "DenseMatrix<" << type << ">( size = " << mNumRows << " x " << mNumColumns << ", rowdist = "
            << getDistribution() << ", coldist = " << getColDistribution() << ")";
 }
 

@@ -52,6 +52,7 @@
 #include<ostream>
 
 using namespace common;
+using namespace memory;
 
 namespace lama
 {
@@ -64,7 +65,11 @@ LAMA_LOG_DEF_LOGGER( Vector::logger, "Vector" )
 
 Vector* Vector::getVector( const VectorKind kind, common::ScalarType type )
 {
+    using ::operator<<;     // becomes redundant if operator<< is not defined in namespace lama
+
     VectorCreateKeyType key( kind, type );
+
+    LAMA_LOG_INFO( logger, "getVector uses Factory::create " << key )
 
     // get it from the factory by building a pair as key the creator fn
 
@@ -74,6 +79,7 @@ Vector* Vector::getVector( const VectorKind kind, common::ScalarType type )
 Vector* Vector::createVector( const common::ScalarType valueType, DistributionPtr distribution )
 {
     Vector* v = getVector( DENSE, valueType );
+
     v->resize( distribution );
     return v;
 }

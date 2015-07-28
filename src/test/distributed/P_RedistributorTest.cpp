@@ -42,6 +42,7 @@
 #include <lama/distribution/Redistributor.hpp>
 
 using namespace lama;
+using namespace memory;
 using namespace common;
 
 typedef boost::mpl::list<double, float> test_types;

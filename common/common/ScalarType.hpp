@@ -120,6 +120,9 @@ inline ScalarType getScalarType<double>()
 
 } //namespace 
 
-/** Output of ScalarType in stream by writing strings instead of numbers  */
+/** Output of ScalarType in stream by writing strings instead of numbers 
+ *
+ *  Note: operator<< should never be defined within a namespace.
+ */
 
 COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const common::ScalarType& object );
