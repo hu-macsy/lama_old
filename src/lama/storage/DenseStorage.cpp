@@ -49,6 +49,7 @@ using std::abs;
 // so we can use abs for float and double and own abs for Complex
 
 using common::shared_ptr;
+using namespace memory;
 
 /* --------------------------------------------------------------------------- */
 

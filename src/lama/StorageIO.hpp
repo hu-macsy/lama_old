@@ -41,7 +41,7 @@
 
 #include <fstream>
 
-using namespace memory;
+using memory::LAMAArray;
 
 namespace lama
 {

@@ -41,6 +41,8 @@
 
 #include <lama/DenseVector.hpp>
 
+using namespace memory;
+
 namespace lama
 {
 

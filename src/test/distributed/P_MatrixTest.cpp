@@ -57,6 +57,7 @@
 #include <test/TestSparseMatrices.hpp>
 
 using namespace lama;
+using namespace memory;
 
 /* --------------------------------------------------------------------- */
 

@@ -41,6 +41,7 @@
 #include <lama/storage/ELLStorage.hpp>
 
 using namespace lama;
+using namespace memory;
 using common::Exception;
 
 extern bool base_test_case;

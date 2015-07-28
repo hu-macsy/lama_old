@@ -53,6 +53,7 @@
 #include <logging/logging.hpp>
 
 using namespace lama;
+using namespace memory;
 
 /* ------------------------------------------------------------------------- */
 

@@ -35,6 +35,7 @@
 #include <test/TestMacros.hpp>
 
 using namespace lama;
+using namespace memory;
 
 /************************************************************************
  *  Planned version (avoids use of templates)                            *

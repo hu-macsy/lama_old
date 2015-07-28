@@ -47,6 +47,8 @@
 
 #include <iostream>
 
+using namespace memory;
+
 namespace lama
 {
 

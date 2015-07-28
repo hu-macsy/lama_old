@@ -64,54 +64,6 @@ void Context::writeAt( std::ostream& stream ) const
     stream << "Context";
 }
 
-std::ostream& operator<<( std::ostream& stream, const ContextType& type )
-{
-    switch ( type )
-    {
-        case context::Host :
-            stream << "Host";
-            break;
-
-        case context::CUDA :
-            stream << "CUDA";
-            break;
-
-        case context::OpenCL :
-            stream << "OpenCL";
-            break;
-
-        case context::UserContext :
-            stream << "UserContext";
-            break;
-
-        default:
-            stream << "ContextType_" << (int) type;
-    }
-
-    return stream;
-}
-
-/* -----------------------------------------------------------------------------*/
-
-std::ostream& operator<<( std::ostream& stream, const AccessKind& kind )
-{
-    switch ( kind )
-    {
-        case context::Write :
-            stream << "Write";
-            break;
-
-        case context::Read :
-            stream << "Read";
-            break;
-
-        default:
-            stream << "AccessKind_" << (int) kind;
-    }
-
-    return stream;
-}
-
 /* -----------------------------------------------------------------------------*/
 
 void Context::enable( const char* file, int line ) const
@@ -164,3 +116,58 @@ ContextPtr Context::getContextPtr( ContextType type, int deviceNr )
 }
 
 }
+
+/* ---------------------------------------------------------------------------------*/
+
+std::ostream& operator<<( std::ostream& stream, const memory::ContextType& type )
+{
+    using namespace memory;
+
+    switch ( type )
+    {
+        case context::Host :
+            stream << "Host";
+            break;
+
+        case context::CUDA :
+            stream << "CUDA";
+            break;
+
+        case context::OpenCL :
+            stream << "OpenCL";
+            break;
+
+        case context::UserContext :
+            stream << "UserContext";
+            break;
+
+        default:
+            stream << "ContextType_" << (int) type;
+    }
+
+    return stream;
+}
+
+/* -----------------------------------------------------------------------------*/
+
+std::ostream& operator<<( std::ostream& stream, const memory::AccessKind& kind )
+{
+    using namespace memory;
+
+    switch ( kind )
+    {
+        case context::Write :
+            stream << "Write";
+            break;
+
+        case context::Read :
+            stream << "Read";
+            break;
+
+        default:
+            stream << "AccessKind_" << (int) kind;
+    }
+
+    return stream;
+}
+

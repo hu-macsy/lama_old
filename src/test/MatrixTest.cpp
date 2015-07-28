@@ -56,6 +56,7 @@
 #include <cstring>
 
 using namespace lama;
+using namespace memory;
 
 BOOST_AUTO_TEST_SUITE( MatrixTest )
 

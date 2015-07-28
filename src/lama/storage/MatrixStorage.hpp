@@ -47,8 +47,11 @@ namespace tasking
 class SyncToken;
 }
 
-using namespace tasking;
-using namespace memory;
+using memory::Context;
+using memory::ContextPtr;
+using memory::ContextArray;
+using memory::LAMAArray;
+using memory::LAMAArrayRef;
 
 namespace lama
 {
@@ -81,8 +84,6 @@ typedef enum
 
 using Format::MatrixStorageFormat;
 //!< useful abbreviation
-
-COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const MatrixStorageFormat storageFormat );
 
 COMMON_DLL_IMPORTEXPORT const char* format2Str( const MatrixStorageFormat storageFormat );
 
@@ -828,14 +829,14 @@ public:
      *  and returns a NoSyncToken.
      */
 
-    virtual SyncToken* matrixTimesVectorAsync(
+    virtual tasking::SyncToken* matrixTimesVectorAsync(
         LAMAArray<ValueType>& result,
         const ValueType alpha,
         const LAMAArray<ValueType>& x,
         const ValueType beta,
         const LAMAArray<ValueType>& y ) const;
 
-    virtual SyncToken* vectorTimesMatrixAsync(
+    virtual tasking::SyncToken* vectorTimesMatrixAsync(
         LAMAArray<ValueType>& result,
         const ValueType alpha,
         const LAMAArray<ValueType>& x,
@@ -945,7 +946,7 @@ public:
 
     /** Asynchrounous version of jacobiIterate */
 
-    virtual SyncToken* jacobiIterateAsync(
+    virtual tasking::SyncToken* jacobiIterateAsync(
         LAMAArray<ValueType>& solution,
         const LAMAArray<ValueType>& oldSolution,
         const LAMAArray<ValueType>& rhs,
@@ -1093,4 +1094,8 @@ void MatrixStorage<ValueType>::setRawCSRData(
 }
 
 } // namespace lama
+
+/* ------------------------------------------------------------------------- */
+
+COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const lama::MatrixStorageFormat storageFormat );
 

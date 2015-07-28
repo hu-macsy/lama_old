@@ -130,10 +130,11 @@ void Richardson::iterate(){
 
 	*runtime.mSolution = oldSolution + (*runtime.mSolution);
 
-    if ( LAMA_LOG_TRACE_ON( logger ) ){
+    if ( LAMA_LOG_TRACE_ON( logger ) )
+    {
         LAMA_LOG_TRACE( logger, "Solution " << *runtime.mSolution )
         const DenseVector<T>& sol = dynamic_cast<const DenseVector<T>&>( *runtime.mSolution );
-        ReadAccess<T> rsol( sol.getLocalValues() );
+        memory::ReadAccess<T> rsol( sol.getLocalValues() );
         std::cout << "Solution: ";
         for ( IndexType i = 0; i < rsol.size(); ++i )
         	std::cout << " " << rsol[i];

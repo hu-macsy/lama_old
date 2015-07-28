@@ -50,8 +50,6 @@
 namespace lama
 {
 
-using namespace memory;
-
 /** The halo is an internal data structure that describes the
  *  exchange of non-local values completely.
  *
@@ -90,9 +88,9 @@ public:
 
     inline IndexType global2halo( const IndexType globalIndex ) const;
 
-    inline const LAMAArray<IndexType>& getProvidesIndexes() const;
+    inline const memory::LAMAArray<IndexType>& getProvidesIndexes() const;
 
-    inline const LAMAArray<IndexType>& getRequiredIndexes() const;
+    inline const memory::LAMAArray<IndexType>& getRequiredIndexes() const;
 
     /** Query the size for a halo to be allocated */
 
@@ -124,8 +122,8 @@ private:
     // Indexes for required values and values to provide are stored in LAMAArrays
     // so they might be used in different contexts, especially also on GPU
 
-    LAMAArray<IndexType> mRequiredIndexes;
-    LAMAArray<IndexType> mProvidesIndexes;
+    memory::LAMAArray<IndexType> mRequiredIndexes;
+    memory::LAMAArray<IndexType> mProvidesIndexes;
 
     std::map<IndexType,IndexType> mGlobal2Halo;
 
@@ -142,12 +140,12 @@ const CommunicationPlan& Halo::getProvidesPlan() const
     return mProvidesPlan;
 }
 
-const LAMAArray<IndexType>& Halo::getProvidesIndexes() const
+const memory::LAMAArray<IndexType>& Halo::getProvidesIndexes() const
 {
     return mProvidesIndexes;
 }
 
-const LAMAArray<IndexType>& Halo::getRequiredIndexes() const
+const memory::LAMAArray<IndexType>& Halo::getRequiredIndexes() const
 {
     return mRequiredIndexes;
 }

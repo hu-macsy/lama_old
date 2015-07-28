@@ -43,6 +43,7 @@
 #include <lama/storage/SparseAssemblyStorage.hpp>
 
 using namespace lama;
+using namespace memory;
 
 template<typename ValueType>
 void setCSRStorage( _MatrixStorage& storage )

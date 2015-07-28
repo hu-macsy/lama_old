@@ -42,6 +42,7 @@
 #include <common/unique_ptr.hpp>
 
 using namespace lama;
+using namespace memory;
 using common::Exception;
 using common::unique_ptr;
 using common::scoped_array;

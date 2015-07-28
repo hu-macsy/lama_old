@@ -43,10 +43,11 @@
 
 #include <cmath>
 
+using std::abs;
+using namespace memory;
+
 namespace lama
 {
-
-using std::abs;
 
 /* --------------------------------------------------------------------------- */
 

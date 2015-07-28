@@ -54,6 +54,7 @@
 #include <common/unique_ptr.hpp>
 
 using common::scoped_array;
+using namespace memory;
 
 namespace lama
 {

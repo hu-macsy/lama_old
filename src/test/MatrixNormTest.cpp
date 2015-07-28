@@ -45,6 +45,7 @@
 typedef boost::mpl::list<float, double> test_types;
 
 using namespace lama;
+using namespace memory;
 
 BOOST_AUTO_TEST_SUITE( MatrixNormTest )
 

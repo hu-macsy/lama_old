@@ -59,6 +59,8 @@
 #include <common/bind.hpp>
 #include <boost/preprocessor.hpp>
 
+using namespace memory;
+
 namespace lama
 {
 
@@ -2192,8 +2194,8 @@ const Halo& SparseMatrix<ValueType>::getHalo() const
 template<typename ValueType>
 void SparseMatrix<ValueType>::writeAt( std::ostream& stream ) const
 {
-    stream << getTypeName() << "( " << "size = " << mNumRows << "x" << mNumColumns << ", local = " << *mLocalData
-           << ", halo = " << *mHaloData << ", row dist = " << getDistribution() << ", col dist = "
+    stream << getTypeName() << "( size = " << mNumRows << " x " << mNumColumns << ", local = " << *mLocalData
+           << ", halo = " << *mHaloData << ", rowdist = " << getDistribution() << ", coldist = "
            << getColDistribution() << ")";
 }
 

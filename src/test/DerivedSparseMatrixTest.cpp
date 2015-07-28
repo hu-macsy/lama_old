@@ -43,6 +43,7 @@
 #include <test/SparseMatrixTest.hpp>
 
 using namespace lama;
+using namespace memory;
 
 /* ------------------------------------------------------------------------- */
 

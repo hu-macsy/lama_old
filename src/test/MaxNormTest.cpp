@@ -42,6 +42,7 @@
 #include <test/TestMacros.hpp>
 
 using namespace lama;
+using namespace memory;
 
 extern bool base_test_case;
 extern std::string testcase;

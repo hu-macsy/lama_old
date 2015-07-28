@@ -54,8 +54,6 @@
 #include <common/Factory.hpp>
 #include <common/ScalarType.hpp>
 
-using namespace memory;
-
 namespace lama
 {
 
@@ -1046,12 +1044,6 @@ inline std::ostream& operator<<( std::ostream& stream, const Matrix::SyncKind& k
 
 /** @brief  stream output for key values of creator  */
 
-inline std::ostream& operator<<( std::ostream& stream, const lama::MatrixCreateKeyType& key )
-{
-    stream << "<" << key.first << ", " << key.second << ">";
-    return stream;
-}
-
 } // namespace
 
 /** This function prints a MatrixKind on an output stream.
@@ -1082,6 +1074,12 @@ inline std::ostream& operator<<( std::ostream& stream, const lama::Matrix::Matri
         }
     }
 
+    return stream;
+}
+
+inline std::ostream& operator<<( std::ostream& stream, const lama::MatrixCreateKeyType& key )
+{
+    stream << "<" << key.first << ", " << key.second << ">";
     return stream;
 }
 

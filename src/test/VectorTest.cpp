@@ -60,6 +60,7 @@
 #include <memory/memory.hpp>
 
 using namespace lama;
+using namespace memory;
 using common::Exception;
 
 #if ARITHMETIC_TYPE_CNT == 1

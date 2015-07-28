@@ -68,6 +68,8 @@ using common::shared_ptr;
 
 using tasking::TaskSyncToken;
 
+using namespace memory;
+
 /* --------------------------------------------------------------------------- */
 
 LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, CSRStorage<ValueType>::logger, "MatrixStorage.CSRStorage" )

@@ -71,6 +71,7 @@ class COMMON_DLL_IMPORTEXPORT DenseVector:
     public Vector,
 
     public Vector::Register<DenseVector<ValueType> >    // register at factory
+
 {
 public:
 
@@ -476,7 +477,7 @@ DenseVector<ValueType>::DenseVector( const IndexType size, const OtherValueType*
 {
     // use LAMA array reference to avoid copy of the raw data
 
-    LAMAArrayRef<OtherValueType> valuesArrayRef( size, values );
+    memory::LAMAArrayRef<OtherValueType> valuesArrayRef( size, values );
 
     // use mContext instead of context to avoid NULL pointer
 

@@ -53,6 +53,8 @@
 using common::unique_ptr;
 using common::scoped_array;
 
+using namespace memory;
+
 namespace lama
 {
 

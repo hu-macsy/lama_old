@@ -42,6 +42,7 @@
 #include <test/Configuration.hpp>
 
 using namespace lama;
+using namespace memory;
 using common::shared_ptr;
 
 /* --------------------------------------------------------------------- */

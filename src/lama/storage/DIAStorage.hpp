@@ -215,7 +215,7 @@ public:
 
     /** Implementation of MatrixStorage::matrixTimesVectorAsync for DIA */
 
-    virtual SyncToken* matrixTimesVectorAsync(
+    virtual tasking::SyncToken* matrixTimesVectorAsync(
         LAMAArray<ValueType>& result,
         const ValueType alpha,
         const LAMAArray<ValueType>& x,
@@ -224,7 +224,7 @@ public:
 
     /** Implementation of MatrixStorage::vectorTimesMatrixAsync for DIA */
 
-    virtual SyncToken* vectorTimesMatrixAsync(
+    virtual tasking::SyncToken* vectorTimesMatrixAsync(
         LAMAArray<ValueType>& result,
         const ValueType alpha,
         const LAMAArray<ValueType>& x,

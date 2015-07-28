@@ -42,10 +42,12 @@
 // logging
 #include <logging/logging.hpp>
 
+using memory::ContextArray;
+using memory::LAMAArray;
+using memory::ContextPtr;
+
 namespace lama
 {
-
-using namespace memory;
 
 /** Class that contains some utility routines used at several places. */
 

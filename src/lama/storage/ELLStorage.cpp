@@ -51,9 +51,9 @@
 namespace lama
 {
 
-using common::unique_ptr;
 using common::shared_ptr;
 using namespace tasking;
+using namespace memory;
 
 /* --------------------------------------------------------------------------- */
 
@@ -1295,7 +1295,7 @@ SyncToken* ELLStorage<ValueType>::vectorTimesMatrixAsync(
     LAMA_INTERFACE_FN_T( sparseGEVM, loc, ELLUtils, Mult, ValueType )
     LAMA_INTERFACE_FN_T( normalGEVM, loc, ELLUtils, Mult, ValueType )
 
-    unique_ptr<SyncToken> syncToken( loc->getSyncToken() );
+    common::unique_ptr<SyncToken> syncToken( loc->getSyncToken() );
 
     // all accesses will be pushed to the sync token as LAMA arrays have to be protected up
     // to the end of the computations.

@@ -79,7 +79,6 @@ set ( SOURCE_FILES
         ELLSparseMatrixTest
         ELLStorageTest
         ELLUtilsTest
-        ExceptionTest
         FileLoggerTest
         GMRESTest
         InverseSolverTest

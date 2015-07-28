@@ -52,6 +52,7 @@
 
 using common::unique_ptr;
 using common::shared_ptr;
+using namespace memory;
 
 namespace lama
 {

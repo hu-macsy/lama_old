@@ -48,12 +48,14 @@
 #include <common/bind.hpp>
 #include <common/unique_ptr.hpp>
 
+using common::shared_ptr;
+using namespace::tasking;
+using namespace::memory;
+
 namespace lama
 {
 // Allow for shared_ptr<ValueType> instead of common::shared_ptr<ValueType>
 
-using common::shared_ptr;
-using namespace::tasking;
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
