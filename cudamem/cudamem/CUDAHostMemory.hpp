@@ -77,6 +77,14 @@ public:
 
     virtual tasking::SyncToken* memcpyAsync( void* dst, const void* src, const size_t size ) const;
 
+    virtual bool canCopyFrom( const Memory& other ) const;
+
+    virtual bool canCopyTo( const Memory& other ) const;
+
+    virtual void memcpyFrom( void* dst, const Memory& srcMemory, const void* src, size_t size ) const;
+
+    virtual void memcpyTo( const Memory& dstMemory, void* dst, const void* src, size_t size ) const;
+
     /** On CUDAHostMemory we work usually with the HostContext. */
 
     virtual ContextPtr getContextPtr() const;
