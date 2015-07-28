@@ -70,8 +70,8 @@ GMRES::GMRES( const GMRES& other )
 }
 
 GMRES::GMRESRuntime::GMRESRuntime()
-    : IterativeSolverRuntime(), mCC(), mSS(), mG(), mY(), mH(), mHd(), mV( 0 ), mW( 0 ), mT(
-          0 ), mX0( 0 )
+    : IterativeSolverRuntime(), mCC(new double[1]), mSS(new double[1]), mG(new double[1]), mY(new double[1]), mH(new double[1]), mHd(new double[1]), mV( 0 ), mW( 0 ),
+        mT( 0 ), mX0( 0 )
 {
 }
 

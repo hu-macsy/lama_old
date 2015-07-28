@@ -908,6 +908,28 @@ SyncToken* COOStorage<ValueType>::matrixTimesVectorAsync(
 
     ContextPtr loc = Context::getContextPtr( context::Host );
 
+    if ( loc->getType() == context::Host )
+    {
+        // execution as separate thread
+
+        void (COOStorage::*pf)(
+            LAMAArray<ValueType>&,
+            const ValueType,
+            const LAMAArray<ValueType>&,
+            const ValueType,
+            const LAMAArray<ValueType>& ) const
+
+            = &COOStorage<ValueType>::matrixTimesVector;
+
+        using common::bind;
+        using common::ref;
+        using common::cref;
+
+        LAMA_LOG_INFO( logger, *this << ": matrixTimesVectorAsync on Host by own thread" )
+
+        return new TaskSyncToken( bind( pf, this, ref( result ), alpha, cref( x ), beta, cref( y ) ) );
+    }
+
     LAMA_LOG_INFO( logger, *this << ": matrixTimesVectorAsync on " << *loc )
 
     LAMA_INTERFACE_FN_T( normalGEMV, loc, COOUtils, Mult, ValueType )
