@@ -52,15 +52,6 @@ set ( LAMA_VERSION_PATCH 1 )
 set ( LAMA_VERSION_COUNT 3 )
 set ( LAMA_VERSION ${LAMA_VERSION_MAJOR}.${LAMA_VERSION_MINOR}.${LAMA_VERSION_PATCH} )
 
-### Include all other projects 
-
-add_subdirectory( ../common "${CMAKE_CURRENT_BINARY_DIR}/common" )
-add_subdirectory( ../logging "${CMAKE_CURRENT_BINARY_DIR}/logging" )
-add_subdirectory( ../tracing "${CMAKE_CURRENT_BINARY_DIR}/tracing" )
-add_subdirectory( ../tasking "${CMAKE_CURRENT_BINARY_DIR}/tasking" )
-add_subdirectory( ../memory "${CMAKE_CURRENT_BINARY_DIR}/memory" )
-add_subdirectory( ../cudamem "${CMAKE_CURRENT_BINARY_DIR}/cudamem" )
-
 ### Variables / CMAKE Functions ###
 include ( Variables )
 include ( SearchPackages )
@@ -124,6 +115,17 @@ if ( Boost_INCLUDE_DIR )
     include_directories ( ${Boost_INCLUDE_DIR} )
 endif ( Boost_INCLUDE_DIR )
 
+
+### Include all other projects 
+
+add_subdirectory( ../common "${CMAKE_CURRENT_BINARY_DIR}/common" )
+add_subdirectory( ../logging "${CMAKE_CURRENT_BINARY_DIR}/logging" )
+add_subdirectory( ../tracing "${CMAKE_CURRENT_BINARY_DIR}/tracing" )
+add_subdirectory( ../tasking "${CMAKE_CURRENT_BINARY_DIR}/tasking" )
+add_subdirectory( ../memory "${CMAKE_CURRENT_BINARY_DIR}/memory" )
+if ( CUDA_FOUND AND LAMA_USE_CUDA AND CUDA_HAVE_GPU )
+    add_subdirectory( ../cudamem "${CMAKE_CURRENT_BINARY_DIR}/cudamem" )
+endif ( CUDA_FOUND AND LAMA_USE_CUDA AND CUDA_HAVE_GPU )
 
 ### add subdirectories ###
 add_subdirectory ( lama )

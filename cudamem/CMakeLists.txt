@@ -50,6 +50,7 @@ set ( CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/../CMake/Modules" )
 
 include ( SetBuildFlags )
 include ( SetCPPFlags )
+include ( SetNVCCFlags )
 
 ### Source files for cudamem library
 

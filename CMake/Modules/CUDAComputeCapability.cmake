@@ -56,4 +56,8 @@ if ( CUDA_FOUND )
         set ( CUDA_COMPUTE_CAPABILITY "not-found" CACHE STRING "CUDA compute capability (supported up from 13)" )
     endif ( COMPILE_RESULT_VAR AND NOT RUN_RESULT_VAR )
     mark_as_advanced( CUDA_HAVE_GPU )
+    
+    if ( CUDA_COMPUTE_CAPABILITY MATCHES "35" )
+        add_definitions ( -DCUDA_35 )
+    endif ( CUDA_COMPUTE_CAPABILITY MATCHES "35" )
 endif ( CUDA_FOUND )
