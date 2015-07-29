@@ -84,21 +84,18 @@ checkValue( ${LAMA_ASSERT_LEVEL} "${ASSERT_CHOICES}" )
 
 add_definitions ( -DLAMA_ASSERT_LEVEL_${LAMA_ASSERT_LEVEL} )
 
-## LAMA TRACE LEVEL
+## LAMA TRACING
 #
-# If TRACE is set to OFF all LAMA_REGION macros in the code are
-# completely ignored. If TRACE is set to VT, regions will be traced
-# (entry, exit event) for VampirTrace.
+# If TRACING is disabled all LAMA_REGION macros in the code are
+# ignored. Otherwise performance data can be collected
+# where configuration is set at runtime via LAMA_TRACE.
 
-LIST ( APPEND TRACE_CHOICES "ON" "OFF" )
+set ( LAMA_TRACING FALSE CACHE BOOL 
+     "Enable / Disable tracing of regions for performance analysis" )
+if ( LAMA_TRACING )
+    set ( LAMA_TRACING_FLAG "LAMA_TRACE_ON" )
+else ( LAMA_TRACING )
+    set ( LAMA_TRACING_FLAG "LAMA_TRACE_OFF" )
+endif ( LAMA_TRACING )
 
-if ( NOT LAMA_TRACE_LEVEL )
-    set ( DEFAULT_TRACE_LEVEL "OFF" )
-endif ( NOT LAMA_TRACE_LEVEL )
-
-set ( LAMA_TRACE_LEVEL ${DEFAULT_TRACE_LEVEL} CACHE STRING
-     "Choose level of TRACE: ON (enabled) or OFF (disabled, default)" )
-set ( CACHE LAMA_TRACE_LEVEL PROPERTY STRINGS ${TRACE_CHOICES} )
-checkValue( ${LAMA_TRACE_LEVEL} "${TRACE_CHOICES}" )
-
-add_definitions( -DLAMA_TRACE_${LAMA_TRACE_LEVEL} )
+add_definitions( -D${LAMA_TRACING_FLAG} )

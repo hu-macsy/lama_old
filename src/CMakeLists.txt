@@ -337,7 +337,7 @@ message ( STATUS "Build Type   : ${CMAKE_BUILD_TYPE}" )
 message ( STATUS "Library Type : ${LAMA_LIBRARY_TYPE}" )
 message ( STATUS "LOG Level    : ${LAMA_LOG_LEVEL}" )
 message ( STATUS "ASSERT Level : ${LAMA_ASSERT_LEVEL}" )
-message ( STATUS "TRACE Level  : ${LAMA_TRACE_LEVEL}" )
+message ( STATUS "TRACING      : ${LAMA_TRACING} ( -D${LAMA_TRACING_FLAG} )" )
 message ( STATUS "" )
 
 

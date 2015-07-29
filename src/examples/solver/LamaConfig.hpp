@@ -108,7 +108,7 @@ public:
         return mContext;
     }
 
-    const lama::Context& getContext() const
+    const memory::Context& getContext() const
     {
         return *getContextPtr();
     }
