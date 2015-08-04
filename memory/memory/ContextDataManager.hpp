@@ -38,7 +38,7 @@
 #include <tasking/SyncToken.hpp>
 #include <memory/Context.hpp>
 
-#include <logging/logging.hpp>
+#include <logging.hpp>
 
 #include <common/NonCopyable.hpp>
 

@@ -38,7 +38,7 @@
 #include <memory/Access.hpp>
 #include <memory/LAMAArray.hpp>
 
-#include <logging/logging.hpp>
+#include <logging.hpp>
 
 namespace memory
 {

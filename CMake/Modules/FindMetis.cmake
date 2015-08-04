@@ -1,5 +1,5 @@
 #
-# Find the PARMETIS includes and libraries
+# Find the METIS includes and libraries
 #
 # ParMETIS is an MPI-based parallel library that implements a variety of algorithms for
 # partitioning unstructured graphs, meshes, and for computing fill-reducing orderings of

@@ -35,7 +35,7 @@
 #include "tracing/FileTable.hpp"
 #include "tracing/Counters.hpp"
 
-#include "logging/logging.hpp"
+#include "logging.hpp"
 
 namespace tracing
 

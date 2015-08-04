@@ -25,76 +25,65 @@
  # SOFTWARE.
  # @endlicense
  #
- # @brief tasking/CMakeLists.txt
+ # @brief CMake configuration file for tasking library
  # @author Thomas Brandes
  # @date 10.06.2015
 ###
 
 ### Set required CMake version
-
 cmake_minimum_required ( VERSION 2.8 )
 
-project( tasking CXX )
+### Set PROJECT NAME / supported LANGUAGES
+project( tasking CXX C )
 
-set ( tasking_LIBRARY tasking
-      CACHE FILEPATH "tasking library" )
-
-set ( tasking_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR} 
-      CACHE PATH "tasking include directory" )
-
-mark_as_advanced( tasking_LIBRARY tasking_INCLUDE_DIR )
-
+### Set Module Path
 set ( CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/../CMake/Modules" )
 
+## Define all search packages
+include ( SearchPackages/Tasking ) 
+
+# Find required packages
+foreach    ( PACKAGE_TO_FIND ${REQUIRED_PACKAGES_TO_FIND} )
+    find_package ( ${PACKAGE_TO_FIND} ${LAMA_FIND_PACKAGE_FLAGS} REQUIRED )
+endforeach ( PACKAGE_TO_FIND ${REQUIRED_PACKAGES_TO_FIND} )
+
+# Find optional packages
+foreach    ( PACKAGE_TO_FIND ${OPTIONAL_PACKAGES_TO_FIND} )
+    find_package ( ${PACKAGE_TO_FIND} ${LAMA_FIND_PACKAGE_FLAGS} )
+endforeach ( PACKAGE_TO_FIND ${OPTIONAL_PACKAGES_TO_FIND} )
+
+### Include Compiler Flags
 include ( SetBuildFlags )
 include ( SetCPPFlags )
 
-### Source files for tasking library
+## Project System-Include
+include_directories ( . )
 
-file( GLOB CPP_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp" )
-file( GLOB HPP_HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/tasking/*.hpp" )
-
-### add library and put path to search path ###
-
-add_library ( ${tasking_LIBRARY} SHARED ${CPP_SOURCES} )
-
-include_directories( ${tasking_INCLUDE_DIR} )
+set ( DEPS COMMON LOGGING TRACING )
+foreach    ( module ${DEPS} )
+    include_directories( ${${module}_INCLUDE_DIR} )
+endforeach ( module ${DEPS} )
 
 ### add definitions ###
 
-# set ( CMAKE_INSTALL_PREFIX /home/brandes/local )
-
-if ( NOT CXX_SUPPORTS_C11 )
-    find_package( Boost REQUIRED COMPONENTS )
-    include_directories( ${Boost_INCLUDE_DIR} )
-endif ( NOT CXX_SUPPORTS_C11 )
-
-foreach ( module common logging tracing )
-
-   find_library( ${module}_LIBRARY 
-                 NAMES ${module}
-                 HINTS ${CMAKE_INSTALL_PREFIX}/lib )
-
-   set ( ${module}_INCLUDE_DIR
-            ${CMAKE_INSTALL_PREFIX}/include 
-            CACHE PATH "include" )
-
-   include_directories( ${${module}_INCLUDE_DIR} )
-
-   target_link_libraries( ${tasking_LIBRARY} ${${module}_LIBRARY} )
-
-endforeach()
+## log level
+if    ( LAMA_LOG_LEVEL )
+    add_definitions ( -DLAMA_LOG_LEVEL_${LAMA_LOG_LEVEL} )
+else  ( LAMA_LOG_LEVEL )
+    add_definitions( -DLAMA_LOG_LEVEL_DEBUG )
+endif ( LAMA_LOG_LEVEL )
 
 if ( WIN32 )
     add_definitions ( -DCOMMON_COMPILING_DLL )
 endif ( WIN32 )
 
-add_definitions( -DLAMA_LOG_LEVEL_DEBUG )
 add_definitions( -DLAMA_TRACE_ON )
 
-add_subdirectory( examples )
+add_subdirectory ( tasking )
+add_subdirectory ( examples )
 
-### install ###
+## install library.hpp
+install ( FILES tasking.hpp DESTINATION include )
 
-install ( TARGETS ${tasking_LIBRARY} DESTINATION lib )
-install ( FILES ${HPP_HEADERS} DESTINATION include/tasking )
+## add custum target distClean
+include ( DistClean )

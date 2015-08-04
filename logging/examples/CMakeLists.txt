@@ -35,7 +35,7 @@
 # DemoLogging example, here we compile also LOG_TRACE macros
 
 add_executable( DemoLogging DemoLogging.cpp )
-target_link_libraries( DemoLogging ${logging_LIBRARY} )
+target_link_libraries( DemoLogging logging )
 set_target_properties( DemoLogging PROPERTIES COMPILE_FLAGS -DLAMA_LOG_LEVEL_TRACE )
 
 # ThreadTest example, here we need the Boost Thread library
@@ -51,7 +51,7 @@ if ( Boost_THREAD_FOUND )
     if ( Boost_SYSTEM_FOUND )
         include_directories ( ${Boost_INCLUDE_DIR} )
         add_executable ( LogThreads LogThreads.cpp )
-        target_link_libraries ( LogThreads ${logging_LIBRARY} ${Boost_THREAD_LIBRARY} ${Boost_SYSTEM_LIBRARY} )
+        target_link_libraries ( LogThreads logging ${Boost_THREAD_LIBRARY} ${Boost_SYSTEM_LIBRARY} )
     else ()
         message ( STATUS "Boost system library not found" )
     endif ()
@@ -66,7 +66,8 @@ find_package ( OpenMP )
 if ( OPENMP_FOUND )
     # Adding this example only possible if OpenMP is available
     add_executable( LogOpenMP LogOpenMP.cpp )
-    target_link_libraries( LogOpenMP ${logging_LIBRARY} )
+    #target_link_libraries( LogOpenMP ${logging_LIBRARY} )
+    target_link_libraries( LogOpenMP logging )
     # Note: OpenMP_CXX_FLAGS are already set globally
     # set_target_properties( LogOpenMP PROPERTIES COMPILE_FLAGS ${OpenMP_CXX_FLAGS} )
     # set_target_properties( LogOpenMP PROPERTIES LINK_FLAGS ${OpenMP_CXX_FLAGS} )

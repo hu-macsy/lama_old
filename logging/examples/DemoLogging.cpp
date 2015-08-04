@@ -31,7 +31,7 @@
  * @date 08.07.2015
  */
 
-#include "logging/logging.hpp"
+#include "logging.hpp"
 
 LAMA_LOG_DEF_LOGGER( myLogger, "Demo" )
 

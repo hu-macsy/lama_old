@@ -40,7 +40,7 @@
 #include <tasking/ThreadPool.hpp>
 
 // logging
-#include <logging/logging.hpp>
+#include <logging.hpp>
 
 #include <common/function.hpp>
 #include <common/shared_ptr.hpp>

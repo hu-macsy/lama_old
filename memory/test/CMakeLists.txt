@@ -44,7 +44,7 @@ if ( Boost_UNIT_TEST_FRAMEWORK_FOUND )
 
     target_link_libraries ( MemoryTest 
         ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}
-        ${memory_LIBRARY}
+        memory
         )
 
 endif ( Boost_UNIT_TEST_FRAMEWORK_FOUND )

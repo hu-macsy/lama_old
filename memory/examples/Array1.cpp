@@ -34,7 +34,7 @@
 #include <memory/WriteAccess.hpp>
 #include <memory/ReadAccess.hpp>
 
-#include <logging/logging.hpp>
+#include <logging.hpp>
 
 #include <iostream> 
 

@@ -43,7 +43,7 @@
 #include <common/NonCopyable.hpp>
 
 // logging
-#include <logging/logging.hpp>
+#include <logging.hpp>
 
 #include <common/shared_ptr.hpp>
 #include <common/function.hpp>

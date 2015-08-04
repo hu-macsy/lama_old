@@ -35,7 +35,7 @@
 
 // for dll_import
 #include <common/config.hpp>
-#include <logging/logging.hpp>
+#include <logging.hpp>
 
 #include <common/shared_ptr.hpp>
 

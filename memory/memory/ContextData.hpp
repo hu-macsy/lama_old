@@ -34,7 +34,7 @@
 
 #include <memory/Memory.hpp>
 
-#include <logging/logging.hpp>
+#include <logging.hpp>
 
 #include <common/config.hpp>
 #include <common/Exception.hpp>

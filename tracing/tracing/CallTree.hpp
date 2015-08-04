@@ -36,7 +36,7 @@
 #include "tracing/RegionEntry.hpp"
 #include "tracing/Counters.hpp"
 
-#include "logging/logging.hpp"
+#include "logging.hpp"
 
 #include <vector>
 

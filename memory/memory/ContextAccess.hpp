@@ -43,7 +43,7 @@
 #include <memory/Context.hpp>
 
 // logging
-#include <logging/logging.hpp>
+#include <logging.hpp>
 
 namespace memory
 {

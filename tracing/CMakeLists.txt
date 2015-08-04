@@ -31,67 +31,55 @@
 ###
 
 ### Set required CMake version
-
 cmake_minimum_required ( VERSION 2.8 )
 
-project( tracing CXX )
+### Set PROJECT NAME / supported LANGUAGES
+project( tracing CXX C )
 
-set ( tracing_LIBRARY tracing
-      CACHE FILEPATH "trace library" )
-
-set ( tracing_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR} 
-      CACHE PATH "traing include directory" )
-
-mark_as_advanced( tracing_LIBRARY tracing_INCLUDE_DIR )
-
+### Set Module Path
 set ( CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/../CMake/Modules" )
 
-# Set default build type to RELEASE, can be changed via ccmake
+## Define all search packages
+include ( SearchPackages/Tracing ) 
 
+# Find required packages
+foreach    ( PACKAGE_TO_FIND ${REQUIRED_PACKAGES_TO_FIND} )
+    find_package ( ${PACKAGE_TO_FIND} ${LAMA_FIND_PACKAGE_FLAGS} REQUIRED )
+endforeach ( PACKAGE_TO_FIND ${REQUIRED_PACKAGES_TO_FIND} )
+
+# Find optional packages
+foreach    ( PACKAGE_TO_FIND ${OPTIONAL_PACKAGES_TO_FIND} )
+    find_package ( ${PACKAGE_TO_FIND} ${LAMA_FIND_PACKAGE_FLAGS} )
+endforeach ( PACKAGE_TO_FIND ${OPTIONAL_PACKAGES_TO_FIND} )
+
+include ( Functions/checkValue )
+include ( Functions/setAndCheckCache )
+
+include ( Package/CUDA )
+
+### Include Compiler Flags
 include ( SetBuildFlags )
 include ( SetCPPFlags )
 
-### Source files for tracing library
+## Project System-Include
+include_directories ( . )
 
-file( GLOB CPP_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp" )
-file( GLOB HPP_HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/tracing/*.hpp" )
-
-add_library ( ${tracing_LIBRARY} SHARED ${CPP_SOURCES} )
-
-include_directories( ${tracing_INCLUDE_DIR} )
+set ( DEPS COMMON LOGGING )
+foreach    ( module ${DEPS} )
+    include_directories( ${${module}_INCLUDE_DIR} )
+endforeach ( module ${DEPS} )
 
 ### add definitions ###
 
-if ( NOT CXX_SUPPORTS_C11 )
-    find_package( Boost REQUIRED COMPONENTS )
-    include_directories( ${Boost_INCLUDE_DIR} )
-endif ( NOT CXX_SUPPORTS_C11 )
-
-# set ( CMAKE_INSTALL_PREFIX /home/brandes/local )
-
-foreach ( module common logging )
-
-   find_library( ${module}_LIBRARY 
-                 NAMES ${module}
-                 HINTS ${CMAKE_INSTALL_PREFIX}/lib )
-
-   set ( ${module}_INCLUDE_DIR
-            ${CMAKE_INSTALL_PREFIX}/include 
-            CACHE PATH "include" )
-
-   include_directories( ${${module}_INCLUDE_DIR} )
-
-   target_link_libraries( ${tracing_LIBRARY} ${${module}_LIBRARY} )
-
-endforeach()
+if    ( LAMA_LOG_LEVEL )
+    add_definitions ( -DLAMA_LOG_LEVEL_${LAMA_LOG_LEVEL} )
+else  ( LAMA_LOG_LEVEL )
+    add_definitions( -DLAMA_LOG_LEVEL_DEBUG )
+endif ( LAMA_LOG_LEVEL ) 
 
 if ( WIN32 )
     add_definitions ( -DCOMMON_COMPILING_DLL )
 endif ( WIN32 )
-
-add_definitions( -DLAMA_LOG_LEVEL_DEBUG )
-
-### add library and put path to search path ###
 
 if ( FALSE )
 
@@ -106,10 +94,13 @@ if ( FALSE )
         message( STATUS "VAMPIRTRACE found, lib = ${VAMPIRTRACE_LIBRARIES}" )
         add_definitions( -DUSE_VAMPIRTRACE )
         include_directories( ${VAMPIRTRACE_INCLUDE_DIR} )
-        target_link_libraries( ${tracing_LIBRARY} ${VAMPIRTRACE_LIBRARIES} ${MPI_LIBRARIES} )
+        target_link_libraries( tracing ${VAMPIRTRACE_LIBRARIES} ${MPI_LIBRARIES} )
     endif ()
 
 endif ()
+
+add_subdirectory ( tracing )
+add_subdirectory ( examples )
 
 if ( CMAKE_VERSION VERSION_GREATER 2.8.7 ) 
 	add_subdirectory( gui )
@@ -117,9 +108,8 @@ else ()
 	message( STATUS "GUI will not be build" )
 endif( )
 
-add_subdirectory( examples )
+## install library.hpp
+install ( FILES tracing.hpp DESTINATION include )
 
-### install ###
-
-install ( TARGETS ${tracing_LIBRARY} DESTINATION lib )
-install ( FILES ${HPP_HEADERS} DESTINATION include/tracing )
+## add custum target distClean
+include ( DistClean )

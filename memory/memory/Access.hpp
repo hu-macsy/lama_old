@@ -41,7 +41,7 @@
 #include <tasking/SyncToken.hpp>
 
 // logging
-#include <logging/logging.hpp>
+#include <logging.hpp>
 
 namespace memory
 {

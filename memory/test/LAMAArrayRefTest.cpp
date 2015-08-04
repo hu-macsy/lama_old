@@ -33,7 +33,7 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/mpl/list.hpp>
 
-#include <memory/memory.hpp>
+#include <memory.hpp>
 
 using namespace boost;
 using namespace common;

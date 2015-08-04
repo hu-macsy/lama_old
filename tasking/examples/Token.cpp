@@ -34,7 +34,7 @@
 #include <tasking/TaskSyncToken.hpp>
 
 #include <common/Exception.hpp>
-#include <logging/logging.hpp>
+#include <logging.hpp>
 
 #include <common/bind.hpp>
 #include <common/shared_ptr.hpp>

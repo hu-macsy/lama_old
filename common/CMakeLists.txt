@@ -31,51 +31,46 @@
 ###
 
 ### Set required CMake version
-
 cmake_minimum_required ( VERSION 2.8 )
 
-project ( common CXX )
+### Set PROJECT NAME / supported LANGUAGES
+project ( common CXX C )
 
-# import SetCPPFlags, ....
-
+### Set Module Path
 set ( CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/../CMake/Modules" )
 
+## Define all search packages
+include ( SearchPackages/Common )
+
+# Find required packages
+foreach    ( PACKAGE_TO_FIND ${REQUIRED_PACKAGES_TO_FIND} )
+    find_package ( ${PACKAGE_TO_FIND} ${LAMA_FIND_PACKAGE_FLAGS} REQUIRED )
+endforeach ( PACKAGE_TO_FIND ${REQUIRED_PACKAGES_TO_FIND} )
+
+# Find optional packages
+foreach    ( PACKAGE_TO_FIND ${OPTIONAL_PACKAGES_TO_FIND} )
+    find_package ( ${PACKAGE_TO_FIND} ${LAMA_FIND_PACKAGE_FLAGS} )
+endforeach ( PACKAGE_TO_FIND ${OPTIONAL_PACKAGES_TO_FIND} )
+
+include ( Functions/checkValue )
+include ( Functions/setAndCheckCache )
+
+include ( Package/CUDA )
+
+### Include Compiler Flags
 include ( SetBuildFlags )
 include ( SetCPPFlags )
+include ( SetNVCCFlags )
 
-### Define variables needed for common library 
-### Variables are put in the cache so they might be used in other scopes
+## Project System-Include
+include_directories ( . )
 
-set ( common_LIBRARY common 
-      CACHE FILEPATH "common library" )
-
-set ( common_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR} 
-      CACHE PATH "common include directory" )
-
-mark_as_advanced ( common_INCLUDE_DIR common_LIBRARY )
-
-###  Here we use PThread library for threads
-###  Note: FindThreads in CMake is available as Module, but is buggy, needs update of CheckIncludeFiles.cmake
-
-find_library ( PTHREADS_LIBRARY NAMES pthread pthreads )
-
-file ( GLOB CPP_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp" )
-file ( GLOB HPP_HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/common/*.hpp" )
-
-include_directories ( ${common_INCLUDE_DIR} )
-
-if ( WIN32 )
-	add_definitions ( -DCOMMON_COMPILING_DLL )
-endif ( WIN32 )
-
-### add library and put path to search path ###
-
-add_library ( ${common_LIBRARY} SHARED ${CPP_SOURCES} )
-target_link_libraries( ${common_LIBRARY} ${PTHREADS_LIBRARY} )
-
+## add subdirectories
+add_subdirectory ( common )
 add_subdirectory ( examples )
 
-### install ###
+## install library.hpp
+install ( FILES common.hpp DESTINATION include )
 
-install ( TARGETS ${common_LIBRARY} DESTINATION lib )
-install ( FILES ${HPP_HEADERS} DESTINATION include/common )
+## add custum target distClean
+include ( DistClean )

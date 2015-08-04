@@ -30,8 +30,8 @@
  * @date 13.07.2015
  */
 
+#include <tracing.hpp>
 #include <tasking/ThreadPool.hpp>
-#include <tracing/tracing.hpp>
 
 #include <memory>
 #include <common/bind.hpp>

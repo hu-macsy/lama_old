@@ -37,7 +37,7 @@
 #include <common/NonCopyable.hpp>
 
 // others
-#include <logging/logging.hpp>
+#include <logging.hpp>
 #include <common/Thread.hpp>
 
 #include <common/shared_ptr.hpp>

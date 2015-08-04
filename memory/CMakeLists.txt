@@ -31,71 +31,59 @@
 ###
 
 ### Set required CMake version
-
 cmake_minimum_required ( VERSION 2.8 )
 
-project( memory CXX )
+### Set PROJECT NAME / supported LANGUAGES
+project( memory CXX C )
 
-set ( memory_LIBRARY memory
-      CACHE FILEPATH "memory library" )
-
-set ( memory_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR} 
-      CACHE PATH "memory include directory" )
-
-mark_as_advanced( memory_LIBRARY memory_INCLUDE_DIR )
-
-include_directories( ${memory_INCLUDE_DIR} )
-
+### Set Module Path
 set ( CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/../CMake/Modules" )
 
+## Define all search packages
+include ( SearchPackages/Logging ) 
+
+# Find required packages
+foreach    ( PACKAGE_TO_FIND ${REQUIRED_PACKAGES_TO_FIND} )
+    find_package ( ${PACKAGE_TO_FIND} ${LAMA_FIND_PACKAGE_FLAGS} REQUIRED )
+endforeach ( PACKAGE_TO_FIND ${REQUIRED_PACKAGES_TO_FIND} )
+
+# Find optional packages
+foreach    ( PACKAGE_TO_FIND ${OPTIONAL_PACKAGES_TO_FIND} )
+    find_package ( ${PACKAGE_TO_FIND} ${LAMA_FIND_PACKAGE_FLAGS} )
+endforeach ( PACKAGE_TO_FIND ${OPTIONAL_PACKAGES_TO_FIND} )
+
+include ( Functions/checkValue )
+include ( Functions/setAndCheckCache )
+
+include ( Package/CUDA )
+
+### Include Compiler Flags
 include ( SetBuildFlags )
 include ( SetCPPFlags )
+include ( SetNVCCFlags )
 
-### Source files for memory library
+## Project System-Include
+include_directories ( . )
 
-file( GLOB CPP_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp" )
-file( GLOB HPP_HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/memory/*.hpp" )
-
-add_library ( ${memory_LIBRARY} SHARED ${CPP_SOURCES} )
+set ( DEPS COMMON LOGGING TRACING TASKING )
+foreach    ( module ${DEPS} )
+    include_directories( ${${module}_INCLUDE_DIR} )
+endforeach ( module ${DEPS} )
 
 ### add definitions ###
 
-# set ( CMAKE_INSTALL_PREFIX /home/brandes/local )
-
-if ( NOT CXX_SUPPORTS_C11 )
-    find_package( Boost REQUIRED COMPONENTS )
-    include_directories( ${Boost_INCLUDE_DIR} )
-endif ( NOT CXX_SUPPORTS_C11 )
-
-foreach ( module common logging tasking )
-
-   find_library( ${module}_LIBRARY 
-                 NAMES ${module}
-                 HINTS ${CMAKE_INSTALL_PREFIX}/lib )
-
-   set ( ${module}_INCLUDE_DIR
-            ${CMAKE_INSTALL_PREFIX}/include 
-            CACHE PATH "include" )
- 
-   include_directories( ${${module}_INCLUDE_DIR} )
-
-   target_link_libraries( ${memory_LIBRARY} ${${module}_LIBRARY} )
-
-endforeach()
+add_definitions( -DLAMA_LOG_LEVEL_DEBUG )
 
 if ( WIN32 )
     add_definitions ( -DCOMMON_COMPILING_DLL )
 endif ( WIN32 )
 
-add_definitions( -DLAMA_LOG_LEVEL_DEBUG )
+add_subdirectory ( memory )
+add_subdirectory ( examples )
+add_subdirectory ( test )
 
-### add library and put path to search path ###
+## install library.hpp
+install ( FILES memory.hpp DESTINATION include )
 
-
-add_subdirectory( examples )
-add_subdirectory( test )
-
-### install ###
-
-install ( TARGETS ${memory_LIBRARY} DESTINATION lib )
-install ( FILES ${HPP_HEADERS} DESTINATION include/memory )
+## add custum target distClean
+include ( DistClean )

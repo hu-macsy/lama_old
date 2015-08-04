@@ -40,7 +40,7 @@
 #include <common/shared_ptr.hpp>
 
 // logging
-#include <logging/logging.hpp>
+#include <logging.hpp>
 
 namespace tasking
 {

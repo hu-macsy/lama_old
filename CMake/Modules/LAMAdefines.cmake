@@ -39,22 +39,22 @@
 #  For serious problems: -DLOG_LEVEL_TRACE
 #  For benchmarks:       -DLOG_LEVEL_OFF (or -DLOG_LEVEL_FATAL, -DLOG_LEVEL_ERROR)
 
-LIST ( APPEND LOG_CHOICES "TRACE" "DEBUG" "INFO" "WARN" "ERROR" "OFF" )
+list ( APPEND LOG_CHOICES "TRACE" "DEBUG" "INFO" "WARN" "ERROR" "OFF" )
 
-if ( NOT LAMA_LOG_LEVEL )
-    if ( CMAKE_BUILD_TYPE STREQUAL "Release" )
+if    ( NOT LAMA_LOG_LEVEL )
+    if     ( CMAKE_BUILD_TYPE STREQUAL "Release" )
         set ( DEFAULT_LOG_LEVEL "INFO" )
     elseif ( CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo" )
         set ( DEFAULT_LOG_LEVEL "DEBUG" )
-    else ()
+    else   ( )
         set ( DEFAULT_LOG_LEVEL "TRACE" )
-    endif ()
+    endif  ( )
 endif ( NOT LAMA_LOG_LEVEL )
 
 set ( LAMA_LOG_LEVEL ${DEFAULT_LOG_LEVEL} CACHE STRING
       "Choose level of compile time logging: ${LOG_CHOICES}" )
 set ( CACHE LAMA_LOG_LEVEL PROPERTY STRINGS ${LOG_CHOICES} )
-checkValue( ${LAMA_LOG_LEVEL} "${LOG_CHOICES}" )
+checkValue ( ${LAMA_LOG_LEVEL} "${LOG_CHOICES}" )
 
 add_definitions ( -DLAMA_LOG_LEVEL_${LAMA_LOG_LEVEL} )
 
@@ -65,22 +65,22 @@ add_definitions ( -DLAMA_LOG_LEVEL_${LAMA_LOG_LEVEL} )
 #  
 #  For benchmarks:       -DASSERT_LEVEL_OFF
 
-LIST ( APPEND ASSERT_CHOICES "DEBUG" "ERROR" "OFF" )
+list ( APPEND ASSERT_CHOICES "DEBUG" "ERROR" "OFF" )
 
-if ( NOT LAMA_ASSERT_LEVEL )
-    if ( CMAKE_BUILD_TYPE STREQUAL "Release" )
+if    ( NOT LAMA_ASSERT_LEVEL )
+    if     ( CMAKE_BUILD_TYPE STREQUAL "Release" )
         set ( DEFAULT_ASSERT_LEVEL "ERROR" )
     elseif ( CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo" )
         set ( DEFAULT_ASSERT_LEVEL "DEBUG" )
-    else ()
+    else   ( )
         set ( DEFAULT_ASSERT_LEVEL "DEBUG" )
-    endif ()
+    endif  ( )
 endif ( NOT LAMA_ASSERT_LEVEL )
 
 set ( LAMA_ASSERT_LEVEL ${DEFAULT_ASSERT_LEVEL} CACHE STRING
       "Choose level of ASSERT: ${ASSERT_CHOICES}" )
 set ( CACHE LAMA_ASSERT_LEVEL PROPERTY STRINGS ${ASSERT_CHOICES} )
-checkValue( ${LAMA_ASSERT_LEVEL} "${ASSERT_CHOICES}" )
+checkValue ( ${LAMA_ASSERT_LEVEL} "${ASSERT_CHOICES}" )
 
 add_definitions ( -DLAMA_ASSERT_LEVEL_${LAMA_ASSERT_LEVEL} )
 
@@ -90,15 +90,15 @@ add_definitions ( -DLAMA_ASSERT_LEVEL_${LAMA_ASSERT_LEVEL} )
 # completely ignored. If TRACE is set to VT, regions will be traced
 # (entry, exit event) for VampirTrace.
 
-LIST ( APPEND TRACE_CHOICES "ON" "OFF" )
+list ( APPEND TRACE_CHOICES "ON" "OFF" )
 
-if ( NOT LAMA_TRACE_LEVEL )
+if    ( NOT LAMA_TRACE_LEVEL )
     set ( DEFAULT_TRACE_LEVEL "OFF" )
 endif ( NOT LAMA_TRACE_LEVEL )
 
 set ( LAMA_TRACE_LEVEL ${DEFAULT_TRACE_LEVEL} CACHE STRING
      "Choose level of TRACE: ON (enabled) or OFF (disabled, default)" )
 set ( CACHE LAMA_TRACE_LEVEL PROPERTY STRINGS ${TRACE_CHOICES} )
-checkValue( ${LAMA_TRACE_LEVEL} "${TRACE_CHOICES}" )
+checkValue ( ${LAMA_TRACE_LEVEL} "${TRACE_CHOICES}" )
 
-add_definitions( -DLAMA_TRACE_${LAMA_TRACE_LEVEL} )
+add_definitions ( -DLAMA_TRACE_${LAMA_TRACE_LEVEL} )

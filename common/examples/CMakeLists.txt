@@ -33,6 +33,6 @@
 # ThreadTest example
 
 foreach ( executable ExceptionDemo CriticalRegion Barrier DemoFactory DemoFactory1 )
-    add_executable( ${executable} ${executable}.cpp )
-    target_link_libraries( ${executable} ${common_LIBRARY} )
+    add_executable ( ${executable} ${executable}.cpp )
+    target_link_libraries ( ${executable} common )
 endforeach ( executable )

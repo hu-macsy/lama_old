@@ -36,7 +36,7 @@
 #include <common/Thread.hpp>
 #include <common/NonCopyable.hpp>
 
-#include <logging/logging.hpp>
+#include <logging.hpp>
 
 #include <common/function.hpp>
 #include <common/shared_ptr.hpp>

@@ -30,12 +30,12 @@
  * @date 03.07.2015
  **/
 
-#include <memory/memory.hpp>
+#include <memory.hpp>
 
 #include <common/Walltime.hpp>
 
 #include <iostream>
-#include <logging/logging.hpp>
+#include <logging.hpp>
 
 using namespace std;
 using namespace memory;

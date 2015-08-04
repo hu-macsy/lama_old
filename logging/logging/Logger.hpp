@@ -36,9 +36,9 @@
 #include <common/config.hpp>
 
 // others
+//#include <logging.hpp>
 #include <logging/SourceLocation.hpp>
 #include <logging/Level.hpp>
-#include <logging/logging.hpp>
 
 #include <string>
 #include <vector>

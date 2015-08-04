@@ -41,7 +41,7 @@
 #include <tracing/CallStack.hpp>
 
 // logging
-#include <logging/logging.hpp>
+#include <logging.hpp>
 
 #include <cstring>
 #include <cstdio>

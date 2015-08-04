@@ -1,6 +1,6 @@
 
 #include <common/Thread.hpp>
-#include <tracing/tracing.hpp>
+#include <tracing.hpp>
 #include <unistd.h>
 
 using common::Thread;

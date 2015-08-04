@@ -28,71 +28,56 @@
  # @brief CMake configuration file for Logging library
  # @author Thomas Brandes
  # @date 09.06.2015
- # @since 2.0.0
 ###
 
 ### Set required CMake version
-
 cmake_minimum_required ( VERSION 2.8 )
 
+### Set PROJECT NAME / supported LANGUAGES
 project( logging CXX )
 
-### Define variables needed for logging library 
-### Variables are put in the cache so they might be used in other scopes
-
-set ( logging_LIBRARY logging 
-      CACHE FILEPATH "logging library" )
-
-set ( logging_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR} 
-      CACHE PATH "logging include directory" )
-
-mark_as_advanced( logging_INCLUDE_DIR logging_LIBRARY )
-
+### Set Module Path
 set ( CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/../CMake/Modules" )
 
+## Define all search packages
+include ( SearchPackages/Logging ) 
+
+# Find required packages
+foreach    ( PACKAGE_TO_FIND ${REQUIRED_PACKAGES_TO_FIND} )
+    find_package ( ${PACKAGE_TO_FIND} ${LAMA_FIND_PACKAGE_FLAGS} REQUIRED )
+endforeach ( PACKAGE_TO_FIND ${REQUIRED_PACKAGES_TO_FIND} )
+
+# Find optional packages
+foreach    ( PACKAGE_TO_FIND ${OPTIONAL_PACKAGES_TO_FIND} )
+    find_package ( ${PACKAGE_TO_FIND} ${LAMA_FIND_PACKAGE_FLAGS} )
+endforeach ( PACKAGE_TO_FIND ${OPTIONAL_PACKAGES_TO_FIND} )
+
+### Include Compiler Flags
 include ( SetBuildFlags )
 include ( SetCPPFlags )
 
-if ( NOT CXX_SUPPORTS_C11 )
-    find_package( Boost REQUIRED COMPONENTS )
-    include_directories( ${Boost_INCLUDE_DIR} )
-endif ( NOT CXX_SUPPORTS_C11 )
+## Project System-Include
+include_directories ( . )
 
-# Common library of other project is used here
-# It might be either installed or variables are already in CACHE
-
-find_library( common_LIBRARY 
-              NAMES common
-              HINTS ${CMAKE_INSTALL_PREFIX}/lib )
-
-set ( common_INCLUDE_DIR ${CMAKE_INSTALL_PREFIX}/include CACHE PATH "include" )
-
-### Source files for logging library
-
-file( GLOB CPP_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp" )
-file( GLOB HPP_HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/logging/*.hpp" )
+set ( DEPS COMMON )
+foreach    ( module ${DEPS} )
+    include_directories( ${${module}_INCLUDE_DIR} )
+endforeach ( module ${DEPS} )
 
 ### add definitions ###
 
 # GenLogger uses also logging
-
 add_definitions ( -DLAMA_LOG_LEVEL_DEBUG )
-
-include_directories( ${common_INCLUDE_DIR} )
-include_directories( ${logging_INCLUDE_DIR} )
 
 if ( WIN32 )
 	add_definitions ( -DCOMMON_COMPILING_DLL )
 endif ( WIN32 )
 
-### add library and put path to search path ###
+add_subdirectory ( logging )
+add_subdirectory ( examples )
 
-add_library ( ${logging_LIBRARY} SHARED ${CPP_SOURCES} )
-target_link_libraries( ${logging_LIBRARY} ${common_LIBRARY} )
+## install library.hpp
+install ( FILES logging.hpp DESTINATION include )
 
-add_subdirectory( examples )
-
-### install ###
-
-install ( TARGETS ${logging_LIBRARY} DESTINATION lib )
-install ( FILES ${HPP_HEADERS} DESTINATION include/logging )
+## add custum target distClean
+include ( DistClean )

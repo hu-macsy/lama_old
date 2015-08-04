@@ -34,5 +34,5 @@
 
 foreach ( executable Array1 BenchArray Aliasing Threading Create )
     add_executable( ${executable} ${executable}.cpp )
-    target_link_libraries( ${executable} ${memory_LIBRARY} )
+    target_link_libraries( ${executable} memory )
 endforeach ( executable )
