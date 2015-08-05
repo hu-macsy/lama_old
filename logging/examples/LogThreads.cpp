@@ -78,7 +78,7 @@ int main( int, char** )
 
     LAMA_LOG_INFO( myLogger, "go sleep for 5 seconds" )
 
-    sleep( 4 );
+    sleep( 5 );
 
     LAMA_LOG_INFO( myLogger, "wait for threads" )
 

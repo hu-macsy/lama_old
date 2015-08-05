@@ -46,14 +46,9 @@ include_directories ( . )
 
 ### add library and put path to search path ###
 
-
-if    ( CUDA_FOUND AND LAMA_USE_CUDA )
-    cuda_add_library ( memory SHARED ${CPP_SOURCES} ${CUDA_SOURCES} )
-    #target_link_libraries ( memory ${CUDA_LIBRARIES} )
-    target_link_libraries ( memory ${CUDA_CUDA_LIBRARY} ${CUDA_CUDART_LIBRARY} ${CUDA_cublas_LIBRARY} ${CUDA_cusparse_LIBRARY} )
-else  (  CUDA_FOUND AND LAMA_USE_CUDA )
-    add_library ( memory SHARED ${CPP_SOURCES} )
-endif ( CUDA_FOUND AND LAMA_USE_CUDA )
+add_library ( memory SHARED ${CPP_SOURCES} ${CUDA_SOURCES} )
+target_link_libraries ( memory ${CUDA_CUDA_LIBRARY} ${CUDA_CUDART_LIBRARY}
+                               ${CUDA_cublas_LIBRARY} ${CUDA_cusparse_LIBRARY} )
 
 foreach    ( module ${DEPS} )
     target_link_libraries ( memory ${${module}_LIBRARY} )
