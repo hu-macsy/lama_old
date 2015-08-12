@@ -50,8 +50,7 @@ namespace lama
  * @brief The class CGNR represents a IterativeSolver which uses the krylov subspace Conjugate
  * Gradients for Normal Residuals (CGNR) method to solve a system of linear equations iteratively.
  * Remarks:
- * 1. We need matrix vector operations of the transposed matrix. This arithmetic operation seems to 
- * be much faster in COOSparseMatrix format (CPU). 
+ * 1. assignTranspose is not supported yet for DenseMatrix.
  * 2. The scalars in the algorithm are set to zero if they are smaller then machine
  * precision (3*eps) to avoid devision by zero. In this case the solution doesn't change anymore.
  * 3. In this case it makes less sense to take the residual regarding to some norm itself since 
@@ -97,6 +96,7 @@ public:
         CGNRRuntime();
         virtual ~CGNRRuntime();
 
+    common::shared_ptr<Matrix> mTransposedMat;
 	common::shared_ptr<Vector> mVecD;
     common::shared_ptr<Vector> mVecW;
     common::shared_ptr<Vector> mVecZ;

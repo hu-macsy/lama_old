@@ -77,10 +77,12 @@ void CGNR::initialize( const Matrix& coefficients ){
     common::ScalarType type = coefficients.getValueType();
     runtime.mEps = std::numeric_limits<double>::epsilon()*3;   //CAREFUL: No abstract type 
 
-
+    runtime.mTransposedMat.reset( coefficients.clone() );
     runtime.mVecD.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
     runtime.mVecW.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
     runtime.mVecZ.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
+
+    runtime.mTransposedMat->assignTranspose( coefficients );
 
     runtime.mVecD->setContext( coefficients.getContextPtr() );   
     runtime.mVecW->setContext( coefficients.getContextPtr() );
@@ -121,10 +123,10 @@ void CGNR::solveInit( Vector& solution, const Vector& rhs ){
     // Initialize
     this->getResidual();   
    
-    const Matrix& A = *runtime.mCoefficients;
+    const Matrix& transposedA = *runtime.mTransposedMat;
     const Vector& residual = *runtime.mResidual;
     Vector& vecZ = *runtime.mVecZ;
-    vecZ = residual*A;
+    vecZ = transposedA*residual;
 
     Vector* vecD = (*runtime.mVecZ).copy();
     runtime.mVecD.reset(vecD);
@@ -138,6 +140,7 @@ void CGNR::iterate(){
     CGNRRuntime& runtime = getRuntime();
    
     const Matrix& A = *runtime.mCoefficients;
+    const Matrix& transposedA = *runtime.mTransposedMat;
     Vector& vecW = *runtime.mVecW;
     Vector& vecD = *runtime.mVecD;
     Vector& vecZ = *runtime.mVecZ;
@@ -159,7 +162,7 @@ void CGNR::iterate(){
     
     solution= solution + alpha*vecD;
     residual = residual - alpha*vecW;
-    vecZ = residual*A;
+    vecZ = transposedA*residual;
     
     Scalar normVecZNew=norm.apply(vecZ);
 
