@@ -85,6 +85,8 @@ public:
 
     static void setFlush( bool flush );
 
+    static void setFormat( const std::string& format );
+
     /** Output routine as global variable so it might be reset for other purposes. */
 
     static void ( *myPrintf ) ( const char* format, ... );
@@ -92,6 +94,8 @@ public:
 private:
 
     static bool sFlush; //!< if true flush each loggging output
+
+    static std::vector<std::string> formatTokens;  //!< tokens of ouputline
 
     /** Constructor for a generic logger.
      *

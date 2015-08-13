@@ -52,6 +52,8 @@ namespace logging
 
 bool GenLogger::sFlush = false;
 
+std::vector<std::string> GenLogger::formatTokens;
+
 void ( *GenLogger::myPrintf ) ( const char* format, ... ) = ( void (* ) ( const char* format, ... ) )& printf ;
 
 /********************************************************************
@@ -169,22 +171,43 @@ static int evalEntry( char* line, int length, const char* /* filename */ )
     }
 
     // now find the name without blanks, e.g. "atom vec = " is only atom
+
     string::size_type lastPos = myLine.find_first_of( " =", firstPos );
     string name = myLine.substr( firstPos, lastPos - firstPos );
-    firstPos = myLine.find_first_not_of( " ", equalPos + 1 );
-    lastPos = myLine.find_first_of( " ", firstPos );
-#ifdef DEBUGGING
-    printf( "value at %lu - %lu\n", firstPos, lastPos );
-#endif
 
-    if ( string::npos == lastPos )
+    firstPos = myLine.find_first_not_of( " ", equalPos + 1 );
+
+    if ( string::npos == firstPos )
     {
-        lastPos = myLine.length();
+        throw std::runtime_error( "no value after = " );
     }
 
-    for ( string::size_type i = firstPos; i <= lastPos; i++ )
+    if ( myLine[firstPos] == '"' )
     {
-        myLine[i] = static_cast<string::value_type>( toupper( myLine[i] ) );
+        // look for matching " and do not 
+
+        firstPos++;
+
+        lastPos = myLine.find_first_of( "\"", firstPos );
+
+        if ( string::npos == lastPos )
+        {
+            lastPos = myLine.length();
+        }
+    }
+    else
+    {
+        lastPos = myLine.find_first_of( " ", firstPos );
+
+        if ( string::npos == lastPos )
+        {
+            lastPos = myLine.length();
+        }
+
+        for ( string::size_type i = firstPos; i <= lastPos; i++ )
+        {
+            myLine[i] = static_cast<string::value_type>( toupper( myLine[i] ) );
+        }
     }
 
     string value = myLine.substr( firstPos, lastPos - firstPos );
@@ -193,6 +216,12 @@ static int evalEntry( char* line, int length, const char* /* filename */ )
     if ( name == "flush" )
     {
         GenLogger::setFlush( string2bool( value ) );
+        return 1;
+    }
+
+    if ( name == "format" )
+    {
+        GenLogger::setFormat( value );
         return 1;
     }
 
@@ -288,6 +317,7 @@ int GenLogger::readConfig( const char* fname )
     }
 
     fclose( configFile );
+
     return noEntries;
 }
 
@@ -373,6 +403,11 @@ void GenLogger::configure()
     }
 
     rootLogger->traverse(); // traverse all loggers and might be print it
+
+    if ( formatTokens.size() == 0 )
+    {
+        setFormat( "#date, #time #name @ #thread ( #func -> #file::#line ) #level #msg" );
+    }
 }
 
 /********************************************************************
@@ -397,11 +432,6 @@ static void writeTime( std::ostringstream& stream )
 
     struct tm* tp = localtime( &timer );
 
-    stream << ( 1900 + tp->tm_year ) << "-";
-    writeVal2( stream, 1 + tp->tm_mon );
-    stream << "-";
-    writeVal2( stream, tp->tm_mday );
-    stream << ",";
     writeVal2( stream, tp->tm_hour );
     stream << ":";
     writeVal2( stream, tp->tm_min );
@@ -409,19 +439,88 @@ static void writeTime( std::ostringstream& stream )
     writeVal2( stream, tp->tm_sec );
 }
 
+static void writeDate( std::ostringstream& stream )
+{
+    time_t timer;
+
+    time ( &timer );
+
+    struct tm* tp = localtime( &timer );
+
+    stream << ( 1900 + tp->tm_year ) << "-";
+    writeVal2( stream, 1 + tp->tm_mon );
+    stream << "-";
+    writeVal2( stream, tp->tm_mday );
+}
+
 /********************************************************************
- *  Helper routine for logging via Python                            *
+ *  general log routine                                              *
  ********************************************************************/
 
 void GenLogger::log( const char* level, SourceLocation& loc, const string& msg )
 {
     std::ostringstream output;
 
-    writeTime( output );
-    output << ": " << getFullName() << "@" << common::Thread::getCurrentThreadName();
-    // output << ": " << getFullName();
-    output << " (" << loc.mFileName << "::" << loc.mLine << ",func=" << loc.mFuncName << ")";
-    output << " " << level << " " << msg << std::endl;
+    for ( size_t i = 0; i < formatTokens.size(); ++i )
+    {
+        const std::string& token = formatTokens[i];
+
+        if ( token[0] != '#' )
+        {
+            output << formatTokens[i];
+        }
+        else if ( token == "#name" )
+        {
+            output << getFullName();
+        }
+        else if ( token == "#time" )
+        {
+            writeTime( output );
+        }
+        else if ( token == "#date" )
+        {
+            writeDate( output );
+        }
+        else if ( formatTokens[i] == "#thread" )
+        {
+            output << common::Thread::getCurrentThreadName();
+        }
+        else if ( formatTokens[i] == "#file" )
+        {
+            output << loc.mFileName;
+        }
+        else if ( formatTokens[i] == "#line" )
+        {
+            output << loc.mLine;
+        }
+        else if ( formatTokens[i] == "#func" )
+        {
+            output << loc.mFuncName;
+        }
+        else if ( formatTokens[i] == "#level" )
+        {
+            output << level;
+        }
+        else if ( formatTokens[i] == "#msg" )
+        {
+            output << msg;
+        }
+        else
+        {
+            output << formatTokens[i];
+        }
+    }
+
+    output << std::endl;
+
+    /* old code:
+
+       writeTime( output );
+       output << ": " << getFullName() << "@" << common::Thread::getCurrentThreadName();
+       output << " (" << loc.mFileName << "::" << loc.mLine << ",func=" << loc.mFuncName << ")";
+       output << " " << level << " " << msg << std::endl;
+     
+    */
 
     myPrintf( "%s", output.str().c_str() );
 
@@ -490,6 +589,44 @@ void GenLogger::traverse()
 void GenLogger::setFlush( bool flush )
 {
     GenLogger::sFlush = flush;
+}
+
+/********************************************************************
+ *  GenLogger::setFormat( formatString )                             *
+ ********************************************************************/
+
+static void tokenize( std::vector<std::string>& tokens, const std::string& input )
+{
+    tokens.clear();
+
+    std::string::size_type lastPos = 0;
+    std::string::size_type pos     = input.find_first_of( "#", lastPos );
+    
+    while ( std::string::npos != pos )
+    {
+        // found 
+
+        if ( lastPos < pos )
+        {
+            tokens.push_back( input.substr( lastPos, pos - lastPos ) );
+        }
+
+        lastPos = input.find_first_not_of( "abcdefghijklmnopqrstuvwxyz", pos + 1 );
+ 
+        tokens.push_back( input.substr( pos, lastPos - pos ) );
+
+        pos = input.find_first_of( "#", lastPos );
+    }
+
+    if ( lastPos < pos )
+    {
+        tokens.push_back( input.substr( lastPos, pos - lastPos ) );
+    }
+}
+
+void GenLogger::setFormat( const std::string& format )
+{
+    tokenize( formatTokens, format );
 }
 
 } //namespace logging
