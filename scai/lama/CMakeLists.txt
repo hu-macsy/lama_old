@@ -341,8 +341,8 @@ include ( Package/Doxygen )
 include ( Package/Sphinx )
 
 ## install library.hpp
-configure_file ( "${CMAKE_SOURCE_DIR}/scai/lama.hpp.in" "${CMAKE_CURRENT_BINARY_DIR}/include/scai/lama.hpp" )
-install ( FILES "${CMAKE_CURRENT_BINARY_DIR}/include/scai/lama.hpp" DESTINATION include/scai )
+configure_file ( "${CMAKE_SOURCE_DIR}/lama.hpp.in" "${CMAKE_CURRENT_BINARY_DIR}/include/lama.hpp" )
+install ( FILES "${CMAKE_CURRENT_BINARY_DIR}/include/lama.hpp" DESTINATION include/scai )
 
 ## add custum target distClean
 include ( DistClean )
