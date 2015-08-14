@@ -39,7 +39,7 @@
 #include <test/distributed/DistributionTest.hpp>
 #include <test/TestMacros.hpp>
 
-using namespace lama;
+using namespace scai::lama;
 
 extern bool base_test_case;
 extern std::string testcase;

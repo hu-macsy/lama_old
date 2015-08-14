@@ -37,8 +37,8 @@
 #include <scai/lama/Scalar.hpp>
 #include <scai/lama/solver/SolutionProxy.hpp>
 
-using namespace lama;
-using namespace memory;
+using namespace scai::lama;
+using namespace scai::memory;
 
 typedef Vector VectorType;
 typedef SolutionProxy ProxyType;

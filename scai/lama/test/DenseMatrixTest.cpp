@@ -46,11 +46,13 @@
 #include <scai/lama/expression/MatrixExpressions.hpp>
 #include <scai/lama/expression/all.hpp>
 
-using namespace lama;
-using namespace memory;
-using common::unique_ptr;
-using common::scoped_array;
+using namespace scai::lama;
+using namespace scai::memory;
+using scai::common::unique_ptr;
+using scai::common::scoped_array;
 
+namespace scai
+{
 namespace lama
 {
 namespace DenseMatrixTest
@@ -730,8 +732,11 @@ void swapTest( )
     verifySameMatrix<ValueType>( matrixB1, matrixA2 );
 }
 
-} // namespace DenseMatrixTest
-} // namespace lama
+} /* end namespace DenseMatrixTest */
+
+} /* end namespace lama */
+
+} /* end namespace scai */
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 

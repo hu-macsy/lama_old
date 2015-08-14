@@ -59,9 +59,9 @@
 
 #include <scai/memory.hpp>
 
-using namespace lama;
-using namespace memory;
-using common::Exception;
+using namespace scai::lama;
+using namespace scai::memory;
+using scai::common::Exception;
 
 #if ARITHMETIC_TYPE_CNT == 1
 typedef boost::mpl::list<ARITHMETIC_TYPE0> test_types;

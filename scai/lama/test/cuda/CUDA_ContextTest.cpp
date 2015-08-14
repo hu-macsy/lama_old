@@ -54,9 +54,9 @@
 #include <scai/lama/cuda/CUDABLAS1.hpp>
 #include <test/cuda/CUDAContext.hpp>
 
-using namespace lama;
-using namespace memory;
-using tasking::Task;
+using namespace scai::lama;
+using namespace scai::memory;
+using scai::tasking::Task;
 
 typedef boost::mpl::list<double, float> test_types;
 

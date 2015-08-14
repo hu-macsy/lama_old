@@ -49,7 +49,7 @@
 
 #include <vector>
 
-using namespace lama;
+using namespace scai::lama;
 
 extern bool base_test_case;
 extern std::string testcase;

@@ -39,8 +39,8 @@
 #include <scai/memory.hpp>
 #include <test/TestMacros.hpp>
 
-using namespace lama;
-using namespace memory;
+using namespace scai::lama;
+using namespace scai::memory;
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
@@ -49,6 +49,8 @@ typedef bool NoType;
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
+namespace scai
+{
 namespace lama
 {
 namespace JDSUtilsTest
@@ -551,9 +553,11 @@ void getCSRValuesTest( ContextPtr loc )
     }
 }
 
-} // namespace JDSUtilsTest
-} // namespace lama
+} /* end namespace JDSUtilsTest */
 
+} /* end namespace lama */
+
+} /* end namespace scai */
 /* ----------------------------------------------------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_SUITE( JDSUtilsTest )

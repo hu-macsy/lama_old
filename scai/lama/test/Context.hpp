@@ -30,25 +30,28 @@
  * @date 12.04.2012
  * @since 1.0.0
  */
-#ifndef LAMA_BTEST_CONTEXT_HPP_
-#define LAMA_BTEST_CONTEXT_HPP_
+
+#pragma once
+
 #include <map>
 #include <scai/memory/Context.hpp>
 
+namespace scai
+{
 namespace lama_test
 {
 
 class Context
 {
 public:
-    static memory::ContextPtr getContext( const memory::ContextType type );
+    static scai::memory::ContextPtr getContext( const scai::memory::ContextType type );
 private:
     Context();
     virtual ~Context();
 
-    static std::map<memory::ContextType, memory::ContextPtr> contexts;
+    static std::map<scai::memory::ContextType, scai::memory::ContextPtr> contexts;
 };
 
-} //namespace lama_test
+} /* end namespace lama_test */
+} /* end namespace scai */
 
-#endif // LAMA_BTEST_CONTEXT_HPP_

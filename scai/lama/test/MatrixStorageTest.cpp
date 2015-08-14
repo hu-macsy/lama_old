@@ -47,8 +47,8 @@
 #include <iostream>
 #include <fstream>
 
-using namespace lama;
-using namespace memory;
+using namespace scai::lama;
+using namespace scai::memory;
 
 /* ------------------------------------------------------------------------- */
 

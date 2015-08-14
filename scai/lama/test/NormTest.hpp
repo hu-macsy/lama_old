@@ -36,7 +36,7 @@
 #include <scai/lama/norm/Norm.hpp>
 #include <test/TestMacros.hpp>
 
-using namespace lama;
+using namespace scai::lama;
 
 /** Common test class for all derived classes of class Norm.
  *

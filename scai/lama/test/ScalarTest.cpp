@@ -42,9 +42,9 @@
 
 #include <complex>
 
-using namespace lama;
-using namespace memory;
-using namespace common;
+using namespace scai::lama;
+using namespace scai::memory;
+using namespace scai::common;
 
 // Scalar can be tested for all LAMA arithmetic types even if LAMA matrices
 // and vectors have not been instantiated for these types

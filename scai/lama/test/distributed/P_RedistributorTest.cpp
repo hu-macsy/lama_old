@@ -41,9 +41,9 @@
 #include <scai/lama/distribution/CyclicDistribution.hpp>
 #include <scai/lama/distribution/Redistributor.hpp>
 
-using namespace lama;
-using namespace memory;
-using namespace common;
+using namespace scai::lama;
+using namespace scai::memory;
+using namespace scai::common;
 
 typedef boost::mpl::list<double, float> test_types;
 

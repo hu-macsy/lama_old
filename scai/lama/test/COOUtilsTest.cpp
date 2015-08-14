@@ -40,8 +40,8 @@
 
 #include <test/TestMacros.hpp>
 
-using namespace lama;
-using namespace memory;
+using namespace scai::lama;
+using namespace scai::memory;
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
@@ -50,6 +50,8 @@ typedef bool NoType;
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
+namespace scai
+{
 namespace lama
 {
 namespace COOUtilsTest
@@ -160,9 +162,11 @@ void setCSRDataTest( ContextPtr loc )
     }
 } // setCSRData
 
-} //namespace COOUtilsTest
+} /* end namespace COOUtilsTest */
 
-} //namespace lama
+} /* end namespace lama */
+
+} /* end namespace scai */
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 

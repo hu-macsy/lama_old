@@ -34,6 +34,8 @@
 
 #include <scai/memory/Context.hpp>
 
+namespace scai
+{
 namespace lama_test
 {
 
@@ -49,4 +51,6 @@ memory::ContextPtr CUDAContext::getContext()
     return cudaContext;
 }
 
-} //namespace lama_test
+} /* end namespace lama_test */
+
+} /* end namespace scai */

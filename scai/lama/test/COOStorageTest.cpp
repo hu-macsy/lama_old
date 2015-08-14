@@ -42,11 +42,13 @@
 
 using namespace lama;
 using namespace memory;
-using common::Exception;
+using scai::common::Exception;
 
 extern bool base_test_case;
 extern std::string testcase;
 
+namespace scai
+{
 namespace lama
 {
 namespace COOStorageTest
@@ -202,8 +204,9 @@ void typeNameTest()
     BOOST_CHECK( s.length() > 0 );
 }
 
-} // namespace COOStorageTest
-} // namespace lama
+} /* end namespace COOStorageTest */
+} /* end namespace lama */
+} /* end namespace scai */
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 

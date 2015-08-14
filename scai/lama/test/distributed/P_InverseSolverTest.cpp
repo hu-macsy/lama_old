@@ -57,8 +57,8 @@
 
 #include <test/TestMacros.hpp>
 
-using namespace lama;
-using namespace memory;
+using namespace scai::lama;
+using namespace scai::memory;
 
 typedef boost::mpl::list<float, double> test_types;
 

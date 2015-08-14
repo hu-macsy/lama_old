@@ -31,6 +31,8 @@
  * @since 1.0.0
  */
 
+#pragma once
+
 #include <string>
 #include <map>
 
@@ -40,9 +42,6 @@
 
 #include <boost/assign/list_of.hpp>
 #include <boost/preprocessor.hpp>
-
-#ifndef LAMA_TESTMACROS_HPP_
-#define LAMA_TESTMACROS_HPP_
 
 extern std::string loglevel_argument;
 
@@ -79,18 +78,18 @@ inline double eps<double>()
 }
 
 template<typename ValueType>
-inline lama::Scalar scalarEps();
+inline scai::lama::Scalar scalarEps();
 
 template<>
-inline lama::Scalar scalarEps<float>()
+inline scai::lama::Scalar scalarEps<float>()
 {
-    return lama::Scalar( 1E-8f );
+    return scai::lama::Scalar( 1E-8f );
 }
 
 template<>
-inline lama::Scalar scalarEps<double>()
+inline scai::lama::Scalar scalarEps<double>()
 {
-    return lama::Scalar( 1E-16 );
+    return scai::lama::Scalar( 1E-16 );
 }
 
 /**
@@ -142,15 +141,15 @@ inline std::string getEnvContext()
  * @return the current context as a ContextType from a std::string
  */
 
-inline memory::ContextType mapEnvContexttoContextType( std::string contextname )
+inline scai::memory::ContextType mapEnvContexttoContextType( std::string contextname )
 {
-    memory::ContextType myContext;
-    std::map<std::string, memory::ContextType> contextmap =
-        boost::assign::map_list_of ( "Host", memory::context::Host )
-        ( "CUDA", memory::context::CUDA )
-        ( "OPENCL", memory::context::OpenCL )
-        ( "MIC", memory::context::MIC )
-        ( "MaxContext", memory::context::MaxContext );
+	scai::memory::ContextType myContext;
+    std::map<std::string, scai::memory::ContextType> contextmap =
+        boost::assign::map_list_of ( "Host", scai::memory::context::Host )
+        ( "CUDA", scai::memory::context::CUDA )
+        ( "OPENCL", scai::memory::context::OpenCL )
+        ( "MIC", scai::memory::context::MIC )
+        ( "MaxContext", scai::memory::context::MaxContext );
     myContext = contextmap[contextname];
     return myContext;
 }
@@ -307,7 +306,7 @@ inline memory::ContextType mapEnvContexttoContextType( std::string contextname )
             GETCONTEXT( context );                                                                                     \
             if ( loglevel_argument == "test_suite" )                                                                   \
                 SCAI_LOG_INFO( logger, "    Entering context: " << context->getType() );                               \
-            lama::classname::name( context );                                                                          \
+                scai::lama::classname::name( context );                                                                \
         }                                                                                                              \
     }
 
@@ -325,8 +324,8 @@ inline memory::ContextType mapEnvContexttoContextType( std::string contextname )
     {                                                                                                                  \
         const std::string lama_name = #name;                                                                           \
         const std::string lama_classname = #classname;                                                                 \
-        lama::classname::name<float>( );                                                                               \
-        lama::classname::name<double>( );                                                                              \
+        scai::lama::classname::name<float>( );                                                                         \
+        scai::lama::classname::name<double>( );                                                                        \
     }
 
 /*
@@ -343,8 +342,8 @@ inline memory::ContextType mapEnvContexttoContextType( std::string contextname )
     {                                                                                                                  \
         const std::string lama_name = #name;                                                                           \
         const std::string lama_classname = #classname;                                                                 \
-        lama::classname::name<float>( logger );                                                                        \
-        lama::classname::name<double>( logger );                                                                       \
+        scai::lama::classname::name<float>( logger );                                                                  \
+        scai::lama::classname::name<double>( logger );                                                                 \
     }
 
 // we need the double trick, otherwise we just see ARITHMETIC_TYPE##I in output
@@ -374,29 +373,29 @@ inline memory::ContextType mapEnvContexttoContextType( std::string contextname )
      * @param name          name of test method, which will invoke.
      * @param classname     name of the given test class.
      */
-#define LAMA_AUTO_TEST_CASE_CT( name, classname )                                             \
-    \
-    BOOST_AUTO_TEST_CASE( name )                                                              \
-    {                                                                                         \
-        CONTEXTLOOP()                                                                         \
-        {                                                                                     \
-            GETCONTEXT( context )                                                             \
-            if ( loglevel_argument == "test_suite" )                                          \
-            {                                                                                 \
-                SCAI_LOG_INFO( logger, "    Entering context: " << context->getType() );      \
-            }                                                                                 \
-            const std::string lama_name = #name;                                              \
-            const std::string lama_classname = #classname;                                    \
-            BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_RUN_TEST, lama::classname::name )      \
-        }                                                                                     \
+#define LAMA_AUTO_TEST_CASE_CT( name, classname )                                                \
+                                                                                                 \
+    BOOST_AUTO_TEST_CASE( name )                                                                 \
+    {                                                                                            \
+        CONTEXTLOOP()                                                                            \
+        {                                                                                        \
+            GETCONTEXT( context )                                                                \
+            if ( loglevel_argument == "test_suite" )                                             \
+            {                                                                                    \
+                SCAI_LOG_INFO( logger, "    Entering context: " << context->getType() );         \
+            }                                                                                    \
+            const std::string lama_name = #name;                                                 \
+            const std::string lama_classname = #classname;                                       \
+            BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_RUN_TEST, scai::lama::classname::name )   \
+        }                                                                                        \
     }
 
-#define LAMA_RUN_TESTL(z, I, method )                                                            \
+#define LAMA_RUN_TESTL(z, I, method )                                                                \
     try                                                                                              \
     {                                                                                                \
-        method<ARITHMETIC_TYPE##I>( context, logger );                                                \
+        method<ARITHMETIC_TYPE##I>( context, logger );                                               \
     }                                                                                                \
-    catch ( common::Exception& )                                                                               \
+    catch ( common::Exception& )                                                                     \
     {                                                                                                \
         SCAI_LOG_WARN( logger, #method << "<" << STR( ARITHMETIC_TYPE##I ) << "> cannot run on "     \
                        << context->getType() << ", corresponding function not implemented yet." );   \
@@ -422,7 +421,7 @@ inline memory::ContextType mapEnvContexttoContextType( std::string contextname )
             {                                                                                                          \
                 SCAI_LOG_INFO( logger, "    Entering context: " << context->getType() );                               \
             }                                                                                                          \
-            BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_RUN_TESTL, lama::classname::name )      \
+            BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_RUN_TESTL, scai::lama::classname::name )      				   \
         }                                                                                                              \
     }
 
@@ -452,7 +451,7 @@ inline memory::ContextType mapEnvContexttoContextType( std::string contextname )
             const std::string lama_classname = #classname;                                                             \
             try                                                                                                        \
             {                                                                                                          \
-                lama::classname::name<float, float>( context );                                                        \
+            	scai::lama::classname::name<float, float>( context );                                                  \
             }                                                                                                          \
             catch ( common::Exception& )                                                                               \
             {                                                                                                          \
@@ -462,7 +461,7 @@ inline memory::ContextType mapEnvContexttoContextType( std::string contextname )
             }                                                                                                          \
             try                                                                                                        \
             {                                                                                                          \
-                lama::classname::name<double, double>( context );                                                      \
+            	scai::lama::classname::name<double, double>( context );                                                \
             }                                                                                                          \
             catch ( common::Exception& )                                                                               \
             {                                                                                                          \
@@ -472,7 +471,7 @@ inline memory::ContextType mapEnvContexttoContextType( std::string contextname )
             }                                                                                                          \
             try                                                                                                        \
             {                                                                                                          \
-                lama::classname::name<float, double>( context );                                                       \
+            	scai::lama::classname::name<float, double>( context );                                                 \
             }                                                                                                          \
             catch ( common::Exception& )                                                                               \
             {                                                                                                          \
@@ -482,7 +481,7 @@ inline memory::ContextType mapEnvContexttoContextType( std::string contextname )
             }                                                                                                          \
             try                                                                                                        \
             {                                                                                                          \
-                lama::classname::name<double, float>( context );                                                       \
+            	scai::lama::classname::name<double, float>( context );                                                 \
             }                                                                                                          \
             catch ( common::Exception& )                                                                               \
             {                                                                                                          \
@@ -518,7 +517,7 @@ inline memory::ContextType mapEnvContexttoContextType( std::string contextname )
             const std::string lama_classname = #classname;                                                             \
             try                                                                                                        \
             {                                                                                                          \
-                lama::classname::name<name>( context );                                                                \
+            	scai::lama::classname::name<name>( context );                                                          \
             }                                                                                                          \
             catch ( common::Exception& )                                                                               \
             {                                                                                                          \
@@ -543,7 +542,7 @@ inline memory::ContextType mapEnvContexttoContextType( std::string contextname )
             const std::string lama_classname = #classname;                                                             \
             try                                                                                                        \
             {                                                                                                          \
-                lama::classname::name( context );                                                                \
+            	scai::lama::classname::name( context );                                                                \
             }                                                                                                          \
             catch ( common::Exception& )                                                                               \
             {                                                                                                          \
@@ -711,4 +710,3 @@ inline memory::ContextType mapEnvContexttoContextType( std::string contextname )
 
 #endif
 
-#endif // LAMA_TESTMACROS_HPP_

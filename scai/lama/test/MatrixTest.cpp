@@ -55,8 +55,8 @@
 
 #include <cstring>
 
-using namespace lama;
-using namespace memory;
+using namespace scai::lama;
+using namespace scai::memory;
 
 BOOST_AUTO_TEST_SUITE( MatrixTest )
 

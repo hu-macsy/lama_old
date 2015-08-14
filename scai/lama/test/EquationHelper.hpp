@@ -31,14 +31,13 @@
  * @since 1.0.0
  */
 
-#ifndef LAMA_EQUATIONHELPER_H_
-#define LAMA_EQUATIONHELPER_H_
+#pragma once
 
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 
 #include <scai/lama/DenseVector.hpp>
 
-using namespace lama;
+using namespace scai::lama;
 
 class EquationHelper
 {
@@ -278,4 +277,3 @@ EquationHelper::EquationSystem<ValueType> EquationHelper::get8x8SystemD()
     return equationSystem;
 }
 
-#endif // LAMA_EQUATIONHELPER_H_

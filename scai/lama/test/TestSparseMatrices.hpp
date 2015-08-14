@@ -36,7 +36,7 @@
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 #include <scai/common/unique_ptr.hpp>
 
-using namespace lama;
+using namespace scai::lama;
 
 /**
  * @brief The class TestSparseMatrices summaries test sparse test matrices that

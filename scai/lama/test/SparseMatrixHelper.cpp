@@ -47,10 +47,10 @@ bool compareMatrices( const lama::CSRSparseMatrix<ValueType>& matrix, const lama
     }
 
     // Note: getLocalData returns CSRStorage<ValueType>, so we can use getIA
-    const lama::CSRStorage<ValueType>& matrixLocal = matrix.getLocalStorage();
-    const lama::CSRStorage<ValueType>& otherLocal = other.getLocalStorage();
-    memory::ReadAccess<lama::IndexType> ia( matrixLocal.getIA() );
-    memory::ReadAccess<lama::IndexType> iaOther( otherLocal.getIA() );
+    const scai::lama::CSRStorage<ValueType>& matrixLocal = matrix.getLocalStorage();
+    const scai::lama::CSRStorage<ValueType>& otherLocal = other.getLocalStorage();
+    scai::memory::ReadAccess<lama::IndexType> ia( matrixLocal.getIA() );
+    scai::memory::ReadAccess<lama::IndexType> iaOther( otherLocal.getIA() );
 
     for ( lama::IndexType i = 0; i < nnu + 1; ++i )
     {
@@ -60,10 +60,10 @@ bool compareMatrices( const lama::CSRSparseMatrix<ValueType>& matrix, const lama
         }
     }
 
-    memory::ReadAccess<lama::IndexType> ja( matrixLocal.getJA() );
-    memory::ReadAccess<lama::IndexType> jaOther( otherLocal.getJA() );
-    memory::ReadAccess<ValueType> data( matrixLocal.getValues() );
-    memory::ReadAccess<ValueType> dataOther( otherLocal.getValues() );
+    scai::memory::ReadAccess<lama::IndexType> ja( matrixLocal.getJA() );
+    scai::memory::ReadAccess<lama::IndexType> jaOther( otherLocal.getJA() );
+    scai::memory::ReadAccess<ValueType> data( matrixLocal.getValues() );
+    scai::memory::ReadAccess<ValueType> dataOther( otherLocal.getValues() );
 
     for ( lama::IndexType i = 0; i < nnu; ++i )
     {

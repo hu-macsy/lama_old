@@ -52,9 +52,9 @@
 #include <test/TestSparseMatrices.hpp>
 #include <test/TestMacros.hpp>
 
-using namespace common;
-using namespace lama;
-using namespace memory;
+using namespace scai::common;
+using namespace scai::lama;
+using namespace scai::memory;
 
 typedef boost::mpl::list<double, float> test_types;
 

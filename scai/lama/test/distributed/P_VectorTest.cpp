@@ -63,12 +63,12 @@
 
 #include <test/TestMacros.hpp>
 
-using namespace lama;
-using namespace memory;
-using common::unique_ptr;
-using common::scoped_array;
-using common::shared_ptr;
-using common::Exception;
+using namespace scai::lama;
+using namespace scai::memory;
+using scai::common::unique_ptr;
+using scai::common::scoped_array;
+using scai::common::shared_ptr;
+using scai::common::Exception;
 
 typedef boost::mpl::list<float, double> test_types;
 

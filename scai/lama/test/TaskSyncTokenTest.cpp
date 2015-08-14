@@ -38,8 +38,8 @@
 #include <test/TestMacros.hpp>
 #include <scai/common/bind.hpp>
 
-using namespace tasking;
-using namespace common;
+using namespace scai::tasking;
+using namespace scai::common;
 
 /* --------------------------------------------------------------------- */
 

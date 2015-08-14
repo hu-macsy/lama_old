@@ -42,11 +42,12 @@
 
 #include <test/TestMacros.hpp>
 
-using namespace lama;
-using namespace memory;
+using namespace scai::lama;
+using namespace scai::memory;
 
 /* ------------------------------------------------------------------------------------------------------------------ */
-
+namespace scai
+{
 namespace lama
 {
 namespace CSRUtilsTest
@@ -230,9 +231,11 @@ void transposeTestNonSquare( ContextPtr loc )
     }
 }
 
-} //namespace CSRUtilsTest
+} /* end namespace CSRUtilsTest */
 
-} //namespace lama
+} /* end namespace lama */
+
+} /* end namespace scai */
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 

@@ -37,7 +37,7 @@
 
 #include <test/TestMacros.hpp>
 
-using namespace lama;
+using namespace scai::lama;
 
 static std::string sparsematrixtestclasses[] =
 {

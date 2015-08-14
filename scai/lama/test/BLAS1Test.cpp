@@ -44,9 +44,11 @@
 
 #include <test/TestMacros.hpp>
 
-using namespace lama;
-using namespace memory;
+using namespace scai::lama;
+using namespace scai::memory;
 
+namespace scai
+{
 namespace lama
 {
 namespace BLAS1Test
@@ -563,8 +565,9 @@ void swapTest( ContextPtr loc )
 } // swapTest
 
 } // namespace BLAS1Test
-} // namespace lama
+} /* end namespace lama */
 
+} /* end namespace scai */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 BOOST_AUTO_TEST_SUITE( BLAS1Test )

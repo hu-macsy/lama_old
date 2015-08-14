@@ -40,13 +40,15 @@
 #include <scai/lama/LAMAArrayUtils.hpp>
 #include <scai/lama/storage/ELLStorage.hpp>
 
-using namespace lama;
-using namespace memory;
+using namespace scai::lama;
+using namespace scai::memory;
 using common::Exception;
 
 extern bool base_test_case;
 extern std::string testcase;
 
+namespace scai
+{
 namespace lama
 {
 namespace ELLStorageTest
@@ -238,8 +240,11 @@ void typeNameTest()
     BOOST_CHECK( s.length() > 0 );
 }
 
-} // namespace ELLStorageTest
-} // namespace lama
+} /* end namespace ELLStorageTest */
+
+} /* end namespace lama */
+
+} /* end namespace scai */
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
