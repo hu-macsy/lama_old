@@ -93,7 +93,7 @@ MPICommunicator::MPICommunicator( int& argc, char** & argv )
       mMainThread( common::Thread::getSelf() ),
       mThreadSafetyLevel( Communicator::Funneled )
 {
-    LAMA_TRACE_SCOPE( false ) // switch off tracing in this scope as it might call this constructor again
+    SCAI_TRACE_SCOPE( false ) // switch off tracing in this scope as it might call this constructor again
 
     initialize( argc, argv );
 }

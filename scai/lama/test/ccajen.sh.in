@@ -60,8 +60,8 @@ export SCAI_LOG=ERROR
 for i in VT TIME OFF 
 do
 
-	export LAMA_TRACE_LEVEL=$i
-	echo LAMA_TRACE_LEVEL=$i
+	export SCAI_TRACE_LEVEL=$i
+	echo SCAI_TRACE_LEVEL=$i
 	
 	# Running tests serial
 	echo "Running serial tests"

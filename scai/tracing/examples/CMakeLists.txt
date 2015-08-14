@@ -1,5 +1,5 @@
 
-add_definitions( -DLAMA_TRACE_ON )
+add_definitions( -DSCAI_TRACE_ON )
 
 
 foreach ( executable TraceTest TraceCalls TraceThreads )

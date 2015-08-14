@@ -125,7 +125,7 @@ protected:
      * @throw           Exception if the device initialization fails.
      *
      * If device is DEFAULT_DEVICE_NUMBER, the device number is taken by
-     * the environment variable LAMA_DEVICE. If this variabe is not set,
+     * the environment variable SCAI_DEVICE. If this variabe is not set,
      * it will take device 0 as default.
      */
     MICContext( int device );

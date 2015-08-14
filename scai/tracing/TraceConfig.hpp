@@ -52,7 +52,7 @@ class TraceData;
 
 /** Name of environment variable used to specify trace configuration. */
 
-#define LAMA_ENV_TRACE_CONFIG "LAMA_TRACE"
+#define SCAI_ENV_TRACE_CONFIG "SCAI_TRACE"
 
 /**
  * @brief This class is used to define/set the runtime configuration for tracing.

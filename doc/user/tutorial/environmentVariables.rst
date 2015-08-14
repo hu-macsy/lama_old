@@ -43,7 +43,7 @@ or not in the desired matrix format (e.g. implicit conversion to CSR format and 
 * ``ERROR`` will throw an exception (and so it might terminate if exception is not caught)
 * ``IGNORE`` will not give any information or action for such operations.
 
-LAMA_DEVICE
+SCAI_DEVICE
 -----------
 
 This variable specifies the default device for creation of a CUDA Context in case operations should be
@@ -51,7 +51,7 @@ executed on a GPU.
 
 Example::
 
-    export LAMA_DEVICE=1
+    export SCAI_DEVICE=1
 
 LAMA_TEST_DEVICE
 ----------------

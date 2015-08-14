@@ -61,7 +61,7 @@ namespace memory
  *  to specify the default CUDA device.
  */
 
-#define SCAI_CUDA_ENV_FOR_DEVICE "LAMA_DEVICE"
+#define SCAI_CUDA_ENV_FOR_DEVICE "SCAI_DEVICE"
 
 /**
  * @brief CUDAContext initializes the CUDA device with the given number.
@@ -158,7 +158,7 @@ protected:
      * @throw           Exception if the device initialization fails.
      *
      * If device is DEFAULT_DEVICE_NUMBER, the device number is taken by
-     * the environment variable LAMA_DEVICE. If this variabe is not set,
+     * the environment variable SCAI_DEVICE. If this variabe is not set,
      * it will take device 0 as default.
      */
     CUDAContext( int device );

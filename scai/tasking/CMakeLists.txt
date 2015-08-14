@@ -77,7 +77,7 @@ if ( WIN32 )
     add_definitions ( -DCOMMON_COMPILING_DLL )
 endif ( WIN32 )
 
-add_definitions( -DLAMA_TRACE_ON )
+add_definitions( -DSCAI_TRACE_ON )
 
 ## add subdirectories
 add_subdirectory ( examples )

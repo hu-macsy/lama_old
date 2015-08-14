@@ -36,12 +36,12 @@ You can set explicitly the number of used processors as follows::
 
 If CUDA has been enabled (is default if CUDA is available) and your system has at least one GPU
 you can run also the tests on the GPU (you can choose the device by the environment variable
-``LAMA_DEVICE``, by default device 0 is taken).
+``SCAI_DEVICE``, by default device 0 is taken).
 
 .. code-block:: bash
 
   export LAMA_TEST_CONTEXT=CUDA
-  export LAMA_DEVICE=0
+  export SCAI_DEVICE=0
   ./lama_test
   ./cuda/lama_cuda_test
 
@@ -74,8 +74,8 @@ exactly one GPU.
 .. code-block:: bash
 
   mpirun -x SCAI_LOG=ERROR -x LAMA_UNSUPPORTED=IGNORE
-         -x LAMA_TEST_CONTEXT=CUDA -x LAMA_DEVICE=0 -machine_file=<file> ./lama_test
+         -x LAMA_TEST_CONTEXT=CUDA -x SCAI_DEVICE=0 -machine_file=<file> ./lama_test
 
-If you need a solution where MPI processes require different values for the LAMA_DEVICE
+If you need a solution where MPI processes require different values for the SCAI_DEVICE
 you need a hand-coded script for starting the tests (we will work on a more convenient 
 solution).

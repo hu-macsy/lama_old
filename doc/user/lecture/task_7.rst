@@ -14,18 +14,18 @@ processes is traced to identify communication patterns and to get communication
 statistics.
 
 By default, tracing is deactivated at runtime. Tracing can be activated by
-setting the environment variable ``LAMA_TRACE``.
+setting the environment variable ``SCAI_TRACE``.
 
 .. code-block:: bash
 
-   export LAMA_TRACE=vt
+   export SCAI_TRACE=vt
 
 Furthermore, you can also enable tracing for additional running threads 
 that will be started for asynchronous computations.
 
 .. code-block:: bash
 
-   export LAMA_TRACE=vt:thread
+   export SCAI_TRACE=vt:thread
 
 When using CUDA, CUDA runtime and device activities can be recorded by
 setting the following environment variable (of VampirTrace):

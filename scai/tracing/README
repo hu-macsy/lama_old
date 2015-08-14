@@ -15,12 +15,12 @@ This library supports timing and tracing of C++ programs.
 
 2. Running
 
-export LAMA_TRACE=time
+export SCAI_TRACE=time
 
  - timing of all traced regions in main thread
  - output file is <executable>.trace
 
-export LAMA_TRACE=time:thread
+export SCAI_TRACE=time:thread
 
 Attention: using of VampirTrace library needs some more sophisticated library path
 

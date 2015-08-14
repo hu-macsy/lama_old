@@ -8,11 +8,11 @@ internal subroutine is called at each entry and exit of such a region. These int
 of the regions and/or for the generation of Vampir trace files that can be visualized by Vampir.
 
 By default, tracing is disabled (OFF) and the regions are not instrumented. Tracing can be enabled by the cmake
-variable ``LAMA_TRACE_LEVEL`` for timing (TIME) or Vampir tracing (VT).
+variable ``SCAI_TRACE_LEVEL`` for timing (TIME) or Vampir tracing (VT).
 
 .. code-block:: bash 
 
-   cmake -DLAMA_TRACE_LEVEL=<OFF | TIME | VT>
+   cmake -DSCAI_TRACE_LEVEL=<OFF | TIME | VT>
 
 Tracing for Time Measurements
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -22,14 +22,14 @@ are timed.
 
 .. code-block:: bash 
 
-   cmake -DLAMA_TRACE_LEVEL=TIME ...
+   cmake -DSCAI_TRACE_LEVEL=TIME ...
 
 Beside the source code instrumentation for the installation, take into account that
 the timing must be explicitly enabled at runtime by:
 
 .. code-block:: bash 
 
-   export LAMA_TRACE=TIME
+   export SCAI_TRACE=TIME
 
 Source code instrumentation might add some overhead at runtime due to the calls of
 the internal subroutines. When tracing is disabled at runtime, this overhead should
@@ -52,7 +52,7 @@ During the build, source code instrumentation of LAMA for VampirTrace must be en
 .. code-block:: bash 
 
    export VT_ROOT=<VampirTrace/installation/directory>
-   cmake -DLAMA_TRACE_LEVEL=VT ...
+   cmake -DSCAI_TRACE_LEVEL=VT ...
 
 The environment variable ``VT_ROOT`` should be set to the directory where the VampirTrace installation is available.
 
@@ -62,7 +62,7 @@ be enabled explicitly at runtime.
 
 .. code-block:: bash 
 
-    export LAMA_TRACE=vt
+    export SCAI_TRACE=vt
 
 Now for a running LAMA application tracefiles will be generated.
 

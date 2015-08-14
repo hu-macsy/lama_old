@@ -174,7 +174,7 @@ TraceConfig::TraceConfig()
     mTraceFilePrefix = "_";
     // value of environmentvariable:  param1:param2=valx:param3:param4=valy
     std::string params;
-    const char* env = getenv( LAMA_ENV_TRACE_CONFIG );
+    const char* env = getenv( SCAI_ENV_TRACE_CONFIG );
 
     if ( env )
     {
@@ -213,8 +213,8 @@ TraceConfig::TraceConfig()
     else
     {
         SCAI_LOG_WARN( logger,
-                       LAMA_ENV_TRACE_CONFIG << " not set, tracing is disabled."
-                       << " Enable by " << LAMA_ENV_TRACE_CONFIG << "=time|ct[:vt][:thread]" )
+                       SCAI_ENV_TRACE_CONFIG << " not set, tracing is disabled."
+                       << " Enable by " << SCAI_ENV_TRACE_CONFIG << "=time|ct[:vt][:thread]" )
     }
 
     // enable/disable VampirTrace, action needed now
