@@ -67,7 +67,7 @@ void countNonEmptyRowsBySizesTest( ContextPtr loc )
         const IndexType n = sizeof( values ) / sizeof( IndexType );
         LAMAArray<IndexType> sizes( n, values );
         ReadAccess<IndexType> rSizes( sizes, loc );
-        LAMA_CONTEXT_ACCESS( loc );
+        SCAI_CONTEXT_ACCESS( loc );
         IndexType count = countNonEmptyRowsBySizes( rSizes.get(), n );
         BOOST_CHECK_EQUAL( 4, count );
     }
@@ -75,7 +75,7 @@ void countNonEmptyRowsBySizesTest( ContextPtr loc )
     {
         LAMAArray<IndexType> sizes;
         ReadAccess<IndexType> rSizes( sizes, loc );
-        LAMA_CONTEXT_ACCESS( loc );
+        SCAI_CONTEXT_ACCESS( loc );
         IndexType count = countNonEmptyRowsBySizes( rSizes.get(), sizes.size() );
         BOOST_CHECK_EQUAL( 0, count );
     }
@@ -98,7 +98,7 @@ void setNonEmptyRowsBySizesTest( ContextPtr loc )
     {
         ReadAccess<IndexType> rSizes( sizes, loc );
         WriteAccess<IndexType> wRowIndexes( rowIndexes, loc );
-        LAMA_CONTEXT_ACCESS( loc );
+        SCAI_CONTEXT_ACCESS( loc );
         setNonEmptyRowsBySizes( wRowIndexes.get(), numNonEmptyRows, rSizes.get(), n );
     }
     {
@@ -125,7 +125,7 @@ void hasDiagonalPropertyTest( ContextPtr loc )
         const IndexType numDiagonals = 8;
         LAMAArray<IndexType> ellJa( n, ellJaValues );
         ReadAccess<IndexType> rEllJa( ellJa, loc );
-        LAMA_CONTEXT_ACCESS( loc );
+        SCAI_CONTEXT_ACCESS( loc );
         bool diagonalProperty = hasDiagonalProperty( numDiagonals, rEllJa.get() );
         BOOST_CHECK_EQUAL( true, diagonalProperty );
     }
@@ -137,7 +137,7 @@ void hasDiagonalPropertyTest( ContextPtr loc )
         const IndexType numDiagonals = 8;
         LAMAArray<IndexType> ellJa( n, ellJaValues );
         ReadAccess<IndexType> rEllJa( ellJa, loc );
-        LAMA_CONTEXT_ACCESS( loc );
+        SCAI_CONTEXT_ACCESS( loc );
         bool diagonalProperty = hasDiagonalProperty( numDiagonals, rEllJa.get() );
         BOOST_CHECK_EQUAL( false, diagonalProperty );
     }
@@ -146,7 +146,7 @@ void hasDiagonalPropertyTest( ContextPtr loc )
         const IndexType numDiagonals = 0;
         LAMAArray<IndexType> ellJa;
         ReadAccess<IndexType> rEllJa( ellJa, loc );
-        LAMA_CONTEXT_ACCESS( loc );
+        SCAI_CONTEXT_ACCESS( loc );
         bool diagonalProperty = hasDiagonalProperty( numDiagonals, rEllJa.get() );
         BOOST_CHECK_EQUAL( false, diagonalProperty );
     }
@@ -173,7 +173,7 @@ void checkTest( ContextPtr loc )
         LAMAArray<IndexType> ja( nJa, valuesJa );
         ReadAccess<IndexType> rIa( ia, loc );
         ReadAccess<IndexType> rJa( ja, loc );
-        LAMA_CONTEXT_ACCESS( loc );
+        SCAI_CONTEXT_ACCESS( loc );
         BOOST_CHECK_NO_THROW( check( numRows, numValuesPerRow, numColumns, rIa.get(), rJa.get(), "checkTest" ) );
     }
     // check with invalid ia
@@ -191,7 +191,7 @@ void checkTest( ContextPtr loc )
         LAMAArray<IndexType> ja( nJa, valuesJa );
         ReadAccess<IndexType> rIa( ia, loc );
         ReadAccess<IndexType> rJa( ja, loc );
-        LAMA_CONTEXT_ACCESS( loc );
+        SCAI_CONTEXT_ACCESS( loc );
         BOOST_CHECK_THROW( check( numRows, numValuesPerRow, numColumns, rIa.get(), rJa.get(), "checkTest" ),
                            Exception );
     }
@@ -210,7 +210,7 @@ void checkTest( ContextPtr loc )
         LAMAArray<IndexType> ja( nJa, valuesJa );
         ReadAccess<IndexType> rIa( ia, loc );
         ReadAccess<IndexType> rJa( ja, loc );
-        LAMA_CONTEXT_ACCESS( loc );
+        SCAI_CONTEXT_ACCESS( loc );
         BOOST_CHECK_THROW( check( numRows, numValuesPerRow, numColumns, rIa.get(), rJa.get(), "checkTest" ),
                            Exception );
     }
@@ -223,7 +223,7 @@ void checkTest( ContextPtr loc )
         LAMAArray<IndexType> ja;
         ReadAccess<IndexType> rIa( ia, loc );
         ReadAccess<IndexType> rJa( ja, loc );
-        LAMA_CONTEXT_ACCESS( loc );
+        SCAI_CONTEXT_ACCESS( loc );
         BOOST_CHECK_NO_THROW( check( numRows, numValuesPerRow, numColumns, rIa.get(), rJa.get(), "checkTest" ) );
     }
     // check with invalid empty values
@@ -235,7 +235,7 @@ void checkTest( ContextPtr loc )
         LAMAArray<IndexType> ja;
         ReadAccess<IndexType> rIa( ia, loc );
         ReadAccess<IndexType> rJa( ja, loc );
-        LAMA_CONTEXT_ACCESS( loc );
+        SCAI_CONTEXT_ACCESS( loc );
         BOOST_CHECK_THROW( check( numRows, numValuesPerRow, numColumns, rIa.get(), rJa.get(), "checkTest" ),
                            Exception );
     }
@@ -273,7 +273,7 @@ void getRowTest( ContextPtr loc )
             ReadAccess<IndexType> rIa( ia, loc );
             ReadAccess<IndexType> rJa( ja, loc );
             WriteOnlyAccess<OtherValueType> wRow( row, loc, numColumns );
-            LAMA_CONTEXT_ACCESS( loc );
+            SCAI_CONTEXT_ACCESS( loc );
             getRow( wRow.get(), i, numRows, numColumns, numValuesPerRow, rIa.get(), rJa.get(), rValues.get() );
         }
         ReadAccess<OtherValueType> rRow( row );
@@ -309,7 +309,7 @@ void getRowTest( ContextPtr loc )
             ReadAccess<IndexType> rIa( ia, loc );
             ReadAccess<IndexType> rJa( ja, loc );
             WriteOnlyAccess<OtherValueType> wRow( row, loc, numColumns );
-            LAMA_CONTEXT_ACCESS( loc );
+            SCAI_CONTEXT_ACCESS( loc );
             getRow( wRow.get(), i, numRows, numColumns, numValuesPerRow, rIa.get(), rJa.get(), rValues.get() );
         }
         ReadAccess<OtherValueType> rRow( row );
@@ -347,7 +347,7 @@ void getValueTest( ContextPtr loc )
     ReadAccess<ValueType> rValues( values, loc );
     ReadAccess<IndexType> rIa( ia, loc );
     ReadAccess<IndexType> rJa( ja, loc );
-    LAMA_CONTEXT_ACCESS( loc );
+    SCAI_CONTEXT_ACCESS( loc );
 
     for ( IndexType i = 0; i < numRows; i++ )
     {
@@ -384,7 +384,7 @@ void scaleValueTest( ContextPtr loc )
         ReadAccess<IndexType> rEllIa( ellIa, loc );
         WriteAccess<ValueType> wEllValues( ellValues, loc );
         ReadAccess<OtherValueType> rScaleValues( scaleValues, loc );
-        LAMA_CONTEXT_ACCESS( loc );
+        SCAI_CONTEXT_ACCESS( loc );
         scaleValue( numRows, numValuesPerRow, rEllIa.get(), wEllValues.get(), rScaleValues.get() );
     }
     ReadAccess<ValueType> rEllValues( ellValues );
@@ -435,7 +435,7 @@ void getCSRValuesTest( ContextPtr loc )
         ReadAccess<IndexType> rCSRIa( csrIa, loc );
         WriteOnlyAccess<OtherValueType> wCSRValues( csrValues, loc, nCSRValues );
         WriteOnlyAccess<IndexType> wCSRJa( csrJa, loc, nCSRValues );
-        LAMA_CONTEXT_ACCESS( loc );
+        SCAI_CONTEXT_ACCESS( loc );
         getCSRValues( wCSRJa.get(), wCSRValues.get(), rCSRIa.get(), numRows, numValuesPerRow, rELLIa.get(),
                       rELLJa.get(), rELLValues.get() );
     }
@@ -489,7 +489,7 @@ void setCSRValuesTest( ContextPtr loc )
         ReadAccess<IndexType> rELLIa( ellIa, loc );
         WriteOnlyAccess<OtherValueType> wELLValues( ellValues, loc, nELLValues );
         WriteOnlyAccess<IndexType> wELLJa( ellJa, loc, nELLValues );
-        LAMA_CONTEXT_ACCESS( loc );
+        SCAI_CONTEXT_ACCESS( loc );
         setCSRValues( wELLJa.get(), wELLValues.get(), rELLIa.get(), numRows, numValuesPerRow, rCSRIa.get(),
                       rCSRJa.get(), rCSRValues.get() );
     }
@@ -534,7 +534,7 @@ void compressIATest( ContextPtr loc )
             ReadAccess<IndexType> rELLIa( ellIa, loc );
             ReadAccess<IndexType> rELLJa( ellJa, loc );
             WriteOnlyAccess<IndexType> wNewELLIa( newEllIa, loc, nELLIa );
-            LAMA_CONTEXT_ACCESS( loc );
+            SCAI_CONTEXT_ACCESS( loc );
             compressIA( rELLIa.get(), rELLJa.get(), rELLValues.get(), numRows, numValuesPerRow, eps, wNewELLIa.get() );
         }
         ReadAccess<IndexType> rNewELLIa( newEllIa );
@@ -569,7 +569,7 @@ void compressIATest( ContextPtr loc )
             ReadAccess<IndexType> rELLIa( ellIa, loc );
             ReadAccess<IndexType> rELLJa( ellJa, loc );
             WriteOnlyAccess<IndexType> wNewELLIa( newEllIa, loc, nELLIa );
-            LAMA_CONTEXT_ACCESS( loc );
+            SCAI_CONTEXT_ACCESS( loc );
             compressIA( rELLIa.get(), rELLJa.get(), rELLValues.get(), numRows, numValuesPerRow, eps, wNewELLIa.get() );
         }
         ReadAccess<IndexType> rNewELLIa( newEllIa );
@@ -604,7 +604,7 @@ void compressIATest( ContextPtr loc )
             ReadAccess<IndexType> rELLIa( ellIa, loc );
             ReadAccess<IndexType> rELLJa( ellJa, loc );
             WriteOnlyAccess<IndexType> wNewELLIa( newEllIa, loc, nELLIa );
-            LAMA_CONTEXT_ACCESS( loc );
+            SCAI_CONTEXT_ACCESS( loc );
             compressIA( rELLIa.get(), rELLJa.get(), rELLValues.get(), numRows, numValuesPerRow, eps, wNewELLIa.get() );
         }
         ReadAccess<IndexType> rNewELLIa( newEllIa );
@@ -653,7 +653,7 @@ void compressValuesTest( ContextPtr loc )
             ReadAccess<IndexType> rELLJa( ellJa, loc );
             WriteOnlyAccess<ValueType> wNewELLValues( newEllValues, loc, numValues );
             WriteOnlyAccess<IndexType> wNewELLJa( newEllJa, loc, numValues );
-            LAMA_CONTEXT_ACCESS( loc );
+            SCAI_CONTEXT_ACCESS( loc );
             compressValues( rELLIa.get(), rELLJa.get(), rELLValues.get(), numRows, numValuesPerRow, eps,
                             newNumValuesPerRow, wNewELLJa.get(), wNewELLValues.get() );
         }
@@ -697,7 +697,7 @@ void compressValuesTest( ContextPtr loc )
             ReadAccess<IndexType> rELLJa( ellJa, loc );
             WriteOnlyAccess<ValueType> wNewELLValues( newEllValues, loc, numValues );
             WriteOnlyAccess<IndexType> wNewELLJa( newEllJa, loc, numValues );
-            LAMA_CONTEXT_ACCESS( loc );
+            SCAI_CONTEXT_ACCESS( loc );
             compressValues( rELLIa.get(), rELLJa.get(), rELLValues.get(), numRows, numValuesPerRow, eps,
                             newNumValuesPerRow, wNewELLJa.get(), wNewELLValues.get() );
         }
@@ -741,7 +741,7 @@ void compressValuesTest( ContextPtr loc )
             ReadAccess<IndexType> rELLJa( ellJa, loc );
             WriteOnlyAccess<ValueType> wNewELLValues( newEllValues, loc, numValues );
             WriteOnlyAccess<IndexType> wNewELLJa( newEllJa, loc, numValues );
-            LAMA_CONTEXT_ACCESS( loc );
+            SCAI_CONTEXT_ACCESS( loc );
             compressValues( rELLIa.get(), rELLJa.get(), rELLValues.get(), numRows, numValuesPerRow, eps,
                             newNumValuesPerRow, wNewELLJa.get(), wNewELLValues.get() );
         }
@@ -790,7 +790,7 @@ void matrixMultiplySizesTest( ContextPtr loc )
             ReadAccess<IndexType> rBIa( BIa, loc );
             ReadAccess<IndexType> rBJa( BJa, loc );
             WriteOnlyAccess<IndexType> wCIa( CIa, loc, numValues );
-            LAMA_CONTEXT_ACCESS( loc );
+            SCAI_CONTEXT_ACCESS( loc );
             matrixMultiplySizes( wCIa.get(), numValues, numValues, numValues, false, rAIa.get(), rAJa.get(),
                                  aNumValuesPerRow, rBIa.get(), rBJa.get(), bNumValuesPerRow );
         }
@@ -837,7 +837,7 @@ void matrixMultiplySizesTest( ContextPtr loc )
             ReadAccess<IndexType> rBIa( BIa, loc );
             ReadAccess<IndexType> rBJa( BJa, loc );
             WriteOnlyAccess<IndexType> wCIa( CIa, loc, cNumRows );
-            LAMA_CONTEXT_ACCESS( loc );
+            SCAI_CONTEXT_ACCESS( loc );
             IndexType numColumns = 5; // does not really matter
             matrixMultiplySizes( wCIa.get(), aNumRows, numColumns, bNumRows, false, rAIa.get(), rAJa.get(),
                                  aNumValuesPerRow, rBIa.get(), rBJa.get(), bNumValuesPerRow );
@@ -906,7 +906,7 @@ void matrixMultiplyTest( ContextPtr loc )
             ReadAccess<IndexType> rCIa( CIa, loc );
             WriteOnlyAccess<ValueType> wCValues( CValues, loc, numValues );
             WriteOnlyAccess<IndexType> wCJa( CJa, loc, numValues );
-            LAMA_CONTEXT_ACCESS( loc );
+            SCAI_CONTEXT_ACCESS( loc );
             IndexType numColumns = 5; // not really needed here but internally used
             bool diagonalProperty = false; // do not care about it here
             matrixMultiply( wCJa.get(), wCValues.get(), rCIa.get(), cNumValuesPerRow, aNumRows, numColumns, bNumRows,
@@ -973,7 +973,7 @@ void matrixMultiplyTest( ContextPtr loc )
             ReadAccess<IndexType> rCIa( CIa, loc );
             WriteOnlyAccess<ValueType> wCValues( CValues, loc, numValues );
             WriteOnlyAccess<IndexType> wCJa( CJa, loc, numValues );
-            LAMA_CONTEXT_ACCESS( loc );
+            SCAI_CONTEXT_ACCESS( loc );
             bool diagonalProperty = false; // do not care about it
             IndexType numColumns = 15; // does not matter here but internally used for optimizations
             matrixMultiply( wCJa.get(), wCValues.get(), rCIa.get(), cNumValuesPerRow, aNumRows, numColumns, bNumRows,
@@ -1042,7 +1042,7 @@ void matrixMultiplyTest( ContextPtr loc )
             ReadAccess<IndexType> rCIa( CIa, loc );
             WriteOnlyAccess<ValueType> wCValues( CValues, loc, cNumValues );
             WriteOnlyAccess<IndexType> wCJa( CJa, loc, cNumValues );
-            LAMA_CONTEXT_ACCESS( loc );
+            SCAI_CONTEXT_ACCESS( loc );
             bool diagonalProperty = false; // do not care about it
             IndexType numColumns = 15; // does not matter here but internally used for optimizations
             matrixMultiply( wCJa.get(), wCValues.get(), rCIa.get(), cNumValuesPerRow, aNumRows, numColumns, bNumRows,
@@ -1099,7 +1099,7 @@ void matrixAddSizesTest( ContextPtr loc )
         ReadAccess<IndexType> rBIa( BIa, loc );
         ReadAccess<IndexType> rBJa( BJa, loc );
         WriteOnlyAccess<IndexType> wCIa( CIa, loc, cNumRows );
-        LAMA_CONTEXT_ACCESS( loc );
+        SCAI_CONTEXT_ACCESS( loc );
         bool diagonalProperty = false;
         IndexType numColumns = aNumRows; // square matrices here
         matrixAddSizes( wCIa.get(), aNumRows, numColumns, diagonalProperty, rAIa.get(), rAJa.get(), aNumValuesPerRow,
@@ -1170,7 +1170,7 @@ void matrixAddTest( ContextPtr loc )
             ReadAccess<IndexType> rCIa( CIa, loc );
             WriteOnlyAccess<ValueType> wCValues( CValues, loc, cNumValues );
             WriteOnlyAccess<IndexType> wCJa( CJa, loc, cNumValues );
-            LAMA_CONTEXT_ACCESS( loc );
+            SCAI_CONTEXT_ACCESS( loc );
             bool diagonalProperty = false; // does not matter here
             matrixAdd( wCJa.get(), wCValues.get(), rCIa.get(), cNumValuesPerRow, aNumRows, numColumns, diagonalProperty,
                        alpha, rAIa.get(), rAJa.get(), rAValues.get(), aNumValuesPerRow, beta, rBIa.get(), rBJa.get(),
@@ -1241,7 +1241,7 @@ void matrixAddTest( ContextPtr loc )
             ReadAccess<IndexType> rCIa( CIa, loc );
             WriteOnlyAccess<ValueType> wCValues( CValues, loc, cNumValues );
             WriteOnlyAccess<IndexType> wCJa( CJa, loc, cNumValues );
-            LAMA_CONTEXT_ACCESS( loc );
+            SCAI_CONTEXT_ACCESS( loc );
             bool diagonalProperty = false; // does not matter here
             matrixAdd( wCJa.get(), wCValues.get(), rCIa.get(), cNumValuesPerRow, aNumRows, numColumns, diagonalProperty,
                        alpha, rAIa.get(), rAJa.get(), rAValues.get(), aNumValuesPerRow, beta, rBIa.get(), rBJa.get(),

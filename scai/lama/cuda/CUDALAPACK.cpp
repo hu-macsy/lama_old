@@ -71,7 +71,7 @@ void CUDALAPACK::laswp(
             }
 
             CUDABLAS1::swap( n, &A_d[ipiv_h[i * incx] * lda], incx, &A_d[i * lda], incx, syncToken );
-            LAMA_CHECK_CUDA_ERROR
+            SCAI_CHECK_CUDA_ERROR
         }
 
         info = -1 * (IndexType) feedback;
@@ -121,7 +121,7 @@ void CUDALAPACK::laswp(
             }
 
             CUDABLAS1::swap( n, &A_d[ipiv_h[i * incx] * lda], incx, &A_d[i * lda], incx, syncToken );
-            LAMA_CHECK_CUDA_ERROR
+            SCAI_CHECK_CUDA_ERROR
         }
 
         info = -1 * (IndexType) feedback;

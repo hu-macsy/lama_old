@@ -120,7 +120,7 @@ ThreadPool::ThreadPool( int size )
 
 shared_ptr<ThreadTask> ThreadPool::schedule( function<void()> work, int numOmpThreads /* = 0 */ )
 {
-    LAMA_REGION( "ThreadPool::schedule" )
+    SCAI_REGION( "ThreadPool::schedule" )
     Thread::Id thisThread = Thread::getSelf();
     bool isRecursiveTask = false;
     std::vector<Thread::Id>::const_iterator end = mThreads.end();

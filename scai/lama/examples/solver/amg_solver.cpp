@@ -171,8 +171,8 @@ int main( int argc, char* argv[] )
 
     // only square matrices are accetpted
 
-    LAMA_ASSERT_EQUAL( matrix.getNumRows(), matrix.getNumColumns() )
-    LAMA_ASSERT_EQUAL( matrix.getNumRows(), rhs.size() )
+    SCAI_ASSERT_EQUAL( matrix.getNumRows(), matrix.getNumColumns() )
+    SCAI_ASSERT_EQUAL( matrix.getNumRows(), rhs.size() )
 
     int numRows = matrix.getNumRows();
 

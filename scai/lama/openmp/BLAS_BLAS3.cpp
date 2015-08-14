@@ -42,7 +42,7 @@
 // macros
 #include <scai/lama/macros/unused.hpp>
 
-// tracing with LAMA_REGION
+// tracing with SCAI_REGION
 #include <scai/tracing.hpp>
 #include <scai/lama/cblas.hpp>
 
@@ -194,7 +194,7 @@ void BLAS_BLAS3::gemm(
     const IndexType ldc,
     SyncToken* syncToken )
 {
-    LAMA_REGION( "BLAS.BLAS3.gemm" )
+    SCAI_REGION( "BLAS.BLAS3.gemm" )
 
     SCAI_LOG_INFO( logger,
                    "gemm<" << getScalarType<ValueType>() << ">: " << "m = " << m << ", n = " << n << ", k = " << k << ", lda = " << lda << ", ldb = " << ldb << ", ldc = " << ldc << ", alpha = " << alpha << ", beta = " << beta )

@@ -156,7 +156,7 @@ namespace lama
     {
         SCAI_LOG_INFO( logger, "getRow with i = " << i << ", numColumns = " << numColumns << " and numRows = " << numRows )
 
-        LAMA_CHECK_CUDA_ACCESS
+        SCAI_CHECK_CUDA_ACCESS
 
         thrust::device_ptr<OtherValueType> rowPtr( row );
         thrust::device_ptr<IndexType> permPtr( const_cast<IndexType*>( perm ) );
@@ -179,7 +179,7 @@ namespace lama
         //TODO: find better CUDA / Thrust implementation
         getRowKernel<<<dimGrid, dimBlock>>>( row, ii, ilg, dlg, ja, values );
 
-        LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "JDS:getRowKernel FAILED" )
+        SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "JDS:getRowKernel FAILED" )
     }
 
     /* ------------------------------------------------------------------------------------------------------------------ */
@@ -246,7 +246,7 @@ namespace lama
                     const IndexType* ja,
                     const ValueType* values )
     {
-        LAMA_CHECK_CUDA_ACCESS
+        SCAI_CHECK_CUDA_ACCESS
 
         thrust::device_ptr<ValueType> resultPtr = thrust::device_malloc < ValueType > ( 1 );
         ValueType *resultRawPtr = thrust::raw_pointer_cast( resultPtr );
@@ -303,7 +303,7 @@ namespace lama
     {
         SCAI_LOG_INFO( logger, "scaleValue with numRows = " << numRows )
 
-        LAMA_CHECK_CUDA_ACCESS
+        SCAI_CHECK_CUDA_ACCESS
 
         const int blockSize = CUDASettings::getBlockSize();
         dim3 dimBlock( blockSize, 1, 1 );
@@ -311,7 +311,7 @@ namespace lama
 
         scaleValueKernel<<<dimGrid, dimBlock>>>( numRows, perm, ilg, dlg, mValues, values );
 
-        LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "JDS:scaleValueKernel FAILED" )
+        SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "JDS:scaleValueKernel FAILED" )
     }
 
     /* ------------------------------------------------------------------------------------------------------------------ */
@@ -366,7 +366,7 @@ namespace lama
         SCAI_LOG_INFO( logger, "checkDiagonalProperty with numDiagonals = " << numDiagonals
                         << ", numRows = " << numRows << " and numColumns = " << numColumns )
 
-        LAMA_CHECK_CUDA_ACCESS
+        SCAI_CHECK_CUDA_ACCESS
 
         if ( numRows <= 0 )
         {
@@ -384,7 +384,7 @@ namespace lama
 
         IndexType nonEmptyRows = 0;
 
-        LAMA_CUDA_RT_CALL( cudaMemcpy( &nonEmptyRows, &dlg[0], sizeof( IndexType ), cudaMemcpyDeviceToHost ),
+        SCAI_CUDA_RT_CALL( cudaMemcpy( &nonEmptyRows, &dlg[0], sizeof( IndexType ), cudaMemcpyDeviceToHost ),
                         "get number of non-zero rows from dlg" );
 
         // Be careful: numDiagonals has nothing to do with size of diagonal
@@ -398,10 +398,10 @@ namespace lama
 
         bool hasProperty = true;
 
-        LAMA_CUDA_RT_CALL( cudaMalloc( (void**) &d_hasProperty, sizeof( bool ) ),
+        SCAI_CUDA_RT_CALL( cudaMalloc( (void**) &d_hasProperty, sizeof( bool ) ),
                         "allocate 4 bytes on the device for the result of hasDiagonalProperty_kernel" )
 
-        LAMA_CUDA_RT_CALL( cudaMemcpy( d_hasProperty, &hasProperty, sizeof( bool ), cudaMemcpyHostToDevice ),
+        SCAI_CUDA_RT_CALL( cudaMemcpy( d_hasProperty, &hasProperty, sizeof( bool ), cudaMemcpyHostToDevice ),
                         "copy flag for diagonalProperty to device" )
 
         const int blockSize = CUDASettings::getBlockSize();
@@ -412,12 +412,12 @@ namespace lama
                         numRows, numColumns, nonEmptyRows,
                         perm, ja );
 
-        LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "JDS:checkDiagonalPropertyKernel FAILED" )
+        SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "JDS:checkDiagonalPropertyKernel FAILED" )
 
-        LAMA_CUDA_RT_CALL( cudaMemcpy( &hasProperty, d_hasProperty, sizeof( bool ), cudaMemcpyDeviceToHost ),
+        SCAI_CUDA_RT_CALL( cudaMemcpy( &hasProperty, d_hasProperty, sizeof( bool ), cudaMemcpyDeviceToHost ),
                         "copy flag for diagonalProperty to host" )
 
-        LAMA_CUDA_RT_CALL( cudaFree( d_hasProperty ),
+        SCAI_CUDA_RT_CALL( cudaFree( d_hasProperty ),
                         "free result var for diagonal property" )
 
         return hasProperty;
@@ -466,11 +466,11 @@ namespace lama
                     const IndexType ilg[],
                     const IndexType numRows )
     {
-        LAMA_REGION( "CUDA.JDS:dlg<-ilg" )
+        SCAI_REGION( "CUDA.JDS:dlg<-ilg" )
 
         SCAI_LOG_INFO( logger, "ilg2dlg with numDiagonals = " << numDiagonals << ", numRows = " << numRows )
 
-        LAMA_CHECK_CUDA_ACCESS
+        SCAI_CHECK_CUDA_ACCESS
 
         if ( numDiagonals == 0 )
         {
@@ -489,7 +489,7 @@ namespace lama
 
         ilg2dlgKernel<<<dimGrid, dimBlock>>>( dlg, numDiagonals, ilg, numRows );
 
-        LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "JDS: ilg2dlgKernel FAILED" )
+        SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "JDS: ilg2dlgKernel FAILED" )
 
         return sumIlg;
     }
@@ -500,11 +500,11 @@ namespace lama
 
     void CUDAJDSUtils::sortRows( IndexType array[], IndexType perm[], const IndexType n )
     {
-        LAMA_REGION( "CUDA.JDS:sortRows" )
+        SCAI_REGION( "CUDA.JDS:sortRows" )
 
         SCAI_LOG_INFO( logger, "sort " << n << " rows by sizes" )
 
-        LAMA_CHECK_CUDA_ACCESS
+        SCAI_CHECK_CUDA_ACCESS
 
         thrust::device_ptr<IndexType> array_d( array );
         thrust::device_ptr<IndexType> perm_d( perm );
@@ -513,7 +513,7 @@ namespace lama
 
         thrust::stable_sort_by_key( array_d, array_d + n, perm_d, thrust::greater<IndexType>() );
 
-        LAMA_CUDA_RT_CALL( cudaStreamSynchronize(0), "JDS: synchronize for sortRows FAILED" )
+        SCAI_CUDA_RT_CALL( cudaStreamSynchronize(0), "JDS: synchronize for sortRows FAILED" )
     }
 
     /* ------------------------------------------------------------------------------------------------------------------ */
@@ -593,11 +593,11 @@ namespace lama
     {
         // convert CSR data to JDS, ja and values
 
-        LAMA_REGION( "CUDA.JDS<-CSR_values" )
+        SCAI_REGION( "CUDA.JDS<-CSR_values" )
 
         SCAI_LOG_INFO( logger, "convert CSR to JDS, #rows = " << numRows )
 
-        LAMA_CHECK_CUDA_ACCESS
+        SCAI_CHECK_CUDA_ACCESS
 
         bool useSharedMem = CUDASettings::useSharedMem();
 
@@ -612,7 +612,7 @@ namespace lama
 
         if ( useSharedMem )
         {
-            LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( csr2jdsKernel<JDSValueType, CSRValueType, true>,
+            SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( csr2jdsKernel<JDSValueType, CSRValueType, true>,
                                             cudaFuncCachePreferL1 ),
                             "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" );
 
@@ -623,7 +623,7 @@ namespace lama
         }
         else
         {
-            LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( csr2jdsKernel<JDSValueType, CSRValueType, false>,
+            SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( csr2jdsKernel<JDSValueType, CSRValueType, false>,
                                             cudaFuncCachePreferL1 ),
                             "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" );
 
@@ -631,7 +631,7 @@ namespace lama
                             jdsJA, jdsValues, jdsDLG, ndlg, jdsILG, jdsPerm, numRows, csrIA, csrJA, csrValues );
         }
 
-        LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "csr2jdsKernel failed" );
+        SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "csr2jdsKernel failed" );
 
         SCAI_LOG_INFO( logger, "Ready csr2jds_kernel<" << getScalarType<JDSValueType>()
                         << ", " << getScalarType<CSRValueType>() << " )" )
@@ -645,7 +645,7 @@ namespace lama
     {
         SCAI_LOG_INFO( logger, "compute inverse perm, n = " << n )
 
-        LAMA_CHECK_CUDA_ACCESS
+        SCAI_CHECK_CUDA_ACCESS
 
         if ( n > 0 )
         {
@@ -656,7 +656,7 @@ namespace lama
 
             thrust::scatter( sequence, sequence + n, permPtr, inversePermPtr );
 
-            LAMA_CHECK_CUDA_ERROR
+            SCAI_CHECK_CUDA_ERROR
         }
     }
 
@@ -710,12 +710,12 @@ namespace lama
                     const IndexType jdsJA[],
                     const JDSValueType jdsValues[] )
     {
-        LAMA_REGION( "CUDA.JDS->CSR_values" )
+        SCAI_REGION( "CUDA.JDS->CSR_values" )
 
         SCAI_LOG_INFO( logger,
                         "get CSRValues<" << getScalarType<JDSValueType>() << ", " << getScalarType<CSRValueType>() << ">" << ", #rows = " << numRows )
 
-        LAMA_CHECK_CUDA_ACCESS
+        SCAI_CHECK_CUDA_ACCESS
 
         const int blockSize = CUDASettings::getBlockSize();
         dim3 dimBlock( blockSize, 1, 1 );
@@ -724,7 +724,7 @@ namespace lama
         jds2csrKernel<<<dimGrid,dimBlock>>>( csrJA, csrValues, csrIA, numRows, jdsInversePerm, jdsILG, jdsDLG, jdsJA,
                         jdsValues );
 
-        LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "JDS:jds2csrKernel FAILED" )
+        SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "JDS:jds2csrKernel FAILED" )
     }
 
     /* ------------------------------------------------------------------------------------------------------------------ */
@@ -835,19 +835,19 @@ namespace lama
                     const ValueType omega,
                     SyncToken* syncToken )
     {
-        LAMA_REGION( "CUDA.JDS.jacobi" )
+        SCAI_REGION( "CUDA.JDS.jacobi" )
 
         cudaStream_t stream = 0;
 
         SCAI_LOG_INFO( logger,
                         "jacobi<" << getScalarType<ValueType>() << ">" << ", #rows = " << numRows << ", omega = " << omega )
 
-        LAMA_CHECK_CUDA_ACCESS
+        SCAI_CHECK_CUDA_ACCESS
 
         if ( syncToken )
         {
             CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-            LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
+            SCAI_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
             stream = cudaStreamSyncToken->getCUDAStream();
         }
 
@@ -867,13 +867,13 @@ namespace lama
             if ( !useSharedMem )
             {
                 vectorBindTexture( jdsDLG );
-                LAMA_CUDA_RT_CALL(
+                SCAI_CUDA_RT_CALL(
                                 cudaFuncSetCacheConfig( jds_jacobi_kernel<ValueType, true, false>, cudaFuncCachePreferL1 ),
                                 "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" );
             }
             else
             {
-                LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( jds_jacobi_kernel<ValueType, true, true>,cudaFuncCachePreferL1 ),
+                SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( jds_jacobi_kernel<ValueType, true, true>,cudaFuncCachePreferL1 ),
                                 "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" );
             }
         }
@@ -881,13 +881,13 @@ namespace lama
         {
             if ( !useSharedMem )
             {
-                LAMA_CUDA_RT_CALL(
+                SCAI_CUDA_RT_CALL(
                                 cudaFuncSetCacheConfig( jds_jacobi_kernel<ValueType, false, false>,cudaFuncCachePreferL1 ),
                                 "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" );
             }
             else
             {
-                LAMA_CUDA_RT_CALL(
+                SCAI_CUDA_RT_CALL(
                                 cudaFuncSetCacheConfig( jds_jacobi_kernel<ValueType, false, true>, cudaFuncCachePreferL1 ),
                                 "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" );
             }
@@ -925,12 +925,12 @@ namespace lama
             }
         }
 
-        LAMA_CUDA_RT_CALL( cudaGetLastError(), "jds_jacobi_kernel<" << getScalarType<ValueType>()
+        SCAI_CUDA_RT_CALL( cudaGetLastError(), "jds_jacobi_kernel<" << getScalarType<ValueType>()
                         << ", " << useTexture << ", " << useSharedMem << "> failed" )
 
         if ( !syncToken )
         {
-            LAMA_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "JDS:jacobi_kernel failed" )
+            SCAI_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "JDS:jacobi_kernel failed" )
         }
 
         if ( useTexture )
@@ -1026,7 +1026,7 @@ namespace lama
                     const ValueType omega,
                     SyncToken* syncToken )
     {
-        LAMA_REGION( "CUDA.JDS.jacobiHalo" )
+        SCAI_REGION( "CUDA.JDS.jacobiHalo" )
 
         SCAI_LOG_INFO( logger, "jacobiHalo<" << getScalarType<ValueType>() << ">"
                         << ", #rows = " << numRows << ", omega = " << omega )
@@ -1036,7 +1036,7 @@ namespace lama
             COMMON_THROWEXCEPTION( "jacobiHalo not supported for aynchronous execution" )
         }
 
-        LAMA_CHECK_CUDA_ACCESS
+        SCAI_CHECK_CUDA_ACCESS
 
         const bool useTexture = CUDASettings::useTexture();
         const bool useSharedMem = CUDASettings::useSharedMem();
@@ -1064,7 +1064,7 @@ namespace lama
         {
             if ( !useSharedMem )
             {
-                LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( jds_jacobi_halo_kernel<ValueType, true, false>,
+                SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( jds_jacobi_halo_kernel<ValueType, true, false>,
                                                 cudaFuncCachePreferL1),
                                 "cudaFuncSetCacheConfig jds_jacobi_halo_kernel<ValueType, true, false> failed" )
 
@@ -1074,7 +1074,7 @@ namespace lama
             }
             else
             {
-                LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( jds_jacobi_halo_kernel<ValueType, true, true>,
+                SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( jds_jacobi_halo_kernel<ValueType, true, true>,
                                                 cudaFuncCachePreferL1),
                                 "cudaFuncSetCacheConfig jds_jacobi_halo_kernel<ValueType, true, true> failed" )
 
@@ -1090,7 +1090,7 @@ namespace lama
         {
             if ( !useSharedMem )
             {
-                LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( jds_jacobi_halo_kernel<ValueType, false, false>,
+                SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( jds_jacobi_halo_kernel<ValueType, false, false>,
                                                 cudaFuncCachePreferL1),
                                 "cudaFuncSetCacheConfig jds_jacobi_halo_kernel<ValueType, false, false> failed" )
 
@@ -1100,7 +1100,7 @@ namespace lama
             }
             else
             {
-                LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( jds_jacobi_halo_kernel<ValueType, false, true>,
+                SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( jds_jacobi_halo_kernel<ValueType, false, true>,
                                                 cudaFuncCachePreferL1),
                                 "cudaFuncSetCacheConfig jds_jacobi_halo_kernel<ValueType, false, true> failed" )
 
@@ -1112,7 +1112,7 @@ namespace lama
             }
         }
 
-        LAMA_CUDA_RT_CALL( cudaStreamSynchronize(0), "jds_jacobi_halo_kernel" );
+        SCAI_CUDA_RT_CALL( cudaStreamSynchronize(0), "jds_jacobi_halo_kernel" );
 
         if ( useTexture )
         {
@@ -1665,7 +1665,7 @@ namespace lama
             return;
         }
 
-        LAMA_REGION( "CUDA.JDS.normalGEMV" )
+        SCAI_REGION( "CUDA.JDS.normalGEMV" )
 
         SCAI_LOG_INFO( logger, "normalGEMV<" << getScalarType<ValueType>() << ">"
                         << " result[ " << numRows << "] = " << alpha
@@ -1680,7 +1680,7 @@ namespace lama
         dim3 dimBlock( blockSize, 1, 1 );
         dim3 dimGrid = makeGrid( numRows, dimBlock.x );
 
-        LAMA_CHECK_CUDA_ACCESS
+        SCAI_CHECK_CUDA_ACCESS
 
         cudaStream_t stream = 0; // default stream if no SyncToken is available
 
@@ -1691,7 +1691,7 @@ namespace lama
         if ( syncToken )
         {
             CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-            LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
+            SCAI_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
             stream = cudaStreamSyncToken->getCUDAStream();
         }
 
@@ -1798,7 +1798,7 @@ namespace lama
             {
                 // synchronize here and unbind texture
 
-                LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "JDS: gemvKernel FAILED" )
+                SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "JDS: gemvKernel FAILED" )
 
                 vectorUnbindTexture( x );
 
@@ -1912,7 +1912,7 @@ namespace lama
             }
             if ( !syncToken )
             {
-                LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "JDS: gemvKernel FAILED" )
+                SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "JDS: gemvKernel FAILED" )
             }
         }
     }
@@ -2329,7 +2329,7 @@ namespace lama
             return;
         }
 
-        LAMA_REGION( "CUDA.JDS.normalGEVM" )
+        SCAI_REGION( "CUDA.JDS.normalGEVM" )
 
         SCAI_LOG_INFO( logger, "normalGEVM<" << getScalarType<ValueType>() << ">"
                         << " result[ " << numColumns << "] = " << alpha
@@ -2344,7 +2344,7 @@ namespace lama
         dim3 dimBlock( blockSize, 1, 1 );
         dim3 dimGrid = makeGrid( numColumns, dimBlock.x );
 
-        LAMA_CHECK_CUDA_ACCESS
+        SCAI_CHECK_CUDA_ACCESS
 
         cudaStream_t stream = 0; // default stream if no SyncToken is available
 
@@ -2355,7 +2355,7 @@ namespace lama
         if ( syncToken )
         {
             CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-            LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
+            SCAI_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
             stream = cudaStreamSyncToken->getCUDAStream();
         }
 
@@ -2462,7 +2462,7 @@ namespace lama
             {
                 // synchronize here and unbind texture
 
-                LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "JDS: gevmKernel FAILED" )
+                SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "JDS: gevmKernel FAILED" )
 
                 vectorUnbindTexture( x );
 
@@ -2576,7 +2576,7 @@ namespace lama
             }
             if ( !syncToken )
             {
-                LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "JDS: normal_gevm_kernel FAILED" )
+                SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "JDS: normal_gevm_kernel FAILED" )
             }
         }
     }
@@ -2597,7 +2597,7 @@ namespace lama
                     const ValueType jdsValues[],
                     SyncToken* syncToken )
     {
-        LAMA_REGION( "CUDA.JDS.sparseGEMV" )
+        SCAI_REGION( "CUDA.JDS.sparseGEMV" )
 
         SCAI_LOG_INFO( logger, "sparseGEMV<" << getScalarType<ValueType>() << ">"
                         << ", #rows = " << numRows << ", #diags = " << ndlg )
@@ -2609,7 +2609,7 @@ namespace lama
 
         IndexType nonEmptyRows = numRows;
 
-        LAMA_CUDA_RT_CALL( cudaMemcpy( &nonEmptyRows, &jdsDLG[0], sizeof( IndexType ), cudaMemcpyDeviceToHost ),
+        SCAI_CUDA_RT_CALL( cudaMemcpy( &nonEmptyRows, &jdsDLG[0], sizeof( IndexType ), cudaMemcpyDeviceToHost ),
                         "dlg[0] for number of non-empty rows" )
 
         const bool useTexture = CUDASettings::useTexture();
@@ -2619,14 +2619,14 @@ namespace lama
         dim3 dimBlock( blockSize, 1, 1 );
         dim3 dimGrid = makeGrid( nonEmptyRows, dimBlock.x );
 
-        LAMA_CHECK_CUDA_ACCESS
+        SCAI_CHECK_CUDA_ACCESS
 
         cudaStream_t stream = 0;// default stream if no SyncToken is available
 
         if ( syncToken )
         {
             CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-            LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
+            SCAI_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
             stream = cudaStreamSyncToken->getCUDAStream();
         }
 
@@ -2659,7 +2659,7 @@ namespace lama
             {
                 // synchronize now, then unbind texture 
 
-                LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "JDS: gemvSparseKernel FAILED" )
+                SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "JDS: gemvSparseKernel FAILED" )
 
                 if ( !useSharedMem )
                 {
@@ -2704,7 +2704,7 @@ namespace lama
 
             if ( !syncToken )
             {
-                LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "JDS: gemvSparseKernel FAILED" )
+                SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "JDS: gemvSparseKernel FAILED" )
             }
         }
     }
@@ -2725,7 +2725,7 @@ namespace lama
                     const ValueType jdsValues[],
                     SyncToken* syncToken )
     {
-        LAMA_REGION( "CUDA.JDS.sparseGEVM" )
+        SCAI_REGION( "CUDA.JDS.sparseGEVM" )
 
         SCAI_LOG_INFO( logger, "sparseGEVM<" << getScalarType<ValueType>() << ">"
                         << ", #rows = " << numRows << ", #diags = " << ndlg )
@@ -2737,7 +2737,7 @@ namespace lama
 
         IndexType nonEmptyRows = numRows;
 
-        LAMA_CUDA_RT_CALL( cudaMemcpy( &nonEmptyRows, &jdsDLG[0], sizeof( IndexType ), cudaMemcpyDeviceToHost ),
+        SCAI_CUDA_RT_CALL( cudaMemcpy( &nonEmptyRows, &jdsDLG[0], sizeof( IndexType ), cudaMemcpyDeviceToHost ),
                         "dlg[0] for number of non-empty rows" )
 
         const bool useTexture = CUDASettings::useTexture();
@@ -2747,14 +2747,14 @@ namespace lama
         dim3 dimBlock( blockSize, 1, 1 );
         dim3 dimGrid = makeGrid( nonEmptyRows, dimBlock.x );
 
-        LAMA_CHECK_CUDA_ACCESS
+        SCAI_CHECK_CUDA_ACCESS
 
         cudaStream_t stream = 0;// default stream if no SyncToken is available
 
         if ( syncToken )
         {
             CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-            LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
+            SCAI_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
             stream = cudaStreamSyncToken->getCUDAStream();
         }
 
@@ -2787,7 +2787,7 @@ namespace lama
             {
                 // synchronize now, then unbind texture
 
-                LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "JDS: gemvSparseKernel FAILED" )
+                SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "JDS: gemvSparseKernel FAILED" )
 
                 if ( !useSharedMem )
                 {
@@ -2832,7 +2832,7 @@ namespace lama
 
             if ( !syncToken )
             {
-                LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "JDS: gemvSparseKernel FAILED" )
+                SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "JDS: gemvSparseKernel FAILED" )
             }
         }
     }

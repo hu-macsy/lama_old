@@ -22,7 +22,7 @@ are designed to be reliable, fast and extensible.
 <h2>Support of Logging</h2>
 
 The LAMA library makes heavy use of logging statements. These logging features
-can be enabled at runtime by setting the environment variable LOG4LAMA to the file
+can be enabled at runtime by setting the environment variable LOG4SCAI to the file
 that contains the logger configuration.
 
 \code

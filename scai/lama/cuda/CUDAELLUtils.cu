@@ -166,7 +166,7 @@ namespace lama
     {
         SCAI_LOG_INFO( logger, "countNonEmptyRowsBySizes #sizes = " << sizes << " #numRows = " << numRows )
 
-        LAMA_CHECK_CUDA_ACCESS
+        SCAI_CHECK_CUDA_ACCESS
 
         thrust::device_ptr<IndexType> sizes_ptr( const_cast<IndexType*>( sizes ) );
         IndexType counter = thrust::transform_reduce( sizes_ptr, sizes_ptr + numRows, greaterThan<IndexType>( 0 ), 0,
@@ -187,7 +187,7 @@ namespace lama
         SCAI_LOG_INFO( logger,
                         "setNonEmptyRowsBySizes" << " #rowIndexes = " << rowIndexes << ", #numNonEmptyRows = " << numNonEmptyRows << ", #sizes = " << sizes << ", #numRows = " << numRows )
 
-        LAMA_CHECK_CUDA_ACCESS
+        SCAI_CHECK_CUDA_ACCESS
 
         // Create device ptr and help variables
         thrust::device_ptr<IndexType> rowIndexes_ptr( const_cast<IndexType*>( rowIndexes ) );
@@ -208,7 +208,7 @@ namespace lama
     {
         SCAI_LOG_INFO( logger, "hasDiagonalProperty, #numDiagonals = " << numDiagonals )
 
-        LAMA_CHECK_CUDA_ACCESS
+        SCAI_CHECK_CUDA_ACCESS
 
         thrust::device_ptr<IndexType> ellJA_ptr( const_cast<IndexType*>( ellJA ) );
         thrust::counting_iterator<IndexType> sequence( 0 );
@@ -269,7 +269,7 @@ namespace lama
         SCAI_LOG_INFO( logger,
                         "check # numRows = " << numRows << ", numValuesPerRow = " << numValuesPerRow << ", numColumns = " << numColumns )
 
-        LAMA_CHECK_CUDA_ACCESS
+        SCAI_CHECK_CUDA_ACCESS
 
         if ( numRows > 0 )
         {
@@ -284,16 +284,16 @@ namespace lama
 
             checkKernel<<<dimGrid, dimBlock>>>( numRows, numValuesPerRow, numColumns, ia, ja, resultRawPtr );
 
-            LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "fill result with false failed" )
+            SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "fill result with false failed" )
 
             bool integrity = thrust::reduce( resultPtr, resultPtr + numRows, true, thrust::logical_and<bool>() );
 
-            LAMA_ASSERT_ERROR( integrity, msg << ": ia to large, or ja out of range" )
+            SCAI_ASSERT_ERROR( integrity, msg << ": ia to large, or ja out of range" )
         }
         else
         {
-            LAMA_ASSERT_EQUAL_ERROR( 0, numValuesPerRow )
-            LAMA_ASSERT_EQUAL_ERROR( 0, numColumns )
+            SCAI_ASSERT_EQUAL_ERROR( 0, numValuesPerRow )
+            SCAI_ASSERT_EQUAL_ERROR( 0, numColumns )
         }
     }
 
@@ -334,7 +334,7 @@ namespace lama
     {
         SCAI_LOG_TRACE( logger, "get row #i = " << i )
 
-        LAMA_CHECK_CUDA_ACCESS
+        SCAI_CHECK_CUDA_ACCESS
 
         thrust::device_ptr<OtherValueType> rowPtr( const_cast<OtherValueType*>( row ) );
         thrust::fill( rowPtr, rowPtr + numColumns, 0.0 );
@@ -350,7 +350,7 @@ namespace lama
         getRowKernel<<<dimGrid, dimBlock>>>( row, i, numRows, numColumns, rowNumColumns[0], ja, values );
 
         cudaStreamSynchronize( 0 );
-        LAMA_CHECK_CUDA_ERROR
+        SCAI_CHECK_CUDA_ERROR
     }
 
     /* ------------------------------------------------------------------------------------------------------------------ */
@@ -390,7 +390,7 @@ namespace lama
                     const IndexType *ja,
                     const ValueType *values )
     {
-        LAMA_CHECK_CUDA_ACCESS
+        SCAI_CHECK_CUDA_ACCESS
 
         SCAI_LOG_TRACE( logger, "get value i = " << i << ", j = " << j << " numRows = " << numRows )
 
@@ -413,7 +413,7 @@ namespace lama
             getValueKernel<<<dimGrid, dimBlock>>>( i, j, numRows, rowNumColumns, ja, values, resultRawPtr );
 
             cudaStreamSynchronize( 0 );
-            LAMA_CHECK_CUDA_ERROR
+            SCAI_CHECK_CUDA_ERROR
 
             return thrust::reduce( resultPtr, resultPtr + rowNumColumns );
         }
@@ -436,7 +436,7 @@ namespace lama
         SCAI_LOG_INFO( logger,
                         "scaleValue, #numRows = " << numRows << ", ia = " << ia << ", ellValues = " << ellValues << ", values = " << values )
 
-        LAMA_CHECK_CUDA_ACCESS
+        SCAI_CHECK_CUDA_ACCESS
 
         thrust::device_ptr<IndexType> ia_ptr( const_cast<IndexType*>( ia ) );
         thrust::device_ptr<ValueType> ellValues_ptr( const_cast<ValueType*>( ellValues ) );
@@ -497,12 +497,12 @@ namespace lama
                     const IndexType ellJA[],
                     const ELLValueType ellValues[] )
     {
-        LAMA_REGION( "CUDA.ELL->CSR_values" )
+        SCAI_REGION( "CUDA.ELL->CSR_values" )
 
         SCAI_LOG_INFO( logger,
                         "get CSRValues<" << getScalarType<ELLValueType>() << ", " << getScalarType<CSRValueType>() << ">" << ", #rows = " << numRows )
 
-        LAMA_CHECK_CUDA_ACCESS
+        SCAI_CHECK_CUDA_ACCESS
 
         const int blockSize = CUDASettings::getBlockSize();
         dim3 dimBlock( blockSize, 1, 1 );
@@ -513,7 +513,7 @@ namespace lama
                         ellSizes, ellJA, ellValues);
 
         cudaStreamSynchronize( 0 );
-        LAMA_CHECK_CUDA_ERROR
+        SCAI_CHECK_CUDA_ERROR
     }
 
     /* ------------------------------------------------------------------------------------------------------------------ */
@@ -569,7 +569,7 @@ namespace lama
                     const IndexType csrJA[],
                     const CSRValueType csrValues[] )
     {
-        LAMA_REGION( "CUDA.ELL<-CSR_values" )
+        SCAI_REGION( "CUDA.ELL<-CSR_values" )
 
         SCAI_LOG_INFO( logger,
                         "set CSRValues<" << getScalarType<ELLValueType>() << ", " << getScalarType<CSRValueType>() << ">" << ", #rows = " << numRows << ", #values/row = " << numValuesPerRow )
@@ -577,7 +577,7 @@ namespace lama
         SCAI_LOG_DEBUG( logger,
                         "ellJA = " << ellJA << ", ellValues = " << ellValues << ", ellSizes = " << ellSizes << ", csrIA = " << csrIA << ", csrJA = " << csrJA << ", csrValues = " << csrValues )
 
-        LAMA_CHECK_CUDA_ACCESS
+        SCAI_CHECK_CUDA_ACCESS
 
         const int blockSize = CUDASettings::getBlockSize();
         dim3 dimBlock( blockSize, 1, 1 );
@@ -586,7 +586,7 @@ namespace lama
         csr2ellKernel<<<dimGrid, dimBlock>>>( ellJA, ellValues, ellSizes, numRows, numValuesPerRow,
                         csrIA, csrJA, csrValues);
 
-        LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "csr2ellKernel" );
+        SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "csr2ellKernel" );
     }
 
     /* ------------------------------------------------------------------------------------------------------------------ */
@@ -636,7 +636,7 @@ namespace lama
     {
         SCAI_LOG_INFO( logger, "fill ELLValues<" << getScalarType<ValueType>() )
 
-        LAMA_CHECK_CUDA_ACCESS
+        SCAI_CHECK_CUDA_ACCESS
 
         const int blockSize = CUDASettings::getBlockSize();
         dim3 dimBlock( blockSize, 1, 1 );
@@ -644,7 +644,7 @@ namespace lama
 
         fillEllKernel<<<dimGrid, dimBlock>>>( ellJA, ellValues, ellSizes, numRows, numValuesPerRow );
 
-        LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "fillEllKernel" );
+        SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "fillEllKernel" );
     }
 
     /* ------------------------------------------------------------------------------------------------------------------ */
@@ -888,21 +888,21 @@ namespace lama
                     const ValueType ellValues[],
                     SyncToken* syncToken )
     {
-        LAMA_REGION( "CUDA.ELL.normalGEMV" )
+        SCAI_REGION( "CUDA.ELL.normalGEMV" )
 
         SCAI_LOG_INFO( logger, "normalGEMV<" << getScalarType<ValueType>() << ">" <<
                         " result[ " << numRows << "] = " << alpha << " * A(ell) * x + " << beta << " * y " )
 
         SCAI_LOG_DEBUG( logger, "x = " << x << ", y = " << y << ", result = " << result )
 
-        LAMA_CHECK_CUDA_ACCESS
+        SCAI_CHECK_CUDA_ACCESS
 
         cudaStream_t stream = 0;
 
         if ( syncToken )
         {
             CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-            LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
+            SCAI_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
             stream = cudaStreamSyncToken->getCUDAStream();
             SCAI_LOG_INFO( logger, "asyncronous execution on stream " << stream );
         }
@@ -923,7 +923,7 @@ namespace lama
 
             if( alpha == 1 && beta == 1 )
             {
-                LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gemv_kernel_alpha_one_beta_one<ValueType, true>, cudaFuncCachePreferL1 ),
+                SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gemv_kernel_alpha_one_beta_one<ValueType, true>, cudaFuncCachePreferL1 ),
                                 "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
 
                 normal_gemv_kernel_alpha_one_beta_one<ValueType, true> <<<dimGrid, dimBlock, 0, stream>>> (
@@ -931,7 +931,7 @@ namespace lama
             }
             else if ( alpha == 1 && beta == 0 )
             {
-                LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gemv_kernel_alpha_one_beta_zero<ValueType, true>, cudaFuncCachePreferL1 ),
+                SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gemv_kernel_alpha_one_beta_zero<ValueType, true>, cudaFuncCachePreferL1 ),
                                 "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
 
                 normal_gemv_kernel_alpha_one_beta_zero<ValueType, true> <<<dimGrid, dimBlock, 0, stream>>> (
@@ -939,14 +939,14 @@ namespace lama
             }
             else if ( alpha == 0 && beta == 1 )
             {
-                LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( assign_kernel<ValueType, true>, cudaFuncCachePreferL1 ),
+                SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( assign_kernel<ValueType, true>, cudaFuncCachePreferL1 ),
                                 "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
 
                 assign_kernel<ValueType, true> <<<dimGrid, dimBlock, 0, stream>>> (result, y, numRows);
             }
             else if ( alpha == 1 )
             {
-                LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gemv_kernel_alpha_one<ValueType, true>, cudaFuncCachePreferL1 ),
+                SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gemv_kernel_alpha_one<ValueType, true>, cudaFuncCachePreferL1 ),
                                 "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
 
                 normal_gemv_kernel_alpha_one<ValueType, true> <<<dimGrid, dimBlock, 0, stream>>> (
@@ -954,14 +954,14 @@ namespace lama
             }
             else if ( alpha == 0 )
             {
-                LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( scale_kernel<ValueType, true>, cudaFuncCachePreferL1 ),
+                SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( scale_kernel<ValueType, true>, cudaFuncCachePreferL1 ),
                                 "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
 
                 scale_kernel<ValueType, true> <<<dimGrid, dimBlock, 0, stream>>> ( result, y, beta, numRows );
             }
             else if ( beta == 1 )
             {
-                LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gemv_kernel_beta_one<ValueType, true>, cudaFuncCachePreferL1 ),
+                SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gemv_kernel_beta_one<ValueType, true>, cudaFuncCachePreferL1 ),
                                 "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
 
                 normal_gemv_kernel_beta_one<ValueType, true> <<<dimGrid, dimBlock, 0, stream>>> (
@@ -969,7 +969,7 @@ namespace lama
             }
             else if ( beta == 0 )
             {
-                LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gemv_kernel_beta_zero<ValueType, true>, cudaFuncCachePreferL1 ),
+                SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gemv_kernel_beta_zero<ValueType, true>, cudaFuncCachePreferL1 ),
                                 "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
 
                 normal_gemv_kernel_beta_zero<ValueType, true> <<<dimGrid, dimBlock, 0, stream>>> (
@@ -977,7 +977,7 @@ namespace lama
             }
             else
             {
-                LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gemv_kernel<ValueType, true>, cudaFuncCachePreferL1 ),
+                SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gemv_kernel<ValueType, true>, cudaFuncCachePreferL1 ),
                                 "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
 
                 normal_gemv_kernel<ValueType, true> <<<dimGrid, dimBlock, 0, stream>>> (
@@ -988,7 +988,7 @@ namespace lama
         {
             if( alpha == 1 && beta == 1 )
             {
-                LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gemv_kernel_alpha_one_beta_one<ValueType, false>, cudaFuncCachePreferL1 ),
+                SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gemv_kernel_alpha_one_beta_one<ValueType, false>, cudaFuncCachePreferL1 ),
                                 "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
 
                 normal_gemv_kernel_alpha_one_beta_one<ValueType, false> <<<dimGrid, dimBlock, 0, stream>>> (
@@ -996,7 +996,7 @@ namespace lama
             }
             else if ( alpha == 1 && beta == 0 )
             {
-                LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gemv_kernel_alpha_one_beta_zero<ValueType, false>, cudaFuncCachePreferL1 ),
+                SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gemv_kernel_alpha_one_beta_zero<ValueType, false>, cudaFuncCachePreferL1 ),
                                 "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
 
                 normal_gemv_kernel_alpha_one_beta_zero<ValueType, false> <<<dimGrid, dimBlock, 0, stream>>> (
@@ -1004,14 +1004,14 @@ namespace lama
             }
             else if ( alpha == 0 && beta == 1 )
             {
-                LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( assign_kernel<ValueType, false>, cudaFuncCachePreferL1 ),
+                SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( assign_kernel<ValueType, false>, cudaFuncCachePreferL1 ),
                                 "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
 
                 assign_kernel<ValueType, false> <<<dimGrid, dimBlock, 0, stream>>> (result, y, numRows );
             }
             else if ( alpha == 1 )
             {
-                LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gemv_kernel_alpha_one<ValueType, false>, cudaFuncCachePreferL1 ),
+                SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gemv_kernel_alpha_one<ValueType, false>, cudaFuncCachePreferL1 ),
                                 "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
 
                 normal_gemv_kernel_alpha_one<ValueType, false> <<<dimGrid, dimBlock, 0, stream>>> (
@@ -1019,14 +1019,14 @@ namespace lama
             }
             else if ( alpha == 0 )
             {
-                LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( scale_kernel<ValueType, false>, cudaFuncCachePreferL1 ),
+                SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( scale_kernel<ValueType, false>, cudaFuncCachePreferL1 ),
                                 "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
 
                 scale_kernel<ValueType, false> <<<dimGrid, dimBlock, 0, stream>>> (result, y, beta, numRows );
             }
             else if ( beta == 1 )
             {
-                LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gemv_kernel_beta_one<ValueType, false>, cudaFuncCachePreferL1 ),
+                SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gemv_kernel_beta_one<ValueType, false>, cudaFuncCachePreferL1 ),
                                 "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
 
                 normal_gemv_kernel_beta_one<ValueType, false> <<<dimGrid, dimBlock, 0, stream>>> (
@@ -1034,7 +1034,7 @@ namespace lama
             }
             else if ( beta == 0 )
             {
-                LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gemv_kernel_beta_zero<ValueType, false>, cudaFuncCachePreferL1 ),
+                SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gemv_kernel_beta_zero<ValueType, false>, cudaFuncCachePreferL1 ),
                                 "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
 
                 normal_gemv_kernel_beta_zero<ValueType, false> <<<dimGrid, dimBlock, 0, stream>>> (
@@ -1042,7 +1042,7 @@ namespace lama
             }
             else
             {
-                LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gemv_kernel<ValueType, false>, cudaFuncCachePreferL1 ),
+                SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gemv_kernel<ValueType, false>, cudaFuncCachePreferL1 ),
                                 "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
 
                 normal_gemv_kernel<ValueType, false> <<<dimGrid, dimBlock, 0, stream>>> (
@@ -1052,7 +1052,7 @@ namespace lama
 
         if ( !syncToken )
         {
-            LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "sync for normal_gemv_kernel failed" )
+            SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "sync for normal_gemv_kernel failed" )
 
             if ( useTexture )
             {
@@ -1381,7 +1381,7 @@ namespace lama
 
         SCAI_LOG_DEBUG( logger, "x = " << x << ", y = " << y << ", result = " << result )
 
-        LAMA_CHECK_CUDA_ACCESS
+        SCAI_CHECK_CUDA_ACCESS
 
         cudaStream_t stream = 0; // default stream if no syncToken is given
 
@@ -1396,7 +1396,7 @@ namespace lama
         if ( syncToken )
         {
             CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-            LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
+            SCAI_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
             stream = cudaStreamSyncToken->getCUDAStream();
         }
 
@@ -1409,7 +1409,7 @@ namespace lama
 
             if( alpha == 1 && beta == 1 )
             {
-                LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gevm_kernel_alpha_one_beta_one<ValueType, true>, cudaFuncCachePreferL1 ),
+                SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gevm_kernel_alpha_one_beta_one<ValueType, true>, cudaFuncCachePreferL1 ),
                                 "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
 
                 normal_gevm_kernel_alpha_one_beta_one<ValueType, true> <<<dimGrid, dimBlock, 0, stream>>> (
@@ -1417,7 +1417,7 @@ namespace lama
             }
             else if ( alpha == 1 && beta == 0 )
             {
-                LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gevm_kernel_alpha_one_beta_zero<ValueType, true>, cudaFuncCachePreferL1 ),
+                SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gevm_kernel_alpha_one_beta_zero<ValueType, true>, cudaFuncCachePreferL1 ),
                                 "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
 
                 normal_gevm_kernel_alpha_one_beta_zero<ValueType, true> <<<dimGrid, dimBlock, 0, stream>>> (
@@ -1425,7 +1425,7 @@ namespace lama
             }
             else if ( alpha == 0 && beta == 1 )
             {
-                LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gevm_kernel_alpha_zero_beta_one<ValueType, true>, cudaFuncCachePreferL1 ),
+                SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gevm_kernel_alpha_zero_beta_one<ValueType, true>, cudaFuncCachePreferL1 ),
                                 "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
 
                 normal_gevm_kernel_alpha_zero_beta_one<ValueType, true> <<<dimGrid, dimBlock, 0, stream>>> (
@@ -1433,7 +1433,7 @@ namespace lama
             }
             else if ( alpha == 1 )
             {
-                LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gevm_kernel_alpha_one<ValueType, true>, cudaFuncCachePreferL1 ),
+                SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gevm_kernel_alpha_one<ValueType, true>, cudaFuncCachePreferL1 ),
                                 "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
 
                 normal_gevm_kernel_alpha_one<ValueType, true> <<<dimGrid, dimBlock, 0, stream>>> (
@@ -1441,7 +1441,7 @@ namespace lama
             }
             else if ( alpha == 0 )
             {
-                LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gevm_kernel_alpha_zero<ValueType, true>, cudaFuncCachePreferL1 ),
+                SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gevm_kernel_alpha_zero<ValueType, true>, cudaFuncCachePreferL1 ),
                                 "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
 
                 normal_gevm_kernel_alpha_zero<ValueType, true> <<<dimGrid, dimBlock, 0, stream>>> (
@@ -1449,7 +1449,7 @@ namespace lama
             }
             else if ( beta == 1 )
             {
-                LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gevm_kernel_beta_one<ValueType, true>, cudaFuncCachePreferL1 ),
+                SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gevm_kernel_beta_one<ValueType, true>, cudaFuncCachePreferL1 ),
                                 "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
 
                 normal_gevm_kernel_beta_one<ValueType, true> <<<dimGrid, dimBlock, 0, stream>>> (
@@ -1457,7 +1457,7 @@ namespace lama
             }
             else if ( beta == 0 )
             {
-                LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gevm_kernel_beta_zero<ValueType, true>, cudaFuncCachePreferL1 ),
+                SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gevm_kernel_beta_zero<ValueType, true>, cudaFuncCachePreferL1 ),
                                 "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
 
                 normal_gevm_kernel_beta_zero<ValueType, true> <<<dimGrid, dimBlock, 0, stream>>> (
@@ -1465,7 +1465,7 @@ namespace lama
             }
             else
             {
-                LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gevm_kernel<ValueType, true>, cudaFuncCachePreferL1 ),
+                SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gevm_kernel<ValueType, true>, cudaFuncCachePreferL1 ),
                                 "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
 
                 normal_gevm_kernel<ValueType, true> <<<dimGrid, dimBlock, 0, stream>>> (
@@ -1476,7 +1476,7 @@ namespace lama
         {
             if( alpha == 1 && beta == 1 )
             {
-                LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gevm_kernel_alpha_one_beta_one<ValueType, false>, cudaFuncCachePreferL1 ),
+                SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gevm_kernel_alpha_one_beta_one<ValueType, false>, cudaFuncCachePreferL1 ),
                                 "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
 
                 normal_gevm_kernel_alpha_one_beta_one<ValueType, false> <<<dimGrid, dimBlock, 0, stream>>> (
@@ -1484,7 +1484,7 @@ namespace lama
             }
             else if ( alpha == 1 && beta == 0 )
             {
-                LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gevm_kernel_alpha_one_beta_zero<ValueType, false>, cudaFuncCachePreferL1 ),
+                SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gevm_kernel_alpha_one_beta_zero<ValueType, false>, cudaFuncCachePreferL1 ),
                                 "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
 
                 normal_gevm_kernel_alpha_one_beta_zero<ValueType, false> <<<dimGrid, dimBlock, 0, stream>>> (
@@ -1492,7 +1492,7 @@ namespace lama
             }
             else if ( alpha == 0 && beta == 1 )
             {
-                LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gevm_kernel_alpha_zero_beta_one<ValueType, false>, cudaFuncCachePreferL1 ),
+                SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gevm_kernel_alpha_zero_beta_one<ValueType, false>, cudaFuncCachePreferL1 ),
                                 "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
 
                 normal_gevm_kernel_alpha_zero_beta_one<ValueType, false> <<<dimGrid, dimBlock, 0, stream>>> (
@@ -1500,7 +1500,7 @@ namespace lama
             }
             else if ( alpha == 1 )
             {
-                LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gevm_kernel_alpha_one<ValueType, false>, cudaFuncCachePreferL1 ),
+                SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gevm_kernel_alpha_one<ValueType, false>, cudaFuncCachePreferL1 ),
                                 "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
 
                 normal_gevm_kernel_alpha_one<ValueType, false> <<<dimGrid, dimBlock, 0, stream>>> (
@@ -1508,7 +1508,7 @@ namespace lama
             }
             else if ( alpha == 0 )
             {
-                LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gevm_kernel_alpha_zero<ValueType, false>, cudaFuncCachePreferL1 ),
+                SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gevm_kernel_alpha_zero<ValueType, false>, cudaFuncCachePreferL1 ),
                                 "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
 
                 normal_gevm_kernel_alpha_zero<ValueType, false> <<<dimGrid, dimBlock, 0, stream>>> (
@@ -1516,7 +1516,7 @@ namespace lama
             }
             else if ( beta == 1 )
             {
-                LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gevm_kernel_beta_one<ValueType, false>, cudaFuncCachePreferL1 ),
+                SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gevm_kernel_beta_one<ValueType, false>, cudaFuncCachePreferL1 ),
                                 "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
 
                 normal_gevm_kernel_beta_one<ValueType, false> <<<dimGrid, dimBlock, 0, stream>>> (
@@ -1524,7 +1524,7 @@ namespace lama
             }
             else if ( beta == 0 )
             {
-                LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gevm_kernel_beta_zero<ValueType, false>, cudaFuncCachePreferL1 ),
+                SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gevm_kernel_beta_zero<ValueType, false>, cudaFuncCachePreferL1 ),
                                 "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
 
                 normal_gevm_kernel_beta_zero<ValueType, false> <<<dimGrid, dimBlock, 0, stream>>> (
@@ -1532,7 +1532,7 @@ namespace lama
             }
             else
             {
-                LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gevm_kernel<ValueType, false>, cudaFuncCachePreferL1 ),
+                SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gevm_kernel<ValueType, false>, cudaFuncCachePreferL1 ),
                                 "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
 
                 normal_gevm_kernel<ValueType, false> <<<dimGrid, dimBlock, 0, stream>>> (
@@ -1542,7 +1542,7 @@ namespace lama
 
         if ( !syncToken )
         {
-            LAMA_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "normalGEVM, stream = " << stream )
+            SCAI_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "normalGEVM, stream = " << stream )
             SCAI_LOG_DEBUG( logger, "normalGEVM<" << getScalarType<ValueType>() << "> synchronized" )
         }
 
@@ -1666,18 +1666,18 @@ namespace lama
                     const ValueType ellValues[],
                     SyncToken* syncToken )
     {
-        LAMA_REGION( "CUDA.ELL.sparseGEMV" )
+        SCAI_REGION( "CUDA.ELL.sparseGEMV" )
 
         SCAI_LOG_INFO( logger, "sparseGEMV<" << getScalarType<ValueType>() << ">" << ", #non-zero rows = " << numNonZeroRows )
 
-        LAMA_CHECK_CUDA_ACCESS
+        SCAI_CHECK_CUDA_ACCESS
 
         cudaStream_t stream = 0;
 
         if ( syncToken )
         {
             CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-            LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
+            SCAI_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
             stream = cudaStreamSyncToken->getCUDAStream();
         }
 
@@ -1700,7 +1700,7 @@ namespace lama
         {
             if ( alpha == 1 )
             {
-                LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( sparse_gemv_kernel_alpha_one<ValueType, true>, cudaFuncCachePreferL1),
+                SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( sparse_gemv_kernel_alpha_one<ValueType, true>, cudaFuncCachePreferL1),
                                 "cudaFuncSetCacheConfig failed" )
 
                 sparse_gemv_kernel_alpha_one<ValueType, true> <<<dimGrid, dimBlock, 0, stream>>>(
@@ -1708,7 +1708,7 @@ namespace lama
             }
             else
             {
-                LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( sparse_gemv_kernel<ValueType, true>, cudaFuncCachePreferL1),
+                SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( sparse_gemv_kernel<ValueType, true>, cudaFuncCachePreferL1),
                                 "cudaFuncSetCacheConfig failed" )
 
                 sparse_gemv_kernel<ValueType, true> <<<dimGrid, dimBlock, 0, stream>>>(
@@ -1719,7 +1719,7 @@ namespace lama
         {
             if ( alpha == 1 )
             {
-                LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( sparse_gemv_kernel_alpha_one<ValueType, false>, cudaFuncCachePreferL1),
+                SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( sparse_gemv_kernel_alpha_one<ValueType, false>, cudaFuncCachePreferL1),
                                 "cudaFuncSetCacheConfig failed" )
 
                 sparse_gemv_kernel_alpha_one<ValueType, false> <<<dimGrid, dimBlock, 0, stream>>>(
@@ -1727,7 +1727,7 @@ namespace lama
             }
             else
             {
-                LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( sparse_gemv_kernel<ValueType, false>, cudaFuncCachePreferL1),
+                SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( sparse_gemv_kernel<ValueType, false>, cudaFuncCachePreferL1),
                                 "cudaFuncSetCacheConfig failed" )
 
                 sparse_gemv_kernel<ValueType, false> <<<dimGrid, dimBlock, 0, stream>>>(
@@ -1737,7 +1737,7 @@ namespace lama
 
         if ( !syncToken )
         {
-            LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "sparse GEMV kernel failed" )
+            SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "sparse GEMV kernel failed" )
 
             if ( useTexture )
             {
@@ -1868,14 +1868,14 @@ namespace lama
         SCAI_LOG_INFO( logger,
                         "sparseGEVM<" << getScalarType<ValueType>() << ">" << ", #non-zero rows = " << numNonZeroRows )
 
-        LAMA_CHECK_CUDA_ACCESS
+        SCAI_CHECK_CUDA_ACCESS
 
         cudaStream_t stream = 0;
 
         if ( syncToken )
         {
             CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-            LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
+            SCAI_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
             stream = cudaStreamSyncToken->getCUDAStream();
         }
 
@@ -1916,7 +1916,7 @@ namespace lama
 
         if ( !syncToken )
         {
-            LAMA_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "sparseGEVM, stream = " << stream )
+            SCAI_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "sparseGEVM, stream = " << stream )
             SCAI_LOG_INFO( logger, "sparseGEVM<" << getScalarType<ValueType>() << "> synchronized" )
         }
     }
@@ -1984,11 +1984,11 @@ namespace lama
                     const ValueType omega,
                     SyncToken* syncToken )
     {
-        LAMA_REGION( "CUDA.ELL.jacobi" )
+        SCAI_REGION( "CUDA.ELL.jacobi" )
 
         SCAI_LOG_INFO( logger, "jacobi, #rows = " << numRows )
 
-        LAMA_CHECK_CUDA_ACCESS
+        SCAI_CHECK_CUDA_ACCESS
 
         cudaStream_t stream = 0;
 
@@ -1997,7 +1997,7 @@ namespace lama
         if ( syncToken )
         {
             CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-            LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
+            SCAI_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
             stream = cudaStreamSyncToken->getCUDAStream();
         }
 
@@ -2013,7 +2013,7 @@ namespace lama
         {
             vectorBindTexture( oldSolution );
 
-            LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( ell_jacobi_kernel<ValueType, true>, cudaFuncCachePreferL1),
+            SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( ell_jacobi_kernel<ValueType, true>, cudaFuncCachePreferL1),
                             "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
 
             ell_jacobi_kernel<ValueType, true> <<<dimGrid, dimBlock, 0, stream>>>( ellSizes, ellJA, ellValues,
@@ -2022,20 +2022,20 @@ namespace lama
 
         else
         {
-            LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( ell_jacobi_kernel<ValueType, false>, cudaFuncCachePreferL1 ),
+            SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( ell_jacobi_kernel<ValueType, false>, cudaFuncCachePreferL1 ),
                             "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
 
             ell_jacobi_kernel<ValueType, false> <<<dimGrid, dimBlock, 0, stream>>>( ellSizes, ellJA, ellValues,
                             numRows, rhs, solution, oldSolution, omega );
         }
 
-        LAMA_CUDA_RT_CALL( cudaGetLastError(), "LAMA_STATUS_DCSRJACOBI_CUDAKERNEL_FAILED" )
+        SCAI_CUDA_RT_CALL( cudaGetLastError(), "LAMA_STATUS_DCSRJACOBI_CUDAKERNEL_FAILED" )
 
         if ( !syncToken )
         {
             // synchronize now and unbind texture if used
 
-            LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "ELL: jacobiKernel FAILED" )
+            SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "ELL: jacobiKernel FAILED" )
 
             if ( useTexture )
             {
@@ -2113,11 +2113,11 @@ namespace lama
                     const ValueType omega,
                     SyncToken* syncToken )
     {
-        LAMA_REGION( "CUDA.ELL.jacobiHalo" )
+        SCAI_REGION( "CUDA.ELL.jacobiHalo" )
 
         SCAI_LOG_INFO( logger, "jacobiHalo, #non-empty rows = " << numNonEmptyRows )
 
-        LAMA_CHECK_CUDA_ACCESS
+        SCAI_CHECK_CUDA_ACCESS
 
         const int blockSize = CUDASettings::getBlockSize( numNonEmptyRows );
         dim3 dimBlock( blockSize, 1, 1 );
@@ -2129,7 +2129,7 @@ namespace lama
         {
             vectorBindTexture( oldSolution );
 
-            LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( ell_jacobi_halo_kernel<ValueType, true>, cudaFuncCachePreferL1 ),
+            SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( ell_jacobi_halo_kernel<ValueType, true>, cudaFuncCachePreferL1 ),
                             "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
 
             ell_jacobi_halo_kernel<ValueType, true> <<<dimGrid, dimBlock>>>(
@@ -2138,7 +2138,7 @@ namespace lama
         }
         else
         {
-            LAMA_CUDA_RT_CALL( cudaFuncSetCacheConfig( ell_jacobi_halo_kernel<ValueType, false>, cudaFuncCachePreferL1 ),
+            SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( ell_jacobi_halo_kernel<ValueType, false>, cudaFuncCachePreferL1 ),
                             "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
 
             ell_jacobi_halo_kernel<ValueType, false> <<<dimGrid, dimBlock>>>(
@@ -2146,8 +2146,8 @@ namespace lama
                             rowIndexes, numNonEmptyRows, numRows, oldSolution, omega );
         }
 
-        LAMA_CUDA_RT_CALL( cudaGetLastError(), "LAMA_STATUS_ELLJACOBIHALO_CUDAKERNEL_FAILED" )
-        LAMA_CUDA_RT_CALL( cudaStreamSynchronize(0), "LAMA_STATUS_ELLJACOBIHALO_CUDAKERNEL_FAILED" )
+        SCAI_CUDA_RT_CALL( cudaGetLastError(), "LAMA_STATUS_ELLJACOBIHALO_CUDAKERNEL_FAILED" )
+        SCAI_CUDA_RT_CALL( cudaStreamSynchronize(0), "LAMA_STATUS_ELLJACOBIHALO_CUDAKERNEL_FAILED" )
 
         if ( useTexture )
         {

@@ -79,9 +79,9 @@ void* CUDAHostMemory::allocate( const size_t size ) const
 
     void* pointer = 0;
 
-    LAMA_CONTEXT_ACCESS( mCUDAContext );
+    SCAI_CONTEXT_ACCESS( mCUDAContext );
 
-    LAMA_CUDA_DRV_CALL( cuMemAllocHost( &pointer, size ), "cuMemAllocHost( size = " << size << " ) failed" )
+    SCAI_CUDA_DRV_CALL( cuMemAllocHost( &pointer, size ), "cuMemAllocHost( size = " << size << " ) failed" )
 
     SCAI_LOG_DEBUG( logger, *this << ": allocated " << size << " bytes, pointer = " << pointer )
 
@@ -91,7 +91,7 @@ void* CUDAHostMemory::allocate( const size_t size ) const
 
     // check if we can use HostMemory also for device computations
 
-    LAMA_CUDA_RT_CALL( cudaHostGetDevicePointer( &pDevice, pointer, flags ), "cudaHostGetDevicePointer" )
+    SCAI_CUDA_RT_CALL( cudaHostGetDevicePointer( &pDevice, pointer, flags ), "cudaHostGetDevicePointer" )
 
     COMMON_ASSERT_EQUAL( pDevice, pointer, "Not yet supported: pointer conversion for different context" )
 
@@ -100,15 +100,15 @@ void* CUDAHostMemory::allocate( const size_t size ) const
 
 void CUDAHostMemory::free( void* pointer, const size_t size ) const
 {
-    // LAMA_REGION( "CUDAHostMemory::free" )
+    // SCAI_REGION( "CUDAHostMemory::free" )
     // Be careful: do not use
     // ContextAccess useCUDA( ContextPtr( mCUDAContext ) );
     // as this defines a function and not a variable
     // General rule: never use shared_ptr temporaries implicitly
 
-    LAMA_CONTEXT_ACCESS( mCUDAContext )
+    SCAI_CONTEXT_ACCESS( mCUDAContext )
 
-    LAMA_CUDA_DRV_CALL( cuMemFreeHost( pointer ), "cuMemFreeHost( " << pointer << ", " << size << " ) failed" )
+    SCAI_CUDA_DRV_CALL( cuMemFreeHost( pointer ), "cuMemFreeHost( " << pointer << ", " << size << " ) failed" )
 
     SCAI_LOG_DEBUG( logger, *this << ": freed " << size << " bytes, pointer = " << pointer )
 }
@@ -120,22 +120,22 @@ void CUDAHostMemory::memcpy( void* dst, const void* src, const size_t size ) con
 
 SyncToken* CUDAHostMemory::memcpyAsync( void* dst, const void* src, const size_t size ) const
 {
-    LAMA_CONTEXT_ACCESS( mCUDAContext )
+    SCAI_CONTEXT_ACCESS( mCUDAContext )
 
     std::auto_ptr<CUDAStreamSyncToken> syncToken( mCUDAContext->getTransferSyncToken() );
 
     SCAI_LOG_INFO( logger, "copy async " << size << " bytes from " << src << " (host) to " << dst << " (host) " )
 
-    LAMA_CUDA_RT_CALL(
+    SCAI_CUDA_RT_CALL(
         cudaMemcpyAsync( dst, src, size, cudaMemcpyHostToHost, syncToken->getCUDAStream() ),
         "cudaMemcpyAsync( " << dst << ", " << src << ", " << size << ", " 
         << cudaMemcpyHostToHost << ", " << syncToken->getCUDAStream() << ") failed " )
 
     CUevent event;
 
-    LAMA_CUDA_DRV_CALL( cuEventCreate( &event, CU_EVENT_DEFAULT | CU_EVENT_DISABLE_TIMING ), "Could not create event " )
+    SCAI_CUDA_DRV_CALL( cuEventCreate( &event, CU_EVENT_DEFAULT | CU_EVENT_DISABLE_TIMING ), "Could not create event " )
 
-    LAMA_CUDA_DRV_CALL( cuEventRecord( event, syncToken->getCUDAStream() ),
+    SCAI_CUDA_DRV_CALL( cuEventRecord( event, syncToken->getCUDAStream() ),
                         "cuEventRecord failed for CUevent " << event << '.' )
 
     syncToken->setEvent( event );

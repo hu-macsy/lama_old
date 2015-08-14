@@ -51,9 +51,9 @@ regions in the trace file. LAMA uses corresponding macros to define code
 sections as regions. Each region has a name that should be unique for the whole
 application. These macros can also be used in user applications.
 
-Lets try it: With the makro LAMA_REGION("CUDA region") create a new region at
+Lets try it: With the makro SCAI_REGION("CUDA region") create a new region at
 the beginning of your program before setting the CUDA-Context. Use the makros
-LAMA_REGION_START("CG-region") and LAMA_REGION_END("CG-region") around the
+SCAI_REGION_START("CG-region") and SCAI_REGION_END("CG-region") around the
 solve-method() of your CG-Solver to create a second region. Run the program MPI
 parallel and open the created \*.otf file with Vampir. To be able to see all of
 your regions it is advisable to increase the zoom of the timeline. You can find

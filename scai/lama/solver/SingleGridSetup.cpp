@@ -57,7 +57,7 @@ SingleGridSetup::~SingleGridSetup()
 
 void SingleGridSetup::initialize( const Matrix& coefficients )
 {
-    LAMA_REGION( "initialize_SingleGridSetup" )
+    SCAI_REGION( "initialize_SingleGridSetup" )
 
     SCAI_LOG_DEBUG( logger, "SingleGridSetup::initialize" )
 

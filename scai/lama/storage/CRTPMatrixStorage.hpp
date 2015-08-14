@@ -274,7 +274,7 @@ case common::scalar::SCALAR_ARITHMETIC_TYPE##I:                                 
 
     void scale( const ContextArray& diagonal )
     {
-        LAMA_ASSERT_EQUAL_ERROR( this->getNumRows(), diagonal.size() )
+        SCAI_ASSERT_EQUAL_ERROR( this->getNumRows(), diagonal.size() )
 
         common::ScalarType arrayType = diagonal.getValueType();
 

@@ -121,9 +121,9 @@ lama_headers ( ${HEADERS} )
 lama_sources ( ${SOURCE_FILES} )
 
 ### checks ####
-if ( ${LAMA_ASSERT_LEVEL} STREQUAL "OFF" )
+if ( ${SCAI_ASSERT_LEVEL} STREQUAL "OFF" )
    message ( STATUS "WARNING: tests will not check for exceptions (assertions are switched off)" )
-endif ( ${LAMA_ASSERT_LEVEL} STREQUAL "OFF" )
+endif ( ${SCAI_ASSERT_LEVEL} STREQUAL "OFF" )
 
 if ( NOT ( Boost_UNIT_TEST_FRAMEWORK_LIBRARY OR Boost_REGEX ) )
     message ( FATAL_ERROR "No Boost unit test available." )

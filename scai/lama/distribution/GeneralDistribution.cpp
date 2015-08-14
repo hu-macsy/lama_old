@@ -61,7 +61,7 @@ GeneralDistribution::GeneralDistribution(
     for( std::vector<IndexType>::const_iterator it = begin; it != end; ++it )
     {
         IndexType i = static_cast<IndexType>( std::distance( begin, it ) );
-        LAMA_ASSERT( 0 <= *it && *it < mGlobalSize,
+        SCAI_ASSERT( 0 <= *it && *it < mGlobalSize,
                      *it << " is illegal index for general distribution of size " << mGlobalSize )
         mGlobal2Local[ *it] = i;
     }
@@ -80,7 +80,7 @@ GeneralDistribution::GeneralDistribution(
 
     // // gather number of local rows
     // IndexType numMyRows = static_cast<IndexType>( mLocal2Global.size() );
-    // LAMA_ASSERT(mGlobalSize == partSize, "partition size " << partSize << " is not equal to global size " << mGlobalSize);
+    // SCAI_ASSERT(mGlobalSize == partSize, "partition size " << partSize << " is not equal to global size " << mGlobalSize);
 
     std::vector<IndexType> displ;
     std::vector<IndexType> curpos;
@@ -88,13 +88,13 @@ GeneralDistribution::GeneralDistribution(
 
     if( myRank == MASTER )
     {
-        LAMA_ASSERT( mGlobalSize == partSize,
+        SCAI_ASSERT( mGlobalSize == partSize,
                      "partition size " << partSize << " is not equal to global size " << mGlobalSize )
         displ.resize( parts + 1 );
 
         for( IndexType i = 0; i < mGlobalSize; ++i )
         {
-            LAMA_ASSERT( row2Partition[i] < parts, "invalid partition id at position" << i )
+            SCAI_ASSERT( row2Partition[i] < parts, "invalid partition id at position" << i )
             displ[row2Partition[i] + 1]++;
         }
     }
@@ -117,7 +117,7 @@ GeneralDistribution::GeneralDistribution(
             curpos[i] = 0;
         }
 
-        LAMA_ASSERT( displ[parts] == mGlobalSize, "sum of local rows is not global size" )
+        SCAI_ASSERT( displ[parts] == mGlobalSize, "sum of local rows is not global size" )
 
         for( IndexType i = 0; i < mGlobalSize; ++i )
         {
@@ -128,7 +128,7 @@ GeneralDistribution::GeneralDistribution(
 
         for( IndexType i = 0; i < parts; ++i )
         {
-            LAMA_ASSERT( displ[i] + curpos[i] == displ[i + 1],
+            SCAI_ASSERT( displ[i] + curpos[i] == displ[i + 1],
                          "partition "<< i <<"  size mismatch, expected " << displ[i+1] - displ[i] << " actual " << curpos[i] )
         }
     }
@@ -149,7 +149,7 @@ GeneralDistribution::GeneralDistribution(
     for( std::vector<IndexType>::const_iterator it = begin; it != end; ++it )
     {
         IndexType i = static_cast<IndexType>( std::distance( begin, it ) );
-        LAMA_ASSERT( 0 <= *it && *it < mGlobalSize,
+        SCAI_ASSERT( 0 <= *it && *it < mGlobalSize,
                      *it << " is illegal index for general distribution of size " << mGlobalSize )
         mGlobal2Local[ *it] = i;
     }
@@ -250,7 +250,7 @@ void GeneralDistribution::getDistributionVector( std::vector<IndexType>& row2Par
         }
 
         displ[parts] = displacement;
-        LAMA_ASSERT( displ[parts] == mGlobalSize, "sum of local rows is not global size" )
+        SCAI_ASSERT( displ[parts] == mGlobalSize, "sum of local rows is not global size" )
     }
 
     // gather global indices of local rows

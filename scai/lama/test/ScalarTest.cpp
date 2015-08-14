@@ -152,7 +152,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( DivisionTest, ValueType, test_types )
     Scalar t ( 3.0 );
     Scalar u = s / t;
     s /= t;
-    LAMA_CHECK_CLOSE( u.getValue<ValueType>(), 0.6666, 1 );
+    SCAI_CHECK_CLOSE( u.getValue<ValueType>(), 0.6666, 1 );
 }
 
 /* --------------------------------------------------------------------- */

@@ -126,7 +126,7 @@ GMRES::GMRESRuntime::~GMRESRuntime()
 
 void GMRES::initialize( const Matrix& coefficients )
 {
-    LAMA_REGION( "Solver.GMRES.initialize" )
+    SCAI_REGION( "Solver.GMRES.initialize" )
 
     IterativeSolver::initialize( coefficients );
 
@@ -255,7 +255,7 @@ void GMRES::setKrylovDim( unsigned int krylovDim )
 
 void GMRES::iterate()
 {
-    LAMA_REGION( "Solver.GMRES.iterate" )
+    SCAI_REGION( "Solver.GMRES.iterate" )
 
     GMRESRuntime& runtime = getRuntime();
 
@@ -271,7 +271,7 @@ void GMRES::iterate()
     // lazy allocation structure mV
     if( !( *runtime.mV )[krylovIndex + 1] )
     {
-        LAMA_REGION( "Solver.GMRES.setMV" )
+        SCAI_REGION( "Solver.GMRES.setMV" )
 
         switch( A.getValueType() )
         {
@@ -299,7 +299,7 @@ void GMRES::iterate()
     // initialize in case of GMRES start/restart
     if( krylovIndex == 0 )
     {
-        LAMA_REGION( "Solver.GMRES.restartInit" )
+        SCAI_REGION( "Solver.GMRES.restartInit" )
         // Compute r0=b-Ax0
         this->getResidual();
         Vector& residual = ( *runtime.mResidual );
@@ -312,12 +312,12 @@ void GMRES::iterate()
 
         if( !mPreconditioner )
         {
-            LAMA_REGION( "Solver.GMRES.setVCurrent" )
+            SCAI_REGION( "Solver.GMRES.setVCurrent" )
             vCurrent = residual;
         }
         else
         {
-            LAMA_REGION( "Solver.GMRES.start.solvePreconditioner" )
+            SCAI_REGION( "Solver.GMRES.start.solvePreconditioner" )
             vCurrent = 0.0;
             double preconditionerTimeStart = omp_get_wtime();
             mPreconditioner->solve( vCurrent, residual );
@@ -343,7 +343,7 @@ void GMRES::iterate()
     }
     else
     {
-        LAMA_REGION( "Solver.GMRES.solvePreconditioner" )
+        SCAI_REGION( "Solver.GMRES.solvePreconditioner" )
         tmp = A * vCurrent;
         w = 0.0;
         double preconditionerTimeStart = omp_get_wtime();
@@ -356,7 +356,7 @@ void GMRES::iterate()
 
     for( unsigned int k = 0; k <= krylovIndex; ++k )
     {
-        LAMA_REGION( "Solver.GMRES.orthogonalization" )
+        SCAI_REGION( "Solver.GMRES.orthogonalization" )
         const Vector& Vk = *( ( *runtime.mV )[k] );
         runtime.mH[hIdxStart + k] = ( w.dotProduct( Vk ) ).getValue<double>();
         w = w - runtime.mH[hIdxStart + k] * Vk;
@@ -375,7 +375,7 @@ void GMRES::iterate()
 
     for( unsigned int k = 0; k < krylovIndex; ++k )
     {
-        LAMA_REGION( "Solver.GMRES.applyRotations" )
+        SCAI_REGION( "Solver.GMRES.applyRotations" )
         double tmp1 = runtime.mH[hIdxStart + k];
         double tmp2 = runtime.mH[hIdxStart + k + 1];
         runtime.mH[hIdxStart + k] = runtime.mCC[k] * tmp1 + runtime.mSS[k] * tmp2;
@@ -384,7 +384,7 @@ void GMRES::iterate()
 
     // compute new rotation
     {
-        LAMA_REGION( "Solver.GMRES.computeNextRotation" )
+        SCAI_REGION( "Solver.GMRES.computeNextRotation" )
         SCAI_LOG_DEBUG( logger, "Compute next plane rotation." )
         double tmp = std::sqrt(
                          runtime.mH[hIdxDiag] * runtime.mH[hIdxDiag]
@@ -395,7 +395,7 @@ void GMRES::iterate()
 
     // update Hessenberg-system
     {
-        LAMA_REGION( "Solver.GMRES.updateHessenbergSystem" )
+        SCAI_REGION( "Solver.GMRES.updateHessenbergSystem" )
         SCAI_LOG_DEBUG( logger, "Update Hessenberg-System." )
         runtime.mG[krylovIndex + 1] = -1.0 * runtime.mSS[krylovIndex] * runtime.mG[krylovIndex];
         runtime.mG[krylovIndex] = runtime.mCC[krylovIndex] * runtime.mG[krylovIndex];
@@ -415,7 +415,7 @@ void GMRES::iterate()
 
 void GMRES::updateX( unsigned int i )
 {
-    LAMA_REGION( "Solver.GMRES.updateX" )
+    SCAI_REGION( "Solver.GMRES.updateX" )
 
     // back-substitution Hessenberg system H*y=g
     // H stored in column 'packed' order

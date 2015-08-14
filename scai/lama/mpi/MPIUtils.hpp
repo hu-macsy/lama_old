@@ -38,7 +38,7 @@
 #include <sstream>
 #include <mpi.h>
 
-#ifdef LAMA_CHECK_ASSERTS
+#ifdef SCAI_CHECK_ASSERTS
 
 #define LAMA_MPICALL( logger, exp, msg)                                             \
     {                                                                               \
@@ -61,6 +61,6 @@
 
 #define LAMA_MPICALL( logger, exp, msg) exp;
 
-#endif // LAMA_CHECK_ASSERTS
+#endif // SCAI_CHECK_ASSERTS
 
 #endif // LAMA_MPIUTILS_HPP_

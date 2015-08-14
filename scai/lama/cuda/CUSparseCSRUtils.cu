@@ -78,7 +78,7 @@ namespace lama
                         "convertCSR2CSC<float> -> cusparseScsr2csc" << ", matrix size = "
                         << numRows << " x " << numColumns << ", nnz = " << numValues )
 
-        LAMA_CUSPARSE_CALL(
+        SCAI_CUSPARSE_CALL(
                         cusparseScsr2csc( CUDAContext_cusparseHandle,
                                         numRows, numColumns, numValues,
                                         csrValues, csrIA, csrJA,
@@ -86,7 +86,7 @@ namespace lama
                                         CUSPARSE_ACTION_NUMERIC, CUSPARSE_INDEX_BASE_ZERO ),
                         "convertCSR2SCC<float>" )
 
-        LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "convertCSR2CSC" )
+        SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "convertCSR2CSC" )
     }
 
     /* --------------------------------------------------------------------------- */
@@ -109,7 +109,7 @@ namespace lama
                         "convertCSR2CSC<double> -> cusparseDcsr2csc" << ", matrix size = "
                         << numRows << " x " << numColumns << ", nnz = " << numValues )
 
-        LAMA_CUSPARSE_CALL(
+        SCAI_CUSPARSE_CALL(
                         cusparseDcsr2csc( CUDAContext_cusparseHandle,
                                         numRows, numColumns, numValues,
                                         csrValues, csrIA, csrJA,
@@ -117,7 +117,7 @@ namespace lama
                                         CUSPARSE_ACTION_NUMERIC, CUSPARSE_INDEX_BASE_ZERO ),
                         "convertCSR2SCC<double>" )
 
-        LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "convertCSR2CSC" )
+        SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "convertCSR2CSC" )
     }
 
     /* ------------------------------------------------------------------------------------------------------------------ */
@@ -144,13 +144,13 @@ namespace lama
 
         SCAI_LOG_DEBUG( logger, "x = " << x << ", y = " << y << ", result = " << result )
 
-        LAMA_CHECK_CUDA_ACCESS
+        SCAI_CHECK_CUDA_ACCESS
 
         cudaStream_t stream = 0; // default stream if no syncToken is given
 
         cusparseMatDescr_t descrCSR;
 
-        LAMA_CUSPARSE_CALL( cusparseCreateMatDescr( &descrCSR ), "cusparseCreateMatDescr" )
+        SCAI_CUSPARSE_CALL( cusparseCreateMatDescr( &descrCSR ), "cusparseCreateMatDescr" )
 
         cusparseSetMatType( descrCSR, CUSPARSE_MATRIX_TYPE_GENERAL );
         cusparseSetMatIndexBase( descrCSR, CUSPARSE_INDEX_BASE_ZERO );
@@ -158,15 +158,15 @@ namespace lama
         if ( syncToken )
         {
             CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-            LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
+            SCAI_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
             stream = cudaStreamSyncToken->getCUDAStream();
-            LAMA_CUSPARSE_CALL( cusparseSetStream( CUDAContext_cusparseHandle, stream ),
+            SCAI_CUSPARSE_CALL( cusparseSetStream( CUDAContext_cusparseHandle, stream ),
                             "cusparseSetStream" )
         }
 
         if ( y != result && beta != 0 )
         {
-            LAMA_CUDA_RT_CALL( cudaMemcpy( result, y, numRows * sizeof( float ), cudaMemcpyDeviceToDevice ),
+            SCAI_CUDA_RT_CALL( cudaMemcpy( result, y, numRows * sizeof( float ), cudaMemcpyDeviceToDevice ),
                             "cudaMemcpy for result = y" )
         }
 
@@ -175,7 +175,7 @@ namespace lama
 
         SCAI_LOG_INFO( logger, "Start cusparseScsrmv, stream = " << stream )
 
-        LAMA_CUSPARSE_CALL( cusparseScsrmv( CUDAContext_cusparseHandle, CUSPARSE_OPERATION_NON_TRANSPOSE,
+        SCAI_CUSPARSE_CALL( cusparseScsrmv( CUDAContext_cusparseHandle, CUSPARSE_OPERATION_NON_TRANSPOSE,
                                         numRows, numColumns, nnz, &alpha, descrCSR,
                                         csrValues, csrIA, csrJA, x, &beta, result ),
                         "cusparseScsrmv" )
@@ -184,12 +184,12 @@ namespace lama
         {
             // set back stream for cusparse
 
-            LAMA_CUSPARSE_CALL( cusparseSetStream( CUDAContext_cusparseHandle, 0 ),
+            SCAI_CUSPARSE_CALL( cusparseSetStream( CUDAContext_cusparseHandle, 0 ),
                             "cusparseSetStream" )
         }
         else
         {
-            LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cusparseXcsrgeamNnz" )
+            SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cusparseXcsrgeamNnz" )
         }
     }
 
@@ -213,13 +213,13 @@ namespace lama
 
         SCAI_LOG_DEBUG( logger, "x = " << x << ", y = " << y << ", result = " << result )
 
-        LAMA_CHECK_CUDA_ACCESS
+        SCAI_CHECK_CUDA_ACCESS
 
         cudaStream_t stream = 0; // default stream if no syncToken is given
 
         cusparseMatDescr_t descrCSR;
 
-        LAMA_CUSPARSE_CALL( cusparseCreateMatDescr( &descrCSR ), "cusparseCreateMatDescr" )
+        SCAI_CUSPARSE_CALL( cusparseCreateMatDescr( &descrCSR ), "cusparseCreateMatDescr" )
 
         cusparseSetMatType( descrCSR, CUSPARSE_MATRIX_TYPE_GENERAL );
         cusparseSetMatIndexBase( descrCSR, CUSPARSE_INDEX_BASE_ZERO );
@@ -227,15 +227,15 @@ namespace lama
         if ( syncToken )
         {
             CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-            LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
+            SCAI_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
             stream = cudaStreamSyncToken->getCUDAStream();
-            LAMA_CUSPARSE_CALL( cusparseSetStream( CUDAContext_cusparseHandle, stream ),
+            SCAI_CUSPARSE_CALL( cusparseSetStream( CUDAContext_cusparseHandle, stream ),
                             "cusparseSetStream" )
         }
 
         if ( y != result && beta != 0 )
         {
-            LAMA_CUDA_RT_CALL( cudaMemcpy( result, y, numRows * sizeof( double ), cudaMemcpyDeviceToDevice ),
+            SCAI_CUDA_RT_CALL( cudaMemcpy( result, y, numRows * sizeof( double ), cudaMemcpyDeviceToDevice ),
                             "cudaMemcpy for result = y" )
         }
 
@@ -244,7 +244,7 @@ namespace lama
 
         SCAI_LOG_INFO( logger, "Start cusparseDcsrmv, stream = " << stream )
 
-        LAMA_CUSPARSE_CALL( cusparseDcsrmv( CUDAContext_cusparseHandle, CUSPARSE_OPERATION_NON_TRANSPOSE,
+        SCAI_CUSPARSE_CALL( cusparseDcsrmv( CUDAContext_cusparseHandle, CUSPARSE_OPERATION_NON_TRANSPOSE,
                                         numRows, numColumns, nnz, &alpha, descrCSR,
                                         csrValues, csrIA, csrJA, x, &beta, result ),
                         "cusparseScsrmv" )
@@ -253,12 +253,12 @@ namespace lama
         {
             // set back stream for cusparse
 
-            LAMA_CUSPARSE_CALL( cusparseSetStream( CUDAContext_cusparseHandle, 0 ),
+            SCAI_CUSPARSE_CALL( cusparseSetStream( CUDAContext_cusparseHandle, 0 ),
                             "cusparseSetStream" )
         }
         else
         {
-            LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cusparseXcsrgeamNnz" )
+            SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cusparseXcsrgeamNnz" )
         }
     }
 
@@ -276,17 +276,17 @@ namespace lama
                     const IndexType bIA[],
                     const IndexType bJA[] )
     {
-        LAMA_REGION( "CUDA.CSR.matrixAddSizes" )
+        SCAI_REGION( "CUDA.CSR.matrixAddSizes" )
 
         SCAI_LOG_INFO(
                         logger,
                         "matrixAddSizes for " << numRows << " x " << numColumns << " matrix" << ", diagonalProperty = " << diagonalProperty )
 
-        LAMA_CHECK_CUDA_ACCESS
+        SCAI_CHECK_CUDA_ACCESS
 
         cusparseMatDescr_t descrCSR;
 
-        LAMA_CUSPARSE_CALL( cusparseCreateMatDescr( &descrCSR ), "cusparseCreateMatDescr" )
+        SCAI_CUSPARSE_CALL( cusparseCreateMatDescr( &descrCSR ), "cusparseCreateMatDescr" )
 
         cusparseSetMatType( descrCSR, CUSPARSE_MATRIX_TYPE_GENERAL );
         cusparseSetMatIndexBase( descrCSR, CUSPARSE_INDEX_BASE_ZERO );
@@ -301,7 +301,7 @@ namespace lama
 
         int nnzC;
 
-        LAMA_CUSPARSE_CALL(
+        SCAI_CUSPARSE_CALL(
                         cusparseXcsrgeamNnz( CUDAContext_cusparseHandle,
                                         numRows, numColumns,
                                         descrCSR, nnzA, aIA, aJA,
@@ -311,7 +311,7 @@ namespace lama
 
         // synchronization might be redundant due to the return value
 
-        LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cusparseXcsrgeamNnz" )
+        SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cusparseXcsrgeamNnz" )
 
         return nnzC;
     }
@@ -331,17 +331,17 @@ namespace lama
                     const IndexType bIA[],
                     const IndexType bJA[] )
     {
-        LAMA_REGION( "CUDA.CSR.matrixMultiplySizes" )
+        SCAI_REGION( "CUDA.CSR.matrixMultiplySizes" )
 
         SCAI_LOG_INFO(
                         logger,
                         "matrixMutliplySizes for " << m << " x " << n << " matrix" << ", diagonalProperty = " << diagonalProperty )
 
-        LAMA_CHECK_CUDA_ACCESS
+        SCAI_CHECK_CUDA_ACCESS
 
         cusparseMatDescr_t descrCSR;
 
-        LAMA_CUSPARSE_CALL( cusparseCreateMatDescr( &descrCSR ), "cusparseCreateMatDescr" )
+        SCAI_CUSPARSE_CALL( cusparseCreateMatDescr( &descrCSR ), "cusparseCreateMatDescr" )
 
         cusparseSetMatType( descrCSR, CUSPARSE_MATRIX_TYPE_GENERAL );
         cusparseSetMatIndexBase( descrCSR, CUSPARSE_INDEX_BASE_ZERO );
@@ -360,7 +360,7 @@ namespace lama
                         << ", B is " << k << " x " << n << ", nnz = " << nnzB
                         << ", C = " << m << " x " << n )
 
-        LAMA_CUSPARSE_CALL(
+        SCAI_CUSPARSE_CALL(
                         cusparseXcsrgemmNnz( CUDAContext_cusparseHandle,
                                         CUSPARSE_OPERATION_NON_TRANSPOSE, CUSPARSE_OPERATION_NON_TRANSPOSE,
                                         m, n, k,
@@ -371,7 +371,7 @@ namespace lama
 
         // synchronization might be redundant due to the return value
 
-        LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "convertCSR2CSC" )
+        SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "convertCSR2CSC" )
 
         SCAI_LOG_DEBUG( logger, "matrixMultiplySizes, nnzC = " << nnzC )
 
@@ -399,15 +399,15 @@ namespace lama
                     const IndexType bJA[],
                     const float bValues[] )
     {
-        LAMA_REGION( "CUDA.CSR.matrixAdd" )
+        SCAI_REGION( "CUDA.CSR.matrixAdd" )
 
         SCAI_LOG_INFO( logger, "matrixAdd for " << numRows << "x" << numColumns << " matrix" )
 
-        LAMA_CHECK_CUDA_ACCESS
+        SCAI_CHECK_CUDA_ACCESS
 
         cusparseMatDescr_t descrCSR;
 
-        LAMA_CUSPARSE_CALL( cusparseCreateMatDescr( &descrCSR ), "cusparseCreateMatDescr" )
+        SCAI_CUSPARSE_CALL( cusparseCreateMatDescr( &descrCSR ), "cusparseCreateMatDescr" )
 
         cusparseSetMatType( descrCSR, CUSPARSE_MATRIX_TYPE_GENERAL );
         cusparseSetMatIndexBase( descrCSR, CUSPARSE_INDEX_BASE_ZERO );
@@ -422,7 +422,7 @@ namespace lama
 
         // cIA requires const_cast, but will not be modified
 
-        LAMA_CUSPARSE_CALL(
+        SCAI_CUSPARSE_CALL(
                         cusparseScsrgeam( CUDAContext_cusparseHandle,
                                         numRows, numColumns,
                                         &alpha, descrCSR, nnzA, aValues, aIA, aJA,
@@ -432,7 +432,7 @@ namespace lama
 
         // synchronization might be redundant
 
-        LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cusparseScsrgeam" )
+        SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cusparseScsrgeam" )
     }
 
     template<>
@@ -452,15 +452,15 @@ namespace lama
                     const IndexType bJA[],
                     const double bValues[] )
     {
-        LAMA_REGION( "CUDA.CSR.matrixAdd" )
+        SCAI_REGION( "CUDA.CSR.matrixAdd" )
 
         SCAI_LOG_INFO( logger, "matrixAdd for " << numRows << "x" << numColumns << " matrix" )
 
-        LAMA_CHECK_CUDA_ACCESS
+        SCAI_CHECK_CUDA_ACCESS
 
         cusparseMatDescr_t descrCSR;
 
-        LAMA_CUSPARSE_CALL( cusparseCreateMatDescr( &descrCSR ), "cusparseCreateMatDescr" )
+        SCAI_CUSPARSE_CALL( cusparseCreateMatDescr( &descrCSR ), "cusparseCreateMatDescr" )
 
         cusparseSetMatType( descrCSR, CUSPARSE_MATRIX_TYPE_GENERAL );
         cusparseSetMatIndexBase( descrCSR, CUSPARSE_INDEX_BASE_ZERO );
@@ -475,7 +475,7 @@ namespace lama
 
         // cIA requires const_cast, but will not be modified
 
-        LAMA_CUSPARSE_CALL(
+        SCAI_CUSPARSE_CALL(
                         cusparseDcsrgeam( CUDAContext_cusparseHandle,
                                         numRows, numColumns,
                                         &alpha, descrCSR, nnzA, aValues, aIA, aJA,
@@ -485,7 +485,7 @@ namespace lama
 
         // synchronization might be redundant
 
-        LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cusparseDcsrgeam" )
+        SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cusparseDcsrgeam" )
     }
 
     /* ------------------------------------------------------------------------------------------------------------------ */
@@ -509,15 +509,15 @@ namespace lama
                     const IndexType bJA[],
                     const float bValues[] )
     {
-        LAMA_REGION( "CUDA.CSR.matrixMultiply" )
+        SCAI_REGION( "CUDA.CSR.matrixMultiply" )
 
         SCAI_LOG_INFO( logger, "matrixMultiply, result is " << m << "x" << n << " CSR storage" )
 
-        LAMA_CHECK_CUDA_ACCESS
+        SCAI_CHECK_CUDA_ACCESS
 
         cusparseMatDescr_t descrCSR;
 
-        LAMA_CUSPARSE_CALL( cusparseCreateMatDescr( &descrCSR ), "cusparseCreateMatDescr" )
+        SCAI_CUSPARSE_CALL( cusparseCreateMatDescr( &descrCSR ), "cusparseCreateMatDescr" )
 
         cusparseSetMatType( descrCSR, CUSPARSE_MATRIX_TYPE_GENERAL );
         cusparseSetMatIndexBase( descrCSR, CUSPARSE_INDEX_BASE_ZERO );
@@ -530,9 +530,9 @@ namespace lama
         cudaMemcpy( &nnzA, &aIA[m], sizeof( IndexType ), cudaMemcpyDeviceToHost );
         cudaMemcpy( &nnzB, &bIA[k], sizeof( IndexType ), cudaMemcpyDeviceToHost );
 
-        LAMA_ASSERT_EQUAL_ERROR( static_cast<float>( 1 ), alpha );
+        SCAI_ASSERT_EQUAL_ERROR( static_cast<float>( 1 ), alpha );
 
-        LAMA_CUSPARSE_CALL(
+        SCAI_CUSPARSE_CALL(
                         cusparseScsrgemm( CUDAContext_cusparseHandle,
                                         CUSPARSE_OPERATION_NON_TRANSPOSE, CUSPARSE_OPERATION_NON_TRANSPOSE,
                                         m, n, k,
@@ -543,7 +543,7 @@ namespace lama
 
         // synchronization might be redundant d
 
-        LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "csrSparseMatmulS" )
+        SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "csrSparseMatmulS" )
     }
 
     template<>
@@ -563,15 +563,15 @@ namespace lama
                     const IndexType bJA[],
                     const double bValues[] )
     {
-        LAMA_REGION( "CUDA.CSR.matrixMultiply" )
+        SCAI_REGION( "CUDA.CSR.matrixMultiply" )
 
         SCAI_LOG_INFO( logger, "matrixMultiply, result is " << m << "x" << n << " CSR storage" )
 
-        LAMA_CHECK_CUDA_ACCESS
+        SCAI_CHECK_CUDA_ACCESS
 
         cusparseMatDescr_t descrCSR;
 
-        LAMA_CUSPARSE_CALL( cusparseCreateMatDescr( &descrCSR ), "cusparseCreateMatDescr" )
+        SCAI_CUSPARSE_CALL( cusparseCreateMatDescr( &descrCSR ), "cusparseCreateMatDescr" )
 
         cusparseSetMatType( descrCSR, CUSPARSE_MATRIX_TYPE_GENERAL );
         cusparseSetMatIndexBase( descrCSR, CUSPARSE_INDEX_BASE_ZERO );
@@ -584,9 +584,9 @@ namespace lama
         cudaMemcpy( &nnzA, &aIA[m], sizeof( IndexType ), cudaMemcpyDeviceToHost );
         cudaMemcpy( &nnzB, &bIA[k], sizeof( IndexType ), cudaMemcpyDeviceToHost );
 
-        LAMA_ASSERT_EQUAL_ERROR( static_cast<double>( 1 ), alpha );
+        SCAI_ASSERT_EQUAL_ERROR( static_cast<double>( 1 ), alpha );
 
-        LAMA_CUSPARSE_CALL(
+        SCAI_CUSPARSE_CALL(
                         cusparseDcsrgemm( CUDAContext_cusparseHandle,
                                         CUSPARSE_OPERATION_NON_TRANSPOSE, CUSPARSE_OPERATION_NON_TRANSPOSE,
                                         m, n, k,
@@ -597,7 +597,7 @@ namespace lama
 
         // synchronization might be redundant d
 
-        LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "csrSparseMatmulD" )
+        SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "csrSparseMatmulD" )
     }
 
     /* ------------------------------------------------------------------------------------------------------------------ */

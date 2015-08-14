@@ -124,7 +124,7 @@ SimpleAMG::SimpleAMGRuntime::~SimpleAMGRuntime()
 
 void SimpleAMG::initialize( const Matrix& coefficients )
 {
-    LAMA_REGION( "Solver.SimpleAMG.initialize" )
+    SCAI_REGION( "Solver.SimpleAMG.initialize" )
 
     SCAI_LOG_DEBUG( logger, "initialize AMG, coefficients matrix = " << coefficients )
 
@@ -208,7 +208,7 @@ void SimpleAMG::initialize( const Matrix& coefficients )
 
 void SimpleAMG::iterate()
 {
-    LAMA_REGION( "Solver.SimpleAMG.iterate" )
+    SCAI_REGION( "Solver.SimpleAMG.iterate" )
 
     cycle();
     totalIterations++;
@@ -317,7 +317,7 @@ void SimpleAMG::cycle()
 
     SimpleAMGRuntime& runtime = getRuntime();
 
-    LAMA_REGION_N( "Solver.SimpleAMG.cycle", runtime.mCurrentLevel )
+    SCAI_REGION_N( "Solver.SimpleAMG.cycle", runtime.mCurrentLevel )
 
     // dereferences to current level solution + rhs
     common::shared_ptr<AMGSetup>& amgSetup = runtime.mSetup;

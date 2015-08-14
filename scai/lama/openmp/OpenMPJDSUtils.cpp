@@ -248,7 +248,7 @@ void OpenMPJDSUtils::setInversePerm( IndexType inversePerm[], const IndexType pe
     for( IndexType ii = 0; ii < n; ii++ )
     {
         IndexType i = perm[ii];
-        LAMA_ASSERT_DEBUG( 0 <= i && i < n, "permutation value out of range, perm[" << ii << "] = " << i )
+        SCAI_ASSERT_DEBUG( 0 <= i && i < n, "permutation value out of range, perm[" << ii << "] = " << i )
         inversePerm[i] = ii;
     }
 }
@@ -350,7 +350,7 @@ IndexType OpenMPJDSUtils::ilg2dlg(
         return 0;
     }
 
-    LAMA_ASSERT_EQUAL_DEBUG( numDiagonals, ilg[0] )
+    SCAI_ASSERT_EQUAL_DEBUG( numDiagonals, ilg[0] )
 
     // Entries in dlg filled every time there is a change in values of consecutive elements of ilg
     //
@@ -410,7 +410,7 @@ void OpenMPJDSUtils::getCSRValues(
 
     #pragma omp parallel
     {
-        LAMA_REGION( "OpenMP.JDS->CSR_values" )
+        SCAI_REGION( "OpenMP.JDS->CSR_values" )
 
         #pragma omp for schedule(LAMA_OMP_SCHEDULE)
 
@@ -455,7 +455,7 @@ void OpenMPJDSUtils::setCSRValues(
 
     #pragma omp parallel
     {
-        LAMA_REGION( "OpenMP.JDS<-CSR_values" )
+        SCAI_REGION( "OpenMP.JDS<-CSR_values" )
 
         #pragma omp for schedule( LAMA_OMP_SCHEDULE )
 
@@ -551,7 +551,7 @@ void OpenMPJDSUtils::normalGEMV(
 
     #pragma omp parallel
     {
-        LAMA_REGION( "OpenMP.JDS.normalGEMV" )
+        SCAI_REGION( "OpenMP.JDS.normalGEMV" )
 
         #pragma omp for schedule( LAMA_OMP_SCHEDULE )
 
@@ -653,7 +653,7 @@ void OpenMPJDSUtils::normalGEVM(
 
     #pragma omp parallel
     {
-        LAMA_REGION( "OpenMP.JDS.normalGEVM" )
+        SCAI_REGION( "OpenMP.JDS.normalGEVM" )
 
         #pragma omp for schedule( LAMA_OMP_SCHEDULE )
 
@@ -716,7 +716,7 @@ void OpenMPJDSUtils::jacobi(
 
     #pragma omp parallel
     {
-        LAMA_REGION( "OpenMP.JDS.jacobi" )
+        SCAI_REGION( "OpenMP.JDS.jacobi" )
 
         #pragma omp for schedule( LAMA_OMP_SCHEDULE )
 
@@ -793,7 +793,7 @@ void OpenMPJDSUtils::jacobiHalo(
 
     #pragma omp parallel
     {
-        LAMA_REGION( "OpenMP.JDS.jacobiHalo" )
+        SCAI_REGION( "OpenMP.JDS.jacobiHalo" )
 
         #pragma omp for schedule( LAMA_OMP_SCHEDULE )
 

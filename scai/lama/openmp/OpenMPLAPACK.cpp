@@ -84,7 +84,7 @@ IndexType OpenMPLAPACK::getrf(
     const int lda,
     int* const ipiv )
 {
-    LAMA_REGION( "OpenMP.LAPACK.getrf<ValueType>" )
+    SCAI_REGION( "OpenMP.LAPACK.getrf<ValueType>" )
 
     SCAI_LOG_INFO( logger, "getrf<" << getScalarType<ValueType>()<< "> for A of size " << m << " x " << n )
 
@@ -183,7 +183,7 @@ IndexType OpenMPLAPACK::getrf(
 template<typename ValueType>
 void OpenMPLAPACK::getinv( const IndexType n, ValueType* a, const IndexType lda )
 {
-    LAMA_REGION( "OpenMP.LAPACK.getinv<ValueType>" )
+    SCAI_REGION( "OpenMP.LAPACK.getinv<ValueType>" )
 
     SCAI_LOG_INFO( logger,
                    "getinv<" << getScalarType<ValueType>()<< "> for " << n << " x " << n << " matrix, uses openmp" )
@@ -203,7 +203,7 @@ void OpenMPLAPACK::getinv( const IndexType n, ValueType* a, const IndexType lda 
 template<typename ValueType>
 int OpenMPLAPACK::getri( const CBLAS_ORDER order, const int n, ValueType* const A, const int lda, int* const ipiv )
 {
-    LAMA_REGION( "OpenMP.LAPACK.getri<ValueType>" )
+    SCAI_REGION( "OpenMP.LAPACK.getri<ValueType>" )
 
     SCAI_LOG_INFO( logger, "getri<" << getScalarType<ValueType>()<< "> for A of size " << n << " x " << n )
     int info = 0;
@@ -329,7 +329,7 @@ int OpenMPLAPACK::tptrs(
     ValueType* B,
     const int UNUSED(ldb) )
 {
-    LAMA_REGION( "OpenMP.LAPACK.tptrs<ValueType>" )
+    SCAI_REGION( "OpenMP.LAPACK.tptrs<ValueType>" )
 
     int info = 0;
 
@@ -506,7 +506,7 @@ void OpenMPLAPACK::laswp(
     const int INCX,
     SyncToken* syncToken )
 {
-    LAMA_REGION( "OpenMP.LAPACK.laswp" )
+    SCAI_REGION( "OpenMP.LAPACK.laswp" )
 
     int i = K1;
 

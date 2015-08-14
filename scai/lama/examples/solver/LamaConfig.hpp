@@ -380,22 +380,22 @@ void LamaConfig::setArg( const char* arg )
     else if ( "TEXTURE" == val )
     {
         int replace = 1;
-        setenv( "LAMA_CUDA_USE_TEXTURE", "1", replace );
+        setenv( "SCAI_CUDA_USE_TEXTURE", "1", replace );
     }
     else if ( "NOTEXTURE" == val )
     {
         int replace = 1;
-        setenv( "LAMA_CUDA_USE_TEXTURE", "0", replace );
+        setenv( "SCAI_CUDA_USE_TEXTURE", "0", replace );
     }
     else if ( ( "SHAREDMEM" == val ) || ( "SM" == val ) )
     {
         int replace = 1;
-        setenv( "LAMA_CUDA_USE_SHARED_MEM", "1", replace );
+        setenv( "SCAI_CUDA_USE_SHARED_MEM", "1", replace );
     }
     else if ( ( "NOSHAREDMEM" == val ) || ( "NOSM" == val ) )
     {
         int replace = 1;
-        setenv( "LAMA_CUDA_USE_SHARED_MEM", "0", replace );
+        setenv( "SCAI_CUDA_USE_SHARED_MEM", "0", replace );
     }
     else if ( "LOG_HISTORY" == val ) 
     {
@@ -451,10 +451,10 @@ void LamaConfig::setArg( const char* arg )
         if ( narg > 0 )
         {
             char envSetting[ 256 ];
-            sprintf( envSetting, "LAMA_CUDA_BLOCK_SIZE=%d", numBlocks );
+            sprintf( envSetting, "SCAI_CUDA_BLOCK_SIZE=%d", numBlocks );
             int replace = 1;
-            setenv( "LAMA_CUDA_BLOCK_SIZE", envSetting, replace );
-            std::cout << "Environment setting: LAMA_CUDA_BLOCK_SIZE = " << envSetting << std::endl;
+            setenv( "SCAI_CUDA_BLOCK_SIZE", envSetting, replace );
+            std::cout << "Environment setting: SCAI_CUDA_BLOCK_SIZE = " << envSetting << std::endl;
         }
         else
         {
@@ -498,17 +498,17 @@ void LamaConfig::writeAt( std::ostream& stream ) const
     stream << "#Threads/CPU      = " << omp_get_max_threads() << std::endl;
     stream << "weight            = " << mWeight << std::endl;
 
-    if ( getenv( "LAMA_CUDA_USE_TEXTURE" ) )
+    if ( getenv( "SCAI_CUDA_USE_TEXTURE" ) )
     {
-        stream << "useTexture(GPU)   = " << getenv( "LAMA_CUDA_USE_TEXTURE" ) << std::endl;
+        stream << "useTexture(GPU)   = " << getenv( "SCAI_CUDA_USE_TEXTURE" ) << std::endl;
     }
-    if ( getenv( "LAMA_CUDA_USE_SHARED_MEM" ) )
+    if ( getenv( "SCAI_CUDA_USE_SHARED_MEM" ) )
     {
-        stream << "useSharedMem(GPU) = " << getenv( "LAMA_CUDA_USE_SHARED_MEM" ) << std::endl;
+        stream << "useSharedMem(GPU) = " << getenv( "SCAI_CUDA_USE_SHARED_MEM" ) << std::endl;
     }
-    if ( getenv( "LAMA_CUDA_BLOCK_SIZE" ) )
+    if ( getenv( "SCAI_CUDA_BLOCK_SIZE" ) )
     {
-        stream << "BlockSize(GPU)    = " << getenv( "LAMA_CUDA_BLOCK_SIZE" ) << std::endl;
+        stream << "BlockSize(GPU)    = " << getenv( "SCAI_CUDA_BLOCK_SIZE" ) << std::endl;
     }
     if ( hasMaxIter () )
     {

@@ -127,8 +127,8 @@ void MetisDistribution::computeIt( const CommunicatorPtr comm, const Matrix& mat
     {
         // MASTER must have all values of the matrix to build the graph
 
-        LAMA_ASSERT_EQUAL_ERROR( totalRows, localMatrix.getNumRows() )
-        LAMA_ASSERT_EQUAL_ERROR( matrix.getNumColumns(), localMatrix.getNumColumns() )
+        SCAI_ASSERT_EQUAL_ERROR( totalRows, localMatrix.getNumRows() )
+        SCAI_ASSERT_EQUAL_ERROR( matrix.getNumColumns(), localMatrix.getNumColumns() )
     }
 
     std::vector<IndexType> numRowsPerOwner;
@@ -219,7 +219,7 @@ void MetisDistribution::computeIt( const CommunicatorPtr comm, const Matrix& mat
     for( std::vector<IndexType>::const_iterator it = begin; it != end; ++it )
     {
         IndexType i = static_cast<IndexType>( std::distance( begin, it ) );
-        LAMA_ASSERT( 0 <= *it && *it < mGlobalSize,
+        SCAI_ASSERT( 0 <= *it && *it < mGlobalSize,
                      *it << " is illegal index for general distribution of size " << mGlobalSize )
         mGlobal2Local[ *it] = i;
     }
@@ -247,7 +247,7 @@ void MetisDistribution::callPartitioning(
     const CommunicatorPtr comm,
     const Matrix& matrix ) const
 {
-    LAMA_REGION( "METIScall" )
+    SCAI_REGION( "METIScall" )
 
     IndexType totalRows = matrix.getNumRows();
 

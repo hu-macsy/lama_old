@@ -302,7 +302,7 @@ void OpenMPCSRUtils::sortRowElements(
             {
                 bool swapIt = false;
 
-                LAMA_ASSERT_DEBUG(
+                SCAI_ASSERT_DEBUG(
                     csrJA[jj] != csrJA[jj + 1],
                     "row " << i << ": " << jj << ", column index " << csrJA[jj] << ", " << csrJA[ jj+1] << " appears twice" );
 
@@ -381,7 +381,7 @@ void OpenMPCSRUtils::setNonEmptyRowsByOffsets(
         }
     }
 
-    LAMA_ASSERT_EQUAL_DEBUG( counter, numNonEmptyRows )
+    SCAI_ASSERT_EQUAL_DEBUG( counter, numNonEmptyRows )
 
     SCAI_LOG_INFO( logger, "#non-zero rows = " << counter << ", set by offsets" )
 }
@@ -427,11 +427,11 @@ void OpenMPCSRUtils::convertCSR2CSC(
     IndexType numColumns,
     IndexType numValues )
 {
-    LAMA_REGION( "OpenMP.CSRUtils.CSR2CSC" )
+    SCAI_REGION( "OpenMP.CSRUtils.CSR2CSC" )
 
     SCAI_LOG_INFO( logger, "convertCSR2CSC of matrix " << numRows << " x " << numColumns )
 
-    LAMA_ASSERT_EQUAL_DEBUG( numValues, rIA[numRows] )
+    SCAI_ASSERT_EQUAL_DEBUG( numValues, rIA[numRows] )
 
     // initialization of column counters with 0
 
@@ -462,7 +462,7 @@ void OpenMPCSRUtils::convertCSR2CSC(
 
     SCAI_LOG_INFO( logger, "convertCSR2CSC, #num values counted = " << cscIA[ numColumns ] )
 
-    LAMA_ASSERT_EQUAL_DEBUG( numValues, cscIA[numColumns] )
+    SCAI_ASSERT_EQUAL_DEBUG( numValues, cscIA[numColumns] )
 
     // temporary copy neeeded of cscIA
 
@@ -528,7 +528,7 @@ void OpenMPCSRUtils::normalGEMV(
     {
         // Note: region will be entered by each thread
 
-        LAMA_REGION( "OpenMP.CSR.normalGEMV" )
+        SCAI_REGION( "OpenMP.CSR.normalGEMV" )
 
         #pragma omp for schedule(LAMA_OMP_SCHEDULE)
 
@@ -598,7 +598,7 @@ void OpenMPCSRUtils::normalGEVM(
     #pragma omp parallel
     {
         // Note: region will be entered by each thread
-        LAMA_REGION( "OpenMP.CSR.normalGEVM" )
+        SCAI_REGION( "OpenMP.CSR.normalGEVM" )
         #pragma omp for schedule(LAMA_OMP_SCHEDULE)
 
         for( IndexType i = 0; i < numColumns; ++i )
@@ -674,7 +674,7 @@ void OpenMPCSRUtils::sparseGEMV(
     {
         // Note: region will be entered by each thread
 
-        LAMA_REGION( "OpenMP.CSR.sparseGEMV" )
+        SCAI_REGION( "OpenMP.CSR.sparseGEMV" )
 
         #pragma omp for schedule(LAMA_OMP_SCHEDULE)
 
@@ -731,7 +731,7 @@ void OpenMPCSRUtils::sparseGEVM(
     {
         // Note: region will be entered by each thread
 
-        LAMA_REGION( "OpenMP.CSR.normalGEVM" )
+        SCAI_REGION( "OpenMP.CSR.normalGEVM" )
 
         #pragma omp for schedule(LAMA_OMP_SCHEDULE)
 
@@ -807,7 +807,7 @@ void OpenMPCSRUtils::gemm(
             {
                 IndexType j = csrJA[jj];
 
-                // LAMA_ASSERT_DEBUG( j < p , "index j = " << j << " out of range " << p )
+                // SCAI_ASSERT_DEBUG( j < p , "index j = " << j << " out of range " << p )
 
                 // csrValues[jj] stands for CSR( i, j )
 
@@ -846,7 +846,7 @@ void OpenMPCSRUtils::jacobi(
 
     #pragma omp parallel
     {
-        LAMA_REGION( "OpenMP.CSR.jacobi" )
+        SCAI_REGION( "OpenMP.CSR.jacobi" )
 
         #pragma omp for schedule( LAMA_OMP_SCHEDULE )
 
@@ -898,7 +898,7 @@ void OpenMPCSRUtils::jacobiHalo(
 
     #pragma omp parallel
     {
-        LAMA_REGION( "OpenMP.CSR.jacabiHalo" )
+        SCAI_REGION( "OpenMP.CSR.jacabiHalo" )
 
         #pragma omp for schedule( LAMA_OMP_SCHEDULE )
 
@@ -951,7 +951,7 @@ void OpenMPCSRUtils::jacobiHaloWithDiag(
 
     #pragma omp parallel
     {
-        LAMA_REGION( "OpenMP.CSR.jacabiHaloWithDiag" )
+        SCAI_REGION( "OpenMP.CSR.jacabiHaloWithDiag" )
 
         #pragma omp for schedule( LAMA_OMP_SCHEDULE )
 
@@ -1000,7 +1000,7 @@ IndexType OpenMPCSRUtils::matrixAddSizes(
     SCAI_LOG_INFO( logger,
                    "matrixAddSizes for " << numRows << " x " << numColumns << " matrix" << ", diagonalProperty = " << diagonalProperty )
 
-    LAMA_REGION( "OpenMP.CSR.matrixAddSizes" )
+    SCAI_REGION( "OpenMP.CSR.matrixAddSizes" )
 
     // determine the number of entries in output matrix
 
@@ -1119,7 +1119,7 @@ IndexType OpenMPCSRUtils::matrixMultiplySizes(
     const IndexType bIA[],
     const IndexType bJA[] )
 {
-    LAMA_REGION( "OpenMP.CSR.matrixMultiplySizes" )
+    SCAI_REGION( "OpenMP.CSR.matrixMultiplySizes" )
 
     SCAI_LOG_INFO( logger,
                    "matrixMutliplySizes for " << m << " x " << n << " matrix" << ", diagonalProperty = " << diagonalProperty )
@@ -1170,7 +1170,7 @@ IndexType OpenMPCSRUtils::matrixMultiplySizes(
 
                     IndexType k = bJA[kk];
 
-                    LAMA_ASSERT_DEBUG( 0 <= k && k < n, "invalid k = " << k )
+                    SCAI_ASSERT_DEBUG( 0 <= k && k < n, "invalid k = " << k )
 
                     // element a(i,j) an b(j,k) will generate the output element c(i,k)
 
@@ -1247,7 +1247,7 @@ void OpenMPCSRUtils::matrixAdd(
     const IndexType bJA[],
     const ValueType bValues[] )
 {
-    LAMA_REGION( "OpenMP.CSR.matrixAdd" )
+    SCAI_REGION( "OpenMP.CSR.matrixAdd" )
 
     SCAI_LOG_INFO( logger,
                    "matrixAddJA for " << numRows << " x " << numColumns << " matrix" << ", diagonalProperty = " << diagonalProperty )
@@ -1363,7 +1363,7 @@ void OpenMPCSRUtils::matrixAdd(
 
             // make sure that we have still the right offsets
 
-            LAMA_ASSERT_EQUAL_DEBUG( offset, cIA[i + 1] )
+            SCAI_ASSERT_EQUAL_DEBUG( offset, cIA[i + 1] )
 
         } //end loop over all rows of input matrix a
     }
@@ -1474,7 +1474,7 @@ void OpenMPCSRUtils::matrixMultiplyJA(
 
             // make sure that we have still the right offsets
 
-            LAMA_ASSERT_EQUAL_DEBUG( offset, cIA[i + 1] )
+            SCAI_ASSERT_EQUAL_DEBUG( offset, cIA[i + 1] )
 
         } //end loop over all rows of input matrix a
     }
@@ -1556,7 +1556,7 @@ void OpenMPCSRUtils::matrixMultiply(
     const IndexType bJA[],
     const ValueType bValues[] )
 {
-    LAMA_REGION( "OpenMP.CSR.matrixMultiply" )
+    SCAI_REGION( "OpenMP.CSR.matrixMultiply" )
 
     //TODO: Rewrite this!
     const IndexType NINIT = n + 1;
@@ -1647,7 +1647,7 @@ void OpenMPCSRUtils::matrixMultiply(
 
             // make sure that we have still the right offsets
 
-            // LAMA_ASSERT_EQUAL_DEBUG( offset, cIA[i+1] )
+            // SCAI_ASSERT_EQUAL_DEBUG( offset, cIA[i+1] )
 
         } //end loop over all rows of input matrix a
     }
@@ -1838,7 +1838,7 @@ ValueType OpenMPCSRUtils::absMaxDiffRowSorted(
 
                 if( i1 < n1 )
                 {
-                    LAMA_ASSERT_ERROR( csrJA1[i1 - 1] < csrJA1[i1], "unsorted col indexes at csrJA1[" << i1 << "]" )
+                    SCAI_ASSERT_ERROR( csrJA1[i1 - 1] < csrJA1[i1], "unsorted col indexes at csrJA1[" << i1 << "]" )
                 }
             }
             else if( j1 > j2 )
@@ -1848,7 +1848,7 @@ ValueType OpenMPCSRUtils::absMaxDiffRowSorted(
 
                 if( i2 < n2 )
                 {
-                    LAMA_ASSERT_ERROR( csrJA2[i2 - 1] < csrJA2[i2], "unsorted col indexes at csrJA2[" << i2 << "]" )
+                    SCAI_ASSERT_ERROR( csrJA2[i2 - 1] < csrJA2[i2], "unsorted col indexes at csrJA2[" << i2 << "]" )
                 }
             }
         }

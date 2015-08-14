@@ -54,9 +54,9 @@ lama_sources ( ${SOURCE_FILES} )
 
 # Due to additional include files an own executable is defined for CUDA tests
 
-if ( ${LAMA_ASSERT_LEVEL} STREQUAL "OFF" )
+if ( ${SCAI_ASSERT_LEVEL} STREQUAL "OFF" )
    message ( STATUS "WARNING: tests will not check for exceptions (assertions are switched off)" )
-endif ( ${LAMA_ASSERT_LEVEL} STREQUAL "OFF" )
+endif ( ${SCAI_ASSERT_LEVEL} STREQUAL "OFF" )
 
 ### set include directories ###
 include_directories ( ${CUDA_INCLUDE_DIRS} )

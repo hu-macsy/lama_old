@@ -95,7 +95,7 @@ void cublasWrapperGemm(
     float* c,
     IndexType ldc )
 {
-    LAMA_CUBLAS_CALL(
+    SCAI_CUBLAS_CALL(
         cublasSgemm( CUDAContext_cublasHandle, transA_char, transB_char, m, n, k, &alpha, a, lda, b, ldb,
                      &beta, c, ldc ),
         "cublasWrapperGemm<float>" );
@@ -117,7 +117,7 @@ void cublasWrapperGemm(
     double* c,
     IndexType ldc )
 {
-    LAMA_CUBLAS_CALL(
+    SCAI_CUBLAS_CALL(
         cublasDgemm( CUDAContext_cublasHandle, transA_char, transB_char, m, n, k, &alpha, a, lda, b, ldb,
                      &beta, c, ldc ),
         "cublasWrapperGemm<dobule>" );
@@ -139,7 +139,7 @@ void cublasWrapperGemm(
     ComplexFloat* c,
     IndexType ldc )
 {
-    LAMA_CUBLAS_CALL(
+    SCAI_CUBLAS_CALL(
         cublasCgemm( CUDAContext_cublasHandle, transA_char, transB_char, m, n, k, cublasCast( &alpha ),
                      cublasCast( a ), lda, cublasCast( b ), ldb, cublasCast( &beta ), cublasCast( c ),
                      ldc ),
@@ -162,7 +162,7 @@ void cublasWrapperGemm(
     ComplexDouble* c,
     IndexType ldc )
 {
-    LAMA_CUBLAS_CALL(
+    SCAI_CUBLAS_CALL(
         cublasZgemm( CUDAContext_cublasHandle, transA_char, transB_char, m, n, k, cublasCast( &alpha ),
                      cublasCast( a ), lda, cublasCast( b ), ldb, cublasCast( &beta ), cublasCast( c ),
                      ldc ),
@@ -229,18 +229,18 @@ void CUDABLAS3::gemm(
         }
     }
 
-    LAMA_CHECK_CUDA_ACCESS
+    SCAI_CHECK_CUDA_ACCESS
 
     cudaStream_t stream = 0; // default stream if no syncToken is given
 
     if( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
+        SCAI_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
         stream = cudaStreamSyncToken->getCUDAStream();
     }
 
-    LAMA_CUBLAS_CALL( cublasSetStream( CUDAContext_cublasHandle, stream ),
+    SCAI_CUBLAS_CALL( cublasSetStream( CUDAContext_cublasHandle, stream ),
                       "CUDABLAS3::gemm set cublas kernel stream = " << stream );
 
     SCAI_LOG_INFO( logger, "cublasSgemm: m = " << m_call << " x " << n_call )
@@ -252,10 +252,10 @@ void CUDABLAS3::gemm(
 
     if( !syncToken )
     {
-        LAMA_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "stream = " << stream );
+        SCAI_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "stream = " << stream );
     }
 
-    LAMA_CUBLAS_CALL( cublasSetStream( CUDAContext_cublasHandle, NULL ), "CUDABLAS3::gemm set stream to NULL" );
+    SCAI_CUBLAS_CALL( cublasSetStream( CUDAContext_cublasHandle, NULL ), "CUDABLAS3::gemm set stream to NULL" );
 }
 
 /** trsm */
@@ -487,18 +487,18 @@ void CUDABLAS3::trsm(
         return;
     }
 
-    LAMA_CHECK_CUDA_ACCESS
+    SCAI_CHECK_CUDA_ACCESS
 
     cudaStream_t stream = 0; // default stream if no syncToken is given
 
     if( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
+        SCAI_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
         stream = cudaStreamSyncToken->getCUDAStream();
     }
 
-    LAMA_CUBLAS_CALL( cublasSetStream( CUDAContext_cublasHandle, stream ),
+    SCAI_CUBLAS_CALL( cublasSetStream( CUDAContext_cublasHandle, stream ),
                       "CUDABLAS3::trsm set cublas kernel stream = " << stream );
 
     cublasWrapperTrsm( side, uplo, transA, diag, m, n, alpha, A, lda, B, ldb );
@@ -507,10 +507,10 @@ void CUDABLAS3::trsm(
 
     if( !syncToken )
     {
-        LAMA_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "stream = " << stream );
+        SCAI_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "stream = " << stream );
     }
 
-    LAMA_CUBLAS_CALL( cublasSetStream( CUDAContext_cublasHandle, NULL ), "CUDABLAS3::trsm set stream NULL" );
+    SCAI_CUBLAS_CALL( cublasSetStream( CUDAContext_cublasHandle, NULL ), "CUDABLAS3::trsm set stream NULL" );
 }
 
 /* --------------------------------------------------------------------------- */

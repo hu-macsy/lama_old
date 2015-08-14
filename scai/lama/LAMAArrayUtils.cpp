@@ -62,8 +62,8 @@ void LAMAArrayUtils::assignImpl(
 {
     // verify that dynamic cast operations went okay before
 
-    LAMA_ASSERT_ERROR( &target, "NULL target" )
-    LAMA_ASSERT_ERROR( &source, "NULL source" )
+    SCAI_ASSERT_ERROR( &target, "NULL target" )
+    SCAI_ASSERT_ERROR( &source, "NULL source" )
 
     // set should be available on interface for each loc
 
@@ -74,7 +74,7 @@ void LAMAArrayUtils::assignImpl(
     WriteOnlyAccess<ValueType1> targetVals( target, loc, n );
     ReadAccess<ValueType2> sourceVals( source, loc );
 
-    LAMA_CONTEXT_ACCESS( loc )
+    SCAI_CONTEXT_ACCESS( loc )
 
     set( targetVals.get(), sourceVals.get(), n );
 }
@@ -157,7 +157,7 @@ void LAMAArrayUtils::gather(
     const LAMAArray<ValueType2>& source,
     const LAMAArray<IndexType>& indexes )
 {
-    LAMA_REGION( "LAMAArray.gather" )
+    SCAI_REGION( "LAMAArray.gather" )
 
 // choose location for the operation where source array is currently valid
 
@@ -172,7 +172,7 @@ void LAMAArrayUtils::gather(
     ReadAccess<ValueType2> rSource( source, context );
     ReadAccess<IndexType> rIndexes( indexes, context );
 
-    LAMA_CONTEXT_ACCESS( context )
+    SCAI_CONTEXT_ACCESS( context )
 
 // target[i] = source[ indexes[i] ]
     setGather( wTarget.get(), rSource.get(), rIndexes.get(), n );
@@ -195,7 +195,7 @@ void LAMAArrayUtils::assignScalar( LAMAArray<ValueType>& target, const Scalar& v
 
     WriteOnlyAccess<ValueType> values( target, context );
 
-    LAMA_CONTEXT_ACCESS( context )
+    SCAI_CONTEXT_ACCESS( context )
 
     setVal( values.get(), n, val );
 }
@@ -238,7 +238,7 @@ default        :
 template<typename ValueType>
 void LAMAArrayUtils::setVal( LAMAArray<ValueType>& target, const IndexType index, ValueType val )
 {
-    LAMA_ASSERT_DEBUG( index < target.size(), "index = " << index << " out of range for target = " << target );
+    SCAI_ASSERT_DEBUG( index < target.size(), "index = " << index << " out of range for target = " << target );
 
     ContextPtr loc = target.getValidContext(); // best position where to fill
 
@@ -246,7 +246,7 @@ void LAMAArrayUtils::setVal( LAMAArray<ValueType>& target, const IndexType index
 
     WriteAccess<ValueType> wTarget( target, loc );
 
-    LAMA_CONTEXT_ACCESS( loc )
+    SCAI_CONTEXT_ACCESS( loc )
 
     setVal( wTarget.get() + index, 1, val );
 }
@@ -260,7 +260,7 @@ void LAMAArrayUtils::assignScaled(
 {
     const IndexType n = result.size();
 
-    LAMA_ASSERT_EQUAL_ERROR( n, y.size() );
+    SCAI_ASSERT_EQUAL_ERROR( n, y.size() );
 
 // beta = 0    : saves the need of a read access for y
 // result == y : only one write access needed ( write + read not possible)
@@ -273,7 +273,7 @@ void LAMAArrayUtils::assignScaled(
 
         WriteAccess<ValueType> wResult( result, loc );
 
-        LAMA_CONTEXT_ACCESS( loc )
+        SCAI_CONTEXT_ACCESS( loc )
 
         setVal( wResult.get(), n, 0 );
     }
@@ -290,7 +290,7 @@ void LAMAArrayUtils::assignScaled(
 
         WriteAccess<ValueType> wResult( result, loc );
 
-        LAMA_CONTEXT_ACCESS( loc )
+        SCAI_CONTEXT_ACCESS( loc )
 
         scale( wResult.get(), beta, n );
     }
@@ -306,7 +306,7 @@ void LAMAArrayUtils::assignScaled(
         WriteAccess<ValueType> wResult( result, loc );
         ReadAccess<ValueType> rY( y, loc );
 
-        LAMA_CONTEXT_ACCESS( loc )
+        SCAI_CONTEXT_ACCESS( loc )
 
         setScale( wResult.get(), beta, rY.get(), n );
     }

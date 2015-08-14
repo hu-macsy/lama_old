@@ -189,8 +189,8 @@ void _MatrixStorage::setContext( ContextPtr context )
 
 void _MatrixStorage::localize( const _MatrixStorage& global, const Distribution& rowDist )
 {
-    LAMA_ASSERT_EQUAL_ERROR( getNumColumns(), global.getNumColumns() )
-    LAMA_ASSERT_EQUAL_ERROR( global.getNumRows(), rowDist.getGlobalSize() )
+    SCAI_ASSERT_EQUAL_ERROR( getNumColumns(), global.getNumColumns() )
+    SCAI_ASSERT_EQUAL_ERROR( global.getNumRows(), rowDist.getGlobalSize() )
     COMMON_THROWEXCEPTION( "No default implementation for localize available, matrix = " << *this )
 }
 
@@ -358,18 +358,18 @@ void MatrixStorage<ValueType>::convertCSR2CSC(
     // ContextPtr loc = Context::getContextPtr( context::Host );
     const IndexType numRows = rowIA.size() - 1;
     const IndexType numValues = rowJA.size();
-    LAMA_ASSERT_EQUAL_DEBUG( rowJA.size(), rowValues.size() )
+    SCAI_ASSERT_EQUAL_DEBUG( rowJA.size(), rowValues.size() )
     LAMA_INTERFACE_FN_T( convertCSR2CSC, loc, CSRUtils, Transpose, ValueType )
     SCAI_LOG_INFO( logger,
                    "MatrixStorage::CSR2CSC of matrix " << numRows << " x " << numColumns << ", #nnz = " << numValues << " on " << *loc )
-    LAMA_REGION( "Storage.CSR2CSC" )
+    SCAI_REGION( "Storage.CSR2CSC" )
     WriteOnlyAccess<IndexType> cIA( colIA, loc, numColumns + 1 );
     WriteOnlyAccess<IndexType> cJA( colJA, loc, numValues );
     WriteOnlyAccess<ValueType> cValues( colValues, loc, numValues );
     ReadAccess<IndexType> rIA( rowIA, loc );
     ReadAccess<IndexType> rJA( rowJA, loc );
     ReadAccess<ValueType> rValues( rowValues, loc );
-    LAMA_CONTEXT_ACCESS( loc )
+    SCAI_CONTEXT_ACCESS( loc )
     convertCSR2CSC( cIA.get(), cJA.get(), cValues.get(), rIA.get(), rJA.get(), rValues.get(), numRows, numColumns,
                     numValues );
 }
@@ -395,7 +395,7 @@ void MatrixStorage<ValueType>::buildCSCData(
 template<typename ValueType>
 void MatrixStorage<ValueType>::assign( const _MatrixStorage& other )
 {
-    LAMA_REGION( "Storage.assign" )
+    SCAI_REGION( "Storage.assign" )
 
     if ( &other == this )
     {
@@ -441,7 +441,7 @@ void MatrixStorage<ValueType>::assign( const _MatrixStorage& other )
 template<typename ValueType>
 void MatrixStorage<ValueType>::copyTo( _MatrixStorage& other ) const
 {
-    LAMA_REGION( "Storage.copyTo" )
+    SCAI_REGION( "Storage.copyTo" )
     // If the size of other value type is smaller that this value type, it might be better
     // to use the other value type.
     SCAI_LOG_INFO( logger, *this << ": (default) copyTo ( " << other << " )" )
@@ -449,9 +449,9 @@ void MatrixStorage<ValueType>::copyTo( _MatrixStorage& other ) const
     LAMAArray<IndexType> csrJA;
     LAMAArray<ValueType> csrValues;
     buildCSRData( csrIA, csrJA, csrValues );
-    LAMA_ASSERT_EQUAL_DEBUG( csrIA.size(), mNumRows + 1 )
+    SCAI_ASSERT_EQUAL_DEBUG( csrIA.size(), mNumRows + 1 )
     IndexType numValues = csrJA.size();
-    LAMA_ASSERT_EQUAL_DEBUG( csrValues.size(), numValues )
+    SCAI_ASSERT_EQUAL_DEBUG( csrValues.size(), numValues )
     SCAI_LOG_DEBUG( logger, "build CSR data " << mNumRows << " x " << mNumColumns << ", #nnz = " << numValues )
     other.setCSRData( mNumRows, mNumColumns, numValues, csrIA, csrJA, csrValues );
     SCAI_LOG_INFO( logger, "now assigned: " << *this )
@@ -462,7 +462,7 @@ void MatrixStorage<ValueType>::copyTo( _MatrixStorage& other ) const
 template<typename ValueType>
 void MatrixStorage<ValueType>::assignTranspose( const MatrixStorage<ValueType>& other )
 {
-    LAMA_REGION( "Storage.assignTranspose" )
+    SCAI_REGION( "Storage.assignTranspose" )
     SCAI_LOG_INFO( logger, *this << ": assignTranspose " << other )
     LAMAArray<IndexType> cscIA;
     LAMAArray<IndexType> cscJA;
@@ -487,7 +487,7 @@ void MatrixStorage<ValueType>::joinRows(
     const LAMAArray<IndexType>& inJA,
     const LAMAArray<ValueType>& inValues )
 {
-    LAMA_REGION( "Storage.joinRows" )
+    SCAI_REGION( "Storage.joinRows" )
     SCAI_LOG_INFO( logger, "join " << numLocalRows << " rows " )
     {
         WriteOnlyAccess<IndexType> sizes( outSizes, numLocalRows );
@@ -563,7 +563,7 @@ void MatrixStorage<ValueType>::joinHalo(
     const Distribution& colDist,
     const bool attemptDiagonalProperty )
 {
-    LAMA_REGION( "Storage.joinHalo" )
+    SCAI_REGION( "Storage.joinHalo" )
     SCAI_LOG_INFO( logger,
                    "join local = " << localData << " with diag = " << localData.hasDiagonalProperty() << " and halo = " << haloData << ", col dist = " << colDist )
     //  Default solution joins storage data via the CSR format
@@ -627,7 +627,7 @@ void MatrixStorage<ValueType>::joinHalo(
 template<typename ValueType>
 void MatrixStorage<ValueType>::localize( const _MatrixStorage& globalData, const Distribution& rowDist )
 {
-    LAMA_REGION( "Storage.localize" )
+    SCAI_REGION( "Storage.localize" )
 
     if ( rowDist.isReplicated() )
     {
@@ -635,7 +635,7 @@ void MatrixStorage<ValueType>::localize( const _MatrixStorage& globalData, const
         return;
     }
 
-    LAMA_ASSERT_EQUAL_ERROR( globalData.getNumRows(), rowDist.getGlobalSize() )
+    SCAI_ASSERT_EQUAL_ERROR( globalData.getNumRows(), rowDist.getGlobalSize() )
     const IndexType numColumns = globalData.getNumColumns();
     const IndexType localNumRows = rowDist.getLocalSize();
     LAMAArray<IndexType> globalIA;
@@ -656,7 +656,7 @@ void MatrixStorage<ValueType>::localize( const _MatrixStorage& globalData, const
 template<typename ValueType>
 void MatrixStorage<ValueType>::replicate( const _MatrixStorage& localData, const Distribution& rowDist )
 {
-    LAMA_REGION( "Storage.replicate" )
+    SCAI_REGION( "Storage.replicate" )
 
     if ( rowDist.isReplicated() )
     {
@@ -665,7 +665,7 @@ void MatrixStorage<ValueType>::replicate( const _MatrixStorage& localData, const
         return;
     }
 
-    LAMA_ASSERT_EQUAL_ERROR( localData.getNumRows(), rowDist.getLocalSize() )
+    SCAI_ASSERT_EQUAL_ERROR( localData.getNumRows(), rowDist.getLocalSize() )
     const IndexType numColumns = localData.getNumColumns();
     const IndexType globalNumRows = rowDist.getGlobalSize();
     LAMAArray<IndexType> localIA;
@@ -691,9 +691,9 @@ void MatrixStorage<ValueType>::splitHalo(
     const Distribution& colDist,
     const Distribution* rowDist ) const
 {
-    LAMA_REGION( "Storage.splitHalo" )
+    SCAI_REGION( "Storage.splitHalo" )
     SCAI_LOG_INFO( logger, *this << ": split according to column distribution " << colDist )
-    LAMA_ASSERT_EQUAL( mNumColumns, colDist.getGlobalSize() )
+    SCAI_ASSERT_EQUAL( mNumColumns, colDist.getGlobalSize() )
 
     if ( getFormat() != Format::CSR )
     {
@@ -724,7 +724,7 @@ void MatrixStorage<ValueType>::splitHalo(
     if ( rowDist )
     {
         SCAI_LOG_INFO( logger, *this << ": split also localizes for " << *rowDist )
-        LAMA_ASSERT_EQUAL( mNumRows, rowDist->getGlobalSize() )
+        SCAI_ASSERT_EQUAL( mNumRows, rowDist->getGlobalSize() )
         numRows = rowDist->getLocalSize();
     }
 
@@ -741,8 +741,8 @@ void MatrixStorage<ValueType>::splitHalo(
     LAMAArray<ValueType> haloValues;
     StorageMethods<ValueType>::splitCSR( localIA, localJA, localValues, haloIA, haloJA, haloValues, csrIA, csrJA,
                                          csrValues, colDist, rowDist );
-    LAMA_ASSERT_EQUAL_DEBUG( localIA.size(), numRows + 1 )
-    LAMA_ASSERT_EQUAL_DEBUG( haloIA.size(), numRows + 1 )
+    SCAI_ASSERT_EQUAL_DEBUG( localIA.size(), numRows + 1 )
+    SCAI_ASSERT_EQUAL_DEBUG( haloIA.size(), numRows + 1 )
     const IndexType haloNumValues = haloJA.size();
     const IndexType localNumValues = localJA.size();
     SCAI_LOG_INFO( logger,
@@ -768,7 +768,7 @@ template<typename ValueType>
 void MatrixStorage<ValueType>::buildHalo( Halo& halo, const Distribution& colDist )
 {
     SCAI_LOG_INFO( logger, *this << ": build halo according to column distribution " << colDist )
-    LAMA_ASSERT_EQUAL( mNumColumns, colDist.getGlobalSize() )
+    SCAI_ASSERT_EQUAL( mNumColumns, colDist.getGlobalSize() )
     LAMAArray<IndexType> haloIA;
     LAMAArray<IndexType> haloJA; // global columns, all non-local
     LAMAArray<ValueType> haloValues;
@@ -1023,8 +1023,8 @@ void MatrixStorage<ValueType>::matrixTimesMatrix(
 template<typename ValueType>
 ValueType MatrixStorage<ValueType>::maxDiffNorm( const MatrixStorage<ValueType>& other ) const
 {
-    LAMA_ASSERT_EQUAL_ERROR( mNumRows, other.getNumRows() )
-    LAMA_ASSERT_EQUAL_ERROR( mNumColumns, other.getNumColumns() )
+    SCAI_ASSERT_EQUAL_ERROR( mNumRows, other.getNumRows() )
+    SCAI_ASSERT_EQUAL_ERROR( mNumColumns, other.getNumColumns() )
     LAMA_UNSUPPORTED( *this << ": no maxDiffNorm for format " << getFormat() << " available, take Dense" )
     DenseStorage<ValueType> tmp( *this );
     return tmp.maxDiffNorm( other );
@@ -1064,12 +1064,12 @@ void MatrixStorage<ValueType>::redistribute( const _MatrixStorage& other, const 
     {
         // This special case avoids unnecssary CSR conversions
         const CSRStorage<ValueType>* otherCSR = dynamic_cast<const CSRStorage<ValueType>*>( &other );
-        LAMA_ASSERT_DEBUG( otherCSR, "serious cast error" );
+        SCAI_ASSERT_DEBUG( otherCSR, "serious cast error" );
         redistributeCSR( *otherCSR, redistributor );
         return;
     }
 
-    LAMA_REGION( "Storage.redistribute" )
+    SCAI_REGION( "Storage.redistribute" )
     // For the redistribution we use the CSR format on both sides
     const Distribution& sourceDistribution = *redistributor.getSourceDistributionPtr();
     const Distribution& targetDistribution = *redistributor.getTargetDistributionPtr();
@@ -1097,7 +1097,7 @@ void MatrixStorage<ValueType>::redistribute( const _MatrixStorage& other, const 
     const IndexType numColumns = other.getNumColumns(); // does not change
 
     // check that source distribution fits with storage
-    LAMA_ASSERT_EQUAL_ERROR( other.getNumRows(), sourceDistribution.getLocalSize() )
+    SCAI_ASSERT_EQUAL_ERROR( other.getNumRows(), sourceDistribution.getLocalSize() )
     // get the matrix data from other in CSR format
     LAMAArray<IndexType> sourceIA;
 
@@ -1128,7 +1128,7 @@ void MatrixStorage<ValueType>::redistribute( const _MatrixStorage& other, const 
 template<typename ValueType>
 void MatrixStorage<ValueType>::redistributeCSR( const CSRStorage<ValueType>& other, const Redistributor& redistributor )
 {
-    LAMA_REGION( "Storage.redistributeCSR" )
+    SCAI_REGION( "Storage.redistributeCSR" )
     const Distribution& sourceDistribution = *redistributor.getSourceDistributionPtr();
     const Distribution& targetDistribution = *redistributor.getTargetDistributionPtr();
     SCAI_LOG_INFO( logger, other << ": redistribute rows via " << redistributor )
@@ -1155,7 +1155,7 @@ void MatrixStorage<ValueType>::redistributeCSR( const CSRStorage<ValueType>& oth
     const IndexType numColumns = other.getNumColumns(); // does not change
 
     // check that source distribution fits with storage
-    LAMA_ASSERT_EQUAL_ERROR( other.getNumRows(), sourceDistribution.getLocalSize() )
+    SCAI_ASSERT_EQUAL_ERROR( other.getNumRows(), sourceDistribution.getLocalSize() )
     // it is not necessary to convert the other storage to CSR
     LAMAArray<IndexType> targetIA;
 
@@ -1183,7 +1183,7 @@ void MatrixStorage<ValueType>::setRawDenseData(
     const OtherValueType values[],
     const ValueType epsilon )
 {
-    LAMA_ASSERT_ERROR( epsilon >= 0.0, "epsilon = " << epsilon << ", must not be negative" )
+    SCAI_ASSERT_ERROR( epsilon >= 0.0, "epsilon = " << epsilon << ", must not be negative" )
     mEpsilon = epsilon;
     // wrap all the data in a dense storage and make just an assign
     SCAI_LOG_INFO( logger, "set dense storage " << numRows << " x " << numColumns )
@@ -1271,7 +1271,7 @@ template<typename ValueType>
 void MatrixStorage<ValueType>::readFromFile( const std::string& fileName )
 {
     SCAI_LOG_INFO( logger, "MatrixStorage<" << getValueType() << ">::readFromFile( " << fileName << ")" )
-    LAMA_REGION( "Storage.readFromFile" )
+    SCAI_REGION( "Storage.readFromFile" )
     IndexType numColumns;
     IndexType numRows;
     IndexType numValues;
@@ -1304,7 +1304,7 @@ void _MatrixStorage::buildCSRGraph(
         const PartitionId MASTER = 0;
         IndexType parts = comm->getSize();
 // Is this valid ?
-// LAMA_ASSERT_ERROR( getDistribution().getNumPartitions() == parts,
+// SCAI_ASSERT_ERROR( getDistribution().getNumPartitions() == parts,
 //              "mismatch number of partitions and communicator size" );
         std::vector<IndexType> localNumRows( parts );
         comm->gather( vtxdist, 1, MASTER, &numLocalRows );

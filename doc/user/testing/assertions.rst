@@ -17,9 +17,9 @@ In addition to assertions of Boost there are some selfmade assertions, which fil
 
 Selfmade assertions of LAMA:
 
-- LAMA_CHECK_SCALAR_CLOSE( x, y, ValueType, tolerance ) : Checks if two Scalars are equal with a percentual tolerance. The Scalar are transformed to ValueType.
-- LAMA_CHECK_SCALAR_SMALL( x, ValueType, eps ) : Checks if a Scalar is equal to 0 with a absolute tolerance
-- LAMA_CHECK_SCALAR_SMALL_EPS( x, ValueType ) : Checks if a Scalar is equal to 0 with a default absolute tolerance given by LAMA. This default tolerance is 1E-5.
+- SCAI_CHECK_SCALAR_CLOSE( x, y, ValueType, tolerance ) : Checks if two Scalars are equal with a percentual tolerance. The Scalar are transformed to ValueType.
+- SCAI_CHECK_SCALAR_SMALL( x, ValueType, eps ) : Checks if a Scalar is equal to 0 with a absolute tolerance
+- SCAI_CHECK_SCALAR_SMALL_EPS( x, ValueType ) : Checks if a Scalar is equal to 0 with a default absolute tolerance given by LAMA. This default tolerance is 1E-5.
 
 
 - LAMA_WRITEAT_TEST( printable ) : Checks if an object of type printable prints something (the content is not compared). 

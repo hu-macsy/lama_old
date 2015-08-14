@@ -183,8 +183,8 @@ void Matrix::setDefaultKind()
 
 void Matrix::setDistributedMatrix( DistributionPtr rowDistribution, DistributionPtr colDistribution )
 {
-    LAMA_ASSERT_ERROR( rowDistribution, "NULL row distribution for matrix not allowed" )
-    LAMA_ASSERT_ERROR( colDistribution, "NULL column distribution for matrix not allowed" )
+    SCAI_ASSERT_ERROR( rowDistribution, "NULL row distribution for matrix not allowed" )
+    SCAI_ASSERT_ERROR( colDistribution, "NULL column distribution for matrix not allowed" )
     mNumRows = rowDistribution->getGlobalSize();
     setDistributionPtr( rowDistribution );
     mNumColumns = colDistribution->getGlobalSize();
@@ -255,8 +255,8 @@ void Matrix::setCommunicationKind( SyncKind communicationKind )
 
 void Matrix::setContext( ContextPtr localContext, ContextPtr haloContext )
 {
-    LAMA_ASSERT_DEBUG( localContext, "localContext == NULL" )
-    LAMA_ASSERT_DEBUG( haloContext, "haloContext == NULL" )
+    SCAI_ASSERT_DEBUG( localContext, "localContext == NULL" )
+    SCAI_ASSERT_DEBUG( haloContext, "haloContext == NULL" )
 
     // default implementation for matrices that do not support halo context
 

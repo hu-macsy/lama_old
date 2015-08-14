@@ -87,7 +87,7 @@ InverseSolver::InverseSolverRuntime::~InverseSolverRuntime()
 
 void InverseSolver::initialize( const Matrix& coefficients )
 {
-    LAMA_REGION( "Solver.Inverse.intialize" )
+    SCAI_REGION( "Solver.Inverse.intialize" )
 
     SCAI_LOG_INFO( logger, "Initializing with " << coefficients )
 
@@ -106,7 +106,7 @@ void InverseSolver::initialize( const Matrix& coefficients )
 
 const Matrix& InverseSolver::getInverse() const
 {
-    LAMA_ASSERT_ERROR( getConstRuntime().mInverse, "inverse not available (no call of initialize before)" );
+    SCAI_ASSERT_ERROR( getConstRuntime().mInverse, "inverse not available (no call of initialize before)" );
 
     return *getConstRuntime().mInverse;
 }
@@ -115,11 +115,11 @@ const Matrix& InverseSolver::getInverse() const
 
 void InverseSolver::solveImpl()
 {
-    LAMA_REGION( "Solver.Inverse.solve" )
+    SCAI_REGION( "Solver.Inverse.solve" )
 
     InverseSolverRuntime& runtime = getRuntime();
 
-    LAMA_ASSERT_ERROR( runtime.mInverse.get(), "solve, but mInverse is NULL" )
+    SCAI_ASSERT_ERROR( runtime.mInverse.get(), "solve, but mInverse is NULL" )
 
     logStartSolve();
     *runtime.mSolution = ( *runtime.mInverse ) * ( *runtime.mRhs );

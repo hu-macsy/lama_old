@@ -252,20 +252,20 @@ namespace lama
                     const ValueType cooValues[],
                     class SyncToken* syncToken )
     {
-        LAMA_REGION( "CUDA.COO.normalGEMV" )
+        SCAI_REGION( "CUDA.COO.normalGEMV" )
 
         SCAI_LOG_INFO( logger, "normalGEMV<" << getScalarType<ValueType>() << ">, "
                         << "result[ " << numRows << "] = " << alpha
                         << " COO( #vals = " << numValues << " ) * x + " << beta << " * y" )
 
-        LAMA_CHECK_CUDA_ACCESS
+        SCAI_CHECK_CUDA_ACCESS
 
         cudaStream_t stream = 0;
 
         if ( syncToken )
         {
             CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-            LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
+            SCAI_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
             stream = cudaStreamSyncToken->getCUDAStream();
             SCAI_LOG_INFO( logger, "asyncronous execution on stream " << stream );
         }
@@ -289,7 +289,7 @@ namespace lama
             CUDAUtils::setScale( result, beta, y, numRows );
         }
 
-        LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "COO: initGemvKernel FAILED" )
+        SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "COO: initGemvKernel FAILED" )
 
         if ( numValues == 0 )
         {
@@ -338,7 +338,7 @@ namespace lama
         {
             // synchronization now, unbind texture if it has been used
 
-            LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "COO: gemvKernel FAILED" )
+            SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "COO: gemvKernel FAILED" )
 
             if ( useTexture )
             {
@@ -374,18 +374,18 @@ namespace lama
                     const ValueType cooValues[],
                     class SyncToken* syncToken )
     {
-        LAMA_REGION( "CUDA.COO.normalGEVM" )
+        SCAI_REGION( "CUDA.COO.normalGEVM" )
 
         SCAI_LOG_INFO( logger, "normalGEVM, #rows = " << numRows << ", #vals = " << numValues )
 
-        LAMA_CHECK_CUDA_ACCESS
+        SCAI_CHECK_CUDA_ACCESS
 
         cudaStream_t stream = 0;
 
         if ( syncToken )
         {
             CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-            LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
+            SCAI_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
             stream = cudaStreamSyncToken->getCUDAStream();
             SCAI_LOG_INFO( logger, "asyncronous execution on stream " << stream );
         }
@@ -408,7 +408,7 @@ namespace lama
             CUDAUtils::setScale( result, beta, y, numRows );
         }
 
-        LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "COO: initGevmKernel FAILED" )
+        SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "COO: initGevmKernel FAILED" )
 
         if ( numValues == 0 )
         {
@@ -456,7 +456,7 @@ namespace lama
         {
             // synchronization now, unbind texture if it has been used
 
-            LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "COO: gevmKernel FAILED" )
+            SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "COO: gevmKernel FAILED" )
 
             if ( useTexture )
             {
@@ -519,7 +519,7 @@ namespace lama
                         "build cooIA( " << numValues << " ) from csrIA( " << ( numRows + 1 )
                         << " ), #diagonals = " << numDiagonals )
 
-        LAMA_CHECK_CUDA_ACCESS
+        SCAI_CHECK_CUDA_ACCESS
 
         // make grid
 
@@ -529,7 +529,7 @@ namespace lama
 
         offsets2ia_kernel<<<dimGrid, dimBlock>>>( cooIA, csrIA, numRows, numDiagonals );
 
-        LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "sync for offsets2ia_kernel" )
+        SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "sync for offsets2ia_kernel" )
     }
 
     /* --------------------------------------------------------------------------- */
@@ -620,7 +620,7 @@ namespace lama
 
         // Note: the array cooIA is assumed to be sorted after the diagonal elements
 
-        LAMA_CHECK_CUDA_ACCESS
+        SCAI_CHECK_CUDA_ACCESS
 
         cudaStream_t stream = 0;// default stream, asynchronous execution not supported here
 
@@ -640,7 +640,7 @@ namespace lama
             add_diagonals_kernel<<<dimGrid, dimBlock>>>( csrIA, numRows, numDiagonals );
         }
 
-        LAMA_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "normalGEMV, stream = " << stream )
+        SCAI_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "normalGEMV, stream = " << stream )
     }
 
     /* --------------------------------------------------------------------------- */
@@ -689,7 +689,7 @@ namespace lama
                         "build cooValues( << " << numValues << " from csrValues + csrIA( " << ( numRows + 1 )
                         << " ), #diagonals = " << numDiagonals )
 
-        LAMA_CHECK_CUDA_ACCESS
+        SCAI_CHECK_CUDA_ACCESS
 
         // make grid
 
@@ -699,7 +699,7 @@ namespace lama
 
         csr2coo_kernel<<<dimGrid, dimBlock>>>( cooValues, csrValues, csrIA, numRows, numDiagonals );
 
-        LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "sync for csr2coo_kernel" )
+        SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "sync for csr2coo_kernel" )
     }
 
     /* --------------------------------------------------------------------------- */

@@ -92,7 +92,7 @@ public:
 
     virtual void free( ContextData& contextData ) const
     {
-        LAMA_ASSERT_EQUAL_ERROR( contextData.context->getType(), getType() );
+        SCAI_ASSERT_EQUAL_ERROR( contextData.context->getType(), getType() );
         BOOST_CHECK_EQUAL( contextData.context->getType(), getType() );
         contextData.free();
     }
@@ -122,13 +122,13 @@ public:
 
     virtual void memcpy( ContextData& dst, const ContextData& src, const size_t size ) const
     {
-        LAMA_ASSERT_ERROR( cancpy( dst, src ), "Can not copy from " << * ( src.context ) << " to " << * ( dst.context ) );
+        SCAI_ASSERT_ERROR( cancpy( dst, src ), "Can not copy from " << * ( src.context ) << " to " << * ( dst.context ) );
         memcpy( dst.pointer, src.pointer, size );
     }
 
     virtual common::unique_ptr<SyncToken> memcpyAsync( ContextData& dst, const ContextData& src, const size_t size ) const
     {
-        LAMA_ASSERT_ERROR( cancpy( dst, src ), "Can not copy from " << * ( src.context ) << " to " << * ( dst.context ) );
+        SCAI_ASSERT_ERROR( cancpy( dst, src ), "Can not copy from " << * ( src.context ) << " to " << * ( dst.context ) );
         return memcpyAsync( dst.pointer, src.pointer, size );
     }
 
@@ -209,7 +209,7 @@ BOOST_AUTO_TEST_CASE( releaseTest )
 
     writeAccess.release();
     // working on a released array should give an exception
-    LAMA_CHECK_THROW( { writeAccess.resize( 20 ); }, Exception );
+    SCAI_CHECK_THROW( { writeAccess.resize( 20 ); }, Exception );
     // This is not checked:  writeAccess[0] = 5.0; -> crashes
     HostReadAccess<IndexType> readAccess( lamaArray );
 
@@ -328,7 +328,7 @@ BOOST_AUTO_TEST_CASE( swapTest )
         }
 
         // swapping of arrays not allowed with any access
-        LAMA_CHECK_THROW( data1.swap( data2 ), Exception );
+        SCAI_CHECK_THROW( data1.swap( data2 ), Exception );
     }
     data1.swap( data2 );
     {

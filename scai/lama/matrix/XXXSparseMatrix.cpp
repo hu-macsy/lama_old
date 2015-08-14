@@ -266,7 +266,7 @@ XXXSparseMatrix<ValueType>::getLocalStorage() const
 
     const StorageType* local = dynamic_cast<const StorageType*>( this->mLocalData.get() );
 
-    LAMA_ASSERT_ERROR( local, "XXXSparseMatrix: local storage is no more XXX: " << *this->mLocalData )
+    SCAI_ASSERT_ERROR( local, "XXXSparseMatrix: local storage is no more XXX: " << *this->mLocalData )
 
     return *local;
 }
@@ -282,7 +282,7 @@ XXXSparseMatrix<ValueType>::getLocalStorage()
 
     StorageType* local = dynamic_cast<StorageType*>( this->mLocalData.get() );
 
-    LAMA_ASSERT_ERROR( local, "XXXSparseMatrix: local storage is no more XXX: " << *this->mLocalData )
+    SCAI_ASSERT_ERROR( local, "XXXSparseMatrix: local storage is no more XXX: " << *this->mLocalData )
 
     return *local;
 }
@@ -298,7 +298,7 @@ XXXSparseMatrix<ValueType>::getHaloStorage() const
 
     const StorageType* halo = dynamic_cast<const StorageType*>( mHaloData.get() );
 
-    LAMA_ASSERT_ERROR( halo, "XXXSparseMatrix: halo storage is no more XXX: " << *mHaloData )
+    SCAI_ASSERT_ERROR( halo, "XXXSparseMatrix: halo storage is no more XXX: " << *mHaloData )
 
     return *halo;
 }
@@ -310,14 +310,14 @@ void XXXSparseMatrix<ValueType>::swapLocalStorage( StorageType& localStorage )
 {
     // make sure that local storage fits into this sparse matrix
 
-    LAMA_ASSERT_EQUAL_ERROR( localStorage.getNumRows(), mLocalData->getNumRows() )
-    LAMA_ASSERT_EQUAL_ERROR( localStorage.getNumColumns(), mLocalData->getNumColumns() )
+    SCAI_ASSERT_EQUAL_ERROR( localStorage.getNumRows(), mLocalData->getNumRows() )
+    SCAI_ASSERT_EQUAL_ERROR( localStorage.getNumColumns(), mLocalData->getNumColumns() )
 
     // make sure that local matrix storage has the correct format / value type
 
     StorageType* localData = dynamic_cast<StorageType*>( mLocalData.get() );
 
-    LAMA_ASSERT_ERROR( localData, *mLocalData << ": does not fit matrix type " << typeName() )
+    SCAI_ASSERT_ERROR( localData, *mLocalData << ": does not fit matrix type " << typeName() )
 
     localData->swap( localStorage );
 }

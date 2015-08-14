@@ -325,9 +325,9 @@ void MPICommunicator::setNodeData()
 
     free( allNodeNames );
 
-    LAMA_ASSERT_ERROR( mNodeSize > 0, "Serious problem encountered to get node size" )
+    SCAI_ASSERT_ERROR( mNodeSize > 0, "Serious problem encountered to get node size" )
 
-    LAMA_ASSERT_ERROR( mNodeRank < mNodeSize, "Serious problem encountered to get node size" )
+    SCAI_ASSERT_ERROR( mNodeRank < mNodeSize, "Serious problem encountered to get node size" )
 
     SCAI_LOG_INFO( logger, "Processor " << mRank << ": node rank " << mNodeRank << " of " << mNodeSize )
 }
@@ -449,10 +449,10 @@ void MPICommunicator::send( const ValueType buffer[], int count, int target ) co
 
 void MPICommunicator::all2all( IndexType recvSizes[], const IndexType sendSizes[] ) const
 {
-    LAMA_REGION( "Communicator.MPI.all2all" )
+    SCAI_REGION( "Communicator.MPI.all2all" )
 
-    LAMA_ASSERT_ERROR( sendSizes != 0, " invalid sendSizes " )
-    LAMA_ASSERT_ERROR( recvSizes != 0, " invalid recvSizes " )
+    SCAI_ASSERT_ERROR( sendSizes != 0, " invalid sendSizes " )
+    SCAI_ASSERT_ERROR( recvSizes != 0, " invalid recvSizes " )
 
     // MPI is not const-aware so we have to use a const_cast on sendSizes
 
@@ -473,10 +473,10 @@ void MPICommunicator::exchangeByPlanImpl(
     const ValueType sendData[],
     const CommunicationPlan& sendPlan ) const
 {
-    LAMA_REGION( "Communicator.MPI.exchangeByPlan" )
+    SCAI_REGION( "Communicator.MPI.exchangeByPlan" )
 
-    LAMA_ASSERT_ERROR( sendPlan.allocated(), "sendPlan not allocated" )
-    LAMA_ASSERT_ERROR( recvPlan.allocated(), "recvPlan not allocated" )
+    SCAI_ASSERT_ERROR( sendPlan.allocated(), "sendPlan not allocated" )
+    SCAI_ASSERT_ERROR( recvPlan.allocated(), "recvPlan not allocated" )
 
     SCAI_LOG_INFO( logger,
                    *this << ": exchange for values of type " << common::getScalarType<ValueType>() 
@@ -529,7 +529,7 @@ void MPICommunicator::exchangeByPlanImpl(
         else
         {
             SCAI_LOG_DEBUG( logger, "self-exchange of " << quantity << " elements" )
-            LAMA_ASSERT_DEBUG( quantity == recvDataForMeSize, "size mismatch for self exchange" )
+            SCAI_ASSERT_DEBUG( quantity == recvDataForMeSize, "size mismatch for self exchange" )
 
             for( IndexType k = 0; k < recvDataForMeSize; k++ )
             {
@@ -553,10 +553,10 @@ SyncToken* MPICommunicator::exchangeByPlanAsyncImpl(
     const ValueType* const sendData,
     const CommunicationPlan& sendPlan ) const
 {
-    LAMA_REGION( "Communicator.MPI.exchangeByPlanAsync" )
+    SCAI_REGION( "Communicator.MPI.exchangeByPlanAsync" )
 
-    LAMA_ASSERT_ERROR( sendPlan.allocated(), "sendPlan not allocated" )
-    LAMA_ASSERT_ERROR( recvPlan.allocated(), "recvPlan not allocated" )
+    SCAI_ASSERT_ERROR( sendPlan.allocated(), "sendPlan not allocated" )
+    SCAI_ASSERT_ERROR( recvPlan.allocated(), "recvPlan not allocated" )
     SCAI_LOG_INFO( logger,
                    *this << ": exchange for values of type " << common::getScalarType<ValueType>() 
                     << ", send to " << sendPlan.size() << " processors, recv from " << recvPlan.size() )
@@ -607,7 +607,7 @@ SyncToken* MPICommunicator::exchangeByPlanAsyncImpl(
         else
         {
             SCAI_LOG_DEBUG( logger, "self-exchange of " << quantity << " elements" )
-            LAMA_ASSERT_DEBUG( quantity == recvDataForMeSize, "size mismatch for self exchange" )
+            SCAI_ASSERT_DEBUG( quantity == recvDataForMeSize, "size mismatch for self exchange" )
 
             for( IndexType k = 0; k < recvDataForMeSize; k++ )
             {
@@ -647,7 +647,7 @@ inline MPI_Comm MPICommunicator::selectMPIComm() const
 template<typename ValueType>
 void MPICommunicator::bcastImpl( ValueType val[], const IndexType n, const PartitionId root ) const
 {
-    LAMA_REGION( "Communicator.MPI.bcast" )
+    SCAI_REGION( "Communicator.MPI.bcast" )
 
     MPI_Datatype commType = getMPIType<ValueType>();
     LAMA_MPICALL( logger, MPI_Bcast( val, n, commType, root, selectMPIComm() ), "MPI_Bcast<ValueType>" )
@@ -666,10 +666,10 @@ IndexType MPICommunicator::shiftImpl(
     const IndexType sendSize,
     const PartitionId dest ) const
 {
-    LAMA_REGION( "Communicator.MPI.shift" )
+    SCAI_REGION( "Communicator.MPI.shift" )
 
-    LAMA_ASSERT_ERROR( source != getRank(), "source must not be this partition" )
-    LAMA_ASSERT_ERROR( dest != getRank(), "dest must not be this partition" )
+    SCAI_ASSERT_ERROR( source != getRank(), "source must not be this partition" )
+    SCAI_ASSERT_ERROR( dest != getRank(), "dest must not be this partition" )
 
     SCAI_LOG_DEBUG( logger,
                     *this << ": recv from " << source << " max " << recvSize << " values " << ", send to " << dest << " " << sendSize << " values." )
@@ -708,8 +708,8 @@ SyncToken* MPICommunicator::shiftAsyncImpl(
     SCAI_LOG_DEBUG( logger,
                     *this << ": recv from " << source << ", send to " << dest << ", both " << size << " values." )
 
-    LAMA_ASSERT_ERROR( source != getRank(), "source must not be this partition" )
-    LAMA_ASSERT_ERROR( dest != getRank(), "dest must not be this partition" )
+    SCAI_ASSERT_ERROR( source != getRank(), "source must not be this partition" )
+    SCAI_ASSERT_ERROR( dest != getRank(), "dest must not be this partition" )
 
     // need an MPI communicator with 2 requests, no clean up needed
 
@@ -728,7 +728,7 @@ SyncToken* MPICommunicator::shiftAsyncImpl(
 template<typename ValueType>
 ValueType MPICommunicator::sumImpl( const ValueType value ) const
 {
-    LAMA_REGION( "Communicator.MPI.sum" )
+    SCAI_REGION( "Communicator.MPI.sum" )
 
     ValueType sum;
     MPI_Datatype commType = getMPIType<ValueType>();
@@ -745,7 +745,7 @@ ValueType MPICommunicator::sumImpl( const ValueType value ) const
 template<typename ValueType>
 ValueType MPICommunicator::minImpl( const ValueType value ) const
 {
-    LAMA_REGION( "Communicator.MPI.min" )
+    SCAI_REGION( "Communicator.MPI.min" )
 
     MPI_Datatype commType = getMPIType<ValueType>();
 
@@ -759,7 +759,7 @@ ValueType MPICommunicator::minImpl( const ValueType value ) const
 template<typename ValueType>
 ValueType MPICommunicator::maxImpl( const ValueType value ) const
 {
-    LAMA_REGION( "Communicator.MPI.max" )
+    SCAI_REGION( "Communicator.MPI.max" )
 
     MPI_Datatype commType = getMPIType<ValueType>();
 
@@ -791,9 +791,9 @@ void MPICommunicator::scatterImpl(
     const PartitionId root,
     const ValueType allvals[] ) const
 {
-    LAMA_REGION( "Communicator.MPI.scatter" )
+    SCAI_REGION( "Communicator.MPI.scatter" )
 
-    LAMA_ASSERT_DEBUG( root < getSize(), "illegal root, root = " << root )
+    SCAI_ASSERT_DEBUG( root < getSize(), "illegal root, root = " << root )
     SCAI_LOG_DEBUG( logger, *this << ": scatter of " << n << " elements, root = " << root )
     MPI_Datatype commType = getMPIType<ValueType>();
     // MPI interface is not aware of const, so const_cast is required
@@ -815,9 +815,9 @@ void MPICommunicator::scatterVImpl(
     const ValueType allvals[],
     const IndexType sizes[] ) const
 {
-    LAMA_REGION( "Communicator.MPI.scatterV" )
+    SCAI_REGION( "Communicator.MPI.scatterV" )
 
-    LAMA_ASSERT_ERROR( root < getSize(), "illegal root, root = " << root )
+    SCAI_ASSERT_ERROR( root < getSize(), "illegal root, root = " << root )
     MPI_Datatype commType = getMPIType<ValueType>();
 
     if( root == getRank() )
@@ -872,9 +872,9 @@ void MPICommunicator::gatherImpl(
     const PartitionId root,
     const ValueType myvals[] ) const
 {
-    LAMA_REGION( "Communicator.MPI.gather" )
+    SCAI_REGION( "Communicator.MPI.gather" )
 
-    LAMA_ASSERT_DEBUG( root < getSize(), "illegal root, root = " << root )
+    SCAI_ASSERT_DEBUG( root < getSize(), "illegal root, root = " << root )
     SCAI_LOG_DEBUG( logger, *this << ": gather of " << n << " elements, root = " << root )
     MPI_Datatype commType = getMPIType<ValueType>();
     // MPI interface is not aware of const, so const_cast is required
@@ -895,9 +895,9 @@ void MPICommunicator::gatherVImpl(
     const ValueType myvals[],
     const IndexType sizes[] ) const
 {
-    LAMA_REGION( "Communicator.MPI.gatherV" )
+    SCAI_REGION( "Communicator.MPI.gatherV" )
 
-    LAMA_ASSERT_ERROR( root < getSize(), "illegal root, root = " << root )
+    SCAI_ASSERT_ERROR( root < getSize(), "illegal root, root = " << root )
     void* sendbuf = const_cast<ValueType*>( myvals );
     MPI_Datatype commType = getMPIType<ValueType>();
 
@@ -948,7 +948,7 @@ void MPICommunicator::gatherVImpl(
 template<typename ValueType>
 void MPICommunicator::maxlocImpl( ValueType& val, IndexType& location, PartitionId root ) const
 {
-    LAMA_REGION( "Communicator.MPI.maxloc" )
+    SCAI_REGION( "Communicator.MPI.maxloc" )
 
     struct ValAndLoc
     {
@@ -976,7 +976,7 @@ void MPICommunicator::maxlocImpl( ValueType& val, IndexType& location, Partition
 template<typename ValueType>
 void MPICommunicator::swapImpl( ValueType val[], const IndexType n, PartitionId partner ) const
 {
-    LAMA_REGION( "Communicator.MPI.swap" )
+    SCAI_REGION( "Communicator.MPI.swap" )
 
     if( partner == mRank )
     {
@@ -996,7 +996,7 @@ void MPICommunicator::swapImpl( ValueType val[], const IndexType n, PartitionId 
                   MPI_Sendrecv( tmp.get(), n, commType, partner, defaultTag, val, n, commType, partner, defaultTag,
                                 selectMPIComm(), &mpiStatus ),
                   "MPI_Sendrecv" )
-    LAMA_ASSERT_ERROR( getCount<ValueType>( mpiStatus ) == n, "size mismatch for swap" )
+    SCAI_ASSERT_ERROR( getCount<ValueType>( mpiStatus ) == n, "size mismatch for swap" )
 }
 
 memory::ContextPtr MPICommunicator::getCommunicationContext( const memory::ContextArray& array ) const

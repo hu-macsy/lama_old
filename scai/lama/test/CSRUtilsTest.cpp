@@ -91,7 +91,7 @@ void absMaxDiffValTest( ContextPtr loc )
     ReadAccess<IndexType> rCSRIA2( csrIA2, loc );
     ReadAccess<IndexType> rCSRJA2( csrJA2, loc );
     ReadAccess<ValueType> rCSRValues2( csrValues2, loc );
-    LAMA_CONTEXT_ACCESS( loc );
+    SCAI_CONTEXT_ACCESS( loc );
     ValueType maxVal = absMaxDiffVal( numRows, false, rCSRIA1.get(), rCSRJA1.get(), rCSRValues1.get(), rCSRIA2.get(),
                                       rCSRJA2.get(), rCSRValues2.get() );
     BOOST_CHECK_EQUAL( 3, maxVal );
@@ -136,7 +136,7 @@ void transposeTestSquare( ContextPtr loc )
     WriteOnlyAccess<IndexType> wCSCIA( cscIA, loc, numColumns + 1 );
     WriteOnlyAccess<IndexType> wCSCJA( cscJA, loc, numValues );
     WriteOnlyAccess<ValueType> wCSCValues( cscValues, loc, numValues );
-    LAMA_CONTEXT_ACCESS( loc );
+    SCAI_CONTEXT_ACCESS( loc );
     convertCSR2CSC( wCSCIA.get(), wCSCJA.get(), wCSCValues.get(), rCSRIA.get(), rCSRJA.get(), rCSRValues.get(), numRows,
                     numColumns, numValues );
     {
@@ -201,7 +201,7 @@ void transposeTestNonSquare( ContextPtr loc )
     WriteOnlyAccess<IndexType> wCSCIA( cscIA, loc, numColumns + 1 );
     WriteOnlyAccess<IndexType> wCSCJA( cscJA, loc, numValues );
     WriteOnlyAccess<ValueType> wCSCValues( cscValues, loc, numValues );
-    LAMA_CONTEXT_ACCESS( loc );
+    SCAI_CONTEXT_ACCESS( loc );
     convertCSR2CSC( wCSCIA.get(), wCSCJA.get(), wCSCValues.get(), rCSRIA.get(), rCSRJA.get(), rCSRValues.get(), numRows,
                     numColumns, numValues );
     {

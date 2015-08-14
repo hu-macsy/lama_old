@@ -59,7 +59,7 @@ extern cublasHandle_t CUDAContext_cublasHandle;
 
 static void scal( int n, float alpha, float* x_d, int inc_x, SyncToken* syncToken )
 {
-    LAMA_CHECK_CUDA_ACCESS
+    SCAI_CHECK_CUDA_ACCESS
 
     cudaStream_t stream = NULL;
 
@@ -72,8 +72,8 @@ static void scal( int n, float alpha, float* x_d, int inc_x, SyncToken* syncToke
 
     std::cout << "scal( n = " << n << ", alpha = " << alpha << ", x[], inc_x = " << inc_x << std::endl;
 
-    LAMA_CUBLAS_CALL( cublasSetStream( CUDAContext_cublasHandle, stream ), "scal set stream" );
-    LAMA_CUBLAS_CALL( cublasSscal( CUDAContext_cublasHandle, n, &alpha, x_d, inc_x ), "cublasSscal" );
+    SCAI_CUBLAS_CALL( cublasSetStream( CUDAContext_cublasHandle, stream ), "scal set stream" );
+    SCAI_CUBLAS_CALL( cublasSscal( CUDAContext_cublasHandle, n, &alpha, x_d, inc_x ), "cublasSscal" );
 }
 
 /* --------------------------------------------------------------------- */
@@ -174,7 +174,7 @@ BOOST_AUTO_TEST_CASE( asyncTest )
     common::shared_ptr<SyncToken> token( cudaContext->getSyncToken() );
 
     {
-        LAMA_CONTEXT_ACCESS( cudaContext )
+        SCAI_CONTEXT_ACCESS( cudaContext )
         scal( n, alpha, cudaV->get(), 1, token.get() );
         token->pushToken( cudaV );
     }
@@ -203,7 +203,7 @@ BOOST_AUTO_TEST_CASE( syncTest )
     LAMAArray<float> vector( n, value );
     {
         WriteAccess<float> cudaV( vector, cudaContext );
-        LAMA_CONTEXT_ACCESS( cudaContext );
+        SCAI_CONTEXT_ACCESS( cudaContext );
         common::shared_ptr<SyncToken> token( cudaContext->getSyncToken() );
         scal( n, alpha, cudaV.get(), 1, token.get() );
         // synchronize on token at end of this scope

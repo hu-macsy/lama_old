@@ -461,7 +461,7 @@ namespace lama
                     const ValueType diaValues[],
                     SyncToken* syncToken )
     {
-        LAMA_REGION( "CUDA.DIA.normalGEMV" )
+        SCAI_REGION( "CUDA.DIA.normalGEMV" )
 
         SCAI_LOG_INFO( logger, "normalGEMV<" << getScalarType<ValueType>() << ">"
                         << " result[ " << numRows << "] = " << alpha
@@ -471,14 +471,14 @@ namespace lama
         dim3 dimBlock( blockSize, 1, 1 );
         dim3 dimGrid = makeGrid( numRows, dimBlock.x );
 
-        LAMA_CHECK_CUDA_ACCESS
+        SCAI_CHECK_CUDA_ACCESS
 
         cudaStream_t stream = 0;
 
         if ( syncToken )
         {
             CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-            LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
+            SCAI_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
             stream = cudaStreamSyncToken->getCUDAStream();
         }
 
@@ -685,7 +685,7 @@ namespace lama
         {
             // synchronize now, unbind used textures
 
-            LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "normalGEMV for DIA" )
+            SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "normalGEMV for DIA" )
 
             if ( useTexture )
             {
@@ -782,7 +782,7 @@ namespace lama
                     const ValueType diaValues[],
                     SyncToken* syncToken )
     {
-        LAMA_REGION( "CUDA.DIA.normalGEVM" )
+        SCAI_REGION( "CUDA.DIA.normalGEVM" )
 
         SCAI_LOG_INFO( logger, "normalGEVM<" << getScalarType<ValueType>() << ">"
                         << " result[ " << numRows << "] = " << alpha
@@ -792,14 +792,14 @@ namespace lama
         dim3 dimBlock( blockSize, 1, 1 );
         dim3 dimGrid = makeGrid( numColumns, dimBlock.x );
 
-        LAMA_CHECK_CUDA_ACCESS
+        SCAI_CHECK_CUDA_ACCESS
 
         cudaStream_t stream = 0;
 
         if ( syncToken )
         {
             CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-            LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
+            SCAI_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
             stream = cudaStreamSyncToken->getCUDAStream();
         }
 
@@ -855,7 +855,7 @@ namespace lama
         {
             // synchronize now, unbind used textures
 
-            LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "normalGEMV for DIA" )
+            SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "normalGEMV for DIA" )
 
             if ( useTexture )
             {

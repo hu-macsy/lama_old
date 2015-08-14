@@ -406,7 +406,7 @@ void DenseMatrix<ValueType>::setIdentity( DistributionPtr dist )
     IndexType rank = comm.getRank();
     IndexType size = comm.getSize();
 
-    LAMA_ASSERT_EQUAL_DEBUG( size, static_cast<IndexType>( mData.size() ) )
+    SCAI_ASSERT_EQUAL_DEBUG( size, static_cast<IndexType>( mData.size() ) )
 
     for ( IndexType i = 0; i < size; i++ )
     {
@@ -516,7 +516,7 @@ bool DenseMatrix<ValueType>::isConsistent() const
 
         for ( size_t i = 0; i < mData.size(); ++i )
         {
-            LAMA_ASSERT_EQUAL_ERROR( numLocalRows, mData[i]->getNumRows() )
+            SCAI_ASSERT_EQUAL_ERROR( numLocalRows, mData[i]->getNumRows() )
             mData[i]->check( "check for consistency" );
         }
     }
@@ -537,7 +537,7 @@ bool DenseMatrix<ValueType>::isConsistent() const
 template<typename ValueType>
 void DenseMatrix<ValueType>::invert( const Matrix& other )
 {
-    LAMA_ASSERT_ERROR( other.getNumRows() == other.getNumColumns(),
+    SCAI_ASSERT_ERROR( other.getNumRows() == other.getNumColumns(),
                        "invert not allowed for non-square matrices: " << other )
 
     // invert supported for replicated or cyclic(n) distributed matrices
@@ -594,7 +594,7 @@ bool DenseMatrix<ValueType>::hasScalaPack()
 template<typename ValueType>
 void DenseMatrix<ValueType>::invertReplicated()
 {
-    LAMA_REGION( "Mat.Dense.invertReplicated" )
+    SCAI_REGION( "Mat.Dense.invertReplicated" )
 
     DistributionPtr rowDist = getDistributionPtr();
     DistributionPtr colDist = getColDistributionPtr();
@@ -616,7 +616,7 @@ void DenseMatrix<ValueType>::invertReplicated()
 template<typename ValueType>
 void DenseMatrix<ValueType>::invertCyclic()
 {
-    LAMA_REGION( "Mat.Dense.invertCyclic" )
+    SCAI_REGION( "Mat.Dense.invertCyclic" )
 
     const Communicator& comm = getDistribution().getCommunicator();
 
@@ -624,7 +624,7 @@ void DenseMatrix<ValueType>::invertCyclic()
 
     const CyclicDistribution* cyclicDist = dynamic_cast<const CyclicDistribution*>( &rowDist );
 
-    LAMA_ASSERT_ERROR( cyclicDist, "no cyclic distribution: " << rowDist )
+    SCAI_ASSERT_ERROR( cyclicDist, "no cyclic distribution: " << rowDist )
 
     const int nb = cyclicDist->chunkSize(); // blocking factor
 
@@ -638,13 +638,13 @@ void DenseMatrix<ValueType>::invertCyclic()
 
     // assert square matrix
 
-    LAMA_ASSERT_EQUAL_ERROR( getNumColumns(), n )
+    SCAI_ASSERT_EQUAL_ERROR( getNumColumns(), n )
 
     DenseStorage<ValueType>& denseStorage = getLocalStorage();
 
     const IndexType localSize = denseStorage.getData().size();
 
-    LAMA_ASSERT_EQUAL_ERROR( localSize, denseStorage.getNumRows() * n )
+    SCAI_ASSERT_EQUAL_ERROR( localSize, denseStorage.getNumRows() * n )
 
     SCAI_LOG_INFO( logger, "local dense data = " << denseStorage << ", localSize = " << localSize )
 
@@ -654,7 +654,7 @@ void DenseMatrix<ValueType>::invertCyclic()
 
     SCAI_LOG_INFO( logger, "now call inverse" )
 
-    LAMA_CONTEXT_ACCESS( loc )
+    SCAI_CONTEXT_ACCESS( loc )
 
     inverse( n, nb, data, comm );
 }
@@ -720,7 +720,7 @@ void DenseMatrix<ValueType>::allocate( const IndexType numRows, const IndexType 
 
     mData.resize( 1 ); // all other storages will be freed
 
-    LAMA_ASSERT_ERROR( mData[0], "no local data available" )
+    SCAI_ASSERT_ERROR( mData[0], "no local data available" )
 
     mData[0]->allocate( mNumRows, mNumColumns );
 }
@@ -844,7 +844,7 @@ void DenseMatrix<ValueType>::assignSparse( const CRTPMatrix<SparseMatrix<ValueTy
 
 // assertion just to make sure that we do not end up in infinite recursion
 
-        LAMA_ASSERT_DEBUG( otherCSR.getColDistribution().isReplicated(), "otherCSR not replicated columns" )
+        SCAI_ASSERT_DEBUG( otherCSR.getColDistribution().isReplicated(), "otherCSR not replicated columns" )
 
         assignSparse( otherCSR );
 
@@ -914,7 +914,7 @@ void DenseMatrix<ValueType>::assign( const _MatrixStorage& storage, Distribution
         if ( storage.getFormat() == Format::DENSE && storage.getValueType() == getValueType() )
         {
             const DenseStorage<ValueType>* localData = dynamic_cast<const DenseStorage<ValueType>*>( &storage );
-            LAMA_ASSERT_ERROR( localData, "dynamic_cast<constDenseStorage<ValueType>*> failed: " << storage )
+            SCAI_ASSERT_ERROR( localData, "dynamic_cast<constDenseStorage<ValueType>*> failed: " << storage )
             splitColumnData( mData, *localData, numColPartitions, mOwners );
         }
         else if ( colDist->isReplicated() )
@@ -982,7 +982,7 @@ void DenseMatrix<ValueType>::joinColumnData(
 
 // SCAI_LOG_INFO( logger, "join column data of " << chunks.size() << " chunks to " << result )
 
-    LAMA_ASSERT_EQUAL_ERROR( static_cast<IndexType>( columnOwners.size() ), numColumns )
+    SCAI_ASSERT_EQUAL_ERROR( static_cast<IndexType>( columnOwners.size() ), numColumns )
 
     const PartitionId numColPartitions = static_cast<PartitionId>( chunks.size() );
 
@@ -994,8 +994,8 @@ void DenseMatrix<ValueType>::joinColumnData(
 
     for ( PartitionId p = 0; p < numColPartitions; ++p )
     {
-        LAMA_ASSERT_ERROR( chunks[p], "no chunk data for partition " << p )
-        LAMA_ASSERT_EQUAL_ERROR( chunks[p]->getNumRows(), numRows )
+        SCAI_ASSERT_ERROR( chunks[p], "no chunk data for partition " << p )
+        SCAI_ASSERT_EQUAL_ERROR( chunks[p]->getNumRows(), numRows )
         chunkRead[p].reset( new ReadAccess<ValueType>( chunks[p]->getData() ) );
         SCAI_LOG_DEBUG( logger, "column chunk[" << p << "] : " << *chunks[p] )
     }
@@ -1021,7 +1021,7 @@ void DenseMatrix<ValueType>::joinColumnData(
 
     for ( PartitionId p = 0; p < numColPartitions; ++p )
     {
-        LAMA_ASSERT_EQUAL_ERROR( chunkOffset[p], chunks[p]->getNumColumns() * numRows )
+        SCAI_ASSERT_EQUAL_ERROR( chunkOffset[p], chunks[p]->getNumColumns() * numRows )
     }
 }
 
@@ -1032,8 +1032,8 @@ void DenseMatrix<ValueType>::allocateData()
 {
 // mOwners are already computed, now we count them
 
-    LAMA_ASSERT_EQUAL_DEBUG( mNumColumns, ( IndexType ) mOwners.size() )
-    LAMA_ASSERT_EQUAL_DEBUG( mNumColumns, getColDistribution().getGlobalSize() )
+    SCAI_ASSERT_EQUAL_DEBUG( mNumColumns, ( IndexType ) mOwners.size() )
+    SCAI_ASSERT_EQUAL_DEBUG( mNumColumns, getColDistribution().getGlobalSize() )
 
     const PartitionId numChunks = getColDistribution().getCommunicator().getSize();
 
@@ -1061,7 +1061,7 @@ void DenseMatrix<ValueType>::allocateData()
 
     for ( std::vector<PartitionId>::size_type i = 0; i < mOwners.size(); ++i )
     {
-        LAMA_ASSERT_DEBUG( mOwners[i] < numChunks,
+        SCAI_ASSERT_DEBUG( mOwners[i] < numChunks,
                            "column owner [" << i << "] = " << mOwners[i] << " out of range, #chunks = " << numChunks )
 
         ++numColsPartition[mOwners[i]];
@@ -1089,13 +1089,13 @@ void DenseMatrix<ValueType>::splitColumnData(
     const IndexType numColumns = columnData.getNumColumns();
     const IndexType numRows = columnData.getNumRows();
 
-    LAMA_ASSERT_EQUAL_ERROR( static_cast<IndexType>( columnOwners.size() ), numColumns )
+    SCAI_ASSERT_EQUAL_ERROR( static_cast<IndexType>( columnOwners.size() ), numColumns )
 
     std::vector<PartitionId> numCols( numChunks, 0 );
 
     for ( std::vector<PartitionId>::size_type i = 0; i < columnOwners.size(); ++i )
     {
-        LAMA_ASSERT_DEBUG( columnOwners[i] < numChunks, "owner out of range" )
+        SCAI_ASSERT_DEBUG( columnOwners[i] < numChunks, "owner out of range" )
         ++numCols[columnOwners[i]];
     }
 
@@ -1136,14 +1136,14 @@ void DenseMatrix<ValueType>::splitColumnData(
 
     for ( PartitionId p = 0; p < numChunks; ++p )
     {
-        LAMA_ASSERT_EQUAL_ERROR( chunkOffset[p], numCols[p] * numRows )
+        SCAI_ASSERT_EQUAL_ERROR( chunkOffset[p], numCols[p] * numRows )
     }
 }
 
 template<typename ValueType>
 void DenseMatrix<ValueType>::redistribute( DistributionPtr rowDistribution, DistributionPtr colDistribution )
 {
-    LAMA_REGION( "Mat.Dense.redistribute" )
+    SCAI_REGION( "Mat.Dense.redistribute" )
 
     if ( *rowDistribution == getDistribution() && *colDistribution == getColDistribution() )
     {
@@ -1177,7 +1177,7 @@ void DenseMatrix<ValueType>::redistribute( DistributionPtr rowDistribution, Dist
 template<typename ValueType>
 void DenseMatrix<ValueType>::splitColumns( DistributionPtr colDistribution )
 {
-    LAMA_ASSERT_EQUAL_ERROR( 1, getColDistribution().getNumPartitions() )
+    SCAI_ASSERT_EQUAL_ERROR( 1, getColDistribution().getNumPartitions() )
 
     common::shared_ptr<DenseStorage<ValueType> > oldStorage = mData[0];
 
@@ -1185,8 +1185,8 @@ void DenseMatrix<ValueType>::splitColumns( DistributionPtr colDistribution )
 
     computeOwners(); // compute mapping column index -> chunk
 
-    LAMA_ASSERT_EQUAL_ERROR( getDistribution().getLocalSize(), oldStorage->getNumRows() )
-    LAMA_ASSERT_EQUAL_ERROR( mNumColumns, oldStorage->getNumColumns() )
+    SCAI_ASSERT_EQUAL_ERROR( getDistribution().getLocalSize(), oldStorage->getNumRows() )
+    SCAI_ASSERT_EQUAL_ERROR( mNumColumns, oldStorage->getNumColumns() )
 
     const PartitionId numColPartitions = colDistribution->getNumPartitions();
 
@@ -1206,7 +1206,7 @@ void DenseMatrix<ValueType>::localize(
     const IndexType numLocalRows = rowDistribution.getLocalSize();
     const IndexType numColumns = global.getNumColumns();
 
-    LAMA_ASSERT_EQUAL_ERROR( global.getNumRows(), rowDistribution.getGlobalSize() )
+    SCAI_ASSERT_EQUAL_ERROR( global.getNumRows(), rowDistribution.getGlobalSize() )
 
     local.allocate( numLocalRows, numColumns );
 
@@ -1236,9 +1236,9 @@ static void replicate(
 {
     const IndexType numCols = replicatedData.getNumColumns();
 
-    LAMA_ASSERT_EQUAL_DEBUG( numCols, distributedData.getNumColumns() )
-    LAMA_ASSERT_EQUAL_DEBUG( replicatedData.getNumRows(), distribution.getGlobalSize() )
-    LAMA_ASSERT_EQUAL_DEBUG( distributedData.getNumRows(), distribution.getLocalSize() )
+    SCAI_ASSERT_EQUAL_DEBUG( numCols, distributedData.getNumColumns() )
+    SCAI_ASSERT_EQUAL_DEBUG( replicatedData.getNumRows(), distribution.getGlobalSize() )
+    SCAI_ASSERT_EQUAL_DEBUG( distributedData.getNumRows(), distribution.getLocalSize() )
 
     WriteAccess<ValueType> globalVals( replicatedData.getData() );
     ReadAccess<ValueType> localVals( distributedData.getData() );
@@ -1311,7 +1311,7 @@ void DenseMatrix<ValueType>::redistributeRows( DistributionPtr rowDistribution )
 
     DenseStorage<ValueType>& oldLocalData = getLocalStorage();
 
-    LAMA_ASSERT_EQUAL_DEBUG( nCols, oldLocalData.getNumColumns() )
+    SCAI_ASSERT_EQUAL_DEBUG( nCols, oldLocalData.getNumColumns() )
 
     DenseStorage<ValueType> newLocalData( rowDistribution->getLocalSize(), nCols );
 
@@ -1379,7 +1379,7 @@ void DenseMatrix<ValueType>::getRow( DenseVector<ValueType>& row, const IndexTyp
 
     owner = comm.sum( owner ) - 1; // get owner via a reduction
 
-    LAMA_ASSERT_ERROR( owner >= 0, "could not find owner of row " << globalRowIndex )
+    SCAI_ASSERT_ERROR( owner >= 0, "could not find owner of row " << globalRowIndex )
 
     {
         WriteAccess<ValueType> rowAccess( row.getLocalValues() );
@@ -1395,7 +1395,7 @@ void DenseMatrix<ValueType>::getRow( Vector& row, const IndexType globalRowIndex
 // row must be a DenseVector of same type
 
         DenseVector<ValueType>* typedRow = dynamic_cast<DenseVector<ValueType>*>( &row );
-        LAMA_ASSERT_DEBUG( typedRow, "row is not DenseVector<Matrix::ValueType>" )
+        SCAI_ASSERT_DEBUG( typedRow, "row is not DenseVector<Matrix::ValueType>" )
         getRow( *typedRow, globalRowIndex );
     }
     else
@@ -1555,7 +1555,7 @@ Scalar DenseMatrix<ValueType>::getValue( lama::IndexType i, lama::IndexType j ) 
             }
         }
 
-        LAMA_ASSERT_ERROR( jLocal != nIndex, "non local column index" )
+        SCAI_ASSERT_ERROR( jLocal != nIndex, "non local column index" )
         SCAI_LOG_TRACE( logger,
                         "getting value for index(" << i << "," << j << ")" << " which is localy ( " << iLocal << "," << jLocal << " )" )
         myValue = mData[owner]->getValue( iLocal, jLocal );
@@ -1591,7 +1591,7 @@ void DenseMatrix<ValueType>::matrixTimesVectorImpl(
     const ValueType betaValue,
     const DenseVector<ValueType>& denseY ) const
 {
-    LAMA_REGION( "Mat.Dense.timesVector" )
+    SCAI_REGION( "Mat.Dense.timesVector" )
 
     const LAMAArray<ValueType>& localY = denseY.getLocalValues();
 
@@ -1716,7 +1716,7 @@ void DenseMatrix<ValueType>::matrixTimesVectorImpl(
 
                 LAMA_INTERFACE_FN_DEFAULT_T( copy, loc, BLAS, BLAS1, ValueType );
 
-                LAMA_CONTEXT_ACCESS( loc )
+                SCAI_CONTEXT_ACCESS( loc )
 
                 ReadAccess<ValueType> readSend( *sendValues, loc );
                 WriteAccess<ValueType> writeX( x, loc );
@@ -1779,7 +1779,7 @@ void DenseMatrix<ValueType>::vectorTimesMatrixImpl(
     const ValueType betaValue,
     const DenseVector<ValueType>& denseY ) const
 {
-    LAMA_REGION( "Mat.Dense.vectorTimesMatrix" )
+    SCAI_REGION( "Mat.Dense.vectorTimesMatrix" )
 
     const LAMAArray<ValueType>& localY = denseY.getLocalValues();
 
@@ -1828,11 +1828,11 @@ void DenseMatrix<ValueType>::matrixPlusMatrix(
 
     const DenseMatrix<ValueType>* denseA = dynamic_cast<const DenseMatrix<ValueType>*>( &matA );
 
-    LAMA_ASSERT_ERROR( denseA, "Must be dense matrix<" << getValueType() << "> : " << matA )
+    SCAI_ASSERT_ERROR( denseA, "Must be dense matrix<" << getValueType() << "> : " << matA )
 
     const DenseMatrix<ValueType>* denseB = dynamic_cast<const DenseMatrix<ValueType>*>( &matB );
 
-    LAMA_ASSERT_ERROR( denseB, "Must be dense matrix<" << getValueType() << "> : " << matB )
+    SCAI_ASSERT_ERROR( denseB, "Must be dense matrix<" << getValueType() << "> : " << matB )
 
 // Now we can add sparse matrices
 
@@ -1848,12 +1848,12 @@ void DenseMatrix<ValueType>::matrixPlusMatrixImpl(
     const ValueType beta,
     const DenseMatrix<ValueType>& B )
 {
-    LAMA_REGION( "Mat.plusMatrix" )
+    SCAI_REGION( "Mat.plusMatrix" )
 
 // already verified
 
-    LAMA_ASSERT_EQUAL_DEBUG( A.getDistribution(), B.getDistribution() )
-    LAMA_ASSERT_EQUAL_DEBUG( A.getColDistribution(), B.getColDistribution() )
+    SCAI_ASSERT_EQUAL_DEBUG( A.getDistribution(), B.getDistribution() )
+    SCAI_ASSERT_EQUAL_DEBUG( A.getColDistribution(), B.getColDistribution() )
 
 // Now we can do it completely local
 
@@ -1878,12 +1878,12 @@ void DenseMatrix<ValueType>::matrixTimesMatrix(
     const Scalar beta,
     const Matrix& C ) const
 {
-    LAMA_ASSERT_ERROR( getDistribution().isReplicated(), "this->rows are distributed" )
-    LAMA_ASSERT_ERROR( getColDistribution().isReplicated(), "this->cols are distributed" )
-    LAMA_ASSERT_ERROR( B.getDistribution().isReplicated(), "B.rows are distributed" )
-    LAMA_ASSERT_ERROR( B.getColDistribution().isReplicated(), "B.cols are distributed" )
-    LAMA_ASSERT_ERROR( C.getDistribution().isReplicated(), "C.rows are distributed" )
-    LAMA_ASSERT_ERROR( C.getColDistribution().isReplicated(), "C.cols are distributed" )
+    SCAI_ASSERT_ERROR( getDistribution().isReplicated(), "this->rows are distributed" )
+    SCAI_ASSERT_ERROR( getColDistribution().isReplicated(), "this->cols are distributed" )
+    SCAI_ASSERT_ERROR( B.getDistribution().isReplicated(), "B.rows are distributed" )
+    SCAI_ASSERT_ERROR( B.getColDistribution().isReplicated(), "B.cols are distributed" )
+    SCAI_ASSERT_ERROR( C.getDistribution().isReplicated(), "C.rows are distributed" )
+    SCAI_ASSERT_ERROR( C.getColDistribution().isReplicated(), "C.cols are distributed" )
 
 // Prefetch values to the ComputeLocation
 
@@ -2020,7 +2020,7 @@ Scalar DenseMatrix<ValueType>::maxDiffNorm( const Matrix& other ) const
             && ( getValueType() == other.getValueType() ) )
     {
         const DenseMatrix<ValueType>* typedOther = dynamic_cast<const DenseMatrix<ValueType>*>( &other );
-        LAMA_ASSERT_DEBUG( typedOther, "SERIOUS: wrong dynamic cast: " << other )
+        SCAI_ASSERT_DEBUG( typedOther, "SERIOUS: wrong dynamic cast: " << other )
         return maxDiffNormImpl( *typedOther );
     }
     else
@@ -2038,8 +2038,8 @@ ValueType DenseMatrix<ValueType>::maxDiffNormImpl( const DenseMatrix<ValueType>&
 {
 // implementation only supported for same distributions
 
-    LAMA_ASSERT_EQUAL_ERROR( getDistribution(), other.getDistribution() )
-    LAMA_ASSERT_EQUAL_ERROR( getColDistribution(), other.getColDistribution() )
+    SCAI_ASSERT_EQUAL_ERROR( getDistribution(), other.getDistribution() )
+    SCAI_ASSERT_EQUAL_ERROR( getColDistribution(), other.getColDistribution() )
 
     ValueType myMaxDiff = 0.0;
 
@@ -2090,14 +2090,14 @@ void DenseMatrix<ValueType>::wait() const
 template<typename ValueType>
 const DenseStorage<ValueType>& DenseMatrix<ValueType>::getLocalStorage() const
 {
-    LAMA_ASSERT_ERROR( mData.size() > 0, "no local values allocated" )
+    SCAI_ASSERT_ERROR( mData.size() > 0, "no local values allocated" )
 
     if ( mData.size() == 1 )
     {
         return *mData[0];
     }
 
-    LAMA_ASSERT_EQUAL_ERROR( getDistribution(), getColDistribution() )
+    SCAI_ASSERT_EQUAL_ERROR( getDistribution(), getColDistribution() )
 
     const PartitionId myRank = getDistribution().getCommunicator().getRank();
 
@@ -2107,14 +2107,14 @@ const DenseStorage<ValueType>& DenseMatrix<ValueType>::getLocalStorage() const
 template<typename ValueType>
 DenseStorage<ValueType>& DenseMatrix<ValueType>::getLocalStorage()
 {
-    LAMA_ASSERT_ERROR( mData.size() > 0, "no local values allocated" )
+    SCAI_ASSERT_ERROR( mData.size() > 0, "no local values allocated" )
 
     if ( mData.size() == 1 )
     {
         return *mData[0];
     }
 
-    LAMA_ASSERT_EQUAL_ERROR( getDistribution(), getColDistribution() )
+    SCAI_ASSERT_EQUAL_ERROR( getDistribution(), getColDistribution() )
 
     const PartitionId myRank = getDistribution().getCommunicator().getRank();
 

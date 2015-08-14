@@ -42,7 +42,7 @@
 // macros
 #include <scai/lama/macros/unused.hpp>
 
-// tracing with LAMA_REGION
+// tracing with SCAI_REGION
 #include <scai/tracing.hpp>
 
 #include <boost/preprocessor.hpp>
@@ -82,7 +82,7 @@ void OpenMPBLAS1::scal(
         return;
     }
 
-    LAMA_REGION( "OpenMP.BLAS1.scal" )
+    SCAI_REGION( "OpenMP.BLAS1.scal" )
 
     SCAI_LOG_DEBUG( logger,
                     "scal<" << getScalarType<ValueType>()<< ">, n = " << n << ", alpha = " << alpha << ", x = " << x << ", incX = " << incX )
@@ -117,7 +117,7 @@ void OpenMPBLAS1::scal(
 template<typename ValueType>
 ValueType OpenMPBLAS1::nrm2( const IndexType n, const ValueType* x, const IndexType incX, SyncToken* syncToken )
 {
-    LAMA_REGION( "OpenMP.BLAS1.nrm2" )
+    SCAI_REGION( "OpenMP.BLAS1.nrm2" )
 
     SCAI_LOG_DEBUG( logger,
                     "nrm2<" << getScalarType<ValueType>()<< ">, n = " << n << ", x = " << x << ", incX = " << incX )
@@ -169,7 +169,7 @@ ValueType OpenMPBLAS1::nrm2( const IndexType n, const ValueType* x, const IndexT
 template<typename ValueType>
 ValueType OpenMPBLAS1::asum( const IndexType n, const ValueType* x, const IndexType incX, SyncToken* syncToken )
 {
-    LAMA_REGION( "OpenMP.BLAS1.asum" )
+    SCAI_REGION( "OpenMP.BLAS1.asum" )
 
     SCAI_LOG_DEBUG( logger,
                     "asum<" << getScalarType<ValueType>()<< ">, n = " << n << ", x = " << x << ", incX = " << incX )
@@ -222,7 +222,7 @@ ValueType OpenMPBLAS1::asum( const IndexType n, const ValueType* x, const IndexT
 template<typename ValueType>
 IndexType OpenMPBLAS1::iamax( const IndexType n, const ValueType* x, const IndexType incX, SyncToken* syncToken )
 {
-    LAMA_REGION( "OpenMP.BLAS1.iamax" )
+    SCAI_REGION( "OpenMP.BLAS1.iamax" )
 
     SCAI_LOG_INFO( logger,
                    "iamax<" << getScalarType<ValueType>()<< ">, n = " << n << ", x = " << x << ", incX = " << incX )
@@ -292,7 +292,7 @@ void OpenMPBLAS1::swap(
     const IndexType incY,
     SyncToken* syncToken )
 {
-    LAMA_REGION( "OpenMP.BLAS1.swap" )
+    SCAI_REGION( "OpenMP.BLAS1.swap" )
 
     SCAI_LOG_DEBUG( logger,
                     "iamax<" << getScalarType<ValueType>()<< ">, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
@@ -378,7 +378,7 @@ void OpenMPBLAS1::copy(
     const IndexType incY,
     SyncToken* UNUSED(syncToken) )
 {
-    LAMA_REGION( "OpenMP.BLAS1.copy" )
+    SCAI_REGION( "OpenMP.BLAS1.copy" )
 
     SCAI_LOG_DEBUG( logger,
                     "copy<" << getScalarType<ValueType>() << ">, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
@@ -420,7 +420,7 @@ void OpenMPBLAS1::axpy(
     const IndexType incY,
     SyncToken* syncToken )
 {
-    LAMA_REGION( "OpenMP.BLAS1.axpy" )
+    SCAI_REGION( "OpenMP.BLAS1.axpy" )
 
     SCAI_LOG_DEBUG( logger,
                     "axpy<" << getScalarType<ValueType>() << ">, n = " << n << ", alpha = " << alpha << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
@@ -466,7 +466,7 @@ ValueType OpenMPBLAS1::dot(
     const IndexType incY,
     SyncToken* syncToken )
 {
-    LAMA_REGION( "OpenMP.BLAS1.sdot" )
+    SCAI_REGION( "OpenMP.BLAS1.sdot" )
 
     SCAI_LOG_DEBUG( logger,
                     "dot<" << getScalarType<ValueType>() << ">, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
@@ -523,7 +523,7 @@ void OpenMPBLAS1::sum(
     ValueType* z,
     SyncToken* syncToken )
 {
-    LAMA_REGION( "OpenMP.BLAS1.dot" )
+    SCAI_REGION( "OpenMP.BLAS1.dot" )
 
     SCAI_LOG_DEBUG( logger,
                     "sum<" << getScalarType<ValueType>() << ">, n = " << n << ", alpha = " << alpha << ", x = " << x << ", beta = " << beta << ", y = " << y << ", z = " << z )

@@ -90,7 +90,7 @@ void cublasWrapperGemv(
     float* y,
     IndexType incY )
 {
-    LAMA_CUBLAS_CALL( cublasSgemv( CUDAContext_cublasHandle, trans, m, n, &alpha, A, lda, x, incX, &beta, y, incY ),
+    SCAI_CUBLAS_CALL( cublasSgemv( CUDAContext_cublasHandle, trans, m, n, &alpha, A, lda, x, incX, &beta, y, incY ),
                       "cublasWrapperGemv<float>" );
 }
 
@@ -108,7 +108,7 @@ void cublasWrapperGemv(
     double* y,
     IndexType incY )
 {
-    LAMA_CUBLAS_CALL( cublasDgemv( CUDAContext_cublasHandle, trans, m, n, &alpha, A, lda, x, incX, &beta, y, incY ),
+    SCAI_CUBLAS_CALL( cublasDgemv( CUDAContext_cublasHandle, trans, m, n, &alpha, A, lda, x, incX, &beta, y, incY ),
                       "cublasWrapperGemv<double>" );
 }
 
@@ -126,7 +126,7 @@ void cublasWrapperGemv(
     ComplexFloat* y,
     IndexType incY )
 {
-    LAMA_CUBLAS_CALL(
+    SCAI_CUBLAS_CALL(
         cublasCgemv( CUDAContext_cublasHandle, trans, m, n, cublasCast( &alpha ), cublasCast( A ), lda,
                      cublasCast( x ), incX, cublasCast( &beta ), cublasCast( y ), incY ),
         "cublasWrapperGemv<ComplexFloat>" );
@@ -146,7 +146,7 @@ void cublasWrapperGemv(
     ComplexDouble* y,
     IndexType incY )
 {
-    LAMA_CUBLAS_CALL(
+    SCAI_CUBLAS_CALL(
         cublasZgemv( CUDAContext_cublasHandle, trans, m, n, cublasCast( &alpha ), cublasCast( A ), lda,
                      cublasCast( x ), incX, cublasCast( &beta ), cublasCast( y ), incY ),
         "cublasWrapperGemv<ComplexDouble>" );
@@ -206,18 +206,18 @@ void CUDABLAS2::gemv(
         }
     }
 
-    LAMA_CHECK_CUDA_ACCESS
+    SCAI_CHECK_CUDA_ACCESS
 
     cudaStream_t stream = 0; // default stream if no syncToken is given
 
     if( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-        LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
+        SCAI_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
         stream = cudaStreamSyncToken->getCUDAStream();
     }
 
-    LAMA_CUBLAS_CALL( cublasSetStream( CUDAContext_cublasHandle, stream ),
+    SCAI_CUBLAS_CALL( cublasSetStream( CUDAContext_cublasHandle, stream ),
                       "CUDABLAS2::gemv set cublas kernel stream = " << stream );
 
     SCAI_LOG_INFO( logger,
@@ -229,10 +229,10 @@ void CUDABLAS2::gemv(
 
     if( !syncToken )
     {
-        LAMA_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "cudaStreamSynchronize( stream = " << stream << " )" );
+        SCAI_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "cudaStreamSynchronize( stream = " << stream << " )" );
     }
 
-    LAMA_CUBLAS_CALL( cublasSetStream( CUDAContext_cublasHandle, NULL ), "CUDABLAS2::gemv set stream NULL" );
+    SCAI_CUBLAS_CALL( cublasSetStream( CUDAContext_cublasHandle, NULL ), "CUDABLAS2::gemv set stream NULL" );
 }
 
 /* --------------------------------------------------------------------------- */

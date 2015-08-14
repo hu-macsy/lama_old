@@ -520,7 +520,7 @@ void MICJDSUtils::getCSRValues(
     SCAI_LOG_INFO( logger,
                    "get CSRValues<" << common::getScalarType<JDSValueType>() << ", " << common::getScalarType<CSRValueType>() << ">" << ", #rows = " << numRows )
 
-    LAMA_REGION( "MIC.JDS->CSR_values" )
+    SCAI_REGION( "MIC.JDS->CSR_values" )
 
     const void* jdsJAPtr = jdsJA;
     const void* jdsValuesPtr = jdsValues;
@@ -584,7 +584,7 @@ void MICJDSUtils::setCSRValues(
     SCAI_LOG_INFO( logger,
                    "set CSRValues<" << common::getScalarType<JDSValueType>() << ", " << common::getScalarType<CSRValueType>() << ">" << ", #rows = " << numRows )
 
-    LAMA_REGION( "MIC.JDS<-CSR_values" )
+    SCAI_REGION( "MIC.JDS<-CSR_values" )
 
     void* jdsJAPtr = jdsJA;
     void* jdsValuesPtr = jdsValues;
@@ -678,7 +678,7 @@ void MICJDSUtils::normalGEMV(
         return; // definitively empty matrix
     }
 
-    LAMA_REGION( "MIC.JDS.normalGEMV" )
+    SCAI_REGION( "MIC.JDS.normalGEMV" )
 
     void* resultPtr = result;
     const void* xPtr = x;
@@ -742,7 +742,7 @@ void MICJDSUtils::jacobi(
     const ValueType omega,
     class SyncToken* syncToken )
 {
-    LAMA_REGION( "MIC.JDS.jacobi" )
+    SCAI_REGION( "MIC.JDS.jacobi" )
 
     SCAI_LOG_INFO( logger,
                    "jacobi<" << common::getScalarType<ValueType>() << ">" << ", #rows = " << numRows << ", omega = " << omega )
@@ -750,7 +750,7 @@ void MICJDSUtils::jacobi(
     if( syncToken )
     {
         MICSyncToken* micSyncToken = dynamic_cast<MICSyncToken*>( syncToken );
-        LAMA_ASSERT_ERROR( micSyncToken, "no MIC sync token provided" )
+        SCAI_ASSERT_ERROR( micSyncToken, "no MIC sync token provided" )
         SCAI_LOG_WARN( logger, "jacobi called asynchronously, not supported yet" )
     }
 
@@ -830,7 +830,7 @@ void MICJDSUtils::jacobiHalo(
     SCAI_LOG_INFO( logger,
                    "jacobiHalo<" << common::getScalarType<ValueType>() << ">" << ", #rows = " << numRows << ", omega = " << omega )
 
-    LAMA_REGION( "MIC.JDS.jacobiHalo" )
+    SCAI_REGION( "MIC.JDS.jacobiHalo" )
 
     if( syncToken != NULL )
     {

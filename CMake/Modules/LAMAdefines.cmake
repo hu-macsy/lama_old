@@ -67,7 +67,7 @@ add_definitions ( -DSCAI_LOG_LEVEL_${SCAI_LOG_LEVEL} )
 
 list ( APPEND ASSERT_CHOICES "DEBUG" "ERROR" "OFF" )
 
-if    ( NOT LAMA_ASSERT_LEVEL )
+if    ( NOT SCAI_ASSERT_LEVEL )
     if     ( CMAKE_BUILD_TYPE STREQUAL "Release" )
         set ( DEFAULT_ASSERT_LEVEL "ERROR" )
     elseif ( CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo" )
@@ -75,18 +75,18 @@ if    ( NOT LAMA_ASSERT_LEVEL )
     else   ( )
         set ( DEFAULT_ASSERT_LEVEL "DEBUG" )
     endif  ( )
-endif ( NOT LAMA_ASSERT_LEVEL )
+endif ( NOT SCAI_ASSERT_LEVEL )
 
-set ( LAMA_ASSERT_LEVEL ${DEFAULT_ASSERT_LEVEL} CACHE STRING
+set ( SCAI_ASSERT_LEVEL ${DEFAULT_ASSERT_LEVEL} CACHE STRING
       "Choose level of ASSERT: ${ASSERT_CHOICES}" )
-set ( CACHE LAMA_ASSERT_LEVEL PROPERTY STRINGS ${ASSERT_CHOICES} )
-checkValue ( ${LAMA_ASSERT_LEVEL} "${ASSERT_CHOICES}" )
+set ( CACHE SCAI_ASSERT_LEVEL PROPERTY STRINGS ${ASSERT_CHOICES} )
+checkValue ( ${SCAI_ASSERT_LEVEL} "${ASSERT_CHOICES}" )
 
-add_definitions ( -DLAMA_ASSERT_LEVEL_${LAMA_ASSERT_LEVEL} )
+add_definitions ( -DSCAI_ASSERT_LEVEL_${SCAI_ASSERT_LEVEL} )
 
 ## LAMA TRACE LEVEL
 #
-# If TRACE is set to OFF all LAMA_REGION macros in the code are
+# If TRACE is set to OFF all SCAI_REGION macros in the code are
 # completely ignored. If TRACE is set to VT, regions will be traced
 # (entry, exit event) for VampirTrace.
 

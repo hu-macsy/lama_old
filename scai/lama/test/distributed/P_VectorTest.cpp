@@ -404,7 +404,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( assignLocalTest, ValueType, test_types )
     const IndexType localSize = dist->getLocalSize();
     LAMAArray<float> localData;
 // Be careful: for more than 13 processors some of them do not throw exception
-    LAMA_CHECK_THROW(
+    SCAI_CHECK_THROW(
     {   DenseVector<ValueType> denseVector( localData, dist );}, Exception );
     {
         WriteOnlyAccess<float> wLocalData( localData, localSize );
@@ -963,7 +963,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( dotProductTest, ValueType, test_types )
     //vectors are distributed if np > 1
     if ( comm->getSize() > 1 )
     {
-        LAMA_CHECK_THROW( { result = v3.dotProduct( v4 ); }, Exception );
+        SCAI_CHECK_THROW( { result = v3.dotProduct( v4 ); }, Exception );
     }
     else
     {

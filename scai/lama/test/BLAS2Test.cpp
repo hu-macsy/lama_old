@@ -74,7 +74,7 @@ void gemvTest( ContextPtr loc )
         LAMAArray<ValueType> Ax( 3, x );
         LAMAArray<ValueType> Ay( 3, y );
         {
-            LAMA_CONTEXT_ACCESS( loc );
+            SCAI_CONTEXT_ACCESS( loc );
             ReadAccess<ValueType> rAm( Am, loc );
             ReadAccess<ValueType> rAx( Ax, loc );
             WriteAccess<ValueType> wAy( Ay, loc );
@@ -108,7 +108,7 @@ void gemvTest( ContextPtr loc )
         LAMAArray<ValueType> Ax( 3, x );
         LAMAArray<ValueType> Ay( 3, y );
         {
-            LAMA_CONTEXT_ACCESS( loc );
+            SCAI_CONTEXT_ACCESS( loc );
             ReadAccess<ValueType> rAm( Am, loc );
             ReadAccess<ValueType> rAx( Ax, loc );
             WriteAccess<ValueType> wAy( Ay, loc );
@@ -142,7 +142,7 @@ void gemvTest( ContextPtr loc )
         LAMAArray<ValueType> Ax( 3, x );
         LAMAArray<ValueType> Ay( 3, y );
         {
-            LAMA_CONTEXT_ACCESS( loc );
+            SCAI_CONTEXT_ACCESS( loc );
             ReadAccess<ValueType> rAm( Am, loc );
             ReadAccess<ValueType> rAx( Ax, loc );
             WriteAccess<ValueType> wAy( Ay, loc );
@@ -177,7 +177,7 @@ void gemvTest( ContextPtr loc )
         LAMAArray<ValueType> Ax( 3, x );
         LAMAArray<ValueType> Ay( 3, y );
         {
-            LAMA_CONTEXT_ACCESS( loc );
+            SCAI_CONTEXT_ACCESS( loc );
             ReadAccess<ValueType> rAm( Am, loc );
             ReadAccess<ValueType> rAx( Ax, loc );
             WriteAccess<ValueType> wAy( Ay, loc );

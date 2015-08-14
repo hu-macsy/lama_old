@@ -85,7 +85,7 @@ CommunicationPlan::CommunicationPlan( const CommunicationPlan& other, const Inde
 {
     SCAI_LOG_INFO( logger, "extend plan for quantity of quantites: " << other )
 
-    LAMA_ASSERT_ERROR( other.allocated(), "non allocated plan cannot be extended" )
+    SCAI_ASSERT_ERROR( other.allocated(), "non allocated plan cannot be extended" )
 
     // copy the entries of the available plan, partitionIds do not change
 
@@ -98,7 +98,7 @@ CommunicationPlan::CommunicationPlan( const CommunicationPlan& other, const Inde
     for( size_t i = 0; i < mEntries.size(); i++ )
     {
         Entry& entry = mEntries[i];
-        LAMA_ASSERT_ERROR( entry.offset == offset, "illegal plan to extend for quantities" )
+        SCAI_ASSERT_ERROR( entry.offset == offset, "illegal plan to extend for quantities" )
         offset += entry.quantity;
     }
 
@@ -137,7 +137,7 @@ CommunicationPlan::CommunicationPlan( const CommunicationPlan& other, const Inde
 {
     SCAI_LOG_INFO( logger, "Construct multiply plan: " << other << ", factor = " << n )
 
-    LAMA_ASSERT_ERROR( other.allocated(), "non allocated plan cannot be extended" )
+    SCAI_ASSERT_ERROR( other.allocated(), "non allocated plan cannot be extended" )
 
     // copy the entries of the available plan, partitionIds do not change
 
@@ -150,7 +150,7 @@ CommunicationPlan::CommunicationPlan( const CommunicationPlan& other, const Inde
     for( size_t i = 0; i < mEntries.size(); i++ )
     {
         Entry& entry = mEntries[i];
-        LAMA_ASSERT_EQUAL_DEBUG( entry.offset * n, offset )
+        SCAI_ASSERT_EQUAL_DEBUG( entry.offset * n, offset )
         entry.quantity *= n; // each quantitiy is multiplied by n
         entry.offset *= n; // offsets are also multiplied by n
         offset += entry.quantity;
@@ -247,7 +247,7 @@ void CommunicationPlan::allocate(
     for( IndexType i = 0; i < nOwners; ++i )
     {
         const PartitionId& p = owners[i];
-        LAMA_ASSERT( p >= 0 && p < noPartitions, "Illegal owner value: " << p << " at Position " << i )
+        SCAI_ASSERT( p >= 0 && p < noPartitions, "Illegal owner value: " << p << " at Position " << i )
         ++mEntries[p].quantity;
         SCAI_LOG_TRACE( logger, " entry for p = " << p << ", total = " << mEntries[p].quantity )
     }
@@ -262,7 +262,7 @@ void CommunicationPlan::allocate(
 
     // this assertion should be valid by the above algorithm
 
-    LAMA_ASSERT_EQUAL_DEBUG( mQuantity, nOwners )
+    SCAI_ASSERT_EQUAL_DEBUG( mQuantity, nOwners )
 
     mAllocated = true;
 
@@ -276,7 +276,7 @@ void CommunicationPlan::allocate(
 
 IndexType CommunicationPlan::maxQuantity() const
 {
-    LAMA_ASSERT( allocated(), "Plan not allocated." )
+    SCAI_ASSERT( allocated(), "Plan not allocated." )
 
     // Get the maximal quantity of another proc
 
@@ -342,7 +342,7 @@ void CommunicationPlan::compress()
 
 void CommunicationPlan::allocateTranspose( const CommunicationPlan& plan, const Communicator& comm )
 {
-    LAMA_ASSERT( plan.allocated(), "plan to reverse not allocated" )
+    SCAI_ASSERT( plan.allocated(), "plan to reverse not allocated" )
 
     const int size = comm.getSize();
     comm.synchronize();

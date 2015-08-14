@@ -370,10 +370,10 @@ private:
         const IndexType numRows,
         const IndexType numDiagonals )
     {
-        LAMA_ASSERT_ERROR( irow >= 0, "irow = " << irow );
-        LAMA_ASSERT_ERROR( idiag >= 0, "idiag = " << idiag );
-        LAMA_ASSERT_ERROR( irow < numRows, "irow = " << irow << " out of range, numRows = " << numRows );
-        LAMA_ASSERT_ERROR( idiag < numDiagonals,
+        SCAI_ASSERT_ERROR( irow >= 0, "irow = " << irow );
+        SCAI_ASSERT_ERROR( idiag >= 0, "idiag = " << idiag );
+        SCAI_ASSERT_ERROR( irow < numRows, "irow = " << irow << " out of range, numRows = " << numRows );
+        SCAI_ASSERT_ERROR( idiag < numDiagonals,
                            "idiag = " << idiag << " out of range, numDiagonals = " << numDiagonals );
 
         return idiag * numRows + irow;

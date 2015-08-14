@@ -99,7 +99,7 @@ void assertSameMatrix( const Matrix& m1, const Matrix& m2 )
 
         for ( IndexType j = 0; j < n; j++ )
         {
-            LAMA_CHECK_CLOSE( ptrRow1->getValue( j ), ptrRow2->getValue( j ), 1 )
+            SCAI_CHECK_CLOSE( ptrRow1->getValue( j ), ptrRow2->getValue( j ), 1 )
         }
     }
 }

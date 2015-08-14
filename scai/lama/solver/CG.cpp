@@ -77,7 +77,7 @@ CG::CGRuntime::~CGRuntime()
 
 void CG::initialize( const Matrix& coefficients )
 {
-    LAMA_REGION( "Solver.CG.initialize" )
+    SCAI_REGION( "Solver.CG.initialize" )
     IterativeSolver::initialize( coefficients );
     CGRuntime& runtime = getRuntime();
 
@@ -102,7 +102,7 @@ void CG::initialize( const Matrix& coefficients )
 void CG::iterate()
 {
     double iterationStartTime = omp_get_wtime();
-    LAMA_REGION( "Solver.CG.iterate" )
+    SCAI_REGION( "Solver.CG.iterate" )
     CGRuntime& runtime = getRuntime();
     Scalar lastPScalar( runtime.mPScalar );
     Scalar& pScalar = runtime.mPScalar;
@@ -125,12 +125,12 @@ void CG::iterate()
     //CG implementation start
     if( !mPreconditioner )
     {
-        LAMA_REGION( "Solver.CG.setZ" )
+        SCAI_REGION( "Solver.CG.setZ" )
         z = residual;
     }
     else
     {
-        LAMA_REGION( "Solver.CG.solvePreconditioner" )
+        SCAI_REGION( "Solver.CG.solvePreconditioner" )
         z = 0.0;
         double preconditionerStartTime = omp_get_wtime();
         mPreconditioner->solve( z, residual );
@@ -148,7 +148,7 @@ void CG::iterate()
     }
     else
     {
-        LAMA_REGION( "Solver.CG.setP" )
+        SCAI_REGION( "Solver.CG.setP" )
 
         if( lastPScalar.getValue<double>() == 0.0 )
         {
@@ -165,7 +165,7 @@ void CG::iterate()
     }
 
     {
-        LAMA_REGION( "Solver.CG.calc_q" )
+        SCAI_REGION( "Solver.CG.calc_q" )
         SCAI_LOG_INFO( logger, "Calculating q." )
         q = A * p;
         SCAI_LOG_TRACE( logger, "l2Norm( q ) = " << q.l2Norm() )
@@ -187,13 +187,13 @@ void CG::iterate()
     SCAI_LOG_DEBUG( logger, "alpha = " << alpha )
     {
         SCAI_LOG_INFO( logger, "Calculating x." )
-        LAMA_REGION( "Solver.CG.update_x" )
+        SCAI_REGION( "Solver.CG.update_x" )
         x = x + alpha * p;
         SCAI_LOG_TRACE( logger, "l2Norm( x ) = " << x.l2Norm() )
     }
     {
         SCAI_LOG_INFO( logger, "Updating residual." )
-        LAMA_REGION( "Solver.CG.update_res" )
+        SCAI_REGION( "Solver.CG.update_res" )
         residual = residual - alpha * q;
         SCAI_LOG_TRACE( logger, "l2Norm( residual ) = " << residual.l2Norm() )
     }

@@ -56,15 +56,15 @@ void work( int n )
 
 void bar()
 {
-    LAMA_REGION_START( "bar" )
+    SCAI_REGION_START( "bar" )
     work( 1 );
-    LAMA_REGION_END( "bar" )
+    SCAI_REGION_END( "bar" )
 }
 ;
 
 void foo( bool call )
 {
-    LAMA_REGION( "foo" )
+    SCAI_REGION( "foo" )
     work( 1 );
 
     if ( call )

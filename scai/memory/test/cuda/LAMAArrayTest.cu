@@ -71,7 +71,7 @@ ValueType sum( const ValueType array[], const IndexType n )
 
     ValueType result = thrust::reduce( data, data + n, zero, thrust::plus<ValueType>() );
 
-    LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
+    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
 
     return result;
 }

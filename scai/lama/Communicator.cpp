@@ -254,7 +254,7 @@ void Communicator::factorize3(
 
 void Communicator::getGrid2Rank( PartitionId pos[2], const PartitionId procgrid[2] ) const
 {
-    LAMA_ASSERT_EQUAL_ERROR( getSize(), procgrid[0] * procgrid[1] )
+    SCAI_ASSERT_EQUAL_ERROR( getSize(), procgrid[0] * procgrid[1] )
 
     PartitionId rank = getRank();
     PartitionId size = procgrid[0];
@@ -269,7 +269,7 @@ void Communicator::getGrid2Rank( PartitionId pos[2], const PartitionId procgrid[
 
 void Communicator::getGrid3Rank( PartitionId pos[3], const PartitionId procgrid[3] ) const
 {
-    LAMA_ASSERT_EQUAL_ERROR( getSize(), procgrid[0] * procgrid[1] * procgrid[2] )
+    SCAI_ASSERT_EQUAL_ERROR( getSize(), procgrid[0] * procgrid[1] * procgrid[2] )
 
     PartitionId rank = getRank();
 
@@ -344,7 +344,7 @@ IndexType Communicator::shift0(
     const ValueType sourceVals[],
     const IndexType sourceSize ) const
 {
-    LAMA_ASSERT_ERROR( sourceSize <= maxTargetSize, "insufficient size for target array" )
+    SCAI_ASSERT_ERROR( sourceSize <= maxTargetSize, "insufficient size for target array" )
 
     for( IndexType i = 0; i < sourceSize; i++ )
     {
@@ -362,7 +362,7 @@ void Communicator::shiftArray(
     const LAMAArray<ValueType>& sendArray,
     const int direction ) const
 {
-    LAMA_ASSERT_ERROR( &recvArray != &sendArray, "send and receive array are same, not allowed for shift" )
+    SCAI_ASSERT_ERROR( &recvArray != &sendArray, "send and receive array are same, not allowed for shift" )
 
     if( direction % getSize() == 0 )
     {
@@ -407,7 +407,7 @@ SyncToken* Communicator::shiftAsync(
     const LAMAArray<ValueType>& sendArray,
     const int direction ) const
 {
-    LAMA_ASSERT_ERROR( &recvArray != &sendArray, "send and receive array are same, not allowed for shift" )
+    SCAI_ASSERT_ERROR( &recvArray != &sendArray, "send and receive array are same, not allowed for shift" )
 
     recvArray.clear(); // do not keep any old data, keep capacities
 
@@ -423,7 +423,7 @@ SyncToken* Communicator::shiftAsync(
 
     SyncToken* syncToken = shiftDataAsync( recvData->get(), sendData->get(), numElems, direction );
 
-    LAMA_ASSERT_DEBUG( syncToken, "NULL pointer for sync token" )
+    SCAI_ASSERT_DEBUG( syncToken, "NULL pointer for sync token" )
 
     // accesses are pushed in the sync token so they are freed after synchronization
 
@@ -441,19 +441,19 @@ void Communicator::updateHalo(
     const LAMAArray<ValueType>& localValues,
     const Halo& halo ) const
 {
-LAMA_REGION( "Communicator.updateHalo" )
+SCAI_REGION( "Communicator.updateHalo" )
 
         SCAI_LOG_INFO( logger, *this << ": update halo" )
 
     const CommunicationPlan& requiredPlan = halo.getRequiredPlan();
 
-    LAMA_ASSERT_ERROR( requiredPlan.allocated(), "Required plan in Halo not allocated" )
-    LAMA_ASSERT_ERROR( requiredPlan.size() < getSize(), "Required plan in Halo mismatches size of communicator" )
+    SCAI_ASSERT_ERROR( requiredPlan.allocated(), "Required plan in Halo not allocated" )
+    SCAI_ASSERT_ERROR( requiredPlan.size() < getSize(), "Required plan in Halo mismatches size of communicator" )
 
     const CommunicationPlan& providesPlan = halo.getProvidesPlan();
 
-    LAMA_ASSERT_ERROR( providesPlan.allocated(), "Provides plan in Halo not allocated" )
-    LAMA_ASSERT_ERROR( providesPlan.size() < getSize(), "Provides plan in Halo mismatches size of communicator" )
+    SCAI_ASSERT_ERROR( providesPlan.allocated(), "Provides plan in Halo not allocated" )
+    SCAI_ASSERT_ERROR( providesPlan.size() < getSize(), "Provides plan in Halo mismatches size of communicator" )
 
     // Before we exchange by plan, we have to pack local values to send
 
@@ -478,19 +478,19 @@ SyncToken* Communicator::updateHaloAsync(
     const LAMAArray<ValueType>& localValues,
     const Halo& halo ) const
 {
-LAMA_REGION( "Communicator.updateHaloAsync" )
+SCAI_REGION( "Communicator.updateHaloAsync" )
 
         SCAI_LOG_INFO( logger, *this << ": asynchronous update halo" )
 
     const CommunicationPlan& requiredPlan = halo.getRequiredPlan();
 
-    LAMA_ASSERT_ERROR( requiredPlan.allocated(), "Required plan in Halo not allocated" )
-    LAMA_ASSERT_ERROR( requiredPlan.size() < getSize(), "Required plan in Halo mismatches size of communicator" )
+    SCAI_ASSERT_ERROR( requiredPlan.allocated(), "Required plan in Halo not allocated" )
+    SCAI_ASSERT_ERROR( requiredPlan.size() < getSize(), "Required plan in Halo mismatches size of communicator" )
 
     const CommunicationPlan& providesPlan = halo.getProvidesPlan();
 
-    LAMA_ASSERT_ERROR( providesPlan.allocated(), "Provides plan in Halo not allocated" )
-    LAMA_ASSERT_ERROR( providesPlan.size() < getSize(), "Provides plan in Halo mismatches size of communicator" )
+    SCAI_ASSERT_ERROR( providesPlan.allocated(), "Provides plan in Halo not allocated" )
+    SCAI_ASSERT_ERROR( providesPlan.size() < getSize(), "Provides plan in Halo mismatches size of communicator" )
 
     // Before we exchange by plan, we have to pack local values to send
 
@@ -613,7 +613,7 @@ void Communicator::computeOwners(
 
         currentSize = shiftData( indexesReceive.get(), receiveSize, indexesSend.get(), currentSize, direction );
 
-        LAMA_ASSERT_ERROR( ownersSize == -1 || currentSize == ownersSize, "Communication corrupted." )
+        SCAI_ASSERT_ERROR( ownersSize == -1 || currentSize == ownersSize, "Communication corrupted." )
 
         SCAI_LOG_DEBUG( logger, "owners size = " << ownersSize << ", current size = " << currentSize )
         IndexType* indexes = indexesReceive.get();

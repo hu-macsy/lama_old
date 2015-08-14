@@ -61,23 +61,23 @@ std::ostream& operator<<( std::ostream& os, const SourceLocation& loc );
 
 }
 
-#if !defined(LOG4LAMA_LOCATION)
+#if !defined(LOG4SCAI_LOCATION)
 #if defined(_MSC_VER)
 #if _MSC_VER >= 1300
-#define __LOG4LAMA_FUNC__ __FUNCSIG__
+#define __LOG4SCAI_FUNC__ __FUNCSIG__
 #endif
 #else
 #if defined(__GNUC__)
 // this macro gives the whole signature
-// #define __LOG4LAMA_FUNC__ __PRETTY_FUNCTION__
+// #define __LOG4SCAI_FUNC__ __PRETTY_FUNCTION__
 // this macro is standardized
-#define __LOG4LAMA_FUNC__ __func__
+#define __LOG4SCAI_FUNC__ __func__
 #endif
 #endif
 
-#if !defined(__LOG4LAMA_FUNC__)
-#define __LOG4LAMA_FUNC__ ""
+#if !defined(__LOG4SCAI_FUNC__)
+#define __LOG4SCAI_FUNC__ ""
 #endif
 
-#define LOG4LAMA_LOCATION logging::SourceLocation(__FILE__, __LOG4LAMA_FUNC__, __LINE__)
+#define LOG4SCAI_LOCATION logging::SourceLocation(__FILE__, __LOG4SCAI_FUNC__, __LINE__)
 #endif

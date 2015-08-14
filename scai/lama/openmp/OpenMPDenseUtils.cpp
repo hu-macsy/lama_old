@@ -68,11 +68,11 @@ void OpenMPDenseUtils::getCSRSizes(
 {
     if( numRows > 0 )
     {
-        LAMA_ASSERT_DEBUG( csrSizes != NULL, "csrSizes is NULL" )
+        SCAI_ASSERT_DEBUG( csrSizes != NULL, "csrSizes is NULL" )
 
         if( numColumns > 0 )
         {
-            LAMA_ASSERT_DEBUG( denseValues != NULL, "denseValues is NULL" )
+            SCAI_ASSERT_DEBUG( denseValues != NULL, "denseValues is NULL" )
         }
     }
 
@@ -153,7 +153,7 @@ void OpenMPDenseUtils::getCSRValues(
         // verification that offset array was really a good one
         // check is not needed if non-zero values have been counted by getCSRSizes
 
-        LAMA_ASSERT_EQUAL_DEBUG( offset, csrIA[i + 1] )
+        SCAI_ASSERT_EQUAL_DEBUG( offset, csrIA[i + 1] )
     }
 }
 

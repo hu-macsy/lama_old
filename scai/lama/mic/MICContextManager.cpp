@@ -133,7 +133,7 @@ ContextPtr MICContextManager::getInstance( int deviceNr )
     }
     else
     {
-        LAMA_ASSERT_ERROR(
+        SCAI_ASSERT_ERROR(
             0 <= micDeviceNr && micDeviceNr < LAMA_MAX_MIC_DEVICES,
             "device = " << micDeviceNr << " out of range" << ", max supported device = " << LAMA_MAX_MIC_DEVICES )
     }

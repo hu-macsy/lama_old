@@ -85,7 +85,7 @@ LAMAConfiguratin:
  * general strategy
  * should also contain section for logging configuration
 
-LAMA_CONTEXT:
+SCAI_CONTEXT:
 
   * context is set globally
   * ReadAccess, WriteAccess for this context (as default, instead Host)

@@ -80,7 +80,7 @@ namespace lama
     template<typename T>
     void CUDABLAS1::sum_launcher( const int n, T alpha, const T* x, T beta, const T* y, T* z, cudaStream_t stream )
     {
-        LAMA_CHECK_CUDA_ACCESS
+        SCAI_CHECK_CUDA_ACCESS
 
         const int blockSize = 256;
         dim3 dimBlock( blockSize, 1, 1 );
@@ -93,7 +93,7 @@ namespace lama
     /*       Template Instantiations                                             */
     /* ========================================================================= */
 
-#define LAMA_CUDA_BLAS1_INSTANTIATE(z, I, _)                 \
+#define SCAI_CUDA_BLAS1_INSTANTIATE(z, I, _)                 \
                                                              \
 template void CUDABLAS1::sum_launcher<ARITHMETIC_TYPE##I>(   \
     const int,                                               \
@@ -104,9 +104,9 @@ template void CUDABLAS1::sum_launcher<ARITHMETIC_TYPE##I>(   \
     ARITHMETIC_TYPE##I*,                                     \
     cudaStream_t );   
 
-    BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_CUDA_BLAS1_INSTANTIATE, _ )
+    BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, SCAI_CUDA_BLAS1_INSTANTIATE, _ )
 
-#undef LAMA_CUDA_BLAS1_INSTANTIATE
+#undef SCAI_CUDA_BLAS1_INSTANTIATE
 
 } /* namespace lama */
 

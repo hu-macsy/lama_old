@@ -694,7 +694,7 @@ void DenseMatrix<ValueType>::copyDenseMatrix( const DenseMatrix<OtherValueType>&
 {
     // check for valid pointer, might be dynamic cast went wrong somewhere else
 
-    LAMA_ASSERT_ERROR( &other, "NULL matrix in assignment operator" )
+    SCAI_ASSERT_ERROR( &other, "NULL matrix in assignment operator" )
 
     SCAI_LOG_INFO( logger, "copy dense, this = " << this << ", other = " << &other )
 

@@ -80,7 +80,7 @@ void gemmTest( ContextPtr loc )
         LAMAArray<ValueType> AmB( 6, matrixB );
         LAMAArray<ValueType> AmC( 4, matrixC );
         {
-            LAMA_CONTEXT_ACCESS( loc );
+            SCAI_CONTEXT_ACCESS( loc );
             ReadAccess<ValueType> rAmA( AmA, loc );
             ReadAccess<ValueType> rAmB( AmB, loc );
             WriteAccess<ValueType> wAmC( AmC, loc );
@@ -111,7 +111,7 @@ void gemmTest( ContextPtr loc )
         LAMAArray<ValueType> AmB( 6, matrixB );
         LAMAArray<ValueType> AmC( 4, matrixC );
         {
-            LAMA_CONTEXT_ACCESS( loc );
+            SCAI_CONTEXT_ACCESS( loc );
             ReadAccess<ValueType> rAmA( AmA, loc );
             ReadAccess<ValueType> rAmB( AmB, loc );
             WriteAccess<ValueType> wAmC( AmC, loc );
@@ -142,7 +142,7 @@ void gemmTest( ContextPtr loc )
         LAMAArray<ValueType> AmB( 6, matrixB );
         LAMAArray<ValueType> AmC( 4, matrixC );
         {
-            LAMA_CONTEXT_ACCESS( loc );
+            SCAI_CONTEXT_ACCESS( loc );
             ReadAccess<ValueType> rAmA( AmA, loc );
             ReadAccess<ValueType> rAmB( AmB, loc );
             WriteAccess<ValueType> wAmC( AmC, loc );
@@ -173,7 +173,7 @@ void gemmTest( ContextPtr loc )
         LAMAArray<ValueType> AmB( 6, matrixB );
         LAMAArray<ValueType> AmC( 4, matrixC );
         {
-            LAMA_CONTEXT_ACCESS( loc );
+            SCAI_CONTEXT_ACCESS( loc );
             ReadAccess<ValueType> rAmA( AmA, loc );
             ReadAccess<ValueType> rAmB( AmB, loc );
             WriteAccess<ValueType> wAmC( AmC, loc );
@@ -204,7 +204,7 @@ void gemmTest( ContextPtr loc )
         LAMAArray<ValueType> AmB( 6, matrixB );
         LAMAArray<ValueType> AmC( 4, matrixC );
         {
-            LAMA_CONTEXT_ACCESS( loc );
+            SCAI_CONTEXT_ACCESS( loc );
             ReadAccess<ValueType> rAmA( AmA, loc );
             ReadAccess<ValueType> rAmB( AmB, loc );
             WriteAccess<ValueType> wAmC( AmC, loc );
@@ -235,7 +235,7 @@ void gemmTest( ContextPtr loc )
         LAMAArray<ValueType> AmB( 6, matrixB );
         LAMAArray<ValueType> AmC( 4, matrixC );
         {
-            LAMA_CONTEXT_ACCESS( loc );
+            SCAI_CONTEXT_ACCESS( loc );
             ReadAccess<ValueType> rAmA( AmA, loc );
             ReadAccess<ValueType> rAmB( AmB, loc );
             WriteAccess<ValueType> wAmC( AmC, loc );
@@ -266,7 +266,7 @@ void gemmTest( ContextPtr loc )
         LAMAArray<ValueType> AmB( 6, matrixB );
         LAMAArray<ValueType> AmC( 4, matrixC );
         {
-            LAMA_CONTEXT_ACCESS( loc );
+            SCAI_CONTEXT_ACCESS( loc );
             ReadAccess<ValueType> rAmA( AmA, loc );
             ReadAccess<ValueType> rAmB( AmB, loc );
             WriteAccess<ValueType> wAmC( AmC, loc );
@@ -297,7 +297,7 @@ void gemmTest( ContextPtr loc )
         LAMAArray<ValueType> AmB( 6, matrixB );
         LAMAArray<ValueType> AmC( 4, matrixC );
         {
-            LAMA_CONTEXT_ACCESS( loc );
+            SCAI_CONTEXT_ACCESS( loc );
             ReadAccess<ValueType> rAmA( AmA, loc );
             ReadAccess<ValueType> rAmB( AmB, loc );
             WriteAccess<ValueType> wAmC( AmC, loc );

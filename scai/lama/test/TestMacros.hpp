@@ -156,7 +156,7 @@ inline memory::ContextType mapEnvContexttoContextType( std::string contextname )
 }
 
 /*
- * @brief HelperMacro LAMA_CHECK_SCALAR_CLOSE( x, y, type, percent_eps )
+ * @brief HelperMacro SCAI_CHECK_SCALAR_CLOSE( x, y, type, percent_eps )
  *
  * Extended macro BOOST_CHECK_CLOSE(left,right,procent_tolerance) from Boost.Test.
  * Checks if the difference between x and y is smaller then eps.
@@ -169,7 +169,7 @@ inline memory::ContextType mapEnvContexttoContextType( std::string contextname )
  *
  */
 
-#define LAMA_CHECK_CLOSE( x, y, tolerance )                         \
+#define SCAI_CHECK_CLOSE( x, y, tolerance )                         \
     {                                                               \
         Scalar xScalar = Scalar( x );                               \
         Scalar yScalar = Scalar( y );                               \
@@ -180,7 +180,7 @@ inline memory::ContextType mapEnvContexttoContextType( std::string contextname )
     }
 
 /*
- * @brief HelperMacro LAMA_CHECK_SCALAR_SMALL( x, ValueType, eps )
+ * @brief HelperMacro SCAI_CHECK_SCALAR_SMALL( x, ValueType, eps )
  *
  * Extended Macro BOOST_CHECK_SMALL( x, eps ) from Boost.Test for
  * Scalar class of LAMA. Transforms Scalar x into ValueType,
@@ -193,21 +193,21 @@ inline memory::ContextType mapEnvContexttoContextType( std::string contextname )
  * Static cast is used to convert eps to the right ValueType.
  */
 
-#define LAMA_CHECK_SCALAR_SMALL( x, ValueType, eps )                                                                   \
+#define SCAI_CHECK_SCALAR_SMALL( x, ValueType, eps )                                                                   \
     ValueType xHelper = (x).getValue<ValueType>();                                                                     \
     BOOST_CHECK_SMALL( xHelper, static_cast<ValueType>( eps ) );
 
 /*
- * @brief HelperMacro LAMA_CHECK_SCALAR_SMALL_EPS( x, ValueType )
+ * @brief HelperMacro SCAI_CHECK_SCALAR_SMALL_EPS( x, ValueType )
  *
- * Same as LAMA_CHECK_SCALAR_SMALL but with default eps value.
+ * Same as SCAI_CHECK_SCALAR_SMALL but with default eps value.
  *
  * @param x             Scalar
  * @param ValueType     type of Scalar to be used for test
  */
 
-#define LAMA_CHECK_SCALAR_SMALL_EPS( x, ValueType )                                                                    \
-    LAMA_CHECK_SCALAR_SMALL( x, ValueType, eps<ValueType> () )
+#define SCAI_CHECK_SCALAR_SMALL_EPS( x, ValueType )                                                                    \
+    SCAI_CHECK_SCALAR_SMALL( x, ValueType, eps<ValueType> () )
 
 /*
  * @brief HelperMacro LAMA_WRITEAT_TEST( printable )
@@ -696,17 +696,17 @@ inline memory::ContextType mapEnvContexttoContextType( std::string contextname )
     template<typename StorageType>                                                                                     \
     void classname<StorageType>::runTests()
 
-#if defined(LAMA_ASSERT_LEVEL_OFF)
+#if defined(SCAI_ASSERT_LEVEL_OFF)
 
 // Do not check for exception if ASSERTions are switched off
 
-#define LAMA_CHECK_THROW( stmt, exception )
+#define SCAI_CHECK_THROW( stmt, exception )
 
 #else
 
 // use Boost macro for throwing exception
 
-#define LAMA_CHECK_THROW( stmt, exception )    \
+#define SCAI_CHECK_THROW( stmt, exception )    \
     BOOST_CHECK_THROW( stmt, exception )
 
 #endif

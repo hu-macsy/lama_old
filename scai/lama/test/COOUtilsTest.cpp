@@ -78,7 +78,7 @@ void offsets2iaTest( ContextPtr loc )
         const IndexType numDiagonals = 0;
         {
             WriteOnlyAccess<IndexType> wIA( ia, loc, numValues );
-            LAMA_CONTEXT_ACCESS( loc );
+            SCAI_CONTEXT_ACCESS( loc );
             offsets2ia( wIA.get(), numValues, rOffsets.get(), numRows, numDiagonals );
         }
         ReadAccess<IndexType> rIA( ia );
@@ -107,7 +107,7 @@ void offsets2iaTest( ContextPtr loc )
         const IndexType numDiagonals = 3;
         {
             WriteOnlyAccess<IndexType> wIA( ia, loc, numValues );
-            LAMA_CONTEXT_ACCESS( loc );
+            SCAI_CONTEXT_ACCESS( loc );
             offsets2ia( wIA.get(), numValues, rOffsets.get(), numRows, numDiagonals );
         }
         ReadAccess<IndexType> rIA( ia );
@@ -148,7 +148,7 @@ void setCSRDataTest( ContextPtr loc )
         ReadAccess<IndexType> rCSRJA( csrJA, loc );
         {
             WriteOnlyAccess<IndexType> wCOOJA( cooJA, loc, numValues );
-            LAMA_CONTEXT_ACCESS( loc );
+            SCAI_CONTEXT_ACCESS( loc );
             setCSRData( wCOOJA.get(), rCSRJA.get(), numValues, rOffsets.get(), numRows, numDiagonals );
         }
         ReadAccess<IndexType> rCOOJA( cooJA );

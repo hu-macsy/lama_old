@@ -101,7 +101,7 @@ public:
         const Scalar beta,
         const Vector& y ) const
     {
-        LAMA_REGION( "MatrixTimesVector" )
+        SCAI_REGION( "MatrixTimesVector" )
 
         SCAI_LOG_INFO( logger, result << " = " << alpha << " * " << *this << " * " << x << " + " << beta << " * " << y )
 
@@ -122,20 +122,20 @@ public:
             // no more to check: result.size() == mNumRows, getDistirubtion() == result.getDistribution()
         }
 
-        LAMA_ASSERT_EQUAL( x.getDistribution(), getColDistribution() )
-        LAMA_ASSERT_EQUAL( y.getDistribution(), getDistribution() )
+        SCAI_ASSERT_EQUAL( x.getDistribution(), getColDistribution() )
+        SCAI_ASSERT_EQUAL( y.getDistribution(), getDistribution() )
 
         const DenseVector<ValueType>* denseX = dynamic_cast<const DenseVector<ValueType>*>( &x );
         const DenseVector<ValueType>* denseY = dynamic_cast<const DenseVector<ValueType>*>( &y );
         DenseVector<ValueType>* denseResult = dynamic_cast<DenseVector<ValueType>*>( &result );
 
-        LAMA_ASSERT( denseX, x << ": must be DenseVector<" << common::getScalarType<ValueType>() << ">" )
+        SCAI_ASSERT( denseX, x << ": must be DenseVector<" << common::getScalarType<ValueType>() << ">" )
 
         // Note: in case of beta == 0, we might skip this test
 
-        LAMA_ASSERT( denseY, y << ": must be DenseVector<" << common::getScalarType<ValueType>() << ">" )
+        SCAI_ASSERT( denseY, y << ": must be DenseVector<" << common::getScalarType<ValueType>() << ">" )
 
-        LAMA_ASSERT( denseResult, result << ": must be DenseVector<" << common::getScalarType<ValueType>() << ">" )
+        SCAI_ASSERT( denseResult, result << ": must be DenseVector<" << common::getScalarType<ValueType>() << ">" )
 
         static_cast<const Derived*>( this )->matrixTimesVectorImpl( *denseResult, alpha.getValue<ValueType>(), *denseX,
                 beta.getValue<ValueType>(), *denseY );
@@ -148,7 +148,7 @@ public:
         const Scalar beta,
         const Vector& y ) const
     {
-        LAMA_REGION( "VectorTimesMatrix" )
+        SCAI_REGION( "VectorTimesMatrix" )
 
         SCAI_LOG_INFO( logger, result << " = " << alpha << " * " << *this << " * " << x << " + " << beta << " * " << y )
 
@@ -169,20 +169,20 @@ public:
             // no more to check: result.size() == mNumRows, getDistirubtion() == result.getDistribution()
         }
 
-        LAMA_ASSERT_EQUAL( x.getDistribution(), getDistribution() )
-        LAMA_ASSERT_EQUAL( y.getDistribution(), getColDistribution() )
+        SCAI_ASSERT_EQUAL( x.getDistribution(), getDistribution() )
+        SCAI_ASSERT_EQUAL( y.getDistribution(), getColDistribution() )
 
         const DenseVector<ValueType>* denseX = dynamic_cast<const DenseVector<ValueType>*>( &x );
         const DenseVector<ValueType>* denseY = dynamic_cast<const DenseVector<ValueType>*>( &y );
         DenseVector<ValueType>* denseResult = dynamic_cast<DenseVector<ValueType>*>( &result );
 
-        LAMA_ASSERT( denseX, x << ": must be DenseVector<" << common::getScalarType<ValueType>() << ">" )
+        SCAI_ASSERT( denseX, x << ": must be DenseVector<" << common::getScalarType<ValueType>() << ">" )
 
         // Note: in case of beta == 0, we might skip this test
 
-        LAMA_ASSERT( denseY, y << ": must be DenseVector<" << common::getScalarType<ValueType>() << ">" )
+        SCAI_ASSERT( denseY, y << ": must be DenseVector<" << common::getScalarType<ValueType>() << ">" )
 
-        LAMA_ASSERT( denseResult, result << ": must be DenseVector<" << common::getScalarType<ValueType>() << ">" )
+        SCAI_ASSERT( denseResult, result << ": must be DenseVector<" << common::getScalarType<ValueType>() << ">" )
 
         static_cast<const Derived*>( this )->vectorTimesMatrixImpl( *denseResult, alpha.getValue<ValueType>(), *denseX,
                 beta.getValue<ValueType>(), *denseY );

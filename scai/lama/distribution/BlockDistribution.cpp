@@ -49,7 +49,7 @@ void BlockDistribution::getRange(
     const PartitionId rank,
     const PartitionId size )
 {
-    LAMA_ASSERT_DEBUG( rank < size, "illegal rank = " << rank << ", size = " << size )
+    SCAI_ASSERT_DEBUG( rank < size, "illegal rank = " << rank << ", size = " << size )
     IndexType blockSize = ( n + size - 1 ) / size;
     lb = rank * blockSize;
     ub = ( rank + 1 ) * blockSize - 1;

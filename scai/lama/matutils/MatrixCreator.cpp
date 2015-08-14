@@ -175,9 +175,9 @@ static inline IndexType getNStencilValues(
     IndexType length,
     IndexType maxDistance )
 {
-    LAMA_ASSERT_DEBUG( idX < dimX, "idX = " << idX << " out of range, dimX = " << dimX )
-    LAMA_ASSERT_DEBUG( idY < dimY, "idY = " << idY << " out of range, dimY = " << dimY )
-    LAMA_ASSERT_DEBUG( idZ < dimZ, "idZ = " << idZ << " out of range, dimZ = " << dimZ )
+    SCAI_ASSERT_DEBUG( idX < dimX, "idX = " << idX << " out of range, dimX = " << dimX )
+    SCAI_ASSERT_DEBUG( idY < dimY, "idY = " << idY << " out of range, dimY = " << dimY )
+    SCAI_ASSERT_DEBUG( idZ < dimZ, "idZ = " << idZ << " out of range, dimZ = " << dimZ )
 
     IndexType nX = getNumNeighbors( idX, dimX, -length ) + getNumNeighbors( idX, dimX, length );
     IndexType nY = getNumNeighbors( idY, dimY, -length ) + getNumNeighbors( idY, dimY, length );
@@ -194,13 +194,13 @@ static inline IndexType getNStencilValues(
 
     if( maxDistance >= 2 )
     {
-        LAMA_ASSERT_ERROR( length == 1, "length > 1 for stencil not supported" )
+        SCAI_ASSERT_ERROR( length == 1, "length > 1 for stencil not supported" )
         numValues += nX * nY + nX * nZ + nY * nZ;
     }
 
     if( maxDistance >= 3 )
     {
-        LAMA_ASSERT_ERROR( length == 1, "length > 1 for stencil not supported" )
+        SCAI_ASSERT_ERROR( length == 1, "length > 1 for stencil not supported" )
         // dimension cannot be 1, 2
         numValues += nX * nY * nZ;
     }
@@ -355,7 +355,7 @@ void MatrixCreator<ValueType>::buildPoisson(
 
     getStencilProperties( dimStencil, length, maxDistance, stencilType );
 
-    LAMA_ASSERT_EQUAL_ERROR( dimStencil, dimension )
+    SCAI_ASSERT_EQUAL_ERROR( dimStencil, dimension )
 
     SCAI_LOG_INFO( logger,
                    "stencil type = " << stencilType << " -> dim = " << dimStencil << ", direction length = " << length << ", max distance = " << maxDistance )
@@ -436,10 +436,10 @@ void MatrixCreator<ValueType>::buildPoisson(
 
                     // check colIndexes.size() against number of values given by getNStencilValues
 
-                    LAMA_ASSERT_EQUAL_DEBUG( (int ) colIndexes.size(),
+                    SCAI_ASSERT_EQUAL_DEBUG( (int ) colIndexes.size(),
                                              getNStencilValues( idX, idY, idZ, dimX, dimY, dimZ, length, maxDistance ) );
 
-                    LAMA_ASSERT_EQUAL_DEBUG( colIndexes.size(), colValues.size() )
+                    SCAI_ASSERT_EQUAL_DEBUG( colIndexes.size(), colValues.size() )
 
                     SCAI_LOG_TRACE( logger,
                                     *comm << ": at " << idX << " x " << idY << " x " << idZ << ", local row : " << rowCounter << ", global row : " << getMatrixPosition( idX, idY, idZ, dimX, dimY, dimZ ) << ": " << colIndexes.size() << " entries: " << colIndexes[0] << ": " << colValues[0] << ", ..." )
@@ -468,7 +468,7 @@ void MatrixCreator<ValueType>::buildPoisson(
     // but now the local part of matrixA should have the diagonal property as global column
     // indexes have been localized
 
-    LAMA_ASSERT_DEBUG( matrix.getLocalStorage().hasDiagonalProperty(), "CSR data has not diagonal property" )
+    SCAI_ASSERT_DEBUG( matrix.getLocalStorage().hasDiagonalProperty(), "CSR data has not diagonal property" )
 
     SCAI_LOG_INFO( logger, "built matrix A = " << matrix )
 }

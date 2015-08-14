@@ -89,12 +89,12 @@ if ( EXISTS "${LAMA_HOME}/include/lama.hpp" )
     file ( STRINGS ${LAMA_HOME}/include/lama.hpp LAMA_HPP )
 
     # match for defintions
-    string( REGEX MATCH "LAMA_ASSERT_LEVEL_[A-Z]*" LAMA_ASSERT_LEVEL "${LAMA_HPP}" )
+    string( REGEX MATCH "SCAI_ASSERT_LEVEL_[A-Z]*" SCAI_ASSERT_LEVEL "${LAMA_HPP}" )
     string( REGEX MATCH "SCAI_LOG_LEVEL_[A-Z]*" SCAI_LOG_LEVEL "${LAMA_HPP}" )
     string( REGEX MATCH "LAMA_TRACE_LEVEL_[A-Z]*" LAMA_TRACE_LEVEL "${LAMA_HPP}" )
 
     # cache the defintions
-    set( LAMA_ASSERT_LEVEL ${LAMA_ASSERT_LEVEL} CACHE STRING "Taken over from LAMA installation" )
+    set( SCAI_ASSERT_LEVEL ${SCAI_ASSERT_LEVEL} CACHE STRING "Taken over from LAMA installation" )
     set( SCAI_LOG_LEVEL ${SCAI_LOG_LEVEL} CACHE STRING "Taken over from LAMA installation" )
     set( LAMA_TRACE_LEVEL ${LAMA_TRACE_LEVEL} CACHE STRING "Taken over from LAMA installation" )
 
@@ -163,7 +163,7 @@ if ( CUSPARSE_V2 )
 endif ( CUSPARSE_V2 )
 
 ### add definitions
-add_definitions( -D${LAMA_ASSERT_LEVEL} -D${SCAI_LOG_LEVEL} -D${LAMA_TRACE_LEVEL} )
+add_definitions( -D${SCAI_ASSERT_LEVEL} -D${SCAI_LOG_LEVEL} -D${LAMA_TRACE_LEVEL} )
 
 ### set include directories ### 
 include_directories ( . ${CMAKE_SOURCE_DIR}/../.. ${CUDA_INCLUDE_DIRS} )

@@ -213,7 +213,7 @@ void MICContext::free( void* pointer, const size_t size ) const
 
 void MICContext::free( ContextData& contextData ) const
 {
-    LAMA_ASSERT_EQUAL_ERROR( contextData.context->getType(), getType() )
+    SCAI_ASSERT_EQUAL_ERROR( contextData.context->getType(), getType() )
     free( contextData.pointer, contextData.size );
 }
 
@@ -228,7 +228,7 @@ void MICContext::memcpy( void* dst, const void* src, const size_t size ) const
 
     if( ( size & 7 ) == 0 && ( dst_ptr & 7 ) == 0 && ( src_ptr & 7 ) == 0 )
     {
-        LAMA_REGION( "MIC.memcpy8" )
+        SCAI_REGION( "MIC.memcpy8" )
 
 #pragma offload target( mic : mDeviceNr ) in( src_ptr, dst_ptr, size )
         {
@@ -245,7 +245,7 @@ void MICContext::memcpy( void* dst, const void* src, const size_t size ) const
     }
     else if( ( size & 3 ) == 0 && ( dst_ptr & 3 ) == 0 && ( src_ptr & 3 ) == 0 )
     {
-        LAMA_REGION( "MIC.memcpy4" )
+        SCAI_REGION( "MIC.memcpy4" )
 
 #pragma offload target( mic : mDeviceNr ) in( src_ptr, dst_ptr, size )
         {
@@ -262,7 +262,7 @@ void MICContext::memcpy( void* dst, const void* src, const size_t size ) const
     }
     else
     {
-        LAMA_REGION( "MIC.memcpy1" )
+        SCAI_REGION( "MIC.memcpy1" )
 
 #pragma offload target( mic : mDeviceNr ) in( src_ptr, dst_ptr, size )
         {
@@ -280,7 +280,7 @@ void MICContext::memcpyToHost( void* dst, const void* src, const size_t size ) c
 {
     SCAI_LOG_INFO( logger, "memcpy " << size << " bytes from MIC to Host" )
 
-    LAMA_REGION( "MIC.memcpyToHost" )
+    SCAI_REGION( "MIC.memcpyToHost" )
 
     uint8_t* dst8 = (uint8_t*) dst;
 
@@ -297,7 +297,7 @@ void MICContext::memcpyFromHost( void* dst, const void* src, const size_t size )
 {
     SCAI_LOG_INFO( logger, "memcpy " << size << " bytes on MIC device, dst = " << dst << ", src = " << src )
 
-    LAMA_REGION( "MIC.memcpyFromHost1" )
+    SCAI_REGION( "MIC.memcpyFromHost1" )
 
     uint8_t* src8 = (uint8_t*) src;
 

@@ -129,7 +129,7 @@ void MICELLUtils::setNonEmptyRowsBySizes(
         }
     }
 
-    LAMA_ASSERT_EQUAL_DEBUG( counter, numNonEmptyRows )
+    SCAI_ASSERT_EQUAL_DEBUG( counter, numNonEmptyRows )
 
     SCAI_LOG_INFO( logger, "#non-zero rows = " << counter << ", set by sizes" )
 }
@@ -263,12 +263,12 @@ void MICELLUtils::check(
             }
         }
 
-        LAMA_ASSERT_ERROR( integrityIA, msg << ": ellSizes: at least one value out of range" );
-        LAMA_ASSERT_ERROR( integrityJA, msg << ": ellJA: at least one value out of range" );
+        SCAI_ASSERT_ERROR( integrityIA, msg << ": ellSizes: at least one value out of range" );
+        SCAI_ASSERT_ERROR( integrityJA, msg << ": ellJA: at least one value out of range" );
     }
     else
     {
-        LAMA_ASSERT_ERROR( numValuesPerRow == 0,
+        SCAI_ASSERT_ERROR( numValuesPerRow == 0,
                            msg << ": numRows is 0 but numValuesPerRow is: " << numValuesPerRow << ", should be 0" )
     }
 }
@@ -428,7 +428,7 @@ void MICELLUtils::getCSRValues(
     SCAI_LOG_INFO( logger,
                    "get CSRValues<" << common::getScalarType<ELLValueType>() << ", " << common::getScalarType<CSRValueType>() << ">" << ", #rows = " << numRows )
 
-    LAMA_REGION( "MIC.ELL->CSR_values" )
+    SCAI_REGION( "MIC.ELL->CSR_values" )
 
     // parallelization possible as offset array csrIA is available
 
@@ -486,7 +486,7 @@ void MICELLUtils::setCSRValues(
     const IndexType csrJA[],
     const CSRValueType csrValues[] )
 {
-    LAMA_REGION( "MIC.ELL<-CSR_values" )
+    SCAI_REGION( "MIC.ELL<-CSR_values" )
 
     SCAI_LOG_INFO( logger,
                    "set CSRValues<" << common::getScalarType<ELLValueType>() << ", " << common::getScalarType<CSRValueType>() << ">" << ", #rows = " << numRows << ", #values/row = " << numValuesPerRow )
@@ -896,7 +896,7 @@ void MICELLUtils::jacobi(
     const ValueType omega,
     class SyncToken* syncToken )
 {
-    LAMA_REGION( "MIC.ELL.jacobi" )
+    SCAI_REGION( "MIC.ELL.jacobi" )
 
     SCAI_LOG_INFO( logger,
                    "jacobi<" << common::getScalarType<ValueType>() << ">" << ", #rows = " << numRows << ", omega = " << omega )
@@ -904,7 +904,7 @@ void MICELLUtils::jacobi(
     if( syncToken )
     {
         MICSyncToken* micSyncToken = dynamic_cast<MICSyncToken*>( syncToken );
-        LAMA_ASSERT_ERROR( micSyncToken, "no MIC sync token provided" )
+        SCAI_ASSERT_ERROR( micSyncToken, "no MIC sync token provided" )
         SCAI_LOG_WARN( logger, "asynchronous execution on MIC not supported yet" )
     }
 
@@ -978,11 +978,11 @@ void MICELLUtils::jacobiHalo(
     if( syncToken )
     {
         MICSyncToken* micSyncToken = dynamic_cast<MICSyncToken*>( syncToken );
-        LAMA_ASSERT_ERROR( micSyncToken, "no MIC sync token provided" )
+        SCAI_ASSERT_ERROR( micSyncToken, "no MIC sync token provided" )
         // not yet implemented: run the offload computation asynchronously
     }
 
-    LAMA_REGION( "MIC.ELL.jacobiHalo" )
+    SCAI_REGION( "MIC.ELL.jacobiHalo" )
 
     void* solutionPtr = solution;
 
@@ -1063,11 +1063,11 @@ void MICELLUtils::normalGEMV(
     if( syncToken )
     {
         MICSyncToken* micSyncToken = dynamic_cast<MICSyncToken*>( syncToken );
-        LAMA_ASSERT_ERROR( micSyncToken, "no MIC sync token provided" )
+        SCAI_ASSERT_ERROR( micSyncToken, "no MIC sync token provided" )
         // not yet implemented: run the offload computation asynchronously
     }
 
-    LAMA_REGION( "MIC.ELL.normalGEMV" )
+    SCAI_REGION( "MIC.ELL.normalGEMV" )
 
     // conversion of pointer to size_t to cheat offload
 
@@ -1139,11 +1139,11 @@ void MICELLUtils::sparseGEMV(
     if( syncToken )
     {
         MICSyncToken* micSyncToken = dynamic_cast<MICSyncToken*>( syncToken );
-        LAMA_ASSERT_ERROR( micSyncToken, "no MIC sync token provided" )
+        SCAI_ASSERT_ERROR( micSyncToken, "no MIC sync token provided" )
         // not yet implemented: run the offload computation asynchronously
     }
 
-    LAMA_REGION( "MIC.ELL.sparseGEMV" )
+    SCAI_REGION( "MIC.ELL.sparseGEMV" )
 
     SCAI_LOG_INFO( logger,
                    "sparseGEMV<" << common::getScalarType<ValueType>() << ">, n = " << numRows << ", nonZeroRows = " << numNonZeroRows << ", alpha = " << alpha )

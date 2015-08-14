@@ -63,7 +63,7 @@ void MICSyncToken::wait()
 
     if( mSignal >= 0 )
     {
-        LAMA_REGION( "MIC.offloadSynchronize" )
+        SCAI_REGION( "MIC.offloadSynchronize" )
 
 #pragma offload target( mic : 0 ), wait( mSignal )
         {
@@ -78,9 +78,9 @@ void MICSyncToken::wait()
 
 void MICSyncToken::setSignal( int signal )
 {
-    LAMA_ASSERT_ERROR( !isSynchronized(), "cannot set signal as SyncToken is already synchronized" )
+    SCAI_ASSERT_ERROR( !isSynchronized(), "cannot set signal as SyncToken is already synchronized" )
 
-    LAMA_ASSERT_ERROR( mSignal < 0, "signal already set, cannot handle multiple signals" )
+    SCAI_ASSERT_ERROR( mSignal < 0, "signal already set, cannot handle multiple signals" )
 
     // this signal will be used to wait for synchronization
 

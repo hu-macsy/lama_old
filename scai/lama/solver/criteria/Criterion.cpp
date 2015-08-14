@@ -70,8 +70,8 @@ Criterion::Criterion( const CriterionPtr other, const bool modifier )
 Criterion::Criterion( const CriterionPtr leftChild, const CriterionPtr rightChild, BooleanOperator operation )
     : mLeftChild( leftChild ), mRightChild( rightChild ), mOperation( operation ), mModifier( false )
 {
-    LAMA_ASSERT_DEBUG( leftChild.get() != NULL, "Left child is a NULL pointer." );
-    LAMA_ASSERT_DEBUG( rightChild.get() != NULL, "Right child is a NULL pointer." );
+    SCAI_ASSERT_DEBUG( leftChild.get() != NULL, "Left child is a NULL pointer." );
+    SCAI_ASSERT_DEBUG( rightChild.get() != NULL, "Right child is a NULL pointer." );
 }
 
 Criterion::~Criterion()

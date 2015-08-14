@@ -49,7 +49,7 @@ SCAI_LOG_DEF_LOGGER( HaloBuilder::logger, "Halo.Builder" )
 
 void HaloBuilder::build( const Distribution& distribution, const std::vector<IndexType>& requiredIndexes, Halo& halo )
 {
-    LAMA_REGION( "HaloBuilder.build" )
+    SCAI_REGION( "HaloBuilder.build" )
 
     const PartitionId noPartitions = distribution.getNumPartitions();
 
@@ -63,7 +63,7 @@ void HaloBuilder::build( const Distribution& distribution, const std::vector<Ind
     std::vector<PartitionId> owners( nIndexes );
 
     {
-        LAMA_REGION( "HaloBuilder.computeOwners" )
+        SCAI_REGION( "HaloBuilder.computeOwners" )
         communicator.computeOwners( &owners[0], distribution, &requiredIndexes[0], nIndexes );
     }
 #ifdef SCAI_LOG_TRACE
@@ -106,12 +106,12 @@ void HaloBuilder::build( const Distribution& distribution, const std::vector<Ind
     {
         PartitionId owner = owners[jj];
 
-        LAMA_ASSERT( owner >= 0 && owner < noPartitions, "No owner for required Index " << requiredIndexes[jj] )
+        SCAI_ASSERT( owner >= 0 && owner < noPartitions, "No owner for required Index " << requiredIndexes[jj] )
 
         //The offset for the owner
         IndexType haloIndex = counts[owner];
 
-        LAMA_ASSERT( haloIndex >= 0, "No offset for owner "<<owner<< " of required Index "<<requiredIndexes[jj] )
+        SCAI_ASSERT( haloIndex >= 0, "No offset for owner "<<owner<< " of required Index "<<requiredIndexes[jj] )
 
         requiredIndexesByOwner[haloIndex] = requiredIndexes[jj];
 
@@ -173,7 +173,7 @@ void HaloBuilder::build( const Distribution& distribution, const std::vector<Ind
         for( IndexType i = 0; i < n; i++ )
         {
             IndexType localIndex = distribution.global2local( partitionIndexes[i] );
-            LAMA_ASSERT( localIndex != nIndex,
+            SCAI_ASSERT( localIndex != nIndex,
                          "global index "<<partitionIndexes[i]<<" is not local on Rank " << communicator.getRank() )
             partitionIndexes[i] = localIndex;
         }

@@ -176,7 +176,7 @@ IndexType LAPACK_LAPACK::getrf(
     const int lda,
     int* const ipiv )
 {
-    LAMA_REGION( "LAPACK.LAPACK.getrf<float>" )
+    SCAI_REGION( "LAPACK.LAPACK.getrf<float>" )
 
     SCAI_LOG_INFO( logger, "getrf<float> for A of size " << m << " x " << n )
 
@@ -250,7 +250,7 @@ IndexType LAPACK_LAPACK::getrf(
     const int lda,
     int* const ipiv )
 {
-    LAMA_REGION( "LAPACK.LAPACK.getrf<double>" )
+    SCAI_REGION( "LAPACK.LAPACK.getrf<double>" )
 
     SCAI_LOG_INFO( logger, "getrf<double> for A of size " << m << " x " << n )
 
@@ -318,7 +318,7 @@ IndexType LAPACK_LAPACK::getrf(
 template<>
 void LAPACK_LAPACK::getinv( const IndexType n, float* a, const IndexType lda )
 {
-    LAMA_REGION( "LAPACK.LAPACK.getinv<float>" )
+    SCAI_REGION( "LAPACK.LAPACK.getinv<float>" )
 
     int info = 0;
 
@@ -360,7 +360,7 @@ void LAPACK_LAPACK::getinv( const IndexType n, float* a, const IndexType lda )
 template<>
 void LAPACK_LAPACK::getinv( const IndexType n, double* a, const IndexType lda )
 {
-    LAMA_REGION( "LAPACK.LAPACK.getinv<double>" )
+    SCAI_REGION( "LAPACK.LAPACK.getinv<double>" )
 
     int info = 0;
 
@@ -400,7 +400,7 @@ void LAPACK_LAPACK::getinv( const IndexType n, double* a, const IndexType lda )
 template<>
 int LAPACK_LAPACK::getri( const CBLAS_ORDER order, const int n, float* const a, const int lda, int* const ipiv )
 {
-    LAMA_REGION( "LAPACK.LAPACK.getri<float>" )
+    SCAI_REGION( "LAPACK.LAPACK.getri<float>" )
 
     SCAI_LOG_INFO( logger, "getri<float> for A of size " << n << " x " << n )
 
@@ -417,7 +417,7 @@ int LAPACK_LAPACK::getri( const CBLAS_ORDER order, const int n, float* const a, 
 
     if( order != CblasColMajor )
     {
-        LAMA_ASSERT_EQUAL_ERROR( lda, n )
+        SCAI_ASSERT_EQUAL_ERROR( lda, n )
 
         for( int i = 0; i < n; ++i )
         {
@@ -475,7 +475,7 @@ int LAPACK_LAPACK::getri( const CBLAS_ORDER order, const int n, float* const a, 
 template<>
 int LAPACK_LAPACK::getri( const CBLAS_ORDER order, const int n, double* const a, const int lda, int* const ipiv )
 {
-    LAMA_REGION( "LAPACK.LAPACK.getri<double>" )
+    SCAI_REGION( "LAPACK.LAPACK.getri<double>" )
 
     SCAI_LOG_INFO( logger, "getri<double> for A of size " << n << " x " << n )
 
@@ -492,7 +492,7 @@ int LAPACK_LAPACK::getri( const CBLAS_ORDER order, const int n, double* const a,
 
     if( order != CblasColMajor )
     {
-        LAMA_ASSERT_EQUAL_ERROR( lda, n )
+        SCAI_ASSERT_EQUAL_ERROR( lda, n )
 
         for( int i = 0; i < n; ++i )
         {
@@ -557,7 +557,7 @@ int LAPACK_LAPACK::tptrs(
     float* B,
     const int ldb )
 {
-    LAMA_REGION( "LAPACK.LAPACK.tptrs<float>" )
+    SCAI_REGION( "LAPACK.LAPACK.tptrs<float>" )
 
     int info = 0;
 
@@ -616,7 +616,7 @@ int LAPACK_LAPACK::tptrs(
     double* B,
     const int ldb )
 {
-    LAMA_REGION( "LAPACK.LAPACK.tptrs<double>" )
+    SCAI_REGION( "LAPACK.LAPACK.tptrs<double>" )
 
     int info = 0;
 
@@ -675,7 +675,7 @@ void LAPACK_LAPACK::laswp(
     const int INCX,
     SyncToken* syncToken )
 {
-    LAMA_REGION( "LAPACK.LAPACK.laswp<float>" )
+    SCAI_REGION( "LAPACK.LAPACK.laswp<float>" )
 
     int i = K1;
 
@@ -729,7 +729,7 @@ void LAPACK_LAPACK::laswp(
     const int INCX,
     SyncToken* syncToken )
 {
-    LAMA_REGION( "LAPACK.LAPACK.laswp<double>" )
+    SCAI_REGION( "LAPACK.LAPACK.laswp<double>" )
 
     int i = K1;
 

@@ -108,7 +108,7 @@ void verifySameVector( Vector& v1, Vector& v2 )
     for ( IndexType i = 0; i < n; ++i )
     {
         // BOOST_CHECK_CLOSE: cannot be used for Complex<ValueType>
-        LAMA_CHECK_CLOSE( v1.getValue( i ), v2.getValue( i ), 1 );
+        SCAI_CHECK_CLOSE( v1.getValue( i ), v2.getValue( i ), 1 );
     }
 }
 
@@ -121,7 +121,7 @@ void verifyVectorWithScalar( Vector& v, Scalar s )
 
     for ( IndexType i = 0; i < n; ++i )
     {
-        LAMA_CHECK_CLOSE( v.getValue( i ), s, 1 );
+        SCAI_CHECK_CLOSE( v.getValue( i ), s, 1 );
     }
 }
 
@@ -289,7 +289,7 @@ void CtorMatrixExpressionTestmethod()
     SCAI_LOG_INFO( logger, "Exceptiontests" );
     DenseVector<ValueType> vec1( 6, 0.0 );
     //Should throw Exception, because of different sizes of matrix and vector
-    LAMA_CHECK_THROW( { DenseVector<ValueType> vec( n4m4IdentityMatrix * vec1 ); }, Exception );
+    SCAI_CHECK_THROW( { DenseVector<ValueType> vec( n4m4IdentityMatrix * vec1 ); }, Exception );
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( CtorMatrixExpressionTest, ValueType, test_types )
@@ -458,7 +458,7 @@ void AssignmentOpMatrixExpressionTestmethod( ContextPtr context )
     // Note: result vector size does not matter as it will be resized
     DenseVector<ValueType> vec1( 6, 1.0 );
     DenseVector<ValueType> vec2( 4, 2.0 );
-    LAMA_CHECK_THROW( { vec2 = n4m4IdentityMatrix* vec1; }, Exception );
+    SCAI_CHECK_THROW( { vec2 = n4m4IdentityMatrix* vec1; }, Exception );
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( AssignmentOpMatrixExpressionTest, ValueType, test_types )
@@ -529,8 +529,8 @@ void AssignmentVectorExpressionTestmethod( ContextPtr context )
     DenseVector<ValueType> vec1( 4, 1.0 );
     DenseVector<ValueType> vec2( 6, 2.0 );
     DenseVector<ValueType> vec3( 1, 1.0 );
-    LAMA_CHECK_THROW( { vec3 = vec1 + vec2; }, Exception );
-    LAMA_CHECK_THROW( { DenseVector<ValueType> vec4( vec1 + 2.0 * vec2 ) ; }, Exception );
+    SCAI_CHECK_THROW( { vec3 = vec1 + vec2; }, Exception );
+    SCAI_CHECK_THROW( { DenseVector<ValueType> vec4( vec1 + 2.0 * vec2 ) ; }, Exception );
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( AssignmentVectorExpressionTest, ValueType, test_types )
@@ -580,7 +580,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SpecialAssignmentTest, ValueType, test_types )
         verifySameVector<ValueType>( vectorA, vectorC );
         DenseVector<ValueType> vectorWrong( n + 1, 6 );
         SCAI_LOG_INFO( logger, "vector(4) += vector(5) should fail" );
-        LAMA_CHECK_THROW(
+        SCAI_CHECK_THROW(
         {   vectorA += vectorWrong;}, Exception );
     }
 }
@@ -639,7 +639,7 @@ BOOST_AUTO_TEST_CASE( SwapTest )
     }
 
     //Should throw exception, because of different vector types
-    LAMA_CHECK_THROW( { v1.swap( v3 ); }, Exception );
+    SCAI_CHECK_THROW( { v1.swap( v3 ); }, Exception );
 }
 
 /* --------------------------------------------------------------------- */
@@ -652,7 +652,7 @@ BOOST_AUTO_TEST_CASE( AssignTest )
     DenseVector<float> v4( 4, 1.0 );
     DenseVector<float> v5( 5, 1.0 );
     // Should throw exception, because of different vector sizes
-    LAMA_CHECK_THROW( { v1 += v5; }, Exception );
+    SCAI_CHECK_THROW( { v1 += v5; }, Exception );
     v3.assign( v4 );
     v1 = v2 = v3;
     BOOST_REQUIRE_EQUAL( v2.size(), v3.size() );
@@ -732,10 +732,10 @@ void operatorMatrixTimesVectorTestmethod()
     verifySameVector<ValueType>( vectorErg4, vectorB4 );
     MatrixType matrixZ1( TestSparseMatrices::n4m4MatrixA1<ValueType>() );
     //Should throw Exception, because of different sizes of matrix and vector
-    // LAMA_CHECK_THROW( { DenseVector<ValueType> d( matrixZ1 * vectorA4 ); }, Exception );
+    // SCAI_CHECK_THROW( { DenseVector<ValueType> d( matrixZ1 * vectorA4 ); }, Exception );
     SCAI_LOG_INFO( logger, "check for exception" );
     DenseVector<ValueType> wrongVectorErg4( m + 1, 1.0 );
-    LAMA_CHECK_THROW( { vectorA4 = matrixZ1* wrongVectorErg4; }, Exception );
+    SCAI_CHECK_THROW( { vectorA4 = matrixZ1* wrongVectorErg4; }, Exception );
     SCAI_LOG_INFO( logger, "check for exception done" );
 }
 
@@ -801,10 +801,10 @@ void operatorVectorTimesMatrixTestmethod()
     verifySameVector<ValueType>( vectorErg4, vectorB4 );
     MatrixType matrixZ1( TestSparseMatrices::n4m4MatrixA1<ValueType>() );
     //Should throw Exception, because of different sizes of matrix and vector
-    // LAMA_CHECK_THROW( { DenseVector<ValueType> d( matrixZ1 * vectorA4 ); }, Exception );
+    // SCAI_CHECK_THROW( { DenseVector<ValueType> d( matrixZ1 * vectorA4 ); }, Exception );
     SCAI_LOG_INFO( logger, "check for exception" );
     DenseVector<ValueType> wrongVectorErg4( m + 1, 1.0 );
-    LAMA_CHECK_THROW( { vectorA4 = matrixZ1* wrongVectorErg4; }, Exception );
+    SCAI_CHECK_THROW( { vectorA4 = matrixZ1* wrongVectorErg4; }, Exception );
     SCAI_LOG_INFO( logger, "check for exception done" );
 }
 

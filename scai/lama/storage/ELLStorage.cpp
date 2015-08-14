@@ -81,7 +81,7 @@ ELLStorage<ValueType>::ELLStorage(
 
     WriteOnlyAccess<IndexType> ellSizes( mIA, loc, mNumRows );
 
-    LAMA_CONTEXT_ACCESS( loc )
+    SCAI_CONTEXT_ACCESS( loc )
 
     setVal( ellSizes.get(), mNumRows, 0 );
 
@@ -210,7 +210,7 @@ IndexType ELLStorage<ValueType>::getNumValues() const
 
     ReadAccess<IndexType> ia( mIA, loc );
 
-    LAMA_CONTEXT_ACCESS( loc )
+    SCAI_CONTEXT_ACCESS( loc )
 
     IndexType numValues = sum( ia.get(), mNumRows );
 
@@ -256,7 +256,7 @@ void ELLStorage<ValueType>::setIdentity( const IndexType size )
         LAMA_INTERFACE_FN_T( setVal, loc, Utils, Setter, IndexType )
         LAMA_INTERFACE_FN_T( setOrder, loc, Utils, Setter, IndexType )
 
-        LAMA_CONTEXT_ACCESS( loc )
+        SCAI_CONTEXT_ACCESS( loc )
 
         setVal( ia.get(), mNumRows, 1 );
         setOrder( ja.get(), mNumRows );
@@ -268,7 +268,7 @@ void ELLStorage<ValueType>::setIdentity( const IndexType size )
 
         LAMA_INTERFACE_FN_T( setVal, loc, Utils, Setter, ValueType )
 
-        LAMA_CONTEXT_ACCESS( loc )
+        SCAI_CONTEXT_ACCESS( loc )
 
         ValueType one = static_cast<ValueType>( 1.0 );
         setVal( data.get(), mNumRows, one );
@@ -310,7 +310,7 @@ bool ELLStorage<ValueType>::checkDiagonalProperty() const
 
         ReadAccess<IndexType> ja( mJA, loc );
 
-        LAMA_CONTEXT_ACCESS( loc )
+        SCAI_CONTEXT_ACCESS( loc )
 
         diagonalProperty = hasDiagonalProperty( numDiagonals, ja.get() );
     }
@@ -349,7 +349,7 @@ void ELLStorage<ValueType>::buildCSR(
     LAMAArray<OtherValueType>* values,
     const ContextPtr loc ) const
 {
-    LAMA_REGION( "Storage.ELL->CSR" )
+    SCAI_REGION( "Storage.ELL->CSR" )
 
     SCAI_LOG_INFO( logger,
                    "buildCSR<" << common::getScalarType<OtherValueType>() << ">" << " from ELL<" << common::getScalarType<ValueType>() << ">" << " on " << *loc )
@@ -363,7 +363,7 @@ void ELLStorage<ValueType>::buildCSR(
 
     csrIA.resize( mNumRows + 1 );
 
-    LAMA_CONTEXT_ACCESS( loc )
+    SCAI_CONTEXT_ACCESS( loc )
     // just copy the size array mIA
     set( csrIA.get(), ellSizes.get(), mNumRows );
 
@@ -399,7 +399,7 @@ void ELLStorage<ValueType>::setCSRDataImpl(
     const LAMAArray<OtherValueType>& values,
     const ContextPtr loc )
 {
-    LAMA_REGION( "Storage.ELL<-CSR" )
+    SCAI_REGION( "Storage.ELL<-CSR" )
 
     SCAI_LOG_INFO( logger,
                    "set CSR data on " << *loc << ": numRows = " << numRows << ", numColumns = " << numColumns << ", numValues = " << numValues << ", compress threshold = " << mCompressThreshold )
@@ -428,7 +428,7 @@ void ELLStorage<ValueType>::setCSRDataImpl(
         ReadAccess<IndexType> csrIA( ia, loc );
         WriteOnlyAccess<IndexType> ellSizes( mIA, loc, mNumRows );
 
-        LAMA_CONTEXT_ACCESS( loc )
+        SCAI_CONTEXT_ACCESS( loc )
         offsets2sizes( ellSizes.get(), csrIA.get(), mNumRows );
     }
 
@@ -436,7 +436,7 @@ void ELLStorage<ValueType>::setCSRDataImpl(
 
     {
         ReadAccess<IndexType> ellSizes( mIA, loc );
-        LAMA_CONTEXT_ACCESS( loc )
+        SCAI_CONTEXT_ACCESS( loc )
         mNumValuesPerRow = maxval( ellSizes.get(), mNumRows );
     }
 
@@ -473,7 +473,7 @@ void ELLStorage<ValueType>::setCSRDataImpl(
 
         SCAI_LOG_DEBUG( logger, "convert CSR -> ELL, ellSize = " << dataSize )
 
-        LAMA_CONTEXT_ACCESS( loc )
+        SCAI_CONTEXT_ACCESS( loc )
 
         setCSRValues( ellJA.get(), ellValues.get(), ellIA.get(), mNumRows, mNumValuesPerRow, csrIA.get(), csrJA.get(),
                       csrValues.get() );
@@ -492,7 +492,7 @@ void ELLStorage<ValueType>::setCSRDataImpl(
         }
         else
         {
-            LAMA_CONTEXT_ACCESS( loc )
+            SCAI_CONTEXT_ACCESS( loc )
             mDiagonalProperty = hasDiagonalProperty( numDiagonals, ellJA.get() );
         }
     }
@@ -518,9 +518,9 @@ void ELLStorage<ValueType>::setELLData(
     const LAMAArray<IndexType>& ja,
     const ContextArray& values )
 {
-    LAMA_ASSERT_EQUAL_ERROR( numRows, ia.size() )
-    LAMA_ASSERT_EQUAL_ERROR( numRows * numValuesPerRow, ja.size() )
-    LAMA_ASSERT_EQUAL_ERROR( numRows * numValuesPerRow, values.size() )
+    SCAI_ASSERT_EQUAL_ERROR( numRows, ia.size() )
+    SCAI_ASSERT_EQUAL_ERROR( numRows * numValuesPerRow, ja.size() )
+    SCAI_ASSERT_EQUAL_ERROR( numRows * numValuesPerRow, values.size() )
 
     _MatrixStorage::setDimension( numRows, numColumns );
 
@@ -546,14 +546,14 @@ void ELLStorage<ValueType>::setELLData(
 
         SCAI_LOG_DEBUG( logger, "fill ELL data" )
 
-        LAMA_CONTEXT_ACCESS( loc )
+        SCAI_CONTEXT_ACCESS( loc )
 
         fillELLValues( ellJA.get(), ellValues.get(), ellIA.get(), mNumRows, mNumValuesPerRow );
     }
 
     // check is expensive, so do it only if ASSERT_LEVEL is on DEBUG mode
 
-#ifdef LAMA_ASSERT_LEVEL_DEBUG
+#ifdef SCAI_ASSERT_LEVEL_DEBUG
     check( "ELLStorage( #row, #cols, #values, #diags, dlg, ilg, perm, ja, values" );
 #endif
 
@@ -590,7 +590,7 @@ void ELLStorage<ValueType>::setDiagonalImpl( const Scalar scalar )
 
     ValueType value = scalar.getValue<ValueType>();
 
-    LAMA_CONTEXT_ACCESS( loc )
+    SCAI_CONTEXT_ACCESS( loc )
     setVal( wValues.get(), numDiagonalElements, value );
 }
 
@@ -613,7 +613,7 @@ void ELLStorage<ValueType>::setDiagonalImpl( const LAMAArray<OtherType>& diagona
 
     // ELL format with diagonal property: diagonal is just the first column in mValues
 
-    LAMA_CONTEXT_ACCESS( loc )
+    SCAI_CONTEXT_ACCESS( loc )
 
     set( wValues.get(), rDiagonal.get(), numDiagonalElements );
 }
@@ -626,7 +626,7 @@ void ELLStorage<ValueType>::getRowImpl( LAMAArray<OtherType>& row, const IndexTy
 {
     SCAI_LOG_TRACE( logger, "getRowImpl # row = " << row << ", i = " << i )
 
-    LAMA_ASSERT_DEBUG( i >= 0 && i < mNumRows, "row index " << i << " out of range" )
+    SCAI_ASSERT_DEBUG( i >= 0 && i < mNumRows, "row index " << i << " out of range" )
 
     ContextPtr loc = getContextPtr();
 
@@ -637,7 +637,7 @@ void ELLStorage<ValueType>::getRowImpl( LAMAArray<OtherType>& row, const IndexTy
     const ReadAccess<IndexType> rJa( mJA, loc );
     const ReadAccess<ValueType> rValues( mValues, loc );
 
-    LAMA_CONTEXT_ACCESS( loc )
+    SCAI_CONTEXT_ACCESS( loc )
 
     getRow( wRow.get(), i, mNumRows, mNumColumns, mNumValuesPerRow, rIa.get(), rJa.get(), rValues.get() );
 }
@@ -661,7 +661,7 @@ void ELLStorage<ValueType>::getDiagonalImpl( LAMAArray<OtherType>& diagonal ) co
 
     // ELL format with diagonal property: diagonal is just the first column in mValues
 
-    LAMA_CONTEXT_ACCESS( loc )
+    SCAI_CONTEXT_ACCESS( loc )
 
     set( wDiagonal.get(), rValues.get(), numDiagonalElements );
 }
@@ -681,7 +681,7 @@ void ELLStorage<ValueType>::scaleImpl( const Scalar scalar )
 
     const ValueType value = scalar.getValue<ValueType>();
 
-    LAMA_CONTEXT_ACCESS( loc )
+    SCAI_CONTEXT_ACCESS( loc )
 
     scale( wValues.get(), value, mValues.size() );
 }
@@ -702,7 +702,7 @@ void ELLStorage<ValueType>::scaleImpl( const LAMAArray<OtherValueType>& values )
     ReadAccess<IndexType> rIa( mIA, loc );
     WriteAccess<ValueType> wValues( mValues, loc );
 
-    LAMA_CONTEXT_ACCESS( loc )
+    SCAI_CONTEXT_ACCESS( loc )
 
     scaleValue( mNumRows, mNumValuesPerRow, rIa.get(), wValues.get(), rValues.get() );
 }
@@ -747,9 +747,9 @@ void ELLStorage<ValueType>::check( const char* msg ) const
 {
     SCAI_LOG_INFO( logger, "check # msg = " << msg )
 
-    LAMA_ASSERT_EQUAL_ERROR( mNumRows, mIA.size() )
-    LAMA_ASSERT_EQUAL_ERROR( mNumValuesPerRow * mNumRows, mJA.size() )
-    LAMA_ASSERT_EQUAL_ERROR( mJA.size(), mValues.size() )
+    SCAI_ASSERT_EQUAL_ERROR( mNumRows, mIA.size() )
+    SCAI_ASSERT_EQUAL_ERROR( mNumValuesPerRow * mNumRows, mJA.size() )
+    SCAI_ASSERT_EQUAL_ERROR( mJA.size(), mValues.size() )
 
     ContextPtr loc = getContextPtr();
 
@@ -758,7 +758,7 @@ void ELLStorage<ValueType>::check( const char* msg ) const
     ReadAccess<IndexType> rIa( mIA, loc );
     ReadAccess<IndexType> rJa( mJA, loc );
 
-    LAMA_CONTEXT_ACCESS( loc )
+    SCAI_CONTEXT_ACCESS( loc )
 
     check( mNumRows, mNumValuesPerRow, mNumColumns, rIa.get(), rJa.get(), msg );
 }
@@ -786,7 +786,7 @@ void ELLStorage<ValueType>::allocate( IndexType numRows, IndexType numColumns )
 
         WriteOnlyAccess<IndexType> ia( mIA, loc, mNumRows );
 
-        LAMA_CONTEXT_ACCESS( loc )
+        SCAI_CONTEXT_ACCESS( loc )
 
         setVal( ia.get(), mNumRows, 0 );
     }
@@ -823,7 +823,7 @@ ValueType ELLStorage<ValueType>::getValue( const IndexType i, const IndexType j 
     const ReadAccess<IndexType> rJa( mJA, loc );
     const ReadAccess<ValueType> rValues( mValues, loc );
 
-    LAMA_CONTEXT_ACCESS( loc )
+    SCAI_CONTEXT_ACCESS( loc )
 
     return getValue( i, j, mNumRows, mNumValuesPerRow, rIa.get(), rJa.get(), rValues.get() );
 }
@@ -876,7 +876,7 @@ void ELLStorage<ValueType>::buildRowIndexes( const ContextPtr loc )
     LAMA_INTERFACE_FN( setNonEmptyRowsBySizes, loc, ELLUtils, Operations )
 
     ReadAccess<IndexType> ellIA( mIA, loc );
-    LAMA_CONTEXT_ACCESS( loc )
+    SCAI_CONTEXT_ACCESS( loc )
     IndexType nonZeroRows = countNonEmptyRowsBySizes( ellIA.get(), mNumRows );
 
     float usage = float( nonZeroRows ) / float( mNumRows );
@@ -980,8 +980,8 @@ void ELLStorage<ValueType>::matrixTimesVector(
     SCAI_LOG_INFO( logger,
                    *this << ": matrixTimesVector, result = " << result << ", alpha = " << alpha << ", x = " << x << ", beta = " << beta << ", y = " << y )
 
-    LAMA_ASSERT_EQUAL_ERROR( x.size(), mNumColumns )
-    LAMA_ASSERT_EQUAL_ERROR( y.size(), mNumRows )
+    SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumColumns )
+    SCAI_ASSERT_EQUAL_ERROR( y.size(), mNumRows )
 
     ContextPtr loc = getContextPtr();
 
@@ -993,7 +993,7 @@ void ELLStorage<ValueType>::matrixTimesVector(
         return;
     }
 
-    LAMA_REGION( "Storage.ELL.timesVector" )
+    SCAI_REGION( "Storage.ELL.timesVector" )
 
     SCAI_LOG_INFO( logger, *this << ": matrixTimesVector on " << *loc )
 
@@ -1021,7 +1021,7 @@ void ELLStorage<ValueType>::matrixTimesVector(
             IndexType numNonZeroRows = mRowIndexes.size();
             ReadAccess<IndexType> rows( mRowIndexes, loc );
 
-            LAMA_CONTEXT_ACCESS( loc )
+            SCAI_CONTEXT_ACCESS( loc )
             sparseGEMV( wResult.get(), alpha, rX.get(), mNumRows, mNumValuesPerRow, numNonZeroRows, rows.get(),
                         ellIA.get(), ellJA.get(), ellValues.get(), NULL );
         }
@@ -1029,7 +1029,7 @@ void ELLStorage<ValueType>::matrixTimesVector(
         {
             // we assume that normalGEMV can deal with the alias of result, y
 
-            LAMA_CONTEXT_ACCESS( loc )
+            SCAI_CONTEXT_ACCESS( loc )
             normalGEMV( wResult.get(), alpha, rX.get(), beta, wResult.get(), mNumRows, mNumValuesPerRow, ellIA.get(),
                         ellJA.get(), ellValues.get(), NULL );
         }
@@ -1039,7 +1039,7 @@ void ELLStorage<ValueType>::matrixTimesVector(
         WriteOnlyAccess<ValueType> wResult( result, loc, mNumRows );
         ReadAccess<ValueType> rY( y, loc );
 
-        LAMA_CONTEXT_ACCESS( loc )
+        SCAI_CONTEXT_ACCESS( loc )
         normalGEMV( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumRows, mNumValuesPerRow, ellIA.get(),
                     ellJA.get(), ellValues.get(), NULL );
     }
@@ -1058,14 +1058,14 @@ void ELLStorage<ValueType>::vectorTimesMatrix(
     SCAI_LOG_INFO( logger,
                    *this << ": vectorTimesMatrix, result = " << result << ", alpha = " << alpha << ", x = " << x << ", beta = " << beta << ", y = " << y )
 
-    LAMA_REGION( "Storage.ELL.VectorTimesMatrix" )
+    SCAI_REGION( "Storage.ELL.VectorTimesMatrix" )
 
-    LAMA_ASSERT_EQUAL_ERROR( x.size(), mNumRows )
-    LAMA_ASSERT_EQUAL_ERROR( result.size(), mNumColumns )
+    SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumRows )
+    SCAI_ASSERT_EQUAL_ERROR( result.size(), mNumColumns )
 
     if( ( beta != 0.0 ) && ( &result != &y ) )
     {
-        LAMA_ASSERT_EQUAL_ERROR( y.size(), mNumColumns )
+        SCAI_ASSERT_EQUAL_ERROR( y.size(), mNumColumns )
     }
 
     ContextPtr loc = getContextPtr();
@@ -1096,7 +1096,7 @@ void ELLStorage<ValueType>::vectorTimesMatrix(
             IndexType numNonZeroRows = mRowIndexes.size();
             ReadAccess<IndexType> rows( mRowIndexes, loc );
 
-            LAMA_CONTEXT_ACCESS( loc )
+            SCAI_CONTEXT_ACCESS( loc )
             sparseGEVM( wResult.get(), alpha, rX.get(), mNumRows, mNumColumns, mNumValuesPerRow, numNonZeroRows,
                         rows.get(), ellSizes.get(), ellJA.get(), ellValues.get(), NULL );
         }
@@ -1104,7 +1104,7 @@ void ELLStorage<ValueType>::vectorTimesMatrix(
         {
             // we assume that normalGEMV can deal with the alias of result, y
 
-            LAMA_CONTEXT_ACCESS( loc )
+            SCAI_CONTEXT_ACCESS( loc )
             normalGEVM( wResult.get(), alpha, rX.get(), beta, wResult.get(), mNumRows, mNumColumns, mNumValuesPerRow,
                         ellSizes.get(), ellJA.get(), ellValues.get(), NULL );
         }
@@ -1114,7 +1114,7 @@ void ELLStorage<ValueType>::vectorTimesMatrix(
         WriteOnlyAccess<ValueType> wResult( result, loc, mNumColumns );
         ReadAccess<ValueType> rY( y, loc );
 
-        LAMA_CONTEXT_ACCESS( loc )
+        SCAI_CONTEXT_ACCESS( loc )
         normalGEVM( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumRows, mNumColumns, mNumValuesPerRow,
                     ellSizes.get(), ellJA.get(), ellValues.get(), NULL );
     }
@@ -1130,7 +1130,7 @@ SyncToken* ELLStorage<ValueType>::matrixTimesVectorAsync(
     const ValueType beta,
     const LAMAArray<ValueType>& y ) const
 {
-    LAMA_REGION( "Storage.ELL.timesVectorAsync" )
+    SCAI_REGION( "Storage.ELL.timesVectorAsync" )
 
     ContextPtr loc = getContextPtr();
 
@@ -1158,8 +1158,8 @@ SyncToken* ELLStorage<ValueType>::matrixTimesVectorAsync(
         return new TaskSyncToken( bind( pf, this, ref( result ), alpha, cref( x ), beta, cref( y ) ) );
     }
 
-    LAMA_ASSERT_EQUAL_ERROR( x.size(), mNumColumns )
-    LAMA_ASSERT_EQUAL_ERROR( y.size(), mNumRows )
+    SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumColumns )
+    SCAI_ASSERT_EQUAL_ERROR( y.size(), mNumRows )
 
     if( mNumValuesPerRow == 0 )
     {
@@ -1203,7 +1203,7 @@ SyncToken* ELLStorage<ValueType>::matrixTimesVectorAsync(
 
             syncToken->pushToken( rRowIndexes );
 
-            LAMA_CONTEXT_ACCESS( loc )
+            SCAI_CONTEXT_ACCESS( loc )
 
             sparseGEMV( wResult->get(), alpha, rX->get(), mNumRows, mNumValuesPerRow, numNonZeroRows,
                         rRowIndexes->get(), ellIA->get(), ellJA->get(), ellValues->get(), syncToken.get() );
@@ -1212,7 +1212,7 @@ SyncToken* ELLStorage<ValueType>::matrixTimesVectorAsync(
         {
             // we assume that normalGEMV can deal with the alias of result, y
 
-            LAMA_CONTEXT_ACCESS( loc )
+            SCAI_CONTEXT_ACCESS( loc )
 
             normalGEMV( wResult->get(), alpha, rX->get(), beta, wResult->get(), mNumRows, mNumValuesPerRow,
                         ellIA->get(), ellJA->get(), ellValues->get(), syncToken.get() );
@@ -1225,7 +1225,7 @@ SyncToken* ELLStorage<ValueType>::matrixTimesVectorAsync(
         shared_ptr<WriteAccess<ValueType> > wResult( new WriteOnlyAccess<ValueType>( result, loc, mNumRows ) );
         shared_ptr<ReadAccess<ValueType> > rY( new ReadAccess<ValueType>( y, loc ) );
 
-        LAMA_CONTEXT_ACCESS( loc )
+        SCAI_CONTEXT_ACCESS( loc )
 
         normalGEMV( wResult->get(), alpha, rX->get(), beta, rY->get(), mNumRows, mNumValuesPerRow, ellIA->get(),
                     ellJA->get(), ellValues->get(), syncToken.get() );
@@ -1255,7 +1255,7 @@ SyncToken* ELLStorage<ValueType>::vectorTimesMatrixAsync(
     SCAI_LOG_INFO( logger,
                    *this << ": vectorTimesMatrixAsync, result = " << result << ", alpha = " << alpha << ", x = " << x << ", beta = " << beta << ", y = " << y )
 
-    LAMA_REGION( "Storage.ELL.vectorTimesMatrixAsync" )
+    SCAI_REGION( "Storage.ELL.vectorTimesMatrixAsync" )
 
     ContextPtr loc = getContextPtr();
 
@@ -1286,12 +1286,12 @@ SyncToken* ELLStorage<ValueType>::vectorTimesMatrixAsync(
         return new TaskSyncToken( bind( pf, this, ref( result ), alpha, cref( x ), beta, cref( y ) ) );
     }
 
-    LAMA_ASSERT_EQUAL_ERROR( x.size(), mNumRows )
-    LAMA_ASSERT_EQUAL_ERROR( result.size(), mNumColumns )
+    SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumRows )
+    SCAI_ASSERT_EQUAL_ERROR( result.size(), mNumColumns )
 
     if ( ( beta != 0.0 ) && ( &result != &y ) )
     {
-        LAMA_ASSERT_EQUAL_ERROR( y.size(), mNumColumns )
+        SCAI_ASSERT_EQUAL_ERROR( y.size(), mNumColumns )
     }
 
     LAMA_INTERFACE_FN_T( sparseGEVM, loc, ELLUtils, Mult, ValueType )
@@ -1325,7 +1325,7 @@ SyncToken* ELLStorage<ValueType>::vectorTimesMatrixAsync(
 
             syncToken->pushToken( rows );
 
-            LAMA_CONTEXT_ACCESS( loc )
+            SCAI_CONTEXT_ACCESS( loc )
 
             sparseGEVM( wResult->get(), alpha, rX->get(), mNumRows, mNumColumns, mNumValuesPerRow, numNonZeroRows,
                         rows->get(), ellSizes->get(), ellJA->get(), ellValues->get(), syncToken.get() );
@@ -1334,7 +1334,7 @@ SyncToken* ELLStorage<ValueType>::vectorTimesMatrixAsync(
         {
             // we assume that normalGEMV can deal with the alias of result, y
 
-            LAMA_CONTEXT_ACCESS( loc )
+            SCAI_CONTEXT_ACCESS( loc )
 
             normalGEVM( wResult->get(), alpha, rX->get(), beta, wResult->get(), mNumRows, mNumColumns, mNumValuesPerRow,
                         ellSizes->get(), ellJA->get(), ellValues->get(), syncToken.get() );
@@ -1347,7 +1347,7 @@ SyncToken* ELLStorage<ValueType>::vectorTimesMatrixAsync(
         shared_ptr<WriteAccess<ValueType> > wResult( new WriteOnlyAccess<ValueType>( result, loc, mNumColumns ) );
         shared_ptr<ReadAccess<ValueType> > rY( new ReadAccess<ValueType>( y, loc ) );
 
-        LAMA_CONTEXT_ACCESS( loc )
+        SCAI_CONTEXT_ACCESS( loc )
 
         normalGEVM( wResult->get(), alpha, rX->get(), beta, rY->get(), mNumRows, mNumColumns, mNumValuesPerRow,
                     ellSizes->get(), ellJA->get(), ellValues->get(), syncToken.get() );
@@ -1373,20 +1373,20 @@ void ELLStorage<ValueType>::jacobiIterate(
     const LAMAArray<ValueType>& rhs,
     const ValueType omega ) const
 {
-    LAMA_REGION( "Storage.ELL.jacobiIterate" )
+    SCAI_REGION( "Storage.ELL.jacobiIterate" )
 
     SCAI_LOG_INFO( logger, *this << ": Jacobi iteration for local matrix data." )
 
-    LAMA_ASSERT_ERROR( mDiagonalProperty, *this << ": jacobiIterate requires diagonal property" )
+    SCAI_ASSERT_ERROR( mDiagonalProperty, *this << ": jacobiIterate requires diagonal property" )
 
     if ( &solution == &oldSolution )
     {
         COMMON_THROWEXCEPTION( "alias of solution and oldSolution unsupported" )
     }
 
-    LAMA_ASSERT_EQUAL_DEBUG( mNumRows, oldSolution.size() )
-    LAMA_ASSERT_EQUAL_DEBUG( mNumRows, solution.size() )
-    LAMA_ASSERT_EQUAL_DEBUG( mNumRows, mNumColumns )
+    SCAI_ASSERT_EQUAL_DEBUG( mNumRows, oldSolution.size() )
+    SCAI_ASSERT_EQUAL_DEBUG( mNumRows, solution.size() )
+    SCAI_ASSERT_EQUAL_DEBUG( mNumRows, mNumColumns )
     // matrix must be square
 
     ContextPtr loc = getContextPtr();
@@ -1402,7 +1402,7 @@ void ELLStorage<ValueType>::jacobiIterate(
     ReadAccess<ValueType> rOldSolution( oldSolution, loc );
     ReadAccess<ValueType> rRhs( rhs, loc );
 
-    LAMA_CONTEXT_ACCESS( loc )
+    SCAI_CONTEXT_ACCESS( loc )
 
     jacobi( wSolution.get(), mNumRows, mNumValuesPerRow, ellSizes.get(), ellJA.get(), ellValues.get(),
             rOldSolution.get(), rRhs.get(), omega, NULL );
@@ -1417,7 +1417,7 @@ SyncToken* ELLStorage<ValueType>::jacobiIterateAsync(
     const LAMAArray<ValueType>& rhs,
     const ValueType omega ) const
 {
-    LAMA_REGION( "Storage.ELL.jacobiIterateAsync" )
+    SCAI_REGION( "Storage.ELL.jacobiIterateAsync" )
 
     ContextPtr loc = getContextPtr();
 
@@ -1444,16 +1444,16 @@ SyncToken* ELLStorage<ValueType>::jacobiIterateAsync(
 
     SCAI_LOG_INFO( logger, *this << ": Jacobi iteration for local matrix data." )
 
-    LAMA_ASSERT_ERROR( mDiagonalProperty, *this << ": jacobiIterate requires diagonal property" )
+    SCAI_ASSERT_ERROR( mDiagonalProperty, *this << ": jacobiIterate requires diagonal property" )
 
     if ( &solution == &oldSolution )
     {
         COMMON_THROWEXCEPTION( "alias of solution and oldSolution unsupported" )
     }
 
-    LAMA_ASSERT_EQUAL_DEBUG( mNumRows, oldSolution.size() )
-    LAMA_ASSERT_EQUAL_DEBUG( mNumRows, solution.size() )
-    LAMA_ASSERT_EQUAL_DEBUG( mNumRows, mNumColumns )
+    SCAI_ASSERT_EQUAL_DEBUG( mNumRows, oldSolution.size() )
+    SCAI_ASSERT_EQUAL_DEBUG( mNumRows, solution.size() )
+    SCAI_ASSERT_EQUAL_DEBUG( mNumRows, mNumColumns )
     // matrix must be square
 
     LAMA_INTERFACE_FN_T( jacobi, loc, ELLUtils, Solver, ValueType )
@@ -1469,7 +1469,7 @@ SyncToken* ELLStorage<ValueType>::jacobiIterateAsync(
     shared_ptr<ReadAccess<ValueType> > rOldSolution( new ReadAccess<ValueType>( oldSolution, loc ) );
     shared_ptr<ReadAccess<ValueType> > rRhs( new ReadAccess<ValueType>( rhs, loc ) );
 
-    LAMA_CONTEXT_ACCESS( loc )
+    SCAI_CONTEXT_ACCESS( loc )
 
     jacobi( wSolution->get(), mNumRows, mNumValuesPerRow, ellSizes->get(), ellJA->get(), ellValues->get(),
             rOldSolution->get(), rRhs->get(), omega, syncToken.get() );
@@ -1493,15 +1493,15 @@ void ELLStorage<ValueType>::jacobiIterateHalo(
     const LAMAArray<ValueType>& oldHaloSolution,
     const ValueType omega ) const
 {
-    LAMA_REGION( "Storage.ELL.jacobiIterateHalo" )
+    SCAI_REGION( "Storage.ELL.jacobiIterateHalo" )
 
     SCAI_LOG_INFO( logger, "HOST: Jacobi iteration on halo matrix data." )
 
-    LAMA_ASSERT_EQUAL_DEBUG( mNumRows, localSolution.size() )
-    LAMA_ASSERT_EQUAL_DEBUG( mNumRows, localStorage.getNumRows() )
-    LAMA_ASSERT_EQUAL_DEBUG( mNumRows, localStorage.getNumColumns() )
-    LAMA_ASSERT_DEBUG( localStorage.hasDiagonalProperty(), localStorage << ": has not diagonal property" )
-    LAMA_ASSERT_EQUAL_DEBUG( mNumColumns, oldHaloSolution.size() )
+    SCAI_ASSERT_EQUAL_DEBUG( mNumRows, localSolution.size() )
+    SCAI_ASSERT_EQUAL_DEBUG( mNumRows, localStorage.getNumRows() )
+    SCAI_ASSERT_EQUAL_DEBUG( mNumRows, localStorage.getNumColumns() )
+    SCAI_ASSERT_DEBUG( localStorage.hasDiagonalProperty(), localStorage << ": has not diagonal property" )
+    SCAI_ASSERT_EQUAL_DEBUG( mNumColumns, oldHaloSolution.size() )
 
     const LAMAArray<ValueType>* localDiagonal;
 
@@ -1514,7 +1514,7 @@ void ELLStorage<ValueType>::jacobiIterateHalo(
         const ELLStorage<ValueType>* ellLocal;
 
         ellLocal = dynamic_cast<const ELLStorage<ValueType>*>( &localStorage );
-        LAMA_ASSERT_DEBUG( ellLocal, "could not cast to ELLStorage " << localStorage )
+        SCAI_ASSERT_DEBUG( ellLocal, "could not cast to ELLStorage " << localStorage )
         localDiagonal = &( ellLocal->mValues );
     }
     else
@@ -1543,12 +1543,12 @@ void ELLStorage<ValueType>::jacobiIterateHalo(
     const LAMAArray<ValueType>& oldHaloSolution,
     const ValueType omega ) const
 {
-    LAMA_REGION( "Storage.ELL.jacobiIterateHalo" )
+    SCAI_REGION( "Storage.ELL.jacobiIterateHalo" )
 
     SCAI_LOG_INFO( logger, "HOST: Jacobi iteration on halo matrix data." )
 
-    LAMA_ASSERT_EQUAL_DEBUG( mNumRows, localSolution.size() )
-    LAMA_ASSERT_EQUAL_DEBUG( mNumColumns, oldHaloSolution.size() )
+    SCAI_ASSERT_EQUAL_DEBUG( mNumRows, localSolution.size() )
+    SCAI_ASSERT_EQUAL_DEBUG( mNumColumns, oldHaloSolution.size() )
 
     ContextPtr loc = getContextPtr();
 
@@ -1568,7 +1568,7 @@ void ELLStorage<ValueType>::jacobiIterateHalo(
         {
             ReadAccess<IndexType> haloRowIndexes( mRowIndexes, loc );
 
-            LAMA_CONTEXT_ACCESS( loc )
+            SCAI_CONTEXT_ACCESS( loc )
 
             jacobiHalo( wSolution.get(), mNumRows, rLocalDiagonal.get(), mNumValuesPerRow, haloIA.get(), haloJA.get(),
                         haloValues.get(), haloRowIndexes.get(), numNonEmptyRows, rOldHaloSolution.get(), omega, NULL );
@@ -1579,7 +1579,7 @@ void ELLStorage<ValueType>::jacobiIterateHalo(
 
             const IndexType numNonEmptyRows = mNumRows;
 
-            LAMA_CONTEXT_ACCESS( loc )
+            SCAI_CONTEXT_ACCESS( loc )
 
             jacobiHalo( wSolution.get(), mNumRows, rLocalDiagonal.get(), mNumValuesPerRow, haloIA.get(), haloJA.get(),
                         haloValues.get(), NULL, numNonEmptyRows, rOldHaloSolution.get(), omega, NULL );
@@ -1605,7 +1605,7 @@ ValueType ELLStorage<ValueType>::l1Norm() const
 
 	ReadAccess<ValueType> data( mValues, loc );
 
-	LAMA_CONTEXT_ACCESS( loc );
+	SCAI_CONTEXT_ACCESS( loc );
 
 	return asum( mValues.size(), data.get(), 1, NULL );
 }
@@ -1628,7 +1628,7 @@ ValueType ELLStorage<ValueType>::l2Norm() const
 
 	ReadAccess<ValueType> data( mValues, loc );
 
-	LAMA_CONTEXT_ACCESS( loc );
+	SCAI_CONTEXT_ACCESS( loc );
 
 	return sqrt(dot( mValues.size(), data.get(), 1, data.get(), 1, NULL ));
 }
@@ -1652,7 +1652,7 @@ ValueType ELLStorage<ValueType>::maxNorm() const
     ReadAccess<IndexType> ellIA( mIA, loc );
     ReadAccess<ValueType> ellValues( mValues, loc );
 
-    LAMA_CONTEXT_ACCESS( loc )
+    SCAI_CONTEXT_ACCESS( loc )
 
     ValueType maxval = absMaxVal( mNumRows, mNumValuesPerRow, ellIA.get(), ellValues.get() );
 
@@ -1683,7 +1683,7 @@ void ELLStorage<ValueType>::matrixTimesMatrix(
     if( a.getFormat() == Format::ELL )
     {
         ellA = dynamic_cast<const ELLStorage<ValueType>*>( &a );
-        LAMA_ASSERT_DEBUG( ellA, "could not cast to ELLStorage " << a )
+        SCAI_ASSERT_DEBUG( ellA, "could not cast to ELLStorage " << a )
     }
     else
     {
@@ -1693,7 +1693,7 @@ void ELLStorage<ValueType>::matrixTimesMatrix(
     if( b.getFormat() == Format::ELL )
     {
         ellB = dynamic_cast<const ELLStorage<ValueType>*>( &b );
-        LAMA_ASSERT_DEBUG( ellB, "could not cast to ELLStorage " << b )
+        SCAI_ASSERT_DEBUG( ellB, "could not cast to ELLStorage " << b )
     }
     else
     {
@@ -1713,7 +1713,7 @@ void ELLStorage<ValueType>::matrixTimesMatrix(
         if( ( c.getFormat() == Format::ELL ) && ( &c != this ) )
         {
             ellC = dynamic_cast<const ELLStorage<ValueType>*>( &c );
-            LAMA_ASSERT_DEBUG( ellC, "could not cast to ELLStorage " << c )
+            SCAI_ASSERT_DEBUG( ellC, "could not cast to ELLStorage " << c )
         }
         else
         {
@@ -1757,10 +1757,10 @@ void ELLStorage<ValueType>::matrixTimesMatrixELL(
     LAMA_INTERFACE_FN_T( maxval, loc, Utils, Reductions, IndexType )
     LAMA_INTERFACE_FN_T( matrixMultiply, loc, ELLUtils, MatrixExp, ValueType )
 
-    LAMA_ASSERT_ERROR( &a != this, "matrixTimesMatrix: alias of a with this result matrix" )
-    LAMA_ASSERT_ERROR( &b != this, "matrixTimesMatrix: alias of b with this result matrix" )
+    SCAI_ASSERT_ERROR( &a != this, "matrixTimesMatrix: alias of a with this result matrix" )
+    SCAI_ASSERT_ERROR( &b != this, "matrixTimesMatrix: alias of b with this result matrix" )
 
-    LAMA_ASSERT_EQUAL_ERROR( a.getNumColumns(), b.getNumRows() )
+    SCAI_ASSERT_EQUAL_ERROR( a.getNumColumns(), b.getNumRows() )
 
     allocate( a.getNumRows(), b.getNumColumns() );
 
@@ -1779,7 +1779,7 @@ void ELLStorage<ValueType>::matrixTimesMatrixELL(
 
         WriteOnlyAccess<IndexType> cIA( mIA, loc, mNumRows );
 
-        LAMA_CONTEXT_ACCESS( loc )
+        SCAI_CONTEXT_ACCESS( loc )
 
         // 1. Step: compute resulting IA array
         matrixMultiplySizes( cIA.get(), a.getNumRows(), a.getNumColumns(), b.getNumRows(), false, aIA.get(), aJA.get(),
@@ -1819,13 +1819,13 @@ void ELLStorage<ValueType>::matrixAddMatrixELL(
     LAMA_INTERFACE_FN_T( maxval, loc, Utils, Reductions, IndexType )
     LAMA_INTERFACE_FN_T( matrixAdd, loc, ELLUtils, MatrixExp, ValueType )
 
-    LAMA_ASSERT_ERROR( &a != this, "matrixAddMatrix: alias of a with this result matrix" )
-    LAMA_ASSERT_ERROR( &b != this, "matrixAddMatrix: alias of b with this result matrix" )
+    SCAI_ASSERT_ERROR( &a != this, "matrixAddMatrix: alias of a with this result matrix" )
+    SCAI_ASSERT_ERROR( &b != this, "matrixAddMatrix: alias of b with this result matrix" )
 
     allocate( a.getNumRows(), a.getNumColumns() );
 
-    LAMA_ASSERT_EQUAL_ERROR( mNumRows, b.getNumRows() )
-    LAMA_ASSERT_EQUAL_ERROR( mNumColumns, b.getNumColumns() )
+    SCAI_ASSERT_EQUAL_ERROR( mNumRows, b.getNumRows() )
+    SCAI_ASSERT_EQUAL_ERROR( mNumColumns, b.getNumColumns() )
 
     //mDiagonalProperty = ( mNumRows == mNumColumns );
 
@@ -1840,7 +1840,7 @@ void ELLStorage<ValueType>::matrixAddMatrixELL(
 
         WriteOnlyAccess<IndexType> cIA( mIA, loc, mNumRows );
 
-        LAMA_CONTEXT_ACCESS( loc )
+        SCAI_CONTEXT_ACCESS( loc )
 
         // 1. Step: Compute IA array
         matrixAddSizes( cIA.get(), a.getNumRows(), a.getNumColumns(), false, aIA.get(), aJA.get(),

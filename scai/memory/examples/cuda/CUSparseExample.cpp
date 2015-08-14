@@ -92,7 +92,7 @@ int main()
         ReadAccess<int> readcooIA( cooIA, cuda );
         WriteOnlyAccess<int> writecsrIA( csrIA, cuda, numRows + 1 );
 
-        LAMA_CUSPARSE_CALL(
+        SCAI_CUSPARSE_CALL(
             cusparseXcoo2csr( CUDAContext_cusparseHandle,
                               readcooIA.get(), numValues, numRows, 
                               writecsrIA.get(), 
@@ -122,7 +122,7 @@ int main()
         WriteOnlyAccess<int> writecscIA( cscIA, cuda, numValues );
         WriteOnlyAccess<float> writecscValues( cscValues, cuda, numValues );
      
-        LAMA_CUSPARSE_CALL(
+        SCAI_CUSPARSE_CALL(
             cusparseScsr2csc( CUDAContext_cusparseHandle,
                               numRows, numColumns, numValues,
                               readcsrValues.get(), readcsrIA.get(), readcsrJA.get(),

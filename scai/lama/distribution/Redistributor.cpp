@@ -54,16 +54,16 @@ Redistributor::Redistributor( DistributionPtr targetDistribution, DistributionPt
     : mSourceDistribution( sourceDistribution ), mTargetDistribution( targetDistribution )
 
 {
-    LAMA_ASSERT_ERROR( sourceDistribution, "NULL pointer for source distribution" )
-    LAMA_ASSERT_ERROR( targetDistribution, "NULL pointer for target distribution" )
+    SCAI_ASSERT_ERROR( sourceDistribution, "NULL pointer for source distribution" )
+    SCAI_ASSERT_ERROR( targetDistribution, "NULL pointer for target distribution" )
 
     // Dereference distribution pointers, avoids checks for validity
 
     const Distribution& sourceDist = *sourceDistribution;
     const Distribution& targetDist = *targetDistribution;
 
-    LAMA_ASSERT_EQUAL_ERROR( sourceDist.getGlobalSize(), targetDist.getGlobalSize() )
-    LAMA_ASSERT_EQUAL_ERROR( sourceDist.getCommunicator(), targetDist.getCommunicator() )
+    SCAI_ASSERT_EQUAL_ERROR( sourceDist.getGlobalSize(), targetDist.getGlobalSize() )
+    SCAI_ASSERT_EQUAL_ERROR( sourceDist.getCommunicator(), targetDist.getCommunicator() )
 
     mSourceSize = sourceDist.getLocalSize();
     mTargetSize = targetDist.getLocalSize();
@@ -154,14 +154,14 @@ Redistributor::Redistributor( DistributionPtr targetDistribution, DistributionPt
     // In contrary to Halo schedules we have here the situation that each non-local
     // index of source should be required by some other processor.
 
-    LAMA_ASSERT_EQUAL_ERROR( offset, haloSourceIndexes.size() )
-    LAMA_ASSERT_EQUAL_ERROR( mNumLocalValues + offset, mSourceSize )
+    SCAI_ASSERT_EQUAL_ERROR( offset, haloSourceIndexes.size() )
+    SCAI_ASSERT_EQUAL_ERROR( mNumLocalValues + offset, mSourceSize )
 
     // Now add the indexes where to scatter the halo into destination
 
     IndexType haloSize = halo.getHaloSize();
 
-    LAMA_ASSERT_ERROR( mNumLocalValues + haloSize == mTargetSize, "size mismatch" )
+    SCAI_ASSERT_ERROR( mNumLocalValues + haloSize == mTargetSize, "size mismatch" )
 
     haloTargetIndexes.resize( haloSize );
 

@@ -73,7 +73,7 @@ void scaleTest( ContextPtr loc )
     LAMAArray<ValueType> values( nValues, valuesValues );
     {
         WriteAccess<ValueType> wValues( values, loc );
-        LAMA_CONTEXT_ACCESS( loc );
+        SCAI_CONTEXT_ACCESS( loc );
         scale( wValues.get(), mult, nValues );
     }
     ReadAccess<ValueType> rValues( values );
@@ -97,7 +97,7 @@ void sumTest( ContextPtr loc )
         const ValueType expectedSum = 30;
         LAMAArray<ValueType> values( nValues, valuesValues );
         ReadAccess<ValueType> rValues( values, loc );
-        LAMA_CONTEXT_ACCESS( loc );
+        SCAI_CONTEXT_ACCESS( loc );
         const ValueType resultSum = sum( rValues.get(), nValues );
         BOOST_CHECK_EQUAL( expectedSum, resultSum );
     }
@@ -105,7 +105,7 @@ void sumTest( ContextPtr loc )
         const ValueType expectedSum = 0;
         LAMAArray<ValueType> values;
         ReadAccess<ValueType> rValues( values, loc );
-        LAMA_CONTEXT_ACCESS( loc );
+        SCAI_CONTEXT_ACCESS( loc );
         const ValueType resultSum = sum( rValues.get(), values.size() );
         BOOST_CHECK_EQUAL( expectedSum, resultSum );
     }
@@ -122,7 +122,7 @@ void setValTest( ContextPtr loc )
         LAMAArray<ValueType> values;
         {
             WriteOnlyAccess<ValueType> wValues( values, loc, 3 * n );
-            LAMA_CONTEXT_ACCESS( loc );
+            SCAI_CONTEXT_ACCESS( loc );
             setVal( wValues.get(), 3 * n, 0 );
             // overwrite in the middle to check that there is no out-of-range set
             setVal( wValues.get() + n, n, 10 );
@@ -141,7 +141,7 @@ void setValTest( ContextPtr loc )
         LAMAArray<ValueType> values;
         {
             WriteOnlyAccess<ValueType> wValues( values, loc, n );
-            LAMA_CONTEXT_ACCESS( loc );
+            SCAI_CONTEXT_ACCESS( loc );
             setVal( wValues.get(), n, 7 );
         }
     }
@@ -169,7 +169,7 @@ void isSortedTest( ContextPtr loc )
         ReadAccess<ValueType> rValues1( valueArray1, loc );
         ReadAccess<ValueType> rValues2( valueArray2, loc );
         ReadAccess<ValueType> rValues3( valueArray3, loc );
-        LAMA_CONTEXT_ACCESS( loc );
+        SCAI_CONTEXT_ACCESS( loc );
         // values1 are sorted, ascending = true
         BOOST_CHECK( isSorted( rValues1.get(), nValues1, true ) );
         BOOST_CHECK( ! isSorted( rValues1.get(), nValues1, false ) );
@@ -199,7 +199,7 @@ void setOrderTest( ContextPtr loc )
         LAMAArray<IndexType> values;
         {
             WriteOnlyAccess<IndexType> wValues( values, loc, n );
-            LAMA_CONTEXT_ACCESS( loc );
+            SCAI_CONTEXT_ACCESS( loc );
             setOrder( wValues.get(), n );
         }
         ReadAccess<IndexType> rValues( values );
@@ -214,7 +214,7 @@ void setOrderTest( ContextPtr loc )
         LAMAArray<IndexType> values;
         {
             WriteOnlyAccess<IndexType> wValues( values, loc, n );
-            LAMA_CONTEXT_ACCESS( loc );
+            SCAI_CONTEXT_ACCESS( loc );
             setOrder( wValues.get(), n );
         }
     }
@@ -232,14 +232,14 @@ void invertTest( ContextPtr loc )
         LAMAArray<ValueType> values( nValues, valuesValues );
         {
             WriteAccess<ValueType> wValues( values, loc );
-            LAMA_CONTEXT_ACCESS( loc );
+            SCAI_CONTEXT_ACCESS( loc );
             invert( wValues.get(), nValues );
         }
         ReadAccess<ValueType> rValues( values );
 
         for ( IndexType i = 0; i < nValues; i++ )
         {
-            LAMA_CHECK_CLOSE( 1 / valuesValues[i], rValues.get()[i], 1 );
+            SCAI_CHECK_CLOSE( 1 / valuesValues[i], rValues.get()[i], 1 );
         }
     }
     {
@@ -247,7 +247,7 @@ void invertTest( ContextPtr loc )
         LAMAArray<ValueType> values;
         {
             WriteOnlyAccess<ValueType> wValues( values, loc, n );
-            LAMA_CONTEXT_ACCESS( loc );
+            SCAI_CONTEXT_ACCESS( loc );
             invert( wValues.get(), n );
         }
     }

@@ -136,7 +136,7 @@ const std::string& AMGSetupFactory::getDefaultAMGSetupType() const
 
 common::shared_ptr<AMGSetupManager> AMGSetupFactory::getAMGSetupManager( const std::string& type )
 {
-    LAMA_ASSERT( mAMGSetupToManagerMap.find( type ) != mAMGSetupToManagerMap.end(),
+    SCAI_ASSERT( mAMGSetupToManagerMap.find( type ) != mAMGSetupToManagerMap.end(),
                  "AMGSetup for " << type << " not supported, no manager registered" )
     return mAMGSetupToManagerMap[type];
 }

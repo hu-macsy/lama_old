@@ -107,7 +107,7 @@ void OpenMPELLUtils::setNonEmptyRowsBySizes(
         }
     }
 
-    LAMA_ASSERT_EQUAL_DEBUG( counter, numNonEmptyRows )
+    SCAI_ASSERT_EQUAL_DEBUG( counter, numNonEmptyRows )
 
     SCAI_LOG_INFO( logger, "#non-zero rows = " << counter << ", set by sizes" )
 }
@@ -205,12 +205,12 @@ void OpenMPELLUtils::check(
             }
         }
 
-        LAMA_ASSERT_ERROR( integrityIA, msg << ": ellSizes: at least one value out of range" )
-        LAMA_ASSERT_ERROR( integrityJA, msg << ": ellJA: at least one value out of range" )
+        SCAI_ASSERT_ERROR( integrityIA, msg << ": ellSizes: at least one value out of range" )
+        SCAI_ASSERT_ERROR( integrityJA, msg << ": ellJA: at least one value out of range" )
     }
     else
     {
-        LAMA_ASSERT_EQUAL_ERROR( 0, numValuesPerRow )
+        SCAI_ASSERT_EQUAL_ERROR( 0, numValuesPerRow )
     }
 }
 
@@ -339,7 +339,7 @@ void OpenMPELLUtils::getCSRValues(
 
     #pragma omp parallel
     {
-        LAMA_REGION( "OpenMP.ELL->CSR_values" )
+        SCAI_REGION( "OpenMP.ELL->CSR_values" )
 
         #pragma omp for schedule( LAMA_OMP_SCHEDULE )
 
@@ -350,7 +350,7 @@ void OpenMPELLUtils::getCSRValues(
 
             // just make sure that csrIA and ellSizes really fit with each other
 
-            LAMA_ASSERT_EQUAL_DEBUG( csrIA[i] + rowSize, csrIA[i + 1] )
+            SCAI_ASSERT_EQUAL_DEBUG( csrIA[i] + rowSize, csrIA[i + 1] )
 
             for( IndexType jj = 0; jj < rowSize; ++jj )
             {
@@ -382,7 +382,7 @@ void OpenMPELLUtils::setCSRValues(
 
     #pragma omp parallel
     {
-        LAMA_REGION( "OpenMP.ELL<-CSR_values" )
+        SCAI_REGION( "OpenMP.ELL<-CSR_values" )
 
         #pragma omp for schedule( LAMA_OMP_SCHEDULE )
 
@@ -812,7 +812,7 @@ void OpenMPELLUtils::jacobi(
     const ValueType oneMinusOmega = static_cast<ValueType>( 1.0 - omega );
     #pragma omp parallel
     {
-        LAMA_REGION( "OpenMP.ELL.jacobi" )
+        SCAI_REGION( "OpenMP.ELL.jacobi" )
         #pragma omp for schedule(LAMA_OMP_SCHEDULE)
 
         for( IndexType i = 0; i < numRows; i++ )
@@ -867,7 +867,7 @@ void OpenMPELLUtils::jacobiHalo(
 
     #pragma omp parallel
     {
-        LAMA_REGION( "OpenMP.ELL.jacobiHalo" )
+        SCAI_REGION( "OpenMP.ELL.jacobiHalo" )
 
         #pragma omp for schedule( LAMA_OMP_SCHEDULE )
 
@@ -928,7 +928,7 @@ void OpenMPELLUtils::normalGEMV(
 
     #pragma omp parallel
     {
-        LAMA_REGION( "OpenMP.ELL.normalGEMV" )
+        SCAI_REGION( "OpenMP.ELL.normalGEMV" )
 
         #pragma omp for schedule(LAMA_OMP_SCHEDULE)
 
@@ -993,7 +993,7 @@ void OpenMPELLUtils::sparseGEMV(
 
     #pragma omp parallel
     {
-        LAMA_REGION( "OpenMP.ELL.sparseGEMV" )
+        SCAI_REGION( "OpenMP.ELL.sparseGEMV" )
 
         #pragma omp for schedule( LAMA_OMP_SCHEDULE )
 
@@ -1050,7 +1050,7 @@ void OpenMPELLUtils::normalGEVM(
 
     //#pragma omp parallel
     {
-        LAMA_REGION( "OpenMP.ELL.normalGEVM" )
+        SCAI_REGION( "OpenMP.ELL.normalGEVM" )
 
         //#pragma omp for schedule(LAMA_OMP_SCHEDULE)
         for( IndexType i = 0; i < numColumns; ++i )
@@ -1131,7 +1131,7 @@ void OpenMPELLUtils::sparseGEVM(
 
     #pragma omp parallel
     {
-        LAMA_REGION( "OpenMP.ELL.sparseGEVM" )
+        SCAI_REGION( "OpenMP.ELL.sparseGEVM" )
 
         #pragma omp for schedule(LAMA_OMP_SCHEDULE)
 

@@ -436,7 +436,7 @@ for ( IndexType i = 0; i < mMatrixStorage.getNumRows(); ++i )
 {
     for ( IndexType j = 0; j < mMatrixStorage.getNumColumns(); ++j )
     {
-        LAMA_CHECK_CLOSE( 2.0 * tmp.getValue( i, j ),
+        SCAI_CHECK_CLOSE( 2.0 * tmp.getValue( i, j ),
                           mMatrixStorage.getValue( i, j ), 1 );
     }
 }
@@ -455,7 +455,7 @@ ValueType maxNorm = mMatrixStorage.maxNorm();
 
 ValueType expected = 9.3f; // maximal absolute value
 
-LAMA_CHECK_CLOSE( maxNorm, expected, 1 );
+SCAI_CHECK_CLOSE( maxNorm, expected, 1 );
 
 LAMA_COMMON_TEST_CASE_TEMPLATE_END()
 
@@ -495,7 +495,7 @@ SCAI_LOG_INFO( logger, "Test matrixTimesVector" )
         }
 
         sum += beta * yVal;
-        LAMA_CHECK_CLOSE( sum, res[i], 0.1 );
+        SCAI_CHECK_CLOSE( sum, res[i], 0.1 );
     }
 }
 
@@ -530,7 +530,7 @@ SCAI_LOG_INFO( logger, "Test " << mMatrixStorage.getTypeName() << "::matrixTimes
         }
 
         sum += beta * yVal;
-        LAMA_CHECK_CLOSE( sum, res[i], 0.1f );
+        SCAI_CHECK_CLOSE( sum, res[i], 0.1f );
     }
 }
 
@@ -572,7 +572,7 @@ SCAI_LOG_INFO( logger, "Test vectorTimesMatrix" )
         }
 
         sum += beta * yVal;
-        LAMA_CHECK_CLOSE( sum, res[j], 0.1f );
+        SCAI_CHECK_CLOSE( sum, res[j], 0.1f );
     }
 }
 
@@ -608,7 +608,7 @@ SCAI_LOG_INFO( logger, "Test vectorTimesMatrixAsync" )
         }
 
         sum += beta * yVal;
-        LAMA_CHECK_CLOSE( sum, res[j], 0.1f );
+        SCAI_CHECK_CLOSE( sum, res[j], 0.1f );
     }
 }
 
@@ -656,7 +656,7 @@ SCAI_LOG_INFO( logger, "Test vectorTimesMatrixAsync 2" )
         }
 
         sum += beta * yValues[j];
-        LAMA_CHECK_CLOSE( sum, res[j], 0.1f );
+        SCAI_CHECK_CLOSE( sum, res[j], 0.1f );
     }
 }
 
@@ -707,7 +707,7 @@ SCAI_LOG_INFO( logger, "Test vectorTimesMatrixAsync 3" )
         }
 
         sum += beta * yValues[j];
-        LAMA_CHECK_CLOSE( sum, res[j], 0.1f );
+        SCAI_CHECK_CLOSE( sum, res[j], 0.1f );
     }
 }
 
@@ -792,10 +792,10 @@ for ( IndexType j = 0; j < ncol; ++j )
     }
 
     sum *= alpha;
-    LAMA_CHECK_CLOSE( sum, res[j], 0.1f );
-    LAMA_CHECK_CLOSE( res[j], res2[j], 0.1f );
-    LAMA_CHECK_CLOSE( resD[j], res2D[j], 0.1f );
-    LAMA_CHECK_CLOSE( resD[j], res[j], 0.1f );
+    SCAI_CHECK_CLOSE( sum, res[j], 0.1f );
+    SCAI_CHECK_CLOSE( res[j], res2[j], 0.1f );
+    SCAI_CHECK_CLOSE( resD[j], res2D[j], 0.1f );
+    SCAI_CHECK_CLOSE( resD[j], res[j], 0.1f );
 }
 
 LAMA_COMMON_TEST_CASE_TEMPLATE_END()
@@ -832,11 +832,11 @@ for ( IndexType i = 0; i < n; ++i )
     {
         if ( i == j )
         {
-            LAMA_CHECK_CLOSE( mMatrixStorage.getValue( i, j ), aValue * bValue, 1 );
+            SCAI_CHECK_CLOSE( mMatrixStorage.getValue( i, j ), aValue * bValue, 1 );
         }
         else
         {
-            LAMA_CHECK_CLOSE( mMatrixStorage.getValue( i, j ), 0.0, 1 );
+            SCAI_CHECK_CLOSE( mMatrixStorage.getValue( i, j ), 0.0, 1 );
         }
     }
 }
@@ -880,11 +880,11 @@ for ( IndexType i = 0; i < n; ++i )
     {
         if ( i == j )
         {
-            LAMA_CHECK_CLOSE( mMatrixStorage.getValue( i, j ), aValue * bValue + cValue, 1 );
+            SCAI_CHECK_CLOSE( mMatrixStorage.getValue( i, j ), aValue * bValue + cValue, 1 );
         }
         else
         {
-            LAMA_CHECK_CLOSE( mMatrixStorage.getValue( i, j ), 0.0, 1 );
+            SCAI_CHECK_CLOSE( mMatrixStorage.getValue( i, j ), 0.0, 1 );
         }
     }
 }
@@ -907,7 +907,7 @@ for ( IndexType i = 0; i < n; ++i )
 {
     for ( IndexType j = 0; j < n; ++j )
     {
-        LAMA_CHECK_CLOSE( mMatrixStorage.getValue( i, j ), 0.0, 1 );
+        SCAI_CHECK_CLOSE( mMatrixStorage.getValue( i, j ), 0.0, 1 );
     }
 }
 
@@ -950,7 +950,7 @@ ReadAccess<ValueType> rY2( y2 );
 
 for ( IndexType i = 0; i < n; ++i )
 {
-    LAMA_CHECK_CLOSE( rY1[i], rY2[i], 1 );
+    SCAI_CHECK_CLOSE( rY1[i], rY2[i], 1 );
 }
 
 LAMA_COMMON_TEST_CASE_TEMPLATE_END()
@@ -1005,7 +1005,7 @@ void MatrixStorageTest<ValueType>::jacobiTest( const ValueType omega )
 
         for ( IndexType i = 0; i < n; ++i )
         {
-            LAMA_CHECK_CLOSE( rSolution1[i], rSolution2[i], 1 );
+            SCAI_CHECK_CLOSE( rSolution1[i], rSolution2[i], 1 );
         }
     }
 }
@@ -1078,7 +1078,7 @@ tmp.matrixTimesVector( solution2, -omega, oldSolution, 1.0, solution2 );
 
     for ( IndexType i = 0; i < numRows; ++i )
     {
-        LAMA_CHECK_CLOSE( rSolution1[i], rSolution2[i], 1 );
+        SCAI_CHECK_CLOSE( rSolution1[i], rSolution2[i], 1 );
     }
 }
 

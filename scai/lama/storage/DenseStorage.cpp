@@ -69,7 +69,7 @@ DenseStorageView<ValueType>::DenseStorageView(
 {
     if( initializedData )
     {
-        LAMA_ASSERT_EQUAL_ERROR( data.size(), numRows * numColumns )
+        SCAI_ASSERT_EQUAL_ERROR( data.size(), numRows * numColumns )
     }
 
     SCAI_LOG_DEBUG( logger, "created dense storage with referenced data" )
@@ -122,7 +122,7 @@ IndexType DenseStorageView<ValueType>::getNumValues() const
 
 /* --------------------------------------------------------------------------- */
 
-#ifdef LAMA_ASSERT_LEVEL_OFF
+#ifdef SCAI_ASSERT_LEVEL_OFF
 template<typename ValueType>
 void DenseStorageView<ValueType>::check( const char* ) const
 {}
@@ -130,7 +130,7 @@ void DenseStorageView<ValueType>::check( const char* ) const
 template<typename ValueType>
 void DenseStorageView<ValueType>::check( const char* /* msg */) const
 {
-    LAMA_ASSERT_EQUAL_ERROR( mNumRows * mNumColumns, mData.size() )
+    SCAI_ASSERT_EQUAL_ERROR( mNumRows * mNumColumns, mData.size() )
 }
 #endif
 
@@ -150,7 +150,7 @@ template<typename ValueType>
 template<typename OtherType>
 void DenseStorageView<ValueType>::getRowImpl( LAMAArray<OtherType>& row, const IndexType i ) const
 {
-    LAMA_ASSERT_DEBUG( i >= 0 && i < mNumRows, "row index " << i << " out of range" )
+    SCAI_ASSERT_DEBUG( i >= 0 && i < mNumRows, "row index " << i << " out of range" )
 
     WriteOnlyAccess<OtherType> wRow( row, mNumColumns );
     ReadAccess<ValueType> rData( mData );
@@ -401,7 +401,7 @@ void DenseStorageView<ValueType>::invert( const MatrixStorage<ValueType>& other 
     {
         const DenseStorageView<ValueType>* otherDense = dynamic_cast<const DenseStorageView<ValueType>*>( &other );
 
-        LAMA_ASSERT_ERROR( otherDense, "Internal error: dynamic cast Dense" )
+        SCAI_ASSERT_ERROR( otherDense, "Internal error: dynamic cast Dense" )
         invertDense( *otherDense );
     }
     else
@@ -431,7 +431,7 @@ void DenseStorageView<ValueType>::invertDense( const DenseStorageView<ValueType>
     int nRows = this->getNumRows();
     int nCols = this->getNumColumns();
 
-    LAMA_ASSERT_EQUAL_ERROR( nRows, nCols )
+    SCAI_ASSERT_EQUAL_ERROR( nRows, nCols )
 
     ContextPtr loc = Context::getContextPtr( context::Host );
 
@@ -439,7 +439,7 @@ void DenseStorageView<ValueType>::invertDense( const DenseStorageView<ValueType>
 
     WriteAccess<ValueType> denseValues( this->getData(), loc );
 
-    LAMA_CONTEXT_ACCESS( loc );
+    SCAI_CONTEXT_ACCESS( loc );
 
     getinv( nRows, denseValues.get(), nCols );
 
@@ -459,8 +459,8 @@ void DenseStorageView<ValueType>::matrixTimesVector(
     SCAI_LOG_INFO( logger,
                    "Computing z = " << alpha << " * A * x + " << beta << " * y" << ", with A = " << *this << ", x = " << x << ", y = " << y << ", z = " << result )
 
-    LAMA_ASSERT_EQUAL_ERROR( x.size(), mNumColumns )
-    LAMA_ASSERT_EQUAL_ERROR( y.size(), mNumRows )
+    SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumColumns )
+    SCAI_ASSERT_EQUAL_ERROR( y.size(), mNumRows )
 
     if( mNumRows == 0 )
     {
@@ -483,7 +483,7 @@ void DenseStorageView<ValueType>::matrixTimesVector(
 
         WriteOnlyAccess<ValueType> wResult( result, loc, mNumRows );
 
-        LAMA_CONTEXT_ACCESS( loc )
+        SCAI_CONTEXT_ACCESS( loc )
 
         setVal( wResult.get(), mNumRows, static_cast<ValueType>( 0 ) );
     }
@@ -499,7 +499,7 @@ void DenseStorageView<ValueType>::matrixTimesVector(
 
         ReadAccess<ValueType> rY( y, loc );
 
-        LAMA_CONTEXT_ACCESS( loc )
+        SCAI_CONTEXT_ACCESS( loc )
 
         copy( mNumRows, rY.get(), 1, wResult.get(), 1, NULL );
     }
@@ -528,7 +528,7 @@ void DenseStorageView<ValueType>::matrixTimesVector(
 
             WriteAccess<ValueType> wResult( result, loc );
 
-            LAMA_CONTEXT_ACCESS( loc )
+            SCAI_CONTEXT_ACCESS( loc )
 
             scal( mNumRows, beta, wResult.get(), 1, NULL );
         }
@@ -546,7 +546,7 @@ void DenseStorageView<ValueType>::matrixTimesVector(
 
         WriteAccess<ValueType> wResult( result, loc );
 
-        LAMA_CONTEXT_ACCESS( loc )
+        SCAI_CONTEXT_ACCESS( loc )
 
         // gemv:  result = alpha * this * x + beta * result
 
@@ -568,8 +568,8 @@ void DenseStorageView<ValueType>::vectorTimesMatrix(
     SCAI_LOG_INFO( logger,
                    "Computing z = " << alpha << " * A * x + " << beta << " * y" << ", with A = " << *this << ", x = " << x << ", y = " << y << ", z = " << result )
 
-    LAMA_ASSERT_EQUAL_ERROR( x.size(), mNumRows )
-    LAMA_ASSERT_EQUAL_ERROR( y.size(), mNumColumns )
+    SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumRows )
+    SCAI_ASSERT_EQUAL_ERROR( y.size(), mNumColumns )
 
     if( mNumRows == 0 )
     {
@@ -592,7 +592,7 @@ void DenseStorageView<ValueType>::vectorTimesMatrix(
 
         WriteOnlyAccess<ValueType> wResult( result, loc, mNumColumns );
 
-        LAMA_CONTEXT_ACCESS( loc )
+        SCAI_CONTEXT_ACCESS( loc )
 
         setVal( wResult.get(), mNumColumns, static_cast<ValueType>( 0 ) );
     }
@@ -608,7 +608,7 @@ void DenseStorageView<ValueType>::vectorTimesMatrix(
 
         ReadAccess<ValueType> rY( y, loc );
 
-        LAMA_CONTEXT_ACCESS( loc )
+        SCAI_CONTEXT_ACCESS( loc )
 
         copy( mNumColumns, rY.get(), 1, wResult.get(), 1, NULL );
     }
@@ -637,7 +637,7 @@ void DenseStorageView<ValueType>::vectorTimesMatrix(
 
             WriteAccess<ValueType> wResult( result, loc );
 
-            LAMA_CONTEXT_ACCESS( loc )
+            SCAI_CONTEXT_ACCESS( loc )
 
             scal( mNumColumns, beta, wResult.get(), 1, NULL );
         }
@@ -655,7 +655,7 @@ void DenseStorageView<ValueType>::vectorTimesMatrix(
 
         WriteAccess<ValueType> wResult( result, loc );
 
-        LAMA_CONTEXT_ACCESS( loc )
+        SCAI_CONTEXT_ACCESS( loc )
 
         // gemv:  result = alpha * this * x + beta * result
 
@@ -717,7 +717,7 @@ void DenseStorageView<ValueType>::matrixTimesMatrix(
     if( a.getFormat() == Format::DENSE )
     {
         denseA = dynamic_cast<const DenseStorageView<ValueType>*>( &a );
-        LAMA_ASSERT_DEBUG( denseA, "could not cast to DenseStorage " << a )
+        SCAI_ASSERT_DEBUG( denseA, "could not cast to DenseStorage " << a )
     }
     else
     {
@@ -729,7 +729,7 @@ void DenseStorageView<ValueType>::matrixTimesMatrix(
     if( b.getFormat() == Format::DENSE )
     {
         denseB = dynamic_cast<const DenseStorageView<ValueType>*>( &b );
-        LAMA_ASSERT_DEBUG( denseB, "could not cast to DenseStorage " << b )
+        SCAI_ASSERT_DEBUG( denseB, "could not cast to DenseStorage " << b )
     }
     else
     {
@@ -741,7 +741,7 @@ void DenseStorageView<ValueType>::matrixTimesMatrix(
     if( c.getFormat() == Format::DENSE )
     {
         denseC = dynamic_cast<const DenseStorageView<ValueType>*>( &c );
-        LAMA_ASSERT_DEBUG( denseB, "could not cast to DenseStorage " << c )
+        SCAI_ASSERT_DEBUG( denseB, "could not cast to DenseStorage " << c )
     }
     else
     {
@@ -805,7 +805,7 @@ void DenseStorageView<ValueType>::matrixTimesMatrixDense(
     int k = b.getNumRows();
     int n = b.getNumColumns();
 
-    LAMA_ASSERT_EQUAL_ERROR( k, a.getNumColumns() )
+    SCAI_ASSERT_EQUAL_ERROR( k, a.getNumColumns() )
 
     mNumRows = m;
     mNumColumns = n;
@@ -819,22 +819,22 @@ void DenseStorageView<ValueType>::matrixTimesMatrixDense(
         SCAI_LOG_INFO( logger, "init this result with 0, size = " << m * n )
         WriteOnlyAccess<ValueType> resAccess( getData(), context, m * n );
         LAMA_INTERFACE_FN_T( setVal, context, Utils, Setter, ValueType )
-        LAMA_CONTEXT_ACCESS( context )
+        SCAI_CONTEXT_ACCESS( context )
         setVal( resAccess.get(), m * n, 0.0 );
     }
     else if( this != &c )
     {
         // force result = C
 
-        LAMA_ASSERT_EQUAL_ERROR( m, c.getNumRows() )
-        LAMA_ASSERT_EQUAL_ERROR( n, c.getNumColumns() )
+        SCAI_ASSERT_EQUAL_ERROR( m, c.getNumRows() )
+        SCAI_ASSERT_EQUAL_ERROR( n, c.getNumColumns() )
         mNumRows = m;
         mNumColumns = n;
         LAMA_INTERFACE_FN_T( copy, context, BLAS, BLAS1, ValueType )
         ReadAccess<ValueType> cAccess( c.getData(), context );
         WriteOnlyAccess<ValueType> resAccess( getData(), context, m * n );
         SCAI_LOG_TRACE( logger, "Copying: res = c " )
-        LAMA_CONTEXT_ACCESS( context )
+        SCAI_CONTEXT_ACCESS( context )
         copy( n * m, cAccess.get(), 1, resAccess.get(), 1, NULL );
     }
     else
@@ -861,7 +861,7 @@ void DenseStorageView<ValueType>::matrixTimesMatrixDense(
     {
         LAMA_INTERFACE_FN_T( gemm, context, BLAS, BLAS3, ValueType );
 
-        LAMA_CONTEXT_ACCESS( context )
+        SCAI_CONTEXT_ACCESS( context )
 
         gemm( CblasRowMajor, CblasNoTrans, CblasNoTrans, m, n, k, alpha, aAccess.get(), lda, bAccess.get(), ldb, beta,
               resAccess.get(), ldc, NULL );
@@ -894,7 +894,7 @@ ValueType DenseStorageView<ValueType>::l1Norm() const
 
 	ReadAccess<ValueType> data( mData, loc );
 
-	LAMA_CONTEXT_ACCESS( loc );
+	SCAI_CONTEXT_ACCESS( loc );
 
 	return asum( n, data.get(), 1, NULL );
 }
@@ -917,7 +917,7 @@ ValueType DenseStorageView<ValueType>::l2Norm() const
 
 	ReadAccess<ValueType> data( mData, loc );
 
-	LAMA_CONTEXT_ACCESS( loc );
+	SCAI_CONTEXT_ACCESS( loc );
 
 	return sqrt(dot( n, data.get(), 1, data.get(), 1, NULL ));
 }
@@ -940,7 +940,7 @@ ValueType DenseStorageView<ValueType>::maxNorm() const
 
     ReadAccess<ValueType> read1( mData, loc );
 
-    LAMA_CONTEXT_ACCESS( loc )
+    SCAI_CONTEXT_ACCESS( loc )
 
     ValueType maxval = absMaxVal( read1.get(), n );
 
@@ -952,8 +952,8 @@ ValueType DenseStorageView<ValueType>::maxNorm() const
 template<typename ValueType>
 ValueType DenseStorageView<ValueType>::maxDiffNorm( const MatrixStorage<ValueType>& other ) const
 {
-    LAMA_ASSERT_EQUAL_ERROR( mNumRows, other.getNumRows() )
-    LAMA_ASSERT_EQUAL_ERROR( mNumColumns, other.getNumColumns() )
+    SCAI_ASSERT_EQUAL_ERROR( mNumRows, other.getNumRows() )
+    SCAI_ASSERT_EQUAL_ERROR( mNumColumns, other.getNumColumns() )
 
     common::shared_ptr<DenseStorage<ValueType> > tmpOtherDense;
 
@@ -962,7 +962,7 @@ ValueType DenseStorageView<ValueType>::maxDiffNorm( const MatrixStorage<ValueTyp
     if( other.getValueType() == getValueType() && ( other.getFormat() == Format::DENSE ) )
     {
         otherDense = dynamic_cast<const DenseStorageView<ValueType>*>( &other );
-        LAMA_ASSERT_ERROR( otherDense, other << ": could not cast to " << typeName() )
+        SCAI_ASSERT_ERROR( otherDense, other << ": could not cast to " << typeName() )
     }
     else
     {
@@ -995,7 +995,7 @@ ValueType DenseStorageView<ValueType>::maxDiffNormImpl( const DenseStorageView<V
     ReadAccess<ValueType> read1( mData, loc );
     ReadAccess<ValueType> read2( other.mData, loc );
 
-    LAMA_CONTEXT_ACCESS( loc )
+    SCAI_CONTEXT_ACCESS( loc )
 
     ValueType maxval = absMaxDiffVal( read1.get(), read2.get(), n );
 
@@ -1051,7 +1051,7 @@ case common::scalar::SCALAR_ARITHMETIC_TYPE##I:                                 
 {                                                                                        \
     const DenseStorageView<ARITHMETIC_TYPE##I>* otherTyped =                             \
             dynamic_cast<const DenseStorageView<ARITHMETIC_TYPE##I>*>( &other );             \
-    LAMA_ASSERT_DEBUG( otherTyped, other << ": dynamic cast failed, should not happen" ) \
+    SCAI_ASSERT_DEBUG( otherTyped, other << ": dynamic cast failed, should not happen" ) \
     assignDenseStorageImpl( *otherTyped );                                               \
     return;                                                                              \
 }                                                                                        \
@@ -1171,7 +1171,7 @@ DenseStorage<ValueType>::DenseStorage(
 {
 // here we can check for correct size
 
-LAMA_ASSERT_EQUAL_ERROR( data.size(), numRows * numColumns )
+SCAI_ASSERT_EQUAL_ERROR( data.size(), numRows * numColumns )
 
 mDataArray = data; // is a flat copy of the array
 }

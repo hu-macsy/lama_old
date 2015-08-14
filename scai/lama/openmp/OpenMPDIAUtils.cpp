@@ -143,7 +143,7 @@ void OpenMPDIAUtils::getCSRValues(
         {
             IndexType n = std::min( numRows, numColumns );
 
-            LAMA_ASSERT_EQUAL_DEBUG( n, csrIA[numRows] )
+            SCAI_ASSERT_EQUAL_DEBUG( n, csrIA[numRows] )
 
             #pragma omp parallel for schedule( LAMA_OMP_SCHEDULE )
 
@@ -155,7 +155,7 @@ void OpenMPDIAUtils::getCSRValues(
         }
         else
         {
-            LAMA_ASSERT_EQUAL_DEBUG( 0, csrIA[numRows] )
+            SCAI_ASSERT_EQUAL_DEBUG( 0, csrIA[numRows] )
         }
 
         return;
@@ -163,11 +163,11 @@ void OpenMPDIAUtils::getCSRValues(
 
     if( numDiagonals > 0 )
     {
-        LAMA_ASSERT_DEBUG( diaOffsets != NULL, "offset array of DIA data is NULL" )
+        SCAI_ASSERT_DEBUG( diaOffsets != NULL, "offset array of DIA data is NULL" )
 
         if( numRows > 0 )
         {
-            LAMA_ASSERT_DEBUG( diaValues != NULL, "value array of DIA data is NULL" )
+            SCAI_ASSERT_DEBUG( diaValues != NULL, "value array of DIA data is NULL" )
         }
     }
 
@@ -175,7 +175,7 @@ void OpenMPDIAUtils::getCSRValues(
 
     #pragma omp parallel
     {
-        LAMA_REGION( "OpenMP.DIA->CSR_values" )
+        SCAI_REGION( "OpenMP.DIA->CSR_values" )
 
         #pragma omp for schedule( LAMA_OMP_SCHEDULE )
 
@@ -189,7 +189,7 @@ void OpenMPDIAUtils::getCSRValues(
             {
                 // store main diagonal at first, must be first diagonal
 
-                LAMA_ASSERT_EQUAL_ERROR( diaOffsets[0], 0 )
+                SCAI_ASSERT_EQUAL_ERROR( diaOffsets[0], 0 )
 
                 csrJA[offset] = i;
                 csrValues[offset] = static_cast<CSRValueType>( diaValues[i] );
@@ -230,7 +230,7 @@ void OpenMPDIAUtils::getCSRValues(
                 }
             }
 
-            LAMA_ASSERT_EQUAL_DEBUG( offset, csrIA[i + 1] )
+            SCAI_ASSERT_EQUAL_DEBUG( offset, csrIA[i + 1] )
         }
     }
 }
@@ -323,7 +323,7 @@ void OpenMPDIAUtils::normalGEMV(
 
     #pragma omp parallel
     {
-        LAMA_REGION( "OpenMP.DIA.normalGEMV" )
+        SCAI_REGION( "OpenMP.DIA.normalGEMV" )
 
         #pragma omp for schedule ( LAMA_OMP_SCHEDULE )
 
@@ -424,7 +424,7 @@ void OpenMPDIAUtils::normalGEVM(
 
     #pragma omp parallel
     {
-        LAMA_REGION( "OpenMP.DIA.normalGEVM" )
+        SCAI_REGION( "OpenMP.DIA.normalGEVM" )
 
         #pragma omp for schedule ( LAMA_OMP_SCHEDULE )
 
@@ -487,7 +487,7 @@ void OpenMPDIAUtils::jacobi(
     SCAI_LOG_INFO( logger,
                    "jacobi<" << getScalarType<ValueType>() << ">" << ", #rows = " << numRows << ", #cols = " << numColumns << ", #diagonals = " << numDiagonals << ", omega = " << omega )
 
-    LAMA_ASSERT_EQUAL_DEBUG( 0, diaOffset[0] )
+    SCAI_ASSERT_EQUAL_DEBUG( 0, diaOffset[0] )
     // main diagonal must be first
 
     if( syncToken != NULL )
@@ -499,7 +499,7 @@ void OpenMPDIAUtils::jacobi(
 
     #pragma omp parallel
     {
-        LAMA_REGION( "OpenMP.DIA.Jacobi" )
+        SCAI_REGION( "OpenMP.DIA.Jacobi" )
 
         #pragma omp for schedule( LAMA_OMP_SCHEDULE )
 

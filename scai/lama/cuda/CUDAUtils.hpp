@@ -30,8 +30,8 @@
  * @date 02.07.2012
  * @since 1.0.0
  */
-#ifndef LAMA_CUDA_UTILS_HPP_
-#define LAMA_CUDA_UTILS_HPP_
+#ifndef SCAI_CUDA_UTILS_HPP_
+#define SCAI_CUDA_UTILS_HPP_
 
 // for dll_import
 #include <scai/common/config.hpp>
@@ -140,4 +140,4 @@ private:
 }
 // namespace lama
 
-#endif //  LAMA_CUDA_UTILS_HPP_
+#endif //  SCAI_CUDA_UTILS_HPP_

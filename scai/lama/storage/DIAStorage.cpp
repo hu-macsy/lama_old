@@ -191,7 +191,7 @@ MatrixStorageFormat DIAStorage<ValueType>::getFormat() const
 template<typename ValueType>
 void DIAStorage<ValueType>::setDiagonalImpl( const Scalar scalar )
 {
-    LAMA_ASSERT_ERROR( mDiagonalProperty, *this << ": has not diagonal property, cannot set diagonal" )
+    SCAI_ASSERT_ERROR( mDiagonalProperty, *this << ": has not diagonal property, cannot set diagonal" )
 
     IndexType numDiagonalElements = std::min( mNumColumns, mNumRows );
 
@@ -207,7 +207,7 @@ void DIAStorage<ValueType>::setDiagonalImpl( const Scalar scalar )
 
         ValueType value = scalar.getValue<ValueType>();
 
-        LAMA_CONTEXT_ACCESS( loc )
+        SCAI_CONTEXT_ACCESS( loc )
 
         setVal( wValues.get(), numDiagonalElements, value );
     }
@@ -219,7 +219,7 @@ template<typename ValueType>
 template<typename OtherType>
 void DIAStorage<ValueType>::getRowImpl( LAMAArray<OtherType>& row, const IndexType i ) const
 {
-    LAMA_ASSERT_DEBUG( i >= 0 && i < mNumRows, "row index " << i << " out of range" )
+    SCAI_ASSERT_DEBUG( i >= 0 && i < mNumRows, "row index " << i << " out of range" )
 
     WriteOnlyAccess<OtherType> wRow( row, mNumColumns );
 
@@ -259,7 +259,7 @@ void DIAStorage<ValueType>::getDiagonalImpl( LAMAArray<OtherType>& diagonal ) co
     WriteOnlyAccess<OtherType> wDiagonal( diagonal, loc, numDiagonalElements );
     ReadAccess<ValueType> rValues( mValues, loc );
 
-    LAMA_CONTEXT_ACCESS( loc )
+    SCAI_CONTEXT_ACCESS( loc )
 
     // Diagonal is first column
 
@@ -283,7 +283,7 @@ void DIAStorage<ValueType>::setDiagonalImpl( const LAMAArray<OtherType>& diagona
     ReadAccess<OtherType> rDiagonal( diagonal, loc );
     WriteAccess<ValueType> wValues( mValues, loc );
 
-    LAMA_CONTEXT_ACCESS( loc )
+    SCAI_CONTEXT_ACCESS( loc )
 
     set( wValues.get(), rDiagonal.get(), numDiagonalElements );
 }
@@ -381,14 +381,14 @@ bool DIAStorage<ValueType>::checkDiagonalProperty() const
 template<typename ValueType>
 void DIAStorage<ValueType>::check( const char* /* msg */) const
 {
-    LAMA_ASSERT_EQUAL_ERROR( mNumDiagonals, mOffset.size() )
+    SCAI_ASSERT_EQUAL_ERROR( mNumDiagonals, mOffset.size() )
 
     if( mNumDiagonals == 0 )
     {
-        LAMA_ASSERT_EQUAL_ERROR( false, mDiagonalProperty )
+        SCAI_ASSERT_EQUAL_ERROR( false, mDiagonalProperty )
     }
 
-    LAMA_ASSERT_EQUAL_ERROR( mNumDiagonals * mNumRows, mValues.size() )
+    SCAI_ASSERT_EQUAL_ERROR( mNumDiagonals * mNumRows, mValues.size() )
 }
 
 /* --------------------------------------------------------------------------- */
@@ -412,7 +412,7 @@ void DIAStorage<ValueType>::setIdentity( const IndexType size )
 
         IndexType zero = 0;
 
-        LAMA_CONTEXT_ACCESS( loc )
+        SCAI_CONTEXT_ACCESS( loc )
 
         setVal( wOffset.get(), 1, zero );
     }
@@ -423,7 +423,7 @@ void DIAStorage<ValueType>::setIdentity( const IndexType size )
 
         ValueType one = 1;
 
-        LAMA_CONTEXT_ACCESS( loc )
+        SCAI_CONTEXT_ACCESS( loc )
 
         setVal( values.get(), mNumRows, one );
     }
@@ -472,7 +472,7 @@ void DIAStorage<ValueType>::buildCSR(
     LAMAArray<OtherValueType>* values,
     const ContextPtr /* loc */) const
 {
-    LAMA_REGION( "Storage.DIA->CSR" )
+    SCAI_REGION( "Storage.DIA->CSR" )
 
     // TODO all done on host, so loc is unused
 
@@ -519,7 +519,7 @@ void DIAStorage<ValueType>::setCSRDataImpl(
     const LAMAArray<OtherValueType>& values,
     ContextPtr UNUSED( loc ) )
 {
-    LAMA_REGION( "Storage.DIA<-CSR" )
+    SCAI_REGION( "Storage.DIA<-CSR" )
 
     // loc is ignored, we do it on the Host
 
@@ -667,7 +667,7 @@ void DIAStorage<ValueType>::setOffsets(
         SCAI_LOG_INFO( logger, "lower + upper diagonals = " << mNumDiagonals )
     }
 
-    LAMA_ASSERT_EQUAL_DEBUG( mNumDiagonals, wOffset.size() )
+    SCAI_ASSERT_EQUAL_DEBUG( mNumDiagonals, wOffset.size() )
 }
 
 /* --------------------------------------------------------------------------- */
@@ -734,7 +734,7 @@ ValueType DIAStorage<ValueType>::l1Norm() const
 
 	ReadAccess<ValueType> data( mValues, loc );
 
-	LAMA_CONTEXT_ACCESS( loc );
+	SCAI_CONTEXT_ACCESS( loc );
 
 	return asum( mValues.size(), data.get(), 1, NULL );
 }
@@ -752,7 +752,7 @@ ValueType DIAStorage<ValueType>::l2Norm() const
 
 	ReadAccess<ValueType> data( mValues, loc );
 
-	LAMA_CONTEXT_ACCESS( loc );
+	SCAI_CONTEXT_ACCESS( loc );
 
 	return sqrt(dot( mValues.size(), data.get(), 1, data.get(), 1, NULL ));
 }
@@ -771,7 +771,7 @@ ValueType DIAStorage<ValueType>::maxNorm() const
     ReadAccess<IndexType> diaOffsets( mOffset, loc );
     ReadAccess<ValueType> diaValues( mValues, loc );
 
-    LAMA_CONTEXT_ACCESS( loc )
+    SCAI_CONTEXT_ACCESS( loc )
 
     ValueType maxval = absMaxVal( mNumRows, mNumColumns, mNumDiagonals, diaOffsets.get(), diaValues.get() );
 
@@ -882,15 +882,15 @@ void DIAStorage<ValueType>::matrixTimesVector(
     const ValueType beta,
     const LAMAArray<ValueType>& y ) const
 {
-    LAMA_REGION( "Storage.DIA.timesVector" )
+    SCAI_REGION( "Storage.DIA.timesVector" )
 
     ContextPtr loc = getContextPtr();
 
     SCAI_LOG_INFO( logger,
                    "Computing z = " << alpha << " * A * x + " << beta << " * y, with A = " << *this << ", x = " << x << ", y = " << y << ", z = " << result << " on " << *loc )
 
-    LAMA_ASSERT_EQUAL_ERROR( x.size(), mNumColumns )
-    LAMA_ASSERT_EQUAL_ERROR( y.size(), mNumRows )
+    SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumColumns )
+    SCAI_ASSERT_EQUAL_ERROR( y.size(), mNumRows )
 
     LAMA_INTERFACE_FN_DEFAULT_T( normalGEMV, loc, DIAUtils, Mult, ValueType )
 
@@ -911,7 +911,7 @@ void DIAStorage<ValueType>::matrixTimesVector(
 
         // we assume that normalGEMV can deal with the alias of result, y
 
-        LAMA_CONTEXT_ACCESS( loc )
+        SCAI_CONTEXT_ACCESS( loc )
 
         normalGEMV( wResult.get(), alpha, rX.get(), beta, wResult.get(), mNumRows, mNumColumns, mNumDiagonals,
                     diaOffsets.get(), diaValues.get(), NULL );
@@ -923,7 +923,7 @@ void DIAStorage<ValueType>::matrixTimesVector(
         WriteOnlyAccess<ValueType> wResult( result, loc, mNumRows );
         ReadAccess<ValueType> rY( y, loc );
 
-        LAMA_CONTEXT_ACCESS( loc )
+        SCAI_CONTEXT_ACCESS( loc )
 
         normalGEMV( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumRows, mNumColumns, mNumDiagonals,
                     diaOffsets.get(), diaValues.get(), NULL );
@@ -943,14 +943,14 @@ void DIAStorage<ValueType>::vectorTimesMatrix(
     SCAI_LOG_INFO( logger,
                    *this << ": vectorTimesMatrix, result = " << result << ", alpha = " << alpha << ", x = " << x << ", beta = " << beta << ", y = " << y )
 
-    LAMA_REGION( "Storage.DIA.VectorTimesMatrix" )
+    SCAI_REGION( "Storage.DIA.VectorTimesMatrix" )
 
-    LAMA_ASSERT_EQUAL_ERROR( x.size(), mNumRows )
-    LAMA_ASSERT_EQUAL_ERROR( result.size(), mNumColumns )
+    SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumRows )
+    SCAI_ASSERT_EQUAL_ERROR( result.size(), mNumColumns )
 
     if( ( beta != 0.0 ) && ( &result != &y ) )
     {
-        LAMA_ASSERT_EQUAL_ERROR( y.size(), mNumColumns )
+        SCAI_ASSERT_EQUAL_ERROR( y.size(), mNumColumns )
     }
 
     ContextPtr loc = getContextPtr();
@@ -974,7 +974,7 @@ void DIAStorage<ValueType>::vectorTimesMatrix(
 
         // we assume that normalGEVM can deal with the alias of result, y
 
-        LAMA_CONTEXT_ACCESS( loc )
+        SCAI_CONTEXT_ACCESS( loc )
 
         normalGEVM( wResult.get(), alpha, rX.get(), beta, wResult.get(), mNumRows, mNumColumns, mNumDiagonals,
                     diaOffsets.get(), diaValues.get(), NULL );
@@ -984,7 +984,7 @@ void DIAStorage<ValueType>::vectorTimesMatrix(
         WriteOnlyAccess<ValueType> wResult( result, loc, mNumColumns );
         ReadAccess<ValueType> rY( y, loc );
 
-        LAMA_CONTEXT_ACCESS( loc )
+        SCAI_CONTEXT_ACCESS( loc )
 
         normalGEVM( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumRows, mNumColumns, mNumDiagonals,
                     diaOffsets.get(), diaValues.get(), NULL );
@@ -1001,7 +1001,7 @@ SyncToken* DIAStorage<ValueType>::matrixTimesVectorAsync(
     const ValueType beta,
     const LAMAArray<ValueType>& y ) const
 {
-    LAMA_REGION( "Storage.DIA.timesVectorAsync" )
+    SCAI_REGION( "Storage.DIA.timesVectorAsync" )
 
     ContextPtr loc = getContextPtr();
 
@@ -1032,8 +1032,8 @@ SyncToken* DIAStorage<ValueType>::matrixTimesVectorAsync(
     SCAI_LOG_INFO( logger,
                    "Start z = " << alpha << " * A * x + " << beta << " * y, with A = " << *this << ", x = " << x << ", y = " << y << ", z = " << result << " on " << *loc )
 
-    LAMA_ASSERT_EQUAL_ERROR( x.size(), mNumColumns )
-    LAMA_ASSERT_EQUAL_ERROR( y.size(), mNumRows )
+    SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumColumns )
+    SCAI_ASSERT_EQUAL_ERROR( y.size(), mNumRows )
 
     common::unique_ptr<SyncToken> syncToken( loc->getSyncToken() );
 
@@ -1059,7 +1059,7 @@ SyncToken* DIAStorage<ValueType>::matrixTimesVectorAsync(
 
         // we assume that normalGEMV can deal with the alias of result, y
 
-        LAMA_CONTEXT_ACCESS( loc )
+        SCAI_CONTEXT_ACCESS( loc )
 
         normalGEMV( wResult->get(), alpha, rX->get(), beta, wResult->get(), mNumRows, mNumColumns, mNumDiagonals,
                     diaOffsets->get(), diaValues->get(), syncToken.get() );
@@ -1074,7 +1074,7 @@ SyncToken* DIAStorage<ValueType>::matrixTimesVectorAsync(
         syncToken->pushToken( rY );
         syncToken->pushToken( wResult );
 
-        LAMA_CONTEXT_ACCESS( loc )
+        SCAI_CONTEXT_ACCESS( loc )
 
         normalGEMV( wResult->get(), alpha, rX->get(), beta, rY->get(), mNumRows, mNumColumns, mNumDiagonals,
                     diaOffsets->get(), diaValues->get(), syncToken.get() );
@@ -1100,7 +1100,7 @@ SyncToken* DIAStorage<ValueType>::vectorTimesMatrixAsync(
     SCAI_LOG_INFO( logger,
                    *this << ": vectorTimesMatrixAsync, result = " << result << ", alpha = " << alpha << ", x = " << x << ", beta = " << beta << ", y = " << y )
 
-    LAMA_REGION( "Storage.DIA.vectorTimesMatrixAsync" )
+    SCAI_REGION( "Storage.DIA.vectorTimesMatrixAsync" )
 
     ContextPtr loc = getContextPtr();
 
@@ -1131,12 +1131,12 @@ SyncToken* DIAStorage<ValueType>::vectorTimesMatrixAsync(
         return new TaskSyncToken( bind( pf, this, ref( result ), alpha, cref( x ), beta, cref( y ) ) );
     }
 
-    LAMA_ASSERT_EQUAL_ERROR( x.size(), mNumRows )
-    LAMA_ASSERT_EQUAL_ERROR( result.size(), mNumColumns )
+    SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumRows )
+    SCAI_ASSERT_EQUAL_ERROR( result.size(), mNumColumns )
 
     if( ( beta != 0.0 ) && ( &result != &y ) )
     {
-        LAMA_ASSERT_EQUAL_ERROR( y.size(), mNumColumns )
+        SCAI_ASSERT_EQUAL_ERROR( y.size(), mNumColumns )
     }
 
     LAMA_INTERFACE_FN_T( normalGEVM, loc, DIAUtils, Mult, ValueType )
@@ -1161,7 +1161,7 @@ SyncToken* DIAStorage<ValueType>::vectorTimesMatrixAsync(
 
         // we assume that normalGEMV can deal with the alias of result, y
 
-        LAMA_CONTEXT_ACCESS( loc )
+        SCAI_CONTEXT_ACCESS( loc )
 
         normalGEVM( wResult->get(), alpha, rX->get(), beta, wResult->get(), mNumRows, mNumColumns, mNumDiagonals,
                     diaOffsets->get(), diaValues->get(), syncToken.get() );
@@ -1173,7 +1173,7 @@ SyncToken* DIAStorage<ValueType>::vectorTimesMatrixAsync(
         shared_ptr<WriteAccess<ValueType> > wResult( new WriteOnlyAccess<ValueType>( result, loc, mNumColumns ) );
         shared_ptr<ReadAccess<ValueType> > rY( new ReadAccess<ValueType>( y, loc ) );
 
-        LAMA_CONTEXT_ACCESS( loc )
+        SCAI_CONTEXT_ACCESS( loc )
 
         normalGEVM( wResult->get(), alpha, rX->get(), beta, rY->get(), mNumRows, mNumColumns, mNumDiagonals,
                     diaOffsets->get(), diaValues->get(), syncToken.get() );
@@ -1200,16 +1200,16 @@ void DIAStorage<ValueType>::jacobiIterate(
 {
     SCAI_LOG_INFO( logger, *this << ": Jacobi iteration for local matrix data." )
 
-    LAMA_ASSERT_ERROR( mDiagonalProperty, *this << ": jacobiIterate requires diagonal property" )
+    SCAI_ASSERT_ERROR( mDiagonalProperty, *this << ": jacobiIterate requires diagonal property" )
 
     if( &solution == &oldSolution )
     {
         COMMON_THROWEXCEPTION( "alias of solution and oldSolution unsupported" )
     }
 
-    LAMA_ASSERT_EQUAL_DEBUG( mNumRows, oldSolution.size() )
-    LAMA_ASSERT_EQUAL_DEBUG( mNumRows, solution.size() )
-    LAMA_ASSERT_EQUAL_DEBUG( mNumRows, mNumColumns )
+    SCAI_ASSERT_EQUAL_DEBUG( mNumRows, oldSolution.size() )
+    SCAI_ASSERT_EQUAL_DEBUG( mNumRows, solution.size() )
+    SCAI_ASSERT_EQUAL_DEBUG( mNumRows, mNumColumns )
     // matrix must be square
 
     WriteAccess<ValueType> wSolution( solution );

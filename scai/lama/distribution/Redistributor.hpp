@@ -252,7 +252,7 @@ public:
         ReadAccess<IndexType> tindexes( targetIndexes );
         ReadAccess<IndexType> sindexes( sourceIndexes );
 
-        LAMA_ASSERT_ERROR( tindexes.size() == sindexes.size(), "index size mismatch" )
+        SCAI_ASSERT_ERROR( tindexes.size() == sindexes.size(), "index size mismatch" )
 
         for( IndexType i = 0; i < tindexes.size(); i++ )
         {
@@ -277,7 +277,7 @@ public:
         ReadAccess<IndexType> tindexes( targetIndexes );
         ReadAccess<IndexType> sindexes( sourceIndexes );
 
-        LAMA_ASSERT_ERROR( tindexes.size() == sindexes.size(), "index size mismatch" )
+        SCAI_ASSERT_ERROR( tindexes.size() == sindexes.size(), "index size mismatch" )
 
         #pragma omp parallel for
 
@@ -394,7 +394,7 @@ void Redistributor::redistribute( LAMAArray<ValueType>& targetArray, const LAMAA
 {
     using namespace memory;
 
-    LAMA_REGION( "Redistributor.redistribute" )
+    SCAI_REGION( "Redistributor.redistribute" )
 
     {
         // make sure that target array has sufficient memory
@@ -432,7 +432,7 @@ void Redistributor::redistributeN(
 {
     using namespace memory;
 
-    LAMA_REGION( "Redistributor.redistributeN" )
+    SCAI_REGION( "Redistributor.redistributeN" )
 
     {
         // make sure that target array has sufficient memory
@@ -470,7 +470,7 @@ void Redistributor::redistributeV(
     const LAMAArray<ValueType>& sourceArray,
     const LAMAArray<IndexType>& sourceOffsets ) const
 {
-    LAMA_REGION( "Redistributor.redistributeV" )
+    SCAI_REGION( "Redistributor.redistributeV" )
 
     // allocate memory for source (provides) and target (required) halo
 
@@ -565,7 +565,7 @@ void Redistributor::copyV(
 {
     using namespace memory;
 
-    LAMA_ASSERT_EQUAL_ERROR( targetIndexes.size(), sourceIndexes.size() )
+    SCAI_ASSERT_EQUAL_ERROR( targetIndexes.size(), sourceIndexes.size() )
 
     const IndexType n = targetIndexes.size();
 
@@ -589,7 +589,7 @@ void Redistributor::copyV(
             ++k;
         }
 
-        LAMA_ASSERT_EQUAL_DEBUG( k, rTargetOffsets[targetI + 1] )
+        SCAI_ASSERT_EQUAL_DEBUG( k, rTargetOffsets[targetI + 1] )
     }
 }
 
@@ -598,7 +598,7 @@ void Redistributor::copyV(
 template<typename ValueType>
 void Redistributor::exchangeHalo( LAMAArray<ValueType>& targetHalo, const LAMAArray<ValueType>& sourceHalo ) const
 {
-    LAMA_REGION( "Redistributor.exchangeHalo" )
+    SCAI_REGION( "Redistributor.exchangeHalo" )
 
     const Communicator& comm = mSourceDistribution->getCommunicator();
 
@@ -622,7 +622,7 @@ void Redistributor::exchangeHaloN(
     const LAMAArray<ValueType>& sourceHalo,
     const IndexType n ) const
 {
-    LAMA_REGION( "Redistributor.exchangeHaloN" )
+    SCAI_REGION( "Redistributor.exchangeHaloN" )
 
     const Communicator& comm = mSourceDistribution->getCommunicator();
 
@@ -646,11 +646,11 @@ void Redistributor::exchangeHaloN(
 template<typename ValueType>
 void Redistributor::exchangeVHalo( LAMAArray<ValueType>& targetHalo, const LAMAArray<ValueType>& sourceHalo ) const
 {
-    LAMA_REGION( "Redistributor.exchangeVHalo" )
+    SCAI_REGION( "Redistributor.exchangeVHalo" )
 
     const Communicator& comm = mSourceDistribution->getCommunicator();
 
-    LAMA_ASSERT_ERROR( mRequiredPlan.get(), "There was no previous call of buildVPlan" )
+    SCAI_ASSERT_ERROR( mRequiredPlan.get(), "There was no previous call of buildVPlan" )
 
     delete comm.exchangeByPlanAsync( targetHalo, *mRequiredPlan, sourceHalo, *mProvidesPlan );
 }

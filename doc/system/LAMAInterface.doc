@@ -149,7 +149,7 @@ void invert( LAMAArray<T>& values );
     LAMA_INTERFACE_FN_DEFAULT_T( invert, loc, Utils, Math, T);
     WriteAccess<T> wValues( values, loc );
     T one = static_cast<T>( 1.0 );
-    LAMA_CONTEXT_ACCESS( loc );
+    SCAI_CONTEXT_ACCESS( loc );
     invert( wValues.get(), size );
 }
 \endcode

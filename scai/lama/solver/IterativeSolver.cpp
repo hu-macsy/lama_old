@@ -139,7 +139,7 @@ void IterativeSolver::solveImpl()
 
 void IterativeSolver::setStoppingCriterion( const CriterionPtr criterion )
 {
-    LAMA_ASSERT_ERROR( criterion, "Criterion defined is NULL." )
+    SCAI_ASSERT_ERROR( criterion, "Criterion defined is NULL." )
 
     SCAI_LOG_INFO( logger, "Criteria " << *criterion << " defined." )
 

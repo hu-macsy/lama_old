@@ -114,7 +114,7 @@ Vector::Vector( DistributionPtr distribution, ContextPtr context )
 Vector::Vector( const Vector& other )
                 : Distributed( other ), mContext( other.getContext() )
 {
-    LAMA_ASSERT_ERROR( mContext, "NULL context not allowed" )
+    SCAI_ASSERT_ERROR( mContext, "NULL context not allowed" )
     SCAI_LOG_INFO( logger, "Vector(" << other.getDistribution().getGlobalSize() << "), distributed, copied" )
 }
 
@@ -174,7 +174,7 @@ Vector& Vector::operator=( const Expression_SV_SV& expression )
     const Vector& x = expression.getArg1().getArg2();
     const Vector& y = expression.getArg2().getArg2();
 
-    LAMA_ASSERT_EQUAL( x.size(), y.size() );
+    SCAI_ASSERT_EQUAL( x.size(), y.size() );
 
     assign( expression );
 
@@ -420,7 +420,7 @@ void Vector::writeAt( std::ostream& stream ) const
 
 void Vector::setContext( ContextPtr context )
 {
-    LAMA_ASSERT_DEBUG( context, "NULL context invalid" )
+    SCAI_ASSERT_DEBUG( context, "NULL context invalid" )
 
     if( mContext->getType() != context->getType() )
     {

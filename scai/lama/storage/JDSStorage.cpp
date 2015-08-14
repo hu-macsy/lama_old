@@ -125,11 +125,11 @@ void JDSStorage<ValueType>::setJDSData(
     const LAMAArray<IndexType>& ja,
     const ContextArray& values )
 {
-    LAMA_ASSERT_EQUAL_ERROR( numRows, ilg.size() )
-    LAMA_ASSERT_EQUAL_ERROR( numRows, perm.size() )
-    LAMA_ASSERT_EQUAL_ERROR( numValues, ja.size() )
-    LAMA_ASSERT_EQUAL_ERROR( numValues, values.size() )
-    LAMA_ASSERT_EQUAL_ERROR( numDiagonals, dlg.size() )
+    SCAI_ASSERT_EQUAL_ERROR( numRows, ilg.size() )
+    SCAI_ASSERT_EQUAL_ERROR( numRows, perm.size() )
+    SCAI_ASSERT_EQUAL_ERROR( numValues, ja.size() )
+    SCAI_ASSERT_EQUAL_ERROR( numValues, values.size() )
+    SCAI_ASSERT_EQUAL_ERROR( numDiagonals, dlg.size() )
 
     _MatrixStorage::setDimension( numRows, numColumns );
 
@@ -147,7 +147,7 @@ void JDSStorage<ValueType>::setJDSData(
 
     // check is expensive, so do it only if ASSERT_LEVEL is on DEBUG mode
 
-#ifdef LAMA_ASSERT_LEVEL_DEBUG
+#ifdef SCAI_ASSERT_LEVEL_DEBUG
     check( "JDSStorage( #row, #cols, #values, #diags, dlg, ilg, perm, ja, values" );
 #endif
 
@@ -287,7 +287,7 @@ void JDSStorage<ValueType>::setDiagonalImpl( const Scalar scalar )
 
     WriteAccess<ValueType> wValues( mValues, loc );
 
-    LAMA_CONTEXT_ACCESS( loc )
+    SCAI_CONTEXT_ACCESS( loc )
 
     setVal( wValues.get(), numDiagonalValues, scalar.getValue<ValueType>() );
 }
@@ -312,7 +312,7 @@ void JDSStorage<ValueType>::setDiagonalImpl( const LAMAArray<OtherValueType>& di
     ReadAccess<IndexType> rJa( mJa, loc );
     WriteOnlyAccess<ValueType> wValues( mValues, loc, numDiagonal );
 
-    LAMA_CONTEXT_ACCESS( loc )
+    SCAI_CONTEXT_ACCESS( loc )
 
     // diagonal is first column in JDS data
     // values[i] = diagonal[ ja[ i ] ]
@@ -329,7 +329,7 @@ void JDSStorage<ValueType>::getRowImpl( LAMAArray<OtherValueType>& row, const In
 
     ContextPtr loc = getContextPtr();
 
-    LAMA_ASSERT_DEBUG( i >= 0 && i < mNumRows, "row index " << i << " out of range" )
+    SCAI_ASSERT_DEBUG( i >= 0 && i < mNumRows, "row index " << i << " out of range" )
 
     LAMA_INTERFACE_FN_TT( getRow, loc, JDSUtils, Getter, ValueType, OtherValueType )
 
@@ -340,7 +340,7 @@ void JDSStorage<ValueType>::getRowImpl( LAMAArray<OtherValueType>& row, const In
     ReadAccess<ValueType> values( mValues, loc );
     WriteOnlyAccess<OtherValueType> wRow( row, loc, mNumColumns );
 
-    LAMA_CONTEXT_ACCESS( loc )
+    SCAI_CONTEXT_ACCESS( loc )
 
     getRow( wRow.get(), i, mNumColumns, mNumRows, perm.get(), ilg.get(), dlg.get(), ja.get(), values.get() );
 }
@@ -366,7 +366,7 @@ void JDSStorage<ValueType>::getDiagonalImpl( LAMAArray<OtherValueType>& diagonal
     // diagonal is first column in JDS data
     // wDiagonal[ rJa[ i ] ] = rValues[ i ];
 
-    LAMA_CONTEXT_ACCESS( loc )
+    SCAI_CONTEXT_ACCESS( loc )
 
     setScatter( wDiagonal.get(), rPerm.get(), rValues.get(), numDiagonal );
 }
@@ -384,12 +384,12 @@ void JDSStorage<ValueType>::scaleImpl( const Scalar scalar )
 
     IndexType size = mValues.size();
 
-    LAMA_ASSERT_EQUAL_DEBUG( size, mNumValues )
+    SCAI_ASSERT_EQUAL_DEBUG( size, mNumValues )
 
     WriteAccess<ValueType> wValues( mValues, loc );
     ValueType value = scalar.getValue<ValueType>();
 
-    LAMA_CONTEXT_ACCESS( loc )
+    SCAI_CONTEXT_ACCESS( loc )
 
     scale( wValues.get(), value, size );
 }
@@ -412,7 +412,7 @@ void JDSStorage<ValueType>::scaleImpl( const LAMAArray<OtherValueType>& diagonal
     ReadAccess<IndexType> rDlg( mDlg, loc );
     WriteAccess<ValueType> wValues( mValues, loc );
 
-    LAMA_CONTEXT_ACCESS( loc )
+    SCAI_CONTEXT_ACCESS( loc )
 
     scaleValue( mNumRows, rPerm.get(), rIlg.get(), rDlg.get(), wValues.get(), rDiagonal.get() );
 }
@@ -448,7 +448,7 @@ bool JDSStorage<ValueType>::checkDiagonalProperty() const
         ReadAccess<IndexType> rJa( mJa, loc );
         ReadAccess<IndexType> rDlg( mDlg, loc );
 
-        LAMA_CONTEXT_ACCESS( loc )
+        SCAI_CONTEXT_ACCESS( loc )
 
         diagonalProperty = checkDiagonalProperty( mNumDiagonals, mNumRows, mNumColumns, rPerm.get(), rJa.get(),
                            rDlg.get() );
@@ -464,11 +464,11 @@ void JDSStorage<ValueType>::check( const char* msg ) const
 {
     SCAI_LOG_DEBUG( logger, "check at " << getContext() << ", msg = " << msg )
 
-    LAMA_ASSERT_EQUAL_ERROR( mNumRows, mIlg.size() )
-    LAMA_ASSERT_EQUAL_ERROR( mNumRows, mPerm.size() )
-    LAMA_ASSERT_EQUAL_ERROR( mNumValues, mJa.size() )
-    LAMA_ASSERT_EQUAL_ERROR( mNumValues, mValues.size() )
-    LAMA_ASSERT_EQUAL_ERROR( mNumDiagonals, mDlg.size() )
+    SCAI_ASSERT_EQUAL_ERROR( mNumRows, mIlg.size() )
+    SCAI_ASSERT_EQUAL_ERROR( mNumRows, mPerm.size() )
+    SCAI_ASSERT_EQUAL_ERROR( mNumValues, mJa.size() )
+    SCAI_ASSERT_EQUAL_ERROR( mNumValues, mValues.size() )
+    SCAI_ASSERT_EQUAL_ERROR( mNumDiagonals, mDlg.size() )
 
     // check column indexes in JA
 
@@ -479,9 +479,9 @@ void JDSStorage<ValueType>::check( const char* msg ) const
 
         ReadAccess<IndexType> rJA( mJa, loc );
 
-        LAMA_CONTEXT_ACCESS( loc )
+        SCAI_CONTEXT_ACCESS( loc )
 
-        LAMA_ASSERT_ERROR( validIndexes( rJA.get(), mNumValues, mNumColumns ),
+        SCAI_ASSERT_ERROR( validIndexes( rJA.get(), mNumValues, mNumColumns ),
                            *this << " @ " << msg << ": illegel indexes in JA" )
     }
 
@@ -497,14 +497,14 @@ void JDSStorage<ValueType>::check( const char* msg ) const
         ReadAccess<IndexType> rIlg( mIlg, loc );
         ReadAccess<IndexType> rDlg( mDlg, loc );
 
-        LAMA_CONTEXT_ACCESS( loc )
+        SCAI_CONTEXT_ACCESS( loc )
 
         bool ascending = false; // check for descending
 
-        LAMA_ASSERT_ERROR( isSorted( rIlg.get(), mNumRows, ascending ),
+        SCAI_ASSERT_ERROR( isSorted( rIlg.get(), mNumRows, ascending ),
                            *this << " @ " << msg << ": not descending values in ILG" )
 
-        LAMA_ASSERT_ERROR( isSorted( rDlg.get(), mNumDiagonals, ascending ),
+        SCAI_ASSERT_ERROR( isSorted( rDlg.get(), mNumDiagonals, ascending ),
                            *this << " @ " << msg << ": not descending values in DLG" )
     }
 
@@ -518,10 +518,10 @@ void JDSStorage<ValueType>::check( const char* msg ) const
         ReadAccess<IndexType> rIlg( mIlg, loc );
         ReadAccess<IndexType> rDlg( mDlg, loc );
 
-        LAMA_CONTEXT_ACCESS( loc )
+        SCAI_CONTEXT_ACCESS( loc )
 
-        LAMA_ASSERT_EQUAL_ERROR( sum( rIlg.get(), mNumRows ), mNumValues )
-        LAMA_ASSERT_EQUAL_ERROR( sum( rDlg.get(), mNumDiagonals ), mNumValues )
+        SCAI_ASSERT_EQUAL_ERROR( sum( rIlg.get(), mNumRows ), mNumValues )
+        SCAI_ASSERT_EQUAL_ERROR( sum( rDlg.get(), mNumDiagonals ), mNumValues )
     }
 
     // check index values in Perm for out of range
@@ -534,9 +534,9 @@ void JDSStorage<ValueType>::check( const char* msg ) const
 
         ReadAccess<IndexType> rPerm( mPerm, loc );
 
-        LAMA_CONTEXT_ACCESS( loc )
+        SCAI_CONTEXT_ACCESS( loc )
 
-        LAMA_ASSERT_ERROR( validIndexes( rPerm.get(), mNumRows, mNumRows ),
+        SCAI_ASSERT_ERROR( validIndexes( rPerm.get(), mNumRows, mNumRows ),
                            *this << " @ " << msg << ": illegel indexes in Perm" )
     }
 
@@ -558,7 +558,7 @@ void JDSStorage<ValueType>::check( const char* msg ) const
         ReadAccess<IndexType> rPerm( mPerm, loc );
         WriteAccess<IndexType> wInversePerm( invPermArray, loc );
 
-        LAMA_CONTEXT_ACCESS( loc )
+        SCAI_CONTEXT_ACCESS( loc )
 
         // set inverse permutation, should overwrite all values 'mNumRows'
 
@@ -566,7 +566,7 @@ void JDSStorage<ValueType>::check( const char* msg ) const
 
         IndexType maxIndex = maxval( wInversePerm.get(), mNumRows );
 
-        LAMA_ASSERT_ERROR( maxIndex < mNumRows, "Perm array does not cover all row indexes, #rows = " << mNumRows );
+        SCAI_ASSERT_ERROR( maxIndex < mNumRows, "Perm array does not cover all row indexes, #rows = " << mNumRows );
     }
 
     // Note: check is not exhaustive, e.g. it does not check for same column index in one row
@@ -592,7 +592,7 @@ void JDSStorage<ValueType>::setIdentity( const IndexType size )
     WriteOnlyAccess<IndexType> wJa( mJa, loc, mNumValues );
     WriteOnlyAccess<ValueType> wValues( mValues, loc, mNumValues );
 
-    LAMA_CONTEXT_ACCESS( loc )
+    SCAI_CONTEXT_ACCESS( loc )
 
     {
         ValueType one = static_cast<ValueType>( 1.0 );
@@ -620,7 +620,7 @@ void JDSStorage<ValueType>::setupData( ContextPtr loc )
 {
     SCAI_LOG_INFO( logger, "setupData" )
 
-    LAMA_ASSERT_EQUAL_ERROR( mIlg.size(), mNumRows )
+    SCAI_ASSERT_EQUAL_ERROR( mIlg.size(), mNumRows )
 
     LAMA_INTERFACE_FN_T( getValue, loc, Utils, Getter, IndexType )
     LAMA_INTERFACE_FN( ilg2dlg, loc, JDSUtils, Sort )
@@ -631,7 +631,7 @@ void JDSStorage<ValueType>::setupData( ContextPtr loc )
     mNumDiagonals = 0;
     mNumValues = 0;
 
-    LAMA_CONTEXT_ACCESS( loc )
+    SCAI_CONTEXT_ACCESS( loc )
 
     if( mNumRows )
     {
@@ -655,7 +655,7 @@ void JDSStorage<ValueType>::sortRows( ContextPtr loc )
     WriteAccess<IndexType> ilg( mIlg, loc );
     WriteAccess<IndexType> perm( mPerm, loc );
 
-    LAMA_CONTEXT_ACCESS( loc )
+    SCAI_CONTEXT_ACCESS( loc )
 
     mNumDiagonals = maxval( ilg.get(), mNumRows );
 
@@ -672,7 +672,7 @@ void JDSStorage<ValueType>::buildCSR(
     LAMAArray<OtherValueType>* values,
     const ContextPtr loc ) const
 {
-    LAMA_REGION( "Storage.JDS->CSR" )
+    SCAI_REGION( "Storage.JDS->CSR" )
 
     SCAI_LOG_INFO( logger,
                    "buildCSR<" << common::getScalarType<OtherValueType>() << ">" << " from JDS<" << common::getScalarType<ValueType>() << ">" << " on " << *loc )
@@ -686,7 +686,7 @@ void JDSStorage<ValueType>::buildCSR(
     ReadAccess<IndexType> rJdsILG( mIlg, loc );
     WriteOnlyAccess<IndexType> wCsrIA( ia, loc, mNumRows + 1 );
 
-    LAMA_CONTEXT_ACCESS( loc )
+    SCAI_CONTEXT_ACCESS( loc )
 
     // rowValues[ perm[i] ] = ilg[i]
     setScatter( wCsrIA.get(), rJdsPerm.get(), rJdsILG.get(), mNumRows );
@@ -699,7 +699,7 @@ void JDSStorage<ValueType>::buildCSR(
 
     IndexType numValues = sizes2offsets( wCsrIA.get(), mNumRows );
 
-    LAMA_ASSERT_EQUAL_DEBUG( numValues, mNumValues )
+    SCAI_ASSERT_EQUAL_DEBUG( numValues, mNumValues )
 
     // temporary array for inverse permutation
     LAMAArray<IndexType> invPermArray; // allows to find a CSR row in JDS rows
@@ -734,7 +734,7 @@ void JDSStorage<ValueType>::setCSRDataImpl(
     const LAMAArray<OtherValueType>& values,
     const ContextPtr )
 {
-    LAMA_REGION( "Storage.JDS<-CSR" )
+    SCAI_REGION( "Storage.JDS<-CSR" )
 
     SCAI_LOG_INFO( logger,
                    "setCSRDataImpl<" << common::getScalarType<ValueType>() << "," << common::getScalarType<OtherValueType>() << ">" << ", shape is " << numRows << " x " << numColumns << ", #values for CSR = " << numValues )
@@ -761,7 +761,7 @@ void JDSStorage<ValueType>::setCSRDataImpl(
         WriteOnlyAccess<IndexType> wIlg( mIlg, loc, mNumRows );
         WriteOnlyAccess<IndexType> wPerm( mPerm, loc, mNumRows );
 
-        LAMA_CONTEXT_ACCESS( loc )
+        SCAI_CONTEXT_ACCESS( loc )
 
         // ilg willl contain the sizes of each row
         offsets2sizes( wIlg.get(), rCsrIA.get(), mNumRows );
@@ -783,7 +783,7 @@ void JDSStorage<ValueType>::setCSRDataImpl(
         WriteOnlyAccess<ValueType> wValues( mValues, loc, mNumValues );
         WriteOnlyAccess<IndexType> wJa( mJa, loc, mNumValues );
 
-        LAMA_CONTEXT_ACCESS( loc )
+        SCAI_CONTEXT_ACCESS( loc )
 
         setCSRValues( wJa.get(), wValues.get(), numRows, rPerm.get(), rIlg.get(), numDiagonals, rDlg.get(),
                       rCsrIA.get(), rCsrJA.get(), rCsrValues.get() );
@@ -848,7 +848,7 @@ void JDSStorage<ValueType>::allocate( IndexType numRows, IndexType numColumns )
         WriteOnlyAccess<IndexType> ilg( mIlg, loc, mNumRows );
         WriteOnlyAccess<IndexType> perm( mPerm, loc, mNumRows );
 
-        LAMA_CONTEXT_ACCESS( loc )
+        SCAI_CONTEXT_ACCESS( loc )
 
         setVal( ilg.get(), mNumRows, 0 );
         setOrder( perm.get(), mNumRows );
@@ -894,7 +894,7 @@ ValueType JDSStorage<ValueType>::getValue( const IndexType i, const IndexType j 
 
     LAMA_INTERFACE_FN_TT( getValue, loc, JDSUtils, Getter, ValueType, ValueType )
 
-    LAMA_CONTEXT_ACCESS( loc )
+    SCAI_CONTEXT_ACCESS( loc )
 
     return getValue( i, j, mNumRows, dlg.get(), ilg.get(), perm.get(), ja.get(), values.get() );
 }
@@ -909,13 +909,13 @@ void JDSStorage<ValueType>::matrixTimesVector(
     const ValueType beta,
     const LAMAArray<ValueType>& y ) const
 {
-    LAMA_REGION( "Storage.JDS.timesVector" )
+    SCAI_REGION( "Storage.JDS.timesVector" )
 
     SCAI_LOG_DEBUG( logger,
                     "Computing z = " << alpha << " * A * x + " << beta << " * y, with A = " << *this << ", x = " << x << ", y = " << y << ", z = " << result )
 
-    LAMA_ASSERT_EQUAL_ERROR( x.size(), mNumColumns )
-    LAMA_ASSERT_EQUAL_ERROR( y.size(), mNumRows )
+    SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumColumns )
+    SCAI_ASSERT_EQUAL_ERROR( y.size(), mNumRows )
 
     ContextPtr loc = getContextPtr();
 
@@ -939,7 +939,7 @@ void JDSStorage<ValueType>::matrixTimesVector(
 
         // we assume that normalGEMV can deal with the alias of result, y
 
-        LAMA_CONTEXT_ACCESS( loc )
+        SCAI_CONTEXT_ACCESS( loc )
 
         // this call will finish the computation, syncToken == NULL
 
@@ -951,7 +951,7 @@ void JDSStorage<ValueType>::matrixTimesVector(
         WriteOnlyAccess<ValueType> wResult( result, loc, mNumRows );
         ReadAccess<ValueType> rY( y, loc );
 
-        LAMA_CONTEXT_ACCESS( loc )
+        SCAI_CONTEXT_ACCESS( loc )
 
         // this call will finish the computation, syncToken == NULL
 
@@ -970,13 +970,13 @@ void JDSStorage<ValueType>::vectorTimesMatrix(
     const ValueType beta,
     const LAMAArray<ValueType>& y ) const
 {
-    LAMA_REGION( "Storage.JDS.vectorTimesMatrix" )
+    SCAI_REGION( "Storage.JDS.vectorTimesMatrix" )
 
     SCAI_LOG_DEBUG( logger,
                     "Computing z = " << alpha << " * x * A + " << beta << " * y, with A = " << *this << ", x = " << x << ", y = " << y << ", z = " << result )
 
-    LAMA_ASSERT_EQUAL_ERROR( x.size(), mNumRows )
-    LAMA_ASSERT_EQUAL_ERROR( y.size(), mNumColumns )
+    SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumRows )
+    SCAI_ASSERT_EQUAL_ERROR( y.size(), mNumColumns )
 
     ContextPtr loc = getContextPtr();
 
@@ -1000,7 +1000,7 @@ void JDSStorage<ValueType>::vectorTimesMatrix(
 
         // we assume that normalGEMV can deal with the alias of result, y
 
-        LAMA_CONTEXT_ACCESS( loc )
+        SCAI_CONTEXT_ACCESS( loc )
 
         // this call will finish the computation, syncToken == NULL
 
@@ -1012,7 +1012,7 @@ void JDSStorage<ValueType>::vectorTimesMatrix(
         WriteOnlyAccess<ValueType> wResult( result, loc, mNumColumns );
         ReadAccess<ValueType> rY( y, loc );
 
-        LAMA_CONTEXT_ACCESS( loc )
+        SCAI_CONTEXT_ACCESS( loc )
 
         // this call will finish the computation, syncToken == NULL
 
@@ -1056,13 +1056,13 @@ SyncToken* JDSStorage<ValueType>::matrixTimesVectorAsync(
 
     // For CUDA a solution using stream synchronization is more efficient than using a task
 
-    LAMA_REGION( "Storage.JDS.timesVectorAsync" )
+    SCAI_REGION( "Storage.JDS.timesVectorAsync" )
 
     SCAI_LOG_INFO( logger,
                    "Async start z = " << alpha << " * A * x + " << beta << " * y, with A = " << *this << ", x = " << x << ", y = " << y << ", z = " << result )
 
-    LAMA_ASSERT_EQUAL_ERROR( x.size(), mNumColumns )
-    LAMA_ASSERT_EQUAL_ERROR( y.size(), mNumRows )
+    SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumColumns )
+    SCAI_ASSERT_EQUAL_ERROR( y.size(), mNumRows )
 
     SCAI_LOG_INFO( logger, *this << ": matrixTimesVector on " << *loc )
 
@@ -1091,7 +1091,7 @@ SyncToken* JDSStorage<ValueType>::matrixTimesVectorAsync(
 
         // we assume that normalGEMV can deal with the alias of result, y
 
-        LAMA_CONTEXT_ACCESS( loc )
+        SCAI_CONTEXT_ACCESS( loc )
 
         // this call will only start the computation
 
@@ -1106,7 +1106,7 @@ SyncToken* JDSStorage<ValueType>::matrixTimesVectorAsync(
         syncToken->pushToken( wResult );
         syncToken->pushToken( rY );
 
-        LAMA_CONTEXT_ACCESS( loc )
+        SCAI_CONTEXT_ACCESS( loc )
 
         // this call will only start the computation
 
@@ -1159,13 +1159,13 @@ SyncToken* JDSStorage<ValueType>::vectorTimesMatrixAsync(
 
     // For CUDA a solution using stream synchronization is more efficient than using a task
 
-    LAMA_REGION( "Storage.JDS.vectorTimesMatrixAsync" )
+    SCAI_REGION( "Storage.JDS.vectorTimesMatrixAsync" )
 
     SCAI_LOG_INFO( logger,
                    "Async start z = " << alpha << " * x * A + " << beta << " * y, with A = " << *this << ", x = " << x << ", y = " << y << ", z = " << result )
 
-    LAMA_ASSERT_EQUAL_ERROR( x.size(), mNumRows )
-    LAMA_ASSERT_EQUAL_ERROR( y.size(), mNumColumns )
+    SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumRows )
+    SCAI_ASSERT_EQUAL_ERROR( y.size(), mNumColumns )
 
     SCAI_LOG_INFO( logger, *this << ": matrixTimesVector on " << *loc )
 
@@ -1194,7 +1194,7 @@ SyncToken* JDSStorage<ValueType>::vectorTimesMatrixAsync(
 
         // we assume that normalGEMV can deal with the alias of result, y
 
-        LAMA_CONTEXT_ACCESS( loc )
+        SCAI_CONTEXT_ACCESS( loc )
 
         // this call will only start the computation
 
@@ -1209,7 +1209,7 @@ SyncToken* JDSStorage<ValueType>::vectorTimesMatrixAsync(
         syncToken->pushToken( wResult );
         syncToken->pushToken( rY );
 
-        LAMA_CONTEXT_ACCESS( loc )
+        SCAI_CONTEXT_ACCESS( loc )
 
         // this call will only start the computation
 
@@ -1236,7 +1236,7 @@ void JDSStorage<ValueType>::jacobiIterate(
     const LAMAArray<ValueType>& rhs,
     const ValueType omega ) const
 {
-    LAMA_REGION( "Storage.JDS.jacobiIterate" )
+    SCAI_REGION( "Storage.JDS.jacobiIterate" )
 
     SCAI_LOG_INFO( logger, *this << ": Jacobi iteration for local matrix data." )
 
@@ -1244,16 +1244,16 @@ void JDSStorage<ValueType>::jacobiIterate(
 
     LAMA_INTERFACE_FN_T( jacobi, loc, JDSUtils, Solver, ValueType )
 
-    LAMA_ASSERT_ERROR( mDiagonalProperty, *this << ": jacobiIterate requires diagonal property" )
+    SCAI_ASSERT_ERROR( mDiagonalProperty, *this << ": jacobiIterate requires diagonal property" )
 
     if ( &solution == &oldSolution )
     {
         COMMON_THROWEXCEPTION( "alias of solution and oldSolution unsupported" )
     }
 
-    LAMA_ASSERT_EQUAL_DEBUG( mNumRows, oldSolution.size() )
-    LAMA_ASSERT_EQUAL_DEBUG( mNumRows, solution.size() )
-    LAMA_ASSERT_EQUAL_DEBUG( mNumRows, mNumColumns )
+    SCAI_ASSERT_EQUAL_DEBUG( mNumRows, oldSolution.size() )
+    SCAI_ASSERT_EQUAL_DEBUG( mNumRows, solution.size() )
+    SCAI_ASSERT_EQUAL_DEBUG( mNumRows, mNumColumns )
     // matrix must be square
 
     {
@@ -1267,7 +1267,7 @@ void JDSStorage<ValueType>::jacobiIterate(
         ReadAccess<ValueType> rOldSolution( oldSolution, loc );
         ReadAccess<ValueType> rRhs( rhs, loc );
 
-        LAMA_CONTEXT_ACCESS( loc )
+        SCAI_CONTEXT_ACCESS( loc )
 
         jacobi( wSolution.get(), mNumRows, jdsPerm.get(), jdsIlg.get(), mNumDiagonals, jdsDlg.get(), jdsJA.get(),
                 jdsValues.get(), rOldSolution.get(), rRhs.get(), omega, NULL );
@@ -1284,7 +1284,7 @@ SyncToken* JDSStorage<ValueType>::jacobiIterateAsync(
     const LAMAArray<ValueType>& rhs,
     const ValueType omega ) const
 {
-    LAMA_REGION( "Storage.JDS.jacobiIterateAsync" )
+    SCAI_REGION( "Storage.JDS.jacobiIterateAsync" )
 
     ContextPtr loc = getContextPtr();
 
@@ -1313,16 +1313,16 @@ SyncToken* JDSStorage<ValueType>::jacobiIterateAsync(
 
     LAMA_INTERFACE_FN_T( jacobi, loc, JDSUtils, Solver, ValueType )
 
-    LAMA_ASSERT_ERROR( mDiagonalProperty, *this << ": jacobiIterate requires diagonal property" )
+    SCAI_ASSERT_ERROR( mDiagonalProperty, *this << ": jacobiIterate requires diagonal property" )
 
     if ( &solution == &oldSolution )
     {
         COMMON_THROWEXCEPTION( "alias of solution and oldSolution unsupported" )
     }
 
-    LAMA_ASSERT_EQUAL_DEBUG( mNumRows, oldSolution.size() )
-    LAMA_ASSERT_EQUAL_DEBUG( mNumRows, solution.size() )
-    LAMA_ASSERT_EQUAL_DEBUG( mNumRows, mNumColumns )
+    SCAI_ASSERT_EQUAL_DEBUG( mNumRows, oldSolution.size() )
+    SCAI_ASSERT_EQUAL_DEBUG( mNumRows, solution.size() )
+    SCAI_ASSERT_EQUAL_DEBUG( mNumRows, mNumColumns )
     // matrix must be square
 
     common::unique_ptr<SyncToken> syncToken( loc->getSyncToken() );
@@ -1344,7 +1344,7 @@ SyncToken* JDSStorage<ValueType>::jacobiIterateAsync(
     shared_ptr<ReadAccess<ValueType> > rRhs( new ReadAccess<ValueType>( rhs, loc ) );
     syncToken->pushToken( rRhs );
 
-    LAMA_CONTEXT_ACCESS( loc )
+    SCAI_CONTEXT_ACCESS( loc )
 
     jacobi( wSolution->get(), mNumRows, jdsPerm->get(), jdsILG->get(), mNumDiagonals, jdsDLG->get(), jdsJA->get(),
             jdsValues->get(), rOldSolution->get(), rRhs->get(), omega, syncToken.get() );
@@ -1363,13 +1363,13 @@ void JDSStorage<ValueType>::jacobiIterateHalo(
 {
     SCAI_LOG_INFO( logger, *this << ": Jacobi iteration for halo matrix data." )
 
-    LAMA_REGION( "Storage.JDS.jacobiIterateHalo" )
+    SCAI_REGION( "Storage.JDS.jacobiIterateHalo" )
 
-    LAMA_ASSERT_EQUAL_DEBUG( mNumRows, localSolution.size() )
-    LAMA_ASSERT_EQUAL_DEBUG( mNumRows, localStorage.getNumRows() )
-    LAMA_ASSERT_EQUAL_DEBUG( mNumRows, localStorage.getNumColumns() )
-    LAMA_ASSERT_DEBUG( localStorage.hasDiagonalProperty(), localStorage << ": has not diagonal property" )
-    LAMA_ASSERT_EQUAL_DEBUG( mNumColumns, oldHaloSolution.size() )
+    SCAI_ASSERT_EQUAL_DEBUG( mNumRows, localSolution.size() )
+    SCAI_ASSERT_EQUAL_DEBUG( mNumRows, localStorage.getNumRows() )
+    SCAI_ASSERT_EQUAL_DEBUG( mNumRows, localStorage.getNumColumns() )
+    SCAI_ASSERT_DEBUG( localStorage.hasDiagonalProperty(), localStorage << ": has not diagonal property" )
+    SCAI_ASSERT_EQUAL_DEBUG( mNumColumns, oldHaloSolution.size() )
 
     // need diagonal of local storage in *natural* order
     const LAMAArray<ValueType>* localDiagonal;
@@ -1391,15 +1391,15 @@ void JDSStorage<ValueType>::jacobiIterateHalo(
 {
     SCAI_LOG_INFO( logger, *this << ": Jacobi iteration for halo matrix data." )
 
-    LAMA_REGION( "Storage.JDS.jacobiIterateHalo" )
+    SCAI_REGION( "Storage.JDS.jacobiIterateHalo" )
 
     ContextPtr loc = getContextPtr();
 
     LAMA_INTERFACE_FN_T( jacobiHalo, loc, JDSUtils, Solver, ValueType )
     LAMA_INTERFACE_FN_T( invert, loc, Utils, Math, ValueType )
 
-    LAMA_ASSERT_EQUAL_DEBUG( mNumRows, localSolution.size() )
-    LAMA_ASSERT_EQUAL_DEBUG( mNumColumns, oldHaloSolution.size() )
+    SCAI_ASSERT_EQUAL_DEBUG( mNumRows, localSolution.size() )
+    SCAI_ASSERT_EQUAL_DEBUG( mNumColumns, oldHaloSolution.size() )
 
     WriteAccess<ValueType> wSolution( localSolution, loc ); // will be updated
     ReadAccess<ValueType> diagonal( localDiagonal, loc );
@@ -1410,7 +1410,7 @@ void JDSStorage<ValueType>::jacobiIterateHalo(
     ReadAccess<ValueType> jdsHaloValues( mValues, loc );
     ReadAccess<ValueType> rOldHaloSolution( oldHaloSolution, loc );
 
-    LAMA_CONTEXT_ACCESS( loc )
+    SCAI_CONTEXT_ACCESS( loc )
 
     jacobiHalo( wSolution.get(), mNumRows, diagonal.get(), mNumDiagonals, jdsHaloPerm.get(), jdsHaloIlg.get(),
                 jdsHaloDlg.get(), jdsHaloJA.get(), jdsHaloValues.get(), rOldHaloSolution.get(), omega, NULL );
@@ -1437,7 +1437,7 @@ ValueType JDSStorage<ValueType>::l1Norm() const
 
 	ReadAccess<ValueType> data( mValues, loc );
 
-	LAMA_CONTEXT_ACCESS( loc )
+	SCAI_CONTEXT_ACCESS( loc )
 
 	return asum( n, data.get(), 1, NULL );
 }
@@ -1462,7 +1462,7 @@ ValueType JDSStorage<ValueType>::l2Norm() const
 
 	ReadAccess<ValueType> data( mValues, loc );
 
-	LAMA_CONTEXT_ACCESS( loc )
+	SCAI_CONTEXT_ACCESS( loc )
 
 	return sqrt(dot( n, data.get(), 1, data.get(), 1, NULL ));
 }
@@ -1487,7 +1487,7 @@ ValueType JDSStorage<ValueType>::maxNorm() const
 
     ReadAccess<ValueType> jdsValues( mValues, loc );
 
-    LAMA_CONTEXT_ACCESS( loc )
+    SCAI_CONTEXT_ACCESS( loc )
 
     ValueType maxval = absMaxVal( jdsValues.get(), n );
 

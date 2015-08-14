@@ -30,8 +30,8 @@
  * @date 05.07.2012
  * @since 1.0.0
  */
-#ifndef LAMA_CUDABLAS2_HPP_
-#define LAMA_CUDABLAS2_HPP_
+#ifndef SCAI_CUDABLAS2_HPP_
+#define SCAI_CUDABLAS2_HPP_
 
 // for dll_import
 #include <scai/common/config.hpp>
@@ -305,4 +305,4 @@ private:
 }
 /* namespace lama */
 
-#endif // LAMA_CUDABLAS2_HPP_
+#endif // SCAI_CUDABLAS2_HPP_

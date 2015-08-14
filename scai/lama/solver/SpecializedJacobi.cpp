@@ -112,7 +112,7 @@ void SpecializedJacobi::initialize( const Matrix& coefficients )
 
     SCAI_LOG_DEBUG( logger, "diagonal property of coefficients: " << coefficients.hasDiagonalProperty() )
 
-    LAMA_ASSERT( coefficients.hasDiagonalProperty(), "Diagonal Property not set." )
+    SCAI_ASSERT( coefficients.hasDiagonalProperty(), "Diagonal Property not set." )
 
     SpecializedJacobiRuntime& runtime = getRuntime();
 
@@ -206,7 +206,7 @@ void SpecializedJacobi::solveFinalize()
 
 void SpecializedJacobi::iterate()
 {
-    LAMA_REGION( "Solver.SpJacobi.iterate" )
+    SCAI_REGION( "Solver.SpJacobi.iterate" )
 
     // for each supported arithmetic type we have to dynamic cast and instatiate typed version
 
@@ -234,7 +234,7 @@ void SpecializedJacobi::iterate()
 template<typename ValueType>
 void SpecializedJacobi::iterateTyped( const SparseMatrix<ValueType>& coefficients )
 {
-    LAMA_REGION( "Solver.SpJacobi.iterateTyped" )
+    SCAI_REGION( "Solver.SpJacobi.iterateTyped" )
 
     SCAI_LOG_INFO( logger,
                    *getConstRuntime().mSolution << " = " << coefficients << " * " << *getConstRuntime().mOldSolution << " = " << *getConstRuntime().mRhs )

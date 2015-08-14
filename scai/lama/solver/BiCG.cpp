@@ -78,7 +78,7 @@ BiCG::BiCGRuntime::~BiCGRuntime()
 
 void BiCG::initialize( const Matrix& coefficients )
 {
-    LAMA_REGION( "Solver.BiCG.initialize" )
+    SCAI_REGION( "Solver.BiCG.initialize" )
     CG::initialize( coefficients );
     BiCGRuntime& runtime = getRuntime();
 
@@ -102,7 +102,7 @@ void BiCG::initialize( const Matrix& coefficients )
 
 void BiCG::iterate()
 {
-    LAMA_REGION( "Solver.BiCG.iterate" )
+    SCAI_REGION( "Solver.BiCG.iterate" )
 
     BiCGRuntime& runtime = getRuntime();
     Scalar lastPScalar( runtime.mPScalar );
@@ -173,7 +173,7 @@ void BiCG::iterate()
     }
 
     {
-        LAMA_REGION( "Solver.BiCG.calc_q" )
+        SCAI_REGION( "Solver.BiCG.calc_q" )
         SCAI_LOG_INFO( logger, "Calculating q." )
         q = A * p;
         SCAI_LOG_TRACE( logger, "l2Norm( q ) = " << q.l2Norm() )
@@ -197,13 +197,13 @@ void BiCG::iterate()
     SCAI_LOG_DEBUG( logger, "alpha = " << alpha )
     {
         SCAI_LOG_INFO( logger, "Calculating x." )
-        LAMA_REGION( "Solver.BiCG.update_x" )
+        SCAI_REGION( "Solver.BiCG.update_x" )
         x = x + alpha * p;
         SCAI_LOG_TRACE( logger, "l2Norm( x ) = " << x.l2Norm() )
     }
     {
         SCAI_LOG_INFO( logger, "Updating residual." )
-        LAMA_REGION( "Solver.BiCG.update_res" )
+        SCAI_REGION( "Solver.BiCG.update_res" )
         residual = residual - alpha * q;
         SCAI_LOG_TRACE( logger, "l2Norm( residual ) = " << residual.l2Norm() )
         residual2 = residual2 - alpha * q2;
@@ -219,8 +219,8 @@ const Vector& BiCG::getResidual2() const
     SCAI_LOG_DEBUG( logger, "getResidual2 of solver " << mId )
 
     const BiCGRuntime& runtime = getConstRuntime();
-    LAMA_ASSERT_DEBUG( runtime.mCoefficients, "mCoefficients == NULL" )
-    LAMA_ASSERT_DEBUG( runtime.mRhs, "mRhs == NULL" )
+    SCAI_ASSERT_DEBUG( runtime.mCoefficients, "mCoefficients == NULL" )
+    SCAI_ASSERT_DEBUG( runtime.mRhs, "mRhs == NULL" )
 
     //mLogger->logMessage(LogLevel::completeInformation,"Request for residual received.\n");
 

@@ -161,7 +161,7 @@ BOOST_AUTO_TEST_CASE( allocateTest )
 //        ReadAccess<ValueType> v1( vector1, cudaContext );
 //
 //        {
-//            LAMA_CONTEXT_ACCESS( cudaContext );
+//            SCAI_CONTEXT_ACCESS( cudaContext );
 //            double norm = lama_DNRM2_cuda( n, v1.get(), 1 );
 //            double expNorm = sqrt( n * value1 );
 //            BOOST_CHECK_EQUAL( expNorm, norm );
@@ -172,7 +172,7 @@ BOOST_AUTO_TEST_CASE( allocateTest )
 //        WriteAccess<ValueType> v2( vector2, cudaContext );
 //
 //        {
-//            LAMA_CONTEXT_ACCESS( cudaContext );
+//            SCAI_CONTEXT_ACCESS( cudaContext );
 //            lama_DCOPY_cuda( n, v1.get(), 1, v2.get(), 1 );
 //        }
 //    }

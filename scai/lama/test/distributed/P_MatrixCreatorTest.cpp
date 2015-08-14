@@ -83,7 +83,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( randomTest, ValueType, test_types )
 BOOST_AUTO_TEST_CASE_TEMPLATE( testPoisson, ValueType, test_types )
 {
     CSRSparseMatrix<ValueType> matrix;
-    LAMA_CHECK_THROW(
+    SCAI_CHECK_THROW(
     {   MatrixCreator<ValueType>::buildPoisson1D( matrix, 5, 100 );}, Exception );
     MatrixCreator<ValueType>::buildPoisson1D( matrix, 3, 100 );
 //std::cout << "Poisson1D3P matrix = " << matrix << std::endl;

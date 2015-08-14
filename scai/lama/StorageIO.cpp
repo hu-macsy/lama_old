@@ -77,7 +77,7 @@ void StorageIO<ValueType>::writeCSRToFormattedFile(
     const LAMAArray<ValueType>& csrValues,
     const std::string& fileName )
 {
-    LAMA_REGION( "StorageIO.writeCSRToFormattedFile" )
+    SCAI_REGION( "StorageIO.writeCSRToFormattedFile" )
 
     IndexType numRows = csrIA.size() - 1;
     IndexType numValues = csrJA.size();
@@ -123,7 +123,7 @@ void StorageIO<ValueType>::readCSRFromFormattedFile(
     const std::string& fileName,
     const IndexType numRows )
 {
-    LAMA_REGION( "StorageIO.readCSRFromFormattedFile" )
+    SCAI_REGION( "StorageIO.readCSRFromFormattedFile" )
 
     //Reading matrix data
     std::ifstream amgfile( fileName.c_str(), std::ios::in ); // open .amg
@@ -221,7 +221,7 @@ void StorageIO<ValueType>::readCSRFromBinaryFile(
     SCAI_LOG_INFO( logger,
                    "read CSR<" << common::getScalarType<ValueType>() << "> storage from binary file " << fileName << ", #rows = " << numRows )
 
-    LAMA_REGION( "StorageIO.readCSRFromBinaryFile" )
+    SCAI_REGION( "StorageIO.readCSRFromBinaryFile" )
 
     FileIO::file_size_t actualSize = FileIO::getFileSize( fileName.c_str() );
 
@@ -342,7 +342,7 @@ void StorageIO<ValueType>::writeCSRToXDRFile(
     const long indexDataTypeSizeJA,
     const long dataTypeSize )
 {
-    LAMA_REGION( "StorageIO.writeCSRToXDRFile" )
+    SCAI_REGION( "StorageIO.writeCSRToXDRFile" )
 
     IndexType numValues = csrJA.size();
     IndexType numRows = csrIA.size() - 1;
@@ -437,7 +437,7 @@ void StorageIO<ValueType>::readCSRFromXDRFile(
     const std::string& fileName,
     const IndexType numRows )
 {
-    LAMA_REGION( "StorageIO.readCSRFromXDRFile" )
+    SCAI_REGION( "StorageIO.readCSRFromXDRFile" )
 
     XDRFileStream xdrFile( fileName.c_str(), std::ios::in );
     int indexDataTypeSizeIA;
@@ -455,7 +455,7 @@ void StorageIO<ValueType>::readCSRFromXDRFile(
 
     // check for mismatch in header and XDR matrix file.
 
-    LAMA_ASSERT_EQUAL_ERROR( numRows, (IndexType ) nnu )
+    SCAI_ASSERT_EQUAL_ERROR( numRows, (IndexType ) nnu )
 
     xdrFile.read( &indexDataTypeSizeIA );
 
@@ -481,12 +481,12 @@ void StorageIO<ValueType>::readCSRFromXDRFile(
     int indexDataTypeSizeIACheck;
     xdrFile.read( &indexDataTypeSizeIACheck );
 
-    LAMA_ASSERT_EQUAL_ERROR( indexDataTypeSizeIA, indexDataTypeSizeIACheck )
+    SCAI_ASSERT_EQUAL_ERROR( indexDataTypeSizeIA, indexDataTypeSizeIACheck )
 
     int nnuCheck;
     xdrFile.read( &nnuCheck );
 
-    LAMA_ASSERT_EQUAL_ERROR( nnuCheck, numRows )
+    SCAI_ASSERT_EQUAL_ERROR( nnuCheck, numRows )
 
     IndexType numValues = m_ia[numRows];
 
@@ -494,7 +494,7 @@ void StorageIO<ValueType>::readCSRFromXDRFile(
     int nna;
     xdrFile.read( &nna );
 
-    LAMA_ASSERT_EQUAL_ERROR( numValues, (IndexType ) nna );
+    SCAI_ASSERT_EQUAL_ERROR( numValues, (IndexType ) nna );
 
     xdrFile.read( &indexDataTypeSizeJA );
 
@@ -520,18 +520,18 @@ void StorageIO<ValueType>::readCSRFromXDRFile(
     int indexDataTypeSizeJACheck;
     xdrFile.read( &indexDataTypeSizeJACheck );
 
-    LAMA_ASSERT_EQUAL_ERROR( indexDataTypeSizeJA, indexDataTypeSizeJACheck )
+    SCAI_ASSERT_EQUAL_ERROR( indexDataTypeSizeJA, indexDataTypeSizeJACheck )
 
     int nnaCheck;
     xdrFile.read( &nnaCheck );
 
-    LAMA_ASSERT_EQUAL_ERROR( nnaCheck, numValues )
+    SCAI_ASSERT_EQUAL_ERROR( nnaCheck, numValues )
 
     //Read Index Vector m_data with m_nna elements
 
     xdrFile.read( &nnaCheck );
 
-    LAMA_ASSERT_EQUAL_ERROR( nnaCheck, numValues )
+    SCAI_ASSERT_EQUAL_ERROR( nnaCheck, numValues )
 
     xdrFile.read( &dataTypeSize );
 
@@ -561,11 +561,11 @@ void StorageIO<ValueType>::readCSRFromXDRFile(
     int dataTypeSizeCheck;
     xdrFile.read( &dataTypeSizeCheck );
 
-    LAMA_ASSERT_EQUAL_ERROR( dataTypeSize, dataTypeSizeCheck )
+    SCAI_ASSERT_EQUAL_ERROR( dataTypeSize, dataTypeSizeCheck )
 
     xdrFile.read( &nnaCheck );
 
-    LAMA_ASSERT_EQUAL_ERROR( nnaCheck, nna )
+    SCAI_ASSERT_EQUAL_ERROR( nnaCheck, nna )
 
     xdrFile.close();
 }
@@ -582,7 +582,7 @@ void StorageIO<ValueType>::writeCSRToBinaryFile(
     const long indexDataTypeSizeJA,
     const long dataTypeSize )
 {
-    LAMA_REGION( "StorageIO.writeCSRToBinaryFile " )
+    SCAI_REGION( "StorageIO.writeCSRToBinaryFile " )
 
     ReadAccess<IndexType> iaRead( csrIA );
     ReadAccess<IndexType> jaRead( csrJA );
@@ -661,7 +661,7 @@ void StorageIO<ValueType>::writeCSRToMMFile(
     const std::string& fileName,
     const File::DataType& dataType )
 {
-    LAMA_REGION( "StorageIO.writeCSRToMMFile" )
+    SCAI_REGION( "StorageIO.writeCSRToMMFile" )
 
     const IndexType numRows = csrIA.size() - 1;
     const IndexType numValues = csrJA.size();
@@ -1160,7 +1160,7 @@ void _StorageIO::readCSRHeader(
 
     frmFile >> id;
 
-    // not really important, may be warning: LAMA_ASSERT_EQUAL_DEBUG( VERSION_ID, id )
+    // not really important, may be warning: SCAI_ASSERT_EQUAL_DEBUG( VERSION_ID, id )
 
     frmFile >> size;
     frmFile >> rank;
@@ -1197,7 +1197,7 @@ void StorageIO<ValueType>::writeCSRToFile(
     const File::IndexDataType indexDataTypeJA /*=LONG*/
     )
 {
-    LAMA_REGION( "StorageIO.writeCSRToFile " )
+    SCAI_REGION( "StorageIO.writeCSRToFile " )
 
     std::string fileBaseName;
 
@@ -1223,9 +1223,9 @@ void StorageIO<ValueType>::writeCSRToFile(
     long indexDataTypeSizeIA = getIndexDataTypeSize( indexDataTypeIA );
     long indexDataTypeSizeJA = getIndexDataTypeSize( indexDataTypeJA );
 
-    LAMA_ASSERT_ERROR( indexDataTypeSizeIA > 0, "indexDataTypeIA = " << indexDataTypeIA << " unsupported" )
-    LAMA_ASSERT_ERROR( indexDataTypeSizeJA > 0, "indexDataTypeJA = " << indexDataTypeJA << " unsupported" )
-    LAMA_ASSERT_ERROR( dataTypeSize >= 0, "dataTypeSize = " << dataTypeSize << " unsupported" )
+    SCAI_ASSERT_ERROR( indexDataTypeSizeIA > 0, "indexDataTypeIA = " << indexDataTypeIA << " unsupported" )
+    SCAI_ASSERT_ERROR( indexDataTypeSizeJA > 0, "indexDataTypeJA = " << indexDataTypeJA << " unsupported" )
+    SCAI_ASSERT_ERROR( dataTypeSize >= 0, "dataTypeSize = " << dataTypeSize << " unsupported" )
 
     switch( fileType )
     {
@@ -1285,7 +1285,7 @@ void StorageIO<ValueType>::readCSRFromFile(
 {
     SCAI_LOG_INFO( logger, "read CSR matrix data from file: '" << fileName << "'." )
 
-    LAMA_REGION( "StorageIO.readCSRFromFile" )
+    SCAI_REGION( "StorageIO.readCSRFromFile" )
 
     std::string suffix;
 

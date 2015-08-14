@@ -744,7 +744,7 @@ PartitionId Communicator::getNeighbor( int pos ) const
     PartitionId size = getSize();
     PartitionId rank = getRank();
 
-    LAMA_ASSERT( std::abs( pos ) <= size, "neighbor pos "<<pos<<" out of range ("<<size<<")" )
+    SCAI_ASSERT( std::abs( pos ) <= size, "neighbor pos "<<pos<<" out of range ("<<size<<")" )
 
     return ( size + rank + pos ) % size;
 }
@@ -758,7 +758,7 @@ void Communicator::exchangeByPlan(
     const memory::LAMAArray<ValueType>& sendArray,
     const CommunicationPlan& sendPlan ) const
 {
-    LAMA_ASSERT_EQUAL_ERROR( sendArray.size(), sendPlan.totalQuantity() )
+    SCAI_ASSERT_EQUAL_ERROR( sendArray.size(), sendPlan.totalQuantity() )
 
     IndexType recvSize = recvPlan.totalQuantity();
 
@@ -792,7 +792,7 @@ tasking::SyncToken* Communicator::exchangeByPlanAsync(
     using memory::WriteAccess;
     using memory::WriteOnlyAccess;
 
-    LAMA_ASSERT_EQUAL_ERROR( sendArray.size(), sendPlan.totalQuantity() )
+    SCAI_ASSERT_EQUAL_ERROR( sendArray.size(), sendPlan.totalQuantity() )
 
     IndexType recvSize = recvPlan.totalQuantity();
 

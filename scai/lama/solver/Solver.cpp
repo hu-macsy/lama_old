@@ -101,7 +101,7 @@ void Solver::initialize( const Matrix& coefficients )
 
 void Solver::solve( Vector& solution, const Vector& rhs )
 {
-    LAMA_REGION( "Solver.solve" )
+    SCAI_REGION( "Solver.solve" )
 
     if( getConstRuntime().mSolveInit )
     {
@@ -162,8 +162,8 @@ const Vector& Solver::getResidual() const
     SCAI_LOG_DEBUG( logger, "getResidual of solver " << mId )
 
     const SolverRuntime& runtime = getConstRuntime();
-    LAMA_ASSERT_DEBUG( runtime.mCoefficients, "mCoefficients == NULL" )
-    LAMA_ASSERT_DEBUG( runtime.mRhs, "mRhs == NULL" )
+    SCAI_ASSERT_DEBUG( runtime.mCoefficients, "mCoefficients == NULL" )
+    SCAI_ASSERT_DEBUG( runtime.mRhs, "mRhs == NULL" )
 
     //mLogger->logMessage(LogLevel::completeInformation,"Request for residual received.\n");
 
@@ -194,7 +194,7 @@ const Vector& Solver::getResidual() const
 
 const Matrix& Solver::getCoefficients() const
 {
-    LAMA_ASSERT_DEBUG( getConstRuntime().mCoefficients, "mCoefficents == NULL" )
+    SCAI_ASSERT_DEBUG( getConstRuntime().mCoefficients, "mCoefficents == NULL" )
 
     return *getConstRuntime().mCoefficients;
 }

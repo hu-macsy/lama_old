@@ -66,12 +66,12 @@ BOOST_AUTO_TEST_CASE( ConstructorTest )
     Timer timer;
     timer.start( "Solver" );
     // cannot start timer twice
-    LAMA_CHECK_THROW( { timer.start( "Solver" ); }, Exception );
+    SCAI_CHECK_THROW( { timer.start( "Solver" ); }, Exception );
     // cannot stop non-existing timer
-    LAMA_CHECK_THROW( { timer.stop( "Solver1" ); }, Exception );
+    SCAI_CHECK_THROW( { timer.stop( "Solver1" ); }, Exception );
     timer.stop( "Solver" );
     // cannot stop timer twice
-    LAMA_CHECK_THROW( { timer.stop( "Solver" ); }, Exception );
+    SCAI_CHECK_THROW( { timer.stop( "Solver" ); }, Exception );
 }
 
 /* --------------------------------------------------------------------- */
@@ -79,7 +79,7 @@ BOOST_AUTO_TEST_CASE( ConstructorTest )
 BOOST_AUTO_TEST_CASE( ResetTest )
 {
     Timer timer;
-    LAMA_CHECK_THROW( { timer.reset( "Timer" ) ; }, Exception );
+    SCAI_CHECK_THROW( { timer.reset( "Timer" ) ; }, Exception );
     timer.start( "Timer" );
     usleep( 100000 );
     double time1 = timer.getTime( "Timer" );

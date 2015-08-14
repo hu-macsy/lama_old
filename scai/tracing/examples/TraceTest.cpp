@@ -4,13 +4,13 @@
 
 void subA()
 {
-    LAMA_REGION( "A" )
+    SCAI_REGION( "A" )
     sleep( 1 );
 }
 
 void subB()
 {
-    LAMA_REGION( "B" )
+    SCAI_REGION( "B" )
     subA();
     sleep( 2 );
 }
@@ -18,7 +18,7 @@ void subB()
 int main()
 {
     SCAI_LOG_THREAD( "master" )
-    LAMA_REGION( "main" )
+    SCAI_REGION( "main" )
     subA();
     subB();
     sleep( 3 );

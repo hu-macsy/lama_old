@@ -24,7 +24,7 @@ ValueType sum( const ValueType array[], const IndexType n )
 
     ValueType result = thrust::reduce( data, data + n, zero, thrust::plus<ValueType>() );
 
-    LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
+    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
 
     SCAI_LOG_INFO( logger, "sum of " << n << " values = " << result )
 
@@ -56,7 +56,7 @@ void add( ValueType array[], const IndexType n )
 
     add_kernel<<<grid, block>>>( array, n );
  
-    LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cuda failure" );
+    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cuda failure" );
 }
 
 template<typename ValueType>
@@ -98,7 +98,7 @@ void doBench( LAMAArray<ValueType>& array, const IndexType N )
         for ( int k = 0; k < ncuda; ++k )
         {
             WriteAccess<double> write( array, cudaContext );
-            LAMA_CONTEXT_ACCESS( cudaContext )
+            SCAI_CONTEXT_ACCESS( cudaContext )
             add( write.get(), N );
         }
 
@@ -117,7 +117,7 @@ void doBench( LAMAArray<ValueType>& array, const IndexType N )
 
     {
         ReadAccess<double> read( array, cudaContext );
-        LAMA_CONTEXT_ACCESS( cudaContext )
+        SCAI_CONTEXT_ACCESS( cudaContext )
         res = sum( read.get(), N );
     }
 

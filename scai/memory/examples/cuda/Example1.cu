@@ -24,7 +24,7 @@ ValueType sum( const ValueType array[], const IndexType n )
 
     ValueType result = thrust::reduce( data, data + n, zero, thrust::plus<ValueType>() );
 
-    LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
+    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
 
     SCAI_LOG_INFO( logger, "sum of " << n << " values = " << result )
 
@@ -106,7 +106,7 @@ int main()
     {
         SCAI_LOG_INFO( logger, "read on cuda" )
         ReadAccess<double> read( data, cudaContext );
-        LAMA_CONTEXT_ACCESS( cudaContext )
+        SCAI_CONTEXT_ACCESS( cudaContext )
         double s = sum( read.get(), data.size() );
         std::cout << "sum = " << s << ", should be " << N  << std::endl;
     }
@@ -116,7 +116,7 @@ int main()
     {
         SCAI_LOG_INFO( logger, "write on cuda" )
         WriteAccess<double> write( data, cudaContext );
-        LAMA_CONTEXT_ACCESS( cudaContext )
+        SCAI_CONTEXT_ACCESS( cudaContext )
         add( static_cast<double*>( write ), data.size() );
     }
 

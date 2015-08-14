@@ -60,7 +60,7 @@ public:
 
     Bitmap( const int w, const int h, const int s )
     {
-        LAMA_ASSERT( s > 0, "scale factor s = " << s << " must be positive" )
+        SCAI_ASSERT( s > 0, "scale factor s = " << s << " must be positive" )
 
         scale  = s;
         width  = w;
@@ -175,7 +175,7 @@ public:
 
     void getColor( int& r, int& g, int& b, double val )
     {
-        LAMA_ASSERT( palette.size() >  0, "No colors defined for Bitmap" )
+        SCAI_ASSERT( palette.size() >  0, "No colors defined for Bitmap" )
 
         if ( palette.size() == 1 )
         {

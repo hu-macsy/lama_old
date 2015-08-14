@@ -100,7 +100,7 @@ void testEqualMatrix( const _SparseMatrix& m1, const _SparseMatrix& m2 )
 
     for ( IndexType i = 0; i < n; i++ )
     {
-        LAMA_CHECK_SCALAR_CLOSE( YA.getValue( i ), YB.getValue( i ), double, 1.0e-5 );
+        SCAI_CHECK_SCALAR_CLOSE( YA.getValue( i ), YB.getValue( i ), double, 1.0e-5 );
     }
 }
 

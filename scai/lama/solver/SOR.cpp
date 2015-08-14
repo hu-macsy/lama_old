@@ -97,7 +97,7 @@ SOR::SORRuntime::~SORRuntime()
 
 void SOR::initialize( const Matrix& coefficients )
 {
-    LAMA_REGION( "Solver.SOR.initialize" )
+    SCAI_REGION( "Solver.SOR.initialize" )
 
     Solver::initialize( coefficients );
 
@@ -140,7 +140,7 @@ void SOR::initialize( const Matrix& coefficients )
 
 void SOR::iterate()
 {
-    LAMA_REGION( "Solver.SOR.iterate" )
+    SCAI_REGION( "Solver.SOR.iterate" )
 
     switch( getRuntime().mCoefficients->getValueType() )
     {
@@ -179,7 +179,7 @@ void SOR::iterateImpl()
 
     const SparseMatrix<ValueType> & A = dynamic_cast<const SparseMatrix<ValueType>&>( *matrixPtr );
     const CSRStorage<ValueType> & csrA = dynamic_cast<const CSRStorage<ValueType>&>( A.getLocalStorage() );
-    LAMA_ASSERT_ERROR( csrA.hasDiagonalProperty(), "csrA = " << csrA << " has not diagonal property" )
+    SCAI_ASSERT_ERROR( csrA.hasDiagonalProperty(), "csrA = " << csrA << " has not diagonal property" )
     const CSRStorage<ValueType> & csrAHalo = dynamic_cast<const CSRStorage<ValueType>&>( A.getHaloStorage() );
     const Halo& Ahalo = A.getHalo();
 
@@ -208,7 +208,7 @@ void SOR::iterateImpl()
     //SOR with relaxation factor omega
     if( omega != 1.0 )
     {
-        LAMA_REGION( "Solver.SOR.iterate:Relaxation" )
+        SCAI_REGION( "Solver.SOR.iterate:Relaxation" )
 
         const ValueType oneMinusOmega = 1 - omega;
 
@@ -240,7 +240,7 @@ void SOR::iterateImpl()
     }
     else //GaussSeidel (SOR without relaxation factor omega)
     {
-        LAMA_REGION( "Solver.SOR.iterate:GaussSeidel" )
+        SCAI_REGION( "Solver.SOR.iterate:GaussSeidel" )
 
         for( IndexType i = 0; i < csrA.getNumRows(); i++ )
         {

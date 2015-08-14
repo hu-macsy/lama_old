@@ -60,7 +60,7 @@ BOOST_AUTO_TEST_CASE( LoggingTest )
     std::string testMessage( "FileLoggerTestMessage\n" );
     FileLogger& flogger = FileLogger::getFileLogger();
     // This should throw an exception
-    LAMA_CHECK_THROW( flogger.setLogFile( "/15/16/17" ), Exception );
+    SCAI_CHECK_THROW( flogger.setLogFile( "/15/16/17" ), Exception );
     const std::string path = Configuration::getInstance().getPath();
     SCAI_LOG_INFO( logger, "Configuration path = " << path );
     std::string logFileName( path + "/" + "FileLoggerTestFile.log" );
@@ -69,7 +69,7 @@ BOOST_AUTO_TEST_CASE( LoggingTest )
     // Setting same name twice should be okay
     flogger.setLogFile( logFileName );
     // Setting other name should throw an exception
-    LAMA_CHECK_THROW( flogger.setLogFile( logFileName + "1" ), Exception );
+    SCAI_CHECK_THROW( flogger.setLogFile( logFileName + "1" ), Exception );
     flogger.logMessage( testMessage );
     flogger.closeLogFile();
     scoped_array<char> fileInput( new char[testMessage.length()] );

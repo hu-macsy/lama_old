@@ -43,7 +43,7 @@
 // macros
 #include <scai/lama/macros/unused.hpp>
 
-// tracing with LAMA_REGION
+// tracing with SCAI_REGION
 #include <scai/tracing.hpp>
 #include <scai/lama/cblas.hpp>
 
@@ -114,7 +114,7 @@ void BLAS_BLAS1::scal(
         return;
     }
 
-    LAMA_REGION( "BLAS.BLAS1.scal" )
+    SCAI_REGION( "BLAS.BLAS1.scal" )
 
     SCAI_LOG_DEBUG( logger,
                     "scal<" << getScalarType<ValueType>() << " n = " << n << ", alpha = " << alpha << ", x = " << x << ", incX = " << incX )
@@ -175,7 +175,7 @@ ValueType BLAS_BLAS1::nrm2( const IndexType n, const ValueType* x, const IndexTy
         return static_cast<ValueType>( 0 );
     }
 
-    LAMA_REGION( "BLAS.BLAS1.nrm2" )
+    SCAI_REGION( "BLAS.BLAS1.nrm2" )
 
     SCAI_LOG_DEBUG( logger,
                     "nrm2<" << getScalarType<ValueType>() << ">, n = " << n << ", x = " << x << ", incX = " << incX )
@@ -231,7 +231,7 @@ LongDouble wrapperAsum( const int, const LongDouble*, const int )
 template<typename ValueType>
 ValueType BLAS_BLAS1::asum( const IndexType n, const ValueType* x, const IndexType incX, SyncToken* syncToken )
 {
-    LAMA_REGION( "BLAS.BLAS1.asum" )
+    SCAI_REGION( "BLAS.BLAS1.asum" )
 
     SCAI_LOG_DEBUG( logger,
                     "asum<" << getScalarType<ValueType>() << ">,  n = " << n << ", x = " << x << ", incX = " << incX )
@@ -291,7 +291,7 @@ IndexType wrapperIamax( const int, const LongDouble*, const int )
 template<typename ValueType>
 IndexType BLAS_BLAS1::iamax( const IndexType n, const ValueType* x, const IndexType incX, SyncToken* syncToken )
 {
-    LAMA_REGION( "BLAS.BLAS1.iamax" )
+    SCAI_REGION( "BLAS.BLAS1.iamax" )
 
     SCAI_LOG_INFO( logger,
                    "iamax<" << getScalarType<ValueType>() << ">, " << "n = " << n << ", x = " << x << ", incX = " << incX )
@@ -350,7 +350,7 @@ void BLAS_BLAS1::swap(
     const IndexType incY,
     SyncToken* syncToken )
 {
-    LAMA_REGION( "BLAS.BLAS1.swap" )
+    SCAI_REGION( "BLAS.BLAS1.swap" )
 
     SCAI_LOG_DEBUG( logger,
                     "iamax<" << getScalarType<ValueType>() << ">" << ", n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
@@ -414,7 +414,7 @@ void BLAS_BLAS1::copy(
     const IndexType incY,
     SyncToken* syncToken )
 {
-    LAMA_REGION( "BLAS.BLAS1.copy" )
+    SCAI_REGION( "BLAS.BLAS1.copy" )
 
     SCAI_LOG_DEBUG( logger,
                     "copy<" << getScalarType<ValueType>() << ">, " << "n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
@@ -501,7 +501,7 @@ void BLAS_BLAS1::axpy(
     const IndexType incY,
     SyncToken* syncToken )
 {
-    LAMA_REGION( "BLAS.BLAS1.axpy" )
+    SCAI_REGION( "BLAS.BLAS1.axpy" )
 
     SCAI_LOG_DEBUG( logger,
                     "axpy<" << getScalarType<ValueType>() << ">, " << "n = " << n << ", alpha = " << alpha << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
@@ -575,7 +575,7 @@ ValueType BLAS_BLAS1::dot(
     const IndexType incY,
     SyncToken* syncToken )
 {
-    LAMA_REGION( "BLAS.BLAS1.dot" )
+    SCAI_REGION( "BLAS.BLAS1.dot" )
 
     SCAI_LOG_DEBUG( logger,
                     "dot<" << getScalarType<ValueType>() << ">, " << "n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )

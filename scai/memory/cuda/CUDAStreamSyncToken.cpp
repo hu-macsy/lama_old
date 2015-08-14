@@ -77,20 +77,20 @@ void CUDAStreamSyncToken::wait()
     SCAI_LOG_DEBUG( logger, "wait on CUDA stream synchronization" )
 
     {
-        // LAMA_REGION( "CUDA.streamSynchronize" )
+        // SCAI_REGION( "CUDA.streamSynchronize" )
 
-        LAMA_CONTEXT_ACCESS( mCUDAContext )
+        SCAI_CONTEXT_ACCESS( mCUDAContext )
 
         if( mEvent != 0 )
         {
-            LAMA_CUDA_DRV_CALL( cuEventSynchronize( mEvent ), "cuEventSynchronize( " << mEvent << " ) failed." )
-            LAMA_CUDA_DRV_CALL( cuEventDestroy( mEvent ), "cuEventDestroy( " << mEvent << " ) failed." );
+            SCAI_CUDA_DRV_CALL( cuEventSynchronize( mEvent ), "cuEventSynchronize( " << mEvent << " ) failed." )
+            SCAI_CUDA_DRV_CALL( cuEventDestroy( mEvent ), "cuEventDestroy( " << mEvent << " ) failed." );
             mEvent = 0;
         }
         else
         {
             SCAI_LOG_DEBUG( logger, "synchronize with stream " << mStream );
-            LAMA_CUDA_DRV_CALL( cuStreamSynchronize( mStream ), "cuStreamSynchronize( " << mStream <<" ) failed." );
+            SCAI_CUDA_DRV_CALL( cuStreamSynchronize( mStream ), "cuStreamSynchronize( " << mStream <<" ) failed." );
             SCAI_LOG_DEBUG( logger, "synchronized with stream " << mStream );
         }
 
@@ -119,13 +119,13 @@ bool CUDAStreamSyncToken::probeEvent( const CUevent& stopEvent ) const
 {
     COMMON_ASSERT( stopEvent != 0, "probe on invalid event" )
 
-    LAMA_CONTEXT_ACCESS( mCUDAContext )
+    SCAI_CONTEXT_ACCESS( mCUDAContext )
 
     CUresult result = cuEventQuery( stopEvent );
 
     if( result != CUDA_SUCCESS && result != CUDA_ERROR_NOT_READY )
     {
-        LAMA_CUDA_DRV_CALL( result, "cuEventQuery failed for CUevent " << stopEvent << '.' );
+        SCAI_CUDA_DRV_CALL( result, "cuEventQuery failed for CUevent " << stopEvent << '.' );
     }
 
     return result == CUDA_SUCCESS;
@@ -133,13 +133,13 @@ bool CUDAStreamSyncToken::probeEvent( const CUevent& stopEvent ) const
 
 bool CUDAStreamSyncToken::queryEvent( const CUevent event ) const
 {
-    LAMA_CONTEXT_ACCESS( mCUDAContext )
+    SCAI_CONTEXT_ACCESS( mCUDAContext )
 
     CUresult result = cuEventQuery( event );
 
     if( result != CUDA_SUCCESS || result != CUDA_ERROR_NOT_READY )
     {
-        LAMA_CUDA_DRV_CALL( result, "cuEventQuery failed for CUevent "<<event<<'.' );
+        SCAI_CUDA_DRV_CALL( result, "cuEventQuery failed for CUevent "<<event<<'.' );
     }
 
     return result == CUDA_SUCCESS;
@@ -147,8 +147,8 @@ bool CUDAStreamSyncToken::queryEvent( const CUevent event ) const
 
 void CUDAStreamSyncToken::synchronizeEvent( const CUevent event ) const
 {
-    LAMA_CONTEXT_ACCESS( mCUDAContext )
-    LAMA_CUDA_DRV_CALL( cuEventSynchronize( event ), "cuEventSynchronize failed for CUevent "<<event<<'.' )
+    SCAI_CONTEXT_ACCESS( mCUDAContext )
+    SCAI_CUDA_DRV_CALL( cuEventSynchronize( event ), "cuEventSynchronize failed for CUevent "<<event<<'.' )
 }
 
 } // namespace

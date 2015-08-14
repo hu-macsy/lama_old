@@ -193,9 +193,9 @@ void COOStorage<ValueType>::clear()
 template<typename ValueType>
 void COOStorage<ValueType>::check( const char* msg ) const
 {
-    LAMA_ASSERT_EQUAL_ERROR( mNumValues, mIA.size() )
-    LAMA_ASSERT_EQUAL_ERROR( mNumValues, mJA.size() )
-    LAMA_ASSERT_EQUAL_ERROR( mNumValues, mValues.size() )
+    SCAI_ASSERT_EQUAL_ERROR( mNumValues, mIA.size() )
+    SCAI_ASSERT_EQUAL_ERROR( mNumValues, mJA.size() )
+    SCAI_ASSERT_EQUAL_ERROR( mNumValues, mValues.size() )
 
     // check row indexes in IA and column indexes in JA
 
@@ -207,12 +207,12 @@ void COOStorage<ValueType>::check( const char* msg ) const
         ReadAccess<IndexType> rJA( mJA, loc );
         ReadAccess<IndexType> rIA( mIA, loc );
 
-        LAMA_CONTEXT_ACCESS( loc )
+        SCAI_CONTEXT_ACCESS( loc )
 
-        LAMA_ASSERT_ERROR( validIndexes( rIA.get(), mNumValues, mNumRows ),
+        SCAI_ASSERT_ERROR( validIndexes( rIA.get(), mNumValues, mNumRows ),
                            *this << " @ " << msg << ": illegel indexes in IA" )
 
-        LAMA_ASSERT_ERROR( validIndexes( rJA.get(), mNumValues, mNumColumns ),
+        SCAI_ASSERT_ERROR( validIndexes( rJA.get(), mNumValues, mNumColumns ),
                            *this << " @ " << msg << ": illegel indexes in JA" )
     }
 }
@@ -239,7 +239,7 @@ void COOStorage<ValueType>::setIdentity( const IndexType size )
 
     ValueType one = static_cast<ValueType>( 1.0 );
 
-    LAMA_CONTEXT_ACCESS( loc )
+    SCAI_CONTEXT_ACCESS( loc )
 
     setOrder( ia.get(), mNumValues );
     setOrder( ja.get(), mNumValues );
@@ -280,7 +280,7 @@ void COOStorage<ValueType>::buildCSR(
 
     IndexType numValues = sizes2offsets( csrIA.get(), mNumRows );
 
-    LAMA_ASSERT_EQUAL_DEBUG( mNumValues, numValues )
+    SCAI_ASSERT_EQUAL_DEBUG( mNumValues, numValues )
 
     ReadAccess<IndexType> cooJA( mJA, loc );
     ReadAccess<ValueType> cooValues( mValues, loc );
@@ -305,9 +305,9 @@ void COOStorage<ValueType>::setCOOData(
 {
     // check the sizes of the arrays
 
-    LAMA_ASSERT_EQUAL_ERROR( numValues, ia.size() )
-    LAMA_ASSERT_EQUAL_ERROR( numValues, ja.size() )
-    LAMA_ASSERT_EQUAL_ERROR( numValues, values.size() )
+    SCAI_ASSERT_EQUAL_ERROR( numValues, ia.size() )
+    SCAI_ASSERT_EQUAL_ERROR( numValues, ja.size() )
+    SCAI_ASSERT_EQUAL_ERROR( numValues, values.size() )
 
     _MatrixStorage::setDimension( numRows, numColumns );
 
@@ -322,7 +322,7 @@ void COOStorage<ValueType>::setCOOData(
 
     // check is expensive, so do it only if ASSERT_LEVEL is on DEBUG mode
 
-#ifdef LAMA_ASSERT_LEVEL_DEBUG
+#ifdef SCAI_ASSERT_LEVEL_DEBUG
     check( "COOStorage.setCOOData" );
 #endif
 
@@ -348,9 +348,9 @@ void COOStorage<ValueType>::setCSRDataImpl(
 {
     SCAI_LOG_DEBUG( logger, "set CSR data " << numRows << " x " << numColumns << ", nnz = " << numValues )
 
-    LAMA_ASSERT_EQUAL_DEBUG( numRows + 1, ia.size() )
-    LAMA_ASSERT_EQUAL_DEBUG( numValues, ja.size() )
-    LAMA_ASSERT_EQUAL_DEBUG( numValues, values.size() )
+    SCAI_ASSERT_EQUAL_DEBUG( numRows + 1, ia.size() )
+    SCAI_ASSERT_EQUAL_DEBUG( numValues, ja.size() )
+    SCAI_ASSERT_EQUAL_DEBUG( numValues, values.size() )
 
     ContextPtr loc = getContextPtr();
 
@@ -373,7 +373,7 @@ void COOStorage<ValueType>::setCSRDataImpl(
         ReadAccess<IndexType> csrIA( ia, loc );
         ReadAccess<IndexType> csrJA( ja, loc );
 
-        LAMA_CONTEXT_ACCESS( loc )
+        SCAI_CONTEXT_ACCESS( loc )
 
         mDiagonalProperty = hasDiagonalProperty( numDiagonals, csrIA.get(), csrJA.get() );
     }
@@ -394,7 +394,7 @@ void COOStorage<ValueType>::setCSRDataImpl(
         ReadAccess<IndexType> csrIA( ia, loc );
         WriteOnlyAccess<IndexType> cooIA( mIA, loc, mNumValues );
 
-        LAMA_CONTEXT_ACCESS( loc )
+        SCAI_CONTEXT_ACCESS( loc )
 
         offsets2ia( cooIA.get(), mNumValues, csrIA.get(), mNumRows, numDiagonals );
     }
@@ -406,7 +406,7 @@ void COOStorage<ValueType>::setCSRDataImpl(
         ReadAccess<IndexType> csrJA( ja, loc );
         WriteOnlyAccess<IndexType> cooJA( mJA, loc, mNumValues );
 
-        LAMA_CONTEXT_ACCESS( loc )
+        SCAI_CONTEXT_ACCESS( loc )
 
         setCSRData( cooJA.get(), csrJA.get(), numValues, csrIA.get(), mNumRows, numDiagonals );
     }
@@ -418,7 +418,7 @@ void COOStorage<ValueType>::setCSRDataImpl(
         ReadAccess<OtherValueType> csrValues( values, loc );
         WriteOnlyAccess<ValueType> cooValues( mValues, loc, mNumValues );
 
-        LAMA_CONTEXT_ACCESS( loc )
+        SCAI_CONTEXT_ACCESS( loc )
 
         setCSRData( cooValues.get(), csrValues.get(), numValues, csrIA.get(), mNumRows, numDiagonals );
     }
@@ -618,7 +618,7 @@ template<typename ValueType>
 template<typename OtherType>
 void COOStorage<ValueType>::getRowImpl( LAMAArray<OtherType>& row, const IndexType i ) const
 {
-    LAMA_ASSERT_DEBUG( i >= 0 && i < mNumRows, "row index " << i << " out of range" )
+    SCAI_ASSERT_DEBUG( i >= 0 && i < mNumRows, "row index " << i << " out of range" )
 
     WriteOnlyAccess<OtherType> wRow( row, mNumColumns );
 
@@ -659,7 +659,7 @@ void COOStorage<ValueType>::getDiagonalImpl( LAMAArray<OtherType>& diagonal ) co
     WriteOnlyAccess<OtherType> wDiagonal( diagonal, loc, numDiagonalElements );
     ReadAccess<ValueType> rValues( mValues, loc );
 
-    LAMA_CONTEXT_ACCESS( loc )
+    SCAI_CONTEXT_ACCESS( loc )
 
     // diagonal elements are the first entries of mValues
 
@@ -683,7 +683,7 @@ void COOStorage<ValueType>::setDiagonalImpl( const LAMAArray<OtherType>& diagona
     ReadAccess<OtherType> rDiagonal( diagonal, loc );
     WriteAccess<ValueType> wValues( mValues, loc );
 
-    LAMA_CONTEXT_ACCESS( loc )
+    SCAI_CONTEXT_ACCESS( loc )
 
     // diagonal elements are the first entries of mValues
 
@@ -705,7 +705,7 @@ ValueType COOStorage<ValueType>::l1Norm() const
 
 	ReadAccess<ValueType> data( mValues, loc );
 
-	LAMA_CONTEXT_ACCESS( loc );
+	SCAI_CONTEXT_ACCESS( loc );
 
 	return asum( n, data.get(), 1, NULL );
 }
@@ -725,7 +725,7 @@ ValueType COOStorage<ValueType>::l2Norm() const
 
 	ReadAccess<ValueType> data( mValues, loc );
 
-	LAMA_CONTEXT_ACCESS( loc );
+	SCAI_CONTEXT_ACCESS( loc );
 
 	return sqrt(dot( n, data.get(), 1, data.get(), 1, NULL ));
 }
@@ -750,7 +750,7 @@ ValueType COOStorage<ValueType>::maxNorm() const
 
     ReadAccess<ValueType> cooValues( mValues, loc );
 
-    LAMA_CONTEXT_ACCESS( loc )
+    SCAI_CONTEXT_ACCESS( loc )
 
     ValueType maxval = absMaxVal( cooValues.get(), n );
 
@@ -782,13 +782,13 @@ void COOStorage<ValueType>::matrixTimesVector(
     const LAMAArray<ValueType>& y ) const
 
 {
-    LAMA_REGION( "Storage.COO.timesVector" )
+    SCAI_REGION( "Storage.COO.timesVector" )
 
     SCAI_LOG_DEBUG( logger,
                     "Computing z = alpha * A * x + beta * y, with A = " << *this << ", x = " << x << ", y = " << y << ", z = " << result )
 
-    LAMA_ASSERT_EQUAL_ERROR( x.size(), mNumColumns )
-    LAMA_ASSERT_EQUAL_ERROR( y.size(), mNumRows )
+    SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumColumns )
+    SCAI_ASSERT_EQUAL_ERROR( y.size(), mNumRows )
 
     // Method on CUDA is not safe due to atomic
 
@@ -814,7 +814,7 @@ void COOStorage<ValueType>::matrixTimesVector(
 
         // we assume that normalGEMV can deal with the alias of result, y
 
-        LAMA_CONTEXT_ACCESS( loc )
+        SCAI_CONTEXT_ACCESS( loc )
         normalGEMV( wResult.get(), alpha, rX.get(), beta, wResult.get(), mNumRows, mNumValues, cooIA.get(), cooJA.get(),
                     cooValues.get(), NULL );
     }
@@ -825,7 +825,7 @@ void COOStorage<ValueType>::matrixTimesVector(
         WriteOnlyAccess<ValueType> wResult( result, loc, mNumRows );
         ReadAccess<ValueType> rY( y, loc );
 
-        LAMA_CONTEXT_ACCESS( loc )
+        SCAI_CONTEXT_ACCESS( loc )
         normalGEMV( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumRows, mNumValues, cooIA.get(), cooJA.get(),
                     cooValues.get(), NULL );
     }
@@ -843,14 +843,14 @@ void COOStorage<ValueType>::vectorTimesMatrix(
     SCAI_LOG_INFO( logger,
                    *this << ": vectorTimesMatrix, result = " << result << ", alpha = " << alpha << ", x = " << x << ", beta = " << beta << ", y = " << y )
 
-    LAMA_REGION( "Storage.COO.VectorTimesMatrix" )
+    SCAI_REGION( "Storage.COO.VectorTimesMatrix" )
 
-    LAMA_ASSERT_EQUAL_ERROR( x.size(), mNumRows )
-    LAMA_ASSERT_EQUAL_ERROR( result.size(), mNumColumns )
+    SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumRows )
+    SCAI_ASSERT_EQUAL_ERROR( result.size(), mNumColumns )
 
     if( ( beta != 0.0 ) && ( &result != &y ) )
     {
-        LAMA_ASSERT_EQUAL_ERROR( y.size(), mNumColumns )
+        SCAI_ASSERT_EQUAL_ERROR( y.size(), mNumColumns )
     }
 
     ContextPtr loc = getContextPtr();
@@ -875,7 +875,7 @@ void COOStorage<ValueType>::vectorTimesMatrix(
 
         // we assume that normalGEVM can deal with the alias of result, y
 
-        LAMA_CONTEXT_ACCESS( loc )
+        SCAI_CONTEXT_ACCESS( loc )
         normalGEVM( wResult.get(), alpha, rX.get(), beta, wResult.get(), mNumColumns, mNumValues, cooIA.get(),
                     cooJA.get(), cooValues.get(), NULL );
     }
@@ -886,7 +886,7 @@ void COOStorage<ValueType>::vectorTimesMatrix(
         WriteOnlyAccess<ValueType> wResult( result, loc, mNumColumns );
         ReadAccess<ValueType> rY( y, loc );
 
-        LAMA_CONTEXT_ACCESS( loc )
+        SCAI_CONTEXT_ACCESS( loc )
         normalGEVM( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumColumns, mNumValues, cooIA.get(), cooJA.get(),
                     cooValues.get(), NULL );
     }
@@ -905,8 +905,8 @@ SyncToken* COOStorage<ValueType>::matrixTimesVectorAsync(
     SCAI_LOG_DEBUG( logger,
                     "Computing z = alpha * A * x + beta * y, with A = " << *this << ", x = " << x << ", y = " << y << ", z = " << result )
 
-    LAMA_ASSERT_EQUAL_ERROR( x.size(), mNumColumns )
-    LAMA_ASSERT_EQUAL_ERROR( y.size(), mNumRows )
+    SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumColumns )
+    SCAI_ASSERT_EQUAL_ERROR( y.size(), mNumRows )
 
     // not yet available on other devices, so we take Host
 
@@ -958,7 +958,7 @@ SyncToken* COOStorage<ValueType>::matrixTimesVectorAsync(
 
         // we assume that normalGEMV can deal with the alias of result, y
 
-        LAMA_CONTEXT_ACCESS( loc )
+        SCAI_CONTEXT_ACCESS( loc )
 
         normalGEMV( wResult->get(), alpha, rX->get(), beta, wResult->get(), mNumRows, mNumValues, cooIA->get(),
                     cooJA->get(), cooValues->get(), syncToken.get() );
@@ -970,7 +970,7 @@ SyncToken* COOStorage<ValueType>::matrixTimesVectorAsync(
         shared_ptr<WriteAccess<ValueType> > wResult( new WriteOnlyAccess<ValueType>( result, loc, mNumRows ) );
         shared_ptr<ReadAccess<ValueType> > rY( new ReadAccess<ValueType>( y, loc ) );
 
-        LAMA_CONTEXT_ACCESS( loc )
+        SCAI_CONTEXT_ACCESS( loc )
 
         normalGEMV( wResult->get(), alpha, rX->get(), beta, rY->get(), mNumRows, mNumValues, cooIA->get(), cooJA->get(),
                     cooValues->get(), syncToken.get() );
@@ -1000,7 +1000,7 @@ SyncToken* COOStorage<ValueType>::vectorTimesMatrixAsync(
     SCAI_LOG_INFO( logger,
                    *this << ": vectorTimesMatrixAsync, result = " << result << ", alpha = " << alpha << ", x = " << x << ", beta = " << beta << ", y = " << y )
 
-    LAMA_REGION( "Storage.COO.vectorTimesMatrixAsync" )
+    SCAI_REGION( "Storage.COO.vectorTimesMatrixAsync" )
 
     ContextPtr loc = getContextPtr();
 
@@ -1030,12 +1030,12 @@ SyncToken* COOStorage<ValueType>::vectorTimesMatrixAsync(
         return new TaskSyncToken( bind( pf, this, ref( result ), alpha, ref( x ), beta, ref( y ) ) );
     }
 
-    LAMA_ASSERT_EQUAL_ERROR( x.size(), mNumRows )
-    LAMA_ASSERT_EQUAL_ERROR( result.size(), mNumColumns )
+    SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumRows )
+    SCAI_ASSERT_EQUAL_ERROR( result.size(), mNumColumns )
 
     if( ( beta != 0.0 ) && ( &result != &y ) )
     {
-        LAMA_ASSERT_EQUAL_ERROR( y.size(), mNumColumns )
+        SCAI_ASSERT_EQUAL_ERROR( y.size(), mNumColumns )
     }
 
     LAMA_INTERFACE_FN_T( normalGEVM, loc, COOUtils, Mult, ValueType )
@@ -1060,7 +1060,7 @@ SyncToken* COOStorage<ValueType>::vectorTimesMatrixAsync(
 
         // we assume that normalGEMV can deal with the alias of result, y
 
-        LAMA_CONTEXT_ACCESS( loc )
+        SCAI_CONTEXT_ACCESS( loc )
 
         normalGEVM( wResult->get(), alpha, rX->get(), beta, wResult->get(), mNumRows, mNumValues, cooIA->get(),
                     cooJA->get(), cooValues->get(), syncToken.get() );
@@ -1072,7 +1072,7 @@ SyncToken* COOStorage<ValueType>::vectorTimesMatrixAsync(
         shared_ptr<WriteAccess<ValueType> > wResult( new WriteOnlyAccess<ValueType>( result, loc, mNumColumns ) );
         shared_ptr<ReadAccess<ValueType> > rY( new ReadAccess<ValueType>( y, loc ) );
 
-        LAMA_CONTEXT_ACCESS( loc )
+        SCAI_CONTEXT_ACCESS( loc )
 
         normalGEVM( wResult->get(), alpha, rX->get(), beta, rY->get(), mNumRows, mNumValues, cooIA->get(), cooJA->get(),
                     cooValues->get(), syncToken.get() );
@@ -1098,20 +1098,20 @@ void COOStorage<ValueType>::jacobiIterate(
     const LAMAArray<ValueType>& rhs,
     const ValueType omega ) const
 {
-    LAMA_REGION( "Storage.COO.jacobiIterate" )
+    SCAI_REGION( "Storage.COO.jacobiIterate" )
 
     SCAI_LOG_INFO( logger, *this << ": Jacobi iteration for local matrix data." )
 
-    LAMA_ASSERT_ERROR( mDiagonalProperty, *this << ": jacobiIterate requires diagonal property" )
+    SCAI_ASSERT_ERROR( mDiagonalProperty, *this << ": jacobiIterate requires diagonal property" )
 
     if( &solution == &oldSolution )
     {
         COMMON_THROWEXCEPTION( "alias of solution and oldSolution unsupported" )
     }
 
-    LAMA_ASSERT_EQUAL_DEBUG( mNumRows, oldSolution.size() )
-    LAMA_ASSERT_EQUAL_DEBUG( mNumRows, solution.size() )
-    LAMA_ASSERT_EQUAL_DEBUG( mNumRows, mNumColumns )
+    SCAI_ASSERT_EQUAL_DEBUG( mNumRows, oldSolution.size() )
+    SCAI_ASSERT_EQUAL_DEBUG( mNumRows, solution.size() )
+    SCAI_ASSERT_EQUAL_DEBUG( mNumRows, mNumColumns )
     // matrix must be square
 
     ContextPtr loc = getContextPtr();
@@ -1129,7 +1129,7 @@ void COOStorage<ValueType>::jacobiIterate(
 
     // Due to diagonal property there is no advantage by taking row indexes
 
-    LAMA_CONTEXT_ACCESS( loc )
+    SCAI_CONTEXT_ACCESS( loc )
 
     jacobi( wSolution.get(), mNumValues, cooIA.get(), cooJA.get(), cooValues.get(), rOldSolution.get(), rRhs.get(),
             omega, mNumRows, NULL );

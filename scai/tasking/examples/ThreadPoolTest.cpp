@@ -61,7 +61,7 @@ void work( const int in, int& out )
     int factor = in % 4 + 1;
     std::ostringstream regionName;
     regionName << "work_" << factor;
-    LAMA_REGION( regionName.str().c_str() )
+    SCAI_REGION( regionName.str().c_str() )
 
     // just do some stupid work, workload depends on in
 
@@ -87,7 +87,7 @@ void work( const int in, int& out )
 void runTest()
 {
     SCAI_LOG_INFO( logger, "runTest" );
-    LAMA_REGION( "runTest" )
+    SCAI_REGION( "runTest" )
     int thread_sizes[] = POOL_SIZES;
     int thread_configs = sizeof( thread_sizes ) / sizeof( int );
     int task_sizes[] = TASK_SIZES;
@@ -99,7 +99,7 @@ void runTest()
 
         for ( int j = 0; j < thread_configs; ++j )
         {
-            LAMA_REGION_N( "PoolRun", thread_sizes[j] * 100 + ntasks )
+            SCAI_REGION_N( "PoolRun", thread_sizes[j] * 100 + ntasks )
 
             std::vector<int> x ( ntasks );
 
@@ -130,7 +130,7 @@ void runTest()
 void waitTest()
 {
     SCAI_LOG_INFO( logger, "waitTest" );
-    LAMA_REGION( "waitTest" )
+    SCAI_REGION( "waitTest" )
     int thread_sizes[] = POOL_SIZES;
     int thread_configs = sizeof( thread_sizes ) / sizeof( int );
     int task_sizes[] = TASK_SIZES;
@@ -142,7 +142,7 @@ void waitTest()
 
         for ( int j = 0; j < thread_configs; ++j )
         {
-            LAMA_REGION_N( "PoolWait", thread_sizes[j] * 100 + ntasks )
+            SCAI_REGION_N( "PoolWait", thread_sizes[j] * 100 + ntasks )
             std::vector<int> x( ntasks );  // array with result for each task
             std::vector<shared_ptr<ThreadTask> > tasks( ntasks );
             ThreadPool pool( thread_sizes[j] );
@@ -168,7 +168,7 @@ void singleTest()
 {
     SCAI_LOG_THREAD( "main:singleTest" )
 
-    LAMA_REGION( "singleTest" )
+    SCAI_REGION( "singleTest" )
     SCAI_LOG_INFO( logger, "singleTest" );
     // Extensive test of a thread pool with one thread
     // Should verify that master never misses a notify at wait

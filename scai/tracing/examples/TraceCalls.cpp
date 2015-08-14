@@ -6,13 +6,13 @@
 
 void subA( int& X )
 {
-    LAMA_REGION( "A" )
+    SCAI_REGION( "A" )
     ++X;
 }
 
 void subB( int& X )
 {
-    LAMA_REGION( "B" )
+    SCAI_REGION( "B" )
     X++;
 }
 
@@ -20,7 +20,7 @@ int main()
 {
     double time = common::Walltime::get();
     int X = 0;
-    LAMA_REGION( "main" )
+    SCAI_REGION( "main" )
 
     for ( int i = 0; i < 10000; ++i )
     {

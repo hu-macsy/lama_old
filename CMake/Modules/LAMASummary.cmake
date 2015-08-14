@@ -215,7 +215,7 @@ message ( STATUS "LAMA Version : ${LAMA_VERSION} ${LAMA_VERSION_NAME}" )
 message ( STATUS "Build Type   : ${CMAKE_BUILD_TYPE}" )
 message ( STATUS "Library Type : ${LAMA_LIBRARY_TYPE}" )
 message ( STATUS "LOG Level    : ${SCAI_LOG_LEVEL}" )
-message ( STATUS "ASSERT Level : ${LAMA_ASSERT_LEVEL}" )
+message ( STATUS "ASSERT Level : ${SCAI_ASSERT_LEVEL}" )
 message ( STATUS "TRACE Level  : ${LAMA_TRACE_LEVEL}" )
 message ( STATUS "" )
 

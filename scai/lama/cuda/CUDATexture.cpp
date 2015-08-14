@@ -54,7 +54,7 @@ bool CUDATexture::theUseTextureFlag = getUseTextureByEnv();
 
 bool CUDATexture::getUseTextureByEnv()
 {
-    const char* env = getenv( "LAMA_CUDA_USE_TEXTURE" );
+    const char* env = getenv( "SCAI_CUDA_USE_TEXTURE" );
 
     if( !env )
         return false; // no initialization by environment
@@ -85,7 +85,7 @@ bool CUDATexture::getUseTextureByEnv()
     }
     else
     {
-        SCAI_LOG_ERROR( logger, "LAMA_CUDA_USE_TEXTURE = " << env << ", illegal setting" )
+        SCAI_LOG_ERROR( logger, "SCAI_CUDA_USE_TEXTURE = " << env << ", illegal setting" )
 
         return false;
     }
@@ -97,7 +97,7 @@ void CUDATexture::setUseTextureByDevice()
 {
     CUdevice dev; // curent device
 
-    LAMA_CUDA_DRV_CALL( cuCtxGetDevice( &dev ), "get current device" )
+    SCAI_CUDA_DRV_CALL( cuCtxGetDevice( &dev ), "get current device" )
 
     int major = 0;
     int minor = 0;
@@ -106,7 +106,7 @@ void CUDATexture::setUseTextureByDevice()
     // CUdevice_attribute attr = CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MAJOR;
     // cuDeviceGetAttribute ( &major, attr, dev ),
 
-    LAMA_CUDA_DRV_CALL( cuDeviceComputeCapability( &major, &minor, dev ), "getComputeCapability" )
+    SCAI_CUDA_DRV_CALL( cuDeviceComputeCapability( &major, &minor, dev ), "getComputeCapability" )
 
     SCAI_LOG_INFO( logger, "compute capabilty = " << major << "." << minor );
 

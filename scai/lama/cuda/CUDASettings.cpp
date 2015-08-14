@@ -69,7 +69,7 @@ int CUDASettings::getComputeCapability()
 {
     CUdevice dev; // curent device
 
-    LAMA_CUDA_DRV_CALL( cuCtxGetDevice( &dev ), "get current device" )
+    SCAI_CUDA_DRV_CALL( cuCtxGetDevice( &dev ), "get current device" )
 
     int major = 0;
     int minor = 0;
@@ -78,7 +78,7 @@ int CUDASettings::getComputeCapability()
     // CUdevice_attribute attr = CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MAJOR;
     // cuDeviceGetAttribute ( &major, attr, dev ),
 
-    LAMA_CUDA_DRV_CALL( cuDeviceComputeCapability( &major, &minor, dev ), "getComputeCapability" )
+    SCAI_CUDA_DRV_CALL( cuDeviceComputeCapability( &major, &minor, dev ), "getComputeCapability" )
 
     SCAI_LOG_INFO( logger, "compute capabilty = " << major << "." << minor );
 
@@ -91,9 +91,9 @@ void CUDASettings::initialize()
 {
     // check environment variables for settings
 
-    bool setTexture = Settings::getEnvironment( theUseTextureFlag, "LAMA_CUDA_USE_TEXTURE" );
-    bool setSharedMem = Settings::getEnvironment( theUseSharedMemFlag, "LAMA_CUDA_USE_SHARED_MEM" );
-    bool setBlockSize = Settings::getEnvironment( theBlockSize, "LAMA_CUDA_BLOCK_SIZE" );
+    bool setTexture = Settings::getEnvironment( theUseTextureFlag, "SCAI_CUDA_USE_TEXTURE" );
+    bool setSharedMem = Settings::getEnvironment( theUseSharedMemFlag, "SCAI_CUDA_USE_SHARED_MEM" );
+    bool setBlockSize = Settings::getEnvironment( theBlockSize, "SCAI_CUDA_BLOCK_SIZE" );
 
     if( !setTexture || !setSharedMem || !setBlockSize )
     {

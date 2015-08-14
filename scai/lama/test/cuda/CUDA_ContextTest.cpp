@@ -210,17 +210,17 @@ BOOST_AUTO_TEST_CASE( asyncTest )
     common::shared_ptr<WriteAccess<float> > cudaV( new WriteAccess<float>( vector, cudaContext ) );
     //CUDAContext* cuda = dynamic_cast<const CUDAContext*>( cudaContext.get() );
     const CUDAContext* cuda = ( CUDAContext* ) cudaContext.get();
-    LAMA_ASSERT_ERROR( cuda, "dynamic cast for CUDAContext failed" );
+    SCAI_ASSERT_ERROR( cuda, "dynamic cast for CUDAContext failed" );
     common::shared_ptr<CUDAStreamSyncToken> token( cuda->getComputeSyncToken() );
     {
         LAMA_INTERFACE_FN_t( scal, cudaContext, BLAS, BLAS1, float )
-        LAMA_CONTEXT_ACCESS( cudaContext )
+        SCAI_CONTEXT_ACCESS( cudaContext )
         // test: should be async!!!
         common::unique_ptr<SyncToken> token( cudaContext->getSyncToken() );
         scal( n, alpha, cudaV->get(), 1, token.get() );
         token->pushAccess( cudaV );
         token->wait();
-        LAMA_CHECK_CUDA_ERROR;
+        SCAI_CHECK_CUDA_ERROR;
     }
     cudaV.reset();  // give free the write access
     HostReadAccess<float> hostV( vector );
@@ -244,7 +244,7 @@ BOOST_AUTO_TEST_CASE( syncTest )
     {
         LAMA_INTERFACE_FN_t( scal, cudaContext, BLAS, BLAS1, float );
         WriteAccess<float> cudaV( vector, cudaContext );
-        LAMA_CONTEXT_ACCESS( cudaContext );
+        SCAI_CONTEXT_ACCESS( cudaContext );
         common::unique_ptr<SyncToken> token( cudaContext->getSyncToken() );
         scal( n, alpha, cudaV.get(), 1, token.get() );
         // synchronize on token at end of this scope
@@ -267,7 +267,7 @@ static void callSSCAL( LAMAArray<float>& vector, const float alpha, ContextPtr c
     // get routine for context, must be available, otherwise Exception
     LAMA_INTERFACE_FN_t( scal, context, BLAS, BLAS1, float );
     WriteAccess<float> vectorAccess( vector, context );
-    LAMA_CONTEXT_ACCESS( context );
+    SCAI_CONTEXT_ACCESS( context );
     common::unique_ptr<SyncToken> token( context->getSyncToken() );
     scal( vector.size(), alpha, vectorAccess.get(), 1, token.get() );
     // syncronize on token is done here at end of scope where token will be destroyed

@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Contains error checking macros like LAMA_ASSERT that can be enabled
+ * @brief Contains error checking macros like SCAI_ASSERT that can be enabled
  *        or disabled at runtime
  *
  * @author Jiri Kraus
@@ -44,12 +44,12 @@
 // Little help for the Eclipse Parser
 
 #ifdef __CDT_PARSER__
-#define LAMA_ASSERT_LEVEL_DEBUG
+#define SCAI_ASSERT_LEVEL_DEBUG
 #endif
 
-#ifndef LAMA_ASSERT_LEVEL_OFF
+#ifndef SCAI_ASSERT_LEVEL_OFF
 
-#    ifndef LAMA_CHECK_ASSERTS
+#    ifndef SCAI_CHECK_ASSERTS
 /**
  * @brief The macro LAMACHECKASSERTS is used to control the checking of
  *        asserts.
@@ -59,7 +59,7 @@
  * builds) is not defined.
  * If LAMACHECKASSERTS is not defined the assertions will not be checked.
  */
-#        define LAMA_CHECK_ASSERTS
+#        define SCAI_CHECK_ASSERTS
 #    endif
 #endif // NDEBUG
 /** Dummy function to avoid compiler warnings. */
@@ -76,25 +76,25 @@ static inline void unused( const ValueType1&, const ValueType2& )
     // do nothing
 }
 
-#ifndef LAMA_CHECK_ASSERTS
+#ifndef SCAI_CHECK_ASSERTS
 
-#define LAMA_ASSERT(exp, msg) unused( exp );
+#define SCAI_ASSERT(exp, msg) unused( exp );
 
-#define LAMA_ASSERT_EQUAL(exp1, exp2) unused( exp1, exp2 );
+#define SCAI_ASSERT_EQUAL(exp1, exp2) unused( exp1, exp2 );
 
 #else // LAMACHECKASSERTS DEFINED
 
-#define LAMA_ASSERT(exp, msg)                                                           \
+#define SCAI_ASSERT(exp, msg)                                                           \
     COMMON_ASSERT( exp, msg )
 
-#define LAMA_ASSERT_EQUAL(exp1, exp2)                                                   \
+#define SCAI_ASSERT_EQUAL(exp1, exp2)                                                   \
     COMMON_ASSERT_EQUAL( exp1, exp2, "LAMA equality error" ) 
 
-#endif // LAMA_CHECK_ASSERTS
+#endif // SCAI_CHECK_ASSERTS
 
-#if defined( LAMA_ASSERT_LEVEL_OFF )
+#if defined( SCAI_ASSERT_LEVEL_OFF )
 
-#define LAMA_ASSERT_ERROR(exp, msg)                                                 \
+#define SCAI_ASSERT_ERROR(exp, msg)                                                 \
     {                                                                               \
         unused( exp );                                                              \
         if ( false )                                                                \
@@ -103,10 +103,10 @@ static inline void unused( const ValueType1&, const ValueType2& )
         }                                                                           \
     }
 
-#define LAMA_ASSERT_EQUAL_ERROR( exp1, exp2 )                                       \
+#define SCAI_ASSERT_EQUAL_ERROR( exp1, exp2 )                                       \
     unused( exp1, exp2 );
 
-#define LAMA_ASSERT_DEBUG(exp, msg)                                                 \
+#define SCAI_ASSERT_DEBUG(exp, msg)                                                 \
     {                                                                               \
         unused( exp );                                                              \
         if ( false )                                                                \
@@ -115,41 +115,41 @@ static inline void unused( const ValueType1&, const ValueType2& )
         }                                                                           \
     }
 
-#define LAMA_ASSERT_EQUAL_DEBUG( exp1, exp2 )                                      \
+#define SCAI_ASSERT_EQUAL_DEBUG( exp1, exp2 )                                      \
     unused( exp1, exp2 );
 
-#elif defined(LAMA_ASSERT_LEVEL_ERROR)
+#elif defined(SCAI_ASSERT_LEVEL_ERROR)
 
 /**
- * @brief LAMA_ASSERT_ERROR(exp, msg) used for assertions that should cause an error
+ * @brief SCAI_ASSERT_ERROR(exp, msg) used for assertions that should cause an error
  */
-#define LAMA_ASSERT_ERROR(exp, msg)  LAMA_ASSERT(exp, msg)
-#define LAMA_ASSERT_DEBUG(exp, msg)  unused( exp );
-#define LAMA_ASSERT_EQUAL_ERROR(exp1, exp2)  LAMA_ASSERT_EQUAL(exp1, exp2)
-#define LAMA_ASSERT_EQUAL_DEBUG(exp1, exp2)  unused( exp1, exp2 );
+#define SCAI_ASSERT_ERROR(exp, msg)  SCAI_ASSERT(exp, msg)
+#define SCAI_ASSERT_DEBUG(exp, msg)  unused( exp );
+#define SCAI_ASSERT_EQUAL_ERROR(exp1, exp2)  SCAI_ASSERT_EQUAL(exp1, exp2)
+#define SCAI_ASSERT_EQUAL_DEBUG(exp1, exp2)  unused( exp1, exp2 );
 
-#elif defined(LAMA_ASSERT_LEVEL_DEBUG)
+#elif defined(SCAI_ASSERT_LEVEL_DEBUG)
 
 /**
- * @brief LAMA_ASSERT_DEBUG(exp, msg) used in a debug mode for additional tests.
+ * @brief SCAI_ASSERT_DEBUG(exp, msg) used in a debug mode for additional tests.
  */
-#define LAMA_ASSERT_DEBUG(exp, msg)  LAMA_ASSERT(exp, msg)
-#define LAMA_ASSERT_ERROR(exp, msg)  LAMA_ASSERT(exp, msg)
+#define SCAI_ASSERT_DEBUG(exp, msg)  SCAI_ASSERT(exp, msg)
+#define SCAI_ASSERT_ERROR(exp, msg)  SCAI_ASSERT(exp, msg)
 
-#define LAMA_ASSERT_EQUAL_ERROR(exp1, exp2)  LAMA_ASSERT_EQUAL(exp1, exp2)
-#define LAMA_ASSERT_EQUAL_DEBUG(exp1, exp2)  LAMA_ASSERT_EQUAL(exp1, exp2)
+#define SCAI_ASSERT_EQUAL_ERROR(exp1, exp2)  SCAI_ASSERT_EQUAL(exp1, exp2)
+#define SCAI_ASSERT_EQUAL_DEBUG(exp1, exp2)  SCAI_ASSERT_EQUAL(exp1, exp2)
 
 #else
 
-#pragma message( "Please specify LAMA_ASSERT_LEVEL_xxx with xxx = DEBUG, ERROR, or OFF" )
-#pragma message( "Will use LAMA_ASSERT_LEVEL_ERROR by default." )
+#pragma message( "Please specify SCAI_ASSERT_LEVEL_xxx with xxx = DEBUG, ERROR, or OFF" )
+#pragma message( "Will use SCAI_ASSERT_LEVEL_ERROR by default." )
 
 /**
- * @brief LAMA_ASSERT_ERROR(exp, msg) used for assertions that should cause an error
+ * @brief SCAI_ASSERT_ERROR(exp, msg) used for assertions that should cause an error
  */
-#define LAMA_ASSERT_ERROR(exp, msg)  LAMA_ASSERT(exp, msg)
-#define LAMA_ASSERT_DEBUG(exp, msg)  unused( exp );
-#define LAMA_ASSERT_EQUAL_ERROR(exp1, exp2)  LAMA_ASSERT_EQUAL(exp1, exp2)
-#define LAMA_ASSERT_EQUAL_DEBUG(exp1, exp2)  unused( exp1, exp2 );
+#define SCAI_ASSERT_ERROR(exp, msg)  SCAI_ASSERT(exp, msg)
+#define SCAI_ASSERT_DEBUG(exp, msg)  unused( exp );
+#define SCAI_ASSERT_EQUAL_ERROR(exp1, exp2)  SCAI_ASSERT_EQUAL(exp1, exp2)
+#define SCAI_ASSERT_EQUAL_DEBUG(exp1, exp2)  unused( exp1, exp2 );
 
 #endif

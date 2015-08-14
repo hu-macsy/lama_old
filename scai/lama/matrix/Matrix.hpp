@@ -115,7 +115,7 @@ public:
      * working with inconsistent matrices.
      *
      * \code
-     * LAMA_ASSERT_DEBUG( a.isConsistent(), a << ": is invalid matrix after reading" )
+     * SCAI_ASSERT_DEBUG( a.isConsistent(), a << ": is invalid matrix after reading" )
      * \endcode
      */
 
@@ -175,7 +175,7 @@ public:
      * \code
      * void sub( ..., Matrix& a, ... )
      * ...
-     * LAMA_ASSERT_EQUAL_DEBUG( a.getNumRows(), a.getNumColumns() )
+     * SCAI_ASSERT_EQUAL_DEBUG( a.getNumRows(), a.getNumColumns() )
      * a.setIdentity( a.getRowDistribution() );
      * \endcode
      */
@@ -1001,13 +1001,13 @@ inline Matrix::SyncKind Matrix::getCommunicationKind() const
 
 inline const Distribution& Matrix::getColDistribution() const
 {
-    LAMA_ASSERT_ERROR( mColDistribution, "NULL column distribution for Matrix" )
+    SCAI_ASSERT_ERROR( mColDistribution, "NULL column distribution for Matrix" )
     return *mColDistribution;
 }
 
 inline DistributionPtr Matrix::getColDistributionPtr() const
 {
-    LAMA_ASSERT_ERROR( mColDistribution, "NULL column distribution for Matrix" )
+    SCAI_ASSERT_ERROR( mColDistribution, "NULL column distribution for Matrix" )
     return mColDistribution;
 }
 

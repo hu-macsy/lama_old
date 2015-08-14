@@ -38,7 +38,7 @@
 #include <scai/lama/BLASInterface.hpp>
 #include <scai/lama/LAMAInterfaceRegistry.hpp>
 
-// tracing with LAMA_REGION
+// tracing with SCAI_REGION
 #include <scai/tracing.hpp>
 #include <omp.h>
 
@@ -298,7 +298,7 @@ void MICBLAS1::copy(
         SCAI_LOG_WARN( logger, "asynchronous execution for MIC not supported yet." )
     }
 
-    LAMA_REGION( "MIC.BLAS1.copy" )
+    SCAI_REGION( "MIC.BLAS1.copy" )
 
     if( n < 1 || incX < 1 || incY < 1 )
     {
@@ -336,7 +336,7 @@ void MICBLAS1::axpy(
     const IndexType incY,
     SyncToken* syncToken )
 {
-    LAMA_REGION( "MIC.BLAS1.axpy" )
+    SCAI_REGION( "MIC.BLAS1.axpy" )
 
     SCAI_LOG_INFO( logger,
                    "axpy<" << common::getScalarType<ValueType>() << ",  n = " << n << ", alpha = " << alpha << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
@@ -381,7 +381,7 @@ ValueType MICBLAS1::dot(
     const IndexType incY,
     SyncToken* syncToken )
 {
-    LAMA_REGION( "MIC.BLAS1.dot" )
+    SCAI_REGION( "MIC.BLAS1.dot" )
 
     SCAI_LOG_INFO( logger, "dot<" << common::getScalarType<ValueType>() << ">, n = " << n );
 
@@ -438,7 +438,7 @@ void MICBLAS1::sum(
         SCAI_LOG_WARN( logger, "asynchronous execution for MIC not supported yet." )
     }
 
-    LAMA_REGION( "MIC.BLAS1.sum" )
+    SCAI_REGION( "MIC.BLAS1.sum" )
 
     const void* xPtr = x;
     const void* yPtr = y;

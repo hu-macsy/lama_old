@@ -67,7 +67,7 @@ void verifyMatrixWithScalar( Matrix& m, Scalar& s )
         {
             Scalar expected = m.getValue( i, j );
             Scalar result = s;
-            LAMA_CHECK_SCALAR_SMALL_EPS( expected - result, ValueType );
+            SCAI_CHECK_SCALAR_SMALL_EPS( expected - result, ValueType );
         }
     }
 }
@@ -84,7 +84,7 @@ void verifySameMatrix( Matrix& m1, Matrix& m2 )
         {
             Scalar expected = m1.getValue( i, j );
             Scalar result = m2.getValue( i, j );
-            LAMA_CHECK_SCALAR_SMALL_EPS( expected - result, ValueType );
+            SCAI_CHECK_SCALAR_SMALL_EPS( expected - result, ValueType );
         }
     }
 }
@@ -103,7 +103,7 @@ void verifySameMatrix( Matrix& m1, Matrix& m2, ValueType eps, logging::Logger& l
             Scalar result = m2.getValue( i, j );
             SCAI_LOG_INFO( logger,
                            "compare exp =" << expected.getValue<ValueType>() << ", res = " << result.getValue<ValueType>() );
-            LAMA_CHECK_SCALAR_SMALL( expected - result, ValueType, eps );
+            SCAI_CHECK_SCALAR_SMALL( expected - result, ValueType, eps );
         }
     }
 }
@@ -158,7 +158,7 @@ void GEMMTestImpl( const int n, const int m, const int k, ValueType eps, Context
             Scalar expectedValue( 42.0 );
             Scalar value = C.getValue( i, j );
             Scalar diff = expectedValue - value;
-            LAMA_CHECK_SCALAR_SMALL( diff, ValueType, eps );
+            SCAI_CHECK_SCALAR_SMALL( diff, ValueType, eps );
         }
     }
 
@@ -173,7 +173,7 @@ void GEMMTestImpl( const int n, const int m, const int k, ValueType eps, Context
             Scalar expectedValue( 42.0 );
             Scalar value = D.getValue( i, j );
             Scalar diff = expectedValue - value;
-            LAMA_CHECK_SCALAR_SMALL( diff, ValueType, eps );
+            SCAI_CHECK_SCALAR_SMALL( diff, ValueType, eps );
         }
     }
 }

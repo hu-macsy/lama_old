@@ -37,29 +37,29 @@
 #include <scai/tracing/TraceRegionRecord.hpp>
 #include <scai/tracing/TraceConfig.hpp>
 
-#define LAMA_REGION( name ) tracing::ScopedTraceRecord LAMA_Trc__( name, __FILE__, __LINE__ );
-#define LAMA_REGION_N( name, n ) tracing::ScopedTraceRecord LAMA_Trc__( name, n, __FILE__, __LINE__ );
-#define LAMA_REGION_START( name ) tracing::TraceRegionRecord::start( name, __FILE__, __LINE__ );
-#define LAMA_REGION_END( name ) tracing::TraceRegionRecord::stop( name );
+#define SCAI_REGION( name ) tracing::ScopedTraceRecord LAMA_Trc__( name, __FILE__, __LINE__ );
+#define SCAI_REGION_N( name, n ) tracing::ScopedTraceRecord LAMA_Trc__( name, n, __FILE__, __LINE__ );
+#define SCAI_REGION_START( name ) tracing::TraceRegionRecord::start( name, __FILE__, __LINE__ );
+#define SCAI_REGION_END( name ) tracing::TraceRegionRecord::stop( name );
 #define LAMA_TRACE_SCOPE( flag ) tracing::TraceConfig::TraceScope LAMA_Scp__( flag );
 #define LAMA_TIMETRACER( name ) tracing::TraceRegionRecord::spentLast( name );
 
 #elif defined( LAMA_TRACE_OFF )
 
-#define LAMA_REGION( name )
-#define LAMA_REGION_START( name )
-#define LAMA_REGION_END( name )
-#define LAMA_REGION_N( name, n )
+#define SCAI_REGION( name )
+#define SCAI_REGION_START( name )
+#define SCAI_REGION_END( name )
+#define SCAI_REGION_N( name, n )
 #define LAMA_TRACE_SCOPE( flag )
 #define LAMA_TIMETRACER( name ) 0.0
 
 #else
 
-//Macro LAMA_REGION should also be defined in case of error for convenience with Eclipse.
-#define LAMA_REGION( name )
-#define LAMA_REGION_START( name )
-#define LAMA_REGION_END( name )
-#define LAMA_REGION_N( name, n )
+//Macro SCAI_REGION should also be defined in case of error for convenience with Eclipse.
+#define SCAI_REGION( name )
+#define SCAI_REGION_START( name )
+#define SCAI_REGION_END( name )
+#define SCAI_REGION_N( name, n )
 #define LAMA_TRACE_SCOPE( flag )
 #define LAMA_TIMETRACER( name ) 0.0
 #error "Must define LAMA_TRACE_xxx with xxx = ON, or OFF"

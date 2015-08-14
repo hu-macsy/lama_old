@@ -197,7 +197,7 @@ template<typename ValueType>
 DenseVector<ValueType>::DenseVector( const ContextArray& localValues, DistributionPtr distribution )
                 : Vector( distribution )
 {
-    LAMA_ASSERT_EQUAL_ERROR( localValues.size(), distribution->getLocalSize() )
+    SCAI_ASSERT_EQUAL_ERROR( localValues.size(), distribution->getLocalSize() )
 
     LAMAArrayUtils::assign( mLocalValues, localValues ); // can deal with type conversions
 }
@@ -347,7 +347,7 @@ void DenseVector<ValueType>::buildValues( ContextArray& values ) const
 template<typename ValueType>
 void DenseVector<ValueType>::setValues( const ContextArray& values )
 {
-    LAMA_ASSERT_ERROR(
+    SCAI_ASSERT_ERROR(
                     values.size() == mLocalValues.size(),
                     "Size of values = " << values.size() << ", does not match local size of vector = " << mLocalValues.size() );
 
@@ -465,7 +465,7 @@ Scalar DenseVector<ValueType>::min() const
 template<typename ValueType>
 Scalar DenseVector<ValueType>::max() const
 {
-    LAMA_ASSERT_ERROR( mLocalValues.size() > 0, "no local values for max" )
+    SCAI_ASSERT_ERROR( mLocalValues.size() > 0, "no local values for max" )
 
     //TODO: need a interface function for this
     ReadAccess<ValueType> localValues( mLocalValues );
@@ -509,7 +509,7 @@ Scalar DenseVector<ValueType>::l1Norm() const
 
         ReadAccess<ValueType> read( mLocalValues, loc );
 
-        LAMA_CONTEXT_ACCESS( loc )
+        SCAI_CONTEXT_ACCESS( loc )
 
         localL1Norm = asum( nnu, read.get(), 1, NULL );
     }
@@ -538,7 +538,7 @@ Scalar DenseVector<ValueType>::l2Norm() const
 
         ReadAccess<ValueType> read( mLocalValues, loc );
 
-        LAMA_CONTEXT_ACCESS( mContext )
+        SCAI_CONTEXT_ACCESS( mContext )
 
         localDotProduct = dot( nnu, read.get(), 1, read.get(), 1, NULL );
     }
@@ -565,7 +565,7 @@ Scalar DenseVector<ValueType>::maxNorm() const
 
         ReadAccess<ValueType> read( mLocalValues, loc );
 
-        LAMA_CONTEXT_ACCESS( loc )
+        SCAI_CONTEXT_ACCESS( loc )
 
         localMaxNorm = absMaxVal( read.get(), nnu );
     }
@@ -642,7 +642,7 @@ void DenseVector<ValueType>::vectorPlusVector(
 
         WriteAccess<ValueType> resultAccess( result, context, true );
 
-        LAMA_CONTEXT_ACCESS( context )
+        SCAI_CONTEXT_ACCESS( context )
         scale( resultAccess.get(), alpha + beta, nnu );
     }
     else if( &result == &x ) //result = alpha * result + beta * y
@@ -656,7 +656,7 @@ void DenseVector<ValueType>::vectorPlusVector(
 
             if( alpha != 1.0 ) // result *= alpha
             {
-                LAMA_CONTEXT_ACCESS( context )
+                SCAI_CONTEXT_ACCESS( context )
                 scale( resultAccess.get(), alpha, nnu );
             }
             else
@@ -671,12 +671,12 @@ void DenseVector<ValueType>::vectorPlusVector(
             if( alpha != 1.0 ) // result = alpha * result + y
             {
                 // result *= alpha
-                LAMA_CONTEXT_ACCESS( context )
+                SCAI_CONTEXT_ACCESS( context )
                 scale( resultAccess.get(), alpha, nnu );
             }
 
             // result += y
-            LAMA_CONTEXT_ACCESS( context )
+            SCAI_CONTEXT_ACCESS( context )
             axpy( nnu, 1/*alpha*/, yAccess.get(), 1, resultAccess.get(), 1, NULL );
         }
         else // beta != 1.0 && beta != 0.0 --> result = alpha * result + beta * y
@@ -686,11 +686,11 @@ void DenseVector<ValueType>::vectorPlusVector(
 
             if( alpha != 1.0 )
             {
-                LAMA_CONTEXT_ACCESS( context )
+                SCAI_CONTEXT_ACCESS( context )
                 scale( resultAccess.get(), alpha, nnu );
             }
 
-            LAMA_CONTEXT_ACCESS( context )
+            SCAI_CONTEXT_ACCESS( context )
             axpy( nnu, beta, yAccess.get(), 1, resultAccess.get(), 1, NULL );
         }
     }
@@ -707,14 +707,14 @@ void DenseVector<ValueType>::vectorPlusVector(
         if( beta != 1.0 ) // result = [alpha * x + ] beta * result
         {
             // result *= beta
-            LAMA_CONTEXT_ACCESS( context )
+            SCAI_CONTEXT_ACCESS( context )
             scale( resultAccess.get(), beta, nnu );
         }
 
         if( alpha != 0.0 )
         {
             // result = alpha * x + result
-            LAMA_CONTEXT_ACCESS( context )
+            SCAI_CONTEXT_ACCESS( context )
             axpy( nnu, alpha, xAccess.get(), 1, resultAccess.get(), 1, NULL );
         }
     }
@@ -728,7 +728,7 @@ void DenseVector<ValueType>::vectorPlusVector(
         // no need to keep old values of result
         WriteAccess<ValueType> resultAccess( result, context, false );
 
-        LAMA_CONTEXT_ACCESS( context )
+        SCAI_CONTEXT_ACCESS( context )
         sum( nnu, alpha, xAccess.get(), beta, yAccess.get(), resultAccess.get(), NULL );
     }
 
@@ -810,7 +810,7 @@ void DenseVector<ValueType>::assign( const Expression_SV_SV& expression )
 template<typename ValueType>
 Scalar DenseVector<ValueType>::dotProduct( const Vector& other ) const
 {
-LAMA_REGION( "Vector.Dense.dotP" )
+SCAI_REGION( "Vector.Dense.dotP" )
 
         SCAI_LOG_INFO( logger, "Calculating dot product for " << *this << " * " << other )
 
@@ -825,7 +825,7 @@ LAMA_REGION( "Vector.Dense.dotP" )
 
         const DenseVector<ValueType>* denseOther = dynamic_cast<const DenseVector<ValueType>*>( &other );
 
-        LAMA_ASSERT_DEBUG( denseOther, "dynamic_cast failed for other = " << other )
+        SCAI_ASSERT_DEBUG( denseOther, "dynamic_cast failed for other = " << other )
 
         SCAI_LOG_DEBUG( logger, "Calculating local dot product at " << *mContext )
 
@@ -838,11 +838,11 @@ LAMA_REGION( "Vector.Dense.dotP" )
         ReadAccess<ValueType> localRead( mLocalValues, loc );
         ReadAccess<ValueType> otherRead( denseOther->mLocalValues, loc );
 
-        LAMA_CONTEXT_ACCESS( loc )
+        SCAI_CONTEXT_ACCESS( loc )
 
         const IndexType localSize = mLocalValues.size();
 
-        LAMA_ASSERT_EQUAL_DEBUG( localSize, getDistribution().getLocalSize() )
+        SCAI_ASSERT_EQUAL_DEBUG( localSize, getDistribution().getLocalSize() )
 
         const ValueType localDotProduct = dot( localSize, localRead.get(), 1, otherRead.get(), 1, NULL );
 
@@ -895,7 +895,7 @@ void DenseVector<ValueType>::assign( const ContextArray& localValues, Distributi
 {
     SCAI_LOG_INFO( logger, "assign vector with localValues = " << localValues << ", dist = " << *dist )
 
-    LAMA_ASSERT_EQUAL_ERROR( localValues.size(), dist->getLocalSize() )
+    SCAI_ASSERT_EQUAL_ERROR( localValues.size(), dist->getLocalSize() )
 
     setDistributionPtr( dist );
     LAMAArrayUtils::assign( mLocalValues, localValues );
@@ -930,7 +930,7 @@ void DenseVector<ValueType>::invert()
 
     WriteAccess<ValueType> wValues( mLocalValues, loc );
 
-    LAMA_CONTEXT_ACCESS( loc );
+    SCAI_CONTEXT_ACCESS( loc );
 
     invert( wValues.get(), size );
 }
@@ -949,7 +949,7 @@ size_t DenseVector<ValueType>::getMemoryUsage() const
 template<typename ValueType>
 void DenseVector<ValueType>::redistribute( DistributionPtr distribution )
 {
-    LAMA_ASSERT_EQUAL_ERROR( size(), distribution->getGlobalSize() )
+    SCAI_ASSERT_EQUAL_ERROR( size(), distribution->getGlobalSize() )
 
     if( getDistribution() == *distribution )
     {
@@ -980,7 +980,7 @@ void DenseVector<ValueType>::redistribute( DistributionPtr distribution )
                 if( distribution->isLocal( i ) )
                 {
                     const IndexType iLocal = distribution->global2local( i );
-                    LAMA_ASSERT_DEBUG( iLocal < newSize, "illegal index " << iLocal )
+                    SCAI_ASSERT_DEBUG( iLocal < newSize, "illegal index " << iLocal )
                     wNewLocalValues[iLocal] = rLocalValues[i];
                 }
             }

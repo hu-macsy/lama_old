@@ -26,7 +26,7 @@
  * @endlicense
  *
  * @brief Definition of class for tracing that measures inclusive and exclusive
- *        walltimes for regions defined by directive LAMA_REGION.
+ *        walltimes for regions defined by directive SCAI_REGION.
  * @author Thomas Brandes
  * @date 11.06.2015
  */

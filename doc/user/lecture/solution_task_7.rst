@@ -14,14 +14,14 @@ A possible solution for task 7 is shown in the following sourcecode:
    int main()
    {
 
-   LAMA_REGION( "CUDA-Region" );
+   SCAI_REGION( "CUDA-Region" );
    lama::ContextPtr mCudaContext = ContextFactory::getContext( Context::CUDA, 0 );
 
    {...}
 
    //Creating CG-Solver
 
-   LAMA_REGION_START( "CG-Solver-Region" );
+   SCAI_REGION_START( "CG-Solver-Region" );
    for (int k = 1; k < 10; k++) 
    {
       if (norm(r) < eps) 
@@ -43,7 +43,7 @@ A possible solution for task 7 is shown in the following sourcecode:
          rOld = rNew;
       }
    }
-   LAMA_REGION_END( "CG-Solver-Region" );
+   SCAI_REGION_END( "CG-Solver-Region" );
 
    {...}
    }

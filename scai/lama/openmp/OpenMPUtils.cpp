@@ -55,7 +55,7 @@ SCAI_LOG_DEF_LOGGER( OpenMPUtils::logger, "OpenMP.Utils" )
 template<typename ValueType>
 void OpenMPUtils::scale( ValueType mValues[], const ValueType value, const IndexType n )
 {
-    LAMA_REGION( "OpenMP.Utils.scale" )
+    SCAI_REGION( "OpenMP.Utils.scale" )
 
     SCAI_LOG_INFO( logger, "scale, #n = " << n << ", value = " << value )
 
@@ -93,7 +93,7 @@ void OpenMPUtils::setScale(
     const OtherValueType inValues[],
     const IndexType n )
 {
-    LAMA_REGION( "OpenMP.Utils.setScale" )
+    SCAI_REGION( "OpenMP.Utils.setScale" )
 
     SCAI_LOG_INFO( logger, "setScale, #n = " << n << ", value = " << value )
 
@@ -125,7 +125,7 @@ void OpenMPUtils::setScale(
 template<typename ValueType>
 ValueType OpenMPUtils::sum( const ValueType array[], const IndexType n )
 {
-    LAMA_REGION( "OpenMP.Utils.sum" )
+    SCAI_REGION( "OpenMP.Utils.sum" )
 
     SCAI_LOG_INFO( logger, "sum # array = " << array << ", n = " << n )
     ValueType val = static_cast<ValueType>( 0 );
@@ -152,7 +152,7 @@ ValueType OpenMPUtils::sum( const ValueType array[], const IndexType n )
 template<typename ValueType>
 void OpenMPUtils::setVal( ValueType array[], const IndexType n, const ValueType val )
 {
-    LAMA_REGION( "OpenMP.Utils.setVal" )
+    SCAI_REGION( "OpenMP.Utils.setVal" )
 
     SCAI_LOG_DEBUG( logger, "setVal<" << getScalarType<ValueType>() << ">: " << "array[" << n << "] = " << val )
 
@@ -169,7 +169,7 @@ void OpenMPUtils::setVal( ValueType array[], const IndexType n, const ValueType 
 template<typename ValueType>
 void OpenMPUtils::setOrder( ValueType array[], const IndexType n )
 {
-    LAMA_REGION( "OpenMP.Utils.setOrder" )
+    SCAI_REGION( "OpenMP.Utils.setOrder" )
 
     SCAI_LOG_DEBUG( logger,
                     "setOrder<" << getScalarType<ValueType>() << ">: " << "array[" << n << "] = 0, 1, 2, ..., " << ( n - 1 ) )
@@ -197,7 +197,7 @@ ValueType OpenMPUtils::getValue( const ValueType* array, const IndexType i )
 template<typename ValueType>
 ValueType OpenMPUtils::maxval( const ValueType array[], const IndexType n )
 {
-    LAMA_REGION( "OpenMP.Utils.maxVal" )
+    SCAI_REGION( "OpenMP.Utils.maxVal" )
 
     SCAI_LOG_DEBUG( logger, "maxval<" << getScalarType<ValueType>() << ">: " << "array[" << n << "]" )
 
@@ -236,7 +236,7 @@ ValueType OpenMPUtils::maxval( const ValueType array[], const IndexType n )
 template<typename ValueType>
 ValueType OpenMPUtils::absMaxVal( const ValueType array[], const IndexType n )
 {
-    LAMA_REGION( "OpenMP.Utils.absMaxVal" )
+    SCAI_REGION( "OpenMP.Utils.absMaxVal" )
 
     SCAI_LOG_DEBUG( logger, "absMaxVal<" << getScalarType<ValueType>() << ">: " << "array[" << n << "]" )
 
@@ -277,7 +277,7 @@ ValueType OpenMPUtils::absMaxVal( const ValueType array[], const IndexType n )
 template<typename ValueType>
 ValueType OpenMPUtils::absMaxDiffVal( const ValueType array1[], const ValueType array2[], const IndexType n )
 {
-    LAMA_REGION( "OpenMP.Utils.absMaxDiffVal" )
+    SCAI_REGION( "OpenMP.Utils.absMaxDiffVal" )
 
     SCAI_LOG_DEBUG( logger, "absMaxDiffVal<" << getScalarType<ValueType>() << ">: " << "array[" << n << "]" )
 
@@ -318,7 +318,7 @@ ValueType OpenMPUtils::absMaxDiffVal( const ValueType array1[], const ValueType 
 template<typename ValueType>
 bool OpenMPUtils::isSorted( const ValueType array[], const IndexType n, bool ascending )
 {
-    LAMA_REGION( "OpenMP.Utils.isSorted" )
+    SCAI_REGION( "OpenMP.Utils.isSorted" )
 
     SCAI_LOG_INFO( logger,
                    "isSorted<" << getScalarType<ValueType>() << ">, n = " << n << ", ascending = " << ascending )
@@ -356,7 +356,7 @@ bool OpenMPUtils::isSorted( const ValueType array[], const IndexType n, bool asc
 template<typename ValueType1,typename ValueType2>
 void OpenMPUtils::set( ValueType1 out[], const ValueType2 in[], const IndexType n )
 {
-    LAMA_REGION( "OpenMP.Utils.set" )
+    SCAI_REGION( "OpenMP.Utils.set" )
 
     SCAI_LOG_DEBUG( logger,
                     "set: out<" << getScalarType<ValueType1>() << "[" << n << "]" << " = in<" << getScalarType<ValueType2>() << ">[" << n << "]" )
@@ -373,7 +373,7 @@ void OpenMPUtils::set( ValueType1 out[], const ValueType2 in[], const IndexType 
 
 bool OpenMPUtils::validIndexes( const IndexType array[], const IndexType n, const IndexType size )
 {
-    LAMA_REGION( "OpenMP.Utils.validIndexes" )
+    SCAI_REGION( "OpenMP.Utils.validIndexes" )
 
     SCAI_LOG_DEBUG( logger, "validIndexes: array[" << n << "], size " << size )
 
@@ -404,7 +404,7 @@ bool OpenMPUtils::validIndexes( const IndexType array[], const IndexType n, cons
 template<typename ValueType1,typename ValueType2>
 void OpenMPUtils::setGather( ValueType1 out[], const ValueType2 in[], const IndexType indexes[], const IndexType n )
 {
-    LAMA_REGION( "OpenMP.Utils.setGather" )
+    SCAI_REGION( "OpenMP.Utils.setGather" )
 
     SCAI_LOG_DEBUG( logger,
                     "setGather: out<" << getScalarType<ValueType1>() << ">[" << n << "]" << " = in<" << getScalarType<ValueType2>() << ">[ indexes[" << n << "] ]" )
@@ -422,7 +422,7 @@ void OpenMPUtils::setGather( ValueType1 out[], const ValueType2 in[], const Inde
 template<typename ValueType1,typename ValueType2>
 void OpenMPUtils::setScatter( ValueType1 out[], const IndexType indexes[], const ValueType2 in[], const IndexType n )
 {
-    LAMA_REGION( "OpenMP.Utils.setScatter" )
+    SCAI_REGION( "OpenMP.Utils.setScatter" )
 
     SCAI_LOG_DEBUG( logger,
                     "setScatter: out<" << getScalarType<ValueType1>() << ">" << "[ indexes[" << n << "] ]" << " = in<" << getScalarType<ValueType2>() << ">[" << n << "]" )
@@ -440,7 +440,7 @@ void OpenMPUtils::setScatter( ValueType1 out[], const IndexType indexes[], const
 template<typename ValueType>
 void OpenMPUtils::invert( ValueType array[], const IndexType n )
 {
-    LAMA_REGION( "OpenMP.Utils.invert" )
+    SCAI_REGION( "OpenMP.Utils.invert" )
 
     SCAI_LOG_INFO( logger, "invert array[ " << n << " ]" )
 

@@ -511,7 +511,7 @@ int LAPACKe_LAPACK::tptrs(
     SCAI_LOG_INFO( logger,
                    "tptrs<float>, n = " << n << ", nrhs = " << nrhs << ", order = " << matrix_order << ", UL = " << UL << ", TA = " << TA << ", DI = " << DI );
 
-    LAMA_ASSERT_ERROR( ldb >= std::max( 1, n ), "ldb = " << ldb << " out of range" );
+    SCAI_ASSERT_ERROR( ldb >= std::max( 1, n ), "ldb = " << ldb << " out of range" );
 
     int info = LAPACKE_stptrs( matrix_order, UL, TA, DI, n, nrhs, AP, B, ldb );
 
@@ -573,7 +573,7 @@ int LAPACKe_LAPACK::tptrs(
     SCAI_LOG_INFO( logger,
                    "tptrs<ComplexFloat>, n = " << n << ", nrhs = " << nrhs << ", order = " << matrix_order << ", UL = " << UL << ", TA = " << TA << ", DI = " << DI );
 
-    LAMA_ASSERT_ERROR( ldb >= std::max( 1, n ), "ldb = " << ldb << " out of range" );
+    SCAI_ASSERT_ERROR( ldb >= std::max( 1, n ), "ldb = " << ldb << " out of range" );
 
     int info = LAPACKE_ctptrs( matrix_order, UL, TA, DI, n, nrhs, mklCast( AP ), mklCast( B ), ldb );
 
@@ -605,7 +605,7 @@ int LAPACKe_LAPACK::tptrs(
     SCAI_LOG_INFO( logger,
                    "tptrs<ComplexDouble>, n = " << n << ", nrhs = " << nrhs << ", order = " << matrix_order << ", UL = " << UL << ", TA = " << TA << ", DI = " << DI );
 
-    LAMA_ASSERT_ERROR( ldb >= std::max( 1, n ), "ldb = " << ldb << " out of range" );
+    SCAI_ASSERT_ERROR( ldb >= std::max( 1, n ), "ldb = " << ldb << " out of range" );
 
     int info = LAPACKE_ztptrs( matrix_order, UL, TA, DI, n, nrhs, mklCast( AP ), mklCast( B ), ldb );
 

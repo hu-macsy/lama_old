@@ -427,7 +427,7 @@ void MICCSRUtils::setNonEmptyRowsByOffsets(
         }
     }
 
-    LAMA_ASSERT_EQUAL_DEBUG( counter, numNonEmptyRows )
+    SCAI_ASSERT_EQUAL_DEBUG( counter, numNonEmptyRows )
 
     SCAI_LOG_INFO( logger, "#non-zero rows = " << counter << ", set by offsets" )
 }
@@ -483,7 +483,7 @@ void MICCSRUtils::convertCSR2CSC(
 {
     SCAI_LOG_INFO( logger, "convertCSR2CSC of matrix " << numRows << " x " << numColumns )
 
-    LAMA_ASSERT_EQUAL_DEBUG( numValues, rIA[numRows] )
+    SCAI_ASSERT_EQUAL_DEBUG( numValues, rIA[numRows] )
 
     // initialization of column counters with 0
 
@@ -501,7 +501,7 @@ void MICCSRUtils::convertCSR2CSC(
         for( IndexType jj = rIA[i]; jj < rIA[i + 1]; ++jj )
         {
             IndexType j = rJA[jj];
-            LAMA_ASSERT_DEBUG( j < numColumns, "column index " << j << " out of range, #cols = " << numColumns )
+            SCAI_ASSERT_DEBUG( j < numColumns, "column index " << j << " out of range, #cols = " << numColumns )
             cIA[j]++;
         }
     }
@@ -510,7 +510,7 @@ void MICCSRUtils::convertCSR2CSC(
 
     SCAI_LOG_INFO( logger, "convertCSR2CSC, #num values counted = " << cIA[ numColumns ] )
 
-    LAMA_ASSERT_EQUAL_DEBUG( numValues, cIA[numColumns] )
+    SCAI_ASSERT_EQUAL_DEBUG( numValues, cIA[numColumns] )
 
     // fill in the array cJA and cValues
 
@@ -536,7 +536,7 @@ void MICCSRUtils::convertCSR2CSC(
 
     cIA[0] = 0;
 
-    LAMA_ASSERT_EQUAL_DEBUG( cIA[numColumns], numValues )
+    SCAI_ASSERT_EQUAL_DEBUG( cIA[numColumns], numValues )
 }
 
 /* --------------------------------------------------------------------------- */
@@ -562,11 +562,11 @@ void MICCSRUtils::normalGEMV(
     if( syncToken )
     {
         MICSyncToken* micSyncToken = dynamic_cast<MICSyncToken*>( syncToken );
-        LAMA_ASSERT_ERROR( micSyncToken, "no MIC sync token provided" )
+        SCAI_ASSERT_ERROR( micSyncToken, "no MIC sync token provided" )
         // not yet implemented: run the offload computation asynchronously
     }
 
-    LAMA_REGION( "MIC.CSR.normalGEMV" )
+    SCAI_REGION( "MIC.CSR.normalGEMV" )
 
     void* resultPtr = result;
     const void* xPtr = x;
@@ -629,11 +629,11 @@ void MICCSRUtils::sparseGEMV(
     if( syncToken )
     {
         MICSyncToken* micSyncToken = dynamic_cast<MICSyncToken*>( syncToken );
-        LAMA_ASSERT_ERROR( micSyncToken, "no MIC sync token provided" )
+        SCAI_ASSERT_ERROR( micSyncToken, "no MIC sync token provided" )
         // not yet implemented: run the offload computation asynchronously
     }
 
-    LAMA_REGION( "MIC.CSR.sparseGEMV" )
+    SCAI_REGION( "MIC.CSR.sparseGEMV" )
 
     // conversion of pointer to size_t to cheat offload
 
@@ -699,7 +699,7 @@ void MICCSRUtils::gemm(
     if( syncToken )
     {
         MICSyncToken* micSyncToken = dynamic_cast<MICSyncToken*>( syncToken );
-        LAMA_ASSERT_ERROR( micSyncToken, "no MIC sync token provided" )
+        SCAI_ASSERT_ERROR( micSyncToken, "no MIC sync token provided" )
         // not yet implemented: run the offload computation asynchronously
     }
 
@@ -738,7 +738,7 @@ void MICCSRUtils::gemm(
                 {
                     IndexType j = csrJA[jj];
 
-                    // LAMA_ASSERT_DEBUG( j < p , "index j = " << j << " out of range " << p )
+                    // SCAI_ASSERT_DEBUG( j < p , "index j = " << j << " out of range " << p )
 
                     // csrValues[jj] stands for CSR( i, j )
 
@@ -772,11 +772,11 @@ void MICCSRUtils::jacobi(
     if( syncToken )
     {
         MICSyncToken* micSyncToken = dynamic_cast<MICSyncToken*>( syncToken );
-        LAMA_ASSERT_ERROR( micSyncToken, "no MIC sync token provided" )
+        SCAI_ASSERT_ERROR( micSyncToken, "no MIC sync token provided" )
         // not yet implemented: run the offload computation asynchronously
     }
 
-    LAMA_REGION( "MIC.CSR.jacobi" )
+    SCAI_REGION( "MIC.CSR.jacobi" )
 
     const size_t solutionPtr = (size_t) solution;
     const size_t oldSolutionPtr = (size_t) oldSolution;
@@ -847,7 +847,7 @@ void MICCSRUtils::jacobiHalo(
     SCAI_LOG_INFO( logger,
                    "jacobiHalo<" << common::getScalarType<ValueType>() << ">" << ", #rows (not empty) = " << numNonEmptyRows << ", omega = " << omega );
 
-    LAMA_REGION( "MIC.CSR.jacabiHalo" )
+    SCAI_REGION( "MIC.CSR.jacabiHalo" )
 
     const size_t solutionPtr = (size_t) solution;
     const size_t oldSolutionPtr = (size_t) oldSolution;
@@ -920,7 +920,7 @@ void MICCSRUtils::jacobiHaloWithDiag(
     SCAI_LOG_INFO( logger,
                    "jacobiHaloWithDiag<" << common::getScalarType<ValueType>() << ">" << ", #rows (not empty) = " << numNonEmptyRows << ", omega = " << omega );
 
-    LAMA_REGION( "MIC.CSR.jacabiHaloWithDiag" )
+    SCAI_REGION( "MIC.CSR.jacabiHaloWithDiag" )
 
     const size_t solutionPtr = (size_t) solution;
     const size_t oldSolutionPtr = (size_t) oldSolution;
@@ -991,7 +991,7 @@ IndexType MICCSRUtils::matrixAddSizes(
     const IndexType bIA[],
     const IndexType bJA[] )
 {
-    LAMA_REGION( "MIC.CSR.matrixAddSizes" )
+    SCAI_REGION( "MIC.CSR.matrixAddSizes" )
 
     SCAI_LOG_INFO( logger,
                    "matrixAddSizes for " << numRows << " x " << numColumns << " matrix" << ", diagonalProperty = " << diagonalProperty )
@@ -1131,7 +1131,7 @@ IndexType MICCSRUtils::matrixMultiplySizes(
     const IndexType bIA[],
     const IndexType bJA[] )
 {
-    LAMA_REGION( "MIC.CSR.matrixMultiplySizes" )
+    SCAI_REGION( "MIC.CSR.matrixMultiplySizes" )
 
     SCAI_LOG_INFO( logger,
                    "matrixMutliplySizes for " << m << " x " << n << " matrix" << ", diagonalProperty = " << diagonalProperty )
@@ -1148,7 +1148,7 @@ IndexType MICCSRUtils::matrixMultiplySizes(
     const void* bIAPtr = bIA;
     const void* bJAPtr = bJA;
 
-    LAMA_ASSERT_ERROR( n <= 8192, "problem too big for add" );
+    SCAI_ASSERT_ERROR( n <= 8192, "problem too big for add" );
 
     int device = MICContext::getCurrentDevice();
 
@@ -1282,7 +1282,7 @@ void MICCSRUtils::matrixAdd(
     const IndexType bJA[],
     const ValueType bValues[] )
 {
-    LAMA_REGION( "MIC.CSR.matrixAdd" )
+    SCAI_REGION( "MIC.CSR.matrixAdd" )
 
     SCAI_LOG_INFO( logger,
                    "matrixAddJA for " << numRows << " x " << numColumns << " matrix" << ", diagonalProperty = " << diagonalProperty )
@@ -1441,7 +1441,7 @@ void MICCSRUtils::matrixMultiply(
     const IndexType bJA[],
     const ValueType bValues[] )
 {
-    LAMA_REGION( "MIC.CSR.matrixMultiply" )
+    SCAI_REGION( "MIC.CSR.matrixMultiply" )
 
     const IndexType NINIT = n + 1;
     const IndexType END = n + 2;
@@ -1755,7 +1755,7 @@ ValueType MICCSRUtils::absMaxDiffRowSorted(
 
                 if( i1 < n1 )
                 {
-                    // LAMA_ASSERT_ERROR( csrJA1[i1-1] < csrJA1[i1], "unsorted col indexes at csrJA1[" << i1 << "]" )
+                    // SCAI_ASSERT_ERROR( csrJA1[i1-1] < csrJA1[i1], "unsorted col indexes at csrJA1[" << i1 << "]" )
                 }
             }
             else if( j1 > j2 )
@@ -1765,7 +1765,7 @@ ValueType MICCSRUtils::absMaxDiffRowSorted(
 
                 if( i2 < n2 )
                 {
-                    // LAMA_ASSERT_ERROR( csrJA2[i2-1] < csrJA2[i2], "unsorted col indexes at csrJA2[" << i2 << "]" )
+                    // SCAI_ASSERT_ERROR( csrJA2[i2-1] < csrJA2[i2], "unsorted col indexes at csrJA2[" << i2 << "]" )
                 }
             }
         }

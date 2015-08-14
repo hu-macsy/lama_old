@@ -64,7 +64,7 @@ void GenBlockDistribution::setOffsets(
                         "Partition " << p << ": local size =  " << localSizes[p] << ", offset = " << mOffsets[p] )
     }
 
-    LAMA_ASSERT_EQUAL_ERROR( sumSizes, getGlobalSize() )
+    SCAI_ASSERT_EQUAL_ERROR( sumSizes, getGlobalSize() )
 
     mUB = mOffsets[rank] - 1;
     mLB = mOffsets[rank] - localSizes[rank];
@@ -78,7 +78,7 @@ void GenBlockDistribution::setOffsets( const IndexType rank, const IndexType num
     mCommunicator->gather( localSizes.get(), 1, root, &mySize );
     mCommunicator->bcast( localSizes.get(), numPartitions, root );
 
-    LAMA_ASSERT_EQUAL_DEBUG( localSizes[rank], mySize )
+    SCAI_ASSERT_EQUAL_DEBUG( localSizes[rank], mySize )
 
     setOffsets( rank, numPartitions, localSizes.get() );
 }
@@ -95,7 +95,7 @@ GenBlockDistribution::GenBlockDistribution(
 
     SCAI_LOG_INFO( logger, "GenBlockDistribution of " << getGlobalSize() << " elements" )
 
-    LAMA_ASSERT_EQUAL_ERROR( size, static_cast<PartitionId>( localSizes.size() ) )
+    SCAI_ASSERT_EQUAL_ERROR( size, static_cast<PartitionId>( localSizes.size() ) )
 
     setOffsets( rank, size, &localSizes[0] );
 
@@ -115,8 +115,8 @@ GenBlockDistribution::GenBlockDistribution(
 
     setOffsets( rank, size, lastGlobalIdx - firstGlobalIdx + 1 );
 
-    LAMA_ASSERT_EQUAL_ERROR( mLB, firstGlobalIdx )
-    LAMA_ASSERT_EQUAL_ERROR( mUB, lastGlobalIdx )
+    SCAI_ASSERT_EQUAL_ERROR( mLB, firstGlobalIdx )
+    SCAI_ASSERT_EQUAL_ERROR( mUB, lastGlobalIdx )
 
     SCAI_LOG_INFO( logger, *this << ": constructed by local range " << firstGlobalIdx << ":" << lastGlobalIdx )
 }

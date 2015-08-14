@@ -70,7 +70,7 @@ void MICMKLCSRUtils::normalGEMV(
     const float csrValues[],
     SyncToken* syncToken )
 {
-    LAMA_REGION( "MIC.MKLscsrmv" )
+    SCAI_REGION( "MIC.MKLscsrmv" )
 
     SCAI_LOG_INFO( logger,
                    "normalGEMV<float>, result[" << numRows << "] = " << alpha << " * A * x + " << beta << " * y " )
@@ -123,7 +123,7 @@ void MICMKLCSRUtils::normalGEMV(
     const double csrValues[],
     SyncToken* syncToken )
 {
-    LAMA_REGION( "MIC.MKLdcsrmv" )
+    SCAI_REGION( "MIC.MKLdcsrmv" )
 
     SCAI_LOG_INFO( logger,
                    "normalGEMV<double>, result[" << numRows << "] = " << alpha << " * A * x + " << beta << " * y " )

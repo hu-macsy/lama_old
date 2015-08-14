@@ -288,7 +288,7 @@ void MICCOOUtils::normalGEMV(
     const ValueType cooValues[],
     SyncToken* syncToken )
 {
-    LAMA_REGION( "MIC.COO.normalGEMV" )
+    SCAI_REGION( "MIC.COO.normalGEMV" )
 
     SCAI_LOG_INFO( logger,
                    "normalGEMV<" << common::getScalarType<ValueType>() << ">, result[" << numRows << "] = " << alpha << " * A( coo, #vals = " << numValues << " ) * x + " << beta << " * y " )
@@ -296,7 +296,7 @@ void MICCOOUtils::normalGEMV(
     if( syncToken )
     {
         MICSyncToken* micSyncToken = dynamic_cast<MICSyncToken*>( syncToken );
-        LAMA_ASSERT_ERROR( micSyncToken, "no MIC sync token provided" )
+        SCAI_ASSERT_ERROR( micSyncToken, "no MIC sync token provided" )
         // not yet implemented: run the offload computation asynchronously
     }
 
@@ -353,7 +353,7 @@ void MICCOOUtils::jacobi(
     const IndexType numRows,
     class SyncToken* syncToken )
 {
-    LAMA_REGION( "MIC.COO.jacobi" )
+    SCAI_REGION( "MIC.COO.jacobi" )
 
     SCAI_LOG_INFO( logger,
                    "jacobi<" << common::getScalarType<ValueType>() << ">" << ", #rows = " << numRows << ", omega = " << omega )
@@ -361,7 +361,7 @@ void MICCOOUtils::jacobi(
     if( syncToken )
     {
         MICSyncToken* micSyncToken = dynamic_cast<MICSyncToken*>( syncToken );
-        LAMA_ASSERT_ERROR( micSyncToken, "no MIC sync token provided" )
+        SCAI_ASSERT_ERROR( micSyncToken, "no MIC sync token provided" )
         // not yet implemented: run the offload computation asynchronously
     }
 

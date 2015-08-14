@@ -77,7 +77,7 @@ void OpenMPCOOUtils::getCSRSizes(
     for( IndexType k = 0; k < numValues; k++ )
     {
         IndexType i = cooIA[k];
-        LAMA_ASSERT_DEBUG( i < numRows, "cooIA[" << k << "] = " << i << " out of range, #rows = " << numRows )
+        SCAI_ASSERT_DEBUG( i < numRows, "cooIA[" << k << "] = " << i << " out of range, #rows = " << numRows )
         csrSizes[i]++;
     }
 }
@@ -121,7 +121,7 @@ void OpenMPCOOUtils::getCSRValues( IndexType csrJA[], CSRValueType csrValues[], 
 
     csrIA[0] = 0;
 
-    LAMA_ASSERT_EQUAL_DEBUG( csrIA[numRows], numValues )
+    SCAI_ASSERT_EQUAL_DEBUG( csrIA[numRows], numValues )
 }
 
 /* --------------------------------------------------------------------------- */
@@ -147,7 +147,7 @@ void OpenMPCOOUtils::offsets2ia(
         {
             // make sure that we really have at least one element in this row
 
-            LAMA_ASSERT_DEBUG( csrIA[i] < csrIA[i + 1], "no elem in row " << i );
+            SCAI_ASSERT_DEBUG( csrIA[i] < csrIA[i + 1], "no elem in row " << i );
 
             // diagonal elements will be the first nrows entries
 
@@ -237,7 +237,7 @@ void OpenMPCOOUtils::normalGEMV(
 
     #pragma omp parallel
     {
-        LAMA_REGION( "OpenMP.COO.normalGEMV" )
+        SCAI_REGION( "OpenMP.COO.normalGEMV" )
 
         #pragma omp for schedule( LAMA_OMP_SCHEDULE )
 
@@ -285,7 +285,7 @@ void OpenMPCOOUtils::normalGEVM(
 
     #pragma omp parallel
     {
-        LAMA_REGION( "OpenMP.COO.normalGEMV" )
+        SCAI_REGION( "OpenMP.COO.normalGEMV" )
 
         #pragma omp for schedule( LAMA_OMP_SCHEDULE )
 
@@ -344,7 +344,7 @@ void OpenMPCOOUtils::jacobi(
 
     #pragma omp parallel
     {
-        LAMA_REGION( "OpenMP.COO.jacobi" )
+        SCAI_REGION( "OpenMP.COO.jacobi" )
 
         #pragma omp for
 

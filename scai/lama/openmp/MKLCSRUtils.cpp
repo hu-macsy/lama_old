@@ -74,7 +74,7 @@ void MKLCSRUtils::normalGEMV(
     const float csrValues[],
     SyncToken* syncToken )
 {
-    LAMA_REGION( "MKL.scsrmv" )
+    SCAI_REGION( "MKL.scsrmv" )
 
     SCAI_LOG_INFO( logger,
                    "normalGEMV<float>, result[" << numRows << "] = " << alpha << " * A * x + " << beta << " * y " )
@@ -127,7 +127,7 @@ void MKLCSRUtils::normalGEMV(
     const double csrValues[],
     SyncToken* syncToken )
 {
-    LAMA_REGION( "MKL.dcsrmv" )
+    SCAI_REGION( "MKL.dcsrmv" )
 
     SCAI_LOG_INFO( logger,
                    "normalGEMV<double>, result[" << numRows << "] = " << alpha << " * A * x + " << beta << " * y " )
@@ -181,7 +181,7 @@ void MKLCSRUtils::convertCSR2CSC(
 
     if( numRows == numColumns )
     {
-        LAMA_REGION( "MKL.CSRUtils.convertCSR2CSC" )
+        SCAI_REGION( "MKL.CSRUtils.convertCSR2CSC" )
 
         SCAI_LOG_INFO( logger, "convertCSR2CSC of matrix " << numRows << " x " << numColumns )
 
@@ -218,7 +218,7 @@ void MKLCSRUtils::convertCSR2CSC(
 
     if( numRows == numColumns )
     {
-        LAMA_REGION( "MKL.CSRUtils.convertCSR2CSC" )
+        SCAI_REGION( "MKL.CSRUtils.convertCSR2CSC" )
 
         SCAI_LOG_INFO( logger, "convertCSR2CSC of matrix " << numRows << " x " << numColumns )
 

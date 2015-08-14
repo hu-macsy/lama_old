@@ -536,7 +536,7 @@ void MICUtils::setScatter( ValueType1 out[], const IndexType indexes[], const Va
 template<typename ValueType>
 void MICUtils::invert( ValueType array[], const IndexType n )
 {
-    LAMA_REGION( "MIC.invert" )
+    SCAI_REGION( "MIC.invert" )
 
     SCAI_LOG_INFO( logger, "invert array[ " << n << " ]" )
 

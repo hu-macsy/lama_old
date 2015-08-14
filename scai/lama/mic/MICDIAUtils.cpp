@@ -134,7 +134,7 @@ void MICDIAUtils::getCSRValues(
         {
             IndexType n = std::min( numRows, numColumns );
 
-            LAMA_ASSERT_EQUAL_DEBUG( n, csrIA[numRows] )
+            SCAI_ASSERT_EQUAL_DEBUG( n, csrIA[numRows] )
 
             #pragma omp parallel for
 
@@ -146,7 +146,7 @@ void MICDIAUtils::getCSRValues(
         }
         else
         {
-            LAMA_ASSERT_EQUAL_DEBUG( 0, csrIA[numRows] )
+            SCAI_ASSERT_EQUAL_DEBUG( 0, csrIA[numRows] )
         }
 
         return;
@@ -154,11 +154,11 @@ void MICDIAUtils::getCSRValues(
 
     if( numDiagonals > 0 )
     {
-        LAMA_ASSERT_DEBUG( diaOffsets != NULL, "offset array of DIA data is NULL" )
+        SCAI_ASSERT_DEBUG( diaOffsets != NULL, "offset array of DIA data is NULL" )
 
         if( numRows > 0 )
         {
-            LAMA_ASSERT_DEBUG( diaValues != NULL, "value array of DIA data is NULL" )
+            SCAI_ASSERT_DEBUG( diaValues != NULL, "value array of DIA data is NULL" )
         }
     }
 
@@ -166,7 +166,7 @@ void MICDIAUtils::getCSRValues(
 
     #pragma omp parallel
     {
-        LAMA_REGION( "MIC.DIA->CSR_values" )
+        SCAI_REGION( "MIC.DIA->CSR_values" )
 
         #pragma omp for
 
@@ -180,7 +180,7 @@ void MICDIAUtils::getCSRValues(
             {
                 // store main diagonal at first, must be first diagonal
 
-                LAMA_ASSERT_EQUAL_ERROR( diaOffsets[0], 0 )
+                SCAI_ASSERT_EQUAL_ERROR( diaOffsets[0], 0 )
 
                 csrJA[offset] = i;
                 csrValues[offset] = static_cast<CSRValueType>( diaValues[i] );
@@ -221,7 +221,7 @@ void MICDIAUtils::getCSRValues(
                 }
             }
 
-            LAMA_ASSERT_EQUAL_DEBUG( offset, csrIA[i + 1] )
+            SCAI_ASSERT_EQUAL_DEBUG( offset, csrIA[i + 1] )
         }
     }
 }
@@ -307,7 +307,7 @@ void MICDIAUtils::normalGEMV(
 
     // result := alpha * A * x + beta * y -> result:= beta * y; result += alpha * A
 
-    LAMA_REGION( "MIC.DIA.normalGEMV" )
+    SCAI_REGION( "MIC.DIA.normalGEMV" )
 
     MICUtils::setScale( result, beta, y, numRows );
 
@@ -368,7 +368,7 @@ void MICDIAUtils::jacobi(
     const IndexType numRows,
     class SyncToken* syncToken )
 {
-    LAMA_REGION( "MIC.DIA.Jacobi" )
+    SCAI_REGION( "MIC.DIA.Jacobi" )
 
     SCAI_LOG_INFO( logger,
                    "jacobi<" << common::getScalarType<ValueType>() << ">" << ", #rows = " << numRows << ", #cols = " << numColumns << ", #diagonals = " << numDiagonals << ", omega = " << omega )

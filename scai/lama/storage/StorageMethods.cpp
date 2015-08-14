@@ -72,11 +72,11 @@ void StorageMethods<ValueType>::localizeCSR(
     const LAMAArray<ValueType>& globalValues,
     const Distribution& rowDist )
 {
-    LAMA_REGION( "Storage.localizeCSR" )
+    SCAI_REGION( "Storage.localizeCSR" )
 
     const IndexType globalNumRows = globalIA.size() - 1;
 
-    LAMA_ASSERT_EQUAL_ERROR( globalNumRows, rowDist.getGlobalSize() )
+    SCAI_ASSERT_EQUAL_ERROR( globalNumRows, rowDist.getGlobalSize() )
 
     const IndexType localNumRows = rowDist.getLocalSize();
 
@@ -132,7 +132,7 @@ void StorageMethods<ValueType>::localizeCSR(
             ++localOffset;
         }
 
-        LAMA_ASSERT_DEBUG( localOffset == wLocalIA[i + 1],
+        SCAI_ASSERT_DEBUG( localOffset == wLocalIA[i + 1],
                            ", localOffset = " << localOffset << ", expected " << wLocalIA[i+1] )
     }
 }
@@ -149,11 +149,11 @@ void StorageMethods<ValueType>::replicateCSR(
     const LAMAArray<ValueType>& localValues,
     const Distribution& rowDist )
 {
-    LAMA_REGION( "Storage.replicateCSR" )
+    SCAI_REGION( "Storage.replicateCSR" )
 
     const IndexType localNumRows = localIA.size() - 1;
 
-    LAMA_ASSERT_EQUAL_ERROR( localNumRows, rowDist.getLocalSize() )
+    SCAI_ASSERT_EQUAL_ERROR( localNumRows, rowDist.getLocalSize() )
 
     // the CSR data is not checked for consistency here
 
@@ -212,12 +212,12 @@ void StorageMethods<ValueType>::redistributeCSR(
     const LAMAArray<ValueType>& sourceValues,
     const Redistributor& redistributor )
 {
-    LAMA_REGION( "Storage.redistributeCSR" )
+    SCAI_REGION( "Storage.redistributeCSR" )
 
     const IndexType sourceNumRows = redistributor.getSourceLocalSize();
     const IndexType targetNumRows = redistributor.getTargetLocalSize();
 
-    LAMA_ASSERT_EQUAL_ERROR( sourceNumRows, sourceIA.size() - 1 )
+    SCAI_ASSERT_EQUAL_ERROR( sourceNumRows, sourceIA.size() - 1 )
 
     SCAI_LOG_INFO( logger, "redistributeCSR, #source rows = " << sourceNumRows << ", #target rows = " << targetNumRows )
 
@@ -274,7 +274,7 @@ void StorageMethods<ValueType>::exchangeHaloCSR(
     const Halo& halo,
     const Communicator& comm )
 {
-    LAMA_REGION( "Storage.exchangeHaloCSR" )
+    SCAI_REGION( "Storage.exchangeHaloCSR" )
 
     // get the number of rows for the new matrix
 
@@ -368,7 +368,7 @@ void StorageMethods<ValueType>::splitCSR(
     const Distribution& colDist,
     const Distribution* rowDist )
 {
-    LAMA_REGION( "Storage.splitCSR" )
+    SCAI_REGION( "Storage.splitCSR" )
 
     IndexType numRows = csrIA.size() - 1;
 
@@ -484,9 +484,9 @@ void StorageMethods<ValueType>::splitCSR(
             }
         }
 
-        LAMA_ASSERT_DEBUG( localOffset == wLocalIA[i + 1],
+        SCAI_ASSERT_DEBUG( localOffset == wLocalIA[i + 1],
                            ", localOffset = " << localOffset << ", expected " << wLocalIA[i+1] )
-        LAMA_ASSERT_DEBUG( haloOffset == wHaloIA[i + 1],
+        SCAI_ASSERT_DEBUG( haloOffset == wHaloIA[i + 1],
                            ", haloOffset = " << haloOffset << ", expected " << wHaloIA[i+1] )
     }
 }
@@ -547,11 +547,11 @@ void _StorageMethods::buildHalo(
 
             const std::map<IndexType,IndexType>::const_iterator elem = table.find( columnIndex );
 
-            LAMA_ASSERT_DEBUG( elem != table.end(), columnIndex << " not found" )
+            SCAI_ASSERT_DEBUG( elem != table.end(), columnIndex << " not found" )
 
             ja[jj] = elem->second;
 
-            LAMA_ASSERT_DEBUG( ja[jj] < haloSize, "mapped column index out of range " )
+            SCAI_ASSERT_DEBUG( ja[jj] < haloSize, "mapped column index out of range " )
 
             SCAI_LOG_TRACE( logger, "global index " << columnIndex << " is halo index " << ja[jj] )
         }
@@ -573,11 +573,11 @@ void StorageMethods<ValueType>::joinCSR(
     const LAMAArray<ValueType>& haloValues,
     const IndexType numKeepDiagonals )
 {
-    LAMA_REGION( "Storage.joinCSR" )
+    SCAI_REGION( "Storage.joinCSR" )
 
-    LAMA_ASSERT_EQUAL_ERROR( localIA.size(), haloIA.size() )
-    LAMA_ASSERT_EQUAL_ERROR( localJA.size(), localValues.size() )
-    LAMA_ASSERT_EQUAL_ERROR( haloJA.size(), haloValues.size() )
+    SCAI_ASSERT_EQUAL_ERROR( localIA.size(), haloIA.size() )
+    SCAI_ASSERT_EQUAL_ERROR( localJA.size(), localValues.size() )
+    SCAI_ASSERT_EQUAL_ERROR( haloJA.size(), haloValues.size() )
 
     IndexType numRows = localIA.size() - 1;
 
@@ -603,7 +603,7 @@ void StorageMethods<ValueType>::joinCSR(
 
     IndexType numValues = OpenMPCSRUtils::sizes2offsets( ia, numRows );
 
-    LAMA_ASSERT_ERROR( numValues == localJA.size() + haloJA.size(), "#non-zero values mismatches" )
+    SCAI_ASSERT_ERROR( numValues == localJA.size() + haloJA.size(), "#non-zero values mismatches" )
 
     WriteOnlyAccess<IndexType> ja( outJA, numValues );
     WriteOnlyAccess<ValueType> values( outValues, numValues );
@@ -670,8 +670,8 @@ void StorageMethods<ValueType>::joinCSR(
             }
         }
 
-        LAMA_ASSERT_EQUAL_DEBUG( offset1, ia1[i + 1] )
-        LAMA_ASSERT_EQUAL_DEBUG( offset2, ia2[i + 1] )
+        SCAI_ASSERT_EQUAL_DEBUG( offset1, ia1[i + 1] )
+        SCAI_ASSERT_EQUAL_DEBUG( offset2, ia2[i + 1] )
     }
 }
 

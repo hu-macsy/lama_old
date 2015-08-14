@@ -68,7 +68,7 @@ void MPISyncToken::writeAt( std::ostream& stream ) const
 
 void MPISyncToken::wait()
 {
-    LAMA_REGION( "SyncToken.MPI.wait" )
+    SCAI_REGION( "SyncToken.MPI.wait" )
 
     if( isSynchronized() )
     {
@@ -97,7 +97,7 @@ bool MPISyncToken::probe() const
 
 void MPISyncToken::pushRequest( const MPI_Request& request )
 {
-    LAMA_ASSERT_ERROR( mUsedRequests < mNRequests,
+    SCAI_ASSERT_ERROR( mUsedRequests < mNRequests,
                        "too many requests" << ", MPISyncToken allocated for maximal " << mNRequests << " requests" )
 
     mRequests[mUsedRequests++] = request;

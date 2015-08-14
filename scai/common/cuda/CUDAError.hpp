@@ -57,7 +57,7 @@ const char* cusparseErrorString( cusparseStatus_t res );
 
 /** Macro for CUDA driver API calls to catch errors */
 
-#define LAMA_CUDA_DRV_CALL(call, msg)                                               \
+#define SCAI_CUDA_DRV_CALL(call, msg)                                               \
     {                                                                                   \
         CUresult res = call;                                                            \
         if ( CUDA_SUCCESS != res )                                                      \
@@ -75,7 +75,7 @@ const char* cusparseErrorString( cusparseStatus_t res );
         }                                                                               \
     }
 
-#define LAMA_CUDA_RT_CALL(call, msg)                                                \
+#define SCAI_CUDA_RT_CALL(call, msg)                                                \
     {                                                                                   \
         cudaError_t res = call;                                                         \
         if ( cudaSuccess != res )                                                       \
@@ -93,7 +93,7 @@ const char* cusparseErrorString( cusparseStatus_t res );
         }                                                                               \
     }
 
-#define LAMA_CUBLAS_CALL( call, msg )                                               \
+#define SCAI_CUBLAS_CALL( call, msg )                                               \
     {                                                                                   \
         cublasStatus_t res = call;                                                        \
         if ( CUBLAS_STATUS_SUCCESS != res )                                             \
@@ -111,7 +111,7 @@ const char* cusparseErrorString( cusparseStatus_t res );
         }                                                                               \
     }
 
-#define LAMA_CUSPARSE_CALL( call, msg )                                             \
+#define SCAI_CUSPARSE_CALL( call, msg )                                             \
     {                                                                               \
         cusparseStatus_t res = call;                                                \
         if ( CUSPARSE_STATUS_SUCCESS != res )                                       \
@@ -129,17 +129,17 @@ const char* cusparseErrorString( cusparseStatus_t res );
         }                                                                           \
     }
 
-#define LAMA_CHECK_CUDA_ACCESS                                                          \
+#define SCAI_CHECK_CUDA_ACCESS                                                          \
     {                                                                                   \
         CUcontext pctx;                                                                 \
-        LAMA_CUDA_DRV_CALL( cuCtxGetCurrent( &pctx ), "" );                             \
-        COMMON_ASSERT( pctx, "No current context, forgotten LAMA_CONTEXT_ACCESS ?" )    \
+        SCAI_CUDA_DRV_CALL( cuCtxGetCurrent( &pctx ), "" );                             \
+        COMMON_ASSERT( pctx, "No current context, forgotten SCAI_CONTEXT_ACCESS ?" )    \
     }
 
-#define LAMA_CHECK_CUDA_ERROR                                                         \
+#define SCAI_CHECK_CUDA_ERROR                                                         \
     {                                                                                 \
-        LAMA_CUDA_RT_CALL( cudaGetLastError(), "last CUDA error" )                    \
+        SCAI_CUDA_RT_CALL( cudaGetLastError(), "last CUDA error" )                    \
     }
 
-//    #define LAMA_CHECK_CUDA_ERROR
+//    #define SCAI_CHECK_CUDA_ERROR
 

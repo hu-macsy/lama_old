@@ -166,7 +166,7 @@ void Logger::logResidual(
 
 void Logger::logTime( const std::string& timerId, LogLevel::LogLevel level, const std::string& message )
 {
-    LAMA_ASSERT_DEBUG( mTimer.get(), "mTimer == NULL" );
+    SCAI_ASSERT_DEBUG( mTimer.get(), "mTimer == NULL" );
 
     double time = mTimer->getTime( timerId );
 
@@ -182,21 +182,21 @@ void Logger::logTime( const std::string& timerId, LogLevel::LogLevel level, cons
 
 void Logger::startTimer( const std::string& timerId )
 {
-    LAMA_ASSERT_DEBUG( mTimer.get(), "mTimer == NULL" );
+    SCAI_ASSERT_DEBUG( mTimer.get(), "mTimer == NULL" );
 
     mTimer->start( timerId );
 }
 
 void Logger::stopTimer( const std::string& timerId )
 {
-    LAMA_ASSERT_DEBUG( mTimer.get(), "mTimer == NULL" );
+    SCAI_ASSERT_DEBUG( mTimer.get(), "mTimer == NULL" );
 
     mTimer->stop( timerId );
 }
 
 void Logger::stopAndResetTimer( const std::string& timerId )
 {
-    LAMA_ASSERT_DEBUG( mTimer.get(), "mTimer == NULL" );
+    SCAI_ASSERT_DEBUG( mTimer.get(), "mTimer == NULL" );
 
     mTimer->stopAndReset( timerId );
 }

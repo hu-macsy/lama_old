@@ -119,8 +119,8 @@ int main( int argc, char* argv[] )
 
         // only square matrices are accetpted
 
-        LAMA_ASSERT_EQUAL( inMatrix.getNumRows(), inMatrix.getNumColumns() )
-        LAMA_ASSERT_EQUAL( inMatrix.getNumRows(), rhs.size() )
+        SCAI_ASSERT_EQUAL( inMatrix.getNumRows(), inMatrix.getNumColumns() )
+        SCAI_ASSERT_EQUAL( inMatrix.getNumRows(), rhs.size() )
     }
 
     // for solutin create vector with same format/type as rhs, size = numRows, init = 0.0

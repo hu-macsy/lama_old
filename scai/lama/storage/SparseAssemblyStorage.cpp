@@ -212,7 +212,7 @@ void SparseAssemblyStorage<ValueType>::purge()
 
 /* --------------------------------------------------------------------------- */
 
-#ifdef LAMA_ASSERT_LEVEL_OFF
+#ifdef SCAI_ASSERT_LEVEL_OFF
 template<typename ValueType>
 void SparseAssemblyStorage<ValueType>::check( const char* ) const
 {}
@@ -513,7 +513,7 @@ void SparseAssemblyStorage<ValueType>::setRow(
     const LAMAArray<IndexType>& ja,
     const LAMAArray<ValueType>& values )
 {
-    //LAMA_ASSERT_EQUAL_ERROR( ja.size(), values.size() )
+    //SCAI_ASSERT_EQUAL_ERROR( ja.size(), values.size() )
 
     #pragma omp atomic
     mNumValues -= mRows[i].ja.size();
@@ -646,7 +646,7 @@ void SparseAssemblyStorage<ValueType>::setCSRDataImpl(
 
     mRows.resize( mNumRows );
 
-    LAMA_ASSERT_EQUAL_ERROR( csrIA[numRows], numValues )
+    SCAI_ASSERT_EQUAL_ERROR( csrIA[numRows], numValues )
 
     SCAI_LOG_DEBUG( logger, "fill " << *this << " with csr data, " << numValues << " non-zero values" )
 
@@ -693,7 +693,7 @@ void SparseAssemblyStorage<ValueType>::buildCSR(
     for( IndexType i = 0; i < mNumRows; ++i )
     {
         csrIA[i] = mRows[i].ja.size();
-        LAMA_ASSERT_EQUAL_DEBUG( mRows[i].ja.size(), mRows[i].values.size() )
+        SCAI_ASSERT_EQUAL_DEBUG( mRows[i].ja.size(), mRows[i].values.size() )
     }
 
     if( ja == NULL || values == NULL )
@@ -764,7 +764,7 @@ template<typename ValueType>
 template<typename OtherType>
 void SparseAssemblyStorage<ValueType>::getRowImpl( LAMAArray<OtherType>& row, const IndexType i ) const
 {
-    LAMA_ASSERT_DEBUG( i >= 0 && i < mNumRows, "row index " << i << " out of range" )
+    SCAI_ASSERT_DEBUG( i >= 0 && i < mNumRows, "row index " << i << " out of range" )
 
     WriteOnlyAccess<OtherType> wRow( row, mNumColumns );
 
@@ -776,12 +776,12 @@ void SparseAssemblyStorage<ValueType>::getRowImpl( LAMAArray<OtherType>& row, co
     const std::vector<IndexType>& ja = mRows[i].ja;
     const std::vector<ValueType>& values = mRows[i].values;
 
-    LAMA_ASSERT_EQUAL_DEBUG( ja.size(), values.size() )
+    SCAI_ASSERT_EQUAL_DEBUG( ja.size(), values.size() )
 
     for( size_t k = 0; k < ja.size(); ++k )
     {
         const IndexType j = ja[k];
-        LAMA_ASSERT_DEBUG( j >= 0 && j < mNumColumns,
+        SCAI_ASSERT_DEBUG( j >= 0 && j < mNumColumns,
                            "col index " << j << " out of range" << " is at row " << i << ":" << k )
 
         wRow[j] = static_cast<OtherType>( values[k] );

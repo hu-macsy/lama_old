@@ -163,7 +163,7 @@ static void update( CSRStorage<ValueType>& affinityMatrix, const std::vector<Ind
 
         // set row i of affinityMatrix to identity
 
-        // LAMA_ASSERT_ERROR( csrIA[i] < csrIA[i+1], "row " << i << " of affinity matrix empty" );
+        // SCAI_ASSERT_ERROR( csrIA[i] < csrIA[i+1], "row " << i << " of affinity matrix empty" );
 
         if( csrIA[i] >= csrIA[i+1] )
         {

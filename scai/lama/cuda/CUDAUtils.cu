@@ -99,7 +99,7 @@ namespace lama
             setVal( values, n, scale );
         }
 
-        LAMA_CHECK_CUDA_ACCESS
+        SCAI_CHECK_CUDA_ACCESS
 
         const int blockSize = CUDASettings::getBlockSize( n );
         dim3 dimBlock( blockSize, 1, 1 );
@@ -138,7 +138,7 @@ namespace lama
 
         if ( n > 0 )
         {
-            LAMA_CHECK_CUDA_ACCESS
+            SCAI_CHECK_CUDA_ACCESS
 
             thrust::device_ptr<IndexType> arrayPtr( const_cast<IndexType*> ( array ) );
 
@@ -168,7 +168,7 @@ namespace lama
     {
         SCAI_LOG_INFO( logger, "sum # array = " << array << ", n = " << n )
 
-        LAMA_CHECK_CUDA_ACCESS
+        SCAI_CHECK_CUDA_ACCESS
 
         thrust::device_ptr<ValueType> data( const_cast<ValueType*>( array ) );
 
@@ -176,7 +176,7 @@ namespace lama
 
         ValueType result = thrust::reduce( data, data + n, zero, thrust::plus<ValueType>() );
 
-        LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
+        SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
 
         SCAI_LOG_INFO( logger, "sum of " << n << " values = " << result )
 
@@ -190,14 +190,14 @@ namespace lama
     {
         SCAI_LOG_INFO( logger, "setVal # array = " << array << ", n = " << n << ", val = " << val )
 
-        LAMA_CHECK_CUDA_ACCESS
+        SCAI_CHECK_CUDA_ACCESS
 
         if ( n > 0 )
         {
             thrust::device_ptr<ValueType> data( const_cast<ValueType*>( array ) );
             thrust::fill( data, data + n, val );
 
-            LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
+            SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
         }
     }
 
@@ -207,12 +207,12 @@ namespace lama
     void CUDAUtils::setOrder( ValueType array[], const IndexType n )
     {
         SCAI_LOG_INFO( logger, "setOrder # array = " << array << ", n = " << n )
-        LAMA_CHECK_CUDA_ACCESS
+        SCAI_CHECK_CUDA_ACCESS
 
         thrust::device_ptr<ValueType> array_ptr( const_cast<ValueType*>( array ) );
         thrust::sequence( array_ptr, array_ptr + n );
 
-        LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
+        SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
     }
 
     /* --------------------------------------------------------------------------- */
@@ -221,7 +221,7 @@ namespace lama
     ValueType CUDAUtils::getValue( const ValueType* array, const IndexType i )
     {
         SCAI_LOG_INFO( logger, "getValue # i = " << i )
-        LAMA_CHECK_CUDA_ACCESS
+        SCAI_CHECK_CUDA_ACCESS
 
         thrust::device_ptr<ValueType> arrayPtr( const_cast<ValueType*>( array ) );
         thrust::host_vector<ValueType> arrayHost( arrayPtr + i, arrayPtr + i + 1 );
@@ -236,13 +236,13 @@ namespace lama
     {
         SCAI_LOG_INFO( logger, "maxval for " << n << " elements " )
 
-        LAMA_CHECK_CUDA_ACCESS
+        SCAI_CHECK_CUDA_ACCESS
 
         thrust::device_ptr<ValueType> data( const_cast<ValueType*>( array ) );
         ValueType zero = static_cast<ValueType>( 0 );
         ValueType result = thrust::reduce( data, data + n, zero, thrust::maximum<ValueType>() );
 
-        LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
+        SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
 
         SCAI_LOG_INFO( logger, "max of " << n << " values = " << result )
 
@@ -267,7 +267,7 @@ namespace lama
     {
         SCAI_LOG_INFO( logger, "absMaxVal for " << n << " elements " )
 
-        LAMA_CHECK_CUDA_ACCESS
+        SCAI_CHECK_CUDA_ACCESS
 
         thrust::device_ptr<ValueType> data( const_cast<ValueType*>( array ) );
 
@@ -276,7 +276,7 @@ namespace lama
         ValueType result = thrust::transform_reduce( data, data + n, absolute_value<ValueType>(), zero,
                         thrust::maximum<ValueType>() );
 
-        LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
+        SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
 
         SCAI_LOG_INFO( logger, "abs max of " << n << " values = " << result )
 
@@ -290,7 +290,7 @@ namespace lama
     {
         SCAI_LOG_INFO( logger, "absMaxDiffVal for " << n << " elements " )
 
-        LAMA_CHECK_CUDA_ACCESS
+        SCAI_CHECK_CUDA_ACCESS
 
         thrust::device_ptr<ValueType> data1( const_cast<ValueType*>( array1 ) );
         thrust::device_ptr<ValueType> data2( const_cast<ValueType*>( array2 ) );
@@ -315,7 +315,7 @@ namespace lama
          thrust::maximum<ValueType>());
          */
 
-        LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" )
+        SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" )
 
         SCAI_LOG_INFO( logger, "abs max diff of " << n << " values = " << result )
 
@@ -350,7 +350,7 @@ namespace lama
         SCAI_LOG_INFO( logger, "isSorted<" << getScalarType<ValueType>()
                         << ">, n = " << n << ", ascending = " << ascending )
 
-        LAMA_CHECK_CUDA_ACCESS
+        SCAI_CHECK_CUDA_ACCESS
 
         if ( n < 2 )
         {
@@ -378,7 +378,7 @@ namespace lama
 
         cudaStreamSynchronize( 0 );
 
-        LAMA_CHECK_CUDA_ERROR
+        SCAI_CHECK_CUDA_ERROR
 
         return thrust::reduce( resultPtr, resultPtr + n - 1, true, thrust::logical_and<bool>() );
     }
@@ -405,7 +405,7 @@ namespace lama
         SCAI_LOG_INFO( logger,
                         "setGather<" << getScalarType<ValueType1>() << "," << getScalarType<ValueType2>() << ">( ..., n = " << n << ")" )
 
-        LAMA_CHECK_CUDA_ACCESS
+        SCAI_CHECK_CUDA_ACCESS
 
         const int blockSize = 256;
         dim3 dimBlock( blockSize, 1, 1 );
@@ -413,7 +413,7 @@ namespace lama
 
         gatherKernel<<<dimGrid, dimBlock>>>( out, in, indexes, n );
 
-        LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
+        SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
     }
 
     /* --------------------------------------------------------------------------- */
@@ -436,7 +436,7 @@ namespace lama
         SCAI_LOG_INFO( logger,
                         "setScatter<" << getScalarType<ValueType1>() << "," << getScalarType<ValueType2>() << ">( ..., n = " << n << ")" )
 
-        LAMA_CHECK_CUDA_ACCESS
+        SCAI_CHECK_CUDA_ACCESS
 
         const int blockSize = 256;
         dim3 dimBlock( blockSize, 1, 1 );
@@ -444,7 +444,7 @@ namespace lama
 
         scatter_kernel<<<dimGrid, dimBlock>>>( out, indexes, in, n );
 
-        LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
+        SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
     }
 
     /* --------------------------------------------------------------------------- */
@@ -474,7 +474,7 @@ namespace lama
             return;
         }
 
-        LAMA_CHECK_CUDA_ACCESS
+        SCAI_CHECK_CUDA_ACCESS
 
         const int blockSize = CUDASettings::getBlockSize( n );
         dim3 dimBlock( blockSize, 1, 1 );
@@ -482,7 +482,7 @@ namespace lama
 
         setKernel<<<dimGrid, dimBlock>>>( out, in, n );
 
-        LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
+        SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
     }
 
     /* --------------------------------------------------------------------------- */
@@ -510,7 +510,7 @@ namespace lama
             return;
         }
 
-        LAMA_CHECK_CUDA_ACCESS
+        SCAI_CHECK_CUDA_ACCESS
 
         const int blockSize = CUDASettings::getBlockSize( n );
         dim3 dimBlock( blockSize, 1, 1 );
@@ -518,7 +518,7 @@ namespace lama
 
         setScaleKernel<<<dimGrid, dimBlock>>>( out, beta, in, n );
 
-        LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
+        SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
     }
 
     /* --------------------------------------------------------------------------- */
@@ -550,7 +550,7 @@ namespace lama
             return;
         }
 
-        LAMA_CHECK_CUDA_ACCESS
+        SCAI_CHECK_CUDA_ACCESS
 
         const int blockSize = 256;
         dim3 dimBlock( blockSize, 1, 1 );
@@ -558,7 +558,7 @@ namespace lama
 
         invertVectorComponents_kernel<<<dimGrid, dimBlock>>>( array, n );
         cudaStreamSynchronize( 0 );
-        LAMA_CHECK_CUDA_ERROR
+        SCAI_CHECK_CUDA_ERROR
     }
 
     /* --------------------------------------------------------------------------- */

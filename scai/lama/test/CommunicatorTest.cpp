@@ -426,7 +426,7 @@ LAMA_COMMON_TEST_CASE_TM( CommunicatorTest, ValueType, shiftASyncTest )
     }
     // Buffers must be different
     SCAI_LOG_INFO( logger, "async shift : using same send and recv buffer should fail" );
-    LAMA_CHECK_THROW( delete comm->shiftAsync( sendBuffer, sendBuffer, 1 ), Exception );
+    SCAI_CHECK_THROW( delete comm->shiftAsync( sendBuffer, sendBuffer, 1 ), Exception );
     // We also verify that the exception is thrown before changing the send Buffer
     BOOST_CHECK_EQUAL( 2, sendBuffer.size() );
     SCAI_LOG_INFO( logger, "async shift : try to access send / receive buffer before synchronization" );
@@ -444,13 +444,13 @@ LAMA_COMMON_TEST_CASE_TM( CommunicatorTest, ValueType, shiftASyncTest )
     if ( !token->isSynchronized() )
     {
         // write access on send buffer should be locked
-        // LAMA_CHECK_THROW( WriteAccess<ValueType> sbuffer( sendBuffer ), Exception );
+        // SCAI_CHECK_THROW( WriteAccess<ValueType> sbuffer( sendBuffer ), Exception );
     }
 
     if ( !token->isSynchronized() )
     {
         // read access on recv buffer should be locked if communication is not finished yet
-        // LAMA_CHECK_THROW( ReadAccess<ValueType> recvBufferAccess( recvBuffer ), Exception );
+        // SCAI_CHECK_THROW( ReadAccess<ValueType> recvBufferAccess( recvBuffer ), Exception );
     }
 
     token->wait();

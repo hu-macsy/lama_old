@@ -66,7 +66,7 @@ void asumTest( ContextPtr loc )
         const ValueType result2 = 9.0;
         LAMAArray<ValueType> AValues( nValues, values );
         {
-            LAMA_CONTEXT_ACCESS( loc );
+            SCAI_CONTEXT_ACCESS( loc );
             ReadAccess<ValueType> rAValues( AValues, loc );
             // n <= 0
             ValueType sum = asum( -1, rAValues.get(), incX1, NULL );
@@ -101,7 +101,7 @@ void axpyTest( ContextPtr loc )
         LAMAArray<ValueType> Ax( 6, x );
         LAMAArray<ValueType> Ay( 9, y );
         {
-            LAMA_CONTEXT_ACCESS( loc );
+            SCAI_CONTEXT_ACCESS( loc );
             ReadAccess<ValueType> wAx( Ax, loc );
             WriteAccess<ValueType> wAy( Ay, loc );
             axpy( -2, 5.0, wAx.get(), incX, wAy.get(), incY, NULL );
@@ -124,7 +124,7 @@ void axpyTest( ContextPtr loc )
         LAMAArray<ValueType> Ax( 6, x );
         LAMAArray<ValueType> Ay( 9, y );
         {
-            LAMA_CONTEXT_ACCESS( loc );
+            SCAI_CONTEXT_ACCESS( loc );
             ReadAccess<ValueType> wAx( Ax, loc );
             WriteAccess<ValueType> wAy( Ay, loc );
             axpy( 3, 5.0, wAx.get(), 0, wAy.get(), 0, NULL );
@@ -151,7 +151,7 @@ void axpyTest( ContextPtr loc )
         LAMAArray<ValueType> Ax( 6, x );
         LAMAArray<ValueType> Ay( 9, y );
         {
-            LAMA_CONTEXT_ACCESS( loc );
+            SCAI_CONTEXT_ACCESS( loc );
             ReadAccess<ValueType> wAx( Ax, loc );
             WriteAccess<ValueType> wAy( Ay, loc );
             axpy( 3, 5.0, wAx.get(), incX, wAy.get(), incY, NULL );
@@ -184,7 +184,7 @@ void copyTest( ContextPtr loc )
         LAMAArray<ValueType> Ax( 6, x );
         LAMAArray<ValueType> Ay( 9, y );
         {
-            LAMA_CONTEXT_ACCESS( loc );
+            SCAI_CONTEXT_ACCESS( loc );
             ReadAccess<ValueType> wAx( Ax, loc );
             WriteAccess<ValueType> wAy( Ay, loc );
             copy( 0, wAx.get(), incX, wAy.get(), incY, NULL );
@@ -209,7 +209,7 @@ void copyTest( ContextPtr loc )
         LAMAArray<ValueType> Ax( 6, x );
         LAMAArray<ValueType> Ay( 9, y );
         {
-            LAMA_CONTEXT_ACCESS( loc );
+            SCAI_CONTEXT_ACCESS( loc );
             ReadAccess<ValueType> wAx( Ax, loc );
             WriteAccess<ValueType> wAy( Ay, loc );
             copy( 3, wAx.get(), -incX, wAy.get(), -incY, NULL );
@@ -236,7 +236,7 @@ void copyTest( ContextPtr loc )
         LAMAArray<ValueType> Ax( 6, x );
         LAMAArray<ValueType> Ay( 9, y );
         {
-            LAMA_CONTEXT_ACCESS( loc );
+            SCAI_CONTEXT_ACCESS( loc );
             ReadAccess<ValueType> wAx( Ax, loc );
             WriteAccess<ValueType> wAy( Ay, loc );
             copy( 3, wAx.get(), incX, wAy.get(), incY, NULL );
@@ -267,7 +267,7 @@ void dotTest( ContextPtr loc )
         LAMAArray<ValueType> Ax( 6, x );
         LAMAArray<ValueType> Ay( 9, y );
         {
-            LAMA_CONTEXT_ACCESS( loc );
+            SCAI_CONTEXT_ACCESS( loc );
             ReadAccess<ValueType> wAx( Ax, loc );
             WriteAccess<ValueType> wAy( Ay, loc );
             // n <= 0
@@ -299,7 +299,7 @@ void iamaxTest( ContextPtr loc )
         const IndexType result2 = 2;
         LAMAArray<ValueType> AValues( nValues, values );
         {
-            LAMA_CONTEXT_ACCESS( loc );
+            SCAI_CONTEXT_ACCESS( loc );
             ReadAccess<ValueType> rAValues( AValues, loc );
             // n <= 0
             IndexType smallestIndexOfMax = iamax( 0, rAValues.get(), incX1, NULL );
@@ -332,7 +332,7 @@ void nrm2Test( ContextPtr loc )
         const ValueType result2 = 35.0;
         LAMAArray<ValueType> AValues( nValues, values );
         {
-            LAMA_CONTEXT_ACCESS( loc );
+            SCAI_CONTEXT_ACCESS( loc );
             ReadAccess<ValueType> rAValues( AValues, loc );
             // n <= 0
             ValueType euclideanNorm = nrm2( 0, rAValues.get(), incX1, NULL );
@@ -342,9 +342,9 @@ void nrm2Test( ContextPtr loc )
             BOOST_CHECK_EQUAL( euclideanNorm, 0.0 );
             // n > 0 and incX > 0
             euclideanNorm = nrm2( nValues / incX1, rAValues.get(), incX1, NULL );
-            LAMA_CHECK_CLOSE( euclideanNorm, ::sqrt( result1 ), 1e-4 );
+            SCAI_CHECK_CLOSE( euclideanNorm, ::sqrt( result1 ), 1e-4 );
             euclideanNorm = nrm2( nValues / incX2, rAValues.get(), incX2, NULL );
-            LAMA_CHECK_CLOSE( euclideanNorm, ::sqrt( result2 ), 1e-4 );
+            SCAI_CHECK_CLOSE( euclideanNorm, ::sqrt( result2 ), 1e-4 );
         }
     }
 } // nrm2Test
@@ -361,7 +361,7 @@ void scalTest( ContextPtr loc )
         { 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0 };
         LAMAArray<ValueType> AValues( 8, values );
         {
-            LAMA_CONTEXT_ACCESS( loc );
+            SCAI_CONTEXT_ACCESS( loc );
             WriteAccess<ValueType> rAValues( AValues, loc );
             scal( 0, 2.0, rAValues.get(), 2, NULL );
         }
@@ -380,7 +380,7 @@ void scalTest( ContextPtr loc )
         { 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0 };
         LAMAArray<ValueType> AValues( 8, values );
         {
-            LAMA_CONTEXT_ACCESS( loc );
+            SCAI_CONTEXT_ACCESS( loc );
             WriteAccess<ValueType> rAValues( AValues, loc );
             scal( 3, 2.0, rAValues.get(), 0, NULL );
         }
@@ -400,15 +400,15 @@ void scalTest( ContextPtr loc )
         const IndexType incX = 3;
         LAMAArray<ValueType> AValues( 8, values );
         {
-            LAMA_CONTEXT_ACCESS( loc );
+            SCAI_CONTEXT_ACCESS( loc );
             WriteAccess<ValueType> rAValues( AValues, loc );
             scal( 3, 2.4, rAValues.get(), incX, NULL );
         }
         {
             ReadAccess<ValueType> rAValues( AValues );
-            LAMA_CHECK_CLOSE( 2.4, rAValues[0], 1e-5 );
-            LAMA_CHECK_CLOSE( 9.6, rAValues[3], 1e-5 );
-            LAMA_CHECK_CLOSE( 16.8, rAValues[6], 1e-5 );
+            SCAI_CHECK_CLOSE( 2.4, rAValues[0], 1e-5 );
+            SCAI_CHECK_CLOSE( 9.6, rAValues[3], 1e-5 );
+            SCAI_CHECK_CLOSE( 16.8, rAValues[6], 1e-5 );
         }
     }
 } // scalTest
@@ -431,7 +431,7 @@ void sumTest( ContextPtr loc )
         LAMAArray<ValueType> Ay( 5, y );
         LAMAArray<ValueType> Az( 5, z );
         {
-            LAMA_CONTEXT_ACCESS( loc );
+            SCAI_CONTEXT_ACCESS( loc );
             ReadAccess<ValueType> rAx( Ax, loc );
             ReadAccess<ValueType> rAy( Ay, loc );
             WriteAccess<ValueType> wAz( Az, loc );
@@ -456,7 +456,7 @@ void sumTest( ContextPtr loc )
         LAMAArray<ValueType> Ay( 5, y );
         LAMAArray<ValueType> Az( 5 );
         {
-            LAMA_CONTEXT_ACCESS( loc );
+            SCAI_CONTEXT_ACCESS( loc );
             ReadAccess<ValueType> rAx( Ax, loc );
             ReadAccess<ValueType> rAy( Ay, loc );
             WriteAccess<ValueType> wAz( Az, loc );
@@ -490,7 +490,7 @@ void swapTest( ContextPtr loc )
         LAMAArray<ValueType> Ax( 5, x );
         LAMAArray<ValueType> Ay( 7, y );
         {
-            LAMA_CONTEXT_ACCESS( loc );
+            SCAI_CONTEXT_ACCESS( loc );
             WriteAccess<ValueType> wAValues1( Ax, loc );
             WriteAccess<ValueType> wAValues2( Ay, loc );
             swap( 0, wAValues1.get(), incX, wAValues2.get(), incY, NULL );
@@ -516,7 +516,7 @@ void swapTest( ContextPtr loc )
         LAMAArray<ValueType> Ax( 5, x );
         LAMAArray<ValueType> Ay( 7, y );
         {
-            LAMA_CONTEXT_ACCESS( loc );
+            SCAI_CONTEXT_ACCESS( loc );
             WriteAccess<ValueType> wAx( Ax, loc );
             WriteAccess<ValueType> wAy( Ay, loc );
             swap( nValues, wAx.get(), 0, wAy.get(), -1, NULL );
@@ -544,7 +544,7 @@ void swapTest( ContextPtr loc )
         LAMAArray<ValueType> AValues1( 5, values1 );
         LAMAArray<ValueType> AValues2( 7, values2 );
         {
-            LAMA_CONTEXT_ACCESS( loc );
+            SCAI_CONTEXT_ACCESS( loc );
             WriteAccess<ValueType> wAValues1( AValues1, loc );
             WriteAccess<ValueType> wAValues2( AValues2, loc );
             swap( nValues, wAValues1.get(), incX, wAValues2.get(), incY, NULL );

@@ -137,7 +137,7 @@ CommunicatorPtr Distribution::getCommunicatorPtr() const
 PartitionId Distribution::getNumPartitions() const
 {
     // mCommunicator is never NULL, but just in case
-    LAMA_ASSERT( mCommunicator, "Distribution without a Communicator is not allowed" )
+    SCAI_ASSERT( mCommunicator, "Distribution without a Communicator is not allowed" )
     return mCommunicator->getSize();
 }
 
@@ -175,7 +175,7 @@ std::ostream& operator<<( std::ostream& stream, Distribution const& dist )
 template<typename T1,typename T2>
 void Distribution::replicate( T1* allValues, const T2* localValues ) const
 {
-    LAMA_REGION( "Distribution.replicate" )
+    SCAI_REGION( "Distribution.replicate" )
 
     const Communicator& comm = getCommunicator();
     IndexType currentSize = getLocalSize();
@@ -217,7 +217,7 @@ void Distribution::replicate( T1* allValues, const T2* localValues ) const
         for( IndexType i = 0; i < currentSize; i++ )
         {
             IndexType globalIndex = local2global( i );
-            LAMA_ASSERT_DEBUG( globalIndex < getGlobalSize(), *this << ": global index " << globalIndex << " illegal" )
+            SCAI_ASSERT_DEBUG( globalIndex < getGlobalSize(), *this << ": global index " << globalIndex << " illegal" )
             pIndexesSend[i] = globalIndex;
             pValuesSend[i] = static_cast<T1>( localValues[i] ); // type conversion here
             allValues[globalIndex] = static_cast<T1>( localValues[i] ); // type conversion here
@@ -238,7 +238,7 @@ void Distribution::replicate( T1* allValues, const T2* localValues ) const
         comm.shiftArray( indexesReceive, indexesSend, 1 );
         comm.shiftArray( valuesReceive, valuesSend, 1 );
 
-        LAMA_ASSERT_EQUAL_DEBUG( valuesReceive.size(), indexesReceive.size() )
+        SCAI_ASSERT_EQUAL_DEBUG( valuesReceive.size(), indexesReceive.size() )
 
         currentSize = valuesReceive.size();
 
@@ -256,7 +256,7 @@ void Distribution::replicate( T1* allValues, const T2* localValues ) const
             for( IndexType i = 0; i < currentSize; i++ )
             {
                 const IndexType globalIndex = rIndexesReceive[i];
-                LAMA_ASSERT_DEBUG( globalIndex < getGlobalSize(),
+                SCAI_ASSERT_DEBUG( globalIndex < getGlobalSize(),
                                    *this << ": global index " << globalIndex << " illegal" )
                 allValues[globalIndex] = rValuesReceive[i]; // implicit type conversion done here
             }
@@ -270,7 +270,7 @@ void Distribution::replicate( T1* allValues, const T2* localValues ) const
     SCAI_LOG_INFO( logger, "replicated by " << ( np - 1 ) << " array shifts" )
 
     // # globalSize values must have been counted
-    LAMA_ASSERT_EQUAL_DEBUG( countValues, getGlobalSize() )
+    SCAI_ASSERT_EQUAL_DEBUG( countValues, getGlobalSize() )
 }
 
 /* ---------------------------------------------------------------------- */
@@ -278,7 +278,7 @@ void Distribution::replicate( T1* allValues, const T2* localValues ) const
 template<typename T1,typename T2>
 void Distribution::replicateN( T1* allValues, const T2* localValues, const IndexType n ) const
 {
-    LAMA_REGION( "Distribution.replicateN" )
+    SCAI_REGION( "Distribution.replicateN" )
 
     const Communicator& comm = getCommunicator();
 
@@ -322,7 +322,7 @@ void Distribution::replicateN( T1* allValues, const T2* localValues, const Index
         for( IndexType i = 0; i < currentSize; i++ )
         {
             IndexType globalIndex = local2global( i );
-            LAMA_ASSERT_DEBUG( globalIndex < getGlobalSize(), *this << ": global index " << globalIndex << " illegal" )
+            SCAI_ASSERT_DEBUG( globalIndex < getGlobalSize(), *this << ": global index " << globalIndex << " illegal" )
             pIndexesSend[i] = globalIndex;
 
             for( IndexType j = 0; j < n; j++ )
@@ -354,7 +354,7 @@ void Distribution::replicateN( T1* allValues, const T2* localValues, const Index
 
         comm.shiftArray( valuesReceive, valuesSend, 1 );
 
-        LAMA_ASSERT_EQUAL_DEBUG( currentSize * n, valuesReceive.size() )
+        SCAI_ASSERT_EQUAL_DEBUG( currentSize * n, valuesReceive.size() )
 
         // sort in the received values
 
@@ -370,7 +370,7 @@ void Distribution::replicateN( T1* allValues, const T2* localValues, const Index
             for( IndexType i = 0; i < currentSize; i++ )
             {
                 const IndexType globalIndex = rIndexesReceive[i];
-                LAMA_ASSERT_DEBUG( globalIndex < getGlobalSize(),
+                SCAI_ASSERT_DEBUG( globalIndex < getGlobalSize(),
                                    *this << ": global index " << globalIndex << " illegal" )
 
                 for( IndexType j = 0; j < n; j++ )
@@ -386,7 +386,7 @@ void Distribution::replicateN( T1* allValues, const T2* localValues, const Index
     }
 
     // # globalSize values must have been counted
-    LAMA_ASSERT_EQUAL_DEBUG( countLines, getGlobalSize() )
+    SCAI_ASSERT_EQUAL_DEBUG( countLines, getGlobalSize() )
 }
 
 /* ---------------------------------------------------------------------- */
@@ -519,7 +519,7 @@ void Distribution::replicateRagged(
             size = fillGlobal( allValues, allOffsets, rIndexesReceive.get(), newSize1, rValuesReceive.get() );
             SCAI_LOG_DEBUG( logger,
                             comm << ": filled received data: " << newSize1 << " buckets with " << size << " values" )
-            LAMA_ASSERT_EQUAL_DEBUG( size, newSize2 )
+            SCAI_ASSERT_EQUAL_DEBUG( size, newSize2 )
         }
 
         currentElemSize = newSize1;
@@ -532,8 +532,8 @@ void Distribution::replicateRagged(
     }
 
     // verify that all values are available
-    LAMA_ASSERT_EQUAL_DEBUG( countElemValues, getGlobalSize() )
-    LAMA_ASSERT_EQUAL_DEBUG( countDataValues, allOffsets[getGlobalSize()] )
+    SCAI_ASSERT_EQUAL_DEBUG( countElemValues, getGlobalSize() )
+    SCAI_ASSERT_EQUAL_DEBUG( countDataValues, allOffsets[getGlobalSize()] )
 }
 
 /* ---------------------------------------------------------------------- */

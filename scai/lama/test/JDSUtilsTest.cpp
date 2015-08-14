@@ -91,7 +91,7 @@ void getRowTest( ContextPtr loc )
     ReadAccess<IndexType> rPerm( perm, loc );
     {
         WriteOnlyAccess<OtherValueType> wRow( row, loc, numColumns );
-        LAMA_CONTEXT_ACCESS( loc );
+        SCAI_CONTEXT_ACCESS( loc );
         getRow( wRow.get(), i, numColumns, numRows, rPerm.get(), rIlg.get(), rDlg.get(), rJa.get(), rValues.get() );
     }
     ReadAccess<OtherValueType> rRow( row );
@@ -149,7 +149,7 @@ void getValueTest( ContextPtr loc )
     {
         for ( IndexType j = 0; j < numColumns; j++ )
         {
-            LAMA_CONTEXT_ACCESS( loc );
+            SCAI_CONTEXT_ACCESS( loc );
             ValueType value = getValue( i, j, numRows, rDlg.get(), rIlg.get(), rPerm.get(), rJa.get(), rValues.get() );
             BOOST_CHECK_EQUAL( expectedValues[i][j], value );
         }
@@ -191,7 +191,7 @@ void scaleValueTest( ContextPtr loc )
     ReadAccess<OtherValueType> rDiagonal( diagonal, loc );
     {
         WriteAccess<ValueType> wValues( values, loc );
-        LAMA_CONTEXT_ACCESS( loc );
+        SCAI_CONTEXT_ACCESS( loc );
         scaleValue( numRows, rPerm.get(), rIlg.get(), rDlg.get(), wValues.get(), rDiagonal.get() );
     }
     ReadAccess<ValueType> rValues( values );
@@ -233,7 +233,7 @@ void checkDiagonalPropertyTest( ContextPtr loc )
         ReadAccess<IndexType> rDlg( dlg, loc );
         ReadAccess<IndexType> rIlg( ilg, loc );
         ReadAccess<IndexType> rPerm( perm, loc );
-        LAMA_CONTEXT_ACCESS( loc );
+        SCAI_CONTEXT_ACCESS( loc );
         bool diagonalProperty;
         diagonalProperty = checkDiagonalProperty( numDiagonals, numRows, numColumns, rPerm.get(), rJa.get(),
                            rDlg.get() );
@@ -264,7 +264,7 @@ void checkDiagonalPropertyTest( ContextPtr loc )
         ReadAccess<IndexType> rDlg( dlg, loc );
         ReadAccess<IndexType> rIlg( ilg, loc );
         ReadAccess<IndexType> rPerm( perm, loc );
-        LAMA_CONTEXT_ACCESS( loc );
+        SCAI_CONTEXT_ACCESS( loc );
         bool diagonalProperty;
         diagonalProperty = checkDiagonalProperty( numDiagonals, numRows, numColumns, rPerm.get(), rJa.get(),
                            rDlg.get() );
@@ -283,7 +283,7 @@ void checkDiagonalPropertyTest( ContextPtr loc )
         ReadAccess<IndexType> rDlg( dlg, loc );
         ReadAccess<IndexType> rIlg( ilg, loc );
         ReadAccess<IndexType> rPerm( perm, loc );
-        LAMA_CONTEXT_ACCESS( loc );
+        SCAI_CONTEXT_ACCESS( loc );
         bool diagonalProperty;
         diagonalProperty = checkDiagonalProperty( numDiagonals, numRows, numColumns, rPerm.get(), rJa.get(),
                            rDlg.get() );
@@ -310,7 +310,7 @@ void ilg2dlgTest( ContextPtr loc )
         {
             WriteOnlyAccess<IndexType> wDlg( dlg, loc, numDiagonals );
             ReadAccess<IndexType> rIlg( ilg, loc );
-            LAMA_CONTEXT_ACCESS( loc );
+            SCAI_CONTEXT_ACCESS( loc );
             ilg2dlg( wDlg.get(), numDiagonals, rIlg.get(), numRows );
         }
         ReadAccess<IndexType> rDlg( dlg );
@@ -345,7 +345,7 @@ void sortRowsTest( ContextPtr loc )
         {
             WriteAccess<IndexType> wPerm( perm, loc );
             WriteAccess<IndexType> wIlg( ilg, loc );
-            LAMA_CONTEXT_ACCESS( loc );
+            SCAI_CONTEXT_ACCESS( loc );
             sortRows( wIlg.get(), wPerm.get(), numRows );
         }
         ReadAccess<IndexType> rIlg( ilg );
@@ -364,7 +364,7 @@ void sortRowsTest( ContextPtr loc )
         {
             WriteOnlyAccess<IndexType> wPerm( perm, loc, numRows );
             WriteOnlyAccess<IndexType> wIlg( ilg, loc, numRows );
-            LAMA_CONTEXT_ACCESS( loc );
+            SCAI_CONTEXT_ACCESS( loc );
             sortRows( wIlg.get(), wPerm.get(), numRows );
         }
     }
@@ -388,7 +388,7 @@ void setInversePermTest( ContextPtr loc )
         {
             ReadAccess<IndexType> rPerm( perm, loc );
             WriteOnlyAccess<IndexType> wInversePerm( inversePerm, loc, numRows );
-            LAMA_CONTEXT_ACCESS( loc );
+            SCAI_CONTEXT_ACCESS( loc );
             setInversePerm( wInversePerm.get(), rPerm.get(), numRows );
         }
         ReadAccess<IndexType> rInversePerm( inversePerm );
@@ -405,7 +405,7 @@ void setInversePermTest( ContextPtr loc )
         {
             ReadAccess<IndexType> rPerm( perm, loc );
             WriteOnlyAccess<IndexType> wInversePerm( inversePerm, loc, numRows );
-            LAMA_CONTEXT_ACCESS( loc );
+            SCAI_CONTEXT_ACCESS( loc );
             setInversePerm( wInversePerm.get(), rPerm.get(), numRows );
         }
     }
@@ -467,7 +467,7 @@ void setCSRValuesTest( ContextPtr loc )
         ReadAccess<IndexType> rCSRIa( CSRIa, loc );
         ReadAccess<IndexType> rCSRJa( CSRJa, loc );
         ReadAccess<OtherValueType> rCSRValues( CSRValues, loc );
-        LAMA_CONTEXT_ACCESS( loc );
+        SCAI_CONTEXT_ACCESS( loc );
         setCSRValues( wJDSJa.get(), wJDSValues.get(), numRows, rJDSPerm.get(), rJDSIlg.get(), nJDSDlg, rJDSDlg.get(),
                       rCSRIa.get(), rCSRJa.get(), rCSRValues.get() );
     }
@@ -537,7 +537,7 @@ void getCSRValuesTest( ContextPtr loc )
         ReadAccess<IndexType> rCSRIa( CSRIa, loc );
         WriteOnlyAccess<IndexType> wCSRJa( CSRJa, loc, nJDS );
         WriteOnlyAccess<OtherValueType> wCSRValues( CSRValues, loc, nJDS );
-        LAMA_CONTEXT_ACCESS( loc );
+        SCAI_CONTEXT_ACCESS( loc );
         getCSRValues( wCSRJa.get(), wCSRValues.get(), rCSRIa.get(), numRows, rJDSPerm.get(), rJDSIlg.get(),
                       rJDSDlg.get(), rJDSJa.get(), rJDSValues.get() );
     }

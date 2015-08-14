@@ -106,7 +106,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( buildTest, ValueType, test_types )
         {
             Scalar value = repM.getValue( i , j );
             Scalar expectedvalue = Scalar( static_cast<ValueType>( values[i * numCols + j] ) );
-            LAMA_CHECK_SCALAR_SMALL( value - expectedvalue, ValueType, eps<ValueType>() );
+            SCAI_CHECK_SCALAR_SMALL( value - expectedvalue, ValueType, eps<ValueType>() );
         }
     }
 
@@ -120,7 +120,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( buildTest, ValueType, test_types )
         {
             Scalar value = distM.getValue( i, j );
             Scalar expectedvalue = repM.getValue( i, j );
-            LAMA_CHECK_SCALAR_SMALL( value - expectedvalue , ValueType, eps<ValueType>() );
+            SCAI_CHECK_SCALAR_SMALL( value - expectedvalue , ValueType, eps<ValueType>() );
         }
     }
 }
@@ -308,7 +308,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( multVectorTest, ValueType, test_types )
                     Scalar value = Scalar( valuesY[m] );
                     Scalar expectedvalue = result.getValue( m );
                     //1e-1 is used because there are 8 of 1280 cases which fails with eps<1e-1
-                    LAMA_CHECK_SCALAR_SMALL( value - expectedvalue , ValueType, 1e-1 );
+                    SCAI_CHECK_SCALAR_SMALL( value - expectedvalue , ValueType, 1e-1 );
                 }
             }
         }
@@ -421,7 +421,7 @@ void cyclicDistTestImpl( const IndexType chunkSize, const IndexType n )
             Scalar expectedvalue = repMatrix.getValue( i, j );
             Scalar value = distMatrix.getValue( i, j );
             Scalar diff = expectedvalue - value;
-            LAMA_CHECK_SCALAR_SMALL( diff, float, 1E-8 );
+            SCAI_CHECK_SCALAR_SMALL( diff, float, 1E-8 );
         }
     }
 }

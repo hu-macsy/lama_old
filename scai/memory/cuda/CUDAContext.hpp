@@ -61,7 +61,7 @@ namespace memory
  *  to specify the default CUDA device.
  */
 
-#define LAMA_CUDA_ENV_FOR_DEVICE "LAMA_DEVICE"
+#define SCAI_CUDA_ENV_FOR_DEVICE "LAMA_DEVICE"
 
 /**
  * @brief CUDAContext initializes the CUDA device with the given number.
