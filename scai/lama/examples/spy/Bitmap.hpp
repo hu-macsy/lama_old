@@ -31,8 +31,7 @@
  * @since 1.0.0
  */
 
-#ifndef LAMA_BITMAP_HPP_
-#define LAMA_BITMAP_HPP_
+#pragma once
 
 #define PNG_DEBUG 3
 
@@ -313,5 +312,3 @@ private:
    
     std::vector<Color> palette;
 };
-
-#endif

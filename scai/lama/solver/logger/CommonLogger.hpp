@@ -30,8 +30,9 @@
  * @date 06.04.2011
  * @since 1.0.0
  */
-#ifndef LAMA_COMMONLOGGER_HPP_
-#define LAMA_COMMONLOGGER_HPP_
+
+#pragma once
+
 
 // for dll_import
 #include <scai/common/config.hpp>
@@ -145,5 +146,3 @@ public:
 } /* end namespace lama */
 
 } /* end namespace scai */
-
-#endif // LAMA_COMMONLOGGER_HPP_

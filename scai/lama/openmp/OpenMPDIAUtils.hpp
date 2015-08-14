@@ -30,8 +30,8 @@
  * @date 15.07.2012
  * @since 1.0.0
  */
-#ifndef LAMA_OPENMP_DIA_UTILS_HPP_
-#define LAMA_OPENMP_DIA_UTILS_HPP_
+
+#pragma once
 
 // for dll_import
 #include <scai/common/config.hpp>
@@ -167,5 +167,3 @@ private:
 } /* end namespace lama */
 
 } /* end namespace scai */
-
-#endif //  LAMA_OPENMP_DIA_UTILS_HPP_

@@ -30,9 +30,8 @@
  * @date 27.05.2015
  * @since 
  */
- #ifndef LAMA_CGNR_HPP
 
-#define LAMA_CGNR_HPP
+#pragma once
 
 // for dll_import
 #include <scai/common/config.hpp>
@@ -135,5 +134,3 @@ protected:
 } /* end namespace lama */
 
 } /* end namespace scai */
-
-#endif // LAMA_CGNR_HPP

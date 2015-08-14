@@ -31,8 +31,7 @@
  * @since 1.0.0
  */
 
-#ifndef LAMA_ITERATIVESOLVER_HPP_
-#define LAMA_ITERATIVESOLVER_HPP_
+#pragma once
 
 // for dll_import
 #include <scai/common/config.hpp>
@@ -222,5 +221,3 @@ protected:
 } /* end namespace lama */
 
 } /* end namespace scai */
-
-#endif // LAMA_ITERATIVESOLVER_HPP_

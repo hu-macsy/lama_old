@@ -30,8 +30,8 @@
  * @date 04.07.2012
  * @since 1.0.0
  */
-#ifndef LAMA_BLASHELPER_HPP_
-#define LAMA_BLASHELPER_HPP_
+
+#pragma once
 
 #include <scai/lama/macros/inline.hpp>
 #include <scai/lama/LAMATypes.hpp>
@@ -94,5 +94,3 @@ LAMA_STATIC_INLINE_FUNCTION_PREFIX void** lama_sToVoidPtr( float** floatPointer 
 } /* end namespace lama */
 
 } /* end namespace scai */
-
-#endif // LAMA_BLASHELPER_HPP_

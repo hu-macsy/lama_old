@@ -31,9 +31,7 @@
  * @since 
  */
 
-#ifndef LAMA_RICHARDSON_HPP
-
-#define LAMA_RICHARDSON_HPP
+#pragma once
 
 // for dll_import
 #include <scai/common/config.hpp>
@@ -142,5 +140,3 @@ private:
 } /* end namespace lama */
 
 } /* end namespace scai */
-
-#endif // LAMA_RICHARDSON_HPP

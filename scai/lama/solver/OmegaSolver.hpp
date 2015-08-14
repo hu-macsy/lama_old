@@ -31,8 +31,7 @@
  * @since 1.0.0
  */
 
-#ifndef LAMA_OMEGASOLVER_HPP_
-#define LAMA_OMEGASOLVER_HPP_
+#pragma once
 
 // for dll_import
 #include <scai/common/config.hpp>
@@ -161,5 +160,3 @@ protected:
 } /* end namespace lama */
 
 } /* end namespace scai */
-
-#endif // LAMA_OMEGASOLVER_HPP_

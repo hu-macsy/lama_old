@@ -30,8 +30,8 @@
  * @date 02.07.2013
  * @since 1.1.0
  */
-#ifndef LAMA_MIC_SYNC_TOKEN_HPP_
-#define LAMA_MIC_SYNC_TOKEN_HPP_
+
+#pragma once
 
 // base classes
 #include <scai/lama/SyncToken.hpp>
@@ -84,5 +84,3 @@ private:
 } /* end namespace lama */
 
 } /* end namespace scai */
-
-#endif // LAMA_MIC_SYNC_TOKEN_HPP_

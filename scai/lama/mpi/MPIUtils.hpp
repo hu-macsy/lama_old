@@ -30,8 +30,8 @@
  * @date 23.03.2011
  * @since 1.0.0
  */
-#ifndef LAMA_MPIUTILS_HPP_
-#define LAMA_MPIUTILS_HPP_
+
+#pragma once
 
 #include <scai/lama/mpi/MPIException.hpp>
 
@@ -51,7 +51,7 @@
             errorStr << "MPI error in line " << __LINE__ ;                          \
             errorStr << " of file " << __FILE__ << ": ";                            \
             errorStr << msg<< "\n";                                                 \
-            common::Exception::addCallStack( errorStr );                           \
+            common::Exception::addCallStack( errorStr );                            \
             fprintf( stderr, "%s\n", errorStr.str().c_str() );                      \
             throw MPIException( errorStr.str(), status );                           \
         }                                                                           \
@@ -62,5 +62,3 @@
 #define LAMA_MPICALL( logger, exp, msg) exp;
 
 #endif // SCAI_CHECK_ASSERTS
-
-#endif // LAMA_MPIUTILS_HPP_

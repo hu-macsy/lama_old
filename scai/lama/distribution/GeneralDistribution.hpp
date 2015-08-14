@@ -30,8 +30,8 @@
  * @date 25.02.2011
  * @since 1.0.0
  */
-#ifndef LAMA_GENERALDISTRIBUTION_HPP_
-#define LAMA_GENERALDISTRIBUTION_HPP_
+
+#pragma once
 
 // for dll_import
 #include <scai/common/config.hpp>
@@ -137,5 +137,3 @@ typedef common::shared_ptr<GeneralDistribution> GeneralDistributionPtr;
 } /* end namespace lama */
 
 } /* end namespace scai */
-
-#endif // LAMA_GENERALDISTRIBUTION_HPP_

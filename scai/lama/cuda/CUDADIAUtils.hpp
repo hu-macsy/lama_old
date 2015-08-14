@@ -29,6 +29,7 @@
  * @author Thomas Brandes
  * @date 05.07.2012
  */
+
 #pragma once
 
 // for dll_import

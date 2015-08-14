@@ -30,8 +30,8 @@
  * @date 05.07.2012
  * @since 1.0.0
  */
-#ifndef SCAI_CUDA_BLAS1_HPP_
-#define SCAI_CUDA_BLAS1_HPP_
+
+#pragma once
 
 // for dll_import
 #include <scai/common/config.hpp>
@@ -182,5 +182,3 @@ private:
 } /* end namespace lama */
 
 } /* end namespace scai */
-
-#endif // SCAI_CUDA_BLAS1_HPP_

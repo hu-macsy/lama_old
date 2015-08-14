@@ -31,8 +31,7 @@
  * @since 1.0.0
  */
 
-#ifndef LAMA_MACRO_UNIQUE_NAME_HPP_
-#define LAMA_MACRO_UNIQUE_NAME_HPP_
+#pragma once
 
 /** Help macro to concatenate two symbols, can also deal with nested calls. */
 
@@ -55,5 +54,3 @@
 
 #define LAMA_UNIQUE_NAME( prefix, postfix )                                    \
     LAMA_JOIN( prefix , LAMA_JOIN( __LINE__ , postfix ) )
-
-#endif //  LAMA_MACRO_UNIQUE_NAME_HPP_

@@ -31,8 +31,7 @@
  * @since 1.0.0
  */
 
-#ifndef LAMA_MACROS_INLINE_HPP_
-#define LAMA_MACROS_INLINE_HPP_
+#pragma once
 
 /** Macros for inlining used on different OS */
 
@@ -43,5 +42,3 @@
 #define LAMA_STATIC_INLINE_FUNCTION_PREFIX static inline
 #define LAMA_INLINE_FUNCTION_PREFIX static inline
 #endif
-
-#endif // LAMA_MACROS_INLINE_HPP_

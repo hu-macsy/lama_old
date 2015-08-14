@@ -30,8 +30,8 @@
  * @date 27.03.2013
  * @since 1.0.0
  */
-#ifndef LAMA_LAMA_INCLUDE_HPP_
-#define LAMA_LAMA_INCLUDE_HPP_
+
+#pragma once
 
 #include <boost/version.hpp>
 #define LAMA_LINKED_BOOST_VERSION ${Boost_VERSION}
@@ -54,5 +54,3 @@ extern "C" inline int lama_getRevision()
 {
     return LAMA_REVISION;
 }
-
-#endif // LAMA_LAMA_INCLUDE_HPP_

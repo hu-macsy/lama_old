@@ -31,8 +31,8 @@
  * @date 09.08.2012
  * @since 1.0.0
  */
-#ifndef LAMA_CRTP_MATRIX_HPP_
-#define LAMA_CRTP_MATRIX_HPP_
+
+#pragma once
 
 // for dll_import
 #include <scai/common/config.hpp>
@@ -203,5 +203,3 @@ protected:
 } /* end namespace lama */
 
 } /* end namespace scai */
-
-#endif // LAMA_CRTP_MATRIX_HPP_

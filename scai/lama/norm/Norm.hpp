@@ -30,8 +30,8 @@
  * @date 01.06.2011
  * @since 1.0.0
  */
-#ifndef LAMA_NORM_HPP_
-#define LAMA_NORM_HPP_
+
+#pragma once
 
 // for dll_import
 #include <scai/common/config.hpp>
@@ -128,5 +128,3 @@ public:
 } /* end namespace lama */
 
 } /* end namespace scai */
-
-#endif // LAMA_NORM_HPP_

@@ -31,8 +31,7 @@
  * @since 1.0.0
  */
 
-#ifndef LAMA_TRIVIALPRECONDITIONER_HPP_
-#define LAMA_TRIVIALPRECONDITIONER_HPP_
+#pragma once
 
 // for dll_import
 #include <scai/common/config.hpp>
@@ -78,5 +77,3 @@ protected:
 } /* end namespace lama */
 
 } /* end namespace scai */
-
-#endif // LAMA_TRIVIALPRECONDITIONER_HPP_

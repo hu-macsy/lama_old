@@ -30,8 +30,8 @@
  * @date 06.04.2011
  * @since 1.0.0
  */
-#ifndef SCAI_LOGLEVEL_HPP_
-#define SCAI_LOGLEVEL_HPP_
+
+#pragma once
 
 namespace scai
 {
@@ -85,5 +85,3 @@ enum LogLevel
 } /* end namespace lama */
 
 } /* end namespace scai */
-
-#endif // SCAI_LOGLEVEL_HPP_

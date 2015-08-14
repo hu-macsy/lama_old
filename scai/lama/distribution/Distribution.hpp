@@ -30,8 +30,8 @@
  * @date 22.02.2011
  * @since 1.0.0
  */
-#ifndef LAMA_DISTRIBUTION_HPP_
-#define LAMA_DISTRIBUTION_HPP_
+
+#pragma once
 
 // for dll_import
 #include <scai/common/config.hpp>
@@ -357,5 +357,3 @@ IndexType Distribution::getGlobalSize() const
 } /* end namespace lama */
 
 } /* end namespace scai */
-
-#endif // LAMA_DISTRIBUTION_HPP_

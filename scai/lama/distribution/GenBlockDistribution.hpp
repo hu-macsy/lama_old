@@ -30,8 +30,8 @@
  * @date 18.03.2011
  * @since 1.0.0
  */
-#ifndef LAMA_GENBLOCKDISTRIBUTION_HPP_
-#define LAMA_GENBLOCKDISTRIBUTION_HPP_
+
+#pragma once
 
 // for dll_import
 #include <scai/common/config.hpp>
@@ -180,5 +180,3 @@ private    :
 } /* end namespace lama */
 
 } /* end namespace scai */
-
-#endif // LAMA_GENBLOCKDISTRIBUTION_HPP_

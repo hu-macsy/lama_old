@@ -30,8 +30,8 @@
  * @date 24.06.2012
  * @since 1.0.0
  */
-#ifndef LAMA_OPENMP_COO_UTILS_HPP_
-#define LAMA_OPENMP_COO_UTILS_HPP_
+
+#pragma once
 
 // for dll_import
 #include <scai/common/config.hpp>
@@ -168,5 +168,3 @@ private:
 } /* end namespace lama */
 
 } /* end namespace scai */
-
-#endif //  LAMA_COO_STORAGE_UTILS_HPP_

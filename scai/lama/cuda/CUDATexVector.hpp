@@ -147,4 +147,3 @@ ComplexDouble fetchVectorX<ComplexDouble, true>( const ComplexDouble* const, con
     int4 u = tex1Dfetch( texVectorZXref, i );
     return ComplexDouble( __hiloint2double( u.y, u.x ), __hiloint2double( u.w, u.z));
 }
-

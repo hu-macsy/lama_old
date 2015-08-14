@@ -31,8 +31,7 @@
  * @since 1.0.0
  */
 
-#ifndef LAMA_BOOLEANCONDITION_HPP_
-#define LAMA_BOOLEANCONDITION_HPP_
+#pragma once
 
 // for dll_import
 #include <scai/common/config.hpp>
@@ -199,5 +198,3 @@ inline CriterionPtr operator&&( CriterionPtr a, CriterionPtr b )
 } /* end namespace lama */
 
 } /* end namespace scai */
-
-#endif // LAMA_BOOLEANCONDITION_HPP_

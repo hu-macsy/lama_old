@@ -30,8 +30,8 @@
  * @date 03.07.2013
  * @since 1.1.0
  */
-#ifndef LAMA_BICG_HPP_
-#define LAMA_BICG_HPP_
+
+#pragma once
 
 #include <scai/lama/solver/CG.hpp>
 
@@ -120,5 +120,3 @@ protected:
 } /* end namespace lama */
 
 } /* end namespace scai */
-
-#endif // LAMA_BICG_HPP_

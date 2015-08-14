@@ -31,8 +31,7 @@
  * @since 1.1.0
  */
 
-#ifndef LAMA_CBLAS_HPP_
-#define LAMA_CBLAS_HPP_
+#pragma once
 
 // Note: LAMA uses these type definitions:
 
@@ -58,5 +57,3 @@ enum CBLAS_SIDE
 #include "lama/cblas/include/cblas.h"
 
 #endif
-
-#endif /* LAMA_CBLAS_HPP_ */

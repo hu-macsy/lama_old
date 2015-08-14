@@ -30,8 +30,8 @@
  * @date 05.07.2013
  * @since 1.1.0
  */
-#ifndef LAMA_MIC_BLAS2_HPP_
-#define LAMA_MIC_BLAS2_HPP_
+
+#pragma once
 
 // for dll_import
 #include <scai/common/config.hpp>
@@ -101,5 +101,3 @@ private:
 } /* end namespace lama */
 
 } /* end namespace scai */
-
-#endif // LAMA_MIC_BLAS2_HPP_

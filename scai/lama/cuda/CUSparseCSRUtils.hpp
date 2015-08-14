@@ -30,8 +30,8 @@
  * @date 03.07.2012
  * @since 1.0.0
  */
-#ifndef SCAI_CUSPARSE_CSR_UTILS_HPP_
-#define SCAI_CUSPARSE_CSR_UTILS_HPP_
+
+#pragma once
 
 // for dll_import
 #include <scai/common/config.hpp>
@@ -168,5 +168,3 @@ private:
 } /* end namespace lama */
 
 } /* end namespace scai */
-
-#endif  //  SCAI_CUDA_CSR_UTILS_SPARSE_HPP_

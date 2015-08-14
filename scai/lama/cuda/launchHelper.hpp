@@ -30,8 +30,8 @@
  * @date 06.07.2012
  * @since 1.0.0
  */
-#ifndef LAMA_LAUNCHHELPER_HPP_
-#define LAMA_LAUNCHHELPER_HPP_
+
+#pragma once
 
 #include <cuda_runtime.h>
 
@@ -65,5 +65,3 @@ int warpSize;
 } /* end namespace lama */
 
 } /* end namespace scai */
-
-#endif // LAMA_LAUNCHHELPER_HPP_

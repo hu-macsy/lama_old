@@ -31,8 +31,7 @@
  * @since 1.0.0
  */
 
-#ifndef XDRFILESTREAM_HPP_
-#define XDRFILESTREAM_HPP_
+#pragma once
 
 // for dll_import
 #include <scai/common/config.hpp>
@@ -304,5 +303,3 @@ int XDRFileStream::getSize( const ValueType )
 } /* end namespace lama */
 
 } /* end namespace scai */
-
-#endif // XDRFILESTREAM_HPP_

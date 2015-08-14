@@ -30,8 +30,8 @@
  * @date 20.05.2011
  * @since 1.0.0
  */
-#ifndef LAMA_CYCLIC_DISTRIBUTION_HPP_
-#define LAMA_CYCLIC_DISTRIBUTION_HPP_
+
+#pragma once
 
 // for dll_import
 #include <scai/common/config.hpp>
@@ -160,5 +160,3 @@ IndexType CyclicDistribution::chunkSize() const
 } /* end namespace lama */
 
 } /* end namespace scai */
-
-#endif // LAMA_CYCLIC_DISTRIBUTION_HPP_

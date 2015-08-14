@@ -30,8 +30,8 @@
  * @date 06.08.2013
  * $Id$
  */
-#ifndef LAMA_BICGSTAB_HPP_
-#define LAMA_BICGSTAB_HPP_
+
+#pragma once
 
 #include <scai/common/config.hpp>
 
@@ -138,5 +138,3 @@ protected:
 } /* end namespace lama */
 
 } /* end namespace scai */
-
-#endif // LAMA_BICGSTAB_HPP_

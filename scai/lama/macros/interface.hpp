@@ -30,8 +30,8 @@
  * @date 02.04.2013
  * @since 1.0.0
  */
-#ifndef LAMA_INTERFACE_MACROS_HPP_
-#define LAMA_INTERFACE_MACROS_HPP_
+
+#pragma once
 
 #include <scai/common/ScalarType.hpp>
 
@@ -140,5 +140,3 @@
 
 #define LAMA_INTERFACE_REGISTER1_TT( interface, function, ValueType1, ValueType2 )                    \
     interface.function##_add<ValueType1,ValueType2>( function<ValueType1,ValueType2>, true );
-
-#endif // LAMA_INTERFACE_MACROS_HPP_

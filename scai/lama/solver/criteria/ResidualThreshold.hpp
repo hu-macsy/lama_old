@@ -31,8 +31,7 @@
  * @since 1.0.0
  */
 
-#ifndef LAMA_RESIDUALTHRESHOLD_HPP_
-#define LAMA_RESIDUALTHRESHOLD_HPP_
+#pragma once
 
 // for dll_import
 #include <scai/common/config.hpp>
@@ -134,5 +133,3 @@ private:
 } /* end namespace lama */
 
 } /* end namespace scai */
-
-#endif // LAMA_RESIDUALTHRESHOLD_HPP_

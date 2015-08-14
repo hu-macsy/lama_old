@@ -30,8 +30,8 @@
  * @date 11.06.2013
  * @since 1.0.1
  */
-#ifndef LAMA_OPENMP_HPP_
-#define LAMA_OPENMP_HPP_
+
+#pragma once
 
 #ifdef _OPENMP
 #include <omp.h>
@@ -66,5 +66,3 @@ inline void atomicAdd( double& sharedResult, const double& threadResult )
     #pragma omp atomic
     sharedResult += threadResult;
 }
-
-#endif //  LAMA_OPENMP_HPP_

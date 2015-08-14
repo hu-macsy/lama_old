@@ -31,8 +31,7 @@
  * @date 06.04.2011
  * @since 1.0.0
  */
-#ifndef SCAI_LOGGERWRITERBEHAVIOUR_HPP_
-#define SCAI_LOGGERWRITERBEHAVIOUR_HPP_
+#pragma once
 
 namespace scai
 {
@@ -74,5 +73,3 @@ enum LoggerWriteBehaviour
 } /* end namespace lama */
 
 } /* end namespace scai */
-
-#endif // SCAI_LOGGERWRITERBEHAVIOUR_HPP_

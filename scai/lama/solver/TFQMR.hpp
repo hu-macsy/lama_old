@@ -30,9 +30,8 @@
  * @date 13.05.2015
  * @since 
  */
- #ifndef LAMA_TFQMR_HPP
 
-#define LAMA_TFQMR_HPP
+#pragma once
 
 // for dll_import
 #include <scai/common/config.hpp>
@@ -148,5 +147,3 @@ protected:
 } /* end namespace lama */
 
 } /* end namespace scai */
-
-#endif // LAMA_TFQMR_HPP

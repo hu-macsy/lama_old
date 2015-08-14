@@ -30,8 +30,8 @@
  * @date 29.08.2011
  * @since 1.0.0
  */
-#ifndef LAMA_SOR_HPP_
-#define LAMA_SOR_HPP_
+
+#pragma once
 
 // for dll_import
 #include <scai/common/config.hpp>
@@ -107,5 +107,3 @@ private:
 } /* end namespace lama */
 
 } /* end namespace scai */
-
-#endif // LAMA_SOR_HPP_

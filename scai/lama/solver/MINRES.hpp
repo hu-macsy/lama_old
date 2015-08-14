@@ -30,9 +30,8 @@
  * @date 29.05.2015
  * @since 
  */
- #ifndef LAMA_MINRES_HPP
 
-#define LAMA_MINRES_HPP
+#pragma once
 
 // for dll_import
 #include <scai/common/config.hpp>
@@ -140,5 +139,3 @@ protected:
 } /* end namespace lama */
 
 } /* end namespace scai */
-
-#endif // LAMA_MINRES_HPP

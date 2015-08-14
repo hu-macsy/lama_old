@@ -31,8 +31,7 @@
  * @since 1.0.0
  */
 
-#ifndef LAMA_DEFAULTJACOBI_HPP_
-#define LAMA_DEFAULTJACOBI_HPP_
+#pragma once
 
 // for dll_import
 #include <scai/common/config.hpp>
@@ -139,5 +138,3 @@ private    :
 } /* end namespace lama */
 
 } /* end namespace scai */
-
-#endif // LAMA_DEFAULTJACOBI_HPP_

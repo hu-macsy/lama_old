@@ -30,8 +30,8 @@
  * @date 04.05.2013
  * $Id$
  */
-#ifndef SCAI_CUDA_TEXTURE_HPP_
-#define SCAI_CUDA_TEXTURE_HPP_
+
+#pragma once
 
 #include <scai/logging.hpp>
 
@@ -81,5 +81,3 @@ private:
 } /* end namespace lama */
 
 } /* end namespace scai */
-
-#endif //  SCAI_CUDA_TEXTURE_HPP_

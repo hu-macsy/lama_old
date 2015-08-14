@@ -31,8 +31,7 @@
  * @since 
  */
 
-#ifndef LAMA_CGS_HPP_
-#define LAMA_CGS_HPP_
+#pragma once
 
 #include <scai/common/config.hpp>
 
@@ -137,5 +136,3 @@ protected:
 } /* end namespace lama */
 
 } /* end namespace scai */
-
-#endif // LAMA_CGS_HPP_

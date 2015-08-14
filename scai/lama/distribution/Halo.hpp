@@ -30,8 +30,8 @@
  * @date 23.02.2011
  * @since 1.0.0
  */
-#ifndef LAMA_HALO_HPP_
-#define LAMA_HALO_HPP_
+
+#pragma once
 
 // for dll_import
 #include <scai/common/config.hpp>
@@ -185,5 +185,3 @@ bool Halo::isEmpty() const
 } /* end namespace lama */
 
 } /* end namespace scai */
-
-#endif // LAMA_HALO_HPP_

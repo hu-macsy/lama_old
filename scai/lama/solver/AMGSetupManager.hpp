@@ -31,8 +31,7 @@
  * @since 1.0.0
  */
 
-#ifndef LAMA_AMG_SETUP_MANAGER_HPP_
-#define LAMA_AMG_SETUP_MANAGER_HPP_
+#pragma once
 
 // for dll_import
 #include <scai/common/config.hpp>
@@ -84,5 +83,3 @@ protected:
 } /* end namespace lama */
 
 } /* end namespace scai */
-
-#endif // LAMA_AMG_SETUP_MANAGER_HPP_

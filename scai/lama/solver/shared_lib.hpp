@@ -31,8 +31,7 @@
  * @since 1.0.0
  */
 
-#ifndef LAMA_SHARED_LIB_HPP_
-#define LAMA_SHARED_LIB_HPP_
+#pragma once
 
 #ifdef _WIN32
 #include <Windows.h>
@@ -152,5 +151,3 @@ inline void freeLibHandle( LAMA_LIB_HANDLE_TYPE handle )
     dlclose( handle );
 #endif //WIN32
 }
-
-#endif // LAMA_SHARED_LIB_HPP_

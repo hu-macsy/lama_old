@@ -30,8 +30,8 @@
  * @date 14.06.2011
  * @since 1.0.0
  */
-#ifndef LAMA_L1NORM_HPP_
-#define LAMA_L1NORM_HPP_
+
+#pragma once
 
 // for dll_import
 #include <scai/common/config.hpp>
@@ -67,5 +67,3 @@ Scalar l1Norm( const Matrix& matrix );
 } /* end namespace lama */
 
 } /* end namespace scai */
-
-#endif // LAMA_L1NORM_HPP_

@@ -31,8 +31,7 @@
  * @since 1.0.0
  */
 
-#ifndef LAMA_UNUSED_HPP_
-#define LAMA_UNUSED_HPP_
+#pragma once
 
 /** Macro for unused parameters if some functionality is not available yet.
  *  @todo a release version of LAMA should not have any UNUSED stuff in it.
@@ -46,5 +45,3 @@
 #else
 # define UNUSED(x) x
 #endif
-
-#endif // LAMA_UNUSED_HPP_

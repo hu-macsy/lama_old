@@ -30,8 +30,8 @@
  * @date 06.07.2012
  * @since 1.0.0
  */
-#ifndef SCAI_CUDALAPACK_HPP_
-#define SCAI_CUDALAPACK_HPP_
+
+#pragma once
 
 // for dll_import
 #include <scai/common/config.hpp>
@@ -87,5 +87,3 @@ private:
 } /* end namespace lama */
 
 } /* end namespace scai */
-
-#endif // SCAI_CUDALAPACK_HPP_

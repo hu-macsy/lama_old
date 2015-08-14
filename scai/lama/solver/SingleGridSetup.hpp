@@ -30,8 +30,8 @@
  * @date 27.10.2011
  * @since 1.0.0
  */
-#ifndef LAMA_SINGLEGRIDSETUP_HPP_
-#define LAMA_SINGLEGRIDSETUP_HPP_
+
+#pragma once
 
 // for dll_import
 #include <scai/common/config.hpp>
@@ -118,5 +118,3 @@ private:
 } /* end namespace lama */
 
 } /* end namespace scai */
-
-#endif /* LAMA_SINGLEGRIDSETUP_HPP_ */

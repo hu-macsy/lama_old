@@ -30,8 +30,8 @@
  * @date 14.06.2011
  * @since 1.0.0
  */
-#ifndef LAMA_MAXNORM_HPP_
-#define LAMA_MAXNORM_HPP_
+
+#pragma once
 
 // for dll_import
 #include <scai/common/config.hpp>
@@ -67,5 +67,3 @@ COMMON_DLL_IMPORTEXPORT Scalar maxNorm( const Matrix& matrix );
 } /* end namespace lama */
 
 } /* end namespace scai */
-
-#endif // LAMA_MAXNORM_HPP_

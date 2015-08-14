@@ -30,8 +30,8 @@
  * @date 22.02.2011
  * @since 1.0.0
  */
-#ifndef LAMA_DENSEMATRIX_HPP_
-#define LAMA_DENSEMATRIX_HPP_
+
+#pragma once
 
 // for dll_import
 #include <scai/common/config.hpp>
@@ -740,5 +740,3 @@ DenseMatrix<ValueType>::DenseMatrix(
 } /* end namespace lama */
 
 } /* end namespace scai */
-
-#endif // LAMA_DENSEMATRIX_HPP_

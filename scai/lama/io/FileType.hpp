@@ -31,8 +31,7 @@
  * @since 1.0.0
  */
 
-#ifndef FILETYPE_HPP_
-#define FILETYPE_HPP_
+#pragma once
 
 #include <scai/lama/TypeTraits.hpp>
 
@@ -202,5 +201,3 @@ long getIndexDataTypeSize( const File::IndexDataType indexDataType )
 } /* end namespace lama */
 
 } /* end namespace scai */
-
-#endif // FILETYPE_HPP_
