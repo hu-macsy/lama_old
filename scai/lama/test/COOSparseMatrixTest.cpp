@@ -43,6 +43,8 @@ using namespace memory;
 extern bool base_test_case;
 extern std::string testcase;
 
+namespace scai
+{
 namespace lama
 {
 namespace COOSparseMatrixTest
@@ -73,9 +75,9 @@ void typeNameTest( )
     BOOST_CHECK( s.length() > 0 );
 }
 
-} // namespace COOSparseMatrixTest
-} // namespace lama
-
+} /* end namespace COOSparseMatrixTest */
+} /* end namespace lama */
+} /* end namespace scai */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 BOOST_AUTO_TEST_SUITE( COOSparseMatrixTest )

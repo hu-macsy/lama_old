@@ -35,6 +35,8 @@
 
 #include <scai/memory/Context.hpp>
 
+namespace scai
+{
 namespace lama_test
 {
 
@@ -52,4 +54,6 @@ private:
 
 };
 
-} // namespace 
+} /* end namespace lama_test */
+
+} /* end namespace scai */

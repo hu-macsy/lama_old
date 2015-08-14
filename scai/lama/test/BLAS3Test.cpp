@@ -43,6 +43,8 @@
 using namespace lama;
 using namespace memory;
 
+namespace scai
+{
 namespace lama
 {
 namespace BLAS3Test
@@ -316,8 +318,9 @@ void gemmTest( ContextPtr loc )
 } // gemmTest
 
 } // namespace BLAS3Test
-} // namespace lama
+} /* end namespace lama */
 
+} /* end namespace scai */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 BOOST_AUTO_TEST_SUITE ( BLAS3Test )

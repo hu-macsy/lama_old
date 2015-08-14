@@ -42,8 +42,8 @@
 #include <scai/lama/storage/DenseStorage.hpp>
 #include <scai/lama/storage/SparseAssemblyStorage.hpp>
 
-using namespace lama;
-using namespace memory;
+using namespace scai::lama;
+using namespace scai::memory;
 
 template<typename ValueType>
 void setCSRStorage( _MatrixStorage& storage )

@@ -35,5 +35,5 @@
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 
 template<typename ValueType>
-bool compareMatrices( const lama::CSRSparseMatrix<ValueType>& matrix, const lama::CSRSparseMatrix<ValueType>& other );
+bool compareMatrices( const scai::lama::CSRSparseMatrix<ValueType>& matrix, const scai::lama::CSRSparseMatrix<ValueType>& other );
 

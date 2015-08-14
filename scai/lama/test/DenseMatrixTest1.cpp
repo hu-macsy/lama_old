@@ -39,12 +39,14 @@
 #include <test/SparseMatrixTest.hpp>
 #include <test/TestMacros.hpp>
 
-using namespace lama;
-using namespace memory;
+using namespace scai::lama;
+using namespace scai::memory;
 
 extern bool base_test_case;
 extern std::string testcase;
 
+namespace scai
+{
 namespace lama
 {
 namespace DenseMatrixTest1
@@ -67,8 +69,11 @@ void commonTestCases( ContextPtr loc )
     }
 }
 
-} // namespace DenseMatrixTest1
-} // namespace lama
+} /* end namespace DenseMatrixTest1 */
+
+} /* end namespace lama */
+
+} /* end namespace scai */
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 

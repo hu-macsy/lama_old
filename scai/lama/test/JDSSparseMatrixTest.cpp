@@ -39,12 +39,14 @@
 #include <test/SparseMatrixTest.hpp>
 #include <test/TestMacros.hpp>
 
-using namespace lama;
-using namespace memory;
+using namespace scai::lama;
+using namespace scai::memory;
 
 extern bool base_test_case;
 extern std::string testcase;
 
+namespace scai
+{
 namespace lama
 {
 namespace JDSSparseMatrixTest
@@ -75,8 +77,11 @@ void typeNameTest( )
     BOOST_CHECK( s.length() > 0 );
 }
 
-} // namespace JDSSparseMatrixTest
-} // namespace lama
+} /* end namespace JDSSparseMatrixTest */
+
+} /* end namespace lama */
+
+} /* end namespace scai */
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 

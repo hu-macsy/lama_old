@@ -45,12 +45,12 @@
 
 #include <scai/common/unique_ptr.hpp>
 
-using namespace lama;
-using namespace memory;
-using namespace tasking;
-using common::Exception;
-using common::unique_ptr;
-using common::scoped_array;
+using namespace scai::lama;
+using namespace scai::memory;
+using namespace scai::tasking;
+using scai::common::Exception;
+using scai::common::unique_ptr;
+using scai::common::scoped_array;
 
 SCAI_LOG_DEF_LOGGER( logger, "Test.CommunicatorTest" )
 

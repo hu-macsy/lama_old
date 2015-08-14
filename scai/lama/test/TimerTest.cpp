@@ -49,9 +49,9 @@ inline void usleep( int t )
 #include <unistd.h>
 #endif
 
-using namespace lama;
-using namespace memory;
-using common::Exception;
+using namespace scai::lama;
+using namespace scai::memory;
+using scai::common::Exception;
 
 /* --------------------------------------------------------------------- */
 

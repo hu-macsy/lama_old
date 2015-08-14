@@ -30,8 +30,8 @@
  * @date 18.06.2012
  * @since 1.0.0
  */
-#ifndef LAMA_SAME_MATRIX_HELPER_HPP_
-#define LAMA_SAME_MATRIX_HELPER_HPP_
+
+#pragma once
 
 #include <scai/lama/matrix/Matrix.hpp>
 
@@ -88,4 +88,3 @@ void testSameMatrix( const MatrixType1& m1, const MatrixType2& m2 )
 
 void assertSameMatrix( const lama::Matrix& m1, const lama::Matrix& m2 );
 
-#endif // LAMA_SAME_MATRIX_HELPER_HPP_

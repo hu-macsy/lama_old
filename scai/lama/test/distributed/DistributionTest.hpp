@@ -31,11 +31,13 @@
  * @since 1.0.0
  */
 
+#pragma once
+
 #include <boost/test/unit_test.hpp>
 
 #include <scai/lama/distribution/Distribution.hpp>
 
-using namespace lama;
+using namespace scai::lama;
 
 static std::string distclasses[] =
 {

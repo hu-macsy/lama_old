@@ -41,9 +41,11 @@
 
 #include <test/TestMacros.hpp>
 
-using namespace lama;
-using namespace memory;
+using namespace scai::lama;
+using namespace scai::memory;
 
+namespace scai
+{
 namespace lama
 {
 namespace BLAS2Test
@@ -194,7 +196,9 @@ void gemvTest( ContextPtr loc )
 } // gemvTest
 
 } // namespace BLAS2Test
-} // namespace lama
+} /* end namespace lama */
+
+} /* end namespace scai */
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 

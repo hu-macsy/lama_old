@@ -45,6 +45,8 @@ using namespace memory;
 extern bool base_test_case;
 extern std::string testcase;
 
+namespace scai
+{
 namespace lama
 {
 namespace CSRStorageTest
@@ -171,8 +173,11 @@ void typeNameTest()
     BOOST_CHECK( s.length() > 0 );
 }
 
-} // namespace CSRStorageTest
-} // namespace lama
+} /* end namespace CSRStorageTest */
+
+} /* end namespace lama */
+
+} /* end namespace scai */
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 

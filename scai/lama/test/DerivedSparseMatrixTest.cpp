@@ -42,8 +42,8 @@
 
 #include <test/SparseMatrixTest.hpp>
 
-using namespace lama;
-using namespace memory;
+using namespace scai::lama;
+using namespace scai::memory;
 
 /* ------------------------------------------------------------------------- */
 

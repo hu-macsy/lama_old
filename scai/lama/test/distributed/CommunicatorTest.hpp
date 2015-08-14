@@ -35,7 +35,7 @@
 
 #include <scai/lama/Communicator.hpp>
 
-using namespace lama;
+using namespace scai::lama;
 
 /* --------------------------------------------------------------------- */
 

@@ -39,12 +39,14 @@
 #include <test/MatrixStorageTest.hpp>
 #include <test/TestMacros.hpp>
 
-using namespace lama;
-using namespace memory;
+using namespace scai::lama;
+using namespace scai::memory;
 
 extern bool base_test_case;
 extern std::string testcase;
 
+namespace scai
+{
 namespace lama
 {
 namespace DIAStorageTest
@@ -186,8 +188,11 @@ void typeNameTest()
     BOOST_CHECK( s.length() > 0 );
 }
 
-} // namespace DIAStorageTest
-} // namespace lama
+} /* end namespace DIAStorageTest */
+
+} /* end namespace lama */
+
+} /* end namespace scai */
 
 /* ------------------------------------------------------------------------- */
 

@@ -36,7 +36,7 @@
 
 #include <test/TestMacros.hpp>
 
-#include <scai/lama/Context.hpp>
+#include <scai/memory/Context.hpp>
 #include <scai/lama/ContextManager.hpp>
 #include <scai/lama/ContextFactory.hpp>
 #include <scai/lama/HostReadAccess.hpp>
@@ -44,7 +44,18 @@
 #include <scai/lama/task/TaskSyncToken.hpp>
 #include <scai/lama/exception/LAMAAssert.hpp>
 
-using namespace lama;
+#include <scai/common/unique_ptr.hpp>
+#include <scai/common/bind.hpp>
+
+#include <scai/tasking/SyncToken.hpp>
+#include <scai/tasking/TaskSyncToken.hpp>
+
+#include <omp.h>
+
+using namespace scai::lama;
+using namespace scai::memory;
+using scai::tasking::SyncToken;
+using scai::tasking::TaskSyncToken;
 
 /* --------------------------------------------------------------------- */
 
@@ -72,7 +83,7 @@ public:
 
     virtual ContextType getType() const
     {
-        return NewContext;
+        return context::UserContext;
     }
 
     virtual void* allocate( const size_t size ) const
@@ -102,14 +113,14 @@ public:
         ::memcpy( target, source, size );
     }
 
-    static common::unique_ptr<SyncToken> theMemcpyAsync( void* dst, const void* src, const size_t size )
+    static scai::common::unique_ptr<SyncToken> theMemcpyAsync( void* dst, const void* src, const size_t size )
     {
-        return common::unique_ptr < SyncToken > ( new TaskSyncToken( common::bind( &::memcpy, dst, src, size ) ) );
+        return scai::common::unique_ptr < SyncToken > ( new TaskSyncToken( scai::common::bind( &::memcpy, dst, src, size ) ) );
     }
 
-    virtual common::unique_ptr<SyncToken> memcpyAsync( void* dst, const void* src, const size_t size ) const
+    virtual scai::common::unique_ptr<SyncToken> memcpyAsync( void* dst, const void* src, const size_t size ) const
     {
-        return common::unique_ptr < SyncToken > ( new TaskSyncToken( common::bind( &::memcpy, dst, src, size ) ) );
+        return scai::common::unique_ptr < SyncToken > ( new TaskSyncToken( scai::common::bind( &::memcpy, dst, src, size ) ) );
     }
 
     virtual bool cancpy( const ContextData& dst, const ContextData& src ) const
@@ -126,15 +137,15 @@ public:
         memcpy( dst.pointer, src.pointer, size );
     }
 
-    virtual common::unique_ptr<SyncToken> memcpyAsync( ContextData& dst, const ContextData& src, const size_t size ) const
+    virtual scai::common::unique_ptr<SyncToken> memcpyAsync( ContextData& dst, const ContextData& src, const size_t size ) const
     {
         SCAI_ASSERT_ERROR( cancpy( dst, src ), "Can not copy from " << * ( src.context ) << " to " << * ( dst.context ) );
         return memcpyAsync( dst.pointer, src.pointer, size );
     }
 
-    virtual common::unique_ptr<SyncToken> getSyncToken() const
+    virtual scai::common::unique_ptr<SyncToken> getSyncToken() const
     {
-        return common::unique_ptr < SyncToken > ( new TaskSyncToken() );
+        return scai::common::unique_ptr < SyncToken > ( new TaskSyncToken() );
     }
 
 private:
@@ -142,7 +153,7 @@ private:
     // MockContext uses the type NewContext as its type
 
     MockContext()
-        : Context( NewContext )
+        : Context( context::UserContext )
     {
     }
 };
@@ -391,8 +402,6 @@ BOOST_AUTO_TEST_CASE( threadSafetyTest )
 }
 
 /* ---------------------------------------------------------------------- */
-
-#include "omp.h"
 
 BOOST_AUTO_TEST_CASE( ompSafetyTest )
 {

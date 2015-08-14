@@ -41,9 +41,9 @@
 
 #include <test/Configuration.hpp>
 
-using namespace lama;
-using namespace memory;
-using common::shared_ptr;
+using namespace scai::lama;
+using namespace scai::memory;
+using scai::common::shared_ptr;
 
 /* --------------------------------------------------------------------- */
 

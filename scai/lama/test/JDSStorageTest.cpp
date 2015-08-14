@@ -40,13 +40,15 @@
 #include <test/MatrixStorageTest.hpp>
 #include <test/TestMacros.hpp>
 
-using namespace lama;
-using namespace memory;
-using common::Exception;
+using namespace scai::lama;
+using namespace scai::memory;
+using scai::common::Exception;
 
 extern bool base_test_case;
 extern std::string testcase;
 
+namespace scai
+{
 namespace lama
 {
 namespace JDSStorageTest
@@ -282,8 +284,11 @@ void typeNameTest( )
     BOOST_CHECK( s.length() > 0 );
 }
 
-} // namespace JDSStorageTest
-} // namespace lama
+} /* end namespace JDSStorageTest */
+
+} /* end namespace lama */
+
+} /* end namespace scai */
 
 
 /* ------------------------------------------------------------------------------------------------------------------ */
