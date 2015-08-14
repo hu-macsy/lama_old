@@ -49,7 +49,7 @@ using namespace memory;
 
 BOOST_AUTO_TEST_SUITE( MatrixNormTest )
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.MatrixNormTest" )
+SCAI_LOG_DEF_LOGGER( logger, "Test.MatrixNormTest" )
 
 template<typename MatrixType>
 void l1NormTestMethod( ContextPtr context )

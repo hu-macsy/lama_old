@@ -46,7 +46,7 @@
 
 namespace lama{ 
 
-LAMA_LOG_DEF_LOGGER( MINRES::logger, "Solver.MINRES" )
+SCAI_LOG_DEF_LOGGER( MINRES::logger, "Solver.MINRES" )
 
 MINRES::MINRES( const std::string& id )
     : IterativeSolver(id){}
@@ -68,7 +68,7 @@ MINRES::~MINRES(){}
 MINRES::MINRESRuntime::~MINRESRuntime(){}
 
 void MINRES::initialize( const Matrix& coefficients ){
-    LAMA_LOG_DEBUG(logger, "Initialization started for coefficients = "<< coefficients)
+    SCAI_LOG_DEBUG(logger, "Initialization started for coefficients = "<< coefficients)
 
     Solver::initialize( coefficients );
  	MINRESRuntime& runtime = getRuntime();

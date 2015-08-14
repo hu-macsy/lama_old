@@ -46,7 +46,7 @@ using namespace std;
 using namespace memory;
 using namespace common;
 
-LAMA_LOG_DEF_LOGGER( logger, "CreateTest" )
+SCAI_LOG_DEF_LOGGER( logger, "CreateTest" )
 
 // Template instantiation of LAMArray
 
@@ -54,7 +54,7 @@ template class LAMAArray<double>;
 
 int main()
 {
-    LAMA_LOG_THREAD( "Main" )
+    SCAI_LOG_THREAD( "Main" )
 
     static IndexType N =  100;
 

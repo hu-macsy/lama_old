@@ -164,7 +164,7 @@ public:
 
 protected:
 
-    LAMA_LOG_DECL_STATIC_LOGGER( logger )
+    SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
     /** Return context data that is valid currently. 
      *

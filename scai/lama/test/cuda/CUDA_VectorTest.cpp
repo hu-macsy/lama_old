@@ -93,7 +93,7 @@ struct CUDA_VectorTestConfig
 
 BOOST_FIXTURE_TEST_SUITE( CUDA_VectorTest, CUDA_VectorTestConfig )
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.CUDA_VectorTest" )
+SCAI_LOG_DEF_LOGGER( logger, "Test.CUDA_VectorTest" )
 
 /* ------------------------------------------------------------------------- */
 
@@ -115,11 +115,11 @@ void doMatrixTimesVectorSyncAsyncTests( Vector& y, Matrix& A, const Vector& x, c
     Matrix::SyncKind saveSyncKind = A.getCommunicationKind();
     //1. Synchronous
     A.setCommunicationKind( Matrix::SYNCHRONOUS );
-    LAMA_LOG_INFO( logger, "Communicate sync" )
+    SCAI_LOG_INFO( logger, "Communicate sync" )
     doMatrixTimesVector( y, A, x, corResult );
     //2. Asynchronous
     A.setCommunicationKind( Matrix::ASYNCHRONOUS );
-    LAMA_LOG_INFO( logger, "Communicate async" )
+    SCAI_LOG_INFO( logger, "Communicate async" )
     doMatrixTimesVector( y, A, x, corResult );
     //reset to original value
     A.setCommunicationKind( saveSyncKind );
@@ -130,20 +130,20 @@ void doMatrixTimesVectorLocationTests( Vector& y, MatrixType& A, const Vector& x
 {
     //1. Host, Host
     ContextPtr hostContext = ContextFactory::getContext( Context::Host );
-    LAMA_LOG_INFO( logger, "Run local on Host, halo on Host" )
+    SCAI_LOG_INFO( logger, "Run local on Host, halo on Host" )
     A.setContext( hostContext, hostContext );
     doMatrixTimesVectorSyncAsyncTests( y, A, x, corResult );
     ContextPtr cudaContext = lama_test::CUDAContext::getContext();
     //2. CUDA, Host
-    LAMA_LOG_INFO( logger, "Run local on CUDA, halo on Host" )
+    SCAI_LOG_INFO( logger, "Run local on CUDA, halo on Host" )
     A.setContext( cudaContext, hostContext );
     doMatrixTimesVectorSyncAsyncTests( y, A, x, corResult );
     //3. Host, CUDA
-    LAMA_LOG_INFO( logger, "Run local on Host, halo on Cuda" )
+    SCAI_LOG_INFO( logger, "Run local on Host, halo on Cuda" )
     A.setContext( hostContext, cudaContext );
     doMatrixTimesVectorSyncAsyncTests( y, A, x, corResult );
     //4. CUDA, CUDA
-    LAMA_LOG_INFO( logger, "Run local on CUDA, halo on CUDA" )
+    SCAI_LOG_INFO( logger, "Run local on CUDA, halo on CUDA" )
     A.setContext( cudaContext, cudaContext );
     doMatrixTimesVectorSyncAsyncTests( y, A, x, corResult );
     //reset to defaults
@@ -156,7 +156,7 @@ void matrixTimesVectorTestImpl()
     typedef typename MatrixType::MatrixValueType ValueType;
     ContextPtr cuda = lama_test::CUDAContext::getContext();
     CUDAHostContextManager::setAsCurrent( cuda );
-    LAMA_LOG_INFO( logger, "set CUDAHostContext as CUDAHostContextManager" )
+    SCAI_LOG_INFO( logger, "set CUDAHostContext as CUDAHostContextManager" )
     PartitionId size = comm->getSize();
     const IndexType vectorSize = 4 * size;
     shared_ptr<Distribution> dist( new BlockDistribution( vectorSize, comm ) );
@@ -208,17 +208,17 @@ void matrixTimesVectorTestImpl()
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( matrixTimesVectorTest, ValueType, test_types )
 {
-    LAMA_LOG_INFO( logger, "matrixTimesVectorTest: call implementation for CSR" )
+    SCAI_LOG_INFO( logger, "matrixTimesVectorTest: call implementation for CSR" )
     matrixTimesVectorTestImpl< CSRSparseMatrix<ValueType> >();
-    LAMA_LOG_INFO( logger, "matrixTimesVectorTest: call implementation for ELL" )
+    SCAI_LOG_INFO( logger, "matrixTimesVectorTest: call implementation for ELL" )
     matrixTimesVectorTestImpl< ELLSparseMatrix<ValueType> >();
-    LAMA_LOG_INFO( logger, "matrixTimesVectorTest: call implementation for JDS" )
+    SCAI_LOG_INFO( logger, "matrixTimesVectorTest: call implementation for JDS" )
     matrixTimesVectorTestImpl< JDSSparseMatrix<ValueType> >();
-    LAMA_LOG_INFO( logger, "matrixTimesVectorTest: call implementation for COO" )
+    SCAI_LOG_INFO( logger, "matrixTimesVectorTest: call implementation for COO" )
     matrixTimesVectorTestImpl< COOSparseMatrix<ValueType> >();
-    LAMA_LOG_INFO( logger, "matrixTimesVectorTest: call implementation for DIA" )
+    SCAI_LOG_INFO( logger, "matrixTimesVectorTest: call implementation for DIA" )
     matrixTimesVectorTestImpl< DIASparseMatrix<ValueType> >();
-    LAMA_LOG_INFO( logger, "matrixTimesVectorTest: call implementation for Dense" )
+    SCAI_LOG_INFO( logger, "matrixTimesVectorTest: call implementation for Dense" )
     matrixTimesVectorTestImpl< DenseMatrix<ValueType> >();
 }
 
@@ -242,11 +242,11 @@ void doVectorTimesMatrixSyncAsyncTests( Vector& y, Matrix& A, const Vector& x, c
     Matrix::SyncKind saveSyncKind = A.getCommunicationKind();
     //1. Synchronous
     A.setCommunicationKind( Matrix::SYNCHRONOUS );
-    LAMA_LOG_INFO( logger, "Communicate sync" )
+    SCAI_LOG_INFO( logger, "Communicate sync" )
     doVectorTimesMatrix( y, A, x, corResult );
     //2. Asynchronous
     A.setCommunicationKind( Matrix::ASYNCHRONOUS );
-    LAMA_LOG_INFO( logger, "Communicate async" )
+    SCAI_LOG_INFO( logger, "Communicate async" )
     doVectorTimesMatrix( y, A, x, corResult );
     //reset to original value
     A.setCommunicationKind( saveSyncKind );
@@ -257,20 +257,20 @@ void doVectorTimesMatrixLocationTests( Vector& y, MatrixType& A, const Vector& x
 {
     //1. Host, Host
     ContextPtr hostContext = ContextFactory::getContext( Context::Host );
-    LAMA_LOG_INFO( logger, "Run local on Host, halo on Host" )
+    SCAI_LOG_INFO( logger, "Run local on Host, halo on Host" )
     A.setContext( hostContext, hostContext );
     doVectorTimesMatrixSyncAsyncTests( y, A, x, corResult );
     ContextPtr cudaContext = lama_test::CUDAContext::getContext();
     //2. CUDA, Host
-    LAMA_LOG_INFO( logger, "Run local on CUDA, halo on Host" )
+    SCAI_LOG_INFO( logger, "Run local on CUDA, halo on Host" )
     A.setContext( cudaContext, hostContext );
     doVectorTimesMatrixSyncAsyncTests( y, A, x, corResult );
     //3. Host, CUDA
-    LAMA_LOG_INFO( logger, "Run local on Host, halo on Cuda" )
+    SCAI_LOG_INFO( logger, "Run local on Host, halo on Cuda" )
     A.setContext( hostContext, cudaContext );
     doVectorTimesMatrixSyncAsyncTests( y, A, x, corResult );
     //4. CUDA, CUDA
-    LAMA_LOG_INFO( logger, "Run local on CUDA, halo on CUDA" )
+    SCAI_LOG_INFO( logger, "Run local on CUDA, halo on CUDA" )
     A.setContext( cudaContext, cudaContext );
     doVectorTimesMatrixSyncAsyncTests( y, A, x, corResult );
     //reset to defaults
@@ -283,7 +283,7 @@ void vectorTimesMatrixTestImpl()
     typedef typename MatrixType::MatrixValueType ValueType;
     ContextPtr cuda = lama_test::CUDAContext::getContext();
     CUDAHostContextManager::setAsCurrent( cuda );
-    LAMA_LOG_INFO( logger, "set CUDAHostContext as CUDAHostContextManager" )
+    SCAI_LOG_INFO( logger, "set CUDAHostContext as CUDAHostContextManager" )
     PartitionId size = comm->getSize();
     const IndexType vectorSize = 4 * size;
     shared_ptr<Distribution> dist( new BlockDistribution( vectorSize, comm ) );
@@ -335,17 +335,17 @@ void vectorTimesMatrixTestImpl()
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( vectorTimesMatrixTest, ValueType, test_types )
 {
-    LAMA_LOG_INFO( logger, "vectorTimesMatrixTest: call implementation for CSR" )
+    SCAI_LOG_INFO( logger, "vectorTimesMatrixTest: call implementation for CSR" )
     vectorTimesMatrixTestImpl< CSRSparseMatrix<ValueType> >();
-    LAMA_LOG_INFO( logger, "vectorTimesMatrixTest: call implementation for ELL" )
+    SCAI_LOG_INFO( logger, "vectorTimesMatrixTest: call implementation for ELL" )
     vectorTimesMatrixTestImpl< ELLSparseMatrix<ValueType> >();
-    LAMA_LOG_INFO( logger, "vectorTimesMatrixTest: call implementation for JDS" )
+    SCAI_LOG_INFO( logger, "vectorTimesMatrixTest: call implementation for JDS" )
     vectorTimesMatrixTestImpl< JDSSparseMatrix<ValueType> >();
-    LAMA_LOG_INFO( logger, "vectorTimesMatrixTest: call implementation for COO" )
+    SCAI_LOG_INFO( logger, "vectorTimesMatrixTest: call implementation for COO" )
     vectorTimesMatrixTestImpl< COOSparseMatrix<ValueType> >();
-    LAMA_LOG_INFO( logger, "vectorTimesMatrixTest: call implementation for DIA" )
+    SCAI_LOG_INFO( logger, "vectorTimesMatrixTest: call implementation for DIA" )
     vectorTimesMatrixTestImpl< DIASparseMatrix<ValueType> >();
-    LAMA_LOG_INFO( logger, "vectorTimesMatrixTest: call implementation for Dense" )
+    SCAI_LOG_INFO( logger, "vectorTimesMatrixTest: call implementation for Dense" )
     vectorTimesMatrixTestImpl< DenseMatrix<ValueType> >();
 }
 
@@ -405,7 +405,7 @@ BOOST_AUTO_TEST_CASE( dotProductTest )
 //with different contexts (e.g. CUDA)
 BOOST_AUTO_TEST_CASE_TEMPLATE( scaleVectorTest, ValueType, test_types )
 {
-    LAMA_LOG_INFO( logger, "scaleVectorTest<" << common::getScalarType<ValueType>() << ">" )
+    SCAI_LOG_INFO( logger, "scaleVectorTest<" << common::getScalarType<ValueType>() << ">" )
     IndexType n = 4;
     DenseVector<ValueType> vec1( n, 1.0 );
     DenseVector<ValueType> vec2( n, 0.25 );

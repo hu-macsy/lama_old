@@ -38,7 +38,7 @@
 #define LAMA_TESTFILE_PATH "res/testfiles"
 #endif
 
-LAMA_LOG_DEF_LOGGER( Configuration::logger, "Configuration" );
+SCAI_LOG_DEF_LOGGER( Configuration::logger, "Configuration" );
 
 Configuration::Configuration()
     : mPath( LAMA_TESTFILE_PATH ), mCommType( "none" )
@@ -62,7 +62,7 @@ const std::string& Configuration::getPath() const
 
 void Configuration::setPath( const std::string& path )
 {
-    LAMA_LOG_DEBUG( logger, "path = " << path );
+    SCAI_LOG_DEBUG( logger, "path = " << path );
     mPath = path;
 }
 

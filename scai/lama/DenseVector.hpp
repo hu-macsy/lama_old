@@ -410,7 +410,7 @@ protected:
 
     using Vector::mContext;
 
-    LAMA_LOG_DECL_STATIC_LOGGER( logger )
+    SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
 private    :
 

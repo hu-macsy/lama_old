@@ -58,7 +58,7 @@ namespace memory
 
 /**  static variables *****************************************************/
 
-LAMA_LOG_DEF_LOGGER( CUDAContext::logger, "Context.CUDAContext" )
+SCAI_LOG_DEF_LOGGER( CUDAContext::logger, "Context.CUDAContext" )
 
 int CUDAContext::currentDeviceNr = -1;
 
@@ -73,7 +73,7 @@ CUDAContext::CUDAContext( int deviceNr ) :
     mDeviceNr( deviceNr )
 
 {
-    LAMA_LOG_DEBUG( logger, "construct CUDAContext, device nr = = " << deviceNr )
+    SCAI_LOG_DEBUG( logger, "construct CUDAContext, device nr = = " << deviceNr )
 
     // Note: logging is safe as CUDA context is always created after static initializations
 
@@ -92,33 +92,33 @@ CUDAContext::CUDAContext( int deviceNr ) :
     cudaGetDeviceProperties( &properties, mCUdevice );
 
     // feature might be important to indicate that we can use CUDAHostMemory on device
-    // LAMA_LOG_ERROR( logger, "canMapHostMemory = " << properties.canMapHostMemory );
+    // SCAI_LOG_ERROR( logger, "canMapHostMemory = " << properties.canMapHostMemory );
 
 
     char deviceName[256];
     LAMA_CUDA_DRV_CALL( cuDeviceGetName( deviceName, 256, mCUdevice ), "cuDeviceGetName" );
     mDeviceName = deviceName; // save it as string member variable for output
-    LAMA_LOG_DEBUG( logger, "got device " << mDeviceName )
+    SCAI_LOG_DEBUG( logger, "got device " << mDeviceName )
     LAMA_CUDA_DRV_CALL( cuCtxCreate( &mCUcontext, CU_CTX_SCHED_SPIN | CU_CTX_MAP_HOST, mCUdevice ),
                         "cuCtxCreate for " << *this )
     LAMA_CUSPARSE_CALL( cusparseCreate( &CUDAContext_cusparseHandle ),
                         "Initialization of CUSparse library: cusparseCreate" );
     LAMA_CUBLAS_CALL( cublasCreate( &CUDAContext_cublasHandle ), "Initialization of CUBlas library: cublasCreate" );
-    LAMA_LOG_INFO( logger, "Initialized: CUBLAS, CuSparse" )
+    SCAI_LOG_INFO( logger, "Initialized: CUBLAS, CuSparse" )
     int flags = 0; // must be 0 by specification of CUDA driver API
     LAMA_CUDA_DRV_CALL( cuStreamCreate( &mTransferStream, flags ), "cuStreamCreate for transfer failed" )
     LAMA_CUDA_DRV_CALL( cuStreamCreate( &mComputeStream, flags ), "cuStreamCreate for compute failed" );
     mOwnerThread = Thread::getSelf(); // thread that can use the context
     disable( __FILE__, __LINE__ );
     // count used devices to shutdown CUDA if no more device is used
-    LAMA_LOG_INFO( logger, *this << " constructed by thread " << mOwnerThread << ", now disabled" )
+    SCAI_LOG_INFO( logger, *this << " constructed by thread " << mOwnerThread << ", now disabled" )
 }
 
 /**  destructor   *********************************************************/
 
 CUDAContext::~CUDAContext()
 {
-    LAMA_LOG_INFO( logger, "~CUDAContext: " << *this )
+    SCAI_LOG_INFO( logger, "~CUDAContext: " << *this )
 
     numUsedDevices--;
 
@@ -129,25 +129,25 @@ CUDAContext::~CUDAContext()
     if ( res == CUDA_ERROR_DEINITIALIZED )
     {
         // this might happen with other software, e.g. VampirTrace
-        LAMA_LOG_WARN( logger, "CUDA driver already deinitialized" )
+        SCAI_LOG_WARN( logger, "CUDA driver already deinitialized" )
         return;
     }
     else if ( res != CUDA_SUCCESS )
     {
-        LAMA_LOG_ERROR( logger, "Could not push any more context for " << *this )
+        SCAI_LOG_ERROR( logger, "Could not push any more context for " << *this )
         return;
     }
 
-    LAMA_LOG_DEBUG( logger, "pushed context: synchronize/destroy compute stream" )
+    SCAI_LOG_DEBUG( logger, "pushed context: synchronize/destroy compute stream" )
     LAMA_CUDA_DRV_CALL( cuStreamSynchronize( mComputeStream ), "cuStreamSynchronize for compute failed" )
     LAMA_CUDA_DRV_CALL( cuStreamDestroy( mComputeStream ), "cuStreamDestroy for compute failed" );
-    LAMA_LOG_DEBUG( logger, "synchronize/destroy transfer stream" )
+    SCAI_LOG_DEBUG( logger, "synchronize/destroy transfer stream" )
     LAMA_CUDA_DRV_CALL( cuStreamSynchronize( mTransferStream ), "cuStreamSynchronize for transfer failed" )
     LAMA_CUDA_DRV_CALL( cuStreamDestroy( mTransferStream ), "cuStreamDestroy for transfer failed" );
 
     if ( !numUsedDevices )
     {
-        LAMA_LOG_DEBUG( logger, "no more devices in use -> shutdown cuda" )
+        SCAI_LOG_DEBUG( logger, "no more devices in use -> shutdown cuda" )
 
         if ( CUDAContext_cublasHandle )
         {
@@ -155,10 +155,10 @@ CUDAContext::~CUDAContext()
 
             if ( error != CUBLAS_STATUS_SUCCESS )
             {
-                LAMA_LOG_ERROR( logger, "Could not destroy cublas handle, status = " << error )
+                SCAI_LOG_ERROR( logger, "Could not destroy cublas handle, status = " << error )
             }
 
-            LAMA_LOG_INFO( logger, "cublas handle successfully destroyed" )
+            SCAI_LOG_INFO( logger, "cublas handle successfully destroyed" )
             CUDAContext_cublasHandle = 0;
         }
 
@@ -168,15 +168,15 @@ CUDAContext::~CUDAContext()
 
             if ( error != CUSPARSE_STATUS_SUCCESS )
             {
-                LAMA_LOG_ERROR( logger, "Could not destroy cusparse handle, status = " << error )
+                SCAI_LOG_ERROR( logger, "Could not destroy cusparse handle, status = " << error )
             }
 
-            LAMA_LOG_INFO( logger, "cusparse handle successfully destroyed" )
+            SCAI_LOG_INFO( logger, "cusparse handle successfully destroyed" )
             CUDAContext_cusparseHandle = 0;
         }
     }
 
-    LAMA_LOG_DEBUG( logger, "destroy cuda context" )
+    SCAI_LOG_DEBUG( logger, "destroy cuda context" )
     // do not do it if CUDA tracing is enabled
     LAMA_CUDA_DRV_CALL( cuCtxDestroy( mCUcontext ), "cuCtxDestroy failed" )
 
@@ -240,7 +240,7 @@ void CUDAContext::writeAt( std::ostream& stream ) const
 void CUDAContext::disable( const char* file, int line ) const
 {
     Context::disable( file, line ); // call routine of base class
-    LAMA_LOG_DEBUG( logger, *this << ": disable by thread = " << Thread::getSelf() )
+    SCAI_LOG_DEBUG( logger, *this << ": disable by thread = " << Thread::getSelf() )
     CUcontext tmp; // temporary for last context, not necessary to save it
     LAMA_CUDA_DRV_CALL( cuCtxPopCurrent( &tmp ), "could not pop context" )
     currentDeviceNr = -1;
@@ -250,7 +250,7 @@ void CUDAContext::disable( const char* file, int line ) const
 
 void CUDAContext::enable( const char* file, int line ) const
 {
-    LAMA_LOG_DEBUG( logger, *this << ": enable by thread = " << Thread::getSelf() )
+    SCAI_LOG_DEBUG( logger, *this << ": enable by thread = " << Thread::getSelf() )
     Context::enable( file, line ); // call routine of base class
     LAMA_CUDA_DRV_CALL( cuCtxPushCurrent( mCUcontext ), "could not push context for " << *this )
 //    lama_init0_cuda ();  // otherwise some properties of device might be wrong
@@ -285,7 +285,7 @@ bool CUDAContext::canUseMemory( const Memory& other ) const
         canUse = otherCUDAHostMem->getCUDAContext().getDeviceNr() == mDeviceNr;
     }
 
-    LAMA_LOG_DEBUG( logger, *this << ": " << ( canUse ? "can use " : "can't use " )
+    SCAI_LOG_DEBUG( logger, *this << ": " << ( canUse ? "can use " : "can't use " )
                             << other )
 
     return canUse;

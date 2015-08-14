@@ -41,12 +41,12 @@
 using namespace std;
 using namespace memory;
 
-LAMA_LOG_DEF_LOGGER( logger, "MemoryTest" )
+SCAI_LOG_DEF_LOGGER( logger, "MemoryTest" )
 
 template<typename T>
 void sumArray( const LAMAArray<T>& array )
 {
-    LAMA_LOG_INFO( logger, "read access on " << array );
+    SCAI_LOG_INFO( logger, "read access on " << array );
 
     ReadAccess<T> readAccess( array );
    
@@ -65,7 +65,7 @@ void sumArray( const LAMAArray<T>& array )
 template<typename T>
 void writeArray( LAMAArray<T>& array )
 {
-    LAMA_LOG_INFO( logger, "make write test access on empty array\n" );
+    SCAI_LOG_INFO( logger, "make write test access on empty array\n" );
 
     WriteAccess<T> writeAccess( array );
 
@@ -85,7 +85,7 @@ int X; double Y;
 
 int main()
 {
-    LAMA_LOG_THREAD( "Main" )
+    SCAI_LOG_THREAD( "Main" )
 
     LAMAArray<IndexType> lamaArray; // default, not allocated at all
 

@@ -146,7 +146,7 @@ private:
 
     IndexType mChunkSize; // chunk size of each partition
 
-    LAMA_LOG_DECL_STATIC_LOGGER( logger )
+    SCAI_LOG_DECL_STATIC_LOGGER( logger )
 };
 
 IndexType CyclicDistribution::chunkSize() const

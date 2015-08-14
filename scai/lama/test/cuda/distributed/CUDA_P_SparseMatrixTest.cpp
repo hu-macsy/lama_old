@@ -76,7 +76,7 @@ struct CUDA_P_SparseMatrixTestConfig
 BOOST_FIXTURE_TEST_SUITE( CUDA_P_SparseMatrixTest, CUDA_P_SparseMatrixTestConfig )
 ;
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.CUDA_P_SparseMatrixTest" );
+SCAI_LOG_DEF_LOGGER( logger, "Test.CUDA_P_SparseMatrixTest" );
 
 /* --------------------------------------------------------------------- */
 
@@ -109,29 +109,29 @@ BOOST_AUTO_TEST_CASE( createPoissonTest )
     const IndexType N1 = 100;
     const IndexType N2 = 100;
     const IndexType n = N1 * N2;
-    LAMA_LOG_INFO( logger, "Problem size = " << N1 << " x " << N2 );
+    SCAI_LOG_INFO( logger, "Problem size = " << N1 << " x " << N2 );
     std::ostringstream inputSetName;
     // generate string for input set, e.g. 2D9P_3_3
     inputSetName << "Poisson( 2D9P_" << N1 << "_" << N2 << " )";
-    LAMA_LOG_INFO( logger, "get input set for " << inputSetName.str() );
+    SCAI_LOG_INFO( logger, "get input set for " << inputSetName.str() );
     CSRSparseMatrix<double> inputA;
     MatrixCreator<double>::buildPoisson2D( inputA, 9, N1, N2 );
-    LAMA_LOG_INFO( logger, inputSetName.str() << ": inputA = " << inputA );
+    SCAI_LOG_INFO( logger, inputSetName.str() << ": inputA = " << inputA );
     BOOST_CHECK_EQUAL( inputA.getNumRows(), n );
     BOOST_CHECK_EQUAL( inputA.getNumColumns(), n );
-    LAMA_LOG_INFO( logger, "row distribution : " << inputA.getDistribution() );
-    LAMA_LOG_INFO( logger, "col distribution : " << inputA.getColDistribution() );
+    SCAI_LOG_INFO( logger, "row distribution : " << inputA.getDistribution() );
+    SCAI_LOG_INFO( logger, "col distribution : " << inputA.getColDistribution() );
     CommunicatorPtr comm = inputA.getDistribution().getCommunicatorPtr();
     DistributionPtr blockDist( new BlockDistribution( n, comm ) );
-    LAMA_LOG_INFO( logger, "B1 ( inputA, blockDist, blockDist )" );
+    SCAI_LOG_INFO( logger, "B1 ( inputA, blockDist, blockDist )" );
     CSRSparseMatrix<double> B1( inputA, blockDist, blockDist );
-    LAMA_LOG_INFO( logger, "B2 ( inputA )" );
+    SCAI_LOG_INFO( logger, "B2 ( inputA )" );
     CSRSparseMatrix<double> B2( inputA );
     ContextPtr context = lama_test::CUDAContext::getContext();
     B2.setContext( context, context );
     B2.setCommunicationKind( Matrix::ASYNCHRONOUS );
     // Version 2 : redistribute as method
-    LAMA_LOG_INFO( logger, "B2.redistribute( blockDist, blockDist );" );
+    SCAI_LOG_INFO( logger, "B2.redistribute( blockDist, blockDist );" );
     B2.redistribute( blockDist, blockDist );
     testEqualMatrix( inputA, B2 );
     float weight = 1.0;
@@ -142,9 +142,9 @@ BOOST_AUTO_TEST_CASE( createPoissonTest )
     }
 
     DistributionPtr genDist( new GenBlockDistribution( inputA.getNumRows(), weight, comm ) );
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    *comm << ": redistribute to " << *genDist << ", my local size = " << genDist->getLocalSize() );
-    LAMA_LOG_INFO( logger, "B2.redistribute( genDist, genDist );" );
+    SCAI_LOG_INFO( logger, "B2.redistribute( genDist, genDist );" );
     B2.redistribute( genDist, genDist );
     testEqualMatrix( inputA, B2 );
     weight = 1.0;
@@ -155,9 +155,9 @@ BOOST_AUTO_TEST_CASE( createPoissonTest )
     }
 
     DistributionPtr genDist1( new GenBlockDistribution( inputA.getNumRows(), weight, comm ) );
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    *comm << ": redistribute to " << *genDist1 << ", my local size = " << genDist1->getLocalSize() );
-    LAMA_LOG_INFO( logger, "B2.redistribute( genDist1, genDist1 );" );
+    SCAI_LOG_INFO( logger, "B2.redistribute( genDist1, genDist1 );" );
     B2.redistribute( genDist1, genDist1 );
     testEqualMatrix( inputA, B2 );
 }
@@ -168,25 +168,25 @@ BOOST_AUTO_TEST_CASE( repDistTest )
 {
     const IndexType N1 = 5;
     const IndexType N2 = 5;
-    LAMA_LOG_INFO( logger, "Problem size = " << N1 << " x " << N2 );
+    SCAI_LOG_INFO( logger, "Problem size = " << N1 << " x " << N2 );
     std::ostringstream inputSetName;
     inputSetName << "Poisson( 2D9P_" << N1 << "_" << N2 << " )";
-    LAMA_LOG_INFO( logger, "repDistTest, input set = " << inputSetName.str() );
+    SCAI_LOG_INFO( logger, "repDistTest, input set = " << inputSetName.str() );
     CSRSparseMatrix<double> inputA;
     MatrixCreator<double>::buildPoisson2D( inputA, 9, N1, N2 );
     CommunicatorPtr comm = CommunicatorFactory::get( "MPI" );
     DistributionPtr repDist( new NoDistribution( inputA.getNumRows() ) );
     DistributionPtr blockDist( new BlockDistribution( inputA.getNumRows(), comm ) );
-    LAMA_LOG_INFO( logger, "Construct replicated C from " << inputA );
+    SCAI_LOG_INFO( logger, "Construct replicated C from " << inputA );
     CSRSparseMatrix<double> C( inputA, repDist, repDist );
     testEqualMatrix( inputA, C );
-    LAMA_LOG_INFO( logger, "Construct distributed D from " << C );
+    SCAI_LOG_INFO( logger, "Construct distributed D from " << C );
     CSRSparseMatrix<double> D( C, blockDist, blockDist );
     testEqualMatrix( C, D );
-    LAMA_LOG_INFO( logger, "Replicate columns of D " << D );
+    SCAI_LOG_INFO( logger, "Replicate columns of D " << D );
     D.redistribute( blockDist, repDist );
     testEqualMatrix( C, D );
-    LAMA_LOG_INFO( logger, "Replicate rows and distribte columns of D (is nonsense)" << D );
+    SCAI_LOG_INFO( logger, "Replicate rows and distribte columns of D (is nonsense)" << D );
     // This case is nonsense as each processor will require all values from
     // other processors, but should work
     D.redistribute( repDist, blockDist );
@@ -199,10 +199,10 @@ BOOST_AUTO_TEST_CASE( replicateTest )
 {
     const IndexType N1 = 5;
     const IndexType N2 = 5;
-    LAMA_LOG_INFO( logger, "Problem size = " << N1 << " x " << N2 );
+    SCAI_LOG_INFO( logger, "Problem size = " << N1 << " x " << N2 );
     std::ostringstream inputSetName;
     inputSetName << "Poisson( 2D9P_" << N1 << "_" << N2 << " )";
-    LAMA_LOG_INFO( logger, "get input set for " << inputSetName.str() );
+    SCAI_LOG_INFO( logger, "get input set for " << inputSetName.str() );
     CSRSparseMatrix<double> inputA;
     MatrixCreator<double>::buildPoisson2D( inputA, 9, N1, N2 );
     DistributionPtr repDist( new NoDistribution( inputA.getNumRows() ) );

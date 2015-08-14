@@ -161,7 +161,7 @@ namespace lama
 
 /* ------------------------------------------------------------------------- */
 
-LAMA_LOG_DEF_LOGGER( LAPACK_LAPACK::logger, "LAPACK.LAPACK" )
+SCAI_LOG_DEF_LOGGER( LAPACK_LAPACK::logger, "LAPACK.LAPACK" )
 
 /* ------------------------------------------------------------------------- */
 /*      getrf<float>                                                         */
@@ -178,7 +178,7 @@ IndexType LAPACK_LAPACK::getrf(
 {
     LAMA_REGION( "LAPACK.LAPACK.getrf<float>" )
 
-    LAMA_LOG_INFO( logger, "getrf<float> for A of size " << m << " x " << n )
+    SCAI_LOG_INFO( logger, "getrf<float> for A of size " << m << " x " << n )
 
     int info = 0;
 
@@ -252,7 +252,7 @@ IndexType LAPACK_LAPACK::getrf(
 {
     LAMA_REGION( "LAPACK.LAPACK.getrf<double>" )
 
-    LAMA_LOG_INFO( logger, "getrf<double> for A of size " << m << " x " << n )
+    SCAI_LOG_INFO( logger, "getrf<double> for A of size " << m << " x " << n )
 
     int info = 0;
 
@@ -334,7 +334,7 @@ void LAPACK_LAPACK::getinv( const IndexType n, float* a, const IndexType lda )
 #define F77_info info
 #endif
 
-    LAMA_LOG_INFO( logger, "getinv<float> for " << n << " x " << n << " matrix, uses Fortran interface" )
+    SCAI_LOG_INFO( logger, "getinv<float> for " << n << " x " << n << " matrix, uses Fortran interface" )
 
     F77_sgetrf( &F77_N, &F77_N, a, &F77_lda, ipiv.get(), &F77_info );
 
@@ -374,7 +374,7 @@ void LAPACK_LAPACK::getinv( const IndexType n, double* a, const IndexType lda )
 #define F77_info info
 #endif
 
-    LAMA_LOG_INFO( logger, "getinv<double> for " << n << " x " << n << " matrix, uses Fortran interface" )
+    SCAI_LOG_INFO( logger, "getinv<double> for " << n << " x " << n << " matrix, uses Fortran interface" )
 
     F77_dgetrf( &F77_N, &F77_N, a, &F77_lda, ipiv.get(), &F77_info );
 
@@ -402,7 +402,7 @@ int LAPACK_LAPACK::getri( const CBLAS_ORDER order, const int n, float* const a, 
 {
     LAMA_REGION( "LAPACK.LAPACK.getri<float>" )
 
-    LAMA_LOG_INFO( logger, "getri<float> for A of size " << n << " x " << n )
+    SCAI_LOG_INFO( logger, "getri<float> for A of size " << n << " x " << n )
 
     int info = 0;
 
@@ -477,7 +477,7 @@ int LAPACK_LAPACK::getri( const CBLAS_ORDER order, const int n, double* const a,
 {
     LAMA_REGION( "LAPACK.LAPACK.getri<double>" )
 
-    LAMA_LOG_INFO( logger, "getri<double> for A of size " << n << " x " << n )
+    SCAI_LOG_INFO( logger, "getri<double> for A of size " << n << " x " << n )
 
     int info = 0;
 
@@ -586,7 +586,7 @@ int LAPACK_LAPACK::tptrs(
     F77_DI = C2F_CHAR( &DI );
 #endif
 
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "tptrs<float>, n = " << n << ", nrhs = " << nrhs << ", order = " << order << ", UL = " << UL << ", TA = " << TA << ", DI = " << DI );
 
     if( order == CblasColMajor )
@@ -645,7 +645,7 @@ int LAPACK_LAPACK::tptrs(
     F77_DI = C2F_CHAR( &DI );
 #endif
 
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "tptrs<double>, n = " << n << ", nrhs = " << nrhs << ", order = " << order << ", UL = " << UL << ", TA = " << TA << ", DI = " << DI );
 
     if( order == CblasColMajor )

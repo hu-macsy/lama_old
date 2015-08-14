@@ -59,7 +59,7 @@ inline void getRange( IndexType& lb, IndexType& ub, IndexType n, PartitionId ran
 
 /* --------------------------------------------------------------------------- */
 
-LAMA_LOG_DEF_LOGGER( MICCOOUtils::logger, "MIC.COOUtils" )
+SCAI_LOG_DEF_LOGGER( MICCOOUtils::logger, "MIC.COOUtils" )
 
 /* --------------------------------------------------------------------------- */
 /*     Template implementations                                                */
@@ -71,7 +71,7 @@ void MICCOOUtils::getCSRSizes(
     const IndexType numValues,
     const IndexType cooIA[] )
 {
-    LAMA_LOG_ERROR( logger, "get CSR sizes, #rows = " << numRows << ", #values = " << numValues )
+    SCAI_LOG_ERROR( logger, "get CSR sizes, #rows = " << numRows << ", #values = " << numValues )
 
     void* csrSizesPtr = csrSizes;
     const void* cooIAPtr = cooIA;
@@ -120,7 +120,7 @@ void MICCOOUtils::getCSRValues(
     const IndexType cooJA[],
     const COOValueType cooValues[] )
 {
-    LAMA_LOG_ERROR( logger,
+    SCAI_LOG_ERROR( logger,
                     "get CSRValues<" << common::getScalarType<COOValueType>() << ", " << common::getScalarType<CSRValueType>() << ">" << ", #rows = " << numRows << ", #values = " << numValues )
 
     void* csrJAPtr = csrJA;
@@ -178,7 +178,7 @@ void MICCOOUtils::offsets2ia(
     const IndexType numRows,
     const IndexType numDiagonals )
 {
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "build cooIA( " << numValues << " ) from csrIA( " << ( numRows + 1 ) << " ), #diagonals = " << numDiagonals )
 
     const void* csrIAPtr = csrIA;
@@ -230,7 +230,7 @@ void MICCOOUtils::setCSRData(
     const IndexType numRows,
     const IndexType numDiagonals )
 {
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "build cooValues( << " << numValues << " from csrValues + csrIA( " << ( numRows + 1 ) << " ), #diagonals = " << numDiagonals )
 
     const void* csrValuesPtr = csrValues;
@@ -290,7 +290,7 @@ void MICCOOUtils::normalGEMV(
 {
     LAMA_REGION( "MIC.COO.normalGEMV" )
 
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "normalGEMV<" << common::getScalarType<ValueType>() << ">, result[" << numRows << "] = " << alpha << " * A( coo, #vals = " << numValues << " ) * x + " << beta << " * y " )
 
     if( syncToken )
@@ -355,7 +355,7 @@ void MICCOOUtils::jacobi(
 {
     LAMA_REGION( "MIC.COO.jacobi" )
 
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "jacobi<" << common::getScalarType<ValueType>() << ">" << ", #rows = " << numRows << ", omega = " << omega )
 
     if( syncToken )
@@ -420,7 +420,7 @@ void MICCOOUtils::jacobi(
 
 void MICCOOUtils::setInterface( COOUtilsInterface& COOUtils )
 {
-    LAMA_LOG_INFO( logger, "set COO routines for MIC in Interface" )
+    SCAI_LOG_INFO( logger, "set COO routines for MIC in Interface" )
 
     LAMA_INTERFACE_REGISTER( COOUtils, offsets2ia )
 

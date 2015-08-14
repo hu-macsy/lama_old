@@ -139,7 +139,7 @@ The file MatrixStorageTest.cpp looks like this:
 
 	//include headerfiles & declare namespaces
 	
-	LAMA_LOG_DEF_TEMPLATE_LOGGER(template<typename T>, MatrixStorageTest<T>::logger, "Test.MatrixStorageTest" );
+	SCAI_LOG_DEF_TEMPLATE_LOGGER(template<typename T>, MatrixStorageTest<T>::logger, "Test.MatrixStorageTest" );
 	
 	
 	LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, StorageType, purgeTest )

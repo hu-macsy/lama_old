@@ -64,7 +64,7 @@ struct SolutionProxyTestConfig
 
 BOOST_FIXTURE_TEST_SUITE( SolutionProxyTest , SolutionProxyTestConfig )
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.SolutionProxyTest" )
+SCAI_LOG_DEF_LOGGER( logger, "Test.SolutionProxyTest" )
 
 /* --------------------------------------------------------------------- */
 

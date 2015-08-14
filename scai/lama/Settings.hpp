@@ -87,7 +87,7 @@ private:
 
     Settings();
 
-    LAMA_LOG_DECL_STATIC_LOGGER( logger )
+    SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
     /** convert the string value to a boolean value, name only used for messages.
      *

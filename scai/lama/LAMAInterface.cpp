@@ -37,7 +37,7 @@
 namespace lama
 {
 
-LAMA_LOG_DEF_LOGGER( LAMAInterface::logger, "LAMAInterface" )
+SCAI_LOG_DEF_LOGGER( LAMAInterface::logger, "LAMAInterface" )
 
 LAMAInterface::LAMAInterface()
 {

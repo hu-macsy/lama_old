@@ -84,7 +84,7 @@ private:
 
     common::shared_ptr<const HostContext> mHostContextPtr;
 
-    LAMA_LOG_DECL_STATIC_LOGGER( logger )
+    SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
     mutable size_t mNumberOfAllocates; //!< variable counts allocates
 

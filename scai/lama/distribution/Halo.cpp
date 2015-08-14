@@ -37,7 +37,7 @@
 namespace lama
 {
 
-LAMA_LOG_DEF_LOGGER( Halo::logger, "Halo" )
+SCAI_LOG_DEF_LOGGER( Halo::logger, "Halo" )
 
 Halo::Halo()
 {
@@ -80,7 +80,7 @@ Halo& Halo::operator=( const Halo& other )
 {
     if( this != &other )
     {
-        LAMA_LOG_DEBUG( logger, "make deep copy of Halo" )
+        SCAI_LOG_DEBUG( logger, "make deep copy of Halo" )
 
         mRequiredPlan = other.mRequiredPlan;
         mProvidesPlan = other.mProvidesPlan;

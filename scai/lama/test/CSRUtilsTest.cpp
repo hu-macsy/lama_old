@@ -238,7 +238,7 @@ void transposeTestNonSquare( ContextPtr loc )
 
 BOOST_AUTO_TEST_SUITE( CSRUtilsTest )
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.CSRUtilsTest" )
+SCAI_LOG_DEF_LOGGER( logger, "Test.CSRUtilsTest" )
 
 LAMA_AUTO_TEST_CASE_CTT( absMaxDiffValTest, CSRUtilsTest )
 LAMA_AUTO_TEST_CASE_CT( transposeTestSquare, CSRUtilsTest )

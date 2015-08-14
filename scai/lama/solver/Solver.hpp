@@ -284,7 +284,7 @@ protected:
 
     virtual void writeAt( std::ostream& stream ) const;
 
-    LAMA_LOG_DECL_STATIC_LOGGER( logger )
+    SCAI_LOG_DECL_STATIC_LOGGER( logger )
 };
 
 }

@@ -9,9 +9,9 @@
 
 BOOST_AUTO_TEST_CASE( ContextTest )
 {
-    LAMA_LOG_DEF_LOGGER( logger, "Test" )
+    SCAI_LOG_DEF_LOGGER( logger, "Test" )
 
-    LAMA_LOG_THREAD( "main" )
+    SCAI_LOG_THREAD( "main" )
 
     using namespace memory;
 
@@ -19,7 +19,7 @@ BOOST_AUTO_TEST_CASE( ContextTest )
     ContextPtr userContext2 = Context::getContextPtr( context::UserContext, 2 );
     ContextPtr hostContext  = Context::getContextPtr( context::Host );
 
-    LAMA_LOG_INFO( logger, "userContext = " << *userContext );
+    SCAI_LOG_INFO( logger, "userContext = " << *userContext );
 
     LAMAArray<double> X( 10, 5.0 );
 

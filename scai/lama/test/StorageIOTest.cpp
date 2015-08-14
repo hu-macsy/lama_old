@@ -47,7 +47,7 @@ using namespace memory;
 BOOST_AUTO_TEST_SUITE( StorageIOTest )
 ;
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.StorageIOTest" );
+SCAI_LOG_DEF_LOGGER( logger, "Test.StorageIOTest" );
 
 typedef boost::mpl::list<float, double> test_types;
 

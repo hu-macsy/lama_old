@@ -45,7 +45,7 @@ using namespace common;
 
 BOOST_AUTO_TEST_SUITE( TaskSyncTokenTest )
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.TaskSyncTokenTest" )
+SCAI_LOG_DEF_LOGGER( logger, "Test.TaskSyncTokenTest" )
 
 /* ----------------------------------------------------------------------- */
 

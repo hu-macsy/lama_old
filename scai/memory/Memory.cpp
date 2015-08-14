@@ -43,18 +43,18 @@ namespace memory
 
 /* ---------------------------------------------------------------------------------*/
 
-LAMA_LOG_DEF_LOGGER( Memory::logger, "Memory" )
+SCAI_LOG_DEF_LOGGER( Memory::logger, "Memory" )
 
 /* ---------------------------------------------------------------------------------*/
 
 Memory::Memory( MemoryType type ) : mMemoryType( type )
 {
-    LAMA_LOG_DEBUG( logger, "Memory( type = " << mMemoryType << " )" )
+    SCAI_LOG_DEBUG( logger, "Memory( type = " << mMemoryType << " )" )
 }
 
 Memory::~Memory()
 {
-    LAMA_LOG_DEBUG( logger, "~Memory( type = " << mMemoryType << " )" )
+    SCAI_LOG_DEBUG( logger, "~Memory( type = " << mMemoryType << " )" )
 }
 
 /* ---------------------------------------------------------------------------------*/

@@ -46,7 +46,7 @@ This can be done by writing a shell script in a post build task:
 
 	cd build/test
 	echo "Exception = ERROR" >> config
-	export LAMA_LOG=config
+	export SCAI_LOG=config
 	export LAMA_UNSUPPORTED=IGNORE
 
 	./lama_test --log_level=test_suite 

@@ -39,14 +39,14 @@
 namespace tracing
 {
 
-LAMA_LOG_DEF_LOGGER( TraceData::logger, "TraceData" )
+SCAI_LOG_DEF_LOGGER( TraceData::logger, "TraceData" )
 
 void TraceData::enter( const int regionId, RegionEntry& region, const bool callTreeFlag )
 {
     COMMON_ASSERT( &region != NULL, "NULL pointer for region" )
     CounterArray enterCounterValues( true );  // get stamp of all counters
-    LAMA_LOG_DEBUG( logger, "enter " << regionId << ", region= " << &region )
-    // LAMA_LOG_DEBUG( logger, "enter " << regionId << ", " << region << ", counters = " << enterCounterValues )
+    SCAI_LOG_DEBUG( logger, "enter " << regionId << ", region= " << &region )
+    // SCAI_LOG_DEBUG( logger, "enter " << regionId << ", " << region << ", counters = " << enterCounterValues )
 
     if ( callTreeFlag )
     {
@@ -77,13 +77,13 @@ void TraceData::leave( const int regionId, RegionEntry& region, const bool callT
 {
     COMMON_ASSERT( &region != NULL, "NULL pointer for region" )
     CounterArray leaveCounterValues( true );  // get stamp of all counters
-    LAMA_LOG_DEBUG( logger, "leave " << regionId << ", region = " << &region )
+    SCAI_LOG_DEBUG( logger, "leave " << regionId << ", region = " << &region )
 
-    // LAMA_LOG_DEBUG( logger, "leave " << regionId << ", " << region << ", counters = " << leaveCounterValues )
+    // SCAI_LOG_DEBUG( logger, "leave " << regionId << ", " << region << ", counters = " << leaveCounterValues )
 
     if ( mCallStack.empty() )
     {
-        LAMA_LOG_ERROR( logger, "stop region on empty call region stack" )
+        SCAI_LOG_ERROR( logger, "stop region on empty call region stack" )
         return;
     }
 
@@ -102,11 +102,11 @@ void TraceData::leave( const int regionId, RegionEntry& region, const bool callT
 
     region.addCall( spentTime );
 
-    LAMA_LOG_DEBUG( logger, "Region " << regionId << ": spent time = " << spentTime )
+    SCAI_LOG_DEBUG( logger, "Region " << regionId << ": spent time = " << spentTime )
 
     mCallTreeTable.addExclusiveCosts( regionId, 0, leaveCounterValues );
 
-    LAMA_LOG_DEBUG( logger, region.getRegionName() << ", spent time = " << spentTime << ", costs = " << costs )
+    SCAI_LOG_DEBUG( logger, region.getRegionName() << ", spent time = " << spentTime << ", costs = " << costs )
     mCallStack.pop();
 
     // correct exclusive time of previous entry in call stack
@@ -154,12 +154,12 @@ TraceData::TraceData( ThreadId threadId, bool mThreadEnabled ) :
     mRegionTable( mThreadEnabled ? common::Thread::getThreadName( threadId ) : NULL ),
     mCallTreeTable( mThreadEnabled ? common::Thread::getThreadName( threadId ) : NULL )
 {
-    LAMA_LOG_DEBUG( logger, "TraceData for thread " << threadId )
+    SCAI_LOG_DEBUG( logger, "TraceData for thread " << threadId )
 }
 
 TraceData::~TraceData()
 {
-    LAMA_LOG_DEBUG( logger, "~TraceData for thread " << mThreadId )
+    SCAI_LOG_DEBUG( logger, "~TraceData for thread " << mThreadId )
 }
 
 }  // namespace

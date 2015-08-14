@@ -661,7 +661,7 @@ private:
     //TODO: no implementation: implement or delete
     //void initChunks();  // common initialization for constructors
 
-    LAMA_LOG_DECL_STATIC_LOGGER( logger )
+    SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
     void    computeOwners();
 
@@ -696,7 +696,7 @@ void DenseMatrix<ValueType>::copyDenseMatrix( const DenseMatrix<OtherValueType>&
 
     LAMA_ASSERT_ERROR( &other, "NULL matrix in assignment operator" )
 
-    LAMA_LOG_INFO( logger, "copy dense, this = " << this << ", other = " << &other )
+    SCAI_LOG_INFO( logger, "copy dense, this = " << this << ", other = " << &other )
 
     // inherit size and distributions
 
@@ -708,7 +708,7 @@ void DenseMatrix<ValueType>::copyDenseMatrix( const DenseMatrix<OtherValueType>&
 
     for( IndexType i = 0; i < n; ++i )
     {
-        LAMA_LOG_DEBUG( logger, "copy block " << i << " of " << n << " = " << *other.mData[i] )
+        SCAI_LOG_DEBUG( logger, "copy block " << i << " of " << n << " = " << *other.mData[i] )
 
         mData[i].reset( new DenseStorage<ValueType>( *other.mData[i] ) );
     }

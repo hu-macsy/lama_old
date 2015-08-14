@@ -62,7 +62,7 @@ public:
 
     ~MockContext()
     {
-        LAMA_LOG_DEBUG( logger, "~MockContext: " << *this )
+        SCAI_LOG_DEBUG( logger, "~MockContext: " << *this )
     }
 
     virtual void writeAt( std::ostream& stream ) const

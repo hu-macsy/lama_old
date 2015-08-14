@@ -166,7 +166,7 @@ private:
 
 private:
 
-    LAMA_LOG_DECL_STATIC_LOGGER( logger )
+    SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
     template    <typename ValueType>
     static void sum_launcher( const int n, ValueType alpha, const ValueType* x, ValueType beta, const ValueType* y, ValueType* z, cudaStream_t stream );

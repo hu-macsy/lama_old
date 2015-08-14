@@ -499,7 +499,7 @@ protected:
 
     bool mDiagonalProperty; //!< if true, diagonal elements are always stored at first position in each row
 
-    LAMA_LOG_DECL_STATIC_LOGGER( logger ) //!< logger for this matrix format
+    SCAI_LOG_DECL_STATIC_LOGGER( logger ) //!< logger for this matrix format
 
     ContextPtr    mContext;//!< preferred context for the storage
 

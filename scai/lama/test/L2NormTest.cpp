@@ -50,7 +50,7 @@ extern std::string testcase;
 
 BOOST_AUTO_TEST_SUITE( L2NormTest )
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.L2NormTest" )
+SCAI_LOG_DEF_LOGGER( logger, "Test.L2NormTest" )
 
 typedef boost::mpl::list<float, double> test_types;
 
@@ -93,7 +93,7 @@ BOOST_AUTO_TEST_CASE( commonTestCases )
 
     if ( base_test_case )
     {
-        LAMA_LOG_INFO( logger, "Run method " << testcase << " in L2NormTest." );
+        SCAI_LOG_INFO( logger, "Run method " << testcase << " in L2NormTest." );
         NORMTEST_COMMONTESTCASES( normtest );
     }
     else

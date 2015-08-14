@@ -125,7 +125,7 @@ private:
 
     GeneralDistribution& operator=( const GeneralDistribution& other );
 
-    LAMA_LOG_DECL_STATIC_LOGGER( logger )
+    SCAI_LOG_DECL_STATIC_LOGGER( logger )
 };
 
 typedef common::shared_ptr<GeneralDistribution> GeneralDistributionPtr;

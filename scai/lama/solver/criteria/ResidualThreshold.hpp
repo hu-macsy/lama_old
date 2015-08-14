@@ -120,7 +120,7 @@ public:
     virtual void writeAt( std::ostream& stream ) const;
 
 protected:
-    LAMA_LOG_USING( Criterion::logger );
+    SCAI_LOG_USING( Criterion::logger );
 private:
     const NormPtr mNorm;
     ResidualThresholdCheckMode mCheckMode;

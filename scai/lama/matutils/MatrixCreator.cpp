@@ -48,7 +48,7 @@ namespace lama
 
 {
 
-LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, MatrixCreator<ValueType>::logger, "MatrixCreator" )
+SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, MatrixCreator<ValueType>::logger, "MatrixCreator" )
 
 static inline void getStencilProperties(
     IndexType& dimension,
@@ -183,7 +183,7 @@ static inline IndexType getNStencilValues(
     IndexType nY = getNumNeighbors( idY, dimY, -length ) + getNumNeighbors( idY, dimY, length );
     IndexType nZ = getNumNeighbors( idZ, dimZ, -length ) + getNumNeighbors( idZ, dimZ, length );
 
-    // LAMA_LOG_DEBUG( logger, idX << "," << idY << "," << idZ << ": neighbors = "
+    // SCAI_LOG_DEBUG( logger, idX << "," << idY << "," << idZ << ": neighbors = "
     //                   << nX << "," << nY << "," << nZ )
 
     // printf("%d,%d,%d has %d,%d,%d neighbors\n", idX, idY, idZ, nX, nY, nZ);
@@ -319,7 +319,7 @@ void MatrixCreator<ValueType>::buildPoisson(
         lama::BlockDistribution::getRange( dimLB[2], dimUB[2], dimZ, gridRank[2], gridSize[2] );
     }
 
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    *comm << ": rank = (" << gridRank[0] << "," << gridRank[1] << "," << gridRank[2] << ") of (" << gridSize[0] << "," << gridSize[1] << "," << gridSize[2] << "), local range = [" << dimLB[0] << ":" << dimUB[0] << "," << dimLB[1] << ":" << dimUB[1] << "," << dimLB[2] << ":" << dimUB[2] << "] of " << dimX << " x " << dimY << " x " << dimZ )
 
     IndexType globalSize = dimX * dimY * dimZ; // number of rows, columns of full matrix
@@ -344,7 +344,7 @@ void MatrixCreator<ValueType>::buildPoisson(
         localSize *= ( dimUB[i] - dimLB[i] + 1 );
     }
 
-    LAMA_LOG_DEBUG( logger, *comm << ": has local size = " << localSize )
+    SCAI_LOG_DEBUG( logger, *comm << ": has local size = " << localSize )
 
     myGlobalIndexes.reserve( localSize );
     myIA.reserve( localSize );
@@ -357,7 +357,7 @@ void MatrixCreator<ValueType>::buildPoisson(
 
     LAMA_ASSERT_EQUAL_ERROR( dimStencil, dimension )
 
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "stencil type = " << stencilType << " -> dim = " << dimStencil << ", direction length = " << length << ", max distance = " << maxDistance )
 
     // compute global indexes this processor is responsibile for and number of non-zero values
@@ -384,13 +384,13 @@ void MatrixCreator<ValueType>::buildPoisson(
         }
     }
 
-    LAMA_LOG_INFO( logger, *comm << ": has local " << localSize << " rows, nna = " << myNNA )
+    SCAI_LOG_INFO( logger, *comm << ": has local " << localSize << " rows, nna = " << myNNA )
     // allocate and fill local part of the distributed matrix
 
     lama::DistributionPtr distribution = lama::DistributionPtr(
             new lama::GeneralDistribution( globalSize, myGlobalIndexes, comm ) );
 
-    LAMA_LOG_INFO( logger, "distribution = " << *distribution )
+    SCAI_LOG_INFO( logger, "distribution = " << *distribution )
 
     // create new local CSR data ( # local rows x # columns )
 
@@ -441,7 +441,7 @@ void MatrixCreator<ValueType>::buildPoisson(
 
                     LAMA_ASSERT_EQUAL_DEBUG( colIndexes.size(), colValues.size() )
 
-                    LAMA_LOG_TRACE( logger,
+                    SCAI_LOG_TRACE( logger,
                                     *comm << ": at " << idX << " x " << idY << " x " << idZ << ", local row : " << rowCounter << ", global row : " << getMatrixPosition( idX, idY, idZ, dimX, dimY, dimZ ) << ": " << colIndexes.size() << " entries: " << colIndexes[0] << ": " << colValues[0] << ", ..." )
 
                     ia[rowCounter + 1] = ia[rowCounter] + static_cast<IndexType>( colIndexes.size() );
@@ -461,7 +461,7 @@ void MatrixCreator<ValueType>::buildPoisson(
 
     localMatrix.swap( csrIA, csrJA, csrValues );
 
-    LAMA_LOG_DEBUG( logger, "replace owned data with " << localMatrix )
+    SCAI_LOG_DEBUG( logger, "replace owned data with " << localMatrix )
 
     matrix.assign( localMatrix, distribution, distribution ); // builds also halo
 
@@ -470,7 +470,7 @@ void MatrixCreator<ValueType>::buildPoisson(
 
     LAMA_ASSERT_DEBUG( matrix.getLocalStorage().hasDiagonalProperty(), "CSR data has not diagonal property" )
 
-    LAMA_LOG_INFO( logger, "built matrix A = " << matrix )
+    SCAI_LOG_INFO( logger, "built matrix A = " << matrix )
 }
 
 /* ------------------------------------------------------------------------- */
@@ -481,7 +481,7 @@ void MatrixCreator<ValueType>::buildPoisson1D(
     const IndexType stencilType,
     const IndexType dim )
 {
-    LAMA_LOG_INFO( logger, "build Poisson1D" << stencilType << "P( " << dim << ")" )
+    SCAI_LOG_INFO( logger, "build Poisson1D" << stencilType << "P( " << dim << ")" )
 
     buildPoisson( matrix, 1, stencilType, dim, 1, 1 );
 }
@@ -495,7 +495,7 @@ void MatrixCreator<ValueType>::buildPoisson2D(
     const IndexType dim1,
     const IndexType dim2 )
 {
-    LAMA_LOG_INFO( logger, "build Poisson2D" << stencilType << "P( " << dim1 << ", " << dim2 << ")" )
+    SCAI_LOG_INFO( logger, "build Poisson2D" << stencilType << "P( " << dim1 << ", " << dim2 << ")" )
 
     buildPoisson( matrix, 2, stencilType, dim1, dim2, 1 );
 }
@@ -510,7 +510,7 @@ void MatrixCreator<ValueType>::buildPoisson3D(
     const IndexType dim2,
     const IndexType dim3 )
 {
-    LAMA_LOG_INFO( logger, "build Poisson3D" << stencilType << "P( " << dim1 << ", " << dim2 << ", " << dim3 << ")" )
+    SCAI_LOG_INFO( logger, "build Poisson3D" << stencilType << "P( " << dim1 << ", " << dim2 << ", " << dim3 << ")" )
 
     buildPoisson( matrix, 3, stencilType, dim1, dim2, dim3 );
 }
@@ -578,7 +578,7 @@ void MatrixCreator<ValueType>::fillRandom( Matrix& matrix, double density )
 
     localCSRStorage.setRawCSRData( localRowSize, colSize, numValues, &csrIA[0], &csrJA[0], &csrValues[0] );
 
-    LAMA_LOG_DEBUG( logger, "replace owned data with " << localCSRStorage )
+    SCAI_LOG_DEBUG( logger, "replace owned data with " << localCSRStorage )
 
     // The new matrix data has the same row distribution as the input
     // matrix, also take over the original column distribution

@@ -131,7 +131,7 @@ void constructorTest1( logging::Logger& logger )
 //    TODO ThoBra: weiter unten die "Nachbildung" des Copy-Constructors laeuft fehlerfrei,
 //    hier knallt es beim letzten BOOST_CHECK_EQUAL
 //    DIAStorage<ValueType> diaStorageCopy( diaStorage );
-//    LAMA_LOG_INFO( logger, "copy constructor" );
+//    SCAI_LOG_INFO( logger, "copy constructor" );
 //
 //    BOOST_REQUIRE_EQUAL( numRows, diaStorageCopy.getNumRows() );
 //    BOOST_REQUIRE_EQUAL( numColumns, diaStorageCopy.getNumColumns() );
@@ -161,7 +161,7 @@ void constructorTest1( logging::Logger& logger )
     diaStorage.setCSRData( numRowsDia, numColumnsDia, numValuesCSR, csrIa, csrJa, csrValues );
     {
         ReadAccess<ValueType> diaValues( diaStorage.getValues() );
-        LAMA_LOG_INFO( logger, "diaValues.size() = " << diaValues.size() );
+        SCAI_LOG_INFO( logger, "diaValues.size() = " << diaValues.size() );
         BOOST_CHECK_EQUAL( diaValues.size(), numValues );
 
         for ( IndexType i = 0; i < numValues; ++i )
@@ -193,7 +193,7 @@ void typeNameTest()
 
 BOOST_AUTO_TEST_SUITE( DIAStorageTest )
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.DIAStorageTest" )
+SCAI_LOG_DEF_LOGGER( logger, "Test.DIAStorageTest" )
 LAMA_AUTO_TEST_CASE_CT( commonTestCases, DIAStorageTest )
 LAMA_AUTO_TEST_CASE_T( constructorTest, DIAStorageTest )
 LAMA_AUTO_TEST_CASE_TL( constructorTest1, DIAStorageTest )

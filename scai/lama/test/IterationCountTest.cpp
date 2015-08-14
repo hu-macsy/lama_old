@@ -70,7 +70,7 @@ struct IterationCountTestConfig
 
 BOOST_FIXTURE_TEST_SUITE( IterationCountTest, IterationCountTestConfig )
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.IterationCountTest" )
+SCAI_LOG_DEF_LOGGER( logger, "Test.IterationCountTest" )
 
 /* --------------------------------------------------------------------- */
 

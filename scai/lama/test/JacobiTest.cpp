@@ -89,7 +89,7 @@ struct JacobiTestConfig
 
 BOOST_FIXTURE_TEST_SUITE( JacobiTest, JacobiTestConfig )
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.JacobiTest" )
+SCAI_LOG_DEF_LOGGER( logger, "Test.JacobiTest" )
 
 /* --------------------------------------------------------------------- */
 
@@ -139,9 +139,9 @@ void testSolveMethod( std::string solverId, ContextPtr context )
     EquationHelper::EquationSystem<ValueType> system = EquationHelper::get3x3SystemA<ValueType>();
     CSRSparseMatrix<ValueType> matrix( system.coefficients );
     MatrixType coefficients( matrix );
-    LAMA_LOG_INFO( logger, "coefficient matrix = " << coefficients );
+    SCAI_LOG_INFO( logger, "coefficient matrix = " << coefficients );
     coefficients.setContext( context );
-    LAMA_LOG_INFO( logger, "JacobiTest uses context = " << context->getType() );
+    SCAI_LOG_INFO( logger, "JacobiTest uses context = " << context->getType() );
     const DenseVector<ValueType> rhs( system.rhs );
     DenseVector<ValueType> solution( system.coefficients.getNumRows(), static_cast<ValueType>( 2.1 ) );
     DenseVector<ValueType> exactSolution( system.solution );

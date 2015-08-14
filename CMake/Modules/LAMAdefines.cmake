@@ -41,7 +41,7 @@
 
 list ( APPEND LOG_CHOICES "TRACE" "DEBUG" "INFO" "WARN" "ERROR" "OFF" )
 
-if    ( NOT LAMA_LOG_LEVEL )
+if    ( NOT SCAI_LOG_LEVEL )
     if     ( CMAKE_BUILD_TYPE STREQUAL "Release" )
         set ( DEFAULT_LOG_LEVEL "INFO" )
     elseif ( CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo" )
@@ -49,14 +49,14 @@ if    ( NOT LAMA_LOG_LEVEL )
     else   ( )
         set ( DEFAULT_LOG_LEVEL "TRACE" )
     endif  ( )
-endif ( NOT LAMA_LOG_LEVEL )
+endif ( NOT SCAI_LOG_LEVEL )
 
-set ( LAMA_LOG_LEVEL ${DEFAULT_LOG_LEVEL} CACHE STRING
+set ( SCAI_LOG_LEVEL ${DEFAULT_LOG_LEVEL} CACHE STRING
       "Choose level of compile time logging: ${LOG_CHOICES}" )
-set ( CACHE LAMA_LOG_LEVEL PROPERTY STRINGS ${LOG_CHOICES} )
-checkValue ( ${LAMA_LOG_LEVEL} "${LOG_CHOICES}" )
+set ( CACHE SCAI_LOG_LEVEL PROPERTY STRINGS ${LOG_CHOICES} )
+checkValue ( ${SCAI_LOG_LEVEL} "${LOG_CHOICES}" )
 
-add_definitions ( -DLAMA_LOG_LEVEL_${LAMA_LOG_LEVEL} )
+add_definitions ( -DSCAI_LOG_LEVEL_${SCAI_LOG_LEVEL} )
 
 ## ASSERT Level
 #

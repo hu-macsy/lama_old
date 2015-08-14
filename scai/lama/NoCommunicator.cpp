@@ -48,17 +48,17 @@ using namespace std;
 namespace lama
 {
 
-LAMA_LOG_DEF_LOGGER( NoCommunicator::logger, "Communicator.NoCommunicator" )
+SCAI_LOG_DEF_LOGGER( NoCommunicator::logger, "Communicator.NoCommunicator" )
 
 NoCommunicator::NoCommunicator()
                 : CRTPCommunicator<NoCommunicator>( "none" )
 {
-    LAMA_LOG_DEBUG( logger, "NoCommunicator()" )
+    SCAI_LOG_DEBUG( logger, "NoCommunicator()" )
 }
 
 NoCommunicator::~NoCommunicator()
 {
-    LAMA_LOG_DEBUG( logger, "~NoCommunicator()" )
+    SCAI_LOG_DEBUG( logger, "~NoCommunicator()" )
 }
 
 memory::ContextPtr NoCommunicator::getCommunicationContext( const memory::ContextArray& ) const

@@ -47,7 +47,7 @@ namespace lama
 
 /**  static variables *****************************************************/
 
-LAMA_LOG_DEF_LOGGER( MICContext::logger, "MIC.Context" )
+SCAI_LOG_DEF_LOGGER( MICContext::logger, "MIC.Context" )
 
 int MICContext::currentDeviceNr = -1;
 
@@ -71,11 +71,11 @@ __attribute__( ( target( mic ) ) ) bool chk_target00()
 MICContext::MICContext( int deviceNr )
     : Context( MIC ), mDeviceNr( deviceNr )
 {
-    LAMA_LOG_INFO( logger, "construct MICContext, device nr = = " << deviceNr )
+    SCAI_LOG_INFO( logger, "construct MICContext, device nr = = " << deviceNr )
 
     int numDevices = 0;
 
-    LAMA_LOG_INFO( logger, "Checking for Intel(R) MIC Architecture (Target CPU) devices" )
+    SCAI_LOG_INFO( logger, "Checking for Intel(R) MIC Architecture (Target CPU) devices" )
 
 #ifdef __INTEL_OFFLOAD
     numDevices = _Offload_number_of_devices();
@@ -90,7 +90,7 @@ MICContext::MICContext( int deviceNr )
 
     mDeviceNr = 0;
 
-    LAMA_LOG_INFO( logger, "Using device " << mDeviceNr << " of " << numDevices << " installed devices" )
+    SCAI_LOG_INFO( logger, "Using device " << mDeviceNr << " of " << numDevices << " installed devices" )
 
     bool targetOK = false;
 
@@ -115,7 +115,7 @@ MICContext::MICContext( int deviceNr )
         }
     }
 
-    LAMA_LOG_INFO( logger, "Uses " << numCores << " threads for parallel execution" );
+    SCAI_LOG_INFO( logger, "Uses " << numCores << " threads for parallel execution" );
 
     mNumThreads = numCores;
 }
@@ -124,7 +124,7 @@ MICContext::MICContext( int deviceNr )
 
 MICContext::~MICContext()
 {
-    LAMA_LOG_INFO( logger, "~MICContext: " << *this )
+    SCAI_LOG_INFO( logger, "~MICContext: " << *this )
 }
 
 /* ----------------------------------------------------------------------------- */
@@ -145,7 +145,7 @@ void MICContext::disable( const char* file, int line ) const
 
 void MICContext::enable( const char* file, int line ) const
 {
-    LAMA_LOG_DEBUG( logger, *this << ": enable" )
+    SCAI_LOG_DEBUG( logger, *this << ": enable" )
     currentDeviceNr = mDeviceNr;
 }
 
@@ -177,14 +177,14 @@ void* MICContext::allocate( const size_t size ) const
 {
     void* pointer = NULL;
 
-    LAMA_LOG_INFO( logger, "allocate, init pointer = " << pointer )
+    SCAI_LOG_INFO( logger, "allocate, init pointer = " << pointer )
 
 #pragma offload target( mic : mDeviceNr ), in( size ), out( pointer )
     {
         pointer = ::malloc( size );
     }
 
-    LAMA_LOG_INFO( logger, "allocated " << size << " bytes on device, ptr = " << pointer )
+    SCAI_LOG_INFO( logger, "allocated " << size << " bytes on device, ptr = " << pointer )
 
     return pointer;
 }
@@ -193,7 +193,7 @@ void* MICContext::allocate( const size_t size ) const
 
 void MICContext::allocate( ContextData& contextData, const size_t size ) const
 {
-    LAMA_LOG_INFO( logger, "context allocate " << size << " bytes on MIC device" )
+    SCAI_LOG_INFO( logger, "context allocate " << size << " bytes on MIC device" )
     contextData.pointer = allocate( size );
 }
 
@@ -201,7 +201,7 @@ void MICContext::allocate( ContextData& contextData, const size_t size ) const
 
 void MICContext::free( void* pointer, const size_t size ) const
 {
-    LAMA_LOG_INFO( logger, "free " << size << " bytes on MIC device, ptr = " << pointer )
+    SCAI_LOG_INFO( logger, "free " << size << " bytes on MIC device, ptr = " << pointer )
 
 #pragma offload target( mic : mDeviceNr ), in( pointer )
     {
@@ -221,7 +221,7 @@ void MICContext::free( ContextData& contextData ) const
 
 void MICContext::memcpy( void* dst, const void* src, const size_t size ) const
 {
-    LAMA_LOG_INFO( logger, "memcpy " << size << " bytes on MIC device, " << dst << " <- " << src )
+    SCAI_LOG_INFO( logger, "memcpy " << size << " bytes on MIC device, " << dst << " <- " << src )
 
     const size_t dst_ptr = (size_t) dst;
     const size_t src_ptr = (size_t) src;
@@ -278,7 +278,7 @@ void MICContext::memcpy( void* dst, const void* src, const size_t size ) const
 
 void MICContext::memcpyToHost( void* dst, const void* src, const size_t size ) const
 {
-    LAMA_LOG_INFO( logger, "memcpy " << size << " bytes from MIC to Host" )
+    SCAI_LOG_INFO( logger, "memcpy " << size << " bytes from MIC to Host" )
 
     LAMA_REGION( "MIC.memcpyToHost" )
 
@@ -295,7 +295,7 @@ void MICContext::memcpyToHost( void* dst, const void* src, const size_t size ) c
 
 void MICContext::memcpyFromHost( void* dst, const void* src, const size_t size ) const
 {
-    LAMA_LOG_INFO( logger, "memcpy " << size << " bytes on MIC device, dst = " << dst << ", src = " << src )
+    SCAI_LOG_INFO( logger, "memcpy " << size << " bytes on MIC device, dst = " << dst << ", src = " << src )
 
     LAMA_REGION( "MIC.memcpyFromHost1" )
 
@@ -336,21 +336,21 @@ void MICContext::memcpy( ContextData& dst, const ContextData& src, const size_t 
 
     if( srcType == Host && dstType == MIC )
     {
-        LAMA_LOG_INFO( logger, "copy from Host to MIC" )
+        SCAI_LOG_INFO( logger, "copy from Host to MIC" )
         memcpyFromHost( dst.pointer, src.pointer, size );
-        LAMA_LOG_INFO( logger, "ready copy from Host to MIC" )
+        SCAI_LOG_INFO( logger, "ready copy from Host to MIC" )
     }
     else if( srcType == MIC && dstType == Host )
     {
-        LAMA_LOG_INFO( logger, "copy from MIC to Host" )
+        SCAI_LOG_INFO( logger, "copy from MIC to Host" )
         memcpyToHost( dst.pointer, src.pointer, size );
-        LAMA_LOG_INFO( logger, "ready copy from MIC to Host" )
+        SCAI_LOG_INFO( logger, "ready copy from MIC to Host" )
     }
     else if( srcType == MIC && dstType == MIC )
     {
-        LAMA_LOG_INFO( logger, "copy from MIC to MIC" )
+        SCAI_LOG_INFO( logger, "copy from MIC to MIC" )
         memcpy( dst.pointer, src.pointer, size );
-        LAMA_LOG_INFO( logger, "ready copy from MIC to MIC" )
+        SCAI_LOG_INFO( logger, "ready copy from MIC to MIC" )
     }
     else
     {

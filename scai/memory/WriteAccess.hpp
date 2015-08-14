@@ -172,12 +172,12 @@ public:
 
 protected:
 
-    LAMA_LOG_DECL_STATIC_LOGGER( logger )
+    SCAI_LOG_DECL_STATIC_LOGGER( logger )
 };
 
 /* --------------------------------------------------------------------------- */
 
-LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, WriteAccess<ValueType>::logger, "WriteAccess" )
+SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, WriteAccess<ValueType>::logger, "WriteAccess" )
 
 /* --------------------------------------------------------------------------- */
 
@@ -187,7 +187,7 @@ WriteAccess<ValueType>::WriteAccess( LAMAArray<ValueType>& array, ContextPtr con
 {
     COMMON_ASSERT( !array.constFlag, "WriteAccess on const array not allowed: " << array )
 
-    LAMA_LOG_DEBUG( logger, "acquire write access for " << *mArray << " at " << *contextPtr << ", keep = " << keep )
+    SCAI_LOG_DEBUG( logger, "acquire write access for " << *mArray << " at " << *contextPtr << ", keep = " << keep )
     mContextDataIndex = mArray->acquireWriteAccess( contextPtr, keep );
     mData = mArray->get( mContextDataIndex );     // cache the data pointer
 }
@@ -202,7 +202,7 @@ WriteAccess<ValueType>::WriteAccess( LAMAArray<ValueType>& array, const bool kee
 
     ContextPtr contextPtr = Context::getContextPtr( context::Host );
 
-    LAMA_LOG_DEBUG( logger, "acquire write access for " << *mArray << " at " << *contextPtr << ", keep = " << keep )
+    SCAI_LOG_DEBUG( logger, "acquire write access for " << *mArray << " at " << *contextPtr << ", keep = " << keep )
     mContextDataIndex = mArray->acquireWriteAccess( contextPtr, keep );
     mData = mArray->get( mContextDataIndex );     // cache the data pointer
 }
@@ -212,7 +212,7 @@ WriteAccess<ValueType>::WriteAccess( LAMAArray<ValueType>& array, const bool kee
 template<typename ValueType>
 WriteAccess<ValueType>::~WriteAccess()
 {
-    LAMA_LOG_DEBUG( logger, "~WriteAccess: release" )
+    SCAI_LOG_DEBUG( logger, "~WriteAccess: release" )
     release();
 }
 
@@ -258,7 +258,7 @@ void WriteAccess<ValueType>::clear()
 {
     COMMON_ASSERT( mArray, "WriteAccess has already been released." )
     mArray->clear( mContextDataIndex );
-    LAMA_LOG_DEBUG( logger, "cleared " << *mArray )
+    SCAI_LOG_DEBUG( logger, "cleared " << *mArray )
     mData = mArray->get( mContextDataIndex );     // not really needed
 }
 
@@ -269,7 +269,7 @@ void WriteAccess<ValueType>::resize( const common::IndexType newSize )
 {
     COMMON_ASSERT( mArray, "WriteAccess has already been released." )
     // do not log before check of mArray
-    LAMA_LOG_DEBUG( logger, "resize " << *mArray << " to new size " << newSize )
+    SCAI_LOG_DEBUG( logger, "resize " << *mArray << " to new size " << newSize )
     mArray->resize( mContextDataIndex, newSize );
     mData = mArray->get( mContextDataIndex );     // data might be reallocated
 }
@@ -280,7 +280,7 @@ template<typename ValueType>
 void WriteAccess<ValueType>::reserve( const common::IndexType capacity )
 {
     COMMON_ASSERT( mArray, "WriteAccess has already been released." )
-    LAMA_LOG_DEBUG( logger, "reserve " << *mArray << " to new capacity " << capacity )
+    SCAI_LOG_DEBUG( logger, "reserve " << *mArray << " to new capacity " << capacity )
     mArray->reserve( mContextDataIndex, capacity ); // copy = true for old data
     mData = mArray->get( mContextDataIndex );     // data might be reallocated
 }
@@ -301,12 +301,12 @@ void WriteAccess<ValueType>::release()
 {
     if ( mArray )
     {
-        LAMA_LOG_DEBUG( logger, "release write access for " << *mArray )
+        SCAI_LOG_DEBUG( logger, "release write access for " << *mArray )
         mArray->releaseWriteAccess( mContextDataIndex );
     }
     else
     {
-        LAMA_LOG_DEBUG( logger, "release write access for an already released LAMAArray" )
+        SCAI_LOG_DEBUG( logger, "release write access for an already released LAMAArray" )
     }
 
     mArray = 0;

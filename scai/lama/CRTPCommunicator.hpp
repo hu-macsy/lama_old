@@ -241,7 +241,7 @@ private:
         const IndexType sendSize,
         const int direction ) const
     {
-        LAMA_LOG_DEBUG( Derived::logger,
+        SCAI_LOG_DEBUG( Derived::logger,
                         *this << ": shift, direction = " << direction << ", sendsize = " << sendSize << ", recvsize = " << recvSize )
 
         if( direction % getSize() == 0 )
@@ -266,7 +266,7 @@ private:
         PartitionId dest = getNeighbor( direction );
         PartitionId source = getNeighbor( -direction );
 
-        LAMA_LOG_DEBUG( Derived::logger,
+        SCAI_LOG_DEBUG( Derived::logger,
                         "shiftDataAsync<" << typeid(T).name() << ">, dest = " << dest << ", source = " << source << ", size = " << size )
 
         return static_cast<const Derived*>( this )->shiftAsyncImpl( recvVals, source, sendVals, dest, size );

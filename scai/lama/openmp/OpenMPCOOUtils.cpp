@@ -51,7 +51,7 @@ namespace lama
 
 /* --------------------------------------------------------------------------- */
 
-LAMA_LOG_DEF_LOGGER( OpenMPCOOUtils::logger, "OpenMP.COOUtils" )
+SCAI_LOG_DEF_LOGGER( OpenMPCOOUtils::logger, "OpenMP.COOUtils" )
 
 /* --------------------------------------------------------------------------- */
 /*     Template implementations                                                */
@@ -63,7 +63,7 @@ void OpenMPCOOUtils::getCSRSizes(
     const IndexType numValues,
     const IndexType cooIA[] )
 {
-    LAMA_LOG_INFO( logger, "get CSR sizes, #rows = " << numRows << ", #values = " << numValues )
+    SCAI_LOG_INFO( logger, "get CSR sizes, #rows = " << numRows << ", #values = " << numValues )
 
     // initialize size array for each row
 
@@ -92,7 +92,7 @@ void OpenMPCOOUtils::getCSRValues( IndexType csrJA[], CSRValueType csrValues[], 
                                    const IndexType cooJA[],
                                    const COOValueType cooValues[] )
 {
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "get CSRValues<" << getScalarType<COOValueType>() << ", " 
                     << getScalarType<CSRValueType>() << ">" << ", #rows = " << numRows << ", #values = " << numValues )
 
@@ -107,7 +107,7 @@ void OpenMPCOOUtils::getCSRValues( IndexType csrJA[], CSRValueType csrValues[], 
         csrJA[offset] = cooJA[k];
         csrValues[offset] = static_cast<CSRValueType>( cooValues[k] );
 
-        LAMA_LOG_DEBUG( logger, "row " << i << ": new offset = " << offset )
+        SCAI_LOG_DEBUG( logger, "row " << i << ": new offset = " << offset )
 
         offset++;
     }
@@ -133,7 +133,7 @@ void OpenMPCOOUtils::offsets2ia(
     const IndexType numRows,
     const IndexType numDiagonals )
 {
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "build cooIA( " << numValues << " ) from csrIA( " << ( numRows + 1 ) << " ), #diagonals = " << numDiagonals )
 
     #pragma omp parallel for schedule( LAMA_OMP_SCHEDULE )
@@ -160,7 +160,7 @@ void OpenMPCOOUtils::offsets2ia(
 
         for( IndexType jj = csrOffset; jj < csrIA[i + 1]; ++jj )
         {
-            LAMA_LOG_TRACE( logger,
+            SCAI_LOG_TRACE( logger,
                             "cooIA[ " << ( jj + cooOffset ) << "] = " << i << ", jj = " << jj << ", cooOffset = " << cooOffset )
             cooIA[jj + cooOffset] = i;
         }
@@ -178,7 +178,7 @@ void OpenMPCOOUtils::setCSRData(
     const IndexType numRows,
     const IndexType numDiagonals )
 {
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "build cooValues( << " << numValues << " from csrValues + csrIA( " << ( numRows + 1 ) << " ), #diagonals = " << numDiagonals )
 
     #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
@@ -223,7 +223,7 @@ void OpenMPCOOUtils::normalGEMV(
     const ValueType cooValues[],
     SyncToken* syncToken )
 {
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "normalGEMV<" << getScalarType<ValueType>() << ", #threads = " << omp_get_max_threads() << ">, result[" << numRows << "] = " << alpha << " * A( coo, #vals = " << numValues << " ) * x + " << beta << " * y " )
 
     if( syncToken )
@@ -271,7 +271,7 @@ void OpenMPCOOUtils::normalGEVM(
     const ValueType cooValues[],
     SyncToken* syncToken )
 {
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "normalGEMV<" << getScalarType<ValueType>() << ", #threads = " << omp_get_max_threads() << ">, result[" << numColumns << "] = " << alpha << " * A( coo, #vals = " << numValues << " ) * x + " << beta << " * y " )
 
     if( syncToken )
@@ -320,7 +320,7 @@ void OpenMPCOOUtils::jacobi(
     const IndexType numRows,
     class SyncToken* syncToken )
 {
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "jacobi<" << getScalarType<ValueType>() << ">" << ", #rows = " << numRows << ", omega = " << omega )
 
     if( syncToken )

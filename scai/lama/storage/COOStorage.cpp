@@ -59,7 +59,7 @@ namespace lama
 
 /* --------------------------------------------------------------------------- */
 
-LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, COOStorage<ValueType>::logger, "MatrixStorage.COOStorage" )
+SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, COOStorage<ValueType>::logger, "MatrixStorage.COOStorage" )
 
 /* --------------------------------------------------------------------------- */
 
@@ -69,7 +69,7 @@ COOStorage<ValueType>::COOStorage( const IndexType numRows, const IndexType numC
 
     CRTPMatrixStorage<COOStorage<ValueType>,ValueType>( numRows, numColumns ), mNumValues( 0 )
 {
-    LAMA_LOG_DEBUG( logger, "COOStorage for matrix " << mNumRows << " x " << mNumColumns << ", no non-zero elements" )
+    SCAI_LOG_DEBUG( logger, "COOStorage for matrix " << mNumRows << " x " << mNumColumns << ", no non-zero elements" )
 }
 
 /* --------------------------------------------------------------------------- */
@@ -109,7 +109,7 @@ template<typename ValueType>
 COOStorage<ValueType>::COOStorage()
     : CRTPMatrixStorage<COOStorage<ValueType>,ValueType>( 0, 0 ), mNumValues( 0 )
 {
-    LAMA_LOG_DEBUG( logger, "COOStorage, matrix is 0 x 0." )
+    SCAI_LOG_DEBUG( logger, "COOStorage, matrix is 0 x 0." )
 }
 
 /* --------------------------------------------------------------------------- */
@@ -167,7 +167,7 @@ bool COOStorage<ValueType>::checkDiagonalProperty() const
         }
     }
 
-    LAMA_LOG_INFO( logger, *this << ": checkDiagonalProperty -> " << diagonalProperty )
+    SCAI_LOG_INFO( logger, *this << ": checkDiagonalProperty -> " << diagonalProperty )
 
     return diagonalProperty;
 }
@@ -222,7 +222,7 @@ void COOStorage<ValueType>::check( const char* msg ) const
 template<typename ValueType>
 void COOStorage<ValueType>::setIdentity( const IndexType size )
 {
-    LAMA_LOG_INFO( logger, "set identity values for " << size )
+    SCAI_LOG_INFO( logger, "set identity values for " << size )
 
     mNumRows = size;
     mNumColumns = size;
@@ -330,7 +330,7 @@ void COOStorage<ValueType>::setCOOData(
 
     // Note: no support for row indexes in COO format
 
-    LAMA_LOG_INFO( logger, *this << ": set COO by arrays ia, ja, values" )
+    SCAI_LOG_INFO( logger, *this << ": set COO by arrays ia, ja, values" )
 }
 
 /* --------------------------------------------------------------------------- */
@@ -346,7 +346,7 @@ void COOStorage<ValueType>::setCSRDataImpl(
     const LAMAArray<OtherValueType>& values,
     const ContextPtr )
 {
-    LAMA_LOG_DEBUG( logger, "set CSR data " << numRows << " x " << numColumns << ", nnz = " << numValues )
+    SCAI_LOG_DEBUG( logger, "set CSR data " << numRows << " x " << numColumns << ", nnz = " << numValues )
 
     LAMA_ASSERT_EQUAL_DEBUG( numRows + 1, ia.size() )
     LAMA_ASSERT_EQUAL_DEBUG( numValues, ja.size() )
@@ -365,7 +365,7 @@ void COOStorage<ValueType>::setCSRDataImpl(
     int numDiagonals = std::min( numRows, numColumns );
 
     {
-        LAMA_LOG_DEBUG( logger,
+        SCAI_LOG_DEBUG( logger,
                         "check CSR data " << numRows << " x " << numColumns << ", nnz = " << numValues << " for diagonal property, #diagonals = " << numDiagonals )
 
         LAMA_INTERFACE_FN( hasDiagonalProperty, loc, CSRUtils, Offsets );
@@ -385,7 +385,7 @@ void COOStorage<ValueType>::setCSRDataImpl(
 
     mNumValues = numValues;
 
-    LAMA_LOG_DEBUG( logger,
+    SCAI_LOG_DEBUG( logger,
                     "input csr data with " << mNumValues << "entries,  has diagonal property = " << mDiagonalProperty )
 
     {
@@ -429,7 +429,7 @@ void COOStorage<ValueType>::setCSRDataImpl(
 template<typename ValueType>
 COOStorage<ValueType>::~COOStorage()
 {
-    LAMA_LOG_DEBUG( logger, "~COOStorage for matrix " << mNumRows << " x " << mNumColumns )
+    SCAI_LOG_DEBUG( logger, "~COOStorage for matrix " << mNumRows << " x " << mNumColumns )
 }
 
 /* --------------------------------------------------------------------------- */
@@ -453,7 +453,7 @@ void COOStorage<ValueType>::purge()
 template<typename ValueType>
 void COOStorage<ValueType>::allocate( IndexType numRows, IndexType numColumns )
 {
-    LAMA_LOG_INFO( logger, "allocate COO sparse matrix of size " << numRows << " x " << numColumns )
+    SCAI_LOG_INFO( logger, "allocate COO sparse matrix of size " << numRows << " x " << numColumns )
 
     clear(); // all variables are set for a zero-sized matrix
 
@@ -486,7 +486,7 @@ ValueType COOStorage<ValueType>::getValue( const IndexType i, const IndexType j 
     const ReadAccess<IndexType> ja( mJA );
     const ReadAccess<ValueType> values( mValues );
 
-    LAMA_LOG_DEBUG( logger, "get value (" << i << ", " << j << ") from " << *this )
+    SCAI_LOG_DEBUG( logger, "get value (" << i << ", " << j << ") from " << *this )
 
     for( IndexType kk = 0; kk < mNumValues; ++kk )
     {
@@ -695,7 +695,7 @@ void COOStorage<ValueType>::setDiagonalImpl( const LAMAArray<OtherType>& diagona
 template<typename ValueType>
 ValueType COOStorage<ValueType>::l1Norm() const
 {
-	LAMA_LOG_INFO( logger, *this << ": l1Norm()" )
+	SCAI_LOG_INFO( logger, *this << ": l1Norm()" )
 
     const IndexType n = mNumValues;
 
@@ -715,7 +715,7 @@ ValueType COOStorage<ValueType>::l1Norm() const
 template<typename ValueType>
 ValueType COOStorage<ValueType>::l2Norm() const
 {
-	LAMA_LOG_INFO( logger, *this << ": l2Norm()" )
+	SCAI_LOG_INFO( logger, *this << ": l2Norm()" )
 
     const IndexType n = mNumValues;
 
@@ -735,7 +735,7 @@ ValueType COOStorage<ValueType>::l2Norm() const
 template<typename ValueType>
 ValueType COOStorage<ValueType>::maxNorm() const
 {
-    LAMA_LOG_INFO( logger, *this << ": maxNorm()" )
+    SCAI_LOG_INFO( logger, *this << ": maxNorm()" )
 
     const IndexType n = mNumValues;
 
@@ -784,7 +784,7 @@ void COOStorage<ValueType>::matrixTimesVector(
 {
     LAMA_REGION( "Storage.COO.timesVector" )
 
-    LAMA_LOG_DEBUG( logger,
+    SCAI_LOG_DEBUG( logger,
                     "Computing z = alpha * A * x + beta * y, with A = " << *this << ", x = " << x << ", y = " << y << ", z = " << result )
 
     LAMA_ASSERT_EQUAL_ERROR( x.size(), mNumColumns )
@@ -794,7 +794,7 @@ void COOStorage<ValueType>::matrixTimesVector(
 
     ContextPtr loc = getContextPtr();
 
-    LAMA_LOG_INFO( logger, *this << ": matrixTimesVector on " << *loc )
+    SCAI_LOG_INFO( logger, *this << ": matrixTimesVector on " << *loc )
 
     LAMA_INTERFACE_FN_DEFAULT_T( normalGEMV, loc, COOUtils, Mult, ValueType )
 
@@ -840,7 +840,7 @@ void COOStorage<ValueType>::vectorTimesMatrix(
     const ValueType beta,
     const LAMAArray<ValueType>& y ) const
 {
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    *this << ": vectorTimesMatrix, result = " << result << ", alpha = " << alpha << ", x = " << x << ", beta = " << beta << ", y = " << y )
 
     LAMA_REGION( "Storage.COO.VectorTimesMatrix" )
@@ -855,7 +855,7 @@ void COOStorage<ValueType>::vectorTimesMatrix(
 
     ContextPtr loc = getContextPtr();
 
-    LAMA_LOG_INFO( logger, *this << ": vectorTimesMatrix on " << *loc )
+    SCAI_LOG_INFO( logger, *this << ": vectorTimesMatrix on " << *loc )
 
     LAMA_INTERFACE_FN_T( normalGEVM, loc, COOUtils, Mult, ValueType )
 
@@ -902,7 +902,7 @@ SyncToken* COOStorage<ValueType>::matrixTimesVectorAsync(
     const ValueType beta,
     const LAMAArray<ValueType>& y ) const
 {
-    LAMA_LOG_DEBUG( logger,
+    SCAI_LOG_DEBUG( logger,
                     "Computing z = alpha * A * x + beta * y, with A = " << *this << ", x = " << x << ", y = " << y << ", z = " << result )
 
     LAMA_ASSERT_EQUAL_ERROR( x.size(), mNumColumns )
@@ -929,12 +929,12 @@ SyncToken* COOStorage<ValueType>::matrixTimesVectorAsync(
         using common::ref;
         using common::cref;
 
-        LAMA_LOG_INFO( logger, *this << ": matrixTimesVectorAsync on Host by own thread" )
+        SCAI_LOG_INFO( logger, *this << ": matrixTimesVectorAsync on Host by own thread" )
 
         return new TaskSyncToken( bind( pf, this, ref( result ), alpha, cref( x ), beta, cref( y ) ) );
     }
 
-    LAMA_LOG_INFO( logger, *this << ": matrixTimesVectorAsync on " << *loc )
+    SCAI_LOG_INFO( logger, *this << ": matrixTimesVectorAsync on " << *loc )
 
     LAMA_INTERFACE_FN_T( normalGEMV, loc, COOUtils, Mult, ValueType )
 
@@ -997,7 +997,7 @@ SyncToken* COOStorage<ValueType>::vectorTimesMatrixAsync(
     const ValueType beta,
     const LAMAArray<ValueType>& y ) const
 {
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    *this << ": vectorTimesMatrixAsync, result = " << result << ", alpha = " << alpha << ", x = " << x << ", beta = " << beta << ", y = " << y )
 
     LAMA_REGION( "Storage.COO.vectorTimesMatrixAsync" )
@@ -1007,7 +1007,7 @@ SyncToken* COOStorage<ValueType>::vectorTimesMatrixAsync(
     // Note: checks will be done by asynchronous task in any case
     //       and exception in tasks are handled correctly
 
-    LAMA_LOG_INFO( logger, *this << ": vectorTimesMatrixAsync on " << *loc )
+    SCAI_LOG_INFO( logger, *this << ": vectorTimesMatrixAsync on " << *loc )
 
     if( loc->getType() == context::Host )
     {
@@ -1022,7 +1022,7 @@ SyncToken* COOStorage<ValueType>::vectorTimesMatrixAsync(
 
             = &COOStorage<ValueType>::vectorTimesMatrix;
 
-        LAMA_LOG_INFO( logger, *this << ": vectorTimesMatrixAsync on Host by own thread" )
+        SCAI_LOG_INFO( logger, *this << ": vectorTimesMatrixAsync on Host by own thread" )
 
         using common::bind;
         using common::ref;
@@ -1100,7 +1100,7 @@ void COOStorage<ValueType>::jacobiIterate(
 {
     LAMA_REGION( "Storage.COO.jacobiIterate" )
 
-    LAMA_LOG_INFO( logger, *this << ": Jacobi iteration for local matrix data." )
+    SCAI_LOG_INFO( logger, *this << ": Jacobi iteration for local matrix data." )
 
     LAMA_ASSERT_ERROR( mDiagonalProperty, *this << ": jacobiIterate requires diagonal property" )
 

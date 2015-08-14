@@ -51,7 +51,7 @@
 namespace lama
 {
 
-LAMA_LOG_DEF_LOGGER( MICCSRUtils::logger, "MIC.CSRUtils" )
+SCAI_LOG_DEF_LOGGER( MICCSRUtils::logger, "MIC.CSRUtils" )
 
 /** Number of minimal threads for which parallelization is effective. */
 
@@ -61,7 +61,7 @@ static int minThreads = 3;
 
 IndexType MICCSRUtils::scanSerial( IndexType array[], const IndexType numValues )
 {
-    LAMA_LOG_DEBUG( logger, "scanSerial: " << numValues << " entries" )
+    SCAI_LOG_DEBUG( logger, "scanSerial: " << numValues << " entries" )
 
     // In this case we do it just serial, probably faster
 
@@ -94,7 +94,7 @@ IndexType MICCSRUtils::scanParallel( PartitionId numThreads, IndexType array[], 
 {
     // std::cout << "Scan with " << numThreads << " in parallel" << std::endl;
 
-    LAMA_LOG_DEBUG( logger, "scanParallel: " << numValues << " entries for " << numThreads << " threads" )
+    SCAI_LOG_DEBUG( logger, "scanParallel: " << numValues << " entries for " << numThreads << " threads" )
 
     void* arrayPtr = array;
 
@@ -169,7 +169,7 @@ IndexType MICCSRUtils::scan( IndexType array[], const IndexType numValues )
         }
     }
 
-    LAMA_LOG_INFO( logger, "scan " << numValues << " entries, #threads = " << numThreads )
+    SCAI_LOG_INFO( logger, "scan " << numValues << " entries, #threads = " << numThreads )
 
     if( numThreads < minThreads )
     {
@@ -185,7 +185,7 @@ IndexType MICCSRUtils::scan( IndexType array[], const IndexType numValues )
 
 bool MICCSRUtils::validOffsets( const IndexType array[], const IndexType n, const IndexType total )
 {
-    LAMA_LOG_INFO( logger, "check offset array[ " << n << "] for validity, total = " << total )
+    SCAI_LOG_INFO( logger, "check offset array[ " << n << "] for validity, total = " << total )
 
     bool validFlag = true;
 
@@ -237,7 +237,7 @@ IndexType MICCSRUtils::sizes2offsets( IndexType array[], const IndexType numValu
         array[numValues] = totalValues;
     }
 
-    LAMA_LOG_INFO( logger, "sizes2offsets, #values = " << numValues << ", total = " << totalValues )
+    SCAI_LOG_INFO( logger, "sizes2offsets, #values = " << numValues << ", total = " << totalValues )
 
     return totalValues;
 }
@@ -284,7 +284,7 @@ void MICCSRUtils::offsets2sizesGather(
 
 bool MICCSRUtils::hasDiagonalProperty( const IndexType numDiagonals, const IndexType csrIA[], const IndexType csrJA[] )
 {
-    LAMA_LOG_INFO( logger, "hasDiagonalProperty, #numDiagonals = " << numDiagonals )
+    SCAI_LOG_INFO( logger, "hasDiagonalProperty, #numDiagonals = " << numDiagonals )
 
     bool diagonalProperty = true;
 
@@ -316,7 +316,7 @@ bool MICCSRUtils::hasDiagonalProperty( const IndexType numDiagonals, const Index
         }
     }
 
-    LAMA_LOG_DEBUG( logger, "hasDiagonalProperty = " << diagonalProperty )
+    SCAI_LOG_DEBUG( logger, "hasDiagonalProperty = " << diagonalProperty )
 
     return diagonalProperty;
 }
@@ -332,7 +332,7 @@ void MICCSRUtils::sortRowElements(
     const bool diagonalFlag )
 {
 
-    LAMA_LOG_INFO( logger, "sort elements in each of " << numRows << " rows, diagonal flag = " << diagonalFlag )
+    SCAI_LOG_INFO( logger, "sort elements in each of " << numRows << " rows, diagonal flag = " << diagonalFlag )
 
     #pragma omp parallel for
 
@@ -399,7 +399,7 @@ IndexType MICCSRUtils::countNonEmptyRowsByOffsets( const IndexType offsets[], co
         }
     }
 
-    LAMA_LOG_INFO( logger, "#non-zero rows = " << counter << ", counted by offsets" )
+    SCAI_LOG_INFO( logger, "#non-zero rows = " << counter << ", counted by offsets" )
 
     return counter;
 }
@@ -429,7 +429,7 @@ void MICCSRUtils::setNonEmptyRowsByOffsets(
 
     LAMA_ASSERT_EQUAL_DEBUG( counter, numNonEmptyRows )
 
-    LAMA_LOG_INFO( logger, "#non-zero rows = " << counter << ", set by offsets" )
+    SCAI_LOG_INFO( logger, "#non-zero rows = " << counter << ", set by offsets" )
 }
 
 /* --------------------------------------------------------------------------- */
@@ -481,7 +481,7 @@ void MICCSRUtils::convertCSR2CSC(
     IndexType numColumns,
     IndexType numValues )
 {
-    LAMA_LOG_INFO( logger, "convertCSR2CSC of matrix " << numRows << " x " << numColumns )
+    SCAI_LOG_INFO( logger, "convertCSR2CSC of matrix " << numRows << " x " << numColumns )
 
     LAMA_ASSERT_EQUAL_DEBUG( numValues, rIA[numRows] )
 
@@ -508,7 +508,7 @@ void MICCSRUtils::convertCSR2CSC(
 
     sizes2offsets( cIA, numColumns );
 
-    LAMA_LOG_INFO( logger, "convertCSR2CSC, #num values counted = " << cIA[ numColumns ] )
+    SCAI_LOG_INFO( logger, "convertCSR2CSC, #num values counted = " << cIA[ numColumns ] )
 
     LAMA_ASSERT_EQUAL_DEBUG( numValues, cIA[numColumns] )
 
@@ -525,7 +525,7 @@ void MICCSRUtils::convertCSR2CSC(
         }
     }
 
-    LAMA_LOG_INFO( logger, "convertCSR2CSC, #num values counted = " << cIA[ numColumns ] )
+    SCAI_LOG_INFO( logger, "convertCSR2CSC, #num values counted = " << cIA[ numColumns ] )
 
     // set back the old offsets
 
@@ -556,7 +556,7 @@ void MICCSRUtils::normalGEMV(
     const ValueType csrValues[],
     SyncToken* syncToken )
 {
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "normalGEMV<" << common::getScalarType<ValueType>() << ">, result[" << numRows << "] = " << alpha << " * A * x + " << beta << " * y " )
 
     if( syncToken )
@@ -693,7 +693,7 @@ void MICCSRUtils::gemm(
     const ValueType csrValues[],
     SyncToken* syncToken )
 {
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "gemm<" << common::getScalarType<ValueType>() << ">, " << " result " << m << " x " << n << " CSR " << m << " x " << p )
 
     if( syncToken )
@@ -766,7 +766,7 @@ void MICCSRUtils::jacobi(
     const IndexType numRows,
     class SyncToken* syncToken )
 {
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "jacobi<" << common::getScalarType<ValueType>() << ">" << ", #rows = " << numRows << ", omega = " << omega )
 
     if( syncToken )
@@ -844,7 +844,7 @@ void MICCSRUtils::jacobiHalo(
     const ValueType omega,
     const IndexType numNonEmptyRows )
 {
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "jacobiHalo<" << common::getScalarType<ValueType>() << ">" << ", #rows (not empty) = " << numNonEmptyRows << ", omega = " << omega );
 
     LAMA_REGION( "MIC.CSR.jacabiHalo" )
@@ -917,7 +917,7 @@ void MICCSRUtils::jacobiHaloWithDiag(
     const ValueType omega,
     const IndexType numNonEmptyRows )
 {
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "jacobiHaloWithDiag<" << common::getScalarType<ValueType>() << ">" << ", #rows (not empty) = " << numNonEmptyRows << ", omega = " << omega );
 
     LAMA_REGION( "MIC.CSR.jacabiHaloWithDiag" )
@@ -993,7 +993,7 @@ IndexType MICCSRUtils::matrixAddSizes(
 {
     LAMA_REGION( "MIC.CSR.matrixAddSizes" )
 
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "matrixAddSizes for " << numRows << " x " << numColumns << " matrix" << ", diagonalProperty = " << diagonalProperty )
 
     // determine the number of entries in output matrix
@@ -1133,7 +1133,7 @@ IndexType MICCSRUtils::matrixMultiplySizes(
 {
     LAMA_REGION( "MIC.CSR.matrixMultiplySizes" )
 
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "matrixMutliplySizes for " << m << " x " << n << " matrix" << ", diagonalProperty = " << diagonalProperty )
 
     // determine the number of entries in output matrix
@@ -1284,7 +1284,7 @@ void MICCSRUtils::matrixAdd(
 {
     LAMA_REGION( "MIC.CSR.matrixAdd" )
 
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "matrixAddJA for " << numRows << " x " << numColumns << " matrix" << ", diagonalProperty = " << diagonalProperty )
 
     const IndexType NINIT = numColumns + 1;
@@ -1794,7 +1794,7 @@ ValueType MICCSRUtils::absMaxDiffVal(
     const IndexType csrJA2[],
     const ValueType csrValues2[] )
 {
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "absMaxDiffVal<" << common::getScalarType<ValueType>() << ">: " << "csr[" << numRows << "], sorted = " << sortedRows )
 
     ValueType val = 0;
@@ -1881,7 +1881,7 @@ ValueType MICCSRUtils::absMaxDiffVal(
 
 void MICCSRUtils::setInterface( CSRUtilsInterface& CSRUtils )
 {
-    LAMA_LOG_INFO( logger, "set CSR routines for MIC in Interface" )
+    SCAI_LOG_INFO( logger, "set CSR routines for MIC in Interface" )
 
     LAMA_INTERFACE_REGISTER( CSRUtils, sizes2offsets )
 

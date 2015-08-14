@@ -103,7 +103,7 @@ public:
 
 protected:
 
-    LAMA_LOG_DECL_STATIC_LOGGER( logger )
+    SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
 private:
 
@@ -138,7 +138,7 @@ public:
         TraceRegionRecord( regionName, fileName, lno )
 
     {
-        LAMA_LOG_DEBUG( logger, "ScopedTraceRecord" )
+        SCAI_LOG_DEBUG( logger, "ScopedTraceRecord" )
         enter();
     }
 
@@ -147,13 +147,13 @@ public:
         TraceRegionRecord( regionName, suffix_n, fileName, lno )
 
     {
-        LAMA_LOG_DEBUG( logger, "ScopedTraceRecord" )
+        SCAI_LOG_DEBUG( logger, "ScopedTraceRecord" )
         enter();
     }
 
     ~ScopedTraceRecord()
     {
-        LAMA_LOG_DEBUG( logger, "~ScopedTraceRecord, call leave" )
+        SCAI_LOG_DEBUG( logger, "~ScopedTraceRecord, call leave" )
         leave();
     }
 };

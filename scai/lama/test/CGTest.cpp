@@ -69,7 +69,7 @@ typedef boost::mpl::list<float, double> test_types;
 
 BOOST_AUTO_TEST_SUITE( CGTest )
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.CGTest" )
+SCAI_LOG_DEF_LOGGER( logger, "Test.CGTest" )
 
 /* --------------------------------------------------------------------- */
 
@@ -107,14 +107,14 @@ void testSolveWithPreconditionmethod( ContextPtr context )
     CG cgSolver( "CGTestSolver", slogger );
     const IndexType N1 = 4;
     const IndexType N2 = 4;
-    LAMA_LOG_INFO( logger, "Problem size = " << N1 << " x " << N2 );
+    SCAI_LOG_INFO( logger, "Problem size = " << N1 << " x " << N2 );
     CSRSparseMatrix<ValueType> helpcoefficients;
     MatrixCreator<ValueType>::buildPoisson2D( helpcoefficients, 9, N1, N2 );
     // convert to the corresponding matrix type, keep distribution
     MatrixType coefficients( helpcoefficients );
-    LAMA_LOG_INFO( logger, "coefficients matrix = " << coefficients );
+    SCAI_LOG_INFO( logger, "coefficients matrix = " << coefficients );
     coefficients.setContext( context );
-    LAMA_LOG_INFO( logger, "CGTest uses context = " << context->getType() );
+    SCAI_LOG_INFO( logger, "CGTest uses context = " << context->getType() );
     DenseVector<ValueType> solution( coefficients.getDistributionPtr(), 1.0 );
     const DenseVector<ValueType> exactSolution( coefficients.getDistributionPtr(), 2.0 );
     DenseVector<ValueType> rhs( coefficients * exactSolution );
@@ -128,7 +128,7 @@ void testSolveWithPreconditionmethod( ContextPtr context )
     BOOST_CHECK_EQUAL( expectedIterations, cgSolver.getIterationCount() );
     DenseVector<ValueType> diff( solution - exactSolution );
     Scalar s = maxNorm( diff );
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "maxNorm of diff = " << diff << " = ( solution - exactSolution ) = " << s.getValue<ValueType>() );
     BOOST_CHECK( s.getValue<ValueType>() < 1E-4 );
 }
@@ -157,19 +157,19 @@ void testSolveWithoutPreconditionmethod( ContextPtr context )
     typedef typename MatrixType::MatrixValueType ValueType;
     const IndexType N1 = 4;
     const IndexType N2 = 4;
-    LAMA_LOG_INFO( logger, "Problem size = " << N1 << " x " << N2 );
+    SCAI_LOG_INFO( logger, "Problem size = " << N1 << " x " << N2 );
     CG cgSolver( "CGTestSolver" );
     CSRSparseMatrix<ValueType> helpcoefficients;
     MatrixCreator<ValueType>::buildPoisson2D( helpcoefficients, 9, N1, N2 );
     MatrixType coefficients( helpcoefficients );
-    LAMA_LOG_INFO( logger, "coefficient matrix = " << coefficients );
+    SCAI_LOG_INFO( logger, "coefficient matrix = " << coefficients );
     coefficients.setContext( context );
-    LAMA_LOG_INFO( logger, "CGTest uses context = " << context->getType() );
+    SCAI_LOG_INFO( logger, "CGTest uses context = " << context->getType() );
     DenseVector<ValueType> solution( coefficients.getColDistributionPtr(), 2.0 );
     const DenseVector<ValueType> exactSolution( coefficients.getColDistributionPtr(), 1.0 );
     // Question: should be valid: rhs.getDistribution() == coefficients.getDistribution()
     const DenseVector<ValueType> rhs( coefficients * exactSolution );
-    LAMA_LOG_INFO( logger, "rhs = " << rhs );
+    SCAI_LOG_INFO( logger, "rhs = " << rhs );
     //initialize
     IndexType expectedIterations = 10;
     CriterionPtr criterion( new IterationCount( expectedIterations ) );
@@ -179,7 +179,7 @@ void testSolveWithoutPreconditionmethod( ContextPtr context )
     BOOST_CHECK_EQUAL( expectedIterations, cgSolver.getIterationCount() );
     DenseVector<ValueType> diff( solution - exactSolution );
     Scalar s = maxNorm( diff );
-    LAMA_LOG_INFO( logger, "maxNorm of ( solution - exactSolution ) = " << s.getValue<ValueType>() );
+    SCAI_LOG_INFO( logger, "maxNorm of ( solution - exactSolution ) = " << s.getValue<ValueType>() );
     BOOST_CHECK( s.getValue<ValueType>() < 1E-6 );
 }
 
@@ -206,7 +206,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( testDefaultCriterionSet, ValueType, test_types )
 {
     const IndexType N1 = 4;
     const IndexType N2 = 4;
-    LAMA_LOG_INFO( logger, "Problem size = " << N1 << " x " << N2 );
+    SCAI_LOG_INFO( logger, "Problem size = " << N1 << " x " << N2 );
     CG cgSolver( "CGTestSolver" );
     CSRSparseMatrix<ValueType> coefficients;
     MatrixCreator<ValueType>::buildPoisson2D( coefficients, 9, N1, N2 );

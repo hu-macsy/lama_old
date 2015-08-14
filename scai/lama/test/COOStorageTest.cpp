@@ -209,7 +209,7 @@ void typeNameTest()
 
 BOOST_AUTO_TEST_SUITE( COOStorageTest )
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.COOStorageTest" )
+SCAI_LOG_DEF_LOGGER( logger, "Test.COOStorageTest" )
 LAMA_AUTO_TEST_CASE_CT( checkTest, COOStorageTest )
 LAMA_AUTO_TEST_CASE_CT( commonTestCases, COOStorageTest )
 LAMA_AUTO_TEST_CASE_T( constructorTest, COOStorageTest )

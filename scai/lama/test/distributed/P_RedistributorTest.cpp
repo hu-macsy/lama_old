@@ -65,7 +65,7 @@ struct P_RedistributorTestConfig
 
 BOOST_FIXTURE_TEST_SUITE( P_RedistributorTest, P_RedistributorTestConfig )
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.P_RedistributorTest" );
+SCAI_LOG_DEF_LOGGER( logger, "Test.P_RedistributorTest" );
 
 /* --------------------------------------------------------------------- */
 
@@ -89,9 +89,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( redistributeTest, ValueType, test_types )
     LAMAArray<ValueType> myData2( cyclicLocalSize );
     Redistributor r1( distCyclic, distBlock );
     Redistributor r2( distBlock, distCyclic );
-    LAMA_LOG_DEBUG( logger, "redistribute 1" );
+    SCAI_LOG_DEBUG( logger, "redistribute 1" );
     r1.redistribute( myData2, myData1 );
-    LAMA_LOG_DEBUG( logger, "redistribute 2" );
+    SCAI_LOG_DEBUG( logger, "redistribute 2" );
     r2.redistribute( myData1, myData2 );
     {
         ReadAccess<ValueType> data ( myData1 );

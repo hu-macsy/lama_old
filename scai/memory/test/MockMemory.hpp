@@ -63,7 +63,7 @@ public:
 
     ~MockMemory()
     {
-        LAMA_LOG_DEBUG( logger, "~MockMemory: " << *this )
+        SCAI_LOG_DEBUG( logger, "~MockMemory: " << *this )
     }
 
     int getDeviceNr() const

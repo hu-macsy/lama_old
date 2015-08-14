@@ -51,7 +51,7 @@ using std::abs;
 
 using common::getScalarType;
 
-LAMA_LOG_DEF_LOGGER( OpenMPDenseUtils::logger, "OpenMP.DenseUtils" )
+SCAI_LOG_DEF_LOGGER( OpenMPDenseUtils::logger, "OpenMP.DenseUtils" )
 
 /* --------------------------------------------------------------------------- */
 /*     Template implementations                                                */
@@ -113,7 +113,7 @@ void OpenMPDenseUtils::getCSRValues(
     const DenseValueType denseValues[],
     const DenseValueType eps )
 {
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "get CSRValues<" << getScalarType<DenseValueType>() << ", " << getScalarType<CSRValueType>() << ">" << ", size is " << numRows << " x " << numColumns )
 
     #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
@@ -168,7 +168,7 @@ void OpenMPDenseUtils::setCSRValues(
     const IndexType csrJA[],
     const CSRValueType csrValues[] )
 {
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "set CSRValues<" << getScalarType<DenseValueType>() << ", " << getScalarType<CSRValueType>() << ">" << ", size is " << numRows << " x " << numColumns )
 
     // parallelization possible as offset array csrIA is available

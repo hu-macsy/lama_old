@@ -371,7 +371,7 @@ private:
         const ValueType ellValues[],
         tasking::SyncToken* syncToken );
 
-    LAMA_LOG_DECL_STATIC_LOGGER( logger )
+    SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
     static    bool initialized;
 

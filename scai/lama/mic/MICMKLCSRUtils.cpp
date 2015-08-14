@@ -51,7 +51,7 @@
 namespace lama
 {
 
-LAMA_LOG_DEF_LOGGER( MICMKLCSRUtils::logger, "MIC.MKLCSRUtils" )
+SCAI_LOG_DEF_LOGGER( MICMKLCSRUtils::logger, "MIC.MKLCSRUtils" )
 
 /* --------------------------------------------------------------------------- */
 
@@ -72,7 +72,7 @@ void MICMKLCSRUtils::normalGEMV(
 {
     LAMA_REGION( "MIC.MKLscsrmv" )
 
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "normalGEMV<float>, result[" << numRows << "] = " << alpha << " * A * x + " << beta << " * y " )
 
     if( syncToken )
@@ -125,7 +125,7 @@ void MICMKLCSRUtils::normalGEMV(
 {
     LAMA_REGION( "MIC.MKLdcsrmv" )
 
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "normalGEMV<double>, result[" << numRows << "] = " << alpha << " * A * x + " << beta << " * y " )
 
     if( y != result && beta != 0 )

@@ -57,7 +57,7 @@ using common::Exception;
 
 BOOST_AUTO_TEST_SUITE( TimerTest )
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.TimerTest" )
+SCAI_LOG_DEF_LOGGER( logger, "Test.TimerTest" )
 
 /* --------------------------------------------------------------------- */
 

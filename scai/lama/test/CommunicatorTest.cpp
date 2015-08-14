@@ -52,7 +52,7 @@ using common::Exception;
 using common::unique_ptr;
 using common::scoped_array;
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.CommunicatorTest" )
+SCAI_LOG_DEF_LOGGER( logger, "Test.CommunicatorTest" )
 
 /* --------------------------------------------------------------------- */
 
@@ -189,11 +189,11 @@ if ( comm->getRank() == 0 )
     val = "Hello";
 }
 
-LAMA_LOG_INFO( logger, *comm << ": val = " << val );
+SCAI_LOG_INFO( logger, *comm << ": val = " << val );
 
 comm->bcast( val, 0 );
 
-LAMA_LOG_INFO( logger, *comm << ": val = " << val );
+SCAI_LOG_INFO( logger, *comm << ": val = " << val );
 
 BOOST_CHECK_EQUAL( "Hello", val );
 LAMA_COMMON_TEST_CASE_END()
@@ -286,7 +286,7 @@ LAMA_COMMON_TEST_CASE_END()
 template<typename ValueType>
 void CommunicatorTest::updateHaloTest()
 {
-    LAMA_LOG_INFO( logger, "updateHaloTest<" << common::getScalarType<ValueType>() << ">" );
+    SCAI_LOG_INFO( logger, "updateHaloTest<" << common::getScalarType<ValueType>() << ">" );
     const IndexType factor = 4;
     const IndexType vectorSize = factor * size;
     BlockDistribution distribution( vectorSize, comm );
@@ -304,10 +304,10 @@ void CommunicatorTest::updateHaloTest()
         requiredIndexes.push_back( requiredIndex );
     }
 
-    LAMA_LOG_INFO( logger, "build the Halo" );
+    SCAI_LOG_INFO( logger, "build the Halo" );
     Halo halo;
     HaloBuilder::build( distribution, requiredIndexes, halo );
-    LAMA_LOG_INFO( logger, "halo is now available: " << halo );
+    SCAI_LOG_INFO( logger, "halo is now available: " << halo );
     LAMAArray<ValueType> localData;
     {
         WriteOnlyAccess<ValueType> localDataAccess( localData, distribution.getLocalSize() );
@@ -317,7 +317,7 @@ void CommunicatorTest::updateHaloTest()
             localDataAccess[i] = static_cast<ValueType>( distribution.local2global( i ) );
         }
     }
-    LAMA_LOG_INFO( logger, "update halo data by communicator" );
+    SCAI_LOG_INFO( logger, "update halo data by communicator" );
     LAMAArray<ValueType> haloData;
     comm->updateHalo( haloData, localData, halo );
     BOOST_CHECK_EQUAL( static_cast<IndexType>( requiredIndexes.size() ), haloData.size() );
@@ -406,17 +406,17 @@ LAMA_COMMON_TEST_CASE_TM( CommunicatorTest, ValueType, shiftASyncTest )
     }
     // if we do not keep the token, it will be synchronized immeadiately
     unique_ptr<SyncToken> token1( comm->shiftAsync( recvBuffer, sendBuffer, 1 ) );
-    LAMA_LOG_INFO( logger, "token for shiftAsync before wait : " << *token1 );
+    SCAI_LOG_INFO( logger, "token for shiftAsync before wait : " << *token1 );
     token1->wait();
-    LAMA_LOG_INFO( logger, "token for shiftAsync after wait : " << *token1 );
-    LAMA_LOG_INFO( logger, "async shift without token, should have been synchronized here" );
+    SCAI_LOG_INFO( logger, "token for shiftAsync after wait : " << *token1 );
+    SCAI_LOG_INFO( logger, "async shift without token, should have been synchronized here" );
     BOOST_CHECK_EQUAL( 2, recvBuffer.size() );
     {
         ReadAccess<ValueType> rbuffer( recvBuffer );
     }
     // dir = 0: should be like assignment
     delete comm->shiftAsync( recvBuffer, sendBuffer, 0 );
-    LAMA_LOG_INFO( logger, "async shift dir = 0, self assing" );
+    SCAI_LOG_INFO( logger, "async shift dir = 0, self assing" );
     BOOST_CHECK_EQUAL( 2, recvBuffer.size() );
     {
         ReadAccess<ValueType> sbuffer( sendBuffer );
@@ -425,11 +425,11 @@ LAMA_COMMON_TEST_CASE_TM( CommunicatorTest, ValueType, shiftASyncTest )
         BOOST_CHECK_EQUAL( sbuffer[1], rbuffer[ 1 ] );
     }
     // Buffers must be different
-    LAMA_LOG_INFO( logger, "async shift : using same send and recv buffer should fail" );
+    SCAI_LOG_INFO( logger, "async shift : using same send and recv buffer should fail" );
     LAMA_CHECK_THROW( delete comm->shiftAsync( sendBuffer, sendBuffer, 1 ), Exception );
     // We also verify that the exception is thrown before changing the send Buffer
     BOOST_CHECK_EQUAL( 2, sendBuffer.size() );
-    LAMA_LOG_INFO( logger, "async shift : try to access send / receive buffer before synchronization" );
+    SCAI_LOG_INFO( logger, "async shift : try to access send / receive buffer before synchronization" );
     unique_ptr<SyncToken> token( comm->shiftAsync( recvBuffer, sendBuffer, 1 ) );
     // read access on send buffer should be possible
     {
@@ -437,7 +437,7 @@ LAMA_COMMON_TEST_CASE_TM( CommunicatorTest, ValueType, shiftASyncTest )
         ValueType value0 = static_cast<ValueType>( rank );
         BOOST_CHECK_EQUAL( value0, sbuffer[ 0 ] );
     }
-    LAMA_LOG_INFO( logger, *token << ": test for correct locks" );
+    SCAI_LOG_INFO( logger, *token << ": test for correct locks" );
 
     // Note: multiple accesses on LAMAArray are possible, the following exceptions  are no more thrown
 
@@ -474,7 +474,7 @@ LAMA_COMMON_TEST_CASE_TM_END();
 
 LAMA_COMMON_TEST_CASE_TM( CommunicatorTest, ValueType, bcastTest )
 {
-    LAMA_LOG_INFO( logger, "bcastTest<" << common::getScalarType<ValueType>() << ">" )
+    SCAI_LOG_INFO( logger, "bcastTest<" << common::getScalarType<ValueType>() << ">" )
     IndexType N = 5;
     ValueType dummyVal = 13;
     scoped_array<ValueType> vector( new ValueType[N + 1] );

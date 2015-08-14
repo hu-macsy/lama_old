@@ -78,7 +78,7 @@ BOOST_AUTO_TEST_SUITE( P_MatrixStorageTest )
 
 /* ------------------------------------------------------------------------- */
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.P_MatrixStorageTest" );
+SCAI_LOG_DEF_LOGGER( logger, "Test.P_MatrixStorageTest" );
 
 /* ------------------------------------------------------------------------- */
 
@@ -101,7 +101,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( buildHaloTest, StorageType, StorageTypes )
     StorageType matrixStorage;
     typedef typename StorageType::StorageValueType ValueType;
     CommunicatorPtr comm = Communicator::get();
-    LAMA_LOG_INFO( logger, *comm << ": buildHaloTest" );
+    SCAI_LOG_INFO( logger, *comm << ": buildHaloTest" );
     setDenseData( matrixStorage );
     CSRStorage<ValueType> compare;
     setDenseData( compare );
@@ -112,15 +112,15 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( buildHaloTest, StorageType, StorageTypes )
     shared_ptr<MatrixStorage<ValueType> > localStorage ( matrixStorage.clone() );
     shared_ptr<MatrixStorage<ValueType> > haloStorage ( matrixStorage.clone() );
     Halo halo;
-    LAMA_LOG_INFO( logger, *comm << ", split halo : " << matrixStorage )
+    SCAI_LOG_INFO( logger, *comm << ", split halo : " << matrixStorage )
     matrixStorage.splitHalo( *localStorage, *haloStorage, halo, *colDist, NULL );
-    LAMA_LOG_DEBUG( logger, *comm << ": split done, local = " << *localStorage
+    SCAI_LOG_DEBUG( logger, *comm << ": split done, local = " << *localStorage
                     << ", halo = " << *haloStorage << ", halo exchg = " << halo );
     BOOST_CHECK_EQUAL( localStorage->getNumRows(), matrixStorage.getNumRows() );
     BOOST_CHECK_EQUAL( haloStorage->getNumRows(), matrixStorage.getNumRows() );
     bool keepDiagonalFlag = false;  // does not matter here
     matrixStorage.joinHalo( *localStorage, *haloStorage, halo, *colDist, keepDiagonalFlag );
-    LAMA_LOG_DEBUG( logger, *comm << ": join done, result = " << matrixStorage );
+    SCAI_LOG_DEBUG( logger, *comm << ": join done, result = " << matrixStorage );
     BOOST_REQUIRE_EQUAL( matrixStorage.getNumRows(), numRows );
     BOOST_REQUIRE_EQUAL( matrixStorage.getNumColumns(), numColumns );
 
@@ -143,20 +143,20 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( replicateTest, StorageType, StorageTypes )
     typedef typename StorageType::StorageValueType ValueType;
     StorageType matrixStorage;
     CommunicatorPtr comm = Communicator::get();
-    LAMA_LOG_INFO( logger, *comm << ": replicateTest" );
+    SCAI_LOG_INFO( logger, *comm << ": replicateTest" );
     setDenseData( matrixStorage );
     CSRStorage<ValueType> compare;
     setDenseData( compare );
     const IndexType numRows = matrixStorage.getNumRows();
     const IndexType numColumns = matrixStorage.getNumColumns();
     BlockDistribution rowDist( numRows, comm );
-    LAMA_LOG_INFO( logger, matrixStorage << ": localize"
+    SCAI_LOG_INFO( logger, matrixStorage << ": localize"
                    " for row distribution = " << rowDist );
     // Localize the matrix data according to the source distribution
     matrixStorage.localize( matrixStorage, rowDist );
-    LAMA_LOG_INFO( logger, matrixStorage << ": is local storage" );
+    SCAI_LOG_INFO( logger, matrixStorage << ": is local storage" );
     matrixStorage.replicate( matrixStorage, rowDist );
-    LAMA_LOG_INFO( logger, matrixStorage << ": is global/replicated storage" );
+    SCAI_LOG_INFO( logger, matrixStorage << ": is global/replicated storage" );
     BOOST_REQUIRE_EQUAL( matrixStorage.getNumRows(), numRows );
     BOOST_REQUIRE_EQUAL( matrixStorage.getNumColumns(), numColumns );
 
@@ -179,7 +179,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( redistributeTest, StorageType, StorageTypes )
     typedef typename StorageType::StorageValueType ValueType;
     StorageType matrixStorage;
     CommunicatorPtr comm = Communicator::get();
-    LAMA_LOG_INFO( logger, *comm << ": redistributeTest" );
+    SCAI_LOG_INFO( logger, *comm << ": redistributeTest" );
     setDenseData( matrixStorage );
     CSRStorage<ValueType> compare;
     setDenseData( compare );
@@ -187,16 +187,16 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( redistributeTest, StorageType, StorageTypes )
     const IndexType numColumns = matrixStorage.getNumColumns();
     DistributionPtr rowDist1 = DistributionPtr ( new BlockDistribution ( numRows, comm ) );
     DistributionPtr rowDist2 = DistributionPtr ( new CyclicDistribution ( numRows, 1, comm ) );
-    LAMA_LOG_INFO( logger, matrixStorage << ": localize"
+    SCAI_LOG_INFO( logger, matrixStorage << ": localize"
                    " for row distribution = " << *rowDist1 );
     // Localize the matrix data according to the source distribution
     matrixStorage.localize( matrixStorage, *rowDist1 );
-    LAMA_LOG_INFO( logger, matrixStorage << ": is local storage" );
+    SCAI_LOG_INFO( logger, matrixStorage << ": is local storage" );
     Redistributor redistributor( rowDist2, rowDist1 );
     matrixStorage.redistribute( matrixStorage, redistributor );
-    LAMA_LOG_INFO( logger, matrixStorage << ": is redistributed storage" );
+    SCAI_LOG_INFO( logger, matrixStorage << ": is redistributed storage" );
     matrixStorage.replicate( matrixStorage, *rowDist2 );
-    LAMA_LOG_INFO( logger, matrixStorage << ": is global/replicated storage" );
+    SCAI_LOG_INFO( logger, matrixStorage << ": is global/replicated storage" );
     BOOST_REQUIRE_EQUAL( matrixStorage.getNumRows(), numRows );
     BOOST_REQUIRE_EQUAL( matrixStorage.getNumColumns(), numColumns );
 
@@ -220,7 +220,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( exchangeHaloTest, StorageType, StorageTypes )
     StorageType matrixStorage;
     typedef typename StorageType::StorageValueType ValueType;
     CommunicatorPtr comm = Communicator::get();
-    LAMA_LOG_INFO( logger, *comm << ": buildHaloTest" );
+    SCAI_LOG_INFO( logger, *comm << ": buildHaloTest" );
     setDenseData( matrixStorage );
     CSRStorage<ValueType> compare;
     setDenseData( compare );
@@ -241,11 +241,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( exchangeHaloTest, StorageType, StorageTypes )
         }
     }
 
-    LAMA_LOG_INFO( logger, *comm << ": #required rows = " << requiredIndexes.size() );
+    SCAI_LOG_INFO( logger, *comm << ": #required rows = " << requiredIndexes.size() );
     HaloBuilder::build( *rowDist, requiredIndexes, halo );
     StorageType haloMatrix;
     haloMatrix.exchangeHalo( halo, matrixStorage, *comm );
-    LAMA_LOG_INFO( logger, *comm << ": halo matrix = " << haloMatrix );
+    SCAI_LOG_INFO( logger, *comm << ": halo matrix = " << haloMatrix );
     BOOST_REQUIRE_EQUAL( haloMatrix.getNumRows(), static_cast<IndexType>( requiredIndexes.size() ) );
     BOOST_REQUIRE_EQUAL( haloMatrix.getNumColumns(), numColumns );
 

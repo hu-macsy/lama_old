@@ -60,25 +60,25 @@ ThreadPool& Task::getThreadPool()
 
 /* ------------------------------------------------------------------------- */
 
-LAMA_LOG_DEF_LOGGER( Task::logger, "Task" )
+SCAI_LOG_DEF_LOGGER( Task::logger, "Task" )
 
 /* ------------------------------------------------------------------------- */
 
 Task::Task( common::function<void()> taskFunction, int numOmpThreads /* = 0 */ )
 
 {
-    LAMA_LOG_DEBUG( logger, "Creating Task" )
+    SCAI_LOG_DEBUG( logger, "Creating Task" )
 
     mTask = getThreadPool().schedule( taskFunction, numOmpThreads );
 
-    LAMA_LOG_DEBUG( logger, "Task created" )
+    SCAI_LOG_DEBUG( logger, "Task created" )
 }
 
 /* ------------------------------------------------------------------------- */
 
 Task::~Task()
 {
-    LAMA_LOG_INFO( logger, "~Task" )
+    SCAI_LOG_INFO( logger, "~Task" )
 }
 
 /* ------------------------------------------------------------------------- */
@@ -90,11 +90,11 @@ void Task::synchronize()
         return;
     }
 
-    LAMA_LOG_DEBUG( logger, "Waiting for task = " << mTask->mTaskId << ", state = " << mTask->mState )
+    SCAI_LOG_DEBUG( logger, "Waiting for task = " << mTask->mTaskId << ", state = " << mTask->mState )
 
     getThreadPool().wait( mTask );
 
-    LAMA_LOG_DEBUG( logger, "Task = " << mTask->mTaskId << " finished" << ", exception = " << mTask->mException )
+    SCAI_LOG_DEBUG( logger, "Task = " << mTask->mTaskId << " finished" << ", exception = " << mTask->mException )
 
     if ( mTask->mException )
     {

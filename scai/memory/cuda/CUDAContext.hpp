@@ -188,7 +188,7 @@ private:
 
     static int numUsedDevices; //!< total number of used devices
 
-    LAMA_LOG_DECL_STATIC_LOGGER( logger )
+    SCAI_LOG_DECL_STATIC_LOGGER( logger )
 };
 
 }

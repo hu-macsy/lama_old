@@ -57,7 +57,7 @@ namespace lama
 using tasking::SyncToken;
 using common::getScalarType;
 
-LAMA_LOG_DEF_LOGGER( BLAS_BLAS1::logger, "BLAS.BLAS1" )
+SCAI_LOG_DEF_LOGGER( BLAS_BLAS1::logger, "BLAS.BLAS1" )
 
 /* ---------------------------------------------------------------------------------------*/
 /*    scal wrapper for BLAS                                                               */
@@ -116,12 +116,12 @@ void BLAS_BLAS1::scal(
 
     LAMA_REGION( "BLAS.BLAS1.scal" )
 
-    LAMA_LOG_DEBUG( logger,
+    SCAI_LOG_DEBUG( logger,
                     "scal<" << getScalarType<ValueType>() << " n = " << n << ", alpha = " << alpha << ", x = " << x << ", incX = " << incX )
 
     if( syncToken )
     {
-        LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
+        SCAI_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
 
     wrapperScal( n, alpha, x, incX );
@@ -177,12 +177,12 @@ ValueType BLAS_BLAS1::nrm2( const IndexType n, const ValueType* x, const IndexTy
 
     LAMA_REGION( "BLAS.BLAS1.nrm2" )
 
-    LAMA_LOG_DEBUG( logger,
+    SCAI_LOG_DEBUG( logger,
                     "nrm2<" << getScalarType<ValueType>() << ">, n = " << n << ", x = " << x << ", incX = " << incX )
 
     if( syncToken )
     {
-        LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
+        SCAI_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
 
     return wrapperNrm2( n, x, incX );
@@ -233,12 +233,12 @@ ValueType BLAS_BLAS1::asum( const IndexType n, const ValueType* x, const IndexTy
 {
     LAMA_REGION( "BLAS.BLAS1.asum" )
 
-    LAMA_LOG_DEBUG( logger,
+    SCAI_LOG_DEBUG( logger,
                     "asum<" << getScalarType<ValueType>() << ">,  n = " << n << ", x = " << x << ", incX = " << incX )
 
     if( syncToken )
     {
-        LAMA_LOG_WARN( logger, "asynchronous execution of BLAS1:asum not supported, do it synchronously." )
+        SCAI_LOG_WARN( logger, "asynchronous execution of BLAS1:asum not supported, do it synchronously." )
     }
 
     if( incX <= 0 )
@@ -293,12 +293,12 @@ IndexType BLAS_BLAS1::iamax( const IndexType n, const ValueType* x, const IndexT
 {
     LAMA_REGION( "BLAS.BLAS1.iamax" )
 
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "iamax<" << getScalarType<ValueType>() << ">, " << "n = " << n << ", x = " << x << ", incX = " << incX )
 
     if( syncToken )
     {
-        LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
+        SCAI_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
 
     return wrapperIamax( n, x, incX );
@@ -352,7 +352,7 @@ void BLAS_BLAS1::swap(
 {
     LAMA_REGION( "BLAS.BLAS1.swap" )
 
-    LAMA_LOG_DEBUG( logger,
+    SCAI_LOG_DEBUG( logger,
                     "iamax<" << getScalarType<ValueType>() << ">" << ", n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
 
     if( ( incX <= 0 ) || ( incY <= 0 ) )
@@ -362,7 +362,7 @@ void BLAS_BLAS1::swap(
 
     if( syncToken )
     {
-        LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
+        SCAI_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
 
     wrapperSwap( n, x, incX, y, incY );
@@ -416,7 +416,7 @@ void BLAS_BLAS1::copy(
 {
     LAMA_REGION( "BLAS.BLAS1.copy" )
 
-    LAMA_LOG_DEBUG( logger,
+    SCAI_LOG_DEBUG( logger,
                     "copy<" << getScalarType<ValueType>() << ">, " << "n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
 
     if( ( incX <= 0 ) || ( incY <= 0 ) )
@@ -426,7 +426,7 @@ void BLAS_BLAS1::copy(
 
     if( syncToken )
     {
-        LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
+        SCAI_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
 
     // wrapper: uses overloading and converts arguments if required
@@ -503,7 +503,7 @@ void BLAS_BLAS1::axpy(
 {
     LAMA_REGION( "BLAS.BLAS1.axpy" )
 
-    LAMA_LOG_DEBUG( logger,
+    SCAI_LOG_DEBUG( logger,
                     "axpy<" << getScalarType<ValueType>() << ">, " << "n = " << n << ", alpha = " << alpha << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
 
     if( ( incX <= 0 ) || ( incY <= 0 ) )
@@ -513,7 +513,7 @@ void BLAS_BLAS1::axpy(
 
     if( syncToken )
     {
-        LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
+        SCAI_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
 
     wrapperAxpy( n, alpha, x, incX, y, incY );
@@ -577,7 +577,7 @@ ValueType BLAS_BLAS1::dot(
 {
     LAMA_REGION( "BLAS.BLAS1.dot" )
 
-    LAMA_LOG_DEBUG( logger,
+    SCAI_LOG_DEBUG( logger,
                     "dot<" << getScalarType<ValueType>() << ">, " << "n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
 
     if( ( incX <= 0 ) || ( incY <= 0 ) )
@@ -587,7 +587,7 @@ ValueType BLAS_BLAS1::dot(
 
     if( syncToken )
     {
-        LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
+        SCAI_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
 
     return wrapperDot( static_cast<int>( n ), x, static_cast<int>( incX ), y, static_cast<int>( incY ) );
@@ -606,18 +606,18 @@ void BLAS_BLAS1::setInterface( BLASInterface& BLAS )
 
     if( !useBLAS || ( level <= 0 ) )
     {
-        LAMA_LOG_INFO( logger, "BLAS1 wrapper routines for Host Interface are disabled (LAMA_USE_BLAS not set or 0)" )
+        SCAI_LOG_INFO( logger, "BLAS1 wrapper routines for Host Interface are disabled (LAMA_USE_BLAS not set or 0)" )
         return;
     }
     else if( level > 1 )
     {
         // only level 2 or level 3 wrappers might be used
-        LAMA_LOG_INFO( logger,
+        SCAI_LOG_INFO( logger,
                        "BLAS1 wrapper routines for Host Interface are disabled (LAMA_USE_BLAS = " << level << ")" )
         return;
     }
 
-    LAMA_LOG_INFO( logger, "set BLAS1 wrapper routines for Host Context in Interface" )
+    SCAI_LOG_INFO( logger, "set BLAS1 wrapper routines for Host Context in Interface" )
 
     // REGISTER1: give these routines priority in case of overriding
 

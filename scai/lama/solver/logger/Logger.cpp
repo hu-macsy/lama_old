@@ -46,7 +46,7 @@
 namespace lama
 {
 
-LAMA_LOG_DEF_LOGGER( Logger::logger, "Logger" );
+SCAI_LOG_DEF_LOGGER( Logger::logger, "Logger" );
 
 const std::string& Logger::id() const
 {

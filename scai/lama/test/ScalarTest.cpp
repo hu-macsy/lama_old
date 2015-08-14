@@ -58,7 +58,7 @@ BOOST_AUTO_TEST_SUITE( ScalarTest )
 
 /* --------------------------------------------------------------------- */
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.ScalarTest" )
+SCAI_LOG_DEF_LOGGER( logger, "Test.ScalarTest" )
 
 /* --------------------------------------------------------------------- */
 

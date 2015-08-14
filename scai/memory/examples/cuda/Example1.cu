@@ -13,7 +13,7 @@
 
 using namespace memory;
 
-LAMA_LOG_DEF_LOGGER( logger, "CudaExample" )
+SCAI_LOG_DEF_LOGGER( logger, "CudaExample" )
 
 template<typename ValueType>
 ValueType sum( const ValueType array[], const IndexType n )
@@ -26,7 +26,7 @@ ValueType sum( const ValueType array[], const IndexType n )
 
     LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
 
-    LAMA_LOG_INFO( logger, "sum of " << n << " values = " << result )
+    SCAI_LOG_INFO( logger, "sum of " << n << " values = " << result )
 
     return result;
 }
@@ -88,7 +88,7 @@ int main()
     std::cout << "data = " << data << std::endl;
 
     {
-        LAMA_LOG_INFO( logger, "write only on cuda host" )
+        SCAI_LOG_INFO( logger, "write only on cuda host" )
         // HostWriteOnlyAccess<double> write( data,  N );
 
         WriteOnlyAccess<double> writeData( data, N );
@@ -104,7 +104,7 @@ int main()
     std::cout << "After host write: data = " << data << std::endl;
 
     {
-        LAMA_LOG_INFO( logger, "read on cuda" )
+        SCAI_LOG_INFO( logger, "read on cuda" )
         ReadAccess<double> read( data, cudaContext );
         LAMA_CONTEXT_ACCESS( cudaContext )
         double s = sum( read.get(), data.size() );
@@ -114,7 +114,7 @@ int main()
     std::cout << "After cuda read: data = " << data << std::endl;
 
     {
-        LAMA_LOG_INFO( logger, "write on cuda" )
+        SCAI_LOG_INFO( logger, "write on cuda" )
         WriteAccess<double> write( data, cudaContext );
         LAMA_CONTEXT_ACCESS( cudaContext )
         add( static_cast<double*>( write ), data.size() );
@@ -123,7 +123,7 @@ int main()
     std::cout << "After cuda write: data = " << data << std::endl;
 
     {
-        LAMA_LOG_INFO( logger, "read on host" )
+        SCAI_LOG_INFO( logger, "read on host" )
         ReadAccess<double> read( data );
         sleep( 1 );
         for ( IndexType i = 0; i < N; ++i )

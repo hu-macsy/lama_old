@@ -59,7 +59,7 @@ class AMGSetup;
 
 /* ---- Static variables of AMGSetupFactory  ----------------------------------- */
 
-LAMA_LOG_DEF_LOGGER( AMGSetupFactory::logger, "AMGSetupFactory" )
+SCAI_LOG_DEF_LOGGER( AMGSetupFactory::logger, "AMGSetupFactory" )
 
 AMGSetupFactory& AMGSetupFactory::getFactory()
 {
@@ -83,7 +83,7 @@ AMGSetupFactory& AMGSetupFactory::getFactory()
 
 AMGSetupPtr AMGSetupFactory::get( const std::string& type )
 {
-    LAMA_LOG_TRACE( logger, "Get AMGSetup of type " << type )
+    SCAI_LOG_TRACE( logger, "Get AMGSetup of type " << type )
 
     const AMGSetupFactory& factory = getFactory();
 
@@ -96,7 +96,7 @@ AMGSetupPtr AMGSetupFactory::get( const std::string& type )
 
     const std::string& defaultType = factory.getDefaultAMGSetupType();
 
-    LAMA_LOG_WARN( logger, "AMGSetup for " << type << " not supported, will use " << defaultType )
+    SCAI_LOG_WARN( logger, "AMGSetup for " << type << " not supported, will use " << defaultType )
 
     // try to get a default AMGSetup
 
@@ -147,13 +147,13 @@ void AMGSetupFactory::setDefaultAMGSetupType( const std::string& defaultType ) c
     {
         mDefaultAMGSetupType = defaultType;
 
-        LAMA_LOG_INFO( logger, "set default AMGSetup: " << mDefaultAMGSetupType )
+        SCAI_LOG_INFO( logger, "set default AMGSetup: " << mDefaultAMGSetupType )
     }
     else
     {
         setDefaultAMGSetupType();
 
-        LAMA_LOG_WARN( logger,
+        SCAI_LOG_WARN( logger,
                        "default AMGSetup " << defaultType << " not available, will be " << mDefaultAMGSetupType )
     }
 }
@@ -193,7 +193,7 @@ AMGSetupFactory::AMGSetupFactory()
 
 AMGSetupFactory::~AMGSetupFactory()
 {
-    LAMA_LOG_INFO( logger, "~AMGSetupFactory" )
+    SCAI_LOG_INFO( logger, "~AMGSetupFactory" )
 }
 
 /* ---- AMGSetupFactory methods  ----------------------------------------------- */
@@ -208,7 +208,7 @@ void AMGSetupFactory::addAMGSetupManager( const std::string& type, common::share
     {
         // AMGSetupManager might be replaced, e.g. for Host context (DefaultHost or CUDAHost)
 
-        LAMA_LOG_INFO( logger, "AMGSetup manager replaced for AMGSetup type " << type )
+        SCAI_LOG_INFO( logger, "AMGSetup manager replaced for AMGSetup type " << type )
     }
 
     mAMGSetupToManagerMap[type] = commManager; // ownership of pointer is taken over

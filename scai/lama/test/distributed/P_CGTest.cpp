@@ -83,7 +83,7 @@ struct P_CGTestConfig
 
 BOOST_FIXTURE_TEST_SUITE( P_CGTest, P_CGTestConfig )
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.P_CGTest" );
+SCAI_LOG_DEF_LOGGER( logger, "Test.P_CGTest" );
 
 /* --------------------------------------------------------------------- */
 
@@ -93,15 +93,15 @@ void testSolveWithoutPreconditionmethod( ContextPtr loc )
     typedef typename MatrixType::MatrixValueType ValueType;
     const IndexType N1 = 4;
     const IndexType N2 = 4;
-    LAMA_LOG_INFO( logger, "testSolveWithoutPreconditionmethod<" << typeid( MatrixType ).name() << " at " << *loc );
-    LAMA_LOG_INFO( logger, "Problem size = " << N1 << " x " << N2 );
+    SCAI_LOG_INFO( logger, "testSolveWithoutPreconditionmethod<" << typeid( MatrixType ).name() << " at " << *loc );
+    SCAI_LOG_INFO( logger, "Problem size = " << N1 << " x " << N2 );
     CG cgSolver( "CGTestSolver" );
-    LAMA_LOG_INFO( logger, "Solver = " << cgSolver );
+    SCAI_LOG_INFO( logger, "Solver = " << cgSolver );
     CSRSparseMatrix<ValueType> helpcoefficients;
     MatrixCreator<ValueType>::buildPoisson2D( helpcoefficients, 9, N1, N2 );
-    LAMA_LOG_INFO( logger, "Poisson2D matrix = " << helpcoefficients );
+    SCAI_LOG_INFO( logger, "Poisson2D matrix = " << helpcoefficients );
     MatrixType coefficients( helpcoefficients );
-    LAMA_LOG_INFO( logger, "Poisson2D matrix (converted to MatrixType)  = " << helpcoefficients );
+    SCAI_LOG_INFO( logger, "Poisson2D matrix (converted to MatrixType)  = " << helpcoefficients );
     DistributionPtr dist( new BlockDistribution( coefficients.getNumRows(), comm ) );
     coefficients.redistribute( dist, dist );
     coefficients.setContext( loc );
@@ -122,7 +122,7 @@ void testSolveWithoutPreconditionmethod( ContextPtr loc )
 
     if ( ! ( sval < 1E-6 ) )
     {
-        LAMA_LOG_ERROR( logger, "max norm of diff = " << sval << ", should be < 1E-6 " )
+        SCAI_LOG_ERROR( logger, "max norm of diff = " << sval << ", should be < 1E-6 " )
     }
 
     BOOST_CHECK( sval < 1E-6 );
@@ -151,10 +151,10 @@ template<typename MatrixType>
 void testSolveWithPreconditionmethod( ContextPtr loc )
 {
     typedef typename MatrixType::MatrixValueType ValueType;
-    LAMA_LOG_INFO( logger, "testSolveWithPreconditionmethod<" << typeid( MatrixType ).name() << "> on " << *loc );
+    SCAI_LOG_INFO( logger, "testSolveWithPreconditionmethod<" << typeid( MatrixType ).name() << "> on " << *loc );
     CG cgSolver( "CGTestSolver" );
 
-    if ( LAMA_LOG_INFO_ON( logger ) )
+    if ( SCAI_LOG_INFO_ON( logger ) )
     {
         LoggerPtr slogger( new CommonLogger(
                                "<SOR>: ",
@@ -166,7 +166,7 @@ void testSolveWithPreconditionmethod( ContextPtr loc )
 
     const IndexType N1 = 4;
     const IndexType N2 = 4;
-    LAMA_LOG_INFO( logger, "Problem size = " << N1 << " x " << N2 );
+    SCAI_LOG_INFO( logger, "Problem size = " << N1 << " x " << N2 );
     CSRSparseMatrix<ValueType> csrCoefficients;
     MatrixCreator<ValueType>::buildPoisson2D( csrCoefficients, 9, N1, N2 );
     MatrixType coefficients( csrCoefficients );
@@ -182,17 +182,17 @@ void testSolveWithPreconditionmethod( ContextPtr loc )
     cgSolver.setStoppingCriterion( criterion );
     SolverPtr preconditioner( new TrivialPreconditioner( "Trivial preconditioner" ) );
     cgSolver.setPreconditioner( preconditioner );
-    LAMA_LOG_INFO( logger, "matrix for CG solver = " << coefficients );
+    SCAI_LOG_INFO( logger, "matrix for CG solver = " << coefficients );
     cgSolver.initialize( coefficients );
     cgSolver.solve( solution, rhs );
     BOOST_CHECK_EQUAL( expectedIterations, cgSolver.getIterationCount() );
     DenseVector<ValueType> diff( solution - exactSolution );
     Scalar s = maxNorm( diff );
-    LAMA_LOG_INFO( logger, "max norm ( solution - exactSolution ) = " << s );
+    SCAI_LOG_INFO( logger, "max norm ( solution - exactSolution ) = " << s );
 
     if ( s.getValue<ValueType>() >= 1E-6 )
     {
-        LAMA_LOG_ERROR( logger, "cgSolver for " << coefficients
+        SCAI_LOG_ERROR( logger, "cgSolver for " << coefficients
                         << ": max norm ( solution - exactSolution ) = " << s );
     }
 

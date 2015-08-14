@@ -38,12 +38,12 @@
 namespace memory
 {
 
-LAMA_LOG_DEF_LOGGER( ContextAccess::logger, "ContextAccess" )
+SCAI_LOG_DEF_LOGGER( ContextAccess::logger, "ContextAccess" )
 
 ContextAccess::ContextAccess( ContextPtr context, const char* file, int line )
                 : mContext( *context ), mReleased( false ), mFile( file ), mLine( line )
 {
-    LAMA_LOG_INFO( logger, *this << " enabled" )
+    SCAI_LOG_INFO( logger, *this << " enabled" )
 
     mContext.enable( mFile, mLine );
 }
@@ -55,7 +55,7 @@ void ContextAccess::release()
         return;
     }
 
-    LAMA_LOG_INFO( logger, *this << " released" )
+    SCAI_LOG_INFO( logger, *this << " released" )
 
     mContext.disable( mFile, mLine );
     mReleased = false;

@@ -81,12 +81,12 @@ SpecializedJacobi::SpecializedJacobiRuntime::SpecializedJacobiRuntime()
 
 SpecializedJacobi::~SpecializedJacobi()
 {
-    LAMA_LOG_INFO( logger, "~SpecializedJacobi" )
+    SCAI_LOG_INFO( logger, "~SpecializedJacobi" )
 }
 
 SpecializedJacobi::SpecializedJacobiRuntime::~SpecializedJacobiRuntime()
 {
-    LAMA_LOG_INFO( logger, "~SpecializedJacobiRuntime" )
+    SCAI_LOG_INFO( logger, "~SpecializedJacobiRuntime" )
 }
 
 void SpecializedJacobi::initialize( const Matrix& coefficients )
@@ -108,9 +108,9 @@ void SpecializedJacobi::initialize( const Matrix& coefficients )
 
     OmegaSolver::initialize( coefficients );
 
-    LAMA_LOG_DEBUG( logger, "Initialization started" )
+    SCAI_LOG_DEBUG( logger, "Initialization started" )
 
-    LAMA_LOG_DEBUG( logger, "diagonal property of coefficients: " << coefficients.hasDiagonalProperty() )
+    SCAI_LOG_DEBUG( logger, "diagonal property of coefficients: " << coefficients.hasDiagonalProperty() )
 
     LAMA_ASSERT( coefficients.hasDiagonalProperty(), "Diagonal Property not set." )
 
@@ -118,7 +118,7 @@ void SpecializedJacobi::initialize( const Matrix& coefficients )
 
     if( !runtime.mOldSolution.get() )
     {
-        LAMA_LOG_DEBUG( logger, "Creating old solution vector using properties of the coefficient matrix. " )
+        SCAI_LOG_DEBUG( logger, "Creating old solution vector using properties of the coefficient matrix. " )
         runtime.mOldSolution.reset(
             Vector::createVector( runtime.mCoefficients->getValueType(),
                                   runtime.mCoefficients->getDistributionPtr() ) );
@@ -132,7 +132,7 @@ void SpecializedJacobi::initialize( const Matrix& coefficients )
                 dynamic_cast<const SparseMatrix<ARITHMETIC_TYPE##I>*>( runtime.mCoefficients );                   \
         if ( sparseTypeCoefficients )                                                                         \
         {                                                                                                     \
-            LAMA_LOG_DEBUG( logger, "Creating " << common::getScalarType<ARITHMETIC_TYPE##I>() << " diagonal. " )   \
+            SCAI_LOG_DEBUG( logger, "Creating " << common::getScalarType<ARITHMETIC_TYPE##I>() << " diagonal. " )   \
             if ( !runtime.mDiagonal.get() )                                                                   \
             {                                                                                                 \
                 runtime.mDiagonal.reset( ContextArray::create( common::getScalarType<ARITHMETIC_TYPE##I>() ) );     \
@@ -157,7 +157,7 @@ void SpecializedJacobi::solve( Vector& solution, const Vector& rhs )
 {
     if( getConstRuntime().mSolveInit )
     {
-        LAMA_LOG_DEBUG( logger, "Previous initialization of solver found! Will be overriden!" )
+        SCAI_LOG_DEBUG( logger, "Previous initialization of solver found! Will be overriden!" )
     }
 
     solveInit( solution, rhs );
@@ -197,11 +197,11 @@ void SpecializedJacobi::solveFinalize()
 //        &( mSolution.getConstReference() ) )
     if( getConstRuntime().mIterations % 2 )
     {
-        LAMA_LOG_DEBUG( logger, "mProxyOldSolution = *mSolution" )
+        SCAI_LOG_DEBUG( logger, "mProxyOldSolution = *mSolution" )
         *getRuntime().mProxyOldSolution = *getRuntime().mSolution;
     }
 
-    LAMA_LOG_DEBUG( logger, " end solve " )
+    SCAI_LOG_DEBUG( logger, " end solve " )
 }
 
 void SpecializedJacobi::iterate()
@@ -236,16 +236,16 @@ void SpecializedJacobi::iterateTyped( const SparseMatrix<ValueType>& coefficient
 {
     LAMA_REGION( "Solver.SpJacobi.iterateTyped" )
 
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    *getConstRuntime().mSolution << " = " << coefficients << " * " << *getConstRuntime().mOldSolution << " = " << *getConstRuntime().mRhs )
 
     if( coefficients.getNumRows() == 0 )
     {
-        LAMA_LOG_WARN( logger, "Zero sized matrix given. Won't execute any calculations in this iteration. " )
+        SCAI_LOG_WARN( logger, "Zero sized matrix given. Won't execute any calculations in this iteration. " )
         return;
     }
 
-    LAMA_LOG_INFO( logger, "Swap old solution and solution pointer." )
+    SCAI_LOG_INFO( logger, "Swap old solution and solution pointer." )
 
     Vector* ptr_OldSolution = &( *getRuntime().mProxyOldSolution );
     Vector* ptr_solution = &( *getRuntime().mSolution );
@@ -263,7 +263,7 @@ void SpecializedJacobi::iterateTyped( const SparseMatrix<ValueType>& coefficient
             && typeid( *getRuntime().mSolution ) == typeid( oldSolution )
             && typeid( *getRuntime().mRhs ) == typeid( oldSolution ) )
     {
-        LAMA_LOG_INFO( logger, "All types have the same value type." )
+        SCAI_LOG_INFO( logger, "All types have the same value type." )
         const DenseVector<ValueType>& denseOldSolution = dynamic_cast<const DenseVector<ValueType>&>( oldSolution );
         DenseVector<ValueType>& denseSolution = dynamic_cast<DenseVector<ValueType>&>( *getRuntime().mSolution );
         const DenseVector<ValueType>& denseRhs = dynamic_cast<const DenseVector<ValueType>&>( *getRuntime().mRhs );

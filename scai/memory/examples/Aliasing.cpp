@@ -39,7 +39,7 @@ using namespace memory;
 
 /* --------------------------------------------------------------------- */
 
-LAMA_LOG_DEF_LOGGER( logger, "ContextTest" )
+SCAI_LOG_DEF_LOGGER( logger, "ContextTest" )
 
 using namespace memory;
 using common::IndexType;

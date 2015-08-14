@@ -66,7 +66,7 @@ struct P_NormTestConfig
 
 BOOST_FIXTURE_TEST_SUITE( P_NormTest, P_NormTestConfig );
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.P_NormTest" );
+SCAI_LOG_DEF_LOGGER( logger, "Test.P_NormTest" );
 
 /* --------------------------------------------------------------------- */
 

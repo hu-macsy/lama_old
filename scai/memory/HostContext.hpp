@@ -90,7 +90,7 @@ private:
 
     HostContext();
 
-    LAMA_LOG_DECL_STATIC_LOGGER( logger )
+    SCAI_LOG_DECL_STATIC_LOGGER( logger )
 };
 
 inline ContextType HostContext::createValue() 

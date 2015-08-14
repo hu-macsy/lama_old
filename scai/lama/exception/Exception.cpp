@@ -50,7 +50,7 @@
 namespace lama
 {
 
-LAMA_LOG_DEF_LOGGER( Exception1::logger, "Exception" )
+SCAI_LOG_DEF_LOGGER( Exception1::logger, "Exception" )
 
 Exception1::UnsupportedType Exception1::unsupportedSetting = Exception1::UNSUPPORTED_UNDEFINED;
 
@@ -64,7 +64,7 @@ Exception1::UnsupportedType Exception1::getUnsupportedSetting()
 
         if( !isSet )
         {
-            LAMA_LOG_WARN( logger, "LAMA_UNSUPPORTED not set, default is WARN" )
+            SCAI_LOG_WARN( logger, "LAMA_UNSUPPORTED not set, default is WARN" )
         }
 
         // transform to uppercase
@@ -74,7 +74,7 @@ Exception1::UnsupportedType Exception1::getUnsupportedSetting()
             *p = static_cast<char>( toupper( *p ) );
         }
 
-        LAMA_LOG_INFO( logger, "LAMA_UNSUPPORTED=" << val << ", setting used for LAMA" )
+        SCAI_LOG_INFO( logger, "LAMA_UNSUPPORTED=" << val << ", setting used for LAMA" )
 
         if( "IGNORE" == val )
         {
@@ -90,7 +90,7 @@ Exception1::UnsupportedType Exception1::getUnsupportedSetting()
         }
         else
         {
-            LAMA_LOG_ERROR( logger, "LAMA_UNSUPPORTED=" << val << ", illegal value, take WARN" )
+            SCAI_LOG_ERROR( logger, "LAMA_UNSUPPORTED=" << val << ", illegal value, take WARN" )
             unsupportedSetting = UNSUPPORTED_WARN;
         }
     }
@@ -105,7 +105,7 @@ Exception1::Exception1()
 Exception1::Exception1( const std::string& message )
     : mMessage( message )
 {
-    LAMA_LOG_WARN( logger, "EXCEPTION: " << message )
+    SCAI_LOG_WARN( logger, "EXCEPTION: " << message )
 }
 
 Exception1::~Exception1() throw ()

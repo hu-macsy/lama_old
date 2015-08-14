@@ -79,7 +79,7 @@ typedef boost::mpl::list<double, float> test_types;
 BOOST_FIXTURE_TEST_SUITE( BlockDistributionTest, BlockDistributionTestConfig )
 ;
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.BlockDistributionTest" );
+SCAI_LOG_DEF_LOGGER( logger, "Test.BlockDistributionTest" );
 
 /* --------------------------------------------------------------------- */
 
@@ -89,7 +89,7 @@ BOOST_AUTO_TEST_CASE( commonTestCases )
 
     if ( base_test_case )
     {
-        LAMA_LOG_INFO( logger, "Run test method " << testcase << " in BlockDistributionTest." );
+        SCAI_LOG_INFO( logger, "Run test method " << testcase << " in BlockDistributionTest." );
         DISTRIBUTION_COMMONTESTCASES( disttest );
     }
     else

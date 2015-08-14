@@ -51,7 +51,7 @@ namespace memory
 
 /**  static variables *****************************************************/
 
-LAMA_LOG_DEF_LOGGER( CUDAMemory::logger, "Memory.CUDAMemory" )
+SCAI_LOG_DEF_LOGGER( CUDAMemory::logger, "Memory.CUDAMemory" )
 
 /**  constructor  *********************************************************/
 
@@ -63,7 +63,7 @@ CUDAMemory::CUDAMemory( common::shared_ptr<const CUDAContext> cudaContext )
 {
     COMMON_ASSERT( cudaContext, "NULL context for CUDA memory" )
 
-    LAMA_LOG_DEBUG( logger, "construct CUDAMemory for context " << cudaContext )
+    SCAI_LOG_DEBUG( logger, "construct CUDAMemory for context " << cudaContext )
 
     mNumberOfAllocatedBytes = 0;
     mNumberOfAllocates = 0;
@@ -74,20 +74,20 @@ CUDAMemory::CUDAMemory( common::shared_ptr<const CUDAContext> cudaContext )
 
 CUDAMemory::~CUDAMemory()
 {
-    LAMA_LOG_INFO( logger, "~CUDAMemory: " << *this )
+    SCAI_LOG_INFO( logger, "~CUDAMemory: " << *this )
 
     if ( mNumberOfAllocates > 0 )
     {
-        LAMA_LOG_ERROR( logger, *this << ": " << mNumberOfAllocates << " allocate without free" )
+        SCAI_LOG_ERROR( logger, *this << ": " << mNumberOfAllocates << " allocate without free" )
     }
     else if ( mNumberOfAllocates < 0 )
     {
-        LAMA_LOG_ERROR( logger, *this << ": " << mNumberOfAllocates << " free without allocate" )
+        SCAI_LOG_ERROR( logger, *this << ": " << mNumberOfAllocates << " free without allocate" )
     }
 
     if ( mNumberOfAllocatedBytes != 0 )
     {
-        LAMA_LOG_ERROR( logger, *this << ": number of allocated bytes = " << mNumberOfAllocatedBytes 
+        SCAI_LOG_ERROR( logger, *this << ": number of allocated bytes = " << mNumberOfAllocatedBytes 
                                 << ", mismatch of free/allocate sizes" )
     }
 }
@@ -120,12 +120,12 @@ void* CUDAMemory::allocate( const size_t size ) const
     // LAMA_REGION( "CUDA.allocate" )
     LAMA_CONTEXT_ACCESS( mCUDAContext )
     COMMON_ASSERT( size > 0, "should not call allocate for size = " << size )
-    LAMA_LOG_TRACE( logger, *this << ": allocate " << size << " bytes" )
+    SCAI_LOG_TRACE( logger, *this << ": allocate " << size << " bytes" )
     CUdeviceptr pointer = 0;
     LAMA_CUDA_DRV_CALL(
         cuMemAlloc( &pointer, size ),
         "cuMemAlloc( size = " << size << " ) failed. This allocation would require a total of " << mMaxNumberOfAllocatedBytes + size << " bytes global memory." )
-    LAMA_LOG_DEBUG( logger, *this << ": allocated " << size << " bytes, ptr = " << ( ( void* ) pointer ) )
+    SCAI_LOG_DEBUG( logger, *this << ": allocated " << size << " bytes, ptr = " << ( ( void* ) pointer ) )
     mNumberOfAllocatedBytes += size;
     mNumberOfAllocates++;
     mMaxNumberOfAllocatedBytes = std::max( mNumberOfAllocatedBytes, mMaxNumberOfAllocatedBytes );
@@ -138,7 +138,7 @@ void CUDAMemory::free( void* pointer, const size_t size ) const
 {
     // LAMA_REGION( "CUDA.free" )
     LAMA_CONTEXT_ACCESS( mCUDAContext )
-    LAMA_LOG_DEBUG( logger, *this << ": free " << size << " bytes, ptr = " << pointer )
+    SCAI_LOG_DEBUG( logger, *this << ": free " << size << " bytes, ptr = " << pointer )
     LAMA_CUDA_DRV_CALL( cuMemFree( ( CUdeviceptr ) pointer ), "cuMemFree( " << pointer << " ) failed" )
     mNumberOfAllocatedBytes -= size;
     mNumberOfAllocates--;
@@ -149,7 +149,7 @@ void CUDAMemory::free( void* pointer, const size_t size ) const
 void CUDAMemory::memcpy( void* dst, const void* src, const size_t size ) const
 {
     LAMA_CONTEXT_ACCESS( mCUDAContext )
-    LAMA_LOG_INFO( logger, "copy " << size << " bytes from " << src << " (device) to " << dst << " (device) " )
+    SCAI_LOG_INFO( logger, "copy " << size << " bytes from " << src << " (device) to " << dst << " (device) " )
     LAMA_CUDA_DRV_CALL( cuMemcpyDtoD( ( CUdeviceptr ) dst, ( CUdeviceptr ) src, size ),
                         "cuMemcpyDtoD( " << dst << ", " << src << ", " << size << " ) failed" )
 }
@@ -168,7 +168,7 @@ void CUDAMemory::memcpyToCUDA( const CUDAMemory& dstMemory, void* dst, const voi
 
     // unified adressing makes this possible
 
-    LAMA_LOG_INFO( logger, "copy " << size << " bytes to " << dst << " @ " << dstMemory
+    SCAI_LOG_INFO( logger, "copy " << size << " bytes to " << dst << " @ " << dstMemory
                                    << " from " << src << " @ " << *this )
 
     LAMA_CUDA_DRV_CALL( cuMemcpyDtoD( ( CUdeviceptr ) dst, ( CUdeviceptr ) src, size ),
@@ -191,7 +191,7 @@ void CUDAMemory::memcpyFromCUDA( void* dst, const CUDAMemory& srcMemory, const v
 
     // unified adressing makes this possible
 
-    LAMA_LOG_INFO( logger, "copy " << size << " bytes from " << src << " @ " << srcMemory  
+    SCAI_LOG_INFO( logger, "copy " << size << " bytes from " << src << " @ " << srcMemory  
                                    << " to " << dst << " @ " << *this )
 
     LAMA_CUDA_DRV_CALL( cuMemcpyDtoD( ( CUdeviceptr ) dst, ( CUdeviceptr ) src, size ),
@@ -207,7 +207,7 @@ SyncToken* CUDAMemory::memcpyAsync( void* dst, const void* src, const size_t siz
     // LAMA_REGION( "CUDA.memcpyDtoDAsync" )
     LAMA_CONTEXT_ACCESS( mCUDAContext )
     // use auto pointer so memory will be freed in case of exceptions
-    LAMA_LOG_INFO( logger, "copy async " << size << " bytes from " << src << " (device) to " << dst << " (device) " )
+    SCAI_LOG_INFO( logger, "copy async " << size << " bytes from " << src << " (device) to " << dst << " (device) " )
 
     CUDAStreamSyncToken* token = mCUDAContext->getTransferSyncToken();
 
@@ -231,7 +231,7 @@ SyncToken* CUDAMemory::memcpyAsync( void* dst, const void* src, const size_t siz
 
 void CUDAMemory::memcpyFromHost( void* dst, const void* src, const size_t size ) const
 {
-    LAMA_LOG_INFO( logger, "copy " << size << " bytes from " << src << " (host) to " << dst << " (device) " )
+    SCAI_LOG_INFO( logger, "copy " << size << " bytes from " << src << " (host) to " << dst << " (device) " )
 
     LAMA_CONTEXT_ACCESS( mCUDAContext )
 
@@ -243,7 +243,7 @@ void CUDAMemory::memcpyFromHost( void* dst, const void* src, const size_t size )
 
 SyncToken* CUDAMemory::memcpyAsyncFromHost( void* dst, const void* src, const size_t size ) const
 {
-    LAMA_LOG_INFO( logger, "async copy " << size << " bytes from " << src << " (host) to " << dst << " (device) " )
+    SCAI_LOG_INFO( logger, "async copy " << size << " bytes from " << src << " (host) to " << dst << " (device) " )
 
     // as current thread has disabled the context, another thread might use it
 
@@ -256,7 +256,7 @@ SyncToken* CUDAMemory::memcpyAsyncFromHost( void* dst, const void* src, const si
 
 void CUDAMemory::memcpyToHost( void* dst, const void* src, const size_t size ) const
 {
-    LAMA_LOG_INFO( logger, "copy " << size << " bytes from " << src << " (device) to " << dst << " (host) " )
+    SCAI_LOG_INFO( logger, "copy " << size << " bytes from " << src << " (device) to " << dst << " (host) " )
 
     LAMA_CONTEXT_ACCESS( mCUDAContext )
 
@@ -268,7 +268,7 @@ void CUDAMemory::memcpyToHost( void* dst, const void* src, const size_t size ) c
 
 SyncToken* CUDAMemory::memcpyAsyncToHost( void* dst, const void* src, const size_t size ) const
 {
-    LAMA_LOG_INFO( logger, "async copy " << size << " bytes from " << src << " (device) to " << dst << " (host) " )
+    SCAI_LOG_INFO( logger, "async copy " << size << " bytes from " << src << " (device) to " << dst << " (host) " )
 
     // as current thread has disabled the context, another thread might use it
 
@@ -283,7 +283,7 @@ void CUDAMemory::memcpyFromCUDAHost( void* dst, const void* src, const size_t si
 {
     // LAMA_REGION( "CUDA.memcpyCUDAHost->Dev")
     LAMA_CONTEXT_ACCESS( mCUDAContext )
-    LAMA_LOG_INFO( logger, "copy " << size << " bytes from " << src << " (host) to " << dst << " (device) " )
+    SCAI_LOG_INFO( logger, "copy " << size << " bytes from " << src << " (host) to " << dst << " (device) " )
     LAMA_CUDA_DRV_CALL( cuMemcpyHtoD( ( CUdeviceptr ) dst, src, size ),
                         "cuMemcpyHToD( " << dst << ", " << src << ", " << size << ") failed " )
 }
@@ -294,7 +294,7 @@ SyncToken* CUDAMemory::memcpyAsyncFromCUDAHost( void* dst, const void* src, cons
 {
     // LAMA_REGION( "CUDA.memcpyHtoDAsync" )
     LAMA_CONTEXT_ACCESS( mCUDAContext )
-    LAMA_LOG_INFO( logger, "copy async " << size << " bytes from " << src << " (host) to " << dst << " (device) " )
+    SCAI_LOG_INFO( logger, "copy async " << size << " bytes from " << src << " (host) to " << dst << " (device) " )
 
     CUDAStreamSyncToken* token = mCUDAContext->getTransferSyncToken();
 
@@ -310,7 +310,7 @@ void CUDAMemory::memcpyToCUDAHost( void* dst, const void* src, const size_t size
 {
     // LAMA_REGION( "CUDA.memcpyDev->CUDAHost" )
     LAMA_CONTEXT_ACCESS( mCUDAContext )
-    LAMA_LOG_INFO( logger, "copy " << size << " bytes from " << src << " (device) to " << dst << " (cuda host) " )
+    SCAI_LOG_INFO( logger, "copy " << size << " bytes from " << src << " (device) to " << dst << " (cuda host) " )
     LAMA_CUDA_DRV_CALL( cuMemcpyDtoH( dst, ( CUdeviceptr ) src, size ),
                         "cuMemcpyDToH( " << dst << ", " << src << ", " << size << ") failed " )
 }
@@ -321,7 +321,7 @@ SyncToken* CUDAMemory::memcpyAsyncToCUDAHost( void* dst, const void* src, const 
 {
     // LAMA_REGION( "CUDA.memcpyDtoHAsync" )
     LAMA_CONTEXT_ACCESS( mCUDAContext )
-    LAMA_LOG_INFO( logger, "copy async " << size << " bytes from " << src << " (device) to " << dst << " (host) " )
+    SCAI_LOG_INFO( logger, "copy async " << size << " bytes from " << src << " (device) to " << dst << " (host) " )
 
     CUDAStreamSyncToken* token = mCUDAContext->getTransferSyncToken();
 
@@ -368,7 +368,7 @@ bool CUDAMemory::canCopyFrom( const Memory& other ) const
         supported = canCopyCUDA( *otherCUDAMem );
     }
 
-    LAMA_LOG_INFO( logger, "canCopyFrom " << other << " to this " << *this << ", supported = " << supported )
+    SCAI_LOG_INFO( logger, "canCopyFrom " << other << " to this " << *this << ", supported = " << supported )
 
     return supported;
 }
@@ -433,7 +433,7 @@ bool CUDAMemory::canCopyTo( const Memory& other ) const
         supported = canCopyCUDA( *otherCUDA );
     }
 
-    LAMA_LOG_INFO( logger, "canCopyTo " << other << " from this " << *this << ", supported = " << supported )
+    SCAI_LOG_INFO( logger, "canCopyTo " << other << " from this " << *this << ", supported = " << supported )
 
     return supported;
 }
@@ -460,7 +460,7 @@ void CUDAMemory::memcpyFrom( void* dst, const Memory& srcMemory, const void* src
     }
     else
     {
-        LAMA_LOG_ERROR( logger, "copy from " << srcMemory << " to " << *this << " not supported" )
+        SCAI_LOG_ERROR( logger, "copy from " << srcMemory << " to " << *this << " not supported" )
         COMMON_THROWEXCEPTION( "copy from " << srcMemory << " to " << *this << " not supported" )
     }
 }
@@ -487,7 +487,7 @@ void CUDAMemory::memcpyTo( const Memory& dstMemory, void* dst, const void* src, 
     }
     else
     {
-        LAMA_LOG_ERROR( logger, "copy to " << dstMemory << " from " << *this << " not supported" )
+        SCAI_LOG_ERROR( logger, "copy to " << dstMemory << " from " << *this << " not supported" )
         COMMON_THROWEXCEPTION( "copy to " << dstMemory << " from " << *this << " not supported" )
     }
 }

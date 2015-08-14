@@ -51,7 +51,7 @@ ${path_lcov} --base-directory ../.. --directory ../.. --zerocounters
 
 cd ..
 
-export LAMA_LOG=ERROR
+export SCAI_LOG=ERROR
 
 #for i in TRACE DEBUG INFO WARN ERROR OFF # TRACE DEBUG INFO WARN are causing failures
 #do

@@ -5,9 +5,9 @@
 
 BOOST_AUTO_TEST_CASE( host_context )
 {
-    LAMA_LOG_DEF_LOGGER( logger, "Test" )
+    SCAI_LOG_DEF_LOGGER( logger, "Test" )
 
-    LAMA_LOG_THREAD( "main" )
+    SCAI_LOG_THREAD( "main" )
 
     using namespace memory;
 
@@ -17,6 +17,6 @@ BOOST_AUTO_TEST_CASE( host_context )
 
     BOOST_CHECK( host.get() );
 
-    LAMA_LOG_INFO( logger, "host context = " << *host )
+    SCAI_LOG_INFO( logger, "host context = " << *host )
 }
 

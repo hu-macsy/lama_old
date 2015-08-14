@@ -50,7 +50,7 @@ using namespace memory;
 
 BOOST_AUTO_TEST_SUITE( LAPACKTest )
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.LAPACKTest" )
+SCAI_LOG_DEF_LOGGER( logger, "Test.LAPACKTest" )
 
 typedef boost::mpl::list<float, double> test_types;
 

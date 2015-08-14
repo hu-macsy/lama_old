@@ -51,7 +51,7 @@ using tasking::CUDAStreamSyncToken;
 namespace memory
 {
 
-LAMA_LOG_DEF_LOGGER( CUDAHostMemory::logger, "Memory.CUDAHostMemory" );
+SCAI_LOG_DEF_LOGGER( CUDAHostMemory::logger, "Memory.CUDAHostMemory" );
 
 CUDAHostMemory::CUDAHostMemory( common::shared_ptr<const CUDAContext> cudaContext ) : 
 
@@ -60,12 +60,12 @@ CUDAHostMemory::CUDAHostMemory( common::shared_ptr<const CUDAContext> cudaContex
 
 {
     COMMON_ASSERT( cudaContext, "CUDAHostMemory requires valid CUDAContext, is NULL" )
-    LAMA_LOG_INFO( logger, "CUDAHostMemory created, allows faster transfer HOST <-> " << *mCUDAContext )
+    SCAI_LOG_INFO( logger, "CUDAHostMemory created, allows faster transfer HOST <-> " << *mCUDAContext )
 }
 
 CUDAHostMemory::~CUDAHostMemory()
 {
-    LAMA_LOG_INFO( logger, "~CUDAHostMemory for " << *mCUDAContext )
+    SCAI_LOG_INFO( logger, "~CUDAHostMemory for " << *mCUDAContext )
 }
 
 void CUDAHostMemory::writeAt( std::ostream& stream ) const
@@ -75,7 +75,7 @@ void CUDAHostMemory::writeAt( std::ostream& stream ) const
 
 void* CUDAHostMemory::allocate( const size_t size ) const
 {
-    LAMA_LOG_TRACE( logger, *this << ": allocate " << size << " bytes" )
+    SCAI_LOG_TRACE( logger, *this << ": allocate " << size << " bytes" )
 
     void* pointer = 0;
 
@@ -83,7 +83,7 @@ void* CUDAHostMemory::allocate( const size_t size ) const
 
     LAMA_CUDA_DRV_CALL( cuMemAllocHost( &pointer, size ), "cuMemAllocHost( size = " << size << " ) failed" )
 
-    LAMA_LOG_DEBUG( logger, *this << ": allocated " << size << " bytes, pointer = " << pointer )
+    SCAI_LOG_DEBUG( logger, *this << ": allocated " << size << " bytes, pointer = " << pointer )
 
     unsigned int flags = 0;
 
@@ -110,7 +110,7 @@ void CUDAHostMemory::free( void* pointer, const size_t size ) const
 
     LAMA_CUDA_DRV_CALL( cuMemFreeHost( pointer ), "cuMemFreeHost( " << pointer << ", " << size << " ) failed" )
 
-    LAMA_LOG_DEBUG( logger, *this << ": freed " << size << " bytes, pointer = " << pointer )
+    SCAI_LOG_DEBUG( logger, *this << ": freed " << size << " bytes, pointer = " << pointer )
 }
 
 void CUDAHostMemory::memcpy( void* dst, const void* src, const size_t size ) const
@@ -124,7 +124,7 @@ SyncToken* CUDAHostMemory::memcpyAsync( void* dst, const void* src, const size_t
 
     std::auto_ptr<CUDAStreamSyncToken> syncToken( mCUDAContext->getTransferSyncToken() );
 
-    LAMA_LOG_INFO( logger, "copy async " << size << " bytes from " << src << " (host) to " << dst << " (host) " )
+    SCAI_LOG_INFO( logger, "copy async " << size << " bytes from " << src << " (host) to " << dst << " (host) " )
 
     LAMA_CUDA_RT_CALL(
         cudaMemcpyAsync( dst, src, size, cudaMemcpyHostToHost, syncToken->getCUDAStream() ),
@@ -211,7 +211,7 @@ void CUDAHostMemory::memcpyFrom( void* dst, const Memory& srcMemory, const void*
     }
     else
     {
-        LAMA_LOG_ERROR( logger, "copy from " << srcMemory << " to " << *this << " not supported" )
+        SCAI_LOG_ERROR( logger, "copy from " << srcMemory << " to " << *this << " not supported" )
         COMMON_THROWEXCEPTION( "copy from " << srcMemory << " to " << *this << " not supported" )
     }
 }
@@ -232,7 +232,7 @@ void CUDAHostMemory::memcpyTo( const Memory& dstMemory, void* dst, const void* s
     }
     else
     {
-        LAMA_LOG_ERROR( logger, "copy to " << dstMemory << " from " << *this << " not supported" )
+        SCAI_LOG_ERROR( logger, "copy to " << dstMemory << " from " << *this << " not supported" )
         COMMON_THROWEXCEPTION( "copy to " << dstMemory << " from " << *this << " not supported" )
     }
 }

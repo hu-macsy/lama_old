@@ -290,7 +290,7 @@ void typeNameTest( )
 
 BOOST_AUTO_TEST_SUITE( JDSStorageTest )
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.JDSStorageTest" )
+SCAI_LOG_DEF_LOGGER( logger, "Test.JDSStorageTest" )
 
 LAMA_AUTO_TEST_CASE_CT( checkTest, JDSStorageTest )
 LAMA_AUTO_TEST_CASE_CT( commonTestCases, JDSStorageTest )

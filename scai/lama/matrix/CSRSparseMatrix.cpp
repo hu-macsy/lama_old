@@ -43,7 +43,7 @@ namespace lama
 
 /* -------------------------------------------------------------------------- */
 
-LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, CSRSparseMatrix<ValueType>::logger,
+SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, CSRSparseMatrix<ValueType>::logger,
                               "Matrix.SparseMatrix.CSRSparseMatrix" )
 
 /* -------------------------------------------------------------------------- */
@@ -72,7 +72,7 @@ CSRSparseMatrix<ValueType>::CSRSparseMatrix()
     : SparseMatrix<ValueType>( createStorage() )
 
 {
-    LAMA_LOG_INFO( logger, "CSRSparseMatrix()" )
+    SCAI_LOG_INFO( logger, "CSRSparseMatrix()" )
 }
 
 /* -------------------------------------------------------------------------- */
@@ -83,7 +83,7 @@ CSRSparseMatrix<ValueType>::CSRSparseMatrix( const IndexType numRows, const Inde
     : SparseMatrix<ValueType>( createStorage( numRows, numColumns ) )
 
 {
-    LAMA_LOG_INFO( logger, "CSRSparseMatrix( " << numRows << " x " << numColumns << " )" )
+    SCAI_LOG_INFO( logger, "CSRSparseMatrix( " << numRows << " x " << numColumns << " )" )
 }
 
 /* -------------------------------------------------------------------------- */
@@ -242,7 +242,7 @@ CSRSparseMatrix<ValueType>::CSRSparseMatrix( const std::string& filename )
 template<typename ValueType>
 CSRSparseMatrix<ValueType>::~CSRSparseMatrix()
 {
-    LAMA_LOG_INFO( logger, "~CSRSpareMatrix" )
+    SCAI_LOG_INFO( logger, "~CSRSpareMatrix" )
 }
 
 /* ---------------------------------------------------------------------------------------*/
@@ -250,7 +250,7 @@ CSRSparseMatrix<ValueType>::~CSRSparseMatrix()
 template<typename ValueType>
 CSRSparseMatrix<ValueType>& CSRSparseMatrix<ValueType>::operator=( const CSRSparseMatrix& matrix )
 {
-    LAMA_LOG_INFO( logger, "CSRSparseMatrix = CSRSparseMatrix : " << matrix )
+    SCAI_LOG_INFO( logger, "CSRSparseMatrix = CSRSparseMatrix : " << matrix )
     this->assign( matrix );
     return *this;
 }
@@ -334,7 +334,7 @@ CSRSparseMatrix<ValueType>* CSRSparseMatrix<ValueType>::clone() const
     newSparseMatrix->setContext( this->getContextPtr() );
     newSparseMatrix->setCommunicationKind( this->getCommunicationKind() );
 
-    LAMA_LOG_INFO( logger, "create is " << *newSparseMatrix )
+    SCAI_LOG_INFO( logger, "create is " << *newSparseMatrix )
 
     return newSparseMatrix;
 }
@@ -344,11 +344,11 @@ CSRSparseMatrix<ValueType>* CSRSparseMatrix<ValueType>::clone() const
 template<typename ValueType>
 CSRSparseMatrix<ValueType>* CSRSparseMatrix<ValueType>::copy() const
 {
-    LAMA_LOG_INFO( logger, "copy of " << *this )
+    SCAI_LOG_INFO( logger, "copy of " << *this )
 
     CSRSparseMatrix<ValueType>* newSparseMatrix = new CSRSparseMatrix<ValueType>( *this );
 
-    LAMA_LOG_INFO( logger, "copy is " << *newSparseMatrix )
+    SCAI_LOG_INFO( logger, "copy is " << *newSparseMatrix )
 
     return newSparseMatrix;
 }

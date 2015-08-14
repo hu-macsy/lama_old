@@ -56,7 +56,7 @@ static Thread::Mutex printMutex; // needed to avoid mixing output of threads
 
 /* -------------------------------------------------------------------------- */
 
-LAMA_LOG_DEF_LOGGER( RegionTable::logger, "RegionTable" )
+SCAI_LOG_DEF_LOGGER( RegionTable::logger, "RegionTable" )
 
 /* ---------------------------------------------------------------------- */
 
@@ -68,7 +68,7 @@ RegionTable::RegionTable( const char* threadName )
         mThreadName = threadName;
     }
 
-    LAMA_LOG_DEBUG( logger, "Constructor RegionTable" )
+    SCAI_LOG_DEBUG( logger, "Constructor RegionTable" )
     // avoid too much reallocations at the beginning
     array.reserve( 16 );
 }
@@ -77,9 +77,9 @@ RegionTable::RegionTable( const char* threadName )
 
 RegionTable::~RegionTable()
 {
-    LAMA_LOG_DEBUG( logger, "~RegionTable" )
+    SCAI_LOG_DEBUG( logger, "~RegionTable" )
 
-    if ( LAMA_LOG_INFO_ON( logger ) )
+    if ( SCAI_LOG_INFO_ON( logger ) )
     {
         printTimer();
     }
@@ -124,7 +124,7 @@ int RegionTable::getRegionId( const char* regionName, const char* file, int scl 
         VTInterface::define( entry );
         // do not use this: mapTimer[regionName] = regionId; // causes problems with composed strings
         mapTimer.insert( std::pair<const char*, int>( entry.mName.c_str(), regionId ));
-        LAMA_LOG_DEBUG( logger,
+        SCAI_LOG_DEBUG( logger,
                         "Added region " << regionId << "( " << array[regionId].mName << ") for region " << regionName )
         return static_cast<int>( regionId );
     }
@@ -176,7 +176,7 @@ void RegionTable::printTimer()
 
 void RegionTable::printTimer( ostream& outfile )
 {
-    LAMA_LOG_INFO( logger, "Summary of all timers for thread " << mThreadName  );
+    SCAI_LOG_INFO( logger, "Summary of all timers for thread " << mThreadName  );
 
     if ( mThreadName.size() > 0 )
     {

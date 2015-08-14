@@ -244,7 +244,7 @@ private:
 
     IndexType mQuantity; //!< sum of quantities for all entries
 
-    LAMA_LOG_DECL_STATIC_LOGGER( logger )};
+    SCAI_LOG_DECL_STATIC_LOGGER( logger )};
 
     /* ----------------------------------------------------------------------*/
 

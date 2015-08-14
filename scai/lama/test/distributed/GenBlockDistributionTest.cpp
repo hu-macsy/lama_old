@@ -89,7 +89,7 @@ struct GenBlockDistributionTestConfig
 
 BOOST_FIXTURE_TEST_SUITE( GenBlockDistributionTest, GenBlockDistributionTestConfig )
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.GenBlockDistributionTest" );
+SCAI_LOG_DEF_LOGGER( logger, "Test.GenBlockDistributionTest" );
 
 /* --------------------------------------------------------------------- */
 
@@ -99,7 +99,7 @@ BOOST_AUTO_TEST_CASE( commonTestCases )
 
     if ( base_test_case )
     {
-        LAMA_LOG_INFO( logger, "Run test method " << testcase << " in GenBlockDistributionTest." );
+        SCAI_LOG_INFO( logger, "Run test method " << testcase << " in GenBlockDistributionTest." );
         DISTRIBUTION_COMMONTESTCASES( disttest );
     }
     else

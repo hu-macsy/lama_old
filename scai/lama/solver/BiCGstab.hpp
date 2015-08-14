@@ -126,7 +126,7 @@ protected:
 
     virtual void iterate();
 
-    LAMA_LOG_DECL_STATIC_LOGGER( logger )
+    SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
     BiCGstabRuntime    mBiCGstabRuntime;
 };

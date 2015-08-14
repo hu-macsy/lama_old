@@ -43,7 +43,7 @@
 namespace lama
 {
 
-LAMA_LOG_DEF_LOGGER( Criterion::logger, "Criterion" );
+SCAI_LOG_DEF_LOGGER( Criterion::logger, "Criterion" );
 
 Criterion::Criterion()
     : mOperation( AND ), mModifier( true )
@@ -89,7 +89,7 @@ Criterion& Criterion::operator=( const Criterion& other )
 
 bool Criterion::isSatisfied( const lama::IterativeSolver& solver )
 {
-    LAMA_LOG_INFO( logger, "isSatisfied: " << *this );
+    SCAI_LOG_INFO( logger, "isSatisfied: " << *this );
 
     bool satisfied = true;
 

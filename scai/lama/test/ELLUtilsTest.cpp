@@ -1267,7 +1267,7 @@ void matrixAddTest( ContextPtr loc )
 
 BOOST_AUTO_TEST_SUITE( ELLUtilsTest )
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.ELLUtilsTest" )
+SCAI_LOG_DEF_LOGGER( logger, "Test.ELLUtilsTest" )
 
 LAMA_AUTO_TEST_CASE_CTDUMMY( countNonEmptyRowsBySizesTest, ELLUtilsTest )
 LAMA_AUTO_TEST_CASE_CTDUMMY( setNonEmptyRowsBySizesTest, ELLUtilsTest )

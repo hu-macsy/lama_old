@@ -63,7 +63,7 @@ typedef boost::mpl::list<float, double> test_types;
 
 BOOST_AUTO_TEST_SUITE( InverseSolverTest )
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.InverseSolverTest" )
+SCAI_LOG_DEF_LOGGER( logger, "Test.InverseSolverTest" )
 
 /* --------------------------------------------------------------------- */
 
@@ -76,7 +76,7 @@ void testSolveMethod( ContextPtr context )
     DenseVector<ValueType> reference( system.solution );
     MatrixType coefficients( system.coefficients );
     coefficients.setContext( context );
-    LAMA_LOG_INFO( logger, "InverseSolverTest uses context = " << context->getType() );
+    SCAI_LOG_INFO( logger, "InverseSolverTest uses context = " << context->getType() );
     DenseVector<ValueType> rhs( system.rhs );
     InverseSolver inverseSolver( "InverseSolverTest solver" );
     inverseSolver.initialize( coefficients );

@@ -47,7 +47,7 @@
 namespace memory
 {
 
-LAMA_LOG_DEF_LOGGER( HostMemory::logger, "Memory.HostMemory" )
+SCAI_LOG_DEF_LOGGER( HostMemory::logger, "Memory.HostMemory" )
 
 HostMemory::HostMemory( common::shared_ptr<const HostContext> hostContextPtr ) : 
 
@@ -57,24 +57,24 @@ HostMemory::HostMemory( common::shared_ptr<const HostContext> hostContextPtr ) :
     mNumberOfAllocatedBytes = 0;
     mNumberOfAllocates = 0;
 
-    LAMA_LOG_INFO( logger, "HostMemory created" )
+    SCAI_LOG_INFO( logger, "HostMemory created" )
 }
 
 HostMemory::~HostMemory()
 {
     if( mNumberOfAllocates > 0 )
     {
-        LAMA_LOG_ERROR( logger, *this << ": " << mNumberOfAllocates << " allocate without free" )
+        SCAI_LOG_ERROR( logger, *this << ": " << mNumberOfAllocates << " allocate without free" )
     }
 
     if( mNumberOfAllocatedBytes != 0 )
     {
-        LAMA_LOG_ERROR( logger,
+        SCAI_LOG_ERROR( logger,
                         *this << ": number of allocated bytes = " << mNumberOfAllocatedBytes 
                          << ", should be 0, so mismatch of free/allocate sizes" )
     }
 
-    LAMA_LOG_INFO( logger, "~HostMemory" )
+    SCAI_LOG_INFO( logger, "~HostMemory" )
 }
 
 void HostMemory::writeAt( std::ostream& stream ) const
@@ -102,14 +102,14 @@ void* HostMemory::allocate( const size_t size ) const
     mNumberOfAllocatedBytes += size;
     mNumberOfAllocates++;
 
-    LAMA_LOG_DEBUG( logger, "allocated " << pointer << ", size = " << size )
+    SCAI_LOG_DEBUG( logger, "allocated " << pointer << ", size = " << size )
 
     return pointer;
 }
 
 void HostMemory::free( void* pointer, const size_t size ) const
 {
-    LAMA_LOG_DEBUG( logger, "free " << pointer << ", size = " << size )
+    SCAI_LOG_DEBUG( logger, "free " << pointer << ", size = " << size )
 
     COMMON_ASSERT( mNumberOfAllocates >= 1, "Invalid free, because there are no open allocates." )
 
@@ -123,7 +123,7 @@ void HostMemory::free( void* pointer, const size_t size ) const
 
 void HostMemory::memcpy( void* dst, const void* src, const size_t size ) const
 {
-    LAMA_LOG_DEBUG( logger, "memcpy: " << dst << " <- " << src << ", size = " << size )
+    SCAI_LOG_DEBUG( logger, "memcpy: " << dst << " <- " << src << ", size = " << size )
 
     ::memcpy( dst, src, size );
 }
@@ -144,7 +144,7 @@ MemoryPtr HostMemory::getIt()
 
     if ( !instancePtr.get() )
     {
-        LAMA_LOG_DEBUG( logger, "Create instance for HostMemory" ) 
+        SCAI_LOG_DEBUG( logger, "Create instance for HostMemory" ) 
 
         ContextPtr contextPtr = Context::getContextPtr( context::Host );
         common::shared_ptr<const HostContext> hostContextPtr = common::dynamic_pointer_cast<const HostContext>( contextPtr );

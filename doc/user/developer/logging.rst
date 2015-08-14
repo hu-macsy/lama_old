@@ -49,7 +49,7 @@ We decided to use an own simple logging facilitate to decrease dependencies with
 The macros make it possible to implement the logging of LAMA with one arbitrary library and may be later
 with an own version.
 
-Each of the following macro starts with ``LAMA_LOG`` to indicate that it is used for logging.
+Each of the following macro starts with ``SCAI_LOG`` to indicate that it is used for logging.
 
 The first two macros are used for the global definition, configuration and initialization of the logging
 system. These macro have no arguments as the usual way of configuration of the logging system is done by
@@ -57,42 +57,42 @@ reading a configuration file that itself is specified by an environment variable
 
 ::
 
-	LAMA_LOG_DEFINITION()
+	SCAI_LOG_DEFINITION()
    
 	int main(int argc, char **argv)
 	{ // this is only done in the main file or any other initial routine
 	    // it reads a configuration file for the different loggers
-	    LAMA_LOG_CONFIGURE();
+	    SCAI_LOG_CONFIGURE();
 	    ...
 	}
 
-In the different subroutines and modules it is possible to get access to a logger. The macro LAMA_LOG_ROOTLOGGER
-is used to get the root logger, with the macro LAMA_LOG_LOGGER it is possible to define a logger with a certain
+In the different subroutines and modules it is possible to get access to a logger. The macro SCAI_LOG_ROOTLOGGER
+is used to get the root logger, with the macro SCAI_LOG_LOGGER it is possible to define a logger with a certain
 name. By the dot notation for the name loggers can be structured hierarchically that makes it more
 comfortable to configure the loggers.
 
 ::
 
-	LAMA_LOG_ROOTLOGGER( rootLogger );
-	LAMA_LOG_LOGGER( logger1, "Vector" ); 
-	LAMA_LOG_LOGGER( logger2, "Matrix.CSR" );
+	SCAI_LOG_ROOTLOGGER( rootLogger );
+	SCAI_LOG_LOGGER( logger1, "Vector" ); 
+	SCAI_LOG_LOGGER( logger2, "Matrix.CSR" );
 
 A logger is used in the following macros that stand for the logging statements at the different levels. The
 variable logger must have been defined with one of the two previous macros:
 
 ::
 
-	LAMA_LOG_DEBUG(logger, "debug message");
-	LAMA_LOG_INFO (logger, "info message");
-	LAMA_LOG_WARN (logger, "warn message");
-	LAMA_LOG_ERROR(logger, "error message");
-	LAMA_LOG_FATAL(logger, "fatal message");
+	SCAI_LOG_DEBUG(logger, "debug message");
+	SCAI_LOG_INFO (logger, "info message");
+	SCAI_LOG_WARN (logger, "warn message");
+	SCAI_LOG_ERROR(logger, "error message");
+	SCAI_LOG_FATAL(logger, "fatal message");
 
 It is possible to combine arguments like it is done for streams:
 
 ::
 
-	LAMA_LOG_DEBUG(logger, "loop iteration " << i " of " << n);
+	SCAI_LOG_DEBUG(logger, "loop iteration " << i " of " << n);
 
 The general idea is that the logging should appear in the source code but logging is usually disabled at
 runtime especially for the lower levels (DEBUG, INFO).
@@ -119,13 +119,13 @@ messages in the source file already at compile time:
 
 ::
 
-	#define LAMA_LOG_LEVEL_TRACE
-	#define LAMA_LOG_LEVEL_DEBUG    // no trace logging
-	#define LAMA_LOG_LEVEL_INFO     // default, no trace and debug logging
-	#define LAMA_LOG_LEVEL_WARN     // no trace, debug and info logging
-	#define LAMA_LOG_LEVEL_ERROR    // no trace, debug, info, warn logging
-	#define LAMA_LOG_LEVEL_FATAL    // no trace, debug, info, warn, error
-	#define LAMA_LOG_LEVEL_OFF      // all logging statements are disabled
+	#define SCAI_LOG_LEVEL_TRACE
+	#define SCAI_LOG_LEVEL_DEBUG    // no trace logging
+	#define SCAI_LOG_LEVEL_INFO     // default, no trace and debug logging
+	#define SCAI_LOG_LEVEL_WARN     // no trace, debug and info logging
+	#define SCAI_LOG_LEVEL_ERROR    // no trace, debug, info, warn logging
+	#define SCAI_LOG_LEVEL_FATAL    // no trace, debug, info, warn, error
+	#define SCAI_LOG_LEVEL_OFF      // all logging statements are disabled
 
 Be careful when using one of these macros. It implies that the corresponding logging messages for the lower
 levels will become empty and do not appear any more in the code. They cannot be enabled at runtime without
@@ -140,19 +140,19 @@ the logging. It should be executed only if the corresponding logging level is en
 
 ::
 
-   #ifdef LAMA_LOG_INFO_ENABLED
-   if ( LAMA_LOG_INFO_ON( rootLogger ) )
+   #ifdef SCAI_LOG_INFO_ENABLED
+   if ( SCAI_LOG_INFO_ON( rootLogger ) )
    {
        int sum = 0;
        for (int k = 0; k < N; k++)
        {
            sum += k;
        }
-       LAMA_LOG_INFO( rootLogger, "main program terminates with sum = " << sum );
+       SCAI_LOG_INFO( rootLogger, "main program terminates with sum = " << sum );
    }
 	#endif
 
-The macro LAMA_LOG_INFO_ON( logger ) returns true if the info level is enabled for the logger at runtme. The
+The macro SCAI_LOG_INFO_ON( logger ) returns true if the info level is enabled for the logger at runtme. The
 guard LOG4_INFO_ENABLED might be used disable the code even at compile time if not needed.
 
 Use of logging for C++ classes
@@ -169,7 +169,7 @@ The logger becomes a static variable of the class.
    {
        ...
    protected: 
-       LAMA_LOG_DECL_STATIC_LOGGER(logger);
+       SCAI_LOG_DECL_STATIC_LOGGER(logger);
        ...
    }
 
@@ -182,16 +182,16 @@ In the implementation of the class, e.g. Example.cpp, the logger has to be defin
 
 ::
 
-	LAMA_LOG_DEF_LOGGER(Example::logger, "Example");
+	SCAI_LOG_DEF_LOGGER(Example::logger, "Example");
  
 Configuration of Logging with the default logger
 ------------------------------------------------
 
-Logging can be configured at runtime by setting the environment variable ``LAMA_LOG`` with a configuration file.
+Logging can be configured at runtime by setting the environment variable ``SCAI_LOG`` with a configuration file.
 
 .. code-block:: bash
 
-	export LAMA_LOG=config
+	export SCAI_LOG=config
 
 The file config contains lines that specfy the levels of the logger.
 
@@ -218,7 +218,7 @@ Compile Flags for Logging
 
 For CMake, the following variable should be set::
 
-  LAMA_LOG_LEVEL = DEBUG ( or TRACE or INFO or OFF )
+  SCAI_LOG_LEVEL = DEBUG ( or TRACE or INFO or OFF )
 
 - DEBUG should be chosen for DEBUG mode
 - INFO should be chosen in RELEASE mode
@@ -234,11 +234,11 @@ lower level and they can not be used at runtime any more.
  
 ::
 
-	#  Debug   : use -DLAMA_LOG_LEVEL_DEBUG
-	#  Release : use -DLAMA_LOG_LEVEL_INFO
+	#  Debug   : use -DSCAI_LOG_LEVEL_DEBUG
+	#  Release : use -DSCAI_LOG_LEVEL_INFO
 	#
-	#  For serious problems: -DLAMA_LOG_LEVEL_TRACE
-	#  For benchmarks:       -DLAMA_LOG_LEVEL_OFF (or -DLAMA_LOG_LEVEL_FATAL, -DLAMA_LOG_LEVEL_ERROR)
+	#  For serious problems: -DSCAI_LOG_LEVEL_TRACE
+	#  For benchmarks:       -DSCAI_LOG_LEVEL_OFF (or -DSCAI_LOG_LEVEL_FATAL, -DSCAI_LOG_LEVEL_ERROR)
 	ADD_DEFINITIONS( -DLOG_LEVEL_TRACE )
 
 Some Discussion and Further Ideas

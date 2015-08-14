@@ -467,7 +467,7 @@ private:
 
     /** Logger for this class. */
 
-    LAMA_LOG_DECL_STATIC_LOGGER( logger )
+    SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
     /** Matrix + Matrix for ELL only */
     void    matrixAddMatrixELL( const ValueType alpha,

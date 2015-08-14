@@ -55,7 +55,7 @@ extern cublasHandle_t CUDAContext_cublasHandle;
 namespace lama
 {
 
-LAMA_LOG_DEF_LOGGER( CUDABLAS2::logger, "CUDA.BLAS2" )
+SCAI_LOG_DEF_LOGGER( CUDABLAS2::logger, "CUDA.BLAS2" )
 
 /* ---------------------------------------------------------------------------------------*/
 /*    gemv                                                                                */
@@ -220,7 +220,7 @@ void CUDABLAS2::gemv(
     LAMA_CUBLAS_CALL( cublasSetStream( CUDAContext_cublasHandle, stream ),
                       "CUDABLAS2::gemv set cublas kernel stream = " << stream );
 
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "gemv<" << getScalarType<ValueType>() << "> with cuBLAS: m = " << order_m << " x " << order_n )
 
     cublasWrapperGemv( trans_char, order_m, order_n, alpha, A, lda, x, incx, beta, y, incy );
@@ -241,7 +241,7 @@ void CUDABLAS2::gemv(
 
 void CUDABLAS2::setInterface( BLASInterface& BLAS )
 {
-    LAMA_LOG_INFO( logger, "set BLAS2 routines for CUDA in Interface" )
+    SCAI_LOG_INFO( logger, "set BLAS2 routines for CUDA in Interface" )
 
 #define LAMA_BLAS2_REGISTER(z, I, _)                                            \
     LAMA_INTERFACE_REGISTER_T( BLAS, gemv, ARITHMETIC_TYPE##I )                 \

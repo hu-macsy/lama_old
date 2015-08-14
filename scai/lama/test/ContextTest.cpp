@@ -50,7 +50,7 @@ using namespace lama;
 
 BOOST_AUTO_TEST_SUITE ( ContextTest )
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.ContextTest" )
+SCAI_LOG_DEF_LOGGER( logger, "Test.ContextTest" )
 
 /* --------------------------------------------------------------------- */
 

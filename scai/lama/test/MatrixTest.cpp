@@ -62,7 +62,7 @@ BOOST_AUTO_TEST_SUITE( MatrixTest )
 
 /* --------------------------------------------------------------------- */
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.MatrixTest" )
+SCAI_LOG_DEF_LOGGER( logger, "Test.MatrixTest" )
 
 /* --------------------------------------------------------------------- */
 
@@ -77,7 +77,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( TypeNameTest, MatrixType, MatrixTypes )
     MatrixType matrix;
     const Matrix* ptrMatrix = &matrix;
     const std::string objTypeName = ptrMatrix->getTypeName();
-    LAMA_LOG_INFO( logger, matrix << ": class name = " << classTypeName
+    SCAI_LOG_INFO( logger, matrix << ": class name = " << classTypeName
                    << ", object name = " << objTypeName );
     BOOST_CHECK( objTypeName == classTypeName );
 }
@@ -92,7 +92,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( RandomTest, MatrixType, MatrixTypes )
     const double density = 0.1; // 10% density
     MatrixType matrix( numRows, numColumns );
     MatrixCreator<ValueType>::fillRandom( matrix, density );
-    LAMA_LOG_INFO( logger, "Random matrix = " << matrix );
+    SCAI_LOG_INFO( logger, "Random matrix = " << matrix );
     BOOST_CHECK_EQUAL( numRows, matrix.getNumRows() );
     BOOST_CHECK_EQUAL( numColumns, matrix.getNumColumns() );
     IndexType numValues = matrix.getNumValues();
@@ -117,14 +117,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( RandomTest, MatrixType, MatrixTypes )
 BOOST_AUTO_TEST_CASE_TEMPLATE( ReadWriteTest, MatrixType, MatrixTypes )
 {
     CommunicatorPtr comm = Communicator::get(); // get default, MPI or serial
-    LAMA_LOG_INFO( logger, "ReadWriteTest for MatrixType = " << typeid( MatrixType ).name() );
+    SCAI_LOG_INFO( logger, "ReadWriteTest for MatrixType = " << typeid( MatrixType ).name() );
     std::string prefix = Configuration::getInstance().getPath();
-    LAMA_LOG_INFO( logger, "prefix = " << prefix );
-    LAMA_LOG_INFO( logger, "readWriteTest: check loading float matrix" );
+    SCAI_LOG_INFO( logger, "prefix = " << prefix );
+    SCAI_LOG_INFO( logger, "readWriteTest: check loading float matrix" );
 // load an available testfile matrix.
     std::string formattedInputFile = prefix + "/bp__1600.mtx";
     MatrixType formattedMatrix( formattedInputFile );
-    LAMA_LOG_INFO( logger, "formatted input matrix = " << formattedMatrix );
+    SCAI_LOG_INFO( logger, "formatted input matrix = " << formattedMatrix );
 
     if ( formattedMatrix.getMatrixKind() == Matrix::SPARSE )
     {
@@ -136,23 +136,23 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ReadWriteTest, MatrixType, MatrixTypes )
         testSameMatrix( formattedPoisson, xdrPoisson );
     }
 
-    LAMA_LOG_INFO( logger, "readWriteTest: check writing and loading formatted matrix" );
+    SCAI_LOG_INFO( logger, "readWriteTest: check writing and loading formatted matrix" );
     std::string formattedFileName = prefix + "/test_matrix_formatted.tmp.frm";
     formattedMatrix.writeToFile( formattedFileName, File::FORMATTED, File::FLOAT, File::INT, File::INT );
     MatrixType readFormattedMatrix( formattedFileName );
     testSameMatrix( formattedMatrix, readFormattedMatrix );
-    LAMA_LOG_INFO( logger, "readWriteTest: check writing and loading XDR matrix" );
+    SCAI_LOG_INFO( logger, "readWriteTest: check writing and loading XDR matrix" );
     std::string xdrFileName = prefix + "/test_matrix_xdr.tmp.frm";
     formattedMatrix.writeToFile( xdrFileName, File::XDR, File::DOUBLE, File::LONG, File::LONG );
     MatrixType readXDRMatrix( xdrFileName );
     testSameMatrix( readXDRMatrix, formattedMatrix );
-    LAMA_LOG_INFO( logger, "readWriteTest: check writing and loading binary matrix" );
+    SCAI_LOG_INFO( logger, "readWriteTest: check writing and loading binary matrix" );
     std::string binaryFileName = prefix + "/test_matrix_bin.tmp.frm";
 // Be careful: binary read must fit to the format that has been used for the write
     formattedMatrix.writeToFile( binaryFileName, File::BINARY, File::INTERNAL, File::INT, File::INT );
     MatrixType readBinaryMatrix( binaryFileName );
     testSameMatrix( formattedMatrix, readBinaryMatrix );
-    LAMA_LOG_INFO( logger, "readWriteTest: check writing and loading Matrix Market matrix" );
+    SCAI_LOG_INFO( logger, "readWriteTest: check writing and loading Matrix Market matrix" );
     std::string matrixMarketFileName = prefix + "/test_matrix_mm.tmp.mtx";
     formattedMatrix.writeToFile( matrixMarketFileName, File::MATRIX_MARKET, File::DOUBLE );
     MatrixType readMarketMatrix( matrixMarketFileName );

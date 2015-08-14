@@ -210,7 +210,7 @@ private:
 
     inline MPI_Comm selectMPIComm() const;
 
-    LAMA_LOG_DECL_STATIC_LOGGER( logger )
+    SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
     static    const int defaultTag;
 

@@ -52,7 +52,7 @@ using namespace memory;
 
 /* ------------------------------------------------------------------------- */
 
-LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, MatrixStorageTest<ValueType>::logger, "Test.MatrixStorageTest" )
+SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, MatrixStorageTest<ValueType>::logger, "Test.MatrixStorageTest" )
 
 /* ========================================================================= */
 /* Implementations of some helpfunction                                      */
@@ -215,7 +215,7 @@ void MatrixStorageTest<ValueType>::setDenseRandomInverse( MatrixStorage<ValueTyp
 
 LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, ValueType, emptyTest )
 {
-    LAMA_LOG_INFO( logger, "emptyTest" );
+    SCAI_LOG_INFO( logger, "emptyTest" );
     mMatrixStorage.clear();
     // verify that empty matrix has diagonal property
     BOOST_CHECK( mMatrixStorage.hasDiagonalProperty() );
@@ -242,7 +242,7 @@ LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, ValueType, setIdentityTest )
 
 const IndexType n = 15;
 
-LAMA_LOG_INFO( logger, "setIdentity, uses n = " << n );
+SCAI_LOG_INFO( logger, "setIdentity, uses n = " << n );
 
 mMatrixStorage.clear();
 
@@ -278,7 +278,7 @@ LAMA_COMMON_TEST_CASE_TEMPLATE_END()
 
 LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, ValueType, setCSRDataTest )
 {
-    LAMA_LOG_INFO( logger, "setCSRDataTest" )
+    SCAI_LOG_INFO( logger, "setCSRDataTest" )
     mMatrixStorage.clear();
     IndexType numRows;
     IndexType numColumns;
@@ -291,7 +291,7 @@ LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, ValueType, setCSRDataTest )
     _MatrixStorage::sizes2offsets( matrixRowSizes );
 // Now we can use matrixRowSizes as IA array
     mMatrixStorage.setCSRData( numRows, numColumns, numValues, matrixRowSizes, matrixJA, matrixValues );
-    LAMA_LOG_INFO( logger, "set CSR data (" << numRows << " x " << numColumns
+    SCAI_LOG_INFO( logger, "set CSR data (" << numRows << " x " << numColumns
                    << ", nnz = " << numValues << ") : matrix = " << mMatrixStorage )
     mMatrixStorage.prefetch();
     ReadAccess<ValueType> results( matrixDense );
@@ -329,7 +329,7 @@ LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, ValueType, buildCSRDataTest )
     BOOST_REQUIRE_EQUAL( mMatrixStorage.hasDiagonalProperty(), false );
 // make sure that we have all values stored
     BOOST_CHECK_EQUAL( numValues, mMatrixStorage.getNumValues() );
-    LAMA_LOG_INFO( logger, "set CSR data (" << numRows << " x " << numColumns
+    SCAI_LOG_INFO( logger, "set CSR data (" << numRows << " x " << numColumns
                    << ", nnz = " << numValues << ") : matrix = " << mMatrixStorage )
     LAMAArray<IndexType> csrIA;
     LAMAArray<IndexType> csrJA;
@@ -356,7 +356,7 @@ LAMA_COMMON_TEST_CASE_TEMPLATE_END()
 
 LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, ValueType, purgeTest )
 
-LAMA_LOG_INFO( logger, "PurgeTest" )
+SCAI_LOG_INFO( logger, "PurgeTest" )
 
 setDenseData( mMatrixStorage );
 
@@ -380,14 +380,14 @@ LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, ValueType, diagonalTest )
 
 setDenseData( mMatrixStorage );
 
-LAMA_LOG_INFO( logger, "diagonalTest: matrix = " << mMatrixStorage )
+SCAI_LOG_INFO( logger, "diagonalTest: matrix = " << mMatrixStorage )
 
 LAMAArray<ValueType> diag;
 mMatrixStorage.getDiagonal( diag );
 
 BOOST_CHECK_EQUAL( diag.size(), mMatrixStorage.getNumRows() ); // square matrix
 
-LAMA_LOG_INFO( logger, "diagonalTest: get diagonal = " << diag )
+SCAI_LOG_INFO( logger, "diagonalTest: get diagonal = " << diag )
 
 {
     ReadAccess<ValueType> rDiag ( diag );
@@ -449,7 +449,7 @@ LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, ValueType, normTest )
 
 setDenseData( mMatrixStorage );
 
-LAMA_LOG_INFO( logger, "maxNormTest, mMatrixStorage = " << mMatrixStorage )
+SCAI_LOG_INFO( logger, "maxNormTest, mMatrixStorage = " << mMatrixStorage )
 
 ValueType maxNorm = mMatrixStorage.maxNorm();
 
@@ -468,7 +468,7 @@ setDenseData( mMatrixStorage );
 DenseStorage<ValueType> orig; // used for comparing results
 setDenseData( orig );
 
-LAMA_LOG_INFO( logger, "Test matrixTimesVector" )
+SCAI_LOG_INFO( logger, "Test matrixTimesVector" )
 {
     const ValueType xVal = 1.0;
     const ValueType yVal = 1.0;
@@ -499,7 +499,7 @@ LAMA_LOG_INFO( logger, "Test matrixTimesVector" )
     }
 }
 
-LAMA_LOG_INFO( logger, "Test " << mMatrixStorage.getTypeName() << "::matrixTimesVectorAsync" )
+SCAI_LOG_INFO( logger, "Test " << mMatrixStorage.getTypeName() << "::matrixTimesVectorAsync" )
 {
     const ValueType xVal = static_cast<ValueType>( 1.5 );
     const ValueType yVal = static_cast<ValueType>( 2.0 );
@@ -545,7 +545,7 @@ setDenseData( mMatrixStorage );
 DenseStorage<ValueType> orig; // used for comparing results
 setDenseData( orig );
 
-LAMA_LOG_INFO( logger, "Test vectorTimesMatrix" )
+SCAI_LOG_INFO( logger, "Test vectorTimesMatrix" )
 {
     const ValueType xVal = 1.0;
     const ValueType yVal = 1.0;
@@ -576,7 +576,7 @@ LAMA_LOG_INFO( logger, "Test vectorTimesMatrix" )
     }
 }
 
-LAMA_LOG_INFO( logger, "Test vectorTimesMatrixAsync" )
+SCAI_LOG_INFO( logger, "Test vectorTimesMatrixAsync" )
 {
     const ValueType xVal = 1.0;
     const ValueType yVal = 1.0;
@@ -593,7 +593,7 @@ LAMA_LOG_INFO( logger, "Test vectorTimesMatrixAsync" )
         common::unique_ptr<SyncToken> token ( mMatrixStorage.vectorTimesMatrixAsync( result, alpha, x, beta, y ) );
         // free of token at end of this scope does the synchronization
     }
-    LAMA_LOG_TRACE( logger, "vectorTimesMatrixAsync synchronized" )
+    SCAI_LOG_TRACE( logger, "vectorTimesMatrixAsync synchronized" )
     BOOST_CHECK_EQUAL( result.size(), m );
     ReadAccess<ValueType> values( orig.getData() );
     ReadAccess<ValueType> res( result );
@@ -612,7 +612,7 @@ LAMA_LOG_INFO( logger, "Test vectorTimesMatrixAsync" )
     }
 }
 
-LAMA_LOG_INFO( logger, "Test vectorTimesMatrixAsync 2" )
+SCAI_LOG_INFO( logger, "Test vectorTimesMatrixAsync 2" )
 {
     IndexType n = mMatrixStorage.getNumRows();
     ValueType* xValues = ( ValueType* ) malloc( n * sizeof( ValueType ) );
@@ -641,7 +641,7 @@ LAMA_LOG_INFO( logger, "Test vectorTimesMatrixAsync 2" )
         common::unique_ptr<SyncToken> token ( mMatrixStorage.vectorTimesMatrixAsync( result, alpha, x, beta, y ) );
         // free of token at end of this scope does the synchronization
     }
-    LAMA_LOG_TRACE( logger, "vectorTimesMatrixAsync synchronized" )
+    SCAI_LOG_TRACE( logger, "vectorTimesMatrixAsync synchronized" )
     BOOST_CHECK_EQUAL( result.size(), m );
     ReadAccess<ValueType> values( orig.getData() );
     ReadAccess<ValueType> res( result );
@@ -663,7 +663,7 @@ LAMA_LOG_INFO( logger, "Test vectorTimesMatrixAsync 2" )
 setDenseDataNotSquare( mMatrixStorage );
 setDenseDataNotSquare( orig );
 
-LAMA_LOG_INFO( logger, "Test vectorTimesMatrixAsync 3" )
+SCAI_LOG_INFO( logger, "Test vectorTimesMatrixAsync 3" )
 {
     IndexType n = mMatrixStorage.getNumRows();
     ValueType* xValues = ( ValueType* ) malloc( n * sizeof( ValueType ) );
@@ -692,7 +692,7 @@ LAMA_LOG_INFO( logger, "Test vectorTimesMatrixAsync 3" )
         common::unique_ptr<SyncToken> token ( mMatrixStorage.vectorTimesMatrixAsync( result, alpha, x, beta, y ) );
         // free of token at end of this scope does the synchronization
     }
-    LAMA_LOG_TRACE( logger, "vectorTimesMatrixAsync synchronized" )
+    SCAI_LOG_TRACE( logger, "vectorTimesMatrixAsync synchronized" )
     BOOST_CHECK_EQUAL( result.size(), m );
     ReadAccess<ValueType> values( orig.getData() );
     ReadAccess<ValueType> res( result );
@@ -751,7 +751,7 @@ LAMAArray<ValueType> denseResult2 ( m );
     common::unique_ptr<SyncToken> token4 ( denseStorage.matrixTimesVectorAsync( denseResult2, alpha, x, beta, y ) );
     // free of token at end of this scope does the synchronization
 }
-LAMA_LOG_TRACE( logger, "vectorTimesMatrixAsync and matrixTimesVectorAsync synchronized" )
+SCAI_LOG_TRACE( logger, "vectorTimesMatrixAsync and matrixTimesVectorAsync synchronized" )
 
 BOOST_CHECK_EQUAL( result.size(), mMatrixStorage.getNumColumns() );
 
@@ -804,7 +804,7 @@ LAMA_COMMON_TEST_CASE_TEMPLATE_END()
 
 LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, ValueType, matrixMultTest )
 
-LAMA_LOG_INFO( logger, "Test " << typeid( ValueType ).name() << "::matrixTimesMatrix" )
+SCAI_LOG_INFO( logger, "Test " << typeid( ValueType ).name() << "::matrixTimesMatrix" )
 
 const IndexType n = 3;
 const ValueType aValue = 2.0;
@@ -847,7 +847,7 @@ LAMA_COMMON_TEST_CASE_TEMPLATE_END()
 
 LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, ValueType, matrixAddTest )
 
-LAMA_LOG_INFO( logger, "Test " << typeid( ValueType ).name() << "::matrixTimesMatrix" );
+SCAI_LOG_INFO( logger, "Test " << typeid( ValueType ).name() << "::matrixTimesMatrix" );
 
 IndexType n = 3;
 const ValueType aValue = 2.0;
@@ -917,7 +917,7 @@ LAMA_COMMON_TEST_CASE_TEMPLATE_END()
 
 LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, ValueType, matrixMultTest1 )
 
-LAMA_LOG_INFO( logger, "matrixMultTest1" )
+SCAI_LOG_INFO( logger, "matrixMultTest1" )
 
 //TODO: USE TEMPLATED STORAGE!!!!!!
 ELLStorage<ValueType> a;
@@ -960,7 +960,7 @@ LAMA_COMMON_TEST_CASE_TEMPLATE_END()
 template<typename ValueType>
 void MatrixStorageTest<ValueType>::jacobiTest( const ValueType omega )
 {
-    LAMA_LOG_INFO( logger, "jacobiTest: matrix = " << mMatrixStorage << ", omega = " << omega )
+    SCAI_LOG_INFO( logger, "jacobiTest: matrix = " << mMatrixStorage << ", omega = " << omega )
     setDenseLocal( mMatrixStorage );
     CSRStorage<ValueType> tmp;
     setDenseLocal( tmp );
@@ -969,7 +969,7 @@ void MatrixStorageTest<ValueType>::jacobiTest( const ValueType omega )
     LAMAArray<ValueType> rhs( n, 2.0 );
     LAMAArray<ValueType> solution1( n );
     LAMAArray<ValueType> solution2( n );
-    LAMA_LOG_INFO( logger, "initialized: solution1 = " << solution1 )
+    SCAI_LOG_INFO( logger, "initialized: solution1 = " << solution1 )
     // jacobi:  solution1 = omega * ( rhs - B * oldSolution) * dinv  + ( 1 - omega ) * oldSolution
     mMatrixStorage.jacobiIterate( solution1, oldSolution, rhs, omega );
     LAMAArray<ValueType> diagonal;
@@ -1022,7 +1022,7 @@ LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, ValueType, jacobiHaloTest )
 
 const ValueType omega = static_cast<ValueType> ( 0.35 );
 
-LAMA_LOG_INFO( logger, "jacobiHaloTest: matrix = " << mMatrixStorage
+SCAI_LOG_INFO( logger, "jacobiHaloTest: matrix = " << mMatrixStorage
                << ", omega = " << omega )
 
 setDenseHalo( mMatrixStorage );
@@ -1042,7 +1042,7 @@ LAMAArray<ValueType> oldSolution ( numCols, 1.0 );
 LAMAArray<ValueType> solution1( numRows, 2.0 );
 LAMAArray<ValueType> solution2( numRows, 2.0 );
 
-LAMA_LOG_INFO( logger, "initialized: solution1 = " << solution1 )
+SCAI_LOG_INFO( logger, "initialized: solution1 = " << solution1 )
 
 // jacobi:  solution1 -=  omega * ( B(halo) * oldSolution) * dinv
 
@@ -1088,7 +1088,7 @@ LAMA_COMMON_TEST_CASE_TEMPLATE_END()
 
 LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, ValueType, inverseTest )
 
-LAMA_LOG_INFO( logger, "inverseTest for " << mMatrixStorage.getTypeName() )
+SCAI_LOG_INFO( logger, "inverseTest for " << mMatrixStorage.getTypeName() )
 
 setDenseRandom( mMatrixStorage );
 
@@ -1103,7 +1103,7 @@ setDenseRandomInverse( *compare );
 
 ValueType diff = compare->maxDiffNorm( *inverse );
 
-LAMA_LOG_INFO( logger, "max diff " << diff )
+SCAI_LOG_INFO( logger, "max diff " << diff )
 
 ValueType eps = static_cast<ValueType> ( 0.005 );
 
@@ -1115,7 +1115,7 @@ mMatrixStorage.invert( mMatrixStorage );
 
 diff = compare->maxDiffNorm( *inverse );
 
-LAMA_LOG_INFO( logger, "max diff " << diff )
+SCAI_LOG_INFO( logger, "max diff " << diff )
 
 BOOST_CHECK_SMALL( diff, eps );
 

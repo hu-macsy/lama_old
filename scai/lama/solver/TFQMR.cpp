@@ -46,7 +46,7 @@
 
 namespace lama{ 
 
-LAMA_LOG_DEF_LOGGER( TFQMR::logger, "Solver.TFQMR" )
+SCAI_LOG_DEF_LOGGER( TFQMR::logger, "Solver.TFQMR" )
 
 TFQMR::TFQMR( const std::string& id )
     : IterativeSolver(id){}
@@ -68,7 +68,7 @@ TFQMR::~TFQMR(){}
 TFQMR::TFQMRRuntime::~TFQMRRuntime(){}
 
 void TFQMR::initialize( const Matrix& coefficients ){
-    LAMA_LOG_DEBUG(logger, "Initialization started for coefficients = "<< coefficients)
+    SCAI_LOG_DEBUG(logger, "Initialization started for coefficients = "<< coefficients)
 
     Solver::initialize( coefficients );
  	TFQMRRuntime& runtime = getRuntime();

@@ -274,7 +274,7 @@ int GenLogger::readConfig( const char* fname )
 
     if ( configFile == NULL )
     {
-        LAMA_LOG_ERROR( ( *rootLogger ), "config: could not open config file " << fname );
+        SCAI_LOG_ERROR( ( *rootLogger ), "config: could not open config file " << fname );
         return 0;
     }
 
@@ -296,7 +296,7 @@ int GenLogger::readConfig( const char* fname )
             }
             catch ( std::runtime_error& e )
             {
-                LAMA_LOG_WARN( ( *rootLogger ),
+                SCAI_LOG_WARN( ( *rootLogger ),
                                "Config file '" << fname << "', ignored invalid line '" << buffer << "'" << ": " << e.what() );
             }
 
@@ -309,7 +309,7 @@ int GenLogger::readConfig( const char* fname )
 
             if ( bufferLength == MAX_LINE_LENGTH )
             {
-                LAMA_LOG_ERROR( ( *rootLogger ), "Config file '" << fname << "', too long line, stop reading" );
+                SCAI_LOG_ERROR( ( *rootLogger ), "Config file '" << fname << "', too long line, stop reading" );
                 stop = true;
             }
         }
@@ -334,10 +334,10 @@ void GenLogger::configure()
     }
 
     rootLogger->setLevel( WARN ); // default setting for root
-#ifdef LAMA_LOG
-    const char* configFile = LAMA_LOG;
+#ifdef SCAI_LOG
+    const char* configFile = SCAI_LOG;
 #else
-    const char* configFile = getenv( "LAMA_LOG" );
+    const char* configFile = getenv( "SCAI_LOG" );
 #endif
 
     if ( configFile == NULL )
@@ -361,7 +361,7 @@ void GenLogger::configure()
 
     if ( configFile == NULL )
     {
-        LAMA_LOG_WARN( ( *rootLogger ), "LAMA_LOG not set, no $HOME/.logging, so use default configuration" );
+        SCAI_LOG_WARN( ( *rootLogger ), "SCAI_LOG not set, no $HOME/.logging, so use default configuration" );
     }
     else if ( strlen( configFile ) == 0 )
     {
@@ -397,7 +397,7 @@ void GenLogger::configure()
     }
     else
     {
-        LAMA_LOG_INFO( ( *rootLogger ), "read configuration from file " << configFile );
+        SCAI_LOG_INFO( ( *rootLogger ), "read configuration from file " << configFile );
         readConfig( configFile );
     }
 
@@ -572,7 +572,7 @@ void GenLogger::fatal( SourceLocation loc, const string& msg )
 
 void GenLogger::traverse()
 {
-    // LAMA_LOG_DEBUG(myLogger, "rootLogger " << getFullName() << ", level = "
+    // SCAI_LOG_DEBUG(myLogger, "rootLogger " << getFullName() << ", level = "
     //            << getEffectiveLevel() << ", set = " << setFlag);
     for ( size_t i = 0; i < mSons.size(); i++ )
     {

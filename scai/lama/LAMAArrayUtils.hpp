@@ -118,7 +118,7 @@ private:
     template<typename ValueType>
     static void assignImpl1( LAMAArray<ValueType>& target, const ContextArray& source, ContextPtr context );
 
-    LAMA_LOG_DECL_STATIC_LOGGER( logger )};
+    SCAI_LOG_DECL_STATIC_LOGGER( logger )};
 
 }  // namespace
 

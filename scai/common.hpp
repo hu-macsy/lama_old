@@ -32,18 +32,18 @@
 
 #pragma once
 
-#include "scai/common/bind.hpp"
-#include "scai/common/config.hpp"
-#include "scai/common/Exception.hpp"
-#include "scai/common/Factory.hpp"
-#include "scai/common/Factory1.hpp"
-#include "scai/common/function.hpp"
-#include "scai/common/NonCopyable.hpp"
-#include "scai/common/OpenMP.hpp"
-#include "scai/common/Printable.hpp"
-#include "scai/common/ScalarType.hpp"
-#include "scai/common/shared_ptr.hpp"
-#include "scai/common/Thread.hpp"
-#include "scai/common/unique_ptr.hpp"
-#include "scai/common/Walltime.hpp"
-#include "scai/common/weak_ptr.hpp"
+#include <scai/common/bind.hpp>
+#include <scai/common/config.hpp>
+#include <scai/common/Exception.hpp>
+#include <scai/common/Factory.hpp>
+#include <scai/common/Factory1.hpp>
+#include <scai/common/function.hpp>
+#include <scai/common/NonCopyable.hpp>
+#include <scai/common/OpenMP.hpp>
+#include <scai/common/Printable.hpp>
+#include <scai/common/ScalarType.hpp>
+#include <scai/common/shared_ptr.hpp>
+#include <scai/common/Thread.hpp>
+#include <scai/common/unique_ptr.hpp>
+#include <scai/common/Walltime.hpp>
+#include <scai/common/weak_ptr.hpp>

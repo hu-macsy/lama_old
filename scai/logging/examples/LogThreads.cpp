@@ -37,17 +37,17 @@
 
 #include <boost/thread.hpp>
 
-LAMA_LOG_DEF_LOGGER( myLogger, "LogTest" )
+SCAI_LOG_DEF_LOGGER( myLogger, "LogTest" )
 
 int threadRoutine( int id, int param )
 {
-    LAMA_LOG_THREAD( "thread_" << id )
+    SCAI_LOG_THREAD( "thread_" << id )
  
-    LAMA_LOG_INFO( myLogger, "starts, param = " << param )
+    SCAI_LOG_INFO( myLogger, "starts, param = " << param )
 
     sleep( param );
 
-    LAMA_LOG_INFO( myLogger, "stops, param = " << param )
+    SCAI_LOG_INFO( myLogger, "stops, param = " << param )
 
     return 0;
 }
@@ -56,7 +56,7 @@ int main( int, char** )
 {
     // macro to give the current thread a name that appears in further logs
 
-    LAMA_LOG_THREAD( "main" )
+    SCAI_LOG_THREAD( "main" )
     
     int params[] = { 1, 2, 3, 5 };
 
@@ -64,7 +64,7 @@ int main( int, char** )
 
     // log macros handle arguments like streams do
 
-    LAMA_LOG_INFO( myLogger, "start " << N << " threads" )
+    SCAI_LOG_INFO( myLogger, "start " << N << " threads" )
 
     std::vector<boost::thread*> threads;
 
@@ -72,15 +72,15 @@ int main( int, char** )
 
     for ( int i = 0; i < N; ++i )
     {
-        LAMA_LOG_INFO( myLogger, "create thread " << i )
+        SCAI_LOG_INFO( myLogger, "create thread " << i )
         threads[i] = new boost::thread( threadRoutine, i, params[i] );
     }
 
-    LAMA_LOG_INFO( myLogger, "go sleep for 5 seconds" )
+    SCAI_LOG_INFO( myLogger, "go sleep for 5 seconds" )
 
     sleep( 5 );
 
-    LAMA_LOG_INFO( myLogger, "wait for threads" )
+    SCAI_LOG_INFO( myLogger, "wait for threads" )
 
     for ( int i = 0; i < N; ++i )
     {
@@ -88,5 +88,5 @@ int main( int, char** )
         delete threads[i];
     }
 
-    LAMA_LOG_INFO( myLogger, "Threads finished, terminate" )
+    SCAI_LOG_INFO( myLogger, "Threads finished, terminate" )
 }

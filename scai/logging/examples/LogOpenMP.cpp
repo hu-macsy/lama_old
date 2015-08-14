@@ -1,11 +1,11 @@
 #include "scai/logging.hpp"
 #include "omp.h"
 
-LAMA_LOG_DEF_LOGGER( myLogger, "LogOpenMP" )
+SCAI_LOG_DEF_LOGGER( myLogger, "LogOpenMP" )
 
 int main( int, char** )
 {
-    LAMA_LOG_THREAD( "main" )
+    SCAI_LOG_THREAD( "main" )
 
     // Here we name the OpenMP Threads
 
@@ -15,7 +15,7 @@ int main( int, char** )
 
         if ( thread_id > 0 ) 
         {
-            LAMA_LOG_THREAD( "OMP_Thread_" << thread_id )
+            SCAI_LOG_THREAD( "OMP_Thread_" << thread_id )
         }
     }
 
@@ -26,6 +26,6 @@ int main( int, char** )
     {
         // logging per thread shows exactly which thread executes which iteration
 
-        LAMA_LOG_INFO( myLogger, "executes iteration " << i << " of " << N )
+        SCAI_LOG_INFO( myLogger, "executes iteration " << i << " of " << N )
     }
 }

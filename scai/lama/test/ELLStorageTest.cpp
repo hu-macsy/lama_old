@@ -245,7 +245,7 @@ void typeNameTest()
 
 BOOST_AUTO_TEST_SUITE( ELLStorageTest )
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.ELLStorageTest" )
+SCAI_LOG_DEF_LOGGER( logger, "Test.ELLStorageTest" )
 LAMA_AUTO_TEST_CASE_CT( commonTestCases, ELLStorageTest )
 LAMA_AUTO_TEST_CASE_CT( constructorTest, ELLStorageTest )
 LAMA_AUTO_TEST_CASE_CT( constructorTest1, ELLStorageTest )

@@ -260,20 +260,20 @@ inline memory::ContextType mapEnvContexttoContextType( std::string contextname )
     contexttype = getEnvContext();                                                                                     \
     if ( contexttype == "*" )                                                                                          \
     {                                                                                                                  \
-        LAMA_LOG_INFO( logger, "LAMA_TEST_CONTEXT is not set or has value '*', so all available contexts will be used." );  \
+        SCAI_LOG_INFO( logger, "LAMA_TEST_CONTEXT is not set or has value '*', so all available contexts will be used." );  \
         for ( ContextType i = context::Host; i < context::MaxContext; i = static_cast<ContextType>( i + 1 ) )          \
         {                                                                                                              \
             if ( Context::hasContext( i ) )                                                                            \
             {                                                                                                          \
                 listofcontexts.push_back( i );                                                                         \
-                LAMA_LOG_DEBUG( logger, "Context " << i << " is available");                                           \
+                SCAI_LOG_DEBUG( logger, "Context " << i << " is available");                                           \
             }                                                                                                          \
             else                                                                                                       \
-                LAMA_LOG_INFO( logger, "The following context will be skipped, because it is not available: " << i );  \
+                SCAI_LOG_INFO( logger, "The following context will be skipped, because it is not available: " << i );  \
         }                                                                                                              \
     } else {                                                                                                           \
         listofcontexts.push_back( mapEnvContexttoContextType( contexttype ) );                                         \
-        LAMA_LOG_INFO( logger, "Environment variable LAMA_TEST_CONTEXT contains context = " << getEnvContext() );      \
+        SCAI_LOG_INFO( logger, "Environment variable LAMA_TEST_CONTEXT contains context = " << getEnvContext() );      \
     }                                                                                                                  \
     for ( Iter = listofcontexts.begin(); Iter != listofcontexts.end(); Iter++ )
 
@@ -306,7 +306,7 @@ inline memory::ContextType mapEnvContexttoContextType( std::string contextname )
         {                                                                                                              \
             GETCONTEXT( context );                                                                                     \
             if ( loglevel_argument == "test_suite" )                                                                   \
-                LAMA_LOG_INFO( logger, "    Entering context: " << context->getType() );                               \
+                SCAI_LOG_INFO( logger, "    Entering context: " << context->getType() );                               \
             lama::classname::name( context );                                                                          \
         }                                                                                                              \
     }
@@ -359,7 +359,7 @@ inline memory::ContextType mapEnvContexttoContextType( std::string contextname )
     }                                                                                                \
     catch ( common::Exception& )                                                                      \
     {                                                                                                \
-        LAMA_LOG_WARN( logger, #method << "<" << STR( ARITHMETIC_TYPE##I ) << "> cannot run on "     \
+        SCAI_LOG_WARN( logger, #method << "<" << STR( ARITHMETIC_TYPE##I ) << "> cannot run on "     \
                        << context->getType() << ", corresponding function not implemented yet." );   \
         return;                                                                                      \
     }                                                                                                \
@@ -383,7 +383,7 @@ inline memory::ContextType mapEnvContexttoContextType( std::string contextname )
             GETCONTEXT( context )                                                             \
             if ( loglevel_argument == "test_suite" )                                          \
             {                                                                                 \
-                LAMA_LOG_INFO( logger, "    Entering context: " << context->getType() );      \
+                SCAI_LOG_INFO( logger, "    Entering context: " << context->getType() );      \
             }                                                                                 \
             const std::string lama_name = #name;                                              \
             const std::string lama_classname = #classname;                                    \
@@ -398,7 +398,7 @@ inline memory::ContextType mapEnvContexttoContextType( std::string contextname )
     }                                                                                                \
     catch ( common::Exception& )                                                                               \
     {                                                                                                \
-        LAMA_LOG_WARN( logger, #method << "<" << STR( ARITHMETIC_TYPE##I ) << "> cannot run on "     \
+        SCAI_LOG_WARN( logger, #method << "<" << STR( ARITHMETIC_TYPE##I ) << "> cannot run on "     \
                        << context->getType() << ", corresponding function not implemented yet." );   \
         return;                                                                                      \
     }                                                                                                \
@@ -420,7 +420,7 @@ inline memory::ContextType mapEnvContexttoContextType( std::string contextname )
             GETCONTEXT( context )                                                                                      \
             if ( loglevel_argument == "test_suite" )                                                                   \
             {                                                                                                          \
-                LAMA_LOG_INFO( logger, "    Entering context: " << context->getType() );                               \
+                SCAI_LOG_INFO( logger, "    Entering context: " << context->getType() );                               \
             }                                                                                                          \
             BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_RUN_TESTL, lama::classname::name )      \
         }                                                                                                              \
@@ -446,7 +446,7 @@ inline memory::ContextType mapEnvContexttoContextType( std::string contextname )
             GETCONTEXT( context );                                                                                     \
             if ( loglevel_argument == "test_suite" )                                                                   \
             {                                                                                                          \
-                LAMA_LOG_INFO( logger, "    Entering context: " << context->getType() );                               \
+                SCAI_LOG_INFO( logger, "    Entering context: " << context->getType() );                               \
             }                                                                                                          \
             const std::string lama_name = #name;                                                                       \
             const std::string lama_classname = #classname;                                                             \
@@ -456,7 +456,7 @@ inline memory::ContextType mapEnvContexttoContextType( std::string contextname )
             }                                                                                                          \
             catch ( common::Exception& )                                                                               \
             {                                                                                                          \
-                LAMA_LOG_WARN( logger, lama_classname << "::" << lama_name << "<float, float> cannot run on  "         \
+                SCAI_LOG_WARN( logger, lama_classname << "::" << lama_name << "<float, float> cannot run on  "         \
                                << context->getType() << ", corresponding function not implemented yet." );             \
                 return;                                                                                                \
             }                                                                                                          \
@@ -466,7 +466,7 @@ inline memory::ContextType mapEnvContexttoContextType( std::string contextname )
             }                                                                                                          \
             catch ( common::Exception& )                                                                               \
             {                                                                                                          \
-                LAMA_LOG_WARN( logger, lama_classname << "::" << lama_name << "<double, double> cannot run on  "       \
+                SCAI_LOG_WARN( logger, lama_classname << "::" << lama_name << "<double, double> cannot run on  "       \
                                << context->getType() << ", corresponding function not implemented yet." );             \
                 return;                                                                                                \
             }                                                                                                          \
@@ -476,7 +476,7 @@ inline memory::ContextType mapEnvContexttoContextType( std::string contextname )
             }                                                                                                          \
             catch ( common::Exception& )                                                                               \
             {                                                                                                          \
-                LAMA_LOG_WARN( logger, lama_classname << "::" << lama_name << "<float, double> cannot run on  "        \
+                SCAI_LOG_WARN( logger, lama_classname << "::" << lama_name << "<float, double> cannot run on  "        \
                                << context->getType() << ", corresponding function not implemented yet." );             \
                 return;                                                                                                \
             }                                                                                                          \
@@ -486,7 +486,7 @@ inline memory::ContextType mapEnvContexttoContextType( std::string contextname )
             }                                                                                                          \
             catch ( common::Exception& )                                                                               \
             {                                                                                                          \
-                LAMA_LOG_WARN( logger, lama_classname << "::" << lama_name << "<double, float> cannot run on  "        \
+                SCAI_LOG_WARN( logger, lama_classname << "::" << lama_name << "<double, float> cannot run on  "        \
                                << context->getType() << ", corresponding function not implemented yet." );             \
                 return;                                                                                                \
             }                                                                                                          \
@@ -512,7 +512,7 @@ inline memory::ContextType mapEnvContexttoContextType( std::string contextname )
             GETCONTEXT( context );                                                                                     \
             if ( loglevel_argument == "test_suite" )                                                                   \
             {                                                                                                          \
-                LAMA_LOG_INFO( logger, "    Entering context: " << context->getType() );                               \
+                SCAI_LOG_INFO( logger, "    Entering context: " << context->getType() );                               \
             }                                                                                                          \
             const std::string lama_name = #name;                                                                       \
             const std::string lama_classname = #classname;                                                             \
@@ -522,7 +522,7 @@ inline memory::ContextType mapEnvContexttoContextType( std::string contextname )
             }                                                                                                          \
             catch ( common::Exception& )                                                                               \
             {                                                                                                          \
-                LAMA_LOG_WARN( logger, lama_classname << "::" << lama_name << " cannot run on  "                       \
+                SCAI_LOG_WARN( logger, lama_classname << "::" << lama_name << " cannot run on  "                       \
                                << context->getType() << ", corresponding function not implemented yet." );             \
                 return;                                                                                                \
             }                                                                                                          \
@@ -537,7 +537,7 @@ inline memory::ContextType mapEnvContexttoContextType( std::string contextname )
             GETCONTEXT( context );                                                                                     \
             if ( loglevel_argument == "test_suite" )                                                                   \
             {                                                                                                          \
-                LAMA_LOG_INFO( logger, "    Entering context: " << context->getType() );                               \
+                SCAI_LOG_INFO( logger, "    Entering context: " << context->getType() );                               \
             }                                                                                                          \
             const std::string lama_name = #name;                                                                       \
             const std::string lama_classname = #classname;                                                             \
@@ -547,7 +547,7 @@ inline memory::ContextType mapEnvContexttoContextType( std::string contextname )
             }                                                                                                          \
             catch ( common::Exception& )                                                                               \
             {                                                                                                          \
-                LAMA_LOG_WARN( logger, lama_classname << "::" << lama_name << " cannot run on  "                       \
+                SCAI_LOG_WARN( logger, lama_classname << "::" << lama_name << " cannot run on  "                       \
                                << context->getType() << ", corresponding function not implemented yet." );             \
                 return;                                                                                                \
             }                                                                                                          \
@@ -667,7 +667,7 @@ inline memory::ContextType mapEnvContexttoContextType( std::string contextname )
         std::string lama_common_testcase_template = omsg.str();                                                        \
         if ( loglevel_argument == "test_suite" )                                                                       \
         {                                                                                                              \
-            LAMA_LOG_INFO( logger, "    Entering common test case \"" + lama_common_testcase_method + "<" +            \
+            SCAI_LOG_INFO( logger, "    Entering common test case \"" + lama_common_testcase_method + "<" +            \
                            lama_common_testcase_template + ">\" " );                                                   \
         }
 
@@ -682,7 +682,7 @@ inline memory::ContextType mapEnvContexttoContextType( std::string contextname )
 
 #define LAMA_COMMON_TEST_CASE_TEMPLATE_END();                                                                          \
     if ( loglevel_argument == "test_suite" )                                                                           \
-        LAMA_LOG_INFO( logger, "    Leaving common test case \"" + lama_common_testcase_method + "\" " );                \
+        SCAI_LOG_INFO( logger, "    Leaving common test case \"" + lama_common_testcase_method + "\" " );                \
     }
 
         /*

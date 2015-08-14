@@ -49,7 +49,7 @@ CUDAStreamSyncToken::CUDAStreamSyncToken( memory::CUDAContextPtr cudaContext, CU
     mEvent( 0 )
 
 {
-    LAMA_LOG_DEBUG( logger, "StreamSyncToken for " << *cudaContext << " generated, stream = " << stream )
+    SCAI_LOG_DEBUG( logger, "StreamSyncToken for " << *cudaContext << " generated, stream = " << stream )
 }
 
 CUDAStreamSyncToken::CUDAStreamSyncToken( memory::CUDAContextPtr cudaContext, CUstream stream, CUevent event ) : 
@@ -58,7 +58,7 @@ CUDAStreamSyncToken::CUDAStreamSyncToken( memory::CUDAContextPtr cudaContext, CU
     mStream( stream ), 
     mEvent( event )
 {
-    LAMA_LOG_DEBUG( logger,
+    SCAI_LOG_DEBUG( logger,
                     "StreamSyncToken for " << *cudaContext << " generated" << ", event = " << event << ", stream = " << stream )
 }
 
@@ -74,7 +74,7 @@ void CUDAStreamSyncToken::wait()
         return;
     }
 
-    LAMA_LOG_DEBUG( logger, "wait on CUDA stream synchronization" )
+    SCAI_LOG_DEBUG( logger, "wait on CUDA stream synchronization" )
 
     {
         // LAMA_REGION( "CUDA.streamSynchronize" )
@@ -89,9 +89,9 @@ void CUDAStreamSyncToken::wait()
         }
         else
         {
-            LAMA_LOG_DEBUG( logger, "synchronize with stream " << mStream );
+            SCAI_LOG_DEBUG( logger, "synchronize with stream " << mStream );
             LAMA_CUDA_DRV_CALL( cuStreamSynchronize( mStream ), "cuStreamSynchronize( " << mStream <<" ) failed." );
-            LAMA_LOG_DEBUG( logger, "synchronized with stream " << mStream );
+            SCAI_LOG_DEBUG( logger, "synchronized with stream " << mStream );
         }
 
         // // finally called functions might also need the context, e.g. unbindTexture

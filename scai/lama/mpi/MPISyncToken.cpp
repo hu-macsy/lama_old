@@ -49,14 +49,14 @@ MPISyncToken::MPISyncToken( PartitionId nRequests )
     : mNRequests( nRequests ), mUsedRequests( 0 ), mRequests( new MPI_Request[mNRequests] ), mStatuses(
           new MPI_Status[mNRequests] )
 {
-    LAMA_LOG_INFO( logger, "MPISyncToken for " << mNRequests << " requests constructed" )
+    SCAI_LOG_INFO( logger, "MPISyncToken for " << mNRequests << " requests constructed" )
 }
 
 MPISyncToken::~MPISyncToken()
 {
     if( !isSynchronized() )
     {
-        LAMA_LOG_DEBUG( logger, *this << ": synchnronized at destructor" )
+        SCAI_LOG_DEBUG( logger, *this << ": synchnronized at destructor" )
         wait();
     }
 }
@@ -72,16 +72,16 @@ void MPISyncToken::wait()
 
     if( isSynchronized() )
     {
-        LAMA_LOG_WARN( logger, *this << ": waiting twice" )
+        SCAI_LOG_WARN( logger, *this << ": waiting twice" )
 
         return; // do not wait twice, especially do not clean-up twice
     }
 
-    LAMA_LOG_INFO( logger, *this << ": wait" )
+    SCAI_LOG_INFO( logger, *this << ": wait" )
 
     LAMA_MPICALL( logger, MPI_Waitall( mUsedRequests, mRequests.get(), mStatuses.get() ), "MPI_Waitall" );
 
-    LAMA_LOG_INFO( logger, *this << ": synchronized, clean up and free accesses" )
+    SCAI_LOG_INFO( logger, *this << ": synchronized, clean up and free accesses" )
 
     setSynchronized();
 }
@@ -102,7 +102,7 @@ void MPISyncToken::pushRequest( const MPI_Request& request )
 
     mRequests[mUsedRequests++] = request;
 
-    LAMA_LOG_INFO( logger, "# used requests = " << mUsedRequests )
+    SCAI_LOG_INFO( logger, "# used requests = " << mUsedRequests )
 }
 
 }

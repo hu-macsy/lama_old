@@ -50,11 +50,11 @@ using namespace tasking;
 namespace lama
 {
 
-LAMA_LOG_DEF_LOGGER( Communicator::logger, "Communicator" )
+SCAI_LOG_DEF_LOGGER( Communicator::logger, "Communicator" )
 
 CommunicatorPtr Communicator::get( const std::string& type )
 {
-    LAMA_LOG_TRACE( logger, "Get communicator of type " << type )
+    SCAI_LOG_TRACE( logger, "Get communicator of type " << type )
 
     if ( canCreate( type ) )
     {
@@ -62,7 +62,7 @@ CommunicatorPtr Communicator::get( const std::string& type )
     }
     else
     {
-        LAMA_LOG_WARN( logger, "could not get communicator " << type << ", take default one" )
+        SCAI_LOG_WARN( logger, "could not get communicator " << type << ", take default one" )
         return get();
     }
 }
@@ -89,12 +89,12 @@ CommunicatorPtr Communicator::get()
 Communicator::Communicator( const std::string& type )
                 : mCommunicatorType( type )
 {
-    LAMA_LOG_DEBUG( logger, "Communicator constructed, type = " << type )
+    SCAI_LOG_DEBUG( logger, "Communicator constructed, type = " << type )
 }
 
 Communicator::~Communicator()
 {
-    LAMA_LOG_DEBUG( logger, "~Communicator" )
+    SCAI_LOG_DEBUG( logger, "~Communicator" )
 }
 
 bool Communicator::operator==( const Communicator& other ) const
@@ -166,7 +166,7 @@ void Communicator::factorize2( const double sizeX, const double sizeY, Partition
                         "No processor 2D-grid found for usergrid " << usergrid[0] << " x " << usergrid[1] << ", NP = " << size );
     }
 
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "Best processor factorization of size = " << size << ": " << procgrid[0] << " x " << procgrid[1] )
 }
 
@@ -248,7 +248,7 @@ void Communicator::factorize3(
                         "No processor 3D-grid found for usergrid " << usergrid[0] << " x " << usergrid[1] << " x " << usergrid[2] << ", NP = " << size );
     }
 
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "Best processor factorization of size = " << size << ": " << procgrid[0] << " x " << procgrid[1] << " x " << procgrid[2] )
 }
 
@@ -263,7 +263,7 @@ void Communicator::getGrid2Rank( PartitionId pos[2], const PartitionId procgrid[
     rank = rank % size;
     pos[0] = rank;
 
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    *this << ": is (" << pos[0] << "," << pos[1] << ") of (" << procgrid[0] << "," << procgrid[1] << ")" )
 }
 
@@ -284,7 +284,7 @@ void Communicator::getGrid3Rank( PartitionId pos[3], const PartitionId procgrid[
     rank = rank % size;
     pos[0] = rank;
 
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    *this << ": is (" << pos[0] << "," << pos[1] << "," << pos[2] << ") of (" << procgrid[0] << "," << procgrid[1] << "," << procgrid[2] << ")" )
 }
 
@@ -326,12 +326,12 @@ void Communicator::getUserProcArray( PartitionId userProcArray[3] )
             pos = str.find_first_of( delimiters, lastPos );
         }
 
-        LAMA_LOG_INFO( logger,
+        SCAI_LOG_INFO( logger,
                        "LAMA_NP=" << np4lama << " -> userProcArray " << userProcArray[0] << " x " << userProcArray[1] << " x " << userProcArray[2] )
     }
     else
     {
-        LAMA_LOG_INFO( logger, "environment variable LAMA_NP no set" )
+        SCAI_LOG_INFO( logger, "environment variable LAMA_NP no set" )
     }
 }
 
@@ -374,7 +374,7 @@ void Communicator::shiftArray(
 
     ContextPtr commContext = getCommunicationContext( sendArray );
 
-    LAMA_LOG_DEBUG( logger,
+    SCAI_LOG_DEBUG( logger,
                     "shiftArray at this context " << *commContext << ", sendArray = " << sendArray << ", recvArray = " << recvArray )
 
     ReadAccess<ValueType> sendData( sendArray, commContext );
@@ -393,7 +393,7 @@ void Communicator::shiftArray(
 
     IndexType numRecvElems = shiftData( recvData.get(), maxNumRecvElems, sendData.get(), numSendElems, direction );
 
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "shift, direction = " << direction << ", sent " << numSendElems << ", recvd " << numRecvElems << "( max was " << maxNumRecvElems << ")" )
 
     recvData.resize( numRecvElems ); // take over the size
@@ -443,7 +443,7 @@ void Communicator::updateHalo(
 {
 LAMA_REGION( "Communicator.updateHalo" )
 
-        LAMA_LOG_INFO( logger, *this << ": update halo" )
+        SCAI_LOG_INFO( logger, *this << ": update halo" )
 
     const CommunicationPlan& requiredPlan = halo.getRequiredPlan();
 
@@ -480,7 +480,7 @@ SyncToken* Communicator::updateHaloAsync(
 {
 LAMA_REGION( "Communicator.updateHaloAsync" )
 
-        LAMA_LOG_INFO( logger, *this << ": asynchronous update halo" )
+        SCAI_LOG_INFO( logger, *this << ": asynchronous update halo" )
 
     const CommunicationPlan& requiredPlan = halo.getRequiredPlan();
 
@@ -539,7 +539,7 @@ void Communicator::computeOwners(
     PartitionId rank = getRank();
     PartitionId size = getSize();
 
-    LAMA_LOG_DEBUG( logger, "need owners for " << nIndexes << " global indexes" )
+    SCAI_LOG_DEBUG( logger, "need owners for " << nIndexes << " global indexes" )
 
     if( distribution.getCommunicator() != *this )
     {
@@ -562,9 +562,9 @@ void Communicator::computeOwners(
         }
     }
 
-    LAMA_LOG_DEBUG( logger, nIndexes - nonLocal << " Indexes are local. Only need to send " << nonLocal << " values." )
+    SCAI_LOG_DEBUG( logger, nIndexes - nonLocal << " Indexes are local. Only need to send " << nonLocal << " values." )
     IndexType receiveSize = max( nonLocal ); // --> pure method call
-    LAMA_LOG_DEBUG( logger, "max size of receive buffer is " << receiveSize )
+    SCAI_LOG_DEBUG( logger, "max size of receive buffer is " << receiveSize )
 
     // Allocate the maximal needed size for the communication buffers
 
@@ -606,7 +606,7 @@ void Communicator::computeOwners(
         WriteAccess<IndexType> indexesReceive( indexesReceiveArray );
         WriteAccess<IndexType> ownersSend( ownersSendArray );
         WriteAccess<IndexType> ownersReceive( ownersReceiveArray );
-        LAMA_LOG_DEBUG( logger,
+        SCAI_LOG_DEBUG( logger,
                         *this << " shift: recv " << receiveSize << ", send " << currentSize << ", direction = " << direction )
 
         // --->   Pure method call
@@ -615,20 +615,20 @@ void Communicator::computeOwners(
 
         LAMA_ASSERT_ERROR( ownersSize == -1 || currentSize == ownersSize, "Communication corrupted." )
 
-        LAMA_LOG_DEBUG( logger, "owners size = " << ownersSize << ", current size = " << currentSize )
+        SCAI_LOG_DEBUG( logger, "owners size = " << ownersSize << ", current size = " << currentSize )
         IndexType* indexes = indexesReceive.get();
         int* currentOwners = ownersSend.get();
-        LAMA_LOG_DEBUG( logger, "check buffer with " << currentSize << " global indexes whether I am owner" )
+        SCAI_LOG_DEBUG( logger, "check buffer with " << currentSize << " global indexes whether I am owner" )
 
         for( int i = 0; i < currentSize; ++i )
         {
             //TODO there should be a blockwise implementation of isLocal
-            LAMA_LOG_TRACE( logger,
+            SCAI_LOG_TRACE( logger,
                             "check global index " << indexes[i] << " with current owner " << currentOwners[i] << ", is local = " << distribution.isLocal( indexes[i] ) )
 
             if( currentOwners[i] == -1 && distribution.isLocal( indexes[i] ) )
             {
-                LAMA_LOG_TRACE( logger, *this << ": me is owner of global index " << indexes[i] )
+                SCAI_LOG_TRACE( logger, *this << ": me is owner of global index " << indexes[i] )
                 currentOwners[i] = rank;
             }
         }
@@ -638,21 +638,21 @@ void Communicator::computeOwners(
         indexesSend.release();
         indexesReceiveArray.swap( indexesSendArray );
 
-        LAMA_LOG_DEBUG( logger, *this << ": send array with " << currentSize << " owners to right" )
+        SCAI_LOG_DEBUG( logger, *this << ": send array with " << currentSize << " owners to right" )
 
         for( int i = 0; i < currentSize; i++ )
         {
-            LAMA_LOG_TRACE( logger, *this << " send currentOwner[" << i << "] = " << ownersSend[i] )
+            SCAI_LOG_TRACE( logger, *this << " send currentOwner[" << i << "] = " << ownersSend[i] )
         }
 
         // --->   Pure method call
         ownersSize = shiftData( ownersReceive.get(), receiveSize, ownersSend.get(), currentSize, direction );
 
-        LAMA_LOG_DEBUG( logger, *this << ": recvd array with " << ownersSize << " owners from left" )
+        SCAI_LOG_DEBUG( logger, *this << ": recvd array with " << ownersSize << " owners from left" )
 
         for( int i = 0; i < ownersSize; i++ )
         {
-            LAMA_LOG_TRACE( logger, *this << ": recv currentOwner[" << i << "] = " << ownersReceive[i] )
+            SCAI_LOG_TRACE( logger, *this << ": recv currentOwner[" << i << "] = " << ownersReceive[i] )
         }
 
         //Release so we can swap the Arrays
@@ -665,7 +665,7 @@ void Communicator::computeOwners(
 
     for( int i = 0; i < nonLocal; ++i )
     {
-        LAMA_LOG_TRACE( logger,
+        SCAI_LOG_TRACE( logger,
                         *this << ": final " << i << " of " << nonLocal << ": " << requiredIndexes[i] << ", owner = " << ownersSend[i] )
     }
 
@@ -699,7 +699,7 @@ bool Communicator::all( const bool flag ) const
 
     int allval = sum( val ); // count flags == false
 
-    LAMA_LOG_DEBUG( logger, "sum( " << val << " ) = " << allval )
+    SCAI_LOG_DEBUG( logger, "sum( " << val << " ) = " << allval )
 
     return allval == 0;
 }
@@ -712,7 +712,7 @@ bool Communicator::any( const bool flag ) const
 
     int allval = sum( val ); // count flags == false
 
-    LAMA_LOG_DEBUG( logger, "sum( " << val << " ) = " << allval )
+    SCAI_LOG_DEBUG( logger, "sum( " << val << " ) = " << allval )
 
     return allval > 0;
 }

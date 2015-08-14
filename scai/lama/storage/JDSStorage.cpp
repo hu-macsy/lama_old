@@ -59,7 +59,7 @@ namespace lama
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, JDSStorage<ValueType>::logger, "MatrixStorage.JDSStorage" )
+SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, JDSStorage<ValueType>::logger, "MatrixStorage.JDSStorage" )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
@@ -69,7 +69,7 @@ JDSStorage<ValueType>::JDSStorage( const IndexType numRows, const IndexType numC
     : CRTPMatrixStorage<JDSStorage<ValueType>,ValueType>( numRows, numColumns ), mNumDiagonals( 0 ), mNumValues(
           0 )
 {
-    LAMA_LOG_DEBUG( logger, "JDSStorage for matrix " << mNumRows << " x " << mNumColumns << ", no non-zero elements" )
+    SCAI_LOG_DEBUG( logger, "JDSStorage for matrix " << mNumRows << " x " << mNumColumns << ", no non-zero elements" )
 
     ContextPtr loc = getContextPtr();
 
@@ -108,7 +108,7 @@ JDSStorage<ValueType>::JDSStorage(
 {
     check( "JDSStorage( #row, #cols, #values, #diags, dlg, ilg, perm, ja, values" );
     this->resetDiagonalProperty();
-    LAMA_LOG_INFO( logger, *this << ": constructed by JDS arrays dlg, ilg, .., values" )
+    SCAI_LOG_INFO( logger, *this << ": constructed by JDS arrays dlg, ilg, .., values" )
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -153,7 +153,7 @@ void JDSStorage<ValueType>::setJDSData(
 
     this->resetDiagonalProperty();
 
-    LAMA_LOG_INFO( logger, *this << ": set JDS by arrays dlg, ilg, .., values" )
+    SCAI_LOG_INFO( logger, *this << ": set JDS by arrays dlg, ilg, .., values" )
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -240,7 +240,7 @@ JDSStorage<ValueType>::JDSStorage()
 
     : CRTPMatrixStorage<JDSStorage<ValueType>,ValueType>( 0, 0 ), mNumDiagonals( 0 ), mNumValues( 0 )
 {
-    LAMA_LOG_DEBUG( logger, "JDSStorage, matrix is 0 x 0." )
+    SCAI_LOG_DEBUG( logger, "JDSStorage, matrix is 0 x 0." )
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -274,7 +274,7 @@ void JDSStorage<ValueType>::setDiagonalImpl( const Scalar scalar )
 {
     // diagonal property has already been checked
 
-    LAMA_LOG_INFO( logger, "setDiagonalImpl with scalar = " << scalar )
+    SCAI_LOG_INFO( logger, "setDiagonalImpl with scalar = " << scalar )
 
     ContextPtr loc = getContextPtr();
 
@@ -300,7 +300,7 @@ void JDSStorage<ValueType>::setDiagonalImpl( const LAMAArray<OtherValueType>& di
 {
     // diagonal property has already been checked
 
-    LAMA_LOG_INFO( logger, "setDiagonalImpl" )
+    SCAI_LOG_INFO( logger, "setDiagonalImpl" )
 
     ContextPtr loc = getContextPtr();
 
@@ -325,7 +325,7 @@ template<typename ValueType>
 template<typename OtherValueType>
 void JDSStorage<ValueType>::getRowImpl( LAMAArray<OtherValueType>& row, const IndexType i ) const
 {
-    LAMA_LOG_INFO( logger, "getRowImpl with i = " << i )
+    SCAI_LOG_INFO( logger, "getRowImpl with i = " << i )
 
     ContextPtr loc = getContextPtr();
 
@@ -351,7 +351,7 @@ template<typename ValueType>
 template<typename OtherValueType>
 void JDSStorage<ValueType>::getDiagonalImpl( LAMAArray<OtherValueType>& diagonal ) const
 {
-    LAMA_LOG_INFO( logger, "getDiagonalImpl" )
+    SCAI_LOG_INFO( logger, "getDiagonalImpl" )
     //TODO: check diagonal property?
     ContextPtr loc = getContextPtr();
 
@@ -376,7 +376,7 @@ void JDSStorage<ValueType>::getDiagonalImpl( LAMAArray<OtherValueType>& diagonal
 template<typename ValueType>
 void JDSStorage<ValueType>::scaleImpl( const Scalar scalar )
 {
-    LAMA_LOG_INFO( logger, "scaleImpl with scalar = " << scalar )
+    SCAI_LOG_INFO( logger, "scaleImpl with scalar = " << scalar )
 
     ContextPtr loc = getContextPtr();
 
@@ -400,7 +400,7 @@ template<typename ValueType>
 template<typename OtherValueType>
 void JDSStorage<ValueType>::scaleImpl( const LAMAArray<OtherValueType>& diagonal )
 {
-    LAMA_LOG_INFO( logger, "scaleImpl" )
+    SCAI_LOG_INFO( logger, "scaleImpl" )
 
     ContextPtr loc = getContextPtr();
 
@@ -422,7 +422,7 @@ void JDSStorage<ValueType>::scaleImpl( const LAMAArray<OtherValueType>& diagonal
 template<typename ValueType>
 bool JDSStorage<ValueType>::checkDiagonalProperty() const
 {
-    LAMA_LOG_INFO( logger, "checkDiagonalProperty" )
+    SCAI_LOG_INFO( logger, "checkDiagonalProperty" )
 
     IndexType n = std::min( mNumRows, mNumColumns );
 
@@ -462,7 +462,7 @@ bool JDSStorage<ValueType>::checkDiagonalProperty() const
 template<typename ValueType>
 void JDSStorage<ValueType>::check( const char* msg ) const
 {
-    LAMA_LOG_DEBUG( logger, "check at " << getContext() << ", msg = " << msg )
+    SCAI_LOG_DEBUG( logger, "check at " << getContext() << ", msg = " << msg )
 
     LAMA_ASSERT_EQUAL_ERROR( mNumRows, mIlg.size() )
     LAMA_ASSERT_EQUAL_ERROR( mNumRows, mPerm.size() )
@@ -577,7 +577,7 @@ void JDSStorage<ValueType>::check( const char* msg ) const
 template<typename ValueType>
 void JDSStorage<ValueType>::setIdentity( const IndexType size )
 {
-    LAMA_LOG_INFO( logger, "set identity values with size = " << size )
+    SCAI_LOG_INFO( logger, "set identity values with size = " << size )
 
     ContextPtr loc = getContextPtr();
 
@@ -618,7 +618,7 @@ void JDSStorage<ValueType>::setIdentity( const IndexType size )
 template<typename ValueType>
 void JDSStorage<ValueType>::setupData( ContextPtr loc )
 {
-    LAMA_LOG_INFO( logger, "setupData" )
+    SCAI_LOG_INFO( logger, "setupData" )
 
     LAMA_ASSERT_EQUAL_ERROR( mIlg.size(), mNumRows )
 
@@ -646,7 +646,7 @@ void JDSStorage<ValueType>::setupData( ContextPtr loc )
 template<typename ValueType>
 void JDSStorage<ValueType>::sortRows( ContextPtr loc )
 {
-    LAMA_LOG_INFO( logger, *this << "sortRows, number of jagged diagonals = " << mNumDiagonals )
+    SCAI_LOG_INFO( logger, *this << "sortRows, number of jagged diagonals = " << mNumDiagonals )
 
     LAMA_INTERFACE_FN_T( maxval, loc, Utils, Reductions, IndexType )
     LAMA_INTERFACE_FN( sortRows, loc, JDSUtils, Sort )
@@ -674,7 +674,7 @@ void JDSStorage<ValueType>::buildCSR(
 {
     LAMA_REGION( "Storage.JDS->CSR" )
 
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "buildCSR<" << common::getScalarType<OtherValueType>() << ">" << " from JDS<" << common::getScalarType<ValueType>() << ">" << " on " << *loc )
 
     LAMA_INTERFACE_FN_TT( setScatter, loc, Utils, Copy, IndexType, IndexType )
@@ -736,7 +736,7 @@ void JDSStorage<ValueType>::setCSRDataImpl(
 {
     LAMA_REGION( "Storage.JDS<-CSR" )
 
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "setCSRDataImpl<" << common::getScalarType<ValueType>() << "," << common::getScalarType<OtherValueType>() << ">" << ", shape is " << numRows << " x " << numColumns << ", #values for CSR = " << numValues )
 
     ContextPtr loc = getContextPtr();
@@ -797,7 +797,7 @@ void JDSStorage<ValueType>::setCSRDataImpl(
 template<typename ValueType>
 JDSStorage<ValueType>::~JDSStorage()
 {
-    LAMA_LOG_DEBUG( logger,
+    SCAI_LOG_DEBUG( logger,
                     "~JDSStorage for matrix " << mNumRows << " x " << mNumColumns << ", # diags = " << mNumDiagonals )
 }
 
@@ -824,7 +824,7 @@ void JDSStorage<ValueType>::purge()
 template<typename ValueType>
 void JDSStorage<ValueType>::allocate( IndexType numRows, IndexType numColumns )
 {
-    LAMA_LOG_INFO( logger, "allocate JDS sparse matrix of size " << numRows << " x " << numColumns )
+    SCAI_LOG_INFO( logger, "allocate JDS sparse matrix of size " << numRows << " x " << numColumns )
 
     clear();
 
@@ -882,7 +882,7 @@ void JDSStorage<ValueType>::writeAt( std::ostream& stream ) const
 template<typename ValueType>
 ValueType JDSStorage<ValueType>::getValue( const IndexType i, const IndexType j ) const
 {
-    LAMA_LOG_TRACE( logger, "get value (" << i << ", " << j << ") from " << *this )
+    SCAI_LOG_TRACE( logger, "get value (" << i << ", " << j << ") from " << *this )
 
     ContextPtr loc = getContextPtr();
 
@@ -911,7 +911,7 @@ void JDSStorage<ValueType>::matrixTimesVector(
 {
     LAMA_REGION( "Storage.JDS.timesVector" )
 
-    LAMA_LOG_DEBUG( logger,
+    SCAI_LOG_DEBUG( logger,
                     "Computing z = " << alpha << " * A * x + " << beta << " * y, with A = " << *this << ", x = " << x << ", y = " << y << ", z = " << result )
 
     LAMA_ASSERT_EQUAL_ERROR( x.size(), mNumColumns )
@@ -919,7 +919,7 @@ void JDSStorage<ValueType>::matrixTimesVector(
 
     ContextPtr loc = getContextPtr();
 
-    LAMA_LOG_INFO( logger, *this << ": matrixTimesVector on " << *loc )
+    SCAI_LOG_INFO( logger, *this << ": matrixTimesVector on " << *loc )
 
     LAMA_INTERFACE_FN_T( normalGEMV, loc, JDSUtils, Mult, ValueType )
 
@@ -972,7 +972,7 @@ void JDSStorage<ValueType>::vectorTimesMatrix(
 {
     LAMA_REGION( "Storage.JDS.vectorTimesMatrix" )
 
-    LAMA_LOG_DEBUG( logger,
+    SCAI_LOG_DEBUG( logger,
                     "Computing z = " << alpha << " * x * A + " << beta << " * y, with A = " << *this << ", x = " << x << ", y = " << y << ", z = " << result )
 
     LAMA_ASSERT_EQUAL_ERROR( x.size(), mNumRows )
@@ -980,7 +980,7 @@ void JDSStorage<ValueType>::vectorTimesMatrix(
 
     ContextPtr loc = getContextPtr();
 
-    LAMA_LOG_INFO( logger, *this << ": vectorTimesMatrix on " << *loc )
+    SCAI_LOG_INFO( logger, *this << ": vectorTimesMatrix on " << *loc )
 
     LAMA_INTERFACE_FN_T( normalGEVM, loc, JDSUtils, Mult, ValueType )
 
@@ -1058,13 +1058,13 @@ SyncToken* JDSStorage<ValueType>::matrixTimesVectorAsync(
 
     LAMA_REGION( "Storage.JDS.timesVectorAsync" )
 
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "Async start z = " << alpha << " * A * x + " << beta << " * y, with A = " << *this << ", x = " << x << ", y = " << y << ", z = " << result )
 
     LAMA_ASSERT_EQUAL_ERROR( x.size(), mNumColumns )
     LAMA_ASSERT_EQUAL_ERROR( y.size(), mNumRows )
 
-    LAMA_LOG_INFO( logger, *this << ": matrixTimesVector on " << *loc )
+    SCAI_LOG_INFO( logger, *this << ": matrixTimesVector on " << *loc )
 
     LAMA_INTERFACE_FN_T( normalGEMV, loc, JDSUtils, Mult, ValueType )
 
@@ -1161,13 +1161,13 @@ SyncToken* JDSStorage<ValueType>::vectorTimesMatrixAsync(
 
     LAMA_REGION( "Storage.JDS.vectorTimesMatrixAsync" )
 
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "Async start z = " << alpha << " * x * A + " << beta << " * y, with A = " << *this << ", x = " << x << ", y = " << y << ", z = " << result )
 
     LAMA_ASSERT_EQUAL_ERROR( x.size(), mNumRows )
     LAMA_ASSERT_EQUAL_ERROR( y.size(), mNumColumns )
 
-    LAMA_LOG_INFO( logger, *this << ": matrixTimesVector on " << *loc )
+    SCAI_LOG_INFO( logger, *this << ": matrixTimesVector on " << *loc )
 
     LAMA_INTERFACE_FN_T( normalGEVM, loc, JDSUtils, Mult, ValueType )
 
@@ -1238,7 +1238,7 @@ void JDSStorage<ValueType>::jacobiIterate(
 {
     LAMA_REGION( "Storage.JDS.jacobiIterate" )
 
-    LAMA_LOG_INFO( logger, *this << ": Jacobi iteration for local matrix data." )
+    SCAI_LOG_INFO( logger, *this << ": Jacobi iteration for local matrix data." )
 
     ContextPtr loc = getContextPtr();
 
@@ -1309,7 +1309,7 @@ SyncToken* JDSStorage<ValueType>::jacobiIterateAsync(
 
     // For CUDA a solution using stream synchronization is more efficient than using a task
 
-    LAMA_LOG_INFO( logger, *this << ": Jacobi iteration for local matrix data." )
+    SCAI_LOG_INFO( logger, *this << ": Jacobi iteration for local matrix data." )
 
     LAMA_INTERFACE_FN_T( jacobi, loc, JDSUtils, Solver, ValueType )
 
@@ -1361,7 +1361,7 @@ void JDSStorage<ValueType>::jacobiIterateHalo(
     const LAMAArray<ValueType>& oldHaloSolution,
     const ValueType omega ) const
 {
-    LAMA_LOG_INFO( logger, *this << ": Jacobi iteration for halo matrix data." )
+    SCAI_LOG_INFO( logger, *this << ": Jacobi iteration for halo matrix data." )
 
     LAMA_REGION( "Storage.JDS.jacobiIterateHalo" )
 
@@ -1389,7 +1389,7 @@ void JDSStorage<ValueType>::jacobiIterateHalo(
     const LAMAArray<ValueType>& oldHaloSolution,
     const ValueType omega ) const
 {
-    LAMA_LOG_INFO( logger, *this << ": Jacobi iteration for halo matrix data." )
+    SCAI_LOG_INFO( logger, *this << ": Jacobi iteration for halo matrix data." )
 
     LAMA_REGION( "Storage.JDS.jacobiIterateHalo" )
 
@@ -1422,7 +1422,7 @@ void JDSStorage<ValueType>::jacobiIterateHalo(
 template<typename ValueType>
 ValueType JDSStorage<ValueType>::l1Norm() const
 {
-    LAMA_LOG_INFO( logger, *this << ": l1Norm()" )
+    SCAI_LOG_INFO( logger, *this << ": l1Norm()" )
 
     const IndexType n = mNumValues;
 
@@ -1447,7 +1447,7 @@ ValueType JDSStorage<ValueType>::l1Norm() const
 template<typename ValueType>
 ValueType JDSStorage<ValueType>::l2Norm() const
 {
-    LAMA_LOG_INFO( logger, *this << ": l2Norm()" )
+    SCAI_LOG_INFO( logger, *this << ": l2Norm()" )
 
     const IndexType n = mNumValues;
 
@@ -1472,7 +1472,7 @@ ValueType JDSStorage<ValueType>::l2Norm() const
 template<typename ValueType>
 ValueType JDSStorage<ValueType>::maxNorm() const
 {
-    LAMA_LOG_INFO( logger, *this << ": maxNorm()" )
+    SCAI_LOG_INFO( logger, *this << ": maxNorm()" )
 
     const IndexType n = mNumValues;
 

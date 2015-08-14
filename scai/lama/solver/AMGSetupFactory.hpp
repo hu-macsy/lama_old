@@ -152,7 +152,7 @@ private:
 
     mutable std::string mDefaultAMGSetupType; // name of the default AMG setup
 
-    LAMA_LOG_DECL_STATIC_LOGGER( logger )
+    SCAI_LOG_DECL_STATIC_LOGGER( logger )
 };
 
 }

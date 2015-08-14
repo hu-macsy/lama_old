@@ -65,7 +65,7 @@ using common::shared_ptr;
 
 /* --------------------------------------------------------------------------- */
 
-LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, DIAStorage<ValueType>::logger, "MatrixStorage.DIAStorage" )
+SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, DIAStorage<ValueType>::logger, "MatrixStorage.DIAStorage" )
 
 /* --------------------------------------------------------------------------- */
 
@@ -74,7 +74,7 @@ DIAStorage<ValueType>::DIAStorage( const IndexType numRows, const IndexType numC
 
     : CRTPMatrixStorage<DIAStorage<ValueType>,ValueType>( numRows, numColumns ), mNumDiagonals( 0 )
 {
-    LAMA_LOG_DEBUG( logger, "DIAStorage for matrix " << mNumRows << " x " << mNumColumns << ", no non-zero elements" )
+    SCAI_LOG_DEBUG( logger, "DIAStorage for matrix " << mNumRows << " x " << mNumColumns << ", no non-zero elements" )
 }
 
 /* --------------------------------------------------------------------------- */
@@ -83,7 +83,7 @@ template<typename ValueType>
 DIAStorage<ValueType>::DIAStorage()
     : CRTPMatrixStorage<DIAStorage<ValueType>,ValueType>( 0, 0 ), mNumDiagonals( 0 )
 {
-    LAMA_LOG_DEBUG( logger, "DIAStorage, matrix is 0 x 0." )
+    SCAI_LOG_DEBUG( logger, "DIAStorage, matrix is 0 x 0." )
 }
 
 /* --------------------------------------------------------------------------- */
@@ -333,9 +333,9 @@ void DIAStorage<ValueType>::scaleImpl( const LAMAArray<OtherType>& diagonal )
         }
     }
 
-    if( LAMA_LOG_TRACE_ON( logger ) )
+    if( SCAI_LOG_TRACE_ON( logger ) )
     {
-        LAMA_LOG_TRACE( logger, "DIA after scale diagonal" )
+        SCAI_LOG_TRACE( logger, "DIA after scale diagonal" )
         print();
     }
 }
@@ -371,7 +371,7 @@ bool DIAStorage<ValueType>::checkDiagonalProperty() const
         diagonalProperty = offset[0] == 0;
     }
 
-    LAMA_LOG_INFO( logger, *this << ": checkDiagonalProperty -> " << diagonalProperty )
+    SCAI_LOG_INFO( logger, *this << ": checkDiagonalProperty -> " << diagonalProperty )
 
     return diagonalProperty;
 }
@@ -396,7 +396,7 @@ void DIAStorage<ValueType>::check( const char* /* msg */) const
 template<typename ValueType>
 void DIAStorage<ValueType>::setIdentity( const IndexType size )
 {
-    LAMA_LOG_DEBUG( logger, "set identity, size = " << size )
+    SCAI_LOG_DEBUG( logger, "set identity, size = " << size )
 
     mNumRows = size;
     mNumColumns = size;
@@ -476,7 +476,7 @@ void DIAStorage<ValueType>::buildCSR(
 
     // TODO all done on host, so loc is unused
 
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "buildTypedCSRData<" << common::getScalarType<OtherValueType>() << ">" << " from DIA<" << common::getScalarType<ValueType>() << "> = " << *this << ", diagonal property = " << mDiagonalProperty )
 
     ReadAccess<IndexType> diaOffsets( mOffset );
@@ -497,7 +497,7 @@ void DIAStorage<ValueType>::buildCSR(
 
     IndexType numValues = OpenMPCSRUtils::sizes2offsets( csrIA.get(), mNumRows );
 
-    LAMA_LOG_INFO( logger, "CSR: #non-zero values = " << numValues )
+    SCAI_LOG_INFO( logger, "CSR: #non-zero values = " << numValues )
 
     WriteOnlyAccess<IndexType> csrJA( *ja, numValues );
     WriteOnlyAccess<OtherValueType> csrValues( *values, numValues );
@@ -529,7 +529,7 @@ void DIAStorage<ValueType>::setCSRDataImpl(
 
     _MatrixStorage::setDimension( numRows, numColumns );
 
-    LAMA_LOG_DEBUG( logger, "fill DIA sparse matrix " << mNumRows << " x " << mNumColumns << " from csr data" )
+    SCAI_LOG_DEBUG( logger, "fill DIA sparse matrix " << mNumRows << " x " << mNumColumns << " from csr data" )
 
     // build a set of all used lower and upper diagonals
 
@@ -631,7 +631,7 @@ void DIAStorage<ValueType>::setOffsets(
         }
     }
 
-    LAMA_LOG_INFO( logger, "storage data requires " << mNumDiagonals << " diagonals a " << mNumRows << " values" )
+    SCAI_LOG_INFO( logger, "storage data requires " << mNumDiagonals << " diagonals a " << mNumRows << " values" )
 
     WriteOnlyAccess<IndexType> wOffset( mOffset, mNumDiagonals );
 
@@ -654,7 +654,7 @@ void DIAStorage<ValueType>::setOffsets(
             }
         }
 
-        LAMA_LOG_INFO( logger, "lower diagonals = " << mNumDiagonals )
+        SCAI_LOG_INFO( logger, "lower diagonals = " << mNumDiagonals )
 
         for( IndexType i = firstIndex; i < maxNumDiagonals; i++ )
         {
@@ -664,7 +664,7 @@ void DIAStorage<ValueType>::setOffsets(
             }
         }
 
-        LAMA_LOG_INFO( logger, "lower + upper diagonals = " << mNumDiagonals )
+        SCAI_LOG_INFO( logger, "lower + upper diagonals = " << mNumDiagonals )
     }
 
     LAMA_ASSERT_EQUAL_DEBUG( mNumDiagonals, wOffset.size() )
@@ -675,7 +675,7 @@ void DIAStorage<ValueType>::setOffsets(
 template<typename ValueType>
 DIAStorage<ValueType>::~DIAStorage()
 {
-    LAMA_LOG_DEBUG( logger,
+    SCAI_LOG_DEBUG( logger,
                     "~DIAStorage for matrix " << mNumRows << " x " << mNumColumns << ", # diags = " << mNumDiagonals )
 }
 
@@ -699,7 +699,7 @@ void DIAStorage<ValueType>::purge()
 template<typename ValueType>
 void DIAStorage<ValueType>::allocate( IndexType numRows, IndexType numColumns )
 {
-    LAMA_LOG_INFO( logger, "allocate DIA sparse matrix of size " << numRows << " x " << numColumns )
+    SCAI_LOG_INFO( logger, "allocate DIA sparse matrix of size " << numRows << " x " << numColumns )
 
     clear();
 
@@ -726,7 +726,7 @@ void DIAStorage<ValueType>::writeAt( std::ostream& stream ) const
 template<typename ValueType>
 ValueType DIAStorage<ValueType>::l1Norm() const
 {
-    LAMA_LOG_INFO( logger, *this << ": l1Norm()" )
+    SCAI_LOG_INFO( logger, *this << ": l1Norm()" )
 
     ContextPtr loc = getContextPtr();
 
@@ -744,7 +744,7 @@ ValueType DIAStorage<ValueType>::l1Norm() const
 template<typename ValueType>
 ValueType DIAStorage<ValueType>::l2Norm() const
 {
-    LAMA_LOG_INFO( logger, *this << ": l2Norm()" )
+    SCAI_LOG_INFO( logger, *this << ": l2Norm()" )
 
     ContextPtr loc = getContextPtr();
 
@@ -762,7 +762,7 @@ ValueType DIAStorage<ValueType>::l2Norm() const
 template<typename ValueType>
 ValueType DIAStorage<ValueType>::maxNorm() const
 {
-    LAMA_LOG_INFO( logger, *this << ": maxNorm()" )
+    SCAI_LOG_INFO( logger, *this << ": maxNorm()" )
 
     ContextPtr loc = getContextPtr();
 
@@ -783,7 +783,7 @@ ValueType DIAStorage<ValueType>::maxNorm() const
 template<typename ValueType>
 ValueType DIAStorage<ValueType>::getValue( const IndexType i, const IndexType j ) const
 {
-    LAMA_LOG_DEBUG( logger, "get value (" << i << ", " << j << ") from " << *this )
+    SCAI_LOG_DEBUG( logger, "get value (" << i << ", " << j << ") from " << *this )
 
     const ReadAccess<IndexType> offset( mOffset );
 
@@ -796,7 +796,7 @@ ValueType DIAStorage<ValueType>::getValue( const IndexType i, const IndexType j 
         if( i + offset[d] == j )
         {
             const ReadAccess<ValueType> values( mValues );
-            LAMA_LOG_DEBUG( logger,
+            SCAI_LOG_DEBUG( logger,
                             "get value (" << i << ", " << j << ") is diag = " << d << ", offset = " << offset[d] << ", index = " << diaindex( i, d, mNumRows, mNumColumns ) )
             myValue = values[diaindex( i, d, mNumRows, mNumDiagonals )];
             break;
@@ -886,7 +886,7 @@ void DIAStorage<ValueType>::matrixTimesVector(
 
     ContextPtr loc = getContextPtr();
 
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "Computing z = " << alpha << " * A * x + " << beta << " * y, with A = " << *this << ", x = " << x << ", y = " << y << ", z = " << result << " on " << *loc )
 
     LAMA_ASSERT_EQUAL_ERROR( x.size(), mNumColumns )
@@ -903,7 +903,7 @@ void DIAStorage<ValueType>::matrixTimesVector(
 
     if( &result == &y )
     {
-        LAMA_LOG_DEBUG( logger, "result == y" )
+        SCAI_LOG_DEBUG( logger, "result == y" )
 
         // only write access for y, no read access for result
 
@@ -918,7 +918,7 @@ void DIAStorage<ValueType>::matrixTimesVector(
     }
     else
     {
-        LAMA_LOG_DEBUG( logger, "result != y" )
+        SCAI_LOG_DEBUG( logger, "result != y" )
 
         WriteOnlyAccess<ValueType> wResult( result, loc, mNumRows );
         ReadAccess<ValueType> rY( y, loc );
@@ -940,7 +940,7 @@ void DIAStorage<ValueType>::vectorTimesMatrix(
     const ValueType beta,
     const LAMAArray<ValueType>& y ) const
 {
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    *this << ": vectorTimesMatrix, result = " << result << ", alpha = " << alpha << ", x = " << x << ", beta = " << beta << ", y = " << y )
 
     LAMA_REGION( "Storage.DIA.VectorTimesMatrix" )
@@ -955,7 +955,7 @@ void DIAStorage<ValueType>::vectorTimesMatrix(
 
     ContextPtr loc = getContextPtr();
 
-    LAMA_LOG_INFO( logger, *this << ": vectorTimesMatrix on " << *loc )
+    SCAI_LOG_INFO( logger, *this << ": vectorTimesMatrix on " << *loc )
 
     LAMA_INTERFACE_FN_DEFAULT_T( normalGEVM, loc, DIAUtils, Mult, ValueType )
 
@@ -1029,7 +1029,7 @@ SyncToken* DIAStorage<ValueType>::matrixTimesVectorAsync(
 
     // logging + checks not needed when started as a task
 
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "Start z = " << alpha << " * A * x + " << beta << " * y, with A = " << *this << ", x = " << x << ", y = " << y << ", z = " << result << " on " << *loc )
 
     LAMA_ASSERT_EQUAL_ERROR( x.size(), mNumColumns )
@@ -1049,7 +1049,7 @@ SyncToken* DIAStorage<ValueType>::matrixTimesVectorAsync(
 
     if( &result == &y )
     {
-        LAMA_LOG_DEBUG( logger, "result == y" )
+        SCAI_LOG_DEBUG( logger, "result == y" )
 
         // only write access for y, no read access for result
 
@@ -1066,7 +1066,7 @@ SyncToken* DIAStorage<ValueType>::matrixTimesVectorAsync(
     }
     else
     {
-        LAMA_LOG_DEBUG( logger, "result != y" )
+        SCAI_LOG_DEBUG( logger, "result != y" )
 
         shared_ptr<WriteOnlyAccess<ValueType> > wResult( new WriteOnlyAccess<ValueType>( result, loc, mNumRows ) );
         shared_ptr<ReadAccess<ValueType> > rY( new ReadAccess<ValueType>( y, loc ) );
@@ -1097,7 +1097,7 @@ SyncToken* DIAStorage<ValueType>::vectorTimesMatrixAsync(
     const ValueType beta,
     const LAMAArray<ValueType>& y ) const
 {
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    *this << ": vectorTimesMatrixAsync, result = " << result << ", alpha = " << alpha << ", x = " << x << ", beta = " << beta << ", y = " << y )
 
     LAMA_REGION( "Storage.DIA.vectorTimesMatrixAsync" )
@@ -1107,7 +1107,7 @@ SyncToken* DIAStorage<ValueType>::vectorTimesMatrixAsync(
     // Note: checks will be done by asynchronous task in any case
     //       and exception in tasks are handled correctly
 
-    LAMA_LOG_INFO( logger, *this << ": vectorTimesMatrixAsync on " << *loc )
+    SCAI_LOG_INFO( logger, *this << ": vectorTimesMatrixAsync on " << *loc )
 
     if( loc->getType() == context::Host )
     {
@@ -1126,7 +1126,7 @@ SyncToken* DIAStorage<ValueType>::vectorTimesMatrixAsync(
         using common::ref;
         using common::cref;
 
-        LAMA_LOG_INFO( logger, *this << ": vectorTimesMatrixAsync on Host by own thread" )
+        SCAI_LOG_INFO( logger, *this << ": vectorTimesMatrixAsync on Host by own thread" )
 
         return new TaskSyncToken( bind( pf, this, ref( result ), alpha, cref( x ), beta, cref( y ) ) );
     }
@@ -1198,7 +1198,7 @@ void DIAStorage<ValueType>::jacobiIterate(
     const LAMAArray<ValueType>& rhs,
     const ValueType omega ) const
 {
-    LAMA_LOG_INFO( logger, *this << ": Jacobi iteration for local matrix data." )
+    SCAI_LOG_INFO( logger, *this << ": Jacobi iteration for local matrix data." )
 
     LAMA_ASSERT_ERROR( mDiagonalProperty, *this << ": jacobiIterate requires diagonal property" )
 

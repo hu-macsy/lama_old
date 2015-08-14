@@ -39,7 +39,7 @@
 using namespace common;
 using namespace tasking;
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.ThreadPoolTest" )
+SCAI_LOG_DEF_LOGGER( logger, "Test.ThreadPoolTest" )
 
 /** Maximal number of threads in the pool. */
 
@@ -86,7 +86,7 @@ void work( const int in, int& out )
 
 void runTest()
 {
-    LAMA_LOG_INFO( logger, "runTest" );
+    SCAI_LOG_INFO( logger, "runTest" );
     LAMA_REGION( "runTest" )
     int thread_sizes[] = POOL_SIZES;
     int thread_configs = sizeof( thread_sizes ) / sizeof( int );
@@ -129,7 +129,7 @@ void runTest()
 
 void waitTest()
 {
-    LAMA_LOG_INFO( logger, "waitTest" );
+    SCAI_LOG_INFO( logger, "waitTest" );
     LAMA_REGION( "waitTest" )
     int thread_sizes[] = POOL_SIZES;
     int thread_configs = sizeof( thread_sizes ) / sizeof( int );
@@ -166,10 +166,10 @@ void waitTest()
 
 void singleTest()
 {
-    LAMA_LOG_THREAD( "main:singleTest" )
+    SCAI_LOG_THREAD( "main:singleTest" )
 
     LAMA_REGION( "singleTest" )
-    LAMA_LOG_INFO( logger, "singleTest" );
+    SCAI_LOG_INFO( logger, "singleTest" );
     // Extensive test of a thread pool with one thread
     // Should verify that master never misses a notify at wait
     ThreadPool pool( 1 );

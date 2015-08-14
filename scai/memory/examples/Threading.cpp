@@ -43,7 +43,7 @@ using namespace tasking;
 
 /* --------------------------------------------------------------------- */
 
-LAMA_LOG_DEF_LOGGER( logger, "Threading" )
+SCAI_LOG_DEF_LOGGER( logger, "Threading" )
 
 using namespace memory;
 
@@ -52,7 +52,7 @@ void readJob( LAMAArray<double>& X )
     ReadAccess<double> read( X );
     const double* data = read.get();
     double s = data[0];
-    LAMA_LOG_INFO( logger, "Do Read job, size = " << X.size() << ", val = " << s )
+    SCAI_LOG_INFO( logger, "Do Read job, size = " << X.size() << ", val = " << s )
     int error = 0;
 
     for ( int k = 0; k < 100; ++k )
@@ -65,7 +65,7 @@ void readJob( LAMAArray<double>& X )
             {
                 if ( error < 5 )
                 {
-                    LAMA_LOG_ERROR( logger, "Read error at i = " << i << ", is " << v << ", expected " << s )
+                    SCAI_LOG_ERROR( logger, "Read error at i = " << i << ", is " << v << ", expected " << s )
                 }
 
                 ++error;
@@ -82,7 +82,7 @@ void writeJob( LAMAArray<double>& X )
  
     double* data = write.get();
 
-    LAMA_LOG_INFO( logger, "Do Write job, size = " << write.size() << ", val = " << data[0] )
+    SCAI_LOG_INFO( logger, "Do Write job, size = " << write.size() << ", val = " << data[0] )
 
     for ( int i = 0; i < write.size(); ++i )
     {
@@ -97,7 +97,7 @@ void job( LAMAArray<double>* X )
 
     try
     {
-        LAMA_LOG_INFO( logger, "job, r = " << r << ", kind = " << kind << ", X = " << X )
+        SCAI_LOG_INFO( logger, "job, r = " << r << ", kind = " << kind << ", X = " << X )
 
         if ( kind > 0 )
         {
@@ -108,19 +108,19 @@ void job( LAMAArray<double>* X )
             writeJob( *X );
         }
 
-        LAMA_LOG_INFO( logger, "job, r = " << r << ", kind = " << kind << ", finished" )
+        SCAI_LOG_INFO( logger, "job, r = " << r << ", kind = " << kind << ", finished" )
     }
     catch ( common::Exception ex )
     {
-        LAMA_LOG_ERROR( logger, "job, r = " << r << ", kind = " << kind << ", caught exception: " << ex.what() )
+        SCAI_LOG_ERROR( logger, "job, r = " << r << ", kind = " << kind << ", caught exception: " << ex.what() )
     }
 }
 using namespace tasking;
 int main()
 {
-    LAMA_LOG_THREAD( "main" )
+    SCAI_LOG_THREAD( "main" )
     LAMAArray<double> X( 100000, 10 );
-    LAMA_LOG_INFO( logger, "X = " << X << " at " << ( &X ) )
+    SCAI_LOG_INFO( logger, "X = " << X << " at " << ( &X ) )
     tasking::ThreadPool pool( 10 );
 
     for ( int k = 0; k < 100; ++k )
@@ -128,7 +128,7 @@ int main()
         pool.schedule( common::bind( &job, &X )  );
     }
 
-    LAMA_LOG_INFO( logger, "synchronize" )
+    SCAI_LOG_INFO( logger, "synchronize" )
 
     // Wait on pool until all tasks are finished
 

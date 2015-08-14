@@ -102,7 +102,7 @@ static int lapack_order( const CBLAS_ORDER order )
 
 /* ------------------------------------------------------------------------- */
 
-LAMA_LOG_DEF_LOGGER( LAPACKe_LAPACK::logger, "LAPACKe.LAPACK" )
+SCAI_LOG_DEF_LOGGER( LAPACKe_LAPACK::logger, "LAPACKe.LAPACK" )
 
 /* ------------------------------------------------------------------------- */
 /*      getrf<float>                                                         */
@@ -117,7 +117,7 @@ IndexType LAPACKe_LAPACK::getrf(
     const int lda,
     int* const ipiv )
 {
-    LAMA_LOG_INFO( logger, "getrf<float> for A of size " << m << " x " << n )
+    SCAI_LOG_INFO( logger, "getrf<float> for A of size " << m << " x " << n )
 
     int info = LAPACKE_sgetrf( lapack_order( order ), m, n, A, lda, ipiv );
 
@@ -146,7 +146,7 @@ IndexType LAPACKe_LAPACK::getrf(
     const int lda,
     int* const ipiv )
 {
-    LAMA_LOG_INFO( logger, "getrf<double> for A of size " << m << " x " << n )
+    SCAI_LOG_INFO( logger, "getrf<double> for A of size " << m << " x " << n )
 
     int matrix_order = lapack_order( order );
 
@@ -177,7 +177,7 @@ IndexType LAPACKe_LAPACK::getrf(
     const int lda,
     int* const ipiv )
 {
-    LAMA_LOG_INFO( logger, "getrf<ComplexFloat> for a of size " << m << " x " << n )
+    SCAI_LOG_INFO( logger, "getrf<ComplexFloat> for a of size " << m << " x " << n )
 
     int info = LAPACKE_cgetrf( lapack_order( order ), m, n, mklCast( a ), lda, ipiv );
 
@@ -206,7 +206,7 @@ IndexType LAPACKe_LAPACK::getrf(
     const int lda,
     int* const ipiv )
 {
-    LAMA_LOG_INFO( logger, "getrf<ComplexFloat> for a of size " << m << " x " << n )
+    SCAI_LOG_INFO( logger, "getrf<ComplexFloat> for a of size " << m << " x " << n )
 
     int info = LAPACKE_zgetrf( lapack_order( order ), m, n, mklCast( a ), lda, ipiv );
 
@@ -246,7 +246,7 @@ void LAPACKe_LAPACK::getinv( const IndexType n, float* a, const IndexType lda )
 
     scoped_array<IndexType> ipiv( new IndexType[n] );
 
-    LAMA_LOG_INFO( logger, "getinv<float> for " << n << " x " << n << " matrix, uses MKL" )
+    SCAI_LOG_INFO( logger, "getinv<float> for " << n << " x " << n << " matrix, uses MKL" )
 
     info = LAPACKE_sgetrf( LAPACK_COL_MAJOR, n, n, a, lda, ipiv.get() );
 
@@ -276,7 +276,7 @@ void LAPACKe_LAPACK::getinv( const IndexType n, double* a, const IndexType lda )
 
     scoped_array<IndexType> ipiv( new IndexType[n] );
 
-    LAMA_LOG_INFO( logger, "getinv<double> for " << n << " x " << n << " matrix, uses MKL" )
+    SCAI_LOG_INFO( logger, "getinv<double> for " << n << " x " << n << " matrix, uses MKL" )
 
     int matrix_order = LAPACK_COL_MAJOR;
 
@@ -310,7 +310,7 @@ void LAPACKe_LAPACK::getinv( const IndexType n, ComplexFloat* a, const IndexType
 
     scoped_array<IndexType> ipiv( new IndexType[n] );
 
-    LAMA_LOG_INFO( logger, "getinv<ComplexFloat> for " << n << " x " << n << " matrix, uses MKL" )
+    SCAI_LOG_INFO( logger, "getinv<ComplexFloat> for " << n << " x " << n << " matrix, uses MKL" )
 
     info = LAPACKE_cgetrf( LAPACK_COL_MAJOR, n, n, mklCast( a ), lda, ipiv.get() );
 
@@ -351,7 +351,7 @@ void LAPACKe_LAPACK::getinv( const IndexType n, ComplexDouble* a, const IndexTyp
 
     scoped_array<IndexType> ipiv( new IndexType[n] );
 
-    LAMA_LOG_INFO( logger, "getinv<ComplexDouble> for " << n << " x " << n << " matrix, uses MKL" )
+    SCAI_LOG_INFO( logger, "getinv<ComplexDouble> for " << n << " x " << n << " matrix, uses MKL" )
 
     info = LAPACKE_zgetrf( LAPACK_COL_MAJOR, n, n, mklCast( a ), lda, ipiv.get() );
 
@@ -377,7 +377,7 @@ void LAPACKe_LAPACK::getinv( const IndexType n, ComplexDouble* a, const IndexTyp
 template<>
 int LAPACKe_LAPACK::getri( const CBLAS_ORDER order, const int n, float* const a, const int lda, int* const ipiv )
 {
-    LAMA_LOG_INFO( logger, "getri<float> for A of size " << n << " x " << n )
+    SCAI_LOG_INFO( logger, "getri<float> for A of size " << n << " x " << n )
 
     int matrix_order = lapack_order( order );
 
@@ -402,7 +402,7 @@ int LAPACKe_LAPACK::getri( const CBLAS_ORDER order, const int n, float* const a,
 template<>
 int LAPACKe_LAPACK::getri( const CBLAS_ORDER order, const int n, double* const a, const int lda, int* const ipiv )
 {
-    LAMA_LOG_INFO( logger, "getri<double> for A of size " << n << " x " << n )
+    SCAI_LOG_INFO( logger, "getri<double> for A of size " << n << " x " << n )
 
     int matrix_order = lapack_order( order );
 
@@ -427,7 +427,7 @@ int LAPACKe_LAPACK::getri( const CBLAS_ORDER order, const int n, double* const a
 template<>
 int LAPACKe_LAPACK::getri( const CBLAS_ORDER order, const int n, ComplexFloat* const a, const int lda, int* const ipiv )
 {
-    LAMA_LOG_INFO( logger, "getri<ComplexFloat> for A of size " << n << " x " << n )
+    SCAI_LOG_INFO( logger, "getri<ComplexFloat> for A of size " << n << " x " << n )
 
     int matrix_order = lapack_order( order );
 
@@ -457,7 +457,7 @@ int LAPACKe_LAPACK::getri(
     const int lda,
     int* const ipiv )
 {
-    LAMA_LOG_INFO( logger, "getri<ComplexDouble> for A of size " << n << " x " << n )
+    SCAI_LOG_INFO( logger, "getri<ComplexDouble> for A of size " << n << " x " << n )
 
     int matrix_order = lapack_order( order );
 
@@ -508,7 +508,7 @@ int LAPACKe_LAPACK::tptrs(
 
     int matrix_order = lapack_order( order );
 
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "tptrs<float>, n = " << n << ", nrhs = " << nrhs << ", order = " << matrix_order << ", UL = " << UL << ", TA = " << TA << ", DI = " << DI );
 
     LAMA_ASSERT_ERROR( ldb >= std::max( 1, n ), "ldb = " << ldb << " out of range" );
@@ -540,7 +540,7 @@ int LAPACKe_LAPACK::tptrs(
 
     int matrix_order = lapack_order( order );
 
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "tptrs<double>, n = " << n << ", nrhs = " << nrhs << ", order = " << matrix_order << ", UL = " << UL << ", TA = " << TA << ", DI = " << DI );
 
     int info = LAPACKE_dtptrs( matrix_order, UL, TA, DI, n, nrhs, AP, B, ldb );
@@ -570,7 +570,7 @@ int LAPACKe_LAPACK::tptrs(
 
     int matrix_order = lapack_order( order );
 
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "tptrs<ComplexFloat>, n = " << n << ", nrhs = " << nrhs << ", order = " << matrix_order << ", UL = " << UL << ", TA = " << TA << ", DI = " << DI );
 
     LAMA_ASSERT_ERROR( ldb >= std::max( 1, n ), "ldb = " << ldb << " out of range" );
@@ -602,7 +602,7 @@ int LAPACKe_LAPACK::tptrs(
 
     int matrix_order = lapack_order( order );
 
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "tptrs<ComplexDouble>, n = " << n << ", nrhs = " << nrhs << ", order = " << matrix_order << ", UL = " << UL << ", TA = " << TA << ", DI = " << DI );
 
     LAMA_ASSERT_ERROR( ldb >= std::max( 1, n ), "ldb = " << ldb << " out of range" );

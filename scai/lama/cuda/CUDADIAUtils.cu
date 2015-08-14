@@ -57,7 +57,7 @@ using common::getScalarType;
 namespace lama
 {
 
-    LAMA_LOG_DEF_LOGGER( CUDADIAUtils::logger, "CUDA.DIAUtils" )
+    SCAI_LOG_DEF_LOGGER( CUDADIAUtils::logger, "CUDA.DIAUtils" )
 
     /* --------------------------------------------------------------------------- */
 
@@ -463,7 +463,7 @@ namespace lama
     {
         LAMA_REGION( "CUDA.DIA.normalGEMV" )
 
-        LAMA_LOG_INFO( logger, "normalGEMV<" << getScalarType<ValueType>() << ">"
+        SCAI_LOG_INFO( logger, "normalGEMV<" << getScalarType<ValueType>() << ">"
                         << " result[ " << numRows << "] = " << alpha
                         << " * A( #diags = " << numDiagonals << " ) * x + " << beta << " * y " )
 
@@ -485,7 +485,7 @@ namespace lama
         const bool useSharedMem = CUDASettings::useSharedMem();
         const bool useTexture = CUDASettings::useTexture();
 
-        LAMA_LOG_INFO( logger, "Start normal_gemv_kernel<" << getScalarType<ValueType>()
+        SCAI_LOG_INFO( logger, "Start normal_gemv_kernel<" << getScalarType<ValueType>()
                         << "> <<< blockSize = " << blockSize << ", stream = " << stream
                         << ", useTexture = " << useTexture << ", useSharedMem = " << useSharedMem << ">>>" );
 
@@ -784,7 +784,7 @@ namespace lama
     {
         LAMA_REGION( "CUDA.DIA.normalGEVM" )
 
-        LAMA_LOG_INFO( logger, "normalGEVM<" << getScalarType<ValueType>() << ">"
+        SCAI_LOG_INFO( logger, "normalGEVM<" << getScalarType<ValueType>() << ">"
                         << " result[ " << numRows << "] = " << alpha
                         << " * A( #diags = " << numDiagonals << " ) * x + " << beta << " * y " )
 
@@ -806,7 +806,7 @@ namespace lama
         const bool useSharedMem = CUDASettings::useSharedMem();
         const bool useTexture = CUDASettings::useTexture();
 
-        LAMA_LOG_INFO( logger, "Start normal_gevm_kernel<" << getScalarType<ValueType>()
+        SCAI_LOG_INFO( logger, "Start normal_gevm_kernel<" << getScalarType<ValueType>()
                         << "> <<< blockSize = " << blockSize << ", stream = " << stream
                         << ", useTexture = " << useTexture << ", useSharedMem = " << useSharedMem << ">>>" );
 
@@ -890,7 +890,7 @@ namespace lama
 
     void CUDADIAUtils::setInterface( DIAUtilsInterface& DIAUtils )
     {
-        LAMA_LOG_INFO( logger, "set DIA routines for CUDA in Interface" )
+        SCAI_LOG_INFO( logger, "set DIA routines for CUDA in Interface" )
 
 #define LAMA_DIA_UTILS_REGISTER(z, I, _)                                                 \
     LAMA_INTERFACE_REGISTER_T( DIAUtils, normalGEMV, ARITHMETIC_TYPE##I )                \

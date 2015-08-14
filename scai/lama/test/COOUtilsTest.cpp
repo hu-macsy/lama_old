@@ -114,7 +114,7 @@ void offsets2iaTest( ContextPtr loc )
 
         for ( int i = 0; i < numValues; ++i )
         {
-            // LAMA_LOG_TRACE( logger,  "rIA[" << i << "] = " << rIA[i] << ", expects " << ia_values[i] )
+            // SCAI_LOG_TRACE( logger,  "rIA[" << i << "] = " << rIA[i] << ", expects " << ia_values[i] )
             BOOST_CHECK_EQUAL( rIA[i], ia_values[i] );
         }
     }
@@ -168,7 +168,7 @@ void setCSRDataTest( ContextPtr loc )
 
 BOOST_AUTO_TEST_SUITE( COOUtilsTest )
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.COOUtilsTest" )
+SCAI_LOG_DEF_LOGGER( logger, "Test.COOUtilsTest" )
 
 LAMA_AUTO_TEST_CASE_CTDUMMY( offsets2iaTest, COOUtilsTest )
 LAMA_AUTO_TEST_CASE_CTDUMMY( setCSRDataTest, COOUtilsTest )

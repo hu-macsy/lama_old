@@ -178,7 +178,7 @@ void typeNameTest()
 
 BOOST_AUTO_TEST_SUITE( CSRStorageTest )
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.CSRStorageTest" );
+SCAI_LOG_DEF_LOGGER( logger, "Test.CSRStorageTest" );
 LAMA_AUTO_TEST_CASE_CT( commonTestCases, CSRStorageTest )
 LAMA_AUTO_TEST_CASE_T( constructorTest, CSRStorageTest )
 LAMA_AUTO_TEST_CASE_CT( constructorTest1, CSRStorageTest )

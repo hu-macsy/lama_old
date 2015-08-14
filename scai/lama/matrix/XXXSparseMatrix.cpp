@@ -43,7 +43,7 @@ namespace lama
 
 /* -------------------------------------------------------------------------- */
 
-LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, XXXSparseMatrix<ValueType>::logger,
+SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, XXXSparseMatrix<ValueType>::logger,
                               "Matrix.SparseMatrix.XXXSparseMatrix" )
 
 /* -------------------------------------------------------------------------- */
@@ -72,7 +72,7 @@ XXXSparseMatrix<ValueType>::XXXSparseMatrix()
     : SparseMatrix<ValueType>( createStorage() )
 
 {
-    LAMA_LOG_INFO( logger, "XXXSparseMatrix()" )
+    SCAI_LOG_INFO( logger, "XXXSparseMatrix()" )
 }
 
 /* -------------------------------------------------------------------------- */
@@ -83,7 +83,7 @@ XXXSparseMatrix<ValueType>::XXXSparseMatrix( const IndexType numRows, const Inde
     : SparseMatrix<ValueType>( createStorage( numRows, numColumns ) )
 
 {
-    LAMA_LOG_INFO( logger, "XXXSparseMatrix( " << numRows << " x " << numColumns << " )" )
+    SCAI_LOG_INFO( logger, "XXXSparseMatrix( " << numRows << " x " << numColumns << " )" )
 }
 
 /* -------------------------------------------------------------------------- */
@@ -242,7 +242,7 @@ XXXSparseMatrix<ValueType>::XXXSparseMatrix( const std::string& filename )
 template<typename ValueType>
 XXXSparseMatrix<ValueType>::~XXXSparseMatrix()
 {
-    LAMA_LOG_INFO( logger, "~XXXSpareMatrix" )
+    SCAI_LOG_INFO( logger, "~XXXSpareMatrix" )
 }
 
 /* ---------------------------------------------------------------------------------------*/
@@ -250,7 +250,7 @@ XXXSparseMatrix<ValueType>::~XXXSparseMatrix()
 template<typename ValueType>
 XXXSparseMatrix<ValueType>& XXXSparseMatrix<ValueType>::operator=( const XXXSparseMatrix& matrix )
 {
-    LAMA_LOG_INFO( logger, "XXXSparseMatrix = XXXSparseMatrix : " << matrix )
+    SCAI_LOG_INFO( logger, "XXXSparseMatrix = XXXSparseMatrix : " << matrix )
     this->assign( matrix );
     return *this;
 }
@@ -334,7 +334,7 @@ XXXSparseMatrix<ValueType>* XXXSparseMatrix<ValueType>::clone() const
     newSparseMatrix->setContext( this->getContextPtr() );
     newSparseMatrix->setCommunicationKind( this->getCommunicationKind() );
 
-    LAMA_LOG_INFO( logger, "create is " << *newSparseMatrix )
+    SCAI_LOG_INFO( logger, "create is " << *newSparseMatrix )
 
     return newSparseMatrix;
 }
@@ -344,11 +344,11 @@ XXXSparseMatrix<ValueType>* XXXSparseMatrix<ValueType>::clone() const
 template<typename ValueType>
 XXXSparseMatrix<ValueType>* XXXSparseMatrix<ValueType>::copy() const
 {
-    LAMA_LOG_INFO( logger, "copy of " << *this )
+    SCAI_LOG_INFO( logger, "copy of " << *this )
 
     XXXSparseMatrix<ValueType>* newSparseMatrix = new XXXSparseMatrix<ValueType>( *this );
 
-    LAMA_LOG_INFO( logger, "copy is " << *newSparseMatrix )
+    SCAI_LOG_INFO( logger, "copy is " << *newSparseMatrix )
 
     return newSparseMatrix;
 }

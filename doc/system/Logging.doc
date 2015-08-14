@@ -26,7 +26,7 @@ can be enabled at runtime by setting the environment variable LOG4LAMA to the fi
 that contains the logger configuration.
 
 \code
-export LAMA_LOG=config
+export SCAI_LOG=config
 \endcode
 
 The configuration file looks as follows:

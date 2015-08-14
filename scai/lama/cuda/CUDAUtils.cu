@@ -60,7 +60,7 @@ using namespace memory;
 namespace lama
 {
 
-    LAMA_LOG_DEF_LOGGER( CUDAUtils::logger, "CUDA.Utils" )
+    SCAI_LOG_DEF_LOGGER( CUDAUtils::logger, "CUDA.Utils" )
 
     /* ------------------------------------------------------------------------------------------------------------------ */
     /*   Kernel used for scale, set, setScale                                                                             */
@@ -87,7 +87,7 @@ namespace lama
     template<typename ValueType>
     void CUDAUtils::scale( ValueType *values, const ValueType scale, const IndexType n )
     {
-        LAMA_LOG_INFO( logger, "scale, #n = " << n << ", scale = " << scale )
+        SCAI_LOG_INFO( logger, "scale, #n = " << n << ", scale = " << scale )
 
         if ( n == 0 )
         {
@@ -132,7 +132,7 @@ namespace lama
 
     bool CUDAUtils::validIndexes( const IndexType array[], const IndexType n, const IndexType size )
     {
-        LAMA_LOG_DEBUG( logger, "validIndexes: array[" << n << "], size " << size )
+        SCAI_LOG_DEBUG( logger, "validIndexes: array[" << n << "], size " << size )
 
         bool validFlag = true;
 
@@ -166,7 +166,7 @@ namespace lama
     template<typename ValueType>
     ValueType CUDAUtils::sum( const ValueType array[], const IndexType n )
     {
-        LAMA_LOG_INFO( logger, "sum # array = " << array << ", n = " << n )
+        SCAI_LOG_INFO( logger, "sum # array = " << array << ", n = " << n )
 
         LAMA_CHECK_CUDA_ACCESS
 
@@ -178,7 +178,7 @@ namespace lama
 
         LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
 
-        LAMA_LOG_INFO( logger, "sum of " << n << " values = " << result )
+        SCAI_LOG_INFO( logger, "sum of " << n << " values = " << result )
 
         return result;
     }
@@ -188,7 +188,7 @@ namespace lama
     template<typename ValueType>
     void CUDAUtils::setVal( ValueType array[], const IndexType n, const ValueType val )
     {
-        LAMA_LOG_INFO( logger, "setVal # array = " << array << ", n = " << n << ", val = " << val )
+        SCAI_LOG_INFO( logger, "setVal # array = " << array << ", n = " << n << ", val = " << val )
 
         LAMA_CHECK_CUDA_ACCESS
 
@@ -206,7 +206,7 @@ namespace lama
     template<typename ValueType>
     void CUDAUtils::setOrder( ValueType array[], const IndexType n )
     {
-        LAMA_LOG_INFO( logger, "setOrder # array = " << array << ", n = " << n )
+        SCAI_LOG_INFO( logger, "setOrder # array = " << array << ", n = " << n )
         LAMA_CHECK_CUDA_ACCESS
 
         thrust::device_ptr<ValueType> array_ptr( const_cast<ValueType*>( array ) );
@@ -220,7 +220,7 @@ namespace lama
     template<typename ValueType>
     ValueType CUDAUtils::getValue( const ValueType* array, const IndexType i )
     {
-        LAMA_LOG_INFO( logger, "getValue # i = " << i )
+        SCAI_LOG_INFO( logger, "getValue # i = " << i )
         LAMA_CHECK_CUDA_ACCESS
 
         thrust::device_ptr<ValueType> arrayPtr( const_cast<ValueType*>( array ) );
@@ -234,7 +234,7 @@ namespace lama
     template<typename ValueType>
     ValueType CUDAUtils::maxval( const ValueType array[], const IndexType n )
     {
-        LAMA_LOG_INFO( logger, "maxval for " << n << " elements " )
+        SCAI_LOG_INFO( logger, "maxval for " << n << " elements " )
 
         LAMA_CHECK_CUDA_ACCESS
 
@@ -244,7 +244,7 @@ namespace lama
 
         LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
 
-        LAMA_LOG_INFO( logger, "max of " << n << " values = " << result )
+        SCAI_LOG_INFO( logger, "max of " << n << " values = " << result )
 
         return result;
     }
@@ -265,7 +265,7 @@ namespace lama
     template<typename ValueType>
     ValueType CUDAUtils::absMaxVal( const ValueType array[], const IndexType n )
     {
-        LAMA_LOG_INFO( logger, "absMaxVal for " << n << " elements " )
+        SCAI_LOG_INFO( logger, "absMaxVal for " << n << " elements " )
 
         LAMA_CHECK_CUDA_ACCESS
 
@@ -278,7 +278,7 @@ namespace lama
 
         LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
 
-        LAMA_LOG_INFO( logger, "abs max of " << n << " values = " << result )
+        SCAI_LOG_INFO( logger, "abs max of " << n << " values = " << result )
 
         return result;
     }
@@ -288,7 +288,7 @@ namespace lama
     template<typename ValueType>
     ValueType CUDAUtils::absMaxDiffVal( const ValueType array1[], const ValueType array2[], const IndexType n )
     {
-        LAMA_LOG_INFO( logger, "absMaxDiffVal for " << n << " elements " )
+        SCAI_LOG_INFO( logger, "absMaxDiffVal for " << n << " elements " )
 
         LAMA_CHECK_CUDA_ACCESS
 
@@ -317,7 +317,7 @@ namespace lama
 
         LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" )
 
-        LAMA_LOG_INFO( logger, "abs max diff of " << n << " values = " << result )
+        SCAI_LOG_INFO( logger, "abs max diff of " << n << " values = " << result )
 
         return result;
     }
@@ -347,7 +347,7 @@ namespace lama
     template<typename ValueType>
     bool CUDAUtils::isSorted( const ValueType array[], const IndexType n, bool ascending )
     {
-        LAMA_LOG_INFO( logger, "isSorted<" << getScalarType<ValueType>()
+        SCAI_LOG_INFO( logger, "isSorted<" << getScalarType<ValueType>()
                         << ">, n = " << n << ", ascending = " << ascending )
 
         LAMA_CHECK_CUDA_ACCESS
@@ -402,7 +402,7 @@ namespace lama
     template<typename ValueType1,typename ValueType2>
     void CUDAUtils::setGather( ValueType1 out[], const ValueType2 in[], const IndexType indexes[], const IndexType n )
     {
-        LAMA_LOG_INFO( logger,
+        SCAI_LOG_INFO( logger,
                         "setGather<" << getScalarType<ValueType1>() << "," << getScalarType<ValueType2>() << ">( ..., n = " << n << ")" )
 
         LAMA_CHECK_CUDA_ACCESS
@@ -433,7 +433,7 @@ namespace lama
     template<typename ValueType1,typename ValueType2>
     void CUDAUtils::setScatter( ValueType1 out[], const IndexType indexes[], const ValueType2 in[], const IndexType n )
     {
-        LAMA_LOG_INFO( logger,
+        SCAI_LOG_INFO( logger,
                         "setScatter<" << getScalarType<ValueType1>() << "," << getScalarType<ValueType2>() << ">( ..., n = " << n << ")" )
 
         LAMA_CHECK_CUDA_ACCESS
@@ -464,10 +464,10 @@ namespace lama
     template<typename ValueType1,typename ValueType2>
     void CUDAUtils::set( ValueType1 out[], const ValueType2 in[], const IndexType n )
     {
-        LAMA_LOG_INFO( logger,
+        SCAI_LOG_INFO( logger,
                         "set<" << getScalarType<ValueType1>() << "," << getScalarType<ValueType2>() << ">( ..., n = " << n << ")" )
 
-        LAMA_LOG_DEBUG( logger, "out = " << out << ", in = " << in )
+        SCAI_LOG_DEBUG( logger, "out = " << out << ", in = " << in )
 
         if ( n <= 0 )
         {
@@ -492,10 +492,10 @@ namespace lama
                     const ValueType1 beta,
                     const ValueType2 in[], const IndexType n )
     {
-        LAMA_LOG_INFO( logger,
+        SCAI_LOG_INFO( logger,
                         "set<" << getScalarType<ValueType1>() << "," << getScalarType<ValueType2>() << ">( ..., n = " << n << ")" )
 
-        LAMA_LOG_DEBUG( logger, "out = " << out << ", in = " << in )
+        SCAI_LOG_DEBUG( logger, "out = " << out << ", in = " << in )
 
         if ( n <= 0 )
         {
@@ -542,7 +542,7 @@ namespace lama
     template<typename ValueType>
     void CUDAUtils::invert( ValueType array[], const IndexType n )
     {
-        LAMA_LOG_INFO( logger,
+        SCAI_LOG_INFO( logger,
                         "invert Vector components for vector of type " << getScalarType<ValueType>() << " and size n = " << n << "." )
 
         if ( n <= 0 )
@@ -567,7 +567,7 @@ namespace lama
 
     void CUDAUtils::setInterface( UtilsInterface& Utils )
     {
-        LAMA_LOG_INFO( logger, "set general utilty routines for CUDA in Interface" )
+        SCAI_LOG_INFO( logger, "set general utilty routines for CUDA in Interface" )
 
         LAMA_INTERFACE_REGISTER( Utils, validIndexes )
 

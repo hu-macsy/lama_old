@@ -45,7 +45,7 @@ using namespace common;
 namespace lama
 {
 
-LAMA_LOG_DEF_LOGGER( Matrix::logger, "Matrix" )
+SCAI_LOG_DEF_LOGGER( Matrix::logger, "Matrix" )
 
 /* ---------------------------------------------------------------------------------------*/
 /*    Factory to create a matrix                                                          */
@@ -56,7 +56,7 @@ Matrix* Matrix::getMatrix( const MatrixStorageFormat format, common::ScalarType 
     using ::operator<<;   // important to make operator<< outside this namespace available
 
     MatrixCreateKeyType val( format, type );
-    LAMA_LOG_INFO( logger, "getMatrix uses Factory::create " << val )
+    SCAI_LOG_INFO( logger, "getMatrix uses Factory::create " << val )
     return create( val );
 }
 
@@ -70,7 +70,7 @@ Matrix::Matrix( const Matrix& other ) :
     mNumColumns( other.mNumColumns ), 
     mCommunicationKind( other.mCommunicationKind )
 {
-    LAMA_LOG_INFO( logger, "Creating copy of " << other << " with same distributions." )
+    SCAI_LOG_INFO( logger, "Creating copy of " << other << " with same distributions." )
 }
 
 /* ----------------------------------------------------------------------- */
@@ -87,7 +87,7 @@ Matrix::Matrix( const Matrix& other, DistributionPtr rowDist, DistributionPtr co
 
     checkSettings();
 
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "Creating copy of " << other << " with new distributions: " << "row = " << getDistribution() << ", col = " << getColDistribution() )
 }
 
@@ -102,7 +102,7 @@ Matrix::Matrix( const IndexType numRows, const IndexType numColumns ) :
 {
     setDefaultKind();
 
-    LAMA_LOG_INFO( logger, "Creating a replicated Matrix of size " << mNumRows << " x " << mNumColumns )
+    SCAI_LOG_INFO( logger, "Creating a replicated Matrix of size " << mNumRows << " x " << mNumColumns )
 }
 
 /* ----------------------------------------------------------------------- */
@@ -145,7 +145,7 @@ Matrix::Matrix( DistributionPtr rowDistribution, DistributionPtr colDistribution
 
     setDefaultKind();
 
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "Construct a Matrix of size " << mNumRows << " x " << mNumColumns << " with the distribution " << getDistribution() )
 
     checkSettings();
@@ -156,7 +156,7 @@ Matrix::Matrix( DistributionPtr distribution )
 {
     setDistributedMatrix( distribution, distribution );
 
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "Construct a square Matrix of size " << mNumRows << " x " << mNumColumns << " with the row/col distribution " << getDistribution() )
 
     checkSettings();
@@ -171,7 +171,7 @@ Matrix::Matrix()
 
 Matrix::~Matrix()
 {
-    LAMA_LOG_DEBUG( logger, "~Matrix" )
+    SCAI_LOG_DEBUG( logger, "~Matrix" )
 }
 
 void Matrix::setDefaultKind()
@@ -222,7 +222,7 @@ Vector* Matrix::createDenseVector( DistributionPtr distribution, const Scalar va
 {
     common::ScalarType matrixValueType = getValueType();
 
-    LAMA_LOG_INFO( logger, "create vector of type " << matrixValueType )
+    SCAI_LOG_INFO( logger, "create vector of type " << matrixValueType )
 
     switch ( matrixValueType )
     {
@@ -262,7 +262,7 @@ void Matrix::setContext( ContextPtr localContext, ContextPtr haloContext )
 
     if ( localContext.get() != haloContext.get() )
     {
-        LAMA_LOG_WARN( logger, *this << ": halo context = " << *haloContext << " ignored" )
+        SCAI_LOG_WARN( logger, *this << ": halo context = " << *haloContext << " ignored" )
     }
 
     setContext( localContext );
@@ -289,11 +289,11 @@ Matrix& Matrix::operator=( const Matrix& other )
 {
     // assignment operator is just implemented by the assign method
 
-    LAMA_LOG_INFO( logger, *this << ": operator = " << other )
+    SCAI_LOG_INFO( logger, *this << ": operator = " << other )
 
     this->assign( other );
 
-    LAMA_LOG_INFO( logger, *this << ": end operator = " << other )
+    SCAI_LOG_INFO( logger, *this << ": end operator = " << other )
 
     return *this;
 }
@@ -507,7 +507,7 @@ Matrix& Matrix::operator=( const Expression_SMM_SM& exp )
     const Scalar& alpha = arg11.getArg1();
     const Scalar& beta = arg2.getArg1();
 
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "operator=:  " << alpha << " * A * B  + " << beta << " * C" " with A = " << A << ", B = " << B << ", C = " << C )
 
     const Scalar zero( 0 );
@@ -521,13 +521,13 @@ Matrix& Matrix::operator=( const Expression_SMM_SM& exp )
         sanityCheck( Expression<Matrix, Matrix, Times>( A, B ), C );
     }
 
-    LAMA_LOG_INFO( logger, "Context of this before matrixTimesMatrix = " << this->getContext() )
+    SCAI_LOG_INFO( logger, "Context of this before matrixTimesMatrix = " << this->getContext() )
 
     A.matrixTimesMatrix( *this, alpha, B, beta, C );
 
-    LAMA_LOG_INFO( logger, "end operator=:  A * B * alpha + C * beta " )
+    SCAI_LOG_INFO( logger, "end operator=:  A * B * alpha + C * beta " )
 
-    LAMA_LOG_INFO( logger, "Context of this after matrixTimesMatrix = " << this->getContext() )
+    SCAI_LOG_INFO( logger, "Context of this after matrixTimesMatrix = " << this->getContext() )
 
     return *this;
 }
@@ -539,7 +539,7 @@ Matrix& Matrix::operator=( const Expression_SMM_SM& exp )
  */
 Matrix& Matrix::operator=( const Expression_SM_SM& exp )
 {
-    LAMA_LOG_INFO( logger, "operator=:  A * alpha + B * beta " )
+    SCAI_LOG_INFO( logger, "operator=:  A * alpha + B * beta " )
 
     const Matrix& A = exp.getArg1().getArg2();
     const Matrix& B = exp.getArg2().getArg2();

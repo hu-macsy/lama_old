@@ -63,7 +63,7 @@ using std::abs;
 
 using common::getScalarType;
 
-LAMA_LOG_DEF_LOGGER( OpenMPCSRUtils::logger, "OpenMP.CSRUtils" )
+SCAI_LOG_DEF_LOGGER( OpenMPCSRUtils::logger, "OpenMP.CSRUtils" )
 
 /** Number of minimal threads for which parallelization is effective. */
 
@@ -73,7 +73,7 @@ static int minThreads = 3;
 
 IndexType OpenMPCSRUtils::scanSerial( IndexType array[], const IndexType numValues )
 {
-    LAMA_LOG_DEBUG( logger, "scanSerial: " << numValues << " entries" )
+    SCAI_LOG_DEBUG( logger, "scanSerial: " << numValues << " entries" )
 
     // In this case we do it just serial, probably faster
 
@@ -83,7 +83,7 @@ IndexType OpenMPCSRUtils::scanSerial( IndexType array[], const IndexType numValu
     {
         IndexType tmp = runningSum;
         runningSum += array[i];
-        LAMA_LOG_TRACE( logger, "scan, row = " << i << ", size = " << array[i] << ", offset = " << runningSum )
+        SCAI_LOG_TRACE( logger, "scan, row = " << i << ", size = " << array[i] << ", offset = " << runningSum )
         array[i] = tmp;
     }
 
@@ -101,7 +101,7 @@ IndexType OpenMPCSRUtils::scanParallel( PartitionId numThreads, IndexType array[
 
     scoped_array<IndexType> threadCounter( new IndexType[numThreads] );
 
-    LAMA_LOG_DEBUG( logger, "scanParallel: " << numValues << " entries for " << numThreads << " threads" )
+    SCAI_LOG_DEBUG( logger, "scanParallel: " << numValues << " entries for " << numThreads << " threads" )
 
     #pragma omp parallel
     {
@@ -150,7 +150,7 @@ IndexType OpenMPCSRUtils::scan( IndexType array[], const IndexType numValues )
         numThreads = omp_get_num_threads();
     }
 
-    LAMA_LOG_INFO( logger, "scan " << numValues << " entries, #threads = " << numThreads )
+    SCAI_LOG_INFO( logger, "scan " << numValues << " entries, #threads = " << numThreads )
 
     if( numThreads < minThreads )
     {
@@ -166,7 +166,7 @@ IndexType OpenMPCSRUtils::scan( IndexType array[], const IndexType numValues )
 
 bool OpenMPCSRUtils::validOffsets( const IndexType array[], const IndexType n, const IndexType total )
 {
-    LAMA_LOG_INFO( logger, "check offset array[ " << n << "] for validity, total = " << total )
+    SCAI_LOG_INFO( logger, "check offset array[ " << n << "] for validity, total = " << total )
 
     bool validFlag = true;
 
@@ -176,14 +176,14 @@ bool OpenMPCSRUtils::validOffsets( const IndexType array[], const IndexType n, c
     {
         if( !( array[i] <= array[i + 1] ) )
         {
-            LAMA_LOG_DEBUG( logger, "illegal offsets at pos " << i << ": " << array[i] << " - " << array[i+1] )
+            SCAI_LOG_DEBUG( logger, "illegal offsets at pos " << i << ": " << array[i] << " - " << array[i+1] )
             validFlag = false;
         }
     }
 
     if( array[n] != total )
     {
-        LAMA_LOG_DEBUG( logger, "last entry in offset array = " << array[n] << " illegal, should be " << total )
+        SCAI_LOG_DEBUG( logger, "last entry in offset array = " << array[n] << " illegal, should be " << total )
         validFlag = false;
     }
 
@@ -197,7 +197,7 @@ IndexType OpenMPCSRUtils::sizes2offsets( IndexType array[], const IndexType numV
     IndexType totalValues = scan( array, numValues );
     array[numValues] = totalValues;
 
-    LAMA_LOG_INFO( logger, "sizes2offsets, #values = " << numValues << ", total = " << totalValues )
+    SCAI_LOG_INFO( logger, "sizes2offsets, #values = " << numValues << ", total = " << totalValues )
 
     return totalValues;
 }
@@ -238,7 +238,7 @@ bool OpenMPCSRUtils::hasDiagonalProperty(
     const IndexType csrIA[],
     const IndexType csrJA[] )
 {
-    LAMA_LOG_INFO( logger, "hasDiagonalProperty, #numDiagonals = " << numDiagonals )
+    SCAI_LOG_INFO( logger, "hasDiagonalProperty, #numDiagonals = " << numDiagonals )
 
     bool diagonalProperty = true;
 
@@ -261,7 +261,7 @@ bool OpenMPCSRUtils::hasDiagonalProperty(
         }
     }
 
-    LAMA_LOG_DEBUG( logger, "hasDiagonalProperty = " << diagonalProperty )
+    SCAI_LOG_DEBUG( logger, "hasDiagonalProperty = " << diagonalProperty )
 
     return diagonalProperty;
 }
@@ -277,7 +277,7 @@ void OpenMPCSRUtils::sortRowElements(
     const bool diagonalFlag )
 {
 
-    LAMA_LOG_INFO( logger, "sort elements in each of " << numRows << " rows, diagonal flag = " << diagonalFlag )
+    SCAI_LOG_INFO( logger, "sort elements in each of " << numRows << " rows, diagonal flag = " << diagonalFlag )
 
     #pragma omp parallel for
 
@@ -288,7 +288,7 @@ void OpenMPCSRUtils::sortRowElements(
         const IndexType start = csrIA[i];
         IndexType end = csrIA[i + 1] - 1;
 
-        LAMA_LOG_TRACE( logger, "row " << i << ": sort " << start << " - " << end )
+        SCAI_LOG_TRACE( logger, "row " << i << ": sort " << start << " - " << end )
 
         bool sorted = false;
 
@@ -296,7 +296,7 @@ void OpenMPCSRUtils::sortRowElements(
         {
             sorted = true; // will be reset if any wrong order appears
 
-            LAMA_LOG_TRACE( logger, "sort from " << start << " - " << end )
+            SCAI_LOG_TRACE( logger, "sort from " << start << " - " << end )
 
             for( IndexType jj = start; jj < end; ++jj )
             {
@@ -323,7 +323,7 @@ void OpenMPCSRUtils::sortRowElements(
 
                 if( swapIt )
                 {
-                    LAMA_LOG_TRACE( logger, "swap at pos " << jj << " : " << csrJA[jj] << " - " << csrJA[ jj+1 ] )
+                    SCAI_LOG_TRACE( logger, "swap at pos " << jj << " : " << csrJA[jj] << " - " << csrJA[ jj+1 ] )
                     sorted = false;
                     std::swap( csrJA[jj], csrJA[jj + 1] );
                     std::swap( csrValues[jj], csrValues[jj + 1] );
@@ -353,7 +353,7 @@ IndexType OpenMPCSRUtils::countNonEmptyRowsByOffsets( const IndexType offsets[],
         }
     }
 
-    LAMA_LOG_INFO( logger, "#non-zero rows = " << counter << ", counted by offsets" )
+    SCAI_LOG_INFO( logger, "#non-zero rows = " << counter << ", counted by offsets" )
 
     return counter;
 }
@@ -383,7 +383,7 @@ void OpenMPCSRUtils::setNonEmptyRowsByOffsets(
 
     LAMA_ASSERT_EQUAL_DEBUG( counter, numNonEmptyRows )
 
-    LAMA_LOG_INFO( logger, "#non-zero rows = " << counter << ", set by offsets" )
+    SCAI_LOG_INFO( logger, "#non-zero rows = " << counter << ", set by offsets" )
 }
 
 /* --------------------------------------------------------------------------- */
@@ -429,7 +429,7 @@ void OpenMPCSRUtils::convertCSR2CSC(
 {
     LAMA_REGION( "OpenMP.CSRUtils.CSR2CSC" )
 
-    LAMA_LOG_INFO( logger, "convertCSR2CSC of matrix " << numRows << " x " << numColumns )
+    SCAI_LOG_INFO( logger, "convertCSR2CSC of matrix " << numRows << " x " << numColumns )
 
     LAMA_ASSERT_EQUAL_DEBUG( numValues, rIA[numRows] )
 
@@ -460,7 +460,7 @@ void OpenMPCSRUtils::convertCSR2CSC(
 
     sizes2offsets( cscIA, numColumns );
 
-    LAMA_LOG_INFO( logger, "convertCSR2CSC, #num values counted = " << cscIA[ numColumns ] )
+    SCAI_LOG_INFO( logger, "convertCSR2CSC, #num values counted = " << cscIA[ numColumns ] )
 
     LAMA_ASSERT_EQUAL_DEBUG( numValues, cscIA[numColumns] )
 
@@ -508,7 +508,7 @@ void OpenMPCSRUtils::normalGEMV(
     const ValueType csrValues[],
     SyncToken* syncToken )
 {
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "normalGEMV<" << getScalarType<ValueType>() << ", #threads = " << omp_get_max_threads() 
                     << ">, result[" << numRows << "] = " << alpha << " * A * x + " << beta << " * y " )
 
@@ -553,7 +553,7 @@ void OpenMPCSRUtils::normalGEMV(
         }
     }
 
-    if( LAMA_LOG_TRACE_ON( logger ) )
+    if( SCAI_LOG_TRACE_ON( logger ) )
     {
         std::cout << "NormalGEMV: result = ";
 
@@ -582,7 +582,7 @@ void OpenMPCSRUtils::normalGEVM(
     const ValueType csrValues[],
     SyncToken* syncToken )
 {
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "normalGEVM<" << getScalarType<ValueType>() << ", #threads = " << omp_get_max_threads() << ">, result[" << numColumns << "] = " << alpha << " * x * A + " << beta << " * y " )
 
     if( syncToken )
@@ -638,7 +638,7 @@ void OpenMPCSRUtils::normalGEVM(
         }
     }
 
-    if( LAMA_LOG_TRACE_ON( logger ) )
+    if( SCAI_LOG_TRACE_ON( logger ) )
     {
         std::cout << "NormalGEVM: result = ";
 
@@ -693,7 +693,7 @@ void OpenMPCSRUtils::sparseGEMV(
         }
     }
 
-    if( LAMA_LOG_TRACE_ON( logger ) )
+    if( SCAI_LOG_TRACE_ON( logger ) )
     {
         std::cout << "sparseGEMV: result = ";
 
@@ -757,7 +757,7 @@ void OpenMPCSRUtils::sparseGEVM(
         }
     }
 
-    if( LAMA_LOG_TRACE_ON( logger ) )
+    if( SCAI_LOG_TRACE_ON( logger ) )
     {
         std::cout << "sparseGEMV: result = ";
 
@@ -787,7 +787,7 @@ void OpenMPCSRUtils::gemm(
     const ValueType csrValues[],
     SyncToken* syncToken )
 {
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "gemm<" << getScalarType<ValueType>() << ">, " << " result " << m << " x " << n << " CSR " << m << " x " << p )
 
     if( syncToken )
@@ -834,7 +834,7 @@ void OpenMPCSRUtils::jacobi(
     const IndexType numRows,
     class SyncToken* syncToken )
 {
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "jacobi<" << getScalarType<ValueType>() << ">" << ", #rows = " << numRows << ", omega = " << omega )
 
     if( syncToken )
@@ -893,7 +893,7 @@ void OpenMPCSRUtils::jacobiHalo(
     const ValueType omega,
     const IndexType numNonEmptyRows )
 {
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "jacobiHalo<" << getScalarType<ValueType>() << ">" << ", #rows (not empty) = " << numNonEmptyRows << ", omega = " << omega );
 
     #pragma omp parallel
@@ -946,7 +946,7 @@ void OpenMPCSRUtils::jacobiHaloWithDiag(
     const ValueType omega,
     const IndexType numNonEmptyRows )
 {
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "jacobiHaloWithDiag<" << getScalarType<ValueType>() << ">" << ", #rows (not empty) = " << numNonEmptyRows << ", omega = " << omega );
 
     #pragma omp parallel
@@ -997,7 +997,7 @@ IndexType OpenMPCSRUtils::matrixAddSizes(
     const IndexType bIA[],
     const IndexType bJA[] )
 {
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "matrixAddSizes for " << numRows << " x " << numColumns << " matrix" << ", diagonalProperty = " << diagonalProperty )
 
     LAMA_REGION( "OpenMP.CSR.matrixAddSizes" )
@@ -1038,7 +1038,7 @@ IndexType OpenMPCSRUtils::matrixAddSizes(
 
                 if( indexList[j] == NINIT )
                 {
-                    LAMA_LOG_TRACE( logger, "entry for [" << i << "," << j << "] by a" )
+                    SCAI_LOG_TRACE( logger, "entry for [" << i << "," << j << "] by a" )
 
                     // Add column position j to the indexList
 
@@ -1064,7 +1064,7 @@ IndexType OpenMPCSRUtils::matrixAddSizes(
 
                 if( indexList[j] == NINIT )
                 {
-                    LAMA_LOG_TRACE( logger, "entry for [" << i << "," << j << "] by b" )
+                    SCAI_LOG_TRACE( logger, "entry for [" << i << "," << j << "] by b" )
 
                     // Add column position j to the indexList
 
@@ -1086,7 +1086,7 @@ IndexType OpenMPCSRUtils::matrixAddSizes(
 
             // so we have now the correct length
 
-            LAMA_LOG_TRACE( logger, "row " << i << " will have " << length << " entries" )
+            SCAI_LOG_TRACE( logger, "row " << i << " will have " << length << " entries" )
 
             cSizes[i] = length;
 
@@ -1094,7 +1094,7 @@ IndexType OpenMPCSRUtils::matrixAddSizes(
 
             while( firstCol != END )
             {
-                LAMA_LOG_TRACE( logger, "entry [" << i << "," << firstCol << "] will be set" )
+                SCAI_LOG_TRACE( logger, "entry [" << i << "," << firstCol << "] will be set" )
                 IndexType nextCol = indexList[firstCol];
                 indexList[firstCol] = NINIT;
                 firstCol = nextCol;
@@ -1121,7 +1121,7 @@ IndexType OpenMPCSRUtils::matrixMultiplySizes(
 {
     LAMA_REGION( "OpenMP.CSR.matrixMultiplySizes" )
 
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "matrixMutliplySizes for " << m << " x " << n << " matrix" << ", diagonalProperty = " << diagonalProperty )
 
     // determine the number of entries in output matrix
@@ -1176,7 +1176,7 @@ IndexType OpenMPCSRUtils::matrixMultiplySizes(
 
                     if( indexList[k] == NINIT )
                     {
-                        LAMA_LOG_TRACE( logger, "entry for [" << i << "," << k << "]" )
+                        SCAI_LOG_TRACE( logger, "entry for [" << i << "," << k << "]" )
 
                         // Add column position k to the indexList
 
@@ -1205,7 +1205,7 @@ IndexType OpenMPCSRUtils::matrixMultiplySizes(
 
             // so we have now the correct length
 
-            LAMA_LOG_TRACE( logger, "row " << i << " will have " << length << " entries" )
+            SCAI_LOG_TRACE( logger, "row " << i << " will have " << length << " entries" )
 
             cSizes[i] = length;
 
@@ -1213,7 +1213,7 @@ IndexType OpenMPCSRUtils::matrixMultiplySizes(
 
             while( firstCol != END )
             {
-                LAMA_LOG_TRACE( logger, "entry [" << i << "," << firstCol << "] will be set" )
+                SCAI_LOG_TRACE( logger, "entry [" << i << "," << firstCol << "] will be set" )
                 IndexType nextCol = indexList[firstCol];
                 indexList[firstCol] = NINIT;
                 firstCol = nextCol;
@@ -1249,7 +1249,7 @@ void OpenMPCSRUtils::matrixAdd(
 {
     LAMA_REGION( "OpenMP.CSR.matrixAdd" )
 
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "matrixAddJA for " << numRows << " x " << numColumns << " matrix" << ", diagonalProperty = " << diagonalProperty )
 
     const IndexType NINIT = numColumns + 1;
@@ -1284,7 +1284,7 @@ void OpenMPCSRUtils::matrixAdd(
 
                 valueList[j] += alpha * aValues[jj];
 
-                LAMA_LOG_TRACE( logger, "entry for [" << i << "," << j << "] by a" << ", new val = " << valueList[j] )
+                SCAI_LOG_TRACE( logger, "entry for [" << i << "," << j << "] by a" << ", new val = " << valueList[j] )
 
                 // element a(i,j) will generate an output element c(i,j)
 
@@ -1308,7 +1308,7 @@ void OpenMPCSRUtils::matrixAdd(
 
                 valueList[j] += beta * bValues[jj];
 
-                LAMA_LOG_TRACE( logger, "entry for [" << i << "," << j << "] by b" << ", new val = " << valueList[j] )
+                SCAI_LOG_TRACE( logger, "entry for [" << i << "," << j << "] by b" << ", new val = " << valueList[j] )
 
                 // element b(i,j) will generate an output element c(i,j)
 
@@ -1328,7 +1328,7 @@ void OpenMPCSRUtils::matrixAdd(
             if( diagonalProperty )
             {
                 // first element is reserved for diagonal element
-                LAMA_LOG_TRACE( logger, "entry for [" << i << "," << i << "] as diagonal" )
+                SCAI_LOG_TRACE( logger, "entry for [" << i << "," << i << "] as diagonal" )
                 cJA[offset] = i;
                 cValues[offset] = 0.0;
                 ++offset;
@@ -1346,13 +1346,13 @@ void OpenMPCSRUtils::matrixAdd(
 
                 if( diagonalProperty && firstCol == i )
                 {
-                    LAMA_LOG_TRACE( logger, "diagonal already added before" )
-                    LAMA_LOG_TRACE( logger, "entry for [" << i << "," << i << "] = " << val )
+                    SCAI_LOG_TRACE( logger, "diagonal already added before" )
+                    SCAI_LOG_TRACE( logger, "entry for [" << i << "," << i << "] = " << val )
                     cValues[cIA[i]] = val;
                 }
                 else
                 {
-                    LAMA_LOG_TRACE( logger, "entry for [" << i << "," << firstCol << "] = " << val )
+                    SCAI_LOG_TRACE( logger, "entry for [" << i << "," << firstCol << "] = " << val )
                     cJA[offset] = firstCol;
                     cValues[offset] = val;
                     ++offset;
@@ -1382,7 +1382,7 @@ void OpenMPCSRUtils::matrixMultiplyJA(
     const IndexType bIA[],
     const IndexType bJA[] )
 {
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "matrixMutliplyJA for " << numRows << " x " << numColumns << " matrix" << ", diagonalProperty = " << diagonalProperty )
 
     const IndexType NINIT = numColumns + 1;
@@ -1435,7 +1435,7 @@ void OpenMPCSRUtils::matrixMultiplyJA(
                         indexList[k] = firstCol;
                         firstCol = k;
                         ++length;
-                        LAMA_LOG_TRACE( logger, "entry for [" << i << "," << k << "]" )
+                        SCAI_LOG_TRACE( logger, "entry for [" << i << "," << k << "]" )
                     }
                 }
             }
@@ -1445,7 +1445,7 @@ void OpenMPCSRUtils::matrixMultiplyJA(
             if( diagonalProperty )
             {
                 // first element is reserved for diagonal element
-                LAMA_LOG_TRACE( logger, "entry for [" << i << "," << i << "] as diagonal" )
+                SCAI_LOG_TRACE( logger, "entry for [" << i << "," << i << "] as diagonal" )
                 cJA[offset] = i;
                 ++offset;
             }
@@ -1460,11 +1460,11 @@ void OpenMPCSRUtils::matrixMultiplyJA(
 
                 if( diagonalProperty && firstCol == i )
                 {
-                    LAMA_LOG_TRACE( logger, "diagonal already added before" )
+                    SCAI_LOG_TRACE( logger, "diagonal already added before" )
                 }
                 else
                 {
-                    LAMA_LOG_TRACE( logger, "entry for [" << i << "," << firstCol << "]" )
+                    SCAI_LOG_TRACE( logger, "entry for [" << i << "," << firstCol << "]" )
                     cJA[offset] = firstCol;
                     ++offset;
                 }
@@ -1532,7 +1532,7 @@ void OpenMPCSRUtils::matrixMultiplyJA(
 
  cValues[jj] *= alpha;
 
- LAMA_LOG_TRACE( logger, "Computed output Element ( "
+ SCAI_LOG_TRACE( logger, "Computed output Element ( "
  << i << ", " << j << " ) = " << cValues[jj] )
  }
  }
@@ -1608,7 +1608,7 @@ void OpenMPCSRUtils::matrixMultiply(
                         indexList[k] = firstCol;
                         firstCol = k;
                         ++length;
-                        LAMA_LOG_TRACE( logger, "entry for [" << i << "," << k << "]" )
+                        SCAI_LOG_TRACE( logger, "entry for [" << i << "," << k << "]" )
                     }
                 }
             }
@@ -1618,7 +1618,7 @@ void OpenMPCSRUtils::matrixMultiply(
             if( diagonalProperty )
             {
                 // first element is reserved for diagonal element
-                LAMA_LOG_TRACE( logger, "entry for [" << i << "," << i << "] as diagonal" )
+                SCAI_LOG_TRACE( logger, "entry for [" << i << "," << i << "] as diagonal" )
                 cJA[offset] = i;
                 ++offset;
             }
@@ -1633,11 +1633,11 @@ void OpenMPCSRUtils::matrixMultiply(
 
                 if( diagonalProperty && firstCol == i )
                 {
-                    LAMA_LOG_TRACE( logger, "diagonal already added before" )
+                    SCAI_LOG_TRACE( logger, "diagonal already added before" )
                 }
                 else
                 {
-                    LAMA_LOG_TRACE( logger, "entry for [" << i << "," << firstCol << "]" )
+                    SCAI_LOG_TRACE( logger, "entry for [" << i << "," << firstCol << "]" )
                     cJA[offset] = firstCol;
                     ++offset;
                 }
@@ -1691,7 +1691,7 @@ void OpenMPCSRUtils::matrixMultiply(
 
             cValues[jj] *= alpha;
 
-            LAMA_LOG_TRACE( logger, "Computed output Element ( " << i << ", " << j << " ) = " << cValues[jj] )
+            SCAI_LOG_TRACE( logger, "Computed output Element ( " << i << ", " << j << " ) = " << cValues[jj] )
         }
     }
 }
@@ -1877,7 +1877,7 @@ ValueType OpenMPCSRUtils::absMaxDiffVal(
     const IndexType csrJA2[],
     const ValueType csrValues2[] )
 {
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "absMaxDiffVal<" << getScalarType<ValueType>() << ">: " << "csr[" << numRows << "], sorted = " << sortedRows )
 
     ValueType (*absMaxDiffRow)(
@@ -1924,7 +1924,7 @@ ValueType OpenMPCSRUtils::absMaxDiffVal(
 
         #pragma omp critical
         {
-            LAMA_LOG_TRACE( logger, "max val of thread  = " << threadVal << ", global was " << val )
+            SCAI_LOG_TRACE( logger, "max val of thread  = " << threadVal << ", global was " << val )
 
             if( threadVal > val )
             {

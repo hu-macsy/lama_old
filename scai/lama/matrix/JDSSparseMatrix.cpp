@@ -43,7 +43,7 @@ namespace lama
 
 /* -------------------------------------------------------------------------- */
 
-LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, JDSSparseMatrix<ValueType>::logger,
+SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, JDSSparseMatrix<ValueType>::logger,
                               "Matrix.SparseMatrix.JDSSparseMatrix" )
 
 /* -------------------------------------------------------------------------- */
@@ -72,7 +72,7 @@ JDSSparseMatrix<ValueType>::JDSSparseMatrix()
     : SparseMatrix<ValueType>( createStorage() )
 
 {
-    LAMA_LOG_INFO( logger, "JDSSparseMatrix()" )
+    SCAI_LOG_INFO( logger, "JDSSparseMatrix()" )
 }
 
 /* -------------------------------------------------------------------------- */
@@ -83,7 +83,7 @@ JDSSparseMatrix<ValueType>::JDSSparseMatrix( const IndexType numRows, const Inde
     : SparseMatrix<ValueType>( createStorage( numRows, numColumns ) )
 
 {
-    LAMA_LOG_INFO( logger, "JDSSparseMatrix( " << numRows << " x " << numColumns << " )" )
+    SCAI_LOG_INFO( logger, "JDSSparseMatrix( " << numRows << " x " << numColumns << " )" )
 }
 
 /* -------------------------------------------------------------------------- */
@@ -242,7 +242,7 @@ JDSSparseMatrix<ValueType>::JDSSparseMatrix( const std::string& filename )
 template<typename ValueType>
 JDSSparseMatrix<ValueType>::~JDSSparseMatrix()
 {
-    LAMA_LOG_INFO( logger, "~JDSSpareMatrix" )
+    SCAI_LOG_INFO( logger, "~JDSSpareMatrix" )
 }
 
 /* ---------------------------------------------------------------------------------------*/
@@ -250,7 +250,7 @@ JDSSparseMatrix<ValueType>::~JDSSparseMatrix()
 template<typename ValueType>
 JDSSparseMatrix<ValueType>& JDSSparseMatrix<ValueType>::operator=( const JDSSparseMatrix& matrix )
 {
-    LAMA_LOG_INFO( logger, "JDSSparseMatrix = JDSSparseMatrix : " << matrix )
+    SCAI_LOG_INFO( logger, "JDSSparseMatrix = JDSSparseMatrix : " << matrix )
     this->assign( matrix );
     return *this;
 }
@@ -334,7 +334,7 @@ JDSSparseMatrix<ValueType>* JDSSparseMatrix<ValueType>::clone() const
     newSparseMatrix->setContext( this->getContextPtr() );
     newSparseMatrix->setCommunicationKind( this->getCommunicationKind() );
 
-    LAMA_LOG_INFO( logger, "create is " << *newSparseMatrix )
+    SCAI_LOG_INFO( logger, "create is " << *newSparseMatrix )
 
     return newSparseMatrix;
 }
@@ -344,11 +344,11 @@ JDSSparseMatrix<ValueType>* JDSSparseMatrix<ValueType>::clone() const
 template<typename ValueType>
 JDSSparseMatrix<ValueType>* JDSSparseMatrix<ValueType>::copy() const
 {
-    LAMA_LOG_INFO( logger, "copy of " << *this )
+    SCAI_LOG_INFO( logger, "copy of " << *this )
 
     JDSSparseMatrix<ValueType>* newSparseMatrix = new JDSSparseMatrix<ValueType>( *this );
 
-    LAMA_LOG_INFO( logger, "copy is " << *newSparseMatrix )
+    SCAI_LOG_INFO( logger, "copy is " << *newSparseMatrix )
 
     return newSparseMatrix;
 }

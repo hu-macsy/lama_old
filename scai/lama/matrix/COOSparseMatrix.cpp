@@ -43,7 +43,7 @@ namespace lama
 
 /* -------------------------------------------------------------------------- */
 
-LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, COOSparseMatrix<ValueType>::logger,
+SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, COOSparseMatrix<ValueType>::logger,
                               "Matrix.SparseMatrix.COOSparseMatrix" )
 
 /* -------------------------------------------------------------------------- */
@@ -72,7 +72,7 @@ COOSparseMatrix<ValueType>::COOSparseMatrix()
     : SparseMatrix<ValueType>( createStorage() )
 
 {
-    LAMA_LOG_INFO( logger, "COOSparseMatrix()" )
+    SCAI_LOG_INFO( logger, "COOSparseMatrix()" )
 }
 
 /* -------------------------------------------------------------------------- */
@@ -83,7 +83,7 @@ COOSparseMatrix<ValueType>::COOSparseMatrix( const IndexType numRows, const Inde
     : SparseMatrix<ValueType>( createStorage( numRows, numColumns ) )
 
 {
-    LAMA_LOG_INFO( logger, "COOSparseMatrix( " << numRows << " x " << numColumns << " )" )
+    SCAI_LOG_INFO( logger, "COOSparseMatrix( " << numRows << " x " << numColumns << " )" )
 }
 
 /* -------------------------------------------------------------------------- */
@@ -242,7 +242,7 @@ COOSparseMatrix<ValueType>::COOSparseMatrix( const std::string& filename )
 template<typename ValueType>
 COOSparseMatrix<ValueType>::~COOSparseMatrix()
 {
-    LAMA_LOG_INFO( logger, "~COOSpareMatrix" )
+    SCAI_LOG_INFO( logger, "~COOSpareMatrix" )
 }
 
 /* ---------------------------------------------------------------------------------------*/
@@ -250,7 +250,7 @@ COOSparseMatrix<ValueType>::~COOSparseMatrix()
 template<typename ValueType>
 COOSparseMatrix<ValueType>& COOSparseMatrix<ValueType>::operator=( const COOSparseMatrix& matrix )
 {
-    LAMA_LOG_INFO( logger, "COOSparseMatrix = COOSparseMatrix : " << matrix )
+    SCAI_LOG_INFO( logger, "COOSparseMatrix = COOSparseMatrix : " << matrix )
     this->assign( matrix );
     return *this;
 }
@@ -334,7 +334,7 @@ COOSparseMatrix<ValueType>* COOSparseMatrix<ValueType>::clone() const
     newSparseMatrix->setContext( this->getContextPtr() );
     newSparseMatrix->setCommunicationKind( this->getCommunicationKind() );
 
-    LAMA_LOG_INFO( logger, "create is " << *newSparseMatrix )
+    SCAI_LOG_INFO( logger, "create is " << *newSparseMatrix )
 
     return newSparseMatrix;
 }
@@ -344,11 +344,11 @@ COOSparseMatrix<ValueType>* COOSparseMatrix<ValueType>::clone() const
 template<typename ValueType>
 COOSparseMatrix<ValueType>* COOSparseMatrix<ValueType>::copy() const
 {
-    LAMA_LOG_INFO( logger, "copy of " << *this )
+    SCAI_LOG_INFO( logger, "copy of " << *this )
 
     COOSparseMatrix<ValueType>* newSparseMatrix = new COOSparseMatrix<ValueType>( *this );
 
-    LAMA_LOG_INFO( logger, "copy is " << *newSparseMatrix )
+    SCAI_LOG_INFO( logger, "copy is " << *newSparseMatrix )
 
     return newSparseMatrix;
 }

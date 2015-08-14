@@ -75,7 +75,7 @@ find_library( LAMA_LIB
               NAMES ama
               HINTS ${LAMA_HOME}/lib )
 
-find_library( LAMA_LOG_LIB
+find_library( SCAI_LOG_LIB
               NAMES log4lama
               HINTS ${LAMA_HOME}/lib )
 
@@ -90,12 +90,12 @@ if ( EXISTS "${LAMA_HOME}/include/lama.hpp" )
 
     # match for defintions
     string( REGEX MATCH "LAMA_ASSERT_LEVEL_[A-Z]*" LAMA_ASSERT_LEVEL "${LAMA_HPP}" )
-    string( REGEX MATCH "LAMA_LOG_LEVEL_[A-Z]*" LAMA_LOG_LEVEL "${LAMA_HPP}" )
+    string( REGEX MATCH "SCAI_LOG_LEVEL_[A-Z]*" SCAI_LOG_LEVEL "${LAMA_HPP}" )
     string( REGEX MATCH "LAMA_TRACE_LEVEL_[A-Z]*" LAMA_TRACE_LEVEL "${LAMA_HPP}" )
 
     # cache the defintions
     set( LAMA_ASSERT_LEVEL ${LAMA_ASSERT_LEVEL} CACHE STRING "Taken over from LAMA installation" )
-    set( LAMA_LOG_LEVEL ${LAMA_LOG_LEVEL} CACHE STRING "Taken over from LAMA installation" )
+    set( SCAI_LOG_LEVEL ${SCAI_LOG_LEVEL} CACHE STRING "Taken over from LAMA installation" )
     set( LAMA_TRACE_LEVEL ${LAMA_TRACE_LEVEL} CACHE STRING "Taken over from LAMA installation" )
 
     # take LAMA_HOME also as installation directory
@@ -163,7 +163,7 @@ if ( CUSPARSE_V2 )
 endif ( CUSPARSE_V2 )
 
 ### add definitions
-add_definitions( -D${LAMA_ASSERT_LEVEL} -D${LAMA_LOG_LEVEL} -D${LAMA_TRACE_LEVEL} )
+add_definitions( -D${LAMA_ASSERT_LEVEL} -D${SCAI_LOG_LEVEL} -D${LAMA_TRACE_LEVEL} )
 
 ### set include directories ### 
 include_directories ( . ${CMAKE_SOURCE_DIR}/../.. ${CUDA_INCLUDE_DIRS} )
@@ -177,7 +177,7 @@ add_library( amacuda SHARED ${CXX_SOURCES} ${CUDA_FILES} )
 ### target link libraries ###
 target_link_libraries( amacuda
                         ${LAMA_LIB}
-                        ${LAMA_LOG_LIB}
+                        ${SCAI_LOG_LIB}
                         ${CUDA_cusparse_LIBRARY}
                         ${CUDA_cublas_LIBRARY} 
                         ${CUDA_CUDART_LIBRARY}

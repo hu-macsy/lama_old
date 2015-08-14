@@ -44,7 +44,7 @@
 namespace lama
 {
 
-LAMA_LOG_DEF_LOGGER( CUDATexture::logger, "CUDA.Texture" )
+SCAI_LOG_DEF_LOGGER( CUDATexture::logger, "CUDA.Texture" )
 
 bool CUDATexture::initialized = false;
 
@@ -85,7 +85,7 @@ bool CUDATexture::getUseTextureByEnv()
     }
     else
     {
-        LAMA_LOG_ERROR( logger, "LAMA_CUDA_USE_TEXTURE = " << env << ", illegal setting" )
+        SCAI_LOG_ERROR( logger, "LAMA_CUDA_USE_TEXTURE = " << env << ", illegal setting" )
 
         return false;
     }
@@ -108,11 +108,11 @@ void CUDATexture::setUseTextureByDevice()
 
     LAMA_CUDA_DRV_CALL( cuDeviceComputeCapability( &major, &minor, dev ), "getComputeCapability" )
 
-    LAMA_LOG_INFO( logger, "compute capabilty = " << major << "." << minor );
+    SCAI_LOG_INFO( logger, "compute capabilty = " << major << "." << minor );
 
     theUseTextureFlag = major == 1; // use texture on devices with compute capability 1.x
 
-    LAMA_LOG_INFO( logger, "useTexture = " << theUseTextureFlag );
+    SCAI_LOG_INFO( logger, "useTexture = " << theUseTextureFlag );
 
     initialized = true;
 }

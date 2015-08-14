@@ -7,11 +7,11 @@ Here is the solution of task 6.
 
 In total there are six logging-levels: TRACE, DEBUG, INFO, WARN, ERROR, and FATAL with TRACE being the most verbose one.
 
-Setting the environment variable LAMA_LOG with a configuration file:
+Setting the environment variable SCAI_LOG with a configuration file:
 
 .. code-block:: bash
 
-   export LAMA_LOG=config
+   export SCAI_LOG=config
 
 Possible configuration in this configuration file:
 

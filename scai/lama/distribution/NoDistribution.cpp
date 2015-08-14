@@ -40,7 +40,7 @@
 namespace lama
 {
 
-LAMA_LOG_DEF_LOGGER( NoDistribution::logger, "Distribution.NoDistribution" )
+SCAI_LOG_DEF_LOGGER( NoDistribution::logger, "Distribution.NoDistribution" )
 
 NoDistribution::NoDistribution( const IndexType globalSize )
     : Distribution( globalSize )

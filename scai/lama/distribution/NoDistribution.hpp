@@ -90,7 +90,7 @@ private:
 
     NoDistribution(); // no default constructor as global size is not available
 
-    LAMA_LOG_DECL_STATIC_LOGGER( logger )
+    SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
     static    bool initialized; //!< used for static registration
 };

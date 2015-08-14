@@ -720,7 +720,7 @@ protected:
     int mNodeRank; // rank of this processor on its node
     int mNodeSize; // number of processors on same node
 
-    LAMA_LOG_DECL_STATIC_LOGGER( logger )
+    SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
     /** Read in the environment variable LAMA_NP for user processor array.
      *
@@ -768,7 +768,7 @@ void Communicator::exchangeByPlan(
 
     memory::ContextPtr comCtx = getCommunicationContext( sendArray );
 
-    LAMA_LOG_DEBUG( logger, *this << ": exchangeByPlan, comCtx = " << *comCtx )
+    SCAI_LOG_DEBUG( logger, *this << ": exchangeByPlan, comCtx = " << *comCtx )
 
     memory::ReadAccess<ValueType> sendData( sendArray, comCtx );
 
@@ -800,7 +800,7 @@ tasking::SyncToken* Communicator::exchangeByPlanAsync(
 
     memory::ContextPtr comCtx = getCommunicationContext( sendArray );
 
-    LAMA_LOG_DEBUG( logger, *this << ": exchangeByPlanAsync, comCtx = " << *comCtx )
+    SCAI_LOG_DEBUG( logger, *this << ": exchangeByPlanAsync, comCtx = " << *comCtx )
 
     common::shared_ptr<ReadAccess<ValueType> > sendData( new ReadAccess<ValueType>( sendArray, comCtx ) );
     common::shared_ptr<WriteAccess<ValueType> > recvData(

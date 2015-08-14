@@ -31,8 +31,8 @@
  * @date 06.04.2011
  * @since 1.0.0
  */
-#ifndef LAMA_LOGGERWRITERBEHAVIOUR_HPP_
-#define LAMA_LOGGERWRITERBEHAVIOUR_HPP_
+#ifndef SCAI_LOGGERWRITERBEHAVIOUR_HPP_
+#define SCAI_LOGGERWRITERBEHAVIOUR_HPP_
 
 namespace lama
 {
@@ -70,4 +70,4 @@ enum LoggerWriteBehaviour
 
 } // namespace lama
 
-#endif // LAMA_LOGGERWRITERBEHAVIOUR_HPP_
+#endif // SCAI_LOGGERWRITERBEHAVIOUR_HPP_

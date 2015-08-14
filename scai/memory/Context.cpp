@@ -44,17 +44,17 @@ namespace memory
 
 /* -----------------------------------------------------------------------------*/
 
-LAMA_LOG_DEF_LOGGER( Context::logger, "Context" )
+SCAI_LOG_DEF_LOGGER( Context::logger, "Context" )
 
 Context::Context( ContextType type )
                 : mContextType( type ), mEnabled( false ), mFile( NULL ), mLine( 0 )
 {
-    LAMA_LOG_DEBUG( logger, "Context( type = " << mContextType << " )" )
+    SCAI_LOG_DEBUG( logger, "Context( type = " << mContextType << " )" )
 }
 
 Context::~Context()
 {
-    LAMA_LOG_DEBUG( logger, "~Context( type = " << mContextType << " )" )
+    SCAI_LOG_DEBUG( logger, "~Context( type = " << mContextType << " )" )
 }
 
 void Context::writeAt( std::ostream& stream ) const
@@ -68,11 +68,11 @@ void Context::writeAt( std::ostream& stream ) const
 
 void Context::enable( const char* file, int line ) const
 {
-    LAMA_LOG_INFO( logger, file << "( line = " << line << ") : enable " << *this )
+    SCAI_LOG_INFO( logger, file << "( line = " << line << ") : enable " << *this )
 
     if( mEnabled )
     {
-        LAMA_LOG_INFO( logger,
+        SCAI_LOG_INFO( logger,
                        "Enable " << *this << " at " << file << " ( line = " << line << " )" << ", already enabled at " << mFile << " ( line = " << mLine << " )" )
     }
 
@@ -85,11 +85,11 @@ void Context::enable( const char* file, int line ) const
 
 void Context::disable( const char* file, int line ) const
 {
-    LAMA_LOG_INFO( logger, file << "( line = " << line << ") : disable " << *this )
+    SCAI_LOG_INFO( logger, file << "( line = " << line << ") : disable " << *this )
 
     if( !mEnabled )
     {
-        LAMA_LOG_INFO( logger,
+        SCAI_LOG_INFO( logger,
                        "Disable " << *this << " at " << file << " ( line = " << line << " )" << ", context was not enabled before" )
     }
 

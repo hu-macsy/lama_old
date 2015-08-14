@@ -58,12 +58,12 @@ public:
 
 NoSyncToken::NoSyncToken()
 {
-    LAMA_LOG_DEBUG( logger, "NoSyncToken constructed" )
+    SCAI_LOG_DEBUG( logger, "NoSyncToken constructed" )
 }
 
 NoSyncToken::~NoSyncToken()
 {
-    LAMA_LOG_DEBUG( logger, "~NoSyncToken, synchronized = " << isSynchronized() )
+    SCAI_LOG_DEBUG( logger, "~NoSyncToken, synchronized = " << isSynchronized() )
 
     if ( !isSynchronized() )
     {

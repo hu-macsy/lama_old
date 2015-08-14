@@ -54,7 +54,7 @@ namespace lama
 using tasking::SyncToken;
 using common::getScalarType;
 
-LAMA_LOG_DEF_LOGGER( BLAS_BLAS3::logger, "BLAS.BLAS3" )
+SCAI_LOG_DEF_LOGGER( BLAS_BLAS3::logger, "BLAS.BLAS3" )
 
 template<typename ValueType>
 static inline
@@ -196,12 +196,12 @@ void BLAS_BLAS3::gemm(
 {
     LAMA_REGION( "BLAS.BLAS3.gemm" )
 
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "gemm<" << getScalarType<ValueType>() << ">: " << "m = " << m << ", n = " << n << ", k = " << k << ", lda = " << lda << ", ldb = " << ldb << ", ldc = " << ldc << ", alpha = " << alpha << ", beta = " << beta )
 
     if( syncToken )
     {
-        LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
+        SCAI_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
 
     wrapperGemm( order, transA, transB, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc );
@@ -221,17 +221,17 @@ void BLAS_BLAS3::setInterface( BLASInterface& BLAS )
 
     if( !useBLAS || ( level <= 0 ) )
     {
-        LAMA_LOG_INFO( logger, "BLAS3 wrapper routines for Host Interface are disabled (LAMA_USE_BLAS not set or 0)" )
+        SCAI_LOG_INFO( logger, "BLAS3 wrapper routines for Host Interface are disabled (LAMA_USE_BLAS not set or 0)" )
         return;
     }
     else if( level > 2 )
     {
-        LAMA_LOG_INFO( logger,
+        SCAI_LOG_INFO( logger,
                        "BLAS3 wrapper routines for Host Interface are disabled (LAMA_USE_BLAS = " << level << ")" )
         return;
     }
 
-    LAMA_LOG_INFO( logger, "set BLAS3 wrapper routines for Host Context in Interface" )
+    SCAI_LOG_INFO( logger, "set BLAS3 wrapper routines for Host Context in Interface" )
 
     // Note: macro takes advantage of same name for routines and type definitions
     //       ( e.g. routine CUDABLAS1::sum<ValueType> is set for BLAS::BLAS1::sum variable

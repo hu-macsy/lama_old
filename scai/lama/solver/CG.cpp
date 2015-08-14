@@ -45,7 +45,7 @@
 namespace lama
 {
 
-LAMA_LOG_DEF_LOGGER( CG::logger, "Solver.IterativeSolver.CG" )
+SCAI_LOG_DEF_LOGGER( CG::logger, "Solver.IterativeSolver.CG" )
 
 CG::CG( const std::string& id )
     : IterativeSolver( id )
@@ -120,7 +120,7 @@ void CG::iterate()
     Vector& p = *runtime.mP;
     Vector& q = *runtime.mQ;
     Vector& z = *runtime.mZ;
-    LAMA_LOG_INFO( logger, "Doing preconditioning." )
+    SCAI_LOG_INFO( logger, "Doing preconditioning." )
 
     //CG implementation start
     if( !mPreconditioner )
@@ -137,10 +137,10 @@ void CG::iterate()
         totalPreconditionerTime += omp_get_wtime() - preconditionerStartTime;
     }
 
-    LAMA_LOG_INFO( logger, "Calculating pScalar." )
+    SCAI_LOG_INFO( logger, "Calculating pScalar." )
     pScalar = residual.dotProduct( z );
-    LAMA_LOG_DEBUG( logger, "pScalar = " << pScalar )
-    LAMA_LOG_INFO( logger, "Calculating p." )
+    SCAI_LOG_DEBUG( logger, "pScalar = " << pScalar )
+    SCAI_LOG_INFO( logger, "Calculating p." )
 
     if( this->getIterationCount() == 0 )
     {
@@ -159,21 +159,21 @@ void CG::iterate()
             beta = pScalar / lastPScalar;
         }
 
-        LAMA_LOG_DEBUG( logger, "beta = " << beta )
+        SCAI_LOG_DEBUG( logger, "beta = " << beta )
         p = z + beta * p;
-        LAMA_LOG_TRACE( logger, "l2Norm( p ) = " << p.l2Norm() )
+        SCAI_LOG_TRACE( logger, "l2Norm( p ) = " << p.l2Norm() )
     }
 
     {
         LAMA_REGION( "Solver.CG.calc_q" )
-        LAMA_LOG_INFO( logger, "Calculating q." )
+        SCAI_LOG_INFO( logger, "Calculating q." )
         q = A * p;
-        LAMA_LOG_TRACE( logger, "l2Norm( q ) = " << q.l2Norm() )
+        SCAI_LOG_TRACE( logger, "l2Norm( q ) = " << q.l2Norm() )
     }
 
-    LAMA_LOG_INFO( logger, "Calculating pqProd." )
+    SCAI_LOG_INFO( logger, "Calculating pqProd." )
     const Scalar pqProd = p.dotProduct( q );
-    LAMA_LOG_DEBUG( logger, "pqProd = " << pqProd )
+    SCAI_LOG_DEBUG( logger, "pqProd = " << pqProd )
 
     if( pqProd.getValue<double>() == 0.0 )
     {
@@ -184,18 +184,18 @@ void CG::iterate()
         alpha = pScalar / pqProd;
     }
 
-    LAMA_LOG_DEBUG( logger, "alpha = " << alpha )
+    SCAI_LOG_DEBUG( logger, "alpha = " << alpha )
     {
-        LAMA_LOG_INFO( logger, "Calculating x." )
+        SCAI_LOG_INFO( logger, "Calculating x." )
         LAMA_REGION( "Solver.CG.update_x" )
         x = x + alpha * p;
-        LAMA_LOG_TRACE( logger, "l2Norm( x ) = " << x.l2Norm() )
+        SCAI_LOG_TRACE( logger, "l2Norm( x ) = " << x.l2Norm() )
     }
     {
-        LAMA_LOG_INFO( logger, "Updating residual." )
+        SCAI_LOG_INFO( logger, "Updating residual." )
         LAMA_REGION( "Solver.CG.update_res" )
         residual = residual - alpha * q;
-        LAMA_LOG_TRACE( logger, "l2Norm( residual ) = " << residual.l2Norm() )
+        SCAI_LOG_TRACE( logger, "l2Norm( residual ) = " << residual.l2Norm() )
     }
     //CG implementation end
     mCGRuntime.mSolution.setDirty( false );

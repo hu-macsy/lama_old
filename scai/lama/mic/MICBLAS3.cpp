@@ -43,7 +43,7 @@
 namespace lama
 {
 
-LAMA_LOG_DEF_LOGGER( MICBLAS3::logger, "MIC.BLAS3" )
+SCAI_LOG_DEF_LOGGER( MICBLAS3::logger, "MIC.BLAS3" )
 
 inline static char trans2C( CBLAS_TRANSPOSE trans )
 {
@@ -85,7 +85,7 @@ void MICBLAS3::gemm(
 {
     if( syncToken )
     {
-        LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
+        SCAI_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
 
     char ta = trans2C( transA );
@@ -111,7 +111,7 @@ void MICBLAS3::gemm(
             COMMON_THROWEXCEPTION( "Illegal order setting " << order )
     }
 
-    LAMA_LOG_INFO( logger, "gemm, ta = " << ta << ", tb = " << tb << ", a has shape " << m << " x " << n )
+    SCAI_LOG_INFO( logger, "gemm, ta = " << ta << ", tb = " << tb << ", a has shape " << m << " x " << n )
 
 #pragma offload target( mic ), in( ta, tb, m, n, k, alpha, aPtr, lda, bPtr, ldb, beta, cPtr, ldc )
     {
@@ -143,7 +143,7 @@ void MICBLAS3::gemm(
 {
     if( syncToken )
     {
-        LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
+        SCAI_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
 
     char ta = trans2C( transA );
@@ -169,7 +169,7 @@ void MICBLAS3::gemm(
             COMMON_THROWEXCEPTION( "Illegal order setting " << order )
     }
 
-    LAMA_LOG_INFO( logger, "gemm, ta = " << ta << ", tb = " << tb << ", a has shape " << m << " x " << n )
+    SCAI_LOG_INFO( logger, "gemm, ta = " << ta << ", tb = " << tb << ", a has shape " << m << " x " << n )
 
 #pragma offload target( mic ), in( ta, tb, m, n, k, alpha, aPtr, lda, bPtr, ldb, beta, cPtr, ldc )
     {
@@ -187,7 +187,7 @@ void MICBLAS3::gemm(
 
 void MICBLAS3::setInterface( BLASInterface& BLAS )
 {
-    LAMA_LOG_INFO( logger, "set BLAS3 routines for MIC in Interface" )
+    SCAI_LOG_INFO( logger, "set BLAS3 routines for MIC in Interface" )
 
     // Note: macro takes advantage of same name for routines and type definitions
     //       ( e.g. routine CUDABLAS1::sum<ValueType> is set for BLAS::BLAS1::sum variable

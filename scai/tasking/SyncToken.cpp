@@ -40,7 +40,7 @@ using common::shared_ptr;
 namespace tasking
 {
 
-LAMA_LOG_DEF_LOGGER( SyncToken::logger, "SyncToken" )
+SCAI_LOG_DEF_LOGGER( SyncToken::logger, "SyncToken" )
 
 /* ------------------------------------------------------------------------ */
 
@@ -55,7 +55,7 @@ SyncToken::CGuard::~CGuard()
 
     if ( countSyncToken )
     {
-        LAMA_LOG_ERROR( logger, "Remaining SyncToken (undeleted) = " << countSyncToken );
+        SCAI_LOG_ERROR( logger, "Remaining SyncToken (undeleted) = " << countSyncToken );
     }
 }
 
@@ -70,18 +70,18 @@ SyncToken::CGuard SyncToken::cguard;
 SyncToken::SyncToken()
     : mSynchronized( false )
 {
-    LAMA_LOG_DEBUG( logger, "SyncToken constructed" )
+    SCAI_LOG_DEBUG( logger, "SyncToken constructed" )
 
     countSyncToken++;
 }
 
 SyncToken::~SyncToken()
 {
-    LAMA_LOG_DEBUG( logger, "~SyncToken" )
+    SCAI_LOG_DEBUG( logger, "~SyncToken" )
 
     if ( !mSynchronized )
     {
-        LAMA_LOG_WARN( logger, "no synchronization called on SyncToken" )
+        SCAI_LOG_WARN( logger, "no synchronization called on SyncToken" )
     }
 
     countSyncToken--;
@@ -102,11 +102,11 @@ void SyncToken::pushToken( shared_ptr<SyncTokenMember> member )
 
     if ( mSynchronized )
     {
-        LAMA_LOG_DEBUG( logger, *this << ": push token not done, already synchronized" )
+        SCAI_LOG_DEBUG( logger, *this << ": push token not done, already synchronized" )
     }
     else
     {
-        LAMA_LOG_INFO( logger, *this << ": push token, will be freed at synchronization" )
+        SCAI_LOG_INFO( logger, *this << ": push token, will be freed at synchronization" )
 
         // take ownership of the token so it is not deleted before synchronization
 
@@ -137,7 +137,7 @@ void SyncToken::setSynchronized()
         COMMON_THROWEXCEPTION( *this << " is already synchronized" )
     }
 
-    LAMA_LOG_INFO( logger, "setSynchronized, free " << mTokens.size() << " SyncTokenMember "
+    SCAI_LOG_INFO( logger, "setSynchronized, free " << mTokens.size() << " SyncTokenMember "
                    << " and call " << mSynchronizedFunctions.size() << " clean functions" )
 
     mSynchronized = true;

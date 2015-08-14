@@ -48,7 +48,7 @@ namespace tracing
 
 /* -------------------------------------------------------------------------- */
 
-LAMA_LOG_DEF_LOGGER( TraceRegionRecord::logger, "TraceRegionRecord" )
+SCAI_LOG_DEF_LOGGER( TraceRegionRecord::logger, "TraceRegionRecord" )
 
 /* -------------------------------------------------------------------------- */
 
@@ -209,13 +209,13 @@ double TraceRegionRecord::spentLast( const char* name )
 
     if ( !traceData )
     {
-        LAMA_LOG_WARN( logger, "spentLast " << name << ": trace is disabled" )
+        SCAI_LOG_WARN( logger, "spentLast " << name << ": trace is disabled" )
     }
 
     int regionId = traceData->getRegionId( name, NULL, 0 );
     const RegionEntry& region = traceData->getRegion( regionId );
     double lastTime = region.getLastTime();
-    LAMA_LOG_DEBUG( logger, "Spent time for last call of " << region.getRegionName() << " : " << lastTime )
+    SCAI_LOG_DEBUG( logger, "Spent time for last call of " << region.getRegionName() << " : " << lastTime )
     return lastTime;
 }
 

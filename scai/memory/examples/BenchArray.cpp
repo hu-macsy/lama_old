@@ -40,7 +40,7 @@
 using namespace std;
 using namespace memory;
 
-LAMA_LOG_DEF_LOGGER( logger, "BenchArray" )
+SCAI_LOG_DEF_LOGGER( logger, "BenchArray" )
 
 void init( double X[], IndexType size, double val )
 {
@@ -60,7 +60,7 @@ void sub( double& res, const double data[], IndexType size )
 
 void routineLAMA( double& res, IndexType n )
 {
-    LAMA_LOG_TRACE( logger, "routineLAMA, n = " << n )
+    SCAI_LOG_TRACE( logger, "routineLAMA, n = " << n )
 
     LAMAArray<double> X;
     {
@@ -102,7 +102,7 @@ void routineLAMA_3( double& res, IndexType n )
 
 void routineSimple( double& res, IndexType n )
 {
-    LAMA_LOG_TRACE( logger, "routineSimple, n = " << n )
+    SCAI_LOG_TRACE( logger, "routineSimple, n = " << n )
     double* X = new double[n];
     init ( X, n, 1.0 );
     sub ( res, X, n );

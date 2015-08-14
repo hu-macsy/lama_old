@@ -62,7 +62,7 @@ namespace lama
 
 /* -------------------------------------------------------------------------- */
 
-LAMA_LOG_DEF_LOGGER( _StorageIO::logger, "StorageIO" )
+SCAI_LOG_DEF_LOGGER( _StorageIO::logger, "StorageIO" )
 
 /* -------------------------------------------------------------------------- */
 
@@ -82,7 +82,7 @@ void StorageIO<ValueType>::writeCSRToFormattedFile(
     IndexType numRows = csrIA.size() - 1;
     IndexType numValues = csrJA.size();
 
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "write CSR (#rows = " << numRows << ", #values = " << numValues << ") formatted to file :'" << fileName << "'" )
 
     //writing matrix data
@@ -218,14 +218,14 @@ void StorageIO<ValueType>::readCSRFromBinaryFile(
     const std::string& fileName,
     const IndexType numRows )
 {
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "read CSR<" << common::getScalarType<ValueType>() << "> storage from binary file " << fileName << ", #rows = " << numRows )
 
     LAMA_REGION( "StorageIO.readCSRFromBinaryFile" )
 
     FileIO::file_size_t actualSize = FileIO::getFileSize( fileName.c_str() );
 
-    LAMA_LOG_INFO( logger, "CSR binary file " << fileName << " has size = " << actualSize )
+    SCAI_LOG_INFO( logger, "CSR binary file " << fileName << " has size = " << actualSize )
 
     std::fstream inFile( fileName.c_str(), std::ios::in | std::ios::binary );
 
@@ -248,27 +248,27 @@ void StorageIO<ValueType>::readCSRFromBinaryFile(
 
     if( expectedSize == actualSize )
     {
-        LAMA_LOG_INFO( logger, "read binary data of type " << csrValues.getValueType() << ", no conversion" )
+        SCAI_LOG_INFO( logger, "read binary data of type " << csrValues.getValueType() << ", no conversion" )
         FileIO::readBinaryData<ValueType,ValueType,0>( inFile, values.get(), numValues );
     }
     else if( actualSize == expectedCSRFileSize<float>( numRows, numValues ) )
     {
-        LAMA_LOG_WARN( logger, "read binary data of type float, conversion to " << csrValues.getValueType() )
+        SCAI_LOG_WARN( logger, "read binary data of type float, conversion to " << csrValues.getValueType() )
         FileIO::readBinaryData<float,ValueType,0>( inFile, values.get(), numValues );
     }
     else if( actualSize == expectedCSRFileSize<double>( numRows, numValues ) )
     {
-        LAMA_LOG_WARN( logger, "read binary data of type double, conversion to " << csrValues.getValueType() )
+        SCAI_LOG_WARN( logger, "read binary data of type double, conversion to " << csrValues.getValueType() )
         FileIO::readBinaryData<double,ValueType,0>( inFile, values.get(), numValues );
     }
     else if( actualSize == expectedCSRFileSize<ComplexFloat>( numRows, numValues ) )
     {
-        LAMA_LOG_WARN( logger, "read binary data of type double, conversion to " << csrValues.getValueType() )
+        SCAI_LOG_WARN( logger, "read binary data of type double, conversion to " << csrValues.getValueType() )
         FileIO::readBinaryData<ComplexFloat,ValueType,0>( inFile, values.get(), numValues );
     }
     else if( actualSize == expectedCSRFileSize<ComplexDouble>( numRows, numValues ) )
     {
-        LAMA_LOG_WARN( logger, "read binary data of type double, conversion to " << csrValues.getValueType() )
+        SCAI_LOG_WARN( logger, "read binary data of type double, conversion to " << csrValues.getValueType() )
         FileIO::readBinaryData<ComplexDouble,ValueType,0>( inFile, values.get(), numValues );
     }
     else
@@ -591,7 +591,7 @@ void StorageIO<ValueType>::writeCSRToBinaryFile(
     IndexType numRows = csrIA.size() - 1;
     IndexType numValues = csrJA.size();
 
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "writeCSRToBinaryFile ( " << amgFileName << ")" << ", #rows = " << numRows << ", #values = " << numValues )
 
     std::fstream outFile( amgFileName.c_str(), std::ios::out | std::ios::binary );
@@ -814,7 +814,7 @@ void StorageIO<ValueType>::readCSRFromMMFile(
                         "Could not read values from file '" << fileName << "'. Cause: '" << getErrorString( errorCode ) << "'." );
     }
 
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "mmx values: #rows = " << numRows << ", #cols = " << numColumns << ", #values = " << numValues )
 
     if( std::fclose( file ) != 0 )
@@ -916,7 +916,7 @@ void StorageIO<ValueType>::readCSRFromMMFile(
     for( int i = 1; i < numRows; i++ )
     {
         ia[i] += ia[i - 1];
-        LAMA_LOG_INFO( logger, "offset[" << i << "] = " << ia[i] )
+        SCAI_LOG_INFO( logger, "offset[" << i << "] = " << ia[i] )
     }
 
     ia[numRows] = numValues;
@@ -940,14 +940,14 @@ void StorageIO<ValueType>::readCSRFromMMFile(
             pos++;
         }
 
-        LAMA_LOG_INFO( logger, "added row " << value.i << ", offset = " << offset + pos << ", j = " << value.j )
+        SCAI_LOG_INFO( logger, "added row " << value.i << ", offset = " << offset + pos << ", j = " << value.j )
         ja[offset + pos] = value.j;
         data[offset + pos] = value.v;
     }
 
     OpenMPCSRUtils::sortRowElements( ja.get(), data.get(), ia.get(), numRows, true );
     // Note: we do care if the matrix has really all diagonal elements available
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "construct matrix " << numRows << " x " << numColumns << " from CSR arrays, # non-zeros = " << numValues )
 }
 
@@ -1014,7 +1014,7 @@ void _StorageIO::getFileInfo(
 
     std::string suffix = fileName.substr( pos + 1 );
 
-    LAMA_LOG_DEBUG( logger, "File info of " << fileName << ": base = " << baseName << ", suffix = " << suffix )
+    SCAI_LOG_DEBUG( logger, "File info of " << fileName << ": base = " << baseName << ", suffix = " << suffix )
 
     if( suffix == MATRIX_MARKET_FILE_SUFFIX )
     {
@@ -1030,7 +1030,7 @@ void _StorageIO::getFileInfo(
         IndexType numValues;
         PartitionId rank;
 
-        LAMA_LOG_DEBUG( logger, "readCSRHeader " << fileName )
+        SCAI_LOG_DEBUG( logger, "readCSRHeader " << fileName )
 
         readCSRHeader( numRows, numColumns, numValues, np, rank, fileType, fileName );
 
@@ -1283,7 +1283,7 @@ void StorageIO<ValueType>::readCSRFromFile(
     LAMAArray<ValueType>& csrValues,
     const std::string& fileName )
 {
-    LAMA_LOG_INFO( logger, "read CSR matrix data from file: '" << fileName << "'." )
+    SCAI_LOG_INFO( logger, "read CSR matrix data from file: '" << fileName << "'." )
 
     LAMA_REGION( "StorageIO.readCSRFromFile" )
 
@@ -1320,7 +1320,7 @@ void StorageIO<ValueType>::readCSRFromFile(
 
     readCSRHeader( numRows, numColumns, numValues, size, rank, fileType, frmFileName );
 
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "readCSRHeader( " << frmFileName << " ): " << numRows << " x " << numColumns << ", #values = " << numValues )
 
     switch( fileType )

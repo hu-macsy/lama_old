@@ -55,7 +55,7 @@ typedef boost::mpl::list<double, float> test_types;
 
 BOOST_AUTO_TEST_SUITE( CUDA_HostContextTest );
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.CUDA_HostContextTest" );
+SCAI_LOG_DEF_LOGGER( logger, "Test.CUDA_HostContextTest" );
 
 /* --------------------------------------------------------------------- */
 
@@ -70,8 +70,8 @@ BOOST_AUTO_TEST_CASE( getContextTest )
     ContextPtr cudaContext = lama_test::CUDAContext::getContext();
     CUDAHostContextManager::setAsCurrent( cudaContext );
     cudaHostContext = ContextFactory::getContext( Context::Host );
-    LAMA_LOG_INFO( logger, "defaultHostContext = " << *defaultHostContext );
-    LAMA_LOG_INFO( logger, "cudaHostContext = " << *cudaHostContext );
+    SCAI_LOG_INFO( logger, "defaultHostContext = " << *defaultHostContext );
+    SCAI_LOG_INFO( logger, "cudaHostContext = " << *cudaHostContext );
     BOOST_CHECK( defaultHostContext.get() != cudaHostContext.get() );
     // Note: the two shared pointers will be freed at the end of the subroutine
     //       so the CUDA context is freed now

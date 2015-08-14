@@ -57,7 +57,7 @@ using std::abs;
 using common::getScalarType;
 using tasking::SyncToken;
 
-LAMA_LOG_DEF_LOGGER( OpenMPDIAUtils::logger, "OpenMP.DIAUtils" )
+SCAI_LOG_DEF_LOGGER( OpenMPDIAUtils::logger, "OpenMP.DIAUtils" )
 
 /* --------------------------------------------------------------------------- */
 /*   Implementation of methods                                                 */
@@ -103,7 +103,7 @@ ValueType OpenMPDIAUtils::absMaxVal(
 
         #pragma omp critical
         {
-            LAMA_LOG_DEBUG( logger, "absMaxVal, threadVal = " << threadVal << ", maxVal = " << maxValue )
+            SCAI_LOG_DEBUG( logger, "absMaxVal, threadVal = " << threadVal << ", maxVal = " << maxValue )
 
             if( threadVal > maxValue )
             {
@@ -130,7 +130,7 @@ void OpenMPDIAUtils::getCSRValues(
     const DIAValueType diaValues[],
     const DIAValueType eps )
 {
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "get CSRValues<" << getScalarType<DIAValueType>() << ", " << getScalarType<CSRValueType>() 
                     << ">" << ", #rows = " << numRows << ", #diagonals = " << numDiagonals 
                     << ", #non-zero values = " << csrIA[numRows] << ", diagonalFlag = " << diagonalFlag )
@@ -194,7 +194,7 @@ void OpenMPDIAUtils::getCSRValues(
                 csrJA[offset] = i;
                 csrValues[offset] = static_cast<CSRValueType>( diaValues[i] );
 
-                LAMA_LOG_TRACE( logger,
+                SCAI_LOG_TRACE( logger,
                                 "csrJA[" << offset << "] = " << csrJA[offset] << ", csrValues[" << offset << "] = " << csrValues[offset] )
 
                 offset++;
@@ -223,7 +223,7 @@ void OpenMPDIAUtils::getCSRValues(
                 {
                     csrJA[offset] = j;
                     csrValues[offset] = static_cast<CSRValueType>( value );
-                    LAMA_LOG_TRACE( logger,
+                    SCAI_LOG_TRACE( logger,
                                     "csrJA[" << offset << "] = " << csrJA[offset] << ", csrValues[" << offset << "] = " << csrValues[offset] )
 
                     offset++;
@@ -248,7 +248,7 @@ void OpenMPDIAUtils::getCSRSizes(
     const DIAValueType diaValues[],
     const DIAValueType eps )
 {
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "get CSRSizes<" << getScalarType<DIAValueType>() << "> for DIA matrix " << numRows << " x " << numColumns 
                     << ", #diagonals = " << numDiagonals << ", eps = " << eps << ", diagonalFlag = " << diagonalFlag )
 
@@ -292,7 +292,7 @@ void OpenMPDIAUtils::getCSRSizes(
 
         csrSizes[i] = count;
 
-        LAMA_LOG_TRACE( logger, "#entries in row " << i << ": " << count )
+        SCAI_LOG_TRACE( logger, "#entries in row " << i << ": " << count )
     }
 }
 
@@ -311,10 +311,10 @@ void OpenMPDIAUtils::normalGEMV(
     const IndexType diaOffsets[],
     const ValueType diaValues[] )
 {
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "normalGEMV<" << getScalarType<ValueType>() << ", #threads = " << omp_get_max_threads() << ">, result[" << numRows << "] = " << alpha << " * A( dia, #diags = " << numDiagonals << " ) * x + " << beta << " * y " )
 
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "normalGEMV<" << getScalarType<ValueType>() << ">, n = " << numRows << ", d = " << numDiagonals )
 
     // result := alpha * A * x + beta * y -> result:= beta * y; result += alpha * A
@@ -349,7 +349,7 @@ void OpenMPDIAUtils::normalGEMV(
             result[i] += alpha * accu;
         }
 
-        if( LAMA_LOG_TRACE_ON( logger ) )
+        if( SCAI_LOG_TRACE_ON( logger ) )
         {
             std::cout << "NormalGEMV: result = ";
 
@@ -407,10 +407,10 @@ void OpenMPDIAUtils::normalGEVM(
     const ValueType diaValues[],
     SyncToken* syncToken )
 {
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "normalGEVM<" << getScalarType<ValueType>() << ", #threads = " << omp_get_max_threads() << ">, result[" << numRows << "] = " << alpha << " * A( dia, #diags = " << numDiagonals << " ) * x + " << beta << " * y " )
 
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "normalGEVM<" << getScalarType<ValueType>() << ">, n = " << numRows << ", d = " << numDiagonals )
 
     if( syncToken )
@@ -454,7 +454,7 @@ void OpenMPDIAUtils::normalGEVM(
         }
     }
 
-    if( LAMA_LOG_TRACE_ON( logger ) )
+    if( SCAI_LOG_TRACE_ON( logger ) )
     {
         std::cout << "NormalGEVM: result = ";
 
@@ -484,7 +484,7 @@ void OpenMPDIAUtils::jacobi(
     const IndexType numRows,
     class SyncToken* syncToken )
 {
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "jacobi<" << getScalarType<ValueType>() << ">" << ", #rows = " << numRows << ", #cols = " << numColumns << ", #diagonals = " << numDiagonals << ", omega = " << omega )
 
     LAMA_ASSERT_EQUAL_DEBUG( 0, diaOffset[0] )
@@ -492,7 +492,7 @@ void OpenMPDIAUtils::jacobi(
 
     if( syncToken != NULL )
     {
-        LAMA_LOG_ERROR( logger, "jacobi called asynchronously, not supported here" )
+        SCAI_LOG_ERROR( logger, "jacobi called asynchronously, not supported here" )
     }
 
     const ValueType oneMinusOmega = static_cast<ValueType>( 1.0 - omega );

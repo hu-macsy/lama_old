@@ -65,14 +65,14 @@ namespace lama
 
 const int MPICommunicator::defaultTag = 1;
 
-LAMA_LOG_DEF_LOGGER( MPICommunicator::logger, "Communicator.MPICommunicator" )
+SCAI_LOG_DEF_LOGGER( MPICommunicator::logger, "Communicator.MPICommunicator" )
 
 MPICommunicator::MPICommunicator( int& argc, char** & argv, const std::string& type )
     : CRTPCommunicator<MPICommunicator>( type ), 
       mMainThread( common::Thread::getSelf() ),
       mThreadSafetyLevel( Communicator::Funneled )
 {
-    LAMA_LOG_DEBUG( logger, "Communicator constructed, type = " << type )
+    SCAI_LOG_DEBUG( logger, "Communicator constructed, type = " << type )
     initialize( argc, argv );
 }
 
@@ -84,7 +84,7 @@ MPICommunicator::MPICommunicator()
     int argc = 0;
     char** argv = NULL;
 
-    LAMA_LOG_DEBUG( logger, "MPICommunicator constructed, no args" )
+    SCAI_LOG_DEBUG( logger, "MPICommunicator constructed, no args" )
     initialize( argc, argv );
 }
 
@@ -107,7 +107,7 @@ void MPICommunicator::initialize( int& argc, char** & argv )
     if( initialized )
     {
         mExternInitialization = true;
-        LAMA_LOG_WARN( logger, "MPI_Init: MPI has already been initialized." )
+        SCAI_LOG_WARN( logger, "MPI_Init: MPI has already been initialized." )
     }
     else
     {
@@ -134,7 +134,7 @@ void MPICommunicator::initialize( int& argc, char** & argv )
         }
         else if( threadSafetyEnvironment != "" )
         {
-            LAMA_LOG_ERROR( logger,
+            SCAI_LOG_ERROR( logger,
                             "LAMA_MPICOMM_THREAD_SAFETY = " << threadSafetyEnvironment << ", unknown value (try Multiple or Serialized)" )
         }
 
@@ -146,22 +146,22 @@ void MPICommunicator::initialize( int& argc, char** & argv )
         {
             case MPI_THREAD_MULTIPLE:
                 mThreadSafetyLevel = Communicator::Multiple;
-                LAMA_LOG_INFO( logger, "MPI Thread Safety Level: MPI_THREAD_MULTIPLE" )
+                SCAI_LOG_INFO( logger, "MPI Thread Safety Level: MPI_THREAD_MULTIPLE" )
                 break;
 
             case MPI_THREAD_SERIALIZED:
                 mThreadSafetyLevel = Communicator::Serialized;
-                LAMA_LOG_INFO( logger, "MPI Thread Safety Level: MPI_THREAD_SERIALIZED" )
+                SCAI_LOG_INFO( logger, "MPI Thread Safety Level: MPI_THREAD_SERIALIZED" )
                 break;
 
             case MPI_THREAD_FUNNELED:
                 mThreadSafetyLevel = Communicator::Funneled;
-                LAMA_LOG_INFO( logger, "MPI Thread Safety Level: MPI_THREAD_FUNNELED" )
+                SCAI_LOG_INFO( logger, "MPI Thread Safety Level: MPI_THREAD_FUNNELED" )
                 break;
 
             case MPI_THREAD_SINGLE:
                 mThreadSafetyLevel = Communicator::Funneled;
-                LAMA_LOG_INFO( logger, "MPI Thread Safety Level: MPI_THREAD_SINGLE" )
+                SCAI_LOG_INFO( logger, "MPI Thread Safety Level: MPI_THREAD_SINGLE" )
                 break;
 
             default:
@@ -175,14 +175,14 @@ void MPICommunicator::initialize( int& argc, char** & argv )
 
         if( setCUDA )
         {
-            LAMA_LOG_ERROR( logger, "MPI isCUDAAware = " << isCUDAAware )
+            SCAI_LOG_ERROR( logger, "MPI isCUDAAware = " << isCUDAAware )
         }
     }
 
     mCommWorld = MPI_COMM_WORLD;
     MPI_Comm_dup( mCommWorld, &mComm );
     MPI_Comm_dup( mCommWorld, &mCommTask );
-    LAMA_LOG_INFO( logger, "MPI_Init" )
+    SCAI_LOG_INFO( logger, "MPI_Init" )
     LAMA_MPICALL( logger, MPI_Comm_size( mComm, &mSize ), "MPI_Comm_size" )
     LAMA_MPICALL( logger, MPI_Comm_rank( mComm, &mRank ), "MPI_Comm_rank" )
 
@@ -287,7 +287,7 @@ void MPICommunicator::setNodeData()
 
     LAMA_MPICALL( logger, MPI_Get_processor_name( nodeName, &nodeNameLength ), "MPI_Get_processor_name" )
 
-    LAMA_LOG_INFO( logger, "Processor " << mRank << " runs on node " << nodeName )
+    SCAI_LOG_INFO( logger, "Processor " << mRank << " runs on node " << nodeName )
 
     char* allNodeNames = (char*) malloc( MPI_MAX_PROCESSOR_NAME * mSize * sizeof(char) );
 
@@ -329,14 +329,14 @@ void MPICommunicator::setNodeData()
 
     LAMA_ASSERT_ERROR( mNodeRank < mNodeSize, "Serious problem encountered to get node size" )
 
-    LAMA_LOG_INFO( logger, "Processor " << mRank << ": node rank " << mNodeRank << " of " << mNodeSize )
+    SCAI_LOG_INFO( logger, "Processor " << mRank << ": node rank " << mNodeRank << " of " << mNodeSize )
 }
 
 /* ---------------------------------------------------------------------------------- */
 
 MPICommunicator::~MPICommunicator()
 {
-    LAMA_LOG_INFO( logger, *this << ": ~MPICommunicator" )
+    SCAI_LOG_INFO( logger, *this << ": ~MPICommunicator" )
     int finalized = 0;
     LAMA_MPICALL( logger, MPI_Finalized( &finalized ), "MPI_Finalized" )
 
@@ -344,17 +344,17 @@ MPICommunicator::~MPICommunicator()
     {
         if( !mExternInitialization )
         {
-            LAMA_LOG_INFO( logger, "call MPI_Finalize" )
+            SCAI_LOG_INFO( logger, "call MPI_Finalize" )
             LAMA_MPICALL( logger, MPI_Finalize(), "MPI_Finalize" )
         }
         else
         {
-            LAMA_LOG_INFO( logger, "ATTENTION: no call MPI_Finalize, was externally initialized" )
+            SCAI_LOG_INFO( logger, "ATTENTION: no call MPI_Finalize, was externally initialized" )
         }
     }
     else
     {
-        LAMA_LOG_WARN( logger, *this << ": tried to finalize MPI, but MPI has already been finalized." )
+        SCAI_LOG_WARN( logger, *this << ": tried to finalize MPI, but MPI has already been finalized." )
     }
 }
 
@@ -478,7 +478,7 @@ void MPICommunicator::exchangeByPlanImpl(
     LAMA_ASSERT_ERROR( sendPlan.allocated(), "sendPlan not allocated" )
     LAMA_ASSERT_ERROR( recvPlan.allocated(), "recvPlan not allocated" )
 
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    *this << ": exchange for values of type " << common::getScalarType<ValueType>() 
                    << ", send to " << sendPlan.size() << " processors, recv from " << recvPlan.size() )
 
@@ -496,7 +496,7 @@ void MPICommunicator::exchangeByPlanImpl(
         IndexType offset = recvPlan[i].offset;
         ValueType* recvDataForI = recvData + offset;
         PartitionId p = recvPlan[i].partitionId;
-        LAMA_LOG_DEBUG( logger,
+        SCAI_LOG_DEBUG( logger,
                         *this << ": receive " << quantity << " elements" << " from processor " << p << " at offset " << offset )
 
         if( p != mRank )
@@ -519,7 +519,7 @@ void MPICommunicator::exchangeByPlanImpl(
         IndexType offset = sendPlan[i].offset;
         const ValueType* sendDataForI = sendData + offset;
         PartitionId p = sendPlan[i].partitionId;
-        LAMA_LOG_DEBUG( logger,
+        SCAI_LOG_DEBUG( logger,
                         *this << ": send " << quantity << " elements" << " to processor " << p << " at offset " << offset )
 
         if( p != mRank )
@@ -528,7 +528,7 @@ void MPICommunicator::exchangeByPlanImpl(
         }
         else
         {
-            LAMA_LOG_DEBUG( logger, "self-exchange of " << quantity << " elements" )
+            SCAI_LOG_DEBUG( logger, "self-exchange of " << quantity << " elements" )
             LAMA_ASSERT_DEBUG( quantity == recvDataForMeSize, "size mismatch for self exchange" )
 
             for( IndexType k = 0; k < recvDataForMeSize; k++ )
@@ -557,7 +557,7 @@ SyncToken* MPICommunicator::exchangeByPlanAsyncImpl(
 
     LAMA_ASSERT_ERROR( sendPlan.allocated(), "sendPlan not allocated" )
     LAMA_ASSERT_ERROR( recvPlan.allocated(), "recvPlan not allocated" )
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    *this << ": exchange for values of type " << common::getScalarType<ValueType>() 
                     << ", send to " << sendPlan.size() << " processors, recv from " << recvPlan.size() )
     int noRequests = sendPlan.size() + recvPlan.size();
@@ -578,7 +578,7 @@ SyncToken* MPICommunicator::exchangeByPlanAsyncImpl(
         IndexType quantity = recvPlan[i].quantity;
         ValueType* recvDataForI = recvData + recvPlan[i].offset;
         PartitionId p = recvPlan[i].partitionId;
-        LAMA_LOG_DEBUG( logger, *this << ": receive " << quantity << " elements" << " from processor " << p )
+        SCAI_LOG_DEBUG( logger, *this << ": receive " << quantity << " elements" << " from processor " << p )
 
         if( p != mRank )
         {
@@ -598,7 +598,7 @@ SyncToken* MPICommunicator::exchangeByPlanAsyncImpl(
         IndexType quantity = sendPlan[i].quantity;
         const ValueType* sendDataForI = sendData + sendPlan[i].offset;
         PartitionId p = sendPlan[i].partitionId;
-        LAMA_LOG_DEBUG( logger, *this << ": send " << quantity << " elements" << " to processor " << p )
+        SCAI_LOG_DEBUG( logger, *this << ": send " << quantity << " elements" << " to processor " << p )
 
         if( p != mRank )
         {
@@ -606,7 +606,7 @@ SyncToken* MPICommunicator::exchangeByPlanAsyncImpl(
         }
         else
         {
-            LAMA_LOG_DEBUG( logger, "self-exchange of " << quantity << " elements" )
+            SCAI_LOG_DEBUG( logger, "self-exchange of " << quantity << " elements" )
             LAMA_ASSERT_DEBUG( quantity == recvDataForMeSize, "size mismatch for self exchange" )
 
             for( IndexType k = 0; k < recvDataForMeSize; k++ )
@@ -671,7 +671,7 @@ IndexType MPICommunicator::shiftImpl(
     LAMA_ASSERT_ERROR( source != getRank(), "source must not be this partition" )
     LAMA_ASSERT_ERROR( dest != getRank(), "dest must not be this partition" )
 
-    LAMA_LOG_DEBUG( logger,
+    SCAI_LOG_DEBUG( logger,
                     *this << ": recv from " << source << " max " << recvSize << " values " << ", send to " << dest << " " << sendSize << " values." )
 
     MPI_Datatype commType = getMPIType<ValueType>();
@@ -688,7 +688,7 @@ IndexType MPICommunicator::shiftImpl(
 
     LAMA_MPICALL( logger, MPI_Get_count( &mpiStatus, commType, &count ), "MPI_Get_count(ValueType)" )
 
-    LAMA_LOG_DEBUG( logger, "received from " << source << " #values = " << count << ", max was " << recvSize )
+    SCAI_LOG_DEBUG( logger, "received from " << source << " #values = " << count << ", max was " << recvSize )
 
     return count;
 }
@@ -705,7 +705,7 @@ SyncToken* MPICommunicator::shiftAsyncImpl(
     const PartitionId dest,
     const IndexType size ) const
 {
-    LAMA_LOG_DEBUG( logger,
+    SCAI_LOG_DEBUG( logger,
                     *this << ": recv from " << source << ", send to " << dest << ", both " << size << " values." )
 
     LAMA_ASSERT_ERROR( source != getRank(), "source must not be this partition" )
@@ -734,7 +734,7 @@ ValueType MPICommunicator::sumImpl( const ValueType value ) const
     MPI_Datatype commType = getMPIType<ValueType>();
     LAMA_MPICALL( logger, MPI_Allreduce( (void* ) &value, (void* ) &sum, 1, commType, MPI_SUM, selectMPIComm() ),
                   "MPI_Allreduce(MPI_SUM)" )
-    LAMA_LOG_DEBUG( logger, "sum: my value = " << value << ", sum = " << sum )
+    SCAI_LOG_DEBUG( logger, "sum: my value = " << value << ", sum = " << sum )
     return sum;
 }
 
@@ -765,12 +765,12 @@ ValueType MPICommunicator::maxImpl( const ValueType value ) const
 
     ValueType globalMax; // no initialization needed, done in MPI call
 
-    LAMA_LOG_DEBUG( logger, "maxImpl: local value = " << value )
+    SCAI_LOG_DEBUG( logger, "maxImpl: local value = " << value )
 
     LAMA_MPICALL( logger, MPI_Allreduce( (void* ) &value, (void* ) &globalMax, 1, commType, MPI_MAX, selectMPIComm() ),
                   "MPI_Allreduce( MPI_MAX )" )
 
-    LAMA_LOG_DEBUG( logger, "maxImpl: global value = " << globalMax )
+    SCAI_LOG_DEBUG( logger, "maxImpl: global value = " << globalMax )
 
     return globalMax;
 }
@@ -794,7 +794,7 @@ void MPICommunicator::scatterImpl(
     LAMA_REGION( "Communicator.MPI.scatter" )
 
     LAMA_ASSERT_DEBUG( root < getSize(), "illegal root, root = " << root )
-    LAMA_LOG_DEBUG( logger, *this << ": scatter of " << n << " elements, root = " << root )
+    SCAI_LOG_DEBUG( logger, *this << ": scatter of " << n << " elements, root = " << root )
     MPI_Datatype commType = getMPIType<ValueType>();
     // MPI interface is not aware of const, so const_cast is required
     LAMA_MPICALL( logger,
@@ -835,7 +835,7 @@ void MPICommunicator::scatterVImpl(
             displacement += counts[i];
         }
 
-        LAMA_LOG_DEBUG( logger,
+        SCAI_LOG_DEBUG( logger,
                         *this << ": scatter of " << displacement << " elements, I receive " << n << " elements" )
         LAMA_MPICALL( logger,
                       MPI_Scatterv( sendbuf, counts.get(), displs.get(), commType, myvals, n, commType, root,
@@ -854,7 +854,7 @@ void MPICommunicator::scatterVImpl(
             counts[i] = 0;
         }
 
-        LAMA_LOG_DEBUG( logger, *this << ": root = " << root << " scatters " << n << " elements to me" )
+        SCAI_LOG_DEBUG( logger, *this << ": root = " << root << " scatters " << n << " elements to me" )
         LAMA_MPICALL( logger,
                       MPI_Scatterv( NULL, counts.get(), NULL, commType, myvals, n, commType, root, selectMPIComm() ),
                       "MPI_Scatterv" )
@@ -875,7 +875,7 @@ void MPICommunicator::gatherImpl(
     LAMA_REGION( "Communicator.MPI.gather" )
 
     LAMA_ASSERT_DEBUG( root < getSize(), "illegal root, root = " << root )
-    LAMA_LOG_DEBUG( logger, *this << ": gather of " << n << " elements, root = " << root )
+    SCAI_LOG_DEBUG( logger, *this << ": gather of " << n << " elements, root = " << root )
     MPI_Datatype commType = getMPIType<ValueType>();
     // MPI interface is not aware of const, so const_cast is required
     void* sendbuf = const_cast<ValueType*>( myvals );
@@ -915,7 +915,7 @@ void MPICommunicator::gatherVImpl(
             displacement += counts[i];
         }
 
-        LAMA_LOG_DEBUG( logger,
+        SCAI_LOG_DEBUG( logger,
                         *this << ": scatter of " << displacement << " elements, I receive " << n << " elements" )
         LAMA_MPICALL( logger,
                       MPI_Gatherv( sendbuf, n, commType, allvals, counts.get(), displs.get(), commType, root,
@@ -934,7 +934,7 @@ void MPICommunicator::gatherVImpl(
             counts[i] = 0;
         }
 
-        LAMA_LOG_DEBUG( logger, *this << ": root = " << root << " scatters " << n << " elements to me" )
+        SCAI_LOG_DEBUG( logger, *this << ": root = " << root << " scatters " << n << " elements to me" )
         LAMA_MPICALL( logger,
                       MPI_Gatherv( sendbuf, n, commType, NULL, counts.get(), NULL, commType, root, selectMPIComm() ),
                       "MPI_Gatherv<ValueType>" )
@@ -1005,7 +1005,7 @@ memory::ContextPtr MPICommunicator::getCommunicationContext( const memory::Conte
 
     memory::ContextPtr validContext = array.getValidContext( memory::context::Host );
 
-    LAMA_LOG_DEBUG( logger, "CommunicationContext: valid context for " << array << ": " << *validContext )
+    SCAI_LOG_DEBUG( logger, "CommunicationContext: valid context for " << array << ": " << *validContext )
 
     if ( validContext->getType() == memory::context::Host )
     {
@@ -1055,7 +1055,7 @@ MPICommunicator::MPIGuard::~MPIGuard()
 {
     if ( theMPICommunicator.use_count() > 1 )
     {
-        LAMA_LOG_WARN( logger,
+        SCAI_LOG_WARN( logger,
                    "MPICommunicator has " << theMPICommunicator.use_count() - 1 << " remaining references, seems that not all LAMA data structures have been freed" )
     }
 }
@@ -1068,7 +1068,7 @@ CommunicatorPtr MPICommunicator::create()
 {
     if( !theMPICommunicator )
     {
-        LAMA_LOG_INFO( logger, "create new MPICommunicator" )
+        SCAI_LOG_INFO( logger, "create new MPICommunicator" )
 
         // create a new instance of MPICommunicator, will call MPI_Init
 

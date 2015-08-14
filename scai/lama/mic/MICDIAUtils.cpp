@@ -50,7 +50,7 @@
 namespace lama
 {
 
-LAMA_LOG_DEF_LOGGER( MICDIAUtils::logger, "MIC.DIAUtils" )
+SCAI_LOG_DEF_LOGGER( MICDIAUtils::logger, "MIC.DIAUtils" )
 
 /* --------------------------------------------------------------------------- */
 /*   Implementation of methods                                                 */
@@ -96,7 +96,7 @@ ValueType MICDIAUtils::absMaxVal(
 
         #pragma omp critical
         {
-            LAMA_LOG_DEBUG( logger, "absMaxVal, threadVal = " << threadVal << ", maxVal = " << maxValue )
+            SCAI_LOG_DEBUG( logger, "absMaxVal, threadVal = " << threadVal << ", maxVal = " << maxValue )
 
             if( threadVal > maxValue )
             {
@@ -123,7 +123,7 @@ void MICDIAUtils::getCSRValues(
     const DIAValueType diaValues[],
     const DIAValueType eps )
 {
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "get CSRValues<" << common::getScalarType<DIAValueType>() << ", " << common::getScalarType<CSRValueType>() << ">" << ", #rows = " << numRows << ", #diagonals = " << numDiagonals << ", #non-zero values = " << csrIA[numRows] << ", diagonalFlag = " << diagonalFlag )
 
     // we cannot check for correct sizes, but at least for valid pointers
@@ -185,7 +185,7 @@ void MICDIAUtils::getCSRValues(
                 csrJA[offset] = i;
                 csrValues[offset] = static_cast<CSRValueType>( diaValues[i] );
 
-                LAMA_LOG_TRACE( logger,
+                SCAI_LOG_TRACE( logger,
                                 "csrJA[" << offset << "] = " << csrJA[offset] << ", csrValues[" << offset << "] = " << csrValues[offset] )
 
                 offset++;
@@ -214,7 +214,7 @@ void MICDIAUtils::getCSRValues(
                 {
                     csrJA[offset] = j;
                     csrValues[offset] = static_cast<CSRValueType>( value );
-                    LAMA_LOG_TRACE( logger,
+                    SCAI_LOG_TRACE( logger,
                                     "csrJA[" << offset << "] = " << csrJA[offset] << ", csrValues[" << offset << "] = " << csrValues[offset] )
 
                     offset++;
@@ -239,7 +239,7 @@ void MICDIAUtils::getCSRSizes(
     const DIAValueType diaValues[],
     const DIAValueType eps )
 {
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "get CSRSizes<" << common::getScalarType<DIAValueType>() << "> for DIA matrix " << numRows << " x " << numColumns << ", #diagonals = " << numDiagonals << ", eps = " << eps << ", diagonalFlag = " << diagonalFlag )
 
     #pragma omp parallel for
@@ -282,7 +282,7 @@ void MICDIAUtils::getCSRSizes(
 
         csrSizes[i] = count;
 
-        LAMA_LOG_TRACE( logger, "#entries in row " << i << ": " << count )
+        SCAI_LOG_TRACE( logger, "#entries in row " << i << ": " << count )
     }
 }
 
@@ -302,7 +302,7 @@ void MICDIAUtils::normalGEMV(
     const ValueType diaValues[],
     SyncToken* syncToken )
 {
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "normalGEMV<" << common::getScalarType<ValueType>() << ">, result[" << numRows << "] = " << alpha << " * A( dia, #diags = " << numDiagonals << " ) * x + " << beta << " * y " )
 
     // result := alpha * A * x + beta * y -> result:= beta * y; result += alpha * A
@@ -370,14 +370,14 @@ void MICDIAUtils::jacobi(
 {
     LAMA_REGION( "MIC.DIA.Jacobi" )
 
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "jacobi<" << common::getScalarType<ValueType>() << ">" << ", #rows = " << numRows << ", #cols = " << numColumns << ", #diagonals = " << numDiagonals << ", omega = " << omega )
 
     // main diagonal must be first
 
     if( syncToken != NULL )
     {
-        LAMA_LOG_ERROR( logger, "jacobi called asynchronously, not supported here" )
+        SCAI_LOG_ERROR( logger, "jacobi called asynchronously, not supported here" )
     }
 
     void* solutionPtr = solution;
@@ -449,7 +449,7 @@ void MICDIAUtils::setInterface( DIAUtilsInterface& DIAUtils )
 {
     // Register all CUDA routines of this class for the LAMA interface
 
-    LAMA_LOG_INFO( logger, "set DIA routines for MIC in Interface" )
+    SCAI_LOG_INFO( logger, "set DIA routines for MIC in Interface" )
 
     /*
      LAMA_INTERFACE_REGISTER_T( DIAUtils, getCSRSizes, float )

@@ -46,7 +46,7 @@
 
 namespace lama{ 
 
-LAMA_LOG_DEF_LOGGER( CGNR::logger, "Solver.CGNR" )
+SCAI_LOG_DEF_LOGGER( CGNR::logger, "Solver.CGNR" )
 
 CGNR::CGNR( const std::string& id )
     : IterativeSolver(id){}
@@ -69,7 +69,7 @@ CGNR::CGNRRuntime::~CGNRRuntime(){}
 
 
 void CGNR::initialize( const Matrix& coefficients ){
-    LAMA_LOG_DEBUG(logger, "Initialization started for coefficients = "<< coefficients)
+    SCAI_LOG_DEBUG(logger, "Initialization started for coefficients = "<< coefficients)
 
     Solver::initialize(coefficients);
  	CGNRRuntime& runtime = getRuntime();

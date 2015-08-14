@@ -80,7 +80,7 @@ void typeNameTest( )
 
 BOOST_AUTO_TEST_SUITE( COOSparseMatrixTest )
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.SparseMatrixTest.COOSparseMatrixTest" )
+SCAI_LOG_DEF_LOGGER( logger, "Test.SparseMatrixTest.COOSparseMatrixTest" )
 
 LAMA_AUTO_TEST_CASE_CT( commonTestCases, COOSparseMatrixTest )
 LAMA_AUTO_TEST_CASE_T( typeNameTest, COOSparseMatrixTest )

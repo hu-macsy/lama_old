@@ -122,7 +122,7 @@ public:
 
 private:
 
-    LAMA_LOG_DECL_STATIC_LOGGER( logger )
+    SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
     /** Thread pool will be allocated on need, shared pointer guarantees deallocation. */
 

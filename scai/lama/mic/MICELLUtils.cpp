@@ -61,7 +61,7 @@ namespace lama
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-LAMA_LOG_DEF_LOGGER( MICELLUtils::logger, "MIC.ELLUtils" )
+SCAI_LOG_DEF_LOGGER( MICELLUtils::logger, "MIC.ELLUtils" )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
@@ -90,7 +90,7 @@ IndexType MICELLUtils::countNonEmptyRowsBySizes( const IndexType sizes[], const 
         }
     }
 
-    LAMA_LOG_INFO( logger, "#non-zero rows = " << counter << ", counted by sizes" )
+    SCAI_LOG_INFO( logger, "#non-zero rows = " << counter << ", counted by sizes" )
 
     return counter;
 }
@@ -131,14 +131,14 @@ void MICELLUtils::setNonEmptyRowsBySizes(
 
     LAMA_ASSERT_EQUAL_DEBUG( counter, numNonEmptyRows )
 
-    LAMA_LOG_INFO( logger, "#non-zero rows = " << counter << ", set by sizes" )
+    SCAI_LOG_INFO( logger, "#non-zero rows = " << counter << ", set by sizes" )
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 bool MICELLUtils::hasDiagonalProperty( const IndexType numDiagonals, const IndexType ellJA[] )
 {
-    LAMA_LOG_INFO( logger, "hasDiagonalProperty, #numDiagonals = " << numDiagonals )
+    SCAI_LOG_INFO( logger, "hasDiagonalProperty, #numDiagonals = " << numDiagonals )
 
     if( numDiagonals == 0 )
     {
@@ -184,7 +184,7 @@ void MICELLUtils::scaleValue(
     ValueType ellValues[],
     const OtherValueType values[] )
 {
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "scaleValue<" << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << ">" << ", #numRows = " << numRows )
 
     void* ellValuesPtr = ellValues;
@@ -223,7 +223,7 @@ void MICELLUtils::check(
     const IndexType ellJA[],
     const char* msg )
 {
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "check # numRows = " << numRows << ", numValuesPerRow = " << numValuesPerRow << ", numColumns = " << numColumns )
 
     if( numRows > 0 )
@@ -302,13 +302,13 @@ ValueType MICELLUtils::absMaxVal(
                     threadVal = val;
                 }
 
-                // LAMA_LOG_TRACE( logger, "absMaxVal, val[" << i << ", " << jj << "] = " << val )
+                // SCAI_LOG_TRACE( logger, "absMaxVal, val[" << i << ", " << jj << "] = " << val )
             }
         }
 
         #pragma omp critical
         {
-            LAMA_LOG_DEBUG( logger, "absMaxVal, threadVal = " << threadVal << ", maxVal = " << maxValue )
+            SCAI_LOG_DEBUG( logger, "absMaxVal, threadVal = " << threadVal << ", maxVal = " << maxValue )
 
             if( threadVal > maxValue )
             {
@@ -317,7 +317,7 @@ ValueType MICELLUtils::absMaxVal(
         }
     }
 
-    LAMA_LOG_DEBUG( logger, "absMaxVal, maxVal = " << maxValue )
+    SCAI_LOG_DEBUG( logger, "absMaxVal, maxVal = " << maxValue )
 
     return maxValue;
 }
@@ -335,7 +335,7 @@ void MICELLUtils::getRow(
     const IndexType ellJA[],
     const ValueType ellValues[] )
 {
-    LAMA_LOG_DEBUG( logger, "get row #i = " << i )
+    SCAI_LOG_DEBUG( logger, "get row #i = " << i )
 
     const void* ellSizesPtr = ellSizes;
     const void* ellJAPtr = ellJA;
@@ -379,7 +379,7 @@ OtherValueType MICELLUtils::getValue(
     const IndexType ellJA[],
     const ValueType ellValues[] )
 {
-    LAMA_LOG_TRACE( logger, "get value i = " << i << ", j = " << j )
+    SCAI_LOG_TRACE( logger, "get value i = " << i << ", j = " << j )
 
     OtherValueType value = 0;
 
@@ -425,7 +425,7 @@ void MICELLUtils::getCSRValues(
     const IndexType ellJA[],
     const ELLValueType ellValues[] )
 {
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "get CSRValues<" << common::getScalarType<ELLValueType>() << ", " << common::getScalarType<CSRValueType>() << ">" << ", #rows = " << numRows )
 
     LAMA_REGION( "MIC.ELL->CSR_values" )
@@ -488,7 +488,7 @@ void MICELLUtils::setCSRValues(
 {
     LAMA_REGION( "MIC.ELL<-CSR_values" )
 
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "set CSRValues<" << common::getScalarType<ELLValueType>() << ", " << common::getScalarType<CSRValueType>() << ">" << ", #rows = " << numRows << ", #values/row = " << numValuesPerRow )
 
     const void* ellSizesPtr = ellSizes;
@@ -550,7 +550,7 @@ void MICELLUtils::fillELLValues(
     const IndexType numRows,
     const IndexType numValuesPerRow )
 {
-    LAMA_LOG_INFO( logger, "fill ELLValues<" << typeid( ValueType ).name() )
+    SCAI_LOG_INFO( logger, "fill ELLValues<" << typeid( ValueType ).name() )
 
     #pragma omp parallel
     {
@@ -591,7 +591,7 @@ void MICELLUtils::compressIA(
     const ValueType eps,
     IndexType newIA[] )
 {
-    LAMA_LOG_INFO( logger, "compressIA with eps = " << eps )
+    SCAI_LOG_INFO( logger, "compressIA with eps = " << eps )
 
     #pragma omp parallel
     {
@@ -631,7 +631,7 @@ void MICELLUtils::compressValues(
     IndexType newJA[],
     ValueType newValues[] )
 {
-    LAMA_LOG_INFO( logger, "compressValues with eps = " << eps )
+    SCAI_LOG_INFO( logger, "compressValues with eps = " << eps )
 
     #pragma omp parallel
     {
@@ -668,7 +668,7 @@ void MICELLUtils::computeIA(
     const IndexType bNumRows,
     IndexType cIA[] )
 {
-    LAMA_LOG_INFO( logger, "computeIA with numRows A = " << aNumRows << " and numRows B = " << bNumRows )
+    SCAI_LOG_INFO( logger, "computeIA with numRows A = " << aNumRows << " and numRows B = " << bNumRows )
 
     #pragma omp parallel
     {
@@ -718,7 +718,7 @@ void MICELLUtils::computeValues(
     IndexType cJA[],
     ValueType cValues[] )
 {
-    LAMA_LOG_INFO( logger, "computeValues with numRows A = " << aNumRows << " and numRows B = " << bNumRows )
+    SCAI_LOG_INFO( logger, "computeValues with numRows A = " << aNumRows << " and numRows B = " << bNumRows )
 
     #pragma omp parallel
     {
@@ -780,7 +780,7 @@ void MICELLUtils::addComputeIA(
     const IndexType bNumRows,
     IndexType cIA[] )
 {
-    LAMA_LOG_INFO( logger, "addComputeIA with numRows A = " << aNumRows << " and numRows B = " << bNumRows )
+    SCAI_LOG_INFO( logger, "addComputeIA with numRows A = " << aNumRows << " and numRows B = " << bNumRows )
 
     #pragma omp parallel
     {
@@ -830,7 +830,7 @@ void MICELLUtils::addComputeValues(
     IndexType cJA[],
     ValueType cValues[] )
 {
-    LAMA_LOG_INFO( logger, "computeValues with numRows A = " << aNumRows << " and numRows B = " << bNumRows )
+    SCAI_LOG_INFO( logger, "computeValues with numRows A = " << aNumRows << " and numRows B = " << bNumRows )
 
     #pragma omp parallel
     {
@@ -898,14 +898,14 @@ void MICELLUtils::jacobi(
 {
     LAMA_REGION( "MIC.ELL.jacobi" )
 
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "jacobi<" << common::getScalarType<ValueType>() << ">" << ", #rows = " << numRows << ", omega = " << omega )
 
     if( syncToken )
     {
         MICSyncToken* micSyncToken = dynamic_cast<MICSyncToken*>( syncToken );
         LAMA_ASSERT_ERROR( micSyncToken, "no MIC sync token provided" )
-        LAMA_LOG_WARN( logger, "asynchronous execution on MIC not supported yet" )
+        SCAI_LOG_WARN( logger, "asynchronous execution on MIC not supported yet" )
     }
 
     void* solutionPtr = solution;
@@ -1050,7 +1050,7 @@ void MICELLUtils::normalGEMV(
     const ValueType ellValues[],
     SyncToken* syncToken )
 {
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "normalGEMV<" << common::getScalarType<ValueType>() << ">, result[" << numRows << "] = " << alpha << " * A( ell, #maxNZ/row = " << numNonZerosPerRow << " ) * x + " << beta << " * y " )
 
     if( numNonZerosPerRow == 0 )
@@ -1145,7 +1145,7 @@ void MICELLUtils::sparseGEMV(
 
     LAMA_REGION( "MIC.ELL.sparseGEMV" )
 
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "sparseGEMV<" << common::getScalarType<ValueType>() << ">, n = " << numRows << ", nonZeroRows = " << numNonZeroRows << ", alpha = " << alpha )
 
     // conversion of pointer to void* to cheat offload
@@ -1206,7 +1206,7 @@ void MICELLUtils::sparseGEMV(
 
 void MICELLUtils::setInterface( ELLUtilsInterface& ELLUtils )
 {
-    LAMA_LOG_INFO( logger, "set ELL routines for MIC in Interface" )
+    SCAI_LOG_INFO( logger, "set ELL routines for MIC in Interface" )
 
     LAMA_INTERFACE_REGISTER( ELLUtils, countNonEmptyRowsBySizes )
     LAMA_INTERFACE_REGISTER( ELLUtils, setNonEmptyRowsBySizes )

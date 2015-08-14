@@ -42,7 +42,7 @@ namespace tracing
 
 using namespace std;
 
-LAMA_LOG_DEF_LOGGER( CallTreeTable::logger, "CallTreeTable" )
+SCAI_LOG_DEF_LOGGER( CallTreeTable::logger, "CallTreeTable" )
 
 void CTTEntry::writeEntry( ostream& outfile )
 {
@@ -139,7 +139,7 @@ void CallTreeTable::close()
     // file might not have been opened, can be closed several times
     if ( outfile.is_open() )
     {
-        LAMA_LOG_DEBUG( logger, "close calltree file " << mFileName );
+        SCAI_LOG_DEBUG( logger, "close calltree file " << mFileName );
         outfile << "# closed by close" << endl;
         outfile << "totals ";
         totalCosts.write( outfile, " " );
@@ -159,7 +159,7 @@ void CallTreeTable::open( const char* threadSuffix )
     }
 
     mFileName = "calltree.ct";
-    LAMA_LOG_DEBUG( logger, "open calltree file" );
+    SCAI_LOG_DEBUG( logger, "open calltree file" );
 
     if ( threadSuffix != NULL )
     {
@@ -239,7 +239,7 @@ void CallTreeTable::add( int caller, int callee, int scl, const CounterArray& co
 void CallTreeTable::addExclusiveCosts( const int regionId, const int scl, const CounterArray& currentCounterValues )
 {
     CounterArray costs = currentCounterValues - lastCounterValues;
-    LAMA_LOG_DEBUG( logger, "region " << regionId << ", add exclusive costs: " << costs )
+    SCAI_LOG_DEBUG( logger, "region " << regionId << ", add exclusive costs: " << costs )
     totalCosts += costs;     // sum of all exclusive costs will be the total costs
     lastCounterValues = currentCounterValues;  // uses current counters as start for next time
     add( regionId, -1, scl, costs );
@@ -247,7 +247,7 @@ void CallTreeTable::addExclusiveCosts( const int regionId, const int scl, const 
 
 void CallTreeTable::addCallCosts( int caller, int callee, int scl, const CounterArray& costs )
 {
-    LAMA_LOG_DEBUG( logger, "call " << caller << " -> " << callee << ", add call costs: " << costs )
+    SCAI_LOG_DEBUG( logger, "call " << caller << " -> " << callee << ", add call costs: " << costs )
     add( caller, callee, scl, costs );
 }
 

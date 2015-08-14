@@ -45,7 +45,7 @@
 namespace lama
 {
 
-LAMA_LOG_DEF_LOGGER( OpenMPBLAS2::logger, "OpenMP.BLAS2" )
+SCAI_LOG_DEF_LOGGER( OpenMPBLAS2::logger, "OpenMP.BLAS2" )
 
 /** gemv */
 
@@ -65,7 +65,7 @@ void OpenMPBLAS2::gemv(
     const IndexType incY,
     SyncToken* syncToken )
 {
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "gemv<" << common::getScalarType<ValueType>()<< ">: M = " << M << ", N = " << N 
                       << ", LDA = " << lda << ", incX = " << incX << ", incY = " << incY 
                       << ", alpha = " << alpha << ", beta = " << beta )
@@ -79,7 +79,7 @@ void OpenMPBLAS2::gemv(
 
     if( syncToken )
     {
-        LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
+        SCAI_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
 
     IndexType RowMajorStrg;
@@ -286,7 +286,7 @@ void OpenMPBLAS2::gemv(
 
 void OpenMPBLAS2::setInterface( BLASInterface& BLAS )
 {
-    LAMA_LOG_INFO( logger, "set BLAS2 routines for OpenMP in Interface" )
+    SCAI_LOG_INFO( logger, "set BLAS2 routines for OpenMP in Interface" )
 
 #define LAMA_BLAS2_REGISTER(z, I, _)                                            \
     LAMA_INTERFACE_REGISTER_T( BLAS, gemv, ARITHMETIC_TYPE##I )                 \

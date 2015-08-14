@@ -54,12 +54,12 @@ There are two solutions to solve this problem.
 Now it should be possible to run the executable. Beside the output it is very likely that you get
 the following warning message::
 
-    <root> (GenLogger.cpp::275,func=configure) WARN: LAMA_LOG not set, use default configuration
+    <root> (GenLogger.cpp::275,func=configure) WARN: SCAI_LOG not set, use default configuration
 
-The environment variable LAMA_LOG should be set with a useful value to get rid of the warning.
+The environment variable SCAI_LOG should be set with a useful value to get rid of the warning.
 You can set the variable explicitly with the default value::
 
-    export LAMA_LOG=WARN
+    export SCAI_LOG=WARN
     
 For other useful environment variables see :doc:`here <environmentVariables>`.
 

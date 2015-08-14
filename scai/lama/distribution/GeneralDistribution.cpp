@@ -47,7 +47,7 @@
 namespace lama
 {
 
-LAMA_LOG_DEF_LOGGER( GeneralDistribution::logger, "Distribution.General" )
+SCAI_LOG_DEF_LOGGER( GeneralDistribution::logger, "Distribution.General" )
 
 GeneralDistribution::GeneralDistribution(
     const IndexType globalSize,
@@ -177,7 +177,7 @@ GeneralDistribution::GeneralDistribution( const IndexType globalSize, const Comm
 
 GeneralDistribution::~GeneralDistribution()
 {
-    LAMA_LOG_INFO( logger, "~GeneralDistribution" )
+    SCAI_LOG_INFO( logger, "~GeneralDistribution" )
 }
 
 bool GeneralDistribution::isLocal( const IndexType index ) const

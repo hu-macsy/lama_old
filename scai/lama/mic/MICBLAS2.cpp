@@ -42,7 +42,7 @@
 namespace lama
 {
 
-LAMA_LOG_DEF_LOGGER( MICBLAS2::logger, "MIC.BLAS2" )
+SCAI_LOG_DEF_LOGGER( MICBLAS2::logger, "MIC.BLAS2" )
 
 inline static char trans2C( CBLAS_TRANSPOSE trans )
 {
@@ -102,7 +102,7 @@ void MICBLAS2::gemv(
     const IndexType incY,
     SyncToken* syncToken )
 {
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "gemv<float>: m = " << m << ", n = " << n << ", lda = " << lda << ", incX = " << incX << ", incY = " << incY << ", alpha = " << alpha << ", beta = " << beta )
 
     if( m == 0 )
@@ -114,7 +114,7 @@ void MICBLAS2::gemv(
 
     if( syncToken )
     {
-        LAMA_LOG_WARN( logger, "asynchronous execution for MIC not supported yet." )
+        SCAI_LOG_WARN( logger, "asynchronous execution for MIC not supported yet." )
     }
 
     char ta = ' ';
@@ -164,7 +164,7 @@ void MICBLAS2::gemv(
     const IndexType incY,
     SyncToken* syncToken )
 {
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "gemv<double>: m = " << m << ", n = " << n << ", lda = " << lda << ", incX = " << incX << ", incY = " << incY << ", alpha = " << alpha << ", beta = " << beta )
 
     if( m == 0 )
@@ -176,7 +176,7 @@ void MICBLAS2::gemv(
 
     if( syncToken )
     {
-        LAMA_LOG_WARN( logger, "asynchronous execution for MIC not supported yet." )
+        SCAI_LOG_WARN( logger, "asynchronous execution for MIC not supported yet." )
     }
 
     char ta = ' ';
@@ -216,7 +216,7 @@ void MICBLAS2::gemv(
 
 void MICBLAS2::setInterface( BLASInterface& BLAS )
 {
-    LAMA_LOG_INFO( logger, "set BLAS2 routines for MIC in Interface" )
+    SCAI_LOG_INFO( logger, "set BLAS2 routines for MIC in Interface" )
 
     // Note: macro takes advantage of same name for routines and type definitions
     //       ( e.g. routine CUDABLAS1::sum<ValueType> is set for BLAS::BLAS1::sum variable

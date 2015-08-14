@@ -107,7 +107,7 @@ struct MetisDistributionTestConfig
 
 BOOST_FIXTURE_TEST_SUITE( MetisDistributionTest, MetisDistributionTestConfig )
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.MetisDistributionTest" );
+SCAI_LOG_DEF_LOGGER( logger, "Test.MetisDistributionTest" );
 
 /* --------------------------------------------------------------------- */
 
@@ -117,7 +117,7 @@ BOOST_AUTO_TEST_CASE( commonTestCases )
 
     if ( base_test_case )
     {
-        LAMA_LOG_INFO( logger, "Run test method " << testcase << " in MetisDistributionTest." );
+        SCAI_LOG_INFO( logger, "Run test method " << testcase << " in MetisDistributionTest." );
         DISTRIBUTION_COMMONTESTCASES( disttest );
     }
     else

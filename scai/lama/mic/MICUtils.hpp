@@ -139,7 +139,7 @@ private:
 
     static bool registerInterface();
 
-    LAMA_LOG_DECL_STATIC_LOGGER( logger )
+    SCAI_LOG_DECL_STATIC_LOGGER( logger )
 };
 
 }

@@ -143,7 +143,7 @@ public:
 
 private:
 
-    LAMA_LOG_DECL_STATIC_LOGGER( logger )
+    SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
     unsigned    int mTaskId; // last given task id
 

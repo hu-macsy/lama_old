@@ -200,7 +200,7 @@ void gemvTest( ContextPtr loc )
 
 BOOST_AUTO_TEST_SUITE( BLAS2Test )
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.BLAS2Test" )
+SCAI_LOG_DEF_LOGGER( logger, "Test.BLAS2Test" )
 
 LAMA_AUTO_TEST_CASE_CT( gemvTest, BLAS2Test )
 /* ------------------------------------------------------------------------------------------------------------------ */

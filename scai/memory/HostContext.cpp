@@ -47,16 +47,16 @@ using  common::weak_ptr;
 namespace memory
 {
 
-LAMA_LOG_DEF_LOGGER( HostContext::logger, "Context.HostContext" )
+SCAI_LOG_DEF_LOGGER( HostContext::logger, "Context.HostContext" )
 
 HostContext::HostContext() : Context( context::Host )
 {
-    LAMA_LOG_INFO( logger, "HostContext created" )
+    SCAI_LOG_INFO( logger, "HostContext created" )
 }
 
 HostContext::~HostContext()
 {
-    LAMA_LOG_INFO( logger, "~HostContext" )
+    SCAI_LOG_INFO( logger, "~HostContext" )
 }
 
 void HostContext::writeAt( std::ostream& stream ) const
@@ -84,7 +84,7 @@ ContextPtr HostContext::create( int deviceNr )
 
     if ( deviceNr >= 0 )
     {
-        LAMA_LOG_WARN( logger, "Context number ignored for HostContext, deviceNr = " << deviceNr )
+        SCAI_LOG_WARN( logger, "Context number ignored for HostContext, deviceNr = " << deviceNr )
     }
 
     // use the last contextInstance if it is still valid

@@ -38,18 +38,18 @@
  *                                                                       *
  *    make sure that the desired logging levels are enabled              *
  *                                                                       *
- *    LAMA_LOG_DEBUG_ENABLED  :  LAMA_LOG_DEBUG is done                  *
- *    LAMA_LOG_INFO_ENABLED   :  LAMA_LOG_INFO is done                   *
+ *    SCAI_LOG_DEBUG_ENABLED  :  SCAI_LOG_DEBUG is done                  *
+ *    SCAI_LOG_INFO_ENABLED   :  SCAI_LOG_INFO is done                   *
  *                                                                       *
  *  The compile time guards itself can be set by these macros:           *
  *                                                                       *
- *    LAMA_LOG_LEVEL_TRACE  - compile all                                *
- *    LAMA_LOG_LEVEL_DEBUG  - compile debug and higher                   *
- *    LAMA_LOG_LEVEL_INFO   - compile info and higher                    *
- *    LAMA_LOG_LEVEL_WARN   - compile warn and higher                    *
- *    LAMA_LOG_LEVEL_ERROR  - compile error and higher                   *
- *    LAMA_LOG_LEVEL_FATAL  - compile fatal only                         *
- *    LAMA_LOG_LEVEL_OFF    - removes all LOG statements at compile time *
+ *    SCAI_LOG_LEVEL_TRACE  - compile all                                *
+ *    SCAI_LOG_LEVEL_DEBUG  - compile debug and higher                   *
+ *    SCAI_LOG_LEVEL_INFO   - compile info and higher                    *
+ *    SCAI_LOG_LEVEL_WARN   - compile warn and higher                    *
+ *    SCAI_LOG_LEVEL_ERROR  - compile error and higher                   *
+ *    SCAI_LOG_LEVEL_FATAL  - compile fatal only                         *
+ *    SCAI_LOG_LEVEL_OFF    - removes all LOG statements at compile time *
  *                                                                       *
  *  Please note: These guards are only for compile time, so logging      *
  *               can still be switched off at runtime.                   *
@@ -59,168 +59,168 @@
 #include <iostream>
 
 /*******************************************************
- *   LAMA_LOG_LEVEL_TRACE                                    *
+ *   SCAI_LOG_LEVEL_TRACE                                    *
  *******************************************************/
 
-#if defined(LAMA_LOG_LEVEL_TRACE)
+#if defined(SCAI_LOG_LEVEL_TRACE)
 
-#define LAMA_LOG_TRACE_ENABLED
-#define LAMA_LOG_DEBUG_ENABLED
-#define LAMA_LOG_INFO_ENABLED
-#define LAMA_LOG_WARN_ENABLED
-#define LAMA_LOG_ERROR_ENABLED
-#define LAMA_LOG_FATAL_ENABLED
+#define SCAI_LOG_TRACE_ENABLED
+#define SCAI_LOG_DEBUG_ENABLED
+#define SCAI_LOG_INFO_ENABLED
+#define SCAI_LOG_WARN_ENABLED
+#define SCAI_LOG_ERROR_ENABLED
+#define SCAI_LOG_FATAL_ENABLED
 
 /*******************************************************
- *   LAMA_LOG_LEVEL_DEBUG                                    *
+ *   SCAI_LOG_LEVEL_DEBUG                                    *
  *******************************************************/
 
-#elif defined(LAMA_LOG_LEVEL_DEBUG)
+#elif defined(SCAI_LOG_LEVEL_DEBUG)
 
-#undef LAMA_LOG_TRACE_ENABLED
+#undef SCAI_LOG_TRACE_ENABLED
 
-#define LAMA_LOG_DEBUG_ENABLED
-#define LAMA_LOG_INFO_ENABLED
-#define LAMA_LOG_WARN_ENABLED
-#define LAMA_LOG_ERROR_ENABLED
-#define LAMA_LOG_FATAL_ENABLED
+#define SCAI_LOG_DEBUG_ENABLED
+#define SCAI_LOG_INFO_ENABLED
+#define SCAI_LOG_WARN_ENABLED
+#define SCAI_LOG_ERROR_ENABLED
+#define SCAI_LOG_FATAL_ENABLED
 
 /*******************************************************
- *   LAMA_LOG_LEVEL_INFO                                     *
+ *   SCAI_LOG_LEVEL_INFO                                     *
  *******************************************************/
 
-#elif defined(LAMA_LOG_LEVEL_INFO)
+#elif defined(SCAI_LOG_LEVEL_INFO)
 
-#undef LAMA_LOG_TRACE_ENABLED
-#undef LAMA_LOG_DEBUG_ENABLED
+#undef SCAI_LOG_TRACE_ENABLED
+#undef SCAI_LOG_DEBUG_ENABLED
 
-#define LAMA_LOG_INFO_ENABLED
-#define LAMA_LOG_WARN_ENABLED
-#define LAMA_LOG_ERROR_ENABLED
-#define LAMA_LOG_FATAL_ENABLED
+#define SCAI_LOG_INFO_ENABLED
+#define SCAI_LOG_WARN_ENABLED
+#define SCAI_LOG_ERROR_ENABLED
+#define SCAI_LOG_FATAL_ENABLED
 
 /*******************************************************
- *   LAMA_LOG_LEVEL_WARN                                     *
+ *   SCAI_LOG_LEVEL_WARN                                     *
  *******************************************************/
 
-#elif defined(LAMA_LOG_LEVEL_WARN)
+#elif defined(SCAI_LOG_LEVEL_WARN)
 
-#undef LAMA_LOG_TRACE_ENABLED
-#undef LAMA_LOG_DEBUG_ENABLED
-#undef LAMA_LOG_INFO_ENABLED
+#undef SCAI_LOG_TRACE_ENABLED
+#undef SCAI_LOG_DEBUG_ENABLED
+#undef SCAI_LOG_INFO_ENABLED
 
-#define LAMA_LOG_WARN_ENABLED
-#define LAMA_LOG_ERROR_ENABLED
-#define LAMA_LOG_FATAL_ENABLED
+#define SCAI_LOG_WARN_ENABLED
+#define SCAI_LOG_ERROR_ENABLED
+#define SCAI_LOG_FATAL_ENABLED
 
 /*******************************************************
- *   LAMA_LOG_LEVEL_ERROR                                    *
+ *   SCAI_LOG_LEVEL_ERROR                                    *
  *******************************************************/
 
-#elif defined(LAMA_LOG_LEVEL_ERROR)
+#elif defined(SCAI_LOG_LEVEL_ERROR)
 
-#undef LAMA_LOG_TRACE_ENABLED
-#undef LAMA_LOG_DEBUG_ENABLED
-#undef LAMA_LOG_INFO_ENABLED
-#undef LAMA_LOG_WARN_ENABLED
+#undef SCAI_LOG_TRACE_ENABLED
+#undef SCAI_LOG_DEBUG_ENABLED
+#undef SCAI_LOG_INFO_ENABLED
+#undef SCAI_LOG_WARN_ENABLED
 
-#define LAMA_LOG_ERROR_ENABLED
-#define LAMA_LOG_FATAL_ENABLED
+#define SCAI_LOG_ERROR_ENABLED
+#define SCAI_LOG_FATAL_ENABLED
 
 /*******************************************************
- *   LAMA_LOG_LEVEL_FATAL                                    *
+ *   SCAI_LOG_LEVEL_FATAL                                    *
  *******************************************************/
 
-#elif defined(LAMA_LOG_LEVEL_FATAL)
+#elif defined(SCAI_LOG_LEVEL_FATAL)
 
-#undef LAMA_LOG_DEBUG_ENABLED
-#undef LAMA_LOG_TRACE_ENABLED
-#undef LAMA_LOG_INFO_ENABLED
-#undef LAMA_LOG_WARN_ENABLED
-#undef LAMA_LOG_ERROR_ENABLED
+#undef SCAI_LOG_DEBUG_ENABLED
+#undef SCAI_LOG_TRACE_ENABLED
+#undef SCAI_LOG_INFO_ENABLED
+#undef SCAI_LOG_WARN_ENABLED
+#undef SCAI_LOG_ERROR_ENABLED
 
-#define LAMA_LOG_FATAL_ENABLED
+#define SCAI_LOG_FATAL_ENABLED
 
 /*******************************************************
- *   LAMA_LOG_LEVEL_OFF                                      *
+ *   SCAI_LOG_LEVEL_OFF                                      *
  *******************************************************/
 
-#elif defined(LAMA_LOG_LEVEL_OFF)
+#elif defined(SCAI_LOG_LEVEL_OFF)
 
-#undef LAMA_LOG_DEBUG_ENABLED
-#undef LAMA_LOG_TRACE_ENABLED
-#undef LAMA_LOG_INFO_ENABLED
-#undef LAMA_LOG_WARN_ENABLED
-#undef LAMA_LOG_ERROR_ENABLED
-#undef LAMA_LOG_FATAL_ENABLED
+#undef SCAI_LOG_DEBUG_ENABLED
+#undef SCAI_LOG_TRACE_ENABLED
+#undef SCAI_LOG_INFO_ENABLED
+#undef SCAI_LOG_WARN_ENABLED
+#undef SCAI_LOG_ERROR_ENABLED
+#undef SCAI_LOG_FATAL_ENABLED
 
 #else
 
 /*******************************************************
- *   DEFAULT: The Default LAMA_LOG_FATAL_ENABLED is enabled *
+ *   DEFAULT: The Default SCAI_LOG_FATAL_ENABLED is enabled *
  *******************************************************/
 
-#pragma message("Please define LAMA_LOG_LEVEL_xxx with xxx = TRACE, DEBUG, INFO, WARN, ERROR, FATAL, or OFF")
-#pragma message("Will use default LAMA_LOG_LEVEL_FATAL")
+#pragma message("Please define SCAI_LOG_LEVEL_xxx with xxx = TRACE, DEBUG, INFO, WARN, ERROR, FATAL, or OFF")
+#pragma message("Will use default SCAI_LOG_LEVEL_FATAL")
 
-#undef LAMA_LOG_DEBUG_ENABLED
-#undef LAMA_LOG_TRACE_ENABLED
-#undef LAMA_LOG_INFO_ENABLED
-#undef LAMA_LOG_WARN_ENABLED
-#undef LAMA_LOG_ERROR_ENABLED
+#undef SCAI_LOG_DEBUG_ENABLED
+#undef SCAI_LOG_TRACE_ENABLED
+#undef SCAI_LOG_INFO_ENABLED
+#undef SCAI_LOG_WARN_ENABLED
+#undef SCAI_LOG_ERROR_ENABLED
 
-#define LAMA_LOG_FATAL_ENABLED
+#define SCAI_LOG_FATAL_ENABLED
 
 #endif
 
-#ifdef LAMA_LOG_FATAL_ENABLED
+#ifdef SCAI_LOG_FATAL_ENABLED
 
 /*******************************************************
- *   logging enabled, at least one -DLAMA_LOG_LEVEL_xxx      *
+ *   logging enabled, at least one -DSCAI_LOG_LEVEL_xxx      *
  *******************************************************/
 
-#include "scai/logging/Level.hpp"
-#include "scai/logging/SourceLocation.hpp"
+#include <scai/logging/Level.hpp>
+#include <scai/logging/SourceLocation.hpp>
 
-#include "scai/logging/Logger.hpp"
-#include "scai/logging/LoggerProvider.hpp"
+#include <scai/logging/Logger.hpp>
+#include <scai/logging/LoggerProvider.hpp>
 
-#include "scai/common/Thread.hpp"
+#include <scai/common/Thread.hpp>
 
 /*******************************************************
  *   Definitions for logging                           *
  *******************************************************/
 
-#define LAMA_LOG_DECL_STATIC_LOGGER(aLogger) static class logging::Logger& aLogger;
-#define LAMA_LOG_DEF_LOGGER(aLogger,name) logging::Logger& aLogger = \
+#define SCAI_LOG_DECL_STATIC_LOGGER(aLogger) static class logging::Logger& aLogger;
+#define SCAI_LOG_DEF_LOGGER(aLogger,name) logging::Logger& aLogger = \
         logging::LoggerProvider::getProvider().getInstance(std::string(name));
-#define LAMA_LOG_DEF_TEMPLATE_LOGGER(temp,aLogger,name) temp logging::Logger& aLogger = \
+#define SCAI_LOG_DEF_TEMPLATE_LOGGER(temp,aLogger,name) temp logging::Logger& aLogger = \
         logging::LoggerProvider::getProvider().getInstance(std::string(name));
-#define LAMA_LOG_USING(alogger) using alogger;
+#define SCAI_LOG_USING(alogger) using alogger;
 
 #include <sstream>
 
 /*******************************************************
- *   LAMA_LOG_XXXXX_ON : Predicates                    *
+ *   SCAI_LOG_XXXXX_ON : Predicates                    *
  *******************************************************/
 
-#define LAMA_LOG_TRACE_ON(logger) (logger.isTraceEnabled())
-#define LAMA_LOG_DEBUG_ON(logger) (logger.isDebugEnabled())
-#define LAMA_LOG_INFO_ON(logger) (logger.isInfoEnabled())
-#define LAMA_LOG_WARN_ON(logger) (logger.isWarnEnabled())
-#define LAMA_LOG_ERROR_ON(logger) (logger.isErrorEnabled())
-#define LAMA_LOG_FATAL_ON(logger) (logger.isFatalEnabled())
+#define SCAI_LOG_TRACE_ON(logger) (logger.isTraceEnabled())
+#define SCAI_LOG_DEBUG_ON(logger) (logger.isDebugEnabled())
+#define SCAI_LOG_INFO_ON(logger) (logger.isInfoEnabled())
+#define SCAI_LOG_WARN_ON(logger) (logger.isWarnEnabled())
+#define SCAI_LOG_ERROR_ON(logger) (logger.isErrorEnabled())
+#define SCAI_LOG_FATAL_ON(logger) (logger.isFatalEnabled())
 
 /*******************************************************
- *   LAMA_LOG_SET_XXXX                                 *
+ *   SCAI_LOG_SET_XXXX                                 *
  *******************************************************/
 
-#define LAMA_LOG_SET_TRACE(logger) { logger.setLevel(logging::TRACE, true); }
-#define LAMA_LOG_SET_DEBUG(logger) { logger.setLevel(logging::DEBUG, true); }
-#define LAMA_LOG_SET_INFO(logger) { logger.setLevel(logging::INFO, true); }
-#define LAMA_LOG_SET_WARN(logger) { logger.setLevel(logging::WARN, true); }
-#define LAMA_LOG_SET_ERROR(logger) { logger.setLevel(logging::ERROR, true); }
-#define LAMA_LOG_SET_FATAL(logger) { logger.setLevel(logging::FATAL, true); }
+#define SCAI_LOG_SET_TRACE(logger) { logger.setLevel(logging::TRACE, true); }
+#define SCAI_LOG_SET_DEBUG(logger) { logger.setLevel(logging::DEBUG, true); }
+#define SCAI_LOG_SET_INFO(logger) { logger.setLevel(logging::INFO, true); }
+#define SCAI_LOG_SET_WARN(logger) { logger.setLevel(logging::WARN, true); }
+#define SCAI_LOG_SET_ERROR(logger) { logger.setLevel(logging::ERROR, true); }
+#define SCAI_LOG_SET_FATAL(logger) { logger.setLevel(logging::FATAL, true); }
 
 #else
 
@@ -228,92 +228,92 @@
  *   logging completely disabled                       *
  *******************************************************/
 
-#define LAMA_LOG_DECL_STATIC_LOGGER( aLogger )
-#define LAMA_LOG_DEF_LOGGER( aLogger, name)
-#define LAMA_LOG_USING( aLogger )
-#define LAMA_LOG_DEF_TEMPLATE_LOGGER( temp, aLogger, name)
+#define SCAI_LOG_DECL_STATIC_LOGGER( aLogger )
+#define SCAI_LOG_DEF_LOGGER( aLogger, name)
+#define SCAI_LOG_USING( aLogger )
+#define SCAI_LOG_DEF_TEMPLATE_LOGGER( temp, aLogger, name)
 
-#define LAMA_LOG_TRACE_ON(logger) (false)
-#define LAMA_LOG_DEBUG_ON(logger) (false)
-#define LAMA_LOG_INFO_ON(logger)  (false)
-#define LAMA_LOG_WARN_ON(logger)  (false)
-#define LAMA_LOG_ERROR_ON(logger) (false)
-#define LAMA_LOG_FATAL_ON(logger) (false)
+#define SCAI_LOG_TRACE_ON(logger) (false)
+#define SCAI_LOG_DEBUG_ON(logger) (false)
+#define SCAI_LOG_INFO_ON(logger)  (false)
+#define SCAI_LOG_WARN_ON(logger)  (false)
+#define SCAI_LOG_ERROR_ON(logger) (false)
+#define SCAI_LOG_FATAL_ON(logger) (false)
 
-#endif // LAMA_LOG_FATAL_ENABLED
+#endif // SCAI_LOG_FATAL_ENABLED
 /*******************************************************
- *   LAMA_LOG_TRACE                                    *
+ *   SCAI_LOG_TRACE                                    *
  *******************************************************/
 
-#ifdef LAMA_LOG_TRACE_ENABLED
-#define LAMA_LOG_TRACE(logger,msg) { if (&logger && logger.isTraceEnabled()) \
+#ifdef SCAI_LOG_TRACE_ENABLED
+#define SCAI_LOG_TRACE(logger,msg) { if (&logger && logger.isTraceEnabled()) \
         { std::ostringstream omsg; omsg << msg; logger.trace(LOG4LAMA_LOCATION, omsg.str()); } }
 #else
-#define LAMA_LOG_TRACE(logger,msg) { if (false){ std::cout<<msg; } }
+#define SCAI_LOG_TRACE(logger,msg) { if (false){ std::cout<<msg; } }
 #endif
 
 /*******************************************************
- *   LAMA_LOG_DEBUG                                    *
+ *   SCAI_LOG_DEBUG                                    *
  *******************************************************/
 
-#ifdef LAMA_LOG_DEBUG_ENABLED
-#define LAMA_LOG_DEBUG(logger,msg) { if (&logger && logger.isDebugEnabled()) \
+#ifdef SCAI_LOG_DEBUG_ENABLED
+#define SCAI_LOG_DEBUG(logger,msg) { if (&logger && logger.isDebugEnabled()) \
         { std::ostringstream omsg; omsg << msg; logger.debug(LOG4LAMA_LOCATION, omsg.str()); } }
 #else
-#define LAMA_LOG_DEBUG(logger,msg) { if (false){ std::cout<<msg; } }
+#define SCAI_LOG_DEBUG(logger,msg) { if (false){ std::cout<<msg; } }
 #endif
 
 /*******************************************************
- *   LAMA_LOG_INFO                                     *
+ *   SCAI_LOG_INFO                                     *
  *******************************************************/
 
-#ifdef LAMA_LOG_INFO_ENABLED
-#define LAMA_LOG_INFO(logger,msg) { if (&logger && logger.isInfoEnabled()) \
+#ifdef SCAI_LOG_INFO_ENABLED
+#define SCAI_LOG_INFO(logger,msg) { if (&logger && logger.isInfoEnabled()) \
         { std::ostringstream omsg; omsg << msg; logger.info(LOG4LAMA_LOCATION, omsg.str()); } }
 #else
-#define LAMA_LOG_INFO(logger,msg) { if (false){ std::cout<<msg; } }
+#define SCAI_LOG_INFO(logger,msg) { if (false){ std::cout<<msg; } }
 #endif
 
 /*******************************************************
- *   LAMA_LOG_WARN                                     *
+ *   SCAI_LOG_WARN                                     *
  *******************************************************/
 
-#ifdef LAMA_LOG_WARN_ENABLED
-#define LAMA_LOG_WARN(logger,msg) { if (&logger && logger.isWarnEnabled()) \
+#ifdef SCAI_LOG_WARN_ENABLED
+#define SCAI_LOG_WARN(logger,msg) { if (&logger && logger.isWarnEnabled()) \
         { std::ostringstream omsg; omsg << msg; logger.warn(LOG4LAMA_LOCATION, omsg.str()); } }
 #else
-#define LAMA_LOG_WARN(logger,msg) { if (false){ std::cout<<msg; } }
+#define SCAI_LOG_WARN(logger,msg) { if (false){ std::cout<<msg; } }
 #endif
 
 /*******************************************************
- *   LAMA_LOG_ERROR                                    *
+ *   SCAI_LOG_ERROR                                    *
  *******************************************************/
 
-#ifdef LAMA_LOG_ERROR_ENABLED
-#define LAMA_LOG_ERROR(logger,msg) { if (&logger && logger.isErrorEnabled()) \
+#ifdef SCAI_LOG_ERROR_ENABLED
+#define SCAI_LOG_ERROR(logger,msg) { if (&logger && logger.isErrorEnabled()) \
         { std::ostringstream omsg; omsg << msg; logger.error(LOG4LAMA_LOCATION, omsg.str()); } }
 #else
-#define LAMA_LOG_ERROR(logger,msg) { if (false){ std::cout<<msg; } }
+#define SCAI_LOG_ERROR(logger,msg) { if (false){ std::cout<<msg; } }
 #endif
 
 /*******************************************************
- *   LAMA_LOG_FATAL                                    *
+ *   SCAI_LOG_FATAL                                    *
  *******************************************************/
 
-#ifdef LAMA_LOG_FATAL_ENABLED
-#define LAMA_LOG_FATAL(logger,msg) { if (&logger && logger.isFatalEnabled()) \
+#ifdef SCAI_LOG_FATAL_ENABLED
+#define SCAI_LOG_FATAL(logger,msg) { if (&logger && logger.isFatalEnabled()) \
         { std::ostringstream omsg; omsg << msg; logger.fatal(LOG4LAMA_LOCATION, omsg.str()); } }
 #else
-#define LAMA_LOG_FATAL(logger,msg) { if (false){ std::cout<<msg; } }
+#define SCAI_LOG_FATAL(logger,msg) { if (false){ std::cout<<msg; } }
 #endif
 
 /*******************************************************
- *   LAMA_LOG_THREAD                                   *
+ *   SCAI_LOG_THREAD                                   *
  *******************************************************/
 
-#ifdef LAMA_LOG_LEVEL_OFF
+#ifdef SCAI_LOG_LEVEL_OFF
 
-#define LAMA_LOG_THREAD                          \
+#define SCAI_LOG_THREAD                          \
 {                                                \
     if ( false )                                 \
     {                                            \
@@ -325,7 +325,7 @@
 
 // macro defines a name for the current thread 
 
-#define LAMA_LOG_THREAD( name )                                      \
+#define SCAI_LOG_THREAD( name )                                      \
 {                                                                    \
     std::ostringstream oname;                                        \
     oname << name;                                                   \
@@ -335,10 +335,10 @@
 #endif
 
 // just temporarily include all files
-#include "scai/logging/AbstractLoggerCreator.hpp"
-#include "scai/logging/GenLogger.hpp"
-#include "scai/logging/GenLoggerCreator.hpp"
-#include "scai/logging/Level.hpp"
-#include "scai/logging/Logger.hpp"
-#include "scai/logging/LoggerProvider.hpp"
-#include "scai/logging/SourceLocation.hpp"
+#include <scai/logging/AbstractLoggerCreator.hpp>
+#include <scai/logging/GenLogger.hpp>
+#include <scai/logging/GenLoggerCreator.hpp>
+#include <scai/logging/Level.hpp>
+#include <scai/logging/Logger.hpp>
+#include <scai/logging/LoggerProvider.hpp>
+#include <scai/logging/SourceLocation.hpp>

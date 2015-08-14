@@ -53,21 +53,21 @@ using namespace memory;
 namespace lama
 {
 
-LAMA_LOG_DEF_LOGGER( SimpleAMG::logger, "Solver.IterativeSolver.SimpleAMG" )
-LAMA_LOG_DEF_LOGGER( SimpleAMG::SimpleAMGRuntime::logger, "Solver.IterativeSolver.SimpleAMG.SimpleAMGRuntime" )
+SCAI_LOG_DEF_LOGGER( SimpleAMG::logger, "Solver.IterativeSolver.SimpleAMG" )
+SCAI_LOG_DEF_LOGGER( SimpleAMG::SimpleAMGRuntime::logger, "Solver.IterativeSolver.SimpleAMG.SimpleAMGRuntime" )
 
 SimpleAMG::SimpleAMG( const std::string& id )
     : IterativeSolver( id ), mMaxLevels( 25 ), mMinVarsCoarseLevel( 100 ), mSmootherContext(
           Context::getContextPtr( context::Host ) )
 {
-    LAMA_LOG_INFO( logger, "SimpleAMG, id = " << id << " created, no logger" )
+    SCAI_LOG_INFO( logger, "SimpleAMG, id = " << id << " created, no logger" )
 }
 
 SimpleAMG::SimpleAMG( const std::string& id, LoggerPtr logger )
     : IterativeSolver( id, logger ), mMaxLevels( 25 ), mMinVarsCoarseLevel( 100 ), mSmootherContext(
           Context::getContextPtr( context::Host ) )
 {
-    LAMA_LOG_INFO( SimpleAMG::logger, "SimpleAMG, id = " << id << " created, with logger" )
+    SCAI_LOG_INFO( SimpleAMG::logger, "SimpleAMG, id = " << id << " created, with logger" )
 }
 
 SimpleAMG::SimpleAMG( const SimpleAMG& other )
@@ -93,7 +93,7 @@ SimpleAMG::SimpleAMGRuntime::~SimpleAMGRuntime()
 
     if( mLibHandle != 0 )
     {
-        LAMA_LOG_INFO( logger, "~SimpleAMG, now release AMGSetup in lib" )
+        SCAI_LOG_INFO( logger, "~SimpleAMG, now release AMGSetup in lib" )
 
         typedef void (*lama_releaseAMGSetup)( lama::AMGSetup* );
         lama_releaseAMGSetup funcHandle = NULL;
@@ -105,20 +105,20 @@ SimpleAMG::SimpleAMGRuntime::~SimpleAMGRuntime()
         }
         else
         {
-            LAMA_LOG_WARN( logger, "Failed to locate function lama_releaseAMGSetup" )
+            SCAI_LOG_WARN( logger, "Failed to locate function lama_releaseAMGSetup" )
         }
 
-        LAMA_LOG_INFO( logger, "~SimpleAMG, AMGSetup has been released" )
+        SCAI_LOG_INFO( logger, "~SimpleAMG, AMGSetup has been released" )
 
         //TODO: feeLibHandle call dlclose this leads to a crash in case of
         //      scalapack mkl + intel mpi
         //freeLibHandle( reinterpret_cast<LAMA_LIB_HANDLE_TYPE&>( mLibHandle ) );
 
-        LAMA_LOG_INFO( logger, "~SimpleAMG, library has been released" )
+        SCAI_LOG_INFO( logger, "~SimpleAMG, library has been released" )
     }
     else
     {
-        LAMA_LOG_INFO( logger, "~SimpleAMG, no library has been used" )
+        SCAI_LOG_INFO( logger, "~SimpleAMG, no library has been used" )
     }
 }
 
@@ -126,7 +126,7 @@ void SimpleAMG::initialize( const Matrix& coefficients )
 {
     LAMA_REGION( "Solver.SimpleAMG.initialize" )
 
-    LAMA_LOG_DEBUG( logger, "initialize AMG, coefficients matrix = " << coefficients )
+    SCAI_LOG_DEBUG( logger, "initialize AMG, coefficients matrix = " << coefficients )
 
     SimpleAMGRuntime& runtime = getRuntime();
 
@@ -157,13 +157,13 @@ void SimpleAMG::initialize( const Matrix& coefficients )
             }
             else
             {
-                LAMA_LOG_WARN( logger,
+                SCAI_LOG_WARN( logger,
                                "Failed to load lib " << amgSetupLibrary << ", func lama_createAMGSetup" << ": error = " << error << ", lib handle = " << runtime.mLibHandle << ", func handle = " << funcHandle )
             }
         }
         else
         {
-            LAMA_LOG_WARN( logger, "LAMA_AMG_SETUP_LIBRARY not set, take SingleGridSetup" )
+            SCAI_LOG_WARN( logger, "LAMA_AMG_SETUP_LIBRARY not set, take SingleGridSetup" )
         }
 
         if( amgSetup.get() == 0 )
@@ -296,13 +296,13 @@ void SimpleAMG::setReplicatedLevel( IndexType replicatedLevel )
 
 void SimpleAMG::setCoarseLevelSolver( SolverPtr solver )
 {
-    LAMA_LOG_DEBUG( logger, "Defined smoother for all level " << *solver )
+    SCAI_LOG_DEBUG( logger, "Defined smoother for all level " << *solver )
     mCoarseLevelSolver = solver;
 }
 
 void SimpleAMG::setSmoother( SolverPtr solver )
 {
-    LAMA_LOG_DEBUG( logger, "Defined smoother for all level " << *solver )
+    SCAI_LOG_DEBUG( logger, "Defined smoother for all level " << *solver )
     mSmoother = solver;
 }
 
@@ -355,18 +355,18 @@ void SimpleAMG::cycle()
         Solver& curSmoother = amgSetup->getSmoother( runtime.mCurrentLevel );
 
         // PreSmoothing
-        LAMA_LOG_DEBUG( logger, "Pre smoothing on level "<< runtime.mCurrentLevel )
+        SCAI_LOG_DEBUG( logger, "Pre smoothing on level "<< runtime.mCurrentLevel )
         double smootherStartTime = omp_get_wtime();
         curSmoother.solve( curSolution, curRhs );
         totalSmootherTime += omp_get_wtime() - smootherStartTime;
 
         // Restrict residual to next coarser grid
         // and initialize solution
-        LAMA_LOG_DEBUG( logger, "curTmpRhs=curRhs - curGalerkin * curSolution on level "<< runtime.mCurrentLevel )
+        SCAI_LOG_DEBUG( logger, "curTmpRhs=curRhs - curGalerkin * curSolution on level "<< runtime.mCurrentLevel )
         double residualStartTime = omp_get_wtime();
         curTmpRhs = curRhs - curGalerkin * curSolution;
         totalResidualTime += omp_get_wtime() - residualStartTime;
-        LAMA_LOG_DEBUG( logger, "curCoarseRhs = curRestriction * curTmpRhs on level "<< runtime.mCurrentLevel )
+        SCAI_LOG_DEBUG( logger, "curCoarseRhs = curRestriction * curTmpRhs on level "<< runtime.mCurrentLevel )
         double transferStartTime = omp_get_wtime();
         curCoarseRhs = curRestriction * curTmpRhs;
         curCoarseSolution = 0.0;
@@ -378,13 +378,13 @@ void SimpleAMG::cycle()
 
         --runtime.mCurrentLevel;
 
-        LAMA_LOG_DEBUG( logger,
+        SCAI_LOG_DEBUG( logger,
                         "curSolution = curSolution + curInterpolation * curCoarseSolution on level "<< runtime.mCurrentLevel )
         transferStartTime = omp_get_wtime();
         curSolution = curSolution + curInterpolation * curCoarseSolution;
         totalTransferTime += omp_get_wtime() - transferStartTime;
 
-        LAMA_LOG_DEBUG( logger, "Post smoothing on level "<< runtime.mCurrentLevel )
+        SCAI_LOG_DEBUG( logger, "Post smoothing on level "<< runtime.mCurrentLevel )
         smootherStartTime = omp_get_wtime();
         curSmoother.solve( curSolution, curRhs );
         totalSmootherTime += omp_get_wtime() - smootherStartTime;

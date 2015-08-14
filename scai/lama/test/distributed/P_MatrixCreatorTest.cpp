@@ -64,7 +64,7 @@ struct P_MatrixCreatorTestConfig
 
 BOOST_FIXTURE_TEST_SUITE( P_MatrixCreatorTest, P_MatrixCreatorTestConfig )
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.P_MatrixCreatorTest" );
+SCAI_LOG_DEF_LOGGER( logger, "Test.P_MatrixCreatorTest" );
 
 /* ------------------------------------------------------------------------- */
 

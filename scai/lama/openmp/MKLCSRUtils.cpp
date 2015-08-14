@@ -55,7 +55,7 @@ using tasking::SyncToken;
 namespace lama
 {
 
-LAMA_LOG_DEF_LOGGER( MKLCSRUtils::logger, "MKL.CSRUtils" )
+SCAI_LOG_DEF_LOGGER( MKLCSRUtils::logger, "MKL.CSRUtils" )
 
 /* --------------------------------------------------------------------------- */
 
@@ -76,7 +76,7 @@ void MKLCSRUtils::normalGEMV(
 {
     LAMA_REGION( "MKL.scsrmv" )
 
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "normalGEMV<float>, result[" << numRows << "] = " << alpha << " * A * x + " << beta << " * y " )
 
     if( syncToken )
@@ -129,7 +129,7 @@ void MKLCSRUtils::normalGEMV(
 {
     LAMA_REGION( "MKL.dcsrmv" )
 
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "normalGEMV<double>, result[" << numRows << "] = " << alpha << " * A * x + " << beta << " * y " )
 
     if( syncToken )
@@ -183,7 +183,7 @@ void MKLCSRUtils::convertCSR2CSC(
     {
         LAMA_REGION( "MKL.CSRUtils.convertCSR2CSC" )
 
-        LAMA_LOG_INFO( logger, "convertCSR2CSC of matrix " << numRows << " x " << numColumns )
+        SCAI_LOG_INFO( logger, "convertCSR2CSC of matrix " << numRows << " x " << numColumns )
 
         int job[] =
         { 0, 0, 0, 0, 0, 1 };
@@ -220,7 +220,7 @@ void MKLCSRUtils::convertCSR2CSC(
     {
         LAMA_REGION( "MKL.CSRUtils.convertCSR2CSC" )
 
-        LAMA_LOG_INFO( logger, "convertCSR2CSC of matrix " << numRows << " x " << numColumns )
+        SCAI_LOG_INFO( logger, "convertCSR2CSC of matrix " << numRows << " x " << numColumns )
 
         int job[] =
         { 0, 0, 0, 0, 0, 1 };
@@ -251,13 +251,13 @@ void MKLCSRUtils::setInterface( CSRUtilsInterface& CSRUtils )
 
     if( !useMKL )
     {
-        LAMA_LOG_INFO( logger, "MKL routines for Host Interface are disabled" )
+        SCAI_LOG_INFO( logger, "MKL routines for Host Interface are disabled" )
         return;
     }
 
     // REGISTER1: give these routines priority in case of overriding
 
-    LAMA_LOG_INFO( logger, "set CSR routines for MKL in Host Interface" )
+    SCAI_LOG_INFO( logger, "set CSR routines for MKL in Host Interface" )
 
     LAMA_INTERFACE_REGISTER1_T( CSRUtils, normalGEMV, float )
     LAMA_INTERFACE_REGISTER1_T( CSRUtils, normalGEMV, double )

@@ -101,7 +101,7 @@ void verifySameMatrix( Matrix& m1, Matrix& m2, ValueType eps, logging::Logger& l
         {
             Scalar expected = m1.getValue( i, j );
             Scalar result = m2.getValue( i, j );
-            LAMA_LOG_INFO( logger,
+            SCAI_LOG_INFO( logger,
                            "compare exp =" << expected.getValue<ValueType>() << ", res = " << result.getValue<ValueType>() );
             LAMA_CHECK_SCALAR_SMALL( expected - result, ValueType, eps );
         }
@@ -207,42 +207,42 @@ void assignmentMultiplicationTest( logging::Logger& logger )
         const DenseMatrix<ValueType> matrixAInv( n4m4InvMatrix );
         DenseMatrix<ValueType> matrixIdent( identMatrix );
         DenseMatrix<ValueType> matrixD( 4, 4 );
-        LAMA_LOG_INFO( logger, "linear algebra expression: a*A*B+b*C" );
+        SCAI_LOG_INFO( logger, "linear algebra expression: a*A*B+b*C" );
         matrixD = t * matrixAInv * matrixA + t * matrixIdent;
         verifySameMatrix<ValueType>( matrixD, Diag2Matrix );
-        LAMA_LOG_INFO( logger, "linear algebra expression: A*(A^-1)=Ident" );
+        SCAI_LOG_INFO( logger, "linear algebra expression: A*(A^-1)=Ident" );
         matrixD = matrixA * matrixAInv;
         verifySameMatrix<ValueType>( matrixD, matrixIdent );
-        LAMA_LOG_INFO( logger, "selfassignment: A=A*B by hand: tmp=A, A=tmp*B" );
+        SCAI_LOG_INFO( logger, "selfassignment: A=A*B by hand: tmp=A, A=tmp*B" );
         DenseMatrix<ValueType> tmpA ( matrixA );
         matrixA = tmpA * matrixAInv;
         verifySameMatrix<ValueType>( matrixA, matrixIdent );
-        LAMA_LOG_INFO( logger, "selfassignment lhs - linear algebra expression: A=A*B" );
+        SCAI_LOG_INFO( logger, "selfassignment lhs - linear algebra expression: A=A*B" );
         matrixA = n4m4Matrix;
         matrixA = matrixA * matrixAInv;
         verifySameMatrix<ValueType>( matrixA, matrixIdent );
-        LAMA_LOG_INFO( logger, "reset and selfassignment rhs - linear algebra expression: A=B*A" );
+        SCAI_LOG_INFO( logger, "reset and selfassignment rhs - linear algebra expression: A=B*A" );
         matrixA = n4m4Matrix;
         matrixA = matrixAInv * matrixA;
         verifySameMatrix<ValueType>( matrixA, matrixIdent );
-        LAMA_LOG_INFO( logger, "self assignment lhs and rhs - linear algebra expression: A=A*A" );
+        SCAI_LOG_INFO( logger, "self assignment lhs and rhs - linear algebra expression: A=A*A" );
         DenseMatrix<ValueType> matrixIdent2( identMatrix );
         matrixIdent = matrixIdent * matrixIdent;
         verifySameMatrix<ValueType>( matrixIdent2, matrixIdent );
-        LAMA_LOG_INFO( logger, "linear algebra expression: a*A*B" );
+        SCAI_LOG_INFO( logger, "linear algebra expression: a*A*B" );
         matrixA = n4m4Matrix;
         matrixD = s * matrixAInv * matrixA;
         verifySameMatrix<ValueType>( matrixD, Diag2Matrix );
-        LAMA_LOG_INFO( logger, "linear algebra expression: a*A" );
+        SCAI_LOG_INFO( logger, "linear algebra expression: a*A" );
         matrixD = matrixA;
         matrixIdent = identMatrix;
         matrixD = s * matrixIdent;
         verifySameMatrix<ValueType>( matrixD, Diag2Matrix );
-        LAMA_LOG_INFO( logger, "linear algebra expression: M*a" );
+        SCAI_LOG_INFO( logger, "linear algebra expression: M*a" );
         matrixD = matrixA;
         matrixD = matrixIdent * s;
         verifySameMatrix<ValueType>( matrixD, Diag2Matrix );
-        LAMA_LOG_INFO( logger, "clear - linear algebra expression: a*A" );
+        SCAI_LOG_INFO( logger, "clear - linear algebra expression: a*A" );
         matrixD.clear();
         matrixD = s * matrixIdent;
         verifySameMatrix<ValueType>( matrixD, Diag2Matrix );
@@ -280,17 +280,17 @@ void assignmentMultiplicationTest( logging::Logger& logger )
         ValueType j = 2.0;
         Scalar s = 2.0;
         Scalar t = 4.0;
-        LAMA_LOG_INFO( logger, "matrixRes = j (" << j << ") * mat1 = " << mat1 );
+        SCAI_LOG_INFO( logger, "matrixRes = j (" << j << ") * mat1 = " << mat1 );
         matrixRes = j * mat1;
-        LAMA_LOG_INFO( logger, "matrixRes = " << matrixRes );
+        SCAI_LOG_INFO( logger, "matrixRes = " << matrixRes );
         verifyMatrixWithScalar<ValueType>( matrixRes, s );
-        LAMA_LOG_INFO( logger, "matrixRes = mat1 ( " << mat1 << ") * j ( " << j << " )" );
+        SCAI_LOG_INFO( logger, "matrixRes = mat1 ( " << mat1 << ") * j ( " << j << " )" );
         matrixRes = mat1 * j;
-        LAMA_LOG_INFO( logger, "matrixRes = " << matrixRes );
+        SCAI_LOG_INFO( logger, "matrixRes = " << matrixRes );
         verifyMatrixWithScalar<ValueType>( matrixRes, s );
-        LAMA_LOG_INFO( logger, "matrixRes = matrixRes ( " << matrixRes << ") * j ( " << j << " )" );
+        SCAI_LOG_INFO( logger, "matrixRes = matrixRes ( " << matrixRes << ") * j ( " << j << " )" );
         matrixRes = matrixRes * j;
-        LAMA_LOG_INFO( logger, "matrixRes = " << matrixRes );
+        SCAI_LOG_INFO( logger, "matrixRes = " << matrixRes );
         verifyMatrixWithScalar<ValueType>( matrixRes, t );
     }
     {
@@ -306,11 +306,11 @@ void assignmentMultiplicationTest( logging::Logger& logger )
         DenseMatrix<ValueType> matrixInvA( n4m4InvMatrix );
         DenseMatrix<ValueType> matrixB = n4m6Matrix;
         DenseMatrix<ValueType> matrixC = n6m4Matrix;
-        LAMA_LOG_INFO( logger, "Assignment Test - using constructor" );
+        SCAI_LOG_INFO( logger, "Assignment Test - using constructor" );
         verifySameMatrix<ValueType>( n4m4Matrix, matrixA );
-        LAMA_LOG_INFO( logger, "Assignment Test - using operator=" );
+        SCAI_LOG_INFO( logger, "Assignment Test - using operator=" );
         verifySameMatrix<ValueType>( matrixB, n4m6Matrix );
-        LAMA_LOG_INFO( logger, "Assignment Test - different matrix-sizes" );
+        SCAI_LOG_INFO( logger, "Assignment Test - different matrix-sizes" );
         matrixA = matrixC;
         verifySameMatrix<ValueType>( matrixA, matrixC );
     }
@@ -336,23 +336,23 @@ void xGEMMOperationTest( logging::Logger& logger )
         DenseMatrix<ValueType> matrixTestRes( identMatrix );
         Scalar j = 2.0;
         matrixTestRes = j * j * matrixTestRes;
-        LAMA_LOG_INFO( logger, "matrixRes = j * matrixA * matrixAInv + j * matrixIdent" );
+        SCAI_LOG_INFO( logger, "matrixRes = j * matrixA * matrixAInv + j * matrixIdent" );
         matrixRes = j * matrixA * matrixAInv + j * matrixIdent;
         verifySameMatrix<ValueType>( matrixTestRes, matrixRes, 1E-4f, logger );
         matrixRes = matrixA;
-        LAMA_LOG_INFO( logger, "matrixRes = j * matrixMatrixRes * matrixAInv + j * matrixIdent" );
+        SCAI_LOG_INFO( logger, "matrixRes = j * matrixMatrixRes * matrixAInv + j * matrixIdent" );
         matrixRes = j * matrixRes * matrixAInv + j * matrixIdent;
         verifySameMatrix<ValueType>( matrixTestRes, matrixRes, 1E-3f, logger );
         matrixRes = matrixAInv;
-        LAMA_LOG_INFO( logger, "matrixRes = j * matrixA * matrixRes + j * matrixIdent" );
+        SCAI_LOG_INFO( logger, "matrixRes = j * matrixA * matrixRes + j * matrixIdent" );
         matrixRes = j * matrixA * matrixRes + j * matrixIdent;
         verifySameMatrix<ValueType>( matrixTestRes, matrixRes, 1E-3f, logger );
         matrixRes = matrixIdent;
-        LAMA_LOG_INFO( logger, "matrixRes = j * matrixA * matrixAInv + j * matrixRes" );
+        SCAI_LOG_INFO( logger, "matrixRes = j * matrixA * matrixAInv + j * matrixRes" );
         matrixRes = j * matrixA * matrixAInv + j * matrixRes;
         verifySameMatrix<ValueType>( matrixTestRes, matrixRes, 1E-3f, logger );
         matrixRes = matrixIdent;
-        LAMA_LOG_INFO( logger, "matrixRes = j * matrixRes * matrixRes + j * matrixRes" );
+        SCAI_LOG_INFO( logger, "matrixRes = j * matrixRes * matrixRes + j * matrixRes" );
         matrixRes = j * matrixRes * matrixRes + j * matrixRes;
         verifySameMatrix<ValueType>( matrixTestRes, matrixRes, 1E-3f, logger );
     }
@@ -369,10 +369,10 @@ void xGEMMOperationTest( logging::Logger& logger )
         DenseMatrix<ValueType> cDMatrix( resSparseMatrix );
         DenseMatrix<ValueType> ergDMatrix( 6, 3 );
         Scalar j = 1.0;
-        LAMA_LOG_INFO( logger, "ergDMatrix = j * n6m4DMatrix * n4m3DMatrix + j * cDMatrix" );
+        SCAI_LOG_INFO( logger, "ergDMatrix = j * n6m4DMatrix * n4m3DMatrix + j * cDMatrix" );
         ergDMatrix = j * n6m4DMatrix * n4m3DMatrix + j * cDMatrix;
         verifySameMatrix<ValueType>( ergDMatrix, resDMatrix );
-        LAMA_LOG_INFO( logger, "cDMatrix = j * n6m4DMatrix * n4m3DMatrix + j * cDMatrix" );
+        SCAI_LOG_INFO( logger, "cDMatrix = j * n6m4DMatrix * n4m3DMatrix + j * cDMatrix" );
         cDMatrix = j * n6m4DMatrix * n4m3DMatrix + j * cDMatrix;
         verifySameMatrix<ValueType>( ergDMatrix, resDMatrix );
     } //alpha * A * B + beta * C
@@ -390,14 +390,14 @@ void xGEMMOperationTest( logging::Logger& logger )
         DenseMatrix<ValueType> matrixTestRes( resSMatrix );
         ValueType j = 2.0;
         matrixTestRes = j * matrixTestRes;
-        LAMA_LOG_INFO( logger, "matrixRes = j * matrixA * matrixB" );
+        SCAI_LOG_INFO( logger, "matrixRes = j * matrixA * matrixB" );
         matrixRes = j * matrixA * matrixB;
         verifySameMatrix<ValueType>( matrixTestRes, matrixRes );
-        LAMA_LOG_INFO( logger, "matrixA = j * matrixA * matrixB" );
+        SCAI_LOG_INFO( logger, "matrixA = j * matrixA * matrixB" );
         matrixA = j * matrixA * matrixB;
         verifySameMatrix<ValueType>( matrixTestRes, matrixA );
         matrixA = n4m4SMatrixA;
-        LAMA_LOG_INFO( logger, "matrixB = j * matrixA * matrixB" );
+        SCAI_LOG_INFO( logger, "matrixB = j * matrixA * matrixB" );
         matrixB = j * matrixA * matrixB;
         verifySameMatrix<ValueType>( matrixTestRes, matrixB );
     }
@@ -737,7 +737,7 @@ void swapTest( )
 
 BOOST_AUTO_TEST_SUITE( DenseMatrixTest )
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.DenseMatrixTest" )
+SCAI_LOG_DEF_LOGGER( logger, "Test.DenseMatrixTest" )
 
 LAMA_AUTO_TEST_CASE_TL( assignmentMultiplicationTest, DenseMatrixTest )
 LAMA_AUTO_TEST_CASE_TL( xGEMMOperationTest, DenseMatrixTest )

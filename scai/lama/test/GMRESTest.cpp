@@ -69,7 +69,7 @@ typedef boost::mpl::list<float, double> test_types;
 
 BOOST_AUTO_TEST_SUITE( GMRESTest )
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.GMRESTest" )
+SCAI_LOG_DEF_LOGGER( logger, "Test.GMRESTest" )
 
 /* --------------------------------------------------------------------- */
 
@@ -85,7 +85,7 @@ void testSolveWithPreconditionmethod()
     GMRES gmresSolver( "GMRESTestSolver"/*, slogger*/ );
     const IndexType N1 = 4;
     const IndexType N2 = 4;
-    LAMA_LOG_INFO( logger, "Problem size = " << N1 << " x " << N2 );
+    SCAI_LOG_INFO( logger, "Problem size = " << N1 << " x " << N2 );
     CSRSparseMatrix<ValueType> coefficients;
     MatrixCreator<ValueType>::buildPoisson2D( coefficients, 9, N1, N2 );
     DenseVector<ValueType> solution( coefficients.getDistributionPtr(), 1.0 );
@@ -129,7 +129,7 @@ void testSolveWithoutPreconditionmethod()
     typedef typename MatrixType::MatrixValueType ValueType;
     const IndexType N1 = 4;
     const IndexType N2 = 4;
-    LAMA_LOG_INFO( logger, "Problem size = " << N1 << " x " << N2 );
+    SCAI_LOG_INFO( logger, "Problem size = " << N1 << " x " << N2 );
 //    LoggerPtr slogger( new CommonLogger(
 //        "<GMRES>: ",
 //        lama::LogLevel::solverInformation,
@@ -175,7 +175,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( testDefaultCriterionSet, ValueType, test_types )
 {
     const IndexType N1 = 4;
     const IndexType N2 = 4;
-    LAMA_LOG_INFO( logger, "Problem size = " << N1 << " x " << N2 );
+    SCAI_LOG_INFO( logger, "Problem size = " << N1 << " x " << N2 );
     GMRES gmresSolver( "GMRESTestSolver" );
     CSRSparseMatrix<ValueType> coefficients;
     MatrixCreator<ValueType>::buildPoisson2D( coefficients, 9, N1, N2 );

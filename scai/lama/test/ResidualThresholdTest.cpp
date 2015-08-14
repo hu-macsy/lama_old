@@ -77,7 +77,7 @@ struct ResidualThresholdTestConfig
 
 BOOST_FIXTURE_TEST_SUITE( ResidualThresholdTest, ResidualThresholdTestConfig )
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.ResidualThresholdTest" )
+SCAI_LOG_DEF_LOGGER( logger, "Test.ResidualThresholdTest" )
 
 /* --------------------------------------------------------------------- */
 

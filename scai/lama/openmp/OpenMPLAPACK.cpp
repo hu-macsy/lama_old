@@ -69,7 +69,7 @@ using tasking::SyncToken;
 
 /* ------------------------------------------------------------------------- */
 
-LAMA_LOG_DEF_LOGGER( OpenMPLAPACK::logger, "OpenMP.LAPACK" )
+SCAI_LOG_DEF_LOGGER( OpenMPLAPACK::logger, "OpenMP.LAPACK" )
 
 /* ------------------------------------------------------------------------- */
 /*      getrf<float>                                                         */
@@ -86,7 +86,7 @@ IndexType OpenMPLAPACK::getrf(
 {
     LAMA_REGION( "OpenMP.LAPACK.getrf<ValueType>" )
 
-    LAMA_LOG_INFO( logger, "getrf<" << getScalarType<ValueType>()<< "> for A of size " << m << " x " << n )
+    SCAI_LOG_INFO( logger, "getrf<" << getScalarType<ValueType>()<< "> for A of size " << m << " x " << n )
 
     int info = 0;
     int index = 0;
@@ -185,7 +185,7 @@ void OpenMPLAPACK::getinv( const IndexType n, ValueType* a, const IndexType lda 
 {
     LAMA_REGION( "OpenMP.LAPACK.getinv<ValueType>" )
 
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "getinv<" << getScalarType<ValueType>()<< "> for " << n << " x " << n << " matrix, uses openmp" )
 
     // temporary array for pivot indexes needed, deleted by destructor
@@ -205,7 +205,7 @@ int OpenMPLAPACK::getri( const CBLAS_ORDER order, const int n, ValueType* const 
 {
     LAMA_REGION( "OpenMP.LAPACK.getri<ValueType>" )
 
-    LAMA_LOG_INFO( logger, "getri<" << getScalarType<ValueType>()<< "> for A of size " << n << " x " << n )
+    SCAI_LOG_INFO( logger, "getri<" << getScalarType<ValueType>()<< "> for A of size " << n << " x " << n )
     int info = 0;
     ValueType* A_inv = 0;
     A_inv = new ValueType[n * n];

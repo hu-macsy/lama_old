@@ -44,14 +44,14 @@ namespace lama
 
 /* ------------------------------------------------------------------------- */
 
-LAMA_LOG_DEF_LOGGER( CommunicationPlan::logger, "CommunicationPlan" )
+SCAI_LOG_DEF_LOGGER( CommunicationPlan::logger, "CommunicationPlan" )
 
 /* ------------------------------------------------------------------------- */
 
 CommunicationPlan::CommunicationPlan()
                 : mAllocated( false ), mQuantity( 0 )
 {
-    LAMA_LOG_INFO( logger, "Communication plan constructed, not allocated" )
+    SCAI_LOG_INFO( logger, "Communication plan constructed, not allocated" )
 }
 
 /* ------------------------------------------------------------------------- */
@@ -83,7 +83,7 @@ CommunicationPlan::CommunicationPlan( const CommunicationPlan& other, const Inde
 
                 : mAllocated( false ), mQuantity( 0 )
 {
-    LAMA_LOG_INFO( logger, "extend plan for quantity of quantites: " << other )
+    SCAI_LOG_INFO( logger, "extend plan for quantity of quantites: " << other )
 
     LAMA_ASSERT_ERROR( other.allocated(), "non allocated plan cannot be extended" )
 
@@ -126,7 +126,7 @@ CommunicationPlan::CommunicationPlan( const CommunicationPlan& other, const Inde
     mCompressed = other.compressed();
     mQuantity = offset;
 
-    LAMA_LOG_INFO( logger, "extended quantity plan: " << *this )
+    SCAI_LOG_INFO( logger, "extended quantity plan: " << *this )
 }
 
 /* ------------------------------------------------------------------------- */
@@ -135,7 +135,7 @@ CommunicationPlan::CommunicationPlan( const CommunicationPlan& other, const Inde
 
                 : mAllocated( false ), mQuantity( 0 )
 {
-    LAMA_LOG_INFO( logger, "Construct multiply plan: " << other << ", factor = " << n )
+    SCAI_LOG_INFO( logger, "Construct multiply plan: " << other << ", factor = " << n )
 
     LAMA_ASSERT_ERROR( other.allocated(), "non allocated plan cannot be extended" )
 
@@ -162,14 +162,14 @@ CommunicationPlan::CommunicationPlan( const CommunicationPlan& other, const Inde
     mCompressed = other.compressed();
     mQuantity = offset;
 
-    LAMA_LOG_INFO( logger, "multiplied quantity plan: " << *this )
+    SCAI_LOG_INFO( logger, "multiplied quantity plan: " << *this )
 }
 
 /* ------------------------------------------------------------------------- */
 
 CommunicationPlan::~CommunicationPlan()
 {
-    LAMA_LOG_DEBUG( logger, "~CommunicationPlan" )
+    SCAI_LOG_DEBUG( logger, "~CommunicationPlan" )
 }
 
 /* ------------------------------------------------------------------------- */
@@ -198,7 +198,7 @@ void CommunicationPlan::purge()
 
 void CommunicationPlan::allocate( const IndexType quantities[], const PartitionId noPartitions, bool compressFlag )
 {
-    LAMA_LOG_INFO( logger, "allocate plan for " << noPartitions << " partitions from quantities" )
+    SCAI_LOG_INFO( logger, "allocate plan for " << noPartitions << " partitions from quantities" )
 
     mEntries.resize( noPartitions );
 
@@ -214,8 +214,8 @@ void CommunicationPlan::allocate( const IndexType quantities[], const PartitionI
 
         mQuantity += entry.quantity;
 
-        LAMA_LOG_TRACE( logger, "Entries["<<i<<"].quantity = "<<mEntries[i].quantity )
-        LAMA_LOG_TRACE( logger, " mQuantity = " << mQuantity )
+        SCAI_LOG_TRACE( logger, "Entries["<<i<<"].quantity = "<<mEntries[i].quantity )
+        SCAI_LOG_TRACE( logger, " mQuantity = " << mQuantity )
     }
 
     mAllocated = true;
@@ -236,7 +236,7 @@ void CommunicationPlan::allocate(
 {
     mEntries.resize( noPartitions );
 
-    LAMA_LOG_INFO( logger, "allocate plan for " << noPartitions << " partitions from owners" )
+    SCAI_LOG_INFO( logger, "allocate plan for " << noPartitions << " partitions from owners" )
 
     for( PartitionId p = 0; p < noPartitions; ++p )
     {
@@ -249,7 +249,7 @@ void CommunicationPlan::allocate(
         const PartitionId& p = owners[i];
         LAMA_ASSERT( p >= 0 && p < noPartitions, "Illegal owner value: " << p << " at Position " << i )
         ++mEntries[p].quantity;
-        LAMA_LOG_TRACE( logger, " entry for p = " << p << ", total = " << mEntries[p].quantity )
+        SCAI_LOG_TRACE( logger, " entry for p = " << p << ", total = " << mEntries[p].quantity )
     }
 
     mQuantity = 0; // counts total quantity
@@ -315,7 +315,7 @@ void CommunicationPlan::compress()
 
     for( PartitionId pid = 0; pid < size(); pid++ )
     {
-        LAMA_LOG_TRACE( logger, "Entries["<<pid<<"].quantity = "<<mEntries[pid].quantity )
+        SCAI_LOG_TRACE( logger, "Entries["<<pid<<"].quantity = "<<mEntries[pid].quantity )
 
         if( mEntries[pid].quantity == 0 )
         {
@@ -330,7 +330,7 @@ void CommunicationPlan::compress()
         count++;
     }
 
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "CommunicationPlan compressed from " << size() << " to " << count << " entries, total quantity = " << mQuantity )
 
     mEntries.resize( count );

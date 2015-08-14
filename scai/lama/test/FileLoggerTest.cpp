@@ -51,7 +51,7 @@ using common::scoped_array;
 
 BOOST_AUTO_TEST_SUITE( FileLoggerTest )
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.FileLoggerTest" )
+SCAI_LOG_DEF_LOGGER( logger, "Test.FileLoggerTest" )
 
 /* --------------------------------------------------------------------- */
 
@@ -62,9 +62,9 @@ BOOST_AUTO_TEST_CASE( LoggingTest )
     // This should throw an exception
     LAMA_CHECK_THROW( flogger.setLogFile( "/15/16/17" ), Exception );
     const std::string path = Configuration::getInstance().getPath();
-    LAMA_LOG_INFO( logger, "Configuration path = " << path );
+    SCAI_LOG_INFO( logger, "Configuration path = " << path );
     std::string logFileName( path + "/" + "FileLoggerTestFile.log" );
-    LAMA_LOG_INFO( logger, "Log file name = " << logFileName );
+    SCAI_LOG_INFO( logger, "Log file name = " << logFileName );
     flogger.setLogFile( logFileName );
     // Setting same name twice should be okay
     flogger.setLogFile( logFileName );

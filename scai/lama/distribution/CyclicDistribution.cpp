@@ -39,11 +39,11 @@
 namespace lama
 {
 
-LAMA_LOG_DEF_LOGGER( CyclicDistribution::logger, "Distribution.CyclicDistribution" )
+SCAI_LOG_DEF_LOGGER( CyclicDistribution::logger, "Distribution.CyclicDistribution" )
 
 CyclicDistribution::~CyclicDistribution()
 {
-    LAMA_LOG_INFO( logger, "~CyclicDistribution" )
+    SCAI_LOG_INFO( logger, "~CyclicDistribution" )
 }
 
 CyclicDistribution::CyclicDistribution(
@@ -53,7 +53,7 @@ CyclicDistribution::CyclicDistribution(
 
     : Distribution( globalSize, communicator ), mChunkSize( chunkSize )
 {
-    LAMA_LOG_INFO( logger, "CyclicDistribution of " << mGlobalSize << " elements " << " and chunk size " << mChunkSize )
+    SCAI_LOG_INFO( logger, "CyclicDistribution of " << mGlobalSize << " elements " << " and chunk size " << mChunkSize )
 }
 
 PartitionId CyclicDistribution::getOwner( const IndexType globalIndex ) const
@@ -70,12 +70,12 @@ bool CyclicDistribution::isLocal( const IndexType globalIndex ) const
 
     if( getOwner( globalIndex ) == rank )
     {
-        LAMA_LOG_TRACE( logger, "global index " << globalIndex << " is local on partition " << rank )
+        SCAI_LOG_TRACE( logger, "global index " << globalIndex << " is local on partition " << rank )
         return true;
     }
     else
     {
-        LAMA_LOG_TRACE( logger, "global index " << globalIndex << " is not local on partition " << rank )
+        SCAI_LOG_TRACE( logger, "global index " << globalIndex << " is not local on partition " << rank )
         return false;
     }
 }
@@ -86,7 +86,7 @@ IndexType CyclicDistribution::getLocalSize() const
 
     const IndexType elements = getPartitionSize( rank );
 
-    LAMA_LOG_TRACE( logger, *mCommunicator << ": local size = " << elements << " elements" )
+    SCAI_LOG_TRACE( logger, *mCommunicator << ": local size = " << elements << " elements" )
 
     return elements;
 }
@@ -113,7 +113,7 @@ void CyclicDistribution::getChunkInfo( IndexType& localChunks, IndexType& extra,
         extra = mGlobalSize % mChunkSize;
     }
 
-    LAMA_LOG_TRACE( logger,
+    SCAI_LOG_TRACE( logger,
                     "Partition " << rank << " of " << size << ": " << localChunks << " of " << chunks << ", extra = " << extra )
 }
 
@@ -170,7 +170,7 @@ IndexType CyclicDistribution::local2global( const IndexType localIndex ) const
     IndexType localOffset = localIndex % mChunkSize;
     IndexType globalChunk = localChunk * size + rank;
     IndexType globalIndex = globalChunk * mChunkSize + localOffset;
-    LAMA_LOG_TRACE( logger,
+    SCAI_LOG_TRACE( logger,
                     "local Index " << localIndex << " is with chunkSize " << mChunkSize << " and " << size << " partitions on partition " << rank << ": " << globalIndex )
     return globalIndex;
 }
@@ -182,7 +182,7 @@ IndexType CyclicDistribution::allGlobal2local( const IndexType globalIndex ) con
     IndexType globalChunkIndex = globalIndex / mChunkSize;
     IndexType localChunkIndex = globalChunkIndex / size;
     IndexType localIndex = localChunkIndex * mChunkSize + globalIndex % mChunkSize;
-    LAMA_LOG_TRACE( logger,
+    SCAI_LOG_TRACE( logger,
                     "global Index " << globalIndex << " is with chunkSize " << mChunkSize << " and " << size << " partitions: " << localIndex )
     return localIndex;
 }
@@ -207,13 +207,13 @@ void CyclicDistribution::computeOwners(
     owners.clear();
     owners.reserve( requiredIndexes.size() );
 
-    LAMA_LOG_INFO( logger, "compute " << requiredIndexes.size() << " owners for " << *this )
+    SCAI_LOG_INFO( logger, "compute " << requiredIndexes.size() << " owners for " << *this )
 
     for( size_t i = 0; i < requiredIndexes.size(); i++ )
     {
         IndexType globalChunkIndex = requiredIndexes[i] / mChunkSize;
         IndexType owner = globalChunkIndex % size;
-        LAMA_LOG_TRACE( logger, "owner of global index " << requiredIndexes[i] << " is " << owner )
+        SCAI_LOG_TRACE( logger, "owner of global index " << requiredIndexes[i] << " is " << owner )
         owners.push_back( owner );
     }
 }

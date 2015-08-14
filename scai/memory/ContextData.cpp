@@ -45,7 +45,7 @@ namespace memory
 
 /* ---------------------------------------------------------------------------------*/
 
-LAMA_LOG_DEF_LOGGER( ContextData::logger, "ContextData" )
+SCAI_LOG_DEF_LOGGER( ContextData::logger, "ContextData" )
 
 /* ---------------------------------------------------------------------------------*/
 
@@ -73,7 +73,7 @@ ContextData::ContextData() :
 
 ContextData::~ContextData()
 {
-    LAMA_LOG_DEBUG( logger, "~ContextData @ " << *mMemory << ", size = " << size )
+    SCAI_LOG_DEBUG( logger, "~ContextData @ " << *mMemory << ", size = " << size )
 
     free(); 
 }
@@ -93,7 +93,7 @@ void ContextData::allocate( const size_t size )
 
     this->size = size;
     allocated = true;
-    LAMA_LOG_DEBUG( logger, "allocated " << size << " bytes" )
+    SCAI_LOG_DEBUG( logger, "allocated " << size << " bytes" )
 }
 
 /* ---------------------------------------------------------------------------------*/
@@ -111,14 +111,14 @@ void ContextData::setRef( void* reference, const size_t size )
         COMMON_THROWEXCEPTION( "NULL pointer cannot set be as reference, size = " << size )
     }
 
-    LAMA_LOG_DEBUG( logger, "set ref for " << size << " bytes" )
+    SCAI_LOG_DEBUG( logger, "set ref for " << size << " bytes" )
 }
 
 /* ---------------------------------------------------------------------------------*/
 
 void ContextData::free()
 {
-    LAMA_LOG_TRACE( logger, "free for " << *mMemory )
+    SCAI_LOG_TRACE( logger, "free for " << *mMemory )
 
     if ( mMemory && pointer )
     {
@@ -204,26 +204,26 @@ void ContextData::writeAt( std::ostream& stream ) const
 
 void ContextData::copyFrom( const ContextData& other, size_t size )
 {
-    LAMA_LOG_INFO( logger, "copyFrom " << *other.mMemory << " to " << *mMemory << ", size = " << size )
+    SCAI_LOG_INFO( logger, "copyFrom " << *other.mMemory << " to " << *mMemory << ", size = " << size )
 
     if ( mMemory.get() == other.mMemory.get() )
     {
-        LAMA_LOG_INFO( logger, "copy on same context" )
+        SCAI_LOG_INFO( logger, "copy on same context" )
         mMemory->memcpy( pointer, other.pointer, size );
     }
     else if ( mMemory->canCopyFrom( *other.mMemory ) )
     {
-        LAMA_LOG_INFO( logger, "copy from" )
+        SCAI_LOG_INFO( logger, "copy from" )
         mMemory->memcpyFrom( pointer, *other.mMemory, other.pointer, size );
     }
     else if ( other.mMemory->canCopyTo( *mMemory ) )
     {
-        LAMA_LOG_INFO( logger, "copy to" )
+        SCAI_LOG_INFO( logger, "copy to" )
         other.mMemory->memcpyTo( *mMemory, pointer, other.pointer, size );
     }
     else
     {
-        LAMA_LOG_WARN( logger, "copyFrom " << *other.mMemory << " to " << *mMemory << " UNSUPPORTED" )
+        SCAI_LOG_WARN( logger, "copyFrom " << *other.mMemory << " to " << *mMemory << " UNSUPPORTED" )
 
         COMMON_THROWEXCEPTION( "copyFrom  "
                                << *other.mMemory << " to " << *mMemory << ", size = " << size  << " UNSUPPORTED" )
@@ -233,7 +233,7 @@ void ContextData::copyFrom( const ContextData& other, size_t size )
 
 SyncToken* ContextData::copyFromAsync( const ContextData& other, size_t size )
 {
-    LAMA_LOG_INFO( logger, "copyFrom " << *other.mMemory << " to " << *mMemory << ", size = " << size )
+    SCAI_LOG_INFO( logger, "copyFrom " << *other.mMemory << " to " << *mMemory << ", size = " << size )
 
     if ( mMemory.get() == other.mMemory.get() )
     {

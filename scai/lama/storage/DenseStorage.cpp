@@ -53,7 +53,7 @@ using namespace memory;
 
 /* --------------------------------------------------------------------------- */
 
-LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, DenseStorageView<ValueType>::logger,
+SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, DenseStorageView<ValueType>::logger,
                               "MatrixStorage.DenseStorage" )
 
 /* --------------------------------------------------------------------------- */
@@ -72,7 +72,7 @@ DenseStorageView<ValueType>::DenseStorageView(
         LAMA_ASSERT_EQUAL_ERROR( data.size(), numRows * numColumns )
     }
 
-    LAMA_LOG_DEBUG( logger, "created dense storage with referenced data" )
+    SCAI_LOG_DEBUG( logger, "created dense storage with referenced data" )
 
     // we can always access diagonals directly
 
@@ -115,7 +115,7 @@ IndexType DenseStorageView<ValueType>::getNumValues() const
         }
     }
 
-    LAMA_LOG_INFO( logger, *this << ": #non-zero values = " << count )
+    SCAI_LOG_INFO( logger, *this << ": #non-zero values = " << count )
 
     return count;
 }
@@ -286,7 +286,7 @@ void DenseStorageView<ValueType>::setIdentity()
     OpenMPDenseUtils::scaleValue( data.get(), mNumRows, mNumColumns, zero );
     OpenMPDenseUtils::setDiagonalValue( data.get(), mNumRows, mNumColumns, one );
 
-    LAMA_LOG_INFO( logger, *this << " has been set to identity" )
+    SCAI_LOG_INFO( logger, *this << " has been set to identity" )
 }
 
 /* --------------------------------------------------------------------------- */
@@ -302,7 +302,7 @@ void DenseStorageView<ValueType>::setZero()
 
     OpenMPDenseUtils::scaleValue( data.get(), mNumRows, mNumColumns, zero );
 
-    LAMA_LOG_INFO( logger, *this << " has been set to zero" )
+    SCAI_LOG_INFO( logger, *this << " has been set to zero" )
 }
 
 /* --------------------------------------------------------------------------- */
@@ -361,7 +361,7 @@ void DenseStorageView<ValueType>::setCSRDataImpl(
 
     ContextPtr loc = Context::getContextPtr( context::Host );
 
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "setCRSData for dense storage " << numRows << " x " << numColumns << ", nnz = " << numValues )
 
     mNumRows = numRows;
@@ -395,7 +395,7 @@ void DenseStorageView<ValueType>::setCSRDataImpl(
 template<typename ValueType>
 void DenseStorageView<ValueType>::invert( const MatrixStorage<ValueType>& other )
 {
-    LAMA_LOG_INFO( logger, "invert( " << other << ") to a dense storage" )
+    SCAI_LOG_INFO( logger, "invert( " << other << ") to a dense storage" )
 
     if( other.getFormat() == Format::DENSE )
     {
@@ -418,13 +418,13 @@ void DenseStorageView<ValueType>::invert( const MatrixStorage<ValueType>& other 
 template<typename ValueType>
 void DenseStorageView<ValueType>::invertDense( const DenseStorageView<ValueType>& other )
 {
-    LAMA_LOG_INFO( logger, "invertDense: " << other )
+    SCAI_LOG_INFO( logger, "invertDense: " << other )
 
     // invert is always done in place, so assign other to this
 
     if( &other != this )
     {
-        LAMA_LOG_INFO( logger, "invertDense: copy input matrix to this matrix" )
+        SCAI_LOG_INFO( logger, "invertDense: copy input matrix to this matrix" )
         assign( other );
     }
 
@@ -443,7 +443,7 @@ void DenseStorageView<ValueType>::invertDense( const DenseStorageView<ValueType>
 
     getinv( nRows, denseValues.get(), nCols );
 
-    LAMA_LOG_INFO( logger, "invertDense: this = " << *this )
+    SCAI_LOG_INFO( logger, "invertDense: this = " << *this )
 }
 
 /* --------------------------------------------------------------------------- */
@@ -456,7 +456,7 @@ void DenseStorageView<ValueType>::matrixTimesVector(
     const ValueType beta,
     const LAMAArray<ValueType>& y ) const
 {
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "Computing z = " << alpha << " * A * x + " << beta << " * y" << ", with A = " << *this << ", x = " << x << ", y = " << y << ", z = " << result )
 
     LAMA_ASSERT_EQUAL_ERROR( x.size(), mNumColumns )
@@ -469,7 +469,7 @@ void DenseStorageView<ValueType>::matrixTimesVector(
 
     ContextPtr loc = mContext;
 
-    LAMA_LOG_INFO( logger, *this << ": matrixTimesVector on " << *loc )
+    SCAI_LOG_INFO( logger, *this << ": matrixTimesVector on " << *loc )
 
     // not used here: LAMA_INTERFACE_FN_T( normalGEMV, loc, DenseUtils, Mult, ValueType )
 
@@ -477,7 +477,7 @@ void DenseStorageView<ValueType>::matrixTimesVector(
 
     if( beta == static_cast<ValueType>( 0 ) )
     {
-        LAMA_LOG_INFO( logger, "set result = 0 as y != result and beta = 0" )
+        SCAI_LOG_INFO( logger, "set result = 0 as y != result and beta = 0" )
 
         LAMA_INTERFACE_FN_T( setVal, loc, Utils, Setter, ValueType )
 
@@ -489,7 +489,7 @@ void DenseStorageView<ValueType>::matrixTimesVector(
     }
     else if( &result != &y )
     {
-        LAMA_LOG_INFO( logger, "set result = y as y != result" )
+        SCAI_LOG_INFO( logger, "set result = y as y != result" )
 
         LAMA_INTERFACE_FN_T( copy, loc, BLAS, BLAS1, ValueType )
 
@@ -505,14 +505,14 @@ void DenseStorageView<ValueType>::matrixTimesVector(
     }
     else
     {
-        LAMA_LOG_INFO( logger, "alias of result and y, can use it" )
+        SCAI_LOG_INFO( logger, "alias of result and y, can use it" )
     }
 
     // now we have: result = alpha * A * x + beta * result
 
     if( mNumColumns == 0 )
     {
-        LAMA_LOG_INFO( logger, "empty matrix, so compute result = " << beta << " * result " )
+        SCAI_LOG_INFO( logger, "empty matrix, so compute result = " << beta << " * result " )
 
         if( beta == static_cast<ValueType>( 0 ) )
         {
@@ -565,7 +565,7 @@ void DenseStorageView<ValueType>::vectorTimesMatrix(
     const ValueType beta,
     const LAMAArray<ValueType>& y ) const
 {
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "Computing z = " << alpha << " * A * x + " << beta << " * y" << ", with A = " << *this << ", x = " << x << ", y = " << y << ", z = " << result )
 
     LAMA_ASSERT_EQUAL_ERROR( x.size(), mNumRows )
@@ -578,7 +578,7 @@ void DenseStorageView<ValueType>::vectorTimesMatrix(
 
     ContextPtr loc = mContext;
 
-    LAMA_LOG_INFO( logger, *this << ": matrixTimesVector on " << *loc )
+    SCAI_LOG_INFO( logger, *this << ": matrixTimesVector on " << *loc )
 
     // not used here: LAMA_INTERFACE_FN_T( normalGEVM, loc, DenseUtils, Mult, ValueType )
 
@@ -586,7 +586,7 @@ void DenseStorageView<ValueType>::vectorTimesMatrix(
 
     if( beta == static_cast<ValueType>( 0 ) )
     {
-        LAMA_LOG_INFO( logger, "set result = 0 as y != result and beta = 0" )
+        SCAI_LOG_INFO( logger, "set result = 0 as y != result and beta = 0" )
 
         LAMA_INTERFACE_FN_T( setVal, loc, Utils, Setter, ValueType )
 
@@ -598,7 +598,7 @@ void DenseStorageView<ValueType>::vectorTimesMatrix(
     }
     else if( &result != &y )
     {
-        LAMA_LOG_INFO( logger, "set result = y as y != result" )
+        SCAI_LOG_INFO( logger, "set result = y as y != result" )
 
         LAMA_INTERFACE_FN_T( copy, loc, BLAS, BLAS1, ValueType )
 
@@ -614,14 +614,14 @@ void DenseStorageView<ValueType>::vectorTimesMatrix(
     }
     else
     {
-        LAMA_LOG_INFO( logger, "alias of result and y, can use it" )
+        SCAI_LOG_INFO( logger, "alias of result and y, can use it" )
     }
 
     // now we have: result = alpha * A * x + beta * result
 
     if( mNumColumns == 0 )
     {
-        LAMA_LOG_INFO( logger, "empty matrix, so compute result = " << beta << " * result " )
+        SCAI_LOG_INFO( logger, "empty matrix, so compute result = " << beta << " * result " )
 
         if( beta == static_cast<ValueType>( 0 ) )
         {
@@ -699,7 +699,7 @@ void DenseStorageView<ValueType>::matrixTimesMatrix(
     const ValueType beta,
     const MatrixStorage<ValueType>& c )
 {
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    *this << ": = " << alpha << " * A * B + " << beta << " * C" << ", with A = " << a << ", B = " << b << ", C = " << c )
 
     // a and b have to be Dense storages, otherwise create temporaries.
@@ -773,12 +773,12 @@ void DenseStorageView<ValueType>::matrixTimesMatrixDense(
     common::shared_ptr<DenseStorage<ValueType> > tmpA;
     common::shared_ptr<DenseStorage<ValueType> > tmpB;
 
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "matrixTimesMatrixDense: " << alpha << " * a * b + " << beta << " * c, with a = " << a << ", b = " << b << ", c = " << c )
 
     if( &a == this )
     {
-        LAMA_LOG_INFO( logger, "temporary for A in A * B ( dense storages) needed" )
+        SCAI_LOG_INFO( logger, "temporary for A in A * B ( dense storages) needed" )
         tmpA = common::shared_ptr<DenseStorage<ValueType> >( new DenseStorage<ValueType>( a ) );
         ptrA = tmpA.get();
     }
@@ -790,12 +790,12 @@ void DenseStorageView<ValueType>::matrixTimesMatrixDense(
 
         if( &a == &b )
         {
-            LAMA_LOG_INFO( logger, "same temporary for A and B in A * B ( dense storages) needed" )
+            SCAI_LOG_INFO( logger, "same temporary for A and B in A * B ( dense storages) needed" )
             ptrB = tmpA.get();
         }
         else
         {
-            LAMA_LOG_INFO( logger, "temporary for B in A * B ( dense storages) needed" )
+            SCAI_LOG_INFO( logger, "temporary for B in A * B ( dense storages) needed" )
             tmpB = common::shared_ptr<DenseStorage<ValueType> >( new DenseStorage<ValueType>( b ) );
             ptrB = tmpB.get();
         }
@@ -816,7 +816,7 @@ void DenseStorageView<ValueType>::matrixTimesMatrixDense(
     {
         // do not care at all about C as it might be any dummy, or aliased to result
 
-        LAMA_LOG_INFO( logger, "init this result with 0, size = " << m * n )
+        SCAI_LOG_INFO( logger, "init this result with 0, size = " << m * n )
         WriteOnlyAccess<ValueType> resAccess( getData(), context, m * n );
         LAMA_INTERFACE_FN_T( setVal, context, Utils, Setter, ValueType )
         LAMA_CONTEXT_ACCESS( context )
@@ -833,13 +833,13 @@ void DenseStorageView<ValueType>::matrixTimesMatrixDense(
         LAMA_INTERFACE_FN_T( copy, context, BLAS, BLAS1, ValueType )
         ReadAccess<ValueType> cAccess( c.getData(), context );
         WriteOnlyAccess<ValueType> resAccess( getData(), context, m * n );
-        LAMA_LOG_TRACE( logger, "Copying: res = c " )
+        SCAI_LOG_TRACE( logger, "Copying: res = c " )
         LAMA_CONTEXT_ACCESS( context )
         copy( n * m, cAccess.get(), 1, resAccess.get(), 1, NULL );
     }
     else
     {
-        LAMA_LOG_INFO( logger, "results is aliased with C as required for gemm, beta = " << beta )
+        SCAI_LOG_INFO( logger, "results is aliased with C as required for gemm, beta = " << beta )
     }
 
     // now C used for BLAS3 call of GEMM is this matrix
@@ -854,7 +854,7 @@ void DenseStorageView<ValueType>::matrixTimesMatrixDense(
 
     // Now  C = alpha * A * B + beta * C, can use GEMM of BLAS3
 
-    LAMA_LOG_TRACE( logger,
+    SCAI_LOG_TRACE( logger,
                     "GEMM( CblasRowMajor, CblasNoTrans, CblasNoTrans, m:" << m << ", n:" << n << ", k:" << k << ", alpha:" << alpha << ", A , lda:" << lda << " ,B ,ldb:"<< ldb << " ,beta:" << beta << " C ,ldc:" << ldc << " )" )
 
     if( lda != 0 && n != 0 && m != 0 )
@@ -873,7 +873,7 @@ void DenseStorageView<ValueType>::matrixTimesMatrixDense(
 template<typename ValueType>
 DenseStorageView<ValueType>::~DenseStorageView()
 {
-    LAMA_LOG_DEBUG( logger, "~DenseStorage for matrix " << mNumRows << " x " << mNumColumns )
+    SCAI_LOG_DEBUG( logger, "~DenseStorage for matrix " << mNumRows << " x " << mNumColumns )
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1019,7 +1019,7 @@ void DenseStorageView<ValueType>::assignDenseStorageImpl( const DenseStorageView
 
     OpenMPDenseUtils::copyDenseValues( data.get(), mNumRows, mNumColumns, otherData.get() );
 
-    LAMA_LOG_INFO( logger, *this << ": assigned dense storage " << other )
+    SCAI_LOG_INFO( logger, *this << ": assigned dense storage " << other )
 
     mDiagonalProperty = checkDiagonalProperty();
 }
@@ -1033,7 +1033,7 @@ void DenseStorageView<ValueType>::assign( const _MatrixStorage& other )
 
     if( &other == this )
     {
-        LAMA_LOG_INFO( logger, "self assign, is skipped" )
+        SCAI_LOG_INFO( logger, "self assign, is skipped" )
         return;
     }
 
@@ -1062,13 +1062,13 @@ BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_ASSIGN_DENSE_CALL, _ )
 
 default            :
 
-    LAMA_LOG_INFO( logger, "unsupported  typed assign" )
+    SCAI_LOG_INFO( logger, "unsupported  typed assign" )
 
     // also take fallback call
 }
 }
 
-LAMA_LOG_INFO( logger, *this << ": (dense) assign " << other )
+SCAI_LOG_INFO( logger, *this << ": (dense) assign " << other )
 
 // In all other cases we use the fallback routine
 
@@ -1080,7 +1080,7 @@ MatrixStorage<ValueType>::assign( other );
 template<typename ValueType>
 void DenseStorageView<ValueType>::allocate( IndexType numRows, IndexType numCols )
 {
-LAMA_LOG_INFO( logger, "allocate Dense sparse matrix of size " << numRows << " x " << numCols )
+SCAI_LOG_INFO( logger, "allocate Dense sparse matrix of size " << numRows << " x " << numCols )
 
 mNumRows = numRows;
 mNumColumns = numCols;
@@ -1089,7 +1089,7 @@ ContextPtr loc = mContext;
 
 WriteOnlyAccess<ValueType> data( mData, loc, numRows * numCols );
 
-LAMA_LOG_DEBUG( logger, *this << " allocated, #values = " << mNumRows * mNumColumns << ", not initialized" )
+SCAI_LOG_DEBUG( logger, *this << " allocated, #values = " << mNumRows * mNumColumns << ", not initialized" )
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1106,7 +1106,7 @@ template<typename ValueType>
 ValueType DenseStorageView<ValueType>::getValue( const IndexType i, const IndexType j ) const
 {
 const ReadAccess<ValueType> data( mData );
-LAMA_LOG_TRACE( logger,
+SCAI_LOG_TRACE( logger,
                 "get value (" << i << ", " << j << ")--> " << i*mNumColumns+j << "= " << data[i*mNumColumns+j] )
 return data[i * mNumColumns + j];
 }

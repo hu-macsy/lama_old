@@ -47,7 +47,7 @@ BOOST_AUTO_TEST_SUITE( LAMAArrayTest )
 
 /* --------------------------------------------------------------------- */
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.LAMAArrayTest" )
+SCAI_LOG_DEF_LOGGER( logger, "Test.LAMAArrayTest" )
 
 typedef boost::mpl::list<float, double> test_types;
 
@@ -56,11 +56,11 @@ typedef boost::mpl::list<float, double> test_types;
 BOOST_AUTO_TEST_CASE( releaseTest )
 {
     LAMAArray<IndexType> lamaArray; // default, not allocated at all
-    LAMA_LOG_INFO( logger, "make read test access on empty array\n" );
+    SCAI_LOG_INFO( logger, "make read test access on empty array\n" );
     ReadAccess<IndexType> readTestAccess( lamaArray );
-    LAMA_LOG_INFO( logger, "release read on empty array\n" );
+    SCAI_LOG_INFO( logger, "release read on empty array\n" );
     readTestAccess.release();
-    LAMA_LOG_INFO( logger, "make write test access on empty array\n" );
+    SCAI_LOG_INFO( logger, "make write test access on empty array\n" );
     WriteAccess<IndexType> writeAccess( lamaArray );
     writeAccess.resize( 10 );
 

@@ -44,7 +44,7 @@ namespace lama
 MICSyncToken::MICSyncToken( MICContextPtr micContext )
     : mMICContext( micContext ), mSignal( -1 )
 {
-    LAMA_LOG_DEBUG( logger, "MICSyncToken for " << *micContext << " generated" )
+    SCAI_LOG_DEBUG( logger, "MICSyncToken for " << *micContext << " generated" )
 }
 
 MICSyncToken::~MICSyncToken()
@@ -59,7 +59,7 @@ void MICSyncToken::wait()
         return;
     }
 
-    LAMA_LOG_DEBUG( logger, "wait for offload computation by signal" )
+    SCAI_LOG_DEBUG( logger, "wait for offload computation by signal" )
 
     if( mSignal >= 0 )
     {

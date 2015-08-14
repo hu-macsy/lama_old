@@ -57,7 +57,7 @@ extern cublasHandle_t CUDAContext_cublasHandle;
 namespace lama
 {
 
-LAMA_LOG_DEF_LOGGER( CUDABLAS3::logger, "CUDA.BLAS3" )
+SCAI_LOG_DEF_LOGGER( CUDABLAS3::logger, "CUDA.BLAS3" )
 
 /*    gemm                                                                                */
 /* ---------------------------------------------------------------------------------------*/
@@ -199,7 +199,7 @@ void CUDABLAS3::gemm(
     const ValueType* const A_call = ( order == CblasRowMajor ) ? B : A;
     const ValueType* const B_call = ( order == CblasRowMajor ) ? A : B;
 
-    LAMA_LOG_INFO( logger, "gemm<" << getScalarType<ValueType>() << ">( m = " << m << ", n = " << n << ", k = " << k )
+    SCAI_LOG_INFO( logger, "gemm<" << getScalarType<ValueType>() << ">( m = " << m << ", n = " << n << ", k = " << k )
 
     if( transa == CblasTrans )
     {
@@ -243,7 +243,7 @@ void CUDABLAS3::gemm(
     LAMA_CUBLAS_CALL( cublasSetStream( CUDAContext_cublasHandle, stream ),
                       "CUDABLAS3::gemm set cublas kernel stream = " << stream );
 
-    LAMA_LOG_INFO( logger, "cublasSgemm: m = " << m_call << " x " << n_call )
+    SCAI_LOG_INFO( logger, "cublasSgemm: m = " << m_call << " x " << n_call )
 
     cublasWrapperGemm( transA_char, transB_char, m_call, n_call, k, alpha, A_call, lda_call, B_call, ldb_call, beta, C,
                        ldc );
@@ -519,7 +519,7 @@ void CUDABLAS3::trsm(
 
 void CUDABLAS3::setInterface( BLASInterface& BLAS )
 {
-    LAMA_LOG_INFO( logger, "set BLAS3 routines for CUDA in Interface" )
+    SCAI_LOG_INFO( logger, "set BLAS3 routines for CUDA in Interface" )
 
     // Note: macro takes advantage of same name for routines and type definitions
     //       ( e.g. routine CUDABLAS1::sum<ValueType> is set for BLAS::BLAS1::sum variable

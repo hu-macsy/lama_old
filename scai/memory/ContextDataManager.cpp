@@ -44,7 +44,7 @@ using tasking::SyncToken;
 
 /* ---------------------------------------------------------------------------------*/
 
-LAMA_LOG_DEF_LOGGER( ContextDataManager::logger, "ContextDataManager" )
+SCAI_LOG_DEF_LOGGER( ContextDataManager::logger, "ContextDataManager" )
 
 /* ---------------------------------------------------------------------------------*/
 
@@ -59,7 +59,7 @@ ContextDataManager::ContextDataManager() :
     multiContext = false;
     multiThreaded = false;
   
-    LAMA_LOG_DEBUG( logger, "ContextDataManager()" )
+    SCAI_LOG_DEBUG( logger, "ContextDataManager()" )
 }
 
 /* ---------------------------------------------------------------------------------*/
@@ -68,7 +68,7 @@ void ContextDataManager::wait()
 {
     if ( 0 != mSyncToken.get() )
     {
-        LAMA_LOG_DEBUG( logger, "Waiting for SyncToken: " << *mSyncToken )
+        SCAI_LOG_DEBUG( logger, "Waiting for SyncToken: " << *mSyncToken )
         mSyncToken.reset(); // waits for transfer and frees resources
     }
 }
@@ -112,7 +112,7 @@ void ContextDataManager::lockAccess( AccessKind kind, ContextPtr context )
 
     common::Thread::Id id = common::Thread::getSelf();
 
-    LAMA_LOG_DEBUG( logger, "lockAccess, kind = " << kind << ", #reads = "
+    SCAI_LOG_DEBUG( logger, "lockAccess, kind = " << kind << ", #reads = "
                      << mLock[context::Read] << ", #writes = " << mLock[context::Write] )
 
     if ( !locked() )
@@ -124,7 +124,7 @@ void ContextDataManager::lockAccess( AccessKind kind, ContextPtr context )
         multiContext   = false;
         multiThreaded  = false;
 
-        LAMA_LOG_DEBUG( logger, "first access, set context = " << *context << ", set thread = " << id )
+        SCAI_LOG_DEBUG( logger, "first access, set context = " << *context << ", set thread = " << id )
 
     } 
     else if ( !hasAccessConflict( kind ) )
@@ -134,13 +134,13 @@ void ContextDataManager::lockAccess( AccessKind kind, ContextPtr context )
         if ( accessContext.get() != context.get() )
         {
             multiContext = true;
-            LAMA_LOG_DEBUG( logger, "multiple Context for read" )
+            SCAI_LOG_DEBUG( logger, "multiple Context for read" )
         }
 
         if ( id != accessThread )
         {
             multiThreaded = true;
-            LAMA_LOG_DEBUG( logger, "multiple Thread for read" )
+            SCAI_LOG_DEBUG( logger, "multiple Thread for read" )
         }
     }
     else if ( multiContext || ( accessContext.get() != context.get() ) )
@@ -157,9 +157,9 @@ void ContextDataManager::lockAccess( AccessKind kind, ContextPtr context )
  
         while ( locked() )
         {
-            LAMA_LOG_DEBUG( logger, id << ": wait for free access, blocked by " << accessThread << ", multiple = " << multiThreaded )
+            SCAI_LOG_DEBUG( logger, id << ": wait for free access, blocked by " << accessThread << ", multiple = " << multiThreaded )
             mAccessCondition.wait( lock );
-            LAMA_LOG_DEBUG( logger, id << ": have now free access" )
+            SCAI_LOG_DEBUG( logger, id << ": have now free access" )
         }
 
         accessContext  = context;
@@ -169,13 +169,13 @@ void ContextDataManager::lockAccess( AccessKind kind, ContextPtr context )
     }
     else
     {
-        LAMA_LOG_DEBUG( logger, "same thread, same context, multiThreaded = " << multiThreaded << ", multiContext = " << multiContext )
+        SCAI_LOG_DEBUG( logger, "same thread, same context, multiThreaded = " << multiThreaded << ", multiContext = " << multiContext )
         // same thread, same context, that is okay for now
     }
 
     mLock[kind]++;
 
-    LAMA_LOG_DEBUG( logger, "lockAccess done, kind = " << kind << ", #reads = "
+    SCAI_LOG_DEBUG( logger, "lockAccess done, kind = " << kind << ", #reads = "
                      << mLock[context::Read] << ", #writes = " << mLock[context::Write] )
 }
 
@@ -189,14 +189,14 @@ void ContextDataManager::unlockAccess( AccessKind kind )
 
     mLock[kind]--;
 
-    LAMA_LOG_DEBUG( logger, kind << "Access released, #reads = "
+    SCAI_LOG_DEBUG( logger, kind << "Access released, #reads = "
                  << mLock[context::Read] << ", #writes = " << mLock[context::Write] )
  
     if ( ( mLock[context::Write] == 0 ) && ( mLock[context::Read] == 0 ) )
     {
         multiContext = false;
         multiThreaded = false;
-        LAMA_LOG_DEBUG( logger, common::Thread::getSelf() << ": notify threads waiting for access" )
+        SCAI_LOG_DEBUG( logger, common::Thread::getSelf() << ": notify threads waiting for access" )
         mAccessCondition.notifyOne();  // Notify waiting thread
     }
 }
@@ -237,7 +237,7 @@ ContextDataManager::~ContextDataManager()
 
     // check for existing read / write lock
 
-    if ( LAMA_LOG_WARN_ON( logger ) )
+    if ( SCAI_LOG_WARN_ON( logger ) )
     {
         isLocked = locked();
     }
@@ -246,12 +246,12 @@ ContextDataManager::~ContextDataManager()
 
     if ( isLocked )
     {
-        LAMA_LOG_WARN( logger, "Destructor on read/write locked array: " )
+        SCAI_LOG_WARN( logger, "Destructor on read/write locked array: " )
     }
 
     for ( size_t i = 0; i < mContextData.size(); i++ )
     {
-        LAMA_LOG_INFO( logger, "~ContextDataManager, free " << mContextData[i] )
+        SCAI_LOG_INFO( logger, "~ContextDataManager, free " << mContextData[i] )
         mContextData[i].free();
     }
 
@@ -350,7 +350,7 @@ ContextDataIndex ContextDataManager::getContextData( ContextPtr context )
 {
     size_t contextIndex = findContextData( context );
 
-    LAMA_LOG_DEBUG( logger, "contextIndex = " << contextIndex << ", size = " << mContextData.size() )
+    SCAI_LOG_DEBUG( logger, "contextIndex = " << contextIndex << ", size = " << mContextData.size() )
 
     // if context is used first time, make new entry for context data
 
@@ -377,7 +377,7 @@ ContextDataIndex ContextDataManager::getContextData( ContextPtr context )
 
         mContextData.push_back( ContextData( memoryPtr ) );
 
-        LAMA_LOG_DEBUG( logger, "new context data entry for " << *context << ", index = " << contextIndex )
+        SCAI_LOG_DEBUG( logger, "new context data entry for " << *context << ", index = " << contextIndex )
     }
 
     return contextIndex;
@@ -389,7 +389,7 @@ ContextDataIndex ContextDataManager::getMemoryData( MemoryPtr memoryPtr )
 {
     size_t contextIndex = findMemoryData( memoryPtr );
 
-    LAMA_LOG_DEBUG( logger, "contextIndex = " << contextIndex << ", size = " << mContextData.size() )
+    SCAI_LOG_DEBUG( logger, "contextIndex = " << contextIndex << ", size = " << mContextData.size() )
 
     // if this memory is used first time, make new entry for context data
 
@@ -402,7 +402,7 @@ ContextDataIndex ContextDataManager::getMemoryData( MemoryPtr memoryPtr )
 
         mContextData.push_back( ContextData( memoryPtr ) );
 
-        LAMA_LOG_DEBUG( logger, "new data entry for " << *memoryPtr << ", index = " << contextIndex )
+        SCAI_LOG_DEBUG( logger, "new data entry for " << *memoryPtr << ", index = " << contextIndex )
     }
 
     return contextIndex;
@@ -439,18 +439,18 @@ ContextDataIndex ContextDataManager::findValidData() const
     for ( index = 0; index < mContextData.size(); ++index )
     {
         const ContextData& entry = mContextData[index];
-        LAMA_LOG_INFO( logger, "check valid: " << entry )
+        SCAI_LOG_INFO( logger, "check valid: " << entry )
 
         if ( entry.isValid() )
         {
-            LAMA_LOG_INFO( logger, "found valid entry at index = " << index << ": " << entry )
+            SCAI_LOG_INFO( logger, "found valid entry at index = " << index << ": " << entry )
             break;
         }
     }
 
     if ( index == mContextData.size() )
     {
-        LAMA_LOG_INFO( logger, "no valid data found, index = " << index )
+        SCAI_LOG_INFO( logger, "no valid data found, index = " << index )
     }
 
     return index;
@@ -487,7 +487,7 @@ ContextPtr ContextDataManager::getValidContext( const ContextType preferredType 
 
     if ( !result.get() )
     {
-        LAMA_LOG_WARN( logger, "no valid context found for LAMAArray" )
+        SCAI_LOG_WARN( logger, "no valid context found for LAMAArray" )
 
         if ( Context::hasContext( preferredType ) )
         {
@@ -509,7 +509,7 @@ ContextDataIndex ContextDataManager::acquireAccess( ContextPtr context, AccessKi
 {
     COMMON_ASSERT( context, "NULL pointer for context" )
     lockAccess( kind, context );
-    LAMA_LOG_DEBUG( logger, "acquire access on " << *context << ", kind = " << kind
+    SCAI_LOG_DEBUG( logger, "acquire access on " << *context << ", kind = " << kind
                     << ", allocSize = " << allocSize << ", validSize = " << validSize )
     ContextDataIndex index = getContextData( context );
     ContextData& data = ( *this )[index];
@@ -519,7 +519,7 @@ ContextDataIndex ContextDataManager::acquireAccess( ContextPtr context, AccessKi
 
     if ( !data.isValid() && allocSize > 0 )
     {
-        LAMA_LOG_DEBUG( logger, "data not valid at " << data.getMemory() )
+        SCAI_LOG_DEBUG( logger, "data not valid at " << data.getMemory() )
         // make sure that we have enough memory on the target context
         // old data is invalid so it must not be saved.
         data.reserve( allocSize, 0 );  // do not save any old values
@@ -531,12 +531,12 @@ ContextDataIndex ContextDataManager::acquireAccess( ContextPtr context, AccessKi
             if ( validIndex < mContextData.size() )
             {
                 const ContextData& validEntry = mContextData[ validIndex ];
-                LAMA_LOG_INFO( logger, "valid data here: " << validEntry )
+                SCAI_LOG_INFO( logger, "valid data here: " << validEntry )
                 fetch( data, validEntry, validSize );
             }
             else if ( kind == context::Read )
             {
-                LAMA_LOG_WARN( logger, "acquired read access for uninitialized array" )
+                SCAI_LOG_WARN( logger, "acquired read access for uninitialized array" )
             }
         }
     }
@@ -548,7 +548,7 @@ ContextDataIndex ContextDataManager::acquireAccess( ContextPtr context, AccessKi
 
     data.setValid( true );  // for next access the data @ context is valid.
 
-    LAMA_LOG_DEBUG( logger, "acquired access :" << data );
+    SCAI_LOG_DEBUG( logger, "acquired access :" << data );
     return index;
 }
 
@@ -562,7 +562,7 @@ void ContextDataManager::fetch( ContextData& target, const ContextData& source, 
     }
     catch ( common::Exception& ex )
     {
-        LAMA_LOG_INFO( logger, target << " copy from " << source << " not supported" )
+        SCAI_LOG_INFO( logger, target << " copy from " << source << " not supported" )
 
         // try it via host
 
@@ -602,7 +602,7 @@ SyncToken* ContextDataManager::fetchAsync( ContextData& target, const ContextDat
     }
     catch ( common::Exception& ex )
     {
-        LAMA_LOG_INFO( logger, target << " async copy from " << source << " not supported" )
+        SCAI_LOG_INFO( logger, target << " async copy from " << source << " not supported" )
 
         ContextPtr hostContextPtr = Context::getContextPtr( context::Host );
 
@@ -682,7 +682,7 @@ void ContextDataManager::setValidData( ContextPtr context, const ContextDataMana
     }
     else
     {
-        LAMA_LOG_WARN( logger, "cannot set valid data as no valid data is available (uninitialized)" )
+        SCAI_LOG_WARN( logger, "cannot set valid data as no valid data is available (uninitialized)" )
     }
 }
 
@@ -691,7 +691,7 @@ void ContextDataManager::setValidData( ContextPtr context, const ContextDataMana
 void ContextDataManager::invalidateAll()
 {
     size_t noContexts = mContextData.size();
-    LAMA_LOG_DEBUG( logger, "invalidate for " << noContexts << " context locations" )
+    SCAI_LOG_DEBUG( logger, "invalidate for " << noContexts << " context locations" )
 
     for ( size_t i = 0; i < noContexts; ++i )
     {
@@ -746,7 +746,7 @@ void ContextDataManager::prefetch( ContextPtr context, size_t size )
     else
     {
         // no valid data is not serious, but might be worth a warning 
-        LAMA_LOG_WARN( logger, "prefetch on array with no valid data" )
+        SCAI_LOG_WARN( logger, "prefetch on array with no valid data" )
     }
 }
 

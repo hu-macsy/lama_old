@@ -963,7 +963,7 @@ protected:
 
     void swapMatrix( Matrix& other ); // swap member variables of Matrix
 
-    LAMA_LOG_DECL_STATIC_LOGGER( logger )
+    SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
 private    :
 

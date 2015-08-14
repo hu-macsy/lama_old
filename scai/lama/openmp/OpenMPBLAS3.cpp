@@ -46,7 +46,7 @@
 namespace lama
 {
 
-LAMA_LOG_DEF_LOGGER( OpenMPBLAS3::logger, "OpenMP.BLAS3" )
+SCAI_LOG_DEF_LOGGER( OpenMPBLAS3::logger, "OpenMP.BLAS3" )
 
 template<typename ValueType>
 void OpenMPBLAS3::gemm(
@@ -68,10 +68,10 @@ void OpenMPBLAS3::gemm(
 {
     if( syncToken )
     {
-        LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
+        SCAI_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
 
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "gemm<" << common::getScalarType<ValueType>() << ">: " << "m = " << m << ", n = " << n 
                      << ", k = " << k << ", lda = " << lda << ", ldb = " << ldb << ", ldc = " << ldc 
                      << ", alpha = " << alpha << ", beta = " << beta )
@@ -370,7 +370,7 @@ void OpenMPBLAS3::gemm(
 
 void OpenMPBLAS3::setInterface( BLASInterface& blas )
 {
-    LAMA_LOG_INFO( logger, "set BLAS3 routines for OpenMP in Interface" )
+    SCAI_LOG_INFO( logger, "set BLAS3 routines for OpenMP in Interface" )
 
 #define LAMA_BLAS3_REGISTER(z, I, _)                                            \
     LAMA_INTERFACE_REGISTER_T( blas, gemm, ARITHMETIC_TYPE##I )                 \

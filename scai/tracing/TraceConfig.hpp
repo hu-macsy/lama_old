@@ -196,7 +196,7 @@ private:
 
     static common::shared_ptr<TraceConfig> config;
 
-    LAMA_LOG_DECL_STATIC_LOGGER( logger )
+    SCAI_LOG_DECL_STATIC_LOGGER( logger )
 };
 
 }

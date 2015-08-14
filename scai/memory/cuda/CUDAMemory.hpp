@@ -124,7 +124,7 @@ private:
     mutable long long mNumberOfAllocatedBytes; //!< variable counts allocated bytes on device
     mutable long long mMaxNumberOfAllocatedBytes; //!< variable counts the maximum allocated bytes
 
-    LAMA_LOG_DECL_STATIC_LOGGER( logger )
+    SCAI_LOG_DECL_STATIC_LOGGER( logger )
 };
 
 }

@@ -348,7 +348,7 @@ private:
         const IndexType csrJA[],
         const ValueType csrValues[] );
 
-    LAMA_LOG_DECL_STATIC_LOGGER( logger )
+    SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
     static    bool initialized;
 

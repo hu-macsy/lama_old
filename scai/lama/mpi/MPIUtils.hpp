@@ -42,9 +42,9 @@
 
 #define LAMA_MPICALL( logger, exp, msg)                                             \
     {                                                                               \
-        LAMA_LOG_TRACE( logger, "MPI call " << msg );                               \
+        SCAI_LOG_TRACE( logger, "MPI call " << msg );                               \
         int status = exp;                                                           \
-        LAMA_LOG_TRACE( logger, "MPI call " << msg  << ", status = " << status );   \
+        SCAI_LOG_TRACE( logger, "MPI call " << msg  << ", status = " << status );   \
         if ( status != MPI_SUCCESS )                                                \
         {                                                                           \
             std::ostringstream errorStr;                                            \

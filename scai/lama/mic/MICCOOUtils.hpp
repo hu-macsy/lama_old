@@ -143,7 +143,7 @@ private:
 
     /** Logger for this class. */
 
-    LAMA_LOG_DECL_STATIC_LOGGER( logger )
+    SCAI_LOG_DECL_STATIC_LOGGER( logger )
 };
 
 }

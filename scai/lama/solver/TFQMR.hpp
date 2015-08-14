@@ -139,7 +139,7 @@ protected:
     void iterationOdd();
     void iterationEven();
 
-    LAMA_LOG_DECL_STATIC_LOGGER( logger )
+    SCAI_LOG_DECL_STATIC_LOGGER( logger )
 };
 
 } // namespace lama

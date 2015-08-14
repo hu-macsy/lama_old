@@ -44,7 +44,7 @@
 namespace lama
 {
 
-LAMA_LOG_DEF_LOGGER( CUDASettings::logger, "CUDA.Settings" )
+SCAI_LOG_DEF_LOGGER( CUDASettings::logger, "CUDA.Settings" )
 
 /* ----------------------------------------------------------------------------- */
 
@@ -80,7 +80,7 @@ int CUDASettings::getComputeCapability()
 
     LAMA_CUDA_DRV_CALL( cuDeviceComputeCapability( &major, &minor, dev ), "getComputeCapability" )
 
-    LAMA_LOG_INFO( logger, "compute capabilty = " << major << "." << minor );
+    SCAI_LOG_INFO( logger, "compute capabilty = " << major << "." << minor );
 
     return major;
 }
@@ -105,7 +105,7 @@ void CUDASettings::initialize()
         {
             theUseTextureFlag = computeCapability == 1;
 
-            LAMA_LOG_INFO( logger,
+            SCAI_LOG_INFO( logger,
                            "useTexture = " << theUseTextureFlag << ", due to compute capability = " << computeCapability );
         }
 
@@ -113,7 +113,7 @@ void CUDASettings::initialize()
         {
             theUseSharedMemFlag = computeCapability == 1;
 
-            LAMA_LOG_INFO( logger,
+            SCAI_LOG_INFO( logger,
                            "useSharedMem = " << theUseSharedMemFlag << ", due to compute capability = " << computeCapability );
         }
 
@@ -128,7 +128,7 @@ void CUDASettings::initialize()
                 theBlockSize = 256;
             }
 
-            LAMA_LOG_INFO( logger,
+            SCAI_LOG_INFO( logger,
                            "blockSize = " << theBlockSize << ", due to compute capability = " << computeCapability );
         }
     }
@@ -204,7 +204,7 @@ void CUDASettings::set( bool useSharedMemFlag, bool useTextureFlag )
 
     initialized = true;
 
-    LAMA_LOG_INFO( logger, "set: useSharedMem = " << theUseSharedMemFlag << ", useTexture = " << theUseTextureFlag )
+    SCAI_LOG_INFO( logger, "set: useSharedMem = " << theUseSharedMemFlag << ", useTexture = " << theUseTextureFlag )
 }
 
 /* ----------------------------------------------------------------------------- */

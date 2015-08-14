@@ -240,7 +240,7 @@ private:
 
     common::shared_ptr<MatrixStorage<ValueType> > createStorage( const IndexType numRows, const IndexType numColumns );
 
-    LAMA_LOG_DECL_STATIC_LOGGER( logger )
+    SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
 public:
 
@@ -271,7 +271,7 @@ ELLSparseMatrix<ValueType>::ELLSparseMatrix(
     : SparseMatrix<ValueType>( createStorage() )
 
 {
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    communicator << ": construct distributed matrix " << numLocalRows << " by local and halo data + owned indexes" );
 
     // For the distribution we need the global number of rows, not available as arg, so compute it

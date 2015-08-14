@@ -40,7 +40,7 @@
 namespace lama
 {
 
-LAMA_LOG_DEF_LOGGER( IterationCount::logger, "Criterion.IterationCount" );
+SCAI_LOG_DEF_LOGGER( IterationCount::logger, "Criterion.IterationCount" );
 
 IterationCount::IterationCount()
     : Criterion(), mIterationExtrema( 1 )
@@ -50,7 +50,7 @@ IterationCount::IterationCount()
 IterationCount::IterationCount( const IndexType iterationExtrema )
     : Criterion(), mIterationExtrema( iterationExtrema )
 {
-    LAMA_LOG_DEBUG( logger, "Creating IterationCount with " << iterationExtrema );
+    SCAI_LOG_DEBUG( logger, "Creating IterationCount with " << iterationExtrema );
 }
 
 IterationCount::IterationCount( const IterationCount &other )
@@ -65,7 +65,7 @@ IterationCount::~IterationCount()
 
 bool IterationCount::isSatisfied( const lama::IterativeSolver& solver )
 {
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "Iteration Extrema = " << mIterationExtrema << ", Iteration Count = " << solver.getIterationCount() );
 
     return solver.getIterationCount() >= mIterationExtrema;

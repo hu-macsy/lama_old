@@ -44,7 +44,7 @@
 
 namespace lama{
 
-LAMA_LOG_DEF_LOGGER( Richardson::logger, "Solver.Richardson" )
+SCAI_LOG_DEF_LOGGER( Richardson::logger, "Solver.Richardson" )
 
 Richardson::Richardson( const std::string& id )
     : OmegaSolver( id,(Scalar) -1.0){}
@@ -73,7 +73,7 @@ Richardson::RichardsonRuntime::~RichardsonRuntime(){}
 
 
 void Richardson::initialize( const Matrix& coefficients ){
-    LAMA_LOG_DEBUG(logger, "Initialization started for coefficients = "<< coefficients)
+    SCAI_LOG_DEBUG(logger, "Initialization started for coefficients = "<< coefficients)
 
     Solver::initialize( coefficients );
 
@@ -98,10 +98,10 @@ void Richardson::solveInit( Vector& solution, const Vector& rhs ){
 void Richardson::solveFinalize(){
     RichardsonRuntime& runtime = getRuntime();
     if ( runtime.mIterations % 2 ){
-        LAMA_LOG_DEBUG( logger, "mProxyOldSolution = *mSolution" )
+        SCAI_LOG_DEBUG( logger, "mProxyOldSolution = *mSolution" )
         *runtime.mProxyOldSolution = *runtime.mSolution;
     }
-    LAMA_LOG_DEBUG( logger, " end solve " )
+    SCAI_LOG_DEBUG( logger, " end solve " )
 }
 
 template<typename T>
@@ -130,9 +130,9 @@ void Richardson::iterate(){
 
 	*runtime.mSolution = oldSolution + (*runtime.mSolution);
 
-    if ( LAMA_LOG_TRACE_ON( logger ) )
+    if ( SCAI_LOG_TRACE_ON( logger ) )
     {
-        LAMA_LOG_TRACE( logger, "Solution " << *runtime.mSolution )
+        SCAI_LOG_TRACE( logger, "Solution " << *runtime.mSolution )
         const DenseVector<T>& sol = dynamic_cast<const DenseVector<T>&>( *runtime.mSolution );
         memory::ReadAccess<T> rsol( sol.getLocalValues() );
         std::cout << "Solution: ";

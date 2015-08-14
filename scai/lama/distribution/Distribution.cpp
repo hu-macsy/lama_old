@@ -54,14 +54,14 @@ namespace lama
 
 /* ------  Static class variables --------------------------------------- */
 
-LAMA_LOG_DEF_LOGGER( Distribution::logger, "Distribution" )
+SCAI_LOG_DEF_LOGGER( Distribution::logger, "Distribution" )
 
 /* ------  Constructor  ------------------------------------------------- */
 
 Distribution::Distribution( const IndexType globalSize )
     : mGlobalSize( globalSize ), mCommunicator( Communicator::get( "none" ) )
 {
-    LAMA_LOG_INFO( logger, "Distribution(" << mGlobalSize << ") onto NoCommunicator" )
+    SCAI_LOG_INFO( logger, "Distribution(" << mGlobalSize << ") onto NoCommunicator" )
 }
 
 /* ------  Constructor  ------------------------------------------------- */
@@ -74,14 +74,14 @@ Distribution::Distribution( const IndexType globalSize, const CommunicatorPtr co
         COMMON_THROWEXCEPTION( "Distribution without a Communicator is not allowed" )
     }
 
-    LAMA_LOG_INFO( logger, "Distribution( size = " << globalSize << ", comm = " << *mCommunicator << " )" )
+    SCAI_LOG_INFO( logger, "Distribution( size = " << globalSize << ", comm = " << *mCommunicator << " )" )
 }
 
 /* -------  Destructor  ------------------------------------------------- */
 
 Distribution::~Distribution()
 {
-    LAMA_LOG_DEBUG( logger, "~Distribution, global size " << mGlobalSize << ", communicator = " << mCommunicator )
+    SCAI_LOG_DEBUG( logger, "~Distribution, global size " << mGlobalSize << ", communicator = " << mCommunicator )
 }
 
 /* ---------------------------------------------------------------------- */
@@ -89,23 +89,23 @@ Distribution::~Distribution()
 bool Distribution::operator==( const Distribution& other ) const
 {
     // two distributions are the same if they are both replicated
-    LAMA_LOG_TRACE( logger, "check " << *this << " == " << other )
+    SCAI_LOG_TRACE( logger, "check " << *this << " == " << other )
     bool isSame = false;
 
     if( this == &other )
     {
         isSame = true;
-        LAMA_LOG_DEBUG( logger, *this << " == " << other << ": pointer equal" )
+        SCAI_LOG_DEBUG( logger, *this << " == " << other << ": pointer equal" )
     }
     else if( isReplicated() && other.isReplicated() )
     {
         isSame = getGlobalSize() == other.getGlobalSize();
-        LAMA_LOG_DEBUG( logger, *this << " == " << other << ": both are replicated, same size" )
+        SCAI_LOG_DEBUG( logger, *this << " == " << other << ": both are replicated, same size" )
     }
     else
     {
         isSame = isEqual( other );
-        LAMA_LOG_DEBUG( logger, *this << " == " << other << ": " << isSame )
+        SCAI_LOG_DEBUG( logger, *this << " == " << other << ": " << isSame )
     }
 
     return isSame;
@@ -155,7 +155,7 @@ void Distribution::computeOwners(
     const std::vector<IndexType>& requiredIndexes,
     std::vector<PartitionId>& owners ) const
 {
-    LAMA_LOG_INFO( logger, "compute owners via communicator (default)" )
+    SCAI_LOG_INFO( logger, "compute owners via communicator (default)" )
     // use communicator to compute ownership on each processor
     IndexType n = requiredIndexes.size();
     owners.resize( n );
@@ -182,7 +182,7 @@ void Distribution::replicate( T1* allValues, const T2* localValues ) const
     // Implemenation via cyclic shifting of the vector data and distribution
     IndexType maxLocalSize = comm.max( currentSize );
 
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    comm << ": replicate localValues<" << common::getScalarType<T2>() << ">[ " << currentSize << ", max = " << maxLocalSize << " ] " << " to allValues<" << common::getScalarType<T1>() << ">[ " << getGlobalSize() << " ]" )
 
     // Only allocate the needed size of the Arrays
@@ -203,7 +203,7 @@ void Distribution::replicate( T1* allValues, const T2* localValues ) const
     indexesSend.reserve( commContext, maxLocalSize );
     valuesSend.reserve( commContext, maxLocalSize );
 
-    LAMA_LOG_INFO( logger, "replicate on this communication context: " << *commContext )
+    SCAI_LOG_INFO( logger, "replicate on this communication context: " << *commContext )
 
     {
         WriteOnlyAccess<IndexType> wIndexesSend( indexesSend, commContext, currentSize );
@@ -267,7 +267,7 @@ void Distribution::replicate( T1* allValues, const T2* localValues ) const
         valuesReceive.swap( valuesSend );
     }
 
-    LAMA_LOG_INFO( logger, "replicated by " << ( np - 1 ) << " array shifts" )
+    SCAI_LOG_INFO( logger, "replicated by " << ( np - 1 ) << " array shifts" )
 
     // # globalSize values must have been counted
     LAMA_ASSERT_EQUAL_DEBUG( countValues, getGlobalSize() )
@@ -289,7 +289,7 @@ void Distribution::replicateN( T1* allValues, const T2* localValues, const Index
     IndexType currentSize = getLocalSize();
     IndexType maxLocalSize = comm.max( currentSize );
 
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    comm << ": replicateN, n = " << n << ", localValues<" << common::getScalarType<T2>() << ">[ " << currentSize << ", max = " << maxLocalSize << " ] " << " to allValues<" << common::getScalarType<T1>() << ">[ " << getGlobalSize() << " ]" )
 
     // Only allocate the needed size of the Arrays
@@ -308,7 +308,7 @@ void Distribution::replicateN( T1* allValues, const T2* localValues, const Index
     indexesSend.reserve( commContext, maxLocalSize );
     valuesSend.reserve( commContext, maxLocalSize * n );
 
-    LAMA_LOG_INFO( logger, "replicate on this communication context: " << *commContext )
+    SCAI_LOG_INFO( logger, "replicate on this communication context: " << *commContext )
 
     {
         WriteOnlyAccess<IndexType> wIndexesSend( indexesSend, commContext, currentSize );
@@ -466,14 +466,14 @@ void Distribution::replicateRagged(
         currentDataSize = fillGlobal( allValues, allOffsets, pIndexesSend, currentElemSize, localValues );
     }
 
-    LAMA_LOG_DEBUG( logger,
+    SCAI_LOG_DEBUG( logger,
                     comm << ": filled my local data: " << currentElemSize << " buckets with " << currentDataSize << " values" )
     // get maximal size of data values and allocate send buffer
     IndexType maxLocalDataSize = comm.max( currentDataSize );
     // Implemenation via cyclic shifting of the vector data and distribution
-    LAMA_LOG_DEBUG( logger, "maximal data size for exchange = " << maxLocalDataSize )
+    SCAI_LOG_DEBUG( logger, "maximal data size for exchange = " << maxLocalDataSize )
 
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    comm << ": replicateRagged<" << common::getScalarType<ValueType>() << ">, localValues[ " << currentDataSize << ", max = " << maxLocalDataSize << " ] " << " to allValues [ allOffsets[ " << getGlobalSize() << " ] ]" )
 
     LAMAArray<ValueType> valuesSend;
@@ -517,7 +517,7 @@ void Distribution::replicateRagged(
 
             IndexType size = -1;
             size = fillGlobal( allValues, allOffsets, rIndexesReceive.get(), newSize1, rValuesReceive.get() );
-            LAMA_LOG_DEBUG( logger,
+            SCAI_LOG_DEBUG( logger,
                             comm << ": filled received data: " << newSize1 << " buckets with " << size << " values" )
             LAMA_ASSERT_EQUAL_DEBUG( size, newSize2 )
         }
@@ -584,7 +584,7 @@ Distribution* Distribution::getDistribution(
     }
     else
     {
-        LAMA_LOG_WARN( logger, "getDistribution: distribution " << kind << " not available" )
+        SCAI_LOG_WARN( logger, "getDistribution: distribution " << kind << " not available" )
         return NULL;
     }
 
@@ -610,7 +610,7 @@ Distribution* Distribution::getDistribution(
     }
     else
     {
-        LAMA_LOG_WARN( logger, "getDistribution: distribution " << kind << " not available" )
+        SCAI_LOG_WARN( logger, "getDistribution: distribution " << kind << " not available" )
         return NULL;
     }
 

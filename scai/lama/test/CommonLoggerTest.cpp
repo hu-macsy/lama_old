@@ -49,7 +49,7 @@ using common::shared_ptr;
 
 BOOST_AUTO_TEST_SUITE( CommonLoggerTest )
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.CommonLoggerTest" )
+SCAI_LOG_DEF_LOGGER( logger, "Test.CommonLoggerTest" )
 
 /* --------------------------------------------------------------------- */
 
@@ -76,7 +76,7 @@ BOOST_AUTO_TEST_CASE( setAndGetLogLevelTest )
 
 void logMessageTest( std::string logFileName, LoggerWriteBehaviour::LoggerWriteBehaviour lwb )
 {
-    LAMA_LOG_DEBUG( logger, "CommonLoggerTest with LoggerWriteBehaviour: " << lwb );
+    SCAI_LOG_DEBUG( logger, "CommonLoggerTest with LoggerWriteBehaviour: " << lwb );
     CommonLogger consoleAndFileLogger( "<CommonLoggerTest>: ", LogLevel::noLogging, lwb, logFileName,
                                        shared_ptr<Timer>( new Timer() ) );
     FileLogger::getFileLogger().setLogFile( logFileName );
@@ -88,7 +88,7 @@ BOOST_AUTO_TEST_CASE( ConsoleAndFileLoggingTest )
 {
     std::string testMessage( "ConsoleAndFileLoggerTestMessage\n" );
     const std::string path = Configuration::getInstance().getPath();
-    LAMA_LOG_INFO( logger, "Configuration path = " << path );
+    SCAI_LOG_INFO( logger, "Configuration path = " << path );
     std::string logFileName( path + "/" + "LogFileCommonLogger.log" );
     logMessageTest( logFileName, LoggerWriteBehaviour::toFileAndConsole );
     logMessageTest( logFileName, LoggerWriteBehaviour::toFileOnly );

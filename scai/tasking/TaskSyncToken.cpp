@@ -44,19 +44,19 @@ using common::shared_ptr;
 namespace tasking
 {
 
-LAMA_LOG_DEF_LOGGER( TaskSyncToken::logger, "SyncToken.TaskSyncToken" )
+SCAI_LOG_DEF_LOGGER( TaskSyncToken::logger, "SyncToken.TaskSyncToken" )
 
 TaskSyncToken::TaskSyncToken( function<void()> routine, int numOmpThreads ) :
 
     mTask( new Task( routine, numOmpThreads ) )
 
 {
-    LAMA_LOG_DEBUG( logger, "Thread " << *mTask << " with routine started." )
+    SCAI_LOG_DEBUG( logger, "Thread " << *mTask << " with routine started." )
 }
 
 TaskSyncToken::TaskSyncToken()
 {
-    LAMA_LOG_DEBUG( logger, "TaskSyncToken(): no function set" )
+    SCAI_LOG_DEBUG( logger, "TaskSyncToken(): no function set" )
     // empty task token
 }
 
@@ -64,21 +64,21 @@ void TaskSyncToken::run( function<void()> routine, int numOmpThreads /* = 0 */ )
 {
     mTask = shared_ptr<Task>( new Task( routine, numOmpThreads ) );
 
-    LAMA_LOG_DEBUG( logger, "Thread " << *mTask << " with routine started." )
+    SCAI_LOG_DEBUG( logger, "Thread " << *mTask << " with routine started." )
 }
 
 TaskSyncToken::~TaskSyncToken()
 {
-    LAMA_LOG_DEBUG( logger, "~TaskSyncToken: wait" )
+    SCAI_LOG_DEBUG( logger, "~TaskSyncToken: wait" )
 
     wait();
 
-    LAMA_LOG_DEBUG( logger, "~TaskSyncToken: wait done" )
+    SCAI_LOG_DEBUG( logger, "~TaskSyncToken: wait done" )
 }
 
 void TaskSyncToken::wait()
 {
-    LAMA_LOG_DEBUG( logger, "wait" )
+    SCAI_LOG_DEBUG( logger, "wait" )
 
     if ( isSynchronized() )
     {
@@ -87,7 +87,7 @@ void TaskSyncToken::wait()
 
     if ( mTask ) // might be running task
     {
-        LAMA_LOG_DEBUG( logger, "Waiting for thread " << mTask )
+        SCAI_LOG_DEBUG( logger, "Waiting for thread " << mTask )
 
         try
         {
@@ -95,7 +95,7 @@ void TaskSyncToken::wait()
         }
         catch ( common::Exception& ex )
         {
-            LAMA_LOG_ERROR( logger, "Task caught exception: " << ex.what() );
+            SCAI_LOG_ERROR( logger, "Task caught exception: " << ex.what() );
         }
 
         mTask = shared_ptr<Task>(); // implies call destructor of mTask
@@ -104,7 +104,7 @@ void TaskSyncToken::wait()
     }
     else
     {
-        LAMA_LOG_DEBUG( logger, "no task to synchronize." )
+        SCAI_LOG_DEBUG( logger, "no task to synchronize." )
     }
 
     // Now we can free tokens and call clean functions, do not call it before mTask is synchronized

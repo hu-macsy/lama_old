@@ -49,24 +49,24 @@
 namespace lama
 {
 
-LAMA_LOG_DEF_LOGGER( InverseSolver::logger, "Solver.InverseSolver" )
+SCAI_LOG_DEF_LOGGER( InverseSolver::logger, "Solver.InverseSolver" )
 
 InverseSolver::InverseSolver( const std::string & id )
     : Solver( id )
 {
-    LAMA_LOG_INFO( InverseSolver::logger, "InverseSolver, id = " << id )
+    SCAI_LOG_INFO( InverseSolver::logger, "InverseSolver, id = " << id )
 }
 
 InverseSolver::InverseSolver( const std::string & id, LoggerPtr logger )
     : Solver( id, logger )
 {
-    LAMA_LOG_INFO( InverseSolver::logger, "InverseSolver, id = " << id )
+    SCAI_LOG_INFO( InverseSolver::logger, "InverseSolver, id = " << id )
 }
 
 InverseSolver::InverseSolver( const InverseSolver& other )
     : Solver( other )
 {
-    LAMA_LOG_INFO( InverseSolver::logger, "InverseSolver, id = " << other.mId )
+    SCAI_LOG_INFO( InverseSolver::logger, "InverseSolver, id = " << other.mId )
 }
 
 InverseSolver::InverseSolverRuntime::InverseSolverRuntime()
@@ -76,7 +76,7 @@ InverseSolver::InverseSolverRuntime::InverseSolverRuntime()
 
 InverseSolver::~InverseSolver()
 {
-    LAMA_LOG_INFO( logger, "~InverseSolver" )
+    SCAI_LOG_INFO( logger, "~InverseSolver" )
 }
 
 InverseSolver::InverseSolverRuntime::~InverseSolverRuntime()
@@ -89,7 +89,7 @@ void InverseSolver::initialize( const Matrix& coefficients )
 {
     LAMA_REGION( "Solver.Inverse.intialize" )
 
-    LAMA_LOG_INFO( logger, "Initializing with " << coefficients )
+    SCAI_LOG_INFO( logger, "Initializing with " << coefficients )
 
     getRuntime().mInverse = MatrixPtr( coefficients.clone() );
 
@@ -138,7 +138,7 @@ void InverseSolver::setContext( ContextPtr context )
     }
     else
     {
-        LAMA_LOG_WARN( logger, "setContext on uninitialized solver" )
+        SCAI_LOG_WARN( logger, "setContext on uninitialized solver" )
     }
 }
 

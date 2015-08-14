@@ -76,7 +76,7 @@ struct NoDistributionTestConfig
 
 BOOST_FIXTURE_TEST_SUITE( NoDistributionTest, NoDistributionTestConfig )
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.NoDistributionTest" );
+SCAI_LOG_DEF_LOGGER( logger, "Test.NoDistributionTest" );
 
 /* --------------------------------------------------------------------- */
 
@@ -96,7 +96,7 @@ BOOST_AUTO_TEST_CASE( commonTestCases )
 
     if ( base_test_case )
     {
-        LAMA_LOG_INFO( logger, "Run test method " << testcase << " in NoDistributionTest." );
+        SCAI_LOG_INFO( logger, "Run test method " << testcase << " in NoDistributionTest." );
         DISTRIBUTION_COMMONTESTCASES( disttest );
     }
     else

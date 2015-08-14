@@ -48,7 +48,7 @@ namespace tasking
 
 /* ------------------------------------------------------------------------- */
 
-LAMA_LOG_DEF_LOGGER( ThreadPool::logger, "ThreadPool" )
+SCAI_LOG_DEF_LOGGER( ThreadPool::logger, "ThreadPool" )
 
 /* ------------------------------------------------------------------------- */
 
@@ -83,7 +83,7 @@ static void* threadRoutine( void* p )
 {
     ThreadPool::ThreadData* args = ( ThreadPool::ThreadData* ) p;
 
-    LAMA_LOG_THREAD( "ThreadPoolWorker_" << args->i )
+    SCAI_LOG_THREAD( "ThreadPoolWorker_" << args->i )
 
     args->pool->worker( args->i );
 
@@ -92,7 +92,7 @@ static void* threadRoutine( void* p )
 
 ThreadPool::ThreadPool( int size )
 {
-    LAMA_LOG_INFO( logger, "Construct thread pool with " << size << " threads" )
+    SCAI_LOG_INFO( logger, "Construct thread pool with " << size << " threads" )
     mMaxSize = size;
     mThreads.reserve( mMaxSize );
     mThreadArgs.reserve( mMaxSize );
@@ -138,7 +138,7 @@ shared_ptr<ThreadTask> ThreadPool::schedule( function<void()> work, int numOmpTh
 
     if ( isRecursiveTask )
     {
-        LAMA_LOG_WARN( logger, "Executing recursive taks synchronously to avoid deadlocks." )
+        SCAI_LOG_WARN( logger, "Executing recursive taks synchronously to avoid deadlocks." )
         work();
         task->mState = ThreadTask::FINISHED;
         return task;
@@ -147,7 +147,7 @@ shared_ptr<ThreadTask> ThreadPool::schedule( function<void()> work, int numOmpTh
     Thread::ScopedLock lock( mTaskQueueMutex );
 
     mTaskQueue.push( task );
-    LAMA_LOG_DEBUG( logger, "Added task " << task->mTaskId << " to task queue" )
+    SCAI_LOG_DEBUG( logger, "Added task " << task->mTaskId << " to task queue" )
     task->mState = ThreadTask::QUEUED;
 
     //  notifiy one waiting worker
@@ -166,7 +166,7 @@ void ThreadPool::wait( shared_ptr<ThreadTask> task )
         COMMON_THROWEXCEPTION( "NULL pointer for task" )
     }
 
-    LAMA_LOG_DEBUG( logger, "wait on task id = " << task->mTaskId << ", state = " << task->mState )
+    SCAI_LOG_DEBUG( logger, "wait on task id = " << task->mTaskId << ", state = " << task->mState )
 
     while ( task->mState != ThreadTask::FINISHED )
     {
@@ -180,7 +180,7 @@ void ThreadPool::wait( shared_ptr<ThreadTask> task )
             mNotifyFinished.wait( lock );
         }
 
-        LAMA_LOG_DEBUG( logger, "notified, task state = " << task->mState )
+        SCAI_LOG_DEBUG( logger, "notified, task state = " << task->mState )
     }
 }
 
@@ -192,7 +192,7 @@ void ThreadPool::worker( int id )
     // Each thread picks up a task if available in the task queue
     // No busy wait, waits on signal mNotifyTask
 
-    LAMA_LOG_INFO( logger, "worker thread " << id << " starts" )
+    SCAI_LOG_INFO( logger, "worker thread " << id << " starts" )
 
     mWorkerState = WORKING;
 
@@ -212,7 +212,7 @@ void ThreadPool::worker( int id )
             {
                 // Instead of busy wait this thread waits on notification
 
-                LAMA_LOG_DEBUG( logger, "worker thread " << id << " waits on notify for new task" )
+                SCAI_LOG_DEBUG( logger, "worker thread " << id << " waits on notify for new task" )
 
                 mWorkerState = WAITING;
 
@@ -220,7 +220,7 @@ void ThreadPool::worker( int id )
 
                 mWorkerState = WORKING;
 
-                LAMA_LOG_DEBUG( logger, "worker thread " << id << " notified about a new task" )
+                SCAI_LOG_DEBUG( logger, "worker thread " << id << " notified about a new task" )
             }
             else
             {
@@ -229,7 +229,7 @@ void ThreadPool::worker( int id )
 
                 if ( !task )
                 {
-                    LAMA_LOG_DEBUG( logger, "worker thread " << id << " picked shutdown task" )
+                    SCAI_LOG_DEBUG( logger, "worker thread " << id << " picked shutdown task" )
                     // this is the shutdown task
                     break;
                 }
@@ -238,7 +238,7 @@ void ThreadPool::worker( int id )
 
         if ( task )
         {
-            LAMA_LOG_DEBUG( logger,
+            SCAI_LOG_DEBUG( logger,
                             "worker thread " << id << " runs task " << task->mTaskId << " with " << task->ompThreads << " OMP threads" )
 
             task->mState = ThreadTask::RUNNING;
@@ -255,12 +255,12 @@ void ThreadPool::worker( int id )
             }
             catch ( common::Exception& ex )
             {
-                LAMA_LOG_INFO( logger, "worker thread got exception, has been caught: " << ex.what() )
+                SCAI_LOG_INFO( logger, "worker thread got exception, has been caught: " << ex.what() )
                 task->mException = true;
             }
             catch ( ... )
             {
-                LAMA_LOG_INFO( logger, "worker thread got exception, has been caught" )
+                SCAI_LOG_INFO( logger, "worker thread got exception, has been caught" )
                 task->mException = true;
             }
 
@@ -268,7 +268,7 @@ void ThreadPool::worker( int id )
 
             task->mState = ThreadTask::FINISHED;
 
-            LAMA_LOG_DEBUG( logger, "worker thread " << id << " finished task " << task->mTaskId )
+            SCAI_LOG_DEBUG( logger, "worker thread " << id << " finished task " << task->mTaskId )
 
             // notify threads waiting on a finished task
 
@@ -278,14 +278,14 @@ void ThreadPool::worker( int id )
 
     // worker is finished
 
-    LAMA_LOG_INFO( logger, "worker thread " << id << " finishes" )
+    SCAI_LOG_INFO( logger, "worker thread " << id << " finishes" )
 }
 
 /* ------------------------------------------------------------------------- */
 
 void ThreadPool::shutdown()
 {
-    LAMA_LOG_INFO( logger, "shut down " << mThreads.size() << " threads, "
+    SCAI_LOG_INFO( logger, "shut down " << mThreads.size() << " threads, "
                    << mTaskQueue.size() << " tasks in queue" )
 
     shared_ptr<ThreadTask> shutdownTask; // NULL pointer
@@ -305,15 +305,15 @@ void ThreadPool::shutdown()
         mNotifyTask.notifyAll();
     }
 
-    LAMA_LOG_DEBUG( logger, "added " << mThreads.size() << " shutdown tasks" )
+    SCAI_LOG_DEBUG( logger, "added " << mThreads.size() << " shutdown tasks" )
 
     // and now wait for completion of all worker threads and delete them
 
     for ( size_t i = 0; i < mThreads.size(); ++i )
     {
-        LAMA_LOG_DEBUG( logger, "wait for worker thread " << i )
+        SCAI_LOG_DEBUG( logger, "wait for worker thread " << i )
         pthread_join( mThreads[i], NULL );
-        LAMA_LOG_DEBUG( logger, "worker thread " << i << " terminated (joined)" )
+        SCAI_LOG_DEBUG( logger, "worker thread " << i << " terminated (joined)" )
     }
 }
 

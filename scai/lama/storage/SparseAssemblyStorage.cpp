@@ -51,7 +51,7 @@ namespace lama
 
 /* --------------------------------------------------------------------------- */
 
-LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, SparseAssemblyStorage<ValueType>::logger,
+SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, SparseAssemblyStorage<ValueType>::logger,
                               "MatrixStorage.SparseAssemblyStorage" )
 
 /* --------------------------------------------------------------------------- */
@@ -92,16 +92,16 @@ SparseAssemblyStorage<ValueType>::SparseAssemblyStorage(
     : CRTPMatrixStorage<SparseAssemblyStorage<ValueType>,ValueType>( numRows, numColumns ), mRows(
           numRows ), mNumValues( 0 )
 {
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "Creating with " << mNumRows <<" rows, " << mNumColumns << " columns, " << numValuesPerRow << " values per row." )
 
     for( IndexType i = 0; i < mNumRows; ++i )
     {
-        LAMA_LOG_TRACE( logger, "Reserving storage for row " << i )
+        SCAI_LOG_TRACE( logger, "Reserving storage for row " << i )
         mRows[i].reserve( numValuesPerRow );
     }
 
-    LAMA_LOG_DEBUG( logger, "Created." )
+    SCAI_LOG_DEBUG( logger, "Created." )
 }
 
 template<typename ValueType>
@@ -147,7 +147,7 @@ SparseAssemblyStorage<ValueType>& SparseAssemblyStorage<ValueType>::operator=( c
 template<typename ValueType>
 void SparseAssemblyStorage<ValueType>::allocate( const IndexType numRows, const IndexType numColumns )
 {
-    LAMA_LOG_INFO( logger, "allocate sparse assembly storage " << numRows << " x " << numColumns )
+    SCAI_LOG_INFO( logger, "allocate sparse assembly storage " << numRows << " x " << numColumns )
 
     _MatrixStorage::setDimension( numRows, numColumns );
 
@@ -331,7 +331,7 @@ bool SparseAssemblyStorage<ValueType>::checkDiagonalProperty() const
         }
     }
 
-    LAMA_LOG_INFO( logger, *this << ": checkDiagonalProperty -> " << diagonalProperty )
+    SCAI_LOG_INFO( logger, *this << ": checkDiagonalProperty -> " << diagonalProperty )
 
     return diagonalProperty;
 }
@@ -452,7 +452,7 @@ void SparseAssemblyStorage<ValueType>::set( const IndexType i, const IndexType j
             {
                 std::vector<ValueType>& wValues = mRows[i].values;
 
-                LAMA_LOG_TRACE( logger,
+                SCAI_LOG_TRACE( logger,
                                 "set( " << i << ", " << j << ", " << value << ") : override existing value " << wValues[k] )
 
                 wValues[k] = value;
@@ -461,7 +461,7 @@ void SparseAssemblyStorage<ValueType>::set( const IndexType i, const IndexType j
         }
     }
 
-    LAMA_LOG_TRACE( logger, "set( " << i << ", " << j << ", " << value << ") : new entry " )
+    SCAI_LOG_TRACE( logger, "set( " << i << ", " << j << ", " << value << ") : new entry " )
 
     std::vector<IndexType>& wJA = mRows[i].ja;
     std::vector<ValueType>& wValues = mRows[i].values;
@@ -475,7 +475,7 @@ void SparseAssemblyStorage<ValueType>::set( const IndexType i, const IndexType j
 
     if( i == j && ( wJA.size() - 1 > 0 ) )
     {
-        LAMA_LOG_TRACE( logger, "diagonal element swapped to first element of row" )
+        SCAI_LOG_TRACE( logger, "diagonal element swapped to first element of row" )
 
         std::swap( wValues[0], wValues[wValues.size() - 1] );
         std::swap( wJA[0], wJA[wJA.size() - 1] );
@@ -648,7 +648,7 @@ void SparseAssemblyStorage<ValueType>::setCSRDataImpl(
 
     LAMA_ASSERT_EQUAL_ERROR( csrIA[numRows], numValues )
 
-    LAMA_LOG_DEBUG( logger, "fill " << *this << " with csr data, " << numValues << " non-zero values" )
+    SCAI_LOG_DEBUG( logger, "fill " << *this << " with csr data, " << numValues << " non-zero values" )
 
     for( IndexType i = 0; i < numRows; ++i )
     {
@@ -684,7 +684,7 @@ void SparseAssemblyStorage<ValueType>::buildCSR(
 {
     // TODO all done on host, so loc is unused
 
-    LAMA_LOG_INFO( logger, *this << ": build CSR data from it" )
+    SCAI_LOG_INFO( logger, *this << ": build CSR data from it" )
 
     WriteOnlyAccess<IndexType> csrIA( ia, mNumRows + 1 );
 

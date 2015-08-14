@@ -45,7 +45,7 @@ using namespace memory;
 namespace lama
 {
 
-LAMA_LOG_DEF_LOGGER( HaloBuilder::logger, "Halo.Builder" )
+SCAI_LOG_DEF_LOGGER( HaloBuilder::logger, "Halo.Builder" )
 
 void HaloBuilder::build( const Distribution& distribution, const std::vector<IndexType>& requiredIndexes, Halo& halo )
 {
@@ -55,7 +55,7 @@ void HaloBuilder::build( const Distribution& distribution, const std::vector<Ind
 
     const Communicator& communicator = distribution.getCommunicator();
 
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    communicator << ": building halo for " << noPartitions << " partitions, # requiredIndexes = " << requiredIndexes.size() )
 
     IndexType nIndexes = requiredIndexes.size();
@@ -66,11 +66,11 @@ void HaloBuilder::build( const Distribution& distribution, const std::vector<Ind
         LAMA_REGION( "HaloBuilder.computeOwners" )
         communicator.computeOwners( &owners[0], distribution, &requiredIndexes[0], nIndexes );
     }
-#ifdef LAMA_LOG_TRACE
+#ifdef SCAI_LOG_TRACE
 
     for( unsigned int i = 0; i < requiredIndexes.size(); ++i )
     {
-        LAMA_LOG_TRACE( logger, "Index " << requiredIndexes[i] << " belongs to " << owners[i] )
+        SCAI_LOG_TRACE( logger, "Index " << requiredIndexes[i] << " belongs to " << owners[i] )
     }
 
 #endif
@@ -80,7 +80,7 @@ void HaloBuilder::build( const Distribution& distribution, const std::vector<Ind
     //allocate Required plan with the nodes, where we get data from
     requiredPlan.allocate( noPartitions, owners.data(), owners.size() );
 
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    communicator << ": allocated required plan for " << noPartitions << " partitions, size = " << requiredPlan.size() << ", total quantity = " << requiredPlan.totalQuantity() )
 
     // sort required indexes by the owner and define global->local mapping
@@ -89,7 +89,7 @@ void HaloBuilder::build( const Distribution& distribution, const std::vector<Ind
 
     for( IndexType p = 0; p < requiredPlan.size(); ++p )
     {
-        LAMA_LOG_TRACE( logger,
+        SCAI_LOG_TRACE( logger,
                         "requiredPlan[ " << p << "]: offset = " << requiredPlan[p].offset << ", pid = " << requiredPlan[p].partitionId << ", quantity = " << requiredPlan[p].quantity )
         counts[requiredPlan[p].partitionId] = requiredPlan[p].offset;
     }
@@ -130,29 +130,29 @@ void HaloBuilder::build( const Distribution& distribution, const std::vector<Ind
 
     providesPlan.allocateTranspose( requiredPlan, communicator );
 
-    LAMA_LOG_DEBUG( logger, communicator << ": providesPlan = " << providesPlan )
+    SCAI_LOG_DEBUG( logger, communicator << ": providesPlan = " << providesPlan )
 
-    LAMA_LOG_TRACE( logger, "requiredPlan: " << requiredPlan )
-    LAMA_LOG_TRACE( logger, "providesPlan: " << providesPlan )
+    SCAI_LOG_TRACE( logger, "requiredPlan: " << requiredPlan )
+    SCAI_LOG_TRACE( logger, "providesPlan: " << providesPlan )
 
     // communicate required indexes to other processors to get provideIndexes
 
     communicator.exchangeByPlan( halo.mProvidesIndexes, providesPlan, halo.mRequiredIndexes, requiredPlan );
 
-    LAMA_LOG_INFO( logger, "exchanged plan indexes" )
-#ifdef LAMA_LOG_TRACE
+    SCAI_LOG_INFO( logger, "exchanged plan indexes" )
+#ifdef SCAI_LOG_TRACE
     {
         ReadAccess<IndexType> provide( halo.mProvidesIndexes );
         ReadAccess<IndexType> required( halo.mRequiredIndexes );
 
         for( int i = 0; i < provide.size(); ++i )
         {
-            LAMA_LOG_TRACE( logger, "halo.mProvidesIndexes[" << i << "] " << provide[i] )
+            SCAI_LOG_TRACE( logger, "halo.mProvidesIndexes[" << i << "] " << provide[i] )
         }
 
         for( int i = 0; i < required.size(); ++i )
         {
-            LAMA_LOG_TRACE( logger, "halo.mRequiredIndexes[" << i << "] " << required[i] )
+            SCAI_LOG_TRACE( logger, "halo.mRequiredIndexes[" << i << "] " << required[i] )
         }
     }
 #endif
@@ -165,7 +165,7 @@ void HaloBuilder::build( const Distribution& distribution, const std::vector<Ind
     {
         IndexType n = providesPlan[p].quantity;
 
-        LAMA_LOG_TRACE( logger,
+        SCAI_LOG_TRACE( logger,
                         "Partition " << providesPlan[p].partitionId << " needs " << n << " entries from me(Partition: " << communicator.getRank() << "), offset = " << providesPlan[p].offset )
 
         IndexType* partitionIndexes = providesIndexes.get() + providesPlan[p].offset;

@@ -37,7 +37,7 @@ By using ccmake you can set individual items that will also be discussed later o
  - \c CMAKE_INSTALL_PREFIX directory where LAMA should be installed later
  - \c CUDA_TOOLKIT_ROOT_DIR optional, directory of your CUDA installation
  - \c LAMA_ASSERT_LEVEL ERROR recommended, alternatively DEBUG
- - \c LAMA_LOG_LEVEL INFO recommended, alternatively DEBUG or more detailled TRACE
+ - \c SCAI_LOG_LEVEL INFO recommended, alternatively DEBUG or more detailled TRACE
  - \c LAMA_USE_CUDA switch ON or OFF
  - \c LAMA_USE_MPI switch ON or OFF
 
@@ -164,7 +164,7 @@ Examples can be found in the directory \c <project-root>/share/tutorial.
 
 \code
 cd test
-export LAMA_LOG=config
+export SCAI_LOG=config
 export LAMA_UNSUPPORTED=IGNORE
 lama_test 
 \endcode

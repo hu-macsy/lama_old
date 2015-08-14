@@ -81,7 +81,7 @@ void typeNameTest( )
 
 BOOST_AUTO_TEST_SUITE( DIASparseMatrixTest )
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.DIASparseMatrixTest" )
+SCAI_LOG_DEF_LOGGER( logger, "Test.DIASparseMatrixTest" )
 
 LAMA_AUTO_TEST_CASE_CT( commonTestCases, DIASparseMatrixTest )
 LAMA_AUTO_TEST_CASE_T( typeNameTest, DIASparseMatrixTest )

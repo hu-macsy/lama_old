@@ -80,7 +80,7 @@ static void scal( int n, float alpha, float* x_d, int inc_x, SyncToken* syncToke
 
 BOOST_AUTO_TEST_SUITE( CUDAContextTest );
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.CUDAContextTest" );
+SCAI_LOG_DEF_LOGGER( logger, "Test.CUDAContextTest" );
 
 /* --------------------------------------------------------------------- */
 

@@ -18,7 +18,7 @@ This command runs specific tests:
 As many tests throw exceptions to test for failures, messages of exceptions
 should be disabled.
 
-export LAMA_LOG=config
+export SCAI_LOG=config
 
 and in config:
 

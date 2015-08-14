@@ -42,7 +42,7 @@
 namespace lama
 {
 
-LAMA_LOG_DEF_LOGGER( IterativeSolver::logger, "Solver.IterativeSolver" )
+SCAI_LOG_DEF_LOGGER( IterativeSolver::logger, "Solver.IterativeSolver" )
 
 IterativeSolver::IterativeSolver( const std::string& id )
     : lama::IterativeSolver::Solver( id ), mCriterionRootComponent( new IterationCount( 1 ) )
@@ -63,7 +63,7 @@ IterativeSolver::IterativeSolver( const IterativeSolver& other )
     }
     else
     {
-        LAMA_LOG_INFO( logger, other <<" has no conditions, that can be copied." )
+        SCAI_LOG_INFO( logger, other <<" has no conditions, that can be copied." )
         mCriterionRootComponent.reset( new IterationCount( 1 ) );
     }
 
@@ -73,7 +73,7 @@ IterativeSolver::IterativeSolver( const IterativeSolver& other )
     }
     else
     {
-        LAMA_LOG_INFO( logger, other << " has no preconditioner." )
+        SCAI_LOG_INFO( logger, other << " has no preconditioner." )
     }
 }
 
@@ -98,7 +98,7 @@ void IterativeSolver::initialize( const Matrix& coefficients )
     {
         if( mPreconditioner->getConstRuntime().mInitialized )
         {
-            LAMA_LOG_INFO( logger, "Preconditioner already initialized, skipping recursive init." )
+            SCAI_LOG_INFO( logger, "Preconditioner already initialized, skipping recursive init." )
             mLogger->logMessage( LogLevel::solverInformation,
                                  "Preconditioner already initialized, skipping recursive init\n" );
         }
@@ -141,7 +141,7 @@ void IterativeSolver::setStoppingCriterion( const CriterionPtr criterion )
 {
     LAMA_ASSERT_ERROR( criterion, "Criterion defined is NULL." )
 
-    LAMA_LOG_INFO( logger, "Criteria " << *criterion << " defined." )
+    SCAI_LOG_INFO( logger, "Criteria " << *criterion << " defined." )
 
     mCriterionRootComponent = criterion;
 }
@@ -158,7 +158,7 @@ bool IterativeSolver::criteriaAreSatisfied() const
 
 void IterativeSolver::setPreconditioner( SolverPtr const conditioner )
 {
-    LAMA_LOG_INFO( logger, "Preconditioner " << conditioner->getId() << " defined." )
+    SCAI_LOG_INFO( logger, "Preconditioner " << conditioner->getId() << " defined." )
     mPreconditioner = conditioner;
 }
 

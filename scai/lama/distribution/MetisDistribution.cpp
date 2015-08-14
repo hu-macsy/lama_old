@@ -47,7 +47,7 @@ extern "C"
 namespace lama
 {
 
-LAMA_LOG_DEF_LOGGER( MetisDistribution::logger, "Distribution.MetisDistribution" )
+SCAI_LOG_DEF_LOGGER( MetisDistribution::logger, "Distribution.MetisDistribution" )
 
 #define MASTER 0
 
@@ -62,7 +62,7 @@ MetisDistribution::MetisDistribution( const CommunicatorPtr comm, const Matrix& 
 
     : GeneralDistribution( matrix.getNumRows(), comm )
 {
-    LAMA_LOG_INFO( logger, "construct Metis distribution, weight at " << *comm << ": " << weight )
+    SCAI_LOG_INFO( logger, "construct Metis distribution, weight at " << *comm << ": " << weight )
 
     // collect weights from all processors
 
@@ -70,7 +70,7 @@ MetisDistribution::MetisDistribution( const CommunicatorPtr comm, const Matrix& 
 
     std::vector<float> weights( numPartitions );
 
-    LAMA_LOG_INFO( logger, "#weights = " << weights.size() )
+    SCAI_LOG_INFO( logger, "#weights = " << weights.size() )
 
     comm->gather( &weights[0], 1, MASTER, &weight );
     comm->bcast( &weights[0], numPartitions, MASTER );
@@ -79,11 +79,11 @@ MetisDistribution::MetisDistribution( const CommunicatorPtr comm, const Matrix& 
 
     normWeights( weights );
 
-    LAMA_LOG_INFO( logger, "#weights = " << weights.size() )
+    SCAI_LOG_INFO( logger, "#weights = " << weights.size() )
 
     for( size_t i = 0; i < weights.size(); ++i )
     {
-        LAMA_LOG_INFO( logger, "weight[" << i << "] = " << weights[i] )
+        SCAI_LOG_INFO( logger, "weight[" << i << "] = " << weights[i] )
     }
 
     computeIt( comm, matrix, weights );
@@ -190,7 +190,7 @@ void MetisDistribution::computeIt( const CommunicatorPtr comm, const Matrix& mat
         }
         else
         {
-            LAMA_LOG_WARN( logger,
+            SCAI_LOG_WARN( logger,
                            "MetisDistribution called with 1 processor/1 weight, which is the same as NoDistribution." )
 
             for( IndexType i = 0; i < size; i++ )
@@ -227,7 +227,7 @@ void MetisDistribution::computeIt( const CommunicatorPtr comm, const Matrix& mat
 
 MetisDistribution::~MetisDistribution()
 {
-    LAMA_LOG_INFO( logger, "~MetisDistribution" )
+    SCAI_LOG_INFO( logger, "~MetisDistribution" )
 }
 
 void MetisDistribution::writeAt( std::ostream& stream ) const

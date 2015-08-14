@@ -77,7 +77,7 @@ struct P_DenseMatrixTestConfig
 
 BOOST_FIXTURE_TEST_SUITE( P_DenseMatrixTest, P_DenseMatrixTestConfig );
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.P_DenseMatrixTest" );
+SCAI_LOG_DEF_LOGGER( logger, "Test.P_DenseMatrixTest" );
 
 /* --------------------------------------------------------------------- */
 
@@ -296,7 +296,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( multVectorTest, ValueType, test_types )
                     A.setCommunicationKind( Matrix::ASYNCHRONOUS );
                 }
 
-                LAMA_LOG_INFO( logger, "mult matrix A = " << A << " with vector X = " << X );
+                SCAI_LOG_INFO( logger, "mult matrix A = " << A << " with vector X = " << X );
                 DenseVector<ValueType> result ( A * X );
                 BOOST_REQUIRE_EQUAL( result.size(), numRows );
                 BOOST_REQUIRE_EQUAL( result.getDistribution(), *rowDist );

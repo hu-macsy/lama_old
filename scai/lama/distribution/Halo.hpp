@@ -127,7 +127,7 @@ private:
 
     std::map<IndexType,IndexType> mGlobal2Halo;
 
-    LAMA_LOG_DECL_STATIC_LOGGER( logger )
+    SCAI_LOG_DECL_STATIC_LOGGER( logger )
 };
 
 const CommunicationPlan& Halo::getRequiredPlan() const

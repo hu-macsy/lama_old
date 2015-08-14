@@ -558,7 +558,7 @@ void getCSRValuesTest( ContextPtr loc )
 
 BOOST_AUTO_TEST_SUITE( JDSUtilsTest )
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.JDSUtilsTest" )
+SCAI_LOG_DEF_LOGGER( logger, "Test.JDSUtilsTest" )
 
 LAMA_AUTO_TEST_CASE_CTDUMMY( checkDiagonalPropertyTest, JDSUtilsTest )
 LAMA_AUTO_TEST_CASE_CTDUMMY( ilg2dlgTest, JDSUtilsTest )

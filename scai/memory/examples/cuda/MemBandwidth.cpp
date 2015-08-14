@@ -13,7 +13,7 @@
 
 using namespace memory;
 
-LAMA_LOG_DEF_LOGGER( logger, "MemBandwidth" )
+SCAI_LOG_DEF_LOGGER( logger, "MemBandwidth" )
 
 template <typename ValueType> 
 void bench( LAMAArray<ValueType>& array )

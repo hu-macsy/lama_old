@@ -61,7 +61,7 @@ namespace lama
 
 /* ========================================================================= */
 
-LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, DenseMatrix<ValueType>::logger, "Matrix.DenseMatrix" )
+SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, DenseMatrix<ValueType>::logger, "Matrix.DenseMatrix" )
 
 /* ------------------------------------------------------------------------- */
 
@@ -72,7 +72,7 @@ void DenseMatrix<ValueType>::computeOwners()
 
     const Distribution& colDist = getColDistribution();
 
-    LAMA_LOG_DEBUG( logger, "computerOwners for col dist = " << colDist )
+    SCAI_LOG_DEBUG( logger, "computerOwners for col dist = " << colDist )
 
     mOwners.resize( mNumColumns );
 
@@ -84,7 +84,7 @@ void DenseMatrix<ValueType>::computeOwners()
             requiredIndexes[i] = static_cast<IndexType>( i );
         }
 
-        if ( LAMA_LOG_TRACE_ON( logger ) )
+        if ( SCAI_LOG_TRACE_ON( logger ) )
         {
             std::string s = "requiredIndexes{ ";
 
@@ -94,13 +94,13 @@ void DenseMatrix<ValueType>::computeOwners()
             }
 
             s += " }";
-            LAMA_LOG_TRACE( logger, s );
+            SCAI_LOG_TRACE( logger, s );
         }
 
         colDist.computeOwners( requiredIndexes, mOwners );
     }
 
-    if ( LAMA_LOG_TRACE_ON( logger ) )
+    if ( SCAI_LOG_TRACE_ON( logger ) )
     {
         std::string s = "mOwners{ ";
 
@@ -110,7 +110,7 @@ void DenseMatrix<ValueType>::computeOwners()
         }
 
         s += " }";
-        LAMA_LOG_TRACE( logger, s );
+        SCAI_LOG_TRACE( logger, s );
     }
 }
 
@@ -154,7 +154,7 @@ DenseMatrix<ValueType>::DenseMatrix(
 
     CRTPMatrix<DenseMatrix<ValueType>, ValueType>( rowDistribution, colDistribution )
 {
-    LAMA_LOG_INFO( logger, "redistribute " << matrix << " to " << *this )
+    SCAI_LOG_INFO( logger, "redistribute " << matrix << " to " << *this )
 
     if ( matrix.getColDistribution().getNumPartitions() != 1 || matrix.getDistribution().getNumPartitions() != 1 )
     {
@@ -171,9 +171,9 @@ DenseMatrix<ValueType>::DenseMatrix(
 
     const PartitionId numColPartitions = colDist.getNumPartitions();
 
-    LAMA_LOG_TRACE( logger, "rowDist: " << rowDist )
-    LAMA_LOG_TRACE( logger, "colDist: " << colDist )
-    LAMA_LOG_TRACE( logger, "colDist.comm: " << colDist.getCommunicator() )
+    SCAI_LOG_TRACE( logger, "rowDist: " << rowDist )
+    SCAI_LOG_TRACE( logger, "colDist: " << colDist )
+    SCAI_LOG_TRACE( logger, "colDist.comm: " << colDist.getCommunicator() )
 
     common::shared_ptr<DenseStorage<ValueType> > otherData = matrix.mData[0];
 
@@ -185,7 +185,7 @@ DenseMatrix<ValueType>::DenseMatrix(
 
         localize( *otherData, *matrix.mData[0], rowDist );
 
-        LAMA_LOG_INFO( logger, "localized for " << rowDist << ": " << *otherData )
+        SCAI_LOG_INFO( logger, "localized for " << rowDist << ": " << *otherData )
     }
 
     splitColumnData( mData, *otherData, numColPartitions, mOwners );
@@ -197,7 +197,7 @@ DenseMatrix<ValueType>::DenseMatrix(
     DistributionPtr rowDistribution,
     DistributionPtr colDistribution )
 {
-    LAMA_LOG_INFO( logger, "construct copy of " << other << " for " << *this )
+    SCAI_LOG_INFO( logger, "construct copy of " << other << " for " << *this )
     assign( other );
     redistribute( rowDistribution, colDistribution );
 }
@@ -240,13 +240,13 @@ DenseMatrix<ValueType>::DenseMatrix( const Expression_SM& expression )
 template<typename ValueType>
 DenseMatrix<ValueType>::DenseMatrix( const std::string& fileName )
 {
-    LAMA_LOG_INFO( logger, "DenseMatrix( (fileName = " << fileName )
+    SCAI_LOG_INFO( logger, "DenseMatrix( (fileName = " << fileName )
 
     common::shared_ptr<DenseStorage<ValueType> > denseStorage( new DenseStorage<ValueType>() );
 
     denseStorage->readFromFile( fileName );
 
-    LAMA_LOG_INFO( logger, "read dense storage from file " << fileName << ": " << denseStorage )
+    SCAI_LOG_INFO( logger, "read dense storage from file " << fileName << ": " << denseStorage )
 
     mData.resize( 1 );
     mData[0] = denseStorage;
@@ -261,13 +261,13 @@ DenseMatrix<ValueType>::DenseMatrix( const std::string& fileName )
 template<typename ValueType>
 void DenseMatrix<ValueType>::readFromFile( const std::string& fileName )
 {
-    LAMA_LOG_INFO( logger, "set dense matrix with values from input file " << fileName )
+    SCAI_LOG_INFO( logger, "set dense matrix with values from input file " << fileName )
 
     common::shared_ptr<DenseStorage<ValueType> > denseStorage( new DenseStorage<ValueType>() );
 
     denseStorage->readFromFile( fileName );
 
-    LAMA_LOG_INFO( logger, "read dense storage from file " << fileName << ": " << denseStorage )
+    SCAI_LOG_INFO( logger, "read dense storage from file " << fileName << ": " << denseStorage )
 
     mData.resize( 1 );
     mData[0] = denseStorage;
@@ -288,7 +288,7 @@ void DenseMatrix<ValueType>::writeToFile(
     const File::IndexDataType indexDataTypeIA /* = LONG */,
     const File::IndexDataType indexDataTypeJA /* = LONG */ ) const
 {
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    *this << ": writeToFile( " << fileName << ", fileType = " << fileType << ", dataType = " << dataType << " )" )
 
     if ( getDistribution().isReplicated() && getColDistribution().isReplicated() )
@@ -331,7 +331,7 @@ DenseMatrix<ValueType>::DenseMatrix( const DenseMatrix<ValueType>& other )
     CRTPMatrix<DenseMatrix<ValueType>, ValueType>()
 
 {
-    LAMA_LOG_INFO( logger, "copy constructor( dense matrix, same value type) : " << other )
+    SCAI_LOG_INFO( logger, "copy constructor( dense matrix, same value type) : " << other )
     assign( other ); // will choose the local assignment
 }
 
@@ -340,7 +340,7 @@ DenseMatrix<ValueType>::DenseMatrix( const DenseMatrix<ValueType>& other )
 template<typename ValueType>
 DenseMatrix<ValueType>::DenseMatrix( const Matrix& other )
 {
-    LAMA_LOG_INFO( logger, "copy constructor( any matrix) : " << other )
+    SCAI_LOG_INFO( logger, "copy constructor( any matrix) : " << other )
     assign( other ); // will choose the local assignment
 }
 
@@ -371,7 +371,7 @@ DenseMatrix<ValueType>::DenseMatrix( DistributionPtr distribution )
 
         mData.resize( n );
 
-        LAMA_LOG_DEBUG( logger, "mData.size() = " << mData.size() )
+        SCAI_LOG_DEBUG( logger, "mData.size() = " << mData.size() )
 
         #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
 
@@ -383,10 +383,10 @@ DenseMatrix<ValueType>::DenseMatrix( DistributionPtr distribution )
 
         mData[0]->setIdentity();
 
-        LAMA_LOG_DEBUG( logger, "mData[0] : " << *mData[0] << ", with data = " << mData[0]->getData() )
+        SCAI_LOG_DEBUG( logger, "mData[0] : " << *mData[0] << ", with data = " << mData[0]->getData() )
     }
 
-    LAMA_LOG_INFO( logger, *this << " constructed" )
+    SCAI_LOG_INFO( logger, *this << " constructed" )
 }
 
 /* ------------------------------------------------------------------ */
@@ -410,7 +410,7 @@ void DenseMatrix<ValueType>::setIdentity( DistributionPtr dist )
 
     for ( IndexType i = 0; i < size; i++ )
     {
-        LAMA_LOG_INFO( logger, "identity, mData[" << i << "] = " << *mData[i] );
+        SCAI_LOG_INFO( logger, "identity, mData[" << i << "] = " << *mData[i] );
 
         if ( i == rank )
         {
@@ -450,7 +450,7 @@ void DenseMatrix<ValueType>::setDenseData(
 
     mData[0]->setDenseData( n, m, values, eps.getValue<ValueType>() );
 
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "Dense matrix, row dist = " << *rowDist << " filled locally with " << ( n * m ) << " values, now split for col dist = " << *colDist );
 
     if ( !colDist->isReplicated() )
@@ -459,7 +459,7 @@ void DenseMatrix<ValueType>::setDenseData(
 
         for ( int i = 0; i < colDist->getCommunicator().getSize(); ++i )
         {
-            LAMA_LOG_DEBUG( logger, "mData[" << i << "] = " << *mData[i] );
+            SCAI_LOG_DEBUG( logger, "mData[" << i << "] = " << *mData[i] );
         }
     }
 }
@@ -646,13 +646,13 @@ void DenseMatrix<ValueType>::invertCyclic()
 
     LAMA_ASSERT_EQUAL_ERROR( localSize, denseStorage.getNumRows() * n )
 
-    LAMA_LOG_INFO( logger, "local dense data = " << denseStorage << ", localSize = " << localSize )
+    SCAI_LOG_INFO( logger, "local dense data = " << denseStorage << ", localSize = " << localSize )
 
     WriteAccess<ValueType> localValues( denseStorage.getData(), loc );
 
     ValueType* data = localValues.get();
 
-    LAMA_LOG_INFO( logger, "now call inverse" )
+    SCAI_LOG_INFO( logger, "now call inverse" )
 
     LAMA_CONTEXT_ACCESS( loc )
 
@@ -728,7 +728,7 @@ void DenseMatrix<ValueType>::allocate( const IndexType numRows, const IndexType 
 template<typename ValueType>
 void DenseMatrix<ValueType>::allocate( DistributionPtr rowDistribution, DistributionPtr colDistribution )
 {
-    LAMA_LOG_DEBUG( logger,
+    SCAI_LOG_DEBUG( logger,
                     *this << " with mData[" << mData.size() << "]" << ", owners[" << mOwners.size() << "] " << " allocate row dist = " << *rowDistribution << ", col dist = " << *colDistribution )
 
     if ( colDistribution->isReplicated() )
@@ -758,7 +758,7 @@ void DenseMatrix<ValueType>::allocate( DistributionPtr rowDistribution, Distribu
     }
 
     Matrix::setDistributedMatrix( rowDistribution, colDistribution );
-    LAMA_LOG_DEBUG( logger, *this << ": now allocated" )
+    SCAI_LOG_DEBUG( logger, *this << ": now allocated" )
 }
 
 template<typename ValueType>
@@ -781,12 +781,12 @@ void DenseMatrix<ValueType>::assignTranspose( const Matrix& /* other */ )
 template<typename ValueType>
 void DenseMatrix<ValueType>::assign( const Matrix& other )
 {
-    LAMA_LOG_INFO( logger, "assign " << &other << " to " << this )
-    LAMA_LOG_INFO( logger, "assign " << other << " to " << *this )
+    SCAI_LOG_INFO( logger, "assign " << &other << " to " << this )
+    SCAI_LOG_INFO( logger, "assign " << other << " to " << *this )
 
     if ( &other == this )
     {
-        LAMA_LOG_INFO( logger, "self assign, is skpped" )
+        SCAI_LOG_INFO( logger, "self assign, is skpped" )
         return;
     }
 
@@ -796,7 +796,7 @@ void DenseMatrix<ValueType>::assign( const Matrix& other )
 
     if ( other.getMatrixKind() == Matrix::DENSE )
     {
-        LAMA_LOG_INFO( logger, "copy dense matrix" )
+        SCAI_LOG_INFO( logger, "copy dense matrix" )
 
         switch ( other.getValueType() )
         {
@@ -883,7 +883,7 @@ void DenseMatrix<ValueType>::assignLocal( const _MatrixStorage& other )
 template<typename ValueType>
 void DenseMatrix<ValueType>::assign( const _MatrixStorage& storage )
 {
-    LAMA_LOG_INFO( logger, "assign matrix storage = " << storage )
+    SCAI_LOG_INFO( logger, "assign matrix storage = " << storage )
 
     const IndexType numRows = storage.getNumRows();
     const IndexType numColumns = storage.getNumColumns();
@@ -899,7 +899,7 @@ void DenseMatrix<ValueType>::assign( const _MatrixStorage& storage )
 template<typename ValueType>
 void DenseMatrix<ValueType>::assign( const _MatrixStorage& storage, DistributionPtr rowDist, DistributionPtr colDist )
 {
-    LAMA_LOG_INFO( logger, "assign local matrix storage = " << storage )
+    SCAI_LOG_INFO( logger, "assign local matrix storage = " << storage )
 
     Matrix::setDistributedMatrix( rowDist, colDist );
 
@@ -964,7 +964,7 @@ void DenseMatrix<ValueType>::buildLocalStorage( _MatrixStorage& storage ) const
         storage = denseStorage;
     }
 
-    LAMA_LOG_INFO( logger, "buildLocalStorage( " << *this << " ) = " << storage )
+    SCAI_LOG_INFO( logger, "buildLocalStorage( " << *this << " ) = " << storage )
 }
 
 /* ------------------------------------------------------------------ */
@@ -980,7 +980,7 @@ void DenseMatrix<ValueType>::joinColumnData(
     const IndexType numColumns = result.getNumColumns();
     const IndexType numRows = result.getNumRows();
 
-// LAMA_LOG_INFO( logger, "join column data of " << chunks.size() << " chunks to " << result )
+// SCAI_LOG_INFO( logger, "join column data of " << chunks.size() << " chunks to " << result )
 
     LAMA_ASSERT_EQUAL_ERROR( static_cast<IndexType>( columnOwners.size() ), numColumns )
 
@@ -997,7 +997,7 @@ void DenseMatrix<ValueType>::joinColumnData(
         LAMA_ASSERT_ERROR( chunks[p], "no chunk data for partition " << p )
         LAMA_ASSERT_EQUAL_ERROR( chunks[p]->getNumRows(), numRows )
         chunkRead[p].reset( new ReadAccess<ValueType>( chunks[p]->getData() ) );
-        LAMA_LOG_DEBUG( logger, "column chunk[" << p << "] : " << *chunks[p] )
+        SCAI_LOG_DEBUG( logger, "column chunk[" << p << "] : " << *chunks[p] )
     }
 
     std::vector<IndexType> chunkOffset( numColPartitions, 0 ); // offset for each chunk
@@ -1042,7 +1042,7 @@ void DenseMatrix<ValueType>::allocateData()
 
     const IndexType numRows = getDistribution().getLocalSize();
 
-    LAMA_LOG_INFO( logger, "build " << numChunks << " data arrays for numRows = " << numRows );
+    SCAI_LOG_INFO( logger, "build " << numChunks << " data arrays for numRows = " << numRows );
 
     if ( numChunks == 1 )
     {
@@ -1082,7 +1082,7 @@ void DenseMatrix<ValueType>::splitColumnData(
     const PartitionId numChunks,
     const std::vector<IndexType>& columnOwners )
 {
-    LAMA_LOG_INFO( logger, "split columns of " << columnData << " into " << numChunks << " chunks" )
+    SCAI_LOG_INFO( logger, "split columns of " << columnData << " into " << numChunks << " chunks" )
 
 // Note: this is a static method, no member variables are used
 
@@ -1112,7 +1112,7 @@ void DenseMatrix<ValueType>::splitColumnData(
     {
         chunks[p].reset( new DenseStorage<ValueType>( numRows, numCols[p] ) );
         chunkWrite[p].reset( new WriteAccess<ValueType>( chunks[p]->getData() ) );
-        LAMA_LOG_DEBUG( logger, "column chunk[" << p << "] : " << *chunks[p] )
+        SCAI_LOG_DEBUG( logger, "column chunk[" << p << "] : " << *chunks[p] )
     }
 
     std::vector<IndexType> chunkOffset( numChunks, 0 ); // offset for each chunk
@@ -1147,7 +1147,7 @@ void DenseMatrix<ValueType>::redistribute( DistributionPtr rowDistribution, Dist
 
     if ( *rowDistribution == getDistribution() && *colDistribution == getColDistribution() )
     {
-        LAMA_LOG_INFO( logger, "row and column distribtion remains unchanged" )
+        SCAI_LOG_INFO( logger, "row and column distribtion remains unchanged" )
         return;
     }
 
@@ -1217,7 +1217,7 @@ void DenseMatrix<ValueType>::localize(
     {
         const IndexType globalRow = rowDistribution.local2global( irow );
 
-        LAMA_LOG_TRACE( logger, "set local row " << irow << " with global row " << globalRow )
+        SCAI_LOG_TRACE( logger, "set local row " << irow << " with global row " << globalRow )
 
         for ( IndexType j = 0; j < numColumns; ++j )
         {
@@ -1257,13 +1257,13 @@ void DenseMatrix<ValueType>::redistributeRows( DistributionPtr rowDistribution )
 
     if ( *rowDistribution == getDistribution() )
     {
-        LAMA_LOG_INFO( logger, "row distribtion remains unchanged" )
+        SCAI_LOG_INFO( logger, "row distribtion remains unchanged" )
         return;
     }
 
     if ( rowDistribution->getNumPartitions() == 1 && getDistribution().getNumPartitions() == 1 )
     {
-        LAMA_LOG_INFO( logger, "replace row distribtion, all on one processor" )
+        SCAI_LOG_INFO( logger, "replace row distribtion, all on one processor" )
         this->setDistributionPtr( rowDistribution );
         return;
     }
@@ -1276,7 +1276,7 @@ void DenseMatrix<ValueType>::redistributeRows( DistributionPtr rowDistribution )
 
         const IndexType numLocalRows = rowDistribution->getLocalSize();
 
-        LAMA_LOG_INFO( logger,
+        SCAI_LOG_INFO( logger,
                        "distribute replicated rows: use " << numLocalRows << " local rows of " << getNumRows() << " global rows" )
 
         DenseStorage<ValueType> newLocalData( numLocalRows, nCols );
@@ -1344,7 +1344,7 @@ void DenseMatrix<ValueType>::setContext( const ContextPtr context )
 template<typename ValueType>
 void DenseMatrix<ValueType>::getRow( DenseVector<ValueType>& row, const IndexType globalRowIndex ) const
 {
-    LAMA_LOG_DEBUG( logger, "get values of dense matrix from row " << globalRowIndex )
+    SCAI_LOG_DEBUG( logger, "get values of dense matrix from row " << globalRowIndex )
 
     if ( !row.getDistribution().isReplicated() )
     {
@@ -1373,7 +1373,7 @@ void DenseMatrix<ValueType>::getRow( DenseVector<ValueType>& row, const IndexTyp
     {
         getLocalStorage().getRow( row.getLocalValues(), localRowIndex );
         owner = comm.getRank() + 1;
-        LAMA_LOG_DEBUG( logger,
+        SCAI_LOG_DEBUG( logger,
                         "owner of row " << globalRowIndex << " is " << owner << ", local index = " << localRowIndex )
     }
 
@@ -1556,12 +1556,12 @@ Scalar DenseMatrix<ValueType>::getValue( lama::IndexType i, lama::IndexType j ) 
         }
 
         LAMA_ASSERT_ERROR( jLocal != nIndex, "non local column index" )
-        LAMA_LOG_TRACE( logger,
+        SCAI_LOG_TRACE( logger,
                         "getting value for index(" << i << "," << j << ")" << " which is localy ( " << iLocal << "," << jLocal << " )" )
         myValue = mData[owner]->getValue( iLocal, jLocal );
     }
 
-    LAMA_LOG_TRACE( logger, "My value is " << myValue << " starting sum reduction to produce final result." )
+    SCAI_LOG_TRACE( logger, "My value is " << myValue << " starting sum reduction to produce final result." )
 
     return comm.sum( myValue );
 }
@@ -1569,11 +1569,11 @@ Scalar DenseMatrix<ValueType>::getValue( lama::IndexType i, lama::IndexType j ) 
 template<typename ValueType>
 void DenseMatrix<ValueType>::matrixTimesScalar( const Matrix& other, Scalar alpha )
 {
-    LAMA_LOG_INFO( logger, " this = " << alpha << " * " << other )
+    SCAI_LOG_INFO( logger, " this = " << alpha << " * " << other )
 
     assign( other );
 
-    LAMA_LOG_INFO( logger, " this = other = " << *this )
+    SCAI_LOG_INFO( logger, " this = other = " << *this )
 
     for ( size_t i = 0; i < mData.size(); ++i )
     {
@@ -1615,10 +1615,10 @@ void DenseMatrix<ValueType>::matrixTimesVectorImpl(
 
     const LAMAArray<ValueType>& localX = denseX.getLocalValues();
 
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    comm << ": matrixTimesVector" << ", alpha = " << alphaValue << ", localX = " << localX << ", beta = " << betaValue << ", localY = " << localY )
 
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "Aliasing: result = y : " << ( &denseResult == &denseY ) << ", local = " << ( &localResult == &localY ) )
 
     if ( n == 1 )
@@ -1627,12 +1627,12 @@ void DenseMatrix<ValueType>::matrixTimesVectorImpl(
 // localResult = alpha * mData[0] * X + beta * localY
 
         const DenseStorage<ValueType>& dense = *mData[0];
-        LAMA_LOG_INFO( logger, comm << ": matrixTimesVector, single dense block = " << dense )
+        SCAI_LOG_INFO( logger, comm << ": matrixTimesVector, single dense block = " << dense )
         dense.matrixTimesVector( localResult, alphaValue, localX, betaValue, localY );
         return;
     }
 
-    LAMA_LOG_INFO( logger, comm << ": start pipelined multiplication." )
+    SCAI_LOG_INFO( logger, comm << ": start pipelined multiplication." )
 
     int size = comm.max( localX.size() ); // largest local part of X
 
@@ -1671,13 +1671,13 @@ void DenseMatrix<ValueType>::matrixTimesVectorImpl(
 
     if ( Matrix::ASYNCHRONOUS == Matrix::getCommunicationKind() )
     {
-        LAMA_LOG_INFO( logger, comm << ": asynchronous communication" )
+        SCAI_LOG_INFO( logger, comm << ": asynchronous communication" )
 
 // asynchronous communication always requires same sizes of arrays, might shift some more data
 
         common::unique_ptr<SyncToken> st( comm.shiftAsync( *recvValues, *sendValues, COMM_DIRECTION ) );
 
-        LAMA_LOG_INFO( logger,
+        SCAI_LOG_INFO( logger,
                        comm << ": matrixTimesVector, my dense block = " << *mData[rank] << ", localX = " << localX << ", localY = " << localY << ", localResult = " << localResult )
 
 // overlap communication with local computation
@@ -1705,7 +1705,7 @@ void DenseMatrix<ValueType>::matrixTimesVectorImpl(
                 st.reset( new NoSyncToken() );
             }
 
-            LAMA_LOG_INFO( logger,
+            SCAI_LOG_INFO( logger,
                            comm << ": matrixTimesVector, actual dense block [" << actualPartition << "] = " << *mData[actualPartition] << ", sendX = " << localX << ", localResult = " << localResult )
 
             // adapt the size of recvValues, that is now sendValues after swap
@@ -1738,15 +1738,15 @@ void DenseMatrix<ValueType>::matrixTimesVectorImpl(
             wSendValues.resize( localX.size() );
         }
 
-        LAMA_LOG_INFO( logger, comm << ": synchronous communication" )
+        SCAI_LOG_INFO( logger, comm << ": synchronous communication" )
 
         comm.shiftArray( *recvValues, *sendValues, COMM_DIRECTION );
 
 // For the synchronous shift we have no problems regarding the correct sizes
 
-        LAMA_LOG_DEBUG( logger, comm << ": send " << *sendValues << ", recv " << *recvValues )
+        SCAI_LOG_DEBUG( logger, comm << ": send " << *sendValues << ", recv " << *recvValues )
 
-        LAMA_LOG_INFO( logger,
+        SCAI_LOG_INFO( logger,
                        comm << ": matrixTimesVector, actual dense block [" << rank << "] = " << *mData[rank] << ", local X = " << localX << ", local Y = " << localY )
 
         mData[rank]->matrixTimesVector( localResult, alphaValue, localX, betaValue, localY );
@@ -1757,10 +1757,10 @@ void DenseMatrix<ValueType>::matrixTimesVectorImpl(
         {
             PartitionId actualPartition = comm.getNeighbor( -p );
             comm.shiftArray( *recvValues, *sendValues, COMM_DIRECTION );
-            LAMA_LOG_DEBUG( logger,
+            SCAI_LOG_DEBUG( logger,
                             comm << ": send " << *sendValues << ", recv " << *recvValues << ", actual = " << actualPartition )
 
-            LAMA_LOG_INFO( logger,
+            SCAI_LOG_INFO( logger,
                            comm << ": matrixTimesVector, actual dense block [" << actualPartition << "] = " << *mData[actualPartition] << ", sendX = " << *sendValues << ", localResult = " << localResult )
 
             mData[actualPartition]->matrixTimesVector( localResult, alphaValue, *sendValues, one, localResult );
@@ -1801,15 +1801,15 @@ void DenseMatrix<ValueType>::vectorTimesMatrixImpl(
 
     const LAMAArray<ValueType>& localX = denseX.getLocalValues();
 
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    comm << ": vectorTimesMatrix" << ", alpha = " << alphaValue << ", localX = " << localX << ", beta = " << betaValue << ", localY = " << localY )
 
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "Aliasing: result = y : " << ( &denseResult == &denseY ) << ", local = " << ( &localResult == &localY ) )
 
     const DenseStorage<ValueType>& dense = *mData[0];
 
-    LAMA_LOG_INFO( logger, comm << ": vectorTimesMatrix, singe dense block = " << dense )
+    SCAI_LOG_INFO( logger, comm << ": vectorTimesMatrix, singe dense block = " << dense )
     dense.vectorTimesMatrix( localResult, alphaValue, localX, betaValue, localY );
 
     return;
@@ -1824,7 +1824,7 @@ void DenseMatrix<ValueType>::matrixPlusMatrix(
     const Scalar beta,
     const Matrix& matB )
 {
-    LAMA_LOG_INFO( logger, "this = " << alpha << " * A + " << beta << " * B" << ", A = " << matA << ", B = " << matB )
+    SCAI_LOG_INFO( logger, "this = " << alpha << " * A + " << beta << " * B" << ", A = " << matA << ", B = " << matB )
 
     const DenseMatrix<ValueType>* denseA = dynamic_cast<const DenseMatrix<ValueType>*>( &matA );
 
@@ -1860,7 +1860,7 @@ void DenseMatrix<ValueType>::matrixPlusMatrixImpl(
     Matrix::setDistributedMatrix( A.getDistributionPtr(), A.getColDistributionPtr() );
 
 // Add matrices of each chunk
-    LAMA_LOG_INFO( logger, "Mat.plusMatrix, mDataSize = " << mData.size() );
+    SCAI_LOG_INFO( logger, "Mat.plusMatrix, mDataSize = " << mData.size() );
 
     for ( size_t i = 0; i < mData.size(); ++i )
     {
@@ -1910,19 +1910,19 @@ void DenseMatrix<ValueType>::matrixTimesMatrix(
 
     if ( res == this )
     {
-        LAMA_LOG_DEBUG( logger, "result is aliased with this A matrix" )
+        SCAI_LOG_DEBUG( logger, "result is aliased with this A matrix" )
     }
     else if ( res == Bp )
     {
-        LAMA_LOG_DEBUG( logger, "result is aliased with B matrix" )
+        SCAI_LOG_DEBUG( logger, "result is aliased with B matrix" )
     }
     else if ( res == Cp && beta != 0.0 )
     {
-        LAMA_LOG_DEBUG( logger, "result is aliased with C matrix" )
+        SCAI_LOG_DEBUG( logger, "result is aliased with C matrix" )
     }
     else
     {
-        LAMA_LOG_DEBUG( logger, "result is not aliased, so allocate it correctly" )
+        SCAI_LOG_DEBUG( logger, "result is not aliased, so allocate it correctly" )
         res->allocate( getDistributionPtr(), B.getColDistributionPtr() );
     }
 

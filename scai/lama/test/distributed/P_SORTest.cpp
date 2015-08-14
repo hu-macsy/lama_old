@@ -88,7 +88,7 @@ struct P_SORTestConfig
 
 BOOST_FIXTURE_TEST_SUITE( P_SORTest, P_SORTestConfig )
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.P_SORTest" );
+SCAI_LOG_DEF_LOGGER( logger, "Test.P_SORTest" );
 
 /* --------------------------------------------------------------------- */
 template<typename MatrixType>
@@ -98,16 +98,16 @@ void testSolveMethod( ContextPtr loc )
     SOR sor( "SORTestSolver" );
     const IndexType N1 = 8;
     const IndexType N2 = 8;
-    LAMA_LOG_INFO( logger, "Problem size = " << N1 << " x " << N2 );
+    SCAI_LOG_INFO( logger, "Problem size = " << N1 << " x " << N2 );
     CSRSparseMatrix<ValueType> helpcoefficients;
     MatrixCreator<ValueType>::buildPoisson2D( helpcoefficients, 9, N1, N2 );
-    LAMA_LOG_INFO( logger, "Poisson 2D CSR matrix = " << helpcoefficients );
+    SCAI_LOG_INFO( logger, "Poisson 2D CSR matrix = " << helpcoefficients );
     MatrixType coefficients( helpcoefficients );
     // redistribution of coefficient: does not keep diagonal property for DIA
     DistributionPtr dist( new BlockDistribution( helpcoefficients.getNumRows(), comm ) );
     coefficients.redistribute( dist, dist );
     coefficients.setContext( loc );
-    LAMA_LOG_INFO( logger, "SOR: coefficients = " << coefficients );
+    SCAI_LOG_INFO( logger, "SOR: coefficients = " << coefficients );
     const DenseVector<ValueType> exactSolution( dist, static_cast<ValueType>( 1.1 ) );
     DenseVector<ValueType> rhs( dist );
     rhs = coefficients * exactSolution;
@@ -121,7 +121,7 @@ void testSolveMethod( ContextPtr loc )
     DenseVector<ValueType> diff( exactSolution );
     diff = solution - exactSolution;
     Scalar s = maxNorm( diff );
-    LAMA_LOG_INFO( logger, "maxNorm ( solution - exactSolutino ) = " << s );
+    SCAI_LOG_INFO( logger, "maxNorm ( solution - exactSolutino ) = " << s );
     //TODO: Check bad value of MaxNorm 0.65
     BOOST_CHECK( s.getValue<ValueType>() < 0.65 );
 }
@@ -154,14 +154,14 @@ void testSolvePoissonMethod()
     double omegaStep = 0.1;
     const IndexType N1 = 4;
     const IndexType N2 = 4;
-    LAMA_LOG_INFO( logger, "Problem size = " << N1 << " x " << N2 );
+    SCAI_LOG_INFO( logger, "Problem size = " << N1 << " x " << N2 );
     int n = static_cast<int>( ( omegaMax - omegaMin ) / omegaStep + 1 );
     n = 1;
 
     for ( int i = 0; i < n; i++ )
     {
         omega = omegaMin + omegaStep * i;
-        LAMA_LOG_INFO( logger, "run with omega = " << omega );
+        SCAI_LOG_INFO( logger, "run with omega = " << omega );
         //Optional Logger; deactivated for testruns
 //        LoggerPtr slogger( new CommonLogger(
 //            "<SOR>: ",
@@ -174,7 +174,7 @@ void testSolvePoissonMethod()
         MatrixCreator<ValueType>::buildPoisson2D( csrCoefficients, 9, N1, N2 );
         // copy constructur, converts to format of MatrixType
         MatrixType coefficients( csrCoefficients );
-        LAMA_LOG_INFO( logger, "coefficients for SOR: " << csrCoefficients );
+        SCAI_LOG_INFO( logger, "coefficients for SOR: " << csrCoefficients );
         // DistributionPtr dist( new BlockDistribution( coefficients.getNumRows(), comm) );
         // coefficients.redistribute( dist, dist );
         DenseVector<ValueType> solution( coefficients.getDistributionPtr(), 3.0 );
@@ -218,12 +218,12 @@ void testSolve2Method( ContextPtr loc )
     int n = static_cast<int>( std::floor( ( omegaMax - omegaMin ) / omegaStep + 1 ) );
     const IndexType N1 = 4;
     const IndexType N2 = 4;
-    LAMA_LOG_INFO( logger, "Problem size = " << N1 << " x " << N2 );
+    SCAI_LOG_INFO( logger, "Problem size = " << N1 << " x " << N2 );
 
     for ( int i = 0; i < n; i++ )
     {
         omega = omegaMin + omegaStep * i;
-        LAMA_LOG_INFO( logger, "iterate i = " << i << " of " << n << " iterations" << ", omega = " << omega );
+        SCAI_LOG_INFO( logger, "iterate i = " << i << " of " << n << " iterations" << ", omega = " << omega );
 //        LoggerPtr slogger( new CommonLogger(
 //            "<SOR>: ",
 //            lama::LogLevel::solverInformation,

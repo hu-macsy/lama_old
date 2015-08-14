@@ -385,7 +385,7 @@ private:
 
     static void setUsedDiagonal( bool upperDiagonalUsed[], bool lowerDiagonalUsed[], IndexType i, IndexType j );
 
-    LAMA_LOG_DECL_STATIC_LOGGER( logger ) //!< logger for this matrix format
+    SCAI_LOG_DECL_STATIC_LOGGER( logger ) //!< logger for this matrix format
 }    ;
 
 }

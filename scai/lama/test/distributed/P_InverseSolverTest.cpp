@@ -66,7 +66,7 @@ typedef boost::mpl::list<float, double> test_types;
 
 BOOST_AUTO_TEST_SUITE( P_InverseSolverTest )
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.P_InverseSolverTest" );
+SCAI_LOG_DEF_LOGGER( logger, "Test.P_InverseSolverTest" );
 
 /* --------------------------------------------------------------------- */
 
@@ -76,16 +76,16 @@ void testSolveMethod( ContextPtr loc )
     typedef typename MatrixType::MatrixValueType ValueType;
     const IndexType N1 = 4;
     const IndexType N2 = 4;
-    LAMA_LOG_INFO( logger, "Problem size = " << N1 << " x " << N2 );
+    SCAI_LOG_INFO( logger, "Problem size = " << N1 << " x " << N2 );
     LoggerPtr loggerD(
         new CommonLogger( "<InverseSolver>: ", LogLevel::noLogging,
                           LoggerWriteBehaviour::toConsoleOnly,
                           new Timer() ) );
     InverseSolver inverseSolver( "InverseTestSolver", loggerD );
-    LAMA_LOG_DEBUG( logger, "inverseSolver created" )
+    SCAI_LOG_DEBUG( logger, "inverseSolver created" )
     CSRSparseMatrix<ValueType> helpcoefficients;
     MatrixCreator<ValueType>::buildPoisson2D( helpcoefficients, 9, N1, N2 );
-    LAMA_LOG_DEBUG( logger, "Poisson2D matrix created" << helpcoefficients )
+    SCAI_LOG_DEBUG( logger, "Poisson2D matrix created" << helpcoefficients )
     MatrixType coefficients( helpcoefficients );
     CommunicatorPtr comm = Communicator::get();
     DistributionPtr dist( new BlockDistribution( coefficients.getNumRows(), comm ) );
@@ -95,7 +95,7 @@ void testSolveMethod( ContextPtr loc )
     const DenseVector<ValueType> exactSolution( dist, 1.0 );
     DenseVector<ValueType> rhs( dist, 1.0 );
     rhs = coefficients * exactSolution;
-    LAMA_LOG_INFO( logger, "created all stuff for inverse solver" )
+    SCAI_LOG_INFO( logger, "created all stuff for inverse solver" )
     //initialize
     inverseSolver.initialize( coefficients );
     inverseSolver.setContext( loc );

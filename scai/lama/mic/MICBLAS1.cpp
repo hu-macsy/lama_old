@@ -48,7 +48,7 @@
 namespace lama
 {
 
-LAMA_LOG_DEF_LOGGER( MICBLAS1::logger, "MIC.BLAS1" )
+SCAI_LOG_DEF_LOGGER( MICBLAS1::logger, "MIC.BLAS1" )
 
 /* ------------------------------------------------------------------------- */
 
@@ -62,7 +62,7 @@ void MICBLAS1::scal(
     const IndexType incX,
     SyncToken* syncToken )
 {
-    LAMA_LOG_DEBUG( logger,
+    SCAI_LOG_DEBUG( logger,
                     "scal<" << common::getScalarType<ValueType>() << ">, n = " << n << ", alpha = " << alpha << ", x = " << x << ", incX = " << incX )
 
     if( n < 1 || incX < 1 )
@@ -72,7 +72,7 @@ void MICBLAS1::scal(
 
     if( syncToken )
     {
-        LAMA_LOG_WARN( logger, "asynchronous execution for MIC not supported yet." )
+        SCAI_LOG_WARN( logger, "asynchronous execution for MIC not supported yet." )
     }
 
     void* xPtr = x;
@@ -95,12 +95,12 @@ void MICBLAS1::scal(
 template<typename ValueType>
 ValueType MICBLAS1::asum( const IndexType n, const ValueType* x, const IndexType incX, SyncToken* syncToken )
 {
-    LAMA_LOG_DEBUG( logger,
+    SCAI_LOG_DEBUG( logger,
                     "asum<" << common::getScalarType<ValueType>() << ">, n = " << n << ", x = " << x << ", incX = " << incX )
 
     if( syncToken )
     {
-        LAMA_LOG_WARN( logger, "no asynchronous execution for mic possible at this level." )
+        SCAI_LOG_WARN( logger, "no asynchronous execution for mic possible at this level." )
     }
 
     ValueType asum = 0;
@@ -134,12 +134,12 @@ ValueType MICBLAS1::asum( const IndexType n, const ValueType* x, const IndexType
 template<typename ValueType>
 IndexType MICBLAS1::iamax( const IndexType n, const ValueType* x, const IndexType incX, SyncToken* syncToken )
 {
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "iamax<" << common::getScalarType<ValueType>() << " >, n = " << n << ", x = " << x << ", incX = " << incX )
 
     if( syncToken )
     {
-        LAMA_LOG_WARN( logger, "no asynchronous execution for mic possible at this level." )
+        SCAI_LOG_WARN( logger, "no asynchronous execution for mic possible at this level." )
     }
 
     IndexType maxIndex = 0;
@@ -209,12 +209,12 @@ void MICBLAS1::swap(
     const IndexType incY,
     SyncToken* syncToken )
 {
-    LAMA_LOG_DEBUG( logger,
+    SCAI_LOG_DEBUG( logger,
                     "iamax<long double>, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
 
     if( syncToken )
     {
-        LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
+        SCAI_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
 
     if( n < 1 || incX < 1 || incY < 1 )
@@ -244,11 +244,11 @@ void MICBLAS1::swap(
 template<typename ValueType>
 ValueType MICBLAS1::nrm2( const IndexType n, const ValueType* x, const IndexType incX, SyncToken* syncToken )
 {
-    LAMA_LOG_INFO( logger, "nrm2<" << common::getScalarType<ValueType>() << ">( n = " << n << " )" )
+    SCAI_LOG_INFO( logger, "nrm2<" << common::getScalarType<ValueType>() << ">( n = " << n << " )" )
 
     if( syncToken )
     {
-        LAMA_LOG_WARN( logger, "no asynchronous execution for mic possible at this level." )
+        SCAI_LOG_WARN( logger, "no asynchronous execution for mic possible at this level." )
     }
 
     const void* xPtr = x;
@@ -290,12 +290,12 @@ void MICBLAS1::copy(
     const IndexType incY,
     SyncToken* syncToken )
 {
-    LAMA_LOG_DEBUG( logger,
+    SCAI_LOG_DEBUG( logger,
                     "copy<" << common::getScalarType<ValueType>() << ">, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
 
     if( syncToken )
     {
-        LAMA_LOG_WARN( logger, "asynchronous execution for MIC not supported yet." )
+        SCAI_LOG_WARN( logger, "asynchronous execution for MIC not supported yet." )
     }
 
     LAMA_REGION( "MIC.BLAS1.copy" )
@@ -338,12 +338,12 @@ void MICBLAS1::axpy(
 {
     LAMA_REGION( "MIC.BLAS1.axpy" )
 
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "axpy<" << common::getScalarType<ValueType>() << ",  n = " << n << ", alpha = " << alpha << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
 
     if( syncToken )
     {
-        LAMA_LOG_WARN( logger, "asynchronous execution for MIC not supported yet." )
+        SCAI_LOG_WARN( logger, "asynchronous execution for MIC not supported yet." )
     }
 
     if( n < 1 || incX < 1 || incY < 1 )
@@ -383,7 +383,7 @@ ValueType MICBLAS1::dot(
 {
     LAMA_REGION( "MIC.BLAS1.dot" )
 
-    LAMA_LOG_INFO( logger, "dot<" << common::getScalarType<ValueType>() << ">, n = " << n );
+    SCAI_LOG_INFO( logger, "dot<" << common::getScalarType<ValueType>() << ">, n = " << n );
 
     if( syncToken )
     {
@@ -430,12 +430,12 @@ void MICBLAS1::sum(
     ValueType* z,
     SyncToken* syncToken )
 {
-    LAMA_LOG_DEBUG( logger,
+    SCAI_LOG_DEBUG( logger,
                     "sum<" << common::getScalarType<ValueType>() << ">, n = " << n << ", alpha = " << alpha << ", x = " << x << ", beta = " << beta << ", y = " << y << ", z = " << z )
 
     if( syncToken )
     {
-        LAMA_LOG_WARN( logger, "asynchronous execution for MIC not supported yet." )
+        SCAI_LOG_WARN( logger, "asynchronous execution for MIC not supported yet." )
     }
 
     LAMA_REGION( "MIC.BLAS1.sum" )
@@ -467,7 +467,7 @@ void MICBLAS1::sum(
 
 void MICBLAS1::setInterface( BLASInterface& BLAS )
 {
-    LAMA_LOG_INFO( logger, "set BLAS1 routines for MIC in Interface" )
+    SCAI_LOG_INFO( logger, "set BLAS1 routines for MIC in Interface" )
 
     // Note: macro takes advantage of same name for routines and type definitions
     //       ( e.g. routine CUDABLAS1::sum<ValueType> is set for BLAS::BLAS1::sum variable

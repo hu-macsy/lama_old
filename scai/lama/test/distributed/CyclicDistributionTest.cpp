@@ -76,7 +76,7 @@ struct CyclicDistributionTestConfig
 
 BOOST_FIXTURE_TEST_SUITE( CyclicDistributionTest, CyclicDistributionTestConfig )
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.CyclicDistributionTest" );
+SCAI_LOG_DEF_LOGGER( logger, "Test.CyclicDistributionTest" );
 
 /* --------------------------------------------------------------------- */
 
@@ -86,7 +86,7 @@ BOOST_AUTO_TEST_CASE( commonTestCases )
 
     if ( base_test_case )
     {
-        LAMA_LOG_INFO( logger, "Run test method " << testcase << " in CyclicDistributionTest." );
+        SCAI_LOG_INFO( logger, "Run test method " << testcase << " in CyclicDistributionTest." );
         DISTRIBUTION_COMMONTESTCASES( disttest );
     }
     else

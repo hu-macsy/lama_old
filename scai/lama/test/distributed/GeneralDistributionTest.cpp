@@ -84,7 +84,7 @@ struct GeneralDistributionTestConfig
 
 BOOST_FIXTURE_TEST_SUITE( GeneralDistributionTest, GeneralDistributionTestConfig )
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.GeneralDistributionTest" );
+SCAI_LOG_DEF_LOGGER( logger, "Test.GeneralDistributionTest" );
 
 /* --------------------------------------------------------------------- */
 
@@ -94,7 +94,7 @@ BOOST_AUTO_TEST_CASE( commonTestCases )
 
     if ( base_test_case )
     {
-        LAMA_LOG_INFO( logger, "Run test method " << testcase << " in GeneralDistributionTest." );
+        SCAI_LOG_INFO( logger, "Run test method " << testcase << " in GeneralDistributionTest." );
         DISTRIBUTION_COMMONTESTCASES( disttest );
     }
     else

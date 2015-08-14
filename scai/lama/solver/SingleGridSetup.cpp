@@ -44,11 +44,11 @@
 namespace lama
 {
 
-LAMA_LOG_DEF_LOGGER( SingleGridSetup::logger, "AMGSetup.SingleGridSetup" )
+SCAI_LOG_DEF_LOGGER( SingleGridSetup::logger, "AMGSetup.SingleGridSetup" )
 
 SingleGridSetup::SingleGridSetup()
 {
-    LAMA_LOG_DEBUG( logger, "SingleGridSetup" )
+    SCAI_LOG_DEBUG( logger, "SingleGridSetup" )
 }
 
 SingleGridSetup::~SingleGridSetup()
@@ -59,12 +59,12 @@ void SingleGridSetup::initialize( const Matrix& coefficients )
 {
     LAMA_REGION( "initialize_SingleGridSetup" )
 
-    LAMA_LOG_DEBUG( logger, "SingleGridSetup::initialize" )
+    SCAI_LOG_DEBUG( logger, "SingleGridSetup::initialize" )
 
     // set default solver
     if( !mSolver )
     {
-        LAMA_LOG_DEBUG( logger, "new sor" )
+        SCAI_LOG_DEBUG( logger, "new sor" )
         SOR* sorSolver = new SOR( "10x SingleGridSetup SOR Solver" );
 
         CriterionPtr criterion( new IterationCount( 10 ) );
@@ -74,17 +74,17 @@ void SingleGridSetup::initialize( const Matrix& coefficients )
         mSolver.reset( sorSolver );
     }
 
-    LAMA_LOG_DEBUG( logger, "mSolver->initialize" )
+    SCAI_LOG_DEBUG( logger, "mSolver->initialize" )
     mSolver->initialize( coefficients );
 
-    LAMA_LOG_DEBUG( logger, "mIdentity.reset" )
+    SCAI_LOG_DEBUG( logger, "mIdentity.reset" )
     mIdentity.reset( coefficients.clone() );
 
-    LAMA_LOG_DEBUG( logger, "before identity" )
+    SCAI_LOG_DEBUG( logger, "before identity" )
     mIdentity->setIdentity( coefficients.getDistributionPtr() );
-    LAMA_LOG_DEBUG( logger, "after identity" )
+    SCAI_LOG_DEBUG( logger, "after identity" )
 
-    LAMA_LOG_DEBUG( logger, "Identity matrix = " << *mIdentity )
+    SCAI_LOG_DEBUG( logger, "Identity matrix = " << *mIdentity )
 
     mSolutionVector.reset( Vector::createVector( coefficients.getValueType(), mIdentity->getDistributionPtr() ) );
     mRhsVector.reset( Vector::createVector( coefficients.getValueType(), mIdentity->getDistributionPtr() ) );

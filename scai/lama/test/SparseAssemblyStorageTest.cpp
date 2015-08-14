@@ -53,7 +53,7 @@ using namespace memory;
 
 BOOST_AUTO_TEST_SUITE( SparseAssemblyStorageTest )
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.SparseAssemblyStorageTest" )
+SCAI_LOG_DEF_LOGGER( logger, "Test.SparseAssemblyStorageTest" )
 
 typedef boost::mpl::list<float, double> ValueTypes;
 

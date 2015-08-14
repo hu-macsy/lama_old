@@ -43,7 +43,7 @@ namespace lama
 
 /* -------------------------------------------------------------------------- */
 
-LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, ELLSparseMatrix<ValueType>::logger,
+SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, ELLSparseMatrix<ValueType>::logger,
                               "Matrix.SparseMatrix.ELLSparseMatrix" )
 
 /* -------------------------------------------------------------------------- */
@@ -72,7 +72,7 @@ ELLSparseMatrix<ValueType>::ELLSparseMatrix()
     : SparseMatrix<ValueType>( createStorage() )
 
 {
-    LAMA_LOG_INFO( logger, "ELLSparseMatrix()" )
+    SCAI_LOG_INFO( logger, "ELLSparseMatrix()" )
 }
 
 /* -------------------------------------------------------------------------- */
@@ -83,7 +83,7 @@ ELLSparseMatrix<ValueType>::ELLSparseMatrix( const IndexType numRows, const Inde
     : SparseMatrix<ValueType>( createStorage( numRows, numColumns ) )
 
 {
-    LAMA_LOG_INFO( logger, "ELLSparseMatrix( " << numRows << " x " << numColumns << " )" )
+    SCAI_LOG_INFO( logger, "ELLSparseMatrix( " << numRows << " x " << numColumns << " )" )
 }
 
 /* -------------------------------------------------------------------------- */
@@ -242,7 +242,7 @@ ELLSparseMatrix<ValueType>::ELLSparseMatrix( const std::string& filename )
 template<typename ValueType>
 ELLSparseMatrix<ValueType>::~ELLSparseMatrix()
 {
-    LAMA_LOG_INFO( logger, "~ELLSpareMatrix" )
+    SCAI_LOG_INFO( logger, "~ELLSpareMatrix" )
 }
 
 /* ---------------------------------------------------------------------------------------*/
@@ -250,7 +250,7 @@ ELLSparseMatrix<ValueType>::~ELLSparseMatrix()
 template<typename ValueType>
 ELLSparseMatrix<ValueType>& ELLSparseMatrix<ValueType>::operator=( const ELLSparseMatrix& matrix )
 {
-    LAMA_LOG_INFO( logger, "ELLSparseMatrix = ELLSparseMatrix : " << matrix )
+    SCAI_LOG_INFO( logger, "ELLSparseMatrix = ELLSparseMatrix : " << matrix )
     this->assign( matrix );
     return *this;
 }
@@ -334,7 +334,7 @@ ELLSparseMatrix<ValueType>* ELLSparseMatrix<ValueType>::clone() const
     newSparseMatrix->setContext( this->getContextPtr() );
     newSparseMatrix->setCommunicationKind( this->getCommunicationKind() );
 
-    LAMA_LOG_INFO( logger, "create is " << *newSparseMatrix )
+    SCAI_LOG_INFO( logger, "create is " << *newSparseMatrix )
 
     return newSparseMatrix;
 }
@@ -344,11 +344,11 @@ ELLSparseMatrix<ValueType>* ELLSparseMatrix<ValueType>::clone() const
 template<typename ValueType>
 ELLSparseMatrix<ValueType>* ELLSparseMatrix<ValueType>::copy() const
 {
-    LAMA_LOG_INFO( logger, "copy of " << *this )
+    SCAI_LOG_INFO( logger, "copy of " << *this )
 
     ELLSparseMatrix<ValueType>* newSparseMatrix = new ELLSparseMatrix<ValueType>( *this );
 
-    LAMA_LOG_INFO( logger, "copy is " << *newSparseMatrix )
+    SCAI_LOG_INFO( logger, "copy is " << *newSparseMatrix )
 
     return newSparseMatrix;
 }

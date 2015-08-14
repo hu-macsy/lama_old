@@ -114,7 +114,7 @@ void setZeroTest()
 
 BOOST_AUTO_TEST_SUITE( DenseStorageTest )
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.DenseStorageTest" )
+SCAI_LOG_DEF_LOGGER( logger, "Test.DenseStorageTest" )
 LAMA_AUTO_TEST_CASE_CT( commonTestCases, DenseStorageTest )
 LAMA_AUTO_TEST_CASE_T( setZeroTest, DenseStorageTest )
 LAMA_AUTO_TEST_CASE_T( typeNameTest, DenseStorageTest )

@@ -74,7 +74,7 @@ void commonTestCases( ContextPtr loc )
 
 BOOST_AUTO_TEST_SUITE( DenseMatrixTest1 )
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.DenseMatrixTest1" )
+SCAI_LOG_DEF_LOGGER( logger, "Test.DenseMatrixTest1" )
 
 LAMA_AUTO_TEST_CASE_CT( commonTestCases, DenseMatrixTest1 )
 /* ------------------------------------------------------------------------------------------------------------------ */

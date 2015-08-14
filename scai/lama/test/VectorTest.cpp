@@ -93,7 +93,7 @@ struct VectorTestConfig
 
 BOOST_FIXTURE_TEST_SUITE( VectorTest, VectorTestConfig )
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.VectorTest" )
+SCAI_LOG_DEF_LOGGER( logger, "Test.VectorTest" )
 
 /* --------------------------------------------------------------------- */
 
@@ -153,7 +153,7 @@ void cleanupfiles( std::string filename )
 {
     std::string prefix = Configuration::getInstance().getPath();
     std::string s = prefix + "/" + filename;
-    LAMA_LOG_INFO( logger, "Deleting " << s << " .vec/.frv ." );
+    SCAI_LOG_INFO( logger, "Deleting " << s << " .vec/.frv ." );
     std::remove( ( s + ".vec" ).c_str() );
     std::remove( ( s + ".frv" ).c_str() );
 }
@@ -174,9 +174,9 @@ BOOST_AUTO_TEST_CASE( ReadAndWriteVectorTest )
     cleanupfiles( testfilename );
     // write and read BINARY
     std::string fileName = prefix + "/" + testfilename;
-    LAMA_LOG_INFO( logger, "write " << vector << " to binary file " << fileName );
+    SCAI_LOG_INFO( logger, "write " << vector << " to binary file " << fileName );
     vector.writeToFile( fileName, File::BINARY, File::FLOAT );
-    LAMA_LOG_INFO( logger, "Read constructur from binary file " << fileName );
+    SCAI_LOG_INFO( logger, "Read constructur from binary file " << fileName );
     DenseVector<double> vector3( prefix + "/" + testfilename );
     verifySameVector<double>( vector3, result );
     cleanupfiles( testfilename );
@@ -199,7 +199,7 @@ template<typename MatrixType>
 void CtorMatrixExpressionTestmethod()
 {
     typedef typename MatrixType::MatrixValueType ValueType;
-    LAMA_LOG_INFO( logger, "CtorMatrixExpressionTestmethod, MatrixType = " << typeid( MatrixType ).name() );
+    SCAI_LOG_INFO( logger, "CtorMatrixExpressionTestmethod, MatrixType = " << typeid( MatrixType ).name() );
     IndexType n = 4;
     IndexType m = 4;
     DenseVector<ValueType> vectorA( n, 3.0 );
@@ -217,76 +217,76 @@ void CtorMatrixExpressionTestmethod()
     DenseVector<ValueType> vectorResult6( n, 1.0 );
     DenseVector<ValueType> vectorResult7( m, 6.0 );
     DenseVector<ValueType> vectorResult8( m, 3.0 );
-    LAMA_LOG_INFO( logger, "linear algebra expression: a*A*x" );
+    SCAI_LOG_INFO( logger, "linear algebra expression: a*A*x" );
     DenseVector<ValueType> v1( s * n4m4IdentityMatrix * vectorA );
     verifySameVector<ValueType>( v1, vectorResult2 );
-    LAMA_LOG_INFO( logger, "linear algebra expression: A*a*x" );
+    SCAI_LOG_INFO( logger, "linear algebra expression: A*a*x" );
     DenseVector<ValueType> v2( n4m4IdentityMatrix * s * vectorA );
     verifySameVector<ValueType>( v2, vectorResult2 );
-    LAMA_LOG_INFO( logger, "linear algebra expression: A*x*a" );
+    SCAI_LOG_INFO( logger, "linear algebra expression: A*x*a" );
     DenseVector<ValueType> v3( n4m4IdentityMatrix * vectorA * s );
     verifySameVector<ValueType>( v3, vectorResult2 );
-    LAMA_LOG_INFO( logger, "linear algebra expression: A*x" );
+    SCAI_LOG_INFO( logger, "linear algebra expression: A*x" );
     DenseVector<ValueType> v4( n4m4IdentityMatrix * vectorA );
     verifySameVector<ValueType>( v4, vectorResult3 );
     /* ************************************************************ */
-    LAMA_LOG_INFO( logger, "linear algebra expression: a*x*A" );
+    SCAI_LOG_INFO( logger, "linear algebra expression: a*x*A" );
     DenseVector<ValueType> v19( s * vectorA * n4m4IdentityMatrix );
     verifySameVector<ValueType>( v19, vectorResult7 );
-    LAMA_LOG_INFO( logger, "linear algebra expression: x*A*a" );
+    SCAI_LOG_INFO( logger, "linear algebra expression: x*A*a" );
     DenseVector<ValueType> v20( vectorA * n4m4IdentityMatrix * s );
     verifySameVector<ValueType>( v20, vectorResult7 );
-    LAMA_LOG_INFO( logger, "linear algebra expression: x*a*A" );
+    SCAI_LOG_INFO( logger, "linear algebra expression: x*a*A" );
     DenseVector<ValueType> v21( vectorA * s * n4m4IdentityMatrix );
     verifySameVector<ValueType>( v21, vectorResult7 );
-    LAMA_LOG_INFO( logger, "linear algebra expression: x*A" );
+    SCAI_LOG_INFO( logger, "linear algebra expression: x*A" );
     DenseVector<ValueType> v22( vectorC * n4m4IdentityMatrix );
     verifySameVector<ValueType>( v22, vectorResult8 );
     //AdditionExpressionTest in Constructor
-    LAMA_LOG_INFO( logger, "linear algebra expression: a*A*x+b*y" );
+    SCAI_LOG_INFO( logger, "linear algebra expression: a*A*x+b*y" );
     DenseVector<ValueType> v5( s * n4m4IdentityMatrix * vectorA + t * vectorB );
     verifySameVector<ValueType>( v5, vectorResult );
-    LAMA_LOG_INFO( logger, "linear algebra expression: A*a*x+b*y" );
+    SCAI_LOG_INFO( logger, "linear algebra expression: A*a*x+b*y" );
     DenseVector<ValueType> v6( n4m4IdentityMatrix * s * vectorA + t * vectorB );
     verifySameVector<ValueType>( v6, vectorResult );
-    LAMA_LOG_INFO( logger, "linear algebra expression: A*x*a+b*y" );
+    SCAI_LOG_INFO( logger, "linear algebra expression: A*x*a+b*y" );
     DenseVector<ValueType> v7( n4m4IdentityMatrix * vectorA * s + t * vectorB );
     verifySameVector<ValueType>( v7, vectorResult );
-    LAMA_LOG_INFO( logger, "linear algebra expression: a*A*x+y" );
+    SCAI_LOG_INFO( logger, "linear algebra expression: a*A*x+y" );
     DenseVector<ValueType> v8( s * n4m4IdentityMatrix * vectorA + vectorB );
     verifySameVector<ValueType>( v8, vectorResult );
-    LAMA_LOG_INFO( logger, "linear algebra expression: A*a*x+y" );
+    SCAI_LOG_INFO( logger, "linear algebra expression: A*a*x+y" );
     DenseVector<ValueType> v9( n4m4IdentityMatrix * s * vectorA + vectorB );
     verifySameVector<ValueType>( v9, vectorResult );
-    LAMA_LOG_INFO( logger, "linear algebra expression: A*x*a+y" );
+    SCAI_LOG_INFO( logger, "linear algebra expression: A*x*a+y" );
     DenseVector<ValueType> v10( n4m4IdentityMatrix * vectorA * s + vectorB );
     verifySameVector<ValueType>( v10, vectorResult );
-    LAMA_LOG_INFO( logger, "linear algebra expression: A*x+y" );
+    SCAI_LOG_INFO( logger, "linear algebra expression: A*x+y" );
     DenseVector<ValueType> v11( n4m4IdentityMatrix * vectorA + vectorB );
     verifySameVector<ValueType>( v11, vectorResult4 );
     //SubstractionExpressionTest in Constructor
-    LAMA_LOG_INFO( logger, "linear algebra expression: a*A*x-b*y" );
+    SCAI_LOG_INFO( logger, "linear algebra expression: a*A*x-b*y" );
     DenseVector<ValueType> v12( s * n4m4IdentityMatrix * vectorA - t * vectorB );
     verifySameVector<ValueType>( v12, vectorResult5 );
-    LAMA_LOG_INFO( logger, "linear algebra expression: A*a*x-b*y" );
+    SCAI_LOG_INFO( logger, "linear algebra expression: A*a*x-b*y" );
     DenseVector<ValueType> v13( n4m4IdentityMatrix * s * vectorA - t * vectorB );
     verifySameVector<ValueType>( v13, vectorResult5 );
-    LAMA_LOG_INFO( logger, "linear algebra expression: A*x*a-b*y" );
+    SCAI_LOG_INFO( logger, "linear algebra expression: A*x*a-b*y" );
     DenseVector<ValueType> v14( n4m4IdentityMatrix * vectorA * s - t * vectorB );
     verifySameVector<ValueType>( v14, vectorResult5 );
-    LAMA_LOG_INFO( logger, "linear algebra expression: a*A*x-y" );
+    SCAI_LOG_INFO( logger, "linear algebra expression: a*A*x-y" );
     DenseVector<ValueType> v15( s * n4m4IdentityMatrix * vectorA - vectorB );
     verifySameVector<ValueType>( v15, vectorResult5 );
-    LAMA_LOG_INFO( logger, "linear algebra expression: A*a*x-y" );
+    SCAI_LOG_INFO( logger, "linear algebra expression: A*a*x-y" );
     DenseVector<ValueType> v16( n4m4IdentityMatrix * s * vectorA - vectorB );
     verifySameVector<ValueType>( v16, vectorResult5 );
-    LAMA_LOG_INFO( logger, "linear algebra expression: A*x*a-y" );
+    SCAI_LOG_INFO( logger, "linear algebra expression: A*x*a-y" );
     DenseVector<ValueType> v17( n4m4IdentityMatrix * vectorA * s - vectorB );
     verifySameVector<ValueType>( v17, vectorResult5 );
-    LAMA_LOG_INFO( logger, "linear algebra expression: A*x-y" );
+    SCAI_LOG_INFO( logger, "linear algebra expression: A*x-y" );
     DenseVector<ValueType> v18( n4m4IdentityMatrix * vectorA - vectorB );
     verifySameVector<ValueType>( v18, vectorResult6 );
-    LAMA_LOG_INFO( logger, "Exceptiontests" );
+    SCAI_LOG_INFO( logger, "Exceptiontests" );
     DenseVector<ValueType> vec1( 6, 0.0 );
     //Should throw Exception, because of different sizes of matrix and vector
     LAMA_CHECK_THROW( { DenseVector<ValueType> vec( n4m4IdentityMatrix * vec1 ); }, Exception );
@@ -376,36 +376,36 @@ void AssignmentOpMatrixExpressionTestmethod( ContextPtr context )
     vector = vectorref;
     verifySameVector<ValueType>( vector, vectorResult );
     // linear algebra expression: a*A*x
-    LAMA_LOG_INFO( logger, "linear algebra expression: a*A*x" );
+    SCAI_LOG_INFO( logger, "linear algebra expression: a*A*x" );
     vector = s * n4m4IdentityMatrix * vectorA;
     verifySameVector<ValueType>( vector, vectorResult2 );
     // linear algebra expression: A*a*x
-    LAMA_LOG_INFO( logger, "linear algebra expression: A*a*x" );
+    SCAI_LOG_INFO( logger, "linear algebra expression: A*a*x" );
     vector = n4m4IdentityMatrix * s * vectorA;
     verifySameVector<ValueType>( vector, vectorResult2 );
     // linear algebra expression: A*x*a
-    LAMA_LOG_INFO( logger, "linear algebra expression: A*x*a" );
+    SCAI_LOG_INFO( logger, "linear algebra expression: A*x*a" );
     vector = n4m4IdentityMatrix * vectorA * s;
     verifySameVector<ValueType>( vector, vectorResult2 );
     // linear algebra expression: A*x
-    LAMA_LOG_INFO( logger, "linear algebra expression: A*x" );
+    SCAI_LOG_INFO( logger, "linear algebra expression: A*x" );
     vector = n4m4IdentityMatrix * vectorA;
     verifySameVector<ValueType>( vector, vectorResult3 );
     /* ************************************************** */
     // linear algebra expression: a*x*A
-    LAMA_LOG_INFO( logger, "linear algebra expression: a*x*A" );
+    SCAI_LOG_INFO( logger, "linear algebra expression: a*x*A" );
     vectorM = s * vectorA * n4m4IdentityMatrix;
     verifySameVector<ValueType>( vectorM, vectorResult2 );
     // linear algebra expression: x*a*A
-    LAMA_LOG_INFO( logger, "linear algebra expression: x*a*A" );
+    SCAI_LOG_INFO( logger, "linear algebra expression: x*a*A" );
     vectorM = vectorA * s * n4m4IdentityMatrix;
     verifySameVector<ValueType>( vectorM, vectorResult2 );
     // linear algebra expression: x*A*a
-    LAMA_LOG_INFO( logger, "linear algebra expression: x*A*a" );
+    SCAI_LOG_INFO( logger, "linear algebra expression: x*A*a" );
     vectorM = vectorA * n4m4IdentityMatrix * s;
     verifySameVector<ValueType>( vectorM, vectorResult2 );
     // linear algebra expression: x*A
-    LAMA_LOG_INFO( logger, "linear algebra expression: x*A" );
+    SCAI_LOG_INFO( logger, "linear algebra expression: x*A" );
     vectorM = vectorA * n4m4IdentityMatrix;
     verifySameVector<ValueType>( vectorM, vectorResult3 );
     //AdditionExpressionTest in Constructor
@@ -495,8 +495,8 @@ void AssignmentVectorExpressionTestmethod( ContextPtr context )
     DenseVector<ValueType> vectorResult10( n, -14.0 );
     vectorA.setContext( context );
     vectorB.setContext( context );
-    LAMA_LOG_DEBUG( logger, "Using context vecA = " << vectorA.getContext()->getType() );
-    LAMA_LOG_DEBUG( logger, "Using context vecB = " << vectorB.getContext()->getType() );
+    SCAI_LOG_DEBUG( logger, "Using context vecA = " << vectorA.getContext()->getType() );
+    SCAI_LOG_DEBUG( logger, "Using context vecB = " << vectorB.getContext()->getType() );
     Scalar s = 2.0;
     Scalar t = 4.0;
     DenseVector<ValueType> vector( n, 0.0 );
@@ -562,14 +562,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SpecialAssignmentTest, ValueType, test_types )
         vectorB.setContext( context );
         vectorC.setContext( context );
         Scalar s = 2.0;
-        LAMA_LOG_INFO( logger, "vectorA *= 2.0" );
+        SCAI_LOG_INFO( logger, "vectorA *= 2.0" );
         vectorA *= s;
         verifySameVector<ValueType>( vectorA, vectorB );
         vectorA = 6.0;
-        LAMA_LOG_INFO( logger, "vectorA += vectorB" );
+        SCAI_LOG_INFO( logger, "vectorA += vectorB" );
         vectorA += vectorB;
         verifySameVector<ValueType>( vectorA, vectorC );
-        LAMA_LOG_INFO( logger, "vectorA -= vectorB" );
+        SCAI_LOG_INFO( logger, "vectorA -= vectorB" );
         vectorA -= vectorB;
         verifySameVector<ValueType>( vectorA, vectorB );
         vectorA = 1.0;
@@ -579,7 +579,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SpecialAssignmentTest, ValueType, test_types )
         vectorA += 2.0 * vectorB;
         verifySameVector<ValueType>( vectorA, vectorC );
         DenseVector<ValueType> vectorWrong( n + 1, 6 );
-        LAMA_LOG_INFO( logger, "vector(4) += vector(5) should fail" );
+        SCAI_LOG_INFO( logger, "vector(4) += vector(5) should fail" );
         LAMA_CHECK_THROW(
         {   vectorA += vectorWrong;}, Exception );
     }
@@ -733,10 +733,10 @@ void operatorMatrixTimesVectorTestmethod()
     MatrixType matrixZ1( TestSparseMatrices::n4m4MatrixA1<ValueType>() );
     //Should throw Exception, because of different sizes of matrix and vector
     // LAMA_CHECK_THROW( { DenseVector<ValueType> d( matrixZ1 * vectorA4 ); }, Exception );
-    LAMA_LOG_INFO( logger, "check for exception" );
+    SCAI_LOG_INFO( logger, "check for exception" );
     DenseVector<ValueType> wrongVectorErg4( m + 1, 1.0 );
     LAMA_CHECK_THROW( { vectorA4 = matrixZ1* wrongVectorErg4; }, Exception );
-    LAMA_LOG_INFO( logger, "check for exception done" );
+    SCAI_LOG_INFO( logger, "check for exception done" );
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( operatorMatrixTimeVectorTestold, ValueType, test_types )
@@ -758,41 +758,41 @@ void operatorVectorTimesMatrixTestmethod()
     const IndexType n = 6;
     const IndexType m = 4;
     // Matrix Vector multiplication test 1 ValueType precision
-    LAMA_LOG_INFO( logger, "4x4 Matrix" )
+    SCAI_LOG_INFO( logger, "4x4 Matrix" )
     MatrixType matrixA( TestSparseMatrices::n4m4MatrixA1<ValueType>() );
     DenseVector<ValueType> vectorA( m, 0.0 );
     DenseVector<ValueType> vectorAcalc( vectorA * matrixA );
     DenseVector<ValueType> vectorErg0( m, 0.0 );
     verifySameVector<ValueType>( vectorErg0, vectorAcalc );
     // Matrix Vector multiplication test 2 ValueType precision
-    LAMA_LOG_INFO( logger, "6x4 Matrix" )
+    SCAI_LOG_INFO( logger, "6x4 Matrix" )
     MatrixType matrixA1( TestSparseMatrices::n6m4MatrixD1<ValueType>() );
     DenseVector<ValueType> vectorA1( n, 0.0 );
     DenseVector<ValueType> vectorErg1( m, 0.0 );
     DenseVector<ValueType> vectorA1calc( vectorA1 * matrixA1 );
     verifySameVector<ValueType>( vectorErg1, vectorA1calc );
     // Matrix Vector multiplication test 3 ValueType precision
-    LAMA_LOG_INFO( logger, "4x6 Matrix" )
+    SCAI_LOG_INFO( logger, "4x6 Matrix" )
     MatrixType matrixB1( TestSparseMatrices::n4m6MatrixD2<ValueType>() );
     DenseVector<ValueType> vectorA2( m, 0.0 );
     DenseVector<ValueType> vectorErg2( n, 0.0 );
     DenseVector<ValueType> vectorB1( vectorA2 * matrixB1 );
     verifySameVector<ValueType>( vectorErg2, vectorB1 );
     // Matrix Vector multiplication test 4 ValueType precision
-    LAMA_LOG_INFO( logger, "4x4 Matrix" )
+    SCAI_LOG_INFO( logger, "4x4 Matrix" )
     ValueType vectorBvalues[] = { 1.5f, 0.9f, 0.9f, 1.1f };
     DenseVector<ValueType> vectorB( m, vectorBvalues );
     DenseVector<ValueType> vectorBinput( m, 1.0 );
     DenseVector<ValueType> vectorBcalc( vectorBinput * matrixA );
     verifySameVector<ValueType>( vectorB, vectorBcalc );
     // Matrix Vector multiplication test 3 ValueType precision
-    LAMA_LOG_INFO( logger, "4x6 Matrix" )
+    SCAI_LOG_INFO( logger, "4x6 Matrix" )
     DenseVector<ValueType> vectorErg3( n, 0.0 );
     DenseVector<ValueType> vectorA3( m, 0.0 );
     vectorA3 = vectorA3 * matrixA;
     verifySameVector<ValueType>( vectorErg3, vectorB1 );
     // Matrix Vector multiplication with non constant input vector
-    LAMA_LOG_INFO( logger, "6x4 Matrix" )
+    SCAI_LOG_INFO( logger, "6x4 Matrix" )
     ValueType vectorAValues[] = { 1.0, 2.0, 3.0, 4.0, 5.0, 6.0 };
     ValueType vectorErgValues[] = { 38.0, 34.0, 27.0, 45.0 };
     DenseVector<ValueType> vectorErg4( m, vectorErgValues );
@@ -802,10 +802,10 @@ void operatorVectorTimesMatrixTestmethod()
     MatrixType matrixZ1( TestSparseMatrices::n4m4MatrixA1<ValueType>() );
     //Should throw Exception, because of different sizes of matrix and vector
     // LAMA_CHECK_THROW( { DenseVector<ValueType> d( matrixZ1 * vectorA4 ); }, Exception );
-    LAMA_LOG_INFO( logger, "check for exception" );
+    SCAI_LOG_INFO( logger, "check for exception" );
     DenseVector<ValueType> wrongVectorErg4( m + 1, 1.0 );
     LAMA_CHECK_THROW( { vectorA4 = matrixZ1* wrongVectorErg4; }, Exception );
-    LAMA_LOG_INFO( logger, "check for exception done" );
+    SCAI_LOG_INFO( logger, "check for exception done" );
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( operatorVectorTimesMatrixTestold, ValueType, test_types )

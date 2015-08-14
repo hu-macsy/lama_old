@@ -61,7 +61,7 @@ All relevant LAMA options and their significations are listed in the table below
    "LAMA_CMAKE_VERBOSE", "set to 1 or TRUE for more detailed infos about configuration"
    "LAMA_BLAS_LIBRARY", "Selected the used BLAS library: auto, MKL, ACML, GOTOBLAS, BLAS"
    "LAMA_BUILD_TEST", "ON or OFF, explicitly enable/disable building the tests"
-   "LAMA_LOG", "INFO recommended, alternatively DEBUG or even more detailed TRACE"
+   "SCAI_LOG", "INFO recommended, alternatively DEBUG or even more detailed TRACE"
    "LAMA_USE_CODE_COVERAGE", "ON or OFF, explicitly enable/disable use of Code Coverage"
    "LAMA_USE_CUDA", "ON or OFF, explicitly enable/disable use of CUDA"
    "LAMA_USE_MPI", "ON or OFF, explicitly enable/disable use of MPI"

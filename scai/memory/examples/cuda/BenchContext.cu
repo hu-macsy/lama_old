@@ -13,7 +13,7 @@
 
 using namespace memory;
 
-LAMA_LOG_DEF_LOGGER( logger, "CudaExample" )
+SCAI_LOG_DEF_LOGGER( logger, "CudaExample" )
 
 template<typename ValueType>
 ValueType sum( const ValueType array[], const IndexType n )
@@ -26,7 +26,7 @@ ValueType sum( const ValueType array[], const IndexType n )
 
     LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
 
-    LAMA_LOG_INFO( logger, "sum of " << n << " values = " << result )
+    SCAI_LOG_INFO( logger, "sum of " << n << " values = " << result )
 
     return result;
 }

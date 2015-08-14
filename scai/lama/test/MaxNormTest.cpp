@@ -52,7 +52,7 @@ extern std::string testcase;
 BOOST_AUTO_TEST_SUITE( MaxNormTest )
 ;
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.MaxNormTest" );
+SCAI_LOG_DEF_LOGGER( logger, "Test.MaxNormTest" );
 
 typedef boost::mpl::list<float, double> test_types;
 
@@ -94,7 +94,7 @@ BOOST_AUTO_TEST_CASE( commonTestCases )
 
     if ( base_test_case )
     {
-        LAMA_LOG_INFO( logger, "Run test method " << testcase << " in MaxNormTest." );
+        SCAI_LOG_INFO( logger, "Run test method " << testcase << " in MaxNormTest." );
         NORMTEST_COMMONTESTCASES( normtest );
     }
     else

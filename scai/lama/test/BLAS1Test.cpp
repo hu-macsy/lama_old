@@ -569,7 +569,7 @@ void swapTest( ContextPtr loc )
 
 BOOST_AUTO_TEST_SUITE( BLAS1Test )
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.BLAS1Test" )
+SCAI_LOG_DEF_LOGGER( logger, "Test.BLAS1Test" )
 
 LAMA_AUTO_TEST_CASE_CT( asumTest, BLAS1Test )
 LAMA_AUTO_TEST_CASE_CT( axpyTest, BLAS1Test )

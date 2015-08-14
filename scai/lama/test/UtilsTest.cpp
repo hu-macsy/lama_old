@@ -262,7 +262,7 @@ void invertTest( ContextPtr loc )
 
 BOOST_AUTO_TEST_SUITE( UtilsTest )
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.UtilsTest" )
+SCAI_LOG_DEF_LOGGER( logger, "Test.UtilsTest" )
 
 LAMA_AUTO_TEST_CASE_CT( sumTest, UtilsTest )
 LAMA_AUTO_TEST_CASE_CT( isSortedTest, UtilsTest )

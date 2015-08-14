@@ -69,7 +69,7 @@ typedef boost::mpl::list<float> test_types;
 
 BOOST_AUTO_TEST_SUITE( RichardsonTest )
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.RichardsonTest" )
+SCAI_LOG_DEF_LOGGER( logger, "Test.RichardsonTest" )
 
 /* --------------------------------------------------------------------- */
 
@@ -119,7 +119,7 @@ void testSolveWithPreconditionmethod( ContextPtr context )
     const IndexType N1 = 4;
     const IndexType N2 = 4;
 
-    LAMA_LOG_INFO( logger, "Problem size = " << N1 << " x " << N2 );
+    SCAI_LOG_INFO( logger, "Problem size = " << N1 << " x " << N2 );
 
     CSRSparseMatrix<ValueType> helpcoefficients;
     MatrixCreator<ValueType>::buildPoisson2D( helpcoefficients, 9, N1, N2 );
@@ -129,10 +129,10 @@ void testSolveWithPreconditionmethod( ContextPtr context )
     // convert to the corresponding matrix type, keep distribution
 
     MatrixType coefficients( helpcoefficients );
-    LAMA_LOG_INFO( logger, "coefficients matrix = " << coefficients );
+    SCAI_LOG_INFO( logger, "coefficients matrix = " << coefficients );
 
     coefficients.setContext( context );
-    LAMA_LOG_INFO( logger, "RichardsonTest uses context = " << context->getType() );
+    SCAI_LOG_INFO( logger, "RichardsonTest uses context = " << context->getType() );
 
     DenseVector<ValueType> solution( coefficients.getDistributionPtr(), 1.0 );
     const DenseVector<ValueType> exactSolution( coefficients.getDistributionPtr(), 2.0 );
@@ -155,7 +155,7 @@ void testSolveWithPreconditionmethod( ContextPtr context )
 
     //CAREFUL: Scalar overflow from inf to -nan casted to 0.
 
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "maxNorm of diff = " << diff << " = ( solution - exactSolution ) = " << s.getValue<ValueType>() );
 
     BOOST_CHECK( s.getValue<ValueType>() < 1E-04 );
@@ -190,7 +190,7 @@ void testSolveWithoutPreconditionmethod( ContextPtr context )
     const IndexType N1 = 4;
     const IndexType N2 = 4;
 
-    LAMA_LOG_INFO( logger, "Problem size = " << N1 << " x " << N2 );
+    SCAI_LOG_INFO( logger, "Problem size = " << N1 << " x " << N2 );
 
     LoggerPtr slogger(
         new CommonLogger( "<Richardson>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly,
@@ -202,10 +202,10 @@ void testSolveWithoutPreconditionmethod( ContextPtr context )
     MatrixCreator<ValueType>::buildPoisson2D( helpcoefficients, 9, N1, N2 );
 
     MatrixType coefficients( helpcoefficients );
-    LAMA_LOG_INFO( logger, "coefficient matrix = " << coefficients );
+    SCAI_LOG_INFO( logger, "coefficient matrix = " << coefficients );
 
     coefficients.setContext( context );
-    LAMA_LOG_INFO( logger, "RichardsonTest uses context = " << context->getType() );
+    SCAI_LOG_INFO( logger, "RichardsonTest uses context = " << context->getType() );
 
     Richardson rSolver( "RichardsonTestSolver",slogger);    
 
@@ -216,7 +216,7 @@ void testSolveWithoutPreconditionmethod( ContextPtr context )
 
     const DenseVector<ValueType> rhs( coefficients * exactSolution );
 
-    LAMA_LOG_INFO( logger, "rhs = " << rhs );
+    SCAI_LOG_INFO( logger, "rhs = " << rhs );
 
     //initialize
     IndexType expectedIterations = 200;
@@ -230,7 +230,7 @@ void testSolveWithoutPreconditionmethod( ContextPtr context )
 
     DenseVector<ValueType> diff( solution - exactSolution );
     Scalar s = maxNorm( diff );
-    LAMA_LOG_INFO( logger, "maxNorm of ( solution - exactSolution ) = " << s.getValue<ValueType>() );
+    SCAI_LOG_INFO( logger, "maxNorm of ( solution - exactSolution ) = " << s.getValue<ValueType>() );
     BOOST_CHECK( s.getValue<ValueType>() < 1E-6 );
 }
 
@@ -260,7 +260,7 @@ BOOST_AUTO_TEST_CASE( testDefaultCriterionSet )
     const IndexType N1 = 4;
     const IndexType N2 = 4;
 
-    LAMA_LOG_INFO( logger, "Problem size = " << N1 << " x " << N2 );
+    SCAI_LOG_INFO( logger, "Problem size = " << N1 << " x " << N2 );
 
     Richardson rSolver( "RichardsonTestSolver" );
 

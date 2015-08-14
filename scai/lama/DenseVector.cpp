@@ -61,7 +61,7 @@ using namespace memory;
 namespace lama
 {
 
-LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, DenseVector<ValueType>::logger, "Vector.DenseVector" )
+SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, DenseVector<ValueType>::logger, "Vector.DenseVector" )
 
 template<typename ValueType>
 DenseVector<ValueType>::DenseVector()
@@ -79,7 +79,7 @@ template<typename ValueType>
 DenseVector<ValueType>::DenseVector( DistributionPtr distribution )
                 : Vector( distribution ), mLocalValues( distribution->getLocalSize() )
 {
-    LAMA_LOG_INFO( logger, "Construct dense vector, size = " << distribution->getGlobalSize()
+    SCAI_LOG_INFO( logger, "Construct dense vector, size = " << distribution->getGlobalSize()
     // << ", type = " << typename(ValueType)
                    << ", distribution = " << *distribution << ", local size = " << distribution->getLocalSize() << ", no initialization" )
 }
@@ -88,14 +88,14 @@ template<typename ValueType>
 DenseVector<ValueType>::DenseVector( const IndexType size, const ValueType value, ContextPtr context )
                 : Vector( size, context ), mLocalValues( size, value )
 {
-    LAMA_LOG_INFO( logger, "Construct dense vector, size = " << size << ", init =" << value )
+    SCAI_LOG_INFO( logger, "Construct dense vector, size = " << size << ", init =" << value )
 }
 
 template<typename ValueType>
 DenseVector<ValueType>::DenseVector( DistributionPtr distribution, const ValueType value, ContextPtr context )
                 : Vector( distribution, context ), mLocalValues( distribution->getLocalSize(), value )
 {
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "Construct dense vector, size = " << distribution->getGlobalSize() << ", distribution = " << *distribution << ", local size = " << distribution->getLocalSize() << ", init = " << value )
 }
 
@@ -121,7 +121,7 @@ DenseVector<ValueType>::DenseVector( const Vector& other, DistributionPtr distri
 template<typename ValueType>
 DenseVector<ValueType>::DenseVector( const std::string& filename )
 {
-    LAMA_LOG_INFO( logger, "Construct dense vector from file " << filename )
+    SCAI_LOG_INFO( logger, "Construct dense vector from file " << filename )
 
     readFromFile( filename );
 }
@@ -131,7 +131,7 @@ DenseVector<ValueType>::DenseVector( const std::string& filename )
 template<typename ValueType>
 void DenseVector<ValueType>::readFromFile( const std::string& filename )
 {
-    LAMA_LOG_INFO( logger, "read dense vector from file " << filename )
+    SCAI_LOG_INFO( logger, "read dense vector from file " << filename )
 
     // Take the current default communicator
 
@@ -214,7 +214,7 @@ DenseVector<ValueType>::DenseVector( const Expression<Scalar,Vector,Times>& expr
 
                 : Vector( expression.getArg2() )
 {
-    LAMA_LOG_INFO( logger, "Constructor( alpha * x )" )
+    SCAI_LOG_INFO( logger, "Constructor( alpha * x )" )
     Vector::operator=( expression );
 }
 
@@ -227,7 +227,7 @@ DenseVector<ValueType>::DenseVector(
                 : Vector( expression.getArg1().getArg2() )
 {
     allocate( getDistributionPtr() );
-    LAMA_LOG_INFO( logger, "Constructor( alpha * x + beta * y )" )
+    SCAI_LOG_INFO( logger, "Constructor( alpha * x + beta * y )" )
     Vector::operator=( expression );
 }
 
@@ -241,7 +241,7 @@ DenseVector<ValueType>::DenseVector(
                           expression.getArg1().getArg2().getArg1().getContextPtr() )
 {
     allocate( getDistributionPtr() );
-    LAMA_LOG_INFO( logger, "Constructor( alpha * A * x + b * y )" )
+    SCAI_LOG_INFO( logger, "Constructor( alpha * A * x + b * y )" )
     Vector::operator=( expression );
 }
 
@@ -254,7 +254,7 @@ DenseVector<ValueType>::DenseVector(
                           expression.getArg1().getArg2().getArg2().getContextPtr() )
 {
     allocate( getDistributionPtr() );
-    LAMA_LOG_INFO( logger, "Constructor( alpha * x * A + b * y )" )
+    SCAI_LOG_INFO( logger, "Constructor( alpha * x * A + b * y )" )
     Vector::operator=( expression );
 }
 
@@ -267,7 +267,7 @@ DenseVector<ValueType>::DenseVector( const Expression<Scalar,Expression<Matrix,V
                           expression.getArg2().getArg1().getContextPtr() )
 {
     allocate( getDistributionPtr() );
-    LAMA_LOG_INFO( logger, "Constructor( alpha * A * x )" )
+    SCAI_LOG_INFO( logger, "Constructor( alpha * A * x )" )
     Vector::operator=( expression );
 }
 
@@ -279,7 +279,7 @@ DenseVector<ValueType>::DenseVector( const Expression<Scalar,Expression<Vector,M
                           expression.getArg2().getArg2().getContextPtr() )
 {
     allocate( getDistributionPtr() );
-    LAMA_LOG_INFO( logger, "Constructor( alpha * x * A )" )
+    SCAI_LOG_INFO( logger, "Constructor( alpha * x * A )" )
     Vector::operator=( expression );
 }
 
@@ -290,7 +290,7 @@ DenseVector<ValueType>::DenseVector( const Expression<Matrix,Vector,Times>& expr
                 : Vector( expression.getArg1().getDistributionPtr(), expression.getArg1().getContextPtr() )
 {
     allocate( getDistributionPtr() );
-    LAMA_LOG_INFO( logger, "Constructor( A * x )" )
+    SCAI_LOG_INFO( logger, "Constructor( A * x )" )
     Vector::operator=( expression );
 }
 
@@ -301,7 +301,7 @@ DenseVector<ValueType>::DenseVector( const Expression<Vector,Matrix,Times>& expr
                 : Vector( expression.getArg2().getColDistributionPtr(), expression.getArg2().getContextPtr() )
 {
     allocate( getDistributionPtr() );
-    LAMA_LOG_INFO( logger, "Constructor( x * A )" )
+    SCAI_LOG_INFO( logger, "Constructor( x * A )" )
     Vector::operator=( expression );
 }
 
@@ -357,7 +357,7 @@ void DenseVector<ValueType>::setValues( const ContextArray& values )
 template<typename ValueType>
 DenseVector<ValueType>* DenseVector<ValueType>::clone() const
 {
-    LAMA_LOG_INFO( logger, "DenseVector<ValueType>::clone" )
+    SCAI_LOG_INFO( logger, "DenseVector<ValueType>::clone" )
 
     DenseVector<ValueType>* newDenseVector = new DenseVector<ValueType>();
 
@@ -369,7 +369,7 @@ DenseVector<ValueType>* DenseVector<ValueType>::clone() const
 template<typename ValueType>
 DenseVector<ValueType>* DenseVector<ValueType>::clone( DistributionPtr distribution ) const
 {
-    LAMA_LOG_INFO( logger, "DenseVector<ValueType>::create" )
+    SCAI_LOG_INFO( logger, "DenseVector<ValueType>::create" )
 
     DenseVector<ValueType>* newDenseVector = new DenseVector<ValueType>( distribution );
 
@@ -393,7 +393,7 @@ void DenseVector<ValueType>::updateHalo( const Halo& halo ) const
 {
     const IndexType haloSize = halo.getHaloSize();
 
-    LAMA_LOG_DEBUG( logger, "Acquiring halo write access on " << *mContext )
+    SCAI_LOG_DEBUG( logger, "Acquiring halo write access on " << *mContext )
 
     mHaloValues.clear();
     WriteAccess<ValueType> haloAccess( mHaloValues, mContext );
@@ -421,7 +421,7 @@ SyncToken* DenseVector<ValueType>::updateHaloAsync( const Halo& halo ) const
 template<typename ValueType>
 Scalar DenseVector<ValueType>::getValue( IndexType globalIndex ) const
 {
-    LAMA_LOG_TRACE( logger, *this << ": getValue( globalIndex = " << globalIndex << " )" )
+    SCAI_LOG_TRACE( logger, *this << ": getValue( globalIndex = " << globalIndex << " )" )
     ValueType myValue = 0.0;
     const IndexType localIndex = getDistribution().global2local( globalIndex );
 
@@ -429,12 +429,12 @@ Scalar DenseVector<ValueType>::getValue( IndexType globalIndex ) const
     {
         ReadAccess<ValueType> localAccess( mLocalValues );
 
-        LAMA_LOG_TRACE( logger, "index "<< globalIndex << " is local " << localIndex )
+        SCAI_LOG_TRACE( logger, "index "<< globalIndex << " is local " << localIndex )
         myValue = localAccess[localIndex];
     }
 
     ValueType allValue = getDistribution().getCommunicator().sum( myValue );
-    LAMA_LOG_TRACE( logger, "myValue = " << myValue << ", allValue = " << allValue )
+    SCAI_LOG_TRACE( logger, "myValue = " << myValue << ", allValue = " << allValue )
     return Scalar( allValue );
 }
 
@@ -574,7 +574,7 @@ Scalar DenseVector<ValueType>::maxNorm() const
 
     ValueType globalMaxNorm = comm.max( localMaxNorm );
 
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    comm << ": max norm " << *this << ", local max norm of " << nnu << " elements: " << localMaxNorm << ", max norm global = " << globalMaxNorm )
 
     return globalMaxNorm;
@@ -585,7 +585,7 @@ Scalar DenseVector<ValueType>::maxNorm() const
 template<typename ValueType>
 void DenseVector<ValueType>::swap( Vector& other )
 {
-    LAMA_LOG_DEBUG( logger, "swap:" << *this << " with " << other )
+    SCAI_LOG_DEBUG( logger, "swap:" << *this << " with " << other )
 
     DenseVector* otherPtr = dynamic_cast<DenseVector*>( &other );
 
@@ -617,7 +617,7 @@ void DenseVector<ValueType>::vectorPlusVector(
     const ValueType beta,
     const LAMAArray<ValueType>& y )
 {
-    LAMA_LOG_DEBUG( logger,
+    SCAI_LOG_DEBUG( logger,
                     "vectorPlusVector: result:" << result << " = " << alpha << " * x:" << x << " + " << beta << " * y:" << y )
 
     // get function pointers, do not use fallbacks here
@@ -637,7 +637,7 @@ void DenseVector<ValueType>::vectorPlusVector(
         //=>
         //result *= ( alpha + beta )
 
-        LAMA_LOG_DEBUG( logger,
+        SCAI_LOG_DEBUG( logger,
                         "vectorPlusVector: x = y = result, result *= " << "alpha(" << alpha << ") + beta(" << beta << ")" )
 
         WriteAccess<ValueType> resultAccess( result, context, true );
@@ -652,7 +652,7 @@ void DenseVector<ValueType>::vectorPlusVector(
 
         if( beta == 0.0 )
         {
-            LAMA_LOG_DEBUG( logger, "vectorPlusVector: result *= alpha" )
+            SCAI_LOG_DEBUG( logger, "vectorPlusVector: result *= alpha" )
 
             if( alpha != 1.0 ) // result *= alpha
             {
@@ -666,7 +666,7 @@ void DenseVector<ValueType>::vectorPlusVector(
         }
         else if( beta == 1.0 ) // result = alpha * result + y
         {
-            LAMA_LOG_DEBUG( logger, "vectorPlusVector: result = alpha * result + y" )
+            SCAI_LOG_DEBUG( logger, "vectorPlusVector: result = alpha * result + y" )
 
             if( alpha != 1.0 ) // result = alpha * result + y
             {
@@ -681,7 +681,7 @@ void DenseVector<ValueType>::vectorPlusVector(
         }
         else // beta != 1.0 && beta != 0.0 --> result = alpha * result + beta * y
         {
-            LAMA_LOG_DEBUG( logger,
+            SCAI_LOG_DEBUG( logger,
                             "vectorPlusVector: result = alpha(" << alpha << ")" << " * result + beta(" << beta << ") * y" )
 
             if( alpha != 1.0 )
@@ -696,7 +696,7 @@ void DenseVector<ValueType>::vectorPlusVector(
     }
     else if( &result == &y ) // result = alpha * x + beta * result
     {
-        LAMA_LOG_DEBUG( logger,
+        SCAI_LOG_DEBUG( logger,
                         "vectorPlusVector: result = alpha(" << alpha << ")" << " * x + beta(" << beta << ") * result" )
 
         // so we do here:  result = beta * result, result += alpha * x
@@ -720,7 +720,7 @@ void DenseVector<ValueType>::vectorPlusVector(
     }
     else // result = alpha * x + beta * y
     {
-        LAMA_LOG_DEBUG( logger,
+        SCAI_LOG_DEBUG( logger,
                         "vectorPlusVector: result = alpha(" << alpha << ")" << " * x + beta(" << beta << ") * y" )
 
         ReadAccess<ValueType> xAccess( x, context );
@@ -732,7 +732,7 @@ void DenseVector<ValueType>::vectorPlusVector(
         sum( nnu, alpha, xAccess.get(), beta, yAccess.get(), resultAccess.get(), NULL );
     }
 
-    LAMA_LOG_INFO( logger, "vectorPlusVector done" )
+    SCAI_LOG_INFO( logger, "vectorPlusVector done" )
 }
 
 template<typename ValueType>
@@ -758,10 +758,10 @@ void DenseVector<ValueType>::assign( const Expression_SV_SV& expression )
     const ValueType beta = exp2.getArg1().getValue<ValueType>();
     const Vector& y = exp2.getArg2();
 
-    LAMA_LOG_DEBUG( logger, *this << ": assign" << alpha << " * x:" << x << " + " << beta << " * y:" << y )
+    SCAI_LOG_DEBUG( logger, *this << ": assign" << alpha << " * x:" << x << " + " << beta << " * y:" << y )
 
-    LAMA_LOG_DEBUG( logger, "dist of x = " << x.getDistribution() )
-    LAMA_LOG_DEBUG( logger, "dist of y = " << y.getDistribution() )
+    SCAI_LOG_DEBUG( logger, "dist of x = " << x.getDistribution() )
+    SCAI_LOG_DEBUG( logger, "dist of y = " << y.getDistribution() )
 
     if( x.getDistribution() != y.getDistribution() )
     {
@@ -786,7 +786,7 @@ void DenseVector<ValueType>::assign( const Expression_SV_SV& expression )
             localAccess.resize( denseX.mLocalValues.size() );
         }
 
-#ifdef LAMA_LOG_DEBUG_ENABLED
+#ifdef SCAI_LOG_DEBUG_ENABLED
         {
             // useful output to identify aliases between arguments
 
@@ -794,7 +794,7 @@ void DenseVector<ValueType>::assign( const Expression_SV_SV& expression )
             ReadAccess<ValueType> rX( denseX.mLocalValues, mContext );
             ReadAccess<ValueType> rY( denseY.mLocalValues, mContext );
 
-            LAMA_LOG_DEBUG( logger, " z = " << rZ.get() << ", x = " << rX.get() << ", y = " << rY.get() )
+            SCAI_LOG_DEBUG( logger, " z = " << rZ.get() << ", x = " << rX.get() << ", y = " << rY.get() )
         }
 #endif
 
@@ -812,7 +812,7 @@ Scalar DenseVector<ValueType>::dotProduct( const Vector& other ) const
 {
 LAMA_REGION( "Vector.Dense.dotP" )
 
-        LAMA_LOG_INFO( logger, "Calculating dot product for " << *this << " * " << other )
+        SCAI_LOG_INFO( logger, "Calculating dot product for " << *this << " * " << other )
 
     // add other->getVectorKind() == DENSE, if sparse is also supported
 
@@ -827,7 +827,7 @@ LAMA_REGION( "Vector.Dense.dotP" )
 
         LAMA_ASSERT_DEBUG( denseOther, "dynamic_cast failed for other = " << other )
 
-        LAMA_LOG_DEBUG( logger, "Calculating local dot product at " << *mContext )
+        SCAI_LOG_DEBUG( logger, "Calculating local dot product at " << *mContext )
 
         ContextPtr loc = mContext; // prefered location is context of this vector
 
@@ -846,11 +846,11 @@ LAMA_REGION( "Vector.Dense.dotP" )
 
         const ValueType localDotProduct = dot( localSize, localRead.get(), 1, otherRead.get(), 1, NULL );
 
-        LAMA_LOG_DEBUG( logger, "Calculating global dot product form local dot product = " << localDotProduct )
+        SCAI_LOG_DEBUG( logger, "Calculating global dot product form local dot product = " << localDotProduct )
 
         ValueType dotProduct = getDistribution().getCommunicator().sum( localDotProduct );
 
-        LAMA_LOG_DEBUG( logger, "Global dot product = " << dotProduct )
+        SCAI_LOG_DEBUG( logger, "Global dot product = " << dotProduct )
 
         return dotProduct;
     }
@@ -884,7 +884,7 @@ void DenseVector<ValueType>::assign( const Vector& other )
 template<typename ValueType>
 void DenseVector<ValueType>::assign( const Scalar value )
 {
-    LAMA_LOG_DEBUG( logger, *this << ": assign " << value )
+    SCAI_LOG_DEBUG( logger, *this << ": assign " << value )
 
     ContextPtr ctx = mLocalValues.getValidContext( mContext->getType() );
     LAMAArrayUtils::assignScalar( mLocalValues, value, ctx );
@@ -893,7 +893,7 @@ void DenseVector<ValueType>::assign( const Scalar value )
 template<typename ValueType>
 void DenseVector<ValueType>::assign( const ContextArray& localValues, DistributionPtr dist )
 {
-    LAMA_LOG_INFO( logger, "assign vector with localValues = " << localValues << ", dist = " << *dist )
+    SCAI_LOG_INFO( logger, "assign vector with localValues = " << localValues << ", dist = " << *dist )
 
     LAMA_ASSERT_EQUAL_ERROR( localValues.size(), dist->getLocalSize() )
 
@@ -953,7 +953,7 @@ void DenseVector<ValueType>::redistribute( DistributionPtr distribution )
 
     if( getDistribution() == *distribution )
     {
-        LAMA_LOG_INFO( logger, *this << " redistribute to same distribution " << *distribution )
+        SCAI_LOG_INFO( logger, *this << " redistribute to same distribution " << *distribution )
 
         // we can keep local/global values, but just set dist pointer
 
@@ -963,7 +963,7 @@ void DenseVector<ValueType>::redistribute( DistributionPtr distribution )
     else if( getDistribution().isReplicated() )
 
     {
-        LAMA_LOG_INFO( logger, *this << ": replicated vector" << " will be localized to " << *distribution )
+        SCAI_LOG_INFO( logger, *this << ": replicated vector" << " will be localized to " << *distribution )
 
         LAMAArray<ValueType> newLocalValues;
 
@@ -992,7 +992,7 @@ void DenseVector<ValueType>::redistribute( DistributionPtr distribution )
 
     else if( distribution->isReplicated() )
     {
-        LAMA_LOG_INFO( logger, *this << " will be replicated" )
+        SCAI_LOG_INFO( logger, *this << " will be replicated" )
 
         // replicate a distributed vector
 
@@ -1009,7 +1009,7 @@ void DenseVector<ValueType>::redistribute( DistributionPtr distribution )
     }
     else
     {
-        LAMA_LOG_INFO( logger, *this << " will be redistributed to " << *distribution )
+        SCAI_LOG_INFO( logger, *this << " will be redistributed to " << *distribution )
 
         // so we have now really a redistibution, build a Redistributor
 
@@ -1042,7 +1042,7 @@ void DenseVector<ValueType>::readVectorHeader(
     File::FileType& fileType,
     long& dataTypeSize )
 {
-    LAMA_LOG_INFO( logger, "Read Vector Header" )
+    SCAI_LOG_INFO( logger, "Read Vector Header" )
 
     char charFileType;
     std::ifstream inFile( filename.c_str(), std::ios::in );
@@ -1082,7 +1082,7 @@ void DenseVector<ValueType>::readVectorHeader(
             COMMON_THROWEXCEPTION( "Invalid header file." )
     }
 
-    LAMA_LOG_TRACE( logger, "Read Vector Header, size = " << size() )
+    SCAI_LOG_TRACE( logger, "Read Vector Header, size = " << size() )
 }
 
 template<typename ValueType>
@@ -1429,7 +1429,7 @@ void DenseVector<ValueType>::readVectorFromFormattedFile( const std::string& fil
     }
 
     inFile.close();
-    LAMA_LOG_TRACE( logger, "read Vector From Formatted File, " << size() << " values" )
+    SCAI_LOG_TRACE( logger, "read Vector From Formatted File, " << size() << " values" )
 }
 
 template<typename ValueType>
@@ -1567,7 +1567,7 @@ void DenseVector<ValueType>::readVectorDataFromBinaryFile( std::fstream &inFile,
 {
     IndexType n = size();
 
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "read DenseVector<" << common::getScalarType<ValueType>() << "> from binary file, size = " << n << ", dataType = " << ( ( common::ScalarType ) type ) )
 
     WriteOnlyAccess<ValueType> writeData( mLocalValues, n );
@@ -1626,7 +1626,7 @@ DenseVector<ValueType>::DenseVector( const DenseVector<ValueType>& other )
 {
     // implementation here can be simpler as DenseVector( const Vector& other )
 
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "Copy of vector of global size " << size() << ", local size " << getDistribution().getLocalSize() )
 
     mLocalValues = other.getLocalValues();

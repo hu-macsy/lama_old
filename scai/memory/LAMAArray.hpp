@@ -245,7 +245,7 @@ protected:
 
     common::IndexType capacity( ContextDataIndex index ) const;
 
-    LAMA_LOG_DECL_STATIC_LOGGER( logger )
+    SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
 };
 
@@ -262,13 +262,13 @@ LAMAArray<ValueType>::LAMAArray( const common::IndexType n, const OtherValueType
 
     if ( n <= 0 )
     {
-        LAMA_LOG_DEBUG( logger, "Zero-sized array with value constructed: " << *this )
+        SCAI_LOG_DEBUG( logger, "Zero-sized array with value constructed: " << *this )
         return;
     }
 
     host.allocate( mSize * sizeof(ValueType) );
 
-    LAMA_LOG_DEBUG( logger, "constructed: " << *this )
+    SCAI_LOG_DEBUG( logger, "constructed: " << *this )
 
     ValueType* hostData = static_cast<ValueType*>( host.get() );
 
@@ -281,12 +281,12 @@ LAMAArray<ValueType>::LAMAArray( const common::IndexType n, const OtherValueType
 
     host.setValid( true );
 
-    LAMA_LOG_DEBUG( logger, "constructed: " << *this )
+    SCAI_LOG_DEBUG( logger, "constructed: " << *this )
 }
 
 /* ---------------------------------------------------------------------------------*/
 
-LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, LAMAArray<ValueType>::logger, "LAMAArray" )
+SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, LAMAArray<ValueType>::logger, "LAMAArray" )
 
 /* ---------------------------------------------------------------------------------*/
 
@@ -296,7 +296,7 @@ LAMAArray<ValueType>::LAMAArray() :
     ContextArray( 0, sizeof( ValueType ) )
 
 {
-    LAMA_LOG_DEBUG( logger, "created new LAMA array: " << *this )
+    SCAI_LOG_DEBUG( logger, "created new LAMA array: " << *this )
 }
 
 /* ---------------------------------------------------------------------------------*/
@@ -311,7 +311,7 @@ LAMAArray<ValueType>::LAMAArray( ContextPtr context ) :
 
     /* ContextDataIndex data = */  mContextDataManager.getContextData( context );
 
-    LAMA_LOG_DEBUG( logger, "created new LAMA array: " << *this )
+    SCAI_LOG_DEBUG( logger, "created new LAMA array: " << *this )
 }
 
 /* ---------------------------------------------------------------------------------*/
@@ -326,7 +326,7 @@ LAMAArray<ValueType>::LAMAArray( MemoryPtr memory ) :
 
     /* ContextDataIndex data = */  mContextDataManager.getMemoryData( memory );
 
-    LAMA_LOG_DEBUG( logger, "created new LAMA array: " << *this )
+    SCAI_LOG_DEBUG( logger, "created new LAMA array: " << *this )
 }
 
 /* ---------------------------------------------------------------------------------*/
@@ -342,7 +342,7 @@ LAMAArray<ValueType>::LAMAArray( const common::IndexType n ) :
     ContextPtr hostPtr = Context::getContextPtr( context::Host );
     mContextDataManager.reserve( hostPtr, n * mValueSize, 0 );
 
-    LAMA_LOG_DEBUG( logger, "created new LAMA array: " << *this )
+    SCAI_LOG_DEBUG( logger, "created new LAMA array: " << *this )
 }
 
 /* ---------------------------------------------------------------------------------*/
@@ -377,7 +377,7 @@ LAMAArray<ValueType>::LAMAArray( const common::IndexType n, const ValueType& val
 
     releaseWriteAccess( index );
 
-    LAMA_LOG_DEBUG( logger, "constructed: " << *this )
+    SCAI_LOG_DEBUG( logger, "constructed: " << *this )
 }
 
 /* ---------------------------------------------------------------------------------*/
@@ -398,7 +398,7 @@ LAMAArray<ValueType>::~LAMAArray()
 {
     // destructor of ContextDataManager does all the release/check stuff
 
-    LAMA_LOG_DEBUG( logger, "~LAMAArray = " << *this )
+    SCAI_LOG_DEBUG( logger, "~LAMAArray = " << *this )
 }
 
 /* ---------------------------------------------------------------------------------*/
@@ -440,7 +440,7 @@ common::ScalarType LAMAArray<ValueType>::getValueType() const
 template<typename ValueType>
 LAMAArray<ValueType>& LAMAArray<ValueType>::operator=( const LAMAArray<ValueType>& other )
 {
-    LAMA_LOG_DEBUG( logger, other << " will be assigned to " << *this )
+    SCAI_LOG_DEBUG( logger, other << " will be assigned to " << *this )
 
     if ( &other == this )
     {
@@ -470,7 +470,7 @@ LAMAArray<ValueType>& LAMAArray<ValueType>::operator=( const LAMAArray<ValueType
 template<typename ValueType>
 void LAMAArray<ValueType>::assign( const LAMAArray<ValueType>& other, ContextPtr context )
 {
-    LAMA_LOG_DEBUG( logger, other << " will be assigned to " << *this )
+    SCAI_LOG_DEBUG( logger, other << " will be assigned to " << *this )
 
     if ( &other == this )
     {
@@ -491,7 +491,7 @@ void LAMAArray<ValueType>::assign( const LAMAArray<ValueType>& other, ContextPtr
 
     mContextDataManager.setValidData( context, other.mContextDataManager, mSize * mValueSize );
  
-    LAMA_LOG_DEBUG( logger, *this << " has now been assigned at " << *context )
+    SCAI_LOG_DEBUG( logger, *this << " has now been assigned at " << *context )
 }
 
 /* ---------------------------------------------------------------------------------*/
@@ -499,7 +499,7 @@ void LAMAArray<ValueType>::assign( const LAMAArray<ValueType>& other, ContextPtr
 template<typename ValueType>
 void LAMAArray<ValueType>::swap( LAMAArray<ValueType>& other )
 {
-    LAMA_LOG_DEBUG( logger, *this << ": swap with other = " << other )
+    SCAI_LOG_DEBUG( logger, *this << ": swap with other = " << other )
 
     // we cannot swap if there is any access for any array
 
@@ -512,7 +512,7 @@ void LAMAArray<ValueType>::swap( LAMAArray<ValueType>& other )
 
     std::swap( mSize, other.mSize );
 
-    LAMA_LOG_DEBUG( logger, *this << ": has been swapped with other = " << other )
+    SCAI_LOG_DEBUG( logger, *this << ": has been swapped with other = " << other )
 }
 
 /* ---------------------------------------------------------------------------------*/
@@ -532,7 +532,7 @@ void LAMAArray<ValueType>::purge()
 
     mSize = 0;
  
-    LAMA_LOG_DEBUG( logger, *this << " purged" )
+    SCAI_LOG_DEBUG( logger, *this << " purged" )
 }
 
 /* ---------------------------------------------------------------------------------*/
@@ -589,7 +589,7 @@ void LAMAArray<ValueType>::resize( ContextDataIndex index, const common::IndexTy
         validSize = allocSize;   // some entries are no more needed
     }
 
-    LAMA_LOG_INFO( logger, *this << ": resize, needed = " << allocSize << " bytes, used = " 
+    SCAI_LOG_INFO( logger, *this << ": resize, needed = " << allocSize << " bytes, used = " 
                          << validSize << " bytes, capacity = " << entry.capacity() << " bytes" )
 
     entry.reserve( allocSize, validSize );

@@ -17,7 +17,7 @@ void subB()
 
 int main()
 {
-    LAMA_LOG_THREAD( "master" )
+    SCAI_LOG_THREAD( "master" )
     LAMA_REGION( "main" )
     subA();
     subB();

@@ -59,7 +59,7 @@ extern cublasHandle_t CUDAContext_cublasHandle;
 namespace lama
 {
 
-LAMA_LOG_DEF_LOGGER( CUDABLAS1::logger, "CUDA.BLAS1" )
+SCAI_LOG_DEF_LOGGER( CUDABLAS1::logger, "CUDA.BLAS1" )
 
 /* ---------------------------------------------------------------------------------------*/
 /*    scale                                                                               */
@@ -108,7 +108,7 @@ void CUDABLAS1::scal( IndexType n, const ValueType alpha, ValueType* x_d, const 
         return;
     }
 
-    LAMA_LOG_DEBUG( logger, "scal<" << getScalarType<ValueType>() << "> of x[" << n << "], alpha = " << alpha )
+    SCAI_LOG_DEBUG( logger, "scal<" << getScalarType<ValueType>() << "> of x[" << n << "], alpha = " << alpha )
 
     LAMA_CHECK_CUDA_ACCESS
 
@@ -189,7 +189,7 @@ ValueType CUDABLAS1::nrm2( IndexType n, const ValueType* x_d, IndexType incX, Sy
         return 0.0;
     }
 
-    LAMA_LOG_DEBUG( logger, "nrm2<" << getScalarType<ValueType>() << "> of x[" << n << "]" )
+    SCAI_LOG_DEBUG( logger, "nrm2<" << getScalarType<ValueType>() << "> of x[" << n << "]" )
 
     LAMA_CHECK_CUDA_ACCESS
 
@@ -271,7 +271,7 @@ ValueType CUDABLAS1::asum( const IndexType n, const ValueType* x_d, const IndexT
         return 0.0;
     }
 
-    LAMA_LOG_DEBUG( logger, "asum<" << getScalarType<ValueType>() << "> of x[" << n << "]" )
+    SCAI_LOG_DEBUG( logger, "asum<" << getScalarType<ValueType>() << "> of x[" << n << "]" )
 
     LAMA_CHECK_CUDA_ACCESS
 
@@ -346,7 +346,7 @@ IndexType CUDABLAS1::iamax( const IndexType n, const ValueType* x_d, const Index
 {
     LAMA_REGION( "CUDA.BLAS1.iamax" )
 
-    LAMA_LOG_DEBUG( logger, "iamax<" << getScalarType<ValueType>() << "> of x[" << n << "]" )
+    SCAI_LOG_DEBUG( logger, "iamax<" << getScalarType<ValueType>() << "> of x[" << n << "]" )
 
     LAMA_CHECK_CUDA_ACCESS
 
@@ -424,7 +424,7 @@ void CUDABLAS1::swap(
         return;
     }
 
-    LAMA_LOG_DEBUG( logger, "swap<" << getScalarType<ValueType>() << "> of x, y with size " << n )
+    SCAI_LOG_DEBUG( logger, "swap<" << getScalarType<ValueType>() << "> of x, y with size " << n )
 
     LAMA_CHECK_CUDA_ACCESS
 
@@ -501,7 +501,7 @@ void CUDABLAS1::copy(
         return;
     }
 
-    LAMA_LOG_DEBUG( logger, "copy<" << getScalarType<ValueType>() << "> of x, y, n = " << n )
+    SCAI_LOG_DEBUG( logger, "copy<" << getScalarType<ValueType>() << "> of x, y, n = " << n )
 
     LAMA_CHECK_CUDA_ACCESS
 
@@ -591,7 +591,7 @@ void CUDABLAS1::axpy(
         return;
     }
 
-    LAMA_LOG_DEBUG( logger, "axpy<" << getScalarType<ValueType>() << "> of x, y, n = " << n << ", alpha = " << alpha )
+    SCAI_LOG_DEBUG( logger, "axpy<" << getScalarType<ValueType>() << "> of x, y, n = " << n << ", alpha = " << alpha )
 
     LAMA_CHECK_CUDA_ACCESS
 
@@ -676,7 +676,7 @@ ValueType CUDABLAS1::dot(
 {
     LAMA_REGION( "CUDA.BLAS1.dot" )
 
-    LAMA_LOG_DEBUG( logger,
+    SCAI_LOG_DEBUG( logger,
                     "dot<" << getScalarType<ValueType>() << ">, n = " << n << ", incX = " << incX << ", incY = " << incY << ", x_d = " << x_d << ", y_d = " << y_d )
 
     if( ( incX <= 0 ) || ( incY <= 0 ) )
@@ -733,7 +733,7 @@ void CUDABLAS1::sum(
         return;
     }
 
-    LAMA_LOG_DEBUG( logger,
+    SCAI_LOG_DEBUG( logger,
                     "sum<" << getScalarType<ValueType>() << ">, n = " << n << ", " << alpha << " * x + " << beta << " * y " )
 
     LAMA_CHECK_CUDA_ACCESS

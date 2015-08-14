@@ -103,11 +103,11 @@ public:
     {
         LAMA_REGION( "MatrixTimesVector" )
 
-        LAMA_LOG_INFO( logger, result << " = " << alpha << " * " << *this << " * " << x << " + " << beta << " * " << y )
+        SCAI_LOG_INFO( logger, result << " = " << alpha << " * " << *this << " * " << x << " + " << beta << " * " << y )
 
         if( &result == &y )
         {
-            LAMA_LOG_DEBUG( logger, "alias: result = y is well handled" )
+            SCAI_LOG_DEBUG( logger, "alias: result = y is well handled" )
         }
         else if( &result == &x )
         {
@@ -150,11 +150,11 @@ public:
     {
         LAMA_REGION( "VectorTimesMatrix" )
 
-        LAMA_LOG_INFO( logger, result << " = " << alpha << " * " << *this << " * " << x << " + " << beta << " * " << y )
+        SCAI_LOG_INFO( logger, result << " = " << alpha << " * " << *this << " * " << x << " + " << beta << " * " << y )
 
         if( &result == &y )
         {
-            LAMA_LOG_DEBUG( logger, "alias: result = y is well handled" )
+            SCAI_LOG_DEBUG( logger, "alias: result = y is well handled" )
         }
         else if( &result == &x )
         {
@@ -192,7 +192,7 @@ public:
     using Matrix::operator=;
 
 protected:
-#ifndef LAMA_LOG_LEVEL_OFF
+#ifndef SCAI_LOG_LEVEL_OFF
     using Matrix::logger;
 #endif
 };

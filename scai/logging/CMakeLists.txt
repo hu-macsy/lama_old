@@ -67,7 +67,7 @@ endforeach ( module ${DEPS} )
 ### add definitions ###
 
 # GenLogger uses also logging
-add_definitions ( -DLAMA_LOG_LEVEL_DEBUG )
+add_definitions ( -DSCAI_LOG_LEVEL_DEBUG )
 
 if ( WIN32 )
 	add_definitions ( -DCOMMON_COMPILING_DLL )

@@ -82,7 +82,7 @@ void typeNameTest( )
 
 BOOST_AUTO_TEST_SUITE( JDSSparseMatrixTest )
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.SparseMatrixTest.JDSSparseMatrixTest" )
+SCAI_LOG_DEF_LOGGER( logger, "Test.SparseMatrixTest.JDSSparseMatrixTest" )
 
 LAMA_AUTO_TEST_CASE_CT( commonTestCases, JDSSparseMatrixTest )
 LAMA_AUTO_TEST_CASE_T( typeNameTest, JDSSparseMatrixTest )

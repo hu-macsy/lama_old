@@ -80,7 +80,7 @@ void typeNameTest( )
 
 BOOST_AUTO_TEST_SUITE( ELLSparseMatrixTest )
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.ELLSparseMatrixTest" )
+SCAI_LOG_DEF_LOGGER( logger, "Test.ELLSparseMatrixTest" )
 
 LAMA_AUTO_TEST_CASE_CT( commonTestCases, ELLSparseMatrixTest )
 LAMA_AUTO_TEST_CASE_T( typeNameTest, ELLSparseMatrixTest )

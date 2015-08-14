@@ -52,7 +52,7 @@ using namespace memory;
 namespace lama
 {
 
-LAMA_LOG_DEF_LOGGER( LAMAArrayUtils::logger, "LAMAArrayUtils" )
+SCAI_LOG_DEF_LOGGER( LAMAArrayUtils::logger, "LAMAArrayUtils" )
 
 template<typename ValueType1,typename ValueType2>
 void LAMAArrayUtils::assignImpl(
@@ -183,7 +183,7 @@ void LAMAArrayUtils::assignScalar( LAMAArray<ValueType>& target, const Scalar& v
 {
     COMMON_ASSERT( context.get(), "No context specified" )
 
-    LAMA_LOG_INFO( logger, target << " = " << value << ", to do at " << *context )
+    SCAI_LOG_INFO( logger, target << " = " << value << ", to do at " << *context )
 
 // assignment takes place at the given context
 

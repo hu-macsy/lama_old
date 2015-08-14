@@ -83,7 +83,7 @@ inline bool ResidualThreshold::isSatisfied( const IterativeSolver& solver )
     switch( mCheckMode )
     {
         case ResidualThreshold::Absolute:
-            LAMA_LOG_DEBUG( logger,
+            SCAI_LOG_DEBUG( logger,
                             "Absolute residual in iteration " << solver.getIterationCount() << " is " << normResult << " should become smaller than precision " << mPrecision )
             ;
             return normResult < mPrecision;
@@ -96,7 +96,7 @@ inline bool ResidualThreshold::isSatisfied( const IterativeSolver& solver )
                 mFirstNormResult = normResult;
             }
 
-            LAMA_LOG_DEBUG( logger,
+            SCAI_LOG_DEBUG( logger,
                             "Relative residual in iteration " << solver.getIterationCount() << " is " << normResult << " divided by firstNormResult " << mFirstNormResult << " is " << normResult/mFirstNormResult << " should become smaller than precision " << mPrecision );
             return ( normResult / mFirstNormResult ) < mPrecision;
         }

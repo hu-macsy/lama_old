@@ -49,7 +49,7 @@ extern std::string testcase;
 
 BOOST_AUTO_TEST_SUITE( P_DIASparseMatrixTest )
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.SparseMatrixTest.P_DIASparseMatrixTest" );
+SCAI_LOG_DEF_LOGGER( logger, "Test.SparseMatrixTest.P_DIASparseMatrixTest" );
 
 typedef boost::mpl::list<float, double> test_types;
 
@@ -61,7 +61,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( commonTestCases, ValueType, test_types )
 
     if ( base_test_case )
     {
-        LAMA_LOG_INFO( logger, "Run test method " << testcase << " in P_DIASparseMatrixTest." );
+        SCAI_LOG_INFO( logger, "Run test method " << testcase << " in P_DIASparseMatrixTest." );
         PSPARSEMATRIXTEST_COMMONTESTCASES( p_diaSparseMatrixtest );
     }
     else

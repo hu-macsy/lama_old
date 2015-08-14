@@ -54,7 +54,7 @@ typedef boost::mpl::list<double, float> test_types;
 
 BOOST_AUTO_TEST_SUITE( CUDA_MatrixStorageTest );
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.CUDA_CUDAMatrixStorageTest" );
+SCAI_LOG_DEF_LOGGER( logger, "Test.CUDA_CUDAMatrixStorageTest" );
 
 /* --------------------------------------------------------------------- */
 

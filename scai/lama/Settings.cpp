@@ -43,7 +43,7 @@ extern char **environ;
 namespace lama
 {
 
-LAMA_LOG_DEF_LOGGER( Settings::logger, "Settings" )
+SCAI_LOG_DEF_LOGGER( Settings::logger, "Settings" )
 
 /* ----------------------------------------------------------------------------- */
 
@@ -112,7 +112,7 @@ bool Settings::getEnvironment( bool& flag, const char* envVarName )
 
     if( !env )
     {
-        LAMA_LOG_INFO( logger, envVarName << " not set, will use other default" )
+        SCAI_LOG_INFO( logger, envVarName << " not set, will use other default" )
 
         return false; // no initialization by environment
     }
@@ -121,7 +121,7 @@ bool Settings::getEnvironment( bool& flag, const char* envVarName )
 
     if( !done )
     {
-        LAMA_LOG_ERROR( logger,
+        SCAI_LOG_ERROR( logger,
                         "Environment variable " << envVarName << "=" << env << ", is illegal setting, assume FALSE" )
 
         flag = false;
@@ -136,7 +136,7 @@ bool Settings::getEnvironment( int& val, const char* envVarName )
 
     if( !env )
     {
-        LAMA_LOG_INFO( logger, envVarName << " not set, will select by compute capability" )
+        SCAI_LOG_INFO( logger, envVarName << " not set, will select by compute capability" )
 
         return false; // no initialization by environment
     }
@@ -145,7 +145,7 @@ bool Settings::getEnvironment( int& val, const char* envVarName )
 
     if( !done )
     {
-        LAMA_LOG_ERROR( logger,
+        SCAI_LOG_ERROR( logger,
                         "Environment variable " << envVarName << "=" << env << ", is illegal setting, assume FALSE" )
 
         return false;
@@ -162,12 +162,12 @@ bool Settings::getEnvironment( std::string& val, const char* envVarName )
     {
         val = env;
 
-        LAMA_LOG_INFO( logger, envVarName << " = " << val );
+        SCAI_LOG_INFO( logger, envVarName << " = " << val );
 
         return true;
     }
 
-    LAMA_LOG_INFO( logger, envVarName << " not set" );
+    SCAI_LOG_INFO( logger, envVarName << " not set" );
 
     return false;
 }
@@ -216,7 +216,7 @@ bool Settings::getEnvironment( std::string& val, const char* envVarName, const C
         }
     }
 
-    LAMA_LOG_INFO( logger, comm << ": " << envVarName << "=" << val );
+    SCAI_LOG_INFO( logger, comm << ": " << envVarName << "=" << val );
 
     return hasSet;
 }

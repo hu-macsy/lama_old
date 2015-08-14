@@ -41,7 +41,7 @@
 
 using namespace memory;
 
-LAMA_LOG_DEF_LOGGER( logger, "CudaExample" )
+SCAI_LOG_DEF_LOGGER( logger, "CudaExample" )
 
 extern cusparseHandle_t CUDAContext_cusparseHandle;
 

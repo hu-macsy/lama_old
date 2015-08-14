@@ -653,7 +653,7 @@ private:
      */
     SparseMatrix();
 
-    LAMA_LOG_DECL_STATIC_LOGGER( logger )
+    SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
     /** This method sets a row-distributed matrix corresponding to the distribution of this matrix.
      *  ( no column distribution, no halo ).

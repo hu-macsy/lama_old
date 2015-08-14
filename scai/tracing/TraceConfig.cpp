@@ -56,7 +56,7 @@ bool TraceConfig::globalTraceFlag = true;
 
 /* -------------------------------------------------------------------------- */
 
-LAMA_LOG_DEF_LOGGER( TraceConfig::logger, "TraceConfig" )
+SCAI_LOG_DEF_LOGGER( TraceConfig::logger, "TraceConfig" )
 
 /* -------------------------------------------------------------------------- */
 
@@ -99,7 +99,7 @@ extern "C" void VT_User_trace_off__();
 
 void TraceConfig::setKey( const std::string& key, const std::string& value )
 {
-    LAMA_LOG_INFO( logger, "Set trace key " << key << " = " << value )
+    SCAI_LOG_INFO( logger, "Set trace key " << key << " = " << value )
 
     if ( key == "PREFIX" )
     {
@@ -107,7 +107,7 @@ void TraceConfig::setKey( const std::string& key, const std::string& value )
     }
     else
     {
-        LAMA_LOG_WARN( logger, key << " is unknown key for TRACE configuration" )
+        SCAI_LOG_WARN( logger, key << " is unknown key for TRACE configuration" )
     }
 }
 
@@ -117,14 +117,14 @@ void TraceConfig::enableVampirTrace( bool flag )
 {
     mVampirTraceEnabled = flag;
 #if defined( USE_VAMPIRTRACE )
-    LAMA_LOG_INFO( logger, "enableVampirTrace: flag =  " << flag << ", no context" )
+    SCAI_LOG_INFO( logger, "enableVampirTrace: flag =  " << flag << ", no context" )
     VTInterface::enable( flag );
 #else
-    LAMA_LOG_INFO( logger, "enableVampirTrace: flag =  " << flag << ", VAMPIRTRACE not used" )
+    SCAI_LOG_INFO( logger, "enableVampirTrace: flag =  " << flag << ", VAMPIRTRACE not used" )
 
     if ( mVampirTraceEnabled )
     {
-        LAMA_LOG_WARN( logger, "TRACE:vt ignored, define USE_VAMPIRTRACE for compilation." )
+        SCAI_LOG_WARN( logger, "TRACE:vt ignored, define USE_VAMPIRTRACE for compilation." )
     }
 
 #endif
@@ -134,7 +134,7 @@ void TraceConfig::enableVampirTrace( bool flag )
 
 void TraceConfig::setParam( const std::string& param )
 {
-    LAMA_LOG_INFO( logger, "Set trace config value : " << param )
+    SCAI_LOG_INFO( logger, "Set trace config value : " << param )
 
     if ( param == "VT" )
     {
@@ -154,7 +154,7 @@ void TraceConfig::setParam( const std::string& param )
     }
     else
     {
-        LAMA_LOG_WARN( logger, param << " is unknown option for TRACE" )
+        SCAI_LOG_WARN( logger, param << " is unknown option for TRACE" )
     }
 }
 
@@ -212,7 +212,7 @@ TraceConfig::TraceConfig()
     }
     else
     {
-        LAMA_LOG_WARN( logger,
+        SCAI_LOG_WARN( logger,
                        LAMA_ENV_TRACE_CONFIG << " not set, tracing is disabled."
                        << " Enable by " << LAMA_ENV_TRACE_CONFIG << "=time|ct[:vt][:thread]" )
     }
@@ -247,14 +247,14 @@ TraceConfig::TraceConfig()
 
     // save id of this main thread
     mMaster = Thread::getSelf();
-    LAMA_LOG_INFO( logger, "ThreadConfig: enabled = " << mEnabled )
+    SCAI_LOG_INFO( logger, "ThreadConfig: enabled = " << mEnabled )
 }
 
 /* -------------------------------------------------------------------------- */
 
 TraceConfig::~TraceConfig()
 {
-    LAMA_LOG_DEBUG( logger, "Entering Destructor." )
+    SCAI_LOG_DEBUG( logger, "Entering Destructor." )
 
     if ( mVampirTraceEnabled )
     {
@@ -264,8 +264,8 @@ TraceConfig::~TraceConfig()
 
     if ( !mTimeTraceEnabled )
     {
-        LAMA_LOG_INFO( logger, "~TraceConfig, no output file" )
-        LAMA_LOG_DEBUG( logger, "Leaving Destructor." )
+        SCAI_LOG_INFO( logger, "~TraceConfig, no output file" )
+        SCAI_LOG_DEBUG( logger, "Leaving Destructor." )
         return;
     }
 
@@ -280,14 +280,14 @@ TraceConfig::~TraceConfig()
     }
 
     */
-    LAMA_LOG_INFO( logger, "~TraceConfig, output file = " << fileName.str() )
+    SCAI_LOG_INFO( logger, "~TraceConfig, output file = " << fileName.str() )
     std::ofstream outfile;
     outfile.open( fileName.str().c_str(), std::ios::out );
 
     if ( outfile.fail() )
     {
         // do not throw exception as only tracing caused problem
-        LAMA_LOG_ERROR( logger, "Could not open " << fileName.str() << " for writing time information." )
+        SCAI_LOG_ERROR( logger, "Could not open " << fileName.str() << " for writing time information." )
         return;
     }
 
@@ -301,7 +301,7 @@ TraceConfig::~TraceConfig()
     }
 
     outfile.close();
-    LAMA_LOG_DEBUG( logger, "~TraceConfig finished" )
+    SCAI_LOG_DEBUG( logger, "~TraceConfig finished" )
 }
 
 /* -------------------------------------------------------------------------- */

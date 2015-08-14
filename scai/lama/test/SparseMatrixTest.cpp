@@ -61,7 +61,7 @@
 using namespace lama;
 using namespace memory;
 
-LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename MatrixType>, SparseMatrixTest<MatrixType>::logger,
+SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename MatrixType>, SparseMatrixTest<MatrixType>::logger,
                               "Test.SparseMatrixTest" )
 
 /* ----------------------------------------------------------------------------- */
@@ -70,7 +70,7 @@ template<typename MatrixType>
 void SparseMatrixTest<MatrixType>::setUp()
 {
     std::string prefix = Configuration::getInstance().getPath();
-    LAMA_LOG_INFO( logger, "prefix = " << prefix );
+    SCAI_LOG_INFO( logger, "prefix = " << prefix );
     m_FormattedInputFile = prefix + "/2D_poisson_256_formatted.frm";
     m_XDRInputFile = prefix + "/2D_poisson_256_xdr.frm";
     m_TestOutputFileFor = prefix + "/test_matrix_formatted.tmp.frm";
@@ -83,7 +83,7 @@ void SparseMatrixTest<MatrixType>::setUp()
 
 LAMA_COMMON_TEST_CASE_TEMPLATE( SparseMatrixTest, MatrixType, clearTest )
 
-LAMA_LOG_INFO( logger, "clearTest" )
+SCAI_LOG_INFO( logger, "clearTest" )
 
 typedef typename MatrixType::MatrixValueType ValueType;
 
@@ -110,7 +110,7 @@ LAMA_COMMON_TEST_CASE_TEMPLATE_END();
 
 LAMA_COMMON_TEST_CASE_TEMPLATE( SparseMatrixTest, MatrixType, cTorTest )
 
-LAMA_LOG_INFO( logger, "cTorTest" );
+SCAI_LOG_INFO( logger, "cTorTest" );
 
 //TODO: to P_ test?
 const IndexType n = 4;
@@ -121,21 +121,21 @@ DistributionPtr bdist( new BlockDistribution( n, comm ) );
 DistributionPtr cdist( new CyclicDistribution( n, 1, comm ) );
 DistributionPtr rdist( new NoDistribution( n ) );
 
-//LAMA_LOG_INFO( logger, "Matrix( bdist = " << *bdist << ")" );
+//SCAI_LOG_INFO( logger, "Matrix( bdist = " << *bdist << ")" );
 //
 //MatrixType matrix0( bdist );
 //
 //BOOST_CHECK_EQUAL( matrix0.getNumRows() , n );
 //BOOST_CHECK_EQUAL( matrix0.getNumColumns() , n );
 
-LAMA_LOG_INFO( logger, "Matrix( bdist = " << *bdist << ", bdist = " << *bdist << ")" );
+SCAI_LOG_INFO( logger, "Matrix( bdist = " << *bdist << ", bdist = " << *bdist << ")" );
 
 MatrixType matrix1( bdist, bdist );
 
 BOOST_CHECK_EQUAL( matrix1.getNumRows() , n );
 BOOST_CHECK_EQUAL( matrix1.getNumColumns() , n );
 
-LAMA_LOG_INFO( logger, "Matrix( bdist = " << *bdist << ", rdist = " << *bdist << ")" );
+SCAI_LOG_INFO( logger, "Matrix( bdist = " << *bdist << ", rdist = " << *bdist << ")" );
 
 MatrixType matrix2( bdist, rdist );
 
@@ -147,13 +147,13 @@ MatrixType matrix3;
 BOOST_CHECK_EQUAL( matrix3.getNumRows() , 0 );
 BOOST_CHECK_EQUAL( matrix3.getNumColumns() , 0 );
 
-LAMA_LOG_INFO( logger, "Matrix( bdist = " << *bdist << ", cdist = " << *cdist << ")" );
+SCAI_LOG_INFO( logger, "Matrix( bdist = " << *bdist << ", cdist = " << *cdist << ")" );
 
 MatrixType matrix4;
 
 matrix4.setIdentity( bdist );
 
-LAMA_LOG_INFO( logger, "Matrix( " << matrix4 << " )" );
+SCAI_LOG_INFO( logger, "Matrix( " << matrix4 << " )" );
 
 MatrixType matrix5 ( matrix4 );
 
@@ -171,62 +171,62 @@ template<typename MatrixType1>
 template<typename MatrixType2>
 void SparseMatrixTest<MatrixType1>::testConversionsImpl()
 {
-    LAMA_LOG_INFO( logger, "testConversionsImpl<" << typeid( MatrixType1 ).name() << "," << typeid( MatrixType2 ).name() << ">" );
+    SCAI_LOG_INFO( logger, "testConversionsImpl<" << typeid( MatrixType1 ).name() << "," << typeid( MatrixType2 ).name() << ">" );
     typedef MatrixType2 MatrixType;
     typedef typename MatrixType2::MatrixValueType ValueType;
-    LAMA_LOG_DEBUG( logger, "conversion: n4m4" );
+    SCAI_LOG_DEBUG( logger, "conversion: n4m4" );
     CSRSparseMatrix<ValueType> csr_n4m4TestMatrix1( TestSparseMatrices::n4m4TestMatrix1<ValueType>() );
     MatrixType n4m4TestMatrix1( csr_n4m4TestMatrix1 );
     testSameMatrix( n4m4TestMatrix1, csr_n4m4TestMatrix1 );
-    LAMA_LOG_DEBUG( logger, "conversion: n4m4Inverse" );
+    SCAI_LOG_DEBUG( logger, "conversion: n4m4Inverse" );
     CSRSparseMatrix<ValueType> csr_n4m4InverseTestMatrix1( TestSparseMatrices::n4m4InverseTestMatrix1<ValueType>() );
     MatrixType n4m4InverseTestMatrix1( csr_n4m4InverseTestMatrix1 );
     testSameMatrix( n4m4InverseTestMatrix1, csr_n4m4InverseTestMatrix1 );
-    LAMA_LOG_DEBUG( logger, "conversion: n4m4Diagonal" );
+    SCAI_LOG_DEBUG( logger, "conversion: n4m4Diagonal" );
     CSRSparseMatrix<ValueType> csr_n4m4DiagonalMatrix( TestSparseMatrices::n4m4DiagonalMatrix<ValueType>() );
     MatrixType n4m4DiagonalMatrix( csr_n4m4DiagonalMatrix );
     testSameMatrix( n4m4DiagonalMatrix, csr_n4m4DiagonalMatrix );
-    LAMA_LOG_DEBUG( logger, "conversion: n4m4Symmetric" );
+    SCAI_LOG_DEBUG( logger, "conversion: n4m4Symmetric" );
     CSRSparseMatrix<ValueType> csr_n4m4SymmetricMatrix( TestSparseMatrices::n4m4SymmetricMatrix<ValueType>() );
     MatrixType n4m4SymmetricMatrix( csr_n4m4SymmetricMatrix );
     testSameMatrix( n4m4SymmetricMatrix, csr_n4m4SymmetricMatrix );
-    LAMA_LOG_DEBUG( logger, "conversion: n4m6NonSquare" );
+    SCAI_LOG_DEBUG( logger, "conversion: n4m6NonSquare" );
     CSRSparseMatrix<ValueType> csr_n4m6NoneSquareMatrix( TestSparseMatrices::n4m6NoneSquareMatrix<ValueType>() );
     MatrixType n4m6NoneSquareMatrix( csr_n4m6NoneSquareMatrix );
     testSameMatrix( n4m6NoneSquareMatrix, csr_n4m6NoneSquareMatrix );
-    LAMA_LOG_DEBUG( logger, "conversion: n4m4A1" );
+    SCAI_LOG_DEBUG( logger, "conversion: n4m4A1" );
     CSRSparseMatrix<ValueType> csr_n4m4MatrixA1( TestSparseMatrices::n4m4MatrixA1<ValueType>() );
     MatrixType n4m4MatrixA1( csr_n4m4MatrixA1 );
     testSameMatrix( n4m4MatrixA1, csr_n4m4MatrixA1 );
-    LAMA_LOG_DEBUG( logger, "conversion: n4m4A2" );
+    SCAI_LOG_DEBUG( logger, "conversion: n4m4A2" );
     CSRSparseMatrix<ValueType> csr_n4m4MatrixA2( TestSparseMatrices::n4m4MatrixA2<ValueType>() );
     MatrixType n4m4MatrixA2( csr_n4m4MatrixA2 );
     testSameMatrix( n4m4MatrixA2, csr_n4m4MatrixA2 );
-    LAMA_LOG_DEBUG( logger, "conversion: n4m4ARes" );
+    SCAI_LOG_DEBUG( logger, "conversion: n4m4ARes" );
     CSRSparseMatrix<ValueType> csr_n4m4MatrixARes( TestSparseMatrices::n4m4MatrixARes<ValueType>() );
     MatrixType n4m4MatrixARes( csr_n4m4MatrixARes );
     testSameMatrix( n4m4MatrixARes, csr_n4m4MatrixARes );
-    LAMA_LOG_DEBUG( logger, "conversion: n4m4B1" );
+    SCAI_LOG_DEBUG( logger, "conversion: n4m4B1" );
     CSRSparseMatrix<ValueType> csr_n4m4MatrixB1( TestSparseMatrices::n4m4MatrixB1<ValueType>() );
     MatrixType n4m4MatrixB1( csr_n4m4MatrixB1 );
     testSameMatrix( n4m4MatrixB1, csr_n4m4MatrixB1 );
-    LAMA_LOG_DEBUG( logger, "conversion: n4m4B2" );
+    SCAI_LOG_DEBUG( logger, "conversion: n4m4B2" );
     CSRSparseMatrix<ValueType> csr_n4m4MatrixB2( TestSparseMatrices::n4m4MatrixB2<ValueType>() );
     MatrixType n4m4MatrixB2( csr_n4m4MatrixB2 );
     testSameMatrix( n4m4MatrixB2, csr_n4m4MatrixB2 );
-    LAMA_LOG_DEBUG( logger, "conversion: n8m4Interpol" );
+    SCAI_LOG_DEBUG( logger, "conversion: n8m4Interpol" );
     CSRSparseMatrix<ValueType> csr_n8m4Interpol( TestSparseMatrices::n8m4Interpol<ValueType>() );
     MatrixType n8m4Interpol( csr_n8m4Interpol );
     testSameMatrix( n8m4Interpol, csr_n8m4Interpol );
-    LAMA_LOG_DEBUG( logger, "conversion: n8m4InterpolTranspose" );
+    SCAI_LOG_DEBUG( logger, "conversion: n8m4InterpolTranspose" );
     CSRSparseMatrix<ValueType> csr_n4m8InterpolTranspose( TestSparseMatrices::n4m8InterpolTranspose<ValueType>() );
     MatrixType n4m8InterpolTranspose( csr_n4m8InterpolTranspose );
     testSameMatrix( n4m8InterpolTranspose, csr_n4m8InterpolTranspose );
-    LAMA_LOG_DEBUG( logger, "conversion: n8m8Laplace1D" );
+    SCAI_LOG_DEBUG( logger, "conversion: n8m8Laplace1D" );
     CSRSparseMatrix<ValueType> csr_n8m8Laplace1D( TestSparseMatrices::n8m8Laplace1D<ValueType>() );
     MatrixType n8m8Laplace1D( csr_n8m8Laplace1D );
     testSameMatrix( n8m8Laplace1D, csr_n8m8Laplace1D );
-    LAMA_LOG_DEBUG( logger, "conversion: n4m4Galerkin" );
+    SCAI_LOG_DEBUG( logger, "conversion: n4m4Galerkin" );
     CSRSparseMatrix<ValueType> csr_n4m4Galerkin( TestSparseMatrices::n4m4Galerkin<ValueType>() );
     MatrixType n4m4Galerkin( csr_n4m4Galerkin );
     testSameMatrix( n4m4Galerkin, csr_n4m4Galerkin );
@@ -234,7 +234,7 @@ void SparseMatrixTest<MatrixType1>::testConversionsImpl()
 
 LAMA_COMMON_TEST_CASE_TEMPLATE( SparseMatrixTest, MatrixType, testConversions )
 
-LAMA_LOG_INFO( logger, "testConversions" );
+SCAI_LOG_INFO( logger, "testConversions" );
 
 testConversionsImpl<CSRSparseMatrix<float> >();
 testConversionsImpl<CSRSparseMatrix<double> >();
@@ -252,7 +252,7 @@ LAMA_COMMON_TEST_CASE_TEMPLATE_END();
 template<typename MatrixType>
 void SparseMatrixTest<MatrixType>::matrixMultTestImpl( const Matrix& a, const Matrix& b, const Matrix& result )
 {
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "matrixMultTestImpl: verify a * b = result, with a = " << a << ", b = " << b << ", result = " << result );
     MatrixType csrResult;
     MatrixType A( a );
@@ -273,7 +273,7 @@ void SparseMatrixTest<MatrixType>::matrixMultTestImpl( const Matrix& a, const Ma
 
 LAMA_COMMON_TEST_CASE_TEMPLATE( SparseMatrixTest, MatrixType, testMultiplication )
 
-LAMA_LOG_INFO( logger, "testMultiplication" );
+SCAI_LOG_INFO( logger, "testMultiplication" );
 
 typedef typename MatrixType::MatrixValueType ValueType;
 
@@ -305,7 +305,7 @@ const CSRSparseMatrix<ValueType> matrixB =
 const CSRSparseMatrix<ValueType> matrixC =
     TestSparseMatrices::n4m4MatrixARes<ValueType>();
 
-LAMA_LOG_INFO( logger, "verify: n4m4MatrixA1 * n4m4MatrixA2 = n4m4MatrixARes" );
+SCAI_LOG_INFO( logger, "verify: n4m4MatrixA1 * n4m4MatrixA2 = n4m4MatrixARes" );
 
 matrixMultTestImpl( matrixA, matrixB, matrixC );
 
@@ -318,7 +318,7 @@ const CSRSparseMatrix<ValueType> matrixE =
 const CSRSparseMatrix<ValueType> matrixF =
     TestSparseMatrices::n4m4MatrixBRes<ValueType>();
 
-LAMA_LOG_INFO( logger, "verify: n4m4MatrixB1 * n4m4MatrixB2 = n4m4MatrixBRes" );
+SCAI_LOG_INFO( logger, "verify: n4m4MatrixB1 * n4m4MatrixB2 = n4m4MatrixBRes" );
 
 matrixMultTestImpl( matrixD, matrixE, matrixF );
 
@@ -328,7 +328,7 @@ const CSRSparseMatrix<ValueType> matrixG =
 const CSRSparseMatrix<ValueType> matrixGxG =
     TestSparseMatrices::n4m4MatrixCRes<ValueType>();
 
-LAMA_LOG_INFO( logger, "verify: n4m4MatrixC1 * n4m4MatrixC1 = n4m4MatrixCRes" );
+SCAI_LOG_INFO( logger, "verify: n4m4MatrixC1 * n4m4MatrixC1 = n4m4MatrixCRes" );
 
 matrixMultTestImpl( matrixG, matrixG, matrixGxG );
 
@@ -341,7 +341,7 @@ const CSRSparseMatrix<ValueType> matrixB1 =
 const CSRSparseMatrix<ValueType> matrixC1 =
     TestSparseMatrices::n6m6MatrixDRes<ValueType>();
 
-LAMA_LOG_INFO( logger, "verify: n6m4MatrixD1 * n4m4MatrixD2 = n4m4MatrixDRes" );
+SCAI_LOG_INFO( logger, "verify: n6m4MatrixD1 * n4m4MatrixD2 = n4m4MatrixDRes" );
 
 matrixMultTestImpl( matrixA1, matrixB1, matrixC1 );
 
@@ -354,7 +354,7 @@ const CSRSparseMatrix<ValueType> matrixE1 =
 const CSRSparseMatrix<ValueType> matrixF1 =
     TestSparseMatrices::n6m3MatrixERes<ValueType>();
 
-LAMA_LOG_INFO( logger, "verify: n6m4MatrixE1 * n4m3MatrixE2 = n6m3MatrixDRes" );
+SCAI_LOG_INFO( logger, "verify: n6m4MatrixE1 * n4m3MatrixE2 = n6m3MatrixDRes" );
 
 matrixMultTestImpl( matrixD1, matrixE1, matrixF1 );
 
@@ -368,7 +368,7 @@ CSRSparseMatrix<ValueType> interpolationMatrixTransp =
 
 interpolationMatrixTransp.assignTranspose( interpolationMatrix );
 
-LAMA_LOG_INFO( logger, "verify: n8m8Laplace1D * n8m4Interpol_Trans = n8m4GalerkinTemp" );
+SCAI_LOG_INFO( logger, "verify: n8m8Laplace1D * n8m4Interpol_Trans = n8m4GalerkinTemp" );
 
 matrixMultTestImpl( laplace1Dmatrix, interpolationMatrix, TestSparseMatrices::n8m4GalerkinTemp<ValueType>() );
 
@@ -400,7 +400,7 @@ void SparseMatrixTest<MatrixType>::matrixEqualityCheck( const MatrixType& a, con
 
 LAMA_COMMON_TEST_CASE_TEMPLATE( SparseMatrixTest, MatrixType, MatrixExpressionTest )
 
-LAMA_LOG_INFO( logger, "MatrixExpressionTest" )
+SCAI_LOG_INFO( logger, "MatrixExpressionTest" )
 
 //Creating test objects
 typedef typename MatrixType::MatrixValueType ValueType;
@@ -482,7 +482,7 @@ LAMA_COMMON_TEST_CASE_TEMPLATE_END();
 
 LAMA_COMMON_TEST_CASE_TEMPLATE( SparseMatrixTest, MatrixType, MatrixCtorExpressionTest )
 
-LAMA_LOG_INFO( logger, "MatrixCtorExpressionTest" );
+SCAI_LOG_INFO( logger, "MatrixCtorExpressionTest" );
 
 //Creating test objects
 typedef typename MatrixType::MatrixValueType ValueType;

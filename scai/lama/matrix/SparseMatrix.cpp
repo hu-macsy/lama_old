@@ -66,7 +66,7 @@ namespace lama
 
 using common::shared_ptr;
 
-LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, SparseMatrix<ValueType>::logger, "Matrix.SparseMatrix" )
+SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, SparseMatrix<ValueType>::logger, "Matrix.SparseMatrix" )
 
 /* ---------------------------------------------------------------------------------------*/
 
@@ -159,7 +159,7 @@ SparseMatrix<ValueType>::SparseMatrix(
 
     CRTPMatrix<SparseMatrix<ValueType>,ValueType>( rowDist, colDist )
 {
-    LAMA_LOG_INFO( logger, "Construct sparse matrix with finalized local, halo storage + Halo" )
+    SCAI_LOG_INFO( logger, "Construct sparse matrix with finalized local, halo storage + Halo" )
 
     // TODO: asserts for correct sizes of all relevant sizes
 
@@ -181,7 +181,7 @@ SparseMatrix<ValueType>::SparseMatrix(
 template<typename ValueType>
 SparseMatrix<ValueType>& SparseMatrix<ValueType>::operator=( const SparseMatrix& matrix )
 {
-    LAMA_LOG_INFO( logger, " = SparseMatrix : " << matrix )
+    SCAI_LOG_INFO( logger, " = SparseMatrix : " << matrix )
     assign( matrix );
     return *this;
 }
@@ -318,7 +318,7 @@ void SparseMatrix<ValueType>::purge()
 template<typename ValueType>
 void SparseMatrix<ValueType>::allocate( DistributionPtr distribution, DistributionPtr colDistribution )
 {
-    LAMA_LOG_DEBUG( logger,
+    SCAI_LOG_DEBUG( logger,
                     *this << ": allocate with row dist = " << *distribution << ", col dist = " << *colDistribution )
 
     Matrix::setDistributedMatrix( distribution, colDistribution );
@@ -348,7 +348,7 @@ void SparseMatrix<ValueType>::allocate( const IndexType numRows, const IndexType
 template<typename ValueType>
 void SparseMatrix<ValueType>::assign( const Matrix& matrix )
 {
-    LAMA_LOG_INFO( logger, "assign " << matrix << " to " << *this )
+    SCAI_LOG_INFO( logger, "assign " << matrix << " to " << *this )
 
     this->setContext( matrix.getContextPtr() );
 
@@ -380,7 +380,7 @@ void SparseMatrix<ValueType>::assign( const Matrix& matrix )
 template<typename ValueType>
 void SparseMatrix<ValueType>::assignTranspose( const Matrix& matrix )
 {
-    LAMA_LOG_INFO( logger, "assign transposed " << matrix << " to " << *this )
+    SCAI_LOG_INFO( logger, "assign transposed " << matrix << " to " << *this )
 
     const SparseMatrix<ValueType>* sparseMatrix = dynamic_cast<const SparseMatrix<ValueType>*>( &matrix );
 
@@ -400,7 +400,7 @@ template<typename ValueType>
 void SparseMatrix<ValueType>::assignTransposeImpl( const SparseMatrix<ValueType>& matrix )
 
 {
-    LAMA_LOG_INFO( logger, "transpose sparse matrix with same value type, switch row/col distributions" )
+    SCAI_LOG_INFO( logger, "transpose sparse matrix with same value type, switch row/col distributions" )
 
     // assign matrix properties
 
@@ -424,13 +424,13 @@ void SparseMatrix<ValueType>::assignTransposeImpl( const SparseMatrix<ValueType>
     {
         // rows and columns are both distributed
 
-        LAMA_LOG_INFO( logger, "local transpose of " << matrix.getLocalStorage() )
+        SCAI_LOG_INFO( logger, "local transpose of " << matrix.getLocalStorage() )
 
         mLocalData->assignTranspose( matrix.getLocalStorage() );
 
-        LAMA_LOG_INFO( logger, "local transposed = " << mLocalData )
+        SCAI_LOG_INFO( logger, "local transposed = " << mLocalData )
 
-        LAMA_LOG_INFO( logger, "halo transpose of " << matrix.getHaloStorage() )
+        SCAI_LOG_INFO( logger, "halo transpose of " << matrix.getHaloStorage() )
 
         LAMAArray<IndexType> sendIA;
         LAMAArray<IndexType> sendSizes;
@@ -439,14 +439,14 @@ void SparseMatrix<ValueType>::assignTransposeImpl( const SparseMatrix<ValueType>
 
         matrix.getHaloStorage().buildCSCData( sendIA, sendJA, sendValues );
 
-        LAMA_LOG_DEBUG( logger,
+        SCAI_LOG_DEBUG( logger,
                         matrix.getHaloStorage() << ": CSC data, IA = " << sendIA << ", JA = " << sendJA << ", Values = " << sendValues )
 
         // for initial communication we need the sizes and not the offsets
 
         _MatrixStorage::offsets2sizes( sendSizes, sendIA );
 
-        LAMA_LOG_DEBUG( logger, "sendSizes with " << sendSizes.size() << " entries" )
+        SCAI_LOG_DEBUG( logger, "sendSizes with " << sendSizes.size() << " entries" )
 
         LAMAArray<IndexType> recvSizes;
 
@@ -536,11 +536,11 @@ void SparseMatrix<ValueType>::assign( const SparseMatrix<ValueType>& matrix )
 {
     if( this == &matrix )
     {
-        LAMA_LOG_INFO( logger, "self assign sparse matrix = " << matrix )
+        SCAI_LOG_INFO( logger, "self assign sparse matrix = " << matrix )
     }
     else
     {
-        LAMA_LOG_INFO( logger, "copy/convert assign sparse matrix = " << matrix )
+        SCAI_LOG_INFO( logger, "copy/convert assign sparse matrix = " << matrix )
     }
 
     Matrix::setDistributedMatrix( matrix.getDistributionPtr(), matrix.getColDistributionPtr() );
@@ -557,7 +557,7 @@ void SparseMatrix<ValueType>::assign( const SparseMatrix<ValueType>& matrix )
 template<typename ValueType>
 void SparseMatrix<ValueType>::assign( const _MatrixStorage& storage )
 {
-    LAMA_LOG_INFO( logger, "assign matrix storage = " << storage )
+    SCAI_LOG_INFO( logger, "assign matrix storage = " << storage )
 
     const IndexType numRows = storage.getNumRows();
     const IndexType numColumns = storage.getNumColumns();
@@ -576,7 +576,7 @@ void SparseMatrix<ValueType>::assign( const _MatrixStorage& storage )
 template<typename ValueType>
 void SparseMatrix<ValueType>::assign( const _MatrixStorage& storage, DistributionPtr rowDist, DistributionPtr colDist )
 {
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "assign storage = " << storage << ", row dist = " << *rowDist << ", col dist = " << *colDist );
 
     LAMA_ASSERT_EQUAL_ERROR( storage.getNumColumns(), colDist->getGlobalSize() )
@@ -623,7 +623,7 @@ void SparseMatrix<ValueType>::assign( const _MatrixStorage& storage, Distributio
             comm << ": " << storage << ": does not fit to row distribution " << *rowDist << ", isLocal = " << isLocal << ", isGlobal = " << isGlobal )
     }
 
-    LAMA_LOG_INFO( logger, "assign done: " << *this );
+    SCAI_LOG_INFO( logger, "assign done: " << *this );
 }
 
 /* -------------------------------------------------------------------------- */
@@ -668,7 +668,7 @@ void SparseMatrix<ValueType>::redistribute( DistributionPtr rowDistributionPtr, 
 {
     LAMA_REGION( "Mat.Sp.redistribute" )
 
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "redistribute " << *this << ": new row dist = " << *rowDistributionPtr << ", new col dist = " << *colDistributionPtr )
 
     LAMA_ASSERT_ERROR(
@@ -693,7 +693,7 @@ void SparseMatrix<ValueType>::redistribute( DistributionPtr rowDistributionPtr, 
 
     if( getDistribution() == *oldRowDistributionPtr && getColDistribution() == *oldColDistributionPtr )
     {
-        LAMA_LOG_INFO( logger, "row/column distribution are same" )
+        SCAI_LOG_INFO( logger, "row/column distribution are same" )
         return;
     }
 
@@ -703,11 +703,11 @@ void SparseMatrix<ValueType>::redistribute( DistributionPtr rowDistributionPtr, 
 
     if( oldColDistributionPtr->isReplicated() )
     {
-        LAMA_LOG_DEBUG( logger, "No column distribution, no halo" )
+        SCAI_LOG_DEBUG( logger, "No column distribution, no halo" )
     }
     else
     {
-        LAMA_LOG_DEBUG( logger, "remove halo, join local = " << *mLocalData << " and halo = " << *mHaloData )
+        SCAI_LOG_DEBUG( logger, "remove halo, join local = " << *mLocalData << " and halo = " << *mHaloData )
 
         bool keepDiagonalProperty = ( *oldColDistributionPtr == *oldRowDistributionPtr );
 
@@ -717,7 +717,7 @@ void SparseMatrix<ValueType>::redistribute( DistributionPtr rowDistributionPtr, 
 
         mHalo.clear();
 
-        LAMA_LOG_INFO( logger, "removed column distribution / halo, local data = " << *mLocalData )
+        SCAI_LOG_INFO( logger, "removed column distribution / halo, local data = " << *mLocalData )
     }
 
     // assign the old local data redistributed to this matrix.
@@ -740,7 +740,7 @@ template<typename ValueType> void SparseMatrix<ValueType>::invert( const Matrix&
 
     tmp.invert( other );
 
-    LAMA_LOG_INFO( logger, "tmp = " << tmp << ": inverse of " << other )
+    SCAI_LOG_INFO( logger, "tmp = " << tmp << ": inverse of " << other )
 
     assign( tmp ); // convert back to sparse matrix
 }
@@ -761,7 +761,7 @@ set( const MatrixStorage<ValueType>& otherLocalData, DistributionPtr otherDist )
 
     if( *otherDist == getDistribution() )
     {
-        LAMA_LOG_INFO( logger, "same row distribution, assign local" )
+        SCAI_LOG_INFO( logger, "same row distribution, assign local" )
 
         otherLocalData.splitHalo( *mLocalData, *mHaloData, mHalo, getColDistribution(), NULL );
 
@@ -770,7 +770,7 @@ set( const MatrixStorage<ValueType>& otherLocalData, DistributionPtr otherDist )
     {
         // we have to localize and split the other matrix
 
-        LAMA_LOG_INFO( logger, "assign by distribute of replicated data, compute halo" )
+        SCAI_LOG_INFO( logger, "assign by distribute of replicated data, compute halo" )
 
         // just split the global replicated data according to
         // column + row distribution of this matrix
@@ -780,28 +780,28 @@ set( const MatrixStorage<ValueType>& otherLocalData, DistributionPtr otherDist )
     }
     else if( getDistribution().isReplicated() )
     {
-        LAMA_LOG_INFO( logger, "Replication of distributed matrix storage: " << otherLocalData )
+        SCAI_LOG_INFO( logger, "Replication of distributed matrix storage: " << otherLocalData )
 
         mLocalData->replicate( otherLocalData, *otherDist );
 
-        LAMA_LOG_INFO( logger, "Replicated local storage: " << *mLocalData )
+        SCAI_LOG_INFO( logger, "Replicated local storage: " << *mLocalData )
 
         mLocalData->splitHalo( *mLocalData, *mHaloData, mHalo, getColDistribution(), NULL );
 
-        LAMA_LOG_INFO( logger, "Splitted storage: local = " << *mLocalData << ", halo = " << *mHaloData )
+        SCAI_LOG_INFO( logger, "Splitted storage: local = " << *mLocalData << ", halo = " << *mHaloData )
     }
     else
     {
-        LAMA_LOG_INFO( logger, "assign is redistribute of distributed matrix" )
+        SCAI_LOG_INFO( logger, "assign is redistribute of distributed matrix" )
 
         Redistributor redistributor( getDistributionPtr(), otherDist );
 
-        LAMA_LOG_INFO( logger,
+        SCAI_LOG_INFO( logger,
                        "Redistributor available: source halo = " << redistributor.getHaloSourceSize() << " target halo = " << redistributor.getHaloTargetSize() )
 
         mLocalData->redistribute( otherLocalData, redistributor );
 
-        LAMA_LOG_INFO( logger, "redistributed, now assign locally" )
+        SCAI_LOG_INFO( logger, "redistributed, now assign locally" )
 
         mLocalData->splitHalo( *mLocalData, *mHaloData, mHalo, getColDistribution(), NULL );
     }
@@ -812,7 +812,7 @@ set( const MatrixStorage<ValueType>& otherLocalData, DistributionPtr otherDist )
 template<typename ValueType>
 SparseMatrix<ValueType>::~SparseMatrix()
 {
-    LAMA_LOG_INFO( logger, "~SparseMatrix" )
+    SCAI_LOG_INFO( logger, "~SparseMatrix" )
 }
 
 /* -------------------------------------------------------------------------- */
@@ -832,7 +832,7 @@ void SparseMatrix<ValueType>::getLocalRow( DenseVector<ValueType>& row, const In
     {
         IndexType jLocal = distributionCol.global2local( j );
 
-        LAMA_LOG_TRACE( logger, "global column " << j << " of " << getNumColumns() << " is local " << jLocal )
+        SCAI_LOG_TRACE( logger, "global column " << j << " of " << getNumColumns() << " is local " << jLocal )
 
         if( nIndex != jLocal )
         {
@@ -845,7 +845,7 @@ void SparseMatrix<ValueType>::getLocalRow( DenseVector<ValueType>& row, const In
             rowAccess[j] = mHaloData->getValue( iLocal, mHalo.global2halo( j ) );
         }
 
-        LAMA_LOG_TRACE( logger, "row[" << j << "] = " << rowAccess[j] )
+        SCAI_LOG_TRACE( logger, "row[" << j << "] = " << rowAccess[j] )
     }
 
     // TODO: for optimization make an own loop if distributionCol.isReplicated()
@@ -868,7 +868,7 @@ void SparseMatrix<ValueType>::getRow( Vector& row, const IndexType globalRowInde
 
     if( getDistribution().isReplicated() )
     {
-        LAMA_LOG_INFO( logger, "get local row " << globalRowIndex )
+        SCAI_LOG_INFO( logger, "get local row " << globalRowIndex )
 
         getLocalRow( *typedRow, globalRowIndex );
         return;
@@ -888,7 +888,7 @@ void SparseMatrix<ValueType>::getRow( Vector& row, const IndexType globalRowInde
     {
         getLocalRow( *typedRow, localRowIndex );
         owner = comm.getRank() + 1;
-        LAMA_LOG_DEBUG( logger,
+        SCAI_LOG_DEBUG( logger,
                         "owner of row " << globalRowIndex << " is " << owner << ", local index = " << localRowIndex )
     }
 
@@ -1012,7 +1012,7 @@ void SparseMatrix<ValueType>::matrixTimesMatrix(
     const Scalar beta,
     const Matrix& C ) const
 {
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "result = alpha * A * B + beta * C with result = " << result << ", alpha = " << alpha << ", A = " << *this << ", B = " << B << ", beta = " << beta << ", C = " << C )
 
     if( result.getMatrixKind() == Matrix::DENSE )
@@ -1076,7 +1076,7 @@ void SparseMatrix<ValueType>::matrixPlusMatrix(
     const Scalar beta,
     const Matrix& matB )
 {
-    LAMA_LOG_INFO( logger, "this = " << alpha << " * A + " << beta << " * B" << ", A = " << matA << ", B = " << matB )
+    SCAI_LOG_INFO( logger, "this = " << alpha << " * A + " << beta << " * B" << ", A = " << matA << ", B = " << matB )
 
     const SparseMatrix<ValueType>* sparseA = dynamic_cast<const SparseMatrix<ValueType>*>( &matA );
 
@@ -1136,7 +1136,7 @@ void SparseMatrix<ValueType>::matrixTimesMatrixImpl(
 {
     LAMA_REGION( "Mat.timesMatrix" )
 
-    LAMA_LOG_DEBUG( logger, "Context lhs before mult " << mLocalData->getContext() )
+    SCAI_LOG_DEBUG( logger, "Context lhs before mult " << mLocalData->getContext() )
 
     if( !B.getColDistribution().isReplicated() )
     {
@@ -1161,7 +1161,7 @@ void SparseMatrix<ValueType>::matrixTimesMatrixImpl(
 
     mLocalData->matrixTimesMatrix( alpha, *A.mLocalData, *B.mLocalData, beta, *C.mLocalData );
 
-    LAMA_LOG_INFO( logger, "local result =  " << *mLocalData )
+    SCAI_LOG_INFO( logger, "local result =  " << *mLocalData )
 
     if( !A.getColDistribution().isReplicated() )
     {
@@ -1181,7 +1181,7 @@ void SparseMatrix<ValueType>::matrixTimesMatrixImpl(
     mHaloData->allocate( mNumRows, 0 );
     mHalo.clear();
 
-    LAMA_LOG_DEBUG( logger, "Context lhs after mult " << mLocalData->getContext() )
+    SCAI_LOG_DEBUG( logger, "Context lhs after mult " << mLocalData->getContext() )
 }
 
 /* -------------------------------------------------------------------------- */
@@ -1214,7 +1214,7 @@ void SparseMatrix<ValueType>::haloOperationSync(
 
             LAMA_REGION( "Mat.Sp.syncGatherHalo" )
 
-            LAMA_LOG_INFO( logger,
+            SCAI_LOG_INFO( logger,
                            comm << ": gather " << mHalo.getProvidesIndexes().size() << " values of X to provide on " << *localX.getValidContext( context::Host ) );
 
             LAMAArrayUtils::gather( mTempSendValues, localX, mHalo.getProvidesIndexes() );
@@ -1225,7 +1225,7 @@ void SparseMatrix<ValueType>::haloOperationSync(
         {
             LAMA_REGION( "Mat.Sp.syncExchangeHalo" )
 
-            LAMA_LOG_INFO( logger, comm << ": halo exchange with : " << mHalo );
+            SCAI_LOG_INFO( logger, comm << ": halo exchange with : " << mHalo );
 
             comm.exchangeByPlan( haloX, mHalo.getRequiredPlan(), mTempSendValues, mHalo.getProvidesPlan() );
         }
@@ -1234,7 +1234,7 @@ void SparseMatrix<ValueType>::haloOperationSync(
         {
             LAMA_REGION( "Mat.Sp.syncPrefetchHalo" )
 
-            LAMA_LOG_INFO( logger,
+            SCAI_LOG_INFO( logger,
                            comm << ": prefetch " << haloX.size() << " halo values of X to : " << mHaloData->getContext() );
 
             // During the local computation we prefetch already haloX where it is need
@@ -1244,7 +1244,7 @@ void SparseMatrix<ValueType>::haloOperationSync(
     }
     else
     {
-        LAMA_LOG_INFO( logger, "No halo update needed." )
+        SCAI_LOG_INFO( logger, "No halo update needed." )
 
         haloX.clear(); // sets size to 0, but does not free allocated memory
     }
@@ -1252,7 +1252,7 @@ void SparseMatrix<ValueType>::haloOperationSync(
     {
         LAMA_REGION( "Mat.Sp.syncLocal" )
 
-        LAMA_LOG_INFO( logger,
+        SCAI_LOG_INFO( logger,
                        comm << ": synchronous computation localResult[ " << localResult.size() << "] = localF( localMatrix, localX[ " << localX.size() << "] ) on " << mLocalData->getContext() )
 
         localF( mLocalData.get(), localResult, localX );
@@ -1262,7 +1262,7 @@ void SparseMatrix<ValueType>::haloOperationSync(
     {
         LAMA_REGION( "Mat.Sp.syncHalo" )
 
-        LAMA_LOG_INFO( logger,
+        SCAI_LOG_INFO( logger,
                        comm << ": compute with " << haloX.size() << " halo values on " << mHaloData->getContext() );
 
         // now we can update the result with haloMatrix and halo values of X
@@ -1270,7 +1270,7 @@ void SparseMatrix<ValueType>::haloOperationSync(
         haloF( mHaloData.get(), localResult, haloX );
     }
 
-    LAMA_LOG_DEBUG( logger, "haloOpSync done" )
+    SCAI_LOG_DEBUG( logger, "haloOpSync done" )
 }
 
 /* -------------------------------------------------------------------------- */
@@ -1330,7 +1330,7 @@ void SparseMatrix<ValueType>::vectorHaloOperationSync(
         {
             LAMA_REGION( "Vec.Times.Mat.others" )
 
-            LAMA_LOG_INFO( logger,
+            SCAI_LOG_INFO( logger,
                            comm << ": synchronous computation othersResult[ " << toOthersResult.size() << "] = localF( haloMatrix, localX[ " << xSize << "] ) on " << haloContext )
 
             calcF( mHaloData.get(), haloResult, localX );
@@ -1375,7 +1375,7 @@ void SparseMatrix<ValueType>::vectorHaloOperationSync(
     {
         LAMA_REGION( "Vec.Times.Mat.local" )
 
-        LAMA_LOG_INFO( logger,
+        SCAI_LOG_INFO( logger,
                        comm << ": synchronous computation localResult[ " << resultSize << "] = localF( localMatrix, localX[ " << xSize << "] ) on " << localContext )
 
         calcF( mLocalData.get(), localResult, localX );
@@ -1385,7 +1385,7 @@ void SparseMatrix<ValueType>::vectorHaloOperationSync(
     {
         LAMA_REGION( "Vec.Vec.add" )
 
-        LAMA_LOG_INFO( logger,
+        SCAI_LOG_INFO( logger,
                        comm << ": synchronous computation localResult[ " << resultSize << "] = localF( localMatrix, localX[ " << xSize << "] ) on " << localContext )
 
         if( numParts != 1 )
@@ -1410,7 +1410,7 @@ void SparseMatrix<ValueType>::vectorHaloOperationSync(
         addF( localResult, localResult, localY );
     }
 
-    LAMA_LOG_DEBUG( logger, "vectorHaloOperationSync done" )
+    SCAI_LOG_DEBUG( logger, "vectorHaloOperationSync done" )
 }
 
 /* -------------------------------------------------------------------------- */
@@ -1442,7 +1442,7 @@ void SparseMatrix<ValueType>::haloOperationAsync(
         // gather of halo data cannot be overlapped with local computations on a device
         // Note: gather will be done where denseX is available
 
-        LAMA_LOG_INFO( logger,
+        SCAI_LOG_INFO( logger,
                        comm << ": gather " << mHalo.getProvidesIndexes().size() << " values of X to provide on " << *localX.getValidContext( context::Host ) );
 
         LAMAArrayUtils::gather( mTempSendValues, localX, mHalo.getProvidesIndexes() );
@@ -1457,7 +1457,7 @@ void SparseMatrix<ValueType>::haloOperationAsync(
     {
         LAMA_REGION( "Mat.Sp.asyncLocal" )
 
-        LAMA_LOG_INFO( logger,
+        SCAI_LOG_INFO( logger,
                        comm << ": start async computation localResult[ " << localResult.size() << "] = localF( localMatrix, localX[ " << localX.size() << "] ) on " << mLocalData->getContext() )
 
         localComputation.reset( localAsyncF( mLocalData.get(), localResult, localX ) );
@@ -1469,11 +1469,11 @@ void SparseMatrix<ValueType>::haloOperationAsync(
     {
         LAMA_REGION( "Mat.Sp.asyncExchangeHalo" )
 
-        LAMA_LOG_INFO( logger, comm << ": halo exchange with : " << mHalo );
+        SCAI_LOG_INFO( logger, comm << ": halo exchange with : " << mHalo );
 
         comm.exchangeByPlan( haloX, mHalo.getRequiredPlan(), mTempSendValues, mHalo.getProvidesPlan() );
 
-        LAMA_LOG_DEBUG( logger, "Exchange halo done." )
+        SCAI_LOG_DEBUG( logger, "Exchange halo done." )
     }
 
     // start now transfer of the halo values of X to halo context where it is needed
@@ -1485,7 +1485,7 @@ void SparseMatrix<ValueType>::haloOperationAsync(
 
         ContextPtr haloLocation = mHaloData->getContextPtr();
 
-        LAMA_LOG_INFO( logger, comm << ": prefetch " << haloX.size() << " halo values of X to : " << *haloLocation );
+        SCAI_LOG_INFO( logger, comm << ": prefetch " << haloX.size() << " halo values of X to : " << *haloLocation );
 
         haloX.prefetch( haloLocation ); // implicit wait at next access of haloX
     }
@@ -1497,7 +1497,7 @@ void SparseMatrix<ValueType>::haloOperationAsync(
 
         localComputation->wait();
 
-        LAMA_LOG_INFO( logger, comm << ": local computation ready." )
+        SCAI_LOG_INFO( logger, comm << ": local computation ready." )
     }
 
     if( haloX.size() > 0 )
@@ -1506,13 +1506,13 @@ void SparseMatrix<ValueType>::haloOperationAsync(
 
         LAMA_REGION("Mat.Sp.asyncHalo")
 
-        LAMA_LOG_INFO( logger,
+        SCAI_LOG_INFO( logger,
                        comm << ": compute with " << haloX.size() << " halo values on " << mHaloData->getContext() );
 
         haloF( mHaloData.get(), localResult, haloX );
     }
 
-    LAMA_LOG_DEBUG( logger, "matrixTimesVectorAsync done" )
+    SCAI_LOG_DEBUG( logger, "matrixTimesVectorAsync done" )
 }
 
 /* -------------------------------------------------------------------------- */
@@ -1572,7 +1572,7 @@ void SparseMatrix<ValueType>::vectorHaloOperationAsync(
         {
             LAMA_REGION( "Vec.Times.Mat.others" )
 
-            LAMA_LOG_INFO( logger,
+            SCAI_LOG_INFO( logger,
                            comm << ": asynchronous computation othersResult[" << toOthersResult.size() << "] = localF( haloMatrix, localX[" << xSize << "] ) on " << haloContext )
 
             delete calcF( mHaloData.get(), haloResult, localX );
@@ -1604,7 +1604,7 @@ void SparseMatrix<ValueType>::vectorHaloOperationAsync(
     {
         LAMA_REGION( "Vec.Times.Mat.local" )
 
-        LAMA_LOG_INFO( logger,
+        SCAI_LOG_INFO( logger,
                        comm << ": asynchronous computation localResult[" << resultSize << "] = localF( localMatrix, localX[" << xSize << "] ) on " << localContext )
 
         localComputation.reset( calcF( mLocalData.get(), localResult, localX ) );
@@ -1616,7 +1616,7 @@ void SparseMatrix<ValueType>::vectorHaloOperationAsync(
         {
             LAMA_REGION( "vector.swapping" )
 
-            LAMA_LOG_INFO( logger,
+            SCAI_LOG_INFO( logger,
                            comm << " vector swapping: toOthers[" << toOthersResult.size() << "], fromOthersResult[" << fromOthersResult.size() << "]" )
 
             ReadAccess<ValueType> toOthers( toOthersResult );
@@ -1637,7 +1637,7 @@ void SparseMatrix<ValueType>::vectorHaloOperationAsync(
     {
         LAMA_REGION( "Vec.Vec.add" )
 
-        LAMA_LOG_INFO( logger,
+        SCAI_LOG_INFO( logger,
                        comm << ": asynchronous computation localResult[ " << resultSize << "] = localF( localMatrix, localX[ " << xSize << "] ) on " << localContext )
 
         if( numParts != 1 )
@@ -1662,7 +1662,7 @@ void SparseMatrix<ValueType>::vectorHaloOperationAsync(
         addF( localResult, localResult, localY );
     }
 
-    LAMA_LOG_DEBUG( logger, "vectorHaloOperationAsync done" )
+    SCAI_LOG_DEBUG( logger, "vectorHaloOperationAsync done" )
 }
 
 /* -------------------------------------------------------------------------- */
@@ -1852,7 +1852,7 @@ void SparseMatrix<ValueType>::matrixTimesVectorNImpl(
 {
     LAMA_REGION( "Mat.Sp.timesVectorN" )
 
-    LAMA_LOG_INFO( logger, "sparseGEMM: " << alpha << " * " << *this << " * " << x << " + " << beta << " * " << y )
+    SCAI_LOG_INFO( logger, "sparseGEMM: " << alpha << " * " << *this << " * " << x << " + " << beta << " * " << y )
 
     // currently only available for replicated matrices
 
@@ -1868,7 +1868,7 @@ void SparseMatrix<ValueType>::matrixTimesVectorNImpl(
 
     result.allocate( getDistributionPtr(), x.getColDistributionPtr() );
 
-    LAMA_LOG_INFO( logger, "result (allocated) : " << result )
+    SCAI_LOG_INFO( logger, "result (allocated) : " << result )
 
     LAMAArray<ValueType>& resultData = result.getLocalStorage().getData();
     const LAMAArray<ValueType>& xData = x.getLocalStorage().getData();
@@ -1889,11 +1889,11 @@ void SparseMatrix<ValueType>::matrixTimesVector(
     const Scalar beta,
     const Vector& y ) const
 {
-    LAMA_LOG_INFO( logger, result << " = " << alpha << " * " << *this << " * " << x << " + " << beta << " * " << y )
+    SCAI_LOG_INFO( logger, result << " = " << alpha << " * " << *this << " * " << x << " + " << beta << " * " << y )
 
     if( ( &result == &y ) && ( beta != Scalar( 0.0 ) ) )
     {
-        LAMA_LOG_DEBUG( logger, "alias: result = y is well handled" )
+        SCAI_LOG_DEBUG( logger, "alias: result = y is well handled" )
     }
     else if( &result == &x )
     {
@@ -1936,11 +1936,11 @@ void SparseMatrix<ValueType>::vectorTimesMatrix(
     const Scalar beta,
     const Vector& y ) const
 {
-    LAMA_LOG_INFO( logger, result << " = " << alpha << " * " << x << " * " << *this << " + " << beta << " * " << y )
+    SCAI_LOG_INFO( logger, result << " = " << alpha << " * " << x << " * " << *this << " + " << beta << " * " << y )
 
     if( ( &result == &y ) && ( beta != Scalar( 0.0 ) ) )
     {
-        LAMA_LOG_DEBUG( logger, "alias: result = y is well handled" )
+        SCAI_LOG_DEBUG( logger, "alias: result = y is well handled" )
     }
     else if( &result == &x )
     {
@@ -1978,7 +1978,7 @@ void SparseMatrix<ValueType>::vectorTimesMatrix(
 template<typename ValueType>
 void SparseMatrix<ValueType>::matrixTimesScalar( const Matrix& other, Scalar alpha )
 {
-    LAMA_LOG_INFO( logger, "this  = " << alpha << " * " << other )
+    SCAI_LOG_INFO( logger, "this  = " << alpha << " * " << other )
 
     // should also work fine if other == *this, will not create new data
 
@@ -2003,7 +2003,7 @@ Scalar SparseMatrix<ValueType>::l1Norm() const
 
     ValueType allValue = comm.sum( myValue );
 
-    LAMA_LOG_INFO( logger, "l1 norm: local value = " << myValue << ", value = " << allValue )
+    SCAI_LOG_INFO( logger, "l1 norm: local value = " << myValue << ", value = " << allValue )
 
     return allValue;
 }
@@ -2026,7 +2026,7 @@ Scalar SparseMatrix<ValueType>::l2Norm() const
 
 	allValue = sqrt( allValue );
 
-    LAMA_LOG_INFO( logger, "max norm: local value = " << myValue << ", global value = " << allValue )
+    SCAI_LOG_INFO( logger, "max norm: local value = " << myValue << ", global value = " << allValue )
 
     return allValue;
 }
@@ -2048,7 +2048,7 @@ Scalar SparseMatrix<ValueType>::maxNorm() const
  
     ValueType allMax = comm.max( myMax );
 
-    LAMA_LOG_INFO( logger, "max norm: local max = " << myMax << ", global max = " << allMax )
+    SCAI_LOG_INFO( logger, "max norm: local max = " << myMax << ", global max = " << allMax )
 
     return allMax;
 }
@@ -2100,7 +2100,7 @@ ValueType SparseMatrix<ValueType>::maxDiffNormImpl( const SparseMatrix<ValueType
 
     ValueType allMaxDiff = comm.max( myMaxDiff );
 
-    LAMA_LOG_INFO( logger, "max diff norm: local max = " << myMaxDiff << ", global max = " << allMaxDiff )
+    SCAI_LOG_INFO( logger, "max diff norm: local max = " << myMaxDiff << ", global max = " << allMaxDiff )
 
     return allMaxDiff;
 }
@@ -2152,31 +2152,31 @@ Scalar SparseMatrix<ValueType>::getValue( IndexType i, IndexType j ) const
 {
     const Distribution& distributionRow = getDistribution();
     const Distribution& distributionCol = getColDistribution();
-    LAMA_LOG_TRACE( logger, "this(" << i << "," << j << ")" )
+    SCAI_LOG_TRACE( logger, "this(" << i << "," << j << ")" )
     ValueType myValue = 0.0;
     const IndexType iLocal = distributionRow.global2local( i );
 
     if( iLocal != nIndex )
     {
-        LAMA_LOG_TRACE( logger, "row " << i << " is local " << iLocal )
+        SCAI_LOG_TRACE( logger, "row " << i << " is local " << iLocal )
         IndexType jLocal = distributionCol.global2local( j );
 
         if( nIndex != jLocal )
         {
-            LAMA_LOG_TRACE( logger, "global(" << i << "," << j << ")" " is local(" << iLocal << "," << jLocal << ")" )
+            SCAI_LOG_TRACE( logger, "global(" << i << "," << j << ")" " is local(" << iLocal << "," << jLocal << ")" )
             myValue = mLocalData->getValue( iLocal, jLocal );
-            LAMA_LOG_TRACE( logger, "found local value " << myValue )
+            SCAI_LOG_TRACE( logger, "found local value " << myValue )
         }
         else
         {
             jLocal = mHalo.global2halo( j );
-            LAMA_LOG_TRACE( logger, "global(" << i << "," << j << ")" " is halo(" << iLocal << "," << jLocal << ")" )
+            SCAI_LOG_TRACE( logger, "global(" << i << "," << j << ")" " is halo(" << iLocal << "," << jLocal << ")" )
             myValue = mHaloData->getValue( iLocal, jLocal );
-            LAMA_LOG_TRACE( logger, "found halo value " << myValue )
+            SCAI_LOG_TRACE( logger, "found halo value " << myValue )
         }
     }
 
-    LAMA_LOG_TRACE( logger, "myValue = " << myValue )
+    SCAI_LOG_TRACE( logger, "myValue = " << myValue )
     myValue = distributionRow.getCommunicator().sum( myValue );
     return Scalar( myValue );
 }
@@ -2268,7 +2268,7 @@ size_t SparseMatrix<ValueType>::getValueTypeSize() const
 template<typename ValueType>
 SparseMatrix<ValueType>* SparseMatrix<ValueType>::clone() const
 {
-    LAMA_LOG_INFO( logger, "SparseMatrix<ValueType>::create" )
+    SCAI_LOG_INFO( logger, "SparseMatrix<ValueType>::create" )
 
     shared_ptr<MatrixStorage<ValueType> > newLocalData( mLocalData->clone() );
 
@@ -2282,7 +2282,7 @@ SparseMatrix<ValueType>* SparseMatrix<ValueType>::clone() const
 
     newSparseMatrix->setCommunicationKind( this->getCommunicationKind() );
 
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    *this << ": create -> " << *newSparseMatrix << " @ " << newSparseMatrix->getContext() << ", kind = " << newSparseMatrix->getCommunicationKind() );
 
     return newSparseMatrix.release();
@@ -2293,7 +2293,7 @@ SparseMatrix<ValueType>* SparseMatrix<ValueType>::clone() const
 template<typename ValueType>
 SparseMatrix<ValueType>* SparseMatrix<ValueType>::copy() const
 {
-    LAMA_LOG_INFO( logger, "copy of " << *this )
+    SCAI_LOG_INFO( logger, "copy of " << *this )
 
     // copy makes deep copies of the local + halo storage, halo
     //      and uses the same distributions
@@ -2305,7 +2305,7 @@ SparseMatrix<ValueType>* SparseMatrix<ValueType>::copy() const
 
         new SparseMatrix<ValueType>( newLocalData, newHaloData, mHalo, getDistributionPtr(), getColDistributionPtr() );
 
-    LAMA_LOG_INFO( logger, "copy is " << *newSparseMatrix )
+    SCAI_LOG_INFO( logger, "copy is " << *newSparseMatrix )
 
     return newSparseMatrix;
 }
@@ -2324,7 +2324,7 @@ void SparseMatrix<ValueType>::setIdentity( DistributionPtr dist )
 
     mHalo.clear(); // no exchange needed
 
-    LAMA_LOG_INFO( logger, *this << ": identity" )
+    SCAI_LOG_INFO( logger, *this << ": identity" )
 }
 
 /* ------------------------------------------------------------------------- */
@@ -2355,7 +2355,7 @@ void SparseMatrix<ValueType>::setDenseData(
         mHalo.clear();
     }
 
-    LAMA_LOG_INFO( logger, *this << ": filled by (local) dense data" )
+    SCAI_LOG_INFO( logger, *this << ": filled by (local) dense data" )
 }
 
 /* ------------------------------------------------------------------------- */
@@ -2388,7 +2388,7 @@ void SparseMatrix<ValueType>::setCSRData(
         mHalo.clear();
     }
 
-    LAMA_LOG_INFO( logger, *this << ": filled by (local) dense data" )
+    SCAI_LOG_INFO( logger, *this << ": filled by (local) dense data" )
 }
 
 /* ------------------------------------------------------------------------- */
@@ -2430,7 +2430,7 @@ void SparseMatrix<ValueType>::writeToFile(
     }
     else if( hasDiagonalProperty() )
     {
-        LAMA_LOG_INFO( logger, "write distributed matrix" )
+        SCAI_LOG_INFO( logger, "write distributed matrix" )
 
         const Communicator& comm = getDistribution().getCommunicator();
 

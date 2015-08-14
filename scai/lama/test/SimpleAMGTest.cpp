@@ -65,7 +65,7 @@ typedef boost::mpl::list<float, double> test_types;
 
 BOOST_AUTO_TEST_SUITE( SimpleAMGTest )
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.SimpleAMGTest" )
+SCAI_LOG_DEF_LOGGER( logger, "Test.SimpleAMGTest" )
 
 /* ------------------------------------------------------------------------- */
 
@@ -82,7 +82,7 @@ void solverTestMethod( ContextPtr context )
     const DenseVector<ValueType> refSolution( system.solution );
     MatrixType coefficients( system.coefficients );
     coefficients.setContext( context );
-    LAMA_LOG_INFO( logger, "SimpleAMGTest uses context = " << context->getType() );
+    SCAI_LOG_INFO( logger, "SimpleAMGTest uses context = " << context->getType() );
     SimpleAMG amg( "AMGTest solver", consoleLogger );
     CriterionPtr minCriterion( new IterationCount( 10 ) );
     amg.setStoppingCriterion( minCriterion );

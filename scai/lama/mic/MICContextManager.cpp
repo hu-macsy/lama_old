@@ -70,11 +70,11 @@ int MICContextManager::getDefaultDeviceNr()
             std::istringstream devNumberReader( devNumber );
             devNumberReader >> defaultDeviceNr;
 
-            LAMA_LOG_INFO( logger, LAMA_MIC_ENV_FOR_DEVICE << " = " << defaultDeviceNr << " set, take it" )
+            SCAI_LOG_INFO( logger, LAMA_MIC_ENV_FOR_DEVICE << " = " << defaultDeviceNr << " set, take it" )
         }
         else
         {
-            LAMA_LOG_WARN( logger, LAMA_MIC_ENV_FOR_DEVICE << " not set, take device 0" )
+            SCAI_LOG_WARN( logger, LAMA_MIC_ENV_FOR_DEVICE << " not set, take device 0" )
             defaultDeviceNr = 0;
         }
     }
@@ -104,17 +104,17 @@ MICContextManager::MICContextManager()
 
 MICContextManager::~MICContextManager()
 {
-    LAMA_LOG_DEBUG( logger, "~MICContextManager" )
+    SCAI_LOG_DEBUG( logger, "~MICContextManager" )
 
     for( int i = 0; i < LAMA_MAX_MIC_DEVICES; i++ )
     {
         if( mMICContext[i].expired() )
         {
-            LAMA_LOG_DEBUG( logger, "expired MICContext for device " << i )
+            SCAI_LOG_DEBUG( logger, "expired MICContext for device " << i )
         }
         else
         {
-            LAMA_LOG_DEBUG( logger, "available MICContext for device " << i )
+            SCAI_LOG_DEBUG( logger, "available MICContext for device " << i )
         }
     }
 }

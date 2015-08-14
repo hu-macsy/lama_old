@@ -65,7 +65,7 @@ using std::sqrt;
 using tasking::SyncToken;
 using common::getScalarType;
 
-LAMA_LOG_DEF_LOGGER( OpenMPBLAS1::logger, "OpenMP.BLAS1" )
+SCAI_LOG_DEF_LOGGER( OpenMPBLAS1::logger, "OpenMP.BLAS1" )
 
 /** scal */
 
@@ -84,12 +84,12 @@ void OpenMPBLAS1::scal(
 
     LAMA_REGION( "OpenMP.BLAS1.scal" )
 
-    LAMA_LOG_DEBUG( logger,
+    SCAI_LOG_DEBUG( logger,
                     "scal<" << getScalarType<ValueType>()<< ">, n = " << n << ", alpha = " << alpha << ", x = " << x << ", incX = " << incX )
 
     if( syncToken )
     {
-        LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
+        SCAI_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
 
     if( incX == 1 )
@@ -119,7 +119,7 @@ ValueType OpenMPBLAS1::nrm2( const IndexType n, const ValueType* x, const IndexT
 {
     LAMA_REGION( "OpenMP.BLAS1.nrm2" )
 
-    LAMA_LOG_DEBUG( logger,
+    SCAI_LOG_DEBUG( logger,
                     "nrm2<" << getScalarType<ValueType>()<< ">, n = " << n << ", x = " << x << ", incX = " << incX )
 
     if( incX <= 0 )
@@ -129,7 +129,7 @@ ValueType OpenMPBLAS1::nrm2( const IndexType n, const ValueType* x, const IndexT
 
     if( syncToken )
     {
-        LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
+        SCAI_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
 
     ValueType sumOfSquares = 0.0;
@@ -171,12 +171,12 @@ ValueType OpenMPBLAS1::asum( const IndexType n, const ValueType* x, const IndexT
 {
     LAMA_REGION( "OpenMP.BLAS1.asum" )
 
-    LAMA_LOG_DEBUG( logger,
+    SCAI_LOG_DEBUG( logger,
                     "asum<" << getScalarType<ValueType>()<< ">, n = " << n << ", x = " << x << ", incX = " << incX )
 
     if( syncToken )
     {
-        LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
+        SCAI_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
 
     ValueType result = 0;
@@ -224,12 +224,12 @@ IndexType OpenMPBLAS1::iamax( const IndexType n, const ValueType* x, const Index
 {
     LAMA_REGION( "OpenMP.BLAS1.iamax" )
 
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "iamax<" << getScalarType<ValueType>()<< ">, n = " << n << ", x = " << x << ", incX = " << incX )
 
     if( syncToken )
     {
-        LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
+        SCAI_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
 
     if( n <= 0 || incX <= 0 )
@@ -294,7 +294,7 @@ void OpenMPBLAS1::swap(
 {
     LAMA_REGION( "OpenMP.BLAS1.swap" )
 
-    LAMA_LOG_DEBUG( logger,
+    SCAI_LOG_DEBUG( logger,
                     "iamax<" << getScalarType<ValueType>()<< ">, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
 
     if( ( incX <= 0 ) || ( incY <= 0 ) )
@@ -304,7 +304,7 @@ void OpenMPBLAS1::swap(
 
     if( syncToken )
     {
-        LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
+        SCAI_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
 
     ValueType *temp = 0;
@@ -380,7 +380,7 @@ void OpenMPBLAS1::copy(
 {
     LAMA_REGION( "OpenMP.BLAS1.copy" )
 
-    LAMA_LOG_DEBUG( logger,
+    SCAI_LOG_DEBUG( logger,
                     "copy<" << getScalarType<ValueType>() << ">, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
 
     if( ( incX <= 0 ) || ( incY <= 0 ) )
@@ -422,7 +422,7 @@ void OpenMPBLAS1::axpy(
 {
     LAMA_REGION( "OpenMP.BLAS1.axpy" )
 
-    LAMA_LOG_DEBUG( logger,
+    SCAI_LOG_DEBUG( logger,
                     "axpy<" << getScalarType<ValueType>() << ">, n = " << n << ", alpha = " << alpha << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
 
     if( ( incX <= 0 ) || ( incY <= 0 ) )
@@ -432,7 +432,7 @@ void OpenMPBLAS1::axpy(
 
     if( syncToken )
     {
-        LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
+        SCAI_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
 
     if( incX == 1 && incY == 1 )
@@ -468,7 +468,7 @@ ValueType OpenMPBLAS1::dot(
 {
     LAMA_REGION( "OpenMP.BLAS1.sdot" )
 
-    LAMA_LOG_DEBUG( logger,
+    SCAI_LOG_DEBUG( logger,
                     "dot<" << getScalarType<ValueType>() << ">, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
 
     if( ( incX <= 0 ) || ( incY <= 0 ) )
@@ -478,7 +478,7 @@ ValueType OpenMPBLAS1::dot(
 
     if( syncToken )
     {
-        LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
+        SCAI_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
 
     ValueType result = 0;
@@ -525,12 +525,12 @@ void OpenMPBLAS1::sum(
 {
     LAMA_REGION( "OpenMP.BLAS1.dot" )
 
-    LAMA_LOG_DEBUG( logger,
+    SCAI_LOG_DEBUG( logger,
                     "sum<" << getScalarType<ValueType>() << ">, n = " << n << ", alpha = " << alpha << ", x = " << x << ", beta = " << beta << ", y = " << y << ", z = " << z )
 
     if( syncToken )
     {
-        LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
+        SCAI_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
 
     #pragma omp parallel for schedule( LAMA_OMP_SCHEDULE )
@@ -549,7 +549,7 @@ void OpenMPBLAS1::sum(
 
 void OpenMPBLAS1::setInterface( BLASInterface& BLAS )
 {
-    LAMA_LOG_INFO( logger, "set BLAS1 routines for OpenMP in Interface" )
+    SCAI_LOG_INFO( logger, "set BLAS1 routines for OpenMP in Interface" )
 
 // Note: macro takes advantage of same name for routines and type definitions
 //       ( e.g. routine CUDABLAS1::sum<ValueType> is set for BLAS::BLAS1::sum variable

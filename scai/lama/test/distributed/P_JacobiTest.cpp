@@ -81,7 +81,7 @@ struct P_JacobiTestConfig
 
 BOOST_FIXTURE_TEST_SUITE( P_JacobiTest, P_JacobiTestConfig )
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.P_JacobiTest" );
+SCAI_LOG_DEF_LOGGER( logger, "Test.P_JacobiTest" );
 
 /* --------------------------------------------------------------------- */
 
@@ -91,7 +91,7 @@ void testSolveWithoutPreconditionMethod( ContextPtr loc )
     typedef typename MatrixType::MatrixValueType ValueType;
     const IndexType N1 = 4;
     const IndexType N2 = 4;
-    LAMA_LOG_INFO( logger, "Problem size = " << N1 << " x " << N2 );
+    SCAI_LOG_INFO( logger, "Problem size = " << N1 << " x " << N2 );
     DefaultJacobi jacobiSolver( "JacobiTestSolver" );
     CSRSparseMatrix<ValueType> helpcoefficients;
     MatrixCreator<ValueType>::buildPoisson2D( helpcoefficients, 9, N1, N2 );
@@ -114,12 +114,12 @@ void testSolveWithoutPreconditionMethod( ContextPtr loc )
     CriterionPtr criterion( new IterationCount( expectedIterations ) );
     jacobiSolver.setStoppingCriterion( criterion );
     jacobiSolver.initialize( coefficients );
-    LAMA_LOG_INFO( logger, "jacobiSolver::coefficients = " << coefficients );
+    SCAI_LOG_INFO( logger, "jacobiSolver::coefficients = " << coefficients );
     jacobiSolver.solve( solution, rhs );
     BOOST_CHECK_EQUAL( expectedIterations, jacobiSolver.getIterationCount() );
     DenseVector<ValueType> diff( solution - exactSolution );
     Scalar s = maxNorm( diff );
-    LAMA_LOG_INFO( logger, "max norm ( solution - exactSolution ) = " << s.getValue<ValueType>() );
+    SCAI_LOG_INFO( logger, "max norm ( solution - exactSolution ) = " << s.getValue<ValueType>() );
     BOOST_CHECK( s.getValue<ValueType>() < 1E-6 );
 }
 
@@ -151,7 +151,7 @@ void testSolveWithPreconditionMethod( ContextPtr loc )
     DefaultJacobi jacobiSolver( "JacobiTestSolver"/*, slogger */ );
     const IndexType N1 = 4;
     const IndexType N2 = 4;
-    LAMA_LOG_INFO( logger, "Problem size = " << N1 << " x " << N2 );
+    SCAI_LOG_INFO( logger, "Problem size = " << N1 << " x " << N2 );
     CSRSparseMatrix<ValueType> coefficients;
     MatrixCreator<ValueType>::buildPoisson2D( coefficients, 9, N1, N2 );
     DistributionPtr dist( new BlockDistribution( coefficients.getNumRows(), mComm ) );

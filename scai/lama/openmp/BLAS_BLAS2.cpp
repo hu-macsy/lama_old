@@ -53,7 +53,7 @@ namespace lama
 using common::getScalarType;
 using tasking::SyncToken;
 
-LAMA_LOG_DEF_LOGGER( BLAS_BLAS2::logger, "BLAS.BLAS2" )
+SCAI_LOG_DEF_LOGGER( BLAS_BLAS2::logger, "BLAS.BLAS2" )
 
 /* ---------------------------------------------------------------------------------------*/
 /*    gemv                                                                                */
@@ -185,7 +185,7 @@ void BLAS_BLAS2::gemv(
 {
     LAMA_REGION( "BLAS.BLAS2.gemv" )
 
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "gemv<" << getScalarType<ValueType>() << ">: " << "m = " << m << ", n = " << n << ", LDA = " << lda << ", incX = " << incX << ", incY = " << incY << ", alpha = " << alpha << ", beta = " << beta )
 
     if( m == 0 )
@@ -197,7 +197,7 @@ void BLAS_BLAS2::gemv(
 
     if( syncToken )
     {
-        LAMA_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
+        SCAI_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
 
     // ToDo: error handling
@@ -221,17 +221,17 @@ void BLAS_BLAS2::setInterface( BLASInterface& BLAS )
 
     if( !useBLAS || ( level <= 0 ) )
     {
-        LAMA_LOG_INFO( logger, "BLAS2 wrapper routines for Host Interface are disabled (LAMA_USE_BLAS not set or 0)" )
+        SCAI_LOG_INFO( logger, "BLAS2 wrapper routines for Host Interface are disabled (LAMA_USE_BLAS not set or 0)" )
         return;
     }
     else if( level > 2 )
     {
-        LAMA_LOG_INFO( logger,
+        SCAI_LOG_INFO( logger,
                        "BLAS2 wrapper routines for Host Interface are disabled (LAMA_USE_BLAS = " << level << ")" )
         return;
     }
 
-    LAMA_LOG_INFO( logger, "set BLAS2 wrapper routines for Host Context in Interface" )
+    SCAI_LOG_INFO( logger, "set BLAS2 wrapper routines for Host Context in Interface" )
 
     // REGISTER1: give these routines priority in case of overriding
 

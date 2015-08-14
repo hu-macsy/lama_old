@@ -101,7 +101,7 @@ public:
 
 private:
 
-    LAMA_LOG_DECL_STATIC_LOGGER( logger )
+    SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
     SolverPtr    mSolver;
     common::unique_ptr<Matrix> mIdentity;

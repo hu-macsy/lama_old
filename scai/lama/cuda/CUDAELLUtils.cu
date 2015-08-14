@@ -74,7 +74,7 @@ using common::getScalarType;
 namespace lama
 {
 
-    LAMA_LOG_DEF_LOGGER( CUDAELLUtils::logger, "CUDA.ELLUtils" )
+    SCAI_LOG_DEF_LOGGER( CUDAELLUtils::logger, "CUDA.ELLUtils" )
 
     /* ------------------------------------------------------------------------------------------------------------------ */
 
@@ -164,7 +164,7 @@ namespace lama
 
     IndexType CUDAELLUtils::countNonEmptyRowsBySizes( const IndexType sizes[], const IndexType numRows )
     {
-        LAMA_LOG_INFO( logger, "countNonEmptyRowsBySizes #sizes = " << sizes << " #numRows = " << numRows )
+        SCAI_LOG_INFO( logger, "countNonEmptyRowsBySizes #sizes = " << sizes << " #numRows = " << numRows )
 
         LAMA_CHECK_CUDA_ACCESS
 
@@ -184,7 +184,7 @@ namespace lama
                     const IndexType sizes[],
                     const IndexType numRows )
     {
-        LAMA_LOG_INFO( logger,
+        SCAI_LOG_INFO( logger,
                         "setNonEmptyRowsBySizes" << " #rowIndexes = " << rowIndexes << ", #numNonEmptyRows = " << numNonEmptyRows << ", #sizes = " << sizes << ", #numRows = " << numRows )
 
         LAMA_CHECK_CUDA_ACCESS
@@ -206,7 +206,7 @@ namespace lama
 
     bool CUDAELLUtils::hasDiagonalProperty( const IndexType numDiagonals, const IndexType ellJA[] )
     {
-        LAMA_LOG_INFO( logger, "hasDiagonalProperty, #numDiagonals = " << numDiagonals )
+        SCAI_LOG_INFO( logger, "hasDiagonalProperty, #numDiagonals = " << numDiagonals )
 
         LAMA_CHECK_CUDA_ACCESS
 
@@ -266,7 +266,7 @@ namespace lama
                     const IndexType *ja,
                     const char* msg )
     {
-        LAMA_LOG_INFO( logger,
+        SCAI_LOG_INFO( logger,
                         "check # numRows = " << numRows << ", numValuesPerRow = " << numValuesPerRow << ", numColumns = " << numColumns )
 
         LAMA_CHECK_CUDA_ACCESS
@@ -332,7 +332,7 @@ namespace lama
                     const IndexType *ja,
                     const ValueType *values )
     {
-        LAMA_LOG_TRACE( logger, "get row #i = " << i )
+        SCAI_LOG_TRACE( logger, "get row #i = " << i )
 
         LAMA_CHECK_CUDA_ACCESS
 
@@ -392,7 +392,7 @@ namespace lama
     {
         LAMA_CHECK_CUDA_ACCESS
 
-        LAMA_LOG_TRACE( logger, "get value i = " << i << ", j = " << j << " numRows = " << numRows )
+        SCAI_LOG_TRACE( logger, "get value i = " << i << ", j = " << j << " numRows = " << numRows )
 
         thrust::device_ptr<IndexType> iaPtr( const_cast<IndexType*>( ia ) );
         thrust::host_vector<IndexType> rowNumColumnsVec( iaPtr + i, iaPtr + i + 1 );
@@ -433,7 +433,7 @@ namespace lama
                     const OtherValueType values[] )
     {
 
-        LAMA_LOG_INFO( logger,
+        SCAI_LOG_INFO( logger,
                         "scaleValue, #numRows = " << numRows << ", ia = " << ia << ", ellValues = " << ellValues << ", values = " << values )
 
         LAMA_CHECK_CUDA_ACCESS
@@ -499,7 +499,7 @@ namespace lama
     {
         LAMA_REGION( "CUDA.ELL->CSR_values" )
 
-        LAMA_LOG_INFO( logger,
+        SCAI_LOG_INFO( logger,
                         "get CSRValues<" << getScalarType<ELLValueType>() << ", " << getScalarType<CSRValueType>() << ">" << ", #rows = " << numRows )
 
         LAMA_CHECK_CUDA_ACCESS
@@ -571,10 +571,10 @@ namespace lama
     {
         LAMA_REGION( "CUDA.ELL<-CSR_values" )
 
-        LAMA_LOG_INFO( logger,
+        SCAI_LOG_INFO( logger,
                         "set CSRValues<" << getScalarType<ELLValueType>() << ", " << getScalarType<CSRValueType>() << ">" << ", #rows = " << numRows << ", #values/row = " << numValuesPerRow )
 
-        LAMA_LOG_DEBUG( logger,
+        SCAI_LOG_DEBUG( logger,
                         "ellJA = " << ellJA << ", ellValues = " << ellValues << ", ellSizes = " << ellSizes << ", csrIA = " << csrIA << ", csrJA = " << csrJA << ", csrValues = " << csrValues )
 
         LAMA_CHECK_CUDA_ACCESS
@@ -634,7 +634,7 @@ namespace lama
                     const IndexType numRows,
                     const IndexType numValuesPerRow )
     {
-        LAMA_LOG_INFO( logger, "fill ELLValues<" << getScalarType<ValueType>() )
+        SCAI_LOG_INFO( logger, "fill ELLValues<" << getScalarType<ValueType>() )
 
         LAMA_CHECK_CUDA_ACCESS
 
@@ -890,10 +890,10 @@ namespace lama
     {
         LAMA_REGION( "CUDA.ELL.normalGEMV" )
 
-        LAMA_LOG_INFO( logger, "normalGEMV<" << getScalarType<ValueType>() << ">" <<
+        SCAI_LOG_INFO( logger, "normalGEMV<" << getScalarType<ValueType>() << ">" <<
                         " result[ " << numRows << "] = " << alpha << " * A(ell) * x + " << beta << " * y " )
 
-        LAMA_LOG_DEBUG( logger, "x = " << x << ", y = " << y << ", result = " << result )
+        SCAI_LOG_DEBUG( logger, "x = " << x << ", y = " << y << ", result = " << result )
 
         LAMA_CHECK_CUDA_ACCESS
 
@@ -904,7 +904,7 @@ namespace lama
             CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
             LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
             stream = cudaStreamSyncToken->getCUDAStream();
-            LAMA_LOG_INFO( logger, "asyncronous execution on stream " << stream );
+            SCAI_LOG_INFO( logger, "asyncronous execution on stream " << stream );
         }
 
         const int blockSize = CUDASettings::getBlockSize();
@@ -913,7 +913,7 @@ namespace lama
 
         bool useTexture = CUDASettings::useTexture();
 
-        LAMA_LOG_INFO( logger, "Start normal_gemv_kernel<" << getScalarType<ValueType>()
+        SCAI_LOG_INFO( logger, "Start normal_gemv_kernel<" << getScalarType<ValueType>()
                         << "> <<< blockSize = " << blockSize << ", stream = " << stream
                         << ", useTexture = " << useTexture << ">>>" )
 
@@ -1376,10 +1376,10 @@ namespace lama
                     const ValueType ellValues[],
                     SyncToken* syncToken )
     {
-        LAMA_LOG_INFO( logger, "normalGEVM<" << getScalarType<ValueType>() << ">" <<
+        SCAI_LOG_INFO( logger, "normalGEVM<" << getScalarType<ValueType>() << ">" <<
                         " result[ " << numColumns << "] = " << alpha << " * A(ell) * x + " << beta << " * y " )
 
-        LAMA_LOG_DEBUG( logger, "x = " << x << ", y = " << y << ", result = " << result )
+        SCAI_LOG_DEBUG( logger, "x = " << x << ", y = " << y << ", result = " << result )
 
         LAMA_CHECK_CUDA_ACCESS
 
@@ -1400,7 +1400,7 @@ namespace lama
             stream = cudaStreamSyncToken->getCUDAStream();
         }
 
-        LAMA_LOG_INFO( logger, "Start normal_gevm_kernel<" << getScalarType<ValueType>()
+        SCAI_LOG_INFO( logger, "Start normal_gevm_kernel<" << getScalarType<ValueType>()
                         << ", useTexture = " << useTexture << ">" );
 
         if ( useTexture )
@@ -1543,7 +1543,7 @@ namespace lama
         if ( !syncToken )
         {
             LAMA_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "normalGEVM, stream = " << stream )
-            LAMA_LOG_DEBUG( logger, "normalGEVM<" << getScalarType<ValueType>() << "> synchronized" )
+            SCAI_LOG_DEBUG( logger, "normalGEVM<" << getScalarType<ValueType>() << "> synchronized" )
         }
 
         if ( useTexture )
@@ -1668,7 +1668,7 @@ namespace lama
     {
         LAMA_REGION( "CUDA.ELL.sparseGEMV" )
 
-        LAMA_LOG_INFO( logger, "sparseGEMV<" << getScalarType<ValueType>() << ">" << ", #non-zero rows = " << numNonZeroRows )
+        SCAI_LOG_INFO( logger, "sparseGEMV<" << getScalarType<ValueType>() << ">" << ", #non-zero rows = " << numNonZeroRows )
 
         LAMA_CHECK_CUDA_ACCESS
 
@@ -1692,7 +1692,7 @@ namespace lama
             vectorBindTexture( x );
         }
 
-        LAMA_LOG_INFO( logger, "Start ell_sparse_gemv_kernel<" << getScalarType<ValueType>()
+        SCAI_LOG_INFO( logger, "Start ell_sparse_gemv_kernel<" << getScalarType<ValueType>()
                         << "> <<< blockSize = " << blockSize << ", stream = " << stream
                         << ", useTexture = " << useTexture << ">>>" );
 
@@ -1865,7 +1865,7 @@ namespace lama
                     const ValueType ellValues[],
                     SyncToken* syncToken )
     {
-        LAMA_LOG_INFO( logger,
+        SCAI_LOG_INFO( logger,
                         "sparseGEVM<" << getScalarType<ValueType>() << ">" << ", #non-zero rows = " << numNonZeroRows )
 
         LAMA_CHECK_CUDA_ACCESS
@@ -1917,7 +1917,7 @@ namespace lama
         if ( !syncToken )
         {
             LAMA_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "sparseGEVM, stream = " << stream )
-            LAMA_LOG_INFO( logger, "sparseGEVM<" << getScalarType<ValueType>() << "> synchronized" )
+            SCAI_LOG_INFO( logger, "sparseGEVM<" << getScalarType<ValueType>() << "> synchronized" )
         }
     }
 
@@ -1986,7 +1986,7 @@ namespace lama
     {
         LAMA_REGION( "CUDA.ELL.jacobi" )
 
-        LAMA_LOG_INFO( logger, "jacobi, #rows = " << numRows )
+        SCAI_LOG_INFO( logger, "jacobi, #rows = " << numRows )
 
         LAMA_CHECK_CUDA_ACCESS
 
@@ -2005,7 +2005,7 @@ namespace lama
         dim3 dimBlock( blockSize, 1, 1 );
         dim3 dimGrid = makeGrid( numRows, dimBlock.x );
 
-        LAMA_LOG_INFO( logger, "Start ell_jacobi_kernel<" << getScalarType<ValueType>()
+        SCAI_LOG_INFO( logger, "Start ell_jacobi_kernel<" << getScalarType<ValueType>()
                         << "> <<< block size = " << blockSize << ", stream = " << stream
                         << ", useTexture = " << useTexture << ">>>" );
 
@@ -2115,7 +2115,7 @@ namespace lama
     {
         LAMA_REGION( "CUDA.ELL.jacobiHalo" )
 
-        LAMA_LOG_INFO( logger, "jacobiHalo, #non-empty rows = " << numNonEmptyRows )
+        SCAI_LOG_INFO( logger, "jacobiHalo, #non-empty rows = " << numNonEmptyRows )
 
         LAMA_CHECK_CUDA_ACCESS
 
@@ -2161,7 +2161,7 @@ namespace lama
 
     void CUDAELLUtils::setInterface( ELLUtilsInterface& ELLUtils )
     {
-        LAMA_LOG_INFO( logger, "set ELL routines for CUDA in Interface" )
+        SCAI_LOG_INFO( logger, "set ELL routines for CUDA in Interface" )
 
         LAMA_INTERFACE_REGISTER( ELLUtils, countNonEmptyRowsBySizes )
         LAMA_INTERFACE_REGISTER( ELLUtils, setNonEmptyRowsBySizes )

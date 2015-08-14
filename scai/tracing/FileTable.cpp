@@ -40,13 +40,13 @@ namespace tracing
 
 /* ---------------------------------------------------------------------- */
 
-LAMA_LOG_DEF_LOGGER( FileTable::logger, "FileTable" )
+SCAI_LOG_DEF_LOGGER( FileTable::logger, "FileTable" )
 
 /* ---------------------------------------------------------------------- */
 
 FileTable::FileTable()
 {
-    LAMA_LOG_DEBUG( logger, "Constructor FileTable" )
+    SCAI_LOG_DEBUG( logger, "Constructor FileTable" )
     // avoid too much reallocations at the beginning
     array.reserve( 16 );
 }
@@ -55,7 +55,7 @@ FileTable::FileTable()
 
 FileTable::~FileTable()
 {
-    LAMA_LOG_DEBUG( logger, "~FileTable" )
+    SCAI_LOG_DEBUG( logger, "~FileTable" )
 }
 
 /* ---------------------------------------------------------------------- */

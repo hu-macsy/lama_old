@@ -107,7 +107,7 @@ private:
         std::vector<float>& weights,
         IndexType size ) const;
 
-    LAMA_LOG_DECL_STATIC_LOGGER( logger )
+    SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
     std    ::vector<float> mWeights;
 

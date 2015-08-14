@@ -36,7 +36,7 @@
 
 add_executable( DemoLogging DemoLogging.cpp )
 target_link_libraries( DemoLogging scai_logging )
-set_target_properties( DemoLogging PROPERTIES COMPILE_FLAGS -DLAMA_LOG_LEVEL_TRACE )
+set_target_properties( DemoLogging PROPERTIES COMPILE_FLAGS -DSCAI_LOG_LEVEL_TRACE )
 
 # ThreadTest example, here we need the Boost Thread library
 

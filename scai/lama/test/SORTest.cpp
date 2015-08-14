@@ -69,7 +69,7 @@ typedef boost::mpl::list<float, double> test_types;
 
 BOOST_AUTO_TEST_SUITE( SORTest )
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.SORTest" )
+SCAI_LOG_DEF_LOGGER( logger, "Test.SORTest" )
 
 /* --------------------------------------------------------------------- */
 

@@ -39,21 +39,21 @@
 #include <scai/common/bind.hpp>
 #include <scai/common/shared_ptr.hpp>
 
-LAMA_LOG_DEF_LOGGER( logger, "Token" )
+SCAI_LOG_DEF_LOGGER( logger, "Token" )
 
 /* --------------------------------------------------------------------- */
 
 void task( int a[], const int b[], const int c[], int N )
 {
-    LAMA_LOG_INFO( logger, "Run task with N = " << N )
-    LAMA_LOG_INFO( logger, "a = " << a << ", b = " << b << ", c = " << c )
+    SCAI_LOG_INFO( logger, "Run task with N = " << N )
+    SCAI_LOG_INFO( logger, "a = " << a << ", b = " << b << ", c = " << c )
 
     for ( int i = 0; i < N; ++i )
     {
         a[i] = b[i] + c[i];
     }
 
-    LAMA_LOG_INFO( logger, "task done" )
+    SCAI_LOG_INFO( logger, "task done" )
 
     // Note: COMMON_THROWEXCEPTION( "I hate you" ) would be handled by Task
 }
@@ -100,13 +100,13 @@ struct Data : private common::NonCopyable, public SyncTokenMember
 {
     Data( int N ) 
     {
-        LAMA_LOG_INFO( logger, "construct Data( N = " << N << " )" )
+        SCAI_LOG_INFO( logger, "construct Data( N = " << N << " )" )
 
         mA = new int[N];
         mB = new int[N];
         mC = new int[N];
 
-        LAMA_LOG_INFO( logger, "a = " << mA << ", b = " << mB << ", c = " << mC )
+        SCAI_LOG_INFO( logger, "a = " << mA << ", b = " << mB << ", c = " << mC )
 
         for ( int i = 0; i < N; ++i )
         {
@@ -117,7 +117,7 @@ struct Data : private common::NonCopyable, public SyncTokenMember
 
     ~Data()
     {
-        LAMA_LOG_INFO( logger, "~Data, a = " << mA << ", b = " << mB << ", c = " << mC )
+        SCAI_LOG_INFO( logger, "~Data, a = " << mA << ", b = " << mB << ", c = " << mC )
         delete [] mC;
         delete [] mB;
         delete [] mA;
@@ -153,11 +153,11 @@ int main()
 
     shared_ptr<SyncToken> t = run( 100000 );
 
-    LAMA_LOG_INFO( logger, "run started" )
+    SCAI_LOG_INFO( logger, "run started" )
 
     t->wait();
 
-    LAMA_LOG_INFO( logger, "wait done" )
+    SCAI_LOG_INFO( logger, "wait done" )
 
     // destructor of token t waits for synchronization and frees data
 

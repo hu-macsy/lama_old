@@ -48,7 +48,7 @@ namespace lama
 using std::abs;
 using common::getScalarType;
 
-LAMA_LOG_DEF_LOGGER( OpenMPUtils::logger, "OpenMP.Utils" )
+SCAI_LOG_DEF_LOGGER( OpenMPUtils::logger, "OpenMP.Utils" )
 
 /* --------------------------------------------------------------------------- */
 
@@ -57,7 +57,7 @@ void OpenMPUtils::scale( ValueType mValues[], const ValueType value, const Index
 {
     LAMA_REGION( "OpenMP.Utils.scale" )
 
-    LAMA_LOG_INFO( logger, "scale, #n = " << n << ", value = " << value )
+    SCAI_LOG_INFO( logger, "scale, #n = " << n << ", value = " << value )
 
     if( value == static_cast<ValueType>( 1 ) )
     {
@@ -95,7 +95,7 @@ void OpenMPUtils::setScale(
 {
     LAMA_REGION( "OpenMP.Utils.setScale" )
 
-    LAMA_LOG_INFO( logger, "setScale, #n = " << n << ", value = " << value )
+    SCAI_LOG_INFO( logger, "setScale, #n = " << n << ", value = " << value )
 
     // alias of outValues == inValues is no problem
 
@@ -127,7 +127,7 @@ ValueType OpenMPUtils::sum( const ValueType array[], const IndexType n )
 {
     LAMA_REGION( "OpenMP.Utils.sum" )
 
-    LAMA_LOG_INFO( logger, "sum # array = " << array << ", n = " << n )
+    SCAI_LOG_INFO( logger, "sum # array = " << array << ", n = " << n )
     ValueType val = static_cast<ValueType>( 0 );
 
     #pragma omp parallel shared( val )
@@ -154,7 +154,7 @@ void OpenMPUtils::setVal( ValueType array[], const IndexType n, const ValueType 
 {
     LAMA_REGION( "OpenMP.Utils.setVal" )
 
-    LAMA_LOG_DEBUG( logger, "setVal<" << getScalarType<ValueType>() << ">: " << "array[" << n << "] = " << val )
+    SCAI_LOG_DEBUG( logger, "setVal<" << getScalarType<ValueType>() << ">: " << "array[" << n << "] = " << val )
 
     #pragma omp parallel for schedule( LAMA_OMP_SCHEDULE )
 
@@ -171,7 +171,7 @@ void OpenMPUtils::setOrder( ValueType array[], const IndexType n )
 {
     LAMA_REGION( "OpenMP.Utils.setOrder" )
 
-    LAMA_LOG_DEBUG( logger,
+    SCAI_LOG_DEBUG( logger,
                     "setOrder<" << getScalarType<ValueType>() << ">: " << "array[" << n << "] = 0, 1, 2, ..., " << ( n - 1 ) )
 
     #pragma omp parallel for schedule( LAMA_OMP_SCHEDULE )
@@ -187,7 +187,7 @@ void OpenMPUtils::setOrder( ValueType array[], const IndexType n )
 template<typename ValueType>
 ValueType OpenMPUtils::getValue( const ValueType* array, const IndexType i )
 {
-    LAMA_LOG_DEBUG( logger, "getValue<" << getScalarType<ValueType>() << ">: i = " << i )
+    SCAI_LOG_DEBUG( logger, "getValue<" << getScalarType<ValueType>() << ">: i = " << i )
 
     return array[i];
 }
@@ -199,7 +199,7 @@ ValueType OpenMPUtils::maxval( const ValueType array[], const IndexType n )
 {
     LAMA_REGION( "OpenMP.Utils.maxVal" )
 
-    LAMA_LOG_DEBUG( logger, "maxval<" << getScalarType<ValueType>() << ">: " << "array[" << n << "]" )
+    SCAI_LOG_DEBUG( logger, "maxval<" << getScalarType<ValueType>() << ">: " << "array[" << n << "]" )
 
     ValueType val = static_cast<ValueType>( 0.0 );
 
@@ -219,7 +219,7 @@ ValueType OpenMPUtils::maxval( const ValueType array[], const IndexType n )
 
         #pragma omp critical
         {
-            LAMA_LOG_TRACE( logger, "max val of thread = " << threadVal << ", global was " << val )
+            SCAI_LOG_TRACE( logger, "max val of thread = " << threadVal << ", global was " << val )
 
             if( threadVal > val )
             {
@@ -238,7 +238,7 @@ ValueType OpenMPUtils::absMaxVal( const ValueType array[], const IndexType n )
 {
     LAMA_REGION( "OpenMP.Utils.absMaxVal" )
 
-    LAMA_LOG_DEBUG( logger, "absMaxVal<" << getScalarType<ValueType>() << ">: " << "array[" << n << "]" )
+    SCAI_LOG_DEBUG( logger, "absMaxVal<" << getScalarType<ValueType>() << ">: " << "array[" << n << "]" )
 
     ValueType val = static_cast<ValueType>( 0.0 );
 
@@ -260,7 +260,7 @@ ValueType OpenMPUtils::absMaxVal( const ValueType array[], const IndexType n )
 
         #pragma omp critical
         {
-            LAMA_LOG_TRACE( logger, "max val of thread  = " << threadVal << ", global was " << val )
+            SCAI_LOG_TRACE( logger, "max val of thread  = " << threadVal << ", global was " << val )
 
             if( threadVal > val )
             {
@@ -279,7 +279,7 @@ ValueType OpenMPUtils::absMaxDiffVal( const ValueType array1[], const ValueType 
 {
     LAMA_REGION( "OpenMP.Utils.absMaxDiffVal" )
 
-    LAMA_LOG_DEBUG( logger, "absMaxDiffVal<" << getScalarType<ValueType>() << ">: " << "array[" << n << "]" )
+    SCAI_LOG_DEBUG( logger, "absMaxDiffVal<" << getScalarType<ValueType>() << ">: " << "array[" << n << "]" )
 
     ValueType val = static_cast<ValueType>( 0.0 );
 
@@ -301,7 +301,7 @@ ValueType OpenMPUtils::absMaxDiffVal( const ValueType array1[], const ValueType 
 
         #pragma omp critical
         {
-            LAMA_LOG_TRACE( logger, "max val of thread  = " << threadVal << ", global was " << val )
+            SCAI_LOG_TRACE( logger, "max val of thread  = " << threadVal << ", global was " << val )
 
             if( threadVal > val )
             {
@@ -320,7 +320,7 @@ bool OpenMPUtils::isSorted( const ValueType array[], const IndexType n, bool asc
 {
     LAMA_REGION( "OpenMP.Utils.isSorted" )
 
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "isSorted<" << getScalarType<ValueType>() << ">, n = " << n << ", ascending = " << ascending )
 
     bool sorted = true; //!< will be set to false at violations
@@ -358,7 +358,7 @@ void OpenMPUtils::set( ValueType1 out[], const ValueType2 in[], const IndexType 
 {
     LAMA_REGION( "OpenMP.Utils.set" )
 
-    LAMA_LOG_DEBUG( logger,
+    SCAI_LOG_DEBUG( logger,
                     "set: out<" << getScalarType<ValueType1>() << "[" << n << "]" << " = in<" << getScalarType<ValueType2>() << ">[" << n << "]" )
 
     #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
@@ -375,7 +375,7 @@ bool OpenMPUtils::validIndexes( const IndexType array[], const IndexType n, cons
 {
     LAMA_REGION( "OpenMP.Utils.validIndexes" )
 
-    LAMA_LOG_DEBUG( logger, "validIndexes: array[" << n << "], size " << size )
+    SCAI_LOG_DEBUG( logger, "validIndexes: array[" << n << "], size " << size )
 
     bool validFlag = true;
 
@@ -406,7 +406,7 @@ void OpenMPUtils::setGather( ValueType1 out[], const ValueType2 in[], const Inde
 {
     LAMA_REGION( "OpenMP.Utils.setGather" )
 
-    LAMA_LOG_DEBUG( logger,
+    SCAI_LOG_DEBUG( logger,
                     "setGather: out<" << getScalarType<ValueType1>() << ">[" << n << "]" << " = in<" << getScalarType<ValueType2>() << ">[ indexes[" << n << "] ]" )
 
     #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
@@ -424,7 +424,7 @@ void OpenMPUtils::setScatter( ValueType1 out[], const IndexType indexes[], const
 {
     LAMA_REGION( "OpenMP.Utils.setScatter" )
 
-    LAMA_LOG_DEBUG( logger,
+    SCAI_LOG_DEBUG( logger,
                     "setScatter: out<" << getScalarType<ValueType1>() << ">" << "[ indexes[" << n << "] ]" << " = in<" << getScalarType<ValueType2>() << ">[" << n << "]" )
 
     #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
@@ -442,7 +442,7 @@ void OpenMPUtils::invert( ValueType array[], const IndexType n )
 {
     LAMA_REGION( "OpenMP.Utils.invert" )
 
-    LAMA_LOG_INFO( logger, "invert array[ " << n << " ]" )
+    SCAI_LOG_INFO( logger, "invert array[ " << n << " ]" )
 
     ValueType one = static_cast<ValueType>( 1.0 );
 

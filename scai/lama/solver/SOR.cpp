@@ -50,7 +50,7 @@ using namespace memory;
 namespace lama
 {
 
-LAMA_LOG_DEF_LOGGER( SOR::logger, "Solver.IterativeSolver.OmegaSolver.SOR" )
+SCAI_LOG_DEF_LOGGER( SOR::logger, "Solver.IterativeSolver.OmegaSolver.SOR" )
 
 SOR::SOR( const std::string& id )
     :
@@ -114,7 +114,7 @@ void SOR::initialize( const Matrix& coefficients )
         else
         {
             mIterationMatrix.reset( new CSRSparseMatrix<float>( coefficients ) );
-            LAMA_LOG_INFO( logger, "conversion of iteration matrix to CSR: " << *mIterationMatrix )
+            SCAI_LOG_INFO( logger, "conversion of iteration matrix to CSR: " << *mIterationMatrix )
         }
     }
     else if( coefficients.getValueType() == common::scalar::DOUBLE )
@@ -128,7 +128,7 @@ void SOR::initialize( const Matrix& coefficients )
         else
         {
             mIterationMatrix.reset( new CSRSparseMatrix<double>( coefficients ) );
-            LAMA_LOG_INFO( logger, "conversion of iteration matrix to CSR: " << *mIterationMatrix )
+            SCAI_LOG_INFO( logger, "conversion of iteration matrix to CSR: " << *mIterationMatrix )
         }
     }
     else
@@ -172,7 +172,7 @@ void SOR::iterateImpl()
 
     if( mIterationMatrix.get() )
     {
-        LAMA_LOG_DEBUG( logger,
+        SCAI_LOG_DEBUG( logger,
                         "Taking CSR converted matrix " << *mIterationMatrix << " instead of " << *getRuntime().mCoefficients )
         matrixPtr = mIterationMatrix.get();
     }
@@ -203,7 +203,7 @@ void SOR::iterateImpl()
 
     ValueType omega = mOmega.getValue<ValueType>();
 
-    LAMA_LOG_DEBUG( logger, "iterate, omega = " << omega << ", #rows = " << csrA.getNumRows() )
+    SCAI_LOG_DEBUG( logger, "iterate, omega = " << omega << ", #rows = " << csrA.getNumRows() )
 
     //SOR with relaxation factor omega
     if( omega != 1.0 )

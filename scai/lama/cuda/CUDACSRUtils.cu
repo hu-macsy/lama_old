@@ -98,11 +98,11 @@ using namespace common;
 namespace lama
 {
 
-    LAMA_LOG_DEF_LOGGER( CUDACSRUtils::logger, "CUDA.CSRUtils" )
+    SCAI_LOG_DEF_LOGGER( CUDACSRUtils::logger, "CUDA.CSRUtils" )
 
     IndexType CUDACSRUtils::sizes2offsets( IndexType array[], const IndexType n )
     {
-        LAMA_LOG_INFO( logger, "sizes2offsets " << " #n = " << n )
+        SCAI_LOG_INFO( logger, "sizes2offsets " << " #n = " << n )
 
         LAMA_CHECK_CUDA_ACCESS
 
@@ -136,7 +136,7 @@ namespace lama
     {
         LAMA_REGION( "CUDA.CSRUtils.offsets2sizes" )
 
-        LAMA_LOG_INFO( logger, "offsets2sizes " << " #n = " << n )
+        SCAI_LOG_INFO( logger, "offsets2sizes " << " #n = " << n )
 
         LAMA_CHECK_CUDA_ACCESS
 
@@ -239,7 +239,7 @@ namespace lama
     {
         LAMA_REGION( "CUDA.CSRUtils.CSR2CSC" )
 
-        LAMA_LOG_INFO( logger, "convertCSR2CSC of " << numRows << " x " << numColumns << ", nnz = " << numValues )
+        SCAI_LOG_INFO( logger, "convertCSR2CSC of " << numRows << " x " << numColumns << ", nnz = " << numValues )
 
         // Sort the csrJA ( same as cooJA ), apply it to cooIA and cooValues
 
@@ -941,7 +941,7 @@ namespace lama
     {
         LAMA_REGION( "CUDA.CSRUtils.scaleRows" )
 
-        LAMA_LOG_INFO( logger, "scaleRows<" << getScalarType<ValueType1>() << ","
+        SCAI_LOG_INFO( logger, "scaleRows<" << getScalarType<ValueType1>() << ","
                         << getScalarType<ValueType2>() << ">"
                         << ", numrows= " << numRows )
 
@@ -975,10 +975,10 @@ namespace lama
     {
         LAMA_REGION( "CUDA.CSRUtils.normalGEMV" )
 
-        LAMA_LOG_INFO( logger, "normalGEMV<" << getScalarType<ValueType>() << ">" <<
+        SCAI_LOG_INFO( logger, "normalGEMV<" << getScalarType<ValueType>() << ">" <<
                         " result[ " << numRows << "] = " << alpha << " * A(csr) * x + " << beta << " * y " )
 
-        LAMA_LOG_DEBUG( logger, "x = " << x << ", y = " << y << ", result = " << result )
+        SCAI_LOG_DEBUG( logger, "x = " << x << ", y = " << y << ", result = " << result )
 
         LAMA_CHECK_CUDA_ACCESS
 
@@ -999,7 +999,7 @@ namespace lama
             stream = cudaStreamSyncToken->getCUDAStream();
         }
 
-        LAMA_LOG_INFO( logger, "Start normal_gemv_kernel<" << getScalarType<ValueType>()
+        SCAI_LOG_INFO( logger, "Start normal_gemv_kernel<" << getScalarType<ValueType>()
                         << ", useTexture = " << useTexture << ">" );
 
         if ( useTexture )
@@ -1160,7 +1160,7 @@ namespace lama
         if ( !syncToken )
         {
             LAMA_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "normalGEMV, stream = " << stream )
-            LAMA_LOG_DEBUG( logger, "normalGEMV<" << getScalarType<ValueType>() << "> synchronized" )
+            SCAI_LOG_DEBUG( logger, "normalGEMV<" << getScalarType<ValueType>() << "> synchronized" )
         }
 
         if ( useTexture )
@@ -1196,10 +1196,10 @@ namespace lama
                     const ValueType csrValues[],
                     SyncToken* syncToken )
     {
-        LAMA_LOG_INFO( logger, "normalGEVM<" << getScalarType<ValueType>() << ">" <<
+        SCAI_LOG_INFO( logger, "normalGEVM<" << getScalarType<ValueType>() << ">" <<
                         " result[ " << numColumns << "] = " << alpha << " * A(csr) * x + " << beta << " * y " )
 
-        LAMA_LOG_DEBUG( logger, "x = " << x << ", y = " << y << ", result = " << result )
+        SCAI_LOG_DEBUG( logger, "x = " << x << ", y = " << y << ", result = " << result )
 
         LAMA_CHECK_CUDA_ACCESS
 
@@ -1220,7 +1220,7 @@ namespace lama
             stream = cudaStreamSyncToken->getCUDAStream();
         }
 
-        LAMA_LOG_INFO( logger, "Start normal_gevm_kernel<" << getScalarType<ValueType>()
+        SCAI_LOG_INFO( logger, "Start normal_gevm_kernel<" << getScalarType<ValueType>()
                         << ", useTexture = " << useTexture << ">" );
 
         if ( useTexture )
@@ -1381,7 +1381,7 @@ namespace lama
         if ( !syncToken )
         {
             LAMA_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "normalGEVM, stream = " << stream )
-            LAMA_LOG_DEBUG( logger, "normalGEVM<" << getScalarType<ValueType>() << "> synchronized" )
+            SCAI_LOG_DEBUG( logger, "normalGEVM<" << getScalarType<ValueType>() << "> synchronized" )
         }
 
         if ( useTexture )
@@ -1417,7 +1417,7 @@ namespace lama
     {
         LAMA_REGION( "CUDA.CSRUtils.sparseGEMV" )
 
-        LAMA_LOG_INFO( logger,
+        SCAI_LOG_INFO( logger,
                         "sparseGEMV<" << getScalarType<ValueType>() << ">" << ", #non-zero rows = " << numNonZeroRows )
 
         LAMA_CHECK_CUDA_ACCESS
@@ -1471,7 +1471,7 @@ namespace lama
         if ( !syncToken )
         {
             LAMA_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "sparseGEMV, stream = " << stream )
-            LAMA_LOG_INFO( logger, "sparseGEMV<" << getScalarType<ValueType>() << "> synchronized" )
+            SCAI_LOG_INFO( logger, "sparseGEMV<" << getScalarType<ValueType>() << "> synchronized" )
         }
 
         if ( useTexture )
@@ -1506,7 +1506,7 @@ namespace lama
                     const ValueType csrValues[],
                     SyncToken* syncToken )
     {
-        LAMA_LOG_INFO( logger,
+        SCAI_LOG_INFO( logger,
                         "sparseGEVM<" << getScalarType<ValueType>() << ">" << ", #non-zero rows = " << numNonZeroRows )
 
         LAMA_CHECK_CUDA_ACCESS
@@ -1560,7 +1560,7 @@ namespace lama
         if ( !syncToken )
         {
             LAMA_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "sparseGEVM, stream = " << stream )
-            LAMA_LOG_INFO( logger, "sparseGEVM<" << getScalarType<ValueType>() << "> synchronized" )
+            SCAI_LOG_INFO( logger, "sparseGEVM<" << getScalarType<ValueType>() << "> synchronized" )
         }
 
         if ( useTexture )
@@ -1731,7 +1731,7 @@ namespace lama
                     const IndexType numRows,
                     SyncToken* syncToken )
     {
-        LAMA_LOG_INFO( logger, "jacobi, #rows = " << numRows )
+        SCAI_LOG_INFO( logger, "jacobi, #rows = " << numRows )
 
         LAMA_CHECK_CUDA_ACCESS
 
@@ -1752,7 +1752,7 @@ namespace lama
         dim3 dimBlock( blockSize, 1, 1 );
         dim3 dimGrid = makeGrid( numRows, dimBlock.x );
 
-        LAMA_LOG_INFO( logger, "Start csr_jacobi_kernel<" << getScalarType<ValueType>()
+        SCAI_LOG_INFO( logger, "Start csr_jacobi_kernel<" << getScalarType<ValueType>()
                         << ", useTexture = " << useTexture << ">" );
 
         if ( useTexture )
@@ -1843,7 +1843,7 @@ namespace lama
                     const ValueType omega,
                     const IndexType numNonEmptyRows )
     {
-        LAMA_LOG_INFO( logger, "jacobiHalo, #non-empty rows = " << numNonEmptyRows )
+        SCAI_LOG_INFO( logger, "jacobiHalo, #non-empty rows = " << numNonEmptyRows )
 
         LAMA_CHECK_CUDA_ACCESS
 
@@ -1941,7 +1941,7 @@ namespace lama
                     const ValueType omega,
                     const IndexType numNonEmptyRows )
     {
-        LAMA_LOG_INFO( logger, "jacobiHaloWithDiag, #non-empty rows = " << numNonEmptyRows )
+        SCAI_LOG_INFO( logger, "jacobiHaloWithDiag, #non-empty rows = " << numNonEmptyRows )
 
         LAMA_CHECK_CUDA_ACCESS
 
@@ -2098,7 +2098,7 @@ namespace lama
     {
         LAMA_REGION( "CUDA.CSRUtils.matrixAddSizes" )
 
-        LAMA_LOG_INFO(
+        SCAI_LOG_INFO(
                         logger,
                         "matrixAddSizes for " << numRows << " x " << numColumns << " matrix" << ", diagonalProperty = " << diagonalProperty )
 
@@ -2585,7 +2585,7 @@ namespace lama
 
         LAMA_REGION( "CUDA.CSR.matrixMultiplySizes" )
 
-        LAMA_LOG_INFO(
+        SCAI_LOG_INFO(
                         logger,
                         "matrixMutliplySizes for " << numRows << " x " << numColumns << " matrix" << ", diagonalProperty = " << diagonalProperty )
 
@@ -2807,7 +2807,7 @@ namespace lama
     {
         LAMA_REGION( "CUDA.CSRUtils.matrixAdd" )
 
-        LAMA_LOG_INFO( logger, "matrixAdd for " << numRows << "x" << numColumns << " matrix" )
+        SCAI_LOG_INFO( logger, "matrixAdd for " << numRows << "x" << numColumns << " matrix" )
 
         LAMA_CHECK_CUDA_ACCESS
 
@@ -3113,7 +3113,7 @@ namespace lama
     {
         LAMA_REGION( "CUDA.CSRUtils.matrixMultiply" )
 
-        LAMA_LOG_INFO( logger, "matrixMultiply for " << numRows << "x" << numColumns << " matrix" )
+        SCAI_LOG_INFO( logger, "matrixMultiply for " << numRows << "x" << numColumns << " matrix" )
 
         LAMA_CHECK_CUDA_ACCESS
 
@@ -3209,7 +3209,7 @@ namespace lama
 
     void CUDACSRUtils::setInterface( CSRUtilsInterface& CSRUtils )
     {
-        LAMA_LOG_INFO( logger, "set CSR routines for CUDA in Interface" )
+        SCAI_LOG_INFO( logger, "set CSR routines for CUDA in Interface" )
 
         LAMA_INTERFACE_REGISTER( CSRUtils, sizes2offsets )
         LAMA_INTERFACE_REGISTER( CSRUtils, offsets2sizes )

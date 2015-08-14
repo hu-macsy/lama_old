@@ -63,7 +63,7 @@ using common::getScalarType;
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-LAMA_LOG_DEF_LOGGER( OpenMPELLUtils::logger, "OpenMP.ELLUtils" )
+SCAI_LOG_DEF_LOGGER( OpenMPELLUtils::logger, "OpenMP.ELLUtils" )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
@@ -81,7 +81,7 @@ IndexType OpenMPELLUtils::countNonEmptyRowsBySizes( const IndexType sizes[], con
         }
     }
 
-    LAMA_LOG_INFO( logger, "#non-zero rows = " << counter << ", counted by sizes" )
+    SCAI_LOG_INFO( logger, "#non-zero rows = " << counter << ", counted by sizes" )
 
     return counter;
 }
@@ -109,14 +109,14 @@ void OpenMPELLUtils::setNonEmptyRowsBySizes(
 
     LAMA_ASSERT_EQUAL_DEBUG( counter, numNonEmptyRows )
 
-    LAMA_LOG_INFO( logger, "#non-zero rows = " << counter << ", set by sizes" )
+    SCAI_LOG_INFO( logger, "#non-zero rows = " << counter << ", set by sizes" )
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 bool OpenMPELLUtils::hasDiagonalProperty( const IndexType numDiagonals, const IndexType ellJA[] )
 {
-    LAMA_LOG_INFO( logger, "hasDiagonalProperty, #numDiagonals = " << numDiagonals )
+    SCAI_LOG_INFO( logger, "hasDiagonalProperty, #numDiagonals = " << numDiagonals )
 
     if( numDiagonals == 0 )
     {
@@ -153,7 +153,7 @@ void OpenMPELLUtils::scaleValue(
     ValueType ellValues[],
     const OtherValueType values[] )
 {
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "scaleValue<" << getScalarType<ValueType>() << ", " << getScalarType<OtherValueType>() << ">" << ", #numRows = " << numRows )
 
     #pragma omp parallel for schedule( LAMA_OMP_SCHEDULE )
@@ -178,7 +178,7 @@ void OpenMPELLUtils::check(
     const IndexType ellJA[],
     const char* msg )
 {
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "check # numRows = " << numRows << ", numValuesPerRow = " << numValuesPerRow << ", numColumns = " << numColumns )
 
     if( numRows > 0 )
@@ -243,13 +243,13 @@ ValueType OpenMPELLUtils::absMaxVal(
                     threadVal = val;
                 }
 
-                // LAMA_LOG_TRACE( logger, "absMaxVal, val[" << i << ", " << jj << "] = " << val )
+                // SCAI_LOG_TRACE( logger, "absMaxVal, val[" << i << ", " << jj << "] = " << val )
             }
         }
 
         #pragma omp critical
         {
-            LAMA_LOG_DEBUG( logger, "absMaxVal, threadVal = " << threadVal << ", maxVal = " << maxValue )
+            SCAI_LOG_DEBUG( logger, "absMaxVal, threadVal = " << threadVal << ", maxVal = " << maxValue )
 
             if( threadVal > maxValue )
             {
@@ -258,7 +258,7 @@ ValueType OpenMPELLUtils::absMaxVal(
         }
     }
 
-    LAMA_LOG_DEBUG( logger, "absMaxVal, maxVal = " << maxValue )
+    SCAI_LOG_DEBUG( logger, "absMaxVal, maxVal = " << maxValue )
 
     return maxValue;
 }
@@ -276,7 +276,7 @@ void OpenMPELLUtils::getRow(
     const IndexType ellJA[],
     const ValueType values[] )
 {
-    LAMA_LOG_DEBUG( logger, "get row #i = " << i )
+    SCAI_LOG_DEBUG( logger, "get row #i = " << i )
 
     #pragma omp parallel for schedule( LAMA_OMP_SCHEDULE )
 
@@ -304,7 +304,7 @@ OtherValueType OpenMPELLUtils::getValue(
     const IndexType ellJA[],
     const ValueType ellValues[] )
 {
-    LAMA_LOG_TRACE( logger, "get value i = " << i << ", j = " << j )
+    SCAI_LOG_TRACE( logger, "get value i = " << i << ", j = " << j )
 
     for( IndexType jj = 0; jj < ellSizes[i]; ++jj )
     {
@@ -332,7 +332,7 @@ void OpenMPELLUtils::getCSRValues(
     const IndexType ellJA[],
     const ELLValueType ellValues[] )
 {
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "get CSRValues<" << getScalarType<ELLValueType>() << ", " << getScalarType<CSRValueType>() << ">" << ", #rows = " << numRows )
 
     // parallelization possible as offset array csrIA is available
@@ -375,7 +375,7 @@ void OpenMPELLUtils::setCSRValues(
     const IndexType csrJA[],
     const CSRValueType csrValues[] )
 {
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "set CSRValues<" << getScalarType<ELLValueType>() << ", " << getScalarType<CSRValueType>() << ">" << ", #rows = " << numRows << ", #values/row = " << numValuesPerRow )
 
     // parallelization possible as offset array csrIA is available
@@ -422,7 +422,7 @@ void OpenMPELLUtils::fillELLValues(
     const IndexType numRows,
     const IndexType numValuesPerRow )
 {
-    LAMA_LOG_INFO( logger, "fill ELLValues<" << getScalarType<ValueType>() )
+    SCAI_LOG_INFO( logger, "fill ELLValues<" << getScalarType<ValueType>() )
 
     #pragma omp parallel
     {
@@ -464,7 +464,7 @@ void OpenMPELLUtils::compressIA(
     const ValueType eps,
     IndexType newIA[] )
 {
-    LAMA_LOG_INFO( logger, "compressIA with eps = " << eps )
+    SCAI_LOG_INFO( logger, "compressIA with eps = " << eps )
 
     #pragma omp parallel
     {
@@ -508,7 +508,7 @@ void OpenMPELLUtils::compressValues(
     IndexType newJA[],
     ValueType newValues[] )
 {
-    LAMA_LOG_INFO( logger, "compressValues with eps = " << eps )
+    SCAI_LOG_INFO( logger, "compressValues with eps = " << eps )
 
     #pragma omp parallel
     {
@@ -551,7 +551,7 @@ void OpenMPELLUtils::matrixMultiplySizes(
     const IndexType bJA[],
     const IndexType bNumValuesPerRow )
 {
-    LAMA_LOG_INFO( logger, "matrixMultiplySizes with numRows A = " << aNumRows << " and numRows B = " << bNumRows )
+    SCAI_LOG_INFO( logger, "matrixMultiplySizes with numRows A = " << aNumRows << " and numRows B = " << bNumRows )
 
     #pragma omp parallel
     {
@@ -608,7 +608,7 @@ void OpenMPELLUtils::matrixMultiply(
     const ValueType bValues[],
     const IndexType bNumValuesPerRow )
 {
-    LAMA_LOG_INFO( logger, "matrix multiply with numRows A = " << aNumRows << " and numRows B = " << bNumRows )
+    SCAI_LOG_INFO( logger, "matrix multiply with numRows A = " << aNumRows << " and numRows B = " << bNumRows )
 
     #pragma omp parallel
     {
@@ -676,7 +676,7 @@ void OpenMPELLUtils::matrixAddSizes(
     const IndexType bJA[],
     const IndexType bNumValuesPerRow )
 {
-    LAMA_LOG_INFO( logger, "matrixAddSizes A + B, #rows = " << m )
+    SCAI_LOG_INFO( logger, "matrixAddSizes A + B, #rows = " << m )
 
     #pragma omp parallel
     {
@@ -733,7 +733,7 @@ void OpenMPELLUtils::matrixAdd(
     const ValueType bValues[],
     const IndexType bNumValuesPerRow )
 {
-    LAMA_LOG_INFO( logger, "matrixAdd C = " << alpha << " * A + " << beta << " * B, #rows = " << m )
+    SCAI_LOG_INFO( logger, "matrixAdd C = " << alpha << " * A + " << beta << " * B, #rows = " << m )
 
     #pragma omp parallel
     {
@@ -801,12 +801,12 @@ void OpenMPELLUtils::jacobi(
     const ValueType omega,
     class SyncToken* syncToken )
 {
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "jacobi<" << getScalarType<ValueType>() << ">" << ", #rows = " << numRows << ", omega = " << omega )
 
     if( syncToken != NULL )
     {
-        LAMA_LOG_ERROR( logger, "jacobi called asynchronously, not supported here" )
+        SCAI_LOG_ERROR( logger, "jacobi called asynchronously, not supported here" )
     }
 
     const ValueType oneMinusOmega = static_cast<ValueType>( 1.0 - omega );
@@ -862,7 +862,7 @@ void OpenMPELLUtils::jacobiHalo(
 {
     if( syncToken != NULL )
     {
-        LAMA_LOG_WARN( logger, "jacobi called asynchronously, not supported here" )
+        SCAI_LOG_WARN( logger, "jacobi called asynchronously, not supported here" )
     }
 
     #pragma omp parallel
@@ -911,7 +911,7 @@ void OpenMPELLUtils::normalGEMV(
     const ValueType ellValues[],
     SyncToken* syncToken )
 {
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "normalGEMV<" << getScalarType<ValueType>() << ", #threads = " << omp_get_max_threads() << ">, result[" << numRows << "] = " << alpha << " * A( ell, #maxNZ/row = " << numValuesPerRow << " ) * x + " << beta << " * y " )
 
     if( numValuesPerRow == 0 )
@@ -923,7 +923,7 @@ void OpenMPELLUtils::normalGEMV(
 
     if( syncToken )
     {
-        LAMA_LOG_WARN( logger, "Host: asynchronous execution by task should be done at higher level" )
+        SCAI_LOG_WARN( logger, "Host: asynchronous execution by task should be done at higher level" )
     }
 
     #pragma omp parallel
@@ -940,14 +940,14 @@ void OpenMPELLUtils::normalGEMV(
             {
                 IndexType pos = ellindex( i, jj, numRows, numValuesPerRow );
                 IndexType j = ellJA[pos];
-                LAMA_LOG_TRACE( logger,
+                SCAI_LOG_TRACE( logger,
                                 "temp += dataAccess[i + jj * numRows] * xAccess[j];, jj = " << jj << ", j = " << j )
-                LAMA_LOG_TRACE( logger, ", dataAccess[i + jj * numRows] = " << ellValues[ pos ] )
-                LAMA_LOG_TRACE( logger, ", xAccess[j] = " << x[ j ] )
+                SCAI_LOG_TRACE( logger, ", dataAccess[i + jj * numRows] = " << ellValues[ pos ] )
+                SCAI_LOG_TRACE( logger, ", xAccess[j] = " << x[ j ] )
                 temp += ellValues[pos] * x[j];
             }
 
-            LAMA_LOG_TRACE( logger, "row = " << i << ", temp = " << temp )
+            SCAI_LOG_TRACE( logger, "row = " << i << ", temp = " << temp )
 
             if( static_cast<ValueType>( 0 ) == beta )
             {
@@ -985,10 +985,10 @@ void OpenMPELLUtils::sparseGEMV(
 {
     if( syncToken )
     {
-        LAMA_LOG_WARN( logger, "Host: asynchronous execution by task should be done at higher level" )
+        SCAI_LOG_WARN( logger, "Host: asynchronous execution by task should be done at higher level" )
     }
 
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "sparseGEMV<" << getScalarType<ValueType>() << ">, n = " << numRows << ", nonZeroRows = " << numNonZeroRows << ", alpha = " << alpha )
 
     #pragma omp parallel
@@ -1040,7 +1040,7 @@ void OpenMPELLUtils::normalGEVM(
     const ValueType ellValues[],
     SyncToken* syncToken )
 {
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "normalGEVM<" << getScalarType<ValueType>() << ", #threads = " << omp_get_max_threads() << ">, result[" << numColumns << "] = " << alpha << " * x * A + " << beta << " * y " )
 
     if( syncToken )
@@ -1063,16 +1063,16 @@ void OpenMPELLUtils::normalGEVM(
                 {
                     if( ellJA[k * numRows + j] == i )
                     {
-                        LAMA_LOG_TRACE( logger, "temp += dataAccess[k * numRows + j] * xAccess[j]; j = " << j )
-                        LAMA_LOG_TRACE( logger, ", dataAccess[k * numRows + j] = " << ellValues[ k * numRows + j ] )
-                        LAMA_LOG_TRACE( logger, ", xAccess[j] = " << x[ j ] )
+                        SCAI_LOG_TRACE( logger, "temp += dataAccess[k * numRows + j] * xAccess[j]; j = " << j )
+                        SCAI_LOG_TRACE( logger, ", dataAccess[k * numRows + j] = " << ellValues[ k * numRows + j ] )
+                        SCAI_LOG_TRACE( logger, ", xAccess[j] = " << x[ j ] )
 
                         temp += ellValues[k * numRows + j] * x[j];
                     }
                 }
             }
 
-            LAMA_LOG_TRACE( logger, "column = " << i << ", temp = " << temp )
+            SCAI_LOG_TRACE( logger, "column = " << i << ", temp = " << temp )
 
             if( 0.0 == beta )
             {
@@ -1091,7 +1091,7 @@ void OpenMPELLUtils::normalGEVM(
         }
     }
 
-    if( LAMA_LOG_TRACE_ON( logger ) )
+    if( SCAI_LOG_TRACE_ON( logger ) )
     {
         std::cout << "NormalGEVM: result = ";
 
@@ -1121,7 +1121,7 @@ void OpenMPELLUtils::sparseGEVM(
     const ValueType ellValues[],
     SyncToken* syncToken )
 {
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "sparseGEVM<" << getScalarType<ValueType>() << ", #threads = " << omp_get_max_threads() << ">, result[" << numColumns << "] = " << alpha << " * x * A " )
 
     if( syncToken )
@@ -1147,10 +1147,10 @@ void OpenMPELLUtils::sparseGEVM(
                 {
                     if( ellJA[k * numNonZeroRows + j] == i )
                     {
-                        LAMA_LOG_TRACE( logger, "temp += dataAccess[k * numNonZeroRows + j] * xAccess[j]; i = " << j )
-                        LAMA_LOG_TRACE( logger,
+                        SCAI_LOG_TRACE( logger, "temp += dataAccess[k * numNonZeroRows + j] * xAccess[j]; i = " << j )
+                        SCAI_LOG_TRACE( logger,
                                         ", dataAccess[k * numNonZeroRows + j] = " << ellValues[ k * numNonZeroRows + j ] )
-                        LAMA_LOG_TRACE( logger, ", xAccess[j] = " << x[ j ] )
+                        SCAI_LOG_TRACE( logger, ", xAccess[j] = " << x[ j ] )
 
                         temp += ellValues[k * numNonZeroRows + j] * x[j];
                     }

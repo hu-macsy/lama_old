@@ -5,17 +5,17 @@ Environment variables
 
 This is a summary of environment variables that are currently used for LAMA.
 
-LAMA_LOG
+SCAI_LOG
 --------
 
-The variable ``LAMA_LOG`` specifies the detail of logging or the logger configuration file.
+The variable ``SCAI_LOG`` specifies the detail of logging or the logger configuration file.
 
 ::
 
-    export LAMA_LOG=WARN  ( is default )
-    export LAMA_LOG=INFO
-    export LAMA_LOG=DEBUG
-    export LAMA_LOG=<filename>
+    export SCAI_LOG=WARN  ( is default )
+    export SCAI_LOG=INFO
+    export SCAI_LOG=DEBUG
+    export SCAI_LOG=<filename>
 
 For specific logging of certain classes a configuration file is required. The entries in this file could be
 as follows:

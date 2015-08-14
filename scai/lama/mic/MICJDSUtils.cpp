@@ -52,7 +52,7 @@
 namespace lama
 {
 
-LAMA_LOG_DEF_LOGGER( MICJDSUtils::logger, "MIC.JDSUtils" )
+SCAI_LOG_DEF_LOGGER( MICJDSUtils::logger, "MIC.JDSUtils" )
 
 /* --------------------------------------------------------------------------- */
 /*   Implementation of methods                                                 */
@@ -72,7 +72,7 @@ void MICJDSUtils::getRow(
     const IndexType ja[],
     const ValueType values[] )
 {
-    LAMA_LOG_INFO( logger, "getRow with i = " << i << ", numColumns = " << numColumns << " and numRows = " << numRows )
+    SCAI_LOG_INFO( logger, "getRow with i = " << i << ", numColumns = " << numColumns << " and numRows = " << numRows )
 
     int device = MICContext::getCurrentDevice();
 
@@ -190,7 +190,7 @@ void MICJDSUtils::scaleValue(
     ValueType jdsValues[],
     const OtherValueType values[] )
 {
-    LAMA_LOG_INFO( logger, "scaleValue with numRows = " << numRows )
+    SCAI_LOG_INFO( logger, "scaleValue with numRows = " << numRows )
 
     int device = MICContext::getCurrentDevice();
 
@@ -237,7 +237,7 @@ bool MICJDSUtils::checkDiagonalProperty(
     const IndexType ja[],
     const IndexType dlg[] )
 {
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "checkDiagonalProperty with numDiagonals = " << numDiagonals << ", numColumns = " << numColumns << " and numRows = " << numRows )
 
     if( numRows > 0 )
@@ -303,7 +303,7 @@ bool MICJDSUtils::checkDiagonalProperty(
 
 void MICJDSUtils::setInversePerm( IndexType inversePerm[], const IndexType perm[], const IndexType n )
 {
-    LAMA_LOG_INFO( logger, "compute inverse perm, n = " << n )
+    SCAI_LOG_INFO( logger, "compute inverse perm, n = " << n )
 
     void* inversePermPtr = inversePerm;
     const void* permPtr = perm;
@@ -444,7 +444,7 @@ IndexType MICJDSUtils::ilg2dlg(
     const IndexType ilg[],
     const IndexType numRows )
 {
-    LAMA_LOG_INFO( logger, "ilg2dlg with numDiagonals = " << numDiagonals << ", numRows = " << numRows )
+    SCAI_LOG_INFO( logger, "ilg2dlg with numDiagonals = " << numDiagonals << ", numRows = " << numRows )
 
     if( numDiagonals == 0 )
     {
@@ -517,7 +517,7 @@ void MICJDSUtils::getCSRValues(
     const IndexType jdsJA[],
     const JDSValueType jdsValues[] )
 {
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "get CSRValues<" << common::getScalarType<JDSValueType>() << ", " << common::getScalarType<CSRValueType>() << ">" << ", #rows = " << numRows )
 
     LAMA_REGION( "MIC.JDS->CSR_values" )
@@ -581,7 +581,7 @@ void MICJDSUtils::setCSRValues(
     const IndexType csrJA[],
     const CSRValueType csrValues[] )
 {
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "set CSRValues<" << common::getScalarType<JDSValueType>() << ", " << common::getScalarType<CSRValueType>() << ">" << ", #rows = " << numRows )
 
     LAMA_REGION( "MIC.JDS<-CSR_values" )
@@ -645,7 +645,7 @@ void MICJDSUtils::normalGEMV(
     const ValueType jdsValues[],
     class SyncToken* /* syncToken */)
 {
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "normalGEMV<" << common::getScalarType<ValueType>() << ">, result[" << numRows << "] = " << alpha << " * A( jds, ndlg = " << ndlg << " ) * x + " << beta << " * y " )
 
     if( beta == 0 )
@@ -663,7 +663,7 @@ void MICJDSUtils::normalGEMV(
         }
         else
         {
-            LAMA_LOG_DEBUG( logger, "result remains unchanged" )
+            SCAI_LOG_DEBUG( logger, "result remains unchanged" )
         }
     }
     else
@@ -744,14 +744,14 @@ void MICJDSUtils::jacobi(
 {
     LAMA_REGION( "MIC.JDS.jacobi" )
 
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "jacobi<" << common::getScalarType<ValueType>() << ">" << ", #rows = " << numRows << ", omega = " << omega )
 
     if( syncToken )
     {
         MICSyncToken* micSyncToken = dynamic_cast<MICSyncToken*>( syncToken );
         LAMA_ASSERT_ERROR( micSyncToken, "no MIC sync token provided" )
-        LAMA_LOG_WARN( logger, "jacobi called asynchronously, not supported yet" )
+        SCAI_LOG_WARN( logger, "jacobi called asynchronously, not supported yet" )
     }
 
     void* solutionPtr = solution;
@@ -827,14 +827,14 @@ void MICJDSUtils::jacobiHalo(
     const ValueType omega,
     class SyncToken* syncToken )
 {
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "jacobiHalo<" << common::getScalarType<ValueType>() << ">" << ", #rows = " << numRows << ", omega = " << omega )
 
     LAMA_REGION( "MIC.JDS.jacobiHalo" )
 
     if( syncToken != NULL )
     {
-        LAMA_LOG_WARN( logger, "jacobi called asynchronously, not supported here" )
+        SCAI_LOG_WARN( logger, "jacobi called asynchronously, not supported here" )
     }
 
     if( numRows == 0 )
@@ -903,7 +903,7 @@ void MICJDSUtils::jacobiHalo(
 
 void MICJDSUtils::setInterface( JDSUtilsInterface& JDSUtils )
 {
-    LAMA_LOG_INFO( logger, "set JDS routines for MIC in Interface" )
+    SCAI_LOG_INFO( logger, "set JDS routines for MIC in Interface" )
 
     // Register all MIC routines of this class for the LAMA interface
 

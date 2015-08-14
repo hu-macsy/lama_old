@@ -58,7 +58,7 @@ using namespace tasking;
 namespace lama
 {
 
-    LAMA_LOG_DEF_LOGGER( CUDACOOUtils::logger, "CUDA.COOUtils" )
+    SCAI_LOG_DEF_LOGGER( CUDACOOUtils::logger, "CUDA.COOUtils" )
 
     /* --------------------------------------------------------------------------- */
 
@@ -254,7 +254,7 @@ namespace lama
     {
         LAMA_REGION( "CUDA.COO.normalGEMV" )
 
-        LAMA_LOG_INFO( logger, "normalGEMV<" << getScalarType<ValueType>() << ">, "
+        SCAI_LOG_INFO( logger, "normalGEMV<" << getScalarType<ValueType>() << ">, "
                         << "result[ " << numRows << "] = " << alpha
                         << " COO( #vals = " << numValues << " ) * x + " << beta << " * y" )
 
@@ -267,7 +267,7 @@ namespace lama
             CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
             LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
             stream = cudaStreamSyncToken->getCUDAStream();
-            LAMA_LOG_INFO( logger, "asyncronous execution on stream " << stream );
+            SCAI_LOG_INFO( logger, "asyncronous execution on stream " << stream );
         }
 
         bool useTexture = CUDASettings::useTexture();
@@ -280,11 +280,11 @@ namespace lama
 
         if ( static_cast<ValueType>( 1 ) == beta && result == y )
         {
-            LAMA_LOG_DEBUG( logger, "normalGEMV is sparse, no init of result needed" )
+            SCAI_LOG_DEBUG( logger, "normalGEMV is sparse, no init of result needed" )
         }
         else
         {
-            LAMA_LOG_DEBUG( logger, "normalGEMV, set result = " << beta << " * y " )
+            SCAI_LOG_DEBUG( logger, "normalGEMV, set result = " << beta << " * y " )
             // setScale also deals with y undefined for beta == 0
             CUDAUtils::setScale( result, beta, y, numRows );
         }
@@ -300,7 +300,7 @@ namespace lama
         dimBlock = dim3( blockSize, 1, 1 );
         dimGrid = makeGrid( numValues, dimBlock.x );
 
-        LAMA_LOG_INFO( logger, "Start cooGemvKernel<" << getScalarType<ValueType>()
+        SCAI_LOG_INFO( logger, "Start cooGemvKernel<" << getScalarType<ValueType>()
                         << "> <<< blockSize = " << blockSize << ", stream = " << stream
                         << ", alpha = " << alpha
                         << ", useTexture = " << useTexture << ">>>" )
@@ -376,7 +376,7 @@ namespace lama
     {
         LAMA_REGION( "CUDA.COO.normalGEVM" )
 
-        LAMA_LOG_INFO( logger, "normalGEVM, #rows = " << numRows << ", #vals = " << numValues )
+        SCAI_LOG_INFO( logger, "normalGEVM, #rows = " << numRows << ", #vals = " << numValues )
 
         LAMA_CHECK_CUDA_ACCESS
 
@@ -387,7 +387,7 @@ namespace lama
             CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
             LAMA_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
             stream = cudaStreamSyncToken->getCUDAStream();
-            LAMA_LOG_INFO( logger, "asyncronous execution on stream " << stream );
+            SCAI_LOG_INFO( logger, "asyncronous execution on stream " << stream );
         }
 
         bool useTexture = CUDASettings::useTexture();
@@ -400,11 +400,11 @@ namespace lama
 
         if ( static_cast<ValueType>( 1 ) == beta && result == y )
         {
-            LAMA_LOG_DEBUG( logger, "normalGEVM is sparse, no init of result needed" )
+            SCAI_LOG_DEBUG( logger, "normalGEVM is sparse, no init of result needed" )
         }
         else
         {
-            LAMA_LOG_DEBUG( logger, "normalGEMV, set result = " << beta << " * y " )
+            SCAI_LOG_DEBUG( logger, "normalGEMV, set result = " << beta << " * y " )
             CUDAUtils::setScale( result, beta, y, numRows );
         }
 
@@ -419,7 +419,7 @@ namespace lama
         dimBlock = dim3( blockSize, 1, 1 );
         dimGrid = makeGrid( numValues, dimBlock.x );
 
-        LAMA_LOG_INFO( logger, "Start cooGevmKernel<" << getScalarType<ValueType>()
+        SCAI_LOG_INFO( logger, "Start cooGevmKernel<" << getScalarType<ValueType>()
                         << "> <<< blockSize = " << blockSize << ", stream = " << stream
                         << ", useTexture = " << useTexture << ">>>" )
 
@@ -515,7 +515,7 @@ namespace lama
                     const IndexType numRows,
                     const IndexType numDiagonals )
     {
-        LAMA_LOG_INFO( logger,
+        SCAI_LOG_INFO( logger,
                         "build cooIA( " << numValues << " ) from csrIA( " << ( numRows + 1 )
                         << " ), #diagonals = " << numDiagonals )
 
@@ -614,7 +614,7 @@ namespace lama
                     const IndexType cooIA[],
                     const IndexType numValues )
     {
-        LAMA_LOG_INFO( logger,
+        SCAI_LOG_INFO( logger,
                         "build csrIA( " << numRows + 1 << " ) from cooIA( " << ( numValues )
                         << " ), #diagonals = " << numDiagonals )
 
@@ -685,7 +685,7 @@ namespace lama
                     const IndexType numRows,
                     const IndexType numDiagonals )
     {
-        LAMA_LOG_INFO( logger,
+        SCAI_LOG_INFO( logger,
                         "build cooValues( << " << numValues << " from csrValues + csrIA( " << ( numRows + 1 )
                         << " ), #diagonals = " << numDiagonals )
 
@@ -706,7 +706,7 @@ namespace lama
 
     void CUDACOOUtils::setInterface( COOUtilsInterface& COOUtils )
     {
-        LAMA_LOG_INFO( logger, "set COO routines for CUDA in Interface" )
+        SCAI_LOG_INFO( logger, "set COO routines for CUDA in Interface" )
 
         LAMA_INTERFACE_REGISTER( COOUtils, offsets2ia )
 

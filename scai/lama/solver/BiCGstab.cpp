@@ -47,7 +47,7 @@
 
 namespace lama{ 
 
-LAMA_LOG_DEF_LOGGER( BiCGstab::logger, "Solver.BiCGstab" )
+SCAI_LOG_DEF_LOGGER( BiCGstab::logger, "Solver.BiCGstab" )
 
 BiCGstab::BiCGstab( const std::string& id )
     : IterativeSolver(id){}
@@ -69,7 +69,7 @@ BiCGstab::~BiCGstab(){}
 BiCGstab::BiCGstabRuntime::~BiCGstabRuntime(){}
 
 void BiCGstab::initialize( const Matrix& coefficients ){
-    LAMA_LOG_DEBUG(logger, "Initialization started for coefficients = "<< coefficients)
+    SCAI_LOG_DEBUG(logger, "Initialization started for coefficients = "<< coefficients)
 
     Solver::initialize( coefficients );
  	BiCGstabRuntime& runtime = getRuntime();

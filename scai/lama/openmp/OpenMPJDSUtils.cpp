@@ -59,7 +59,7 @@ using common::scoped_array;
 namespace lama
 {
 
-LAMA_LOG_DEF_LOGGER( OpenMPJDSUtils::logger, "OpenMP.JDSUtils" )
+SCAI_LOG_DEF_LOGGER( OpenMPJDSUtils::logger, "OpenMP.JDSUtils" )
 
 /* --------------------------------------------------------------------------- */
 /*   Implementation of methods                                                 */
@@ -79,7 +79,7 @@ void OpenMPJDSUtils::getRow(
     const IndexType ja[],
     const ValueType values[] )
 {
-    LAMA_LOG_INFO( logger, "getRow with i = " << i << ", numColumns = " << numColumns << " and numRows = " << numRows )
+    SCAI_LOG_INFO( logger, "getRow with i = " << i << ", numColumns = " << numColumns << " and numRows = " << numRows )
 
     //TODO: use OpenMP
     for( IndexType j = 0; j < numColumns; ++j )
@@ -133,7 +133,7 @@ ValueType OpenMPJDSUtils::getValue(
         }
     }
 
-    LAMA_LOG_TRACE( logger, "row " << i << " is now " << ii << ", has " << ilg[ii] << " elements" )
+    SCAI_LOG_TRACE( logger, "row " << i << " is now " << ii << ", has " << ilg[ii] << " elements" )
     // search in the found row
     IndexType k = 0;
 
@@ -161,7 +161,7 @@ void OpenMPJDSUtils::scaleValue(
     ValueType mValues[],
     const OtherValueType values[] )
 {
-    LAMA_LOG_INFO( logger, "scaleValue with numRows = " << numRows )
+    SCAI_LOG_INFO( logger, "scaleValue with numRows = " << numRows )
 
     //TODO: use OpenMP
     for( IndexType i = 0; i < numRows; i++ )
@@ -187,7 +187,7 @@ bool OpenMPJDSUtils::checkDiagonalProperty(
     const IndexType ja[],
     const IndexType dlg[] )
 {
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "checkDiagonalProperty with numDiagonals = " << numDiagonals << ", numColumns = " << numColumns << " and numRows = " << numRows )
 
     if( numRows > 0 )
@@ -239,7 +239,7 @@ bool OpenMPJDSUtils::checkDiagonalProperty(
 
 void OpenMPJDSUtils::setInversePerm( IndexType inversePerm[], const IndexType perm[], const IndexType n )
 {
-    LAMA_LOG_INFO( logger, "compute inverse perm, n = " << n )
+    SCAI_LOG_INFO( logger, "compute inverse perm, n = " << n )
 
     // Parallel execution is safe as perm does not contain a value twice
 
@@ -272,7 +272,7 @@ void OpenMPJDSUtils::sortRows( IndexType ilg[], IndexType perm[], const IndexTyp
 
     const IndexType maxBucket = OpenMPUtils::maxval( ilg, n );
 
-    LAMA_LOG_INFO( logger, "sort " << n << " values, number of buckets = " << maxBucket )
+    SCAI_LOG_INFO( logger, "sort " << n << " values, number of buckets = " << maxBucket )
 
     // longest row = maxBucket, but rows with length 0 is possible too!
 
@@ -291,7 +291,7 @@ void OpenMPJDSUtils::sortRows( IndexType ilg[], IndexType perm[], const IndexTyp
 
     for( IndexType i = 0; i <= maxBucket; i++ )
     {
-        LAMA_LOG_DEBUG( logger, "bucket " << i << " has " << bucket[i] << " entries" )
+        SCAI_LOG_DEBUG( logger, "bucket " << i << " has " << bucket[i] << " entries" )
     }
 
     // use now bucket array for finding right offsets
@@ -307,7 +307,7 @@ void OpenMPJDSUtils::sortRows( IndexType ilg[], IndexType perm[], const IndexTyp
         IndexType cnt = bucket[i];
         bucket[i] = total;
         total += cnt;
-        LAMA_LOG_TRACE( logger, "bucket " << i << " offset = " << bucket[i] << ", total = " << total )
+        SCAI_LOG_TRACE( logger, "bucket " << i << " offset = " << bucket[i] << ", total = " << total )
     }
 
     // now we can build the new perm array
@@ -315,7 +315,7 @@ void OpenMPJDSUtils::sortRows( IndexType ilg[], IndexType perm[], const IndexTyp
     for( IndexType i = 0; i < n; i++ )
     {
         IndexType b = ilg[i];
-        LAMA_LOG_TRACE( logger, "perm[" << bucket[b] << "]= " << input[i] )
+        SCAI_LOG_TRACE( logger, "perm[" << bucket[b] << "]= " << input[i] )
         perm[bucket[b]++] = input[i];
     }
 
@@ -324,7 +324,7 @@ void OpenMPJDSUtils::sortRows( IndexType ilg[], IndexType perm[], const IndexTyp
 
     for( IndexType i = maxBucket; i >= 0; i-- )
     {
-        LAMA_LOG_DEBUG( logger, "set ilg[" << total << ":" << (bucket[i]-1) << "] = " << i )
+        SCAI_LOG_DEBUG( logger, "set ilg[" << total << ":" << (bucket[i]-1) << "] = " << i )
 
         for( IndexType k = total; k < bucket[i]; k++ )
         {
@@ -343,7 +343,7 @@ IndexType OpenMPJDSUtils::ilg2dlg(
     const IndexType ilg[],
     const IndexType numRows )
 {
-    LAMA_LOG_INFO( logger, "ilg2dlg with numDiagonals = " << numDiagonals << ", numRows = " << numRows )
+    SCAI_LOG_INFO( logger, "ilg2dlg with numDiagonals = " << numDiagonals << ", numRows = " << numRows )
 
     if( numDiagonals == 0 )
     {
@@ -405,7 +405,7 @@ void OpenMPJDSUtils::getCSRValues(
     const IndexType jdsJA[],
     const JDSValueType jdsValues[] )
 {
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "get CSRValues<" << common::getScalarType<JDSValueType>() << ", " << common::getScalarType<CSRValueType>() << ">" << ", #rows = " << numRows << ", #values = " << csrIA[numRows] )
 
     #pragma omp parallel
@@ -448,7 +448,7 @@ void OpenMPJDSUtils::setCSRValues(
     const IndexType csrJA[],
     const CSRValueType csrValues[] )
 {
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "set CSRValues<" << common::getScalarType<JDSValueType>() << ", " << common::getScalarType<CSRValueType>() << ">" << ", #rows = " << numRows << ", #values = " << csrIA[numRows] )
 
     // parallelization possible as offset array csrIA is available
@@ -492,12 +492,12 @@ void OpenMPJDSUtils::normalGEMV(
     const ValueType jdsValues[],
     class SyncToken* /* syncToken */)
 {
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "normalGEMV<" << common::getScalarType<ValueType>() << ", #threads = " << omp_get_max_threads() << ">, result[" << numRows << "] = " << alpha << " * A( jds, ndlg = " << ndlg << " ) * x + " << beta << " * y " )
 
     if( beta == 0.0 )
     {
-        LAMA_LOG_DEBUG( logger, "set result = 0.0" )
+        SCAI_LOG_DEBUG( logger, "set result = 0.0" )
 
         #pragma omp parallel for
 
@@ -512,7 +512,7 @@ void OpenMPJDSUtils::normalGEMV(
 
         if( beta != 1.0 )
         {
-            LAMA_LOG_DEBUG( logger, "set result *= beta" )
+            SCAI_LOG_DEBUG( logger, "set result *= beta" )
 
             #pragma omp parallel for
 
@@ -523,12 +523,12 @@ void OpenMPJDSUtils::normalGEMV(
         }
         else
         {
-            LAMA_LOG_DEBUG( logger, "result remains unchanged" )
+            SCAI_LOG_DEBUG( logger, "result remains unchanged" )
         }
     }
     else
     {
-        LAMA_LOG_DEBUG( logger, "set result = beta * y" )
+        SCAI_LOG_DEBUG( logger, "set result = beta * y" )
 
         #pragma omp parallel for
 
@@ -547,7 +547,7 @@ void OpenMPJDSUtils::normalGEMV(
 
     IndexType nonEmptyRows = jdsDLG[0];
 
-    LAMA_LOG_DEBUG( logger, "y += alpha * A * x, #non-empty row = " << nonEmptyRows )
+    SCAI_LOG_DEBUG( logger, "y += alpha * A * x, #non-empty row = " << nonEmptyRows )
 
     #pragma omp parallel
     {
@@ -563,7 +563,7 @@ void OpenMPJDSUtils::normalGEMV(
             for( IndexType jj = 0; jj < jdsILG[ii]; jj++ )
             {
                 IndexType j = jdsJA[offset];
-                LAMA_LOG_TRACE( logger,
+                SCAI_LOG_TRACE( logger,
                                 "compute entry i = " << perm[ii] << ", j = " << j << ", val = " << jdsValues[offset] )
                 value += jdsValues[offset] * x[j];
                 offset += jdsDLG[jj]; // there is next value for this row
@@ -594,12 +594,12 @@ void OpenMPJDSUtils::normalGEVM(
     const ValueType jdsValues[],
     class SyncToken* UNUSED( syncToken ) )
 {
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "normalGEVM<" << common::getScalarType<ValueType>() << ", #threads = " << omp_get_max_threads() << ">, result[" << numColumns << "] = " << alpha << " * A( jds, ndlg = " << ndlg << " ) * x + " << beta << " * y " )
 
     if( beta == 0.0 )
     {
-        LAMA_LOG_DEBUG( logger, "set result = 0.0" )
+        SCAI_LOG_DEBUG( logger, "set result = 0.0" )
 
         #pragma omp parallel for
 
@@ -614,7 +614,7 @@ void OpenMPJDSUtils::normalGEVM(
 
         if( beta != 1.0 )
         {
-            LAMA_LOG_DEBUG( logger, "set result *= beta" )
+            SCAI_LOG_DEBUG( logger, "set result *= beta" )
 
             #pragma omp parallel for
 
@@ -625,12 +625,12 @@ void OpenMPJDSUtils::normalGEVM(
         }
         else
         {
-            LAMA_LOG_DEBUG( logger, "result remains unchanged" )
+            SCAI_LOG_DEBUG( logger, "result remains unchanged" )
         }
     }
     else
     {
-        LAMA_LOG_DEBUG( logger, "set result = beta * y" )
+        SCAI_LOG_DEBUG( logger, "set result = beta * y" )
 
         #pragma omp parallel for
 
@@ -649,7 +649,7 @@ void OpenMPJDSUtils::normalGEVM(
 
     IndexType nonEmptyRows = jdsDLG[0];
 
-    LAMA_LOG_DEBUG( logger, "y += alpha * x * A, #non-empty row = " << nonEmptyRows )
+    SCAI_LOG_DEBUG( logger, "y += alpha * x * A, #non-empty row = " << nonEmptyRows )
 
     #pragma omp parallel
     {
@@ -671,7 +671,7 @@ void OpenMPJDSUtils::normalGEVM(
 
                     if( j == k )
                     {
-                        LAMA_LOG_TRACE( logger,
+                        SCAI_LOG_TRACE( logger,
                                         "compute entry i = " << perm[ii] << ", j = " << j << ", matrix val = " << jdsValues[offset] << ", vector val = " << x[ perm[ii] ] )
                         value += jdsValues[offset] * x[perm[ii]];
                     }
@@ -704,12 +704,12 @@ void OpenMPJDSUtils::jacobi(
     const ValueType omega,
     class SyncToken* syncToken )
 {
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "jacobi<" << common::getScalarType<ValueType>() << ">" << ", #rows = " << numRows << ", omega = " << omega )
 
     if( syncToken != NULL )
     {
-        LAMA_LOG_ERROR( logger, "jacobi called asynchronously, not supported here" )
+        SCAI_LOG_ERROR( logger, "jacobi called asynchronously, not supported here" )
     }
 
     const ValueType oneMinusOmega = static_cast<ValueType>( 1.0 - omega );
@@ -767,12 +767,12 @@ void OpenMPJDSUtils::jacobiHalo(
     const ValueType omega,
     class SyncToken* syncToken )
 {
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "jacobiHalo<" << common::getScalarType<ValueType>() << ">" << ", #rows = " << numRows << ", omega = " << omega )
 
     if( syncToken != NULL )
     {
-        LAMA_LOG_ERROR( logger, "jacobi called asynchronously, not supported here" )
+        SCAI_LOG_ERROR( logger, "jacobi called asynchronously, not supported here" )
     }
 
     if( numRows == 0 )
@@ -789,7 +789,7 @@ void OpenMPJDSUtils::jacobiHalo(
 
     const IndexType numNonEmptyRows = jdsHaloDLG[0];
 
-    LAMA_LOG_DEBUG( logger, "#non empty rows = " << numNonEmptyRows )
+    SCAI_LOG_DEBUG( logger, "#non empty rows = " << numNonEmptyRows )
 
     #pragma omp parallel
     {
@@ -812,12 +812,12 @@ void OpenMPJDSUtils::jacobiHalo(
                 pos += jdsHaloDLG[j];
             }
 
-            LAMA_LOG_TRACE( logger,
+            SCAI_LOG_TRACE( logger,
                             "jds row " << ii << ", is row " << i << " in halo" << ", diag = " << diag << ", temp = " << temp )
 
             solution[i] -= temp * omega / diag;
 
-            LAMA_LOG_TRACE( logger, "solution[" << i << "] = " << solution[i] )
+            SCAI_LOG_TRACE( logger, "solution[" << i << "] = " << solution[i] )
         }
     }
 }

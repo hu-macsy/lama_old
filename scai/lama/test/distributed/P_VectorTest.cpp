@@ -98,7 +98,7 @@ struct P_VectorTestConfig
 
 BOOST_FIXTURE_TEST_SUITE( P_VectorTest, P_VectorTestConfig )
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.P_VectorTest" )
+SCAI_LOG_DEF_LOGGER( logger, "Test.P_VectorTest" )
 
 /* --------------------------------------------------------------------- */
 
@@ -227,7 +227,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( vectorTimesMatrixTest, ValueType, test_types )
 {
     PartitionId size = comm->getSize();
     const IndexType vectorSize = 4 * size;
-    LAMA_LOG_DEBUG( logger, "VectorSize is " << vectorSize )
+    SCAI_LOG_DEBUG( logger, "VectorSize is " << vectorSize )
     shared_ptr<Distribution> dist( new BlockDistribution( vectorSize, comm ) );
     shared_ptr<Distribution> repdist( new NoDistribution( vectorSize ) );
     CSRSparseMatrix<ValueType> matrixTypeMatrix( dist, repdist );
@@ -237,7 +237,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( vectorTimesMatrixTest, ValueType, test_types )
     const Matrix& matrix = matrixTypeMatrix;
     const Vector& vector = denseVector;
     Vector& result = denseResult;
-    LAMA_LOG_INFO( logger, "Vector(NoDist) = Vector(BlockDist) * Matrix(BlockDist, NoDist)" )
+    SCAI_LOG_INFO( logger, "Vector(NoDist) = Vector(BlockDist) * Matrix(BlockDist, NoDist)" )
     result = vector * matrix;
     ContextPtr host = Context::getContextPtr( context::Host );
     matrixTypeMatrix.setContext( host, host );
@@ -286,7 +286,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( vectorTimesMatrixTest, ValueType, test_types )
     DenseVector<ValueType> denseVector0( vectorSize, 1.0 );
     DenseVector<ValueType> denseResult0( vectorSize, 0.0 );
     Vector& result0 = denseResult0;
-    LAMA_LOG_INFO( logger, "Vector(rep) = Vector(rep) * Matrix(rep)" )
+    SCAI_LOG_INFO( logger, "Vector(rep) = Vector(rep) * Matrix(rep)" )
     result0 = denseVector0 * repM;
     BOOST_CHECK_EQUAL( vectorSize, result.size() );
 
@@ -300,7 +300,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( vectorTimesMatrixTest, ValueType, test_types )
     const Matrix& matrix2 = matrixTypeMatrix2;
     DenseVector<ValueType> denseVector2( dist, 1.0 );
     DenseVector<ValueType> result2( dist, 0.0 );
-    LAMA_LOG_INFO( logger, "Vector(BlockDist) = Vector(BlockDist) * Matrix(BlockDist, BlockDist)" )
+    SCAI_LOG_INFO( logger, "Vector(BlockDist) = Vector(BlockDist) * Matrix(BlockDist, BlockDist)" )
     result2 = denseVector2 * matrix2;
     BOOST_CHECK_EQUAL( vectorSize, result2.size() );
 
@@ -477,7 +477,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( redistributeTest, ValueType, test_types )
     }
 
     DenseVector<ValueType> replicatedVector( vectorSize, vectorData.get() );
-    LAMA_LOG_INFO( logger, "redistributeTest: distribtedVector ( replicatedVector )" );
+    SCAI_LOG_INFO( logger, "redistributeTest: distribtedVector ( replicatedVector )" );
 // constructor with redistribute that is here a localization
     DenseVector<ValueType> dist1Vector( replicatedVector, dist1 );
     {
@@ -495,7 +495,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( redistributeTest, ValueType, test_types )
         }
     }
 // redistribute block-distributed vector to cyclic-distributed vector
-    LAMA_LOG_INFO( logger, "redistributeTest: distributedVector ( distributedVector, newDist )" );
+    SCAI_LOG_INFO( logger, "redistributeTest: distributedVector ( distributedVector, newDist )" );
     DenseVector<double> dist2Vector( dist1Vector );
     dist2Vector.redistribute( dist2 );
     {
@@ -589,175 +589,175 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ExpressionCtorTest, ValueType, test_types )
     DenseVector<ValueType> resultvector19( dist, 19.0 );
     DenseVector<ValueType> resultvector8( dist, 8.0 );
 // Vector Expressions in constructors
-    LAMA_LOG_INFO( logger, "Ctor: vector( scalar * vector )" );
+    SCAI_LOG_INFO( logger, "Ctor: vector( scalar * vector )" );
     DenseVector<ValueType> d3( s2 * testvector5 );
-    LAMA_LOG_DEBUG( logger, "dist = " << d3.getDistribution() );
+    SCAI_LOG_DEBUG( logger, "dist = " << d3.getDistribution() );
     vectorCheck ( d3, resultvector10 );
-    LAMA_LOG_INFO( logger, "Ctor: vector( scalar * vector + vector )" );
+    SCAI_LOG_INFO( logger, "Ctor: vector( scalar * vector + vector )" );
     DenseVector<ValueType> d5( s2 * testvector5 + testvector3 );
-    LAMA_LOG_DEBUG( logger, "dist = " << d5.getDistribution() );
+    SCAI_LOG_DEBUG( logger, "dist = " << d5.getDistribution() );
     vectorCheck ( d5, resultvector13 );
-    LAMA_LOG_INFO( logger, "Ctor: vector( vector + scalar * vector)" );
+    SCAI_LOG_INFO( logger, "Ctor: vector( vector + scalar * vector)" );
     DenseVector<ValueType> d6( testvector5 + s3 * testvector3 );
-    LAMA_LOG_DEBUG( logger, "dist = " << d6.getDistribution() );
+    SCAI_LOG_DEBUG( logger, "dist = " << d6.getDistribution() );
     vectorCheck ( d6, resultvector14 );
-    LAMA_LOG_INFO( logger, "Ctor: vector( scalar * vector + scalar * vector)" );
+    SCAI_LOG_INFO( logger, "Ctor: vector( scalar * vector + scalar * vector)" );
     DenseVector<ValueType> d4( s2 * testvector5 + s3 * testvector3 );
-    LAMA_LOG_DEBUG( logger, "d4 = " << d4 );
+    SCAI_LOG_DEBUG( logger, "d4 = " << d4 );
     vectorCheck ( d4, resultvector19 );
 // MatrixVector-Expressions here:
 // Note: the constructed vector inherits the row distribution of the matrix
-    LAMA_LOG_INFO( logger, "Ctor: vector( matrix * vector )" );
+    SCAI_LOG_INFO( logger, "Ctor: vector( matrix * vector )" );
     DenseVector<ValueType> d1( Id * testvector5 );
-    LAMA_LOG_DEBUG( logger, "d1 = " << d1 );
+    SCAI_LOG_DEBUG( logger, "d1 = " << d1 );
     vectorCheck( d1, testvector5 );
-    LAMA_LOG_INFO( logger, "Ctor: vector( matrix * scalar * vector )" );
+    SCAI_LOG_INFO( logger, "Ctor: vector( matrix * scalar * vector )" );
 //A*a*x
     DenseVector<ValueType> d17( Id * s2 * testvector5 );
-    LAMA_LOG_DEBUG( logger, "dist = " << d17.getDistribution() );
+    SCAI_LOG_DEBUG( logger, "dist = " << d17.getDistribution() );
     vectorCheck ( d17, resultvector10 );
-    LAMA_LOG_INFO( logger, "Ctor: vector( matrix * vector * scalar )" );
+    SCAI_LOG_INFO( logger, "Ctor: vector( matrix * vector * scalar )" );
     DenseVector<ValueType> d16( Id * testvector5 * s2 );
-    LAMA_LOG_DEBUG( logger, "dist = " << d16.getDistribution() );
+    SCAI_LOG_DEBUG( logger, "dist = " << d16.getDistribution() );
     vectorCheck ( d16, resultvector10 );
-    LAMA_LOG_INFO( logger, "Ctor: vector( scalar * matrix * vector )" );
+    SCAI_LOG_INFO( logger, "Ctor: vector( scalar * matrix * vector )" );
     DenseVector<ValueType> d2( s2 * Id * testvector5 );
-    LAMA_LOG_DEBUG( logger, "dist = " << d2.getDistribution() );
+    SCAI_LOG_DEBUG( logger, "dist = " << d2.getDistribution() );
     vectorCheck ( d2, resultvector10 );
 // VectorMatrix-Expressions here:
 // Note: the constructed vector inherits the column distribution of the matrix
-    LAMA_LOG_INFO( logger, "Ctor: vector( vector * matrix )" );
+    SCAI_LOG_INFO( logger, "Ctor: vector( vector * matrix )" );
     DenseVector<ValueType> dd1( testvector5 * Id );
-    LAMA_LOG_DEBUG( logger, "d1 = " << d1 );
+    SCAI_LOG_DEBUG( logger, "d1 = " << d1 );
     vectorCheck( dd1, testvector5 );
-    LAMA_LOG_INFO( logger, "Ctor: vector( scalar * vector * matrix)" );
+    SCAI_LOG_INFO( logger, "Ctor: vector( scalar * vector * matrix)" );
     //A*a*x
     DenseVector<ValueType> dd17( s2 * testvector5 * Id );
-    LAMA_LOG_DEBUG( logger, "dist = " << d17.getDistribution() );
+    SCAI_LOG_DEBUG( logger, "dist = " << d17.getDistribution() );
     vectorCheck ( dd17, resultvector10 );
-    LAMA_LOG_INFO( logger, "Ctor: vector( vector * matrix * scalar )" );
+    SCAI_LOG_INFO( logger, "Ctor: vector( vector * matrix * scalar )" );
     DenseVector<ValueType> dd16( testvector5 * Id * s2 );
-    LAMA_LOG_DEBUG( logger, "dist = " << d16.getDistribution() );
+    SCAI_LOG_DEBUG( logger, "dist = " << d16.getDistribution() );
     vectorCheck ( dd16, resultvector10 );
-    LAMA_LOG_INFO( logger, "Ctor: vector( scalar * vector * matrix )" );
+    SCAI_LOG_INFO( logger, "Ctor: vector( scalar * vector * matrix )" );
     DenseVector<ValueType> dd2( s2 * testvector5 * Id );
-    LAMA_LOG_DEBUG( logger, "dist = " << d2.getDistribution() );
+    SCAI_LOG_DEBUG( logger, "dist = " << d2.getDistribution() );
     vectorCheck ( dd2, resultvector10 );
 // Plus-MatrixVectorExpressions:
-    LAMA_LOG_INFO( logger, "Ctor: vector( matrix * vector + vector )" );
+    SCAI_LOG_INFO( logger, "Ctor: vector( matrix * vector + vector )" );
     DenseVector<ValueType> d11( Id * testvector5 + testvector3 );
-    LAMA_LOG_DEBUG( logger, "dist = " << d11.getDistribution() );
+    SCAI_LOG_DEBUG( logger, "dist = " << d11.getDistribution() );
     vectorCheck ( d11, resultvector8 );
-    LAMA_LOG_INFO( logger, "Ctor: vector( matrix * vector + scalar * vector )" );
+    SCAI_LOG_INFO( logger, "Ctor: vector( matrix * vector + scalar * vector )" );
     DenseVector<ValueType> d7( Id * testvector5 + s2 * testvector3 );
-    LAMA_LOG_DEBUG( logger, "dist = " << d7.getDistribution() );
+    SCAI_LOG_DEBUG( logger, "dist = " << d7.getDistribution() );
     vectorCheck ( d7, resultvector11 );
-    LAMA_LOG_INFO( logger, "Ctor: vector( matrix * vector + vector * scalar )" );
+    SCAI_LOG_INFO( logger, "Ctor: vector( matrix * vector + vector * scalar )" );
     DenseVector<ValueType> d9( Id * testvector5 + testvector3 * s2 );
     vectorCheck ( d9, resultvector11 );
-    LAMA_LOG_INFO( logger, "Ctor: vector( matrix * scalar * vector + scalar * vector )" );
+    SCAI_LOG_INFO( logger, "Ctor: vector( matrix * scalar * vector + scalar * vector )" );
     DenseVector<ValueType> d8( Id * s2 * testvector5 + s2 * testvector3 );
     vectorCheck ( d8, resultvector16 );
-    LAMA_LOG_INFO( logger, "Ctor: vector( matrix * vector * scalar + scalar * vector )" );
+    SCAI_LOG_INFO( logger, "Ctor: vector( matrix * vector * scalar + scalar * vector )" );
     DenseVector<ValueType> d10( Id * testvector5 * s2 + s2 * testvector3 );
     vectorCheck ( d10, resultvector16 );
-    LAMA_LOG_INFO( logger, "Ctor: vector( matrix * scalar * vector + vector )" );
+    SCAI_LOG_INFO( logger, "Ctor: vector( matrix * scalar * vector + vector )" );
     DenseVector<ValueType> d13( Id * s2 * testvector5 + testvector3 );
     vectorCheck ( d13, resultvector13 );
-    LAMA_LOG_INFO( logger, "Ctor: vector( scalar * matrix * vector + vector )" );
+    SCAI_LOG_INFO( logger, "Ctor: vector( scalar * matrix * vector + vector )" );
     DenseVector<ValueType> d14( s2 * Id * testvector5 + testvector3 );
     vectorCheck ( d14, resultvector13 );
-    LAMA_LOG_INFO( logger, "Ctor: vector( scalar * matrix * vector + scalar * vector )" );
+    SCAI_LOG_INFO( logger, "Ctor: vector( scalar * matrix * vector + scalar * vector )" );
     DenseVector<ValueType> d15( s2 * Id * testvector5 + s3 * testvector3 );
     vectorCheck ( d15, resultvector19 );
-    LAMA_LOG_INFO( logger, "Ctor: vector( matrix * vector * scalar + vector )" );
+    SCAI_LOG_INFO( logger, "Ctor: vector( matrix * vector * scalar + vector )" );
     DenseVector<ValueType> d12( Id * testvector5 * s2 + testvector3 );
     vectorCheck ( d12, resultvector13 );
 // VectorMatrix Plus Vector Expressions:
-    LAMA_LOG_INFO( logger, "Ctor: vector( vector * matrix + vector )" );
+    SCAI_LOG_INFO( logger, "Ctor: vector( vector * matrix + vector )" );
     DenseVector<ValueType> d111( testvector5 * Id + testvector3 );
-    LAMA_LOG_DEBUG( logger, "dist = " << d11.getDistribution() );
+    SCAI_LOG_DEBUG( logger, "dist = " << d11.getDistribution() );
     vectorCheck ( d111, resultvector8 );
-    LAMA_LOG_INFO( logger, "Ctor: vector( vector * matrix + scalar * vector )" );
+    SCAI_LOG_INFO( logger, "Ctor: vector( vector * matrix + scalar * vector )" );
     DenseVector<ValueType> d71( testvector5 * Id + s2 * testvector3 );
-    LAMA_LOG_DEBUG( logger, "dist = " << d7.getDistribution() );
+    SCAI_LOG_DEBUG( logger, "dist = " << d7.getDistribution() );
     vectorCheck ( d71, resultvector11 );
-    LAMA_LOG_INFO( logger, "Ctor: vector( vector * matrix + vector * scalar )" );
+    SCAI_LOG_INFO( logger, "Ctor: vector( vector * matrix + vector * scalar )" );
     DenseVector<ValueType> d91( testvector5 * Id + testvector3 * s2 );
     vectorCheck ( d91, resultvector11 );
-    LAMA_LOG_INFO( logger, "Ctor: vector( scalar * vector * matrix + scalar * vector )" );
+    SCAI_LOG_INFO( logger, "Ctor: vector( scalar * vector * matrix + scalar * vector )" );
     DenseVector<ValueType> d81( s2 * testvector5 * Id + s2 * testvector3 );
     vectorCheck ( d81, resultvector16 );
-    LAMA_LOG_INFO( logger, "Ctor: vector( vector * matrix * scalar + scalar * vector )" );
+    SCAI_LOG_INFO( logger, "Ctor: vector( vector * matrix * scalar + scalar * vector )" );
     DenseVector<ValueType> d101( testvector5 * Id * s2 + s2 * testvector3 );
     vectorCheck ( d101, resultvector16 );
-    LAMA_LOG_INFO( logger, "Ctor: vector( scalar * vector  * matrix+ vector )" );
+    SCAI_LOG_INFO( logger, "Ctor: vector( scalar * vector  * matrix+ vector )" );
     DenseVector<ValueType> d131( s2 * testvector5 * Id + testvector3 );
     vectorCheck ( d131, resultvector13 );
-    LAMA_LOG_INFO( logger, "Ctor: vector( scalar * vector * matrix + vector )" );
+    SCAI_LOG_INFO( logger, "Ctor: vector( scalar * vector * matrix + vector )" );
     DenseVector<ValueType> d141( s2 * testvector5 * Id + testvector3 );
     vectorCheck ( d141, resultvector13 );
-    LAMA_LOG_INFO( logger, "Ctor: vector( scalar * vector * matrix + scalar * vector )" );
+    SCAI_LOG_INFO( logger, "Ctor: vector( scalar * vector * matrix + scalar * vector )" );
     DenseVector<ValueType> d151( s2 * testvector5 * Id + s3 * testvector3 );
     vectorCheck ( d151, resultvector19 );
-    LAMA_LOG_INFO( logger, "Ctor: vector( vector * matrix * scalar + vector )" );
+    SCAI_LOG_INFO( logger, "Ctor: vector( vector * matrix * scalar + vector )" );
     DenseVector<ValueType> d121( testvector5 * Id * s2 + testvector3 );
     vectorCheck ( d121, resultvector13 );
 //Minus Vector Expressions:
-    LAMA_LOG_INFO( logger, "Ctor: vector( vector - vector )" );
+    SCAI_LOG_INFO( logger, "Ctor: vector( vector - vector )" );
     DenseVector<ValueType> d18( testvector5 - testvector3 );
     vectorCheck ( d18, resultvector2 );
-    LAMA_LOG_INFO( logger, "Ctor: vector( scalar * vector - vector )" );
+    SCAI_LOG_INFO( logger, "Ctor: vector( scalar * vector - vector )" );
     DenseVector<ValueType> d19( s2 * testvector5 - testvector3 );
     vectorCheck ( d19, resultvector7 );
-    LAMA_LOG_INFO( logger, "Ctor: vector( vector - scalar * vector )" );
+    SCAI_LOG_INFO( logger, "Ctor: vector( vector - scalar * vector )" );
     DenseVector<ValueType> d20( testvector5 - s2 * testvector3 );
     vectorCheck ( d20, resultvectorm1 );
-    LAMA_LOG_INFO( logger, "Ctor: vector( scalar * vector - scalar * vector )" );
+    SCAI_LOG_INFO( logger, "Ctor: vector( scalar * vector - scalar * vector )" );
     DenseVector<ValueType> d21( s2 * testvector5 - s3 * testvector3 );
     vectorCheck ( d21, resultvector1 );
 //Minus MatrixVector Expressions:
-    LAMA_LOG_INFO( logger, "Ctor: vector( matrix * scalar * vector - scalar * vector )" );
+    SCAI_LOG_INFO( logger, "Ctor: vector( matrix * scalar * vector - scalar * vector )" );
     DenseVector<ValueType> d22( Id * s2 * testvector5 - s3 * testvector3 );
     vectorCheck ( d22, resultvector1 );
-    LAMA_LOG_INFO( logger, "Ctor: vector( matrix * vector * scalar - scalar * vector )" );
+    SCAI_LOG_INFO( logger, "Ctor: vector( matrix * vector * scalar - scalar * vector )" );
     DenseVector<ValueType> d23( Id * testvector5 * s2 - s3 * testvector3 );
     vectorCheck ( d23, resultvector1 );
-    LAMA_LOG_INFO( logger, "Ctor: vector( matrix * scalar * vector - vector * scalar )" );
+    SCAI_LOG_INFO( logger, "Ctor: vector( matrix * scalar * vector - vector * scalar )" );
     DenseVector<ValueType> d24( Id * s2 * testvector5 - testvector3 * s3 );
     vectorCheck ( d24, resultvector1 );
-    LAMA_LOG_INFO( logger, "Ctor: vector( matrix * vector * scalar - vector * scalar )" );
+    SCAI_LOG_INFO( logger, "Ctor: vector( matrix * vector * scalar - vector * scalar )" );
     DenseVector<ValueType> d25( Id * testvector5 * s2 - testvector3 * s3 );
     vectorCheck ( d25, resultvector1 );
-    LAMA_LOG_INFO( logger, "Ctor: vector( matrix * vector - vector )" );
+    SCAI_LOG_INFO( logger, "Ctor: vector( matrix * vector - vector )" );
     DenseVector<ValueType> d26( Id * testvector5 - testvector3 );
     vectorCheck ( d26, resultvector2 );
-    LAMA_LOG_INFO( logger, "Ctor: vector( matrix * vector * scalar - scalar * vector )" );
+    SCAI_LOG_INFO( logger, "Ctor: vector( matrix * vector * scalar - scalar * vector )" );
     DenseVector<ValueType> d27( Id * testvector5 * s2 - testvector3 );
     vectorCheck ( d27, resultvector7 );
-    LAMA_LOG_INFO( logger, "Ctor: vector( matrix * scalar * vector - vector )" );
+    SCAI_LOG_INFO( logger, "Ctor: vector( matrix * scalar * vector - vector )" );
     DenseVector<ValueType> d28( Id * s2 * testvector5 - testvector3 );
     vectorCheck ( d28, resultvector7 );
 //VectorMatrix Minus Vector Expressions:
-    LAMA_LOG_INFO( logger, "Ctor: vector( scalar * vector * matrix - scalar * vector )" );
+    SCAI_LOG_INFO( logger, "Ctor: vector( scalar * vector * matrix - scalar * vector )" );
     DenseVector<ValueType> d222( s2 * testvector5 * Id - s3 * testvector3 );
     vectorCheck ( d222, resultvector1 );
-    LAMA_LOG_INFO( logger, "Ctor: vector( vector * matrix * scalar - scalar * vector )" );
+    SCAI_LOG_INFO( logger, "Ctor: vector( vector * matrix * scalar - scalar * vector )" );
     DenseVector<ValueType> d232( testvector5 * Id * s2 - s3 * testvector3 );
     vectorCheck ( d232, resultvector1 );
-    LAMA_LOG_INFO( logger, "Ctor: vector( scalar * vector * matrix - vector * scalar )" );
+    SCAI_LOG_INFO( logger, "Ctor: vector( scalar * vector * matrix - vector * scalar )" );
     DenseVector<ValueType> d242( s2 * testvector5 * Id - testvector3 * s3 );
     vectorCheck ( d242, resultvector1 );
-    LAMA_LOG_INFO( logger, "Ctor: vector( vector * matrix * scalar - vector * scalar )" );
+    SCAI_LOG_INFO( logger, "Ctor: vector( vector * matrix * scalar - vector * scalar )" );
     DenseVector<ValueType> d252( testvector5 * Id * s2 - testvector3 * s3 );
     vectorCheck ( d252, resultvector1 );
-    LAMA_LOG_INFO( logger, "Ctor: vector( vector * matrix - vector )" );
+    SCAI_LOG_INFO( logger, "Ctor: vector( vector * matrix - vector )" );
     DenseVector<ValueType> d262( testvector5 * Id - testvector3 );
     vectorCheck ( d262, resultvector2 );
-    LAMA_LOG_INFO( logger, "Ctor: vector( vector * matrix * scalar - scalar * vector )" );
+    SCAI_LOG_INFO( logger, "Ctor: vector( vector * matrix * scalar - scalar * vector )" );
     DenseVector<ValueType> d272( testvector5 * Id * s2 - testvector3 );
     vectorCheck ( d272, resultvector7 );
-    LAMA_LOG_INFO( logger, "Ctor: vector( scalar * vector * matrix - vector )" );
+    SCAI_LOG_INFO( logger, "Ctor: vector( scalar * vector * matrix - vector )" );
     DenseVector<ValueType> d282( s2 * testvector5 * Id - testvector3 );
     vectorCheck ( d282, resultvector7 );
 }
@@ -967,7 +967,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( dotProductTest, ValueType, test_types )
     }
     else
     {
-        LAMA_LOG_INFO( logger, "dotProductTest did not run, because np = 1" );
+        SCAI_LOG_INFO( logger, "dotProductTest did not run, because np = 1" );
     }
 }
 /* ------------------------------------------------------------------------- */

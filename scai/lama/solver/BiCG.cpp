@@ -46,7 +46,7 @@
 namespace lama
 {
 
-LAMA_LOG_DEF_LOGGER( BiCG::logger, "Solver.IterativeSolver.BiCG" )
+SCAI_LOG_DEF_LOGGER( BiCG::logger, "Solver.IterativeSolver.BiCG" )
 
 BiCG::BiCG( const std::string& id )
     : CG( id )
@@ -128,7 +128,7 @@ void BiCG::iterate()
     Vector& z = *runtime.mZ;
     Vector& z2 = *runtime.mZ2;
 
-    LAMA_LOG_INFO( logger, "Doing preconditioning." )
+    SCAI_LOG_INFO( logger, "Doing preconditioning." )
 
     //BiCG implementation start
     if( !mPreconditioner )
@@ -144,10 +144,10 @@ void BiCG::iterate()
         mPreconditioner->solve( z2, residual2 );
     }
 
-    LAMA_LOG_INFO( logger, "Calculating pScalar." )
+    SCAI_LOG_INFO( logger, "Calculating pScalar." )
     pScalar = z2.dotProduct( z );
-    LAMA_LOG_DEBUG( logger, "pScalar = " << pScalar )
-    LAMA_LOG_INFO( logger, "Calculating p." )
+    SCAI_LOG_DEBUG( logger, "pScalar = " << pScalar )
+    SCAI_LOG_INFO( logger, "Calculating p." )
 
     if( this->getIterationCount() == 0 )
     {
@@ -165,25 +165,25 @@ void BiCG::iterate()
             beta = pScalar / lastPScalar;
         }
 
-        LAMA_LOG_DEBUG( logger, "beta = " << beta )
+        SCAI_LOG_DEBUG( logger, "beta = " << beta )
         p = z + beta * p;
-        LAMA_LOG_TRACE( logger, "l2Norm( p ) = " << p.l2Norm() )
+        SCAI_LOG_TRACE( logger, "l2Norm( p ) = " << p.l2Norm() )
         p2 = z2 + beta * p2;
-        LAMA_LOG_TRACE( logger, "l2Norm( p2 ) = " << p2.l2Norm() )
+        SCAI_LOG_TRACE( logger, "l2Norm( p2 ) = " << p2.l2Norm() )
     }
 
     {
         LAMA_REGION( "Solver.BiCG.calc_q" )
-        LAMA_LOG_INFO( logger, "Calculating q." )
+        SCAI_LOG_INFO( logger, "Calculating q." )
         q = A * p;
-        LAMA_LOG_TRACE( logger, "l2Norm( q ) = " << q.l2Norm() )
+        SCAI_LOG_TRACE( logger, "l2Norm( q ) = " << q.l2Norm() )
         q2 = transA * p2; //p2 * A;
-        LAMA_LOG_TRACE( logger, "l2Norm( q2 ) = " << q2.l2Norm() )
+        SCAI_LOG_TRACE( logger, "l2Norm( q2 ) = " << q2.l2Norm() )
     }
 
-    LAMA_LOG_INFO( logger, "Calculating pqProd." )
+    SCAI_LOG_INFO( logger, "Calculating pqProd." )
     const Scalar pqProd = p2.dotProduct( q );
-    LAMA_LOG_DEBUG( logger, "pqProd = " << pqProd )
+    SCAI_LOG_DEBUG( logger, "pqProd = " << pqProd )
 
     if( pqProd.getValue<double>() == 0.0 )
     {
@@ -194,20 +194,20 @@ void BiCG::iterate()
         alpha = pScalar / pqProd;
     }
 
-    LAMA_LOG_DEBUG( logger, "alpha = " << alpha )
+    SCAI_LOG_DEBUG( logger, "alpha = " << alpha )
     {
-        LAMA_LOG_INFO( logger, "Calculating x." )
+        SCAI_LOG_INFO( logger, "Calculating x." )
         LAMA_REGION( "Solver.BiCG.update_x" )
         x = x + alpha * p;
-        LAMA_LOG_TRACE( logger, "l2Norm( x ) = " << x.l2Norm() )
+        SCAI_LOG_TRACE( logger, "l2Norm( x ) = " << x.l2Norm() )
     }
     {
-        LAMA_LOG_INFO( logger, "Updating residual." )
+        SCAI_LOG_INFO( logger, "Updating residual." )
         LAMA_REGION( "Solver.BiCG.update_res" )
         residual = residual - alpha * q;
-        LAMA_LOG_TRACE( logger, "l2Norm( residual ) = " << residual.l2Norm() )
+        SCAI_LOG_TRACE( logger, "l2Norm( residual ) = " << residual.l2Norm() )
         residual2 = residual2 - alpha * q2;
-        LAMA_LOG_TRACE( logger, "l2Norm( residual2 ) = " << residual.l2Norm() )
+        SCAI_LOG_TRACE( logger, "l2Norm( residual2 ) = " << residual.l2Norm() )
     }
     //BiCG implementation end
 
@@ -216,7 +216,7 @@ void BiCG::iterate()
 
 const Vector& BiCG::getResidual2() const
 {
-    LAMA_LOG_DEBUG( logger, "getResidual2 of solver " << mId )
+    SCAI_LOG_DEBUG( logger, "getResidual2 of solver " << mId )
 
     const BiCGRuntime& runtime = getConstRuntime();
     LAMA_ASSERT_DEBUG( runtime.mCoefficients, "mCoefficients == NULL" )
@@ -226,7 +226,7 @@ const Vector& BiCG::getResidual2() const
 
     if( runtime.mSolution.isDirty() || !runtime.mResidual2.get() )
     {
-        LAMA_LOG_DEBUG( logger, "calculating residual of = " << &(runtime.mSolution.getConstReference()) )
+        SCAI_LOG_DEBUG( logger, "calculating residual of = " << &(runtime.mSolution.getConstReference()) )
 
         if( !runtime.mResidual2.get() )
         {

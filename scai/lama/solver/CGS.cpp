@@ -47,7 +47,7 @@
 
 namespace lama{ 
 
-LAMA_LOG_DEF_LOGGER( CGS::logger, "Solver.CGS" )
+SCAI_LOG_DEF_LOGGER( CGS::logger, "Solver.CGS" )
 
 CGS::CGS( const std::string& id )
     : IterativeSolver(id){}
@@ -69,7 +69,7 @@ CGS::~CGS(){}
 CGS::CGSRuntime::~CGSRuntime(){}
 
 void CGS::initialize( const Matrix& coefficients ){
-    LAMA_LOG_DEBUG(logger, "Initialization started for coefficients = "<< coefficients)
+    SCAI_LOG_DEBUG(logger, "Initialization started for coefficients = "<< coefficients)
 
     Solver::initialize( coefficients );
  	CGSRuntime& runtime = getRuntime();

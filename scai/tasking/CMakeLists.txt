@@ -67,11 +67,11 @@ endforeach ( module ${DEPS} )
 ### add definitions ###
 
 ## log level
-if    ( LAMA_LOG_LEVEL )
-    add_definitions ( -DLAMA_LOG_LEVEL_${LAMA_LOG_LEVEL} )
-else  ( LAMA_LOG_LEVEL )
-    add_definitions( -DLAMA_LOG_LEVEL_DEBUG )
-endif ( LAMA_LOG_LEVEL )
+if    ( SCAI_LOG_LEVEL )
+    add_definitions ( -DSCAI_LOG_LEVEL_${SCAI_LOG_LEVEL} )
+else  ( SCAI_LOG_LEVEL )
+    add_definitions( -DSCAI_LOG_LEVEL_DEBUG )
+endif ( SCAI_LOG_LEVEL )
 
 if ( WIN32 )
     add_definitions ( -DCOMMON_COMPILING_DLL )

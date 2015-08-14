@@ -73,7 +73,7 @@ struct ResidualStagnationTestConfig
 
 BOOST_FIXTURE_TEST_SUITE( ResidualStagnationTest, ResidualStagnationTestConfig )
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.ResidualStagnationTest" )
+SCAI_LOG_DEF_LOGGER( logger, "Test.ResidualStagnationTest" )
 
 /* --------------------------------------------------------------------- */
 

@@ -5,7 +5,7 @@ Task 6: Enable Logging to track the moving of data to and from the GPU
 
 LAMA includes sophisticated logging facilities. There are different gradations
 of logging: TRACE, DEBUG, INFO, WARN, ERROR, and FATAL. You can regulate the logging
-output by setting the environment variable LAMA_LOG with a configuration file.
+output by setting the environment variable SCAI_LOG with a configuration file.
 In a configuration file it is possible to specify logging levels for each
 created logger. In general a logger exists for each class with the same
 name as the class. The log level of a super class is inherited by derived

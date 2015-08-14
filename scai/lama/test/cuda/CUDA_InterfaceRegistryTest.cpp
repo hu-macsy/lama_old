@@ -47,7 +47,7 @@ typedef boost::mpl::list<double, float> test_types;
 
 BOOST_AUTO_TEST_SUITE( CUDA_InterfaceRegistry );
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.CUDA_InterfaceRegistry" );
+SCAI_LOG_DEF_LOGGER( logger, "Test.CUDA_InterfaceRegistry" );
 
 /* --------------------------------------------------------------------- */
 

@@ -67,7 +67,7 @@ struct CriterionTestConfig
 
 BOOST_FIXTURE_TEST_SUITE( CriterionTest, CriterionTestConfig )
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.CriterionTest" );
+SCAI_LOG_DEF_LOGGER( logger, "Test.CriterionTest" );
 
 /* --------------------------------------------------------------------- */
 

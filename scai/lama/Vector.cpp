@@ -57,7 +57,7 @@ using namespace memory;
 namespace lama
 {
 
-LAMA_LOG_DEF_LOGGER( Vector::logger, "Vector" )
+SCAI_LOG_DEF_LOGGER( Vector::logger, "Vector" )
 
 /* ---------------------------------------------------------------------------------------*/
 /*    Factory to create a vector                                                          */
@@ -69,7 +69,7 @@ Vector* Vector::getVector( const VectorKind kind, common::ScalarType type )
 
     VectorCreateKeyType key( kind, type );
 
-    LAMA_LOG_INFO( logger, "getVector uses Factory::create " << key )
+    SCAI_LOG_INFO( logger, "getVector uses Factory::create " << key )
 
     // get it from the factory by building a pair as key the creator fn
 
@@ -96,7 +96,7 @@ Vector::Vector( const IndexType size, ContextPtr context )
         mContext = Context::getContextPtr( context::Host );
     }
 
-    LAMA_LOG_INFO( logger, "Vector(" << size << "), replicated, on " << *mContext )
+    SCAI_LOG_INFO( logger, "Vector(" << size << "), replicated, on " << *mContext )
 }
 
 Vector::Vector( DistributionPtr distribution, ContextPtr context )
@@ -107,7 +107,7 @@ Vector::Vector( DistributionPtr distribution, ContextPtr context )
         mContext = Context::getContextPtr( context::Host );
     }
 
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "Vector(" << distribution->getGlobalSize() << ") with " << getDistribution() << " constructed" )
 }
 
@@ -115,12 +115,12 @@ Vector::Vector( const Vector& other )
                 : Distributed( other ), mContext( other.getContext() )
 {
     LAMA_ASSERT_ERROR( mContext, "NULL context not allowed" )
-    LAMA_LOG_INFO( logger, "Vector(" << other.getDistribution().getGlobalSize() << "), distributed, copied" )
+    SCAI_LOG_INFO( logger, "Vector(" << other.getDistribution().getGlobalSize() << "), distributed, copied" )
 }
 
 Vector::~Vector()
 {
-    LAMA_LOG_INFO( logger, "~Vector(" << getDistribution().getGlobalSize() << ")" )
+    SCAI_LOG_INFO( logger, "~Vector(" << getDistribution().getGlobalSize() << ")" )
 }
 
 /* ---------------------------------------------------------------------------------------*/
@@ -129,7 +129,7 @@ Vector::~Vector()
 
 Vector& Vector::operator=( const Expression_MV& expression )
 {
-    LAMA_LOG_DEBUG( logger, "this = matrix * vector1 -> this = 1.0 * matrix * vector1 + 0.0 * this" )
+    SCAI_LOG_DEBUG( logger, "this = matrix * vector1 -> this = 1.0 * matrix * vector1 + 0.0 * this" )
 
     // expression = A * x, generalized to A * x * 1.0 + 0.0 * this
     // but be careful: this might not be resized correctly, so we do it here
@@ -149,7 +149,7 @@ Vector& Vector::operator=( const Expression_MV& expression )
 
 Vector& Vector::operator=( const Expression_VM& expression )
 {
-    LAMA_LOG_DEBUG( logger, "this = matrix * vector1 -> this = 1.0 * vector1 * matrix + 0.0 * this" )
+    SCAI_LOG_DEBUG( logger, "this = matrix * vector1 -> this = 1.0 * vector1 * matrix + 0.0 * this" )
 
     // expression = A * x, generalized to A * x * 1.0 + 0.0 * this
     // but be careful: this might not be resized correctly, so we do it here
@@ -169,7 +169,7 @@ Vector& Vector::operator=( const Expression_VM& expression )
 
 Vector& Vector::operator=( const Expression_SV_SV& expression )
 {
-    LAMA_LOG_DEBUG( logger, "this = a * vector1 + b * vector2, check vector1.size() == vector2.size()" )
+    SCAI_LOG_DEBUG( logger, "this = a * vector1 + b * vector2, check vector1.size() == vector2.size()" )
 
     const Vector& x = expression.getArg1().getArg2();
     const Vector& y = expression.getArg2().getArg2();
@@ -183,7 +183,7 @@ Vector& Vector::operator=( const Expression_SV_SV& expression )
 
 Vector& Vector::operator=( const Expression_SMV& expression )
 {
-    LAMA_LOG_INFO( logger, "this = alpha * matrix * vectorX -> this = alpha * matrix * vectorX + 0.0 * this" )
+    SCAI_LOG_INFO( logger, "this = alpha * matrix * vectorX -> this = alpha * matrix * vectorX + 0.0 * this" )
 
     const Scalar& beta = 0.0;
 
@@ -214,7 +214,7 @@ Vector& Vector::operator=( const Expression_SMV& expression )
 
 Vector& Vector::operator=( const Expression_SVM& expression )
 {
-    LAMA_LOG_INFO( logger, "this = alpha * vectorX * matrix -> this = alpha * vectorX * matrix + 0.0 * this" )
+    SCAI_LOG_INFO( logger, "this = alpha * vectorX * matrix -> this = alpha * vectorX * matrix + 0.0 * this" )
 
     const Scalar& beta = 0.0;
 
@@ -245,7 +245,7 @@ Vector& Vector::operator=( const Expression_SVM& expression )
 
 Vector& Vector::operator=( const Expression_SMV_SV& expression )
 {
-    LAMA_LOG_INFO( logger, "Vector::operator=( Expression_SMV_SV )" )
+    SCAI_LOG_INFO( logger, "Vector::operator=( Expression_SMV_SV )" )
 
     const Expression_SMV& exp1 = expression.getArg1();
     const Expression_SV& exp2 = expression.getArg2();
@@ -263,12 +263,12 @@ Vector& Vector::operator=( const Expression_SMV_SV& expression )
 
     if( &vectorX == this )
     {
-        LAMA_LOG_DEBUG( logger, "Temporary for X required" )
+        SCAI_LOG_DEBUG( logger, "Temporary for X required" )
         tmpResult = common::shared_ptr<Vector>( this->clone( getDistributionPtr() ) );
         resultPtr = tmpResult.get();
     }
 
-    LAMA_LOG_DEBUG( logger, "call matrixTimesVector with matrix = " << matrix )
+    SCAI_LOG_DEBUG( logger, "call matrixTimesVector with matrix = " << matrix )
 
     matrix.matrixTimesVector( *resultPtr, alpha, vectorX, beta, vectorY );
 
@@ -282,7 +282,7 @@ Vector& Vector::operator=( const Expression_SMV_SV& expression )
 
 Vector& Vector::operator=( const Expression_SVM_SV& expression )
 {
-    LAMA_LOG_INFO( logger, "Vector::operator=( Expression_SVM_SV )" )
+    SCAI_LOG_INFO( logger, "Vector::operator=( Expression_SVM_SV )" )
 
     const Expression_SVM& exp1 = expression.getArg1();
     const Expression_SV& exp2 = expression.getArg2();
@@ -300,12 +300,12 @@ Vector& Vector::operator=( const Expression_SVM_SV& expression )
 
     if( &vectorX == this )
     {
-        LAMA_LOG_DEBUG( logger, "Temporary for X required" )
+        SCAI_LOG_DEBUG( logger, "Temporary for X required" )
         tmpResult = common::shared_ptr<Vector>( this->clone( getDistributionPtr() ) );
         resultPtr = tmpResult.get();
     }
 
-    LAMA_LOG_DEBUG( logger, "call vectorTimesMatrix with matrix = " << matrix )
+    SCAI_LOG_DEBUG( logger, "call vectorTimesMatrix with matrix = " << matrix )
 
     matrix.vectorTimesMatrix( *resultPtr, alpha, vectorX, beta, vectorY );
 
@@ -319,7 +319,7 @@ Vector& Vector::operator=( const Expression_SVM_SV& expression )
 
 Vector& Vector::operator=( const Expression_SV& expression )
 {
-    LAMA_LOG_DEBUG( logger, "a * vector1 -> a * vector1 + 0.0 * vector1" )
+    SCAI_LOG_DEBUG( logger, "a * vector1 -> a * vector1 + 0.0 * vector1" )
 
     Expression_SV_SV tmpExp( expression, Expression_SV( Scalar( 0 ), expression.getArg2() ) );
 
@@ -424,7 +424,7 @@ void Vector::setContext( ContextPtr context )
 
     if( mContext->getType() != context->getType() )
     {
-        LAMA_LOG_DEBUG( logger, *this << ": new context = " << *context << ", old context = " << *mContext )
+        SCAI_LOG_DEBUG( logger, *this << ": new context = " << *context << ", old context = " << *mContext )
     }
 
     mContext = context;

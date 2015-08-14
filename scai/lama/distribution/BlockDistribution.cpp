@@ -40,7 +40,7 @@
 namespace lama
 {
 
-LAMA_LOG_DEF_LOGGER( BlockDistribution::logger, "Distribution.BlockDistribution" )
+SCAI_LOG_DEF_LOGGER( BlockDistribution::logger, "Distribution.BlockDistribution" )
 
 void BlockDistribution::getRange(
     IndexType& lb,
@@ -58,7 +58,7 @@ void BlockDistribution::getRange(
 
 BlockDistribution::~BlockDistribution()
 {
-    LAMA_LOG_INFO( logger, "~BlockDistribution" )
+    SCAI_LOG_INFO( logger, "~BlockDistribution" )
 }
 
 BlockDistribution::BlockDistribution( const IndexType globalSize, const CommunicatorPtr communicator )
@@ -67,10 +67,10 @@ BlockDistribution::BlockDistribution( const IndexType globalSize, const Communic
 {
     PartitionId size = mCommunicator->getSize();
     PartitionId rank = mCommunicator->getRank();
-    LAMA_LOG_DEBUG( logger, "BlockDistribution of " << getGlobalSize() << " elements" )
+    SCAI_LOG_DEBUG( logger, "BlockDistribution of " << getGlobalSize() << " elements" )
     mBlockSize = ( globalSize + size - 1 ) / size;
     getRange( mLB, mUB, globalSize, rank, size );
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "BlockDistribution of " << getGlobalSize() << " elements" << ", me has " << mLB << " : " << mUB )
 }
 
@@ -119,7 +119,7 @@ void BlockDistribution::computeOwners(
 {
     owners.clear();
     owners.reserve( requiredIndexes.size() );
-    LAMA_LOG_INFO( logger, "compute " << requiredIndexes.size() << " owners for " << *this )
+    SCAI_LOG_INFO( logger, "compute " << requiredIndexes.size() << " owners for " << *this )
 
     for( size_t i = 0; i < requiredIndexes.size(); i++ )
     {

@@ -145,7 +145,7 @@ public:
 
         for( IndexType i = 0; i < indexes.size(); i++ )
         {
-            LAMA_LOG_DEBUG( logger, "target[" << i << "] = source[" << indexes[i] << "] = " << source[indexes[i]] )
+            SCAI_LOG_DEBUG( logger, "target[" << i << "] = source[" << indexes[i] << "] = " << source[indexes[i]] )
 
             target[i] = source[indexes[i]];
         }
@@ -168,7 +168,7 @@ public:
 
         for( IndexType i = 0; i < indexes.size(); i++ )
         {
-            LAMA_LOG_DEBUG( logger,
+            SCAI_LOG_DEBUG( logger,
                             "targetN[" << i << "] = sourceN[" << indexes[i] << "] = " << source[indexes[i] * n] << " ..." )
 
             for( IndexType j = 0; j < n; j++ )
@@ -199,7 +199,7 @@ public:
 
         for( IndexType i = 0; i < indexes.size(); i++ )
         {
-            LAMA_LOG_DEBUG( logger, "target[" << indexes[i] << "] = source[" << i << "] = " << source[i] )
+            SCAI_LOG_DEBUG( logger, "target[" << indexes[i] << "] = source[" << i << "] = " << source[i] )
 
             target[indexes[i]] = source[i];
         }
@@ -222,7 +222,7 @@ public:
 
         for( IndexType i = 0; i < indexes.size(); i++ )
         {
-            LAMA_LOG_DEBUG( logger,
+            SCAI_LOG_DEBUG( logger,
                             "targetN[" << indexes[i] << "] = sourceN[" << i << "] = " << source[i * n] << " ..." )
 
             for( IndexType j = 0; j < n; j++ )
@@ -256,7 +256,7 @@ public:
 
         for( IndexType i = 0; i < tindexes.size(); i++ )
         {
-            LAMA_LOG_DEBUG( logger,
+            SCAI_LOG_DEBUG( logger,
                             "target[" << tindexes[i] << "] = source[" << sindexes[i] << "] = " << source[ sindexes[i] ] )
 
             target[tindexes[i]] = source[sindexes[i]];
@@ -283,7 +283,7 @@ public:
 
         for( IndexType i = 0; i < tindexes.size(); i++ )
         {
-            LAMA_LOG_DEBUG( logger,
+            SCAI_LOG_DEBUG( logger,
                             "targetN[" << tindexes[i] << "] = sourceN[" << sindexes[i] << "] = " << source[ sindexes[i] * n ] << " ..." )
 
             for( IndexType j = 0; j < n; j++ )
@@ -384,7 +384,7 @@ private:
     mutable common::unique_ptr<CommunicationPlan> mProvidesPlan;
     mutable common::unique_ptr<CommunicationPlan> mRequiredPlan;
 
-    LAMA_LOG_DECL_STATIC_LOGGER( logger )
+    SCAI_LOG_DECL_STATIC_LOGGER( logger )
 };
 
 /* ------------------------------------------------------------------------------- */
@@ -407,17 +407,17 @@ void Redistributor::redistribute( LAMAArray<ValueType>& targetArray, const LAMAA
     LAMAArray<ValueType> sourceHalo( getHaloSourceSize() );
     LAMAArray<ValueType> targetHalo( getHaloTargetSize() );
 
-    LAMA_LOG_DEBUG( logger, "gather: sourceHalo " << mHaloSourceIndexes.size() << " values" )
+    SCAI_LOG_DEBUG( logger, "gather: sourceHalo " << mHaloSourceIndexes.size() << " values" )
 
     gather( sourceHalo, sourceArray, mHaloSourceIndexes );
 
-    LAMA_LOG_DEBUG( logger, "copy: source -> target " << mLocalTargetIndexes.size() << " values" )
+    SCAI_LOG_DEBUG( logger, "copy: source -> target " << mLocalTargetIndexes.size() << " values" )
 
     copy( targetArray, mLocalTargetIndexes, sourceArray, mLocalSourceIndexes );
 
     exchangeHalo( targetHalo, sourceHalo );
 
-    LAMA_LOG_DEBUG( logger, "scatter: targetHalo " << mHaloTargetIndexes.size() << " values" )
+    SCAI_LOG_DEBUG( logger, "scatter: targetHalo " << mHaloTargetIndexes.size() << " values" )
 
     scatter( targetArray, mHaloTargetIndexes, targetHalo );
 }
@@ -445,17 +445,17 @@ void Redistributor::redistributeN(
     LAMAArray<ValueType> sourceHalo( n * getHaloSourceSize() );
     LAMAArray<ValueType> targetHalo( n * getHaloTargetSize() );
 
-    LAMA_LOG_DEBUG( logger, "gather: sourceHalo " << mHaloSourceIndexes.size() << " * " << n << " values" )
+    SCAI_LOG_DEBUG( logger, "gather: sourceHalo " << mHaloSourceIndexes.size() << " * " << n << " values" )
 
     gatherN( sourceHalo, sourceArray, mHaloSourceIndexes, n );
 
-    LAMA_LOG_DEBUG( logger, "copy: source -> target " << mLocalTargetIndexes.size() << " * " << n << " values" )
+    SCAI_LOG_DEBUG( logger, "copy: source -> target " << mLocalTargetIndexes.size() << " * " << n << " values" )
 
     copyN( targetArray, mLocalTargetIndexes, sourceArray, mLocalSourceIndexes, n );
 
     exchangeHaloN( targetHalo, sourceHalo, n );
 
-    LAMA_LOG_DEBUG( logger, "scatter: targetHalo " << mHaloTargetIndexes.size() << " * " << n << " values" )
+    SCAI_LOG_DEBUG( logger, "scatter: targetHalo " << mHaloTargetIndexes.size() << " * " << n << " values" )
 
     scatterN( targetArray, mHaloTargetIndexes, targetHalo, n );
 
@@ -631,8 +631,8 @@ void Redistributor::exchangeHaloN(
     CommunicationPlan requiredN( mHalo.getRequiredPlan(), n );
     CommunicationPlan providesN( mHalo.getProvidesPlan(), n );
 
-    LAMA_LOG_DEBUG( logger, "requiredN ( n = " << n << "): " << requiredN )
-    LAMA_LOG_DEBUG( logger, "providesN ( n = " << n << "): " << providesN )
+    SCAI_LOG_DEBUG( logger, "requiredN ( n = " << n << "): " << requiredN )
+    SCAI_LOG_DEBUG( logger, "providesN ( n = " << n << "): " << providesN )
 
     // use asynchronous communication to avoid deadlocks
 

@@ -58,7 +58,7 @@ namespace lama
 
 /* -------------------------------------------------------------------------- */
 
-LAMA_LOG_DEF_LOGGER( _StorageMethods::logger, "Storage.Methods" )
+SCAI_LOG_DEF_LOGGER( _StorageMethods::logger, "Storage.Methods" )
 
 /* -------------------------------------------------------------------------- */
 
@@ -80,7 +80,7 @@ void StorageMethods<ValueType>::localizeCSR(
 
     const IndexType localNumRows = rowDist.getLocalSize();
 
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "localzeCSR (#rows = global:" << globalNumRows << ", local:" << localNumRows << ", #values( global ) = " << globalJA.size() << ", rowDist = " << rowDist )
 
     ReadAccess<IndexType> rGlobalIA( globalIA );
@@ -104,7 +104,7 @@ void StorageMethods<ValueType>::localizeCSR(
 
     IndexType localNumValues = OpenMPCSRUtils::sizes2offsets( wLocalIA.get(), localNumRows );
 
-    LAMA_LOG_DEBUG( logger, "#values( local ) = " << localNumValues )
+    SCAI_LOG_DEBUG( logger, "#values( local ) = " << localNumValues )
 
     // so we can now allocate s of correct size
 
@@ -159,7 +159,7 @@ void StorageMethods<ValueType>::replicateCSR(
 
     const IndexType globalNumRows = rowDist.getGlobalSize();
 
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "replicateCSR (#rows = local:" << localNumRows << ", global: " << globalNumRows << ", #values(local) = " << localJA.size() << ", rowDist = " << rowDist )
 
     // gather distributed matrix storage into one global storage replicated on all processors
@@ -181,23 +181,23 @@ void StorageMethods<ValueType>::replicateCSR(
 
     rowDist.replicate( wGlobalIA.get(), wLocalSizes.get() );
 
-    LAMA_LOG_DEBUG( logger, comm << ": IA is now replicated, build offset " )
+    SCAI_LOG_DEBUG( logger, comm << ": IA is now replicated, build offset " )
 
     const IndexType globalNumValues = OpenMPCSRUtils::sizes2offsets( wGlobalIA.get(), globalNumRows );
 
-    LAMA_LOG_DEBUG( logger, comm << ": offsets available, #non-zeros (global) = " << globalNumValues )
+    SCAI_LOG_DEBUG( logger, comm << ": offsets available, #non-zeros (global) = " << globalNumValues )
 
     // Distribution supports a replicate routine that works on arrays with jagged rows
 
     ReadAccess<IndexType> rLocalJA( localJA );
     WriteOnlyAccess<IndexType> wGlobalJA( globalJA, globalNumValues );
     rowDist.replicateRagged( wGlobalJA.get(), rLocalJA.get(), wGlobalIA.get() );
-    LAMA_LOG_DEBUG( logger, comm << ": JA is now replicated " )
+    SCAI_LOG_DEBUG( logger, comm << ": JA is now replicated " )
 
     ReadAccess<ValueType> rLocalValues( localValues );
     WriteOnlyAccess<ValueType> wGlobalValues( globalValues, globalNumValues );
     rowDist.replicateRagged( wGlobalValues.get(), rLocalValues.get(), wGlobalIA.get() );
-    LAMA_LOG_DEBUG( logger, comm << ": Values are now replicated " )
+    SCAI_LOG_DEBUG( logger, comm << ": Values are now replicated " )
 }
 
 /* -------------------------------------------------------------------------- */
@@ -219,7 +219,7 @@ void StorageMethods<ValueType>::redistributeCSR(
 
     LAMA_ASSERT_EQUAL_ERROR( sourceNumRows, sourceIA.size() - 1 )
 
-    LAMA_LOG_INFO( logger, "redistributeCSR, #source rows = " << sourceNumRows << ", #target rows = " << targetNumRows )
+    SCAI_LOG_INFO( logger, "redistributeCSR, #source rows = " << sourceNumRows << ", #target rows = " << targetNumRows )
 
     // Redistribution of row sizes, requires size array
 
@@ -248,7 +248,7 @@ void StorageMethods<ValueType>::redistributeCSR(
 
         targetNumValues = OpenMPCSRUtils::sizes2offsets( wTargetSizes.get(), targetNumRows );
 
-        LAMA_LOG_INFO( logger,
+        SCAI_LOG_INFO( logger,
                        "redistributeCSR: #source values = " << sourceJA.size() << ", #target values = " << targetNumValues )
 
         // allocate target array with the correct size
@@ -287,7 +287,7 @@ void StorageMethods<ValueType>::exchangeHaloCSR(
     const LAMAArray<IndexType> providesIndexes = halo.getProvidesIndexes();
     const IndexType numSendRows = providesIndexes.size();
 
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "exchange halo matrix, #rows to send = " << numSendRows << ", #rows to recv = " << numRecvRows )
 
     {
@@ -307,13 +307,13 @@ void StorageMethods<ValueType>::exchangeHaloCSR(
 
     // send the sizes of the rows I will provide
 
-    LAMA_LOG_INFO( logger, "exchange sizes of rows" )
+    SCAI_LOG_INFO( logger, "exchange sizes of rows" )
 
     comm.exchangeByPlan( targetIA, halo.getRequiredPlan(), sourceSizes, halo.getProvidesPlan() );
 
     // now we build the variable communication plan
 
-    LAMA_LOG_INFO( logger, "exchanged sizes of rows, build vPlans" )
+    SCAI_LOG_INFO( logger, "exchanged sizes of rows, build vPlans" )
 
     ReadAccess<IndexType> sendSizes( sourceSizes );
     ReadAccess<IndexType> recvSizes( targetIA );
@@ -323,11 +323,11 @@ void StorageMethods<ValueType>::exchangeHaloCSR(
 
     const IndexType sendVSize = provideV.totalQuantity();
 
-    LAMA_LOG_INFO( logger, "built vPlans: #send " << sendVSize << ", #recv = " << requiredV.totalQuantity() )
+    SCAI_LOG_INFO( logger, "built vPlans: #send " << sendVSize << ", #recv = " << requiredV.totalQuantity() )
 
     recvSizes.release();
 
-    LAMA_LOG_INFO( logger, "released read access to recvSizes" )
+    SCAI_LOG_INFO( logger, "released read access to recvSizes" )
 
     // row sizes of target will now become offsets
 
@@ -372,7 +372,7 @@ void StorageMethods<ValueType>::splitCSR(
 
     IndexType numRows = csrIA.size() - 1;
 
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "splitCSR (#rows = " << numRows << ", #values = " << csrJA.size() << ", colDist = " << colDist )
 
     if( rowDist )
@@ -423,7 +423,7 @@ void StorageMethods<ValueType>::splitCSR(
     IndexType localNumValues = OpenMPCSRUtils::sizes2offsets( wLocalIA.get(), numRows );
     IndexType haloNumValues = OpenMPCSRUtils::sizes2offsets( wHaloIA.get(), numRows );
 
-    LAMA_LOG_DEBUG( logger,
+    SCAI_LOG_DEBUG( logger,
                     "split: local part has " << localNumValues << " values" << ", halo part has " << haloNumValues << " values" )
 
     // so we can now allocate s of correct size
@@ -450,9 +450,9 @@ void StorageMethods<ValueType>::splitCSR(
         IndexType localOffset = wLocalIA[i];
         IndexType haloOffset = wHaloIA[i];
 
-        LAMA_LOG_TRACE( logger, "fill local row " << i << " from " << localOffset << " to " << wLocalIA[i+1] )
+        SCAI_LOG_TRACE( logger, "fill local row " << i << " from " << localOffset << " to " << wLocalIA[i+1] )
 
-        LAMA_LOG_TRACE( logger, "fill halo row " << i << " from " << haloOffset << " to " << wHaloIA[i+1] )
+        SCAI_LOG_TRACE( logger, "fill halo row " << i << " from " << haloOffset << " to " << wHaloIA[i+1] )
 
         for( IndexType jj = ia[globalI]; jj < ia[globalI + 1]; ++jj )
         {
@@ -465,7 +465,7 @@ void StorageMethods<ValueType>::splitCSR(
                 wLocalJA[localOffset] = jLocal;
                 wLocalValues[localOffset] = values[jj];
 
-                LAMA_LOG_TRACE( logger,
+                SCAI_LOG_TRACE( logger,
                                 "row " << i << " (global = " << globalI << ": j = " << ja[jj] << " is local " << " local offset = " << localOffset )
 
                 ++localOffset;
@@ -477,7 +477,7 @@ void StorageMethods<ValueType>::splitCSR(
                 wHaloJA[haloOffset] = ja[jj];
                 wHaloValues[haloOffset] = values[jj];
 
-                LAMA_LOG_TRACE( logger,
+                SCAI_LOG_TRACE( logger,
                                 "row " << i << " (global = " << globalI << ": j = " << ja[jj] << " is not local " << " halo offset = " << haloOffset )
 
                 ++haloOffset;
@@ -501,7 +501,7 @@ void _StorageMethods::buildHalo(
 {
     const IndexType haloNumValues = haloJA.size();
 
-    LAMA_LOG_INFO( logger, "build halo for " << haloNumValues << " non-local indexes" )
+    SCAI_LOG_INFO( logger, "build halo for " << haloNumValues << " non-local indexes" )
 
     // copy the LAMA array values into a std::vector
 
@@ -525,12 +525,12 @@ void _StorageMethods::buildHalo(
 
     haloIndexes.resize( it - haloIndexes.begin() );
 
-    LAMA_LOG_DEBUG( logger,
+    SCAI_LOG_DEBUG( logger,
                     "Eliminating multiple global indexes, " << haloNumValues << " are shrinked to " << haloIndexes.size() << " values, is halo size" )
 
     HaloBuilder::build( colDist, haloIndexes, halo );
 
-    LAMA_LOG_DEBUG( logger, "Halo = " << halo )
+    SCAI_LOG_DEBUG( logger, "Halo = " << halo )
 
     haloSize = static_cast<IndexType>( haloIndexes.size() );
 
@@ -553,7 +553,7 @@ void _StorageMethods::buildHalo(
 
             LAMA_ASSERT_DEBUG( ja[jj] < haloSize, "mapped column index out of range " )
 
-            LAMA_LOG_TRACE( logger, "global index " << columnIndex << " is halo index " << ja[jj] )
+            SCAI_LOG_TRACE( logger, "global index " << columnIndex << " is halo index " << ja[jj] )
         }
     }
 }
@@ -581,7 +581,7 @@ void StorageMethods<ValueType>::joinCSR(
 
     IndexType numRows = localIA.size() - 1;
 
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "joinCSRData, #rows = " << numRows << ", local has " << localValues.size() << " elements" << ", halo has " << haloValues.size() << " elements" << ", keep " << numKeepDiagonals << " diagonals " )
 
     WriteOnlyAccess<IndexType> ia( outIA, numRows + 1 );
@@ -628,7 +628,7 @@ void StorageMethods<ValueType>::joinCSR(
         {
             if( offset1 >= ia1[i + 1] )
             {
-                LAMA_LOG_FATAL( logger, "no diagonal element for first CSR input data" )
+                SCAI_LOG_FATAL( logger, "no diagonal element for first CSR input data" )
                 COMMON_THROWEXCEPTION( "keep diagonal error" )
                 // @todo this exception caused segmentation faults when thrown
             }

@@ -43,7 +43,7 @@ namespace lama
 
 /* -------------------------------------------------------------------------- */
 
-LAMA_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, DIASparseMatrix<ValueType>::logger,
+SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, DIASparseMatrix<ValueType>::logger,
                               "Matrix.SparseMatrix.DIASparseMatrix" )
 
 /* -------------------------------------------------------------------------- */
@@ -72,7 +72,7 @@ DIASparseMatrix<ValueType>::DIASparseMatrix()
     : SparseMatrix<ValueType>( createStorage() )
 
 {
-    LAMA_LOG_INFO( logger, "DIASparseMatrix()" )
+    SCAI_LOG_INFO( logger, "DIASparseMatrix()" )
 }
 
 /* -------------------------------------------------------------------------- */
@@ -83,7 +83,7 @@ DIASparseMatrix<ValueType>::DIASparseMatrix( const IndexType numRows, const Inde
     : SparseMatrix<ValueType>( createStorage( numRows, numColumns ) )
 
 {
-    LAMA_LOG_INFO( logger, "DIASparseMatrix( " << numRows << " x " << numColumns << " )" )
+    SCAI_LOG_INFO( logger, "DIASparseMatrix( " << numRows << " x " << numColumns << " )" )
 }
 
 /* -------------------------------------------------------------------------- */
@@ -242,7 +242,7 @@ DIASparseMatrix<ValueType>::DIASparseMatrix( const std::string& filename )
 template<typename ValueType>
 DIASparseMatrix<ValueType>::~DIASparseMatrix()
 {
-    LAMA_LOG_INFO( logger, "~DIASpareMatrix" )
+    SCAI_LOG_INFO( logger, "~DIASpareMatrix" )
 }
 
 /* ---------------------------------------------------------------------------------------*/
@@ -250,7 +250,7 @@ DIASparseMatrix<ValueType>::~DIASparseMatrix()
 template<typename ValueType>
 DIASparseMatrix<ValueType>& DIASparseMatrix<ValueType>::operator=( const DIASparseMatrix& matrix )
 {
-    LAMA_LOG_INFO( logger, "DIASparseMatrix = DIASparseMatrix : " << matrix )
+    SCAI_LOG_INFO( logger, "DIASparseMatrix = DIASparseMatrix : " << matrix )
     this->assign( matrix );
     return *this;
 }
@@ -334,7 +334,7 @@ DIASparseMatrix<ValueType>* DIASparseMatrix<ValueType>::clone() const
     newSparseMatrix->setContext( this->getContextPtr() );
     newSparseMatrix->setCommunicationKind( this->getCommunicationKind() );
 
-    LAMA_LOG_INFO( logger, "create is " << *newSparseMatrix )
+    SCAI_LOG_INFO( logger, "create is " << *newSparseMatrix )
 
     return newSparseMatrix;
 }
@@ -344,11 +344,11 @@ DIASparseMatrix<ValueType>* DIASparseMatrix<ValueType>::clone() const
 template<typename ValueType>
 DIASparseMatrix<ValueType>* DIASparseMatrix<ValueType>::copy() const
 {
-    LAMA_LOG_INFO( logger, "copy of " << *this )
+    SCAI_LOG_INFO( logger, "copy of " << *this )
 
     DIASparseMatrix<ValueType>* newSparseMatrix = new DIASparseMatrix<ValueType>( *this );
 
-    LAMA_LOG_INFO( logger, "copy is " << *newSparseMatrix )
+    SCAI_LOG_INFO( logger, "copy is " << *newSparseMatrix )
 
     return newSparseMatrix;
 }

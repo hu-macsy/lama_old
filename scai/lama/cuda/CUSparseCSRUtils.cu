@@ -50,7 +50,7 @@
 namespace lama
 {
 
-    LAMA_LOG_DEF_LOGGER( CUSparseCSRUtils::logger, "CUDA.CSRUtilsSparse" )
+    SCAI_LOG_DEF_LOGGER( CUSparseCSRUtils::logger, "CUDA.CSRUtilsSparse" )
 
     /* --------------------------------------------------------------------------- */
     /*     cusparse handle is needed, set by CUDAContext                           */
@@ -74,7 +74,7 @@ namespace lama
                     int numColumns,
                     int numValues )
     {
-        LAMA_LOG_INFO( logger,
+        SCAI_LOG_INFO( logger,
                         "convertCSR2CSC<float> -> cusparseScsr2csc" << ", matrix size = "
                         << numRows << " x " << numColumns << ", nnz = " << numValues )
 
@@ -105,7 +105,7 @@ namespace lama
                     int numColumns,
                     int numValues )
     {
-        LAMA_LOG_INFO( logger,
+        SCAI_LOG_INFO( logger,
                         "convertCSR2CSC<double> -> cusparseDcsr2csc" << ", matrix size = "
                         << numRows << " x " << numColumns << ", nnz = " << numValues )
 
@@ -139,10 +139,10 @@ namespace lama
                     const float csrValues[],
                     SyncToken* syncToken )
     {
-        LAMA_LOG_INFO( logger, "normalGEMV<float>" <<
+        SCAI_LOG_INFO( logger, "normalGEMV<float>" <<
                         " result[ " << numRows << "] = " << alpha << " * A(csr) * x + " << beta << " * y " )
 
-        LAMA_LOG_DEBUG( logger, "x = " << x << ", y = " << y << ", result = " << result )
+        SCAI_LOG_DEBUG( logger, "x = " << x << ", y = " << y << ", result = " << result )
 
         LAMA_CHECK_CUDA_ACCESS
 
@@ -173,7 +173,7 @@ namespace lama
         // call result = alpha * op(A) * x + beta * result of cusparse
         // Note: alpha, beta are passed as pointers
 
-        LAMA_LOG_INFO( logger, "Start cusparseScsrmv, stream = " << stream )
+        SCAI_LOG_INFO( logger, "Start cusparseScsrmv, stream = " << stream )
 
         LAMA_CUSPARSE_CALL( cusparseScsrmv( CUDAContext_cusparseHandle, CUSPARSE_OPERATION_NON_TRANSPOSE,
                                         numRows, numColumns, nnz, &alpha, descrCSR,
@@ -208,10 +208,10 @@ namespace lama
                     const double csrValues[],
                     SyncToken* syncToken )
     {
-        LAMA_LOG_INFO( logger, "normalGEMV<double>" <<
+        SCAI_LOG_INFO( logger, "normalGEMV<double>" <<
                         " result[ " << numRows << "] = " << alpha << " * A(csr) * x + " << beta << " * y " )
 
-        LAMA_LOG_DEBUG( logger, "x = " << x << ", y = " << y << ", result = " << result )
+        SCAI_LOG_DEBUG( logger, "x = " << x << ", y = " << y << ", result = " << result )
 
         LAMA_CHECK_CUDA_ACCESS
 
@@ -242,7 +242,7 @@ namespace lama
         // call result = alpha * op(A) * x + beta * result of cusparse
         // Note: alpha, beta are passed as pointers
 
-        LAMA_LOG_INFO( logger, "Start cusparseDcsrmv, stream = " << stream )
+        SCAI_LOG_INFO( logger, "Start cusparseDcsrmv, stream = " << stream )
 
         LAMA_CUSPARSE_CALL( cusparseDcsrmv( CUDAContext_cusparseHandle, CUSPARSE_OPERATION_NON_TRANSPOSE,
                                         numRows, numColumns, nnz, &alpha, descrCSR,
@@ -278,7 +278,7 @@ namespace lama
     {
         LAMA_REGION( "CUDA.CSR.matrixAddSizes" )
 
-        LAMA_LOG_INFO(
+        SCAI_LOG_INFO(
                         logger,
                         "matrixAddSizes for " << numRows << " x " << numColumns << " matrix" << ", diagonalProperty = " << diagonalProperty )
 
@@ -333,7 +333,7 @@ namespace lama
     {
         LAMA_REGION( "CUDA.CSR.matrixMultiplySizes" )
 
-        LAMA_LOG_INFO(
+        SCAI_LOG_INFO(
                         logger,
                         "matrixMutliplySizes for " << m << " x " << n << " matrix" << ", diagonalProperty = " << diagonalProperty )
 
@@ -356,7 +356,7 @@ namespace lama
 
         int nnzC;
 
-        LAMA_LOG_DEBUG( logger, "multSizes, A is " << m << " x " << k << ", nnz = " << nnzA
+        SCAI_LOG_DEBUG( logger, "multSizes, A is " << m << " x " << k << ", nnz = " << nnzA
                         << ", B is " << k << " x " << n << ", nnz = " << nnzB
                         << ", C = " << m << " x " << n )
 
@@ -373,7 +373,7 @@ namespace lama
 
         LAMA_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "convertCSR2CSC" )
 
-        LAMA_LOG_DEBUG( logger, "matrixMultiplySizes, nnzC = " << nnzC )
+        SCAI_LOG_DEBUG( logger, "matrixMultiplySizes, nnzC = " << nnzC )
 
         return nnzC;
     }
@@ -401,7 +401,7 @@ namespace lama
     {
         LAMA_REGION( "CUDA.CSR.matrixAdd" )
 
-        LAMA_LOG_INFO( logger, "matrixAdd for " << numRows << "x" << numColumns << " matrix" )
+        SCAI_LOG_INFO( logger, "matrixAdd for " << numRows << "x" << numColumns << " matrix" )
 
         LAMA_CHECK_CUDA_ACCESS
 
@@ -454,7 +454,7 @@ namespace lama
     {
         LAMA_REGION( "CUDA.CSR.matrixAdd" )
 
-        LAMA_LOG_INFO( logger, "matrixAdd for " << numRows << "x" << numColumns << " matrix" )
+        SCAI_LOG_INFO( logger, "matrixAdd for " << numRows << "x" << numColumns << " matrix" )
 
         LAMA_CHECK_CUDA_ACCESS
 
@@ -511,7 +511,7 @@ namespace lama
     {
         LAMA_REGION( "CUDA.CSR.matrixMultiply" )
 
-        LAMA_LOG_INFO( logger, "matrixMultiply, result is " << m << "x" << n << " CSR storage" )
+        SCAI_LOG_INFO( logger, "matrixMultiply, result is " << m << "x" << n << " CSR storage" )
 
         LAMA_CHECK_CUDA_ACCESS
 
@@ -565,7 +565,7 @@ namespace lama
     {
         LAMA_REGION( "CUDA.CSR.matrixMultiply" )
 
-        LAMA_LOG_INFO( logger, "matrixMultiply, result is " << m << "x" << n << " CSR storage" )
+        SCAI_LOG_INFO( logger, "matrixMultiply, result is " << m << "x" << n << " CSR storage" )
 
         LAMA_CHECK_CUDA_ACCESS
 
@@ -608,7 +608,7 @@ namespace lama
 
     void CUSparseCSRUtils::setInterface( CSRUtilsInterface& CSRUtils )
     {
-        LAMA_LOG_INFO( logger, "set CSR routines for CUSparse in Interface" )
+        SCAI_LOG_INFO( logger, "set CSR routines for CUSparse in Interface" )
 
         bool useCUSparse = true;
 

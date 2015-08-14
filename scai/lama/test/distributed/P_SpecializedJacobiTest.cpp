@@ -95,7 +95,7 @@ struct P_SpecializedJacobiTestConfig
 
 BOOST_FIXTURE_TEST_SUITE( P_SpecializedJacobiTest, P_SpecializedJacobiTestConfig )
 
-LAMA_LOG_DEF_LOGGER( logger, "Test.P_SpecializedJacobi" );
+SCAI_LOG_DEF_LOGGER( logger, "Test.P_SpecializedJacobi" );
 
 /* ------------------------------------------------------------------------- */
 
@@ -122,14 +122,14 @@ void testSolveMethod( ContextPtr loc )
     DenseVector<ValueType> solution( dist, 1.0 );
     DenseVector<ValueType> exactSolution( solution );
     DenseVector<ValueType> rhs( coefficients * solution );
-    LAMA_LOG_INFO( logger, "Matrix for solver: " << coefficients )
+    SCAI_LOG_INFO( logger, "Matrix for solver: " << coefficients )
     jacobiSolver.initialize( coefficients );
     CriterionPtr criterion( new IterationCount( 40 ) );
     jacobiSolver.setStoppingCriterion( criterion );
     solution = 0.0;
-    LAMA_LOG_INFO( logger, "Specialized Jacobi Solver:solve" )
+    SCAI_LOG_INFO( logger, "Specialized Jacobi Solver:solve" )
     jacobiSolver.solve( solution, rhs );
-    LAMA_LOG_INFO( logger, "l2norm( compute solution - exactSolution )" )
+    SCAI_LOG_INFO( logger, "l2norm( compute solution - exactSolution )" )
     DenseVector<ValueType> diff( solution - exactSolution );
     L2Norm l2Norm;
     Scalar norm = l2Norm( diff );

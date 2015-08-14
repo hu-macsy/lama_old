@@ -42,14 +42,14 @@
 namespace lama
 {
 
-LAMA_LOG_DEF_LOGGER( MICUtils::logger, "MIC.Utils" )
+SCAI_LOG_DEF_LOGGER( MICUtils::logger, "MIC.Utils" )
 
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
 void MICUtils::scale( ValueType array[], const ValueType value, const IndexType n )
 {
-    LAMA_LOG_INFO( logger, "scale, #n = " << n << ", value = " << value )
+    SCAI_LOG_INFO( logger, "scale, #n = " << n << ", value = " << value )
 
     if( value == 1 )
     {
@@ -91,7 +91,7 @@ void MICUtils::setScale(
     const OtherValueType inValues[],
     const IndexType n )
 {
-    LAMA_LOG_INFO( logger, "setScale, #n = " << n << ", value = " << value )
+    SCAI_LOG_INFO( logger, "setScale, #n = " << n << ", value = " << value )
 
     // alias of outValues == inValues is no problem
 
@@ -132,7 +132,7 @@ void MICUtils::setScale(
 template<typename ValueType>
 ValueType MICUtils::sum( const ValueType array[], const IndexType n )
 {
-    LAMA_LOG_INFO( logger, "sum # array = " << array << ", n = " << n )
+    SCAI_LOG_INFO( logger, "sum # array = " << array << ", n = " << n )
 
     ValueType val = 0;
 
@@ -162,7 +162,7 @@ ValueType MICUtils::sum( const ValueType array[], const IndexType n )
 template<typename ValueType>
 void MICUtils::setVal( ValueType array[], const IndexType n, const ValueType val )
 {
-    LAMA_LOG_DEBUG( logger, "setVal<" << common::getScalarType<ValueType>() << ">: " << "array[" << n << "] = " << val )
+    SCAI_LOG_DEBUG( logger, "setVal<" << common::getScalarType<ValueType>() << ">: " << "array[" << n << "] = " << val )
 
     int device = MICContext::getCurrentDevice();
 
@@ -186,7 +186,7 @@ void MICUtils::setVal( ValueType array[], const IndexType n, const ValueType val
 template<typename ValueType>
 void MICUtils::setOrder( ValueType array[], const IndexType n )
 {
-    LAMA_LOG_DEBUG( logger,
+    SCAI_LOG_DEBUG( logger,
                     "setOrder<" << common::getScalarType<ValueType>() << ">: " << "array[" << n << "] = 0, 1, 2, ..., " << ( n - 1 ) )
 
     void* arrayPtr = array;
@@ -211,7 +211,7 @@ void MICUtils::setOrder( ValueType array[], const IndexType n )
 template<typename ValueType>
 ValueType MICUtils::getValue( const ValueType* array, const IndexType i )
 {
-    LAMA_LOG_DEBUG( logger, "getValue<" << common::getScalarType<ValueType>() << ">: i = " << i )
+    SCAI_LOG_DEBUG( logger, "getValue<" << common::getScalarType<ValueType>() << ">: i = " << i )
 
     ValueType val = 0;
 
@@ -232,7 +232,7 @@ ValueType MICUtils::getValue( const ValueType* array, const IndexType i )
 template<typename ValueType>
 ValueType MICUtils::maxval( const ValueType array[], const IndexType n )
 {
-    LAMA_LOG_INFO( logger, "maxval<" << common::getScalarType<ValueType>() << ">: " << "array[" << n << "]" )
+    SCAI_LOG_INFO( logger, "maxval<" << common::getScalarType<ValueType>() << ">: " << "array[" << n << "]" )
 
     ValueType val = 0;
 
@@ -283,8 +283,8 @@ ValueType MICUtils::maxval( const ValueType array[], const IndexType n )
 template<typename ValueType>
 ValueType MICUtils::absMaxVal( const ValueType array[], const IndexType n )
 {
-    LAMA_LOG_INFO( logger, "absMaxVal<" << common::getScalarType<ValueType>() << ">: " << "array[" << n << "]" )
-    LAMA_LOG_INFO( logger, "array = " << array )
+    SCAI_LOG_INFO( logger, "absMaxVal<" << common::getScalarType<ValueType>() << ">: " << "array[" << n << "]" )
+    SCAI_LOG_INFO( logger, "array = " << array )
 
     ValueType val = 0;
 
@@ -332,7 +332,7 @@ ValueType MICUtils::absMaxVal( const ValueType array[], const IndexType n )
 template<typename ValueType>
 ValueType MICUtils::absMaxDiffVal( const ValueType array1[], const ValueType array2[], const IndexType n )
 {
-    LAMA_LOG_DEBUG( logger, "absMaxDiffVal<" << common::getScalarType<ValueType>() << ">: " << "array[" << n << "]" )
+    SCAI_LOG_DEBUG( logger, "absMaxDiffVal<" << common::getScalarType<ValueType>() << ">: " << "array[" << n << "]" )
 
     ValueType val = 0;
 
@@ -354,7 +354,7 @@ ValueType MICUtils::absMaxDiffVal( const ValueType array1[], const ValueType arr
 
         #pragma omp critical
         {
-            LAMA_LOG_TRACE( logger, "max val of thread  = " << threadVal << ", global was " << val )
+            SCAI_LOG_TRACE( logger, "max val of thread  = " << threadVal << ", global was " << val )
 
             if( threadVal > val )
             {
@@ -371,7 +371,7 @@ ValueType MICUtils::absMaxDiffVal( const ValueType array1[], const ValueType arr
 template<typename ValueType>
 bool MICUtils::isSorted( const ValueType array[], const IndexType n, bool ascending )
 {
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "isSorted<" << common::getScalarType<ValueType>() << ">, n = " << n << ", ascending = " << ascending )
 
     bool sorted = true; //!< will be set to false at violations
@@ -420,7 +420,7 @@ bool MICUtils::isSorted( const ValueType array[], const IndexType n, bool ascend
 template<typename ValueType1,typename ValueType2>
 void MICUtils::set( ValueType1 out[], const ValueType2 in[], const IndexType n )
 {
-    LAMA_LOG_INFO( logger,
+    SCAI_LOG_INFO( logger,
                    "set: out<" << common::getScalarType<ValueType1>() << "[" << n << "]" << " = in<" << common::getScalarType<ValueType2>() << ">[" << n << "]" )
 
     void* outPtr = out;
@@ -446,7 +446,7 @@ void MICUtils::set( ValueType1 out[], const ValueType2 in[], const IndexType n )
 
 bool MICUtils::validIndexes( const IndexType array[], const IndexType n, const IndexType size )
 {
-    LAMA_LOG_DEBUG( logger, "validIndexes: array[" << n << "], size " << size )
+    SCAI_LOG_DEBUG( logger, "validIndexes: array[" << n << "], size " << size )
 
     bool validFlag = true;
 
@@ -477,7 +477,7 @@ bool MICUtils::validIndexes( const IndexType array[], const IndexType n, const I
 template<typename ValueType1,typename ValueType2>
 void MICUtils::setGather( ValueType1 out[], const ValueType2 in[], const IndexType indexes[], const IndexType n )
 {
-    LAMA_LOG_DEBUG( logger,
+    SCAI_LOG_DEBUG( logger,
                     "setGather: out<" << common::getScalarType<ValueType1>() << ">[" << n << "]" << " = in<" << common::getScalarType<ValueType2>() << ">[ indexes[" << n << "] ]" )
 
     void* outPtr = out;
@@ -507,7 +507,7 @@ void MICUtils::setGather( ValueType1 out[], const ValueType2 in[], const IndexTy
 template<typename ValueType1,typename ValueType2>
 void MICUtils::setScatter( ValueType1 out[], const IndexType indexes[], const ValueType2 in[], const IndexType n )
 {
-    LAMA_LOG_DEBUG( logger,
+    SCAI_LOG_DEBUG( logger,
                     "setScatter: out<" << common::getScalarType<ValueType1>() << ">" << "[ indexes[" << n << "] ]" << " = in<" << common::getScalarType<ValueType2>() << ">[" << n << "]" )
 
     void* outPtr = out;
@@ -538,7 +538,7 @@ void MICUtils::invert( ValueType array[], const IndexType n )
 {
     LAMA_REGION( "MIC.invert" )
 
-    LAMA_LOG_INFO( logger, "invert array[ " << n << " ]" )
+    SCAI_LOG_INFO( logger, "invert array[ " << n << " ]" )
 
     void* array_ptr = array;
 
@@ -565,7 +565,7 @@ void MICUtils::invert( ValueType array[], const IndexType n )
 
 void MICUtils::setInterface( UtilsInterface& Utils )
 {
-    LAMA_LOG_INFO( logger, "set Utils routines for MIC in Interface" )
+    SCAI_LOG_INFO( logger, "set Utils routines for MIC in Interface" )
 
     LAMA_INTERFACE_REGISTER( Utils, validIndexes )
 
