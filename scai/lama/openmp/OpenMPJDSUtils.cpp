@@ -56,6 +56,9 @@
 
 using common::scoped_array;
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -874,4 +877,6 @@ bool OpenMPJDSUtils::registerInterface()
 
 bool OpenMPJDSUtils::initialized = registerInterface();
 
-} // namespace lama
+} /* end namespace lama */
+
+} /* end namespace scai */

@@ -34,6 +34,9 @@
 
 #include <scai/lama/LAMATypes.hpp>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -136,5 +139,6 @@ public:
     static const long size = sizeof(LongDouble);
 };
 
-} //namespace lama
+} /* end namespace lama */
 
+} /* end namespace scai */

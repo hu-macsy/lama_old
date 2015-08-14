@@ -39,6 +39,9 @@
 // base classes
 #include <scai/lama/solver/logger/Logger.hpp>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -139,6 +142,8 @@ public:
     std::string createPrefix();
 };
 
-} // namespace lama
+} /* end namespace lama */
+
+} /* end namespace scai */
 
 #endif // LAMA_COMMONLOGGER_HPP_

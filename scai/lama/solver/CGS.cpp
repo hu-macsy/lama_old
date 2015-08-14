@@ -42,8 +42,10 @@
 
 #include <scai/lama/DenseVector.hpp>
 
-
 #include <limits>
+
+namespace scai
+{
 
 namespace lama{ 
 
@@ -205,4 +207,6 @@ const CGS::CGSRuntime& CGS::getConstRuntime() const{
     return mCGSRuntime;
 }
 
-} /* namespace lama */
+} /* end namespace lama */
+
+} /* end namespace scai */

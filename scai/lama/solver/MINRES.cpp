@@ -44,7 +44,11 @@
 
 #include <limits>
 
-namespace lama{ 
+namespace scai
+{
+
+namespace lama
+{
 
 SCAI_LOG_DEF_LOGGER( MINRES::logger, "Solver.MINRES" )
 
@@ -241,5 +245,6 @@ const MINRES::MINRESRuntime& MINRES::getConstRuntime() const{
     return mMINRESRuntime;
 }
 
-} /* namespace lama */
+} /* end namespace lama */
 
+} /* end namespace scai */

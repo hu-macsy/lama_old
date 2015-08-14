@@ -44,6 +44,9 @@
 
 #include <vector>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -118,7 +121,8 @@ private:
     static bool initialized;//!< static initialization used for registration of create in Distribution factory
 };
 
-}
-// namespace lama
+} /* end namespace lama */
+
+} /* end namespace scai */
 
 #endif // LAMA_METISDISTRIBUTION_HPP_

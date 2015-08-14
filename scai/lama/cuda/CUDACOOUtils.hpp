@@ -42,6 +42,9 @@
 // logging
 #include <scai/logging.hpp>
 
+namespace scai
+{
+
 namespace tasking
 {
     class SyncToken;
@@ -135,7 +138,8 @@ private:
 
 /* --------------------------------------------------------------------------- */
 
-}
-// namespace lama
+} /* end namespace lama */
+
+} /* end namespace scai */
 
 #endif //  SCAI_CUDA_COO_UTILS_HPP_

@@ -39,6 +39,9 @@
 // base classes
 #include <scai/lama/norm/Norm.hpp>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -61,6 +64,8 @@ COMMON_DLL_IMPORTEXPORT Scalar maxNorm( const Vector& vector );
 
 COMMON_DLL_IMPORTEXPORT Scalar maxNorm( const Matrix& matrix );
 
-}
+} /* end namespace lama */
+
+} /* end namespace scai */
 
 #endif // LAMA_MAXNORM_HPP_

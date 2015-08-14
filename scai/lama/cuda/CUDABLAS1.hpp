@@ -43,6 +43,9 @@
 #include <cublas_v2.h>
 #include <cuda_runtime_api.h>
 
+namespace scai
+{
+
 namespace tasking
 {
     class SyncToken;   // forward declaration
@@ -176,7 +179,8 @@ private:
     static bool registerInterface();//!< registration
 };
 
-}
-/* namespace lama */
+} /* end namespace lama */
+
+} /* end namespace scai */
 
 #endif // SCAI_CUDA_BLAS1_HPP_

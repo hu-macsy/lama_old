@@ -49,6 +49,9 @@
 using common::unique_ptr;
 using common::scoped_array;
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -473,4 +476,6 @@ SolverPtr GMRES::copy()
     return SolverPtr( new GMRES( *this ) );
 }
 
-} //namespace lama
+} /* end namespace lama */
+
+} /* end namespace scai */

@@ -36,6 +36,9 @@
 
 #include <fstream>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -279,4 +282,6 @@ void CyclicDistribution::printDistributionVector( std::string name ) const
     }
 }
 
-}
+} /* end namespace lama */
+
+} /* end namespace scai */

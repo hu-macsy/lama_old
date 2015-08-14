@@ -43,6 +43,9 @@
 
 #include <iostream>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -201,4 +204,6 @@ void Logger::stopAndResetTimer( const std::string& timerId )
     mTimer->stopAndReset( timerId );
 }
 
-} // namespace lama
+} /* end namespace lama */
+
+} /* end namespace scai */

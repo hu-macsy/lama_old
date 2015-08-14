@@ -44,6 +44,9 @@
 #include <string>
 #include <fstream>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -110,6 +113,8 @@ private:
     FileLogger();
 };
 
-} // namespace lama
+} /* end namespace lama */
+
+} /* end namespace scai */
 
 #endif // LAMA_FILELOGGER_HPP_

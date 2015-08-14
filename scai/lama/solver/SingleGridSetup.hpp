@@ -42,6 +42,9 @@
 // others
 #include <scai/lama/solver/Solver.hpp>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -112,6 +115,8 @@ private:
 
 };
 
-}
+} /* end namespace lama */
+
+} /* end namespace scai */
 
 #endif /* LAMA_SINGLEGRIDSETUP_HPP_ */

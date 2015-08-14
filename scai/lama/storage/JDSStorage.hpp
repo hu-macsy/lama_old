@@ -43,6 +43,9 @@
 #include <scai/memory/LAMAArray.hpp>
 #include <scai/lama/Scalar.hpp>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -410,7 +413,8 @@ private:
     void print() const;
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger ) //!< logger for this matrix format
-}    ;
+};
 
-}
-// namespace lama
+} /* end namespace lama */
+
+} /* end namespace scai */

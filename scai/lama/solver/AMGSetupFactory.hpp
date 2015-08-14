@@ -53,6 +53,9 @@
 
 #include <map>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -155,6 +158,8 @@ private:
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 };
 
-}
+} /* end namespace lama */
+
+} /* end namespace scai */
 
 #endif // LAMA_AMG_SETUP_FACTORY_HPP_

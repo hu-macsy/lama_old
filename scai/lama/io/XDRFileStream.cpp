@@ -36,6 +36,9 @@
 
 #include <sstream>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -100,4 +103,6 @@ bool XDRFileStream::isLittleEndian()
     return static_cast<int>( *ch ) != 0;
 }
 
-} //namespace lama
+} /* end namespace lama */
+
+} /* end namespace scai */

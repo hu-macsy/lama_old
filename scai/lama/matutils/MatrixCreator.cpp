@@ -44,8 +44,10 @@
 
 #include <cmath>
 
-namespace lama
+namespace scai
+{
 
+namespace lama
 {
 
 SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, MatrixCreator<ValueType>::logger, "MatrixCreator" )
@@ -612,5 +614,6 @@ BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_MATRIX_CREATOR_INSTANTIATE, _ )
 
 #undef LAMA_MATRIX_CREATOR_INSTANTIATE
 
-}// namespace lama
+} /* end namespace lama */
 
+} /* end namespace scai */

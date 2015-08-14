@@ -48,6 +48,9 @@
 #include <boost/lexical_cast.hpp>
 #include <scai/common/shared_ptr.hpp>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -734,6 +737,8 @@ DenseMatrix<ValueType>::DenseMatrix(
     computeOwners();
 }
 
-} // namespace lama
+} /* end namespace lama */
+
+} /* end namespace scai */
 
 #endif // LAMA_DENSEMATRIX_HPP_

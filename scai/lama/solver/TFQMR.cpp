@@ -44,7 +44,11 @@
 
 #include <limits>
 
-namespace lama{ 
+namespace scai
+{
+
+namespace lama
+{
 
 SCAI_LOG_DEF_LOGGER( TFQMR::logger, "Solver.TFQMR" )
 
@@ -258,5 +262,6 @@ const TFQMR::TFQMRRuntime& TFQMR::getConstRuntime() const{
     return mTFQMRRuntime;
 }
 
-} /* namespace lama */
+} /* end namespace lama */
 
+} /* end namespace scai */

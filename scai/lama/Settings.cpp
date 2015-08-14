@@ -40,6 +40,9 @@
 
 extern char **environ;
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -239,4 +242,6 @@ bool Settings::init()
     return true;
 }
 
-} // namespace
+} /* end namespace lama */
+
+} /* end namespace scai */

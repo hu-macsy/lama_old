@@ -58,6 +58,9 @@
 using namespace common;
 using namespace memory;
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -1643,4 +1646,6 @@ BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_DENSE_VECTOR_INSTANTIATE, _ )
 
 #undef LAMA_DENSE_VECTOR_INSTANTIATE
 
-}//namespace
+} /* end namespace lama */
+
+} /* end namespace scai */

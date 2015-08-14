@@ -54,6 +54,9 @@
 using namespace common;
 using namespace memory;
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -441,4 +444,6 @@ void Vector::resize( DistributionPtr distributionPtr )
     resizeImpl();
 }
 
-}
+} /* end namespace lama */
+
+} /* end namespace scai */

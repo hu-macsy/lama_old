@@ -40,6 +40,9 @@
 // assert
 #include <scai/lama/exception/LAMAAssert.hpp>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -186,4 +189,6 @@ void Criterion::writeAt( std::ostream& stream ) const
     }
 }
 
-} // namespace lama
+} /* end namespace lama */
+
+} /* end namespace scai */

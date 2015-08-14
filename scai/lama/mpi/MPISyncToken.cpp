@@ -42,6 +42,9 @@
 
 using namespace tasking;
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -105,4 +108,6 @@ void MPISyncToken::pushRequest( const MPI_Request& request )
     SCAI_LOG_INFO( logger, "# used requests = " << mUsedRequests )
 }
 
-}
+} /* end namespace lama */
+
+} /* end namespace scai */

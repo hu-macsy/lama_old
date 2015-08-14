@@ -32,6 +32,9 @@
  */
 #pragma once
 
+namespace scai
+{
+
 /**
  * @brief The namespace lama holds everything of the LAMA Library.
  */
@@ -158,5 +161,6 @@ typedef Expression<Expression_SM,Expression_SM,Plus> Expression_SM_SM;
 
 typedef Expression<Expression_SMM,Expression_SM,Plus> Expression_SMM_SM;
 
-} //namespace lama
+} /* end namespace lama */
 
+} /* end namespace scai */

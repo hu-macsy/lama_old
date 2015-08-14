@@ -47,6 +47,9 @@
 
 #include <vector>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -263,4 +266,6 @@ IndexType CommunicationPlan::totalQuantity() const
     return mQuantity;
 }
 
-}  // namespace
+} /* end namespace lama */
+
+} /* end namespace scai */

@@ -49,6 +49,9 @@
 #include <cublas_v2.h>
 #include <cuda_runtime_api.h>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -302,7 +305,8 @@ private:
     static bool registerInterface();//!< registration
 };
 
-}
-/* namespace lama */
+} /* end namespace lama */
+
+} /* end namespace scai */
 
 #endif // SCAI_CUDABLAS2_HPP_

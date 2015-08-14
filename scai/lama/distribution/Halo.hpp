@@ -47,6 +47,9 @@
 
 #include <map>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -179,6 +182,8 @@ bool Halo::isEmpty() const
     return ( mRequiredPlan.totalQuantity() == 0 ) && ( mProvidesPlan.totalQuantity() == 0 );
 }
 
-}
+} /* end namespace lama */
+
+} /* end namespace scai */
 
 #endif // LAMA_HALO_HPP_

@@ -42,6 +42,9 @@
 // boost
 #include <scai/common/unique_ptr.hpp>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -151,7 +154,8 @@ private    :
     double totalPreconditionerTime;
 };
 
-}
-// namespace lama
+} /* end namespace lama */
+
+} /* end namespace scai */
 
 #endif // LAMA_GMRES_HPP_

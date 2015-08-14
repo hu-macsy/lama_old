@@ -38,6 +38,9 @@
 
 using common::shared_ptr;
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -399,4 +402,6 @@ BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_ELL_SPARSE_MATRIX_INSTANTIATE, _ )
 #undef tmp_xstr
 #undef tmp_str
 
-}
+} /* end namespace lama */
+
+} /* end namespace scai */

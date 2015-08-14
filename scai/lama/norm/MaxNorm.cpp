@@ -34,6 +34,9 @@
 // hpp
 #include <scai/lama/norm/MaxNorm.hpp>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -75,4 +78,6 @@ Scalar maxNorm( const Matrix& matrix )
     return matrix.maxNorm();
 }
 
-}
+} /* end namespace lama */
+
+} /* end namespace scai */

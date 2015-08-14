@@ -34,6 +34,9 @@
 // hpp
 #include <scai/lama/norm/L1Norm.hpp>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -75,4 +78,6 @@ Scalar l1Norm( const Matrix& matrix )
     return matrix.l1Norm();
 }
 
-}
+} /* end namespace lama */
+
+} /* end namespace scai */

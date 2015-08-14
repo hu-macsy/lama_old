@@ -39,6 +39,9 @@
 #include <scai/lama/macros/interface.hpp>
 #include <scai/lama/BLASInterface.hpp>
 
+namespace scai
+{
+
 namespace tasking
 {
     class SyncToken;
@@ -2010,5 +2013,6 @@ struct COOUtilsInterface
     COOUtilsInterface ();
 };
 
-} //namespace lama
+} /* end namespace lama */
 
+} /* end namespace scai */

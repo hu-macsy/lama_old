@@ -41,6 +41,9 @@
 // others
 #include <scai/lama/distribution/Distribution.hpp>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -88,4 +91,6 @@ DistributionPtr Distributed::getDistributionPtr() const
     return mDistribution;
 }
 
-}
+} /* end namespace lama */
+
+} /* end namespace scai */

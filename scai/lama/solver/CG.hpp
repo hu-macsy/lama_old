@@ -38,6 +38,8 @@
 
 // base classes
 #include <scai/lama/solver/IterativeSolver.hpp>
+namespace scai
+{
 
 namespace lama
 {
@@ -119,6 +121,8 @@ private:
     double totalPreconditionerTime;
 };
 
-}
+} /* end namespace lama */
+
+} /* end namespace scai */
 
 #endif // LAMA_CG_HPP_

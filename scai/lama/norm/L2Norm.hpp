@@ -39,6 +39,9 @@
 // base classes
 #include <scai/lama/norm/Norm.hpp>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -114,6 +117,8 @@ COMMON_DLL_IMPORTEXPORT Scalar l2Norm( const Vector& vector );
  */
 COMMON_DLL_IMPORTEXPORT Scalar l2Norm( const Matrix& matrix );
 
-}
+} /* end namespace lama */
+
+} /* end namespace scai */
 
 #endif // LAMA_L2NORM_HPP_

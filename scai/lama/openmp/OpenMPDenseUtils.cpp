@@ -43,6 +43,9 @@
 // boost
 #include <boost/preprocessor.hpp>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -372,4 +375,6 @@ bool OpenMPDenseUtils::initialized = registerInterface();
 
 /* --------------------------------------------------------------------------- */
 
-} // namespace lama
+} /* end namespace lama */
+
+} /* end namespace scai */

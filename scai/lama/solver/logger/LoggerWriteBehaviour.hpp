@@ -34,6 +34,9 @@
 #ifndef SCAI_LOGGERWRITERBEHAVIOUR_HPP_
 #define SCAI_LOGGERWRITERBEHAVIOUR_HPP_
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -66,8 +69,10 @@ enum LoggerWriteBehaviour
     toFileAndConsole
 };
 
-} // namespace LoggerWriteBehaviour
+} /* end namespace LoggerWriteBehaviour */
 
-} // namespace lama
+} /* end namespace lama */
+
+} /* end namespace scai */
 
 #endif // SCAI_LOGGERWRITERBEHAVIOUR_HPP_

@@ -44,6 +44,9 @@
 
 #include <scai/lama/cblas.hpp>
 
+namespace scai
+{
+
 namespace tasking
 {
     class SyncToken;
@@ -232,7 +235,9 @@ private:
     static bool registerInterface();//!< registration
 };
 
-}
-/* namespace lama */
+} /* end namespace lama */
+
+} /* end namespace scai */
+
 
 #endif // SCAI_CUDABLAS3_HPP_

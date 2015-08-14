@@ -47,6 +47,9 @@
 
 #include <cmath>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -488,4 +491,6 @@ bool MICDIAUtils::registerInterface()
 
 bool MICDIAUtils::initialized = registerInterface();
 
-} // namespace lama
+} /* end namespace lama */
+
+} /* end namespace scai */

@@ -40,6 +40,9 @@
 
 using memory::LAMAArray;
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -195,4 +198,6 @@ public:
 
 /* -------------------------------------------------------------------------- */
 
-}
+} /* end namespace lama */
+
+} /* end namespace scai */

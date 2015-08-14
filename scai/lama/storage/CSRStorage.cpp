@@ -59,6 +59,9 @@
 
 #include <cmath>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -2357,26 +2360,28 @@ void CSRStorage<ValueType>::buildSparseRowData(
 /*       Template Instantiations                                             */
 /* ========================================================================= */
 
-#define LAMA_CSR_STORAGE_INSTANTIATE(z, I, _)                              \
+#define LAMA_CSR_STORAGE_INSTANTIATE(z, I, _)                                  \
     template<>                                                                 \
     const char* CSRStorage<ARITHMETIC_TYPE##I>::typeName()                     \
     {                                                                          \
         return "CSRStorage<ARITHMETIC_TYPE##I>";                               \
     }                                                                          \
-    \
-    template class COMMON_DLL_IMPORTEXPORT CSRStorage<ARITHMETIC_TYPE##I> ;      \
-    \
+                                                                               \
+    template class COMMON_DLL_IMPORTEXPORT CSRStorage<ARITHMETIC_TYPE##I> ;    \
+                                                                               \
     template void CSRStorage<ARITHMETIC_TYPE##I>::setCSRDataSwap(              \
-            const IndexType numRows,                                               \
-            const IndexType numColumns,                                            \
-            const IndexType numValues,                                             \
-            LAMAArray<IndexType>& ia,                                              \
-            LAMAArray<IndexType>& ja,                                              \
-            LAMAArray<ARITHMETIC_TYPE##I>& values,                                \
-            const ContextPtr loc );                                                \
+            const IndexType numRows,                                           \
+            const IndexType numColumns,                                        \
+            const IndexType numValues,                                         \
+            LAMAArray<IndexType>& ia,                                          \
+            LAMAArray<IndexType>& ja,                                          \
+            LAMAArray<ARITHMETIC_TYPE##I>& values,                             \
+            const ContextPtr loc );                                            \
 
     BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_CSR_STORAGE_INSTANTIATE, _ )
 
 #undef LAMA_CSR_STORAGE_INSTANTIATE
 
-    }
+} /* end namespace lama */
+
+} /* end namespace scai */

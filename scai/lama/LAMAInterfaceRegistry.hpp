@@ -48,6 +48,9 @@
 
 #include <map>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -108,5 +111,6 @@ private:
     friend class CGuard;
 };
 
-} // namespace
+} /* end namespace lama */
 
+} /* end namespace scai */

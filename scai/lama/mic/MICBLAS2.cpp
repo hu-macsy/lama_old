@@ -39,6 +39,9 @@
 
 #include <mkl.h>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -244,5 +247,6 @@ bool MICBLAS2::registerInterface()
 
 bool MICBLAS2::initialized = registerInterface();
 
-} /* namespace lama */
+} /* end namespace lama */
 
+} /* end namespace scai */

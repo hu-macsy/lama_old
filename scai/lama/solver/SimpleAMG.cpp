@@ -50,6 +50,9 @@
 
 using namespace memory;
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -679,4 +682,6 @@ SolverPtr SimpleAMG::copy()
     return SolverPtr( new SimpleAMG( *this ) );
 }
 
-}
+} /* end namespace lama */
+
+} /* end namespace scai */

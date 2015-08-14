@@ -40,6 +40,9 @@
 // boost
 #include <scai/common/shared_ptr.hpp>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -78,6 +81,8 @@ private:
     int mSignal; // set by an offload computation
 };
 
-} // namespace
+} /* end namespace lama */
+
+} /* end namespace scai */
 
 #endif // LAMA_MIC_SYNC_TOKEN_HPP_

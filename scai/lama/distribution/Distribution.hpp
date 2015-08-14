@@ -53,6 +53,9 @@
 #include <map>
 #include <utility>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -351,6 +354,8 @@ IndexType Distribution::getGlobalSize() const
     return mGlobalSize;
 }
 
-}
+} /* end namespace lama */
+
+} /* end namespace scai */
 
 #endif // LAMA_DISTRIBUTION_HPP_

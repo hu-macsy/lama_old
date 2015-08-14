@@ -39,6 +39,9 @@
 
 #include <sstream>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -93,4 +96,6 @@ FileLogger::FileLogger()
 {
 }
 
-} // namespace lama
+} /* end namespace lama */
+
+} /* end namespace scai */

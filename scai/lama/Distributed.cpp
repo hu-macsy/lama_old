@@ -34,6 +34,9 @@
 // hpp
 #include <scai/lama/Distributed.hpp>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -68,4 +71,6 @@ void Distributed::setDistributionPtr( DistributionPtr distributionPtr )
     mDistribution = distributionPtr;
 }
 
-}
+} /* end namespace lama */
+
+} /* end namespace scai */

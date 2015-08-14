@@ -42,8 +42,10 @@
 // assert
 #include <scai/lama/exception/LAMAAssert.hpp>
 
-namespace lama
+namespace scai
+{
 
+namespace lama
 {
 
 /* ----------------------------------------------------------------------------- */
@@ -160,5 +162,6 @@ ContextPtr MICContextManager::getInstance( int deviceNr )
     return context;
 }
 
-} //namespace lama
+} /* end namespace lama */
 
+} /* end namespace scai */

@@ -39,6 +39,9 @@
 
 #include <scai/lama/solver/criteria/IterationCount.hpp>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -214,4 +217,6 @@ void IterativeSolver::logIterationStart()
     mLogger->startTimer( "IterationTimer" );
 }
 
-} // namespace lama
+} /* end namespace lama */
+
+} /* end namespace scai */

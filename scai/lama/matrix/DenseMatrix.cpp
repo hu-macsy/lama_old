@@ -56,6 +56,9 @@ using namespace memory;
 using common::unique_ptr;
 using common::scoped_array;
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -2255,4 +2258,7 @@ BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_DENSE_MATRIX_INSTANTIATE, _ )
 
 #undef LAMA_DENSE_MATRIX_INSTANTIATE
 
-}
+} /* end namespace lama */
+
+} /* end namespace scai */
+

@@ -45,6 +45,9 @@
 
 using namespace std;
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -322,5 +325,6 @@ std::string NoCommunicator::createValue()
     return "none";
 }
 
-}
+} /* end namespace lama */
 
+} /* end namespace scai */

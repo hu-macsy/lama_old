@@ -42,6 +42,9 @@
 
 using namespace memory;
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -180,4 +183,6 @@ void HaloBuilder::build( const Distribution& distribution, const std::vector<Ind
     }
 }
 
-} // namespace LAMA
+} /* end namespace lama */
+
+} /* end namespace scai */

@@ -37,6 +37,9 @@
 
 #include <fstream>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -116,4 +119,6 @@ NoDistribution* NoDistribution::create( const CommunicatorPtr, const Matrix& mat
 
 bool NoDistribution::initialized = Distribution::registerCreator<NoDistribution>( "NO" );
 
-}
+} /* end namespace lama */
+
+} /* end namespace scai */

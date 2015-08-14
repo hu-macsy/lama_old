@@ -71,6 +71,9 @@ using namespace memory;
 
 using common::getScalarType;
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -2212,4 +2215,6 @@ namespace lama
 
     bool CUDAELLUtils::initialized = registerInterface();
 
-} // namespace lama
+} /* end namespace lama */
+
+} /* end namespace scai */

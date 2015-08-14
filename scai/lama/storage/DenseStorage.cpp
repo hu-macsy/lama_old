@@ -42,6 +42,9 @@
 #include <scai/lama/openmp/OpenMPCSRUtils.hpp>
 #include <scai/lama/openmp/OpenMPUtils.hpp>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -1294,4 +1297,6 @@ BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_DENSE_STORAGE_INSTANTIATE, _ )
 
 #undef LAMA_DENSE_STORAGE_INSTANTIATE
 
-} // namespace lama
+} /* end namespace lama */
+
+} /* end namespace scai */

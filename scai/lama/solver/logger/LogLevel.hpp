@@ -33,6 +33,9 @@
 #ifndef SCAI_LOGLEVEL_HPP_
 #define SCAI_LOGLEVEL_HPP_
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -77,8 +80,10 @@ enum LogLevel
     completeInformation = 4
 };
 
-} // namespace LogLevel
+} /* end namespace LogLevel */
 
-} // namespace lama
+} /* end namespace lama */
+
+} /* end namespace scai */
 
 #endif // SCAI_LOGLEVEL_HPP_

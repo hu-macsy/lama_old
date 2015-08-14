@@ -41,6 +41,10 @@
 
 // logging
 #include <scai/logging/Logger.hpp>
+
+namespace scai
+{
+
 namespace lama
 {
 
@@ -130,7 +134,8 @@ protected:
     CGSRuntime    mCGSRuntime;
 };
 
-}
-// namespace lama
+} /* end namespace lama */
+
+} /* end namespace scai */
 
 #endif // LAMA_CGS_HPP_

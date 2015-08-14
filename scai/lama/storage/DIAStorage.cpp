@@ -56,6 +56,9 @@
 using common::scoped_array;
 using namespace memory;
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -1255,4 +1258,6 @@ BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_DIA_STORAGE_INSTANTIATE, _ )
 
 #undef LAMA_DIA_STORAGE_INSTANTIATE
 
-}
+} /* end namespace lama */
+
+} /* end namespace scai */

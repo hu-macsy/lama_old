@@ -39,6 +39,9 @@
 
 #include <scai/lama/exception/LAMAAssert.hpp>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -384,4 +387,6 @@ void CommunicationPlan::writeAt( std::ostream& stream ) const
     stream << ")";
 }
 
-}
+} /* end namespace lama */
+
+} /* end namespace scai */

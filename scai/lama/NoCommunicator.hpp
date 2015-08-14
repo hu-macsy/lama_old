@@ -37,6 +37,9 @@
 // base classes
 #include <scai/lama/CRTPCommunicator.hpp>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -170,4 +173,6 @@ public:
     static std::string createValue();
 };
 
-} // namespace
+} /* end namespace lama */
+
+} /* end namespace scai */

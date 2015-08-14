@@ -40,6 +40,9 @@
 #include <iostream>
 #include <algorithm>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -126,4 +129,6 @@ void ResidualStagnation::writeAt( std::ostream& stream ) const
     stream << "ResStgn<" << getPrecision() << ", " << getLookback() << ">";
 }
 
-} // namespace lama
+} /* end namespace lama */
+
+} /* end namespace scai */

@@ -44,6 +44,10 @@
 #include <typeinfo>
 #include <sstream>
 
+namespace scai
+{
+
+}
 namespace lama
 {
 
@@ -298,6 +302,8 @@ int XDRFileStream::getSize( const ValueType )
     return size;
 }
 
-} //namespace lama
+} /* end namespace lama */
+
+} /* end namespace scai */
 
 #endif // XDRFILESTREAM_HPP_

@@ -41,6 +41,9 @@
 // tracing
 #include <scai/tracing.hpp>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -171,4 +174,6 @@ void SingleGridSetup::setSmoother( SolverPtr solver )
     mSolver = solver;
 }
 
-}
+} /* end namespace lama */
+
+} /* end namespace scai */

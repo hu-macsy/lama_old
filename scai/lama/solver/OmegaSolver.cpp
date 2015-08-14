@@ -34,6 +34,9 @@
 // hpp
 #include <scai/lama/solver/OmegaSolver.hpp>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -92,4 +95,6 @@ Scalar OmegaSolver::getOmega() const
     return mOmega;
 }
 
-} // namespace lama
+} /* end namespace lama */
+
+} /* end namespace scai */

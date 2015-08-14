@@ -55,6 +55,9 @@
 using common::getScalarType;
 using namespace tasking;
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -747,4 +750,6 @@ namespace lama
 
     bool CUDACOOUtils::initialized = registerInterface();
 
-}  // namespace
+} /* end namespace lama */
+
+} /* end namespace scai */

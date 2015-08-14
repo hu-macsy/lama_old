@@ -42,6 +42,9 @@
 #include <scai/lama/expression/VectorExpressions.hpp>
 #include <scai/lama/expression/MatrixVectorExpressions.hpp>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -227,4 +230,6 @@ const CG::CGRuntime& CG::getConstRuntime() const
     return mCGRuntime;
 }
 
-} //namespace lama
+} /* end namespace lama */
+
+} /* end namespace scai */

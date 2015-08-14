@@ -52,6 +52,9 @@ using common::getScalarType;
 
 extern cublasHandle_t CUDAContext_cublasHandle;
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -270,4 +273,6 @@ bool CUDABLAS2::registerInterface()
 
 bool CUDABLAS2::initialized = registerInterface();
 
-} /* namespace lama */
+} /* end namespace lama */
+
+} /* end namespace scai */

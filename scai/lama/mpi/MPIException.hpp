@@ -39,6 +39,9 @@
 // base classes
 #include <scai/common/Exception.hpp>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -50,6 +53,8 @@ public:
     virtual ~MPIException() throw ();
 };
 
-}
+} /* end namespace lama */
+
+} /* end namespace scai */
 
 #endif // LAMA_MPIEXCEPTION_HPP_

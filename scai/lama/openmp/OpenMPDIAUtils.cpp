@@ -50,6 +50,9 @@
 
 #include <cmath>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -572,4 +575,6 @@ bool OpenMPDIAUtils::registerInterface()
 
 bool OpenMPDIAUtils::initialized = registerInterface();
 
-} // namespace lama
+} /* end namespace lama */
+
+} /* end namespace scai */

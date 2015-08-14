@@ -44,6 +44,9 @@
 
 #include <vector>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -158,6 +161,8 @@ private:
     int totalIterations;
 };
 
-}
+} /* end namespace lama */
+
+} /* end namespace scai */
 
 #endif /* LAMA_SIMPLEAMG_HPP_ */

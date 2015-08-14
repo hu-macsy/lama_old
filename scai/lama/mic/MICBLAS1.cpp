@@ -45,6 +45,9 @@
 #include <cmath>
 #include <cstdlib>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -517,4 +520,6 @@ bool MICBLAS1::registerInterface()
 
 bool MICBLAS1::initialized = registerInterface();
 
-} /** namespace lama */
+} /* end namespace lama */
+
+} /* end namespace scai */

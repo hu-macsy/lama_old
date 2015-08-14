@@ -44,7 +44,11 @@
 
 #include <limits>
 
-namespace lama{ 
+namespace scai
+{
+
+namespace lama
+{
 
 SCAI_LOG_DEF_LOGGER( CGNR::logger, "Solver.CGNR" )
 
@@ -189,5 +193,6 @@ const CGNR::CGNRRuntime& CGNR::getConstRuntime() const{
     return mCGNRRuntime;
 }
 
-} /* namespace lama */
+} /* end namespace lama */
 
+} /* end namespace scai */

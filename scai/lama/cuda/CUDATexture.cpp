@@ -41,6 +41,9 @@
 
 #include <cstdlib>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -129,5 +132,7 @@ bool CUDATexture::useTexture()
     return theUseTextureFlag;
 }
 
-} // namespace
+} /* end namespace lama */
+
+} /* end namespace scai */
 

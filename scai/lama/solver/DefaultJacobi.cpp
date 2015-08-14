@@ -43,6 +43,9 @@
 
 using namespace memory;
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -264,4 +267,6 @@ SolverPtr DefaultJacobi::copy()
     return SolverPtr( new DefaultJacobi( *this ) );
 }
 
-} // namespace lama
+} /* end namespace lama */
+
+} /* end namespace scai */

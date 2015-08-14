@@ -34,6 +34,9 @@
 // hpp
 #include <scai/lama/solver/AMGSetup.hpp>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -62,4 +65,6 @@ void AMGSetup::setReplicatedLevel( IndexType replicatedLevel )
     mReplicatedLevel = replicatedLevel;
 }
 
-}
+} /* end namespace lama */
+
+} /* end namespace scai */

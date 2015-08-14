@@ -43,6 +43,9 @@
 // logging
 #include <scai/logging.hpp>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -268,7 +271,8 @@ private:
 
 /* --------------------------------------------------------------------------- */
 
-}
-// namespace lama
+} /* end namespace lama */
+
+} /* end namespace scai */
 
 #endif  //  SCAI_CUDA_ELL_UTILS_HPP_

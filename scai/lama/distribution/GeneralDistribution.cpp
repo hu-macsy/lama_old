@@ -44,6 +44,9 @@
 
 #define MASTER 0
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -313,4 +316,6 @@ void GeneralDistribution::printDistributionVector( std::string /*name*/) const
 //    }
 }
 
-}
+} /* end namespace lama */
+
+} /* end namespace scai */

@@ -51,6 +51,9 @@
  *  \endcode
  */
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -95,7 +98,7 @@ typedef int PartitionId;
  */
 static const PartitionId nPartition = std::numeric_limits<PartitionId>::max();
 
-} // namespace lama
+} /* end namespace lama */
 
 /***************************************************************************
  *
@@ -129,7 +132,9 @@ inline ScalarType getScalarType<lama::ComplexLongDouble>()
     return scalar::LONG_DOUBLE_COMPLEX;
 }
 
-}
+} /* end namespace common */
+
+} /* end namespace scai */
 
 // Number of supported arithmetic types, maximal number is currently 4
 

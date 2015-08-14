@@ -49,6 +49,9 @@
 // trace
 #include <scai/tracing.hpp>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -966,4 +969,6 @@ bool MICJDSUtils::registerInterface()
 
 bool MICJDSUtils::initialized = registerInterface();
 
-} // namespace lama
+} /* end namespace lama */
+
+} /* end namespace scai */

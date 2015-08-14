@@ -39,6 +39,9 @@
 // base classes
 #include <scai/lama/distribution/Distribution.hpp>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -154,6 +157,8 @@ IndexType CyclicDistribution::chunkSize() const
     return mChunkSize;
 }
 
-}
+} /* end namespace lama */
+
+} /* end namespace scai */
 
 #endif // LAMA_CYCLIC_DISTRIBUTION_HPP_

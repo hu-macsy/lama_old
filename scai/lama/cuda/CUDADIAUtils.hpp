@@ -40,6 +40,9 @@
 // logging
 #include <scai/logging.hpp>
 
+namespace scai
+{
+
 namespace tasking
 {
     class SyncToken;
@@ -103,4 +106,6 @@ private:
 
 /* --------------------------------------------------------------------------- */
 
-}  // namespace 
+} /* end namespace lama */
+
+} /* end namespace scai */

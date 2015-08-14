@@ -40,6 +40,9 @@
 // base classes
 #include <scai/lama/solver/criteria/Criterion.hpp>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -113,7 +116,8 @@ private    :
     IndexType mIterationExtrema;
 };
 
-}
-//namespace lama
+} /* end namespace lama */
+
+} /* end namespace scai */
 
 #endif // LAMA_ITERATIONCOUNT_HPP_

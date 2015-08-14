@@ -42,6 +42,9 @@
 
 using namespace common;
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -570,4 +573,6 @@ Matrix& Matrix::operator=( const Expression_SM_SM& exp )
     return *this;
 }
 
-}
+} /* end namespace lama */
+
+} /* end namespace scai */

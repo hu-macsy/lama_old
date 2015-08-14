@@ -34,6 +34,9 @@
 // hpp
 #include <scai/lama/solver/SolutionProxy.hpp>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -94,4 +97,6 @@ void SolutionProxy::swap( Vector*& other )
     std::swap( other, mSolution );
 }
 
-} // namespace lama
+} /* end namespace lama */
+
+} /* end namespace scai */

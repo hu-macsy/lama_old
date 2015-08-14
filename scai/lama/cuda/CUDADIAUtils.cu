@@ -54,6 +54,9 @@ using namespace memory;
 using namespace tasking;
 using common::getScalarType;
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -919,4 +922,6 @@ namespace lama
 
     bool CUDADIAUtils::initialized = registerInterface();
 
-} // namespace lama
+} /* end namespace lama */
+
+} /* end namespace scai */

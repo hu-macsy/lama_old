@@ -39,6 +39,9 @@
 
 #include <scai/lama/norm/L2Norm.hpp> //default
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -145,4 +148,6 @@ void ResidualThreshold::writeAt( std::ostream& stream ) const
     stream << "ResThr<" << getPrecision() << ", " << mCheckMode << ">";
 }
 
-} //namespace lama
+} /* end namespace lama */
+
+} /* end namespace scai */

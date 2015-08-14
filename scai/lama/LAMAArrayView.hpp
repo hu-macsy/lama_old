@@ -42,6 +42,9 @@
 // others
 #include <scai/lama/LAMAArray.hpp>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -303,6 +306,8 @@ inline IndexType LAMAArrayConstView<ValueType>::size() const
     return mSize;
 }
 
-} /* namespace lama */
+} /* end namespace lama */
+
+} /* end namespace scai */
 
 #endif // LAMA_LAMAARRAYVIEW_HPP_

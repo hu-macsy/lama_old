@@ -40,6 +40,10 @@
 
 // logging
 #include <scai/logging/Logger.hpp>
+
+namespace scai
+{
+
 namespace lama
 {
 
@@ -131,7 +135,8 @@ protected:
     BiCGstabRuntime    mBiCGstabRuntime;
 };
 
-}
-// namespace lama
+} /* end namespace lama */
+
+} /* end namespace scai */
 
 #endif // LAMA_BICGSTAB_HPP_

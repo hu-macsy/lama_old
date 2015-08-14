@@ -38,6 +38,9 @@
 // base classes
 #include <scai/lama/storage/CRTPMatrixStorage.hpp>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -386,7 +389,8 @@ private:
     static void setUsedDiagonal( bool upperDiagonalUsed[], bool lowerDiagonalUsed[], IndexType i, IndexType j );
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger ) //!< logger for this matrix format
-}    ;
+};
 
-}
-// namespace lama
+} /* end namespace lama */
+
+} /* end namespace scai */

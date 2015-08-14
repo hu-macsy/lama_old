@@ -57,6 +57,9 @@
 
 using namespace tasking;
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -487,4 +490,6 @@ DenseVector<ValueType>::DenseVector( const IndexType size, const OtherValueType*
 
 }
 
-}
+} /* end namespace lama */
+
+} /* end namespace scai */

@@ -54,6 +54,9 @@
 #include <scai/common/Factory.hpp>
 #include <scai/common/ScalarType.hpp>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -1044,7 +1047,9 @@ inline std::ostream& operator<<( std::ostream& stream, const Matrix::SyncKind& k
 
 /** @brief  stream output for key values of creator  */
 
-} // namespace
+} /* end namespace lama */
+
+} /* end namespace scai */
 
 /** This function prints a MatrixKind on an output stream.
  *
@@ -1082,4 +1087,3 @@ inline std::ostream& operator<<( std::ostream& stream, const lama::MatrixCreateK
     stream << "<" << key.first << ", " << key.second << ">";
     return stream;
 }
-

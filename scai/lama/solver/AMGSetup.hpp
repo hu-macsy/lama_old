@@ -41,6 +41,9 @@
 
 #include <scai/lama/solver/Solver.hpp>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -116,6 +119,8 @@ protected:
     IndexType mReplicatedLevel;
 };
 
-}
+} /* end namespace lama */
+
+} /* end namespace scai */
 
 #endif /* LAMA_AMGSETUP_HPP_ */

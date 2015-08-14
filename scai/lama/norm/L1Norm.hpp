@@ -39,6 +39,9 @@
 // base classes
 #include <scai/lama/norm/Norm.hpp>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -61,6 +64,8 @@ Scalar l1Norm( const Vector& vector );
 
 Scalar l1Norm( const Matrix& matrix );
 
-}
+} /* end namespace lama */
+
+} /* end namespace scai */
 
 #endif // LAMA_L1NORM_HPP_

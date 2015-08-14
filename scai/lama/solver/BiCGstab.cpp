@@ -42,10 +42,13 @@
 
 #include <scai/lama/DenseVector.hpp>
 
-
 #include <limits>
 
-namespace lama{ 
+namespace scai
+{
+
+namespace lama
+{
 
 SCAI_LOG_DEF_LOGGER( BiCGstab::logger, "Solver.BiCGstab" )
 
@@ -206,4 +209,6 @@ const BiCGstab::BiCGstabRuntime& BiCGstab::getConstRuntime() const{
     return mBiCGstabRuntime;
 }
 
-} /* namespace lama */
+} /* end namespace lama */
+
+} /* end namespace scai */

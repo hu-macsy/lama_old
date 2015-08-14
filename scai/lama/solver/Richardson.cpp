@@ -41,8 +41,11 @@
 
 #include <scai/lama/DenseVector.hpp>
 
+namespace scai
+{
 
-namespace lama{
+namespace lama
+{
 
 SCAI_LOG_DEF_LOGGER( Richardson::logger, "Solver.Richardson" )
 
@@ -168,5 +171,6 @@ SolverPtr Richardson::copy(){
     return SolverPtr( new Richardson( *this ) );
 }
 
+} /* end namespace lama */
 
-} //namespace
+} /* end namespace scai */

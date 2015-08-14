@@ -43,6 +43,9 @@
 #include <scai/memory.hpp>
 #include <scai/lama/Scalar.hpp>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -437,4 +440,6 @@ private:
 
 };
 
-}
+} /* end namespace lama */
+
+} /* end namespace scai */

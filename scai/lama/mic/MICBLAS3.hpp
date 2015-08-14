@@ -40,6 +40,9 @@
 #include <scai/lama/LAMATypes.hpp>
 #include <scai/lama/SyncToken.hpp>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -91,7 +94,8 @@ private:
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 };
 
-}
-/* namespace lama */
+} /* end namespace lama */
+
+} /* end namespace scai */
 
 #endif // LAMA_MIC_BLAS3_HPP_

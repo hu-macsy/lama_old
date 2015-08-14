@@ -44,6 +44,9 @@ extern "C"
 #include <metis.h>
 }
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -318,4 +321,6 @@ MetisDistribution* MetisDistribution::create( const CommunicatorPtr commPtr, con
 
 bool MetisDistribution::initialized = Distribution::registerCreator<MetisDistribution>( "METIS" );
 
-} // namespace lama
+} /* end namespace lama */
+
+} /* end namespace scai */

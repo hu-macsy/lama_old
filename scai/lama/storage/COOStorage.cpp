@@ -52,7 +52,11 @@
 
 using common::unique_ptr;
 using common::shared_ptr;
+
 using namespace memory;
+
+namespace scai
+{
 
 namespace lama
 {
@@ -1155,17 +1159,19 @@ COOStorage<ValueType>* COOStorage<ValueType>::copy() const
 /*       Template specializations and instantiations                         */
 /* ========================================================================= */
 
-#define LAMA_COO_STORAGE_INSTANTIATE(z, I, _)                              \
+#define LAMA_COO_STORAGE_INSTANTIATE(z, I, _)                                  \
     template<>                                                                 \
     const char* COOStorage<ARITHMETIC_TYPE##I>::typeName()                     \
     {                                                                          \
         return "COOStorage<ARITHMETIC_TYPE##I>";                               \
     }                                                                          \
-    \
+                                                                               \
     template class COMMON_DLL_IMPORTEXPORT COOStorage<ARITHMETIC_TYPE##I> ;
 
 BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_COO_STORAGE_INSTANTIATE, _ )
 
 #undef LAMA_COO_STORAGE_INSTANTIATE
 
-} // namespace lama
+} /* end namespace lama */
+
+} /* end namespace scai */

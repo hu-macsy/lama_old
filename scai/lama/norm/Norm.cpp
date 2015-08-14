@@ -34,6 +34,9 @@
 // hpp
 #include <scai/lama/norm/Norm.hpp>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -60,4 +63,6 @@ Scalar Norm::operator()( const Matrix& matrix ) const
     return apply( matrix );
 }
 
-}
+} /* end namespace lama */
+
+} /* end namespace scai */

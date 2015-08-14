@@ -52,6 +52,9 @@
 // assert
 #include <scai/lama/exception/LAMAAssert.hpp>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -197,6 +200,8 @@ protected:
 #endif
 };
 
-}
+} /* end namespace lama */
+
+} /* end namespace scai */
 
 #endif // LAMA_CRTP_MATRIX_HPP_

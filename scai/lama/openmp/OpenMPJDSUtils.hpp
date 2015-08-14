@@ -44,6 +44,9 @@
 // logging
 #include <scai/logging.hpp>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -225,7 +228,8 @@ private:
 
 /* --------------------------------------------------------------------------- */
 
-}
-// namespace lama
+} /* end namespace lama */
+
+} /* end namespace scai */
 
 #endif //  LAMA_OPENMP_JDS_UTILS_HPP_

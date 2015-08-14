@@ -48,6 +48,9 @@
 
 #include <scai/common/bind.hpp>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -1952,4 +1955,6 @@ bool MICCSRUtils::registerInterface()
 
 bool MICCSRUtils::initialized = registerInterface();
 
-} // namespace lama
+} /* end namespace lama */
+
+} /* end namespace scai */

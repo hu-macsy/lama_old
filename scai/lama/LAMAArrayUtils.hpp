@@ -46,6 +46,9 @@ using memory::ContextArray;
 using memory::LAMAArray;
 using memory::ContextPtr;
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -120,5 +123,6 @@ private:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )};
 
-}  // namespace
+} /* end namespace lama */
 
+} /* end namespace scai */

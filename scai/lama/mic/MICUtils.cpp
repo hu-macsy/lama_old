@@ -39,6 +39,9 @@
 #include <scai/lama/LAMAInterfaceRegistry.hpp>
 #include <scai/tracing.hpp>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -649,4 +652,6 @@ bool MICUtils::registerInterface()
 
 bool MICUtils::initialized = registerInterface();
 
-} // namespace lama
+} /* end namespace lama */
+
+} /* end namespace scai */

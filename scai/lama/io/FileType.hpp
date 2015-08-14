@@ -36,6 +36,9 @@
 
 #include <scai/lama/TypeTraits.hpp>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -196,6 +199,8 @@ long getIndexDataTypeSize( const File::IndexDataType indexDataType )
     }
 }
 
-} //namespace lama
+} /* end namespace lama */
+
+} /* end namespace scai */
 
 #endif // FILETYPE_HPP_

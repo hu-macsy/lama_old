@@ -47,6 +47,9 @@
 
 #include <boost/preprocessor.hpp>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -262,5 +265,6 @@ bool BLAS_BLAS2::registerInterface()
 
 bool BLAS_BLAS2::initialized = registerInterface();
 
-} /* namespace lama */
+} /* end namespace lama */
 
+} /* end namespace scai */

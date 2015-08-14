@@ -46,6 +46,9 @@
 
 using common::getScalarType;
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -410,4 +413,6 @@ bool OpenMPCOOUtils::registerInterface()
 
 bool OpenMPCOOUtils::initialized = registerInterface();
 
-} // namespace lama
+} /* end namespace lama */
+
+} /* end namespace scai */

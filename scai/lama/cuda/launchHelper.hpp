@@ -35,6 +35,9 @@
 
 #include <cuda_runtime.h>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -59,6 +62,8 @@ int warpSize;
 #define MIN(a,b) ((a>b)?b:a)
 #define MAX(a,b) ((a<b)?b:a)
 
-} /* namespace lama */
+} /* end namespace lama */
+
+} /* end namespace scai */
 
 #endif // LAMA_LAUNCHHELPER_HPP_

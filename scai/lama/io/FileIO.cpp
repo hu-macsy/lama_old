@@ -36,6 +36,10 @@
 
 #include <scai/lama/exception/LAMAAssert.hpp>
 
+
+namespace scai
+{
+
 namespace lama
 {
 
@@ -61,4 +65,6 @@ FileIO::file_size_t FileIO::getFileSize( const char* filename )
     return size;
 }
 
-} // namespace LAMA
+} /* end namespace lama */
+
+} /* end namespace scai */

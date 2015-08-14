@@ -52,6 +52,9 @@
 
 using tasking::SyncToken;
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -286,4 +289,6 @@ bool MKLCSRUtils::registerInterface()
 
 bool MKLCSRUtils::initialized = registerInterface();
 
-} // namespace lama
+} /* end namespace lama */
+
+} /* end namespace scai */

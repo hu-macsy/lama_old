@@ -39,6 +39,9 @@
 
 #include <scai/lama/expression/Expression.hpp>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -423,5 +426,6 @@ inline Expression_SM_SM operator-( const Expression_SM& exp, const Matrix& matri
     return Expression_SM_SM( exp, Expression_SM( Scalar( -1 ), matrix ) );
 }
 
-} // namespace LAMA
+} /* end namespace lama */
 
+} /* end namespace scai */

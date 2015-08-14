@@ -43,6 +43,9 @@
 // logging
 #include <scai/logging.hpp>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -380,7 +383,8 @@ private:
 
 /* --------------------------------------------------------------------------- */
 
-}
-// namespace lama
+} /* end namespace lama */
+
+} /* end namespace scai */
 
 #endif  //  LAMA_ELL_STORAGE_UTILS_HPP_

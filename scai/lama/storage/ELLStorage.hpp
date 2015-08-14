@@ -38,6 +38,9 @@
 // base classes
 #include <scai/lama/storage/CRTPMatrixStorage.hpp>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -482,4 +485,6 @@ private:
 
 };
 
-}  // namespace lama
+} /* end namespace lama */
+
+} /* end namespace scai */

@@ -45,6 +45,9 @@
 // logging
 #include <scai/logging/Logger.hpp>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -131,6 +134,8 @@ private:
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 };
 
-}
+} /* end namespace lama */
+
+} /* end namespace scai */
 
 #endif // LAMA_INVERSESOLVER_HPP_

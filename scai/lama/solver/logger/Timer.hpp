@@ -42,6 +42,9 @@
 #include <map>
 #include <string>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -127,6 +130,8 @@ private:
 
 };
 
-} // namespace lama
+} /* end namespace lama */
+
+} /* end namespace scai */
 
 #endif // LAMA_TIMER_HPP_

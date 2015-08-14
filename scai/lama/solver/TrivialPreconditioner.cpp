@@ -34,6 +34,9 @@
 // hpp
 #include <scai/lama/solver/TrivialPreconditioner.hpp>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -90,4 +93,6 @@ const TrivialPreconditioner::TrivialPreconditionerRuntime& TrivialPreconditioner
     return mTrivialPreconditionerRuntime;
 }
 
-} // namespace lama
+} /* end namespace lama */
+
+} /* end namespace scai */

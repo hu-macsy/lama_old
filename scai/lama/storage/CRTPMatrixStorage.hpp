@@ -38,6 +38,9 @@
 // base classes
 #include <scai/lama/storage/MatrixStorage.hpp>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -308,6 +311,6 @@ case common::scalar::SCALAR_ARITHMETIC_TYPE##I:                                 
     }
 };
 
-}
-// namespace lama
+} /* end namespace lama */
 
+} /* end namespace scai */

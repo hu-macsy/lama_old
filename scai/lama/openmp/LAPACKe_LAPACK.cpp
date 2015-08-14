@@ -48,6 +48,9 @@
 
 using common::scoped_array;
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -668,4 +671,6 @@ bool LAPACKe_LAPACK::registerInterface()
 
 bool LAPACKe_LAPACK::initialized = registerInterface();
 
-} /* namespace lama */
+} /* end namespace lama */
+
+} /* end namespace scai */

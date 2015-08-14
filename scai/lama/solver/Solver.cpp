@@ -43,6 +43,9 @@
 // assert
 #include <scai/tracing.hpp>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -220,4 +223,6 @@ void Solver::writeAt( std::ostream& stream ) const
     stream << "Solver ( id = " << mId << " )";
 }
 
-} //namespace lama
+} /* end namespace lama */
+
+} /* end namespace scai */

@@ -45,6 +45,9 @@
 using tasking::SyncToken;
 using tasking::NoSyncToken;
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -274,5 +277,6 @@ private:
 
 };
 
-} // namespace lama
+} /* end namespace lama */
 
+} /* end namespace scai */

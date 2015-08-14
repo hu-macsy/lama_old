@@ -38,6 +38,9 @@
 
 #include <fstream>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -370,4 +373,6 @@ GenBlockDistribution* GenBlockDistribution::create(
 
 bool GenBlockDistribution::initialized = Distribution::registerCreator<GenBlockDistribution>( "GEN_BLOCK" );
 
-}
+} /* end namespace lama */
+
+} /* end namespace scai */

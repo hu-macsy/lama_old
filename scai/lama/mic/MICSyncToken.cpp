@@ -38,6 +38,9 @@
 #include <scai/tracing.hpp>
 #include <scai/lama/exception/LAMAAssert.hpp>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -101,5 +104,6 @@ bool MICSyncToken::probe() const
     return false;
 }
 
-} // namespace
+} /* end namespace lama */
 
+} /* end namespace scai */

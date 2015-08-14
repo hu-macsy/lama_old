@@ -37,6 +37,9 @@
 
 #include <scai/lama/matrix/SparseMatrix.hpp>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -114,7 +117,8 @@ protected:
     BiCGRuntime    mBiCGRuntime;
 };
 
-}
-// namespace lama
+} /* end namespace lama */
+
+} /* end namespace scai */
 
 #endif // LAMA_BICG_HPP_

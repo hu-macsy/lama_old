@@ -53,6 +53,9 @@ using memory::ContextArray;
 using memory::LAMAArray;
 using memory::LAMAArrayRef;
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -1093,7 +1096,9 @@ void MatrixStorage<ValueType>::setRawCSRData(
     setCSRData( numRows, numColumns, numValues, csrIA, csrJA, csrValues );
 }
 
-} // namespace lama
+} /* end namespace lama */
+
+} /* end namespace scai */
 
 /* ------------------------------------------------------------------------- */
 

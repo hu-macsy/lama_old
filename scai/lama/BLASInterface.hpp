@@ -40,6 +40,9 @@
 #include <cstring>
 #include <scai/lama/cblas.hpp>
 
+namespace scai
+{
+
 namespace tasking
 {
     class SyncToken;
@@ -576,5 +579,6 @@ struct BLASInterface
     }
 };
 
-}   //namespace lama
+} /* end namespace lama */
 
+} /* end namespace scai */

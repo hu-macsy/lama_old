@@ -37,6 +37,10 @@
 
 #include <sstream>
 
+namespace scai
+{
+
+}
 namespace lama
 {
 
@@ -55,4 +59,6 @@ MPIException::~MPIException() throw ()
 {
 }
 
-}
+} /* end namespace lama */
+
+} /* end namespace scai */

@@ -47,6 +47,9 @@
 
 #include <cmath>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -163,7 +166,8 @@ private:
 
 /* --------------------------------------------------------------------------- */
 
-}
-// namespace lama
+} /* end namespace lama */
+
+} /* end namespace scai */
 
 #endif  //  LAMA_DENSE_STORAGE_UTILS_HPP_

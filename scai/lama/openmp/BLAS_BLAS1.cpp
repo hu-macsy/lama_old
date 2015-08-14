@@ -51,6 +51,9 @@
 
 #include <cmath>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -656,5 +659,6 @@ bool BLAS_BLAS1::registerInterface()
 
 bool BLAS_BLAS1::initialized = registerInterface();
 
-} /** namespace lama */
+} /* end namespace lama */
 
+} /* end namespace scai */

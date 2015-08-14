@@ -51,40 +51,40 @@
  * providing another functionality.
  */
 
-#define COMPLEX_SET_REAL                                                                            \
+#define COMPLEX_SET_REAL                                                                                \
     real( static_cast<ValueType>( t ) );                                                                \
     imag( static_cast<ValueType>( 0 ) );                                                                \
     return *this;
 
-#define COMPLEX_SET_COMPLEX                                                                         \
+#define COMPLEX_SET_COMPLEX                                                                             \
     real( static_cast<ValueType>( t.real() ) );                                                         \
     imag( static_cast<ValueType>( t.imag() ) );                                                         \
     return *this;
 
-#define COMPLEX_PLUS_REAL                                                                           \
+#define COMPLEX_PLUS_REAL                                                                               \
     real( real() + static_cast<ValueType>( t ) );                                                       \
     return *this;
 
-#define COMPLEX_PLUS_COMPLEX                                                                        \
+#define COMPLEX_PLUS_COMPLEX                                                                            \
     real( real() + static_cast<ValueType>( t.real() ) );                                                \
     imag( imag() + static_cast<ValueType>( t.imag() ) );                                                \
     return *this;
 
-#define COMPLEX_MINUS_REAL                                                                          \
+#define COMPLEX_MINUS_REAL                                                                              \
     real( real() - static_cast<ValueType>( t ) );                                                       \
     return *this;
 
-#define COMPLEX_MINUS_COMPLEX                                                                       \
+#define COMPLEX_MINUS_COMPLEX                                                                           \
     real( real() - static_cast<ValueType>( t.real() ) );                                                \
     imag( imag() - static_cast<ValueType>( t.imag() ) );                                                \
     return *this;
 
-#define COMPLEX_MULTIPLY_REAL                                                                       \
+#define COMPLEX_MULTIPLY_REAL                                                                           \
     real( real() * static_cast<ValueType>( t ) );                                                       \
     imag( imag() * static_cast<ValueType>( t ) );                                                       \
     return *this;
 
-#define COMPLEX_MULTIPLY_COMPLEX                                                                    \
+#define COMPLEX_MULTIPLY_COMPLEX                                                                        \
     ValueType a = real();                                                                               \
     ValueType b = imag();                                                                               \
     ValueType c = static_cast<ValueType>( t.real() );                                                   \
@@ -93,12 +93,12 @@
     imag( a * d + b * c );                                                                              \
     return *this;
 
-#define COMPLEX_DIVIDE_REAL                                                                         \
+#define COMPLEX_DIVIDE_REAL                                                                             \
     real( real() / static_cast<ValueType>( t ) );                                                       \
     imag( imag() / static_cast<ValueType>( t ) );                                                       \
     return *this;
 
-#define COMPLEX_DIVIDE_COMPLEX                                                                      \
+#define COMPLEX_DIVIDE_COMPLEX                                                                          \
     ValueType a = real();                                                                               \
     ValueType b = imag();                                                                               \
     ValueType c = static_cast<ValueType>( t.real() );                                                   \
@@ -108,13 +108,13 @@
     imag( ( b * c - a * d ) / ( c2d2 ) );                                                               \
     return *this;
 
-#define COMPLEX_CAST_REAL(type)                                                                     \
+#define COMPLEX_CAST_REAL(type)                                                                         \
     return static_cast<type>( metrikCuda() );
 
-#define COMPLEX_CAST_COMPLEX(type)                                                                  \
+#define COMPLEX_CAST_COMPLEX(type)                                                                      \
     return Complex<type>( static_cast<type>( real() ), static_cast<type>( imag() ) );
 
-#define COMPLEX_CONSTRUCTOR_REAL                                                                    \
+#define COMPLEX_CONSTRUCTOR_REAL                                                                        \
     this->real( static_cast<ValueType>( value ) );                                                      \
     this->imag( static_cast<ValueType>( 0 ) );
 
@@ -127,15 +127,15 @@
  *
  */
 
-#define COMPLEX_CONSTRUCTOR_CUDA( type, method )                                                    \
+#define COMPLEX_CONSTRUCTOR_CUDA( type, method )                                                        \
     CUDA_CALLABLE_MEMBER                                                                                \
     inline Complex( const type value )                                                                  \
     {                                                                                                   \
         method                                                                                          \
     }
 
-#define COMPLEX_CONSTRUCTOR_NONCUDA( type, method )                                                 \
-    \
+#define COMPLEX_CONSTRUCTOR_NONCUDA( type, method )                                                     \
+                                                                                                        \
     inline Complex( const type value )                                                                  \
     {                                                                                                   \
         method                                                                                          \
@@ -145,7 +145,7 @@
  * For member calculation operators =, +=, -=, *= and /=
  */
 
-#define COMPLEX_OPERATOR_CUDA( op, type, method )                                                   \
+#define COMPLEX_OPERATOR_CUDA( op, type, method )                                                       \
     CUDA_CALLABLE_MEMBER inline Complex<ValueType>& op( const type t )                                  \
     {                                                                                                   \
         method                                                                                          \
@@ -155,7 +155,7 @@
         method                                                                                          \
     }
 
-#define COMPLEX_OPERATOR_NONCUDA( op, type, method )                                                \
+#define COMPLEX_OPERATOR_NONCUDA( op, type, method )                                                    \
     inline Complex<ValueType>& op( const type t )                                                       \
     {                                                                                                   \
         method                                                                                          \
@@ -169,13 +169,13 @@
  * For cast operators
  */
 
-#define COMPLEX_OPERATOR_CAST_CUDA( type, method )                                                  \
+#define COMPLEX_OPERATOR_CAST_CUDA( type, method )                                                      \
     CUDA_CALLABLE_MEMBER operator type() const                                                          \
     {                                                                                                   \
         method                                                                                          \
     }
 
-#define COMPLEX_OPERATOR_CAST_NONCUDA( type, method )                                               \
+#define COMPLEX_OPERATOR_CAST_NONCUDA( type, method )                                                   \
     operator type() const                                                                               \
     {                                                                                                   \
         method                                                                                          \
@@ -186,7 +186,7 @@
  *
  */
 
-#define COMPLEX_OPERATOR_COMPARISON_CUDA(op, sign, type)                                            \
+#define COMPLEX_OPERATOR_COMPARISON_CUDA(op, sign, type)                                                \
     template<typename ValueType>                                                                        \
     CUDA_CALLABLE_MEMBER inline bool op( const Complex<ValueType>& a, const Complex<type>& b )          \
     {                                                                                                   \
@@ -203,7 +203,7 @@
         return a sign static_cast<type>(b.metrikCuda());                                                \
     }
 
-#define COMPLEX_OPERATOR_COMPARISON_NONCUDA(op, sign, type)                                         \
+#define COMPLEX_OPERATOR_COMPARISON_NONCUDA(op, sign, type)                                             \
     template<typename ValueType>                                                                        \
     inline bool op( const Complex<ValueType>& a, const Complex<type>& b )                               \
     {                                                                                                   \
@@ -224,7 +224,7 @@
  * For equality operators: ==, !=
  */
 
-#define COMPLEX_OPERATOR_EQUALITY_CUDA(op, sign, connection, type)                                  \
+#define COMPLEX_OPERATOR_EQUALITY_CUDA(op, sign, connection, type)                                      \
     template<typename ValueType>                                                                        \
     CUDA_CALLABLE_MEMBER inline bool op( const Complex<ValueType>& a, const Complex<type>& b )          \
     {                                                                                                   \
@@ -241,7 +241,7 @@
         return a sign b.real() connection 0 sign b.imag();                                              \
     }
 
-#define COMPLEX_OPERATOR_EQUALITY_NONCUDA(op, sign, connection, type)                               \
+#define COMPLEX_OPERATOR_EQUALITY_NONCUDA(op, sign, connection, type)                                   \
     template<typename ValueType>                                                                        \
     CUDA_CALLABLE_MEMBER inline bool op( const Complex<ValueType>& a, const Complex<type>& b )          \
     {                                                                                                   \
@@ -262,7 +262,7 @@
  * For non-member calculation operators: +,-,*,/
  */
 
-#define COMPLEX_OPERATOR_NONMEMBER_CUDA(op, sign, type)                                                     \
+#define COMPLEX_OPERATOR_NONMEMBER_CUDA(op, sign, type)                                                         \
     template<typename ValueType>                                                                                \
     CUDA_CALLABLE_MEMBER inline Complex<ValueType> op( const Complex<ValueType>& a, const Complex<type>& b )    \
     {                                                                                                           \
@@ -305,7 +305,7 @@
         return x;                                                                                               \
     }                                                                                                           \
 
-#define COMPLEX_OPERATOR_NONMEMBER_NONCUDA(op, sign, type)                                          \
+#define COMPLEX_OPERATOR_NONMEMBER_NONCUDA(op, sign, type)                                              \
     template<typename ValueType>                                                                        \
     inline Complex<ValueType> op( const Complex<ValueType>& a, const Complex<type>& b )                 \
     {                                                                                                   \
@@ -886,7 +886,9 @@ operator>>( std::basic_istream<InputType1,InputType2>& input, Complex<ValueType>
     return input;
 }
 
-} //namespace lama
+} /* end namespace lama */
+
+} /* end namespace scai */
 
 #undef CUDA_CALLABLE_MEMBER
 #undef COMPLEX_SET_REAL

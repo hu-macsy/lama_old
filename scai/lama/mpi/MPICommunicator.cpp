@@ -60,6 +60,9 @@ using common::shared_ptr;
 using common::unique_ptr;
 using common::scoped_array;
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -1085,4 +1088,6 @@ std::string MPICommunicator::createValue()
     return "MPI";
 }
 
-} // namespace lama
+} /* end namespace lama */
+
+} /* end namespace scai */

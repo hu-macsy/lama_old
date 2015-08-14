@@ -58,6 +58,9 @@ extern "C"
 } /*extern "C"*/
 #endif /*__cplusplus*/
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -580,4 +583,6 @@ bool OpenMPLAPACK::registerInterface()
 
 bool OpenMPLAPACK::initialized = registerInterface();
 
-} /* namespace lama */
+} /* end namespace lama */
+
+} /* end namespace scai */

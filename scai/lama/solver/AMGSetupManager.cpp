@@ -33,6 +33,9 @@
 
 #include <scai/lama/solver/AMGSetupManager.hpp>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -51,4 +54,6 @@ AMGSetupManager::~AMGSetupManager()
     SCAI_LOG_INFO( logger, "~AMGSetupManager, type = " << mAMGSetupType )
 }
 
-}
+} /* end namespace lama */
+
+} /* end namespace scai */

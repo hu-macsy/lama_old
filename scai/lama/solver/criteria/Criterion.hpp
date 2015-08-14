@@ -51,6 +51,9 @@
 
 #include <ostream>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -193,6 +196,8 @@ inline CriterionPtr operator&&( CriterionPtr a, CriterionPtr b )
     return CriterionPtr( new Criterion( a, b, Criterion::AND ) );
 }
 
-} // namespace lama
+} /* end namespace lama */
+
+} /* end namespace scai */
 
 #endif // LAMA_BOOLEANCONDITION_HPP_

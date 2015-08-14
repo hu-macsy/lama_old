@@ -42,6 +42,9 @@
 // logging
 #include <scai/logging.hpp>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -350,7 +353,8 @@ private    :
         const IndexType n2, const IndexType csrJA2[], const ValueType csrValues2[] );
 };
 
-}
-// namespace lama
+} /* end namespace lama */
+
+} /* end namespace scai */
 
 #endif //  LAMA_MIC_CSR_UTILS_HPP_

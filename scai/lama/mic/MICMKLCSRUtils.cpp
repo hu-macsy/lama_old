@@ -48,6 +48,9 @@
 
 #include <mkl.h>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -208,4 +211,6 @@ bool MICMKLCSRUtils::registerInterface()
 
 bool MICMKLCSRUtils::initialized = registerInterface();
 
-} // namespace lama
+} /* end namespace lama */
+
+} /* end namespace scai */

@@ -57,6 +57,9 @@ using namespace common;
 using namespace tasking;
 using namespace memory;
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -633,4 +636,6 @@ namespace lama
 
     bool CUDAUtils::initialized = registerInterface();
 
-} // namespace lama
+} /* end namespace lama */
+
+} /* end namespace scai */

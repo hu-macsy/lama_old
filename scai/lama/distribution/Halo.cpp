@@ -34,6 +34,9 @@
 // hpp
 #include <scai/lama/distribution/Halo.hpp>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -104,4 +107,6 @@ void Halo::writeAt( std::ostream& stream ) const
            << mProvidesPlan << ")";
 }
 
-}
+} /* end namespace lama */
+
+} /* end namespace scai */

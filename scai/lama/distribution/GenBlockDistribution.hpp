@@ -41,6 +41,9 @@
 
 #include <scai/common/unique_ptr.hpp>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -174,6 +177,8 @@ private    :
     static bool initialized;//!< static initialization used for registration of create in Distribution factory
 };
 
-}
+} /* end namespace lama */
+
+} /* end namespace scai */
 
 #endif // LAMA_GENBLOCKDISTRIBUTION_HPP_

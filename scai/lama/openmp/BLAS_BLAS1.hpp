@@ -43,6 +43,9 @@
 // logging
 #include <scai/logging.hpp>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -151,7 +154,8 @@ private:
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 };
 
-}
-/* namespace lama */
+} /* end namespace lama */
+
+} /* end namespace scai */
 
 #endif // LAMA_BLAS_BLAS1_HPP_

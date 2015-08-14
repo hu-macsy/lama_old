@@ -49,6 +49,9 @@
 
 using namespace memory;
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -622,33 +625,35 @@ Distribution* Distribution::getDistribution(
 // Instantiation of all relevant replicate routines
 // Macro to instantiate for type pair ARRAY_TYPE##I, ARRAY_TYPE##J
 #define LAMA_DISTRIBUTE2_INSTANTIATE(z, J, TYPE)                           \
-    \
-    template COMMON_DLL_IMPORTEXPORT void Distribution::replicate(               \
-            TYPE allValues[],                                                      \
-            const ARRAY_TYPE##J localValues[] ) const;                             \
+                                                                           \
+    template COMMON_DLL_IMPORTEXPORT void Distribution::replicate(         \
+            TYPE allValues[],                                              \
+            const ARRAY_TYPE##J localValues[] ) const;                     \
 
 
 #define LAMA_DISTRIBUTE_INSTANTIATE(z, I, _)                               \
-    template COMMON_DLL_IMPORTEXPORT void Distribution::replicateRagged(         \
-            ARRAY_TYPE##I allValues[],                                             \
-            const ARRAY_TYPE##I localValues[],                                     \
-            const IndexType allOffsets[] ) const;                                  \
-    \
-    template COMMON_DLL_IMPORTEXPORT void Distribution::replicateN(              \
-            ARRAY_TYPE##I allValues[],                                             \
-            const ARRAY_TYPE##I localValues[],                                     \
-            const IndexType n ) const;                                             \
-    \
+    template COMMON_DLL_IMPORTEXPORT void Distribution::replicateRagged(   \
+            ARRAY_TYPE##I allValues[],                                     \
+            const ARRAY_TYPE##I localValues[],                             \
+            const IndexType allOffsets[] ) const;                          \
+                                                                           \
+    template COMMON_DLL_IMPORTEXPORT void Distribution::replicateN(        \
+            ARRAY_TYPE##I allValues[],                                     \
+            const ARRAY_TYPE##I localValues[],                             \
+            const IndexType n ) const;                                     \
+                                                                           \
     BOOST_PP_REPEAT( ARRAY_TYPE_CNT,                                       \
                      LAMA_DISTRIBUTE2_INSTANTIATE,                         \
                      ARRAY_TYPE##I )                                       \
 
 // template instantiation for the supported data types
 
-    BOOST_PP_REPEAT( ARRAY_TYPE_CNT, LAMA_DISTRIBUTE_INSTANTIATE, _ )
+BOOST_PP_REPEAT( ARRAY_TYPE_CNT, LAMA_DISTRIBUTE_INSTANTIATE, _ )
 
 #undef LAMA_DISTRIBUTE_INSTANTIATE
 
-    /* ---------------------------------------------------------------------- */
+/* ---------------------------------------------------------------------- */
 
-    }
+} /* end namespace lama */
+
+} /* end namespace scai */

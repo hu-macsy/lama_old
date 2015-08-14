@@ -40,6 +40,9 @@
 
 #include <scai/lama/openmp/BLASHelper.hpp>
 
+namespace scai
+{
+
 namespace tasking
 {
     class SyncToken;
@@ -81,6 +84,8 @@ private:
         tasking::SyncToken* syncToken );
 };
 
-} /* namespace lama */
+} /* end namespace lama */
+
+} /* end namespace scai */
 
 #endif // SCAI_CUDALAPACK_HPP_

@@ -39,6 +39,9 @@
 
 #include <scai/lama/cblas.hpp>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -88,6 +91,8 @@ LAMA_STATIC_INLINE_FUNCTION_PREFIX void** lama_sToVoidPtr( float** floatPointer 
     return convert.vpp;
 }
 
-} /* namespace lama */
+} /* end namespace lama */
+
+} /* end namespace scai */
 
 #endif // LAMA_BLASHELPER_HPP_

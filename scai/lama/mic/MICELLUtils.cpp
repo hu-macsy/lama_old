@@ -56,6 +56,9 @@
 #include <map>
 #include <cmath>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -1294,4 +1297,6 @@ bool MICELLUtils::registerInterface()
 
 bool MICELLUtils::initialized = registerInterface();
 
-} // namespace lama
+} /* end namespace lama */
+
+} /* end namespace scai */

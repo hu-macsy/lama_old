@@ -40,6 +40,9 @@
 #include <boost/preprocessor.hpp>
 #include <scai/lama/LAMATypes.hpp>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -108,5 +111,6 @@ template void CUDABLAS1::sum_launcher<ARITHMETIC_TYPE##I>(   \
 
 #undef SCAI_CUDA_BLAS1_INSTANTIATE
 
-} /* namespace lama */
+} /* end namespace lama */
 
+} /* end namespace scai */

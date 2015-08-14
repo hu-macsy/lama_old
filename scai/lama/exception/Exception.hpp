@@ -43,6 +43,9 @@
 #include <exception>
 #include <string>
 
+namespace scai
+{
+
 /**
  * @brief The namespace lama holds everything of the C++ Library lama
  */
@@ -99,10 +102,11 @@ private    :
     static UnsupportedType unsupportedSetting;
 };
 
-}
-//namespace lama
+} /* end namespace lama */
 
-#define LAMA_WEG_THROWEXCEPTION( msg )                                                 \
+} /* end namespace scai */
+
+#define LAMA_WEG_THROWEXCEPTION( msg )                                             \
     {                                                                              \
         std::ostringstream errorStr;                                               \
         errorStr<<"Exception in line "<<__LINE__<<" of file "<<__FILE__<<"\n";     \
@@ -122,8 +126,8 @@ private    :
  */
 #define LAMA_UNSUPPORTED( msg )                                                    \
     {                                                                              \
-        if ( lama::Exception1::getUnsupportedSetting() !=                           \
-                lama::Exception1::UNSUPPORTED_IGNORE )                              \
+        if ( lama::Exception1::getUnsupportedSetting() !=                          \
+                lama::Exception1::UNSUPPORTED_IGNORE )                             \
         {                                                                          \
             std::ostringstream errorStr;                                           \
             errorStr << "Unsupported at line ";                                    \
@@ -132,8 +136,8 @@ private    :
             errorStr << "Use environment variable LAMA_UNSUPPORTED";               \
             errorStr << " (WARN or IGNORE) to get rid of this message";            \
             errorStr << std::endl;                                                 \
-            if ( lama::Exception1::getUnsupportedSetting() ==                       \
-                    lama::Exception1::UNSUPPORTED_ERROR )                           \
+            if ( lama::Exception1::getUnsupportedSetting() ==                      \
+                    lama::Exception1::UNSUPPORTED_ERROR )                          \
             {                                                                      \
                 throw common::Exception( errorStr.str() );                         \
             }                                                                      \

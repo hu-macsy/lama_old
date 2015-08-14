@@ -45,6 +45,9 @@
 
 #include <scai/lama/norm/Norm.hpp>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -189,6 +192,8 @@ private:
     Scalar mPrecision;
 };
 
-} // namespace lama
+} /* end namespace lama */
+
+} /* end namespace scai */
 
 #endif // LAMA_RESIDUALSTAGNATION_HPP_

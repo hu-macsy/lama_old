@@ -54,6 +54,9 @@
 #include <map>
 #include <cmath>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -1231,4 +1234,6 @@ bool OpenMPELLUtils::registerInterface()
 
 bool OpenMPELLUtils::initialized = registerInterface();
 
-} // namespace lama
+} /* end namespace lama */
+
+} /* end namespace scai */

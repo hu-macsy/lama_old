@@ -45,6 +45,9 @@
 
 #include <scai/lama/norm/Norm.hpp>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -128,7 +131,8 @@ private:
     Scalar mFirstNormResult;
 };
 
-}
-//namespace lama
+} /* end namespace lama */
+
+} /* end namespace scai */
 
 #endif // LAMA_RESIDUALTHRESHOLD_HPP_

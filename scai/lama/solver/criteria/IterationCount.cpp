@@ -37,6 +37,9 @@
 // others
 #include <scai/lama/solver/IterativeSolver.hpp>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -86,4 +89,6 @@ void IterationCount::writeAt( std::ostream& stream ) const
     stream << "ItCount<" << getIterationExtrema() << ">";
 }
 
-} //namespace lama
+} /* end namespace lama */
+
+} /* end namespace scai */

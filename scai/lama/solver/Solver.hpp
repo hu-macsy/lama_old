@@ -55,6 +55,9 @@
 #include <string>
 #include <memory>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -287,7 +290,8 @@ protected:
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 };
 
-}
-// namespace lama
+} /* end namespace lama */
+
+} /* end namespace scai */
 
 #endif // LAMA_SOLVER_HPP_

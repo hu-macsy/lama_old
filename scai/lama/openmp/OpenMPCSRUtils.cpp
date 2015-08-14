@@ -55,6 +55,9 @@
 
 using common::scoped_array;
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -1997,4 +2000,6 @@ bool OpenMPCSRUtils::registerInterface()
 
 bool OpenMPCSRUtils::initialized = registerInterface();
 
-} // namespace lama
+} /* end namespace lama */
+
+} /* end namespace scai */

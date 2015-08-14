@@ -49,7 +49,7 @@
 
 #ifndef SCAI_ASSERT_LEVEL_OFF
 
-#    ifndef SCAI_CHECK_ASSERTS
+#ifndef SCAI_CHECK_ASSERTS
 /**
  * @brief The macro LAMACHECKASSERTS is used to control the checking of
  *        asserts.
@@ -59,8 +59,8 @@
  * builds) is not defined.
  * If LAMACHECKASSERTS is not defined the assertions will not be checked.
  */
-#        define SCAI_CHECK_ASSERTS
-#    endif
+#define SCAI_CHECK_ASSERTS
+#endif
 #endif // NDEBUG
 /** Dummy function to avoid compiler warnings. */
 
@@ -84,10 +84,10 @@ static inline void unused( const ValueType1&, const ValueType2& )
 
 #else // LAMACHECKASSERTS DEFINED
 
-#define SCAI_ASSERT(exp, msg)                                                           \
+#define SCAI_ASSERT(exp, msg)                                                       \
     COMMON_ASSERT( exp, msg )
 
-#define SCAI_ASSERT_EQUAL(exp1, exp2)                                                   \
+#define SCAI_ASSERT_EQUAL(exp1, exp2)                                               \
     COMMON_ASSERT_EQUAL( exp1, exp2, "LAMA equality error" ) 
 
 #endif // SCAI_CHECK_ASSERTS
@@ -115,7 +115,7 @@ static inline void unused( const ValueType1&, const ValueType2& )
         }                                                                           \
     }
 
-#define SCAI_ASSERT_EQUAL_DEBUG( exp1, exp2 )                                      \
+#define SCAI_ASSERT_EQUAL_DEBUG( exp1, exp2 )                                       \
     unused( exp1, exp2 );
 
 #elif defined(SCAI_ASSERT_LEVEL_ERROR)

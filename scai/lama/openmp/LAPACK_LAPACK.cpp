@@ -156,6 +156,9 @@ int F77_dlaswp(
 
 using common::unique_ptr;
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -810,4 +813,6 @@ bool LAPACK_LAPACK::registerInterface()
 
 bool LAPACK_LAPACK::initialized = registerInterface();
 
-} /* namespace lama */
+} /* end namespace lama */
+
+} /* end namespace scai */

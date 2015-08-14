@@ -43,6 +43,9 @@
 #include <scai/lama/distribution/GeneralDistribution.hpp>
 #include <scai/lama/distribution/NoDistribution.hpp>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -290,5 +293,6 @@ DIASparseMatrix<ValueType>::DIASparseMatrix(
     Matrix::setDistributedMatrix( dist, dist );
 }
 
-} // namespace lama
+} /* end namespace lama */
 
+} /* end namespace scai */

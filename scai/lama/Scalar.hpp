@@ -50,6 +50,9 @@
 #include <cstdio>
 #include <scai/lama/Complex.hpp>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -518,5 +521,6 @@ inline Scalar min( const Scalar a, const Scalar b )
     return Scalar( std::min( a.getValue<ComplexLongDouble>(), b.getValue<ComplexLongDouble>() ) );
 }
 
-} //namespace lama
+} /* end namespace lama */
 
+} /* end namespace scai */

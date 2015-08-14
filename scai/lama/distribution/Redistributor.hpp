@@ -48,6 +48,9 @@
 #include <scai/memory/LAMAArray.hpp>
 #include <scai/tasking/SyncToken.hpp>
 
+namespace scai
+{
+
 using namespace tasking;
 using memory::LAMAArray;
 
@@ -655,5 +658,6 @@ void Redistributor::exchangeVHalo( LAMAArray<ValueType>& targetHalo, const LAMAA
     delete comm.exchangeByPlanAsync( targetHalo, *mRequiredPlan, sourceHalo, *mProvidesPlan );
 }
 
-} // namespace
+} /* end namespace lama */
 
+} /* end namespace scai */

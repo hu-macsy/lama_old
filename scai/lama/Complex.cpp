@@ -33,6 +33,9 @@
 
 #include <scai/lama/Complex.hpp>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -40,4 +43,6 @@ template class COMMON_DLL_IMPORTEXPORT Complex<float> ;
 template class COMMON_DLL_IMPORTEXPORT Complex<double> ;
 template class COMMON_DLL_IMPORTEXPORT Complex<long double> ;
 
-}
+} /* end namespace lama */
+
+} /* end namespace scai */

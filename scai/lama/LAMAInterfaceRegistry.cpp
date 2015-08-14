@@ -40,6 +40,9 @@
 
 using namespace std;
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -149,4 +152,6 @@ const LAMAInterface& Context::getInterface() const
     return *lamaInterface;
 }
 
-}
+} /* end namespace lama */
+
+} /* end namespace scai */

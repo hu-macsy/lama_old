@@ -95,6 +95,9 @@
 using namespace memory;
 using namespace common;
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -3262,4 +3265,6 @@ namespace lama
     bool CUDACSRUtils::initialized = registerInterface();
     unsigned int CUDACSRUtils::lastHashTableSize = 1024;
 
-} // namespace lama
+} /* end namespace lama */
+
+} /* end namespace scai */

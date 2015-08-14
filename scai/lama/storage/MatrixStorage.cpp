@@ -70,6 +70,9 @@ using tasking::TaskSyncToken;
 
 using namespace memory;
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -1401,11 +1404,12 @@ BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_MATRIX_STORAGE_INSTANTIATE, _ )
 #undef LAMA_MATRIX_STORAGE_INSTANTIATE
 #undef LAMA_MATRIX_STORAGE2_INSTANTIATE
 
-} // namespace LAMA
+} /* end namespace lama */
+
+} /* end namespace scai */
 
 std::ostream& operator<<( std::ostream& stream, const lama::MatrixStorageFormat storageFormat )
 {
     stream << lama::format2Str( storageFormat );
     return stream;
 }
-

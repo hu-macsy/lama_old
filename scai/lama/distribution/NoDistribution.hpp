@@ -42,6 +42,9 @@
 // logging
 #include <scai/logging.hpp>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -95,6 +98,8 @@ private:
     static    bool initialized; //!< used for static registration
 };
 
-}
+} /* end namespace lama */
+
+} /* end namespace scai */
 
 #endif // LAMA_NODISTRIBUTION_HPP_

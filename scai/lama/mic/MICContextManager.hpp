@@ -47,6 +47,9 @@
 
 #include <string>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -103,6 +106,8 @@ private:
     static int getDefaultDeviceNr(); // getter for defaultDeviceNr, might be set
 };
 
-}
+} /* end namespace lama */
+
+} /* end namespace scai */
 
 #endif // LAMA_MIC_CONTEXT_MANAGER_HPP_

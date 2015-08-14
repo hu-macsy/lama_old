@@ -40,6 +40,9 @@
 #include <scai/lama/BLASInterface.hpp>
 #include <scai/lama/LAMAInterfaceRegistry.hpp>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -213,4 +216,6 @@ bool MICBLAS3::registerInterface()
 
 bool MICBLAS3::initialized = registerInterface();
 
-} /* namespace lama */
+} /* end namespace lama */
+
+} /* end namespace scai */

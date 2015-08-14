@@ -47,6 +47,9 @@
 #include <cstring>
 #endif // __GNUC__
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -117,5 +120,6 @@ const char* Exception1::what() const throw ()
     return mMessage.c_str();
 }
 
-}
-//namespace lama
+} /* end namespace lama */
+
+} /* end namespace scai */

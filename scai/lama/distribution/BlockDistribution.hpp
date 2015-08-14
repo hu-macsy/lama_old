@@ -39,6 +39,9 @@
 // base classes
 #include <scai/lama/distribution/Distribution.hpp>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -121,6 +124,8 @@ private    :
 
 };
 
-}
+} /* end namespace lama */
+
+} /* end namespace scai */
 
 #endif // LAMA_BLOCKDISTRIBUTION_HPP_

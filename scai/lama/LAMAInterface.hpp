@@ -43,6 +43,9 @@
 #include <scai/lama/BLASInterface.hpp>
 #include <scai/lama/UtilsInterface.hpp>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -87,8 +90,9 @@ protected:
 
     SCAI_LOG_DECL_STATIC_LOGGER(logger)};
 
-}
-//namespace lama
+} /* end namespace lama */
+
+} /* end namespace scai */
 
 /** macros for getting function pointers
  *
@@ -98,67 +102,67 @@ protected:
  *  @param structname: structure of the module, e.g. BLAS1, Conversions
  */
 
-#define LAMA_INTERFACE_FN( function, loc, module, structname )                                \
-    typename module##Interface::structname::function function =                               \
-            loc->getInterface().module.function();                                                 \
-    if ( function == NULL )                                                                   \
-    {                                                                                         \
+#define LAMA_INTERFACE_FN( function, loc, module, structname )                                  \
+    typename module##Interface::structname::function function =                                 \
+            loc->getInterface().module.function();                                              \
+    if ( function == NULL )                                                                     \
+    {                                                                                           \
         COMMON_THROWEXCEPTION( "Method " #module "::" #function " not available on " << *loc ); \
     }
 
 /** same as LAMA_INTERFACE_FN but takes routine on Host if not available at loc */
 
-#define LAMA_INTERFACE_FN_DEFAULT( function, loc, module, structname )                        \
-    typename module##Interface::structname::function function =                               \
-            loc->getInterface().module.function();                                                 \
-    if ( function == NULL )                                                                   \
-    {                                                                                         \
-        LAMA_UNSUPPORTED( "Method " #module "::" #function " not available on " << *loc );    \
-        loc = Context::getContextPtr( context::Host );                                        \
-        function = loc->getInterface().module.function();                                     \
-        if ( function == NULL )                                                               \
-        {                                                                                     \
+#define LAMA_INTERFACE_FN_DEFAULT( function, loc, module, structname )                          \
+    typename module##Interface::structname::function function =                                 \
+            loc->getInterface().module.function();                                              \
+    if ( function == NULL )                                                                     \
+    {                                                                                           \
+        LAMA_UNSUPPORTED( "Method " #module "::" #function " not available on " << *loc );      \
+        loc = Context::getContextPtr( context::Host );                                          \
+        function = loc->getInterface().module.function();                                       \
+        if ( function == NULL )                                                                 \
+        {                                                                                       \
             COMMON_THROWEXCEPTION( "Method " #module "::" #function                             \
-                                 " also not available on " << *loc );                         \
-        }                                                                                     \
+                                 " also not available on " << *loc );                           \
+        }                                                                                       \
     }
 
-#define LAMA_INTERFACE_FN_T( function, loc, module, structname, ValueType )                   \
-    typename module##Interface::structname<ValueType>::function function;                     \
-    function = loc->getInterface().module.function<ValueType>();                              \
-    if ( function == NULL )                                                                   \
-    {                                                                                         \
+#define LAMA_INTERFACE_FN_T( function, loc, module, structname, ValueType )                     \
+    typename module##Interface::structname<ValueType>::function function;                       \
+    function = loc->getInterface().module.function<ValueType>();                                \
+    if ( function == NULL )                                                                     \
+    {                                                                                           \
         COMMON_THROWEXCEPTION( "Method " #module "::" #function " not available on " << *loc ); \
     }
 
-#define LAMA_INTERFACE_FN_t( function, loc, module, structname, ValueType )                   \
-    module##Interface::structname<ValueType>::function function;                              \
-    function = loc->getInterface().module.function<ValueType>();                              \
-    if ( function == NULL )                                                                   \
-    {                                                                                         \
+#define LAMA_INTERFACE_FN_t( function, loc, module, structname, ValueType )                     \
+    module##Interface::structname<ValueType>::function function;                                \
+    function = loc->getInterface().module.function<ValueType>();                                \
+    if ( function == NULL )                                                                     \
+    {                                                                                           \
         COMMON_THROWEXCEPTION( "Method " #module "::" #function " not available on " << *loc ); \
     }
 
-#define LAMA_INTERFACE_FN_DEFAULT_T( function, loc, module, structname, ValueType )           \
-    typename module##Interface::structname<ValueType>::function function =                    \
-            loc->getInterface().module.function<ValueType>();                                      \
-    if ( function == NULL )                                                                   \
-    {                                                                                         \
-        LAMA_UNSUPPORTED( "Method " #module "::" #function " not available on " << *loc );    \
-        loc = Context::getContextPtr( context::Host );                                        \
-        function = loc->getInterface().module.function<ValueType>();                          \
-        if ( function == NULL )                                                               \
-        {                                                                                     \
+#define LAMA_INTERFACE_FN_DEFAULT_T( function, loc, module, structname, ValueType )             \
+    typename module##Interface::structname<ValueType>::function function =                      \
+            loc->getInterface().module.function<ValueType>();                                   \
+    if ( function == NULL )                                                                     \
+    {                                                                                           \
+        LAMA_UNSUPPORTED( "Method " #module "::" #function " not available on " << *loc );      \
+        loc = Context::getContextPtr( context::Host );                                          \
+        function = loc->getInterface().module.function<ValueType>();                            \
+        if ( function == NULL )                                                                 \
+        {                                                                                       \
             COMMON_THROWEXCEPTION( "Method " #module "::" #function                             \
-                                 " also not available on " << *loc );                         \
-        }                                                                                     \
+                                 " also not available on " << *loc );                           \
+        }                                                                                       \
     }
 
-#define LAMA_INTERFACE_FN_TT( function, loc, module, structname, T1, T2 )                     \
-    typename module##Interface::structname<T1,T2>::function function;                         \
-    function = loc->getInterface().module.function<T1,T2>();                                  \
-    if ( function == NULL )                                                                   \
-    {                                                                                         \
+#define LAMA_INTERFACE_FN_TT( function, loc, module, structname, T1, T2 )                       \
+    typename module##Interface::structname<T1,T2>::function function;                           \
+    function = loc->getInterface().module.function<T1,T2>();                                    \
+    if ( function == NULL )                                                                     \
+    {                                                                                           \
         COMMON_THROWEXCEPTION( "Method " #module "::" #function " not available on " << *loc ); \
     }
 

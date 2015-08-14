@@ -51,6 +51,9 @@
 #include <sstream>
 #include <memory>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -318,6 +321,8 @@ void Logger::logType( LogLevel::LogLevel level, const std::string& message, Valu
     }
 }
 
-} // namespace lama
+} /* end namespace lama */
+
+} /* end namespace scai */
 
 #endif // LAMA_SOLVER_LOGGER_HPP_

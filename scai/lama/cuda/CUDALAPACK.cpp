@@ -41,6 +41,9 @@
 using namespace tasking;
 using namespace memory;
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -176,5 +179,6 @@ bool CUDALAPACK::registerInterface()
 
 bool CUDALAPACK::initialized = registerInterface();
 
-} /* namespace lama */
+} /* end namespace lama */
 
+} /* end namespace scai */

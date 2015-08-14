@@ -44,6 +44,9 @@
 // logging
 #include <scai/logging.hpp>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -137,7 +140,8 @@ private:
     static bool registerInterface();//!< registration
 };
 
-}
-// namespace lama
+} /* end namespace lama */
+
+} /* end namespace scai */
 
 #endif //  SCAI_CUDA_UTILS_HPP_

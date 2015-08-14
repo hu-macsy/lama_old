@@ -47,6 +47,9 @@
 
 #include <scai/lama/ContextFactory.hpp>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -656,4 +659,6 @@ namespace lama
 
     bool CUSparseCSRUtils::initialized = registerInterface();
 
-} // namespace lama
+} /* end namespace lama */
+
+} /* end namespace scai */

@@ -43,6 +43,9 @@
 // logging
 #include <scai/logging/Logger.hpp>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -133,7 +136,8 @@ private    :
     void iterate();
 };
 
-}
-// namespace lama
+} /* end namespace lama */
+
+} /* end namespace scai */
 
 #endif // LAMA_DEFAULTJACOBI_HPP_

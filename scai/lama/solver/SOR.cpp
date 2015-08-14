@@ -47,6 +47,9 @@
 
 using namespace memory;
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -283,4 +286,6 @@ SolverPtr SOR::copy()
     return SolverPtr( new SOR( *this ) );
 }
 
-} /* namespace lama */
+} /* end namespace lama */
+
+} /* end namespace scai */

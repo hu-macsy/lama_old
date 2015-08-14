@@ -44,6 +44,9 @@ using common::unique_ptr;
 using common::scoped_array;
 using namespace memory;
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -307,4 +310,6 @@ void Redistributor::buildRowPlans(
  IndexType n ) const;
  */
 
-}
+} /* end namespace lama */
+
+} /* end namespace scai */

@@ -39,6 +39,9 @@
 
 #include <sstream>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -124,4 +127,6 @@ void BLASHelper::XERBLA_cpu(
 // @todo This routine should proably call blas error function xerbla ?!
 }
 
-} /* namespace lama */
+} /* end namespace lama */
+
+} /* end namespace scai */

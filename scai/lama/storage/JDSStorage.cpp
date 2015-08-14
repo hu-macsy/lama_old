@@ -52,6 +52,9 @@ using common::shared_ptr;
 using namespace::tasking;
 using namespace::memory;
 
+namespace scai
+{
+
 namespace lama
 {
 // Allow for shared_ptr<ValueType> instead of common::shared_ptr<ValueType>
@@ -1654,17 +1657,19 @@ JDSStorage<ValueType>* JDSStorage<ValueType>::copy() const
 /*       Template specializations and instantiations                         */
 /* ========================================================================= */
 
-#define LAMA_JDS_STORAGE_INSTANTIATE(z, I, _)                              \
+#define LAMA_JDS_STORAGE_INSTANTIATE(z, I, _)                                  \
     template<>                                                                 \
     const char* JDSStorage<ARITHMETIC_TYPE##I>::typeName()                     \
     {                                                                          \
         return "JDSStorage<ARITHMETIC_TYPE##I>";                               \
     }                                                                          \
-    \
+                                                                               \
     template class COMMON_DLL_IMPORTEXPORT JDSStorage<ARITHMETIC_TYPE##I> ;
 
 BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_JDS_STORAGE_INSTANTIATE, _ )
 
 #undef LAMA_JDS_STORAGE_INSTANTIATE
 
-}
+} /* end namespace lama */
+
+} /* end namespace scai */

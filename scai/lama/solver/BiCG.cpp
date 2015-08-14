@@ -43,6 +43,9 @@
 
 #include <scai/lama/storage/MatrixStorage.hpp>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -265,4 +268,6 @@ const BiCG::BiCGRuntime& BiCG::getConstRuntime() const
     return mBiCGRuntime;
 }
 
-} // namespace lama
+} /* end namespace lama */
+
+} /* end namespace scai */

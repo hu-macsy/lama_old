@@ -45,6 +45,9 @@
 // logging
 #include <scai/logging.hpp>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -125,7 +128,8 @@ private:
 
 }; /* OpenMPLAPACK */
 
-}
-/* namespace lama */
+} /* end namespace lama */
+
+} /* end namespace scai */
 
 #endif // LAMA_OPENMP_LAPACK_HPP_

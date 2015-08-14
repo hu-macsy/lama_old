@@ -51,6 +51,9 @@
  *  The matrix A will have a general distribution and is in CSR format.
  */
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -154,7 +157,8 @@ private:
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 };
 
-}
-// namespace lama
+} /* end namespace lama */
+
+} /* end namespace scai */
 
 #endif  // LAMA_MATRIX_CREATOR_HPP_

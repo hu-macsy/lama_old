@@ -40,6 +40,9 @@
 // base classes
 #include <scai/lama/solver/Solver.hpp>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -70,10 +73,10 @@ public:
 
 protected:
     TrivialPreconditionerRuntime mTrivialPreconditionerRuntime;
-
-private:
 };
 
-} // namespace lama
+} /* end namespace lama */
+
+} /* end namespace scai */
 
 #endif // LAMA_TRIVIALPRECONDITIONER_HPP_

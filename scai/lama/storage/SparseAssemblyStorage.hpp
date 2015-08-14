@@ -37,6 +37,9 @@
 // others
 #include <scai/lama/storage/CRTPMatrixStorage.hpp>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -394,5 +397,6 @@ private:
     static    std::string theTypeName;
 };
 
-}  //namespace lama
+} /* end namespace lama */
 
+} /* end namespace scai */

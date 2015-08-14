@@ -49,8 +49,10 @@
 
 using tasking::SyncToken;
 
-namespace lama
+namespace scai
+{
 
+namespace lama
 {
 
 // forward declarations
@@ -678,7 +680,8 @@ private:
     mutable LAMAArray<ValueType> mTempSendValues; //!< temporary vector for halo communications
 };
 
-}
-// namespace lama
+} /* end namespace lama */
+
+} /* end namespace scai */
 
 #endif // LAMA_SPARSE_MATRIX_HPP_

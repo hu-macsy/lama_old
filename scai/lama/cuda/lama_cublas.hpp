@@ -34,6 +34,9 @@
 // hpp
 #include <cublas_v2.h>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -96,4 +99,6 @@ static inline cuDoubleComplex cublasCast( ComplexDouble x )
     return *cublasCast( &x );
 }
 
-} /* namespace lama */
+} /* end namespace lama */
+
+} /* end namespace scai */

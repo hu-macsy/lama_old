@@ -37,6 +37,9 @@
 // boost
 #include <boost/preprocessor.hpp>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -319,4 +322,6 @@ BOOST_PP_REPEAT( ARRAY_TYPE_CNT, LAMA_ARRAY_VIEW_INSTANTIATE, _ )
 
 #undef LAMA_ARRAY_VIEW_INSTANTIATE
 
-} /* namespace lama */
+} /* end namespace lama */
+
+} /* end namespace scai */

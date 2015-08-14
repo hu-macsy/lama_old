@@ -36,6 +36,9 @@
 // for dll_import
 #include <scai/common/config.hpp>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -83,6 +86,8 @@ protected:
     FileType mFileType;
 };
 
-}
+} /* end namespace lama */
+
+} /* end namespace scai */
 
 #endif // LAMA_LAMAFILE_HPP_

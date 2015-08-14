@@ -43,6 +43,9 @@
 // others
 #include <scai/lama/matrix/SparseMatrix.hpp>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -121,6 +124,8 @@ private:
         const ValueType omega );
 };
 
-} // namespace lama
+} /* end namespace lama */
+
+} /* end namespace scai */
 
 #endif // LAMA_SPECIALIZEDJACOBI_HPP_

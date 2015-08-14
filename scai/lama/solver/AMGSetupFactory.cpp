@@ -52,6 +52,9 @@ using namespace common;
 
 #define LAMA_ENV_FOR_COMMUNICATOR "LAMA_COMMUNICATOR"
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -214,4 +217,6 @@ void AMGSetupFactory::addAMGSetupManager( const std::string& type, common::share
     mAMGSetupToManagerMap[type] = commManager; // ownership of pointer is taken over
 }
 
-}
+} /* end namespace lama */
+
+} /* end namespace scai */

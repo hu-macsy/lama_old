@@ -59,9 +59,13 @@
 #include <vector>
 //#include <cmath>
 
+namespace scai
+{
+
+
 namespace memory
 {
-template<typename ValueType> class LAMAArray;
+	template<typename ValueType> class LAMAArray;
 }
 
 namespace lama
@@ -819,4 +823,6 @@ tasking::SyncToken* Communicator::exchangeByPlanAsync(
     return token;
 }
 
-}
+} /* end namespace lama */
+
+} /* end namespace scai */

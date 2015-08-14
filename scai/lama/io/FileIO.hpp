@@ -41,6 +41,9 @@
 #include <fstream>
 #include <typeinfo>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -117,4 +120,6 @@ void FileIO::readBinaryData( std::fstream& inFile, UserDataType data[], const In
     }
 }
 
-}
+} /* end namespace lama */
+
+} /* end namespace scai */

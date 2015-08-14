@@ -39,6 +39,9 @@
 
 #include <scai/lama/expression/Expression.hpp>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -355,5 +358,7 @@ inline Expression_SVM_SV operator+( const Expression_SVM& exp1, const Expression
     return Expression_SVM_SV( exp1, exp2 );
 }
 
-}
+} /* end namespace lama */
+
+} /* end namespace scai */
 

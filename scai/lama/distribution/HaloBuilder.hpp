@@ -40,6 +40,9 @@
 #include <scai/lama/distribution/Halo.hpp>
 #include <scai/lama/distribution/Distribution.hpp>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -53,6 +56,8 @@ private:
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 };
 
-}
+} /* end namespace lama */
+
+} /* end namespace scai */
 
 #endif // LAMA_HALOBUILDER_HPP_

@@ -35,6 +35,9 @@
 
 #include <scai/logging.hpp>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -75,7 +78,8 @@ private:
     static void setUseTextureByDevice();
 };
 
-}
-// namespace
+} /* end namespace lama */
+
+} /* end namespace scai */
 
 #endif //  SCAI_CUDA_TEXTURE_HPP_

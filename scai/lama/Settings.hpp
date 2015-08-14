@@ -34,6 +34,9 @@
 
 #include <scai/logging.hpp>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -110,6 +113,6 @@ static    bool convertYesNoString( bool& flag, const char* value );
     static bool init();
 };
 
-} // namespace
+} /* end namespace lama */
 
-
+} /* end namespace scai */

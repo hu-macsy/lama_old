@@ -57,6 +57,9 @@
 
 using memory::ContextPtr;
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -535,7 +538,9 @@ ContextPtr Vector::getContext() const
     return mContext;
 }
 
-}  // namespace
+} /* end namespace lama */
+
+} /* end namespace scai */
 
 /** @brief  stream output for key values of creator  */
 

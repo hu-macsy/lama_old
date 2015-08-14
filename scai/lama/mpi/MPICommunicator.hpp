@@ -53,6 +53,9 @@
 
 #include <vector>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -260,4 +263,6 @@ private:
     static MPIGuard guard;   // define one guard variable
 };
 
-}
+} /* end namespace lama */
+
+} /* end namespace scai */

@@ -47,6 +47,9 @@ using namespace std;
 using namespace memory;
 using namespace tasking;
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -755,35 +758,35 @@ void Communicator::bcast( std::string& val, const PartitionId root ) const
 
 // Instantiation of template methods for the supported types
 
-#define LAMA_COMMUNICATOR_INSTANTIATIONS( z, I, _ )         \
-    \
-    template COMMON_DLL_IMPORTEXPORT                              \
-    IndexType Communicator::shift0(                             \
+#define LAMA_COMMUNICATOR_INSTANTIATIONS( z, I, _ )                 \
+                                                                    \
+    template COMMON_DLL_IMPORTEXPORT                                \
+    IndexType Communicator::shift0(                                 \
             ARRAY_TYPE##I targetVals[],                             \
             const IndexType maxTargetSize,                          \
             const ARRAY_TYPE##I sourceVals[],                       \
             const IndexType sourceSize ) const;                     \
-    \
-    template COMMON_DLL_IMPORTEXPORT                              \
-    void Communicator::shiftArray(                              \
+                                                                    \
+    template COMMON_DLL_IMPORTEXPORT                                \
+    void Communicator::shiftArray(                                  \
             LAMAArray<ARRAY_TYPE##I>& recvArray,                    \
             const LAMAArray<ARRAY_TYPE##I>& sendArray,              \
             const int direction ) const;                            \
-    \
-    template COMMON_DLL_IMPORTEXPORT                              \
-    SyncToken* Communicator::shiftAsync(                        \
+                                                                    \
+    template COMMON_DLL_IMPORTEXPORT                                \
+    SyncToken* Communicator::shiftAsync(                            \
             LAMAArray<ARRAY_TYPE##I>& recvArray,                    \
             const LAMAArray<ARRAY_TYPE##I>& sendArray,              \
             const int direction ) const;                            \
-    \
-    template COMMON_DLL_IMPORTEXPORT                              \
-    void Communicator::updateHalo(                              \
+                                                                    \
+    template COMMON_DLL_IMPORTEXPORT                                \
+    void Communicator::updateHalo(                                  \
             LAMAArray<ARRAY_TYPE##I>& haloValues,                   \
             const LAMAArray<ARRAY_TYPE##I>& localValues,            \
             const Halo& halo ) const;                               \
-    \
-    template COMMON_DLL_IMPORTEXPORT                              \
-    SyncToken* Communicator::updateHaloAsync(                   \
+                                                                    \
+    template COMMON_DLL_IMPORTEXPORT                                \
+    SyncToken* Communicator::updateHaloAsync(                       \
             LAMAArray<ARRAY_TYPE##I>& haloValues,                   \
             const LAMAArray<ARRAY_TYPE##I>& localValues,            \
             const Halo& halo ) const;                               \
@@ -795,4 +798,6 @@ BOOST_PP_REPEAT( ARRAY_TYPE_CNT, LAMA_COMMUNICATOR_INSTANTIATIONS, _ )
 
 #undef LAMA_COMMUNICATOR_INSTANTIATIONS
 
-}
+} /* end namespace lama */
+
+} /* end namespace scai */

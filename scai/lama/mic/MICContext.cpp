@@ -42,6 +42,9 @@
 #include <omp.h>
 #include <mkl.h>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -385,5 +388,6 @@ int MICContext::getCurrentDevice()
 
 /* ----------------------------------------------------------------------------- */
 
-} //namespace lama
+} /* end namespace lama */
 
+} /* end namespace scai */

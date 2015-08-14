@@ -41,6 +41,9 @@
 
 #include <cstdlib>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -209,5 +212,6 @@ void CUDASettings::set( bool useSharedMemFlag, bool useTextureFlag )
 
 /* ----------------------------------------------------------------------------- */
 
-} // namespace
+} /* end namespace lama */
 
+} /* end namespace scai */

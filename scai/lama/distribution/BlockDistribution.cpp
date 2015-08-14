@@ -37,6 +37,9 @@
 
 #include <fstream>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -199,5 +202,6 @@ BlockDistribution* BlockDistribution::create( const CommunicatorPtr communicator
 
 bool BlockDistribution::initialized = Distribution::registerCreator<BlockDistribution>( "BLOCK" );
 
-}
+} /* end namespace lama */
 
+} /* end namespace scai */

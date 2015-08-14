@@ -46,6 +46,9 @@
 
 using tasking::SyncToken;
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -366,4 +369,6 @@ SolverPtr SpecializedJacobi::copy()
     return SolverPtr( new SpecializedJacobi( *this ) );
 }
 
-} // namespace lama
+} /* end namespace lama */
+
+} /* end namespace scai */

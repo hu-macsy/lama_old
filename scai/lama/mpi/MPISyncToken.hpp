@@ -44,6 +44,9 @@
 
 #include <scai/common/unique_ptr.hpp>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -89,4 +92,6 @@ private:
     common::scoped_array<MPI_Status> mStatuses;
 };
 
-}  // namespace
+} /* end namespace lama */
+
+} /* end namespace scai */

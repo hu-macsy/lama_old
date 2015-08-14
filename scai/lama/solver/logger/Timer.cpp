@@ -42,6 +42,9 @@
 #include <cstdio>
 #include <sstream>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -159,4 +162,6 @@ void Timer::stopAndReset( const std::string& timerId )
     timer.isRunning = false;
 }
 
-} // namespace lama
+} /* end namespace lama */
+
+} /* end namespace scai */

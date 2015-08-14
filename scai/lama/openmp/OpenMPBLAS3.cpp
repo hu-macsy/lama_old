@@ -43,6 +43,9 @@
 
 #include <boost/preprocessor.hpp>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -398,4 +401,6 @@ bool OpenMPBLAS3::registerInterface()
 
 bool OpenMPBLAS3::initialized = registerInterface();
 
-} /* namespace lama */
+} /* end namespace lama */
+
+} /* end namespace scai */

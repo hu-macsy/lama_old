@@ -48,6 +48,10 @@
 #else //(BOOST_VERSION >= 103600)
 #include <boost/unordered_map.hpp>
 #endif //(BOOST_VERSION < 103600)
+
+namespace scai
+{
+
 namespace lama
 {
 
@@ -130,6 +134,8 @@ private:
 
 typedef common::shared_ptr<GeneralDistribution> GeneralDistributionPtr;
 
-}
+} /* end namespace lama */
+
+} /* end namespace scai */
 
 #endif // LAMA_GENERALDISTRIBUTION_HPP_

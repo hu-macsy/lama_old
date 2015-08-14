@@ -34,6 +34,9 @@
 // hpp
 #include <scai/lama/Scalar.hpp>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -61,4 +64,6 @@ Scalar& Scalar::operator/=( Scalar& other )
     return *this;
 }
 
-} //namespace lama
+} /* end namespace lama */
+
+} /* end namespace scai */

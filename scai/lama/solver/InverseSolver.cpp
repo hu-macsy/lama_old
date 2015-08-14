@@ -46,6 +46,9 @@
 
 #include <sstream>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -182,4 +185,6 @@ SolverPtr InverseSolver::copy()
     return SolverPtr( new InverseSolver( *this ) );
 }
 
-}
+} /* end namespace lama */
+
+} /* end namespace scai */

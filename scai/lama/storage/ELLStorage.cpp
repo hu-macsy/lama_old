@@ -48,6 +48,9 @@
 #include <scai/common/bind.hpp>
 #include <scai/common/unique_ptr.hpp>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -1904,4 +1907,6 @@ BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_ELL_STORAGE_INSTANTIATE, _ )
 
 #undef LAMA_ELL_STORAGE_INSTANTIATE
 
-} // namespace LAMA
+} /* end namespace lama */
+
+} /* end namespace scai */

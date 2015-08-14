@@ -41,6 +41,9 @@
 #include <scai/lama/Vector.hpp>
 #include <scai/lama/Scalar.hpp>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -122,6 +125,8 @@ public:
     virtual Scalar apply( const Matrix& matrix ) const =0;
 };
 
-}
+} /* end namespace lama */
+
+} /* end namespace scai */
 
 #endif // LAMA_NORM_HPP_

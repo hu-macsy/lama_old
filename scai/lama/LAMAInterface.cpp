@@ -34,6 +34,9 @@
 // hpp
 #include <scai/lama/LAMAInterface.hpp>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -90,4 +93,6 @@ void LAMAInterface::writeAt( std::ostream& stream ) const
     stream << "LAMAInterface(base class)";
 }
 
-} //namespace lama
+} /* end namespace lama */
+
+} /* end namespace scai */

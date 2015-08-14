@@ -34,6 +34,9 @@
 // hpp
 #include <scai/lama/solver/logger/CommonLogger.hpp>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -76,4 +79,6 @@ std::string CommonLogger::createPrefix()
     return mId;
 }
 
-} // namespace lama
+} /* end namespace lama */
+
+} /* end namespace scai */

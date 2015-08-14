@@ -41,6 +41,9 @@
 // others
 #include <scai/lama/Vector.hpp>
 
+namespace scai
+{
+
 namespace lama
 {
 
@@ -147,6 +150,8 @@ private:
     bool mIsDirty;
 };
 
-} // namespace lama
+} /* end namespace lama */
+
+} /* end namespace scai */
 
 #endif // LAMA_SOLUTIONPROXY_HPP_
