@@ -38,13 +38,13 @@ endif ( NOT CXX_SUPPORTS_C11 )
 
 # Find required packages
 set ( REQUIRED_PACKAGES_TO_FIND
-        Common
-        Logging
+        scai_common
+        scai_logging
         #add required packages here
     )
     
 # Find optional packages
 set ( OPTIONAL_PACKAGES_TO_FIND
-        Tracing
+        scai_tracing
         #add optional packages here
     )

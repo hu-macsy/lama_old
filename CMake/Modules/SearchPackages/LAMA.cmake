@@ -33,11 +33,11 @@
 
 # Find required packages
 set ( REQUIRED_PACKAGES_TO_FIND
-        Common
-        Logging
-        Tracing
-        Tasking
-        Memory
+        scai_common
+        scai_logging
+        scai_tracing
+        scai_tasking
+        scai_memory
         #add required packages here
     )
     

@@ -69,7 +69,7 @@ macro    ( lama_headers )
     endforeach ( SOURCE_FILE ${ARGN} )
     
     # install CXX_HEADERS
-    install ( FILES ${CXX_HEADERS} DESTINATION "include/${RELATIVE_PATH}" )
+    install ( FILES ${CXX_HEADERS} DESTINATION "include/scai/lama/${RELATIVE_PATH}" )
 endmacro ( lama_headers )
 
 # Publishes sources and headers in the parent scope

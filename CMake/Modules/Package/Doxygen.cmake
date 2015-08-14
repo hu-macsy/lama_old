@@ -35,12 +35,13 @@
 
 if    ( DOXYGEN_FOUND )
     ### install ###
-    set ( LAMA_DOC_DIR "${LAMA_SOURCE_DIR}/doc/" )
+    #set ( LAMA_DOC_DIR "${LAMA_SOURCE_DIR}/doc/" )
+    set ( LAMA_DOC_DIR "${CMAKE_SOURCE_DIR}/../../doc" )
     set ( DOXYGEN_BUILD_ROOT "${CMAKE_CURRENT_BINARY_DIR}/doc" )
     set ( DOXYGEN_INSTALL_ROOT ${CMAKE_INSTALL_PREFIX})
     file ( MAKE_DIRECTORY ${DOXYGEN_BUILD_ROOT} )
     
-    configure_file ( "${CMAKE_SOURCE_DIR}/doc/LAMA.Doxyfile.in" "${CMAKE_CURRENT_BINARY_DIR}/doc/LAMA.Doxyfile" )
+    configure_file ( "${LAMA_DOC_DIR}/LAMA.Doxyfile.in" "${CMAKE_CURRENT_BINARY_DIR}/doc/LAMA.Doxyfile" )
 
    # The initial rm command gets rid of everything previously built by this
    # custom command.

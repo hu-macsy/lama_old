@@ -38,14 +38,11 @@ endif ( NOT CXX_SUPPORTS_C11 )
 
 # Find required packages
 set ( REQUIRED_PACKAGES_TO_FIND
-        Common
-        Logging
-        Tasking
+        scai_common
         #add required packages here
     )
     
 # Find optional packages
 set ( OPTIONAL_PACKAGES_TO_FIND
-        Tracing
         #add optional packages here
     )
