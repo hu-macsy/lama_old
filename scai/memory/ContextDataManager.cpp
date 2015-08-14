@@ -37,6 +37,9 @@
 
 #include <scai/common/Exception.hpp>
 
+namespace scai
+{
+
 namespace memory
 {
 
@@ -812,6 +815,6 @@ void ContextDataManager::writeAt( std::ostream& stream ) const
 
 /* ---------------------------------------------------------------------------------*/
 
+} /* end namespace memory */
 
-} // namespace
-
+} /* end namespace scai */

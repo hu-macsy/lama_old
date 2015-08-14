@@ -39,8 +39,8 @@
 #include <scai/common/weak_ptr.hpp>
 #include "MockMemory.hpp"
 
-using namespace memory;
-using namespace tasking;
+using namespace scai::memory;
+using namespace scai::tasking;
 
 /** Exampes of a new context class that implements all relevant routines. */
 
@@ -56,7 +56,7 @@ private:
 
     int mDeviceNr;     // MockContext with different device numbers are not equal
 
-    mutable common::weak_ptr<Memory> mMemory;
+    mutable scai::common::weak_ptr<Memory> mMemory;
 
 public:
 
@@ -139,13 +139,13 @@ private:
 
 /* --------------------------------------------------------------------- */
 
-static std::vector<common::weak_ptr<class MockContext> > contextInstances( 6 );
+static std::vector<scai::common::weak_ptr<class MockContext> > contextInstances( 6 );
 
 /* --------------------------------------------------------------------- */
 
 inline ContextPtr MockContext::create( int deviceNr )
 {
-    common::shared_ptr<MockContext> context;
+	scai::common::shared_ptr<MockContext> context;
 
     COMMON_ASSERT( deviceNr < 6, "number of instances limited" )
 
@@ -155,7 +155,7 @@ inline ContextPtr MockContext::create( int deviceNr )
     {
         // create a new instance of MockContext and keep it for further uses
 
-        context = common::shared_ptr<MockContext>( new MockContext( deviceNr ) );
+        context = scai::common::shared_ptr<MockContext>( new MockContext( deviceNr ) );
 
         contextInstances[deviceNr] = context;
     }

@@ -34,6 +34,9 @@
 
 #include <scai/logging/Logger.hpp>
 
+namespace scai
+{
+
 namespace logging
 {
 
@@ -70,4 +73,6 @@ public:
 
 AbstractLoggerCreator& theLoggerCreator();
 
-}
+} /* end namespace logging */
+
+} /* end namespace scai */

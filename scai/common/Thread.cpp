@@ -44,6 +44,9 @@
 
 using namespace std;
 
+namespace scai
+{
+
 namespace common
 {
 
@@ -241,4 +244,6 @@ Thread::~Thread()
     join();
 }
 
-} // namespace
+} /* end namespace common */
+
+} /* end namespace scai */

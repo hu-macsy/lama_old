@@ -35,7 +35,10 @@
 
 #include <scai/common/Exception.hpp>
 
-using common::shared_ptr;
+using scai::common::shared_ptr;
+
+namespace scai
+{
 
 namespace tasking
 {
@@ -152,4 +155,6 @@ void SyncToken::setSynchronized()
     }
 }
 
-}
+} /* end namespace tasking */
+
+} /* end namespace scai */

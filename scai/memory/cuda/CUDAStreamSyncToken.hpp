@@ -46,6 +46,9 @@
 #include <scai/common/config.hpp>
 #include <scai/tasking/SyncToken.hpp>
 
+namespace scai
+{
+
 namespace memory
 {
     class CUDAContext;
@@ -111,4 +114,6 @@ private:
     CUevent mEvent;
 };
 
-} // namespace
+} /* end namespace memory */
+
+} /* end namespace scai */

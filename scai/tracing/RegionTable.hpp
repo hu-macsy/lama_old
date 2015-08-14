@@ -49,6 +49,9 @@
 #include <map>
 #include <fstream>
 
+namespace scai
+{
+
 namespace tracing
 {
 
@@ -134,4 +137,6 @@ private:
 
 };
 
-}
+} /* end namespace tracing */
+
+} /* end namespace scai */

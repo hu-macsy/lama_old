@@ -38,7 +38,7 @@
 #include <scai/logging.hpp>
 
 using namespace std;
-using namespace memory;
+using namespace scai::memory;
 
 SCAI_LOG_DEF_LOGGER( logger, "BenchArray" )
 
@@ -124,51 +124,51 @@ int main()
         int ITER = ITER_VEC[k];
         int N    = N_VEC[k];
         double res = 0.0;  // avoids dead code elimination
-        double time = common::Walltime::get();
+        double time = scai::common::Walltime::get();
 
         for ( int i = 0; i < ITER; ++i )
         {
             routineSimple( res, N );
         }
 
-        double ts = ( common::Walltime::get() - time ) * 1000.0;
+        double ts = ( scai::common::Walltime::get() - time ) * 1000.0;
 
-        time = common::Walltime::get();
+        time = scai::common::Walltime::get();
 
         for ( int i = 0; i < ITER; ++i )
         {
             routineLAMA_1( res );
         }
 
-        double tl1 = ( common::Walltime::get() - time ) * 1000.0;
+        double tl1 = ( scai::common::Walltime::get() - time ) * 1000.0;
 
 
-        time = common::Walltime::get();
+        time = scai::common::Walltime::get();
 
         for ( int i = 0; i < ITER; ++i )
         {
             routineLAMA_2( res, N );
         }
 
-        double tl2 = ( common::Walltime::get() - time ) * 1000.0;
+        double tl2 = ( scai::common::Walltime::get() - time ) * 1000.0;
 
-        time = common::Walltime::get();
+        time = scai::common::Walltime::get();
 
         for ( int i = 0; i < ITER; ++i )
         {
             routineLAMA_3( res, N );
         }
 
-        double tl3 = ( common::Walltime::get() - time ) * 1000.0;
+        double tl3 = ( scai::common::Walltime::get() - time ) * 1000.0;
 
-        time = common::Walltime::get();
+        time = scai::common::Walltime::get();
 
         for ( int i = 0; i < ITER; ++i )
         {
             routineLAMA( res, N );
         }
 
-        double tl = ( common::Walltime::get() - time ) * 1000.0;
+        double tl = ( scai::common::Walltime::get() - time ) * 1000.0;
 
 
         cout << "Case " << k << ": N = " << N << ", ITER = " << ITER << endl;

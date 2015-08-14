@@ -44,6 +44,9 @@
 
 #include <scai/common/weak_ptr.hpp>
 
+namespace scai
+{
+
 namespace memory
 {
 
@@ -100,4 +103,6 @@ protected:
     common::shared_ptr<const CUDAContext> mCUDAContext;   // fast DMA transfer to this device
 };
 
-}
+} /* end namespace memory */
+
+} /* end namespace scai */

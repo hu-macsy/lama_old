@@ -47,6 +47,9 @@
 // logging
 #include <scai/logging.hpp>
 
+namespace scai
+{
+
 namespace memory
 {
 
@@ -330,5 +333,6 @@ void WriteAccess<ValueType>::writeAt( std::ostream& stream ) const
     }
 }
 
-} // namespace
+} /* end namespace memory */
 
+} /* end namespace scai */

@@ -35,6 +35,9 @@
 
 #include <string.h>
 
+namespace scai
+{
+
 namespace logging
 {
 
@@ -55,4 +58,6 @@ std::ostream& operator<<( std::ostream& os, const SourceLocation& loc )
     return os;
 }
 
-}
+} /* end namespace logging */
+
+} /* end namespace scai */

@@ -40,6 +40,9 @@
 
 #include <sstream>
 
+namespace scai
+{
+
 namespace logging
 {
 
@@ -134,4 +137,6 @@ Logger& LoggerProvider::getInstance( const std::string& name ) const
     return *instance;
 }
 
-} // namespace logging
+} /* end namespace logging */
+
+} /* end namespace scai */

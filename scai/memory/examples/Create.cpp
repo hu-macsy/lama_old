@@ -43,8 +43,8 @@
 #include <iostream> 
 
 using namespace std;
-using namespace memory;
-using namespace common;
+using namespace scai::memory;
+using namespace scai::common;
 
 SCAI_LOG_DEF_LOGGER( logger, "CreateTest" )
 

@@ -42,6 +42,9 @@
 
 #endif
 
+namespace scai
+{
+
 namespace common
 {
 
@@ -103,4 +106,6 @@ double Walltime::get()
 
 }
 
-} // namespace lama
+} /* end namespace common */
+
+} /* end namespace scai */

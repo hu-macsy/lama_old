@@ -38,7 +38,10 @@
 #include <scai/common/Exception.hpp>
 #include <scai/logging.hpp>
 
-using tasking::SyncToken;
+using scai::tasking::SyncToken;
+
+namespace scai
+{
 
 namespace memory
 {
@@ -260,5 +263,6 @@ SyncToken* ContextData::copyFromAsync( const ContextData& other, size_t size )
     }
 }
 
-} // namespace
+} /* end namespace memory */
 
+} /* end namespace scai */

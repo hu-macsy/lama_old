@@ -44,6 +44,9 @@
 
 using namespace std;
 
+namespace scai
+{
+
 namespace logging
 {
 
@@ -84,5 +87,6 @@ Logger* GenLoggerCreator::create( const std::string& name, Logger* parent ) cons
     return new GenLogger( name, parent );
 }
 
-} //namespace logging
+} /* end namespace logging */
 
+} /* end namespace scai */

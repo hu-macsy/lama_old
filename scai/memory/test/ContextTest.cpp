@@ -13,7 +13,7 @@ BOOST_AUTO_TEST_CASE( ContextTest )
 
     SCAI_LOG_THREAD( "main" )
 
-    using namespace memory;
+    using namespace scai::memory;
 
     ContextPtr userContext  = Context::getContextPtr( context::UserContext, 1 );
     ContextPtr userContext2 = Context::getContextPtr( context::UserContext, 2 );
@@ -107,7 +107,7 @@ BOOST_AUTO_TEST_CASE( ContextTest )
         WriteAccess<float> write( v, userContext2 );
         COMMON_THROWEXCEPTION( "read and write access at same time not possible" )
     }
-    catch ( common::Exception& ex )
+    catch ( scai::common::Exception& ex )
     {
         std::cout << "Exception caught: " << ex.what() << std::endl;
     }

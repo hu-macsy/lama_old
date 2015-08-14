@@ -35,6 +35,8 @@
 #include <ostream>
 #include <string>
 
+namespace scai
+{
 namespace logging
 {
 /** @brief Enumeration type for different logging levels.
@@ -67,4 +69,6 @@ const char* level2str( const Level level );
  */
 std::ostream& operator<<( std::ostream& os, const Level& level );
 
-}
+} /* end namespace logging */
+
+} /* end namespace scai */

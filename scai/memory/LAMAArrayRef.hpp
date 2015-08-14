@@ -38,6 +38,9 @@
 #include <scai/memory/LAMAArray.hpp>
 #include <scai/memory/HostMemory.hpp>
 
+namespace scai
+{
+
 namespace memory
 {
 
@@ -122,4 +125,6 @@ LAMAArrayRef<ValueType>::LAMAArrayRef( IndexType size, const ValueType* pointer 
     mSize = size;
 }
 
-}  // namespace 
+} /* end namespace memory */
+
+} /* end namespace scai */

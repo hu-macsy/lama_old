@@ -36,8 +36,8 @@
 #include <memory>
 #include <scai/common/bind.hpp>
 
-using namespace common;
-using namespace tasking;
+using namespace scai::common;
+using namespace scai::tasking;
 
 SCAI_LOG_DEF_LOGGER( logger, "Test.ThreadPoolTest" )
 

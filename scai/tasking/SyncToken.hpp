@@ -47,6 +47,9 @@
 #include <vector>
 #include <scai/common/function.hpp>
 
+namespace scai
+{
+
 /** Namespace for all data structures used in the tasking library. */
 
 namespace tasking
@@ -183,4 +186,6 @@ private:
     std::vector< common::function<void()> > mSynchronizedFunctions;
 };
 
-}
+} /* end namespace tasking */
+
+} /* end namespace scai */

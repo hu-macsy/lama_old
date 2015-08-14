@@ -43,6 +43,9 @@
 
 #include <iostream>
 
+namespace scai
+{
+
 namespace common
 {
 
@@ -118,11 +121,13 @@ inline ScalarType getScalarType<double>()
     return scalar::DOUBLE;
 }
 
-} //namespace 
+} /* end namespace common */
+
+} /* end namespace scai */
 
 /** Output of ScalarType in stream by writing strings instead of numbers 
  *
  *  Note: operator<< should never be defined within a namespace.
  */
 
-COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const common::ScalarType& object );
+COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const scai::common::ScalarType& object );

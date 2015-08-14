@@ -37,8 +37,10 @@
 
 #include <scai/logging.hpp>
 
-namespace tracing
+namespace scai
+{
 
+namespace tracing
 {
 
 /** Structure defines entry for call tree table.
@@ -175,4 +177,6 @@ private:
     FileTable mFileTable;
 };
 
-} // namespace
+} /* end namespace tracing */
+
+} /* end namespace scai */

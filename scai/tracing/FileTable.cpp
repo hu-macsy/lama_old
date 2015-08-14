@@ -35,6 +35,9 @@
 
 using namespace std;
 
+namespace scai
+{
+
 namespace tracing
 {
 
@@ -86,4 +89,6 @@ const char* FileTable::getFileName( int fileId )
     return array[fileId].c_str();
 }
 
-} // namespace tracing
+} /* end namespace tracing */
+
+} /* end namespace scai */

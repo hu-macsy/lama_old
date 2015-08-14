@@ -44,6 +44,9 @@
 #include <cuda.h>
 #include <cusparse.h>
 
+namespace scai
+{
+
 #include <memory>
 
 using common::Thread;
@@ -369,5 +372,6 @@ ContextPtr CUDAContext::create( int deviceNr )
 
 /* ----------------------------------------------------------------------------- */
 
-} //namespace
+} /* end namespace memory */
 
+} /* end namespace scai */

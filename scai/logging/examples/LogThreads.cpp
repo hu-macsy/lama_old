@@ -31,7 +31,7 @@
  * @date 08.07.2015
  */
 
-#include "scai/logging.hpp"
+#include <scai/logging.hpp>
 
 #include <cstdlib>
 

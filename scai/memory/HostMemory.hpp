@@ -42,6 +42,9 @@
 
 #include <scai/common/shared_ptr.hpp>
 
+namespace scai
+{
+
 namespace memory
 {
 
@@ -93,4 +96,6 @@ private:
     mutable common::Thread::RecursiveMutex allocate_mutex;// needed to make allocate/free thread-safe
 };
 
-}
+} /* end namespace memory */
+
+} /* end namespace scai */

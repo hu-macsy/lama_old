@@ -31,9 +31,9 @@
  * @date 19.06.2015
  */
 
-#include "scai/common/Thread.hpp"
-#include "scai/common/Walltime.hpp"
-#include "scai/common/Exception.hpp"
+#include <scai/common/Thread.hpp>
+#include <scai/common/Walltime.hpp>
+#include <scai/common/Exception.hpp>
 
 #include <iostream>
 #include <cstdlib>
@@ -41,7 +41,7 @@
 #include <unistd.h>
 
 using namespace std;
-using namespace common;
+using namespace scai::common;
 
 Thread::RecursiveMutex mutex;    // recursive mutex needed here
 

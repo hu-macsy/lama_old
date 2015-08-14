@@ -33,6 +33,9 @@
 // hpp
 #include <scai/logging/Logger.hpp>
 
+namespace scai
+{
+
 namespace logging
 {
 
@@ -105,4 +108,6 @@ bool Logger::isRootLogger() const
     return mParent == NULL;
 }
 
-} // namespace logging
+} /* end namespace logging */
+
+} /* end namespace scai */

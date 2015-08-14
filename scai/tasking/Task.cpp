@@ -39,6 +39,9 @@
 
 #include <limits>
 
+namespace scai
+{
+
 namespace tasking
 {
 
@@ -130,4 +133,6 @@ Task::Id Task::getId() const
     }
 }
 
-} // namespace lama
+} /* end namespace tasking */
+
+} /* end namespace scai */

@@ -37,9 +37,12 @@
 // boost
 #include <scai/common/bind.hpp>
 
-using tasking::Task;
-using common::function;
-using common::shared_ptr;
+using scai::tasking::Task;
+using scai::common::function;
+using scai::common::shared_ptr;
+
+namespace scai
+{
 
 namespace tasking
 {
@@ -138,4 +141,6 @@ void TaskSyncToken::writeAt( std::ostream& stream ) const
     stream << ", synchronized = " << isSynchronized() << ")";
 }
 
-}
+} /* end namespace tasking */
+
+} /* end namespace scai */

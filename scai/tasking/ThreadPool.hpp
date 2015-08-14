@@ -46,6 +46,9 @@
 #include <climits>
 #include <queue>
 
+namespace scai
+{
+
 namespace tasking
 {
 
@@ -169,5 +172,6 @@ private:
     WorkerState mWorkerState; //used to indicate the state of the worker
 };
 
-} // namespace
+} /* end namespace tasking */
 
+} /* end namespace scai */

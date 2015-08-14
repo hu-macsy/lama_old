@@ -45,7 +45,10 @@
 
 using namespace std;
 
-using common::Thread;
+using scai::common::Thread;
+
+namespace scai
+{
 
 namespace tracing
 {
@@ -202,4 +205,6 @@ void RegionTable::printTimer( ostream& outfile )
     }
 }
 
-} // namespace tracing
+} /* end namespace tracing */
+
+} /* end namespace scai */

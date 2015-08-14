@@ -40,8 +40,10 @@
 
 #include <vector>
 
-namespace tracing
+namespace scai
+{
 
+namespace tracing
 {
 
 class CallTree
@@ -61,4 +63,6 @@ private:
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 };
 
-}
+} /* end namespace tracing */
+
+} /* end namespace scai */

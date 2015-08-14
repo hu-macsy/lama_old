@@ -40,6 +40,9 @@
 #include <map>
 #include <vector>
 
+namespace scai
+{
+
 namespace common
 {
 
@@ -210,4 +213,6 @@ void Factory1<InputType, ValueType, OutputType>::getCreateValues( std::vector<In
     }
 }
 
-}
+} /* end namespace common */
+
+} /* end namespace scai */

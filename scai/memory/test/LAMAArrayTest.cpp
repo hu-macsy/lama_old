@@ -40,8 +40,8 @@
 #include <scai/memory/ReadAccess.hpp>
 
 using namespace boost;
-using namespace common;
-using namespace memory;
+using namespace scai::common;
+using namespace scai::memory;
 
 /* --------------------------------------------------------------------- */
 

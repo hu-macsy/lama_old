@@ -42,6 +42,9 @@
 // logging
 #include <scai/logging.hpp>
 
+namespace scai
+{
+
 namespace tasking
 {
     class SyncToken;    // forward declaration
@@ -222,12 +225,14 @@ inline MemoryType Memory::getType() const
     return mMemoryType;
 }
 
-}  // namespace
+} /* end namespace memory */
+
+} /* end namespace scai */
 
 /** This method make is possible to use enum values of MemoryType in output streams. 
  *
  *  Note: It should not be defined in a namespace.
  */
 
-COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const memory::MemoryType& type );
+COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const scai::memory::MemoryType& type );
 

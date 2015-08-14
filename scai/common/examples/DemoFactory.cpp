@@ -37,7 +37,7 @@
 #include <iostream>
 #include <typeinfo>
 
-using namespace common;
+using namespace scai::common;
 
 /** Base class that provides by deriving from Factory a factory with a create routine.
  *

@@ -1,5 +1,5 @@
-#include "scai/logging.hpp"
-#include "omp.h"
+#include <scai/logging.hpp>
+#include <omp.h>
 
 SCAI_LOG_DEF_LOGGER( myLogger, "LogOpenMP" )
 

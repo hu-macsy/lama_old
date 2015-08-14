@@ -18,7 +18,7 @@ void subB( int& X )
 
 int main()
 {
-    double time = common::Walltime::get();
+    double time = scai::common::Walltime::get();
     int X = 0;
     SCAI_REGION( "main" )
 
@@ -35,6 +35,6 @@ int main()
         }
     }
 
-    time = common::Walltime::get() - time;
+    time = scai::common::Walltime::get() - time;
     printf( "X = %d, number of calls, time = %f s\n", X, time );
 }

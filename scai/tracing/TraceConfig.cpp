@@ -40,11 +40,14 @@
 #include <iostream>
 #include <cstdlib>
 
+namespace scai
+{
+
 namespace tracing
 {
 
-using common::Thread;
-using common::shared_ptr;
+using scai::common::Thread;
+using scai::common::shared_ptr;
 
 /* -------------------------------------------------------------------------- *
  *   Static class variables                                                   *
@@ -374,5 +377,6 @@ TraceConfig::TraceScope::~TraceScope()
     TraceConfig::globalTraceFlag = saveFlag;
 }
 
-} // namespace tracing
+} /* end namespace tracing */
 
+} /* end namespace scai */

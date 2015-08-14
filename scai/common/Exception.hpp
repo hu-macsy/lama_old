@@ -40,6 +40,8 @@
 #include <string>
 #include <sstream>
 
+namespace scai
+{
 /**
  * @brief The namespace common holds common stuff useful for different C++ projects
  */
@@ -93,7 +95,9 @@ protected:
     static std::string demangle( const char* string );
 };
 
-}  // namespace common
+}  /* end namespace common */
+
+}  /* end namespace scai */
 
 /**
  * @brief The macro COMMON_THROWEXCEPTION throws an exception that contains
@@ -108,8 +112,8 @@ protected:
     std::ostringstream errorStr;                                               \
     errorStr<<"Exception in line "<<__LINE__<<" of file "<<__FILE__<<"\n";     \
     errorStr<<"    Message: "<<msg<<"\n";                                      \
-    common::Exception::addCallStack( errorStr );                               \
-    throw common::Exception( errorStr.str() );                                 \
+    scai::common::Exception::addCallStack( errorStr );                         \
+    throw scai::common::Exception( errorStr.str() );                           \
 }
 
 /**
@@ -133,8 +137,8 @@ protected:
         errorStr << " of file " << __FILE__ << "\n";                           \
         errorStr << "    Condition: " << #cond << "\n";                        \
         errorStr << "    Message: " << msg << "\n";                            \
-        common::Exception::addCallStack( errorStr );                           \
-        throw common::Exception( errorStr.str() );                             \
+        scai::common::Exception::addCallStack( errorStr );                     \
+        throw scai::common::Exception( errorStr.str() );                       \
     }                                                                          \
 }
 
@@ -163,8 +167,8 @@ protected:
         errorStr << "    Message: " << msg << "\n";                            \
         errorStr << "    exp_1: " << #exp1 " = " << exp1 << "\n";              \
         errorStr << "    exp_2: " << #exp2 " = " << exp2 << "\n";              \
-        common::Exception::addCallStack( errorStr );                           \
-        throw common::Exception( errorStr.str() );                             \
+        scai::common::Exception::addCallStack( errorStr );                     \
+        throw scai::common::Exception( errorStr.str() );                       \
     }                                                                          \
 }
 
@@ -178,8 +182,8 @@ protected:
         errorStr << "    Message: " << msg << "\n";                            \
         errorStr << "    exp_1: " << #exp1 " = " << exp1 << "\n";              \
         errorStr << "    exp_2: " << #exp2 " = " << exp2 << "\n";              \
-        common::Exception::addCallStack( errorStr );                           \
-        throw common::Exception( errorStr.str() );                             \
+        scai::common::Exception::addCallStack( errorStr );                     \
+        throw scai::common::Exception( errorStr.str() );                       \
     }                                                                          \
 }
 
@@ -193,8 +197,8 @@ protected:
         errorStr << "    Message: " << msg << "\n";                            \
         errorStr << "    exp_1: " << #exp1 " = " << exp1 << "\n";              \
         errorStr << "    exp_2: " << #exp2 " = " << exp2 << "\n";              \
-        common::Exception::addCallStack( errorStr );                           \
-        throw common::Exception( errorStr.str() );                             \
+        scai::common::Exception::addCallStack( errorStr );                     \
+        throw scai::common::Exception( errorStr.str() );                       \
     }                                                                          \
 }
 

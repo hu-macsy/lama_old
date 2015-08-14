@@ -43,6 +43,9 @@
 
 #include <cstdio>
 
+namespace scai
+{
+
 namespace tracing
 {
 
@@ -219,4 +222,6 @@ double TraceRegionRecord::spentLast( const char* name )
     return lastTime;
 }
 
-} // namespace
+} /* end namespace tracing */
+
+} /* end namespace scai */

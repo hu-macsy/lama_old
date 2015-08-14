@@ -35,6 +35,9 @@
 #include <scai/tracing/Counters.hpp>
 #include <vector>
 
+namespace scai
+{
+
 namespace tracing
 {
 
@@ -111,4 +114,6 @@ private:
     std::vector<CallStackEntry> stack;
 };
 
-}  // namespace
+} /* end namespace tracing */
+
+} /* end namespace scai */

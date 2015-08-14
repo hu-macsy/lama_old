@@ -36,7 +36,7 @@
 
 #include <iostream>
 
-using namespace common;
+using namespace scai::common;
 
 enum Kind 
 {

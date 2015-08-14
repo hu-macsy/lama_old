@@ -45,6 +45,9 @@
 #include <string>
 #include <map>
 
+namespace scai
+{
+
 namespace tracing
 {
 
@@ -199,4 +202,6 @@ private:
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 };
 
-}
+} /* end namespace tracing */
+
+} /* end namespace scai */

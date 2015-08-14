@@ -38,6 +38,9 @@
 
 #include <string>
 
+namespace scai
+{
+
 namespace tracing
 {
 
@@ -153,4 +156,6 @@ void VTInterface::enable( const bool )
 
 #endif
 
-} // namespace
+} /* end namespace tracing */
+
+} /* end namespace scai */

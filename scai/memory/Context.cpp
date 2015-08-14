@@ -39,6 +39,9 @@
 
 #include <map>
 
+namespace scai
+{
+
 namespace memory
 {
 
@@ -115,13 +118,15 @@ ContextPtr Context::getContextPtr( ContextType type, int deviceNr )
     return create( type, deviceNr );
 }
 
-}
+} /* end namespace memory */
+
+} /* end namespace scai */
 
 /* ---------------------------------------------------------------------------------*/
 
-std::ostream& operator<<( std::ostream& stream, const memory::ContextType& type )
+std::ostream& operator<<( std::ostream& stream, const scai::memory::ContextType& type )
 {
-    using namespace memory;
+    using namespace scai::memory;
 
     switch ( type )
     {
@@ -150,9 +155,9 @@ std::ostream& operator<<( std::ostream& stream, const memory::ContextType& type 
 
 /* -----------------------------------------------------------------------------*/
 
-std::ostream& operator<<( std::ostream& stream, const memory::AccessKind& kind )
+std::ostream& operator<<( std::ostream& stream, const scai::memory::AccessKind& kind )
 {
-    using namespace memory;
+    using namespace scai::memory;
 
     switch ( kind )
     {

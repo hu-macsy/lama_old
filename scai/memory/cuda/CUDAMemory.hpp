@@ -47,6 +47,9 @@
 
 #include <string>
 
+namespace scai
+{
+
 namespace tasking
 {
     class COMMON_DLL_IMPORTEXPORT CUDAStreamSyncToken;
@@ -127,7 +130,6 @@ private:
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 };
 
-}
+} /* end namespace memory */
 
-// namespace
-
+} /* end namespace scai */

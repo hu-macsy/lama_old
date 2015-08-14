@@ -36,7 +36,10 @@
 #include <cuda_runtime.h>
 #include <cusparse.h>
 
-namespace cuda
+namespace scai
+{
+
+namespace common
 {
 
 const char* cudaDriverErrorString( CUresult res )
@@ -263,5 +266,7 @@ const char* cusparseErrorString( cusparseStatus_t res )
 
 /* ----------------------------------------------------------------------------- */
 
-} //namespace
+} /* end namespace common */
+
+} /* end namespace scai */
 

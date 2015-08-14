@@ -41,8 +41,11 @@
 
 #include <scai/tasking/TaskSyncToken.hpp>
 
-using  common::shared_ptr;
-using  common::weak_ptr;
+using  scai::common::shared_ptr;
+using  scai::common::weak_ptr;
+
+namespace scai
+{
 
 namespace memory
 {
@@ -143,5 +146,6 @@ tasking::TaskSyncToken* HostContext::getSyncToken() const
     return new tasking::TaskSyncToken();
 }
 
-} // namespace
+} /* end namespace memory */
 
+} /* end namespace scai */

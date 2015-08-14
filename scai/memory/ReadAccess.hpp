@@ -40,6 +40,9 @@
 
 #include <scai/logging.hpp>
 
+namespace scai
+{
+
 namespace memory
 {
 
@@ -234,4 +237,6 @@ ReadAccess<ValueType>::operator const ValueType*() const
     return mData;
 }
 
-} // namespace
+} /* end namespace memory */
+
+} /* end namespace scai */

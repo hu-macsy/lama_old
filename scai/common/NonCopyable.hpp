@@ -36,6 +36,9 @@
 // for dll_import
 #include <scai/common/config.hpp>
 
+namespace scai
+{
+
 namespace common
 {
 
@@ -92,4 +95,6 @@ private:
     const NonCopyable& operator=( const NonCopyable& other );
 };
 
-}
+} /* end namespace common */
+
+} /* end namespace scai */

@@ -44,6 +44,9 @@
 #include <scai/common/bind.hpp>
 #include <cstring>
 
+namespace scai
+{
+
 namespace memory
 {
 
@@ -155,5 +158,6 @@ MemoryPtr HostMemory::getIt()
     return instancePtr;
 }
 
-} // namespace
+} /* end namespace memory */
 
+} /* end namespace scai */

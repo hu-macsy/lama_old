@@ -36,6 +36,9 @@
 
 #include <scai/common/config.hpp>
 
+namespace scai
+{
+
 namespace logging
 {
 
@@ -59,7 +62,9 @@ struct COMMON_DLL_IMPORTEXPORT SourceLocation
 
 std::ostream& operator<<( std::ostream& os, const SourceLocation& loc );
 
-}
+} /* end namespace logging */
+
+} /* end namespace scai */
 
 #if !defined(LOG4SCAI_LOCATION)
 #if defined(_MSC_VER)
@@ -79,5 +84,5 @@ std::ostream& operator<<( std::ostream& os, const SourceLocation& loc );
 #define __LOG4SCAI_FUNC__ ""
 #endif
 
-#define LOG4SCAI_LOCATION logging::SourceLocation(__FILE__, __LOG4SCAI_FUNC__, __LINE__)
+#define LOG4SCAI_LOCATION scai::logging::SourceLocation(__FILE__, __LOG4SCAI_FUNC__, __LINE__)
 #endif

@@ -48,6 +48,9 @@
 
 #include <string>
 
+namespace scai
+{
+
 namespace tasking
 {
     class CUDAStreamSyncToken;  // forward 
@@ -191,6 +194,6 @@ private:
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 };
 
-}
-//namespace
+} /* end namespace memory */
 
+} /* end namespace scai */

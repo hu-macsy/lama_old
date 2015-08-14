@@ -60,9 +60,9 @@ void task( int a[], const int b[], const int c[], int N )
 
 /* --------------------------------------------------------------------- */
 
-using namespace tasking;
+using namespace scai::tasking;
 
-using common::shared_ptr;
+using scai::common::shared_ptr;
 
 void simple()
 {
@@ -81,7 +81,7 @@ void simple()
 
     // using shared pointer will delete token automatically
 
-    shared_ptr<SyncToken> t ( new TaskSyncToken( common::bind( task, a, b, c , N ) ) );
+    shared_ptr<SyncToken> t ( new TaskSyncToken( scai::common::bind( task, a, b, c , N ) ) );
 
     t->wait();
 
@@ -96,7 +96,7 @@ void simple()
 
 }
 
-struct Data : private common::NonCopyable, public SyncTokenMember
+struct Data : private scai::common::NonCopyable, public SyncTokenMember
 {
     Data( int N ) 
     {
@@ -138,7 +138,7 @@ shared_ptr<SyncToken> run( int N )
 
     // call task asynchronously
  
-    shared_ptr<SyncToken> t ( new TaskSyncToken( common::bind( task, data->mA, data->mB, data->mC , N ) ) );
+    shared_ptr<SyncToken> t ( new TaskSyncToken( scai::common::bind( task, data->mA, data->mB, data->mC , N ) ) );
 
     // give ownership of data to the sync token 
 

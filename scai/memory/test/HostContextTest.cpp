@@ -9,7 +9,7 @@ BOOST_AUTO_TEST_CASE( host_context )
 
     SCAI_LOG_THREAD( "main" )
 
-    using namespace memory;
+    using namespace scai::memory;
 
     BOOST_CHECK( Context::canCreate( context::Host ) );
 

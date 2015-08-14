@@ -37,6 +37,9 @@
 
 #include <scai/memory/ContextArray.hpp>
 
+namespace scai
+{
+
 namespace memory
 {
 
@@ -639,4 +642,6 @@ void LAMAArray<ValueType>::writeAt( std::ostream& stream ) const
 
 /* ---------------------------------------------------------------------------------*/
 
-}  // namespace 
+} /* end namespace memory */
+
+} /* end namespace scai */

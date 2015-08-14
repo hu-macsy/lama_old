@@ -45,6 +45,9 @@
 
 #endif
 
+namespace scai
+{
+
 namespace common
 {
 #if __cplusplus > 199711L
@@ -78,4 +81,7 @@ namespace common
         }
     };
 #endif
-}
+
+} /* end namespace common */
+
+} /* end namespace scai */

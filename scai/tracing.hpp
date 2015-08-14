@@ -37,12 +37,12 @@
 #include <scai/tracing/TraceRegionRecord.hpp>
 #include <scai/tracing/TraceConfig.hpp>
 
-#define SCAI_REGION( name ) tracing::ScopedTraceRecord LAMA_Trc__( name, __FILE__, __LINE__ );
-#define SCAI_REGION_N( name, n ) tracing::ScopedTraceRecord LAMA_Trc__( name, n, __FILE__, __LINE__ );
-#define SCAI_REGION_START( name ) tracing::TraceRegionRecord::start( name, __FILE__, __LINE__ );
-#define SCAI_REGION_END( name ) tracing::TraceRegionRecord::stop( name );
-#define SCAI_TRACE_SCOPE( flag ) tracing::TraceConfig::TraceScope LAMA_Scp__( flag );
-#define LAMA_TIMETRACER( name ) tracing::TraceRegionRecord::spentLast( name );
+#define SCAI_REGION( name ) scai::tracing::ScopedTraceRecord LAMA_Trc__( name, __FILE__, __LINE__ );
+#define SCAI_REGION_N( name, n ) scai::tracing::ScopedTraceRecord LAMA_Trc__( name, n, __FILE__, __LINE__ );
+#define SCAI_REGION_START( name ) scai::tracing::TraceRegionRecord::start( name, __FILE__, __LINE__ );
+#define SCAI_REGION_END( name ) scai::tracing::TraceRegionRecord::stop( name );
+#define SCAI_TRACE_SCOPE( flag ) scai::tracing::TraceConfig::TraceScope LAMA_Scp__( flag );
+#define LAMA_TIMETRACER( name ) scai::	tracing::TraceRegionRecord::spentLast( name );
 
 #elif defined( SCAI_TRACE_OFF )
 

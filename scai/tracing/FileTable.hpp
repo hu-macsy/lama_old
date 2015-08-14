@@ -43,6 +43,9 @@
 #include<map>
 #include<cstdio>
 
+namespace scai
+{
+
 namespace tracing
 {
 
@@ -101,4 +104,6 @@ private:
     std::map<const char*, int, CmpString> mapTimer;
 };
 
-}
+} /* end namespace tracing */
+
+} /* end namespace scai */

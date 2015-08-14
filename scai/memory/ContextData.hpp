@@ -40,6 +40,9 @@
 #include <scai/common/Exception.hpp>
 #include <scai/common/Printable.hpp>
 
+namespace scai
+{
+
 namespace tasking
 {
 class SyncToken;
@@ -153,5 +156,6 @@ protected:
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 };
 
-}
+} /* end namespace memory */
 
+} /* end namespace scai */

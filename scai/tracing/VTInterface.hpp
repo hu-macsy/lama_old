@@ -32,6 +32,9 @@
 
 #pragma once
 
+namespace scai
+{
+
 namespace tracing
 {
 
@@ -58,5 +61,6 @@ public:
     static void enable( bool flag );
 };
 
-} // namespace
+} /* end namespace tracing */
 
+} /* end namespace scai */

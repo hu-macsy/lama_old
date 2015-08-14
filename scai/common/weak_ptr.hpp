@@ -38,6 +38,9 @@
 #include <boost/weak_ptr.hpp>
 #endif
 
+namespace scai
+{
+
 namespace common
 {
 #if __cplusplus > 199711L
@@ -45,4 +48,6 @@ namespace common
 #else
     using boost::weak_ptr;
 #endif
-}
+} /* end namespace common */
+
+} /* end namespace scai */

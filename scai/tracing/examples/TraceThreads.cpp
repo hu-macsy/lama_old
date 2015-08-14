@@ -3,7 +3,7 @@
 #include <scai/tracing.hpp>
 #include <unistd.h>
 
-using common::Thread;
+using scai::common::Thread;
 
 void subA( int& )
 {

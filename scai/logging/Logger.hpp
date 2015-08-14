@@ -43,6 +43,9 @@
 #include <string>
 #include <vector>
 
+namespace scai
+{
+
 /** Namespace for logging data structures */
 
 namespace logging
@@ -246,5 +249,6 @@ private:
     const Logger& operator=( const Logger& other ); // Disable default assignment operator
 };
 
-} //namespace logging
+} /* end namespace logging */
 
+} /* end namespace scai */

@@ -30,11 +30,14 @@
  * @date 11.06.2015
  */
 
-#include "scai/tracing/TraceData.hpp"
-#include "scai/tracing/CallStack.hpp"
-#include "scai/tracing/CallTreeTable.hpp"
+#include <scai/tracing/TraceData.hpp>
+#include <scai/tracing/CallStack.hpp>
+#include <scai/tracing/CallTreeTable.hpp>
 
-#include "scai/common/Exception.hpp"
+#include <scai/common/Exception.hpp>
+
+namespace scai
+{
 
 namespace tracing
 {
@@ -162,5 +165,6 @@ TraceData::~TraceData()
     SCAI_LOG_DEBUG( logger, "~TraceData for thread " << mThreadId )
 }
 
-}  // namespace
+} /* end namespace tracing */
 
+} /* end namespace scai */

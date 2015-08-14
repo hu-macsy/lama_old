@@ -38,14 +38,14 @@
 #include <scai/tasking/Task.hpp>
 #include <scai/common/bind.hpp>
 
-using namespace memory;
-using namespace tasking;
+using namespace scai::memory;
+using namespace scai::tasking;
 
 /* --------------------------------------------------------------------- */
 
 SCAI_LOG_DEF_LOGGER( logger, "Threading" )
 
-using namespace memory;
+using namespace scai::memory;
 
 void readJob( LAMAArray<double>& X )
 {
@@ -110,22 +110,22 @@ void job( LAMAArray<double>* X )
 
         SCAI_LOG_INFO( logger, "job, r = " << r << ", kind = " << kind << ", finished" )
     }
-    catch ( common::Exception ex )
+    catch ( scai::common::Exception ex )
     {
         SCAI_LOG_ERROR( logger, "job, r = " << r << ", kind = " << kind << ", caught exception: " << ex.what() )
     }
 }
-using namespace tasking;
+using namespace scai::tasking;
 int main()
 {
     SCAI_LOG_THREAD( "main" )
     LAMAArray<double> X( 100000, 10 );
     SCAI_LOG_INFO( logger, "X = " << X << " at " << ( &X ) )
-    tasking::ThreadPool pool( 10 );
+    scai::tasking::ThreadPool pool( 10 );
 
     for ( int k = 0; k < 100; ++k )
     {
-        pool.schedule( common::bind( &job, &X )  );
+        pool.schedule( scai::common::bind( &job, &X )  );
     }
 
     SCAI_LOG_INFO( logger, "synchronize" )

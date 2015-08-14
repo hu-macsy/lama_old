@@ -40,7 +40,7 @@
 #include <scai/common/bind.hpp>
 
 using namespace std;
-using namespace tasking;
+using namespace scai::tasking;
 
 static const int WORKLOAD = 10;
 
@@ -81,7 +81,7 @@ void doTasking( int N )
         int arg = 1;
         int omp_threads = 1;
 
-        Task task( common::bind( &work, common::ref( arg )), omp_threads );
+        Task task( scai::common::bind( &work, scai::common::ref( arg )), omp_threads );
  
         // Note: synchronization is expensive
 
@@ -97,7 +97,7 @@ void doThreading( int N )
     {
         int arg = 1;
 
-        common::Thread thread( &work, arg );
+        scai::common::Thread thread( &work, arg );
     }
 }
 
@@ -107,17 +107,17 @@ int main()
 {
     static int N = 100000;
 
-    double time1 = common::Walltime::get();
+    double time1 = scai::common::Walltime::get();
 
     doThreading( N );
  
-    time1 = common::Walltime::get() - time1;
+    time1 = scai::common::Walltime::get() - time1;
 
-    double time2 = common::Walltime::get();
+    double time2 = scai::common::Walltime::get();
 
     doTasking( N );
  
-    time2 = common::Walltime::get() - time2;
+    time2 = scai::common::Walltime::get() - time2;
 
     cout << "Execution of " << N << " threads, time for threads = " << time1 
          << ", time for tasks = " << time2 << endl;

@@ -45,6 +45,9 @@
 // logging
 #include <scai/logging.hpp>
 
+namespace scai
+{
+
 namespace memory
 {
 
@@ -89,7 +92,9 @@ private:
     int mLine;//!< line number of access
 };
 
-}
+} /* end namespace memory */
+
+} /* end namespace scai */
 
 /** Macro that should be used for any context access
  *

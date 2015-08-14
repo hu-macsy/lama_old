@@ -39,6 +39,9 @@
 #include <iostream>
 #include <iomanip>
 
+namespace scai
+{
+
 namespace tracing
 {
 
@@ -164,4 +167,6 @@ private:
     bool mFirst;           //!< only true for first access
 };
 
-}
+} /* end namespace tracing */
+
+} /* end namespace scai */

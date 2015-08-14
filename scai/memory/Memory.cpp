@@ -38,6 +38,9 @@
 
 #include <map>
 
+namespace scai
+{
+
 namespace memory
 {
 
@@ -138,27 +141,29 @@ tasking::SyncToken* Memory::memcpyToAsync( const Memory& dstMemory, void* dst, c
 
 /* ---------------------------------------------------------------------------------*/
 
-}  // namespace
+} /* end namespace memory */
+
+} /* end namespace scai */
 
 /* ---------------------------------------------------------------------------------*/
 
-std::ostream& operator<<( std::ostream& stream, const memory::MemoryType& type )
+std::ostream& operator<<( std::ostream& stream, const scai::memory::MemoryType& type )
 {
     switch ( type )
     {
-        case memory::memtype::HostMemory :
+        case scai::memory::memtype::HostMemory :
             stream << "HostMemory";
             break;
 
-        case memory::memtype::CUDAMemory :
+        case scai::memory::memtype::CUDAMemory :
             stream << "CUDAMemory";
             break;
 
-        case memory::memtype::CUDAHostMemory :
+        case scai::memory::memtype::CUDAHostMemory :
             stream << "CUDAHostMemory";
             break;
 
-        case memory::memtype::UserMemory :
+        case scai::memory::memtype::UserMemory :
             stream << "UserMemory";
             break;
 

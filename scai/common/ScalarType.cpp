@@ -34,7 +34,7 @@
 
 #include <scai/common/ScalarType.hpp>
 
-using namespace common;
+using namespace scai::common;
 
 std::ostream& operator<<( std::ostream& stream, const ScalarType& object )
 {

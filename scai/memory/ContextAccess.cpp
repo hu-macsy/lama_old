@@ -35,6 +35,9 @@
 
 #include <scai/memory/ContextAccess.hpp>
 
+namespace scai
+{
+
 namespace memory
 {
 
@@ -72,4 +75,6 @@ void ContextAccess::writeAt( std::ostream& stream ) const
     stream << " at " << mFile << "( line = " << mLine << " )";
 }
 
-} // namespace 
+} /* end namespace memory */
+
+} /* end namespace scai */

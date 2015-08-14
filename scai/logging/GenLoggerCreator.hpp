@@ -35,6 +35,9 @@
 // base classes
 #include <scai/logging/AbstractLoggerCreator.hpp>
 
+namespace scai
+{
+
 namespace logging
 {
 
@@ -76,4 +79,6 @@ private:
     static GenLoggerCreator* theCreator; //!< singleton instantiation
 };
 
-}
+} /* end namespace logging */
+
+} /* end namespace scai */

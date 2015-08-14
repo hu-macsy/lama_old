@@ -39,9 +39,12 @@
 #include <scai/common/Exception.hpp>
 #include <scai/common/OpenMP.hpp>
 
-using common::Thread;
-using common::shared_ptr;
-using common::function;
+using scai::common::Thread;
+using scai::common::shared_ptr;
+using scai::common::function;
+
+namespace scai
+{
 
 namespace tasking
 {
@@ -324,4 +327,6 @@ ThreadPool::~ThreadPool()
     shutdown();
 }
 
-} // namespace lama
+} /* end namespace tasking */
+
+} /* end namespace scai */

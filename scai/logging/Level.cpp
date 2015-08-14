@@ -34,6 +34,9 @@
 
 #include <cstring>
 
+namespace scai
+{
+
 namespace logging
 {
 
@@ -117,4 +120,6 @@ Level str2level( const std::string& value )
     return level;
 }
 
-} //namespace logging
+} /* end namespace logging */
+
+} /* end namespace scai */

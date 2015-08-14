@@ -38,6 +38,9 @@
 // base classes
 #include <scai/tasking/SyncToken.hpp>
 
+namespace scai
+{
+
 namespace tasking
 {
 
@@ -89,4 +92,6 @@ bool NoSyncToken::probe() const
     return true; // always ready
 }
 
-}
+} /* end namespace tasking */
+
+} /* end namespace scai */

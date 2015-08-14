@@ -37,9 +37,10 @@
 #include <cublas_v2.h>
 #include <cusparse_v2.h>
 
-/** Namespace for routines using CUDA. */
+namespace scai
+{
 
-namespace cuda
+namespace common
 {
 /** Function that translates enum CUresult to strings. */
 
@@ -53,11 +54,13 @@ const char* cublasErrorString( cublasStatus_t res );
 
 const char* cusparseErrorString( cusparseStatus_t res );
 
-}
+} /* end namespace common */
+
+} /* end namespace scai */
 
 /** Macro for CUDA driver API calls to catch errors */
 
-#define SCAI_CUDA_DRV_CALL(call, msg)                                               \
+#define SCAI_CUDA_DRV_CALL(call, msg)                                                   \
     {                                                                                   \
         CUresult res = call;                                                            \
         if ( CUDA_SUCCESS != res )                                                      \
@@ -68,14 +71,14 @@ const char* cusparseErrorString( cusparseStatus_t res );
             errorStr << "  Msg  : " << msg << std::endl;                                \
             errorStr << "  Call : " #call;                                              \
             errorStr << "  Error: ";                                                    \
-            errorStr << cuda::cudaDriverErrorString( res );                             \
+            errorStr << scai::common::cudaDriverErrorString( res );                     \
             errorStr << ", CUresult = " << res << "\n";                                 \
-            common::Exception::addCallStack( errorStr );                                  \
-            throw common::Exception( errorStr.str() );                                  \
+            scai::common::Exception::addCallStack( errorStr );                          \
+            throw scai::common::Exception( errorStr.str() );                            \
         }                                                                               \
     }
 
-#define SCAI_CUDA_RT_CALL(call, msg)                                                \
+#define SCAI_CUDA_RT_CALL(call, msg)                                                    \
     {                                                                                   \
         cudaError_t res = call;                                                         \
         if ( cudaSuccess != res )                                                       \
@@ -88,14 +91,14 @@ const char* cusparseErrorString( cusparseStatus_t res );
             errorStr << "  Error: ";                                                    \
             errorStr << cudaGetErrorString( res );                                      \
             errorStr << ", cudaError_t = " << res << "\n";                              \
-            common::Exception::addCallStack( errorStr );                                  \
-            throw common::Exception( errorStr.str() );                                  \
+            scai::common::Exception::addCallStack( errorStr );                          \
+            throw scai::common::Exception( errorStr.str() );                            \
         }                                                                               \
     }
 
-#define SCAI_CUBLAS_CALL( call, msg )                                               \
+#define SCAI_CUBLAS_CALL( call, msg )                                                   \
     {                                                                                   \
-        cublasStatus_t res = call;                                                        \
+        cublasStatus_t res = call;                                                      \
         if ( CUBLAS_STATUS_SUCCESS != res )                                             \
         {                                                                               \
             std::ostringstream errorStr;                                                \
@@ -104,10 +107,10 @@ const char* cusparseErrorString( cusparseStatus_t res );
             errorStr << "  Call : " #call;                                              \
             errorStr << "  Msg  : " << msg << std::endl;                                \
             errorStr << "  Error: ";                                                    \
-            errorStr << cuda::cublasErrorString( res );                                 \
+            errorStr << scai::common::cublasErrorString( res );                         \
             errorStr << ", cublasStatus = " << res << "\n";                             \
-            common::Exception::addCallStack( errorStr );                                  \
-            throw common::Exception( errorStr.str() );                                    \
+            scai::common::Exception::addCallStack( errorStr );                          \
+            throw scai::common::Exception( errorStr.str() );                            \
         }                                                                               \
     }
 
@@ -122,10 +125,10 @@ const char* cusparseErrorString( cusparseStatus_t res );
             errorStr << "  Call : " #call;                                          \
             errorStr << "  Msg  : " << msg << std::endl;                            \
             errorStr << "  Error: ";                                                \
-            errorStr << cuda::cusparseErrorString( res );                           \
+            errorStr << scai::common::cusparseErrorString( res );                   \
             errorStr << ", cusparseStatus = " << res << "\n";                       \
-            common::Exception::addCallStack( errorStr );                            \
-            throw common::Exception( errorStr.str() );                              \
+            scai::common::Exception::addCallStack( errorStr );                      \
+            throw scai::common::Exception( errorStr.str() );                        \
         }                                                                           \
     }
 

@@ -191,11 +191,11 @@
  *   Definitions for logging                           *
  *******************************************************/
 
-#define SCAI_LOG_DECL_STATIC_LOGGER(aLogger) static class logging::Logger& aLogger;
-#define SCAI_LOG_DEF_LOGGER(aLogger,name) logging::Logger& aLogger = \
-        logging::LoggerProvider::getProvider().getInstance(std::string(name));
-#define SCAI_LOG_DEF_TEMPLATE_LOGGER(temp,aLogger,name) temp logging::Logger& aLogger = \
-        logging::LoggerProvider::getProvider().getInstance(std::string(name));
+#define SCAI_LOG_DECL_STATIC_LOGGER(aLogger) static class scai::logging::Logger& aLogger;
+#define SCAI_LOG_DEF_LOGGER(aLogger,name) scai::logging::Logger& aLogger = \
+        scai::logging::LoggerProvider::getProvider().getInstance(std::string(name));
+#define SCAI_LOG_DEF_TEMPLATE_LOGGER(temp,aLogger,name) temp scai::logging::Logger& aLogger = \
+        scai::logging::LoggerProvider::getProvider().getInstance(std::string(name));
 #define SCAI_LOG_USING(alogger) using alogger;
 
 #include <sstream>
@@ -215,12 +215,12 @@
  *   SCAI_LOG_SET_XXXX                                 *
  *******************************************************/
 
-#define SCAI_LOG_SET_TRACE(logger) { logger.setLevel(logging::TRACE, true); }
-#define SCAI_LOG_SET_DEBUG(logger) { logger.setLevel(logging::DEBUG, true); }
-#define SCAI_LOG_SET_INFO(logger) { logger.setLevel(logging::INFO, true); }
-#define SCAI_LOG_SET_WARN(logger) { logger.setLevel(logging::WARN, true); }
-#define SCAI_LOG_SET_ERROR(logger) { logger.setLevel(logging::ERROR, true); }
-#define SCAI_LOG_SET_FATAL(logger) { logger.setLevel(logging::FATAL, true); }
+#define SCAI_LOG_SET_TRACE(logger) { logger.setLevel(scai::logging::TRACE, true); }
+#define SCAI_LOG_SET_DEBUG(logger) { logger.setLevel(scai::logging::DEBUG, true); }
+#define SCAI_LOG_SET_INFO(logger) { logger.setLevel(scai::logging::INFO, true); }
+#define SCAI_LOG_SET_WARN(logger) { logger.setLevel(scai::logging::WARN, true); }
+#define SCAI_LOG_SET_ERROR(logger) { logger.setLevel(scai::logging::ERROR, true); }
+#define SCAI_LOG_SET_FATAL(logger) { logger.setLevel(scai::logging::FATAL, true); }
 
 #else
 
@@ -325,11 +325,11 @@
 
 // macro defines a name for the current thread 
 
-#define SCAI_LOG_THREAD( name )                                      \
-{                                                                    \
-    std::ostringstream oname;                                        \
-    oname << name;                                                   \
-    common::Thread::defineCurrentThreadName( oname.str().c_str() );  \
+#define SCAI_LOG_THREAD( name )                                            \
+{                                                                          \
+    std::ostringstream oname;                                              \
+    oname << name;                                                         \
+    scai::common::Thread::defineCurrentThreadName( oname.str().c_str() );  \
 }
 
 #endif

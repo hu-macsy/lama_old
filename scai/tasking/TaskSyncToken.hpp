@@ -43,6 +43,9 @@
 
 // others
 
+namespace scai
+{
+
 namespace tasking
 {
 
@@ -83,5 +86,6 @@ private:
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 };
 
-}
+} /* end namespace tasking */
 
+} /* end namespace scai */

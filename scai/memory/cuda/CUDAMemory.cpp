@@ -43,8 +43,11 @@
 
 #include <memory>
 
-using tasking::SyncToken;
-using tasking::CUDAStreamSyncToken;
+using scai::tasking::SyncToken;
+using scai::tasking::CUDAStreamSyncToken;
+
+namespace scai
+{
 
 namespace memory
 {
@@ -494,5 +497,6 @@ void CUDAMemory::memcpyTo( const Memory& dstMemory, void* dst, const void* src, 
 
 /* ----------------------------------------------------------------------------- */
 
-} //namespace
+} /* end namespace memory */
 
+} /* end namespace scai */

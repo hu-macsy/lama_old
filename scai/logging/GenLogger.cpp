@@ -44,6 +44,9 @@
 
 using namespace std;
 
+namespace scai
+{
+
 namespace logging
 {
 
@@ -628,5 +631,6 @@ void GenLogger::setFormat( const std::string& format )
     tokenize( formatTokens, format );
 }
 
-} //namespace logging
+} /* end namespace logging */
 
+} /* end namespace scai */

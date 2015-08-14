@@ -60,6 +60,9 @@
 
 #define LAMA_MAX_CONTEXTS 4
 
+namespace scai
+{
+
 namespace memory
 {
 
@@ -342,4 +345,6 @@ inline void ContextArray::releaseWriteAccess( ContextDataIndex index )
     mContextDataManager.releaseAccess( index, context::Write );
 }
 
-}  // namespace 
+} /* end namespace memory */
+
+} /* end namespace scai */

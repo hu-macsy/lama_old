@@ -38,6 +38,9 @@
 
 #include <pthread.h>
 
+namespace scai
+{
+
 namespace common
 {
 
@@ -198,4 +201,6 @@ private:
     bool      running;
 };
 
-} // namespace 
+} /* end namespace common */
+
+} /* end namespace scai */

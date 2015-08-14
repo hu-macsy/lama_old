@@ -39,6 +39,9 @@
 
 #include <scai/memory/ContextAccess.hpp>
 
+namespace scai
+{
+
 namespace tasking
 {
 
@@ -151,5 +154,6 @@ void CUDAStreamSyncToken::synchronizeEvent( const CUevent event ) const
     SCAI_CUDA_DRV_CALL( cuEventSynchronize( event ), "cuEventSynchronize failed for CUevent "<<event<<'.' )
 }
 
-} // namespace
+} /* end namespace memory */
 
+} /* end namespace scai */

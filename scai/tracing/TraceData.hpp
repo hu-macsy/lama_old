@@ -32,9 +32,12 @@
 
 #pragma once
 
-#include "scai/tracing/RegionTable.hpp"
-#include "scai/tracing/CallStack.hpp"
-#include "scai/tracing/CallTreeTable.hpp"
+#include <scai/tracing/RegionTable.hpp>
+#include <scai/tracing/CallStack.hpp>
+#include <scai/tracing/CallTreeTable.hpp>
+
+namespace scai
+{
 
 namespace tracing
 {
@@ -113,5 +116,6 @@ protected:
 
 };
 
-}  // namespace
+} /* end namespace tracing */
 
+} /* end namespace scai */

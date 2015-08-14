@@ -36,8 +36,8 @@
 #include <scai/common/bind.hpp>
 #include <scai/common/weak_ptr.hpp>
 
-using namespace memory;
-using namespace tasking;
+using namespace scai::memory;
+using namespace scai::tasking;
 
 /** Exampes of a new memory class that implements all relevant routines. */
 
@@ -103,12 +103,12 @@ public:
 
     static SyncToken* theMemcpyAsync( void* dst, const void* src, const size_t size )
     {
-        return new TaskSyncToken( common::bind( &::memcpy, dst, src, size ) );
+        return new TaskSyncToken( scai::common::bind( &::memcpy, dst, src, size ) );
     }
 
     virtual SyncToken* memcpyAsync( void* dst, const void* src, const size_t size ) const
     {
-        return new TaskSyncToken( common::bind( &::memcpy, dst, src, size ) );
+        return new TaskSyncToken( scai::common::bind( &::memcpy, dst, src, size ) );
     }
 
     virtual bool canCopyFrom( const Memory& other ) const

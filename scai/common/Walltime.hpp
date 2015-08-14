@@ -37,6 +37,9 @@
 #include <string>
 #include <stdint.h>
 
+namespace scai
+{
+
 namespace common
 {
 
@@ -72,4 +75,6 @@ private:
     Walltime();
 };
 
-} // namespace
+} /* end namespace common */
+
+} /* end namespace scai */

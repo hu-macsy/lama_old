@@ -44,6 +44,9 @@
 // common
 #include <scai/common/shared_ptr.hpp>
 
+namespace scai
+{
+
 namespace memory
 {
 
@@ -98,5 +101,6 @@ inline ContextType HostContext::createValue()
     return context::Host;
 }
 
-}  // namespace
+} /* end namespace memory */
 
+} /* end namespace scai */

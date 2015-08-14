@@ -37,6 +37,9 @@
 // getpid required
 #include <unistd.h>
 
+namespace scai
+{
+
 namespace tracing
 {
 
@@ -256,4 +259,6 @@ void CallTreeTable::initCounters( const CounterArray& counterValues )
     lastCounterValues = counterValues;
 }
 
-} // namespace
+} /* end namespace tracing */
+
+} /* end namespace scai */

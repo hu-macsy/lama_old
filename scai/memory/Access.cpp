@@ -33,6 +33,9 @@
 // hpp
 #include <scai/memory/Access.hpp>
 
+namespace scai
+{
+
 namespace memory
 {
 
@@ -56,4 +59,6 @@ void Access::writeAt( std::ostream& stream ) const
     stream << "Access";
 }
 
-}
+} /* end namespace memory */
+
+} /* end namespace scai */

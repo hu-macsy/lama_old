@@ -39,6 +39,9 @@
 #include <boost/ref.hpp>
 #endif
 
+namespace scai
+{
+
 namespace common
 {
 #if __cplusplus > 199711L
@@ -51,4 +54,6 @@ namespace common
     using boost::ref;
     using boost::cref;
 #endif
-}
+} /* end namespace common */
+
+} /* end namespace scai */

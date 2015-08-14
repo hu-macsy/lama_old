@@ -39,6 +39,9 @@
 #include <boost/enable_shared_from_this.hpp>
 #endif
 
+namespace scai
+{
+
 namespace common
 {
  #if __cplusplus > 199711L
@@ -50,4 +53,6 @@ namespace common
     using boost::dynamic_pointer_cast;
     using boost::enable_shared_from_this;
 #endif
-}
+} /* end namespace common */
+
+} /* end namespace scai */

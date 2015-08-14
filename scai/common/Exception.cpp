@@ -47,6 +47,9 @@
 #include <cstring>
 #endif // __GNUC__
 
+namespace scai
+{
+
 namespace common
 {
 
@@ -162,4 +165,6 @@ std::string Exception::demangle( const char* functionName )
 
 #endif
 
-}  //namespace 
+}  /* end namespace common */
+
+} /* end namespace scai */

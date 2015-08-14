@@ -43,6 +43,9 @@
 // logging
 #include <scai/logging.hpp>
 
+namespace scai
+{
+
 namespace memory
 {
 
@@ -69,5 +72,6 @@ protected:
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 };
 
-} // namespace
+} /* end namespace memory */
 
+} /* end namespace scai */

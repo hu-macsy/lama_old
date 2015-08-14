@@ -45,6 +45,9 @@
 #include <scai/common/function.hpp>
 #include <scai/common/shared_ptr.hpp>
 
+namespace scai
+{
+
 namespace tasking
 {
 
@@ -133,4 +136,6 @@ private:
     common::shared_ptr<ThreadTask> mTask;
 };
 
-}  // namespace
+} /* end namespace tasking */
+
+} /* end namespace scai */

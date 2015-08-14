@@ -41,6 +41,9 @@
 // logging
 #include <scai/logging.hpp>
 
+namespace scai
+{
+
 namespace memory
 {
 
@@ -123,5 +126,6 @@ private:
     using WriteAccess<ValueType>::mContextDataIndex;
 };
 
-} // namespace
+} /* end namespace memory */
 
+} /* end namespace scai */

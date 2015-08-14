@@ -35,14 +35,14 @@
 #include <scai/memory/WriteOnlyAccess.hpp>
 #include <scai/common/Exception.hpp>
 
-using namespace memory;
+using namespace scai::memory;
 
 /* --------------------------------------------------------------------- */
 
 SCAI_LOG_DEF_LOGGER( logger, "ContextTest" )
 
-using namespace memory;
-using common::IndexType;
+using namespace scai::memory;
+using scai::common::IndexType;
 
 typedef LAMAArray<double> Array;
 

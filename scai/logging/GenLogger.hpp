@@ -35,6 +35,9 @@
 // base classes
 #include <scai/logging/Logger.hpp>
 
+namespace scai
+{
+
 namespace logging
 {
 
@@ -136,4 +139,6 @@ private:
     void traverse();
 };
 
-}
+} /* end namespace logging */
+
+} /* end namespace scai */

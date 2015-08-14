@@ -39,6 +39,9 @@
 
 #include <scai/common/shared_ptr.hpp>
 
+namespace scai
+{
+
 /** Namespace for all data structures used in tracing library. */
 
 namespace tracing
@@ -158,5 +161,6 @@ public:
     }
 };
 
-}  // namescape
+} /* end namespace tracing */
 
+} /* end namespace scai */

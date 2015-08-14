@@ -38,6 +38,9 @@
 // others
 #include <scai/logging/AbstractLoggerCreator.hpp>
 
+namespace scai
+{
+
 namespace logging
 {
 
@@ -99,5 +102,6 @@ private:
     static LoggerProvider* theProvider; //!< unique instance for provider
 };
 
-}
+} /* end namespace logging */
 
+} /* end namespace scai */

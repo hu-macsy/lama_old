@@ -37,6 +37,9 @@
 
 #include <ostream>
 
+namespace scai
+{
+
 namespace tracing
 {
 static const int MAX_COUNTERS = 1;
@@ -165,4 +168,6 @@ private:
     uint64_t values[MAX_COUNTERS];
 };
 
-}  // namespace
+} /* end namespace tracing */
+
+} /* end namespace scai */

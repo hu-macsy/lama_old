@@ -46,6 +46,9 @@
 
 #define MEMORY_MAX_CONTEXTS 4
 
+namespace scai
+{
+
 namespace memory
 {
 
@@ -222,4 +225,6 @@ private:
 };
 
 
-}  // namespace 
+} /* end namespace memory */
+
+} /* end namespace scai */
