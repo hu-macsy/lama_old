@@ -46,7 +46,7 @@
 #include <scai/common/shared_ptr.hpp>
 
 using namespace std;
-using namespace common;
+using namespace scai::common;
 
 /** String for the default AMG Setup. */
 

@@ -395,7 +395,7 @@ public:
 
     /* Implementation of pure method of class Matrix. */
 
-    virtual Scalar getValue( lama::IndexType i, lama::IndexType j ) const;
+    virtual Scalar getValue( scai::lama::IndexType i, scai::lama::IndexType j ) const;
 
     /* Implemenation of pure method of class Matrix */
 

@@ -61,7 +61,7 @@
 #include <test/TestMacros.hpp>
 
 using namespace scai::lama;
-using namespace memory;
+using namespace scai::memory;
 
 typedef boost::mpl::list<float,double> test_types;
 
@@ -278,7 +278,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE ( simpleTest, ValueType, test_types )
     const LAMAArray<IndexType> matrixJA = LAMAArray<IndexType>( numValues, ja );
     const LAMAArray<ValueType> mValues  = LAMAArray<ValueType>( numValues, matrixValues );
     CSRStorage<ValueType>* csrStorage = new CSRStorage<ValueType>( n, n, numValues, matrixIA, matrixJA, mValues );
-    lama::DistributionPtr dist( new lama::NoDistribution( n ) );
+    scai::lama::DistributionPtr dist( new scai::lama::NoDistribution( n ) );
     CSRSparseMatrix<ValueType> matrix( *csrStorage, dist, dist );
     ValueType vectorValues[] = { 0.3f, 0.7f, 3.1416f };
     const LAMAArray<ValueType> vValues  = LAMAArray<ValueType>( n, vectorValues );

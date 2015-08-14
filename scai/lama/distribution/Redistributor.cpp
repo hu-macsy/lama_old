@@ -40,9 +40,9 @@
 
 #include <scai/common/unique_ptr.hpp>
 
-using common::unique_ptr;
-using common::scoped_array;
-using namespace memory;
+using scai::common::unique_ptr;
+using scai::common::scoped_array;
+using namespace scai::memory;
 
 namespace scai
 {

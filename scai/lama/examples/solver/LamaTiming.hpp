@@ -50,7 +50,7 @@ public:
 
     /** Constructor. */
 
-    LamaTiming( const lama::Communicator& comm, const char* name );
+    LamaTiming( const scai::lama::Communicator& comm, const char* name );
 
     /** Destructor, prints timing on root processor */
 
@@ -58,14 +58,14 @@ public:
 
 private:
 
-    const lama::Communicator& mComm;
+    const scai::lama::Communicator& mComm;
     const char* mName;
     double mStart;
 };
 
 /* ---------------------------------------------------------------------------- */
   
-LamaTiming::LamaTiming( const lama::Communicator& comm, const char* name ) :
+LamaTiming::LamaTiming( const scai::lama::Communicator& comm, const char* name ) :
     mComm( comm ),
     mName( name )
 {

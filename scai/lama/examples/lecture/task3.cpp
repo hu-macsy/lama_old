@@ -17,7 +17,7 @@
 
 #include <iostream>
 
-using namespace lama;
+using namespace scai::lama;
 
 int main( int argc, char* argv[] )
 {

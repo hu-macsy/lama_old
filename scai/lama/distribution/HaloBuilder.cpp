@@ -40,7 +40,7 @@
 // tracing
 #include <scai/tracing.hpp>
 
-using namespace memory;
+using namespace scai::memory;
 
 namespace scai
 {

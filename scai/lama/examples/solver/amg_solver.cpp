@@ -52,10 +52,10 @@
 #include <scai/common/unique_ptr.hpp>
 
 using namespace std;
-using namespace lama;
+using namespace scai::lama;
 
-using common::Walltime;
-using common::unique_ptr;
+using scai::common::Walltime;
+using scai::common::unique_ptr;
 
 void dummy( const LamaConfig& lamaconf )
 {
@@ -82,11 +82,11 @@ vector<IndexType>* readPartitionVector( const char* filename, int commSize, int 
 
     if ( pfile.is_open() )
     {
-        vector<IndexType> *pvector = new vector<lama::IndexType>;
+        vector<IndexType> *pvector = new vector<scai::lama::IndexType>;
 
         pvector->reserve( expectedSize );
 
-        lama::IndexType elem;
+        scai::lama::IndexType elem;
 
         while ( pfile >> elem )
         {
@@ -278,7 +278,7 @@ int main( int argc, char* argv[] )
 
     loggerName << "<CG>, " << lamaconf.getCommunicator() << ": ";
 
-    LoggerPtr logger( new CommonLogger ( loggerName.str(), lama::LogLevel::advancedInformation,
+    LoggerPtr logger( new CommonLogger ( loggerName.str(), scai::lama::LogLevel::advancedInformation,
                    LoggerWriteBehaviour::toConsoleOnly,
                     new Timer() ) );
 
@@ -306,7 +306,7 @@ int main( int argc, char* argv[] )
 
     mySolver.setStoppingCriterion( rt );
 
-    LoggerPtr amgLogger( new CommonLogger ( loggerName.str(), lama::LogLevel::solverInformation,
+    LoggerPtr amgLogger( new CommonLogger ( loggerName.str(), scai::lama::LogLevel::solverInformation,
                    LoggerWriteBehaviour::toConsoleOnly,
                    new Timer() ) );
 

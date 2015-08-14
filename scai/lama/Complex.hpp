@@ -344,6 +344,9 @@
 /**
  * @brief The class Complex represents complex numbers.
  */
+namespace scai
+{
+
 namespace lama
 {
 using std::sqrt;

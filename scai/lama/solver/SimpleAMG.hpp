@@ -50,7 +50,7 @@ namespace scai
 namespace lama
 {
 
-class COMMON_DLL_IMPORTEXPORT SimpleAMG: public lama::IterativeSolver
+class COMMON_DLL_IMPORTEXPORT SimpleAMG: public scai::lama::IterativeSolver
 {
 public:
 

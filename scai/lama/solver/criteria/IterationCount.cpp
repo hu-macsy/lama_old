@@ -66,7 +66,7 @@ IterationCount::~IterationCount()
 {
 }
 
-bool IterationCount::isSatisfied( const lama::IterativeSolver& solver )
+bool IterationCount::isSatisfied( const scai::lama::IterativeSolver& solver )
 {
     SCAI_LOG_INFO( logger,
                    "Iteration Extrema = " << mIterationExtrema << ", Iteration Count = " << solver.getIterationCount() );

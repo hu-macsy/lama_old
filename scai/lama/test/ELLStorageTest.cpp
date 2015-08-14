@@ -42,7 +42,7 @@
 
 using namespace scai::lama;
 using namespace scai::memory;
-using common::Exception;
+using scai::common::Exception;
 
 extern bool base_test_case;
 extern std::string testcase;

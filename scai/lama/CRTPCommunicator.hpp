@@ -42,8 +42,8 @@
 #include <scai/tasking/NoSyncToken.hpp>
 #include <vector>
 
-using tasking::SyncToken;
-using tasking::NoSyncToken;
+using scai::tasking::SyncToken;
+using scai::tasking::NoSyncToken;
 
 namespace scai
 {

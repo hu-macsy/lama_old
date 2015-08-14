@@ -31,6 +31,8 @@
  * @since 1.0.0
  */
 
+#include <scai/common/OpenMP.hpp>
+
 // hpp
 #include <scai/lama/StorageIO.hpp>
 
@@ -50,10 +52,10 @@
 #include <scai/common/unique_ptr.hpp>
 #include <boost/preprocessor.hpp>
 
-using common::unique_ptr;
-using common::scoped_array;
+using scai::common::unique_ptr;
+using scai::common::scoped_array;
 
-using namespace memory;
+using namespace scai::memory;
 
 namespace scai
 {
@@ -836,8 +838,8 @@ void StorageIO<ValueType>::readCSRFromMMFile(
 
     WriteOnlyAccess<IndexType> ia( csrIA, numRows + 1 );
     // initialize ia;
-#pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
 
+	#pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
     for( IndexType i = 0; i < numRows + 1; i++ )
     {
         ia[i] = 0;

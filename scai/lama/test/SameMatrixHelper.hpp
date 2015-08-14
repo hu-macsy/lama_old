@@ -58,25 +58,25 @@ void testSameMatrix( const MatrixType1& m1, const MatrixType2& m2 )
     typedef typename MatrixType1::MatrixValueType ValueType1;
     typedef typename MatrixType2::MatrixValueType ValueType2;
     // Both matrices must be matrices of the same size
-    const lama::IndexType m = m1.getNumRows();
-    const lama::IndexType n = m1.getNumColumns();
+    const scai::lama::IndexType m = m1.getNumRows();
+    const scai::lama::IndexType n = m1.getNumColumns();
     BOOST_REQUIRE_EQUAL( m, m2.getNumRows() );
     BOOST_REQUIRE_EQUAL( n, m2.getNumColumns() );
-    lama::DenseVector<ValueType1> x1( m1.getColDistributionPtr(), 1.0 );
-    lama::DenseVector<ValueType2> x2( m2.getColDistributionPtr(), 1.0 );
-    lama::DenseVector<ValueType1> y1( m1.getDistributionPtr(), 0.0 );
-    lama::DenseVector<ValueType2> y2( m2.getDistributionPtr(), 0.0 );
+    scai::lama::DenseVector<ValueType1> x1( m1.getColDistributionPtr(), 1.0 );
+    scai::lama::DenseVector<ValueType2> x2( m2.getColDistributionPtr(), 1.0 );
+    scai::lama::DenseVector<ValueType1> y1( m1.getDistributionPtr(), 0.0 );
+    scai::lama::DenseVector<ValueType2> y2( m2.getDistributionPtr(), 0.0 );
     y1 = m1 * x1; // YA = mA * XA;
     y2 = m2 * x2; // YB = mB * XB;
     // replicate the vectors to avoid communication overhead for single elements
-    lama::DistributionPtr replicated( new lama::NoDistribution( m ) );
+    scai::lama::DistributionPtr replicated( new scai::lama::NoDistribution( m ) );
     y1.redistribute( replicated );
     y2.redistribute( replicated );
 
-    for ( lama::IndexType i = 0; i < m; i++ )
+    for ( scai::lama::IndexType i = 0; i < m; i++ )
     {
-        lama::Scalar s1 = y1.getValue( i );
-        lama::Scalar s2 = y2.getValue( i );
+        scai::lama::Scalar s1 = y1.getValue( i );
+        scai::lama::Scalar s2 = y2.getValue( i );
         BOOST_CHECK_CLOSE( s1.getValue<double>(), s2.getValue<double>(), 0.01 );
     }
 }
@@ -86,5 +86,5 @@ void testSameMatrix( const MatrixType1& m1, const MatrixType2& m2 )
  *  For efficiency on distributed matrices, it will do it row-wise.
  */
 
-void assertSameMatrix( const lama::Matrix& m1, const lama::Matrix& m2 );
+void assertSameMatrix( const scai::lama::Matrix& m1, const scai::lama::Matrix& m2 );
 

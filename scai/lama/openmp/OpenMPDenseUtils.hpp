@@ -53,7 +53,7 @@ namespace scai
 namespace lama
 {
 
-/** This class provides OpenMP implementations for methods in lama::DenseUtilsInterface
+/** This class provides OpenMP implementations for methods in scai::lama::DenseUtilsInterface
  */
 
 class COMMON_DLL_IMPORTEXPORT OpenMPDenseUtils

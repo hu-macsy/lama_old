@@ -1056,17 +1056,17 @@ inline std::ostream& operator<<( std::ostream& stream, const Matrix::SyncKind& k
  *  \param stream   is the reference to the output stream
  *  \param kind      is the enum value that is printed
  */
-inline std::ostream& operator<<( std::ostream& stream, const lama::Matrix::MatrixKind& kind )
+inline std::ostream& operator<<( std::ostream& stream, const scai::lama::Matrix::MatrixKind& kind )
 {
     switch( kind )
     {
-        case lama::Matrix::DENSE:
+        case scai::lama::Matrix::DENSE:
         {
             stream << "DENSE";
             break;
         }
 
-        case lama::Matrix::SPARSE:
+        case scai::lama::Matrix::SPARSE:
         {
             stream << "SPARSE";
             break;
@@ -1082,7 +1082,7 @@ inline std::ostream& operator<<( std::ostream& stream, const lama::Matrix::Matri
     return stream;
 }
 
-inline std::ostream& operator<<( std::ostream& stream, const lama::MatrixCreateKeyType& key )
+inline std::ostream& operator<<( std::ostream& stream, const scai::lama::MatrixCreateKeyType& key )
 {
     stream << "<" << key.first << ", " << key.second << ">";
     return stream;

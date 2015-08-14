@@ -38,7 +38,7 @@
 #include <scai/lama/solver/SimpleAMG.hpp>
 #include <scai/lama/solver/logger/CommonLogger.hpp>
 
-using namespace lama;
+using namespace scai::lama;
 
 int main( int argc, char** argv )
 {
@@ -80,7 +80,7 @@ int main( int argc, char** argv )
 
     std::string loggerName = "<AMG>";
 
-    LoggerPtr amgLogger( new CommonLogger ( loggerName, lama::LogLevel::completeInformation,
+    LoggerPtr amgLogger( new CommonLogger ( loggerName, scai::lama::LogLevel::completeInformation,
                    LoggerWriteBehaviour::toConsoleOnly,
                    common::unique_ptr<Timer>( new Timer() ) ) );
 

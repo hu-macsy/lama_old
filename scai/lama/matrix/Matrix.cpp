@@ -40,7 +40,7 @@
 
 #include <scai/lama/exception/LAMAAssert.hpp>
 
-using namespace common;
+using namespace scai::common;
 
 namespace scai
 {

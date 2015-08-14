@@ -6,7 +6,7 @@
 #include <iostream>
 #include <stdlib.h>
 
-using namespace lama;
+using namespace scai::lama;
 
 int main()
 

@@ -52,7 +52,7 @@ namespace lama
 using std::abs;
 // so we can use abs for float and double and abs for Complex<ValueType>
 
-using common::getScalarType;
+using scai::common::getScalarType;
 
 SCAI_LOG_DEF_LOGGER( OpenMPDenseUtils::logger, "OpenMP.DenseUtils" )
 

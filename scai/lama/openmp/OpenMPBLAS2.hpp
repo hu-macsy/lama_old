@@ -51,7 +51,7 @@ namespace scai
 namespace lama
 {
 
-/** Implementations of methods for lama::BLAS2Interface with OpenMP.
+/** Implementations of methods for scai::lama::BLAS2Interface with OpenMP.
  *
  *  @todo Move all method documentations to LAMAInterface and make references here
  *  @todo Add information here about use of native BLAS2 libraries
@@ -62,7 +62,7 @@ class COMMON_DLL_IMPORTEXPORT OpenMPBLAS2
 public:
 
     /**
-     * This function is the OpenMP implementation of lama::BLAS2Interface::gemv
+     * This function is the OpenMP implementation of scai::lama::BLAS2Interface::gemv
      */
     template<typename ValueType>
     static void gemv(
@@ -81,7 +81,7 @@ public:
         tasking::SyncToken* syncToken );
 
     /**
-     * This function is the OpenMP implementation of lama::BLAS2Interface::trmv
+     * This function is the OpenMP implementation of scai::lama::BLAS2Interface::trmv
      */
     template<typename ValueType>
     static void trmv(
@@ -97,7 +97,7 @@ public:
         tasking::SyncToken* syncToken );
 
     /**
-     * This function is the OpenMP implementation of lama::BLAS2Interface::trsv
+     * This function is the OpenMP implementation of scai::lama::BLAS2Interface::trsv
      */
     template<typename ValueType>
     static void trsv(
@@ -113,7 +113,7 @@ public:
         tasking::SyncToken* syncToken );
 
     /**
-     * This function is the OpenMP implementation of lama::BLAS2Interface::gbmv
+     * This function is the OpenMP implementation of scai::lama::BLAS2Interface::gbmv
      */
     template<typename ValueType>
     static void gbmv(
@@ -134,7 +134,7 @@ public:
         tasking::SyncToken* syncToken );
 
     /**
-     * This function is the OpenMP implementation of lama::BLAS2Interface::sbmv
+     * This function is the OpenMP implementation of scai::lama::BLAS2Interface::sbmv
      */
     template<typename ValueType>
     static void sbmv(
@@ -153,7 +153,7 @@ public:
         tasking::SyncToken* syncToken );
 
     /**
-     * This function is the OpenMP implementation of lama::BLAS2Interface::tbmv
+     * This function is the OpenMP implementation of scai::lama::BLAS2Interface::tbmv
      */
     template<typename ValueType>
     static void tbmv(
@@ -170,7 +170,7 @@ public:
         tasking::SyncToken* syncToken );
 
     /**
-     * This function is the OpenMP implementation of lama::BLAS2Interface::tbsv
+     * This function is the OpenMP implementation of scai::lama::BLAS2Interface::tbsv
      */
     template<typename ValueType>
     static void tbsv(
@@ -187,7 +187,7 @@ public:
         tasking::SyncToken* syncToken );
 
     /**
-     * This function is the OpenMP implementation of lama::BLAS2Interface::ger
+     * This function is the OpenMP implementation of scai::lama::BLAS2Interface::ger
      */
     template<typename ValueType>
     static void ger(
@@ -204,7 +204,7 @@ public:
         tasking::SyncToken* syncToken );
 
     /**
-     * This function is the OpenMP implementation of lama::BLAS2Interface::syr
+     * This function is the OpenMP implementation of scai::lama::BLAS2Interface::syr
      */
     template<typename ValueType>
     static void syr(
@@ -219,7 +219,7 @@ public:
         tasking::SyncToken* syncToken );
 
     /**
-     * This function is the OpenMP implementation of lama::BLAS2Interface::syr2
+     * This function is the OpenMP implementation of scai::lama::BLAS2Interface::syr2
      */
     template<typename ValueType>
     static void syr2(
@@ -236,7 +236,7 @@ public:
         tasking::SyncToken* syncToken );
 
     /**
-     * This function is the OpenMP implementation of lama::BLAS2Interface::spmv
+     * This function is the OpenMP implementation of scai::lama::BLAS2Interface::spmv
      */
     template<typename ValueType>
     static void spmv(
@@ -253,7 +253,7 @@ public:
         tasking::SyncToken* syncToken );
 
     /**
-     * This function is the OpenMP implementation of lama::BLAS2Interface::spr
+     * This function is the OpenMP implementation of scai::lama::BLAS2Interface::spr
      */
     template<typename ValueType>
     static void spr(
@@ -267,7 +267,7 @@ public:
         tasking::SyncToken* syncToken );
 
     /**
-     * This function is the OpenMP implementation of lama::BLAS2Interface::spr2
+     * This function is the OpenMP implementation of scai::lama::BLAS2Interface::spr2
      */
     template<typename ValueType>
     static void spr2(
@@ -283,7 +283,7 @@ public:
         tasking::SyncToken* syncToken );
 
     /**
-     * This function is the OpenMP implementation of lama::BLAS2Interface::tpmv
+     * This function is the OpenMP implementation of scai::lama::BLAS2Interface::tpmv
      */
     template<typename ValueType>
     static void tpmv(
@@ -298,7 +298,7 @@ public:
         tasking::SyncToken* syncToken );
 
     /**
-     * This function is the OpenMP implementation of lama::BLAS2Interface::tpsv
+     * This function is the OpenMP implementation of scai::lama::BLAS2Interface::tpsv
      */
     template<typename ValueType>
     static void tpsv(

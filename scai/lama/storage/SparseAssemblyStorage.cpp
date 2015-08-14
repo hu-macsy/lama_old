@@ -44,7 +44,7 @@
 #include <cmath>
 
 using std::abs;
-using namespace memory;
+using namespace scai::memory;
 
 namespace scai
 {

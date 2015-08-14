@@ -91,10 +91,10 @@ public:
     /** Create a new sparse matrix of the desired matrix type. */
 
     template<typename ValueType>
-    lama::SparseMatrix<ValueType>* createSparseMatrix();
+    scai::lama::SparseMatrix<ValueType>* createSparseMatrix();
 
     template<typename ValueType>
-    lama::SparseMatrix<ValueType>* createSparseMatrix( const char* format );
+    scai::lama::SparseMatrix<ValueType>* createSparseMatrix( const char* format );
 
     memory::ContextPtr getContextPtr() const
     {
@@ -108,17 +108,17 @@ public:
         return mContext;
     }
 
-    const lama::Context& getContext() const
+    const scai::lama::Context& getContext() const
     {
         return *getContextPtr();
     }
 
-    lama::CommunicatorPtr getCommunicatorPtr() const
+    scai::lama::CommunicatorPtr getCommunicatorPtr() const
     {
         return mComm;
     }
 
-    const lama::Communicator& getCommunicator() const
+    const scai::lama::Communicator& getCommunicator() const
     {
         return *mComm;
     }
@@ -138,22 +138,22 @@ public:
 
     bool hasMaxIter() const
     { 
-        return mMaxIter != lama::nIndex; 
+        return mMaxIter != scai::lama::nIndex; 
     }
 
     /** Get the maximal number of iterations. */
 
-    lama::IndexType getMaxIter() const
+    scai::lama::IndexType getMaxIter() const
     { 
         return mMaxIter; 
     }
 
-    lama::LogLevel::LogLevel getLogLevel() const
+    scai::lama::LogLevel::LogLevel getLogLevel() const
     {
         return mLogLevel;
     }
 
-    lama::Matrix::SyncKind getCommunicationKind() const
+    scai::lama::Matrix::SyncKind getCommunicationKind() const
     {
         return mCommunicationKind;
     }
@@ -181,15 +181,15 @@ private:
 
     mutable memory::ContextPtr   mContext;
 
-    lama::Matrix::SyncKind     mCommunicationKind;
+    scai::lama::Matrix::SyncKind     mCommunicationKind;
 
     common::ScalarType   mValueType;          // value type to use
 
-    lama::CommunicatorPtr      mComm;
+    scai::lama::CommunicatorPtr      mComm;
 
-    lama::IndexType            mMaxIter;
+    scai::lama::IndexType            mMaxIter;
 
-    lama::LogLevel::LogLevel   mLogLevel;
+    scai::lama::LogLevel::LogLevel   mLogLevel;
 
     bool                       mUseMetis;
 
@@ -208,12 +208,12 @@ private:
   
 LamaConfig::LamaConfig()
 {
-    mCommunicationKind = lama::Matrix::SYNCHRONOUS;
-    mComm              = lama::Communicator::get();
+    mCommunicationKind = scai::lama::Matrix::SYNCHRONOUS;
+    mComm              = scai::lama::Communicator::get();
     mContextType       = memory::context::Host;
-    mMaxIter           = lama::nIndex;
+    mMaxIter           = scai::lama::nIndex;
     mValueType         = common::scalar::DOUBLE;
-    mLogLevel          = lama::LogLevel::convergenceHistory;
+    mLogLevel          = scai::lama::LogLevel::convergenceHistory;
     mUseMetis          = false;
     mWeight            = 1.0f;
     mDevice            = 0;
@@ -338,7 +338,7 @@ void LamaConfig::setArg( const char* arg )
         // support fast memory transfer Host->CUDA
 
 #ifdef USE_CUDA
-        lama::CUDAHostContextManager::setAsCurrent( getContextPtr() );
+        scai::lama::CUDAHostContextManager::setAsCurrent( getContextPtr() );
 #endif
     }
     else if ( "METIS" == val )
@@ -347,11 +347,11 @@ void LamaConfig::setArg( const char* arg )
     }
     else if ( "SYNC" == val )
     {
-        mCommunicationKind = lama::Matrix::SYNCHRONOUS;
+        mCommunicationKind = scai::lama::Matrix::SYNCHRONOUS;
     }
     else if ( "ASYNC" == val )
     {
-        mCommunicationKind = lama::Matrix::ASYNCHRONOUS;
+        mCommunicationKind = scai::lama::Matrix::ASYNCHRONOUS;
     }
     else if ( ( "FLOAT" == val ) || ( "SP" == val ) )
     {
@@ -399,23 +399,23 @@ void LamaConfig::setArg( const char* arg )
     }
     else if ( "LOG_HISTORY" == val ) 
     {
-        mLogLevel = lama::LogLevel::convergenceHistory;
+        mLogLevel = scai::lama::LogLevel::convergenceHistory;
     }
     else if ( "LOG_SOLVER" == val ) 
     {
-        mLogLevel = lama::LogLevel::solverInformation;
+        mLogLevel = scai::lama::LogLevel::solverInformation;
     }
     else if ( "LOG_AVANCED" == val ) 
     {
-        mLogLevel = lama::LogLevel::advancedInformation;
+        mLogLevel = scai::lama::LogLevel::advancedInformation;
     }
     else if ( "LOG_COMPLETE" == val ) 
     {
-        mLogLevel = lama::LogLevel::completeInformation;
+        mLogLevel = scai::lama::LogLevel::completeInformation;
     }
     else if ( "LOG_NO" == val ) 
     {
-        mLogLevel = lama::LogLevel::noLogging;
+        mLogLevel = scai::lama::LogLevel::noLogging;
     }
     else if ( ( 'T' == val[0] ) && isNumber( val.c_str() + 1 ) )
     {
@@ -517,7 +517,7 @@ void LamaConfig::writeAt( std::ostream& stream ) const
 }
 
 template<typename ValueType>
-lama::SparseMatrix<ValueType>* LamaConfig::createSparseMatrix()
+scai::lama::SparseMatrix<ValueType>* LamaConfig::createSparseMatrix()
 {
     return createSparseMatrix<ValueType>( getFormat() );
 }
@@ -544,27 +544,27 @@ const char* LamaConfig::getFormat( ) const
 }
 
 template<typename ValueType>
-lama::SparseMatrix<ValueType>* LamaConfig::createSparseMatrix( const char* format )
+scai::lama::SparseMatrix<ValueType>* LamaConfig::createSparseMatrix( const char* format )
 {
     if ( strcmp( format, "CSR" ) == 0 )
     {
-        return new lama::CSRSparseMatrix<ValueType>();
+        return new scai::lama::CSRSparseMatrix<ValueType>();
     }
     else if ( strcmp( format, "ELL" ) == 0 )
     {
-        return new lama::ELLSparseMatrix<ValueType>();
+        return new scai::lama::ELLSparseMatrix<ValueType>();
     }
     else if ( strcmp( format, "JDS" ) == 0 )
     {
-        return new lama::JDSSparseMatrix<ValueType>();
+        return new scai::lama::JDSSparseMatrix<ValueType>();
     }
     else if ( strcmp( format, "DIA" ) == 0 )
     {
-        return new lama::DIASparseMatrix<ValueType>();
+        return new scai::lama::DIASparseMatrix<ValueType>();
     }
     else if ( strcmp( format, "COO" ) == 0 )
     {
-        return new lama::COOSparseMatrix<ValueType>();
+        return new scai::lama::COOSparseMatrix<ValueType>();
     }
     else
     {

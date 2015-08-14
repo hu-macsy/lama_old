@@ -65,10 +65,10 @@
 #include <boost/assign/list_of.hpp>
 #include <boost/unordered_map.hpp>
 
-using tasking::SyncToken;
-using tasking::TaskSyncToken;
+using scai::tasking::SyncToken;
+using scai::tasking::TaskSyncToken;
 
-using namespace memory;
+using namespace scai::memory;
 
 namespace scai
 {
@@ -874,9 +874,9 @@ SyncToken* MatrixStorage<ValueType>::matrixTimesVectorAsync(
         const ValueType,
         const LAMAArray<ValueType>& ) const
     = &MatrixStorage<ValueType>::matrixTimesVector;
-    using common::bind;
-    using common::ref;
-    using common::cref;
+    using scai::common::bind;
+    using scai::common::ref;
+    using scai::common::cref;
     return new TaskSyncToken( bind( pf, this, ref( result ), alpha, cref( x ), beta, cref( y ) ) );
 }
 
@@ -899,9 +899,9 @@ SyncToken* MatrixStorage<ValueType>::vectorTimesMatrixAsync(
         const ValueType,
         const LAMAArray<ValueType>& ) const
     = &MatrixStorage<ValueType>::vectorTimesMatrix;
-    using common::bind;
-    using common::ref;
-    using common::cref;
+    using scai::common::bind;
+    using scai::common::ref;
+    using scai::common::cref;
     return new TaskSyncToken( bind( pf, this, ref( result ), alpha, cref( x ), beta, cref( y ) ) );
 }
 
@@ -935,9 +935,9 @@ SyncToken* MatrixStorage<ValueType>::jacobiIterateAsync(
         const LAMAArray<ValueType>&,
         const ValueType ) const
     = &MatrixStorage<ValueType>::jacobiIterate;
-    using common::bind;
-    using common::cref;
-    using common::ref;
+    using scai::common::bind;
+    using scai::common::cref;
+    using scai::common::ref;
     return new TaskSyncToken( bind( pf, this, ref( solution ), cref( oldSolution ), cref( rhs ), omega ) );
 }
 
@@ -1408,8 +1408,8 @@ BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_MATRIX_STORAGE_INSTANTIATE, _ )
 
 } /* end namespace scai */
 
-std::ostream& operator<<( std::ostream& stream, const lama::MatrixStorageFormat storageFormat )
+std::ostream& operator<<( std::ostream& stream, const scai::lama::MatrixStorageFormat storageFormat )
 {
-    stream << lama::format2Str( storageFormat );
+    stream << scai::lama::format2Str( storageFormat );
     return stream;
 }

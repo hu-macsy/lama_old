@@ -36,7 +36,7 @@
 #include <scai/lama/storage/CSRStorage.hpp>
 #include <scai/lama/HostReadAccess.hpp>
 
-using namespace lama;
+using namespace scai::lama;
 
 int main( int argc, char** argv )
 {

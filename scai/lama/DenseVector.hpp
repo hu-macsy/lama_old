@@ -55,7 +55,7 @@
 
 #include <fstream>
 
-using namespace tasking;
+using namespace scai::tasking;
 
 namespace scai
 {

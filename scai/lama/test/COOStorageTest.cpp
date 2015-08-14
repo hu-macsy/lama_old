@@ -40,8 +40,8 @@
 #include <test/TestMacros.hpp>
 #include <scai/lama/LAMAArrayUtils.hpp>
 
-using namespace lama;
-using namespace memory;
+using namespace scai::lama;
+using namespace scai::memory;
 using scai::common::Exception;
 
 extern bool base_test_case;

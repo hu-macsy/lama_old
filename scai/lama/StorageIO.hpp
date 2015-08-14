@@ -41,7 +41,7 @@
 
 #include <fstream>
 
-using memory::LAMAArray;
+using scai::memory::LAMAArray;
 
 namespace scai
 {

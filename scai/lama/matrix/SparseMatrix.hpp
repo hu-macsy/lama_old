@@ -47,7 +47,7 @@
 
 #include <scai/common/function.hpp>
 
-using tasking::SyncToken;
+using scai::tasking::SyncToken;
 
 namespace scai
 {

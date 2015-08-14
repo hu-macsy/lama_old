@@ -141,7 +141,7 @@ void cyclicMultVectorTest( const IndexType chunkSize, const IndexType n )
 
     DenseMatrix<float> repMatrix;
     repMatrix.setRawDenseData( n, n, values.get() );
-    common::shared_ptr<Distribution> dist( new CyclicDistribution( n, chunkSize, comm ) );
+    scai::common::shared_ptr<Distribution> dist( new CyclicDistribution( n, chunkSize, comm ) );
     DenseMatrix<float> distMatrix( repMatrix, dist, dist );
     distMatrix.setCommunicationKind( Matrix::ASYNCHRONOUS );
     DenseVector<float> x( dist, 1.0f );
@@ -411,7 +411,7 @@ void cyclicDistTestImpl( const IndexType chunkSize, const IndexType n )
 
     DenseMatrix<float> repMatrix;
     repMatrix.setRawDenseData( n, n, values.get() );
-    common::shared_ptr<Distribution> dist( new CyclicDistribution( n, chunkSize, comm ) );
+    scai::common::shared_ptr<Distribution> dist( new CyclicDistribution( n, chunkSize, comm ) );
     DenseMatrix<float> distMatrix( repMatrix, dist, dist );
 
     for ( IndexType i = 0; i < n; i++ )

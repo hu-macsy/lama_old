@@ -46,7 +46,7 @@ namespace scai
 namespace lama
 {
 
-/** Implementations of methods for lama::BLAS3Interface with MIC.
+/** Implementations of methods for scai::lama::BLAS3Interface with MIC.
  *
  *  @todo Move all method documentations to LAMAInterface and make references here
  *  @todo Add information here about use of native BLAS3 libraries

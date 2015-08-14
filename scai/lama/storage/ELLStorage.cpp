@@ -54,9 +54,9 @@ namespace scai
 namespace lama
 {
 
-using common::shared_ptr;
-using namespace tasking;
-using namespace memory;
+using scai::common::shared_ptr;
+using namespace scai::tasking;
+using namespace scai::memory;
 
 /* --------------------------------------------------------------------------- */
 
@@ -1152,9 +1152,9 @@ SyncToken* ELLStorage<ValueType>::matrixTimesVectorAsync(
 
             = &ELLStorage<ValueType>::matrixTimesVector;
 
-        using common::bind;
-        using common::ref;
-        using common::cref;
+        using scai::common::bind;
+        using scai::common::ref;
+        using scai::common::cref;
 
         SCAI_LOG_INFO( logger, *this << ": matrixTimesVectorAsync on Host by own thread" )
 
@@ -1280,9 +1280,9 @@ SyncToken* ELLStorage<ValueType>::vectorTimesMatrixAsync(
 
             = &ELLStorage<ValueType>::vectorTimesMatrix;
 
-        using common::bind;
-        using common::ref;
-        using common::cref;
+        using scai::common::bind;
+        using scai::common::ref;
+        using scai::common::cref;
 
         SCAI_LOG_INFO( logger, *this << ": vectorTimesMatrixAsync on Host by own thread" )
 
@@ -1436,9 +1436,9 @@ SyncToken* ELLStorage<ValueType>::jacobiIterateAsync(
 
             = &ELLStorage<ValueType>::jacobiIterate;
 
-        using common::bind;
-        using common::cref;
-        using common::ref;
+        using scai::common::bind;
+        using scai::common::cref;
+        using scai::common::ref;
 
         return new TaskSyncToken( bind( jb, this, ref( solution ), cref( oldSolution ), cref( rhs ), omega ) );
     }

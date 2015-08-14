@@ -42,12 +42,12 @@
 
 /** LAMA uses for all its classes and routines an own namespace.
  *
- *  Applications using LAMA must either put \c lama:: before the used
+ *  Applications using LAMA must either put \c scai::lama:: before the used
  *  classes and routines or utilize the using directive of C++.
  *
  *  \code
  *                                         using namespace lama;
- *     lama::DenseVector<float> V;         DenseVector<float> V;
+ *     scai::lama::DenseVector<float> V;         DenseVector<float> V;
  *  \endcode
  */
 
@@ -63,7 +63,7 @@ namespace lama
  *  int is the good choice, might be long int or long long int for
  *  future versions that deal with very large matrices even on on processor.
  */
-using memory::IndexType;
+using scai::memory::IndexType;
 
 /** Data type long double to have it as one word. Otherwise certain macros
  *  might fail to work correctly.
@@ -109,25 +109,25 @@ namespace common
 {
 
 template<>
-inline ScalarType getScalarType<lama::LongDouble>()
+inline ScalarType getScalarType<scai::lama::LongDouble>()
 {
     return scalar::LONG_DOUBLE;
 }
 
 template<>
-inline ScalarType getScalarType<lama::ComplexFloat>()
+inline ScalarType getScalarType<scai::lama::ComplexFloat>()
 {
     return scalar::COMPLEX;
 }
 
 template<>
-inline ScalarType getScalarType<lama::ComplexDouble>()
+inline ScalarType getScalarType<scai::lama::ComplexDouble>()
 {
     return scalar::DOUBLE_COMPLEX;
 }
 
 template<>
-inline ScalarType getScalarType<lama::ComplexLongDouble>()
+inline ScalarType getScalarType<scai::lama::ComplexLongDouble>()
 {
     return scalar::LONG_DOUBLE_COMPLEX;
 }

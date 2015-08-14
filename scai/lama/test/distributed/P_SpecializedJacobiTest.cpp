@@ -73,8 +73,8 @@ struct P_SpecializedJacobiTestConfig
     P_SpecializedJacobiTestConfig()
     {
         LoggerPtr loggerD(
-            new CommonLogger( "<Jacobi>: ", lama::LogLevel::completeInformation,
-                              lama::LoggerWriteBehaviour::toConsoleOnly,
+            new CommonLogger( "<Jacobi>: ", scai::lama::LogLevel::completeInformation,
+                              scai::lama::LoggerWriteBehaviour::toConsoleOnly,
                               new Timer() ) );
         mJacobiDouble = new SpecializedJacobi( "SpecializedJacobiTest double solver", loggerD );
         mJacobiFloat = new SpecializedJacobi( "SpecializedJacobiTest float solver", loggerD );

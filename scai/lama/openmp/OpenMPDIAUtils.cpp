@@ -57,8 +57,8 @@ namespace lama
 {
 
 using std::abs;
-using common::getScalarType;
-using tasking::SyncToken;
+using scai::common::getScalarType;
+using scai::tasking::SyncToken;
 
 SCAI_LOG_DEF_LOGGER( OpenMPDIAUtils::logger, "OpenMP.DIAUtils" )
 

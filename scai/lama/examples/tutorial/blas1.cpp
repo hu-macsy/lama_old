@@ -76,9 +76,9 @@ int main()
   //
   // Define a few scalars:
   //
-  lama::Scalar s1( static_cast<ScalarType>( 3.1415926 ) ); // static_cast is only needed to switch between float and double by typedef
-  lama::Scalar s2( static_cast<ScalarType>( 2.71763 ) );
-  lama::Scalar s3( static_cast<ScalarType>( 42.0 ) );
+  scai::lama::Scalar s1( static_cast<ScalarType>( 3.1415926 ) ); // static_cast is only needed to switch between float and double by typedef
+  scai::lama::Scalar s2( static_cast<ScalarType>( 2.71763 ) );
+  scai::lama::Scalar s3( static_cast<ScalarType>( 42.0 ) );
 
   // pure scalar operations only can be executed on the host
   std::cout << "Manipulating a few scalars..." << std::endl;
@@ -121,21 +121,21 @@ int main()
     plain_vec[ i ] = static_cast<ScalarType>( rand() ) / static_cast<ScalarType>( RAND_MAX );
   }
 
-  lama::DenseVector<ScalarType> lama_vec1( 10, plain_vec );
+  scai::lama::DenseVector<ScalarType> lama_vec1( 10, plain_vec );
 
-  lama::LAMAArray<ScalarType> lama_array1 ( 10, plain_vec );
-  lama::DenseVector<ScalarType> lama_vec2( 10, 0.0 );
+  scai::lama::LAMAArray<ScalarType> lama_array1 ( 10, plain_vec );
+  scai::lama::DenseVector<ScalarType> lama_vec2( 10, 0.0 );
   lama_vec2.setValues( lama_array1 );
 
-  lama::DistributionPtr noDist( new lama::NoDistribution( 10 ) );
-  lama::DenseVector<ScalarType> lama_vec3( lama_array1, noDist  );
+  scai::lama::DistributionPtr noDist( new scai::lama::NoDistribution( 10 ) );
+  scai::lama::DenseVector<ScalarType> lama_vec3( lama_array1, noDist  );
 
   std::cout << "DenseVector with rand values filled" << std::endl;
 
   //
   // Define the vectors to be used on GPU (CUDA context on device 0) and upload them
   //
-  lama::ContextPtr cudaContext;
+  scai::lama::ContextPtr cudaContext;
   if ( memory::Context::canCreate( context::CUDA ) )
   {
       cudaContext = memory::Context::getContextPtr( context::CUDA, 0 );

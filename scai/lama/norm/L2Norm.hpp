@@ -49,7 +49,7 @@ namespace lama
  * @brief L2Norm is a functor specialization of Norm that calculates the l2 norm
  *        for the passed values.
  */
-class COMMON_DLL_IMPORTEXPORT L2Norm: public lama::Norm
+class COMMON_DLL_IMPORTEXPORT L2Norm: public scai::lama::Norm
 {
 public:
     /**

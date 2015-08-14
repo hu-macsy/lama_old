@@ -48,7 +48,7 @@ namespace tasking
     class SyncToken;
 }
 
-using namespace tasking;
+using namespace scai::tasking;
 
 namespace lama
 {

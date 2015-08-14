@@ -27,8 +27,8 @@ public:
     {
         // overlap communication with local computation
 
-        mCommunicationKind = lama::Matrix::SYNCHRONOUS;
-        mComm              = lama::Communicator::get();
+        mCommunicationKind = scai::lama::Matrix::SYNCHRONOUS;
+        mComm              = scai::lama::Communicator::get();
         mContext           = memory::Context::getContextPtr( memory::context::Host );
         mMaxIters          = 1000;
     }
@@ -70,11 +70,11 @@ public:
         }
         else if ( "SYNC" == val )
         {
-            mCommunicationKind = lama::Matrix::SYNCHRONOUS;
+            mCommunicationKind = scai::lama::Matrix::SYNCHRONOUS;
         }
         else if ( "ASYNC" == val )
         {
-            mCommunicationKind = lama::Matrix::ASYNCHRONOUS;
+            mCommunicationKind = scai::lama::Matrix::ASYNCHRONOUS;
         }
         else if ( isNumber( val.c_str() ) )
         {
@@ -117,19 +117,19 @@ public:
         return *mContext;
     }
 
-    lama::CommunicatorPtr getCommunicatorPtr() const
+    scai::lama::CommunicatorPtr getCommunicatorPtr() const
     {
         return mComm;
     }
 
-    const lama::Communicator& getCommunicator() const
+    const scai::lama::Communicator& getCommunicator() const
     {
         return *mComm;
     }
 
     std::string            mMatrixFormat;
     memory::ContextPtr     mContext;
-    lama::Matrix::SyncKind mCommunicationKind;
+    scai::lama::Matrix::SyncKind mCommunicationKind;
     int                    mMaxIters;
 
     void writeAt( std::ostream& stream ) const
@@ -144,7 +144,7 @@ public:
 
 private:
 
-    lama::CommunicatorPtr  mComm;
+    scai::lama::CommunicatorPtr  mComm;
 
     inline bool isNumber( const char* arg )
     {

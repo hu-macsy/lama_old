@@ -40,7 +40,6 @@
 namespace scai
 {
 
-}
 namespace lama
 {
 

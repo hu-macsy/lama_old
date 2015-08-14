@@ -356,7 +356,7 @@ inline scai::memory::ContextType mapEnvContexttoContextType( std::string context
     {                                                                                                \
         method<ARITHMETIC_TYPE##I>( context );                                                        \
     }                                                                                                \
-    catch ( common::Exception& )                                                                      \
+    catch ( scai::common::Exception& )                                                                      \
     {                                                                                                \
         SCAI_LOG_WARN( logger, #method << "<" << STR( ARITHMETIC_TYPE##I ) << "> cannot run on "     \
                        << context->getType() << ", corresponding function not implemented yet." );   \
@@ -395,7 +395,7 @@ inline scai::memory::ContextType mapEnvContexttoContextType( std::string context
     {                                                                                                \
         method<ARITHMETIC_TYPE##I>( context, logger );                                               \
     }                                                                                                \
-    catch ( common::Exception& )                                                                     \
+    catch ( scai::common::Exception& )                                                                     \
     {                                                                                                \
         SCAI_LOG_WARN( logger, #method << "<" << STR( ARITHMETIC_TYPE##I ) << "> cannot run on "     \
                        << context->getType() << ", corresponding function not implemented yet." );   \
@@ -453,7 +453,7 @@ inline scai::memory::ContextType mapEnvContexttoContextType( std::string context
             {                                                                                                          \
             	scai::lama::classname::name<float, float>( context );                                                  \
             }                                                                                                          \
-            catch ( common::Exception& )                                                                               \
+            catch ( scai::common::Exception& )                                                                               \
             {                                                                                                          \
                 SCAI_LOG_WARN( logger, lama_classname << "::" << lama_name << "<float, float> cannot run on  "         \
                                << context->getType() << ", corresponding function not implemented yet." );             \
@@ -463,7 +463,7 @@ inline scai::memory::ContextType mapEnvContexttoContextType( std::string context
             {                                                                                                          \
             	scai::lama::classname::name<double, double>( context );                                                \
             }                                                                                                          \
-            catch ( common::Exception& )                                                                               \
+            catch ( scai::common::Exception& )                                                                               \
             {                                                                                                          \
                 SCAI_LOG_WARN( logger, lama_classname << "::" << lama_name << "<double, double> cannot run on  "       \
                                << context->getType() << ", corresponding function not implemented yet." );             \
@@ -473,7 +473,7 @@ inline scai::memory::ContextType mapEnvContexttoContextType( std::string context
             {                                                                                                          \
             	scai::lama::classname::name<float, double>( context );                                                 \
             }                                                                                                          \
-            catch ( common::Exception& )                                                                               \
+            catch ( scai::common::Exception& )                                                                               \
             {                                                                                                          \
                 SCAI_LOG_WARN( logger, lama_classname << "::" << lama_name << "<float, double> cannot run on  "        \
                                << context->getType() << ", corresponding function not implemented yet." );             \
@@ -483,7 +483,7 @@ inline scai::memory::ContextType mapEnvContexttoContextType( std::string context
             {                                                                                                          \
             	scai::lama::classname::name<double, float>( context );                                                 \
             }                                                                                                          \
-            catch ( common::Exception& )                                                                               \
+            catch ( scai::common::Exception& )                                                                               \
             {                                                                                                          \
                 SCAI_LOG_WARN( logger, lama_classname << "::" << lama_name << "<double, float> cannot run on  "        \
                                << context->getType() << ", corresponding function not implemented yet." );             \
@@ -519,7 +519,7 @@ inline scai::memory::ContextType mapEnvContexttoContextType( std::string context
             {                                                                                                          \
             	scai::lama::classname::name<name>( context );                                                          \
             }                                                                                                          \
-            catch ( common::Exception& )                                                                               \
+            catch ( scai::common::Exception& )                                                                               \
             {                                                                                                          \
                 SCAI_LOG_WARN( logger, lama_classname << "::" << lama_name << " cannot run on  "                       \
                                << context->getType() << ", corresponding function not implemented yet." );             \
@@ -544,7 +544,7 @@ inline scai::memory::ContextType mapEnvContexttoContextType( std::string context
             {                                                                                                          \
             	scai::lama::classname::name( context );                                                                \
             }                                                                                                          \
-            catch ( common::Exception& )                                                                               \
+            catch ( scai::common::Exception& )                                                                               \
             {                                                                                                          \
                 SCAI_LOG_WARN( logger, lama_classname << "::" << lama_name << " cannot run on  "                       \
                                << context->getType() << ", corresponding function not implemented yet." );             \
@@ -662,7 +662,7 @@ inline scai::memory::ContextType mapEnvContexttoContextType( std::string context
     {                                                                                                                  \
         std::string lama_common_testcase_method = #methodname;                                                         \
         std::ostringstream omsg;                                                                                       \
-        omsg << common::getScalarType<templatename>();                                                                       \
+        omsg << scai::common::getScalarType<templatename>();                                                                       \
         std::string lama_common_testcase_template = omsg.str();                                                        \
         if ( loglevel_argument == "test_suite" )                                                                       \
         {                                                                                                              \

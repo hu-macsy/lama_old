@@ -59,7 +59,7 @@
 #include <scai/common/bind.hpp>
 #include <boost/preprocessor.hpp>
 
-using namespace memory;
+using namespace scai::memory;
 
 namespace scai
 {
@@ -67,7 +67,7 @@ namespace scai
 namespace lama
 {
 
-using common::shared_ptr;
+using scai::common::shared_ptr;
 
 SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, SparseMatrix<ValueType>::logger, "Matrix.SparseMatrix" )
 
@@ -1688,14 +1688,14 @@ void SparseMatrix<ValueType>::matrixTimesVectorImpl(
 
     // if halo is empty, asynchronous execution is not helpful
 
-    void (lama::MatrixStorage<ValueType>::*matrixTimesVector)(
+    void (scai::lama::MatrixStorage<ValueType>::*matrixTimesVector)(
         LAMAArray<ValueType>& result,
         const ValueType alpha,
         const LAMAArray<ValueType>& x,
         const ValueType beta,
         const LAMAArray<ValueType>& y ) const = &MatrixStorage<ValueType>::matrixTimesVector;
 
-    SyncToken* (lama::MatrixStorage<ValueType>::*matrixTimesVectorAsync)(
+    SyncToken* (scai::lama::MatrixStorage<ValueType>::*matrixTimesVectorAsync)(
         LAMAArray<ValueType>& result,
         const ValueType alpha,
         const LAMAArray<ValueType>& x,
@@ -1705,7 +1705,7 @@ void SparseMatrix<ValueType>::matrixTimesVectorImpl(
     ValueType one = 1;
 
     // routine for halo matrix is same for sync and async version
-    using namespace common;
+    using namespace scai::common;
 
     function<
     void(
@@ -1802,7 +1802,7 @@ void SparseMatrix<ValueType>::vectorTimesMatrixImpl(
     // todo: think about this if its useful to upload the vector (again)
     ContextPtr hostContext = Context::getContextPtr( context::Host );
 
-    using namespace common;
+    using namespace scai::common;
 
     if( Matrix::SYNCHRONOUS == getCommunicationKind() )
     {

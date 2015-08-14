@@ -48,7 +48,7 @@
 #include <cstdlib>
 #include <iomanip>
 
-using namespace memory;
+using namespace scai::memory;
 
 namespace scai
 {
@@ -98,7 +98,7 @@ SimpleAMG::SimpleAMGRuntime::~SimpleAMGRuntime()
     {
         SCAI_LOG_INFO( logger, "~SimpleAMG, now release AMGSetup in lib" )
 
-        typedef void (*lama_releaseAMGSetup)( lama::AMGSetup* );
+        typedef void (*lama_releaseAMGSetup)( scai::lama::AMGSetup* );
         lama_releaseAMGSetup funcHandle = NULL;
         getFunctionHandle( funcHandle, reinterpret_cast<LAMA_LIB_HANDLE_TYPE&>( mLibHandle ),"lama_releaseAMGSetup" );
 
@@ -149,7 +149,7 @@ void SimpleAMG::initialize( const Matrix& coefficients )
 
         if( isSet )
         {
-            typedef lama::AMGSetup* (*lama_createAMGSetup)();
+            typedef scai::lama::AMGSetup* (*lama_createAMGSetup)();
             lama_createAMGSetup funcHandle = NULL;
 
             int error = loadLibAndGetFunctionHandle( funcHandle, reinterpret_cast<LAMA_LIB_HANDLE_TYPE&>( runtime.mLibHandle ), amgSetupLibrary.c_str(), "lama_createAMGSetup" );

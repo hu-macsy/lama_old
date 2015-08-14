@@ -52,8 +52,8 @@
 #include <scai/common/bind.hpp>
 #include <boost/preprocessor.hpp>
 
-using common::getScalarType;
-using namespace tasking;
+using scai::common::getScalarType;
+using namespace scai::tasking;
 
 namespace scai
 {

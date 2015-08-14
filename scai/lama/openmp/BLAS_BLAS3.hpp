@@ -48,7 +48,7 @@ namespace scai
 namespace lama
 {
 
-/** Implementations of methods for lama::BLAS3Interface with OpenMP.
+/** Implementations of methods for scai::lama::BLAS3Interface with OpenMP.
  *
  *  @todo Move all method documentations to LAMAInterface and make references here
  *  @todo Add information here about use of native BLAS1 libraries

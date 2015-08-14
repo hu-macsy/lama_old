@@ -51,10 +51,10 @@
 #include <scai/common/ScalarType.hpp>
 #include <boost/preprocessor.hpp>
 
-using namespace memory;
+using namespace scai::memory;
 
-using common::unique_ptr;
-using common::scoped_array;
+using scai::common::unique_ptr;
+using scai::common::scoped_array;
 
 namespace scai
 {
@@ -1519,7 +1519,7 @@ const std::vector<typename DenseMatrix<ValueType>::DenseStoragePtr>& DenseMatrix
 }
 
 template<typename ValueType>
-Scalar DenseMatrix<ValueType>::getValue( lama::IndexType i, lama::IndexType j ) const
+Scalar DenseMatrix<ValueType>::getValue( scai::lama::IndexType i, scai::lama::IndexType j ) const
 {
     ValueType myValue = 0.0;
 

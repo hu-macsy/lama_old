@@ -53,8 +53,8 @@
 #include <scai/common/bind.hpp>
 #include <scai/common/unique_ptr.hpp>
 
-using common::scoped_array;
-using namespace memory;
+using scai::common::scoped_array;
+using namespace scai::memory;
 
 namespace scai
 {
@@ -64,7 +64,7 @@ namespace lama
 
 // Allow for shared_ptr<ValueType> instead of common::shared_ptr<ValueType>
 
-using common::shared_ptr;
+using scai::common::shared_ptr;
 
 /* --------------------------------------------------------------------------- */
 
@@ -1023,9 +1023,9 @@ SyncToken* DIAStorage<ValueType>::matrixTimesVectorAsync(
 
             = &DIAStorage<ValueType>::matrixTimesVector;
 
-        using common::bind;
-        using common::ref;
-        using common::cref;
+        using scai::common::bind;
+        using scai::common::ref;
+        using scai::common::cref;
 
         return new TaskSyncToken( bind( mv, this, ref( result ), alpha, cref( x ), beta, cref( y ) ) );
     }
@@ -1125,9 +1125,9 @@ SyncToken* DIAStorage<ValueType>::vectorTimesMatrixAsync(
 
             = &DIAStorage<ValueType>::vectorTimesMatrix;
 
-        using common::bind;
-        using common::ref;
-        using common::cref;
+        using scai::common::bind;
+        using scai::common::ref;
+        using scai::common::cref;
 
         SCAI_LOG_INFO( logger, *this << ": vectorTimesMatrixAsync on Host by own thread" )
 

@@ -38,8 +38,8 @@
 #include <scai/common/cuda/CUDAError.hpp>
 #include <scai/lama/cuda/CUDALAPACK.hpp>
 
-using namespace tasking;
-using namespace memory;
+using namespace scai::tasking;
+using namespace scai::memory;
 
 namespace scai
 {

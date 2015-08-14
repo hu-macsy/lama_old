@@ -44,7 +44,7 @@
 
 #include <boost/preprocessor.hpp>
 
-using common::getScalarType;
+using scai::common::getScalarType;
 
 namespace scai
 {

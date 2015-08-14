@@ -49,7 +49,7 @@ namespace lama
 {
 
 using std::abs;
-using common::getScalarType;
+using scai::common::getScalarType;
 
 SCAI_LOG_DEF_LOGGER( OpenMPUtils::logger, "OpenMP.Utils" )
 

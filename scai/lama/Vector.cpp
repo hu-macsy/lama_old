@@ -51,8 +51,8 @@
 #include<map>
 #include<ostream>
 
-using namespace common;
-using namespace memory;
+using namespace scai::common;
+using namespace scai::memory;
 
 namespace scai
 {

@@ -36,9 +36,9 @@
 #include <test/SparseMatrixHelper.hpp>
 
 template<typename ValueType>
-bool compareMatrices( const lama::CSRSparseMatrix<ValueType>& matrix, const lama::CSRSparseMatrix<ValueType>& other )
+bool compareMatrices( const scai::lama::CSRSparseMatrix<ValueType>& matrix, const scai::lama::CSRSparseMatrix<ValueType>& other )
 {
-    lama::IndexType nnu = matrix.getLocalNumRows();
+    scai::lama::IndexType nnu = matrix.getLocalNumRows();
 
     if ( !( nnu == other.getLocalNumRows() && matrix.getLocalNumColumns() == other.getLocalNumColumns()
             && matrix.getLocalNumValues() == other.getLocalNumValues() ) )
@@ -49,10 +49,10 @@ bool compareMatrices( const lama::CSRSparseMatrix<ValueType>& matrix, const lama
     // Note: getLocalData returns CSRStorage<ValueType>, so we can use getIA
     const scai::lama::CSRStorage<ValueType>& matrixLocal = matrix.getLocalStorage();
     const scai::lama::CSRStorage<ValueType>& otherLocal = other.getLocalStorage();
-    scai::memory::ReadAccess<lama::IndexType> ia( matrixLocal.getIA() );
-    scai::memory::ReadAccess<lama::IndexType> iaOther( otherLocal.getIA() );
+    scai::memory::ReadAccess<scai::lama::IndexType> ia( matrixLocal.getIA() );
+    scai::memory::ReadAccess<scai::lama::IndexType> iaOther( otherLocal.getIA() );
 
-    for ( lama::IndexType i = 0; i < nnu + 1; ++i )
+    for ( scai::lama::IndexType i = 0; i < nnu + 1; ++i )
     {
         if ( ia[i] != iaOther[i] )
         {
@@ -60,19 +60,19 @@ bool compareMatrices( const lama::CSRSparseMatrix<ValueType>& matrix, const lama
         }
     }
 
-    scai::memory::ReadAccess<lama::IndexType> ja( matrixLocal.getJA() );
-    scai::memory::ReadAccess<lama::IndexType> jaOther( otherLocal.getJA() );
+    scai::memory::ReadAccess<scai::lama::IndexType> ja( matrixLocal.getJA() );
+    scai::memory::ReadAccess<scai::lama::IndexType> jaOther( otherLocal.getJA() );
     scai::memory::ReadAccess<ValueType> data( matrixLocal.getValues() );
     scai::memory::ReadAccess<ValueType> dataOther( otherLocal.getValues() );
 
-    for ( lama::IndexType i = 0; i < nnu; ++i )
+    for ( scai::lama::IndexType i = 0; i < nnu; ++i )
     {
-        for ( lama::IndexType jj = ia[i]; jj < ia[i + 1]; ++jj )
+        for ( scai::lama::IndexType jj = ia[i]; jj < ia[i + 1]; ++jj )
         {
-            lama::IndexType j = ja[jj];
+            scai::lama::IndexType j = ja[jj];
             bool found = false;
 
-            for ( lama::IndexType kk = iaOther[i]; kk < iaOther[i + 1]; ++kk )
+            for ( scai::lama::IndexType kk = iaOther[i]; kk < iaOther[i + 1]; ++kk )
             {
                 if ( j == jaOther[kk] )
                 {
@@ -99,11 +99,11 @@ template
 #ifdef WIN32
 __declspec( dllexport )
 #endif
-bool compareMatrices( const lama::CSRSparseMatrix<double>& matrix, const lama::CSRSparseMatrix<double>& other );
+bool compareMatrices( const scai::lama::CSRSparseMatrix<double>& matrix, const scai::lama::CSRSparseMatrix<double>& other );
 
 template
 #ifdef WIN32
 __declspec( dllexport )
 #endif
-bool compareMatrices( const lama::CSRSparseMatrix<float>& matrix, const lama::CSRSparseMatrix<float>& other );
+bool compareMatrices( const scai::lama::CSRSparseMatrix<float>& matrix, const scai::lama::CSRSparseMatrix<float>& other );
 

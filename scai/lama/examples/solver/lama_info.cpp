@@ -49,7 +49,7 @@ using namespace std;
 
 void contextInfo()
 {
-    using namespace memory;
+    using namespace scai::memory;
 
     vector<ContextType> values;  // supported context types
 
@@ -74,7 +74,7 @@ void contextInfo()
 
 void communicatorInfo()
 {
-    using namespace lama;
+    using namespace scai::lama;
 
     CommunicatorPtr nocomm = NoCommunicator::create();
 
@@ -96,7 +96,7 @@ void communicatorInfo()
 
 void matrixInfo()
 {
-    using namespace lama;
+    using namespace scai::lama;
 
     vector<MatrixCreateKeyType> keys;
 
@@ -116,7 +116,7 @@ void matrixInfo()
 
 void vectorInfo()
 {
-    using namespace lama;
+    using namespace scai::lama;
 
     vector<VectorCreateKeyType> keys;
 

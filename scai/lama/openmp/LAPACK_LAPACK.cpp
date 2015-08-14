@@ -154,7 +154,7 @@ int F77_dlaswp(
 #endif /*__cplusplus*/
 
 
-using common::unique_ptr;
+using scai::common::unique_ptr;
 
 namespace scai
 {

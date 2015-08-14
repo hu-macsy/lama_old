@@ -90,7 +90,7 @@ Criterion& Criterion::operator=( const Criterion& other )
     return *this;
 }
 
-bool Criterion::isSatisfied( const lama::IterativeSolver& solver )
+bool Criterion::isSatisfied( const scai::lama::IterativeSolver& solver )
 {
     SCAI_LOG_INFO( logger, "isSatisfied: " << *this );
 

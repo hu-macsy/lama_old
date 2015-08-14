@@ -48,12 +48,12 @@ namespace lama
 SCAI_LOG_DEF_LOGGER( IterativeSolver::logger, "Solver.IterativeSolver" )
 
 IterativeSolver::IterativeSolver( const std::string& id )
-    : lama::IterativeSolver::Solver( id ), mCriterionRootComponent( new IterationCount( 1 ) )
+    : scai::lama::IterativeSolver::Solver( id ), mCriterionRootComponent( new IterationCount( 1 ) )
 {
 }
 
 IterativeSolver::IterativeSolver( const std::string& id, LoggerPtr logger )
-    : lama::IterativeSolver::Solver( id, logger ), mCriterionRootComponent( new IterationCount( 1 ) )
+    : scai::lama::IterativeSolver::Solver( id, logger ), mCriterionRootComponent( new IterationCount( 1 ) )
 {
 }
 

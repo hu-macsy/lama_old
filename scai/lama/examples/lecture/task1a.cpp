@@ -7,7 +7,7 @@
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 #include <scai/lama/DenseVector.hpp>
 
-using namespace lama;
+using namespace scai::lama;
 
 int main( int argc, char* argv[] )
 {

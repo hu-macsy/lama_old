@@ -77,7 +77,7 @@ public:
 private:
 
     /**
-     * This function is the CUDA implementation of lama::BLASInterface::scal
+     * This function is the CUDA implementation of scai::lama::BLASInterface::scal
      */
     template<typename ValueType>
     static void scal(
@@ -88,25 +88,25 @@ private:
         tasking::SyncToken* syncToken );
 
     /**
-     * This function is the CUDA implementation of lama::BLASInterface::nrm2
+     * This function is the CUDA implementation of scai::lama::BLASInterface::nrm2
      */
     template<typename ValueType>
     static ValueType nrm2( const IndexType n, const ValueType* x, const IndexType incX, tasking::SyncToken* syncToken );
 
     /**
-     * This function is the CUDA implementation of lama::BLASInterface::asum
+     * This function is the CUDA implementation of scai::lama::BLASInterface::asum
      */
     template<typename ValueType>
     static ValueType asum( const IndexType n, const ValueType* x, const IndexType incX, tasking::SyncToken* syncToken );
 
     /**
-     * This function is the CUDA implementation of lama::BLASInterface::iamax
+     * This function is the CUDA implementation of scai::lama::BLASInterface::iamax
      */
     template<typename ValueType>
     static IndexType iamax( const IndexType n, const ValueType* x, const IndexType incX, tasking::SyncToken* syncToken );
 
     /**
-     * This function is the CUDA implementation of lama::BLASInterface::swap
+     * This function is the CUDA implementation of scai::lama::BLASInterface::swap
      */
     template<typename ValueType>
     static void swap(
@@ -118,7 +118,7 @@ private:
         tasking::SyncToken* syncToken );
 
     /**
-     * This function is the CUDA implementation of lama::BLASInterface::copy
+     * This function is the CUDA implementation of scai::lama::BLASInterface::copy
      */
     template<typename ValueType>
     static void copy(
@@ -130,7 +130,7 @@ private:
         tasking::SyncToken* syncToken );
 
     /**
-     * This function is the CUDA implementation of lama::BLASInterface::axpy
+     * This function is the CUDA implementation of scai::lama::BLASInterface::axpy
      */
     template<typename ValueType>
     static void axpy(
@@ -143,7 +143,7 @@ private:
         tasking::SyncToken* syncToken );
 
     /**
-     * This function is the CUDA implementation of lama::BLASInterface::dot
+     * This function is the CUDA implementation of scai::lama::BLASInterface::dot
      */
     template<typename ValueType>
     static ValueType dot(
@@ -155,7 +155,7 @@ private:
         tasking::SyncToken* syncToken );
 
     /**
-     * This function is the CUDA implementation of lama::BLASInterface::sum
+     * This function is the CUDA implementation of scai::lama::BLASInterface::sum
      */
     template<typename ValueType>
     static void sum(

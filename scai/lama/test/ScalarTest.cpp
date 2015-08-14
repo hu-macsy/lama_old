@@ -66,7 +66,7 @@ BOOST_AUTO_TEST_CASE( ScalarGetTypeTest )
 {
     // Challenge: some of these types were not defined in module common but later in lama
 
-    using namespace common;
+    using namespace scai::common;
 
     BOOST_CHECK_EQUAL( getScalarType<float>(), scalar::FLOAT );
     BOOST_CHECK_EQUAL( getScalarType<double>(), scalar::DOUBLE );

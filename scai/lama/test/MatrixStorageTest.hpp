@@ -72,7 +72,7 @@ public:
      *  @param[in] storage is an (derived) object of matrix storage.
      *
      */
-    MatrixStorageTest( lama::MatrixStorage<ValueType>& storage )
+    MatrixStorageTest( scai::lama::MatrixStorage<ValueType>& storage )
         : mMatrixStorage( storage )
     {
     }
@@ -133,11 +133,11 @@ public:
     void matrixMultTest1();
 
     //todo: not implemented --> implement or delete
-    //void haloTest( const lama::CommunicatorPtr comm );
+    //void haloTest( const scai::lama::CommunicatorPtr comm );
 
-    //void replicateTest( const lama::CommunicatorPtr comm );
+    //void replicateTest( const scai::lama::CommunicatorPtr comm );
 
-    //void redistributeTest( const lama::CommunicatorPtr comm );
+    //void redistributeTest( const scai::lama::CommunicatorPtr comm );
 
     void inverseTest();
 
@@ -147,7 +147,7 @@ public:
 
     void writeAtTest();
 
-    lama::MatrixStorage<ValueType>& mMatrixStorage;
+    scai::lama::MatrixStorage<ValueType>& mMatrixStorage;
 
 private:
 
@@ -161,19 +161,19 @@ private:
      */
     void jacobiTest( ValueType omega );
 
-    static void setDenseData( lama::MatrixStorage<ValueType>& storage );
+    static void setDenseData( scai::lama::MatrixStorage<ValueType>& storage );
 
-    static void setDenseDataNotSquare( lama::MatrixStorage<ValueType>& storage );
+    static void setDenseDataNotSquare( scai::lama::MatrixStorage<ValueType>& storage );
 
-    static void setDenseDataSymmetric( lama::MatrixStorage<ValueType>& storage );
+    static void setDenseDataSymmetric( scai::lama::MatrixStorage<ValueType>& storage );
 
-    static void setDenseLocal( lama::MatrixStorage<ValueType>& storage );
+    static void setDenseLocal( scai::lama::MatrixStorage<ValueType>& storage );
 
-    static void setDenseHalo( lama::MatrixStorage<ValueType>& storage );
+    static void setDenseHalo( scai::lama::MatrixStorage<ValueType>& storage );
 
-    static void setDenseRandom( lama::MatrixStorage<ValueType>& storage );
+    static void setDenseRandom( scai::lama::MatrixStorage<ValueType>& storage );
 
-    static void setDenseRandomInverse( lama::MatrixStorage<ValueType>& storage );
+    static void setDenseRandomInverse( scai::lama::MatrixStorage<ValueType>& storage );
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger );
 };

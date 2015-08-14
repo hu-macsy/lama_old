@@ -38,7 +38,7 @@
 #include <test/TestMacros.hpp>
 
 using namespace scai::lama;
-using namespace scaI::memory;
+using namespace scai::memory;
 
 extern bool base_test_case;
 extern std::string testcase;

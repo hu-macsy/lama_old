@@ -42,9 +42,9 @@
 // logging
 #include <scai/logging.hpp>
 
-using memory::ContextArray;
-using memory::LAMAArray;
-using memory::ContextPtr;
+using scai::memory::ContextArray;
+using scai::memory::LAMAArray;
+using scai::memory::ContextPtr;
 
 namespace scai
 {

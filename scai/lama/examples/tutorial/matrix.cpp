@@ -42,7 +42,7 @@
 #include <iostream>
 #include <stdlib.h>
 
-using namespace lama;
+using namespace scai::lama;
 
 //
 // EXAMPLE multiplication of a dense vector with a sparse matrix in CSR format.
@@ -104,8 +104,8 @@ int main()
     DenseVector<ValueType> result( numRows, 0.0 );
 
     // Distribution pointer are needed to construct a CSRSparseMatrix.
-    lama::DistributionPtr rowDist( new lama::NoDistribution( numRows ) );
-    lama::DistributionPtr colDist( new lama::NoDistribution( numColumns ) );
+    scai::lama::DistributionPtr rowDist( new scai::lama::NoDistribution( numRows ) );
+    scai::lama::DistributionPtr colDist( new scai::lama::NoDistribution( numColumns ) );
 
     // Allocation of the CSRSparseMatrix.
     CSRSparseMatrix<ValueType> csrMatrix( *csrStorage, rowDist, colDist );

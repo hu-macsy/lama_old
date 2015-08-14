@@ -50,9 +50,9 @@
 #include <scai/common/bind.hpp>
 #include <boost/preprocessor.hpp>
 
-using namespace memory;
-using namespace tasking;
-using common::getScalarType;
+using namespace scai::memory;
+using namespace scai::tasking;
+using scai::common::getScalarType;
 
 namespace scai
 {

@@ -50,10 +50,10 @@
 #include <boost/preprocessor.hpp>
 #include <scai/common/bind.hpp>
 
-using common::unique_ptr;
-using common::shared_ptr;
+using scai::common::unique_ptr;
+using scai::common::shared_ptr;
 
-using namespace memory;
+using namespace scai::memory;
 
 namespace scai
 {
@@ -929,9 +929,9 @@ SyncToken* COOStorage<ValueType>::matrixTimesVectorAsync(
 
             = &COOStorage<ValueType>::matrixTimesVector;
 
-        using common::bind;
-        using common::ref;
-        using common::cref;
+        using scai::common::bind;
+        using scai::common::ref;
+        using scai::common::cref;
 
         SCAI_LOG_INFO( logger, *this << ": matrixTimesVectorAsync on Host by own thread" )
 
@@ -1028,8 +1028,8 @@ SyncToken* COOStorage<ValueType>::vectorTimesMatrixAsync(
 
         SCAI_LOG_INFO( logger, *this << ": vectorTimesMatrixAsync on Host by own thread" )
 
-        using common::bind;
-        using common::ref;
+        using scai::common::bind;
+        using scai::common::ref;
 
         return new TaskSyncToken( bind( pf, this, ref( result ), alpha, ref( x ), beta, ref( y ) ) );
     }

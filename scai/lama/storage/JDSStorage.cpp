@@ -48,9 +48,9 @@
 #include <scai/common/bind.hpp>
 #include <scai/common/unique_ptr.hpp>
 
-using common::shared_ptr;
-using namespace::tasking;
-using namespace::memory;
+using scai::common::shared_ptr;
+using namespace scai::tasking;
+using namespace scai::memory;
 
 namespace scai
 {
@@ -1050,9 +1050,9 @@ SyncToken* JDSStorage<ValueType>::matrixTimesVectorAsync(
 
             = &JDSStorage<ValueType>::matrixTimesVector;
 
-        using common::bind;
-        using common::ref;
-        using common::cref;
+        using scai::common::bind;
+        using scai::common::ref;
+        using scai::common::cref;
 
         return new TaskSyncToken( bind( mv, this, ref( result ), alpha, cref( x ), beta, cref( y ) ) );
     }
@@ -1153,9 +1153,9 @@ SyncToken* JDSStorage<ValueType>::vectorTimesMatrixAsync(
 
             = &JDSStorage<ValueType>::vectorTimesMatrix;
 
-        using common::bind;
-        using common::ref;
-        using common::cref;
+        using scai::common::bind;
+        using scai::common::ref;
+        using scai::common::cref;
 
         return new TaskSyncToken( bind( vm, this, ref( result ), alpha, cref( x ), beta, cref( y ) ) );
     }
@@ -1303,9 +1303,9 @@ SyncToken* JDSStorage<ValueType>::jacobiIterateAsync(
 
             = &JDSStorage<ValueType>::jacobiIterate;
 
-        using common::bind;
-        using common::ref;
-        using common::cref;
+        using scai::common::bind;
+        using scai::common::ref;
+        using scai::common::cref;
 
         return new TaskSyncToken( bind( jb, this, ref( solution ), cref( oldSolution ), cref( rhs ), omega ) );
     }

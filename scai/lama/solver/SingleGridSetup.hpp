@@ -48,7 +48,7 @@ namespace scai
 namespace lama
 {
 
-class SingleGridSetup: public lama::AMGSetup
+class SingleGridSetup: public scai::lama::AMGSetup
 {
 public:
     SingleGridSetup();

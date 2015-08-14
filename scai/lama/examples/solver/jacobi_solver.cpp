@@ -52,10 +52,10 @@
 #include <scai/common/unique_ptr.hpp>
 
 using namespace std;
-using namespace lama;
+using namespace scai::lama;
 
-using common::Walltime;
-using common::unique_ptr;
+using scai::common::Walltime;
+using scai::common::unique_ptr;
 
 int main( int argc, char* argv[] )
 {

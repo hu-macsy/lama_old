@@ -45,7 +45,7 @@ namespace scai
 namespace lama
 {
 
-class COMMON_DLL_IMPORTEXPORT L1Norm: public lama::Norm
+class COMMON_DLL_IMPORTEXPORT L1Norm: public scai::lama::Norm
 {
 public:
     L1Norm();

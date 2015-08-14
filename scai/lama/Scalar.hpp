@@ -56,8 +56,8 @@ namespace scai
 namespace lama
 {
 
-using common::ScalarType;
-using namespace common::scalar;
+using scai::common::ScalarType;
+using namespace scai::common::scalar;
 
 /**
  * @brief The class Scalar represents a multi precision scalar.

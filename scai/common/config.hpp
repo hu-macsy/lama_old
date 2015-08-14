@@ -30,28 +30,33 @@
  * @date 10.06.2015
  */
 
-//No include header guards be cause we want to allow this header to be included multiple times
+//No include header guards because we want to allow this header to be included multiple times
 
 #ifdef WIN32
-#ifdef min
-#undef min
-#endif //min
-#ifdef max
-#undef max
-#endif //max
-//Do not display warnings about dll-interface issues.
-//TODO: How can we resolve these issues? Do we want to resolve these issues?
-#pragma warning( disable : 4251 )
+	#ifdef min
+		#undef min
+	#endif //min
 
-#ifndef COMMON_DLL_IMPORTEXPORT
-#ifdef COMMON_COMPILING_DLL
-#define COMMON_DLL_IMPORTEXPORT   __declspec( dllexport )
-#else //COMMON_COMPILING_DLL is defined
-#define COMMON_DLL_IMPORTEXPORT   __declspec( dllimport )
-#endif //COMMON_COMPILING_DLL
-#endif //COMMON_DLL_IMPORTEXPORT
+	#ifdef max
+		#undef max
+	#endif //max
+
+	//Do not display warnings about dll-interface issues.
+	//TODO: How can we resolve these issues? Do we want to resolve these issues?
+	#pragma warning( disable : 4251 )
+
+	#ifndef COMMON_DLL_IMPORTEXPORT
+		#ifdef COMMON_COMPILING_DLL
+			#define COMMON_DLL_IMPORTEXPORT   __declspec( dllexport )
+		#else //COMMON_COMPILING_DLL is defined
+			#define COMMON_DLL_IMPORTEXPORT   __declspec( dllimport )
+		#endif //COMMON_COMPILING_DLL
+	#endif //COMMON_DLL_IMPORTEXPORT
+
 #else //WIN32 is not defined
-#ifndef COMMON_DLL_IMPORTEXPORT
-#define COMMON_DLL_IMPORTEXPORT
-#endif //COMMON_DLL_IMPORTEXPORT
+
+	#ifndef COMMON_DLL_IMPORTEXPORT
+		#define COMMON_DLL_IMPORTEXPORT
+	#endif //COMMON_DLL_IMPORTEXPORT
+
 #endif //WIN32

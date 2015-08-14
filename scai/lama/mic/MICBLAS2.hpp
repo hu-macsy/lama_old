@@ -51,7 +51,7 @@ namespace lama
 
 class SyncToken;
 
-/** Implementations of methods for lama::BLAS2Interface with MIC.
+/** Implementations of methods for scai::lama::BLAS2Interface with MIC.
  *
  *  @todo Move all method documentations to LAMAInterface and make references here
  *  @todo Add information here about use of native BLAS1 libraries
@@ -62,7 +62,7 @@ class COMMON_DLL_IMPORTEXPORT MICBLAS2
 public:
 
     /**
-     * This function is the MIC implementation of lama::BLAS2Interface::gemv
+     * This function is the MIC implementation of scai::lama::BLAS2Interface::gemv
      */
     template<typename ValueType>
     static void gemv(

@@ -40,7 +40,7 @@
 
 #include <scai/lama/exception/LAMAAssert.hpp>
 
-using namespace tasking;
+using namespace scai::tasking;
 
 namespace scai
 {

@@ -44,7 +44,7 @@
 #include <scai/common/bind.hpp>
 #include <boost/preprocessor.hpp>
 
-using tasking::SyncToken;
+using scai::tasking::SyncToken;
 
 namespace scai
 {
@@ -289,9 +289,9 @@ void SpecializedJacobi::iterateTyped( const SparseMatrix<ValueType>& coefficient
 
         const LAMAArray<ValueType>* diagonal = dynamic_cast<const LAMAArray<ValueType>*>( getRuntime().mDiagonal.get() );
 
-        using namespace common;  // placeholders are also needed
+        using namespace scai::common;  // placeholders are also needed
 
-        void (lama::MatrixStorage<ValueType>::*jacobiIterateHalo)(
+        void (scai::lama::MatrixStorage<ValueType>::*jacobiIterateHalo)(
             LAMAArray<ValueType>& localSolution,
             const LAMAArray<ValueType>& localDiagonal,
             const LAMAArray<ValueType>& oldHaloSolution,
@@ -311,7 +311,7 @@ void SpecializedJacobi::iterateTyped( const SparseMatrix<ValueType>& coefficient
         {
             // For the local operation a jacobi step is done
 
-            void (lama::MatrixStorage<ValueType>::*jacobiIterate)(
+            void (scai::lama::MatrixStorage<ValueType>::*jacobiIterate)(
                 LAMAArray<ValueType>& solution,
                 const LAMAArray<ValueType>& oldSolution,
                 const LAMAArray<ValueType>& rhs,
@@ -331,7 +331,7 @@ void SpecializedJacobi::iterateTyped( const SparseMatrix<ValueType>& coefficient
         }
         else
         {
-            SyncToken* (lama::MatrixStorage<ValueType>::*jacobiIterateAsync)(
+            SyncToken* (scai::lama::MatrixStorage<ValueType>::*jacobiIterateAsync)(
                 LAMAArray<ValueType>& solution,
                 const LAMAArray<ValueType>& oldSolution,
                 const LAMAArray<ValueType>& rhs,

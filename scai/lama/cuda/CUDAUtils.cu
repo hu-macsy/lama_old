@@ -53,9 +53,9 @@
 
 #include <boost/preprocessor.hpp>
 
-using namespace common;
-using namespace tasking;
-using namespace memory;
+using namespace scai::common;
+using namespace scai::tasking;
+using namespace scai::memory;
 
 namespace scai
 {

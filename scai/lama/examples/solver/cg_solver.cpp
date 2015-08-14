@@ -50,8 +50,8 @@
 #include <scai/common/unique_ptr.hpp>
 
 using namespace std;
-using namespace lama;
-using common::unique_ptr;
+using namespace scai::lama;
+using scai::common::unique_ptr;
 
 int main( int argc, char* argv[] )
 {

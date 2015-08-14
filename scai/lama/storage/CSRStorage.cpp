@@ -66,12 +66,12 @@ namespace lama
 {
 
 using std::abs;
-using common::unique_ptr;
-using common::shared_ptr;
+using scai::common::unique_ptr;
+using scai::common::shared_ptr;
 
-using tasking::TaskSyncToken;
+using scai::tasking::TaskSyncToken;
 
-using namespace memory;
+using namespace scai::memory;
 
 /* --------------------------------------------------------------------------- */
 
@@ -1500,9 +1500,9 @@ SyncToken* CSRStorage<ValueType>::matrixTimesVectorAsync(
 
             = &CSRStorage<ValueType>::matrixTimesVector;
 
-        using common::bind;
-        using common::ref;
-        using common::cref;
+        using scai::common::bind;
+        using scai::common::ref;
+        using scai::common::cref;
 
         SCAI_LOG_INFO( logger, *this << ": matrixTimesVectorAsync on Host by own thread" )
 
@@ -1622,9 +1622,9 @@ SyncToken* CSRStorage<ValueType>::vectorTimesMatrixAsync(
 
             = &CSRStorage<ValueType>::vectorTimesMatrix;
 
-        using common::bind;
-        using common::ref;
-        using common::cref;
+        using scai::common::bind;
+        using scai::common::ref;
+        using scai::common::cref;
 
         SCAI_LOG_INFO( logger, *this << ": vectorTimesMatrixAsync on Host by own thread" )
 

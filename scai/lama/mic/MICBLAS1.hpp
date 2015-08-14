@@ -49,7 +49,7 @@ namespace scai
 namespace lama
 {
 
-/** Implementations of methods for lama::BLAS1Interface with MIC.
+/** Implementations of methods for scai::lama::BLAS1Interface with MIC.
  *
  *  @todo Add information here about use of native BLAS1 libraries
  */
@@ -59,7 +59,7 @@ class COMMON_DLL_IMPORTEXPORT MICBLAS1
 public:
 
     /**
-     * This function is the MIC implementation of lama::BLAS1Interface::BLAS1::scal
+     * This function is the MIC implementation of scai::lama::BLAS1Interface::BLAS1::scal
      */
     template<typename ValueType>
     static void scal(
@@ -70,25 +70,25 @@ public:
         SyncToken* syncToken );
 
     /**
-     * This function is the MIC implementation of lama::BLAS1Interface::nrm2
+     * This function is the MIC implementation of scai::lama::BLAS1Interface::nrm2
      */
     template<typename ValueType>
     static ValueType nrm2( const IndexType n, const ValueType* x, const IndexType incX, SyncToken* syncToken );
 
     /**
-     * This function is the MIC implementation of lama::BLAS1Interface::asum
+     * This function is the MIC implementation of scai::lama::BLAS1Interface::asum
      */
     template<typename ValueType>
     static ValueType asum( const IndexType n, const ValueType* x, const IndexType incX, SyncToken* syncToken );
 
     /**
-     * This function is the MIC implementation of lama::BLAS1Interface::iamax
+     * This function is the MIC implementation of scai::lama::BLAS1Interface::iamax
      */
     template<typename ValueType>
     static IndexType iamax( const IndexType n, const ValueType* x, const IndexType incX, SyncToken* syncToken );
 
     /**
-     * This function is the MIC implementation of lama::BLAS1Interface::swap
+     * This function is the MIC implementation of scai::lama::BLAS1Interface::swap
      */
     template<typename ValueType>
     static void swap(
@@ -100,7 +100,7 @@ public:
         SyncToken* syncToken );
 
     /**
-     * This function is the MIC implementation of lama::BLAS1Interface::copy
+     * This function is the MIC implementation of scai::lama::BLAS1Interface::copy
      */
     template<typename ValueType>
     static void copy(
@@ -112,7 +112,7 @@ public:
         SyncToken* syncToken );
 
     /**
-     * This function is the MIC implementation of lama::BLAS1Interface::axpy
+     * This function is the MIC implementation of scai::lama::BLAS1Interface::axpy
      */
     template<typename ValueType>
     static void axpy(
@@ -125,7 +125,7 @@ public:
         SyncToken* syncToken );
 
     /**
-     * This function is the MIC implementation of lama::BLAS1Interface::dot
+     * This function is the MIC implementation of scai::lama::BLAS1Interface::dot
      */
     template<typename ValueType>
     static ValueType dot(
@@ -137,7 +137,7 @@ public:
         SyncToken* syncToken );
 
     /**
-     * This function is the MIC implementation of lama::BLAS1Interface::sum
+     * This function is the MIC implementation of scai::lama::BLAS1Interface::sum
      */
     template<typename ValueType>
     static void sum(

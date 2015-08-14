@@ -286,7 +286,7 @@ LAMA_COMMON_TEST_CASE_END()
 template<typename ValueType>
 void CommunicatorTest::updateHaloTest()
 {
-    SCAI_LOG_INFO( logger, "updateHaloTest<" << common::getScalarType<ValueType>() << ">" );
+    SCAI_LOG_INFO( logger, "updateHaloTest<" << scai::common::getScalarType<ValueType>() << ">" );
     const IndexType factor = 4;
     const IndexType vectorSize = factor * size;
     BlockDistribution distribution( vectorSize, comm );
@@ -474,7 +474,7 @@ LAMA_COMMON_TEST_CASE_TM_END();
 
 LAMA_COMMON_TEST_CASE_TM( CommunicatorTest, ValueType, bcastTest )
 {
-    SCAI_LOG_INFO( logger, "bcastTest<" << common::getScalarType<ValueType>() << ">" )
+    SCAI_LOG_INFO( logger, "bcastTest<" << scai::common::getScalarType<ValueType>() << ">" )
     IndexType N = 5;
     ValueType dummyVal = 13;
     scoped_array<ValueType> vector( new ValueType[N + 1] );

@@ -45,7 +45,7 @@ namespace scai
 namespace lama
 {
 
-class COMMON_DLL_IMPORTEXPORT MaxNorm: public lama::Norm
+class COMMON_DLL_IMPORTEXPORT MaxNorm: public scai::lama::Norm
 {
 public:
     MaxNorm();

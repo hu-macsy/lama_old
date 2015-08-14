@@ -792,9 +792,9 @@ tasking::SyncToken* Communicator::exchangeByPlanAsync(
     const memory::LAMAArray<ValueType>& sendArray,
     const CommunicationPlan& sendPlan ) const
 {
-    using memory::ReadAccess;
-    using memory::WriteAccess;
-    using memory::WriteOnlyAccess;
+    using scai::memory::ReadAccess;
+    using scai::memory::WriteAccess;
+    using scai::memory::WriteOnlyAccess;
 
     SCAI_ASSERT_EQUAL_ERROR( sendArray.size(), sendPlan.totalQuantity() )
 

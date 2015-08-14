@@ -67,9 +67,9 @@
 #include <scai/common/bind.hpp>
 #include <boost/preprocessor.hpp>
 
-using namespace memory;
+using namespace scai::memory;
 
-using common::getScalarType;
+using scai::common::getScalarType;
 
 namespace scai
 {

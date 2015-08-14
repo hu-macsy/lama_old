@@ -671,8 +671,8 @@ BOOST_AUTO_TEST_CASE( VectorGetValueTypeTest )
 {
     DenseVector<float> v1( 4, 0.0 );
     DenseVector<double> v2( 4, 0.0 );
-    BOOST_CHECK_EQUAL( v1.getValueType(), common::scalar::FLOAT );
-    BOOST_CHECK_EQUAL( v2.getValueType(), common::scalar::DOUBLE );
+    BOOST_CHECK_EQUAL( v1.getValueType(), scai::common::scalar::FLOAT );
+    BOOST_CHECK_EQUAL( v2.getValueType(), scai::common::scalar::DOUBLE );
 }
 
 /* --------------------------------------------------------------------- */

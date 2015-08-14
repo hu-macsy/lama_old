@@ -47,14 +47,14 @@
 
 #include <boost/preprocessor.hpp>
 
-using namespace tasking;
-using namespace memory;
-using common::getScalarType;
-
-extern cublasHandle_t CUDAContext_cublasHandle;
+using namespace scai::tasking;
+using namespace scai::memory;
+using scai::common::getScalarType;
 
 namespace scai
 {
+
+extern cublasHandle_t CUDAContext_cublasHandle;
 
 /* ---------------------------------------------------------------------------------------*/
 namespace lama

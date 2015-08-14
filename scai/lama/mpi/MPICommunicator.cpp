@@ -56,9 +56,9 @@
 #include <mpi.h>
 
 using namespace std;
-using common::shared_ptr;
-using common::unique_ptr;
-using common::scoped_array;
+using scai::common::shared_ptr;
+using scai::common::unique_ptr;
+using scai::common::scoped_array;
 
 namespace scai
 {

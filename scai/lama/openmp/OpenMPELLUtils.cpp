@@ -62,7 +62,7 @@ namespace lama
 
 using std::abs;
 
-using common::getScalarType;
+using scai::common::getScalarType;
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 

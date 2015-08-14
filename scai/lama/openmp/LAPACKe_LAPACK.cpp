@@ -46,7 +46,7 @@
 
 #include <boost/preprocessor.hpp>
 
-using common::scoped_array;
+using scai::common::scoped_array;
 
 namespace scai
 {

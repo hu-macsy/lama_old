@@ -284,18 +284,18 @@ void MatrixCreator<ValueType>::buildPoisson(
 {
     // Calculate subdomains, subranges
 
-    lama::PartitionId gridSize[3] =
+    scai::lama::PartitionId gridSize[3] =
     { 1, 1, 1 };
-    lama::PartitionId gridRank[3] =
+    scai::lama::PartitionId gridRank[3] =
     { 0, 0, 0 };
-    lama::PartitionId dimLB[3] =
+    scai::lama::PartitionId dimLB[3] =
     { 0, 0, 0 };
-    lama::PartitionId dimUB[3] =
+    scai::lama::PartitionId dimUB[3] =
     { dimX - 1, dimY - 1, dimZ - 1 };
 
     // ToDo: take communicator from input set
 
-    lama::CommunicatorPtr comm = lama::Communicator::get( "MPI" );
+    scai::lama::CommunicatorPtr comm = scai::lama::Communicator::get( "MPI" );
 
     // get rank of this processor
 
@@ -303,22 +303,22 @@ void MatrixCreator<ValueType>::buildPoisson(
     {
         gridSize[0] = comm->getSize();
         gridRank[0] = comm->getRank();
-        lama::BlockDistribution::getRange( dimLB[0], dimUB[0], dimX, gridRank[0], gridSize[0] );
+        scai::lama::BlockDistribution::getRange( dimLB[0], dimUB[0], dimX, gridRank[0], gridSize[0] );
     }
     else if( dimension == 2 )
     {
         comm->factorize2( dimX, dimY, gridSize );
         comm->getGrid2Rank( gridRank, gridSize );
-        lama::BlockDistribution::getRange( dimLB[0], dimUB[0], dimX, gridRank[0], gridSize[0] );
-        lama::BlockDistribution::getRange( dimLB[1], dimUB[1], dimY, gridRank[1], gridSize[1] );
+        scai::lama::BlockDistribution::getRange( dimLB[0], dimUB[0], dimX, gridRank[0], gridSize[0] );
+        scai::lama::BlockDistribution::getRange( dimLB[1], dimUB[1], dimY, gridRank[1], gridSize[1] );
     }
     else if( dimension == 3 )
     {
         comm->factorize3( dimX, dimY, dimZ, gridSize );
         comm->getGrid3Rank( gridRank, gridSize );
-        lama::BlockDistribution::getRange( dimLB[0], dimUB[0], dimX, gridRank[0], gridSize[0] );
-        lama::BlockDistribution::getRange( dimLB[1], dimUB[1], dimY, gridRank[1], gridSize[1] );
-        lama::BlockDistribution::getRange( dimLB[2], dimUB[2], dimZ, gridRank[2], gridSize[2] );
+        scai::lama::BlockDistribution::getRange( dimLB[0], dimUB[0], dimX, gridRank[0], gridSize[0] );
+        scai::lama::BlockDistribution::getRange( dimLB[1], dimUB[1], dimY, gridRank[1], gridSize[1] );
+        scai::lama::BlockDistribution::getRange( dimLB[2], dimUB[2], dimZ, gridRank[2], gridSize[2] );
     }
 
     SCAI_LOG_INFO( logger,
@@ -389,14 +389,14 @@ void MatrixCreator<ValueType>::buildPoisson(
     SCAI_LOG_INFO( logger, *comm << ": has local " << localSize << " rows, nna = " << myNNA )
     // allocate and fill local part of the distributed matrix
 
-    lama::DistributionPtr distribution = lama::DistributionPtr(
-            new lama::GeneralDistribution( globalSize, myGlobalIndexes, comm ) );
+    scai::lama::DistributionPtr distribution = scai::lama::DistributionPtr(
+            new scai::lama::GeneralDistribution( globalSize, myGlobalIndexes, comm ) );
 
     SCAI_LOG_INFO( logger, "distribution = " << *distribution )
 
     // create new local CSR data ( # local rows x # columns )
 
-    lama::CSRStorage<ValueType> localMatrix;
+    scai::lama::CSRStorage<ValueType> localMatrix;
     localMatrix.allocate( localSize, globalSize );
 
     // Allocate local matrix with correct sizes and correct first touch in case of OpenMP
@@ -596,7 +596,7 @@ void MatrixCreator<ValueType>::buildRandom(
     const IndexType size,
     const double density )
 {
-    CommunicatorPtr comm = lama::Communicator::get( "MPI" );
+    CommunicatorPtr comm = scai::lama::Communicator::get( "MPI" );
 
     DistributionPtr dist( new BlockDistribution( size, comm ) );
     matrix.allocate( dist, dist );

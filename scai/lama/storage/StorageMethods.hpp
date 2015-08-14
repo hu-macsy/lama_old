@@ -38,7 +38,7 @@
 #include <scai/lama/LAMATypes.hpp>
 #include <scai/memory.hpp>
 
-using memory::LAMAArray;
+using scai::memory::LAMAArray;
 
 namespace scai
 {

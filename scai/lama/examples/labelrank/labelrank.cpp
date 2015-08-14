@@ -12,8 +12,8 @@
 #include <iomanip>
 
 using namespace std;
-using namespace lama;
-using common::Walltime;
+using namespace scai::lama;
+using scai::common::Walltime;
 
 /** ValueType is the type used for matrix and vector elements. */
 

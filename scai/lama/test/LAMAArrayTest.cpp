@@ -70,8 +70,8 @@ BOOST_AUTO_TEST_CASE( releaseTest )
     }
 
     writeAccess.release();
-    SCAI_CHECK_THROW( { writeAccess.resize( 20 ); }, common::Exception );
-    SCAI_CHECK_THROW( { writeAccess[0] = static_cast<IndexType> ( 5.0 ); }, common::Exception );
+    SCAI_CHECK_THROW( { writeAccess.resize( 20 ); }, scai::common::Exception );
+    SCAI_CHECK_THROW( { writeAccess[0] = static_cast<IndexType> ( 5.0 ); }, scai::common::Exception );
     ReadAccess<IndexType> readAccess( lamaArray );
 
     for ( IndexType i = 0; i < 5; i++ )
@@ -159,7 +159,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( refTest, ValueType, test_types )
         WriteAccess<ValueType> lamaArrayWAccess( lamaArray );
         // resize of a LAMA array with referenced data is not possible
         SCAI_CHECK_THROW(
-        {   lamaArrayWAccess.resize( 20 );}, common::Exception );
+        {   lamaArrayWAccess.resize( 20 );}, scai::common::Exception );
 
         for ( IndexType i = 0; i < n; ++i )
         {
@@ -185,7 +185,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( refTest, ValueType, test_types )
         {
             WriteAccess<ValueType> lamaArrayWAccess( lamaArray );
         }
-        , common::Exception );
+        , scai::common::Exception );
     }
 }
 

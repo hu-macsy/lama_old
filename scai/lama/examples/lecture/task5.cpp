@@ -17,7 +17,7 @@
 
 #include <iostream>
 
-using namespace lama;
+using namespace scai::lama;
 
 int main( int argc, char* argv[] )
 {
@@ -31,7 +31,7 @@ int main( int argc, char* argv[] )
     std::cout << "Read matrix m : " << m << std::endl;
     IndexType size = m.getNumRows();
 
-    lama::ContextPtr cudaContext = Context::getContextPtr( context::CUDA, 0 ); 
+    scai::lama::ContextPtr cudaContext = Context::getContextPtr( context::CUDA, 0 ); 
     m.setContext( cudaContext );
 
     DenseVector<double> rhs( size , 0.0 );

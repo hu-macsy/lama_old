@@ -50,7 +50,7 @@
 
 #include <mkl_spblas.h>
 
-using tasking::SyncToken;
+using scai::tasking::SyncToken;
 
 namespace scai
 {

@@ -53,8 +53,8 @@ SCAI_LOG_DEF_LOGGER( Solver::logger, "Solver" )
 
 Solver::Solver( const std::string& id )
     : mId( id ), mLogger(
-          new CommonLogger( "dummyLog", lama::LogLevel::noLogging,
-                            lama::LoggerWriteBehaviour::toConsoleOnly,
+          new CommonLogger( "dummyLog", scai::lama::LogLevel::noLogging,
+                            scai::lama::LoggerWriteBehaviour::toConsoleOnly,
                             common::shared_ptr<Timer>( new Timer() ) ) )
 {
     SCAI_LOG_INFO( Solver::logger, "Solver id = " << mId << " created, dummy log" )

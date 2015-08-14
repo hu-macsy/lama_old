@@ -53,7 +53,7 @@
 #include <scai/lama/macros/unused.hpp>
 #include <vector>
 
-using common::scoped_array;
+using scai::common::scoped_array;
 
 namespace scai
 {
@@ -64,7 +64,7 @@ namespace lama
 using std::abs;
 // is used for abs( float ), abs( double )
 
-using common::getScalarType;
+using scai::common::getScalarType;
 
 SCAI_LOG_DEF_LOGGER( OpenMPCSRUtils::logger, "OpenMP.CSRUtils" )
 

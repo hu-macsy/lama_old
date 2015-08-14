@@ -43,9 +43,9 @@
 #include <scai/lama/matutils/MatrixCreator.hpp>
 #include <scai/common/Walltime.hpp>
 
-using namespace lama;
+using namespace scai::lama;
 using namespace std;
-using common::Walltime;
+using scai::common::Walltime;
 
 static bool verboseFlag = false;
 

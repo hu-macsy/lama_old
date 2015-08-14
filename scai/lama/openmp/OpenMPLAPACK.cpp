@@ -67,8 +67,8 @@ namespace lama
 using std::abs;
 // used for float, double
 
-using common::getScalarType;
-using tasking::SyncToken;
+using scai::common::getScalarType;
+using scai::tasking::SyncToken;
 
 /* ------------------------------------------------------------------------- */
 

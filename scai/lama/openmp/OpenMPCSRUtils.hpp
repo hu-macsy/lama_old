@@ -416,6 +416,6 @@ private    :
 
 } /* end namespace lama */
 
-} /* end namespace scai */s
+} /* end namespace scai */
 
 #endif //  LAMA_OPENMP_CSR_UTILS_HPP_

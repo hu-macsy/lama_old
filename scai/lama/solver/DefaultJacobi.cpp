@@ -41,7 +41,7 @@
 
 #include <scai/lama/DenseVector.hpp>
 
-using namespace memory;
+using namespace scai::memory;
 
 namespace scai
 {

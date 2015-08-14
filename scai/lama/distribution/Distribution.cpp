@@ -47,7 +47,7 @@
 // boost
 #include <boost/preprocessor.hpp>
 
-using namespace memory;
+using namespace scai::memory;
 
 namespace scai
 {

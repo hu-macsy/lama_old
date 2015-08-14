@@ -126,8 +126,8 @@ private    :
  */
 #define LAMA_UNSUPPORTED( msg )                                                    \
     {                                                                              \
-        if ( lama::Exception1::getUnsupportedSetting() !=                          \
-                lama::Exception1::UNSUPPORTED_IGNORE )                             \
+        if ( scai::lama::Exception1::getUnsupportedSetting() !=                          \
+                scai::lama::Exception1::UNSUPPORTED_IGNORE )                             \
         {                                                                          \
             std::ostringstream errorStr;                                           \
             errorStr << "Unsupported at line ";                                    \
@@ -136,8 +136,8 @@ private    :
             errorStr << "Use environment variable LAMA_UNSUPPORTED";               \
             errorStr << " (WARN or IGNORE) to get rid of this message";            \
             errorStr << std::endl;                                                 \
-            if ( lama::Exception1::getUnsupportedSetting() ==                      \
-                    lama::Exception1::UNSUPPORTED_ERROR )                          \
+            if ( scai::lama::Exception1::getUnsupportedSetting() ==                      \
+                    scai::lama::Exception1::UNSUPPORTED_ERROR )                          \
             {                                                                      \
                 throw common::Exception( errorStr.str() );                         \
             }                                                                      \

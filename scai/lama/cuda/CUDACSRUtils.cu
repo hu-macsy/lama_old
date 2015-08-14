@@ -92,8 +92,8 @@
 #define HASH_C1 1
 #define NUM_CHUNKS_PER_WARP 128
 
-using namespace memory;
-using namespace common;
+using namespace scai::memory;
+using namespace scai::common;
 
 namespace scai
 {

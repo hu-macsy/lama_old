@@ -55,7 +55,7 @@
 
 // Not recommened, but here for convenience
 
-using memory::ContextPtr;
+using scai::memory::ContextPtr;
 
 namespace scai
 {
@@ -544,7 +544,7 @@ ContextPtr Vector::getContext() const
 
 /** @brief  stream output for key values of creator  */
 
-inline std::ostream& operator<<( std::ostream& stream, const lama::VectorCreateKeyType& key )
+inline std::ostream& operator<<( std::ostream& stream, const scai::lama::VectorCreateKeyType& key )
 {
     stream << "<" << key.first << ", " << key.second << ">";
     return stream;

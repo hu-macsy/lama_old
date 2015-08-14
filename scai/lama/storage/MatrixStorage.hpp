@@ -42,19 +42,19 @@
 
 #include <scai/lama/io/FileType.hpp>
 
-namespace tasking
-{
-class SyncToken;
-}
-
-using memory::Context;
-using memory::ContextPtr;
-using memory::ContextArray;
-using memory::LAMAArray;
-using memory::LAMAArrayRef;
+using scai::memory::Context;
+using scai::memory::ContextPtr;
+using scai::memory::ContextArray;
+using scai::memory::LAMAArray;
+using scai::memory::LAMAArrayRef;
 
 namespace scai
 {
+
+namespace tasking
+{
+	class SyncToken;
+}
 
 namespace lama
 {
@@ -71,6 +71,7 @@ template<typename ValueType> class CSRStorage;
  */
 namespace Format
 {
+
 typedef enum
 {
     CSR, //!< Compressed Sparse Row
@@ -82,11 +83,10 @@ typedef enum
     ASSEMBLY, //!<  Matrix storage used for assembling of values
     UNDEFINED //!<  Default value
 } MatrixStorageFormat;
-}
-;
 
-using Format::MatrixStorageFormat;
-//!< useful abbreviation
+} /* end namespace Format */
+
+using Format::MatrixStorageFormat; //!< useful abbreviation
 
 COMMON_DLL_IMPORTEXPORT const char* format2Str( const MatrixStorageFormat storageFormat );
 
@@ -1102,5 +1102,4 @@ void MatrixStorage<ValueType>::setRawCSRData(
 
 /* ------------------------------------------------------------------------- */
 
-COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const lama::MatrixStorageFormat storageFormat );
-
+COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const scai::lama::MatrixStorageFormat storageFormat );

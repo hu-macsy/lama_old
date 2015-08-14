@@ -36,7 +36,7 @@
 // boost
 #include <boost/preprocessor.hpp>
 
-using common::shared_ptr;
+using scai::common::shared_ptr;
 
 namespace scai
 {

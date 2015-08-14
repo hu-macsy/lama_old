@@ -57,7 +57,7 @@ namespace lama
  *  objects.
  */
 
-class COMMON_DLL_IMPORTEXPORT GenBlockDistribution: public lama::Distribution
+class COMMON_DLL_IMPORTEXPORT GenBlockDistribution: public scai::lama::Distribution
 {
 public:
 
