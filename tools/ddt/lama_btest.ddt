@@ -54,7 +54,7 @@
             <input-file></input-file>
             <mpi-arguments></mpi-arguments>
             <mpi-enabled>no</mpi-enabled>
-            <mpi-environment-variables>LAMA_DEVICE=0\nLAMA_LOG=config\nLAMA_TRACE=OFF\nLD_LIBRARY_PATH=/usr/local/cuda/lib64:/usr/local/cuda/lib:/usr/local/cuda/lib64:/opt/intel/composerxe-2011.3.174/compiler/lib/intel64</mpi-environment-variables>
+            <mpi-environment-variables>SCAI_DEVICE=0\nSCAI_LOG=config\nSCAI_TRACE=OFF\nLD_LIBRARY_PATH=/usr/local/cuda/lib64:/usr/local/cuda/lib:/usr/local/cuda/lib64:/opt/intel/composerxe-2011.3.174/compiler/lib/intel64</mpi-environment-variables>
             <mpirun></mpirun>
             <openmp-enabled>yes</openmp-enabled>
             <override-mpirun>no</override-mpirun>

@@ -47,9 +47,9 @@ int main()
     if ( cudaGetDeviceCount( &deviceCount ) != cudaSuccess )
         return 1;
 
-    if ( getenv( "LAMA_DEVICE" ) ) {
+    if ( getenv( "SCAI_DEVICE" ) ) {
         char *pEnd;
-        cuda_device = strtol( getenv( "LAMA_DEVICE" ), &pEnd, 10 );
+        cuda_device = strtol( getenv( "SCAI_DEVICE" ), &pEnd, 10 );
     } else {
         // TODO:  search for device with highest compute capability
         cuda_device = 0;

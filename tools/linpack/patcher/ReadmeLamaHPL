@@ -22,7 +22,7 @@ Entweder auf der GPU rechnen oder auf der CPU. Default ist CPU
 LAMA_BLAS_ENV = GPU | CPU
 
 Falls mit GPU gerechnet werden soll, mit welchem device. Default ist 0
-LAMA_CUDA_DEV_NUMBER = 0...X
+SCAI_CUDA_DEV_NUMBER = 0...X
 
 Pinned memory oder Pageable memory soll benutzt werden. Default ist Standard
 LAMA_MEMORY = PINNED | STANDARD
