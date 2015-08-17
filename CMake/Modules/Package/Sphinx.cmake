@@ -40,6 +40,9 @@ if     ( SPHINX_FOUND )
     set ( SPHINX_INSTALL_ROOT ${CMAKE_INSTALL_PREFIX})
     # file ( MAKE_DIRECTORY ${DOXYGEN_BUILD_ROOT} )
     
+    # Sphinx configuration file conf.py will be generated with correct LAMA version, copyright, etc.
+    # must be in same directory as Sphinx source files
+
     configure_file ( "${CMAKE_SOURCE_DIR}/doc/user/conf.py.in" "${CMAKE_SOURCE_DIR}/doc/user/conf.py" )
     configure_file ( "${CMAKE_SOURCE_DIR}/doc/user/convert_json.sh.in" "${CMAKE_CURRENT_BINARY_DIR}/doc/user/convert_json.sh" )
 
