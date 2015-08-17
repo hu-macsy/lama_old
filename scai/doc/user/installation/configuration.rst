@@ -51,6 +51,7 @@ If you have not installed CMake in the system path you need to specify to CMake 
 All relevant LAMA options and their significations are listed in the table below.
 
 .. csv-table:: 
+
    :header: "CMake variable", "Signification"
 
    "CMAKE_BUILD_TYPE", "Debug (default), or Release (for an optimized build)"

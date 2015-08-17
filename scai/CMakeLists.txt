@@ -50,6 +50,9 @@ include ( Package/MIC )
 include ( Package/Boost )
 include ( Package/CodeCoverage ) # LAMA_USE_CODE_COVERAGE --> COVERAGE_FLAGS
 
+include ( FindSphinx )
+include ( Package/Sphinx )
+
 ## Boost 
 if    ( Boost_INCLUDE_DIR )
     include_directories ( ${Boost_INCLUDE_DIR} )

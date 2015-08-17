@@ -68,7 +68,7 @@ Furthermore, for template classes:
 
 ::
 
-    SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, SparseMatrix<ValueType>::logger, "Matrix.SparseMatrix" )
+    SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename T>, SparseMatrix<T>::logger, "Matrix.SparseMatrix" )
 
 A logger is used in the following macros that stand for the logging statements at the different levels. The
 variable logger must have been defined with one of the two previous macros:
@@ -157,13 +157,21 @@ The logger becomes a static variable of the class.
 
 ::
 
-   #include "logging.hpp"
+   #include "scai/logging.hpp"
    
    class Example
    {
        ...
    protected: 
-       SCAI_LOG_DECL_STATIC_LOGGER(logger);
+       SCAI_LOG_DECL_STATIC_LOGGER( logger )
+       ...
+   }
+
+   template<typename T>
+   class SparseMatrix
+   {
+   protected: 
+       SCAI_LOG_DECL_STATIC_LOGGER( logger )
        ...
    }
 
@@ -176,7 +184,8 @@ In the implementation of the class, e.g. Example.cpp, the logger has to be defin
 
 ::
 
-	SCAI_LOG_DEF_LOGGER(Example::logger, "Example");
+	SCAI_LOG_DEF_LOGGER( Example::logger, "Example" )
+    SCAI_LOG_DEF_TEMPLATE_LOGGER( template <typename T>, SparseMatrix<T>::logger, "Matrix.SparseMatrix" )
  
 Configuration of logging at runtime
 -----------------------------------
@@ -218,14 +227,14 @@ The default output format of logging messages is as follows:
 
 where the tokens starting with # have the following meanings:
 
-- date stands for the current date, e.g. 2015-07-26
-- time stands for the time of the output, e.g. 13:21:22 (hh:mm:ss)
-- name stands for the full name of the logger
-- func stands for the function in which the logging has been called
-- file is the file contaning the logging macro
-- line is the line number in the file with the actual logging statement
-- level is the logging level (e.g. INFO or WARN)
-- msg is the output message of the logging statement
+- #date stands for the current date, e.g. 2015-07-26 (yyyy-mm-dd)
+- #time stands for the time of the output, e.g. 13:21:22 (hh:mm:ss)
+- #name stands for the full name of the logger
+- #func stands for the function in which the logging has been called
+- #file is the file contaning the logging macro
+- #line is the line number in the file with the actual logging statement
+- #level is the logging level (e.g. INFO or WARN)
+- #msg is the output message of the logging statement
 
 It is possible to change this default output format by a line in the config file, e.g.:
 

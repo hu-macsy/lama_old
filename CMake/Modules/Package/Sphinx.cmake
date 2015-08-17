@@ -35,10 +35,10 @@
 
 if     ( SPHINX_FOUND )
     ### install ###
-    set ( LAMA_DOC_DIR "${LAMA_SOURCE_DIR}/doc" )
+    set ( LAMA_DOC_DIR "${CMAKE_SOURCE_DIR}/doc" )
     set ( SPHINX_BUILD_ROOT "${CMAKE_CURRENT_BINARY_DIR}/doc/user" )
     set ( SPHINX_INSTALL_ROOT ${CMAKE_INSTALL_PREFIX})
-    file ( MAKE_DIRECTORY ${DOXYGEN_BUILD_ROOT} )
+    # file ( MAKE_DIRECTORY ${DOXYGEN_BUILD_ROOT} )
     
     configure_file ( "${CMAKE_SOURCE_DIR}/doc/user/conf.py.in" "${CMAKE_SOURCE_DIR}/doc/user/conf.py" )
     configure_file ( "${CMAKE_SOURCE_DIR}/doc/user/convert_json.sh.in" "${CMAKE_CURRENT_BINARY_DIR}/doc/user/convert_json.sh" )
