@@ -329,7 +329,7 @@ int GenLogger::readConfig( const char* fname )
 
 void GenLogger::configure()
 {
-    std::string configFileString;  // might be used
+    std::string configFileString;  // shoud not be auto-string as pointer on it is used
 
     if ( !rootLogger )
     {
@@ -337,11 +337,15 @@ void GenLogger::configure()
     }
 
     rootLogger->setLevel( WARN ); // default setting for root
-#ifdef SCAI_LOG
-    const char* configFile = SCAI_LOG;
-#else
+
+    // Set default format string, now as it might be used very soon
+
+    if ( formatTokens.size() == 0 )
+    {
+        setFormat( "#date, #time #name @ #thread ( #func -> #file::#line ) #level #msg" );
+    }
+
     const char* configFile = getenv( "SCAI_LOG" );
-#endif
 
     if ( configFile == NULL )
     {
@@ -405,11 +409,6 @@ void GenLogger::configure()
     }
 
     rootLogger->traverse(); // traverse all loggers and might be print it
-
-    if ( formatTokens.size() == 0 )
-    {
-        setFormat( "#date, #time #name @ #thread ( #func -> #file::#line ) #level #msg" );
-    }
 }
 
 /********************************************************************

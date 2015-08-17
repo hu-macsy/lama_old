@@ -46,53 +46,47 @@ Logging in LAMA
 ---------------
 
 We decided to use an own simple logging facilitate to decrease dependencies with other software packages.
-The macros make it possible to implement the logging of LAMA with one arbitrary library and may be later
+The macros make it possible to implement the logging with one arbitrary library and may be later
 with an own version.
 
 Each of the following macro starts with ``SCAI_LOG`` to indicate that it is used for logging.
 
-The first two macros are used for the global definition, configuration and initialization of the logging
-system. These macro have no arguments as the usual way of configuration of the logging system is done by
-reading a configuration file that itself is specified by an environment variable.
+Global definition, configuration and initialization of the logging system is not necessary.
+It is done implicitly when the first logging statement is used.
+
+In the different subroutines and modules it is possible to get access to a logger. The macro SCAI_LOG_DEF_LOGGER
+defines a static logger variable with a certain name. By the dot notation for the name loggers can be structured
+hierarchically that makes it more comfortable to configure the loggers.
 
 ::
 
-	SCAI_LOG_DEFINITION()
-   
-	int main(int argc, char **argv)
-	{ // this is only done in the main file or any other initial routine
-	    // it reads a configuration file for the different loggers
-	    SCAI_LOG_CONFIGURE();
-	    ...
-	}
+	SCAI_LOG_DEF_LOGGER( Vector::logger, "Vector" ); 
+	SCAI_LOG_DEF_LOGGER( CSRMatrix::logger, "Matrix.CSR" );
+	SCAI_LOG_DEF_LOGGER( ELLMatrix::logger, "Matrix.ELL" );
 
-In the different subroutines and modules it is possible to get access to a logger. The macro SCAI_LOG_ROOTLOGGER
-is used to get the root logger, with the macro SCAI_LOG_LOGGER it is possible to define a logger with a certain
-name. By the dot notation for the name loggers can be structured hierarchically that makes it more
-comfortable to configure the loggers.
+Furthermore, for template classes:
 
 ::
 
-	SCAI_LOG_ROOTLOGGER( rootLogger );
-	SCAI_LOG_LOGGER( logger1, "Vector" ); 
-	SCAI_LOG_LOGGER( logger2, "Matrix.CSR" );
+    SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, SparseMatrix<ValueType>::logger, "Matrix.SparseMatrix" )
 
 A logger is used in the following macros that stand for the logging statements at the different levels. The
 variable logger must have been defined with one of the two previous macros:
 
 ::
 
-	SCAI_LOG_DEBUG(logger, "debug message");
-	SCAI_LOG_INFO (logger, "info message");
-	SCAI_LOG_WARN (logger, "warn message");
-	SCAI_LOG_ERROR(logger, "error message");
-	SCAI_LOG_FATAL(logger, "fatal message");
+	SCAI_LOG_TRACE( logger, "trace message" );
+	SCAI_LOG_DEBUG( logger, "debug message" );
+	SCAI_LOG_INFO ( logger, "info message" );
+	SCAI_LOG_WARN ( logger, "warn message" );
+	SCAI_LOG_ERROR( logger, "error message" );
+	SCAI_LOG_FATAL( logger, "fatal message" );
 
 It is possible to combine arguments like it is done for streams:
 
 ::
 
-	SCAI_LOG_DEBUG(logger, "loop iteration " << i " of " << n);
+	SCAI_LOG_DEBUG( logger, "loop iteration " << i " of " << n );
 
 The general idea is that the logging should appear in the source code but logging is usually disabled at
 runtime especially for the lower levels (DEBUG, INFO).
@@ -105,7 +99,7 @@ There is an include file that contains the definitions for all the macros:
 
 ::
 
-	#include "logging.hpp"
+	#include <scai/logging.hpp>
 
 Disabling logging at compile time
 ---------------------------------
@@ -213,6 +207,31 @@ displayed even if the program crashes. Flushing can be activated by the config f
 	
 	flush = true
 
+The default output format of logging messages is as follows:
+
+::
+
+    #date, #time #name @ #thread ( #func -> #file::#line ) #level #msg
+
+where the tokens starting with # have the following meanings:
+
+- date stands for the current date, e.g. 2015-07-26
+- time stands for the time of the output, e.g. 13:21:22 (hh:mm:ss)
+- name stands for the full name of the logger
+- func stands for the function in which the logging has been called
+- file is the file contaning the logging macro
+- line is the line number in the file with the actual logging statement
+- level is the logging level (e.g. INFO or WARN)
+- msg is the output message of the logging statement
+
+It is possible to change this default output format by a line in the config file, e.g.:
+
+::
+
+    format = "logger = #name, msg: #msg"
+
+The output format cannot be redefined individually for different loggers.
+
 Compile Flags for Logging
 -------------------------
 
@@ -223,7 +242,7 @@ For CMake, the following variable should be set::
 - DEBUG should be chosen for DEBUG mode
 - INFO should be chosen in RELEASE mode
 - TRACE should be set in case of serious problems
-- OFF should be used only for benchmarking.
+- OFF might be used for benchmarking.
 
 As logging does not cause much overhead when it is switched off at runtime, the DEBUG level is 
 usually the first choice. The TRACE level might cause some overhead as it might be used in 
@@ -239,7 +258,8 @@ lower level and they can not be used at runtime any more.
 	#
 	#  For serious problems: -DSCAI_LOG_LEVEL_TRACE
 	#  For benchmarks:       -DSCAI_LOG_LEVEL_OFF (or -DSCAI_LOG_LEVEL_FATAL, -DSCAI_LOG_LEVEL_ERROR)
-	ADD_DEFINITIONS( -DLOG_LEVEL_TRACE )
+
+	ADD_DEFINITIONS( -DSCAI_LOG_LEVEL_TRACE )
 
 Some Discussion and Further Ideas
 ---------------------------------
