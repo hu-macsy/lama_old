@@ -1,5 +1,5 @@
 ###
- # @file CMakeLists.txt
+ # @file scai/logging/CMakeLists.txt
  #
  # @license
  # Copyright (c) 2009-2015
@@ -28,6 +28,7 @@
  # @brief CMake configuration file for Logging library
  # @author Thomas Brandes
  # @date 09.06.2015
+ # @since 2.0.0
 ###
 
 ### Set required CMake version
@@ -40,6 +41,8 @@ project( logging CXX C )
 set ( CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/../../CMake/Modules" )
 
 ## Define all search packages
+#include ( InternalDependencies )
+set ( SCAI_LOGGING_INTERNAL_DEPS scai_common )
 include ( SearchPackages/Logging ) 
 
 # Find required packages
@@ -59,10 +62,10 @@ include ( SetCPPFlags )
 ## Project System-Include
 include_directories ( ../.. )
 
-set ( DEPS SCAI_COMMON )
-foreach    ( module ${DEPS} )
-    include_directories( ${${module}_INCLUDE_DIR} )
-endforeach ( module ${DEPS} )
+foreach    ( module ${SCAI_LOGGING_INTERNAL_DEPS} )
+	string ( TOUPPER ${module} upper_module )
+    include_directories( ${${upper_module}_INCLUDE_DIR} )
+endforeach ( module ${SCAI_LOGGING_INTERNAL_DEPS} )
 
 ### add definitions ###
 
@@ -83,9 +86,10 @@ file ( GLOB HPP_HEADERS "*.hpp" )
 
 add_library ( scai_logging SHARED ${CPP_SOURCES} )
 
-foreach    ( module ${DEPS} )
-    target_link_libraries ( scai_logging ${${module}_LIBRARY} )
-endforeach    ( module ${DEPS} )
+foreach    ( module ${SCAI_LOGGING_INTERNAL_DEPS} )
+	string ( TOUPPER ${module} upper_module )
+    target_link_libraries ( scai_logging ${${upper_module}_LIBRARY} )
+endforeach    ( module ${SCAI_LOGGING_INTERNAL_DEPS} )
 
 ### install ###
 

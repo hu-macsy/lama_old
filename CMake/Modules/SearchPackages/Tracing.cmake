@@ -38,8 +38,7 @@ endif ( NOT CXX_SUPPORTS_C11 )
 
 # Find required packages
 set ( REQUIRED_PACKAGES_TO_FIND
-        scai_common
-        scai_logging
+	${SCAI_TRACING_INTERNAL_DEPS}
         #add required packages here
     )
     

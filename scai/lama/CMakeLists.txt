@@ -1,5 +1,5 @@
 ###
- # @file CMakeLists.txt
+ # @file scai/lama/CMakeLists.txt
  #
  # @license
  # Copyright (c) 2009-2015
@@ -40,8 +40,10 @@ message ( STATUS "LAMA Configuration:" )
 message ( STATUS "===================" )
 message ( STATUS "" )
 
-### Set PROJECT NAME / supported LANGUAGES and Module Path ###
+### Set PROJECT NAME / supported LANGUAGES
 project ( LAMA CXX C )
+
+### set Module Path
 set ( CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/../../CMake/Modules" )
 
 set ( LAMA_VERSION_NAME "Alpamayo" )
@@ -51,6 +53,10 @@ set ( LAMA_VERSION_MINOR 0 )
 set ( LAMA_VERSION_PATCH 1 )
 set ( LAMA_VERSION_COUNT 3 )
 set ( LAMA_VERSION ${LAMA_VERSION_MAJOR}.${LAMA_VERSION_MINOR}.${LAMA_VERSION_PATCH} )
+
+## Define all search packages
+include ( InternalDependencies )
+include ( SearchPackages/LAMA ) 
 
 ### Variables / CMAKE Functions ###
 include ( Variables ) #LAMA.CMakeLists
@@ -80,9 +86,8 @@ endforeach ( PACKAGE_TO_FIND ${OPTIONAL_PACKAGES_TO_FIND} )
 # LAMA irrelevant entries will be marked as advanced ( Remove them from default cmake GUI )
 mark_as_advanced ( CUDA_BUILD_CUBIN CUDA_BUILD_EMULATION CUDA_SDK_ROOT_DIR CUDA_VERBOSE_BUILD )
 
-### Include Compiler Flags, after all packages are found ###
-# TB: removed, now already done by other packages: include ( CompilerFlags )
-# TB: only flags concerning NVCC are used ( not required by other projects)
+### Include Compiler Flags
+include ( SetBuildFlags )
 include ( SetCPPFlags ) #LAMA.CMakeLists
 
 ## MKL FOUND
@@ -97,9 +102,23 @@ endif  ( )
 ## Project System-Include
 include_directories ( ../.. )
 
+foreach    ( module ${SCAI_LAMA_INTERNAL_DEPS} )
+	string ( TOUPPER ${module} upper_module )
+    include_directories( ${${upper_module}_INCLUDE_DIR} )
+endforeach ( module ${SCAI_LAMA_INTERNAL_DEPS} )
+
 if    ( Boost_INCLUDE_DIR )
     include_directories ( ${Boost_INCLUDE_DIR} )
 endif ( Boost_INCLUDE_DIR )
+
+### add definitions ###
+
+# GenLogger uses also logging
+add_definitions ( -DSCAI_LOG_LEVEL_DEBUG )
+
+if ( WIN32 )
+	add_definitions ( -DCOMMON_COMPILING_DLL )
+endif ( WIN32 )
 
 ## build lama library
 
@@ -150,7 +169,6 @@ set ( HEADERS
 lama_classes ( ${CLASSES} )
 lama_headers ( ${HEADERS} )
 
-
 ### add subdirectories ###
 
 if ( CUDA_FOUND AND LAMA_USE_CUDA AND CUDA_HAVE_GPU )
@@ -182,6 +200,10 @@ add_subdirectory ( openmp )
 add_subdirectory ( solver )
 add_subdirectory ( storage )
 
+if ( FOUND_BOOST_TEST AND LAMA_BUILD_TEST )
+    add_subdirectory ( test )
+endif ( FOUND_BOOST_TEST AND LAMA_BUILD_TEST )
+
 ### set link directories ###
 if ( WIN32 )
     set ( LAMAPP_LINK_DIRECTORIES ${LAMAPP_LINK_DIRECTORIES} ${Boost_LIBRARY_DIRS} )
@@ -192,129 +214,42 @@ link_directories ( ${LAMAPP_LINK_DIRECTORIES} )
 ### add library ###
 add_library ( ama ${LAMA_LIBRARY_TYPE} ${CXX_SOURCES} ${HEADERS} )
 
+foreach    ( module ${SCAI_LAMA_INTERNAL_DEPS} )
+	string ( TOUPPER ${module} upper_module )
+    target_link_libraries ( ama ${${upper_module}_LIBRARY} )
+endforeach ( module ${SCAI_LAMA_INTERNAL_DEPS} )
 
-### set target link libraries ###
+target_link_libraries ( ama ${LAMA_BLAS_LIBRARIES} )
 
-set ( LAMA_USER_LINK_LIBRARIES "-L\${LAMA_ROOT}/lib -lama" )
-set ( LAMA_USER_LINK_LIBRARIES "${LAMA_USER_LINK_LIBRARIES} -lscai_common" )
-set ( LAMA_USER_LINK_LIBRARIES "${LAMA_USER_LINK_LIBRARIES} -lscai_logging" )
-set ( LAMA_USER_LINK_LIBRARIES "${LAMA_USER_LINK_LIBRARIES} -lscai_tasking" )
-set ( LAMA_USER_LINK_LIBRARIES "${LAMA_USER_LINK_LIBRARIES} -lscai_memory" )
-if ( SCAI_TRACE_LEVEL STREQUAL "ON" )
-    set ( LAMA_USER_LINK_LIBRARIES "${LAMA_USER_LINK_LIBRARIES} -lscai_tracing" )
-endif ( SCAI_TRACE_LEVEL STREQUAL "ON" )
+#if    ( CUDA_FOUND AND LAMA_USE_CUDA AND CUDA_HAVE_GPU )
+#	 target_link_libraries ( ama ${CUDA_cusparse_LIBRARY} ${CUDA_cublas_LIBRARY}
+#	 							 ${CUDA_CUDART_LIBRARY} ${CUDA_CUDA_LIBRARY} )          
+#endif ( CUDA_FOUND AND LAMA_USE_CUDA AND CUDA_HAVE_GPU )
+#
+#if    ( MPI_FOUND AND LAMA_USE_MPI )
+#    target_link_libraries ( ama ${MPI_LIBRARIES} )
+#endif ( MPI_FOUND AND LAMA_USE_MPI )
+#
+#if    ( GPI2_FOUND AND IBVERBS_FOUND AND LAMA_USE_GPI2 )
+#    target_link_libraries ( ama ${GPI2_LIBRARIES} ${IBVERBS_LIBRARIES} )
+#endif ( GPI2_FOUND AND IBVERBS_FOUND AND LAMA_USE_GPI2 )
 
-set ( LAMA_LINK_LIBRARIES ${SCAI_COMMON_LIBRARY} )
-set ( LAMA_LINK_LIBRARIES ${LAMA_LINK_LIBRARIES} ${SCAI_LOGGING_LIBRARY} )
-set ( LAMA_LINK_LIBRARIES ${LAMA_LINK_LIBRARIES} ${SCAI_TASKING_LIBRARY} )
-set ( LAMA_LINK_LIBRARIES ${LAMA_LINK_LIBRARIES} ${SCAI_MEMORY_LIBRARY} )
-if ( SCAI_TRACE_LEVEL STREQUAL "ON" )
-    set( LAMA_LINK_LIBRARIES ${LAMA_LINK_LIBRARIES} ${SCAI_TRACING_LIBRARY} )
-endif ( )
-
-# amacuda
-if ( CUDA_FOUND AND LAMA_USE_CUDA AND CUDA_HAVE_GPU )
-    set ( LAMA_LINK_LIBRARIES ${LAMA_LINK_LIBRARIES} amacuda )
-    set ( LAMA_USER_LINK_LIBRARIES "${LAMA_USER_LINK_LIBRARIES} -lamacuda" )
-    set ( ADDITIONAL_EXTERNAL_LINKER_FLAGS ${ADDITIONAL_EXTERNAL_LINKER_FLAGS}  ${CUDA_cusparse_LIBRARY}
-                                                                                ${CUDA_cublas_LIBRARY} 
-                                                                                ${CUDA_CUDART_LIBRARY}
-                                                                                ${CUDA_CUDA_LIBRARY} )          
-endif ( CUDA_FOUND AND LAMA_USE_CUDA AND CUDA_HAVE_GPU )
-
-# amamic
-if ( LAMA_USE_MIC )
-    set ( LAMA_LINK_LIBRARIES ${LAMA_LINK_LIBRARIES} amamic )
-    set ( LAMA_USER_LINK_LIBRARIES "${LAMA_USER_LINK_LIBRARIES} -lamamic" )
-endif ( LAMA_USE_MIC )
-
-# amampi
-if ( MPI_FOUND AND LAMA_USE_MPI )
-    set ( LAMA_LINK_LIBRARIES ${LAMA_LINK_LIBRARIES} amampi )
-    set ( LAMA_USER_LINK_LIBRARIES "${LAMA_USER_LINK_LIBRARIES} -lamampi" )
-    set ( ADDITIONAL_EXTERNAL_LINKER_FLAGS ${ADDITIONAL_EXTERNAL_LINKER_FLAGS} ${MPI_LIBRARIES} )
-endif ( MPI_FOUND AND LAMA_USE_MPI )
-
-# amagpi
-if ( GPI2_FOUND AND IBVERBS_FOUND AND LAMA_USE_GPI2 )
-    set ( LAMA_LINK_LIBRARIES ${LAMA_LINK_LIBRARIES} amagpi )
-    set ( LAMA_USER_LINK_LIBRARIES "${LAMA_USER_LINK_LIBRARIES} -lamagpi" )
-    set ( ADDITIONAL_EXTERNAL_LINKER_FLAGS ${ADDITIONAL_EXTERNAL_LINKER_FLAGS} ${GPI2_LIBRARIES} ${IBVERBS_LIBRARIES} )
-endif ( GPI2_FOUND AND IBVERBS_FOUND AND LAMA_USE_GPI2 )
-
-set ( LAMA_USER_LINK_FLAGS "-Wl,--whole-archive ${LAMA_USER_LINK_LIBRARIES} -Wl,--no-whole-archive" )
-
-# blas lapack 
 if ( SCALAPACK_FOUND AND MPI_FOUND AND LAMA_USE_MPI )
-    set ( LAMAPP_LINK_LIBRARIES ${LAMAPP_LINK_LIBRARIES} ${LAMA_PBLAS_LIBRARIES} ${LAMA_BLAS_LIBRARIES})
+    target_link_libraries ( ama ${LAMA_PBLAS_LIBRARIES} )
     add_definitions( -DLAMA_MKL_SCALAPACK )
-else ( SCALAPACK_FOUND AND MPI_FOUND AND LAMA_USE_MPI )
-    set ( LAMAPP_LINK_LIBRARIES ${LAMAPP_LINK_LIBRARIES} ${LAMA_BLAS_LIBRARIES} )
 endif ( SCALAPACK_FOUND AND MPI_FOUND AND LAMA_USE_MPI )
 
-# Metis / ParMetis
 if ( METIS_FOUND )
-    set( LAMA_LINK_LIBRARIES ${LAMA_LINK_LIBRARIES} ${METIS_LIBRARY} )
-    set ( ADDITIONAL_EXTERNAL_LINKER_FLAGS ${ADDITIONAL_EXTERNAL_LINKER_FLAGS} ${METIS_LIBRARY} )
+    target_link_libraries( ama ${METIS_LIBRARY} )
 endif ( METIS_FOUND ) 
 
 if ( METIS_FOUND AND PARMETIS_FOUND )
-    set( LAMA_LINK_LIBRARIES ${LAMA_LINK_LIBRARIES} ${PARMETIS_LIBRARY} )
-    set ( ADDITIONAL_EXTERNAL_LINKER_FLAGS ${ADDITIONAL_EXTERNAL_LINKER_FLAGS} ${PARMETIS_LIBRARY} )
+    target_link_libraries( ama ${PARMETIS_LIBRARY} )
 endif ( METIS_FOUND AND PARMETIS_FOUND )
-
-if ( LAMA_BLAS_FOUND )
-    set ( LAMA_LINK_LIBRARIES ${LAMA_LINK_LIBRARIES} ${LAMAPP_LINK_LIBRARIES} )
-    set ( ADDITIONAL_EXTERNAL_LINKER_FLAGS ${ADDITIONAL_EXTERNAL_LINKER_FLAGS} ${LAMAPP_LINK_LIBRARIES} )
-endif( LAMA_BLAS_FOUND )
-
-# thread library
-if ( NOT WIN32 )
-    # set ( LAMA_LINK_LIBRARIES ${LAMA_LINK_LIBRARIES} ${LAMA_THREAD_LIBRARY} )
-    # set ( ADDITIONAL_EXTERNAL_LINKER_FLAGS ${ADDITIONAL_EXTERNAL_LINKER_FLAGS} ${LAMA_THREAD_LIBRARY} )
-endif ( NOT WIN32 )
-
-# generate additional linker flags for the examples
-foreach ( lib ${ADDITIONAL_EXTERNAL_LINKER_FLAGS} )
-    get_filename_component ( libname ${lib} NAME_WE )
-    get_filename_component ( libpath ${lib} PATH )
-    get_filename_component ( libext ${lib} EXT )
-    
-    if ( NOT ${libpath} STREQUAL "" )        
-        list_contains(contains "-L${libpath}" "${LAMA_USER_LINK_FLAGS}")
-        if ( NOT contains )
-          set ( LAMA_USER_LINK_FLAGS "${LAMA_USER_LINK_FLAGS} -L${libpath}" )
-        endif ( NOT contains )
-    endif ( NOT ${libpath} STREQUAL "" )
-    
-    if ( "${libext}" STREQUAL "" )
-        set ( LAMA_USER_LINK_FLAGS "${LAMA_USER_LINK_FLAGS} -l${libname}" )
-    else ( "${libext}" STREQUAL "" )
-        string ( LENGTH ${libname} namelength )
-        math ( EXPR namelength ${namelength}-3 )
-        string ( SUBSTRING ${libname} 3 ${namelength} libname )
-        set ( LAMA_USER_LINK_FLAGS "${LAMA_USER_LINK_FLAGS} -l${libname}" )
-    endif ( "${libext}" STREQUAL "" )
-endforeach ( lib ${LAMAPP_LINK_LIBRARIES} )
-
-# override the linker flags if lama is build SHARED
-if ( NOT ${LAMA_LIBRARY_TYPE} STREQUAL STATIC )
-    set ( LAMA_USER_LINK_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${ADDITIONAL_CXX_FLAGS} ${ADDITIONAL_LINKER_FLAGS} -ldl ${LAMA_USER_LINK_LIBRARIES}" )
-endif ( NOT ${LAMA_LIBRARY_TYPE} STREQUAL STATIC )
 
 # generate file make.inc + install it
 configure_file ( "${CMAKE_SOURCE_DIR}/examples/make.inc.in" "${PROJECT_BINARY_DIR}/examples/make.inc" )
 install ( FILES "${PROJECT_BINARY_DIR}/examples/make.inc" DESTINATION share/examples )
-
-if ( LAMA_ADDITIONAL_LINK_FLAGS )
-    set_target_properties ( ama PROPERTIES LINK_FLAGS ${LAMA_ADDITIONAL_LINK_FLAGS} )
-endif ( LAMA_ADDITIONAL_LINK_FLAGS )
-
-
-# add additional link libraries
-set ( LAMA_LINK_LIBRARIES ${LAMA_LINK_LIBRARIES} ${LAMA_ADDITIONAL_LINK_LIBRARIES} )
-
-target_link_libraries ( ama ${LAMA_LINK_LIBRARIES} )
 
 ### add definitions ###
 if ( WIN32 )
@@ -322,23 +257,15 @@ if ( WIN32 )
 endif ( WIN32 )
 
 ### install ###
+
 install ( TARGETS ama DESTINATION lib )
 
-
 ## end build lama library
-
-if ( FOUND_BOOST_TEST AND LAMA_BUILD_TEST )
-    add_subdirectory ( test )
-endif ( FOUND_BOOST_TEST AND LAMA_BUILD_TEST )
 
 ### Examples ###
 # copy examples in build directory + install it
 file ( COPY ${CMAKE_SOURCE_DIR}/examples DESTINATION ${CMAKE_BINARY_DIR} )
 install ( DIRECTORY ${CMAKE_SOURCE_DIR}/examples DESTINATION share )
-
-### Doxygen and Sphinx Configuration ###
-include ( Package/Doxygen )
-include ( Package/Sphinx )
 
 ## install library.hpp
 configure_file ( "${CMAKE_SOURCE_DIR}/lama.hpp.in" "${CMAKE_CURRENT_BINARY_DIR}/include/lama.hpp" )

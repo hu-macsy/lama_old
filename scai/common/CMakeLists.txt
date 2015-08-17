@@ -40,6 +40,7 @@ project ( common CXX C )
 set ( CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/../../CMake/Modules" )
 
 ## Define all search packages
+include ( InternalDependencies )
 include ( SearchPackages/Common )
 
 # Find required packages
@@ -65,6 +66,10 @@ include ( SetNVCCFlags )
 ## Project System-Include
 include_directories ( ../.. )
 
+foreach    ( module ${SCAI_COMMON_INTERNAL_DEPS} )
+    include_directories( ${${module}_INCLUDE_DIR} )
+endforeach ( module ${SCAI_COMMON_INTERNAL_DEPS} )
+
 ## add subdirectories
 add_subdirectory ( examples )
 
@@ -87,6 +92,10 @@ include_directories ( . )
 
 add_library ( scai_common SHARED ${CPP_SOURCES} ${CUDA_SOURCES} )
 target_link_libraries( scai_common ${PTHREADS_LIBRARY} )
+
+foreach    ( module ${SCAI_COMMON_INTERNAL_DEPS} )
+    target_link_libraries ( scai_logging ${${module}_LIBRARY} )
+endforeach    ( module ${SCAI_COMMON_INTERNAL_DEPS} )
 
 ### install ###
 

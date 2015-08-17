@@ -1,5 +1,5 @@
 ###
- # @file CMakeLists.txt
+ # @file scai/memory/CMakeLists.txt
  #
  # @license
  # Copyright (c) 2009-2015
@@ -40,6 +40,7 @@ project( memory CXX C )
 set ( CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/../../CMake/Modules" )
 
 ## Define all search packages
+include ( InternalDependencies )
 include ( SearchPackages/Memory ) 
 
 # Find required packages
@@ -65,10 +66,10 @@ include ( SetNVCCFlags )
 ## Project System-Include
 include_directories ( ../.. )
 
-set ( DEPS SCAI_COMMON SCAI_LOGGING SCAI_TRACING SCAI_TASKING )
-foreach    ( module ${DEPS} )
-    include_directories( ${${module}_INCLUDE_DIR} )
-endforeach ( module ${DEPS} )
+foreach    ( module ${SCAI_MEMORY_INTERNAL_DEPS} )
+	string ( TOUPPER ${module} upper_module )
+    include_directories( ${${upper_module}_INCLUDE_DIR} )
+endforeach ( module ${SCAI_MEMORY_INTERNAL_DEPS} )
 
 ### add definitions ###
 
@@ -103,9 +104,10 @@ add_library ( scai_memory SHARED ${CPP_SOURCES} ${CUDA_SOURCES} )
 target_link_libraries ( scai_memory ${CUDA_CUDA_LIBRARY} ${CUDA_CUDART_LIBRARY}
                                ${CUDA_cublas_LIBRARY} ${CUDA_cusparse_LIBRARY} )
 
-foreach    ( module ${DEPS} )
-    target_link_libraries ( scai_memory ${${module}_LIBRARY} )
-endforeach    ( module ${DEPS} )
+foreach    ( module ${SCAI_MEMORY_INTERNAL_DEPS} )
+	string ( TOUPPER ${module} upper_module )
+    target_link_libraries ( scai_memory ${${upper_module}_LIBRARY} )
+endforeach    ( module ${SCAI_MEMORY_INTERNAL_DEPS} )
 
 ### install ###
 

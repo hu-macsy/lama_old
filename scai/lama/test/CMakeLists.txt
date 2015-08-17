@@ -1,5 +1,5 @@
 ###
- # @file CMakeLists.txt
+ # @file scai/lama/test/CMakeLists.txt
  #
  # @license
  # Copyright (c) 2009-2015
@@ -25,7 +25,7 @@
  # SOFTWARE.
  # @endlicense
  #
- # @brief test/CMakeLists.txt
+ # @brief scai/lama/test/CMakeLists.txt
  # @author Jan Ecker
  # @date 03.04.2013
  # @since 1.0.0

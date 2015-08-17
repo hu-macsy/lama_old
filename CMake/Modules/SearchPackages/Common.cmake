@@ -34,6 +34,7 @@
 # Find required packages
 set ( REQUIRED_PACKAGES_TO_FIND
         Threads # use ${CMAKE_THREAD_LIBS_INIT} for target_link_libraries
+	${SCAI_COMMON_INTERNAL_DEPS}
         #add required packages here
     )
     
