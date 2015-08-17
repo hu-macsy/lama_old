@@ -31,10 +31,6 @@
  # @since 1.0.0
 ###
 
-### MPI source files need path to find "mpi.h"
-
-include_directories ( ${MPI_INCLUDE_PATH} )
-
 ### Add classes and header files ###
 set ( CLASSES
         MPICommunicator

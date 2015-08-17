@@ -125,12 +125,20 @@ endif ( WIN32 )
 ### set this dir as lama source dir ###
 lama_set_source_dir ()
 
+if    ( MPI_FOUND AND LAMA_USE_MPI )
+	include_directories ( ${MPI_INCLUDE_PATH} ) 
+endif ( MPI_FOUND AND LAMA_USE_MPI )
+
+if    ( CUDA_FOUND AND LAMA_USE_CUDA )
+	include_directories ( ${CUDA_INCLUDE_DIRS} )
+endif ( CUDA_FOUND AND LAMA_USE_CUDA )
+
 if ( METIS_FOUND )
-    include_directories( ${METIS_INCLUDE_DIR} ) 
+    include_directories ( ${METIS_INCLUDE_DIR} ) 
 endif ( METIS_FOUND )
 
 if ( METIS_FOUND AND PARMETIS_FOUND )
-    include_directories( ${PARMETIS_INCLUDE_DIR} ) 
+    include_directories ( ${PARMETIS_INCLUDE_DIR} ) 
 endif ( METIS_FOUND AND PARMETIS_FOUND )
 
 if ( LAMA_BLAS_NAME STREQUAL "MKL" )
@@ -212,7 +220,13 @@ endif ( WIN32 )
 link_directories ( ${LAMAPP_LINK_DIRECTORIES} )
 
 ### add library ###
-add_library ( ama ${LAMA_LIBRARY_TYPE} ${CXX_SOURCES} ${HEADERS} )
+
+if    ( CUDA_FOUND AND LAMA_USE_CUDA AND CUDA_HAVE_GPU )
+	cuda_compile ( CUDA_FILES ${CUDA_SOURCES} )
+	set ( CXX_SOURCES ${CXX_SOURCES} ${CUDA_FILES} )
+endif ( CUDA_FOUND AND LAMA_USE_CUDA AND CUDA_HAVE_GPU )
+
+add_library ( ama ${LAMA_LIBRARY_TYPE} ${CXX_SOURCES} ) #${HEADERS} )
 
 foreach    ( module ${SCAI_LAMA_INTERNAL_DEPS} )
 	string ( TOUPPER ${module} upper_module )
@@ -221,18 +235,18 @@ endforeach ( module ${SCAI_LAMA_INTERNAL_DEPS} )
 
 target_link_libraries ( ama ${LAMA_BLAS_LIBRARIES} )
 
-#if    ( CUDA_FOUND AND LAMA_USE_CUDA AND CUDA_HAVE_GPU )
-#	 target_link_libraries ( ama ${CUDA_cusparse_LIBRARY} ${CUDA_cublas_LIBRARY}
-#	 							 ${CUDA_CUDART_LIBRARY} ${CUDA_CUDA_LIBRARY} )          
-#endif ( CUDA_FOUND AND LAMA_USE_CUDA AND CUDA_HAVE_GPU )
-#
-#if    ( MPI_FOUND AND LAMA_USE_MPI )
-#    target_link_libraries ( ama ${MPI_LIBRARIES} )
-#endif ( MPI_FOUND AND LAMA_USE_MPI )
-#
-#if    ( GPI2_FOUND AND IBVERBS_FOUND AND LAMA_USE_GPI2 )
-#    target_link_libraries ( ama ${GPI2_LIBRARIES} ${IBVERBS_LIBRARIES} )
-#endif ( GPI2_FOUND AND IBVERBS_FOUND AND LAMA_USE_GPI2 )
+if    ( CUDA_FOUND AND LAMA_USE_CUDA AND CUDA_HAVE_GPU )
+	 target_link_libraries ( ama ${CUDA_cusparse_LIBRARY} ${CUDA_cublas_LIBRARY}
+	 							 ${CUDA_CUDART_LIBRARY} ${CUDA_CUDA_LIBRARY} )          
+endif ( CUDA_FOUND AND LAMA_USE_CUDA AND CUDA_HAVE_GPU )
+
+if    ( MPI_FOUND AND LAMA_USE_MPI )
+    target_link_libraries ( ama ${MPI_LIBRARIES} )
+endif ( MPI_FOUND AND LAMA_USE_MPI )
+
+if    ( GPI2_FOUND AND IBVERBS_FOUND AND LAMA_USE_GPI2 )
+    target_link_libraries ( ama ${GPI2_LIBRARIES} ${IBVERBS_LIBRARIES} )
+endif ( GPI2_FOUND AND IBVERBS_FOUND AND LAMA_USE_GPI2 )
 
 if ( SCALAPACK_FOUND AND MPI_FOUND AND LAMA_USE_MPI )
     target_link_libraries ( ama ${LAMA_PBLAS_LIBRARIES} )
