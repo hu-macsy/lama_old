@@ -42,8 +42,8 @@ __ http://log4cpp.hora-obscura.de/index.php/LoggingLibraryForCpp
 - Boost logging might be integrated in one of the next versions of Boost but not yet; it has only include
   files but no library itself; configuration files are not supported.
 
-Logging in LAMA
----------------
+SCAI Logging
+------------
 
 We decided to use an own simple logging facilitate to decrease dependencies with other software packages.
 The macros make it possible to implement the logging with one arbitrary library and may be later
@@ -101,14 +101,14 @@ There is an include file that contains the definitions for all the macros:
 
 	#include <scai/logging.hpp>
 
-Disabling logging at compile time
----------------------------------
+Configuration logging at compile time
+-------------------------------------
 
 By default, all logging statements will be compiled so that they can be enabled at runtime. If the logging
 is switched off at runtime, the logging becomes just a comparison between integers. But even this might
-cause some overhead so log4espp provides the possibility to disable logging already at compile time.
+cause some overhead so this logging library provides the possibility to disable logging already at compile time.
 
-Before the file "log4espp.h" is included one of the following macros might be used to disable certain logging
+Before the file "scai/logging.hpp" is included one of the following macros might be used to disable certain logging
 messages in the source file already at compile time:
 
 ::
@@ -178,8 +178,8 @@ In the implementation of the class, e.g. Example.cpp, the logger has to be defin
 
 	SCAI_LOG_DEF_LOGGER(Example::logger, "Example");
  
-Configuration of Logging with the default logger
-------------------------------------------------
+Configuration of logging at runtime
+-----------------------------------
 
 Logging can be configured at runtime by setting the environment variable ``SCAI_LOG`` with a configuration file.
 
@@ -187,7 +187,10 @@ Logging can be configured at runtime by setting the environment variable ``SCAI_
 
 	export SCAI_LOG=config
 
-The file config contains lines that specfy the levels of the logger.
+If the variable is not set, a logging file with the name .loggingrc is searched in the home directory of the user.
+If this file is also not available, the default configuration is chosen.
+
+The configuration file should contain lines that specfy the levels of the logger.
 
 ::
 

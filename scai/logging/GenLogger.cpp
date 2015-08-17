@@ -345,17 +345,22 @@ void GenLogger::configure()
         setFormat( "#date, #time #name @ #thread ( #func -> #file::#line ) #level #msg" );
     }
 
+    const char homeConfigFile[] = ".loggingrc";
     const char* configFile = getenv( "SCAI_LOG" );
 
     if ( configFile == NULL )
     {
-        // environment variable not set, so we try it at $HOME/.logging
+
+        // environment variable not set, so we try it at $HOME/.loggingrc
+
         const char* home = getenv( "HOME" );
 
         if ( home != NULL )
         {
             configFileString = home;
-            configFileString += "/.loggingrc";
+            configFileString += "/";
+            configFileString += homeConfigFile;
+
             FILE* fp = fopen ( configFileString.c_str(), "r" );
 
             if ( fp != NULL )
@@ -368,7 +373,7 @@ void GenLogger::configure()
 
     if ( configFile == NULL )
     {
-        SCAI_LOG_WARN( ( *rootLogger ), "SCAI_LOG not set, no $HOME/.logging, so use default configuration" );
+        SCAI_LOG_WARN( ( *rootLogger ), "SCAI_LOG not set, no $HOME/" << homeConfigFile << ", so use default configuration" );
     }
     else if ( strlen( configFile ) == 0 )
     {
