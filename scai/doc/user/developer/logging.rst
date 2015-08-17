@@ -60,9 +60,9 @@ hierarchically that makes it more comfortable to configure the loggers.
 
 ::
 
-	SCAI_LOG_DEF_LOGGER( Vector::logger, "Vector" ); 
-	SCAI_LOG_DEF_LOGGER( CSRMatrix::logger, "Matrix.CSR" );
-	SCAI_LOG_DEF_LOGGER( ELLMatrix::logger, "Matrix.ELL" );
+    SCAI_LOG_DEF_LOGGER( Vector::logger, "Vector" ); 
+    SCAI_LOG_DEF_LOGGER( CSRMatrix::logger, "Matrix.CSR" );
+    SCAI_LOG_DEF_LOGGER( ELLMatrix::logger, "Matrix.ELL" );
 
 Furthermore, for template classes:
 
@@ -75,18 +75,18 @@ variable logger must have been defined with one of the two previous macros:
 
 ::
 
-	SCAI_LOG_TRACE( logger, "trace message" );
-	SCAI_LOG_DEBUG( logger, "debug message" );
-	SCAI_LOG_INFO ( logger, "info message" );
-	SCAI_LOG_WARN ( logger, "warn message" );
-	SCAI_LOG_ERROR( logger, "error message" );
-	SCAI_LOG_FATAL( logger, "fatal message" );
+    SCAI_LOG_TRACE( logger, "trace message" );
+    SCAI_LOG_DEBUG( logger, "debug message" );
+    SCAI_LOG_INFO ( logger, "info message" );
+    SCAI_LOG_WARN ( logger, "warn message" );
+    SCAI_LOG_ERROR( logger, "error message" );
+    SCAI_LOG_FATAL( logger, "fatal message" );
 
 It is possible to combine arguments like it is done for streams:
 
 ::
 
-	SCAI_LOG_DEBUG( logger, "loop iteration " << i " of " << n );
+    SCAI_LOG_DEBUG( logger, "loop iteration " << i " of " << n );
 
 The general idea is that the logging should appear in the source code but logging is usually disabled at
 runtime especially for the lower levels (DEBUG, INFO).
@@ -99,7 +99,7 @@ There is an include file that contains the definitions for all the macros:
 
 ::
 
-	#include <scai/logging.hpp>
+    #include <scai/logging.hpp>
 
 Configuration logging at compile time
 -------------------------------------
@@ -113,13 +113,13 @@ messages in the source file already at compile time:
 
 ::
 
-	#define SCAI_LOG_LEVEL_TRACE
-	#define SCAI_LOG_LEVEL_DEBUG    // no trace logging
-	#define SCAI_LOG_LEVEL_INFO     // default, no trace and debug logging
-	#define SCAI_LOG_LEVEL_WARN     // no trace, debug and info logging
-	#define SCAI_LOG_LEVEL_ERROR    // no trace, debug, info, warn logging
-	#define SCAI_LOG_LEVEL_FATAL    // no trace, debug, info, warn, error
-	#define SCAI_LOG_LEVEL_OFF      // all logging statements are disabled
+    #define SCAI_LOG_LEVEL_TRACE
+    #define SCAI_LOG_LEVEL_DEBUG    // no trace logging
+    #define SCAI_LOG_LEVEL_INFO     // default, no trace and debug logging
+    #define SCAI_LOG_LEVEL_WARN     // no trace, debug and info logging
+    #define SCAI_LOG_LEVEL_ERROR    // no trace, debug, info, warn logging
+    #define SCAI_LOG_LEVEL_FATAL    // no trace, debug, info, warn, error
+    #define SCAI_LOG_LEVEL_OFF      // all logging statements are disabled
 
 Be careful when using one of these macros. It implies that the corresponding logging messages for the lower
 levels will become empty and do not appear any more in the code. They cannot be enabled at runtime without
@@ -138,13 +138,13 @@ the logging. It should be executed only if the corresponding logging level is en
    if ( SCAI_LOG_INFO_ON( rootLogger ) )
    {
        int sum = 0;
-       for (int k = 0; k < N; k++)
+       for ( int k = 0; k < N; k++ )
        {
            sum += k;
        }
        SCAI_LOG_INFO( rootLogger, "main program terminates with sum = " << sum );
    }
-	#endif
+   #endif
 
 The macro SCAI_LOG_INFO_ON( logger ) returns true if the info level is enabled for the logger at runtme. The
 guard LOG4_INFO_ENABLED might be used disable the code even at compile time if not needed.
@@ -184,7 +184,7 @@ In the implementation of the class, e.g. Example.cpp, the logger has to be defin
 
 ::
 
-	SCAI_LOG_DEF_LOGGER( Example::logger, "Example" )
+    SCAI_LOG_DEF_LOGGER( Example::logger, "Example" )
     SCAI_LOG_DEF_TEMPLATE_LOGGER( template <typename T>, SparseMatrix<T>::logger, "Matrix.SparseMatrix" )
  
 Configuration of logging at runtime
@@ -194,7 +194,7 @@ Logging can be configured at runtime by setting the environment variable ``SCAI_
 
 .. code-block:: bash
 
-	export SCAI_LOG=config
+    export SCAI_LOG=config
 
 If the variable is not set, a logging file with the name .loggingrc is searched in the home directory of the user.
 If this file is also not available, the default configuration is chosen.
@@ -203,11 +203,11 @@ The configuration file should contain lines that specfy the levels of the logger
 
 ::
 
-	<root> = ERROR
-	Matrix = INFO
-	Matrix.CSRSparseMatrix = DEBUG
-	Distribution = INFO
-	Distribution.BlockDistribution = WARN
+    <root> = ERROR
+    Matrix = INFO
+    Matrix.CSRSparseMatrix = DEBUG
+    Distribution = INFO
+    Distribution.BlockDistribution = WARN
 
 The default configuration for all loggers is level *WARN* if no configuration file is specified or if no
 level has been specified in the configuration file. The RootLogger can be referenced by **<root>**.
@@ -216,8 +216,8 @@ For Debugging purposes it is also possible to flush the output of the logger, so
 displayed even if the program crashes. Flushing can be activated by the config file:
 
 ::
-	
-	flush = true
+
+    flush = true
 
 The default output format of logging messages is as follows:
 
@@ -265,13 +265,13 @@ lower level and they can not be used at runtime any more.
  
 ::
 
-	#  Debug   : use -DSCAI_LOG_LEVEL_DEBUG
-	#  Release : use -DSCAI_LOG_LEVEL_INFO
-	#
-	#  For serious problems: -DSCAI_LOG_LEVEL_TRACE
-	#  For benchmarks:       -DSCAI_LOG_LEVEL_OFF (or -DSCAI_LOG_LEVEL_FATAL, -DSCAI_LOG_LEVEL_ERROR)
+    #  Debug   : use -DSCAI_LOG_LEVEL_DEBUG
+    #Release : use -DSCAI_LOG_LEVEL_INFO
+    #
+    #  For serious problems: -DSCAI_LOG_LEVEL_TRACE
+    #  For benchmarks:       -DSCAI_LOG_LEVEL_OFF (or -DSCAI_LOG_LEVEL_FATAL, -DSCAI_LOG_LEVEL_ERROR)
 
-	ADD_DEFINITIONS( -DSCAI_LOG_LEVEL_TRACE )
+    ADD_DEFINITIONS( -DSCAI_LOG_LEVEL_TRACE )
 
 Some Discussion and Further Ideas
 ---------------------------------
