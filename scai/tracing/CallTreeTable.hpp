@@ -107,7 +107,7 @@ public:
      *  the master/main thread.
      */
 
-    CallTreeTable( const char* threadName );
+    CallTreeTable( const char* prefix, const char* threadName );
 
     /** Destructor will also write final entries and close the output file. */
 
@@ -170,9 +170,9 @@ private:
 
     void close();
 
-    /** Open the output file for the calltree */
+    /** Open the output file for the calltree <prefix>.ct.<threadName> */
 
-    void open( const char* threadName );
+    void open( const char* prefix,  const char* threadName );
 
     FileTable mFileTable;
 };

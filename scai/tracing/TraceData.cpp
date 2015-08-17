@@ -152,10 +152,10 @@ int TraceData::getCurrentRegionId( const char* regionName )
     return 0; // compiler avoids warning
 }
 
-TraceData::TraceData( ThreadId threadId, bool mThreadEnabled ) :
+TraceData::TraceData( const char* prefix, ThreadId threadId, bool mThreadEnabled ) :
     mThreadId( threadId ),
     mRegionTable( mThreadEnabled ? common::Thread::getThreadName( threadId ) : NULL ),
-    mCallTreeTable( mThreadEnabled ? common::Thread::getThreadName( threadId ) : NULL )
+    mCallTreeTable( prefix, mThreadEnabled ? common::Thread::getThreadName( threadId ) : NULL )
 {
     SCAI_LOG_DEBUG( logger, "TraceData for thread " << threadId )
 }

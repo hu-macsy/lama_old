@@ -154,21 +154,23 @@ void CallTreeTable::close()
     }
 }
 
-void CallTreeTable::open( const char* threadSuffix )
+void CallTreeTable::open( const char* prefix, const char* threadSuffix )
 {
     if ( outfile.is_open() )
     {
         return;
     }
 
-    mFileName = "calltree.ct";
-    SCAI_LOG_DEBUG( logger, "open calltree file" );
+    mFileName = prefix;
+    mFileName += ".ct";
 
     if ( threadSuffix != NULL )
     {
         mFileName += ".";
         mFileName += threadSuffix;
     }
+
+    SCAI_LOG_DEBUG( logger, "open calltree file " << mFileName );
 
     outfile.open( mFileName.c_str(), ios::out );
 
@@ -188,13 +190,13 @@ void CallTreeTable::open( const char* threadSuffix )
     outfile << "define WALL_TIME " << rate << " WALL_TICKS" << endl;
 }
 
-CallTreeTable::CallTreeTable( const char* threadSuffix )
+CallTreeTable::CallTreeTable( const char* prefix, const char* threadSuffix )
 {
     callCachePos = 0;
     callCacheLast = 0;
     cacheHit = 0;
     cacheMiss = 0;
-    open( threadSuffix );
+    open( prefix, threadSuffix );
 }
 
 CallTreeTable::~CallTreeTable()

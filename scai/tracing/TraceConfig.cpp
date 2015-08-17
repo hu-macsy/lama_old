@@ -36,6 +36,7 @@
 // others
 #include <scai/tracing/VTInterface.hpp>
 #include <scai/tracing/TraceData.hpp>
+#include <scai/common/Exception.hpp>
 
 #include <iostream>
 #include <cstdlib>
@@ -273,8 +274,11 @@ TraceConfig::~TraceConfig()
     }
 
     // now print all info in a file
+
     std::ostringstream fileName;
-    fileName << mTraceFilePrefix << ".trace";
+
+    fileName << mTraceFilePrefix << ".time";
+
     /* For parallel processes we should add suffix for rank
 
     if( mComm->getSize() > 1 )
@@ -351,7 +355,16 @@ TraceData* TraceConfig::getTraceData( ThreadId threadId )
     {
         // this thread calls the first time a region
 
-        traceData.reset( new TraceData( threadId, mThreadEnabled ) );
+        try
+        {
+            traceData.reset( new TraceData( mTraceFilePrefix.c_str(), threadId, mThreadEnabled ) );
+        }
+        catch ( common::Exception& ex )
+        {
+            std::cerr << "getTraceData: caugh exception, will continue without tracing" << std::endl;
+            std::cerr << ex.what() << std::endl;
+        }
+
         mTraceDataMap.insert( std::pair<ThreadId, shared_ptr<TraceData> >( threadId, traceData ) );
     }
     else

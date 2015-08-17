@@ -50,13 +50,14 @@ public:
 
     typedef common::Thread::Id ThreadId;
 
-    /** Constructor of a new region table.
+    /** Constructor of new thread record for tracing data.
      *
-     *  @param[in] threadId  id of the thread to which region table belongs
+     *  @param[in] prefix string for the first part of the calltree filename
+     *  @param[in] threadId  id of the thread to which data belongs
      *  @param[in] threadEnabled if true tracing is done for all threads
      */
 
-    TraceData( ThreadId threadId, bool threadEnabled );
+    TraceData( const char* prefix, ThreadId threadId, bool threadEnabled );
 
     /** Destructor. */
 
