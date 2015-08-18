@@ -42,7 +42,7 @@ message ( STATUS "" )
 
 ### Set PROJECT NAME / supported LANGUAGES and Module Path ###
 project ( LAMA CXX C )
-set ( CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/../../CMake/Modules" )
+set ( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../CMake/Modules" )
 
 set ( LAMA_VERSION_NAME "Alpamayo" )
 set ( LAMA_COPYRIGHT_YEAR 2015 )
@@ -303,7 +303,7 @@ if ( NOT ${LAMA_LIBRARY_TYPE} STREQUAL STATIC )
 endif ( NOT ${LAMA_LIBRARY_TYPE} STREQUAL STATIC )
 
 # generate file make.inc + install it
-configure_file ( "${CMAKE_SOURCE_DIR}/examples/make.inc.in" "${PROJECT_BINARY_DIR}/examples/make.inc" )
+configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/examples/make.inc.in" "${PROJECT_BINARY_DIR}/examples/make.inc" )
 install ( FILES "${PROJECT_BINARY_DIR}/examples/make.inc" DESTINATION share/examples )
 
 if ( LAMA_ADDITIONAL_LINK_FLAGS )
@@ -333,18 +333,23 @@ endif ( FOUND_BOOST_TEST AND LAMA_BUILD_TEST )
 
 ### Examples ###
 # copy examples in build directory + install it
-file ( COPY ${CMAKE_SOURCE_DIR}/examples DESTINATION ${CMAKE_BINARY_DIR} )
-install ( DIRECTORY ${CMAKE_SOURCE_DIR}/examples DESTINATION share )
+file ( COPY ${CMAKE_CURRENT_SOURCE_DIR}/examples DESTINATION ${CMAKE_BINARY_DIR} )
+install ( DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/examples DESTINATION share )
 
 ### Doxygen and Sphinx Configuration ###
-include ( Package/Doxygen )
+# include ( Package/Doxygen )
 include ( Package/Sphinx )
 
 ## install library.hpp
-configure_file ( "${CMAKE_SOURCE_DIR}/lama.hpp.in" "${CMAKE_CURRENT_BINARY_DIR}/include/lama.hpp" )
+configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/lama.hpp.in" "${CMAKE_CURRENT_BINARY_DIR}/include/lama.hpp" )
 install ( FILES "${CMAKE_CURRENT_BINARY_DIR}/include/lama.hpp" DESTINATION include/scai )
 
 ## add custum target distClean
-include ( DistClean )
+
+## add custum target distClean, but only if this project is not included
+
+if ( CMAKE_SOURCE_DIR EQUAL CMAKE_CURRENT_SOURCE_DIR )
+    add_custom_target ( distclean )
+endif ()
 
 include ( LAMASummary )

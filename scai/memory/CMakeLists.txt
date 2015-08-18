@@ -37,7 +37,7 @@ cmake_minimum_required ( VERSION 2.8 )
 project( memory CXX C )
 
 ### Set Module Path
-set ( CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/../../CMake/Modules" )
+set ( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../CMake/Modules" )
 
 ## Define all search packages
 include ( SearchPackages/Memory ) 
@@ -61,6 +61,12 @@ include ( Package/CUDA )
 include ( SetBuildFlags )
 include ( SetCPPFlags )
 include ( SetNVCCFlags )
+
+set ( SCAI_MEMORY_LIBRARY memory
+      CACHE FILEPATH "memory library" )
+
+set ( SCAI_MEMORY_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR} 
+      CACHE PATH "memory include directory" )
 
 ## Project System-Include
 include_directories ( ../.. )
@@ -115,5 +121,8 @@ install ( FILES ${HPP_HEADERS} DESTINATION include/scai/memory )
 ## install library.hpp
 install ( FILES ../memory.hpp DESTINATION include/scai )
 
-## add custum target distClean
-include ( DistClean )
+## add custum target distClean, but only if this project is not included
+
+if ( CMAKE_SOURCE_DIR EQUAL CMAKE_CURRENT_SOURCE_DIR )
+    add_custom_target ( distclean )
+endif ()
