@@ -44,6 +44,5 @@ set ( REQUIRED_PACKAGES_TO_FIND
     
 # Find optional packages
 set ( OPTIONAL_PACKAGES_TO_FIND
-        scai_tracing
         #add optional packages here
     )

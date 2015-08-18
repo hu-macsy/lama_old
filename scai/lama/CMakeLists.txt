@@ -60,9 +60,8 @@ include ( SearchPackages/LAMA )
 
 ### Variables / CMAKE Functions ###
 include ( Variables ) #LAMA.CMakeLists
-include ( SearchPackages/LAMA )
 include ( Functions/allFunctions )
-include ( LAMAdefines ) #LAMA.CMakeLists
+include ( SCAIdefines ) #LAMA.CMakeLists
 include ( CompilerVersion ) #LAMA.CMakeLists
 
 ### PACKAGES ###

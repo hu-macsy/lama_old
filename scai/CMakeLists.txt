@@ -41,72 +41,126 @@ set ( CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/../CMake/Modules" )
 include ( Variables ) # VERBOSE, RPATH, LIB64, BUILD_SHARED
 include ( Functions/checkValue )
 include ( Functions/setAndCheckCache )
-include ( LAMAdefines ) # LAMA_: LOG_LEVEL, ASSERT_LEVEL, TRACE_LEVEL
+include ( SCAIdefines ) # SCAI_: LOG_LEVEL, ASSERT_LEVEL, TRACE_LEVEL
 include ( CompilerVersion )
 
 include ( Package/OpenMP )
 include ( Package/CUDA )
 include ( Package/MIC )
 include ( Package/Boost )
+#include ( Package/MPI )
 include ( Package/CodeCoverage ) # LAMA_USE_CODE_COVERAGE --> COVERAGE_FLAGS
 
+set ( REQUIRED_PACKAGES_TO_FIND Threads )
+set ( OPTIONAL_PACKAGES_TO_FIND LAMA_BLAS ParMetis REQUIRES Metis )
+
+# Find required packages
+foreach    ( PACKAGE_TO_FIND ${REQUIRED_PACKAGES_TO_FIND} )
+    find_package ( ${PACKAGE_TO_FIND} ${LAMA_FIND_PACKAGE_FLAGS} REQUIRED )
+endforeach ( PACKAGE_TO_FIND ${REQUIRED_PACKAGES_TO_FIND} )
+
+# Find optional packages
+foreach    ( PACKAGE_TO_FIND ${OPTIONAL_PACKAGES_TO_FIND} )
+    find_package ( ${PACKAGE_TO_FIND} ${LAMA_FIND_PACKAGE_FLAGS} )
+endforeach ( PACKAGE_TO_FIND ${OPTIONAL_PACKAGES_TO_FIND} )
+
+## documentation
+
+# user docu --> make userdoc, make userdoc_json, make install_userdoc
 find_package ( Sphinx )
 include ( Package/Sphinx )
+
+#system docu --> make doc
 find_package ( Doxygen )
 include ( Package/Doxygen )
-
-## Boost 
-if    ( Boost_INCLUDE_DIR )
-    include_directories ( ${Boost_INCLUDE_DIR} )
-endif ( Boost_INCLUDE_DIR )
 
 ## general compiler settings
 
 include ( SetBuildFlags )
 include ( SetCPPFlags )
+include ( SetNVCCFlags )
 
-## pass CACHE Variables to all subprojects
 
-#get_cmake_property ( CACHE_VARS CACHE_VARIABLES )
+## summary of what is found
+
+
+
+## pass CACHE Variables to all subprojects via white listing
+
+# loads variables WHITELIST, CUDA_WHITELIST, MPI_WHITELIST, MIC_WHITELIST
+include ( NeededCacheVariables )
+
+get_cmake_property ( CACHE_VARS CACHE_VARIABLES )
 #message ( STATUS "CACHE_VARS ${CACHE_VARS}" )
 
 foreach    ( CACHE_VAR ${CACHE_VARS} )
-    #get_property ( CACHE_VAR_HELPSTRING CACHE ${CACHE_VAR} PROPERTY HELPSTRING )
-    #if    ( CACHE_VAR_HELPSTRING STREQUAL "No help, variable specified on the command line." )
+    foreach    ( WHITELIST_ITEM ${WHITELIST} )
         
-        get_property ( CACHE_VAR_TYPE CACHE ${CACHE_VAR} PROPERTY TYPE )
-        #message ( STATUS "CACHE_VAR ${CACHE_VAR}" )
-        if     ( CACHE_VAR_TYPE STREQUAL "INTERNAL" )
-            # skip Variable
-        elseif ( CACHE_VAR_TYPE STREQUAL "UNINITIALIZED" )
-            set ( CACHE_VAR_TYPE )
-            list ( APPEND CMAKE_ARGS "-D${CACHE_VAR}${CACHE_VAR_TYPE}=${${CACHE_VAR}}" )
-        else   ( )
-            set( CACHE_VAR_TYPE :${CACHE_VAR_TYPE} )
-            list ( APPEND CMAKE_ARGS "-D${CACHE_VAR}${CACHE_VAR_TYPE}=${${CACHE_VAR}}" )
-        endif  ( )
-        #set(CMAKE_ARGS "${CMAKE_ARGS} -D${CACHE_VAR}${CACHE_VAR_TYPE}=\"${${CACHE_VAR}}\"")
-        #list ( APPEND CMAKE_ARGS "-D${CACHE_VAR}${CACHE_VAR_TYPE}=${${CACHE_VAR}}" )
-    #endif ( CACHE_VAR_HELPSTRING STREQUAL "No help, variable specified on the command line." )
+        string( COMPARE EQUAL "${CACHE_VAR}" "${WHITELIST_ITEM}" result )
+        if    ( ${result} )
+        	#message ( STATUS "${CACHE_VAR} matches ${WHITELIST_ITEM}" )
+        
+	        get_property ( CACHE_VAR_TYPE CACHE ${CACHE_VAR} PROPERTY TYPE )
+	        #message ( STATUS "CACHE_VAR ${CACHE_VAR}" )
+	        if     ( CACHE_VAR_TYPE STREQUAL "INTERNAL" )
+	            # skip Variable
+	        #elseif ( CACHE_VAR_TYPE STREQUAL "UNINITIALIZED" )
+	        #    set ( CACHE_VAR_TYPE )
+	        #    list ( APPEND CMAKE_ARGS "-D${CACHE_VAR}${CACHE_VAR_TYPE}=${${CACHE_VAR}}" )
+	        else   ( )
+	            set( CACHE_VAR_TYPE :${CACHE_VAR_TYPE} )
+	            list ( APPEND CMAKE_ARGS "-D${CACHE_VAR}${CACHE_VAR_TYPE}=${${CACHE_VAR}}" )
+	        endif  ( )
+	        #set(CMAKE_ARGS "${CMAKE_ARGS} -D${CACHE_VAR}${CACHE_VAR_TYPE}=\"${${CACHE_VAR}}\"")
+	        #list ( APPEND CMAKE_ARGS "-D${CACHE_VAR}${CACHE_VAR_TYPE}=${${CACHE_VAR}}" )
+        
+        endif ( ${result} )
+        
+    endforeach ( WHITELIST_ITEM ${WHITELIST} )
+    
+ foreach    ( WHITELIST_ITEM ${CUDA_WHITELIST} )
+        
+        string( COMPARE EQUAL "${CACHE_VAR}" "${WHITELIST_ITEM}" result )
+        if    ( ${result} )
+        	#message ( STATUS "${CACHE_VAR} matches ${WHITELIST_ITEM}" )
+        
+	        get_property ( CACHE_VAR_TYPE CACHE ${CACHE_VAR} PROPERTY TYPE )
+	        #message ( STATUS "CACHE_VAR ${CACHE_VAR}" )
+	        if     ( CACHE_VAR_TYPE STREQUAL "INTERNAL" )
+	            # skip Variable
+	        #elseif ( CACHE_VAR_TYPE STREQUAL "UNINITIALIZED" )
+	        #    set ( CACHE_VAR_TYPE )
+	        #    list ( APPEND CMAKE_ARGS "-D${CACHE_VAR}${CACHE_VAR_TYPE}=${${CACHE_VAR}}" )
+	        else   ( )
+	            set( CACHE_VAR_TYPE :${CACHE_VAR_TYPE} )
+	            list ( APPEND CMAKE_ARGS "-D${CACHE_VAR}${CACHE_VAR_TYPE}=${${CACHE_VAR}}" )
+	        endif  ( )
+	        #set(CMAKE_ARGS "${CMAKE_ARGS} -D${CACHE_VAR}${CACHE_VAR_TYPE}=\"${${CACHE_VAR}}\"")
+	        #list ( APPEND CMAKE_ARGS "-D${CACHE_VAR}${CACHE_VAR_TYPE}=${${CACHE_VAR}}" )
+        
+        endif ( ${result} )
+        
+    endforeach ( WHITELIST_ITEM ${CUDA_WHITELIST} )
+    
+    ## do the same for MPI_WHITELIST, MIC_WHITELIST
+    
 endforeach ( CACHE_VAR ${CACHE_VARS} )
 
 #message ( STATUS "Passed CMAKE_ARGS ${CMAKE_ARGS}" )
 
-set ( CMAKE_ARGS "-DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}" )
+## define external projects
 
-if    ( LAMA_USE_CODE_COVERAGE )
-	set ( CMAKE_ARGS "${CMAKE_ARGS} -DLAMA_USE_CODE_COVERAGE=1" ) 
-endif ( LAMA_USE_CODE_COVERAGE )
-
+# loads SCAI_[LIB]_INTERNAL_DEPS variables 
 include ( InternalDependencies )
+
 include ( ExternalProject )
 
 ExternalProject_Add ( scai_common 
 			DEPENDS ${SCAI_COMMON_INTERNAL_DEPS}
             PREFIX common
             SOURCE_DIR ${CMAKE_SOURCE_DIR}/common
-            CMAKE_ARGS "${CMAKE_ARGS}"
-            #CMAKE_CACHE_ARGS "${CMAKE_ARGS}"
+            CMAKE_ARGS "-DSCAI_COMPLETE_BUILD=1"
+            CMAKE_CACHE_ARGS "${CMAKE_ARGS}"
 	    	BINARY_DIR common
             )
                        
@@ -114,7 +168,8 @@ ExternalProject_Add ( scai_logging
             DEPENDS ${SCAI_LOGGING_INTERNAL_DEPS}
             PREFIX logging
             SOURCE_DIR ${CMAKE_SOURCE_DIR}/logging
-            CMAKE_ARGS "${CMAKE_ARGS}"
+            CMAKE_ARGS "-DSCAI_COMPLETE_BUILD=1"
+            CMAKE_CACHE_ARGS "${CMAKE_ARGS}"
 	    	BINARY_DIR logging
             )
             
@@ -122,7 +177,8 @@ ExternalProject_Add ( scai_tracing
             DEPENDS ${SCAI_TRACING_INTERNAL_DEPS}
             PREFIX tracing
             SOURCE_DIR ${CMAKE_SOURCE_DIR}/tracing
-            CMAKE_ARGS "${CMAKE_ARGS}"
+            CMAKE_ARGS "-DSCAI_COMPLETE_BUILD=1"
+            CMAKE_CACHE_ARGS "${CMAKE_ARGS}"
 	    	BINARY_DIR tracing
             )
 
@@ -130,7 +186,8 @@ ExternalProject_Add ( scai_tasking
             DEPENDS ${SCAI_TASKING_INTERNAL_DEPS}
             PREFIX tasking
             SOURCE_DIR ${CMAKE_SOURCE_DIR}/tasking
-            CMAKE_ARGS "${CMAKE_ARGS}"
+            CMAKE_ARGS "-DSCAI_COMPLETE_BUILD=1"
+            CMAKE_CACHE_ARGS "${CMAKE_ARGS}"
 	    	BINARY_DIR tasking
             )
 
@@ -138,7 +195,8 @@ ExternalProject_Add ( scai_memory
             DEPENDS ${SCAI_MEMORY_INTERNAL_DEPS}
             PREFIX memory
             SOURCE_DIR ${CMAKE_SOURCE_DIR}/memory
-            CMAKE_ARGS "${CMAKE_ARGS}"
+            CMAKE_ARGS "-DSCAI_COMPLETE_BUILD=1"
+            CMAKE_CACHE_ARGS "${CMAKE_ARGS}"
 	    	BINARY_DIR memory
             )
 
@@ -146,6 +204,7 @@ ExternalProject_Add ( lama
             DEPENDS ${SCAI_LAMA_INTERNAL_DEPS}
             PREFIX lama
             SOURCE_DIR ${CMAKE_SOURCE_DIR}/lama
-            CMAKE_ARGS "${CMAKE_ARGS}"
+            CMAKE_ARGS "-DSCAI_COMPLETE_BUILD=1"
+            CMAKE_CACHE_ARGS "${CMAKE_ARGS}"
 	    	BINARY_DIR lama
             )

@@ -53,9 +53,22 @@ foreach    ( PACKAGE_TO_FIND ${OPTIONAL_PACKAGES_TO_FIND} )
     find_package ( ${PACKAGE_TO_FIND} ${LAMA_FIND_PACKAGE_FLAGS} )
 endforeach ( PACKAGE_TO_FIND ${OPTIONAL_PACKAGES_TO_FIND} )
 
-### Include Compiler Flags
-include ( SetBuildFlags )
-include ( SetCPPFlags )
+if    ( NOT SCAI_COMPLETE_BUILD )
+
+	### Include Compiler Flags
+	include ( SetBuildFlags )
+	include ( SetCPPFlags )
+	
+else  ( NOT SCAI_COMPLETE_BUILD )
+
+	add_definitions( ${ADDITIONAL_WARNING_FLAGS} )
+
+	set ( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${ADDITIONAL_CXX_FLAGS}")
+	set ( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${ADDITIONAL_CXX_FLAGS_RELEASE} " )
+	set ( CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${ADDITIONAL_LINKER_FLAGS} " )
+	set ( CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${ADDITIONAL_LINKER_FLAGS} " )
+
+endif ( NOT SCAI_COMPLETE_BUILD )
 
 ## Project System-Include
 include_directories ( ../.. )
