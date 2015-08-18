@@ -1,5 +1,5 @@
 ###
- # @file CMakeLists.txt
+ # @file scai/tasking/CMakeLists.txt
  #
  # @license
  # Copyright (c) 2009-2015
@@ -40,6 +40,7 @@ project( scai_tasking CXX C )
 set ( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../CMake/Modules" )
 
 ## Define all search packages
+include ( InternalDependencies )
 include ( SearchPackages/Tasking ) 
 
 # Find required packages
@@ -65,10 +66,10 @@ set ( SCAI_TASKING_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}
 ## Project System-Include
 include_directories ( ../.. )
 
-set ( DEPS SCAI_COMMON SCAI_LOGGING SCAI_TRACING )
-foreach    ( module ${DEPS} )
-    include_directories( ${${module}_INCLUDE_DIR} )
-endforeach ( module ${DEPS} )
+foreach    ( module ${SCAI_TASKING_INTERNAL_DEPS} )
+	string ( TOUPPER ${module} upper_module )
+    include_directories( ${${upper_module}_INCLUDE_DIR} )
+endforeach ( module ${SCAI_TASKING_INTERNAL_DEPS} )
 
 ### add definitions ###
 
@@ -102,9 +103,10 @@ include_directories ( . )
 
 add_library ( scai_tasking SHARED ${CPP_SOURCES} )
 
-foreach    ( module ${DEPS} )
-    target_link_libraries ( scai_tasking ${${module}_LIBRARY} )
-endforeach    ( module ${DEPS} )
+foreach    ( module ${SCAI_TASKING_INTERNAL_DEPS} )
+	string ( TOUPPER ${module} upper_module )
+    target_link_libraries ( scai_tasking ${${upper_module}_LIBRARY} )
+endforeach    ( module ${SCAI_TASKING_INTERNAL_DEPS} )
 
 ### install ###
 

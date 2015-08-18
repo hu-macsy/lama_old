@@ -50,8 +50,10 @@ include ( Package/MIC )
 include ( Package/Boost )
 include ( Package/CodeCoverage ) # LAMA_USE_CODE_COVERAGE --> COVERAGE_FLAGS
 
-include ( FindSphinx )
+find_package ( Sphinx )
 include ( Package/Sphinx )
+find_package ( Doxygen )
+include ( Package/Doxygen )
 
 ## Boost 
 if    ( Boost_INCLUDE_DIR )
@@ -90,51 +92,60 @@ endforeach ( CACHE_VAR ${CACHE_VARS} )
 
 #message ( STATUS "Passed CMAKE_ARGS ${CMAKE_ARGS}" )
 
+set ( CMAKE_ARGS "-DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}" )
+
+if    ( LAMA_USE_CODE_COVERAGE )
+	set ( CMAKE_ARGS "${CMAKE_ARGS} -DLAMA_USE_CODE_COVERAGE=1" ) 
+endif ( LAMA_USE_CODE_COVERAGE )
+
+include ( InternalDependencies )
 include ( ExternalProject )
 
-ExternalProject_Add ( common 
+ExternalProject_Add ( scai_common 
+			DEPENDS ${SCAI_COMMON_INTERNAL_DEPS}
             PREFIX common
             SOURCE_DIR ${CMAKE_SOURCE_DIR}/common
-            #CMAKE_ARGS "${CMAKE_ARGS}"
-	    CMAKE_ARGS "-DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}"
+            CMAKE_ARGS "${CMAKE_ARGS}"
+            #CMAKE_CACHE_ARGS "${CMAKE_ARGS}"
+	    	BINARY_DIR common
             )
                        
-ExternalProject_Add ( logging 
-            DEPENDS common
+ExternalProject_Add ( scai_logging 
+            DEPENDS ${SCAI_LOGGING_INTERNAL_DEPS}
             PREFIX logging
             SOURCE_DIR ${CMAKE_SOURCE_DIR}/logging
-            #CMAKE_ARGS "${CMAKE_ARGS}"
-	    CMAKE_ARGS "-DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}"
+            CMAKE_ARGS "${CMAKE_ARGS}"
+	    	BINARY_DIR logging
             )
             
-ExternalProject_Add ( tracing 
-            DEPENDS common logging
+ExternalProject_Add ( scai_tracing 
+            DEPENDS ${SCAI_TRACING_INTERNAL_DEPS}
             PREFIX tracing
             SOURCE_DIR ${CMAKE_SOURCE_DIR}/tracing
-            #CMAKE_ARGS "${CMAKE_ARGS}"
-	    CMAKE_ARGS "-DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}"
+            CMAKE_ARGS "${CMAKE_ARGS}"
+	    	BINARY_DIR tracing
             )
 
-ExternalProject_Add ( tasking 
-            DEPENDS common logging tracing
+ExternalProject_Add ( scai_tasking 
+            DEPENDS ${SCAI_TASKING_INTERNAL_DEPS}
             PREFIX tasking
             SOURCE_DIR ${CMAKE_SOURCE_DIR}/tasking
-            #CMAKE_ARGS "${CMAKE_ARGS}"
-	    CMAKE_ARGS "-DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}"
+            CMAKE_ARGS "${CMAKE_ARGS}"
+	    	BINARY_DIR tasking
             )
 
-ExternalProject_Add ( memory
-            DEPENDS common logging tasking
+ExternalProject_Add ( scai_memory
+            DEPENDS ${SCAI_MEMORY_INTERNAL_DEPS}
             PREFIX memory
             SOURCE_DIR ${CMAKE_SOURCE_DIR}/memory
-            #CMAKE_ARGS "${CMAKE_ARGS}"
-	    CMAKE_ARGS "-DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}"
+            CMAKE_ARGS "${CMAKE_ARGS}"
+	    	BINARY_DIR memory
             )
 
 ExternalProject_Add ( lama
-            DEPENDS common logging memory tasking
+            DEPENDS ${SCAI_LAMA_INTERNAL_DEPS}
             PREFIX lama
             SOURCE_DIR ${CMAKE_SOURCE_DIR}/lama
-            #CMAKE_ARGS "${CMAKE_ARGS}"
-	    CMAKE_ARGS "-DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}"
+            CMAKE_ARGS "${CMAKE_ARGS}"
+	    	BINARY_DIR lama
             )

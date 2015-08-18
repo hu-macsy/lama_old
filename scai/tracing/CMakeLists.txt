@@ -40,6 +40,7 @@ project( scai_tracing CXX C )
 set ( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../CMake/Modules" )
 
 ## Define all search packages
+include ( InternalDependencies )
 include ( SearchPackages/Tracing ) 
 
 # Find required packages
@@ -70,10 +71,10 @@ set ( SCAI_TRACING_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}
 ## Project System-Include
 include_directories ( ../.. )
 
-set ( DEPS SCAI_COMMON SCAI_LOGGING )
-foreach    ( module ${DEPS} )
-    include_directories( ${${module}_INCLUDE_DIR} )
-endforeach ( module ${DEPS} )
+foreach    ( module ${SCAI_TRACING_INTERNAL_DEPS} )
+	string ( TOUPPER ${module} upper_module )
+    include_directories( ${${upper_module}_INCLUDE_DIR} )
+endforeach ( module ${SCAI_TRACING_INTERNAL_DEPS} )
 
 ### add definitions ###
 
@@ -116,9 +117,10 @@ file ( GLOB HPP_HEADERS "*.hpp" )
 
 add_library ( scai_tracing SHARED ${CPP_SOURCES} )
 
-foreach    ( module ${DEPS} )
-    target_link_libraries ( scai_tracing ${${module}_LIBRARY} )
-endforeach    ( module ${DEPS} )
+foreach    ( module ${SCAI_TRACING_INTERNAL_DEPS} )
+	string ( TOUPPER ${module} upper_module )
+    target_link_libraries ( scai_tracing ${${upper_module}_LIBRARY} )
+endforeach    ( module ${SCAI_TRACING_INTERNAL_DEPS} )
 
 ### install ###
 

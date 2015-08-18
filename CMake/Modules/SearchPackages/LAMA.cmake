@@ -33,11 +33,7 @@
 
 # Find required packages
 set ( REQUIRED_PACKAGES_TO_FIND
-        scai_common
-        scai_logging
-        scai_tracing
-        scai_tasking
-        scai_memory
+        ${SCAI_LAMA_INTERNAL_DEPS}
         #add required packages here
     )
     

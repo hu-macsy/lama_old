@@ -72,8 +72,17 @@ macro    ( lama_headers )
     install ( FILES ${CXX_HEADERS} DESTINATION "include/scai/lama/${RELATIVE_PATH}" )
 endmacro ( lama_headers )
 
+macro    ( lama_cuda_sources )
+	lama_get_relative_path ( LAMA_RELATIVE_PATH )
+    
+    foreach   ( SOURCE_FILE ${ARGN} )
+        set ( CUDA_SOURCES ${CUDA_SOURCES} "${LAMA_RELATIVE_PATH}${SOURCE_FILE}.cu" )
+    endforeach ( SOURCE_FILE ${ARGN} )
+endmacro ( lama_cuda_sources )
+
 # Publishes sources and headers in the parent scope
 macro    ( lama_add )
     set ( CXX_SOURCES ${CXX_SOURCES} PARENT_SCOPE )
     set ( CXX_HEADERS ${CXX_HEADERS} PARENT_SCOPE )
+    set ( CUDA_SOURCES ${CUDA_SOURCES} PARENT_SCOPE )
 endmacro ( lama_add )

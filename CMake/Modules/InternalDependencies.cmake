@@ -1,8 +1,8 @@
 ###
- # @file SearchPackages.cmake
+ # @file CMakeLists.txt
  #
  # @license
- # Copyright (c) 2009-2013
+ # Copyright (c) 2009-2015
  # Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  # for Fraunhofer-Gesellschaft
  #
@@ -25,24 +25,16 @@
  # SOFTWARE.
  # @endlicense
  #
- # @brief List of required and optional packages
- # @author Jan Ecker
- # @date 25.04.2013
- # @since 1.0.0
+ # @brief Central defenition of internal dependencies between sub projects
+ # @author Lauretta Schubert
+ # @date 17.08.2015
+ # @since 2.0.0
 ###
 
-# Find required packages
-set ( REQUIRED_PACKAGES_TO_FIND
-        Threads # use ${CMAKE_THREAD_LIBS_INIT} for target_link_libraries
-	${SCAI_COMMON_INTERNAL_DEPS}
-        #add required packages here
-    )
-    
-# Find optional packages
-set ( OPTIONAL_PACKAGES_TO_FIND
-        #add optional packages here
-    )
-
-###  Here we use PThread library for threads
-###  Note: FindThreads in CMake is available as Module, but is buggy, needs update of CheckIncludeFiles.cmake
-#find_library ( PTHREADS_LIBRARY NAMES pthread pthreads )
+set ( SCAI_COMMON_INTERNAL_DEPS )
+set ( SCAI_LOGGING_INTERNAL_DEPS scai_common )
+set ( SCAI_TRACING_INTERNAL_DEPS scai_common scai_logging )
+set ( SCAI_TASKING_INTERNAL_DEPS scai_common scai_logging scai_tracing )
+#set ( SCAI_KERNEL_INTERNAL_DEPS scai_common scai_logging scai_tracing )
+set ( SCAI_MEMORY_INTERNAL_DEPS scai_common scai_logging scai_tracing scai_tasking )
+set ( SCAI_LAMA_INTERNAL_DEPS scai_common scai_logging scai_tracing scai_tasking scai_memory ) #scai_kernel )

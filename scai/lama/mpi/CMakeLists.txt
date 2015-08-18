@@ -31,9 +31,6 @@
  # @since 1.0.0
 ###
 
-### set this dir as lama source dir ###
-lama_set_source_dir ()
-
 ### Add classes and header files ###
 set ( CLASSES
         MPICommunicator
@@ -48,29 +45,5 @@ set ( HEADERS
 lama_classes ( ${CLASSES} )
 lama_headers ( ${HEADERS} )
 
-### MPI source files need path to find "mpi.h"
-
-include_directories ( ${MPI_INCLUDE_PATH} )
-
-################################################################################
-#TODO: RECHECK!
-if ( CMAKE_COMPILER_IS_GNUCXX )
-    set_source_files_properties ( ${CXX_SOURCES} PROPERTIES COMPILE_FLAGS "-Wno-unused-parameter" )
-endif ( CMAKE_COMPILER_IS_GNUCXX )
-
-################################################################################
-
-### add library ###
-add_library ( amampi ${LAMA_LIBRARY_TYPE} ${CXX_SOURCES} )
-
-### set target link libraries ###  
-
-target_link_libraries ( amampi ${MPI_LIBRARIES} )
-
-### add definitions ###
-if ( WIN32 )
-    add_definitions ( -DLAMA_COMPILING_DLL )
-endif ( WIN32 )
-
-### install ####
-install ( TARGETS amampi DESTINATION lib )
+### add sources and headers to parent scope ###
+lama_add ()
