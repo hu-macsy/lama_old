@@ -62,12 +62,6 @@ include ( Package/CUDA )
 include ( SetBuildFlags )
 include ( SetCPPFlags )
 
-set ( SCAI_TRACING_LIBRARY scai_tracing
-      CACHE FILEPATH "tracing library" )
-
-set ( SCAI_TRACING_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR} 
-      CACHE PATH "tracing include directory" )
-
 ## Project System-Include
 include_directories ( ../.. )
 

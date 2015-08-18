@@ -57,12 +57,6 @@ endforeach ( PACKAGE_TO_FIND ${OPTIONAL_PACKAGES_TO_FIND} )
 include ( SetBuildFlags )
 include ( SetCPPFlags )
 
-set ( SCAI_TASKING_LIBRARY scai_tasking
-      CACHE FILEPATH "tasking library" )
-
-set ( SCAI_TASKING_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR} 
-      CACHE PATH "tasking include directory" )
-
 ## Project System-Include
 include_directories ( ../.. )
 

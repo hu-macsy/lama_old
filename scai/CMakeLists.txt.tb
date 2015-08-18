@@ -36,11 +36,68 @@ cmake_minimum_required ( VERSION 2.8 )
 project ( LAMA_ALL CXX C )
 
 ### Set Module Path
+
 set ( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../CMake/Modules" )
 
-foreach ( module common logging tracing tasking memory lama )
-    add_subdirectory( ${module} )
-endforeach ()
+# Project: common library
+
+add_subdirectory( common )
+
+### Set variables for Findscai_common so other projects can use it 
+
+set ( SCAI_COMMON_LIBRARY scai_common 
+      CACHE FILEPATH "common library" )
+
+set ( SCAI_COMMON_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/common
+      CACHE PATH "common include directory" )
+
+# Project: logging library
+
+add_subdirectory( logging )
+
+### Set variables for Findscai_common so other projects can use it 
+
+set ( SCAI_LOGGING_LIBRARY scai_logging 
+      CACHE FILEPATH "logging library" )
+
+set ( SCAI_LOGGING_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/logging
+      CACHE PATH "logging include directory" )
+
+# Project: tracing library
+
+add_subdirectory( tracing )
+
+### Set variables for Findscai_tracing so other projects can use it 
+
+set ( SCAI_TRACING_LIBRARY scai_tracing
+      CACHE FILEPATH "tracing library" )
+
+set ( SCAI_TRACING_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/tracing
+      CACHE PATH "tracing include directory" )
+
+add_subdirectory( tasking )
+
+### Set variables for Findscai_tasking so other projects can use it 
+
+set ( SCAI_TASKING_LIBRARY scai_tasking 
+      CACHE FILEPATH  "library for thread tasking" )
+
+set ( SCAI_TASKING_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/memory
+      CACHE PATH "tasking include directory" )
+
+add_subdirectory( memory )
+
+### Set variables for Findscai_memory so further projects can use it 
+
+set ( SCAI_MEMORY_LIBRARY scai_memory 
+      CACHE FILEPATH  "library for memory on multiple devices" )
+
+set ( SCAI_MEMORY_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/memory
+      CACHE PATH "tracing include directory" )
+
+### Final: lama project
+
+add_subdirectory( lama )
 
 ## add custum target distClean
 

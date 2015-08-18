@@ -63,12 +63,6 @@ include ( SetBuildFlags )
 include ( SetCPPFlags )
 include ( SetNVCCFlags )
 
-set ( SCAI_MEMORY_LIBRARY scai_memory
-      CACHE FILEPATH "memory library" )
-
-set ( SCAI_MEMORY_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR} 
-      CACHE PATH "memory include directory" )
-
 ## Project System-Include
 include_directories ( ../.. )
 

@@ -34,6 +34,9 @@
 ### Set required CMake version
 cmake_minimum_required ( VERSION 2.8 )
 
+### Set Module Path
+set ( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../CMake/Modules" )
+
 ### Print LAMA Installation header
 message ( STATUS "" )
 message ( STATUS "LAMA Configuration:" )
@@ -280,13 +283,6 @@ install ( TARGETS ama DESTINATION lib )
 file ( COPY ${CMAKE_CURRENT_SOURCE_DIR}/examples DESTINATION ${CMAKE_BINARY_DIR} )
 install ( DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/examples DESTINATION share )
 
-<<<<<<< HEAD
-### Doxygen and Sphinx Configuration ###
-# include ( Package/Doxygen )
-include ( Package/Sphinx )
-
-=======
->>>>>>> 9de668eb883d9380e905aca0fbca6faa6069b6a7
 ## install library.hpp
 configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/lama.hpp.in" "${CMAKE_CURRENT_BINARY_DIR}/include/lama.hpp" )
 install ( FILES "${CMAKE_CURRENT_BINARY_DIR}/include/lama.hpp" DESTINATION include/scai )

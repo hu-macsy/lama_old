@@ -63,15 +63,8 @@ include ( SetBuildFlags )
 include ( SetCPPFlags )
 include ( SetNVCCFlags )
 
-### Set variables for Findscai_common if this file is included
-
-set ( SCAI_COMMON_LIBRARY scai_common 
-      CACHE FILEPATH "common library" )
-
-set ( SCAI_COMMON_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR} 
-      CACHE PATH "common include directory" )
-
 ## Project System-Include
+
 include_directories ( ../.. )
 
 foreach    ( module ${SCAI_COMMON_INTERNAL_DEPS} )
@@ -101,7 +94,7 @@ include_directories ( . )
 add_library ( scai_common SHARED ${CPP_SOURCES} ${CUDA_SOURCES} )
 target_link_libraries( scai_common ${PTHREADS_LIBRARY} )
 
-foreach    ( module ${SCAI_COMMON_INTERNAL_DEPS} )
+foreach ( module ${SCAI_COMMON_INTERNAL_DEPS} )
     target_link_libraries ( scai_logging ${${module}_LIBRARY} )
 endforeach    ( module ${SCAI_COMMON_INTERNAL_DEPS} )
 
