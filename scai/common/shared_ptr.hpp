@@ -33,7 +33,7 @@
 #pragma once
 
 #if __cplusplus > 199711L
-#include <scai/memory>
+#include <memory>
 #else
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>

@@ -125,8 +125,8 @@ public:
             // no more to check: result.size() == mNumRows, getDistirubtion() == result.getDistribution()
         }
 
-        SCAI_ASSERT_EQUAL( x.getDistribution(), getColDistribution() )
-        SCAI_ASSERT_EQUAL( y.getDistribution(), getDistribution() )
+        SCAI_ASSERT_EQUAL_ERROR( x.getDistribution(), getColDistribution() )
+        SCAI_ASSERT_EQUAL_ERROR( y.getDistribution(), getDistribution() )
 
         const DenseVector<ValueType>* denseX = dynamic_cast<const DenseVector<ValueType>*>( &x );
         const DenseVector<ValueType>* denseY = dynamic_cast<const DenseVector<ValueType>*>( &y );
@@ -172,8 +172,8 @@ public:
             // no more to check: result.size() == mNumRows, getDistirubtion() == result.getDistribution()
         }
 
-        SCAI_ASSERT_EQUAL( x.getDistribution(), getDistribution() )
-        SCAI_ASSERT_EQUAL( y.getDistribution(), getColDistribution() )
+        SCAI_ASSERT_EQUAL_ERROR( x.getDistribution(), getDistribution() )
+        SCAI_ASSERT_EQUAL_ERROR( y.getDistribution(), getColDistribution() )
 
         const DenseVector<ValueType>* denseX = dynamic_cast<const DenseVector<ValueType>*>( &x );
         const DenseVector<ValueType>* denseY = dynamic_cast<const DenseVector<ValueType>*>( &y );

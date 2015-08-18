@@ -1175,7 +1175,7 @@ void CSRStorage<ValueType>::splitHalo(
 
     SCAI_LOG_INFO( logger, *this << ": split CSR according to column distribution " << colDist )
 
-    SCAI_ASSERT_EQUAL( mNumColumns, colDist.getGlobalSize() )
+    SCAI_ASSERT_EQUAL_ERROR( mNumColumns, colDist.getGlobalSize() )
 
     if( colDist.isReplicated() )
     {
@@ -1204,7 +1204,7 @@ void CSRStorage<ValueType>::splitHalo(
     if( rowDist )
     {
         SCAI_LOG_INFO( logger, *this << ": split also localizes for " << *rowDist )
-        SCAI_ASSERT_EQUAL( mNumRows, rowDist->getGlobalSize() )
+        SCAI_ASSERT_EQUAL_ERROR( mNumRows, rowDist->getGlobalSize() )
         numRows = rowDist->getLocalSize();
     }
 

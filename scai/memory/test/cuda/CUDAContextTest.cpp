@@ -66,7 +66,7 @@ static void scal( int n, float alpha, float* x_d, int inc_x, SyncToken* syncToke
     if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-        COMMON_ASSERT( cudaStreamSyncToken, "no cuda stream sync token provided" )
+        SCAI_ASSERT( cudaStreamSyncToken, "no cuda stream sync token provided" )
         stream = cudaStreamSyncToken->getCUDAStream();
     }
 

@@ -64,7 +64,7 @@ CUDAMemory::CUDAMemory( common::shared_ptr<const CUDAContext> cudaContext )
       mCUDAContext( cudaContext )
 
 {
-    COMMON_ASSERT( cudaContext, "NULL context for CUDA memory" )
+    SCAI_ASSERT( cudaContext, "NULL context for CUDA memory" )
 
     SCAI_LOG_DEBUG( logger, "construct CUDAMemory for context " << cudaContext )
 
@@ -122,7 +122,7 @@ void* CUDAMemory::allocate( const size_t size ) const
 {
     // SCAI_REGION( "CUDA.allocate" )
     SCAI_CONTEXT_ACCESS( mCUDAContext )
-    COMMON_ASSERT( size > 0, "should not call allocate for size = " << size )
+    SCAI_ASSERT( size > 0, "should not call allocate for size = " << size )
     SCAI_LOG_TRACE( logger, *this << ": allocate " << size << " bytes" )
     CUdeviceptr pointer = 0;
     SCAI_CUDA_DRV_CALL(
@@ -366,7 +366,7 @@ bool CUDAMemory::canCopyFrom( const Memory& other ) const
     {
         const CUDAMemory* otherCUDAMem = dynamic_cast<const CUDAMemory*>( &other );
 
-        COMMON_ASSERT( otherCUDAMem, "dynamic_cast<CUDAMemory*> failed" )
+        SCAI_ASSERT( otherCUDAMem, "dynamic_cast<CUDAMemory*> failed" )
 
         supported = canCopyCUDA( *otherCUDAMem );
     }
@@ -431,7 +431,7 @@ bool CUDAMemory::canCopyTo( const Memory& other ) const
     {
         const CUDAMemory* otherCUDA = dynamic_cast<const CUDAMemory*>( &other );
 
-        COMMON_ASSERT( otherCUDA, "dynamic_cast<CUDAMemory*> failed" )
+        SCAI_ASSERT( otherCUDA, "dynamic_cast<CUDAMemory*> failed" )
 
         supported = canCopyCUDA( *otherCUDA );
     }
@@ -457,7 +457,7 @@ void CUDAMemory::memcpyFrom( void* dst, const Memory& srcMemory, const void* src
     {
         const CUDAMemory* srcCUDAMemory = dynamic_cast<const CUDAMemory*>( &srcMemory );
 
-        COMMON_ASSERT( srcCUDAMemory, "dynamic_cast<CUDAMemory*> failed" )
+        SCAI_ASSERT( srcCUDAMemory, "dynamic_cast<CUDAMemory*> failed" )
 
         memcpyFromCUDA( dst, *srcCUDAMemory, src, size );
     }
@@ -484,7 +484,7 @@ void CUDAMemory::memcpyTo( const Memory& dstMemory, void* dst, const void* src, 
     {
         const CUDAMemory* dstCUDAMemory = dynamic_cast<const CUDAMemory*>( &dstMemory );
 
-        COMMON_ASSERT( dstCUDAMemory, "dynamic_cast<CUDAMemory*> failed" )
+        SCAI_ASSERT( dstCUDAMemory, "dynamic_cast<CUDAMemory*> failed" )
 
         memcpyToCUDA( *dstCUDAMemory, dst, src, size );
     }

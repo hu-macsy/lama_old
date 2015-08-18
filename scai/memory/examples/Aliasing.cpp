@@ -48,8 +48,8 @@ typedef LAMAArray<double> Array;
 
 void add ( Array& res, const Array& a, const Array& b )
 {
-    COMMON_ASSERT_LE( res.size(), a.size(), "size mismatch" )
-    COMMON_ASSERT_LE( res.size(), b.size(), "size mismatch" )
+    SCAI_ASSERT_LE( res.size(), a.size(), "size mismatch" )
+    SCAI_ASSERT_LE( res.size(), b.size(), "size mismatch" )
 
     IndexType n = res.size();
 

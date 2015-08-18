@@ -87,7 +87,7 @@ void simple()
 
     for ( int i = 0; i < N; ++i )
     {
-        COMMON_ASSERT_EQUAL( a[i], i + 3, "wrong value" )
+        SCAI_ASSERT_EQUAL( a[i], i + 3, "wrong value" )
     }
 
     delete [] c;

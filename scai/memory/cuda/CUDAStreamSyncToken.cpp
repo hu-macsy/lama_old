@@ -120,7 +120,7 @@ cudaStream_t CUDAStreamSyncToken::getCUDAStream() const
 
 bool CUDAStreamSyncToken::probeEvent( const CUevent& stopEvent ) const
 {
-    COMMON_ASSERT( stopEvent != 0, "probe on invalid event" )
+    SCAI_ASSERT( stopEvent != 0, "probe on invalid event" )
 
     SCAI_CONTEXT_ACCESS( mCUDAContext )
 

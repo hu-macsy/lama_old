@@ -34,7 +34,7 @@
 cmake_minimum_required ( VERSION 2.8 )
 
 ### Set PROJECT NAME / supported LANGUAGES
-project( memory CXX C )
+project( scai_memory CXX C )
 
 ### Set Module Path
 set ( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../CMake/Modules" )
@@ -62,7 +62,7 @@ include ( SetBuildFlags )
 include ( SetCPPFlags )
 include ( SetNVCCFlags )
 
-set ( SCAI_MEMORY_LIBRARY memory
+set ( SCAI_MEMORY_LIBRARY scai_memory
       CACHE FILEPATH "memory library" )
 
 set ( SCAI_MEMORY_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR} 

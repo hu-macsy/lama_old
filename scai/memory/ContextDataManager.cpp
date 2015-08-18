@@ -188,7 +188,7 @@ void ContextDataManager::unlockAccess( AccessKind kind )
 {
     common::Thread::ScopedLock lock( mAccessMutex );
 
-    COMMON_ASSERT_LE( 1, mLock[kind], "release access " << kind << ", never acquired" )
+    SCAI_ASSERT_LE( 1, mLock[kind], "release access " << kind << ", never acquired" )
 
     mLock[kind]--;
 
@@ -210,7 +210,7 @@ void ContextDataManager::releaseAccess( ContextDataIndex index, AccessKind kind 
 {
     // we should check that this is really the context data for which access was reserved
  
-    COMMON_ASSERT_LT( index, mContextData.size(), "Illegal context data index = " << index )
+    SCAI_ASSERT_LT( index, mContextData.size(), "Illegal context data index = " << index )
 
     unlockAccess( kind );
 }
@@ -221,7 +221,7 @@ void ContextDataManager::purge()
 {
     // purge frees all data but keeps the ContextData entries
     wait();
-    COMMON_ASSERT( !locked(), "purge on array with access" )
+    SCAI_ASSERT( !locked(), "purge on array with access" )
 
     for ( size_t i = 0; i < mContextData.size(); ++i )
     {
@@ -376,7 +376,7 @@ ContextDataIndex ContextDataManager::getContextData( ContextPtr context )
             }
         }
 
-        COMMON_ASSERT( memoryPtr, "getMemory failed for context = " << *context )
+        SCAI_ASSERT( memoryPtr, "getMemory failed for context = " << *context )
 
         mContextData.push_back( ContextData( memoryPtr ) );
 
@@ -415,7 +415,7 @@ ContextDataIndex ContextDataManager::getMemoryData( MemoryPtr memoryPtr )
 
 ContextData& ContextDataManager::operator[] ( ContextDataIndex index )
 {
-    COMMON_ASSERT( index < mContextData.size(), "index = " << index << " is illegal index, size = " << mContextData.size() )
+    SCAI_ASSERT( index < mContextData.size(), "index = " << index << " is illegal index, size = " << mContextData.size() )
     return mContextData[index];
 }
 
@@ -510,7 +510,7 @@ ContextPtr ContextDataManager::getValidContext( const ContextType preferredType 
 ContextDataIndex ContextDataManager::acquireAccess( ContextPtr context, AccessKind kind,
         size_t allocSize, size_t validSize )
 {
-    COMMON_ASSERT( context, "NULL pointer for context" )
+    SCAI_ASSERT( context, "NULL pointer for context" )
     lockAccess( kind, context );
     SCAI_LOG_DEBUG( logger, "acquire access on " << *context << ", kind = " << kind
                     << ", allocSize = " << allocSize << ", validSize = " << validSize )
@@ -707,8 +707,8 @@ void ContextDataManager::invalidateAll()
 void ContextDataManager::swap( ContextDataManager& other )
 {
     // there must be no accesses to the swapped arrays as references would be invalid. */
-    COMMON_ASSERT( !locked(), "" )
-    COMMON_ASSERT( !other.locked(), "" )
+    SCAI_ASSERT( !locked(), "" )
+    SCAI_ASSERT( !other.locked(), "" )
     // due to the pointers swap on vectors is okay
     std::swap( mContextData, other.mContextData );
 }
@@ -761,7 +761,7 @@ void ContextDataManager::reserve( ContextPtr context, const size_t size, const s
 
     ContextData& data = ( *this )[context];
 
-    // ToDo: must have a write access here COMMON_ASSERT( !data.locked( context::Write ), "no reserve on write locked data." )
+    // ToDo: must have a write access here SCAI_ASSERT( !data.locked( context::Write ), "no reserve on write locked data." )
 
     if ( data.isValid() )
     {
@@ -777,7 +777,7 @@ void ContextDataManager::reserve( ContextPtr context, const size_t size, const s
 
 void ContextDataManager::resize( const size_t size, const size_t validSize )
 {
-    COMMON_ASSERT( !locked(), "Array is locked, no resize possible" )
+    SCAI_ASSERT( !locked(), "Array is locked, no resize possible" )
 
     wait();  // valid is checked so outstanding transfers must be finished
 

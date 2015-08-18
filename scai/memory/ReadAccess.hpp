@@ -139,7 +139,7 @@ SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, ReadAccess<ValueType
 template<typename ValueType>
 ReadAccess<ValueType>::ReadAccess( const LAMAArray<ValueType>& array, ContextPtr contextPtr ) : mArray( &array )
 {
-    COMMON_ASSERT( contextPtr.get(), "NULL context for read access not allowed" )
+    SCAI_ASSERT( contextPtr.get(), "NULL context for read access not allowed" )
 
     SCAI_LOG_DEBUG( logger, "ReadAccess<" << common::getScalarType<ValueType>()
                     << "> : create for " << array << " @ " << *contextPtr )
@@ -222,7 +222,7 @@ common::IndexType ReadAccess<ValueType>::size() const
 template<typename ValueType>
 const ValueType* ReadAccess<ValueType>::get() const
 {
-    COMMON_ASSERT( mArray, "ReadAccess::get fails, has already been released." )
+    SCAI_ASSERT( mArray, "ReadAccess::get fails, has already been released." )
 
     return mData;
 }
@@ -232,7 +232,7 @@ const ValueType* ReadAccess<ValueType>::get() const
 template<typename ValueType>
 ReadAccess<ValueType>::operator const ValueType*() const
 {
-    COMMON_ASSERT( mArray, "ReadAccess has already been released." )
+    SCAI_ASSERT( mArray, "ReadAccess has already been released." )
 
     return mData;
 }

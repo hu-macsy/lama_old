@@ -147,7 +147,7 @@ const LAMAInterface& Context::getInterface() const
 
     // Registry throws an exception if no interface is available
 
-    COMMON_ASSERT( lamaInterface, "No lama interface available on " << *this )
+    SCAI_ASSERT( lamaInterface, "No lama interface available on " << *this )
 
     return *lamaInterface;
 }

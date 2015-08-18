@@ -184,7 +184,7 @@ void LAMAArrayUtils::gather(
 template<typename ValueType>
 void LAMAArrayUtils::assignScalar( LAMAArray<ValueType>& target, const Scalar& value, ContextPtr context )
 {
-    COMMON_ASSERT( context.get(), "No context specified" )
+    SCAI_ASSERT( context.get(), "No context specified" )
 
     SCAI_LOG_INFO( logger, target << " = " << value << ", to do at " << *context )
 

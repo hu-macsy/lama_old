@@ -35,7 +35,7 @@ BOOST_AUTO_TEST_CASE( ContextTest )
 
     for ( int i = 0; i < 10; ++i )
     {
-        COMMON_ASSERT_EQUAL( vals[i], 5.0, "check" )
+        SCAI_ASSERT_EQUAL( vals[i], 5.0, "check" )
     }
 
     // Now make some checks

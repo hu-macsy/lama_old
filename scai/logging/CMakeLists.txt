@@ -34,7 +34,7 @@
 cmake_minimum_required ( VERSION 2.8 )
 
 ### Set PROJECT NAME / supported LANGUAGES
-project( logging CXX C )
+project( scai_logging CXX C )
 
 ### Set Module Path
 set ( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../CMake/Modules" )
@@ -56,7 +56,7 @@ endforeach ( PACKAGE_TO_FIND ${OPTIONAL_PACKAGES_TO_FIND} )
 include ( SetBuildFlags )
 include ( SetCPPFlags )
 
-set ( SCAI_LOGGING_LIBRARY common 
+set ( SCAI_LOGGING_LIBRARY scai_logging
       CACHE FILEPATH "logging library" )
 
 set ( SCAI_LOGGING_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR} 

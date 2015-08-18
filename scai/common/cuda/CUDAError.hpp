@@ -136,7 +136,7 @@ const char* cusparseErrorString( cusparseStatus_t res );
     {                                                                                   \
         CUcontext pctx;                                                                 \
         SCAI_CUDA_DRV_CALL( cuCtxGetCurrent( &pctx ), "" );                             \
-        COMMON_ASSERT( pctx, "No current context, forgotten SCAI_CONTEXT_ACCESS ?" )    \
+        SCAI_ASSERT( pctx, "No current context, forgotten SCAI_CONTEXT_ACCESS ?" )    \
     }
 
 #define SCAI_CHECK_CUDA_ERROR                                                         \

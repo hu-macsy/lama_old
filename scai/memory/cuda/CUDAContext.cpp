@@ -272,7 +272,7 @@ bool CUDAContext::canUseMemory( const Memory& other ) const
     {
         const CUDAMemory* otherCUDAMem = dynamic_cast<const CUDAMemory*>( &other );
 
-        COMMON_ASSERT( otherCUDAMem, "serious type mismatch" )
+        SCAI_ASSERT( otherCUDAMem, "serious type mismatch" )
 
         canUse = otherCUDAMem->getDeviceNr() == mDeviceNr;
     }
@@ -283,7 +283,7 @@ bool CUDAContext::canUseMemory( const Memory& other ) const
     {
         const CUDAHostMemory* otherCUDAHostMem = dynamic_cast<const CUDAHostMemory*>( &other );
 
-        COMMON_ASSERT( otherCUDAHostMem, "serious type mismatch" )
+        SCAI_ASSERT( otherCUDAHostMem, "serious type mismatch" )
 
         canUse = otherCUDAHostMem->getCUDAContext().getDeviceNr() == mDeviceNr;
     }
@@ -343,7 +343,7 @@ ContextPtr CUDAContext::create( int deviceNr )
     }
     else
     {
-        COMMON_ASSERT(
+        SCAI_ASSERT(
             0 <= cudaDeviceNr && cudaDeviceNr < LAMA_MAX_CUDA_DEVICES,
             "device = " << cudaDeviceNr << " out of range" << ", max supported device = " << LAMA_MAX_CUDA_DEVICES )
     }

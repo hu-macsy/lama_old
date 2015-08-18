@@ -42,11 +42,11 @@ void sub( int val )
         COMMON_THROWEXCEPTION( "sub: val must not be negative, val = " << val )
     }
 
-    COMMON_ASSERT ( val % 2 == 0, "val = " << val << " must be even" )
+    SCAI_ASSERT ( val % 2 == 0, "val = " << val << " must be even" )
 
-    COMMON_ASSERT_LT( val, 10, "val = " << val << " must be less than 10" )
+    SCAI_ASSERT_LT( val, 10, "val = " << val << " must be less than 10" )
 
-    COMMON_ASSERT_EQUAL( val, 4, "None" )
+    SCAI_ASSERT_EQUAL( val, 4, "None" )
 }
 
 int main()

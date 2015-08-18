@@ -89,7 +89,7 @@ public:
 
     virtual bool canUseMemory( const Memory& memory ) const
     {
-        COMMON_ASSERT( &memory, "NULL memory" )
+        SCAI_ASSERT( &memory, "NULL memory" )
 
         if ( memory.getType() != memtype ::UserMemory )
         {
@@ -98,7 +98,7 @@ public:
 
         const MockMemory* mockMemory = dynamic_cast<const MockMemory*>( &memory );
 
-        COMMON_ASSERT( mockMemory, "NULL mock memory" )
+        SCAI_ASSERT( mockMemory, "NULL mock memory" )
 
         return mockMemory->getDeviceNr() == mDeviceNr;
         
@@ -147,7 +147,7 @@ inline ContextPtr MockContext::create( int deviceNr )
 {
 	scai::common::shared_ptr<MockContext> context;
 
-    COMMON_ASSERT( deviceNr < 6, "number of instances limited" )
+    SCAI_ASSERT( deviceNr < 6, "number of instances limited" )
 
     // use the last contextInstance if it is still valid
 

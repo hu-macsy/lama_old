@@ -281,7 +281,7 @@ inline void ContextArray::resize( common::IndexType size )
 
 inline void ContextArray::clear()
 {
-    COMMON_ASSERT( !mContextDataManager.locked(), "Tried to clear a locked LAMAArray " << *this )
+    SCAI_ASSERT( !mContextDataManager.locked(), "Tried to clear a locked LAMAArray " << *this )
 
     mSize = 0;
 }

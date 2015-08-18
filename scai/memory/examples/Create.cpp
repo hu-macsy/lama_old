@@ -72,7 +72,7 @@ int main()
 
     for ( IndexType i = 0; i < N; ++i )
     {
-        COMMON_ASSERT_EQUAL( data[i], data1[i], "" )
+        SCAI_ASSERT_EQUAL( data[i], data1[i], "" )
     }
   
     std::cout << "Create finished" << std::endl;

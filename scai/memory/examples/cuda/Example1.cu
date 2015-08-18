@@ -61,24 +61,24 @@ int main()
 {
     std::cout << "try to get " << context::CUDA << " context from factory" << std::endl;
     ContextPtr cudaContext = Context::getContextPtr( context::CUDA );
-    COMMON_ASSERT( cudaContext, "NULL context" )
+    SCAI_ASSERT( cudaContext, "NULL context" )
     std::cout << "cudaContext = " << *cudaContext << std::endl;
 
     MemoryPtr cudaMemory = cudaContext->getMemoryPtr();
-    COMMON_ASSERT( cudaMemory, "NULL memory" )
+    SCAI_ASSERT( cudaMemory, "NULL memory" )
     std::cout << "cudaMemory = " << *cudaMemory << std::endl;
 
     std::cout << "try to get " << context::Host << " context from factory" << std::endl;
     ContextPtr hostContext = Context::getContextPtr( context::Host );
-    COMMON_ASSERT( hostContext, "NULL context" )
+    SCAI_ASSERT( hostContext, "NULL context" )
     std::cout << "hostContext = " << *hostContext << std::endl;
 
     MemoryPtr hostMemory = hostContext->getMemoryPtr();
-    COMMON_ASSERT( hostMemory, "NULL memory" )
+    SCAI_ASSERT( hostMemory, "NULL memory" )
     std::cout << "hostMemory = " << *hostMemory << std::endl;
 
     MemoryPtr cudaHostMemory = cudaContext->getHostMemoryPtr();
-    COMMON_ASSERT( cudaHostMemory, "NULL memory" )
+    SCAI_ASSERT( cudaHostMemory, "NULL memory" )
     std::cout << "cudaHostMemory = " << *cudaHostMemory << std::endl;
 
     const IndexType N = 100;
@@ -128,7 +128,7 @@ int main()
         sleep( 1 );
         for ( IndexType i = 0; i < N; ++i )
         {
-            COMMON_ASSERT_EQUAL( read[i], 2 * 1.0, "wrong value after add, i = " << i )
+            SCAI_ASSERT_EQUAL( read[i], 2 * 1.0, "wrong value after add, i = " << i )
         }
     }
 

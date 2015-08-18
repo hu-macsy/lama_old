@@ -34,7 +34,7 @@
 cmake_minimum_required ( VERSION 2.8 )
 
 ### Set PROJECT NAME / supported LANGUAGES
-project( tasking CXX C )
+project( scai_tasking CXX C )
 
 ### Set Module Path
 set ( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../CMake/Modules" )
@@ -56,7 +56,7 @@ endforeach ( PACKAGE_TO_FIND ${OPTIONAL_PACKAGES_TO_FIND} )
 include ( SetBuildFlags )
 include ( SetCPPFlags )
 
-set ( SCAI_TASKING_LIBRARY common 
+set ( SCAI_TASKING_LIBRARY scai_tasking
       CACHE FILEPATH "tasking library" )
 
 set ( SCAI_TASKING_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR} 

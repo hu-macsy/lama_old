@@ -34,7 +34,7 @@
 cmake_minimum_required ( VERSION 2.8 )
 
 ### Set PROJECT NAME / supported LANGUAGES
-project ( common CXX C )
+project ( scai_common CXX C )
 
 ### Set Module Path
 set ( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../CMake/Modules" )
@@ -62,7 +62,9 @@ include ( SetBuildFlags )
 include ( SetCPPFlags )
 include ( SetNVCCFlags )
 
-set ( SCAI_COMMON_LIBRARY common 
+### Set variables for Findscai_common if this file is included
+
+set ( SCAI_COMMON_LIBRARY scai_common 
       CACHE FILEPATH "common library" )
 
 set ( SCAI_COMMON_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR} 

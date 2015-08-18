@@ -453,11 +453,11 @@ LAMAArray<ValueType>& LAMAArray<ValueType>::operator=( const LAMAArray<ValueType
     mSize      = other.mSize;
     mValueSize = other.mValueSize;
 
-    COMMON_ASSERT( !mContextDataManager.locked(), "assign to a locked array (read/write access)" )
+    SCAI_ASSERT( !mContextDataManager.locked(), "assign to a locked array (read/write access)" )
 
     // ToDo: we might add an exception on same thread: only valid write location is copied
 
-    COMMON_ASSERT( !other.mContextDataManager.locked( context::Write ), "assign of a write locked array" )
+    SCAI_ASSERT( !other.mContextDataManager.locked( context::Write ), "assign of a write locked array" )
 
     mContextDataManager.invalidateAll();
 
@@ -484,11 +484,11 @@ void LAMAArray<ValueType>::assign( const LAMAArray<ValueType>& other, ContextPtr
     mSize      = other.mSize;
     mValueSize = other.mValueSize;
 
-    COMMON_ASSERT( !mContextDataManager.locked(), "assign to a locked array (read/write access)" )
+    SCAI_ASSERT( !mContextDataManager.locked(), "assign to a locked array (read/write access)" )
 
     // ToDo: we might add an exception on same thread: only valid write location is copied
 
-    COMMON_ASSERT( !other.mContextDataManager.locked( context::Write ), "assign of a write locked array" )
+    SCAI_ASSERT( !other.mContextDataManager.locked( context::Write ), "assign of a write locked array" )
 
     mContextDataManager.invalidateAll();
 
@@ -506,10 +506,10 @@ void LAMAArray<ValueType>::swap( LAMAArray<ValueType>& other )
 
     // we cannot swap if there is any access for any array
 
-    COMMON_ASSERT_EQUAL( 0, other.mContextDataManager.locked(), "swap: other array locked: " << other )
-    COMMON_ASSERT_EQUAL( 0, mContextDataManager.locked(), "this array locked: " << *this )
+    SCAI_ASSERT_EQUAL( 0, other.mContextDataManager.locked(), "swap: other array locked: " << other )
+    SCAI_ASSERT_EQUAL( 0, mContextDataManager.locked(), "this array locked: " << *this )
 
-    COMMON_ASSERT_EQUAL( mValueSize, other.mValueSize, "serious size mismatch" )
+    SCAI_ASSERT_EQUAL( mValueSize, other.mValueSize, "serious size mismatch" )
 
     mContextDataManager.swap( other.mContextDataManager );
 
@@ -563,8 +563,8 @@ void LAMAArray<ValueType>::clear( const ContextDataIndex index )
 
     ContextData& data = mContextDataManager[index];
 
-    COMMON_ASSERT_EQUAL( 1, mContextDataManager.locked( context::Write ), "multiple write access for clear" << data )
-    COMMON_ASSERT_EQUAL( 0, mContextDataManager.locked( context::Read ), "further read access, cannot clear " << data )
+    SCAI_ASSERT_EQUAL( 1, mContextDataManager.locked( context::Write ), "multiple write access for clear" << data )
+    SCAI_ASSERT_EQUAL( 0, mContextDataManager.locked( context::Read ), "further read access, cannot clear " << data )
 
     mSize = 0;
 }
@@ -576,12 +576,12 @@ void LAMAArray<ValueType>::resize( ContextDataIndex index, const common::IndexTy
 {
     ContextData& data = mContextDataManager[index];
 
-    COMMON_ASSERT_EQUAL( 1, mContextDataManager.locked( context::Write ), "multiple write access for resize" << data )
-    COMMON_ASSERT_EQUAL( 0, mContextDataManager.locked( context::Read ), "further read access, cannot resize" << data )
+    SCAI_ASSERT_EQUAL( 1, mContextDataManager.locked( context::Write ), "multiple write access for resize" << data )
+    SCAI_ASSERT_EQUAL( 0, mContextDataManager.locked( context::Read ), "further read access, cannot resize" << data )
 
     ContextData& entry = mContextDataManager[index];
 
-    // COMMON_ASSERT( entry.locked( context::Write ), "resize illegal here " << entry )
+    // SCAI_ASSERT( entry.locked( context::Write ), "resize illegal here " << entry )
 
     size_t allocSize = size * mValueSize;
 

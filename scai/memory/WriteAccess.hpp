@@ -188,7 +188,7 @@ template<typename ValueType>
 WriteAccess<ValueType>::WriteAccess( LAMAArray<ValueType>& array, ContextPtr contextPtr, const bool keep )
     : mArray( &array )
 {
-    COMMON_ASSERT( !array.constFlag, "WriteAccess on const array not allowed: " << array )
+    SCAI_ASSERT( !array.constFlag, "WriteAccess on const array not allowed: " << array )
 
     SCAI_LOG_DEBUG( logger, "acquire write access for " << *mArray << " at " << *contextPtr << ", keep = " << keep )
     mContextDataIndex = mArray->acquireWriteAccess( contextPtr, keep );
@@ -201,7 +201,7 @@ template<typename ValueType>
 WriteAccess<ValueType>::WriteAccess( LAMAArray<ValueType>& array, const bool keep /* = true*/ )
     : mArray( &array )
 {
-    COMMON_ASSERT( !array.constFlag, "WriteAccess on const array not allowed: " << array )
+    SCAI_ASSERT( !array.constFlag, "WriteAccess on const array not allowed: " << array )
 
     ContextPtr contextPtr = Context::getContextPtr( context::Host );
 
@@ -224,7 +224,7 @@ WriteAccess<ValueType>::~WriteAccess()
 template<typename ValueType>
 ValueType* WriteAccess<ValueType>::get()
 {
-    COMMON_ASSERT( mArray, "illegal get(): access has already been released." )
+    SCAI_ASSERT( mArray, "illegal get(): access has already been released." )
 
     return mData;    // mData might be NULL if size of array is 0
 }
@@ -234,7 +234,7 @@ ValueType* WriteAccess<ValueType>::get()
 template<typename ValueType>
 WriteAccess<ValueType>::operator ValueType*()
 {
-    COMMON_ASSERT( mArray, "illegal get(): access has already been released." )
+    SCAI_ASSERT( mArray, "illegal get(): access has already been released." )
 
     return mData;    // mData might be NULL if size of array is 0
 }
@@ -259,7 +259,7 @@ inline common::IndexType WriteAccess<ValueType>::size() const
 template<typename ValueType>
 void WriteAccess<ValueType>::clear()
 {
-    COMMON_ASSERT( mArray, "WriteAccess has already been released." )
+    SCAI_ASSERT( mArray, "WriteAccess has already been released." )
     mArray->clear( mContextDataIndex );
     SCAI_LOG_DEBUG( logger, "cleared " << *mArray )
     mData = mArray->get( mContextDataIndex );     // not really needed
@@ -270,7 +270,7 @@ void WriteAccess<ValueType>::clear()
 template<typename ValueType>
 void WriteAccess<ValueType>::resize( const common::IndexType newSize )
 {
-    COMMON_ASSERT( mArray, "WriteAccess has already been released." )
+    SCAI_ASSERT( mArray, "WriteAccess has already been released." )
     // do not log before check of mArray
     SCAI_LOG_DEBUG( logger, "resize " << *mArray << " to new size " << newSize )
     mArray->resize( mContextDataIndex, newSize );
@@ -282,7 +282,7 @@ void WriteAccess<ValueType>::resize( const common::IndexType newSize )
 template<typename ValueType>
 void WriteAccess<ValueType>::reserve( const common::IndexType capacity )
 {
-    COMMON_ASSERT( mArray, "WriteAccess has already been released." )
+    SCAI_ASSERT( mArray, "WriteAccess has already been released." )
     SCAI_LOG_DEBUG( logger, "reserve " << *mArray << " to new capacity " << capacity )
     mArray->reserve( mContextDataIndex, capacity ); // copy = true for old data
     mData = mArray->get( mContextDataIndex );     // data might be reallocated
@@ -293,7 +293,7 @@ void WriteAccess<ValueType>::reserve( const common::IndexType capacity )
 template<typename ValueType>
 common::IndexType WriteAccess<ValueType>::capacity() const
 {
-    COMMON_ASSERT( mArray, "WriteAccess has already been released." )
+    SCAI_ASSERT( mArray, "WriteAccess has already been released." )
     return mArray->capacity( mContextDataIndex );
 }
 

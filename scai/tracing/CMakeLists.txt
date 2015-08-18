@@ -34,7 +34,7 @@
 cmake_minimum_required ( VERSION 2.8 )
 
 ### Set PROJECT NAME / supported LANGUAGES
-project( tracing CXX C )
+project( scai_tracing CXX C )
 
 ### Set Module Path
 set ( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../CMake/Modules" )
@@ -61,7 +61,7 @@ include ( Package/CUDA )
 include ( SetBuildFlags )
 include ( SetCPPFlags )
 
-set ( SCAI_TRACING_LIBRARY common 
+set ( SCAI_TRACING_LIBRARY scai_tracing
       CACHE FILEPATH "tracing library" )
 
 set ( SCAI_TRACING_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR} 

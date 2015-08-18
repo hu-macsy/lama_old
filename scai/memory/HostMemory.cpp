@@ -89,7 +89,7 @@ void HostMemory::writeAt( std::ostream& stream ) const
 
 void* HostMemory::allocate( const size_t size ) const
 {
-    COMMON_ASSERT( size > 0, "allocate with size = " << size << " should not be done" )
+    SCAI_ASSERT( size > 0, "allocate with size = " << size << " should not be done" )
 
     void* pointer = malloc( size );
 
@@ -114,7 +114,7 @@ void HostMemory::free( void* pointer, const size_t size ) const
 {
     SCAI_LOG_DEBUG( logger, "free " << pointer << ", size = " << size )
 
-    COMMON_ASSERT( mNumberOfAllocates >= 1, "Invalid free, because there are no open allocates." )
+    SCAI_ASSERT( mNumberOfAllocates >= 1, "Invalid free, because there are no open allocates." )
 
     ::free( pointer );
 
@@ -151,7 +151,7 @@ MemoryPtr HostMemory::getIt()
 
         ContextPtr contextPtr = Context::getContextPtr( context::Host );
         common::shared_ptr<const HostContext> hostContextPtr = common::dynamic_pointer_cast<const HostContext>( contextPtr );
-        COMMON_ASSERT( hostContextPtr.get(), "Serious: dynamic cast failed" )
+        SCAI_ASSERT( hostContextPtr.get(), "Serious: dynamic cast failed" )
         instancePtr.reset( new HostMemory( hostContextPtr ) );
     }
 

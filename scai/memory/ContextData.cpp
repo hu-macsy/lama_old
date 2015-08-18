@@ -85,7 +85,7 @@ ContextData::~ContextData()
 
 void ContextData::allocate( const size_t size )
 {
-    COMMON_ASSERT( 0 == pointer, "ContextData data already given at " << *mMemory )
+    SCAI_ASSERT( 0 == pointer, "ContextData data already given at " << *mMemory )
 
     pointer = mMemory->allocate( size );
 
@@ -103,7 +103,7 @@ void ContextData::allocate( const size_t size )
 
 void ContextData::setRef( void* reference, const size_t size )
 {
-    COMMON_ASSERT( 0 == pointer, "ContextData data already given at " << *mMemory )
+    SCAI_ASSERT( 0 == pointer, "ContextData data already given at " << *mMemory )
     pointer = reference;
     this->size = size;
     allocated = false;
@@ -143,11 +143,11 @@ void ContextData::realloc( const size_t newSize, const size_t validSize )
 {
     // Note: realloc can also be used to shrink the array size
 
-    COMMON_ASSERT( allocated, "Cannot realloc data set by reference" )
-    COMMON_ASSERT( mMemory, "no mMemory available for realloc" )
+    SCAI_ASSERT( allocated, "Cannot realloc data set by reference" )
+    SCAI_ASSERT( mMemory, "no mMemory available for realloc" )
 
-    COMMON_ASSERT_LE( validSize, size, "size of valid data is more than actual size" )
-    COMMON_ASSERT_LE( validSize, newSize, "size of valid data is more than new size" )
+    SCAI_ASSERT_LE( validSize, size, "size of valid data is more than actual size" )
+    SCAI_ASSERT_LE( validSize, newSize, "size of valid data is more than new size" )
 
     void* oldPointer = pointer;
 
@@ -177,7 +177,7 @@ void ContextData::reserve( const size_t newSize, const size_t validSize )
 {
     if ( newSize <= size )
     {
-        COMMON_ASSERT_LE( validSize, newSize, "size of valid data is more than new size" )
+        SCAI_ASSERT_LE( validSize, newSize, "size of valid data is more than new size" )
 
         // current capacity is sufficient
         return;
@@ -185,7 +185,7 @@ void ContextData::reserve( const size_t newSize, const size_t validSize )
 
     if ( size == 0 )
     {
-        COMMON_ASSERT_LE( validSize, size, "size of valid data is more than actual size" )
+        SCAI_ASSERT_LE( validSize, size, "size of valid data is more than actual size" )
 
         // first allocation of the data, validSize is also 0
 

@@ -62,7 +62,7 @@ CUDAHostMemory::CUDAHostMemory( common::shared_ptr<const CUDAContext> cudaContex
     mCUDAContext( cudaContext )
 
 {
-    COMMON_ASSERT( cudaContext, "CUDAHostMemory requires valid CUDAContext, is NULL" )
+    SCAI_ASSERT( cudaContext, "CUDAHostMemory requires valid CUDAContext, is NULL" )
     SCAI_LOG_INFO( logger, "CUDAHostMemory created, allows faster transfer HOST <-> " << *mCUDAContext )
 }
 
@@ -96,7 +96,7 @@ void* CUDAHostMemory::allocate( const size_t size ) const
 
     SCAI_CUDA_RT_CALL( cudaHostGetDevicePointer( &pDevice, pointer, flags ), "cudaHostGetDevicePointer" )
 
-    COMMON_ASSERT_EQUAL( pDevice, pointer, "Not yet supported: pointer conversion for different context" )
+    SCAI_ASSERT_EQUAL( pDevice, pointer, "Not yet supported: pointer conversion for different context" )
 
     return pointer;
 }

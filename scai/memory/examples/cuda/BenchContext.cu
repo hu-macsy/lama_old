@@ -124,7 +124,7 @@ void doBench( LAMAArray<ValueType>& array, const IndexType N )
     double resExpected = N;
     resExpected *= double ( niter * ( ncuda + nhost ) );
 
-    COMMON_ASSERT_EQUAL( res, resExpected, "wrong result, N = " << N 
+    SCAI_ASSERT_EQUAL( res, resExpected, "wrong result, N = " << N 
         << ", niter = " << niter << ", ncuda = " << ncuda << ", nhost = " << nhost )
 
     time = common::Walltime::get() - time;

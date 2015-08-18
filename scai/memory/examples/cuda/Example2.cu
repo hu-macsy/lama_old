@@ -114,7 +114,7 @@ int main()
         const double* values = read.get();
         for ( IndexType i = 0; i < N; ++i )
         {
-            COMMON_ASSERT_EQUAL( values[i], 3.0, "wrong value after add" )
+            SCAI_ASSERT_EQUAL( values[i], 3.0, "wrong value after add" )
         }
     }
 }
