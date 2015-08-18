@@ -36,7 +36,7 @@
 // assert
 #include <scai/lama/exception/LAMAAssert.hpp>
 #include <scai/lama/Scalar.hpp>
-#include <scai/memory.hpp>
+#include <scai/hmemo.hpp>
 
 // tracing
 #include <scai/tracing.hpp>
@@ -47,7 +47,7 @@
 // boost
 #include <boost/preprocessor.hpp>
 
-using namespace scai::memory;
+using namespace scai::hmemo;
 
 namespace scai
 {

@@ -9,7 +9,7 @@
 
 #include <scai/lama.hpp>
 
-#include <scai/memory/Context.hpp>
+#include <scai/hmemo/Context.hpp>
 #include <scai/common/Printable.hpp>
 #include <scai/lama/matrix/Matrix.hpp>
 #include <scai/lama/Communicator.hpp>
@@ -29,7 +29,7 @@ public:
 
         mCommunicationKind = scai::lama::Matrix::SYNCHRONOUS;
         mComm              = scai::lama::Communicator::get();
-        mContext           = memory::Context::getContextPtr( memory::context::Host );
+        mContext           = hmemo::Context::getContextPtr( hmemo::context::Host );
         mMaxIters          = 1000;
     }
 
@@ -60,13 +60,13 @@ public:
         }
         else if ( "HOST" == val )
         { 
-            mContext = memory::Context::getContextPtr( memory::context::Host );
+            mContext = hmemo::Context::getContextPtr( hmemo::context::Host );
         }
         else if ( ( "CUDA" == val ) || ( "GPU" == val ) )
         { 
             // int device = mComm->getNodeRank();
             int device = 0;
-            mContext = memory::Context::getContextPtr( memory::context::CUDA, device );
+            mContext = hmemo::Context::getContextPtr( hmemo::context::CUDA, device );
         }
         else if ( "SYNC" == val )
         {
@@ -92,7 +92,7 @@ public:
         {
             // choose default format by context: Host -> CSR, CUDA -> ELL
 
-            if ( mContext->getType() == memory::context::CUDA )
+            if ( mContext->getType() == hmemo::context::CUDA )
             {
                 return "ELL";
             }
@@ -107,12 +107,12 @@ public:
         }
     }
 
-    memory::ContextPtr getContextPtr() const
+    hmemo::ContextPtr getContextPtr() const
     {
         return mContext;
     }
 
-    const memory::Context& getContext() const
+    const hmemo::Context& getContext() const
     {
         return *mContext;
     }
@@ -128,7 +128,7 @@ public:
     }
 
     std::string            mMatrixFormat;
-    memory::ContextPtr     mContext;
+    hmemo::ContextPtr     mContext;
     scai::lama::Matrix::SyncKind mCommunicationKind;
     int                    mMaxIters;
 

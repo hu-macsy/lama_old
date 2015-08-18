@@ -37,7 +37,7 @@
 // others
 #include <scai/lama/LAMAArrayUtils.hpp>
 #include <scai/lama/LAMAInterface.hpp>
-#include <scai/memory/ContextAccess.hpp>
+#include <scai/hmemo/ContextAccess.hpp>
 
 #include <scai/lama/distribution/NoDistribution.hpp>
 #include <scai/lama/distribution/CyclicDistribution.hpp>
@@ -56,7 +56,7 @@
 #include <ostream>
 
 using namespace scai::common;
-using namespace scai::memory;
+using namespace scai::hmemo;
 
 namespace scai
 {

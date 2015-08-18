@@ -36,12 +36,12 @@
 #include <scai/common/config.hpp>
 
 // others
-#include <scai/memory/LAMAArray.hpp>
+#include <scai/hmemo/LAMAArray.hpp>
 #include <scai/lama/io/FileType.hpp>
 
 #include <fstream>
 
-using scai::memory::LAMAArray;
+using scai::hmemo::LAMAArray;
 
 namespace scai
 {

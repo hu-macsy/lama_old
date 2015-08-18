@@ -41,7 +41,7 @@
 #include <scai/lama/LAMATypes.hpp>
 #include <scai/lama/Scalar.hpp>
 #include <scai/lama/Vector.hpp>
-#include <scai/memory.hpp>
+#include <scai/hmemo.hpp>
 
 #include <scai/lama/distribution/Distribution.hpp>
 #include <scai/lama/distribution/NoDistribution.hpp>

@@ -40,7 +40,7 @@
 #include <scai/tracing.hpp>
 
 #include <scai/lama/LAMAInterface.hpp>
-#include <scai/memory/ContextAccess.hpp>
+#include <scai/hmemo/ContextAccess.hpp>
 #include <scai/tasking/TaskSyncToken.hpp>
 
 // macros
@@ -54,7 +54,7 @@
 #include <scai/common/unique_ptr.hpp>
 
 using scai::common::scoped_array;
-using namespace scai::memory;
+using namespace scai::hmemo;
 
 namespace scai
 {

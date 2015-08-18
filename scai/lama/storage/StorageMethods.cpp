@@ -51,7 +51,7 @@
 
 #include <algorithm>
 
-using namespace scai::memory;
+using namespace scai::hmemo;
 
 namespace scai
 {

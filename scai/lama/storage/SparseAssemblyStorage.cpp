@@ -37,14 +37,14 @@
 #include <scai/lama/openmp/OpenMPUtils.hpp>
 #include <scai/lama/openmp/OpenMPCSRUtils.hpp>
 
-#include <scai/memory.hpp>
+#include <scai/hmemo.hpp>
 
 #include <boost/preprocessor.hpp>
 
 #include <cmath>
 
 using std::abs;
-using namespace scai::memory;
+using namespace scai::hmemo;
 
 namespace scai
 {

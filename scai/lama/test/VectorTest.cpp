@@ -57,10 +57,10 @@
 
 #include <test/TestMacros.hpp>
 
-#include <scai/memory.hpp>
+#include <scai/hmemo.hpp>
 
 using namespace scai::lama;
-using namespace scai::memory;
+using namespace scai::hmemo;
 using scai::common::Exception;
 
 #if ARITHMETIC_TYPE_CNT == 1

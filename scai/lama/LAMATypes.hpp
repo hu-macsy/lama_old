@@ -34,7 +34,7 @@
 // include LAMA
 #include <scai/lama/Complex.hpp>
 #include <scai/common/ScalarType.hpp>
-#include <scai/memory/LAMAArray.hpp>
+#include <scai/hmemo/LAMAArray.hpp>
 
 #include <cstring>
 #include <limits>
@@ -63,7 +63,7 @@ namespace lama
  *  int is the good choice, might be long int or long long int for
  *  future versions that deal with very large matrices even on on processor.
  */
-using scai::memory::IndexType;
+using scai::hmemo::IndexType;
 
 /** Data type long double to have it as one word. Otherwise certain macros
  *  might fail to work correctly.

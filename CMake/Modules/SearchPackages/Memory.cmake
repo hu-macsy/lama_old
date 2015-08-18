@@ -38,7 +38,7 @@ endif ( NOT CXX_SUPPORTS_C11 )
 
 # Find required packages
 set ( REQUIRED_PACKAGES_TO_FIND
-        ${SCAI_MEMORY_INTERNAL_DEPS}
+        ${SCAI_HMEMO_INTERNAL_DEPS}
         #add required packages here
     )
     

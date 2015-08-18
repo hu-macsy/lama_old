@@ -52,7 +52,7 @@
 #include<ostream>
 
 using namespace scai::common;
-using namespace scai::memory;
+using namespace scai::hmemo;
 
 namespace scai
 {

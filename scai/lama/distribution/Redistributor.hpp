@@ -45,14 +45,14 @@
 #include <scai/lama/distribution/Halo.hpp>
 #include <scai/tracing.hpp>
 
-#include <scai/memory/LAMAArray.hpp>
+#include <scai/hmemo/LAMAArray.hpp>
 #include <scai/tasking/SyncToken.hpp>
 
 namespace scai
 {
 
 using namespace scai::tasking;
-using scai::memory::LAMAArray;
+using scai::hmemo::LAMAArray;
 
 namespace lama
 {
@@ -140,7 +140,7 @@ public:
         const LAMAArray<ValueType>& sourceArray,
         const LAMAArray<IndexType>& sourceIndexes )
     {
-        using namespace scai::memory;
+        using namespace scai::hmemo;
 
         WriteAccess<ValueType> target( targetArray );
         ReadAccess<ValueType> source( sourceArray );
@@ -161,7 +161,7 @@ public:
         const LAMAArray<IndexType>& sourceIndexes,
         const IndexType n )
     {
-        using namespace scai::memory;
+        using namespace scai::hmemo;
 
         WriteAccess<ValueType> target( targetArray );
         ReadAccess<ValueType> source( sourceArray );
@@ -194,7 +194,7 @@ public:
         const LAMAArray<IndexType>& targetIndexes,
         const LAMAArray<ValueType>& sourceArray )
     {
-        using namespace scai::memory;
+        using namespace scai::hmemo;
 
         WriteAccess<ValueType> target( targetArray );
         ReadAccess<IndexType> indexes( targetIndexes );
@@ -215,7 +215,7 @@ public:
         const LAMAArray<ValueType>& sourceArray,
         const IndexType n )
     {
-        using namespace scai::memory;
+        using namespace scai::hmemo;
 
         WriteAccess<ValueType> target( targetArray );
         ReadAccess<IndexType> indexes( targetIndexes );
@@ -249,7 +249,7 @@ public:
         const LAMAArray<ValueType>& sourceArray,
         const LAMAArray<IndexType>& sourceIndexes )
     {
-        using namespace scai::memory;
+        using namespace scai::hmemo;
         WriteAccess<ValueType> target( targetArray );
         ReadAccess<ValueType> source( sourceArray );
         ReadAccess<IndexType> tindexes( targetIndexes );
@@ -274,7 +274,7 @@ public:
         const LAMAArray<IndexType>& sourceIndexes,
         IndexType n )
     {
-        using namespace scai::memory;
+        using namespace scai::hmemo;
         WriteAccess<ValueType> target( targetArray );
         ReadAccess<ValueType> source( sourceArray );
         ReadAccess<IndexType> tindexes( targetIndexes );
@@ -395,7 +395,7 @@ private:
 template<typename ValueType>
 void Redistributor::redistribute( LAMAArray<ValueType>& targetArray, const LAMAArray<ValueType>& sourceArray ) const
 {
-    using namespace scai::memory;
+    using namespace scai::hmemo;
 
     SCAI_REGION( "Redistributor.redistribute" )
 
@@ -433,7 +433,7 @@ void Redistributor::redistributeN(
     const LAMAArray<ValueType>& sourceArray,
     IndexType n ) const
 {
-    using namespace scai::memory;
+    using namespace scai::hmemo;
 
     SCAI_REGION( "Redistributor.redistributeN" )
 
@@ -498,7 +498,7 @@ void Redistributor::gatherV(
     const LAMAArray<IndexType>& sourceOffsets,
     const LAMAArray<IndexType>& sourceIndexes )
 {
-    using namespace scai::memory;
+    using namespace scai::hmemo;
 
     const IndexType n = sourceIndexes.size();
 
@@ -531,7 +531,7 @@ void Redistributor::scatterV(
     const LAMAArray<IndexType>& targetIndexes,
     const LAMAArray<ValueType>& sourceArray )
 {
-    using namespace scai::memory;
+    using namespace scai::hmemo;
 
     const IndexType n = targetIndexes.size();
 
@@ -566,7 +566,7 @@ void Redistributor::copyV(
     const LAMAArray<IndexType>& sourceOffsets,
     const LAMAArray<IndexType>& sourceIndexes )
 {
-    using namespace scai::memory;
+    using namespace scai::hmemo;
 
     SCAI_ASSERT_EQUAL_ERROR( targetIndexes.size(), sourceIndexes.size() )
 

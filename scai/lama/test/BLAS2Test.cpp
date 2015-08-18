@@ -35,14 +35,14 @@
 #include <boost/test/unit_test.hpp>
 
 // others
-#include <scai/memory.hpp>
+#include <scai/hmemo.hpp>
 #include <scai/lama/LAMAInterface.hpp>
 #include <scai/lama/Scalar.hpp>
 
 #include <test/TestMacros.hpp>
 
 using namespace scai::lama;
-using namespace scai::memory;
+using namespace scai::hmemo;
 
 namespace scai
 {

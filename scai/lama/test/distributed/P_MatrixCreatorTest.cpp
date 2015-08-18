@@ -40,7 +40,7 @@
 #include <scai/lama/matutils/MatrixCreator.hpp>
 
 using namespace scai::lama;
-using namespace scai::memory;
+using namespace scai::hmemo;
 using scai::common::Exception;
 
 typedef boost::mpl::list<double, float> test_types;

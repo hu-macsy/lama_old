@@ -253,13 +253,13 @@ public:
 
     /* Implementation of pure method of class Matrix. */
 
-    virtual void setContext( const memory::ContextPtr context );
+    virtual void setContext( const hmemo::ContextPtr context );
 
     using CRTPMatrix<DenseMatrix<ValueType>,ValueType>::setContext; // setContext( localContext, haloContext )
 
     /* Implementation of pure method of class Matrix. */
 
-    virtual memory::ContextPtr getContextPtr() const
+    virtual hmemo::ContextPtr getContextPtr() const
     {
         return mData[0]->getContextPtr();
     }
@@ -479,7 +479,7 @@ public:
      *
      * @param[in] loc   TODO[doxy] Complete Description.
      */
-    void prefetch( memory::ContextPtr loc ) const;
+    void prefetch( hmemo::ContextPtr loc ) const;
 
     /* Implementation of pure method of class Matrix. */
 

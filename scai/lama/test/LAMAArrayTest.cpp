@@ -33,13 +33,13 @@
 
 #include <test/TestMacros.hpp>
 
-#include <scai/memory.hpp>
+#include <scai/hmemo.hpp>
 
 #include <boost/test/unit_test.hpp>
 #include <boost/mpl/list.hpp>
 
 using namespace scai::lama;
-using namespace scai::memory;
+using namespace scai::hmemo;
 
 /* --------------------------------------------------------------------- */
 

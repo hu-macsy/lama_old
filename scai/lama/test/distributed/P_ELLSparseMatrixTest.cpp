@@ -39,7 +39,7 @@
 #include <scai/lama/matrix/ELLSparseMatrix.hpp>
 
 using namespace scai::lama;
-using namespace scai::memory;
+using namespace scai::hmemo;
 
 extern bool base_test_case;
 extern std::string testcase;

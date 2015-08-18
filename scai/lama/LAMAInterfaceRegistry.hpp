@@ -41,7 +41,7 @@
 
 // others
 #include <scai/lama/LAMAInterface.hpp>
-#include <scai/memory/Context.hpp>
+#include <scai/hmemo/Context.hpp>
 
 // macros
 #include <scai/lama/macros/unique_name.hpp>
@@ -74,7 +74,7 @@ public:
 
     /** @brief Get const reference to an interface for a certain context type. */
 
-    const LAMAInterface* getInterface( const memory::ContextType location ) const;
+    const LAMAInterface* getInterface( const hmemo::ContextType location ) const;
 
     /** @brief Get a modify reference for a LAMAInterface; if not available an
      *         new interface is generated.
@@ -85,11 +85,11 @@ public:
      *  If an interface is not available a default one will be created
      *  (all function pointers are set to NULL).
      */
-    LAMAInterface& modifyInterface( const memory::ContextType location );
+    LAMAInterface& modifyInterface( const hmemo::ContextType location );
 
     /** @brief Query whether an interface for a certain context is available  */
 
-    bool hasInterface( const memory::ContextType location ) const;
+    bool hasInterface( const hmemo::ContextType location ) const;
 
 private:
 
@@ -97,7 +97,7 @@ private:
 
     static LAMAInterfaceRegistry* instance;
 
-    typedef std::map<memory::ContextType,LAMAInterface*> InterfaceMapType;
+    typedef std::map<hmemo::ContextType,LAMAInterface*> InterfaceMapType;
 
     InterfaceMapType mInterfaceMap;
 

@@ -35,7 +35,7 @@
 #include <scai/lama/cuda/utils.cu.h>
 
 // others
-#include <scai/memory/cuda/CUDAStreamSyncToken.hpp>
+#include <scai/hmemo/cuda/CUDAStreamSyncToken.hpp>
 #include <scai/common/cuda/CUDAError.hpp>
 #include <scai/lama/cuda/CUDASettings.hpp>
 #include <scai/lama/cuda/CUDAJDSUtils.hpp>
@@ -67,7 +67,7 @@
 #include <scai/common/bind.hpp>
 #include <boost/preprocessor.hpp>
 
-using namespace scai::memory;
+using namespace scai::hmemo;
 using namespace scai::tasking;
 using scai::common::getScalarType;
 

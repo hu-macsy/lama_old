@@ -35,7 +35,7 @@
 #include <scai/lama/LAMAArrayUtils.hpp>
 
 // others
-#include <scai/memory.hpp>
+#include <scai/hmemo.hpp>
 #include <scai/lama/LAMAInterface.hpp>
 
 // tracing
@@ -47,7 +47,7 @@
 
 #include <iostream>
 
-using namespace scai::memory;
+using namespace scai::hmemo;
 
 namespace scai
 {

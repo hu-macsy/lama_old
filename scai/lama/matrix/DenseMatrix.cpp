@@ -51,7 +51,7 @@
 #include <scai/common/ScalarType.hpp>
 #include <boost/preprocessor.hpp>
 
-using namespace scai::memory;
+using namespace scai::hmemo;
 
 using scai::common::unique_ptr;
 using scai::common::scoped_array;

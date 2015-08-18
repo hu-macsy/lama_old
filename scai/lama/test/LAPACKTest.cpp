@@ -31,7 +31,7 @@
  * @since 1.0.0
  */
 
-#include <scai/memory.hpp>
+#include <scai/hmemo.hpp>
 
 #include <boost/test/unit_test.hpp>
 #include <boost/mpl/list.hpp>
@@ -41,7 +41,7 @@
 #include <test/TestMacros.hpp>
 
 using namespace scai::lama;
-using namespace scai::memory;
+using namespace scai::hmemo;
 
 // extern bool base_test_case;
 // extern std::string testcase;

@@ -28,7 +28,7 @@
 #include <test/TestMacros.hpp>
 
 using namespace scai::lama;
-using namespace scai::memory;
+using namespace scai::hmemo;
 
 
 

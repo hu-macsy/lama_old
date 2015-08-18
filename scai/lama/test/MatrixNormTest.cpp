@@ -45,7 +45,7 @@
 typedef boost::mpl::list<float, double> test_types;
 
 using namespace scai::lama;
-using namespace scai::memory;
+using namespace scai::hmemo;
 
 BOOST_AUTO_TEST_SUITE( MatrixNormTest )
 

@@ -34,7 +34,7 @@
 #pragma once
 
 #include <map>
-#include <scai/memory/Context.hpp>
+#include <scai/hmemo/Context.hpp>
 
 namespace scai
 {
@@ -44,12 +44,12 @@ namespace lama_test
 class Context
 {
 public:
-    static scai::memory::ContextPtr getContext( const scai::memory::ContextType type );
+    static scai::hmemo::ContextPtr getContext( const scai::hmemo::ContextType type );
 private:
     Context();
     virtual ~Context();
 
-    static std::map<scai::memory::ContextType, scai::memory::ContextPtr> contexts;
+    static std::map<scai::hmemo::ContextType, scai::hmemo::ContextPtr> contexts;
 };
 
 } /* end namespace lama_test */

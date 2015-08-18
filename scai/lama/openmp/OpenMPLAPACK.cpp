@@ -572,7 +572,7 @@ void OpenMPLAPACK::setInterface( BLASInterface& BLAS )
 
 bool OpenMPLAPACK::registerInterface()
 {
-    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( memory::context::Host );
+    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( hmemo::context::Host );
     setInterface( interface.BLAS );
     return true;
 }

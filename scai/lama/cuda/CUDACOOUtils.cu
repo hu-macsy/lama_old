@@ -37,7 +37,7 @@
 #include <scai/common/cuda/CUDAError.hpp>
 #include <scai/lama/cuda/CUDAUtils.hpp>
 #include <scai/lama/cuda/CUDACOOUtils.hpp>
-#include <scai/memory/cuda/CUDAStreamSyncToken.hpp>
+#include <scai/hmemo/cuda/CUDAStreamSyncToken.hpp>
 #include <scai/tasking/SyncToken.hpp>
 #include <scai/lama/cuda/CUDASettings.hpp>
 
@@ -739,7 +739,7 @@ namespace lama
 
     bool CUDACOOUtils::registerInterface()
     {
-        LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( memory::context::CUDA );
+        LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( hmemo::context::CUDA );
         setInterface( interface.COOUtils );
         return true;
     }

@@ -82,17 +82,17 @@ add_subdirectory( tasking )
 set ( SCAI_TASKING_LIBRARY scai_tasking 
       CACHE FILEPATH  "library for thread tasking" )
 
-set ( SCAI_TASKING_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/memory
+set ( SCAI_TASKING_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/tasking
       CACHE PATH "tasking include directory" )
 
-add_subdirectory( memory )
+add_subdirectory( hmemo )
 
-### Set variables for Findscai_memory so further projects can use it 
+### Set variables for Findscai_hmemo so further projects can use it 
 
-set ( SCAI_MEMORY_LIBRARY scai_memory 
-      CACHE FILEPATH  "library for memory on multiple devices" )
+set ( SCAI_HMEMO_LIBRARY scai_hmemo 
+      CACHE FILEPATH  "library for hybrid memory on multiple devices" )
 
-set ( SCAI_MEMORY_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/memory
+set ( SCAI_HMEMO_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/hmemo
       CACHE PATH "tracing include directory" )
 
 ### Final: lama project

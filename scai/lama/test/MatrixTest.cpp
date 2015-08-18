@@ -56,7 +56,7 @@
 #include <cstring>
 
 using namespace scai::lama;
-using namespace scai::memory;
+using namespace scai::hmemo;
 
 BOOST_AUTO_TEST_SUITE( MatrixTest )
 

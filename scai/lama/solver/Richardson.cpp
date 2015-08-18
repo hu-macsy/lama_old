@@ -137,7 +137,7 @@ void Richardson::iterate(){
     {
         SCAI_LOG_TRACE( logger, "Solution " << *runtime.mSolution )
         const DenseVector<T>& sol = dynamic_cast<const DenseVector<T>&>( *runtime.mSolution );
-        memory::ReadAccess<T> rsol( sol.getLocalValues() );
+        hmemo::ReadAccess<T> rsol( sol.getLocalValues() );
         std::cout << "Solution: ";
         for ( IndexType i = 0; i < rsol.size(); ++i )
         	std::cout << " " << rsol[i];

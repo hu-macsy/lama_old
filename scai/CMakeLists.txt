@@ -134,12 +134,12 @@ ExternalProject_Add ( scai_tasking
 	    	BINARY_DIR tasking
             )
 
-ExternalProject_Add ( scai_memory
-            DEPENDS ${SCAI_MEMORY_INTERNAL_DEPS}
-            PREFIX memory
-            SOURCE_DIR ${CMAKE_SOURCE_DIR}/memory
+ExternalProject_Add ( scai_hmemo
+            DEPENDS ${SCAI_HMEMO_INTERNAL_DEPS}
+            PREFIX hmemo
+            SOURCE_DIR ${CMAKE_SOURCE_DIR}/hmemo
             CMAKE_ARGS "${CMAKE_ARGS}"
-	    	BINARY_DIR memory
+	    	BINARY_DIR hmemo
             )
 
 ExternalProject_Add ( lama

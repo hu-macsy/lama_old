@@ -40,7 +40,7 @@
 #include <scai/common/Printable.hpp>
 
 // others
-#include <scai/memory.hpp>
+#include <scai/hmemo.hpp>
 #include <scai/lama/CommunicationPlan.hpp>
 
 #include <scai/lama/exception/LAMAAssert.hpp>
@@ -91,9 +91,9 @@ public:
 
     inline IndexType global2halo( const IndexType globalIndex ) const;
 
-    inline const memory::LAMAArray<IndexType>& getProvidesIndexes() const;
+    inline const hmemo::LAMAArray<IndexType>& getProvidesIndexes() const;
 
-    inline const memory::LAMAArray<IndexType>& getRequiredIndexes() const;
+    inline const hmemo::LAMAArray<IndexType>& getRequiredIndexes() const;
 
     /** Query the size for a halo to be allocated */
 
@@ -125,8 +125,8 @@ private:
     // Indexes for required values and values to provide are stored in LAMAArrays
     // so they might be used in different contexts, especially also on GPU
 
-    memory::LAMAArray<IndexType> mRequiredIndexes;
-    memory::LAMAArray<IndexType> mProvidesIndexes;
+    hmemo::LAMAArray<IndexType> mRequiredIndexes;
+    hmemo::LAMAArray<IndexType> mProvidesIndexes;
 
     std::map<IndexType,IndexType> mGlobal2Halo;
 
@@ -143,12 +143,12 @@ const CommunicationPlan& Halo::getProvidesPlan() const
     return mProvidesPlan;
 }
 
-const memory::LAMAArray<IndexType>& Halo::getProvidesIndexes() const
+const hmemo::LAMAArray<IndexType>& Halo::getProvidesIndexes() const
 {
     return mProvidesIndexes;
 }
 
-const memory::LAMAArray<IndexType>& Halo::getRequiredIndexes() const
+const hmemo::LAMAArray<IndexType>& Halo::getRequiredIndexes() const
 {
     return mRequiredIndexes;
 }

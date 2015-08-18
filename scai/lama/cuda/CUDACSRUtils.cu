@@ -50,7 +50,7 @@
 #include <scai/lama/cuda/CUDACOOUtils.hpp>
 #include <scai/lama/cuda/CUDATexture.hpp>
 #include <scai/lama/cuda/CUDASettings.hpp>
-#include <scai/memory/cuda/CUDAStreamSyncToken.hpp>
+#include <scai/hmemo/cuda/CUDAStreamSyncToken.hpp>
 
 #include <cuda.h>
 #include <cuda_runtime.h>
@@ -92,7 +92,7 @@
 #define HASH_C1 1
 #define NUM_CHUNKS_PER_WARP 128
 
-using namespace scai::memory;
+using namespace scai::hmemo;
 using namespace scai::common;
 
 namespace scai

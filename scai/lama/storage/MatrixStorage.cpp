@@ -68,7 +68,7 @@
 using scai::tasking::SyncToken;
 using scai::tasking::TaskSyncToken;
 
-using namespace scai::memory;
+using namespace scai::hmemo;
 
 namespace scai
 {

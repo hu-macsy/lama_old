@@ -32,20 +32,20 @@
  */
 #include <test/cuda/CUDAContext.hpp>
 
-#include <scai/memory/Context.hpp>
+#include <scai/hmemo/Context.hpp>
 
 namespace scai
 {
 namespace lama_test
 {
 
-memory::ContextPtr CUDAContext::cudaContext;
+hmemo::ContextPtr CUDAContext::cudaContext;
 
-memory::ContextPtr CUDAContext::getContext()
+hmemo::ContextPtr CUDAContext::getContext()
 {
     if ( !cudaContext )
     {
-        cudaContext = memory::Context::getContextPtr( memory::context::CUDA, 0 );
+        cudaContext = hmemo::Context::getContextPtr( hmemo::context::CUDA, 0 );
     }
 
     return cudaContext;

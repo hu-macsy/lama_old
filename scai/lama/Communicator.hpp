@@ -39,7 +39,7 @@
 
 // others
 #include <scai/lama/LAMATypes.hpp>
-#include <scai/memory.hpp>
+#include <scai/hmemo.hpp>
 #include <scai/lama/CommunicationPlan.hpp>
 #include <scai/tasking/SyncToken.hpp>
 
@@ -63,7 +63,7 @@ namespace scai
 {
 
 
-namespace memory
+namespace hmemo
 {
 	template<typename ValueType> class LAMAArray;
 }
@@ -626,18 +626,18 @@ public:
 
     template<typename ValueType>
     void exchangeByPlan(
-        memory::LAMAArray<ValueType>& recvArray,
+        hmemo::LAMAArray<ValueType>& recvArray,
         const CommunicationPlan& recvPlan,
-        const memory::LAMAArray<ValueType>& sendArray,
+        const hmemo::LAMAArray<ValueType>& sendArray,
         const CommunicationPlan& sendPlan ) const;
 
     /** Asynchronous exchange of LAMAArrays. */
 
     template<typename ValueType>
     tasking::SyncToken* exchangeByPlanAsync(
-        memory::LAMAArray<ValueType>& recvArray,
+        hmemo::LAMAArray<ValueType>& recvArray,
         const CommunicationPlan& recvPlan,
-        const memory::LAMAArray<ValueType>& sendArray,
+        const hmemo::LAMAArray<ValueType>& sendArray,
         const CommunicationPlan& sendPlan ) const;
 
     /** @brief Update of halo array via Halo object.
@@ -651,16 +651,16 @@ public:
      */
     template<typename ValueType>
     void updateHalo(
-        memory::LAMAArray<ValueType>& haloValues,
-        const memory::LAMAArray<ValueType>& localValues,
+        hmemo::LAMAArray<ValueType>& haloValues,
+        const hmemo::LAMAArray<ValueType>& localValues,
         const Halo& halo ) const;
 
     /** @brief Asynchronous update of halo array via Halo object. */
 
     template<typename ValueType>
     tasking::SyncToken* updateHaloAsync(
-        memory::LAMAArray<ValueType>& haloValues,
-        const memory::LAMAArray<ValueType>& localValues,
+        hmemo::LAMAArray<ValueType>& haloValues,
+        const hmemo::LAMAArray<ValueType>& localValues,
         const Halo& halo ) const;
 
     /** @brief Shift on LAMA arrays.
@@ -674,7 +674,7 @@ public:
      *        receive all the data.
      */
     template<typename ValueType>
-    void shiftArray( memory::LAMAArray<ValueType>& recv, const memory::LAMAArray<ValueType>& send, const int direction ) const;
+    void shiftArray( hmemo::LAMAArray<ValueType>& recv, const hmemo::LAMAArray<ValueType>& send, const int direction ) const;
 
     /** @brief Asychronous shift on LAMA arrays.
      *
@@ -687,8 +687,8 @@ public:
      */
     template<typename ValueType>
     tasking::SyncToken* shiftAsync(
-        memory::LAMAArray<ValueType>& recvArray,
-        const memory::LAMAArray<ValueType>& sendArray,
+        hmemo::LAMAArray<ValueType>& recvArray,
+        const hmemo::LAMAArray<ValueType>& sendArray,
         const int direction ) const;
 
     /** Override routine of base class Printable. */
@@ -711,7 +711,7 @@ public:
      * Note: this routine is mainly used for sending of values; in case of CUDA aware
      *       communication it might return a CUDA context if the array has valid data there.
      */
-    virtual memory::ContextPtr getCommunicationContext( const memory::ContextArray& array ) const = 0;
+    virtual hmemo::ContextPtr getCommunicationContext( const hmemo::ContextArray& array ) const = 0;
 
 protected:
 
@@ -757,9 +757,9 @@ PartitionId Communicator::getNeighbor( int pos ) const
 
 template<typename ValueType>
 void Communicator::exchangeByPlan(
-    memory::LAMAArray<ValueType>& recvArray,
+    hmemo::LAMAArray<ValueType>& recvArray,
     const CommunicationPlan& recvPlan,
-    const memory::LAMAArray<ValueType>& sendArray,
+    const hmemo::LAMAArray<ValueType>& sendArray,
     const CommunicationPlan& sendPlan ) const
 {
     SCAI_ASSERT_EQUAL_ERROR( sendArray.size(), sendPlan.totalQuantity() )
@@ -770,15 +770,15 @@ void Communicator::exchangeByPlan(
     // if possible try to find a context where valid data is available
     // CUDAaware MPI: might give GPU or Host context here
 
-    memory::ContextPtr comCtx = getCommunicationContext( sendArray );
+    hmemo::ContextPtr comCtx = getCommunicationContext( sendArray );
 
     SCAI_LOG_DEBUG( logger, *this << ": exchangeByPlan, comCtx = " << *comCtx )
 
-    memory::ReadAccess<ValueType> sendData( sendArray, comCtx );
+    hmemo::ReadAccess<ValueType> sendData( sendArray, comCtx );
 
     // Data will be received at the same context where send data is
 
-    memory::WriteOnlyAccess<ValueType> recvData( recvArray, comCtx, recvSize );
+    hmemo::WriteOnlyAccess<ValueType> recvData( recvArray, comCtx, recvSize );
 
     exchangeByPlan( recvData.get(), recvPlan, sendData.get(), sendPlan );
 }
@@ -787,14 +787,14 @@ void Communicator::exchangeByPlan(
 
 template<typename ValueType>
 tasking::SyncToken* Communicator::exchangeByPlanAsync(
-    memory::LAMAArray<ValueType>& recvArray,
+    hmemo::LAMAArray<ValueType>& recvArray,
     const CommunicationPlan& recvPlan,
-    const memory::LAMAArray<ValueType>& sendArray,
+    const hmemo::LAMAArray<ValueType>& sendArray,
     const CommunicationPlan& sendPlan ) const
 {
-    using scai::memory::ReadAccess;
-    using scai::memory::WriteAccess;
-    using scai::memory::WriteOnlyAccess;
+    using scai::hmemo::ReadAccess;
+    using scai::hmemo::WriteAccess;
+    using scai::hmemo::WriteOnlyAccess;
 
     SCAI_ASSERT_EQUAL_ERROR( sendArray.size(), sendPlan.totalQuantity() )
 
@@ -802,7 +802,7 @@ tasking::SyncToken* Communicator::exchangeByPlanAsync(
 
     // allocate accesses, SyncToken will take ownership
 
-    memory::ContextPtr comCtx = getCommunicationContext( sendArray );
+    hmemo::ContextPtr comCtx = getCommunicationContext( sendArray );
 
     SCAI_LOG_DEBUG( logger, *this << ": exchangeByPlanAsync, comCtx = " << *comCtx )
 

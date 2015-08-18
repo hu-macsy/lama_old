@@ -36,7 +36,7 @@
 
 // others
 #include <scai/lama/LAMAInterface.hpp>
-#include <scai/memory/ContextAccess.hpp>
+#include <scai/hmemo/ContextAccess.hpp>
 
 #include <scai/lama/openmp/OpenMPDenseUtils.hpp>
 #include <scai/lama/openmp/OpenMPCSRUtils.hpp>
@@ -52,7 +52,7 @@ using std::abs;
 // so we can use abs for float and double and own abs for Complex
 
 using scai::common::shared_ptr;
-using namespace scai::memory;
+using namespace scai::hmemo;
 
 /* --------------------------------------------------------------------------- */
 

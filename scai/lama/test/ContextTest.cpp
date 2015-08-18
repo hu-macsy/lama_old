@@ -36,7 +36,7 @@
 
 #include <test/TestMacros.hpp>
 
-#include <scai/memory/Context.hpp>
+#include <scai/hmemo/Context.hpp>
 #include <scai/lama/ContextManager.hpp>
 #include <scai/lama/ContextFactory.hpp>
 #include <scai/lama/HostReadAccess.hpp>
@@ -53,7 +53,7 @@
 #include <omp.h>
 
 using namespace scai::lama;
-using namespace scai::memory;
+using namespace scai::hmemo;
 using scai::tasking::SyncToken;
 using scai::tasking::TaskSyncToken;
 

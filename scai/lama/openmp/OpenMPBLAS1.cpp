@@ -580,7 +580,7 @@ void OpenMPBLAS1::setInterface( BLASInterface& BLAS )
 
 bool OpenMPBLAS1::registerInterface()
 {
-    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( memory::context::Host );
+    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( hmemo::context::Host );
     setInterface( interface.BLAS );
     return true;
 }

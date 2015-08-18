@@ -42,7 +42,7 @@
 #include <scai/lama/LAMAArrayUtils.hpp>
 
 #include <scai/lama/distribution/Redistributor.hpp>
-#include <scai/memory.hpp>
+#include <scai/hmemo.hpp>
 
 #include <scai/tasking/TaskSyncToken.hpp>
 
@@ -71,7 +71,7 @@ using scai::common::shared_ptr;
 
 using scai::tasking::TaskSyncToken;
 
-using namespace scai::memory;
+using namespace scai::hmemo;
 
 /* --------------------------------------------------------------------------- */
 

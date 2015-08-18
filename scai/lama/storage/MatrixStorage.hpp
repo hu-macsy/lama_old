@@ -36,17 +36,17 @@
 #include <ostream>
 
 // others
-#include <scai/memory.hpp>
+#include <scai/hmemo.hpp>
 #include <scai/lama/Communicator.hpp>
 #include <scai/lama/Scalar.hpp>
 
 #include <scai/lama/io/FileType.hpp>
 
-using scai::memory::Context;
-using scai::memory::ContextPtr;
-using scai::memory::ContextArray;
-using scai::memory::LAMAArray;
-using scai::memory::LAMAArrayRef;
+using scai::hmemo::Context;
+using scai::hmemo::ContextPtr;
+using scai::hmemo::ContextArray;
+using scai::hmemo::LAMAArray;
+using scai::hmemo::LAMAArrayRef;
 
 namespace scai
 {

@@ -55,7 +55,7 @@
 #include <test/cuda/CUDAContext.hpp>
 
 using namespace scai::lama;
-using namespace scai::memory;
+using namespace scai::hmemo;
 using scai::tasking::Task;
 
 typedef boost::mpl::list<double, float> test_types;

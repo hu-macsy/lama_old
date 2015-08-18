@@ -253,7 +253,7 @@ void BLAS_BLAS3::setInterface( BLASInterface& BLAS )
 
 bool BLAS_BLAS3::registerInterface()
 {
-    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( memory::context::Host );
+    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( hmemo::context::Host );
     setInterface( interface.BLAS );
     return true;
 }
