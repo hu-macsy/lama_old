@@ -5,7 +5,7 @@
 # SCAI_LOGGING_INCLUDE_DIR - the logging include dir
 # SCAI_LOGGING_LIBRARY     - libraries to link against
 
-if    ( NOT DEFINED SCAI_LOGGING_INCLUDE_DIR )
+if ( NOT SCAI_LOGGING_INCLUDE_DIR )
     find_path ( SCAI_LOGGING_INCLUDE_DIR logging.hpp
         /usr/local/include/scai
         /usr/include/scai
@@ -13,7 +13,9 @@ if    ( NOT DEFINED SCAI_LOGGING_INCLUDE_DIR )
         $ENV{SCAI_LOGGING_INCLUDE_PATH}/scai
         ${SCAI_LOGGING_ROOT}/include/scai
     )
-endif ( NOT DEFINED SCAI_LOGGING_INCLUDE_DIR )
+endif ( NOT SCAI_LOGGING_INCLUDE_DIR )
+
+set ( SCAI_LOGGING_INCLUDE_DIR ${SCAI_LOGGING_INCLUDE_DIR} CACHE PATH "Path to LOGGING include dir" FORCE )
 
 find_library ( SCAI_LOGGING_LIBRARY scai_logging
     /usr/local/lib
@@ -22,10 +24,10 @@ find_library ( SCAI_LOGGING_LIBRARY scai_logging
     ${SCAI_LOGGING_ROOT}/lib
 )
 
-if    ( SCAI_LOGGING_INCLUDE_DIR )
-    if    (SCAI_LOGGING_LIBRARY)
+if ( SCAI_LOGGING_INCLUDE_DIR )
+    if ( SCAI_LOGGING_LIBRARY)
         set ( SCAI_LOGGING_FOUND TRUE )
     endif ( SCAI_LOGGING_LIBRARY )
-endif (SCAI_LOGGING_INCLUDE_DIR)
+endif ( SCAI_LOGGING_INCLUDE_DIR)
 
 mark_as_advanced ( SCAI_LOGGING_FOUND SCAI_LOGGING_INCLUDE_DIR SCAI_LOGGING_LIBRARY )
