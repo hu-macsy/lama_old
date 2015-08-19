@@ -45,7 +45,7 @@ include ( SearchPackages/Tracing )
 
 # Find required packages
 foreach    ( PACKAGE_TO_FIND ${REQUIRED_PACKAGES_TO_FIND} )
-    find_package ( ${PACKAGE_TO_FIND} ${LAMA_FIND_PACKAGE_FLAGS} REQUIRED )
+    find_package ( ${PACKAGE_TO_FIND} ${LAMA_FIND_PACKAGE_FLAGS} QUIET REQUIRED )
 endforeach ( PACKAGE_TO_FIND ${REQUIRED_PACKAGES_TO_FIND} )
 
 # Find optional packages
@@ -70,35 +70,23 @@ foreach    ( module ${SCAI_TRACING_INTERNAL_DEPS} )
     include_directories( ${${upper_module}_INCLUDE_DIR} )
 endforeach ( module ${SCAI_TRACING_INTERNAL_DEPS} )
 
-### add definitions ###
+### Mandatory: compile flag for logging level
 
-if    ( SCAI_LOG_LEVEL )
-    add_definitions ( -DSCAI_LOG_LEVEL_${SCAI_LOG_LEVEL} )
-else  ( SCAI_LOG_LEVEL )
-    add_definitions( -DSCAI_LOG_LEVEL_DEBUG )
-endif ( SCAI_LOG_LEVEL ) 
+add_definitions ( -D${SCAI_LOGGING_FLAG} )
+add_definitions ( -D${SCAI_LOGGING_FLAG} )
+add_definitions ( -D${SCAI_LOGGING_FLAG} )
+add_definitions ( -D${SCAI_LOGGING_FLAG} )
+add_definitions ( -D${SCAI_LOGGING_FLAG} )
+add_definitions ( -D${SCAI_LOGGING_FLAG} )
+add_definitions ( -D${SCAI_LOGGING_FLAG} )
+add_definitions ( -D${SCAI_LOGGING_FLAG} )
+add_definitions ( -D${SCAI_LOGGING_FLAG} )
+add_definitions ( -D${SCAI_LOGGING_FLAG} )
+add_definitions ( -D${SCAI_LOGGING_FLAG} )
 
 if ( WIN32 )
     add_definitions ( -DCOMMON_COMPILING_DLL )
 endif ( WIN32 )
-
-if ( FALSE )
-
-### VampirTrace is not easy to add for tracing, is in development
-
-    find_package ( VampirTrace )
-
-    message( STATUS "VAMPIRTRACE found = ${VAMPIRTRACE_FOUND}" )
-    message( STATUS "MPI found = ${MPI_FOUND}" )
-
-    if ( ${VAMPIRTRACE_FOUND} )
-        message( STATUS "VAMPIRTRACE found, lib = ${VAMPIRTRACE_LIBRARIES}" )
-        add_definitions( -DUSE_VAMPIRTRACE )
-        include_directories( ${VAMPIRTRACE_INCLUDE_DIR} )
-        target_link_libraries( tracing ${VAMPIRTRACE_LIBRARIES} ${MPI_LIBRARIES} )
-    endif ()
-
-endif ()
 
 ## add subdirectory
 add_subdirectory ( examples )

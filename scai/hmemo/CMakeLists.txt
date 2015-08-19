@@ -71,9 +71,9 @@ foreach    ( module ${SCAI_HMEMO_INTERNAL_DEPS} )
     include_directories( ${${upper_module}_INCLUDE_DIR} )
 endforeach ( module ${SCAI_HMEMO_INTERNAL_DEPS} )
 
-### add definitions ###
+### compile flag for logging level mandatory
 
-add_definitions( -DSCAI_LOG_LEVEL_DEBUG )
+add_definitions( -D${SCAI_LOGGING_FLAG} )
 
 if ( WIN32 )
     add_definitions ( -DCOMMON_COMPILING_DLL )
