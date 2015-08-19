@@ -89,7 +89,7 @@ set_property( SOURCE ../Configuration.cpp
 
 ### add definitions ###
 if ( WIN32 )
-    add_definitions ( -DSCAI_COMPILING_DLL )
+    add_definitions ( -DCOMMON_COMPILING_DLL )
 endif ( WIN32 )
 
 ### set link directories ###

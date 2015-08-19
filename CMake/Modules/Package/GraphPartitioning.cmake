@@ -31,9 +31,9 @@
  # @since 2.0.0
 ###
 
-find_package ( Metis ${LAMA_FIND_PACKAGE_FLAGS} )
+find_package ( Metis ${SCAI_FIND_PACKAGE_FLAGS} )
 if    ( METIS_FOUND )
-	find_package ( ParMetis ${LAMA_FIND_PACKAGE_FLAGS} )
+	find_package ( ParMetis ${SCAI_FIND_PACKAGE_FLAGS} )
 endif ( METIS_FOUND )
 
 ## ALLOW to switch off GRAPH_PART explicitly ( doing something linke setAndCheckCache )

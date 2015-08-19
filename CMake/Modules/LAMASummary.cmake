@@ -83,7 +83,7 @@ lama_summary_message ( "USE"
                        "USE_OPENMP"
                        "  OpenMP usage"
                        "" )
-message ( STATUS "       OpenMP schedule set to \"${LAMA_OMP_SCHEDULE}\"" )
+message ( STATUS "       OpenMP schedule set to \"${SCAI_OMP_SCHEDULE}\"" )
 
 # LAMA (core)
 message ( STATUS "" )

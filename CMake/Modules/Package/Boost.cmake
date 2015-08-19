@@ -51,16 +51,16 @@ endif ( WIN32 )
 set ( Boost_COMPONENTS thread unit_test_framework regex system )
 
 # FindBoost Debug options comment
-if    ( LAMA_CMAKE_VERBOSE )
+if    ( SCAI_CMAKE_VERBOSE )
     set ( Boost_DEBUG TRUE )
     set ( Boost_DETAILED_FAILURE_MSG TRUE )
-endif ( LAMA_CMAKE_VERBOSE )
+endif ( SCAI_CMAKE_VERBOSE )
 
 # Find Boost 
 
-set ( LAMA_CMAKE_VERBOSE QUIET )
+set ( SCAI_CMAKE_VERBOSE QUIET )
 
-find_package ( Boost COMPONENTS ${Boost_COMPONENTS} ${LAMA_FIND_PACKAGE_FLAGS} )
+find_package ( Boost COMPONENTS ${Boost_COMPONENTS} ${SCAI_FIND_PACKAGE_FLAGS} )
 
 # Note: we use Boost_INCLUDE_DIR, Boost_<lib>_FOUND, Boost_<lib>_LIBRARY, but
 #       not Boost_FOUND, as it is false if some optional libraries are missing
