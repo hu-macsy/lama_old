@@ -29,7 +29,7 @@ Method.
    solver.initialize( matrix );
    solver.solve( solution, rhs );  
 
-:download:`Download source file <../../../examples/tutorial/solver.cpp>`
+:download:`Download source file <../../../lama/examples/tutorial/solver.cpp>`
 
 First we need the required vectors and matrices for the linear equation :math:`Ax=b` where A is the 
 matrix, x is the solution vector and b is the right-hand-side (rhs).
