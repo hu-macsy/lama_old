@@ -88,7 +88,7 @@ If the MKL is not available, LAMA tries to find other BLAS or LAPACK libraries. 
 it fails, you will see a typical message like this:
 
 \code
-  Could NOT find LAMA_BLAS (missing: LAMA_BLAS_LIBRARIES)
+  Could NOT find SCAI_BLAS (missing: SCAI_BLAS_LIBRARIES)
 \endcode
 
 Unfortunately, the CMake modules have some problems in finding the BLAS and LAPACK
@@ -126,7 +126,7 @@ LAMA supports GPU accelearators via CUDA. This feature is optional.
 
 If CUDA is installed on your machine, LAMA should find it if it is
 in one of the system directories. Otherwise you can give cmake the hint
-by the variable \c LAMA_ROOT.
+by the variable \c SCAI_ROOT.
 
 <h2>API Documentation</h2>
 
@@ -149,11 +149,11 @@ make install
 
 in your build directory. 
 
-For your convenience, we recommend to set the environment variable \c LAMA_ROOT
+For your convenience, we recommend to set the environment variable \c SCAI_ROOT
 to this installation directory.
 
 \code
-export LAMA_ROOT=<installation-directory>
+export SCAI_ROOT=<installation-directory>
 \endcode
 
 <h2>Running Examples</h2>
@@ -165,7 +165,7 @@ Examples can be found in the directory \c <project-root>/share/tutorial.
 \code
 cd test
 export SCAI_LOG=config
-export LAMA_UNSUPPORTED=IGNORE
+export SCAI_UNSUPPORTED=IGNORE
 lama_test 
 \endcode
 

@@ -14,13 +14,13 @@ endif (NOT CMAKE_BUILD_TYPE)
 
 set ( CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/../../Modules" )
 
-find_package ( LAMA_BLAS REQUIRED )
+find_package ( SCAI_BLAS REQUIRED )
 
 if ( SCAI_BLAS_LIBRARIES )
-    message( STATUS "LAMA_BLAS found, SCAI_BLAS_LIBRARIES=${SCAI_BLAS_LIBRARIES}" )
+    message( STATUS "SCAI_BLAS found, SCAI_BLAS_LIBRARIES=${SCAI_BLAS_LIBRARIES}" )
     add_executable( QR QR.cpp )
     target_link_libraries( QR ${SCAI_BLAS_LIBRARIES} )
 else( SCAI_BLAS_LIBRARIES )
-    message( STATUS "LAMA_BLAS not found" )
+    message( STATUS "SCAI_BLAS not found" )
 endif( SCAI_BLAS_LIBRARIES )
 

@@ -31,7 +31,7 @@
  # @since 1.0.0
 ###
 
-# Look for MPI first to allow LAMA_BLAS to take the correct blacs implementation
+# Look for MPI first to allow SCAI_BLAS to take the correct blacs implementation
 # based on the found mpi
 if    ( WIN32 AND NOT ( MPI_C_INCLUDE_PATH OR MPI_CXX_INCLUDE_PATH OR MPI_C_LIBRARIES OR MPI_CXX_LIBRARIES ) )
     if    ( MPI_ROOT )

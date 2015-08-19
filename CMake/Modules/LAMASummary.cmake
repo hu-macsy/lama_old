@@ -89,14 +89,14 @@ message ( STATUS "       OpenMP schedule set to \"${LAMA_OMP_SCHEDULE}\"" )
 message ( STATUS "" )
 lama_status_message ( HEADLINE "LIBRARIES:" )
 
-if    ( LAMA_BLAS_FOUND AND Boost_INCLUDE_DIR )
+if    ( SCAI_BLAS_FOUND AND Boost_INCLUDE_DIR )
     set( REQUIRED_FOUND TRUE )
-    if ( LAMA_BLAS_NAME MATCHES "BLAS" AND NOT LAPACK_FOUND )
+    if ( SCAI_BLAS_NAME MATCHES "BLAS" AND NOT LAPACK_FOUND )
         set( REQUIRED_FOUND FALSE )
-    endif ( LAMA_BLAS_NAME MATCHES "BLAS" AND NOT LAPACK_FOUND )
-else  ( LAMA_BLAS_FOUND AND Boost_INCLUDE_DIR )
+    endif ( SCAI_BLAS_NAME MATCHES "BLAS" AND NOT LAPACK_FOUND )
+else  ( SCAI_BLAS_FOUND AND Boost_INCLUDE_DIR )
     set( REQUIRED_FOUND FALSE )
-endif ( LAMA_BLAS_FOUND AND Boost_INCLUDE_DIR ) 
+endif ( SCAI_BLAS_FOUND AND Boost_INCLUDE_DIR ) 
 
 lama_summary_message ( "STATIC"
                        "REQUIRED_FOUND"
@@ -104,15 +104,15 @@ lama_summary_message ( "STATIC"
                        " " )
    # BLAS
     lama_summary_message ( "FOUND"
-                           "LAMA_BLAS_FOUND"
+                           "SCAI_BLAS_FOUND"
                            "BLAS"
-                           "(${LAMA_BLAS_NAME}) with libraries: ${LAMA_BLAS_LIBRARIES}" )
-    if    ( LAMA_BLAS_NAME MATCHES "BLAS" )
+                           "(${SCAI_BLAS_NAME}) with libraries: ${SCAI_BLAS_LIBRARIES}" )
+    if    ( SCAI_BLAS_NAME MATCHES "BLAS" )
     lama_summary_message ( "FOUND"
                            "LAPACK_FOUND"
                            "LAPACK"
                            "" )
-    endif ( LAMA_BLAS_NAME MATCHES "BLAS" )
+    endif ( SCAI_BLAS_NAME MATCHES "BLAS" )
     
     # Boost
     lama_summary_message ( "FOUND"
@@ -223,9 +223,9 @@ message ( STATUS "" )
 # Check if all required packages are found
 # LAMA (core)
 
-if    ( NOT ( LAMA_BLAS_FOUND AND Boost_INCLUDE_DIR  ) OR ( (LAMA_BLAS_NAME MATCHES "BLAS") AND NOT LAPACK_FOUND )  )
+if    ( NOT ( SCAI_BLAS_FOUND AND Boost_INCLUDE_DIR  ) OR ( (SCAI_BLAS_NAME MATCHES "BLAS") AND NOT LAPACK_FOUND )  )
     message( FATAL_ERROR "Configuration for LAMA (core) incomplete!")
-endif ( NOT ( LAMA_BLAS_FOUND AND Boost_INCLUDE_DIR  ) OR ( (LAMA_BLAS_NAME MATCHES "BLAS") AND NOT LAPACK_FOUND ) )
+endif ( NOT ( SCAI_BLAS_FOUND AND Boost_INCLUDE_DIR  ) OR ( (SCAI_BLAS_NAME MATCHES "BLAS") AND NOT LAPACK_FOUND ) )
 
 # LAMA MPI
 if    ( USE_MPI AND NOT MPI_FOUND )

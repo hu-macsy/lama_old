@@ -31,12 +31,12 @@
  # @since 1.0.0
 ###
 
-find_package ( OpenMP ${LAMA_FIND_PACKAGE_FLAGS} )
+find_package ( OpenMP ${SCAI_FIND_PACKAGE_FLAGS} )
 
 setAndCheckCache ( OPENMP )
 
-if    ( NOT LAMA_OMP_SCHEDULE )
-    set ( LAMA_OMP_SCHEDULE "static" )
-endif ( NOT LAMA_OMP_SCHEDULE )
+if    ( NOT SCAI_OMP_SCHEDULE )
+    set ( SCAI_OMP_SCHEDULE "static" )
+endif ( NOT SCAI_OMP_SCHEDULE )
 
-add_definitions ( -DLAMA_OMP_SCHEDULE=${LAMA_OMP_SCHEDULE} )
+add_definitions ( -DSCAI_OMP_SCHEDULE=${SCAI_OMP_SCHEDULE} )

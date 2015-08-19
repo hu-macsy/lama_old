@@ -63,7 +63,7 @@ include ( Package/GraphPartitioning )
 include ( Package/CodeCoverage ) # USE_CODE_COVERAGE --> COVERAGE_FLAGS
 
 set ( REQUIRED_PACKAGES_TO_FIND Threads )
-set ( OPTIONAL_PACKAGES_TO_FIND LAMA_BLAS )
+set ( OPTIONAL_PACKAGES_TO_FIND SCAI_BLAS )
 
 # Find required packages
 foreach    ( PACKAGE_TO_FIND ${REQUIRED_PACKAGES_TO_FIND} )

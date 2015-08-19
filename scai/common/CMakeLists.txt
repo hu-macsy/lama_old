@@ -48,6 +48,7 @@ find_package ( Threads ) # use ${CMAKE_THREAD_LIBS_INIT} for target_link_librari
 #find_library ( PTHREADS_LIBRARY NAMES pthread pthreads )
 	
 include ( Package/CUDA )
+include ( Package/OpenMP ) 
 	
 if    ( NOT SCAI_COMPLETE_BUILD )
 	

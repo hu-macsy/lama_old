@@ -39,9 +39,10 @@ set ( REQUIRED_PACKAGES_TO_FIND
     
 # Find optional packages
 set ( OPTIONAL_PACKAGES_TO_FIND
-        LAMA_BLAS
+        SCAI_BLAS
         Threads
-        ParMetis REQUIRES Metis
+	Metis
+        ParMetis
 #        CUDA # needs check on windows # used through Package/CUDA
         #add optional packages here
     )
