@@ -32,7 +32,7 @@
 ###
 
 # defined functions:
-#     setAndCheckCache: Function for setting LAMA_USE_{PACKAGE_NAME} variables depending on {PACKAGE_NAME}_FOUND.
+#     setAndCheckCache: Function for setting USE_{PACKAGE_NAME} variables depending on {PACKAGE_NAME}_FOUND.
 include ( Functions/setAndCheckCache )
 #     get_relative_path: returns the relative path to the actual directory to the CMAKE_SOURCE_DIR
 include ( Functions/getRelativePath )

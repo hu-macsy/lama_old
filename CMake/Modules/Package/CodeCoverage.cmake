@@ -32,8 +32,8 @@
 ###
 
 ###  Code coverage with gcov/lcov
-set ( LAMA_USE_CODE_COVERAGE FALSE CACHE BOOL "Enable / Disable use of Code Coverage" )
+set ( USE_CODE_COVERAGE FALSE CACHE BOOL "Enable / Disable use of Code Coverage" )
 
-if    ( LAMA_USE_CODE_COVERAGE )
+if    ( USE_CODE_COVERAGE )
     set ( COVERAGE_FLAGS "-fprofile-arcs -ftest-coverage" )
-endif ( LAMA_USE_CODE_COVERAGE )
+endif ( USE_CODE_COVERAGE )

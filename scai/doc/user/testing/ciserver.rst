@@ -37,7 +37,7 @@ The Cmake Build plugin contains the following values:
 
 Advanced:
 
-- Other CMake Arguments (as an example) : -DBOOST_ROOT=/usr/include/boost -DLAMA_USE_CUDA=OFF -DLAMA_USE_OPENCL=OFF
+- Other CMake Arguments (as an example) : -DBOOST_ROOT=/usr/include/boost -DUSE_CUDA=OFF -DUSE_OPENCL=OFF
 
 After building a project, all tests should be executed to varify the correctness of the calculations.
 This can be done by writing a shell script in a post build task:

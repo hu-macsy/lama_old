@@ -617,7 +617,7 @@ namespace lama
 
         // using CUSparse for CSR might be disabled explicitly by environment variable
 
-        Settings::getEnvironment( useCUSparse, "LAMA_USE_CUSPARSE" );
+        Settings::getEnvironment( useCUSparse, "USE_CUSPARSE" );
 
         if ( !useCUSparse )
         {

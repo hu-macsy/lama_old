@@ -80,7 +80,7 @@ lama_summary_message ( "FOUND"
 message ( STATUS "" )
 
 lama_summary_message ( "USE"
-                       "LAMA_USE_OPENMP"
+                       "USE_OPENMP"
                        "  OpenMP usage"
                        "" )
 message ( STATUS "       OpenMP schedule set to \"${LAMA_OMP_SCHEDULE}\"" )
@@ -123,7 +123,7 @@ lama_summary_message ( "STATIC"
 # LAMA MPI
 message ( STATUS "" )
 lama_summary_message ( "USE"
-                       "LAMA_USE_MPI"
+                       "USE_MPI"
                        "LAMA MPI"
                        "" )
 
@@ -136,7 +136,7 @@ lama_summary_message ( "USE"
 # LAMA CUDA
 message ( STATUS "" )
 lama_summary_message ( "USE"
-                       "LAMA_USE_CUDA"
+                       "USE_CUDA"
                        "LAMA CUDA"
                        "" )
 
@@ -155,14 +155,14 @@ lama_summary_message ( "USE"
 # LAMA MIC
 message ( STATUS "" )
 lama_summary_message ( "USE"
-                       "LAMA_USE_MIC"
+                       "USE_MIC"
                        "LAMA MIC"
                        "" )
 
 # LAMA TEST
 message ( STATUS "" )
 lama_summary_message ( "USE"
-                       "LAMA_USE_CUDA"
+                       "USE_CUDA"
                        "LAMA TEST"
                        "" )
 
@@ -228,19 +228,19 @@ if    ( NOT ( LAMA_BLAS_FOUND AND Boost_INCLUDE_DIR  ) OR ( (LAMA_BLAS_NAME MATC
 endif ( NOT ( LAMA_BLAS_FOUND AND Boost_INCLUDE_DIR  ) OR ( (LAMA_BLAS_NAME MATCHES "BLAS") AND NOT LAPACK_FOUND ) )
 
 # LAMA MPI
-if    ( LAMA_USE_MPI AND NOT MPI_FOUND )
+if    ( USE_MPI AND NOT MPI_FOUND )
     message( FATAL_ERROR "Configuration for LAMA MPI incomplete!")
-endif ( LAMA_USE_MPI AND NOT MPI_FOUND )
+endif ( USE_MPI AND NOT MPI_FOUND )
 
 # LAMA MPI
-if    ( LAMA_USE_MPI AND NOT MPI_FOUND )
+if    ( USE_MPI AND NOT MPI_FOUND )
     message( FATAL_ERROR "Build of LAMA MPI enabled, but configuration is incomplete!")
-endif ( LAMA_USE_MPI AND NOT MPI_FOUND )
+endif ( USE_MPI AND NOT MPI_FOUND )
 
 # LAMA Cuda
-if    ( LAMA_USE_CUDA AND NOT CUDA_FOUND )
+if    ( USE_CUDA AND NOT CUDA_FOUND )
     message( FATAL_ERROR "Build of LAMA Cuda enabled, but configuration is incomplete!")
-endif ( LAMA_USE_CUDA AND NOT CUDA_FOUND )
+endif ( USE_CUDA AND NOT CUDA_FOUND )
 
 # LAMA Test
 if    ( LAMA_BUILD_TEST AND NOT ( Boost_UNIT_TEST_FRAMEWORK_FOUND AND Boost_REGEX_FOUND ) )

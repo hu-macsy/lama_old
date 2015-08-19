@@ -138,13 +138,13 @@ if ( LAMA_BLAS_NAME STREQUAL "MKL" )
 endif ( LAMA_BLAS_NAME STREQUAL "MKL" )
 
 ### add subdirectories ###
-if ( MPI_FOUND AND LAMA_USE_MPI )
+if ( MPI_FOUND AND USE_MPI )
     add_subdirectory ( distributed )
-endif ( MPI_FOUND AND LAMA_USE_MPI )
+endif ( MPI_FOUND AND USE_MPI )
 
-if ( CUDA_FOUND AND LAMA_USE_CUDA AND CUDA_HAVE_GPU )
+if ( CUDA_FOUND AND USE_CUDA AND CUDA_HAVE_GPU )
     add_subdirectory ( cuda )
-endif ( CUDA_FOUND AND LAMA_USE_CUDA AND CUDA_HAVE_GPU )
+endif ( CUDA_FOUND AND USE_CUDA AND CUDA_HAVE_GPU )
  
 ### add definitions ###
 add_definitions ( -DLAMA_TESTFILE_PATH="${CMAKE_SOURCE_DIR}/../res/testfiles" )
@@ -173,8 +173,8 @@ endif ( WIN32 )
 file ( COPY README DESTINATION ${CMAKE_BINARY_DIR}/test )
 file ( COPY xmltest.sh DESTINATION ${CMAKE_BINARY_DIR}/test ) 
 
-if ( LAMA_USE_CODE_COVERAGE )
+if ( USE_CODE_COVERAGE )
     ### Copy the cca.sh and ccajen.sh file in build directory ###
     configure_file( "${CMAKE_SOURCE_DIR}/test/cca.sh.in" "${CMAKE_CURRENT_BINARY_DIR}/cca.sh" @ONLY)
     configure_file( "${CMAKE_SOURCE_DIR}/test/ccajen.sh.in" "${CMAKE_CURRENT_BINARY_DIR}/ccajen.sh" @ONLY)
-endif ( LAMA_USE_CODE_COVERAGE )
+endif ( USE_CODE_COVERAGE )

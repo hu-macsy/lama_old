@@ -60,7 +60,7 @@ include ( Package/MIC )
 include ( Package/Boost )
 include ( Package/MPI )
 include ( Package/GraphPartitioning )
-include ( Package/CodeCoverage ) # LAMA_USE_CODE_COVERAGE --> COVERAGE_FLAGS
+include ( Package/CodeCoverage ) # USE_CODE_COVERAGE --> COVERAGE_FLAGS
 
 set ( REQUIRED_PACKAGES_TO_FIND Threads )
 set ( OPTIONAL_PACKAGES_TO_FIND LAMA_BLAS )

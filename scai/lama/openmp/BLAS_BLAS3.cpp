@@ -176,7 +176,7 @@ void wrapperGemm(
     LongDouble*,
     const int )
 {
-    COMMON_THROWEXCEPTION( "LongDouble not supported by BLAS, please set LAMA_USE_BLAS=0" )
+    COMMON_THROWEXCEPTION( "LongDouble not supported by BLAS, please set USE_BLAS=0" )
 }
 
 template<typename ValueType>
@@ -220,17 +220,17 @@ void BLAS_BLAS3::setInterface( BLASInterface& BLAS )
 
     int level = 0;
 
-    bool useBLAS = Settings::getEnvironment( level, "LAMA_USE_BLAS" );
+    bool useBLAS = Settings::getEnvironment( level, "USE_BLAS" );
 
     if( !useBLAS || ( level <= 0 ) )
     {
-        SCAI_LOG_INFO( logger, "BLAS3 wrapper routines for Host Interface are disabled (LAMA_USE_BLAS not set or 0)" )
+        SCAI_LOG_INFO( logger, "BLAS3 wrapper routines for Host Interface are disabled (USE_BLAS not set or 0)" )
         return;
     }
     else if( level > 2 )
     {
         SCAI_LOG_INFO( logger,
-                       "BLAS3 wrapper routines for Host Interface are disabled (LAMA_USE_BLAS = " << level << ")" )
+                       "BLAS3 wrapper routines for Host Interface are disabled (USE_BLAS = " << level << ")" )
         return;
     }
 

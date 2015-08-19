@@ -105,10 +105,10 @@ if    ( WIN32 )
 	add_definitions ( -DCOMMON_COMPILING_DLL )
 endif ( WIN32 )
 
-if    ( CUDA_FOUND AND LAMA_USE_CUDA )
+if    ( CUDA_FOUND AND USE_CUDA )
     add_subdirectory ( cuda )
     include_directories ( ${CUDA_TOOLKIT_INCLUDE} )
-endif ( CUDA_FOUND AND LAMA_USE_CUDA )
+endif ( CUDA_FOUND AND USE_CUDA )
 
 include_directories ( . )
 

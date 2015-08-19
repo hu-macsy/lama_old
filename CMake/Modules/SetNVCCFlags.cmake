@@ -33,7 +33,7 @@
 
 #### CUDA specific compiler flags ####
 
-if    ( CUDA_FOUND AND LAMA_USE_CUDA )
+if    ( CUDA_FOUND AND USE_CUDA )
     
     ### choosing the right compute capability
     ### we just start from version 1.3 ( 1.0 - 1.2 is not supported )
@@ -127,7 +127,7 @@ if    ( CUDA_FOUND AND LAMA_USE_CUDA )
 
     endif ( CUDA_VERSION_MAJOR MATCHES "5" )
     
-endif ( CUDA_FOUND AND LAMA_USE_CUDA )
+endif ( CUDA_FOUND AND USE_CUDA )
 
 if ( CUDA_FOUND  )
     set ( CUDA_NVCC_FLAGS_MINSIZEREL "${CUDA_NVCC_FLAGS_MINSIZEREL}" CACHE INTERNAL "" )

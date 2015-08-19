@@ -124,17 +124,17 @@ endif ( ${Boost_VERSION} GREATER "104099" AND Boost_UNIT_TEST_FRAMEWORK_FOUND AN
 set ( LAMA_THREAD_LIBRARY ${Boost_THREAD_LIBRARY} ${Boost_SYSTEM_LIBRARY} )
 
 # Check if cache variable is already set
-if    ( DEFINED LAMA_BUILD_TEST )
+if    ( DEFINED BUILD_TEST )
     # if use of package is enabled
-    if    ( ${LAMA_BUILD_TEST} )
+    if    ( ${BUILD_TEST} )
         if    ( NOT ${FOUND_BOOST_TEST} )
             # if package is enabled, but not found: ERROR!
             message ( STATUS "Boost Test Framework or Bost Regex missing, but tests are enabled!" )
         endif ( NOT ${FOUND_BOOST_TEST} )
-    endif ( ${LAMA_BUILD_TEST} )
+    endif ( ${BUILD_TEST} )
 
 # if cache variable is NOT set
-else  ( DEFINED LAMA_BUILD_TEST )
+else  ( DEFINED BUILD_TEST )
     # Check if package was found
     if    ( ${FOUND_BOOST_TEST} )
         set ( USE_PACKAGE TRUE )
@@ -143,5 +143,5 @@ else  ( DEFINED LAMA_BUILD_TEST )
     endif ( ${FOUND_BOOST_TEST} )
     
     # Set cache variable
-    set ( LAMA_BUILD_TEST ${USE_PACKAGE} CACHE BOOL "Enable / Disable building of tests" )
-endif ( DEFINED LAMA_BUILD_TEST )
+    set ( BUILD_TEST ${USE_PACKAGE} CACHE BOOL "Enable / Disable building of tests" )
+endif ( DEFINED BUILD_TEST )

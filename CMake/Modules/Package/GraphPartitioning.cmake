@@ -40,10 +40,10 @@ endif ( METIS_FOUND )
 setAndCheckCache ( METIS GRAPH_PART )
 
 ## Check if cache variable is already set
-#if    ( DEFINED LAMA_USE_GRAPH_PART )
+#if    ( DEFINED USE_GRAPH_PART )
 #	# do nothing
 ## if cache variable is NOT set
-#else ( DEFINED LAMA_USE_GRAPH_PART )
+#else ( DEFINED USE_GRAPH_PART )
 #	# Check if package was found
 #    if    ( METIS_FOUND ) # ParMetis can only be found with Metis
 #    	set ( USE_PACKAGE TRUE )
@@ -53,4 +53,4 @@ setAndCheckCache ( METIS GRAPH_PART )
 #              
 #    # Set cache variable
 #    set ( ${CACHE_VARIABLE_NAME} ${USE_PACKAGE} CACHE BOOL "Enable / Disable use of ${PACKAGE_NAME}" )
-#endif ( DEFINED LAMA_USE_GRAPH_PART )
+#endif ( DEFINED USE_GRAPH_PART )

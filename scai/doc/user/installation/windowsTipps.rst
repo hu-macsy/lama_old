@@ -83,7 +83,7 @@ OpenCL
 (only in branch feature/opencl)
 
 In the case of NVIDIA cards, OpenCL is installed together with CUDA. Here, you may want to disable OpenCL by switching
-it off by LAMA_USE_OPENCL=OFF.
+it off by USE_OPENCL=OFF.
 
 Otherwise, download and install the OpenCL SDK for your platform. You may need to set **OPENCL_LIBRARIES** and
 **OPENCL_INCLUDE_DIRS**, e.g.

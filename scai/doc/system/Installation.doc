@@ -1,4 +1,4 @@
-/*! 
+﻿/*! 
 
 \page page_linuxinstallation Linux Installation
 
@@ -38,8 +38,8 @@ By using ccmake you can set individual items that will also be discussed later o
  - \c CUDA_TOOLKIT_ROOT_DIR optional, directory of your CUDA installation
  - \c SCAI_ASSERT_LEVEL ERROR recommended, alternatively DEBUG
  - \c SCAI_LOG_LEVEL INFO recommended, alternatively DEBUG or more detailled TRACE
- - \c LAMA_USE_CUDA switch ON or OFF
- - \c LAMA_USE_MPI switch ON or OFF
+ - \c USE_CUDA switch ON or OFF
+ - \c USE_MPI switch ON or OFF
 
 To build LAMA just invoke make in your build directory. Parallel builds are supported
 and recommended.
