@@ -33,7 +33,7 @@
 
 #pragma once
 
-#include <scai/memory/Context.hpp>
+#include <scai/hmemo/Context.hpp>
 
 namespace scai
 {
@@ -43,14 +43,14 @@ namespace lama_test
 class CUDAContext
 {
 public:
-    static memory::ContextPtr getContext();
+    static hmemo::ContextPtr getContext();
 private:
     CUDAContext();
     CUDAContext( const CUDAContext& );
     const CUDAContext& operator=( const CUDAContext& );
     ~CUDAContext();
 
-    static memory::ContextPtr cudaContext;
+    static hmemo::ContextPtr cudaContext;
 
 };
 

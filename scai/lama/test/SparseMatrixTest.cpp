@@ -59,7 +59,7 @@
 #include <test/SameMatrixHelper.hpp>
 
 using namespace scai::lama;
-using namespace scai::memory;
+using namespace scai::hmemo;
 
 SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename MatrixType>, SparseMatrixTest<MatrixType>::logger,
                               "Test.SparseMatrixTest" )

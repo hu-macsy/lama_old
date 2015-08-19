@@ -34,10 +34,10 @@
 cmake_minimum_required ( VERSION 2.8 )
 
 ### Set PROJECT NAME / supported LANGUAGES
-project ( common CXX C )
+project ( scai_common CXX C )
 
 ### Set Module Path
-set ( CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/../../CMake/Modules" )
+set ( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../CMake/Modules" )
 
 ## Define all search packages
 include ( InternalDependencies )
@@ -77,6 +77,7 @@ else  ( NOT SCAI_COMPLETE_BUILD )
 endif ( NOT SCAI_COMPLETE_BUILD )
 
 ## Project System-Include
+
 include_directories ( ../.. )
 
 foreach    ( module ${SCAI_COMMON_INTERNAL_DEPS} )
@@ -106,7 +107,7 @@ include_directories ( . )
 add_library ( scai_common SHARED ${CPP_SOURCES} ${CUDA_SOURCES} )
 target_link_libraries( scai_common ${PTHREADS_LIBRARY} )
 
-foreach    ( module ${SCAI_COMMON_INTERNAL_DEPS} )
+foreach ( module ${SCAI_COMMON_INTERNAL_DEPS} )
     target_link_libraries ( scai_logging ${${module}_LIBRARY} )
 endforeach    ( module ${SCAI_COMMON_INTERNAL_DEPS} )
 
@@ -118,5 +119,8 @@ install ( FILES ${HPP_HEADERS} DESTINATION include/scai/common )
 ## install library.hpp
 install ( FILES ../common.hpp DESTINATION include/scai )
 
-## add custum target distClean
-include ( DistClean )
+## add custum target distClean, but only if this project is not included
+
+if ( CMAKE_SOURCE_DIR EQUAL CMAKE_CURRENT_SOURCE_DIR )
+    add_custom_target ( distclean )
+endif ()

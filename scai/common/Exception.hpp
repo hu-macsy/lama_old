@@ -117,7 +117,7 @@ protected:
 }
 
 /**
- * @brief The macro COMMON_ASSERT checks a condition and throws an exception 
+ * @brief The macro SCAI_ASSERT checks a condition and throws an exception 
  *        when the condition fails.
  *
  * @param[in] cond  boolean expression that is checked
@@ -128,7 +128,7 @@ protected:
  * and the current call stack.
  */
 
-#define COMMON_ASSERT( cond, msg )                                             \
+#define SCAI_ASSERT( cond, msg )                                             \
 {                                                                              \
     if (!(cond))                                                               \
     {                                                                          \
@@ -143,7 +143,7 @@ protected:
 }
 
 /**
- * @brief The macro COMMON_ASSERT_EQUAL checks to expressions for equality
+ * @brief The macro SCAI_ASSERT_EQUAL checks to expressions for equality
  *        and throws an exception when they are different.
  *
  * @param[in] exp1  first expression for comparison
@@ -157,7 +157,7 @@ protected:
  * file location and the current call stack.
  */
 
-#define COMMON_ASSERT_EQUAL( exp1, exp2, msg )                                 \
+#define SCAI_ASSERT_EQUAL( exp1, exp2, msg )                                 \
 {                                                                              \
     if ( ! ( ( exp1 ) == ( exp2 ) ) )                                          \
     {                                                                          \
@@ -172,7 +172,7 @@ protected:
     }                                                                          \
 }
 
-#define COMMON_ASSERT_LE( exp1, exp2, msg )                                    \
+#define SCAI_ASSERT_LE( exp1, exp2, msg )                                    \
 {                                                                              \
     if ( ! ( ( exp1 ) <= ( exp2 ) ) )                                          \
     {                                                                          \
@@ -187,7 +187,7 @@ protected:
     }                                                                          \
 }
 
-#define COMMON_ASSERT_LT( exp1, exp2, msg )                                    \
+#define SCAI_ASSERT_LT( exp1, exp2, msg )                                    \
 {                                                                              \
     if ( ! ( ( exp1 ) < ( exp2 ) ) )                                           \
     {                                                                          \

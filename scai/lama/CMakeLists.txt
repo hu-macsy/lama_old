@@ -34,6 +34,9 @@
 ### Set required CMake version
 cmake_minimum_required ( VERSION 2.8 )
 
+### Set Module Path
+set ( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../CMake/Modules" )
+
 ### Print LAMA Installation header
 message ( STATUS "" )
 message ( STATUS "LAMA Configuration:" )
@@ -44,7 +47,6 @@ message ( STATUS "" )
 project ( LAMA CXX C )
 
 ### set Module Path
-set ( CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/../../CMake/Modules" )
 
 set ( LAMA_VERSION_NAME "Alpamayo" )
 set ( LAMA_COPYRIGHT_YEAR 2015 )
@@ -261,7 +263,7 @@ if ( METIS_FOUND AND PARMETIS_FOUND )
 endif ( METIS_FOUND AND PARMETIS_FOUND )
 
 # generate file make.inc + install it
-configure_file ( "${CMAKE_SOURCE_DIR}/examples/make.inc.in" "${PROJECT_BINARY_DIR}/examples/make.inc" )
+configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/examples/make.inc.in" "${PROJECT_BINARY_DIR}/examples/make.inc" )
 install ( FILES "${PROJECT_BINARY_DIR}/examples/make.inc" DESTINATION share/examples )
 
 ### add definitions ###
@@ -277,14 +279,19 @@ install ( TARGETS ama DESTINATION lib )
 
 ### Examples ###
 # copy examples in build directory + install it
-file ( COPY ${CMAKE_SOURCE_DIR}/examples DESTINATION ${CMAKE_BINARY_DIR} )
-install ( DIRECTORY ${CMAKE_SOURCE_DIR}/examples DESTINATION share )
+file ( COPY ${CMAKE_CURRENT_SOURCE_DIR}/examples DESTINATION ${CMAKE_BINARY_DIR} )
+install ( DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/examples DESTINATION share )
 
 ## install library.hpp
-configure_file ( "${CMAKE_SOURCE_DIR}/lama.hpp.in" "${CMAKE_CURRENT_BINARY_DIR}/include/lama.hpp" )
+configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/lama.hpp.in" "${CMAKE_CURRENT_BINARY_DIR}/include/lama.hpp" )
 install ( FILES "${CMAKE_CURRENT_BINARY_DIR}/include/lama.hpp" DESTINATION include/scai )
 
 ## add custum target distClean
-include ( DistClean )
+
+## add custum target distClean, but only if this project is not included
+
+if ( CMAKE_SOURCE_DIR EQUAL CMAKE_CURRENT_SOURCE_DIR )
+    add_custom_target ( distclean )
+endif ()
 
 include ( LAMASummary )

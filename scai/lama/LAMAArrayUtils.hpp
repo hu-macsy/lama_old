@@ -36,15 +36,15 @@
 #include <scai/common/config.hpp>
 
 // others
-#include <scai/memory.hpp>
+#include <scai/hmemo.hpp>
 #include <scai/lama/Scalar.hpp>
 
 // logging
 #include <scai/logging.hpp>
 
-using scai::memory::ContextArray;
-using scai::memory::LAMAArray;
-using scai::memory::ContextPtr;
+using scai::hmemo::ContextArray;
+using scai::hmemo::LAMAArray;
+using scai::hmemo::ContextPtr;
 
 namespace scai
 {

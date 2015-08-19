@@ -49,7 +49,7 @@ using namespace std;
 
 void contextInfo()
 {
-    using namespace scai::memory;
+    using namespace scai::hmemo;
 
     vector<ContextType> values;  // supported context types
 

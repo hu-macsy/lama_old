@@ -42,7 +42,7 @@
 #include <test/Configuration.hpp>
 
 using namespace scai::lama;
-using namespace scai::memory;
+using namespace scai::hmemo;
 using scai::common::shared_ptr;
 
 /* --------------------------------------------------------------------- */

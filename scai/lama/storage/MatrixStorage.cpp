@@ -68,7 +68,7 @@
 using scai::tasking::SyncToken;
 using scai::tasking::TaskSyncToken;
 
-using namespace scai::memory;
+using namespace scai::hmemo;
 
 namespace scai
 {
@@ -696,7 +696,7 @@ void MatrixStorage<ValueType>::splitHalo(
 {
     SCAI_REGION( "Storage.splitHalo" )
     SCAI_LOG_INFO( logger, *this << ": split according to column distribution " << colDist )
-    SCAI_ASSERT_EQUAL( mNumColumns, colDist.getGlobalSize() )
+    SCAI_ASSERT_EQUAL_ERROR( mNumColumns, colDist.getGlobalSize() )
 
     if ( getFormat() != Format::CSR )
     {
@@ -727,7 +727,7 @@ void MatrixStorage<ValueType>::splitHalo(
     if ( rowDist )
     {
         SCAI_LOG_INFO( logger, *this << ": split also localizes for " << *rowDist )
-        SCAI_ASSERT_EQUAL( mNumRows, rowDist->getGlobalSize() )
+        SCAI_ASSERT_EQUAL_ERROR( mNumRows, rowDist->getGlobalSize() )
         numRows = rowDist->getLocalSize();
     }
 
@@ -771,7 +771,7 @@ template<typename ValueType>
 void MatrixStorage<ValueType>::buildHalo( Halo& halo, const Distribution& colDist )
 {
     SCAI_LOG_INFO( logger, *this << ": build halo according to column distribution " << colDist )
-    SCAI_ASSERT_EQUAL( mNumColumns, colDist.getGlobalSize() )
+    SCAI_ASSERT_EQUAL_ERROR( mNumColumns, colDist.getGlobalSize() )
     LAMAArray<IndexType> haloIA;
     LAMAArray<IndexType> haloJA; // global columns, all non-local
     LAMAArray<ValueType> haloValues;

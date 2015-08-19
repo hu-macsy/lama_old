@@ -35,7 +35,7 @@
 #include <scai/lama/storage/COOStorage.hpp>
 
 // others
-#include <scai/memory.hpp>
+#include <scai/hmemo.hpp>
 
 #include <scai/lama/LAMAInterface.hpp>
 #include <scai/lama/LAMAArrayUtils.hpp>
@@ -53,7 +53,7 @@
 using scai::common::unique_ptr;
 using scai::common::shared_ptr;
 
-using namespace scai::memory;
+using namespace scai::hmemo;
 
 namespace scai
 {

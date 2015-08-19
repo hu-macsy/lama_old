@@ -101,6 +101,7 @@ public:
 
     /** Generate a new CallTree table and open the corresponding output file.
      *
+     *  @param prefix is the first part of the output filename, before .ct
      *  @param threadName is the name of the thread
      *
      *  threadName == NULL might be used if call tree data is only collected for
@@ -170,7 +171,7 @@ private:
 
     void close();
 
-    /** Open the output file for the calltree <prefix>.ct.<threadName> */
+    /** Open the output file for the calltree "#prefix.ct.#threadName" */
 
     void open( const char* prefix,  const char* threadName );
 

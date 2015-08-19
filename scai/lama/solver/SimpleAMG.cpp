@@ -48,7 +48,7 @@
 #include <cstdlib>
 #include <iomanip>
 
-using namespace scai::memory;
+using namespace scai::hmemo;
 
 namespace scai
 {

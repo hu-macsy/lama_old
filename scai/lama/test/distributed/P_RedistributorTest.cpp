@@ -42,7 +42,7 @@
 #include <scai/lama/distribution/Redistributor.hpp>
 
 using namespace scai::lama;
-using namespace scai::memory;
+using namespace scai::hmemo;
 using namespace scai::common;
 
 typedef boost::mpl::list<double, float> test_types;

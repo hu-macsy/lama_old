@@ -99,6 +99,6 @@ int main( int, char** )
 
     // If critical region is implemented correctly, time must be > ( #threds * sleep_time )
 
-    COMMON_ASSERT_LT( N_THREADS * SLEEP_TIME, time, 
+    SCAI_ASSERT_LT( N_THREADS * SLEEP_TIME, time, 
                       "ERROR: " << N_THREADS << " threads seem to enter critial region at same time" )
 }

@@ -35,7 +35,7 @@
 
 #include <scai/lama.hpp>
 
-#include <scai/memory/Context.hpp>
+#include <scai/hmemo/Context.hpp>
 #include <scai/common/Printable.hpp>
 #include <scai/lama/matrix/all.hpp>
 #include <scai/lama/solver/logger/LogLevel.hpp>
@@ -96,19 +96,19 @@ public:
     template<typename ValueType>
     scai::lama::SparseMatrix<ValueType>* createSparseMatrix( const char* format );
 
-    memory::ContextPtr getContextPtr() const
+    hmemo::ContextPtr getContextPtr() const
     {
         // Create a new context if not done yet
 
         if ( !mContext )
         {
-            mContext = memory::Context::getContextPtr( mContextType, mDevice );
+            mContext = hmemo::Context::getContextPtr( mContextType, mDevice );
         }
 
         return mContext;
     }
 
-    const memory::Context& getContext() const
+    const hmemo::Context& getContext() const
     {
         return *getContextPtr();
     }
@@ -177,9 +177,9 @@ private:
 
     std::string              mMatrixFormat;
 
-    memory::ContextType        mContextType;
+    hmemo::ContextType        mContextType;
 
-    mutable memory::ContextPtr   mContext;
+    mutable hmemo::ContextPtr   mContext;
 
     scai::lama::Matrix::SyncKind     mCommunicationKind;
 
@@ -210,7 +210,7 @@ LamaConfig::LamaConfig()
 {
     mCommunicationKind = scai::lama::Matrix::SYNCHRONOUS;
     mComm              = scai::lama::Communicator::get();
-    mContextType       = memory::context::Host;
+    mContextType       = hmemo::context::Host;
     mMaxIter           = scai::lama::nIndex;
     mValueType         = common::scalar::DOUBLE;
     mLogLevel          = scai::lama::LogLevel::convergenceHistory;
@@ -323,15 +323,15 @@ void LamaConfig::setArg( const char* arg )
     { 
         // Host does not require a device id
 
-        mContextType = memory::context::Host;
+        mContextType = hmemo::context::Host;
     }
     else if ( ( "MIC" == val ) || ( "PHI" == val ) )
     { 
-        mContextType = memory::context::MIC;
+        mContextType = hmemo::context::MIC;
     }
     else if ( ( "CUDA" == val ) || ( "GPU" == val ) )
     { 
-        mContextType = memory::context::CUDA;
+        mContextType = hmemo::context::CUDA;
     }
     else if ( "PINNED" == val )
     {
@@ -528,7 +528,7 @@ const char* LamaConfig::getFormat( ) const
     {
         // choose default format by context: Host -> CSR, CUDA -> ELL
 
-        if ( mContextType == memory::context::CUDA )
+        if ( mContextType == hmemo::context::CUDA )
         {
             return "ELL";
         }

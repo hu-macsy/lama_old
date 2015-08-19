@@ -553,10 +553,13 @@ WARN_LOGFILE           =
 # directories like "/usr/src/myproject". Separate the files or directories
 # with spaces.
 
-INPUT                  = ${LAMA_SOURCE_DIR}/doc/system \
-                         ${LAMA_SOURCE_DIR}/lama  \
-                         ${LAMA_SOURCE_DIR}/lama/storage \
-                         ${LAMA_SOURCE_DIR}/lama/openmp
+INPUT                  = ${CMAKE_SOURCE_DIR}/doc/system \
+                         ${CMAKE_SOURCE_DIR}/common  \
+                         ${CMAKE_SOURCE_DIR}/logging  \
+                         ${CMAKE_SOURCE_DIR}/tracing  \
+                         ${CMAKE_SOURCE_DIR}/tasking  \
+                         ${CMAKE_SOURCE_DIR}/memory  \
+                         ${CMAKE_SOURCE_DIR}/lama
 
 #                        add additional directories
 #                        ../src/logging \
@@ -640,7 +643,7 @@ EXAMPLE_RECURSIVE      = NO
 # directories that contain image that are included in the documentation (see
 # the \image command).
 
-IMAGE_PATH             = ${LAMA_SOURCE_DIR}/doc/figs
+IMAGE_PATH             = ${CMAKE_SOURCE_DIR}/doc/figs
 
 # The INPUT_FILTER tag can be used to specify a program that doxygen should
 # invoke to filter for each input file. Doxygen will invoke the filter program

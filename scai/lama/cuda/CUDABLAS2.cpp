@@ -38,7 +38,7 @@
 #include <scai/lama/LAMAInterface.hpp>
 #include <scai/lama/LAMAInterfaceRegistry.hpp>
 #include <scai/common/cuda/CUDAError.hpp>
-#include <scai/memory/cuda/CUDAStreamSyncToken.hpp>
+#include <scai/hmemo/cuda/CUDAStreamSyncToken.hpp>
 #include <scai/lama/cuda/lama_cublas.hpp>
 
 // macros
@@ -47,7 +47,7 @@
 #include <boost/preprocessor.hpp>
 
 using namespace scai::tasking;
-using namespace scai::memory;
+using namespace scai::hmemo;
 using scai::common::getScalarType;
 
 namespace scai

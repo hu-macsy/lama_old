@@ -44,7 +44,7 @@
 #include <scai/tracing.hpp>
 
 using namespace std;
-using namespace scai::memory;
+using namespace scai::hmemo;
 using namespace scai::tasking;
 
 namespace scai

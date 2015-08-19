@@ -36,12 +36,12 @@
 
 // others
 #include <scai/lama/LAMAInterface.hpp>
-#include <scai/memory.hpp>
+#include <scai/hmemo.hpp>
 
 #include <test/TestMacros.hpp>
 
 using namespace scai::lama;
-using namespace scai::memory;
+using namespace scai::hmemo;
 using scai::common::Exception;
 
 /* ------------------------------------------------------------------------------------------------------------------ */

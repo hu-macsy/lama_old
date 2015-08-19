@@ -42,7 +42,7 @@
 
 using scai::common::unique_ptr;
 using scai::common::scoped_array;
-using namespace scai::memory;
+using namespace scai::hmemo;
 
 namespace scai
 {

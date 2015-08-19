@@ -48,7 +48,7 @@
 #include <scai/lama/DenseVector.hpp>
 
 //include for using different Contexts (e.g. CUDA, default: Host)
-#include <scai/memory/Context.hpp>
+#include <scai/hmemo/Context.hpp>
 
 //include for using the NoDistribution
 #include <scai/lama/distribution/NoDistribution.hpp>
@@ -136,13 +136,13 @@ int main()
   // Define the vectors to be used on GPU (CUDA context on device 0) and upload them
   //
   scai::lama::ContextPtr cudaContext;
-  if ( memory::Context::canCreate( context::CUDA ) )
+  if ( hmemo::Context::canCreate( context::CUDA ) )
   {
-      cudaContext = memory::Context::getContextPtr( context::CUDA, 0 );
+      cudaContext = hmemo::Context::getContextPtr( context::CUDA, 0 );
   }
   else
   {
-      cudaContext = memory::Context::getContextPtr( context::Host );
+      cudaContext = hmemo::Context::getContextPtr( context::Host );
   }
   lama_vec1.setContext( cudaContext );
   lama_vec2.setContext( cudaContext );

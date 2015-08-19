@@ -59,7 +59,7 @@
 #include <scai/common/bind.hpp>
 #include <boost/preprocessor.hpp>
 
-using namespace scai::memory;
+using namespace scai::hmemo;
 
 namespace scai
 {
@@ -1911,8 +1911,8 @@ void SparseMatrix<ValueType>::matrixTimesVector(
         // no more to check: result.size() == mNumRows, getDistribution() == result.getDistribution()
     }
 
-    SCAI_ASSERT_EQUAL( x.getDistribution(), getColDistribution() )
-    SCAI_ASSERT_EQUAL( y.getDistribution(), getDistribution() )
+    SCAI_ASSERT_EQUAL_ERROR( x.getDistribution(), getColDistribution() )
+    SCAI_ASSERT_EQUAL_ERROR( y.getDistribution(), getDistribution() )
 
     const DenseVector<ValueType>* denseX = dynamic_cast<const DenseVector<ValueType>*>( &x );
     const DenseVector<ValueType>* denseY = dynamic_cast<const DenseVector<ValueType>*>( &y );
@@ -1958,8 +1958,8 @@ void SparseMatrix<ValueType>::vectorTimesMatrix(
         // no more to check: result.size() == mNumColumns, getDistribution() == result.getColDistribution()
     }
 
-    SCAI_ASSERT_EQUAL( x.getDistribution(), getDistribution() )
-    SCAI_ASSERT_EQUAL( y.getDistribution(), getColDistribution() )
+    SCAI_ASSERT_EQUAL_ERROR( x.getDistribution(), getDistribution() )
+    SCAI_ASSERT_EQUAL_ERROR( y.getDistribution(), getColDistribution() )
 
     const DenseVector<ValueType>* denseX = dynamic_cast<const DenseVector<ValueType>*>( &x );
     const DenseVector<ValueType>* denseY = dynamic_cast<const DenseVector<ValueType>*>( &y );

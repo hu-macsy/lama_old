@@ -362,7 +362,7 @@ void OpenMPDenseUtils::setInterface( DenseUtilsInterface& DenseUtils )
 
 bool OpenMPDenseUtils::registerInterface()
 {
-    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( memory::context::Host );
+    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( hmemo::context::Host );
     setInterface( interface.DenseUtils );
     return true;
 }

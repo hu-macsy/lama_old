@@ -47,7 +47,7 @@
 #include <scai/lama/expression/all.hpp>
 
 using namespace scai::lama;
-using namespace scai::memory;
+using namespace scai::hmemo;
 using scai::common::unique_ptr;
 using scai::common::scoped_array;
 

@@ -43,7 +43,7 @@
 #include <scai/lama/storage/SparseAssemblyStorage.hpp>
 
 using namespace scai::lama;
-using namespace scai::memory;
+using namespace scai::hmemo;
 
 template<typename ValueType>
 void setCSRStorage( _MatrixStorage& storage )

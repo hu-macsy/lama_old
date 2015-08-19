@@ -38,7 +38,7 @@
 
 #include <scai/lama/Scalar.hpp>
 #include <scai/common/Printable.hpp>
-#include <scai/memory/Context.hpp>
+#include <scai/hmemo/Context.hpp>
 
 #include <boost/assign/list_of.hpp>
 #include <boost/preprocessor.hpp>
@@ -141,15 +141,15 @@ inline std::string getEnvContext()
  * @return the current context as a ContextType from a std::string
  */
 
-inline scai::memory::ContextType mapEnvContexttoContextType( std::string contextname )
+inline scai::hmemo::ContextType mapEnvContexttoContextType( std::string contextname )
 {
-	scai::memory::ContextType myContext;
-    std::map<std::string, scai::memory::ContextType> contextmap =
-        boost::assign::map_list_of ( "Host", scai::memory::context::Host )
-        ( "CUDA", scai::memory::context::CUDA )
-        ( "OPENCL", scai::memory::context::OpenCL )
-        ( "MIC", scai::memory::context::MIC )
-        ( "MaxContext", scai::memory::context::MaxContext );
+	scai::hmemo::ContextType myContext;
+    std::map<std::string, scai::hmemo::ContextType> contextmap =
+        boost::assign::map_list_of ( "Host", scai::hmemo::context::Host )
+        ( "CUDA", scai::hmemo::context::CUDA )
+        ( "OPENCL", scai::hmemo::context::OpenCL )
+        ( "MIC", scai::hmemo::context::MIC )
+        ( "MaxContext", scai::hmemo::context::MaxContext );
     myContext = contextmap[contextname];
     return myContext;
 }

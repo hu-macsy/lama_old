@@ -32,7 +32,7 @@
  */
 
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
-#include <scai/memory.hpp>
+#include <scai/hmemo.hpp>
 #include <test/SparseMatrixHelper.hpp>
 
 template<typename ValueType>
@@ -49,8 +49,8 @@ bool compareMatrices( const scai::lama::CSRSparseMatrix<ValueType>& matrix, cons
     // Note: getLocalData returns CSRStorage<ValueType>, so we can use getIA
     const scai::lama::CSRStorage<ValueType>& matrixLocal = matrix.getLocalStorage();
     const scai::lama::CSRStorage<ValueType>& otherLocal = other.getLocalStorage();
-    scai::memory::ReadAccess<scai::lama::IndexType> ia( matrixLocal.getIA() );
-    scai::memory::ReadAccess<scai::lama::IndexType> iaOther( otherLocal.getIA() );
+    scai::hmemo::ReadAccess<scai::lama::IndexType> ia( matrixLocal.getIA() );
+    scai::hmemo::ReadAccess<scai::lama::IndexType> iaOther( otherLocal.getIA() );
 
     for ( scai::lama::IndexType i = 0; i < nnu + 1; ++i )
     {
@@ -60,10 +60,10 @@ bool compareMatrices( const scai::lama::CSRSparseMatrix<ValueType>& matrix, cons
         }
     }
 
-    scai::memory::ReadAccess<scai::lama::IndexType> ja( matrixLocal.getJA() );
-    scai::memory::ReadAccess<scai::lama::IndexType> jaOther( otherLocal.getJA() );
-    scai::memory::ReadAccess<ValueType> data( matrixLocal.getValues() );
-    scai::memory::ReadAccess<ValueType> dataOther( otherLocal.getValues() );
+    scai::hmemo::ReadAccess<scai::lama::IndexType> ja( matrixLocal.getJA() );
+    scai::hmemo::ReadAccess<scai::lama::IndexType> jaOther( otherLocal.getJA() );
+    scai::hmemo::ReadAccess<ValueType> data( matrixLocal.getValues() );
+    scai::hmemo::ReadAccess<ValueType> dataOther( otherLocal.getValues() );
 
     for ( scai::lama::IndexType i = 0; i < nnu; ++i )
     {

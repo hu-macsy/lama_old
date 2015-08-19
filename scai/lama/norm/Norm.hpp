@@ -95,7 +95,7 @@ public:
      *
      * To call this is equivalent to call apply with the same argument.
      *
-     * @param[in] vector    the Matrix to caluclate the norm for.
+     * @param[in] matrix    the Matrix to caluclate the norm for.
      * @return              the norm of matrix.
      */
     Scalar operator()( const Matrix& matrix ) const;
@@ -119,7 +119,7 @@ public:
     /**
      * @brief Calculates the norm of the passed Matrix.
      *
-     * @param[in] vector    the Matrix to caluclate the norm for.
+     * @param[in] matrix    the Matrix to caluclate the norm for.
      * @return              the norm of matrix.
      */
     virtual Scalar apply( const Matrix& matrix ) const =0;

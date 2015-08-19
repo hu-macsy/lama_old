@@ -43,7 +43,7 @@
 #include <complex>
 
 using namespace scai::lama;
-using namespace scai::memory;
+using namespace scai::hmemo;
 using namespace scai::common;
 
 // Scalar can be tested for all LAMA arithmetic types even if LAMA matrices

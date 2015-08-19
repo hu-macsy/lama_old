@@ -32,20 +32,20 @@
  */
 #include <test/Context.hpp>
 
-#include <scai/memory/Context.hpp>
+#include <scai/hmemo/Context.hpp>
 
 namespace scai
 {
 namespace lama_test
 {
 
-std::map<scai::memory::ContextType, scai::memory::ContextPtr> Context::contexts;
+std::map<scai::hmemo::ContextType, scai::hmemo::ContextPtr> Context::contexts;
 
-scai::memory::ContextPtr Context::getContext( const scai::memory::ContextType type )
+scai::hmemo::ContextPtr Context::getContext( const scai::hmemo::ContextType type )
 {
     if ( !contexts[type] )
     {
-        contexts[type] = scai::memory::Context::getContextPtr( type );
+        contexts[type] = scai::hmemo::Context::getContextPtr( type );
     }
 
     return contexts[type];

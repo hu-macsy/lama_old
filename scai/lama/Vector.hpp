@@ -41,7 +41,7 @@
 // others
 #include <scai/lama/expression/Expression.hpp>
 
-#include <scai/memory.hpp>
+#include <scai/hmemo.hpp>
 
 #include <scai/lama/LAMATypes.hpp>
 #include <scai/lama/Scalar.hpp>
@@ -55,7 +55,7 @@
 
 // Not recommened, but here for convenience
 
-using scai::memory::ContextPtr;
+using scai::hmemo::ContextPtr;
 
 namespace scai
 {
@@ -262,7 +262,7 @@ public:
      *
      * Only the type of the LAMA array is used as input arg to determine the value type.
      */
-    virtual void buildValues( memory::ContextArray& values ) const = 0;
+    virtual void buildValues( hmemo::ContextArray& values ) const = 0;
 
     /**
      * @brief Sets the local values of a vector by an array.
@@ -272,7 +272,7 @@ public:
      * Note: A conversion operator must be available for values.getValueType() to
      *       the type of this vector.
      */
-    virtual void setValues( const memory::ContextArray& values ) = 0;
+    virtual void setValues( const hmemo::ContextArray& values ) = 0;
 
     /**
      * @brief Assign this vector with values stored the file with the given filename.
@@ -292,7 +292,7 @@ public:
     /**
      * @brief get a vector with all local values
      */
-    virtual const memory::ContextArray& getLocalValues() const = 0;
+    virtual const hmemo::ContextArray& getLocalValues() const = 0;
 
     /**
      * @brief Queries the value type of the vector elements, e.g. DOUBLE or FLOAT.
@@ -397,7 +397,7 @@ public:
     /**
      *  Assignment to vector by local values and distribution.
      */
-    virtual void assign( const memory::ContextArray& localValues, DistributionPtr distribution ) = 0;
+    virtual void assign( const hmemo::ContextArray& localValues, DistributionPtr distribution ) = 0;
 
     /**
      *  Builds an array with local values of a distributed vector.
@@ -407,7 +407,7 @@ public:
      *  For different value types, implicit format conversion will be done.
      *  A sparse vector should generate an array with all values.
      */
-    virtual void buildLocalValues( memory::ContextArray& localValues ) const = 0;
+    virtual void buildLocalValues( hmemo::ContextArray& localValues ) const = 0;
 
     /**
      * @brief Assigns the passed value to all elements of this.

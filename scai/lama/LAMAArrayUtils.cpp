@@ -35,7 +35,7 @@
 #include <scai/lama/LAMAArrayUtils.hpp>
 
 // others
-#include <scai/memory.hpp>
+#include <scai/hmemo.hpp>
 #include <scai/lama/LAMAInterface.hpp>
 
 // tracing
@@ -47,7 +47,7 @@
 
 #include <iostream>
 
-using namespace scai::memory;
+using namespace scai::hmemo;
 
 namespace scai
 {
@@ -184,7 +184,7 @@ void LAMAArrayUtils::gather(
 template<typename ValueType>
 void LAMAArrayUtils::assignScalar( LAMAArray<ValueType>& target, const Scalar& value, ContextPtr context )
 {
-    COMMON_ASSERT( context.get(), "No context specified" )
+    SCAI_ASSERT( context.get(), "No context specified" )
 
     SCAI_LOG_INFO( logger, target << " = " << value << ", to do at " << *context )
 

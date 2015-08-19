@@ -101,7 +101,7 @@ void SyncToken::writeAt( std::ostream& stream ) const
 
 void SyncToken::pushToken( shared_ptr<SyncTokenMember> member )
 {
-    COMMON_ASSERT( member.get(), "NULL token cannot be pushed for synchronization." )
+    SCAI_ASSERT( member.get(), "NULL token cannot be pushed for synchronization." )
 
     if ( mSynchronized )
     {

@@ -37,7 +37,7 @@
 #include <scai/lama/cuda/utils.cu.h>
 #include <scai/lama/cuda/CUDAError.hpp>
 #include <scai/lama/cuda/CUSparseCSRUtils.hpp>
-#include <scai/memory/cuda/CUDAStreamSyncToken.hpp>
+#include <scai/hmemo/cuda/CUDAStreamSyncToken.hpp>
 #include <scai/lama/Settings.hpp>
 
 #include <cuda.h>

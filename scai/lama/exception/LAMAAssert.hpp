@@ -84,11 +84,10 @@ static inline void unused( const ValueType1&, const ValueType2& )
 
 #else // LAMACHECKASSERTS DEFINED
 
-#define SCAI_ASSERT(exp, msg)                                                       \
-    COMMON_ASSERT( exp, msg )
-
+/*
 #define SCAI_ASSERT_EQUAL(exp1, exp2)                                               \
-    COMMON_ASSERT_EQUAL( exp1, exp2, "LAMA equality error" ) 
+    SCAI_ASSERT_EQUAL( exp1, exp2, "LAMA equality error" ) 
+*/
 
 #endif // SCAI_CHECK_ASSERTS
 
@@ -125,7 +124,7 @@ static inline void unused( const ValueType1&, const ValueType2& )
  */
 #define SCAI_ASSERT_ERROR(exp, msg)  SCAI_ASSERT(exp, msg)
 #define SCAI_ASSERT_DEBUG(exp, msg)  unused( exp );
-#define SCAI_ASSERT_EQUAL_ERROR(exp1, exp2)  SCAI_ASSERT_EQUAL(exp1, exp2)
+#define SCAI_ASSERT_EQUAL_ERROR(exp1, exp2)  SCAI_ASSERT_EQUAL(exp1, exp2, "")
 #define SCAI_ASSERT_EQUAL_DEBUG(exp1, exp2)  unused( exp1, exp2 );
 
 #elif defined(SCAI_ASSERT_LEVEL_DEBUG)
@@ -136,8 +135,8 @@ static inline void unused( const ValueType1&, const ValueType2& )
 #define SCAI_ASSERT_DEBUG(exp, msg)  SCAI_ASSERT(exp, msg)
 #define SCAI_ASSERT_ERROR(exp, msg)  SCAI_ASSERT(exp, msg)
 
-#define SCAI_ASSERT_EQUAL_ERROR(exp1, exp2)  SCAI_ASSERT_EQUAL(exp1, exp2)
-#define SCAI_ASSERT_EQUAL_DEBUG(exp1, exp2)  SCAI_ASSERT_EQUAL(exp1, exp2)
+#define SCAI_ASSERT_EQUAL_ERROR(exp1, exp2)  SCAI_ASSERT_EQUAL(exp1, exp2, "")
+#define SCAI_ASSERT_EQUAL_DEBUG(exp1, exp2)  SCAI_ASSERT_EQUAL(exp1, exp2, "")
 
 #else
 
@@ -149,7 +148,7 @@ static inline void unused( const ValueType1&, const ValueType2& )
  */
 #define SCAI_ASSERT_ERROR(exp, msg)  SCAI_ASSERT(exp, msg)
 #define SCAI_ASSERT_DEBUG(exp, msg)  unused( exp );
-#define SCAI_ASSERT_EQUAL_ERROR(exp1, exp2)  SCAI_ASSERT_EQUAL(exp1, exp2)
-#define SCAI_ASSERT_EQUAL_DEBUG(exp1, exp2)  unused( exp1, exp2 );
+#define SCAI_ASSERT_EQUAL_ERROR(exp1, exp2)  SCAI_ASSERT_EQUAL(exp1, exp2, "" )
+#define SCAI_ASSERT_EQUAL_DEBUG(exp1, exp2)  unused( exp1, exp2, "" );
 
 #endif

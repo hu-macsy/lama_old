@@ -92,7 +92,7 @@ static void threadRoutine( int& arg )
 
     int expected_sum = N_THREADS * ( N_THREADS-1 ) / 2;
 
-    COMMON_ASSERT_EQUAL( sum, expected_sum, "Wrong value after thread barrier" )
+    SCAI_ASSERT_EQUAL( sum, expected_sum, "Wrong value after thread barrier" )
 
     {
         Thread::ScopedLock lock( printMutex );

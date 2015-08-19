@@ -113,7 +113,7 @@ ThreadPool::ThreadPool( int size )
 
         int rc = pthread_create( &id, NULL, &threadRoutine, &mThreadArgs[i] );
 
-        COMMON_ASSERT( rc == 0, "pthread_create failed, rc = " << rc )
+        SCAI_ASSERT( rc == 0, "pthread_create failed, rc = " << rc )
 
         mThreads.push_back( id );
     }

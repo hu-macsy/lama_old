@@ -57,7 +57,7 @@
 #include <test/TestSparseMatrices.hpp>
 
 using namespace scai::lama;
-using namespace scai::memory;
+using namespace scai::hmemo;
 
 /* --------------------------------------------------------------------- */
 
@@ -403,8 +403,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( InvertTest, MatrixType, SparseMatrixTypes )
     MatrixType m2;
     m2.invert( m1 );
     SCAI_LOG_INFO( logger, "Inverted matrix: " << m2 );
-    SCAI_ASSERT_EQUAL( m2.getDistribution(), m1.getDistribution() );
-    SCAI_ASSERT_EQUAL( m2.getColDistribution(), m1.getColDistribution() );
+    SCAI_ASSERT_EQUAL_ERROR( m2.getDistribution(), m1.getDistribution() );
+    SCAI_ASSERT_EQUAL_ERROR( m2.getColDistribution(), m1.getColDistribution() );
     m1.redistribute( bdist, bdist );// otherwise no matrix mult possible
     // dense matrix multiplication not supported yet with distributed m2
     MatrixType mm( m1 * m2 );

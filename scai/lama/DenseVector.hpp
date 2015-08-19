@@ -39,7 +39,7 @@
 #include <scai/lama/Vector.hpp>
 
 // others
-#include <scai/memory.hpp>
+#include <scai/hmemo.hpp>
 #include <scai/lama/LAMAArrayUtils.hpp>
 #include <scai/tasking/SyncToken.hpp>
 #include <scai/lama/TypeTraits.hpp>
@@ -480,7 +480,7 @@ DenseVector<ValueType>::DenseVector( const IndexType size, const OtherValueType*
 {
     // use LAMA array reference to avoid copy of the raw data
 
-    memory::LAMAArrayRef<OtherValueType> valuesArrayRef( size, values );
+    hmemo::LAMAArrayRef<OtherValueType> valuesArrayRef( size, values );
 
     // use mContext instead of context to avoid NULL pointer
 

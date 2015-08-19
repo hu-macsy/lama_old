@@ -40,7 +40,7 @@
 
 // others
 #include <scai/lama/LAMATypes.hpp>
-#include <scai/memory.hpp>
+#include <scai/hmemo.hpp>
 
 // logging
 #include <scai/logging.hpp>

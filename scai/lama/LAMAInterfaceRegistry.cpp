@@ -65,7 +65,7 @@ LAMAInterfaceRegistry::~LAMAInterfaceRegistry()
     }
 }
 
-const LAMAInterface* LAMAInterfaceRegistry::getInterface( const memory::ContextType location ) const
+const LAMAInterface* LAMAInterfaceRegistry::getInterface( const hmemo::ContextType location ) const
 {
     InterfaceMapType::const_iterator loc = mInterfaceMap.find( location );
 
@@ -77,7 +77,7 @@ const LAMAInterface* LAMAInterfaceRegistry::getInterface( const memory::ContextT
     return loc->second;
 }
 
-LAMAInterface& LAMAInterfaceRegistry::modifyInterface( const memory::ContextType location )
+LAMAInterface& LAMAInterfaceRegistry::modifyInterface( const hmemo::ContextType location )
 {
     InterfaceMapType::const_iterator loc = mInterfaceMap.find( location );
 
@@ -93,7 +93,7 @@ LAMAInterface& LAMAInterfaceRegistry::modifyInterface( const memory::ContextType
     return *loc->second;
 }
 
-bool LAMAInterfaceRegistry::hasInterface( const memory::ContextType location ) const
+bool LAMAInterfaceRegistry::hasInterface( const hmemo::ContextType location ) const
 {
     bool hasInterface = false;
 
@@ -136,7 +136,7 @@ LAMAInterfaceRegistry::CGuard::~CGuard()
 
 /* -----------------------------------------------------------------------------*/
 
-namespace memory
+namespace hmemo
 {
 
 using namespace lama;
@@ -147,7 +147,7 @@ const LAMAInterface& Context::getInterface() const
 
     // Registry throws an exception if no interface is available
 
-    COMMON_ASSERT( lamaInterface, "No lama interface available on " << *this )
+    SCAI_ASSERT( lamaInterface, "No lama interface available on " << *this )
 
     return *lamaInterface;
 }

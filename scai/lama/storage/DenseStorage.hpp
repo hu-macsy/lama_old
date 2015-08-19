@@ -40,7 +40,7 @@
 #include <scai/lama/storage/CRTPMatrixStorage.hpp>
 
 // others
-#include <scai/memory.hpp>
+#include <scai/hmemo.hpp>
 #include <scai/lama/Scalar.hpp>
 
 namespace scai

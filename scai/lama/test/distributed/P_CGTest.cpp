@@ -60,7 +60,7 @@
 #include <test/TestMacros.hpp>
 
 using namespace scai::lama;
-using namespace scai::memory;
+using namespace scai::hmemo;
 
 typedef boost::mpl::list<float, double> test_types;
 

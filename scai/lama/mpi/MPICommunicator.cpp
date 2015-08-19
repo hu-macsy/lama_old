@@ -1002,27 +1002,27 @@ void MPICommunicator::swapImpl( ValueType val[], const IndexType n, PartitionId 
     SCAI_ASSERT_ERROR( getCount<ValueType>( mpiStatus ) == n, "size mismatch for swap" )
 }
 
-memory::ContextPtr MPICommunicator::getCommunicationContext( const memory::ContextArray& array ) const
+hmemo::ContextPtr MPICommunicator::getCommunicationContext( const hmemo::ContextArray& array ) const
 {
     // get a valid context, i.e. a context that contains valid data
 
-    memory::ContextPtr validContext = array.getValidContext( memory::context::Host );
+    hmemo::ContextPtr validContext = array.getValidContext( hmemo::context::Host );
 
     SCAI_LOG_DEBUG( logger, "CommunicationContext: valid context for " << array << ": " << *validContext )
 
-    if ( validContext->getType() == memory::context::Host )
+    if ( validContext->getType() == hmemo::context::Host )
     {
         return validContext;
     }
 
     // This can only be used for CUDAaware MPI
 
-    if( isCUDAAware && ( validContext->getType() == memory::context::CUDA ) )
+    if( isCUDAAware && ( validContext->getType() == hmemo::context::CUDA ) )
     {
         return validContext;
     }
 
-    return memory::Context::getContextPtr( memory::context::Host );
+    return hmemo::Context::getContextPtr( hmemo::context::Host );
 }
 
 /* ---------------------------------------------------------------------------------- */

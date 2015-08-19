@@ -38,7 +38,7 @@
 #include <scai/lama/LAMAInterface.hpp>
 #include <scai/tasking/TaskSyncToken.hpp>
 #include <scai/tasking/NoSyncToken.hpp>
-#include <scai/memory.hpp>
+#include <scai/hmemo.hpp>
 
 // tracing
 #include <scai/tracing.hpp>
@@ -56,7 +56,7 @@ namespace lama
 
 using scai::common::shared_ptr;
 using namespace scai::tasking;
-using namespace scai::memory;
+using namespace scai::hmemo;
 
 /* --------------------------------------------------------------------------- */
 

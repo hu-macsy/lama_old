@@ -46,7 +46,7 @@
 #include <scai/common/unique_ptr.hpp>
 
 using namespace scai::lama;
-using namespace scai::memory;
+using namespace scai::hmemo;
 using namespace scai::tasking;
 using scai::common::Exception;
 using scai::common::unique_ptr;

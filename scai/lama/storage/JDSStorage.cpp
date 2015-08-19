@@ -50,7 +50,7 @@
 
 using scai::common::shared_ptr;
 using namespace scai::tasking;
-using namespace scai::memory;
+using namespace scai::hmemo;
 
 namespace scai
 {
