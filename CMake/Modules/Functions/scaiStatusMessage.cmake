@@ -33,7 +33,7 @@
 
 # prints colored text messages
 # inspired by soci colormsg function
-function ( lama_status_message )
+function ( scai_status_message )
     string ( ASCII 27 _escape )
     # ANSI Display Atributes
     set ( ERROR "1\;31" )
@@ -58,4 +58,4 @@ function ( lama_status_message )
     endforeach ( arg ${ARGV} )
     
     message ( STATUS ${str} )
-endfunction ( lama_status_message )
+endfunction ( scai_status_message )

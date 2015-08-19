@@ -40,9 +40,7 @@ set ( REQUIRED_PACKAGES_TO_FIND
 # Find optional packages
 set ( OPTIONAL_PACKAGES_TO_FIND
         LAMA_BLAS
-        Doxygen
         Threads
-        Sphinx
         ParMetis REQUIRES Metis
 #        CUDA # needs check on windows # used through Package/CUDA
         #add optional packages here

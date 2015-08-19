@@ -36,11 +36,21 @@ cmake_minimum_required ( VERSION 2.8 )
 project ( LAMA_ALL CXX C )
 set ( CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/../CMake/Modules" )
 
+## version info
+set ( LAMA_VERSION_NAME "Alpamayo" )
+set ( LAMA_COPYRIGHT_YEAR 2015 )
+set ( LAMA_VERSION_MAJOR 1 )
+set ( LAMA_VERSION_MINOR 0 )
+set ( LAMA_VERSION_PATCH 1 )
+set ( LAMA_VERSION_COUNT 3 )
+set ( LAMA_VERSION ${LAMA_VERSION_MAJOR}.${LAMA_VERSION_MINOR}.${LAMA_VERSION_PATCH} )
+
 ## general Settings for all projects
 
 include ( Variables ) # VERBOSE, RPATH, LIB64, BUILD_SHARED
 include ( Functions/checkValue )
 include ( Functions/setAndCheckCache )
+include ( Functions/checkWhiteList )
 include ( SCAIdefines ) # SCAI_: LOG_LEVEL, ASSERT_LEVEL, TRACE_LEVEL
 include ( CompilerVersion )
 
@@ -48,11 +58,12 @@ include ( Package/OpenMP )
 include ( Package/CUDA )
 include ( Package/MIC )
 include ( Package/Boost )
-#include ( Package/MPI )
+include ( Package/MPI )
+include ( Package/GraphPartitioning )
 include ( Package/CodeCoverage ) # LAMA_USE_CODE_COVERAGE --> COVERAGE_FLAGS
 
 set ( REQUIRED_PACKAGES_TO_FIND Threads )
-set ( OPTIONAL_PACKAGES_TO_FIND LAMA_BLAS ParMetis REQUIRES Metis )
+set ( OPTIONAL_PACKAGES_TO_FIND LAMA_BLAS )
 
 # Find required packages
 foreach    ( PACKAGE_TO_FIND ${REQUIRED_PACKAGES_TO_FIND} )
@@ -82,71 +93,31 @@ include ( SetNVCCFlags )
 
 
 ## summary of what is found
-
-
+include ( Summary )
 
 ## pass CACHE Variables to all subprojects via white listing
 
-# loads variables WHITELIST, CUDA_WHITELIST, MPI_WHITELIST, MIC_WHITELIST
+# loads variables WHITELIST, MPI_WHITELIST, CUDA_WHITELIST, MIC_WHITELIST
 include ( NeededCacheVariables )
 
-get_cmake_property ( CACHE_VARS CACHE_VARIABLES )
-#message ( STATUS "CACHE_VARS ${CACHE_VARS}" )
+set ( MPI_ARGS "" )
+set ( CUDA_ARGS "" )
+set ( MIC_ARGS "" )
 
+get_cmake_property ( CACHE_VARS CACHE_VARIABLES )
 foreach    ( CACHE_VAR ${CACHE_VARS} )
-    foreach    ( WHITELIST_ITEM ${WHITELIST} )
-        
-        string( COMPARE EQUAL "${CACHE_VAR}" "${WHITELIST_ITEM}" result )
-        if    ( ${result} )
-        	#message ( STATUS "${CACHE_VAR} matches ${WHITELIST_ITEM}" )
-        
-	        get_property ( CACHE_VAR_TYPE CACHE ${CACHE_VAR} PROPERTY TYPE )
-	        #message ( STATUS "CACHE_VAR ${CACHE_VAR}" )
-	        if     ( CACHE_VAR_TYPE STREQUAL "INTERNAL" )
-	            # skip Variable
-	        #elseif ( CACHE_VAR_TYPE STREQUAL "UNINITIALIZED" )
-	        #    set ( CACHE_VAR_TYPE )
-	        #    list ( APPEND CMAKE_ARGS "-D${CACHE_VAR}${CACHE_VAR_TYPE}=${${CACHE_VAR}}" )
-	        else   ( )
-	            set( CACHE_VAR_TYPE :${CACHE_VAR_TYPE} )
-	            list ( APPEND CMAKE_ARGS "-D${CACHE_VAR}${CACHE_VAR_TYPE}=${${CACHE_VAR}}" )
-	        endif  ( )
-	        #set(CMAKE_ARGS "${CMAKE_ARGS} -D${CACHE_VAR}${CACHE_VAR_TYPE}=\"${${CACHE_VAR}}\"")
-	        #list ( APPEND CMAKE_ARGS "-D${CACHE_VAR}${CACHE_VAR_TYPE}=${${CACHE_VAR}}" )
-        
-        endif ( ${result} )
-        
-    endforeach ( WHITELIST_ITEM ${WHITELIST} )
-    
- foreach    ( WHITELIST_ITEM ${CUDA_WHITELIST} )
-        
-        string( COMPARE EQUAL "${CACHE_VAR}" "${WHITELIST_ITEM}" result )
-        if    ( ${result} )
-        	#message ( STATUS "${CACHE_VAR} matches ${WHITELIST_ITEM}" )
-        
-	        get_property ( CACHE_VAR_TYPE CACHE ${CACHE_VAR} PROPERTY TYPE )
-	        #message ( STATUS "CACHE_VAR ${CACHE_VAR}" )
-	        if     ( CACHE_VAR_TYPE STREQUAL "INTERNAL" )
-	            # skip Variable
-	        #elseif ( CACHE_VAR_TYPE STREQUAL "UNINITIALIZED" )
-	        #    set ( CACHE_VAR_TYPE )
-	        #    list ( APPEND CMAKE_ARGS "-D${CACHE_VAR}${CACHE_VAR_TYPE}=${${CACHE_VAR}}" )
-	        else   ( )
-	            set( CACHE_VAR_TYPE :${CACHE_VAR_TYPE} )
-	            list ( APPEND CMAKE_ARGS "-D${CACHE_VAR}${CACHE_VAR_TYPE}=${${CACHE_VAR}}" )
-	        endif  ( )
-	        #set(CMAKE_ARGS "${CMAKE_ARGS} -D${CACHE_VAR}${CACHE_VAR_TYPE}=\"${${CACHE_VAR}}\"")
-	        #list ( APPEND CMAKE_ARGS "-D${CACHE_VAR}${CACHE_VAR_TYPE}=${${CACHE_VAR}}" )
-        
-        endif ( ${result} )
-        
-    endforeach ( WHITELIST_ITEM ${CUDA_WHITELIST} )
-    
-    ## do the same for MPI_WHITELIST, MIC_WHITELIST
+
+	check_whitelist ( CACHE_VAR "${WHITELIST}" "${CMAKE_ARGS}" )
+	check_whitelist ( CACHE_VAR "${MPI_WHITELIST}" "${MPI_ARGS}" )  
+	check_whitelist ( CACHE_VAR "${CUDA_WHITELIST}" "${CUDA_ARGS}" )
+	check_whitelist ( CACHE_VAR "${MIC_WHITELIST}" "${MIC_ARGS}" )    
     
 endforeach ( CACHE_VAR ${CACHE_VARS} )
 
 #message ( STATUS "Passed CMAKE_ARGS ${CMAKE_ARGS}" )
+#message ( STATUS "Passed MPI_ARGS ${MPI_ARGS}" )
+#message ( STATUS "Passed CUDA_ARGS ${CUDA_ARGS}" )
+#message ( STATUS "Passed MIC_ARGS ${MIC_ARGS}" )
 
 ## define external projects
 
@@ -160,7 +131,7 @@ ExternalProject_Add ( scai_common
             PREFIX common
             SOURCE_DIR ${CMAKE_SOURCE_DIR}/common
             CMAKE_ARGS "-DSCAI_COMPLETE_BUILD=1"
-            CMAKE_CACHE_ARGS "${CMAKE_ARGS}"
+            CMAKE_CACHE_ARGS "${CMAKE_ARGS} ${CUDA_ARGS}"
 	    	BINARY_DIR common
             )
                        
@@ -196,7 +167,7 @@ ExternalProject_Add ( scai_hmemo
             PREFIX hmemo
             SOURCE_DIR ${CMAKE_SOURCE_DIR}/hmemo
             CMAKE_ARGS "-DSCAI_COMPLETE_BUILD=1"
-            CMAKE_CACHE_ARGS "${CMAKE_ARGS}"
+            CMAKE_CACHE_ARGS "${CMAKE_ARGS} ${CUDA_ARGS}" #${MIC_ARGS}
 	    	BINARY_DIR hmemo
             )
 
@@ -205,6 +176,6 @@ ExternalProject_Add ( lama
             PREFIX lama
             SOURCE_DIR ${CMAKE_SOURCE_DIR}/lama
             CMAKE_ARGS "-DSCAI_COMPLETE_BUILD=1"
-            CMAKE_CACHE_ARGS "${CMAKE_ARGS}"
+            CMAKE_CACHE_ARGS "${CMAKE_ARGS} ${CUDA_ARGS}" #${MIC_ARGS} ${MPI_ARGS}
 	    	BINARY_DIR lama
             )

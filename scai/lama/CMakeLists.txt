@@ -294,4 +294,4 @@ if ( CMAKE_SOURCE_DIR EQUAL CMAKE_CURRENT_SOURCE_DIR )
     add_custom_target ( distclean )
 endif ()
 
-include ( LAMASummary )
+#include ( LAMASummary )

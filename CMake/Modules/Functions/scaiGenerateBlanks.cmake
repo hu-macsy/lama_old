@@ -1,5 +1,5 @@
 ###
- # @file Functions.cmake
+ # @file Functions/scaiGenerateBlanks.cmake
  #
  # @license
  # Copyright (c) 2009-2013
@@ -25,22 +25,21 @@
  # SOFTWARE.
  # @endlicense
  #
- # @brief CMake functions and macros
+ # @brief Simple internal helper function that generates a blank string that fits the size of an given STRING to LENGTH
  # @author Jan Ecker
  # @date 25.04.2013
  # @since 1.0.0
 ###
 
-# Simple internal helper function that generates a blank string that fits the size of an given STRING to LENGTH
-function    ( lama_generate_blanks OUTPUT STRING LENGTH )
-    string ( LENGTH "${STRING}" LAMA_STRING_LENGTH )
+function    ( scai_generate_blanks OUTPUT STRING LENGTH )
+    string ( LENGTH "${STRING}" SCAI_STRING_LENGTH )
     # -1 for correct looping from 0 to LENGTH
-    math ( EXPR LAMA_MESSAGE_BLANK_LENGTH ${LENGTH}-${LAMA_STRING_LENGTH} )
+    math ( EXPR SCAI_MESSAGE_BLANK_LENGTH ${LENGTH}-${SCAI_STRING_LENGTH} )
     
     set ( MESSAGE_BLANKS "")
-    foreach    ( LAMA_I RANGE ${LAMA_MESSAGE_BLANK_LENGTH} )
+    foreach    ( SCAI_I RANGE ${SCAI_MESSAGE_BLANK_LENGTH} )
         set ( MESSAGE_BLANKS "${MESSAGE_BLANKS} " )
-    endforeach ( LAMA_I RANGE ${LAMA_MESSAGE_BLANK_LENGTH} )
+    endforeach ( SCAI_I RANGE ${SCAI_MESSAGE_BLANK_LENGTH} )
     
     set ( ${OUTPUT} ${MESSAGE_BLANKS} PARENT_SCOPE )
-endfunction ( lama_generate_blanks )
+endfunction ( scai_generate_blanks )

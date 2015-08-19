@@ -31,35 +31,37 @@
  # @since 1.0.0
 ###
 
+include ( Functions/scaiGenerateBlanks )
+
 ## Need to be macros not functions, because modifications of the parent scope
 
-# generates messages for lama summary page
-macro    ( lama_summary_message MESSAGE_TYPE EXPRESSION PACKAGE_NAME ADDITIONAL_INFO )
-    set ( LAMA_SUMMARY_PACKAGE_NAME_LENGTH 18 )
+# generates messages for scai summary page
+macro    ( scai_summary_message MESSAGE_TYPE EXPRESSION PACKAGE_NAME ADDITIONAL_INFO )
+    set ( SCAI_SUMMARY_PACKAGE_NAME_LENGTH 18 )
     if    ( ${MESSAGE_TYPE} STREQUAL "FOUND" )
         set ( TYPE_TRUE "FOUND" )
         set ( TYPE_FALSE "NOT FOUND" )
         set ( TYPE_INTENT "    " )
-        lama_generate_blanks ( LAMA_PACKAGE_NAME_BLANKS ${PACKAGE_NAME} ${LAMA_SUMMARY_PACKAGE_NAME_LENGTH} )
+        scai_generate_blanks ( SCAI_PACKAGE_NAME_BLANKS ${PACKAGE_NAME} ${SCAI_SUMMARY_PACKAGE_NAME_LENGTH} )
     endif ( ${MESSAGE_TYPE} STREQUAL "FOUND" )
     
     if ( ${MESSAGE_TYPE} STREQUAL "STATIC" )
         set ( TYPE_TRUE "REQUIRED" )
         set ( TYPE_FALSE "REQUIRED" )
         set ( TYPE_INTENT " " )
-        set ( LAMA_PACKAGE_NAME_BLANKS "" )
+        set ( SCAI_PACKAGE_NAME_BLANKS "" )
     endif ( ${MESSAGE_TYPE} STREQUAL "STATIC" )
     
     if ( ${MESSAGE_TYPE} STREQUAL "USE" )
         set ( TYPE_TRUE "ENABLED" )
         set ( TYPE_FALSE "DISABLED" )
         set ( TYPE_INTENT "  " )
-        set ( LAMA_PACKAGE_NAME_BLANKS "" )
+        set ( SCAI_PACKAGE_NAME_BLANKS "" )
     endif ( ${MESSAGE_TYPE} STREQUAL "USE" )
         
     if    ( ${EXPRESSION} )
-        lama_status_message ( ${TYPE_INTENT} ${PACKAGE_NAME} ${LAMA_PACKAGE_NAME_BLANKS} INFO ${TYPE_TRUE} ${ADDITIONAL_INFO})
+        scai_status_message ( ${TYPE_INTENT} ${PACKAGE_NAME} ${SCAI_PACKAGE_NAME_BLANKS} INFO ${TYPE_TRUE} ${ADDITIONAL_INFO})
     else  ( ${EXPRESSION} )
-        lama_status_message ( ${TYPE_INTENT} ${PACKAGE_NAME} ${LAMA_PACKAGE_NAME_BLANKS} ERROR ${TYPE_FALSE} )  
+        scai_status_message ( ${TYPE_INTENT} ${PACKAGE_NAME} ${SCAI_PACKAGE_NAME_BLANKS} ERROR ${TYPE_FALSE} )  
     endif ( ${EXPRESSION} )
-endmacro ( lama_summary_message )
+endmacro ( scai_summary_message )
