@@ -58,7 +58,6 @@ set ( LAMA_VERSION ${LAMA_VERSION_MAJOR}.${LAMA_VERSION_MINOR}.${LAMA_VERSION_PA
 
 ## Define all search packages
 include ( InternalDependencies )
-include ( SearchPackages/LAMA ) 
 
 ### Variables / CMAKE Functions ###
 include ( Functions/allFunctions )
@@ -75,11 +74,12 @@ include ( Package/MPI )
 include ( Package/CodeCoverage ) #LAMA.CMakeLists
 
 # Find required packages
-foreach    ( PACKAGE_TO_FIND ${REQUIRED_PACKAGES_TO_FIND} )
+foreach    ( PACKAGE_TO_FIND ${SCAI_LAMA_INTERNAL_DEPS} )
     find_package ( ${PACKAGE_TO_FIND} ${SCAI_FIND_PACKAGE_FLAGS} REQUIRED )
-endforeach ( PACKAGE_TO_FIND ${REQUIRED_PACKAGES_TO_FIND} )
+endforeach ( PACKAGE_TO_FIND $${SCAI_LAMA_INTERNAL_DEPS} )
 
 # Find optional packages
+set ( OPTIONAL_PACKAGES_TO_FIND SCAI_BLAS Threads Metis ParMetis )
 foreach    ( PACKAGE_TO_FIND ${OPTIONAL_PACKAGES_TO_FIND} )
     find_package ( ${PACKAGE_TO_FIND} ${SCAI_FIND_PACKAGE_FLAGS} )
 endforeach ( PACKAGE_TO_FIND ${OPTIONAL_PACKAGES_TO_FIND} )
