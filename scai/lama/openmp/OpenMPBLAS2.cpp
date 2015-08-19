@@ -98,7 +98,7 @@ void OpenMPBLAS2::gemv(
 
             if( incX == 1 && incY == 1 )
             {
-                #pragma omp parallel for private(Z) schedule( LAMA_OMP_SCHEDULE )
+                #pragma omp parallel for private(Z) schedule( SCAI_OMP_SCHEDULE )
 
                 for( int i = 0; i < M; i++ )
                 {
@@ -115,7 +115,7 @@ void OpenMPBLAS2::gemv(
             else
             {
                 //incX != 1 || incY != 1
-                #pragma omp parallel for private(Z) schedule( LAMA_OMP_SCHEDULE )
+                #pragma omp parallel for private(Z) schedule( SCAI_OMP_SCHEDULE )
                 for( int i = 0; i < M; i++ )
                 {
                     Z = 0.0;
@@ -138,7 +138,7 @@ void OpenMPBLAS2::gemv(
 
             if( incX == 1 && incY == 1 )
             {
-                #pragma omp parallel for private(Z) schedule( LAMA_OMP_SCHEDULE )
+                #pragma omp parallel for private(Z) schedule( SCAI_OMP_SCHEDULE )
 
                 for( int i = 0; i < N; i++ )
                 {
@@ -155,7 +155,7 @@ void OpenMPBLAS2::gemv(
             else
             {
                 //incX != 1 || incY != 1
-                #pragma omp parallel for private(Z) schedule( LAMA_OMP_SCHEDULE )
+                #pragma omp parallel for private(Z) schedule( SCAI_OMP_SCHEDULE )
                 for( int i = 0; i < N; i++ )
                 {
                     Z = 0.0;
@@ -192,7 +192,7 @@ void OpenMPBLAS2::gemv(
 
             if( incX == 1 && incY == 1 )
             {
-                #pragma omp parallel for private(Z) schedule( LAMA_OMP_SCHEDULE )
+                #pragma omp parallel for private(Z) schedule( SCAI_OMP_SCHEDULE )
 
                 for( int i = 0; i < M; i++ )
                 {
@@ -209,7 +209,7 @@ void OpenMPBLAS2::gemv(
             else
             {
                 //incX != 1 || incY != 1
-                #pragma omp parallel for private(Z) schedule( LAMA_OMP_SCHEDULE )
+                #pragma omp parallel for private(Z) schedule( SCAI_OMP_SCHEDULE )
                 for( int i = 0; i < M; i++ )
                 {
                     Z = 0.0;
@@ -231,7 +231,7 @@ void OpenMPBLAS2::gemv(
 
             if( incX == 1 && incY == 1 )
             {
-                #pragma omp parallel for private(Z) schedule( LAMA_OMP_SCHEDULE )
+                #pragma omp parallel for private(Z) schedule( SCAI_OMP_SCHEDULE )
 
                 for( int i = 0; i < N; i++ )
                 {
@@ -248,7 +248,7 @@ void OpenMPBLAS2::gemv(
             else
             {
                 //incX != 1 || incY != 1
-                #pragma omp parallel for private(Z) schedule( LAMA_OMP_SCHEDULE )
+                #pragma omp parallel for private(Z) schedule( SCAI_OMP_SCHEDULE )
                 for( int i = 0; i < N; i++ )
                 {
                     Z = 0.0;

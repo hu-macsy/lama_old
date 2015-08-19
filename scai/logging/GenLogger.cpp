@@ -227,9 +227,9 @@ static int evalEntry( char* line, int length, const char* /* filename */ )
         return 1;
     }
 
-    // take entries of LAMA_xxx as environment variables
+    // take entries of SCAI_xxx as environment variables
 
-    if ( strncmp( name.c_str(), "LAMA_", 5 ) == 0 )
+    if ( strncmp( name.c_str(), "SCAI_", 5 ) == 0 )
     {
         // this is not a logging entry so take it as environment
         // Note: use of putenv is unsafe for auto-strings

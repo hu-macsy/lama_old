@@ -204,7 +204,7 @@ bool OpenMPJDSUtils::checkDiagonalProperty(
             return diagonalProperty;
         }
 
-        #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
+        #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
 
         for( IndexType ii = 0; ii < numRows; ++ii )
         {
@@ -246,7 +246,7 @@ void OpenMPJDSUtils::setInversePerm( IndexType inversePerm[], const IndexType pe
 
     // Parallel execution is safe as perm does not contain a value twice
 
-    #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
+    #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
 
     for( IndexType ii = 0; ii < n; ii++ )
     {
@@ -264,7 +264,7 @@ void OpenMPJDSUtils::sortRows( IndexType ilg[], IndexType perm[], const IndexTyp
 
     // Open: can this routine be called where perm is a valid permutation as input
 
-    #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
+    #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
 
     for( IndexType i = 0; i < n; i++ )
     {
@@ -369,7 +369,7 @@ IndexType OpenMPJDSUtils::ilg2dlg(
 
     IndexType numTotal = 0;
 
-    #pragma omp parallel for schedule( LAMA_OMP_SCHEDULE ) reduction( +:numTotal )
+    #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE ) reduction( +:numTotal )
 
     for( IndexType i = 0; i < numRows; ++i )
     {
@@ -415,7 +415,7 @@ void OpenMPJDSUtils::getCSRValues(
     {
         SCAI_REGION( "OpenMP.JDS->CSR_values" )
 
-        #pragma omp for schedule(LAMA_OMP_SCHEDULE)
+        #pragma omp for schedule(SCAI_OMP_SCHEDULE)
 
         for( IndexType i = 0; i < numRows; i++ )
         {
@@ -460,7 +460,7 @@ void OpenMPJDSUtils::setCSRValues(
     {
         SCAI_REGION( "OpenMP.JDS<-CSR_values" )
 
-        #pragma omp for schedule( LAMA_OMP_SCHEDULE )
+        #pragma omp for schedule( SCAI_OMP_SCHEDULE )
 
         for( IndexType ii = 0; ii < numRows; ii++ )
         {
@@ -556,7 +556,7 @@ void OpenMPJDSUtils::normalGEMV(
     {
         SCAI_REGION( "OpenMP.JDS.normalGEMV" )
 
-        #pragma omp for schedule( LAMA_OMP_SCHEDULE )
+        #pragma omp for schedule( SCAI_OMP_SCHEDULE )
 
         for( IndexType ii = 0; ii < nonEmptyRows; ii++ )
         {
@@ -658,7 +658,7 @@ void OpenMPJDSUtils::normalGEVM(
     {
         SCAI_REGION( "OpenMP.JDS.normalGEVM" )
 
-        #pragma omp for schedule( LAMA_OMP_SCHEDULE )
+        #pragma omp for schedule( SCAI_OMP_SCHEDULE )
 
         for( IndexType k = 0; k < numColumns; ++k )
         {
@@ -721,7 +721,7 @@ void OpenMPJDSUtils::jacobi(
     {
         SCAI_REGION( "OpenMP.JDS.jacobi" )
 
-        #pragma omp for schedule( LAMA_OMP_SCHEDULE )
+        #pragma omp for schedule( SCAI_OMP_SCHEDULE )
 
         for( IndexType ii = 0; ii < numRows; ii++ )
         {
@@ -798,7 +798,7 @@ void OpenMPJDSUtils::jacobiHalo(
     {
         SCAI_REGION( "OpenMP.JDS.jacobiHalo" )
 
-        #pragma omp for schedule( LAMA_OMP_SCHEDULE )
+        #pragma omp for schedule( SCAI_OMP_SCHEDULE )
 
         for( IndexType ii = 0; ii < numNonEmptyRows; ++ii )
         {

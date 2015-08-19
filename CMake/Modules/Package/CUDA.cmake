@@ -31,6 +31,8 @@
  # @since 2.0.0
 ###
 
+include ( Functions/setAndCheckCache )
+
 find_package ( CUDA ${LAMA_FIND_PACKAGE_FLAGS} )
 
 # ALLOW to switch off CUDA explicitly

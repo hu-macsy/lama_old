@@ -41,27 +41,17 @@ set ( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../CMake/Modules" )
 
 ## Define all search packages
 include ( InternalDependencies )
-include ( SearchPackages/Common )
-	
-# Find required packages
-foreach    ( PACKAGE_TO_FIND ${REQUIRED_PACKAGES_TO_FIND} )
-    find_package ( ${PACKAGE_TO_FIND} ${LAMA_FIND_PACKAGE_FLAGS} REQUIRED )
-endforeach ( PACKAGE_TO_FIND ${REQUIRED_PACKAGES_TO_FIND} )
-	
-# Find optional packages
-foreach    ( PACKAGE_TO_FIND ${OPTIONAL_PACKAGES_TO_FIND} )
-    find_package ( ${PACKAGE_TO_FIND} ${LAMA_FIND_PACKAGE_FLAGS} )
-endforeach ( PACKAGE_TO_FIND ${OPTIONAL_PACKAGES_TO_FIND} )
 
-include ( Functions/checkValue )
-include ( Functions/setAndCheckCache )
+find_package ( Threads ) # use ${CMAKE_THREAD_LIBS_INIT} for target_link_libraries
+###  Here we use PThread library for threads
+###  Note: FindThreads in CMake is available as Module, but is buggy, needs update of CheckIncludeFiles.cmake
+#find_library ( PTHREADS_LIBRARY NAMES pthread pthreads )
 	
 include ( Package/CUDA )
 	
 if    ( NOT SCAI_COMPLETE_BUILD )
 	
 	### Include Compiler Flags
-	include ( SetBuildFlags )
 	include ( SetCPPFlags )
 	include ( SetNVCCFlags )
 

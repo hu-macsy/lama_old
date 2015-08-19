@@ -133,9 +133,9 @@ endif ( NOT ( Boost_UNIT_TEST_FRAMEWORK_LIBRARY OR Boost_REGEX ) )
 include_directories ( .. ../lama ${Boost_INCLUDE_DIRS} )
 include_directories ( ${CMAKE_INSTALL_PREFIX}/include  )
 
-if ( LAMA_BLAS_NAME STREQUAL "MKL" )
+if ( SCAI_BLAS_NAME STREQUAL "MKL" )
     include_directories ( ${MKL_INCLUDE_DIRS} )
-endif ( LAMA_BLAS_NAME STREQUAL "MKL" )
+endif ( SCAI_BLAS_NAME STREQUAL "MKL" )
 
 ### add subdirectories ###
 if ( MPI_FOUND AND USE_MPI )
@@ -161,11 +161,11 @@ add_executable ( lama_test lama_test.cpp ${CXX_SOURCES} )
 if ( WIN32 )
     target_link_libraries ( lama_test ama )
 else ( WIN32 )
-    if ( LAMA_LIBRARY_TYPE STREQUAL "STATIC" )
+    if ( SCAI_LIBRARY_TYPE STREQUAL "STATIC" )
         target_link_libraries ( lama_test "-Wl,--whole-archive" ama "-Wl,--no-whole-archive" ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} ${Boost_REGEX_LIBRARY} ${LAMA_THREAD_LIBRARY} )
     else ()
         target_link_libraries ( lama_test ama ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} ${Boost_REGEX_LIBRARY} ${LAMA_THREAD_LIBRARY} )
-    endif ( LAMA_LIBRARY_TYPE STREQUAL "STATIC" )
+    endif ( SCAI_LIBRARY_TYPE STREQUAL "STATIC" )
 endif ( WIN32 )
 
 

@@ -376,7 +376,7 @@ DenseMatrix<ValueType>::DenseMatrix( DistributionPtr distribution )
 
         SCAI_LOG_DEBUG( logger, "mData.size() = " << mData.size() )
 
-        #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
+        #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
 
         for ( int i = 0; i < n; ++i )
         {

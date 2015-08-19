@@ -317,8 +317,8 @@ CUDAStreamSyncToken* CUDAContext::getTransferSyncToken() const
 
 /* ----------------------------------------------------------------------------- */
 
-#define LAMA_DEFAULT_DEVICE_NUMBER -1
-#define LAMA_MAX_CUDA_DEVICES 4
+#define SCAI_DEFAULT_DEVICE_NUMBER -1
+#define SCAI_MAX_CUDA_DEVICES 4
 
 static int getDefaultDeviceNr() 
 {
@@ -329,13 +329,13 @@ static int getDefaultDeviceNr()
 /*      Factory::Register - create( int )                                        */
 /* ----------------------------------------------------------------------------- */
 
-static common::weak_ptr<CUDAContext> mCUDAContext[LAMA_MAX_CUDA_DEVICES];
+static common::weak_ptr<CUDAContext> mCUDAContext[SCAI_MAX_CUDA_DEVICES];
 
 ContextPtr CUDAContext::create( int deviceNr )
 {
     int cudaDeviceNr = deviceNr;
 
-    if( cudaDeviceNr == LAMA_DEFAULT_DEVICE_NUMBER )
+    if( cudaDeviceNr == SCAI_DEFAULT_DEVICE_NUMBER )
     {
         cudaDeviceNr = getDefaultDeviceNr();
 
@@ -344,8 +344,8 @@ ContextPtr CUDAContext::create( int deviceNr )
     else
     {
         SCAI_ASSERT(
-            0 <= cudaDeviceNr && cudaDeviceNr < LAMA_MAX_CUDA_DEVICES,
-            "device = " << cudaDeviceNr << " out of range" << ", max supported device = " << LAMA_MAX_CUDA_DEVICES )
+            0 <= cudaDeviceNr && cudaDeviceNr < SCAI_MAX_CUDA_DEVICES,
+            "device = " << cudaDeviceNr << " out of range" << ", max supported device = " << SCAI_MAX_CUDA_DEVICES )
     }
 
     common::shared_ptr<CUDAContext> context = common::shared_ptr<CUDAContext>();

@@ -73,13 +73,13 @@ void routineLAMA( double& res, IndexType n )
     }
 }
 
-void routineLAMA_1( double& res )
+void routineSCAI_1( double& res )
 {
     LAMAArray<double> X;
     res = 0.0;
 }
 
-void routineLAMA_2( double& res, IndexType n )
+void routineSCAI_2( double& res, IndexType n )
 {
     LAMAArray<double> X;
     {
@@ -88,7 +88,7 @@ void routineLAMA_2( double& res, IndexType n )
     res = 0.0;
 }
 
-void routineLAMA_3( double& res, IndexType n )
+void routineSCAI_3( double& res, IndexType n )
 {
     LAMAArray<double> X;
     {
@@ -137,7 +137,7 @@ int main()
 
         for ( int i = 0; i < ITER; ++i )
         {
-            routineLAMA_1( res );
+            routineSCAI_1( res );
         }
 
         double tl1 = ( scai::common::Walltime::get() - time ) * 1000.0;
@@ -147,7 +147,7 @@ int main()
 
         for ( int i = 0; i < ITER; ++i )
         {
-            routineLAMA_2( res, N );
+            routineSCAI_2( res, N );
         }
 
         double tl2 = ( scai::common::Walltime::get() - time ) * 1000.0;
@@ -156,7 +156,7 @@ int main()
 
         for ( int i = 0; i < ITER; ++i )
         {
-            routineLAMA_3( res, N );
+            routineSCAI_3( res, N );
         }
 
         double tl3 = ( scai::common::Walltime::get() - time ) * 1000.0;
@@ -175,9 +175,9 @@ int main()
         cout << "res = " << res << endl;
         cout << "routineSimple: " << ts << " ms "  << endl;
         cout << "routineLAMA: " << tl << " ms "  << endl;
-        cout << "routineLAMA_1: " << tl1 << " ms "  << endl;
-        cout << "routineLAMA_2: " << tl2 << " ms "  << endl;
-        cout << "routineLAMA_3: " << tl3 << " ms "  << endl;
+        cout << "routineSCAI_1: " << tl1 << " ms "  << endl;
+        cout << "routineSCAI_2: " << tl2 << " ms "  << endl;
+        cout << "routineSCAI_3: " << tl3 << " ms "  << endl;
         cout << endl;
     }
 }

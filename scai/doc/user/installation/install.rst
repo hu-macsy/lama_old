@@ -10,13 +10,13 @@ To install LAMA to the configured installation path just call
 in your build directory.
    
 The installation will be placed in the directory that has been specified during the configuration by the variable
-CMAKE_INSTALL_PREFIX. This installation directory will be refered later as ``LAMA_ROOT``.
+CMAKE_INSTALL_PREFIX. This installation directory will be refered later as ``SCAI_ROOT``.
 
-The directory ``{LAMA_ROOT}/include`` will contain a lot of include files
+The directory ``{SCAI_ROOT}/include`` will contain a lot of include files
 organized in different directories. These include files are needed when 
 using the LAMA library.
 
-The directory ``{LAMA_ROOT}/lib`` should contain the following libraries:
+The directory ``{SCAI_ROOT}/lib`` should contain the following libraries:
 
 - libama.so  
 - liblog4lama.so

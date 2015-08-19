@@ -35,11 +35,11 @@
 
 // Note: LAMA uses these type definitions:
 
-#ifdef LAMA_MKL_BLAS
+#ifdef SCAI_MKL_BLAS
 
 #include <mkl_cblas.h>
 
-#elif LAMA_INTERNAL_BLAS
+#elif SCAI_INTERNAL_BLAS
 
 enum CBLAS_ORDER
 {   CblasRowMajor=101, CblasColMajor=102};
@@ -54,6 +54,6 @@ enum CBLAS_SIDE
 
 #else
 
-#include "lama/cblas/include/cblas.h"
+#include <scai/lama/cblas/include/cblas.h>
 
 #endif

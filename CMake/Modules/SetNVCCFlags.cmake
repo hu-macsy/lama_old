@@ -31,6 +31,8 @@
  # @since 1.0.0
 ###
 
+include ( Functions/checkValue )
+
 #### CUDA specific compiler flags ####
 
 if    ( CUDA_FOUND AND USE_CUDA )
@@ -40,6 +42,7 @@ if    ( CUDA_FOUND AND USE_CUDA )
     list ( APPEND CC_CHOICES "not-found" "13" "20" "21" "30" "32" "35" "50" )
 	set ( CACHE CUDA_COMPUTE_CAPABILITY PROPERTY STRINGS ${CC_CHOICES} )
     checkValue( ${CUDA_COMPUTE_CAPABILITY} "${CC_CHOICES}" )
+    
     if    ( CUDA_COMPUTE_CAPABILITY STREQUAL "not-found" )
         set ( CUDA_HAVE_GPU FALSE )
     else  ( CUDA_COMPUTE_CAPABILITY STREQUAL "not-found" )

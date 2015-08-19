@@ -67,12 +67,12 @@ set ( OPTIONAL_PACKAGES_TO_FIND LAMA_BLAS )
 
 # Find required packages
 foreach    ( PACKAGE_TO_FIND ${REQUIRED_PACKAGES_TO_FIND} )
-    find_package ( ${PACKAGE_TO_FIND} ${LAMA_FIND_PACKAGE_FLAGS} REQUIRED )
+    find_package ( ${PACKAGE_TO_FIND} ${SCAI_FIND_PACKAGE_FLAGS} REQUIRED )
 endforeach ( PACKAGE_TO_FIND ${REQUIRED_PACKAGES_TO_FIND} )
 
 # Find optional packages
 foreach    ( PACKAGE_TO_FIND ${OPTIONAL_PACKAGES_TO_FIND} )
-    find_package ( ${PACKAGE_TO_FIND} ${LAMA_FIND_PACKAGE_FLAGS} )
+    find_package ( ${PACKAGE_TO_FIND} ${SCAI_FIND_PACKAGE_FLAGS} )
 endforeach ( PACKAGE_TO_FIND ${OPTIONAL_PACKAGES_TO_FIND} )
 
 ## documentation
@@ -87,10 +87,8 @@ include ( Package/Doxygen )
 
 ## general compiler settings
 
-include ( SetBuildFlags )
 include ( SetCPPFlags )
 include ( SetNVCCFlags )
-
 
 ## summary of what is found
 include ( Summary )

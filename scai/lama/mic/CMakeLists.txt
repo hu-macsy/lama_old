@@ -31,9 +31,6 @@
  # @since 1.0.1
 ###
 
-### set this dir as lama source dir ###
-lama_set_source_dir ()
-
 ### Add classes and header files ###
 set ( CLASSES
         MICContext
@@ -53,14 +50,5 @@ set ( CLASSES
 
 lama_classes ( ${CLASSES} )
 
-add_library( amamic ${LAMA_LIBRARY_TYPE} ${CXX_SOURCES} )
-
-### target link libraries ###
-
-
-set ( MKLROOT /cluster/intel/composer_xe_2013.1.117/mkl )
-
-set_target_properties( amamic PROPERTIES LINK_FLAGS "-offload-option,mic,compiler,\"-L${MKLROOT}/lib/mic -Wl,--start-group -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_core -Wl,--end-group\"" )
-
-### install library
-install ( TARGETS amamic DESTINATION lib )
+### add sources and headers to parent scope ###
+lama_add ()

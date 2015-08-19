@@ -158,7 +158,7 @@ void DenseStorageView<ValueType>::getRowImpl( LAMAArray<OtherType>& row, const I
     WriteOnlyAccess<OtherType> wRow( row, mNumColumns );
     ReadAccess<ValueType> rData( mData );
 
-    #pragma omp parallel for schedule (LAMA_OMP_SCHEDULE)
+    #pragma omp parallel for schedule (SCAI_OMP_SCHEDULE)
 
     for( IndexType j = 0; j < mNumColumns; ++j )
     {
@@ -217,7 +217,7 @@ void DenseStorageView<ValueType>::scaleImpl( const LAMAArray<OtherType>& values 
 
     const IndexType columns = mNumColumns;
 
-    #pragma omp parallel for schedule (LAMA_OMP_SCHEDULE)
+    #pragma omp parallel for schedule (SCAI_OMP_SCHEDULE)
 
     for( IndexType i = 0; i < mNumRows; ++i )
     {

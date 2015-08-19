@@ -37,7 +37,7 @@
 
 #include <omp.h>
 
-#define LAMA_OMP_SCHEDULE static
+#define SCAI_OMP_SCHEDULE static
 
 #else
 

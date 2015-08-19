@@ -69,7 +69,7 @@ void OpenMPUtils::scale( ValueType mValues[], const ValueType value, const Index
 
     if( value == 0 )
     {
-        #pragma omp parallel for schedule( LAMA_OMP_SCHEDULE )
+        #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
 
         for( IndexType i = 0; i < n; i++ )
         {
@@ -78,7 +78,7 @@ void OpenMPUtils::scale( ValueType mValues[], const ValueType value, const Index
     }
     else
     {
-        #pragma omp parallel for schedule( LAMA_OMP_SCHEDULE )
+        #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
 
         for( IndexType i = 0; i < n; i++ )
         {
@@ -115,7 +115,7 @@ void OpenMPUtils::setScale(
         return;
     }
 
-    #pragma omp parallel for schedule( LAMA_OMP_SCHEDULE )
+    #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
 
     for( IndexType i = 0; i < n; i++ )
     {
@@ -137,7 +137,7 @@ ValueType OpenMPUtils::sum( const ValueType array[], const IndexType n )
     {
         ValueType tVal = static_cast<ValueType>( 0 );
 
-        #pragma omp for schedule( LAMA_OMP_SCHEDULE )
+        #pragma omp for schedule( SCAI_OMP_SCHEDULE )
 
         for( IndexType i = 0; i < n; ++i )
         {
@@ -159,7 +159,7 @@ void OpenMPUtils::setVal( ValueType array[], const IndexType n, const ValueType 
 
     SCAI_LOG_DEBUG( logger, "setVal<" << getScalarType<ValueType>() << ">: " << "array[" << n << "] = " << val )
 
-    #pragma omp parallel for schedule( LAMA_OMP_SCHEDULE )
+    #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
 
     for( IndexType i = 0; i < n; ++i )
     {
@@ -177,7 +177,7 @@ void OpenMPUtils::setOrder( ValueType array[], const IndexType n )
     SCAI_LOG_DEBUG( logger,
                     "setOrder<" << getScalarType<ValueType>() << ">: " << "array[" << n << "] = 0, 1, 2, ..., " << ( n - 1 ) )
 
-    #pragma omp parallel for schedule( LAMA_OMP_SCHEDULE )
+    #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
 
     for( IndexType i = 0; i < n; ++i )
     {
@@ -210,7 +210,7 @@ ValueType OpenMPUtils::maxval( const ValueType array[], const IndexType n )
     {
         ValueType threadVal = static_cast<ValueType>( 0.0 );
 
-        #pragma omp for schedule( LAMA_OMP_SCHEDULE )
+        #pragma omp for schedule( SCAI_OMP_SCHEDULE )
 
         for( IndexType i = 0; i < n; ++i )
         {
@@ -249,7 +249,7 @@ ValueType OpenMPUtils::absMaxVal( const ValueType array[], const IndexType n )
     {
         ValueType threadVal = static_cast<ValueType>( 0.0 );
 
-        #pragma omp for schedule( LAMA_OMP_SCHEDULE )
+        #pragma omp for schedule( SCAI_OMP_SCHEDULE )
 
         for( IndexType i = 0; i < n; ++i )
         {
@@ -290,7 +290,7 @@ ValueType OpenMPUtils::absMaxDiffVal( const ValueType array1[], const ValueType 
     {
         ValueType threadVal = static_cast<ValueType>( 0.0 );
 
-        #pragma omp for schedule( LAMA_OMP_SCHEDULE )
+        #pragma omp for schedule( SCAI_OMP_SCHEDULE )
 
         for( IndexType i = 0; i < n; ++i )
         {
@@ -364,7 +364,7 @@ void OpenMPUtils::set( ValueType1 out[], const ValueType2 in[], const IndexType 
     SCAI_LOG_DEBUG( logger,
                     "set: out<" << getScalarType<ValueType1>() << "[" << n << "]" << " = in<" << getScalarType<ValueType2>() << ">[" << n << "]" )
 
-    #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
+    #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
 
     for( IndexType i = 0; i < n; i++ )
     {
@@ -382,7 +382,7 @@ bool OpenMPUtils::validIndexes( const IndexType array[], const IndexType n, cons
 
     bool validFlag = true;
 
-    #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE) reduction( & : validFlag )
+    #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE) reduction( & : validFlag )
 
     for( IndexType i = 0; i < n; i++ )
     {
@@ -412,7 +412,7 @@ void OpenMPUtils::setGather( ValueType1 out[], const ValueType2 in[], const Inde
     SCAI_LOG_DEBUG( logger,
                     "setGather: out<" << getScalarType<ValueType1>() << ">[" << n << "]" << " = in<" << getScalarType<ValueType2>() << ">[ indexes[" << n << "] ]" )
 
-    #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
+    #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
 
     for( IndexType i = 0; i < n; i++ )
     {
@@ -430,7 +430,7 @@ void OpenMPUtils::setScatter( ValueType1 out[], const IndexType indexes[], const
     SCAI_LOG_DEBUG( logger,
                     "setScatter: out<" << getScalarType<ValueType1>() << ">" << "[ indexes[" << n << "] ]" << " = in<" << getScalarType<ValueType2>() << ">[" << n << "]" )
 
-    #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
+    #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
 
     for( IndexType i = 0; i < n; i++ )
     {
@@ -449,7 +449,7 @@ void OpenMPUtils::invert( ValueType array[], const IndexType n )
 
     ValueType one = static_cast<ValueType>( 1.0 );
 
-    #pragma omp parallel for schedule( LAMA_OMP_SCHEDULE )
+    #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
 
     for( IndexType i = 0; i < n; ++i )
     {

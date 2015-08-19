@@ -139,7 +139,7 @@ void OpenMPCOOUtils::offsets2ia(
     SCAI_LOG_INFO( logger,
                    "build cooIA( " << numValues << " ) from csrIA( " << ( numRows + 1 ) << " ), #diagonals = " << numDiagonals )
 
-    #pragma omp parallel for schedule( LAMA_OMP_SCHEDULE )
+    #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
 
     for( IndexType i = 0; i < numRows; ++i )
     {
@@ -184,7 +184,7 @@ void OpenMPCOOUtils::setCSRData(
     SCAI_LOG_INFO( logger,
                    "build cooValues( << " << numValues << " from csrValues + csrIA( " << ( numRows + 1 ) << " ), #diagonals = " << numDiagonals )
 
-    #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
+    #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
 
     for( IndexType i = 0; i < numRows; ++i )
     {
@@ -242,7 +242,7 @@ void OpenMPCOOUtils::normalGEMV(
     {
         SCAI_REGION( "OpenMP.COO.normalGEMV" )
 
-        #pragma omp for schedule( LAMA_OMP_SCHEDULE )
+        #pragma omp for schedule( SCAI_OMP_SCHEDULE )
 
         for( IndexType k = 0; k < numValues; ++k )
         {
@@ -290,7 +290,7 @@ void OpenMPCOOUtils::normalGEVM(
     {
         SCAI_REGION( "OpenMP.COO.normalGEMV" )
 
-        #pragma omp for schedule( LAMA_OMP_SCHEDULE )
+        #pragma omp for schedule( SCAI_OMP_SCHEDULE )
 
         for( IndexType k = 0; k < numValues; ++k )
         {

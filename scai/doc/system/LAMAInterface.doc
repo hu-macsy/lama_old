@@ -1,4 +1,4 @@
-/*! 
+﻿/*! 
 
 \page page_lamainterface Use of the LAMA Interface
 
@@ -13,7 +13,7 @@ void invert( LAMAArray<T>& values );
 {
     HostWriteAccess<T> wValues( values );
     T one = static_cast<T>( 1.0 );
-#pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
+#pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
     for ( IndexType i = 0; i < wValues.size(); ++i )
     {
         wValues[ i ] = one / wValues[ i ];
@@ -31,7 +31,7 @@ template<typename T>
 void OpenMPUtils::invert( T array[], const IndexType n )
 {
     T one = static_cast<T> ( 1.0 );
-#pragma omp parallel for schedule( LAMA_OMP_SCHEDULE )
+#pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
     for ( IndexType i = 0; i < n; ++i )
     {
         array[ i ] = one / array[ i ];

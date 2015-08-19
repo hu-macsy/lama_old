@@ -61,8 +61,8 @@ include ( InternalDependencies )
 include ( SearchPackages/LAMA ) 
 
 ### Variables / CMAKE Functions ###
-include ( Variables ) #LAMA.CMakeLists
 include ( Functions/allFunctions )
+include ( Variables ) #LAMA.CMakeLists
 include ( SCAIdefines ) #LAMA.CMakeLists
 include ( CompilerVersion ) #LAMA.CMakeLists
 
@@ -76,26 +76,25 @@ include ( Package/CodeCoverage ) #LAMA.CMakeLists
 
 # Find required packages
 foreach    ( PACKAGE_TO_FIND ${REQUIRED_PACKAGES_TO_FIND} )
-    find_package ( ${PACKAGE_TO_FIND} ${LAMA_FIND_PACKAGE_FLAGS} REQUIRED )
+    find_package ( ${PACKAGE_TO_FIND} ${SCAI_FIND_PACKAGE_FLAGS} REQUIRED )
 endforeach ( PACKAGE_TO_FIND ${REQUIRED_PACKAGES_TO_FIND} )
 
 # Find optional packages
 foreach    ( PACKAGE_TO_FIND ${OPTIONAL_PACKAGES_TO_FIND} )
-    find_package ( ${PACKAGE_TO_FIND} ${LAMA_FIND_PACKAGE_FLAGS} )
+    find_package ( ${PACKAGE_TO_FIND} ${SCAI_FIND_PACKAGE_FLAGS} )
 endforeach ( PACKAGE_TO_FIND ${OPTIONAL_PACKAGES_TO_FIND} )
 
 # LAMA irrelevant entries will be marked as advanced ( Remove them from default cmake GUI )
 mark_as_advanced ( CUDA_BUILD_CUBIN CUDA_BUILD_EMULATION CUDA_SDK_ROOT_DIR CUDA_VERBOSE_BUILD )
 
 ### Include Compiler Flags
-include ( SetBuildFlags )
 include ( SetCPPFlags ) #LAMA.CMakeLists
 
 ## MKL FOUND
-if     ( LAMA_BLAS_NAME STREQUAL "MKL" )
-    add_definitions( -DLAMA_MKL_BLAS )
+if     ( SCAI_BLAS_NAME STREQUAL "MKL" )
+    add_definitions( -DSCAI_MKL_BLAS )
 elseif ( INTERNALBLAS_FOUND )
-    add_definitions( -DLAMA_INTERNAL_BLAS )
+    add_definitions( -DSCAI_INTERNAL_BLAS )
 else   ( )
     add_definitions( -DADD_ )
 endif  ( )
@@ -142,12 +141,12 @@ if ( METIS_FOUND AND PARMETIS_FOUND )
     include_directories ( ${PARMETIS_INCLUDE_DIR} ) 
 endif ( METIS_FOUND AND PARMETIS_FOUND )
 
-if ( LAMA_BLAS_NAME STREQUAL "MKL" )
+if ( SCAI_BLAS_NAME STREQUAL "MKL" )
     include_directories ( ${MKL_INCLUDE_DIRS} )
-elseif ( NOT LAMA_BLAS_NAME STREQUAL "MKL" AND NOT INTERNALBLAS_FOUND )
+elseif ( NOT SCAI_BLAS_NAME STREQUAL "MKL" AND NOT INTERNALBLAS_FOUND )
     include_directories( cblas/include )
-    add_subdirectory( cblas )
-endif ( LAMA_BLAS_NAME STREQUAL "MKL" )
+#    add_subdirectory( cblas )
+endif ( SCAI_BLAS_NAME STREQUAL "MKL" )
 
 ### Add classes and header files ###
 set ( CLASSES
@@ -227,14 +226,14 @@ if    ( CUDA_FOUND AND USE_CUDA AND CUDA_HAVE_GPU )
 	set ( CXX_SOURCES ${CXX_SOURCES} ${CUDA_FILES} )
 endif ( CUDA_FOUND AND USE_CUDA AND CUDA_HAVE_GPU )
 
-add_library ( ama ${LAMA_LIBRARY_TYPE} ${CXX_SOURCES} ) #${HEADERS} )
+add_library ( ama ${SCAI_LIBRARY_TYPE} ${CXX_SOURCES} ) #${HEADERS} )
 
 foreach    ( module ${SCAI_LAMA_INTERNAL_DEPS} )
 	string ( TOUPPER ${module} upper_module )
     target_link_libraries ( ama ${${upper_module}_LIBRARY} )
 endforeach ( module ${SCAI_LAMA_INTERNAL_DEPS} )
 
-target_link_libraries ( ama ${LAMA_BLAS_LIBRARIES} )
+target_link_libraries ( ama ${SCAI_BLAS_LIBRARIES} )
 
 if    ( CUDA_FOUND AND USE_CUDA AND CUDA_HAVE_GPU )
 	 target_link_libraries ( ama ${CUDA_cusparse_LIBRARY} ${CUDA_cublas_LIBRARY}
@@ -250,8 +249,8 @@ if    ( GPI2_FOUND AND IBVERBS_FOUND AND USE_GPI2 )
 endif ( GPI2_FOUND AND IBVERBS_FOUND AND USE_GPI2 )
 
 if ( SCALAPACK_FOUND AND MPI_FOUND AND USE_MPI )
-    target_link_libraries ( ama ${LAMA_PBLAS_LIBRARIES} )
-    add_definitions( -DLAMA_MKL_SCALAPACK )
+    target_link_libraries ( ama ${SCAI_PBLAS_LIBRARIES} )
+    add_definitions( -DSCAI_MKL_SCALAPACK ) ## TODO: where used?!
 endif ( SCALAPACK_FOUND AND MPI_FOUND AND USE_MPI )
 
 if ( METIS_FOUND )
