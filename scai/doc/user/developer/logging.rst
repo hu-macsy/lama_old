@@ -147,7 +147,8 @@ the logging. It should be executed only if the corresponding logging level is en
    #endif
 
 The macro SCAI_LOG_INFO_ON( logger ) returns true if the info level is enabled for the logger at runtme. The
-guard LOG4_INFO_ENABLED might be used disable the code even at compile time if not needed.
+guard ``SCAI_LOG_INFO_ENABLED`` might be used to ignore the code even at compile time if the LOG_LEVEL is
+higher than INFO.
 
 Use of logging for C++ classes
 ------------------------------
@@ -175,10 +176,16 @@ The logger becomes a static variable of the class.
        ...
    }
 
-A logger should not be declared as public. Derived classes should usually have their own logger, 
-so the logger should become private. The logger should be protected in situatons  where it is 
-useful that the logger can also be used in derived classes, especially if the derived class is 
-a template class where no own static logger can be defined. 
+As the logger is a static variable,
+it is not possible to set logging levels individually for objects of the class. This seemed to be nice
+but has two major problems. The first one is an efficiency reason as each construction of an object requires
+not very cheap access to the logger in the logger hierarchy. The second one is that the  configuration of
+loggers for individual objects is not practical as objects have no individual names.
+
+A logger should not be declared as public so the logger can be used only inside the class. 
+Derived classes should usually have their own logger, in this case
+the logger should become private. The logger should be protected in situatons  where it is 
+useful that the logger can also be used in derived classes.
 
 In the implementation of the class, e.g. Example.cpp, the logger has to be defined as follows:
 
@@ -227,14 +234,14 @@ The default output format of logging messages is as follows:
 
 where the tokens starting with # have the following meanings:
 
-- #date stands for the current date, e.g. 2015-07-26 (yyyy-mm-dd)
-- #time stands for the time of the output, e.g. 13:21:22 (hh:mm:ss)
-- #name stands for the full name of the logger
-- #func stands for the function in which the logging has been called
-- #file is the file contaning the logging macro
-- #line is the line number in the file with the actual logging statement
-- #level is the logging level (e.g. INFO or WARN)
-- #msg is the output message of the logging statement
+- ``#date`` stands for the current date, e.g. 2015-07-26 (yyyy-mm-dd)
+- ``#time`` stands for the time of the output, e.g. 13:21:22 (hh:mm:ss)
+- ``#name`` stands for the full name of the logger
+- ``#func`` stands for the function in which the logging has been called
+- ``#file`` is the file contaning the logging macro
+- ``#line`` is the line number in the file with the actual logging statement
+- ``#level`` is the logging level (e.g. INFO or WARN)
+- ``#msg`` is the output message of the logging statement
 
 It is possible to change this default output format by a line in the config file, e.g.:
 
@@ -247,9 +254,18 @@ The output format cannot be redefined individually for different loggers.
 Compile Flags for Logging
 -------------------------
 
-For CMake, the following variable should be set::
+Source files containing logging statements should include the file ``scai/logging.hpp``.
 
-  SCAI_LOG_LEVEL = DEBUG ( or TRACE or INFO or OFF )
+::
+
+    #include <scai/logging.hpp>
+
+For compilation, the corresponding include directory must be set.
+
+Furthermore, a compile flag ``SCAI_LOG_LEVEL_xxx`` must be specified to specify
+which logging statement should be inserted in the code. All logging statements of level
+xxx and higher are included, logging statements with a lower level be considered as deleted.
+Good choices are:
 
 - DEBUG should be chosen for DEBUG mode
 - INFO should be chosen in RELEASE mode
@@ -263,21 +279,47 @@ innermost loops.
 Please keep in mind that setting a certain level at compile time will remove all logging statements with a
 lower level and they can not be used at runtime any more.
  
+Support for Logging Library with CMake
+--------------------------------------
+
+The logging library itself is built with CMake.
+
+For using the logging library an CMake module ``Findscai_logging.cmake`` is provided.
+
 ::
 
-    #  Debug   : use -DSCAI_LOG_LEVEL_DEBUG
-    #Release : use -DSCAI_LOG_LEVEL_INFO
+    # find installation of logging library
+
+    find_package( scai_logging REQUIRED )
+
+    if ( SCAI_LOGGING_FOUND )
+       # set the include directory containing logging.hpp
+       include_directories( ${SCAI_LOGGING_INCLUDE_DIR} )
+       # set compilation flag, same as -DSCAI_LOG_${SCAI_LOGGING_LEVEL} )
+       add_definitions( -D${SCAI_LOGGING_FLAG} )
+       ...
+       target_link_libraries( <newlib> ${SCAI_LOGGING_LIBRARY} )
+    endif ( SCAI_LOGGING_FOUND )
+
+The default logging level is chosen by the built type.
+
+::
+
+    #  CMAKE_BUILD_TYPE == Debug   : use -DSCAI_LOG_LEVEL_DEBUG
+    #  CMAKE_BUILD_TYPE == Release : use -DSCAI_LOG_LEVEL_INFO
     #
     #  For serious problems: -DSCAI_LOG_LEVEL_TRACE
     #  For benchmarks:       -DSCAI_LOG_LEVEL_OFF (or -DSCAI_LOG_LEVEL_FATAL, -DSCAI_LOG_LEVEL_ERROR)
 
-    ADD_DEFINITIONS( -DSCAI_LOG_LEVEL_TRACE )
+The logging level can be set via ccmake using the CMake variable ``SCAI_LOGGING_LEVEL``.
 
-Some Discussion and Further Ideas
----------------------------------
+Summary
+-------
 
-- We need some more appropriate logging levels for user output in solvers
-- One idea was to set logging levels for individual objects instead of classes. This idea seemed to be nice
-  but has two major problems. The first one is an efficiency reason as each construction of an object requires
-  a not very cheap access to the logger in the logger hierarchy. The second one is that the  configuration of
-  loggers for individual objects is not practical as objects have no individual names.
+The SCAI logging library is a very convenient and efficient library that supports logging in C++ applications.
+It has very low overhead and has quite powerful mechanisms for generating logging output.
+
+Currently, logging is always done on standard output. It is not possible to write logging messages in different 
+output streams.
+
+

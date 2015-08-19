@@ -73,16 +73,6 @@ endforeach ( module ${SCAI_TRACING_INTERNAL_DEPS} )
 ### Mandatory: compile flag for logging level
 
 add_definitions ( -D${SCAI_LOGGING_FLAG} )
-add_definitions ( -D${SCAI_LOGGING_FLAG} )
-add_definitions ( -D${SCAI_LOGGING_FLAG} )
-add_definitions ( -D${SCAI_LOGGING_FLAG} )
-add_definitions ( -D${SCAI_LOGGING_FLAG} )
-add_definitions ( -D${SCAI_LOGGING_FLAG} )
-add_definitions ( -D${SCAI_LOGGING_FLAG} )
-add_definitions ( -D${SCAI_LOGGING_FLAG} )
-add_definitions ( -D${SCAI_LOGGING_FLAG} )
-add_definitions ( -D${SCAI_LOGGING_FLAG} )
-add_definitions ( -D${SCAI_LOGGING_FLAG} )
 
 if ( WIN32 )
     add_definitions ( -DCOMMON_COMPILING_DLL )

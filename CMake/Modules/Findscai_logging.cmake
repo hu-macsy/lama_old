@@ -1,6 +1,16 @@
 #
 # Find the logging includes and libraries
 #
+# InputVariables:
+# 
+# CMAKE_INSTALL_PREFIX : directory is used to find the logging installation
+# LOGGING_ROOT         : installation directory where the logging library is installed 
+#
+# SCAI_LOGGING_INCLUDE_PATH : environment variable used to find logging include directory
+# SCAI_LOGGING_LIBRARY_PATH : environment variable used to find logging include directory
+#
+# OutputVariables:
+#
 # SCAI_LOGGING_FOUND       - Do not attempt to use if "no" or undefined
 # SCAI_LOGGING_INCLUDE_DIR - the logging include dir
 # SCAI_LOGGING_LIBRARY     - libraries to link against
