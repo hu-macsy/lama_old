@@ -31,33 +31,6 @@
  # @since 1.0.0
 ###
 
-## LOGGING Level
-#
-#  Debug   : use -DLOG_LEVEL_DEBUG
-#  Release : use -DLOG_LEVEL_INFO
-#  
-#  For serious problems: -DLOG_LEVEL_TRACE
-#  For benchmarks:       -DLOG_LEVEL_OFF (or -DLOG_LEVEL_FATAL, -DLOG_LEVEL_ERROR)
-
-list ( APPEND LOG_CHOICES "TRACE" "DEBUG" "INFO" "WARN" "ERROR" "OFF" )
-
-if    ( NOT SCAI_LOG_LEVEL )
-    if     ( CMAKE_BUILD_TYPE STREQUAL "Release" )
-        set ( DEFAULT_LOG_LEVEL "INFO" )
-    elseif ( CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo" )
-        set ( DEFAULT_LOG_LEVEL "DEBUG" )
-    else   ( )
-        set ( DEFAULT_LOG_LEVEL "TRACE" )
-    endif  ( )
-endif ( NOT SCAI_LOG_LEVEL )
-
-set ( SCAI_LOG_LEVEL ${DEFAULT_LOG_LEVEL} CACHE STRING
-      "Choose level of compile time logging: ${LOG_CHOICES}" )
-set ( CACHE SCAI_LOG_LEVEL PROPERTY STRINGS ${LOG_CHOICES} )
-checkValue ( ${SCAI_LOG_LEVEL} "${LOG_CHOICES}" )
-
-add_definitions ( -DSCAI_LOG_LEVEL_${SCAI_LOG_LEVEL} )
-
 ## ASSERT Level
 #
 #  Debug   : use -DASSERT_LEVEL_DEBUG

@@ -34,7 +34,7 @@
 # Note: can be changed at any time via CCMAKE
 
 if ( NOT CMAKE_BUILD_TYPE )
-   set ( CMAKE_BUILD_TYPE RELEASE CACHE STRING
+   set ( CMAKE_BUILD_TYPE Release CACHE STRING
       "Choose the type of build, options are: None Debug Release."
       FORCE)
 endif ( NOT CMAKE_BUILD_TYPE )
