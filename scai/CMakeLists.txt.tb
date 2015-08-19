@@ -99,6 +99,13 @@ set ( SCAI_HMEMO_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/hmemo
 
 add_subdirectory( lama )
 
+# Documentation
+
+find_package ( Sphinx )
+include ( Package/Sphinx )
+find_package ( Doxygen )
+include ( Package/Doxygen )
+
 ## add custum target distClean
 
 include ( DistClean )

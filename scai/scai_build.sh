@@ -23,6 +23,7 @@ else
         cd build
         # echo "cmake .. -DCMAKE_INSTALL_PREFIX=${SCAI_ROOT} -DADDITIONAL_WARNING_FLAGS=\"-Wextra -Wall\""
         cmake .. -DCMAKE_INSTALL_PREFIX=${SCAI_ROOT}
+        make j=8
         make install
         cd ../..
     done
