@@ -7,6 +7,7 @@ For Developers
    :maxdepth: 2
    
    developer/firstSteps
+   developer/directories
    developer/styleGuide
    developer/formatting
    developer/logging

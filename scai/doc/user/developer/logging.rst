@@ -40,7 +40,7 @@ __ http://log4cpp.hora-obscura.de/index.php/LoggingLibraryForCpp
   and utilities to be installed.
   
 - Boost logging might be integrated in one of the next versions of Boost but not yet; it has only include
-  files but no library itself; configuration files are not supported.
+  files but no library itself; runtime configuration files are not supported.
 
 SCAI Logging
 ------------
@@ -147,7 +147,8 @@ the logging. It should be executed only if the corresponding logging level is en
    #endif
 
 The macro SCAI_LOG_INFO_ON( logger ) returns true if the info level is enabled for the logger at runtme. The
-guard LOG4_INFO_ENABLED might be used disable the code even at compile time if not needed.
+guard ``SCAI_LOG_INFO_ENABLED`` might be used to ignore the code even at compile time if the LOG_LEVEL is
+higher than INFO.
 
 Use of logging for C++ classes
 ------------------------------
@@ -175,10 +176,16 @@ The logger becomes a static variable of the class.
        ...
    }
 
-A logger should not be declared as public. Derived classes should usually have their own logger, 
-so the logger should become private. The logger should be protected in situatons  where it is 
-useful that the logger can also be used in derived classes, especially if the derived class is 
-a template class where no own static logger can be defined. 
+As the logger is a static variable,
+it is not possible to set logging levels individually for objects of the class. This seemed to be nice
+but has two major problems. The first one is an efficiency reason as each construction of an object requires
+not very cheap access to the logger in the logger hierarchy. The second one is that the  configuration of
+loggers for individual objects is not practical as objects have no individual names.
+
+A logger should not be declared as public so the logger can be used only inside the class. 
+Derived classes should usually have their own logger, in this case
+the logger should become private. The logger should be protected in situatons  where it is 
+useful that the logger can also be used in derived classes.
 
 In the implementation of the class, e.g. Example.cpp, the logger has to be defined as follows:
 
@@ -227,14 +234,14 @@ The default output format of logging messages is as follows:
 
 where the tokens starting with # have the following meanings:
 
-- #date stands for the current date, e.g. 2015-07-26 (yyyy-mm-dd)
-- #time stands for the time of the output, e.g. 13:21:22 (hh:mm:ss)
-- #name stands for the full name of the logger
-- #func stands for the function in which the logging has been called
-- #file is the file contaning the logging macro
-- #line is the line number in the file with the actual logging statement
-- #level is the logging level (e.g. INFO or WARN)
-- #msg is the output message of the logging statement
+- ``#date`` stands for the current date, e.g. 2015-07-26 (yyyy-mm-dd)
+- ``#time`` stands for the time of the output, e.g. 13:21:22 (hh:mm:ss)
+- ``#name`` stands for the full name of the logger
+- ``#func`` stands for the function in which the logging has been called
+- ``#file`` is the file contaning the logging macro
+- ``#line`` is the line number in the file with the actual logging statement
+- ``#level`` is the logging level (e.g. INFO or WARN)
+- ``#msg`` is the output message of the logging statement
 
 It is possible to change this default output format by a line in the config file, e.g.:
 
@@ -247,9 +254,18 @@ The output format cannot be redefined individually for different loggers.
 Compile Flags for Logging
 -------------------------
 
-For CMake, the following variable should be set::
+Source files containing logging statements should include the file ``scai/logging.hpp``.
 
-  SCAI_LOG_LEVEL = DEBUG ( or TRACE or INFO or OFF )
+::
+
+    #include <scai/logging.hpp>
+
+For compilation, the corresponding include directory must be set.
+
+Furthermore, a compile flag ``SCAI_LOG_LEVEL_xxx`` must be specified to specify
+which logging statement should be inserted in the code. All logging statements of level
+xxx and higher are included, logging statements with a lower level be considered as deleted.
+Good choices are:
 
 - DEBUG should be chosen for DEBUG mode
 - INFO should be chosen in RELEASE mode
@@ -263,21 +279,126 @@ innermost loops.
 Please keep in mind that setting a certain level at compile time will remove all logging statements with a
 lower level and they can not be used at runtime any more.
  
+Support for Logging Library with CMake
+--------------------------------------
+
+The logging library itself is built with CMake.
+
+For using the logging library an CMake module ``Findscai_logging.cmake`` is provided.
+
 ::
 
-    #  Debug   : use -DSCAI_LOG_LEVEL_DEBUG
-    #Release : use -DSCAI_LOG_LEVEL_INFO
+    # find installation of logging library
+
+    find_package( scai_logging REQUIRED )
+
+    if ( SCAI_LOGGING_FOUND )
+       # set the include directory containing logging.hpp
+       include_directories( ${SCAI_LOGGING_INCLUDE_DIR} )
+       # set compilation flag, same as -DSCAI_LOG_${SCAI_LOGGING_LEVEL} )
+       add_definitions( -D${SCAI_LOGGING_FLAG} )
+       ...
+       target_link_libraries( <newlib> ${SCAI_LOGGING_LIBRARY} )
+    endif ( SCAI_LOGGING_FOUND )
+
+The default logging level is chosen by the built type.
+
+::
+
+    #  CMAKE_BUILD_TYPE == Debug   : use -DSCAI_LOG_LEVEL_DEBUG
+    #  CMAKE_BUILD_TYPE == Release : use -DSCAI_LOG_LEVEL_INFO
     #
     #  For serious problems: -DSCAI_LOG_LEVEL_TRACE
     #  For benchmarks:       -DSCAI_LOG_LEVEL_OFF (or -DSCAI_LOG_LEVEL_FATAL, -DSCAI_LOG_LEVEL_ERROR)
 
-    ADD_DEFINITIONS( -DSCAI_LOG_LEVEL_TRACE )
+The logging level can be set via ccmake using the CMake variable ``SCAI_LOGGING_LEVEL``.
 
-Some Discussion and Further Ideas
----------------------------------
+Examples
+--------
 
-- We need some more appropriate logging levels for user output in solvers
-- One idea was to set logging levels for individual objects instead of classes. This idea seemed to be nice
-  but has two major problems. The first one is an efficiency reason as each construction of an object requires
-  a not very cheap access to the logger in the logger hierarchy. The second one is that the  configuration of
-  loggers for individual objects is not practical as objects have no individual names.
+The first example shows a simple example with logging statements of all different levels.
+
+.. literalinclude:: ../../../logging/examples/DemoLogging.cpp
+
+At runtime it can be decided which logging will be printed:
+
+::
+
+    export SCAI_LOG=INFO
+    examples/DemoLogging 
+
+    2015-08-19, 16:14:11 Demo @ main ( main -> DemoLogging.cpp::44 ) INFO a message about progress in the program
+    2015-08-19, 16:14:11 Demo @ main ( main -> DemoLogging.cpp::47 ) WARN a message with a warning, but execution is still possible
+    2015-08-19, 16:14:11 Demo @ main ( main -> DemoLogging.cpp::48 ) ERROR a message for an error, error handling will be invoked
+    2015-08-19, 16:14:11 Demo @ main ( main -> DemoLogging.cpp::49 ) FATAL a message for a fatal error, execution will stop
+
+::
+
+    export SCAI_LOG=ERROR
+    examples/DemoLogging 
+
+    2015-08-19, 16:14:25 Demo @ main ( main -> DemoLogging.cpp::48 ) ERROR a message for an error, error handling will be invoked
+    2015-08-19, 16:14:25 Demo @ main ( main -> DemoLogging.cpp::49 ) FATAL a message for a fatal error, execution will stop
+
+Using a config file (here with the name ``config``) is also possible, it should contain a line that sets the
+level of the logger *Demo*.
+
+::
+
+    # config file for logging
+    Demo = TRACE
+
+::
+
+    export SCAI_LOG=config
+    2015-08-19, 16:43:25 Demo @ main ( main -> DemoLogging.cpp::44 ) INFO a message about progress in the program
+    2015-08-19, 16:43:25 Demo @ main ( main -> DemoLogging.cpp::45 ) DEBUG a message useful to find bugs in the program
+    2015-08-19, 16:43:25 Demo @ main ( main -> DemoLogging.cpp::46 ) TRACE a message with very detailled info, usually not compiled
+    2015-08-19, 16:43:25 Demo @ main ( main -> DemoLogging.cpp::47 ) WARN a message with a warning, but execution is still possible
+    2015-08-19, 16:43:25 Demo @ main ( main -> DemoLogging.cpp::48 ) ERROR a message for an error, error handling will be invoked
+    2015-08-19, 16:43:25 Demo @ main ( main -> DemoLogging.cpp::49 ) FATAL a message for a fatal error, execution will stop
+
+The next example demonstrates the use of logging with multiple threads.
+
+.. literalinclude:: ../../../logging/examples/LogOpenMP.cpp
+
+::
+
+   export SCAI_LOG=INFO
+   examples/LogOpenMP
+
+   2015-08-19, 16:11:01 LogOpenMP @ OMP_Thread_4 ( main -> LogOpenMP.cpp::29 ) INFO executes iteration 8 of 20
+   2015-08-19, 16:11:01 LogOpenMP @ OMP_Thread_2 ( main -> LogOpenMP.cpp::29 ) INFO executes iteration 4 of 20
+   2015-08-19, 16:11:01 LogOpenMP @ OMP_Thread_4 ( main -> LogOpenMP.cpp::29 ) INFO executes iteration 9 of 20
+   2015-08-19, 16:11:01 LogOpenMP @ OMP_Thread_1 ( main -> LogOpenMP.cpp::29 ) INFO executes iteration 2 of 20
+   2015-08-19, 16:11:01 LogOpenMP @ OMP_Thread_3 ( main -> LogOpenMP.cpp::29 ) INFO executes iteration 6 of 20
+   2015-08-19, 16:11:01 LogOpenMP @ OMP_Thread_2 ( main -> LogOpenMP.cpp::29 ) INFO executes iteration 5 of 20
+   2015-08-19, 16:11:01 LogOpenMP @ OMP_Thread_5 ( main -> LogOpenMP.cpp::29 ) INFO executes iteration 10 of 20
+   2015-08-19, 16:11:01 LogOpenMP @ main ( main -> LogOpenMP.cpp::29 ) INFO executes iteration 0 of 20
+   2015-08-19, 16:11:01 LogOpenMP @ OMP_Thread_7 ( main -> LogOpenMP.cpp::29 ) INFO executes iteration 14 of 20
+   2015-08-19, 16:11:01 LogOpenMP @ main ( main -> LogOpenMP.cpp::29 ) INFO executes iteration 1 of 20
+   2015-08-19, 16:11:01 LogOpenMP @ OMP_Thread_7 ( main -> LogOpenMP.cpp::29 ) INFO executes iteration 15 of 20
+   2015-08-19, 16:11:01 LogOpenMP @ main ( main -> LogOpenMP.cpp::29 ) INFO executes iteration 16 of 20
+   2015-08-19, 16:11:01 LogOpenMP @ OMP_Thread_1 ( main -> LogOpenMP.cpp::29 ) INFO executes iteration 3 of 20
+   2015-08-19, 16:11:01 LogOpenMP @ main ( main -> LogOpenMP.cpp::29 ) INFO executes iteration 17 of 20
+   2015-08-19, 16:11:01 LogOpenMP @ OMP_Thread_1 ( main -> LogOpenMP.cpp::29 ) INFO executes iteration 18 of 20
+   2015-08-19, 16:11:01 LogOpenMP @ OMP_Thread_3 ( main -> LogOpenMP.cpp::29 ) INFO executes iteration 7 of 20
+   2015-08-19, 16:11:01 LogOpenMP @ OMP_Thread_1 ( main -> LogOpenMP.cpp::29 ) INFO executes iteration 19 of 20
+   2015-08-19, 16:11:01 LogOpenMP @ OMP_Thread_6 ( main -> LogOpenMP.cpp::29 ) INFO executes iteration 12 of 20
+   2015-08-19, 16:11:01 LogOpenMP @ OMP_Thread_5 ( main -> LogOpenMP.cpp::29 ) INFO executes iteration 11 of 20
+   2015-08-19, 16:11:01 LogOpenMP @ OMP_Thread_6 ( main -> LogOpenMP.cpp::29 ) INFO executes iteration 13 of 20
+
+Summary
+-------
+
+The SCAI logging library is a very convenient and efficient library that supports logging in C++ applications.
+It has very low overhead and has quite powerful mechanisms for generating logging output.
+
+It is used in all other SCAI projects coming with the distribution but can also be used in other applications.
+A CMake module is provided that finds the include dir and the logging library and sets the compile flag
+for the desired logging level.
+
+Currently, logging is always done on standard output. It is not possible to write logging messages in different 
+output streams.
+
+

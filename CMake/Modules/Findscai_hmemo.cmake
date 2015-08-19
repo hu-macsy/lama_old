@@ -5,7 +5,7 @@
 # SCAI_HMEMO_INCLUDE_DIR - the memory include dir
 # SCAI_HMEMO_LIBRARY     - libraries to link against
 
-if    ( NOT DEFINED SCAI_HMEMO_INCLUDE_DIR )
+if ( NOT SCAI_HMEMO_INCLUDE_DIR )
     find_path ( SCAI_HMEMO_INCLUDE_DIR hmemo.hpp
         /usr/local/include/scai
         /usr/include/scai
@@ -13,7 +13,9 @@ if    ( NOT DEFINED SCAI_HMEMO_INCLUDE_DIR )
         $ENV{SCAI_HMEMO_INCLUDE_PATH}/scai
         ${SCAI_HMEMO_ROOT}/include/scai
     )
-endif ( NOT DEFINED SCAI_HMEMO_INCLUDE_DIR )
+endif ( NOT SCAI_HMEMO_INCLUDE_DIR )
+
+set ( SCAI_HMEMO_INCLUDE_DIR ${SCAI_HMEMO_INCLUDE_DIR} CACHE PATH "Path to HMEMO include dir" FORCE )
 
 find_library ( SCAI_HMEMO_LIBRARY scai_hmemo
     /usr/local/lib
@@ -22,10 +24,10 @@ find_library ( SCAI_HMEMO_LIBRARY scai_hmemo
     ${SCAI_HMEMO_ROOT}/lib
 )
 
-if    ( SCAI_HMEMO_INCLUDE_DIR )
-    if    (SCAI_HMEMO_LIBRARY)
+if ( SCAI_HMEMO_INCLUDE_DIR )
+    if ( SCAI_HMEMO_LIBRARY)
         set ( SCAI_HMEMO_FOUND TRUE )
     endif ( SCAI_HMEMO_LIBRARY )
-endif (SCAI_HMEMO_INCLUDE_DIR)
+endif ( SCAI_HMEMO_INCLUDE_DIR)
 
 mark_as_advanced ( SCAI_HMEMO_FOUND SCAI_HMEMO_INCLUDE_DIR SCAI_HMEMO_LIBRARY )

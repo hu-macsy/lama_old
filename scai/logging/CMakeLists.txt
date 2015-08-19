@@ -80,7 +80,8 @@ endforeach ( module ${SCAI_LOGGING_INTERNAL_DEPS} )
 
 ### add definitions ###
 
-# GenLogger uses also logging
+# GenLogger uses also logging during initialization, here we make a fixed setting
+
 add_definitions ( -DSCAI_LOG_LEVEL_DEBUG )
 
 if ( WIN32 )

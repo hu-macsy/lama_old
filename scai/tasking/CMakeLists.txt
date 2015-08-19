@@ -78,12 +78,7 @@ endforeach ( module ${SCAI_TASKING_INTERNAL_DEPS} )
 
 ### add definitions ###
 
-## log level
-if    ( SCAI_LOG_LEVEL )
-    add_definitions ( -DSCAI_LOG_LEVEL_${SCAI_LOG_LEVEL} )
-else  ( SCAI_LOG_LEVEL )
-    add_definitions( -DSCAI_LOG_LEVEL_DEBUG )
-endif ( SCAI_LOG_LEVEL )
+add_definitions ( -D${SCAI_LOGGING_FLAG} )
 
 if ( WIN32 )
     add_definitions ( -DCOMMON_COMPILING_DLL )

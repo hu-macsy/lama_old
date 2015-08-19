@@ -5,7 +5,7 @@
 # SCAI_COMMON_INCLUDE_DIR - the common include dir
 # SCAI_COMMON_LIBRARY     - libraries to link against
 
-if    ( NOT DEFINED SCAI_COMMON_INCLUDE_DIR )
+if ( NOT SCAI_COMMON_INCLUDE_DIR )
     find_path ( SCAI_COMMON_INCLUDE_DIR common.hpp
         /usr/local/include/scai
         /usr/include/scai
@@ -13,7 +13,9 @@ if    ( NOT DEFINED SCAI_COMMON_INCLUDE_DIR )
         $ENV{SCAI_COMMON_INCLUDE_PATH}/scai
         ${SCAI_COMMON_ROOT}/include/scai
     )
-endif ( NOT DEFINED SCAI_COMMON_INCLUDE_DIR )
+endif ( NOT SCAI_COMMON_INCLUDE_DIR )
+
+set ( SCAI_COMMON_INCLUDE_DIR ${SCAI_COMMON_INCLUDE_DIR} CACHE PATH "Path to COMMON include dir" FORCE )
 
 find_library ( SCAI_COMMON_LIBRARY scai_common
     /usr/local/lib
@@ -22,10 +24,14 @@ find_library ( SCAI_COMMON_LIBRARY scai_common
     ${SCAI_COMMON_ROOT}/lib
 )
 
-if    ( SCAI_COMMON_INCLUDE_DIR )
+if ( SCAI_COMMON_INCLUDE_DIR )
     if    (SCAI_COMMON_LIBRARY)
         set ( SCAI_COMMON_FOUND TRUE )
     endif ( SCAI_COMMON_LIBRARY )
-endif (SCAI_COMMON_INCLUDE_DIR)
+endif ( SCAI_COMMON_INCLUDE_DIR)
+
+# message ( STATUS "SCAI_COMMON_FOUND: ${SCAI_COMMON_FOUND}" )
+# message ( STATUS "SCAI_COMMON_INCLUDE_DIR: ${SCAI_COMMON_INCLUDE_DIR}" )
+# message ( STATUS "SCAI_COMMON_LIBRARY: ${SCAI_COMMON_LIBRARY}" )
 
 mark_as_advanced ( SCAI_COMMON_FOUND SCAI_COMMON_INCLUDE_DIR SCAI_COMMON_LIBRARY )
