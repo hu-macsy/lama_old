@@ -230,7 +230,7 @@ bool Settings::init()
 
     for( ; s; i++ )
     {
-        if( strncmp( s, "LAMA_", 5 ) == 0 )
+        if( strncmp( s, "SCAI_", 5 ) == 0 )
         {
             printf( "%s\n", s );
         }

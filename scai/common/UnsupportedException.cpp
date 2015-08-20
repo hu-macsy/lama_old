@@ -68,7 +68,7 @@ UnsupportedException::UnsupportedType UnsupportedException::getUnsupportedSettin
 
         //bool isSet = Settings::getEnvironment( val, "SCAI_UNSUPPORTED" );
         
-        Settings::getEnvironment( val, "COMMON_UNSUPPORTED" );
+        Settings::getEnvironment( val, "SCAI_UNSUPPORTED" );
 
         // transform to uppercase
 
@@ -77,7 +77,7 @@ UnsupportedException::UnsupportedType UnsupportedException::getUnsupportedSettin
             *p = static_cast<char>( toupper( *p ) );
         }
 
-//        LAMA_LOG_INFO( logger, "SCAI_UNSUPPORTED=" << val << ", setting used for LAMA" )
+//        SCAI_LOG_INFO( logger, "SCAI_UNSUPPORTED=" << val << ", setting used for LAMA" )
 
         if( "IGNORE" == val )
         {
@@ -93,7 +93,7 @@ UnsupportedException::UnsupportedType UnsupportedException::getUnsupportedSettin
         }
         else
         {
-            //LAMA_LOG_ERROR( logger, "SCAI_UNSUPPORTED=" << val << ", illegal value, take WARN" )
+            //SCAI_LOG_ERROR( logger, "SCAI_UNSUPPORTED=" << val << ", illegal value, take WARN" )
             unsupportedSetting = UNSUPPORTED_WARN;
         }
     }

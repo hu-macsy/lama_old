@@ -82,7 +82,7 @@ private:
  *  is thrown.
  */
  
-#define SCAI_UNSUPPORTED( msg )                                              \
+#define SCAI_UNSUPPORTED( msg )                                                \
 {                                                                              \
     if ( scai::common::UnsupportedException::getUnsupportedSetting() !=        \
             scai::common::UnsupportedException::UNSUPPORTED_IGNORE )           \
