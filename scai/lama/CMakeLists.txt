@@ -44,7 +44,7 @@ message ( STATUS "===================" )
 message ( STATUS "" )
 
 ### Set PROJECT NAME / supported LANGUAGES
-project ( LAMA CXX C )
+project ( LAMA CXX )
 
 ### set Module Path
 

@@ -33,7 +33,7 @@
 
 cmake_minimum_required ( VERSION 2.8 )
 
-project ( LAMA_ALL CXX C )
+project ( LAMA_ALL CXX )
 
 ### Set Module Path
 

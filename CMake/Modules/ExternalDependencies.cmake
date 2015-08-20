@@ -1,8 +1,8 @@
 ###
- # @file PackageMPI.cmake
+ # @file ExternalDependencies.cmake
  #
  # @license
- # Copyright (c) 2009-2013
+ # Copyright (c) 2009-2015
  # Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  # for Fraunhofer-Gesellschaft
  #
@@ -25,22 +25,21 @@
  # SOFTWARE.
  # @endlicense
  #
- # @brief findPackage and configuration of OpenMP
- # @author Jan Ecker
- # @date 25.04.2013
- # @since 1.0.0
+ # @brief Central defenition of external dependencies between sub projects
+ # @author Lauretta Schubert
+ # @date 17.08.2015
+ # @since 2.0.0
 ###
 
-include ( Functions/setAndCheckCache )
+set ( SCAI_COMMON_EXTERNAL_DEPS OpenMP CUDA Thread )
+set ( SCAI_LOGGING_EXTERNAL_DEPS )
+set ( SCAI_TRACING_EXTERNAL_DEPS )
+set ( SCAI_TASKING_EXTERNAL_DEPS Thread )
+#set ( SCAI_KERNEL_EXTERNAL_DEPS OpenMP CUDA MIC SCAI_BLAS )
+set ( SCAI_HMEMO_EXTERNAL_DEPS CUDA )
+set ( SCAI_LAMA_EXTERNAL_DEPS OpenMP CUDA MIC Boost MPI GraphPartitioning )
 
-enable_language ( C )
+set ( SCAI_EXTERNAL_DEPS ${SCAI_COMMON_EXTERNAL_DEPS} ${SCAI_LOGGING_EXTERNAL_DEPS} ${SCAI_TRACING_EXTERNAL_DEPS}
+		${SCAI_TASKING_EXTERNAL_DEPS} ${SCAI_HMEMO_EXTERNAL_DEPS} ${SCAI_LAMA_EXTERNAL_DEPS} ) # ${SCAI_KERNEL_EXTERNAL_DEPS}
 
-find_package ( OpenMP ${SCAI_FIND_PACKAGE_FLAGS} )
-
-setAndCheckCache ( OPENMP )
-
-if    ( NOT SCAI_OMP_SCHEDULE )
-    set ( SCAI_OMP_SCHEDULE "static" )
-endif ( NOT SCAI_OMP_SCHEDULE )
-
-add_definitions ( -DSCAI_OMP_SCHEDULE=${SCAI_OMP_SCHEDULE} )
+list ( REMOVE_DUPLICATES SCAI_EXTERNAL_DEPS )

@@ -34,27 +34,25 @@
 cmake_minimum_required ( VERSION 2.8 )
 
 ### Set PROJECT NAME / supported LANGUAGES
-project ( scai_common CXX C )
+project ( scai_common CXX )
 
 ### Set Module Path
 set ( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../CMake/Modules" )
 
 ## Define all search packages
-include ( InternalDependencies )
+# no internal dependencies
+include ( ExternalDependencies )
 
-find_package ( Threads ) # use ${CMAKE_THREAD_LIBS_INIT} for target_link_libraries
-###  Here we use PThread library for threads
-###  Note: FindThreads in CMake is available as Module, but is buggy, needs update of CheckIncludeFiles.cmake
-#find_library ( PTHREADS_LIBRARY NAMES pthread pthreads )
-	
-include ( Package/CUDA )
-include ( Package/OpenMP ) 
-	
+# Find required packages
+
+foreach    ( module ${SCAI_COMMON_EXTERNAL_DEPS} )
+    include( Package/${module} )
+endforeach ( module ${SCAI_COMMON_EXTERNAL_DEPS} )
+
 if    ( NOT SCAI_COMPLETE_BUILD )
 	
 	### Include Compiler Flags
 	include ( SetCPPFlags )
-	include ( SetNVCCFlags )
 
 else  ( NOT SCAI_COMPLETE_BUILD )
 

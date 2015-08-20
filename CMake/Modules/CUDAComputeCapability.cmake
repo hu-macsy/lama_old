@@ -34,6 +34,8 @@
  # http://www.cmake.org/Bug/print_bug_page.php?bug_id=11767
 ###
 
+enable_language( C )
+
 if    ( CUDA_FOUND )
     try_run ( RUN_RESULT_VAR COMPILE_RESULT_VAR
         ${CMAKE_BINARY_DIR}

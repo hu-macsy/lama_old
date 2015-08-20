@@ -33,7 +33,7 @@
 
 cmake_minimum_required ( VERSION 2.8 )
 
-project ( LAMA_ALL CXX C )
+project ( LAMA_ALL CXX )
 set ( CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/../CMake/Modules" )
 
 ## version info
@@ -54,12 +54,12 @@ include ( Functions/checkWhiteList )
 include ( SCAIdefines ) # SCAI_: LOG_LEVEL, ASSERT_LEVEL, TRACE_LEVEL
 include ( CompilerVersion )
 
-include ( Package/OpenMP )
-include ( Package/CUDA )
-include ( Package/MIC )
-include ( Package/Boost )
-include ( Package/MPI )
-include ( Package/GraphPartitioning )
+include ( ExternalDependencies )
+
+foreach    ( module ${SCAI_EXTERNAL_DEPS} )
+    include( Package/${module} )
+endforeach ( module ${SCAI_EXTERNAL_DEPS} )
+
 include ( Package/CodeCoverage ) # USE_CODE_COVERAGE --> COVERAGE_FLAGS
 
 set ( REQUIRED_PACKAGES_TO_FIND Threads )
@@ -88,7 +88,6 @@ include ( Package/Doxygen )
 ## general compiler settings
 
 include ( SetCPPFlags )
-include ( SetNVCCFlags )
 
 ## summary of what is found
 include ( Summary )

@@ -34,15 +34,21 @@
 cmake_minimum_required ( VERSION 2.8 )
 
 ### Set PROJECT NAME / supported LANGUAGES
-project( scai_hmemo CXX C )
+project( scai_hmemo CXX )
 
 ### Set Module Path
 set ( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../CMake/Modules" )
 
 ## Define all search packages
 include ( InternalDependencies )
+include ( ExternalDependencies )
 
 # Find required packages
+
+foreach    ( module ${SCAI_HMEMO_EXTERNAL_DEPS} )
+    include( Package/${module} )
+endforeach ( module ${SCAI_HMEMO_EXTERNAL_DEPS} )
+
 foreach    ( PACKAGE_TO_FIND ${SCAI_HMEMO_INTERNAL_DEPS} )
     find_package ( ${PACKAGE_TO_FIND} ${SCAI_FIND_PACKAGE_FLAGS} REQUIRED )
 endforeach ( PACKAGE_TO_FIND ${REQUIRED_PACKAGES_TO_FIND} )
@@ -56,7 +62,6 @@ if    ( NOT SCAI_COMPLETE_BUILD )
 
 	### Include Compiler Flags
 	include ( SetCPPFlags )
-	include ( SetNVCCFlags )
 	
 else  ( NOT SCAI_COMPLETE_BUILD )
 

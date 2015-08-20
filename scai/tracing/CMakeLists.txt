@@ -34,13 +34,14 @@
 cmake_minimum_required ( VERSION 2.8 )
 
 ### Set PROJECT NAME / supported LANGUAGES
-project( scai_tracing CXX C )
+project( scai_tracing CXX )
 
 ### Set Module Path
 set ( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../CMake/Modules" )
 
 ## Define all search packages
 include ( InternalDependencies )
+# no external dependencies
 
 # Find required packages
 
@@ -50,8 +51,6 @@ endforeach ( PACKAGE_TO_FIND ${SCAI_TRACING_INTERNAL_DEPS} )
 
 include ( Functions/checkValue )
 include ( Functions/setAndCheckCache )
-
-include ( Package/CUDA )
 
 if    ( NOT SCAI_COMPLETE_BUILD )
 

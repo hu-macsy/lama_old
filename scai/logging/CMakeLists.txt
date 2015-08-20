@@ -35,16 +35,17 @@
 cmake_minimum_required ( VERSION 2.8 )
 
 ### Set PROJECT NAME / supported LANGUAGES
-project( scai_logging CXX C )
+project( scai_logging CXX )
 
 ### Set Module Path
 set ( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../CMake/Modules" )
 
 ## Define all search packages
-#include ( InternalDependencies )
-set ( SCAI_LOGGING_INTERNAL_DEPS scai_common )
+include ( InternalDependencies )
+#no external dependencies
 
 # Find required packages
+
 foreach    ( PACKAGE_TO_FIND ${SCAI_LOGGING_INTERNAL_DEPS} )
     find_package ( ${PACKAGE_TO_FIND} ${SCAI_FIND_PACKAGE_FLAGS} REQUIRED )
 endforeach ( PACKAGE_TO_FIND ${SCAI_LOGGING_INTERNAL_DEPS} )

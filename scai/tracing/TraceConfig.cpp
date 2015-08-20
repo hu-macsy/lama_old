@@ -166,10 +166,6 @@ void TraceConfig::setParam( const std::string& param )
 
 TraceConfig::TraceConfig()
 {
-    // mComm = CommunicatorFactory::get();
-    // mCUDAContext = ContextFactory::getContext( Context::CUDA );
-    // should be done explicitly
-    // mCUDAContext = ContextFactory::getContext( Context::CUDA );
     mEnabled = false;
     mThreadEnabled = false;
     mVampirTraceEnabled = false;
