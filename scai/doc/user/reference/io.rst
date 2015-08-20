@@ -58,8 +58,7 @@ Matrices
 
 Matrix header: *.frm*
    first line:  format (f formatted, x xdr, b binary) *tab* 4 (SAMG internal version number)
-   second line: *tab tab* number of values (nv) *tab* number of rows (nr) *tab* 22 (SAMG internal: symmetry information)
-*tab* 1 (SAMG internal: number of unknowns ) *tab* 0 (SAMG internal)   
+   second line: *tab tab* number of values (nv) *tab* number of rows (nr) *tab* 22 (SAMG internal: symmetry information) *tab* 1 (SAMG internal: number of unknowns ) *tab* 0 (SAMG internal)   
 
 .. 22: unsymmetric, not equal sums of row
 
