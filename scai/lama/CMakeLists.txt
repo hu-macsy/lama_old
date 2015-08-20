@@ -115,8 +115,8 @@ endif ( Boost_INCLUDE_DIR )
 
 ### add definitions ###
 
-# GenLogger uses also logging
 add_definitions ( -D${SCAI_LOGGING_FLAG} )
+add_definitions ( -D${SCAI_TRACING_FLAG} )
 
 if ( WIN32 )
 	add_definitions ( -DCOMMON_COMPILING_DLL )
