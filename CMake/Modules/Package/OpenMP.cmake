@@ -51,4 +51,7 @@ else ( OPENMP_FOUND )
    set ( LAMA_CXX_FLAGS "" )
 endif ( OPENMP_FOUND )
 
-add_definitions ( -DSCAI_OMP_SCHEDULE=${SCAI_OMP_SCHEDULE} )
+set ( SCAI_OMP_SCHEDULE_FLAG "SCAI_OMP_SCHEDULE=${SCAI_OMP_SCHEDULE}" )
+
+# Note: files using omp scheduling should be compiled with the corresponding flag
+# add_definitions ( -D${SCAI_OMP_SCHEDULE_FLAG} )

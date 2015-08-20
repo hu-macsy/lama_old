@@ -68,9 +68,9 @@ include ( ExternalDependencies )
 
 # Find required packages
 
-foreach    ( module ${SCAI_HMEMO_EXTERNAL_DEPS} )
+foreach    ( module ${SCAI_LAMA_EXTERNAL_DEPS} )
     include( Package/${module} )
-endforeach ( module ${SCAI_HMEMO_EXTERNAL_DEPS} )
+endforeach ( module ${SCAI_LAMA_EXTERNAL_DEPS} )
 
 # Find required packages
 foreach    ( PACKAGE_TO_FIND ${SCAI_LAMA_INTERNAL_DEPS} )
@@ -88,6 +88,8 @@ mark_as_advanced ( CUDA_BUILD_CUBIN CUDA_BUILD_EMULATION CUDA_SDK_ROOT_DIR CUDA_
 
 ### Include Compiler Flags
 include ( SetCPPFlags ) #LAMA.CMakeLists
+
+add_definitions ( -D${SCAI_OMP_SCHEDULE_FLAG} )
 
 ## MKL FOUND
 if     ( SCAI_BLAS_NAME STREQUAL "MKL" )
