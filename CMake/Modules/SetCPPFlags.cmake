@@ -40,18 +40,6 @@ if ( NOT DEFINED CXX_SUPPORTS_C11 )
     CHECK_CXX_COMPILER_FLAG( -std=c++11 CXX_SUPPORTS_C11 )
 endif ()
 
-#### OpenMP ####
-
-find_package ( OpenMP )
-
-#### Compile/Link flag for OpenMP will be set for all source files and all targets
-
-if ( OPENMP_FOUND )
-   set ( LAMA_CXX_FLAGS "${OpenMP_CXX_FLAGS}" )
-else ( OPENMP_FOUND )
-   set ( LAMA_CXX_FLAGS "" )
-endif ( OPENMP_FOUND )
-
 #### compiler dependent flag definition ####
 
 # GNU
@@ -126,6 +114,13 @@ set ( ADDITIONAL_CXX_FLAGS_RELEASE "${LAMA_CXX_FLAGS_RELEASE}" CACHE STRING "add
 set ( ADDITIONAL_LINKER_FLAGS "${LAMA_LINKER_FLAGS}" CACHE STRING "additional linker flags" )
 
 mark_as_advanced ( ADDITIONAL_CXX_FLAGS ADDITIONAL_WARNING_FLAGS ADDITIONAL_CXX_FLAGS_RELEASE ADDITIONAL_LINKER_FLAGS )
+
+###  Code coverage with gcov/lcov
+set ( USE_CODE_COVERAGE FALSE CACHE BOOL "Enable / Disable use of Code Coverage" )
+
+if    ( USE_CODE_COVERAGE )
+    set ( COVERAGE_FLAGS "-fprofile-arcs -ftest-coverage" )
+endif ( USE_CODE_COVERAGE )
 
 #### concluding all defined compiler flags to CMAKE_..._FLAGS ####
 

@@ -56,8 +56,6 @@ endforeach ( PACKAGE_TO_FIND ${REQUIRED_PACKAGES_TO_FIND} )
 include ( Functions/checkValue )
 include ( Functions/setAndCheckCache )
 
-include ( Package/CUDA )
-
 if    ( NOT SCAI_COMPLETE_BUILD )
 
 	### Include Compiler Flags

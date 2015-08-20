@@ -60,8 +60,6 @@ foreach    ( module ${SCAI_EXTERNAL_DEPS} )
     include( Package/${module} )
 endforeach ( module ${SCAI_EXTERNAL_DEPS} )
 
-include ( Package/CodeCoverage ) # USE_CODE_COVERAGE --> COVERAGE_FLAGS
-
 set ( REQUIRED_PACKAGES_TO_FIND Threads )
 set ( OPTIONAL_PACKAGES_TO_FIND SCAI_BLAS )
 

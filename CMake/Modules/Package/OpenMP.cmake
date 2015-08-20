@@ -43,4 +43,12 @@ if    ( NOT SCAI_OMP_SCHEDULE )
     set ( SCAI_OMP_SCHEDULE "static" )
 endif ( NOT SCAI_OMP_SCHEDULE )
 
+#### Compile/Link flag for OpenMP will be set for all source files and all targets
+
+if ( OPENMP_FOUND )
+   set ( LAMA_CXX_FLAGS "${OpenMP_CXX_FLAGS}" )
+else ( OPENMP_FOUND )
+   set ( LAMA_CXX_FLAGS "" )
+endif ( OPENMP_FOUND )
+
 add_definitions ( -DSCAI_OMP_SCHEDULE=${SCAI_OMP_SCHEDULE} )

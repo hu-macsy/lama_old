@@ -56,22 +56,21 @@ set ( LAMA_VERSION_PATCH 1 )
 set ( LAMA_VERSION_COUNT 3 )
 set ( LAMA_VERSION ${LAMA_VERSION_MAJOR}.${LAMA_VERSION_MINOR}.${LAMA_VERSION_PATCH} )
 
-## Define all search packages
-include ( InternalDependencies )
-
 ### Variables / CMAKE Functions ###
 include ( Functions/allFunctions )
 include ( Variables ) #LAMA.CMakeLists
 include ( SCAIdefines ) #LAMA.CMakeLists
 include ( CompilerVersion ) #LAMA.CMakeLists
 
-### PACKAGES ###
-include ( Package/OpenMP )
-include ( Package/CUDA )
-include ( Package/MIC )
-include ( Package/Boost ) #LAMA.CMakeLists
-include ( Package/MPI )
-include ( Package/CodeCoverage ) #LAMA.CMakeLists
+## Define all search packages
+include ( InternalDependencies )
+include ( ExternalDependencies )
+
+# Find required packages
+
+foreach    ( module ${SCAI_HMEMO_EXTERNAL_DEPS} )
+    include( Package/${module} )
+endforeach ( module ${SCAI_HMEMO_EXTERNAL_DEPS} )
 
 # Find required packages
 foreach    ( PACKAGE_TO_FIND ${SCAI_LAMA_INTERNAL_DEPS} )
