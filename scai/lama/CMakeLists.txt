@@ -264,8 +264,8 @@ if ( METIS_FOUND AND PARMETIS_FOUND )
 endif ( METIS_FOUND AND PARMETIS_FOUND )
 
 # generate file make.inc + install it
-configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/examples/make.inc.in" "${PROJECT_BINARY_DIR}/examples/make.inc" )
-install ( FILES "${PROJECT_BINARY_DIR}/examples/make.inc" DESTINATION share/examples )
+configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/examples/make.inc.in" "${CMAKE_CURRENT_BINARY_DIR}/examples/make.inc" )
+install ( FILES "${CMAKE_CURRENT_BINARY_DIR}/examples/make.inc" DESTINATION share/examples )
 
 ### add definitions ###
 if ( WIN32 )
@@ -280,7 +280,7 @@ install ( TARGETS ama DESTINATION lib )
 
 ### Examples ###
 # copy examples in build directory + install it
-file ( COPY ${CMAKE_CURRENT_SOURCE_DIR}/examples DESTINATION ${CMAKE_BINARY_DIR} )
+file ( COPY ${CMAKE_CURRENT_SOURCE_DIR}/examples DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
 install ( DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/examples DESTINATION share )
 
 ## install library.hpp
