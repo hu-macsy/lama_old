@@ -1,5 +1,5 @@
 ###
- # @file LAMAdefines.cmake
+ # @file SCAIAssert.cmake
  #
  # @license
  # Copyright (c) 2009-2013
@@ -25,7 +25,7 @@
  # SOFTWARE.
  # @endlicense
  #
- # @brief Definitions for LAMA
+ # @brief Definitions of SCAI_ASSERT
  # @author Jan Ecker
  # @date 25.04.2013
  # @since 1.0.0

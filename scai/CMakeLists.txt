@@ -47,11 +47,12 @@ set ( LAMA_VERSION ${LAMA_VERSION_MAJOR}.${LAMA_VERSION_MINOR}.${LAMA_VERSION_PA
 
 ## general Settings for all projects
 
-include ( Variables ) # VERBOSE, RPATH, LIB64, BUILD_SHARED
+include ( SetBuildFlags ) # VERBOSE, RPATH, LIB64, BUILD_SHARED
 include ( Functions/checkValue )
 include ( Functions/setAndCheckCache )
 include ( Functions/checkWhiteList )
-include ( SCAIdefines ) # SCAI_: LOG_LEVEL, ASSERT_LEVEL, TRACE_LEVEL
+
+include ( SCAIAssert )
 include ( CompilerVersion )
 
 include ( ExternalDependencies )

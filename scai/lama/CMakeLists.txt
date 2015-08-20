@@ -58,8 +58,8 @@ set ( LAMA_VERSION ${LAMA_VERSION_MAJOR}.${LAMA_VERSION_MINOR}.${LAMA_VERSION_PA
 
 ### Variables / CMAKE Functions ###
 include ( Functions/allFunctions )
-include ( Variables ) #LAMA.CMakeLists
-include ( SCAIdefines ) #LAMA.CMakeLists
+include ( SetBuildFlags ) #LAMA.CMakeLists
+include ( SCAIAssert ) #LAMA.CMakeLists
 include ( CompilerVersion ) #LAMA.CMakeLists
 
 ## Define all search packages
