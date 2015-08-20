@@ -8,6 +8,7 @@
 #include <scai/lama/DenseVector.hpp>
 
 using namespace scai::lama;
+using namespace scai::hmemo;
 
 int main( int argc, char* argv[] )
 {

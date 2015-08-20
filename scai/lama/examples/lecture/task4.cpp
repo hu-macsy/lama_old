@@ -16,7 +16,9 @@
 
 #include <iostream>
 
-using namespace scai::lama;
+using namespace scai;
+using namespace lama;
+using namespace hmemo;
 
 int main( int argc, char* argv[] )
 {

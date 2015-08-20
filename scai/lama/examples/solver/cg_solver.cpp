@@ -48,6 +48,7 @@
 #include <scai/lama/norm/L2Norm.hpp>
 
 #include <scai/common/unique_ptr.hpp>
+#include <scai/tracing.hpp>
 
 using namespace std;
 using namespace scai::lama;
@@ -55,6 +56,8 @@ using scai::common::unique_ptr;
 
 int main( int argc, char* argv[] )
 {
+    SCAI_REGION( "cg_solver" )
+
     LamaConfig lamaconf;
 
     // Get (default) communicator, will be MPI if available
@@ -89,7 +92,7 @@ int main( int argc, char* argv[] )
     unique_ptr<Matrix> matrixPtr;
     unique_ptr<Vector> rhsPtr;
 
-    if ( lamaconf.getValueType() == common::scalar::FLOAT )
+    if ( lamaconf.getValueType() == scai::common::scalar::FLOAT )
     {
         matrixPtr.reset( lamaconf.createSparseMatrix<float>() );
         rhsPtr.reset( new DenseVector<float>() );
@@ -117,8 +120,8 @@ int main( int argc, char* argv[] )
 
         // only square matrices are accetpted
 
-        SCAI_ASSERT_EQUAL( matrix.getNumRows(), matrix.getNumColumns() )
-        SCAI_ASSERT_EQUAL( matrix.getNumRows(), rhs.size() )
+        SCAI_ASSERT_EQUAL( matrix.getNumRows(), matrix.getNumColumns(), "" )
+        SCAI_ASSERT_EQUAL( matrix.getNumRows(), rhs.size(), "" )
     }
 
     // for solutin create vector with same format/type as rhs, size = numRows, init = 0.0

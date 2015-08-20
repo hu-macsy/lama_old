@@ -29,7 +29,7 @@ public:
 
         mCommunicationKind = scai::lama::Matrix::SYNCHRONOUS;
         mComm              = scai::lama::Communicator::get();
-        mContext           = hmemo::Context::getContextPtr( hmemo::context::Host );
+        mContext           = scai::hmemo::Context::getContextPtr( scai::hmemo::context::Host );
         mMaxIters          = 1000;
     }
 
@@ -60,13 +60,13 @@ public:
         }
         else if ( "HOST" == val )
         { 
-            mContext = hmemo::Context::getContextPtr( hmemo::context::Host );
+            mContext = scai::hmemo::Context::getContextPtr( scai::hmemo::context::Host );
         }
         else if ( ( "CUDA" == val ) || ( "GPU" == val ) )
         { 
             // int device = mComm->getNodeRank();
             int device = 0;
-            mContext = hmemo::Context::getContextPtr( hmemo::context::CUDA, device );
+            mContext = scai::hmemo::Context::getContextPtr( scai::hmemo::context::CUDA, device );
         }
         else if ( "SYNC" == val )
         {
@@ -92,7 +92,7 @@ public:
         {
             // choose default format by context: Host -> CSR, CUDA -> ELL
 
-            if ( mContext->getType() == hmemo::context::CUDA )
+            if ( mContext->getType() == scai::hmemo::context::CUDA )
             {
                 return "ELL";
             }
@@ -107,12 +107,12 @@ public:
         }
     }
 
-    hmemo::ContextPtr getContextPtr() const
+    scai::hmemo::ContextPtr getContextPtr() const
     {
         return mContext;
     }
 
-    const hmemo::Context& getContext() const
+    const scai::hmemo::Context& getContext() const
     {
         return *mContext;
     }
@@ -128,7 +128,7 @@ public:
     }
 
     std::string            mMatrixFormat;
-    hmemo::ContextPtr     mContext;
+    scai::hmemo::ContextPtr     mContext;
     scai::lama::Matrix::SyncKind mCommunicationKind;
     int                    mMaxIters;
 

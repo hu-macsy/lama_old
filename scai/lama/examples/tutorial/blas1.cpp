@@ -59,6 +59,8 @@
 //include the generic norm functions of LAMA
 #include <scai/lama/norm/all.hpp>
 
+using namespace scai;
+
 int main()
 {
   srand( (unsigned int)time(NULL) );
@@ -76,9 +78,9 @@ int main()
   //
   // Define a few scalars:
   //
-  scai::lama::Scalar s1( static_cast<ScalarType>( 3.1415926 ) ); // static_cast is only needed to switch between float and double by typedef
-  scai::lama::Scalar s2( static_cast<ScalarType>( 2.71763 ) );
-  scai::lama::Scalar s3( static_cast<ScalarType>( 42.0 ) );
+  lama::Scalar s1( static_cast<ScalarType>( 3.1415926 ) ); // static_cast is only needed to switch between float and double by typedef
+  lama::Scalar s2( static_cast<ScalarType>( 2.71763 ) );
+  lama::Scalar s3( static_cast<ScalarType>( 42.0 ) );
 
   // pure scalar operations only can be executed on the host
   std::cout << "Manipulating a few scalars..." << std::endl;
@@ -121,28 +123,28 @@ int main()
     plain_vec[ i ] = static_cast<ScalarType>( rand() ) / static_cast<ScalarType>( RAND_MAX );
   }
 
-  scai::lama::DenseVector<ScalarType> lama_vec1( 10, plain_vec );
+  lama::DenseVector<ScalarType> lama_vec1( 10, plain_vec );
 
-  scai::lama::LAMAArray<ScalarType> lama_array1 ( 10, plain_vec );
-  scai::lama::DenseVector<ScalarType> lama_vec2( 10, 0.0 );
+  hmemo::LAMAArray<ScalarType> lama_array1 ( 10, plain_vec );
+  lama::DenseVector<ScalarType> lama_vec2( 10, 0.0 );
   lama_vec2.setValues( lama_array1 );
 
-  scai::lama::DistributionPtr noDist( new scai::lama::NoDistribution( 10 ) );
-  scai::lama::DenseVector<ScalarType> lama_vec3( lama_array1, noDist  );
+  lama::DistributionPtr noDist( new lama::NoDistribution( 10 ) );
+  lama::DenseVector<ScalarType> lama_vec3( lama_array1, noDist  );
 
   std::cout << "DenseVector with rand values filled" << std::endl;
 
   //
   // Define the vectors to be used on GPU (CUDA context on device 0) and upload them
   //
-  scai::lama::ContextPtr cudaContext;
-  if ( hmemo::Context::canCreate( context::CUDA ) )
+  hmemo::ContextPtr cudaContext;
+  if ( hmemo::Context::canCreate( hmemo::context::CUDA ) )
   {
-      cudaContext = hmemo::Context::getContextPtr( context::CUDA, 0 );
+      cudaContext = hmemo::Context::getContextPtr( hmemo::context::CUDA, 0 );
   }
   else
   {
-      cudaContext = hmemo::Context::getContextPtr( context::Host );
+      cudaContext = hmemo::Context::getContextPtr( hmemo::context::Host );
   }
   lama_vec1.setContext( cudaContext );
   lama_vec2.setContext( cudaContext );

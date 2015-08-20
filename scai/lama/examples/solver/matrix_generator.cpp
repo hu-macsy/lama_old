@@ -33,7 +33,7 @@
 
 // Define levels for assertion, logging and tracing
 
-#include "lama.hpp"
+#include <scai/lama.hpp>
 
 #include <scai/lama/DenseVector.hpp>
 #include <scai/lama/Scalar.hpp>

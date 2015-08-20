@@ -44,6 +44,7 @@
 #include <scai/common/Walltime.hpp>
 
 using namespace scai::lama;
+using namespace scai::hmemo;
 using namespace std;
 using scai::common::Walltime;
 

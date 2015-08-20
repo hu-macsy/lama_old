@@ -69,12 +69,12 @@ LamaTiming::LamaTiming( const scai::lama::Communicator& comm, const char* name )
     mComm( comm ),
     mName( name )
 {
-    mStart = common::Walltime::get();
+    mStart = scai::common::Walltime::get();
 }
 
 LamaTiming::~LamaTiming()
 {
-    double myTime = common::Walltime::get() - mStart;
+    double myTime = scai::common::Walltime::get() - mStart;
 
     double maxTime = mComm.max( myTime );
 

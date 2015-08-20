@@ -44,6 +44,7 @@
 #include <scai/common/Walltime.hpp>
 
 using namespace scai::lama;
+using namespace scai::hmemo;
 using namespace std;
 using scai::common::Walltime;
 
@@ -106,14 +107,14 @@ static void bench( IndexType size, double fillRate )
         cout << "b = " << b << endl;
         cout << "c = " << c << endl;
 
-        cout << "time <" << common::getScalarType<ValueType>() << "> on " << *gpu
+        cout << "time <" << scai::common::getScalarType<ValueType>() << "> on " << *gpu
                  << ", size = " << size << ", rate = " << fillRate << " = " << time << endl;
     }
 
     const int precision = 1;
 
     cout << "Size = " << size << ", rate = " << ( fillRate * 100 )
-         << "%, type = " << common::getScalarType<ValueType>() << endl;
+         << "%, type = " << scai::common::getScalarType<ValueType>() << endl;
     cout << "===================================" << endl;
     cout << setiosflags( std::ios::fixed ) << std::setprecision( precision );
     cout << "time host = " << setw(6) << timeHost * 1000.0 << endl;

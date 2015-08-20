@@ -13,6 +13,7 @@
 
 using namespace std;
 using namespace scai::lama;
+using namespace scai::hmemo;
 using scai::common::Walltime;
 
 /** ValueType is the type used for matrix and vector elements. */
