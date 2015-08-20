@@ -43,7 +43,7 @@
 #include <scai/tracing.hpp>
 
 // assert
-#include <scai/lama/exception/LAMAAssert.hpp>
+#include <scai/common/SCAIAssert.hpp>
 
 // boost
 #include <boost/preprocessor.hpp>
@@ -82,7 +82,7 @@ ValueType OpenMPDIAUtils::absMaxVal(
     {
         ValueType threadVal = static_cast<ValueType>( 0.0 );
 
-        #pragma omp for schedule( LAMA_OMP_SCHEDULE )
+        #pragma omp for schedule( SCAI_OMP_SCHEDULE )
 
         for( IndexType i = 0; i < numRows; ++i )
         {
@@ -148,7 +148,7 @@ void OpenMPDIAUtils::getCSRValues(
 
             SCAI_ASSERT_EQUAL_DEBUG( n, csrIA[numRows] )
 
-            #pragma omp parallel for schedule( LAMA_OMP_SCHEDULE )
+            #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
 
             for( IndexType i = 0; i < n; i++ )
             {
@@ -180,7 +180,7 @@ void OpenMPDIAUtils::getCSRValues(
     {
         SCAI_REGION( "OpenMP.DIA->CSR_values" )
 
-        #pragma omp for schedule( LAMA_OMP_SCHEDULE )
+        #pragma omp for schedule( SCAI_OMP_SCHEDULE )
 
         for( IndexType i = 0; i < numRows; i++ )
         {
@@ -255,7 +255,7 @@ void OpenMPDIAUtils::getCSRSizes(
                    "get CSRSizes<" << getScalarType<DIAValueType>() << "> for DIA matrix " << numRows << " x " << numColumns 
                     << ", #diagonals = " << numDiagonals << ", eps = " << eps << ", diagonalFlag = " << diagonalFlag )
 
-    #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
+    #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
 
     for( IndexType i = 0; i < numRows; i++ )
     {
@@ -328,7 +328,7 @@ void OpenMPDIAUtils::normalGEMV(
     {
         SCAI_REGION( "OpenMP.DIA.normalGEMV" )
 
-        #pragma omp for schedule ( LAMA_OMP_SCHEDULE )
+        #pragma omp for schedule ( SCAI_OMP_SCHEDULE )
 
         for( IndexType i = 0; i < numRows; i++ )
         {
@@ -429,7 +429,7 @@ void OpenMPDIAUtils::normalGEVM(
     {
         SCAI_REGION( "OpenMP.DIA.normalGEVM" )
 
-        #pragma omp for schedule ( LAMA_OMP_SCHEDULE )
+        #pragma omp for schedule ( SCAI_OMP_SCHEDULE )
 
         for( IndexType k = 0; k < numColumns; ++k )
         {
@@ -504,7 +504,7 @@ void OpenMPDIAUtils::jacobi(
     {
         SCAI_REGION( "OpenMP.DIA.Jacobi" )
 
-        #pragma omp for schedule( LAMA_OMP_SCHEDULE )
+        #pragma omp for schedule( SCAI_OMP_SCHEDULE )
 
         for( IndexType i = 0; i < numRows; i++ )
         {

@@ -37,12 +37,11 @@
 #include <scai/tracing/TraceRegionRecord.hpp>
 #include <scai/tracing/TraceConfig.hpp>
 
-#define SCAI_REGION( name ) scai::tracing::ScopedTraceRecord LAMA_Trc__( name, __FILE__, __LINE__ );
-#define SCAI_REGION_N( name, n ) scai::tracing::ScopedTraceRecord LAMA_Trc__( name, n, __FILE__, __LINE__ );
+#define SCAI_REGION( name ) scai::tracing::ScopedTraceRecord SCAI_Trc__( name, __FILE__, __LINE__ );
+#define SCAI_REGION_N( name, n ) scai::tracing::ScopedTraceRecord SCAI_Trc__( name, n, __FILE__, __LINE__ );
 #define SCAI_REGION_START( name ) scai::tracing::TraceRegionRecord::start( name, __FILE__, __LINE__ );
 #define SCAI_REGION_END( name ) scai::tracing::TraceRegionRecord::stop( name );
-#define SCAI_TRACE_SCOPE( flag ) scai::tracing::TraceConfig::TraceScope LAMA_Scp__( flag );
-#define LAMA_TIMETRACER( name ) scai::	tracing::TraceRegionRecord::spentLast( name );
+#define SCAI_TRACE_SCOPE( flag ) scai::tracing::TraceConfig::TraceScope SCAI_Scp__( flag );
 
 #elif defined( SCAI_TRACE_OFF )
 
@@ -51,7 +50,6 @@
 #define SCAI_REGION_END( name )
 #define SCAI_REGION_N( name, n )
 #define SCAI_TRACE_SCOPE( flag )
-#define LAMA_TIMETRACER( name ) 0.0
 
 #else
 
@@ -61,18 +59,6 @@
 #define SCAI_REGION_END( name )
 #define SCAI_REGION_N( name, n )
 #define SCAI_TRACE_SCOPE( flag )
-#define LAMA_TIMETRACER( name ) 0.0
 #error "Must define SCAI_TRACE_xxx with xxx = ON, or OFF"
 
 #endif
-
-#include <scai/tracing/CallStack.hpp>
-#include <scai/tracing/CallTree.hpp>
-#include <scai/tracing/CallTreeTable.hpp>
-#include <scai/tracing/Counters.hpp>
-#include <scai/tracing/FileTable.hpp>
-#include <scai/tracing/RegionTable.hpp>
-#include <scai/tracing/TraceConfig.hpp>
-#include <scai/tracing/TraceData.hpp>
-#include <scai/tracing/TraceRegionRecord.hpp>
-#include <scai/tracing/VTInterface.hpp>

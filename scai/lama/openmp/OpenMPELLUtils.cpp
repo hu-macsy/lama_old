@@ -159,7 +159,7 @@ void OpenMPELLUtils::scaleValue(
     SCAI_LOG_INFO( logger,
                    "scaleValue<" << getScalarType<ValueType>() << ", " << getScalarType<OtherValueType>() << ">" << ", #numRows = " << numRows )
 
-    #pragma omp parallel for schedule( LAMA_OMP_SCHEDULE )
+    #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
 
     for( IndexType i = 0; i < numRows; i++ ) //rows
     {
@@ -189,7 +189,7 @@ void OpenMPELLUtils::check(
         bool integrityIA = true;
         bool integrityJA = true;
 
-        #pragma omp parallel for reduction( && : integrityIA, integrityJA ) schedule( LAMA_OMP_SCHEDULE )
+        #pragma omp parallel for reduction( && : integrityIA, integrityJA ) schedule( SCAI_OMP_SCHEDULE )
 
         for( IndexType i = 0; i < numRows; i++ )
         {
@@ -232,7 +232,7 @@ ValueType OpenMPELLUtils::absMaxVal(
     {
         ValueType threadVal = static_cast<ValueType>( 0.0 );
 
-        #pragma omp for schedule( LAMA_OMP_SCHEDULE )
+        #pragma omp for schedule( SCAI_OMP_SCHEDULE )
 
         for( IndexType i = 0; i < numRows; ++i )
         {
@@ -281,14 +281,14 @@ void OpenMPELLUtils::getRow(
 {
     SCAI_LOG_DEBUG( logger, "get row #i = " << i )
 
-    #pragma omp parallel for schedule( LAMA_OMP_SCHEDULE )
+    #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
 
     for( IndexType j = 0; j < numColumns; ++j )
     {
         row[j] = 0.0;
     }
 
-    #pragma omp parallel for schedule( LAMA_OMP_SCHEDULE )
+    #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
 
     for( IndexType jj = 0; jj < ellSizes[i]; ++jj )
     {
@@ -344,7 +344,7 @@ void OpenMPELLUtils::getCSRValues(
     {
         SCAI_REGION( "OpenMP.ELL->CSR_values" )
 
-        #pragma omp for schedule( LAMA_OMP_SCHEDULE )
+        #pragma omp for schedule( SCAI_OMP_SCHEDULE )
 
         for( IndexType i = 0; i < numRows; i++ )
         {
@@ -387,7 +387,7 @@ void OpenMPELLUtils::setCSRValues(
     {
         SCAI_REGION( "OpenMP.ELL<-CSR_values" )
 
-        #pragma omp for schedule( LAMA_OMP_SCHEDULE )
+        #pragma omp for schedule( SCAI_OMP_SCHEDULE )
 
         for( IndexType i = 0; i < numRows; i++ )
         {
@@ -429,7 +429,7 @@ void OpenMPELLUtils::fillELLValues(
 
     #pragma omp parallel
     {
-        #pragma omp for schedule( LAMA_OMP_SCHEDULE )
+        #pragma omp for schedule( SCAI_OMP_SCHEDULE )
 
         for( IndexType i = 0; i < numRows; i++ )
         {
@@ -816,7 +816,7 @@ void OpenMPELLUtils::jacobi(
     #pragma omp parallel
     {
         SCAI_REGION( "OpenMP.ELL.jacobi" )
-        #pragma omp for schedule(LAMA_OMP_SCHEDULE)
+        #pragma omp for schedule(SCAI_OMP_SCHEDULE)
 
         for( IndexType i = 0; i < numRows; i++ )
         {
@@ -872,7 +872,7 @@ void OpenMPELLUtils::jacobiHalo(
     {
         SCAI_REGION( "OpenMP.ELL.jacobiHalo" )
 
-        #pragma omp for schedule( LAMA_OMP_SCHEDULE )
+        #pragma omp for schedule( SCAI_OMP_SCHEDULE )
 
         for( IndexType ii = 0; ii < numNonEmptyRows; ++ii )
         {
@@ -933,7 +933,7 @@ void OpenMPELLUtils::normalGEMV(
     {
         SCAI_REGION( "OpenMP.ELL.normalGEMV" )
 
-        #pragma omp for schedule(LAMA_OMP_SCHEDULE)
+        #pragma omp for schedule(SCAI_OMP_SCHEDULE)
 
         for( IndexType i = 0; i < numRows; ++i )
         {
@@ -998,7 +998,7 @@ void OpenMPELLUtils::sparseGEMV(
     {
         SCAI_REGION( "OpenMP.ELL.sparseGEMV" )
 
-        #pragma omp for schedule( LAMA_OMP_SCHEDULE )
+        #pragma omp for schedule( SCAI_OMP_SCHEDULE )
 
         for( IndexType ii = 0; ii < numNonZeroRows; ++ii )
         {
@@ -1055,7 +1055,7 @@ void OpenMPELLUtils::normalGEVM(
     {
         SCAI_REGION( "OpenMP.ELL.normalGEVM" )
 
-        //#pragma omp for schedule(LAMA_OMP_SCHEDULE)
+        //#pragma omp for schedule(SCAI_OMP_SCHEDULE)
         for( IndexType i = 0; i < numColumns; ++i )
         {
             ValueType temp = 0.0;
@@ -1136,7 +1136,7 @@ void OpenMPELLUtils::sparseGEVM(
     {
         SCAI_REGION( "OpenMP.ELL.sparseGEVM" )
 
-        #pragma omp for schedule(LAMA_OMP_SCHEDULE)
+        #pragma omp for schedule(SCAI_OMP_SCHEDULE)
 
         for( IndexType i = 0; i < numColumns; ++i )
         {

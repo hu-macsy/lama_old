@@ -1,5 +1,5 @@
 ###
- # @file SearchPackages.cmake
+ # @file Functions.cmake
  #
  # @license
  # Copyright (c) 2009-2013
@@ -25,24 +25,37 @@
  # SOFTWARE.
  # @endlicense
  #
- # @brief List of required and optional packages
+ # @brief CMake functions and macros
  # @author Jan Ecker
  # @date 25.04.2013
  # @since 1.0.0
 ###
 
-# Find required packages
-set ( REQUIRED_PACKAGES_TO_FIND
-        Threads # use ${CMAKE_THREAD_LIBS_INIT} for target_link_libraries
-	${SCAI_COMMON_INTERNAL_DEPS}
-        #add required packages here
-    )
+# prints colored text messages
+# inspired by soci colormsg function
+function ( scai_status_message )
+    string ( ASCII 27 _escape )
+    # ANSI Display Atributes
+    set ( ERROR "1\;31" )
+    set ( WARNING "33" )
+    set ( INFO "2\;32" )
+    set ( HEADLINE "4" )
     
-# Find optional packages
-set ( OPTIONAL_PACKAGES_TO_FIND
-        #add optional packages here
-    )
-
-###  Here we use PThread library for threads
-###  Note: FindThreads in CMake is available as Module, but is buggy, needs update of CheckIncludeFiles.cmake
-#find_library ( PTHREADS_LIBRARY NAMES pthread pthreads )
+    set ( coloron FALSE )
+    set ( str "" )
+    foreach    ( arg ${ARGV} )
+        if    ( DEFINED ${arg} AND CMAKE_COLOR_MAKEFILE )
+            set(str "${str}${_escape}[${${arg}}m")
+            set(coloron TRUE)
+        else  ( DEFINED ${arg} AND CMAKE_COLOR_MAKEFILE )
+            set ( str "${str}${arg}" )
+            if    ( coloron )
+                set ( str "${str}${_escape}[0m" )
+                set ( coloron FALSE )
+            endif ( coloron )
+            set ( str "${str} " )
+        endif ( DEFINED ${arg} AND CMAKE_COLOR_MAKEFILE )
+    endforeach ( arg ${ARGV} )
+    
+    message ( STATUS ${str} )
+endfunction ( scai_status_message )

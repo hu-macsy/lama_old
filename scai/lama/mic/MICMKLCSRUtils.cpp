@@ -180,7 +180,7 @@ void MICMKLCSRUtils::setInterface( CSRUtilsInterface& CSRUtils )
 
     // using MKL for CSR might be disabled explicitly by environment variable
 
-    Settings::getEnvironment( useMKL, "LAMA_USE_MKL" );
+    Settings::getEnvironment( useMKL, "USE_MKL" );
 
     if( !useMKL )
     {

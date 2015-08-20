@@ -46,7 +46,7 @@ set ( CLASSES
 
 set ( HEADERS OpenMP )
 
-if ( LAMA_BLAS_NAME STREQUAL "MKL" )
+if ( SCAI_BLAS_NAME STREQUAL "MKL" )
 
     # Use MKL sparse blas routines for CSR if available
     if ( EXISTS "${MKL_INCLUDE_DIR}/mkl_spblas.h" )
@@ -55,17 +55,17 @@ if ( LAMA_BLAS_NAME STREQUAL "MKL" )
     else ( EXISTS "${MKL_INCLUDE_DIR}/mkl_spblas.h" )
         message( STATUS "MKL Sparse BLAS is not supported" )
     endif ( EXISTS "${MKL_INCLUDE_DIR}/mkl_spblas.h" )
-endif ( LAMA_BLAS_NAME STREQUAL "MKL" )
+endif ( SCAI_BLAS_NAME STREQUAL "MKL" )
 
 # OpenMPLAPACKe requires LAPACKe interface, is in MKL
 
 set ( LAPACKEeFound FALSE )
 
-if ( LAMA_BLAS_NAME STREQUAL "MKL" )
+if ( SCAI_BLAS_NAME STREQUAL "MKL" )
     if ( EXISTS "${MKL_INCLUDE_DIR}/mkl_lapacke.h" ) 
         set ( LAPACKeFound TRUE )
     endif ( EXISTS "${MKL_INCLUDE_DIR}/mkl_lapacke.h" )
-endif ( LAMA_BLAS_NAME STREQUAL "MKL" )
+endif ( SCAI_BLAS_NAME STREQUAL "MKL" )
 
 if ( NOT INTERNALBLAS_FOUND )
     set ( CLASSES

@@ -35,7 +35,6 @@
 #include <scai/lama/LAMAInterfaceRegistry.hpp>
 
 // others
-#include <scai/lama/exception/Exception.hpp>
 #include <scai/common/Exception.hpp>
 
 using namespace std;

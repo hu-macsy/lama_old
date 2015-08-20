@@ -62,7 +62,7 @@ if ( CMAKE_COMPILER_IS_GNUCXX )
     endif ( CXX_SUPPORTS_C11 )
 
     set ( LAMA_LINKER_FLAGS "-Wl,--no-as-needed " )
-    set ( LAMA_WARNING_FLAGS "-Wextra -Wall" ) # -pedantic -std=c++98 " ) # -march=core02
+    set ( LAMA_WARNING_FLAGS "-Wextra -Wall -Werror" ) # -pedantic -std=c++98 " ) # -march=core02
 
     # Supress unknown pragma warnings if OpenMP is disabled
     if ( NOT OPENMP_FOUND )

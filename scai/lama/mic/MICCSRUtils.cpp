@@ -274,7 +274,7 @@ void MICCSRUtils::offsets2sizesGather(
     const IndexType rowIndexes[],
     const IndexType numRows )
 {
-    #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
+    #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
 
     for( IndexType i = 0; i < numRows; i++ )
     {
@@ -590,7 +590,7 @@ void MICCSRUtils::normalGEMV(
 
         #pragma omp parallel
         {
-            #pragma omp for schedule(LAMA_OMP_SCHEDULE)
+            #pragma omp for schedule(SCAI_OMP_SCHEDULE)
 
             for( IndexType i = 0; i < numRows; ++i )
             {
@@ -660,7 +660,7 @@ void MICCSRUtils::sparseGEMV(
         {
             // Note: region will be entered by each thread
 
-            #pragma omp for schedule( LAMA_OMP_SCHEDULE )
+            #pragma omp for schedule( SCAI_OMP_SCHEDULE )
 
             for( IndexType ii = 0; ii < numNonZeroRows; ++ii )
             {
@@ -729,7 +729,7 @@ void MICCSRUtils::gemm(
         const IndexType* csrJA = static_cast<const IndexType*>( csrJAPtr );
         const ValueType* csrValues = static_cast<const ValueType*>( csrValuesPtr );
 
-        #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
+        #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
 
         for( IndexType i = 0; i < m; ++i )
         {
@@ -801,7 +801,7 @@ void MICCSRUtils::jacobi(
 
         #pragma omp parallel
         {
-            #pragma omp for schedule( LAMA_OMP_SCHEDULE )
+            #pragma omp for schedule( SCAI_OMP_SCHEDULE )
 
             for( IndexType i = 0; i < numRows; i++ )
             {
@@ -874,7 +874,7 @@ void MICCSRUtils::jacobiHalo(
         const ValueType* haloValues = (ValueType*) haloValuesPtr;
         const IndexType* haloRowIndexes = (IndexType*) haloRowIndexesPtr;
 
-        #pragma omp parallel for schedule( LAMA_OMP_SCHEDULE )
+        #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
 
         for( IndexType ii = 0; ii < numNonEmptyRows; ++ii )
         {
@@ -949,7 +949,7 @@ void MICCSRUtils::jacobiHaloWithDiag(
 
         #pragma omp parallel
         {
-            #pragma omp for schedule( LAMA_OMP_SCHEDULE )
+            #pragma omp for schedule( SCAI_OMP_SCHEDULE )
 
             for( IndexType ii = 0; ii < numNonEmptyRows; ++ii )
             {
@@ -1845,7 +1845,7 @@ ValueType MICCSRUtils::absMaxDiffVal(
         {
             ValueType threadVal = 0;
 
-            #pragma omp for schedule( LAMA_OMP_SCHEDULE )
+            #pragma omp for schedule( SCAI_OMP_SCHEDULE )
 
             for( IndexType i = 0; i < numRows; ++i )
             {

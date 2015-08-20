@@ -23,11 +23,11 @@ Requirements
 Here we assume that LAMA has already been downloaded, configured, compiled, and
 installed on your machine.
 The installation directory (**INSTALL_PREFIX** used for the configuration) 
-should be set via the environment variable **LAMA_ROOT**.
+should be set via the environment variable **SCAI_ROOT**.
 
 .. code-block:: bash
 
-   export LAMA_ROOT=<path/to/lama/installation/directory>
+   export SCAI_ROOT=<path/to/lama/installation/directory>
 
 The installation directory should contain online documentation
 that is also available `here`__.
@@ -36,21 +36,21 @@ __ http://libama.sourceforge.net/doc/index.html
 
 .. code-block:: bash
 
-   firefox ${LAMA_ROOT}/share/doc/system/html/index.html
+   firefox ${SCAI_ROOT}/share/doc/system/html/index.html
 
 The compilation of your LAMA application, e.g. 'simple.cpp' is usually done as
 follows:
 
 .. code-block:: bash
 
-   g++ -I $LAMA_ROOT/include -L $LAMA_ROOT/lib -lama -llog4lama -o simple simple.cpp
+   g++ -I $SCAI_ROOT/include -L $SCAI_ROOT/lib -lama -llog4lama -o simple simple.cpp
 
 For running the executable, it is necessary to include the lib directory of LAMA
 into your library path.
 
 .. code-block:: bash
 
-   export LD_LIBRARY_PATH=$LAMA_ROOT/lib:$LD_LIBRARY_PATH
+   export LD_LIBRARY_PATH=$SCAI_ROOT/lib:$LD_LIBRARY_PATH
 
 The following example program can be used to verify that compilation, linking
 and running works fine.
@@ -74,7 +74,7 @@ and the solutions for the lecture tasks at **<project-root>/doc/user_guide/cpp_s
    qsub -Iq gpus -lnodes=1:ppn=2
    module load bullxmpi/bullxmpi-1.0.2
    module load intel_compiler/12.0.2.137
-   export LAMA_ROOT=/home_nfs/h4h/LAMA/lama
+   export SCAI_ROOT=/home_nfs/h4h/LAMA/lama
 
 .. csv-table:: 
    :header: "Tasks", "Solutions"

@@ -58,7 +58,7 @@
  *  is used for reservation of entries but does not imply any restrictions.
  */
 
-#define LAMA_MAX_CONTEXTS 4
+#define SCAI_MAX_CONTEXTS 4
 
 namespace scai
 {

@@ -14,7 +14,7 @@ If not, you can give it a hint where to find it::
 
 If CUDA is available on your system but you do not want to use it, you can switch off its use as follows::
 
-   cmake -D LAMA_USE_CUDA=OFF
+   cmake -D USE_CUDA=OFF
 
 Furthermore, you can change relevant CMake variables for CUDA by using the ccmake utility.
 

@@ -700,7 +700,7 @@ void MatrixStorage<ValueType>::splitHalo(
 
     if ( getFormat() != Format::CSR )
     {
-        LAMA_UNSUPPORTED( "splitHalo is not supported for " << getFormat() << ", converting to CSR!" );
+        SCAI_UNSUPPORTED( "splitHalo is not supported for " << getFormat() << ", converting to CSR!" );
     }
 
     if ( colDist.isReplicated() )
@@ -818,7 +818,7 @@ void MatrixStorage<ValueType>::matrixTimesVector(
     const ValueType beta,
     const LAMAArray<ValueType>& y ) const
 {
-    LAMA_UNSUPPORTED( *this << ": no matrixTimesVector for this format available, take CSR" )
+    SCAI_UNSUPPORTED( *this << ": no matrixTimesVector for this format available, take CSR" )
     CSRStorage<ValueType> tmp( *this );
     tmp.matrixTimesVector( result, alpha, x, beta, y );
 }
@@ -833,7 +833,7 @@ void MatrixStorage<ValueType>::vectorTimesMatrix(
     const ValueType beta,
     const LAMAArray<ValueType>& y ) const
 {
-    LAMA_UNSUPPORTED( *this << ": no vectorTimesMatrix for this format available, take CSR" )
+    SCAI_UNSUPPORTED( *this << ": no vectorTimesMatrix for this format available, take CSR" )
     CSRStorage<ValueType> tmp( *this );
     tmp.vectorTimesMatrix( result, alpha, x, beta, y );
 }
@@ -849,7 +849,7 @@ void MatrixStorage<ValueType>::matrixTimesVectorN(
     const ValueType beta,
     const LAMAArray<ValueType>& y ) const
 {
-    LAMA_UNSUPPORTED(
+    SCAI_UNSUPPORTED(
         *this << ": no matrixTimesVectorN" << " ( denseStorage = anyStorage * denseStorage )" << " for this format available, take CSR" );
     CSRStorage<ValueType> tmp( *this );
     tmp.matrixTimesVectorN( result, n, alpha, x, beta, y );
@@ -914,7 +914,7 @@ void MatrixStorage<ValueType>::jacobiIterate(
     const LAMAArray<ValueType>& rhs,
     const ValueType omega ) const
 {
-    LAMA_UNSUPPORTED( *this << ": no jacobiIterate for this format available, take CSR" )
+    SCAI_UNSUPPORTED( *this << ": no jacobiIterate for this format available, take CSR" )
     CSRStorage<ValueType> tmp( *this );
     tmp.jacobiIterate( solution, oldSolution, rhs, omega );
 }
@@ -950,7 +950,7 @@ void MatrixStorage<ValueType>::jacobiIterateHalo(
     const LAMAArray<ValueType>& oldHaloSolution,
     const ValueType omega ) const
 {
-    LAMA_UNSUPPORTED( *this << ": jacobiIterateHalo for this format NOT available, take CSR" )
+    SCAI_UNSUPPORTED( *this << ": jacobiIterateHalo for this format NOT available, take CSR" )
     CSRStorage<ValueType> tmpHalo( *this );
     // very inefficient as we just need the diagonal
     CSRStorage<ValueType> tmpLocal( localStorage );
@@ -966,7 +966,7 @@ void MatrixStorage<ValueType>::jacobiIterateHalo(
     const LAMAArray<ValueType>& oldHaloSolution,
     const ValueType omega ) const
 {
-    LAMA_UNSUPPORTED( *this << ": jacobiIterateHalo for this format NOT available, take CSR" )
+    SCAI_UNSUPPORTED( *this << ": jacobiIterateHalo for this format NOT available, take CSR" )
     CSRStorage<ValueType> tmpHalo( *this );
     tmpHalo.jacobiIterateHalo( localSolution, localDiagonal, oldHaloSolution, omega );
 }
@@ -995,7 +995,7 @@ void MatrixStorage<ValueType>::matrixPlusMatrix(
     const ValueType beta,
     const MatrixStorage<ValueType>& b )
 {
-    LAMA_UNSUPPORTED( *this << ": no matrixPlusMatrix for this format available, take CSR" )
+    SCAI_UNSUPPORTED( *this << ": no matrixPlusMatrix for this format available, take CSR" )
     // TODO How can we make sure that CSRStorage really has overridden it, otherwise endless recursion here
     CSRStorage<ValueType> tmp( *this );
     tmp.check( "Temporary CSR storage for matrix addition" );
@@ -1013,7 +1013,7 @@ void MatrixStorage<ValueType>::matrixTimesMatrix(
     const ValueType beta,
     const MatrixStorage<ValueType>& y )
 {
-    LAMA_UNSUPPORTED( *this << ": no matrixTimesMatrix for this format available, take CSR" )
+    SCAI_UNSUPPORTED( *this << ": no matrixTimesMatrix for this format available, take CSR" )
     // TODO How can we make sure that CSR really has overridden it, otherwise endless recursion here
     CSRStorage<ValueType> tmp( *this );
     tmp.check( "Temporary CSR storage for matrix multiplication" );
@@ -1028,7 +1028,7 @@ ValueType MatrixStorage<ValueType>::maxDiffNorm( const MatrixStorage<ValueType>&
 {
     SCAI_ASSERT_EQUAL_ERROR( mNumRows, other.getNumRows() )
     SCAI_ASSERT_EQUAL_ERROR( mNumColumns, other.getNumColumns() )
-    LAMA_UNSUPPORTED( *this << ": no maxDiffNorm for format " << getFormat() << " available, take Dense" )
+    SCAI_UNSUPPORTED( *this << ": no maxDiffNorm for format " << getFormat() << " available, take Dense" )
     DenseStorage<ValueType> tmp( *this );
     return tmp.maxDiffNorm( other );
 }

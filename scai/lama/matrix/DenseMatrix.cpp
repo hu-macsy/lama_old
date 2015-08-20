@@ -376,7 +376,7 @@ DenseMatrix<ValueType>::DenseMatrix( DistributionPtr distribution )
 
         SCAI_LOG_DEBUG( logger, "mData.size() = " << mData.size() )
 
-        #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
+        #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
 
         for ( int i = 0; i < n; ++i )
         {
@@ -2028,7 +2028,7 @@ Scalar DenseMatrix<ValueType>::maxDiffNorm( const Matrix& other ) const
     }
     else
     {
-        LAMA_UNSUPPORTED( "maxDiffNorm requires temporary of " << other )
+        SCAI_UNSUPPORTED( "maxDiffNorm requires temporary of " << other )
         DenseMatrix<ValueType> typedOther( other, getDistributionPtr(), getColDistributionPtr() );
         return maxDiffNormImpl( typedOther );
     }

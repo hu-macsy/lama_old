@@ -254,16 +254,7 @@ Files
 - Each file only contains one class or template. This rule should ease the orientation within the project besides that
   smaller files with a single objective lead to less version control conflicts.
 
-- All source code in header files need to be surounded by include header guards, the include header should be prefix with **LAMA\_**.
-
-::
-
-	#ifndef LAMA_NAMEOFTHEHEADERFILE_HPP
-	#define LAMA_NAMEOFTHEHEADERFILE_HPP
-   ...
-	#endif // LAMA_NAMEOFTHEHEADERFILE_HPP
-
-The include header guards avoid violation of the multiple definition rule.
+- All source code in header files need to use # pragma once. The include header guards avoid violation of the multiple definition rule.
   
 - No two files within the project should be only distinguishable through their path or upper and lower case letters.
   This avoids problems with the include header guards and maintains portability.
@@ -420,7 +411,7 @@ CMake
 In all CMake files we stick to the style of the `official CMake documentation`_. All **VARIABLE_NAMES** are written
 in upper case and joined by underscore. The **function_names()** are written in lower case letters and are also joined
 by underscore. A short introduction to Find modules can be found `here`__.
-Modules are named according to the variables they define, e.g. FindLAMA_BLAS and LAMA_BLAS.
+Modules are named according to the variables they define, e.g. FindSCAI_BLAS and SCAI_BLAS.
 
 .. _official CMake documentation: http://www.cmake.org/cmake/help/documentation.html
 __ http://www.itk.org/Wiki/CMake:How_To_Find_Libraries#Writing_find_modules

@@ -56,17 +56,17 @@ All relevant LAMA options and their significations are listed in the table below
 
    "CMAKE_BUILD_TYPE", "Debug (default), or Release (for an optimized build)"
    "CMAKE_INSTALL_PREFIX", "Installation path of LAMA library"
-   "LAMA_ADDITIONAL_LINK_LIBRARIES", "Paths to libraries that should be linked to lama, separated by ;"
-   "LAMA_ADDITIONAL_LINK_FLAGS", "Additional linker Flags"
+..   "SCAI_ADDITIONAL_LINK_LIBRARIES", "Paths to libraries that should be linked to lama, separated by ;"
+..   "SCAI_ADDITIONAL_LINK_FLAGS", "Additional linker Flags"
    "SCAI_ASSERT_LEVEL", "ERROR recommended, DEBUG adds much more assertions into the code"
-   "LAMA_CMAKE_VERBOSE", "set to 1 or TRUE for more detailed infos about configuration"
-   "LAMA_BLAS_LIBRARY", "Selected the used BLAS library: auto, MKL, ACML, GOTOBLAS, BLAS"
-   "LAMA_BUILD_TEST", "ON or OFF, explicitly enable/disable building the tests"
+   "SCAI_CMAKE_VERBOSE", "set to 1 or TRUE for more detailed infos about configuration"
+   "SCAI_BLAS_LIBRARY", "Selected the used BLAS library: auto, MKL, ACML, GOTOBLAS, BLAS"
+   "BUILD_TEST", "ON or OFF, explicitly enable/disable building the tests"
    "SCAI_LOG", "INFO recommended, alternatively DEBUG or even more detailed TRACE"
-   "LAMA_USE_CODE_COVERAGE", "ON or OFF, explicitly enable/disable use of Code Coverage"
-   "LAMA_USE_CUDA", "ON or OFF, explicitly enable/disable use of CUDA"
-   "LAMA_USE_MPI", "ON or OFF, explicitly enable/disable use of MPI"
-   "LAMA_USE_SCALAPACK", "ON or OFF, explicitly enable/disable use of SCALAPACK"
+   "USE_CODE_COVERAGE", "ON or OFF, explicitly enable/disable use of Code Coverage"
+   "USE_CUDA", "ON or OFF, explicitly enable/disable use of CUDA"
+   "USE_MPI", "ON or OFF, explicitly enable/disable use of MPI"
+   "USE_SCALAPACK", "ON or OFF, explicitly enable/disable use of SCALAPACK"
    
 For an optimized installation of LAMA call
 

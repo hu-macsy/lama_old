@@ -89,7 +89,7 @@ set_property( SOURCE ../Configuration.cpp
 
 ### add definitions ###
 if ( WIN32 )
-    add_definitions ( -DLAMA_COMPILING_DLL )
+    add_definitions ( -DCOMMON_COMPILING_DLL )
 endif ( WIN32 )
 
 ### set link directories ###
@@ -104,9 +104,9 @@ add_executable ( lama_dist_test lama_dist_test.cpp ${CXX_SOURCES} )
 if ( WIN32 )
     target_link_libraries ( lama_dist_test ama )
 else ( WIN32 )
-    if ( LAMA_LIBRARY_TYPE STREQUAL "STATIC" )
+    if ( SCAI_LIBRARY_TYPE STREQUAL "STATIC" )
         target_link_libraries ( lama_dist_test "-Wl,--whole-archive" ama amampi "-Wl,--no-whole-archive" ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} ${Boost_REGEX_LIBRARY} ${LAMA_THREAD_LIBRARY} )
     else ()
         target_link_libraries ( lama_dist_test ama ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} ${Boost_REGEX_LIBRARY} ${LAMA_THREAD_LIBRARY} )
-    endif ( LAMA_LIBRARY_TYPE STREQUAL "STATIC" ) 
+    endif ( SCAI_LIBRARY_TYPE STREQUAL "STATIC" ) 
 endif ( WIN32 )

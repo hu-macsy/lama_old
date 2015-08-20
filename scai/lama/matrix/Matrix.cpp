@@ -38,7 +38,7 @@
 #include <scai/lama/DenseVector.hpp>
 #include <scai/lama/distribution/NoDistribution.hpp>
 
-#include <scai/lama/exception/LAMAAssert.hpp>
+#include <scai/common/SCAIAssert.hpp>
 
 using namespace scai::common;
 

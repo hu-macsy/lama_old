@@ -43,7 +43,7 @@
 #include <scai/lama/storage/MatrixStorage.hpp>
 #include <scai/lama/storage/CSRStorage.hpp>
 
-#include <scai/lama/exception/Exception.hpp>
+#include <scai/common/Exception.hpp>
 
 #include <scai/lama/distribution/NoDistribution.hpp>
 #include <scai/lama/distribution/CyclicDistribution.hpp>
@@ -737,7 +737,7 @@ template<typename ValueType> void SparseMatrix<ValueType>::invert( const Matrix&
 {
     // invert not supported for sparse matrices, so we need a temporary dense matrix
 
-    LAMA_UNSUPPORTED( "invert not supported for sparse matrices, will use a dense matrix" )
+    SCAI_UNSUPPORTED( "invert not supported for sparse matrices, will use a dense matrix" )
 
     DenseMatrix<ValueType> tmp;
 
@@ -2080,7 +2080,7 @@ Scalar SparseMatrix<ValueType>::maxDiffNorm( const Matrix& other ) const
     }
     else
     {
-        LAMA_UNSUPPORTED( "maxDiffNorm requires temporary of " << other )
+        SCAI_UNSUPPORTED( "maxDiffNorm requires temporary of " << other )
         SparseMatrix<ValueType> typedOther( other, getDistributionPtr(), getColDistributionPtr() );
         return maxDiffNormImpl( typedOther );
     }

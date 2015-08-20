@@ -47,7 +47,7 @@
 #include <scai/lama/distribution/Distribution.hpp>
 #include <scai/lama/distribution/Halo.hpp>
 
-#include <scai/lama/exception/Exception.hpp>
+#include <scai/common/Exception.hpp>
 
 #include <scai/lama/io/mmio.hpp>
 #include <scai/lama/io/FileType.hpp>

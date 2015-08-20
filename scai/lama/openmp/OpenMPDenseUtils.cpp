@@ -79,7 +79,7 @@ void OpenMPDenseUtils::getCSRSizes(
         }
     }
 
-    #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
+    #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
 
     for( IndexType i = 0; i < numRows; ++i )
     {
@@ -119,7 +119,7 @@ void OpenMPDenseUtils::getCSRValues(
     SCAI_LOG_INFO( logger,
                    "get CSRValues<" << getScalarType<DenseValueType>() << ", " << getScalarType<CSRValueType>() << ">" << ", size is " << numRows << " x " << numColumns )
 
-    #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
+    #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
 
     for( IndexType i = 0; i < numRows; ++i )
     {
@@ -176,7 +176,7 @@ void OpenMPDenseUtils::setCSRValues(
 
     // parallelization possible as offset array csrIA is available
 
-    #pragma omp parallel for schedule( LAMA_OMP_SCHEDULE )
+    #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
 
     for( IndexType i = 0; i < numRows; i++ )
     {
@@ -211,7 +211,7 @@ void OpenMPDenseUtils::copyDenseValues(
     const IndexType numColumns,
     const DenseValueType2 oldValues[] )
 {
-    #pragma omp parallel for schedule( LAMA_OMP_SCHEDULE )
+    #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
 
     for( IndexType i = 0; i < numRows; ++i )
     {
@@ -235,7 +235,7 @@ void OpenMPDenseUtils::getDiagonal(
     const IndexType numRows,
     const IndexType numColumns )
 {
-    #pragma omp parallel for schedule (LAMA_OMP_SCHEDULE)
+    #pragma omp parallel for schedule (SCAI_OMP_SCHEDULE)
 
     for( IndexType i = 0; i < numDiagonalValues; ++i )
     {
@@ -254,7 +254,7 @@ void OpenMPDenseUtils::setDiagonal(
     const DiagonalValueType diagonalValues[],
     const IndexType numDiagonalValues )
 {
-    #pragma omp parallel for schedule (LAMA_OMP_SCHEDULE)
+    #pragma omp parallel for schedule (SCAI_OMP_SCHEDULE)
 
     for( IndexType i = 0; i < numDiagonalValues; ++i )
     {
@@ -274,7 +274,7 @@ void OpenMPDenseUtils::setDiagonalValue(
 {
     IndexType numDiagonalValues = std::min( numRows, numColumns );
 
-    #pragma omp parallel for schedule (LAMA_OMP_SCHEDULE)
+    #pragma omp parallel for schedule (SCAI_OMP_SCHEDULE)
 
     for( IndexType i = 0; i < numDiagonalValues; ++i )
     {
@@ -298,7 +298,7 @@ void OpenMPDenseUtils::scaleValue(
     {
         // this solution can also deal with undefined data
 
-        #pragma omp parallel for schedule (LAMA_OMP_SCHEDULE)
+        #pragma omp parallel for schedule (SCAI_OMP_SCHEDULE)
         for( IndexType i = 0; i < numRows; ++i )
         {
             for( IndexType j = 0; j < numColumns; ++j )
@@ -310,7 +310,7 @@ void OpenMPDenseUtils::scaleValue(
     }
     else
     {
-        #pragma omp parallel for schedule (LAMA_OMP_SCHEDULE)
+        #pragma omp parallel for schedule (SCAI_OMP_SCHEDULE)
 
         for( IndexType i = 0; i < numRows; ++i )
         {

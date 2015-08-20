@@ -1,5 +1,5 @@
 /**
- * @file Exception.cpp
+ * @file LAMAInterface.hpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,50 +25,50 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Exception.cpp
- * @author Jiri Kraus
- * @date 01.03.2011
- * @since 1.0.0
+ * @brief Interface class for context dependent operations to be implemented.
+ * @author Eric Schricker
+ * @date 10.08.2015
+ * @since 2.0.0
  */
 
-// hpp
-#include <scai/lama/exception/Exception.hpp>
-#include <scai/lama/Settings.hpp>
-
-#include <cstdio>
-#include <sstream>
-
-#ifndef _WIN32
-#include <execinfo.h>
-#endif //_WIND32
-
-#ifdef __GNUC__
-#include <cxxabi.h>
-#include <cstring>
-#endif // __GNUC__
+#include <scai/common/UnsupportedException.hpp>
+#include <scai/common/Settings.hpp>
 
 namespace scai
 {
 
-namespace lama
+namespace common
 {
+    
+UnsupportedException::UnsupportedType UnsupportedException::unsupportedSetting = UnsupportedException::UNSUPPORTED_UNDEFINED;
 
-SCAI_LOG_DEF_LOGGER( Exception1::logger, "Exception" )
+UnsupportedException::UnsupportedException()
+{
+}
 
-Exception1::UnsupportedType Exception1::unsupportedSetting = Exception1::UNSUPPORTED_UNDEFINED;
+UnsupportedException::UnsupportedException( const std::string& message )
+    : mMessage( message )
+{
+}
 
-Exception1::UnsupportedType Exception1::getUnsupportedSetting()
+UnsupportedException::~UnsupportedException() throw()
+{
+}
+
+const char* UnsupportedException::what() const throw ()
+{
+    return mMessage.c_str();
+}
+
+UnsupportedException::UnsupportedType UnsupportedException::getUnsupportedSetting()
 {
     if( unsupportedSetting == UNSUPPORTED_UNDEFINED )
     {
         std::string val = "WARN";
 
-        bool isSet = Settings::getEnvironment( val, "LAMA_UNSUPPORTED" );
-
-        if( !isSet )
-        {
-            SCAI_LOG_WARN( logger, "LAMA_UNSUPPORTED not set, default is WARN" )
-        }
+        //bool isSet = Settings::getEnvironment( val, "SCAI_UNSUPPORTED" );
+        
+        Settings::getEnvironment( val, "SCAI_UNSUPPORTED" );
 
         // transform to uppercase
 
@@ -77,7 +77,7 @@ Exception1::UnsupportedType Exception1::getUnsupportedSetting()
             *p = static_cast<char>( toupper( *p ) );
         }
 
-        SCAI_LOG_INFO( logger, "LAMA_UNSUPPORTED=" << val << ", setting used for LAMA" )
+//        SCAI_LOG_INFO( logger, "SCAI_UNSUPPORTED=" << val << ", setting used for LAMA" )
 
         if( "IGNORE" == val )
         {
@@ -93,7 +93,7 @@ Exception1::UnsupportedType Exception1::getUnsupportedSetting()
         }
         else
         {
-            SCAI_LOG_ERROR( logger, "LAMA_UNSUPPORTED=" << val << ", illegal value, take WARN" )
+            //SCAI_LOG_ERROR( logger, "SCAI_UNSUPPORTED=" << val << ", illegal value, take WARN" )
             unsupportedSetting = UNSUPPORTED_WARN;
         }
     }
@@ -101,25 +101,6 @@ Exception1::UnsupportedType Exception1::getUnsupportedSetting()
     return unsupportedSetting;
 }
 
-Exception1::Exception1()
-{
-}
+} /* end common */
 
-Exception1::Exception1( const std::string& message )
-    : mMessage( message )
-{
-    SCAI_LOG_WARN( logger, "EXCEPTION: " << message )
-}
-
-Exception1::~Exception1() throw ()
-{
-}
-
-const char* Exception1::what() const throw ()
-{
-    return mMessage.c_str();
-}
-
-} /* end namespace lama */
-
-} /* end namespace scai */
+} /* end scai */

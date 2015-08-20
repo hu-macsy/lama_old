@@ -31,15 +31,14 @@
  # @since 1.0.0
 ###
 
-# Check if verbose mode for CMAKE is selected
-if    ( DEFINED LAMA_CMAKE_VERBOSE AND LAMA_CMAKE_VERBOSE )
-    set ( LAMA_FIND_PACKAGE_FLAGS )
-else  ( DEFINED LAMA_CMAKE_VERBOSE AND LAMA_CMAKE_VERBOSE )
-    set ( LAMA_FIND_PACKAGE_FLAGS QUIET )
-endif ( DEFINED LAMA_CMAKE_VERBOSE AND LAMA_CMAKE_VERBOSE )
+include ( Functions/checkValue )
 
-set ( CMAKE_SYSTEM_LIBRARY_PATH )
-set ( LAMA_ROOT_DIR "${CMAKE_SOURCE_DIR}/.." )
+# Check if verbose mode for CMAKE is selected
+if    ( DEFINED SCAI_CMAKE_VERBOSE AND SCAI_CMAKE_VERBOSE )
+    set ( SCAI_FIND_PACKAGE_FLAGS )
+else  ( DEFINED SCAI_CMAKE_VERBOSE AND SCAI_CMAKE_VERBOSE )
+    set ( SCAI_FIND_PACKAGE_FLAGS QUIET )
+endif ( DEFINED SCAI_CMAKE_VERBOSE AND SCAI_CMAKE_VERBOSE )
 
 # CMAKE configuration variable that guarantees adding rpath for installed
 # libraries; very useful so that installed library can be used without 
@@ -63,31 +62,31 @@ endif( NOT DEFINED BUILD_SHARED_LIBS )
 
 ## BUILDTYPE
 
+# Set default build type, will be used for all projects
+# Note: can be changed at any time via CCMAKE
+
 # Choose Default CMAKE_BUILD_TYPE
 if ( NOT CMAKE_BUILD_TYPE )
-  # Can be: (RelWithDebInfo)
-  set ( CMAKE_BUILD_TYPE Debug CACHE STRING 
-        "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel." FORCE )
+	set ( CMAKE_BUILD_TYPE_OPTIONS None Debug Release RelWithDebInfo MinSizeRel ) 
+    # Can be: (RelWithDebInfo)
+    set ( CMAKE_BUILD_TYPE Debug CACHE STRING 
+        "Choose the type of build, options are: ${CMAKE_BUILD_TYPE_OPTIONS}." FORCE )
+	checkValue ( ${CMAKE_BUILD_TYPE} "${CMAKE_BUILD_TYPE_OPTIONS}" )
 endif ( NOT CMAKE_BUILD_TYPE )
 
 message ( STATUS "Build type is set to " ${CMAKE_BUILD_TYPE} )
 
-## set cache entries
-set ( LAMA_ADDITIONAL_LINK_LIBRARIES "${LAMA_ADDITIONAL_LINK_LIBRARIES}" CACHE STRING "Additional libraries for linking, separated by ;" )
-set ( LAMA_ADDITIONAL_LINK_FLAGS "${LAMA_ADDITIONAL_LINK_FLAGS}" CACHE STRING "Additional link flags, separated by ;" )
-mark_as_advanced ( LAMA_ADDITIONAL_LINK_LIBRARIES LAMA_ADDITIONAL_LINK_FLAGS )
-
 ## Check if lama should be build static or shared
 ## Check if cache variable is already set
-if    ( DEFINED LAMA_BUILD_SHARED )
-    set ( LAMA_BUILD_SHARED ${LAMA_BUILD_SHARED} CACHE BOOL "Enable / Disable dynamic linking of libraries" )
-else  ( DEFINED LAMA_BUILD_SHARED )
+if    ( DEFINED SCAI_BUILD_SHARED )
+    set ( SCAI_BUILD_SHARED ${SCAI_BUILD_SHARED} CACHE BOOL "Enable / Disable dynamic linking of libraries" )
+else  ( DEFINED SCAI_BUILD_SHARED )
     # Set cache variable
-    set ( LAMA_BUILD_SHARED TRUE CACHE BOOL "Enable / Disable dynamic linking of libraries" )
-endif ( DEFINED LAMA_BUILD_SHARED )
+    set ( SCAI_BUILD_SHARED TRUE CACHE BOOL "Enable / Disable dynamic linking of libraries" )
+endif ( DEFINED SCAI_BUILD_SHARED )
 
-if    ( LAMA_BUILD_SHARED )
-    set ( LAMA_LIBRARY_TYPE SHARED )
-else  ( LAMA_BUILD_SHARED )
-    set ( LAMA_LIBRARY_TYPE STATIC )
-endif ( LAMA_BUILD_SHARED )
+if    ( SCAI_BUILD_SHARED )
+    set ( SCAI_LIBRARY_TYPE SHARED )
+else  ( SCAI_BUILD_SHARED )
+    set ( SCAI_LIBRARY_TYPE STATIC )
+endif ( SCAI_BUILD_SHARED )

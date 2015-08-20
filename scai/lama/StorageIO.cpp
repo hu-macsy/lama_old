@@ -43,7 +43,7 @@
 
 #include <scai/hmemo.hpp>
 
-#include <scai/lama/exception/Exception.hpp>
+#include <scai/common/Exception.hpp>
 
 #include <scai/lama/openmp/OpenMPCSRUtils.hpp>
 #include <scai/tracing.hpp>
@@ -839,7 +839,7 @@ void StorageIO<ValueType>::readCSRFromMMFile(
     WriteOnlyAccess<IndexType> ia( csrIA, numRows + 1 );
     // initialize ia;
 
-	#pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
+	#pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
     for( IndexType i = 0; i < numRows + 1; i++ )
     {
         ia[i] = 0;
@@ -926,7 +926,7 @@ void StorageIO<ValueType>::readCSRFromMMFile(
 
     ia[numRows] = numValues;
     //initialize ia and data
-#pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
+#pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
 
     for( IndexType i = 0; i < numValues; i++ )
     {

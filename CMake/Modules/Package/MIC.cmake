@@ -32,5 +32,5 @@
 ###
 
 ###  User selection to switch use on or off
-set ( LAMA_USE_MIC FALSE CACHE BOOL "Enable / Disable use of MIC (only for Intel Compiler)" )
+set ( USE_MIC FALSE CACHE BOOL "Enable / Disable use of MIC (only for Intel Compiler)" )
 

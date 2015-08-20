@@ -38,7 +38,7 @@
 #include <scai/lama/openmp/BLASHelper.hpp>
 #include <scai/lama/BLASInterface.hpp>
 #include <scai/lama/LAMAInterfaceRegistry.hpp>
-#include <scai/lama/Settings.hpp>
+#include <scai/common/Settings.hpp>
 
 // macros
 #include <scai/lama/macros/unused.hpp>
@@ -97,7 +97,7 @@ void wrapperScal( const int n, const ComplexDouble alpha, ComplexDouble* x, cons
 template<>
 void wrapperScal( const int, const LongDouble, LongDouble*, const int )
 {
-    COMMON_THROWEXCEPTION( "LongDouble not supported by BLAS, please set LAMA_USE_BLAS=0" )
+    COMMON_THROWEXCEPTION( "LongDouble not supported by BLAS, please set USE_BLAS=0" )
 }
 
 /* ---------------------------------------------------------------------------------------*/
@@ -166,7 +166,7 @@ ComplexDouble wrapperNrm2( const int n, const ComplexDouble* x, const int incX )
 template<>
 LongDouble wrapperNrm2( const int, const LongDouble*, const int )
 {
-    COMMON_THROWEXCEPTION( "LongDouble not supported by BLAS, please set LAMA_USE_BLAS=0" )
+    COMMON_THROWEXCEPTION( "LongDouble not supported by BLAS, please set USE_BLAS=0" )
     return LongDouble( 0 );
 }
 
@@ -227,7 +227,7 @@ ComplexDouble wrapperAsum( const int n, const ComplexDouble* x, const int incX )
 template<>
 LongDouble wrapperAsum( const int, const LongDouble*, const int )
 {
-    COMMON_THROWEXCEPTION( "LongDouble not supported by BLAS, please set LAMA_USE_BLAS=0" )
+    COMMON_THROWEXCEPTION( "LongDouble not supported by BLAS, please set USE_BLAS=0" )
     return 0;
 }
 
@@ -287,7 +287,7 @@ IndexType wrapperIamax( const int n, const ComplexDouble* x, const int incX )
 template<>
 IndexType wrapperIamax( const int, const LongDouble*, const int )
 {
-    COMMON_THROWEXCEPTION( "LongDouble not supported by BLAS, please set LAMA_USE_BLAS=0" )
+    COMMON_THROWEXCEPTION( "LongDouble not supported by BLAS, please set USE_BLAS=0" )
     return 0;
 }
 
@@ -341,7 +341,7 @@ void wrapperSwap( const int n, ComplexDouble* x, const int incX, ComplexDouble* 
 template<>
 void wrapperSwap( const int, LongDouble*, const int, LongDouble*, const int )
 {
-    COMMON_THROWEXCEPTION( "LongDouble not supported by BLAS, please set LAMA_USE_BLAS=0" )
+    COMMON_THROWEXCEPTION( "LongDouble not supported by BLAS, please set USE_BLAS=0" )
 }
 
 template<typename ValueType>
@@ -405,7 +405,7 @@ void wrapperCopy( const int n, const ComplexDouble* x, const int incX, ComplexDo
 template<>
 void wrapperCopy( const int, const LongDouble*, const int, LongDouble*, const int )
 {
-    COMMON_THROWEXCEPTION( "LongDouble not supported by BLAS, please set LAMA_USE_BLAS=0" )
+    COMMON_THROWEXCEPTION( "LongDouble not supported by BLAS, please set USE_BLAS=0" )
 }
 
 template<typename ValueType>
@@ -491,7 +491,7 @@ void wrapperAxpy(
 template<>
 void wrapperAxpy( const int, LongDouble, const LongDouble*, const int, LongDouble*, const int )
 {
-    COMMON_THROWEXCEPTION( "LongDouble not supported by BLAS, please set LAMA_USE_BLAS=0" )
+    COMMON_THROWEXCEPTION( "LongDouble not supported by BLAS, please set USE_BLAS=0" )
 }
 
 template<typename ValueType>
@@ -565,7 +565,7 @@ ComplexDouble wrapperDot( const int n, const ComplexDouble* x, const int incX, c
 template<>
 LongDouble wrapperDot( const int, const LongDouble*, const int, const LongDouble*, const int )
 {
-    COMMON_THROWEXCEPTION( "LongDouble not supported by BLAS, please set LAMA_USE_BLAS=0" )
+    COMMON_THROWEXCEPTION( "LongDouble not supported by BLAS, please set USE_BLAS=0" )
     return 0;
 }
 
@@ -605,18 +605,18 @@ void BLAS_BLAS1::setInterface( BLASInterface& BLAS )
     bool useBLAS = false;
     int level = 0;
 
-    useBLAS = Settings::getEnvironment( level, "LAMA_USE_BLAS" );
+    useBLAS = common::Settings::getEnvironment( level, "USE_BLAS" );
 
     if( !useBLAS || ( level <= 0 ) )
     {
-        SCAI_LOG_INFO( logger, "BLAS1 wrapper routines for Host Interface are disabled (LAMA_USE_BLAS not set or 0)" )
+        SCAI_LOG_INFO( logger, "BLAS1 wrapper routines for Host Interface are disabled (USE_BLAS not set or 0)" )
         return;
     }
     else if( level > 1 )
     {
         // only level 2 or level 3 wrappers might be used
         SCAI_LOG_INFO( logger,
-                       "BLAS1 wrapper routines for Host Interface are disabled (LAMA_USE_BLAS = " << level << ")" )
+                       "BLAS1 wrapper routines for Host Interface are disabled (USE_BLAS = " << level << ")" )
         return;
     }
 

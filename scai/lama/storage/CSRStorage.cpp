@@ -50,7 +50,7 @@
 #include <scai/lama/openmp/OpenMPCSRUtils.hpp>
 
 // assert
-#include <scai/lama/exception/LAMAAssert.hpp>
+#include <scai/common/SCAIAssert.hpp>
 
 // boost
 #include <scai/common/bind.hpp>
@@ -1907,7 +1907,7 @@ void CSRStorage<ValueType>::matrixPlusMatrix(
     }
     else
     {
-        LAMA_UNSUPPORTED( a << ": will be converted to CSR for matrix multiply" )
+        SCAI_UNSUPPORTED( a << ": will be converted to CSR for matrix multiply" )
         tmpA = common::shared_ptr<CSRStorage<ValueType> >( new CSRStorage<ValueType>( a ) );
         csrA = tmpA.get();
     }
@@ -1919,7 +1919,7 @@ void CSRStorage<ValueType>::matrixPlusMatrix(
     }
     else
     {
-        LAMA_UNSUPPORTED( b << ": will be converted to CSR for matrix multiply" )
+        SCAI_UNSUPPORTED( b << ": will be converted to CSR for matrix multiply" )
         tmpB = common::shared_ptr<CSRStorage<ValueType> >( new CSRStorage<ValueType>( b ) );
         csrB = tmpB.get();
     }
@@ -1965,7 +1965,7 @@ void CSRStorage<ValueType>::matrixTimesMatrix(
     }
     else
     {
-        LAMA_UNSUPPORTED( a << ": will be converted to CSR for matrix multiply" )
+        SCAI_UNSUPPORTED( a << ": will be converted to CSR for matrix multiply" )
         tmpA = common::shared_ptr<CSRStorage<ValueType> >( new CSRStorage<ValueType>( a ) );
         csrA = tmpA.get();
     }
@@ -1977,7 +1977,7 @@ void CSRStorage<ValueType>::matrixTimesMatrix(
     }
     else
     {
-        LAMA_UNSUPPORTED( b << ": will be converted to CSR for matrix multiply" )
+        SCAI_UNSUPPORTED( b << ": will be converted to CSR for matrix multiply" )
         tmpB = common::shared_ptr<CSRStorage<ValueType> >( new CSRStorage<ValueType>( b ) );
         csrB = tmpB.get();
     }
@@ -1993,7 +1993,7 @@ void CSRStorage<ValueType>::matrixTimesMatrix(
         }
         else
         {
-            LAMA_UNSUPPORTED( c << ": CSR temporary required for matrix add" )
+            SCAI_UNSUPPORTED( c << ": CSR temporary required for matrix add" )
             tmpC = common::shared_ptr<CSRStorage<ValueType> >( new CSRStorage<ValueType>( c ) );
             csrC = tmpC.get();
         }
@@ -2270,7 +2270,7 @@ ValueType CSRStorage<ValueType>::maxDiffNorm( const MatrixStorage<ValueType>& ot
     }
     else
     {
-        LAMA_UNSUPPORTED( other << ": converted to " << typeName() << " for maxDiffNorm" )
+        SCAI_UNSUPPORTED( other << ": converted to " << typeName() << " for maxDiffNorm" )
         tmpOtherCSR.reset( new CSRStorage<ValueType>( other ) );
         otherCSR = tmpOtherCSR.get();
     }

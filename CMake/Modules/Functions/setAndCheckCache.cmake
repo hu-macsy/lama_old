@@ -31,11 +31,19 @@
  # @since 1.0.0
 ###
 
-# Function for setting LAMA_USE_{PACKAGE_NAME} variables depending on {PACKAGE_NAME}_FOUND.
+# Function for setting USE_{PACKAGE_NAME} variables depending on {PACKAGE_NAME}_FOUND.
 # Also sets cache Variables
 function    ( setAndCheckCache PACKAGE_NAME )
-    # Create variable names with LAMA_USE_XXX and FOUND_XXX
-    set ( CACHE_VARIABLE_NAME LAMA_USE_${PACKAGE_NAME} )
+	
+    # if optional parameter is set, use this one as package name
+    if    ( DEFINED ARGV1 )
+        set ( CACHE_NAME ${ARGV1} )
+    else  ( DEFINED ARGV1 )
+    	set ( CACHE_NAME ${PACKAGE_NAME} )
+    endif ( DEFINED ARGV1 )
+
+    # Create variable names with USE_XXX and FOUND_XXX
+    set ( CACHE_VARIABLE_NAME USE_${CACHE_NAME} )
     set ( FOUND_VARIABLE_NAME ${PACKAGE_NAME}_FOUND )
 
     # Check if cache variable is already set
@@ -50,12 +58,7 @@ function    ( setAndCheckCache PACKAGE_NAME )
             set ( USE_PACKAGE FALSE )
         endif ( ${FOUND_VARIABLE_NAME} )
         
-        # if optional parameter is set, use this one as package name for message
-        if    ( DEFINED ARGV1 )
-            set ( PACKAGE_NAME ${ARGV1} )
-        endif ( DEFINED ARGV1 )
-        
         # Set cache variable
-        set ( ${CACHE_VARIABLE_NAME} ${USE_PACKAGE} CACHE BOOL "Enable / Disable use of ${PACKAGE_NAME}" )
+        set ( ${CACHE_VARIABLE_NAME} ${USE_PACKAGE} CACHE BOOL "Enable / Disable use of ${CACHE_NAME}" )
     endif ( DEFINED ${CACHE_VARIABLE_NAME} )
 endfunction ( setAndCheckCache )

@@ -107,4 +107,4 @@ private:
  *  \endcode
  */
 
-#define SCAI_CONTEXT_ACCESS( context ) hmemo::ContextAccess LAMA_Ctx_Access__( context, __FILE__, __LINE__ );
+#define SCAI_CONTEXT_ACCESS( context ) hmemo::ContextAccess SCAI_Ctx_Access__( context, __FILE__, __LINE__ );

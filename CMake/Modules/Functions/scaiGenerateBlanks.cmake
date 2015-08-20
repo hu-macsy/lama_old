@@ -1,5 +1,5 @@
 ###
- # @file SearchPackages.cmake
+ # @file Functions/scaiGenerateBlanks.cmake
  #
  # @license
  # Copyright (c) 2009-2013
@@ -25,25 +25,21 @@
  # SOFTWARE.
  # @endlicense
  #
- # @brief List of required and optional packages
+ # @brief Simple internal helper function that generates a blank string that fits the size of an given STRING to LENGTH
  # @author Jan Ecker
  # @date 25.04.2013
  # @since 1.0.0
 ###
 
-# Find required packages
-set ( REQUIRED_PACKAGES_TO_FIND
-        ${SCAI_LAMA_INTERNAL_DEPS}
-        #add required packages here
-    )
+function    ( scai_generate_blanks OUTPUT STRING LENGTH )
+    string ( LENGTH "${STRING}" SCAI_STRING_LENGTH )
+    # -1 for correct looping from 0 to LENGTH
+    math ( EXPR SCAI_MESSAGE_BLANK_LENGTH ${LENGTH}-${SCAI_STRING_LENGTH} )
     
-# Find optional packages
-set ( OPTIONAL_PACKAGES_TO_FIND
-        LAMA_BLAS
-        Doxygen
-        Threads
-        Sphinx
-        ParMetis REQUIRES Metis
-#        CUDA # needs check on windows # used through Package/CUDA
-        #add optional packages here
-    )
+    set ( MESSAGE_BLANKS "")
+    foreach    ( SCAI_I RANGE ${SCAI_MESSAGE_BLANK_LENGTH} )
+        set ( MESSAGE_BLANKS "${MESSAGE_BLANKS} " )
+    endforeach ( SCAI_I RANGE ${SCAI_MESSAGE_BLANK_LENGTH} )
+    
+    set ( ${OUTPUT} ${MESSAGE_BLANKS} PARENT_SCOPE )
+endfunction ( scai_generate_blanks )

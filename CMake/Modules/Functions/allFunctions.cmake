@@ -32,18 +32,20 @@
 ###
 
 # defined functions:
-#     setAndCheckCache: Function for setting LAMA_USE_{PACKAGE_NAME} variables depending on {PACKAGE_NAME}_FOUND.
+#     setAndCheckCache: Function for setting USE_{PACKAGE_NAME} variables depending on {PACKAGE_NAME}_FOUND.
 include ( Functions/setAndCheckCache )
 #     get_relative_path: returns the relative path to the actual directory to the CMAKE_SOURCE_DIR
 include ( Functions/getRelativePath )
 #     lama_get_relative_path: returns the relative path to the actual directory to the LAMA_SOURCE_DIR (Path of the actual target)
 include ( Functions/lamaGetRelativePath )
-#     lama_status_message: prints colored text messages
-include ( Functions/lamaStatusMessage )
+#     scai_status_message: prints colored text messages
+include ( Functions/scaiStatusMessage )
 #     checkValue: checks whether the given value is in the value list ( pass list as "${LIST}" (doublequotes !!!) )
 include ( Functions/checkValue )
-#     lama_generate_blanks: Simple internal helper function that generates a blank string that fits the size of an given STRING to LENGTH
-include ( Functions/lamaGenerateBlanks )
+#     scai_generate_blanks: Simple internal helper function that generates a blank string that fits the size of an given STRING to LENGTH
+include ( Functions/scaiGenerateBlanks )
+#     check_whitelist: checks white list for containing entry and add entry to argument list ( pass whitelist and arglist as "${LIST}" (doublequotes !!!) )
+include ( Functions/checkWhiteList )
 
 # defined makros:
 #     lama_set_source_dir: sets the LAMA_SOURCE_DIR (used to mark the path of the actual build target
@@ -52,7 +54,7 @@ include ( Functions/lamaGenerateBlanks )
 #     lama_headers: Adds a list of classes to the target (the related *.cpp and *.hpp files) and configures # the installation of the header files
 #     lama_add: Publishes sources and headers in the parent scope
 include ( Functions/lamaSourceSolution )
-#     lama_summary_message: generates messages for lama summary page
-include ( Functions/lamaSummaryMessage )
+#     scai_summary_message: generates messages for lama summary page
+include ( Functions/scaiSummaryMessage )
 #     list_contains: checks if value is part of a list
 include ( Functions/listContains )

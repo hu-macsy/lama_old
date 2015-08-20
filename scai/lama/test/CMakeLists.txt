@@ -102,7 +102,7 @@ set ( SOURCE_FILES
         ResidualThresholdTest
         RichardsonTest
         ScalarTest
-        SimpleAMGTest
+    #    SimpleAMGTest
         SolutionProxyTest
         SORTest
         SparseAssemblyStorageTest
@@ -133,18 +133,18 @@ endif ( NOT ( Boost_UNIT_TEST_FRAMEWORK_LIBRARY OR Boost_REGEX ) )
 include_directories ( .. ../lama ${Boost_INCLUDE_DIRS} )
 include_directories ( ${CMAKE_INSTALL_PREFIX}/include  )
 
-if ( LAMA_BLAS_NAME STREQUAL "MKL" )
+if ( SCAI_BLAS_NAME STREQUAL "MKL" )
     include_directories ( ${MKL_INCLUDE_DIRS} )
-endif ( LAMA_BLAS_NAME STREQUAL "MKL" )
+endif ( SCAI_BLAS_NAME STREQUAL "MKL" )
 
 ### add subdirectories ###
-if ( MPI_FOUND AND LAMA_USE_MPI )
+if ( MPI_FOUND AND USE_MPI )
     add_subdirectory ( distributed )
-endif ( MPI_FOUND AND LAMA_USE_MPI )
+endif ( MPI_FOUND AND USE_MPI )
 
-if ( CUDA_FOUND AND LAMA_USE_CUDA AND CUDA_HAVE_GPU )
+if ( CUDA_FOUND AND USE_CUDA AND CUDA_HAVE_GPU )
     add_subdirectory ( cuda )
-endif ( CUDA_FOUND AND LAMA_USE_CUDA AND CUDA_HAVE_GPU )
+endif ( CUDA_FOUND AND USE_CUDA AND CUDA_HAVE_GPU )
  
 ### add definitions ###
 add_definitions ( -DLAMA_TESTFILE_PATH="${CMAKE_SOURCE_DIR}/../res/testfiles" )
@@ -161,11 +161,11 @@ add_executable ( lama_test lama_test.cpp ${CXX_SOURCES} )
 if ( WIN32 )
     target_link_libraries ( lama_test ama )
 else ( WIN32 )
-    if ( LAMA_LIBRARY_TYPE STREQUAL "STATIC" )
+    if ( SCAI_LIBRARY_TYPE STREQUAL "STATIC" )
         target_link_libraries ( lama_test "-Wl,--whole-archive" ama "-Wl,--no-whole-archive" ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} ${Boost_REGEX_LIBRARY} ${LAMA_THREAD_LIBRARY} )
     else ()
         target_link_libraries ( lama_test ama ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} ${Boost_REGEX_LIBRARY} ${LAMA_THREAD_LIBRARY} )
-    endif ( LAMA_LIBRARY_TYPE STREQUAL "STATIC" )
+    endif ( SCAI_LIBRARY_TYPE STREQUAL "STATIC" )
 endif ( WIN32 )
 
 
@@ -173,8 +173,8 @@ endif ( WIN32 )
 file ( COPY README DESTINATION ${CMAKE_BINARY_DIR}/test )
 file ( COPY xmltest.sh DESTINATION ${CMAKE_BINARY_DIR}/test ) 
 
-if ( LAMA_USE_CODE_COVERAGE )
+if ( USE_CODE_COVERAGE )
     ### Copy the cca.sh and ccajen.sh file in build directory ###
     configure_file( "${CMAKE_SOURCE_DIR}/test/cca.sh.in" "${CMAKE_CURRENT_BINARY_DIR}/cca.sh" @ONLY)
     configure_file( "${CMAKE_SOURCE_DIR}/test/ccajen.sh.in" "${CMAKE_CURRENT_BINARY_DIR}/ccajen.sh" @ONLY)
-endif ( LAMA_USE_CODE_COVERAGE )
+endif ( USE_CODE_COVERAGE )

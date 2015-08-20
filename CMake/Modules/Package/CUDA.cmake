@@ -31,7 +31,9 @@
  # @since 2.0.0
 ###
 
-find_package ( CUDA ${LAMA_FIND_PACKAGE_FLAGS} )
+include ( Functions/setAndCheckCache )
+
+find_package ( CUDA ${SCAI_FIND_PACKAGE_FLAGS} )
 
 # ALLOW to switch off CUDA explicitly
 setAndCheckCache ( CUDA )

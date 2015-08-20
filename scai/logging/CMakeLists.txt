@@ -43,21 +43,32 @@ set ( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../CMake/Modules" )
 ## Define all search packages
 #include ( InternalDependencies )
 set ( SCAI_LOGGING_INTERNAL_DEPS scai_common )
-include ( SearchPackages/Logging ) 
 
 # Find required packages
-foreach    ( PACKAGE_TO_FIND ${REQUIRED_PACKAGES_TO_FIND} )
-    find_package ( ${PACKAGE_TO_FIND} ${LAMA_FIND_PACKAGE_FLAGS} REQUIRED )
-endforeach ( PACKAGE_TO_FIND ${REQUIRED_PACKAGES_TO_FIND} )
+foreach    ( PACKAGE_TO_FIND ${SCAI_LOGGING_INTERNAL_DEPS} )
+    find_package ( ${PACKAGE_TO_FIND} ${SCAI_FIND_PACKAGE_FLAGS} REQUIRED )
+endforeach ( PACKAGE_TO_FIND ${SCAI_LOGGING_INTERNAL_DEPS} )
 
-# Find optional packages
-foreach    ( PACKAGE_TO_FIND ${OPTIONAL_PACKAGES_TO_FIND} )
-    find_package ( ${PACKAGE_TO_FIND} ${LAMA_FIND_PACKAGE_FLAGS} )
-endforeach ( PACKAGE_TO_FIND ${OPTIONAL_PACKAGES_TO_FIND} )
+if    ( NOT SCAI_COMPLETE_BUILD )
+	
+	### Include Compiler Flags
+	include ( SetCPPFlags )
+	
+else  ( NOT SCAI_COMPLETE_BUILD )
 
-### Include Compiler Flags
-include ( SetBuildFlags )
-include ( SetCPPFlags )
+	add_definitions( ${ADDITIONAL_WARNING_FLAGS} )
+
+	set ( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${ADDITIONAL_CXX_FLAGS}")
+	set ( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${ADDITIONAL_CXX_FLAGS_RELEASE} " )
+	set ( CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${ADDITIONAL_LINKER_FLAGS} " )
+	set ( CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${ADDITIONAL_LINKER_FLAGS} " )
+
+endif ( NOT SCAI_COMPLETE_BUILD )
+
+if ( NOT CXX_SUPPORTS_C11 )
+    find_package( Boost REQUIRED )
+    include_directories( ${Boost_INCLUDE_DIR} )
+endif ( NOT CXX_SUPPORTS_C11 )
 
 ## Project System-Include
 include_directories ( ../.. )

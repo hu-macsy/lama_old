@@ -155,7 +155,7 @@ bool COOStorage<ValueType>::checkDiagonalProperty() const
         // The diagonal property is given if the first numDiags entries
         // are the diagonal elements
 
-        #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
+        #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
 
         for( IndexType i = 0; i < mNumRows; ++i )
         {

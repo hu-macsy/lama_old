@@ -35,7 +35,7 @@
 #include <scai/lama/distribution/GeneralDistribution.hpp>
 
 // assert
-#include <scai/lama/exception/LAMAAssert.hpp>
+#include <scai/common/SCAIAssert.hpp>
 
 #include <algorithm>
 #include <functional>

@@ -37,8 +37,6 @@
 
 #include <omp.h>
 
-#define LAMA_OMP_SCHEDULE static
-
 #else
 
 #define omp_get_thread_num() 0

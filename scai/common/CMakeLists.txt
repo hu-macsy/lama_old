@@ -1,5 +1,5 @@
 ###
- # @file common/CMakeLists.txt
+ # @file scai/common/CMakeLists.txt
  #
  # @license
  # Copyright (c) 2009-2015
@@ -41,27 +41,31 @@ set ( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../CMake/Modules" )
 
 ## Define all search packages
 include ( InternalDependencies )
-include ( SearchPackages/Common )
 
-# Find required packages
-foreach    ( PACKAGE_TO_FIND ${REQUIRED_PACKAGES_TO_FIND} )
-    find_package ( ${PACKAGE_TO_FIND} ${LAMA_FIND_PACKAGE_FLAGS} REQUIRED )
-endforeach ( PACKAGE_TO_FIND ${REQUIRED_PACKAGES_TO_FIND} )
-
-# Find optional packages
-foreach    ( PACKAGE_TO_FIND ${OPTIONAL_PACKAGES_TO_FIND} )
-    find_package ( ${PACKAGE_TO_FIND} ${LAMA_FIND_PACKAGE_FLAGS} )
-endforeach ( PACKAGE_TO_FIND ${OPTIONAL_PACKAGES_TO_FIND} )
-
-include ( Functions/checkValue )
-include ( Functions/setAndCheckCache )
-
+find_package ( Threads ) # use ${CMAKE_THREAD_LIBS_INIT} for target_link_libraries
+###  Here we use PThread library for threads
+###  Note: FindThreads in CMake is available as Module, but is buggy, needs update of CheckIncludeFiles.cmake
+#find_library ( PTHREADS_LIBRARY NAMES pthread pthreads )
+	
 include ( Package/CUDA )
+include ( Package/OpenMP ) 
+	
+if    ( NOT SCAI_COMPLETE_BUILD )
+	
+	### Include Compiler Flags
+	include ( SetCPPFlags )
+	include ( SetNVCCFlags )
 
-### Include Compiler Flags
-include ( SetBuildFlags )
-include ( SetCPPFlags )
-include ( SetNVCCFlags )
+else  ( NOT SCAI_COMPLETE_BUILD )
+
+	add_definitions( ${ADDITIONAL_WARNING_FLAGS} )
+
+	set ( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${ADDITIONAL_CXX_FLAGS}")
+	set ( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${ADDITIONAL_CXX_FLAGS_RELEASE} " )
+	set ( CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${ADDITIONAL_LINKER_FLAGS} " )
+	set ( CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${ADDITIONAL_LINKER_FLAGS} " )
+
+endif ( NOT SCAI_COMPLETE_BUILD )
 
 ## Project System-Include
 
@@ -82,10 +86,10 @@ if    ( WIN32 )
 	add_definitions ( -DCOMMON_COMPILING_DLL )
 endif ( WIN32 )
 
-if    ( CUDA_FOUND AND LAMA_USE_CUDA )
+if    ( CUDA_FOUND AND USE_CUDA )
     add_subdirectory ( cuda )
     include_directories ( ${CUDA_TOOLKIT_INCLUDE} )
-endif ( CUDA_FOUND AND LAMA_USE_CUDA )
+endif ( CUDA_FOUND AND USE_CUDA )
 
 include_directories ( . )
 

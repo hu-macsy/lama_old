@@ -40,7 +40,7 @@
 #include <scai/lama/LAMAInterfaceRegistry.hpp>
 
 // assert
-#include <scai/lama/exception/LAMAAssert.hpp>
+#include <scai/common/SCAIAssert.hpp>
 
 // trace
 #include <scai/tracing.hpp>
@@ -173,7 +173,7 @@ bool OpenMPCSRUtils::validOffsets( const IndexType array[], const IndexType n, c
 
     bool validFlag = true;
 
-    #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE) reduction( && : validFlag )
+    #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE) reduction( && : validFlag )
 
     for( IndexType i = 0; i < n; i++ )
     {
@@ -209,7 +209,7 @@ IndexType OpenMPCSRUtils::sizes2offsets( IndexType array[], const IndexType numV
 
 void OpenMPCSRUtils::offsets2sizes( IndexType sizes[], const IndexType offsets[], const IndexType numRows )
 {
-    #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
+    #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
 
     for( IndexType i = 0; i < numRows; i++ )
     {
@@ -225,7 +225,7 @@ void OpenMPCSRUtils::offsets2sizesGather(
     const IndexType rowIndexes[],
     const IndexType numRows )
 {
-    #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
+    #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
 
     for( IndexType i = 0; i < numRows; i++ )
     {
@@ -398,7 +398,7 @@ void OpenMPCSRUtils::scaleRows(
     const IndexType numRows,
     const ValueType2 values[] )
 {
-    #pragma omp parallel for schedule( LAMA_OMP_SCHEDULE )
+    #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
 
     for( IndexType i = 0; i < numRows; ++i )
     {
@@ -533,7 +533,7 @@ void OpenMPCSRUtils::normalGEMV(
 
         SCAI_REGION( "OpenMP.CSR.normalGEMV" )
 
-        #pragma omp for schedule(LAMA_OMP_SCHEDULE)
+        #pragma omp for schedule(SCAI_OMP_SCHEDULE)
 
         for( IndexType i = 0; i < numRows; ++i )
         {
@@ -602,7 +602,7 @@ void OpenMPCSRUtils::normalGEVM(
     {
         // Note: region will be entered by each thread
         SCAI_REGION( "OpenMP.CSR.normalGEVM" )
-        #pragma omp for schedule(LAMA_OMP_SCHEDULE)
+        #pragma omp for schedule(SCAI_OMP_SCHEDULE)
 
         for( IndexType i = 0; i < numColumns; ++i )
         {
@@ -633,7 +633,7 @@ void OpenMPCSRUtils::normalGEVM(
 
     if( 0 != beta )
     {
-        #pragma omp for schedule(LAMA_OMP_SCHEDULE)
+        #pragma omp for schedule(SCAI_OMP_SCHEDULE)
 
         for( IndexType i = 0; i < numColumns; ++i )
         {
@@ -679,7 +679,7 @@ void OpenMPCSRUtils::sparseGEMV(
 
         SCAI_REGION( "OpenMP.CSR.sparseGEMV" )
 
-        #pragma omp for schedule(LAMA_OMP_SCHEDULE)
+        #pragma omp for schedule(SCAI_OMP_SCHEDULE)
 
         for( IndexType ii = 0; ii < numNonZeroRows; ++ii )
         {
@@ -736,7 +736,7 @@ void OpenMPCSRUtils::sparseGEVM(
 
         SCAI_REGION( "OpenMP.CSR.normalGEVM" )
 
-        #pragma omp for schedule(LAMA_OMP_SCHEDULE)
+        #pragma omp for schedule(SCAI_OMP_SCHEDULE)
 
         for( IndexType i = 0; i < numColumns; ++i )
         {
@@ -798,7 +798,7 @@ void OpenMPCSRUtils::gemm(
         COMMON_THROWEXCEPTION( "asynchronous execution should be done by LAMATask before" )
     }
 
-    #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
+    #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
 
     for( IndexType i = 0; i < m; ++i )
     {
@@ -851,7 +851,7 @@ void OpenMPCSRUtils::jacobi(
     {
         SCAI_REGION( "OpenMP.CSR.jacobi" )
 
-        #pragma omp for schedule( LAMA_OMP_SCHEDULE )
+        #pragma omp for schedule( SCAI_OMP_SCHEDULE )
 
         for( IndexType i = 0; i < numRows; i++ )
         {
@@ -903,7 +903,7 @@ void OpenMPCSRUtils::jacobiHalo(
     {
         SCAI_REGION( "OpenMP.CSR.jacabiHalo" )
 
-        #pragma omp for schedule( LAMA_OMP_SCHEDULE )
+        #pragma omp for schedule( SCAI_OMP_SCHEDULE )
 
         for( IndexType ii = 0; ii < numNonEmptyRows; ++ii )
         {
@@ -956,7 +956,7 @@ void OpenMPCSRUtils::jacobiHaloWithDiag(
     {
         SCAI_REGION( "OpenMP.CSR.jacabiHaloWithDiag" )
 
-        #pragma omp for schedule( LAMA_OMP_SCHEDULE )
+        #pragma omp for schedule( SCAI_OMP_SCHEDULE )
 
         for( IndexType ii = 0; ii < numNonEmptyRows; ++ii )
         {
@@ -1906,7 +1906,7 @@ ValueType OpenMPCSRUtils::absMaxDiffVal(
     {
         ValueType threadVal = static_cast<ValueType>( 0.0 );
 
-        #pragma omp for schedule( LAMA_OMP_SCHEDULE )
+        #pragma omp for schedule( SCAI_OMP_SCHEDULE )
 
         for( IndexType i = 0; i < numRows; ++i )
         {

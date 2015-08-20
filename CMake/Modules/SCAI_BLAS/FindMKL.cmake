@@ -95,9 +95,9 @@ else ( NOT EXISTS ${MKL_INCLUDE_DIR} )
     if ( NOT DEFINED MKL_LIBRARY_PATH )
         get_filename_component ( MKL_ROOT_PATH "${MKL_INCLUDE_DIR}" PATH )
         
-        if ( LAMA_CMAKE_VERBOSE )
+        if ( SCAI_CMAKE_VERBOSE )
             message ( STATUS "MKL_ROOT_PATH = ${MKL_ROOT_PATH}" )
-        endif ( LAMA_CMAKE_VERBOSE )
+        endif ( SCAI_CMAKE_VERBOSE )
         
         if ( NOT DEFINED MKL_Is64 )
             get_cmake_property ( MKL_Is64 FIND_LIBRARY_USE_LIB64_PATHS )
@@ -119,9 +119,9 @@ else ( NOT EXISTS ${MKL_INCLUDE_DIR} )
         endif( EXISTS ${MKL_ROOT_PATH}/lib )
     endif( NOT DEFINED MKL_LIBRARY_PATH )
 
-    if ( LAMA_CMAKE_VERBOSE )
+    if ( SCAI_CMAKE_VERBOSE )
         message( STATUS "MKL_LIBRARY_PATH = ${MKL_LIBRARY_PATH}, MKL_LIBRARY_PATH_SUFFIXES = ${MKL_LIBRARY_PATH_SUFFIXES}" )
-    endif ( LAMA_CMAKE_VERBOSE )
+    endif ( SCAI_CMAKE_VERBOSE )
     
     ### Search for libraries mkl_gnu_thread, mkl_intel_thread and mkl_core
     
@@ -203,10 +203,10 @@ else ( NOT EXISTS ${MKL_INCLUDE_DIR} )
             list ( APPEND MKL_LIBRARIES ${INTEL_IOMP_LIBRARY} )
         endif ( WIN32 )
         
-        if ( LAMA_CMAKE_VERBOSE )
+        if ( SCAI_CMAKE_VERBOSE )
             message ( STATUS "Found MKL Libraries: ${MKL_LIBRARIES}." )
             message ( STATUS "Found MKL PLibraries: ${MKL_PLIBRARIES}." )
-        endif ( LAMA_CMAKE_VERBOSE )
+        endif ( SCAI_CMAKE_VERBOSE )
     else ( EXISTS ${MKL_LIBRARY_PATH} )
         message ( STATUS "WARNING MKL libraries not found. MKL_LIBRARY_PATH=${MKL_LIBRARY_PATH} directory does not exist." )
     endif ( EXISTS ${MKL_LIBRARY_PATH} )

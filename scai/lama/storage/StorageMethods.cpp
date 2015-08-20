@@ -41,7 +41,7 @@
 #include <scai/lama/openmp/OpenMPCSRUtils.hpp>
 
 // assert
-#include <scai/lama/exception/LAMAAssert.hpp>
+#include <scai/common/SCAIAssert.hpp>
 
 // tracing
 #include <scai/tracing.hpp>
@@ -95,7 +95,7 @@ void StorageMethods<ValueType>::localizeCSR(
     // By using the routine local2global of a distribution we can
     // set the local sizes independently
 
-    #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
+    #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
 
     for( IndexType i = 0; i < localNumRows; i++ )
     {
@@ -120,7 +120,7 @@ void StorageMethods<ValueType>::localizeCSR(
     // Due to the availability of offsets for both storages we
     // can copy the global matrix data to the local one independently
 
-    #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
+    #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
 
     for( IndexType i = 0; i < localNumRows; i++ )
     {
@@ -389,7 +389,7 @@ void StorageMethods<ValueType>::splitCSR(
     WriteOnlyAccess<IndexType> wLocalIA( localIA, numRows + 1 );
     WriteOnlyAccess<IndexType> wHaloIA( haloIA, numRows + 1 );
 
-    #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
+    #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
 
     for( IndexType i = 0; i < numRows; i++ )
     {
@@ -439,7 +439,7 @@ void StorageMethods<ValueType>::splitCSR(
 
     ReadAccess<ValueType> values( csrValues );
 
-    #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
+    #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
 
     for( IndexType i = 0; i < numRows; i++ )
     {
@@ -592,7 +592,7 @@ void StorageMethods<ValueType>::joinCSR(
     ReadAccess<IndexType> ia1( localIA );
     ReadAccess<IndexType> ia2( haloIA );
 
-    #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
+    #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
 
     for( IndexType i = 0; i < numRows; ++i )
     {
@@ -619,7 +619,7 @@ void StorageMethods<ValueType>::joinCSR(
 
     // merging of each row is independent from other rows
 
-    #pragma omp parallel for schedule(LAMA_OMP_SCHEDULE)
+    #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
 
     for( IndexType i = 0; i < numRows; ++i )
     {

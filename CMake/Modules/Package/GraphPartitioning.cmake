@@ -1,8 +1,8 @@
 ###
- # @file SearchPackages.cmake
+ # @file CMakeLists.txt
  #
  # @license
- # Copyright (c) 2009-2013
+ # Copyright (c) 2009-2015
  # Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  # for Fraunhofer-Gesellschaft
  #
@@ -25,24 +25,16 @@
  # SOFTWARE.
  # @endlicense
  #
- # @brief List of required and optional packages
- # @author Jan Ecker
- # @date 25.04.2013
- # @since 1.0.0
+ # @brief Everything needed for using Graph partitioned Distribution ( only with Metis/ParMetis yet )
+ # @author Lauretta Schubert
+ # @date 19.08.2015
+ # @since 2.0.0
 ###
 
-if ( NOT CXX_SUPPORTS_C11 )
-    find_package( Boost REQUIRED )
-    include_directories( ${Boost_INCLUDE_DIR} )
-endif ( NOT CXX_SUPPORTS_C11 )
+find_package ( Metis ${SCAI_FIND_PACKAGE_FLAGS} )
+if    ( METIS_FOUND )
+	find_package ( ParMetis ${SCAI_FIND_PACKAGE_FLAGS} )
+endif ( METIS_FOUND )
 
-# Find required packages
-set ( REQUIRED_PACKAGES_TO_FIND
-        ${SCAI_LOGGING_INTERNAL_DEPS}
-        #add required packages here
-    )
-    
-# Find optional packages
-set ( OPTIONAL_PACKAGES_TO_FIND
-        #add optional packages here
-    )
+## ALLOW to switch off GRAPH_PART explicitly ( doing something linke setAndCheckCache )
+setAndCheckCache ( METIS GRAPH_PART )

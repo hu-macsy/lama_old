@@ -41,7 +41,7 @@ or
 If the MKL is not available, the LAMA configuration tries to find other 
 BLAS or LAPACK libraries. If it fails, you will see a typical message like this::
 
-    Could NOT find LAMA_BLAS (missing: LAMA_BLAS_LIBRARIES)
+    Could NOT find SCAI_BLAS (missing: SCAI_BLAS_LIBRARIES)
 
 Unfortunately, the CMake modules have some problems in finding the BLAS and LAPACK libraries. 
 Especially the module FindLAPACK.cmake has the problem that in some versions the CMAKE_FIND_LIBRARY_SUFFIXES 

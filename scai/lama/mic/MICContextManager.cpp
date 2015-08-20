@@ -51,32 +51,32 @@ namespace lama
 /* ----------------------------------------------------------------------------- */
 
 // definition of array with weak pointers so that we can return shared pointers without allocating again
-boost::weak_ptr<MICContext> MICContextManager::mMICContext[LAMA_MAX_MIC_DEVICES];
+boost::weak_ptr<MICContext> MICContextManager::mMICContext[SCAI_MAX_MIC_DEVICES];
 
 MICContextManager MICContextManager::theInstance;
 
-int MICContextManager::defaultDeviceNr = LAMA_DEFAULT_DEVICE_NUMBER;
+int MICContextManager::defaultDeviceNr = SCAI_DEFAULT_DEVICE_NUMBER;
 
 /* ----------------------------------------------------------------------------- */
 
 int MICContextManager::getDefaultDeviceNr()
 {
-    if( defaultDeviceNr == LAMA_DEFAULT_DEVICE_NUMBER )
+    if( defaultDeviceNr == SCAI_DEFAULT_DEVICE_NUMBER )
     {
 
         // not yet set, so do it now exactly once
 
-        if( getenv( LAMA_MIC_ENV_FOR_DEVICE ) )
+        if( getenv( SCAI_MIC_ENV_FOR_DEVICE ) )
         {
-            std::string devNumber( getenv( LAMA_MIC_ENV_FOR_DEVICE ) );
+            std::string devNumber( getenv( SCAI_MIC_ENV_FOR_DEVICE ) );
             std::istringstream devNumberReader( devNumber );
             devNumberReader >> defaultDeviceNr;
 
-            SCAI_LOG_INFO( logger, LAMA_MIC_ENV_FOR_DEVICE << " = " << defaultDeviceNr << " set, take it" )
+            SCAI_LOG_INFO( logger, SCAI_MIC_ENV_FOR_DEVICE << " = " << defaultDeviceNr << " set, take it" )
         }
         else
         {
-            SCAI_LOG_WARN( logger, LAMA_MIC_ENV_FOR_DEVICE << " not set, take device 0" )
+            SCAI_LOG_WARN( logger, SCAI_MIC_ENV_FOR_DEVICE << " not set, take device 0" )
             defaultDeviceNr = 0;
         }
     }
@@ -96,7 +96,7 @@ MICContextManager::MICContextManager()
 
     // initialize the weak pointers for different devices ( probably not necessary )
 
-    for( int i = 0; i < LAMA_MAX_MIC_DEVICES; i++ )
+    for( int i = 0; i < SCAI_MAX_MIC_DEVICES; i++ )
     {
         mMICContext[i] = boost::weak_ptr<MICContext>();
     }
@@ -108,7 +108,7 @@ MICContextManager::~MICContextManager()
 {
     SCAI_LOG_DEBUG( logger, "~MICContextManager" )
 
-    for( int i = 0; i < LAMA_MAX_MIC_DEVICES; i++ )
+    for( int i = 0; i < SCAI_MAX_MIC_DEVICES; i++ )
     {
         if( mMICContext[i].expired() )
         {
@@ -127,7 +127,7 @@ ContextPtr MICContextManager::getInstance( int deviceNr )
 {
     int micDeviceNr = deviceNr;
 
-    if( micDeviceNr == LAMA_DEFAULT_DEVICE_NUMBER )
+    if( micDeviceNr == SCAI_DEFAULT_DEVICE_NUMBER )
     {
         micDeviceNr = getDefaultDeviceNr();
 
@@ -136,8 +136,8 @@ ContextPtr MICContextManager::getInstance( int deviceNr )
     else
     {
         SCAI_ASSERT_ERROR(
-            0 <= micDeviceNr && micDeviceNr < LAMA_MAX_MIC_DEVICES,
-            "device = " << micDeviceNr << " out of range" << ", max supported device = " << LAMA_MAX_MIC_DEVICES )
+            0 <= micDeviceNr && micDeviceNr < SCAI_MAX_MIC_DEVICES,
+            "device = " << micDeviceNr << " out of range" << ", max supported device = " << SCAI_MAX_MIC_DEVICES )
     }
 
     common::shared_ptr<MICContext> context = common::shared_ptr<MICContext>();

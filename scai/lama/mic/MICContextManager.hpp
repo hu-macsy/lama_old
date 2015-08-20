@@ -57,8 +57,8 @@ class MICContext;
 
 /** maximal number of MIC devices that might be available */
 
-#define LAMA_MAX_MIC_DEVICES 4
-#define LAMA_MIC_ENV_FOR_DEVICE "LAMA_MIC_DEVICE"
+#define SCAI_MAX_MIC_DEVICES 4
+#define SCAI_MIC_ENV_FOR_DEVICE "SCAI_MIC_DEVICE"
 
 /** @brief This class is a derived class of ContextManager for managing MIC Context.
  *
@@ -95,7 +95,7 @@ private:
      *  Entry is available for each possible device.
      */
 
-    static boost::weak_ptr<MICContext> mMICContext[LAMA_MAX_MIC_DEVICES];
+    static boost::weak_ptr<MICContext> mMICContext[SCAI_MAX_MIC_DEVICES];
 
     static MICContextManager theInstance; //!< singleton instance of this class
 

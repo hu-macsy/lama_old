@@ -25,19 +25,19 @@ as follows:
     Matrix = DEBUG
     Matrix.DenseMatrix = INFO
 
-LAMA_UNSUPPORTED
+SCAI_UNSUPPORTED
 ----------------
 
-The variable ``LAMA_UNSUPPORTED`` specifies how the LAMA library deals with operations
+The variable ``SCAI_UNSUPPORTED`` specifies how the LAMA library deals with operations
 that are not efficiently implemented. These might be operations 
 that will not be executed at the intended location (e.g. on the CPU instead on the GPU) 
 or not in the desired matrix format (e.g. implicit conversion to CSR format and back).
 
 ::
 
-    export LAMA_UNSUPPORTED=WARN (default)
-    export LAMA_UNSUPPORTED=ERROR
-    export LAMA_UNSUPPORTED=IGNORE
+    export SCAI_UNSUPPORTED=WARN (default)
+    export SCAI_UNSUPPORTED=ERROR
+    export SCAI_UNSUPPORTED=IGNORE
 
 * ``WARN`` will print always a warning for such an operation
 * ``ERROR`` will throw an exception (and so it might terminate if exception is not caught)

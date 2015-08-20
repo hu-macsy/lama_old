@@ -30,7 +30,7 @@
  * @date 24.05.2013
  */
 
-#include <scai/lama/Settings.hpp>
+#include <scai/common/Settings.hpp>
 #include <scai/lama/cuda/CUDASettings.hpp>
 
 #include <scai/common/cuda/CUDAError.hpp>
@@ -94,9 +94,9 @@ void CUDASettings::initialize()
 {
     // check environment variables for settings
 
-    bool setTexture = Settings::getEnvironment( theUseTextureFlag, "SCAI_CUDA_USE_TEXTURE" );
-    bool setSharedMem = Settings::getEnvironment( theUseSharedMemFlag, "SCAI_CUDA_USE_SHARED_MEM" );
-    bool setBlockSize = Settings::getEnvironment( theBlockSize, "SCAI_CUDA_BLOCK_SIZE" );
+    bool setTexture = common::Settings::getEnvironment( theUseTextureFlag, "SCAI_CUDA_USE_TEXTURE" );
+    bool setSharedMem = common::Settings::getEnvironment( theUseSharedMemFlag, "SCAI_CUDA_USE_SHARED_MEM" );
+    bool setBlockSize = common::Settings::getEnvironment( theBlockSize, "SCAI_CUDA_BLOCK_SIZE" );
 
     if( !setTexture || !setSharedMem || !setBlockSize )
     {

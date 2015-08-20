@@ -158,7 +158,7 @@ void DenseStorageView<ValueType>::getRowImpl( LAMAArray<OtherType>& row, const I
     WriteOnlyAccess<OtherType> wRow( row, mNumColumns );
     ReadAccess<ValueType> rData( mData );
 
-    #pragma omp parallel for schedule (LAMA_OMP_SCHEDULE)
+    #pragma omp parallel for schedule (SCAI_OMP_SCHEDULE)
 
     for( IndexType j = 0; j < mNumColumns; ++j )
     {
@@ -217,7 +217,7 @@ void DenseStorageView<ValueType>::scaleImpl( const LAMAArray<OtherType>& values 
 
     const IndexType columns = mNumColumns;
 
-    #pragma omp parallel for schedule (LAMA_OMP_SCHEDULE)
+    #pragma omp parallel for schedule (SCAI_OMP_SCHEDULE)
 
     for( IndexType i = 0; i < mNumRows; ++i )
     {
@@ -409,7 +409,7 @@ void DenseStorageView<ValueType>::invert( const MatrixStorage<ValueType>& other 
     }
     else
     {
-        LAMA_UNSUPPORTED( "invert (" << other << ") requires conversion to dense storage" )
+        SCAI_UNSUPPORTED( "invert (" << other << ") requires conversion to dense storage" )
 
         assign( other );
         invertDense( *this ); // is always done in place
@@ -724,7 +724,7 @@ void DenseStorageView<ValueType>::matrixTimesMatrix(
     }
     else
     {
-        LAMA_UNSUPPORTED( a << ": will be converted to Dense for matrix multiply" )
+        SCAI_UNSUPPORTED( a << ": will be converted to Dense for matrix multiply" )
         tmpA = shared_ptr<DenseStorage<ValueType> >( new DenseStorage<ValueType>( a ) );
         denseA = tmpA.get();
     }
@@ -736,7 +736,7 @@ void DenseStorageView<ValueType>::matrixTimesMatrix(
     }
     else
     {
-        LAMA_UNSUPPORTED( b << ": will be converted to Dense for matrix multiply" )
+        SCAI_UNSUPPORTED( b << ": will be converted to Dense for matrix multiply" )
         tmpB = shared_ptr<DenseStorage<ValueType> >( new DenseStorage<ValueType>( b ) );
         denseB = tmpB.get();
     }
@@ -748,7 +748,7 @@ void DenseStorageView<ValueType>::matrixTimesMatrix(
     }
     else
     {
-        LAMA_UNSUPPORTED( c << ": will ce converted to Dense for matrix multiply" )
+        SCAI_UNSUPPORTED( c << ": will ce converted to Dense for matrix multiply" )
         tmpC = shared_ptr<DenseStorage<ValueType> >( new DenseStorage<ValueType>( c ) );
         denseC = tmpC.get();
     }
@@ -969,7 +969,7 @@ ValueType DenseStorageView<ValueType>::maxDiffNorm( const MatrixStorage<ValueTyp
     }
     else
     {
-        LAMA_UNSUPPORTED( other << ": converted to " << typeName() << " for maxDiffNorm" )
+        SCAI_UNSUPPORTED( other << ": converted to " << typeName() << " for maxDiffNorm" )
         tmpOtherDense.reset( new DenseStorage<ValueType>( other ) );
         otherDense = tmpOtherDense.get();
     }

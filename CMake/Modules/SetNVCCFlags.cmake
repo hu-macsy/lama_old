@@ -31,15 +31,18 @@
  # @since 1.0.0
 ###
 
+include ( Functions/checkValue )
+
 #### CUDA specific compiler flags ####
 
-if    ( CUDA_FOUND AND LAMA_USE_CUDA )
+if    ( CUDA_FOUND AND USE_CUDA )
     
     ### choosing the right compute capability
     ### we just start from version 1.3 ( 1.0 - 1.2 is not supported )
     list ( APPEND CC_CHOICES "not-found" "13" "20" "21" "30" "32" "35" "50" )
 	set ( CACHE CUDA_COMPUTE_CAPABILITY PROPERTY STRINGS ${CC_CHOICES} )
     checkValue( ${CUDA_COMPUTE_CAPABILITY} "${CC_CHOICES}" )
+    
     if    ( CUDA_COMPUTE_CAPABILITY STREQUAL "not-found" )
         set ( CUDA_HAVE_GPU FALSE )
     else  ( CUDA_COMPUTE_CAPABILITY STREQUAL "not-found" )
@@ -127,7 +130,7 @@ if    ( CUDA_FOUND AND LAMA_USE_CUDA )
 
     endif ( CUDA_VERSION_MAJOR MATCHES "5" )
     
-endif ( CUDA_FOUND AND LAMA_USE_CUDA )
+endif ( CUDA_FOUND AND USE_CUDA )
 
 if ( CUDA_FOUND  )
     set ( CUDA_NVCC_FLAGS_MINSIZEREL "${CUDA_NVCC_FLAGS_MINSIZEREL}" CACHE INTERNAL "" )
