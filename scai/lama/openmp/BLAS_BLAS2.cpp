@@ -35,7 +35,7 @@
 #include <scai/lama/openmp/BLAS_BLAS2.hpp>
 #include <scai/lama/BLASInterface.hpp>
 #include <scai/lama/LAMAInterfaceRegistry.hpp>
-#include <scai/lama/Settings.hpp>
+#include <scai/common/Settings.hpp>
 
 // macros
 #include <scai/lama/macros/unused.hpp>
@@ -220,7 +220,7 @@ void BLAS_BLAS2::setInterface( BLASInterface& BLAS )
 
     int level = 0;
 
-    bool useBLAS = Settings::getEnvironment( level, "USE_BLAS" );
+    bool useBLAS = common::Settings::getEnvironment( level, "USE_BLAS" );
 
     if( !useBLAS || ( level <= 0 ) )
     {

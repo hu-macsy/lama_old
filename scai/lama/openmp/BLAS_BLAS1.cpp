@@ -38,7 +38,7 @@
 #include <scai/lama/openmp/BLASHelper.hpp>
 #include <scai/lama/BLASInterface.hpp>
 #include <scai/lama/LAMAInterfaceRegistry.hpp>
-#include <scai/lama/Settings.hpp>
+#include <scai/common/Settings.hpp>
 
 // macros
 #include <scai/lama/macros/unused.hpp>
@@ -605,7 +605,7 @@ void BLAS_BLAS1::setInterface( BLASInterface& BLAS )
     bool useBLAS = false;
     int level = 0;
 
-    useBLAS = Settings::getEnvironment( level, "USE_BLAS" );
+    useBLAS = common::Settings::getEnvironment( level, "USE_BLAS" );
 
     if( !useBLAS || ( level <= 0 ) )
     {

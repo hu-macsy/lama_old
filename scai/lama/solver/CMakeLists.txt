@@ -61,7 +61,7 @@ set ( CLASSES
         MINRES
         OmegaSolver
 	Richardson
-        SimpleAMG
+ #       SimpleAMG
         SingleGridSetup
         SolutionProxy
         Solver

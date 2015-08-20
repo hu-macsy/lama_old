@@ -161,7 +161,6 @@ set ( CLASSES
         LAMAInterfaceRegistry
         NoCommunicator
         Scalar
-        Settings
         StorageIO
         Vector
     )
@@ -188,7 +187,6 @@ if ( USE_MIC )
 endif ( USE_MIC )
 
 add_subdirectory ( distribution )
-add_subdirectory ( exception )
 add_subdirectory ( expression )
 add_subdirectory ( io )
 add_subdirectory ( macros )

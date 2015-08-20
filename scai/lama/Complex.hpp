@@ -43,7 +43,7 @@
 #include <cmath>
 #endif
 
-#include <scai/lama/exception/LAMAAssert.hpp>
+#include <scai/common/SCAIAssert.hpp>
 
 /*
  * Macros used for building the operators, providing the functionality

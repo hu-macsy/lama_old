@@ -102,7 +102,7 @@ set ( SOURCE_FILES
         ResidualThresholdTest
         RichardsonTest
         ScalarTest
-        SimpleAMGTest
+    #    SimpleAMGTest
         SolutionProxyTest
         SORTest
         SparseAssemblyStorageTest

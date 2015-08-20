@@ -39,7 +39,7 @@
 #include <scai/lama/cuda/CUDAUtils.hpp>
 #include <scai/lama/cuda/CUDASettings.hpp>
 
-#include <scai/lama/exception/LAMAAssert.hpp>
+#include <scai/common/SCAIAssert.hpp>
 
 // thrust
 #include <thrust/device_vector.h>

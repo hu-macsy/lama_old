@@ -34,7 +34,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include <scai/lama/solver/logger/Timer.hpp>
-#include <scai/lama/exception/Exception.hpp>
+#include <scai/common/Exception.hpp>
 
 #include "TestMacros.hpp"
 

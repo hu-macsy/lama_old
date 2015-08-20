@@ -31,8 +31,9 @@
  * @since 1.0.0
  */
 
-#include <scai/lama/Settings.hpp>
-#include <scai/lama/Communicator.hpp>
+#include <scai/common/Settings.hpp>
+// TODO need ENVsetting and LAMAsettings
+//#include <scai/lama/Communicator.hpp>
 
 #include <cstdio>
 #include <cstring>
@@ -43,10 +44,8 @@ extern char **environ;
 namespace scai
 {
 
-namespace lama
+namespace common
 {
-
-SCAI_LOG_DEF_LOGGER( Settings::logger, "Settings" )
 
 /* ----------------------------------------------------------------------------- */
 
@@ -115,7 +114,7 @@ bool Settings::getEnvironment( bool& flag, const char* envVarName )
 
     if( !env )
     {
-        SCAI_LOG_INFO( logger, envVarName << " not set, will use other default" )
+        //SCAI_LOG_INFO( logger, envVarName << " not set, will use other default" )
 
         return false; // no initialization by environment
     }
@@ -124,8 +123,8 @@ bool Settings::getEnvironment( bool& flag, const char* envVarName )
 
     if( !done )
     {
-        SCAI_LOG_ERROR( logger,
-                        "Environment variable " << envVarName << "=" << env << ", is illegal setting, assume FALSE" )
+        //SCAI_LOG_ERROR( logger,
+        //                "Environment variable " << envVarName << "=" << env << ", is illegal setting, assume FALSE" )
 
         flag = false;
     }
@@ -139,7 +138,7 @@ bool Settings::getEnvironment( int& val, const char* envVarName )
 
     if( !env )
     {
-        SCAI_LOG_INFO( logger, envVarName << " not set, will select by compute capability" )
+        //SCAI_LOG_INFO( logger, envVarName << " not set, will select by compute capability" )
 
         return false; // no initialization by environment
     }
@@ -148,8 +147,8 @@ bool Settings::getEnvironment( int& val, const char* envVarName )
 
     if( !done )
     {
-        SCAI_LOG_ERROR( logger,
-                        "Environment variable " << envVarName << "=" << env << ", is illegal setting, assume FALSE" )
+        //SCAI_LOG_ERROR( logger,
+        //                "Environment variable " << envVarName << "=" << env << ", is illegal setting, assume FALSE" )
 
         return false;
     }
@@ -165,17 +164,17 @@ bool Settings::getEnvironment( std::string& val, const char* envVarName )
     {
         val = env;
 
-        SCAI_LOG_INFO( logger, envVarName << " = " << val );
+        //SCAI_LOG_INFO( logger, envVarName << " = " << val );
 
         return true;
     }
 
-    SCAI_LOG_INFO( logger, envVarName << " not set" );
+    //SCAI_LOG_INFO( logger, envVarName << " not set" );
 
     return false;
 }
 
-bool Settings::getEnvironment( std::string& val, const char* envVarName, const Communicator& comm )
+/*bool Settings::getEnvironment( std::string& val, const char* envVarName, const Communicator& comm )
 {
     bool isRoot = comm.getRank() == 0;
 
@@ -219,10 +218,10 @@ bool Settings::getEnvironment( std::string& val, const char* envVarName, const C
         }
     }
 
-    SCAI_LOG_INFO( logger, comm << ": " << envVarName << "=" << val );
+    //SCAI_LOG_INFO( logger, comm << ": " << envVarName << "=" << val );
 
     return hasSet;
-}
+}*/
 
 bool Settings::init()
 {
@@ -242,6 +241,6 @@ bool Settings::init()
     return true;
 }
 
-} /* end namespace lama */
+} /* end namespace common */
 
 } /* end namespace scai */

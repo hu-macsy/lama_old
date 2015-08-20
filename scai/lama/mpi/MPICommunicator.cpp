@@ -38,8 +38,8 @@
 #include <scai/lama/mpi/MPISyncToken.hpp>
 #include <scai/lama/mpi/MPIUtils.hpp>
 
-#include <scai/lama/Settings.hpp>
-#include <scai/lama/exception/LAMAAssert.hpp>
+#include <scai/common/Settings.hpp>
+#include <scai/common/SCAIAssert.hpp>
 
 // tracing
 #include <scai/tracing.hpp>
@@ -174,7 +174,7 @@ void MPICommunicator::initialize( int& argc, char** & argv )
 
         isCUDAAware = false;
 
-        bool setCUDA = Settings::getEnvironment( isCUDAAware, "LAMA_MPI_CUDA" );
+        bool setCUDA = common::Settings::getEnvironment( isCUDAAware, "LAMA_MPI_CUDA" );
 
         if( setCUDA )
         {

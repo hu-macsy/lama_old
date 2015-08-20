@@ -2028,7 +2028,7 @@ Scalar DenseMatrix<ValueType>::maxDiffNorm( const Matrix& other ) const
     }
     else
     {
-        LAMA_UNSUPPORTED( "maxDiffNorm requires temporary of " << other )
+        SCAI_UNSUPPORTED( "maxDiffNorm requires temporary of " << other )
         DenseMatrix<ValueType> typedOther( other, getDistributionPtr(), getColDistributionPtr() );
         return maxDiffNormImpl( typedOther );
     }

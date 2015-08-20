@@ -41,8 +41,8 @@
 #include <scai/lama/LAMAInterfaceRegistry.hpp>
 
 // assert
-#include <scai/lama/exception/LAMAAssert.hpp>
-#include <scai/lama/Settings.hpp>
+#include <scai/common/SCAIAssert.hpp>
+#include <scai/common/Settings.hpp>
 
 // trace
 #include <scai/tracing.hpp>
@@ -250,7 +250,7 @@ void MKLCSRUtils::setInterface( CSRUtilsInterface& CSRUtils )
 
     // using MKL for CSR might be disabled explicitly by environment variable
 
-    Settings::getEnvironment( useMKL, "USE_MKL" );
+    common::Settings::getEnvironment( useMKL, "USE_MKL" );
 
     if( !useMKL )
     {

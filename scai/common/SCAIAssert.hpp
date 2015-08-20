@@ -34,7 +34,6 @@
 
 #pragma once
 
-#include <scai/lama/exception/Exception.hpp>
 #include <scai/common/Exception.hpp>
 
 #include <sstream>

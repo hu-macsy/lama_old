@@ -41,7 +41,7 @@
 #include <scai/lama/openmp/OpenMPCSRUtils.hpp>
 
 // assert
-#include <scai/lama/exception/LAMAAssert.hpp>
+#include <scai/common/SCAIAssert.hpp>
 
 // tracing
 #include <scai/tracing.hpp>

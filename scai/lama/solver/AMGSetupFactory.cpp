@@ -37,7 +37,7 @@
 // others
 #include <scai/lama/solver/AMGSetupManager.hpp>
 
-#include <scai/lama/exception/Exception.hpp>
+#include <scai/common/Exception.hpp>
 
 // logging
 #include <scai/logging.hpp>

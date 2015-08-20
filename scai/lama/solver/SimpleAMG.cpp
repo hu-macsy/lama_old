@@ -39,7 +39,7 @@
 #include <scai/lama/solver/SingleGridSetup.hpp>
 
 #include <scai/lama/expression/MatrixVectorExpressions.hpp>
-#include <scai/lama/Settings.hpp>
+#include <scai/common/Settings.hpp>
 
 // tracing
 #include <scai/tracing.hpp>
@@ -145,7 +145,7 @@ void SimpleAMG::initialize( const Matrix& coefficients )
 
         // comm: so it is sufficient if only root has set the environment variable
 
-        bool isSet = Settings::getEnvironment( amgSetupLibrary, "LAMA_AMG_SETUP_LIBRARY", comm );
+        bool isSet = common::Settings::getEnvironment( amgSetupLibrary, "LAMA_AMG_SETUP_LIBRARY", comm );
 
         if( isSet )
         {

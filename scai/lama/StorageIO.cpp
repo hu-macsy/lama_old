@@ -43,7 +43,7 @@
 
 #include <scai/hmemo.hpp>
 
-#include <scai/lama/exception/Exception.hpp>
+#include <scai/common/Exception.hpp>
 
 #include <scai/lama/openmp/OpenMPCSRUtils.hpp>
 #include <scai/tracing.hpp>

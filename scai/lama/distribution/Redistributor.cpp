@@ -36,7 +36,7 @@
 // others
 #include <scai/lama/distribution/HaloBuilder.hpp>
 
-#include <scai/lama/exception/LAMAAssert.hpp>
+#include <scai/common/SCAIAssert.hpp>
 
 #include <scai/common/unique_ptr.hpp>
 

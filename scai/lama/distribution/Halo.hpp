@@ -43,7 +43,7 @@
 #include <scai/hmemo.hpp>
 #include <scai/lama/CommunicationPlan.hpp>
 
-#include <scai/lama/exception/LAMAAssert.hpp>
+#include <scai/common/SCAIAssert.hpp>
 
 #include <map>
 

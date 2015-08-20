@@ -16,13 +16,13 @@ multiple OpenMP threads) and without using any GPU. Here are the commands::
 
   cd <build-directory>/test
   export SCAI_LOG=ERROR
-  export LAMA_UNSUPPORTED=IGNORE
+  export SCAI_UNSUPPORTED=IGNORE
   export LAMA_TEST_CONTEXT=Host
   ./lama_test
 
 * ``SCAI_LOG`` should be set to ``ERROR`` to avoid logging of exceptions that might be thrown 
   by all unit tests that test for failures.
-* ``LAMA_UNSUPPORTED`` should be set to ``IGNORE`` to avoid warnings for matrix conversions 
+* ``SCAI_UNSUPPORTED`` should be set to ``IGNORE`` to avoid warnings for matrix conversions 
   (here we test functionality and not efficiency).
 * ``LAMA_TEST_CONTEXT=Host`` restricts the tests to run only on the CPU.
 
@@ -65,7 +65,7 @@ have the same values on all available nodes. For OpenMPI, this is done as follow
 
 .. code-block:: bash
 
-  mpirun -x SCAI_LOG=ERROR -x LAMA_UNSUPPORTED=IGNORE
+  mpirun -x SCAI_LOG=ERROR -x SCAI_UNSUPPORTED=IGNORE
          -x LAMA_TEST_CONTEXT=Host -machine_file=<file> ./lama_test
 
 Parallel execution of the tests on multiple GPUs works also fine as long as one node has
@@ -73,7 +73,7 @@ exactly one GPU.
 
 .. code-block:: bash
 
-  mpirun -x SCAI_LOG=ERROR -x LAMA_UNSUPPORTED=IGNORE
+  mpirun -x SCAI_LOG=ERROR -x SCAI_UNSUPPORTED=IGNORE
          -x LAMA_TEST_CONTEXT=CUDA -x SCAI_DEVICE=0 -machine_file=<file> ./lama_test
 
 If you need a solution where MPI processes require different values for the SCAI_DEVICE

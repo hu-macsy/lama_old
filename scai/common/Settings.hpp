@@ -32,15 +32,15 @@
  */
 #pragma once
 
-#include <scai/logging.hpp>
+#include <string>
 
 namespace scai
 {
 
-namespace lama
+namespace common
 {
 
-class Communicator;
+//class Communicator;
 
 /**
  *  This singleton class provides methods to query environment variables.
@@ -84,13 +84,11 @@ public:
      *  @param[in]   comm is communicator used to bcast setting of environment variable
      *  @return      true if environment variable has been used to set flag
      */
-    static bool getEnvironment( std::string& val, const char* envVarName, const Communicator& comm );
+    //static bool getEnvironment( std::string& val, const char* envVarName, const Communicator& comm );
 
 private:
 
     Settings();
-
-    SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
     /** convert the string value to a boolean value, name only used for messages.
      *
@@ -99,7 +97,7 @@ private:
      *  @return      true if string could be converted, false if no legal value has been found
      */
 
-static    bool convertYesNoString( bool& flag, const char* value );
+    static bool convertYesNoString( bool& flag, const char* value );
 
     /** convert the string value to an int value
      *
@@ -113,6 +111,6 @@ static    bool convertYesNoString( bool& flag, const char* value );
     static bool init();
 };
 
-} /* end namespace lama */
+} /* end namespace common */
 
 } /* end namespace scai */

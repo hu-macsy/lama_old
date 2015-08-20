@@ -37,6 +37,10 @@
 
 // base classes
 #include <scai/common/Printable.hpp>
+#include <scai/common/Exception.hpp>
+#include <scai/common/UnsupportedException.hpp>
+
+#include <scai/hmemo/Context.hpp>
 
 // interface structures used in LAMAInterface
 
@@ -117,7 +121,7 @@ protected:
             loc->getInterface().module.function();                                              \
     if ( function == NULL )                                                                     \
     {                                                                                           \
-        LAMA_UNSUPPORTED( "Method " #module "::" #function " not available on " << *loc );      \
+        SCAI_UNSUPPORTED( "Method " #module "::" #function " not available on " << *loc );      \
         loc = Context::getContextPtr( context::Host );                                          \
         function = loc->getInterface().module.function();                                       \
         if ( function == NULL )                                                                 \
@@ -148,7 +152,7 @@ protected:
             loc->getInterface().module.function<ValueType>();                                   \
     if ( function == NULL )                                                                     \
     {                                                                                           \
-        LAMA_UNSUPPORTED( "Method " #module "::" #function " not available on " << *loc );      \
+        SCAI_UNSUPPORTED( "Method " #module "::" #function " not available on " << *loc );      \
         loc = Context::getContextPtr( context::Host );                                          \
         function = loc->getInterface().module.function<ValueType>();                            \
         if ( function == NULL )                                                                 \

@@ -1700,7 +1700,7 @@ void ELLStorage<ValueType>::matrixTimesMatrix(
     }
     else
     {
-        LAMA_UNSUPPORTED( b << ": b not ELL format" )
+        SCAI_UNSUPPORTED( b << ": b not ELL format" )
     }
 
     if( ellA == NULL || ellB == NULL )
@@ -1720,7 +1720,7 @@ void ELLStorage<ValueType>::matrixTimesMatrix(
         }
         else
         {
-            LAMA_UNSUPPORTED( c << ": ELL temporary required for matrix add" )
+            SCAI_UNSUPPORTED( c << ": ELL temporary required for matrix add" )
             tmpC = common::shared_ptr<ELLStorage<ValueType> >( new ELLStorage<ValueType>( c ) );
             ellC = tmpC.get();
         }
