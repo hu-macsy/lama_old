@@ -43,7 +43,7 @@ if ( Boost_UNIT_TEST_FRAMEWORK_FOUND )
 
     target_link_libraries ( CUDATest 
         ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}
-        memory
+        scai_hmemo
         )
 
 else ( Boost_UNIT_TEST_FRAMEWORK_FOUND )

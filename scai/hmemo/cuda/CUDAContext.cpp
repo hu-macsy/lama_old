@@ -44,6 +44,9 @@
 #include <cuda.h>
 #include <cusparse.h>
 
+cusparseHandle_t CUDAContext_cusparseHandle = 0;
+cublasHandle_t CUDAContext_cublasHandle = 0;
+
 namespace scai
 {
 
@@ -53,8 +56,6 @@ using common::Thread;
 using tasking::SyncToken;
 using tasking::CUDAStreamSyncToken;
 
-cusparseHandle_t CUDAContext_cusparseHandle = 0;
-cublasHandle_t CUDAContext_cublasHandle = 0;
 
 namespace hmemo
 {

@@ -11,7 +11,8 @@
 #include <iostream>
 #include <unistd.h>
 
-using namespace hmemo;
+using namespace scai;
+using namespace scai::hmemo;
 
 SCAI_LOG_DEF_LOGGER( logger, "CudaExample" )
 

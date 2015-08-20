@@ -11,7 +11,8 @@
 
 #include <iostream>
 
-using namespace hmemo;
+using namespace scai;
+using namespace scai::hmemo;
 
 SCAI_LOG_DEF_LOGGER( logger, "MemBandwidth" )
 

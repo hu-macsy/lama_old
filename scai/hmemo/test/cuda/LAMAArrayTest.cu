@@ -38,13 +38,14 @@
 #include <thrust/reduce.h>
 #include <thrust/device_vector.h>
 
-#include <common/CUDAError.hpp>
+#include <scai/common/cuda/CUDAError.hpp>
 
 /* --------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_SUITE( LAMAArrayTest )
 
-using namespace hmemo;
+using namespace scai;
+using namespace scai::hmemo;
 
 /* --------------------------------------------------------------------- */
 

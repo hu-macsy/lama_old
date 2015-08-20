@@ -39,6 +39,7 @@
 
 #include <iostream>
 
+using namespace scai;
 using namespace hmemo;
 
 SCAI_LOG_DEF_LOGGER( logger, "CudaExample" )

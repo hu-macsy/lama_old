@@ -45,6 +45,8 @@
 #include <scai/common/function.hpp>
 #include <scai/common/bind.hpp>
 
+using namespace scai;
+
 using tasking::Task;
 using tasking::SyncToken;
 using tasking::CUDAStreamSyncToken;

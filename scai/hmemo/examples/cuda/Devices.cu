@@ -39,7 +39,8 @@
 #include <scai/logging.hpp>
 
 using namespace std;
-using namespace hmemo;
+using namespace scai;
+using namespace scai::hmemo;
 
 void sub( ContextPtr cudaContext )
 {

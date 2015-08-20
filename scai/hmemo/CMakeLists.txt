@@ -105,8 +105,12 @@ if    ( WIN32 )
 	add_definitions ( -DCOMMON_COMPILING_DLL )
 endif ( WIN32 )
 
+message( STATUS "CUDA_FOUND = ${CUDA_FOUND}" )
+message( STATUS "USE_CUDA = ${USE_CUDA}" )
+
 if    ( CUDA_FOUND AND USE_CUDA )
     add_subdirectory ( cuda )
+    message( STATUS "CUDA_SOURCES = ${CUDA_SOURCES}" )
     include_directories ( ${CUDA_TOOLKIT_INCLUDE} )
 endif ( CUDA_FOUND AND USE_CUDA )
 
@@ -115,6 +119,7 @@ include_directories ( . )
 ### add library and put path to search path ###
 
 add_library ( scai_hmemo SHARED ${CPP_SOURCES} ${CUDA_SOURCES} )
+
 target_link_libraries ( scai_hmemo ${CUDA_CUDA_LIBRARY} ${CUDA_CUDART_LIBRARY}
                                ${CUDA_cublas_LIBRARY} ${CUDA_cusparse_LIBRARY} )
 
