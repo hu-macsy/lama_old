@@ -96,11 +96,6 @@ foreach    ( lib ${Boost_COMPONENTS} )
    endif ( ${libname} )
 endforeach ( lib ${Boost_COMPONENTS} )
 
-if    ( NOT Boost_THREAD_LIBRARY )
-    message ( FATAL_ERROR "Boost thread library not found" )
-endif ( NOT Boost_THREAD_LIBRARY )
-
-
 # Check boost versions
 # TODO: RECHECK
 if    ( ${Boost_VERSION} GREATER "104099" AND Boost_UNIT_TEST_FRAMEWORK_FOUND AND Boost_REGEX_FOUND )
@@ -119,9 +114,6 @@ else  ( ${Boost_VERSION} GREATER "104099" AND Boost_UNIT_TEST_FRAMEWORK_FOUND AN
     endif ( ${Boost_VERSION} LESS "104100" )
 endif ( ${Boost_VERSION} GREATER "104099" AND Boost_UNIT_TEST_FRAMEWORK_FOUND AND Boost_REGEX_FOUND )
 
-# For LAMA thread library Boost_THREAD_LIBRARY and Boost_SYSTEM_LIBRARY must be used together
-
-set ( LAMA_THREAD_LIBRARY ${Boost_THREAD_LIBRARY} ${Boost_SYSTEM_LIBRARY} )
 
 # Check if cache variable is already set
 if    ( DEFINED LAMA_BUILD_TEST )
