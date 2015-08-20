@@ -96,19 +96,19 @@ public:
     template<typename ValueType>
     scai::lama::SparseMatrix<ValueType>* createSparseMatrix( const char* format );
 
-    hmemo::ContextPtr getContextPtr() const
+    scai::hmemo::ContextPtr getContextPtr() const
     {
         // Create a new context if not done yet
 
         if ( !mContext )
         {
-            mContext = hmemo::Context::getContextPtr( mContextType, mDevice );
+            mContext = scai::hmemo::Context::getContextPtr( mContextType, mDevice );
         }
 
         return mContext;
     }
 
-    const hmemo::Context& getContext() const
+    const scai::hmemo::Context& getContext() const
     {
         return *getContextPtr();
     }
@@ -158,7 +158,7 @@ public:
         return mCommunicationKind;
     }
 
-    common::ScalarType getValueType() const
+    scai::common::ScalarType getValueType() const
     {
         return mValueType;
     }
@@ -177,13 +177,13 @@ private:
 
     std::string              mMatrixFormat;
 
-    hmemo::ContextType        mContextType;
+    scai::hmemo::ContextType        mContextType;
 
-    mutable hmemo::ContextPtr   mContext;
+    mutable scai::hmemo::ContextPtr   mContext;
 
     scai::lama::Matrix::SyncKind     mCommunicationKind;
 
-    common::ScalarType   mValueType;          // value type to use
+    scai::common::ScalarType   mValueType;          // value type to use
 
     scai::lama::CommunicatorPtr      mComm;
 
@@ -210,9 +210,9 @@ LamaConfig::LamaConfig()
 {
     mCommunicationKind = scai::lama::Matrix::SYNCHRONOUS;
     mComm              = scai::lama::Communicator::get();
-    mContextType       = hmemo::context::Host;
+    mContextType       = scai::hmemo::context::Host;
     mMaxIter           = scai::lama::nIndex;
-    mValueType         = common::scalar::DOUBLE;
+    mValueType         = scai::common::scalar::DOUBLE;
     mLogLevel          = scai::lama::LogLevel::convergenceHistory;
     mUseMetis          = false;
     mWeight            = 1.0f;
@@ -323,15 +323,15 @@ void LamaConfig::setArg( const char* arg )
     { 
         // Host does not require a device id
 
-        mContextType = hmemo::context::Host;
+        mContextType = scai::hmemo::context::Host;
     }
     else if ( ( "MIC" == val ) || ( "PHI" == val ) )
     { 
-        mContextType = hmemo::context::MIC;
+        mContextType = scai::hmemo::context::MIC;
     }
     else if ( ( "CUDA" == val ) || ( "GPU" == val ) )
     { 
-        mContextType = hmemo::context::CUDA;
+        mContextType = scai::hmemo::context::CUDA;
     }
     else if ( "PINNED" == val )
     {
@@ -355,27 +355,27 @@ void LamaConfig::setArg( const char* arg )
     }
     else if ( ( "FLOAT" == val ) || ( "SP" == val ) )
     {
-        mValueType = common::scalar::FLOAT;
+        mValueType = scai::common::scalar::FLOAT;
     }
     else if ( ( "DOUBLE" == val ) || ( "DP" == val ) )
     {
-        mValueType = common::scalar::DOUBLE;
+        mValueType = scai::common::scalar::DOUBLE;
     }
     else if ( ( "LONGDOUBLE" == val ) || ( "LP" == val ) )
     {
-        mValueType = common::scalar::LONG_DOUBLE;
+        mValueType = scai::common::scalar::LONG_DOUBLE;
     }
     else if ( ( "COMPLEX" == val ) || ( "CP" == val ) )
     {
-        mValueType = common::scalar::COMPLEX;
+        mValueType = scai::common::scalar::COMPLEX;
     }
     else if ( ( "DOUBLECOMPLEX" == val ) || ( "COMPLEXDOUBLE" == val) || ( "ZP" == val ) )
     {
-        mValueType = common::scalar::DOUBLE_COMPLEX;
+        mValueType = scai::common::scalar::DOUBLE_COMPLEX;
     }
     else if ( ( "LONGCOMPLEX" == val ) || ( "COMPLEXLONG" == val) )
     {
-        mValueType = common::scalar::LONG_DOUBLE_COMPLEX;
+        mValueType = scai::common::scalar::LONG_DOUBLE_COMPLEX;
     }
     else if ( "TEXTURE" == val )
     {
@@ -528,7 +528,7 @@ const char* LamaConfig::getFormat( ) const
     {
         // choose default format by context: Host -> CSR, CUDA -> ELL
 
-        if ( mContextType == hmemo::context::CUDA )
+        if ( mContextType == scai::hmemo::context::CUDA )
         {
             return "ELL";
         }

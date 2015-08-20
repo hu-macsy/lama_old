@@ -35,7 +35,7 @@ Setting a Context was realized as simple as possible:
 (1) : Getting a CudaContext for cuda device 0.
 (2) : Setting a CudaContext to matrix and vectors.
 
-:download:`Download complete solution Task 5 <../../../examples/lecture/task5.cpp>`
+:download:`Download complete solution Task 5 <../../../lama/examples/lecture/task5.cpp>`
 
 .. csv-table::
    :header: "back to this Task", "Index", "next Task"

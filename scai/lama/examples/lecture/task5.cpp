@@ -18,6 +18,7 @@
 #include <iostream>
 
 using namespace scai::lama;
+using namespace scai::hmemo;
 
 int main( int argc, char* argv[] )
 {
@@ -31,7 +32,7 @@ int main( int argc, char* argv[] )
     std::cout << "Read matrix m : " << m << std::endl;
     IndexType size = m.getNumRows();
 
-    scai::lama::ContextPtr cudaContext = Context::getContextPtr( context::CUDA, 0 ); 
+    ContextPtr cudaContext = Context::getContextPtr( scai::hmemo::context::CUDA, 0 ); 
     m.setContext( cudaContext );
 
     DenseVector<double> rhs( size , 0.0 );

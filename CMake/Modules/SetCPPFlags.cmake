@@ -95,6 +95,9 @@ endif ( CMAKE_CXX_COMPILER_ID MATCHES Intel )
 # PGI
 if ( CMAKE_CXX_COMPILER_ID MATCHES PGI )
 
+    # Flag BOOST_HAS_THREADS is workaround needed for PGI compiler when compiling codes
+    # with Boost headers
+
     set ( LAMA_CXX_FLAGS "-fPIC -Kieee -Mipa=libc -DBOOST_HAS_THREADS " ) # -std=c++0x
 
     # Disable warning 1097 to avoid warnings from openmpi headers with gcc specific attributes

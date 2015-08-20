@@ -4,6 +4,8 @@
 # SCAI_TRACING_FOUND       - Do not attempt to use if "no" or undefined
 # SCAI_TRACING_INCLUDE_DIR - the common include dir
 # SCAI_TRACING_LIBRARY     - libraries to link against
+# SCAI_TRACING             - can be used to disable tracing already at compile time
+# SCAI_TRACING_FLAG        - flag to be set for compilaton of instrumented code
 
 if ( NOT SCAI_TRACING_INCLUDE_DIR )
     find_path ( SCAI_TRACING_INCLUDE_DIR tracing.hpp
@@ -30,4 +32,22 @@ if ( SCAI_TRACING_INCLUDE_DIR )
     endif ( SCAI_TRACING_LIBRARY )
 endif ( SCAI_TRACING_INCLUDE_DIR)
 
-mark_as_advanced ( SCAI_TRACING_FOUND SCAI_TRACING_INCLUDE_DIR SCAI_TRACING_LIBRARY )
+mark_as_advanced ( SCAI_TRACING_INCLUDE_DIR SCAI_TRACING_LIBRARY )
+
+# SCAI_TRACING
+#
+# If TRACING is disabled all SCAI_REGION macros in the code are
+# ignored. Otherwise performance data can be collected
+# where configuration is set at runtime via SCAI_TRACE.
+
+set ( SCAI_TRACING TRUE CACHE BOOL 
+     "Enable / Disable tracing of regions for performance analysis" )
+if ( SCAI_TRACING )
+    set ( SCAI_TRACING_FLAG "SCAI_TRACE_ON" )
+else ( SCAI_TRACING )
+    set ( SCAI_TRACING_FLAG "SCAI_TRACE_OFF" )
+endif ( SCAI_TRACING )
+
+# Instrumented code must be compiled with a corresponding directive.
+# add_definitions( -D${SCAI_TRACING_FLAG} )
+

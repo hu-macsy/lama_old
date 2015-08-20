@@ -50,8 +50,9 @@
 #include <scai/common/unique_ptr.hpp>
 
 using namespace std;
-using namespace scai::lama;
-using scai::common::unique_ptr;
+using namespace scai;
+using namespace lama;
+using common::unique_ptr;
 
 int main( int argc, char* argv[] )
 {
@@ -119,8 +120,8 @@ int main( int argc, char* argv[] )
 
         // only square matrices are accetpted
 
-        SCAI_ASSERT_EQUAL( inMatrix.getNumRows(), inMatrix.getNumColumns() )
-        SCAI_ASSERT_EQUAL( inMatrix.getNumRows(), rhs.size() )
+        SCAI_ASSERT_EQUAL( inMatrix.getNumRows(), inMatrix.getNumColumns(), "size mismatch" )
+        SCAI_ASSERT_EQUAL( inMatrix.getNumRows(), rhs.size(), "size mismatch" )
     }
 
     // for solutin create vector with same format/type as rhs, size = numRows, init = 0.0

@@ -1,6 +1,7 @@
 
-add_definitions( -DSCAI_TRACE_ON )
+# Explicitly enable tracing at compile time here
 
+add_definitions( -DSCAI_TRACE_ON )
 
 foreach ( executable TraceTest TraceCalls TraceThreads )
     add_executable( ${executable} ${executable}.cpp )

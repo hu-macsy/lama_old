@@ -34,9 +34,10 @@
 #include "Bitmap.hpp"
 
 #include <scai/lama/storage/CSRStorage.hpp>
-#include <scai/lama/HostReadAccess.hpp>
+#include <scai/hmemo/ReadAccess.hpp>
 
 using namespace scai::lama;
+using namespace scai::hmemo;
 
 int main( int argc, char** argv )
 {
@@ -78,9 +79,9 @@ int main( int argc, char** argv )
     const LAMAArray<IndexType>& ja = matrix.getJA();
     const LAMAArray<double>& values = matrix.getValues();
 
-    HostReadAccess<IndexType> csrIA( ia );
-    HostReadAccess<IndexType> csrJA( ja );
-    HostReadAccess<double> csrValues( values );
+    ReadAccess<IndexType> csrIA( ia );
+    ReadAccess<IndexType> csrJA( ja );
+    ReadAccess<double> csrValues( values );
 
     std::cout << "Write png of size " << nRows << " x " << nColumns << ", zoom = " << nZoom << std::endl;
 

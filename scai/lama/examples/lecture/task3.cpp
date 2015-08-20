@@ -17,7 +17,8 @@
 
 #include <iostream>
 
-using namespace scai::lama;
+using namespace scai;
+using namespace lama;
 
 int main( int argc, char* argv[] )
 {
@@ -46,7 +47,7 @@ int main( int argc, char* argv[] )
     //Reset solution to zero so that there is something to solve
     solution = 0.0;
 
-    common::unique_ptr<Timer> timer( new Timer() );
+    common::shared_ptr<Timer> timer( new Timer() );
     LoggerPtr logger( new CommonLogger("CGLogger", LogLevel::convergenceHistory, LoggerWriteBehaviour::toConsoleOnly, timer) );
 
     //Create a CG solver using the Constructor with logger as an argument

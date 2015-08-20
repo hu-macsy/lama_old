@@ -34,11 +34,12 @@
 #include "Bitmap.hpp"
 
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
-#include <scai/lama/HostReadAccess.hpp>
+#include <scai/hmemo/ReadAccess.hpp>
 #include <scai/lama/solver/SimpleAMG.hpp>
 #include <scai/lama/solver/logger/CommonLogger.hpp>
 
 using namespace scai::lama;
+using namespace scai::hmemo;
 
 int main( int argc, char** argv )
 {
@@ -82,9 +83,9 @@ int main( int argc, char** argv )
 
     LoggerPtr amgLogger( new CommonLogger ( loggerName, scai::lama::LogLevel::completeInformation,
                    LoggerWriteBehaviour::toConsoleOnly,
-                   common::unique_ptr<Timer>( new Timer() ) ) );
+                   scai::common::shared_ptr<Timer>( new Timer() ) ) );
 
-    common::shared_ptr<SimpleAMG> amgSolver( new SimpleAMG( "SimpleAMG solver", amgLogger ) );
+    scai::common::shared_ptr<SimpleAMG> amgSolver( new SimpleAMG( "SimpleAMG solver", amgLogger ) );
 
     amgSolver->setHostOnlyLevel( 4 );
     amgSolver->setReplicatedLevel( 5 );
@@ -130,9 +131,9 @@ int main( int argc, char** argv )
         pic.setColor( 240, 120, 0 );  // color for smallest value
         // pic.setColor( 0, 0, 255 );    // color for largest value
 
-        HostReadAccess<IndexType> csrIA( ia );
-        HostReadAccess<IndexType> csrJA( ja );
-        HostReadAccess<double> csrValues( values );
+        ReadAccess<IndexType> csrIA( ia );
+        ReadAccess<IndexType> csrJA( ja );
+        ReadAccess<double> csrValues( values );
 
         pic.drawCSR( local.getNumRows(), local.getNumColumns(), csrIA.get(), csrJA.get(), csrValues.get() );
 
@@ -186,9 +187,9 @@ int main( int argc, char** argv )
         pic.setColor( 240, 120, 0 );  // color for smallest value
         // pic.setColor( 0, 0, 255 );    // color for largest value
 
-        HostReadAccess<IndexType> csrIA( ia );
-        HostReadAccess<IndexType> csrJA( ja );
-        HostReadAccess<double> csrValues( values );
+        ReadAccess<IndexType> csrIA( ia );
+        ReadAccess<IndexType> csrJA( ja );
+        ReadAccess<double> csrValues( values );
 
         pic.drawCSR( local.getNumRows(), local.getNumColumns(), csrIA.get(), csrJA.get(), csrValues.get() );
 

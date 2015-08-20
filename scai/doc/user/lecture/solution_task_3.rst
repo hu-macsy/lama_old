@@ -81,7 +81,7 @@ Solution Task 3
 (2) Creating a CommonLogger
 (3) Using Constructor with logger as an argument
 
-:download:`Download complete solution Task 3 <../../../examples/lecture/task3.cpp>`
+:download:`Download complete solution Task 3 <../../../lama/examples/lecture/task3.cpp>`
 
 .. csv-table::
    :header: "back to this Task", "Index", "next Task"

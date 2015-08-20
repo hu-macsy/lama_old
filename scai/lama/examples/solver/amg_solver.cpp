@@ -52,10 +52,11 @@
 #include <scai/common/unique_ptr.hpp>
 
 using namespace std;
-using namespace scai::lama;
+using namespace scai;
+using namespace lama;
 
-using scai::common::Walltime;
-using scai::common::unique_ptr;
+using common::Walltime;
+using common::unique_ptr;
 
 void dummy( const LamaConfig& lamaconf )
 {
@@ -171,8 +172,8 @@ int main( int argc, char* argv[] )
 
     // only square matrices are accetpted
 
-    SCAI_ASSERT_EQUAL( matrix.getNumRows(), matrix.getNumColumns() )
-    SCAI_ASSERT_EQUAL( matrix.getNumRows(), rhs.size() )
+    SCAI_ASSERT_EQUAL( matrix.getNumRows(), matrix.getNumColumns(), "size mismatch" )
+    SCAI_ASSERT_EQUAL( matrix.getNumRows(), rhs.size(), "size mismatch" )
 
     int numRows = matrix.getNumRows();
 

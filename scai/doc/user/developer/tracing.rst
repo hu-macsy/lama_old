@@ -11,24 +11,75 @@ files are generated.
 Source Code Instrumentation
 ---------------------------
 
-A source code region in C++ code can be added as follows:
-
-::
-
-	SCAI_REGION( "region_name" )
-
+A user defined region in the code allows to get performance data for an exactly defined
+part of the code.
 Each time when the region is entered and left (end of the scope) performance counter values are read
 (mainly walltime ticks) and by this way performance data for each region is collected.
 
-The macro definition is included as follows:
+A sequence of statements can be instrumented as a region as follows:
+
+.. code-block:: c++
+
+    #include <scai/tracing.hpp>
+    ...
+    SCAI_REGION_START( "region_name" )
+    <sequence_of_statements>
+    SCAI_REGION_END( "region_name" )
+    ...
+
+The block of statements surrounded by these two macros should not have other exit points (e.g. return,
+goto, throw). The exit points might also be instrumented by  ``SCAI_REGION_END`` but this is not
+very convenient. Mismatching calls of START and END result in serious errors for collecting performance
+data.
+
+Therefore in C++ a source code region should be defined as follows:
+
+.. code-block:: c++
+
+    #include <scai/tracing.hpp>
+    ...
+    {
+        SCAI_REGION( "region_name" )
+        ...
+    }
+
+The macro ``SCAI_REGION`` creates an object whose constructor calls the START routine and
+the destructor will call the corresponding END routine. The destructor is called automatically 
+when the corresponding scope is left.
+
+Name of Regions
+---------------
+
+Regions can be structured hierarchically by using the dot nation.
 
 ::
 
-    #include <scai/tracing.hpp>
+    SCAI_REGION( "CUDA.CSRUtils.hasDiagonalProperty" )
+    SCAI_REGION( "CUDA.CSRUtils.CSR2CSC" )
+    SCAI_REGION( "CUDA.CSR.matrixMultiplySizes" )
+    SCAI_REGION( "CUDA.CSR.matrixAdd" )
+    SCAI_REGION( "Mat.Dense.invertCyclic" )
+    SCAI_REGION( "Mat.Sp.syncLocal" )
+    SCAI_REGION( "Vec.Times.Mat.others" )
+    SCAI_REGION( "Communicator.MPI.scatter" )
+
+For the visualization of performance data, some tools take the first name to group regions.
+
+Even if not supported yet, this notation might be used to explicitly configure for which regions
+the collection of performance data might be enabled or disabled.
+
+Compilation of Instrumented Source Code
+---------------------------------------
+
+A flag must be set to deal correctly with the REGION macros. Tracing can be either enabled or 
+disabled at compile time.
 
 ::
 
     add_definitions( -DSCAI_TRACE_ON )
+    add_definitions( -DSCAI_TRACE_OFF )
+
+Even if it is enabled at compile time, it must be also enabled explicitly at compile time.
 
 Collection at runtime
 ----------------------
@@ -37,9 +88,9 @@ The environment variable SCAI_TRACE specifies which trace data is collected at r
 
 ::
 
-	SCAI_TRACE=time
-	SCAI_TRACE=ct
-	SCAI_TRACE=time:thread:ct
+    SCAI_TRACE=time
+    SCAI_TRACE=ct
+    SCAI_TRACE=time:thread:ct
 
 If tracing is disabled the overhead for each region is very low (just comparison with a global variable).
 
@@ -119,4 +170,42 @@ Runtime calls show how often a subroutine has been called.
     :width: 500px
     :align: center
     :alt: Runtime Calls
+
+Support for Tracing Library with CMake
+--------------------------------------
+
+The tracing library itself is built with CMake.
+
+For using the tracing library an CMake module ``Findscai_tracing.cmake`` is provided.
+
+::
+    # find installation of tracing library
+
+    find_package( scai_tracing REQUIRED )
+
+    if ( SCAI_TRACING_FOUND )
+       # set the include directory containing tracing.hpp
+       include_directories( ${SCAI_TRACING_INCLUDE_DIR} )
+       add_definitions( -D${SCAI_TRACING_FLAG} )
+       ...
+       target_link_libraries( <newlib> ${SCAI_TRACING_LIBRARY} )
+    endif ( SCAI_TRACING_FOUND )
+
+By default, tracing is enabled. It can be disabled by the boolean CMake variable
+``SCAI_TRACING``. All macros used for instrumentation will be ignored if tracing
+is disabled at compile time.
+
+The tracing library itself uses also the logging library. This logging is only intended
+for code development. But by setting corresponding levels of the used loggers it is possible
+to see which instrumented regions are entered and left.
+
+::
+
+   # Tracing loggers ( section in config file of logging )
+   TraceConfig = WARN               # gives warning if no runtime settings are made
+   TraceRegionRecord = INFO         # logging entry at each entry and exit of a region
+   TraceData = WARN
+   FileTable = WARN
+   RegionTable = WARN
+   CallTreeTable = WARN
 
