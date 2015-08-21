@@ -16,32 +16,6 @@ blindness. To alleviate these concerns, our logging module is designed to be rel
 Since logging is rarely the main focus of an application, the API strives to be simple to understand and to
 use.
 
-Logging Libraries
------------------
-
-The following three versions of Logging libraries are available:
-
-- `log4cpp`_
-- `log4cxx`_
-- `boost logging <http://boost-log.sourceforge.net/libs/log/doc/html/index.html>`_
-
-.. _log4cpp: http://log4cpp.sourceforge.net/
-.. _log4cxx: http://logging.apache.org/log4cxx/
-
-There are certain advantages and disadvantges for each of the libraries.
-There is a comparative survey `here`__ for the different facilities but this survey does not give any hints
-about performance, usability, and availability. Here are some impressions for each of the libraries:
-
-__ http://log4cpp.hora-obscura.de/index.php/LoggingLibraryForCpp
-
-- log4cpp is very simple, easy to install, but not very performant.
-
-- log4cxx is the most popular, very performant, highest functionality, but requires the Apache runtime system
-  and utilities to be installed.
-  
-- Boost logging might be integrated in one of the next versions of Boost but not yet; it has only include
-  files but no library itself; runtime configuration files are not supported.
-
 SCAI Logging
 ------------
 
@@ -90,10 +64,8 @@ It is possible to combine arguments like it is done for streams:
 
 The general idea is that the logging should appear in the source code but logging is usually disabled at
 runtime especially for the lower levels (DEBUG, INFO).
-The logging macros should have nearly no overhead if the logging is disabled at runtime. 
-Rather good performance is achieved if there is only one integer comparison at runtime for a logging statement. 
-It could be better if this comparison can even be extracted out of loops. But it could be worse if e.g. string
-operations are executed for the logging messages even if logging is disabled.
+Logging macros have nearly no overhead if the logging is disabled at runtime,
+as it is only an integer comparison with a static variable. 
 
 There is an include file that contains the definitions for all the macros:
 
@@ -125,6 +97,16 @@ Be careful when using one of these macros. It implies that the corresponding log
 levels will become empty and do not appear any more in the code. They cannot be enabled at runtime without
 recompilation. The advantage is that it allows better optimized code as there is not even any integer
 comparison in the code.
+
+If more than one of the preprocessor variables is set, the one which enables the lowest level is used.
+
+::
+
+    #define SCAI_LOG_LEVEL_DEBUG    // debug, info, warn, error, fatal are enabled
+    #define SCAI_LOG_LEVEL_OFF      // useless as lower levels are already enabled
+
+So switching off logging by ``SCAI_LOG_LEVEL_OFF`` via define in the source code does not work
+if ``-DSCAI_LOG_LEVEL_WARN`` has been set at compile flag.
 
 Conditional code for logging
 ----------------------------
@@ -197,14 +179,24 @@ In the implementation of the class, e.g. Example.cpp, the logger has to be defin
 Configuration of logging at runtime
 -----------------------------------
 
-Logging can be configured at runtime by setting the environment variable ``SCAI_LOG`` with a configuration file.
+Logging can be configured at runtime by setting the environment variable ``SCAI_LOG`` with a logging level.
 
 .. code-block:: bash
 
-    export SCAI_LOG=config
+    export SCAI_LOG=TRACE 
+    export SCAI_LOG=DEBUG
+    export SCAI_LOG=INFO
+    export SCAI_LOG=WARN
+    export SCAI_LOG=ERROR
+    export SCAI_LOG=OFF
 
-If the variable is not set, a logging file with the name .loggingrc is searched in the home directory of the user.
-If this file is also not available, the default configuration is chosen.
+For setting loggers invididually, a configuration file can be used whose name should be different to 
+the logging levels.
+
+.. code-block:: bash
+
+    export SCAI_LOG=<config_file>
+
 
 The configuration file should contain lines that specfy the levels of the logger.
 
@@ -218,6 +210,9 @@ The configuration file should contain lines that specfy the levels of the logger
 
 The default configuration for all loggers is level *WARN* if no configuration file is specified or if no
 level has been specified in the configuration file. The RootLogger can be referenced by **<root>**.
+
+If the environment variable ``SCAI_LOG`` is not set, a logging file with the name .loggingrc is searched 
+in the home directory of the user. If this file is also not available, the default configuration is chosen.
 
 For Debugging purposes it is also possible to flush the output of the logger, so all logging messages are
 displayed even if the program crashes. Flushing can be activated by the config file:
@@ -387,6 +382,32 @@ The next example demonstrates the use of logging with multiple threads.
    2015-08-19, 16:11:01 LogOpenMP @ OMP_Thread_6 ( main -> LogOpenMP.cpp::29 ) INFO executes iteration 12 of 20
    2015-08-19, 16:11:01 LogOpenMP @ OMP_Thread_5 ( main -> LogOpenMP.cpp::29 ) INFO executes iteration 11 of 20
    2015-08-19, 16:11:01 LogOpenMP @ OMP_Thread_6 ( main -> LogOpenMP.cpp::29 ) INFO executes iteration 13 of 20
+
+Related Work
+------------
+
+The following three versions of logging libraries are used in most other C++ projects:
+
+- `log4cpp`_
+- `log4cxx`_
+- `boost logging <http://boost-log.sourceforge.net/libs/log/doc/html/index.html>`_
+
+.. _log4cpp: http://log4cpp.sourceforge.net/
+.. _log4cxx: http://logging.apache.org/log4cxx/
+
+There are certain advantages and disadvantges for each of the libraries.
+There is a comparative survey `here`__ for the different facilities but this survey does not give any hints
+about performance, usability, and availability. Here are some impressions for each of the libraries:
+
+__ http://log4cpp.hora-obscura.de/index.php/LoggingLibraryForCpp
+
+- log4cpp is very simple, easy to install, but not very performant.
+
+- log4cxx is the most popular, very performant, highest functionality, but requires the Apache runtime system
+  and utilities to be installed.
+  
+- Boost logging might be integrated in one of the next versions of Boost but not yet; it has only include
+  files but no library itself; runtime configuration files are not supported.
 
 Summary
 -------

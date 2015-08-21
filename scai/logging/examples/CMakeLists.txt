@@ -32,11 +32,11 @@
 
 # Try to find OpenMP compile and link flags for the OpenMP example
 
-# DemoLogging example, here we compile also LOG_TRACE macros
+# LogLevels example, here we compile also LOG_TRACE macros
 
-add_executable( DemoLogging DemoLogging.cpp )
-target_link_libraries( DemoLogging scai_logging )
-set_target_properties( DemoLogging PROPERTIES COMPILE_FLAGS -DSCAI_LOG_LEVEL_TRACE )
+add_executable( LogLevels LogLevels.cpp )
+target_link_libraries( LogLevels scai_logging )
+set_target_properties( LogLevels PROPERTIES COMPILE_FLAGS -DSCAI_LOG_LEVEL_TRACE )
 
 # ThreadTest example, here we need the Boost Thread library
 
