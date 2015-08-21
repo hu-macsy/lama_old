@@ -39,19 +39,10 @@ project ( scai_common CXX )
 ### Set Module Path
 set ( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../CMake/Modules" )
 
-## Define all search packages
-# no internal dependencies
-include ( ExternalDependencies )
-
-# Find required packages
-
-foreach    ( module ${SCAI_COMMON_EXTERNAL_DEPS} )
-    include( Package/${module} )
-endforeach ( module ${SCAI_COMMON_EXTERNAL_DEPS} )
-
 if    ( NOT SCAI_COMPLETE_BUILD )
 	
 	### Include Compiler Flags
+	include ( SetBuildFlags )
 	include ( SetCPPFlags )
 
 else  ( NOT SCAI_COMPLETE_BUILD )
@@ -64,6 +55,16 @@ else  ( NOT SCAI_COMPLETE_BUILD )
 	set ( CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${ADDITIONAL_LINKER_FLAGS} " )
 
 endif ( NOT SCAI_COMPLETE_BUILD )
+
+## Define all search packages
+# no internal dependencies
+include ( ExternalDependencies )
+
+# Find required packages
+
+foreach    ( module ${SCAI_COMMON_EXTERNAL_DEPS} )
+    include( Package/${module} )
+endforeach ( module ${SCAI_COMMON_EXTERNAL_DEPS} )
 
 ## Project System-Include
 
@@ -94,11 +95,8 @@ include_directories ( . )
 ### add library and put path to search path ###
 
 add_library ( scai_common SHARED ${CPP_SOURCES} ${CUDA_SOURCES} )
-target_link_libraries( scai_common ${PTHREADS_LIBRARY} )
 
-foreach ( module ${SCAI_COMMON_INTERNAL_DEPS} )
-    target_link_libraries ( scai_logging ${${module}_LIBRARY} )
-endforeach    ( module ${SCAI_COMMON_INTERNAL_DEPS} )
+target_link_libraries( scai_common ${SCAI_THREAD_LIBRARY}  )
 
 ### install ###
 

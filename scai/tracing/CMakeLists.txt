@@ -39,22 +39,13 @@ project( scai_tracing CXX )
 ### Set Module Path
 set ( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../CMake/Modules" )
 
-## Define all search packages
-include ( InternalDependencies )
-# no external dependencies
-
-# Find required packages
-
-foreach    ( PACKAGE_TO_FIND ${SCAI_TRACING_INTERNAL_DEPS} )
-    find_package ( ${PACKAGE_TO_FIND} ${SCAI_FIND_PACKAGE_FLAGS} REQUIRED )
-endforeach ( PACKAGE_TO_FIND ${SCAI_TRACING_INTERNAL_DEPS} )
-
 include ( Functions/checkValue )
 include ( Functions/setAndCheckCache )
 
 if    ( NOT SCAI_COMPLETE_BUILD )
 
 	### Include Compiler Flags
+	include ( SetBuildFlags )
 	include ( SetCPPFlags )
 	
 else  ( NOT SCAI_COMPLETE_BUILD )
@@ -72,6 +63,16 @@ if ( NOT CXX_SUPPORTS_C11 )
     find_package( Boost REQUIRED )
     include_directories( ${Boost_INCLUDE_DIR} )
 endif ( NOT CXX_SUPPORTS_C11 )
+
+## Define all search packages
+include ( InternalDependencies )
+# no external dependencies
+
+# Find required packages
+
+foreach    ( PACKAGE_TO_FIND ${SCAI_TRACING_INTERNAL_DEPS} )
+    find_package ( ${PACKAGE_TO_FIND} ${SCAI_FIND_PACKAGE_FLAGS} REQUIRED )
+endforeach ( PACKAGE_TO_FIND ${SCAI_TRACING_INTERNAL_DEPS} )
 
 ## Project System-Include
 include_directories ( ../.. )
