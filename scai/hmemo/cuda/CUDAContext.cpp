@@ -44,18 +44,17 @@
 #include <cuda.h>
 #include <cusparse.h>
 
-cusparseHandle_t CUDAContext_cusparseHandle = 0;
-cublasHandle_t CUDAContext_cublasHandle = 0;
+#include <memory>
 
 namespace scai
 {
 
-#include <memory>
+cusparseHandle_t CUDAContext_cusparseHandle = 0;
+cublasHandle_t CUDAContext_cublasHandle = 0;
 
 using common::Thread;
 using tasking::SyncToken;
 using tasking::CUDAStreamSyncToken;
-
 
 namespace hmemo
 {

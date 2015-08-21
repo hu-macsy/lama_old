@@ -39,12 +39,15 @@
 
 #include <iostream>
 
-using namespace scai;
-using namespace hmemo;
-
 SCAI_LOG_DEF_LOGGER( logger, "CudaExample" )
 
-extern cusparseHandle_t CUDAContext_cusparseHandle;
+namespace scai
+{
+	extern cusparseHandle_t CUDAContext_cusparseHandle;
+} /* end namespace scai */
+
+using namespace scai;
+using namespace hmemo;
 
 template<typename ValueType>
 void outArray( const LAMAArray<ValueType>& array, const char* name )

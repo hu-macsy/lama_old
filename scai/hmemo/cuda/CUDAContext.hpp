@@ -180,8 +180,8 @@ private:
     CUstream mTransferStream; //!< stream for memory transfers
     CUstream mComputeStream; //!< stream for asynchronous computations
 
-    cublasHandle_t   mCublasHandle;   //!< handle to cublas library
-    cusparseHandle_t mCusparseHandle; //!< handle to cusparse library
+//    cublasHandle_t   mCublasHandle;   //!< handle to cublas library
+//    cusparseHandle_t mCusparseHandle; //!< handle to cusparse library
 
     std::string mDeviceName; //!< name set during initialization
 

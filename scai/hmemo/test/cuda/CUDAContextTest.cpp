@@ -56,8 +56,10 @@ using namespace hmemo;
 typedef boost::mpl::list<double, float> test_types;
 
 /* --------------------------------------------------------------------- */
-
-extern cublasHandle_t CUDAContext_cublasHandle;
+namespace scai
+{
+	extern cublasHandle_t CUDAContext_cublasHandle;
+} /* end namespace scai */
 
 static void scal( int n, float alpha, float* x_d, int inc_x, SyncToken* syncToken )
 {
