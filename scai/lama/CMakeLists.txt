@@ -57,10 +57,26 @@ set ( LAMA_VERSION_COUNT 3 )
 set ( LAMA_VERSION ${LAMA_VERSION_MAJOR}.${LAMA_VERSION_MINOR}.${LAMA_VERSION_PATCH} )
 
 ### Variables / CMAKE Functions ###
+if    ( NOT SCAI_COMPLETE_BUILD )
+
+	include ( SetBuildFlags )
+	include ( SetCPPFlags )
+	include ( CompilerVersion )
+	
+else  ( NOT SCAI_COMPLETE_BUILD )
+
+	add_definitions( ${ADDITIONAL_WARNING_FLAGS} )
+
+	set ( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${ADDITIONAL_CXX_FLAGS}")
+	set ( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${ADDITIONAL_CXX_FLAGS_RELEASE} " )
+	set ( CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${ADDITIONAL_LINKER_FLAGS} " )
+	set ( CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${ADDITIONAL_LINKER_FLAGS} " )
+	
+endif ( NOT SCAI_COMPLETE_BUILD )
+
 include ( Functions/allFunctions )
-include ( SetBuildFlags ) #LAMA.CMakeLists
-include ( SCAIAssert ) #LAMA.CMakeLists
-include ( CompilerVersion ) #LAMA.CMakeLists
+
+include ( SCAIAssert )
 
 ## Define all search packages
 include ( InternalDependencies )
@@ -77,28 +93,9 @@ foreach    ( PACKAGE_TO_FIND ${SCAI_LAMA_INTERNAL_DEPS} )
     find_package ( ${PACKAGE_TO_FIND} ${SCAI_FIND_PACKAGE_FLAGS} REQUIRED )
 endforeach ( PACKAGE_TO_FIND $${SCAI_LAMA_INTERNAL_DEPS} )
 
-# Find optional packages
-set ( OPTIONAL_PACKAGES_TO_FIND SCAI_BLAS )
-foreach    ( PACKAGE_TO_FIND ${OPTIONAL_PACKAGES_TO_FIND} )
-    find_package ( ${PACKAGE_TO_FIND} ${SCAI_FIND_PACKAGE_FLAGS} )
-endforeach ( PACKAGE_TO_FIND ${OPTIONAL_PACKAGES_TO_FIND} )
-
-# LAMA irrelevant entries will be marked as advanced ( Remove them from default cmake GUI )
-mark_as_advanced ( CUDA_BUILD_CUBIN CUDA_BUILD_EMULATION CUDA_SDK_ROOT_DIR CUDA_VERBOSE_BUILD )
-
-### Include Compiler Flags
-include ( SetCPPFlags ) #LAMA.CMakeLists
-
-add_definitions ( -D${SCAI_OMP_SCHEDULE_FLAG} )
-
-## MKL FOUND
-if     ( SCAI_BLAS_NAME STREQUAL "MKL" )
-    add_definitions( -DSCAI_MKL_BLAS )
-elseif ( INTERNALBLAS_FOUND )
-    add_definitions( -DSCAI_INTERNAL_BLAS )
-else   ( )
-    add_definitions( -DADD_ )
-endif  ( )
+message ( "SCAI_BLAS_NAME ${SCAI_BLAS_NAME}" )
+message ( "SCAI_BLAS_LIBRARIES ${SCAI_BLAS_LIBRARIES}" )
+message ( "SCAI_PBLAS_LIBRARIES ${SCAI_PBLAS_LIBRARIES}" )
 
 ## Project System-Include
 include_directories ( ../.. )
@@ -114,6 +111,16 @@ endif ( Boost_INCLUDE_DIR )
 
 ### add definitions ###
 
+## MKL FOUND
+if     ( SCAI_BLAS_NAME STREQUAL "MKL" )
+    add_definitions( -DSCAI_MKL_BLAS )
+elseif ( INTERNALBLAS_FOUND )
+    add_definitions( -DSCAI_INTERNAL_BLAS )
+else   ( )
+    add_definitions( -DADD_ )
+endif  ( )
+
+add_definitions ( -D${SCAI_OMP_SCHEDULE_FLAG} )
 add_definitions ( -D${SCAI_LOGGING_FLAG} )
 add_definitions ( -D${SCAI_TRACING_FLAG} )
 
@@ -224,11 +231,13 @@ endif ( CUDA_FOUND AND USE_CUDA AND CUDA_HAVE_GPU )
 
 add_library ( ama ${SCAI_LIBRARY_TYPE} ${CXX_SOURCES} ) #${HEADERS} )
 
+# internal libraries
 foreach    ( module ${SCAI_LAMA_INTERNAL_DEPS} )
 	string ( TOUPPER ${module} upper_module )
     target_link_libraries ( ama ${${upper_module}_LIBRARY} )
 endforeach ( module ${SCAI_LAMA_INTERNAL_DEPS} )
 
+# external libraries
 target_link_libraries ( ama ${SCAI_BLAS_LIBRARIES} )
 
 if    ( CUDA_FOUND AND USE_CUDA AND CUDA_HAVE_GPU )

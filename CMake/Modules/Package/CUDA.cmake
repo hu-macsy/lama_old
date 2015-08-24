@@ -82,4 +82,5 @@ if ( NOT CUDA_cusparse_LIBRARY )
 
 endif ( NOT CUDA_cusparse_LIBRARY )
 
-mark_as_advanced ( CUDA_TOOLKIT_ROOT_DIR )
+# LAMA irrelevant entries will be marked as advanced ( Remove them from default cmake GUI )
+mark_as_advanced ( CUDA_TOOLKIT_ROOT_DIR CUDA_BUILD_CUBIN CUDA_BUILD_EMULATION CUDA_SDK_ROOT_DIR CUDA_VERBOSE_BUILD )
