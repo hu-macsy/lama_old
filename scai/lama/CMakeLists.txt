@@ -63,15 +63,6 @@ if    ( NOT SCAI_COMPLETE_BUILD )
 	include ( SetCPPFlags )
 	include ( CompilerVersion )
 	
-else  ( NOT SCAI_COMPLETE_BUILD )
-
-	add_definitions( ${ADDITIONAL_WARNING_FLAGS} )
-
-	set ( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${ADDITIONAL_CXX_FLAGS}")
-	set ( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${ADDITIONAL_CXX_FLAGS_RELEASE} " )
-	set ( CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${ADDITIONAL_LINKER_FLAGS} " )
-	set ( CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${ADDITIONAL_LINKER_FLAGS} " )
-	
 endif ( NOT SCAI_COMPLETE_BUILD )
 
 message ( STATUS "CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS}" )
@@ -87,6 +78,7 @@ include ( ExternalDependencies )
 # Find required packages
 
 foreach    ( module ${SCAI_LAMA_EXTERNAL_DEPS} )
+message ( STATUS "include package ${module}" )
     include( Package/${module} )
 endforeach ( module ${SCAI_LAMA_EXTERNAL_DEPS} )
 
@@ -94,10 +86,6 @@ endforeach ( module ${SCAI_LAMA_EXTERNAL_DEPS} )
 foreach    ( PACKAGE_TO_FIND ${SCAI_LAMA_INTERNAL_DEPS} )
     find_package ( ${PACKAGE_TO_FIND} ${SCAI_FIND_PACKAGE_FLAGS} REQUIRED )
 endforeach ( PACKAGE_TO_FIND $${SCAI_LAMA_INTERNAL_DEPS} )
-
-message ( "SCAI_BLAS_NAME ${SCAI_BLAS_NAME}" )
-message ( "SCAI_BLAS_LIBRARIES ${SCAI_BLAS_LIBRARIES}" )
-message ( "SCAI_PBLAS_LIBRARIES ${SCAI_PBLAS_LIBRARIES}" )
 
 ## Project System-Include
 include_directories ( ../.. )
@@ -111,7 +99,32 @@ if    ( Boost_INCLUDE_DIR )
     include_directories ( ${Boost_INCLUDE_DIR} )
 endif ( Boost_INCLUDE_DIR )
 
+#### concluding all defined compiler flags to CMAKE_..._FLAGS ####
+
+## add variables to cache with new names so they can be modified by the user via CCMAKE
+
+set ( ADDITIONAL_CXX_FLAGS "${LAMA_CXX_FLAGS}" CACHE STRING "additional flags for cxx compile and link" )
+set ( ADDITIONAL_WARNING_FLAGS "${LAMA_WARNING_FLAGS}" CACHE STRING "compilation flags concerning warnings" )
+set ( ADDITIONAL_CXX_FLAGS_RELEASE "${LAMA_CXX_FLAGS_RELEASE}" CACHE STRING "addtional cxx compiler flags for release optimizations" )
+set ( ADDITIONAL_LINKER_FLAGS "${LAMA_LINKER_FLAGS}" CACHE STRING "additional linker flags" )
+
+mark_as_advanced ( ADDITIONAL_CXX_FLAGS ADDITIONAL_WARNING_FLAGS ADDITIONAL_CXX_FLAGS_RELEASE ADDITIONAL_LINKER_FLAGS )
+
+###  Code coverage with gcov/lcov
+set ( USE_CODE_COVERAGE FALSE CACHE BOOL "Enable / Disable use of Code Coverage" )
+
+if    ( USE_CODE_COVERAGE )
+    set ( COVERAGE_FLAGS "-fprofile-arcs -ftest-coverage" )
+endif ( USE_CODE_COVERAGE )
+
+set ( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${ADDITIONAL_CXX_FLAGS}")
+set ( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${ADDITIONAL_CXX_FLAGS_RELEASE} " )
+set ( CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${ADDITIONAL_LINKER_FLAGS} " )
+set ( CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${ADDITIONAL_LINKER_FLAGS} " )
+
 ### add definitions ###
+
+add_definitions( ${ADDITIONAL_WARNING_FLAGS} )
 
 ## MKL FOUND
 if     ( SCAI_BLAS_NAME STREQUAL "MKL" )
