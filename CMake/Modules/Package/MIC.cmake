@@ -33,4 +33,3 @@
 
 ###  User selection to switch use on or off
 set ( USE_MIC FALSE CACHE BOOL "Enable / Disable use of MIC (only for Intel Compiler)" )
-

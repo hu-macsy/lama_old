@@ -30,24 +30,10 @@
  # @date 17.07.2015
 ###
 
-#message ( STATUS "${CMAKE_CXX_COMPILER_ID} compiler" )
-
-#### Check for -std=c++11
-
-include ( CheckCXXCompilerFlag )
-
-if    ( NOT DEFINED CXX_SUPPORTS_C11 )
-    CHECK_CXX_COMPILER_FLAG( -std=c++11 CXX_SUPPORTS_C11 )
-endif ( NOT DEFINED CXX_SUPPORTS_C11 )
-
 #### compiler dependent flag definition ####
 
 # GNU
 if ( CMAKE_COMPILER_IS_GNUCXX )
-
-    if ( CXX_SUPPORTS_C11 )
-        set ( LAMA_CXX_FLAGS "${LAMA_CXX_FLAGS} -std=c++11" )
-    endif ( CXX_SUPPORTS_C11 )
 
     set ( LAMA_LINKER_FLAGS "-Wl,--no-as-needed " )
     set ( LAMA_WARNING_FLAGS "-Wextra -Wall -Werror" ) # -pedantic -std=c++98 " ) # -march=core02
@@ -69,13 +55,7 @@ if ( CMAKE_CXX_COMPILER_ID MATCHES Intel )
 
     set ( LAMA_CXX_FLAGS "${LAMA_CXX_FLAGS} -fPIC -shared-intel" ) 
 
-    if ( CXX_SUPPORTS_C11 )
-        set ( LAMA_CXX_FLAGS "${LAMA_CXX_FLAGS} -std=c++11" )
-    else ( CXX_SUPPORTS_C11 )
-        set ( LAMA_CXX_FLAGS "${LAMA_CXX_FLAGS} -std=c++0x" )
-    endif ( CXX_SUPPORTS_C11 )
-
-    message ( STATUS "LAMA_CXX_FLAGS = ${LAMA_CXX_FLAGS}" )
+    #message ( STATUS "LAMA_CXX_FLAGS = ${LAMA_CXX_FLAGS}" )
     
     # -wd1478 : supprress warning deprecated auto_ptr
     # not set: -Werror-all (all warnings will be errors)

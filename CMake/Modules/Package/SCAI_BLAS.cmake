@@ -36,6 +36,10 @@
 #   SCAI_BLAS_FOUND - System has SCAI_BLAS
 #   SCAI_BLAS_LIBRARIES - The libraries needed to use SCAI_BLAS
 
+include ( Functions/checkValue )
+
+enable_language ( C )
+
 LIST ( APPEND LIBRARY_CHOICES "auto" "MKL" "BLAS" "INTERNALBLAS" )
 if ( NOT DEFINED SCAI_BLAS_LIBRARY )
     set ( SCAI_BLAS_LIBRARY "auto" CACHE STRING "Choose the used BLAS Library: ${LIBRARY_CHOICES}" )

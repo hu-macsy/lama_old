@@ -38,3 +38,5 @@ endif ( METIS_FOUND )
 
 ## ALLOW to switch off GRAPH_PART explicitly ( doing something linke setAndCheckCache )
 setAndCheckCache ( METIS GRAPH_PART )
+
+set ( SCAI_GRAPHPARTITIONING_LIBRARIES ${METIS_LIBRARY} ${PARMETIS_LIBRARY} )

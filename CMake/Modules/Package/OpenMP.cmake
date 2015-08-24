@@ -45,7 +45,7 @@ if ( OPENMP_FOUND AND USE_OPENMP )
 
 	#### Compile/Link flag for OpenMP will be set for all source files and all targets
 
-   set ( LAMA_CXX_FLAGS "${LAMA_CXX_FLAGS} ${OpenMP_CXX_FLAGS}" )
+    set ( LAMA_CXX_FLAGS "${LAMA_CXX_FLAGS} ${OpenMP_CXX_FLAGS}" )
 
 	set ( SCAI_OMP_SCHEDULE_FLAG "SCAI_OMP_SCHEDULE=${SCAI_OMP_SCHEDULE}" )
 	

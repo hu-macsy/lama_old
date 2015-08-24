@@ -67,3 +67,5 @@ find_package ( MPI ${SCAI_FIND_PACKAGE_FLAGS} )
 ### ALLOW to switch off MPI explicitly ###
 
 setAndCheckCache ( MPI )
+
+set ( SCAI_MPI_LIBRARIES ${MPI_LIBRARIES} )

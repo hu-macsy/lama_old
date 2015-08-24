@@ -78,7 +78,8 @@ else  ( Boost_INCLUDE_DIR )
     message ( STATUS "Boost (include directory) not found: give hint by environment variable BOOST_ROOT" ) 
 endif ( Boost_INCLUDE_DIR )
 
-# check status of each Boost component
+# check status of each Boost component and conclude all needed Boost libraries
+set ( SCAI_BOOST_LIBRARIES "" )
 
 foreach    ( lib ${Boost_COMPONENTS} )
     string ( TOUPPER ${lib} libname )
@@ -89,6 +90,7 @@ foreach    ( lib ${Boost_COMPONENTS} )
     if    ( ${libname} )
         # library found, make sure it belongs to same version of Boost
         if    ( "${${libname}}" MATCHES "${Boost_PATH}*" )
+        	list ( APPEND SCAI_BOOST_LIBRARIES ${${libname}} )
             # do nothing
         else  ( "${${libname}}" MATCHES "${Boost_PATH}*" )
             message ( FATAL_ERROR "${${libname}} illegal, not in ${Boost_PATH}" )
