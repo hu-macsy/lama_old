@@ -45,8 +45,7 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.MINRESTest" )
 BOOST_AUTO_TEST_CASE( CtorTest )
 {
     LoggerPtr slogger(
-        new CommonLogger( "<MINRES>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly,
-                          new Timer() ) );
+        new CommonLogger( "<MINRES>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly ) );
 
     MINRES MINRESSolver( "MINRESTestSolver", slogger );
     BOOST_CHECK_EQUAL( MINRESSolver.getId(), "MINRESTestSolver" );
@@ -102,8 +101,7 @@ void testSolveWithPreconditionmethod( ContextPtr context )
     typedef typename MatrixType::MatrixValueType ValueType;
 
     LoggerPtr slogger(
-        new CommonLogger( "<MINRES>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly,
-                          new Timer() ) );
+        new CommonLogger( "<MINRES>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly ) );
 
     MINRES MINRESSolver( "MINRESTestSolver", slogger );
 
@@ -170,8 +168,7 @@ void testSolveWithoutPreconditionmethod( ContextPtr context )
     typedef typename MatrixType::MatrixValueType ValueType;
 
         LoggerPtr slogger(
-        new CommonLogger( "<MINRES>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly,
-                          new Timer() ) );
+        new CommonLogger( "<MINRES>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly ) );
 
     MINRES MINRESSolver( "MINRESTestSolver", slogger );
 

@@ -65,6 +65,9 @@ Logger::Logger(
     : mId( id ), mLogLevel( level ), mWriteBehaviour( writeBehaviour ), mIgnoreRank( ignoreRank )
 {
     mTimer.reset( new Timer() );
+
+    SCAI_LOG_INFO( logger, "Logger created, id = " << mId << ", level = " << mLogLevel << ", writeBehaviour = " 
+                           << mWriteBehaviour << ", ignore rank = " << mIgnoreRank )
 }
 
 Logger::Logger(
@@ -76,6 +79,8 @@ Logger::Logger(
     : mTimer( timer ), mId( id ), mLogLevel( level ), mWriteBehaviour( writeBehaviour ), mIgnoreRank(
           ignoreRank )
 {
+    SCAI_LOG_INFO( logger, "Logger with timer created, id = " << mId << ", level = " << mLogLevel << ", writeBehaviour = " 
+                           << mWriteBehaviour << ", ignore rank = " << mIgnoreRank )
 }
 
 Logger::Logger(
@@ -89,6 +94,10 @@ Logger::Logger(
           ignoreRank )
 {
     FileLogger::getFileLogger().setLogFile( logFileName );
+
+    SCAI_LOG_INFO( logger, "Logger for file " << logFileName << " created, id = " << mId 
+                           << ", level = " << mLogLevel << ", writeBehaviour = " 
+                           << mWriteBehaviour << ", ignore rank = " << mIgnoreRank )
 }
 
 Logger::~Logger()
@@ -129,6 +138,10 @@ void Logger::logString( const std::string& message )
             FileLogger::getFileLogger().logMessage( logMessage );
         }
         break;
+
+        default:
+ 
+            SCAI_LOG_ERROR( logger, "illegal write behaviour: " << mWriteBehaviour )
     }
 }
 
@@ -142,6 +155,8 @@ void Logger::logString( LogLevel::LogLevel level, const std::string& message )
 
 void Logger::logMessage( LogLevel::LogLevel level, const std::string& message )
 {
+    SCAI_LOG_DEBUG( logger, "logMessage, level = " << level 
+                             << " ( mLevel = " << mLogLevel << " ), msg = " << message )
     logString( level, message );
 }
 

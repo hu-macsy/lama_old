@@ -76,8 +76,7 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.RichardsonTest" )
 BOOST_AUTO_TEST_CASE( CtorTest )
 {
     LoggerPtr slogger(
-        new CommonLogger( "<Richardson>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly,
-                          new Timer() ) );
+        new CommonLogger( "<Richardson>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly ) );
 
     Richardson rSolver( "RichardsonTestSolver", slogger );
     BOOST_CHECK_EQUAL( rSolver.getId(), "RichardsonTestSolver" );
@@ -111,8 +110,7 @@ void testSolveWithPreconditionmethod( ContextPtr context )
 
 
     LoggerPtr slogger(
-        new CommonLogger( "<Richardson>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly,
-                          new Timer() ) );
+        new CommonLogger( "<Richardson>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly ) );
 
     
 
@@ -193,10 +191,7 @@ void testSolveWithoutPreconditionmethod( ContextPtr context )
     SCAI_LOG_INFO( logger, "Problem size = " << N1 << " x " << N2 );
 
     LoggerPtr slogger(
-        new CommonLogger( "<Richardson>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly,
-                          new Timer() ) );
-
-
+        new CommonLogger( "<Richardson>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly ) );
 
     CSRSparseMatrix<ValueType> helpcoefficients;
     MatrixCreator<ValueType>::buildPoisson2D( helpcoefficients, 9, N1, N2 );

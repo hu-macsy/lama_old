@@ -73,9 +73,7 @@ struct P_SpecializedJacobiTestConfig
     P_SpecializedJacobiTestConfig()
     {
         LoggerPtr loggerD(
-            new CommonLogger( "<Jacobi>: ", scai::lama::LogLevel::completeInformation,
-                              scai::lama::LoggerWriteBehaviour::toConsoleOnly,
-                              new Timer() ) );
+            new CommonLogger( "<Jacobi>: ", LogLevel::completeInformation, LoggerWriteBehaviour::toConsoleOnly ) );
         mJacobiDouble = new SpecializedJacobi( "SpecializedJacobiTest double solver", loggerD );
         mJacobiFloat = new SpecializedJacobi( "SpecializedJacobiTest float solver", loggerD );
         comm = Communicator::get( "MPI" );
@@ -116,8 +114,7 @@ void testSolveMethod( ContextPtr loc )
 //    LoggerPtr slogger( new CommonLogger(
 //                        loggerName.str(),
 //                        LogLevel::solverInformation, //solverInformation, //noLogging,
-//                        LoggerWriteBehaviour::toConsoleOnly,
-//                        common::unique_ptr<Timer>( new Timer() ) ) );
+//                        LoggerWriteBehaviour::toConsoleOnly ) );
     SpecializedJacobi jacobiSolver( "SpecializedJacobiTest"/*, slogger */ );
     DenseVector<ValueType> solution( dist, 1.0 );
     DenseVector<ValueType> exactSolution( solution );

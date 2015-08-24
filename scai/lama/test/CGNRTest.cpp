@@ -43,8 +43,7 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.CGNRTest" )
 BOOST_AUTO_TEST_CASE( CtorTest )
 {
     LoggerPtr slogger(
-        new CommonLogger( "<CGNR>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly,
-                          new Timer() ) );
+        new CommonLogger( "<CGNR>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly ) );
 
     CGNR CGNRSolver( "CGNRTestSolver", slogger );
     BOOST_CHECK_EQUAL( CGNRSolver.getId(), "CGNRTestSolver" );
@@ -100,8 +99,7 @@ void testSolveWithPreconditionmethod( ContextPtr context )
     typedef typename MatrixType::MatrixValueType ValueType;
 
     LoggerPtr slogger(
-        new CommonLogger( "<CGNR>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly,
-                          new Timer() ) );
+        new CommonLogger( "<CGNR>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly ) );
 
     CGNR CGNRSolver( "CGNRTestSolver", slogger );
 
@@ -168,8 +166,7 @@ void testSolveWithoutPreconditionmethod( ContextPtr context )
     typedef typename MatrixType::MatrixValueType ValueType;
 
         LoggerPtr slogger(
-        new CommonLogger( "<CGNR>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly,
-                          new Timer() ) );
+        new CommonLogger( "<CGNR>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly ) );
 
     CGNR CGNRSolver( "CGNRTestSolver", slogger );
 

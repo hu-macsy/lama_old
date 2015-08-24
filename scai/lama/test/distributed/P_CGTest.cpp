@@ -159,8 +159,7 @@ void testSolveWithPreconditionmethod( ContextPtr loc )
         LoggerPtr slogger( new CommonLogger(
                                "<SOR>: ",
                                scai::lama::LogLevel::solverInformation,
-                               scai::lama::LoggerWriteBehaviour::toConsoleOnly,
-                               new Timer() ) );
+                               scai::lama::LoggerWriteBehaviour::toConsoleOnly ) );
         cgSolver.setLogger( slogger );
     }
 

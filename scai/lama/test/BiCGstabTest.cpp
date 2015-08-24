@@ -76,8 +76,7 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.BiCGstabTest" )
 BOOST_AUTO_TEST_CASE( CtorTest )
 {
     LoggerPtr slogger(
-        new CommonLogger( "<BiCGstab>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly,
-                          new Timer() ) );
+        new CommonLogger( "<BiCGstab>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly ) );
 
     BiCGstab BiCGstabSolver( "BiCGstabTestSolver", slogger );
     BOOST_CHECK_EQUAL( BiCGstabSolver.getId(), "BiCGstabTestSolver" );
@@ -133,8 +132,7 @@ void testSolveWithPreconditionmethod( ContextPtr context )
     typedef typename MatrixType::MatrixValueType ValueType;
 
     LoggerPtr slogger(
-        new CommonLogger( "<BiCGstab>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly,
-                          new Timer() ) );
+        new CommonLogger( "<BiCGstab>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly ) );
 
     BiCGstab BiCGstabSolver( "BiCGstabTestSolver", slogger );
 
@@ -201,8 +199,7 @@ void testSolveWithoutPreconditionmethod( ContextPtr context )
     typedef typename MatrixType::MatrixValueType ValueType;
 
         LoggerPtr slogger(
-        new CommonLogger( "<BiCGstab>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly,
-                          new Timer() ) );
+        new CommonLogger( "<BiCGstab>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly ) );
 
     BiCGstab BiCGstabSolver( "BiCGstabTestSolver", slogger );
 

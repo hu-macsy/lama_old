@@ -405,7 +405,7 @@ void LamaConfig::setArg( const char* arg )
     {
         mLogLevel = scai::lama::LogLevel::solverInformation;
     }
-    else if ( "LOG_AVANCED" == val ) 
+    else if ( "LOG_ADVANCED" == val ) 
     {
         mLogLevel = scai::lama::LogLevel::advancedInformation;
     }

@@ -45,8 +45,7 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.CGSTest" )
 BOOST_AUTO_TEST_CASE( CtorTest )
 {
     LoggerPtr slogger(
-        new CommonLogger( "<CGS>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly,
-                          new Timer() ) );
+        new CommonLogger( "<CGS>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly ) );
 
     CGS CGSSolver( "CGSTestSolver", slogger );
     BOOST_CHECK_EQUAL( CGSSolver.getId(), "CGSTestSolver" );
@@ -102,8 +101,7 @@ void testSolveWithPreconditionmethod( ContextPtr context )
     typedef typename MatrixType::MatrixValueType ValueType;
 
     LoggerPtr slogger(
-        new CommonLogger( "<CGS>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly,
-                          new Timer() ) );
+        new CommonLogger( "<CGS>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly ) );
 
     CGS CGSSolver( "CGSTestSolver", slogger );
 
@@ -170,8 +168,7 @@ void testSolveWithoutPreconditionmethod( ContextPtr context )
     typedef typename MatrixType::MatrixValueType ValueType;
 
         LoggerPtr slogger(
-        new CommonLogger( "<CGS>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly,
-                          new Timer() ) );
+        new CommonLogger( "<CGS>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly ) );
 
     CGS CGSSolver( "CGSTestSolver", slogger );
 
