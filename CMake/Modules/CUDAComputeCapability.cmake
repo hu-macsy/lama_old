@@ -39,7 +39,7 @@ enable_language( C )
 if    ( CUDA_FOUND )
     try_run ( RUN_RESULT_VAR COMPILE_RESULT_VAR
         ${CMAKE_BINARY_DIR}
-        ${CMAKE_MODULE_PATH}/CudaComputeCapability.c
+        ${CMAKE_MODULE_PATH}/CudaComputeCapability.cpp
         CMAKE_FLAGS 
         -DINCLUDE_DIRECTORIES:STRING=${CUDA_TOOLKIT_INCLUDE}
         -DLINK_LIBRARIES:STRING=${CUDA_CUDART_LIBRARY}

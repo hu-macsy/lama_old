@@ -74,6 +74,8 @@ else  ( NOT SCAI_COMPLETE_BUILD )
 	
 endif ( NOT SCAI_COMPLETE_BUILD )
 
+message ( STATUS "CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS}" )
+
 include ( Functions/allFunctions )
 
 include ( SCAIAssert )

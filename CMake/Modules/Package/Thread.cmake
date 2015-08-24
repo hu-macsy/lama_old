@@ -36,7 +36,7 @@ enable_language ( C )
 set ( CMAKE_THREAD_PREFER_PTHREAD 1 )
 set ( THREADS_PREFER_PTHREAD_FLAG 1 )
 
-find_package( Threads REQUIRED )
+find_package( Threads ${SCAI_FIND_PACKAGE_FLAGS} REQUIRED )
 set ( SCAI_THREAD_LIBRARY ${CMAKE_THREAD_LIBS_INIT} )
 
 ###  Here we use PThread library for threads

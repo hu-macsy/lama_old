@@ -31,6 +31,8 @@
  # @since 1.0.0
 ###
 
+find_package ( Sphinx ${SCAI_FIND_PACKAGE_FLAGS} )
+
 ### SPHINX DOCUMENTATION ###
 
 if     ( SPHINX_FOUND )

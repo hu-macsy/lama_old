@@ -183,13 +183,13 @@ scai_status_message ( HEADLINE "DOCUMENTATION:" )
 scai_summary_message ( "FOUND"
                        "DOXYGEN_FOUND"
                        "DOXYGEN "
-                       "'make doc' to build system documentation" )
+                       "Version ${DOXYGEN_VERSION} at ${DOXYGEN_EXECUTABLE}: 'make doc' to build system documentation" )
                        
 # DOXYGEN
 scai_summary_message ( "FOUND"
                        "SPHINX_FOUND"
                        "SPHINX"
-                       "'make userdoc' to build user documentation" )
+                       "Version ${Sphinx_VERSION_STRING} at ${Sphinx-build_EXECUTABLE}: 'make userdoc' to build user documentation" )
 
 message ( STATUS "" )
 

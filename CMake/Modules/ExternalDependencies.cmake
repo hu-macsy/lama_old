@@ -31,6 +31,8 @@
  # @since 2.0.0
 ###
 
+## attention OpenMP should be before SCAI_BLAS !!!
+
 set ( SCAI_COMMON_EXTERNAL_DEPS OpenMP CUDA Thread )
 set ( SCAI_LOGGING_EXTERNAL_DEPS )
 set ( SCAI_TRACING_EXTERNAL_DEPS )

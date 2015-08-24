@@ -58,9 +58,9 @@ endif ( SCAI_CMAKE_VERBOSE )
 
 # Find Boost 
 
-set ( SCAI_CMAKE_VERBOSE QUIET )
+#set ( SCAI_CMAKE_VERBOSE QUIET )
 
-find_package ( Boost COMPONENTS ${Boost_COMPONENTS} ${SCAI_FIND_PACKAGE_FLAGS} )
+find_package ( Boost ${SCAI_FIND_PACKAGE_FLAGS} COMPONENTS ${Boost_COMPONENTS} )
 
 # Note: we use Boost_INCLUDE_DIR, Boost_<lib>_FOUND, Boost_<lib>_LIBRARY, but
 #       not Boost_FOUND, as it is false if some optional libraries are missing
@@ -68,10 +68,10 @@ find_package ( Boost COMPONENTS ${Boost_COMPONENTS} ${SCAI_FIND_PACKAGE_FLAGS} )
 # Boost: include directory is mandatory ( LAMA uses shared pointer, function )
 
 if    ( Boost_INCLUDE_DIR )
-# TODO: SUMMARY
+	# TODO: SUMMARY
     #message ( STATUS "Boost_INCLUDE_DIR = ${Boost_INCLUDE_DIR}" )
     get_filename_component ( Boost_PATH "${Boost_INCLUDE_DIR}" PATH )
-# TODO: SUMMARY
+	# TODO: SUMMARY
     #message ( STATUS "Boost_PATH = ${Boost_PATH}" )
     # Boost_PATH should be same as BOOST_ROOT
 else  ( Boost_INCLUDE_DIR )
@@ -81,19 +81,19 @@ endif ( Boost_INCLUDE_DIR )
 # check status of each Boost component
 
 foreach    ( lib ${Boost_COMPONENTS} )
-   string ( TOUPPER ${lib} libname )
-   set ( libname "Boost_${libname}_LIBRARY" )
-   # libname: variable that contains the library for the boost component
-# TODO: SUMMARY   
-   message ( STATUS "${libname} = ${${libname}}" )
-   if    ( ${libname} )
-       # library found, make sure it belongs to same version of Boost
-       if    ( "${${libname}}" MATCHES "${Boost_PATH}*" )
-           # do nothing
-       else  ( "${${libname}}" MATCHES "${Boost_PATH}*" )
-           message ( FATAL_ERROR "${${libname}} illegal, not in ${Boost_PATH}" )
-       endif ( "${${libname}}" MATCHES "${Boost_PATH}*" )
-   endif ( ${libname} )
+    string ( TOUPPER ${lib} libname )
+    set ( libname "Boost_${libname}_LIBRARY" )
+    # libname: variable that contains the library for the boost component
+    # TODO: SUMMARY   
+    #message ( STATUS "${libname} = ${${libname}}" )
+    if    ( ${libname} )
+        # library found, make sure it belongs to same version of Boost
+        if    ( "${${libname}}" MATCHES "${Boost_PATH}*" )
+            # do nothing
+        else  ( "${${libname}}" MATCHES "${Boost_PATH}*" )
+            message ( FATAL_ERROR "${${libname}} illegal, not in ${Boost_PATH}" )
+        endif ( "${${libname}}" MATCHES "${Boost_PATH}*" )
+    endif ( ${libname} )
 endforeach ( lib ${Boost_COMPONENTS} )
 
 # Check boost versions

@@ -48,7 +48,6 @@ set ( LAMA_VERSION ${LAMA_VERSION_MAJOR}.${LAMA_VERSION_MINOR}.${LAMA_VERSION_PA
 ## general Settings for all projects
 
 include ( SetBuildFlags ) # VERBOSE, RPATH, LIB64, BUILD_SHARED
-include ( SetCPPFlags )
 include ( SCAIAssert )
 include ( CompilerVersion )
 
@@ -59,17 +58,18 @@ include ( Functions/checkWhiteList )
 include ( ExternalDependencies )
 
 foreach    ( module ${SCAI_EXTERNAL_DEPS} )
+message ( STATUS "include package ${module}" )
     include( Package/${module} )
 endforeach ( module ${SCAI_EXTERNAL_DEPS} )
+
+include ( SetCPPFlags ) # do after external deps because openmp dependency
 
 ## documentation
 
 # user docu --> make userdoc, make userdoc_json, make install_userdoc
-find_package ( Sphinx )
 include ( Package/Sphinx )
 
 #system docu --> make doc
-find_package ( Doxygen )
 include ( Package/Doxygen )
 
 ## summary of what is found
@@ -94,7 +94,7 @@ foreach    ( CACHE_VAR ${CACHE_VARS} )
     
 endforeach ( CACHE_VAR ${CACHE_VARS} )
 
-#message ( STATUS "Passed CMAKE_ARGS ${CMAKE_ARGS}" )
+message ( STATUS "Passed CMAKE_ARGS ${CMAKE_ARGS}" )
 #message ( STATUS "Passed MPI_ARGS ${MPI_ARGS}" )
 #message ( STATUS "Passed CUDA_ARGS ${CUDA_ARGS}" )
 #message ( STATUS "Passed MIC_ARGS ${MIC_ARGS}" )
