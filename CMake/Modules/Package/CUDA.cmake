@@ -33,6 +33,8 @@
 
 include ( Functions/setAndCheckCache )
 
+set ( CUDA_HOST_COMPILER ${CMAKE_CXX_COMPILER} CACHE FILEPATH "Host side compiler used by NVCC" )
+
 find_package ( CUDA ${SCAI_FIND_PACKAGE_FLAGS} )
 
 # ALLOW to switch off CUDA explicitly

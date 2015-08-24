@@ -78,13 +78,14 @@ endif ( SCAI_BLAS_FOUND AND Boost_INCLUDE_DIR )
 #                       "REQUIRED_FOUND"
 #                       "LAMA (core)"
 #                       " " )
+
    # BLAS
     scai_summary_message ( "FOUND"
                            "SCAI_BLAS_FOUND"
                            "BLAS"
                            "(${SCAI_BLAS_NAME}) with libraries: ${SCAI_BLAS_LIBRARIES}" )
+                           
     if    ( SCAI_BLAS_NAME MATCHES "BLAS" )
-    
     message ( STATUS "" )
     scai_summary_message ( "FOUND"
                            "LAPACK_FOUND"

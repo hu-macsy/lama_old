@@ -90,14 +90,17 @@ if ( NOT INTERNALBLAS_FOUND )
 
     # load selected or auto choosen BLAS Library and set blas style (default: SCAI_FORTRAN_BLAS_STYLE_LOWERCASE)
     if ( MKL_FOUND )
+
         set ( SCAI_BLAS_FOUND TRUE )
         set ( SCAI_BLAS_NAME "MKL" )
      	set ( SCAI_BLAS_LIBRARIES ${MKL_LIBRARIES} )
       	set ( SCAI_PBLAS_LIBRARIES ${MKL_PLIBRARIES} )
        	# default: SCAI_FORTRAN_BLAS_STYLE_LOWERCASE
+       	
     endif ( MKL_FOUND )
     
     if ( BLAS_FOUND )
+    
         set ( SCAI_BLAS_FOUND TRUE )
         set ( SCAI_BLAS_NAME "BLAS " )
         if ( LAPACK_LIBRARIES )

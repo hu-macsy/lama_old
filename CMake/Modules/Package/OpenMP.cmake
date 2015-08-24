@@ -33,25 +33,23 @@
 
 include ( Functions/setAndCheckCache )
 
-enable_language ( C )
-
 find_package ( OpenMP ${SCAI_FIND_PACKAGE_FLAGS} )
 
 setAndCheckCache ( OPENMP )
 
-if    ( NOT SCAI_OMP_SCHEDULE )
-    set ( SCAI_OMP_SCHEDULE "static" )
-endif ( NOT SCAI_OMP_SCHEDULE )
+if ( OPENMP_FOUND AND USE_OPENMP )
 
-#### Compile/Link flag for OpenMP will be set for all source files and all targets
+	if    ( NOT SCAI_OMP_SCHEDULE )
+    	set ( SCAI_OMP_SCHEDULE "static" )
+	endif ( NOT SCAI_OMP_SCHEDULE )
 
-if ( OPENMP_FOUND )
-   set ( LAMA_CXX_FLAGS "${OpenMP_CXX_FLAGS}" )
-else ( OPENMP_FOUND )
-   set ( LAMA_CXX_FLAGS "" )
-endif ( OPENMP_FOUND )
+	#### Compile/Link flag for OpenMP will be set for all source files and all targets
 
-set ( SCAI_OMP_SCHEDULE_FLAG "SCAI_OMP_SCHEDULE=${SCAI_OMP_SCHEDULE}" )
+   set ( LAMA_CXX_FLAGS "${LAMA_CXX_FLAGS} ${OpenMP_CXX_FLAGS}" )
 
-# Note: files using omp scheduling should be compiled with the corresponding flag
-# add_definitions ( -D${SCAI_OMP_SCHEDULE_FLAG} )
+	set ( SCAI_OMP_SCHEDULE_FLAG "SCAI_OMP_SCHEDULE=${SCAI_OMP_SCHEDULE}" )
+	
+	# Note: files using omp scheduling should be compiled with the corresponding flag
+	# add_definitions ( -D${SCAI_OMP_SCHEDULE_FLAG} )
+
+endif ( OPENMP_FOUND  AND USE_OPENMP )

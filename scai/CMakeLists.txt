@@ -48,31 +48,19 @@ set ( LAMA_VERSION ${LAMA_VERSION_MAJOR}.${LAMA_VERSION_MINOR}.${LAMA_VERSION_PA
 ## general Settings for all projects
 
 include ( SetBuildFlags ) # VERBOSE, RPATH, LIB64, BUILD_SHARED
+include ( SetCPPFlags )
+include ( SCAIAssert )
+include ( CompilerVersion )
+
 include ( Functions/checkValue )
 include ( Functions/setAndCheckCache )
 include ( Functions/checkWhiteList )
-
-include ( SCAIAssert )
-include ( CompilerVersion )
 
 include ( ExternalDependencies )
 
 foreach    ( module ${SCAI_EXTERNAL_DEPS} )
     include( Package/${module} )
 endforeach ( module ${SCAI_EXTERNAL_DEPS} )
-
-set ( REQUIRED_PACKAGES_TO_FIND Threads )
-set ( OPTIONAL_PACKAGES_TO_FIND SCAI_BLAS )
-
-# Find required packages
-foreach    ( PACKAGE_TO_FIND ${REQUIRED_PACKAGES_TO_FIND} )
-    find_package ( ${PACKAGE_TO_FIND} ${SCAI_FIND_PACKAGE_FLAGS} REQUIRED )
-endforeach ( PACKAGE_TO_FIND ${REQUIRED_PACKAGES_TO_FIND} )
-
-# Find optional packages
-foreach    ( PACKAGE_TO_FIND ${OPTIONAL_PACKAGES_TO_FIND} )
-    find_package ( ${PACKAGE_TO_FIND} ${SCAI_FIND_PACKAGE_FLAGS} )
-endforeach ( PACKAGE_TO_FIND ${OPTIONAL_PACKAGES_TO_FIND} )
 
 ## documentation
 
@@ -83,10 +71,6 @@ include ( Package/Sphinx )
 #system docu --> make doc
 find_package ( Doxygen )
 include ( Package/Doxygen )
-
-## general compiler settings
-
-include ( SetCPPFlags )
 
 ## summary of what is found
 include ( Summary )
