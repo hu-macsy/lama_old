@@ -31,6 +31,11 @@
  # @since 1.0.0
 ###
 
+### MPI_FOUND          - if MPI is found
+### USE_MPI            - if MPI is enabled
+### MPI_INCLUDE_DIR    - MPI include directory
+### SCAI_MPI_LIBRARIES - all needed MPI libraries
+
 # Look for MPI first to allow SCAI_BLAS to take the correct blacs implementation
 # based on the found mpi
 if    ( WIN32 AND NOT ( MPI_C_INCLUDE_PATH OR MPI_CXX_INCLUDE_PATH OR MPI_C_LIBRARIES OR MPI_CXX_LIBRARIES ) )
@@ -65,7 +70,8 @@ endif ( WIN32 AND NOT ( MPI_C_INCLUDE_PATH OR MPI_CXX_INCLUDE_PATH OR MPI_C_LIBR
 find_package ( MPI ${SCAI_FIND_PACKAGE_FLAGS} )
 
 ### ALLOW to switch off MPI explicitly ###
-
+include ( Functions/setAndCheckCache )
 setAndCheckCache ( MPI )
 
+set ( MPI_INCLUDE_DIR ${MPI_INCLUDE_PATH} )
 set ( SCAI_MPI_LIBRARIES ${MPI_LIBRARIES} )

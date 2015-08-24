@@ -31,10 +31,13 @@
  # @since 1.0.0
 ###
 
-include ( Functions/setAndCheckCache )
+### OPENMP_FOUND           - if OpenMP is found
+### USE_OPENMP             - if OpenMP is enabled
+### SCAI_OMP_SCHEDULE_FLAG - needed OpenMP scheduling flag 
 
 find_package ( OpenMP ${SCAI_FIND_PACKAGE_FLAGS} )
 
+include ( Functions/setAndCheckCache )
 setAndCheckCache ( OPENMP )
 
 if    ( OPENMP_FOUND AND USE_OPENMP )

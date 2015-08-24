@@ -31,6 +31,11 @@
  # @since 1.0.0
 ###
 
+### BOOST_<lib>_FOUND    - if Boost component is found
+### Boost_INCLUDE_DIR    - Boost include directory
+### Boost_<lib>_LIBRARY  - Boost component library
+### SCAI_BOOST_LIBRARIES - all found BOOST libraries out of the searched component
+
 ### Boost_USE_STATIC_LIBS  ( default is OFF )
 ### 
 ###    - should be set to OFF, default ( will use dynamic Boost libraries if available )

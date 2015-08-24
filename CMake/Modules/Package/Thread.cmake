@@ -31,6 +31,8 @@
  # @since 2.0.0
 ###
 
+### SCAI_THREAD_LIBRARY - needed Thread library
+
 enable_language ( C )
 
 set ( CMAKE_THREAD_PREFER_PTHREAD 1 )

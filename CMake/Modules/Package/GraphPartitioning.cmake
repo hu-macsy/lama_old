@@ -31,12 +31,19 @@
  # @since 2.0.0
 ###
 
+### GRAPH_PART_FOUND                 - if Graph Partitioning library is found
+### USE_GRAPH_PART                   - if Graph Partitioning is enabled
+### GRAPHPARTITIONING_INCLUDE_DIR    - Graph Partitioning include directory
+### SCAI_GRAPHPARTITIONING_LIBRARIES - all needed Graph Partitioning libraries
+
 find_package ( Metis ${SCAI_FIND_PACKAGE_FLAGS} )
 if    ( METIS_FOUND )
 	find_package ( ParMetis ${SCAI_FIND_PACKAGE_FLAGS} )
 endif ( METIS_FOUND )
 
 ## ALLOW to switch off GRAPH_PART explicitly ( doing something linke setAndCheckCache )
+include ( Functions/setAndCheckCache )
 setAndCheckCache ( METIS GRAPH_PART )
 
+set ( GRAPHPARTITIONING_INCLUDE_DIR ${METIS_INCLUDE_DIR} ${PARMETIS_INCLUDE_DIR} )
 set ( SCAI_GRAPHPARTITIONING_LIBRARIES ${METIS_LIBRARY} ${PARMETIS_LIBRARY} )

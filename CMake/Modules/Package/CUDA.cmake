@@ -31,6 +31,11 @@
  # @since 2.0.0
 ###
 
+### CUDA_FOUND          - if CUDA is found
+### USE_CUDA            - if CUDA is enabled
+### CUDA_INCLUDE_DIR    - CUDA include directory
+### SCAI_CUDA_LIBRARIES - all needed CUDA libraries
+
 set ( CUDA_HOST_COMPILER ${CMAKE_CXX_COMPILER} CACHE FILEPATH "Host side compiler used by NVCC" )
 
 find_package ( CUDA ${SCAI_FIND_PACKAGE_FLAGS} )
@@ -87,6 +92,9 @@ endif ( NOT CUDA_cusparse_LIBRARY )
 
 # LAMA irrelevant entries will be marked as advanced ( Remove them from default cmake GUI )
 mark_as_advanced ( CUDA_TOOLKIT_ROOT_DIR CUDA_BUILD_CUBIN CUDA_BUILD_EMULATION CUDA_SDK_ROOT_DIR CUDA_VERBOSE_BUILD )
+
+# just for making it the same variable ending for all packages
+set ( CUDA_INCLUDE_DIR ${CUDA_INCLUDE_DIRS} )
 
 # conclude all needed CUDA libraries
 set ( SCAI_CUDA_LIBRARIES ${CUDA_CUDA_LIBRARY} ${CUDA_CUDART_LIBRARY} ${CUDA_cublas_LIBRARY} ${CUDA_cusparse_LIBRARY} )

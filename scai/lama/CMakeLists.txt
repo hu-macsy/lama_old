@@ -87,34 +87,10 @@ endif ( WIN32 )
 ### Project System-Include
 include_directories ( ../.. )
 
-foreach    ( module ${SCAI_LAMA_INTERNAL_DEPS} )
+foreach    ( module ${SCAI_LAMA_INTERNAL_DEPS} ${SCAI_LAMA_EXTERNAL_DEPS} )
 	string ( TOUPPER ${module} upper_module )
     include_directories( ${${upper_module}_INCLUDE_DIR} )
-endforeach ( module ${SCAI_LAMA_INTERNAL_DEPS} )
-
-#foreach    ( module ${SCAI_LAMA_EXTERNAL_DEPS} )
-#	string ( TOUPPER ${module} upper_module )
-#    include_directories( ${${upper_module}_INCLUDE_DIR} )
-#    message ( "add include dir for module ${module} to ${${upper_module}_INCLUDE_DIRS}" )
-#endforeach ( module ${SCAI_LAMA_EXTERNAL_DEPS} )
-
-if    ( MPI_FOUND AND USE_MPI )
-	include_directories ( ${MPI_INCLUDE_PATH} ) 
-endif ( MPI_FOUND AND USE_MPI )
-
-if    ( CUDA_FOUND AND USE_CUDA )
-	include_directories ( ${CUDA_INCLUDE_DIRS} )
-endif ( CUDA_FOUND AND USE_CUDA )
-
-if ( METIS_FOUND )
-    include_directories ( ${METIS_INCLUDE_DIR} ) 
-endif ( METIS_FOUND )
-
-if ( METIS_FOUND AND PARMETIS_FOUND )
-    include_directories ( ${PARMETIS_INCLUDE_DIR} ) 
-endif ( METIS_FOUND AND PARMETIS_FOUND )
-
-include_directories ( ${SCAI_BLAS_INCLUDE_DIR} )
+endforeach ( module ${SCAI_LAMA_INTERNAL_DEPS} ${SCAI_LAMA_EXTERNAL_DEPS} )
 
 include ( SCAIAssert )
 
@@ -208,7 +184,7 @@ if    ( CUDA_FOUND AND USE_CUDA AND CUDA_HAVE_GPU )
 	set ( CXX_SOURCES ${CXX_SOURCES} ${CUDA_FILES} )
 endif ( CUDA_FOUND AND USE_CUDA AND CUDA_HAVE_GPU )
 
-add_library ( ama ${SCAI_LIBRARY_TYPE} ${CXX_SOURCES} ) #${HEADERS} )
+add_library ( ama ${SCAI_LIBRARY_TYPE} ${CXX_SOURCES} )
 
 ## add link libraries
 foreach    ( module ${SCAI_LAMA_INTERNAL_DEPS} )
