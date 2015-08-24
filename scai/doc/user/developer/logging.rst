@@ -29,8 +29,7 @@ Global definition, configuration and initialization of the logging system is not
 It is done implicitly when the first logging statement is used.
 
 In the different subroutines and modules it is possible to get access to a logger. The macro SCAI_LOG_DEF_LOGGER
-defines a static logger variable with a certain name. By the dot notation for the name loggers can be structured
-hierarchically that makes it more comfortable to configure the loggers.
+defines a static logger variable with a certain name. 
 
 ::
 
@@ -56,7 +55,19 @@ variable logger must have been defined with one of the two previous macros:
     SCAI_LOG_ERROR( logger, "error message" );
     SCAI_LOG_FATAL( logger, "fatal message" );
 
-It is possible to combine arguments like it is done for streams:
+The following logging levels are supported:
+
+- TRACE is even more detailed than DEBUG and 
+- DEBUG designates fine-grained informational events that are most useful to debug an application
+- INFO  is for informational messages that highlight the progress of the application at coarse-grained 
+  level and should be used when a protocol of the application is required.
+- WARN designates potentially harmful situations
+- ERROR is for error events that might still allow the application to continue running.
+- FATAL designates severe error events that will presumably lead the application to abort.
+
+Multiple different output arguments can be combined with the << operator in the
+message argument of the logging statements. It is the same mechanism as used for
+C++ streams, i.e. the << operator must be defined for the corresponding argument.
 
 ::
 
@@ -72,6 +83,28 @@ There is an include file that contains the definitions for all the macros:
 ::
 
     #include <scai/logging.hpp>
+
+Loggers can be structured hierarchically. Each dot in the name gives a new hierarchy,
+The hierarchy of the loggers makes it more comfortable to configure the loggers.
+
+::
+
+    SCAI_LOG_DEF_LOGGER( Vector::logger, "Vector" )
+    SCAI_LOG_DEF_LOGGER( DenseVector::logger, "Vector.DenseVector" )
+    SCAI_LOG_DEF_LOGGER( SparseVector::logger, "Vector.SparseVector" )
+    SCAI_LOG_DEF_LOGGER( Matrix::logger, "Matrix" )
+    SCAI_LOG_DEF_LOGGER( CSRSparseMatrix::logger, "Matrix.CSRSparseMatrix" )
+    SCAI_LOG_DEF_LOGGER( DIASparseMatrix::logger, "Matrix.DIASparseMatrix" )
+    SCAI_LOG_DEF_LOGGER( Distribution::logger, "Distribution" )
+    SCAI_LOG_DEF_LOGGER( BlockDistribution::logger, "Distribution.BlockDistribution" )
+
+These definitions of the loggers result in the following hierarchy:
+
+.. figure:: /_images/Logging1.png
+    :width: 500px
+    :align: center
+    :alt: Hierarchical structure of loggers.
+
 
 Configuration logging at compile time
 -------------------------------------
@@ -202,17 +235,21 @@ The configuration file should contain lines that specfy the levels of the logger
 
 ::
 
-    <root> = ERROR
-    Matrix = INFO
-    Matrix.CSRSparseMatrix = DEBUG
+    <root> = DEBUG
+    Vector = TRACE
+    Vector.DenseVector = ERROR
     Distribution = INFO
-    Distribution.BlockDistribution = WARN
 
 The default configuration for all loggers is level *WARN* if no configuration file is specified or if no
 level has been specified in the configuration file. The RootLogger can be referenced by **<root>**.
 
 If the environment variable ``SCAI_LOG`` is not set, a logging file with the name .loggingrc is searched 
 in the home directory of the user. If this file is also not available, the default configuration is chosen.
+
+.. figure:: /_images/Logging2.png
+    :width: 500px
+    :align: center
+    :alt: Inheritance of logging levels.
 
 For Debugging purposes it is also possible to flush the output of the logger, so all logging messages are
 displayed even if the program crashes. Flushing can be activated by the config file:
@@ -313,27 +350,27 @@ Examples
 
 The first example shows a simple example with logging statements of all different levels.
 
-.. literalinclude:: ../../../logging/examples/DemoLogging.cpp
+.. literalinclude:: ../../../logging/examples/LogLevels.cpp
 
 At runtime it can be decided which logging will be printed:
 
 ::
 
     export SCAI_LOG=INFO
-    examples/DemoLogging 
+    examples/LogLevels 
 
-    2015-08-19, 16:14:11 Demo @ main ( main -> DemoLogging.cpp::44 ) INFO a message about progress in the program
-    2015-08-19, 16:14:11 Demo @ main ( main -> DemoLogging.cpp::47 ) WARN a message with a warning, but execution is still possible
-    2015-08-19, 16:14:11 Demo @ main ( main -> DemoLogging.cpp::48 ) ERROR a message for an error, error handling will be invoked
-    2015-08-19, 16:14:11 Demo @ main ( main -> DemoLogging.cpp::49 ) FATAL a message for a fatal error, execution will stop
+    2015-08-19, 16:14:11 Demo @ main ( main -> LogLevels.cpp::44 ) INFO a message about progress in the program
+    2015-08-19, 16:14:11 Demo @ main ( main -> LogLevels.cpp::47 ) WARN a message with a warning, but execution is still possible
+    2015-08-19, 16:14:11 Demo @ main ( main -> LogLevels.cpp::48 ) ERROR a message for an error, error handling will be invoked
+    2015-08-19, 16:14:11 Demo @ main ( main -> LogLevels.cpp::49 ) FATAL a message for a fatal error, execution will stop
 
 ::
 
     export SCAI_LOG=ERROR
-    examples/DemoLogging 
+    examples/LogLevels 
 
-    2015-08-19, 16:14:25 Demo @ main ( main -> DemoLogging.cpp::48 ) ERROR a message for an error, error handling will be invoked
-    2015-08-19, 16:14:25 Demo @ main ( main -> DemoLogging.cpp::49 ) FATAL a message for a fatal error, execution will stop
+    2015-08-19, 16:14:25 Demo @ main ( main -> LogLevels.cpp::48 ) ERROR a message for an error, error handling will be invoked
+    2015-08-19, 16:14:25 Demo @ main ( main -> LogLevels.cpp::49 ) FATAL a message for a fatal error, execution will stop
 
 Using a config file (here with the name ``config``) is also possible, it should contain a line that sets the
 level of the logger *Demo*.
@@ -346,12 +383,12 @@ level of the logger *Demo*.
 ::
 
     export SCAI_LOG=config
-    2015-08-19, 16:43:25 Demo @ main ( main -> DemoLogging.cpp::44 ) INFO a message about progress in the program
-    2015-08-19, 16:43:25 Demo @ main ( main -> DemoLogging.cpp::45 ) DEBUG a message useful to find bugs in the program
-    2015-08-19, 16:43:25 Demo @ main ( main -> DemoLogging.cpp::46 ) TRACE a message with very detailled info, usually not compiled
-    2015-08-19, 16:43:25 Demo @ main ( main -> DemoLogging.cpp::47 ) WARN a message with a warning, but execution is still possible
-    2015-08-19, 16:43:25 Demo @ main ( main -> DemoLogging.cpp::48 ) ERROR a message for an error, error handling will be invoked
-    2015-08-19, 16:43:25 Demo @ main ( main -> DemoLogging.cpp::49 ) FATAL a message for a fatal error, execution will stop
+    2015-08-19, 16:43:25 Demo @ main ( main -> LogLevels.cpp::44 ) INFO a message about progress in the program
+    2015-08-19, 16:43:25 Demo @ main ( main -> LogLevels.cpp::45 ) DEBUG a message useful to find bugs in the program
+    2015-08-19, 16:43:25 Demo @ main ( main -> LogLevels.cpp::46 ) TRACE a message with very detailled info, usually not compiled
+    2015-08-19, 16:43:25 Demo @ main ( main -> LogLevels.cpp::47 ) WARN a message with a warning, but execution is still possible
+    2015-08-19, 16:43:25 Demo @ main ( main -> LogLevels.cpp::48 ) ERROR a message for an error, error handling will be invoked
+    2015-08-19, 16:43:25 Demo @ main ( main -> LogLevels.cpp::49 ) FATAL a message for a fatal error, execution will stop
 
 The next example demonstrates the use of logging with multiple threads.
 
