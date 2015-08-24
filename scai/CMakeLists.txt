@@ -53,6 +53,8 @@ foreach    ( module ${SCAI_EXTERNAL_DEPS} )
     include( Package/${module} )
 endforeach ( module ${SCAI_EXTERNAL_DEPS} )
 
+set ( USE_CODE_COVERAGE FALSE CACHE BOOL "Enable / Disable use of Code Coverage" )
+
 include ( SetCPPFlags ) # do after external deps because openmp dependency
 
 ## documentation

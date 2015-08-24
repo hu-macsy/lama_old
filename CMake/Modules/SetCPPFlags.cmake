@@ -77,3 +77,9 @@ if ( CMAKE_CXX_COMPILER_ID MATCHES PGI )
     set ( LAMA_CXX_FLAGS_RELEASE "-fast " )
 
 endif ( CMAKE_CXX_COMPILER_ID MATCHES PGI )
+
+###  Code coverage with gcov/lcov
+if    ( USE_CODE_COVERAGE )
+    set ( COVERAGE_FLAGS "-fprofile-arcs -ftest-coverage" )
+    set ( LAMA_CXX_FLAGS ${LAMA_CXX_FLAGS} ${COVERAGE_FLAGS} )
+endif ( USE_CODE_COVERAGE )
