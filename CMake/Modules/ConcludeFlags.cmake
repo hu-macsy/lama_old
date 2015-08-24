@@ -3,7 +3,7 @@
 ## add variables to cache with new names so they can be modified by the user via CCMAKE
 
 set ( ADDITIONAL_CXX_FLAGS "${LAMA_CXX_FLAGS}" CACHE STRING "additional flags for cxx compile and link" )
-set ( ADDITIONAL_WARNING_FLAGS "${LAMA_WARNING_FLAGS}" CACHE STRING "compilation flags concerning warnings" )
+set ( ADDITIONAL_WARNING_FLAGS "${SCAI_WARNING_FLAGS}" CACHE STRING "compilation flags concerning warnings" )
 set ( ADDITIONAL_CXX_FLAGS_RELEASE "${LAMA_CXX_FLAGS_RELEASE}" CACHE STRING "addtional cxx compiler flags for release optimizations" )
 set ( ADDITIONAL_LINKER_FLAGS "${LAMA_LINKER_FLAGS}" CACHE STRING "additional linker flags" )
 

@@ -36,13 +36,8 @@
 if ( CMAKE_COMPILER_IS_GNUCXX )
 
     set ( LAMA_LINKER_FLAGS "-Wl,--no-as-needed " )
-    set ( LAMA_WARNING_FLAGS "-Wextra -Wall -Werror" ) # -pedantic -std=c++98 " ) # -march=core02
+    set ( SCAI_WARNING_FLAGS "-Wextra -Wall -Werror" ) # -pedantic -std=c++98 " ) # -march=core02
 
-    # Supress unknown pragma warnings if OpenMP is disabled
-    if ( NOT OPENMP_FOUND )
-        set ( LAMA_WARNING_FLAGS "${LAMA_WARNING_FLAGS} -Wno-unknown-pragmas" )
-    endif ( NOT OPENMP_FOUND )
-    
     set ( LAMA_CXX_FLAGS_RELEASE "-ffast-math -msse4a " )
 
 endif ( CMAKE_COMPILER_IS_GNUCXX )
@@ -60,12 +55,7 @@ if ( CMAKE_CXX_COMPILER_ID MATCHES Intel )
     # -wd1478 : supprress warning deprecated auto_ptr
     # not set: -Werror-all (all warnings will be errors)
 
-    set ( LAMA_WARNING_FLAGS "-w2 -Wall -Wcheck -wd1478" ) # -Werror-all Warnings/Errors. No Remarks.
-    
-    # Supress unknown pragma warnings if OpenMP is disabled
-    if ( NOT OPENMP_FOUND )
-        set ( LAMA_WARNING_FLAGS "${LAMA_WARNING_FLAGS} -Wno-unknown-pragmas" )
-    endif ( NOT OPENMP_FOUND )
+    set ( SCAI_WARNING_FLAGS "-w2 -Wall -Wcheck -wd1478" ) # -Werror-all Warnings/Errors. No Remarks.
     
     set ( LAMA_CXX_FLAGS_RELEASE "-ipo -no-prec-div -xHost " )
 
@@ -82,7 +72,7 @@ if ( CMAKE_CXX_COMPILER_ID MATCHES PGI )
 
     # Disable warning 1097 to avoid warnings from openmpi headers with gcc specific attributes
 
-    set ( LAMA_WARNING_FLAGS "--display_error_number --diag_suppress1097 " )
+    set ( SCAI_WARNING_FLAGS "--display_error_number --diag_suppress1097 " )
     
     set ( LAMA_CXX_FLAGS_RELEASE "-fast " )
 

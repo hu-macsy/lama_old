@@ -33,8 +33,9 @@
 
 # - Try to find SCAI_BLAS
 #   Once done this will define
-#   SCAI_BLAS_FOUND - System has SCAI_BLAS
-#   SCAI_BLAS_LIBRARIES - The libraries needed to use SCAI_BLAS
+#   SCAI_BLAS_FOUND         - System has SCAI_BLAS
+#   SCAI_BLAS_INCLUDE_DIR   - SCAI_BLAS include directory 
+#   SCAI_BLAS_LIBRARIES     - The libraries needed to use SCAI_BLAS
 
 include ( Functions/checkValue )
 
@@ -97,6 +98,7 @@ if ( NOT INTERNALBLAS_FOUND )
 
         set ( SCAI_BLAS_FOUND TRUE )
         set ( SCAI_BLAS_NAME "MKL" )
+        set ( SCAI_BLAS_INCLUDE_DIR ${MKL_INCLUDE_DIRS} )
      	set ( SCAI_BLAS_LIBRARIES ${MKL_LIBRARIES} )
       	set ( SCAI_PBLAS_LIBRARIES ${MKL_PLIBRARIES} )
        	# default: SCAI_FORTRAN_BLAS_STYLE_LOWERCASE
@@ -107,6 +109,7 @@ if ( NOT INTERNALBLAS_FOUND )
     
         set ( SCAI_BLAS_FOUND TRUE )
         set ( SCAI_BLAS_NAME "BLAS " )
+        set ( SCAI_BLAS_INCLUDE_DIR ${} ) ##TODO
         if ( LAPACK_LIBRARIES )
             set ( SCAI_BLAS_LIBRARIES ${LAPACK_LIBRARIES} )
         elseif ( LAPACK_lapack_LIBRARY AND BLAS_blas_LIBRARY )
@@ -118,6 +121,7 @@ if ( NOT INTERNALBLAS_FOUND )
 else ( NOT INTERNALBLAS_FOUND )
     set ( SCAI_BLAS_FOUND TRUE )
     set ( SCAI_BLAS_NAME "Internal" )
+    set ( SCAI_BLAS_INCLUDE_DIR ${CMAKE_ROOT_DIR}/scai/lama/cblas/include )
 endif ( NOT INTERNALBLAS_FOUND )
 
 include ( FindPackageHandleStandardArgs )

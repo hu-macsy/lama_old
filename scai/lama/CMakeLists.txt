@@ -40,13 +40,7 @@ project ( LAMA CXX )
 ### Set Module Path
 set ( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../CMake/Modules" )
 
-set ( LAMA_VERSION_NAME "Alpamayo" )
-set ( LAMA_COPYRIGHT_YEAR 2015 )
-set ( LAMA_VERSION_MAJOR 1 )
-set ( LAMA_VERSION_MINOR 0 )
-set ( LAMA_VERSION_PATCH 1 )
-set ( LAMA_VERSION_COUNT 3 )
-set ( LAMA_VERSION ${LAMA_VERSION_MAJOR}.${LAMA_VERSION_MINOR}.${LAMA_VERSION_PATCH} )
+include ( VersionDefinition )
 
 ### Include Compiler Flags
 if    ( NOT SCAI_COMPLETE_BUILD )
@@ -91,35 +85,28 @@ if ( WIN32 )
 	add_definitions ( -DCOMMON_COMPILING_DLL )
 endif ( WIN32 )
 
-## Project System-Include
+### Project System-Include
 include_directories ( ../.. )
 
-foreach    ( module ${SCAI_LAMA_INTERNAL_DEPS} ${SCAI_LAMA_EXTERNAL_DEPS} )
+foreach    ( module ${SCAI_LAMA_INTERNAL_DEPS} )
 	string ( TOUPPER ${module} upper_module )
     include_directories( ${${upper_module}_INCLUDE_DIR} )
-endforeach ( module ${SCAI_LAMA_INTERNAL_DEPS} ${SCAI_LAMA_EXTERNAL_DEPS} )
+endforeach ( module ${SCAI_LAMA_INTERNAL_DEPS} )
 
-include ( SCAIAssert )
-
-## Project System-Include
-include_directories ( ../.. )
-
-#foreach    ( module ${SCAI_LAMA_INTERNAL_DEPS} ${SCAI_LAMA_EXTERNAL_DEPS} )
+#foreach    ( module ${SCAI_LAMA_EXTERNAL_DEPS} )
 #	string ( TOUPPER ${module} upper_module )
 #    include_directories( ${${upper_module}_INCLUDE_DIR} )
-#endforeach ( module ${SCAI_LAMA_INTERNAL_DEPS} ${SCAI_LAMA_EXTERNAL_DEPS} )
+#    message ( "add include dir for module ${module} to ${${upper_module}_INCLUDE_DIRS}" )
+#endforeach ( module ${SCAI_LAMA_EXTERNAL_DEPS} )
 
-## CUDA
-if    ( CUDA_FOUND AND USE_CUDA )
-	include_directories ( ${CUDA_INCLUDE_DIRS} )
-endif ( CUDA_FOUND AND USE_CUDA )
-
-## MPI
 if    ( MPI_FOUND AND USE_MPI )
 	include_directories ( ${MPI_INCLUDE_PATH} ) 
 endif ( MPI_FOUND AND USE_MPI )
 
-## Graph Partitioning
+if    ( CUDA_FOUND AND USE_CUDA )
+	include_directories ( ${CUDA_INCLUDE_DIRS} )
+endif ( CUDA_FOUND AND USE_CUDA )
+
 if ( METIS_FOUND )
     include_directories ( ${METIS_INCLUDE_DIR} ) 
 endif ( METIS_FOUND )
@@ -128,15 +115,11 @@ if ( METIS_FOUND AND PARMETIS_FOUND )
     include_directories ( ${PARMETIS_INCLUDE_DIR} ) 
 endif ( METIS_FOUND AND PARMETIS_FOUND )
 
-## SCAI BLAS
-if ( SCAI_BLAS_NAME STREQUAL "MKL" )
-    include_directories ( ${MKL_INCLUDE_DIRS} )
-elseif ( NOT SCAI_BLAS_NAME STREQUAL "MKL" AND NOT INTERNALBLAS_FOUND )
-    include_directories( cblas/include )
-#    add_subdirectory( cblas )
-endif ( SCAI_BLAS_NAME STREQUAL "MKL" )
+include_directories ( ${SCAI_BLAS_INCLUDE_DIR} )
 
-## build lama library
+include ( SCAIAssert )
+
+### build lama library
 
 include ( Functions/lamaSourceSolution )
 
@@ -172,6 +155,10 @@ lama_classes ( ${CLASSES} )
 lama_headers ( ${HEADERS} )
 
 ### add subdirectories ###
+
+if    ( NOT SCAI_BLAS_NAME STREQUAL "MKL" AND NOT INTERNALBLAS_FOUND )
+    add_subdirectory( cblas )
+endif ( NOT SCAI_BLAS_NAME STREQUAL "MKL" AND NOT INTERNALBLAS_FOUND )
 
 ## CUDA
 if ( CUDA_FOUND AND USE_CUDA AND CUDA_HAVE_GPU )
@@ -212,9 +199,8 @@ endif ( FOUND_BOOST_TEST AND BUILD_TEST )
 ### set link directories ###
 if ( WIN32 )
     set ( LAMAPP_LINK_DIRECTORIES ${LAMAPP_LINK_DIRECTORIES} ${Boost_LIBRARY_DIRS} )
+	link_directories ( ${LAMAPP_LINK_DIRECTORIES} )
 endif ( WIN32 )
-
-link_directories ( ${LAMAPP_LINK_DIRECTORIES} )
 
 ### add library ###
 
@@ -237,16 +223,6 @@ foreach    ( module ${SCAI_LAMA_EXTERNAL_DEPS} )
 endforeach ( module ${SCAI_LAMA_EXTERNAL_DEPS} )
 
 # external libraries
-#target_link_libraries ( ama ${SCAI_BLAS_LIBRARIES} )
-
-#if    ( CUDA_FOUND AND USE_CUDA AND CUDA_HAVE_GPU )
-#	 target_link_libraries ( ama ${CUDA_cusparse_LIBRARY} ${CUDA_cublas_LIBRARY}
-#	 							 ${CUDA_CUDART_LIBRARY} ${CUDA_CUDA_LIBRARY} )          
-#endif ( CUDA_FOUND AND USE_CUDA AND CUDA_HAVE_GPU )
-
-#if    ( MPI_FOUND AND USE_MPI )
-#    target_link_libraries ( ama ${MPI_LIBRARIES} )
-#endif ( MPI_FOUND AND USE_MPI )
 
 if    ( GPI2_FOUND AND IBVERBS_FOUND AND USE_GPI2 )
     target_link_libraries ( ama ${GPI2_LIBRARIES} ${IBVERBS_LIBRARIES} )
@@ -256,14 +232,6 @@ if ( SCALAPACK_FOUND AND MPI_FOUND AND USE_MPI )
     target_link_libraries ( ama ${SCAI_PBLAS_LIBRARIES} )
     add_definitions( -DSCAI_MKL_SCALAPACK ) ## TODO: where used?!
 endif ( SCALAPACK_FOUND AND MPI_FOUND AND USE_MPI )
-
-#if ( METIS_FOUND )
-#    target_link_libraries( ama ${METIS_LIBRARY} )
-#endif ( METIS_FOUND ) 
-#
-#if ( METIS_FOUND AND PARMETIS_FOUND )
-#    target_link_libraries( ama ${PARMETIS_LIBRARY} )
-#endif ( METIS_FOUND AND PARMETIS_FOUND )
 
 ### install
 install ( TARGETS ama DESTINATION lib )

@@ -37,7 +37,7 @@ find_package ( OpenMP ${SCAI_FIND_PACKAGE_FLAGS} )
 
 setAndCheckCache ( OPENMP )
 
-if ( OPENMP_FOUND AND USE_OPENMP )
+if    ( OPENMP_FOUND AND USE_OPENMP )
 
 	if    ( NOT SCAI_OMP_SCHEDULE )
     	set ( SCAI_OMP_SCHEDULE "static" )
@@ -52,4 +52,12 @@ if ( OPENMP_FOUND AND USE_OPENMP )
 	# Note: files using omp scheduling should be compiled with the corresponding flag
 	# add_definitions ( -D${SCAI_OMP_SCHEDULE_FLAG} )
 
+else  ( OPENMP_FOUND AND USE_OPENMP )
+
+	# Supress unknown pragma warnings if OpenMP is disabled
+
+	if    ( CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES Intel )
+        set ( SCAI_WARNING_FLAGS "${SCAI_WARNING_FLAGS} -Wno-unknown-pragmas" )
+    endif ( CMAKE_COMPILER_IS_GNUCXX CMAKE_CXX_COMPILER_ID MATCHES Intel )
+    
 endif ( OPENMP_FOUND  AND USE_OPENMP )
