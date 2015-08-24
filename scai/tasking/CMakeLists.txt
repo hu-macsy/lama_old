@@ -55,7 +55,6 @@ foreach    ( PACKAGE_TO_FIND ${SCAI_TASKING_INTERNAL_DEPS} )
 endforeach ( PACKAGE_TO_FIND ${REQUIRED_PACKAGES_TO_FIND} )
 
 ## finalize build flags
-set ( LAMA_CXX_FLAGS ${LAMA_CXX_FLAGS} ${SCAI_COMMON_FLAGS} )
 include ( ConcludeFlags )
 
 ### add definitions

@@ -1,5 +1,13 @@
 #### concluding all defined compiler flags to CMAKE_..._FLAGS ####
 
+if    ( OPENMP_FOUND AND USE_OPENMP )
+    set ( LAMA_CXX_FLAGS ${LAMA_CXX_FLAGS} ${OpenMP_CXX_FLAGS} )
+endif ( OPENMP_FOUND AND USE_OPENMP )
+
+if    ( SCAI_COMMON_FOUND ) 
+	set ( LAMA_CXX_FLAGS ${LAMA_CXX_FLAGS} ${SCAI_COMMON_FLAGS} )
+endif ( SCAI_COMMON_FOUND ) 
+
 ## add variables to cache with new names so they can be modified by the user via CCMAKE
 
 set ( ADDITIONAL_CXX_FLAGS "${LAMA_CXX_FLAGS}" CACHE STRING "additional flags for cxx compile and link" )
