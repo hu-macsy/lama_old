@@ -1,3 +1,8 @@
+/**
+ * @file LogOpenMP.cpp
+ * @brief Example program for logging in OpenMP Threads
+ */
+
 #include <scai/logging.hpp>
 #include <omp.h>
 

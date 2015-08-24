@@ -16,32 +16,6 @@ blindness. To alleviate these concerns, our logging module is designed to be rel
 Since logging is rarely the main focus of an application, the API strives to be simple to understand and to
 use.
 
-Logging Libraries
------------------
-
-The following three versions of Logging libraries are available:
-
-- `log4cpp`_
-- `log4cxx`_
-- `boost logging <http://boost-log.sourceforge.net/libs/log/doc/html/index.html>`_
-
-.. _log4cpp: http://log4cpp.sourceforge.net/
-.. _log4cxx: http://logging.apache.org/log4cxx/
-
-There are certain advantages and disadvantges for each of the libraries.
-There is a comparative survey `here`__ for the different facilities but this survey does not give any hints
-about performance, usability, and availability. Here are some impressions for each of the libraries:
-
-__ http://log4cpp.hora-obscura.de/index.php/LoggingLibraryForCpp
-
-- log4cpp is very simple, easy to install, but not very performant.
-
-- log4cxx is the most popular, very performant, highest functionality, but requires the Apache runtime system
-  and utilities to be installed.
-  
-- Boost logging might be integrated in one of the next versions of Boost but not yet; it has only include
-  files but no library itself; runtime configuration files are not supported.
-
 SCAI Logging
 ------------
 
@@ -55,8 +29,7 @@ Global definition, configuration and initialization of the logging system is not
 It is done implicitly when the first logging statement is used.
 
 In the different subroutines and modules it is possible to get access to a logger. The macro SCAI_LOG_DEF_LOGGER
-defines a static logger variable with a certain name. By the dot notation for the name loggers can be structured
-hierarchically that makes it more comfortable to configure the loggers.
+defines a static logger variable with a certain name. 
 
 ::
 
@@ -82,7 +55,19 @@ variable logger must have been defined with one of the two previous macros:
     SCAI_LOG_ERROR( logger, "error message" );
     SCAI_LOG_FATAL( logger, "fatal message" );
 
-It is possible to combine arguments like it is done for streams:
+The following logging levels are supported:
+
+- TRACE is even more detailed than DEBUG and 
+- DEBUG designates fine-grained informational events that are most useful to debug an application
+- INFO  is for informational messages that highlight the progress of the application at coarse-grained 
+  level and should be used when a protocol of the application is required.
+- WARN designates potentially harmful situations
+- ERROR is for error events that might still allow the application to continue running.
+- FATAL designates severe error events that will presumably lead the application to abort.
+
+Multiple different output arguments can be combined with the << operator in the
+message argument of the logging statements. It is the same mechanism as used for
+C++ streams, i.e. the << operator must be defined for the corresponding argument.
 
 ::
 
@@ -90,16 +75,36 @@ It is possible to combine arguments like it is done for streams:
 
 The general idea is that the logging should appear in the source code but logging is usually disabled at
 runtime especially for the lower levels (DEBUG, INFO).
-The logging macros should have nearly no overhead if the logging is disabled at runtime. 
-Rather good performance is achieved if there is only one integer comparison at runtime for a logging statement. 
-It could be better if this comparison can even be extracted out of loops. But it could be worse if e.g. string
-operations are executed for the logging messages even if logging is disabled.
+Logging macros have nearly no overhead if the logging is disabled at runtime,
+as it is only an integer comparison with a static variable. 
 
 There is an include file that contains the definitions for all the macros:
 
 ::
 
     #include <scai/logging.hpp>
+
+Loggers can be structured hierarchically. Each dot in the name gives a new hierarchy,
+The hierarchy of the loggers makes it more comfortable to configure the loggers.
+
+::
+
+    SCAI_LOG_DEF_LOGGER( Vector::logger, "Vector" )
+    SCAI_LOG_DEF_LOGGER( DenseVector::logger, "Vector.DenseVector" )
+    SCAI_LOG_DEF_LOGGER( SparseVector::logger, "Vector.SparseVector" )
+    SCAI_LOG_DEF_LOGGER( Matrix::logger, "Matrix" )
+    SCAI_LOG_DEF_LOGGER( CSRSparseMatrix::logger, "Matrix.CSRSparseMatrix" )
+    SCAI_LOG_DEF_LOGGER( DIASparseMatrix::logger, "Matrix.DIASparseMatrix" )
+    SCAI_LOG_DEF_LOGGER( Distribution::logger, "Distribution" )
+    SCAI_LOG_DEF_LOGGER( BlockDistribution::logger, "Distribution.BlockDistribution" )
+
+These definitions of the loggers result in the following hierarchy:
+
+.. figure:: /_images/Logging1.png
+    :width: 500px
+    :align: center
+    :alt: Hierarchical structure of loggers.
+
 
 Configuration logging at compile time
 -------------------------------------
@@ -125,6 +130,16 @@ Be careful when using one of these macros. It implies that the corresponding log
 levels will become empty and do not appear any more in the code. They cannot be enabled at runtime without
 recompilation. The advantage is that it allows better optimized code as there is not even any integer
 comparison in the code.
+
+If more than one of the preprocessor variables is set, the one which enables the lowest level is used.
+
+::
+
+    #define SCAI_LOG_LEVEL_DEBUG    // debug, info, warn, error, fatal are enabled
+    #define SCAI_LOG_LEVEL_OFF      // useless as lower levels are already enabled
+
+So switching off logging by ``SCAI_LOG_LEVEL_OFF`` via define in the source code does not work
+if ``-DSCAI_LOG_LEVEL_WARN`` has been set at compile flag.
 
 Conditional code for logging
 ----------------------------
@@ -197,27 +212,44 @@ In the implementation of the class, e.g. Example.cpp, the logger has to be defin
 Configuration of logging at runtime
 -----------------------------------
 
-Logging can be configured at runtime by setting the environment variable ``SCAI_LOG`` with a configuration file.
+Logging can be configured at runtime by setting the environment variable ``SCAI_LOG`` with a logging level.
 
 .. code-block:: bash
 
-    export SCAI_LOG=config
+    export SCAI_LOG=TRACE 
+    export SCAI_LOG=DEBUG
+    export SCAI_LOG=INFO
+    export SCAI_LOG=WARN
+    export SCAI_LOG=ERROR
+    export SCAI_LOG=OFF
 
-If the variable is not set, a logging file with the name .loggingrc is searched in the home directory of the user.
-If this file is also not available, the default configuration is chosen.
+For setting loggers invididually, a configuration file can be used whose name should be different to 
+the logging levels.
+
+.. code-block:: bash
+
+    export SCAI_LOG=<config_file>
+
 
 The configuration file should contain lines that specfy the levels of the logger.
 
 ::
 
-    <root> = ERROR
-    Matrix = INFO
-    Matrix.CSRSparseMatrix = DEBUG
+    <root> = DEBUG
+    Vector = TRACE
+    Vector.DenseVector = ERROR
     Distribution = INFO
-    Distribution.BlockDistribution = WARN
 
 The default configuration for all loggers is level *WARN* if no configuration file is specified or if no
 level has been specified in the configuration file. The RootLogger can be referenced by **<root>**.
+
+If the environment variable ``SCAI_LOG`` is not set, a logging file with the name .loggingrc is searched 
+in the home directory of the user. If this file is also not available, the default configuration is chosen.
+
+.. figure:: /_images/Logging2.png
+    :width: 500px
+    :align: center
+    :alt: Inheritance of logging levels.
 
 For Debugging purposes it is also possible to flush the output of the logger, so all logging messages are
 displayed even if the program crashes. Flushing can be activated by the config file:
@@ -318,27 +350,27 @@ Examples
 
 The first example shows a simple example with logging statements of all different levels.
 
-.. literalinclude:: ../../../logging/examples/DemoLogging.cpp
+.. literalinclude:: ../../../logging/examples/LogLevels.cpp
 
 At runtime it can be decided which logging will be printed:
 
 ::
 
     export SCAI_LOG=INFO
-    examples/DemoLogging 
+    examples/LogLevels 
 
-    2015-08-19, 16:14:11 Demo @ main ( main -> DemoLogging.cpp::44 ) INFO a message about progress in the program
-    2015-08-19, 16:14:11 Demo @ main ( main -> DemoLogging.cpp::47 ) WARN a message with a warning, but execution is still possible
-    2015-08-19, 16:14:11 Demo @ main ( main -> DemoLogging.cpp::48 ) ERROR a message for an error, error handling will be invoked
-    2015-08-19, 16:14:11 Demo @ main ( main -> DemoLogging.cpp::49 ) FATAL a message for a fatal error, execution will stop
+    2015-08-19, 16:14:11 Demo @ main ( main -> LogLevels.cpp::44 ) INFO a message about progress in the program
+    2015-08-19, 16:14:11 Demo @ main ( main -> LogLevels.cpp::47 ) WARN a message with a warning, but execution is still possible
+    2015-08-19, 16:14:11 Demo @ main ( main -> LogLevels.cpp::48 ) ERROR a message for an error, error handling will be invoked
+    2015-08-19, 16:14:11 Demo @ main ( main -> LogLevels.cpp::49 ) FATAL a message for a fatal error, execution will stop
 
 ::
 
     export SCAI_LOG=ERROR
-    examples/DemoLogging 
+    examples/LogLevels 
 
-    2015-08-19, 16:14:25 Demo @ main ( main -> DemoLogging.cpp::48 ) ERROR a message for an error, error handling will be invoked
-    2015-08-19, 16:14:25 Demo @ main ( main -> DemoLogging.cpp::49 ) FATAL a message for a fatal error, execution will stop
+    2015-08-19, 16:14:25 Demo @ main ( main -> LogLevels.cpp::48 ) ERROR a message for an error, error handling will be invoked
+    2015-08-19, 16:14:25 Demo @ main ( main -> LogLevels.cpp::49 ) FATAL a message for a fatal error, execution will stop
 
 Using a config file (here with the name ``config``) is also possible, it should contain a line that sets the
 level of the logger *Demo*.
@@ -351,12 +383,12 @@ level of the logger *Demo*.
 ::
 
     export SCAI_LOG=config
-    2015-08-19, 16:43:25 Demo @ main ( main -> DemoLogging.cpp::44 ) INFO a message about progress in the program
-    2015-08-19, 16:43:25 Demo @ main ( main -> DemoLogging.cpp::45 ) DEBUG a message useful to find bugs in the program
-    2015-08-19, 16:43:25 Demo @ main ( main -> DemoLogging.cpp::46 ) TRACE a message with very detailled info, usually not compiled
-    2015-08-19, 16:43:25 Demo @ main ( main -> DemoLogging.cpp::47 ) WARN a message with a warning, but execution is still possible
-    2015-08-19, 16:43:25 Demo @ main ( main -> DemoLogging.cpp::48 ) ERROR a message for an error, error handling will be invoked
-    2015-08-19, 16:43:25 Demo @ main ( main -> DemoLogging.cpp::49 ) FATAL a message for a fatal error, execution will stop
+    2015-08-19, 16:43:25 Demo @ main ( main -> LogLevels.cpp::44 ) INFO a message about progress in the program
+    2015-08-19, 16:43:25 Demo @ main ( main -> LogLevels.cpp::45 ) DEBUG a message useful to find bugs in the program
+    2015-08-19, 16:43:25 Demo @ main ( main -> LogLevels.cpp::46 ) TRACE a message with very detailled info, usually not compiled
+    2015-08-19, 16:43:25 Demo @ main ( main -> LogLevels.cpp::47 ) WARN a message with a warning, but execution is still possible
+    2015-08-19, 16:43:25 Demo @ main ( main -> LogLevels.cpp::48 ) ERROR a message for an error, error handling will be invoked
+    2015-08-19, 16:43:25 Demo @ main ( main -> LogLevels.cpp::49 ) FATAL a message for a fatal error, execution will stop
 
 The next example demonstrates the use of logging with multiple threads.
 
@@ -387,6 +419,32 @@ The next example demonstrates the use of logging with multiple threads.
    2015-08-19, 16:11:01 LogOpenMP @ OMP_Thread_6 ( main -> LogOpenMP.cpp::29 ) INFO executes iteration 12 of 20
    2015-08-19, 16:11:01 LogOpenMP @ OMP_Thread_5 ( main -> LogOpenMP.cpp::29 ) INFO executes iteration 11 of 20
    2015-08-19, 16:11:01 LogOpenMP @ OMP_Thread_6 ( main -> LogOpenMP.cpp::29 ) INFO executes iteration 13 of 20
+
+Related Work
+------------
+
+The following three versions of logging libraries are used in most other C++ projects:
+
+- `log4cpp`_
+- `log4cxx`_
+- `boost logging <http://boost-log.sourceforge.net/libs/log/doc/html/index.html>`_
+
+.. _log4cpp: http://log4cpp.sourceforge.net/
+.. _log4cxx: http://logging.apache.org/log4cxx/
+
+There are certain advantages and disadvantges for each of the libraries.
+There is a comparative survey `here`__ for the different facilities but this survey does not give any hints
+about performance, usability, and availability. Here are some impressions for each of the libraries:
+
+__ http://log4cpp.hora-obscura.de/index.php/LoggingLibraryForCpp
+
+- log4cpp is very simple, easy to install, but not very performant.
+
+- log4cxx is the most popular, very performant, highest functionality, but requires the Apache runtime system
+  and utilities to be installed.
+  
+- Boost logging might be integrated in one of the next versions of Boost but not yet; it has only include
+  files but no library itself; runtime configuration files are not supported.
 
 Summary
 -------
