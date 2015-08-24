@@ -78,7 +78,6 @@ include ( ExternalDependencies )
 # Find required packages
 
 foreach    ( module ${SCAI_LAMA_EXTERNAL_DEPS} )
-message ( STATUS "include package ${module}" )
     include( Package/${module} )
 endforeach ( module ${SCAI_LAMA_EXTERNAL_DEPS} )
 

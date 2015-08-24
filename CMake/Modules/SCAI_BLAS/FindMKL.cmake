@@ -46,7 +46,7 @@ cmake_policy ( SET CMP0009 NEW )
 ### Search for include path for all required mkl header files
 
 # If MKL_ROOT was defined in the environment, use it.
-if ( MKL_ROOT AND NOT MKL_INCLUDE_DIR )
+if   ( MKL_ROOT AND NOT MKL_INCLUDE_DIR )
     set ( MKL_INCLUDE_DIR ${MKL_ROOT}/include )
 else ( MKL_ROOT AND NOT MKL_INCLUDE_DIR )
 

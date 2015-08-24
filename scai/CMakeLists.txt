@@ -58,7 +58,6 @@ include ( Functions/checkWhiteList )
 include ( ExternalDependencies )
 
 foreach    ( module ${SCAI_EXTERNAL_DEPS} )
-message ( STATUS "include package ${module}" )
     include( Package/${module} )
 endforeach ( module ${SCAI_EXTERNAL_DEPS} )
 
@@ -94,7 +93,7 @@ foreach    ( CACHE_VAR ${CACHE_VARS} )
     
 endforeach ( CACHE_VAR ${CACHE_VARS} )
 
-message ( STATUS "Passed CMAKE_ARGS ${CMAKE_ARGS}" )
+#message ( STATUS "Passed CMAKE_ARGS ${CMAKE_ARGS}" )
 #message ( STATUS "Passed MPI_ARGS ${MPI_ARGS}" )
 #message ( STATUS "Passed CUDA_ARGS ${CUDA_ARGS}" )
 #message ( STATUS "Passed MIC_ARGS ${MIC_ARGS}" )

@@ -44,7 +44,9 @@ setAndCheckCache ( CUDA )
 include ( CUDAComputeCapability )
 
 # set nvcc compiler flags
-include ( SetNVCCFlags )
+if    ( NOT SCAI_COMPLETE_BUILD )
+	include ( SetNVCCFlags )
+endif ( NOT SCAI_COMPLETE_BUILD )
 
 ### Check for cuSPASE library, Version 2 (since CUDA 5.0)
 
