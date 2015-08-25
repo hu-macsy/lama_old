@@ -1,5 +1,5 @@
 ###
- # @file LAMASummary.cmake
+ # @file Summaries/scai.cmake
  #
  # @license
  # Copyright (c) 2009-2013
@@ -25,7 +25,7 @@
  # SOFTWARE.
  # @endlicense
  #
- # @brief SCAI Summary for build configuration
+ # @brief scai Summary for build configuration
  # @author Jan Ecker
  # @date 25.04.2013
  # @since 1.0.0

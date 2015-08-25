@@ -1,5 +1,5 @@
 ###
- # @file LAMASummary.cmake
+ # @file Summaries/lama.cmake
  #
  # @license
  # Copyright (c) 2009-2013

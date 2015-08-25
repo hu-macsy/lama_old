@@ -108,5 +108,5 @@ if    ( NOT SCAI_COMPLETE_BUILD )
 endif ( NOT SCAI_COMPLETE_BUILD )
 
 if    ( CMAKE_VERBOSE_BUILD OR NOT SCAI_COMPLETE_BUILD )
-	include ( Summaries/Tasking )
+	include ( Summaries/tasking )
 endif ( CMAKE_VERBOSE_BUILD OR NOT SCAI_COMPLETE_BUILD )

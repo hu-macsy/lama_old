@@ -1,5 +1,5 @@
 ###
- # @file Summaries/Tracing.cmake
+ # @file Summaries/tracing.cmake
  #
  # @license
  # Copyright (c) 2009-2013
@@ -25,7 +25,7 @@
  # SOFTWARE.
  # @endlicense
  #
- # @brief SCAI Tracing Configuration Summary
+ # @brief SCAI tracing Configuration Summary
  # @author Lauretta Schubert
  # @date 25.08.2015
  # @since 2.0.0
@@ -39,7 +39,7 @@ include ( CompilerVersion )
 include ( CheckC++11 )
 
 message ( STATUS "" )
-message ( STATUS "Summary of SCAI Tracing Configuration:" )
+message ( STATUS "Summary of SCAI tracing Configuration:" )
 message ( STATUS "=====================================" )
 message ( STATUS "" )
 
@@ -83,12 +83,12 @@ scai_status_message ( HEADLINE "LIBRARIES:" )
 message ( STATUS "" )
 scai_summary_message ( "FOUND"
                        "SCAI_COMMON_FOUND"
-                       "SCAI Common"
+                       "SCAI common"
                        "" )
                        
 scai_summary_message ( "FOUND"
                        "SCAI_LOGGING_FOUND"
-                       "SCAI Logging"
+                       "SCAI logging"
                        "" )
                        
 scai_status_message ( HEADLINE "Tool:" )
