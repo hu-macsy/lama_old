@@ -118,6 +118,8 @@ SimpleAMG::SimpleAMGRuntime::~SimpleAMGRuntime()
         //freeLibHandle( reinterpret_cast<LAMA_LIB_HANDLE_TYPE&>( mLibHandle ) );
 
         SCAI_LOG_INFO( logger, "~SimpleAMG, library has been released" )
+
+        mLibHandle = 0;
     }
     else
     {
