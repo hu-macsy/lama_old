@@ -64,7 +64,7 @@ include ( Package/Sphinx )
 include ( Package/Doxygen )
 
 ## summary of what is found
-include ( Summaries/SCAI )
+include ( Summaries/scai )
 
 ## pass CACHE Variables to all subprojects via white listing
 
