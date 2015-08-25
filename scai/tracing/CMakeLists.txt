@@ -99,8 +99,6 @@ install ( FILES ${HPP_HEADERS} DESTINATION include/scai/tracing )
 
 if    ( CMAKE_VERSION VERSION_GREATER 2.8.7 ) 
 	add_subdirectory( gui )
-else  ( CMAKE_VERSION VERSION_GREATER 2.8.7 )
-	message( STATUS "GUI will not be build" )
 endif ( CMAKE_VERSION VERSION_GREATER 2.8.7 )
 
 ## install library.hpp

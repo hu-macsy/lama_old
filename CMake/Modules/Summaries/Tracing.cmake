@@ -90,6 +90,12 @@ scai_summary_message ( "FOUND"
                        "SCAI_LOGGING_FOUND"
                        "SCAI Logging"
                        "" )
+                       
+scai_status_message ( HEADLINE "Tool:" )
+
+if    ( NOT CMAKE_VERSION VERSION_GREATER 2.8.7 )
+	message( STATUS "GUI will not be build, CMake Version too old (${CMAKE_VERSION} < 2.8.7)" )
+endif ( NOT CMAKE_VERSION VERSION_GREATER 2.8.7 )
 
 message ( STATUS "" )
 
