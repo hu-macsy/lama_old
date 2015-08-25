@@ -31,7 +31,8 @@ include ( Package/OpenMP )
 if ( SCAI_COMMON_INCLUDE_DIR )
 
 	if    ( NOT CXX_SUPPORTS_C11 )
-	    find_package( Boost ${SCAI_FIND_PACKAGE_FLAGS} )
+	    #find_package( Boost ${SCAI_FIND_PACKAGE_FLAGS} )
+	    include ( Package/Boost )
 		list ( APPEND SCAI_COMMON_INCLUDE_DIR ${Boost_INCLUDE_DIR} )
 	endif ( NOT CXX_SUPPORTS_C11 )
 	

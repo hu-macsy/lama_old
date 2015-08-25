@@ -1,5 +1,16 @@
 ###
- # @file Summaries/Common.cmake
+ # @file Summaries/Logging.cmake
+ #
+ # @license
+ # Copyright (c) 2009-2013
+ # Fraunhofer Institute for Algorithms and Scientific Computing SCAI
+ # for Fraunhofer-Gesellschaft
+ #
+ # Permission is hereby granted, free of charge, to any person obtaining a copy
+ # of this software and associated documentation files (the "Software"), to deal
+ # in the Software without restriction, including without limitation the rights
+ # to use, copy, modify, merge, publish, distribute, sublicense, and/or sell###
+ # @file Summaries/Logging.cmake
  #
  # @license
  # Copyright (c) 2009-2013
@@ -25,7 +36,7 @@
  # SOFTWARE.
  # @endlicense
  #
- # @brief SCAI Common Configuration Summary
+ # @brief SCAI Logging Configuration Summary
  # @author Lauretta Schubert
  # @date 25.08.2015
  # @since 2.0.0
@@ -39,7 +50,7 @@ include ( CompilerVersion )
 include ( CheckC++11 )
 
 message ( STATUS "" )
-message ( STATUS "Summary of SCAI Common Configuration:" )
+message ( STATUS "Summary of SCAI Logging Configuration:" )
 message ( STATUS "=====================================" )
 message ( STATUS "" )
 
@@ -52,16 +63,16 @@ scai_summary_message ( "FOUND"
 
 message ( STATUS "" )
 
-if    ( ( CXX_SUPPORTS_C11 OR Boost_INCLUDE_DIR) AND SCAI_THREAD_LIBRARY )
+if    ( CXX_SUPPORTS_C11 OR Boost_INCLUDE_DIR )
     set( REQUIRED_FOUND TRUE )
-else  ( ( CXX_SUPPORTS_C11 OR Boost_INCLUDE_DIR) AND SCAI_THREAD_LIBRARY )
+else  ( CXX_SUPPORTS_C11 OR Boost_INCLUDE_DIR )
 	set( REQUIRED_FOUND FALSE )
-endif ( ( CXX_SUPPORTS_C11 OR Boost_INCLUDE_DIR) AND SCAI_THREAD_LIBRARY )
+endif ( CXX_SUPPORTS_C11 OR Boost_INCLUDE_DIR )
 
 scai_summary_message ( "STATIC"
                        "REQUIRED_FOUND"
-                       "Common"
-                       "Needs compiler supporting C++11 or Boost and pThreads" )
+                       "Logging"
+                       "Needs compiler supporting C++11 or Boost" )
 
 scai_summary_message ( "FOUND"
 					   "CXX_SUPPORTS_C11"
@@ -75,65 +86,22 @@ if    ( NOT CXX_SUPPORTS_C11 )
                            "Version ${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}, add include dir ${Boost_INCLUDE_DIR} to compile your sources" )
 endif ( NOT CXX_SUPPORTS_C11 )
 
-scai_summary_message ( "FOUND"
-					   "SCAI_THREAD_LIBRARY"
-					   "pThreads"
-					   "" )
-
-message ( STATUS "" )
-
-if    ( SCAI_COMPLETE_BUILD )
-	set ( OPENMP_INFO_TEXT "OpenMP schedule set to \"${SCAI_OMP_SCHEDULE}\"" )
-else  ( SCAI_COMPLETE_BUILD )
-	set ( OPENMP_INFO_TEXT "compile your sources with -DSCAI_OMP_SCHEDULE=<schedule-type>" )
-endif ( SCAI_COMPLETE_BUILD )
-
-scai_summary_message ( "USE"
-                       "USE_OPENMP"
-                       "  OpenMP usage"
-                       "${OPENMP_INFO_TEXT}"   )
-
 # LAMA (core)
 message ( STATUS "" )
 scai_status_message ( HEADLINE "LIBRARIES:" )
 
 # LAMA CUDA
 message ( STATUS "" )
-scai_summary_message ( "USE"
-                       "USE_CUDA"
-                       "LAMA CUDA"
-                       "" )
-
-    # CUDA
-    scai_summary_message ( "FOUND"
-                           "CUDA_FOUND"
-                           "CUDA"
-                           "Version ${CUDA_VERSION} at ${CUDA_INCLUDE_DIRS}" )
-                           
-    # CUDA Compute Capability
-    scai_summary_message ( "FOUND"
-                           "CUDA_HAVE_GPU"
-                           "Compute Capability"
-                           "${CUDA_COMPUTE_CAPABILITY}" )
-                           
-# LAMA MIC
-message ( STATUS "" )
-scai_summary_message ( "USE"
-                       "USE_MIC"
-                       "LAMA MIC"
+scai_summary_message ( "FOUND"
+                       "SCAI_COMMON_FOUND"
+                       "SCAI Common"
                        "" )
 
 message ( STATUS "" )
 
 scai_status_message ( HEADLINE "INFO:" )
-
 message ( STATUS "LAMA Version : ${LAMA_VERSION} ${LAMA_VERSION_NAME}" )
 message ( STATUS "Build Type   : ${CMAKE_BUILD_TYPE}" )
 message ( STATUS "Library Type : ${SCAI_LIBRARY_TYPE}" )
 message ( STATUS "ASSERT Level : ${SCAI_ASSERT_LEVEL}" )
 message ( STATUS "" )
-
-# LAMA Cuda
-if    ( USE_CUDA AND NOT CUDA_FOUND )
-    message( FATAL_ERROR "Build of LAMA Cuda enabled, but configuration is incomplete!")
-endif ( USE_CUDA AND NOT CUDA_FOUND )
