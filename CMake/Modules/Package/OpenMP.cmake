@@ -31,27 +31,34 @@
  # @since 1.0.0
 ###
 
-include ( Functions/setAndCheckCache )
-
-enable_language ( C )
+### OPENMP_FOUND           - if OpenMP is found
+### USE_OPENMP             - if OpenMP is enabled
+### SCAI_OMP_SCHEDULE_FLAG - needed OpenMP scheduling flag 
 
 find_package ( OpenMP ${SCAI_FIND_PACKAGE_FLAGS} )
 
+include ( Functions/setAndCheckCache )
 setAndCheckCache ( OPENMP )
 
-if    ( NOT SCAI_OMP_SCHEDULE )
-    set ( SCAI_OMP_SCHEDULE "static" )
-endif ( NOT SCAI_OMP_SCHEDULE )
+if    ( OPENMP_FOUND AND USE_OPENMP )
 
-#### Compile/Link flag for OpenMP will be set for all source files and all targets
+	if    ( NOT SCAI_OMP_SCHEDULE )
+    	set ( SCAI_OMP_SCHEDULE "static" )
+	endif ( NOT SCAI_OMP_SCHEDULE )
 
-if ( OPENMP_FOUND )
-   set ( LAMA_CXX_FLAGS "${OpenMP_CXX_FLAGS}" )
-else ( OPENMP_FOUND )
-   set ( LAMA_CXX_FLAGS "" )
-endif ( OPENMP_FOUND )
+	#### Compile/Link flag for OpenMP will be set for all source files and all targets
 
-set ( SCAI_OMP_SCHEDULE_FLAG "SCAI_OMP_SCHEDULE=${SCAI_OMP_SCHEDULE}" )
+	set ( SCAI_OMP_SCHEDULE_FLAG "SCAI_OMP_SCHEDULE=${SCAI_OMP_SCHEDULE}" )
+	
+	# Note: files using omp scheduling should be compiled with the corresponding flag
+	# add_definitions ( -D${SCAI_OMP_SCHEDULE_FLAG} )
 
-# Note: files using omp scheduling should be compiled with the corresponding flag
-# add_definitions ( -D${SCAI_OMP_SCHEDULE_FLAG} )
+else  ( OPENMP_FOUND AND USE_OPENMP )
+
+	# Supress unknown pragma warnings if OpenMP is disabled
+
+	if    ( CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES Intel )
+        set ( SCAI_WARNING_FLAGS "${SCAI_WARNING_FLAGS} -Wno-unknown-pragmas" )
+    endif ( CMAKE_COMPILER_IS_GNUCXX CMAKE_CXX_COMPILER_ID MATCHES Intel )
+    
+endif ( OPENMP_FOUND  AND USE_OPENMP )

@@ -34,62 +34,38 @@
 ### Set required CMake version
 cmake_minimum_required ( VERSION 2.8 )
 
-### Set Module Path
-set ( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../CMake/Modules" )
-
-### Print LAMA Installation header
-message ( STATUS "" )
-message ( STATUS "LAMA Configuration:" )
-message ( STATUS "===================" )
-message ( STATUS "" )
-
 ### Set PROJECT NAME / supported LANGUAGES
 project ( LAMA CXX )
 
-### set Module Path
+### Set Module Path
+set ( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../CMake/Modules" )
 
-set ( LAMA_VERSION_NAME "Alpamayo" )
-set ( LAMA_COPYRIGHT_YEAR 2015 )
-set ( LAMA_VERSION_MAJOR 1 )
-set ( LAMA_VERSION_MINOR 0 )
-set ( LAMA_VERSION_PATCH 1 )
-set ( LAMA_VERSION_COUNT 3 )
-set ( LAMA_VERSION ${LAMA_VERSION_MAJOR}.${LAMA_VERSION_MINOR}.${LAMA_VERSION_PATCH} )
+include ( VersionDefinition )
 
-### Variables / CMAKE Functions ###
-include ( Functions/allFunctions )
-include ( SetBuildFlags ) #LAMA.CMakeLists
-include ( SCAIAssert ) #LAMA.CMakeLists
-include ( CompilerVersion ) #LAMA.CMakeLists
+### Include Compiler Flags
+if    ( NOT SCAI_COMPLETE_BUILD )
+	include ( SetBuildFlags )
+	include ( SetCPPFlags )
+endif ( NOT SCAI_COMPLETE_BUILD )
 
-## Define all search packages
+### include all search packages
 include ( InternalDependencies )
 include ( ExternalDependencies )
-
-# Find required packages
 
 foreach    ( module ${SCAI_LAMA_EXTERNAL_DEPS} )
     include( Package/${module} )
 endforeach ( module ${SCAI_LAMA_EXTERNAL_DEPS} )
 
-# Find required packages
 foreach    ( PACKAGE_TO_FIND ${SCAI_LAMA_INTERNAL_DEPS} )
     find_package ( ${PACKAGE_TO_FIND} ${SCAI_FIND_PACKAGE_FLAGS} REQUIRED )
 endforeach ( PACKAGE_TO_FIND $${SCAI_LAMA_INTERNAL_DEPS} )
 
-# Find optional packages
-set ( OPTIONAL_PACKAGES_TO_FIND SCAI_BLAS Threads Metis ParMetis )
-foreach    ( PACKAGE_TO_FIND ${OPTIONAL_PACKAGES_TO_FIND} )
-    find_package ( ${PACKAGE_TO_FIND} ${SCAI_FIND_PACKAGE_FLAGS} )
-endforeach ( PACKAGE_TO_FIND ${OPTIONAL_PACKAGES_TO_FIND} )
+## finalize build flags
+include ( ConcludeFlags )
 
-# LAMA irrelevant entries will be marked as advanced ( Remove them from default cmake GUI )
-mark_as_advanced ( CUDA_BUILD_CUBIN CUDA_BUILD_EMULATION CUDA_SDK_ROOT_DIR CUDA_VERBOSE_BUILD )
+### add definitions ###
 
-### Include Compiler Flags
-include ( SetCPPFlags ) #LAMA.CMakeLists
-
-add_definitions ( -D${SCAI_OMP_SCHEDULE_FLAG} )
+add_definitions( ${ADDITIONAL_WARNING_FLAGS} )
 
 ## MKL FOUND
 if     ( SCAI_BLAS_NAME STREQUAL "MKL" )
@@ -100,20 +76,7 @@ else   ( )
     add_definitions( -DADD_ )
 endif  ( )
 
-## Project System-Include
-include_directories ( ../.. )
-
-foreach    ( module ${SCAI_LAMA_INTERNAL_DEPS} )
-	string ( TOUPPER ${module} upper_module )
-    include_directories( ${${upper_module}_INCLUDE_DIR} )
-endforeach ( module ${SCAI_LAMA_INTERNAL_DEPS} )
-
-if    ( Boost_INCLUDE_DIR )
-    include_directories ( ${Boost_INCLUDE_DIR} )
-endif ( Boost_INCLUDE_DIR )
-
-### add definitions ###
-
+add_definitions ( -D${SCAI_OMP_SCHEDULE_FLAG} )
 add_definitions ( -D${SCAI_LOGGING_FLAG} )
 add_definitions ( -D${SCAI_TRACING_FLAG} )
 
@@ -121,35 +84,24 @@ if ( WIN32 )
 	add_definitions ( -DCOMMON_COMPILING_DLL )
 endif ( WIN32 )
 
-## build lama library
+### Project System-Include
+include_directories ( ../.. )
 
-### set this dir as lama source dir ###
+foreach    ( module ${SCAI_LAMA_INTERNAL_DEPS} ${SCAI_LAMA_EXTERNAL_DEPS} )
+	string ( TOUPPER ${module} upper_module )
+    include_directories( ${${upper_module}_INCLUDE_DIR} )
+endforeach ( module ${SCAI_LAMA_INTERNAL_DEPS} ${SCAI_LAMA_EXTERNAL_DEPS} )
+
+include ( SCAIAssert )
+
+### build lama library
+
+include ( Functions/lamaSourceSolution )
+
+### set this dir as lama source dir
 lama_set_source_dir ()
 
-if    ( MPI_FOUND AND USE_MPI )
-	include_directories ( ${MPI_INCLUDE_PATH} ) 
-endif ( MPI_FOUND AND USE_MPI )
-
-if    ( CUDA_FOUND AND USE_CUDA )
-	include_directories ( ${CUDA_INCLUDE_DIRS} )
-endif ( CUDA_FOUND AND USE_CUDA )
-
-if ( METIS_FOUND )
-    include_directories ( ${METIS_INCLUDE_DIR} ) 
-endif ( METIS_FOUND )
-
-if ( METIS_FOUND AND PARMETIS_FOUND )
-    include_directories ( ${PARMETIS_INCLUDE_DIR} ) 
-endif ( METIS_FOUND AND PARMETIS_FOUND )
-
-if ( SCAI_BLAS_NAME STREQUAL "MKL" )
-    include_directories ( ${MKL_INCLUDE_DIRS} )
-elseif ( NOT SCAI_BLAS_NAME STREQUAL "MKL" AND NOT INTERNALBLAS_FOUND )
-    include_directories( cblas/include )
-#    add_subdirectory( cblas )
-endif ( SCAI_BLAS_NAME STREQUAL "MKL" )
-
-### Add classes and header files ###
+### Add classes and header files
 set ( CLASSES
         CommunicationPlan
         Communicator
@@ -179,10 +131,16 @@ lama_headers ( ${HEADERS} )
 
 ### add subdirectories ###
 
+if    ( NOT SCAI_BLAS_NAME STREQUAL "MKL" AND NOT INTERNALBLAS_FOUND )
+    add_subdirectory( cblas )
+endif ( NOT SCAI_BLAS_NAME STREQUAL "MKL" AND NOT INTERNALBLAS_FOUND )
+
+## CUDA
 if ( CUDA_FOUND AND USE_CUDA AND CUDA_HAVE_GPU )
     add_subdirectory ( cuda )
 endif ( CUDA_FOUND AND USE_CUDA AND CUDA_HAVE_GPU )
 
+## MIC
 if ( USE_MIC )
     add_subdirectory ( mic )
 endif ( USE_MIC )
@@ -193,12 +151,17 @@ add_subdirectory ( io )
 add_subdirectory ( macros )
 add_subdirectory ( matrix )
 add_subdirectory ( matutils )
+
+## MPI
 if ( MPI_FOUND AND USE_MPI )
     add_subdirectory ( mpi )
 endif ( MPI_FOUND AND USE_MPI )
+
+## GPI
 if ( GPI2_FOUND AND IBVERBS_FOUND AND USE_GPI2 )
     add_subdirectory( gpi )
 endif ( GPI2_FOUND AND IBVERBS_FOUND AND USE_GPI2 )
+
 add_subdirectory ( norm )
 add_subdirectory ( openmp )
 add_subdirectory ( solver )
@@ -211,9 +174,8 @@ endif ( FOUND_BOOST_TEST AND BUILD_TEST )
 ### set link directories ###
 if ( WIN32 )
     set ( LAMAPP_LINK_DIRECTORIES ${LAMAPP_LINK_DIRECTORIES} ${Boost_LIBRARY_DIRS} )
+	link_directories ( ${LAMAPP_LINK_DIRECTORIES} )
 endif ( WIN32 )
-
-link_directories ( ${LAMAPP_LINK_DIRECTORIES} )
 
 ### add library ###
 
@@ -222,23 +184,20 @@ if    ( CUDA_FOUND AND USE_CUDA AND CUDA_HAVE_GPU )
 	set ( CXX_SOURCES ${CXX_SOURCES} ${CUDA_FILES} )
 endif ( CUDA_FOUND AND USE_CUDA AND CUDA_HAVE_GPU )
 
-add_library ( ama ${SCAI_LIBRARY_TYPE} ${CXX_SOURCES} ) #${HEADERS} )
+add_library ( ama ${SCAI_LIBRARY_TYPE} ${CXX_SOURCES} )
 
+## add link libraries
 foreach    ( module ${SCAI_LAMA_INTERNAL_DEPS} )
 	string ( TOUPPER ${module} upper_module )
     target_link_libraries ( ama ${${upper_module}_LIBRARY} )
 endforeach ( module ${SCAI_LAMA_INTERNAL_DEPS} )
 
-target_link_libraries ( ama ${SCAI_BLAS_LIBRARIES} )
+foreach    ( module ${SCAI_LAMA_EXTERNAL_DEPS} )
+	string ( TOUPPER ${module} upper_module )
+    target_link_libraries ( ama ${SCAI_${upper_module}_LIBRARIES} )
+endforeach ( module ${SCAI_LAMA_EXTERNAL_DEPS} )
 
-if    ( CUDA_FOUND AND USE_CUDA AND CUDA_HAVE_GPU )
-	 target_link_libraries ( ama ${CUDA_cusparse_LIBRARY} ${CUDA_cublas_LIBRARY}
-	 							 ${CUDA_CUDART_LIBRARY} ${CUDA_CUDA_LIBRARY} )          
-endif ( CUDA_FOUND AND USE_CUDA AND CUDA_HAVE_GPU )
-
-if    ( MPI_FOUND AND USE_MPI )
-    target_link_libraries ( ama ${MPI_LIBRARIES} )
-endif ( MPI_FOUND AND USE_MPI )
+# external libraries
 
 if    ( GPI2_FOUND AND IBVERBS_FOUND AND USE_GPI2 )
     target_link_libraries ( ama ${GPI2_LIBRARIES} ${IBVERBS_LIBRARIES} )
@@ -249,44 +208,24 @@ if ( SCALAPACK_FOUND AND MPI_FOUND AND USE_MPI )
     add_definitions( -DSCAI_MKL_SCALAPACK ) ## TODO: where used?!
 endif ( SCALAPACK_FOUND AND MPI_FOUND AND USE_MPI )
 
-if ( METIS_FOUND )
-    target_link_libraries( ama ${METIS_LIBRARY} )
-endif ( METIS_FOUND ) 
-
-if ( METIS_FOUND AND PARMETIS_FOUND )
-    target_link_libraries( ama ${PARMETIS_LIBRARY} )
-endif ( METIS_FOUND AND PARMETIS_FOUND )
-
-# generate file make.inc + install it
-configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/examples/make.inc.in" "${CMAKE_CURRENT_BINARY_DIR}/examples/make.inc" )
-install ( FILES "${CMAKE_CURRENT_BINARY_DIR}/examples/make.inc" DESTINATION share/examples )
-
-### add definitions ###
-if ( WIN32 )
-    add_definitions ( -DCOMMON_COMPILING_DLL )
-endif ( WIN32 )
-
-### install ###
-
+### install
 install ( TARGETS ama DESTINATION lib )
-
-## end build lama library
-
-### Examples ###
-# copy examples in build directory + install it
-file ( COPY ${CMAKE_CURRENT_SOURCE_DIR}/examples DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
-install ( DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/examples DESTINATION share )
 
 ## install library.hpp
 configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/lama.hpp.in" "${CMAKE_CURRENT_BINARY_DIR}/include/lama.hpp" )
 install ( FILES "${CMAKE_CURRENT_BINARY_DIR}/include/lama.hpp" DESTINATION include/scai )
 
-## add custum target distClean
+# generate file make.inc + install it
+configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/examples/make.inc.in" "${CMAKE_CURRENT_BINARY_DIR}/examples/make.inc" )
+install ( FILES "${CMAKE_CURRENT_BINARY_DIR}/examples/make.inc" DESTINATION share/examples )
+
+# copy examples in build directory + install it
+file ( COPY ${CMAKE_CURRENT_SOURCE_DIR}/examples DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
+install ( DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/examples DESTINATION share )
 
 ## add custum target distClean, but only if this project is not included
-
-if ( CMAKE_SOURCE_DIR EQUAL CMAKE_CURRENT_SOURCE_DIR )
-    add_custom_target ( distclean )
-endif ()
+if    ( NOT SCAI_COMPLETE_BUILD )
+	include ( DistClean )
+endif ( NOT SCAI_COMPLETE_BUILD )
 
 #include ( LAMASummary )

@@ -58,7 +58,7 @@ macro    ( scai_summary_message MESSAGE_TYPE EXPRESSION PACKAGE_NAME ADDITIONAL_
         set ( TYPE_INTENT "  " )
         set ( SCAI_PACKAGE_NAME_BLANKS "" )
     endif ( ${MESSAGE_TYPE} STREQUAL "USE" )
-        
+
     if    ( ${EXPRESSION} )
         scai_status_message ( ${TYPE_INTENT} ${PACKAGE_NAME} ${SCAI_PACKAGE_NAME_BLANKS} INFO ${TYPE_TRUE} ${ADDITIONAL_INFO})
     else  ( ${EXPRESSION} )

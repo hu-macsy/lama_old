@@ -39,69 +39,59 @@ project ( scai_common CXX )
 ### Set Module Path
 set ( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../CMake/Modules" )
 
-## Define all search packages
+### Include Compiler Flags
+if    ( NOT SCAI_COMPLETE_BUILD )
+	include ( SetBuildFlags )
+	include ( SetCPPFlags )
+endif ( NOT SCAI_COMPLETE_BUILD )
+
+### include all search packages
 # no internal dependencies
 include ( ExternalDependencies )
-
-# Find required packages
 
 foreach    ( module ${SCAI_COMMON_EXTERNAL_DEPS} )
     include( Package/${module} )
 endforeach ( module ${SCAI_COMMON_EXTERNAL_DEPS} )
 
-if    ( NOT SCAI_COMPLETE_BUILD )
-	
-	### Include Compiler Flags
-	include ( SetCPPFlags )
+### finalize build flags
+include ( ConcludeFlags )
 
-else  ( NOT SCAI_COMPLETE_BUILD )
+### add definitions
 
-	add_definitions( ${ADDITIONAL_WARNING_FLAGS} )
-
-	set ( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${ADDITIONAL_CXX_FLAGS}")
-	set ( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${ADDITIONAL_CXX_FLAGS_RELEASE} " )
-	set ( CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${ADDITIONAL_LINKER_FLAGS} " )
-	set ( CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${ADDITIONAL_LINKER_FLAGS} " )
-
-endif ( NOT SCAI_COMPLETE_BUILD )
-
-## Project System-Include
-
-include_directories ( ../.. )
-
-foreach    ( module ${SCAI_COMMON_INTERNAL_DEPS} )
-    include_directories( ${${module}_INCLUDE_DIR} )
-endforeach ( module ${SCAI_COMMON_INTERNAL_DEPS} )
-
-## add subdirectories
-add_subdirectory ( examples )
-
-## build library
-file ( GLOB CPP_SOURCES "*.cpp" )
-file ( GLOB HPP_HEADERS "*.hpp" )
+add_definitions( ${ADDITIONAL_WARNING_FLAGS} )
 
 if    ( WIN32 )
 	add_definitions ( -DCOMMON_COMPILING_DLL )
 endif ( WIN32 )
 
+### Project System-Include
+include_directories ( ../.. )
+
+### build library
+
+## add subdirectories
+add_subdirectory ( examples )
+
+## search for files
+file ( GLOB CPP_SOURCES "*.cpp" )
+file ( GLOB HPP_HEADERS "*.hpp" )
+
+## add CUDA if supported
 if    ( CUDA_FOUND AND USE_CUDA )
     add_subdirectory ( cuda )
     include_directories ( ${CUDA_TOOLKIT_INCLUDE} )
 endif ( CUDA_FOUND AND USE_CUDA )
 
-include_directories ( . )
-
-### add library and put path to search path ###
-
+## add library
 add_library ( scai_common SHARED ${CPP_SOURCES} ${CUDA_SOURCES} )
-target_link_libraries( scai_common ${PTHREADS_LIBRARY} )
 
-foreach ( module ${SCAI_COMMON_INTERNAL_DEPS} )
-    target_link_libraries ( scai_logging ${${module}_LIBRARY} )
-endforeach    ( module ${SCAI_COMMON_INTERNAL_DEPS} )
+## add link libraries
+foreach    ( module ${SCAI_HMEMO_EXTERNAL_DEPS} )
+	string ( TOUPPER ${module} upper_module )
+    target_link_libraries ( scai_common ${SCAI_${upper_module}_LIBRARIES} )
+endforeach ( module ${SCAI_HMEMO_EXTERNAL_DEPS} )
 
 ### install ###
-
 install ( TARGETS scai_common DESTINATION lib )
 install ( FILES ${HPP_HEADERS} DESTINATION include/scai/common )
 
@@ -109,7 +99,6 @@ install ( FILES ${HPP_HEADERS} DESTINATION include/scai/common )
 install ( FILES ../common.hpp DESTINATION include/scai )
 
 ## add custum target distClean, but only if this project is not included
-
-if ( CMAKE_SOURCE_DIR EQUAL CMAKE_CURRENT_SOURCE_DIR )
-    add_custom_target ( distclean )
-endif ()
+if    ( NOT SCAI_COMPLETE_BUILD )
+	include ( DistClean )
+endif ( NOT SCAI_COMPLETE_BUILD )

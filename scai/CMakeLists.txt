@@ -36,24 +36,16 @@ cmake_minimum_required ( VERSION 2.8 )
 project ( LAMA_ALL CXX )
 set ( CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/../CMake/Modules" )
 
-## version info
-set ( LAMA_VERSION_NAME "Alpamayo" )
-set ( LAMA_COPYRIGHT_YEAR 2015 )
-set ( LAMA_VERSION_MAJOR 1 )
-set ( LAMA_VERSION_MINOR 0 )
-set ( LAMA_VERSION_PATCH 1 )
-set ( LAMA_VERSION_COUNT 3 )
-set ( LAMA_VERSION ${LAMA_VERSION_MAJOR}.${LAMA_VERSION_MINOR}.${LAMA_VERSION_PATCH} )
+include ( VersionDefinition )
 
 ## general Settings for all projects
-
 include ( SetBuildFlags ) # VERBOSE, RPATH, LIB64, BUILD_SHARED
+include ( SCAIAssert )
+include ( CompilerVersion )
+
 include ( Functions/checkValue )
 include ( Functions/setAndCheckCache )
 include ( Functions/checkWhiteList )
-
-include ( SCAIAssert )
-include ( CompilerVersion )
 
 include ( ExternalDependencies )
 
@@ -61,32 +53,15 @@ foreach    ( module ${SCAI_EXTERNAL_DEPS} )
     include( Package/${module} )
 endforeach ( module ${SCAI_EXTERNAL_DEPS} )
 
-set ( REQUIRED_PACKAGES_TO_FIND Threads )
-set ( OPTIONAL_PACKAGES_TO_FIND SCAI_BLAS )
-
-# Find required packages
-foreach    ( PACKAGE_TO_FIND ${REQUIRED_PACKAGES_TO_FIND} )
-    find_package ( ${PACKAGE_TO_FIND} ${SCAI_FIND_PACKAGE_FLAGS} REQUIRED )
-endforeach ( PACKAGE_TO_FIND ${REQUIRED_PACKAGES_TO_FIND} )
-
-# Find optional packages
-foreach    ( PACKAGE_TO_FIND ${OPTIONAL_PACKAGES_TO_FIND} )
-    find_package ( ${PACKAGE_TO_FIND} ${SCAI_FIND_PACKAGE_FLAGS} )
-endforeach ( PACKAGE_TO_FIND ${OPTIONAL_PACKAGES_TO_FIND} )
+include ( SetCPPFlags ) # do after external deps because openmp dependency
 
 ## documentation
 
 # user docu --> make userdoc, make userdoc_json, make install_userdoc
-find_package ( Sphinx )
 include ( Package/Sphinx )
 
 #system docu --> make doc
-find_package ( Doxygen )
 include ( Package/Doxygen )
-
-## general compiler settings
-
-include ( SetCPPFlags )
 
 ## summary of what is found
 include ( Summary )

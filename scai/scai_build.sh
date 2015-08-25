@@ -2,7 +2,7 @@
 
 # Skript to build all SCAI projects
 
-SCAI_ROOT=/home/brandes/local/scai
+SCAI_ROOT=/home/lschubert/localInstall/lamaStandalone
 
 PROJECTS="common logging tracing tasking hmemo lama"
 
@@ -21,9 +21,10 @@ else
         cd $project
         mkdir -p build
         cd build
-        # echo "cmake .. -DCMAKE_INSTALL_PREFIX=${SCAI_ROOT} -DADDITIONAL_WARNING_FLAGS=\"-Wextra -Wall\""
+        # echo "cmake .. -DCMAKE_INSTALL_PREFIX=${SCAI_ROOT}\""
         cmake .. -DCMAKE_INSTALL_PREFIX=${SCAI_ROOT}
-        make j=8
+        make -j 4
+
         make install
         cd ../..
     done

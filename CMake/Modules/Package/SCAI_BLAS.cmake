@@ -1,5 +1,5 @@
 ###
- # @file FindSCAI_BLAS.cmake
+ # @file SCAI_BLAS.cmake
  #
  # @license
  # Copyright (c) 2009-2013
@@ -33,8 +33,14 @@
 
 # - Try to find SCAI_BLAS
 #   Once done this will define
-#   SCAI_BLAS_FOUND - System has SCAI_BLAS
-#   SCAI_BLAS_LIBRARIES - The libraries needed to use SCAI_BLAS
+#   SCAI_BLAS_FOUND          - System has SCAI_BLAS
+#   SCAI_BLAS_NAME           - name of choosen BLAS library
+#   SCAI_BLAS_INCLUDE_DIR    - SCAI_BLAS include directory 
+#   SCAI_SCAI_BLAS_LIBRARIES - The libraries needed to use SCAI_BLAS
+
+include ( Functions/checkValue )
+
+enable_language ( C )
 
 LIST ( APPEND LIBRARY_CHOICES "auto" "MKL" "BLAS" "INTERNALBLAS" )
 if ( NOT DEFINED SCAI_BLAS_LIBRARY )
@@ -45,11 +51,13 @@ endif ( NOT DEFINED SCAI_BLAS_LIBRARY )
 set ( CACHE SCAI_BLAS_LIBRARY PROPERTY STRINGS ${LIBRARY_CHOICES} )
 checkValue( ${SCAI_BLAS_LIBRARY} "${LIBRARY_CHOICES}" )
 
+#message ( STATUS "Choosen BLAS_LIBRARY: ${SCAI_BLAS_LIBRARY}" )
+
 if ( DEFINED LAST_SCAI_BLAS_LIBRARY )
     if ( NOT LAST_SCAI_BLAS_LIBRARY STREQUAL SCAI_BLAS_LIBRARY )
         set ( SCAI_BLAS_FOUND FALSE )
         set ( SCAI_BLAS_NAME "" )
-        set ( SCAI_BLAS_LIBRARIES )
+        set ( SCAI_SCAI_BLAS_LIBRARIES )
       	set ( SCAI_PBLAS_LIBRARIES )
         
         set ( MKL_FOUND FALSE )
@@ -90,20 +98,25 @@ if ( NOT INTERNALBLAS_FOUND )
 
     # load selected or auto choosen BLAS Library and set blas style (default: SCAI_FORTRAN_BLAS_STYLE_LOWERCASE)
     if ( MKL_FOUND )
+
         set ( SCAI_BLAS_FOUND TRUE )
         set ( SCAI_BLAS_NAME "MKL" )
-     	set ( SCAI_BLAS_LIBRARIES ${MKL_LIBRARIES} )
+        set ( SCAI_BLAS_INCLUDE_DIR ${MKL_INCLUDE_DIRS} )
+     	set ( SCAI_SCAI_BLAS_LIBRARIES ${MKL_LIBRARIES} )
       	set ( SCAI_PBLAS_LIBRARIES ${MKL_PLIBRARIES} )
        	# default: SCAI_FORTRAN_BLAS_STYLE_LOWERCASE
+       	
     endif ( MKL_FOUND )
     
     if ( BLAS_FOUND )
+    
         set ( SCAI_BLAS_FOUND TRUE )
         set ( SCAI_BLAS_NAME "BLAS " )
+        set ( SCAI_BLAS_INCLUDE_DIR ${CMAKE_ROOT_DIR}/scai/lama/cblas/include )
         if ( LAPACK_LIBRARIES )
-            set ( SCAI_BLAS_LIBRARIES ${LAPACK_LIBRARIES} )
+            set ( SCAI_SCAI_BLAS_LIBRARIES ${LAPACK_LIBRARIES} )
         elseif ( LAPACK_lapack_LIBRARY AND BLAS_blas_LIBRARY )
-            list ( APPEND SCAI_BLAS_LIBRARIES ${LAPACK_lapack_LIBRARY} )
+            list ( APPEND SCAI_SCAI_BLAS_LIBRARIES ${LAPACK_lapack_LIBRARY} )
         endif ()
         add_definitions ( -DSCAI_FORTRAN_BLAS_STYLE_UNDERSCORE )
     endif ( BLAS_FOUND )
@@ -111,13 +124,16 @@ if ( NOT INTERNALBLAS_FOUND )
 else ( NOT INTERNALBLAS_FOUND )
     set ( SCAI_BLAS_FOUND TRUE )
     set ( SCAI_BLAS_NAME "Internal" )
+    set ( SCAI_BLAS_INCLUDE_DIR ${CMAKE_ROOT_DIR}/scai/lama/cblas/include )
 endif ( NOT INTERNALBLAS_FOUND )
+
+#message ( STATUS "SCAI_BLAS_FOUND ${SCAI_BLAS_FOUND} SCAI_BLAS_NAME ${SCAI_BLAS_NAME}" )
+#message ( STATUS "SCAI_BLAS_INCLUDE_DIR ${SCAI_BLAS_INCLUDE_DIR} SCAI_SCAI_BLAS_LIBRARIES ${SCAI_SCAI_BLAS_LIBRARIES}" )
 
 include ( FindPackageHandleStandardArgs )
 # handle the QUIETLY and REQUIRED arguments and set SCAI_BLAS_FOUND to TRUE if all listed variables are TRUE
-#find_package_handle_standard_args ( SCAI_BLAS DEFAULT_MSG SCAI_BLAS_LIBRARIES)
+#find_package_handle_standard_args ( SCAI_BLAS DEFAULT_MSG SCAI_SCAI_BLAS_LIBRARIES)
 
-mark_as_advanced ( SCAI_BLAS_LIBRARIES )
-mark_as_advanced ( SCAI_PBLAS_LIBRARIES )
+mark_as_advanced ( SCAI_SCAI_BLAS_LIBRARIES SCAI_PBLAS_LIBRARIES )
 
 set ( LAST_SCAI_BLAS_LIBRARY ${SCAI_BLAS_LIBRARY} CACHE INTERNAL "" )

@@ -78,13 +78,14 @@ endif ( SCAI_BLAS_FOUND AND Boost_INCLUDE_DIR )
 #                       "REQUIRED_FOUND"
 #                       "LAMA (core)"
 #                       " " )
+
    # BLAS
     scai_summary_message ( "FOUND"
                            "SCAI_BLAS_FOUND"
                            "BLAS"
                            "(${SCAI_BLAS_NAME}) with libraries: ${SCAI_BLAS_LIBRARIES}" )
+                           
     if    ( SCAI_BLAS_NAME MATCHES "BLAS" )
-    
     message ( STATUS "" )
     scai_summary_message ( "FOUND"
                            "LAPACK_FOUND"
@@ -182,13 +183,13 @@ scai_status_message ( HEADLINE "DOCUMENTATION:" )
 scai_summary_message ( "FOUND"
                        "DOXYGEN_FOUND"
                        "DOXYGEN "
-                       "'make doc' to build system documentation" )
+                       "Version ${DOXYGEN_VERSION} at ${DOXYGEN_EXECUTABLE}: 'make doc' to build system documentation" )
                        
 # DOXYGEN
 scai_summary_message ( "FOUND"
                        "SPHINX_FOUND"
                        "SPHINX"
-                       "'make userdoc' to build user documentation" )
+                       "Version ${Sphinx_VERSION_STRING} at ${Sphinx-build_EXECUTABLE}: 'make userdoc' to build user documentation" )
 
 message ( STATUS "" )
 

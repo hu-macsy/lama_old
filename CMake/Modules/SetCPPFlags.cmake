@@ -30,33 +30,14 @@
  # @date 17.07.2015
 ###
 
-message ( STATUS "${CMAKE_CXX_COMPILER_ID} compiler" )
-
-#### Check for -std=c++11
-
-include ( CheckCXXCompilerFlag )
-
-if ( NOT DEFINED CXX_SUPPORTS_C11 )
-    CHECK_CXX_COMPILER_FLAG( -std=c++11 CXX_SUPPORTS_C11 )
-endif ()
-
 #### compiler dependent flag definition ####
 
 # GNU
 if ( CMAKE_COMPILER_IS_GNUCXX )
 
-    if ( CXX_SUPPORTS_C11 )
-        set ( LAMA_CXX_FLAGS "${LAMA_CXX_FLAGS} -std=c++11" )
-    endif ( CXX_SUPPORTS_C11 )
-
     set ( LAMA_LINKER_FLAGS "-Wl,--no-as-needed " )
-    set ( LAMA_WARNING_FLAGS "-Wextra -Wall -Werror" ) # -pedantic -std=c++98 " ) # -march=core02
+    set ( SCAI_WARNING_FLAGS "-Wextra -Wall -Werror" ) # -pedantic -std=c++98 " ) # -march=core02
 
-    # Supress unknown pragma warnings if OpenMP is disabled
-    if ( NOT OPENMP_FOUND )
-        set ( LAMA_WARNING_FLAGS "${LAMA_WARNING_FLAGS} -Wno-unknown-pragmas" )
-    endif ( NOT OPENMP_FOUND )
-    
     set ( LAMA_CXX_FLAGS_RELEASE "-ffast-math -msse4a " )
 
 endif ( CMAKE_COMPILER_IS_GNUCXX )
@@ -69,23 +50,12 @@ if ( CMAKE_CXX_COMPILER_ID MATCHES Intel )
 
     set ( LAMA_CXX_FLAGS "${LAMA_CXX_FLAGS} -fPIC -shared-intel" ) 
 
-    if ( CXX_SUPPORTS_C11 )
-        set ( LAMA_CXX_FLAGS "${LAMA_CXX_FLAGS} -std=c++11" )
-    else ( CXX_SUPPORTS_C11 )
-        set ( LAMA_CXX_FLAGS "${LAMA_CXX_FLAGS} -std=c++0x" )
-    endif ( CXX_SUPPORTS_C11 )
-
-    message ( STATUS "LAMA_CXX_FLAGS = ${LAMA_CXX_FLAGS}" )
+    #message ( STATUS "LAMA_CXX_FLAGS = ${LAMA_CXX_FLAGS}" )
     
     # -wd1478 : supprress warning deprecated auto_ptr
     # not set: -Werror-all (all warnings will be errors)
 
-    set ( LAMA_WARNING_FLAGS "-w2 -Wall -Wcheck -wd1478" ) # -Werror-all Warnings/Errors. No Remarks.
-    
-    # Supress unknown pragma warnings if OpenMP is disabled
-    if ( NOT OPENMP_FOUND )
-        set ( LAMA_WARNING_FLAGS "${LAMA_WARNING_FLAGS} -Wno-unknown-pragmas" )
-    endif ( NOT OPENMP_FOUND )
+    set ( SCAI_WARNING_FLAGS "-w2 -Wall -Wcheck -wd1478" ) # -Werror-all Warnings/Errors. No Remarks.
     
     set ( LAMA_CXX_FLAGS_RELEASE "-ipo -no-prec-div -xHost " )
 
@@ -102,34 +72,14 @@ if ( CMAKE_CXX_COMPILER_ID MATCHES PGI )
 
     # Disable warning 1097 to avoid warnings from openmpi headers with gcc specific attributes
 
-    set ( LAMA_WARNING_FLAGS "--display_error_number --diag_suppress1097 " )
+    set ( SCAI_WARNING_FLAGS "--display_error_number --diag_suppress1097 " )
     
     set ( LAMA_CXX_FLAGS_RELEASE "-fast " )
 
 endif ( CMAKE_CXX_COMPILER_ID MATCHES PGI )
 
-
-## add variables to cache with new names so they can be modified by the user via CCMAKE
-
-set ( ADDITIONAL_CXX_FLAGS "${LAMA_CXX_FLAGS}" CACHE STRING "additional flags for cxx compile and link" )
-set ( ADDITIONAL_WARNING_FLAGS "${LAMA_WARNING_FLAGS}" CACHE STRING "compilation flags concerning warnings" )
-set ( ADDITIONAL_CXX_FLAGS_RELEASE "${LAMA_CXX_FLAGS_RELEASE}" CACHE STRING "addtional cxx compiler flags for release optimizations" )
-set ( ADDITIONAL_LINKER_FLAGS "${LAMA_LINKER_FLAGS}" CACHE STRING "additional linker flags" )
-
-mark_as_advanced ( ADDITIONAL_CXX_FLAGS ADDITIONAL_WARNING_FLAGS ADDITIONAL_CXX_FLAGS_RELEASE ADDITIONAL_LINKER_FLAGS )
-
 ###  Code coverage with gcov/lcov
-set ( USE_CODE_COVERAGE FALSE CACHE BOOL "Enable / Disable use of Code Coverage" )
-
 if    ( USE_CODE_COVERAGE )
     set ( COVERAGE_FLAGS "-fprofile-arcs -ftest-coverage" )
+    set ( LAMA_CXX_FLAGS ${LAMA_CXX_FLAGS} ${COVERAGE_FLAGS} )
 endif ( USE_CODE_COVERAGE )
-
-#### concluding all defined compiler flags to CMAKE_..._FLAGS ####
-
-add_definitions( ${ADDITIONAL_WARNING_FLAGS} )
-
-set ( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${ADDITIONAL_CXX_FLAGS}")
-set ( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${ADDITIONAL_CXX_FLAGS_RELEASE} " )
-set ( CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${ADDITIONAL_LINKER_FLAGS} " )
-set ( CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${ADDITIONAL_LINKER_FLAGS} " )

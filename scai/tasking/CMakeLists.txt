@@ -28,6 +28,7 @@
  # @brief CMake configuration file for tasking library
  # @author Thomas Brandes
  # @date 10.06.2015
+ # @since 2.0.0
 ###
 
 ### Set required CMake version
@@ -39,38 +40,36 @@ project( scai_tasking CXX )
 ### Set Module Path
 set ( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../CMake/Modules" )
 
-## Define all search packages
+### Include Compiler Flags
+if    ( NOT SCAI_COMPLETE_BUILD )
+	include ( SetBuildFlags )
+	include ( SetCPPFlags )
+endif ( NOT SCAI_COMPLETE_BUILD )
+
+### include all search packages
 include ( InternalDependencies )
 #no external dependencies
-
-# Find required packages
 
 foreach    ( PACKAGE_TO_FIND ${SCAI_TASKING_INTERNAL_DEPS} )
     find_package ( ${PACKAGE_TO_FIND} ${SCAI_FIND_PACKAGE_FLAGS} REQUIRED )
 endforeach ( PACKAGE_TO_FIND ${REQUIRED_PACKAGES_TO_FIND} )
 
-if    ( NOT SCAI_COMPLETE_BUILD )
+## finalize build flags
+include ( ConcludeFlags )
 
-	### Include Compiler Flags
-	include ( SetCPPFlags )
-	
-else  ( NOT SCAI_COMPLETE_BUILD )
+### add definitions
 
-	add_definitions( ${ADDITIONAL_WARNING_FLAGS} )
+add_definitions( ${ADDITIONAL_WARNING_FLAGS} )
 
-	set ( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${ADDITIONAL_CXX_FLAGS}")
-	set ( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${ADDITIONAL_CXX_FLAGS_RELEASE} " )
-	set ( CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${ADDITIONAL_LINKER_FLAGS} " )
-	set ( CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${ADDITIONAL_LINKER_FLAGS} " )
+add_definitions ( -D${SCAI_LOGGING_FLAG} )
 
-endif ( NOT SCAI_COMPLETE_BUILD )
+add_definitions( -DSCAI_TRACE_ON )
 
-if ( NOT CXX_SUPPORTS_C11 )
-    find_package( Boost REQUIRED )
-    include_directories( ${Boost_INCLUDE_DIR} )
-endif ( NOT CXX_SUPPORTS_C11 )
+if    ( WIN32 )
+	add_definitions ( -DCOMMON_COMPILING_DLL )
+endif ( WIN32 )
 
-## Project System-Include
+### Project System-Include
 include_directories ( ../.. )
 
 foreach    ( module ${SCAI_TASKING_INTERNAL_DEPS} )
@@ -78,40 +77,25 @@ foreach    ( module ${SCAI_TASKING_INTERNAL_DEPS} )
     include_directories( ${${upper_module}_INCLUDE_DIR} )
 endforeach ( module ${SCAI_TASKING_INTERNAL_DEPS} )
 
-### add definitions ###
-
-add_definitions ( -D${SCAI_LOGGING_FLAG} )
-
-if ( WIN32 )
-    add_definitions ( -DCOMMON_COMPILING_DLL )
-endif ( WIN32 )
-
-add_definitions( -DSCAI_TRACE_ON )
+### build library
 
 ## add subdirectories
 add_subdirectory ( examples )
 
-## build library
+## search for files
 file ( GLOB CPP_SOURCES "*.cpp" )
 file ( GLOB HPP_HEADERS "*.hpp" )
 
-if    ( WIN32 )
-	add_definitions ( -DCOMMON_COMPILING_DLL )
-endif ( WIN32 )
-
-include_directories ( . )
-
-### add library and put path to search path ###
-
+### add library
 add_library ( scai_tasking SHARED ${CPP_SOURCES} )
 
+## add link libraries
 foreach    ( module ${SCAI_TASKING_INTERNAL_DEPS} )
 	string ( TOUPPER ${module} upper_module )
     target_link_libraries ( scai_tasking ${${upper_module}_LIBRARY} )
 endforeach    ( module ${SCAI_TASKING_INTERNAL_DEPS} )
 
 ### install ###
-
 install ( TARGETS scai_tasking DESTINATION lib )
 install ( FILES ${HPP_HEADERS} DESTINATION include/scai/tasking )
 
@@ -119,7 +103,6 @@ install ( FILES ${HPP_HEADERS} DESTINATION include/scai/tasking )
 install ( FILES ../tasking.hpp DESTINATION include/scai )
 
 ## add custum target distClean, but only if this project is not included
-
-if ( CMAKE_SOURCE_DIR EQUAL CMAKE_CURRENT_SOURCE_DIR )
-    add_custom_target ( distclean )
-endif ()
+if    ( NOT SCAI_COMPLETE_BUILD )
+	include ( DistClean )
+endif ( NOT SCAI_COMPLETE_BUILD )

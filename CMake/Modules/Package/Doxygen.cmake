@@ -31,6 +31,8 @@
  # @since 1.0.0
 ###
 
+find_package ( Doxygen ${SCAI_FIND_PACKAGE_FLAGS} )
+
 ### DOXYGEN DOCUMENTATION ###
 
 if    ( DOXYGEN_FOUND )

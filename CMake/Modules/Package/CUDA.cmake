@@ -31,18 +31,26 @@
  # @since 2.0.0
 ###
 
-include ( Functions/setAndCheckCache )
+### CUDA_FOUND          - if CUDA is found
+### USE_CUDA            - if CUDA is enabled
+### CUDA_INCLUDE_DIR    - CUDA include directory
+### SCAI_CUDA_LIBRARIES - all needed CUDA libraries
+
+set ( CUDA_HOST_COMPILER ${CMAKE_CXX_COMPILER} CACHE FILEPATH "Host side compiler used by NVCC" )
 
 find_package ( CUDA ${SCAI_FIND_PACKAGE_FLAGS} )
 
 # ALLOW to switch off CUDA explicitly
+include ( Functions/setAndCheckCache )
 setAndCheckCache ( CUDA )
 
 # find out CUDA compute capability by test program
 include ( CUDAComputeCapability )
 
-# set nvcc compiler flags
-include ( SetNVCCFlags )
+# set nvcc compiler flags, if not added as external project (has flags from parent)
+if    ( NOT SCAI_COMPLETE_BUILD )
+	include ( SetNVCCFlags )
+endif ( NOT SCAI_COMPLETE_BUILD )
 
 ### Check for cuSPASE library, Version 2 (since CUDA 5.0)
 
@@ -82,4 +90,11 @@ if ( NOT CUDA_cusparse_LIBRARY )
 
 endif ( NOT CUDA_cusparse_LIBRARY )
 
-mark_as_advanced ( CUDA_TOOLKIT_ROOT_DIR )
+# LAMA irrelevant entries will be marked as advanced ( Remove them from default cmake GUI )
+mark_as_advanced ( CUDA_TOOLKIT_ROOT_DIR CUDA_BUILD_CUBIN CUDA_BUILD_EMULATION CUDA_SDK_ROOT_DIR CUDA_VERBOSE_BUILD )
+
+# just for making it the same variable ending for all packages
+set ( CUDA_INCLUDE_DIR ${CUDA_INCLUDE_DIRS} )
+
+# conclude all needed CUDA libraries
+set ( SCAI_CUDA_LIBRARIES ${CUDA_CUDA_LIBRARY} ${CUDA_CUDART_LIBRARY} ${CUDA_cublas_LIBRARY} ${CUDA_cusparse_LIBRARY} )

@@ -90,3 +90,5 @@ if    ( SCAI_BUILD_SHARED )
 else  ( SCAI_BUILD_SHARED )
     set ( SCAI_LIBRARY_TYPE STATIC )
 endif ( SCAI_BUILD_SHARED )
+
+set ( USE_CODE_COVERAGE FALSE CACHE BOOL "Enable / Disable use of Code Coverage" )

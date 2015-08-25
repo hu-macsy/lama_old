@@ -31,6 +31,9 @@
  # @since 1.0.0
 ###
 
+include ( Functions/lamaGetRelativePath )
+include ( Functions/getRelativePath )
+
 ## Need to be macros not functions, because modifications of the parent scope
 
 # sets the LAMA_SOURCE_DIR (used to mark the path of the actual build target

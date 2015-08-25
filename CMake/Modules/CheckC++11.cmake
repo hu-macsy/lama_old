@@ -1,8 +1,8 @@
 ###
- # @file Functions.cmake
+ # @file CheckC++11.txt
  #
  # @license
- # Copyright (c) 2009-2013
+ # Copyright (c) 2009-2015
  # Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  # for Fraunhofer-Gesellschaft
  #
@@ -25,20 +25,34 @@
  # SOFTWARE.
  # @endlicense
  #
- # @brief CMake functions and macros
- # @author Jan Ecker
- # @date 25.04.2013
- # @since 1.0.0
+ # @brief Check if compiler supports C++11 features.
+ # @author Thomas Brandes
+ # @date 09.06.2015
+ # @since 2.0.0
 ###
 
-## Need to be macros not functions, because modifications of the parent scope
+#### Check for -std=c++11
 
-# checks if value is part of a list
-macro    ( list_contains var value )
-    set ( ${var} )
-    foreach    ( value2 ${ARGN} )
-        if    ( ${value} STREQUAL ${value2} )
-            set ( ${var} TRUE )
-        endif ( ${value} STREQUAL ${value2} )
-    endforeach ( value2 )
-endmacro ( list_contains )
+include ( CheckCXXCompilerFlag )
+
+if    ( NOT DEFINED CXX_SUPPORTS_C11 )
+    CHECK_CXX_COMPILER_FLAG( -std=c++11 CXX_SUPPORTS_C11 )
+endif ( NOT DEFINED CXX_SUPPORTS_C11 )
+
+if    ( CXX_SUPPORTS_C11 )
+
+	if    ( CMAKE_COMPILER_IS_GNUCXX )
+        set ( SCAI_LANG_FLAGS "-std=c++11" )
+	endif ( CMAKE_COMPILER_IS_GNUCXX )
+
+	if    ( CMAKE_CXX_COMPILER_ID MATCHES Intel )
+		set ( SCAI_LANG_FLAGS "-std=c++11" )
+	endif ( CMAKE_CXX_COMPILER_ID MATCHES Intel )
+
+else  ( CXX_SUPPORTS_C11 )
+	
+	if    ( CMAKE_CXX_COMPILER_ID MATCHES Intel )
+		set ( SCAI_LANG_FLAGS "-std=c++0x" )
+	endif ( CMAKE_CXX_COMPILER_ID MATCHES Intel )
+	
+endif ( CXX_SUPPORTS_C11 )
