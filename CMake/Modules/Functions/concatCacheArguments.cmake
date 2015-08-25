@@ -1,8 +1,8 @@
 ###
- # @file ExternalDependencies.cmake
+ # @file Functions/concatCacheArguments.cmake
  #
  # @license
- # Copyright (c) 2009-2015
+ # Copyright (c) 2009-2013
  # Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  # for Fraunhofer-Gesellschaft
  #
@@ -25,23 +25,20 @@
  # SOFTWARE.
  # @endlicense
  #
- # @brief Central defenition of external dependencies between sub projects
+ # @brief CMake function to concatenate cache argument after whitelisting for external dependencies of module to concatlist
  # @author Lauretta Schubert
- # @date 17.08.2015
+ # @date 19.08.2015
  # @since 2.0.0
 ###
 
-## attention OpenMP should be before SCAI_BLAS !!!
+macro    ( concatCacheArguments MODULE CONCATLIST )
 
-set ( SCAI_COMMON_EXTERNAL_DEPS OpenMP CUDA Thread )
-set ( SCAI_LOGGING_EXTERNAL_DEPS )
-set ( SCAI_TRACING_EXTERNAL_DEPS )
-set ( SCAI_TASKING_EXTERNAL_DEPS Thread )
-#set ( SCAI_KERNEL_EXTERNAL_DEPS OpenMP CUDA MIC SCAI_BLAS )
-set ( SCAI_HMEMO_EXTERNAL_DEPS CUDA ) # MIC
-set ( SCAI_LAMA_EXTERNAL_DEPS OpenMP CUDA MIC Boost MPI GPI2 GraphPartitioning SCAI_BLAS )
+	string ( TOUPPER ${MODULE} upper_module )
 
-set ( SCAI_EXTERNAL_DEPS ${SCAI_COMMON_EXTERNAL_DEPS} ${SCAI_LOGGING_EXTERNAL_DEPS} ${SCAI_TRACING_EXTERNAL_DEPS}
-		${SCAI_TASKING_EXTERNAL_DEPS} ${SCAI_HMEMO_EXTERNAL_DEPS} ${SCAI_LAMA_EXTERNAL_DEPS} ) # ${SCAI_KERNEL_EXTERNAL_DEPS}
+	set ( ${CONCATLIST} "" )
+	foreach    ( package ${${upper_module}_EXTERNAL_DEPS} )
+		string ( TOUPPER ${package} upper_package )
+		set ( ${CONCATLIST} ${${CONCATLIST}} ${${upper_package}_ARGS} )
+	endforeach ( package ${${upper_module}_EXTERNAL_DEPS} )
 
-list ( REMOVE_DUPLICATES SCAI_EXTERNAL_DEPS )
+endmacro ( concatCacheArguments )

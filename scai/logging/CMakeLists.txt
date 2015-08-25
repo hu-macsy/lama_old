@@ -61,8 +61,8 @@ include ( ConcludeFlags )
 
 add_definitions( ${ADDITIONAL_WARNING_FLAGS} )
 
+# logging level for logging library
 # GenLogger uses also logging during initialization, here we make a fixed setting
-
 add_definitions ( -DSCAI_LOG_LEVEL_DEBUG )
 
 if    ( WIN32 )
@@ -107,6 +107,6 @@ if    ( NOT SCAI_COMPLETE_BUILD )
 	include ( DistClean )
 endif ( NOT SCAI_COMPLETE_BUILD )
 
-if    ( CMAKE_VERBOSE_BUILD OR NOT SCAI_COMPLETE_BUILD )
+if    ( DEFINED SCAI_CMAKE_VERBOSE OR NOT DEFINED SCAI_COMPLETE_BUILD )
 	include ( Summaries/logging )
-endif ( CMAKE_VERBOSE_BUILD OR NOT SCAI_COMPLETE_BUILD )
+endif ( DEFINED SCAI_CMAKE_VERBOSE OR NOT DEFINED SCAI_COMPLETE_BUILD )

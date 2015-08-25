@@ -115,7 +115,7 @@ scai_summary_message ( "USE"
 # Graph Partitioning
 message ( STATUS "" )
 scai_summary_message ( "USE"
-                       "USE_GRAPH_PART"
+                       "USE_GRAPHPARTITIONING"
                        "Graph Partitioning"
                        "" )                   
 	# Metis
@@ -196,8 +196,8 @@ scai_status_message ( HEADLINE "INFO:" )
 message ( STATUS "LAMA Version : ${LAMA_VERSION} ${LAMA_VERSION_NAME}" )
 message ( STATUS "Build Type   : ${CMAKE_BUILD_TYPE}" )
 message ( STATUS "Library Type : ${SCAI_LIBRARY_TYPE}" )
-message ( STATUS "LOG Level    : ${SCAI_LOGGING_LEVEL} ( -D${SCAI_LOGGING_FLAG} )" )
 message ( STATUS "ASSERT Level : ${SCAI_ASSERT_LEVEL}" )
+message ( STATUS "LOG Level    : ${SCAI_LOGGING_LEVEL} ( -D${SCAI_LOGGING_FLAG} )" )
 message ( STATUS "TRACING      : ${SCAI_TRACING} ( -D${SCAI_TRACING_FLAG} )" )
 message ( STATUS "" )
 
