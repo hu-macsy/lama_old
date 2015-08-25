@@ -1,5 +1,5 @@
 ###
- # @file LAMASummary.cmake
+ # @file Summaries/scai.cmake
  #
  # @license
  # Copyright (c) 2009-2013
@@ -25,7 +25,7 @@
  # SOFTWARE.
  # @endlicense
  #
- # @brief SCAI Summary for build configuration
+ # @brief scai Summary for build configuration
  # @author Jan Ecker
  # @date 25.04.2013
  # @since 1.0.0
@@ -178,7 +178,6 @@ scai_summary_message ( "USE"
 message ( STATUS "" )
 scai_status_message ( HEADLINE "DOCUMENTATION:" )
 
-
 # DOXYGEN
 scai_summary_message ( "FOUND"
                        "DOXYGEN_FOUND"
@@ -196,7 +195,7 @@ message ( STATUS "" )
 scai_status_message ( HEADLINE "INFO:" )
 message ( STATUS "LAMA Version : ${LAMA_VERSION} ${LAMA_VERSION_NAME}" )
 message ( STATUS "Build Type   : ${CMAKE_BUILD_TYPE}" )
-message ( STATUS "Library Type : ${LAMA_LIBRARY_TYPE}" )
+message ( STATUS "Library Type : ${SCAI_LIBRARY_TYPE}" )
 message ( STATUS "LOG Level    : ${SCAI_LOGGING_LEVEL} ( -D${SCAI_LOGGING_FLAG} )" )
 message ( STATUS "ASSERT Level : ${SCAI_ASSERT_LEVEL}" )
 message ( STATUS "TRACING      : ${SCAI_TRACING} ( -D${SCAI_TRACING_FLAG} )" )

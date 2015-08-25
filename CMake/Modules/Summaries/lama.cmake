@@ -1,5 +1,5 @@
 ###
- # @file LAMASummary.cmake
+ # @file Summaries/lama.cmake
  #
  # @license
  # Copyright (c) 2009-2013
@@ -31,63 +31,60 @@
  # @since 1.0.0
 ###
 
-### Summary ###
-message ( STATUS "" )
-#message ( STATUS "        _    _")
-#message ( STATUS "       ( \\__//)")
-#message ( STATUS "       .'     )")
-#message ( STATUS "    __/b d  .  )")
-#message ( STATUS "   (_Y_`,     .)")
-#message ( STATUS "    `--'-,-'  )")
-#message ( STATUS "         (.  )")
-#message ( STATUS "         (   )")
-#message ( STATUS "        (   )")
-#message ( STATUS "       ( . )         .---.")
-#message ( STATUS "      (    )        (     )")
-#message ( STATUS "      (   . )      (  .    )")
-#message ( STATUS "      (      )    (      .  ),")
-#message ( STATUS "      ( .     `\"'`  .       `)\\")
-#message ( STATUS "       (      .              .)\\")
-#message ( STATUS "       ((  .      .   (   .   )\\\\")
-#message ( STATUS "       ((       .    (        ) \\\\")
-#message ( STATUS "        ((     )     _( .   . )  \\\\")
-#message ( STATUS "        ( ( .   )\"'\"`(.(     )   ( ;")
-#message ( STATUS "        ( (    )      ( ( . )     \\'")
-#message ( STATUS "         |~(  )        |~(  )")
-#message ( STATUS "         | ||~|        | ||~|")
-#message ( STATUS "    jgs  | || |        | || |  ")  
-#message ( STATUS "        _| || |       _| || |")
-#message ( STATUS "       /___(| |      /___(| |")
-#message ( STATUS "          /___(         /___(")
+include ( Functions/scaiStatusMessage )
+include ( Functions/scaiSummaryMessage )
+
+include ( VersionDefinition )
+include ( CompilerVersion )
+include ( CheckC++11 )
+
 message ( STATUS "" )
 message ( STATUS "Summary of LAMA Configuration:" )
 message ( STATUS "==============================" )
 message ( STATUS "" )
 
-lama_status_message ( HEADLINE "Compiler:" )
 # C++ Compiler
-lama_summary_message ( "FOUND"
+scai_status_message ( HEADLINE "Compiler:" )
+
+scai_summary_message ( "FOUND"
                        "CMAKE_CXX_COMPILER"
                        "C++ Compiler"
                        "${CMAKE_CXX_COMPILER_ID} ${${CMAKE_CXX_COMPILER_ID}CXX_COMPILER_VERSION}" )
+                       
+message ( STATUS "" )
 
-# C Compiler
-lama_summary_message ( "FOUND"
-                       "CMAKE_C_COMPILER"
-                       "C Compiler"
-                       "${CMAKE_C_COMPILER_ID} ${${CMAKE_CXX_COMPILER_ID}CC_COMPILER_VERSION}" )
+if    ( CXX_SUPPORTS_C11 OR Boost_INCLUDE_DIR )
+    set( REQUIRED_FOUND TRUE )
+else  ( CXX_SUPPORTS_C11 OR Boost_INCLUDE_DIR )
+	set( REQUIRED_FOUND FALSE )
+endif ( CXX_SUPPORTS_C11 OR Boost_INCLUDE_DIR )
+
+scai_summary_message ( "STATIC"
+                       "REQUIRED_FOUND"
+                       "LAMA"
+                       "Needs compiler supporting C++11 or Boost and pThreads" )
+
+scai_summary_message ( "FOUND"
+					   "CXX_SUPPORTS_C11"
+					   "C++11 support"
+					   "" )
 
 message ( STATUS "" )
 
-lama_summary_message ( "USE"
+if    ( SCAI_COMPLETE_BUILD )
+	set ( OPENMP_INFO_TEXT "OpenMP schedule set to \"${SCAI_OMP_SCHEDULE}\"" )
+else  ( SCAI_COMPLETE_BUILD )
+	set ( OPENMP_INFO_TEXT "compile your sources with -DSCAI_OMP_SCHEDULE=<schedule-type>" )
+endif ( SCAI_COMPLETE_BUILD )
+
+scai_summary_message ( "USE"
                        "USE_OPENMP"
                        "  OpenMP usage"
-                       "" )
-message ( STATUS "       OpenMP schedule set to \"${SCAI_OMP_SCHEDULE}\"" )
+                       "${OPENMP_INFO_TEXT}"   )
 
 # LAMA (core)
 message ( STATUS "" )
-lama_status_message ( HEADLINE "LIBRARIES:" )
+scai_status_message ( HEADLINE "LIBRARIES:" )
 
 if    ( SCAI_BLAS_FOUND AND Boost_INCLUDE_DIR )
     set( REQUIRED_FOUND TRUE )
@@ -98,124 +95,112 @@ else  ( SCAI_BLAS_FOUND AND Boost_INCLUDE_DIR )
     set( REQUIRED_FOUND FALSE )
 endif ( SCAI_BLAS_FOUND AND Boost_INCLUDE_DIR ) 
 
-lama_summary_message ( "STATIC"
+scai_summary_message ( "STATIC"
                        "REQUIRED_FOUND"
                        "LAMA (core)"
-                       " " )
+                       "" )
    # BLAS
-    lama_summary_message ( "FOUND"
+    scai_summary_message ( "FOUND"
                            "SCAI_BLAS_FOUND"
                            "BLAS"
                            "(${SCAI_BLAS_NAME}) with libraries: ${SCAI_BLAS_LIBRARIES}" )
     if    ( SCAI_BLAS_NAME MATCHES "BLAS" )
-    lama_summary_message ( "FOUND"
-                           "LAPACK_FOUND"
-                           "LAPACK"
-                           "" )
+    	scai_summary_message ( "FOUND"
+                     	       "LAPACK_FOUND"
+                      	       "LAPACK"
+                       		   "" )
     endif ( SCAI_BLAS_NAME MATCHES "BLAS" )
     
     # Boost
-    lama_summary_message ( "FOUND"
+    scai_summary_message ( "FOUND"
                            "Boost_INCLUDE_DIR"
                            "Boost"
                            "Version ${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION} at ${Boost_INCLUDE_DIR}" )
 
 # LAMA MPI
 message ( STATUS "" )
-lama_summary_message ( "USE"
+scai_summary_message ( "USE"
                        "USE_MPI"
                        "LAMA MPI"
                        "" )
 
     # MPI
-    lama_summary_message ( "FOUND"
+    scai_summary_message ( "FOUND"
                            "MPI_FOUND"
                            "MPI"
                            "at ${MPI_INCLUDE_PATH}" )
 
+# Graph Partitioning
+message ( STATUS "" )
+scai_summary_message ( "USE"
+                       "USE_GRAPH_PART"
+                       "Graph Partitioning"
+                       "" )                   
+	# Metis
+    scai_summary_message ( "FOUND"
+                           "METIS_FOUND"
+                           "Metis"
+                           "at ${METIS_INCLUDE_DIR}" )
+
+	# ParMetis
+    scai_summary_message ( "FOUND"
+                           "PARMETIS_FOUND"
+                           "ParMetis"
+                           "at ${PARMETIS_INCLUDE_DIR}" )
+
 # LAMA CUDA
 message ( STATUS "" )
-lama_summary_message ( "USE"
+scai_summary_message ( "USE"
                        "USE_CUDA"
                        "LAMA CUDA"
                        "" )
 
     # CUDA
-    lama_summary_message ( "FOUND"
+    scai_summary_message ( "FOUND"
                            "CUDA_FOUND"
                            "CUDA"
                            "${CUDA_VERSION} at ${CUDA_INCLUDE_DIRS}" )
                            
     # CUDA Compute Capability
-    lama_summary_message ( "FOUND"
+    scai_summary_message ( "FOUND"
                            "CUDA_HAVE_GPU"
                            "Compute Capability"
                            "${CUDA_COMPUTE_CAPABILITY}" )
                            
 # LAMA MIC
 message ( STATUS "" )
-lama_summary_message ( "USE"
+scai_summary_message ( "USE"
                        "USE_MIC"
                        "LAMA MIC"
                        "" )
 
 # LAMA TEST
 message ( STATUS "" )
-lama_summary_message ( "USE"
-                       "USE_CUDA"
+scai_summary_message ( "USE"
+                       "BUILD_TEST"
                        "LAMA TEST"
                        "" )
 
     # Boost Test-Framework
-    lama_summary_message ( "FOUND"
+    scai_summary_message ( "FOUND"
                            "Boost_UNIT_TEST_FRAMEWORK_FOUND"
                            "Boost Unit Test"
                            "" )
                            
     # Boost Regex
-    lama_summary_message ( "FOUND"
+    scai_summary_message ( "FOUND"
                            "Boost_REGEX_FOUND"
                            "Boost Regex"
                            "" )
 
 message ( STATUS "" )
-lama_status_message ( HEADLINE "DOCUMENTATION:" )
 
-
-# DOXYGEN
-lama_summary_message ( "FOUND"
-                       "DOXYGEN_FOUND"
-                       "DOXYGEN "
-                       "'make doc' to build system documentation" )
-                       
-# DOXYGEN
-lama_summary_message ( "FOUND"
-                       "SPHINX_FOUND"
-                       "SPHINX"
-                       "'make userdoc' to build user documentation" )
-
-## Metis
-if    ( METIS_FOUND )
-    lama_status_message ( INFO "[FOUND]" "    Metis at ${METIS_INCLUDE_DIR}" )
-else  ( METIS_FOUND )
-    lama_status_message ( WARNING "[NOT FOUND]" "Metis" )
-endif ( METIS_FOUND )
-
-# ParMetis
-if    ( PARMETIS_FOUND )
-    lama_status_message ( INFO "[FOUND]" "    ParMetis at ${PARMETIS_INCLUDE_DIR}" )
-else  ( PARMETIS_FOUND )
-    lama_status_message ( WARNING "[NOT FOUND]" "ParMetis not found" )
-endif ( PARMETIS_FOUND ) 
-
-message ( STATUS "" )
-
-lama_status_message ( HEADLINE "INFO:" )
+scai_status_message ( HEADLINE "INFO:" )
 message ( STATUS "LAMA Version : ${LAMA_VERSION} ${LAMA_VERSION_NAME}" )
 message ( STATUS "Build Type   : ${CMAKE_BUILD_TYPE}" )
-message ( STATUS "Library Type : ${LAMA_LIBRARY_TYPE}" )
-message ( STATUS "LOG Level    : ${SCAI_LOGGING_LEVEL} ( -D${SCAI_LOGGING_FLAG} )" )
+message ( STATUS "Library Type : ${SCAI_LIBRARY_TYPE}" )
 message ( STATUS "ASSERT Level : ${SCAI_ASSERT_LEVEL}" )
+message ( STATUS "LOG Level    : ${SCAI_LOGGING_LEVEL} ( -D${SCAI_LOGGING_FLAG} )" )
 message ( STATUS "TRACING      : ${SCAI_TRACING} ( -D${SCAI_TRACING_FLAG} )" )
 message ( STATUS "" )
 

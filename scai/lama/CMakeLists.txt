@@ -236,4 +236,6 @@ endif ( NOT SCAI_COMPLETE_BUILD )
 ### install
 install ( TARGETS ama DESTINATION lib )
 
-#include ( LAMASummary )
+if    ( CMAKE_VERBOSE_BUILD OR NOT SCAI_COMPLETE_BUILD )
+	include ( Summaries/lama )
+endif ( CMAKE_VERBOSE_BUILD OR NOT SCAI_COMPLETE_BUILD )

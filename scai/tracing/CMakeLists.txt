@@ -99,8 +99,6 @@ install ( FILES ${HPP_HEADERS} DESTINATION include/scai/tracing )
 
 if    ( CMAKE_VERSION VERSION_GREATER 2.8.7 ) 
 	add_subdirectory( gui )
-else  ( CMAKE_VERSION VERSION_GREATER 2.8.7 )
-	message( STATUS "GUI will not be build" )
 endif ( CMAKE_VERSION VERSION_GREATER 2.8.7 )
 
 ## install library.hpp
@@ -110,3 +108,7 @@ install ( FILES ../tracing.hpp DESTINATION include/scai )
 if    ( NOT SCAI_COMPLETE_BUILD )
 	include ( DistClean )
 endif ( NOT SCAI_COMPLETE_BUILD )
+
+if    ( CMAKE_VERBOSE_BUILD OR NOT SCAI_COMPLETE_BUILD )
+	include ( Summaries/tracing )
+endif ( CMAKE_VERBOSE_BUILD OR NOT SCAI_COMPLETE_BUILD )

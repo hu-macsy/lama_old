@@ -43,6 +43,10 @@ set ( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../CMake/Modules" )
 if    ( NOT SCAI_COMPLETE_BUILD )
 	include ( SetBuildFlags )
 	include ( SetCPPFlags )
+	include ( CheckC++11 )
+	if    ( NOT CXX_SUPPORTS_C11 )
+	    find_package( Boost ${SCAI_FIND_PACKAGE_FLAGS} )
+	endif ( NOT CXX_SUPPORTS_C11 )
 endif ( NOT SCAI_COMPLETE_BUILD )
 
 ### include all search packages
@@ -102,3 +106,7 @@ install ( FILES ../common.hpp DESTINATION include/scai )
 if    ( NOT SCAI_COMPLETE_BUILD )
 	include ( DistClean )
 endif ( NOT SCAI_COMPLETE_BUILD )
+
+if    ( CMAKE_VERBOSE_BUILD OR NOT SCAI_COMPLETE_BUILD )
+	include ( Summaries/common )
+endif ( CMAKE_VERBOSE_BUILD OR NOT SCAI_COMPLETE_BUILD )

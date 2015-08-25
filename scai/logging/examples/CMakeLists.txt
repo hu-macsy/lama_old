@@ -45,19 +45,19 @@ set_target_properties( LogLevels PROPERTIES COMPILE_FLAGS -DSCAI_LOG_LEVEL_TRACE
 set ( Boost_DEBUG TRUE )
 set ( Boost_DETAILED_FAILURE_MSG TRUE )
 
-find_package ( Boost COMPONENTS thread system )
+find_package ( Boost ${SCAI_FIND_PACKAGE_FLAGS} COMPONENTS thread system )
 
-if ( Boost_THREAD_FOUND )
-    if ( Boost_SYSTEM_FOUND )
+if    ( Boost_THREAD_FOUND )
+    if    ( Boost_SYSTEM_FOUND )
         include_directories ( ${Boost_INCLUDE_DIR} )
         add_executable ( LogThreads LogThreads.cpp )
         target_link_libraries ( LogThreads scai_logging ${Boost_THREAD_LIBRARY} ${Boost_SYSTEM_LIBRARY} )
-    else ()
+    else  ( Boost_SYSTEM_FOUND )
         message ( STATUS "Boost system library not found" )
-    endif ()
-else ()
+    endif ( Boost_SYSTEM_FOUND )
+else  ( Boost_THREAD_FOUND )
     message ( STATUS "Boost thread library not found" )
-endif ()
+endif ( Boost_THREAD_FOUND )
 
 # OpenMPTest example
 
@@ -71,4 +71,3 @@ if    ( OPENMP_FOUND )
 else  ( OPENMP_FOUND )
     message ( STATUS "LogOpenMP example not built, no compiler option found" )
 endif ( OPENMP_FOUND )
-
