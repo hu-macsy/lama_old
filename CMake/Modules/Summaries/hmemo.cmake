@@ -116,6 +116,11 @@ scai_summary_message ( "USE"
     	                   "Boost_UNIT_TEST_FRAMEWORK_FOUND"
         	               "Boost Unit Test"
             	           "" )
+            	           
+    scai_summary_message ( "FOUND"
+                           "Boost_REGEX_FOUND"
+                           "Boost Regex"
+                           "" )
 
 message ( STATUS "" )
 scai_summary_message ( "FOUND"

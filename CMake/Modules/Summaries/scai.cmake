@@ -178,7 +178,6 @@ scai_summary_message ( "USE"
 message ( STATUS "" )
 scai_status_message ( HEADLINE "DOCUMENTATION:" )
 
-
 # DOXYGEN
 scai_summary_message ( "FOUND"
                        "DOXYGEN_FOUND"
