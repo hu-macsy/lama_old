@@ -162,7 +162,7 @@ lama_summary_message ( "USE"
 # LAMA TEST
 message ( STATUS "" )
 lama_summary_message ( "USE"
-                       "USE_CUDA"
+                       "BUILD_TEST"
                        "LAMA TEST"
                        "" )
 

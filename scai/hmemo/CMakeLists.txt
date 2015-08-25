@@ -120,3 +120,7 @@ install ( FILES ../hmemo.hpp DESTINATION include/scai )
 if    ( NOT SCAI_COMPLETE_BUILD )
 	include ( DistClean )
 endif ( NOT SCAI_COMPLETE_BUILD )
+
+if    ( CMAKE_VERBOSE_BUILD OR NOT SCAI_COMPLETE_BUILD )
+	include ( Summaries/hmemo )
+endif ( CMAKE_VERBOSE_BUILD OR NOT SCAI_COMPLETE_BUILD )
