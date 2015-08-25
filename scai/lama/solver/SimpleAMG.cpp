@@ -92,38 +92,32 @@ SimpleAMG::~SimpleAMG()
 
 SimpleAMG::SimpleAMGRuntime::~SimpleAMGRuntime()
 {
-    common::shared_ptr<AMGSetup>& amgSetup = mSetup;
+}
 
-    if( mLibHandle != 0 )
+void SimpleAMG::loadSetupLibs()
+{
+    std::string amgSetupLibrary;
+
+    bool isSet = common::Settings::getEnvironment( amgSetupLibrary, "LAMA_AMG_SETUP_LIBRARY" );
+
+    if ( isSet )
     {
-        SCAI_LOG_INFO( logger, "~SimpleAMG, now release AMGSetup in lib" )
+        LAMA_LIB_HANDLE_TYPE handle;
 
-        typedef void (*lama_releaseAMGSetup)( scai::lama::AMGSetup* );
-        lama_releaseAMGSetup funcHandle = NULL;
-        getFunctionHandle( funcHandle, reinterpret_cast<LAMA_LIB_HANDLE_TYPE&>( mLibHandle ),"lama_releaseAMGSetup" );
+        int error = loadLib( handle, amgSetupLibrary.c_str() );
 
-        if( funcHandle )
+        if ( error != 0 )
         {
-            funcHandle( amgSetup.get() );
-        }
-        else
-        {
-            SCAI_LOG_WARN( logger, "Failed to locate function lama_releaseAMGSetup" )
+            SCAI_LOG_WARN( logger,
+                           "Failed to load lib " << amgSetupLibrary 
+                           << ": error = " << error << ", lib handle = " << handle )
         }
 
-        SCAI_LOG_INFO( logger, "~SimpleAMG, AMGSetup has been released" )
-
-        //TODO: feeLibHandle call dlclose this leads to a crash in case of
-        //      scalapack mkl + intel mpi
-        //freeLibHandle( reinterpret_cast<LAMA_LIB_HANDLE_TYPE&>( mLibHandle ) );
-
-        SCAI_LOG_INFO( logger, "~SimpleAMG, library has been released" )
-
-        mLibHandle = 0;
+        SCAI_LOG_ERROR( logger, amgSetupLibrary << " loaded successfully." )
     }
     else
     {
-        SCAI_LOG_INFO( logger, "~SimpleAMG, no library has been used" )
+        SCAI_LOG_WARN( logger, "LAMA_AMG_SETUP_LIBRARY not set, take SingleGridSetup" )
     }
 }
 
@@ -135,63 +129,66 @@ void SimpleAMG::initialize( const Matrix& coefficients )
 
     SimpleAMGRuntime& runtime = getRuntime();
 
-    common::shared_ptr<AMGSetup>& amgSetup = runtime.mSetup;
-
-    if( amgSetup.get() == 0 )
+    if ( runtime.mSetup.get() == NULL )
     {
-        //try to load libAMGSetup.so
+        loadSetupLibs();   
+    }
 
-        std::string amgSetupLibrary;
+    // Info about available AMGSetup
 
-        // const Communicator& comm = coefficients.getDistribution().getCommunicator();
+    std::vector<std::string> values;  // string is create type for the factory
 
-        // comm: so it is sufficient if only root has set the environment variable
+    AMGSetup::getCreateValues( values );
 
-        // bool isSet = common::Settings::getEnvironment( amgSetupLibrary, "LAMA_AMG_SETUP_LIBRARY", comm );
+    std::cout << "Factory of AMGSetup: " << values.size() << " entries" << std::endl;
 
-        // New version does not support communicator in Settings
+    for ( size_t i = 0; i < values.size(); ++i )
+    {
+        std::cout << "   Registered values[" << i << "] = " << values[i] << std::endl;
+    }
 
-        bool isSet = common::Settings::getEnvironment( amgSetupLibrary, "LAMA_AMG_SETUP_LIBRARY" );
-
-        if( isSet )
+    if ( runtime.mSetup.get() == NULL )
+    {
+        // no setup defined yet, so we take on from the factory
+      
+        if ( AMGSetup::canCreate( "SAMGPSetup" ) )
         {
-            typedef scai::lama::AMGSetup* (*lama_createAMGSetup)();
-            lama_createAMGSetup funcHandle = NULL;
+            runtime.mSetup.reset( AMGSetup::create( "SAMGPSetup" ) );
 
-            int error = loadLibAndGetFunctionHandle( funcHandle, reinterpret_cast<LAMA_LIB_HANDLE_TYPE&>( runtime.mLibHandle ), amgSetupLibrary.c_str(), "lama_createAMGSetup" );
-
-            if( error == 0 && runtime.mLibHandle != 0 && funcHandle != 0 )
-            {
-                amgSetup.reset( funcHandle() );
-            }
-            else
-            {
-                SCAI_LOG_WARN( logger,
-                               "Failed to load lib " << amgSetupLibrary << ", func lama_createAMGSetup" << ": error = " << error << ", lib handle = " << runtime.mLibHandle << ", func handle = " << funcHandle )
-            }
+            SCAI_LOG_INFO( logger, "SimpleAMG: take SAMGPSetup as AMGSetup" )
         }
-        else
+        else if ( AMGSetup::canCreate( "SimpleAMGSetup" ) )
         {
-            SCAI_LOG_WARN( logger, "LAMA_AMG_SETUP_LIBRARY not set, take SingleGridSetup" )
-        }
+            runtime.mSetup.reset( AMGSetup::create( "SimpleAMGSetup" ) );
 
-        if( amgSetup.get() == 0 )
+            SCAI_LOG_INFO( logger, "SimpleAMG: take SimpleAMGSetup as AMGSetup" )
+        }
+        else if ( AMGSetup::canCreate( "SingleGridSetup" ) )
         {
-            amgSetup.reset( new SingleGridSetup() );
+            runtime.mSetup.reset( AMGSetup::create( "SingleGridSetup" ) );
+
+            SCAI_LOG_INFO( logger, "SimpleAMG: take SingleGridSetup as AMGSetup" )
         }
     }
 
-    amgSetup->setMaxLevels( mMaxLevels );
-    amgSetup->setMinVarsCoarseLevel( mMinVarsCoarseLevel );
-    amgSetup->setHostOnlyLevel( runtime.mHostOnlyLevel );
-    amgSetup->setHostOnlyVars( runtime.mHostOnlyVars );
-    amgSetup->setReplicatedLevel( runtime.mReplicatedLevel );
-    amgSetup->setCoarseLevelSolver( mCoarseLevelSolver );
-    amgSetup->setSmoother( mSmoother );
+    if ( !runtime.mSetup )
+    {
+        COMMON_THROWEXCEPTION( "No AMGSetup found" )
+    }
+
+    AMGSetup& amgSetup = *runtime.mSetup;
+
+    amgSetup.setMaxLevels( mMaxLevels );
+    amgSetup.setMinVarsCoarseLevel( mMinVarsCoarseLevel );
+    amgSetup.setHostOnlyLevel( runtime.mHostOnlyLevel );
+    amgSetup.setHostOnlyVars( runtime.mHostOnlyVars );
+    amgSetup.setReplicatedLevel( runtime.mReplicatedLevel );
+    amgSetup.setCoarseLevelSolver( mCoarseLevelSolver );
+    amgSetup.setSmoother( mSmoother );
 
     logSetupSettings();
 
-    amgSetup->initialize( coefficients );
+    amgSetup.initialize( coefficients );
 
     logSetupInfo();
 
@@ -201,9 +198,9 @@ void SimpleAMG::initialize( const Matrix& coefficients )
 
     if( mSmootherContext )
     {
-        for( IndexType level = 0; level < (IndexType) amgSetup->getNumLevels() - 1; ++level )
+        for( IndexType level = 0; level < (IndexType) amgSetup.getNumLevels() - 1; ++level )
         {
-            amgSetup->getSmoother( level ).setContext( mSmootherContext );
+            amgSetup.getSmoother( level ).setContext( mSmootherContext );
         }
     }
 

@@ -108,6 +108,33 @@ int loadLibAndGetFunctionHandle( FunctionHandleType& functionHandle, LAMA_LIB_HA
     return 0;
 }
 
+int loadLib( LAMA_LIB_HANDLE_TYPE& handle, const char* const filename )
+{
+#ifdef _WIN32
+    handle = LoadLibrary( filename );
+
+    if( !handle )
+    {
+        std::stringstream message;
+        message<<"Cannot load library: "<<filename<<", because LoadLibrary failed with: "<<GetLastError();
+        std::cout << message.str();
+        return 1;
+    }
+#else
+    // load library
+    handle = dlopen( filename,RTLD_LAZY|RTLD_GLOBAL );
+
+    if( !handle )
+    {
+        std::stringstream message;
+        message<<"Cannot load library: "<<dlerror( );
+        std::cout << message.str( );
+        return 1;
+    }
+#endif //WIN32
+    return 0;
+}
+
 template<typename FunctionHandleType>
 int getFunctionHandle( FunctionHandleType& functionHandle, LAMA_LIB_HANDLE_TYPE& handle, const char* const functionName )
 {

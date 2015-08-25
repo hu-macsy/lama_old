@@ -186,6 +186,14 @@ endif ( CUDA_FOUND AND USE_CUDA AND CUDA_HAVE_GPU )
 
 add_library ( ama ${SCAI_LIBRARY_TYPE} ${CXX_SOURCES} )
 
+# Might be some additional solver libraries have been defined
+
+message ( STATUS "LAMA uses following solver libraries: ${LAMA_SOLVER_LIBRARIES}" )
+if ( LAMA_SOLVER_LIBRARIES )
+    message ( STATUS "linked to lama: ${LAMA_SOLVER_LIBRARIES}" )
+    target_link_libraries( ama ${LAMA_SOLVER_LIBRARIES} )
+endif ()
+
 ## add link libraries
 foreach    ( module ${SCAI_LAMA_INTERNAL_DEPS} )
 	string ( TOUPPER ${module} upper_module )
@@ -208,9 +216,6 @@ if ( SCALAPACK_FOUND AND MPI_FOUND AND USE_MPI )
     add_definitions( -DSCAI_MKL_SCALAPACK ) ## TODO: where used?!
 endif ( SCALAPACK_FOUND AND MPI_FOUND AND USE_MPI )
 
-### install
-install ( TARGETS ama DESTINATION lib )
-
 ## install library.hpp
 configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/lama.hpp.in" "${CMAKE_CURRENT_BINARY_DIR}/include/lama.hpp" )
 install ( FILES "${CMAKE_CURRENT_BINARY_DIR}/include/lama.hpp" DESTINATION include/scai )
@@ -227,5 +232,8 @@ install ( DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/examples DESTINATION share )
 if    ( NOT SCAI_COMPLETE_BUILD )
 	include ( DistClean )
 endif ( NOT SCAI_COMPLETE_BUILD )
+
+### install
+install ( TARGETS ama DESTINATION lib )
 
 #include ( LAMASummary )

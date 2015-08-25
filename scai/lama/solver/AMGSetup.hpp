@@ -35,6 +35,7 @@
 
 // for dll_import
 #include <scai/common/config.hpp>
+#include <scai/common/Factory.hpp>
 
 // others
 #include <scai/lama/matrix/Matrix.hpp>
@@ -55,7 +56,10 @@ typedef common::shared_ptr<class AMGSetup> AMGSetupPtr;
  * @todo The current Interface of AMGSetup is just for evaluation so this should be changed to meet all requirements.
  *       (e.g. Pre and Post Smoothing)
  */
-class COMMON_DLL_IMPORTEXPORT AMGSetup
+class COMMON_DLL_IMPORTEXPORT AMGSetup : 
+
+    public scai::common::Factory<std::string, AMGSetup*>
+
 {
 public:
 
