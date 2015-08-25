@@ -1,5 +1,5 @@
 ###
- # @file Summaries/Logging.cmake
+ # @file Summaries/Tracing.cmake
  #
  # @license
  # Copyright (c) 2009-2013
@@ -25,7 +25,7 @@
  # SOFTWARE.
  # @endlicense
  #
- # @brief SCAI Logging Configuration Summary
+ # @brief SCAI Tracing Configuration Summary
  # @author Lauretta Schubert
  # @date 25.08.2015
  # @since 2.0.0
@@ -39,7 +39,7 @@ include ( CompilerVersion )
 include ( CheckC++11 )
 
 message ( STATUS "" )
-message ( STATUS "Summary of SCAI Logging Configuration:" )
+message ( STATUS "Summary of SCAI Tracing Configuration:" )
 message ( STATUS "=====================================" )
 message ( STATUS "" )
 
@@ -60,7 +60,7 @@ endif ( CXX_SUPPORTS_C11 OR Boost_INCLUDE_DIR )
 
 scai_summary_message ( "STATIC"
                        "REQUIRED_FOUND"
-                       "Logging"
+                       "Tracing"
                        "Needs compiler supporting C++11 or Boost" )
 
 scai_summary_message ( "FOUND"
@@ -85,6 +85,11 @@ scai_summary_message ( "FOUND"
                        "SCAI_COMMON_FOUND"
                        "SCAI Common"
                        "" )
+                       
+scai_summary_message ( "FOUND"
+                       "SCAI_LOGGING_FOUND"
+                       "SCAI Logging"
+                       "" )
 
 message ( STATUS "" )
 
@@ -93,4 +98,5 @@ message ( STATUS "LAMA Version : ${LAMA_VERSION} ${LAMA_VERSION_NAME}" )
 message ( STATUS "Build Type   : ${CMAKE_BUILD_TYPE}" )
 message ( STATUS "Library Type : ${SCAI_LIBRARY_TYPE}" )
 message ( STATUS "ASSERT Level : ${SCAI_ASSERT_LEVEL}" )
+message ( STATUS "LOG Level    : ${SCAI_LOGGING_LEVEL} ( -D${SCAI_LOGGING_FLAG} )" )
 message ( STATUS "" )
