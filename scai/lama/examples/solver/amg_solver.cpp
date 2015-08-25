@@ -280,8 +280,7 @@ int main( int argc, char* argv[] )
     loggerName << "<CG>, " << lamaconf.getCommunicator() << ": ";
 
     LoggerPtr logger( new CommonLogger ( loggerName.str(), scai::lama::LogLevel::advancedInformation,
-                   LoggerWriteBehaviour::toConsoleOnly,
-                    new Timer() ) );
+                   LoggerWriteBehaviour::toConsoleOnly ) );
 
     CG mySolver( "CGSolver", logger );
 
@@ -308,8 +307,7 @@ int main( int argc, char* argv[] )
     mySolver.setStoppingCriterion( rt );
 
     LoggerPtr amgLogger( new CommonLogger ( loggerName.str(), scai::lama::LogLevel::solverInformation,
-                   LoggerWriteBehaviour::toConsoleOnly,
-                   new Timer() ) );
+                   LoggerWriteBehaviour::toConsoleOnly ) );
 
     common::shared_ptr<SimpleAMG> amgSolver( new SimpleAMG( "SimpleAMG solver", amgLogger ) );
  

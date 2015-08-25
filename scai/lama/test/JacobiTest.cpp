@@ -71,8 +71,7 @@ struct JacobiTestConfig
     {
         LoggerPtr loggerD(
             new CommonLogger( "<Jacobi>: ", LogLevel::completeInformation,
-                              LoggerWriteBehaviour::toConsoleOnly,
-                              new Timer() ) );
+                              LoggerWriteBehaviour::toConsoleOnly ) );
         mJacobiDouble = new DefaultJacobi( "JacobiTest double solver", loggerD );
         mJacobiFloat = new DefaultJacobi( "JacobiTest float solver", loggerD );
     }
@@ -133,8 +132,7 @@ void testSolveMethod( std::string solverId, ContextPtr context )
     typedef typename MatrixType::MatrixValueType ValueType;
     std::string id = solverId;
     LoggerPtr slogger(
-        new CommonLogger( solverId, LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly,
-                          new Timer() ) );
+        new CommonLogger( solverId, LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly) );
     DefaultJacobi jacobiSolver( "JacobiTest", slogger );
     EquationHelper::EquationSystem<ValueType> system = EquationHelper::get3x3SystemA<ValueType>();
     CSRSparseMatrix<ValueType> matrix( system.coefficients );

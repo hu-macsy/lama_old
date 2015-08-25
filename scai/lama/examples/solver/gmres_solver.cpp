@@ -196,9 +196,9 @@ int main( int argc, char* argv[] )
 
     loggerName << "<GMRES>, " << lamaconf.getCommunicator() << ": ";
 
-    LoggerPtr logger( new CommonLogger ( loggerName.str(), lamaconf.getLogLevel(),
-                   LoggerWriteBehaviour::toConsoleOnly,
-                   new Timer() ) );
+    LoggerPtr logger( new CommonLogger ( loggerName.str(), 
+                                         lamaconf.getLogLevel(),
+                                         LoggerWriteBehaviour::toConsoleOnly ) );
 
     GMRES mySolver( "GMResSolver", logger );
     mySolver.setKrylovDim( 30 );

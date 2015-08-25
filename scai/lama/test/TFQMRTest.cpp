@@ -43,8 +43,7 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.TFQMRTest" )
 BOOST_AUTO_TEST_CASE( CtorTest )
 {
     LoggerPtr slogger(
-        new CommonLogger( "<TFQMR>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly,
-                          new Timer() ) );
+        new CommonLogger( "<TFQMR>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly ) );
 
     TFQMR TFQMRSolver( "TFQMRTestSolver", slogger );
     BOOST_CHECK_EQUAL( TFQMRSolver.getId(), "TFQMRTestSolver" );
@@ -100,8 +99,7 @@ void testSolveWithPreconditionmethod( ContextPtr context )
     typedef typename MatrixType::MatrixValueType ValueType;
 
     LoggerPtr slogger(
-        new CommonLogger( "<TFQMR>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly,
-                          new Timer() ) );
+        new CommonLogger( "<TFQMR>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly ) );
 
     TFQMR TFQMRSolver( "TFQMRTestSolver", slogger );
 
@@ -168,8 +166,7 @@ void testSolveWithoutPreconditionmethod( ContextPtr context )
     typedef typename MatrixType::MatrixValueType ValueType;
 
         LoggerPtr slogger(
-        new CommonLogger( "<TFQMR>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly,
-                          new Timer() ) );
+        new CommonLogger( "<TFQMR>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly ) );
 
     TFQMR TFQMRSolver( "TFQMRTestSolver", slogger );
 

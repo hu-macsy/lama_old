@@ -79,8 +79,7 @@ void testSolveMethod( ContextPtr loc )
     SCAI_LOG_INFO( logger, "Problem size = " << N1 << " x " << N2 );
     LoggerPtr loggerD(
         new CommonLogger( "<InverseSolver>: ", LogLevel::noLogging,
-                          LoggerWriteBehaviour::toConsoleOnly,
-                          new Timer() ) );
+                          LoggerWriteBehaviour::toConsoleOnly ) );
     InverseSolver inverseSolver( "InverseTestSolver", loggerD );
     SCAI_LOG_DEBUG( logger, "inverseSolver created" )
     CSRSparseMatrix<ValueType> helpcoefficients;

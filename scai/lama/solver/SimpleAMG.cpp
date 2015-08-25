@@ -118,6 +118,8 @@ SimpleAMG::SimpleAMGRuntime::~SimpleAMGRuntime()
         //freeLibHandle( reinterpret_cast<LAMA_LIB_HANDLE_TYPE&>( mLibHandle ) );
 
         SCAI_LOG_INFO( logger, "~SimpleAMG, library has been released" )
+
+        mLibHandle = 0;
     }
     else
     {
@@ -141,11 +143,15 @@ void SimpleAMG::initialize( const Matrix& coefficients )
 
         std::string amgSetupLibrary;
 
-        const Communicator& comm = coefficients.getDistribution().getCommunicator();
+        // const Communicator& comm = coefficients.getDistribution().getCommunicator();
 
         // comm: so it is sufficient if only root has set the environment variable
 
-        bool isSet = common::Settings::getEnvironment( amgSetupLibrary, "LAMA_AMG_SETUP_LIBRARY", comm );
+        // bool isSet = common::Settings::getEnvironment( amgSetupLibrary, "LAMA_AMG_SETUP_LIBRARY", comm );
+
+        // New version does not support communicator in Settings
+
+        bool isSet = common::Settings::getEnvironment( amgSetupLibrary, "LAMA_AMG_SETUP_LIBRARY" );
 
         if( isSet )
         {

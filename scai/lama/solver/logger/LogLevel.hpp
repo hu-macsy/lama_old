@@ -33,6 +33,8 @@
 
 #pragma once
 
+#include <iostream>
+
 namespace scai
 {
 
@@ -85,3 +87,41 @@ enum LogLevel
 } /* end namespace lama */
 
 } /* end namespace scai */
+
+/** Output of ScalarType in stream by writing strings instead of numbers 
+ *
+ *  Note: operator<< should never be defined within a namespace.
+ */
+
+inline std::ostream& operator<<( std::ostream& stream, const scai::lama::LogLevel::LogLevel& object )
+{
+    using namespace scai::lama::LogLevel;
+
+    switch ( object )
+    {
+        case noLogging:
+            stream << "noLogging";
+            break;
+
+        case convergenceHistory:
+            stream << "convergenceHistory";
+            break;
+
+        case solverInformation:
+            stream << "solverInformation";
+            break;
+
+        case advancedInformation:
+            stream << "advancedInformation";
+            break;
+
+        case completeInformation:
+            stream << "completeInformation";
+            break;
+
+        default:
+            stream << "unknown_LogLevel";
+    }
+
+    return stream;
+}

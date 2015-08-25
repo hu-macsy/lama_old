@@ -76,8 +76,7 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.SORTest" )
 BOOST_AUTO_TEST_CASE( CtorTest )
 {
     LoggerPtr slogger(
-        new CommonLogger( "<SOR>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly,
-                           new Timer() ) );
+        new CommonLogger( "<SOR>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly ) );
     SOR sorSolver( "SORTestSolver", slogger );
     BOOST_CHECK_EQUAL( sorSolver.getId(), "SORTestSolver" );
     SOR sorSolver2( "SORTestSolver2" );
@@ -118,8 +117,7 @@ void testSolveOmegaMethod( Scalar omega )
 {
     typedef typename MatrixType::MatrixValueType ValueType;
     LoggerPtr loggerD(
-        new CommonLogger( "<SOR>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly,
-                           new Timer() ) );
+        new CommonLogger( "<SOR>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly ) );
     SOR sor( "SORTest", omega, loggerD );
     EquationHelper::EquationSystem<ValueType> system = EquationHelper::get8x8SystemA<ValueType>();
     IndexType n = system.rhs.size();

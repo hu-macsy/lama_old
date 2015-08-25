@@ -190,8 +190,7 @@ int main( int argc, char* argv[] )
     loggerName << "<CG>, " << lamaconf.getCommunicator() << ": ";
 
     LoggerPtr logger( new CommonLogger ( loggerName.str(), lamaconf.getLogLevel(),
-                   LoggerWriteBehaviour::toConsoleOnly,
-                   new Timer() ) );
+                   LoggerWriteBehaviour::toConsoleOnly ) );
 
     SpecializedJacobi mySolver( "SpecializedJacobi", logger );
 

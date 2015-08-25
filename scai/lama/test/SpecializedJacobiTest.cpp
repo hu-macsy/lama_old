@@ -72,8 +72,7 @@ struct SpecializedJacobiTestConfig
     {
         LoggerPtr loggerD(
             new CommonLogger( "<Jacobi>: ", scai::lama::LogLevel::completeInformation,
-                              scai::lama::LoggerWriteBehaviour::toConsoleOnly,
-                              new Timer() ) );
+                              scai::lama::LoggerWriteBehaviour::toConsoleOnly ) );
         mJacobiDouble = new SpecializedJacobi( "SpecializedJacobiTest double solver", loggerD );
         mJacobiFloat = new SpecializedJacobi( "SpecializedJacobiTest float solver", loggerD );
     }
@@ -105,8 +104,7 @@ BOOST_AUTO_TEST_CASE( testGetId )
 BOOST_AUTO_TEST_CASE( CtorTest )
 {
     LoggerPtr slogger(
-        new CommonLogger( "<SJ>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly,
-                          new Timer() ) );
+        new CommonLogger( "<SJ>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly ) );
     SpecializedJacobi sjSolver( "SJTestSolver", slogger );
     BOOST_CHECK_EQUAL( sjSolver.getId(), "SJTestSolver" );
     SpecializedJacobi sjSolver2( "SJTestSolver2" );
@@ -164,8 +162,7 @@ void testSolveMethod( std::string solverId, ContextPtr context )
     typedef typename MatrixType::MatrixValueType ValueType;
     std::string id = solverId;
     LoggerPtr slogger(
-        new CommonLogger( solverId, LogLevel::solverInformation, LoggerWriteBehaviour::toConsoleOnly,
-                          new Timer() ) );
+        new CommonLogger( solverId, LogLevel::solverInformation, LoggerWriteBehaviour::toConsoleOnly ) );
     SpecializedJacobi jacobiSolver( "JacobiTest"/*, slogger*/ );
     EquationHelper::EquationSystem<ValueType> system = EquationHelper::get3x3SystemA<ValueType>();
     CSRSparseMatrix<ValueType> matrix( system.coefficients );

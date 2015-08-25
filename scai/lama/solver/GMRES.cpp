@@ -73,8 +73,8 @@ GMRES::GMRES( const GMRES& other )
 }
 
 GMRES::GMRESRuntime::GMRESRuntime()
-    : IterativeSolverRuntime(), mCC(new double[1]), mSS(new double[1]), mG(new double[1]), mY(new double[1]), mH(new double[1]), mHd(new double[1]), mV( 0 ), mW( 0 ),
-        mT( 0 ), mX0( 0 )
+    : IterativeSolverRuntime(), mCC( new double[1] ), mSS( new double[1] ), mG( new double[1] ), mY( new double[1] ), mH( new double[1] ), mHd( new double[1] ), mV( 0 ), mW( 0 ),
+      mT( 0 ), mX0( 0 )
 {
 }
 
@@ -93,9 +93,9 @@ double GMRES::getAveragePreconditionerTime() const
 }
 GMRES::GMRESRuntime::~GMRESRuntime()
 {
-    if( mV != 0 )
+    if ( mV != 0 )
     {
-        for( unsigned int i = 0; i < mV->size(); ++i )
+        for ( unsigned int i = 0; i < mV->size(); ++i )
         {
             delete ( *mV )[i];
         }
@@ -105,21 +105,21 @@ GMRES::GMRESRuntime::~GMRESRuntime()
 
     mV = 0;
 
-    if( mW != 0 )
+    if ( mW != 0 )
     {
         delete mW;
     }
 
     mW = 0;
 
-    if( mT != 0 )
+    if ( mT != 0 )
     {
         delete mT;
     }
 
     mT = 0;
 
-    if( mX0 != 0 )
+    if ( mX0 != 0 )
     {
         delete mX0;
     }
@@ -135,9 +135,9 @@ void GMRES::initialize( const Matrix& coefficients )
 
     GMRESRuntime& runtime = getRuntime();
 
-    if( runtime.mV != 0 )
+    if ( runtime.mV != 0 )
     {
-        for( unsigned int i = 0; i < runtime.mV->size(); ++i )
+        for ( unsigned int i = 0; i < runtime.mV->size(); ++i )
         {
             delete ( *runtime.mV )[i];
         }
@@ -147,21 +147,21 @@ void GMRES::initialize( const Matrix& coefficients )
 
     runtime.mV = 0;
 
-    if( runtime.mW != 0 )
+    if ( runtime.mW != 0 )
     {
         delete runtime.mW;
     }
 
     runtime.mW = 0;
 
-    if( runtime.mT != 0 )
+    if ( runtime.mT != 0 )
     {
         delete runtime.mT;
     }
 
     runtime.mT = 0;
 
-    if( runtime.mX0 != 0 )
+    if ( runtime.mX0 != 0 )
     {
         delete runtime.mX0;
     }
@@ -185,7 +185,7 @@ void GMRES::initialize( const Matrix& coefficients )
 
     runtime.mV = new std::vector<Vector*>( mKrylovDim + 1, 0 );
 
-    switch( coefficients.getValueType() )
+    switch ( coefficients.getValueType() )
     {
         case common::scalar::FLOAT:
         {
@@ -267,16 +267,16 @@ void GMRES::iterate()
     unsigned int krylovIndex = this->getIterationCount() % mKrylovDim;
     unsigned int hIdxStart = krylovIndex * ( krylovIndex + 1 ) / 2;
     unsigned int hIdxDiag = hIdxStart + krylovIndex;
-    SCAI_LOG_INFO( logger, "GMRES("<<mKrylovDim<<"): Inner Step "<<krylovIndex<<"." )
+    SCAI_LOG_INFO( logger, "GMRES(" << mKrylovDim << "): Inner Step " << krylovIndex << "." )
     Vector& vCurrent = *( ( *runtime.mV )[krylovIndex] );
     const Matrix& A = ( *runtime.mCoefficients );
 
     // lazy allocation structure mV
-    if( !( *runtime.mV )[krylovIndex + 1] )
+    if ( !( *runtime.mV )[krylovIndex + 1] )
     {
         SCAI_REGION( "Solver.GMRES.setMV" )
 
-        switch( A.getValueType() )
+        switch ( A.getValueType() )
         {
             case common::scalar::FLOAT:
             {
@@ -300,7 +300,7 @@ void GMRES::iterate()
     }
 
     // initialize in case of GMRES start/restart
-    if( krylovIndex == 0 )
+    if ( krylovIndex == 0 )
     {
         SCAI_REGION( "Solver.GMRES.restartInit" )
         // Compute r0=b-Ax0
@@ -313,7 +313,7 @@ void GMRES::iterate()
         // set first search direction vCurrent
         SCAI_LOG_INFO( logger, "Doing initial preconditioning." )
 
-        if( !mPreconditioner )
+        if ( !mPreconditioner )
         {
             SCAI_REGION( "Solver.GMRES.setVCurrent" )
             vCurrent = residual;
@@ -330,7 +330,7 @@ void GMRES::iterate()
         // normalize vCurrent
         runtime.mG[0] = vCurrent.l2Norm().getValue<double>();
         double scal = 1.0 / runtime.mG[0];
-        SCAI_LOG_DEBUG( logger, "Normalizing vCurrent with start residual "<< runtime.mG[0] <<"." )
+        SCAI_LOG_DEBUG( logger, "Normalizing vCurrent with start residual " << runtime.mG[0] << "." )
         vCurrent = scal * vCurrent;
     }
 
@@ -340,7 +340,7 @@ void GMRES::iterate()
 
     SCAI_LOG_INFO( logger, "Doing preconditioning." )
 
-    if( !mPreconditioner )
+    if ( !mPreconditioner )
     {
         w = A * vCurrent;
     }
@@ -357,7 +357,7 @@ void GMRES::iterate()
     // orthogonalization loop
     SCAI_LOG_DEBUG( logger, "Orthogonalization of vCurrent." )
 
-    for( unsigned int k = 0; k <= krylovIndex; ++k )
+    for ( unsigned int k = 0; k <= krylovIndex; ++k )
     {
         SCAI_REGION( "Solver.GMRES.orthogonalization" )
         const Vector& Vk = *( ( *runtime.mV )[k] );
@@ -376,7 +376,7 @@ void GMRES::iterate()
     // apply Givens rotations to new column
     SCAI_LOG_DEBUG( logger, "Apply Givens rotations." )
 
-    for( unsigned int k = 0; k < krylovIndex; ++k )
+    for ( unsigned int k = 0; k < krylovIndex; ++k )
     {
         SCAI_REGION( "Solver.GMRES.applyRotations" )
         double tmp1 = runtime.mH[hIdxStart + k];
@@ -404,7 +404,7 @@ void GMRES::iterate()
         runtime.mG[krylovIndex] = runtime.mCC[krylovIndex] * runtime.mG[krylovIndex];
         runtime.mH[hIdxDiag] = runtime.mCC[krylovIndex] * runtime.mH[hIdxDiag]
                                + runtime.mSS[krylovIndex] * runtime.mHd[krylovIndex];
-        SCAI_LOG_DEBUG( logger, "New Residual estimate "<< abs(runtime.mG[krylovIndex+1]) << "." )
+        SCAI_LOG_DEBUG( logger, "New Residual estimate " << abs( runtime.mG[krylovIndex + 1] ) << "." )
     }
 
     // do (partial) update to solution (currently very expensive to do every iteration)
@@ -422,12 +422,12 @@ void GMRES::updateX( unsigned int i )
 
     // back-substitution Hessenberg system H*y=g
     // H stored in column 'packed' order
-    SCAI_LOG_DEBUG( logger, "Updating X within krylov dimensions i+1 = " << i+1 )
+    SCAI_LOG_DEBUG( logger, "Updating X within krylov dimensions i+1 = " << i + 1 )
 
     GMRESRuntime& runtime = getRuntime();
 
     // implementation using LAPACK
-    for( unsigned int j = 0; j <= i; ++j )
+    for ( unsigned int j = 0; j <= i; ++j )
     {
         runtime.mY[j] = runtime.mG[j];
     }
@@ -447,14 +447,14 @@ void GMRES::updateX( unsigned int i )
     Vector& x = runtime.mSolution.getReference();
 
     // reset x to x0
-    if( i != 0 )
+    if ( i != 0 )
     {
         x = *runtime.mX0;
     }
 
     // update x
     // TODO: Add linar combination method
-    for( unsigned int k = 0; k <= i; ++k )
+    for ( unsigned int k = 0; k <= i; ++k )
     {
         const Vector& Vk = *( ( *runtime.mV )[k] );
         x = x + runtime.mY[k] * Vk;

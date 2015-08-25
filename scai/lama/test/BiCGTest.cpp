@@ -76,8 +76,7 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.BiCGTest" )
 BOOST_AUTO_TEST_CASE( CtorTest )
 {
     LoggerPtr slogger(
-        new CommonLogger( "<BiCG>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly,
-                          new Timer() ) );
+        new CommonLogger( "<BiCG>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly ) );
     BiCG bicgSolver( "BiCGTestSolver", slogger );
     BOOST_CHECK_EQUAL( bicgSolver.getId(), "BiCGTestSolver" );
     BiCG bicgSolver2( "BiCGTestSolver2" );
@@ -102,8 +101,7 @@ void testSolveWithPreconditionmethod( ContextPtr context )
 {
     typedef typename MatrixType::MatrixValueType ValueType;
     LoggerPtr slogger(
-        new CommonLogger( "<BiCG>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly,
-                          new Timer() ) );
+        new CommonLogger( "<BiCG>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly ) );
     BiCG bicgSolver( "BiCGTestSolver", slogger );
     const IndexType N1 = 4;
     const IndexType N2 = 4;

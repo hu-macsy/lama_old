@@ -189,9 +189,10 @@ int main( int argc, char* argv[] )
 
     loggerName << "<CG>, " << lamaconf.getCommunicator() << ": ";
 
-    LoggerPtr logger( new CommonLogger ( loggerName.str(), lamaconf.getLogLevel(),
-                   LoggerWriteBehaviour::toConsoleOnly,
-                   new Timer() ) );
+    LoggerPtr logger( new CommonLogger ( loggerName.str(), 
+                                         lamaconf.getLogLevel(),
+                                         LoggerWriteBehaviour::toConsoleOnly
+                                       ) );
 
     CG mySolver( "CGSolver", logger );
 

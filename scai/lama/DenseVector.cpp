@@ -762,7 +762,7 @@ void DenseVector<ValueType>::assign( const Expression_SV_SV& expression )
     const ValueType beta = exp2.getArg1().getValue<ValueType>();
     const Vector& y = exp2.getArg2();
 
-    SCAI_LOG_DEBUG( logger, *this << ": assign" << alpha << " * x:" << x << " + " << beta << " * y:" << y )
+    SCAI_LOG_INFO( logger, *this << ": assign" << alpha << " * x:" << x << " + " << beta << " * y:" << y )
 
     SCAI_LOG_DEBUG( logger, "dist of x = " << x.getDistribution() )
     SCAI_LOG_DEBUG( logger, "dist of y = " << y.getDistribution() )
@@ -794,7 +794,7 @@ void DenseVector<ValueType>::assign( const Expression_SV_SV& expression )
         {
             // useful output to identify aliases between arguments
 
-            ReadAccess<ValueType> rZ( mLocalValues, mContext );
+            WriteAccess<ValueType> rZ( mLocalValues, mContext );
             ReadAccess<ValueType> rX( denseX.mLocalValues, mContext );
             ReadAccess<ValueType> rY( denseY.mLocalValues, mContext );
 

@@ -11,7 +11,7 @@ On linux you can install the corresponding software via your package manager or 
 
 On Windows you need to download the package from the precise page and install them on your machine.
 
-.. 	_required:
+..	_required:
 
 Required software
 -----------------

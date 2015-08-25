@@ -39,6 +39,7 @@
 
 // hpp
 #include <scai/logging.hpp>
+#include <scai/common/Exception.hpp>
 
 #undef DEBUGGING
 
@@ -510,6 +511,11 @@ void GenLogger::log( const char* level, SourceLocation& loc, const string& msg )
         else if ( formatTokens[i] == "#msg" )
         {
             output << msg;
+        }
+        else if ( formatTokens[i] == "#stack" )
+        {
+            // undocumented feature: print stack 
+            scai::common::Exception::addCallStack( output );
         }
         else
         {
