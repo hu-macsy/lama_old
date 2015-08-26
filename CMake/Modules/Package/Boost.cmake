@@ -32,7 +32,7 @@
 ###
 
 ### BOOST_<lib>_FOUND    - if Boost component is found
-### Boost_INCLUDE_DIR    - Boost include directory
+### BOOST_INCLUDE_DIR    - Boost include directory
 ### Boost_<lib>_LIBRARY  - Boost component library
 ### SCAI_BOOST_LIBRARIES - all found BOOST libraries out of the searched component
 
@@ -67,21 +67,23 @@ endif ( SCAI_CMAKE_VERBOSE )
 
 find_package ( Boost ${SCAI_FIND_PACKAGE_FLAGS} COMPONENTS ${Boost_COMPONENTS} )
 
-# Note: we use Boost_INCLUDE_DIR, Boost_<lib>_FOUND, Boost_<lib>_LIBRARY, but
+set ( BOOST_INCLUDE_DIR "${Boost_INCLUDE_DIR}" )
+
+# Note: we use BOOST_INCLUDE_DIR, Boost_<lib>_FOUND, Boost_<lib>_LIBRARY, but
 #       not Boost_FOUND, as it is false if some optional libraries are missing
 
 # Boost: include directory is mandatory ( LAMA uses shared pointer, function )
 
-if    ( Boost_INCLUDE_DIR )
+if    ( BOOST_INCLUDE_DIR )
 	# TODO: SUMMARY
-    #message ( STATUS "Boost_INCLUDE_DIR = ${Boost_INCLUDE_DIR}" )
-    get_filename_component ( Boost_PATH "${Boost_INCLUDE_DIR}" PATH )
+    #message ( STATUS "BOOST_INCLUDE_DIR = ${BOOST_INCLUDE_DIR}" )
+    get_filename_component ( Boost_PATH "${BOOST_INCLUDE_DIR}" PATH )
 	# TODO: SUMMARY
     #message ( STATUS "Boost_PATH = ${Boost_PATH}" )
     # Boost_PATH should be same as BOOST_ROOT
-else  ( Boost_INCLUDE_DIR )
+else  ( BOOST_INCLUDE_DIR )
     message ( STATUS "Boost (include directory) not found: give hint by environment variable BOOST_ROOT" ) 
-endif ( Boost_INCLUDE_DIR )
+endif ( BOOST_INCLUDE_DIR )
 
 # check status of each Boost component and conclude all needed Boost libraries
 set ( SCAI_BOOST_LIBRARIES "" )
