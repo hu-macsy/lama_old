@@ -35,6 +35,10 @@
 ### USE_OPENMP             - if OpenMP is enabled
 ### SCAI_OMP_SCHEDULE_FLAG - needed OpenMP scheduling flag 
 
+if    ( CMAKE_VERSION VERSION_LESS 2.8.7 )
+	enable_language ( C )
+endif ( CMAKE_VERSION VERSION_LESS 2.8.7 ) 
+
 find_package ( OpenMP ${SCAI_FIND_PACKAGE_FLAGS} )
 
 include ( Functions/setAndCheckCache )

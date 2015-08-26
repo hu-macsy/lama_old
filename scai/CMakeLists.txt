@@ -43,6 +43,11 @@ include ( SetBuildFlags ) # VERBOSE, RPATH, LIB64, BUILD_SHARED
 include ( SCAIAssert )
 include ( SetCPPFlags )
 
+include ( CheckC++11 )
+if    ( NOT CXX_SUPPORTS_C11 )
+    find_package( Boost ${SCAI_FIND_PACKAGE_FLAGS} )
+endif ( NOT CXX_SUPPORTS_C11 )
+
 include ( Functions/checkValue )
 include ( Functions/setAndCheckCache )
 include ( Functions/checkWhiteList )
