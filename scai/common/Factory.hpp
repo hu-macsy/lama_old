@@ -180,11 +180,11 @@ OutputType Factory<InputType, OutputType>::create( const InputType type )
 template<typename InputType, typename OutputType>
 std::map<InputType, OutputType(* )() >& Factory<InputType, OutputType>::getFactory()
 {
-    static std::auto_ptr<CreatorMap> factory;
+    static scai::common::unique_ptr<CreatorMap> factory;
 
     if ( !factory.get() )
     {
-        factory = std::auto_ptr<CreatorMap>( new CreatorMap() );
+        factory.reset( new CreatorMap() );
     }
 
     return *factory;
