@@ -41,13 +41,16 @@ dryrun = False
 
 # Some useful data sets that can be used as input sets for the solvers
 
+generate( 1, 3, 1000 )
 generate( 1, 3, 1000000 )
 generate( 2, 5, 500 )
 generate( 2, 5, 1000 )
 generate( 2, 9, 1000 )
 generate( 2, 5, 2000 )
+generate( 3, 7, 25 )
 generate( 3, 7, 100 )
 generate( 3, 19, 100 )
+generate( 3, 27, 25 )
 generate( 3, 27, 65 )
 generate( 3, 27, 100 )
 generate( 3, 27, 125 )

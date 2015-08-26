@@ -49,6 +49,16 @@ namespace lama
 
 SCAI_LOG_DEF_LOGGER( SingleGridSetup::logger, "AMGSetup.SingleGridSetup" )
 
+std::string SingleGridSetup::createValue()
+{
+    return "SingleGridSetup";
+}
+
+AMGSetup* SingleGridSetup::create()
+{
+    return new SingleGridSetup();
+}
+
 SingleGridSetup::SingleGridSetup()
 {
     SCAI_LOG_DEBUG( logger, "SingleGridSetup" )

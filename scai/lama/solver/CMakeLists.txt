@@ -40,14 +40,13 @@ file ( GLOB AMG_SUBDIRPRESENT "amg" )
 
 if ( AMG_SUBDIRPRESENT )
     add_subdirectory ( ${AMG_SUBDIRPRESENT} )
+    message ( STATUS "amg subdir provides following solver libraries: ${LAMA_SOLVER_LIBRARIES}" )
+    set ( LAMA_SOLVER_LIBRARIES ${LAMA_SOLVER_LIBRARIES} PARENT_SCOPE )
 endif ( AMG_SUBDIRPRESENT )
-
 
 ### Add classes and header files ###
 set ( CLASSES
         AMGSetup
-        AMGSetupFactory
-        AMGSetupManager
         BiCG
         BiCGstab
         CG

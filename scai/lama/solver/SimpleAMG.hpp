@@ -155,6 +155,8 @@ private:
 
     void cycle();
 
+    void loadSetupLibs();
+
     double totalSmootherTime;
     double totalTransferTime;
     double totalResidualTime;

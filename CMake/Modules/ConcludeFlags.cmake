@@ -2,9 +2,9 @@
 
 ## scai common adds OpenMP_CXX_FLAGS to SCAI_COMMON_FLAGS if found
 if    ( SCAI_COMMON_FOUND ) 
-	set ( LAMA_CXX_FLAGS ${LAMA_CXX_FLAGS} ${SCAI_COMMON_FLAGS} )
+	set ( LAMA_CXX_FLAGS "${LAMA_CXX_FLAGS} ${SCAI_COMMON_FLAGS}" )
 else  ( SCAI_COMMON_FOUND )
-	set ( LAMA_CXX_FLAGS ${LAMA_CXX_FLAGS} ${OpenMP_CXX_FLAGS} )
+	set ( LAMA_CXX_FLAGS "${LAMA_CXX_FLAGS} ${OpenMP_CXX_FLAGS}" )
 endif ( SCAI_COMMON_FOUND ) 
 
 ## add variables to cache with new names so they can be modified by the user via CCMAKE

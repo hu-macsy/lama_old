@@ -48,7 +48,11 @@ namespace scai
 namespace lama
 {
 
-class SingleGridSetup: public scai::lama::AMGSetup
+class SingleGridSetup: 
+
+    public AMGSetup,
+    public AMGSetup::Register<SingleGridSetup>    // register at factory
+
 {
 public:
     SingleGridSetup();
@@ -95,12 +99,18 @@ public:
     virtual void setMaxLevels( const unsigned int )
     {
     }
-    ;
     // just a dummy function
     virtual void setMinVarsCoarseLevel( const unsigned int )
     {
     }
-    ;
+
+    // Get the key used for registration in factory
+
+    static std::string createValue();
+
+    // Create routine used for factory 
+
+    static AMGSetup* create();
 
 private:
 
