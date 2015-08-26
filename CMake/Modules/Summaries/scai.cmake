@@ -36,7 +36,7 @@ include ( Functions/scaiSummaryMessage )
 
 ### Summary ###
 message ( STATUS "" )
-message ( STATUS "Summary of LAMA Configuration:" )
+message ( STATUS "Summary of SCAI Configuration:" )
 message ( STATUS "==============================" )
 message ( STATUS "" )
 
@@ -47,19 +47,43 @@ scai_summary_message ( "FOUND"
                        "C++ Compiler"
                        "${CMAKE_CXX_COMPILER_ID} ${${CMAKE_CXX_COMPILER_ID}CXX_COMPILER_VERSION}" )
 
-# C Compiler
+message ( STATUS "" )
+
+if    ( CXX_SUPPORTS_C11 OR Boost_INCLUDE_DIR )
+    set( REQUIRED_FOUND TRUE )
+else  ( CXX_SUPPORTS_C11 OR Boost_INCLUDE_DIR )
+	set( REQUIRED_FOUND FALSE )
+endif ( CXX_SUPPORTS_C11 OR Boost_INCLUDE_DIR )
+
+scai_summary_message ( "STATIC"
+                       "REQUIRED_FOUND"
+                       "Common"
+                       "Needs compiler supporting C++11 or Boost" )
+
 scai_summary_message ( "FOUND"
-                       "CMAKE_C_COMPILER"
-                       "C Compiler"
-                       "${CMAKE_C_COMPILER_ID} ${${CMAKE_CXX_COMPILER_ID}CC_COMPILER_VERSION}" )
+					   "CXX_SUPPORTS_C11"
+					   "C++11 support"
+					   "" )
+				
+if    ( NOT CXX_SUPPORTS_C11 )
+    scai_summary_message ( "FOUND"
+                           "Boost_INCLUDE_DIR"
+                           "Boost"
+                           "Version ${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}, add include dir ${Boost_INCLUDE_DIR} to compile your sources" )
+endif ( NOT CXX_SUPPORTS_C11 )
 
 message ( STATUS "" )
+
+if    ( SCAI_COMPLETE_BUILD )
+	set ( OPENMP_INFO_TEXT "OpenMP schedule set to \"${SCAI_OMP_SCHEDULE}\"" )
+else  ( SCAI_COMPLETE_BUILD )
+	set ( OPENMP_INFO_TEXT "compile your sources with -DSCAI_OMP_SCHEDULE=<schedule-type>" )
+endif ( SCAI_COMPLETE_BUILD )
 
 scai_summary_message ( "USE"
                        "USE_OPENMP"
                        "  OpenMP usage"
-                       "" )
-message ( STATUS "       OpenMP schedule set to \"${SCAI_OMP_SCHEDULE}\"" )
+                       "${OPENMP_INFO_TEXT}"   )
 
 # LAMA (core)
 message ( STATUS "" )
@@ -115,7 +139,7 @@ scai_summary_message ( "USE"
 # Graph Partitioning
 message ( STATUS "" )
 scai_summary_message ( "USE"
-                       "USE_GRAPH_PART"
+                       "USE_GRAPHPARTITIONING"
                        "Graph Partitioning"
                        "" )                   
 	# Metis
@@ -196,8 +220,8 @@ scai_status_message ( HEADLINE "INFO:" )
 message ( STATUS "LAMA Version : ${LAMA_VERSION} ${LAMA_VERSION_NAME}" )
 message ( STATUS "Build Type   : ${CMAKE_BUILD_TYPE}" )
 message ( STATUS "Library Type : ${SCAI_LIBRARY_TYPE}" )
-message ( STATUS "LOG Level    : ${SCAI_LOGGING_LEVEL} ( -D${SCAI_LOGGING_FLAG} )" )
 message ( STATUS "ASSERT Level : ${SCAI_ASSERT_LEVEL}" )
+message ( STATUS "LOG Level    : ${SCAI_LOGGING_LEVEL} ( -D${SCAI_LOGGING_FLAG} )" )
 message ( STATUS "TRACING      : ${SCAI_TRACING} ( -D${SCAI_TRACING_FLAG} )" )
 message ( STATUS "" )
 

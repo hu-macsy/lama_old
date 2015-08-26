@@ -43,11 +43,12 @@ set ( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../CMake/Modules" )
 if    ( NOT SCAI_COMPLETE_BUILD )
 	include ( SetBuildFlags )
 	include ( SetCPPFlags )
-	include ( CheckC++11 )
-	if    ( NOT CXX_SUPPORTS_C11 )
-	    find_package( Boost ${SCAI_FIND_PACKAGE_FLAGS} )
-	endif ( NOT CXX_SUPPORTS_C11 )
 endif ( NOT SCAI_COMPLETE_BUILD )
+
+include ( CheckC++11 )
+if    ( NOT CXX_SUPPORTS_C11 )
+    find_package( Boost ${SCAI_FIND_PACKAGE_FLAGS} )
+endif ( NOT CXX_SUPPORTS_C11 )
 
 ### include all search packages
 # no internal dependencies
@@ -90,10 +91,10 @@ endif ( CUDA_FOUND AND USE_CUDA )
 add_library ( scai_common SHARED ${CPP_SOURCES} ${CUDA_SOURCES} )
 
 ## add link libraries
-foreach    ( module ${SCAI_HMEMO_EXTERNAL_DEPS} )
+foreach    ( module ${SCAI_COMMON_EXTERNAL_DEPS} )
 	string ( TOUPPER ${module} upper_module )
     target_link_libraries ( scai_common ${SCAI_${upper_module}_LIBRARIES} )
-endforeach ( module ${SCAI_HMEMO_EXTERNAL_DEPS} )
+endforeach ( module ${SCAI_COMMON_EXTERNAL_DEPS} )
 
 ### install ###
 install ( TARGETS scai_common DESTINATION lib )
@@ -107,6 +108,6 @@ if    ( NOT SCAI_COMPLETE_BUILD )
 	include ( DistClean )
 endif ( NOT SCAI_COMPLETE_BUILD )
 
-if    ( CMAKE_VERBOSE_BUILD OR NOT SCAI_COMPLETE_BUILD )
+if    ( DEFINED SCAI_CMAKE_VERBOSE OR NOT DEFINED SCAI_COMPLETE_BUILD )
 	include ( Summaries/common )
-endif ( CMAKE_VERBOSE_BUILD OR NOT SCAI_COMPLETE_BUILD )
+endif ( DEFINED SCAI_CMAKE_VERBOSE OR NOT DEFINED SCAI_COMPLETE_BUILD )

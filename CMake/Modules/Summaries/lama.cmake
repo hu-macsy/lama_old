@@ -133,7 +133,7 @@ scai_summary_message ( "USE"
 # Graph Partitioning
 message ( STATUS "" )
 scai_summary_message ( "USE"
-                       "USE_GRAPH_PART"
+                       "USE_GRAPHPARTITIONING"
                        "Graph Partitioning"
                        "" )                   
 	# Metis
