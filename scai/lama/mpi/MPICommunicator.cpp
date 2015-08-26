@@ -567,7 +567,7 @@ SyncToken* MPICommunicator::exchangeByPlanAsyncImpl(
 
     // create MPIToken as auto_ptr, so it will be freed in case of exception
 
-    auto_ptr<MPISyncToken> pSyncToken( new MPISyncToken( noRequests ) );
+    scai::common::unique_ptr<MPISyncToken> pSyncToken( new MPISyncToken( noRequests ) );
 
     MPISyncToken& syncToken = *pSyncToken;
 
