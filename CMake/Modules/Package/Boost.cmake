@@ -67,7 +67,9 @@ endif ( SCAI_CMAKE_VERBOSE )
 
 find_package ( Boost ${SCAI_FIND_PACKAGE_FLAGS} COMPONENTS ${Boost_COMPONENTS} )
 
-set ( BOOST_INCLUDE_DIR "${Boost_INCLUDE_DIR}" ) # for getting the module names straight
+if    ( Boost_INCLUDE_DIR )
+	set ( BOOST_INCLUDE_DIR "${Boost_INCLUDE_DIR}" ) # for getting the module names straight
+endif ( Boost_INCLUDE_DIR )
 
 # Note: we use BOOST_INCLUDE_DIR, Boost_<lib>_FOUND, Boost_<lib>_LIBRARY, but
 #       not Boost_FOUND, as it is false if some optional libraries are missing
