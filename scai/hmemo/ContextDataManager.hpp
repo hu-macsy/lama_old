@@ -37,6 +37,7 @@
 #include <scai/hmemo/ContextData.hpp>
 #include <scai/tasking/SyncToken.hpp>
 #include <scai/hmemo/Context.hpp>
+#include <scai/common/unique_ptr.hpp>
 
 #include <scai/logging.hpp>
 
@@ -182,7 +183,7 @@ private:
 
     std::vector<ContextData> mContextData; // Incarnations of the array at different contexts
 
-    std::auto_ptr<tasking::SyncToken> mSyncToken; //!<  outstanding transfers
+    scai::common::unique_ptr<tasking::SyncToken> mSyncToken; //!<  outstanding transfers
 
     ContextDataIndex findContextData( ContextPtr context ) const;
 
