@@ -1,8 +1,16 @@
 #!/bin/bash
 
+# scai_build.sh clean
+# scai_build.sh <install_dir>
+
 # Skript to build all SCAI projects
 
-SCAI_ROOT=/home/lschubert/localInstall/lamaStandalone
+if [ "$#" -ne 1 ]; then
+   echo "Illegal call with $# arguments"
+   echo "scai_build.sh clean"
+   echo "scai_build.sh <install_prefix>"
+   exit 1
+fi
 
 PROJECTS="common logging tracing tasking hmemo lama"
 
@@ -21,8 +29,8 @@ else
         cd $project
         mkdir -p build
         cd build
-        # echo "cmake .. -DCMAKE_INSTALL_PREFIX=${SCAI_ROOT}\""
-        cmake .. -DCMAKE_INSTALL_PREFIX=${SCAI_ROOT}
+        # echo "cmake .. -DCMAKE_INSTALL_PREFIX=$1\""
+        cmake .. -DCMAKE_INSTALL_PREFIX=$1 -DCMAKE_BUILD_TYPE=Release
         make -j 4
 
         make install

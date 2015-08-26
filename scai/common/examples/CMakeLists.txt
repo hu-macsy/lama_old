@@ -35,7 +35,7 @@
 include ( CheckC++11 )
 set ( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${SCAI_LANG_FLAGS}" )
 
-foreach ( executable ExceptionDemo CriticalRegion Barrier DemoFactory DemoFactory1 )
+foreach ( executable ExceptionDemo CriticalRegion Barrier DemoFactory DemoFactory1 DemoPointer )
     add_executable ( ${executable} ${executable}.cpp )
     target_link_libraries ( ${executable} scai_common )
 endforeach ( executable )
