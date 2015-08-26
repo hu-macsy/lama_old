@@ -35,6 +35,7 @@
 
 #include <scai/common/config.hpp>
 #include <scai/common/Exception.hpp>
+#include <scai/common/unique_ptr.hpp>
 
 #include <memory>
 #include <map>
