@@ -47,8 +47,6 @@
 
 if ( NOT DEFINED BOOST_INCLUDE_DIR )
 
-message ( STATUS "########### looking for BOOST ##########" )
-
 if    ( WIN32 )
     message ( STATUS "Setting special Boost options on Windows" )
     #set ( Boost_USE_STATIC_LIBS ON )
