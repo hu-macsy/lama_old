@@ -47,7 +47,7 @@ endif ( NOT SCAI_COMPLETE_BUILD )
 
 include ( CheckC++11 )
 if    ( NOT CXX_SUPPORTS_C11 )
-    find_package( Boost ${SCAI_FIND_PACKAGE_FLAGS} )
+    include( Package/Boost )
 endif ( NOT CXX_SUPPORTS_C11 )
 
 ### include all search packages
