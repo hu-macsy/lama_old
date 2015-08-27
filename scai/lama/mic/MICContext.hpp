@@ -37,8 +37,10 @@
 #include <scai/common/config.hpp>
 
 // base classes
-#include <scai/lama/Context.hpp>
-#include <scai/common/enable_shared_from_this.hpp>
+#include <scai/hmemo/Context.hpp>
+#include <scai/common/shared_ptr.hpp>
+#include <scai/common/weak_ptr.hpp>
+#include <scai/tasking/SyncToken.hpp>
 
 #include <scai/logging.hpp>
 
@@ -48,17 +50,19 @@
 namespace scai
 {
 
-namespace lama
+namespace hmemo
 {
 
 /**
  * @brief MICContext initializes the MIC device with the given number.
  *
  */
-class COMMON_DLL_IMPORTEXPORT MICContext: public Context, public boost::enable_shared_from_this<MICContext>
-{
+class COMMON_DLL_IMPORTEXPORT MICContext: 
 
-    friend class MICContextManager;
+    public Context, 
+    public Context::Register<MICContext>,
+    public common::enable_shared_from_this<MICContext>
+{
 
 public:
 
@@ -73,41 +77,7 @@ public:
         return mDeviceNr;
     }
 
-    /** Each host contxt can data of each other host contxt.  */
-
-    virtual bool canUseData( const Context& other ) const;
-
     virtual void writeAt( std::ostream& stream ) const;
-
-    virtual void* allocate( const size_t size ) const;
-
-    virtual void allocate( ContextData& contextData, const size_t size ) const;
-
-    virtual void free( void* pointer, const size_t size ) const;
-
-    virtual void free( ContextData& contextData ) const;
-
-    virtual void memcpy( void* dst, const void* src, const size_t size ) const;
-
-    virtual void memcpyToHost( void* dst, const void* src, const size_t size ) const;
-
-    virtual void memcpyFromHost( void* dst, const void* src, const size_t size ) const;
-
-    virtual SyncToken* memcpyAsync( void* dst, const void* src, const size_t size ) const;
-
-    virtual bool cancpy( const ContextData& dst, const ContextData& src ) const;
-
-    virtual void memcpy( ContextData& dst, const ContextData& src, const size_t size ) const;
-
-    /** This method implements Context::memcpyAsync */
-
-    virtual SyncToken* memcpyAsync( ContextData& dst, const ContextData& src, const size_t size ) const;
-
-    /** The MIC interface used for the implementation requires that the device
-     *  must be set via a setDevice routine. This method takes care of it if this
-     *  context device is not the current one. So this method must be called before
-     *  any CUDA code is executed (includes also memory transfer routines).
-     */
 
     virtual void enable( const char* filename, int line ) const;
 
@@ -115,9 +85,35 @@ public:
 
     /** Getter routine for a new sync token that allows to asynchronous computations on the context. */
 
-    virtual SyncToken* getSyncToken() const;
+    virtual tasking::SyncToken* getSyncToken() const;
 
     static int getCurrentDevice();
+
+    /** This routine is required for Register in Context Factory. */
+
+    static ContextType createValue()
+    {
+        return context::MIC;
+    }
+
+    /** This routine is required for Register in Context Factory. */
+
+    static ContextPtr create( int deviceNr );
+
+    /**
+     *  No Override for Context::getHostMemoryPtr
+     */
+
+    /**
+     *  @brief Implementation of Context::getMemory for this class.
+     */
+    virtual MemoryPtr getMemoryPtr() const;
+
+    /** 
+     *  @brief Implementation of Context::canUseMemory for this class. 
+     */
+
+    virtual bool canUseMemory( const Memory& other ) const;
 
 protected:
 
@@ -135,6 +131,8 @@ protected:
 
 private:
 
+    mutable common::weak_ptr<class Memory> mMemory;     //!< memory management for this devie
+
     static int currentDeviceNr; //!< number of device currently set for MIC
 
     static int numUsedDevices; //!< total number of used MIC devices
@@ -146,6 +144,6 @@ private:
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 };
 
-} /* end namespace lama */
+} /* end namespace hmemo */
 
 } /* end namespace scai */

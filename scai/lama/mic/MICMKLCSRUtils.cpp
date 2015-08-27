@@ -40,8 +40,8 @@
 #include <scai/lama/LAMAInterfaceRegistry.hpp>
 
 // assert
-#include <scai/lama/exception/LAMAAssert.hpp>
-#include <scai/lama/Settings.hpp>
+#include <scai/common/SCAIAssert.hpp>
+#include <scai/common/Settings.hpp>
 
 // trace
 #include <scai/tracing.hpp>
@@ -50,6 +50,8 @@
 
 namespace scai
 {
+
+using namespace hmemo;
 
 namespace lama
 {
@@ -180,7 +182,7 @@ void MICMKLCSRUtils::setInterface( CSRUtilsInterface& CSRUtils )
 
     // using MKL for CSR might be disabled explicitly by environment variable
 
-    Settings::getEnvironment( useMKL, "USE_MKL" );
+    common::Settings::getEnvironment( useMKL, "USE_MKL" );
 
     if( !useMKL )
     {
@@ -200,7 +202,7 @@ void MICMKLCSRUtils::setInterface( CSRUtilsInterface& CSRUtils )
 
 bool MICMKLCSRUtils::registerInterface()
 {
-    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( Context::MIC );
+    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( context::MIC );
     setInterface( interface.CSRUtils );
     return true;
 }

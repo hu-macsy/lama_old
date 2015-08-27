@@ -42,6 +42,8 @@
 namespace scai
 {
 
+using namespace hmemo;
+
 namespace lama
 {
 
@@ -641,7 +643,7 @@ void MICUtils::setInterface( UtilsInterface& Utils )
 
 bool MICUtils::registerInterface()
 {
-    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( Context::MIC );
+    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( context::MIC );
     setInterface( interface.Utils );
     return true;
 }

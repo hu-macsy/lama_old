@@ -34,7 +34,7 @@
 #pragma once
 
 // base classes
-#include <scai/lama/SyncToken.hpp>
+#include <scai/tasking/SyncToken.hpp>
 #include <scai/lama/mic/MICContext.hpp>
 
 // boost
@@ -43,14 +43,14 @@
 namespace scai
 {
 
-namespace lama
+namespace tasking
 {
 
-typedef common::shared_ptr<const MICContext> MICContextPtr;
+typedef common::shared_ptr<const scai::hmemo::MICContext> MICContextPtr;
 
 /** Class that sycnchronizes with a MIC offload transfer or computation. */
 
-class COMMON_DLL_IMPORTEXPORT MICSyncToken: public scai::lama::SyncToken
+class COMMON_DLL_IMPORTEXPORT MICSyncToken: public SyncToken
 
 {
 public:
@@ -81,6 +81,6 @@ private:
     int mSignal; // set by an offload computation
 };
 
-} /* end namespace lama */
+} /* end namespace tasking */
 
 } /* end namespace scai */
