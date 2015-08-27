@@ -45,6 +45,10 @@
 # set ( Boost_USE_STATIC_LIBS OFF )
 # set ( Boost_USE_MULTITHREADED OFF )
 
+if ( NOT DEFINED BOOST_INCLUDE_DIR )
+
+message ( STATUS "########### looking for BOOST ##########" )
+
 if    ( WIN32 )
     message ( STATUS "Setting special Boost options on Windows" )
     #set ( Boost_USE_STATIC_LIBS ON )
@@ -53,7 +57,7 @@ endif ( WIN32 )
 
 # Finds packages with custom search options 
 
-set ( Boost_COMPONENTS system unit_test_framework regex thread )
+set ( Boost_COMPONENTS unit_test_framework regex thread system )
 
 # FindBoost Debug options comment
 if    ( SCAI_CMAKE_VERBOSE )
@@ -70,6 +74,8 @@ find_package ( Boost ${SCAI_FIND_PACKAGE_FLAGS} COMPONENTS ${Boost_COMPONENTS} )
 if    ( Boost_INCLUDE_DIR )
 	set ( BOOST_INCLUDE_DIR "${Boost_INCLUDE_DIR}" ) # for getting the module names straight
 endif ( Boost_INCLUDE_DIR )
+
+message ( STATUS "Boost_INCLUDE_DIR ${Boost_INCLUDE_DIR} BOOST_INCLUDE_DIR ${BOOST_INCLUDE_DIR}" )
 
 # Note: we use BOOST_INCLUDE_DIR, Boost_<lib>_FOUND, Boost_<lib>_LIBRARY, but
 #       not Boost_FOUND, as it is false if some optional libraries are missing
@@ -148,3 +154,5 @@ else  ( DEFINED BUILD_TEST )
     # Set cache variable
     set ( BUILD_TEST ${USE_PACKAGE} CACHE BOOL "Enable / Disable building of tests" )
 endif ( DEFINED BUILD_TEST )
+
+endif ( NOT DEFINED BOOST_INCLUDE_DIR )

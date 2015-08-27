@@ -45,14 +45,33 @@ set ( CLASSES
 set ( CUDA_SRC
         blas1
         CUDAUtils
+        CUDACOOUtils
         CUDACSRUtils
+        CUDADIAUtils
         CUDAELLUtils
         CUDAJDSUtils
-        CUDADIAUtils
-        CUDACOOUtils
     )
 
+set ( HEADERS
+		CUDACOOUtils
+		CUDACSRUtils
+		CUDADIAUtils
+        CUDAELLUtils
+        CUDAJDSUtils
+        CUDATexVector
+        CUDAUtils
+        lama_cublas
+        launchHelper
+        #utils.cu.h
+	)
+
+if    ( CUSPARSE_V2 )
+	list ( APPEND CUDA_SRC CUSparseCSRUtils )
+	list  ( APPEND HEADERS CUSparseCSRUtils )
+endif ( CUSPARSE_V2 )
+
 lama_classes ( ${CLASSES} )
+lama_headers ( ${HEADERS} )
 lama_cuda_sources ( ${CUDA_SRC} )
 
 ### add sources and headers to parent scope ###
