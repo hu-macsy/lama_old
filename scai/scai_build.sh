@@ -5,6 +5,15 @@
 
 # Skript to build all SCAI projects
 
+function checkErrorValue( ) {
+	$*
+	if [ "$?" -ne 0 ];
+	then
+		echo "Build Failed. Aborting..."
+		exit 1
+	fi
+}
+
 if [ "$#" -ne 1 ]; then
    echo "Illegal call with $# arguments"
    echo "scai_build.sh clean"
@@ -30,11 +39,12 @@ else
         mkdir -p build
         cd build
         # echo "cmake .. -DCMAKE_INSTALL_PREFIX=$1\""
-        cmake .. -DCMAKE_INSTALL_PREFIX=$1 -DCMAKE_BUILD_TYPE=Release
-        make -j 4
+        checkErrorValue cmake .. -DCMAKE_INSTALL_PREFIX=$1 -DCMAKE_BUILD_TYPE=Release 
 
-        make install
-        cd ../..
+	checkErrorValue make -j 4 
+        checkErrorValue make install
+        
+	cd ../..
     done
 fi
 
