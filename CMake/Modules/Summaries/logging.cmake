@@ -52,11 +52,11 @@ scai_summary_message ( "FOUND"
 
 message ( STATUS "" )
 
-if    ( CXX_SUPPORTS_C11 OR Boost_INCLUDE_DIR )
+if    ( CXX_SUPPORTS_C11 OR BOOST_INCLUDE_DIR )
     set( REQUIRED_FOUND TRUE )
-else  ( CXX_SUPPORTS_C11 OR Boost_INCLUDE_DIR )
+else  ( CXX_SUPPORTS_C11 OR BOOST_INCLUDE_DIR )
 	set( REQUIRED_FOUND FALSE )
-endif ( CXX_SUPPORTS_C11 OR Boost_INCLUDE_DIR )
+endif ( CXX_SUPPORTS_C11 OR BOOST_INCLUDE_DIR )
 
 scai_summary_message ( "STATIC"
                        "REQUIRED_FOUND"
@@ -70,9 +70,9 @@ scai_summary_message ( "FOUND"
 				
 if    ( NOT CXX_SUPPORTS_C11 )
     scai_summary_message ( "FOUND"
-                           "Boost_INCLUDE_DIR"
+                           "BOOST_INCLUDE_DIR"
                            "Boost"
-                           "Version ${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}, add include dir ${Boost_INCLUDE_DIR} to compile your sources" )
+                           "Version ${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}, add include dir ${BOOST_INCLUDE_DIR} to compile your sources" )
 endif ( NOT CXX_SUPPORTS_C11 )
 
 # LAMA (core)

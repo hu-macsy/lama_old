@@ -45,7 +45,7 @@ include ( SetCPPFlags )
 
 include ( CheckC++11 )
 if    ( NOT CXX_SUPPORTS_C11 )
-    find_package( Boost ${SCAI_FIND_PACKAGE_FLAGS} )
+    include( Package/Boost )
 endif ( NOT CXX_SUPPORTS_C11 )
 
 include ( Functions/checkValue )
@@ -127,11 +127,11 @@ include ( ExternalProject )
 
 #message ( STATUS "general ${CMAKE_ARGS}" )
 
-concatCacheArguments ( scai_common "CACHE_ARGS" )
-#message ( STATUS "common CACHE_ARGS ${CACHE_ARGS}" )
-
 ## TODO: do in foreach loop
 #foreache ( project scai_common scai_common scai_logging scai_tracing scai_tasking scai_hmemo scai_lama )
+
+concatCacheArguments ( scai_common "CACHE_ARGS" )
+#message ( STATUS "common CACHE_ARGS ${CACHE_ARGS}" )
 
 ExternalProject_Add ( scai_common 
 			DEPENDS ${SCAI_COMMON_INTERNAL_DEPS}
@@ -143,6 +143,7 @@ ExternalProject_Add ( scai_common
             )
 
 concatCacheArguments ( scai_logging "CACHE_ARGS" )
+#message ( STATUS "logging CACHE_ARGS ${CACHE_ARGS}" )
          
 ExternalProject_Add ( scai_logging 
             DEPENDS ${SCAI_LOGGING_INTERNAL_DEPS}
@@ -154,6 +155,7 @@ ExternalProject_Add ( scai_logging
             )
 
 concatCacheArguments ( scai_tracing "CACHE_ARGS" )
+#message ( STATUS "tracing CACHE_ARGS ${CACHE_ARGS}" )
            
 ExternalProject_Add ( scai_tracing 
             DEPENDS ${SCAI_TRACING_INTERNAL_DEPS}
@@ -165,6 +167,7 @@ ExternalProject_Add ( scai_tracing
             )
 
 concatCacheArguments ( scai_tasking "CACHE_ARGS" )
+#message ( STATUS "tasking CACHE_ARGS ${CACHE_ARGS}" )
 
 ExternalProject_Add ( scai_tasking 
             DEPENDS ${SCAI_TASKING_INTERNAL_DEPS}
@@ -176,6 +179,7 @@ ExternalProject_Add ( scai_tasking
             )
 
 concatCacheArguments ( scai_hmemo "CACHE_ARGS" )
+#message ( STATUS "hmemo CACHE_ARGS ${CACHE_ARGS}" )
 
 ExternalProject_Add ( scai_hmemo
             DEPENDS ${SCAI_HMEMO_INTERNAL_DEPS}
@@ -187,6 +191,7 @@ ExternalProject_Add ( scai_hmemo
             )
 
 concatCacheArguments ( scai_lama "CACHE_ARGS" )
+#message ( STATUS "lama CACHE_ARGS ${CACHE_ARGS}" )
 
 ExternalProject_Add ( scai_lama
             DEPENDS ${SCAI_LAMA_INTERNAL_DEPS}
