@@ -41,7 +41,7 @@
 #include <scai/lama/LAMAInterfaceRegistry.hpp>
 
 // assert
-#include <scai/lama/exception/LAMAAssert.hpp>
+#include <scai/common/SCAIAssert.hpp>
 
 // trace
 #include <scai/tracing.hpp>
@@ -50,6 +50,11 @@
 
 namespace scai
 {
+
+using tasking::SyncToken;
+using tasking::MICSyncToken;
+
+using hmemo::MICContext;
 
 namespace lama
 {
@@ -1944,7 +1949,7 @@ void MICCSRUtils::setInterface( CSRUtilsInterface& CSRUtils )
 
 bool MICCSRUtils::registerInterface()
 {
-    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( Context::MIC );
+    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( hmemo::context::MIC );
     setInterface( interface.CSRUtils );
     return true;
 }

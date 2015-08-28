@@ -38,10 +38,14 @@
 
 // others
 #include <scai/lama/LAMATypes.hpp>
-#include <scai/lama/SyncToken.hpp>
 
 namespace scai
 {
+
+namespace tasking
+{
+   class SyncToken;  // forward declaration
+}
 
 namespace lama
 {
@@ -74,7 +78,7 @@ public:
         const ValueType beta,
         ValueType* C,
         const IndexType ldc,
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /** Routine that sets functions pointers belonging to BLAS3 in a BLASInterface.
      *

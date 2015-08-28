@@ -43,14 +43,18 @@
 #include <scai/lama/LAMAInterfaceRegistry.hpp>
 #include <scai/lama/Scalar.hpp>
 
-// assert
-#include <scai/lama/exception/LAMAAssert.hpp>
+// common library
+#include <scai/common/SCAIAssert.hpp>
 
-// trace
+// trace library
 #include <scai/tracing.hpp>
 
 namespace scai
 {
+
+using tasking::SyncToken;
+
+using namespace hmemo;
 
 namespace lama
 {
@@ -958,7 +962,7 @@ void MICJDSUtils::setInterface( JDSUtilsInterface& JDSUtils )
 
 bool MICJDSUtils::registerInterface()
 {
-    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( Context::MIC );
+    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( context::MIC );
     setInterface( interface.JDSUtils );
     return true;
 }

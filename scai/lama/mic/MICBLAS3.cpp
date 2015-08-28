@@ -39,9 +39,12 @@
 // others
 #include <scai/lama/BLASInterface.hpp>
 #include <scai/lama/LAMAInterfaceRegistry.hpp>
+#include <scai/tasking/SyncToken.hpp>
 
 namespace scai
 {
+
+using tasking::SyncToken;
 
 namespace lama
 {
@@ -205,7 +208,7 @@ void MICBLAS3::setInterface( BLASInterface& BLAS )
 
 bool MICBLAS3::registerInterface()
 {
-    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( Context::MIC );
+    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( hmemo::context::MIC );
     setInterface( interface.BLAS );
     return true;
 }

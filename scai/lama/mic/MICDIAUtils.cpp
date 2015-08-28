@@ -39,16 +39,18 @@
 
 #include <scai/lama/LAMAInterface.hpp>
 #include <scai/lama/LAMAInterfaceRegistry.hpp>
-#include <scai/lama/task/TaskSyncToken.hpp>
+#include <scai/tasking/TaskSyncToken.hpp>
 #include <scai/tracing.hpp>
 
 // assert
-#include <scai/lama/exception/LAMAAssert.hpp>
+#include <scai/common/SCAIAssert.hpp>
 
 #include <cmath>
 
 namespace scai
 {
+
+using tasking::SyncToken;
 
 namespace lama
 {
@@ -480,7 +482,7 @@ void MICDIAUtils::setInterface( DIAUtilsInterface& DIAUtils )
 
 bool MICDIAUtils::registerInterface()
 {
-    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( Context::MIC );
+    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( hmemo::context::MIC );
     setInterface( interface.DIAUtils );
     return true;
 }

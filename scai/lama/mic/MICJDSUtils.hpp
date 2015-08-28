@@ -38,7 +38,7 @@
 
 // others
 #include <scai/lama/LAMATypes.hpp>
-#include <scai/lama/SyncToken.hpp>
+#include <scai/tasking/SyncToken.hpp>
 #include <scai/lama/Scalar.hpp>
 
 // logging
@@ -46,6 +46,11 @@
 
 namespace scai
 {
+
+namespace tasking
+{
+    class SyncToken;   // forward declaration
+}
 
 namespace lama
 {
@@ -163,7 +168,7 @@ public:
         const IndexType jdsDLG[],
         const IndexType jdsJA[],
         const ValueType jdsValues[],
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     template<typename ValueType>
     static void jacobi(
@@ -178,7 +183,7 @@ public:
         const ValueType oldSolution[],
         const ValueType rhs[],
         const ValueType omega,
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     template<typename ValueType>
     static void jacobiHalo(
@@ -193,7 +198,7 @@ public:
         const ValueType jdsHaloValues[],
         const ValueType oldSolution[],
         const ValueType omega,
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /** Method for registration of module routines at the interface. */
 

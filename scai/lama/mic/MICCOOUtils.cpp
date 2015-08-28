@@ -35,6 +35,7 @@
 #include <scai/lama/mic/MICCOOUtils.hpp>
 #include <scai/lama/mic/MICUtils.hpp>
 #include <scai/lama/mic/MICSyncToken.hpp>
+#include <scai/lama/mic/MICContext.hpp>
 
 #include <scai/lama/openmp/OpenMP.hpp>
 
@@ -42,11 +43,15 @@
 #include <scai/lama/LAMAInterface.hpp>
 #include <scai/lama/LAMAInterfaceRegistry.hpp>
 #include <scai/tracing.hpp>
+#include <scai/common/SCAIAssert.hpp>
 
 #include <cmath>
 
 namespace scai
 {
+
+using tasking::SyncToken;
+using tasking::MICSyncToken;
 
 namespace lama
 {
@@ -454,7 +459,7 @@ void MICCOOUtils::setInterface( COOUtilsInterface& COOUtils )
 
 bool MICCOOUtils::registerInterface()
 {
-    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( Context::MIC );
+    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( hmemo::context::MIC );
     setInterface( interface.COOUtils );
     return true;
 }
