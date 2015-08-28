@@ -29,12 +29,6 @@ string ( STRIP "${CMAKE_SHARED_LINKER_FLAGS}" CMAKE_SHARED_LINKER_FLAGS )
 
 if ( CUDA_FOUND AND USE_CUDA AND NOT DEFINED SCAI_COMPLETE_BUILD )
     
-    message ( STATUS "conclude cuda flags" )
-    message ( STATUS "ADDITIONAL_NVCC_FLAGS ${ADDITIONAL_NVCC_FLAGS}" )
-    message ( STATUS "ADDITIONAL_NVCC_RELEASE_FLAGS ${ADDITIONAL_NVCC_RELEASE_FLAGS}" )
-    message ( STATUS "CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS}" )
-    message ( STATUS "CUDA_NVCC_FLAGS_RELEASE ${CUDA_NVCC_FLAGS_RELEASE}" )
-    
     # TODO: determine cuda compute capability and use highest
     # with sm_20 no warnings about Cannot tell what pointer points to, assuming global memory space in Release build
     # We need at least compute capability 1.3, so if no architecture is specified set it here
