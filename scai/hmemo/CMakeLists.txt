@@ -43,6 +43,7 @@ set ( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../CMake/Modules" )
 ### Include Compiler Flags
 if    ( NOT SCAI_COMPLETE_BUILD )
 	include ( SetBuildFlags )
+	include ( SCAIAssert )
 	include ( SetCPPFlags )
 endif ( NOT SCAI_COMPLETE_BUILD )
 
@@ -81,10 +82,6 @@ endforeach ( module ${SCAI_HMEMO_INTERNAL_DEPS} ${SCAI_HMEMO_EXTERNAL_DEPS} )
 
 ### build library
 
-## add subdirectories
-add_subdirectory ( examples )
-add_subdirectory ( test )
-
 ## search for files
 file ( GLOB CPP_SOURCES "*.cpp" )
 file ( GLOB HPP_HEADERS "*.hpp" )
@@ -94,6 +91,10 @@ if    ( CUDA_FOUND AND USE_CUDA )
     add_subdirectory ( cuda )
     include_directories ( ${CUDA_TOOLKIT_INCLUDE} )
 endif ( CUDA_FOUND AND USE_CUDA )
+
+## add subdirectories
+add_subdirectory ( examples )
+add_subdirectory ( test )
 
 ## add library
 add_library ( scai_hmemo SHARED ${CPP_SOURCES} ${CUDA_SOURCES} )

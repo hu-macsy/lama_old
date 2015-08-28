@@ -43,6 +43,7 @@ set ( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../CMake/Modules" )
 ### Include Compiler Flags
 if    ( NOT SCAI_COMPLETE_BUILD )
 	include ( SetBuildFlags )
+	include ( SCAIAssert )
 	include ( SetCPPFlags )
 endif ( NOT SCAI_COMPLETE_BUILD )
 

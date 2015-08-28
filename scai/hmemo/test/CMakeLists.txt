@@ -47,8 +47,8 @@ if ( Boost_UNIT_TEST_FRAMEWORK_FOUND )
         scai_hmemo
         )
 
-    if ( CUDA_FOUND AND USE_CUDA )
+    if    ( CUDA_FOUND AND USE_CUDA )
         add_subdirectory ( cuda )
-    endif ()
+    endif ( CUDA_FOUND AND USE_CUDA )
 
 endif ( Boost_UNIT_TEST_FRAMEWORK_FOUND )

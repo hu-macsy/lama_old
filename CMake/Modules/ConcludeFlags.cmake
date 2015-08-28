@@ -27,7 +27,13 @@ string ( STRIP "${CMAKE_CXX_FLAGS_RELEASE}" CMAKE_CXX_FLAGS_RELEASE )
 string ( STRIP "${CMAKE_EXE_LINKER_FLAGS}" CMAKE_EXE_LINKER_FLAGS )
 string ( STRIP "${CMAKE_SHARED_LINKER_FLAGS}" CMAKE_SHARED_LINKER_FLAGS )
 
-if ( CUDA_FOUND AND USE_CUDA )
+if ( CUDA_FOUND AND USE_CUDA AND NOT DEFINED SCAI_COMPLETE_BUILD )
+    
+    message ( STATUS "conclude cuda flags" )
+    message ( STATUS "ADDITIONAL_NVCC_FLAGS ${ADDITIONAL_NVCC_FLAGS}" )
+    message ( STATUS "ADDITIONAL_NVCC_RELEASE_FLAGS ${ADDITIONAL_NVCC_RELEASE_FLAGS}" )
+    message ( STATUS "CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS}" )
+    message ( STATUS "CUDA_NVCC_FLAGS_RELEASE ${CUDA_NVCC_FLAGS_RELEASE}" )
     
     # TODO: determine cuda compute capability and use highest
     # with sm_20 no warnings about Cannot tell what pointer points to, assuming global memory space in Release build
@@ -47,4 +53,4 @@ if ( CUDA_FOUND AND USE_CUDA )
     string ( STRIP "${CUDA_NVCC_FLAGS}" CUDA_NVCC_FLAGS )
     string ( STRIP "${CUDA_NVCC_FLAGS_RELEASE}" CUDA_NVCC_FLAGS_RELEASE )
     
-endif ( CUDA_FOUND AND USE_CUDA )
+endif ( CUDA_FOUND AND USE_CUDA AND NOT DEFINED SCAI_COMPLETE_BUILD )

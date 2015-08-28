@@ -37,6 +37,8 @@ include ( Functions/checkValue )
 
 if    ( CUDA_FOUND AND USE_CUDA )
     
+    message ( STATUS "set NVCC Flags" )
+    
     ### choosing the right compute capability
     ### we just start from version 1.3 ( 1.0 - 1.2 is not supported )
     list ( APPEND CC_CHOICES "not-found" "13" "20" "21" "30" "32" "35" "50" )
@@ -61,8 +63,8 @@ if    ( CUDA_FOUND AND USE_CUDA )
     else  ( WIN32 )
         set ( CUDA_PROPAGATE_HOST_FLAGS OFF )
         
-        list ( APPEND ADDITIONAL_NVCC_FLAGS -Xcompiler -fPIC )
-        list ( APPEND ADDITIONAL_NVCC_RELEASE_FLAGS -O3 -use_fast_math -Xcompiler -ffast-math -Xcompiler -fno-inline )
+        set ( ADDITIONAL_NVCC_FLAGS -Xcompiler -fPIC )
+        set ( ADDITIONAL_NVCC_RELEASE_FLAGS -O3 -use_fast_math -Xcompiler -ffast-math -Xcompiler -fno-inline )
         
         if    ( CXX_SUPPORTS_C11 )
             list ( APPEND ADDITIONAL_NVCC_FLAGS -std=c++11 )
@@ -114,6 +116,9 @@ if    ( CUDA_FOUND AND USE_CUDA )
         endif( CUSPARSE_V2 )
 
     endif ( CUDA_VERSION_MAJOR MATCHES "5" )
+    
+    message ( STATUS "ADDITIONAL_NVCC_FLAGS ${ADDITIONAL_NVCC_FLAGS}" )
+    message ( STATUS "ADDITIONAL_NVCC_RELEASE_FLAGS ${ADDITIONAL_NVCC_RELEASE_FLAGS}" )
     
 endif ( CUDA_FOUND AND USE_CUDA )
 
