@@ -50,7 +50,7 @@
 #include <scai/lama/openmp/OpenMPCSRUtils.hpp>
 
 // assert
-#include <scai/common/SCAIAssert.hpp>
+#include <scai/common/Assert.hpp>
 
 // boost
 #include <scai/common/bind.hpp>

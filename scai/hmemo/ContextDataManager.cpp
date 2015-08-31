@@ -35,7 +35,7 @@
 #include <scai/hmemo/ContextDataManager.hpp>
 #include <scai/hmemo/Context.hpp>
 
-#include <scai/common/Exception.hpp>
+#include <scai/common/Assert.hpp>
 
 namespace scai
 {

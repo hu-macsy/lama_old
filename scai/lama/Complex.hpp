@@ -43,7 +43,8 @@
 #include <cmath>
 #endif
 
-#include <scai/common/SCAIAssert.hpp>
+#include <sstream>
+#include <scai/common/config.hpp>
 
 /*
  * Macros used for building the operators, providing the functionality

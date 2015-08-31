@@ -31,7 +31,7 @@
  * @since 1.0.0
  */
 
-#include <scai/common/SCAIAssert.hpp>
+#include <scai/common/Assert.hpp>
 
 #include <scai/lama/LAMAInterface.hpp>
 #include <scai/lama/LAMAInterfaceRegistry.hpp>

@@ -31,7 +31,7 @@
  */
 
 #include <scai/common/Thread.hpp>
-#include <scai/common/Exception.hpp>
+#include <scai/common/Assert.hpp>
 
 #include <map>
 #include <string>

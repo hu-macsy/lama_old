@@ -41,7 +41,7 @@
 #include <scai/tasking/SyncToken.hpp>
 
 // assert
-#include <scai/common/SCAIAssert.hpp>
+#include <scai/common/Assert.hpp>
 
 // logging
 #include <scai/logging.hpp>

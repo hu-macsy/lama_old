@@ -50,7 +50,7 @@
 #include <scai/tracing.hpp>
 
 // assert
-#include <scai/common/SCAIAssert.hpp>
+#include <scai/common/Assert.hpp>
 
 namespace scai
 {

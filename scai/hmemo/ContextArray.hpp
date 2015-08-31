@@ -50,6 +50,7 @@
 #include <scai/common/Printable.hpp>
 #include <scai/common/Factory.hpp>
 #include <scai/common/ScalarType.hpp>
+#include <scai/common/Assert.hpp>
 
 #include <vector>
 #include <map>

@@ -39,7 +39,7 @@
 #include <scai/lama/mpi/MPIUtils.hpp>
 
 #include <scai/common/Settings.hpp>
-#include <scai/common/SCAIAssert.hpp>
+#include <scai/common/Assert.hpp>
 
 // tracing
 #include <scai/tracing.hpp>

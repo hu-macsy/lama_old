@@ -33,7 +33,7 @@
 
 #include <scai/common/Thread.hpp>
 #include <scai/common/Walltime.hpp>
-#include <scai/common/Exception.hpp>
+#include <scai/common/Assert.hpp>
 
 #include <iostream>
 #include <cstdlib>

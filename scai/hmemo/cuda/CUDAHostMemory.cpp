@@ -38,7 +38,7 @@
 
 #include <scai/hmemo/ContextAccess.hpp>
 
-#include <scai/common/Exception.hpp>
+#include <scai/common/Assert.hpp>
 
 #include <scai/common/bind.hpp>
 

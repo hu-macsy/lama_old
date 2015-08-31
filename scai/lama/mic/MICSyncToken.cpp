@@ -36,7 +36,7 @@
 
 // others
 #include <scai/tracing.hpp>
-#include <scai/common/SCAIAssert.hpp>
+#include <scai/common/Assert.hpp>
 
 namespace scai
 {

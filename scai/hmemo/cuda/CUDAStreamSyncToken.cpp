@@ -39,6 +39,8 @@
 
 #include <scai/hmemo/ContextAccess.hpp>
 
+#include <scai/common/Assert.hpp>
+
 namespace scai
 {
 

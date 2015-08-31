@@ -40,7 +40,7 @@
 #include <scai/lama/LAMAInterfaceRegistry.hpp>
 
 // assert
-#include <scai/common/SCAIAssert.hpp>
+#include <scai/common/Assert.hpp>
 
 // trace
 #include <scai/tracing.hpp>

@@ -34,7 +34,7 @@
 #include <scai/lama/distribution/Distribution.hpp>
 
 // assert
-#include <scai/common/SCAIAssert.hpp>
+#include <scai/common/Assert.hpp>
 #include <scai/lama/Scalar.hpp>
 #include <scai/hmemo.hpp>
 

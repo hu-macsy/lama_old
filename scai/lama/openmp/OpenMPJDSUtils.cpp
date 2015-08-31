@@ -42,7 +42,7 @@
 #include <scai/lama/LAMAInterfaceRegistry.hpp>
 
 // assert
-#include <scai/common/SCAIAssert.hpp>
+#include <scai/common/Assert.hpp>
 
 // macros
 #include <scai/lama/macros/unused.hpp>

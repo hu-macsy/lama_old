@@ -35,7 +35,7 @@
 #include <scai/hmemo/ContextData.hpp>
 #include <scai/hmemo/Context.hpp>
 
-#include <scai/common/Exception.hpp>
+#include <scai/common/Assert.hpp>
 #include <scai/logging.hpp>
 
 using scai::tasking::SyncToken;

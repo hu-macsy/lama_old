@@ -43,7 +43,7 @@
 #include <scai/lama/CommunicationPlan.hpp>
 #include <scai/tasking/SyncToken.hpp>
 
-#include <scai/common/SCAIAssert.hpp>
+#include <scai/common/Assert.hpp>
 
 // logging
 #include <scai/logging.hpp>

@@ -31,7 +31,7 @@
  * @date 19.06.2015
  */
 
-#include <scai/common/Exception.hpp>
+#include <scai/common/Assert.hpp>
 
 #include <iostream>
 

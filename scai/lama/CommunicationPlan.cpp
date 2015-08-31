@@ -37,7 +37,7 @@
 // others
 #include <scai/lama/Communicator.hpp>
 
-#include <scai/common/SCAIAssert.hpp>
+#include <scai/common/Assert.hpp>
 
 namespace scai
 {

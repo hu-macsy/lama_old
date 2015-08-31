@@ -33,7 +33,7 @@
 #pragma once
 
 #include <scai/common/config.hpp>
-#include <scai/common/Exception.hpp>
+#include <scai/common/Assert.hpp>
 
 #include <scai/hmemo/Access.hpp>
 #include <scai/hmemo/LAMAArray.hpp>

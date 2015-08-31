@@ -38,7 +38,7 @@
 #include <scai/tracing.hpp>
 #include <scai/lama/mpi/MPIUtils.hpp>
 
-#include <scai/common/SCAIAssert.hpp>
+#include <scai/common/Assert.hpp>
 
 using namespace scai::tasking;
 

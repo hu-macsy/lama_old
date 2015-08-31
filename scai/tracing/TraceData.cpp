@@ -34,7 +34,7 @@
 #include <scai/tracing/CallStack.hpp>
 #include <scai/tracing/CallTreeTable.hpp>
 
-#include <scai/common/Exception.hpp>
+#include <scai/common/Assert.hpp>
 
 namespace scai
 {
