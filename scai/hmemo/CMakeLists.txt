@@ -68,6 +68,8 @@ add_definitions( ${ADDITIONAL_WARNING_FLAGS} )
 
 add_definitions( -D${SCAI_LOGGING_FLAG} )
 
+add_definitions ( -DSCAI_ASSERT_LEVEL_${SCAI_ASSERT_LEVEL} )
+
 if    ( WIN32 )
 	add_definitions ( -DCOMMON_COMPILING_DLL )
 endif ( WIN32 )

@@ -65,6 +65,7 @@ include ( ConcludeFlags )
 ### add definitions
 
 add_definitions( ${ADDITIONAL_WARNING_FLAGS} )
+add_definitions ( -DSCAI_ASSERT_LEVEL_${SCAI_ASSERT_LEVEL} )
 
 if    ( WIN32 )
 	add_definitions ( -DCOMMON_COMPILING_DLL )

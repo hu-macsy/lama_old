@@ -61,6 +61,7 @@ include ( ConcludeFlags )
 ### add definitions
 
 add_definitions( ${ADDITIONAL_WARNING_FLAGS} )
+add_definitions ( -DSCAI_ASSERT_LEVEL_${SCAI_ASSERT_LEVEL} )
 
 # logging level for logging library
 # GenLogger uses also logging during initialization, here we make a fixed setting

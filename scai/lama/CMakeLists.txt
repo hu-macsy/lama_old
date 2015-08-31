@@ -67,6 +67,7 @@ include ( ConcludeFlags )
 ### add definitions ###
 
 add_definitions( ${ADDITIONAL_WARNING_FLAGS} )
+add_definitions ( -DSCAI_ASSERT_LEVEL_${SCAI_ASSERT_LEVEL} )
 
 ## MKL FOUND
 if     ( SCAI_BLAS_NAME STREQUAL "MKL" )
