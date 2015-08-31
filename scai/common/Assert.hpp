@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include <scai/common/exception/Exception.hpp>
+#include <scai/common/exception/AssertException.hpp>
 
 /**
  * @brief The macro SCAI_ASSERT checks a condition and throws an exception
@@ -21,7 +21,7 @@
  * and the current call stack.
  */
 
-#define SCAI_ASSERT( cond, msg )                                             \
+#define SCAI_ASSERT( cond, msg )                                               \
 {                                                                              \
     if (!(cond))                                                               \
     {                                                                          \
@@ -30,8 +30,8 @@
         errorStr << " of file " << __FILE__ << "\n";                           \
         errorStr << "    Condition: " << #cond << "\n";                        \
         errorStr << "    Message: " << msg << "\n";                            \
-        scai::common::Exception::addCallStack( errorStr );                     \
-        throw scai::common::Exception( errorStr.str() );                       \
+        scai::common::AssertException::addCallStack( errorStr );               \
+        throw scai::common::AssertException( errorStr.str() );                 \
     }                                                                          \
 }
 
@@ -60,8 +60,8 @@
         errorStr << "    Message: " << msg << "\n";                                \
         errorStr << "    exp_1: " << #exp1 " = " << exp1 << "\n";                  \
         errorStr << "    exp_2: " << #exp2 " = " << exp2 << "\n";                  \
-        scai::common::Exception::addCallStack( errorStr );                         \
-        throw scai::common::Exception( errorStr.str() );                           \
+        scai::common::AssertException::addCallStack( errorStr );                   \
+        throw scai::common::AssertException( errorStr.str() );                     \
     }                                                                              \
 }
 
