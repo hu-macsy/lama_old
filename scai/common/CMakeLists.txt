@@ -88,6 +88,9 @@ if    ( CUDA_FOUND AND USE_CUDA )
     include_directories ( ${CUDA_TOOLKIT_INCLUDE} )
 endif ( CUDA_FOUND AND USE_CUDA )
 
+## add exception dir
+add_subdirectory ( exception )
+
 ## add library
 add_library ( scai_common SHARED ${CPP_SOURCES} ${CUDA_SOURCES} )
 

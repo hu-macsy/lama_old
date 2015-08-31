@@ -35,7 +35,7 @@
 #include <scai/lama/mic/MICContext.hpp>
 #include <scai/lama/mic/MICMemory.hpp>
 
-#include <scai/common/Exception.hpp>
+#include <scai/common/exception/Exception.hpp>
 #include <scai/tasking/NoSyncToken.hpp>
 #include <scai/lama/mic/MICSyncToken.hpp>
 

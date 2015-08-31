@@ -34,7 +34,7 @@
 #include <scai/hmemo/Memory.hpp>
 
 // assert
-#include <scai/common/Exception.hpp>
+#include <scai/common/exception/Exception.hpp>
 
 #include <map>
 

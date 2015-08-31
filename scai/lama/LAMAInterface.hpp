@@ -37,8 +37,8 @@
 
 // base classes
 #include <scai/common/Printable.hpp>
-#include <scai/common/Exception.hpp>
-#include <scai/common/UnsupportedException.hpp>
+#include <scai/common/exception/Exception.hpp>
+#include <scai/common/exception/UnsupportedException.hpp>
 
 #include <scai/hmemo/Context.hpp>
 

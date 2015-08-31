@@ -31,7 +31,7 @@
  */
 #pragma once
 
-#include <scai/common/Exception.hpp>
+#include <scai/common/exception/Exception.hpp>
 
 #include <cuda.h>
 #include <cublas_v2.h>

@@ -39,7 +39,7 @@
 
 // hpp
 #include <scai/logging.hpp>
-#include <scai/common/Exception.hpp>
+#include <scai/common/exception/Exception.hpp>
 
 #undef DEBUGGING
 

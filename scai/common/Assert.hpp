@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include <scai/common/Exception.hpp>
+#include <scai/common/exception/Exception.hpp>
 
 /**
  * @brief The macro SCAI_ASSERT checks a condition and throws an exception

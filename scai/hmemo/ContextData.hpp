@@ -37,7 +37,7 @@
 #include <scai/logging.hpp>
 
 #include <scai/common/config.hpp>
-#include <scai/common/Exception.hpp>
+#include <scai/common/exception/Exception.hpp>
 #include <scai/common/Printable.hpp>
 
 namespace scai

@@ -32,7 +32,7 @@
 
 #include <scai/tracing/CallTreeTable.hpp>
 
-#include <scai/common/Exception.hpp>
+#include <scai/common/exception/Exception.hpp>
 
 // getpid required
 #include <unistd.h>

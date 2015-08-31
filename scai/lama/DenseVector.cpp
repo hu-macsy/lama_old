@@ -49,7 +49,7 @@
 #include <scai/lama/io/FileType.hpp>
 
 #include <scai/tracing.hpp>
-#include <scai/common/UnsupportedException.hpp>
+#include <scai/common/exception/UnsupportedException.hpp>
 
 #include <scai/common/unique_ptr.hpp>
 #include <boost/preprocessor.hpp>

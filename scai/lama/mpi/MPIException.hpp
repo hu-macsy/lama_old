@@ -37,7 +37,7 @@
 #include <scai/common/config.hpp>
 
 // base classes
-#include <scai/common/Exception.hpp>
+#include <scai/common/exception/Exception.hpp>
 
 namespace scai
 {

@@ -35,7 +35,7 @@
 #include <scai/lama/solver/logger/FileLogger.hpp>
 
 // others
-#include <scai/common/Exception.hpp>
+#include <scai/common/exception/Exception.hpp>
 
 #include <sstream>
 

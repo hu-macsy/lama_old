@@ -43,7 +43,7 @@
 #include <scai/lama/storage/MatrixStorage.hpp>
 #include <scai/lama/storage/CSRStorage.hpp>
 
-#include <scai/common/Exception.hpp>
+#include <scai/common/exception/Exception.hpp>
 
 #include <scai/lama/distribution/NoDistribution.hpp>
 #include <scai/lama/distribution/CyclicDistribution.hpp>
