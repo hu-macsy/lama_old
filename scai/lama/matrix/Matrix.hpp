@@ -1014,22 +1014,26 @@ inline DistributionPtr Matrix::getColDistributionPtr() const
     return mColDistribution;
 }
 
+} /* end namespace lama */
+
+} /* end namespace scai */
+
 /** This function prints a SyncKind on an output stream.
  *
  *  \param stream   is the reference to the output stream
  *  \param kind      is the enum value that is printed
  */
-inline std::ostream& operator<<( std::ostream& stream, const Matrix::SyncKind& kind )
+inline std::ostream& operator<<( std::ostream& stream, const scai::lama::Matrix::SyncKind& kind )
 {
     switch( kind )
     {
-        case Matrix::SYNCHRONOUS:
+        case scai::lama::Matrix::SYNCHRONOUS:
         {
             stream << "SYNCHRONOUS";
             break;
         }
 
-        case Matrix::ASYNCHRONOUS:
+        case scai::lama::Matrix::ASYNCHRONOUS:
         {
             stream << "ASYNCHRONOUS";
             break;
@@ -1046,10 +1050,6 @@ inline std::ostream& operator<<( std::ostream& stream, const Matrix::SyncKind& k
 }
 
 /** @brief  stream output for key values of creator  */
-
-} /* end namespace lama */
-
-} /* end namespace scai */
 
 /** This function prints a MatrixKind on an output stream.
  *

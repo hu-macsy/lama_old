@@ -840,10 +840,6 @@ void SparseAssemblyStorage<ValueType>::scaleImpl( const LAMAArray<OtherValueType
 template<typename ValueType>
 void SparseAssemblyStorage<ValueType>::writeAt( std::ostream& stream ) const
 {
-    // operator<< ( ..., common::ScalarType ) not visible here 
-
-    using ::operator<<;
-
     stream << "SparseAssemblyStorage<" << common::getScalarType<ValueType>() << ">(" 
            << " size = " << mNumRows << " x " << mNumColumns
            << ", #values = " << mNumValues << ", diag = " << mDiagonalProperty << " )";
@@ -854,8 +850,6 @@ void SparseAssemblyStorage<ValueType>::writeAt( std::ostream& stream ) const
 template<typename ValueType>
 const char* SparseAssemblyStorage<ValueType>::typeName()
 {
-    using ::operator<<;
-
     std::ostringstream name;
 
     name << "SparseAssemblyStorage<" << common::getScalarType<ValueType>() << ">";

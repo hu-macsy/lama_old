@@ -717,8 +717,6 @@ void DIAStorage<ValueType>::allocate( IndexType numRows, IndexType numColumns )
 template<typename ValueType>
 void DIAStorage<ValueType>::writeAt( std::ostream& stream ) const
 {
-    using ::operator<<;
-
     stream << "DIAStorage<" << common::getScalarType<ValueType>()
            << ">( size = " << mNumRows << " x " << mNumColumns
            << ", nd = " << mNumDiagonals << " )";
