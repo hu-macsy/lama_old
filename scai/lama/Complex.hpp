@@ -43,6 +43,7 @@
 #include <cmath>
 #endif
 
+#include <scai/common/Printable.hpp>
 #include <scai/common/SCAIAssert.hpp>
 
 /*
@@ -627,6 +628,8 @@ public:
         mParts[0] = a;
     }
 
+//    CUDA_CALLABLE_MEMBER inline virtual void writeAt( std::ostream& stream ) const;
+
 private:
     ValueType mParts[2]; // mParts[0] <-- Real, //mParts[1] <-- Imag
 };
@@ -861,24 +864,24 @@ inline Complex<long double> sqrt( const Complex<long double>& a )
     }
 }
 
+template<typename ValueType>
+COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const scai::lama::Complex<ValueType>& object )
+{
+	if( object.imag() == 0 )
+	{
+		stream << object.real();
+	}
+	else
+	{
+		stream << object.real() << " " << object.imag();
+	}
+
+	return stream;
+}
+
 } /* end namespace lama */
 
 } /* end namespace scai */
-
-template<typename ValueType>
-std::ostream& operator<<( std::ostream& stream, const scai::lama::Complex<ValueType>& object )
-{
-    if( object.imag() == 0 )
-    {
-        stream << object.real();
-    }
-    else
-    {
-        stream << object.real() << " " << object.imag();
-    }
-
-    return stream;
-}
 
 template<typename ValueType,typename InputType1,typename InputType2>
 std::basic_istream<InputType1,InputType2>&
@@ -892,6 +895,7 @@ operator>>( std::basic_istream<InputType1,InputType2>& input, scai::lama::Comple
     x.imag( imag );
     return input;
 }
+
 
 
 #undef CUDA_CALLABLE_MEMBER
