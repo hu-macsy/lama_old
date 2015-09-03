@@ -82,6 +82,10 @@ endforeach ( module ${SCAI_LOGGING_INTERNAL_DEPS} )
 ## add subdirectories
 add_subdirectory ( examples )
 
+## prepare test
+configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/test/make.inc.in" "${CMAKE_CURRENT_BINARY_DIR}/test/make.inc" )
+file ( COPY ${CMAKE_CURRENT_SOURCE_DIR}/test DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
+
 ## search for files
 file ( GLOB CPP_SOURCES "*.cpp" )
 file ( GLOB HPP_HEADERS "*.hpp" )
