@@ -61,44 +61,30 @@ if    ( CUDA_FOUND AND USE_CUDA )
     else  ( WIN32 )
         set ( CUDA_PROPAGATE_HOST_FLAGS OFF )
         
-        set ( ADDITIONAL_NVCC_FLAGS "-Xcompiler -fPIC" )
-        set ( ADDITIONAL_NVCC_RELEASE_FLAGS "-O3 -use_fast_math -Xcompiler -ffast-math -Xcompiler -fno-inline" )
+        set ( ADDITIONAL_NVCC_FLAGS -Xcompiler -fPIC )
+        set ( ADDITIONAL_NVCC_RELEASE_FLAGS -O3 -use_fast_math -Xcompiler -ffast-math -Xcompiler -fno-inline )
         
         if    ( CXX_SUPPORTS_C11 )
-            set ( ADDITIONAL_NVCC_FLAGS "${ADDITIONAL_NVCC_FLAGS} -std=c++11" )
+            list ( APPEND ADDITIONAL_NVCC_FLAGS -std=c++11 )
         endif ( CXX_SUPPORTS_C11 )
 
         # Intel compiler
         if    ( CMAKE_CXX_COMPILER_ID MATCHES Intel )
-            set ( ADDITIONAL_NVCC_FLAGS "${ADDITIONAL_NVCC_FLAGS} --compiler-bindir ${CMAKE_CXX_COMPILER};" )  
+            list ( APPEND ADDITIONAL_NVCC_FLAGS --compiler-bindir ${CMAKE_CXX_COMPILER}; )  
         endif ( CMAKE_CXX_COMPILER_ID MATCHES Intel )
         
         #-Xcompiler;-fno-inline is used because of compability issues of CUDA with gcc-4.4
         if    ( ${CMAKE_BUILD_TYPE} MATCHES "Debug" )
-      	    set ( ADDITIONAL_NVCC_FLAGS "${ADDITIONAL_NVCC_FLAGS} -g -G" )
+      	    list ( APPEND ADDITIONAL_NVCC_FLAGS -g -G )
         endif ( ${CMAKE_BUILD_TYPE} MATCHES "Debug" )
         
         # set -march=core02,-mmmx,-msse,-msse2,-msse3,-mssse3,-msse4a flags here
         if    ( MARCH_NATIVE_SUPPORT )
-            set ( ADDITIONAL_NVCC_RELEASE_FLAGS "${ADDITIONAL_NVCC_RELEASE_FLAGS} -Xcompiler -march=native" )
+            list ( APPEND ADDITIONAL_NVCC_RELEASE_FLAGS -Xcompiler -march=native )
         endif ( MARCH_NATIVE_SUPPORT )
         
     endif ( WIN32 )
     
-    set ( ADDITIONAL_NVCC_FLAGS "${ADDITIONAL_NVCC_FLAGS}" CACHE STRING "additional nvcc compiler flags" )
-    set ( ADDITIONAL_NVCC_RELEASE_FLAGS "${ADDITIONAL_NVCC_RELEASE_FLAGS}" CACHE STRING "additional nvcc release compiler flags" )
-    mark_as_advanced ( ADDITIONAL_NVCC_FLAGS ADDITIONAL_NVCC_RELEASE_FLAGS )
-
-    set ( CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} ${ADDITIONAL_NVCC_FLAGS}" )
-    set ( CUDA_NVCC_FLAGS_RELEASE "${CUDA_NVCC_FLAGS_RELEASE} ${ADDITIONAL_NVCC_RELEASE_FLAGS}" )
-    
-    # TODO: determine cuda compute capability and use highest
-    # with sm_20 no warnings about Cannot tell what pointer points to, assuming global memory space in Release build
-    # We need at least compute capability 1.3, so if no architecture is specified set it here
-    if    ( NOT "${CUDA_NVCC_FLAGS}" MATCHES "-arch" )
-    	set ( CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -arch=sm_${CUDA_COMPUTE_CAPABILITY}" )
-    endif ( NOT "${CUDA_NVCC_FLAGS}" MATCHES "-arch" )
-
     if ( NOT CUDA_cusparse_LIBRARY )
         ### cusparse is usually in same directory as cublas
         get_filename_component( HINT_CUDA_LIBRARY_DIR ${CUDA_cublas_LIBRARY} PATH )
@@ -123,7 +109,6 @@ if    ( CUDA_FOUND AND USE_CUDA )
 
         if ( CUSPARSE_V2 )
             message( STATUS "cuSPARSE Version 2 is supported and will be used" )
-            set ( CUDA_SOURCES ${CUDA_SOURCES} CUSparseCSRUtils.cu )
         else( CUSPARSE_V2 )
             message( STATUS "cuSPARSE Version 2 not supported" )
         endif( CUSPARSE_V2 )

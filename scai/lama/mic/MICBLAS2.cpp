@@ -236,7 +236,7 @@ void MICBLAS2::setInterface( BLASInterface& BLAS )
 
 bool MICBLAS2::registerInterface()
 {
-    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( Context::MIC );
+    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( hmemo::context::MIC );
     setInterface( interface.BLAS );
     return true;
 }

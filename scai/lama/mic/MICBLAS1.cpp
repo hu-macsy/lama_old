@@ -37,6 +37,8 @@
 // others
 #include <scai/lama/BLASInterface.hpp>
 #include <scai/lama/LAMAInterfaceRegistry.hpp>
+#include <scai/lama/LAMATypes.hpp>
+#include <scai/tasking/SyncToken.hpp>
 
 // tracing with SCAI_REGION
 #include <scai/tracing.hpp>
@@ -63,7 +65,7 @@ void MICBLAS1::scal(
     const ValueType alpha,
     ValueType* x,
     const IndexType incX,
-    SyncToken* syncToken )
+    tasking::SyncToken* syncToken )
 {
     SCAI_LOG_DEBUG( logger,
                     "scal<" << common::getScalarType<ValueType>() << ">, n = " << n << ", alpha = " << alpha << ", x = " << x << ", incX = " << incX )
@@ -96,7 +98,7 @@ void MICBLAS1::scal(
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ValueType MICBLAS1::asum( const IndexType n, const ValueType* x, const IndexType incX, SyncToken* syncToken )
+ValueType MICBLAS1::asum( const IndexType n, const ValueType* x, const IndexType incX, tasking::SyncToken* syncToken )
 {
     SCAI_LOG_DEBUG( logger,
                     "asum<" << common::getScalarType<ValueType>() << ">, n = " << n << ", x = " << x << ", incX = " << incX )
@@ -135,7 +137,7 @@ ValueType MICBLAS1::asum( const IndexType n, const ValueType* x, const IndexType
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-IndexType MICBLAS1::iamax( const IndexType n, const ValueType* x, const IndexType incX, SyncToken* syncToken )
+IndexType MICBLAS1::iamax( const IndexType n, const ValueType* x, const IndexType incX, tasking::SyncToken* syncToken )
 {
     SCAI_LOG_INFO( logger,
                    "iamax<" << common::getScalarType<ValueType>() << " >, n = " << n << ", x = " << x << ", incX = " << incX )
@@ -210,7 +212,7 @@ void MICBLAS1::swap(
     const IndexType incX,
     ValueType* y,
     const IndexType incY,
-    SyncToken* syncToken )
+    tasking::SyncToken* syncToken )
 {
     SCAI_LOG_DEBUG( logger,
                     "iamax<long double>, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
@@ -245,7 +247,7 @@ void MICBLAS1::swap(
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ValueType MICBLAS1::nrm2( const IndexType n, const ValueType* x, const IndexType incX, SyncToken* syncToken )
+ValueType MICBLAS1::nrm2( const IndexType n, const ValueType* x, const IndexType incX, tasking::SyncToken* syncToken )
 {
     SCAI_LOG_INFO( logger, "nrm2<" << common::getScalarType<ValueType>() << ">( n = " << n << " )" )
 
@@ -291,7 +293,7 @@ void MICBLAS1::copy(
     const IndexType incX,
     ValueType* y,
     const IndexType incY,
-    SyncToken* syncToken )
+    tasking::SyncToken* syncToken )
 {
     SCAI_LOG_DEBUG( logger,
                     "copy<" << common::getScalarType<ValueType>() << ">, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
@@ -337,7 +339,7 @@ void MICBLAS1::axpy(
     const IndexType incX,
     ValueType* y,
     const IndexType incY,
-    SyncToken* syncToken )
+    tasking::SyncToken* syncToken )
 {
     SCAI_REGION( "MIC.BLAS1.axpy" )
 
@@ -382,7 +384,7 @@ ValueType MICBLAS1::dot(
     const IndexType incX,
     const ValueType* y,
     const IndexType incY,
-    SyncToken* syncToken )
+    tasking::SyncToken* syncToken )
 {
     SCAI_REGION( "MIC.BLAS1.dot" )
 
@@ -431,7 +433,7 @@ void MICBLAS1::sum(
     ValueType beta,
     const ValueType* y,
     ValueType* z,
-    SyncToken* syncToken )
+    tasking::SyncToken* syncToken )
 {
     SCAI_LOG_DEBUG( logger,
                     "sum<" << common::getScalarType<ValueType>() << ">, n = " << n << ", alpha = " << alpha << ", x = " << x << ", beta = " << beta << ", y = " << y << ", z = " << z )
@@ -509,7 +511,7 @@ void MICBLAS1::setInterface( BLASInterface& BLAS )
 
 bool MICBLAS1::registerInterface()
 {
-    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( Context::MIC );
+    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( hmemo::context::MIC );
     setInterface( interface.BLAS );
     return true;
 }

@@ -35,16 +35,18 @@
 
 // for dll_import
 #include <scai/common/config.hpp>
-
-// others
 #include <scai/lama/LAMATypes.hpp>
-#include <scai/lama/SyncToken.hpp>
 
 // logging
 #include <scai/logging.hpp>
 
 namespace scai
 {
+
+namespace tasking
+{
+    class SyncToken;
+}
 
 namespace lama
 {
@@ -67,25 +69,25 @@ public:
         const ValueType alpha,
         ValueType* x,
         const IndexType incX,
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /**
      * This function is the MIC implementation of scai::lama::BLAS1Interface::nrm2
      */
     template<typename ValueType>
-    static ValueType nrm2( const IndexType n, const ValueType* x, const IndexType incX, SyncToken* syncToken );
+    static ValueType nrm2( const IndexType n, const ValueType* x, const IndexType incX, tasking::SyncToken* syncToken );
 
     /**
      * This function is the MIC implementation of scai::lama::BLAS1Interface::asum
      */
     template<typename ValueType>
-    static ValueType asum( const IndexType n, const ValueType* x, const IndexType incX, SyncToken* syncToken );
+    static ValueType asum( const IndexType n, const ValueType* x, const IndexType incX, tasking::SyncToken* syncToken );
 
     /**
      * This function is the MIC implementation of scai::lama::BLAS1Interface::iamax
      */
     template<typename ValueType>
-    static IndexType iamax( const IndexType n, const ValueType* x, const IndexType incX, SyncToken* syncToken );
+    static IndexType iamax( const IndexType n, const ValueType* x, const IndexType incX, tasking::SyncToken* syncToken );
 
     /**
      * This function is the MIC implementation of scai::lama::BLAS1Interface::swap
@@ -97,7 +99,7 @@ public:
         const IndexType incY,
         ValueType* x,
         const IndexType incX,
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /**
      * This function is the MIC implementation of scai::lama::BLAS1Interface::copy
@@ -109,7 +111,7 @@ public:
         const IndexType incX,
         ValueType* y,
         const IndexType incY,
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /**
      * This function is the MIC implementation of scai::lama::BLAS1Interface::axpy
@@ -122,7 +124,7 @@ public:
         const IndexType incX,
         ValueType* y,
         const IndexType incY,
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /**
      * This function is the MIC implementation of scai::lama::BLAS1Interface::dot
@@ -134,7 +136,7 @@ public:
         const IndexType incX,
         const ValueType* y,
         const IndexType incY,
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /**
      * This function is the MIC implementation of scai::lama::BLAS1Interface::sum
@@ -147,7 +149,7 @@ public:
         ValueType beta,
         const ValueType* y,
         ValueType* z,
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /** Routine that sets functions pointers belonging to BLAS1 in a BLASInterface.
      *

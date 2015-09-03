@@ -52,12 +52,12 @@ SourceLocation::SourceLocation( const char* const filename, const char* const fu
     }
 }
 
-std::ostream& operator<<( std::ostream& os, const SourceLocation& loc )
+} /* end namespace logging */
+
+} /* end namespace scai */
+
+std::ostream& operator<<( std::ostream& os, const scai::logging::SourceLocation& loc )
 {
     os << loc.mFileName << "::" << loc.mLine << ", funct=" << loc.mFuncName;
     return os;
 }
-
-} /* end namespace logging */
-
-} /* end namespace scai */

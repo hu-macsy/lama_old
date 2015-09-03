@@ -45,6 +45,7 @@ include ( VersionDefinition )
 ### Include Compiler Flags
 if    ( NOT SCAI_COMPLETE_BUILD )
 	include ( SetBuildFlags )
+	include ( SCAIAssert )
 	include ( SetCPPFlags )
 endif ( NOT SCAI_COMPLETE_BUILD )
 

@@ -73,12 +73,6 @@ const char* level2str( const Level level )
     }
 }
 
-std::ostream& operator<<( std::ostream& os, const Level& level )
-{
-    os << level2str( level );
-    return os;
-}
-
 Level str2level( const std::string& value )
 {
     const char* cvalue = value.c_str();
@@ -123,3 +117,9 @@ Level str2level( const std::string& value )
 } /* end namespace logging */
 
 } /* end namespace scai */
+
+std::ostream& operator<<( std::ostream& os, const scai::logging::Level& level )
+{
+    os << scai::logging::level2str( level );
+    return os;
+}

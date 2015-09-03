@@ -36,12 +36,12 @@
 
 // others
 #include <scai/tracing.hpp>
-#include <scai/lama/exception/LAMAAssert.hpp>
+#include <scai/common/SCAIAssert.hpp>
 
 namespace scai
 {
 
-namespace lama
+namespace tasking
 {
 
 MICSyncToken::MICSyncToken( MICContextPtr micContext )
@@ -104,6 +104,6 @@ bool MICSyncToken::probe() const
     return false;
 }
 
-} /* end namespace lama */
+} /* end namespace tasking */
 
 } /* end namespace scai */

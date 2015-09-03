@@ -865,8 +865,6 @@ void JDSStorage<ValueType>::allocate( IndexType numRows, IndexType numColumns )
 template<typename ValueType>
 void JDSStorage<ValueType>::writeAt( std::ostream& stream ) const
 {
-    using ::operator<<;   // ToDo: still other operators in this namespace
-
     stream << "JDSStorage<" << common::getScalarType<ValueType>()
            << ">( size = " << mNumRows << " x " << mNumColumns
            << ", jd = " << mNumDiagonals << ", nnz = " << mNumValues;

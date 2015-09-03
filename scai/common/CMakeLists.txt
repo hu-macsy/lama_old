@@ -42,12 +42,13 @@ set ( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../CMake/Modules" )
 ### Include Compiler Flags
 if    ( NOT SCAI_COMPLETE_BUILD )
 	include ( SetBuildFlags )
+	include ( SCAIAssert )
 	include ( SetCPPFlags )
 endif ( NOT SCAI_COMPLETE_BUILD )
 
 include ( CheckC++11 )
 if    ( NOT CXX_SUPPORTS_C11 )
-    find_package( Boost ${SCAI_FIND_PACKAGE_FLAGS} )
+    include( Package/Boost )
 endif ( NOT CXX_SUPPORTS_C11 )
 
 ### include all search packages

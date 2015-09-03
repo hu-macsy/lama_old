@@ -38,7 +38,7 @@
 #include <scai/lama/LAMAInterface.hpp>
 #include <scai/lama/LAMAInterfaceRegistry.hpp>
 
-#include <scai/lama/NoSyncToken.hpp>
+#include <scai/tasking/NoSyncToken.hpp>
 #include <scai/lama/mic/MICSyncToken.hpp>
 #include <scai/lama/mic/MICContext.hpp>
 
@@ -58,6 +58,10 @@
 
 namespace scai
 {
+
+using tasking::SyncToken;
+
+using namespace hmemo;
 
 namespace lama
 {
@@ -1286,7 +1290,7 @@ void MICELLUtils::setInterface( ELLUtilsInterface& ELLUtils )
 
 bool MICELLUtils::registerInterface()
 {
-    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( Context::MIC );
+    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( context::MIC );
     setInterface( interface.ELLUtils );
     return true;
 }

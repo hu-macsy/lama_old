@@ -762,7 +762,6 @@ size_t CSRStorage<ValueType>::getMemoryUsageImpl() const
 template<typename ValueType>
 void CSRStorage<ValueType>::writeAt( std::ostream& stream ) const
 {
-    using ::operator<<;   // ToDo: still other operators in this namespace
     stream << "CSRStorage<" << common::getScalarType<ValueType>() << ">("
            << " size = " << mNumRows << " x " << mNumColumns
            << ", nnz = " << mNumValues << ", diag = " << mDiagonalProperty << ", sorted = " << mSortedRows << " )";
