@@ -84,6 +84,10 @@ endforeach ( module ${SCAI_LOGGING_INTERNAL_DEPS} )
 ## add subdirectories
 add_subdirectory ( examples )
 
+## prepare test
+configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/test/make.inc.in" "${CMAKE_CURRENT_BINARY_DIR}/test/make.inc" )
+file ( COPY ${CMAKE_CURRENT_SOURCE_DIR}/test DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
+
 ## search for files
 file ( GLOB CPP_SOURCES "*.cpp" )
 file ( GLOB HPP_HEADERS "*.hpp" )
@@ -103,6 +107,10 @@ install ( FILES ${HPP_HEADERS} DESTINATION include/scai/logging )
 
 ## install library.hpp
 install ( FILES ../logging.hpp DESTINATION include/scai )
+
+### add userdoc
+include ( Package/Sphinx )
+
 
 ## add custum target distClean, but only if this project is not included
 if    ( NOT SCAI_COMPLETE_BUILD )

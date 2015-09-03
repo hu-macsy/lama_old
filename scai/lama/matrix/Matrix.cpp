@@ -56,7 +56,7 @@ SCAI_LOG_DEF_LOGGER( Matrix::logger, "Matrix" )
 
 Matrix* Matrix::getMatrix( const MatrixStorageFormat format, common::ScalarType type )
 {
-    using ::operator<<;   // important to make operator<< outside this namespace available
+	using ::operator<<;
 
     MatrixCreateKeyType val( format, type );
     SCAI_LOG_INFO( logger, "getMatrix uses Factory::create " << val )

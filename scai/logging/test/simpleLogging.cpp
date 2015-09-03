@@ -1,5 +1,5 @@
-/**
- * @file SourceLocation.cpp
+/*
+ * @file scai/logging/test/simpleLogging.cpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,39 +25,23 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Implementation of methods for class SourceLocation.
- * @author Thomas Brandes
- * @date 01.03.2011
- */
+ * @brief simple executable that uses each log level of SCAI logging
+ * @author Jan Ecker
+ * @date 03.09.2015
+ * @since 2.0.0
+*/
 
-// hpp
-#include <scai/logging/SourceLocation.hpp>
+#include <scai/logging.hpp>
 
-#include <string.h>
+SCAI_LOG_DEF_LOGGER( logger, "Test" )
 
-namespace scai
+int main()
 {
+    SCAI_LOG_TRACE( logger, "trace message" )
+    SCAI_LOG_DEBUG( logger, "debug message" )
+    SCAI_LOG_INFO( logger, "info message" )
+    SCAI_LOG_WARN( logger, "warn message" )
+    SCAI_LOG_ERROR( logger, "error message" )
+    SCAI_LOG_FATAL( logger, "fatal message" )
 
-namespace logging
-{
-
-SourceLocation::SourceLocation( const char* const filename, const char* const funcname, const int line )
-    : mFileName( filename ), mFuncName( funcname ), mLine( line )
-{
-    const char* shortname = strrchr( filename, '/' );
-
-    if ( shortname )
-    {
-        mFileName = shortname + 1;
-    }
-}
-
-} /* end namespace logging */
-
-} /* end namespace scai */
-
-std::ostream& operator<<( std::ostream& os, const scai::logging::SourceLocation& loc )
-{
-    os << loc.mFileName << "::" << loc.mLine << ", funct=" << loc.mFuncName;
-    return os;
-}
+} 

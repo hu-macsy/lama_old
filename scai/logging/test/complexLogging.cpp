@@ -1,5 +1,5 @@
-/**
- * @file SourceLocation.cpp
+/*
+ * @file scai/logging/test/complexLogging.cpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,39 +25,29 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Implementation of methods for class SourceLocation.
- * @author Thomas Brandes
- * @date 01.03.2011
- */
+ * @brief simple executable that uses the hierarchical logging of SCAI logging
+ * @author Jan Ecker
+ * @date 03.09.2015
+ * @since 2.0.0
+*/
 
-// hpp
-#include <scai/logging/SourceLocation.hpp>
+#include <scai/logging.hpp>
 
-#include <string.h>
+SCAI_LOG_DEF_LOGGER( logger_c1,   "Class1" )
+SCAI_LOG_DEF_LOGGER( logger_c1m1, "Class1.method1" )
+SCAI_LOG_DEF_LOGGER( logger_c1m2, "Class1.method2" )
+SCAI_LOG_DEF_LOGGER( logger_c1m2r1, "Class1.method2.region1" )
+SCAI_LOG_DEF_LOGGER( logger_c2,   "Class2" )
+SCAI_LOG_DEF_LOGGER( logger_c2m1, "Class2.method1" )
+SCAI_LOG_DEF_LOGGER( logger_c2m2, "Class2.method2" )
 
-namespace scai
+int main()
 {
-
-namespace logging
-{
-
-SourceLocation::SourceLocation( const char* const filename, const char* const funcname, const int line )
-    : mFileName( filename ), mFuncName( funcname ), mLine( line )
-{
-    const char* shortname = strrchr( filename, '/' );
-
-    if ( shortname )
-    {
-        mFileName = shortname + 1;
-    }
-}
-
-} /* end namespace logging */
-
-} /* end namespace scai */
-
-std::ostream& operator<<( std::ostream& os, const scai::logging::SourceLocation& loc )
-{
-    os << loc.mFileName << "::" << loc.mLine << ", funct=" << loc.mFuncName;
-    return os;
-}
+    SCAI_LOG_DEBUG( logger_c1,   "message class1" )
+    SCAI_LOG_TRACE( logger_c1m1,  "message class1 method1" )
+    SCAI_LOG_INFO( logger_c1m2,  "message class1 method2" )
+    SCAI_LOG_INFO( logger_c1m2r1,"message class1 method2 region1" )
+    SCAI_LOG_WARN( logger_c2,    "message class2" )
+    SCAI_LOG_INFO( logger_c2m1,  "message class2 method1" )
+    SCAI_LOG_TRACE( logger_c2m2, "message class2 method2" )
+} 
