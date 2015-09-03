@@ -107,6 +107,10 @@ install ( FILES ${HPP_HEADERS} DESTINATION include/scai/logging )
 ## install library.hpp
 install ( FILES ../logging.hpp DESTINATION include/scai )
 
+### add userdoc
+include ( Package/Sphinx )
+
+
 ## add custum target distClean, but only if this project is not included
 if    ( NOT SCAI_COMPLETE_BUILD )
 	include ( DistClean )
