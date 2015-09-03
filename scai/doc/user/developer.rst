@@ -10,7 +10,6 @@ For Developers
    developer/directories
    developer/styleGuide
    developer/formatting
-   developer/logging
    developer/tracing
    developer/sharedPointers
    developer/addingStorage
