@@ -35,7 +35,7 @@
 # GNU
 if ( CMAKE_COMPILER_IS_GNUCXX )
 
-    set ( LAMA_LINKER_FLAGS "-Wl,--no-as-needed " )
+    #set ( LAMA_LINKER_FLAGS "-Wl,--no-as-needed " )
     set ( SCAI_WARNING_FLAGS "-Wextra -Wall -Werror" ) # -pedantic -std=c++98 " ) # -march=core02
 
     set ( LAMA_CXX_FLAGS_RELEASE "-ffast-math -msse4a " )

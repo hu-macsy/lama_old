@@ -88,13 +88,15 @@ file ( GLOB CPP_SOURCES "*.cpp" )
 file ( GLOB HPP_HEADERS "*.hpp" )
 
 ### add library
-add_library ( scai_tracing SHARED ${CPP_SOURCES} )
+add_library ( scai_tracing ${SCAI_LIBRARY_TYPE} ${CPP_SOURCES} )
 
 ## add link libraries
+list ( REVERSE SCAI_TRACING_INTERNAL_DEPS )
 foreach    ( module ${SCAI_TRACING_INTERNAL_DEPS} )
 	string ( TOUPPER ${module} upper_module )
-    target_link_libraries ( scai_tracing ${${upper_module}_LIBRARY} )
+	set ( TRACING_LINK_LIBRARIES ${TRACING_LINK_LIBRARIES} ${${upper_module}_LIBRARY} )
 endforeach    ( module ${SCAI_TRACING_INTERNAL_DEPS} )
+target_link_libraries ( scai_tracing ${SCAI_START_LINK_LIBRARIES} ${TRACING_LINK_LIBRARIES} ${SCAI_END_LINK_LIBRARIES} )
 
 ### install ###
 install ( TARGETS scai_tracing DESTINATION lib/ )

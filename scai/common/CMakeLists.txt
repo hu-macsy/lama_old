@@ -93,7 +93,7 @@ endif ( CUDA_FOUND AND USE_CUDA )
 add_subdirectory ( exception )
 
 ## add library
-add_library ( scai_common SHARED ${CPP_SOURCES} ${CUDA_SOURCES} )
+add_library ( scai_common ${SCAI_LIBRARY_TYPE} ${CPP_SOURCES} ${CUDA_SOURCES} )
 
 ## add link libraries
 foreach    ( module ${SCAI_COMMON_EXTERNAL_DEPS} )

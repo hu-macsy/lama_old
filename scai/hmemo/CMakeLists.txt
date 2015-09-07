@@ -99,13 +99,15 @@ add_subdirectory ( examples )
 add_subdirectory ( test )
 
 ## add library
-add_library ( scai_hmemo SHARED ${CPP_SOURCES} ${CUDA_SOURCES} )
+add_library ( scai_hmemo ${SCAI_LIBRARY_TYPE} ${CPP_SOURCES} ${CUDA_SOURCES} )
 
 ## add link libraries
+list ( REVERSE SCAI_HMEMO_INTERNAL_DEPS )
 foreach    ( module ${SCAI_HMEMO_INTERNAL_DEPS} )
 	string ( TOUPPER ${module} upper_module )
-    target_link_libraries ( scai_hmemo ${${upper_module}_LIBRARY} )
+	set ( HMEMO_LINK_LIBRARIES ${HMEMO_LINK_LIBRARIES} ${${upper_module}_LIBRARY} )
 endforeach ( module ${SCAI_HMEMO_INTERNAL_DEPS} )
+target_link_libraries ( scai_hmemo ${SCAI_START_LINK_LIBRARIES} ${HMEMO_LINK_LIBRARIES} ${SCAI_END_LINK_LIBRARIES} )
 
 foreach    ( module ${SCAI_HMEMO_EXTERNAL_DEPS} )
 	string ( TOUPPER ${module} upper_module )

@@ -1,3 +1,11 @@
+if    ( ${SCAI_LIBRARY_TYPE} MATCHES "STATIC" )
+	set ( SCAI_START_LINK_LIBRARIES "-Wl,--whole-archive" )
+	set ( SCAI_END_LINK_LIBRARIES "-Wl,--no-whole-archive" )
+else  ( ${SCAI_LIBRARY_TYPE} MATCHES "STATIC" )
+	set ( SCAI_START_LINK_LIBRARIES "-Wl,--no-as-needed" )
+	set ( SCAI_END_LINK_LIBRARIES "-Wl,--as-needed" )
+endif ( ${SCAI_LIBRARY_TYPE} MATCHES "STATIC" )
+
 #### concluding all defined compiler flags to CMAKE_..._FLAGS ####
 
 ## scai common adds OpenMP_CXX_FLAGS and SCAI_LANG_FLAGS to SCAI_COMMON_FLAGS if found

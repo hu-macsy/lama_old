@@ -90,13 +90,15 @@ file ( GLOB CPP_SOURCES "*.cpp" )
 file ( GLOB HPP_HEADERS "*.hpp" )
 
 ### add library
-add_library ( scai_tasking SHARED ${CPP_SOURCES} )
+add_library ( scai_tasking ${SCAI_LIBRARY_TYPE} ${CPP_SOURCES} )
 
 ## add link libraries
+list ( REVERSE SCAI_TASKING_INTERNAL_DEPS )
 foreach    ( module ${SCAI_TASKING_INTERNAL_DEPS} )
 	string ( TOUPPER ${module} upper_module )
-    target_link_libraries ( scai_tasking ${${upper_module}_LIBRARY} )
+	set ( TASKING_LINK_LIBRARIES ${TASKING_LINK_LIBRARIES} ${${upper_module}_LIBRARY} )
 endforeach    ( module ${SCAI_TASKING_INTERNAL_DEPS} )
+target_link_libraries ( scai_tasking ${SCAI_START_LINK_LIBRARIES} ${TASKING_LINK_LIBRARIES} ${SCAI_END_LINK_LIBRARIES} )
 
 ### install ###
 install ( TARGETS scai_tasking DESTINATION lib )
