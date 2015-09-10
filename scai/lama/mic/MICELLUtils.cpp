@@ -156,7 +156,9 @@ bool MICELLUtils::hasDiagonalProperty( const IndexType numDiagonals, const Index
 
     const void* ellJAPtr = ellJA;
 
-#pragma offload target( MIC ) in( ellJAPtr, numDiagonals ), out( diagonalProperty )
+    int device = MICContext::getCurrentDevice();
+
+#pragma offload target( MIC : device ) in( ellJAPtr, numDiagonals ), out( diagonalProperty )
     {
         const IndexType* ellJA = static_cast<const IndexType*>( ellJAPtr );
 
@@ -435,7 +437,7 @@ void MICELLUtils::getCSRValues(
     SCAI_LOG_INFO( logger,
                    "get CSRValues<" << common::getScalarType<ELLValueType>() << ", " << common::getScalarType<CSRValueType>() << ">" << ", #rows = " << numRows )
 
-    SCAI_REGION( "MIC.ELL->CSR_values" )
+    // SCAI_REGION( "MIC.ELL->CSR_values" )
 
     // parallelization possible as offset array csrIA is available
 
@@ -493,7 +495,7 @@ void MICELLUtils::setCSRValues(
     const IndexType csrJA[],
     const CSRValueType csrValues[] )
 {
-    SCAI_REGION( "MIC.ELL<-CSR_values" )
+    // SCAI_REGION( "MIC.ELL<-CSR_values" )
 
     SCAI_LOG_INFO( logger,
                    "set CSRValues<" << common::getScalarType<ELLValueType>() << ", " << common::getScalarType<CSRValueType>() << ">" << ", #rows = " << numRows << ", #values/row = " << numValuesPerRow )
@@ -903,7 +905,7 @@ void MICELLUtils::jacobi(
     const ValueType omega,
     class SyncToken* syncToken )
 {
-    SCAI_REGION( "MIC.ELL.jacobi" )
+    // SCAI_REGION( "MIC.ELL.jacobi" )
 
     SCAI_LOG_INFO( logger,
                    "jacobi<" << common::getScalarType<ValueType>() << ">" << ", #rows = " << numRows << ", omega = " << omega )
@@ -989,7 +991,7 @@ void MICELLUtils::jacobiHalo(
         // not yet implemented: run the offload computation asynchronously
     }
 
-    SCAI_REGION( "MIC.ELL.jacobiHalo" )
+    // SCAI_REGION( "MIC.ELL.jacobiHalo" )
 
     void* solutionPtr = solution;
 
@@ -1074,7 +1076,7 @@ void MICELLUtils::normalGEMV(
         // not yet implemented: run the offload computation asynchronously
     }
 
-    SCAI_REGION( "MIC.ELL.normalGEMV" )
+    // SCAI_REGION( "MIC.ELL.normalGEMV" )
 
     // conversion of pointer to size_t to cheat offload
 
@@ -1150,7 +1152,7 @@ void MICELLUtils::sparseGEMV(
         // not yet implemented: run the offload computation asynchronously
     }
 
-    SCAI_REGION( "MIC.ELL.sparseGEMV" )
+    // SCAI_REGION( "MIC.ELL.sparseGEMV" )
 
     SCAI_LOG_INFO( logger,
                    "sparseGEMV<" << common::getScalarType<ValueType>() << ">, n = " << numRows << ", nonZeroRows = " << numNonZeroRows << ", alpha = " << alpha )

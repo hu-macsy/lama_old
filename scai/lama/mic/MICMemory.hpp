@@ -87,15 +87,19 @@ public:
 
     virtual void memcpy( void* dst, const void* src, const size_t size ) const;
 
-    virtual void memcpyToHost( void* dst, const void* src, const size_t size ) const;
+    virtual void memcpyFrom( void* dst, const Memory& srcMemory, const void* src, size_t size ) const;
 
-    virtual void memcpyFromHost( void* dst, const void* src, const size_t size ) const;
+    virtual void memcpyTo( const Memory& dstMemory, void* dst, const void* src, size_t size ) const;
 
     virtual tasking::SyncToken* memcpyAsync( void* dst, const void* src, const size_t size ) const;
 
     virtual ContextPtr getContextPtr() const;
 
 private:
+
+    virtual void memcpyToHost( void* dst, const void* src, const size_t size ) const;
+
+    virtual void memcpyFromHost( void* dst, const void* src, const size_t size ) const;
 
     common::shared_ptr<const MICContext> mMICContext;
 

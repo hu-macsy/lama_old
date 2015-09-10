@@ -75,7 +75,7 @@ void MICMKLCSRUtils::normalGEMV(
     const float csrValues[],
     SyncToken* syncToken )
 {
-    SCAI_REGION( "MIC.MKLscsrmv" )
+    // SCAI_REGION( "MIC.MKLscsrmv" )
 
     SCAI_LOG_INFO( logger,
                    "normalGEMV<float>, result[" << numRows << "] = " << alpha << " * A * x + " << beta << " * y " )
@@ -128,7 +128,7 @@ void MICMKLCSRUtils::normalGEMV(
     const double csrValues[],
     SyncToken* syncToken )
 {
-    SCAI_REGION( "MIC.MKLdcsrmv" )
+    // SCAI_REGION( "MIC.MKLdcsrmv" )
 
     SCAI_LOG_INFO( logger,
                    "normalGEMV<double>, result[" << numRows << "] = " << alpha << " * A * x + " << beta << " * y " )
@@ -146,7 +146,9 @@ void MICMKLCSRUtils::normalGEMV(
     size_t xPtr = (size_t) x;
     size_t resultPtr = (size_t) result;
 
-#pragma offload target( mic ), in( numRows, numColumns, alpha, xPtr, beta, resultPtr, \
+    int device = MICContext::getCurrentDevice();
+
+#pragma offload target( mic : device ), in( numRows, numColumns, alpha, xPtr, beta, resultPtr, \
                                        csrValuesPtr, csrJAPtr, csrIAPtr )
     {
         char transa = 'n';

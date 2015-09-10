@@ -108,7 +108,9 @@ IndexType MICCSRUtils::scanParallel( PartitionId numThreads, IndexType array[], 
 
     void* threadCounterPtr; // temporary array on MIC device
 
-#pragma offload target( mic ), in( arrayPtr, numValues, numThreads ), out( threadCounterPtr )
+    int device = MICContext::getCurrentDevice();
+
+#pragma offload target( mic : device ), in( arrayPtr, numValues, numThreads ), out( threadCounterPtr )
     {
         IndexType* threadCounter = new IndexType[numThreads];
 
@@ -137,7 +139,7 @@ IndexType MICCSRUtils::scanParallel( PartitionId numThreads, IndexType array[], 
 
     // Each thread sets now its offsets
 
-#pragma offload target( mic ), in( threadCounterPtr, arrayPtr, numValues )
+#pragma offload target( mic : device ), in( threadCounterPtr, arrayPtr, numValues )
     {
         IndexType* threadCounter = static_cast<IndexType*>( threadCounterPtr );
         IndexType* array = static_cast<IndexType*>( arrayPtr );
@@ -168,7 +170,9 @@ IndexType MICCSRUtils::scan( IndexType array[], const IndexType numValues )
 {
     int numThreads = 1; // will be set to available threads in parallel region
 
-#pragma offload target( mic ), out( numThreads )
+    int device = MICContext::getCurrentDevice();
+
+#pragma offload target( mic : device ), out( numThreads )
     {
         #pragma omp parallel
         #pragma omp master
@@ -257,7 +261,9 @@ void MICCSRUtils::offsets2sizes( IndexType sizes[], const IndexType offsets[], c
     void* sizesPtr = sizes;
     const void* offsetsPtr = offsets;
 
-#pragma offload target( MIC ), in( sizesPtr, offsetsPtr, numRows )
+    int device = MICContext::getCurrentDevice();
+
+#pragma offload target( MIC : device ), in( sizesPtr, offsetsPtr, numRows )
     {
         IndexType* sizes = static_cast<IndexType*>( sizesPtr );
         const IndexType* offsets = static_cast<const IndexType*>( offsetsPtr );
@@ -299,7 +305,9 @@ bool MICCSRUtils::hasDiagonalProperty( const IndexType numDiagonals, const Index
     size_t csrIAPtr = (size_t) csrIA;
     size_t csrJAPtr = (size_t) csrJA;
 
-#pragma offload target( mic ), in( csrIAPtr, csrJAPtr, numDiagonals ), out( diagonalProperty )
+    int device = MICContext::getCurrentDevice();
+
+#pragma offload target( mic : device ), in( csrIAPtr, csrJAPtr, numDiagonals ), out( diagonalProperty )
     {
         const IndexType* csrIA = (IndexType*) csrIAPtr;
         const IndexType* csrJA = (IndexType*) csrJAPtr;
@@ -574,7 +582,7 @@ void MICCSRUtils::normalGEMV(
         // not yet implemented: run the offload computation asynchronously
     }
 
-    SCAI_REGION( "MIC.CSR.normalGEMV" )
+    // SCAI_REGION( "MIC.CSR.normalGEMV" )
 
     void* resultPtr = result;
     const void* xPtr = x;
@@ -583,7 +591,9 @@ void MICCSRUtils::normalGEMV(
     const void* csrJAPtr = csrJA;
     const void* csrValuesPtr = csrValues;
 
-#pragma offload target( mic:0 )in( resultPtr, xPtr, yPtr, \
+    int device = MICContext::getCurrentDevice();
+
+#pragma offload target( mic : device  )in( resultPtr, xPtr, yPtr, \
                           csrIAPtr, csrJAPtr, csrValuesPtr, alpha, beta, numRows )
     {
         ValueType* result = (ValueType*) resultPtr;
@@ -641,7 +651,7 @@ void MICCSRUtils::sparseGEMV(
         // not yet implemented: run the offload computation asynchronously
     }
 
-    SCAI_REGION( "MIC.CSR.sparseGEMV" )
+    // SCAI_REGION( "MIC.CSR.sparseGEMV" )
 
     // conversion of pointer to size_t to cheat offload
 
@@ -652,7 +662,9 @@ void MICCSRUtils::sparseGEMV(
     const size_t csrJAPtr = (size_t) csrJA;
     const size_t csrValuesPtr = (size_t) csrValues;
 
-#pragma offload target( mic ), in( resultPtr, xPtr, rowIndexesPtr, csrIAPtr, csrJAPtr, csrValuesPtr, alpha, numNonZeroRows )
+    int device = MICContext::getCurrentDevice();
+
+#pragma offload target( mic : device ), in( resultPtr, xPtr, rowIndexesPtr, csrIAPtr, csrJAPtr, csrValuesPtr, alpha, numNonZeroRows )
     {
         ValueType* result = (ValueType*) resultPtr;
         const ValueType* x = (ValueType*) xPtr;
@@ -784,7 +796,7 @@ void MICCSRUtils::jacobi(
         // not yet implemented: run the offload computation asynchronously
     }
 
-    SCAI_REGION( "MIC.CSR.jacobi" )
+    // SCAI_REGION( "MIC.CSR.jacobi" )
 
     const size_t solutionPtr = (size_t) solution;
     const size_t oldSolutionPtr = (size_t) oldSolution;
@@ -793,7 +805,9 @@ void MICCSRUtils::jacobi(
     const size_t csrJAPtr = (size_t) csrJA;
     const size_t csrValuesPtr = (size_t) csrValues;
 
-#pragma offload target( mic ), in( solutionPtr, oldSolutionPtr, rhsPtr, csrIAPtr, csrJAPtr, csrValuesPtr, omega, numRows )
+    int device = MICContext::getCurrentDevice();
+
+#pragma offload target( mic : device ), in( solutionPtr, oldSolutionPtr, rhsPtr, csrIAPtr, csrJAPtr, csrValuesPtr, omega, numRows )
     {
         ValueType* solution = (ValueType*) solutionPtr;
         const ValueType* oldSolution = (ValueType*) oldSolutionPtr;
@@ -855,7 +869,7 @@ void MICCSRUtils::jacobiHalo(
     SCAI_LOG_INFO( logger,
                    "jacobiHalo<" << common::getScalarType<ValueType>() << ">" << ", #rows (not empty) = " << numNonEmptyRows << ", omega = " << omega );
 
-    SCAI_REGION( "MIC.CSR.jacabiHalo" )
+    // SCAI_REGION( "MIC.CSR.jacabiHalo" )
 
     const size_t solutionPtr = (size_t) solution;
     const size_t oldSolutionPtr = (size_t) oldSolution;
@@ -866,9 +880,11 @@ void MICCSRUtils::jacobiHalo(
     const size_t haloValuesPtr = (size_t) haloValues;
     const size_t haloRowIndexesPtr = (size_t) haloRowIndexes;
 
-#pragma offload target( mic ), in( solutionPtr, oldSolutionPtr, localValuesPtr, localIAPtr, \
-                                       haloIAPtr, haloJAPtr, haloValuesPtr, haloRowIndexesPtr, \
-                                       omega, numNonEmptyRows )
+    int device = MICContext::getCurrentDevice();
+
+#pragma offload target( mic : device ), in( solutionPtr, oldSolutionPtr, localValuesPtr, localIAPtr, \
+                                            haloIAPtr, haloJAPtr, haloValuesPtr, haloRowIndexesPtr, \
+                                            omega, numNonEmptyRows )
     {
         ValueType* solution = (ValueType*) solutionPtr;
         const ValueType* oldSolution = (ValueType*) oldSolutionPtr;
@@ -928,7 +944,7 @@ void MICCSRUtils::jacobiHaloWithDiag(
     SCAI_LOG_INFO( logger,
                    "jacobiHaloWithDiag<" << common::getScalarType<ValueType>() << ">" << ", #rows (not empty) = " << numNonEmptyRows << ", omega = " << omega );
 
-    SCAI_REGION( "MIC.CSR.jacabiHaloWithDiag" )
+    // SCAI_REGION( "MIC.CSR.jacabiHaloWithDiag" )
 
     const size_t solutionPtr = (size_t) solution;
     const size_t oldSolutionPtr = (size_t) oldSolution;
@@ -938,9 +954,11 @@ void MICCSRUtils::jacobiHaloWithDiag(
     const size_t haloValuesPtr = (size_t) haloValues;
     const size_t haloRowIndexesPtr = (size_t) haloRowIndexes;
 
-#pragma offload target( mic ), in( solutionPtr, oldSolutionPtr, localDiagValuesPtr, \
-                                       haloIAPtr, haloJAPtr, haloValuesPtr, haloRowIndexesPtr, \
-                                       omega, numNonEmptyRows )
+    int device = MICContext::getCurrentDevice();
+
+#pragma offload target( mic : device ), in( solutionPtr, oldSolutionPtr, localDiagValuesPtr, \
+                                            haloIAPtr, haloJAPtr, haloValuesPtr, haloRowIndexesPtr, \
+                                            omega, numNonEmptyRows )
     {
         ValueType* solution = (ValueType*) solutionPtr;
         const ValueType* oldSolution = (ValueType*) oldSolutionPtr;
@@ -999,7 +1017,7 @@ IndexType MICCSRUtils::matrixAddSizes(
     const IndexType bIA[],
     const IndexType bJA[] )
 {
-    SCAI_REGION( "MIC.CSR.matrixAddSizes" )
+    // SCAI_REGION( "MIC.CSR.matrixAddSizes" )
 
     SCAI_LOG_INFO( logger,
                    "matrixAddSizes for " << numRows << " x " << numColumns << " matrix" << ", diagonalProperty = " << diagonalProperty )
@@ -1018,8 +1036,8 @@ IndexType MICCSRUtils::matrixAddSizes(
 
     int device = MICContext::getCurrentDevice();
 
-#pragma offload target( mic ) in ( numRows, numColumns, diagonalProperty, cSizesPtr, \
-                                       aIAPtr, aJAPtr, bIAPtr, bJAPtr )
+#pragma offload target( mic : device ) in ( numRows, numColumns, diagonalProperty, cSizesPtr, \
+                                            aIAPtr, aJAPtr, bIAPtr, bJAPtr )
     {
         IndexType* cSizes = static_cast<IndexType*>( cSizesPtr );
 
@@ -1139,7 +1157,7 @@ IndexType MICCSRUtils::matrixMultiplySizes(
     const IndexType bIA[],
     const IndexType bJA[] )
 {
-    SCAI_REGION( "MIC.CSR.matrixMultiplySizes" )
+    // SCAI_REGION( "MIC.CSR.matrixMultiplySizes" )
 
     SCAI_LOG_INFO( logger,
                    "matrixMutliplySizes for " << m << " x " << n << " matrix" << ", diagonalProperty = " << diagonalProperty )
@@ -1290,7 +1308,7 @@ void MICCSRUtils::matrixAdd(
     const IndexType bJA[],
     const ValueType bValues[] )
 {
-    SCAI_REGION( "MIC.CSR.matrixAdd" )
+    // SCAI_REGION( "MIC.CSR.matrixAdd" )
 
     SCAI_LOG_INFO( logger,
                    "matrixAddJA for " << numRows << " x " << numColumns << " matrix" << ", diagonalProperty = " << diagonalProperty )
@@ -1449,7 +1467,7 @@ void MICCSRUtils::matrixMultiply(
     const IndexType bJA[],
     const ValueType bValues[] )
 {
-    SCAI_REGION( "MIC.CSR.matrixMultiply" )
+    // SCAI_REGION( "MIC.CSR.matrixMultiply" )
 
     const IndexType NINIT = n + 1;
     const IndexType END = n + 2;

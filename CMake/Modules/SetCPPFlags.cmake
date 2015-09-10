@@ -48,16 +48,20 @@ if ( CMAKE_CXX_COMPILER_ID MATCHES Intel )
 
     message ( STATUS "LAMA_CXX_FLAGS = ${LAMA_CXX_FLAGS}" )
 
-    set ( LAMA_CXX_FLAGS "${LAMA_CXX_FLAGS} -fPIC -shared-intel" ) 
+    # -fPIC should always be enabled so static libraries can be linked with shared libraries
 
-    #message ( STATUS "LAMA_CXX_FLAGS = ${LAMA_CXX_FLAGS}" )
-    
+    set ( LAMA_CXX_FLAGS "${LAMA_CXX_FLAGS} -fPIC -shared-intel " ) 
+
     # -wd1478 : supprress warning deprecated auto_ptr
     # not set: -Werror-all (all warnings will be errors)
 
     set ( SCAI_WARNING_FLAGS "-w2 -Wall -Wcheck -wd1478" ) # -Werror-all Warnings/Errors. No Remarks.
     
-    set ( LAMA_CXX_FLAGS_RELEASE "-ipo -no-prec-div -xHost " )
+    # -ipo for interprocedural analysis, might be added for RELEASE but increases compile/link time dramatically
+    # -xHost optimizes for the processor on which the code is compiled, not recommended for cross compilation
+    #  or HPC clusters where compile node has different processor than compute nodes
+
+    set ( LAMA_CXX_FLAGS_RELEASE "-no-prec-div " )
 
 endif ( CMAKE_CXX_COMPILER_ID MATCHES Intel )
 

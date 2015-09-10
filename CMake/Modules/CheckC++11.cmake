@@ -1,5 +1,5 @@
 ###
- # @file CheckC++11.txt
+ # @file CheckC++11.cmake
  #
  # @license
  # Copyright (c) 2009-2015
@@ -32,27 +32,29 @@
 ###
 
 #### Check for -std=c++11
+#### if supported it is set to SCAI_LANG_FLAGS
+#
+#
+#  If C++ compiler supports ISO C++11 standard we will use smart pointers (shared_ptr, unique_ptr)
+#  and function/bind. If not, features of Boost libraries are employed. 
+# 
+#  Note: In C++ files the following macro can be used to see if the flag -std=c++11 has been specified:
+#  if __cplusplus > 199711L  
+#    <code using C++11 features>
+#  else
+#    <code using boost>
+#  endif
+
+# use CMake module that provides CHECK_CXX_COMPILER_FLAG 
 
 include ( CheckCXXCompilerFlag )
 
-if    ( NOT DEFINED CXX_SUPPORTS_C11 )
+if ( NOT DEFINED CXX_SUPPORTS_C11 )
     CHECK_CXX_COMPILER_FLAG( -std=c++11 CXX_SUPPORTS_C11 )
 endif ( NOT DEFINED CXX_SUPPORTS_C11 )
 
-if    ( CXX_SUPPORTS_C11 )
-
-	if    ( CMAKE_COMPILER_IS_GNUCXX )
-        set ( SCAI_LANG_FLAGS "-std=c++11" )
-	endif ( CMAKE_COMPILER_IS_GNUCXX )
-
-	if    ( CMAKE_CXX_COMPILER_ID MATCHES Intel )
-		set ( SCAI_LANG_FLAGS "-std=c++11" )
-	endif ( CMAKE_CXX_COMPILER_ID MATCHES Intel )
-
-else  ( CXX_SUPPORTS_C11 )
-	
-	if    ( CMAKE_CXX_COMPILER_ID MATCHES Intel )
-		set ( SCAI_LANG_FLAGS "-std=c++0x" )
-	endif ( CMAKE_CXX_COMPILER_ID MATCHES Intel )
-	
+if ( CXX_SUPPORTS_C11 )
+    set ( SCAI_LANG_FLAGS "-std=c++11" )
+else ( CXX_SUPPORTS_C11 )
+    set ( SCAI_LANG_FLAGS "" )
 endif ( CXX_SUPPORTS_C11 )

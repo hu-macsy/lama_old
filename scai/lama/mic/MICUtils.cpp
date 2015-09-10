@@ -39,6 +39,10 @@
 #include <scai/lama/LAMAInterfaceRegistry.hpp>
 #include <scai/tracing.hpp>
 
+#pragma offload_attribute (push, target(mic) )
+#include <cmath>
+#pragma offload_attribute (pop)
+
 namespace scai
 {
 
@@ -541,7 +545,7 @@ void MICUtils::setScatter( ValueType1 out[], const IndexType indexes[], const Va
 template<typename ValueType>
 void MICUtils::invert( ValueType array[], const IndexType n )
 {
-    SCAI_REGION( "MIC.invert" )
+    // SCAI_REGION( "MIC.invert" )
 
     SCAI_LOG_INFO( logger, "invert array[ " << n << " ]" )
 

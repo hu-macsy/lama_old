@@ -36,16 +36,16 @@ set ( CLASSES
           MICContext
           MICSyncToken
           MICMemory
-        # MICUtils
-        # MICCSRUtils
-        # MICMKLCSRUtils
-        # MICELLUtils
-        # MICJDSUtils
-        # MICDIAUtils
-        # MICCOOUtils
-        # MICBLAS1
-        # MICBLAS2
-        # MICBLAS3
+          MICUtils
+          MICCSRUtils
+          MICMKLCSRUtils
+          MICELLUtils
+          MICJDSUtils
+          MICDIAUtils
+          MICCOOUtils
+          MICBLAS1
+          MICBLAS2
+          MICBLAS3
     )
 
 lama_classes ( ${CLASSES} )

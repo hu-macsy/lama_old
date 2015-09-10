@@ -39,9 +39,10 @@ else
         mkdir -p build
         cd build
         # echo "cmake .. -DCMAKE_INSTALL_PREFIX=$1\""
+        # optional:  -DCMAKE_CXX_COMPILER=icpc
+        # optional:  -DCXX_SUPPORTS_C11=0 
         checkErrorValue cmake .. -DCMAKE_INSTALL_PREFIX=$1 -DCMAKE_BUILD_TYPE=Release 
-
-	checkErrorValue make -j 4 
+	    checkErrorValue make -j 8
         checkErrorValue make install
         
 	cd ../..

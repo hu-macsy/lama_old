@@ -296,7 +296,7 @@ void MICCOOUtils::normalGEMV(
     const ValueType cooValues[],
     SyncToken* syncToken )
 {
-    SCAI_REGION( "MIC.COO.normalGEMV" )
+    // SCAI_REGION( "MIC.COO.normalGEMV" )
 
     SCAI_LOG_INFO( logger,
                    "normalGEMV<" << common::getScalarType<ValueType>() << ">, result[" << numRows << "] = " << alpha << " * A( coo, #vals = " << numValues << " ) * x + " << beta << " * y " )
@@ -361,7 +361,7 @@ void MICCOOUtils::jacobi(
     const IndexType numRows,
     class SyncToken* syncToken )
 {
-    SCAI_REGION( "MIC.COO.jacobi" )
+    // SCAI_REGION( "MIC.COO.jacobi" )
 
     SCAI_LOG_INFO( logger,
                    "jacobi<" << common::getScalarType<ValueType>() << ">" << ", #rows = " << numRows << ", omega = " << omega )

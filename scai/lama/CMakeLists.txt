@@ -216,6 +216,12 @@ if ( SCALAPACK_FOUND AND MPI_FOUND AND USE_MPI )
     add_definitions( -DSCAI_MKL_SCALAPACK ) ## TODO: where used?!
 endif ( SCALAPACK_FOUND AND MPI_FOUND AND USE_MPI )
 
+if ( USE_MIC )
+    set ( MKLROOT $ENV{MKLROOT} )
+    set_target_properties( ama PROPERTIES LINK_FLAGS
+        "-offload-option,mic,compiler,\"-L${MKLROOT}/lib/mic -Wl,--start-group -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_core -Wl,--end-group\"" )
+endif ( USE_MIC )
+
 ## install library.hpp
 configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/lama.hpp.in" "${CMAKE_CURRENT_BINARY_DIR}/include/lama.hpp" )
 install ( FILES "${CMAKE_CURRENT_BINARY_DIR}/include/lama.hpp" DESTINATION include/scai )

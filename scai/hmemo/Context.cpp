@@ -138,6 +138,10 @@ std::ostream& operator<<( std::ostream& stream, const scai::hmemo::ContextType& 
             stream << "CUDA";
             break;
 
+        case context::MIC :
+            stream << "MIC";
+            break;
+
         case context::OpenCL :
             stream << "OpenCL";
             break;

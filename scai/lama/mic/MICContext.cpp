@@ -62,18 +62,6 @@ int MICContext::numUsedDevices = 0;
 
 /**  constructor  *********************************************************/
 
-__attribute__( ( target( mic ) ) ) bool chk_target00()
-{
-    bool retval;
-
-#ifdef __MIC__
-    retval = true;
-#else
-    retval = false;
-#endif
-
-    return retval;
-}
 
 MICContext::MICContext( int deviceNr )
     : Context( context::MIC ), mDeviceNr( deviceNr )
@@ -95,23 +83,17 @@ MICContext::MICContext( int deviceNr )
 
     // ToDo: allow for any device
 
-    mDeviceNr = 0;
+    mDeviceNr = deviceNr;
+
+    SCAI_ASSERT_LT( deviceNr, numDevices, "Illegal deviceNr" )
 
     SCAI_LOG_INFO( logger, "Using device " << mDeviceNr << " of " << numDevices << " installed devices" )
 
     bool targetOK = false;
 
-#pragma offload target( mic: mDeviceNr ) in( mDeviceNr )
-    targetOK = chk_target00();
-
-    if( !targetOK )
-    {
-        COMMON_THROWEXCEPTION( "Could not offload to device " << mDeviceNr )
-    }
-
     int numCores;
 
-#pragma offload target( mic: mDeviceNr ) out( numCores )
+    #pragma offload target( mic: mDeviceNr ) out( numCores )
     {
         #pragma omp parallel
         {
@@ -212,7 +194,9 @@ int MICContext::getCurrentDevice()
 {
     // ToDo: get current device, make sure that access has been enabled
 
-    return 0;
+    SCAI_ASSERT_LE( 0, currentDeviceNr, "MICContext not enabled" )
+
+    return currentDeviceNr;
 }
 
 /* ----------------------------------------------------------------------------- */

@@ -39,6 +39,7 @@
 #include <scai/lama/LAMAInterfaceRegistry.hpp>
 #include <scai/lama/LAMATypes.hpp>
 #include <scai/tasking/SyncToken.hpp>
+#include <scai/lama/mic/MICContext.hpp>
 
 // tracing with SCAI_REGION
 #include <scai/tracing.hpp>
@@ -49,6 +50,8 @@
 
 namespace scai
 {
+
+using namespace hmemo;
 
 namespace lama
 {
@@ -82,7 +85,9 @@ void MICBLAS1::scal(
 
     void* xPtr = x;
 
-#pragma offload target( mic ) in( xPtr, n, alpha, incX )
+    int device = MICContext::getCurrentDevice();
+
+#pragma offload target( MIC : device ) in( xPtr, n, alpha, incX )
     {
         ValueType* x = static_cast<ValueType*>( xPtr );
 
@@ -117,7 +122,9 @@ ValueType MICBLAS1::asum( const IndexType n, const ValueType* x, const IndexType
 
     const void* xPtr = x;
 
-#pragma offload target( mic ) in( xPtr, n, incX ), out( asum )
+    int device = MICContext::getCurrentDevice();
+
+#pragma offload target( MIC : device ) in( xPtr, n, incX ), out( asum )
     {
         const ValueType* x = static_cast<const ValueType*>( xPtr );
 
@@ -156,7 +163,9 @@ IndexType MICBLAS1::iamax( const IndexType n, const ValueType* x, const IndexTyp
 
     const void* xPtr = x;
 
-#pragma offload target( mic ) in( xPtr, n, incX ), out( maxIndex )
+    int device = MICContext::getCurrentDevice();
+
+#pragma offload target( MIC : device ) in( xPtr, n, incX ), out( maxIndex )
     {
         const ValueType* x = static_cast<const ValueType*>( xPtr );
 
@@ -230,7 +239,9 @@ void MICBLAS1::swap(
     void* xPtr = x;
     void* yPtr = y;
 
-#pragma offload target( MIC ) in( xPtr, yPtr, incX, incY, n )
+    int device = MICContext::getCurrentDevice();
+
+#pragma offload target( MIC : device ) in( xPtr, yPtr, incX, incY, n )
     {
         ValueType* x = static_cast<ValueType*>( xPtr );
         ValueType* y = static_cast<ValueType*>( yPtr );
@@ -265,7 +276,9 @@ ValueType MICBLAS1::nrm2( const IndexType n, const ValueType* x, const IndexType
         return sum;
     }
 
-#pragma offload target( mic ) in( xPtr, n, incX ), out( sum )
+    int device = MICContext::getCurrentDevice();
+
+#pragma offload target( mic : device ) in( xPtr, n, incX ), out( sum )
     {
         const ValueType* x = static_cast<const ValueType*>( xPtr );
 
@@ -303,7 +316,7 @@ void MICBLAS1::copy(
         SCAI_LOG_WARN( logger, "asynchronous execution for MIC not supported yet." )
     }
 
-    SCAI_REGION( "MIC.BLAS1.copy" )
+    // SCAI_REGION( "MIC.BLAS1.copy" )
 
     if( n < 1 || incX < 1 || incY < 1 )
     {
@@ -313,7 +326,9 @@ void MICBLAS1::copy(
     const void* xPtr = x;
     void* yPtr = y;
 
-#pragma offload target( mic ), in( xPtr, yPtr, n, incX, incY )
+    int device = MICContext::getCurrentDevice();
+
+#pragma offload target( mic : device ), in( xPtr, yPtr, n, incX, incY )
     {
         const ValueType* x = (ValueType*) xPtr;
         ValueType* y = (ValueType*) yPtr;
@@ -341,7 +356,7 @@ void MICBLAS1::axpy(
     const IndexType incY,
     tasking::SyncToken* syncToken )
 {
-    SCAI_REGION( "MIC.BLAS1.axpy" )
+    // SCAI_REGION( "MIC.BLAS1.axpy" )
 
     SCAI_LOG_INFO( logger,
                    "axpy<" << common::getScalarType<ValueType>() << ",  n = " << n << ", alpha = " << alpha << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
@@ -359,7 +374,9 @@ void MICBLAS1::axpy(
     const void* xPtr = x;
     void* yPtr = y;
 
-#pragma offload target( mic ), in( xPtr, yPtr, n, alpha, incX, incY )
+    int device = MICContext::getCurrentDevice();
+
+#pragma offload target( mic : device ), in( xPtr, yPtr, n, alpha, incX, incY )
     {
         const ValueType* x = static_cast<const ValueType*>( xPtr );
         ValueType* y = static_cast<ValueType*>( yPtr );
@@ -386,9 +403,10 @@ ValueType MICBLAS1::dot(
     const IndexType incY,
     tasking::SyncToken* syncToken )
 {
-    SCAI_REGION( "MIC.BLAS1.dot" )
+    // SCAI_REGION( "MIC.BLAS1.dot" )
 
-    SCAI_LOG_INFO( logger, "dot<" << common::getScalarType<ValueType>() << ">, n = " << n );
+    SCAI_LOG_INFO( logger, "dot<" << common::getScalarType<ValueType>() << ">" 
+                           << ", n = " << n << ", incX = " << incX << ", incY = " << incY );
 
     if( syncToken )
     {
@@ -397,15 +415,17 @@ ValueType MICBLAS1::dot(
 
     ValueType val = 0;
 
-    if( n < 1 || incX < 1 || incY < 1 )
+    if ( n < 1 || incX < 1 || incY < 1 )
     {
         return val;
     }
 
+    int device = MICContext::getCurrentDevice();
+
     const void* xPtr = x;
     const void* yPtr = y;
 
-#pragma offload target( mic ), out( val ), in( xPtr, yPtr, n, incX, incY )
+#pragma offload target( MIC : device ), out( val ), in( xPtr, yPtr, n, incX, incY )
     {
         const ValueType* x = static_cast<const ValueType*>( xPtr );
         const ValueType* y = static_cast<const ValueType*>( yPtr );
@@ -419,6 +439,8 @@ ValueType MICBLAS1::dot(
             val += x[i * incX] * y[i * incY];
         }
     }
+
+    SCAI_LOG_INFO( logger, "dot: result = " << val )
 
     return val;
 }
@@ -443,13 +465,15 @@ void MICBLAS1::sum(
         SCAI_LOG_WARN( logger, "asynchronous execution for MIC not supported yet." )
     }
 
-    SCAI_REGION( "MIC.BLAS1.sum" )
+    // SCAI_REGION( "MIC.BLAS1.sum" )
 
     const void* xPtr = x;
     const void* yPtr = y;
     void* zPtr = z;
 
-#pragma offload target( mic ), in( xPtr, yPtr, zPtr, alpha, beta )
+    int device = MICContext::getCurrentDevice();
+
+#pragma offload target( MIC : device ), in( xPtr, yPtr, zPtr, alpha, beta )
     {
         const ValueType* x = static_cast<const ValueType*>( xPtr );
         const ValueType* y = static_cast<const ValueType*>( yPtr );

@@ -50,6 +50,7 @@
 namespace scai
 {
 
+using namespace hmemo;
 using tasking::SyncToken;
 
 namespace lama
@@ -171,7 +172,7 @@ void MICDIAUtils::getCSRValues(
 
     #pragma omp parallel
     {
-        SCAI_REGION( "MIC.DIA->CSR_values" )
+        // SCAI_REGION( "MIC.DIA->CSR_values" )
 
         #pragma omp for
 
@@ -312,7 +313,7 @@ void MICDIAUtils::normalGEMV(
 
     // result := alpha * A * x + beta * y -> result:= beta * y; result += alpha * A
 
-    SCAI_REGION( "MIC.DIA.normalGEMV" )
+    // SCAI_REGION( "MIC.DIA.normalGEMV" )
 
     MICUtils::setScale( result, beta, y, numRows );
 
@@ -321,7 +322,9 @@ void MICDIAUtils::normalGEMV(
     const void* diaOffsetsPtr = diaOffsets;
     const void* diaValuesPtr = diaValues;
 
-#pragma offload target( mic ), in( alpha, xPtr, numRows, numColumns, numDiagonals, \
+    int device = MICContext::getCurrentDevice();
+
+#pragma offload target( mic : device ), in( alpha, xPtr, numRows, numColumns, numDiagonals, \
                                        diaOffsetsPtr, diaValuesPtr, resultPtr )
     {
         const IndexType* diaOffsets = static_cast<const IndexType*>( diaOffsetsPtr );
@@ -373,7 +376,7 @@ void MICDIAUtils::jacobi(
     const IndexType numRows,
     class SyncToken* syncToken )
 {
-    SCAI_REGION( "MIC.DIA.Jacobi" )
+    // SCAI_REGION( "MIC.DIA.Jacobi" )
 
     SCAI_LOG_INFO( logger,
                    "jacobi<" << common::getScalarType<ValueType>() << ">" << ", #rows = " << numRows << ", #cols = " << numColumns << ", #diagonals = " << numDiagonals << ", omega = " << omega )
@@ -393,7 +396,9 @@ void MICDIAUtils::jacobi(
 
     bool error = false; // will be set true if diagonal is not first
 
-#pragma offload target( mic ) in( diaOffsetPtr, diaValuesPtr, numRows, numDiagonals, numColumns, \
+    int device = MICContext::getCurrentDevice();
+
+#pragma offload target( mic : device ) in( diaOffsetPtr, diaValuesPtr, numRows, numDiagonals, numColumns, \
                                       solutionPtr, oldSolutionPtr, rhsPtr, omega ), out( error )
     {
         const IndexType* diaOffset = static_cast<const IndexType*>( diaOffsetPtr );

@@ -66,11 +66,7 @@ void MICSyncToken::wait()
 
     if( mSignal >= 0 )
     {
-        SCAI_REGION( "MIC.offloadSynchronize" )
-
-#pragma offload target( mic : 0 ), wait( mSignal )
-        {
-        }
+        // SCAI_REGION( "MIC.offloadSynchronize" )
 
         // // finally called functions might also need the context, e.g. unbindTexture
 

@@ -264,7 +264,9 @@ bool MICJDSUtils::checkDiagonalProperty(
         void* jdsPermPtr = (void*) jdsPerm;
         void* jaPtr = (void*) ja;
 
-#pragma offload target( mic ), in( jdsPermPtr, jaPtr, numRows, numColumns, dlg0 ), out( diagonalProperty )
+        int device = MICContext::getCurrentDevice();
+
+#pragma offload target( mic : device ), in( jdsPermPtr, jaPtr, numRows, numColumns, dlg0 ), out( diagonalProperty )
         {
             const IndexType* ja = static_cast<const IndexType*>( jaPtr );
             const IndexType* jdsPerm = static_cast<const IndexType*>( jdsPermPtr );
@@ -527,7 +529,7 @@ void MICJDSUtils::getCSRValues(
     SCAI_LOG_INFO( logger,
                    "get CSRValues<" << common::getScalarType<JDSValueType>() << ", " << common::getScalarType<CSRValueType>() << ">" << ", #rows = " << numRows )
 
-    SCAI_REGION( "MIC.JDS->CSR_values" )
+    // SCAI_REGION( "MIC.JDS->CSR_values" )
 
     const void* jdsJAPtr = jdsJA;
     const void* jdsValuesPtr = jdsValues;
@@ -539,8 +541,11 @@ void MICJDSUtils::getCSRValues(
     void* csrValuesPtr = csrValues;
     const void* csrIAPtr = csrIA;
 
-#pragma offload target( mic ) in( numRows, jdsJAPtr, jdsValuesPtr, jdsInversePermPtr, jdsILGPtr, jdsDLGPtr, \
-                                      csrIAPtr, csrJAPtr, csrValuesPtr )
+    int device = MICContext::getCurrentDevice();
+
+#pragma offload target( mic : device ) \
+                in( numRows, jdsJAPtr, jdsValuesPtr, jdsInversePermPtr, jdsILGPtr, jdsDLGPtr, \
+                    csrIAPtr, csrJAPtr, csrValuesPtr )
     {
         const JDSValueType* jdsValues = static_cast<const JDSValueType*>( jdsValuesPtr );
         const IndexType* jdsJA = static_cast<const IndexType*>( jdsJAPtr );
@@ -591,7 +596,7 @@ void MICJDSUtils::setCSRValues(
     SCAI_LOG_INFO( logger,
                    "set CSRValues<" << common::getScalarType<JDSValueType>() << ", " << common::getScalarType<CSRValueType>() << ">" << ", #rows = " << numRows )
 
-    SCAI_REGION( "MIC.JDS<-CSR_values" )
+    // SCAI_REGION( "MIC.JDS<-CSR_values" )
 
     void* jdsJAPtr = jdsJA;
     void* jdsValuesPtr = jdsValues;
@@ -603,8 +608,10 @@ void MICJDSUtils::setCSRValues(
     const void* csrJAPtr = csrJA;
     const void* csrValuesPtr = csrValues;
 
-#pragma offload target( mic ) in( numRows, jdsJAPtr, jdsValuesPtr, jdsPermPtr, jdsILGPtr, jdsDLGPtr, \
-                                      csrIAPtr, csrJAPtr, csrValuesPtr )
+    int device = MICContext::getCurrentDevice();
+
+#pragma offload target( mic : device ) in( numRows, jdsJAPtr, jdsValuesPtr, jdsPermPtr, jdsILGPtr, jdsDLGPtr, \
+                                           csrIAPtr, csrJAPtr, csrValuesPtr )
     {
         JDSValueType* jdsValues = static_cast<JDSValueType*>( jdsValuesPtr );
         IndexType* jdsJA = static_cast<IndexType*>( jdsJAPtr );
@@ -685,7 +692,7 @@ void MICJDSUtils::normalGEMV(
         return; // definitively empty matrix
     }
 
-    SCAI_REGION( "MIC.JDS.normalGEMV" )
+    // SCAI_REGION( "MIC.JDS.normalGEMV" )
 
     void* resultPtr = result;
     const void* xPtr = x;
@@ -695,7 +702,9 @@ void MICJDSUtils::normalGEMV(
     const void* jdsJAPtr = jdsJA;
     const void* jdsValuesPtr = jdsValues;
 
-#pragma offload target( mic ), in( resultPtr, xPtr, jdsDLGPtr, jdsILGPtr, jdsJAPtr, jdsValuesPtr, alpha )
+    int device = MICContext::getCurrentDevice();
+
+#pragma offload target( mic : device ), in( resultPtr, xPtr, jdsDLGPtr, jdsILGPtr, jdsJAPtr, jdsValuesPtr, alpha )
     {
         ValueType* result = static_cast<ValueType*>( resultPtr );
         const ValueType* x = static_cast<const ValueType*>( xPtr );
@@ -749,7 +758,7 @@ void MICJDSUtils::jacobi(
     const ValueType omega,
     class SyncToken* syncToken )
 {
-    SCAI_REGION( "MIC.JDS.jacobi" )
+    // SCAI_REGION( "MIC.JDS.jacobi" )
 
     SCAI_LOG_INFO( logger,
                    "jacobi<" << common::getScalarType<ValueType>() << ">" << ", #rows = " << numRows << ", omega = " << omega )
@@ -770,7 +779,9 @@ void MICJDSUtils::jacobi(
     const void* jdsDLGPtr = jdsDLG;
     const void* jdsValuesPtr = jdsValues;
 
-#pragma offload target( mic ), in( solutionPtr, oldSolutionPtr, rhsPtr, omega, numRows, \
+    int device = MICContext::getCurrentDevice();
+
+#pragma offload target( mic : device ), in( solutionPtr, oldSolutionPtr, rhsPtr, omega, numRows, \
                                        jdsPermPtr, jdsJAPtr, jdsDLGPtr, jdsValuesPtr )
     {
         ValueType* solution = static_cast<ValueType*>( solutionPtr );
@@ -837,7 +848,7 @@ void MICJDSUtils::jacobiHalo(
     SCAI_LOG_INFO( logger,
                    "jacobiHalo<" << common::getScalarType<ValueType>() << ">" << ", #rows = " << numRows << ", omega = " << omega )
 
-    SCAI_REGION( "MIC.JDS.jacobiHalo" )
+    // SCAI_REGION( "MIC.JDS.jacobiHalo" )
 
     if( syncToken != NULL )
     {
