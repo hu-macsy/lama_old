@@ -472,8 +472,6 @@ void COOStorage<ValueType>::allocate( IndexType numRows, IndexType numColumns )
 template<typename ValueType>
 void COOStorage<ValueType>::writeAt( std::ostream& stream ) const
 {
-    using ::operator<<;   // ToDo: still other operators in this namespace, so for ScalarType not used
-
     stream << "COOStorage<" << common::getScalarType<ValueType>()
            << ">( size = " << mNumRows << " x " << mNumColumns
            << ", nnz = " << mNumValues << " )" ;

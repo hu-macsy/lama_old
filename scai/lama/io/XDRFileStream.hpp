@@ -35,7 +35,7 @@
 
 // for dll_import
 #include <scai/common/config.hpp>
-#include <scai/common/Exception.hpp>
+#include <scai/common/exception/Exception.hpp>
 
 // others
 #include <fstream>

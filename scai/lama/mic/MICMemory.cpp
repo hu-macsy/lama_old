@@ -34,7 +34,7 @@
 // hpp
 
 #include <scai/lama/mic/MICMemory.hpp>
-#include <scai/common/Exception.hpp>
+#include <scai/common/exception/Exception.hpp>
 #include <scai/tracing.hpp>
 
 #include <scai/lama/mic/MICContext.hpp>

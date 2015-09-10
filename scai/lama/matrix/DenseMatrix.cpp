@@ -2174,8 +2174,6 @@ void DenseMatrix<ValueType>::resetDiagonalProperty()
 template<typename ValueType>
 void DenseMatrix<ValueType>::writeAt( std::ostream& stream ) const
 {
-    using ::operator<<;   // make enum output operators visible here
-
     common::ScalarType type = common::getScalarType<ValueType>();
     stream << "DenseMatrix<" << type << ">( size = " << mNumRows << " x " << mNumColumns << ", rowdist = "
            << getDistribution() << ", coldist = " << getColDistribution() << ")";

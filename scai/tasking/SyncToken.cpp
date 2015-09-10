@@ -33,7 +33,7 @@
 // hpp
 #include <scai/tasking/SyncToken.hpp>
 
-#include <scai/common/Exception.hpp>
+#include <scai/common/Assert.hpp>
 
 using scai::common::shared_ptr;
 

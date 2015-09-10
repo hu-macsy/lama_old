@@ -36,7 +36,7 @@
 // others
 #include <scai/tracing/VTInterface.hpp>
 #include <scai/tracing/TraceData.hpp>
-#include <scai/common/Exception.hpp>
+#include <scai/common/exception/Exception.hpp>
 
 #include <iostream>
 #include <cstdlib>

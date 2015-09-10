@@ -61,8 +61,8 @@ if    ( CUDA_FOUND AND USE_CUDA )
     else  ( WIN32 )
         set ( CUDA_PROPAGATE_HOST_FLAGS OFF )
         
-        list ( APPEND ADDITIONAL_NVCC_FLAGS -Xcompiler -fPIC )
-        list ( APPEND ADDITIONAL_NVCC_RELEASE_FLAGS -O3 -use_fast_math -Xcompiler -ffast-math -Xcompiler -fno-inline )
+        set ( ADDITIONAL_NVCC_FLAGS -Xcompiler -fPIC )
+        set ( ADDITIONAL_NVCC_RELEASE_FLAGS -O3 -use_fast_math -Xcompiler -ffast-math -Xcompiler -fno-inline )
         
         if    ( CXX_SUPPORTS_C11 )
             list ( APPEND ADDITIONAL_NVCC_FLAGS -std=c++11 )

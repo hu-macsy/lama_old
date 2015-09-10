@@ -32,7 +32,7 @@
 
 // hpp
 #include <scai/tasking/TaskSyncToken.hpp>
-#include <scai/common/Exception.hpp>
+#include <scai/common/exception/Exception.hpp>
 
 // boost
 #include <scai/common/bind.hpp>

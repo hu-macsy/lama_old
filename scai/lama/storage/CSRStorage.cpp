@@ -50,7 +50,7 @@
 #include <scai/lama/openmp/OpenMPCSRUtils.hpp>
 
 // assert
-#include <scai/common/SCAIAssert.hpp>
+#include <scai/common/Assert.hpp>
 
 // boost
 #include <scai/common/bind.hpp>
@@ -762,7 +762,6 @@ size_t CSRStorage<ValueType>::getMemoryUsageImpl() const
 template<typename ValueType>
 void CSRStorage<ValueType>::writeAt( std::ostream& stream ) const
 {
-    using ::operator<<;   // ToDo: still other operators in this namespace
     stream << "CSRStorage<" << common::getScalarType<ValueType>() << ">("
            << " size = " << mNumRows << " x " << mNumColumns
            << ", nnz = " << mNumValues << ", diag = " << mDiagonalProperty << ", sorted = " << mSortedRows << " )";

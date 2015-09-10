@@ -44,7 +44,7 @@
 #include <scai/lama/Scalar.hpp>
 
 // common library
-#include <scai/common/SCAIAssert.hpp>
+#include <scai/common/Assert.hpp>
 
 // trace library
 #include <scai/tracing.hpp>

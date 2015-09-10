@@ -39,7 +39,7 @@
 // others
 #include <scai/lama/LAMATypes.hpp>
 
-#include <scai/common/SCAIAssert.hpp>
+#include <scai/common/Assert.hpp>
 
 // logging
 #include <scai/logging.hpp>

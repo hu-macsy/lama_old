@@ -35,7 +35,7 @@
 #include <scai/lama/distribution/HaloBuilder.hpp>
 
 // others
-#include <scai/common/SCAIAssert.hpp>
+#include <scai/common/Assert.hpp>
 
 // tracing
 #include <scai/tracing.hpp>

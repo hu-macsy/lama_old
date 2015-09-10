@@ -32,8 +32,7 @@
 
 # ThreadTest example
 
-foreach ( executable ThreadPoolTest BenchTasking Token )
+foreach    ( executable ThreadPoolTest BenchTasking Token )
    add_executable( ${executable} ${executable}.cpp )
    target_link_libraries( ${executable} scai_tasking )
-endforeach()
-
+endforeach ( executable )

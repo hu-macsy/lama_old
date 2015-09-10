@@ -1087,3 +1087,5 @@ inline std::ostream& operator<<( std::ostream& stream, const scai::lama::MatrixC
     stream << "<" << key.first << ", " << key.second << ">";
     return stream;
 }
+
+

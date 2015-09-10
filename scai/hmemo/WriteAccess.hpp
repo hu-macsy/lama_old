@@ -42,7 +42,7 @@
 #include <scai/hmemo/LAMAArray.hpp>
 #include <scai/hmemo/Context.hpp>
 
-#include <scai/common/Exception.hpp>
+#include <scai/common/exception/Exception.hpp>
 
 // logging
 #include <scai/logging.hpp>

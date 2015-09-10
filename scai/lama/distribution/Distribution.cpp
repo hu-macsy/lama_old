@@ -34,7 +34,7 @@
 #include <scai/lama/distribution/Distribution.hpp>
 
 // assert
-#include <scai/common/SCAIAssert.hpp>
+#include <scai/common/Assert.hpp>
 #include <scai/lama/Scalar.hpp>
 #include <scai/hmemo.hpp>
 
@@ -163,14 +163,6 @@ void Distribution::computeOwners(
     IndexType n = requiredIndexes.size();
     owners.resize( n );
     mCommunicator->computeOwners( &owners[0], *this, &requiredIndexes[0], n );
-}
-
-/* ---------------------------------------------------------------------- */
-
-std::ostream& operator<<( std::ostream& stream, Distribution const& dist )
-{
-    dist.writeAt( stream );
-    return stream;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -657,3 +649,11 @@ BOOST_PP_REPEAT( ARRAY_TYPE_CNT, LAMA_DISTRIBUTE_INSTANTIATE, _ )
 } /* end namespace lama */
 
 } /* end namespace scai */
+
+/* ---------------------------------------------------------------------- */
+
+COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, scai::lama::Distribution const& dist )
+{
+    dist.writeAt( stream );
+    return stream;
+}

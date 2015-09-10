@@ -35,7 +35,7 @@
 
 #include <scai/lama/macros/inline.hpp>
 #include <scai/lama/LAMATypes.hpp>
-#include <scai/common/Exception.hpp>
+#include <scai/common/exception/Exception.hpp>
 
 #include <scai/lama/cblas.hpp>
 

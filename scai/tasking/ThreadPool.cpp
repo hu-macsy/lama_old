@@ -36,7 +36,7 @@
 // tracing
 #include <scai/tracing.hpp>
 
-#include <scai/common/Exception.hpp>
+#include <scai/common/Assert.hpp>
 #include <scai/common/OpenMP.hpp>
 
 using scai::common::Thread;

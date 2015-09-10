@@ -39,7 +39,7 @@
 #include <scai/lama/CommunicationPlan.hpp>
 
 // assert
-#include <scai/common/SCAIAssert.hpp>
+#include <scai/common/Assert.hpp>
 
 #include <scai/common/weak_ptr.hpp>
 

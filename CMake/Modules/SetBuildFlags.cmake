@@ -55,11 +55,6 @@ message ( STATUS "FindLib64: " ${FIND_LIB64} )
 # Makefile outputs
 set ( CMAKE_VERBOSE_MAKEFILE OFF )
 
-# Define default library type as SHARED
-if ( NOT DEFINED BUILD_SHARED_LIBS )
-    set ( BUILD_SHARED_LIBS TRUE )
-endif( NOT DEFINED BUILD_SHARED_LIBS )
-
 ## BUILDTYPE
 
 # Set default build type, will be used for all projects
@@ -77,18 +72,14 @@ endif ( NOT CMAKE_BUILD_TYPE )
 message ( STATUS "Build type is set to " ${CMAKE_BUILD_TYPE} )
 
 ## Check if lama should be build static or shared
-## Check if cache variable is already set
-if    ( DEFINED SCAI_BUILD_SHARED )
-    set ( SCAI_BUILD_SHARED ${SCAI_BUILD_SHARED} CACHE BOOL "Enable / Disable dynamic linking of libraries" )
-else  ( DEFINED SCAI_BUILD_SHARED )
-    # Set cache variable
-    set ( SCAI_BUILD_SHARED TRUE CACHE BOOL "Enable / Disable dynamic linking of libraries" )
-endif ( DEFINED SCAI_BUILD_SHARED )
 
-if    ( SCAI_BUILD_SHARED )
-    set ( SCAI_LIBRARY_TYPE SHARED )
-else  ( SCAI_BUILD_SHARED )
-    set ( SCAI_LIBRARY_TYPE STATIC )
-endif ( SCAI_BUILD_SHARED )
+# default: build shared library
+set ( SCAI_LIBRARY_TYPE_OPTIONS STATIC SHARED )
+if    ( NOT SCAI_LIBRARY_TYPE )
+	set ( SCAI_LIBRARY_TYPE SHARED CACHE STRING "Choose the type of linking: ${SCAI_LIBRARY_TYPE_OPTIONS}" )
+else  ( NOT SCAI_LIBRARY_TYPE ) 	
+    set ( SCAI_LIBRARY_TYPE STATIC CACHE STRING "Choose the type of linking: ${SCAI_LIBRARY_TYPE_OPTIONS}" )
+endif ( NOT SCAI_LIBRARY_TYPE )
+checkValue ( ${SCAI_LIBRARY_TYPE} "${SCAI_LIBRARY_TYPE_OPTIONS}" )
 
 set ( USE_CODE_COVERAGE FALSE CACHE BOOL "Enable / Disable use of Code Coverage" )

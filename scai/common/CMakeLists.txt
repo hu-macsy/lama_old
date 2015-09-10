@@ -42,6 +42,7 @@ set ( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../CMake/Modules" )
 ### Include Compiler Flags
 if    ( NOT SCAI_COMPLETE_BUILD )
 	include ( SetBuildFlags )
+	include ( SCAIAssert )
 	include ( SetCPPFlags )
 endif ( NOT SCAI_COMPLETE_BUILD )
 
@@ -64,6 +65,7 @@ include ( ConcludeFlags )
 ### add definitions
 
 add_definitions( ${ADDITIONAL_WARNING_FLAGS} )
+add_definitions ( -DSCAI_ASSERT_LEVEL_${SCAI_ASSERT_LEVEL} )
 
 if    ( WIN32 )
 	add_definitions ( -DCOMMON_COMPILING_DLL )
@@ -87,8 +89,11 @@ if    ( CUDA_FOUND AND USE_CUDA )
     include_directories ( ${CUDA_TOOLKIT_INCLUDE} )
 endif ( CUDA_FOUND AND USE_CUDA )
 
+## add exception dir
+add_subdirectory ( exception )
+
 ## add library
-add_library ( scai_common SHARED ${CPP_SOURCES} ${CUDA_SOURCES} )
+add_library ( scai_common ${SCAI_LIBRARY_TYPE} ${CPP_SOURCES} ${CUDA_SOURCES} )
 
 ## add link libraries
 foreach    ( module ${SCAI_COMMON_EXTERNAL_DEPS} )

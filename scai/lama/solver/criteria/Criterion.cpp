@@ -38,7 +38,7 @@
 #include <scai/lama/solver/IterativeSolver.hpp>
 
 // assert
-#include <scai/common/SCAIAssert.hpp>
+#include <scai/common/Assert.hpp>
 
 namespace scai
 {

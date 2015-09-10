@@ -45,6 +45,7 @@ include ( VersionDefinition )
 ### Include Compiler Flags
 if    ( NOT SCAI_COMPLETE_BUILD )
 	include ( SetBuildFlags )
+	include ( SCAIAssert )
 	include ( SetCPPFlags )
 endif ( NOT SCAI_COMPLETE_BUILD )
 
@@ -66,6 +67,7 @@ include ( ConcludeFlags )
 ### add definitions ###
 
 add_definitions( ${ADDITIONAL_WARNING_FLAGS} )
+add_definitions ( -DSCAI_ASSERT_LEVEL_${SCAI_ASSERT_LEVEL} )
 
 ## MKL FOUND
 if     ( SCAI_BLAS_NAME STREQUAL "MKL" )
@@ -195,10 +197,12 @@ if ( LAMA_SOLVER_LIBRARIES )
 endif ()
 
 ## add link libraries
+list ( REVERSE SCAI_LAMA_INTERNAL_DEPS )
 foreach    ( module ${SCAI_LAMA_INTERNAL_DEPS} )
 	string ( TOUPPER ${module} upper_module )
-    target_link_libraries ( ama ${${upper_module}_LIBRARY} )
+	set ( LAMA_LINK_LIBRARIES ${LAMA_LINK_LIBRARIES} ${${upper_module}_LIBRARY} )
 endforeach ( module ${SCAI_LAMA_INTERNAL_DEPS} )
+target_link_libraries ( ama ${SCAI_START_LINK_LIBRARIES} ${LAMA_LINK_LIBRARIES} ${SCAI_END_LINK_LIBRARIES} )
 
 foreach    ( module ${SCAI_LAMA_EXTERNAL_DEPS} )
 	string ( TOUPPER ${module} upper_module )

@@ -36,7 +36,7 @@
 #include <scai/hmemo/Context.hpp>
 
 // others
-#include <scai/common/Exception.hpp>
+#include <scai/common/Assert.hpp>
 #include <scai/common/OpenMP.hpp>
 
 #include <scai/tasking/TaskSyncToken.hpp>

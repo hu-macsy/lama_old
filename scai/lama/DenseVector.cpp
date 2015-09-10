@@ -49,7 +49,7 @@
 #include <scai/lama/io/FileType.hpp>
 
 #include <scai/tracing.hpp>
-#include <scai/common/UnsupportedException.hpp>
+#include <scai/common/exception/UnsupportedException.hpp>
 
 #include <scai/common/unique_ptr.hpp>
 #include <boost/preprocessor.hpp>
@@ -606,8 +606,6 @@ void DenseVector<ValueType>::swap( Vector& other )
 template<typename ValueType>
 void DenseVector<ValueType>::writeAt( std::ostream& stream ) const
 {
-    using ::operator<<;
-
     stream << "DenseVector<" << getValueType() << ">" << "( size = " << size() << ", local = " << mLocalValues.size()
                     << ", dist = " << getDistribution() << ", loc  = " << *getContext() << " )";
 }

@@ -38,7 +38,7 @@
 #include <scai/lama/DenseVector.hpp>
 #include <scai/lama/distribution/NoDistribution.hpp>
 
-#include <scai/common/SCAIAssert.hpp>
+#include <scai/common/Assert.hpp>
 
 using namespace scai::common;
 
@@ -56,7 +56,7 @@ SCAI_LOG_DEF_LOGGER( Matrix::logger, "Matrix" )
 
 Matrix* Matrix::getMatrix( const MatrixStorageFormat format, common::ScalarType type )
 {
-    using ::operator<<;   // important to make operator<< outside this namespace available
+	using ::operator<<;
 
     MatrixCreateKeyType val( format, type );
     SCAI_LOG_INFO( logger, "getMatrix uses Factory::create " << val )

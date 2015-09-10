@@ -35,7 +35,7 @@
 #include <scai/lama/solver/logger/Timer.hpp>
 
 // others
-#include <scai/common/Exception.hpp>
+#include <scai/common/exception/Exception.hpp>
 #include <scai/common/Walltime.hpp>
 
 #include <iostream>

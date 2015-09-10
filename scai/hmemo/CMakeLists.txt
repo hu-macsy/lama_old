@@ -43,6 +43,7 @@ set ( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../CMake/Modules" )
 ### Include Compiler Flags
 if    ( NOT SCAI_COMPLETE_BUILD )
 	include ( SetBuildFlags )
+	include ( SCAIAssert )
 	include ( SetCPPFlags )
 endif ( NOT SCAI_COMPLETE_BUILD )
 
@@ -67,6 +68,8 @@ add_definitions( ${ADDITIONAL_WARNING_FLAGS} )
 
 add_definitions( -D${SCAI_LOGGING_FLAG} )
 
+add_definitions ( -DSCAI_ASSERT_LEVEL_${SCAI_ASSERT_LEVEL} )
+
 if    ( WIN32 )
 	add_definitions ( -DCOMMON_COMPILING_DLL )
 endif ( WIN32 )
@@ -81,10 +84,6 @@ endforeach ( module ${SCAI_HMEMO_INTERNAL_DEPS} ${SCAI_HMEMO_EXTERNAL_DEPS} )
 
 ### build library
 
-## add subdirectories
-add_subdirectory ( examples )
-add_subdirectory ( test )
-
 ## search for files
 file ( GLOB CPP_SOURCES "*.cpp" )
 file ( GLOB HPP_HEADERS "*.hpp" )
@@ -95,14 +94,20 @@ if    ( CUDA_FOUND AND USE_CUDA )
     include_directories ( ${CUDA_TOOLKIT_INCLUDE} )
 endif ( CUDA_FOUND AND USE_CUDA )
 
+## add subdirectories
+add_subdirectory ( examples )
+add_subdirectory ( test )
+
 ## add library
-add_library ( scai_hmemo SHARED ${CPP_SOURCES} ${CUDA_SOURCES} )
+add_library ( scai_hmemo ${SCAI_LIBRARY_TYPE} ${CPP_SOURCES} ${CUDA_SOURCES} )
 
 ## add link libraries
+list ( REVERSE SCAI_HMEMO_INTERNAL_DEPS )
 foreach    ( module ${SCAI_HMEMO_INTERNAL_DEPS} )
 	string ( TOUPPER ${module} upper_module )
-    target_link_libraries ( scai_hmemo ${${upper_module}_LIBRARY} )
+	set ( HMEMO_LINK_LIBRARIES ${HMEMO_LINK_LIBRARIES} ${${upper_module}_LIBRARY} )
 endforeach ( module ${SCAI_HMEMO_INTERNAL_DEPS} )
+target_link_libraries ( scai_hmemo ${SCAI_START_LINK_LIBRARIES} ${HMEMO_LINK_LIBRARIES} ${SCAI_END_LINK_LIBRARIES} )
 
 foreach    ( module ${SCAI_HMEMO_EXTERNAL_DEPS} )
 	string ( TOUPPER ${module} upper_module )

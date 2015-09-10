@@ -1,3 +1,11 @@
+if    ( ${SCAI_LIBRARY_TYPE} MATCHES "STATIC" )
+	set ( SCAI_START_LINK_LIBRARIES "-Wl,--whole-archive" )
+	set ( SCAI_END_LINK_LIBRARIES "-Wl,--no-whole-archive" )
+else  ( ${SCAI_LIBRARY_TYPE} MATCHES "STATIC" )
+	set ( SCAI_START_LINK_LIBRARIES "-Wl,--no-as-needed" )
+	set ( SCAI_END_LINK_LIBRARIES "-Wl,--as-needed" )
+endif ( ${SCAI_LIBRARY_TYPE} MATCHES "STATIC" )
+
 #### concluding all defined compiler flags to CMAKE_..._FLAGS ####
 
 ## scai common adds OpenMP_CXX_FLAGS and SCAI_LANG_FLAGS to SCAI_COMMON_FLAGS if found
@@ -27,7 +35,7 @@ string ( STRIP "${CMAKE_CXX_FLAGS_RELEASE}" CMAKE_CXX_FLAGS_RELEASE )
 string ( STRIP "${CMAKE_EXE_LINKER_FLAGS}" CMAKE_EXE_LINKER_FLAGS )
 string ( STRIP "${CMAKE_SHARED_LINKER_FLAGS}" CMAKE_SHARED_LINKER_FLAGS )
 
-if ( CUDA_FOUND AND USE_CUDA )
+if ( CUDA_FOUND AND USE_CUDA AND NOT DEFINED SCAI_COMPLETE_BUILD )
     
     # TODO: determine cuda compute capability and use highest
     # with sm_20 no warnings about Cannot tell what pointer points to, assuming global memory space in Release build
@@ -47,4 +55,4 @@ if ( CUDA_FOUND AND USE_CUDA )
     string ( STRIP "${CUDA_NVCC_FLAGS}" CUDA_NVCC_FLAGS )
     string ( STRIP "${CUDA_NVCC_FLAGS_RELEASE}" CUDA_NVCC_FLAGS_RELEASE )
     
-endif ( CUDA_FOUND AND USE_CUDA )
+endif ( CUDA_FOUND AND USE_CUDA AND NOT DEFINED SCAI_COMPLETE_BUILD )

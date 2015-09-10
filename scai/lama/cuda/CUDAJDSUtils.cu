@@ -41,7 +41,7 @@
 #include <scai/lama/cuda/CUDAJDSUtils.hpp>
 #include <scai/lama/cuda/CUDAUtils.hpp>
 
-#include <scai/common/SCAIAssert.hpp>
+#include <scai/common/Assert.hpp>
 #include <scai/tracing.hpp>
 
 #include <scai/lama/LAMAInterface.hpp>

@@ -35,6 +35,8 @@
 #include <ostream>
 #include <string>
 
+#include <scai/common/config.hpp>
+
 namespace scai
 {
 namespace logging
@@ -67,8 +69,8 @@ const char* level2str( const Level level );
 
 /** Output of level in a stream.
  */
-std::ostream& operator<<( std::ostream& os, const Level& level );
-
 } /* end namespace logging */
 
 } /* end namespace scai */
+
+COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& os, const scai::logging::Level& level );

@@ -68,7 +68,7 @@ SCAI_LOG_DEF_LOGGER( Vector::logger, "Vector" )
 
 Vector* Vector::getVector( const VectorKind kind, common::ScalarType type )
 {
-    using ::operator<<;     // becomes redundant if operator<< is not defined in namespace lama
+	using ::operator<<;
 
     VectorCreateKeyType key( kind, type );
 

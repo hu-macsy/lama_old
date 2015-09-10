@@ -39,7 +39,7 @@ set ( CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/../CMake/Modules" )
 include ( VersionDefinition )
 
 ## general Settings for all projects
-include ( SetBuildFlags ) # VERBOSE, RPATH, LIB64, BUILD_SHARED
+include ( SetBuildFlags ) # VERBOSE, RPATH, LIB64
 include ( SCAIAssert )
 include ( SetCPPFlags )
 

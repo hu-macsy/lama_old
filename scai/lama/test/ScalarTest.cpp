@@ -40,7 +40,7 @@
 
 #include <test/TestMacros.hpp>
 
-#include <complex>
+//#include <complex>
 
 using namespace scai::lama;
 using namespace scai::hmemo;

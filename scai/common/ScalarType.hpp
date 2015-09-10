@@ -39,7 +39,7 @@
 #include <scai/common/Printable.hpp>
 
 // others
-#include <scai/common/Exception.hpp>
+#include <scai/common/exception/Exception.hpp>
 
 #include <iostream>
 
