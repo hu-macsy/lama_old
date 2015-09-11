@@ -364,11 +364,11 @@ void CommunicationPlan::allocateTranspose( const CommunicationPlan& plan, const 
     // send each processor the number of indexes I require
     // and receive the number of indexes that I have to provide
 
-    comm.all2all( recvSizes.data(), sendSizes.data() );
+    comm.all2all( &recvSizes[0], &sendSizes[0] );
 
     // now we can allocate by quantities
 
-    allocate( recvSizes.data(), recvSizes.size() );
+    allocate( &recvSizes[0], recvSizes.size() );
 }
 
 /* ----------------------------------------------------------------------- */

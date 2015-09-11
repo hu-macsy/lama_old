@@ -741,7 +741,7 @@ void Communicator::bcast( std::string& val, const PartitionId root ) const
 
     std::vector<char> buffer( len + 1 );
 
-    char* strptr = buffer.data();
+    char* strptr = &buffer[0];
 
     if( isRoot )
     {

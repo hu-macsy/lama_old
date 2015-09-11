@@ -146,7 +146,7 @@ for ( PartitionId p = 0; p < size; ++p )
     }
 }
 
-CommunicationPlan requiredPlan( reqQuantities.data(), reqQuantities.size() );
+CommunicationPlan requiredPlan( &reqQuantities[0], reqQuantities.size() );
 
 // verify that requiredPlan is correctly set up
 IndexType offsetCheck = 0;

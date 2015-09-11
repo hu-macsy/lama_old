@@ -129,6 +129,8 @@ void TraceData::leave( const int regionId, RegionEntry& region, const bool callT
 
 int TraceData::getCurrentRegionId( const char* regionName )
 {
+    int regionId = 0;  // default value avoids compiler warning due to exception
+
     if ( !mCallStack.empty() )
     {
         // check that regionName is the last region on the current call stack
@@ -139,17 +141,16 @@ int TraceData::getCurrentRegionId( const char* regionName )
         {
             COMMON_THROWEXCEPTION( "mismatch in call stack, stop " << regionName <<
                                    ", but currently called region is " << callRegion.getRegionName() )
-            return 0;
         }
 
-        return currentRegionId;
+        regionId = currentRegionId;
     }
     else
     {
-        return mRegionTable.getRegionId( regionName );
+        regionId = mRegionTable.getRegionId( regionName );
     }
 
-    return 0; // compiler avoids warning
+    return regionId;
 }
 
 TraceData::TraceData( const char* prefix, ThreadId threadId, bool mThreadEnabled ) :

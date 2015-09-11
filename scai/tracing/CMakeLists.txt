@@ -102,9 +102,9 @@ target_link_libraries ( scai_tracing ${SCAI_START_LINK_LIBRARIES} ${TRACING_LINK
 install ( TARGETS scai_tracing DESTINATION lib/ )
 install ( FILES ${HPP_HEADERS} DESTINATION include/scai/tracing )
 
-if    ( CMAKE_VERSION VERSION_GREATER 2.8.7 ) 
+if    ( CMAKE_VERSION VERSION_GREATER 2.8.11 ) 
 	add_subdirectory( gui )
-endif ( CMAKE_VERSION VERSION_GREATER 2.8.7 )
+endif ( CMAKE_VERSION VERSION_GREATER 2.8.11 )
 
 ## install library.hpp
 install ( FILES ../tracing.hpp DESTINATION include/scai )
