@@ -518,8 +518,10 @@ void SparseAssemblyStorage<ValueType>::setRow(
 {
     //SCAI_ASSERT_EQUAL_ERROR( ja.size(), values.size() )
 
+    const IndexType rowSizeOld = mRows[i].ja.size();
+
     #pragma omp atomic
-    mNumValues -= mRows[i].ja.size();
+    mNumValues -= rowSizeOld;
 
     mRows[i].ja.resize( ja.size() );
     mRows[i].values.resize( values.size() );
