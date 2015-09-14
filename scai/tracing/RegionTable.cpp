@@ -47,10 +47,10 @@
 
 using namespace std;
 
-using scai::common::Thread;
-
 namespace scai
 {
+
+using common::Thread;
 
 namespace tracing
 {

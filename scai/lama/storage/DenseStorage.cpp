@@ -44,17 +44,18 @@
 // internal scai libraries
 #include <scai/hmemo/ContextAccess.hpp>
 
-namespace scai
-{
-
-namespace lama
-{
+using namespace scai::hmemo;
 
 using std::abs;
 // so we can use abs for float and double and own abs for Complex
 
-using scai::common::shared_ptr;
-using namespace scai::hmemo;
+namespace scai
+{
+
+using common::shared_ptr;
+
+namespace lama
+{
 
 /* --------------------------------------------------------------------------- */
 

@@ -56,10 +56,11 @@ namespace scai
 {
 
 using namespace scai::tasking;
-using scai::hmemo::LAMAArray;
 
 namespace lama
 {
+
+using hmemo::LAMAArray;
 
 /** This class allows to create objects that handle redistributions of vector and
  *  matrices from one distribution into another distribution.

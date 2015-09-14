@@ -49,8 +49,8 @@ namespace scai
 namespace tracing
 {
 
-using scai::common::Thread;
-using scai::common::shared_ptr;
+using common::Thread;
+using common::shared_ptr;
 
 /* -------------------------------------------------------------------------- *
  *   Static class variables                                                   *

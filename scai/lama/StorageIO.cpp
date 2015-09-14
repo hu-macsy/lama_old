@@ -54,13 +54,13 @@
 // boost
 #include <boost/preprocessor.hpp>
 
-using scai::common::unique_ptr;
-using scai::common::scoped_array;
-
 using namespace scai::hmemo;
 
 namespace scai
 {
+
+using common::unique_ptr;
+using common::scoped_array;
 
 namespace lama
 {

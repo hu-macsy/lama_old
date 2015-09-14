@@ -51,10 +51,10 @@
 // extern
 #include <mkl_spblas.h>
 
-using scai::tasking::SyncToken;
-
 namespace scai
 {
+
+using tasking::SyncToken;
 
 namespace lama
 {

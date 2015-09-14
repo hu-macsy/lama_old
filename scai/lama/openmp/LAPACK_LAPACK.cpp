@@ -153,11 +153,10 @@ int F77_dlaswp(
 } /*extern "C"*/
 #endif /*__cplusplus*/
 
-
-using scai::common::unique_ptr;
-
 namespace scai
 {
+
+using common::unique_ptr;
 
 namespace lama
 {

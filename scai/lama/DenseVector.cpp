@@ -66,10 +66,10 @@
 using namespace scai::common;
 using namespace scai::hmemo;
 
-using scai::common::Complex;
-
 namespace scai
 {
+
+using common::Complex;
 
 namespace lama
 {

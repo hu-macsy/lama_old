@@ -51,13 +51,13 @@
 // boost
 #include <boost/preprocessor.hpp>
 
-using scai::common::scoped_array;
-
 namespace scai
 {
 
 namespace lama
 {
+
+using common::scoped_array;
 
 SCAI_LOG_DEF_LOGGER( OpenMPJDSUtils::logger, "OpenMP.JDSUtils" )
 

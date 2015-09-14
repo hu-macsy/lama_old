@@ -59,8 +59,8 @@ namespace scai
 namespace lama
 {
 
-using scai::tasking::SyncToken;
-using scai::common::getScalarType;
+using tasking::SyncToken;
+using common::getScalarType;
 
 SCAI_LOG_DEF_LOGGER( BLAS_BLAS1::logger, "BLAS.BLAS1" )
 

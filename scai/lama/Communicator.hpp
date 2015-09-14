@@ -61,10 +61,10 @@
 
 //#include <cmath>
 
-using scai::common::Complex;
-
 namespace scai
 {
+
+using common::Complex;
 
 namespace hmemo
 {

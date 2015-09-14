@@ -51,11 +51,11 @@
 // std
 #include <memory>
 
-using scai::tasking::SyncToken;
-using scai::tasking::CUDAStreamSyncToken;
-
 namespace scai
 {
+
+using tasking::SyncToken;
+using tasking::CUDAStreamSyncToken;
 
 namespace hmemo
 {

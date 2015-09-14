@@ -66,8 +66,8 @@ using std::abs;
 using std::sqrt;
 // used for float, double
 
-using scai::tasking::SyncToken;
-using scai::common::getScalarType;
+using tasking::SyncToken;
+using common::getScalarType;
 
 SCAI_LOG_DEF_LOGGER( OpenMPBLAS1::logger, "OpenMP.BLAS1" )
 

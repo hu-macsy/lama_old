@@ -47,10 +47,10 @@
 // boost
 #include <boost/preprocessor.hpp>
 
-using scai::tasking::SyncToken;
-
 namespace scai
 {
+
+using tasking::SyncToken;
 
 namespace lama
 {

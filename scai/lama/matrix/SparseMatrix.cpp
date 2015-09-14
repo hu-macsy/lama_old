@@ -72,7 +72,7 @@ namespace scai
 namespace lama
 {
 
-using scai::common::shared_ptr;
+using common::shared_ptr;
 
 SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, SparseMatrix<ValueType>::logger, "Matrix.SparseMatrix" )
 

@@ -37,12 +37,12 @@
 #include <scai/common/bind.hpp>
 #include <scai/common/exception/Exception.hpp>
 
-using scai::tasking::Task;
-using scai::common::function;
-using scai::common::shared_ptr;
-
 namespace scai
 {
+
+using tasking::Task;
+using common::function;
+using common::shared_ptr;
 
 namespace tasking
 {

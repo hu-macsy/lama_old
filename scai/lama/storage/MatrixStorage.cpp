@@ -62,13 +62,13 @@
 #include <boost/assign/list_of.hpp>
 #include <boost/unordered_map.hpp>
 
-using scai::tasking::SyncToken;
-using scai::tasking::TaskSyncToken;
-
 using namespace scai::hmemo;
 
 namespace scai
 {
+
+using tasking::SyncToken;
+using tasking::TaskSyncToken;
 
 namespace lama
 {

@@ -47,10 +47,10 @@
 // boost
 #include <boost/preprocessor.hpp>
 
-using scai::common::getScalarType;
-
 namespace scai
 {
+
+using common::getScalarType;
 
 namespace lama
 {

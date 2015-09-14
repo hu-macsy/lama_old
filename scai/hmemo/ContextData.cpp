@@ -42,10 +42,10 @@
 
 #include <scai/common/Assert.hpp>
 
-using scai::tasking::SyncToken;
-
 namespace scai
 {
+
+using tasking::SyncToken;
 
 namespace hmemo
 {

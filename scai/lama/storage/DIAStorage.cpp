@@ -51,18 +51,17 @@
 #include <scai/common/bind.hpp>
 #include <scai/common/unique_ptr.hpp>
 
-using scai::common::scoped_array;
 using namespace scai::hmemo;
 
 namespace scai
 {
 
+using common::scoped_array;
+// Allow for shared_ptr<ValueType> instead of common::shared_ptr<ValueType>
+using common::shared_ptr;
+
 namespace lama
 {
-
-// Allow for shared_ptr<ValueType> instead of common::shared_ptr<ValueType>
-
-using scai::common::shared_ptr;
 
 /* --------------------------------------------------------------------------- */
 

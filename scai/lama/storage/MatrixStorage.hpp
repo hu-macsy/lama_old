@@ -44,14 +44,14 @@
 // std
 #include <ostream>
 
-using scai::hmemo::Context;
-using scai::hmemo::ContextPtr;
-using scai::hmemo::ContextArray;
-using scai::hmemo::LAMAArray;
-using scai::hmemo::LAMAArrayRef;
-
 namespace scai
 {
+
+using hmemo::Context;
+using hmemo::ContextPtr;
+using hmemo::ContextArray;
+using hmemo::LAMAArray;
+using hmemo::LAMAArrayRef;
 
 namespace tasking
 {
@@ -112,7 +112,7 @@ COMMON_DLL_IMPORTEXPORT MatrixStorageFormat str2Format( const char* str );
  storage should take place.
  */
 
-class COMMON_DLL_IMPORTEXPORT _MatrixStorage: public scai::common::Printable
+class COMMON_DLL_IMPORTEXPORT _MatrixStorage: public common::Printable
 {
 public:
 

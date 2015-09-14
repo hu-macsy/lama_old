@@ -49,16 +49,15 @@
 // std
 #include <cstdio>
 
+using namespace scai::common;
+
 namespace scai
 {
 
+using namespace common::scalar;
+
 namespace lama
 {
-
-using namespace scai::common;
-
-using scai::common::ScalarType;
-using namespace scai::common::scalar;
 
 /**
  * @brief The class Scalar represents a multi precision scalar.
@@ -190,21 +189,12 @@ public:
     inline virtual void writeAt( std::ostream& stream ) const;
 
     /**
-     * @brief Conversion of a C type into value of enum ScalarType.
-     *
-     * @tparam ValueType    C++ type that should be converted
-     * @return      value of enum type ScalarType that represents the C++ type.
-     */
-    template<typename ValueType>
-    inline static ScalarType getTypeWeg();
-
-    /**
      * @brief Returns the size of the given ScalarType.
      *
      * @param[in] type    the given ScalarType.
      * @return            the size of the given ScalarType.
      */
-    inline static size_t getTypeSize( const ScalarType type );
+    inline static size_t getTypeSize( const common::ScalarType type );
 
 protected:
 
@@ -320,55 +310,7 @@ inline void Scalar::writeAt( std::ostream& stream ) const
     }
 }
 
-template<typename ValueType>
-inline ScalarType Scalar::getTypeWeg()
-{
-    return UNKNOWN;
-}
-
-template<>
-inline ScalarType Scalar::getTypeWeg<IndexType>()
-{
-    return INDEX_TYPE;
-}
-
-template<>
-inline ScalarType Scalar::getTypeWeg<float>()
-{
-    return FLOAT;
-}
-
-template<>
-inline ScalarType Scalar::getTypeWeg<double>()
-{
-    return DOUBLE;
-}
-
-template<>
-inline ScalarType Scalar::getTypeWeg<LongDouble>()
-{
-    return LONG_DOUBLE;
-}
-
-template<>
-inline ScalarType Scalar::getTypeWeg<ComplexFloat>()
-{
-    return COMPLEX;
-}
-
-template<>
-inline ScalarType Scalar::getTypeWeg<ComplexDouble>()
-{
-    return DOUBLE_COMPLEX;
-}
-
-template<>
-inline ScalarType Scalar::getTypeWeg<ComplexLongDouble>()
-{
-    return LONG_DOUBLE_COMPLEX;
-}
-
-inline size_t Scalar::getTypeSize( const ScalarType type )
+inline size_t Scalar::getTypeSize( const common::ScalarType type )
 {
     size_t typeSize = 0;
 

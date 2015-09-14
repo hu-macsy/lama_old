@@ -52,10 +52,11 @@
 
 using namespace scai::tasking;
 using namespace scai::hmemo;
-using scai::common::getScalarType;
 
 namespace scai
 {
+
+using common::getScalarType;
 
 extern cublasHandle_t CUDAContext_cublasHandle;
 

@@ -36,10 +36,10 @@
 // internal scai libraries
 #include <scai/common/Assert.hpp>
 
-using scai::common::shared_ptr;
-
 namespace scai
 {
+
+using common::shared_ptr;
 
 namespace tasking
 {

@@ -47,14 +47,14 @@
 // external
 #include <omp.h>
 
-using scai::common::unique_ptr;
-using scai::common::scoped_array;
-
 namespace scai
 {
 
 namespace lama
 {
+
+using common::unique_ptr;
+using common::scoped_array;
 
 SCAI_LOG_DEF_LOGGER( GMRES::logger, "Solver.IterativeSolver.GMRES" )
 

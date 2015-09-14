@@ -43,12 +43,12 @@
 
 #include <scai/logging.hpp>
 
-using scai::hmemo::ContextArray;
-using scai::hmemo::LAMAArray;
-using scai::hmemo::ContextPtr;
-
 namespace scai
 {
+
+using hmemo::ContextArray;
+using hmemo::LAMAArray;
+using hmemo::ContextPtr;
 
 namespace lama
 {

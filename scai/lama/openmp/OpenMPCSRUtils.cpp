@@ -53,18 +53,17 @@
 // std
 #include <vector>
 
-using scai::common::scoped_array;
-
 namespace scai
 {
+
+using common::scoped_array;
+using common::getScalarType;
 
 namespace lama
 {
 
 using std::abs;
 // is used for abs( float ), abs( double )
-
-using scai::common::getScalarType;
 
 SCAI_LOG_DEF_LOGGER( OpenMPCSRUtils::logger, "OpenMP.CSRUtils" )
 

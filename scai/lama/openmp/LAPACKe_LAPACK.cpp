@@ -50,10 +50,10 @@
 // boost
 #include <boost/preprocessor.hpp>
 
-using scai::common::scoped_array;
-
 namespace scai
 {
+
+using common::scoped_array;
 
 namespace lama
 {

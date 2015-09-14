@@ -43,10 +43,10 @@
 // std
 #include <fstream>
 
-using scai::hmemo::LAMAArray;
-
 namespace scai
 {
+
+using hmemo::LAMAArray;
 
 namespace lama
 {

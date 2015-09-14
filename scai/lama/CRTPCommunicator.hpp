@@ -48,11 +48,11 @@
 // std
 #include <vector>
 
-using scai::tasking::SyncToken;
-using scai::tasking::NoSyncToken;
-
 namespace scai
 {
+
+using tasking::SyncToken;
+using tasking::NoSyncToken;
 
 namespace lama
 {

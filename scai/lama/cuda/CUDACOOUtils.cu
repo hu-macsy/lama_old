@@ -61,10 +61,10 @@
 
 using namespace scai::tasking;
 
-using scai::common::getScalarType;
-
 namespace scai
 {
+
+using common::getScalarType;
 
 namespace lama
 {

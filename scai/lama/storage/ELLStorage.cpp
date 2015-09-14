@@ -51,15 +51,16 @@
 // boost
 #include <boost/preprocessor.hpp>
 
+using namespace scai::tasking;
+using namespace scai::hmemo;
+
 namespace scai
 {
 
 namespace lama
 {
 
-using scai::common::shared_ptr;
-using namespace scai::tasking;
-using namespace scai::hmemo;
+using common::shared_ptr;
 
 /* --------------------------------------------------------------------------- */
 

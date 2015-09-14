@@ -53,11 +53,11 @@
 #include <scai/common/ScalarType.hpp>
 #include <scai/common/SCAITypes.hpp>
 
-// Not recommened, but here for convenience
-using scai::hmemo::ContextPtr;
-
 namespace scai
 {
+
+// Not recommened, but here for convenience
+using hmemo::ContextPtr;
 
 namespace lama
 {

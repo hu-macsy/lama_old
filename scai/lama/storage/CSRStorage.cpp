@@ -63,6 +63,8 @@
 // std
 #include <cmath>
 
+using namespace scai::hmemo;
+
 namespace scai
 {
 
@@ -70,12 +72,11 @@ namespace lama
 {
 
 using std::abs;
-using scai::common::unique_ptr;
-using scai::common::shared_ptr;
 
-using scai::tasking::TaskSyncToken;
+using common::unique_ptr;
+using common::shared_ptr;
 
-using namespace scai::hmemo;
+using tasking::TaskSyncToken;
 
 /* --------------------------------------------------------------------------- */
 
