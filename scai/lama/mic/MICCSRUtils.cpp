@@ -33,7 +33,7 @@
 
 // for dll_import
 #include <scai/lama/mic/MICCSRUtils.hpp>
-#include <scai/lama/mic/MICSyncToken.hpp>
+#include <scai/hmemo/mic/MICSyncToken.hpp>
 #include <omp.h>
 
 // others

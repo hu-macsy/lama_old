@@ -33,9 +33,6 @@
 
 ### Add classes and header files ###
 set ( CLASSES
-          MICContext
-          MICSyncToken
-          MICMemory
           MICUtils
           MICCSRUtils
           MICMKLCSRUtils

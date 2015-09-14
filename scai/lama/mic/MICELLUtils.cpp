@@ -34,21 +34,17 @@
 // hpp
 #include <scai/lama/mic/MICELLUtils.hpp>
 
-// others
+// local project
 #include <scai/lama/LAMAInterface.hpp>
 #include <scai/lama/LAMAInterfaceRegistry.hpp>
-
-#include <scai/tasking/NoSyncToken.hpp>
-#include <scai/lama/mic/MICSyncToken.hpp>
-#include <scai/lama/mic/MICContext.hpp>
-
-// macros
 #include <scai/lama/macros/unused.hpp>
 
-// tracing
-#include <scai/tracing.hpp>
+// other scai projects
+#include <scai/hmemo/mic/MICSyncToken.hpp>
+#include <scai/hmemo/mic/MICContext.hpp>
 
-// boost
+#include <scai/tasking/NoSyncToken.hpp>
+#include <scai/tracing.hpp>
 #include <scai/common/bind.hpp>
 
 // stl

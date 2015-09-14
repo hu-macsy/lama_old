@@ -1,5 +1,5 @@
 /**
- * @file MICSyncToken.cpp
+ * @file MICSyncToken.hpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,18 +25,20 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief MICSyncToken.cpp
+ * @brief MICSyncToken.hpp
  * @author Thomas Brandes
- * @date 03.07.2013
+ * @date 02.07.2013
  * @since 1.1.0
  */
 
-// hpp
-#include <scai/lama/mic/MICSyncToken.hpp>
+#pragma once
 
-// others
-#include <scai/tracing.hpp>
-#include <scai/common/Assert.hpp>
+// base classes
+#include <scai/tasking/SyncToken.hpp>
+#include <scai/hmemo/mic/MICContext.hpp>
+
+// boost
+#include <scai/common/shared_ptr.hpp>
 
 namespace scai
 {
@@ -44,61 +46,40 @@ namespace scai
 namespace tasking
 {
 
-MICSyncToken::MICSyncToken( MICContextPtr micContext )
-    : mMICContext( micContext ), mSignal( -1 )
+typedef common::shared_ptr<const scai::hmemo::MICContext> MICContextPtr;
+
+/** Class that sycnchronizes with a MIC offload transfer or computation. */
+
+class COMMON_DLL_IMPORTEXPORT MICSyncToken: public SyncToken
+
 {
-    SCAI_LOG_DEBUG( logger, "MICSyncToken for " << *micContext << " generated" )
-}
+public:
 
-MICSyncToken::~MICSyncToken()
-{
-    wait();
-}
+    /** Constructor for a MIC sychronization token.
+     *
+     *  @param[in]  context  is the MICcontext where asynchronous operation takes place
+     *
+     *  A pointer to the MIC context is required to enable/disable it.
+     */
 
-void MICSyncToken::wait()
-{
-    if( isSynchronized() )
-    {
-        return;
-    }
+    MICSyncToken( MICContextPtr context );
 
-    SCAI_LOG_DEBUG( logger, "wait for offload computation by signal" )
+    virtual ~MICSyncToken();
 
-    if( mSignal >= 0 )
-    {
-        // SCAI_REGION( "MIC.offloadSynchronize" )
+    /** After starting the offload computation/transfer with a signal this signal is set here. */
 
-        // // finally called functions might also need the context, e.g. unbindTexture
+    void setSignal( int signal );
 
-    }
+    virtual void wait();
 
-    setSynchronized();
-}
+    virtual bool probe() const;
 
-void MICSyncToken::setSignal( int signal )
-{
-    SCAI_ASSERT_ERROR( !isSynchronized(), "cannot set signal as SyncToken is already synchronized" )
+private:
 
-    SCAI_ASSERT_ERROR( mSignal < 0, "signal already set, cannot handle multiple signals" )
+    MICContextPtr mMICContext; // needed for synchronization
 
-    // this signal will be used to wait for synchronization
-
-    mSignal = signal;
-}
-
-bool MICSyncToken::probe() const
-{
-    // No idea what to do so wait
-
-    // wait();
-
-    if( isSynchronized() )
-    {
-        return true;
-    }
-
-    return false;
-}
+    int mSignal; // set by an offload computation
+};
 
 } /* end namespace tasking */
 

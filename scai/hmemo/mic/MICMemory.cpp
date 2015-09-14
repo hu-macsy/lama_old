@@ -33,11 +33,10 @@
 
 // hpp
 
-#include <scai/lama/mic/MICMemory.hpp>
-#include <scai/common/exception/Exception.hpp>
-#include <scai/tracing.hpp>
+#include <scai/hmemo/mic/MICMemory.hpp>
+#include <scai/common/Assert.hpp>
 
-#include <scai/lama/mic/MICContext.hpp>
+#include <scai/hmemo/mic/MICContext.hpp>
 #include <scai/tasking/NoSyncToken.hpp>
 
 #include <cstring>

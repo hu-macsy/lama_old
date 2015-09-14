@@ -40,7 +40,7 @@
 #include <scai/lama/LAMATypes.hpp>
 
 #include <scai/common/Assert.hpp>
-#include <scai/lama/mic/MICContext.hpp>
+#include <scai/hmemo/mic/MICContext.hpp>
 
 // logging
 #include <scai/logging.hpp>

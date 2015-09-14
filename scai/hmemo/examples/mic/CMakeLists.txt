@@ -30,15 +30,12 @@
  # @date 16.06.2015
 ###
 
-foreach ( executable Array1 BenchArray Aliasing Threading Create )
+# REMARKS
+#
+#   - include_directories are taken over from project
+#
+
+foreach ( executable MICExample1 )
     add_executable( ${executable} ${executable}.cpp )
     target_link_libraries( ${executable} scai_hmemo )
 endforeach ( executable )
-
-if    ( CUDA_FOUND AND USE_CUDA )
-    add_subdirectory ( cuda )
-endif ( CUDA_FOUND AND USE_CUDA )
-
-if ( USE_MIC )
-    add_subdirectory ( mic )
-endif ( USE_MIC )

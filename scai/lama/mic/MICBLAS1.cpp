@@ -39,7 +39,7 @@
 #include <scai/lama/LAMAInterfaceRegistry.hpp>
 #include <scai/lama/LAMATypes.hpp>
 #include <scai/tasking/SyncToken.hpp>
-#include <scai/lama/mic/MICContext.hpp>
+#include <scai/hmemo/mic/MICContext.hpp>
 
 // tracing with SCAI_REGION
 #include <scai/tracing.hpp>

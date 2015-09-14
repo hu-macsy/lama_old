@@ -33,17 +33,18 @@
 
 // hpp
 #include <scai/lama/mic/MICCOOUtils.hpp>
+
 #include <scai/lama/mic/MICUtils.hpp>
-#include <scai/lama/mic/MICSyncToken.hpp>
-#include <scai/lama/mic/MICContext.hpp>
 
 #include <scai/lama/openmp/OpenMP.hpp>
-
-// others
 #include <scai/lama/LAMAInterface.hpp>
 #include <scai/lama/LAMAInterfaceRegistry.hpp>
-#include <scai/tracing.hpp>
+
+// others
+#include <scai/hmemo/mic/MICSyncToken.hpp>
+#include <scai/hmemo/mic/MICContext.hpp>
 #include <scai/common/Assert.hpp>
+#include <scai/tracing.hpp>
 
 #include <cmath>
 

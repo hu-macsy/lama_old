@@ -25,20 +25,14 @@
  # SOFTWARE.
  # @endlicense
  #
- # @brief CMake configuration file for common examples
+ # @brief CMakeLists of hmemo/cuda
  # @author Thomas Brandes
- # @date 16.06.2015
+ # @date 09.06.2015
 ###
 
-foreach ( executable Array1 BenchArray Aliasing Threading Create )
-    add_executable( ${executable} ${executable}.cpp )
-    target_link_libraries( ${executable} scai_hmemo )
-endforeach ( executable )
+file ( GLOB MIC_SOURCES "*.cpp" )
+file ( GLOB MIC_HEADERS "*.hpp" )
 
-if    ( CUDA_FOUND AND USE_CUDA )
-    add_subdirectory ( cuda )
-endif ( CUDA_FOUND AND USE_CUDA )
+set ( MIC_SOURCES ${MIC_SOURCES} PARENT_SCOPE )
 
-if ( USE_MIC )
-    add_subdirectory ( mic )
-endif ( USE_MIC )
+install ( FILES ${MIC_HEADERS} DESTINATION include/scai/hmemo/mic )

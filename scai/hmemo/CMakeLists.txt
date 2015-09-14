@@ -94,12 +94,17 @@ if    ( CUDA_FOUND AND USE_CUDA )
     include_directories ( ${CUDA_TOOLKIT_INCLUDE} )
 endif ( CUDA_FOUND AND USE_CUDA )
 
+## add MIC if supported
+if    ( USE_MIC )
+    add_subdirectory ( mic )
+endif ( USE_MIC )
+
 ## add subdirectories
 add_subdirectory ( examples )
 add_subdirectory ( test )
 
 ## add library
-add_library ( scai_hmemo ${SCAI_LIBRARY_TYPE} ${CPP_SOURCES} ${CUDA_SOURCES} )
+add_library ( scai_hmemo ${SCAI_LIBRARY_TYPE} ${CPP_SOURCES} ${CUDA_SOURCES} ${MIC_SOURCES} )
 
 ## add link libraries
 list ( REVERSE SCAI_HMEMO_INTERNAL_DEPS )

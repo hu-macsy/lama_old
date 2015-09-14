@@ -34,14 +34,12 @@
 // hpp
 #include <scai/lama/mic/MICUtils.hpp>
 
-// others
-#include <scai/lama/mic/MICContext.hpp>
+// local project
 #include <scai/lama/LAMAInterfaceRegistry.hpp>
-#include <scai/tracing.hpp>
 
-#pragma offload_attribute (push, target(mic) )
-#include <cmath>
-#pragma offload_attribute (pop)
+// other SCAI projects
+#include <scai/tracing.hpp>
+#include <scai/hmemo/mic/MICContext.hpp>
 
 namespace scai
 {

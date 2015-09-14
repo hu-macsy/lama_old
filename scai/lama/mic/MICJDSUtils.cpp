@@ -34,19 +34,18 @@
 // hpp
 #include <scai/lama/mic/MICJDSUtils.hpp>
 
-// others
-#include <scai/lama/mic/MICContext.hpp>
+// local project
 #include <scai/lama/mic/MICUtils.hpp>
-#include <scai/lama/mic/MICSyncToken.hpp>
 
 #include <scai/lama/LAMAInterface.hpp>
 #include <scai/lama/LAMAInterfaceRegistry.hpp>
 #include <scai/lama/Scalar.hpp>
 
-// common library
+// other scai libraries
+#include <scai/hmemo/mic/MICContext.hpp>
+#include <scai/hmemo/mic/MICSyncToken.hpp>
 #include <scai/common/Assert.hpp>
 
-// trace library
 #include <scai/tracing.hpp>
 
 namespace scai

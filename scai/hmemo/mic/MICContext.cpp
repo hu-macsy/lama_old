@@ -32,14 +32,13 @@
  */
 
 // hpp
-#include <scai/lama/mic/MICContext.hpp>
-#include <scai/lama/mic/MICMemory.hpp>
+#include <scai/hmemo/mic/MICContext.hpp>
+#include <scai/hmemo/mic/MICMemory.hpp>
 
-#include <scai/common/exception/Exception.hpp>
+#include <scai/common/Assert.hpp>
 #include <scai/tasking/NoSyncToken.hpp>
-#include <scai/lama/mic/MICSyncToken.hpp>
+#include <scai/hmemo/mic/MICSyncToken.hpp>
 
-#include <scai/tracing.hpp>
 #include <omp.h>
 #include <mkl.h>
 

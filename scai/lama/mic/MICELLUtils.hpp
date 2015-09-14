@@ -33,14 +33,13 @@
 
 #pragma once
 
-// for dll_import
-#include <scai/common/config.hpp>
 
-// others
+// local project
 #include <scai/lama/LAMATypes.hpp>
 
-// logging
+// other scai projects
 #include <scai/logging.hpp>
+#include <scai/common/config.hpp>
 
 namespace scai
 {
