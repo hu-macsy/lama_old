@@ -34,13 +34,13 @@
 // hpp
 #include <scai/lama/NoCommunicator.hpp>
 
-// others
-#include <scai/tasking/NoSyncToken.hpp>
+// local library
 #include <scai/lama/CommunicationPlan.hpp>
 
-// assert
-#include <scai/common/Assert.hpp>
+// internal scai libraries
+#include <scai/tasking/NoSyncToken.hpp>
 
+#include <scai/common/Assert.hpp>
 #include <scai/common/weak_ptr.hpp>
 
 using namespace std;

@@ -39,7 +39,7 @@
 // base classes
 #include <scai/lama/solver/OmegaSolver.hpp>
 
-// others
+// local library
 #include <scai/lama/matrix/SparseMatrix.hpp>
 
 namespace scai

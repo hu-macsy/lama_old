@@ -32,15 +32,18 @@
  */
 #pragma once
 
+// local library
 #include <scai/hmemo/Context.hpp>
 
-#include <scai/common/config.hpp>
+// base classes
 #include <scai/common/Printable.hpp>
 #include <scai/common/NonCopyable.hpp>
-#include <scai/common/shared_ptr.hpp>
 
-// logging
+// internal scai libraries
 #include <scai/logging.hpp>
+
+#include <scai/common/config.hpp>
+#include <scai/common/shared_ptr.hpp>
 
 namespace scai
 {

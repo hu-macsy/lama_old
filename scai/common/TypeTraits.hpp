@@ -32,6 +32,7 @@
  */
 #pragma once
 
+// local library
 #include <scai/common/SCAITypes.hpp>
 
 namespace scai

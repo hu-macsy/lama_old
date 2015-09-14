@@ -39,7 +39,7 @@
 // base classes
 #include <scai/lama/solver/AMGSetup.hpp>
 
-// others
+// local library
 #include <scai/lama/solver/Solver.hpp>
 
 namespace scai

@@ -34,21 +34,25 @@
 // hpp
 #include <scai/lama/storage/COOStorage.hpp>
 
-// others
-#include <scai/hmemo.hpp>
-
+// local library
 #include <scai/lama/LAMAInterface.hpp>
 #include <scai/lama/LAMAArrayUtils.hpp>
-
-#include <scai/tasking/TaskSyncToken.hpp>
 
 #include <scai/lama/openmp/OpenMPUtils.hpp>
 #include <scai/lama/openmp/OpenMPCOOUtils.hpp>
 #include <scai/lama/openmp/OpenMPCSRUtils.hpp>
 
+// internal scai libraries
+#include <scai/hmemo.hpp>
+
+#include <scai/tasking/TaskSyncToken.hpp>
+
 #include <scai/tracing.hpp>
-#include <boost/preprocessor.hpp>
+
 #include <scai/common/bind.hpp>
+
+// boost
+#include <boost/preprocessor.hpp>
 
 using scai::common::unique_ptr;
 using scai::common::shared_ptr;

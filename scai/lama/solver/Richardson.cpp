@@ -33,7 +33,8 @@
 
  // hpp
 #include <scai/lama/solver/Richardson.hpp>
-// others
+
+// local library
 #include <scai/lama/expression/VectorExpressions.hpp>
 #include <scai/lama/expression/MatrixExpressions.hpp>
 #include <scai/lama/expression/MatrixVectorExpressions.hpp>

@@ -32,20 +32,26 @@
  */
 #pragma once
 
+// base classes
+#include <scai/common/Printable.hpp>
+
+// local library
 #include <scai/hmemo/Memory.hpp>
 
+// internal scai libraries
 #include <scai/logging.hpp>
 
 #include <scai/common/config.hpp>
 #include <scai/common/exception/Exception.hpp>
-#include <scai/common/Printable.hpp>
 
 namespace scai
 {
 
 namespace tasking
 {
+
 class SyncToken;
+
 }
 
 namespace hmemo
@@ -62,7 +68,7 @@ namespace hmemo
  *  free the allocated data. This might be done by other constructors.
  */
 
-class COMMON_DLL_IMPORTEXPORT ContextData: public scai::common::Printable
+class COMMON_DLL_IMPORTEXPORT ContextData: public common::Printable
 {
 private:
 

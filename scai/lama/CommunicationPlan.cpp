@@ -34,9 +34,10 @@
 // hpp
 #include <scai/lama/CommunicationPlan.hpp>
 
-// others
+// local library
 #include <scai/lama/Communicator.hpp>
 
+// internal scai libraries
 #include <scai/common/Assert.hpp>
 
 namespace scai

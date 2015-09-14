@@ -38,19 +38,18 @@
 // for dll_import
 #include <scai/common/config.hpp>
 
-// base classes
+// local library
 #include <scai/lama/CRTPCommunicator.hpp>
 
-// others
-#include <scai/common/SCAITypes.hpp>
+// internal scai libraries
 #include <scai/tasking/SyncToken.hpp>
 
-// logging
 #include <scai/logging.hpp>
 
-// Thread
+#include <scai/common/SCAITypes.hpp>
 #include <scai/common/Thread.hpp>
 
+// std
 #include <vector>
 
 namespace scai

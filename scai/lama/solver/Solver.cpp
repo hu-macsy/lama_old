@@ -34,13 +34,13 @@
 // hpp
 #include <scai/lama/solver/Solver.hpp>
 
-// others
+// local library
 #include <scai/lama/solver/logger/CommonLogger.hpp>
 #include <scai/lama/solver/logger/Timer.hpp>
 
 #include <scai/lama/expression/MatrixVectorExpressions.hpp>
 
-// assert
+// internal scai libraries
 #include <scai/tracing.hpp>
 
 namespace scai

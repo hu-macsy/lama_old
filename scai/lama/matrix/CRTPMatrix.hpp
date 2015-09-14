@@ -37,19 +37,18 @@
 // for dll_import
 #include <scai/common/config.hpp>
 
-#include <scai/lama/expression/all.hpp>
-
 // base classes
 #include <scai/lama/matrix/Matrix.hpp>
 
-// others
+// local library
+#include <scai/lama/expression/all.hpp>
+
 #include <scai/lama/DenseVector.hpp>
 #include <scai/lama/Scalar.hpp>
 
-// tracing
+// internal scai libraries
 #include <scai/tracing.hpp>
 
-// assert
 #include <scai/common/Assert.hpp>
 
 namespace scai

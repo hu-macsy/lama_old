@@ -33,12 +33,17 @@
 
 // hpp
 #include <scai/hmemo/mic/MICContext.hpp>
-#include <scai/hmemo/mic/MICMemory.hpp>
 
-#include <scai/common/Assert.hpp>
-#include <scai/tasking/NoSyncToken.hpp>
+// local library
+#include <scai/hmemo/mic/MICMemory.hpp>
 #include <scai/hmemo/mic/MICSyncToken.hpp>
 
+// internal scai libraries
+#include <scai/tasking/NoSyncToken.hpp>
+
+#include <scai/common/Assert.hpp>
+
+// external
 #include <omp.h>
 #include <mkl.h>
 

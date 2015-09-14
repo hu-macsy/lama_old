@@ -36,13 +36,13 @@
 // for dll_import
 #include <scai/common/config.hpp>
 
-// others
+// internal scai libraries
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/Assert.hpp>
 
-// logging
 #include <scai/logging.hpp>
 
+// std
 #include <cmath>
 
 namespace scai

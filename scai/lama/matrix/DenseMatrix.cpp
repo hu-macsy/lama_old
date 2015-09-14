@@ -34,21 +34,25 @@
 // hpp
 #include <scai/lama/matrix/DenseMatrix.hpp>
 
-// others
+// local library
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 
 #include <scai/lama/DenseVector.hpp>
 #include <scai/lama/LAMAInterface.hpp>
-#include <scai/tasking/NoSyncToken.hpp>
-#include <scai/tracing.hpp>
 
 #include <scai/lama/distribution/NoDistribution.hpp>
 #include <scai/lama/distribution/CyclicDistribution.hpp>
 #include <scai/lama/distribution/Redistributor.hpp>
 
-// boost
+// internal scai libraries
+#include <scai/tasking/NoSyncToken.hpp>
+
+#include <scai/tracing.hpp>
+
 #include <scai/common/unique_ptr.hpp>
 #include <scai/common/ScalarType.hpp>
+
+// boost
 #include <boost/preprocessor.hpp>
 
 using namespace scai::hmemo;

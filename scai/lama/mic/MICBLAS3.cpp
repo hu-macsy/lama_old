@@ -32,14 +32,17 @@
  */
 
 // hpp
-#include "mkl.h"
-
 #include <scai/lama/mic/MICBLAS3.hpp>
 
-// others
+// local library
 #include <scai/lama/BLASInterface.hpp>
 #include <scai/lama/LAMAInterfaceRegistry.hpp>
+
+// internal scai libraries
 #include <scai/tasking/SyncToken.hpp>
+
+// external
+#include <mkl.h>
 
 namespace scai
 {

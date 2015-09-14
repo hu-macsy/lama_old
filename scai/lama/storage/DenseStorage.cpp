@@ -34,13 +34,15 @@
 // hpp
 #include <scai/lama/storage/DenseStorage.hpp>
 
-// others
+// local library
 #include <scai/lama/LAMAInterface.hpp>
-#include <scai/hmemo/ContextAccess.hpp>
 
 #include <scai/lama/openmp/OpenMPDenseUtils.hpp>
 #include <scai/lama/openmp/OpenMPCSRUtils.hpp>
 #include <scai/lama/openmp/OpenMPUtils.hpp>
+
+// internal scai libraries
+#include <scai/hmemo/ContextAccess.hpp>
 
 namespace scai
 {

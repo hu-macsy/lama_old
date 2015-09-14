@@ -33,11 +33,11 @@
 // hpp
 #include <scai/lama/distribution/Redistributor.hpp>
 
-// others
+// local library
 #include <scai/lama/distribution/HaloBuilder.hpp>
 
+// internal scai libraries
 #include <scai/common/Assert.hpp>
-
 #include <scai/common/unique_ptr.hpp>
 
 using scai::common::unique_ptr;

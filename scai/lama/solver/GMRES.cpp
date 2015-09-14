@@ -34,7 +34,7 @@
 // hpp
 #include <scai/lama/solver/GMRES.hpp>
 
-// others
+// local library
 #include <scai/lama/expression/VectorExpressions.hpp>
 #include <scai/lama/expression/MatrixVectorExpressions.hpp>
 
@@ -44,6 +44,7 @@
 // tracing
 #include <scai/tracing.hpp>
 
+// external
 #include <omp.h>
 
 using scai::common::unique_ptr;

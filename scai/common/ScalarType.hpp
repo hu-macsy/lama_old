@@ -38,11 +38,12 @@
 // base classes
 #include <scai/common/Printable.hpp>
 
-// others
+// local library
 #include <scai/common/SCAITypes.hpp>
 
 #include <scai/common/exception/Exception.hpp>
 
+// std
 #include <iostream>
 
 namespace scai

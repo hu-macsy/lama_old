@@ -31,19 +31,25 @@
  * @since 1.0.1
  */
 
+// hpp
+#include <scai/lama/cuda/CUSparseCSRUtils.hpp>
+
+// local library
 #include <scai/lama/LAMAInterface.hpp>
 #include <scai/lama/LAMAInterfaceRegistry.hpp>
-
 #include <scai/lama/cuda/utils.cu.h>
-#include <scai/common/cuda/CUDAError.hpp>
-#include <scai/lama/cuda/CUSparseCSRUtils.hpp>
-#include <scai/hmemo/cuda/CUDAStreamSyncToken.hpp>
-#include <scai/common/Settings.hpp>
 
-#include <cuda.h>
-#include <cusparse_v2.h>
+// internal scai libraries
+#include <scai/hmemo/cuda/CUDAStreamSyncToken.hpp>
 
 #include <scai/tracing.hpp>
+
+#include <scai/common/cuda/CUDAError.hpp>
+#include <scai/common/Settings.hpp>
+
+// CUDA
+#include <cuda.h>
+#include <cusparse_v2.h>
 
 namespace scai
 {

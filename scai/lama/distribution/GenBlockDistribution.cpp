@@ -33,9 +33,14 @@
 
 // hpp
 #include <scai/lama/distribution/GenBlockDistribution.hpp>
+
+// local library
 #include <scai/lama/matrix/Matrix.hpp>
+
+// internal scai libraries
 #include <scai/common/unique_ptr.hpp>
 
+// std
 #include <fstream>
 
 namespace scai

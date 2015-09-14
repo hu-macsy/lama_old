@@ -34,15 +34,7 @@
 // hpp
 #include <scai/lama/DenseVector.hpp>
 
-// others
-#include <scai/common/unique_ptr.hpp>
-
-#include <scai/common/exception/UnsupportedException.hpp>
-
-#include <scai/tracing.hpp>
-
-#include <scai/hmemo/ContextAccess.hpp>
-
+// local library
 #include <scai/lama/LAMAArrayUtils.hpp>
 #include <scai/lama/LAMAInterface.hpp>
 
@@ -57,8 +49,18 @@
 #include <scai/lama/io/FileIO.hpp>
 #include <scai/lama/io/FileType.hpp>
 
+// internal scai libraries
+#include <scai/hmemo/ContextAccess.hpp>
+
+#include <scai/tracing.hpp>
+
+#include <scai/common/unique_ptr.hpp>
+#include <scai/common/exception/UnsupportedException.hpp>
+
+// boost
 #include <boost/preprocessor.hpp>
 
+// std
 #include <ostream>
 
 using namespace scai::common;

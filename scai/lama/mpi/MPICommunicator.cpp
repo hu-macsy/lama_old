@@ -34,26 +34,25 @@
 // hpp
 #include <scai/lama/mpi/MPICommunicator.hpp>
 
-// others
+// local library
 #include <scai/lama/mpi/MPISyncToken.hpp>
 #include <scai/lama/mpi/MPIUtils.hpp>
 
-#include <scai/common/Settings.hpp>
-#include <scai/common/Assert.hpp>
-
-// tracing
+// internal scai libraries
 #include <scai/tracing.hpp>
 
-// boost
+#include <scai/common/Settings.hpp>
+#include <scai/common/Assert.hpp>
 #include <scai/common/unique_ptr.hpp>
 #include <scai/common/bind.hpp>
 #include <scai/common/unique_ptr.hpp>
+
+// boost
 #include <boost/preprocessor.hpp>
 
+// std
 #include <iostream>
 #include <algorithm>
-
-#include <mpi.h>
 
 using namespace std;
 using scai::common::shared_ptr;

@@ -34,9 +34,11 @@
 // hpp
 #include <scai/lama/mpi/MPISyncToken.hpp>
 
-// others
-#include <scai/tracing.hpp>
+// local library
 #include <scai/lama/mpi/MPIUtils.hpp>
+
+// internal scai libraries
+#include <scai/tracing.hpp>
 
 #include <scai/common/Assert.hpp>
 

@@ -34,18 +34,20 @@
 // hpp
 #include <scai/lama/openmp/LAPACKe_LAPACK.hpp>
 
-// others
+// local library
 #include <scai/lama/openmp/OpenMPBLAS1.hpp>
-
 #include <scai/lama/BLASInterface.hpp>
 #include <scai/lama/LAMAInterfaceRegistry.hpp>
 #include <scai/lama/openmp/BLASHelper.hpp>
 
+// internal scai libraries
 #include <scai/common/unique_ptr.hpp>
 #include <scai/common/Assert.hpp>
 
+// external
 #include <mkl_lapacke.h>
 
+// boost
 #include <boost/preprocessor.hpp>
 
 using scai::common::scoped_array;

@@ -34,7 +34,7 @@
 // hpp
 #include <scai/hmemo/mic/MICSyncToken.hpp>
 
-// others
+// internal scai libraries
 #include <scai/common/Assert.hpp>
 
 namespace scai

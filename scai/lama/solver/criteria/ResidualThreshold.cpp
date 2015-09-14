@@ -34,7 +34,7 @@
 // hpp
 #include <scai/lama/solver/criteria/ResidualThreshold.hpp>
 
-// others
+// local library
 #include <scai/lama/solver/IterativeSolver.hpp>
 
 #include <scai/lama/norm/L2Norm.hpp> //default

@@ -33,15 +33,18 @@
 
 // hpp
 #include <scai/lama/openmp/OpenMPCOOUtils.hpp>
+
+// local library
 #include <scai/lama/openmp/OpenMPUtils.hpp>
-
-// others
-#include <scai/lama/LAMAInterface.hpp>
-#include <scai/lama/LAMAInterfaceRegistry.hpp>
-#include <scai/tracing.hpp>
-
 #include <scai/lama/openmp/OpenMP.hpp>
 
+#include <scai/lama/LAMAInterface.hpp>
+#include <scai/lama/LAMAInterfaceRegistry.hpp>
+
+// internal scai libraries
+#include <scai/tracing.hpp>
+
+// boost
 #include <boost/preprocessor.hpp>
 
 using scai::common::getScalarType;

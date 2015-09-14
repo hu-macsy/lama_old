@@ -34,8 +34,8 @@
 // hpp
 #include <scai/lama/io/FileIO.hpp>
 
+// internal scai libraries
 #include <scai/common/Assert.hpp>
-
 
 namespace scai
 {

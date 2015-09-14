@@ -32,19 +32,24 @@
  */
 #pragma once
 
+// for dll_import
+#include <scai/common/config.hpp>
+
 // base classes
+#include <scai/tasking/SyncToken.hpp>
+
+// internal scai libraries
 #include <scai/tasking/SyncToken.hpp>
 
 #include <scai/common/shared_ptr.hpp>
 
-#include <list>
-#include <memory>
-
+// CUDA
 #include <cuda.h>
 #include <cuda_runtime.h> /* no diagnostic for this one */
 
-#include <scai/common/config.hpp>
-#include <scai/tasking/SyncToken.hpp>
+// std
+#include <list>
+#include <memory>
 
 namespace scai
 {

@@ -33,20 +33,21 @@
 
 // for dll_import
 #include <scai/lama/mic/MICCSRUtils.hpp>
-#include <scai/hmemo/mic/MICSyncToken.hpp>
-#include <omp.h>
 
-// others
+// local libray
 #include <scai/lama/LAMAInterface.hpp>
 #include <scai/lama/LAMAInterfaceRegistry.hpp>
 
-// assert
-#include <scai/common/Assert.hpp>
+// internal scai libraries
+#include <scai/hmemo/mic/MICSyncToken.hpp>
 
-// trace
 #include <scai/tracing.hpp>
 
+#include <scai/common/Assert.hpp>
 #include <scai/common/bind.hpp>
+
+// extern
+#include <omp.h>
 
 namespace scai
 {

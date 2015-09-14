@@ -33,6 +33,7 @@
 
 #pragma once
 
+// base class
 #include <scai/common/exception/Exception.hpp>
 
 namespace scai

@@ -39,19 +39,19 @@
 #include <scai/common/config.hpp>
 
 // base classes
+#include <scai/common/Printable.hpp>
+#include <scai/tasking/SyncToken.hpp>
+#include <scai/common/Factory.hpp>
 
-// others
+// local library
 #include <scai/hmemo/Context.hpp>
 #include <scai/hmemo/ContextDataManager.hpp>
 
-#include <scai/tasking/SyncToken.hpp>
-
-// common
-#include <scai/common/Printable.hpp>
-#include <scai/common/Factory.hpp>
+// internal scai libraries
 #include <scai/common/ScalarType.hpp>
 #include <scai/common/Assert.hpp>
 
+// std
 #include <vector>
 #include <map>
 

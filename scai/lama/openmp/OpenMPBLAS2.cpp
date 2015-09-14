@@ -33,11 +33,13 @@
 
 // hpp
 #include <scai/lama/openmp/OpenMPBLAS2.hpp>
+
+// local library
 #include <scai/lama/BLASInterface.hpp>
 #include <scai/lama/LAMAInterfaceRegistry.hpp>
 
-// macros
-#include <scai/lama/macros/unused.hpp>
+// internal scai libraries
+#include <scai/common/macros/unused.hpp>
 
 // boost
 #include <boost/preprocessor.hpp>

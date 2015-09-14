@@ -30,10 +30,12 @@
  * @date 11.06.2015
  */
 
+/// local library
 #include <scai/tracing/TraceData.hpp>
 #include <scai/tracing/CallStack.hpp>
 #include <scai/tracing/CallTreeTable.hpp>
 
+// internal scai libraries
 #include <scai/common/Assert.hpp>
 
 namespace scai

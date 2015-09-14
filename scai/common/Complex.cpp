@@ -31,6 +31,7 @@
  * @since 1.1.0
  */
 
+// hpp
 #include <scai/common/Complex.hpp>
 
 namespace scai

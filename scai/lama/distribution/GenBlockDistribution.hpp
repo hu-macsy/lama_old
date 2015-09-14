@@ -39,6 +39,7 @@
 // base classes
 #include <scai/lama/distribution/Distribution.hpp>
 
+// internal scai libraries
 #include <scai/common/unique_ptr.hpp>
 
 namespace scai

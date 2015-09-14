@@ -31,10 +31,12 @@
  */
 
 // hpp
-
 #include <scai/hmemo/ContextDataManager.hpp>
+
+// local library
 #include <scai/hmemo/Context.hpp>
 
+// internal scai libraries
 #include <scai/common/Assert.hpp>
 
 namespace scai

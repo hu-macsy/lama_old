@@ -30,24 +30,27 @@
  * @date 04.07.2012
  */
 
-#include <scai/common/SCAITypes.hpp>
-#include <scai/common/bind.hpp>
+// hpp
+#include <scai/lama/cuda/CUDACOOUtils.hpp>
 
-#include <scai/common/cuda/CUDAError.hpp>
-
-// tracing
-#include <scai/tracing.hpp>
-#include <scai/tasking/SyncToken.hpp>
-
-#include <scai/hmemo/cuda/CUDAStreamSyncToken.hpp>
+// local library
+#include <scai/lama/cuda/utils.cu.h>
+#include <scai/lama/cuda/CUDAUtils.hpp>
+#include <scai/lama/cuda/CUDASettings.hpp>
 
 #include <scai/lama/LAMAInterface.hpp>
 #include <scai/lama/LAMAInterfaceRegistry.hpp>
 
-#include <scai/lama/cuda/utils.cu.h>
-#include <scai/lama/cuda/CUDAUtils.hpp>
-#include <scai/lama/cuda/CUDACOOUtils.hpp>
-#include <scai/lama/cuda/CUDASettings.hpp>
+// internal scai library
+#include <scai/hmemo/cuda/CUDAStreamSyncToken.hpp>
+
+#include <scai/tracing.hpp>
+#include <scai/tasking/SyncToken.hpp>
+
+#include <scai/common/SCAITypes.hpp>
+#include <scai/common/bind.hpp>
+
+#include <scai/common/cuda/CUDAError.hpp>
 
 // thrust
 #include <thrust/device_ptr.h>

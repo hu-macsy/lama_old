@@ -34,8 +34,11 @@
 
 // for dll_import
 #include <scai/common/config.hpp>
+
+// local library
 #include <scai/common/NonCopyable.hpp>
 
+// std
 #include <exception>
 #include <string>
 #include <sstream>

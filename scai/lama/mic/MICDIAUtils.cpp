@@ -31,20 +31,23 @@
  * @since 1.1.0
  */
 
-// for dll_import
-#include <scai/lama/mic/MICUtils.hpp>
-
-// others
+// hpp
 #include <scai/lama/mic/MICDIAUtils.hpp>
 
+
+// local library
+#include <scai/lama/mic/MICUtils.hpp>
 #include <scai/lama/LAMAInterface.hpp>
 #include <scai/lama/LAMAInterfaceRegistry.hpp>
+
+// internal scai libraries
 #include <scai/tasking/TaskSyncToken.hpp>
+
 #include <scai/tracing.hpp>
 
-// assert
 #include <scai/common/Assert.hpp>
 
+// std
 #include <cmath>
 
 namespace scai

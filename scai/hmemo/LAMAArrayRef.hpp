@@ -35,7 +35,10 @@
 
 #pragma once
 
+// base classes
 #include <scai/hmemo/LAMAArray.hpp>
+
+// local library
 #include <scai/hmemo/HostMemory.hpp>
 
 namespace scai

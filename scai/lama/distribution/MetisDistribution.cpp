@@ -33,10 +33,12 @@
 
 // hpp
 #include <scai/lama/distribution/MetisDistribution.hpp>
+
+// local library
 #include <scai/lama/distribution/NoDistribution.hpp>
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 
-// others
+// internal scai libraries
 #include <scai/tracing.hpp>
 
 extern "C"

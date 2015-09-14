@@ -36,20 +36,22 @@
 // hpp
 #include <scai/lama/StorageIO.hpp>
 
-// others
+// local library
 #include <scai/lama/io/FileIO.hpp>
 #include <scai/lama/io/XDRFileStream.hpp>
 #include <scai/lama/io/mmio.hpp>
 
+#include <scai/lama/openmp/OpenMPCSRUtils.hpp>
+
+// internal scai libraries
 #include <scai/hmemo.hpp>
 
-#include <scai/common/exception/Exception.hpp>
-
-#include <scai/lama/openmp/OpenMPCSRUtils.hpp>
 #include <scai/tracing.hpp>
 
-// boost
+#include <scai/common/exception/Exception.hpp>
 #include <scai/common/unique_ptr.hpp>
+
+// boost
 #include <boost/preprocessor.hpp>
 
 using scai::common::unique_ptr;

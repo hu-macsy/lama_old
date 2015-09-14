@@ -34,7 +34,7 @@
 // hpp
 #include <scai/lama/LAMAInterfaceRegistry.hpp>
 
-// others
+// internal scai libraries
 #include <scai/common/exception/Exception.hpp>
 #include <scai/common/Assert.hpp>
 

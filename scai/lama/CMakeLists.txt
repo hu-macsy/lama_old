@@ -147,7 +147,6 @@ endif ( USE_MIC )
 add_subdirectory ( distribution )
 add_subdirectory ( expression )
 add_subdirectory ( io )
-add_subdirectory ( macros )
 add_subdirectory ( matrix )
 add_subdirectory ( matutils )
 

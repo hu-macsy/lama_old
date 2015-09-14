@@ -34,7 +34,7 @@
 // hpp
 #include <scai/lama/solver/SOR.hpp>
 
-// others
+// local library
 #include <scai/lama/expression/VectorExpressions.hpp>
 #include <scai/lama/expression/MatrixVectorExpressions.hpp>
 

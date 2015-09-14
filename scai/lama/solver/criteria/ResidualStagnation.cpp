@@ -34,9 +34,10 @@
 // hpp
 #include <scai/lama/solver/criteria/ResidualStagnation.hpp>
 
-// others
+// local library
 #include <scai/lama/solver/IterativeSolver.hpp>
 
+// std
 #include <iostream>
 #include <algorithm>
 

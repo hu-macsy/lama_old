@@ -32,9 +32,11 @@
 
 #pragma once
 
+// internal scai libraries
 #include <scai/common/Walltime.hpp>
 #include <scai/common/Printable.hpp>
 
+// std
 #include <ostream>
 
 namespace scai
@@ -42,6 +44,7 @@ namespace scai
 
 namespace tracing
 {
+
 static const int MAX_COUNTERS = 1;
 
 static const int usedCounters = 1;    //!< number of counters used, <= MAX_COUNTERS

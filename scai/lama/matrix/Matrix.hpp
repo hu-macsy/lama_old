@@ -37,22 +37,23 @@
 // base classes
 #include <scai/lama/Distributed.hpp>
 
-// others
-#include <scai/common/Factory.hpp>
-#include <scai/common/ScalarType.hpp>
-#include <scai/common/SCAITypes.hpp>
-
+// local library
 #include <scai/lama/Scalar.hpp>
 #include <scai/lama/Vector.hpp>
-#include <scai/hmemo.hpp>
 
 #include <scai/lama/distribution/Distribution.hpp>
 #include <scai/lama/distribution/NoDistribution.hpp>
 #include <scai/lama/expression/Expression.hpp>
 #include <scai/lama/storage/MatrixStorage.hpp>
 
-// logging
+// internal scai libraries
+#include <scai/hmemo.hpp>
+
 #include <scai/logging.hpp>
+
+#include <scai/common/Factory.hpp>
+#include <scai/common/ScalarType.hpp>
+#include <scai/common/SCAITypes.hpp>
 
 namespace scai
 {

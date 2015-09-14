@@ -32,21 +32,22 @@
  */
 
 // hpp
-#include <scai/lama/openmp/OpenMP.hpp>
 #include <scai/lama/openmp/OpenMPBLAS1.hpp>
 
-// others
+// local library
+#include <scai/lama/openmp/OpenMP.hpp>
 #include <scai/lama/BLASInterface.hpp>
 #include <scai/lama/LAMAInterfaceRegistry.hpp>
 
-// macros
-#include <scai/lama/macros/unused.hpp>
+// internal scai libraries
+#include <scai/common/macros/unused.hpp>
 
-// tracing with SCAI_REGION
 #include <scai/tracing.hpp>
 
+// boost
 #include <boost/preprocessor.hpp>
 
+// std
 #include <cmath>
 
 namespace scai

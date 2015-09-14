@@ -34,14 +34,17 @@
 // hpp
 #include <scai/lama/matutils/MatrixCreator.hpp>
 
-// others
-#include <scai/hmemo/WriteAccess.hpp>
-
+// local library
 #include <scai/lama/distribution/BlockDistribution.hpp>
 #include <scai/lama/distribution/GeneralDistribution.hpp>
 
+// internal scai libraries
+#include <scai/hmemo/WriteAccess.hpp>
+
+// boost
 #include <boost/preprocessor.hpp>
 
+// std
 #include <cmath>
 
 namespace scai

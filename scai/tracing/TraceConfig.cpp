@@ -33,11 +33,13 @@
 // hpp
 #include <scai/tracing/TraceConfig.hpp>
 
-// others
+// local library
 #include <scai/tracing/VTInterface.hpp>
 #include <scai/tracing/TraceData.hpp>
+
 #include <scai/common/exception/Exception.hpp>
 
+// std
 #include <iostream>
 #include <cstdlib>
 

@@ -31,21 +31,22 @@
  * @since 1.0.0
  */
 
-// for dll_import
+// hpp
 #include <scai/lama/mic/MICMKLCSRUtils.hpp>
+
+// local library
 #include <scai/lama/mic/MICUtils.hpp>
 
-// others
 #include <scai/lama/LAMAInterface.hpp>
 #include <scai/lama/LAMAInterfaceRegistry.hpp>
 
-// assert
+// internal scai libraries
+#include <scai/tracing.hpp>
+
 #include <scai/common/Assert.hpp>
 #include <scai/common/Settings.hpp>
 
-// trace
-#include <scai/tracing.hpp>
-
+// external
 #include <mkl.h>
 
 namespace scai

@@ -34,8 +34,7 @@
 // hpp
 #include <scai/lama/matrix/SparseMatrix.hpp>
 
-// other from this project
-
+// local library
 #include <scai/lama/LAMAArrayUtils.hpp>
 
 #include <scai/lama/matrix/DenseMatrix.hpp>
@@ -50,20 +49,19 @@
 #include <scai/lama/LAMAInterface.hpp>
 #include <scai/lama/openmp/OpenMPCSRUtils.hpp>
 
-// internal projects
+// internal libraries
  
-#include <scai/common/bind.hpp>
-
-#include <scai/common/exception/Exception.hpp>
+#include <scai/tasking/NoSyncToken.hpp>
 
 #include <scai/tracing.hpp>
 
-#include <scai/tasking/NoSyncToken.hpp>
+#include <scai/common/bind.hpp>
+#include <scai/common/exception/Exception.hpp>
 
-// external
-
+// boost
 #include <boost/preprocessor.hpp>
 
+// std
 #include <cmath>
 
 using namespace scai::hmemo;

@@ -7,6 +7,7 @@
 
 #pragma once
 
+// local library
 #include <scai/common/exception/AssertException.hpp>
 
 template<typename ValueType>

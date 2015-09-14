@@ -29,9 +29,14 @@
  * @author Thomas Brandes
  * @date   10.06.2015
  */
+
+// local library
 #include <scai/logging.hpp>
+
+// internal scai libraries
 #include <scai/common/exception/Exception.hpp>
 
+// std
 #include <iostream>
 #include <sstream>
 

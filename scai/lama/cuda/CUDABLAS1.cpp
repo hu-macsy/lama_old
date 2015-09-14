@@ -34,20 +34,20 @@
 // hpp
 #include <scai/lama/cuda/CUDABLAS1.hpp>
 
-// others
-#include <scai/common/cuda/CUDAError.hpp>
-#include <scai/hmemo/cuda/CUDAStreamSyncToken.hpp>
+// local library
 #include <scai/lama/cuda/lama_cublas.hpp>
 #include <scai/lama/LAMAInterface.hpp>
 #include <scai/lama/LAMAInterfaceRegistry.hpp>
 
-// macros
-#include <scai/lama/macros/unused.hpp>
+// internal scai libraries
+#include <scai/hmemo/cuda/CUDAStreamSyncToken.hpp>
 
-// tracing with SCAI_REGION
 #include <scai/tracing.hpp>
 
-// blas
+#include <scai/common/cuda/CUDAError.hpp>
+#include <scai/common/macros/unused.hpp>
+
+// boost
 #include <boost/preprocessor.hpp>
 
 using namespace scai::tasking;

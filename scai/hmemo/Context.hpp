@@ -42,7 +42,7 @@
 #include <scai/common/Printable.hpp>
 #include <scai/common/NonCopyable.hpp>
 
-// logging
+// internal scai libraries
 #include <scai/logging.hpp>
 
 #include <scai/common/shared_ptr.hpp>

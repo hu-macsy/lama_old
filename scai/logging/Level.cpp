@@ -30,8 +30,10 @@
  * @date 01.03.2011
  */
 
+// local library
 #include <scai/logging/Level.hpp>
 
+// std
 #include <cstring>
 
 namespace scai

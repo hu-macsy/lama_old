@@ -5,11 +5,14 @@
  *      Author: eschricker
  */
 
+// hpp
 #include <scai/common/exception/AssertException.hpp>
 
-namespace scai {
+namespace scai
+{
 
-namespace common {
+namespace common
+{
 
 AssertException::AssertException()
 {

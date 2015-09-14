@@ -33,14 +33,15 @@
 // hpp
 #include <scai/tracing/TraceRegionRecord.hpp>
 
-// others
-
+// local library
 #include <scai/tracing/TraceData.hpp>
 #include <scai/tracing/TraceConfig.hpp>
 #include <scai/tracing/VTInterface.hpp>
 
+// internal scai libraries
 #include <scai/common/Walltime.hpp>
 
+// std
 #include <cstdio>
 
 namespace scai

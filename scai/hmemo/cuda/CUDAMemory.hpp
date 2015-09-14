@@ -37,14 +37,16 @@
 // base classes
 #include <scai/hmemo/Memory.hpp>
 
-// others
+// internal scai libraries
 #include <scai/common/Thread.hpp>
 
+// CUDA
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include <cusparse.h>
 #include <cublas_v2.h>
 
+// std
 #include <string>
 
 namespace scai

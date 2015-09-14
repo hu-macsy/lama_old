@@ -39,9 +39,10 @@
 // base classes
 #include <scai/lama/solver/IterativeSolver.hpp>
 
-// others
+// local library
 #include <scai/lama/solver/AMGSetup.hpp>
 
+// std
 #include <vector>
 
 namespace scai

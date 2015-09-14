@@ -34,17 +34,19 @@
 // hpp
 #include <scai/lama/cuda/CUDABLAS3.hpp>
 
-// others
+// local library
 #include <scai/lama/LAMAInterface.hpp>
 #include <scai/lama/LAMAInterfaceRegistry.hpp>
-#include <scai/common/cuda/CUDAError.hpp>
-#include <scai/hmemo/cuda/CUDAStreamSyncToken.hpp>
 #include <scai/lama/openmp/BLASHelper.hpp>
 #include <scai/lama/cuda/lama_cublas.hpp>
 
-// macros
-#include <scai/lama/macros/unused.hpp>
+// internal scai library
+#include <scai/hmemo/cuda/CUDAStreamSyncToken.hpp>
 
+#include <scai/common/cuda/CUDAError.hpp>
+#include <scai/common/macros/unused.hpp>
+
+// boost
 #include <boost/preprocessor.hpp>
 
 using namespace scai::tasking;

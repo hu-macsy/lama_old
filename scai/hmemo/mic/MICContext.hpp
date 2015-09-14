@@ -38,13 +38,16 @@
 
 // base classes
 #include <scai/hmemo/Context.hpp>
-#include <scai/common/shared_ptr.hpp>
-#include <scai/common/weak_ptr.hpp>
+
+// internal scai libraries
 #include <scai/tasking/SyncToken.hpp>
 
 #include <scai/logging.hpp>
 
-// others
+#include <scai/common/shared_ptr.hpp>
+#include <scai/common/weak_ptr.hpp>
+
+// std
 #include <string>
 
 namespace scai

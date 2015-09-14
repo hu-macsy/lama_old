@@ -32,8 +32,10 @@
 
 #pragma once
 
+// internal scai libraries
 #include <scai/common/config.hpp>
 
+// std
 #include <ostream>
 #include <string>
 

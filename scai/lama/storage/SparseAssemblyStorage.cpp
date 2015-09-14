@@ -34,13 +34,17 @@
 // hpp
 #include <scai/lama/storage/SparseAssemblyStorage.hpp>
 
+// local library
 #include <scai/lama/openmp/OpenMPUtils.hpp>
 #include <scai/lama/openmp/OpenMPCSRUtils.hpp>
 
+// internal scai libraries
 #include <scai/hmemo.hpp>
 
+// boost
 #include <boost/preprocessor.hpp>
 
+// std
 #include <cmath>
 
 using namespace scai::hmemo;

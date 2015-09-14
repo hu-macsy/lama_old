@@ -39,7 +39,7 @@
 // base classes
 #include <scai/hmemo/Access.hpp>
 
-// others
+// local library
 #include <scai/hmemo/Context.hpp>
 
 // logging

@@ -34,19 +34,20 @@
 // hpp
 #include <scai/lama/LAMAArrayUtils.hpp>
 
-// others
-#include <scai/common/SCAITypes.hpp>
-
-#include <scai/hmemo.hpp>
-
+// local library
 #include <scai/lama/LAMAInterface.hpp>
 
-// tracing
+// internal scai libraries
+#include <scai/hmemo.hpp>
+
 #include <scai/tracing.hpp>
+
+#include <scai/common/SCAITypes.hpp>
 
 // boost
 #include <boost/preprocessor.hpp>
 
+// std
 #include <iostream>
 
 using namespace scai::hmemo;

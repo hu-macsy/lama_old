@@ -33,10 +33,12 @@
 
 // hpp
 #include <scai/lama/openmp/OpenMPUtils.hpp>
-#include <scai/lama/openmp/OpenMP.hpp>
 
-// others
+// local library
+#include <scai/lama/openmp/OpenMP.hpp>
 #include <scai/lama/LAMAInterfaceRegistry.hpp>
+
+// internal scai libraries
 #include <scai/tracing.hpp>
 
 // boost

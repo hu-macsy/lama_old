@@ -34,7 +34,7 @@
 // hpp
 #include <scai/lama/solver/SingleGridSetup.hpp>
 
-// others
+// local library
 #include <scai/lama/solver/SOR.hpp>
 #include <scai/lama/solver/criteria/IterationCount.hpp>
 

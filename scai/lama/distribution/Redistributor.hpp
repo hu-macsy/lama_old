@@ -38,15 +38,19 @@
 
 // base classes
 #include <scai/common/Printable.hpp>
-#include <scai/common/unique_ptr.hpp>
 
-// others
+// local library
 #include <scai/lama/distribution/Distribution.hpp>
 #include <scai/lama/distribution/Halo.hpp>
+
+// internal scai libraries
+#include <scai/hmemo/LAMAArray.hpp>
+
+#include <scai/tasking/SyncToken.hpp>
+
 #include <scai/tracing.hpp>
 
-#include <scai/hmemo/LAMAArray.hpp>
-#include <scai/tasking/SyncToken.hpp>
+#include <scai/common/unique_ptr.hpp>
 
 namespace scai
 {

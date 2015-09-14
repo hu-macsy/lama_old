@@ -33,15 +33,15 @@
 // hpp
 #include <scai/lama/distribution/Distribution.hpp>
 
-// assert
-#include <scai/common/Assert.hpp>
+// local library
 #include <scai/lama/Scalar.hpp>
+
+// internal scai libraries
 #include <scai/hmemo.hpp>
 
-// tracing
 #include <scai/tracing.hpp>
 
-// 
+#include <scai/common/Assert.hpp>
 #include <scai/common/unique_ptr.hpp>
 
 // boost

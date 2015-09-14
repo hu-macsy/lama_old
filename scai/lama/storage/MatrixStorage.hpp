@@ -33,14 +33,16 @@
 
 #pragma once
 
-#include <ostream>
-
-// others
-#include <scai/hmemo.hpp>
+// local library
+#include <scai/lama/io/FileType.hpp>
 #include <scai/lama/Communicator.hpp>
 #include <scai/lama/Scalar.hpp>
 
-#include <scai/lama/io/FileType.hpp>
+// internal scai libraries
+#include <scai/hmemo.hpp>
+
+// std
+#include <ostream>
 
 using scai::hmemo::Context;
 using scai::hmemo::ContextPtr;

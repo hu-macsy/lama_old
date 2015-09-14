@@ -36,27 +36,26 @@
 
 // base classes
 #include <scai/common/NonCopyable.hpp>
+#include <scai/common/Factory.hpp>
+#include <scai/common/Printable.hpp>
 
-// others
+#include <scai/lama/CommunicationPlan.hpp>
+
+// internal scai libraris
+#include <scai/hmemo.hpp>
+
+#include <scai/tasking/SyncToken.hpp>
+
+#include <scai/logging.hpp>
+
 #include <scai/common/Assert.hpp>
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/shared_ptr.hpp>
 
-#include <scai/tasking/SyncToken.hpp>
-
-#include <scai/hmemo.hpp>
-
-#include <scai/lama/CommunicationPlan.hpp>
-
-// logging
-#include <scai/logging.hpp>
-
-// Communicator factory
-#include <scai/common/Factory.hpp>
-
 // boost
 #include <boost/preprocessor.hpp>
 
+// std
 #include <memory>
 #include <vector>
 

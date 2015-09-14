@@ -38,14 +38,14 @@
 // base classes
 #include <scai/hmemo/Access.hpp>
 
-// others
+// local library
 #include <scai/hmemo/LAMAArray.hpp>
 #include <scai/hmemo/Context.hpp>
 
-#include <scai/common/exception/Exception.hpp>
-
-// logging
+// internal scai libraries
 #include <scai/logging.hpp>
+
+#include <scai/common/exception/Exception.hpp>
 
 namespace scai
 {

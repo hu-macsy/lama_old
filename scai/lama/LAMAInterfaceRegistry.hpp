@@ -39,13 +39,15 @@
 // base classes
 #include <scai/common/NonCopyable.hpp>
 
-// others
+// local library
 #include <scai/lama/LAMAInterface.hpp>
+
+// internal scai libraries
 #include <scai/hmemo/Context.hpp>
 
-// macros
-#include <scai/lama/macros/unique_name.hpp>
+#include <scai/common/macros/unique_name.hpp>
 
+// std
 #include <map>
 
 namespace scai

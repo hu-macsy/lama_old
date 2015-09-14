@@ -34,31 +34,31 @@
 // hpp
 #include <scai/lama/cuda/CUDACSRUtils.hpp>
 
-// others
-#include <scai/common/SCAITypes.hpp>
-#include <scai/common/bind.hpp>
-
-#include <scai/common/cuda/CUDAError.hpp>
-
-#include <scai/hmemo/Memory.hpp>
-
-#include <scai/common/macros/unused.hpp>
-
-#include <scai/lama/LAMAInterface.hpp>
-#include <scai/lama/LAMAInterfaceRegistry.hpp>
-
-// tracing
-#include <scai/tracing.hpp>
-
-// others cuda
+// local library
 #include <scai/lama/cuda/utils.cu.h>
 #include <scai/lama/cuda/CUDAUtils.hpp>
 #include <scai/lama/cuda/CUDACSRUtils.hpp>
 #include <scai/lama/cuda/CUDACOOUtils.hpp>
 #include <scai/lama/cuda/CUDATexture.hpp>
 #include <scai/lama/cuda/CUDASettings.hpp>
+
+#include <scai/lama/LAMAInterface.hpp>
+#include <scai/lama/LAMAInterfaceRegistry.hpp>
+
+// internal scai library
+#include <scai/hmemo/Memory.hpp>
 #include <scai/hmemo/cuda/CUDAStreamSyncToken.hpp>
 
+#include <scai/tracing.hpp>
+
+#include <scai/common/SCAITypes.hpp>
+#include <scai/common/bind.hpp>
+
+#include <scai/common/cuda/CUDAError.hpp>
+
+#include <scai/common/macros/unused.hpp>
+
+// CUDA
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include <cuda_runtime_api.h>

@@ -34,15 +34,16 @@
 
 // for dll_import
 #include <scai/common/config.hpp>
-#include <scai/common/Thread.hpp>
 
-// others
+// internal scai library
 #include <scai/tracing/RegionEntry.hpp>
 #include <scai/tracing/CallStack.hpp>
 
-// logging
 #include <scai/logging.hpp>
 
+#include <scai/common/Thread.hpp>
+
+// std
 #include <cstring>
 #include <cstdio>
 #include <vector>

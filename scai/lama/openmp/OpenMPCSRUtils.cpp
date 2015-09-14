@@ -33,24 +33,24 @@
 
 // for dll_import
 #include <scai/lama/openmp/OpenMPCSRUtils.hpp>
-#include <scai/lama/openmp/OpenMP.hpp>
 
-// others
+// local library
+#include <scai/lama/openmp/OpenMP.hpp>
 #include <scai/lama/LAMAInterface.hpp>
 #include <scai/lama/LAMAInterfaceRegistry.hpp>
 
-// assert
-#include <scai/common/Assert.hpp>
-
-// trace
+// internal scai libraries
 #include <scai/tracing.hpp>
 
-// boost
+#include <scai/common/Assert.hpp>
 #include <scai/common/bind.hpp>
 #include <scai/common/unique_ptr.hpp>
+#include <scai/common/macros/unused.hpp>
+
+// boost
 #include <boost/preprocessor.hpp>
 
-#include <scai/lama/macros/unused.hpp>
+// std
 #include <vector>
 
 using scai::common::scoped_array;

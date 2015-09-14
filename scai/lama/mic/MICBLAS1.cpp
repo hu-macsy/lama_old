@@ -34,17 +34,23 @@
 // hpp
 #include <scai/lama/mic/MICBLAS1.hpp>
 
-// others
+// local library
 #include <scai/lama/BLASInterface.hpp>
 #include <scai/lama/LAMAInterfaceRegistry.hpp>
-#include <scai/common/SCAITypes.hpp>
-#include <scai/tasking/SyncToken.hpp>
+
+// internal scai libraries
 #include <scai/hmemo/mic/MICContext.hpp>
 
-// tracing with SCAI_REGION
+#include <scai/tasking/SyncToken.hpp>
+
 #include <scai/tracing.hpp>
+
+#include <scai/common/SCAITypes.hpp>
+
+// external
 #include <omp.h>
 
+// std
 #include <cmath>
 #include <cstdlib>
 

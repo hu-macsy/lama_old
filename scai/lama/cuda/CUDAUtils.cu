@@ -31,16 +31,19 @@
  * @since 1.0.0
  */
 
-#include <scai/common/Assert.hpp>
+// hpp
+#include <scai/lama/cuda/CUDAUtils.hpp>
 
-#include <scai/common/cuda/CUDAError.hpp>
-
+// local library
 #include <scai/lama/LAMAInterface.hpp>
 #include <scai/lama/LAMAInterfaceRegistry.hpp>
 
 #include <scai/lama/cuda/utils.cu.h>
-#include <scai/lama/cuda/CUDAUtils.hpp>
 #include <scai/lama/cuda/CUDASettings.hpp>
+
+// internal scai libraries
+#include <scai/common/Assert.hpp>
+#include <scai/common/cuda/CUDAError.hpp>
 
 // thrust
 #include <thrust/device_vector.h>
@@ -52,6 +55,7 @@
 #include <thrust/transform.h>
 #include <thrust/transform_reduce.h>
 
+// boost
 #include <boost/preprocessor.hpp>
 
 using namespace scai::common;

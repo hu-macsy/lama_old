@@ -34,13 +34,12 @@
 // hpp
 #include <scai/lama/solver/logger/Logger.hpp>
 
-// default timer
+// local library
 #include <scai/lama/solver/logger/Timer.hpp>
-
-// others
 #include <scai/lama/solver/logger/FileLogger.hpp>
 #include <scai/lama/solver/Solver.hpp>
 
+// std
 #include <iostream>
 
 namespace scai

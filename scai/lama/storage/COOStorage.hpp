@@ -34,10 +34,12 @@
 
 // for dll_import
 #include <scai/common/config.hpp>
-#include <scai/common/unique_ptr.hpp>
 
 // base classes
 #include <scai/lama/storage/CRTPMatrixStorage.hpp>
+
+// internal scai libraries
+#include <scai/common/unique_ptr.hpp>
 
 namespace scai
 {

@@ -34,22 +34,20 @@
 // hpp
 #include <scai/lama/storage/DIAStorage.hpp>
 
-// others
+// local library
 #include <scai/lama/openmp/OpenMPCSRUtils.hpp>
 #include <scai/lama/openmp/OpenMPDIAUtils.hpp>
-#include <scai/tracing.hpp>
 
 #include <scai/lama/LAMAInterface.hpp>
+
+// internal scai libraries
 #include <scai/hmemo/ContextAccess.hpp>
+
 #include <scai/tasking/TaskSyncToken.hpp>
 
-// macros
-#include <scai/lama/macros/unused.hpp>
-
-// tracing
 #include <scai/tracing.hpp>
 
-// common
+#include <scai/common/macros/unused.hpp>
 #include <scai/common/bind.hpp>
 #include <scai/common/unique_ptr.hpp>
 

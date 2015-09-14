@@ -31,17 +31,21 @@
  * @since 1.0.0
  */
 
+// local library
+#include <scai/lama/cuda/CUDABLAS1.hpp>
+#include <scai/lama/cuda/launchHelper.hpp>
+#include <scai/lama/cuda/utils.cu.h>
+
+// internal scai libraries
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/Assert.hpp>
 
 #include <scai/common/cuda/CUDAError.hpp>
 
-#include <scai/lama/cuda/CUDABLAS1.hpp>
-#include <scai/lama/cuda/launchHelper.hpp>
-#include <scai/lama/cuda/utils.cu.h>
-
+// CUDA
 #include <cuda_runtime.h>
 
+// boost
 #include <boost/preprocessor.hpp>
 
 namespace scai

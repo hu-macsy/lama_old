@@ -34,19 +34,18 @@
 // hpp
 #include <scai/lama/openmp/LAPACK_LAPACK.hpp>
 
-// others
+// local library
 #include <scai/lama/openmp/BLAS_BLAS1.hpp>
-
 #include <scai/lama/LAMAInterfaceRegistry.hpp>
 #include <scai/lama/BLASInterface.hpp>
-#include <scai/tracing.hpp>
-#include <scai/hmemo/Context.hpp>
-#include <scai/common/unique_ptr.hpp>
-
-// macros
-#include <scai/lama/macros/unused.hpp>
-
 #include <scai/lama/cblas.hpp>
+
+#include <scai/hmemo/Context.hpp>
+
+#include <scai/tracing.hpp>
+
+#include <scai/common/unique_ptr.hpp>
+#include <scai/common/macros/unused.hpp>
 
 //fallback if nothing is set in cmake
 #if !defined(LAMA_FORTRAN_BLAS_STYLE_UNDERSCORE)

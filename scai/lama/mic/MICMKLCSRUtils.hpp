@@ -36,11 +36,10 @@
 // for dll_import
 #include <scai/common/config.hpp>
 
-// others
-#include <scai/common/SCAITypes.hpp>
-
-// logging
+// internal scai libraries
 #include <scai/logging.hpp>
+
+#include <scai/common/SCAITypes.hpp>
 
 namespace scai
 {
@@ -49,8 +48,6 @@ namespace tasking
 {
     class SyncToken;
 }
-
-using common::IndexType;
 
 namespace lama
 {

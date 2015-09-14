@@ -34,24 +34,21 @@
 // hpp
 #include <scai/lama/openmp/OpenMPJDSUtils.hpp>
 
-// others
+// local library
 #include <scai/lama/openmp/OpenMPUtils.hpp>
 #include <scai/lama/openmp/OpenMP.hpp>
 
 #include <scai/lama/LAMAInterface.hpp>
 #include <scai/lama/LAMAInterfaceRegistry.hpp>
 
-// assert
-#include <scai/common/Assert.hpp>
-
-// macros
-#include <scai/lama/macros/unused.hpp>
-
-// trace
+// internal scai libraries
 #include <scai/tracing.hpp>
 
-// boost
+#include <scai/common/macros/unused.hpp>
 #include <scai/common/unique_ptr.hpp>
+#include <scai/common/Assert.hpp>
+
+// boost
 #include <boost/preprocessor.hpp>
 
 using scai::common::scoped_array;

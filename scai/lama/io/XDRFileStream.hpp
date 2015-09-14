@@ -35,9 +35,11 @@
 
 // for dll_import
 #include <scai/common/config.hpp>
+
+// internal scai libraries
 #include <scai/common/exception/Exception.hpp>
 
-// others
+// std
 #include <fstream>
 #include <cstdlib>
 #include <typeinfo>

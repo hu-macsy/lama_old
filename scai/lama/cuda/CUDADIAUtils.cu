@@ -31,26 +31,30 @@
  * @since 1.0.0
  */
 
-#include <scai/common/Assert.hpp>
-#include <scai/common/bind.hpp>
-
-#include <scai/common/cuda/CUDAError.hpp>
-
-#include <scai/hmemo/cuda/CUDAStreamSyncToken.hpp>
-
-#include <scai/tracing.hpp>
-
+// hpp
+#include <scai/lama/cuda/CUDADIAUtils.hpp>
+ 
+// local library
 #include <scai/lama/LAMAInterface.hpp>
 #include <scai/lama/LAMAInterfaceRegistry.hpp>
 
 #include <scai/lama/cuda/utils.cu.h>
-#include <scai/lama/cuda/CUDADIAUtils.hpp>
 #include <scai/lama/cuda/CUDASettings.hpp>
+
+// internal scai library
+#include <scai/hmemo/cuda/CUDAStreamSyncToken.hpp>
+
+#include <scai/tracing.hpp>
+
+#include <scai/common/Assert.hpp>
+#include <scai/common/bind.hpp>
+#include <scai/common/cuda/CUDAError.hpp>
 
 // thrust
 #include <thrust/device_ptr.h>
 #include <thrust/sort.h>
 
+// boost
 #include <boost/preprocessor.hpp>
 
 using namespace scai::hmemo;

@@ -31,26 +31,27 @@
  * @since 1.0.0
  */
 
-#include <scai/common/bind.hpp>
+// hpp
+#include <scai/lama/cuda/CUDAELLUtils.hpp>
 
-#include <scai/common/macros/unused.hpp>
+// local library
+#include <scai/lama/cuda/utils.cu.h>
+#include <scai/lama/cuda/CUDAUtils.hpp>
+#include <scai/lama/cuda/CUDASettings.hpp>
 
-#include <scai/common/cuda/CUDAError.hpp>
+#include <scai/lama/LAMAInterface.hpp>
+#include <scai/lama/LAMAInterfaceRegistry.hpp>
 
+// internal scai library
 #include <scai/hmemo/cuda/CUDAStreamSyncToken.hpp>
 
 #include <scai/tracing.hpp>
 
-#include <scai/lama/cuda/utils.cu.h>
-#include <scai/lama/cuda/CUDAELLUtils.hpp>
-#include <scai/lama/cuda/CUDAUtils.hpp>
-#include <scai/lama/cuda/CUDASettings.hpp>
+#include <scai/common/bind.hpp>
+#include <scai/common/macros/unused.hpp>
+#include <scai/common/cuda/CUDAError.hpp>
 
-// others
-#include <scai/lama/LAMAInterface.hpp>
-#include <scai/lama/LAMAInterfaceRegistry.hpp>
-
-// cuda
+// CUDA
 #include <cuda.h>
 #include <cuda_runtime.h>
 
@@ -69,6 +70,7 @@
 #include <thrust/transform.h>
 #include <thrust/transform_reduce.h>
 
+// boost
 #include <boost/preprocessor.hpp>
 
 using namespace scai::hmemo;

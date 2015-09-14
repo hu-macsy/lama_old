@@ -31,14 +31,16 @@
  * $Id$
  */
 
+// hpp
 #include <scai/lama/cuda/CUDATexture.hpp>
 
+// internal scai libraries
 #include <scai/common/cuda/CUDAError.hpp>
 
-// Some calls are needed of the CUDA driver API
+// CUDA
+#include <cuda.h> // Some calls are needed of the CUDA driver API
 
-#include <cuda.h>
-
+// std
 #include <cstdlib>
 
 namespace scai

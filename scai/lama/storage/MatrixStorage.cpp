@@ -34,10 +34,7 @@
 // hpp
 #include <scai/lama/storage/MatrixStorage.hpp>
 
-// others
-#include <scai/common/bind.hpp>
-#include <scai/common/SCAITypes.hpp>
-
+// local library
 #include <scai/lama/storage/CSRStorage.hpp>
 #include <scai/lama/storage/DenseStorage.hpp>
 #include <scai/lama/storage/StorageMethods.hpp>
@@ -52,11 +49,15 @@
 #include <scai/lama/openmp/OpenMPUtils.hpp>
 #include <scai/lama/openmp/OpenMPCSRUtils.hpp>
 
+// internal scai libraries
 #include <scai/tasking/TaskSyncToken.hpp>
 
-// tracing
 #include <scai/tracing.hpp>
 
+#include <scai/common/bind.hpp>
+#include <scai/common/SCAITypes.hpp>
+
+// boost
 #include <boost/preprocessor.hpp>
 #include <boost/assign/list_of.hpp>
 #include <boost/unordered_map.hpp>

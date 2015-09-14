@@ -34,9 +34,10 @@
 // hpp
 #include <scai/lama/solver/logger/FileLogger.hpp>
 
-// others
+// internal scai libraries
 #include <scai/common/exception/Exception.hpp>
 
+// std
 #include <sstream>
 
 namespace scai

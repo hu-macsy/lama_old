@@ -34,14 +34,17 @@
 // hpp
 #include <scai/lama/solver/SpecializedJacobi.hpp>
 
-// others
-#include <scai/tasking/NoSyncToken.hpp>
+// local library
 #include <scai/lama/LAMAArrayUtils.hpp>
 
-// tracing
+// internal scai libraries
+#include <scai/tasking/NoSyncToken.hpp>
+
 #include <scai/tracing.hpp>
 
 #include <scai/common/bind.hpp>
+
+// boost
 #include <boost/preprocessor.hpp>
 
 using scai::tasking::SyncToken;

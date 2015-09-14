@@ -38,15 +38,15 @@
 // base classes
 #include <scai/common/Printable.hpp>
 
-// others
+// internal scai libraries
+#include <scai/logging.hpp>
+
 #include <scai/common/Assert.hpp>
 #include <scai/common/Complex.hpp>
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/ScalarType.hpp>
 
-// logging
-#include <scai/logging.hpp>
-
+// std
 #include <cstdio>
 
 namespace scai

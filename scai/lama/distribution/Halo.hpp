@@ -39,12 +39,15 @@
 // base classes
 #include <scai/common/Printable.hpp>
 
-// others
-#include <scai/hmemo.hpp>
+// local library
 #include <scai/lama/CommunicationPlan.hpp>
+
+// internal scai libraries
+#include <scai/hmemo.hpp>
 
 #include <scai/common/Assert.hpp>
 
+// std
 #include <map>
 
 namespace scai
@@ -61,7 +64,7 @@ namespace lama
  *  data provided for other partitions.
  */
 
-class COMMON_DLL_IMPORTEXPORT Halo: public scai::common::Printable
+class COMMON_DLL_IMPORTEXPORT Halo: public common::Printable
 {
     friend class HaloBuilder;
 

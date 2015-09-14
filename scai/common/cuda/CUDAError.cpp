@@ -30,8 +30,10 @@
  * @date 15.07.2011
  */
 
+// hpp
 #include <scai/common/cuda/CUDAError.hpp>
 
+// CUDA
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include <cusparse.h>

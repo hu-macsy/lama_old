@@ -37,15 +37,18 @@
 
 // base classes
 #include <scai/common/Printable.hpp>
-#include <scai/common/exception/Exception.hpp>
-#include <scai/common/exception/UnsupportedException.hpp>
 
-#include <scai/hmemo/Context.hpp>
-
+// local library
 // interface structures used in LAMAInterface
 
 #include <scai/lama/BLASInterface.hpp>
 #include <scai/lama/UtilsInterface.hpp>
+
+// internal scai libraries
+#include <scai/hmemo/Context.hpp>
+
+#include <scai/common/exception/Exception.hpp>
+#include <scai/common/exception/UnsupportedException.hpp>
 
 namespace scai
 {

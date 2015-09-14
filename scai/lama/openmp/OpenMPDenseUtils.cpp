@@ -34,10 +34,9 @@
 // hpp
 #include <scai/lama/openmp/OpenMPDenseUtils.hpp>
 
-// others
+// local library
 #include <scai/lama/LAMAInterface.hpp>
 #include <scai/lama/LAMAInterfaceRegistry.hpp>
-
 #include <scai/lama/openmp/OpenMP.hpp>
 
 // boost

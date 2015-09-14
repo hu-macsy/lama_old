@@ -39,7 +39,7 @@
 // base classes
 #include <scai/common/Printable.hpp>
 
-// others
+// local library
 #include <scai/lama/LAMAArray.hpp>
 
 namespace scai

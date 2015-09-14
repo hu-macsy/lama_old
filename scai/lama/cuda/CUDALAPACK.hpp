@@ -36,9 +36,11 @@
 // for dll_import
 #include <scai/common/config.hpp>
 
-#include <scai/common/SCAITypes.hpp>
-
+// local library
 #include <scai/lama/openmp/BLASHelper.hpp>
+
+// internal scai library
+#include <scai/common/SCAITypes.hpp>
 
 namespace scai
 {

@@ -33,20 +33,23 @@
 // hpp
 #include <scai/lama/storage/ELLStorage.hpp>
 
-// others
+// local library
 #include <scai/lama/LAMAArrayUtils.hpp>
 #include <scai/lama/LAMAInterface.hpp>
-#include <scai/tasking/TaskSyncToken.hpp>
-#include <scai/tasking/NoSyncToken.hpp>
+
+// internal scai libraries
 #include <scai/hmemo.hpp>
 
-// tracing
+#include <scai/tasking/TaskSyncToken.hpp>
+#include <scai/tasking/NoSyncToken.hpp>
+
 #include <scai/tracing.hpp>
+
+#include <scai/common/bind.hpp>
+#include <scai/common/unique_ptr.hpp>
 
 // boost
 #include <boost/preprocessor.hpp>
-#include <scai/common/bind.hpp>
-#include <scai/common/unique_ptr.hpp>
 
 namespace scai
 {

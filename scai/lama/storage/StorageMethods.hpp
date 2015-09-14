@@ -34,10 +34,10 @@
 // for dll_import
 #include <scai/common/config.hpp>
 
-// others
-#include <scai/common/SCAITypes.hpp>
-
+// internal scai libraries
 #include <scai/hmemo.hpp>
+
+#include <scai/common/SCAITypes.hpp>
 
 using scai::hmemo::LAMAArray;
 

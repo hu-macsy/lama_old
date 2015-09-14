@@ -34,29 +34,33 @@
 // hpp
 #include <scai/lama/storage/CSRStorage.hpp>
 
-// others
+// local library
 #include <scai/lama/LAMAInterface.hpp>
+#include <scai/lama/LAMAArrayUtils.hpp>
+
 
 #include <scai/lama/storage/StorageMethods.hpp>
 
-#include <scai/lama/LAMAArrayUtils.hpp>
-
 #include <scai/lama/distribution/Redistributor.hpp>
-#include <scai/hmemo.hpp>
-
-#include <scai/tasking/TaskSyncToken.hpp>
 
 #include <scai/lama/openmp/OpenMPUtils.hpp>
 #include <scai/lama/openmp/OpenMPCSRUtils.hpp>
 
-// assert
-#include <scai/common/Assert.hpp>
+// internal scai libraries
+#include <scai/hmemo.hpp>
 
-// boost
-#include <scai/common/bind.hpp>
-#include <boost/preprocessor.hpp>
+#include <scai/tasking/TaskSyncToken.hpp>
+
 #include <scai/tracing.hpp>
 
+#include <scai/common/Assert.hpp>
+
+#include <scai/common/bind.hpp>
+
+// boost
+#include <boost/preprocessor.hpp>
+
+// std
 #include <cmath>
 
 namespace scai

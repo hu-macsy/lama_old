@@ -34,9 +34,10 @@
 // hpp
 #include <scai/lama/openmp/BLASHelper.hpp>
 
-// macros
-#include <scai/lama/macros/unused.hpp>
+// internal scai libraries
+#include <scai/common/macros/unused.hpp>
 
+// std
 #include <sstream>
 
 namespace scai

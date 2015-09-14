@@ -38,7 +38,7 @@
 // base classes
 #include <scai/common/Printable.hpp>
 
-// others
+// local library
 #include <scai/lama/distribution/Distribution.hpp>
 
 namespace scai

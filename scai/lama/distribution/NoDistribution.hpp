@@ -39,7 +39,7 @@
 // base classes
 #include <scai/lama/distribution/Distribution.hpp>
 
-// logging
+// internal scai libraries
 #include <scai/logging.hpp>
 
 namespace scai

@@ -34,20 +34,22 @@
 // for dll_import
 #include <scai/lama/openmp/OpenMPUtils.hpp>
 
-// others
+// local library
 #include <scai/lama/openmp/OpenMPDIAUtils.hpp>
 #include <scai/lama/openmp/OpenMP.hpp>
 
 #include <scai/lama/LAMAInterface.hpp>
 #include <scai/lama/LAMAInterfaceRegistry.hpp>
+
+// internal scai libraries
 #include <scai/tracing.hpp>
 
-// assert
 #include <scai/common/Assert.hpp>
 
 // boost
 #include <boost/preprocessor.hpp>
 
+// std
 #include <cmath>
 
 namespace scai

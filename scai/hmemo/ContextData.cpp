@@ -33,10 +33,14 @@
 
 // hpp
 #include <scai/hmemo/ContextData.hpp>
+
+// local library
 #include <scai/hmemo/Context.hpp>
 
-#include <scai/common/Assert.hpp>
+// internal scai libraries
 #include <scai/logging.hpp>
+
+#include <scai/common/Assert.hpp>
 
 using scai::tasking::SyncToken;
 

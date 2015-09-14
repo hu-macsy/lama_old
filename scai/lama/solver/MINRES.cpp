@@ -33,7 +33,8 @@
 
 // hpp
 #include <scai/lama/solver/MINRES.hpp>
-// others
+
+// local library
 #include <scai/lama/expression/VectorExpressions.hpp>
 #include <scai/lama/expression/MatrixExpressions.hpp>
 #include <scai/lama/expression/MatrixVectorExpressions.hpp>
@@ -42,6 +43,7 @@
 
 #include <scai/lama/DenseVector.hpp>
 
+// std
 #include <limits>
 
 namespace scai

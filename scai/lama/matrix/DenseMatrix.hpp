@@ -39,14 +39,16 @@
 // base classes
 #include <scai/lama/matrix/CRTPMatrix.hpp>
 
-//others
+// local library
 #include <scai/lama/matrix/SparseMatrix.hpp>
 
 #include <scai/lama/storage/DenseStorage.hpp>
 
+// internal scai libraries
+#include <scai/common/shared_ptr.hpp>
+
 //boost
 #include <boost/lexical_cast.hpp>
-#include <scai/common/shared_ptr.hpp>
 
 namespace scai
 {

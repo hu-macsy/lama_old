@@ -51,7 +51,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 
-#include <scai/lama/macros/unused.hpp>
+#include <scai/common/macros/unused.hpp>
 
 //int mm_read_unsymmetric_sparse( const char* fname, int* M_, int* N_, int* nz_, double** val_, int** I_, int** J_ )
 //{

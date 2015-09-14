@@ -32,13 +32,15 @@
 
 #pragma once
 
-#include <scai/common/config.hpp>
-#include <scai/common/Assert.hpp>
-
+// local library
 #include <scai/hmemo/Access.hpp>
 #include <scai/hmemo/LAMAArray.hpp>
 
+// internal scai libraries
 #include <scai/logging.hpp>
+
+#include <scai/common/config.hpp>
+#include <scai/common/Assert.hpp>
 
 namespace scai
 {

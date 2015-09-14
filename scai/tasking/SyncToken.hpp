@@ -39,13 +39,14 @@
 #include <scai/common/NonCopyable.hpp>
 #include <scai/common/Printable.hpp>
 
-// logging
+// internal scai library
+#include <scai/common/shared_ptr.hpp>
+#include <scai/common/function.hpp>
+
 #include <scai/logging.hpp>
 
-#include <scai/common/shared_ptr.hpp>
-
+// std
 #include <vector>
-#include <scai/common/function.hpp>
 
 namespace scai
 {
@@ -99,7 +100,7 @@ public:
  *
  */
 
-class COMMON_DLL_IMPORTEXPORT SyncToken: public scai::common::Printable, private common::NonCopyable
+class COMMON_DLL_IMPORTEXPORT SyncToken: public common::Printable, private common::NonCopyable
 {
 public:
 

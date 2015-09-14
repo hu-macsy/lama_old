@@ -39,9 +39,10 @@
 // base classes
 #include <scai/lama/distribution/GeneralDistribution.hpp>
 
-// others
+// local library
 #include <scai/lama/matrix/SparseMatrix.hpp>
 
+// std
 #include <vector>
 
 namespace scai

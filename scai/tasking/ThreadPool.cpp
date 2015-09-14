@@ -33,7 +33,7 @@
 // hpp
 #include <scai/tasking/ThreadPool.hpp>
 
-// tracing
+// internal scai libraries
 #include <scai/tracing.hpp>
 
 #include <scai/common/Assert.hpp>

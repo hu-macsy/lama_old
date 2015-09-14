@@ -34,15 +34,22 @@
 
 #pragma once
 
+// base classes
+#include <scai/common/Printable.hpp>
+#include <scai/common/NonCopyable.hpp>
+
+// local libray
 #include <scai/hmemo/ContextData.hpp>
-#include <scai/tasking/SyncToken.hpp>
 #include <scai/hmemo/Context.hpp>
-#include <scai/common/unique_ptr.hpp>
+
+// internal scai libraries
+#include <scai/tasking/SyncToken.hpp>
 
 #include <scai/logging.hpp>
 
-#include <scai/common/NonCopyable.hpp>
+#include <scai/common/unique_ptr.hpp>
 
+// std
 #include <vector>
 
 #define MEMORY_MAX_CONTEXTS 4

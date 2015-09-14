@@ -33,12 +33,14 @@
 
 #pragma once
 
+// for dll import
+#include <scai/common/config.hpp>
+
 // others
 #include <scai/common/SCAITypes.hpp>
 
 // other scai projects
 #include <scai/logging.hpp>
-#include <scai/common/config.hpp>
 
 namespace scai
 {
@@ -47,8 +49,6 @@ namespace tasking
 {
     class SyncToken;   // forward declaration
 }
-
-using common::IndexType;
 
 namespace lama
 {

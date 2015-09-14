@@ -36,11 +36,13 @@
 // for dll_import
 #include <scai/common/config.hpp>
 
-// others
-#include <scai/common/SCAITypes.hpp>
-
+// local library
 #include <scai/lama/distribution/Distribution.hpp>
 
+// internal scai libraries
+#include <scai/common/SCAITypes.hpp>
+
+// std
 #include <vector>
 
 #if (BOOST_VERSION < 103600)

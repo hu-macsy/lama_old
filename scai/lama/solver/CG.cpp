@@ -34,13 +34,17 @@
 // hpp
 #include <scai/lama/solver/CG.hpp>
 
-// others
+// local library
 #include <scai/lama/DenseVector.hpp>
-#include <scai/tracing.hpp>
-#include <omp.h>
 
 #include <scai/lama/expression/VectorExpressions.hpp>
 #include <scai/lama/expression/MatrixVectorExpressions.hpp>
+
+// internal scai libraries
+#include <scai/tracing.hpp>
+
+// external
+#include <omp.h>
 
 namespace scai
 {

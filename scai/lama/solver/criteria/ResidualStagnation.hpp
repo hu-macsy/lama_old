@@ -39,10 +39,11 @@
 // base classes
 #include <scai/lama/solver/criteria/Criterion.hpp>
 
-// others
-#include <scai/common/SCAITypes.hpp>
-
+// local library
 #include <scai/lama/norm/Norm.hpp>
+
+// internal scai libraries
+#include <scai/common/SCAITypes.hpp>
 
 namespace scai
 {

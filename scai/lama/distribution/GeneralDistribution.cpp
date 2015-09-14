@@ -34,13 +34,12 @@
 // hpp
 #include <scai/lama/distribution/GeneralDistribution.hpp>
 
-// assert
+// internal scai libraries
 #include <scai/common/Assert.hpp>
 
+// std
 #include <algorithm>
 #include <functional>
-
-//#include <fstream>
 
 #define MASTER 0
 

@@ -34,14 +34,17 @@
 
 // for dll_import
 #include <scai/common/config.hpp>
+
+// base classes
 #include <scai/common/NonCopyable.hpp>
 
-// others
+// interal scai libraries
 #include <scai/logging.hpp>
-#include <scai/common/Thread.hpp>
 
+#include <scai/common/Thread.hpp>
 #include <scai/common/shared_ptr.hpp>
 
+// std
 #include <string>
 #include <map>
 

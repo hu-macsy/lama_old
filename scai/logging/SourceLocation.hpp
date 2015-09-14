@@ -32,9 +32,10 @@
 
 #pragma once
 
-#include <ostream>
-
+// for dll import
 #include <scai/common/config.hpp>
+
+#include <ostream>
 
 namespace scai
 {

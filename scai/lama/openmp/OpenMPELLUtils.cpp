@@ -33,25 +33,24 @@
 
 // hpp
 #include <scai/lama/openmp/OpenMPELLUtils.hpp>
-#include <scai/lama/openmp/OpenMP.hpp>
 
-// others
-#include <scai/common/bind.hpp>
-#include <scai/common/Assert.hpp>
+// local library
+#include <scai/lama/openmp/OpenMP.hpp>
 
 #include <scai/lama/LAMAInterface.hpp>
 #include <scai/lama/LAMAInterfaceRegistry.hpp>
 
-// macros
-#include <scai/lama/macros/unused.hpp>
-
-// tracing
+// internal scai libraries
 #include <scai/tracing.hpp>
+
+#include <scai/common/bind.hpp>
+#include <scai/common/Assert.hpp>
+#include <scai/common/macros/unused.hpp>
 
 // boost
 #include <boost/preprocessor.hpp>
 
-// stl
+// std
 #include <set>
 #include <map>
 #include <cmath>

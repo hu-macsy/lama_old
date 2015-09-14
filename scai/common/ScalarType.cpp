@@ -31,7 +31,6 @@
  */
 
 // hpp
-
 #include <scai/common/ScalarType.hpp>
 
 namespace scai

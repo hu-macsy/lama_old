@@ -32,14 +32,16 @@
 
 // hpp
 #include <scai/hmemo/HostContext.hpp>
+
+// local library
 #include <scai/hmemo/HostMemory.hpp>
 
-// others
+// internal scai libraries
+#include <scai/tasking/TaskSyncToken.hpp>
+
 #include <scai/common/exception/Exception.hpp>
 #include <scai/common/OpenMP.hpp>
 #include <scai/common/weak_ptr.hpp>
-
-#include <scai/tasking/TaskSyncToken.hpp>
 
 using  scai::common::shared_ptr;
 using  scai::common::weak_ptr;

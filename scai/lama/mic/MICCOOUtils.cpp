@@ -34,18 +34,23 @@
 // hpp
 #include <scai/lama/mic/MICCOOUtils.hpp>
 
+// local library
 #include <scai/lama/mic/MICUtils.hpp>
 
 #include <scai/lama/openmp/OpenMP.hpp>
+
 #include <scai/lama/LAMAInterface.hpp>
 #include <scai/lama/LAMAInterfaceRegistry.hpp>
 
-// others
+// internal scai libraries
 #include <scai/hmemo/mic/MICSyncToken.hpp>
 #include <scai/hmemo/mic/MICContext.hpp>
-#include <scai/common/Assert.hpp>
+
 #include <scai/tracing.hpp>
 
+#include <scai/common/Assert.hpp>
+
+// std
 #include <cmath>
 
 namespace scai

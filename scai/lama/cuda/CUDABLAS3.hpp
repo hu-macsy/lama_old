@@ -36,12 +36,13 @@
 // for dll_import
 #include <scai/common/config.hpp>
 
-// others
+// local library
+#include <scai/lama/cblas.hpp>
+
+// internal scai library
 #include <scai/common/SCAITypes.hpp>
 
 #include <scai/logging.hpp>
-
-#include <scai/lama/cblas.hpp>
 
 namespace scai
 {

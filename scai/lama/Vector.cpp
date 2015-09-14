@@ -34,7 +34,7 @@
 // hpp
 #include <scai/lama/Vector.hpp>
 
-// others
+// local library
 #include <scai/lama/DenseVector.hpp>
 
 #include <scai/lama/distribution/NoDistribution.hpp>
@@ -47,9 +47,9 @@
 // boost
 #include <boost/preprocessor.hpp>
 
-// C++
-#include<map>
-#include<ostream>
+// std
+#include <map>
+#include <ostream>
 
 using namespace scai::common;
 using namespace scai::hmemo;

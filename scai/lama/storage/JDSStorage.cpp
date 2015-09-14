@@ -34,19 +34,21 @@
 // hpp
 #include <scai/lama/storage/JDSStorage.hpp>
 
-// others
+// local library
 #include <scai/lama/LAMAInterface.hpp>
 
 #include <scai/lama/LAMAArrayUtils.hpp>
+
+// local scai libraries
 #include <scai/tasking/TaskSyncToken.hpp>
 
-// tracing
 #include <scai/tracing.hpp>
+
+#include <scai/common/bind.hpp>
+#include <scai/common/unique_ptr.hpp>
 
 // boost
 #include <boost/preprocessor.hpp>
-#include <scai/common/bind.hpp>
-#include <scai/common/unique_ptr.hpp>
 
 using scai::common::shared_ptr;
 using namespace scai::tasking;

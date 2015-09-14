@@ -35,6 +35,8 @@
 
 // for dll_import
 #include <scai/common/config.hpp>
+
+// internal scai libraries
 #include <scai/logging.hpp>
 
 #include <scai/common/shared_ptr.hpp>

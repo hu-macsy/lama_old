@@ -30,6 +30,7 @@
  * @date 11.06.2015
  */
 
+// hpp
 #include <scai/common/Walltime.hpp>
 
 #if defined( _WIN32 )

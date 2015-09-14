@@ -31,10 +31,11 @@
  * @since 1.1.0
  */
 
-// hpp
-#include <cublas_v2.h>
-
+// internal scai libraries
 #include <scai/common/SCAITypes.hpp>
+
+// CUDA
+#include <cublas_v2.h>
 
 namespace scai
 {

@@ -33,22 +33,22 @@
 // hpp
 #include <scai/lama/storage/StorageMethods.hpp>
 
-// others
+// local library
 #include <scai/lama/distribution/Distribution.hpp>
 #include <scai/lama/distribution/HaloBuilder.hpp>
 #include <scai/lama/distribution/Redistributor.hpp>
 
 #include <scai/lama/openmp/OpenMPCSRUtils.hpp>
 
-// assert
+// internal scai libraries
 #include <scai/common/Assert.hpp>
 
-// tracing
 #include <scai/tracing.hpp>
 
 // boost
 #include <boost/preprocessor.hpp>
 
+// std
 #include <algorithm>
 
 using namespace scai::hmemo;

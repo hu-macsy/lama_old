@@ -38,12 +38,15 @@
 
 // base classes
 #include <scai/hmemo/Memory.hpp>
-#include <scai/common/shared_ptr.hpp>
+
+// internal scai libraries
 #include <scai/tasking/SyncToken.hpp>
 
 #include <scai/logging.hpp>
 
-// others
+#include <scai/common/shared_ptr.hpp>
+
+// std
 #include <string>
 
 namespace scai

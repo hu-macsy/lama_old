@@ -36,9 +36,10 @@
 // for dll_import
 #include <scai/common/config.hpp>
 
-// others
+// local library
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 
+// std
 #include <memory>
 
 /** This class creates 'distributed' marices for poisson solvers.

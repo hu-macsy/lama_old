@@ -32,16 +32,19 @@
 
 // hpp
 #include <scai/hmemo/HostMemory.hpp>
+
+// local library
 #include <scai/hmemo/HostContext.hpp>
 #include <scai/hmemo/Context.hpp>
 
-// others
-#include <scai/common/Assert.hpp>
-#include <scai/common/OpenMP.hpp>
-
+// internal scai libraries
 #include <scai/tasking/TaskSyncToken.hpp>
 
+#include <scai/common/Assert.hpp>
+#include <scai/common/OpenMP.hpp>
 #include <scai/common/bind.hpp>
+
+// std
 #include <cstring>
 
 namespace scai

@@ -30,13 +30,16 @@
  * @date   10.06.2015
  */
 
+// hpp
 #include <scai/common/Thread.hpp>
+
+// local library
 #include <scai/common/Assert.hpp>
 
+// std
 #include <map>
 #include <string>
 #include <iostream>
-
 
 // define LOCAL_DEBUG for debugging this source code
 

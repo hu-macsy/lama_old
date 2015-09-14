@@ -33,15 +33,17 @@
 
 #pragma once
 
-#include <string>
-#include <map>
-
-//#include <scai/lama/Scalar.hpp>
+// local library
 #include <scai/common/Printable.hpp>
 #include <scai/hmemo/Context.hpp>
 
+// boost
 #include <boost/assign/list_of.hpp>
 #include <boost/preprocessor.hpp>
+
+// std
+#include <string>
+#include <map>
 
 extern std::string loglevel_argument;
 

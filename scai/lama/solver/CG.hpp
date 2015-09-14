@@ -38,6 +38,7 @@
 
 // base classes
 #include <scai/lama/solver/IterativeSolver.hpp>
+
 namespace scai
 {
 

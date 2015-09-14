@@ -39,11 +39,12 @@
 // base classes
 #include <scai/lama/matrix/CRTPMatrix.hpp>
 
-// others
+// local library
 #include <scai/lama/storage/MatrixStorage.hpp>
-#include <scai/tasking/SyncToken.hpp>
-
 #include <scai/lama/DenseVector.hpp>
+
+// internal scai libraries
+#include <scai/tasking/SyncToken.hpp>
 
 #include <scai/common/function.hpp>
 

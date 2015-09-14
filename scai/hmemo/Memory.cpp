@@ -33,9 +33,10 @@
 // hpp
 #include <scai/hmemo/Memory.hpp>
 
-// assert
+// internal scai libraries
 #include <scai/common/exception/Exception.hpp>
 
+// std
 #include <map>
 
 namespace scai

@@ -34,21 +34,23 @@
 // hpp
 #include <scai/lama/openmp/BLAS_BLAS1.hpp>
 
-// others
+// local library
 #include <scai/lama/openmp/BLASHelper.hpp>
 #include <scai/lama/BLASInterface.hpp>
 #include <scai/lama/LAMAInterfaceRegistry.hpp>
-#include <scai/common/Settings.hpp>
-
-// macros
-#include <scai/lama/macros/unused.hpp>
-
-// tracing with SCAI_REGION
-#include <scai/tracing.hpp>
 #include <scai/lama/cblas.hpp>
 
+//Intel MPI need mpi.h to be included before stdio.h so this header comes first
+#include <scai/tracing.hpp>
+
+#include <scai/common/Settings.hpp>
+
+#include <scai/common/macros/unused.hpp>
+
+// boost
 #include <boost/preprocessor.hpp>
 
+// std
 #include <cmath>
 
 namespace scai

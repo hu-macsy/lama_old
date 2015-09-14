@@ -31,9 +31,10 @@
  * @since 1.0.0
  */
 
+// hpp
 #include <scai/common/Settings.hpp>
-//#include <scai/lama/Communicator.hpp>
 
+// std
 #include <cstdio>
 #include <cstring>
 #include <cstdlib>

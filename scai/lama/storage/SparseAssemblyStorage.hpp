@@ -34,7 +34,7 @@
 // for dll_import
 #include <scai/common/config.hpp>
 
-// others
+// base classes
 #include <scai/lama/storage/CRTPMatrixStorage.hpp>
 
 namespace scai

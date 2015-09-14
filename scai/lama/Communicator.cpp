@@ -33,14 +33,15 @@
 // hpp
 #include <scai/lama/Communicator.hpp>
 
-// others
+// local library
 #include <scai/lama/LAMAArrayUtils.hpp>
-#include <scai/tasking/NoSyncToken.hpp>
 
 #include <scai/lama/distribution/Distribution.hpp>
 #include <scai/lama/distribution/Halo.hpp>
 
-// tracing
+// internal scai libraries
+#include <scai/tasking/NoSyncToken.hpp>
+
 #include <scai/tracing.hpp>
 
 using namespace std;

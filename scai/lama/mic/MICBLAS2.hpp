@@ -36,18 +36,16 @@
 // for dll_import
 #include <scai/common/config.hpp>
 
-// others
-#include <scai/common/SCAITypes.hpp>
-
+// local library
 #include <scai/lama/cblas.hpp>
 
-// logging
+// internal scai libraries
+#include <scai/common/SCAITypes.hpp>
+
 #include <scai/logging.hpp>
 
 namespace scai
 {
-
-using common::IndexType;
 
 namespace lama
 {

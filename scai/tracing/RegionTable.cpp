@@ -33,13 +33,15 @@
 // hpp
 #include <scai/tracing/RegionTable.hpp>
 
-// others
+// local library
 #include <scai/tracing/VTInterface.hpp>
 
+// internal scai libraries
 #include <scai/common/Walltime.hpp>
 #include <scai/common/Thread.hpp>
 #include <scai/common/exception/Exception.hpp>
 
+// std
 #include <cstdio>
 #include <cstdlib>
 

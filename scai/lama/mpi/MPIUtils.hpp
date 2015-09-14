@@ -33,10 +33,13 @@
 
 #pragma once
 
+#include <mpi.h> //Intel MPI need mpi.h to be included before stdio.h so this header comes first
+
+// local library
 #include <scai/lama/mpi/MPIException.hpp>
 
+// std
 #include <sstream>
-#include <mpi.h>
 
 #ifdef SCAI_CHECK_ASSERTS
 

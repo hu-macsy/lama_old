@@ -37,19 +37,20 @@
 #include <scai/common/config.hpp>
 
 // base classes
-#include <scai/common/SCAITypes.hpp>
 #include <scai/common/NonCopyable.hpp>
 #include <scai/common/Printable.hpp>
 
-// others
+// local library
 #include <scai/lama/Communicator.hpp>
 
-// logging
+// internal scai libraries
 #include <scai/logging.hpp>
 
 // boost
 #include <scai/common/shared_ptr.hpp>
+#include <scai/common/SCAITypes.hpp>
 
+// std
 #include <map>
 #include <utility>
 

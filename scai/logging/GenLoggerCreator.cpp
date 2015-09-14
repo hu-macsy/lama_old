@@ -30,15 +30,16 @@
  * @date 01.03.2011
  */
 
-#include <iostream>
-
-#include <cstdlib>         // import getenv
-#include <cstdio>          // FILE
-#include <stdexcept>       // runtime_error
-
+// local library
 #include <scai/logging.hpp>
 #include <scai/logging/GenLoggerCreator.hpp>
 #include <scai/logging/GenLogger.hpp>
+
+// std
+#include <iostream>
+#include <cstdlib>         // import getenv
+#include <cstdio>          // FILE
+#include <stdexcept>       // runtime_error
 
 #undef DEBUGGING
 

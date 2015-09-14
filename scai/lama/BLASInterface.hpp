@@ -31,13 +31,14 @@
  */
 #pragma once
 
-#include <scai/common/SCAITypes.hpp>
-
-#include <scai/common/macros/interface.hpp>
-
+// local libary
 #include <scai/lama/cblas.hpp>
 
-// C++
+// internal scai libraries
+#include <scai/common/SCAITypes.hpp>
+#include <scai/common/macros/interface.hpp>
+
+// std
 #include <cstring>
 
 namespace scai

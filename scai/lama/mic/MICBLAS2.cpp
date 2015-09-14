@@ -34,9 +34,11 @@
 // hpp
 #include <scai/lama/mic/MICBLAS2.hpp>
 
+// local library
 #include <scai/lama/BLASInterface.hpp>
 #include <scai/lama/LAMAInterfaceRegistry.hpp>
 
+// external
 #include <mkl.h>
 
 namespace scai

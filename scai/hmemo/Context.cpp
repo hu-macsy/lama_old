@@ -32,11 +32,14 @@
 
 // hpp
 #include <scai/hmemo/Context.hpp>
+
+// local library
 #include <scai/hmemo/Memory.hpp>
 
-// assert
+// internal scai libraries
 #include <scai/common/exception/Exception.hpp>
 
+// std
 #include <map>
 
 namespace scai

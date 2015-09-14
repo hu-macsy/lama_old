@@ -30,12 +30,13 @@
  * @date 24.06.2015
  */
 
+// hpp
 #include <scai/tracing/CallTreeTable.hpp>
 
+// internal scai libraries
 #include <scai/common/exception/Exception.hpp>
 
-// getpid required
-#include <unistd.h>
+#include <unistd.h> // getpid required
 
 namespace scai
 {

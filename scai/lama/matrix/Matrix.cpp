@@ -34,10 +34,11 @@
 // hpp
 #include <scai/lama/matrix/Matrix.hpp>
 
-// others
+// local library
 #include <scai/lama/DenseVector.hpp>
 #include <scai/lama/distribution/NoDistribution.hpp>
 
+// internal scai libraries
 #include <scai/common/Assert.hpp>
 
 using namespace scai::common;

@@ -38,20 +38,20 @@
 // base classes
 #include <scai/lama/Distributed.hpp>
 
-// others
-#include <scai/common/Factory.hpp>
-#include <scai/common/ScalarType.hpp>
-#include <scai/common/SCAITypes.hpp>
-
+// local library
 #include <scai/lama/expression/Expression.hpp>
-
-#include <scai/hmemo.hpp>
 
 #include <scai/lama/Scalar.hpp>
 #include <scai/lama/io/FileType.hpp>
 
-// logging
+// others
+#include <scai/hmemo.hpp>
+
 #include <scai/logging.hpp>
+
+#include <scai/common/Factory.hpp>
+#include <scai/common/ScalarType.hpp>
+#include <scai/common/SCAITypes.hpp>
 
 // Not recommened, but here for convenience
 using scai::hmemo::ContextPtr;
