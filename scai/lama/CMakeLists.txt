@@ -107,7 +107,6 @@ lama_set_source_dir ()
 set ( CLASSES
         CommunicationPlan
         Communicator
-        Complex
         DenseVector
         Distributed
         LAMAArrayUtils
@@ -121,8 +120,6 @@ set ( CLASSES
     )
 
 set ( HEADERS
-        LAMATypes
-        TypeTraits
         BLASInterface
         UtilsInterface
         CRTPCommunicator

@@ -68,13 +68,13 @@ namespace hmemo
 
 class Memory;  // forward declaration
 
-typedef common::shared_ptr<Memory> MemoryPtr;
+typedef scai::common::shared_ptr<Memory> MemoryPtr;
 
 class Context;   // forward declaration
 
 /** Context pointers will be always const, so context can never be modified. */
 
-typedef common::shared_ptr<const Context> ContextPtr;
+typedef scai::common::shared_ptr<const Context> ContextPtr;
 
 /** Namespace for enumeration of context types and access kinds. */
 
@@ -105,6 +105,10 @@ namespace context
         Write, //!<  write access to the array, only one at a time
         MaxAccessKind //!<  internal use for dimension of arrays
     };
+
+    COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const ContextType& type );
+
+    COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const AccessKind& kind );
 }
 
 // Make ContexType and AccessKind visible, but not enum values. 
@@ -126,9 +130,9 @@ using context::AccessKind;
  */
 class COMMON_DLL_IMPORTEXPORT Context: 
   
-    public common::Factory1<ContextType, int, ContextPtr>,
-    public Printable, 
-    private common::NonCopyable
+    public  scai::common::Factory1<ContextType, int, ContextPtr>,
+    public  scai::common::Printable,
+    private scai::common::NonCopyable
 {
 public:
 
@@ -249,17 +253,11 @@ inline bool Context::hasContext( const ContextType type )
     return canCreate( type );
 }
 
-} /* end namespace hmemo */
-
-} /* end namespace scai */
-
-// NOTE: operator<< should never be defined within a namespace 
-
 /** Output of context type in stream. */
 
-COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const scai::hmemo::ContextType& type );
 
 /** Output of AccessKind in stream is supported and very useful.  */
 
-COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const scai::hmemo::AccessKind& kind );
+} /* end namespace hmemo */
 
+} /* end namespace scai */

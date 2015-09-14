@@ -41,7 +41,7 @@
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 
 #include <test/EquationHelper.hpp>
-#include <test/TestMacros.hpp>
+#include <scai/common/test/TestMacros.hpp>
 
 using namespace scai::lama;
 using namespace scai::hmemo;

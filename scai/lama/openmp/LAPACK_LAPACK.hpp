@@ -37,7 +37,7 @@
 #include <scai/common/config.hpp>
 
 // others
-#include <scai/lama/LAMATypes.hpp>
+#include <scai/common/SCAITypes.hpp>
 #include <scai/tasking/SyncToken.hpp>
 
 #include <scai/lama/openmp/BLASHelper.hpp>
@@ -66,7 +66,7 @@ public:
         const IndexType lda,
         IndexType* const ipiv );
 
-    /** Implementation of BLASInterface::LAPACK::getrf by LAPACK. */
+    /** Implementation of BLASInterface::LAPACK::getri by LAPACK. */
 
     template<typename ValueType>
     static IndexType getri(
@@ -122,7 +122,7 @@ private:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
-    static    bool initialized;
+    static bool initialized;
 
     static bool registerInterface();
 

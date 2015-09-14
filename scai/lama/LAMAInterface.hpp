@@ -63,7 +63,7 @@ namespace lama
  * Note: Instead of using virtual routines this class uses function pointer variables.
  *       They are stored in one- or two-dimensional arrays indexed by types.
  */
-class COMMON_DLL_IMPORTEXPORT LAMAInterface: public Printable
+class COMMON_DLL_IMPORTEXPORT LAMAInterface: public scai::common::Printable
 {
 public:
 

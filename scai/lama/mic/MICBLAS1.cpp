@@ -37,7 +37,7 @@
 // others
 #include <scai/lama/BLASInterface.hpp>
 #include <scai/lama/LAMAInterfaceRegistry.hpp>
-#include <scai/lama/LAMATypes.hpp>
+#include <scai/common/SCAITypes.hpp>
 #include <scai/tasking/SyncToken.hpp>
 #include <scai/hmemo/mic/MICContext.hpp>
 

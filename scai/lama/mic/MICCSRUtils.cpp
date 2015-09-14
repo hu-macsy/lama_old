@@ -1634,7 +1634,7 @@ void MICCSRUtils::matrixMultiply(
 
 // MIC device needs nIndex value
 __attribute__( ( target( mic ) ))
-static IndexType targetNIndex = nIndex;
+static IndexType targetNIndex = common::nIndex;
 
 __attribute__( ( target( mic ) ))
 static IndexType findCol(

@@ -50,6 +50,10 @@
 
 #include <cmath>
 
+using scai::common::ComplexFloat;
+using scai::common::ComplexDouble;
+using scai::common::ComplexLongDouble;
+
 namespace scai
 {
 
@@ -538,20 +542,22 @@ void OpenMPDIAUtils::setInterface( DIAUtilsInterface& DIAUtils )
 
 // use of nested BOOST_PP_REPEAT to get all conversions
 
-#define LAMA_DIA_UTILS2_REGISTER(z, J, TYPE )                                            \
-    LAMA_INTERFACE_REGISTER_TT( DIAUtils, getCSRValues, TYPE, ARITHMETIC_TYPE##J )       \
+#define LAMA_DIA_UTILS2_REGISTER(z, J, TYPE )                                                  \
+    LAMA_INTERFACE_REGISTER_TT( DIAUtils, getCSRValues, TYPE, ARITHMETIC_HOST_TYPE_##J )       \
 
 
-#define LAMA_DIA_UTILS_REGISTER(z, I, _)                                                 \
-    LAMA_INTERFACE_REGISTER_T( DIAUtils, getCSRSizes, ARITHMETIC_TYPE##I )               \
-    LAMA_INTERFACE_REGISTER_T( DIAUtils, absMaxVal, ARITHMETIC_TYPE##I )                 \
-    LAMA_INTERFACE_REGISTER_T( DIAUtils, normalGEMV, ARITHMETIC_TYPE##I )                \
-    LAMA_INTERFACE_REGISTER_T( DIAUtils, normalGEVM, ARITHMETIC_TYPE##I )                \
-    LAMA_INTERFACE_REGISTER_T( DIAUtils, jacobi, ARITHMETIC_TYPE##I )                    \
-    \
-    BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_DIA_UTILS2_REGISTER, ARITHMETIC_TYPE##I )
+#define LAMA_DIA_UTILS_REGISTER(z, I, _)                                                       \
+    LAMA_INTERFACE_REGISTER_T( DIAUtils, getCSRSizes, ARITHMETIC_HOST_TYPE_##I )               \
+    LAMA_INTERFACE_REGISTER_T( DIAUtils, absMaxVal, ARITHMETIC_HOST_TYPE_##I )                 \
+    LAMA_INTERFACE_REGISTER_T( DIAUtils, normalGEMV, ARITHMETIC_HOST_TYPE_##I )                \
+    LAMA_INTERFACE_REGISTER_T( DIAUtils, normalGEVM, ARITHMETIC_HOST_TYPE_##I )                \
+    LAMA_INTERFACE_REGISTER_T( DIAUtils, jacobi, ARITHMETIC_HOST_TYPE_##I )                    \
+                                                                                               \
+    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT,                                                 \
+                     LAMA_DIA_UTILS2_REGISTER,                                                 \
+                     ARITHMETIC_HOST_TYPE_##I )
 
-    BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_DIA_UTILS_REGISTER, _ )
+    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_DIA_UTILS_REGISTER, _ )
 
 #undef LAMA_DIA_UTILS_REGISTER
 #undef LAMA_DIA_UTILS2_REGISTER

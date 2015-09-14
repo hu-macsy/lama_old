@@ -64,7 +64,7 @@ typedef size_t ContextDataIndex;
  *  at different contexts.
  */
 
-class ContextDataManager : private common::NonCopyable, public Printable
+class ContextDataManager : private scai::common::NonCopyable, public scai::common::Printable
 {
 public:
 

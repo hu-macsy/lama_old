@@ -54,7 +54,7 @@
 #include <scai/lama/expression/MatrixVectorExpressions.hpp>
 #include <scai/lama/expression/MatrixExpressions.hpp>
 
-#include <test/TestMacros.hpp>
+#include <scai/common/test/TestMacros.hpp>
 #include <test/SparseMatrixHelper.hpp>
 #include <test/SameMatrixHelper.hpp>
 
@@ -595,15 +595,15 @@ LAMA_COMMON_TEST_CASE_RUNNER_TEMPLATE( SparseMatrixTest )
 
 /* ----------------------------------------------------------------------------- */
 
-#define LAMA_SPARSE_TEST( z, I, _ )   \
-    template class SparseMatrixTest<CSRSparseMatrix<ARITHMETIC_TYPE##I> > ;  \
-    template class SparseMatrixTest<ELLSparseMatrix<ARITHMETIC_TYPE##I> > ;  \
-    template class SparseMatrixTest<JDSSparseMatrix<ARITHMETIC_TYPE##I> > ;  \
-    template class SparseMatrixTest<COOSparseMatrix<ARITHMETIC_TYPE##I> > ;  \
-    template class SparseMatrixTest<DIASparseMatrix<ARITHMETIC_TYPE##I> > ;  \
-    template class SparseMatrixTest<DenseMatrix<ARITHMETIC_TYPE##I> > ;  \
+#define LAMA_SPARSE_TEST( z, I, _ )                                                \
+    template class SparseMatrixTest<CSRSparseMatrix<ARITHMETIC_HOST_TYPE_##I> > ;  \
+    template class SparseMatrixTest<ELLSparseMatrix<ARITHMETIC_HOST_TYPE_##I> > ;  \
+    template class SparseMatrixTest<JDSSparseMatrix<ARITHMETIC_HOST_TYPE_##I> > ;  \
+    template class SparseMatrixTest<COOSparseMatrix<ARITHMETIC_HOST_TYPE_##I> > ;  \
+    template class SparseMatrixTest<DIASparseMatrix<ARITHMETIC_HOST_TYPE_##I> > ;  \
+    template class SparseMatrixTest<DenseMatrix<ARITHMETIC_HOST_TYPE_##I> > ;      \
 
-    BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_SPARSE_TEST, _ )
+    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_SPARSE_TEST, _ )
 
 #undef LAMA_SPARSE_TEST
 

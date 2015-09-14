@@ -35,10 +35,10 @@
 #include <boost/mpl/list.hpp>
 
 #include <scai/lama/Scalar.hpp>
-#include <scai/lama/Complex.hpp>
+#include <scai/common/Complex.hpp>
 #include <scai/common/ScalarType.hpp>
 
-#include <test/TestMacros.hpp>
+#include <scai/common/test/TestMacros.hpp>
 
 //#include <complex>
 

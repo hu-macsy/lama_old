@@ -37,7 +37,8 @@
 #include <scai/common/config.hpp>
 
 // others
-#include <scai/lama/LAMATypes.hpp>
+#include <scai/common/SCAITypes.hpp>
+#include <scai/logging.hpp>
 
 namespace scai
 {
@@ -46,6 +47,8 @@ namespace tasking
 {
    class SyncToken;  // forward declaration
 }
+
+using common::IndexType;
 
 namespace lama
 {

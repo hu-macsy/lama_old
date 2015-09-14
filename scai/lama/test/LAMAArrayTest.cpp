@@ -31,7 +31,7 @@
  * @since 1.0.0
  **/
 
-#include <test/TestMacros.hpp>
+#include <scai/common/test/TestMacros.hpp>
 
 #include <scai/hmemo.hpp>
 

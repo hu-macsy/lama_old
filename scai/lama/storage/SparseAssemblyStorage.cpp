@@ -43,7 +43,6 @@
 
 #include <cmath>
 
-using std::abs;
 using namespace scai::hmemo;
 
 namespace scai
@@ -245,7 +244,7 @@ ValueType SparseAssemblyStorage<ValueType>::l1Norm() const
     {
         for( size_t jj = 0; jj < mRows[i].values.size(); ++jj )
         {
-            val += abs( mRows[i].values[jj] );
+            val += ::abs( mRows[i].values[jj] );
         }
     }
 
@@ -263,12 +262,12 @@ ValueType SparseAssemblyStorage<ValueType>::l2Norm() const
     {
         for( size_t jj = 0; jj < mRows[i].values.size(); ++jj )
         {
-			tmp = abs( mRows[i].values[jj] );
+			tmp = ::abs( mRows[i].values[jj] );
             val += tmp * tmp;
         }
     }
 
-    return sqrt(val);
+    return ::sqrt(val);
 }
 
 
@@ -285,7 +284,7 @@ ValueType SparseAssemblyStorage<ValueType>::maxNorm() const
 
         for( size_t jj = 0; jj < values.size(); ++jj )
         {
-            const ValueType val = abs( mRows[i].values[jj] );
+            const ValueType val = ::abs( mRows[i].values[jj] );
 
             if( val > maxval )
             {
@@ -518,10 +517,8 @@ void SparseAssemblyStorage<ValueType>::setRow(
 {
     //SCAI_ASSERT_EQUAL_ERROR( ja.size(), values.size() )
 
-    const IndexType rowSizeOld = mRows[i].ja.size();
-
     #pragma omp atomic
-    mNumValues -= rowSizeOld;
+    mNumValues -= mRows[i].ja.size();
 
     mRows[i].ja.resize( ja.size() );
     mRows[i].values.resize( values.size() );
@@ -863,11 +860,11 @@ const char* SparseAssemblyStorage<ValueType>::typeName()
 /*       Template specializattions and instantiations                        */
 /* ========================================================================= */
 
-#define LAMA_ASSEMBLY_STORAGE_INSTANTIATE(z, I, _)                                \
-    \
-    template class COMMON_DLL_IMPORTEXPORT SparseAssemblyStorage<ARITHMETIC_TYPE##I> ;
+#define LAMA_ASSEMBLY_STORAGE_INSTANTIATE(z, I, _)                                           \
+                                                                                             \
+    template class COMMON_DLL_IMPORTEXPORT SparseAssemblyStorage<ARITHMETIC_HOST_TYPE_##I> ;
 
-BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_ASSEMBLY_STORAGE_INSTANTIATE, _ )
+BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_ASSEMBLY_STORAGE_INSTANTIATE, _ )
 
 #undef LAMA_ASSEMBLY_STORAGE_INSTANTIATE
 

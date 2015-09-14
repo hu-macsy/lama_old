@@ -53,7 +53,7 @@ namespace lama
  * always be specified. You can use NoDistribtion for non distributed objects.
  * */
 
-class COMMON_DLL_IMPORTEXPORT Distributed: public Printable
+class COMMON_DLL_IMPORTEXPORT Distributed: public scai::common::Printable
 {
 public:
 

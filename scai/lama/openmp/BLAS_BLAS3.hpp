@@ -37,10 +37,12 @@
 #include <scai/common/config.hpp>
 
 // others
-#include <scai/lama/LAMATypes.hpp>
+#include <scai/common/SCAITypes.hpp>
 #include <scai/tasking/SyncToken.hpp>
 
 #include <scai/lama/openmp/BLASHelper.hpp>
+
+using scai::common::IndexType;
 
 namespace scai
 {

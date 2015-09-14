@@ -38,10 +38,15 @@
 #include <scai/lama/LAMAInterface.hpp>
 #include <scai/hmemo.hpp>
 
-#include <test/TestMacros.hpp>
+#include <scai/common/test/TestMacros.hpp>
 
 using namespace scai::lama;
 using namespace scai::hmemo;
+
+using scai::common::ComplexFloat;
+using scai::common::ComplexDouble;
+using scai::common::ComplexLongDouble;
+
 using scai::common::Exception;
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -53,8 +58,10 @@ typedef bool NoType;
 
 namespace scai
 {
+
 namespace lama
 {
+
 namespace ELLUtilsTest
 {
 
@@ -64,8 +71,7 @@ void countNonEmptyRowsBySizesTest( ContextPtr loc )
     LAMA_INTERFACE_FN( countNonEmptyRowsBySizes, loc, ELLUtils, Operations )
     // count valid array
     {
-        const IndexType values[] =
-        { 3, 0, 1, 0, 0, 1, 0, 4 };
+        const IndexType values[] = { 3, 0, 1, 0, 0, 1, 0, 4 };
         const IndexType n = sizeof( values ) / sizeof( IndexType );
         LAMAArray<IndexType> sizes( n, values );
         ReadAccess<IndexType> rSizes( sizes, loc );
@@ -89,10 +95,8 @@ template<typename NoType>
 void setNonEmptyRowsBySizesTest( ContextPtr loc )
 {
     LAMA_INTERFACE_FN( setNonEmptyRowsBySizes, loc, ELLUtils, Operations )
-    const IndexType values[] =
-    { 3, 0, 1, 0, 0, 1, 0, 4, 3, 0 };
-    const IndexType valuesResult[] =
-    { 0, 2, 5, 7, 8 };
+    const IndexType values[] = { 3, 0, 1, 0, 0, 1, 0, 4, 3, 0 };
+    const IndexType valuesResult[] = { 0, 2, 5, 7, 8 };
     const IndexType n = 10;
     const IndexType numNonEmptyRows = 5;
     LAMAArray<IndexType> sizes( n, values );
@@ -121,8 +125,7 @@ void hasDiagonalPropertyTest( ContextPtr loc )
     LAMA_INTERFACE_FN( hasDiagonalProperty, loc, ELLUtils, Operations )
     // positive test
     {
-        const IndexType ellJaValues[] =
-        { 0, 1, 2, 3, 4, 5, 6, 7, 5, 3, 9, 10, 7, 8, 9, 10 };
+        const IndexType ellJaValues[] = { 0, 1, 2, 3, 4, 5, 6, 7, 5, 3, 9, 10, 7, 8, 9, 10 };
         const IndexType n = sizeof( ellJaValues ) / sizeof( IndexType );
         const IndexType numDiagonals = 8;
         LAMAArray<IndexType> ellJa( n, ellJaValues );
@@ -133,8 +136,7 @@ void hasDiagonalPropertyTest( ContextPtr loc )
     }
     // negative test
     {
-        const IndexType ellJaValues[] =
-        { 0, 1, 2, 3, 7, 5, 6, 7, 5, 3, 9, 10, 7, 8, 9, 10 };
+        const IndexType ellJaValues[] = { 0, 1, 2, 3, 7, 5, 6, 7, 5, 3, 9, 10, 7, 8, 9, 10 };
         const IndexType n = sizeof( ellJaValues ) / sizeof( IndexType );
         const IndexType numDiagonals = 8;
         LAMAArray<IndexType> ellJa( n, ellJaValues );
@@ -162,11 +164,9 @@ void checkTest( ContextPtr loc )
     LAMA_INTERFACE_FN( check, loc, ELLUtils, Operations )
     // check with correct values
     {
-        const IndexType valuesIa[] =
-        { 4, 3, 5, 2 };
+        const IndexType valuesIa[] = { 4, 3, 5, 2 };
         const IndexType nIa = sizeof( valuesIa ) / sizeof( IndexType );
-        const IndexType valuesJa[] =
-        { 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, -1, 4, -1, 4, 0, 0, 0, 5, 0 };
+        const IndexType valuesJa[] = { 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, -1, 4, -1, 4, 0, 0, 0, 5, 0 };
         const IndexType nJa = sizeof( valuesJa ) / sizeof( IndexType );
         const IndexType numRows = nIa;
         const IndexType numValuesPerRow = 5;
@@ -180,11 +180,9 @@ void checkTest( ContextPtr loc )
     }
     // check with invalid ia
     {
-        const IndexType valuesIa[] =
-        { 4, 3, 7, 2 };
+        const IndexType valuesIa[] = { 4, 3, 7, 2 };
         const IndexType nIa = sizeof( valuesIa ) / sizeof( IndexType );
-        const IndexType valuesJa[] =
-        { 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 0, 4, 0, 4, 0, 0, 0, 5, 0 };
+        const IndexType valuesJa[] = { 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 0, 4, 0, 4, 0, 0, 0, 5, 0 };
         const IndexType nJa = sizeof( valuesJa ) / sizeof( IndexType );
         const IndexType numRows = nIa;
         const IndexType numValuesPerRow = 5;
@@ -199,11 +197,9 @@ void checkTest( ContextPtr loc )
     }
     // check with invalid ja
     {
-        const IndexType valuesIa[] =
-        { 4, 3, 5, 2 };
+        const IndexType valuesIa[] = { 4, 3, 5, 2 };
         const IndexType nIa = sizeof( valuesIa ) / sizeof( IndexType );
-        const IndexType valuesJa[] =
-        { 1, 1, 1, 1, 2, 2, 2, -1, 3, 3, 3, 0, 4, 0, 4, 0, 0, 0, 5, 0 };
+        const IndexType valuesJa[] = { 1, 1, 1, 1, 2, 2, 2, -1, 3, 3, 3, 0, 4, 0, 4, 0, 0, 0, 5, 0 };
         const IndexType nJa = sizeof( valuesJa ) / sizeof( IndexType );
         const IndexType numRows = nIa;
         const IndexType numValuesPerRow = 5;
@@ -251,17 +247,13 @@ void getRowTest( ContextPtr loc )
     LAMA_INTERFACE_FN_TT( getRow, loc, ELLUtils, Getter, ValueType, OtherValueType );
     // check with valid dense values
     {
-        ValueType valuesValues[] =
-        { 0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4 };
+        ValueType valuesValues[] = { 0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4 };
         const IndexType nValues = sizeof( valuesValues ) / sizeof( ValueType );
-        IndexType valuesIa[] =
-        { 5, 5, 5 };
+        IndexType valuesIa[] = { 5, 5, 5 };
         const IndexType nIa = sizeof( valuesIa ) / sizeof( IndexType );
-        IndexType valuesJa[] =
-        { 0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4 };
+        IndexType valuesJa[] = { 0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4 };
         const IndexType nJa = sizeof( valuesJa ) / sizeof( IndexType );
-        OtherValueType expectedValues[] =
-        { 0, 1, 2, 3, 4 };
+        OtherValueType expectedValues[] = { 0, 1, 2, 3, 4 };
         const IndexType i = 1;
         const IndexType numRows = nIa;
         const IndexType numValuesPerRow = nJa / nIa;
@@ -287,11 +279,9 @@ void getRowTest( ContextPtr loc )
     }
     // check with valid sparse values
     {
-        ValueType valuesValues[] =
-        { 0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4 };
+        ValueType valuesValues[] = { 0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4 };
         const IndexType nValues = sizeof( valuesValues ) / sizeof( ValueType );
-        IndexType valuesIa[] =
-        { 5, 5, 5 };
+        IndexType valuesIa[] = { 5, 5, 5 };
         const IndexType nIa = sizeof( valuesIa ) / sizeof( IndexType );
         IndexType valuesJa[] =
         { 0, 0, 0, 2, 2, 2, 4, 4, 4, 6, 6, 6, 10, 10, 10 };
@@ -1282,13 +1272,13 @@ LAMA_AUTO_TEST_CASE_CTDUMMY( checkTest, ELLUtilsTest )
 LAMA_AUTO_TEST_CASE_CTDUMMY( matrixMultiplySizesTest, ELLUtilsTest )
 LAMA_AUTO_TEST_CASE_CTDUMMY( matrixAddSizesTest, ELLUtilsTest )
 
-LAMA_AUTO_TEST_CASE_CT( compressIATest, ELLUtilsTest )
-LAMA_AUTO_TEST_CASE_CT( compressValuesTest, ELLUtilsTest )
+LAMA_AUTO_TEST_CASE_CT( compressIATest, ELLUtilsTest, scai::lama )
+LAMA_AUTO_TEST_CASE_CT( compressValuesTest, ELLUtilsTest, scai::lama )
 
-LAMA_AUTO_TEST_CASE_CT( matrixMultiplyTest, ELLUtilsTest )
+LAMA_AUTO_TEST_CASE_CT( matrixMultiplyTest, ELLUtilsTest, scai::lama )
 
 // ToDo: does not work
-LAMA_AUTO_TEST_CASE_CT( matrixAddTest, ELLUtilsTest )
+LAMA_AUTO_TEST_CASE_CT( matrixAddTest, ELLUtilsTest, scai::lama )
 
 LAMA_AUTO_TEST_CASE_CTT( getRowTest, ELLUtilsTest )
 LAMA_AUTO_TEST_CASE_CTT( getValueTest, ELLUtilsTest )

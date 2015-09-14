@@ -47,6 +47,12 @@
 
 #include <boost/preprocessor.hpp>
 
+using scai::common::LongDouble;
+
+using scai::common::ComplexFloat;
+using scai::common::ComplexDouble;
+using scai::common::ComplexLongDouble;
+
 namespace scai
 {
 
@@ -170,6 +176,24 @@ void wrapperGemv(
     COMMON_THROWEXCEPTION( "LongDouble not supported by BLAS, please set USE_BLAS=0" )
 }
 
+template<>
+void wrapperGemv(
+    const CBLAS_ORDER,
+    const CBLAS_TRANSPOSE,
+    const int,
+    const int,
+    ComplexLongDouble,
+    const ComplexLongDouble*,
+    const int,
+    const ComplexLongDouble*,
+    const int,
+    ComplexLongDouble,
+    ComplexLongDouble*,
+    const int )
+{
+    COMMON_THROWEXCEPTION( "ComplexLongDouble not supported by BLAS, please set USE_BLAS=0" )
+}
+
 template<typename ValueType>
 void BLAS_BLAS2::gemv(
     const CBLAS_ORDER order,
@@ -238,10 +262,10 @@ void BLAS_BLAS2::setInterface( BLASInterface& BLAS )
 
     // REGISTER1: give these routines priority in case of overriding
 
-#define LAMA_BLAS2_REGISTER(z, I, _)                                             \
-    LAMA_INTERFACE_REGISTER1_T( BLAS, gemv, ARITHMETIC_TYPE##I )                 \
+#define LAMA_BLAS2_REGISTER(z, I, _)                                                   \
+    LAMA_INTERFACE_REGISTER1_T( BLAS, gemv, ARITHMETIC_HOST_TYPE_##I )                 \
 
-    BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_BLAS2_REGISTER, _ )
+    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_BLAS2_REGISTER, _ )
 
 #undef LAMA_BLAS2_REGISTER
 

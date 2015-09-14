@@ -71,7 +71,7 @@ typedef common::shared_ptr<Solver> SolverPtr;
  * functionality for coefficient, rhs and solution storing, provides
  * a custom ID for a solver and a residual calculation capabilities.
  */
-class COMMON_DLL_IMPORTEXPORT Solver: public Printable
+class COMMON_DLL_IMPORTEXPORT Solver: public scai::common::Printable
 {
 public:
     /**

@@ -38,7 +38,7 @@
 #include <scai/lama/LAMAArrayUtils.hpp>
 
 #include <test/MatrixStorageTest.hpp>
-#include <test/TestMacros.hpp>
+#include <scai/common/test/TestMacros.hpp>
 
 using namespace scai::lama;
 using namespace scai::hmemo;
@@ -297,10 +297,10 @@ BOOST_AUTO_TEST_SUITE( JDSStorageTest )
 
 SCAI_LOG_DEF_LOGGER( logger, "Test.JDSStorageTest" )
 
-LAMA_AUTO_TEST_CASE_CT( checkTest, JDSStorageTest )
-LAMA_AUTO_TEST_CASE_CT( commonTestCases, JDSStorageTest )
+LAMA_AUTO_TEST_CASE_CT( checkTest, JDSStorageTest, scai::lama )
+LAMA_AUTO_TEST_CASE_CT( commonTestCases, JDSStorageTest, scai::lama )
 LAMA_AUTO_TEST_CASE_T( constructorTest, JDSStorageTest )
-LAMA_AUTO_TEST_CASE_CT( constructorTest1, JDSStorageTest )
+LAMA_AUTO_TEST_CASE_CT( constructorTest1, JDSStorageTest, scai::lama )
 LAMA_AUTO_TEST_CASE_T( typeNameTest, JDSStorageTest )
 
 /* ------------------------------------------------------------------------------------------------------------------ */

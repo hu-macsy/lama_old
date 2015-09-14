@@ -39,15 +39,16 @@
 #include <scai/lama/Vector.hpp>
 
 // others
-#include <scai/hmemo.hpp>
-#include <scai/lama/LAMAArrayUtils.hpp>
-#include <scai/tasking/SyncToken.hpp>
-#include <scai/lama/TypeTraits.hpp>
+#include <scai/common/TypeTraits.hpp>
+#include <scai/common/exception/Exception.hpp>
 
+#include <scai/tasking/SyncToken.hpp>
+
+#include <scai/hmemo.hpp>
+
+#include <scai/lama/LAMAArrayUtils.hpp>
 #include <scai/lama/distribution/Distribution.hpp>
 #include <scai/lama/distribution/Halo.hpp>
-
-#include <scai/common/exception/Exception.hpp>
 
 #include <scai/lama/io/mmio.hpp>
 #include <scai/lama/io/FileType.hpp>
@@ -56,6 +57,8 @@
 #include <fstream>
 
 using namespace scai::tasking;
+
+using scai::common::IndexType;
 
 namespace scai
 {

@@ -39,15 +39,19 @@
 #include <scai/lama/LAMAInterfaceRegistry.hpp>
 #include <scai/lama/macros/unused.hpp>
 
-// other scai projects
+// internal scai projects
 #include <scai/hmemo/mic/MICSyncToken.hpp>
 #include <scai/hmemo/mic/MICContext.hpp>
-
 #include <scai/tasking/NoSyncToken.hpp>
-#include <scai/tracing.hpp>
-#include <scai/common/bind.hpp>
 
-// stl
+#include <scai/tracing.hpp>
+
+#include <scai/common/bind.hpp>
+#include <scai/common/Assert.hpp>
+
+// external
+
+// std
 #include <set>
 #include <map>
 #include <cmath>

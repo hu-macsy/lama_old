@@ -37,7 +37,7 @@
 #include <scai/lama/distribution/BlockDistribution.hpp>
 
 #include <test/distributed/DistributionTest.hpp>
-#include <test/TestMacros.hpp>
+#include <scai/common/test/TestMacros.hpp>
 
 using namespace scai::lama;
 
@@ -149,7 +149,7 @@ BOOST_AUTO_TEST_CASE( blockComputeOwnersTest )
             for ( IndexType i = 0; i < blockSize; ++i )
             {
                 nonLocalIndexes.push_back( p * blockSize + i );
-                BOOST_CHECK_EQUAL( dist->global2local( p * blockSize + i ), nIndex );
+                BOOST_CHECK_EQUAL( dist->global2local( p * blockSize + i ), scai::common::nIndex );
             }
         }
     }
@@ -185,4 +185,6 @@ BOOST_AUTO_TEST_CASE( isEqualTest )
     BOOST_CHECK( ( *blockdist1 ).isEqual( *blockdist3 ) );
     BOOST_CHECK( !( *blockdist1 ).isEqual( *blockdist4 ) );
 }
-/* --------------------------------------------------------------------- */BOOST_AUTO_TEST_SUITE_END();
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_SUITE_END();

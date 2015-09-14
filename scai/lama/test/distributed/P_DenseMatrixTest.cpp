@@ -50,7 +50,7 @@
 #include <scai/lama/LAMAInterfaceRegistry.hpp>
 
 #include <test/TestSparseMatrices.hpp>
-#include <test/TestMacros.hpp>
+#include <scai/common/test/TestMacros.hpp>
 
 using namespace scai::common;
 using namespace scai::lama;

@@ -55,6 +55,10 @@
 
 using scai::common::scoped_array;
 
+using scai::common::ComplexFloat;
+using scai::common::ComplexDouble;
+using scai::common::ComplexLongDouble;
+
 namespace scai
 {
 
@@ -95,7 +99,7 @@ IndexType OpenMPCSRUtils::scanSerial( IndexType array[], const IndexType numValu
 
 /* --------------------------------------------------------------------------- */
 
-IndexType OpenMPCSRUtils::scanParallel( PartitionId numThreads, IndexType array[], const IndexType numValues )
+IndexType OpenMPCSRUtils::scanParallel( scai::common::PartitionId numThreads, IndexType array[], const IndexType numValues )
 {
     // std::cout << "Scan with " << numThreads << " in parallel" << std::endl;
 
@@ -1954,29 +1958,29 @@ void OpenMPCSRUtils::setInterface( CSRUtilsInterface& CSRUtils )
     LAMA_INTERFACE_REGISTER( CSRUtils, matrixMultiplySizes )
     LAMA_INTERFACE_REGISTER( CSRUtils, matrixMultiplyJA )
 
-#define LAMA_CSR_UTILS2_REGISTER(z, J, TYPE )                                        \
-    LAMA_INTERFACE_REGISTER_TT( CSRUtils, scaleRows, TYPE, ARITHMETIC_TYPE##J )      \
+#define LAMA_CSR_UTILS2_REGISTER(z, J, TYPE )                                              \
+    LAMA_INTERFACE_REGISTER_TT( CSRUtils, scaleRows, TYPE, ARITHMETIC_HOST_TYPE_##J )      \
 
-#define LAMA_CSR_UTILS_REGISTER(z, I, _)                                             \
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, convertCSR2CSC, ARITHMETIC_TYPE##I )        \
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, sortRowElements, ARITHMETIC_TYPE##I )       \
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, normalGEMV, ARITHMETIC_TYPE##I )            \
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, sparseGEMV, ARITHMETIC_TYPE##I )            \
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, normalGEVM, ARITHMETIC_TYPE##I )            \
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, sparseGEVM, ARITHMETIC_TYPE##I )            \
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, gemm, ARITHMETIC_TYPE##I )                  \
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, matrixAdd, ARITHMETIC_TYPE##I )             \
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, matrixMultiply, ARITHMETIC_TYPE##I )        \
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, jacobi, ARITHMETIC_TYPE##I )                \
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, jacobiHalo, ARITHMETIC_TYPE##I )            \
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, jacobiHaloWithDiag, ARITHMETIC_TYPE##I )    \
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, absMaxDiffVal, ARITHMETIC_TYPE##I )         \
-    \
-    BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT,                                            \
-                     LAMA_CSR_UTILS2_REGISTER,                                       \
-                     ARITHMETIC_TYPE##I )                                            \
+#define LAMA_CSR_UTILS_REGISTER(z, I, _)                                                   \
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, convertCSR2CSC, ARITHMETIC_HOST_TYPE_##I )        \
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, sortRowElements, ARITHMETIC_HOST_TYPE_##I )       \
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, normalGEMV, ARITHMETIC_HOST_TYPE_##I )            \
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, sparseGEMV, ARITHMETIC_HOST_TYPE_##I )            \
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, normalGEVM, ARITHMETIC_HOST_TYPE_##I )            \
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, sparseGEVM, ARITHMETIC_HOST_TYPE_##I )            \
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, gemm, ARITHMETIC_HOST_TYPE_##I )                  \
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, matrixAdd, ARITHMETIC_HOST_TYPE_##I )             \
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, matrixMultiply, ARITHMETIC_HOST_TYPE_##I )        \
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, jacobi, ARITHMETIC_HOST_TYPE_##I )                \
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, jacobiHalo, ARITHMETIC_HOST_TYPE_##I )            \
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, jacobiHaloWithDiag, ARITHMETIC_HOST_TYPE_##I )    \
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, absMaxDiffVal, ARITHMETIC_HOST_TYPE_##I )         \
+                                                                                           \
+    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT,                                             \
+                     LAMA_CSR_UTILS2_REGISTER,                                             \
+                     ARITHMETIC_HOST_TYPE_##I )                                            \
 
-    BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_CSR_UTILS_REGISTER, _ )
+    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_CSR_UTILS_REGISTER, _ )
 
 #undef LAMA_CSR_UTILS_REGISTER
 #undef LAMA_CSR_UTILS2_REGISTER

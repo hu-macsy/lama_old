@@ -61,7 +61,7 @@ namespace lama
  *  data provided for other partitions.
  */
 
-class COMMON_DLL_IMPORTEXPORT Halo: public Printable
+class COMMON_DLL_IMPORTEXPORT Halo: public scai::common::Printable
 {
     friend class HaloBuilder;
 
@@ -166,7 +166,7 @@ IndexType Halo::global2halo( const IndexType globalIndex ) const
 
     if( elem == mGlobal2Halo.end() )
     {
-        return nIndex;
+        return scai::common::nIndex;
     }
 
     return elem->second;

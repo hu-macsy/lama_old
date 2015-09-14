@@ -38,7 +38,10 @@
 #include <scai/lama/Distributed.hpp>
 
 // others
-#include <scai/lama/LAMATypes.hpp>
+#include <scai/common/Factory.hpp>
+#include <scai/common/ScalarType.hpp>
+#include <scai/common/SCAITypes.hpp>
+
 #include <scai/lama/Scalar.hpp>
 #include <scai/lama/Vector.hpp>
 #include <scai/hmemo.hpp>
@@ -50,9 +53,6 @@
 
 // logging
 #include <scai/logging.hpp>
-
-#include <scai/common/Factory.hpp>
-#include <scai/common/ScalarType.hpp>
 
 namespace scai
 {
@@ -66,7 +66,7 @@ typedef common::shared_ptr<class Matrix> MatrixPtr;
 
 /** For convenience: add the key type used for the Matrix factory. */
 
-typedef std::pair<MatrixStorageFormat, common::ScalarType> MatrixCreateKeyType;
+typedef std::pair<Format::MatrixStorageFormat, scai::common::ScalarType> MatrixCreateKeyType;
 
 /**
  * @brief The class Matrix is a abstract type that represents a distributed 2D real or complex matrix.
@@ -104,7 +104,7 @@ public:
      *
      * Note: the format of the matrix decides whether the matrix will be DENSE or SPARSE.
      */
-    static Matrix* getMatrix( const MatrixStorageFormat format, const common::ScalarType type );
+    static Matrix* getMatrix( const Format::MatrixStorageFormat format, const common::ScalarType type );
 
     /**
      * @brief Checks for a given matrix whether the content of its data is sound.
@@ -1019,17 +1019,17 @@ inline DistributionPtr Matrix::getColDistributionPtr() const
  *  \param stream   is the reference to the output stream
  *  \param kind      is the enum value that is printed
  */
-inline std::ostream& operator<<( std::ostream& stream, const Matrix::SyncKind& kind )
+inline std::ostream& operator<<( std::ostream& stream, const scai::lama::Matrix::SyncKind& kind )
 {
     switch( kind )
     {
-        case Matrix::SYNCHRONOUS:
+        case scai::lama::Matrix::SYNCHRONOUS:
         {
             stream << "SYNCHRONOUS";
             break;
         }
 
-        case Matrix::ASYNCHRONOUS:
+        case scai::lama::Matrix::ASYNCHRONOUS:
         {
             stream << "ASYNCHRONOUS";
             break;
@@ -1045,18 +1045,12 @@ inline std::ostream& operator<<( std::ostream& stream, const Matrix::SyncKind& k
     return stream;
 }
 
-/** @brief  stream output for key values of creator  */
-
-} /* end namespace lama */
-
-} /* end namespace scai */
-
 /** This function prints a MatrixKind on an output stream.
  *
  *  \param stream   is the reference to the output stream
  *  \param kind      is the enum value that is printed
  */
-inline std::ostream& operator<<( std::ostream& stream, const scai::lama::Matrix::MatrixKind& kind )
+inline std::ostream& operator<<( std::ostream& stream, const Matrix::MatrixKind& kind )
 {
     switch( kind )
     {
@@ -1082,10 +1076,13 @@ inline std::ostream& operator<<( std::ostream& stream, const scai::lama::Matrix:
     return stream;
 }
 
-inline std::ostream& operator<<( std::ostream& stream, const scai::lama::MatrixCreateKeyType& key )
+/** @brief  stream output for key values of creator  */
+inline std::ostream& operator<<( std::ostream& stream, const MatrixCreateKeyType& key )
 {
     stream << "<" << key.first << ", " << key.second << ">";
     return stream;
 }
 
+} /* end namespace lama */
 
+} /* end namespace scai */

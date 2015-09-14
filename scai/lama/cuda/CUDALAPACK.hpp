@@ -36,7 +36,7 @@
 // for dll_import
 #include <scai/common/config.hpp>
 
-#include <scai/lama/LAMATypes.hpp>
+#include <scai/common/SCAITypes.hpp>
 
 #include <scai/lama/openmp/BLASHelper.hpp>
 

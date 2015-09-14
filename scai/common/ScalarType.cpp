@@ -34,45 +34,52 @@
 
 #include <scai/common/ScalarType.hpp>
 
-using namespace scai::common;
+namespace scai
+{
+
+namespace common
+{
+
+namespace scalar
+{
 
 std::ostream& operator<<( std::ostream& stream, const ScalarType& object )
 {
     switch( object )
     {
-        case scalar::FLOAT:
+        case FLOAT:
             stream << "float";
             break;
 
-        case scalar::DOUBLE:
+        case DOUBLE:
             stream << "double";
             break;
 
-        case scalar::INDEX_TYPE:
+        case INDEX_TYPE:
             stream << "IndexType";
             break;
 
-        case scalar::LONG_DOUBLE:
+        case LONG_DOUBLE:
             stream << "LongDouble";
             break;
 
-        case scalar::COMPLEX:
+        case COMPLEX:
             stream << "ComplexFloat";
             break;
 
-        case scalar::DOUBLE_COMPLEX:
+        case DOUBLE_COMPLEX:
             stream << "ComplexDouble";
             break;
 
-        case scalar::LONG_DOUBLE_COMPLEX:
+        case LONG_DOUBLE_COMPLEX:
             stream << "ComplexLongDouble";
             break;
 
-        case scalar::INTERNAL:
+        case INTERNAL:
             stream << "_Internal";
             break;
 
-        case scalar::PATTERN:
+        case PATTERN:
             stream << "_Pattern";
             break;
 
@@ -83,3 +90,8 @@ std::ostream& operator<<( std::ostream& stream, const ScalarType& object )
     return stream;
 }
 
+} /* end namespace scalar */
+
+} /* end namespace common */
+
+} /* end namespace scai */

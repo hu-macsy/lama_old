@@ -922,7 +922,7 @@ ValueType DenseStorageView<ValueType>::l2Norm() const
 
 	SCAI_CONTEXT_ACCESS( loc );
 
-	return sqrt(dot( n, data.get(), 1, data.get(), 1, NULL ));
+	return ::sqrt(dot( n, data.get(), 1, data.get(), 1, NULL ));
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1052,14 +1052,14 @@ void DenseStorageView<ValueType>::assign( const _MatrixStorage& other )
 #define LAMA_ASSIGN_DENSE_CALL( z, I, _ )                                                \
 case common::scalar::SCALAR_ARITHMETIC_TYPE##I:                                          \
 {                                                                                        \
-    const DenseStorageView<ARITHMETIC_TYPE##I>* otherTyped =                             \
-            dynamic_cast<const DenseStorageView<ARITHMETIC_TYPE##I>*>( &other );             \
+    const DenseStorageView<ARITHMETIC_HOST_TYPE_##I>* otherTyped =                       \
+            dynamic_cast<const DenseStorageView<ARITHMETIC_HOST_TYPE_##I>*>( &other );   \
     SCAI_ASSERT_DEBUG( otherTyped, other << ": dynamic cast failed, should not happen" ) \
     assignDenseStorageImpl( *otherTyped );                                               \
     return;                                                                              \
 }                                                                                        \
 
-BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_ASSIGN_DENSE_CALL, _ )
+BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_ASSIGN_DENSE_CALL, _ )
 
 #undef LAMA_ASSIGN_DENSE_CALL
 
@@ -1277,23 +1277,23 @@ return new DenseStorage<ValueType>( *this );
 /*       Template Instantiations                                             */
 /* ========================================================================= */
 
-#define LAMA_DENSE_STORAGE_INSTANTIATE(z, I, _)                             \
-    template<>                                                                  \
-    const char* DenseStorage<ARITHMETIC_TYPE##I>::typeName()                    \
-    {                                                                           \
-        return "DenseStorage<ARITHMETIC_TYPE##I>";                              \
-    }                                                                           \
-    \
-    template<>                                                                  \
-    const char* DenseStorageView<ARITHMETIC_TYPE##I>::typeName()                \
-    {                                                                           \
-        return "DenseStorageView<ARITHMETIC_TYPE##I>";                          \
-    }                                                                           \
-    \
-    template class COMMON_DLL_IMPORTEXPORT DenseStorage<ARITHMETIC_TYPE##I> ;     \
-    template class COMMON_DLL_IMPORTEXPORT DenseStorageView<ARITHMETIC_TYPE##I> ;
+#define LAMA_DENSE_STORAGE_INSTANTIATE(z, I, _)                                         \
+    template<>                                                                          \
+    const char* DenseStorage<ARITHMETIC_HOST_TYPE_##I>::typeName()                      \
+    {                                                                                   \
+        return "DenseStorage<ARITHMETIC_HOST_TYPE_##I>";                                \
+    }                                                                                   \
+                                                                                        \
+    template<>                                                                          \
+    const char* DenseStorageView<ARITHMETIC_HOST_TYPE_##I>::typeName()                  \
+    {                                                                                   \
+        return "DenseStorageView<ARITHMETIC_HOST_TYPE_##I>";                            \
+    }                                                                                   \
+                                                                                        \
+    template class COMMON_DLL_IMPORTEXPORT DenseStorage<ARITHMETIC_HOST_TYPE_##I> ;     \
+    template class COMMON_DLL_IMPORTEXPORT DenseStorageView<ARITHMETIC_HOST_TYPE_##I> ;
 
-BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_DENSE_STORAGE_INSTANTIATE, _ )
+BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_DENSE_STORAGE_INSTANTIATE, _ )
 
 #undef LAMA_DENSE_STORAGE_INSTANTIATE
 

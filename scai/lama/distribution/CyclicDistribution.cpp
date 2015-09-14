@@ -198,7 +198,7 @@ IndexType CyclicDistribution::global2local( const IndexType globalIndex ) const
     }
     else
     {
-        return nIndex;
+        return scai::common::nIndex;
     }
 }
 

@@ -39,13 +39,17 @@
 #include <scai/common/Printable.hpp>
 
 // others
-#include <scai/lama/LAMATypes.hpp>
+#include <scai/common/SCAITypes.hpp>
+
 #include <scai/hmemo.hpp>
 
 // logging
 #include <scai/logging.hpp>
 
 #include <vector>
+
+using scai::common::IndexType;
+using scai::common::PartitionId;
 
 namespace scai
 {
@@ -69,7 +73,7 @@ class Communicator;
  * where the number of elements is zero.
  *
  */
-class COMMON_DLL_IMPORTEXPORT CommunicationPlan: public Printable
+class COMMON_DLL_IMPORTEXPORT CommunicationPlan: public scai::common::Printable
 {
 public:
 

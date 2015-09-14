@@ -38,11 +38,15 @@
 
 #include <map>
 
+// std::ostream& operator<<( std::ostream& stream, const scai::hmemo::Memory& object );
+
 namespace scai
 {
 
 namespace hmemo
 {
+
+// using ::operator<<;
 
 /* ---------------------------------------------------------------------------------*/
 
@@ -97,6 +101,12 @@ bool Memory::canCopyTo( const Memory& dstMemory ) const
 
 void Memory::memcpyFrom( void* dst, const Memory& srcMemory, const void* src, size_t size ) const
 {
+    std::ostringstream mystream;
+
+    const Printable& p = srcMemory;
+
+    mystream << srcMemory; 
+
     if ( &srcMemory == this )
     {
         memcpy( dst, src, size );
@@ -141,29 +151,26 @@ tasking::SyncToken* Memory::memcpyToAsync( const Memory& dstMemory, void* dst, c
 
 /* ---------------------------------------------------------------------------------*/
 
-} /* end namespace hmemo */
+namespace memtype
+{
 
-} /* end namespace scai */
-
-/* ---------------------------------------------------------------------------------*/
-
-std::ostream& operator<<( std::ostream& stream, const scai::hmemo::MemoryType& type )
+std::ostream& operator<<( std::ostream& stream, const MemoryType& type )
 {
     switch ( type )
     {
-        case scai::hmemo::memtype::HostMemory :
+        case HostMemory :
             stream << "HostMemory";
             break;
 
-        case scai::hmemo::memtype::CUDAMemory :
+        case CUDAMemory :
             stream << "CUDAMemory";
             break;
 
-        case scai::hmemo::memtype::CUDAHostMemory :
+        case CUDAHostMemory :
             stream << "CUDAHostMemory";
             break;
 
-        case scai::hmemo::memtype::UserMemory :
+        case UserMemory :
             stream << "UserMemory";
             break;
 
@@ -174,3 +181,10 @@ std::ostream& operator<<( std::ostream& stream, const scai::hmemo::MemoryType& t
     return stream;
 }
 
+} /* end namespace memtype */
+
+/* ---------------------------------------------------------------------------------*/
+
+} /* end namespace hmemo */
+
+} /* end namespace scai */

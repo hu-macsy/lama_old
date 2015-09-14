@@ -30,30 +30,38 @@
  * @date 04.07.2012
  */
 
+#include <scai/common/SCAITypes.hpp>
+#include <scai/common/bind.hpp>
+
+#include <scai/common/cuda/CUDAError.hpp>
+
+// tracing
+#include <scai/tracing.hpp>
+#include <scai/tasking/SyncToken.hpp>
+
+#include <scai/hmemo/cuda/CUDAStreamSyncToken.hpp>
+
 #include <scai/lama/LAMAInterface.hpp>
 #include <scai/lama/LAMAInterfaceRegistry.hpp>
 
 #include <scai/lama/cuda/utils.cu.h>
-#include <scai/common/cuda/CUDAError.hpp>
 #include <scai/lama/cuda/CUDAUtils.hpp>
 #include <scai/lama/cuda/CUDACOOUtils.hpp>
-#include <scai/hmemo/cuda/CUDAStreamSyncToken.hpp>
-#include <scai/tasking/SyncToken.hpp>
 #include <scai/lama/cuda/CUDASettings.hpp>
-
-// tracing
-#include <scai/tracing.hpp>
 
 // thrust
 #include <thrust/device_ptr.h>
 #include <thrust/sort.h>
 
 // boost
-#include <scai/common/bind.hpp>
 #include <boost/preprocessor.hpp>
 
-using scai::common::getScalarType;
 using namespace scai::tasking;
+
+using scai::common::getScalarType;
+
+using scai::common::ComplexFloat;
+using scai::common::ComplexDouble;
 
 namespace scai
 {
@@ -715,40 +723,40 @@ namespace lama
 
         LAMA_INTERFACE_REGISTER_TT( COOUtils, setCSRData, IndexType, IndexType )
 
-#define LAMA_COO_UTILS2_REGISTER(z, J, TYPE )                                       \
-    LAMA_INTERFACE_REGISTER_TT( COOUtils, setCSRData, TYPE, ARITHMETIC_TYPE##J )    \
+#define LAMA_COO_UTILS2_REGISTER(z, J, TYPE )                                             \
+    LAMA_INTERFACE_REGISTER_TT( COOUtils, setCSRData, TYPE, ARITHMETIC_CUDA_TYPE_##J )    \
 
-#define LAMA_COO_UTILS_REGISTER(z, I, _)                                            \
-    LAMA_INTERFACE_REGISTER_T( COOUtils, normalGEMV, ARITHMETIC_TYPE##I )           \
-    LAMA_INTERFACE_REGISTER_T( COOUtils, normalGEVM, ARITHMETIC_TYPE##I )           \
-                                                                                    \
-    BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT,                                           \
-                     LAMA_COO_UTILS2_REGISTER,                                      \
-                     ARITHMETIC_TYPE##I )                                           \
+#define LAMA_COO_UTILS_REGISTER(z, I, _)                                                  \
+    LAMA_INTERFACE_REGISTER_T( COOUtils, normalGEMV, ARITHMETIC_CUDA_TYPE_##I )           \
+    LAMA_INTERFACE_REGISTER_T( COOUtils, normalGEVM, ARITHMETIC_CUDA_TYPE_##I )           \
+                                                                                          \
+    BOOST_PP_REPEAT( ARITHMETIC_CUDA_TYPE_CNT,                                            \
+                     LAMA_COO_UTILS2_REGISTER,                                            \
+                     ARITHMETIC_CUDA_TYPE_##I )                                           \
 
-        BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_COO_UTILS_REGISTER, _ )
+        BOOST_PP_REPEAT( ARITHMETIC_CUDA_TYPE_CNT, LAMA_COO_UTILS_REGISTER, _ )
 
 #undef LAMA_COO_UTILS_REGISTER
 #undef LAMA_COO_UTILS2_REGISTER
 
     }
 
-    /* --------------------------------------------------------------------------- */
-    /*    Static registration of the Utils routines                                */
-    /* --------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------- */
+/*    Static registration of the Utils routines                                */
+/* --------------------------------------------------------------------------- */
 
-    bool CUDACOOUtils::registerInterface()
-    {
-        LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( hmemo::context::CUDA );
-        setInterface( interface.COOUtils );
-        return true;
-    }
+bool CUDACOOUtils::registerInterface()
+{
+    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( hmemo::context::CUDA );
+    setInterface( interface.COOUtils );
+    return true;
+}
 
-    /* --------------------------------------------------------------------------- */
-    /*    Static initialiazion at program start                                    */
-    /* --------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------- */
+/*    Static initialiazion at program start                                    */
+/* --------------------------------------------------------------------------- */
 
-    bool CUDACOOUtils::initialized = registerInterface();
+bool CUDACOOUtils::initialized = registerInterface();
 
 } /* end namespace lama */
 

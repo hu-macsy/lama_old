@@ -37,7 +37,8 @@
 #include <scai/common/config.hpp>
 
 // others
-#include <scai/lama/LAMATypes.hpp>
+#include <scai/common/SCAITypes.hpp>
+
 #include <scai/tasking/SyncToken.hpp>
 
 // CBLAS_ORDER, CBLAS_TRANSPOSE, ...
@@ -48,6 +49,8 @@
 
 #include <cublas_v2.h>
 #include <cuda_runtime_api.h>
+
+using scai::common::IndexType;
 
 namespace scai
 {

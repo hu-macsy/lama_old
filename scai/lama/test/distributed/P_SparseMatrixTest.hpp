@@ -33,7 +33,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include <scai/lama/matrix/Matrix.hpp>
-#include <test/TestMacros.hpp>
+#include <scai/common/test/TestMacros.hpp>
 
 using namespace scai::lama;
 

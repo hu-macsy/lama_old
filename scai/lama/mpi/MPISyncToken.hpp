@@ -40,9 +40,11 @@
 #include <scai/tasking/SyncToken.hpp>
 
 // others
-#include <scai/lama/LAMATypes.hpp>
+#include <scai/common/SCAITypes.hpp>
 
 #include <scai/common/unique_ptr.hpp>
+
+using scai::common::PartitionId;
 
 namespace scai
 {

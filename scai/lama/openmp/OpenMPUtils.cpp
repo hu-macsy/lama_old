@@ -42,14 +42,19 @@
 // boost
 #include <boost/preprocessor.hpp>
 
+using std::abs;
+
 namespace scai
 {
 
+using common::ComplexFloat;
+using common::ComplexDouble;
+using common::ComplexLongDouble;
+
+using common::getScalarType;
+
 namespace lama
 {
-
-using std::abs;
-using scai::common::getScalarType;
 
 SCAI_LOG_DEF_LOGGER( OpenMPUtils::logger, "OpenMP.Utils" )
 
@@ -480,25 +485,27 @@ void OpenMPUtils::setInterface( UtilsInterface& Utils )
     LAMA_INTERFACE_REGISTER_TT( Utils, setGather, IndexType, IndexType )
     LAMA_INTERFACE_REGISTER_TT( Utils, set, IndexType, IndexType )
 
-#define LAMA_UTILS2_REGISTER(z, J, TYPE )                                       \
-    LAMA_INTERFACE_REGISTER_TT( Utils, setScale, TYPE, ARITHMETIC_TYPE##J )     \
-    LAMA_INTERFACE_REGISTER_TT( Utils, setGather, TYPE, ARITHMETIC_TYPE##J )    \
-    LAMA_INTERFACE_REGISTER_TT( Utils, setScatter, TYPE, ARITHMETIC_TYPE##J )   \
-    LAMA_INTERFACE_REGISTER_TT( Utils, set, TYPE, ARITHMETIC_TYPE##J )          \
+#define LAMA_UTILS2_REGISTER(z, J, TYPE )                                             \
+    LAMA_INTERFACE_REGISTER_TT( Utils, setScale, TYPE, ARITHMETIC_HOST_TYPE_##J )     \
+    LAMA_INTERFACE_REGISTER_TT( Utils, setGather, TYPE, ARITHMETIC_HOST_TYPE_##J )    \
+    LAMA_INTERFACE_REGISTER_TT( Utils, setScatter, TYPE, ARITHMETIC_HOST_TYPE_##J )   \
+    LAMA_INTERFACE_REGISTER_TT( Utils, set, TYPE, ARITHMETIC_HOST_TYPE_##J )          \
 
-#define LAMA_UTILS_REGISTER(z, I, _)                                                 \
-    LAMA_INTERFACE_REGISTER_T( Utils, scale, ARITHMETIC_TYPE##I )                    \
-    LAMA_INTERFACE_REGISTER_T( Utils, sum, ARITHMETIC_TYPE##I )                      \
-    LAMA_INTERFACE_REGISTER_T( Utils, setVal, ARITHMETIC_TYPE##I )                   \
-    LAMA_INTERFACE_REGISTER_T( Utils, getValue, ARITHMETIC_TYPE##I )                 \
-    LAMA_INTERFACE_REGISTER_T( Utils, maxval, ARITHMETIC_TYPE##I )                   \
-    LAMA_INTERFACE_REGISTER_T( Utils, absMaxVal, ARITHMETIC_TYPE##I )                \
-    LAMA_INTERFACE_REGISTER_T( Utils, absMaxDiffVal, ARITHMETIC_TYPE##I )            \
-    LAMA_INTERFACE_REGISTER_T( Utils, isSorted, ARITHMETIC_TYPE##I )                 \
-    LAMA_INTERFACE_REGISTER_T( Utils, invert, ARITHMETIC_TYPE##I )                   \
-    BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_UTILS2_REGISTER, ARITHMETIC_TYPE##I )
+#define LAMA_UTILS_REGISTER(z, I, _)                                                       \
+    LAMA_INTERFACE_REGISTER_T( Utils, scale, ARITHMETIC_HOST_TYPE_##I )                    \
+    LAMA_INTERFACE_REGISTER_T( Utils, sum, ARITHMETIC_HOST_TYPE_##I )                      \
+    LAMA_INTERFACE_REGISTER_T( Utils, setVal, ARITHMETIC_HOST_TYPE_##I )                   \
+    LAMA_INTERFACE_REGISTER_T( Utils, getValue, ARITHMETIC_HOST_TYPE_##I )                 \
+    LAMA_INTERFACE_REGISTER_T( Utils, maxval, ARITHMETIC_HOST_TYPE_##I )                   \
+    LAMA_INTERFACE_REGISTER_T( Utils, absMaxVal, ARITHMETIC_HOST_TYPE_##I )                \
+    LAMA_INTERFACE_REGISTER_T( Utils, absMaxDiffVal, ARITHMETIC_HOST_TYPE_##I )            \
+    LAMA_INTERFACE_REGISTER_T( Utils, isSorted, ARITHMETIC_HOST_TYPE_##I )                 \
+    LAMA_INTERFACE_REGISTER_T( Utils, invert, ARITHMETIC_HOST_TYPE_##I )                   \
+    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT,                                             \
+                     LAMA_UTILS2_REGISTER,                                                 \
+                     ARITHMETIC_HOST_TYPE_##I )
 
-    BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_UTILS_REGISTER, _ )
+    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_UTILS_REGISTER, _ )
 
 #undef LAMA_UTILS_REGISTER
 #undef LAMA_UTILS2_REGISTER

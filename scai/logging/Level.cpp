@@ -114,12 +114,12 @@ Level str2level( const std::string& value )
     return level;
 }
 
-} /* end namespace logging */
-
-} /* end namespace scai */
-
-std::ostream& operator<<( std::ostream& os, const scai::logging::Level& level )
+std::ostream& operator<<( std::ostream& os, const Level& level )
 {
     os << scai::logging::level2str( level );
     return os;
 }
+
+} /* end namespace logging */
+
+} /* end namespace scai */

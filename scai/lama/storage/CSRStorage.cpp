@@ -2216,7 +2216,7 @@ ValueType CSRStorage<ValueType>::l2Norm() const
 
 	SCAI_CONTEXT_ACCESS( loc );
 
-	return sqrt(dot( mNumValues, data.get(), 1, data.get(), 1, NULL ));
+	return ::sqrt(dot( mNumValues, data.get(), 1, data.get(), 1, NULL ));
 }
 
 /* --------------------------------------------------------------------------- */
@@ -2359,25 +2359,25 @@ void CSRStorage<ValueType>::buildSparseRowData(
 /*       Template Instantiations                                             */
 /* ========================================================================= */
 
-#define LAMA_CSR_STORAGE_INSTANTIATE(z, I, _)                                  \
-    template<>                                                                 \
-    const char* CSRStorage<ARITHMETIC_TYPE##I>::typeName()                     \
-    {                                                                          \
-        return "CSRStorage<ARITHMETIC_TYPE##I>";                               \
-    }                                                                          \
-                                                                               \
-    template class COMMON_DLL_IMPORTEXPORT CSRStorage<ARITHMETIC_TYPE##I> ;    \
-                                                                               \
-    template void CSRStorage<ARITHMETIC_TYPE##I>::setCSRDataSwap(              \
-            const IndexType numRows,                                           \
-            const IndexType numColumns,                                        \
-            const IndexType numValues,                                         \
-            LAMAArray<IndexType>& ia,                                          \
-            LAMAArray<IndexType>& ja,                                          \
-            LAMAArray<ARITHMETIC_TYPE##I>& values,                             \
-            const ContextPtr loc );                                            \
+#define LAMA_CSR_STORAGE_INSTANTIATE(z, I, _)                                      \
+    template<>                                                                     \
+    const char* CSRStorage<ARITHMETIC_HOST_TYPE_##I>::typeName()                   \
+    {                                                                              \
+        return "CSRStorage<ARITHMETIC_HOST_TYPE_##I>";                             \
+    }                                                                              \
+                                                                                   \
+    template class COMMON_DLL_IMPORTEXPORT CSRStorage<ARITHMETIC_HOST_TYPE_##I> ;  \
+                                                                                   \
+    template void CSRStorage<ARITHMETIC_HOST_TYPE_##I>::setCSRDataSwap(            \
+            const IndexType numRows,                                               \
+            const IndexType numColumns,                                            \
+            const IndexType numValues,                                             \
+            LAMAArray<IndexType>& ia,                                              \
+            LAMAArray<IndexType>& ja,                                              \
+            LAMAArray<ARITHMETIC_HOST_TYPE_##I>& values,                           \
+            const ContextPtr loc );                                                \
 
-    BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_CSR_STORAGE_INSTANTIATE, _ )
+    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_CSR_STORAGE_INSTANTIATE, _ )
 
 #undef LAMA_CSR_STORAGE_INSTANTIATE
 

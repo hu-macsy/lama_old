@@ -63,7 +63,7 @@ class LAMAArrayConstView;
  * @tparam ValueType is the type stored in this container.
  */
 template<typename ValueType>
-class COMMON_DLL_IMPORTEXPORT LAMAArrayView: public Printable
+class COMMON_DLL_IMPORTEXPORT LAMAArrayView: public scai::common::Printable
 {
     friend class ReadAccess<ValueType> ;
     friend class WriteAccess<ValueType> ;
@@ -187,7 +187,7 @@ private:
  * @tparam ValueType the value type for the elements of this.
  */
 template<typename ValueType>
-class LAMAArrayConstView: public Printable
+class LAMAArrayConstView: public scai::common::Printable
 {
     friend class ReadAccess<ValueType> ;
 

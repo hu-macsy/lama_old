@@ -35,7 +35,7 @@
 #include <boost/mpl/list.hpp>
 
 #include <test/distributed/CommunicatorTest.hpp>
-#include <test/TestMacros.hpp>
+#include <scai/common/test/TestMacros.hpp>
 
 using namespace scai::lama;
 using namespace scai::hmemo;

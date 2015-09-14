@@ -40,7 +40,7 @@
 #include <scai/common/Printable.hpp>
 
 // others
-#include <scai/lama/LAMATypes.hpp>
+#include <scai/common/SCAITypes.hpp>
 
 // logging
 #include <scai/logging.hpp>
@@ -68,7 +68,7 @@ typedef common::shared_ptr<Criterion> CriterionPtr;
  *
  * Criterion can be composed with the logical operators &&, ||, and !.
  */
-class COMMON_DLL_IMPORTEXPORT Criterion: public Printable
+class COMMON_DLL_IMPORTEXPORT Criterion: public scai::common::Printable
 {
 public:
 

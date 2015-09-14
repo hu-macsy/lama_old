@@ -100,12 +100,6 @@ endif( WIN32 )
 ### add executable ###
 add_executable ( lama_dist_test lama_dist_test.cpp ${CXX_SOURCES} )
 
-if ( USE_MIC )
-    set ( MKLROOT $ENV{MKLROOT} )
-    set_target_properties( lama_dist_test PROPERTIES LINK_FLAGS
-        "-offload-option,mic,compiler,\"-L${MKLROOT}/lib/mic -Wl,--start-group -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_core -Wl,--end-group\"" )
-endif ( USE_MIC )
-
 ### set target link libraries ###
 if ( WIN32 )
     target_link_libraries ( lama_dist_test ama )

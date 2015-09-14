@@ -37,11 +37,10 @@
 #include <scai/common/config.hpp>
 
 // others
-#include <scai/lama/SyncToken.hpp>
-#include <scai/lama/LAMATypes.hpp>
+#include <scai/common/SCAITypes.hpp>
+#include <scai/common/Assert.hpp>
 
-// assert
-#include <scai/lama/exception/LAMAAssert.hpp>
+#include <scai/tasking/SyncToken.hpp>
 
 // logging
 #include <scai/logging.hpp>
@@ -85,7 +84,7 @@ public:
         const IndexType csrIA[],
         const IndexType csrJA[],
         const ValueType csrValues[],
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /** Implementation for CSRUtilsInterface::Offsets::matrixAddSizes  */
 

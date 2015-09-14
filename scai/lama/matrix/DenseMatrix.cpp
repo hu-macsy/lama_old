@@ -806,10 +806,10 @@ void DenseMatrix<ValueType>::assign( const Matrix& other )
 
 #define LAMA_COPY_DENSE_CALL( z, I, _ )                                                        \
 case common::scalar::SCALAR_ARITHMETIC_TYPE##I:                                                \
-    copyDenseMatrix( dynamic_cast<const DenseMatrix<ARITHMETIC_TYPE##I>&>( other ) );  \
-    break;                                                                             \
+    copyDenseMatrix( dynamic_cast<const DenseMatrix<ARITHMETIC_HOST_TYPE_##I>&>( other ) );    \
+    break;                                                                                     \
      
-                BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_COPY_DENSE_CALL, _ )
+    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_COPY_DENSE_CALL, _ )
 
 #undef LAMA_COPY_DENSE_CALL
 
@@ -1435,16 +1435,16 @@ void DenseMatrix<ValueType>::getDiagonal( Vector& diagonal ) const
     {
 // Dense vector with this row distribution, so we do not need a temporary array
 
-#define LAMA_GET_DIAGONAL_CALL( z, I, _ )                                          \
-    if ( diagonal.getValueType() == common::scalar::SCALAR_ARITHMETIC_TYPE##I )        \
-    {                                                                          \
-        DenseVector<ARITHMETIC_TYPE##I>& denseDiagonal =                       \
-                dynamic_cast<DenseVector<ARITHMETIC_TYPE##I>&>( diagonal );        \
-        getDiagonalImpl( denseDiagonal );                                      \
-        return;                                                                \
-    }                                                                          \
+#define LAMA_GET_DIAGONAL_CALL( z, I, _ )                                            \
+    if ( diagonal.getValueType() == common::scalar::SCALAR_ARITHMETIC_TYPE##I )      \
+    {                                                                                \
+        DenseVector<ARITHMETIC_HOST_TYPE_##I>& denseDiagonal =                       \
+                dynamic_cast<DenseVector<ARITHMETIC_HOST_TYPE_##I>&>( diagonal );    \
+        getDiagonalImpl( denseDiagonal );                                            \
+        return;                                                                      \
+    }
      
-        BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_GET_DIAGONAL_CALL, _ )
+    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_GET_DIAGONAL_CALL, _ )
 
 #undef LAMA_GET_DIAGONAL_CALL
 
@@ -2243,16 +2243,16 @@ const char* DenseMatrix<ValueType>::getTypeName() const
 /*       Template Instantiations                                             */
 /* ========================================================================= */
 
-#define LAMA_DENSE_MATRIX_INSTANTIATE(z, I, _)                              \
+#define LAMA_DENSE_MATRIX_INSTANTIATE(z, I, _)                                  \
     template<>                                                                  \
-    const char* DenseMatrix<ARITHMETIC_TYPE##I>::typeName()                     \
+    const char* DenseMatrix<ARITHMETIC_HOST_TYPE_##I>::typeName()               \
     {                                                                           \
-        return "DenseMatrix<ARITHMETIC_TYPE##I>";                               \
+        return "DenseMatrix<ARITHMETIC_HOST_TYPE_##I>";                         \
     }                                                                           \
     \
-    template class COMMON_DLL_IMPORTEXPORT DenseMatrix<ARITHMETIC_TYPE##I> ;
+    template class COMMON_DLL_IMPORTEXPORT DenseMatrix<ARITHMETIC_HOST_TYPE_##I> ;
 
-BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_DENSE_MATRIX_INSTANTIATE, _ )
+BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_DENSE_MATRIX_INSTANTIATE, _ )
 
 #undef LAMA_DENSE_MATRIX_INSTANTIATE
 

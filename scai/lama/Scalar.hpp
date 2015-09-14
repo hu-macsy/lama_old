@@ -39,22 +39,23 @@
 #include <scai/common/Printable.hpp>
 
 // others
-#include <scai/lama/LAMATypes.hpp>
-#include <scai/common/ScalarType.hpp>
-
 #include <scai/common/Assert.hpp>
+#include <scai/common/Complex.hpp>
+#include <scai/common/SCAITypes.hpp>
+#include <scai/common/ScalarType.hpp>
 
 // logging
 #include <scai/logging.hpp>
 
 #include <cstdio>
-#include <scai/lama/Complex.hpp>
 
 namespace scai
 {
 
 namespace lama
 {
+
+using namespace scai::common;
 
 using scai::common::ScalarType;
 using namespace scai::common::scalar;

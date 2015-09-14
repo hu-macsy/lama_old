@@ -37,7 +37,11 @@
 
 #include <ostream>
 
-// Note: Printable is not in any namespace (might be common, but causes problems for operator <<)
+namespace scai
+{
+
+namespace common
+{
 
 /**
  * @brief The class Printable is used as a base class for all classes
@@ -94,3 +98,6 @@ protected:
 
 COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const Printable& object );
 
+} /* end namespace common */
+
+} /* end namespace scai */

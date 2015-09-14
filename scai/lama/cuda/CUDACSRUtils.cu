@@ -35,6 +35,14 @@
 #include <scai/lama/cuda/CUDACSRUtils.hpp>
 
 // others
+#include <scai/common/SCAITypes.hpp>
+#include <scai/common/bind.hpp>
+
+#include <scai/common/cuda/CUDAError.hpp>
+
+#include <scai/hmemo/Memory.hpp>
+
+#include <scai/common/macros/unused.hpp>
 
 #include <scai/lama/LAMAInterface.hpp>
 #include <scai/lama/LAMAInterfaceRegistry.hpp>
@@ -44,7 +52,6 @@
 
 // others cuda
 #include <scai/lama/cuda/utils.cu.h>
-#include <scai/common/cuda/CUDAError.hpp>
 #include <scai/lama/cuda/CUDAUtils.hpp>
 #include <scai/lama/cuda/CUDACSRUtils.hpp>
 #include <scai/lama/cuda/CUDACOOUtils.hpp>
@@ -55,9 +62,6 @@
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include <cuda_runtime_api.h>
-
-// macros
-#include <scai/lama/macros/unused.hpp>
 
 // thrust
 #include <thrust/copy.h>
@@ -75,7 +79,6 @@
 #include <thrust/reduce.h>
 
 // boost
-#include <scai/common/bind.hpp>
 #include <boost/preprocessor.hpp>
 
 // Parameters for Matrix Multiplication
@@ -92,8 +95,13 @@
 #define HASH_C1 1
 #define NUM_CHUNKS_PER_WARP 128
 
-using namespace scai::hmemo;
 using namespace scai::common;
+using namespace scai::hmemo;
+
+using scai::common::IndexType;
+
+using scai::common::ComplexFloat;
+using scai::common::ComplexDouble;
 
 namespace scai
 {
@@ -3221,49 +3229,49 @@ namespace lama
         LAMA_INTERFACE_REGISTER( CSRUtils, matrixAddSizes )
         LAMA_INTERFACE_REGISTER( CSRUtils, matrixMultiplySizes )
 
-#define LAMA_CSR_UTILS2_REGISTER(z, J, TYPE )                                        \
-    LAMA_INTERFACE_REGISTER_TT( CSRUtils, scaleRows, TYPE, ARITHMETIC_TYPE##J )      \
+#define LAMA_CSR_UTILS2_REGISTER(z, J, TYPE )                                              \
+    LAMA_INTERFACE_REGISTER_TT( CSRUtils, scaleRows, TYPE, ARITHMETIC_CUDA_TYPE_##J )      \
 
-#define LAMA_CSR_UTILS_REGISTER(z, I, _)                                             \
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, sparseGEMV, ARITHMETIC_TYPE##I )            \
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, sparseGEVM, ARITHMETIC_TYPE##I )            \
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, jacobi, ARITHMETIC_TYPE##I )                \
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, jacobiHalo, ARITHMETIC_TYPE##I )            \
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, jacobiHaloWithDiag, ARITHMETIC_TYPE##I )    \
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, normalGEVM, ARITHMETIC_TYPE##I )            \
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, normalGEMV, ARITHMETIC_TYPE##I )            \
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, convertCSR2CSC, ARITHMETIC_TYPE##I )        \
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, matrixAdd, ARITHMETIC_TYPE##I )             \
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, matrixMultiply, ARITHMETIC_TYPE##I )        \
-                                                                                     \
-    BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT,                                            \
-                     LAMA_CSR_UTILS2_REGISTER,                                       \
-                     ARITHMETIC_TYPE##I )                                            \
+#define LAMA_CSR_UTILS_REGISTER(z, I, _)                                                   \
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, sparseGEMV, ARITHMETIC_CUDA_TYPE_##I )            \
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, sparseGEVM, ARITHMETIC_CUDA_TYPE_##I )            \
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, jacobi, ARITHMETIC_CUDA_TYPE_##I )                \
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, jacobiHalo, ARITHMETIC_CUDA_TYPE_##I )            \
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, jacobiHaloWithDiag, ARITHMETIC_CUDA_TYPE_##I )    \
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, normalGEVM, ARITHMETIC_CUDA_TYPE_##I )            \
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, normalGEMV, ARITHMETIC_CUDA_TYPE_##I )            \
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, convertCSR2CSC, ARITHMETIC_CUDA_TYPE_##I )        \
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, matrixAdd, ARITHMETIC_CUDA_TYPE_##I )             \
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, matrixMultiply, ARITHMETIC_CUDA_TYPE_##I )        \
+                                                                                           \
+    BOOST_PP_REPEAT( ARITHMETIC_CUDA_TYPE_CNT,                                             \
+                     LAMA_CSR_UTILS2_REGISTER,                                             \
+                     ARITHMETIC_CUDA_TYPE_##I )                                            \
 
-        BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_CSR_UTILS_REGISTER, _ )
+        BOOST_PP_REPEAT( ARITHMETIC_CUDA_TYPE_CNT, LAMA_CSR_UTILS_REGISTER, _ )
 
 #undef LAMA_CSR_UTILS_REGISTER
 #undef LAMA_CSR_UTILS2_REGISTER
 
     }
 
-    /* --------------------------------------------------------------------------- */
-    /*    Static registration of the Utils routines                                */
-    /* --------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------- */
+/*    Static registration of the Utils routines                                */
+/* --------------------------------------------------------------------------- */
 
-    bool CUDACSRUtils::registerInterface()
-    {
-        LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( context::CUDA );
-        setInterface( interface.CSRUtils );
-        return true;
-    }
+bool CUDACSRUtils::registerInterface()
+{
+    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( context::CUDA );
+    setInterface( interface.CSRUtils );
+    return true;
+}
 
-    /* --------------------------------------------------------------------------- */
-    /*    Static initialiazion at program start                                    */
-    /* --------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------- */
+/*    Static initialiazion at program start                                    */
+/* --------------------------------------------------------------------------- */
 
-    bool CUDACSRUtils::initialized = registerInterface();
-    unsigned int CUDACSRUtils::lastHashTableSize = 1024;
+bool CUDACSRUtils::initialized = registerInterface();
+unsigned int CUDACSRUtils::lastHashTableSize = 1024;
 
 } /* end namespace lama */
 

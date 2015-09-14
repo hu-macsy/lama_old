@@ -40,7 +40,7 @@
 #include <scai/lama/solver/criteria/Criterion.hpp>
 
 // others
-#include <scai/lama/LAMATypes.hpp>
+#include <scai/common/SCAITypes.hpp>
 
 #include <scai/lama/norm/Norm.hpp>
 

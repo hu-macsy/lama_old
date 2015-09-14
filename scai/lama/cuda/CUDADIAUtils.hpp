@@ -36,10 +36,11 @@
 #include <scai/common/config.hpp>
 
 // others
-#include <scai/lama/LAMATypes.hpp>
+#include <scai/common/SCAITypes.hpp>
 
-// logging
 #include <scai/logging.hpp>
+
+using scai::common::IndexType;
 
 namespace scai
 {

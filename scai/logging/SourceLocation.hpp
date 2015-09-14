@@ -60,11 +60,11 @@ struct COMMON_DLL_IMPORTEXPORT SourceLocation
 
 };
 
+COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& os, const SourceLocation& loc );
+
 } /* end namespace logging */
 
 } /* end namespace scai */
-
-COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& os, const scai::logging::SourceLocation& loc );
 
 #if !defined(LOG4SCAI_LOCATION)
 #if defined(_MSC_VER)

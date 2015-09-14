@@ -89,8 +89,13 @@ if    ( CUDA_FOUND AND USE_CUDA )
     include_directories ( ${CUDA_TOOLKIT_INCLUDE} )
 endif ( CUDA_FOUND AND USE_CUDA )
 
+# subdirectory macros
+add_subdirectory ( macros )
+
 ## add exception dir
 add_subdirectory ( exception )
+
+add_subdirectory ( test )
 
 ## add library
 add_library ( scai_common ${SCAI_LIBRARY_TYPE} ${CPP_SOURCES} ${CUDA_SOURCES} )

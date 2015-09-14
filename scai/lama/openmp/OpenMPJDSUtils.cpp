@@ -56,6 +56,10 @@
 
 using scai::common::scoped_array;
 
+using scai::common::ComplexFloat;
+using scai::common::ComplexDouble;
+using scai::common::ComplexLongDouble;
+
 namespace scai
 {
 
@@ -836,24 +840,24 @@ void OpenMPJDSUtils::setInterface( JDSUtilsInterface& JDSUtils )
     LAMA_INTERFACE_REGISTER( JDSUtils, ilg2dlg )
     LAMA_INTERFACE_REGISTER( JDSUtils, checkDiagonalProperty )
 
-#define LAMA_JDS_UTILS2_REGISTER(z, J, TYPE )                                       \
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getRow, TYPE, ARITHMETIC_TYPE##J )        \
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getValue, TYPE, ARITHMETIC_TYPE##J )      \
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, scaleValue, TYPE, ARITHMETIC_TYPE##J )    \
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, setCSRValues, TYPE, ARITHMETIC_TYPE##J )  \
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getCSRValues, TYPE, ARITHMETIC_TYPE##J )  \
+#define LAMA_JDS_UTILS2_REGISTER(z, J, TYPE )                                             \
+    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getRow, TYPE, ARITHMETIC_HOST_TYPE_##J )        \
+    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getValue, TYPE, ARITHMETIC_HOST_TYPE_##J )      \
+    LAMA_INTERFACE_REGISTER_TT( JDSUtils, scaleValue, TYPE, ARITHMETIC_HOST_TYPE_##J )    \
+    LAMA_INTERFACE_REGISTER_TT( JDSUtils, setCSRValues, TYPE, ARITHMETIC_HOST_TYPE_##J )  \
+    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getCSRValues, TYPE, ARITHMETIC_HOST_TYPE_##J )  \
 
-#define LAMA_JDS_UTILS_REGISTER(z, I, _)                                            \
-    LAMA_INTERFACE_REGISTER_T( JDSUtils, normalGEMV, ARITHMETIC_TYPE##I )           \
-    LAMA_INTERFACE_REGISTER_T( JDSUtils, normalGEVM, ARITHMETIC_TYPE##I )           \
-    LAMA_INTERFACE_REGISTER_T( JDSUtils, jacobi, ARITHMETIC_TYPE##I )               \
-    LAMA_INTERFACE_REGISTER_T( JDSUtils, jacobiHalo, ARITHMETIC_TYPE##I )           \
+#define LAMA_JDS_UTILS_REGISTER(z, I, _)                                                  \
+    LAMA_INTERFACE_REGISTER_T( JDSUtils, normalGEMV, ARITHMETIC_HOST_TYPE_##I )           \
+    LAMA_INTERFACE_REGISTER_T( JDSUtils, normalGEVM, ARITHMETIC_HOST_TYPE_##I )           \
+    LAMA_INTERFACE_REGISTER_T( JDSUtils, jacobi, ARITHMETIC_HOST_TYPE_##I )               \
+    LAMA_INTERFACE_REGISTER_T( JDSUtils, jacobiHalo, ARITHMETIC_HOST_TYPE_##I )           \
     \
-    BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT,                                           \
-                     LAMA_JDS_UTILS2_REGISTER,                                      \
-                     ARITHMETIC_TYPE##I )                                           \
+    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT,                                            \
+                     LAMA_JDS_UTILS2_REGISTER,                                            \
+                     ARITHMETIC_HOST_TYPE_##I )                                           \
 
-    BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_JDS_UTILS_REGISTER, _ )
+    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_JDS_UTILS_REGISTER, _ )
 
 #undef LAMA_JDS_UTILS_REGISTER
 #undef LAMA_JDS_UTILS2_REGISTER

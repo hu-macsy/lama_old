@@ -99,7 +99,7 @@ public:
  *
  */
 
-class COMMON_DLL_IMPORTEXPORT SyncToken: public Printable, private common::NonCopyable
+class COMMON_DLL_IMPORTEXPORT SyncToken: public scai::common::Printable, private common::NonCopyable
 {
 public:
 

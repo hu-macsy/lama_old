@@ -37,7 +37,7 @@
 #include <scai/common/config.hpp>
 
 // others
-#include <scai/lama/LAMATypes.hpp>
+#include <scai/common/SCAITypes.hpp>
 
 // logging
 #include <scai/logging.hpp>
@@ -49,6 +49,9 @@ namespace tasking
 {
     class SyncToken;
 }
+
+using common::IndexType;
+using common::PartitionId;
 
 namespace lama
 {

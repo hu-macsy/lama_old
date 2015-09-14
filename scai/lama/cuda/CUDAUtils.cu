@@ -31,15 +31,16 @@
  * @since 1.0.0
  */
 
+#include <scai/common/Assert.hpp>
+
+#include <scai/common/cuda/CUDAError.hpp>
+
 #include <scai/lama/LAMAInterface.hpp>
 #include <scai/lama/LAMAInterfaceRegistry.hpp>
 
 #include <scai/lama/cuda/utils.cu.h>
-#include <scai/common/cuda/CUDAError.hpp>
 #include <scai/lama/cuda/CUDAUtils.hpp>
 #include <scai/lama/cuda/CUDASettings.hpp>
-
-#include <scai/common/Assert.hpp>
 
 // thrust
 #include <thrust/device_vector.h>
@@ -591,50 +592,50 @@ namespace lama
         LAMA_INTERFACE_REGISTER_TT( Utils, setScatter, int, int )
         LAMA_INTERFACE_REGISTER_TT( Utils, setGather, int, int )
 
-#define LAMA_UTILS2_REGISTER(z, J, TYPE )                                            \
-    LAMA_INTERFACE_REGISTER_TT( Utils, setScale, TYPE, ARITHMETIC_TYPE##J )          \
-    LAMA_INTERFACE_REGISTER_TT( Utils, set, TYPE, ARITHMETIC_TYPE##J )               \
-    LAMA_INTERFACE_REGISTER_TT( Utils, setScatter, TYPE, ARITHMETIC_TYPE##J )        \
-    LAMA_INTERFACE_REGISTER_TT( Utils, setGather, TYPE, ARITHMETIC_TYPE##J )         \
+#define LAMA_UTILS2_REGISTER(z, J, TYPE )                                                  \
+    LAMA_INTERFACE_REGISTER_TT( Utils, setScale, TYPE, ARITHMETIC_CUDA_TYPE_##J )          \
+    LAMA_INTERFACE_REGISTER_TT( Utils, set, TYPE, ARITHMETIC_CUDA_TYPE_##J )               \
+    LAMA_INTERFACE_REGISTER_TT( Utils, setScatter, TYPE, ARITHMETIC_CUDA_TYPE_##J )        \
+    LAMA_INTERFACE_REGISTER_TT( Utils, setGather, TYPE, ARITHMETIC_CUDA_TYPE_##J )         \
 
-#define LAMA_UTILS_REGISTER(z, I, _)                                                 \
-    LAMA_INTERFACE_REGISTER_T( Utils, invert, ARITHMETIC_TYPE##I )                   \
-    LAMA_INTERFACE_REGISTER_T( Utils, isSorted, ARITHMETIC_TYPE##I )                 \
-    LAMA_INTERFACE_REGISTER_T( Utils, absMaxDiffVal, ARITHMETIC_TYPE##I )            \
-    LAMA_INTERFACE_REGISTER_T( Utils, absMaxVal, ARITHMETIC_TYPE##I )                \
-    LAMA_INTERFACE_REGISTER_T( Utils, maxval, ARITHMETIC_TYPE##I )                   \
-    LAMA_INTERFACE_REGISTER_T( Utils, sum, ARITHMETIC_TYPE##I )                      \
-    LAMA_INTERFACE_REGISTER_T( Utils, setVal, ARITHMETIC_TYPE##I )                   \
-    LAMA_INTERFACE_REGISTER_T( Utils, getValue, ARITHMETIC_TYPE##I )                 \
-    LAMA_INTERFACE_REGISTER_T( Utils, scale, ARITHMETIC_TYPE##I )                    \
-                                                                                     \
-    BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT,                                            \
-                     LAMA_UTILS2_REGISTER,                                           \
-                     ARITHMETIC_TYPE##I )                                            \
+#define LAMA_UTILS_REGISTER(z, I, _)                                                       \
+    LAMA_INTERFACE_REGISTER_T( Utils, invert, ARITHMETIC_CUDA_TYPE_##I )                   \
+    LAMA_INTERFACE_REGISTER_T( Utils, isSorted, ARITHMETIC_CUDA_TYPE_##I )                 \
+    LAMA_INTERFACE_REGISTER_T( Utils, absMaxDiffVal, ARITHMETIC_CUDA_TYPE_##I )            \
+    LAMA_INTERFACE_REGISTER_T( Utils, absMaxVal, ARITHMETIC_CUDA_TYPE_##I )                \
+    LAMA_INTERFACE_REGISTER_T( Utils, maxval, ARITHMETIC_CUDA_TYPE_##I )                   \
+    LAMA_INTERFACE_REGISTER_T( Utils, sum, ARITHMETIC_CUDA_TYPE_##I )                      \
+    LAMA_INTERFACE_REGISTER_T( Utils, setVal, ARITHMETIC_CUDA_TYPE_##I )                   \
+    LAMA_INTERFACE_REGISTER_T( Utils, getValue, ARITHMETIC_CUDA_TYPE_##I )                 \
+    LAMA_INTERFACE_REGISTER_T( Utils, scale, ARITHMETIC_CUDA_TYPE_##I )                    \
+                                                                                           \
+    BOOST_PP_REPEAT( ARITHMETIC_CUDA_TYPE_CNT,                                             \
+                     LAMA_UTILS2_REGISTER,                                                 \
+                     ARITHMETIC_CUDA_TYPE_##I )                                            \
 
-        BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_UTILS_REGISTER, _ )
+    BOOST_PP_REPEAT( ARITHMETIC_CUDA_TYPE_CNT, LAMA_UTILS_REGISTER, _ )
 
 #undef LAMA_UTILS_REGISTER
 #undef LAMA_UTILS2_REGISTER
 
     }
 
-    /* --------------------------------------------------------------------------- */
-    /*    Static registration of the Utils routines                                */
-    /* --------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------- */
+/*    Static registration of the Utils routines                                */
+/* --------------------------------------------------------------------------- */
 
-    bool CUDAUtils::registerInterface()
-    {
-        LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( context::CUDA );
-        setInterface( interface.Utils );
-        return true;
-    }
+bool CUDAUtils::registerInterface()
+{
+    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( context::CUDA );
+    setInterface( interface.Utils );
+    return true;
+}
 
-    /* --------------------------------------------------------------------------- */
-    /*    Static initialiazion at program start                                    */
-    /* --------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------- */
+/*    Static initialiazion at program start                                    */
+/* --------------------------------------------------------------------------- */
 
-    bool CUDAUtils::initialized = registerInterface();
+bool CUDAUtils::initialized = registerInterface();
 
 } /* end namespace lama */
 

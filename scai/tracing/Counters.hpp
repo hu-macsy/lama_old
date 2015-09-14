@@ -51,7 +51,7 @@ static inline int enabledCounters()
     return usedCounters;
 }
 
-class CounterArray : public Printable
+class CounterArray : public scai::common::Printable
 {
 
 public:

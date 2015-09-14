@@ -461,7 +461,7 @@ void StorageMethods<ValueType>::splitCSR(
         {
             const IndexType jLocal = colDist.global2local( ja[jj] );
 
-            if( jLocal != nIndex )
+            if( jLocal != scai::common::nIndex )
             {
                 // Attention: local gets already local column indexes
 
@@ -680,10 +680,10 @@ void StorageMethods<ValueType>::joinCSR(
 
 /* -------------------------------------------------------------------------- */
 
-#define LAMA_STORAGE_METHODS_INSTANTIATE(z, I, _)                              \
-    template class COMMON_DLL_IMPORTEXPORT StorageMethods<ARITHMETIC_TYPE##I> ;
+#define LAMA_STORAGE_METHODS_INSTANTIATE(z, I, _)                                     \
+    template class COMMON_DLL_IMPORTEXPORT StorageMethods<ARITHMETIC_HOST_TYPE_##I> ;
 
-BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_STORAGE_METHODS_INSTANTIATE, _ )
+BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_STORAGE_METHODS_INSTANTIATE, _ )
 
 #undef LAMA_STORAGE_METHODS_INSTANTIATE
 

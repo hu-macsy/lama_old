@@ -39,22 +39,21 @@
 #include <scai/lama/Distributed.hpp>
 
 // others
+#include <scai/common/Factory.hpp>
+#include <scai/common/ScalarType.hpp>
+#include <scai/common/SCAITypes.hpp>
+
 #include <scai/lama/expression/Expression.hpp>
 
 #include <scai/hmemo.hpp>
 
-#include <scai/lama/LAMATypes.hpp>
 #include <scai/lama/Scalar.hpp>
 #include <scai/lama/io/FileType.hpp>
 
 // logging
 #include <scai/logging.hpp>
 
-#include <scai/common/Factory.hpp>
-#include <scai/common/ScalarType.hpp>
-
 // Not recommened, but here for convenience
-
 using scai::hmemo::ContextPtr;
 
 namespace scai
@@ -549,4 +548,3 @@ inline std::ostream& operator<<( std::ostream& stream, const scai::lama::VectorC
     stream << "<" << key.first << ", " << key.second << ">";
     return stream;
 }
-

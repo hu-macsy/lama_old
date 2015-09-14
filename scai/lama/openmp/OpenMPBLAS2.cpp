@@ -42,6 +42,10 @@
 // boost
 #include <boost/preprocessor.hpp>
 
+using scai::common::ComplexFloat;
+using scai::common::ComplexDouble;
+using scai::common::ComplexLongDouble;
+
 namespace scai
 {
 
@@ -291,10 +295,10 @@ void OpenMPBLAS2::setInterface( BLASInterface& BLAS )
 {
     SCAI_LOG_INFO( logger, "set BLAS2 routines for OpenMP in Interface" )
 
-#define LAMA_BLAS2_REGISTER(z, I, _)                                            \
-    LAMA_INTERFACE_REGISTER_T( BLAS, gemv, ARITHMETIC_TYPE##I )                 \
+#define LAMA_BLAS2_REGISTER(z, I, _)                                                  \
+    LAMA_INTERFACE_REGISTER_T( BLAS, gemv, ARITHMETIC_HOST_TYPE_##I )                 \
 
-    BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_BLAS2_REGISTER, _ )
+    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_BLAS2_REGISTER, _ )
 
 #undef LAMA_BLAS2_REGISTER
 

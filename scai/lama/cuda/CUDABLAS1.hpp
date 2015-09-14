@@ -37,11 +37,14 @@
 #include <scai/common/config.hpp>
 
 // others
-#include <scai/lama/LAMATypes.hpp>
+#include <scai/common/SCAITypes.hpp>
+
 #include <scai/logging.hpp>
 
 #include <cublas_v2.h>
 #include <cuda_runtime_api.h>
+
+using scai::common::IndexType;
 
 namespace scai
 {

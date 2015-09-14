@@ -34,7 +34,7 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/thread.hpp>
 
-#include <test/TestMacros.hpp>
+#include <scai/common/test/TestMacros.hpp>
 
 #include <scai/hmemo/Context.hpp>
 #include <scai/lama/ContextManager.hpp>

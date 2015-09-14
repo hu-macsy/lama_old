@@ -51,6 +51,12 @@
 
 #include <cmath>
 
+using scai::common::LongDouble;
+
+using scai::common::ComplexFloat;
+using scai::common::ComplexDouble;
+using scai::common::ComplexLongDouble;
+
 namespace scai
 {
 
@@ -98,6 +104,12 @@ template<>
 void wrapperScal( const int, const LongDouble, LongDouble*, const int )
 {
     COMMON_THROWEXCEPTION( "LongDouble not supported by BLAS, please set USE_BLAS=0" )
+}
+
+template<>
+void wrapperScal( const int, const ComplexLongDouble, ComplexLongDouble*, const int )
+{
+    COMMON_THROWEXCEPTION( "ComplexLongDouble not supported by BLAS, please set USE_BLAS=0" )
 }
 
 /* ---------------------------------------------------------------------------------------*/
@@ -170,6 +182,13 @@ LongDouble wrapperNrm2( const int, const LongDouble*, const int )
     return LongDouble( 0 );
 }
 
+template<>
+ComplexLongDouble wrapperNrm2( const int, const ComplexLongDouble*, const int )
+{
+    COMMON_THROWEXCEPTION( "LongDouble not supported by BLAS, please set USE_BLAS=0" )
+    return LongDouble( 0 );
+}
+
 template<typename ValueType>
 ValueType BLAS_BLAS1::nrm2( const IndexType n, const ValueType* x, const IndexType incX, SyncToken* syncToken )
 {
@@ -226,6 +245,13 @@ ComplexDouble wrapperAsum( const int n, const ComplexDouble* x, const int incX )
 
 template<>
 LongDouble wrapperAsum( const int, const LongDouble*, const int )
+{
+    COMMON_THROWEXCEPTION( "LongDouble not supported by BLAS, please set USE_BLAS=0" )
+    return 0;
+}
+
+template<>
+ComplexLongDouble wrapperAsum( const int, const ComplexLongDouble*, const int )
 {
     COMMON_THROWEXCEPTION( "LongDouble not supported by BLAS, please set USE_BLAS=0" )
     return 0;
@@ -291,6 +317,13 @@ IndexType wrapperIamax( const int, const LongDouble*, const int )
     return 0;
 }
 
+template<>
+IndexType wrapperIamax( const int, const ComplexLongDouble*, const int )
+{
+    COMMON_THROWEXCEPTION( "LongDouble not supported by BLAS, please set USE_BLAS=0" )
+    return 0;
+}
+
 template<typename ValueType>
 IndexType BLAS_BLAS1::iamax( const IndexType n, const ValueType* x, const IndexType incX, SyncToken* syncToken )
 {
@@ -340,6 +373,12 @@ void wrapperSwap( const int n, ComplexDouble* x, const int incX, ComplexDouble* 
 
 template<>
 void wrapperSwap( const int, LongDouble*, const int, LongDouble*, const int )
+{
+    COMMON_THROWEXCEPTION( "LongDouble not supported by BLAS, please set USE_BLAS=0" )
+}
+
+template<>
+void wrapperSwap( const int, ComplexLongDouble*, const int, ComplexLongDouble*, const int )
 {
     COMMON_THROWEXCEPTION( "LongDouble not supported by BLAS, please set USE_BLAS=0" )
 }
@@ -404,6 +443,13 @@ void wrapperCopy( const int n, const ComplexDouble* x, const int incX, ComplexDo
 
 template<>
 void wrapperCopy( const int, const LongDouble*, const int, LongDouble*, const int )
+{
+    COMMON_THROWEXCEPTION( "LongDouble not supported by BLAS, please set USE_BLAS=0" )
+}
+
+
+template<>
+void wrapperCopy( const int, const ComplexLongDouble*, const int, ComplexLongDouble*, const int )
 {
     COMMON_THROWEXCEPTION( "LongDouble not supported by BLAS, please set USE_BLAS=0" )
 }
@@ -494,6 +540,12 @@ void wrapperAxpy( const int, LongDouble, const LongDouble*, const int, LongDoubl
     COMMON_THROWEXCEPTION( "LongDouble not supported by BLAS, please set USE_BLAS=0" )
 }
 
+template<>
+void wrapperAxpy( const int, ComplexLongDouble, const ComplexLongDouble*, const int, ComplexLongDouble*, const int )
+{
+    COMMON_THROWEXCEPTION( "LongDouble not supported by BLAS, please set USE_BLAS=0" )
+}
+
 template<typename ValueType>
 void BLAS_BLAS1::axpy(
     const IndexType n,
@@ -569,6 +621,13 @@ LongDouble wrapperDot( const int, const LongDouble*, const int, const LongDouble
     return 0;
 }
 
+template<>
+ComplexLongDouble wrapperDot( const int, const ComplexLongDouble*, const int, const ComplexLongDouble*, const int )
+{
+    COMMON_THROWEXCEPTION( "LongDouble not supported by BLAS, please set USE_BLAS=0" )
+    return 0;
+}
+
 template<typename ValueType>
 ValueType BLAS_BLAS1::dot(
     const IndexType n,
@@ -627,17 +686,17 @@ void BLAS_BLAS1::setInterface( BLASInterface& BLAS )
     // Note: macro takes advantage of same name for routines and type definitions
     //       ( e.g. routine CUDABLAS1::sum<ValueType> is set for BLAS::BLAS1::sum variable
 
-#define LAMA_BLAS1_REGISTER(z, I, _)                                    \
-    LAMA_INTERFACE_REGISTER1_T( BLAS, scal, ARITHMETIC_TYPE##I )        \
-    LAMA_INTERFACE_REGISTER1_T( BLAS, nrm2, ARITHMETIC_TYPE##I )        \
-    LAMA_INTERFACE_REGISTER1_T( BLAS, asum, ARITHMETIC_TYPE##I )        \
-    LAMA_INTERFACE_REGISTER1_T( BLAS, iamax, ARITHMETIC_TYPE##I )       \
-    LAMA_INTERFACE_REGISTER1_T( BLAS, swap, ARITHMETIC_TYPE##I )        \
-    LAMA_INTERFACE_REGISTER1_T( BLAS, copy, ARITHMETIC_TYPE##I )        \
-    LAMA_INTERFACE_REGISTER1_T( BLAS, axpy, ARITHMETIC_TYPE##I )        \
-    LAMA_INTERFACE_REGISTER1_T( BLAS, dot, ARITHMETIC_TYPE##I )         \
+#define LAMA_BLAS1_REGISTER(z, I, _)                                          \
+    LAMA_INTERFACE_REGISTER1_T( BLAS, scal, ARITHMETIC_HOST_TYPE_##I )        \
+    LAMA_INTERFACE_REGISTER1_T( BLAS, nrm2, ARITHMETIC_HOST_TYPE_##I )        \
+    LAMA_INTERFACE_REGISTER1_T( BLAS, asum, ARITHMETIC_HOST_TYPE_##I )        \
+    LAMA_INTERFACE_REGISTER1_T( BLAS, iamax, ARITHMETIC_HOST_TYPE_##I )       \
+    LAMA_INTERFACE_REGISTER1_T( BLAS, swap, ARITHMETIC_HOST_TYPE_##I )        \
+    LAMA_INTERFACE_REGISTER1_T( BLAS, copy, ARITHMETIC_HOST_TYPE_##I )        \
+    LAMA_INTERFACE_REGISTER1_T( BLAS, axpy, ARITHMETIC_HOST_TYPE_##I )        \
+    LAMA_INTERFACE_REGISTER1_T( BLAS, dot, ARITHMETIC_HOST_TYPE_##I )         \
 
-    BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_BLAS1_REGISTER, _ )
+    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_BLAS1_REGISTER, _ )
 
 #undef LAMA_BLAS1_REGISTER
 }

@@ -33,9 +33,7 @@
 
 #include <test/distributed/CommunicatorTest.hpp>
 
-#include <test/TestMacros.hpp>
-
-#include <scai/lama/LAMATypes.hpp>
+#include <scai/common/test/TestMacros.hpp>
 
 #include <scai/lama/Communicator.hpp>
 
@@ -44,6 +42,7 @@
 #include <scai/lama/distribution/BlockDistribution.hpp>
 
 #include <scai/common/unique_ptr.hpp>
+#include <scai/common/SCAITypes.hpp>
 
 using namespace scai::lama;
 using namespace scai::hmemo;
@@ -146,7 +145,7 @@ for ( PartitionId p = 0; p < size; ++p )
     }
 }
 
-CommunicationPlan requiredPlan( &reqQuantities[0], reqQuantities.size() );
+CommunicationPlan requiredPlan( reqQuantities.data(), reqQuantities.size() );
 
 // verify that requiredPlan is correctly set up
 IndexType offsetCheck = 0;
