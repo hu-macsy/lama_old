@@ -48,6 +48,12 @@
 
 #include <boost/preprocessor.hpp>
 
+using scai::common::LongDouble;
+
+using scai::common::ComplexFloat;
+using scai::common::ComplexDouble;
+using scai::common::ComplexLongDouble;
+
 namespace scai
 {
 
@@ -179,6 +185,26 @@ void wrapperGemm(
     COMMON_THROWEXCEPTION( "LongDouble not supported by BLAS, please set USE_BLAS=0" )
 }
 
+template<>
+void wrapperGemm(
+    const CBLAS_ORDER,
+    const CBLAS_TRANSPOSE,
+    const CBLAS_TRANSPOSE,
+    const int,
+    const int,
+    const int,
+    const ComplexLongDouble,
+    const ComplexLongDouble*,
+    const int,
+    const ComplexLongDouble*,
+    const int,
+    const ComplexLongDouble,
+    ComplexLongDouble*,
+    const int )
+{
+    COMMON_THROWEXCEPTION( "ComplexLongDouble not supported by BLAS, please set USE_BLAS=0" )
+}
+
 template<typename ValueType>
 void BLAS_BLAS3::gemm(
     const CBLAS_ORDER order,
@@ -239,10 +265,10 @@ void BLAS_BLAS3::setInterface( BLASInterface& BLAS )
     // Note: macro takes advantage of same name for routines and type definitions
     //       ( e.g. routine CUDABLAS1::sum<ValueType> is set for BLAS::BLAS1::sum variable
 
-#define LAMA_BLAS3_REGISTER(z, I, _)                                            \
-    LAMA_INTERFACE_REGISTER1_T( BLAS, gemm, ARITHMETIC_TYPE##I )                \
+#define LAMA_BLAS3_REGISTER(z, I, _)                                                  \
+    LAMA_INTERFACE_REGISTER1_T( BLAS, gemm, ARITHMETIC_HOST_TYPE_##I )                \
 
-    BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_BLAS3_REGISTER, _ )
+    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_BLAS3_REGISTER, _ )
 
 #undef LAMA_BLAS3_REGISTER
 }

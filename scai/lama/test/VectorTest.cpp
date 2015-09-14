@@ -55,20 +55,22 @@
 #include <test/TestSparseMatrices.hpp>
 #include <test/EquationHelper.hpp>
 
-#include <test/TestMacros.hpp>
+#include <scai/common/SCAITypes.hpp>
+#include <scai/common/test/TestMacros.hpp>
 
 #include <scai/hmemo.hpp>
 
+using namespace scai::common;
 using namespace scai::lama;
 using namespace scai::hmemo;
 using scai::common::Exception;
 
-#if ARITHMETIC_TYPE_CNT == 1
-typedef boost::mpl::list<ARITHMETIC_TYPE0> test_types;
-#elif ARITHMETIC_TYPE_CNT == 2
-typedef boost::mpl::list<ARITHMETIC_TYPE0, ARITHMETIC_TYPE1> test_types;
+#if ARITHMETIC_HOST_TYPE_CNT == 1
+typedef boost::mpl::list<ARITHMETIC_HOST_TYPE_0> test_types;
+#elif ARITHMETIC_HOST_TYPE_CNT == 2
+typedef boost::mpl::list<ARITHMETIC_HOST_TYPE_0, ARITHMETIC_HOST_TYPE_1> test_types;
 #else
-typedef boost::mpl::list<ARITHMETIC_TYPE0, ARITHMETIC_TYPE1, ARITHMETIC_TYPE2> test_types;
+typedef boost::mpl::list<ARITHMETIC_HOST_TYPE_0, ARITHMETIC_HOST_TYPE_1, ARITHMETIC_HOST_TYPE_2> test_types;
 #endif
 
 /* --------------------------------------------------------------------- */

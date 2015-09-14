@@ -69,8 +69,8 @@ const char* level2str( const Level level );
 
 /** Output of level in a stream.
  */
+COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& os, const Level& level );
+
 } /* end namespace logging */
 
 } /* end namespace scai */
-
-COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& os, const scai::logging::Level& level );

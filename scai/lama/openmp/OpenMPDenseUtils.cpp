@@ -43,6 +43,10 @@
 // boost
 #include <boost/preprocessor.hpp>
 
+using scai::common::ComplexFloat;
+using scai::common::ComplexDouble;
+using scai::common::ComplexLongDouble;
+
 namespace scai
 {
 
@@ -330,26 +334,26 @@ void OpenMPDenseUtils::scaleValue(
 void OpenMPDenseUtils::setInterface( DenseUtilsInterface& DenseUtils )
 {
 
-#define LAMA_DENSE2_REGISTER(z, J, TYPE )                                               \
-    /* Conversions  */                                                                  \
-    LAMA_INTERFACE_REGISTER_TT( DenseUtils, setCSRValues, TYPE, ARITHMETIC_TYPE##J )    \
-    LAMA_INTERFACE_REGISTER_TT( DenseUtils, getCSRValues, TYPE, ARITHMETIC_TYPE##J )    \
-    /* Copy  */                                                                         \
-    LAMA_INTERFACE_REGISTER_TT( DenseUtils, copyDenseValues, TYPE, ARITHMETIC_TYPE##J ) \
-    LAMA_INTERFACE_REGISTER_TT( DenseUtils, getDiagonal, TYPE, ARITHMETIC_TYPE##J )     \
-    LAMA_INTERFACE_REGISTER_TT( DenseUtils, setDiagonal, TYPE, ARITHMETIC_TYPE##J )     \
+#define LAMA_DENSE2_REGISTER(z, J, TYPE )                                                       \
+    /* Conversions  */                                                                          \
+    LAMA_INTERFACE_REGISTER_TT( DenseUtils, setCSRValues, TYPE, ARITHMETIC_HOST_TYPE_##J )      \
+    LAMA_INTERFACE_REGISTER_TT( DenseUtils, getCSRValues, TYPE, ARITHMETIC_HOST_TYPE_##J )      \
+    /* Copy  */                                                                                 \
+    LAMA_INTERFACE_REGISTER_TT( DenseUtils, copyDenseValues, TYPE, ARITHMETIC_HOST_TYPE_##J )   \
+    LAMA_INTERFACE_REGISTER_TT( DenseUtils, getDiagonal, TYPE, ARITHMETIC_HOST_TYPE_##J )       \
+    LAMA_INTERFACE_REGISTER_TT( DenseUtils, setDiagonal, TYPE, ARITHMETIC_HOST_TYPE_##J )       \
 
 
-#define LAMA_DENSE_REGISTER(z, I, _)                                                    \
-    /* Counting  */                                                                     \
-    LAMA_INTERFACE_REGISTER_T( DenseUtils, getCSRSizes, ARITHMETIC_TYPE##I )            \
-    /* Modify  */                                                                       \
-    LAMA_INTERFACE_REGISTER_T( DenseUtils, setDiagonalValue, ARITHMETIC_TYPE##I )       \
-    LAMA_INTERFACE_REGISTER_T( DenseUtils, scaleValue, ARITHMETIC_TYPE##I )             \
-    BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_DENSE2_REGISTER, ARITHMETIC_TYPE##I )    \
+#define LAMA_DENSE_REGISTER(z, I, _)                                                            \
+    /* Counting  */                                                                             \
+    LAMA_INTERFACE_REGISTER_T( DenseUtils, getCSRSizes, ARITHMETIC_HOST_TYPE_##I )              \
+    /* Modify  */                                                                               \
+    LAMA_INTERFACE_REGISTER_T( DenseUtils, setDiagonalValue, ARITHMETIC_HOST_TYPE_##I )         \
+    LAMA_INTERFACE_REGISTER_T( DenseUtils, scaleValue, ARITHMETIC_HOST_TYPE_##I )               \
+    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_DENSE2_REGISTER, ARITHMETIC_HOST_TYPE_##I ) \
 
 
-    BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_DENSE_REGISTER, _ )
+    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_DENSE_REGISTER, _ )
 
 #undef LAMA_DENSE_REGISTER
 #undef LAMA_DENSE2_REGISTER

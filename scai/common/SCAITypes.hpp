@@ -1,5 +1,5 @@
 /**
- * @file LAMATypes.hpp
+ * @file SCAITypes.hpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,16 +25,13 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief LAMATypes.hpp
+ * @brief SCAITypes.hpp
  * @author Jiri Kraus
  * @date 23.02.2011
  */
 #pragma once
 
-// include LAMA
-#include <scai/lama/Complex.hpp>
-#include <scai/common/ScalarType.hpp>
-#include <scai/hmemo/LAMAArray.hpp>
+#include <scai/common/Complex.hpp>
 
 #include <cstring>
 #include <limits>
@@ -46,15 +43,16 @@
  *  classes and routines or utilize the using directive of C++.
  *
  *  \code
- *                                         using namespace lama;
- *     scai::lama::DenseVector<float> V;         DenseVector<float> V;
+ *     using namespace lama;
+ *     scai::lama::DenseVector<float> V;
+ *     DenseVector<float> V;
  *  \endcode
  */
 
 namespace scai
 {
 
-namespace lama
+namespace common
 {
 
 /** Data type that is used for indexing in LAMA.
@@ -63,7 +61,7 @@ namespace lama
  *  int is the good choice, might be long int or long long int for
  *  future versions that deal with very large matrices even on on processor.
  */
-using scai::hmemo::IndexType;
+typedef int IndexType;
 
 /** Data type long double to have it as one word. Otherwise certain macros
  *  might fail to work correctly.
@@ -98,70 +96,53 @@ typedef int PartitionId;
  */
 static const PartitionId nPartition = std::numeric_limits<PartitionId>::max();
 
-} /* end namespace lama */
-
-/***************************************************************************
- *
- * Template specializatin of getScalarType now possible for new LAMA types
- *
- ***************************************************************************/
-namespace common
-{
-
-template<>
-inline ScalarType getScalarType<scai::lama::LongDouble>()
-{
-    return scalar::LONG_DOUBLE;
-}
-
-template<>
-inline ScalarType getScalarType<scai::lama::ComplexFloat>()
-{
-    return scalar::COMPLEX;
-}
-
-template<>
-inline ScalarType getScalarType<scai::lama::ComplexDouble>()
-{
-    return scalar::DOUBLE_COMPLEX;
-}
-
-template<>
-inline ScalarType getScalarType<scai::lama::ComplexLongDouble>()
-{
-    return scalar::LONG_DOUBLE_COMPLEX;
-}
-
 } /* end namespace common */
 
 } /* end namespace scai */
 
 // Number of supported arithmetic types, maximal number is currently 4
 
-#define ARITHMETIC_TYPE_CNT 2
 
 // List here all arithmetic types for which matrices, storages might be created
 
-#define ARITHMETIC_TYPE0        float
-#define ARITHMETIC_TYPE1        double
-#define ARITHMETIC_TYPE2        ComplexFloat
-#define ARITHMETIC_TYPE3        LongDouble
+#define ARITHMETIC_HOST_EXT_TYPE_CNT 4
+#define ARITHMETIC_HOST_TYPE_CNT 6
+
+#define ARITHMETIC_HOST_TYPE_0 float
+#define ARITHMETIC_HOST_TYPE_1 ComplexFloat
+#define ARITHMETIC_HOST_TYPE_2 double
+#define ARITHMETIC_HOST_TYPE_3 ComplexDouble
+#define ARITHMETIC_HOST_TYPE_4 long double
+#define ARITHMETIC_HOST_TYPE_5 ComplexLongDouble
+
+#define ARITHMETIC_CUDA_TYPE_CNT 4
+
+#define ARITHMETIC_CUDA_TYPE_0 float
+#define ARITHMETIC_CUDA_TYPE_1 ComplexFloat
+#define ARITHMETIC_CUDA_TYPE_2 double
+#define ARITHMETIC_CUDA_TYPE_3 ComplexDouble
+
+
 
 // Define for the arithmetic types the counterparts of enum Scalar::Tyep
 // Sorry, we cannot use the routine getType<ARITHMETIC_TYPE##I> in case stmt
 
 #define SCALAR_ARITHMETIC_TYPE0 FLOAT
-#define SCALAR_ARITHMETIC_TYPE1 DOUBLE
-#define SCALAR_ARITHMETIC_TYPE2 COMPLEX
-#define SCALAR_ARITHMETIC_TYPE3 LONG_DOUBLE
+#define SCALAR_ARITHMETIC_TYPE1 COMPLEX
+#define SCALAR_ARITHMETIC_TYPE2 DOUBLE
+#define SCALAR_ARITHMETIC_TYPE3 DOUBLE_COMPLEX
+#define SCALAR_ARITHMETIC_TYPE4 LONG_DOUBLE
+#define SCALAR_ARITHMETIC_TYPE5 LONG_DOUBLE_COMPLEX
 
 // For convenience we define ARRAY_TYPE
 
-#define ARRAY_TYPE_CNT 3
+#define ARRAY_TYPE_CNT 7
 
 #define ARRAY_TYPE0    int
 #define ARRAY_TYPE1    float
-#define ARRAY_TYPE2    double
-#define ARRAY_TYPE3    ComplexFloat
-#define ARRAY_TYPE4    LongDouble
+#define ARRAY_TYPE2    ComplexFloat
+#define ARRAY_TYPE3    double
+#define ARRAY_TYPE4    ComplexDouble
+#define ARRAY_TYPE5    long double
+#define ARRAY_TYPE6    ComplexLongDouble
 

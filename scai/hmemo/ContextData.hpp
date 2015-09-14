@@ -62,7 +62,7 @@ namespace hmemo
  *  free the allocated data. This might be done by other constructors.
  */
 
-class COMMON_DLL_IMPORTEXPORT ContextData: public Printable
+class COMMON_DLL_IMPORTEXPORT ContextData: public scai::common::Printable
 {
 private:
 

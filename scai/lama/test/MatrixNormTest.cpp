@@ -37,7 +37,7 @@
 #include <scai/lama/matrix/all.hpp>
 #include <scai/lama/norm/Norm.hpp>
 
-#include <test/TestMacros.hpp>
+#include <scai/common/test/TestMacros.hpp>
 
 #include <boost/test/unit_test.hpp>
 #include <boost/mpl/list.hpp>

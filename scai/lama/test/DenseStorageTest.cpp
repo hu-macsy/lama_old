@@ -37,7 +37,7 @@
 #include <scai/lama/storage/DenseStorage.hpp>
 
 #include <test/MatrixStorageTest.hpp>
-#include <test/TestMacros.hpp>
+#include <scai/common/test/TestMacros.hpp>
 
 using namespace scai::lama;
 using namespace scai::hmemo;
@@ -120,7 +120,7 @@ void setZeroTest()
 BOOST_AUTO_TEST_SUITE( DenseStorageTest )
 
 SCAI_LOG_DEF_LOGGER( logger, "Test.DenseStorageTest" )
-LAMA_AUTO_TEST_CASE_CT( commonTestCases, DenseStorageTest )
+LAMA_AUTO_TEST_CASE_CT( commonTestCases, DenseStorageTest, scai::lama )
 LAMA_AUTO_TEST_CASE_T( setZeroTest, DenseStorageTest )
 LAMA_AUTO_TEST_CASE_T( typeNameTest, DenseStorageTest )
 /* ------------------------------------------------------------------------------------------------------------------ */

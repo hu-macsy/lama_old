@@ -82,9 +82,9 @@ class WriteAccess;
 
 class COMMON_DLL_IMPORTEXPORT ContextArray: 
 
-    public Printable, 
-    public tasking::SyncTokenMember,
-    public common::Factory<common::ScalarType, ContextArray*>
+    public scai::common::Printable,
+    public scai::tasking::SyncTokenMember,
+    public scai::common::Factory<common::ScalarType, ContextArray*>
 {
     // Member variables of this class
 

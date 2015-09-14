@@ -37,13 +37,13 @@
 #include <scai/common/config.hpp>
 
 // others
-#include <scai/lama/LAMATypes.hpp>
-
-// assert
+#include <scai/common/SCAITypes.hpp>
 #include <scai/common/Assert.hpp>
 
 // logging
 #include <scai/logging.hpp>
+
+using scai::common::IndexType;
 
 namespace scai
 {

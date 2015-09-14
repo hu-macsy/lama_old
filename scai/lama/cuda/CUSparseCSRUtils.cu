@@ -35,31 +35,29 @@
 #include <scai/lama/LAMAInterfaceRegistry.hpp>
 
 #include <scai/lama/cuda/utils.cu.h>
-#include <scai/lama/cuda/CUDAError.hpp>
+#include <scai/common/cuda/CUDAError.hpp>
 #include <scai/lama/cuda/CUSparseCSRUtils.hpp>
 #include <scai/hmemo/cuda/CUDAStreamSyncToken.hpp>
-#include <scai/lama/Settings.hpp>
+#include <scai/common/Settings.hpp>
 
 #include <cuda.h>
 #include <cusparse_v2.h>
 
 #include <scai/tracing.hpp>
 
-#include <scai/lama/ContextFactory.hpp>
-
 namespace scai
 {
-
-namespace lama
-{
-
-    SCAI_LOG_DEF_LOGGER( CUSparseCSRUtils::logger, "CUDA.CSRUtilsSparse" )
 
     /* --------------------------------------------------------------------------- */
     /*     cusparse handle is needed, set by CUDAContext                           */
     /* --------------------------------------------------------------------------- */
 
     extern cusparseHandle_t CUDAContext_cusparseHandle;
+    
+namespace lama
+{
+
+    SCAI_LOG_DEF_LOGGER( CUSparseCSRUtils::logger, "CUDA.CSRUtilsSparse" )
 
     /* --------------------------------------------------------------------------- */
     /*     Template specialization convertCSR2CSC<float>                           */
@@ -617,7 +615,7 @@ namespace lama
 
         // using CUSparse for CSR might be disabled explicitly by environment variable
 
-        Settings::getEnvironment( useCUSparse, "USE_CUSPARSE" );
+        common::Settings::getEnvironment( useCUSparse, "USE_CUSPARSE" );
 
         if ( !useCUSparse )
         {
@@ -648,7 +646,7 @@ namespace lama
 
     bool CUSparseCSRUtils::registerInterface()
     {
-        LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( Context::CUDA );
+        LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( hmemo::context::CUDA );
         setInterface( interface.CSRUtils );
         return true;
     }

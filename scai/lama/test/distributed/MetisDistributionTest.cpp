@@ -36,7 +36,7 @@
 
 #include <scai/lama/distribution/MetisDistribution.hpp>
 
-#include <test/TestMacros.hpp>
+#include <scai/common/test/TestMacros.hpp>
 #include <test/Configuration.hpp>
 #include <test/distributed/DistributionTest.hpp>
 

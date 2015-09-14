@@ -108,7 +108,7 @@ COMMON_DLL_IMPORTEXPORT MatrixStorageFormat str2Format( const char* str );
  storage should take place.
  */
 
-class COMMON_DLL_IMPORTEXPORT _MatrixStorage: public Printable
+class COMMON_DLL_IMPORTEXPORT _MatrixStorage: public scai::common::Printable
 {
 public:
 

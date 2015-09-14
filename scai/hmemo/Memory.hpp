@@ -93,8 +93,8 @@ using memtype::MemoryType;
  */
 class COMMON_DLL_IMPORTEXPORT Memory: 
   
-    public Printable, 
-    private common::NonCopyable
+    public  scai::common::Printable,
+    private scai::common::NonCopyable
 {
 public:
 
@@ -226,14 +226,12 @@ inline MemoryType Memory::getType() const
     return mMemoryType;
 }
 
+
+/**
+ * This method make is possible to use enum values of MemoryType in output streams.
+ */
+COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const scai::hmemo::MemoryType& type );
+
 } /* end namespace hmemo */
 
 } /* end namespace scai */
-
-/** This method make is possible to use enum values of MemoryType in output streams. 
- *
- *  Note: It should not be defined in a namespace.
- */
-
-COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const scai::hmemo::MemoryType& type );
-

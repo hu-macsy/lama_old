@@ -39,6 +39,8 @@
 #include <scai/common/Printable.hpp>
 
 // others
+#include <scai/common/SCAITypes.hpp>
+
 #include <scai/common/exception/Exception.hpp>
 
 #include <iostream>
@@ -48,14 +50,6 @@ namespace scai
 
 namespace common
 {
-
-/** Data type that is used for indexing in LAMA.
- *
- *  Currently, it is still necessary that it is a signed data type.
- *  int is the good choice, might be long int or long long int for
- *  future versions that deal with very large matrices even on on processor.
- */
-typedef int IndexType;
 
 /** Namespace for enumeration type. */
 
@@ -121,13 +115,36 @@ inline ScalarType getScalarType<double>()
     return scalar::DOUBLE;
 }
 
+template<>
+inline ScalarType getScalarType<scai::common::LongDouble>()
+{
+    return scalar::LONG_DOUBLE;
+}
+
+template<>
+inline ScalarType getScalarType<scai::common::ComplexFloat>()
+{
+    return scalar::COMPLEX;
+}
+
+template<>
+inline ScalarType getScalarType<scai::common::ComplexDouble>()
+{
+    return scalar::DOUBLE_COMPLEX;
+}
+
+template<>
+inline ScalarType getScalarType<scai::common::ComplexLongDouble>()
+{
+    return scalar::LONG_DOUBLE_COMPLEX;
+}
+
+/*
+ * Output of ScalarType in stream by writing strings instead of numbers
+ */
+
+COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const ScalarType& object );
+
 } /* end namespace common */
 
 } /* end namespace scai */
-
-/** Output of ScalarType in stream by writing strings instead of numbers 
- *
- *  Note: operator<< should never be defined within a namespace.
- */
-
-COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const scai::common::ScalarType& object );

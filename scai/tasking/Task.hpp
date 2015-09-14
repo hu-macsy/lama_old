@@ -79,7 +79,7 @@ namespace tasking
  * }
  * \endcode
  */
-class COMMON_DLL_IMPORTEXPORT Task: public Printable
+class COMMON_DLL_IMPORTEXPORT Task: public scai::common::Printable
 {
 
 public:

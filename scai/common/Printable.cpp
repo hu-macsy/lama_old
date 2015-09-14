@@ -35,6 +35,12 @@
 
 #include <typeinfo>
 
+namespace scai
+{
+
+namespace common
+{
+
 bool Printable::extended = false;
 
 void Printable::enableExtended( const bool flag )
@@ -61,3 +67,6 @@ std::ostream& operator<<( std::ostream& stream, const Printable& object )
     return stream;
 }
 
+} /* end namespace common */
+
+} /* end namespace scai */

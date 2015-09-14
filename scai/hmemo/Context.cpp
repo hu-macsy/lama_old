@@ -118,13 +118,7 @@ ContextPtr Context::getContextPtr( ContextType type, int deviceNr )
     return create( type, deviceNr );
 }
 
-} /* end namespace hmemo */
-
-} /* end namespace scai */
-
-/* ---------------------------------------------------------------------------------*/
-
-std::ostream& operator<<( std::ostream& stream, const scai::hmemo::ContextType& type )
+std::ostream& operator<<( std::ostream& stream, const ContextType& type )
 {
     using namespace scai::hmemo;
 
@@ -159,7 +153,7 @@ std::ostream& operator<<( std::ostream& stream, const scai::hmemo::ContextType& 
 
 /* -----------------------------------------------------------------------------*/
 
-std::ostream& operator<<( std::ostream& stream, const scai::hmemo::AccessKind& kind )
+std::ostream& operator<<( std::ostream& stream, const AccessKind& kind )
 {
     using namespace scai::hmemo;
 
@@ -180,3 +174,8 @@ std::ostream& operator<<( std::ostream& stream, const scai::hmemo::AccessKind& k
     return stream;
 }
 
+} /* end namespace hmemo */
+
+} /* end namespace scai */
+
+/* ---------------------------------------------------------------------------------*/

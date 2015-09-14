@@ -34,7 +34,11 @@
 
 #include <scai/common/ScalarType.hpp>
 
-using namespace scai::common;
+namespace scai
+{
+
+namespace common
+{
 
 std::ostream& operator<<( std::ostream& stream, const ScalarType& object )
 {
@@ -83,3 +87,6 @@ std::ostream& operator<<( std::ostream& stream, const ScalarType& object )
     return stream;
 }
 
+} /* end namespace common */
+
+} /* end namespace scai */

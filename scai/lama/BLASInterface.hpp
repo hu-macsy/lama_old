@@ -31,14 +31,16 @@
  */
 #pragma once
 
-#include <scai/lama/LAMATypes.hpp>
+#include <scai/common/SCAITypes.hpp>
 
-// others
-#include <scai/lama/macros/interface.hpp>
+#include <scai/common/macros/interface.hpp>
+
+#include <scai/lama/cblas.hpp>
 
 // C++
 #include <cstring>
-#include <scai/lama/cblas.hpp>
+
+using scai::common::IndexType;
 
 namespace scai
 {

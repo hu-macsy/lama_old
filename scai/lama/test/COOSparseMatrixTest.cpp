@@ -34,8 +34,9 @@
 #include <boost/test/unit_test.hpp>
 
 #include <scai/lama/matrix/COOSparseMatrix.hpp>
-#include <test/SparseMatrixTest.hpp>
-#include <test/TestMacros.hpp>
+#include <scai/common/test/TestMacros.hpp>
+
+#include <scai/lama/test/SparseMatrixTest.hpp>
 
 using namespace scai::lama;
 using namespace scai::hmemo;
@@ -83,8 +84,7 @@ void typeNameTest( )
 BOOST_AUTO_TEST_SUITE( COOSparseMatrixTest )
 
 SCAI_LOG_DEF_LOGGER( logger, "Test.SparseMatrixTest.COOSparseMatrixTest" )
-
-LAMA_AUTO_TEST_CASE_CT( commonTestCases, COOSparseMatrixTest )
+LAMA_AUTO_TEST_CASE_CT( commonTestCases, COOSparseMatrixTest, scai::lama )
 LAMA_AUTO_TEST_CASE_T( typeNameTest, COOSparseMatrixTest )
 /* -------------------------------------------------------------------------------------------------------------------*/
 

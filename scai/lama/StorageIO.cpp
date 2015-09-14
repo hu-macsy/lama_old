@@ -1359,9 +1359,9 @@ void StorageIO<ValueType>::readCSRFromFile(
 /* ========================================================================= */
 
 #define LAMA_STORAGE_IO_INSTANTIATE(z, I, _)                              \
-    template class COMMON_DLL_IMPORTEXPORT StorageIO<ARITHMETIC_TYPE##I> ;
+    template class COMMON_DLL_IMPORTEXPORT StorageIO<ARITHMETIC_HOST_TYPE_##I> ;
 
-BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_STORAGE_IO_INSTANTIATE, _ )
+BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_STORAGE_IO_INSTANTIATE, _ )
 
 #undef LAMA_STORAGE_IO_INSTANTIATE
 

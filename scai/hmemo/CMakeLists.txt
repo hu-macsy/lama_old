@@ -66,7 +66,9 @@ include ( ConcludeFlags )
 
 add_definitions( ${ADDITIONAL_WARNING_FLAGS} )
 
-add_definitions( -D${SCAI_LOGGING_FLAG} )
+add_definitions ( -D${SCAI_LOGGING_FLAG} )
+add_definitions ( -D${SCAI_OMP_SCHEDULE_FLAG} )
+add_definitions ( -D${SCAI_TRACING_FLAG} )
 
 add_definitions ( -DSCAI_ASSERT_LEVEL_${SCAI_ASSERT_LEVEL} )
 

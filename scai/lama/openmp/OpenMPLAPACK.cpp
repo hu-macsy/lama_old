@@ -49,14 +49,9 @@
 // C
 #include <cmath>
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif /*__cplusplus*/
-
-#ifdef __cplusplus
-} /*extern "C"*/
-#endif /*__cplusplus*/
+using scai::common::ComplexFloat;
+using scai::common::ComplexDouble;
+using scai::common::ComplexLongDouble;
 
 namespace scai
 {
@@ -552,14 +547,14 @@ void OpenMPLAPACK::setInterface( BLASInterface& BLAS )
     // Note: macro takes advantage of same name for routines and type definitions
     //       ( e.g. routine CUDABLAS1::sum<ValueType> is set for BLAS::BLAS1::sum variable
 
-#define LAMA_LAPACK_REGISTER(z, I, _)                                            \
-    LAMA_INTERFACE_REGISTER_T( BLAS, getrf, ARITHMETIC_TYPE##I )                 \
-    LAMA_INTERFACE_REGISTER_T( BLAS, getri, ARITHMETIC_TYPE##I )                 \
-    LAMA_INTERFACE_REGISTER_T( BLAS, getinv, ARITHMETIC_TYPE##I )                \
-    LAMA_INTERFACE_REGISTER_T( BLAS, tptrs, ARITHMETIC_TYPE##I )                 \
-    LAMA_INTERFACE_REGISTER_T( BLAS, laswp, ARITHMETIC_TYPE##I )                 \
+#define LAMA_LAPACK_REGISTER(z, I, _)                                                  \
+    LAMA_INTERFACE_REGISTER_T( BLAS, getrf, ARITHMETIC_HOST_TYPE_##I )                 \
+    LAMA_INTERFACE_REGISTER_T( BLAS, getri, ARITHMETIC_HOST_TYPE_##I )                 \
+    LAMA_INTERFACE_REGISTER_T( BLAS, getinv, ARITHMETIC_HOST_TYPE_##I )                \
+    LAMA_INTERFACE_REGISTER_T( BLAS, tptrs, ARITHMETIC_HOST_TYPE_##I )                 \
+    LAMA_INTERFACE_REGISTER_T( BLAS, laswp, ARITHMETIC_HOST_TYPE_##I )                 \
 
-    BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_LAPACK_REGISTER, _ )
+    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_LAPACK_REGISTER, _ )
 
 #undef LAMA_LAPACK_REGISTER
 

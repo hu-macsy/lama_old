@@ -39,7 +39,7 @@
 #include <scai/lama/LAMAInterface.hpp>
 #include <scai/lama/Scalar.hpp>
 
-#include <test/TestMacros.hpp>
+#include <scai/common/test/TestMacros.hpp>
 
 using namespace scai::lama;
 using namespace scai::hmemo;

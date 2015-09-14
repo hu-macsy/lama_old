@@ -33,7 +33,7 @@
 
 #include <test/distributed/DistributionTest.hpp>
 
-#include <test/TestMacros.hpp>
+#include <scai/common/test/TestMacros.hpp>
 
 LAMA_COMMON_TEST_CASE( DistributionTest, localSizeTest )
 {
@@ -55,7 +55,7 @@ LAMA_COMMON_TEST_CASE( DistributionTest, local2GlobalTest )
         }
         else
         {
-            BOOST_CHECK_EQUAL( nIndex, mDistributionPtr->global2local( i ) );
+            BOOST_CHECK_EQUAL( scai::common::nIndex, mDistributionPtr->global2local( i ) );
         }
     }
 }
@@ -85,7 +85,7 @@ LAMA_COMMON_TEST_CASE( DistributionTest, printDistributionVector )
     std::string s;
     s = "distribution";
     mDistributionPtr->printDistributionVector( s );
-    std::remove( ( s + ".part" ).c_str() );
+    //std::remove( ( s + ".part" ).c_str() ); // ?!
 }
 LAMA_COMMON_TEST_CASE_END()
 

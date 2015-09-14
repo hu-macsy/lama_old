@@ -67,7 +67,7 @@
  *  \endcode
  */
 
-class LamaConfig : public Printable
+class LamaConfig : public scai::common::Printable
 {
 
 public:

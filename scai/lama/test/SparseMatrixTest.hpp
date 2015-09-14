@@ -35,7 +35,7 @@
 #include <scai/lama/matrix/Matrix.hpp>
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 
-#include <test/TestMacros.hpp>
+#include <scai/common/test/TestMacros.hpp>
 
 using namespace scai::lama;
 

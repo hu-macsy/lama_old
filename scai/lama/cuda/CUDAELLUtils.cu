@@ -31,10 +31,17 @@
  * @since 1.0.0
  */
 
-// lama cuda
-#include <scai/lama/cuda/utils.cu.h>
-#include <scai/hmemo/cuda/CUDAStreamSyncToken.hpp>
+#include <scai/common/bind.hpp>
+
+#include <scai/common/macros/unused.hpp>
+
 #include <scai/common/cuda/CUDAError.hpp>
+
+#include <scai/hmemo/cuda/CUDAStreamSyncToken.hpp>
+
+#include <scai/tracing.hpp>
+
+#include <scai/lama/cuda/utils.cu.h>
 #include <scai/lama/cuda/CUDAELLUtils.hpp>
 #include <scai/lama/cuda/CUDAUtils.hpp>
 #include <scai/lama/cuda/CUDASettings.hpp>
@@ -42,8 +49,6 @@
 // others
 #include <scai/lama/LAMAInterface.hpp>
 #include <scai/lama/LAMAInterfaceRegistry.hpp>
-#include <scai/lama/macros/unused.hpp>
-#include <scai/tracing.hpp>
 
 // cuda
 #include <cuda.h>
@@ -64,12 +69,14 @@
 #include <thrust/transform.h>
 #include <thrust/transform_reduce.h>
 
-#include <scai/common/bind.hpp>
 #include <boost/preprocessor.hpp>
 
 using namespace scai::hmemo;
 
 using scai::common::getScalarType;
+
+using scai::common::ComplexFloat;
+using scai::common::ComplexDouble;
 
 namespace scai
 {
@@ -2171,49 +2178,49 @@ namespace lama
         LAMA_INTERFACE_REGISTER( ELLUtils, hasDiagonalProperty )
         LAMA_INTERFACE_REGISTER( ELLUtils, check )
 
-#define LAMA_ELL_UTILS2_REGISTER(z, J, TYPE )                                       \
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getRow, TYPE, ARITHMETIC_TYPE##J )        \
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getValue, TYPE, ARITHMETIC_TYPE##J )      \
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, scaleValue, TYPE, ARITHMETIC_TYPE##J )    \
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, setCSRValues, TYPE, ARITHMETIC_TYPE##J )  \
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getCSRValues, TYPE, ARITHMETIC_TYPE##J )  \
+#define LAMA_ELL_UTILS2_REGISTER(z, J, TYPE )                                             \
+    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getRow, TYPE, ARITHMETIC_CUDA_TYPE_##J )        \
+    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getValue, TYPE, ARITHMETIC_CUDA_TYPE_##J )      \
+    LAMA_INTERFACE_REGISTER_TT( ELLUtils, scaleValue, TYPE, ARITHMETIC_CUDA_TYPE_##J )    \
+    LAMA_INTERFACE_REGISTER_TT( ELLUtils, setCSRValues, TYPE, ARITHMETIC_CUDA_TYPE_##J )  \
+    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getCSRValues, TYPE, ARITHMETIC_CUDA_TYPE_##J )  \
 
-#define LAMA_ELL_UTILS_REGISTER(z, I, _)                                            \
-    LAMA_INTERFACE_REGISTER_T( ELLUtils, normalGEMV, ARITHMETIC_TYPE##I )           \
-    LAMA_INTERFACE_REGISTER_T( ELLUtils, normalGEVM, ARITHMETIC_TYPE##I )           \
-    LAMA_INTERFACE_REGISTER_T( ELLUtils, sparseGEMV, ARITHMETIC_TYPE##I )           \
-    LAMA_INTERFACE_REGISTER_T( ELLUtils, sparseGEVM, ARITHMETIC_TYPE##I )           \
-    LAMA_INTERFACE_REGISTER_T( ELLUtils, jacobi, ARITHMETIC_TYPE##I )               \
-    LAMA_INTERFACE_REGISTER_T( ELLUtils, jacobiHalo, ARITHMETIC_TYPE##I )           \
-    LAMA_INTERFACE_REGISTER_T( ELLUtils, fillELLValues, ARITHMETIC_TYPE##I )        \
-                                                                                    \
-    BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT,                                           \
-                     LAMA_ELL_UTILS2_REGISTER,                                      \
-                     ARITHMETIC_TYPE##I )                                           \
+#define LAMA_ELL_UTILS_REGISTER(z, I, _)                                                  \
+    LAMA_INTERFACE_REGISTER_T( ELLUtils, normalGEMV, ARITHMETIC_CUDA_TYPE_##I )           \
+    LAMA_INTERFACE_REGISTER_T( ELLUtils, normalGEVM, ARITHMETIC_CUDA_TYPE_##I )           \
+    LAMA_INTERFACE_REGISTER_T( ELLUtils, sparseGEMV, ARITHMETIC_CUDA_TYPE_##I )           \
+    LAMA_INTERFACE_REGISTER_T( ELLUtils, sparseGEVM, ARITHMETIC_CUDA_TYPE_##I )           \
+    LAMA_INTERFACE_REGISTER_T( ELLUtils, jacobi, ARITHMETIC_CUDA_TYPE_##I )               \
+    LAMA_INTERFACE_REGISTER_T( ELLUtils, jacobiHalo, ARITHMETIC_CUDA_TYPE_##I )           \
+    LAMA_INTERFACE_REGISTER_T( ELLUtils, fillELLValues, ARITHMETIC_CUDA_TYPE_##I )        \
+                                                                                          \
+    BOOST_PP_REPEAT( ARITHMETIC_CUDA_TYPE_CNT,                                            \
+                     LAMA_ELL_UTILS2_REGISTER,                                            \
+                     ARITHMETIC_CUDA_TYPE_##I )                                           \
 
-        BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_ELL_UTILS_REGISTER, _ )
+    BOOST_PP_REPEAT( ARITHMETIC_CUDA_TYPE_CNT, LAMA_ELL_UTILS_REGISTER, _ )
 
 #undef LAMA_ELL_UTILS_REGISTER
 #undef LAMA_ELL_UTILS2_REGISTER
 
     }
 
-    /* --------------------------------------------------------------------------- */
-    /*    Static registration of the Utils routines                                */
-    /* --------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------- */
+/*    Static registration of the Utils routines                                */
+/* --------------------------------------------------------------------------- */
 
-    bool CUDAELLUtils::registerInterface()
-    {
-        LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( context::CUDA );
-        setInterface( interface.ELLUtils );
-        return true;
-    }
+bool CUDAELLUtils::registerInterface()
+{
+    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( context::CUDA );
+    setInterface( interface.ELLUtils );
+    return true;
+}
 
-    /* --------------------------------------------------------------------------- */
-    /*    Static initialiazion at program start                                    */
-    /* --------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------- */
+/*    Static initialiazion at program start                                    */
+/* --------------------------------------------------------------------------- */
 
-    bool CUDAELLUtils::initialized = registerInterface();
+bool CUDAELLUtils::initialized = registerInterface();
 
 } /* end namespace lama */
 

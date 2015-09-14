@@ -18,7 +18,7 @@
 
 /** Parameters to define LAMA behavior */
 
-class Config : public Printable
+class Config : public scai::common::Printable
 {
 
 public:

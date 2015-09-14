@@ -31,6 +31,7 @@
  */
 #pragma once
 
+#include <scai/common/Assert.hpp>
 #include <scai/common/exception/Exception.hpp>
 
 #include <cuda.h>

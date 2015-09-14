@@ -37,6 +37,8 @@
 #include <scai/common/exception/Exception.hpp>
 #include <scai/common/unique_ptr.hpp>
 
+#include <typeinfo>
+
 #include <memory>
 #include <map>
 #include <vector>
@@ -172,7 +174,7 @@ OutputType Factory<InputType, OutputType>::create( const InputType type )
     {
         // Be careful: operator<< for InputType must be available
 
-        COMMON_THROWEXCEPTION( "Factory: no creator for " << type << " available" )
+        COMMON_THROWEXCEPTION( "Factory: no creator for " << typeid(type).name() << " available" )
     }
 
     return value;

@@ -35,7 +35,7 @@
 #include <boost/mpl/list.hpp>
 
 #include <test/MatrixStorageTest.hpp>
-#include <test/TestMacros.hpp>
+#include <scai/common/test/TestMacros.hpp>
 
 #include <scai/lama/LAMAArrayUtils.hpp>
 #include <scai/lama/storage/ELLStorage.hpp>
@@ -251,9 +251,9 @@ void typeNameTest()
 BOOST_AUTO_TEST_SUITE( ELLStorageTest )
 
 SCAI_LOG_DEF_LOGGER( logger, "Test.ELLStorageTest" )
-LAMA_AUTO_TEST_CASE_CT( commonTestCases, ELLStorageTest )
-LAMA_AUTO_TEST_CASE_CT( constructorTest, ELLStorageTest )
-LAMA_AUTO_TEST_CASE_CT( constructorTest1, ELLStorageTest )
+LAMA_AUTO_TEST_CASE_CT( commonTestCases, ELLStorageTest, scai::lama )
+LAMA_AUTO_TEST_CASE_CT( constructorTest, ELLStorageTest, scai::lama )
+LAMA_AUTO_TEST_CASE_CT( constructorTest1, ELLStorageTest, scai::lama )
 LAMA_AUTO_TEST_CASE_T( typeNameTest, ELLStorageTest )
 /* ------------------------------------------------------------------------------------------------------------------ */
 

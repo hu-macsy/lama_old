@@ -37,7 +37,7 @@
 #include <scai/lama/distribution/NoDistribution.hpp>
 
 #include <test/distributed/DistributionTest.hpp>
-#include <test/TestMacros.hpp>
+#include <scai/common/test/TestMacros.hpp>
 
 using namespace scai::lama;
 

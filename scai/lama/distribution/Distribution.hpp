@@ -37,11 +37,11 @@
 #include <scai/common/config.hpp>
 
 // base classes
+#include <scai/common/SCAITypes.hpp>
 #include <scai/common/NonCopyable.hpp>
 #include <scai/common/Printable.hpp>
 
 // others
-#include <scai/lama/LAMATypes.hpp>
 #include <scai/lama/Communicator.hpp>
 
 // logging
@@ -71,7 +71,7 @@ class Matrix;
  *
  * Default and copy constructor are not available for this class (noncopyable).
  */
-class COMMON_DLL_IMPORTEXPORT Distribution: public Printable, private common::NonCopyable
+class COMMON_DLL_IMPORTEXPORT Distribution: public scai::common::Printable, private common::NonCopyable
 {
 
 public:

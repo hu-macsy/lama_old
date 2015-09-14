@@ -141,12 +141,6 @@ tasking::SyncToken* Memory::memcpyToAsync( const Memory& dstMemory, void* dst, c
 
 /* ---------------------------------------------------------------------------------*/
 
-} /* end namespace hmemo */
-
-} /* end namespace scai */
-
-/* ---------------------------------------------------------------------------------*/
-
 std::ostream& operator<<( std::ostream& stream, const scai::hmemo::MemoryType& type )
 {
     switch ( type )
@@ -174,3 +168,8 @@ std::ostream& operator<<( std::ostream& stream, const scai::hmemo::MemoryType& t
     return stream;
 }
 
+/* ---------------------------------------------------------------------------------*/
+
+} /* end namespace hmemo */
+
+} /* end namespace scai */

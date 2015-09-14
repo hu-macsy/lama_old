@@ -36,7 +36,7 @@
 #include <scai/lama/solver/logger/Timer.hpp>
 #include <scai/common/exception/Exception.hpp>
 
-#include "TestMacros.hpp"
+#include "TestMacros.hpp_old"
 
 //Adding support for Timers under Windows
 #ifdef _WIN32

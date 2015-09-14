@@ -35,15 +35,21 @@
 #include <scai/lama/matrix/SparseMatrix.hpp>
 
 // others
+#include <scai/common/bind.hpp>
+
+#include <scai/common/exception/Exception.hpp>
+
+// tracing
+#include <scai/tracing.hpp>
+
 #include <scai/tasking/NoSyncToken.hpp>
+
 #include <scai/lama/LAMAArrayUtils.hpp>
 
 #include <scai/lama/matrix/DenseMatrix.hpp>
 
 #include <scai/lama/storage/MatrixStorage.hpp>
 #include <scai/lama/storage/CSRStorage.hpp>
-
-#include <scai/common/exception/Exception.hpp>
 
 #include <scai/lama/distribution/NoDistribution.hpp>
 #include <scai/lama/distribution/CyclicDistribution.hpp>
@@ -52,11 +58,6 @@
 #include <scai/lama/LAMAInterface.hpp>
 #include <scai/lama/openmp/OpenMPCSRUtils.hpp>
 
-// tracing
-#include <scai/tracing.hpp>
-
-// tracing
-#include <scai/common/bind.hpp>
 #include <boost/preprocessor.hpp>
 
 using namespace scai::hmemo;
@@ -2027,7 +2028,7 @@ Scalar SparseMatrix<ValueType>::l2Norm() const
 
     ValueType allValue = comm.max( myValue );
 
-	allValue = sqrt( allValue );
+	allValue = ::sqrt( allValue );
 
     SCAI_LOG_INFO( logger, "max norm: local value = " << myValue << ", global value = " << allValue )
 
@@ -2511,16 +2512,16 @@ void SparseMatrix<ValueType>::readFromFile( const std::string& fileName )
 /*       Template specializations and instantiations                         */
 /* ========================================================================= */
 
-#define LAMA_SPARSE_MATRIX_INSTANTIATE(z, I, _)                            \
-    template<>                                                                 \
-    const char* SparseMatrix<ARITHMETIC_TYPE##I>::typeName()                   \
-    {                                                                          \
-        return "SparseMatrix<ARITHMETIC_TYPE##I>";                             \
-    }                                                                          \
-    \
-    template class COMMON_DLL_IMPORTEXPORT SparseMatrix<ARITHMETIC_TYPE##I> ;
+#define LAMA_SPARSE_MATRIX_INSTANTIATE(z, I, _)                                     \
+    template<>                                                                      \
+    const char* SparseMatrix<ARITHMETIC_HOST_TYPE_##I>::typeName()                  \
+    {                                                                               \
+        return "SparseMatrix<ARITHMETIC_HOST_TYPE_##I>";                            \
+    }                                                                               \
+                                                                                    \
+    template class COMMON_DLL_IMPORTEXPORT SparseMatrix<ARITHMETIC_HOST_TYPE_##I> ;
 
-BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_SPARSE_MATRIX_INSTANTIATE, _ )
+BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_SPARSE_MATRIX_INSTANTIATE, _ )
 
 #undef LAMA_SPARSE_MATRIX_INSTANTIATE
 

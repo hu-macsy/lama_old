@@ -47,7 +47,7 @@ set ( CLASSES
     
 set ( HEADERS
         EquationHelper
-        TestMacros
+#        TestMacros
         TestSparseMatrices
     )
 
@@ -55,9 +55,9 @@ set ( SOURCE_FILES
         BiCGstabTest
        # BiCGTest  : disabled as long as MatrixTranspose for DenseMatrix is
        # not supported
-        BLAS1Test
-        BLAS2Test
-        BLAS3Test
+       # BLAS1Test
+       # BLAS2Test
+       # BLAS3Test
         CGTest
        # not yet: CGNETest
         CGNRTest
@@ -91,7 +91,7 @@ set ( SOURCE_FILES
         L1NormTest
         L2NormTest
         LAMAArrayTest
-        LAPACKTest
+      #  LAPACKTest
         MatrixStorageConversionTest
         MatrixNormTest
         MatrixTest
@@ -156,12 +156,6 @@ endif ( WIN32 )
 
 ### add executeable ###
 add_executable ( lama_test lama_test.cpp ${CXX_SOURCES} )
-
-if ( USE_MIC )
-    set ( MKLROOT $ENV{MKLROOT} )
-    set_target_properties( lama_test PROPERTIES LINK_FLAGS
-        "-offload-option,mic,compiler,\"-L${MKLROOT}/lib/mic -Wl,--start-group -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_core -Wl,--end-group\"" )
-endif ( USE_MIC )
 
 ### target link libraries ###
 if ( WIN32 )

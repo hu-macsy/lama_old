@@ -32,7 +32,6 @@
  */
 
 #include <scai/common/Settings.hpp>
-// TODO need ENVsetting and LAMAsettings
 //#include <scai/lama/Communicator.hpp>
 
 #include <cstdio>

@@ -607,10 +607,10 @@ void MatrixCreator<ValueType>::buildRandom(
 /*       Template Instantiations                                             */
 /* ========================================================================= */
 
-#define LAMA_MATRIX_CREATOR_INSTANTIATE(z, I, _)                           \
-    template class COMMON_DLL_IMPORTEXPORT MatrixCreator<ARITHMETIC_TYPE##I> ;
+#define LAMA_MATRIX_CREATOR_INSTANTIATE(z, I, _)                                     \
+    template class COMMON_DLL_IMPORTEXPORT MatrixCreator<ARITHMETIC_HOST_TYPE_##I> ;
 
-BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_MATRIX_CREATOR_INSTANTIATE, _ )
+BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_MATRIX_CREATOR_INSTANTIATE, _ )
 
 #undef LAMA_MATRIX_CREATOR_INSTANTIATE
 

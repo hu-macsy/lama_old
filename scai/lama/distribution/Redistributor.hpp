@@ -64,7 +64,7 @@ namespace lama
  *  that restrict the redistribution just to the transfer of the corresponding data.
  */
 
-class COMMON_DLL_IMPORTEXPORT Redistributor: public Printable
+class COMMON_DLL_IMPORTEXPORT Redistributor: public scai::common::Printable
 {
 public:
 

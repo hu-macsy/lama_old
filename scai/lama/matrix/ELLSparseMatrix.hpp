@@ -296,4 +296,3 @@ ELLSparseMatrix<ValueType>::ELLSparseMatrix(
 } /* end namespace lama */
 
 } /* end namespace scai */
-

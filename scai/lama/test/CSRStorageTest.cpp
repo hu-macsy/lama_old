@@ -36,8 +36,8 @@
 
 #include <scai/lama/storage/CSRStorage.hpp>
 
-#include <test/MatrixStorageTest.hpp>
-#include <test/TestMacros.hpp>
+#include <scai/lama/test/MatrixStorageTest.hpp>
+#include <scai/common/test/TestMacros.hpp>
 
 using namespace scai::lama;
 using namespace scai::hmemo;
@@ -184,9 +184,9 @@ void typeNameTest()
 BOOST_AUTO_TEST_SUITE( CSRStorageTest )
 
 SCAI_LOG_DEF_LOGGER( logger, "Test.CSRStorageTest" );
-LAMA_AUTO_TEST_CASE_CT( commonTestCases, CSRStorageTest )
+LAMA_AUTO_TEST_CASE_CT( commonTestCases, CSRStorageTest, scai::lama )
 LAMA_AUTO_TEST_CASE_T( constructorTest, CSRStorageTest )
-LAMA_AUTO_TEST_CASE_CT( constructorTest1, CSRStorageTest )
+LAMA_AUTO_TEST_CASE_CT( constructorTest1, CSRStorageTest, scai::lama )
 LAMA_AUTO_TEST_CASE_T( typeNameTest, CSRStorageTest )
 /* ------------------------------------------------------------------------------------------------------------------ */
 

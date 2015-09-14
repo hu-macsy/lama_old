@@ -35,7 +35,7 @@
 
 #include <scai/tasking/TaskSyncToken.hpp>
 
-#include <test/TestMacros.hpp>
+#include <scai/common/test/TestMacros.hpp>
 #include <scai/common/bind.hpp>
 
 using namespace scai::tasking;

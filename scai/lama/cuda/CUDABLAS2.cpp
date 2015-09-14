@@ -35,14 +35,15 @@
 #include <scai/lama/cuda/CUDABLAS2.hpp>
 
 // others
-#include <scai/lama/LAMAInterface.hpp>
-#include <scai/lama/LAMAInterfaceRegistry.hpp>
-#include <scai/common/cuda/CUDAError.hpp>
-#include <scai/hmemo/cuda/CUDAStreamSyncToken.hpp>
 #include <scai/lama/cuda/lama_cublas.hpp>
 
-// macros
-#include <scai/lama/macros/unused.hpp>
+#include <scai/common/macros/unused.hpp>
+#include <scai/common/cuda/CUDAError.hpp>
+
+#include <scai/lama/LAMAInterface.hpp>
+#include <scai/lama/LAMAInterfaceRegistry.hpp>
+
+#include <scai/hmemo/cuda/CUDAStreamSyncToken.hpp>
 
 #include <boost/preprocessor.hpp>
 
@@ -247,9 +248,9 @@ void CUDABLAS2::setInterface( BLASInterface& BLAS )
     SCAI_LOG_INFO( logger, "set BLAS2 routines for CUDA in Interface" )
 
 #define LAMA_BLAS2_REGISTER(z, I, _)                                            \
-    LAMA_INTERFACE_REGISTER_T( BLAS, gemv, ARITHMETIC_TYPE##I )                 \
+    LAMA_INTERFACE_REGISTER_T( BLAS, gemv, ARITHMETIC_CUDA_TYPE_##I )                 \
 
-    BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_BLAS2_REGISTER, _ )
+    BOOST_PP_REPEAT( ARITHMETIC_CUDA_TYPE_CNT, LAMA_BLAS2_REGISTER, _ )
 
 #undef LAMA_BLAS2_REGISTER
 

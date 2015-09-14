@@ -81,7 +81,7 @@ void HaloBuilder::build( const Distribution& distribution, const std::vector<Ind
     CommunicationPlan& requiredPlan = halo.mRequiredPlan;
 
     //allocate Required plan with the nodes, where we get data from
-    requiredPlan.allocate( noPartitions, &owners[0], owners.size() );
+    requiredPlan.allocate( noPartitions, owners.data(), owners.size() );
 
     SCAI_LOG_INFO( logger,
                    communicator << ": allocated required plan for " << noPartitions << " partitions, size = " << requiredPlan.size() << ", total quantity = " << requiredPlan.totalQuantity() )
@@ -176,7 +176,7 @@ void HaloBuilder::build( const Distribution& distribution, const std::vector<Ind
         for( IndexType i = 0; i < n; i++ )
         {
             IndexType localIndex = distribution.global2local( partitionIndexes[i] );
-            SCAI_ASSERT( localIndex != nIndex,
+            SCAI_ASSERT( localIndex != scai::common::nIndex,
                          "global index "<<partitionIndexes[i]<<" is not local on Rank " << communicator.getRank() )
             partitionIndexes[i] = localIndex;
         }

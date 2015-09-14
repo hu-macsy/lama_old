@@ -36,6 +36,9 @@
 #include <scai/lama/openmp/OpenMP.hpp>
 
 // others
+#include <scai/common/bind.hpp>
+#include <scai/common/Assert.hpp>
+
 #include <scai/lama/LAMAInterface.hpp>
 #include <scai/lama/LAMAInterfaceRegistry.hpp>
 
@@ -46,13 +49,16 @@
 #include <scai/tracing.hpp>
 
 // boost
-#include <scai/common/bind.hpp>
 #include <boost/preprocessor.hpp>
 
 // stl
 #include <set>
 #include <map>
 #include <cmath>
+
+using scai::common::ComplexFloat;
+using scai::common::ComplexDouble;
+using scai::common::ComplexLongDouble;
 
 namespace scai
 {
@@ -1185,32 +1191,32 @@ void OpenMPELLUtils::setInterface( ELLUtilsInterface& ELLUtils )
     LAMA_INTERFACE_REGISTER( ELLUtils, matrixMultiplySizes )
     LAMA_INTERFACE_REGISTER( ELLUtils, matrixAddSizes )
 
-#define LAMA_ELL_UTILS2_REGISTER(z, J, TYPE )                                       \
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getRow, TYPE, ARITHMETIC_TYPE##J )        \
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getValue, TYPE, ARITHMETIC_TYPE##J )      \
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, scaleValue, TYPE, ARITHMETIC_TYPE##J )    \
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, setCSRValues, TYPE, ARITHMETIC_TYPE##J )  \
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getCSRValues, TYPE, ARITHMETIC_TYPE##J )  \
+#define LAMA_ELL_UTILS2_REGISTER(z, J, TYPE )                                             \
+    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getRow, TYPE, ARITHMETIC_HOST_TYPE_##J )        \
+    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getValue, TYPE, ARITHMETIC_HOST_TYPE_##J )      \
+    LAMA_INTERFACE_REGISTER_TT( ELLUtils, scaleValue, TYPE, ARITHMETIC_HOST_TYPE_##J )    \
+    LAMA_INTERFACE_REGISTER_TT( ELLUtils, setCSRValues, TYPE, ARITHMETIC_HOST_TYPE_##J )  \
+    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getCSRValues, TYPE, ARITHMETIC_HOST_TYPE_##J )  \
 
-#define LAMA_ELL_UTILS_REGISTER(z, I, _)                                            \
-    LAMA_INTERFACE_REGISTER_T( ELLUtils, absMaxVal, ARITHMETIC_TYPE##I )            \
-    LAMA_INTERFACE_REGISTER_T( ELLUtils, compressIA, ARITHMETIC_TYPE##I )           \
-    LAMA_INTERFACE_REGISTER_T( ELLUtils, compressValues, ARITHMETIC_TYPE##I )       \
-    LAMA_INTERFACE_REGISTER_T( ELLUtils, matrixAdd, ARITHMETIC_TYPE##I )            \
-    LAMA_INTERFACE_REGISTER_T( ELLUtils, matrixMultiply, ARITHMETIC_TYPE##I )       \
-    LAMA_INTERFACE_REGISTER_T( ELLUtils, normalGEMV, ARITHMETIC_TYPE##I )           \
-    LAMA_INTERFACE_REGISTER_T( ELLUtils, normalGEVM, ARITHMETIC_TYPE##I )           \
-    LAMA_INTERFACE_REGISTER_T( ELLUtils, sparseGEMV, ARITHMETIC_TYPE##I )           \
-    LAMA_INTERFACE_REGISTER_T( ELLUtils, sparseGEVM, ARITHMETIC_TYPE##I )           \
-    LAMA_INTERFACE_REGISTER_T( ELLUtils, jacobi, ARITHMETIC_TYPE##I )               \
-    LAMA_INTERFACE_REGISTER_T( ELLUtils, jacobiHalo, ARITHMETIC_TYPE##I )           \
-    LAMA_INTERFACE_REGISTER_T( ELLUtils, fillELLValues, ARITHMETIC_TYPE##I )        \
-    \
-    BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT,                                           \
-                     LAMA_ELL_UTILS2_REGISTER,                                      \
-                     ARITHMETIC_TYPE##I )                                           \
+#define LAMA_ELL_UTILS_REGISTER(z, I, _)                                                  \
+    LAMA_INTERFACE_REGISTER_T( ELLUtils, absMaxVal, ARITHMETIC_HOST_TYPE_##I )            \
+    LAMA_INTERFACE_REGISTER_T( ELLUtils, compressIA, ARITHMETIC_HOST_TYPE_##I )           \
+    LAMA_INTERFACE_REGISTER_T( ELLUtils, compressValues, ARITHMETIC_HOST_TYPE_##I )       \
+    LAMA_INTERFACE_REGISTER_T( ELLUtils, matrixAdd, ARITHMETIC_HOST_TYPE_##I )            \
+    LAMA_INTERFACE_REGISTER_T( ELLUtils, matrixMultiply, ARITHMETIC_HOST_TYPE_##I )       \
+    LAMA_INTERFACE_REGISTER_T( ELLUtils, normalGEMV, ARITHMETIC_HOST_TYPE_##I )           \
+    LAMA_INTERFACE_REGISTER_T( ELLUtils, normalGEVM, ARITHMETIC_HOST_TYPE_##I )           \
+    LAMA_INTERFACE_REGISTER_T( ELLUtils, sparseGEMV, ARITHMETIC_HOST_TYPE_##I )           \
+    LAMA_INTERFACE_REGISTER_T( ELLUtils, sparseGEVM, ARITHMETIC_HOST_TYPE_##I )           \
+    LAMA_INTERFACE_REGISTER_T( ELLUtils, jacobi, ARITHMETIC_HOST_TYPE_##I )               \
+    LAMA_INTERFACE_REGISTER_T( ELLUtils, jacobiHalo, ARITHMETIC_HOST_TYPE_##I )           \
+    LAMA_INTERFACE_REGISTER_T( ELLUtils, fillELLValues, ARITHMETIC_HOST_TYPE_##I )        \
+                                                                                          \
+    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT,                                            \
+                     LAMA_ELL_UTILS2_REGISTER,                                            \
+                     ARITHMETIC_HOST_TYPE_##I )                                           \
 
-    BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_ELL_UTILS_REGISTER, _ )
+    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_ELL_UTILS_REGISTER, _ )
 
 #undef LAMA_ELL_UTILS_REGISTER
 #undef LAMA_ELL_UTILS2_REGISTER

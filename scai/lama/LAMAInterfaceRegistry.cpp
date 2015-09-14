@@ -36,6 +36,7 @@
 
 // others
 #include <scai/common/exception/Exception.hpp>
+#include <scai/common/Assert.hpp>
 
 using namespace std;
 

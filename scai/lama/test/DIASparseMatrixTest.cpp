@@ -35,7 +35,7 @@
 
 #include <scai/lama/matrix/DIASparseMatrix.hpp>
 #include <test/SparseMatrixTest.hpp>
-#include <test/TestMacros.hpp>
+#include <scai/common/test/TestMacros.hpp>
 
 using namespace scai::lama;
 using namespace scai::hmemo;
@@ -88,7 +88,7 @@ BOOST_AUTO_TEST_SUITE( DIASparseMatrixTest )
 
 SCAI_LOG_DEF_LOGGER( logger, "Test.DIASparseMatrixTest" )
 
-LAMA_AUTO_TEST_CASE_CT( commonTestCases, DIASparseMatrixTest )
+LAMA_AUTO_TEST_CASE_CT( commonTestCases, DIASparseMatrixTest, scai::lama )
 LAMA_AUTO_TEST_CASE_T( typeNameTest, DIASparseMatrixTest )
 /* ------------------------------------------------------------------------------------------------------------------ */
 

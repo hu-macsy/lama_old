@@ -1632,7 +1632,7 @@ ValueType ELLStorage<ValueType>::l2Norm() const
 
 	SCAI_CONTEXT_ACCESS( loc );
 
-	return sqrt(dot( mValues.size(), data.get(), 1, data.get(), 1, NULL ));
+	return ::sqrt(dot( mValues.size(), data.get(), 1, data.get(), 1, NULL ));
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1892,17 +1892,17 @@ ELLStorage<ValueType>* ELLStorage<ValueType>::copy() const
 /*       Template Instantiations                                             */
 /* ========================================================================= */
 
-#define LAMA_ELL_STORAGE_INSTANTIATE(z, I, _)                              \
-    \
-    template<>                                                                 \
-    const char* ELLStorage<ARITHMETIC_TYPE##I>::typeName()                     \
-    {                                                                          \
-        return "ELLStorage<ARITHMETIC_TYPE##I>";                               \
-    }                                                                          \
-    \
-    template class COMMON_DLL_IMPORTEXPORT ELLStorage<ARITHMETIC_TYPE##I> ;
+#define LAMA_ELL_STORAGE_INSTANTIATE(z, I, _)                                     \
+                                                                                  \
+    template<>                                                                    \
+    const char* ELLStorage<ARITHMETIC_HOST_TYPE_##I>::typeName()                  \
+    {                                                                             \
+        return "ELLStorage<ARITHMETIC_HOST_TYPE_##I>";                            \
+    }                                                                             \
+                                                                                  \
+    template class COMMON_DLL_IMPORTEXPORT ELLStorage<ARITHMETIC_HOST_TYPE_##I> ;
 
-BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_ELL_STORAGE_INSTANTIATE, _ )
+BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_ELL_STORAGE_INSTANTIATE, _ )
 
 #undef LAMA_ELL_STORAGE_INSTANTIATE
 
