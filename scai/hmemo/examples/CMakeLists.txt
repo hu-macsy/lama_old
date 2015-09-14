@@ -30,7 +30,7 @@
  # @date 16.06.2015
 ###
 
-foreach ( executable Array1 BenchArray Aliasing Threading Create )
+foreach ( executable Array1 BenchArray BenchContext Aliasing Threading Create )
     add_executable( ${executable} ${executable}.cpp )
     target_link_libraries( ${executable} scai_hmemo )
 endforeach ( executable )
