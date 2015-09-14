@@ -49,12 +49,6 @@
  *  \endcode
  */
 
-namespace scai
-{
-
-namespace common
-{
-
 /** Data type that is used for indexing in LAMA.
  *
  *  Currently, it is still necessary that it is a signed data type.
@@ -71,17 +65,17 @@ typedef long double LongDouble;
 /** Data type for complex numbers in single precision.
  *  LAMA uses its own data type instead of std::complex.
  */
-typedef Complex<float> ComplexFloat;
+typedef scai::common::Complex<float> ComplexFloat;
 
 /** Data type for complex numbers in double precision.
  *  LAMA uses its own data type instead of std::complex.
  */
-typedef Complex<double> ComplexDouble;
+typedef scai::common::Complex<double> ComplexDouble;
 
 /** Data type for complex numbers in long double precision.
  *  LAMA uses its own data type instead of std::complex.
  */
-typedef Complex<long double> ComplexLongDouble;
+typedef scai::common::Complex<long double> ComplexLongDouble;
 
 /** Definition for a constant value that indicates a non-available index.
  */
@@ -96,12 +90,7 @@ typedef int PartitionId;
  */
 static const PartitionId nPartition = std::numeric_limits<PartitionId>::max();
 
-} /* end namespace common */
-
-} /* end namespace scai */
-
 // Number of supported arithmetic types, maximal number is currently 4
-
 
 // List here all arithmetic types for which matrices, storages might be created
 
@@ -121,8 +110,6 @@ static const PartitionId nPartition = std::numeric_limits<PartitionId>::max();
 #define ARITHMETIC_CUDA_TYPE_1 ComplexFloat
 #define ARITHMETIC_CUDA_TYPE_2 double
 #define ARITHMETIC_CUDA_TYPE_3 ComplexDouble
-
-
 
 // Define for the arithmetic types the counterparts of enum Scalar::Tyep
 // Sorry, we cannot use the routine getType<ARITHMETIC_TYPE##I> in case stmt

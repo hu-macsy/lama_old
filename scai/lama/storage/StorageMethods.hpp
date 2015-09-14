@@ -41,8 +41,6 @@
 
 using scai::hmemo::LAMAArray;
 
-using scai::common::IndexType;
-
 namespace scai
 {
 

@@ -36,7 +36,6 @@
 #include <scai/common/config.hpp>
 
 // others
-//#include <scai/logging.hpp>
 #include <scai/logging/SourceLocation.hpp>
 #include <scai/logging/Level.hpp>
 
@@ -81,42 +80,42 @@ public:
 
     inline bool isTraceEnabled() const
     {
-        return mLevel <= TRACE;
+        return mLevel <= level::TRACE;
     }
 
     /** Check if logging statements of level DEBUG are enabled. */
 
     inline bool isDebugEnabled() const
     {
-        return mLevel <= DEBUG;
+        return mLevel <= level::DEBUG;
     }
 
     /** Check if logging statements of level INFO are enabled. */
 
     inline bool isInfoEnabled() const
     {
-        return mLevel <= INFO;
+        return mLevel <= level::INFO;
     }
 
     /** Check if logging statements of level WARN are enabled. */
 
     inline bool isWarnEnabled() const
     {
-        return mLevel <= WARN;
+        return mLevel <= level::WARN;
     }
 
     /** Check if logging statements of level ERROR are enabled. */
 
     inline bool isErrorEnabled() const
     {
-        return mLevel <= SERROR;
+        return mLevel <= level::SERROR;
     }
 
     /** Check if logging statements of level FATAL are enabled. */
 
     inline bool isFatalEnabled() const
     {
-        return mLevel <= FATAL;
+        return mLevel <= level::FATAL;
     }
 
     /** Getter routine for the logging level of this object. */

@@ -82,21 +82,13 @@ enum LogLevel
     completeInformation = 4
 };
 
-} /* end namespace LogLevel */
-
-} /* end namespace lama */
-
-} /* end namespace scai */
-
-/** Output of ScalarType in stream by writing strings instead of numbers 
+/*
+ * Output of ScalarType in stream by writing strings instead of numbers
  *
- *  Note: operator<< should never be defined within a namespace.
  */
 
-inline std::ostream& operator<<( std::ostream& stream, const scai::lama::LogLevel::LogLevel& object )
+inline std::ostream& operator<<( std::ostream& stream, const LogLevel& object )
 {
-    using namespace scai::lama::LogLevel;
-
     switch ( object )
     {
         case noLogging:
@@ -125,3 +117,9 @@ inline std::ostream& operator<<( std::ostream& stream, const scai::lama::LogLeve
 
     return stream;
 }
+
+} /* end namespace LogLevel */
+
+} /* end namespace lama */
+
+} /* end namespace scai */

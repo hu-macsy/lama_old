@@ -32,15 +32,20 @@
 
 #pragma once
 
+#include <scai/common/config.hpp>
+
 #include <ostream>
 #include <string>
 
-#include <scai/common/config.hpp>
-
 namespace scai
 {
+
 namespace logging
 {
+
+namespace level
+{
+
 /** @brief Enumeration type for different logging levels.
  *
  *  The values are ordered. Setting a lower level also enables all
@@ -48,15 +53,23 @@ namespace logging
  */
 typedef enum
 {
-    TRACE, //!< even more detailed than DEBUG
-    DEBUG, //!< designates fine-grained informational events
-    INFO, //!< informational messages highlighting progress
-    WARN, //!< for potentially harmful situations
-    SERROR, //!< for errors that might still allow the application to continue
-    FATAL, //!< severe errors that will presumably lead to aborts
-    OFF, //!< turn logging off
+    TRACE,   //!< even more detailed than DEBUG
+    DEBUG,   //!< designates fine-grained informational events
+    INFO,    //!< informational messages highlighting progress
+    WARN,    //!< for potentially harmful situations
+    SERROR,  //!< for errors that might still allow the application to continue
+    FATAL,   //!< severe errors that will presumably lead to aborts
+    OFF,     //!< turn logging off
     MAXLEVEL //!< end value for enumeration, also used as unknown level
 } Level;
+
+/** Output of level in a stream.
+ */
+COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& os, const Level& level );
+
+} /* end namespace level */
+
+using level::Level;
 
 Level str2level( const std::string& value );
 
@@ -66,10 +79,6 @@ Level str2level( const std::string& value );
  */
 
 const char* level2str( const Level level );
-
-/** Output of level in a stream.
- */
-COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& os, const Level& level );
 
 } /* end namespace logging */
 

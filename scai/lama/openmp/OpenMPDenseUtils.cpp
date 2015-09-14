@@ -43,10 +43,6 @@
 // boost
 #include <boost/preprocessor.hpp>
 
-using scai::common::ComplexFloat;
-using scai::common::ComplexDouble;
-using scai::common::ComplexLongDouble;
-
 namespace scai
 {
 

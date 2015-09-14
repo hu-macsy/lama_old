@@ -71,7 +71,7 @@ class Matrix;
  *
  * Default and copy constructor are not available for this class (noncopyable).
  */
-class COMMON_DLL_IMPORTEXPORT Distribution: public scai::common::Printable, private common::NonCopyable
+class COMMON_DLL_IMPORTEXPORT Distribution: public common::Printable, private common::NonCopyable
 {
 
 public:

@@ -166,7 +166,7 @@ IndexType Halo::global2halo( const IndexType globalIndex ) const
 
     if( elem == mGlobal2Halo.end() )
     {
-        return scai::common::nIndex;
+        return nIndex;
     }
 
     return elem->second;

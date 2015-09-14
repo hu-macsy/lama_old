@@ -65,9 +65,6 @@ using namespace scai::common;
 using namespace scai::hmemo;
 
 using scai::common::Complex;
-using scai::common::ComplexFloat;
-using scai::common::ComplexDouble;
-using scai::common::ComplexLongDouble;
 
 namespace scai
 {

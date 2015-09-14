@@ -44,8 +44,6 @@
 
 #include <scai/common/unique_ptr.hpp>
 
-using scai::common::PartitionId;
-
 namespace scai
 {
 

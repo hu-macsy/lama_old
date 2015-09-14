@@ -55,7 +55,7 @@ LAMA_COMMON_TEST_CASE( DistributionTest, local2GlobalTest )
         }
         else
         {
-            BOOST_CHECK_EQUAL( scai::common::nIndex, mDistributionPtr->global2local( i ) );
+            BOOST_CHECK_EQUAL( nIndex, mDistributionPtr->global2local( i ) );
         }
     }
 }

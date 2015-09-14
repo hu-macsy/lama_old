@@ -40,8 +40,6 @@
 // C++
 #include <cstring>
 
-using scai::common::IndexType;
-
 namespace scai
 {
 

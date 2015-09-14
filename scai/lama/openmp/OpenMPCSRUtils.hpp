@@ -44,8 +44,6 @@
 // logging
 #include <scai/logging.hpp>
 
-using scai::common::IndexType;
-
 namespace scai
 {
 
@@ -383,7 +381,7 @@ private    :
 
     static IndexType scanSerial( IndexType array[], const IndexType numValues );
 
-    static IndexType scanParallel( scai::common::PartitionId numThreads, IndexType array[], const IndexType numValues );
+    static IndexType scanParallel( PartitionId numThreads, IndexType array[], const IndexType numValues );
 
     template <typename ValueType>
     static void normalGEMV( ValueType result[],

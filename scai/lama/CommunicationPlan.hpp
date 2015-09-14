@@ -48,9 +48,6 @@
 
 #include <vector>
 
-using scai::common::IndexType;
-using scai::common::PartitionId;
-
 namespace scai
 {
 

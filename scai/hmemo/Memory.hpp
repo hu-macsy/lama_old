@@ -231,7 +231,6 @@ inline MemoryType Memory::getType() const
     return mMemoryType;
 }
 
-
 } /* end namespace hmemo */
 
 } /* end namespace scai */

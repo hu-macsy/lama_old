@@ -42,7 +42,6 @@ using namespace scai::hmemo;
 SCAI_LOG_DEF_LOGGER( logger, "ContextTest" )
 
 using namespace scai::hmemo;
-using scai::common::IndexType;
 
 typedef LAMAArray<double> Array;
 

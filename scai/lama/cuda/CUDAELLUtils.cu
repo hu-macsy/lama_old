@@ -75,9 +75,6 @@ using namespace scai::hmemo;
 
 using scai::common::getScalarType;
 
-using scai::common::ComplexFloat;
-using scai::common::ComplexDouble;
-
 namespace scai
 {
 

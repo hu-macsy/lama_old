@@ -1400,12 +1400,17 @@ BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_MATRIX_STORAGE_INSTANTIATE, _ )
 #undef LAMA_MATRIX_STORAGE_INSTANTIATE
 #undef LAMA_MATRIX_STORAGE2_INSTANTIATE
 
-} /* end namespace lama */
-
-} /* end namespace scai */
+namespace Format
+{
 
 std::ostream& operator<<( std::ostream& stream, const scai::lama::MatrixStorageFormat storageFormat )
 {
     stream << scai::lama::format2Str( storageFormat );
     return stream;
 }
+
+} /* end namespace Format */
+
+} /* end namespace lama */
+
+} /* end namespace scai */

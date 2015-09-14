@@ -176,7 +176,7 @@ void HaloBuilder::build( const Distribution& distribution, const std::vector<Ind
         for( IndexType i = 0; i < n; i++ )
         {
             IndexType localIndex = distribution.global2local( partitionIndexes[i] );
-            SCAI_ASSERT( localIndex != scai::common::nIndex,
+            SCAI_ASSERT( localIndex != nIndex,
                          "global index "<<partitionIndexes[i]<<" is not local on Rank " << communicator.getRank() )
             partitionIndexes[i] = localIndex;
         }

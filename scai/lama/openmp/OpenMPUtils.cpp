@@ -47,10 +47,6 @@ using std::abs;
 namespace scai
 {
 
-using common::ComplexFloat;
-using common::ComplexDouble;
-using common::ComplexLongDouble;
-
 using common::getScalarType;
 
 namespace lama

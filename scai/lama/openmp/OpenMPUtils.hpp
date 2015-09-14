@@ -46,8 +46,6 @@
 namespace scai
 {
 
-using common::IndexType;
-
 namespace lama
 {
 

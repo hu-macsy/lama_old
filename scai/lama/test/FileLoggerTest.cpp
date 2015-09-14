@@ -45,7 +45,6 @@
 using namespace scai::lama;
 using namespace scai::hmemo;
 
-using scai::common::IndexType;
 using scai::common::Exception;
 using scai::common::unique_ptr;
 using scai::common::scoped_array;

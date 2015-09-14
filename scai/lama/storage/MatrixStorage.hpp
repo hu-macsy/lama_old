@@ -84,6 +84,8 @@ typedef enum
     UNDEFINED //!<  Default value
 } MatrixStorageFormat;
 
+COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const MatrixStorageFormat storageFormat );
+
 } /* end namespace Format */
 
 using Format::MatrixStorageFormat; //!< useful abbreviation
@@ -1099,7 +1101,3 @@ void MatrixStorage<ValueType>::setRawCSRData(
 } /* end namespace lama */
 
 } /* end namespace scai */
-
-/* ------------------------------------------------------------------------- */
-
-COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const scai::lama::MatrixStorageFormat storageFormat );

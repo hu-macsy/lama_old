@@ -44,8 +44,6 @@
 // logging
 #include <scai/logging.hpp>
 
-using scai::common::IndexType;
-
 namespace scai
 {
 

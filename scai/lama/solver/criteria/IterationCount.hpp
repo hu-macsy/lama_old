@@ -39,8 +39,6 @@
 // base classes
 #include <scai/lama/solver/criteria/Criterion.hpp>
 
-using scai::common::IndexType;
-
 namespace scai
 {
 

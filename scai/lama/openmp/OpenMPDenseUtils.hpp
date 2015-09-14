@@ -45,8 +45,6 @@
 
 #include <cmath>
 
-using scai::common::IndexType;
-
 namespace scai
 {
 

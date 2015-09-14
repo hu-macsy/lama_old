@@ -149,7 +149,7 @@ BOOST_AUTO_TEST_CASE( blockComputeOwnersTest )
             for ( IndexType i = 0; i < blockSize; ++i )
             {
                 nonLocalIndexes.push_back( p * blockSize + i );
-                BOOST_CHECK_EQUAL( dist->global2local( p * blockSize + i ), scai::common::nIndex );
+                BOOST_CHECK_EQUAL( dist->global2local( p * blockSize + i ), nIndex );
             }
         }
     }

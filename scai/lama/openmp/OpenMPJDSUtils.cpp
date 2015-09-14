@@ -56,10 +56,6 @@
 
 using scai::common::scoped_array;
 
-using scai::common::ComplexFloat;
-using scai::common::ComplexDouble;
-using scai::common::ComplexLongDouble;
-
 namespace scai
 {
 

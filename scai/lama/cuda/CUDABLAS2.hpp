@@ -50,8 +50,6 @@
 #include <cublas_v2.h>
 #include <cuda_runtime_api.h>
 
-using scai::common::IndexType;
-
 namespace scai
 {
 

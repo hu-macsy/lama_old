@@ -1519,7 +1519,7 @@ const std::vector<typename DenseMatrix<ValueType>::DenseStoragePtr>& DenseMatrix
 }
 
 template<typename ValueType>
-Scalar DenseMatrix<ValueType>::getValue( scai::lama::IndexType i, scai::lama::IndexType j ) const
+Scalar DenseMatrix<ValueType>::getValue( IndexType i, IndexType j ) const
 {
     ValueType myValue = 0.0;
 

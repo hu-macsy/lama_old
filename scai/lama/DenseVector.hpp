@@ -58,8 +58,6 @@
 
 using namespace scai::tasking;
 
-using scai::common::IndexType;
-
 namespace scai
 {
 

@@ -461,7 +461,7 @@ void StorageMethods<ValueType>::splitCSR(
         {
             const IndexType jLocal = colDist.global2local( ja[jj] );
 
-            if( jLocal != scai::common::nIndex )
+            if( jLocal != nIndex )
             {
                 // Attention: local gets already local column indexes
 

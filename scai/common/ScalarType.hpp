@@ -122,25 +122,25 @@ inline ScalarType getScalarType<double>()
 }
 
 template<>
-inline ScalarType getScalarType<scai::common::LongDouble>()
+inline ScalarType getScalarType<LongDouble>()
 {
     return scalar::LONG_DOUBLE;
 }
 
 template<>
-inline ScalarType getScalarType<scai::common::ComplexFloat>()
+inline ScalarType getScalarType<ComplexFloat>()
 {
     return scalar::COMPLEX;
 }
 
 template<>
-inline ScalarType getScalarType<scai::common::ComplexDouble>()
+inline ScalarType getScalarType<ComplexDouble>()
 {
     return scalar::DOUBLE_COMPLEX;
 }
 
 template<>
-inline ScalarType getScalarType<scai::common::ComplexLongDouble>()
+inline ScalarType getScalarType<ComplexLongDouble>()
 {
     return scalar::LONG_DOUBLE_COMPLEX;
 }

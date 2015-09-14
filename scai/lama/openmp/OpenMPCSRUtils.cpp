@@ -55,10 +55,6 @@
 
 using scai::common::scoped_array;
 
-using scai::common::ComplexFloat;
-using scai::common::ComplexDouble;
-using scai::common::ComplexLongDouble;
-
 namespace scai
 {
 
@@ -99,7 +95,7 @@ IndexType OpenMPCSRUtils::scanSerial( IndexType array[], const IndexType numValu
 
 /* --------------------------------------------------------------------------- */
 
-IndexType OpenMPCSRUtils::scanParallel( scai::common::PartitionId numThreads, IndexType array[], const IndexType numValues )
+IndexType OpenMPCSRUtils::scanParallel( PartitionId numThreads, IndexType array[], const IndexType numValues )
 {
     // std::cout << "Scan with " << numThreads << " in parallel" << std::endl;
 

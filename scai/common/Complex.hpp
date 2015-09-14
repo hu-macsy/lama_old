@@ -350,6 +350,7 @@ namespace scai
 
 namespace common
 {
+
 using std::sqrt;
 using std::abs;
 

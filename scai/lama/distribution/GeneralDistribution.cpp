@@ -209,7 +209,7 @@ IndexType GeneralDistribution::global2local( const IndexType globalIndex ) const
 
     if( elem == mGlobal2Local.end() )
     {
-        return scai::common::nIndex;
+        return nIndex;
     }
 
     return elem->second;

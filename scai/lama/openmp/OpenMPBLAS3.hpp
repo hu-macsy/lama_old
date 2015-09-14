@@ -43,8 +43,6 @@
 
 #include <scai/lama/openmp/BLASHelper.hpp>
 
-using scai::common::IndexType;
-
 namespace scai
 {
 

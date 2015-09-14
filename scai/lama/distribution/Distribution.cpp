@@ -649,11 +649,3 @@ BOOST_PP_REPEAT( ARRAY_TYPE_CNT, LAMA_DISTRIBUTE_INSTANTIATE, _ )
 } /* end namespace lama */
 
 } /* end namespace scai */
-
-/* ---------------------------------------------------------------------- */
-
-COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, scai::lama::Distribution const& dist )
-{
-    dist.writeAt( stream );
-    return stream;
-}

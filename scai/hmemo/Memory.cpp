@@ -38,15 +38,11 @@
 
 #include <map>
 
-// std::ostream& operator<<( std::ostream& stream, const scai::hmemo::Memory& object );
-
 namespace scai
 {
 
 namespace hmemo
 {
-
-// using ::operator<<;
 
 /* ---------------------------------------------------------------------------------*/
 
@@ -101,12 +97,6 @@ bool Memory::canCopyTo( const Memory& dstMemory ) const
 
 void Memory::memcpyFrom( void* dst, const Memory& srcMemory, const void* src, size_t size ) const
 {
-    std::ostringstream mystream;
-
-    const Printable& p = srcMemory;
-
-    mystream << srcMemory; 
-
     if ( &srcMemory == this )
     {
         memcpy( dst, src, size );

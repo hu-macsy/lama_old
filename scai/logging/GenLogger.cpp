@@ -29,6 +29,9 @@
  * @author Thomas Brandes
  * @date   10.06.2015
  */
+#include <scai/logging.hpp>
+#include <scai/common/exception/Exception.hpp>
+
 #include <iostream>
 #include <sstream>
 
@@ -36,10 +39,6 @@
 #include <cstdio>          // FILE
 #include <stdexcept>       // runtime_error
 #include <cstring>
-
-// hpp
-#include <scai/logging.hpp>
-#include <scai/common/exception/Exception.hpp>
 
 #undef DEBUGGING
 
@@ -250,7 +249,7 @@ static int evalEntry( char* line, int length, const char* /* filename */ )
     // get the logger from the provider and set its level
     Level level = str2level( value );
 
-    if ( level == MAXLEVEL )
+    if ( level == level::MAXLEVEL )
     {
         throw std::runtime_error( "illegal log level" );
     }
@@ -337,7 +336,7 @@ void GenLogger::configure()
         throw std::runtime_error( "configure: rootLogger not available yet" );
     }
 
-    rootLogger->setLevel( WARN ); // default setting for root
+    rootLogger->setLevel( level::WARN ); // default setting for root
 
     // Set default format string, now as it might be used very soon
 
@@ -378,35 +377,35 @@ void GenLogger::configure()
     }
     else if ( strlen( configFile ) == 0 )
     {
-        rootLogger->setLevel( WARN );
+        rootLogger->setLevel( level::WARN );
     }
-    else if ( strcmp( configFile, level2str( OFF ) ) == 0 )
+    else if ( strcmp( configFile, level2str( level::OFF ) ) == 0 )
     {
-        rootLogger->setLevel( OFF );
+        rootLogger->setLevel( level::OFF );
     }
-    else if ( strcmp( configFile, level2str( FATAL ) ) == 0 )
+    else if ( strcmp( configFile, level2str( level::FATAL ) ) == 0 )
     {
-        rootLogger->setLevel( FATAL );
+        rootLogger->setLevel( level::FATAL );
     }
-    else if ( strcmp( configFile, level2str( SERROR ) ) == 0 )
+    else if ( strcmp( configFile, level2str( level::SERROR ) ) == 0 )
     {
-        rootLogger->setLevel( SERROR );
+        rootLogger->setLevel( level::SERROR );
     }
-    else if ( strcmp( configFile, level2str( WARN ) ) == 0 )
+    else if ( strcmp( configFile, level2str( level::WARN ) ) == 0 )
     {
-        rootLogger->setLevel( WARN );
+        rootLogger->setLevel( level::WARN );
     }
-    else if ( strcmp( configFile, level2str( INFO ) ) == 0 )
+    else if ( strcmp( configFile, level2str( level::INFO ) ) == 0 )
     {
-        rootLogger->setLevel( INFO );
+        rootLogger->setLevel( level::INFO );
     }
-    else if ( strcmp( configFile, level2str( DEBUG ) ) == 0 )
+    else if ( strcmp( configFile, level2str( level::DEBUG ) ) == 0 )
     {
-        rootLogger->setLevel( DEBUG );
+        rootLogger->setLevel( level::DEBUG );
     }
-    else if ( strcmp( configFile, level2str( TRACE ) ) == 0 )
+    else if ( strcmp( configFile, level2str( level::TRACE ) ) == 0 )
     {
-        rootLogger->setLevel( TRACE );
+        rootLogger->setLevel( level::TRACE );
     }
     else
     {

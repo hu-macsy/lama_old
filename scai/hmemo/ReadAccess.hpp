@@ -123,7 +123,7 @@ public:
      *
      * @return  the size of the wrapped LAMAArray
      */
-    common::IndexType size() const;
+    IndexType size() const;
 
 protected:
 
@@ -205,7 +205,7 @@ void ReadAccess<ValueType>::writeAt( std::ostream& stream ) const
 /* ---------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-common::IndexType ReadAccess<ValueType>::size() const
+IndexType ReadAccess<ValueType>::size() const
 {
     if ( mArray )
     {

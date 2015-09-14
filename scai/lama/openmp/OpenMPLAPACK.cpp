@@ -49,10 +49,6 @@
 // C
 #include <cmath>
 
-using scai::common::ComplexFloat;
-using scai::common::ComplexDouble;
-using scai::common::ComplexLongDouble;
-
 namespace scai
 {
 

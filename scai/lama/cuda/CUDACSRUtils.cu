@@ -98,11 +98,6 @@
 using namespace scai::common;
 using namespace scai::hmemo;
 
-using scai::common::IndexType;
-
-using scai::common::ComplexFloat;
-using scai::common::ComplexDouble;
-
 namespace scai
 {
 

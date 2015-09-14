@@ -51,12 +51,6 @@
 
 #include <cmath>
 
-using scai::common::LongDouble;
-
-using scai::common::ComplexFloat;
-using scai::common::ComplexDouble;
-using scai::common::ComplexLongDouble;
-
 namespace scai
 {
 

@@ -43,8 +43,6 @@
 
 #include <scai/lama/cblas.hpp>
 
-using scai::common::IndexType;
-
 namespace scai
 {
 
