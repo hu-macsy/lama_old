@@ -1,5 +1,5 @@
 ###
- # @file ExternalDependencies.cmake
+ # @file CMakeLists.txt
  #
  # @license
  # Copyright (c) 2009-2015
@@ -25,23 +25,28 @@
  # SOFTWARE.
  # @endlicense
  #
- # @brief Central defenition of external dependencies between sub projects
- # @author Lauretta Schubert
- # @date 17.08.2015
- # @since 2.0.0
+ # @brief CMake configuration file for MIC memory tests
+ # @author Thomas Brandes
+ # @date 14.09.2015
 ###
 
-## attention OpenMP should be before SCAI_BLAS !!!
+file ( GLOB CPP_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp" )
 
-set ( SCAI_COMMON_EXTERNAL_DEPS OpenMP CUDA Thread )
-set ( SCAI_LOGGING_EXTERNAL_DEPS )
-set ( SCAI_TRACING_EXTERNAL_DEPS )
-set ( SCAI_TASKING_EXTERNAL_DEPS Thread )
-#set ( SCAI_KERNEL_EXTERNAL_DEPS OpenMP CUDA MIC SCAI_BLAS )
-set ( SCAI_HMEMO_EXTERNAL_DEPS CUDA MIC )
-set ( SCAI_LAMA_EXTERNAL_DEPS OpenMP CUDA MIC Boost MPI GPI2 GraphPartitioning SCAI_BLAS )
+find_package ( Boost COMPONENTS unit_test_framework )
 
-set ( SCAI_EXTERNAL_DEPS ${SCAI_COMMON_EXTERNAL_DEPS} ${SCAI_LOGGING_EXTERNAL_DEPS} ${SCAI_TRACING_EXTERNAL_DEPS}
-		${SCAI_TASKING_EXTERNAL_DEPS} ${SCAI_HMEMO_EXTERNAL_DEPS} ${SCAI_LAMA_EXTERNAL_DEPS} ) # ${SCAI_KERNEL_EXTERNAL_DEPS}
+if ( Boost_UNIT_TEST_FRAMEWORK_FOUND )
 
-list ( REMOVE_DUPLICATES SCAI_EXTERNAL_DEPS )
+    include_directories ( ${Boost_INCLUDE_DIR} )
+
+    add_executable ( MICTest ${CPP_SOURCES} )
+
+    target_link_libraries ( MICTest 
+        ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}
+        scai_hmemo
+        )
+
+else ( Boost_UNIT_TEST_FRAMEWORK_FOUND )
+
+    message ( STATUS "hmemo/test/mic/MICTest not built, no Boost UnitTest Framework found" )
+
+endif ( Boost_UNIT_TEST_FRAMEWORK_FOUND )

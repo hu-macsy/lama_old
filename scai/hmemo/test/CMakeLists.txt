@@ -51,4 +51,9 @@ if ( Boost_UNIT_TEST_FRAMEWORK_FOUND )
         add_subdirectory ( cuda )
     endif ( CUDA_FOUND AND USE_CUDA )
 
+    if    ( USE_MIC )
+        add_subdirectory ( mic )
+    endif ( USE_MIC )
+
 endif ( Boost_UNIT_TEST_FRAMEWORK_FOUND )
+
