@@ -33,6 +33,8 @@
 
 #pragma once
 
+#include <scai/lama/cblas.hpp>
+
 // for dll_import
 #include <scai/common/config.hpp>
 

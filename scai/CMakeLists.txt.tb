@@ -39,7 +39,7 @@ project ( LAMA_ALL CXX )
 
 set ( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../CMake/Modules" )
 
-set ( SCAI_COMPLETE_BUILD TRUE )
+set ( SCAI_COMPLETE_BUILD FALSE )
 
 # Project: common library
 

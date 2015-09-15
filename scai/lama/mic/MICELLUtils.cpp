@@ -37,7 +37,6 @@
 // local project
 #include <scai/lama/LAMAInterface.hpp>
 #include <scai/lama/LAMAInterfaceRegistry.hpp>
-#include <scai/lama/macros/unused.hpp>
 
 // internal scai projects
 #include <scai/hmemo/mic/MICSyncToken.hpp>
@@ -48,6 +47,7 @@
 
 #include <scai/common/bind.hpp>
 #include <scai/common/Assert.hpp>
+#include <scai/common/macros/unused.hpp>
 
 // external
 
