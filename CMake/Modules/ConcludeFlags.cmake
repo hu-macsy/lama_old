@@ -35,7 +35,7 @@ string ( STRIP "${CMAKE_CXX_FLAGS_RELEASE}" CMAKE_CXX_FLAGS_RELEASE )
 string ( STRIP "${CMAKE_EXE_LINKER_FLAGS}" CMAKE_EXE_LINKER_FLAGS )
 string ( STRIP "${CMAKE_SHARED_LINKER_FLAGS}" CMAKE_SHARED_LINKER_FLAGS )
 
-if ( CUDA_FOUND AND USE_CUDA AND NOT DEFINED SCAI_COMPLETE_BUILD )
+if ( CUDA_FOUND AND USE_CUDA )
     
     # TODO: determine cuda compute capability and use highest
     # with sm_20 no warnings about Cannot tell what pointer points to, assuming global memory space in Release build
@@ -44,8 +44,8 @@ if ( CUDA_FOUND AND USE_CUDA AND NOT DEFINED SCAI_COMPLETE_BUILD )
     	list ( APPEND CUDA_NVCC_FLAGS -arch=sm_${CUDA_COMPUTE_CAPABILITY} )
     endif ( NOT "${CUDA_NVCC_FLAGS}" MATCHES "-arch" )
     
-    set ( ADDITIONAL_NVCC_FLAGS "${ADDITIONAL_NVCC_FLAGS}" CACHE STRING "additional nvcc compiler flags" )
-    set ( ADDITIONAL_NVCC_RELEASE_FLAGS "${ADDITIONAL_NVCC_RELEASE_FLAGS}" CACHE STRING "additional nvcc release compiler flags" )
+    set ( ADDITIONAL_NVCC_FLAGS "${SCAI_NVCC_FLAGS}" CACHE STRING "additional nvcc compiler flags" )
+    set ( ADDITIONAL_NVCC_RELEASE_FLAGS "${SCAI_NVCC_RELEASE_FLAGS}" CACHE STRING "additional nvcc release compiler flags" )
     mark_as_advanced ( ADDITIONAL_NVCC_FLAGS ADDITIONAL_NVCC_RELEASE_FLAGS )
 
     list ( APPEND CUDA_NVCC_FLAGS ${ADDITIONAL_NVCC_FLAGS} )
@@ -55,4 +55,4 @@ if ( CUDA_FOUND AND USE_CUDA AND NOT DEFINED SCAI_COMPLETE_BUILD )
     string ( STRIP "${CUDA_NVCC_FLAGS}" CUDA_NVCC_FLAGS )
     string ( STRIP "${CUDA_NVCC_FLAGS_RELEASE}" CUDA_NVCC_FLAGS_RELEASE )
     
-endif ( CUDA_FOUND AND USE_CUDA AND NOT DEFINED SCAI_COMPLETE_BUILD )
+endif ( CUDA_FOUND AND USE_CUDA )
