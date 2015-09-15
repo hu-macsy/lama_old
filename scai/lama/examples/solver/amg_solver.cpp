@@ -83,11 +83,11 @@ vector<IndexType>* readPartitionVector( const char* filename, int commSize, int 
 
     if ( pfile.is_open() )
     {
-        vector<IndexType> *pvector = new vector<scai::lama::IndexType>;
+        vector<IndexType> *pvector = new vector<IndexType>;
 
         pvector->reserve( expectedSize );
 
-        scai::lama::IndexType elem;
+        IndexType elem;
 
         while ( pfile >> elem )
         {
