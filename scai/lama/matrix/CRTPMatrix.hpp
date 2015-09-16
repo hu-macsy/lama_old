@@ -103,7 +103,7 @@ public:
         const Scalar beta,
         const Vector& y ) const
     {
-        SCAI_REGION( "MatrixTimesVector" )
+        SCAI_REGION( "Mat.timesVector" )
 
         SCAI_LOG_INFO( logger, result << " = " << alpha << " * " << *this << " * " << x << " + " << beta << " * " << y )
 
@@ -150,7 +150,7 @@ public:
         const Scalar beta,
         const Vector& y ) const
     {
-        SCAI_REGION( "VectorTimesMatrix" )
+        SCAI_REGION( "Mat.vectorTimes" )
 
         SCAI_LOG_INFO( logger, result << " = " << alpha << " * " << *this << " * " << x << " + " << beta << " * " << y )
 

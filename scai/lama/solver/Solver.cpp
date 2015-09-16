@@ -172,6 +172,8 @@ const Vector& Solver::getResidual() const
 
     if( runtime.mSolution.isDirty() || !runtime.mResidual.get() )
     {
+        SCAI_REGION( "Solver.computeResidual" )
+
         SCAI_LOG_DEBUG( logger, "calculating residual of = " << &(runtime.mSolution.getConstReference()) )
 
         if( !runtime.mResidual.get() )
