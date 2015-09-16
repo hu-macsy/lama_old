@@ -721,6 +721,8 @@ void ContextDataManager::prefetch( ContextPtr context, size_t size )
 {
     ContextData& data = operator[]( context );
 
+    SCAI_LOG_DEBUG( logger, "prefetch to " << *context << ", valid = " << data.isValid() << ", size = " << size )
+
     if ( data.isValid() || size == 0 )
     {
         return;

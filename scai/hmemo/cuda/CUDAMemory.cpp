@@ -379,7 +379,7 @@ bool CUDAMemory::canCopyFrom( const Memory& other ) const
         supported = canCopyCUDA( *otherCUDAMem );
     }
 
-    SCAI_LOG_INFO( logger, "canCopyFrom " << other << " to this " << *this << ", supported = " << supported )
+    SCAI_LOG_DEBUG( logger, "canCopyFrom " << other << " to this " << *this << ", supported = " << supported )
 
     return supported;
 }
@@ -444,7 +444,7 @@ bool CUDAMemory::canCopyTo( const Memory& other ) const
         supported = canCopyCUDA( *otherCUDA );
     }
 
-    SCAI_LOG_INFO( logger, "canCopyTo " << other << " from this " << *this << ", supported = " << supported )
+    SCAI_LOG_DEBUG( logger, "canCopyTo " << other << " from this " << *this << ", supported = " << supported )
 
     return supported;
 }

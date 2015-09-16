@@ -229,6 +229,8 @@ public:
         return common::getScalarType<ValueType>();
     }
 
+    using ContextArray::resize;
+
 protected:
 
     using ContextArray::mSize;
