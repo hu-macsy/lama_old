@@ -69,7 +69,7 @@ void l1NormTestMethod( ContextPtr context )
 
 	Scalar l1Norm = matrix.l1Norm();
 
-	BOOST_CHECK_EQUAL( l1Norm, result );
+	SCAI_CHECK_CLOSE( l1Norm, result, eps<ValueType>() );
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( l1NormTest, ValueType, test_types )
@@ -105,7 +105,7 @@ void l2NormTestMethod( ContextPtr context )
 
 	Scalar l2Norm = matrix.l2Norm();
 
-	BOOST_CHECK_EQUAL( l2Norm, result );
+	SCAI_CHECK_CLOSE( l2Norm, result, eps<ValueType>() );
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( l2NormTest, ValueType, test_types )
@@ -141,7 +141,7 @@ void maxNormTestMethod( ContextPtr context )
 
 	Scalar maxNorm = matrix.maxNorm();
 
-	BOOST_CHECK_EQUAL( maxNorm, result );
+	SCAI_CHECK_CLOSE( maxNorm, result, eps<ValueType>() );
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( maxNormTest, ValueType, test_types )

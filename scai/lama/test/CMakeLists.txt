@@ -147,7 +147,7 @@ if ( CUDA_FOUND AND USE_CUDA AND CUDA_HAVE_GPU )
 endif ( CUDA_FOUND AND USE_CUDA AND CUDA_HAVE_GPU )
  
 ### add definitions ###
-add_definitions ( -DLAMA_TESTFILE_PATH="${CMAKE_SOURCE_DIR}/../res/testfiles" )
+add_definitions ( -DLAMA_TESTFILE_PATH="${CMAKE_SOURCE_DIR}/../../res/testfiles" )
 
 ### add link directories ###
 if ( WIN32 )
