@@ -33,21 +33,24 @@
 
 // hpp
 #include <scai/lama/openmp/OpenMPCOOUtils.hpp>
+
+// local library
 #include <scai/lama/openmp/OpenMPUtils.hpp>
-
-// others
-#include <scai/lama/LAMAInterface.hpp>
-#include <scai/lama/LAMAInterfaceRegistry.hpp>
-#include <scai/tracing.hpp>
-
 #include <scai/lama/openmp/OpenMP.hpp>
 
-#include <boost/preprocessor.hpp>
+#include <scai/lama/LAMAInterface.hpp>
+#include <scai/lama/LAMAInterfaceRegistry.hpp>
 
-using scai::common::getScalarType;
+// internal scai libraries
+#include <scai/tracing.hpp>
+
+// boost
+#include <boost/preprocessor.hpp>
 
 namespace scai
 {
+
+using common::getScalarType;
 
 namespace lama
 {
@@ -376,20 +379,20 @@ void OpenMPCOOUtils::setInterface( COOUtilsInterface& COOUtils )
 
     LAMA_INTERFACE_REGISTER_TT( COOUtils, setCSRData, IndexType, IndexType )
 
-#define LAMA_COO_UTILS2_REGISTER(z, J, TYPE )                                       \
-    LAMA_INTERFACE_REGISTER_TT( COOUtils, setCSRData, TYPE, ARITHMETIC_TYPE##J )    \
-    LAMA_INTERFACE_REGISTER_TT( COOUtils, getCSRValues, TYPE, ARITHMETIC_TYPE##J )  \
+#define LAMA_COO_UTILS2_REGISTER(z, J, TYPE )                                             \
+    LAMA_INTERFACE_REGISTER_TT( COOUtils, setCSRData, TYPE, ARITHMETIC_HOST_TYPE_##J )    \
+    LAMA_INTERFACE_REGISTER_TT( COOUtils, getCSRValues, TYPE, ARITHMETIC_HOST_TYPE_##J )  \
 
-#define LAMA_COO_UTILS_REGISTER(z, I, _)                                            \
-    LAMA_INTERFACE_REGISTER_T( COOUtils, normalGEMV, ARITHMETIC_TYPE##I )           \
-    LAMA_INTERFACE_REGISTER_T( COOUtils, normalGEVM, ARITHMETIC_TYPE##I )           \
-    LAMA_INTERFACE_REGISTER_T( COOUtils, jacobi, ARITHMETIC_TYPE##I )               \
-    \
-    BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT,                                           \
-                     LAMA_COO_UTILS2_REGISTER,                                      \
-                     ARITHMETIC_TYPE##I )                                           \
+#define LAMA_COO_UTILS_REGISTER(z, I, _)                                                  \
+    LAMA_INTERFACE_REGISTER_T( COOUtils, normalGEMV, ARITHMETIC_HOST_TYPE_##I )           \
+    LAMA_INTERFACE_REGISTER_T( COOUtils, normalGEVM, ARITHMETIC_HOST_TYPE_##I )           \
+    LAMA_INTERFACE_REGISTER_T( COOUtils, jacobi, ARITHMETIC_HOST_TYPE_##I )               \
+                                                                                          \
+    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT,                                            \
+                     LAMA_COO_UTILS2_REGISTER,                                            \
+                     ARITHMETIC_HOST_TYPE_##I )                                           \
 
-    BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_COO_UTILS_REGISTER, _ )
+    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_COO_UTILS_REGISTER, _ )
 
 #undef LAMA_COO_UTILS_REGISTER
 #undef LAMA_COO_UTILS2_REGISTER

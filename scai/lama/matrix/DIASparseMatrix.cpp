@@ -36,10 +36,10 @@
 // boost
 #include <boost/preprocessor.hpp>
 
-using scai::common::shared_ptr;
-
 namespace scai
 {
+
+using common::shared_ptr;
 
 namespace lama
 {
@@ -389,14 +389,14 @@ std::pair<MatrixStorageFormat, common::ScalarType> DIASparseMatrix<ValueType>::c
 #define LAMA_DIA_SPARSE_MATRIX_INSTANTIATE(z, I, _)                             \
                                                                                 \
     template<>                                                                  \
-    const char* DIASparseMatrix<ARITHMETIC_TYPE##I>::typeName()                 \
+    const char* DIASparseMatrix<ARITHMETIC_HOST_TYPE_##I>::typeName()           \
     {                                                                           \
-        return "DIASparseMatrix<" tmp_xstr(ARITHMETIC_TYPE##I) ">";             \
+        return "DIASparseMatrix<" tmp_xstr(ARITHMETIC_HOST_TYPE_##I) ">";       \
     }                                                                           \
                                                                                 \
-    template class COMMON_DLL_IMPORTEXPORT DIASparseMatrix<ARITHMETIC_TYPE##I> ;
+    template class COMMON_DLL_IMPORTEXPORT DIASparseMatrix<ARITHMETIC_HOST_TYPE_##I> ;
 
-BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_DIA_SPARSE_MATRIX_INSTANTIATE, _ )
+BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_DIA_SPARSE_MATRIX_INSTANTIATE, _ )
 
 #undef LAMA_DIA_SPARSE_MATRIX_INSTANTIATE
 #undef tmp_xstr

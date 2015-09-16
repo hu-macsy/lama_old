@@ -34,7 +34,7 @@
 // hpp
 #include <scai/lama/solver/criteria/IterationCount.hpp>
 
-// others
+// local library
 #include <scai/lama/solver/IterativeSolver.hpp>
 
 namespace scai

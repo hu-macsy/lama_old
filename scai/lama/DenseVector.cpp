@@ -34,26 +34,33 @@
 // hpp
 #include <scai/lama/DenseVector.hpp>
 
-// others
+// local library
 #include <scai/lama/LAMAArrayUtils.hpp>
 #include <scai/lama/LAMAInterface.hpp>
-#include <scai/hmemo/ContextAccess.hpp>
 
 #include <scai/lama/distribution/NoDistribution.hpp>
 #include <scai/lama/distribution/CyclicDistribution.hpp>
 #include <scai/lama/distribution/Redistributor.hpp>
 
 #include <scai/lama/matrix/Matrix.hpp>
+
 #include <scai/lama/expression/Expression.hpp>
+
 #include <scai/lama/io/FileIO.hpp>
 #include <scai/lama/io/FileType.hpp>
 
+// internal scai libraries
+#include <scai/hmemo/ContextAccess.hpp>
+
 #include <scai/tracing.hpp>
-#include <scai/common/UnsupportedException.hpp>
 
 #include <scai/common/unique_ptr.hpp>
+#include <scai/common/exception/UnsupportedException.hpp>
+
+// boost
 #include <boost/preprocessor.hpp>
 
+// std
 #include <ostream>
 
 using namespace scai::common;
@@ -61,6 +68,8 @@ using namespace scai::hmemo;
 
 namespace scai
 {
+
+using common::Complex;
 
 namespace lama
 {
@@ -606,10 +615,8 @@ void DenseVector<ValueType>::swap( Vector& other )
 template<typename ValueType>
 void DenseVector<ValueType>::writeAt( std::ostream& stream ) const
 {
-    using ::operator<<;
-
     stream << "DenseVector<" << getValueType() << ">" << "( size = " << size() << ", local = " << mLocalValues.size()
-                    << ", dist = " << getDistribution() << ", loc  = " << *getContext() << " )";
+                   << ", dist = " << getDistribution() << ", loc  = " << *getContext() << " )";
 }
 
 template<typename ValueType>
@@ -1034,8 +1041,9 @@ void DenseVector<ValueType>::redistribute( DistributionPtr distribution )
 template<typename ValueType>
 void DenseVector<ValueType>::resizeImpl()
 {
-    WriteAccess<ValueType> wLocalValues( mLocalValues );
-    wLocalValues.resize( getDistribution().getLocalSize() );
+    // resize array with local values
+
+    mLocalValues.resize( getDistribution().getLocalSize() );
 }
 
 /* -- IO ------------------------------------------------------------------- */
@@ -1640,10 +1648,10 @@ DenseVector<ValueType>::DenseVector( const DenseVector<ValueType>& other )
 /*       Template instantiations                                             */
 /* ========================================================================= */
 
-#define LAMA_DENSE_VECTOR_INSTANTIATE(z, I, _)                             \
-    template class COMMON_DLL_IMPORTEXPORT DenseVector<ARITHMETIC_TYPE##I> ;
+#define LAMA_DENSE_VECTOR_INSTANTIATE(z, I, _)                                     \
+    template class COMMON_DLL_IMPORTEXPORT DenseVector<ARITHMETIC_HOST_TYPE_##I> ;
 
-BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_DENSE_VECTOR_INSTANTIATE, _ )
+BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_DENSE_VECTOR_INSTANTIATE, _ )
 
 #undef LAMA_DENSE_VECTOR_INSTANTIATE
 

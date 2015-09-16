@@ -38,27 +38,26 @@
 // base classes
 #include <scai/lama/Distributed.hpp>
 
-// others
+// local library
 #include <scai/lama/expression/Expression.hpp>
 
-#include <scai/hmemo.hpp>
-
-#include <scai/lama/LAMATypes.hpp>
 #include <scai/lama/Scalar.hpp>
 #include <scai/lama/io/FileType.hpp>
 
-// logging
+// others
+#include <scai/hmemo.hpp>
+
 #include <scai/logging.hpp>
 
 #include <scai/common/Factory.hpp>
 #include <scai/common/ScalarType.hpp>
-
-// Not recommened, but here for convenience
-
-using scai::hmemo::ContextPtr;
+#include <scai/common/SCAITypes.hpp>
 
 namespace scai
 {
+
+// Not recommened, but here for convenience
+using hmemo::ContextPtr;
 
 namespace lama
 {
@@ -549,4 +548,3 @@ inline std::ostream& operator<<( std::ostream& stream, const scai::lama::VectorC
     stream << "<" << key.first << ", " << key.second << ">";
     return stream;
 }
-

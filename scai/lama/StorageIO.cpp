@@ -36,29 +36,31 @@
 // hpp
 #include <scai/lama/StorageIO.hpp>
 
-// others
+// local library
 #include <scai/lama/io/FileIO.hpp>
 #include <scai/lama/io/XDRFileStream.hpp>
 #include <scai/lama/io/mmio.hpp>
 
+#include <scai/lama/openmp/OpenMPCSRUtils.hpp>
+
+// internal scai libraries
 #include <scai/hmemo.hpp>
 
-#include <scai/common/Exception.hpp>
-
-#include <scai/lama/openmp/OpenMPCSRUtils.hpp>
 #include <scai/tracing.hpp>
 
-// boost
+#include <scai/common/exception/Exception.hpp>
 #include <scai/common/unique_ptr.hpp>
-#include <boost/preprocessor.hpp>
 
-using scai::common::unique_ptr;
-using scai::common::scoped_array;
+// boost
+#include <boost/preprocessor.hpp>
 
 using namespace scai::hmemo;
 
 namespace scai
 {
+
+using common::unique_ptr;
+using common::scoped_array;
 
 namespace lama
 {
@@ -1359,9 +1361,9 @@ void StorageIO<ValueType>::readCSRFromFile(
 /* ========================================================================= */
 
 #define LAMA_STORAGE_IO_INSTANTIATE(z, I, _)                              \
-    template class COMMON_DLL_IMPORTEXPORT StorageIO<ARITHMETIC_TYPE##I> ;
+    template class COMMON_DLL_IMPORTEXPORT StorageIO<ARITHMETIC_HOST_TYPE_##I> ;
 
-BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_STORAGE_IO_INSTANTIATE, _ )
+BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_STORAGE_IO_INSTANTIATE, _ )
 
 #undef LAMA_STORAGE_IO_INSTANTIATE
 

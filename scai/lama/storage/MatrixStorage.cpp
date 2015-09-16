@@ -34,7 +34,7 @@
 // hpp
 #include <scai/lama/storage/MatrixStorage.hpp>
 
-// others
+// local library
 #include <scai/lama/storage/CSRStorage.hpp>
 #include <scai/lama/storage/DenseStorage.hpp>
 #include <scai/lama/storage/StorageMethods.hpp>
@@ -49,29 +49,26 @@
 #include <scai/lama/openmp/OpenMPUtils.hpp>
 #include <scai/lama/openmp/OpenMPCSRUtils.hpp>
 
-#include <scai/lama/LAMATypes.hpp>
-
+// internal scai libraries
 #include <scai/tasking/TaskSyncToken.hpp>
 
-// tracing
 #include <scai/tracing.hpp>
 
-
-#include <scai/lama/LAMATypes.hpp>
+#include <scai/common/bind.hpp>
+#include <scai/common/SCAITypes.hpp>
 
 // boost
-#include <scai/common/bind.hpp>
 #include <boost/preprocessor.hpp>
 #include <boost/assign/list_of.hpp>
 #include <boost/unordered_map.hpp>
-
-using scai::tasking::SyncToken;
-using scai::tasking::TaskSyncToken;
 
 using namespace scai::hmemo;
 
 namespace scai
 {
+
+using tasking::SyncToken;
+using tasking::TaskSyncToken;
 
 namespace lama
 {
@@ -1213,19 +1210,19 @@ void MatrixStorage<ValueType>::setDenseData(
     switch ( values.getValueType() )
     {
 
-#define LAMA_DENSE_ASSIGN( z, I, _ )                                                             \
-case common::scalar::SCALAR_ARITHMETIC_TYPE##I :                                                 \
-{                                                                                                \
-    LAMAArray<ARITHMETIC_TYPE##I>& typedValues =                                                 \
-            dynamic_cast<LAMAArray<ARITHMETIC_TYPE##I>&>( mValues );                             \
-    const DenseStorageView<ARITHMETIC_TYPE##I> denseStorage( typedValues, numRows, numColumns ); \
-    ARITHMETIC_TYPE##I tmpEpsilon = static_cast<ARITHMETIC_TYPE##I>( epsilon );                  \
-    denseStorage.swapEpsilon( tmpEpsilon );                                                      \
-    assign( denseStorage );                                                                      \
-    break;                                                                                       \
+#define LAMA_DENSE_ASSIGN( z, I, _ )                                                                   \
+case common::scalar::SCALAR_ARITHMETIC_TYPE##I :                                                       \
+{                                                                                                      \
+    LAMAArray<ARITHMETIC_HOST_TYPE_##I>& typedValues =                                                 \
+            dynamic_cast<LAMAArray<ARITHMETIC_HOST_TYPE_##I>&>( mValues );                             \
+    const DenseStorageView<ARITHMETIC_HOST_TYPE_##I> denseStorage( typedValues, numRows, numColumns ); \
+    ARITHMETIC_HOST_TYPE_##I tmpEpsilon = static_cast<ARITHMETIC_HOST_TYPE_##I>( epsilon );            \
+    denseStorage.swapEpsilon( tmpEpsilon );                                                            \
+    assign( denseStorage );                                                                            \
+    break;                                                                                             \
 }
 
-BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_DENSE_ASSIGN, _ )
+BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_DENSE_ASSIGN, _ )
 
 #undef LAMA_DENSE_ASSIGN
 
@@ -1382,34 +1379,39 @@ bool MatrixStorage<ValueType>::checkSymmetry() const
 /*       Template Instantiations                                             */
 /* ========================================================================= */
 
-#define LAMA_MATRIX_STORAGE2_INSTANTIATE(z, J, TYPE )      \
-    template COMMON_DLL_IMPORTEXPORT                             \
-    void MatrixStorage<TYPE>::setRawDenseData(                 \
+#define LAMA_MATRIX_STORAGE2_INSTANTIATE(z, J, TYPE )              \
+    template COMMON_DLL_IMPORTEXPORT                               \
+    void MatrixStorage<TYPE>::setRawDenseData(                     \
             const IndexType numRows,                               \
             const IndexType numColumns,                            \
-            const ARITHMETIC_TYPE##J values[],                     \
+            const ARITHMETIC_HOST_TYPE_##J values[],               \
             const TYPE );
 
-#define LAMA_MATRIX_STORAGE_INSTANTIATE(z, I, _)                          \
-    \
-    template class COMMON_DLL_IMPORTEXPORT MatrixStorage<ARITHMETIC_TYPE##I> ;  \
-    \
-    BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT,                                 \
-                     LAMA_MATRIX_STORAGE2_INSTANTIATE,                    \
-                     ARITHMETIC_TYPE##I )                                 \
+#define LAMA_MATRIX_STORAGE_INSTANTIATE(z, I, _)                                      \
+                                                                                      \
+    template class COMMON_DLL_IMPORTEXPORT MatrixStorage<ARITHMETIC_HOST_TYPE_##I> ;  \
+                                                                                      \
+    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT,                                        \
+                     LAMA_MATRIX_STORAGE2_INSTANTIATE,                                \
+                     ARITHMETIC_HOST_TYPE_##I )                                       \
      
 
-BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_MATRIX_STORAGE_INSTANTIATE, _ )
+BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_MATRIX_STORAGE_INSTANTIATE, _ )
 
 #undef LAMA_MATRIX_STORAGE_INSTANTIATE
 #undef LAMA_MATRIX_STORAGE2_INSTANTIATE
 
-} /* end namespace lama */
-
-} /* end namespace scai */
+namespace Format
+{
 
 std::ostream& operator<<( std::ostream& stream, const scai::lama::MatrixStorageFormat storageFormat )
 {
     stream << scai::lama::format2Str( storageFormat );
     return stream;
 }
+
+} /* end namespace Format */
+
+} /* end namespace lama */
+
+} /* end namespace scai */

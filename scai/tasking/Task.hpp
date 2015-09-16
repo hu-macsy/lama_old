@@ -34,12 +34,14 @@
 
 // for dll_import
 #include <scai/common/config.hpp>
+
+// base classes
 #include <scai/common/Printable.hpp>
 
-// others
+// local library
 #include <scai/tasking/ThreadPool.hpp>
 
-// logging
+// internal scai libraries
 #include <scai/logging.hpp>
 
 #include <scai/common/function.hpp>
@@ -79,7 +81,7 @@ namespace tasking
  * }
  * \endcode
  */
-class COMMON_DLL_IMPORTEXPORT Task: public Printable
+class COMMON_DLL_IMPORTEXPORT Task: public common::Printable
 {
 
 public:

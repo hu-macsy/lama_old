@@ -36,15 +36,13 @@
 // for dll_import
 #include <scai/common/config.hpp>
 
-// others
+// internal scai library
 #include <scai/tasking/SyncToken.hpp>
-#include <scai/lama/LAMATypes.hpp>
 
-// assert
-#include <scai/common/SCAIAssert.hpp>
-
-// logging
 #include <scai/logging.hpp>
+
+#include <scai/common/Assert.hpp>
+#include <scai/common/SCAITypes.hpp>
 
 namespace scai
 {
@@ -264,7 +262,7 @@ private:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
-    static    bool initialized; //!< static initialization used for registration
+    static bool initialized; //!< static initialization used for registration
 
     static unsigned int lastHashTableSize;// local variable to handhover hash table size for multiply
 

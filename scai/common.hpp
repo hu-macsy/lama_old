@@ -34,7 +34,7 @@
 
 #include <scai/common/bind.hpp>
 #include <scai/common/config.hpp>
-#include <scai/common/Exception.hpp>
+#include <scai/common/exception/Exception.hpp>
 #include <scai/common/Factory.hpp>
 #include <scai/common/Factory1.hpp>
 #include <scai/common/function.hpp>

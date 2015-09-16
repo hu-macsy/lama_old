@@ -33,23 +33,25 @@
 
 #pragma once
 
-// for dll_import
+// for dll import
 #include <scai/common/config.hpp>
 
 // others
-#include <scai/lama/LAMATypes.hpp>
+#include <scai/common/SCAITypes.hpp>
 
-// logging
+// other scai projects
 #include <scai/logging.hpp>
 
 namespace scai
 {
 
+namespace tasking
+{
+    class SyncToken;   // forward declaration
+}
+
 namespace lama
 {
-
-class SyncToken;
-// forward declaration
 
 /** This class provides routines to converse ELL storage data to CSR storage data and vice versa.
  *
@@ -276,7 +278,7 @@ private:
         const ValueType oldSolution[],
         const ValueType rhs[],
         const ValueType omega,
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /** Implementation for ELLUtilsInterface::Solver::jacobiHalo */
 
@@ -293,7 +295,7 @@ private:
         const IndexType numNonEmptyRows,
         const ValueType oldSolution[],
         const ValueType omega,
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /** Implementation for ELLUtilsInterface::Mult::normalGEMV  */
 
@@ -309,7 +311,7 @@ private:
         const IndexType csrIA[],
         const IndexType csrJA[],
         const ValueType csrValues[],
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /** Implementation for ELLUtilsInterface::Mult::sparseGEMV  */
 
@@ -325,7 +327,7 @@ private:
         const IndexType csrIA[],
         const IndexType csrJA[],
         const ValueType csrValues[],
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     template<typename ValueType>
     static void normalGEMV(

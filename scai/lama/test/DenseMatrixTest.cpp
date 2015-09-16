@@ -35,7 +35,7 @@
 #include <boost/mpl/list.hpp>
 
 #include <test/TestSparseMatrices.hpp>
-#include <test/TestMacros.hpp>
+#include <scai/common/test/TestMacros.hpp>
 #include <test/SameMatrixHelper.hpp>
 
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
@@ -580,8 +580,6 @@ void getMemoryUsageTest( )
     size_t size_double = 141;
     std::ostringstream omsg;
  
-    using ::operator<<;
-
     omsg << common::getScalarType<ValueType>();
 
     if ( std::string( "double" ).compare( omsg.str() ) == 0 )
@@ -751,7 +749,7 @@ LAMA_AUTO_TEST_CASE_T( getLocalValuesTest, DenseMatrixTest )
 LAMA_AUTO_TEST_CASE_T( getMemoryUsageTest, DenseMatrixTest )
 LAMA_AUTO_TEST_CASE_T( getNumValuesTest, DenseMatrixTest )
 LAMA_AUTO_TEST_CASE_T( getRowTest, DenseMatrixTest )
-LAMA_AUTO_TEST_CASE_CT( gemmTest, DenseMatrixTest )
+LAMA_AUTO_TEST_CASE_CT( gemmTest, DenseMatrixTest, scai::lama )
 LAMA_AUTO_TEST_CASE_T( matrixAddMatrixTest, DenseMatrixTest )
 LAMA_AUTO_TEST_CASE_T( maxNormTest, DenseMatrixTest )
 LAMA_AUTO_TEST_CASE_T( scaleTest, DenseMatrixTest )

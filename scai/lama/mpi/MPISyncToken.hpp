@@ -31,7 +31,7 @@
  */
 #pragma once
 
-#include <mpi.h>
+#include <mpi.h> //Intel MPI need mpi.h to be included before stdio.h so this header comes first
 
 // for dll_import
 #include <scai/common/config.hpp>
@@ -39,9 +39,8 @@
 // base classes
 #include <scai/tasking/SyncToken.hpp>
 
-// others
-#include <scai/lama/LAMATypes.hpp>
-
+//Intel MPI need mpi.h to be included before stdio.h so this header comes first
+#include <scai/common/SCAITypes.hpp>
 #include <scai/common/unique_ptr.hpp>
 
 namespace scai

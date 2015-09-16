@@ -33,15 +33,23 @@
 
 #pragma once
 
+#include <scai/lama/cblas.hpp>
+
 // for dll_import
 #include <scai/common/config.hpp>
 
-// others
-#include <scai/lama/LAMATypes.hpp>
-#include <scai/lama/SyncToken.hpp>
+// internal scai libraries
+#include <scai/common/SCAITypes.hpp>
+
+#include <scai/logging.hpp>
 
 namespace scai
 {
+
+namespace tasking
+{
+   class SyncToken;  // forward declaration
+}
 
 namespace lama
 {
@@ -74,7 +82,7 @@ public:
         const ValueType beta,
         ValueType* C,
         const IndexType ldc,
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /** Routine that sets functions pointers belonging to BLAS3 in a BLASInterface.
      *

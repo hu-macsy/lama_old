@@ -32,15 +32,18 @@
  */
 #pragma once
 
+// local library
 #include <scai/hmemo/Context.hpp>
 
-#include <scai/common/config.hpp>
+// base classes
 #include <scai/common/Printable.hpp>
 #include <scai/common/NonCopyable.hpp>
-#include <scai/common/shared_ptr.hpp>
 
-// logging
+// internal scai libraries
 #include <scai/logging.hpp>
+
+#include <scai/common/config.hpp>
+#include <scai/common/shared_ptr.hpp>
 
 namespace scai
 {
@@ -70,8 +73,14 @@ enum MemoryType
     HostMemory,       //!< memory for CPU as host, is main memory
     CUDAMemory,       //!< CUDA GPU memory on a device
     CUDAHostMemory,   //!< pinned memory that allows faster transfer to a certain CUDA Device
+    MICMemory,        //!< Memory on Intel MIC
     UserMemory        //!< can be used for a new derived Context class
 };
+
+/**
+ * This method make is possible to use enum values of MemoryType in output streams.
+ */
+COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const MemoryType& type );
  
 }
 
@@ -92,8 +101,8 @@ using memtype::MemoryType;
  */
 class COMMON_DLL_IMPORTEXPORT Memory: 
   
-    public Printable, 
-    private common::NonCopyable
+    public  scai::common::Printable,
+    private scai::common::NonCopyable
 {
 public:
 
@@ -228,11 +237,3 @@ inline MemoryType Memory::getType() const
 } /* end namespace hmemo */
 
 } /* end namespace scai */
-
-/** This method make is possible to use enum values of MemoryType in output streams. 
- *
- *  Note: It should not be defined in a namespace.
- */
-
-COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const scai::hmemo::MemoryType& type );
-

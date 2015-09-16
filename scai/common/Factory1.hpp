@@ -33,9 +33,13 @@
 
 #pragma once
 
+// local library
 #include <scai/common/config.hpp>
-#include <scai/common/Exception.hpp>
+#include <scai/common/unique_ptr.hpp>
 
+#include <scai/common/exception/Exception.hpp>
+
+// std
 #include <memory>
 #include <map>
 #include <vector>
@@ -167,7 +171,7 @@ OutputType Factory1<InputType, ValueType, OutputType>::create( const InputType t
 template<typename InputType, typename ValueType, typename OutputType>
 std::map<InputType, OutputType(* )( ValueType ) >& Factory1<InputType, ValueType, OutputType>::getFactory()
 {
-    static std::auto_ptr<CreatorMap> factory;
+    static scai::common::unique_ptr<CreatorMap> factory;
 
     if ( !factory.get() )
     {

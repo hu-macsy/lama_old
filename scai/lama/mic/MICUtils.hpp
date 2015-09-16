@@ -37,10 +37,9 @@
 #include <scai/common/config.hpp>
 
 // others
-#include <scai/lama/LAMATypes.hpp>
-
-// assert
-#include <scai/lama/exception/LAMAAssert.hpp>
+#include <scai/common/SCAITypes.hpp>
+#include <scai/common/Assert.hpp>
+#include <scai/hmemo/mic/MICContext.hpp>
 
 // logging
 #include <scai/logging.hpp>

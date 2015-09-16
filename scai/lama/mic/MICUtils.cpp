@@ -34,13 +34,17 @@
 // hpp
 #include <scai/lama/mic/MICUtils.hpp>
 
-// others
-#include <scai/lama/mic/MICContext.hpp>
+// local project
 #include <scai/lama/LAMAInterfaceRegistry.hpp>
+
+// other SCAI projects
 #include <scai/tracing.hpp>
+#include <scai/hmemo/mic/MICContext.hpp>
 
 namespace scai
 {
+
+using namespace hmemo;
 
 namespace lama
 {
@@ -539,7 +543,7 @@ void MICUtils::setScatter( ValueType1 out[], const IndexType indexes[], const Va
 template<typename ValueType>
 void MICUtils::invert( ValueType array[], const IndexType n )
 {
-    SCAI_REGION( "MIC.invert" )
+    // SCAI_REGION( "MIC.invert" )
 
     SCAI_LOG_INFO( logger, "invert array[ " << n << " ]" )
 
@@ -641,7 +645,7 @@ void MICUtils::setInterface( UtilsInterface& Utils )
 
 bool MICUtils::registerInterface()
 {
-    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( Context::MIC );
+    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( context::MIC );
     setInterface( interface.Utils );
     return true;
 }

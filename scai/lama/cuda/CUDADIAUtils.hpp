@@ -35,11 +35,10 @@
 // for dll_import
 #include <scai/common/config.hpp>
 
-// others
-#include <scai/lama/LAMATypes.hpp>
-
-// logging
+// internal scai library
 #include <scai/logging.hpp>
+
+#include <scai/common/SCAITypes.hpp>
 
 namespace scai
 {

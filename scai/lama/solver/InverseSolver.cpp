@@ -34,16 +34,18 @@
 // hpp
 #include <scai/lama/solver/InverseSolver.hpp>
 
-// others
+// local library
 #include <scai/lama/norm/L2Norm.hpp>
 
 #include <scai/lama/matrix/DenseMatrix.hpp>
 
 #include <scai/lama/LAMAInterface.hpp>
-#include <scai/tracing.hpp>
-
 #include <scai/lama/expression/MatrixVectorExpressions.hpp>
 
+// internal scai libraries
+#include <scai/tracing.hpp>
+
+// std
 #include <sstream>
 
 namespace scai

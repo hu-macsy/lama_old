@@ -47,7 +47,7 @@ set ( CLASSES
     
 set ( HEADERS
         EquationHelper
-        TestMacros
+#        TestMacros
         TestSparseMatrices
     )
 
@@ -55,9 +55,9 @@ set ( SOURCE_FILES
         BiCGstabTest
        # BiCGTest  : disabled as long as MatrixTranspose for DenseMatrix is
        # not supported
-        BLAS1Test
-        BLAS2Test
-        BLAS3Test
+       # BLAS1Test
+       # BLAS2Test
+       # BLAS3Test
         CGTest
        # not yet: CGNETest
         CGNRTest
@@ -91,7 +91,7 @@ set ( SOURCE_FILES
         L1NormTest
         L2NormTest
         LAMAArrayTest
-        LAPACKTest
+      #  LAPACKTest
         MatrixStorageConversionTest
         MatrixNormTest
         MatrixTest
@@ -147,7 +147,7 @@ if ( CUDA_FOUND AND USE_CUDA AND CUDA_HAVE_GPU )
 endif ( CUDA_FOUND AND USE_CUDA AND CUDA_HAVE_GPU )
  
 ### add definitions ###
-add_definitions ( -DLAMA_TESTFILE_PATH="${CMAKE_SOURCE_DIR}/../res/testfiles" )
+add_definitions ( -DLAMA_TESTFILE_PATH="${CMAKE_SOURCE_DIR}/../../res/testfiles" )
 
 ### add link directories ###
 if ( WIN32 )
@@ -161,11 +161,7 @@ add_executable ( lama_test lama_test.cpp ${CXX_SOURCES} )
 if ( WIN32 )
     target_link_libraries ( lama_test ama )
 else ( WIN32 )
-    if ( SCAI_LIBRARY_TYPE STREQUAL "STATIC" )
-        target_link_libraries ( lama_test "-Wl,--whole-archive" ama "-Wl,--no-whole-archive" ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} ${Boost_REGEX_LIBRARY} )
-    else ()
-        target_link_libraries ( lama_test ama ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} ${Boost_REGEX_LIBRARY} )
-    endif ( SCAI_LIBRARY_TYPE STREQUAL "STATIC" )
+    target_link_libraries ( lama_test ama ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} ${Boost_REGEX_LIBRARY} )
 endif ( WIN32 )
 
 

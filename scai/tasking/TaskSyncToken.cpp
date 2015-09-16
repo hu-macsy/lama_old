@@ -32,17 +32,17 @@
 
 // hpp
 #include <scai/tasking/TaskSyncToken.hpp>
-#include <scai/common/Exception.hpp>
 
-// boost
+// internal scai libraries
 #include <scai/common/bind.hpp>
-
-using scai::tasking::Task;
-using scai::common::function;
-using scai::common::shared_ptr;
+#include <scai/common/exception/Exception.hpp>
 
 namespace scai
 {
+
+using tasking::Task;
+using common::function;
+using common::shared_ptr;
 
 namespace tasking
 {

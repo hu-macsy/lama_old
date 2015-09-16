@@ -40,7 +40,7 @@
 
 #include <scai/lama/openmp/OpenMPCSRUtils.hpp>
 
-#include <test/TestMacros.hpp>
+#include <scai/common/test/TestMacros.hpp>
 
 using namespace scai::lama;
 using namespace scai::hmemo;
@@ -48,8 +48,10 @@ using namespace scai::hmemo;
 /* ------------------------------------------------------------------------------------------------------------------ */
 namespace scai
 {
+
 namespace lama
 {
+
 namespace CSRUtilsTest
 {
 
@@ -244,8 +246,8 @@ BOOST_AUTO_TEST_SUITE( CSRUtilsTest )
 SCAI_LOG_DEF_LOGGER( logger, "Test.CSRUtilsTest" )
 
 LAMA_AUTO_TEST_CASE_CTT( absMaxDiffValTest, CSRUtilsTest )
-LAMA_AUTO_TEST_CASE_CT( transposeTestSquare, CSRUtilsTest )
-LAMA_AUTO_TEST_CASE_CT( transposeTestNonSquare, CSRUtilsTest )
+LAMA_AUTO_TEST_CASE_CT( transposeTestSquare, CSRUtilsTest, scai::lama )
+LAMA_AUTO_TEST_CASE_CT( transposeTestNonSquare, CSRUtilsTest, scai::lama )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 

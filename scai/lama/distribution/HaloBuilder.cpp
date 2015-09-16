@@ -34,11 +34,10 @@
 // hpp
 #include <scai/lama/distribution/HaloBuilder.hpp>
 
-// others
-#include <scai/common/SCAIAssert.hpp>
-
-// tracing
+// internal scai libraries
 #include <scai/tracing.hpp>
+
+#include <scai/common/Assert.hpp>
 
 using namespace scai::hmemo;
 

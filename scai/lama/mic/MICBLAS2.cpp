@@ -34,9 +34,11 @@
 // hpp
 #include <scai/lama/mic/MICBLAS2.hpp>
 
+// local library
 #include <scai/lama/BLASInterface.hpp>
 #include <scai/lama/LAMAInterfaceRegistry.hpp>
 
+// external
 #include <mkl.h>
 
 namespace scai
@@ -236,7 +238,7 @@ void MICBLAS2::setInterface( BLASInterface& BLAS )
 
 bool MICBLAS2::registerInterface()
 {
-    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( Context::MIC );
+    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( hmemo::context::MIC );
     setInterface( interface.BLAS );
     return true;
 }

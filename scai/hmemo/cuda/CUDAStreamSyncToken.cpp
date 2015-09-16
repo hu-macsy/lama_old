@@ -33,11 +33,13 @@
 // hpp
 #include <scai/hmemo/cuda/CUDAStreamSyncToken.hpp>
 
-// others
+// local library
 #include <scai/hmemo/cuda/CUDAContext.hpp>
-#include <scai/common/cuda/CUDAError.hpp>
-
 #include <scai/hmemo/ContextAccess.hpp>
+
+// internal scai libraries
+#include <scai/common/Assert.hpp>
+#include <scai/common/cuda/CUDAError.hpp>
 
 namespace scai
 {

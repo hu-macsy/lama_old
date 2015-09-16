@@ -42,6 +42,7 @@
 #include <iostream>
 #include <stdlib.h>
 
+using namespace scai::hmemo;
 using namespace scai::lama;
 
 //

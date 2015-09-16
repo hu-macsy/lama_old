@@ -34,14 +34,22 @@
 
 #pragma once
 
+// base classes
+#include <scai/common/Printable.hpp>
+#include <scai/common/NonCopyable.hpp>
+
+// local libray
 #include <scai/hmemo/ContextData.hpp>
-#include <scai/tasking/SyncToken.hpp>
 #include <scai/hmemo/Context.hpp>
+
+// internal scai libraries
+#include <scai/tasking/SyncToken.hpp>
 
 #include <scai/logging.hpp>
 
-#include <scai/common/NonCopyable.hpp>
+#include <scai/common/unique_ptr.hpp>
 
+// std
 #include <vector>
 
 #define MEMORY_MAX_CONTEXTS 4
@@ -63,7 +71,7 @@ typedef size_t ContextDataIndex;
  *  at different contexts.
  */
 
-class ContextDataManager : private common::NonCopyable, public Printable
+class ContextDataManager : private scai::common::NonCopyable, public scai::common::Printable
 {
 public:
 
@@ -182,7 +190,7 @@ private:
 
     std::vector<ContextData> mContextData; // Incarnations of the array at different contexts
 
-    std::auto_ptr<tasking::SyncToken> mSyncToken; //!<  outstanding transfers
+    scai::common::unique_ptr<tasking::SyncToken> mSyncToken; //!<  outstanding transfers
 
     ContextDataIndex findContextData( ContextPtr context ) const;
 

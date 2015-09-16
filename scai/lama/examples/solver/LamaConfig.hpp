@@ -34,6 +34,7 @@
 #pragma once
 
 #include <scai/lama.hpp>
+#include <scai/common/SCAITypes.hpp>
 
 #include <scai/hmemo/Context.hpp>
 #include <scai/common/Printable.hpp>
@@ -67,7 +68,7 @@
  *  \endcode
  */
 
-class LamaConfig : public Printable
+class LamaConfig : public scai::common::Printable
 {
 
 public:
@@ -138,12 +139,12 @@ public:
 
     bool hasMaxIter() const
     { 
-        return mMaxIter != scai::lama::nIndex; 
+        return mMaxIter != nIndex; 
     }
 
     /** Get the maximal number of iterations. */
 
-    scai::lama::IndexType getMaxIter() const
+    IndexType getMaxIter() const
     { 
         return mMaxIter; 
     }
@@ -187,7 +188,7 @@ private:
 
     scai::lama::CommunicatorPtr      mComm;
 
-    scai::lama::IndexType            mMaxIter;
+    IndexType            mMaxIter;
 
     scai::lama::LogLevel::LogLevel   mLogLevel;
 
@@ -211,7 +212,7 @@ LamaConfig::LamaConfig()
     mCommunicationKind = scai::lama::Matrix::SYNCHRONOUS;
     mComm              = scai::lama::Communicator::get();
     mContextType       = scai::hmemo::context::Host;
-    mMaxIter           = scai::lama::nIndex;
+    mMaxIter           = nIndex;
     mValueType         = scai::common::scalar::DOUBLE;
     mLogLevel          = scai::lama::LogLevel::convergenceHistory;
     mUseMetis          = false;

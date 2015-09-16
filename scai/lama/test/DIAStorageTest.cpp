@@ -37,7 +37,7 @@
 #include <scai/lama/storage/DIAStorage.hpp>
 
 #include <test/MatrixStorageTest.hpp>
-#include <test/TestMacros.hpp>
+#include <scai/common/test/TestMacros.hpp>
 
 using namespace scai::lama;
 using namespace scai::hmemo;
@@ -199,7 +199,7 @@ void typeNameTest()
 BOOST_AUTO_TEST_SUITE( DIAStorageTest )
 
 SCAI_LOG_DEF_LOGGER( logger, "Test.DIAStorageTest" )
-LAMA_AUTO_TEST_CASE_CT( commonTestCases, DIAStorageTest )
+LAMA_AUTO_TEST_CASE_CT( commonTestCases, DIAStorageTest, scai::lama )
 LAMA_AUTO_TEST_CASE_T( constructorTest, DIAStorageTest )
 LAMA_AUTO_TEST_CASE_TL( constructorTest1, DIAStorageTest )
 LAMA_AUTO_TEST_CASE_T( typeNameTest, DIAStorageTest )

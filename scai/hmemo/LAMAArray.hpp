@@ -35,6 +35,7 @@
 
 #pragma once
 
+// base classes
 #include <scai/hmemo/ContextArray.hpp>
 
 namespace scai
@@ -42,8 +43,6 @@ namespace scai
 
 namespace hmemo
 {
-
-using common::IndexType;   // for convenience
 
 /**
  * @brief LAMAArray is the base array container for all compute relevant data within LAMA.
@@ -106,7 +105,7 @@ public:
      *
      * LAMAArray( const IndexType n ) creates a LAMAArray of size n and allocates uninitialized Host memory.
      */
-    explicit LAMAArray( const common::IndexType n );
+    explicit LAMAArray( const IndexType n );
 
     /**
      * @brief Creates a LAMAArray of size n.
@@ -117,7 +116,7 @@ public:
      * LAMAArray( const IndexType n ) creates a LAMAArray of size n, allocates Host memory and fills the Host memory with
      * the passed value.
      */
-    LAMAArray( const common::IndexType n, const ValueType& value );
+    LAMAArray( const IndexType n, const ValueType& value );
 
     /**
      * @brief Creates a LAMAArray of size n.
@@ -129,7 +128,7 @@ public:
      * the passed values.
      */
     template<typename OtherValueType>
-    LAMAArray( const common::IndexType n, const OtherValueType* const values );
+    LAMAArray( const IndexType n, const OtherValueType* const values );
 
     /**
      * @brief Creates a copy of the passed LAMAArray.
@@ -216,7 +215,7 @@ public:
      * @param[in] capacity amount of data to be allocated
      *
      */
-    void reserve( ContextPtr context, const common::IndexType capacity );
+    void reserve( ContextPtr context, const IndexType capacity );
 
     using ContextArray::capacity;
     using ContextArray::clear;
@@ -230,6 +229,8 @@ public:
         return common::getScalarType<ValueType>();
     }
 
+    using ContextArray::resize;
+
 protected:
 
     using ContextArray::mSize;
@@ -242,11 +243,11 @@ protected:
 
     void clear( ContextDataIndex index );
 
-    void resize( ContextDataIndex index, const common::IndexType newSize );
+    void resize( ContextDataIndex index, const IndexType newSize );
 
-    void reserve( ContextDataIndex index, const common::IndexType capacity ) const;
+    void reserve( ContextDataIndex index, const IndexType capacity ) const;
 
-    common::IndexType capacity( ContextDataIndex index ) const;
+    IndexType capacity( ContextDataIndex index ) const;
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
@@ -256,7 +257,7 @@ protected:
 
 template<typename ValueType>
 template<typename OtherValueType>
-LAMAArray<ValueType>::LAMAArray( const common::IndexType n, const OtherValueType* const values )
+LAMAArray<ValueType>::LAMAArray( const IndexType n, const OtherValueType* const values )
                 : ContextArray( n, sizeof( ValueType ) )
 {
     ContextPtr hostContextPtr = Context::getContextPtr( context::Host );
@@ -335,7 +336,7 @@ LAMAArray<ValueType>::LAMAArray( MemoryPtr memory ) :
 /* ---------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-LAMAArray<ValueType>::LAMAArray( const common::IndexType n ) : 
+LAMAArray<ValueType>::LAMAArray( const IndexType n ) :
 
     ContextArray( n, sizeof( ValueType) )
 
@@ -351,7 +352,7 @@ LAMAArray<ValueType>::LAMAArray( const common::IndexType n ) :
 /* ---------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-LAMAArray<ValueType>::LAMAArray( const common::IndexType n, const ValueType& value ) : ContextArray( n, sizeof( ValueType ) )
+LAMAArray<ValueType>::LAMAArray( const IndexType n, const ValueType& value ) : ContextArray( n, sizeof( ValueType ) )
 
 {
     // In constructor of the LAMA array lock of accesses is not required 
@@ -521,7 +522,7 @@ void LAMAArray<ValueType>::swap( LAMAArray<ValueType>& other )
 /* ---------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-void LAMAArray<ValueType>::reserve( ContextPtr context, const common::IndexType capacity )
+void LAMAArray<ValueType>::reserve( ContextPtr context, const IndexType capacity )
 {
     mContextDataManager.reserve( context, capacity * mValueSize, mSize * mValueSize );
 }
@@ -572,7 +573,7 @@ void LAMAArray<ValueType>::clear( const ContextDataIndex index )
 /* ---------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-void LAMAArray<ValueType>::resize( ContextDataIndex index, const common::IndexType size )
+void LAMAArray<ValueType>::resize( ContextDataIndex index, const IndexType size )
 {
     ContextData& data = mContextDataManager[index];
 
@@ -605,7 +606,7 @@ void LAMAArray<ValueType>::resize( ContextDataIndex index, const common::IndexTy
 /* ---------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-void LAMAArray<ValueType>::reserve( ContextDataIndex index, const common::IndexType size ) const
+void LAMAArray<ValueType>::reserve( ContextDataIndex index, const IndexType size ) const
 {
     if ( size <= mSize )
     {
@@ -623,7 +624,7 @@ void LAMAArray<ValueType>::reserve( ContextDataIndex index, const common::IndexT
 /* ---------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-common::IndexType LAMAArray<ValueType>::capacity( ContextDataIndex index ) const
+IndexType LAMAArray<ValueType>::capacity( ContextDataIndex index ) const
 {
     const ContextData& entry = mContextDataManager[index];
     return entry.capacity();

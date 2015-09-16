@@ -31,8 +31,12 @@
  */
 #pragma once
 
-#include <scai/common/Exception.hpp>
+// local library
+#include <scai/common/Assert.hpp>
 
+#include <scai/common/exception/Exception.hpp>
+
+// CUDA
 #include <cuda.h>
 #include <cublas_v2.h>
 #include <cusparse_v2.h>

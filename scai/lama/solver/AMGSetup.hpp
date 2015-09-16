@@ -35,12 +35,14 @@
 
 // for dll_import
 #include <scai/common/config.hpp>
-#include <scai/common/Factory.hpp>
 
-// others
+// local library
 #include <scai/lama/matrix/Matrix.hpp>
 
 #include <scai/lama/solver/Solver.hpp>
+
+// internal scai libraries
+#include <scai/common/Factory.hpp>
 
 namespace scai
 {

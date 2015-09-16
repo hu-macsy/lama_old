@@ -35,7 +35,7 @@
 // for dll import
 #include <scai/common/config.hpp>
 
-// others
+// local library
 #include <scai/logging/AbstractLoggerCreator.hpp>
 
 namespace scai

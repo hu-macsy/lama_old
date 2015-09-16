@@ -34,37 +34,34 @@
 // hpp
 #include <scai/lama/storage/DIAStorage.hpp>
 
-// others
+// local library
 #include <scai/lama/openmp/OpenMPCSRUtils.hpp>
 #include <scai/lama/openmp/OpenMPDIAUtils.hpp>
-#include <scai/tracing.hpp>
 
 #include <scai/lama/LAMAInterface.hpp>
+
+// internal scai libraries
 #include <scai/hmemo/ContextAccess.hpp>
+
 #include <scai/tasking/TaskSyncToken.hpp>
 
-// macros
-#include <scai/lama/macros/unused.hpp>
-
-// tracing
 #include <scai/tracing.hpp>
 
-// common
+#include <scai/common/macros/unused.hpp>
 #include <scai/common/bind.hpp>
 #include <scai/common/unique_ptr.hpp>
 
-using scai::common::scoped_array;
 using namespace scai::hmemo;
 
 namespace scai
 {
 
+using common::scoped_array;
+// Allow for shared_ptr<ValueType> instead of common::shared_ptr<ValueType>
+using common::shared_ptr;
+
 namespace lama
 {
-
-// Allow for shared_ptr<ValueType> instead of common::shared_ptr<ValueType>
-
-using scai::common::shared_ptr;
 
 /* --------------------------------------------------------------------------- */
 
@@ -717,8 +714,6 @@ void DIAStorage<ValueType>::allocate( IndexType numRows, IndexType numColumns )
 template<typename ValueType>
 void DIAStorage<ValueType>::writeAt( std::ostream& stream ) const
 {
-    using ::operator<<;
-
     stream << "DIAStorage<" << common::getScalarType<ValueType>()
            << ">( size = " << mNumRows << " x " << mNumColumns
            << ", nd = " << mNumDiagonals << " )";
@@ -757,7 +752,7 @@ ValueType DIAStorage<ValueType>::l2Norm() const
 
 	SCAI_CONTEXT_ACCESS( loc );
 
-	return sqrt(dot( mValues.size(), data.get(), 1, data.get(), 1, NULL ));
+	return ::sqrt(dot( mValues.size(), data.get(), 1, data.get(), 1, NULL ));
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1245,16 +1240,16 @@ DIAStorage<ValueType>* DIAStorage<ValueType>::copy() const
 /*       Template specializations and instantiations                         */
 /* ========================================================================= */
 
-#define LAMA_DIA_STORAGE_INSTANTIATE(z, I, _)                              \
-    template<>                                                                 \
-    const char* DIAStorage<ARITHMETIC_TYPE##I>::typeName()                     \
-    {                                                                          \
-        return "DIAStorage<ARITHMETIC_TYPE##I>";                               \
-    }                                                                          \
-    \
-    template class COMMON_DLL_IMPORTEXPORT DIAStorage<ARITHMETIC_TYPE##I> ;
+#define LAMA_DIA_STORAGE_INSTANTIATE(z, I, _)                                     \
+    template<>                                                                    \
+    const char* DIAStorage<ARITHMETIC_HOST_TYPE_##I>::typeName()                  \
+    {                                                                             \
+        return "DIAStorage<ARITHMETIC_HOST_TYPE_##I>";                            \
+    }                                                                             \
+                                                                                  \
+    template class COMMON_DLL_IMPORTEXPORT DIAStorage<ARITHMETIC_HOST_TYPE_##I> ;
 
-BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_DIA_STORAGE_INSTANTIATE, _ )
+BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_DIA_STORAGE_INSTANTIATE, _ )
 
 #undef LAMA_DIA_STORAGE_INSTANTIATE
 

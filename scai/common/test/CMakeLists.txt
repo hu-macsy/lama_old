@@ -25,29 +25,11 @@
  # SOFTWARE.
  # @endlicense
  #
- # @brief CMake configuration file for memory tests
- # @author Thomas Brandes
- # @date 16.06.2015
+ # @brief CMakeLists of common/test
+ # @author Lauretta Schubert
+ # @date 09.09.2015
 ###
 
-file ( GLOB CU_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/*.cu" )
-file ( GLOB CPP_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp" )
+file ( GLOB LOCAL_HEADERS "*.hpp" )
 
-find_package ( Boost COMPONENTS unit_test_framework )
-
-if ( Boost_UNIT_TEST_FRAMEWORK_FOUND )
-
-    include_directories ( ${Boost_INCLUDE_DIR} )
-
-    cuda_add_executable ( CUDATest ${CU_SOURCES} ${CPP_SOURCES} )
-
-    target_link_libraries ( CUDATest 
-        ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}
-        memory
-        )
-
-else ( Boost_UNIT_TEST_FRAMEWORK_FOUND )
-
-    message ( STATUS "memory/test/cuda/CUDATest not built, no Boost UnitTest Framework found" )
-
-endif ( Boost_UNIT_TEST_FRAMEWORK_FOUND )
+install ( FILES ${LOCAL_HEADERS} DESTINATION include/scai/common/test )

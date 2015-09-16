@@ -37,7 +37,7 @@
 // base classes
 #include <scai/lama/matrix/SparseMatrix.hpp>
 
-// others
+// local library
 #include <scai/lama/storage/DIAStorage.hpp>
 
 #include <scai/lama/distribution/GeneralDistribution.hpp>

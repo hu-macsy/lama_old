@@ -34,10 +34,14 @@
 // for dll_import
 #include <scai/common/config.hpp>
 
-#include <scai/lama/LAMATypes.hpp>
+// local library
 #include <scai/lama/Scalar.hpp>
 
+// internal scai libraries
+#include <scai/common/SCAITypes.hpp>
 #include <scai/common/unique_ptr.hpp>
+
+// std
 #include <fstream>
 #include <typeinfo>
 

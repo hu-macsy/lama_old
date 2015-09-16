@@ -39,14 +39,16 @@
 // base classes
 #include <scai/lama/matrix/CRTPMatrix.hpp>
 
-//others
+// local library
 #include <scai/lama/matrix/SparseMatrix.hpp>
 
 #include <scai/lama/storage/DenseStorage.hpp>
 
+// internal scai libraries
+#include <scai/common/shared_ptr.hpp>
+
 //boost
 #include <boost/lexical_cast.hpp>
-#include <scai/common/shared_ptr.hpp>
 
 namespace scai
 {
@@ -395,7 +397,7 @@ public:
 
     /* Implementation of pure method of class Matrix. */
 
-    virtual Scalar getValue( scai::lama::IndexType i, scai::lama::IndexType j ) const;
+    virtual Scalar getValue( IndexType i, IndexType j ) const;
 
     /* Implemenation of pure method of class Matrix */
 

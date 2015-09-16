@@ -37,7 +37,7 @@
 // base classes
 #include <scai/lama/matrix/SparseMatrix.hpp>
 
-// others
+// local library
 #include <scai/lama/storage/ELLStorage.hpp>
 
 #include <scai/lama/distribution/GeneralDistribution.hpp>
@@ -296,4 +296,3 @@ ELLSparseMatrix<ValueType>::ELLSparseMatrix(
 } /* end namespace lama */
 
 } /* end namespace scai */
-

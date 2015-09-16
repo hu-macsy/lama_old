@@ -30,15 +30,17 @@
  * @date 24.05.2013
  */
 
-#include <scai/common/Settings.hpp>
+// hpp
 #include <scai/lama/cuda/CUDASettings.hpp>
 
+// internal scai library
+#include <scai/common/Settings.hpp>
 #include <scai/common/cuda/CUDAError.hpp>
 
-// Some calls are needed of the CUDA driver API
+// CUDA
+#include <cuda.h> // Some calls are needed of the CUDA driver API
 
-#include <cuda.h>
-
+// std
 #include <cstdlib>
 
 namespace scai

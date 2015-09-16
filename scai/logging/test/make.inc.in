@@ -1,5 +1,5 @@
 ###
- # @file CMakeLists.txt
+ # @file scai/logging/test/make.inc.in
  #
  # @license
  # Copyright (c) 2009-2015
@@ -25,20 +25,12 @@
  # SOFTWARE.
  # @endlicense
  #
- # @brief lama/macros/CMakeLists.txt
+ # @brief Definition of variables that will be included in the test Makfile
  # @author Jan Ecker
- # @date 02.04.2013
- # @since 1.0.0
+ # @date 03.09.2015
+ # @since 2.0.0
 ###
 
-### Add classes and header files ###
-set ( HEADERS
-        inline
-        unique_name
-        unused
-    )
-
-lama_headers ( ${HEADERS} )
-
-### add sources and headers to parent scope ###
-lama_add ()
+CMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
+CXX=${CMAKE_CXX_COMPILER}
+CXX_FLAGS=${SCAI_LANG_FLAGS}

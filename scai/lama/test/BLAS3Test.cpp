@@ -38,7 +38,7 @@
 #include <scai/hmemo.hpp>
 #include <scai/lama/LAMAInterface.hpp>
 
-#include <test/TestMacros.hpp>
+#include <scai/common/test/TestMacros.hpp>
 
 using namespace scai::lama;
 using namespace scai::hmemo;

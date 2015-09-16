@@ -33,20 +33,31 @@
 
 // hpp
 #include <scai/lama/mic/MICCOOUtils.hpp>
+
+// local library
 #include <scai/lama/mic/MICUtils.hpp>
-#include <scai/lama/mic/MICSyncToken.hpp>
 
 #include <scai/lama/openmp/OpenMP.hpp>
 
-// others
 #include <scai/lama/LAMAInterface.hpp>
 #include <scai/lama/LAMAInterfaceRegistry.hpp>
+
+// internal scai libraries
+#include <scai/hmemo/mic/MICSyncToken.hpp>
+#include <scai/hmemo/mic/MICContext.hpp>
+
 #include <scai/tracing.hpp>
 
+#include <scai/common/Assert.hpp>
+
+// std
 #include <cmath>
 
 namespace scai
 {
+
+using tasking::SyncToken;
+using tasking::MICSyncToken;
 
 namespace lama
 {
@@ -291,7 +302,7 @@ void MICCOOUtils::normalGEMV(
     const ValueType cooValues[],
     SyncToken* syncToken )
 {
-    SCAI_REGION( "MIC.COO.normalGEMV" )
+    // SCAI_REGION( "MIC.COO.normalGEMV" )
 
     SCAI_LOG_INFO( logger,
                    "normalGEMV<" << common::getScalarType<ValueType>() << ">, result[" << numRows << "] = " << alpha << " * A( coo, #vals = " << numValues << " ) * x + " << beta << " * y " )
@@ -356,7 +367,7 @@ void MICCOOUtils::jacobi(
     const IndexType numRows,
     class SyncToken* syncToken )
 {
-    SCAI_REGION( "MIC.COO.jacobi" )
+    // SCAI_REGION( "MIC.COO.jacobi" )
 
     SCAI_LOG_INFO( logger,
                    "jacobi<" << common::getScalarType<ValueType>() << ">" << ", #rows = " << numRows << ", omega = " << omega )
@@ -454,7 +465,7 @@ void MICCOOUtils::setInterface( COOUtilsInterface& COOUtils )
 
 bool MICCOOUtils::registerInterface()
 {
-    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( Context::MIC );
+    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( hmemo::context::MIC );
     setInterface( interface.COOUtils );
     return true;
 }

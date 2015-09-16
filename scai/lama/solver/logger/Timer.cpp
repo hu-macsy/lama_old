@@ -34,10 +34,11 @@
 // hpp
 #include <scai/lama/solver/logger/Timer.hpp>
 
-// others
-#include <scai/common/Exception.hpp>
+// local library
+#include <scai/common/exception/Exception.hpp>
 #include <scai/common/Walltime.hpp>
 
+// std
 #include <iostream>
 #include <cstdio>
 #include <sstream>

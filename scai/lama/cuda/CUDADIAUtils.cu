@@ -31,31 +31,39 @@
  * @since 1.0.0
  */
 
-#include <scai/common/SCAIAssert.hpp>
-
+// hpp
+#include <scai/lama/cuda/CUDADIAUtils.hpp>
+ 
+// local library
 #include <scai/lama/LAMAInterface.hpp>
 #include <scai/lama/LAMAInterfaceRegistry.hpp>
 
 #include <scai/lama/cuda/utils.cu.h>
-#include <scai/common/cuda/CUDAError.hpp>
-#include <scai/lama/cuda/CUDADIAUtils.hpp>
-#include <scai/hmemo/cuda/CUDAStreamSyncToken.hpp>
 #include <scai/lama/cuda/CUDASettings.hpp>
+
+// internal scai library
+#include <scai/hmemo/cuda/CUDAStreamSyncToken.hpp>
+
 #include <scai/tracing.hpp>
+
+#include <scai/common/Assert.hpp>
+#include <scai/common/bind.hpp>
+#include <scai/common/cuda/CUDAError.hpp>
 
 // thrust
 #include <thrust/device_ptr.h>
 #include <thrust/sort.h>
 
-#include <scai/common/bind.hpp>
+// boost
 #include <boost/preprocessor.hpp>
 
 using namespace scai::hmemo;
 using namespace scai::tasking;
-using scai::common::getScalarType;
 
 namespace scai
 {
+
+using common::getScalarType;
 
 namespace lama
 {
@@ -895,32 +903,32 @@ namespace lama
     {
         SCAI_LOG_INFO( logger, "set DIA routines for CUDA in Interface" )
 
-#define LAMA_DIA_UTILS_REGISTER(z, I, _)                                                 \
-    LAMA_INTERFACE_REGISTER_T( DIAUtils, normalGEMV, ARITHMETIC_TYPE##I )                \
-    LAMA_INTERFACE_REGISTER_T( DIAUtils, normalGEVM, ARITHMETIC_TYPE##I )                \
+#define LAMA_DIA_UTILS_REGISTER(z, I, _)                                                       \
+    LAMA_INTERFACE_REGISTER_T( DIAUtils, normalGEMV, ARITHMETIC_CUDA_TYPE_##I )                \
+    LAMA_INTERFACE_REGISTER_T( DIAUtils, normalGEVM, ARITHMETIC_CUDA_TYPE_##I )                \
                                                                                          
-        BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_DIA_UTILS_REGISTER, _ )
+    BOOST_PP_REPEAT( ARITHMETIC_CUDA_TYPE_CNT, LAMA_DIA_UTILS_REGISTER, _ )
 
 #undef LAMA_DIA_UTILS_REGISTER
 
     }
 
-    /* --------------------------------------------------------------------------- */
-    /*    Static registration of the Utils routines                                */
-    /* --------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------- */
+/*    Static registration of the Utils routines                                */
+/* --------------------------------------------------------------------------- */
 
-    bool CUDADIAUtils::registerInterface()
-    {
-        LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( context::CUDA );
-        setInterface( interface.DIAUtils );
-        return true;
-    }
+bool CUDADIAUtils::registerInterface()
+{
+    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( context::CUDA );
+    setInterface( interface.DIAUtils );
+    return true;
+}
 
-    /* --------------------------------------------------------------------------- */
-    /*    Static initialiazion at program start                                    */
-    /* --------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------- */
+/*    Static initialiazion at program start                                    */
+/* --------------------------------------------------------------------------- */
 
-    bool CUDADIAUtils::initialized = registerInterface();
+bool CUDADIAUtils::initialized = registerInterface();
 
 } /* end namespace lama */
 

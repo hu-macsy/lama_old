@@ -39,15 +39,13 @@
 // base classes
 #include <scai/common/Printable.hpp>
 
-// others
-#include <scai/lama/LAMATypes.hpp>
-
-// logging
+// internal scai libraries
 #include <scai/logging.hpp>
 
-// boost
+#include <scai/common/SCAITypes.hpp>
 #include <scai/common/shared_ptr.hpp>
 
+// std
 #include <ostream>
 
 namespace scai
@@ -68,7 +66,7 @@ typedef common::shared_ptr<Criterion> CriterionPtr;
  *
  * Criterion can be composed with the logical operators &&, ||, and !.
  */
-class COMMON_DLL_IMPORTEXPORT Criterion: public Printable
+class COMMON_DLL_IMPORTEXPORT Criterion: public common::Printable
 {
 public:
 

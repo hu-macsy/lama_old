@@ -36,16 +36,17 @@
 // for dll_import
 #include <scai/common/config.hpp>
 
-// others
-#include <scai/lama/LAMATypes.hpp>
+// local library
+#include <scai/lama/cblas.hpp> // CBLAS_ORDER, CBLAS_TRANSPOSE, ...
+
+// internal scai libraries
 #include <scai/tasking/SyncToken.hpp>
 
-// CBLAS_ORDER, CBLAS_TRANSPOSE, ...
-#include <scai/lama/cblas.hpp>
-
-// logging
 #include <scai/logging.hpp>
 
+#include <scai/common/SCAITypes.hpp>
+
+// CUDA
 #include <cublas_v2.h>
 #include <cuda_runtime_api.h>
 

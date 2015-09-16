@@ -30,20 +30,26 @@
  * @date 15.07.2011
  */
 
+// local library
 #include <scai/hmemo/cuda/CUDAContext.hpp>
 #include <scai/hmemo/cuda/CUDAHostMemory.hpp>
 #include <scai/hmemo/cuda/CUDAMemory.hpp>
-#include <scai/common/cuda/CUDAError.hpp>
 #include <scai/hmemo/cuda/CUDAStreamSyncToken.hpp>
-
-#include <scai/tasking/TaskSyncToken.hpp>
 
 #include <scai/hmemo/ContextAccess.hpp>
 
+// internal scai libraries
+#include <scai/tasking/TaskSyncToken.hpp>
+
+#include <scai/common/cuda/CUDAError.hpp>
+#include <scai/common/Assert.hpp>
+
+// CUDA
 #include <cublas_v2.h>
 #include <cuda.h>
 #include <cusparse.h>
 
+// std
 #include <memory>
 
 namespace scai

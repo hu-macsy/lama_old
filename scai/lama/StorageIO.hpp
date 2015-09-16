@@ -35,16 +35,18 @@
 // for dll_import
 #include <scai/common/config.hpp>
 
-// others
+// internal scai libraries
 #include <scai/hmemo/LAMAArray.hpp>
+
 #include <scai/lama/io/FileType.hpp>
 
+// std
 #include <fstream>
-
-using scai::hmemo::LAMAArray;
 
 namespace scai
 {
+
+using hmemo::LAMAArray;
 
 namespace lama
 {

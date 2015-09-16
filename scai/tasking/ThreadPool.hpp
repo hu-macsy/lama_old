@@ -32,17 +32,17 @@
 
 #pragma once
 
+// internal scai libraries
+#include <scai/logging.hpp>
+
 #include <scai/common/config.hpp>
 #include <scai/common/Thread.hpp>
 #include <scai/common/NonCopyable.hpp>
-
-#include <scai/logging.hpp>
-
 #include <scai/common/function.hpp>
 #include <scai/common/shared_ptr.hpp>
 
+// std
 #include <pthread.h>
-
 #include <climits>
 #include <queue>
 

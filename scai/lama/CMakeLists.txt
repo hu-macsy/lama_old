@@ -45,6 +45,7 @@ include ( VersionDefinition )
 ### Include Compiler Flags
 if    ( NOT SCAI_COMPLETE_BUILD )
 	include ( SetBuildFlags )
+	include ( SCAIAssert )
 	include ( SetCPPFlags )
 endif ( NOT SCAI_COMPLETE_BUILD )
 
@@ -66,6 +67,7 @@ include ( ConcludeFlags )
 ### add definitions ###
 
 add_definitions( ${ADDITIONAL_WARNING_FLAGS} )
+add_definitions ( -DSCAI_ASSERT_LEVEL_${SCAI_ASSERT_LEVEL} )
 
 ## MKL FOUND
 if     ( SCAI_BLAS_NAME STREQUAL "MKL" )
@@ -105,7 +107,6 @@ lama_set_source_dir ()
 set ( CLASSES
         CommunicationPlan
         Communicator
-        Complex
         DenseVector
         Distributed
         LAMAArrayUtils
@@ -119,8 +120,6 @@ set ( CLASSES
     )
 
 set ( HEADERS
-        LAMATypes
-        TypeTraits
         BLASInterface
         UtilsInterface
         CRTPCommunicator
@@ -148,7 +147,6 @@ endif ( USE_MIC )
 add_subdirectory ( distribution )
 add_subdirectory ( expression )
 add_subdirectory ( io )
-add_subdirectory ( macros )
 add_subdirectory ( matrix )
 add_subdirectory ( matutils )
 
@@ -195,10 +193,12 @@ if ( LAMA_SOLVER_LIBRARIES )
 endif ()
 
 ## add link libraries
+list ( REVERSE SCAI_LAMA_INTERNAL_DEPS )
 foreach    ( module ${SCAI_LAMA_INTERNAL_DEPS} )
 	string ( TOUPPER ${module} upper_module )
-    target_link_libraries ( ama ${${upper_module}_LIBRARY} )
+	set ( LAMA_LINK_LIBRARIES ${LAMA_LINK_LIBRARIES} ${${upper_module}_LIBRARY} )
 endforeach ( module ${SCAI_LAMA_INTERNAL_DEPS} )
+target_link_libraries ( ama ${SCAI_START_LINK_LIBRARIES} ${LAMA_LINK_LIBRARIES} ${SCAI_END_LINK_LIBRARIES} )
 
 foreach    ( module ${SCAI_LAMA_EXTERNAL_DEPS} )
 	string ( TOUPPER ${module} upper_module )
@@ -215,6 +215,12 @@ if ( SCALAPACK_FOUND AND MPI_FOUND AND USE_MPI )
     target_link_libraries ( ama ${SCAI_PBLAS_LIBRARIES} )
     add_definitions( -DSCAI_MKL_SCALAPACK ) ## TODO: where used?!
 endif ( SCALAPACK_FOUND AND MPI_FOUND AND USE_MPI )
+
+if ( USE_MIC )
+    set ( MKLROOT $ENV{MKLROOT} )
+    set_target_properties( ama PROPERTIES LINK_FLAGS
+        "-offload-option,mic,compiler,\"-L${MKLROOT}/lib/mic -Wl,--start-group -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_core -Wl,--end-group\"" )
+endif ( USE_MIC )
 
 ## install library.hpp
 configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/lama.hpp.in" "${CMAKE_CURRENT_BINARY_DIR}/include/lama.hpp" )
@@ -236,6 +242,6 @@ endif ( NOT SCAI_COMPLETE_BUILD )
 ### install
 install ( TARGETS ama DESTINATION lib )
 
-if    ( CMAKE_VERBOSE_BUILD OR NOT SCAI_COMPLETE_BUILD )
+if    ( DEFINED SCAI_CMAKE_VERBOSE OR NOT DEFINED SCAI_COMPLETE_BUILD )
 	include ( Summaries/lama )
-endif ( CMAKE_VERBOSE_BUILD OR NOT SCAI_COMPLETE_BUILD )
+endif ( DEFINED SCAI_CMAKE_VERBOSE OR NOT DEFINED SCAI_COMPLETE_BUILD )

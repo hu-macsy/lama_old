@@ -36,7 +36,7 @@
 #include <scai/lama/storage/CSRStorage.hpp>
 #include <scai/lama/storage/ELLStorage.hpp>
 
-#include <test/TestMacros.hpp>
+#include <scai/common/test/TestMacros.hpp>
 
 #include <test/Configuration.hpp>
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
@@ -70,12 +70,9 @@ void getMatrix_7_4 ( IndexType& numRows,
     numColumns = 4;
     const IndexType numValues = 12;
     // Attention: ia array is not an offset array, it contains number of values in each row
-    IndexType ia[] =
-    {   2, 1, 2, 3, 2, 0, 2};
-    ValueType values[] =
-    {   6.0f, 4.0f, 7.0f, -9.3f, 4.0f, 2.0f, 5.0f, 3.0f, 2.0f, 1.0f, 1.0f, 2.0f };
-    IndexType ja[] =
-    {   0, 3, 0, 2, 3, 0, 1, 3, 0, 3, 1, 3};
+    IndexType ia[] = { 2, 1, 2, 3, 2, 0, 2 };
+    ValueType values[] = { 6.0f, 4.0f, 7.0f, -9.3f, 4.0f, 2.0f, 5.0f, 3.0f, 2.0f, 1.0f, 1.0f, 2.0f };
+    IndexType ja[] = { 0, 3, 0, 2, 3, 0, 1, 3, 0, 3, 1, 3 };
     ValueType Resultmatrix[] =
     {
         6, 0, 0, 4,
@@ -99,8 +96,7 @@ void MatrixStorageTest<ValueType>::setDenseData( MatrixStorage<ValueType>& stora
 {
     const IndexType numRows = 4;
     const IndexType numColumns = 4;
-    static ValueType values[] =
-    { 6, 0, 0, 4, 7, 0, 0, 0, 0, 0, -9.3f, 4, 2, 5, 0, 3 };
+    static ValueType values[] = { 6, 0, 0, 4, 7, 0, 0, 0, 0, 0, -9.3f, 4, 2, 5, 0, 3 };
     // just make sure that number of entries in values matches the matrix size
     BOOST_CHECK_EQUAL( numRows * numColumns, IndexType( sizeof( values ) / sizeof ( ValueType ) ) );
     ValueType eps = static_cast<ValueType>( 1E-5 );
@@ -115,8 +111,7 @@ void MatrixStorageTest<ValueType>::setDenseDataNotSquare( MatrixStorage<ValueTyp
 {
     const IndexType numRows = 6;
     const IndexType numColumns = 4;
-    static ValueType values[] =
-    { 6, 0, 0, 4, 7, 0, 0, 0, 0, 0, -9.3f, 4, 2, 5, 0, 3, 0, 1, 2, 0, 8, 0, 0, 1 };
+    static ValueType values[] = { 6, 0, 0, 4, 7, 0, 0, 0, 0, 0, -9.3f, 4, 2, 5, 0, 3, 0, 1, 2, 0, 8, 0, 0, 1 };
     // just make sure that number of entries in values matches the matrix size
     BOOST_CHECK_EQUAL( numRows * numColumns, IndexType( sizeof( values ) / sizeof ( ValueType ) ) );
     ValueType eps = static_cast<ValueType>( 1E-5 );
@@ -146,8 +141,7 @@ void MatrixStorageTest<ValueType>::setDenseLocal( MatrixStorage<ValueType>& stor
 {
     const IndexType numRows = 4;
     const IndexType numColumns = 4;
-    static ValueType values[] =
-    { 10, 0, 0, 4, 3, 10, 0, 0, 0, 0, -9.3f, 4, 1, 5, 0, 13 };
+    static ValueType values[] = { 10, 0, 0, 4, 3, 10, 0, 0, 0, 0, -9.3f, 4, 1, 5, 0, 13 };
     // just make sure that number of entries in values matches the matrix size
     BOOST_CHECK_EQUAL( numRows * numColumns, IndexType( sizeof( values ) / sizeof ( ValueType ) ) );
     ValueType eps = static_cast<ValueType>( 1E-5 );
@@ -162,8 +156,7 @@ void MatrixStorageTest<ValueType>::setDenseHalo( MatrixStorage<ValueType>& stora
 {
     const IndexType numRows = 4;
     const IndexType numColumns = 3;
-    static ValueType values[] =
-    { 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0 };
+    static ValueType values[] = { 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0 };
     // just make sure that number of entries in values matches the matrix size
     BOOST_CHECK_EQUAL( numRows * numColumns, IndexType( sizeof( values ) / sizeof ( ValueType ) ) );
     ValueType eps = static_cast<ValueType>( 1E-5 );
@@ -232,7 +225,7 @@ LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, ValueType, emptyTest )
     }
 
     mMatrixStorage.purge();
-    BOOST_CHECK( mMatrixStorage.hasDiagonalProperty() );
+   BOOST_CHECK( mMatrixStorage.hasDiagonalProperty() );
 }
 LAMA_COMMON_TEST_CASE_TEMPLATE_END()
 
@@ -1181,9 +1174,9 @@ LAMA_COMMON_TEST_CASE_RUNNER_TEMPLATE( MatrixStorageTest )
 /* ------------------------------------------------------------------------- */
 
 #define LAMA_MATRIX_STORAGE_TEST_INSTANTIATE(z, I, _)                      \
-    template class MatrixStorageTest<ARITHMETIC_TYPE##I> ;
+    template class MatrixStorageTest<ARITHMETIC_HOST_TYPE_##I> ;
 
-BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_MATRIX_STORAGE_TEST_INSTANTIATE, _ )
+BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_MATRIX_STORAGE_TEST_INSTANTIATE, _ )
 
 #undef LAMA_MATRIX_STORAGE_INSTANTIATE
 

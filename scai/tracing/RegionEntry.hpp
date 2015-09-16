@@ -32,8 +32,7 @@
 
 #pragma once
 
-#include <scai/common/Printable.hpp>
-
+// std
 #include <string>
 #include <fstream>
 #include <iostream>

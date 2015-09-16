@@ -33,9 +33,14 @@
 
 #pragma once
 
+// local library
 #include <scai/common/config.hpp>
-#include <scai/common/Exception.hpp>
+#include <scai/common/unique_ptr.hpp>
 
+#include <scai/common/exception/Exception.hpp>
+
+// std
+#include <typeinfo>
 #include <memory>
 #include <map>
 #include <vector>
@@ -171,7 +176,7 @@ OutputType Factory<InputType, OutputType>::create( const InputType type )
     {
         // Be careful: operator<< for InputType must be available
 
-        COMMON_THROWEXCEPTION( "Factory: no creator for " << type << " available" )
+        COMMON_THROWEXCEPTION( "Factory: no creator for " << typeid(type).name() << " available" )
     }
 
     return value;
@@ -180,11 +185,11 @@ OutputType Factory<InputType, OutputType>::create( const InputType type )
 template<typename InputType, typename OutputType>
 std::map<InputType, OutputType(* )() >& Factory<InputType, OutputType>::getFactory()
 {
-    static std::auto_ptr<CreatorMap> factory;
+    static scai::common::unique_ptr<CreatorMap> factory;
 
     if ( !factory.get() )
     {
-        factory = std::auto_ptr<CreatorMap>( new CreatorMap() );
+        factory.reset( new CreatorMap() );
     }
 
     return *factory;

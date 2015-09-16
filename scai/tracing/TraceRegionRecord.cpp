@@ -33,14 +33,15 @@
 // hpp
 #include <scai/tracing/TraceRegionRecord.hpp>
 
-// others
-
+// local library
 #include <scai/tracing/TraceData.hpp>
 #include <scai/tracing/TraceConfig.hpp>
 #include <scai/tracing/VTInterface.hpp>
 
+// internal scai libraries
 #include <scai/common/Walltime.hpp>
 
+// std
 #include <cstdio>
 
 namespace scai
@@ -153,6 +154,8 @@ void TraceRegionRecord::enter()
 
     RegionEntry& regionEntry = mTraceData->getRegion( mRegionId );
 
+    SCAI_LOG_INFO( logger, "enter " << regionEntry.getRegionName() )
+
     if ( mTimeTrace | mCallTree )
     {
         mTraceData->enter( mRegionId, regionEntry, mCallTree );
@@ -174,6 +177,8 @@ void TraceRegionRecord::leave()
     }
 
     RegionEntry& regionEntry = mTraceData->getRegion( mRegionId );
+
+    SCAI_LOG_INFO( logger, "leave " << regionEntry.getRegionName() )
 
     if ( mTimeTrace | mCallTree )
     {

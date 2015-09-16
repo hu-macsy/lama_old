@@ -32,7 +32,7 @@
 ###
 
 ### BOOST_<lib>_FOUND    - if Boost component is found
-### Boost_INCLUDE_DIR    - Boost include directory
+### BOOST_INCLUDE_DIR    - Boost include directory
 ### Boost_<lib>_LIBRARY  - Boost component library
 ### SCAI_BOOST_LIBRARIES - all found BOOST libraries out of the searched component
 
@@ -45,6 +45,8 @@
 # set ( Boost_USE_STATIC_LIBS OFF )
 # set ( Boost_USE_MULTITHREADED OFF )
 
+if ( NOT DEFINED BOOST_INCLUDE_DIR )
+
 if    ( WIN32 )
     message ( STATUS "Setting special Boost options on Windows" )
     #set ( Boost_USE_STATIC_LIBS ON )
@@ -53,7 +55,7 @@ endif ( WIN32 )
 
 # Finds packages with custom search options 
 
-set ( Boost_COMPONENTS system unit_test_framework regex thread )
+set ( Boost_COMPONENTS unit_test_framework regex thread system )
 
 # FindBoost Debug options comment
 if    ( SCAI_CMAKE_VERBOSE )
@@ -67,21 +69,27 @@ endif ( SCAI_CMAKE_VERBOSE )
 
 find_package ( Boost ${SCAI_FIND_PACKAGE_FLAGS} COMPONENTS ${Boost_COMPONENTS} )
 
-# Note: we use Boost_INCLUDE_DIR, Boost_<lib>_FOUND, Boost_<lib>_LIBRARY, but
+if    ( Boost_INCLUDE_DIR )
+	set ( BOOST_INCLUDE_DIR "${Boost_INCLUDE_DIR}" ) # for getting the module names straight
+endif ( Boost_INCLUDE_DIR )
+
+message ( STATUS "Boost_INCLUDE_DIR ${Boost_INCLUDE_DIR} BOOST_INCLUDE_DIR ${BOOST_INCLUDE_DIR}" )
+
+# Note: we use BOOST_INCLUDE_DIR, Boost_<lib>_FOUND, Boost_<lib>_LIBRARY, but
 #       not Boost_FOUND, as it is false if some optional libraries are missing
 
 # Boost: include directory is mandatory ( LAMA uses shared pointer, function )
 
-if    ( Boost_INCLUDE_DIR )
+if    ( BOOST_INCLUDE_DIR )
 	# TODO: SUMMARY
-    #message ( STATUS "Boost_INCLUDE_DIR = ${Boost_INCLUDE_DIR}" )
-    get_filename_component ( Boost_PATH "${Boost_INCLUDE_DIR}" PATH )
+    #message ( STATUS "BOOST_INCLUDE_DIR = ${BOOST_INCLUDE_DIR}" )
+    get_filename_component ( Boost_PATH "${BOOST_INCLUDE_DIR}" PATH )
 	# TODO: SUMMARY
     #message ( STATUS "Boost_PATH = ${Boost_PATH}" )
     # Boost_PATH should be same as BOOST_ROOT
-else  ( Boost_INCLUDE_DIR )
+else  ( BOOST_INCLUDE_DIR )
     message ( STATUS "Boost (include directory) not found: give hint by environment variable BOOST_ROOT" ) 
-endif ( Boost_INCLUDE_DIR )
+endif ( BOOST_INCLUDE_DIR )
 
 # check status of each Boost component and conclude all needed Boost libraries
 set ( SCAI_BOOST_LIBRARIES "" )
@@ -144,3 +152,5 @@ else  ( DEFINED BUILD_TEST )
     # Set cache variable
     set ( BUILD_TEST ${USE_PACKAGE} CACHE BOOL "Enable / Disable building of tests" )
 endif ( DEFINED BUILD_TEST )
+
+endif ( NOT DEFINED BOOST_INCLUDE_DIR )

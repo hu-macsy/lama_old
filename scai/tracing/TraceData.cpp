@@ -30,11 +30,13 @@
  * @date 11.06.2015
  */
 
+/// local library
 #include <scai/tracing/TraceData.hpp>
 #include <scai/tracing/CallStack.hpp>
 #include <scai/tracing/CallTreeTable.hpp>
 
-#include <scai/common/Exception.hpp>
+// internal scai libraries
+#include <scai/common/Assert.hpp>
 
 namespace scai
 {
@@ -129,6 +131,8 @@ void TraceData::leave( const int regionId, RegionEntry& region, const bool callT
 
 int TraceData::getCurrentRegionId( const char* regionName )
 {
+    int regionId = 0;  // default value avoids compiler warning due to exception
+
     if ( !mCallStack.empty() )
     {
         // check that regionName is the last region on the current call stack
@@ -139,17 +143,16 @@ int TraceData::getCurrentRegionId( const char* regionName )
         {
             COMMON_THROWEXCEPTION( "mismatch in call stack, stop " << regionName <<
                                    ", but currently called region is " << callRegion.getRegionName() )
-            return 0;
         }
 
-        return currentRegionId;
+        regionId = currentRegionId;
     }
     else
     {
-        return mRegionTable.getRegionId( regionName );
+        regionId = mRegionTable.getRegionId( regionName );
     }
 
-    return 0; // compiler avoids warning
+    return regionId;
 }
 
 TraceData::TraceData( const char* prefix, ThreadId threadId, bool mThreadEnabled ) :

@@ -34,33 +34,30 @@
 // hpp
 #include <scai/lama/openmp/OpenMPJDSUtils.hpp>
 
-// others
+// local library
 #include <scai/lama/openmp/OpenMPUtils.hpp>
 #include <scai/lama/openmp/OpenMP.hpp>
 
 #include <scai/lama/LAMAInterface.hpp>
 #include <scai/lama/LAMAInterfaceRegistry.hpp>
 
-// assert
-#include <scai/common/SCAIAssert.hpp>
-
-// macros
-#include <scai/lama/macros/unused.hpp>
-
-// trace
+// internal scai libraries
 #include <scai/tracing.hpp>
 
-// boost
+#include <scai/common/macros/unused.hpp>
 #include <scai/common/unique_ptr.hpp>
-#include <boost/preprocessor.hpp>
+#include <scai/common/Assert.hpp>
 
-using scai::common::scoped_array;
+// boost
+#include <boost/preprocessor.hpp>
 
 namespace scai
 {
 
 namespace lama
 {
+
+using common::scoped_array;
 
 SCAI_LOG_DEF_LOGGER( OpenMPJDSUtils::logger, "OpenMP.JDSUtils" )
 
@@ -836,24 +833,24 @@ void OpenMPJDSUtils::setInterface( JDSUtilsInterface& JDSUtils )
     LAMA_INTERFACE_REGISTER( JDSUtils, ilg2dlg )
     LAMA_INTERFACE_REGISTER( JDSUtils, checkDiagonalProperty )
 
-#define LAMA_JDS_UTILS2_REGISTER(z, J, TYPE )                                       \
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getRow, TYPE, ARITHMETIC_TYPE##J )        \
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getValue, TYPE, ARITHMETIC_TYPE##J )      \
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, scaleValue, TYPE, ARITHMETIC_TYPE##J )    \
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, setCSRValues, TYPE, ARITHMETIC_TYPE##J )  \
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getCSRValues, TYPE, ARITHMETIC_TYPE##J )  \
+#define LAMA_JDS_UTILS2_REGISTER(z, J, TYPE )                                             \
+    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getRow, TYPE, ARITHMETIC_HOST_TYPE_##J )        \
+    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getValue, TYPE, ARITHMETIC_HOST_TYPE_##J )      \
+    LAMA_INTERFACE_REGISTER_TT( JDSUtils, scaleValue, TYPE, ARITHMETIC_HOST_TYPE_##J )    \
+    LAMA_INTERFACE_REGISTER_TT( JDSUtils, setCSRValues, TYPE, ARITHMETIC_HOST_TYPE_##J )  \
+    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getCSRValues, TYPE, ARITHMETIC_HOST_TYPE_##J )  \
 
-#define LAMA_JDS_UTILS_REGISTER(z, I, _)                                            \
-    LAMA_INTERFACE_REGISTER_T( JDSUtils, normalGEMV, ARITHMETIC_TYPE##I )           \
-    LAMA_INTERFACE_REGISTER_T( JDSUtils, normalGEVM, ARITHMETIC_TYPE##I )           \
-    LAMA_INTERFACE_REGISTER_T( JDSUtils, jacobi, ARITHMETIC_TYPE##I )               \
-    LAMA_INTERFACE_REGISTER_T( JDSUtils, jacobiHalo, ARITHMETIC_TYPE##I )           \
+#define LAMA_JDS_UTILS_REGISTER(z, I, _)                                                  \
+    LAMA_INTERFACE_REGISTER_T( JDSUtils, normalGEMV, ARITHMETIC_HOST_TYPE_##I )           \
+    LAMA_INTERFACE_REGISTER_T( JDSUtils, normalGEVM, ARITHMETIC_HOST_TYPE_##I )           \
+    LAMA_INTERFACE_REGISTER_T( JDSUtils, jacobi, ARITHMETIC_HOST_TYPE_##I )               \
+    LAMA_INTERFACE_REGISTER_T( JDSUtils, jacobiHalo, ARITHMETIC_HOST_TYPE_##I )           \
     \
-    BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT,                                           \
-                     LAMA_JDS_UTILS2_REGISTER,                                      \
-                     ARITHMETIC_TYPE##I )                                           \
+    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT,                                            \
+                     LAMA_JDS_UTILS2_REGISTER,                                            \
+                     ARITHMETIC_HOST_TYPE_##I )                                           \
 
-    BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_JDS_UTILS_REGISTER, _ )
+    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_JDS_UTILS_REGISTER, _ )
 
 #undef LAMA_JDS_UTILS_REGISTER
 #undef LAMA_JDS_UTILS2_REGISTER

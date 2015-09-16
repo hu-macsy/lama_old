@@ -33,12 +33,13 @@
 // hpp
 #include <scai/tasking/SyncToken.hpp>
 
-#include <scai/common/Exception.hpp>
-
-using scai::common::shared_ptr;
+// internal scai libraries
+#include <scai/common/Assert.hpp>
 
 namespace scai
 {
+
+using common::shared_ptr;
 
 namespace tasking
 {

@@ -38,19 +38,18 @@
 // for dll_import
 #include <scai/common/config.hpp>
 
-// base classes
+// local library
 #include <scai/lama/CRTPCommunicator.hpp>
 
-// others
-#include <scai/lama/LAMATypes.hpp>
+// internal scai libraries
 #include <scai/tasking/SyncToken.hpp>
 
-// logging
 #include <scai/logging.hpp>
 
-// Thread
+#include <scai/common/SCAITypes.hpp>
 #include <scai/common/Thread.hpp>
 
+// std
 #include <vector>
 
 namespace scai
@@ -262,6 +261,97 @@ private:
 
     static MPIGuard guard;   // define one guard variable
 };
+
+/* ---------------------------------------------------------------------------------- */
+/*              getMPIType                                                            */
+/* ---------------------------------------------------------------------------------- */
+
+template<>
+inline MPI_Datatype MPICommunicator::getMPIType<float>()
+{
+    return MPI_FLOAT;
+}
+
+template<>
+inline MPI_Datatype MPICommunicator::getMPIType<char>()
+{
+    return MPI_CHAR;
+}
+
+template<>
+inline MPI_Datatype MPICommunicator::getMPIType<double>()
+{
+    return MPI_DOUBLE;
+}
+
+template<>
+inline MPI_Datatype MPICommunicator::getMPIType<int>()
+{
+    return MPI_INT;
+}
+
+template<>
+inline MPI_Datatype MPICommunicator::getMPIType<long double>()
+{
+    return MPI_LONG_DOUBLE;
+}
+
+template<>
+inline MPI_Datatype MPICommunicator::getMPIType<ComplexFloat>()
+{
+    return MPI_COMPLEX;
+}
+
+template<>
+inline MPI_Datatype MPICommunicator::getMPIType<ComplexDouble>()
+{
+    // Be careful: some MPI implementations do not provide MPI_DOUBLE_COMPLEX
+    // May be helpful: MPI::DOUBLE_COMPLEX
+    return MPI_DOUBLE_COMPLEX;
+}
+
+template<>
+inline MPI_Datatype MPICommunicator::getMPIType<ComplexLongDouble>()
+{
+    // Be careful: some MPI implementations do not provide MPI_DOUBLE_COMPLEX
+    // May be helpful: MPI::DOUBLE_COMPLEX
+    return MPI_2DOUBLE_COMPLEX;
+}
+
+template<>
+inline MPI_Datatype MPICommunicator::getMPIType<unsigned long>()
+{
+    return MPI_UNSIGNED_LONG;
+}
+
+/* ---------------------------------------------------------------------------------- */
+/*              getMPI2Type                                                           */
+/* ---------------------------------------------------------------------------------- */
+
+template<typename T1,typename T2>
+inline MPI_Datatype MPICommunicator::getMPI2Type()
+{
+    COMMON_THROWEXCEPTION( "unsupported type for MPI communication" )
+    return MPI_2INT;
+}
+
+template<>
+inline MPI_Datatype MPICommunicator::getMPI2Type<float,int>()
+{
+    return MPI_FLOAT_INT;
+}
+
+template<>
+inline MPI_Datatype MPICommunicator::getMPI2Type<double,int>()
+{
+    return MPI_DOUBLE_INT;
+}
+
+template<>
+inline MPI_Datatype MPICommunicator::getMPI2Type<int,int>()
+{
+    return MPI_2INT;
+}
 
 } /* end namespace lama */
 

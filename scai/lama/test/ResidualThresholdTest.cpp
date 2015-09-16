@@ -49,7 +49,7 @@
 #include <scai/lama/expression/VectorExpressions.hpp>
 
 #include <test/EquationHelper.hpp>
-#include <test/TestMacros.hpp>
+#include <scai/common/test/TestMacros.hpp>
 
 using namespace scai::lama;
 using namespace scai::hmemo;

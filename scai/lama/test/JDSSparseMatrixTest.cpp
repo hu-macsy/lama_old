@@ -37,7 +37,7 @@
 #include <scai/lama/matrix/JDSSparseMatrix.hpp>
 
 #include <test/SparseMatrixTest.hpp>
-#include <test/TestMacros.hpp>
+#include <scai/common/test/TestMacros.hpp>
 
 using namespace scai::lama;
 using namespace scai::hmemo;
@@ -89,7 +89,7 @@ BOOST_AUTO_TEST_SUITE( JDSSparseMatrixTest )
 
 SCAI_LOG_DEF_LOGGER( logger, "Test.SparseMatrixTest.JDSSparseMatrixTest" )
 
-LAMA_AUTO_TEST_CASE_CT( commonTestCases, JDSSparseMatrixTest )
+LAMA_AUTO_TEST_CASE_CT( commonTestCases, JDSSparseMatrixTest, scai::lama )
 LAMA_AUTO_TEST_CASE_T( typeNameTest, JDSSparseMatrixTest )
 /* ------------------------------------------------------------------------------------------------------------------ */
 

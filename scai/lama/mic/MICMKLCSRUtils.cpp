@@ -31,25 +31,28 @@
  * @since 1.0.0
  */
 
-// for dll_import
+// hpp
 #include <scai/lama/mic/MICMKLCSRUtils.hpp>
+
+// local library
 #include <scai/lama/mic/MICUtils.hpp>
 
-// others
 #include <scai/lama/LAMAInterface.hpp>
 #include <scai/lama/LAMAInterfaceRegistry.hpp>
 
-// assert
-#include <scai/lama/exception/LAMAAssert.hpp>
-#include <scai/lama/Settings.hpp>
-
-// trace
+// internal scai libraries
 #include <scai/tracing.hpp>
 
+#include <scai/common/Assert.hpp>
+#include <scai/common/Settings.hpp>
+
+// external
 #include <mkl.h>
 
 namespace scai
 {
+
+using namespace hmemo;
 
 namespace lama
 {
@@ -73,7 +76,7 @@ void MICMKLCSRUtils::normalGEMV(
     const float csrValues[],
     SyncToken* syncToken )
 {
-    SCAI_REGION( "MIC.MKLscsrmv" )
+    // SCAI_REGION( "MIC.MKLscsrmv" )
 
     SCAI_LOG_INFO( logger,
                    "normalGEMV<float>, result[" << numRows << "] = " << alpha << " * A * x + " << beta << " * y " )
@@ -126,7 +129,7 @@ void MICMKLCSRUtils::normalGEMV(
     const double csrValues[],
     SyncToken* syncToken )
 {
-    SCAI_REGION( "MIC.MKLdcsrmv" )
+    // SCAI_REGION( "MIC.MKLdcsrmv" )
 
     SCAI_LOG_INFO( logger,
                    "normalGEMV<double>, result[" << numRows << "] = " << alpha << " * A * x + " << beta << " * y " )
@@ -144,7 +147,9 @@ void MICMKLCSRUtils::normalGEMV(
     size_t xPtr = (size_t) x;
     size_t resultPtr = (size_t) result;
 
-#pragma offload target( mic ), in( numRows, numColumns, alpha, xPtr, beta, resultPtr, \
+    int device = MICContext::getCurrentDevice();
+
+#pragma offload target( mic : device ), in( numRows, numColumns, alpha, xPtr, beta, resultPtr, \
                                        csrValuesPtr, csrJAPtr, csrIAPtr )
     {
         char transa = 'n';
@@ -180,7 +185,7 @@ void MICMKLCSRUtils::setInterface( CSRUtilsInterface& CSRUtils )
 
     // using MKL for CSR might be disabled explicitly by environment variable
 
-    Settings::getEnvironment( useMKL, "USE_MKL" );
+    common::Settings::getEnvironment( useMKL, "USE_MKL" );
 
     if( !useMKL )
     {
@@ -200,7 +205,7 @@ void MICMKLCSRUtils::setInterface( CSRUtilsInterface& CSRUtils )
 
 bool MICMKLCSRUtils::registerInterface()
 {
-    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( Context::MIC );
+    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( context::MIC );
     setInterface( interface.CSRUtils );
     return true;
 }

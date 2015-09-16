@@ -39,7 +39,7 @@
 // base classes
 #include <scai/lama/solver/criteria/Criterion.hpp>
 
-// others
+// local library
 #include <scai/lama/Scalar.hpp>
 
 #include <scai/lama/norm/Norm.hpp>

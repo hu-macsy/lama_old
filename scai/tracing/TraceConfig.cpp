@@ -33,11 +33,13 @@
 // hpp
 #include <scai/tracing/TraceConfig.hpp>
 
-// others
+// local library
 #include <scai/tracing/VTInterface.hpp>
 #include <scai/tracing/TraceData.hpp>
-#include <scai/common/Exception.hpp>
 
+#include <scai/common/exception/Exception.hpp>
+
+// std
 #include <iostream>
 #include <cstdlib>
 
@@ -47,8 +49,8 @@ namespace scai
 namespace tracing
 {
 
-using scai::common::Thread;
-using scai::common::shared_ptr;
+using common::Thread;
+using common::shared_ptr;
 
 /* -------------------------------------------------------------------------- *
  *   Static class variables                                                   *

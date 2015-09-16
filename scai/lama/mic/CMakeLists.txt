@@ -33,19 +33,16 @@
 
 ### Add classes and header files ###
 set ( CLASSES
-        MICContext
-        MICSyncToken
-        MICContextManager
-        MICUtils
-        MICCSRUtils
-        MICMKLCSRUtils
-        MICELLUtils
-        MICJDSUtils
-        MICDIAUtils
-        MICCOOUtils
-        MICBLAS1
-        MICBLAS2
-        MICBLAS3
+          MICUtils
+          MICCSRUtils
+          MICMKLCSRUtils
+          MICELLUtils
+          MICJDSUtils
+          MICDIAUtils
+          MICCOOUtils
+          MICBLAS1
+          MICBLAS2
+          MICBLAS3
     )
 
 lama_classes ( ${CLASSES} )

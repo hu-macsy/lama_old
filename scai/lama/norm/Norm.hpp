@@ -36,7 +36,7 @@
 // for dll_import
 #include <scai/common/config.hpp>
 
-// others
+// local library
 #include <scai/lama/matrix/Matrix.hpp>
 #include <scai/lama/Vector.hpp>
 #include <scai/lama/Scalar.hpp>

@@ -34,11 +34,13 @@
 // hpp
 #include <scai/lama/mpi/MPISyncToken.hpp>
 
-// others
-#include <scai/tracing.hpp>
+// local library
 #include <scai/lama/mpi/MPIUtils.hpp>
 
-#include <scai/common/SCAIAssert.hpp>
+// internal scai libraries
+#include <scai/tracing.hpp>
+
+#include <scai/common/Assert.hpp>
 
 using namespace scai::tasking;
 

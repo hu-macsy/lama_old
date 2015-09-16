@@ -34,11 +34,11 @@
 // hpp
 #include <scai/lama/solver/criteria/Criterion.hpp>
 
-// others
+// local library
 #include <scai/lama/solver/IterativeSolver.hpp>
 
-// assert
-#include <scai/common/SCAIAssert.hpp>
+// internal scai libraries
+#include <scai/common/Assert.hpp>
 
 namespace scai
 {

@@ -34,7 +34,7 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/mpl/list.hpp>
 
-#include <test/TestMacros.hpp>
+#include <scai/common/test/TestMacros.hpp>
 
 #include <scai/lama/distribution/BlockDistribution.hpp>
 #include <scai/lama/matutils/MatrixCreator.hpp>

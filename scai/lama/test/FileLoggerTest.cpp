@@ -37,12 +37,14 @@
 
 #include <fstream>
 
-#include <test/TestMacros.hpp>
+#include <scai/common/test/TestMacros.hpp>
 #include <test/Configuration.hpp>
 #include <scai/common/unique_ptr.hpp>
+#include <scai/common/SCAITypes.hpp>
 
 using namespace scai::lama;
 using namespace scai::hmemo;
+
 using scai::common::Exception;
 using scai::common::unique_ptr;
 using scai::common::scoped_array;

@@ -35,13 +35,14 @@
 // for dll_import
 #include <scai/common/config.hpp>
 
-#include <scai/tasking/Task.hpp>
-#include <scai/common/shared_ptr.hpp>
-
 // base classes
 #include <scai/tasking/SyncToken.hpp>
 
-// others
+// local library
+#include <scai/tasking/Task.hpp>
+
+// internal scai libraries
+#include <scai/common/shared_ptr.hpp>
 
 namespace scai
 {

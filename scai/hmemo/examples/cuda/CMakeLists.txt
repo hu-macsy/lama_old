@@ -40,8 +40,7 @@ foreach ( executable CUSparseExample MemBandwidth )
     target_link_libraries( ${executable} scai_hmemo )
 endforeach ( executable )
 
-foreach ( executable Example1 Example2 Devices BenchContext )
+foreach ( executable Example1 Example2 Devices CUDABenchContext )
     cuda_add_executable( ${executable} ${executable}.cu )
     target_link_libraries( ${executable} scai_hmemo )
 endforeach ( executable )
-

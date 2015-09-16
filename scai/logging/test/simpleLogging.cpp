@@ -1,5 +1,5 @@
-/**
- * @file MICSyncToken.hpp
+/*
+ * @file scai/logging/test/simpleLogging.cpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,62 +25,23 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief MICSyncToken.hpp
- * @author Thomas Brandes
- * @date 02.07.2013
- * @since 1.1.0
- */
+ * @brief simple executable that uses each log level of SCAI logging
+ * @author Jan Ecker
+ * @date 03.09.2015
+ * @since 2.0.0
+*/
 
-#pragma once
+#include <scai/logging.hpp>
 
-// base classes
-#include <scai/lama/SyncToken.hpp>
-#include <scai/lama/mic/MICContext.hpp>
+SCAI_LOG_DEF_LOGGER( logger, "Test" )
 
-// boost
-#include <scai/common/shared_ptr.hpp>
-
-namespace scai
+int main()
 {
+    SCAI_LOG_TRACE( logger, "trace message" )
+    SCAI_LOG_DEBUG( logger, "debug message" )
+    SCAI_LOG_INFO( logger, "info message" )
+    SCAI_LOG_WARN( logger, "warn message" )
+    SCAI_LOG_ERROR( logger, "error message" )
+    SCAI_LOG_FATAL( logger, "fatal message" )
 
-namespace lama
-{
-
-typedef common::shared_ptr<const MICContext> MICContextPtr;
-
-/** Class that sycnchronizes with a MIC offload transfer or computation. */
-
-class COMMON_DLL_IMPORTEXPORT MICSyncToken: public scai::lama::SyncToken
-
-{
-public:
-
-    /** Constructor for a MIC sychronization token.
-     *
-     *  @param[in]  context  is the MICcontext where asynchronous operation takes place
-     *
-     *  A pointer to the MIC context is required to enable/disable it.
-     */
-
-    MICSyncToken( MICContextPtr context );
-
-    virtual ~MICSyncToken();
-
-    /** After starting the offload computation/transfer with a signal this signal is set here. */
-
-    void setSignal( int signal );
-
-    virtual void wait();
-
-    virtual bool probe() const;
-
-private:
-
-    MICContextPtr mMICContext; // needed for synchronization
-
-    int mSignal; // set by an offload computation
-};
-
-} /* end namespace lama */
-
-} /* end namespace scai */
+} 

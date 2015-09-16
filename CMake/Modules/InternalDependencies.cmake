@@ -31,6 +31,9 @@
  # @since 2.0.0
 ###
 
+## CAUTION: define internal dependencies considering their dependencies !!!
+## use reverse linking order (for static linking)
+
 set ( SCAI_COMMON_INTERNAL_DEPS )
 set ( SCAI_LOGGING_INTERNAL_DEPS scai_common )
 set ( SCAI_TRACING_INTERNAL_DEPS scai_common scai_logging )

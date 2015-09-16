@@ -30,8 +30,10 @@
  * @date 01.03.2011
  */
 
+// local library
 #include <scai/logging/Level.hpp>
 
+// std
 #include <cstring>
 
 namespace scai
@@ -47,36 +49,30 @@ const char* level2str( const Level level )
 {
     switch ( level )
     {
-        case TRACE:
+        case level::TRACE:
             return "TRACE";
 
-        case DEBUG:
+        case level::DEBUG:
             return "DEBUG";
 
-        case INFO:
+        case level::INFO:
             return "INFO";
 
-        case WARN:
+        case level::WARN:
             return "WARN";
 
-        case SERROR:
+        case level::SERROR:
             return "ERROR";
 
-        case FATAL:
+        case level::FATAL:
             return "FATAL";
 
-        case OFF:
+        case level::OFF:
             return "OFF";
 
         default:
             return "UNKNOWN";
     }
-}
-
-std::ostream& operator<<( std::ostream& os, const Level& level )
-{
-    os << level2str( level );
-    return os;
 }
 
 Level str2level( const std::string& value )
@@ -86,39 +82,50 @@ Level str2level( const std::string& value )
 
     if ( strcmp( cvalue, "TRACE" ) == 0 )
     {
-        level = TRACE;
+        level = level::TRACE;
     }
     else if ( strcmp( cvalue, "DEBUG" ) == 0 )
     {
-        level = DEBUG;
+        level = level::DEBUG;
     }
     else if ( strcmp( cvalue, "INFO" ) == 0 )
     {
-        level = INFO;
+        level = level::INFO;
     }
     else if ( strcmp( cvalue, "WARN" ) == 0 )
     {
-        level = WARN;
+        level = level::WARN;
     }
     else if ( strcmp( cvalue, "ERROR" ) == 0 )
     {
-        level = SERROR;
+        level = level::SERROR;
     }
     else if ( strcmp( cvalue, "FATAL" ) == 0 )
     {
-        level = FATAL;
+        level = level::FATAL;
     }
     else if ( strcmp( cvalue, "OFF" ) == 0 )
     {
-        level = OFF;
+        level = level::OFF;
     }
     else
     {
-        level = MAXLEVEL; // used as error indicator
+        level = level::MAXLEVEL; // used as error indicator
     }
 
     return level;
 }
+
+namespace level
+{
+
+std::ostream& operator<<( std::ostream& os, const Level& level )
+{
+    os << scai::logging::level2str( level );
+    return os;
+}
+
+} /* end namespace level */
 
 } /* end namespace logging */
 

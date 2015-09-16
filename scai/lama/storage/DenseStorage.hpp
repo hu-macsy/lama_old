@@ -39,9 +39,11 @@
 // base classes
 #include <scai/lama/storage/CRTPMatrixStorage.hpp>
 
-// others
-#include <scai/hmemo.hpp>
+// local library
 #include <scai/lama/Scalar.hpp>
+
+// internal scai libraries
+#include <scai/hmemo.hpp>
 
 namespace scai
 {

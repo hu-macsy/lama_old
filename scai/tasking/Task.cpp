@@ -33,10 +33,11 @@
 // hpp
 #include <scai/tasking/Task.hpp>
 
-// others
-#include <scai/common/Exception.hpp>
+// internal scai libraries
+#include <scai/common/exception/Exception.hpp>
 #include <scai/common/bind.hpp>
 
+// std
 #include <limits>
 
 namespace scai

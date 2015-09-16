@@ -30,14 +30,15 @@
  # @date 16.06.2015
 ###
 
-# Array1 example
-
-foreach ( executable Array1 BenchArray Aliasing Threading Create )
+foreach ( executable Array1 BenchArray BenchContext Aliasing Threading Create )
     add_executable( ${executable} ${executable}.cpp )
     target_link_libraries( ${executable} scai_hmemo )
 endforeach ( executable )
 
-if ( CUDA_FOUND AND USE_CUDA )
+if    ( CUDA_FOUND AND USE_CUDA )
     add_subdirectory ( cuda )
-endif ()
+endif ( CUDA_FOUND AND USE_CUDA )
 
+if ( USE_MIC )
+    add_subdirectory ( mic )
+endif ( USE_MIC )

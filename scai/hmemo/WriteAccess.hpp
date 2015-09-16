@@ -38,14 +38,14 @@
 // base classes
 #include <scai/hmemo/Access.hpp>
 
-// others
+// local library
 #include <scai/hmemo/LAMAArray.hpp>
 #include <scai/hmemo/Context.hpp>
 
-#include <scai/common/Exception.hpp>
-
-// logging
+// internal scai libraries
 #include <scai/logging.hpp>
+
+#include <scai/common/exception/Exception.hpp>
 
 namespace scai
 {
@@ -142,19 +142,19 @@ public:
      * for all other locations this is done lazy.
      *
      */
-    void resize( const common::IndexType newSize );
+    void resize( const IndexType newSize );
 
     /**
      * @brief Reserves storage for the wrapped LAMAArray at the associated location.
      *
      * @param[in] capacity  the number of elements that should fit into the new storage
      */
-    void reserve( const common::IndexType capacity );
+    void reserve( const IndexType capacity );
 
     /**
      *  @brief Queries the capacity of the array on the reserved context.
      */
-    common::IndexType capacity() const;
+    IndexType capacity() const;
 
     /**
      * @brief Releases the WriteAccess on the associated LAMAArray.
@@ -171,7 +171,7 @@ public:
      *
      * @return  the size of the wrapped LAMAArray
      */
-    inline common::IndexType size() const;
+    inline IndexType size() const;
 
 protected:
 
@@ -242,7 +242,7 @@ WriteAccess<ValueType>::operator ValueType*()
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-inline common::IndexType WriteAccess<ValueType>::size() const
+inline IndexType WriteAccess<ValueType>::size() const
 {
     if ( mArray )
     {
@@ -268,7 +268,7 @@ void WriteAccess<ValueType>::clear()
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void WriteAccess<ValueType>::resize( const common::IndexType newSize )
+void WriteAccess<ValueType>::resize( const IndexType newSize )
 {
     SCAI_ASSERT( mArray, "WriteAccess has already been released." )
     // do not log before check of mArray
@@ -280,7 +280,7 @@ void WriteAccess<ValueType>::resize( const common::IndexType newSize )
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void WriteAccess<ValueType>::reserve( const common::IndexType capacity )
+void WriteAccess<ValueType>::reserve( const IndexType capacity )
 {
     SCAI_ASSERT( mArray, "WriteAccess has already been released." )
     SCAI_LOG_DEBUG( logger, "reserve " << *mArray << " to new capacity " << capacity )
@@ -291,7 +291,7 @@ void WriteAccess<ValueType>::reserve( const common::IndexType capacity )
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-common::IndexType WriteAccess<ValueType>::capacity() const
+IndexType WriteAccess<ValueType>::capacity() const
 {
     SCAI_ASSERT( mArray, "WriteAccess has already been released." )
     return mArray->capacity( mContextDataIndex );

@@ -33,7 +33,7 @@
 
 #include <scai/tasking/TaskSyncToken.hpp>
 
-#include <scai/common/Exception.hpp>
+#include <scai/common/Assert.hpp>
 #include <scai/logging.hpp>
 
 #include <scai/common/bind.hpp>

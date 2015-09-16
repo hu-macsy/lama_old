@@ -33,22 +33,22 @@
 // hpp
 #include <scai/lama/storage/StorageMethods.hpp>
 
-// others
+// local library
 #include <scai/lama/distribution/Distribution.hpp>
 #include <scai/lama/distribution/HaloBuilder.hpp>
 #include <scai/lama/distribution/Redistributor.hpp>
 
 #include <scai/lama/openmp/OpenMPCSRUtils.hpp>
 
-// assert
-#include <scai/common/SCAIAssert.hpp>
+// internal scai libraries
+#include <scai/common/Assert.hpp>
 
-// tracing
 #include <scai/tracing.hpp>
 
 // boost
 #include <boost/preprocessor.hpp>
 
+// std
 #include <algorithm>
 
 using namespace scai::hmemo;
@@ -680,10 +680,10 @@ void StorageMethods<ValueType>::joinCSR(
 
 /* -------------------------------------------------------------------------- */
 
-#define LAMA_STORAGE_METHODS_INSTANTIATE(z, I, _)                              \
-    template class COMMON_DLL_IMPORTEXPORT StorageMethods<ARITHMETIC_TYPE##I> ;
+#define LAMA_STORAGE_METHODS_INSTANTIATE(z, I, _)                                     \
+    template class COMMON_DLL_IMPORTEXPORT StorageMethods<ARITHMETIC_HOST_TYPE_##I> ;
 
-BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_STORAGE_METHODS_INSTANTIATE, _ )
+BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_STORAGE_METHODS_INSTANTIATE, _ )
 
 #undef LAMA_STORAGE_METHODS_INSTANTIATE
 

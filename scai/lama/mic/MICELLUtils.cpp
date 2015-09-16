@@ -34,30 +34,34 @@
 // hpp
 #include <scai/lama/mic/MICELLUtils.hpp>
 
-// others
+// local project
 #include <scai/lama/LAMAInterface.hpp>
 #include <scai/lama/LAMAInterfaceRegistry.hpp>
 
-#include <scai/lama/NoSyncToken.hpp>
-#include <scai/lama/mic/MICSyncToken.hpp>
-#include <scai/lama/mic/MICContext.hpp>
+// internal scai projects
+#include <scai/hmemo/mic/MICSyncToken.hpp>
+#include <scai/hmemo/mic/MICContext.hpp>
+#include <scai/tasking/NoSyncToken.hpp>
 
-// macros
-#include <scai/lama/macros/unused.hpp>
-
-// tracing
 #include <scai/tracing.hpp>
 
-// boost
 #include <scai/common/bind.hpp>
+#include <scai/common/Assert.hpp>
+#include <scai/common/macros/unused.hpp>
 
-// stl
+// external
+
+// std
 #include <set>
 #include <map>
 #include <cmath>
 
 namespace scai
 {
+
+using tasking::SyncToken;
+
+using namespace hmemo;
 
 namespace lama
 {
@@ -152,7 +156,9 @@ bool MICELLUtils::hasDiagonalProperty( const IndexType numDiagonals, const Index
 
     const void* ellJAPtr = ellJA;
 
-#pragma offload target( MIC ) in( ellJAPtr, numDiagonals ), out( diagonalProperty )
+    int device = MICContext::getCurrentDevice();
+
+#pragma offload target( MIC : device ) in( ellJAPtr, numDiagonals ), out( diagonalProperty )
     {
         const IndexType* ellJA = static_cast<const IndexType*>( ellJAPtr );
 
@@ -431,7 +437,7 @@ void MICELLUtils::getCSRValues(
     SCAI_LOG_INFO( logger,
                    "get CSRValues<" << common::getScalarType<ELLValueType>() << ", " << common::getScalarType<CSRValueType>() << ">" << ", #rows = " << numRows )
 
-    SCAI_REGION( "MIC.ELL->CSR_values" )
+    // SCAI_REGION( "MIC.ELL->CSR_values" )
 
     // parallelization possible as offset array csrIA is available
 
@@ -489,7 +495,7 @@ void MICELLUtils::setCSRValues(
     const IndexType csrJA[],
     const CSRValueType csrValues[] )
 {
-    SCAI_REGION( "MIC.ELL<-CSR_values" )
+    // SCAI_REGION( "MIC.ELL<-CSR_values" )
 
     SCAI_LOG_INFO( logger,
                    "set CSRValues<" << common::getScalarType<ELLValueType>() << ", " << common::getScalarType<CSRValueType>() << ">" << ", #rows = " << numRows << ", #values/row = " << numValuesPerRow )
@@ -899,7 +905,7 @@ void MICELLUtils::jacobi(
     const ValueType omega,
     class SyncToken* syncToken )
 {
-    SCAI_REGION( "MIC.ELL.jacobi" )
+    // SCAI_REGION( "MIC.ELL.jacobi" )
 
     SCAI_LOG_INFO( logger,
                    "jacobi<" << common::getScalarType<ValueType>() << ">" << ", #rows = " << numRows << ", omega = " << omega )
@@ -985,7 +991,7 @@ void MICELLUtils::jacobiHalo(
         // not yet implemented: run the offload computation asynchronously
     }
 
-    SCAI_REGION( "MIC.ELL.jacobiHalo" )
+    // SCAI_REGION( "MIC.ELL.jacobiHalo" )
 
     void* solutionPtr = solution;
 
@@ -1070,7 +1076,7 @@ void MICELLUtils::normalGEMV(
         // not yet implemented: run the offload computation asynchronously
     }
 
-    SCAI_REGION( "MIC.ELL.normalGEMV" )
+    // SCAI_REGION( "MIC.ELL.normalGEMV" )
 
     // conversion of pointer to size_t to cheat offload
 
@@ -1146,7 +1152,7 @@ void MICELLUtils::sparseGEMV(
         // not yet implemented: run the offload computation asynchronously
     }
 
-    SCAI_REGION( "MIC.ELL.sparseGEMV" )
+    // SCAI_REGION( "MIC.ELL.sparseGEMV" )
 
     SCAI_LOG_INFO( logger,
                    "sparseGEMV<" << common::getScalarType<ValueType>() << ">, n = " << numRows << ", nonZeroRows = " << numNonZeroRows << ", alpha = " << alpha )
@@ -1286,7 +1292,7 @@ void MICELLUtils::setInterface( ELLUtilsInterface& ELLUtils )
 
 bool MICELLUtils::registerInterface()
 {
-    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( Context::MIC );
+    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( context::MIC );
     setInterface( interface.ELLUtils );
     return true;
 }

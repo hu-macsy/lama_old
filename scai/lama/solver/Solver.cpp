@@ -34,13 +34,13 @@
 // hpp
 #include <scai/lama/solver/Solver.hpp>
 
-// others
+// local library
 #include <scai/lama/solver/logger/CommonLogger.hpp>
 #include <scai/lama/solver/logger/Timer.hpp>
 
 #include <scai/lama/expression/MatrixVectorExpressions.hpp>
 
-// assert
+// internal scai libraries
 #include <scai/tracing.hpp>
 
 namespace scai
@@ -172,6 +172,8 @@ const Vector& Solver::getResidual() const
 
     if( runtime.mSolution.isDirty() || !runtime.mResidual.get() )
     {
+        SCAI_REGION( "Solver.computeResidual" )
+
         SCAI_LOG_DEBUG( logger, "calculating residual of = " << &(runtime.mSolution.getConstReference()) )
 
         if( !runtime.mResidual.get() )

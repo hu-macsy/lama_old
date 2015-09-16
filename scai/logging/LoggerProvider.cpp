@@ -33,11 +33,11 @@
 // hpp
 #include <scai/logging/LoggerProvider.hpp>
 
-// others
+// local library
 #include <scai/logging/Logger.hpp>
 
+// std
 #include <stdexcept>
-
 #include <sstream>
 
 namespace scai

@@ -2,8 +2,6 @@
 
 #include <scai/lama.hpp>
 
-// #include <scai/lama/LAMATypes.hpp>
-
 #include <scai/lama/DenseVector.hpp>
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 

@@ -34,12 +34,14 @@
 
 // for dll_import
 #include <scai/common/config.hpp>
-#include <scai/common/Thread.hpp>
 
 // base classes
 #include <scai/hmemo/Memory.hpp>
+
+// internal scai libraries
 #include <scai/tasking/TaskSyncToken.hpp>
 
+#include <scai/common/Thread.hpp>
 #include <scai/common/shared_ptr.hpp>
 
 namespace scai

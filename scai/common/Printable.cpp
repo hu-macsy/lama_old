@@ -33,7 +33,14 @@
 // hpp
 #include <scai/common/Printable.hpp>
 
+// std
 #include <typeinfo>
+
+namespace scai
+{
+
+namespace common
+{
 
 bool Printable::extended = false;
 
@@ -61,3 +68,6 @@ std::ostream& operator<<( std::ostream& stream, const Printable& object )
     return stream;
 }
 
+} /* end namespace common */
+
+} /* end namespace scai */

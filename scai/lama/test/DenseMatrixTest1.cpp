@@ -37,7 +37,7 @@
 #include <scai/lama/matrix/DenseMatrix.hpp>
 
 #include <test/SparseMatrixTest.hpp>
-#include <test/TestMacros.hpp>
+#include <scai/common/test/TestMacros.hpp>
 
 using namespace scai::lama;
 using namespace scai::hmemo;
@@ -81,7 +81,7 @@ BOOST_AUTO_TEST_SUITE( DenseMatrixTest1 )
 
 SCAI_LOG_DEF_LOGGER( logger, "Test.DenseMatrixTest1" )
 
-LAMA_AUTO_TEST_CASE_CT( commonTestCases, DenseMatrixTest1 )
+LAMA_AUTO_TEST_CASE_CT( commonTestCases, DenseMatrixTest1, scai::lama )
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 BOOST_AUTO_TEST_SUITE_END()

@@ -34,17 +34,20 @@
 // hpp
 #include <scai/lama/LAMAArrayUtils.hpp>
 
-// others
-#include <scai/hmemo.hpp>
+// local library
 #include <scai/lama/LAMAInterface.hpp>
 
-// tracing
+// internal scai libraries
+#include <scai/hmemo.hpp>
+
 #include <scai/tracing.hpp>
+
+#include <scai/common/SCAITypes.hpp>
 
 // boost
 #include <boost/preprocessor.hpp>
-#include <scai/lama/LAMATypes.hpp>
 
+// std
 #include <iostream>
 
 using namespace scai::hmemo;
@@ -111,10 +114,10 @@ void LAMAArrayUtils::assignImpl1( LAMAArray<ValueType>& target, const ContextArr
 
 #define LAMA_ARRAY_ASSIGN( z, I, _ )                                                            \
 case common::scalar::SCALAR_ARITHMETIC_TYPE##I:                                                 \
-    assignImpl( target, dynamic_cast<const LAMAArray<ARITHMETIC_TYPE##I>& >( source ), loc );   \
+    assignImpl( target, dynamic_cast<const LAMAArray<ARITHMETIC_HOST_TYPE_##I>& >( source ), loc );   \
     break;                                                                                      \
 
-        BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_ARRAY_ASSIGN, _ )
+        BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_ARRAY_ASSIGN, _ )
 
 #undef LAMA_ARRAY_ASSIGN
 
@@ -142,10 +145,10 @@ void LAMAArrayUtils::assign( ContextArray& target, const ContextArray& source, c
 
 #define LAMA_ARRAY_ASSIGN1( z, I, _ )                                                          \
 case common::scalar::SCALAR_ARITHMETIC_TYPE##I:                                                \
-    assignImpl1( dynamic_cast<LAMAArray< ARITHMETIC_TYPE##I>& >( target ), source, validLoc ); \
+    assignImpl1( dynamic_cast<LAMAArray< ARITHMETIC_HOST_TYPE_##I>& >( target ), source, validLoc ); \
     break;
 
-        BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_ARRAY_ASSIGN1, _ )
+        BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_ARRAY_ASSIGN1, _ )
 
 #undef LAMA_ARRAY_ASSIGN1
 
@@ -221,13 +224,13 @@ void LAMAArrayUtils::assignScalar( ContextArray& target, const Scalar& value, Co
 #define LAMA_ARRAY_ASSIGN_SCALAR( z, I, _ )                                   \
 case common::scalar::SCALAR_ARITHMETIC_TYPE##I:                               \
 {                                                                             \
-    LAMAArray<ARITHMETIC_TYPE##I>& typedTarget =                              \
-            dynamic_cast<LAMAArray<ARITHMETIC_TYPE##I>&>( target );           \
+    LAMAArray<ARITHMETIC_HOST_TYPE_##I>& typedTarget =                              \
+            dynamic_cast<LAMAArray<ARITHMETIC_HOST_TYPE_##I>&>( target );           \
     assignScalar( typedTarget, value, context );                              \
     break;                                                                    \
 }
 
-BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_ARRAY_ASSIGN_SCALAR, _ )
+BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_ARRAY_ASSIGN_SCALAR, _ )
 
 #undef LAMA_ARRAY_ASSIGN_SCALAR
 
@@ -339,7 +342,7 @@ void LAMAArrayUtils::gather(
     template                                                                        \
     void LAMAArrayUtils::gather(                                                    \
             LAMAArray<TYPE>& target,                                                \
-            const LAMAArray<ARITHMETIC_TYPE##J>& source,                            \
+            const LAMAArray<ARITHMETIC_HOST_TYPE_##J>& source,                            \
             const LAMAArray<IndexType>& indexes );                                  \
 
 /** Macro instantiates operations for supported arithmetic types */
@@ -347,21 +350,21 @@ void LAMAArrayUtils::gather(
 #define LAMA_ARRAY_UTILS_INSTANTIATE(z, I, _)                                       \
     template                                                                        \
     void LAMAArrayUtils::setVal(                                                    \
-            LAMAArray<ARITHMETIC_TYPE##I>& target,                                  \
+            LAMAArray<ARITHMETIC_HOST_TYPE_##I>& target,                                  \
             const IndexType index,                                                  \
-            ARITHMETIC_TYPE##I val );                                               \
+            ARITHMETIC_HOST_TYPE_##I val );                                               \
     \
     template                                                                        \
     void LAMAArrayUtils::assignScaled(                                              \
-            LAMAArray<ARITHMETIC_TYPE##I>& result,                                  \
-            const ARITHMETIC_TYPE##I beta,                                          \
-            const LAMAArray<ARITHMETIC_TYPE##I>& y,                                 \
+            LAMAArray<ARITHMETIC_HOST_TYPE_##I>& result,                                  \
+            const ARITHMETIC_HOST_TYPE_##I beta,                                          \
+            const LAMAArray<ARITHMETIC_HOST_TYPE_##I>& y,                                 \
             ContextPtr loc );                                                       \
     \
-    BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT,                                           \
-                     LAMA_ARRAY_UTILS2_INSTANTIATE, ARITHMETIC_TYPE##I )
+    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT,                                           \
+                     LAMA_ARRAY_UTILS2_INSTANTIATE, ARITHMETIC_HOST_TYPE_##I )
 
-BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_ARRAY_UTILS_INSTANTIATE, _ )
+BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_ARRAY_UTILS_INSTANTIATE, _ )
 
 #undef LAMA_ARRAY_UTILS2_INSTANTIATE
 #undef LAMA_ARRAY_UTILS_INSTANTIATE

@@ -40,7 +40,7 @@ namespace logging
 {
 
 Logger::Logger( const std::string& name, Logger* const parent )
-    : mName( name ), mSetFlag( false ), mLevel( WARN ), mParent( parent )
+    : mName( name ), mSetFlag( false ), mLevel( level::WARN ), mParent( parent )
 {
     if ( mParent != NULL )
     {

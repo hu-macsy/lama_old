@@ -36,32 +36,35 @@
 
 // base classes
 #include <scai/common/NonCopyable.hpp>
+#include <scai/common/Factory.hpp>
+#include <scai/common/Printable.hpp>
 
-// others
-#include <scai/lama/LAMATypes.hpp>
-#include <scai/hmemo.hpp>
 #include <scai/lama/CommunicationPlan.hpp>
+
+// internal scai libraris
+#include <scai/hmemo.hpp>
+
 #include <scai/tasking/SyncToken.hpp>
 
-#include <scai/common/SCAIAssert.hpp>
-
-// logging
 #include <scai/logging.hpp>
 
-// Communicator factory
-#include <scai/common/Factory.hpp>
+#include <scai/common/Assert.hpp>
+#include <scai/common/SCAITypes.hpp>
+#include <scai/common/shared_ptr.hpp>
 
 // boost
-#include <scai/common/shared_ptr.hpp>
 #include <boost/preprocessor.hpp>
 
+// std
 #include <memory>
 #include <vector>
+
 //#include <cmath>
 
 namespace scai
 {
 
+using common::Complex;
 
 namespace hmemo
 {
@@ -101,9 +104,9 @@ typedef common::shared_ptr<const Communicator> CommunicatorPtr;
  */
 class COMMON_DLL_IMPORTEXPORT Communicator: 
 
-    public Printable, 
-    public common::Factory<std::string, CommunicatorPtr>,
-    private common::NonCopyable
+    public  scai::common::Printable,
+    public  scai::common::Factory<std::string, CommunicatorPtr>,
+    private scai::common::NonCopyable
 {
 
 public:

@@ -32,12 +32,13 @@
  */
 #pragma once
 
-#include <scai/lama/LAMATypes.hpp>
+// local library
+#include <scai/common/SCAITypes.hpp>
 
 namespace scai
 {
 
-namespace lama
+namespace common
 {
 
 /**
@@ -130,6 +131,16 @@ public:
 };
 
 template<>
+class TypeTraits<ComplexLongDouble>
+{
+public:
+    typedef int IndexType;
+    typedef ComplexLongDouble ValueType;
+    typedef const ComplexLongDouble ExpressionMemberType;
+    static const long size = sizeof(ComplexLongDouble);
+};
+
+template<>
 class TypeTraits<LongDouble>
 {
 public:
@@ -139,6 +150,6 @@ public:
     static const long size = sizeof(LongDouble);
 };
 
-} /* end namespace lama */
+} /* end namespace common */
 
 } /* end namespace scai */

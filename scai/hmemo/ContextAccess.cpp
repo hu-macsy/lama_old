@@ -32,7 +32,6 @@
  */
 
 // hpp
-
 #include <scai/hmemo/ContextAccess.hpp>
 
 namespace scai

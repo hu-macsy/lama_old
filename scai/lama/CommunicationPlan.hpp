@@ -38,13 +38,14 @@
 // base classes
 #include <scai/common/Printable.hpp>
 
-// others
-#include <scai/lama/LAMATypes.hpp>
+// internal scai libraries
 #include <scai/hmemo.hpp>
 
-// logging
 #include <scai/logging.hpp>
 
+#include <scai/common/SCAITypes.hpp>
+
+// std
 #include <vector>
 
 namespace scai
@@ -69,7 +70,7 @@ class Communicator;
  * where the number of elements is zero.
  *
  */
-class COMMON_DLL_IMPORTEXPORT CommunicationPlan: public Printable
+class COMMON_DLL_IMPORTEXPORT CommunicationPlan: public scai::common::Printable
 {
 public:
 

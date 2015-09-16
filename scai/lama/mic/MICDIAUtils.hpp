@@ -36,9 +36,10 @@
 // for dll_import
 #include <scai/common/config.hpp>
 
-// others
-#include <scai/lama/LAMATypes.hpp>
-#include <scai/lama/SyncToken.hpp>
+// internal scai libraries
+#include <scai/tasking/SyncToken.hpp>
+
+#include <scai/common/SCAITypes.hpp>
 
 namespace scai
 {
@@ -95,7 +96,7 @@ public:
         const IndexType numDiagonals,
         const IndexType diaOffsets[],
         const ValueType diaValues[],
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /** Implementation for DIAUtilsInterface::Solver::jacobi  */
 
@@ -110,7 +111,7 @@ public:
         const ValueType rhs[],
         const ValueType omega,
         const IndexType numRows,
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /** Implemenatation for DIAUtilsInterface::Reductions::absMaxVal */
 

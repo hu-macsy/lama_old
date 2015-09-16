@@ -37,7 +37,7 @@
 #include <scai/lama/storage/COOStorage.hpp>
 
 #include <test/MatrixStorageTest.hpp>
-#include <test/TestMacros.hpp>
+#include <scai/common/test/TestMacros.hpp>
 #include <scai/lama/LAMAArrayUtils.hpp>
 
 using namespace scai::lama;
@@ -213,10 +213,10 @@ void typeNameTest()
 BOOST_AUTO_TEST_SUITE( COOStorageTest )
 
 SCAI_LOG_DEF_LOGGER( logger, "Test.COOStorageTest" )
-LAMA_AUTO_TEST_CASE_CT( checkTest, COOStorageTest )
-LAMA_AUTO_TEST_CASE_CT( commonTestCases, COOStorageTest )
+LAMA_AUTO_TEST_CASE_CT( checkTest, COOStorageTest, scai::lama )
+LAMA_AUTO_TEST_CASE_CT( commonTestCases, COOStorageTest, scai::lama )
 LAMA_AUTO_TEST_CASE_T( constructorTest, COOStorageTest )
-LAMA_AUTO_TEST_CASE_CT( constructorTest1, COOStorageTest )
+LAMA_AUTO_TEST_CASE_CT( constructorTest1, COOStorageTest, scai::lama )
 LAMA_AUTO_TEST_CASE_T( typeNameTest, COOStorageTest )
 
 /* ------------------------------------------------------------------------------------------------------------------ */

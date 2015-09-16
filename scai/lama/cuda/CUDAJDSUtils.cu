@@ -32,23 +32,24 @@
  */
 
 // hpp
-#include <scai/lama/cuda/utils.cu.h>
-
-// others
-#include <scai/hmemo/cuda/CUDAStreamSyncToken.hpp>
-#include <scai/common/cuda/CUDAError.hpp>
-#include <scai/lama/cuda/CUDASettings.hpp>
 #include <scai/lama/cuda/CUDAJDSUtils.hpp>
-#include <scai/lama/cuda/CUDAUtils.hpp>
 
-#include <scai/common/SCAIAssert.hpp>
-#include <scai/tracing.hpp>
+// local library
+#include <scai/lama/cuda/utils.cu.h>
+#include <scai/lama/cuda/CUDAUtils.hpp>
+#include <scai/lama/cuda/CUDASettings.hpp>
 
 #include <scai/lama/LAMAInterface.hpp>
 #include <scai/lama/LAMAInterfaceRegistry.hpp>
 
-// macros
-#include <scai/lama/macros/unused.hpp>
+// internal scai library
+#include <scai/hmemo/cuda/CUDAStreamSyncToken.hpp>
+
+#include <scai/tracing.hpp>
+
+#include <scai/common/bind.hpp>
+#include <scai/common/Assert.hpp>
+#include <scai/common/cuda/CUDAError.hpp>
 
 // thrust
 #include <thrust/device_ptr.h>
@@ -64,15 +65,16 @@
 #include <thrust/transform_reduce.h>
 #include <thrust/tuple.h>
 
-#include <scai/common/bind.hpp>
+// boost
 #include <boost/preprocessor.hpp>
 
 using namespace scai::hmemo;
 using namespace scai::tasking;
-using scai::common::getScalarType;
 
 namespace scai
 {
+
+using common::getScalarType;
 
 namespace lama
 {
@@ -2851,46 +2853,46 @@ namespace lama
         LAMA_INTERFACE_REGISTER( JDSUtils, ilg2dlg )
         LAMA_INTERFACE_REGISTER( JDSUtils, setInversePerm )
 
-#define LAMA_JDS_UTILS2_REGISTER(z, J, TYPE )                                       \
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getRow, TYPE, ARITHMETIC_TYPE##J )        \
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getValue, TYPE, ARITHMETIC_TYPE##J )      \
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, scaleValue, TYPE, ARITHMETIC_TYPE##J )    \
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, setCSRValues, TYPE, ARITHMETIC_TYPE##J )  \
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getCSRValues, TYPE, ARITHMETIC_TYPE##J )  \
+#define LAMA_JDS_UTILS2_REGISTER(z, J, TYPE )                                             \
+    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getRow, TYPE, ARITHMETIC_CUDA_TYPE_##J )        \
+    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getValue, TYPE, ARITHMETIC_CUDA_TYPE_##J )      \
+    LAMA_INTERFACE_REGISTER_TT( JDSUtils, scaleValue, TYPE, ARITHMETIC_CUDA_TYPE_##J )    \
+    LAMA_INTERFACE_REGISTER_TT( JDSUtils, setCSRValues, TYPE, ARITHMETIC_CUDA_TYPE_##J )  \
+    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getCSRValues, TYPE, ARITHMETIC_CUDA_TYPE_##J )  \
 
-#define LAMA_JDS_UTILS_REGISTER(z, I, _)                                            \
-    LAMA_INTERFACE_REGISTER_T( JDSUtils, normalGEMV, ARITHMETIC_TYPE##I )           \
-    LAMA_INTERFACE_REGISTER_T( JDSUtils, normalGEVM, ARITHMETIC_TYPE##I )           \
-    LAMA_INTERFACE_REGISTER_T( JDSUtils, jacobi, ARITHMETIC_TYPE##I )               \
-    LAMA_INTERFACE_REGISTER_T( JDSUtils, jacobiHalo, ARITHMETIC_TYPE##I )           \
-                                                                                    \
-    BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT,                                           \
-                     LAMA_JDS_UTILS2_REGISTER,                                      \
-                     ARITHMETIC_TYPE##I )                                           \
+#define LAMA_JDS_UTILS_REGISTER(z, I, _)                                                  \
+    LAMA_INTERFACE_REGISTER_T( JDSUtils, normalGEMV, ARITHMETIC_CUDA_TYPE_##I )           \
+    LAMA_INTERFACE_REGISTER_T( JDSUtils, normalGEVM, ARITHMETIC_CUDA_TYPE_##I )           \
+    LAMA_INTERFACE_REGISTER_T( JDSUtils, jacobi, ARITHMETIC_CUDA_TYPE_##I )               \
+    LAMA_INTERFACE_REGISTER_T( JDSUtils, jacobiHalo, ARITHMETIC_CUDA_TYPE_##I )           \
+                                                                                          \
+    BOOST_PP_REPEAT( ARITHMETIC_CUDA_TYPE_CNT,                                            \
+                     LAMA_JDS_UTILS2_REGISTER,                                            \
+                     ARITHMETIC_CUDA_TYPE_##I )                                           \
 
-        BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_JDS_UTILS_REGISTER, _ )
+    BOOST_PP_REPEAT( ARITHMETIC_CUDA_TYPE_CNT, LAMA_JDS_UTILS_REGISTER, _ )
 
 #undef LAMA_JDS_UTILS_REGISTER
 #undef LAMA_JDS_UTILS2_REGISTER
 
     }
 
-    /* --------------------------------------------------------------------------- */
-    /*    Static registration of the Utils routines                                */
-    /* --------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------- */
+/*    Static registration of the Utils routines                                */
+/* --------------------------------------------------------------------------- */
 
-    bool CUDAJDSUtils::registerInterface()
-    {
-        LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( context::CUDA );
-        setInterface( interface.JDSUtils );
-        return true;
-    }
+bool CUDAJDSUtils::registerInterface()
+{
+    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( context::CUDA );
+    setInterface( interface.JDSUtils );
+    return true;
+}
 
-    /* --------------------------------------------------------------------------- */
-    /*    Static initialiazion at program start                                    */
-    /* --------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------- */
+/*    Static initialiazion at program start                                    */
+/* --------------------------------------------------------------------------- */
 
-    bool CUDAJDSUtils::initialized = registerInterface();
+bool CUDAJDSUtils::initialized = registerInterface();
 
 } /* end namespace lama */
 

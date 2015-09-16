@@ -34,7 +34,7 @@
 // hpp
 #include <scai/lama/solver/DefaultJacobi.hpp>
 
-// others
+// local library
 #include <scai/lama/expression/VectorExpressions.hpp>
 #include <scai/lama/expression/MatrixExpressions.hpp>
 #include <scai/lama/expression/MatrixVectorExpressions.hpp>

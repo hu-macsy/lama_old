@@ -34,14 +34,17 @@
 // hpp
 #include <scai/lama/matutils/MatrixCreator.hpp>
 
-// others
-#include <scai/hmemo/WriteAccess.hpp>
-
+// local library
 #include <scai/lama/distribution/BlockDistribution.hpp>
 #include <scai/lama/distribution/GeneralDistribution.hpp>
 
+// internal scai libraries
+#include <scai/hmemo/WriteAccess.hpp>
+
+// boost
 #include <boost/preprocessor.hpp>
 
+// std
 #include <cmath>
 
 namespace scai
@@ -284,13 +287,13 @@ void MatrixCreator<ValueType>::buildPoisson(
 {
     // Calculate subdomains, subranges
 
-    scai::lama::PartitionId gridSize[3] =
+    PartitionId gridSize[3] =
     { 1, 1, 1 };
-    scai::lama::PartitionId gridRank[3] =
+    PartitionId gridRank[3] =
     { 0, 0, 0 };
-    scai::lama::PartitionId dimLB[3] =
+    PartitionId dimLB[3] =
     { 0, 0, 0 };
-    scai::lama::PartitionId dimUB[3] =
+    PartitionId dimUB[3] =
     { dimX - 1, dimY - 1, dimZ - 1 };
 
     // ToDo: take communicator from input set
@@ -607,10 +610,10 @@ void MatrixCreator<ValueType>::buildRandom(
 /*       Template Instantiations                                             */
 /* ========================================================================= */
 
-#define LAMA_MATRIX_CREATOR_INSTANTIATE(z, I, _)                           \
-    template class COMMON_DLL_IMPORTEXPORT MatrixCreator<ARITHMETIC_TYPE##I> ;
+#define LAMA_MATRIX_CREATOR_INSTANTIATE(z, I, _)                                     \
+    template class COMMON_DLL_IMPORTEXPORT MatrixCreator<ARITHMETIC_HOST_TYPE_##I> ;
 
-BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_MATRIX_CREATOR_INSTANTIATE, _ )
+BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_MATRIX_CREATOR_INSTANTIATE, _ )
 
 #undef LAMA_MATRIX_CREATOR_INSTANTIATE
 

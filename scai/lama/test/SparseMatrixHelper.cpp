@@ -38,7 +38,7 @@
 template<typename ValueType>
 bool compareMatrices( const scai::lama::CSRSparseMatrix<ValueType>& matrix, const scai::lama::CSRSparseMatrix<ValueType>& other )
 {
-    scai::lama::IndexType nnu = matrix.getLocalNumRows();
+    IndexType nnu = matrix.getLocalNumRows();
 
     if ( !( nnu == other.getLocalNumRows() && matrix.getLocalNumColumns() == other.getLocalNumColumns()
             && matrix.getLocalNumValues() == other.getLocalNumValues() ) )
@@ -49,10 +49,10 @@ bool compareMatrices( const scai::lama::CSRSparseMatrix<ValueType>& matrix, cons
     // Note: getLocalData returns CSRStorage<ValueType>, so we can use getIA
     const scai::lama::CSRStorage<ValueType>& matrixLocal = matrix.getLocalStorage();
     const scai::lama::CSRStorage<ValueType>& otherLocal = other.getLocalStorage();
-    scai::hmemo::ReadAccess<scai::lama::IndexType> ia( matrixLocal.getIA() );
-    scai::hmemo::ReadAccess<scai::lama::IndexType> iaOther( otherLocal.getIA() );
+    scai::hmemo::ReadAccess<IndexType> ia( matrixLocal.getIA() );
+    scai::hmemo::ReadAccess<IndexType> iaOther( otherLocal.getIA() );
 
-    for ( scai::lama::IndexType i = 0; i < nnu + 1; ++i )
+    for ( IndexType i = 0; i < nnu + 1; ++i )
     {
         if ( ia[i] != iaOther[i] )
         {
@@ -60,19 +60,19 @@ bool compareMatrices( const scai::lama::CSRSparseMatrix<ValueType>& matrix, cons
         }
     }
 
-    scai::hmemo::ReadAccess<scai::lama::IndexType> ja( matrixLocal.getJA() );
-    scai::hmemo::ReadAccess<scai::lama::IndexType> jaOther( otherLocal.getJA() );
+    scai::hmemo::ReadAccess<IndexType> ja( matrixLocal.getJA() );
+    scai::hmemo::ReadAccess<IndexType> jaOther( otherLocal.getJA() );
     scai::hmemo::ReadAccess<ValueType> data( matrixLocal.getValues() );
     scai::hmemo::ReadAccess<ValueType> dataOther( otherLocal.getValues() );
 
-    for ( scai::lama::IndexType i = 0; i < nnu; ++i )
+    for ( IndexType i = 0; i < nnu; ++i )
     {
-        for ( scai::lama::IndexType jj = ia[i]; jj < ia[i + 1]; ++jj )
+        for ( IndexType jj = ia[i]; jj < ia[i + 1]; ++jj )
         {
-            scai::lama::IndexType j = ja[jj];
+            IndexType j = ja[jj];
             bool found = false;
 
-            for ( scai::lama::IndexType kk = iaOther[i]; kk < iaOther[i + 1]; ++kk )
+            for ( IndexType kk = iaOther[i]; kk < iaOther[i + 1]; ++kk )
             {
                 if ( j == jaOther[kk] )
                 {

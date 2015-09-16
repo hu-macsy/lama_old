@@ -35,18 +35,24 @@
 
 // for dll_import
 #include <scai/common/config.hpp>
-#include <boost/preprocessor.hpp>
 
 // base classes
 #include <scai/lama/Communicator.hpp>
-#include <scai/tasking/NoSyncToken.hpp>
-#include <vector>
 
-using scai::tasking::SyncToken;
-using scai::tasking::NoSyncToken;
+// internal scai libraris
+#include <scai/tasking/NoSyncToken.hpp>
+
+// boost
+#include <boost/preprocessor.hpp>
+
+// std
+#include <vector>
 
 namespace scai
 {
+
+using tasking::SyncToken;
+using tasking::NoSyncToken;
 
 namespace lama
 {

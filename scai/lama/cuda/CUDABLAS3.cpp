@@ -34,25 +34,28 @@
 // hpp
 #include <scai/lama/cuda/CUDABLAS3.hpp>
 
-// others
+// local library
 #include <scai/lama/LAMAInterface.hpp>
 #include <scai/lama/LAMAInterfaceRegistry.hpp>
-#include <scai/common/cuda/CUDAError.hpp>
-#include <scai/hmemo/cuda/CUDAStreamSyncToken.hpp>
 #include <scai/lama/openmp/BLASHelper.hpp>
 #include <scai/lama/cuda/lama_cublas.hpp>
 
-// macros
-#include <scai/lama/macros/unused.hpp>
+// internal scai library
+#include <scai/hmemo/cuda/CUDAStreamSyncToken.hpp>
 
+#include <scai/common/cuda/CUDAError.hpp>
+#include <scai/common/macros/unused.hpp>
+
+// boost
 #include <boost/preprocessor.hpp>
 
 using namespace scai::tasking;
 using namespace scai::hmemo;
-using scai::common::getScalarType;
 
 namespace scai
 {
+
+using common::getScalarType;
 
 extern cublasHandle_t CUDAContext_cublasHandle;
 
@@ -528,9 +531,9 @@ void CUDABLAS3::setInterface( BLASInterface& BLAS )
     //       ( e.g. routine CUDABLAS1::sum<ValueType> is set for BLAS::BLAS1::sum variable
 
 #define LAMA_BLAS3_REGISTER(z, I, _)                                            \
-    LAMA_INTERFACE_REGISTER_T( BLAS, gemm, ARITHMETIC_TYPE##I )                 \
+    LAMA_INTERFACE_REGISTER_T( BLAS, gemm, ARITHMETIC_CUDA_TYPE_##I )                 \
 
-    BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_BLAS3_REGISTER, _ )
+    BOOST_PP_REPEAT( ARITHMETIC_CUDA_TYPE_CNT, LAMA_BLAS3_REGISTER, _ )
 
 #undef LAMA_BLAS3_REGISTER
 

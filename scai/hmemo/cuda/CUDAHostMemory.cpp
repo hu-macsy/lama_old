@@ -32,24 +32,28 @@
  * @date 16.07.2015
  */
 
+// hpp
 #include <scai/hmemo/cuda/CUDAHostMemory.hpp>
-#include <scai/common/cuda/CUDAError.hpp>
+
+// local library
 #include <scai/hmemo/cuda/CUDAStreamSyncToken.hpp>
 
 #include <scai/hmemo/ContextAccess.hpp>
 
-#include <scai/common/Exception.hpp>
+// internal scai libraries
+#include <scai/common/cuda/CUDAError.hpp>
 
+#include <scai/common/Assert.hpp>
 #include <scai/common/bind.hpp>
 
-// import ::memcpy 
-#include <cstring>
-
-using scai::tasking::SyncToken;
-using scai::tasking::CUDAStreamSyncToken;
+// std
+#include <cstring> // import ::memcpy
 
 namespace scai
 {
+
+using tasking::SyncToken;
+using tasking::CUDAStreamSyncToken;
 
 namespace hmemo
 {

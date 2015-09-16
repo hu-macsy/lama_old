@@ -49,7 +49,7 @@ find_package ( Boost ${SCAI_FIND_PACKAGE_FLAGS} COMPONENTS thread system )
 
 if    ( Boost_THREAD_FOUND )
     if    ( Boost_SYSTEM_FOUND )
-        include_directories ( ${Boost_INCLUDE_DIR} )
+        include_directories ( ${BOOST_INCLUDE_DIR} )
         add_executable ( LogThreads LogThreads.cpp )
         target_link_libraries ( LogThreads scai_logging ${Boost_THREAD_LIBRARY} ${Boost_SYSTEM_LIBRARY} )
     else  ( Boost_SYSTEM_FOUND )

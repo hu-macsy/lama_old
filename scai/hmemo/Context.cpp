@@ -32,11 +32,14 @@
 
 // hpp
 #include <scai/hmemo/Context.hpp>
+
+// local library
 #include <scai/hmemo/Memory.hpp>
 
-// assert
-#include <scai/common/Exception.hpp>
+// internal scai libraries
+#include <scai/common/exception/Exception.hpp>
 
+// std
 #include <map>
 
 namespace scai
@@ -118,31 +121,32 @@ ContextPtr Context::getContextPtr( ContextType type, int deviceNr )
     return create( type, deviceNr );
 }
 
-} /* end namespace hmemo */
+namespace context
+{
 
-} /* end namespace scai */
-
-/* ---------------------------------------------------------------------------------*/
-
-std::ostream& operator<<( std::ostream& stream, const scai::hmemo::ContextType& type )
+std::ostream& operator<<( std::ostream& stream, const ContextType& type )
 {
     using namespace scai::hmemo;
 
     switch ( type )
     {
-        case context::Host :
+        case Host :
             stream << "Host";
             break;
 
-        case context::CUDA :
+        case CUDA :
             stream << "CUDA";
             break;
 
-        case context::OpenCL :
+        case MIC :
+            stream << "MIC";
+            break;
+
+        case OpenCL :
             stream << "OpenCL";
             break;
 
-        case context::UserContext :
+        case UserContext :
             stream << "UserContext";
             break;
 
@@ -155,17 +159,17 @@ std::ostream& operator<<( std::ostream& stream, const scai::hmemo::ContextType& 
 
 /* -----------------------------------------------------------------------------*/
 
-std::ostream& operator<<( std::ostream& stream, const scai::hmemo::AccessKind& kind )
+std::ostream& operator<<( std::ostream& stream, const AccessKind& kind )
 {
     using namespace scai::hmemo;
 
     switch ( kind )
     {
-        case context::Write :
+        case Write :
             stream << "Write";
             break;
 
-        case context::Read :
+        case Read :
             stream << "Read";
             break;
 
@@ -176,3 +180,10 @@ std::ostream& operator<<( std::ostream& stream, const scai::hmemo::AccessKind& k
     return stream;
 }
 
+} /* end namespace context */
+
+} /* end namespace hmemo */
+
+} /* end namespace scai */
+
+/* ---------------------------------------------------------------------------------*/

@@ -38,10 +38,9 @@
 #include <scai/common/config.hpp>
 
 // base classes
-#include <scai/common/NonCopyable.hpp>
 #include <scai/common/Printable.hpp>
 
-// others
+// local library
 #include <scai/lama/Vector.hpp>
 
 #include <scai/lama/matrix/Matrix.hpp>
@@ -52,6 +51,7 @@
 // logging
 #include <scai/logging.hpp>
 
+// std
 #include <string>
 #include <memory>
 
@@ -71,7 +71,7 @@ typedef common::shared_ptr<Solver> SolverPtr;
  * functionality for coefficient, rhs and solution storing, provides
  * a custom ID for a solver and a residual calculation capabilities.
  */
-class COMMON_DLL_IMPORTEXPORT Solver: public Printable
+class COMMON_DLL_IMPORTEXPORT Solver: public common::Printable
 {
 public:
     /**

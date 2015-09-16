@@ -173,11 +173,12 @@ int main()
 
         cout << "Case " << k << ": N = " << N << ", ITER = " << ITER << endl;
         cout << "res = " << res << endl;
-        cout << "routineSimple: " << ts << " ms "  << endl;
-        cout << "routineLAMA: " << tl << " ms "  << endl;
-        cout << "routineSCAI_1: " << tl1 << " ms "  << endl;
-        cout << "routineSCAI_2: " << tl2 << " ms "  << endl;
-        cout << "routineSCAI_3: " << tl3 << " ms "  << endl;
+        cout << "routineSimple (malloc/write/read)                : " << ts << " ms "  << endl;
+        cout << "routineLAMA (LAMA array write/read)              : " << tl << " ms "  << endl;
+        cout << "routineSCAI_1 (constructor LAMA array, size = 0) : " << tl1 << " ms "  << endl;
+        cout << "routineSCAI_2 (constructor LAMA array, size = N) : " << tl2 << " ms "  << endl;
+        cout << "routineSCAI_3 (as before, but also read access)  : " << tl3 << " ms "  << endl;
+        cout << "LAMA overhead : " << ( ( tl - ts ) / ITER * 1000.0 ) << " us "  << endl;
         cout << endl;
     }
 }

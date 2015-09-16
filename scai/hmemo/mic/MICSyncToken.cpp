@@ -32,16 +32,15 @@
  */
 
 // hpp
-#include <scai/lama/mic/MICSyncToken.hpp>
+#include <scai/hmemo/mic/MICSyncToken.hpp>
 
-// others
-#include <scai/tracing.hpp>
-#include <scai/lama/exception/LAMAAssert.hpp>
+// internal scai libraries
+#include <scai/common/Assert.hpp>
 
 namespace scai
 {
 
-namespace lama
+namespace tasking
 {
 
 MICSyncToken::MICSyncToken( MICContextPtr micContext )
@@ -66,11 +65,7 @@ void MICSyncToken::wait()
 
     if( mSignal >= 0 )
     {
-        SCAI_REGION( "MIC.offloadSynchronize" )
-
-#pragma offload target( mic : 0 ), wait( mSignal )
-        {
-        }
+        // SCAI_REGION( "MIC.offloadSynchronize" )
 
         // // finally called functions might also need the context, e.g. unbindTexture
 
@@ -104,6 +99,6 @@ bool MICSyncToken::probe() const
     return false;
 }
 
-} /* end namespace lama */
+} /* end namespace tasking */
 
 } /* end namespace scai */

@@ -104,14 +104,14 @@ public:
 #define LAMA_SET_CSR_CALL( z, I, _ )                                                      \
 case common::scalar::SCALAR_ARITHMETIC_TYPE##I:                                           \
 {                                                                                         \
-    const LAMAArray<ARITHMETIC_TYPE##I>& typedValues =                                    \
-            dynamic_cast<const LAMAArray<ARITHMETIC_TYPE##I>&>( values );                 \
+    const LAMAArray<ARITHMETIC_HOST_TYPE_##I>& typedValues =                                    \
+            dynamic_cast<const LAMAArray<ARITHMETIC_HOST_TYPE_##I>&>( values );                 \
     static_cast<Derived*>( this )->setCSRDataImpl(                                        \
             numRows, numColumns, numValues, ia, ja, typedValues, this->getContextPtr() ); \
     break;                                                                                \
 }                                                                                         \
  
-            BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_SET_CSR_CALL, _ )
+            BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_SET_CSR_CALL, _ )
 
 #undef LAMA_SET_CSR_CALL
 
@@ -143,14 +143,14 @@ case common::scalar::SCALAR_ARITHMETIC_TYPE##I:                                 
 #define LAMA_BUILD_CSR_CALL( z, I, _ )                                        \
 case common::scalar::SCALAR_ARITHMETIC_TYPE##I:                               \
 {                                                                     \
-    LAMAArray<ARITHMETIC_TYPE##I>& typedValues =                      \
-            dynamic_cast<LAMAArray<ARITHMETIC_TYPE##I>&>( csrValues );    \
+    LAMAArray<ARITHMETIC_HOST_TYPE_##I>& typedValues =                      \
+            dynamic_cast<LAMAArray<ARITHMETIC_HOST_TYPE_##I>&>( csrValues );    \
     static_cast<const Derived*>( this )->buildCSR(                    \
             csrIA, &csrJA, &typedValues, this->getContextPtr() );         \
     break;                                                            \
 }                                                                     \
  
-            BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_BUILD_CSR_CALL, _ )
+            BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_BUILD_CSR_CALL, _ )
 
 #undef LAMA_BUILD_CSR_CALL
 
@@ -174,13 +174,13 @@ case common::scalar::SCALAR_ARITHMETIC_TYPE##I:                               \
 #define LAMA_GET_ROW_CALL( z, I, _ )                                           \
 case common::scalar::SCALAR_ARITHMETIC_TYPE##I:                                \
 {                                                                      \
-    LAMAArray<ARITHMETIC_TYPE##I>& typedRow =                          \
-            dynamic_cast<LAMAArray<ARITHMETIC_TYPE##I>&>( row );           \
+    LAMAArray<ARITHMETIC_HOST_TYPE_##I>& typedRow =                          \
+            dynamic_cast<LAMAArray<ARITHMETIC_HOST_TYPE_##I>&>( row );           \
     static_cast<const Derived*>( this )->getRowImpl( typedRow, irow ); \
     break;                                                             \
 }                                                                      \
  
-            BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_GET_ROW_CALL, _ )
+            BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_GET_ROW_CALL, _ )
 
 #undef LAMA_GET_ROW_CALL
 
@@ -206,13 +206,13 @@ case common::scalar::SCALAR_ARITHMETIC_TYPE##I:                                \
 #define LAMA_GET_DIAGONAL_CALL( z, I, _ )                                           \
 case common::scalar::SCALAR_ARITHMETIC_TYPE##I:                                     \
 {                                                                           \
-    LAMAArray<ARITHMETIC_TYPE##I>& typedDiagonal =                          \
-            dynamic_cast<LAMAArray<ARITHMETIC_TYPE##I>&>( diagonal );           \
+    LAMAArray<ARITHMETIC_HOST_TYPE_##I>& typedDiagonal =                          \
+            dynamic_cast<LAMAArray<ARITHMETIC_HOST_TYPE_##I>&>( diagonal );           \
     static_cast<const Derived*>( this )->getDiagonalImpl( typedDiagonal );  \
     break;                                                             \
 }                                                                           \
  
-            BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_GET_DIAGONAL_CALL, _ )
+            BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_GET_DIAGONAL_CALL, _ )
 
 #undef LAMA_GET_DIAGONAL_CALL
 
@@ -253,13 +253,13 @@ case common::scalar::SCALAR_ARITHMETIC_TYPE##I:                                 
 #define LAMA_SET_DIAGONAL_CALL( z, I, _ )                                           \
 case common::scalar::SCALAR_ARITHMETIC_TYPE##I:                                     \
 {                                                                           \
-    const LAMAArray<ARITHMETIC_TYPE##I>& typedDiagonal =                    \
-            dynamic_cast<const LAMAArray<ARITHMETIC_TYPE##I>&>( diagonal );     \
+    const LAMAArray<ARITHMETIC_HOST_TYPE_##I>& typedDiagonal =                    \
+            dynamic_cast<const LAMAArray<ARITHMETIC_HOST_TYPE_##I>&>( diagonal );     \
     static_cast<Derived*>( this )->setDiagonalImpl( typedDiagonal );        \
     break;                                                                  \
 }                                                                           \
  
-            BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_SET_DIAGONAL_CALL, _ )
+            BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_SET_DIAGONAL_CALL, _ )
 
 #undef LAMA_SET_DIAGONAL_CALL
 
@@ -286,13 +286,13 @@ case common::scalar::SCALAR_ARITHMETIC_TYPE##I:                                 
 #define LAMA_SCALE_CALL( z, I, _ )                                                  \
 case common::scalar::SCALAR_ARITHMETIC_TYPE##I:                                     \
 {                                                                           \
-    const LAMAArray<ARITHMETIC_TYPE##I>& typedDiagonal =                    \
-            dynamic_cast<const LAMAArray<ARITHMETIC_TYPE##I>&>( diagonal );     \
+    const LAMAArray<ARITHMETIC_HOST_TYPE_##I>& typedDiagonal =                    \
+            dynamic_cast<const LAMAArray<ARITHMETIC_HOST_TYPE_##I>&>( diagonal );     \
     static_cast<Derived*>( this )->scaleImpl( typedDiagonal );              \
     break;                                                                  \
 }                                                                           \
  
-            BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_SCALE_CALL, _ )
+            BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_SCALE_CALL, _ )
 
 #undef LAMA_SCALE_CALL
 

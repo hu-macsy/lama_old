@@ -58,8 +58,8 @@ void testSameMatrix( const MatrixType1& m1, const MatrixType2& m2 )
     typedef typename MatrixType1::MatrixValueType ValueType1;
     typedef typename MatrixType2::MatrixValueType ValueType2;
     // Both matrices must be matrices of the same size
-    const scai::lama::IndexType m = m1.getNumRows();
-    const scai::lama::IndexType n = m1.getNumColumns();
+    const IndexType m = m1.getNumRows();
+    const IndexType n = m1.getNumColumns();
     BOOST_REQUIRE_EQUAL( m, m2.getNumRows() );
     BOOST_REQUIRE_EQUAL( n, m2.getNumColumns() );
     scai::lama::DenseVector<ValueType1> x1( m1.getColDistributionPtr(), 1.0 );
@@ -73,7 +73,7 @@ void testSameMatrix( const MatrixType1& m1, const MatrixType2& m2 )
     y1.redistribute( replicated );
     y2.redistribute( replicated );
 
-    for ( scai::lama::IndexType i = 0; i < m; i++ )
+    for ( IndexType i = 0; i < m; i++ )
     {
         scai::lama::Scalar s1 = y1.getValue( i );
         scai::lama::Scalar s2 = y2.getValue( i );

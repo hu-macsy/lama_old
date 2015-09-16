@@ -37,15 +37,17 @@
 // base classes
 #include <scai/hmemo/Context.hpp>
 
-// others
+// local library
 #include <scai/common/Thread.hpp>
 #include <scai/common/weak_ptr.hpp>
 
+// CUDA
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include <cusparse.h>
 #include <cublas_v2.h>
 
+// std
 #include <string>
 
 namespace scai

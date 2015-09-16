@@ -31,12 +31,17 @@
  * @since 1.0.0
  */
 
+// hpp
+#include <scai/lama/cuda/CUDALAPACK.hpp>
+
+// local library
 #include <scai/lama/cuda/CUDABLAS1.hpp>
 
 #include <scai/lama/LAMAInterface.hpp>
 #include <scai/lama/LAMAInterfaceRegistry.hpp>
+
+// internal scai library
 #include <scai/common/cuda/CUDAError.hpp>
-#include <scai/lama/cuda/CUDALAPACK.hpp>
 
 using namespace scai::tasking;
 using namespace scai::hmemo;

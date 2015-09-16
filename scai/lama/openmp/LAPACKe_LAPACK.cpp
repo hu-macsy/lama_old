@@ -34,22 +34,26 @@
 // hpp
 #include <scai/lama/openmp/LAPACKe_LAPACK.hpp>
 
-// others
+// local library
 #include <scai/lama/openmp/OpenMPBLAS1.hpp>
-
 #include <scai/lama/BLASInterface.hpp>
 #include <scai/lama/LAMAInterfaceRegistry.hpp>
 #include <scai/lama/openmp/BLASHelper.hpp>
-#include <scai/common/unique_ptr.hpp>
 
+// internal scai libraries
+#include <scai/common/unique_ptr.hpp>
+#include <scai/common/Assert.hpp>
+
+// external
 #include <mkl_lapacke.h>
 
+// boost
 #include <boost/preprocessor.hpp>
-
-using scai::common::scoped_array;
 
 namespace scai
 {
+
+using common::scoped_array;
 
 namespace lama
 {
@@ -237,6 +241,17 @@ IndexType LAPACKe_LAPACK::getrf( const CBLAS_ORDER, const int, const int, LongDo
 }
 
 /* ------------------------------------------------------------------------- */
+/*      getrf<ComplexLongDouble>                                                    */
+/* ------------------------------------------------------------------------- */
+
+template<>
+IndexType LAPACKe_LAPACK::getrf( const CBLAS_ORDER, const int, const int, ComplexLongDouble* const, const int, int* const )
+{
+    // ComplexLongDouble not supported by LAPACK, should give a serious runtime error
+    COMMON_THROWEXCEPTION( "getrf<ComplexLongDouble> unsupported" )
+}
+
+/* ------------------------------------------------------------------------- */
 /*      getinv<float>                                                        */
 /* ------------------------------------------------------------------------- */
 
@@ -333,17 +348,6 @@ void LAPACKe_LAPACK::getinv( const IndexType n, ComplexFloat* a, const IndexType
 }
 
 /* ------------------------------------------------------------------------- */
-/*      getinv<LongDouble>                                                   */
-/* ------------------------------------------------------------------------- */
-
-template<>
-void LAPACKe_LAPACK::getinv( const IndexType, LongDouble*, const IndexType )
-{
-    // LongDouble not supported by LAPACK, should give a serious runtime error
-    COMMON_THROWEXCEPTION( "getinv<LongDouble> unsupported" )
-}
-
-/* ------------------------------------------------------------------------- */
 /*      getinv<ComplexDouble>                                                */
 /* ------------------------------------------------------------------------- */
 
@@ -371,6 +375,28 @@ void LAPACKe_LAPACK::getinv( const IndexType n, ComplexDouble* a, const IndexTyp
     {
         COMMON_THROWEXCEPTION( "MKL sgetri failed, info = " << info )
     }
+}
+
+/* ------------------------------------------------------------------------- */
+/*      getinv<LongDouble>                                                   */
+/* ------------------------------------------------------------------------- */
+
+template<>
+void LAPACKe_LAPACK::getinv( const IndexType, LongDouble*, const IndexType )
+{
+    // LongDouble not supported by LAPACK, should give a serious runtime error
+    COMMON_THROWEXCEPTION( "getinv<LongDouble> unsupported" )
+}
+
+/* ------------------------------------------------------------------------- */
+/*      getinv<ComplexLongDouble>                                                   */
+/* ------------------------------------------------------------------------- */
+
+template<>
+void LAPACKe_LAPACK::getinv( const IndexType, ComplexLongDouble*, const IndexType )
+{
+    // ComplexLongDouble not supported by LAPACK, should give a serious runtime error
+    COMMON_THROWEXCEPTION( "getinv<ComplexLongDouble> unsupported" )
 }
 
 /* ------------------------------------------------------------------------- */
@@ -487,6 +513,17 @@ IndexType LAPACKe_LAPACK::getri( const CBLAS_ORDER, const int, LongDouble* const
 {
     // LongDouble not supported by LAPACK, should give a serious runtime error
     COMMON_THROWEXCEPTION( "getri<LongDouble> unsupported" )
+}
+
+/* ------------------------------------------------------------------------- */
+/*      getri<ComplexLongDouble>                                                    */
+/* ------------------------------------------------------------------------- */
+
+template<>
+IndexType LAPACKe_LAPACK::getri( const CBLAS_ORDER, const int, ComplexLongDouble* const, const int, int* const )
+{
+    // ComplexLongDouble not supported by LAPACK, should give a serious runtime error
+    COMMON_THROWEXCEPTION( "getri<ComplexLongDouble> unsupported" )
 }
 
 /* ------------------------------------------------------------------------- */
@@ -616,7 +653,7 @@ int LAPACKe_LAPACK::tptrs(
 }
 
 /* ------------------------------------------------------------------------- */
-/*      tptrs<ComplexDouble>                                                 */
+/*      tptrs<LongDouble>                                                 */
 /* ------------------------------------------------------------------------- */
 
 template<>
@@ -634,6 +671,25 @@ int LAPACKe_LAPACK::tptrs(
     COMMON_THROWEXCEPTION( "tptrs<LongDouble> unsupported" )
 }
 
+/* ------------------------------------------------------------------------- */
+/*      tptrs<ComplexLongDouble>                                                 */
+/* ------------------------------------------------------------------------- */
+
+template<>
+int LAPACKe_LAPACK::tptrs(
+    const CBLAS_ORDER,
+    const CBLAS_UPLO,
+    const CBLAS_TRANSPOSE,
+    const CBLAS_DIAG,
+    const int,
+    const int,
+    const ComplexLongDouble*,
+    ComplexLongDouble*,
+    const int )
+{
+    COMMON_THROWEXCEPTION( "tptrs<ComplexLongDouble> unsupported" )
+}
+
 /* --------------------------------------------------------------------------- */
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
@@ -643,13 +699,13 @@ void LAPACKe_LAPACK::setInterface( BLASInterface& BLAS )
     // Note: macro takes advantage of same name for routines and type definitions
     //       ( e.g. routine CUDABLAS1::sum<ValueType> is set for BLAS::BLAS1::sum variable
 
-#define LAMA_LAPACK_REGISTER(z, I, _)                                \
-    LAMA_INTERFACE_REGISTER_T( BLAS, getrf, ARITHMETIC_TYPE##I )     \
-    LAMA_INTERFACE_REGISTER_T( BLAS, getri, ARITHMETIC_TYPE##I )     \
-    LAMA_INTERFACE_REGISTER_T( BLAS, getinv, ARITHMETIC_TYPE##I )    \
-    LAMA_INTERFACE_REGISTER_T( BLAS, tptrs, ARITHMETIC_TYPE##I )     \
+#define LAMA_LAPACK_REGISTER(z, I, _)                                      \
+    LAMA_INTERFACE_REGISTER_T( BLAS, getrf, ARITHMETIC_HOST_TYPE_##I )     \
+    LAMA_INTERFACE_REGISTER_T( BLAS, getri, ARITHMETIC_HOST_TYPE_##I )     \
+    LAMA_INTERFACE_REGISTER_T( BLAS, getinv, ARITHMETIC_HOST_TYPE_##I )    \
+    LAMA_INTERFACE_REGISTER_T( BLAS, tptrs, ARITHMETIC_HOST_TYPE_##I )     \
 
-    BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_LAPACK_REGISTER, _ )
+    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_LAPACK_REGISTER, _ )
 
 #undef LAMA_LAPACK_REGISTER
 }

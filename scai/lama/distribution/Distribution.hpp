@@ -40,16 +40,17 @@
 #include <scai/common/NonCopyable.hpp>
 #include <scai/common/Printable.hpp>
 
-// others
-#include <scai/lama/LAMATypes.hpp>
+// local library
 #include <scai/lama/Communicator.hpp>
 
-// logging
+// internal scai libraries
 #include <scai/logging.hpp>
 
 // boost
 #include <scai/common/shared_ptr.hpp>
+#include <scai/common/SCAITypes.hpp>
 
+// std
 #include <map>
 #include <utility>
 
@@ -71,7 +72,7 @@ class Matrix;
  *
  * Default and copy constructor are not available for this class (noncopyable).
  */
-class COMMON_DLL_IMPORTEXPORT Distribution: public Printable, private common::NonCopyable
+class COMMON_DLL_IMPORTEXPORT Distribution: public common::Printable, private common::NonCopyable
 {
 
 public:

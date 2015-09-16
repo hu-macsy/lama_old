@@ -33,11 +33,14 @@
 
 #pragma once
 
+// local library
 #include <scai/tracing/RegionEntry.hpp>
 #include <scai/tracing/Counters.hpp>
 
+// internal scai libraries
 #include <scai/logging.hpp>
 
+// std
 #include <vector>
 
 namespace scai

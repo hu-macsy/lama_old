@@ -20,6 +20,7 @@
 #include <cstdlib>
 #include <cstdio>
 #include <cmath>
+#include <algorithm>
 #include <sys/time.h>
 
 using namespace std;
@@ -216,7 +217,9 @@ int main( int argc, char** argv )
             for ( int j = 1; j <= n; j++ )
             {
                 int k = idx( i, j, m );
-                error = std::max( error, abs( A[k] - A1[k] ) );
+                float diff = A[k] - A1[k];
+                diff = abs( diff );
+                error = std::max( error, diff );
             }
         }
 

@@ -33,14 +33,15 @@
 // hpp
 #include <scai/lama/Communicator.hpp>
 
-// others
+// local library
 #include <scai/lama/LAMAArrayUtils.hpp>
-#include <scai/tasking/NoSyncToken.hpp>
 
 #include <scai/lama/distribution/Distribution.hpp>
 #include <scai/lama/distribution/Halo.hpp>
 
-// tracing
+// internal scai libraries
+#include <scai/tasking/NoSyncToken.hpp>
+
 #include <scai/tracing.hpp>
 
 using namespace std;
@@ -741,7 +742,7 @@ void Communicator::bcast( std::string& val, const PartitionId root ) const
 
     std::vector<char> buffer( len + 1 );
 
-    char* strptr = buffer.data();
+    char* strptr = &buffer[0];
 
     if( isRoot )
     {

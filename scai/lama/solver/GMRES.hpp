@@ -39,7 +39,7 @@
 // base classes
 #include <scai/lama/solver/IterativeSolver.hpp>
 
-// boost
+// internal scai libraries
 #include <scai/common/unique_ptr.hpp>
 
 namespace scai

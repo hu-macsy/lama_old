@@ -38,21 +38,24 @@
 // base classes
 #include <scai/lama/Vector.hpp>
 
-// others
-#include <scai/hmemo.hpp>
+// local library
 #include <scai/lama/LAMAArrayUtils.hpp>
-#include <scai/tasking/SyncToken.hpp>
-#include <scai/lama/TypeTraits.hpp>
-
 #include <scai/lama/distribution/Distribution.hpp>
 #include <scai/lama/distribution/Halo.hpp>
-
-#include <scai/common/Exception.hpp>
 
 #include <scai/lama/io/mmio.hpp>
 #include <scai/lama/io/FileType.hpp>
 #include <scai/lama/io/XDRFileStream.hpp>
 
+// internal scai libraries
+#include <scai/hmemo.hpp>
+
+#include <scai/tasking/SyncToken.hpp>
+
+#include <scai/common/TypeTraits.hpp>
+#include <scai/common/exception/Exception.hpp>
+
+// std
 #include <fstream>
 
 using namespace scai::tasking;

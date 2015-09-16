@@ -34,34 +34,34 @@
 // hpp
 #include <scai/lama/mpi/MPICommunicator.hpp>
 
-// others
+// local library
 #include <scai/lama/mpi/MPISyncToken.hpp>
 #include <scai/lama/mpi/MPIUtils.hpp>
 
-#include <scai/common/Settings.hpp>
-#include <scai/common/SCAIAssert.hpp>
-
-// tracing
+// internal scai libraries
 #include <scai/tracing.hpp>
 
-// boost
+#include <scai/common/Settings.hpp>
+#include <scai/common/Assert.hpp>
 #include <scai/common/unique_ptr.hpp>
 #include <scai/common/bind.hpp>
 #include <scai/common/unique_ptr.hpp>
+
+// boost
 #include <boost/preprocessor.hpp>
 
+// std
 #include <iostream>
 #include <algorithm>
 
-#include <mpi.h>
-
 using namespace std;
-using scai::common::shared_ptr;
-using scai::common::unique_ptr;
-using scai::common::scoped_array;
 
 namespace scai
 {
+
+using common::shared_ptr;
+using common::unique_ptr;
+using common::scoped_array;
 
 namespace lama
 {
@@ -190,89 +190,6 @@ void MPICommunicator::initialize( int& argc, char** & argv )
     LAMA_MPICALL( logger, MPI_Comm_rank( mComm, &mRank ), "MPI_Comm_rank" )
 
     setNodeData(); // determine mNodeRank, mNodeSize
-}
-
-/* ---------------------------------------------------------------------------------- */
-/*              getMPIType                                                            */
-/* ---------------------------------------------------------------------------------- */
-
-template<>
-inline MPI_Datatype MPICommunicator::getMPIType<float>()
-{
-    return MPI_FLOAT;
-}
-
-template<>
-inline MPI_Datatype MPICommunicator::getMPIType<char>()
-{
-    return MPI_CHAR;
-}
-
-template<>
-inline MPI_Datatype MPICommunicator::getMPIType<double>()
-{
-    return MPI_DOUBLE;
-}
-
-template<>
-inline MPI_Datatype MPICommunicator::getMPIType<int>()
-{
-    return MPI_INT;
-}
-
-template<>
-inline MPI_Datatype MPICommunicator::getMPIType<long double>()
-{
-    return MPI_LONG_DOUBLE;
-}
-
-template<>
-inline MPI_Datatype MPICommunicator::getMPIType<ComplexFloat>()
-{
-    return MPI_COMPLEX;
-}
-
-template<>
-inline MPI_Datatype MPICommunicator::getMPIType<ComplexDouble>()
-{
-    // Be careful: some MPI implementations do not provide MPI_DOUBLE_COMPLEX
-    // May be helpful: MPI::DOUBLE_COMPLEX
-    return MPI_DOUBLE_COMPLEX;
-}
-
-template<>
-inline MPI_Datatype MPICommunicator::getMPIType<unsigned long>()
-{
-    return MPI_UNSIGNED_LONG;
-}
-
-/* ---------------------------------------------------------------------------------- */
-/*              getMPI2Type                                                           */
-/* ---------------------------------------------------------------------------------- */
-
-template<typename T1,typename T2>
-inline MPI_Datatype MPICommunicator::getMPI2Type()
-{
-    COMMON_THROWEXCEPTION( "unsupported type for MPI communication" )
-    return MPI_2INT;
-}
-
-template<>
-inline MPI_Datatype MPICommunicator::getMPI2Type<float,int>()
-{
-    return MPI_FLOAT_INT;
-}
-
-template<>
-inline MPI_Datatype MPICommunicator::getMPI2Type<double,int>()
-{
-    return MPI_DOUBLE_INT;
-}
-
-template<>
-inline MPI_Datatype MPICommunicator::getMPI2Type<int,int>()
-{
-    return MPI_2INT;
 }
 
 /* ---------------------------------------------------------------------------------- */
@@ -567,7 +484,7 @@ SyncToken* MPICommunicator::exchangeByPlanAsyncImpl(
 
     // create MPIToken as auto_ptr, so it will be freed in case of exception
 
-    auto_ptr<MPISyncToken> pSyncToken( new MPISyncToken( noRequests ) );
+    scai::common::unique_ptr<MPISyncToken> pSyncToken( new MPISyncToken( noRequests ) );
 
     MPISyncToken& syncToken = *pSyncToken;
 

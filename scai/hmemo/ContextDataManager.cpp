@@ -31,11 +31,13 @@
  */
 
 // hpp
-
 #include <scai/hmemo/ContextDataManager.hpp>
+
+// local library
 #include <scai/hmemo/Context.hpp>
 
-#include <scai/common/Exception.hpp>
+// internal scai libraries
+#include <scai/common/Assert.hpp>
 
 namespace scai
 {
@@ -718,6 +720,8 @@ void ContextDataManager::swap( ContextDataManager& other )
 void ContextDataManager::prefetch( ContextPtr context, size_t size )
 {
     ContextData& data = operator[]( context );
+
+    SCAI_LOG_DEBUG( logger, "prefetch to " << *context << ", valid = " << data.isValid() << ", size = " << size )
 
     if ( data.isValid() || size == 0 )
     {

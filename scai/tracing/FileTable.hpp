@@ -35,13 +35,15 @@
 // for dll_import
 #include <scai/common/config.hpp>
 
+// internal scai libraries
 #include <scai/logging.hpp>
 
-#include<vector>
-#include<cstring>
-#include<string>
-#include<map>
-#include<cstdio>
+// std
+#include <vector>
+#include <cstring>
+#include <string>
+#include <map>
+#include <cstdio>
 
 namespace scai
 {

@@ -34,7 +34,7 @@
 // hpp
 #include <scai/lama/solver/IterativeSolver.hpp>
 
-// others
+// local library
 #include <scai/lama/norm/L2Norm.hpp>
 
 #include <scai/lama/solver/criteria/IterationCount.hpp>

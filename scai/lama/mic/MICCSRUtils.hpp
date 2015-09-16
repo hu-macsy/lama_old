@@ -36,20 +36,21 @@
 // for dll_import
 #include <scai/common/config.hpp>
 
-// others
-#include <scai/lama/LAMATypes.hpp>
+// internal scai libraries
+#include <scai/common/SCAITypes.hpp>
 
-// logging
 #include <scai/logging.hpp>
 
 namespace scai
 {
 
+namespace tasking
+{
+class SyncToken;
+}
+
 namespace lama
 {
-
-class SyncToken;
-// forward declaration
 
 /** This class provides routines on compressed sparse row data
  */
@@ -170,7 +171,7 @@ public:
         const IndexType csrIA[],
         const IndexType csrJA[],
         const ValueType csrValues[],
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /** Implementation for CSRUtilsInterface::Mult::sparseGEMV  */
 
@@ -184,7 +185,7 @@ public:
         const IndexType csrIA[],
         const IndexType csrJA[],
         const ValueType csrValues[],
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /** Implementation for CSRUtilsInterface::Mult::gemm  */
 
@@ -201,7 +202,7 @@ public:
         const IndexType csrIA[],
         const IndexType csrJA[],
         const ValueType csrValues[],
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /** Implementation for CSRUtilsInterface::Jacobi::jacobi(Async/Halo) */
 
@@ -215,7 +216,7 @@ public:
         const ValueType oldSolution[],
         const ValueType omega,
         const IndexType numRows,
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     template<typename ValueType>
     static void jacobiHalo(

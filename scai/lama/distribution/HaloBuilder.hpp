@@ -36,7 +36,7 @@
 // for dll_import
 #include <scai/common/config.hpp>
 
-// others
+// local library
 #include <scai/lama/distribution/Halo.hpp>
 #include <scai/lama/distribution/Distribution.hpp>
 

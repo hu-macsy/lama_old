@@ -33,15 +33,15 @@
 // hpp
 #include <scai/lama/distribution/Distribution.hpp>
 
-// assert
-#include <scai/common/SCAIAssert.hpp>
+// local library
 #include <scai/lama/Scalar.hpp>
+
+// internal scai libraries
 #include <scai/hmemo.hpp>
 
-// tracing
 #include <scai/tracing.hpp>
 
-// 
+#include <scai/common/Assert.hpp>
 #include <scai/common/unique_ptr.hpp>
 
 // boost
@@ -163,14 +163,6 @@ void Distribution::computeOwners(
     IndexType n = requiredIndexes.size();
     owners.resize( n );
     mCommunicator->computeOwners( &owners[0], *this, &requiredIndexes[0], n );
-}
-
-/* ---------------------------------------------------------------------- */
-
-std::ostream& operator<<( std::ostream& stream, Distribution const& dist )
-{
-    dist.writeAt( stream );
-    return stream;
 }
 
 /* ---------------------------------------------------------------------- */

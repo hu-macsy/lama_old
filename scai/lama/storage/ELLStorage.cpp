@@ -33,20 +33,26 @@
 // hpp
 #include <scai/lama/storage/ELLStorage.hpp>
 
-// others
+// local library
 #include <scai/lama/LAMAArrayUtils.hpp>
 #include <scai/lama/LAMAInterface.hpp>
-#include <scai/tasking/TaskSyncToken.hpp>
-#include <scai/tasking/NoSyncToken.hpp>
+
+// internal scai libraries
 #include <scai/hmemo.hpp>
 
-// tracing
+#include <scai/tasking/TaskSyncToken.hpp>
+#include <scai/tasking/NoSyncToken.hpp>
+
 #include <scai/tracing.hpp>
+
+#include <scai/common/bind.hpp>
+#include <scai/common/unique_ptr.hpp>
 
 // boost
 #include <boost/preprocessor.hpp>
-#include <scai/common/bind.hpp>
-#include <scai/common/unique_ptr.hpp>
+
+using namespace scai::tasking;
+using namespace scai::hmemo;
 
 namespace scai
 {
@@ -54,9 +60,7 @@ namespace scai
 namespace lama
 {
 
-using scai::common::shared_ptr;
-using namespace scai::tasking;
-using namespace scai::hmemo;
+using common::shared_ptr;
 
 /* --------------------------------------------------------------------------- */
 
@@ -804,7 +808,6 @@ void ELLStorage<ValueType>::allocate( IndexType numRows, IndexType numColumns )
 template<typename ValueType>
 void ELLStorage<ValueType>::writeAt( std::ostream& stream ) const
 {
-    using ::operator<<;   // ToDo: still other operators in this namespace
     stream << "ELLStorage<" << common::getScalarType<ValueType>() 
            << ">( size = " << mNumRows << " x " << mNumColumns
            << ", nnr = " << mNumValuesPerRow << ", threshold = " << mCompressThreshold << " )";
@@ -1633,7 +1636,7 @@ ValueType ELLStorage<ValueType>::l2Norm() const
 
 	SCAI_CONTEXT_ACCESS( loc );
 
-	return sqrt(dot( mValues.size(), data.get(), 1, data.get(), 1, NULL ));
+	return ::sqrt(dot( mValues.size(), data.get(), 1, data.get(), 1, NULL ));
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1893,17 +1896,17 @@ ELLStorage<ValueType>* ELLStorage<ValueType>::copy() const
 /*       Template Instantiations                                             */
 /* ========================================================================= */
 
-#define LAMA_ELL_STORAGE_INSTANTIATE(z, I, _)                              \
-    \
-    template<>                                                                 \
-    const char* ELLStorage<ARITHMETIC_TYPE##I>::typeName()                     \
-    {                                                                          \
-        return "ELLStorage<ARITHMETIC_TYPE##I>";                               \
-    }                                                                          \
-    \
-    template class COMMON_DLL_IMPORTEXPORT ELLStorage<ARITHMETIC_TYPE##I> ;
+#define LAMA_ELL_STORAGE_INSTANTIATE(z, I, _)                                     \
+                                                                                  \
+    template<>                                                                    \
+    const char* ELLStorage<ARITHMETIC_HOST_TYPE_##I>::typeName()                  \
+    {                                                                             \
+        return "ELLStorage<ARITHMETIC_HOST_TYPE_##I>";                            \
+    }                                                                             \
+                                                                                  \
+    template class COMMON_DLL_IMPORTEXPORT ELLStorage<ARITHMETIC_HOST_TYPE_##I> ;
 
-BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_ELL_STORAGE_INSTANTIATE, _ )
+BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_ELL_STORAGE_INSTANTIATE, _ )
 
 #undef LAMA_ELL_STORAGE_INSTANTIATE
 

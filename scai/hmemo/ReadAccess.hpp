@@ -32,13 +32,15 @@
 
 #pragma once
 
-#include <scai/common/config.hpp>
-#include <scai/common/Exception.hpp>
-
+// local library
 #include <scai/hmemo/Access.hpp>
 #include <scai/hmemo/LAMAArray.hpp>
 
+// internal scai libraries
 #include <scai/logging.hpp>
+
+#include <scai/common/config.hpp>
+#include <scai/common/Assert.hpp>
 
 namespace scai
 {
@@ -123,7 +125,7 @@ public:
      *
      * @return  the size of the wrapped LAMAArray
      */
-    common::IndexType size() const;
+    IndexType size() const;
 
 protected:
 
@@ -205,7 +207,7 @@ void ReadAccess<ValueType>::writeAt( std::ostream& stream ) const
 /* ---------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-common::IndexType ReadAccess<ValueType>::size() const
+IndexType ReadAccess<ValueType>::size() const
 {
     if ( mArray )
     {

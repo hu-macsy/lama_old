@@ -38,24 +38,29 @@
 
 // base classes
 #include <scai/common/Printable.hpp>
-#include <scai/common/unique_ptr.hpp>
 
-// others
+// local library
 #include <scai/lama/distribution/Distribution.hpp>
 #include <scai/lama/distribution/Halo.hpp>
+
+// internal scai libraries
+#include <scai/hmemo/LAMAArray.hpp>
+
+#include <scai/tasking/SyncToken.hpp>
+
 #include <scai/tracing.hpp>
 
-#include <scai/hmemo/LAMAArray.hpp>
-#include <scai/tasking/SyncToken.hpp>
+#include <scai/common/unique_ptr.hpp>
 
 namespace scai
 {
 
 using namespace scai::tasking;
-using scai::hmemo::LAMAArray;
 
 namespace lama
 {
+
+using hmemo::LAMAArray;
 
 /** This class allows to create objects that handle redistributions of vector and
  *  matrices from one distribution into another distribution.
@@ -64,7 +69,7 @@ namespace lama
  *  that restrict the redistribution just to the transfer of the corresponding data.
  */
 
-class COMMON_DLL_IMPORTEXPORT Redistributor: public Printable
+class COMMON_DLL_IMPORTEXPORT Redistributor: public scai::common::Printable
 {
 public:
 

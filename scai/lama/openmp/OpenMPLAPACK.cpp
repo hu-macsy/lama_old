@@ -34,29 +34,23 @@
 // hpp
 #include <scai/lama/openmp/OpenMPLAPACK.hpp>
 
-// others
+// local library
 #include <scai/lama/openmp/OpenMPBLAS1.hpp>
 
 #include <scai/lama/LAMAInterfaceRegistry.hpp>
 #include <scai/lama/BLASInterface.hpp>
+
+// internal scai libraries
 #include <scai/tracing.hpp>
+
 #include <scai/common/unique_ptr.hpp>
+#include <scai/common/macros/unused.hpp>
+
+// boost
 #include <boost/preprocessor.hpp>
 
-// macros
-#include <scai/lama/macros/unused.hpp>
-
-// C
+// std
 #include <cmath>
-
-#ifdef __cplusplus
-extern "C"
-{
-#endif /*__cplusplus*/
-
-#ifdef __cplusplus
-} /*extern "C"*/
-#endif /*__cplusplus*/
 
 namespace scai
 {
@@ -67,8 +61,8 @@ namespace lama
 using std::abs;
 // used for float, double
 
-using scai::common::getScalarType;
-using scai::tasking::SyncToken;
+using common::getScalarType;
+using tasking::SyncToken;
 
 /* ------------------------------------------------------------------------- */
 
@@ -552,14 +546,14 @@ void OpenMPLAPACK::setInterface( BLASInterface& BLAS )
     // Note: macro takes advantage of same name for routines and type definitions
     //       ( e.g. routine CUDABLAS1::sum<ValueType> is set for BLAS::BLAS1::sum variable
 
-#define LAMA_LAPACK_REGISTER(z, I, _)                                            \
-    LAMA_INTERFACE_REGISTER_T( BLAS, getrf, ARITHMETIC_TYPE##I )                 \
-    LAMA_INTERFACE_REGISTER_T( BLAS, getri, ARITHMETIC_TYPE##I )                 \
-    LAMA_INTERFACE_REGISTER_T( BLAS, getinv, ARITHMETIC_TYPE##I )                \
-    LAMA_INTERFACE_REGISTER_T( BLAS, tptrs, ARITHMETIC_TYPE##I )                 \
-    LAMA_INTERFACE_REGISTER_T( BLAS, laswp, ARITHMETIC_TYPE##I )                 \
+#define LAMA_LAPACK_REGISTER(z, I, _)                                                  \
+    LAMA_INTERFACE_REGISTER_T( BLAS, getrf, ARITHMETIC_HOST_TYPE_##I )                 \
+    LAMA_INTERFACE_REGISTER_T( BLAS, getri, ARITHMETIC_HOST_TYPE_##I )                 \
+    LAMA_INTERFACE_REGISTER_T( BLAS, getinv, ARITHMETIC_HOST_TYPE_##I )                \
+    LAMA_INTERFACE_REGISTER_T( BLAS, tptrs, ARITHMETIC_HOST_TYPE_##I )                 \
+    LAMA_INTERFACE_REGISTER_T( BLAS, laswp, ARITHMETIC_HOST_TYPE_##I )                 \
 
-    BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_LAPACK_REGISTER, _ )
+    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_LAPACK_REGISTER, _ )
 
 #undef LAMA_LAPACK_REGISTER
 

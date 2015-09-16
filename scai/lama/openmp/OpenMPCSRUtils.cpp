@@ -33,38 +33,37 @@
 
 // for dll_import
 #include <scai/lama/openmp/OpenMPCSRUtils.hpp>
-#include <scai/lama/openmp/OpenMP.hpp>
 
-// others
+// local library
+#include <scai/lama/openmp/OpenMP.hpp>
 #include <scai/lama/LAMAInterface.hpp>
 #include <scai/lama/LAMAInterfaceRegistry.hpp>
 
-// assert
-#include <scai/common/SCAIAssert.hpp>
-
-// trace
+// internal scai libraries
 #include <scai/tracing.hpp>
 
-// boost
+#include <scai/common/Assert.hpp>
 #include <scai/common/bind.hpp>
 #include <scai/common/unique_ptr.hpp>
+#include <scai/common/macros/unused.hpp>
+
+// boost
 #include <boost/preprocessor.hpp>
 
-#include <scai/lama/macros/unused.hpp>
+// std
 #include <vector>
-
-using scai::common::scoped_array;
 
 namespace scai
 {
+
+using common::scoped_array;
+using common::getScalarType;
 
 namespace lama
 {
 
 using std::abs;
 // is used for abs( float ), abs( double )
-
-using scai::common::getScalarType;
 
 SCAI_LOG_DEF_LOGGER( OpenMPCSRUtils::logger, "OpenMP.CSRUtils" )
 
@@ -1954,29 +1953,29 @@ void OpenMPCSRUtils::setInterface( CSRUtilsInterface& CSRUtils )
     LAMA_INTERFACE_REGISTER( CSRUtils, matrixMultiplySizes )
     LAMA_INTERFACE_REGISTER( CSRUtils, matrixMultiplyJA )
 
-#define LAMA_CSR_UTILS2_REGISTER(z, J, TYPE )                                        \
-    LAMA_INTERFACE_REGISTER_TT( CSRUtils, scaleRows, TYPE, ARITHMETIC_TYPE##J )      \
+#define LAMA_CSR_UTILS2_REGISTER(z, J, TYPE )                                              \
+    LAMA_INTERFACE_REGISTER_TT( CSRUtils, scaleRows, TYPE, ARITHMETIC_HOST_TYPE_##J )      \
 
-#define LAMA_CSR_UTILS_REGISTER(z, I, _)                                             \
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, convertCSR2CSC, ARITHMETIC_TYPE##I )        \
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, sortRowElements, ARITHMETIC_TYPE##I )       \
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, normalGEMV, ARITHMETIC_TYPE##I )            \
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, sparseGEMV, ARITHMETIC_TYPE##I )            \
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, normalGEVM, ARITHMETIC_TYPE##I )            \
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, sparseGEVM, ARITHMETIC_TYPE##I )            \
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, gemm, ARITHMETIC_TYPE##I )                  \
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, matrixAdd, ARITHMETIC_TYPE##I )             \
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, matrixMultiply, ARITHMETIC_TYPE##I )        \
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, jacobi, ARITHMETIC_TYPE##I )                \
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, jacobiHalo, ARITHMETIC_TYPE##I )            \
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, jacobiHaloWithDiag, ARITHMETIC_TYPE##I )    \
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, absMaxDiffVal, ARITHMETIC_TYPE##I )         \
-    \
-    BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT,                                            \
-                     LAMA_CSR_UTILS2_REGISTER,                                       \
-                     ARITHMETIC_TYPE##I )                                            \
+#define LAMA_CSR_UTILS_REGISTER(z, I, _)                                                   \
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, convertCSR2CSC, ARITHMETIC_HOST_TYPE_##I )        \
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, sortRowElements, ARITHMETIC_HOST_TYPE_##I )       \
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, normalGEMV, ARITHMETIC_HOST_TYPE_##I )            \
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, sparseGEMV, ARITHMETIC_HOST_TYPE_##I )            \
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, normalGEVM, ARITHMETIC_HOST_TYPE_##I )            \
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, sparseGEVM, ARITHMETIC_HOST_TYPE_##I )            \
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, gemm, ARITHMETIC_HOST_TYPE_##I )                  \
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, matrixAdd, ARITHMETIC_HOST_TYPE_##I )             \
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, matrixMultiply, ARITHMETIC_HOST_TYPE_##I )        \
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, jacobi, ARITHMETIC_HOST_TYPE_##I )                \
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, jacobiHalo, ARITHMETIC_HOST_TYPE_##I )            \
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, jacobiHaloWithDiag, ARITHMETIC_HOST_TYPE_##I )    \
+    LAMA_INTERFACE_REGISTER_T( CSRUtils, absMaxDiffVal, ARITHMETIC_HOST_TYPE_##I )         \
+                                                                                           \
+    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT,                                             \
+                     LAMA_CSR_UTILS2_REGISTER,                                             \
+                     ARITHMETIC_HOST_TYPE_##I )                                            \
 
-    BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_CSR_UTILS_REGISTER, _ )
+    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_CSR_UTILS_REGISTER, _ )
 
 #undef LAMA_CSR_UTILS_REGISTER
 #undef LAMA_CSR_UTILS2_REGISTER

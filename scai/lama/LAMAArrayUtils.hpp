@@ -35,19 +35,20 @@
 // for dll_import
 #include <scai/common/config.hpp>
 
-// others
-#include <scai/hmemo.hpp>
+// local library
 #include <scai/lama/Scalar.hpp>
 
-// logging
-#include <scai/logging.hpp>
+// internal scai libraries
+#include <scai/hmemo.hpp>
 
-using scai::hmemo::ContextArray;
-using scai::hmemo::LAMAArray;
-using scai::hmemo::ContextPtr;
+#include <scai/logging.hpp>
 
 namespace scai
 {
+
+using hmemo::ContextArray;
+using hmemo::LAMAArray;
+using hmemo::ContextPtr;
 
 namespace lama
 {

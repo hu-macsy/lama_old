@@ -34,7 +34,7 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/mpl/list.hpp>
 
-#include <scai/lama/LAMATypes.hpp>
+#include <scai/common/SCAITypes.hpp>
 
 #include <scai/lama/matrix/ELLSparseMatrix.hpp>
 #include <scai/lama/matrix/JDSSparseMatrix.hpp>
@@ -47,7 +47,7 @@
 
 #include <scai/lama/matutils/MatrixCreator.hpp>
 
-#include <test/TestMacros.hpp>
+#include <scai/common/test/TestMacros.hpp>
 #include <test/SparseMatrixHelper.hpp>
 #include <test/Configuration.hpp>
 #include <test/SameMatrixHelper.hpp>

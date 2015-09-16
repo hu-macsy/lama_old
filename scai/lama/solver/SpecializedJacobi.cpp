@@ -34,20 +34,23 @@
 // hpp
 #include <scai/lama/solver/SpecializedJacobi.hpp>
 
-// others
-#include <scai/tasking/NoSyncToken.hpp>
+// local library
 #include <scai/lama/LAMAArrayUtils.hpp>
 
-// tracing
+// internal scai libraries
+#include <scai/tasking/NoSyncToken.hpp>
+
 #include <scai/tracing.hpp>
 
 #include <scai/common/bind.hpp>
-#include <boost/preprocessor.hpp>
 
-using scai::tasking::SyncToken;
+// boost
+#include <boost/preprocessor.hpp>
 
 namespace scai
 {
+
+using tasking::SyncToken;
 
 namespace lama
 {
@@ -129,23 +132,23 @@ void SpecializedJacobi::initialize( const Matrix& coefficients )
 
     // try dynamic cast for all supported arithmetic types
 
-#define LAMA_CONVERSION(z, I, _)                                                                              \
-    {                                                                                                         \
-        const SparseMatrix<ARITHMETIC_TYPE##I>* sparseTypeCoefficients =                                      \
-                dynamic_cast<const SparseMatrix<ARITHMETIC_TYPE##I>*>( runtime.mCoefficients );                   \
-        if ( sparseTypeCoefficients )                                                                         \
-        {                                                                                                     \
-            SCAI_LOG_DEBUG( logger, "Creating " << common::getScalarType<ARITHMETIC_TYPE##I>() << " diagonal. " )   \
-            if ( !runtime.mDiagonal.get() )                                                                   \
-            {                                                                                                 \
-                runtime.mDiagonal.reset( ContextArray::create( common::getScalarType<ARITHMETIC_TYPE##I>() ) );     \
-            }                                                                                                 \
-            sparseTypeCoefficients->getLocalStorage().getDiagonal( *runtime.mDiagonal );                      \
-            return;                                                                                           \
-        }                                                                                                     \
-    }                                                                                                         \
+#define LAMA_CONVERSION(z, I, _)                                                                                         \
+    {                                                                                                                    \
+        const SparseMatrix<ARITHMETIC_HOST_TYPE_##I>* sparseTypeCoefficients =                                           \
+                dynamic_cast<const SparseMatrix<ARITHMETIC_HOST_TYPE_##I>*>( runtime.mCoefficients );                    \
+        if ( sparseTypeCoefficients )                                                                                    \
+        {                                                                                                                \
+            SCAI_LOG_DEBUG( logger, "Creating " << common::getScalarType<ARITHMETIC_HOST_TYPE_##I>() << " diagonal. " )  \
+            if ( !runtime.mDiagonal.get() )                                                                              \
+            {                                                                                                            \
+                runtime.mDiagonal.reset( ContextArray::create( common::getScalarType<ARITHMETIC_HOST_TYPE_##I>() ) );    \
+            }                                                                                                            \
+            sparseTypeCoefficients->getLocalStorage().getDiagonal( *runtime.mDiagonal );                                 \
+            return;                                                                                                      \
+        }                                                                                                                \
+    }                                                                                                                    \
 
-    BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_CONVERSION, _ )
+    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_CONVERSION, _ )
 
 #undef LAMA_CONVERSION
 
@@ -213,18 +216,18 @@ void SpecializedJacobi::iterate()
 
     // for each supported arithmetic type we have to dynamic cast and instatiate typed version
 
-#define LAMA_TYPE_CAST( z, I, _)                                                                  \
-    {                                                                                             \
-        const SparseMatrix<ARITHMETIC_TYPE##I>* sparseTypedCoefficients =                         \
-                dynamic_cast<const SparseMatrix<ARITHMETIC_TYPE##I>*>( getRuntime().mCoefficients );  \
-        if ( sparseTypedCoefficients )                                                            \
-        {                                                                                         \
-            iterateTyped( *sparseTypedCoefficients );                                             \
-            return;                                                                               \
-        }                                                                                         \
+#define LAMA_TYPE_CAST( z, I, _)                                                                            \
+    {                                                                                                       \
+        const SparseMatrix<ARITHMETIC_HOST_TYPE_##I>* sparseTypedCoefficients =                             \
+                dynamic_cast<const SparseMatrix<ARITHMETIC_HOST_TYPE_##I>*>( getRuntime().mCoefficients );  \
+        if ( sparseTypedCoefficients )                                                                      \
+                   {                                                                                        \
+            iterateTyped( *sparseTypedCoefficients );                                                       \
+            return;                                                                                         \
+        }                                                                                                   \
     }
 
-    BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_TYPE_CAST, _ )
+    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_TYPE_CAST, _ )
 
 #undef LAMA_TYPE_CAST
 

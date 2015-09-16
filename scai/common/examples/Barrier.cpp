@@ -32,16 +32,14 @@
  */
 
 #include <scai/common/Thread.hpp>
-#include <scai/common/Walltime.hpp>
-#include <scai/common/Exception.hpp>
+#include <scai/common/Assert.hpp>
 
 #include <iostream>
 #include <cstdlib>
 #include <vector>
 #include <unistd.h>
 
-using namespace std;
-using namespace scai::common;
+using scai::common::Thread;
 
 Thread::Mutex barrierMutex;
 Thread::Condition barrierCondition;

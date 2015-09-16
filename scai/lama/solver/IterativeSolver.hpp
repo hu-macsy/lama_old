@@ -39,7 +39,7 @@
 // base classes
 #include <scai/lama/solver/Solver.hpp>
 
-// others
+// local library
 #include <scai/lama/solver/criteria/Criterion.hpp>
 
 // logging

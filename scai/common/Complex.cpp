@@ -31,18 +31,19 @@
  * @since 1.1.0
  */
 
-#include <scai/lama/Complex.hpp>
+// hpp
+#include <scai/common/Complex.hpp>
 
 namespace scai
 {
 
-namespace lama
+namespace common
 {
 
 template class COMMON_DLL_IMPORTEXPORT Complex<float> ;
 template class COMMON_DLL_IMPORTEXPORT Complex<double> ;
 template class COMMON_DLL_IMPORTEXPORT Complex<long double> ;
 
-} /* end namespace lama */
+} /* end namespace common */
 
 } /* end namespace scai */

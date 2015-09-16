@@ -33,18 +33,19 @@
 
 // hpp
 #include <scai/lama/openmp/BLAS_BLAS2.hpp>
+
+// local library
 #include <scai/lama/BLASInterface.hpp>
 #include <scai/lama/LAMAInterfaceRegistry.hpp>
-#include <scai/common/Settings.hpp>
-
-// macros
-#include <scai/lama/macros/unused.hpp>
-
-// tracing with SCAI_REGION
-#include <scai/tracing.hpp>
-
 #include <scai/lama/cblas.hpp>
 
+// internal scai libraries
+#include <scai/tracing.hpp>
+
+#include <scai/common/Settings.hpp>
+#include <scai/common/macros/unused.hpp>
+
+// boost
 #include <boost/preprocessor.hpp>
 
 namespace scai
@@ -53,8 +54,8 @@ namespace scai
 namespace lama
 {
 
-using scai::common::getScalarType;
-using scai::tasking::SyncToken;
+using common::getScalarType;
+using tasking::SyncToken;
 
 SCAI_LOG_DEF_LOGGER( BLAS_BLAS2::logger, "BLAS.BLAS2" )
 
@@ -170,6 +171,24 @@ void wrapperGemv(
     COMMON_THROWEXCEPTION( "LongDouble not supported by BLAS, please set USE_BLAS=0" )
 }
 
+template<>
+void wrapperGemv(
+    const CBLAS_ORDER,
+    const CBLAS_TRANSPOSE,
+    const int,
+    const int,
+    ComplexLongDouble,
+    const ComplexLongDouble*,
+    const int,
+    const ComplexLongDouble*,
+    const int,
+    ComplexLongDouble,
+    ComplexLongDouble*,
+    const int )
+{
+    COMMON_THROWEXCEPTION( "ComplexLongDouble not supported by BLAS, please set USE_BLAS=0" )
+}
+
 template<typename ValueType>
 void BLAS_BLAS2::gemv(
     const CBLAS_ORDER order,
@@ -238,10 +257,10 @@ void BLAS_BLAS2::setInterface( BLASInterface& BLAS )
 
     // REGISTER1: give these routines priority in case of overriding
 
-#define LAMA_BLAS2_REGISTER(z, I, _)                                             \
-    LAMA_INTERFACE_REGISTER1_T( BLAS, gemv, ARITHMETIC_TYPE##I )                 \
+#define LAMA_BLAS2_REGISTER(z, I, _)                                                   \
+    LAMA_INTERFACE_REGISTER1_T( BLAS, gemv, ARITHMETIC_HOST_TYPE_##I )                 \
 
-    BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_BLAS2_REGISTER, _ )
+    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_BLAS2_REGISTER, _ )
 
 #undef LAMA_BLAS2_REGISTER
 

@@ -33,23 +33,25 @@
 
 #pragma once
 
-#include <ostream>
-
-// others
-#include <scai/hmemo.hpp>
+// local library
+#include <scai/lama/io/FileType.hpp>
 #include <scai/lama/Communicator.hpp>
 #include <scai/lama/Scalar.hpp>
 
-#include <scai/lama/io/FileType.hpp>
+// internal scai libraries
+#include <scai/hmemo.hpp>
 
-using scai::hmemo::Context;
-using scai::hmemo::ContextPtr;
-using scai::hmemo::ContextArray;
-using scai::hmemo::LAMAArray;
-using scai::hmemo::LAMAArrayRef;
+// std
+#include <ostream>
 
 namespace scai
 {
+
+using hmemo::Context;
+using hmemo::ContextPtr;
+using hmemo::ContextArray;
+using hmemo::LAMAArray;
+using hmemo::LAMAArrayRef;
 
 namespace tasking
 {
@@ -84,6 +86,8 @@ typedef enum
     UNDEFINED //!<  Default value
 } MatrixStorageFormat;
 
+COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const MatrixStorageFormat storageFormat );
+
 } /* end namespace Format */
 
 using Format::MatrixStorageFormat; //!< useful abbreviation
@@ -108,7 +112,7 @@ COMMON_DLL_IMPORTEXPORT MatrixStorageFormat str2Format( const char* str );
  storage should take place.
  */
 
-class COMMON_DLL_IMPORTEXPORT _MatrixStorage: public Printable
+class COMMON_DLL_IMPORTEXPORT _MatrixStorage: public common::Printable
 {
 public:
 
@@ -1099,7 +1103,3 @@ void MatrixStorage<ValueType>::setRawCSRData(
 } /* end namespace lama */
 
 } /* end namespace scai */
-
-/* ------------------------------------------------------------------------- */
-
-COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const scai::lama::MatrixStorageFormat storageFormat );

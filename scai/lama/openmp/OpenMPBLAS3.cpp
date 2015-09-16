@@ -34,13 +34,14 @@
 // hpp
 #include <scai/lama/openmp/OpenMPBLAS3.hpp>
 
-// others
+// local library
 #include <scai/lama/BLASInterface.hpp>
 #include <scai/lama/LAMAInterfaceRegistry.hpp>
 
-// macros
-#include <scai/lama/macros/unused.hpp>
+// internal scai libraries
+#include <scai/common/macros/unused.hpp>
 
+// boost
 #include <boost/preprocessor.hpp>
 
 namespace scai
@@ -375,10 +376,10 @@ void OpenMPBLAS3::setInterface( BLASInterface& blas )
 {
     SCAI_LOG_INFO( logger, "set BLAS3 routines for OpenMP in Interface" )
 
-#define LAMA_BLAS3_REGISTER(z, I, _)                                            \
-    LAMA_INTERFACE_REGISTER_T( blas, gemm, ARITHMETIC_TYPE##I )                 \
+#define LAMA_BLAS3_REGISTER(z, I, _)                                                  \
+    LAMA_INTERFACE_REGISTER_T( blas, gemm, ARITHMETIC_HOST_TYPE_##I )                 \
 
-    BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_BLAS3_REGISTER, _ )
+    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_BLAS3_REGISTER, _ )
 
 #undef LAMA_BLAS3_REGISTER
 

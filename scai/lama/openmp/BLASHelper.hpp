@@ -33,11 +33,13 @@
 
 #pragma once
 
-#include <scai/lama/macros/inline.hpp>
-#include <scai/lama/LAMATypes.hpp>
-#include <scai/common/Exception.hpp>
-
+// local library
 #include <scai/lama/cblas.hpp>
+
+// internal scai libraries
+#include <scai/common/macros/inline.hpp>
+#include <scai/common/SCAITypes.hpp>
+#include <scai/common/exception/Exception.hpp>
 
 namespace scai
 {

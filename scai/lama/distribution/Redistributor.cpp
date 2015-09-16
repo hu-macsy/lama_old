@@ -33,19 +33,20 @@
 // hpp
 #include <scai/lama/distribution/Redistributor.hpp>
 
-// others
+// local library
 #include <scai/lama/distribution/HaloBuilder.hpp>
 
-#include <scai/common/SCAIAssert.hpp>
-
+// internal scai libraries
+#include <scai/common/Assert.hpp>
 #include <scai/common/unique_ptr.hpp>
 
-using scai::common::unique_ptr;
-using scai::common::scoped_array;
 using namespace scai::hmemo;
 
 namespace scai
 {
+
+using common::unique_ptr;
+using common::scoped_array;
 
 namespace lama
 {

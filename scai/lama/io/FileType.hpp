@@ -33,7 +33,11 @@
 
 #pragma once
 
-#include <scai/lama/TypeTraits.hpp>
+// internal scai libraries
+#include <scai/common/SCAITypes.hpp>
+#include <scai/common/TypeTraits.hpp>
+
+using namespace scai::common;
 
 namespace scai
 {

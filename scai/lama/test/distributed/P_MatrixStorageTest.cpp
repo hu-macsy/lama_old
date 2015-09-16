@@ -48,7 +48,7 @@
 #include <scai/lama/distribution/BlockDistribution.hpp>
 #include <scai/lama/distribution/CyclicDistribution.hpp>
 
-#include <test/TestMacros.hpp>
+#include <scai/common/test/TestMacros.hpp>
 
 #include <scai/logging.hpp>
 

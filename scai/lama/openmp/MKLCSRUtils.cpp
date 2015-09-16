@@ -31,29 +31,30 @@
  * @since 1.0.0
  */
 
-// for dll_import
+// hpp
 #include <scai/lama/openmp/MKLCSRUtils.hpp>
+
+// local library
 #include <scai/lama/openmp/OpenMPUtils.hpp>
 #include <scai/lama/openmp/OpenMPCSRUtils.hpp>
 
-// others
 #include <scai/lama/LAMAInterface.hpp>
 #include <scai/lama/LAMAInterfaceRegistry.hpp>
 
-// assert
-#include <scai/common/SCAIAssert.hpp>
+// internal scai libraries
+#include <scai/common/Assert.hpp>
 #include <scai/common/Settings.hpp>
+#include <scai/common/macros/unused.hpp>
 
-// trace
 #include <scai/tracing.hpp>
-#include <scai/lama/macros/unused.hpp>
 
+// extern
 #include <mkl_spblas.h>
-
-using scai::tasking::SyncToken;
 
 namespace scai
 {
+
+using tasking::SyncToken;
 
 namespace lama
 {

@@ -34,17 +34,21 @@
 // hpp
 #include <scai/lama/solver/SimpleAMG.hpp>
 
-// others
+// local library
 #include <scai/lama/solver/shared_lib.hpp>
 #include <scai/lama/solver/SingleGridSetup.hpp>
 
 #include <scai/lama/expression/MatrixVectorExpressions.hpp>
+
+// internal scai libraries
 #include <scai/common/Settings.hpp>
 
-// tracing
 #include <scai/tracing.hpp>
+
+// external
 #include <omp.h>
 
+// std
 #include <cstdlib>
 #include <iomanip>
 

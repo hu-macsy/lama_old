@@ -32,9 +32,10 @@
 
 #pragma once
 
-#include <ostream>
-
+// for dll import
 #include <scai/common/config.hpp>
+
+#include <ostream>
 
 namespace scai
 {
@@ -60,7 +61,7 @@ struct COMMON_DLL_IMPORTEXPORT SourceLocation
 
 };
 
-std::ostream& operator<<( std::ostream& os, const SourceLocation& loc );
+COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& os, const SourceLocation& loc );
 
 } /* end namespace logging */
 

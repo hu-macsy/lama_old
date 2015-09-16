@@ -33,8 +33,11 @@
 
 // hpp
 #include <scai/lama/distribution/NoDistribution.hpp>
+
+// local library
 #include <scai/lama/matrix/Matrix.hpp>
 
+// std
 #include <fstream>
 
 namespace scai

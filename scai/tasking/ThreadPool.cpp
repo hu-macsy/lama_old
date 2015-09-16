@@ -33,18 +33,18 @@
 // hpp
 #include <scai/tasking/ThreadPool.hpp>
 
-// tracing
+// internal scai libraries
 #include <scai/tracing.hpp>
 
-#include <scai/common/Exception.hpp>
+#include <scai/common/Assert.hpp>
 #include <scai/common/OpenMP.hpp>
-
-using scai::common::Thread;
-using scai::common::shared_ptr;
-using scai::common::function;
 
 namespace scai
 {
+
+using common::Thread;
+using common::shared_ptr;
+using common::function;
 
 namespace tasking
 {

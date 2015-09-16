@@ -36,11 +36,10 @@
 // for dll_import
 #include <scai/common/config.hpp>
 
-// others
-#include <scai/lama/LAMATypes.hpp>
-
-// logging
+// internal scai library
 #include <scai/logging.hpp>
+
+#include <scai/common/SCAITypes.hpp>
 
 namespace scai
 {
@@ -105,7 +104,7 @@ public:
         const IndexType cooIA[],
         const IndexType cooJA[],
         const ValueType cooValues[],
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /** Implementation for COOUtilsInterface::Mult:normalGEMV with CUDA on GPUs */
 
@@ -121,7 +120,7 @@ public:
         const IndexType cooIA[],
         const IndexType cooJA[],
         const ValueType cooValues[],
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /** Routine that registers all routines of this class at the LAMA interface. */
 

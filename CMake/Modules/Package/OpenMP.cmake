@@ -38,6 +38,10 @@
 ### OpenMP_CXX_FLAGS       - flags to be used for compiling/linking C++ code with OpenMP pragmas
 ### SCAI_OMP_SCHEDULE_FLAG - needed OpenMP scheduling flag 
 
+if    ( CMAKE_VERSION VERSION_LESS 2.8.7 )
+	enable_language ( C )
+endif ( CMAKE_VERSION VERSION_LESS 2.8.7 ) 
+
 find_package ( OpenMP ${SCAI_FIND_PACKAGE_FLAGS} )
 
 include ( Functions/setAndCheckCache )
@@ -62,6 +66,6 @@ else  ( OPENMP_FOUND AND USE_OPENMP )
 
 	if    ( CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES Intel )
         set ( SCAI_WARNING_FLAGS "${SCAI_WARNING_FLAGS} -Wno-unknown-pragmas" )
-    endif ( CMAKE_COMPILER_IS_GNUCXX CMAKE_CXX_COMPILER_ID MATCHES Intel )
+    endif ( CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES Intel )
     
 endif ( OPENMP_FOUND  AND USE_OPENMP )

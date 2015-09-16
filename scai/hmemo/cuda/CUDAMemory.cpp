@@ -30,24 +30,32 @@
  * @date 15.07.2011
  */
 
+// hpp
 #include <scai/hmemo/cuda/CUDAMemory.hpp>
+
+// local library
 #include <scai/hmemo/cuda/CUDAHostMemory.hpp>
-#include <scai/common/cuda/CUDAError.hpp>
 #include <scai/hmemo/cuda/CUDAStreamSyncToken.hpp>
 
 #include <scai/hmemo/ContextAccess.hpp>
 
+// internal scai libraries
 #include <scai/tasking/TaskSyncToken.hpp>
 
+#include <scai/common/cuda/CUDAError.hpp>
+#include <scai/common/Assert.hpp>
+
+// CUDA
 #include <cuda.h>
 
+// std
 #include <memory>
-
-using scai::tasking::SyncToken;
-using scai::tasking::CUDAStreamSyncToken;
 
 namespace scai
 {
+
+using tasking::SyncToken;
+using tasking::CUDAStreamSyncToken;
 
 namespace hmemo
 {
@@ -371,7 +379,7 @@ bool CUDAMemory::canCopyFrom( const Memory& other ) const
         supported = canCopyCUDA( *otherCUDAMem );
     }
 
-    SCAI_LOG_INFO( logger, "canCopyFrom " << other << " to this " << *this << ", supported = " << supported )
+    SCAI_LOG_DEBUG( logger, "canCopyFrom " << other << " to this " << *this << ", supported = " << supported )
 
     return supported;
 }
@@ -436,7 +444,7 @@ bool CUDAMemory::canCopyTo( const Memory& other ) const
         supported = canCopyCUDA( *otherCUDA );
     }
 
-    SCAI_LOG_INFO( logger, "canCopyTo " << other << " from this " << *this << ", supported = " << supported )
+    SCAI_LOG_DEBUG( logger, "canCopyTo " << other << " from this " << *this << ", supported = " << supported )
 
     return supported;
 }

@@ -35,9 +35,11 @@
 // for dll_import
 #include <scai/common/config.hpp>
 
-// others
-#include <scai/lama/macros/interface.hpp>
+// local library
 #include <scai/lama/BLASInterface.hpp>
+
+// internal scai libraries
+#include <scai/common/macros/interface.hpp>
 
 namespace scai
 {

@@ -34,28 +34,29 @@
 // hpp
 #include <scai/lama/cuda/CUDABLAS1.hpp>
 
-// others
-#include <scai/common/cuda/CUDAError.hpp>
-#include <scai/hmemo/cuda/CUDAStreamSyncToken.hpp>
+// local library
 #include <scai/lama/cuda/lama_cublas.hpp>
 #include <scai/lama/LAMAInterface.hpp>
 #include <scai/lama/LAMAInterfaceRegistry.hpp>
 
-// macros
-#include <scai/lama/macros/unused.hpp>
+// internal scai libraries
+#include <scai/hmemo/cuda/CUDAStreamSyncToken.hpp>
 
-// tracing with SCAI_REGION
 #include <scai/tracing.hpp>
 
-// blas
+#include <scai/common/cuda/CUDAError.hpp>
+#include <scai/common/macros/unused.hpp>
+
+// boost
 #include <boost/preprocessor.hpp>
 
 using namespace scai::tasking;
 using namespace scai::hmemo;
-using scai::common::getScalarType;
 
 namespace scai
 {
+
+using common::getScalarType;
 
 extern cublasHandle_t CUDAContext_cublasHandle;
 
@@ -770,18 +771,18 @@ void CUDABLAS1::setInterface( BLASInterface& BLAS )
     // Note: macro takes advantage of same name for routines and type definitions
     //       ( e.g. routine CUDABLAS1::sum<ValueType> is set for BLAS::BLAS1::sum variable
 
-#define LAMA_BLAS1_REGISTER(z, I, _)                                            \
-    LAMA_INTERFACE_REGISTER_T( BLAS, scal, ARITHMETIC_TYPE##I )                 \
-    LAMA_INTERFACE_REGISTER_T( BLAS, nrm2, ARITHMETIC_TYPE##I )                 \
-    LAMA_INTERFACE_REGISTER_T( BLAS, asum, ARITHMETIC_TYPE##I )                 \
-    LAMA_INTERFACE_REGISTER_T( BLAS, iamax, ARITHMETIC_TYPE##I )                \
-    LAMA_INTERFACE_REGISTER_T( BLAS, swap, ARITHMETIC_TYPE##I )                 \
-    LAMA_INTERFACE_REGISTER_T( BLAS, copy, ARITHMETIC_TYPE##I )                 \
-    LAMA_INTERFACE_REGISTER_T( BLAS, axpy, ARITHMETIC_TYPE##I )                 \
-    LAMA_INTERFACE_REGISTER_T( BLAS, dot, ARITHMETIC_TYPE##I )                  \
-    LAMA_INTERFACE_REGISTER_T( BLAS, sum, ARITHMETIC_TYPE##I )                  \
+#define LAMA_BLAS1_REGISTER(z, I, _)                                                  \
+    LAMA_INTERFACE_REGISTER_T( BLAS, scal, ARITHMETIC_CUDA_TYPE_##I )                 \
+    LAMA_INTERFACE_REGISTER_T( BLAS, nrm2, ARITHMETIC_CUDA_TYPE_##I )                 \
+    LAMA_INTERFACE_REGISTER_T( BLAS, asum, ARITHMETIC_CUDA_TYPE_##I )                 \
+    LAMA_INTERFACE_REGISTER_T( BLAS, iamax, ARITHMETIC_CUDA_TYPE_##I )                \
+    LAMA_INTERFACE_REGISTER_T( BLAS, swap, ARITHMETIC_CUDA_TYPE_##I )                 \
+    LAMA_INTERFACE_REGISTER_T( BLAS, copy, ARITHMETIC_CUDA_TYPE_##I )                 \
+    LAMA_INTERFACE_REGISTER_T( BLAS, axpy, ARITHMETIC_CUDA_TYPE_##I )                 \
+    LAMA_INTERFACE_REGISTER_T( BLAS, dot, ARITHMETIC_CUDA_TYPE_##I )                  \
+    LAMA_INTERFACE_REGISTER_T( BLAS, sum, ARITHMETIC_CUDA_TYPE_##I )                  \
 
-    BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_BLAS1_REGISTER, _ )
+    BOOST_PP_REPEAT( ARITHMETIC_CUDA_TYPE_CNT, LAMA_BLAS1_REGISTER, _ )
 
 #undef LAMA_BLAS1_REGISTER
 

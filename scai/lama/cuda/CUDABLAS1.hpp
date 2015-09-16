@@ -36,10 +36,12 @@
 // for dll_import
 #include <scai/common/config.hpp>
 
-// others
-#include <scai/lama/LAMATypes.hpp>
+// internal scai libraries
 #include <scai/logging.hpp>
 
+#include <scai/common/SCAITypes.hpp>
+
+// CUDA
 #include <cublas_v2.h>
 #include <cuda_runtime_api.h>
 

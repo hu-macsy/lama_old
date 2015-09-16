@@ -34,11 +34,14 @@
 // for dll_import
 #include <scai/common/config.hpp>
 
-// others
+// base classes
 #include <scai/hmemo/Memory.hpp>
-#include <scai/tasking/SyncToken.hpp>
 
+// local library
 #include <scai/hmemo/cuda/CUDAContext.hpp>
+
+// internal scai libraries
+#include <scai/tasking/SyncToken.hpp>
 
 #include <scai/logging.hpp>
 

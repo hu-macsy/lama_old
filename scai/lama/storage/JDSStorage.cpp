@@ -34,26 +34,29 @@
 // hpp
 #include <scai/lama/storage/JDSStorage.hpp>
 
-// others
+// local library
 #include <scai/lama/LAMAInterface.hpp>
 
 #include <scai/lama/LAMAArrayUtils.hpp>
+
+// local scai libraries
 #include <scai/tasking/TaskSyncToken.hpp>
 
-// tracing
 #include <scai/tracing.hpp>
 
-// boost
-#include <boost/preprocessor.hpp>
 #include <scai/common/bind.hpp>
 #include <scai/common/unique_ptr.hpp>
 
-using scai::common::shared_ptr;
+// boost
+#include <boost/preprocessor.hpp>
+
 using namespace scai::tasking;
 using namespace scai::hmemo;
 
 namespace scai
 {
+
+using common::shared_ptr;
 
 namespace lama
 {
@@ -865,8 +868,6 @@ void JDSStorage<ValueType>::allocate( IndexType numRows, IndexType numColumns )
 template<typename ValueType>
 void JDSStorage<ValueType>::writeAt( std::ostream& stream ) const
 {
-    using ::operator<<;   // ToDo: still other operators in this namespace
-
     stream << "JDSStorage<" << common::getScalarType<ValueType>()
            << ">( size = " << mNumRows << " x " << mNumColumns
            << ", jd = " << mNumDiagonals << ", nnz = " << mNumValues;
@@ -1467,7 +1468,7 @@ ValueType JDSStorage<ValueType>::l2Norm() const
 
 	SCAI_CONTEXT_ACCESS( loc )
 
-	return sqrt(dot( n, data.get(), 1, data.get(), 1, NULL ));
+	return ::sqrt(dot( n, data.get(), 1, data.get(), 1, NULL ));
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -1657,16 +1658,16 @@ JDSStorage<ValueType>* JDSStorage<ValueType>::copy() const
 /*       Template specializations and instantiations                         */
 /* ========================================================================= */
 
-#define LAMA_JDS_STORAGE_INSTANTIATE(z, I, _)                                  \
-    template<>                                                                 \
-    const char* JDSStorage<ARITHMETIC_TYPE##I>::typeName()                     \
-    {                                                                          \
-        return "JDSStorage<ARITHMETIC_TYPE##I>";                               \
-    }                                                                          \
-                                                                               \
-    template class COMMON_DLL_IMPORTEXPORT JDSStorage<ARITHMETIC_TYPE##I> ;
+#define LAMA_JDS_STORAGE_INSTANTIATE(z, I, _)                                     \
+    template<>                                                                    \
+    const char* JDSStorage<ARITHMETIC_HOST_TYPE_##I>::typeName()                  \
+    {                                                                             \
+        return "JDSStorage<ARITHMETIC_HOST_TYPE_##I>";                            \
+    }                                                                             \
+                                                                                  \
+    template class COMMON_DLL_IMPORTEXPORT JDSStorage<ARITHMETIC_HOST_TYPE_##I> ;
 
-BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_JDS_STORAGE_INSTANTIATE, _ )
+BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_JDS_STORAGE_INSTANTIATE, _ )
 
 #undef LAMA_JDS_STORAGE_INSTANTIATE
 

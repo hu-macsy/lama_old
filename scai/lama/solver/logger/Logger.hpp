@@ -38,15 +38,18 @@
 
 // base classes
 #include <scai/common/NonCopyable.hpp>
-#include <scai/common/shared_ptr.hpp>
 
-// others
+// local library
 #include <scai/lama/solver/logger/LogLevel.hpp>
 #include <scai/lama/solver/logger/LoggerWriteBehaviour.hpp>
 #include <scai/lama/solver/logger/Timer.hpp>
 
 #include <scai/lama/norm/Norm.hpp>
 
+// internal scai libraries
+#include <scai/common/shared_ptr.hpp>
+
+// std
 #include <string>
 #include <sstream>
 #include <memory>

@@ -33,6 +33,7 @@
 
 #pragma once
 
+// for dll import
 #include <scai/common/config.hpp>
 
 // base classes

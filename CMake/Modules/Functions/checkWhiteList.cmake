@@ -31,10 +31,10 @@
  # @since 2.0.0
 ###
 
-# checks white list for containing entry and add entry to argument list ( pass whitelist and arglist as "${LIST}" (doublequotes !!!) )
-macro    ( check_whitelist VAR WHITELIST CMAKE_ARGS )
+# checks white list for containing entry and add entry to argument list ( pass whitelist as "${LIST}" (doublequotes !!!) )
+macro    ( check_whitelist VAR WHITELIST_NAME ARGS_LIST )
 
-    foreach    ( WHITELIST_ITEM ${WHITELIST} )
+    foreach    ( WHITELIST_ITEM ${WHITELIST_NAME} )
         
         string( COMPARE EQUAL "${CACHE_VAR}" "${WHITELIST_ITEM}" result )
         if    ( ${result} )
@@ -46,16 +46,14 @@ macro    ( check_whitelist VAR WHITELIST CMAKE_ARGS )
 	            # skip Variable
 	        #elseif ( CACHE_VAR_TYPE STREQUAL "UNINITIALIZED" )
 	        #    set ( CACHE_VAR_TYPE )
-	        #    list ( APPEND CMAKE_ARGS "-D${CACHE_VAR}${CACHE_VAR_TYPE}=${${CACHE_VAR}}" )
+	        #    list ( APPEND ${ARGS_LIST} "-D${CACHE_VAR}${CACHE_VAR_TYPE}=${${CACHE_VAR}}" )
 	        else   ( )
 	            set( CACHE_VAR_TYPE :${CACHE_VAR_TYPE} )
-	            list ( APPEND CMAKE_ARGS "-D${CACHE_VAR}${CACHE_VAR_TYPE}=${${CACHE_VAR}}" )
+	            list ( APPEND ${ARGS_LIST} "-D${CACHE_VAR}${CACHE_VAR_TYPE}=${${CACHE_VAR}}" )
 	        endif  ( )
-	        #set(CMAKE_ARGS "${CMAKE_ARGS} -D${CACHE_VAR}${CACHE_VAR_TYPE}=\"${${CACHE_VAR}}\"")
-	        #list ( APPEND CMAKE_ARGS "-D${CACHE_VAR}${CACHE_VAR_TYPE}=${${CACHE_VAR}}" )
         
         endif ( ${result} )
         
-    endforeach ( WHITELIST_ITEM ${WHITELIST} )
+    endforeach ( WHITELIST_ITEM ${WHITELIST_NAME} )
 
 endmacro ( check_whitelist )

@@ -43,6 +43,7 @@ set ( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../CMake/Modules" )
 ### Include Compiler Flags
 if    ( NOT SCAI_COMPLETE_BUILD )
 	include ( SetBuildFlags )
+	include ( SCAIAssert )
 	include ( SetCPPFlags )
 endif ( NOT SCAI_COMPLETE_BUILD )
 
@@ -60,9 +61,10 @@ include ( ConcludeFlags )
 ### add definitions
 
 add_definitions( ${ADDITIONAL_WARNING_FLAGS} )
+add_definitions ( -DSCAI_ASSERT_LEVEL_${SCAI_ASSERT_LEVEL} )
 
+# logging level for logging library
 # GenLogger uses also logging during initialization, here we make a fixed setting
-
 add_definitions ( -DSCAI_LOG_LEVEL_DEBUG )
 
 if    ( WIN32 )
@@ -82,18 +84,24 @@ endforeach ( module ${SCAI_LOGGING_INTERNAL_DEPS} )
 ## add subdirectories
 add_subdirectory ( examples )
 
+## prepare test
+configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/test/make.inc.in" "${CMAKE_CURRENT_BINARY_DIR}/test/make.inc" )
+file ( COPY ${CMAKE_CURRENT_SOURCE_DIR}/test DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
+
 ## search for files
 file ( GLOB CPP_SOURCES "*.cpp" )
 file ( GLOB HPP_HEADERS "*.hpp" )
 
 ### add library
-add_library ( scai_logging SHARED ${CPP_SOURCES} )
+add_library ( scai_logging ${SCAI_LIBRARY_TYPE} ${CPP_SOURCES} )
 
 ## add link libraries
+list ( REVERSE SCAI_LOGGING_INTERNAL_DEPS )
 foreach    ( module ${SCAI_LOGGING_INTERNAL_DEPS} )
 	string ( TOUPPER ${module} upper_module )
-    target_link_libraries ( scai_logging ${${upper_module}_LIBRARY} )
+	set ( LOGGING_LINK_LIBRARIES ${LOGGING_LINK_LIBRARIES} ${${upper_module}_LIBRARY} )
 endforeach ( module ${SCAI_LOGGING_INTERNAL_DEPS} )
+target_link_libraries ( scai_logging ${SCAI_START_LINK_LIBRARIES} ${LOGGING_LINK_LIBRARIES} ${SCAI_END_LINK_LIBRARIES} )
 
 ### install ###
 install ( TARGETS scai_logging DESTINATION lib )
@@ -102,11 +110,15 @@ install ( FILES ${HPP_HEADERS} DESTINATION include/scai/logging )
 ## install library.hpp
 install ( FILES ../logging.hpp DESTINATION include/scai )
 
+### add userdoc
+include ( Package/Sphinx )
+
+
 ## add custum target distClean, but only if this project is not included
 if    ( NOT SCAI_COMPLETE_BUILD )
 	include ( DistClean )
 endif ( NOT SCAI_COMPLETE_BUILD )
 
-if    ( CMAKE_VERBOSE_BUILD OR NOT SCAI_COMPLETE_BUILD )
+if    ( DEFINED SCAI_CMAKE_VERBOSE OR NOT DEFINED SCAI_COMPLETE_BUILD )
 	include ( Summaries/logging )
-endif ( CMAKE_VERBOSE_BUILD OR NOT SCAI_COMPLETE_BUILD )
+endif ( DEFINED SCAI_CMAKE_VERBOSE OR NOT DEFINED SCAI_COMPLETE_BUILD )

@@ -33,15 +33,19 @@
 
 // hpp
 #include <scai/hmemo/ContextData.hpp>
+
+// local library
 #include <scai/hmemo/Context.hpp>
 
-#include <scai/common/Exception.hpp>
+// internal scai libraries
 #include <scai/logging.hpp>
 
-using scai::tasking::SyncToken;
+#include <scai/common/Assert.hpp>
 
 namespace scai
 {
+
+using tasking::SyncToken;
 
 namespace hmemo
 {
@@ -236,21 +240,23 @@ void ContextData::copyFrom( const ContextData& other, size_t size )
 
 SyncToken* ContextData::copyFromAsync( const ContextData& other, size_t size )
 {
+    SyncToken* token = NULL;    // default value avoids compiler warning due to exception
+
     SCAI_LOG_INFO( logger, "copyFrom " << *other.mMemory << " to " << *mMemory << ", size = " << size )
 
     if ( mMemory.get() == other.mMemory.get() )
     {
         // pointer equality implies it is the same context
 
-        return mMemory->memcpyAsync( pointer, other.pointer, size );
+        token = mMemory->memcpyAsync( pointer, other.pointer, size );
     }
     else if ( mMemory->canCopyFrom( *other.mMemory ) )
     {
-        return mMemory->memcpyFromAsync( pointer, *other.mMemory, other.pointer, size );
+        token = mMemory->memcpyFromAsync( pointer, *other.mMemory, other.pointer, size );
     }
     else if ( other.mMemory->canCopyTo( *mMemory ) )
     {
-        return other.mMemory->memcpyToAsync( *mMemory, pointer, other.pointer, size );
+        token = other.mMemory->memcpyToAsync( *mMemory, pointer, other.pointer, size );
     }
     else
     {
@@ -258,9 +264,9 @@ SyncToken* ContextData::copyFromAsync( const ContextData& other, size_t size )
                                << *other.mMemory << " to " << *mMemory << ", size = " << size  << " NOT SUPPORTED" )
 
         // Note: calling routine can deal with it by involving ContextData available on host
-
-        return NULL;  // dead code, but avoids warning
     }
+
+    return token;
 }
 
 } /* end namespace hmemo */

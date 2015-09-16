@@ -33,9 +33,10 @@
 // hpp
 #include <scai/tracing/VTInterface.hpp>
 
-// others
+// local library
 #include <scai/tracing/RegionEntry.hpp>
 
+// std
 #include <string>
 
 namespace scai

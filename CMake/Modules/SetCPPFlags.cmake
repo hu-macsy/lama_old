@@ -35,7 +35,7 @@
 # GNU
 if ( CMAKE_COMPILER_IS_GNUCXX )
 
-    set ( LAMA_LINKER_FLAGS "-Wl,--no-as-needed " )
+    #set ( LAMA_LINKER_FLAGS "-Wl,--no-as-needed " )
     set ( SCAI_WARNING_FLAGS "-Wextra -Wall -Werror" ) # -pedantic -std=c++98 " ) # -march=core02
 
     set ( LAMA_CXX_FLAGS_RELEASE "-ffast-math -msse4a " )
@@ -48,16 +48,20 @@ if ( CMAKE_CXX_COMPILER_ID MATCHES Intel )
 
     message ( STATUS "LAMA_CXX_FLAGS = ${LAMA_CXX_FLAGS}" )
 
-    set ( LAMA_CXX_FLAGS "${LAMA_CXX_FLAGS} -fPIC -shared-intel" ) 
+    # -fPIC should always be enabled so static libraries can be linked with shared libraries
 
-    #message ( STATUS "LAMA_CXX_FLAGS = ${LAMA_CXX_FLAGS}" )
-    
+    set ( LAMA_CXX_FLAGS "${LAMA_CXX_FLAGS} -fPIC -shared-intel " ) 
+
     # -wd1478 : supprress warning deprecated auto_ptr
     # not set: -Werror-all (all warnings will be errors)
 
     set ( SCAI_WARNING_FLAGS "-w2 -Wall -Wcheck -wd1478" ) # -Werror-all Warnings/Errors. No Remarks.
     
-    set ( LAMA_CXX_FLAGS_RELEASE "-ipo -no-prec-div -xHost " )
+    # -ipo for interprocedural analysis, might be added for RELEASE but increases compile/link time dramatically
+    # -xHost optimizes for the processor on which the code is compiled, not recommended for cross compilation
+    #  or HPC clusters where compile node has different processor than compute nodes
+
+    set ( LAMA_CXX_FLAGS_RELEASE "-no-prec-div " )
 
 endif ( CMAKE_CXX_COMPILER_ID MATCHES Intel )
 
@@ -68,7 +72,11 @@ if ( CMAKE_CXX_COMPILER_ID MATCHES PGI )
     # Flag BOOST_HAS_THREADS is workaround needed for PGI compiler when compiling codes
     # with Boost headers
 
-    set ( LAMA_CXX_FLAGS "-fPIC -Kieee -Mipa=libc -DBOOST_HAS_THREADS " ) # -std=c++0x
+    # -DBOOST_HAS_THREADS was neded in previous versions
+    # -Mipa=libc   was used in previous compiler releases
+    # --gnu absolutely required if linking GNU compatible libraries, PGI has other name mangeling
+
+    set ( LAMA_CXX_FLAGS "-fPIC -Kieee --gnu" ) 
 
     # Disable warning 1097 to avoid warnings from openmpi headers with gcc specific attributes
 

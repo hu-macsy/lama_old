@@ -33,9 +33,10 @@
 // hpp
 #include <scai/hmemo/Memory.hpp>
 
-// assert
-#include <scai/common/Exception.hpp>
+// internal scai libraries
+#include <scai/common/exception/Exception.hpp>
 
+// std
 #include <map>
 
 namespace scai
@@ -141,29 +142,26 @@ tasking::SyncToken* Memory::memcpyToAsync( const Memory& dstMemory, void* dst, c
 
 /* ---------------------------------------------------------------------------------*/
 
-} /* end namespace hmemo */
+namespace memtype
+{
 
-} /* end namespace scai */
-
-/* ---------------------------------------------------------------------------------*/
-
-std::ostream& operator<<( std::ostream& stream, const scai::hmemo::MemoryType& type )
+std::ostream& operator<<( std::ostream& stream, const MemoryType& type )
 {
     switch ( type )
     {
-        case scai::hmemo::memtype::HostMemory :
+        case HostMemory :
             stream << "HostMemory";
             break;
 
-        case scai::hmemo::memtype::CUDAMemory :
+        case CUDAMemory :
             stream << "CUDAMemory";
             break;
 
-        case scai::hmemo::memtype::CUDAHostMemory :
+        case CUDAHostMemory :
             stream << "CUDAHostMemory";
             break;
 
-        case scai::hmemo::memtype::UserMemory :
+        case UserMemory :
             stream << "UserMemory";
             break;
 
@@ -174,3 +172,10 @@ std::ostream& operator<<( std::ostream& stream, const scai::hmemo::MemoryType& t
     return stream;
 }
 
+} /* end namespace memtype */
+
+/* ---------------------------------------------------------------------------------*/
+
+} /* end namespace hmemo */
+
+} /* end namespace scai */

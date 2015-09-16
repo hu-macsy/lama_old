@@ -36,15 +36,13 @@
 // for dll_import
 #include <scai/common/config.hpp>
 
-// others
-#include <scai/lama/SyncToken.hpp>
-#include <scai/lama/LAMATypes.hpp>
+// internal scai libraries
+#include <scai/tasking/SyncToken.hpp>
 
-// assert
-#include <scai/lama/exception/LAMAAssert.hpp>
-
-// logging
 #include <scai/logging.hpp>
+
+#include <scai/common/SCAITypes.hpp>
+#include <scai/common/Assert.hpp>
 
 namespace scai
 {
@@ -85,7 +83,7 @@ public:
         const IndexType csrIA[],
         const IndexType csrJA[],
         const ValueType csrValues[],
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /** Implementation for CSRUtilsInterface::Offsets::matrixAddSizes  */
 

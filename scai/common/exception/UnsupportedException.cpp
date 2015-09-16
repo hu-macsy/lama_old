@@ -31,7 +31,10 @@
  * @since 2.0.0
  */
 
-#include <scai/common/UnsupportedException.hpp>
+// hpp
+#include <scai/common/exception/UnsupportedException.hpp>
+
+// local library
 #include <scai/common/Settings.hpp>
 
 namespace scai

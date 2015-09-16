@@ -31,8 +31,9 @@
  */
 
 // hpp
-#include <scai/common/Exception.hpp>
+#include <scai/common/exception/Exception.hpp>
 
+// std
 #include <cstdio>
 #include <cstdlib>
 #include <vector>

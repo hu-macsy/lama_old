@@ -32,10 +32,12 @@
 #pragma once
 
 // for dll_import
-
 #include <scai/common/config.hpp>
+
+// local library
 #include <scai/common/NonCopyable.hpp>
 
+// external
 #include <pthread.h>
 
 namespace scai

@@ -34,14 +34,16 @@
 // hpp
 #include <scai/lama/solver/BiCG.hpp>
 
-// others
+// local library
 #include <scai/lama/DenseVector.hpp>
-#include <scai/tracing.hpp>
 
 #include <scai/lama/expression/VectorExpressions.hpp>
 #include <scai/lama/expression/MatrixVectorExpressions.hpp>
 
 #include <scai/lama/storage/MatrixStorage.hpp>
+
+// internal scai libraries
+#include <scai/tracing.hpp>
 
 namespace scai
 {

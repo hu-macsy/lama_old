@@ -34,29 +34,33 @@
 // hpp
 #include <scai/lama/storage/COOStorage.hpp>
 
-// others
-#include <scai/hmemo.hpp>
-
+// local library
 #include <scai/lama/LAMAInterface.hpp>
 #include <scai/lama/LAMAArrayUtils.hpp>
-
-#include <scai/tasking/TaskSyncToken.hpp>
 
 #include <scai/lama/openmp/OpenMPUtils.hpp>
 #include <scai/lama/openmp/OpenMPCOOUtils.hpp>
 #include <scai/lama/openmp/OpenMPCSRUtils.hpp>
 
+// internal scai libraries
+#include <scai/hmemo.hpp>
+
+#include <scai/tasking/TaskSyncToken.hpp>
+
 #include <scai/tracing.hpp>
-#include <boost/preprocessor.hpp>
+
 #include <scai/common/bind.hpp>
 
-using scai::common::unique_ptr;
-using scai::common::shared_ptr;
+// boost
+#include <boost/preprocessor.hpp>
 
 using namespace scai::hmemo;
 
 namespace scai
 {
+
+using common::unique_ptr;
+using common::shared_ptr;
 
 namespace lama
 {
@@ -472,8 +476,6 @@ void COOStorage<ValueType>::allocate( IndexType numRows, IndexType numColumns )
 template<typename ValueType>
 void COOStorage<ValueType>::writeAt( std::ostream& stream ) const
 {
-    using ::operator<<;   // ToDo: still other operators in this namespace, so for ScalarType not used
-
     stream << "COOStorage<" << common::getScalarType<ValueType>()
            << ">( size = " << mNumRows << " x " << mNumColumns
            << ", nnz = " << mNumValues << " )" ;
@@ -731,7 +733,7 @@ ValueType COOStorage<ValueType>::l2Norm() const
 
 	SCAI_CONTEXT_ACCESS( loc );
 
-	return sqrt(dot( n, data.get(), 1, data.get(), 1, NULL ));
+	return ::sqrt(dot( n, data.get(), 1, data.get(), 1, NULL ));
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1159,16 +1161,16 @@ COOStorage<ValueType>* COOStorage<ValueType>::copy() const
 /*       Template specializations and instantiations                         */
 /* ========================================================================= */
 
-#define LAMA_COO_STORAGE_INSTANTIATE(z, I, _)                                  \
-    template<>                                                                 \
-    const char* COOStorage<ARITHMETIC_TYPE##I>::typeName()                     \
-    {                                                                          \
-        return "COOStorage<ARITHMETIC_TYPE##I>";                               \
-    }                                                                          \
-                                                                               \
-    template class COMMON_DLL_IMPORTEXPORT COOStorage<ARITHMETIC_TYPE##I> ;
+#define LAMA_COO_STORAGE_INSTANTIATE(z, I, _)                                     \
+    template<>                                                                    \
+    const char* COOStorage<ARITHMETIC_HOST_TYPE_##I>::typeName()                  \
+    {                                                                             \
+        return "COOStorage<ARITHMETIC_HOST_TYPE_##I>";                            \
+    }                                                                             \
+                                                                                  \
+    template class COMMON_DLL_IMPORTEXPORT COOStorage<ARITHMETIC_HOST_TYPE_##I> ;
 
-BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, LAMA_COO_STORAGE_INSTANTIATE, _ )
+BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_COO_STORAGE_INSTANTIATE, _ )
 
 #undef LAMA_COO_STORAGE_INSTANTIATE
 

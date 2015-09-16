@@ -33,6 +33,12 @@
 
 #pragma once
 
+// local library
+#include <scai/common/config.hpp>
+
+// std
+#include <sstream>
+
 #ifdef __CUDACC__
 #define CUDA_CALLABLE_MEMBER __device__ __host__
 #include <cuComplex.h>
@@ -42,8 +48,6 @@
 #define CUDA_CALLABLE_MEMBER
 #include <cmath>
 #endif
-
-#include <scai/common/SCAIAssert.hpp>
 
 /*
  * Macros used for building the operators, providing the functionality
@@ -347,8 +351,9 @@
 namespace scai
 {
 
-namespace lama
+namespace common
 {
+
 using std::sqrt;
 using std::abs;
 
@@ -861,6 +866,19 @@ inline Complex<long double> sqrt( const Complex<long double>& a )
     }
 }
 
+template<typename ValueType,typename InputType1,typename InputType2>
+std::basic_istream<InputType1,InputType2>&
+operator>>( std::basic_istream<InputType1,InputType2>& input, Complex<ValueType>& x )
+{
+    ValueType real = 0;
+    ValueType imag = 0;
+    input >> real;
+    input >> imag;
+    x.real( real );
+    x.imag( imag );
+    return input;
+}
+
 template<typename ValueType>
 std::ostream& operator<<( std::ostream& stream, const Complex<ValueType>& object )
 {
@@ -876,20 +894,7 @@ std::ostream& operator<<( std::ostream& stream, const Complex<ValueType>& object
     return stream;
 }
 
-template<typename ValueType,typename InputType1,typename InputType2>
-std::basic_istream<InputType1,InputType2>&
-operator>>( std::basic_istream<InputType1,InputType2>& input, Complex<ValueType>& x )
-{
-    ValueType real = 0;
-    ValueType imag = 0;
-    input >> real;
-    input >> imag;
-    x.real( real );
-    x.imag( imag );
-    return input;
-}
-
-} /* end namespace lama */
+} /* end namespace common */
 
 } /* end namespace scai */
 

@@ -31,14 +31,22 @@
  * @since 1.0.0
  */
 
+// local library
 #include <scai/lama/cuda/CUDABLAS1.hpp>
 #include <scai/lama/cuda/launchHelper.hpp>
 #include <scai/lama/cuda/utils.cu.h>
+
+// internal scai libraries
+#include <scai/common/SCAITypes.hpp>
+#include <scai/common/Assert.hpp>
+
 #include <scai/common/cuda/CUDAError.hpp>
 
+// CUDA
 #include <cuda_runtime.h>
+
+// boost
 #include <boost/preprocessor.hpp>
-#include <scai/lama/LAMATypes.hpp>
 
 namespace scai
 {
@@ -98,16 +106,16 @@ namespace lama
 
 #define SCAI_CUDA_BLAS1_INSTANTIATE(z, I, _)                 \
                                                              \
-template void CUDABLAS1::sum_launcher<ARITHMETIC_TYPE##I>(   \
-    const int,                                               \
-    ARITHMETIC_TYPE##I,                                      \
-    const ARITHMETIC_TYPE##I*,                               \
-    ARITHMETIC_TYPE##I,                                      \
-    const ARITHMETIC_TYPE##I*,                               \
-    ARITHMETIC_TYPE##I*,                                     \
+template void CUDABLAS1::sum_launcher<ARITHMETIC_CUDA_TYPE_##I>(   \
+    const int,                                                     \
+    ARITHMETIC_CUDA_TYPE_##I,                                      \
+    const ARITHMETIC_CUDA_TYPE_##I*,                               \
+    ARITHMETIC_CUDA_TYPE_##I,                                      \
+    const ARITHMETIC_CUDA_TYPE_##I*,                               \
+    ARITHMETIC_CUDA_TYPE_##I*,                                     \
     cudaStream_t );   
 
-    BOOST_PP_REPEAT( ARITHMETIC_TYPE_CNT, SCAI_CUDA_BLAS1_INSTANTIATE, _ )
+    BOOST_PP_REPEAT( ARITHMETIC_CUDA_TYPE_CNT, SCAI_CUDA_BLAS1_INSTANTIATE, _ )
 
 #undef SCAI_CUDA_BLAS1_INSTANTIATE
 

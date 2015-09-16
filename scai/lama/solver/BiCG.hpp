@@ -33,8 +33,10 @@
 
 #pragma once
 
+// base classes
 #include <scai/lama/solver/CG.hpp>
 
+// local library
 #include <scai/lama/matrix/SparseMatrix.hpp>
 
 namespace scai

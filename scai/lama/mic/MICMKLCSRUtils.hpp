@@ -36,20 +36,21 @@
 // for dll_import
 #include <scai/common/config.hpp>
 
-// others
-#include <scai/lama/LAMATypes.hpp>
-
-// logging
+// internal scai libraries
 #include <scai/logging.hpp>
+
+#include <scai/common/SCAITypes.hpp>
 
 namespace scai
 {
 
+namespace tasking
+{
+    class SyncToken;
+}
+
 namespace lama
 {
-
-class SyncToken;
-// forward declaration
 
 /** This class provides routines on compressed sparse row data
  */
@@ -73,7 +74,7 @@ public:
         const IndexType csrIA[],
         const IndexType csrJA[],
         const ValueType csrValues[],
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /** Routine that registers all routines of this class at the LAMA interface. */
 
