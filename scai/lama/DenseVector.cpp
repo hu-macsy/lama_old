@@ -616,7 +616,7 @@ template<typename ValueType>
 void DenseVector<ValueType>::writeAt( std::ostream& stream ) const
 {
     stream << "DenseVector<" << getValueType() << ">" << "( size = " << size() << ", local = " << mLocalValues.size()
-                    << ", dist = " << getDistribution() << ", loc  = " << *getContext() << " )";
+                   << ", dist = " << getDistribution() << ", loc  = " << *getContext() << " )";
 }
 
 template<typename ValueType>
@@ -1041,8 +1041,9 @@ void DenseVector<ValueType>::redistribute( DistributionPtr distribution )
 template<typename ValueType>
 void DenseVector<ValueType>::resizeImpl()
 {
-    WriteAccess<ValueType> wLocalValues( mLocalValues );
-    wLocalValues.resize( getDistribution().getLocalSize() );
+    // resize array with local values
+
+    mLocalValues.resize( getDistribution().getLocalSize() );
 }
 
 /* -- IO ------------------------------------------------------------------- */
