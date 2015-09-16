@@ -154,6 +154,8 @@ void TraceRegionRecord::enter()
 
     RegionEntry& regionEntry = mTraceData->getRegion( mRegionId );
 
+    SCAI_LOG_INFO( logger, "enter " << regionEntry.getRegionName() )
+
     if ( mTimeTrace | mCallTree )
     {
         mTraceData->enter( mRegionId, regionEntry, mCallTree );
@@ -175,6 +177,8 @@ void TraceRegionRecord::leave()
     }
 
     RegionEntry& regionEntry = mTraceData->getRegion( mRegionId );
+
+    SCAI_LOG_INFO( logger, "leave " << regionEntry.getRegionName() )
 
     if ( mTimeTrace | mCallTree )
     {
