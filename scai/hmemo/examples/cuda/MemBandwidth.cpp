@@ -44,7 +44,7 @@ void bench( LAMAArray<ValueType>& array )
         }
         // Transfer: CUDA->Host by WriteAccess on HOST, invalidates CUDA
         {
-            WriteAccess<ValueType> write( array );
+            WriteAccess<ValueType> write( array, hostContext );
         }
     }
 

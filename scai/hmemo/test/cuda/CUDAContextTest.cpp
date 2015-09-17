@@ -116,10 +116,12 @@ BOOST_AUTO_TEST_CASE( allocateTest )
 
 BOOST_AUTO_TEST_CASE ( releaseTest )
 {
+    ContextPtr contextPtr = Context::getContextPtr( context::Host );
+
     LAMAArray<IndexType> ctxArray; // default, not allocated at all
-    ReadAccess<IndexType> readTestAccess( ctxArray );
+    ReadAccess<IndexType> readTestAccess( ctxArray, contextPtr );
     readTestAccess.release();
-    WriteAccess<IndexType> writeAccess( ctxArray );
+    WriteAccess<IndexType> writeAccess( ctxArray, contextPtr );
     writeAccess.resize( 10 );
 
     for ( IndexType i = 0; i < 10; i++ )
@@ -131,7 +133,7 @@ BOOST_AUTO_TEST_CASE ( releaseTest )
     //Should throw exception, because of already released writeAccess
     BOOST_CHECK_THROW( { writeAccess.resize( 20 ); }, common::Exception );
     // This is not checked:  writeAccess[0] = 5.0; -> crashes
-    ReadAccess<IndexType> readAccess( ctxArray );
+    ReadAccess<IndexType> readAccess( ctxArray, contextPtr );
 
     for ( IndexType i = 0; i < 5; i++ )
     {
@@ -145,9 +147,11 @@ BOOST_AUTO_TEST_CASE ( releaseTest )
 
 BOOST_AUTO_TEST_CASE( resizeTest )
 {
+    ContextPtr contextPtr = Context::getContextPtr( context::Host );
+
     LAMAArray<IndexType> ctxArray; // default, not allocated at all
     {
-        WriteAccess<IndexType> writeAccess( ctxArray );
+        WriteAccess<IndexType> writeAccess( ctxArray, contextPtr );
         // Possible problem: fetch from any location not possible
         writeAccess.resize( 10 );
 
@@ -158,7 +162,7 @@ BOOST_AUTO_TEST_CASE( resizeTest )
     }
     ctxArray.purge();
     {
-        WriteAccess<IndexType> writeAccess( ctxArray );
+        WriteAccess<IndexType> writeAccess( ctxArray, contextPtr );
         // Possible problem: fetch from any location not possible
         writeAccess.resize( 10 );
     }
@@ -168,6 +172,7 @@ BOOST_AUTO_TEST_CASE( resizeTest )
 
 BOOST_AUTO_TEST_CASE( asyncTest )
 {
+    ContextPtr hostContext = Context::getContextPtr( context::Host );
     ContextPtr cudaContext = Context::getContextPtr( context::CUDA );
     const IndexType n = 100;
     const float value = 1.4;
@@ -187,7 +192,7 @@ BOOST_AUTO_TEST_CASE( asyncTest )
 
     token->wait();  
 
-    ReadAccess<float> hostV( vector );
+    ReadAccess<float> hostV( vector, hostContext );
 
     for ( IndexType i = 0; i < n; ++i )
     {
@@ -199,6 +204,7 @@ BOOST_AUTO_TEST_CASE( asyncTest )
 
 BOOST_AUTO_TEST_CASE( syncTest )
 {
+    ContextPtr hostContext = Context::getContextPtr( context::Host );
     ContextPtr cudaContext = Context::getContextPtr( context::CUDA );
 
     const IndexType n = 100;
@@ -212,7 +218,7 @@ BOOST_AUTO_TEST_CASE( syncTest )
         scal( n, alpha, cudaV.get(), 1, token.get() );
         // synchronize on token at end of this scope
     }
-    ReadAccess<float> hostV( vector );
+    ReadAccess<float> hostV( vector, hostContext );
 
     for ( IndexType i = 0; i < n; ++i )
     {

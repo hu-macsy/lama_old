@@ -53,7 +53,11 @@ template<typename ValueType>
 void outArray( const LAMAArray<ValueType>& array, const char* name )
 {
     std::cout << name << "[ " << array.size() << " ] = {";
-    ReadAccess<ValueType> read( array );
+
+    ContextPtr contextPtr = Context::getContextPtr( context::Host );
+
+    ReadAccess<ValueType> read( array, contextPtr );
+
     for ( int i = 0; i < array.size(); ++i )
     {
         std::cout << " " << read.get()[i];

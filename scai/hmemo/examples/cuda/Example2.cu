@@ -111,7 +111,7 @@ int main()
 
     {
         SCAI_LOG_INFO( logger, "read on host" )
-        ReadAccess<double> read( data );
+        ReadAccess<double> read( data, hostContext );
         const double* values = read.get();
         for ( IndexType i = 0; i < N; ++i )
         {

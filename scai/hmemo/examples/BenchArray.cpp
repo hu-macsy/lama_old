@@ -62,13 +62,16 @@ void routineLAMA( double& res, IndexType n )
 {
     SCAI_LOG_TRACE( logger, "routineLAMA, n = " << n )
 
-    LAMAArray<double> X;
+    ContextPtr contextPtr = Context::getContextPtr( context::Host );
+
+    LAMAArray<double> X( contextPtr );
+
     {
-        WriteOnlyAccess<double> write( X, n );
+        WriteOnlyAccess<double> write( X, contextPtr, n );
         init( write.get(), n, 1.0 );
     }
     {
-        ReadAccess<double> read( X );
+        ReadAccess<double> read( X, contextPtr );
         sub( res, read.get(), n );
     }
 }
@@ -81,21 +84,27 @@ void routineSCAI_1( double& res )
 
 void routineSCAI_2( double& res, IndexType n )
 {
+    ContextPtr contextPtr = Context::getContextPtr( context::Host );
+
     LAMAArray<double> X;
+
     {
-        WriteOnlyAccess<double> write( X, n );
+        WriteOnlyAccess<double> write( X, contextPtr, n );
     }
     res = 0.0;
 }
 
 void routineSCAI_3( double& res, IndexType n )
 {
+    ContextPtr contextPtr = Context::getContextPtr( context::Host );
+
     LAMAArray<double> X;
+
     {
-        WriteOnlyAccess<double> write( X, n );
+        WriteOnlyAccess<double> write( X, contextPtr, n );
     }
     {
-        ReadAccess<double> read( X );
+        ReadAccess<double> read( X, contextPtr );
     }
     res = 0.0;
 }

@@ -48,7 +48,9 @@ void sumArray( const LAMAArray<T>& array )
 {
     SCAI_LOG_INFO( logger, "read access on " << array );
 
-    ReadAccess<T> readAccess( array );
+    ContextPtr contextPtr = Context::getContextPtr( context::Host );
+
+    ReadAccess<T> readAccess( array, contextPtr );
    
     const T* data = readAccess.get();
  
@@ -67,11 +69,15 @@ void writeArray( LAMAArray<T>& array )
 {
     SCAI_LOG_INFO( logger, "make write test access on empty array\n" );
 
-    WriteAccess<T> writeAccess( array );
+    ContextPtr contextPtr = Context::getContextPtr( context::Host );
+
+    WriteAccess<T> writeAccess( array, contextPtr );
 
     writeAccess.resize( 10 );
 
     T* data = writeAccess.get();
+
+    // data is on host, so we can work directly on it
 
     for ( IndexType i = 0; i < 10; i++ )
     {
