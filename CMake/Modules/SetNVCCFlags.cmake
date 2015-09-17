@@ -31,6 +31,14 @@
  # @since 1.0.0
 ###
 
+#### Output variables set by this function
+# 
+#   SCAI_NVCC_FLAGS         : additional flags for NVCC, specific for SCAI projects
+#   SCAI_NVCC_FLAGS_RELEASE : additional flags for NVCC, specific for SCAI projects, only Release
+#   SCAI_NVCC_FLAGS_DEBUG   : additional flags for NVCC, specific for SCAI projects, only Debug
+#
+#   The corresponding flags in the variables might be subject of change later by the user
+
 include ( Functions/checkValue )
 
 #### CUDA specific compiler flags ####
@@ -62,8 +70,11 @@ if    ( CUDA_FOUND AND USE_CUDA )
         set ( CUDA_PROPAGATE_HOST_FLAGS OFF )
         
         set ( SCAI_NVCC_FLAGS -Xcompiler -fPIC )
-        set ( SCAI_NVCC_RELEASE_FLAGS -O3 -use_fast_math -Xcompiler -ffast-math -Xcompiler -fno-inline )
+      	set ( SCAI_NVCC_FLAGS_DEBUG -g -G )
+        set ( SCAI_NVCC_FLAGS_RELEASE -O3 -use_fast_math -Xcompiler -ffast-math -Xcompiler -fno-inline )
         
+        # Note: -Xcompiler;-fno-inline is used because of compability issues of CUDA with gcc-4.4
+
         if    ( CXX_SUPPORTS_C11 )
             if ( CUDA_VERSION STRLESS "7.0" )
                 message ( FATAL_ERROR "CUDA version ${CUDA_VERSION} does not support -std=c++11, please call cmake with -DCXX_SUPPORTS_C11=0" )
@@ -77,14 +88,9 @@ if    ( CUDA_FOUND AND USE_CUDA )
             list ( APPEND SCAI_NVCC_FLAGS --compiler-bindir ${CMAKE_CXX_COMPILER}; )  
         endif ( CMAKE_CXX_COMPILER_ID MATCHES Intel )
         
-        #-Xcompiler;-fno-inline is used because of compability issues of CUDA with gcc-4.4
-        if    ( ${CMAKE_BUILD_TYPE} MATCHES "Debug" )
-      	    list ( APPEND SCAI_NVCC_FLAGS -g -G )
-        endif ( ${CMAKE_BUILD_TYPE} MATCHES "Debug" )
-        
         # set -march=core02,-mmmx,-msse,-msse2,-msse3,-mssse3,-msse4a flags here
         if    ( MARCH_NATIVE_SUPPORT )
-            list ( APPEND SCAI_NVCC_RELEASE_FLAGS -Xcompiler -march=native )
+            list ( APPEND SCAI_NVCC_FLAGS_RELEASE -Xcompiler -march=native )
         endif ( MARCH_NATIVE_SUPPORT )
         
     endif ( WIN32 )
