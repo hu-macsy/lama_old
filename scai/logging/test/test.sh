@@ -89,7 +89,7 @@ fi
 # Compile-time configuration tests
 #
 # The exported debug level is set to full logging (level TRACE). The simple executable is build using all available log
-# levels and the ouput is checked.
+# levels and the output is checked.
 # =====================================================================================================================
 echo ""
 echo "Running compile-time configuration tests:"

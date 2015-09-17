@@ -59,6 +59,6 @@ if    ( CUDA_FOUND )
     mark_as_advanced ( CUDA_HAVE_GPU )
     
     if    ( CUDA_COMPUTE_CAPABILITY MATCHES "35" )
-        add_definitions ( -DCUDA_35 )
+        #add_definitions ( -DCUDA_35 )
     endif ( CUDA_COMPUTE_CAPABILITY MATCHES "35" )
 endif ( CUDA_FOUND )
