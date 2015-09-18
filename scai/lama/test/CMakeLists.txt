@@ -147,7 +147,7 @@ if ( CUDA_FOUND AND USE_CUDA AND CUDA_HAVE_GPU )
 endif ( CUDA_FOUND AND USE_CUDA AND CUDA_HAVE_GPU )
  
 ### add definitions ###
-add_definitions ( -DLAMA_TESTFILE_PATH="${CMAKE_SOURCE_DIR}/../../res/testfiles" )
+add_definitions ( -DLAMA_TESTFILE_PATH="${CMAKE_CURRENT_SOURCE_DIR}/../../../res/testfiles" )
 
 ### add link directories ###
 if ( WIN32 )
@@ -164,13 +164,12 @@ else ( WIN32 )
     target_link_libraries ( lama_test ama ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} ${Boost_REGEX_LIBRARY} )
 endif ( WIN32 )
 
-
 ### Copy the README and xmltest.sh file in build directory ### 
-file ( COPY README DESTINATION ${CMAKE_BINARY_DIR}/test )
-file ( COPY xmltest.sh DESTINATION ${CMAKE_BINARY_DIR}/test ) 
+file ( COPY README DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
+file ( COPY xmltest.sh DESTINATION ${CMAKE_CURRENT_BINARY_DIR} ) 
 
 if ( USE_CODE_COVERAGE )
     ### Copy the cca.sh and ccajen.sh file in build directory ###
-    configure_file( "${CMAKE_SOURCE_DIR}/test/cca.sh.in" "${CMAKE_CURRENT_BINARY_DIR}/cca.sh" @ONLY)
-    configure_file( "${CMAKE_SOURCE_DIR}/test/ccajen.sh.in" "${CMAKE_CURRENT_BINARY_DIR}/ccajen.sh" @ONLY)
+    configure_file( "${CMAKE_CURRENT_SOURCE_DIR}/cca.sh.in" "${CMAKE_CURRENT_BINARY_DIR}/cca.sh" @ONLY)
+    configure_file( "${CMAKE_CURRENT_SOURCE_DIR}/ccajen.sh.in" "${CMAKE_CURRENT_BINARY_DIR}/ccajen.sh" @ONLY)
 endif ( USE_CODE_COVERAGE )
