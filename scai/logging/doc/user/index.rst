@@ -100,7 +100,7 @@ The hierarchy of the loggers makes it more comfortable to configure the loggers.
 
 These definitions of the loggers result in the following hierarchy:
 
-.. figure:: /_images/Logging1.png
+.. figure:: _images/Logging1.png
     :width: 500px
     :align: center
     :alt: Hierarchical structure of loggers.
@@ -246,7 +246,7 @@ level has been specified in the configuration file. The RootLogger can be refere
 If the environment variable ``SCAI_LOG`` is not set, a logging file with the name .loggingrc is searched 
 in the home directory of the user. If this file is also not available, the default configuration is chosen.
 
-.. figure:: /_images/Logging2.png
+.. figure:: _images/Logging2.png
     :width: 500px
     :align: center
     :alt: Inheritance of logging levels.
