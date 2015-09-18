@@ -58,7 +58,10 @@ if    ( CUDA_FOUND )
     
     mark_as_advanced ( CUDA_HAVE_GPU )
     
-    if    ( CUDA_COMPUTE_CAPABILITY MATCHES "35" )
-        add_definitions ( -DCUDA_35 )
-    endif ( CUDA_COMPUTE_CAPABILITY MATCHES "35" )
+#   DO NEVER USE THIS: implies recompilation of all sources if CUDA is enabled
+#   maybe it might be added as compile property for some files
+#   if    ( CUDA_COMPUTE_CAPABILITY MATCHES "35" )
+#       add_definitions ( -DCUDA_35 )
+#    endif ( CUDA_COMPUTE_CAPABILITY MATCHES "35" )
+
 endif ( CUDA_FOUND )
