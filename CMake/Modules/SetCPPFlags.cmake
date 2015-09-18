@@ -31,26 +31,44 @@
 ###
 
 #### compiler dependent flag definition ####
+#
+#  Input variables: CMAKE_COMPILER_IS_GNUCXX, CMALE_CXX_COMPILER_ID
+#
+#  Output variables: 
+#
+#      SCAI_WARNING_FLAGS       : flags will be used only for compilation, suppress/enable warnings
+#      SCAI_CXX_FLAGS           : flags used for compilation/linking
+#      SCAI_CXX_FLAGS_DEBUG     : flags used for compilation/linking, only in Debug mode
+#      SCAI_CXX_FLAGS_RELASE    : flags used for compilation/linking, only in Release mode
+#      SCAI_CODE_COVERAGE_FLAGS : flags used for compilation/linking, only if code coverage will be enabled
+#
+#  All variables are only set here and not added for CMAKE variables.
+#
+#  Note: most common flags will be set by CMAKE itself, like -g for Debug or -O3 for Release, so these
+#        flags do not have to be defined here.
 
-# GNU
+# GNU C++ compiler
+
 if ( CMAKE_COMPILER_IS_GNUCXX )
 
-    #set ( LAMA_LINKER_FLAGS "-Wl,--no-as-needed " )
-    set ( SCAI_WARNING_FLAGS "-Wextra -Wall -Werror" ) # -pedantic -std=c++98 " ) # -march=core02
+    set ( SCAI_WARNING_FLAGS       "-Wextra -Wall -Werror" )
+    set ( SCAI_CXX_FLAGS_          "" )
+    set ( SCAI_CXX_FLAGS_DEBUG     "" )
+    set ( SCAI_CXX_FLAGS_RELEASE   "-ffast-math -msse4a " )
+    set ( SCAI_CODE_COVERAGE_FLAGS "-fprofile-arcs -ftest-coverage" )
 
-    set ( LAMA_CXX_FLAGS_RELEASE "-ffast-math -msse4a " )
+    ###  Code coverage with gcov/lcov
 
 endif ( CMAKE_COMPILER_IS_GNUCXX )
 
 
-# INTEL
-if ( CMAKE_CXX_COMPILER_ID MATCHES Intel )
+# INTEL compiler
 
-    message ( STATUS "LAMA_CXX_FLAGS = ${LAMA_CXX_FLAGS}" )
+if ( CMAKE_CXX_COMPILER_ID MATCHES Intel )
 
     # -fPIC should always be enabled so static libraries can be linked with shared libraries
 
-    set ( LAMA_CXX_FLAGS "${LAMA_CXX_FLAGS} -fPIC -shared-intel " ) 
+    set ( SCAI_CXX_FLAGS "-fPIC -shared-intel " ) 
 
     # -wd1478 : supprress warning deprecated auto_ptr
     # not set: -Werror-all (all warnings will be errors)
@@ -61,12 +79,19 @@ if ( CMAKE_CXX_COMPILER_ID MATCHES Intel )
     # -xHost optimizes for the processor on which the code is compiled, not recommended for cross compilation
     #  or HPC clusters where compile node has different processor than compute nodes
 
-    set ( LAMA_CXX_FLAGS_RELEASE "-no-prec-div " )
+    set ( SCAI_CXX_FLAGS_DEBUG "" )
+
+    set ( SCAI_CXX_FLAGS_RELEASE "-no-prec-div " )
+
+    #  Intel compiler requires following flags to instrument program for code coverage
+
+    set ( SCAI_CODE_COVERAGE_FLAGS "-prof-gen=srcpos" )
 
 endif ( CMAKE_CXX_COMPILER_ID MATCHES Intel )
 
 
-# PGI
+# PGI C++ compiler
+
 if ( CMAKE_CXX_COMPILER_ID MATCHES PGI )
 
     # Flag BOOST_HAS_THREADS is workaround needed for PGI compiler when compiling codes
@@ -76,18 +101,12 @@ if ( CMAKE_CXX_COMPILER_ID MATCHES PGI )
     # -Mipa=libc   was used in previous compiler releases
     # --gnu absolutely required if linking GNU compatible libraries, PGI has other name mangeling
 
-    set ( LAMA_CXX_FLAGS "-fPIC -Kieee --gnu" ) 
+    set ( SCAI_CXX_FLAGS         "-fPIC -Kieee --gnu" ) 
+    set ( SCAI_CXX_FLAGS_DEBUG   "" )
+    set ( SCAI_CXX_FLAGS_RELEASE "-fast " )
 
     # Disable warning 1097 to avoid warnings from openmpi headers with gcc specific attributes
 
     set ( SCAI_WARNING_FLAGS "--display_error_number --diag_suppress1097 " )
-    
-    set ( LAMA_CXX_FLAGS_RELEASE "-fast " )
 
 endif ( CMAKE_CXX_COMPILER_ID MATCHES PGI )
-
-###  Code coverage with gcov/lcov
-if    ( USE_CODE_COVERAGE )
-    set ( COVERAGE_FLAGS "-fprofile-arcs -ftest-coverage" )
-    set ( LAMA_CXX_FLAGS ${LAMA_CXX_FLAGS} ${COVERAGE_FLAGS} )
-endif ( USE_CODE_COVERAGE )

@@ -49,9 +49,6 @@ set ( CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 set ( CMAKE_BUILD_WITH_INSTALL_RPATH FALSE )
 set ( CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE )
 
-get_property ( FIND_LIB64 GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS )
-message ( STATUS "FindLib64: " ${FIND_LIB64} )
-
 # Makefile outputs
 set ( CMAKE_VERBOSE_MAKEFILE OFF )
 
@@ -67,9 +64,8 @@ if ( NOT CMAKE_BUILD_TYPE )
     set ( CMAKE_BUILD_TYPE Debug CACHE STRING 
         "Choose the type of build, options are: ${CMAKE_BUILD_TYPE_OPTIONS}." FORCE )
 	checkValue ( ${CMAKE_BUILD_TYPE} "${CMAKE_BUILD_TYPE_OPTIONS}" )
+    message ( STATUS "Build type is set to " ${CMAKE_BUILD_TYPE} )
 endif ( NOT CMAKE_BUILD_TYPE )
-
-message ( STATUS "Build type is set to " ${CMAKE_BUILD_TYPE} )
 
 ## Check if lama should be build static or shared
 
