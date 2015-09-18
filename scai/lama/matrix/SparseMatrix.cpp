@@ -473,6 +473,8 @@ void SparseMatrix<ValueType>::assignTransposeImpl( const SparseMatrix<ValueType>
 
         comm.exchangeByPlan( recvSizes, recvSizesPlan, sendSizes, sendSizesPlan );
 
+        ContextPtr contextPtr = Context::getContextPtr( context::Host );
+
         // Now we know the sizes, we can pack the data
 
         LAMAArray<IndexType> recvJA;
@@ -484,7 +486,7 @@ void SparseMatrix<ValueType>::assignTransposeImpl( const SparseMatrix<ValueType>
             const Distribution& dist = matrix.getDistribution();
             const IndexType nJA = sendJA.size();
 
-            WriteAccess<IndexType> ja( sendJA );
+            WriteAccess<IndexType> ja( sendJA, contextPtr );
 
             for( IndexType jj = 0; jj < nJA; ++jj )
             {
@@ -495,8 +497,8 @@ void SparseMatrix<ValueType>::assignTransposeImpl( const SparseMatrix<ValueType>
         // Build the communication plan for sparse data
 
         {
-            ReadAccess<IndexType> sendColSizes( sendSizes );
-            ReadAccess<IndexType> recvColSizes( recvSizes );
+            ReadAccess<IndexType> sendColSizes( sendSizes, contextPtr );
+            ReadAccess<IndexType> recvColSizes( recvSizes, contextPtr );
 
             CommunicationPlan sendDataPlan( sendSizesPlan, sendColSizes.get() );
             CommunicationPlan recvDataPlan( recvSizesPlan, recvColSizes.get() );
@@ -905,7 +907,9 @@ void SparseMatrix<ValueType>::getRow( Vector& row, const IndexType globalRowInde
     SCAI_ASSERT_ERROR( owner >= 0, "Could not find owner of row " << globalRowIndex )
 
     {
-        WriteAccess<ValueType> rowAccess( typedRow->getLocalValues() );
+        ContextPtr contextPtr = Context::getContextPtr( context::Host );
+
+        WriteAccess<ValueType> rowAccess( typedRow->getLocalValues(), contextPtr );
         comm.bcast( rowAccess.get(), getNumColumns(), owner ); // bcast the row
     }
 }
@@ -1345,8 +1349,8 @@ void SparseMatrix<ValueType>::vectorHaloOperationSync(
 
             // reassemble halo computation to global indices
             {
-                ReadAccess<ValueType> h( haloResult );
-                WriteAccess<ValueType> o( toOthersResult );
+                ReadAccess<ValueType> h( haloResult, hostContext );
+                WriteAccess<ValueType> o( toOthersResult, hostContext );
 
                 for( IndexType i = 0; i < toOthersResult.size(); ++i )
                 {
@@ -1368,8 +1372,8 @@ void SparseMatrix<ValueType>::vectorHaloOperationSync(
         {
             SCAI_REGION( "vector.swapping" )
 
-            ReadAccess<ValueType> toOthers( toOthersResult );
-            WriteAccess<ValueType> fromOthers( fromOthersResult );
+            ReadAccess<ValueType> toOthers( toOthersResult, hostContext );
+            WriteAccess<ValueType> fromOthers( fromOthersResult, hostContext );
 
             for( IndexType i = 0; i < numParts; ++i )
             {
@@ -1398,8 +1402,10 @@ void SparseMatrix<ValueType>::vectorHaloOperationSync(
 
         if( numParts != 1 )
         {
-            WriteAccess<ValueType> localData( localResult );
-            ReadAccess<ValueType> otherData( fromOthersResult );
+            ContextPtr contextPtr = Context::getContextPtr( context::Host );
+
+            WriteAccess<ValueType> localData( localResult, contextPtr );
+            ReadAccess<ValueType> otherData( fromOthersResult, contextPtr );
 
             for( IndexType i = 0; i < numParts; ++i )
             {
@@ -1587,8 +1593,8 @@ void SparseMatrix<ValueType>::vectorHaloOperationAsync(
 
             toOthersResult.prefetch( hostContext );
 
-            ReadAccess<ValueType> h( haloResult );
-            WriteAccess<ValueType> o( toOthersResult );
+            ReadAccess<ValueType> h( haloResult, hostContext );
+            WriteAccess<ValueType> o( toOthersResult, hostContext );
 
             for( IndexType i = 0; i < toOthersResult.size(); ++i )
             {
@@ -1618,6 +1624,8 @@ void SparseMatrix<ValueType>::vectorHaloOperationAsync(
         localComputation.reset( calcF( mLocalData.get(), localResult, localX ) );
     }
 
+    ContextPtr contextPtr = Context::getContextPtr( context::Host );
+
     if( numParts != 1 )
     {
         // start vector part exchange
@@ -1627,8 +1635,8 @@ void SparseMatrix<ValueType>::vectorHaloOperationAsync(
             SCAI_LOG_INFO( logger,
                            comm << " vector swapping: toOthers[" << toOthersResult.size() << "], fromOthersResult[" << fromOthersResult.size() << "]" )
 
-            ReadAccess<ValueType> toOthers( toOthersResult );
-            WriteAccess<ValueType> fromOthers( fromOthersResult );
+            ReadAccess<ValueType> toOthers( toOthersResult, contextPtr );
+            WriteAccess<ValueType> fromOthers( fromOthersResult, contextPtr );
 
             for( IndexType i = 0; i < numParts; ++i )
             {
@@ -1650,8 +1658,8 @@ void SparseMatrix<ValueType>::vectorHaloOperationAsync(
 
         if( numParts != 1 )
         {
-            WriteAccess<ValueType> localData( localResult );
-            ReadAccess<ValueType> otherData( fromOthersResult );
+            WriteAccess<ValueType> localData( localResult, contextPtr );
+            ReadAccess<ValueType> otherData( fromOthersResult, contextPtr );
 
             for( IndexType i = 0; i < numParts; ++i )
             {

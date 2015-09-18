@@ -111,7 +111,6 @@ set ( SOURCE_FILES
         TaskSyncTokenTest
         TFQMRTest
         TimerTest
-        TracingTest
 #        UtilsTest
         VectorTest
     )

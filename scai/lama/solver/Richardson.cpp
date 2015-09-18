@@ -28,10 +28,10 @@
  * @brief Richardson.cpp
  * @author David Schissler
  * @date 17.04.2015
- * @since 
+ * @since
  */
 
- // hpp
+// hpp
 #include <scai/lama/solver/Richardson.hpp>
 
 // local library
@@ -51,66 +51,77 @@ namespace lama
 SCAI_LOG_DEF_LOGGER( Richardson::logger, "Solver.Richardson" )
 
 Richardson::Richardson( const std::string& id )
-    : OmegaSolver( id,(Scalar) -1.0){}
+    : OmegaSolver( id, ( Scalar ) - 1.0 ) {}
 
 Richardson::Richardson( const std::string& id, const Scalar omega )
-    : OmegaSolver( id, omega ){}
+    : OmegaSolver( id, omega ) {}
 
 Richardson::Richardson( const std::string& id, LoggerPtr logger )
-    : OmegaSolver( id ,(Scalar) -1.0,logger){}
+    : OmegaSolver( id , ( Scalar ) - 1.0, logger ) {}
 
 Richardson::Richardson( const std::string& id, const Scalar omega, LoggerPtr logger )
-    : OmegaSolver( id, omega, logger ){}
+    : OmegaSolver( id, omega, logger ) {}
 
 Richardson::Richardson( const Richardson& other )
-    : OmegaSolver( other ){}
+    : OmegaSolver( other ) {}
 
 
 
 Richardson::RichardsonRuntime::RichardsonRuntime()
-    : OmegaSolverRuntime(){}
+    : OmegaSolverRuntime() {}
 
-Richardson::~Richardson(){}
+Richardson::~Richardson() {}
 
-Richardson::RichardsonRuntime::~RichardsonRuntime(){}
+Richardson::RichardsonRuntime::~RichardsonRuntime() {}
 
 
 
-void Richardson::initialize( const Matrix& coefficients ){
-    SCAI_LOG_DEBUG(logger, "Initialization started for coefficients = "<< coefficients)
+void Richardson::initialize( const Matrix& coefficients )
+{
+    SCAI_LOG_DEBUG( logger, "Initialization started for coefficients = " << coefficients )
 
     Solver::initialize( coefficients );
 
-    if(mOmega == -1.0){
+    if ( mOmega == -1.0 )
+    {
         L2Norm n;
-        Scalar bound = 2.0/n.apply( coefficients );
-        mOmega = (2.0/3.0 * bound);
+        Scalar bound = 2.0 / n.apply( coefficients );
+        mOmega = ( 2.0 / 3.0 * bound );
     }
 }
 
-void Richardson::solveInit( Vector& solution, const Vector& rhs ){
+void Richardson::solveInit( Vector& solution, const Vector& rhs )
+{
     RichardsonRuntime& runtime = getRuntime();
+
     //Check if oldSolution already exists, if not create copy of solution
     if ( !runtime.mOldSolution.get() )
+    {
         runtime.mOldSolution.reset( solution.clone() );
-    
+    }
+
     runtime.mProxyOldSolution = runtime.mOldSolution.get();
 
     IterativeSolver::solveInit( solution, rhs );
 }
 
-void Richardson::solveFinalize(){
+void Richardson::solveFinalize()
+{
     RichardsonRuntime& runtime = getRuntime();
-    if ( runtime.mIterations % 2 ){
+
+    if ( runtime.mIterations % 2 )
+    {
         SCAI_LOG_DEBUG( logger, "mProxyOldSolution = *mSolution" )
         *runtime.mProxyOldSolution = *runtime.mSolution;
     }
+
     SCAI_LOG_DEBUG( logger, " end solve " )
 }
 
 template<typename T>
-void Richardson::iterate(){
-	typedef T DataType;
+void Richardson::iterate()
+{
+    typedef T DataType;
     RichardsonRuntime& runtime = getRuntime();
 
     DataType omega = mOmega.getValue<DataType>();
@@ -127,48 +138,58 @@ void Richardson::iterate(){
     const Vector& oldSolution = runtime.mProxyOldSolution.getConstReference();
 
     DenseVector<T> x = A * oldSolution;
-   *runtime.mSolution = rhs - x;
-	
-	if(omega != 1.0)
-		*runtime.mSolution = omega * (*runtime.mSolution);
+    *runtime.mSolution = rhs - x;
 
-	*runtime.mSolution = oldSolution + (*runtime.mSolution);
+    if ( omega != 1.0 )
+    {
+        *runtime.mSolution = omega * ( *runtime.mSolution );
+    }
+
+    *runtime.mSolution = oldSolution + ( *runtime.mSolution );
 
     if ( SCAI_LOG_TRACE_ON( logger ) )
     {
         SCAI_LOG_TRACE( logger, "Solution " << *runtime.mSolution )
         const DenseVector<T>& sol = dynamic_cast<const DenseVector<T>&>( *runtime.mSolution );
-        hmemo::ReadAccess<T> rsol( sol.getLocalValues() );
+        hmemo::ReadAccess<T> rsol( sol.getLocalValues(), Context::getHostPtr() );
         std::cout << "Solution: ";
+
         for ( IndexType i = 0; i < rsol.size(); ++i )
-        	std::cout << " " << rsol[i];
+        {
+            std::cout << " " << rsol[i];
+        }
 
         std::cout << std::endl;
     }
 }
 
-void Richardson::iterate(){
-    switch ( getRuntime().mCoefficients->getValueType() ){
-    	case common::scalar::FLOAT:
-        	iterate<float>();
-        break;
-    	case common::scalar::DOUBLE:
-       		iterate<double>();
-        break;
-    	default:
-        COMMON_THROWEXCEPTION( "Unsupported ValueType " << getRuntime().mCoefficients->getValueType() )
+void Richardson::iterate()
+{
+    switch ( getRuntime().mCoefficients->getValueType() )
+    {
+        case common::scalar::FLOAT:
+            iterate<float>();
+            break;
+        case common::scalar::DOUBLE:
+            iterate<double>();
+            break;
+        default:
+            COMMON_THROWEXCEPTION( "Unsupported ValueType " << getRuntime().mCoefficients->getValueType() )
     }
 }
 
-Richardson::RichardsonRuntime& Richardson::getRuntime(){
+Richardson::RichardsonRuntime& Richardson::getRuntime()
+{
     return mRichardsonRuntime;
 }
 
-const Richardson::RichardsonRuntime& Richardson::getConstRuntime() const{
+const Richardson::RichardsonRuntime& Richardson::getConstRuntime() const
+{
     return mRichardsonRuntime;
 }
 
-SolverPtr Richardson::copy(){
+SolverPtr Richardson::copy()
+{
     return SolverPtr( new Richardson( *this ) );
 }
 

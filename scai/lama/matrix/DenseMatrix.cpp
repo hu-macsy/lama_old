@@ -997,19 +997,21 @@ void DenseMatrix<ValueType>::joinColumnData(
 
     std::vector<ReadAccessPtr> chunkRead( numColPartitions );
 
-// Get read access to all chunks, make some assertions for each chunk
+    ContextPtr hostContext = Context::getContextPtr( context::Host );
+
+    // Get read access to all chunks, make some assertions for each chunk
 
     for ( PartitionId p = 0; p < numColPartitions; ++p )
     {
         SCAI_ASSERT_ERROR( chunks[p], "no chunk data for partition " << p )
         SCAI_ASSERT_EQUAL_ERROR( chunks[p]->getNumRows(), numRows )
-        chunkRead[p].reset( new ReadAccess<ValueType>( chunks[p]->getData() ) );
+        chunkRead[p].reset( new ReadAccess<ValueType>( chunks[p]->getData(), hostContext ) );
         SCAI_LOG_DEBUG( logger, "column chunk[" << p << "] : " << *chunks[p] )
     }
 
     std::vector<IndexType> chunkOffset( numColPartitions, 0 ); // offset for each chunk
 
-    WriteAccess<ValueType> resultWrite( result.getData() );
+    WriteAccess<ValueType> resultWrite( result.getData(), hostContext );
 
     for ( IndexType i = 0; i < numRows; ++i )
     {
@@ -1113,18 +1115,20 @@ void DenseMatrix<ValueType>::splitColumnData(
 
     std::vector<WriteAccessPtr> chunkWrite( numChunks );
 
-// Get write access to all chunks, make some assertions for each chunk
+    // Get write access to all chunks, make some assertions for each chunk
+
+    ContextPtr contextPtr = Context::getContextPtr( context :: Host );
 
     for ( PartitionId p = 0; p < numChunks; ++p )
     {
         chunks[p].reset( new DenseStorage<ValueType>( numRows, numCols[p] ) );
-        chunkWrite[p].reset( new WriteAccess<ValueType>( chunks[p]->getData() ) );
+        chunkWrite[p].reset( new WriteAccess<ValueType>( chunks[p]->getData(), contextPtr ) );
         SCAI_LOG_DEBUG( logger, "column chunk[" << p << "] : " << *chunks[p] )
     }
 
     std::vector<IndexType> chunkOffset( numChunks, 0 ); // offset for each chunk
 
-    ReadAccess<ValueType> columnDataRead( columnData.getData() );
+    ReadAccess<ValueType> columnDataRead( columnData.getData(), contextPtr );
 
     for ( IndexType i = 0; i < numRows; ++i )
     {
@@ -1217,8 +1221,10 @@ void DenseMatrix<ValueType>::localize(
 
     local.allocate( numLocalRows, numColumns );
 
-    ReadAccess<ValueType> repData( global.getData() );
-    WriteAccess<ValueType> distData( local.getData() );
+    ContextPtr contextPtr = Context::getContextPtr( context :: Host );
+
+    ReadAccess<ValueType> repData( global.getData(), contextPtr );
+    WriteAccess<ValueType> distData( local.getData(), contextPtr );
 
     for ( IndexType irow = 0; irow < numLocalRows; ++irow )
     {
@@ -1247,8 +1253,10 @@ static void replicate(
     SCAI_ASSERT_EQUAL_DEBUG( replicatedData.getNumRows(), distribution.getGlobalSize() )
     SCAI_ASSERT_EQUAL_DEBUG( distributedData.getNumRows(), distribution.getLocalSize() )
 
-    WriteAccess<ValueType> globalVals( replicatedData.getData() );
-    ReadAccess<ValueType> localVals( distributedData.getData() );
+    ContextPtr contextPtr = Context::getContextPtr( context :: Host );
+
+    WriteAccess<ValueType> globalVals( replicatedData.getData(), contextPtr );
+    ReadAccess<ValueType> localVals( distributedData.getData(), contextPtr );
 
 // replicate distributed rows, each row has numCols entries
 
@@ -1612,8 +1620,8 @@ void DenseMatrix<ValueType>::matrixTimesVectorImpl(
 
     mData[0]->prefetch();
 
-//It makes no sense to prefetch denseX because, if a transfer is started
-//the halo update needs to wait for this transfer to finish
+    // It makes no sense to prefetch denseX because, if a transfer is started
+    // the halo update needs to wait for this transfer to finish
 
     if ( betaValue != zero )
     {
@@ -1646,6 +1654,8 @@ void DenseMatrix<ValueType>::matrixTimesVectorImpl(
     mSendValues.clear();
     mReceiveValues.clear();
 
+    ContextPtr contextPtr = Context::getContextPtr( context :: Host );
+
     LAMAArray<ValueType>* sendValues = &mSendValues;
     LAMAArray<ValueType>* recvValues = &mReceiveValues;
 
@@ -1654,10 +1664,10 @@ void DenseMatrix<ValueType>::matrixTimesVectorImpl(
     {
 // resize the receive buffer to be big enough for largest part of X
 
-        WriteOnlyAccess<ValueType> wRecvValues( *recvValues, size );
+        WriteOnlyAccess<ValueType> wRecvValues( *recvValues, contextPtr, size );
 
-        WriteOnlyAccess<ValueType> wSendValues( *sendValues, size );
-        ReadAccess<ValueType> rLocalX( localX );
+        WriteOnlyAccess<ValueType> wSendValues( *sendValues, contextPtr, size );
+        ReadAccess<ValueType> rLocalX( localX, contextPtr );
 
 // fill send buffer with local X of this processor
 

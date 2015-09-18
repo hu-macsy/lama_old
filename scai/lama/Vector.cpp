@@ -96,7 +96,7 @@ Vector::Vector( const IndexType size, ContextPtr context )
 {
     if( !mContext )
     {
-        mContext = Context::getContextPtr( context::Host );
+        mContext = Context::getHostPtr();
     }
 
     SCAI_LOG_INFO( logger, "Vector(" << size << "), replicated, on " << *mContext )
@@ -107,7 +107,7 @@ Vector::Vector( DistributionPtr distribution, ContextPtr context )
 {
     if( !mContext )
     {
-        mContext = Context::getContextPtr( context::Host );
+        mContext = Context::getHostPtr();
     }
 
     SCAI_LOG_INFO( logger,

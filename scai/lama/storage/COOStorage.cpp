@@ -153,8 +153,10 @@ bool COOStorage<ValueType>::checkDiagonalProperty() const
     {
         diagonalProperty = true; // intialization for reduction
 
-        ReadAccess<IndexType> ia( mIA );
-        ReadAccess<IndexType> ja( mJA );
+        ContextPtr contextPtr = Context::getHostPtr();
+
+        ReadAccess<IndexType> ia( mIA, contextPtr );
+        ReadAccess<IndexType> ja( mJA, contextPtr );
 
         // The diagonal property is given if the first numDiags entries
         // are the diagonal elements
@@ -488,9 +490,11 @@ ValueType COOStorage<ValueType>::getValue( const IndexType i, const IndexType j 
 {
     // only supported on Host at this time
 
-    const ReadAccess<IndexType> ia( mIA );
-    const ReadAccess<IndexType> ja( mJA );
-    const ReadAccess<ValueType> values( mValues );
+    ContextPtr loc = Context::getHostPtr();
+
+    const ReadAccess<IndexType> ia( mIA, loc );
+    const ReadAccess<IndexType> ja( mJA, loc );
+    const ReadAccess<ValueType> values( mValues, loc );
 
     SCAI_LOG_DEBUG( logger, "get value (" << i << ", " << j << ") from " << *this )
 
@@ -554,9 +558,12 @@ void COOStorage<ValueType>::setDiagonalImpl( const Scalar scalar )
 {
     IndexType numDiagonalElements = std::min( mNumColumns, mNumRows );
 
-    WriteAccess<ValueType> wValues( mValues );
-    ReadAccess<IndexType> rJa( mJA );
-    ReadAccess<IndexType> rIa( mIA );
+    ContextPtr loc = Context::getHostPtr();
+
+    WriteAccess<ValueType> wValues( mValues, loc );
+    ReadAccess<IndexType> rJa( mJA, loc );
+    ReadAccess<IndexType> rIa( mIA, loc );
+
     ValueType value = scalar.getValue<ValueType>();
 
     for( IndexType i = 0; i < numDiagonalElements; ++i )
@@ -585,9 +592,13 @@ template<typename ValueType>
 template<typename OtherType>
 void COOStorage<ValueType>::scaleImpl( const LAMAArray<OtherType>& values )
 {
-    ReadAccess<OtherType> rValues( values );
-    WriteAccess<ValueType> wValues( mValues );
-    ReadAccess<IndexType> rIa( mIA );
+    ContextPtr loc = Context::getHostPtr();
+
+    ReadAccess<OtherType> rValues( values, loc );
+    WriteAccess<ValueType> wValues( mValues, loc );  // update
+    ReadAccess<IndexType> rIa( mIA, loc );
+
+    // Only host implementation available
 
     for( IndexType i = 0; i < mNumValues; ++i )
     {
@@ -626,11 +637,15 @@ void COOStorage<ValueType>::getRowImpl( LAMAArray<OtherType>& row, const IndexTy
 {
     SCAI_ASSERT_DEBUG( i >= 0 && i < mNumRows, "row index " << i << " out of range" )
 
+    ContextPtr hostContext = Context::getHostPtr();
+
     WriteOnlyAccess<OtherType> wRow( row, mNumColumns );
 
-    const ReadAccess<IndexType> ia( mIA );
-    const ReadAccess<IndexType> ja( mJA );
-    const ReadAccess<ValueType> values( mValues );
+    const ReadAccess<IndexType> ia( mIA, hostContext );
+    const ReadAccess<IndexType> ja( mJA, hostContext );
+    const ReadAccess<ValueType> values( mValues, hostContext );
+
+    // ToDo: OpenMP parallelization, interface
 
     for( IndexType j = 0; j < mNumColumns; ++j )
     {
