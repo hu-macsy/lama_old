@@ -47,13 +47,18 @@
 // std
 #include <cmath>
 
-using namespace scai::hmemo;
-
 namespace scai
 {
 
+using namespace hmemo;
+
 namespace lama
 {
+
+// abs should be put in this namespace so Scalar::abs will not rule it out
+// The use of ::abs is not recommended as not supported in C++11
+
+using std::abs;
 
 /* --------------------------------------------------------------------------- */
 
@@ -248,7 +253,7 @@ ValueType SparseAssemblyStorage<ValueType>::l1Norm() const
     {
         for( size_t jj = 0; jj < mRows[i].values.size(); ++jj )
         {
-            val += ::abs( mRows[i].values[jj] );
+            val += abs( mRows[i].values[jj] );
         }
     }
 
@@ -266,7 +271,7 @@ ValueType SparseAssemblyStorage<ValueType>::l2Norm() const
     {
         for( size_t jj = 0; jj < mRows[i].values.size(); ++jj )
         {
-			tmp = ::abs( mRows[i].values[jj] );
+			tmp = abs( mRows[i].values[jj] );
             val += tmp * tmp;
         }
     }
@@ -280,6 +285,8 @@ ValueType SparseAssemblyStorage<ValueType>::l2Norm() const
 template<typename ValueType>
 ValueType SparseAssemblyStorage<ValueType>::maxNorm() const
 {
+    // SparseAssemblyStorage not supported on GPUs
+
     ValueType maxval = static_cast<ValueType>( 0.0 );
 
     for( IndexType i = 0; i < mNumRows; ++i )
@@ -288,7 +295,8 @@ ValueType SparseAssemblyStorage<ValueType>::maxNorm() const
 
         for( size_t jj = 0; jj < values.size(); ++jj )
         {
-            const ValueType val = ::abs( mRows[i].values[jj] );
+            ValueType val = mRows[i].values[jj];
+            val = abs( val );
 
             if( val > maxval )
             {
