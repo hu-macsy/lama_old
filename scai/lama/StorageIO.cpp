@@ -96,9 +96,11 @@ void StorageIO<ValueType>::writeCSRToFormattedFile(
 
     std::ofstream amgfile( fileName.c_str(), std::ios::out ); // open .amg
 
-    ReadAccess<IndexType> ia( csrIA );
-    ReadAccess<IndexType> ja( csrJA );
-    ReadAccess<ValueType> data( csrValues );
+    ContextPtr host = Context::getContextPtr( context::Host );
+
+    ReadAccess<IndexType> ia( csrIA, host );
+    ReadAccess<IndexType> ja( csrJA, host );
+    ReadAccess<ValueType> data( csrValues, host );
 
     for( IndexType i = 0; i < numRows + 1; ++i )
     {
@@ -354,9 +356,11 @@ void StorageIO<ValueType>::writeCSRToXDRFile(
     IndexType numValues = csrJA.size();
     IndexType numRows = csrIA.size() - 1;
 
-    ReadAccess<IndexType> iaRead( csrIA );
-    ReadAccess<IndexType> jaRead( csrJA );
-    ReadAccess<ValueType> dataRead( csrValues );
+    ContextPtr host = Context::getContextPtr( context::Host );
+
+    ReadAccess<IndexType> iaRead( csrIA, host );
+    ReadAccess<IndexType> jaRead( csrJA, host );
+    ReadAccess<ValueType> dataRead( csrValues, host );
 
     XDRFileStream outFile( fileName.c_str(), std::ios::out );
 
@@ -591,9 +595,11 @@ void StorageIO<ValueType>::writeCSRToBinaryFile(
 {
     SCAI_REGION( "StorageIO.writeCSRToBinaryFile " )
 
-    ReadAccess<IndexType> iaRead( csrIA );
-    ReadAccess<IndexType> jaRead( csrJA );
-    ReadAccess<ValueType> dataRead( csrValues );
+    ContextPtr host = Context::getContextPtr( context::Host );
+
+    ReadAccess<IndexType> iaRead( csrIA, host );
+    ReadAccess<IndexType> jaRead( csrJA, host );
+    ReadAccess<ValueType> dataRead( csrValues, host );
 
     IndexType numRows = csrIA.size() - 1;
     IndexType numValues = csrJA.size();
@@ -723,9 +729,13 @@ void StorageIO<ValueType>::writeCSRToMMFile(
         COMMON_THROWEXCEPTION( "SparseMatrix>::writeMatrixToMMFile: '" + fileName + "' could not be reopened." )
     }
 
-    ReadAccess<IndexType> ia( csrIA );
-    ReadAccess<IndexType> ja( csrJA );
-    ReadAccess<ValueType> data( csrValues );
+    // output code runs only for host context
+
+    ContextPtr host = Context::getContextPtr( context::Host );
+
+    ReadAccess<IndexType> ia( csrIA, host );
+    ReadAccess<IndexType> ja( csrJA, host );
+    ReadAccess<ValueType> data( csrValues, host );
 
     for( IndexType ii = 0; ii < numRows; ++ii )
     {

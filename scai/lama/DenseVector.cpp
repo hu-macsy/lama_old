@@ -440,7 +440,9 @@ Scalar DenseVector<ValueType>::getValue( IndexType globalIndex ) const
 
     if( localIndex != nIndex )
     {
-        ReadAccess<ValueType> localAccess( mLocalValues );
+        ContextPtr contextPtr = Context::getContextPtr( context::Host );
+
+        ReadAccess<ValueType> localAccess( mLocalValues, contextPtr );
 
         SCAI_LOG_TRACE( logger, "index "<< globalIndex << " is local " << localIndex )
         myValue = localAccess[localIndex];
@@ -455,14 +457,22 @@ template<typename ValueType>
 Scalar DenseVector<ValueType>::min() const
 {
     //TODO: need a interface function for this
-    ReadAccess<ValueType> localValues( mLocalValues );
+
+    ContextPtr contextPtr = Context::getContextPtr( context::Host );
+
+    ReadAccess<ValueType> readLocalValues( mLocalValues, contextPtr );
+ 
+    IndexType n = mLocalValues.size();
+
+    const ValueType* localValues = readLocalValues.get();
+
     ValueType localMin = localValues[0];
 #pragma omp parallel
     {
         ValueType myLocalMin = localMin;
 #pragma omp for
 
-        for( IndexType i = 0; i < localValues.size(); ++i )
+        for( IndexType i = 0; i < n; ++i )
         {
             myLocalMin = std::min( localValues[i], myLocalMin );
         }
@@ -478,26 +488,18 @@ Scalar DenseVector<ValueType>::min() const
 template<typename ValueType>
 Scalar DenseVector<ValueType>::max() const
 {
-    SCAI_ASSERT_ERROR( mLocalValues.size() > 0, "no local values for max" )
+    IndexType nnu = mLocalValues.size();
 
-    //TODO: need a interface function for this
-    ReadAccess<ValueType> localValues( mLocalValues );
-    ValueType localMax = localValues[0];
-#pragma omp parallel
-    {
-        ValueType myLocalMax = localMax;
-#pragma omp for
+    SCAI_ASSERT_GT( nnu, 0, "no local values for max" )
 
-        for( IndexType i = 0; i < localValues.size(); ++i )
-        {
-            myLocalMax = std::max( localValues[i], myLocalMax );
-        }
+    ContextPtr loc = mLocalValues.getValidContext();
 
-#pragma omp critical
-        {
-            localMax = std::max( localMax, myLocalMax );
-        }
-    }
+    LAMA_INTERFACE_FN_DEFAULT_T( maxval, loc, Utils, Reductions, ValueType )
+
+    ReadAccess<ValueType> localValues( mLocalValues, loc );
+
+    ValueType localMax = maxval( localValues.get(), localValues.size() );
+
     return getDistribution().getCommunicator().max( localMax );
 }
 
@@ -978,11 +980,13 @@ void DenseVector<ValueType>::redistribute( DistributionPtr distribution )
 
         LAMAArray<ValueType> newLocalValues;
 
+        ContextPtr hostContext = Context::getContextPtr( context::Host );
+
         {
             const IndexType newSize = distribution->getLocalSize();
 
-            ReadAccess<ValueType> rLocalValues( mLocalValues );
-            WriteOnlyAccess<ValueType> wNewLocalValues( newLocalValues, newSize );
+            ReadAccess<ValueType> rLocalValues( mLocalValues, hostContext );
+            WriteOnlyAccess<ValueType> wNewLocalValues( newLocalValues, hostContext, newSize );
 
 #pragma omp parallel for
 
@@ -1009,9 +1013,11 @@ void DenseVector<ValueType>::redistribute( DistributionPtr distribution )
 
         LAMAArray<ValueType> globalValues;
 
+        ContextPtr hostContext = Context::getContextPtr( context::Host );
+
         {
-            ReadAccess<ValueType> localData( mLocalValues );
-            WriteOnlyAccess<ValueType> globalData( globalValues, size() );
+            ReadAccess<ValueType> localData( mLocalValues, hostContext );
+            WriteOnlyAccess<ValueType> globalData( globalValues, hostContext, size() );
             getDistribution().replicate( globalData.get(), localData.get() );
         }
 
@@ -1241,7 +1247,9 @@ void DenseVector<ValueType>::writeVectorToMMFile( const std::string& filename, c
         COMMON_THROWEXCEPTION( "DenseVector<ValueType>::writeVectorToMMFile: '" + filename + "' could not be reopened." )
     }
 
-    ReadAccess<ValueType> dataRead( mLocalValues );
+    ContextPtr hostContext = Context::getContextPtr( context::Host );
+
+    ReadAccess<ValueType> dataRead( mLocalValues, hostContext );
 
     for( IndexType ii = 0; ii < numRows; ++ii )
     {
@@ -1303,7 +1311,9 @@ void DenseVector<ValueType>::writeVectorToXDRFile( const std::string& file, cons
     outFile.write( &nnu );
     outFile.write( &dataTypeSize );
 
-    ReadAccess<ValueType> dataRead( mLocalValues );
+    ContextPtr hostContext = Context::getContextPtr( context::Host );
+
+    ReadAccess<ValueType> dataRead( mLocalValues, hostContext );
 
     switch( dataType )
     {
@@ -1374,7 +1384,9 @@ void DenseVector<ValueType>::writeVectorDataToBinaryFile( std::fstream& outFile,
 {
     IndexType numRows = size();
 
-    ReadAccess<ValueType> dataRead( mLocalValues );
+    ContextPtr contextPtr = Context::getContextPtr( context::Host );
+
+    ReadAccess<ValueType> dataRead( mLocalValues, contextPtr );
 
     switch( type )
     {
@@ -1410,8 +1422,11 @@ void DenseVector<ValueType>::writeVectorDataToBinaryFile( std::fstream& outFile,
 template<typename ValueType>
 void DenseVector<ValueType>::writeVectorToFormattedFile( const std::string& file ) const
 {
+    ContextPtr hostContext = Context::getContextPtr( context::Host );
+
     std::fstream outFile( file.c_str(), std::ios::out );
-    ReadAccess<ValueType> dataRead( mLocalValues );
+
+    ReadAccess<ValueType> dataRead( mLocalValues, hostContext );
 
     for( IndexType i = 0; i < size(); ++i )
     {
@@ -1424,6 +1439,8 @@ void DenseVector<ValueType>::writeVectorToFormattedFile( const std::string& file
 template<typename ValueType>
 void DenseVector<ValueType>::readVectorFromFormattedFile( const std::string& fileName )
 {
+    ContextPtr hostContext = Context::getContextPtr( context::Host );
+
     std::ifstream inFile( fileName.c_str(), std::ios::in );
 
     if( !inFile.is_open() )
@@ -1433,7 +1450,7 @@ void DenseVector<ValueType>::readVectorFromFormattedFile( const std::string& fil
 
     const IndexType n = size();
 
-    WriteOnlyAccess<ValueType> dataWrite( mLocalValues, n );
+    WriteOnlyAccess<ValueType> dataWrite( mLocalValues, hostContext, n );
 
     for( IndexType i = 0; i < n; ++i )
     {

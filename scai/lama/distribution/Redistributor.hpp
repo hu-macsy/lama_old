@@ -42,6 +42,7 @@
 // local library
 #include <scai/lama/distribution/Distribution.hpp>
 #include <scai/lama/distribution/Halo.hpp>
+#include <scai/lama/LAMAInterface.hpp>
 
 // internal scai libraries
 #include <scai/hmemo/LAMAArray.hpp>
@@ -147,16 +148,17 @@ public:
     {
         using namespace scai::hmemo;
 
-        WriteAccess<ValueType> target( targetArray );
-        ReadAccess<ValueType> source( sourceArray );
-        ReadAccess<IndexType> indexes( sourceIndexes );
+        ContextPtr loc = Context::getContextPtr( context::Host );
 
-        for( IndexType i = 0; i < indexes.size(); i++ )
-        {
-            SCAI_LOG_DEBUG( logger, "target[" << i << "] = source[" << indexes[i] << "] = " << source[indexes[i]] )
+        LAMA_INTERFACE_FN_TT( setGather, loc, Utils, Copy, ValueType, ValueType )
 
-            target[i] = source[indexes[i]];
-        }
+        IndexType n = sourceIndexes.size();
+
+        WriteOnlyAccess<ValueType> target( targetArray, loc, n );
+        ReadAccess<ValueType> source( sourceArray, loc );
+        ReadAccess<IndexType> indexes( sourceIndexes, loc );
+
+        setGather( target.get(), source.get(), indexes.get(), indexes.size() );
     }
 
     template<typename ValueType>
@@ -168,9 +170,11 @@ public:
     {
         using namespace scai::hmemo;
 
-        WriteAccess<ValueType> target( targetArray );
-        ReadAccess<ValueType> source( sourceArray );
-        ReadAccess<IndexType> indexes( sourceIndexes );
+        ContextPtr loc = Context::getContextPtr( context::Host );
+
+        WriteAccess<ValueType> target( targetArray, loc );
+        ReadAccess<ValueType> source( sourceArray, loc );
+        ReadAccess<IndexType> indexes( sourceIndexes, loc );
 
         #pragma omp parallel for
 
@@ -201,9 +205,11 @@ public:
     {
         using namespace scai::hmemo;
 
-        WriteAccess<ValueType> target( targetArray );
-        ReadAccess<IndexType> indexes( targetIndexes );
-        ReadAccess<ValueType> source( sourceArray );
+        ContextPtr loc = Context::getContextPtr( context::Host );
+
+        WriteAccess<ValueType> target( targetArray, loc );
+        ReadAccess<IndexType> indexes( targetIndexes, loc );
+        ReadAccess<ValueType> source( sourceArray, loc );
 
         for( IndexType i = 0; i < indexes.size(); i++ )
         {
@@ -222,9 +228,11 @@ public:
     {
         using namespace scai::hmemo;
 
-        WriteAccess<ValueType> target( targetArray );
-        ReadAccess<IndexType> indexes( targetIndexes );
-        ReadAccess<ValueType> source( sourceArray );
+        ContextPtr loc = Context::getContextPtr( context::Host );
+
+        WriteAccess<ValueType> target( targetArray, loc );
+        ReadAccess<IndexType> indexes( targetIndexes, loc );
+        ReadAccess<ValueType> source( sourceArray, loc );
 
         #pragma omp parallel for
 
@@ -255,10 +263,13 @@ public:
         const LAMAArray<IndexType>& sourceIndexes )
     {
         using namespace scai::hmemo;
-        WriteAccess<ValueType> target( targetArray );
-        ReadAccess<ValueType> source( sourceArray );
-        ReadAccess<IndexType> tindexes( targetIndexes );
-        ReadAccess<IndexType> sindexes( sourceIndexes );
+
+        ContextPtr loc = Context::getContextPtr( context::Host );
+
+        WriteAccess<ValueType> target( targetArray, loc );
+        ReadAccess<ValueType> source( sourceArray, loc );
+        ReadAccess<IndexType> tindexes( targetIndexes, loc );
+        ReadAccess<IndexType> sindexes( sourceIndexes, loc );
 
         SCAI_ASSERT_ERROR( tindexes.size() == sindexes.size(), "index size mismatch" )
 
@@ -280,10 +291,13 @@ public:
         IndexType n )
     {
         using namespace scai::hmemo;
-        WriteAccess<ValueType> target( targetArray );
-        ReadAccess<ValueType> source( sourceArray );
-        ReadAccess<IndexType> tindexes( targetIndexes );
-        ReadAccess<IndexType> sindexes( sourceIndexes );
+
+        ContextPtr loc = Context::getContextPtr( context::Host );
+
+        WriteAccess<ValueType> target( targetArray, loc );
+        ReadAccess<ValueType> source( sourceArray, loc );
+        ReadAccess<IndexType> tindexes( targetIndexes, loc );
+        ReadAccess<IndexType> sindexes( sourceIndexes, loc );
 
         SCAI_ASSERT_ERROR( tindexes.size() == sindexes.size(), "index size mismatch" )
 
@@ -442,10 +456,12 @@ void Redistributor::redistributeN(
 
     SCAI_REGION( "Redistributor.redistributeN" )
 
+    ContextPtr loc = Context::getContextPtr( context::Host );
+
     {
         // make sure that target array has sufficient memory
 
-        WriteOnlyAccess<ValueType> target( targetArray, mTargetSize * n );
+        WriteOnlyAccess<ValueType> target( targetArray, loc, mTargetSize * n );
     }
 
     // allocate memory for source (provides) and target (required) halo
@@ -466,7 +482,6 @@ void Redistributor::redistributeN(
     SCAI_LOG_DEBUG( logger, "scatter: targetHalo " << mHaloTargetIndexes.size() << " * " << n << " values" )
 
     scatterN( targetArray, mHaloTargetIndexes, targetHalo, n );
-
 }
 
 /* ------------------------------------------------------------------------------- */
@@ -507,10 +522,12 @@ void Redistributor::gatherV(
 
     const IndexType n = sourceIndexes.size();
 
-    WriteAccess<ValueType> wTargetArray( targetArray );
-    ReadAccess<ValueType> rSourceArray( sourceArray );
-    ReadAccess<IndexType> rSourceOffsets( sourceOffsets );
-    ReadAccess<IndexType> rSourceIndexes( sourceIndexes );
+    ContextPtr loc = Context::getContextPtr( context::Host );
+
+    WriteAccess<ValueType> wTargetArray( targetArray, loc );
+    ReadAccess<ValueType> rSourceArray( sourceArray, loc );
+    ReadAccess<IndexType> rSourceOffsets( sourceOffsets, loc );
+    ReadAccess<IndexType> rSourceIndexes( sourceIndexes, loc );
 
     // Note: we have no target offsets array
 
@@ -538,12 +555,14 @@ void Redistributor::scatterV(
 {
     using namespace scai::hmemo;
 
+    ContextPtr loc = Context::getContextPtr( context::Host );
+
     const IndexType n = targetIndexes.size();
 
-    WriteAccess<ValueType> wTargetArray( targetArray );
-    ReadAccess<IndexType> rTargetOffsets( targetOffsets );
-    ReadAccess<IndexType> rTargetIndexes( targetIndexes );
-    ReadAccess<ValueType> rSourceArray( sourceArray );
+    WriteAccess<ValueType> wTargetArray( targetArray, loc );
+    ReadAccess<IndexType> rTargetOffsets( targetOffsets, loc );
+    ReadAccess<IndexType> rTargetIndexes( targetIndexes, loc );
+    ReadAccess<ValueType> rSourceArray( sourceArray, loc );
 
     // Note: we have no source offsets array, no parallelization possible
 
@@ -575,14 +594,16 @@ void Redistributor::copyV(
 
     SCAI_ASSERT_EQUAL_ERROR( targetIndexes.size(), sourceIndexes.size() )
 
+    ContextPtr loc = Context::getContextPtr( context::Host );
+
     const IndexType n = targetIndexes.size();
 
-    WriteAccess<ValueType> wTargetArray( targetArray );
-    ReadAccess<IndexType> rTargetOffsets( targetOffsets );
-    ReadAccess<IndexType> rTargetIndexes( targetIndexes );
-    ReadAccess<ValueType> rSourceArray( sourceArray );
-    ReadAccess<IndexType> rSourceOffsets( sourceOffsets );
-    ReadAccess<IndexType> rSourceIndexes( sourceIndexes );
+    WriteAccess<ValueType> wTargetArray( targetArray, loc );
+    ReadAccess<IndexType> rTargetOffsets( targetOffsets, loc );
+    ReadAccess<IndexType> rTargetIndexes( targetIndexes, loc );
+    ReadAccess<ValueType> rSourceArray( sourceArray, loc );
+    ReadAccess<IndexType> rSourceOffsets( sourceOffsets, loc );
+    ReadAccess<IndexType> rSourceIndexes( sourceIndexes, loc );
 
     for( IndexType ii = 0; ii < n; ii++ )
     {
