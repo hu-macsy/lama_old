@@ -35,6 +35,9 @@
 
 // local library
 #include <scai/common/Printable.hpp>
+#include <scai/common/exception/UnsupportedException.hpp>
+#include <scai/common/SCAITypes.hpp>
+#include <scai/common/ScalarType.hpp>
 #include <scai/hmemo/Context.hpp>
 
 // boost
@@ -64,7 +67,7 @@ inline ValueType eps();
 template<>
 inline float eps<float>()
 {
-    return 1E-5f;
+    return 1E-3f;
 }
 
 /**
@@ -76,8 +79,33 @@ inline float eps<float>()
 template<>
 inline double eps<double>()
 {
-    return 1E-5f;
+    return 1E-5;
 }
+
+template<>
+inline long double eps<long double>()
+{
+    return 1E-8L;
+}
+
+template<>
+inline ComplexFloat eps<ComplexFloat>()
+{
+    return ComplexFloat(1E-3f);
+}
+
+template<>
+inline ComplexDouble eps<ComplexDouble>()
+{
+    return ComplexDouble(1E-5);
+}
+
+template<>
+inline ComplexLongDouble eps<ComplexLongDouble>()
+{
+    return ComplexLongDouble(1E-8L);
+}
+
 
 //template<typename ValueType>
 //inline scai::lama::Scalar scalarEps();
@@ -353,17 +381,28 @@ inline scai::hmemo::ContextType mapEnvContexttoContextType( std::string contextn
 #define STR1( x ) #x
 #define STR( x ) STR1( x )
 
-#define LAMA_RUN_TEST(z, I, method )                                                                 \
-    try                                                                                              \
-    {                                                                                                \
-        method<ARITHMETIC_HOST_TYPE_##I>( context );                                                       \
-    }                                                                                                \
-    catch ( scai::common::Exception& )                                                               \
-    {                                                                                                \
-        SCAI_LOG_WARN( logger, #method << "<" << STR( ARITHMETIC_HOST_TYPE_##I ) << "> cannot run on "     \
-                       << context->getType() << ", corresponding function not implemented yet." );   \
-        return;                                                                                      \
-    }                                                                                                \
+#define LAMA_RUN_TEST(z, I, method )                                                                 			\
+    try                                                                                              			\
+    {                 																				 			\
+    	if( context->getType() == scai::hmemo::context::CUDA ) 										 			\
+		{ 																							 			\
+    		switch( scai::common::getScalarType<ARITHMETIC_HOST_TYPE_##I>() ) 									\
+			{ 																						 			\
+    			case scai::common::scalar::LONG_DOUBLE: 														\
+    			case scai::common::scalar::LONG_DOUBLE_COMPLEX: 												\
+					continue; 																					\
+    			default: 																						\
+					;																							\
+			} 																									\
+		} 																										\
+        method<ARITHMETIC_HOST_TYPE_##I>( context );                                                        	\
+    }                                                                                                			\
+    catch ( scai::common::Exception& )                                                               			\
+    {                                                                                                			\
+        SCAI_LOG_WARN( logger, #method << "<" << STR( ARITHMETIC_HOST_TYPE_##I ) << "> cannot run on "      	\
+                       << context->getType() << ", corresponding function not implemented yet." );   			\
+        return;                                                                                      			\
+    }                                                                                                			\
 
 
 /*
@@ -565,7 +604,7 @@ inline scai::hmemo::ContextType mapEnvContexttoContextType( std::string contextn
      */
 
 #define COMMONTESTCASEINVOKER( object_name, method_name )                                                              \
-    { if ( testcase == #method_name ) object_name.method_name(); }
+    { if ( testcase == #method_name ) try {object_name.method_name();} catch(scai::common::UnsupportedException const& ex) { std::cout << "failed on " #method_name << std::endl; } }
 
     /*
      * @brief HelperMacro COMMONTESTCASEINVOKER_TEMPLATE( object_name, method_name, ValueType )
