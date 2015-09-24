@@ -78,14 +78,6 @@ public:
      */
     virtual void writeAt( std::ostream& stream ) const;
 
-    /**
-     * @brief Sets or resets extended output mode for printing structures.
-     */
-    static void enableExtended( const bool flag );
-
-protected:
-
-    static bool extended; //!< flag for extended output of objects.
 };
 
 /**

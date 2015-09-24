@@ -870,15 +870,7 @@ void JDSStorage<ValueType>::writeAt( std::ostream& stream ) const
 {
     stream << "JDSStorage<" << common::getScalarType<ValueType>()
            << ">( size = " << mNumRows << " x " << mNumColumns
-           << ", jd = " << mNumDiagonals << ", nnz = " << mNumValues;
-
-    if ( Printable::extended )
-    {
-        stream << ", context = " << getContext() << ", dlg = " << mDlg << ", ilg = " << mIlg << ", perm = " << mPerm
-               << ", ja = " << mJa << ", vales = " << mValues;
-    }
-
-    stream << " )";
+           << ", jd = " << mNumDiagonals << ", nnz = " << mNumValues << " )";
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

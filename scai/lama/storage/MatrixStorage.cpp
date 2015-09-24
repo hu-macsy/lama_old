@@ -100,7 +100,7 @@ void _MatrixStorage::setDimension( const IndexType numRows, const IndexType numC
 
 _MatrixStorage::~_MatrixStorage()
 {
-    SCAI_LOG_DEBUG( logger, "_MatrixStorage" )
+    SCAI_LOG_DEBUG( logger, "~_MatrixStorage" )
 }
 
 /* ---------------------------------------------------------------------------------- */
