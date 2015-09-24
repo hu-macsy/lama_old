@@ -558,7 +558,10 @@ void SparseMatrix<ValueType>::assign( const SparseMatrix<ValueType>& matrix )
     // TODO: allow flexibility regarding the context, e.g. format conversion should be done on GPU
 
     mLocalData->assign( matrix.getLocalStorage() );
-    mHaloData->assign( matrix.getHaloStorage() );
+    if( mHaloData->getNumRows() * mHaloData->getNumColumns()  > 0 )
+    {
+    	mHaloData->assign( matrix.getHaloStorage() );
+    }
     mHalo = matrix.getHalo();
 }
 
@@ -1171,7 +1174,9 @@ void SparseMatrix<ValueType>::matrixTimesMatrixImpl(
 
     Matrix::setDistributedMatrix( A.getDistributionPtr(), B.getColDistributionPtr() );
 
+    SCAI_LOG_DEBUG( logger, "before matrixTimesMatrix" )
     mLocalData->matrixTimesMatrix( alpha, *A.mLocalData, *B.mLocalData, beta, *C.mLocalData );
+    SCAI_LOG_DEBUG( logger, "after matrixTimesMatrix")
 
     SCAI_LOG_INFO( logger, "local result =  " << *mLocalData )
 
@@ -2001,7 +2006,10 @@ void SparseMatrix<ValueType>::matrixTimesScalar( const Matrix& other, Scalar alp
     assign( other );
 
     mLocalData->scale( alpha.getValue<ValueType>() );
-    mHaloData->scale( alpha.getValue<ValueType>() );
+    if( mHaloData->getNumRows() * mHaloData->getNumColumns() > 0)
+    {
+		mHaloData->scale( alpha.getValue<ValueType>() );
+    }
 }
 
 /* -------------------------------------------------------------------------- */
