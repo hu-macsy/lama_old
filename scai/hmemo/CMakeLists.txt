@@ -45,6 +45,9 @@ if    ( NOT SCAI_COMPLETE_BUILD )
 	include ( SetBuildFlags )
 	include ( SCAIAssert )
 	include ( SetCPPFlags )
+else  ( NOT SCAI_COMPLETE_BUILD )	
+	include ( Functions/CheckValueAtCompleteBuild )
+	CheckValueAtCompleteBuild ( hmemo )
 endif ( NOT SCAI_COMPLETE_BUILD )
 
 ### include all search packages

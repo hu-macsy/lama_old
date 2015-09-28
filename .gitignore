@@ -8,3 +8,4 @@ src/lama/solver/amg
 scai/doc/user/conf.py
 .*.swp
 *.*~
+/Debug/
