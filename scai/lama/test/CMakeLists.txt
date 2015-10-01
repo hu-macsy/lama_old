@@ -130,7 +130,6 @@ endif ( NOT ( Boost_UNIT_TEST_FRAMEWORK_LIBRARY OR Boost_REGEX ) )
 
 ### set include directories ###
 include_directories ( .. ../lama ${Boost_INCLUDE_DIRS} )
-include_directories ( ${CMAKE_INSTALL_PREFIX}/include  )
 
 if ( SCAI_BLAS_NAME STREQUAL "MKL" )
     include_directories ( ${MKL_INCLUDE_DIRS} )
