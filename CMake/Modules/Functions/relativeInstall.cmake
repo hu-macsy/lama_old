@@ -30,14 +30,21 @@
  # @date 01.10.2015
 ###
 
-function ( relative_install FILES DESTINATION )
+# alternative version to install ( FILES f1 f2 ... DESTINATION <dest> )
+# this version keeps relative pathnames of f1 f2 ...
 
-   # message( STATUS "relative_install, FILES = ${FILES}" )
-   # message( STATUS "relative_install, DESTINATION = ${DESTINATION}" )
+function ( relative_install )
 
-   foreach   ( SOURCE_FILE ${FILES} )
+   set ( options )
+   set ( oneValueArgs DESTINATION )
+   set ( multiValueArgs FILES )
 
-       # this does not work install( FILES ${SOURCE_FILE} DESTINATION ${DESTINATION} )
+   cmake_parse_arguments ( relative_install "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN} )
+
+   # message( STATUS "relative_install, FILES = ${relative_install_FILES}" )
+   # message( STATUS "relative_install, DESTINATION = ${relative_install_DESTINATION}" )
+
+   foreach   ( SOURCE_FILE ${relative_install_FILES} )
 
        if    ( CMAKE_VERSION VERSION_GREATER 2.8.11 )
            get_filename_component( FILE_DIR ${SOURCE_FILE} DIRECTORY )
@@ -45,9 +52,9 @@ function ( relative_install FILES DESTINATION )
            get_filename_component( FILE_DIR ${SOURCE_FILE} PATH )
        endif ( CMAKE_VERSION VERSION_GREATER 2.8.11 )
 
-       # message( STATUS "install ${SOURCE_FILE} in ${DESTINATION}/${FILE_DIR}" )
+       # message( STATUS "install ${SOURCE_FILE} in ${relative_install_DESTINATION}/${FILE_DIR}" )
 
-       install( FILES ${SOURCE_FILE} DESTINATION ${DESTINATION}/${FILE_DIR} )
+       install( FILES ${SOURCE_FILE} DESTINATION ${relative_install_DESTINATION}/${FILE_DIR} )
 
    endforeach ( )
 

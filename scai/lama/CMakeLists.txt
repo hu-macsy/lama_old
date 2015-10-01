@@ -229,7 +229,7 @@ endif ( USE_MIC )
 ## install( FILES ${CXX_HEADERS} DESTINATION include/scai/lama ) does not work
 
 include( Functions/relativeInstall )
-relative_install( "${CXX_HEADERS}" include/scai/lama )
+relative_install( FILES ${CXX_HEADERS} DESTINATION include/scai/lama )
 
 ## install library.hpp
 configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/lama.hpp.in" "${CMAKE_CURRENT_BINARY_DIR}/include/lama.hpp" )
