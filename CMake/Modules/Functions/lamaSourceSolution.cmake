@@ -31,15 +31,16 @@
  # @since 1.0.0
 ###
 
-include ( Functions/lamaGetRelativePath )
 include ( Functions/getRelativePath )
 
 ## Need to be macros not functions, because modifications of the parent scope
 
-# sets the LAMA_SOURCE_DIR (used to mark the path of the actual build target
+# sets the globally use variable LAMA_SOURCE_DIR (used to mark the path of the actual project source dir 
+
 macro    ( lama_set_source_dir )
     set ( LAMA_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR} )
     set ( CXX_SOURCES "" )
+    set ( CXX_HEADERS "" )
 endmacro ( lama_set_source_dir )
 
 # Adds a list of classes to the target (the related *.cpp and *.hpp files) and configures
@@ -51,7 +52,7 @@ endmacro ( lama_classes )
 
 # Adds a list of sources to the target (the related *.cpp files)
 macro    ( lama_sources )    
-    lama_get_relative_path ( LAMA_RELATIVE_PATH )
+    get_relative_path ( LAMA_RELATIVE_PATH ${LAMA_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR} )
     
     foreach   ( SOURCE_FILE ${ARGN} )
         set ( CXX_SOURCES ${CXX_SOURCES} "${LAMA_RELATIVE_PATH}${SOURCE_FILE}.cpp" )
@@ -60,23 +61,17 @@ endmacro ( lama_sources )
 
 # Adds a list of headers to the target configures the installation of the header files
 macro    ( lama_headers )
-    lama_get_relative_path ( LAMA_RELATIVE_PATH )
-    get_relative_path ( RELATIVE_PATH )
+    get_relative_path ( LAMA_RELATIVE_PATH ${LAMA_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR} )
     
-    # clear CXX_HEADERS
-    set ( CXX_HEADERS "" )
-    
-    foreach    ( SOURCE_FILE ${ARGN} )
+    foreach ( SOURCE_FILE ${ARGN} )
         set ( CXX_SOURCES ${CXX_SOURCES} "${LAMA_RELATIVE_PATH}${SOURCE_FILE}.hpp" )
-        set ( CXX_HEADERS ${CXX_HEADERS} "${SOURCE_FILE}.hpp" )
+        set ( CXX_HEADERS ${CXX_HEADERS} "${LAMA_RELATIVE_PATH}${SOURCE_FILE}.hpp" )
     endforeach ( SOURCE_FILE ${ARGN} )
-    
-    # install CXX_HEADERS
-    install ( FILES ${CXX_HEADERS} DESTINATION "include/scai/lama/${RELATIVE_PATH}" )
 endmacro ( lama_headers )
 
 macro    ( lama_cuda_sources )
-	lama_get_relative_path ( LAMA_RELATIVE_PATH )
+
+    get_relative_path ( LAMA_RELATIVE_PATH ${LAMA_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR} )
     
     foreach   ( SOURCE_FILE ${ARGN} )
         set ( CUDA_SOURCES ${CUDA_SOURCES} "${LAMA_RELATIVE_PATH}${SOURCE_FILE}.cu" )

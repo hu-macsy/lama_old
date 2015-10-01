@@ -1,5 +1,5 @@
 ###
- # @file Functions.cmake
+ # @file relativeInstall.cmake
  #
  # @license
  # Copyright (c) 2009-2013
@@ -25,26 +25,30 @@
  # SOFTWARE.
  # @endlicense
  #
- # @brief CMake functions and macros
- # @author Jan Ecker
- # @date 25.04.2013
- # @since 1.0.0
+ # @brief Own install command that uses relative path names
+ # @author Thomas Brandes
+ # @date 01.10.2015
 ###
 
-# returns the relative path to the actual directory to the LAMA_SOURCE_DIR (Path of the actual target)
-function    ( lama_get_relative_path RELATIVE_PATH )
-    # get relative path
-    string ( LENGTH "${LAMA_SOURCE_DIR}" LAMA_SOURCE_DIR_LENGTH )
-    string ( LENGTH ${CMAKE_CURRENT_SOURCE_DIR} CMAKE_CURRENT_SOURCE_DIR_LENGTH )
-   
-    if    ( ${LAMA_SOURCE_DIR_LENGTH} LESS ${CMAKE_CURRENT_SOURCE_DIR_LENGTH} )
-        math ( EXPR LAMA_SOURCE_DIR_LENGTH ${LAMA_SOURCE_DIR_LENGTH}+1 )
-        set ( PATH_SUFFIX / )
-    endif ( ${LAMA_SOURCE_DIR_LENGTH} LESS ${CMAKE_CURRENT_SOURCE_DIR_LENGTH} )
+function ( relative_install FILES DESTINATION )
 
-    math ( EXPR PATH_LENGTH ${CMAKE_CURRENT_SOURCE_DIR_LENGTH}-${LAMA_SOURCE_DIR_LENGTH} )
-    string ( SUBSTRING ${CMAKE_CURRENT_SOURCE_DIR} ${LAMA_SOURCE_DIR_LENGTH} ${PATH_LENGTH} PATH )
-    
-    # set return parameter (via PARENT_SCOPE)
-    set ( ${RELATIVE_PATH} ${PATH}${PATH_SUFFIX} PARENT_SCOPE )
-endfunction ( lama_get_relative_path )
+   # message( STATUS "relative_install, FILES = ${FILES}" )
+   # message( STATUS "relative_install, DESTINATION = ${DESTINATION}" )
+
+   foreach   ( SOURCE_FILE ${FILES} )
+
+       # this does not work install( FILES ${SOURCE_FILE} DESTINATION ${DESTINATION} )
+
+       if    ( CMAKE_VERSION VERSION_GREATER 2.8.11 )
+           get_filename_component( FILE_DIR ${SOURCE_FILE} DIRECTORY )
+       else  ( CMAKE_VERSION VERSION_GREATER 2.8.11 )
+           get_filename_component( FILE_DIR ${SOURCE_FILE} PATH )
+       endif ( CMAKE_VERSION VERSION_GREATER 2.8.11 )
+
+       # message( STATUS "install ${SOURCE_FILE} in ${DESTINATION}/${FILE_DIR}" )
+
+       install( FILES ${SOURCE_FILE} DESTINATION ${DESTINATION}/${FILE_DIR} )
+
+   endforeach ( )
+
+endfunction ( relative_install )

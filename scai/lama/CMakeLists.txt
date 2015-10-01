@@ -225,6 +225,12 @@ if ( USE_MIC )
         "-offload-option,mic,compiler,\"-L${MKLROOT}/lib/mic -Wl,--start-group -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_core -Wl,--end-group\"" )
 endif ( USE_MIC )
 
+## install all Include files
+## install( FILES ${CXX_HEADERS} DESTINATION include/scai/lama ) does not work
+
+include( Functions/relativeInstall )
+relative_install( "${CXX_HEADERS}" include/scai/lama )
+
 ## install library.hpp
 configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/lama.hpp.in" "${CMAKE_CURRENT_BINARY_DIR}/include/lama.hpp" )
 install ( FILES "${CMAKE_CURRENT_BINARY_DIR}/include/lama.hpp" DESTINATION include/scai )
