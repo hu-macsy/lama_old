@@ -69,6 +69,6 @@ function ( get_relative_path RELATIVE_PATH PATH1 PATH2 )
     # set return parameter (via PARENT_SCOPE)
     set ( ${RELATIVE_PATH} ${PATH}${PATH_SUFFIX} PARENT_SCOPE )
 
-    message ( STATUS "RELATIVE_PATH = ${${RELATIVE_PATH}} for PATH1=${PATH1} and PATH2=${PATH2}" )
+    # message ( STATUS "RELATIVE_PATH = ${${RELATIVE_PATH}} for PATH1=${PATH1} and PATH2=${PATH2}" )
 
 endfunction ( get_relative_path )

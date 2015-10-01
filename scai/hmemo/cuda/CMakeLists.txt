@@ -30,9 +30,17 @@
  # @date 09.06.2015
 ###
 
-file ( GLOB CUDA_SOURCES "*.cpp" )
-file ( GLOB CUDA_HEADERS "*.hpp" )
+### add sources and headers to parent scope ###
 
-set ( CUDA_SOURCES ${CUDA_SOURCES} PARENT_SCOPE )
+scai_project_add( 
 
-install ( FILES ${CUDA_HEADERS} DESTINATION include/scai/hmemo/cuda )
+   CLASSES 
+
+       CUDAContext 
+       CUDAMemory 
+       CUDAHostMemory 
+       CUDAStreamSyncToken 
+
+   SET_PARENT_SCOPE
+)
+

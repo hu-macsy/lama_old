@@ -43,8 +43,4 @@ set ( HEADERS
         all
     )
 
-lama_classes ( ${CLASSES} )
-lama_headers ( ${HEADERS} )
-
-### add sources and headers to parent scope ###
-lama_add ()
+scai_project_add ( CLASSES ${CLASSES} HEADERS ${HEADERS} SET_PARENT_SCOPE )

@@ -32,21 +32,18 @@
 ###
 
 ### Add classes and header files ###
-set ( CLASSES
+
+scai_project_add (
+
+   CLASSES
         mmio
         FileIO
         XDRFileStream
-    )
 
-set ( HEADERS
+    HEADERS
+
         FileType
         LAMAFile
-    )
 
-lama_classes ( ${CLASSES} )
-lama_headers ( ${HEADERS} )
-
-### add sources and headers to parent scope ###
-
-lama_add ()
-
+    SET_PARENT_SCOPE
+)

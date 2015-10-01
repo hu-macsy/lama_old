@@ -32,6 +32,7 @@
 ###
 
 ### Add classes and header files ###
+
 set ( CLASSES
         Criterion
         IterationCount
@@ -39,7 +40,5 @@ set ( CLASSES
         ResidualThreshold
     )
     
-lama_classes ( ${CLASSES} )
+scai_project_add ( CLASSES ${CLASSES} SET_PARENT_SCOPE )
 
-### add sources and headers to parent scope ###
-lama_add ()

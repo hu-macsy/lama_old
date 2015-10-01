@@ -32,10 +32,13 @@
 ###
 
 ### set this dir as lama source dir ###
-lama_set_source_dir ()
 
-### Add classes and header files ###
-set ( CLASSES
+scai_project_start ()
+
+scai_project_add ( 
+
+    CLASSES
+
         Configuration
         Context
         MatrixStorageTest
@@ -43,15 +46,15 @@ set ( CLASSES
         SameMatrixHelper
         SparseMatrixHelper
         SparseMatrixTest
-    )
     
-set ( HEADERS
+    HEADERS
+
         EquationHelper
 #        TestMacros
         TestSparseMatrices
-    )
 
-set ( SOURCE_FILES
+    SOURCES
+
         BiCGstabTest
        # BiCGTest  : disabled as long as MatrixTranspose for DenseMatrix is
        # not supported
@@ -114,10 +117,6 @@ set ( SOURCE_FILES
 #        UtilsTest
         VectorTest
     )
-
-lama_classes ( ${CLASSES} )
-lama_headers ( ${HEADERS} )
-lama_sources ( ${SOURCE_FILES} )
 
 ### checks ####
 if ( ${SCAI_ASSERT_LEVEL} STREQUAL "OFF" )

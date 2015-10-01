@@ -32,25 +32,24 @@
 ###
 
 ### set this dir as lama source dir ###
-lama_set_source_dir ()
 
-### Add classes and header files ###
-set ( CLASSES
+scai_project_start()
+
+scai_project_add(
+
+  CLASSES
+
         CUDAContext
-    )
 
-set ( SOURCE_FILES
+  SOURCES
+
 #       CUDA_ContextTest
 #       CUDA_HostContextTest
         CUDA_MatrixStorageTest
 #       CUDA_VectorTest
 #       CUDA_InterfaceRegistryTest
-    )
 
-lama_classes ( ${CLASSES} )
-lama_sources ( ${SOURCE_FILES} )
-
-
+)
 
 # Due to additional include files an own executable is defined for CUDA tests
 

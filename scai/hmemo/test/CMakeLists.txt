@@ -30,7 +30,13 @@
  # @date 16.06.2015
 ###
 
-file ( GLOB CPP_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp" )
+set ( CXX_SOURCES
+      LAMAArrayRefTest.cpp  
+      MemoryTest.cpp
+      ContextTest.cpp  
+      HostContextTest.cpp  
+      LAMAArrayTest.cpp  
+) 
 
 # Boost is not required, but if not available tests are not built
 
@@ -40,7 +46,7 @@ if ( Boost_UNIT_TEST_FRAMEWORK_FOUND )
 
     include_directories ( ${Boost_INCLUDE_DIR} )
 
-    add_executable ( MemoryTest ${CPP_SOURCES} )
+    add_executable ( MemoryTest ${CXX_SOURCES} )
 
     target_link_libraries ( MemoryTest 
         ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}

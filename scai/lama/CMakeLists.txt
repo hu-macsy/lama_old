@@ -101,13 +101,16 @@ include ( SCAIAssert )
 
 ### build lama library
 
-include ( Functions/lamaSourceSolution )
+include ( Functions/scaiProject )
 
 ### set this dir as lama source dir
-lama_set_source_dir ()
+scai_project_start ()
 
 ### Add classes and header files
-set ( CLASSES
+scai_project_add(
+
+    CLASSES
+
         CommunicationPlan
         Communicator
         DenseVector
@@ -120,16 +123,13 @@ set ( CLASSES
         Scalar
         StorageIO
         Vector
-    )
 
-set ( HEADERS
+    HEADERS
+
         BLASInterface
         UtilsInterface
         CRTPCommunicator
     )
-
-lama_classes ( ${CLASSES} )
-lama_headers ( ${HEADERS} )
 
 ### add subdirectories ###
 

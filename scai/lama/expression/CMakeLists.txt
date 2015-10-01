@@ -32,15 +32,16 @@
 ###
 
 ### Add classes and header files ###
-set ( HEADERS
+
+scai_project_add (
+
+    HEADERS
+
         all
         Expression
         MatrixExpressions
         MatrixVectorExpressions
         VectorExpressions
-    )
 
-lama_headers ( ${HEADERS} )
-
-### add sources and headers to parent scope ###
-lama_add ()
+    SET_PARENT_SCOPE 
+)

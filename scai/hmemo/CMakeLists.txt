@@ -89,9 +89,38 @@ endforeach ( module ${SCAI_HMEMO_INTERNAL_DEPS} ${SCAI_HMEMO_EXTERNAL_DEPS} )
 
 ### build library
 
-## search for files
-file ( GLOB CPP_SOURCES "*.cpp" )
-file ( GLOB HPP_HEADERS "*.hpp" )
+include ( Functions/scaiProject )
+
+### set this dir as lama source dir
+### to collect source files in CXX_SOURCES and include files in CXX_HEADERS
+
+scai_project_start()
+
+### Add classes
+
+scai_project_add (
+
+    CLASSES
+
+         Access
+         ContextAccess
+         Context
+         ContextData
+         ContextDataManager
+         HostContext
+         HostMemory
+         Memory
+
+### header only files
+
+    HEADERS
+
+         LAMAArray
+         LAMAArrayRef
+         ReadAccess
+         WriteAccess
+         WriteOnlyAccess
+    )
 
 ## add CUDA if supported
 if    ( CUDA_FOUND AND USE_CUDA )
@@ -109,7 +138,7 @@ add_subdirectory ( examples )
 add_subdirectory ( test )
 
 ## add library
-add_library ( scai_hmemo ${SCAI_LIBRARY_TYPE} ${CPP_SOURCES} ${CUDA_SOURCES} ${MIC_SOURCES} )
+add_library ( scai_hmemo ${SCAI_LIBRARY_TYPE} ${CXX_SOURCES} )
 
 ## add link libraries
 list ( REVERSE SCAI_HMEMO_INTERNAL_DEPS )
@@ -125,8 +154,14 @@ foreach    ( module ${SCAI_HMEMO_EXTERNAL_DEPS} )
 endforeach ( module ${SCAI_HMEMO_EXTERNAL_DEPS} )
 
 ### install
+
 install ( TARGETS scai_hmemo DESTINATION lib )
-install ( FILES ${HPP_HEADERS} DESTINATION include/scai/hmemo )
+
+## install all Include files
+## install( FILES ${CXX_HEADERS} DESTINATION include/scai/hmemo ) does not work
+
+include( Functions/relativeInstall )
+relative_install( FILES ${CXX_HEADERS} DESTINATION include/scai/hmemo )
 
 ## install library.hpp
 install ( FILES ../hmemo.hpp DESTINATION include/scai )

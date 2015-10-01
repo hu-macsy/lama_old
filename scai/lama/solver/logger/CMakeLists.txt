@@ -31,7 +31,8 @@
  # @since 1.0.0
 ###
 
-### Add classes and header files ###
+### Add classes (.cpp + .hpp) and header (only .hpp) files ###
+
 set ( CLASSES
         CommonLogger
         FileLogger
@@ -44,8 +45,4 @@ set ( HEADERS
         LogLevel
     )
     
-lama_classes ( ${CLASSES} )
-lama_headers ( ${HEADERS} )
-
-### add sources and headers to parent scope ###
-lama_add ()
+scai_project_add ( CLASSES ${CLASSES} HEADERS ${HEADERS} SET_PARENT_SCOPE )

@@ -30,9 +30,12 @@
  # @date 09.06.2015
 ###
 
-file ( GLOB MIC_SOURCES "*.cpp" )
-file ( GLOB MIC_HEADERS "*.hpp" )
+### Add classes and header files ###
 
-set ( MIC_SOURCES ${MIC_SOURCES} PARENT_SCOPE )
+set ( CLASSES MICContext MICMemory MICSyncToken )
 
-install ( FILES ${MIC_HEADERS} DESTINATION include/scai/hmemo/mic )
+lama_classes ( ${CLASSES} )
+
+### add sources and headers to parent scope ###
+
+lama_add ()
