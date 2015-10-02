@@ -97,4 +97,4 @@ set ( CLASSES
         OpenMPLAPACK
     )
 
-scai_project_add ( CLASSES ${CLASSES} HEADERS ${HEADERS} SET_PARENT_SCOPE )
+scai_project ( CLASSES ${CLASSES} HEADERS ${HEADERS} ADD_PARENT_SCOPE )

@@ -33,7 +33,7 @@
 
 ### Add classes and header files ###
 
-scai_project_add (
+scai_project (
 
     CLASSES
 
@@ -51,5 +51,5 @@ scai_project_add (
         all 
         CRTPMatrix 
 
-    SET_PARENT_SCOPE
+    ADD_PARENT_SCOPE
 )

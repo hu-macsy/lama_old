@@ -91,16 +91,11 @@ endforeach ( module ${SCAI_HMEMO_INTERNAL_DEPS} ${SCAI_HMEMO_EXTERNAL_DEPS} )
 
 include ( Functions/scaiProject )
 
-### set this dir as lama source dir
-### to collect source files in CXX_SOURCES and include files in CXX_HEADERS
+### Add classes/headers to source files CXX_SOURCES, CXX_HEADERS, ...
 
-scai_project_start()
+scai_project (
 
-### Add classes
-
-scai_project_add (
-
-    CLASSES
+    CLASSES                  # .cpp, .hpp
 
          Access
          ContextAccess
@@ -111,16 +106,14 @@ scai_project_add (
          HostMemory
          Memory
 
-### header only files
-
-    HEADERS
+    HEADERS                  # .hpp only
 
          LAMAArray
          LAMAArrayRef
          ReadAccess
          WriteAccess
          WriteOnlyAccess
-    )
+)
 
 ## add CUDA if supported
 if    ( CUDA_FOUND AND USE_CUDA )

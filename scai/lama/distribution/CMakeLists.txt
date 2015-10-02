@@ -35,7 +35,7 @@ if ( METIS_FOUND OR PARMETIS_FOUND )
     set ( MetisDistribution MetisDistribution )
 endif ( METIS_FOUND OR PARMETIS_FOUND )
 
-scai_project_add ( 
+scai_project ( 
 
    CLASSES
 
@@ -50,5 +50,5 @@ scai_project_add (
         Redistributor
         ${MetisDistribution}
 
-    SET_PARENT_SCOPE 
+    ADD_PARENT_SCOPE 
 )

@@ -33,7 +33,7 @@
 
 ### Add classes and header files ###
 
-scai_project_add (
+scai_project (
 
     CLASSES
 
@@ -48,5 +48,5 @@ scai_project_add (
           MICBLAS2
           MICBLAS3
 
-    SET_PARENT_SCOPE
+    ADD_PARENT_SCOPE
 )

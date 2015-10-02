@@ -39,9 +39,9 @@ endif ( CUSPARSE_V2 )
 
 ### Add classes and header files ###
 
-scai_project_add(
+scai_project(
 
-    CLASSES
+    CLASSES      # .cpp, .hpp
 
         CUDABLAS1
         CUDABLAS2
@@ -50,9 +50,8 @@ scai_project_add(
         CUDASettings
         CUDATexture
 
-    CUDA_SOURCES
+    CUDA_CLASSES  # .cu, .hpp
 
-        blas1
         CUDAUtils
         CUDACOOUtils
         CUDACSRUtils
@@ -61,20 +60,16 @@ scai_project_add(
         CUDAJDSUtils
         ${CUSparseCSRUtils}
 
-    HEADERS
+    CUDA_SOURCES   # .cu
 
-		CUDACOOUtils
-		CUDACSRUtils
-		CUDADIAUtils
-        CUDAELLUtils
-        CUDAJDSUtils
+        blas1
+
+    HEADERS        # .hpp
+
         CUDATexVector
-        CUDAUtils
         lama_cublas
         launchHelper
-        ${CUSparseCSRUtils}
 
-    SET_PARENT_SCOPE
+    ADD_PARENT_SCOPE
 )
-
 

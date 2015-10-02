@@ -32,7 +32,7 @@
 
 ### add sources and headers to parent scope ###
 
-scai_project_add( 
+scai_project( 
 
    CLASSES 
 
@@ -41,6 +41,6 @@ scai_project_add(
        CUDAHostMemory 
        CUDAStreamSyncToken 
 
-   SET_PARENT_SCOPE
+   ADD_PARENT_SCOPE
 )
 

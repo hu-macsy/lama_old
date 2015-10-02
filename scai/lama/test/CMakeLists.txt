@@ -33,9 +33,7 @@
 
 ### set this dir as lama source dir ###
 
-scai_project_start ()
-
-scai_project_add ( 
+scai_project ( 
 
     CLASSES
 

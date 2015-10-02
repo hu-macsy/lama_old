@@ -30,9 +30,14 @@
  # @date 31.08.2015
 ###
 
-file ( GLOB LOCAL_SOURCES "*.cpp" )
-file ( GLOB LOCAL_HEADERS "*.hpp" )
+scai_project(
 
-set ( CPP_SOURCES ${CPP_SOURCES} ${LOCAL_SOURCES} PARENT_SCOPE )
+    CLASSES
 
-install ( FILES ${LOCAL_HEADERS} DESTINATION include/scai/common/exception )
+        Exception
+        AssertException
+        UnsupportedException
+
+    ADD_PARENT_SCOPE
+)
+

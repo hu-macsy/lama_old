@@ -32,6 +32,7 @@
 ###
 
 ### Add classes and header files ###
+
 set ( CLASSES
         L1Norm
         L2Norm
@@ -43,4 +44,4 @@ set ( HEADERS
         all
     )
 
-scai_project_add ( CLASSES ${CLASSES} HEADERS ${HEADERS} SET_PARENT_SCOPE )
+scai_project ( CLASSES ${CLASSES} HEADERS ${HEADERS} ADD_PARENT_SCOPE )

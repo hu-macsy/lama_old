@@ -103,11 +103,9 @@ include ( SCAIAssert )
 
 include ( Functions/scaiProject )
 
-### set this dir as lama source dir
-scai_project_start ()
-
 ### Add classes and header files
-scai_project_add(
+
+scai_project(
 
     CLASSES
 

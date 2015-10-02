@@ -91,12 +91,29 @@ add_subdirectory ( examples )
 configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/test/make.inc.in" "${CMAKE_CURRENT_BINARY_DIR}/test/make.inc" )
 file ( COPY ${CMAKE_CURRENT_SOURCE_DIR}/test DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
 
-## search for files
-file ( GLOB CPP_SOURCES "*.cpp" )
-file ( GLOB HPP_HEADERS "*.hpp" )
+## set files in variables CXX_SOURCES and CXX_HEADERS
+
+include ( Functions/scaiProject )
+
+scai_project (
+
+    CLASSES
+
+        GenLoggerCreator
+        Level
+        Logger
+        LoggerProvider
+        GenLogger
+        SourceLocation
+ 
+    HEADERS
+
+        AbstractLoggerCreator
+)
 
 ### add library
-add_library ( scai_logging ${SCAI_LIBRARY_TYPE} ${CPP_SOURCES} )
+
+add_library ( scai_logging ${SCAI_LIBRARY_TYPE} ${CXX_SOURCES} )
 
 ## add link libraries
 list ( REVERSE SCAI_LOGGING_INTERNAL_DEPS )
@@ -108,14 +125,15 @@ target_link_libraries ( scai_logging ${SCAI_START_LINK_LIBRARIES} ${LOGGING_LINK
 
 ### install ###
 install ( TARGETS scai_logging DESTINATION lib )
-install ( FILES ${HPP_HEADERS} DESTINATION include/scai/logging )
+
+include ( Functions/relativeInstall )
+relative_install ( FILES ${CXX_HEADERS} DESTINATION include/scai/logging )
 
 ## install library.hpp
 install ( FILES ../logging.hpp DESTINATION include/scai )
 
 ### add userdoc
 include ( Package/Sphinx )
-
 
 ## add custum target distClean, but only if this project is not included
 if    ( NOT SCAI_COMPLETE_BUILD )

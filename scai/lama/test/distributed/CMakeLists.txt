@@ -31,9 +31,6 @@
  # @since 1.0.0
 ###
 
-### set this dir as lama source dir ###
-scai_project_start ()
-
 ### set include directories ### 
 #include_directories ( . .. )
 
@@ -45,7 +42,7 @@ else( METIS_FOUND OR PARMETIS_FOUND )
     set ( MetisDistributionTest )
 endif ( METIS_FOUND OR PARMETIS_FOUND )
 
-scai_project_add(
+scai_project (
 
    CLASSES
 

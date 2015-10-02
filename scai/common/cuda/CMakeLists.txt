@@ -30,9 +30,17 @@
  # @date 09.06.2015
 ###
 
-file ( GLOB CUDA_SOURCES "*.cpp" )
-file ( GLOB CUDA_HEADERS "*.hpp" )
+# add source and header files to the current project
 
-set ( CUDA_SOURCES ${CUDA_SOURCES} PARENT_SCOPE )
+scai_project (
 
-install ( FILES ${CUDA_HEADERS} DESTINATION include/scai/common/cuda )
+    CLASSES
+
+        CUDAError
+
+    HEADERS
+
+        launchHeoper
+
+    ADD_PARENT_SCOPE
+)

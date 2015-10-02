@@ -82,9 +82,37 @@ include_directories ( ../.. )
 ## add subdirectories
 add_subdirectory ( examples )
 
-## search for files
-file ( GLOB CPP_SOURCES "*.cpp" )
-file ( GLOB HPP_HEADERS "*.hpp" )
+## add source files
+
+include ( Functions/scaiProject )
+
+scai_project (
+
+    CLASSES
+
+        Complex
+        Printable
+        ScalarType
+        Settings
+        Thread
+        Walltime
+
+    HEADERS
+
+        Assert
+        bind     
+        config
+        function
+        TypeTraits
+        weak_ptr
+        Factory1
+        NonCopyable
+        SCAITypes
+        shared_ptr
+        unique_ptr
+        Factory
+        OpenMP
+)
 
 ## add CUDA if supported
 if    ( CUDA_FOUND AND USE_CUDA )
@@ -101,7 +129,7 @@ add_subdirectory ( exception )
 add_subdirectory ( test )
 
 ## add library
-add_library ( scai_common ${SCAI_LIBRARY_TYPE} ${CPP_SOURCES} ${CUDA_SOURCES} )
+add_library ( scai_common ${SCAI_LIBRARY_TYPE} ${CXX_SOURCES} )
 
 ## add link libraries
 foreach    ( module ${SCAI_COMMON_EXTERNAL_DEPS} )
@@ -111,7 +139,9 @@ endforeach ( module ${SCAI_COMMON_EXTERNAL_DEPS} )
 
 ### install ###
 install ( TARGETS scai_common DESTINATION lib )
-install ( FILES ${HPP_HEADERS} DESTINATION include/scai/common )
+
+include ( Functions/relativeInstall )
+relative_install ( FILES ${CXX_HEADERS} DESTINATION include/scai/common )
 
 ## install library.hpp
 install ( FILES ../common.hpp DESTINATION include/scai )

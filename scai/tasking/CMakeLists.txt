@@ -90,9 +90,7 @@ add_subdirectory ( examples )
 
 include( Functions/scaiProject )
 
-scai_project_start()
-
-scai_project_add (
+scai_project (
 
     HEADERS
 

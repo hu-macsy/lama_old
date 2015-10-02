@@ -40,5 +40,5 @@ set ( CLASSES
         ResidualThreshold
     )
     
-scai_project_add ( CLASSES ${CLASSES} SET_PARENT_SCOPE )
+scai_project ( CLASSES ${CLASSES} ADD_PARENT_SCOPE )
 

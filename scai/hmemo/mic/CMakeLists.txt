@@ -32,10 +32,13 @@
 
 ### Add classes and header files ###
 
-set ( CLASSES MICContext MICMemory MICSyncToken )
+scai_project (
 
-lama_classes ( ${CLASSES} )
+    CLASSES 
+ 
+        MICContext
+        MICMemory 
+        MICSyncToken 
 
-### add sources and headers to parent scope ###
-
-lama_add ()
+    ADD_PARENT_SCOPE
+)
