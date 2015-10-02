@@ -40,7 +40,7 @@ scai_project (
 
     HEADERS
 
-        launchHeoper
+        launchHelper
 
     ADD_PARENT_SCOPE
 )

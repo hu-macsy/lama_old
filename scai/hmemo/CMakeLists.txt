@@ -108,6 +108,7 @@ scai_project (
 
     HEADERS                  # .hpp only
 
+         ContextArray
          LAMAArray
          LAMAArrayRef
          ReadAccess

@@ -122,7 +122,9 @@ add_subdirectory ( examples )
 
 ### install ###
 install ( TARGETS scai_tracing DESTINATION lib/ )
-install ( FILES ${HPP_HEADERS} DESTINATION include/scai/tracing )
+
+include ( Functions/relativeInstall )
+relative_install ( FILES ${CXX_HEADERS} DESTINATION include/scai/tracing )
 
 if    ( CMAKE_VERSION VERSION_GREATER 2.8.11 ) 
 	add_subdirectory( gui )
