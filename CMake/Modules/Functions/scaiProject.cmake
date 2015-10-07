@@ -91,13 +91,13 @@ macro    ( scai_project )
 
    cmake_parse_arguments ( scai_project "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN} )
 
-   message ( STATUS "scai_project HEADERS = ${scai_project_HEADERS}" )
-   message ( STATUS "scai_project CLASSES = ${scai_project_CLASSES}" )
-   message ( STATUS "scai_project SOURCES = ${scai_project_SOURCES}" )
-   message ( STATUS "scai_project CUDA_CLASSES = ${scai_project_CUDA_CLASSES}" )
-   message ( STATUS "scai_project CUDA_SOURCES = ${scai_project_CUDA_SOURCES}" )
-   message ( STATUS "scai_project ADD = ${scai_project_ADD}" )
-   message ( STATUS "scai_project ADD_PARENT_SCOPE = ${scai_project_ADD_PARENT_SCOPE}" )
+   #message ( STATUS "scai_project HEADERS = ${scai_project_HEADERS}" )
+   #message ( STATUS "scai_project CLASSES = ${scai_project_CLASSES}" )
+   #message ( STATUS "scai_project SOURCES = ${scai_project_SOURCES}" )
+   #message ( STATUS "scai_project CUDA_CLASSES = ${scai_project_CUDA_CLASSES}" )
+   #message ( STATUS "scai_project CUDA_SOURCES = ${scai_project_CUDA_SOURCES}" )
+   #message ( STATUS "scai_project ADD = ${scai_project_ADD}" )
+   #message ( STATUS "scai_project ADD_PARENT_SCOPE = ${scai_project_ADD_PARENT_SCOPE}" )
 
    if ( ( scai_project_ADD_PARENT_SCOPE ) OR ( scai_project_ADD ) )
 

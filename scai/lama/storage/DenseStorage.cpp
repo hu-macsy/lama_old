@@ -43,6 +43,7 @@
 
 // internal scai libraries
 #include <scai/hmemo/ContextAccess.hpp>
+#include <scai/common/Constants.hpp>
 
 using namespace scai::hmemo;
 
@@ -818,7 +819,7 @@ void DenseStorageView<ValueType>::matrixTimesMatrixDense(
 
     ContextPtr context = mContext;
 
-    if( beta == 0.0 )
+    if( beta == Zero )
     {
         // do not care at all about C as it might be any dummy, or aliased to result
 
