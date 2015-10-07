@@ -44,8 +44,8 @@
 #include <scai/tracing.hpp>
 
 #include <scai/common/Settings.hpp>
-
 #include <scai/common/macros/unused.hpp>
+#include <scai/common/Constants.hpp>
 
 // boost
 #include <boost/preprocessor.hpp>
@@ -55,6 +55,8 @@
 
 namespace scai
 {
+
+using common::Constants;
 
 namespace lama
 {
@@ -175,14 +177,14 @@ template<>
 LongDouble wrapperNrm2( const int, const LongDouble*, const int )
 {
     COMMON_THROWEXCEPTION( "LongDouble not supported by BLAS, please set USE_BLAS=0" )
-    return LongDouble( 0 );
+    return Constants<LongDouble>::zero;
 }
 
 template<>
 ComplexLongDouble wrapperNrm2( const int, const ComplexLongDouble*, const int )
 {
     COMMON_THROWEXCEPTION( "LongDouble not supported by BLAS, please set USE_BLAS=0" )
-    return LongDouble( 0 );
+    return Constants<ComplexLongDouble>::zero;
 }
 
 template<typename ValueType>
@@ -190,7 +192,7 @@ ValueType BLAS_BLAS1::nrm2( const IndexType n, const ValueType* x, const IndexTy
 {
     if( incX <= 0 )
     {
-        return static_cast<ValueType>( 0 );
+        return Constants<ValueType>::zero;
     }
 
     SCAI_REGION( "BLAS.BLAS1.nrm2" )
@@ -243,14 +245,14 @@ template<>
 LongDouble wrapperAsum( const int, const LongDouble*, const int )
 {
     COMMON_THROWEXCEPTION( "LongDouble not supported by BLAS, please set USE_BLAS=0" )
-    return 0;
+    return Constants<LongDouble>::zero;
 }
 
 template<>
 ComplexLongDouble wrapperAsum( const int, const ComplexLongDouble*, const int )
 {
     COMMON_THROWEXCEPTION( "LongDouble not supported by BLAS, please set USE_BLAS=0" )
-    return 0;
+    return Constants<ComplexLongDouble>::zero;
 }
 
 template<typename ValueType>
@@ -268,7 +270,7 @@ ValueType BLAS_BLAS1::asum( const IndexType n, const ValueType* x, const IndexTy
 
     if( incX <= 0 )
     {
-        return static_cast<ValueType>( 0 );
+        return Constants<ValueType>::zero;
     }
 
     return wrapperAsum( n, x, incX );
@@ -614,14 +616,14 @@ template<>
 LongDouble wrapperDot( const int, const LongDouble*, const int, const LongDouble*, const int )
 {
     COMMON_THROWEXCEPTION( "LongDouble not supported by BLAS, please set USE_BLAS=0" )
-    return 0;
+    return Constants<LongDouble>::zero;
 }
 
 template<>
 ComplexLongDouble wrapperDot( const int, const ComplexLongDouble*, const int, const ComplexLongDouble*, const int )
 {
     COMMON_THROWEXCEPTION( "LongDouble not supported by BLAS, please set USE_BLAS=0" )
-    return 0;
+    return Constants<ComplexLongDouble>::zero;
 }
 
 template<typename ValueType>
@@ -640,7 +642,7 @@ ValueType BLAS_BLAS1::dot(
 
     if( ( incX <= 0 ) || ( incY <= 0 ) )
     {
-        return static_cast<ValueType>( 0 );
+        return Constants<ValueType>::zero;
     }
 
     if( syncToken )

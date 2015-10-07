@@ -56,6 +56,7 @@
 
 #include <scai/common/bind.hpp>
 #include <scai/common/SCAITypes.hpp>
+#include <scai/common/Constants.hpp>
 
 // boost
 #include <boost/preprocessor.hpp>
@@ -69,6 +70,7 @@ namespace scai
 
 using tasking::SyncToken;
 using tasking::TaskSyncToken;
+using common::Constants;
 
 namespace lama
 {
@@ -114,7 +116,7 @@ void _MatrixStorage::writeAt( std::ostream& stream ) const
 
 void _MatrixStorage::setCompressThreshold( float ratio )
 {
-    if ( ratio < 0.0 || ratio > 1.0 )
+    if ( ratio < 0.0f || ratio > 1.0f )
     {
         COMMON_THROWEXCEPTION( "Illegal threshold " << ratio << ", must be from 0.0 to 1.0" )
     }
@@ -712,7 +714,7 @@ void MatrixStorage<ValueType>::splitHalo(
             localData.assign( *this );
         }
 
-        haloData.allocate( mNumRows, 0 );
+        haloData.allocate( mNumRows, Constants<int>::zero );
         halo = Halo(); // empty halo schedule
         return;
     }
@@ -1183,7 +1185,7 @@ void MatrixStorage<ValueType>::setRawDenseData(
     const OtherValueType values[],
     const ValueType epsilon )
 {
-    SCAI_ASSERT_ERROR( epsilon >= 0.0, "epsilon = " << epsilon << ", must not be negative" )
+    SCAI_ASSERT_ERROR( epsilon >= Constants<ValueType>::zero, "epsilon = " << epsilon << ", must not be negative" )
     mEpsilon = epsilon;
     // wrap all the data in a dense storage and make just an assign
     SCAI_LOG_INFO( logger, "set dense storage " << numRows << " x " << numColumns )

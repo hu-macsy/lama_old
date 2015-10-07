@@ -46,6 +46,7 @@
 #include <scai/common/unique_ptr.hpp>
 #include <scai/common/bind.hpp>
 #include <scai/common/unique_ptr.hpp>
+#include <scai/common/Constants.hpp>
 
 // boost
 #include <boost/preprocessor.hpp>
@@ -62,6 +63,7 @@ namespace scai
 using common::shared_ptr;
 using common::unique_ptr;
 using common::scoped_array;
+using common::Constants;
 
 namespace lama
 {
@@ -379,8 +381,8 @@ void MPICommunicator::all2all( IndexType recvSizes[], const IndexType sendSizes[
     MPI_Datatype commType = getMPIType<IndexType>();
 
     LAMA_MPICALL( logger,
-                  MPI_Alltoall( const_cast<IndexType*>( sendSizes ), 1, commType, recvSizes, 1, commType,
-                                selectMPIComm() ),
+                  MPI_Alltoall( const_cast<IndexType*>( sendSizes ), Constants<int>::one, commType, recvSizes,
+                                Constants<int>::one, commType, selectMPIComm() ),
                   "MPI_Alltoall" )
 }
 
@@ -652,7 +654,8 @@ ValueType MPICommunicator::sumImpl( const ValueType value ) const
 
     ValueType sum;
     MPI_Datatype commType = getMPIType<ValueType>();
-    LAMA_MPICALL( logger, MPI_Allreduce( (void* ) &value, (void* ) &sum, 1, commType, MPI_SUM, selectMPIComm() ),
+    LAMA_MPICALL( logger, MPI_Allreduce( (void* ) &value, (void* ) &sum, Constants<int>::one, commType,
+                                         MPI_SUM, selectMPIComm() ),
                   "MPI_Allreduce(MPI_SUM)" )
     SCAI_LOG_DEBUG( logger, "sum: my value = " << value << ", sum = " << sum )
     return sum;
@@ -671,8 +674,8 @@ ValueType MPICommunicator::minImpl( const ValueType value ) const
 
     ValueType globalMin; // no initialization needed, done in MPI call
 
-    LAMA_MPICALL( logger, MPI_Allreduce( (void* ) &value, (void* ) &globalMin, 1, commType, MPI_MIN, selectMPIComm() ),
-                  "MPI_Allreduce( MPI_MIN )" )
+    LAMA_MPICALL( logger, MPI_Allreduce( (void* ) &value, (void* ) &globalMin, Constants<int>::one, commType,
+                                         MPI_MIN, selectMPIComm() ), "MPI_Allreduce( MPI_MIN )" )
     return globalMin;
 }
 
@@ -687,8 +690,8 @@ ValueType MPICommunicator::maxImpl( const ValueType value ) const
 
     SCAI_LOG_DEBUG( logger, "maxImpl: local value = " << value )
 
-    LAMA_MPICALL( logger, MPI_Allreduce( (void* ) &value, (void* ) &globalMax, 1, commType, MPI_MAX, selectMPIComm() ),
-                  "MPI_Allreduce( MPI_MAX )" )
+    LAMA_MPICALL( logger, MPI_Allreduce( (void* ) &value, (void* ) &globalMax, Constants<int>::one, commType, MPI_MAX,
+                                         selectMPIComm() ), "MPI_Allreduce( MPI_MAX )" )
 
     SCAI_LOG_DEBUG( logger, "maxImpl: global value = " << globalMax )
 
@@ -880,7 +883,7 @@ void MPICommunicator::maxlocImpl( ValueType& val, IndexType& location, Partition
     in.location = location;
     ValAndLoc out;
     MPI_Datatype commType = getMPI2Type<ValueType,int>();
-    MPI_Reduce( &in, &out, 1, commType, MPI_MAXLOC, root, selectMPIComm() );
+    MPI_Reduce( &in, &out, Constants<int>::one, commType, MPI_MAXLOC, root, selectMPIComm() );
 
     if( mRank == root )
     {

@@ -46,6 +46,7 @@
 #include <scai/tracing.hpp>
 
 #include <scai/common/Assert.hpp>
+#include <scai/common/Constants.hpp>
 
 // std
 #include <cmath>
@@ -55,6 +56,8 @@ namespace scai
 
 using namespace hmemo;
 using tasking::SyncToken;
+
+using common::Constants;
 
 namespace lama
 {
@@ -75,11 +78,11 @@ ValueType MICDIAUtils::absMaxVal(
     const IndexType diaOffsets[],
     const ValueType diaValues[] )
 {
-    ValueType maxValue = static_cast<ValueType>( 0.0 );
+    ValueType maxValue = Constants<ValueType>::zero;
 
     #pragma omp parallel
     {
-        ValueType threadVal = static_cast<ValueType>( 0.0 );
+        ValueType threadVal = Constants<ValueType>::zero;
 
         #pragma omp for
 
@@ -150,7 +153,7 @@ void MICDIAUtils::getCSRValues(
             for( IndexType i = 0; i < n; i++ )
             {
                 csrJA[i] = i;
-                csrValues[i] = 0.0;
+                csrValues[i] = Constants<ValueType>::zero;
             }
         }
         else
@@ -340,7 +343,7 @@ void MICDIAUtils::normalGEMV(
 
         for( IndexType i = 0; i < numRows; i++ )
         {
-            ValueType accu = 0.0;
+            ValueType accu = Constants<ValueType>::zero;
 
             for( IndexType ii = 0; ii < numDiagonals; ++ii )
             {
@@ -416,8 +419,7 @@ void MICDIAUtils::jacobi(
             const ValueType* rhs = static_cast<const ValueType*>( rhsPtr );
             ValueType* solution = static_cast<ValueType*>( solutionPtr );
 
-            const ValueType one = 1;
-            const ValueType oneMinusOmega = one - omega;
+            const ValueType oneMinusOmega = Constants<ValueType>::one - omega;
 
             #pragma omp parallel for
 

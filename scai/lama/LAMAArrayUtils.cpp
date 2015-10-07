@@ -43,6 +43,7 @@
 #include <scai/tracing.hpp>
 
 #include <scai/common/SCAITypes.hpp>
+#include <scai/common/Constants.hpp>
 
 // boost
 #include <boost/preprocessor.hpp>
@@ -54,6 +55,8 @@ using namespace scai::hmemo;
 
 namespace scai
 {
+
+using common::Constants;
 
 namespace lama
 {
@@ -254,7 +257,7 @@ void LAMAArrayUtils::setVal( LAMAArray<ValueType>& target, const IndexType index
 
     SCAI_CONTEXT_ACCESS( loc )
 
-    setVal( wTarget.get() + index, 1, val );
+    setVal( wTarget.get() + index, Constants<IndexType>::one, val );
 }
 
 template<typename ValueType>
@@ -271,7 +274,7 @@ void LAMAArrayUtils::assignScaled(
 // beta = 0    : saves the need of a read access for y
 // result == y : only one write access needed ( write + read not possible)
 
-    if( beta == 0 )
+    if( beta == Constants<ValueType>::zero )
     {
 // result := 0
 
@@ -281,11 +284,11 @@ void LAMAArrayUtils::assignScaled(
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        setVal( wResult.get(), n, 0 );
+        setVal( wResult.get(), n, Constants<IndexType>::zero );
     }
     else if( &result == &y )
     {
-        if( beta == 1 )
+        if( beta == Constants<ValueType>::one )
         {
             return;
         }

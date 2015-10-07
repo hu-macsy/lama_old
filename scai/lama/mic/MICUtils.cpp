@@ -39,12 +39,17 @@
 
 // other SCAI projects
 #include <scai/tracing.hpp>
+
 #include <scai/hmemo/mic/MICContext.hpp>
+
+#include <scai/common/Constants.hpp>
 
 namespace scai
 {
 
 using namespace hmemo;
+
+using common::Constants;
 
 namespace lama
 {
@@ -58,16 +63,14 @@ void MICUtils::scale( ValueType array[], const ValueType value, const IndexType 
 {
     SCAI_LOG_INFO( logger, "scale, #n = " << n << ", value = " << value )
 
-    if( value == 1 )
+    if( value == Constants<ValueType>::one )
     {
         return;
     }
 
-    if( value == 0 )
+    if( value == Constants<ValueType>::zero )
     {
-        ValueType zero = 0;
-
-        setVal( array, n, zero );
+        setVal( array, n, Constants<ValueType>::zero );
     }
     else
     {
@@ -102,14 +105,14 @@ void MICUtils::setScale(
 
     // alias of outValues == inValues is no problem
 
-    if( value == static_cast<ValueType>( 0 ) )
+    if( value == Constants<ValueType>::zero )
     {
         // Important : inValues might be undefined
         setVal( outValues, n, value );
         return;
     }
 
-    if( value == static_cast<ValueType>( 1 ) )
+    if( value == Constants<ValueType>::one )
     {
         set( outValues, inValues, n );
         return;
@@ -141,7 +144,7 @@ ValueType MICUtils::sum( const ValueType array[], const IndexType n )
 {
     SCAI_LOG_INFO( logger, "sum # array = " << array << ", n = " << n )
 
-    ValueType val = 0;
+    ValueType val = Constants<ValueType>::zero;
 
     const void* arrayPtr = array;
 
@@ -149,7 +152,7 @@ ValueType MICUtils::sum( const ValueType array[], const IndexType n )
 
 #pragma offload target( mic : device ) in( arrayPtr, n ), out( val )
     {
-        val = 0;
+        val = Constants<ValueType>::zero;
 
         const ValueType* array = static_cast<const ValueType*>( arrayPtr );
 
@@ -220,7 +223,7 @@ ValueType MICUtils::getValue( const ValueType* array, const IndexType i )
 {
     SCAI_LOG_DEBUG( logger, "getValue<" << common::getScalarType<ValueType>() << ">: i = " << i )
 
-    ValueType val = 0;
+    ValueType val = Constants<ValueType>::zero;
 
     const void* arrayPtr = array;
 
@@ -241,7 +244,7 @@ ValueType MICUtils::maxval( const ValueType array[], const IndexType n )
 {
     SCAI_LOG_INFO( logger, "maxval<" << common::getScalarType<ValueType>() << ">: " << "array[" << n << "]" )
 
-    ValueType val = 0;
+    ValueType val = Constants<ValueType>::zero;
 
     if( n < 1 )
     {
@@ -254,13 +257,13 @@ ValueType MICUtils::maxval( const ValueType array[], const IndexType n )
 
 #pragma offload target( mic : device ) in( arrayPtr, n ), out( val )
     {
-        val = 0;
+        val = Constants<ValueType>::zero;
 
         const ValueType* array = static_cast<const ValueType*>( arrayPtr );
 
         #pragma omp parallel
         {
-            ValueType threadVal = 0;
+            ValueType threadVal = Constants<ValueType>::zero;
 
             #pragma omp for
 
@@ -293,7 +296,7 @@ ValueType MICUtils::absMaxVal( const ValueType array[], const IndexType n )
     SCAI_LOG_INFO( logger, "absMaxVal<" << common::getScalarType<ValueType>() << ">: " << "array[" << n << "]" )
     SCAI_LOG_INFO( logger, "array = " << array )
 
-    ValueType val = 0;
+    ValueType val = Constants<ValueType>::zero;
 
     // array is already on MIC device
 
@@ -307,7 +310,7 @@ ValueType MICUtils::absMaxVal( const ValueType array[], const IndexType n )
 
         #pragma omp parallel
         {
-            ValueType threadVal = 0;
+            ValueType threadVal = Constants<ValueType>::zero;
 
             #pragma omp for
 
@@ -341,11 +344,11 @@ ValueType MICUtils::absMaxDiffVal( const ValueType array1[], const ValueType arr
 {
     SCAI_LOG_DEBUG( logger, "absMaxDiffVal<" << common::getScalarType<ValueType>() << ">: " << "array[" << n << "]" )
 
-    ValueType val = 0;
+    ValueType val = Constants<ValueType>::zero;
 
     #pragma omp parallel
     {
-        ValueType threadVal = 0;
+        ValueType threadVal = Constants<ValueType>::zero;
 
         #pragma omp for
 
@@ -555,13 +558,11 @@ void MICUtils::invert( ValueType array[], const IndexType n )
     {
         ValueType* array = static_cast<ValueType*>( array_ptr );
 
-        ValueType one = 1;
-
         #pragma omp parallel for
 
         for( IndexType i = 0; i < n; ++i )
         {
-            array[i] = one / array[i];
+            array[i] = Constants<ValueType>::one / array[i];
         }
     }
 }

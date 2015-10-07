@@ -41,6 +41,8 @@
 // internal scai libraries
 #include <scai/hmemo.hpp>
 
+#include <scai/common/Constants.hpp>
+
 // boost
 #include <boost/preprocessor.hpp>
 
@@ -51,6 +53,7 @@ namespace scai
 {
 
 using namespace hmemo;
+using common::Constants;
 
 namespace lama
 {
@@ -247,7 +250,7 @@ void SparseAssemblyStorage<ValueType>::check( const char* msg ) const
 template<typename ValueType>
 ValueType SparseAssemblyStorage<ValueType>::l1Norm() const
 {
-    ValueType val = static_cast<ValueType>( 0.0 );
+    ValueType val = Constants<ValueType>::zero;
 
     for( IndexType i = 0; i < mNumRows; ++i )
     {
@@ -265,7 +268,7 @@ ValueType SparseAssemblyStorage<ValueType>::l1Norm() const
 template<typename ValueType>
 ValueType SparseAssemblyStorage<ValueType>::l2Norm() const
 {
-    ValueType val = static_cast<ValueType>( 0.0 );
+    ValueType val = Constants<ValueType>::zero;
 	ValueType tmp;
     for( IndexType i = 0; i < mNumRows; ++i )
     {
@@ -287,7 +290,7 @@ ValueType SparseAssemblyStorage<ValueType>::maxNorm() const
 {
     // SparseAssemblyStorage not supported on GPUs
 
-    ValueType maxval = static_cast<ValueType>( 0.0 );
+    ValueType maxval = Constants<ValueType>::zero;
 
     for( IndexType i = 0; i < mNumRows; ++i )
     {
@@ -414,7 +417,7 @@ ValueType SparseAssemblyStorage<ValueType>::operator()( const IndexType i, const
         }
     }
 
-    return 0.0;
+    return Constants<ValueType>::zero;
 }
 
 /* --------------------------------------------------------------------------- */
@@ -567,7 +570,7 @@ void SparseAssemblyStorage<ValueType>::fixDiagonalProperty( const IndexType i )
         #pragma omp atomic
         ++mNumValues;
         mRows[i].ja.push_back( i );
-        mRows[i].values.push_back( 0.0 );
+        mRows[i].values.push_back( Constants<ValueType>::zero );
         return;
     }
 
@@ -596,7 +599,7 @@ void SparseAssemblyStorage<ValueType>::fixDiagonalProperty( const IndexType i )
         #pragma omp atomic
         ++mNumValues;
         wJA.push_back( i );
-        wValues.push_back( 0.0 );
+        wValues.push_back( Constants<ValueType>::zero );
         std::swap( wValues[0], wValues[wValues.size() - 1] );
         std::swap( wJA[0], wJA[wValues.size() - 1] );
     }
@@ -617,11 +620,9 @@ void SparseAssemblyStorage<ValueType>::setIdentity( const IndexType n )
 {
     allocate( n, n );
 
-    ValueType one = static_cast<ValueType>( 1.0 );
-
     for( IndexType i = 0; i < mNumRows; ++i )
     {
-        set( i, i, one );
+        set( i, i, Constants<ValueType>::one );
     }
 }
 
@@ -784,7 +785,7 @@ void SparseAssemblyStorage<ValueType>::getRowImpl( LAMAArray<OtherType>& row, co
 
     for( IndexType j = 0; j < mNumColumns; ++j )
     {
-        wRow[j] = 0.0;
+        wRow[j] = Constants<OtherType>::zero;
     }
 
     const std::vector<IndexType>& ja = mRows[i].ja;

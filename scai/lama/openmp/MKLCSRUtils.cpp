@@ -45,6 +45,7 @@
 #include <scai/common/Assert.hpp>
 #include <scai/common/Settings.hpp>
 #include <scai/common/macros/unused.hpp>
+#include <scai/common/Constants.hpp>
 
 #include <scai/tracing.hpp>
 
@@ -55,6 +56,7 @@ namespace scai
 {
 
 using tasking::SyncToken;
+using common::Constants;
 
 namespace lama
 {
@@ -88,7 +90,7 @@ void MKLCSRUtils::normalGEMV(
         COMMON_THROWEXCEPTION( "asynchronous execution should be done by LAMATask before" )
     }
 
-    if( y != result && beta != 0 )
+    if( y != result && beta != Constants<float>::zero )
     {
         OpenMPUtils::set( result, y, numRows );
     }
@@ -141,7 +143,7 @@ void MKLCSRUtils::normalGEMV(
         COMMON_THROWEXCEPTION( "asynchronous execution should be done by LAMATask before" )
     }
 
-    if( y != result && beta != 0 )
+    if( y != result && beta != Constants<double>::zero )
     {
         OpenMPUtils::set( result, y, numRows );
     }

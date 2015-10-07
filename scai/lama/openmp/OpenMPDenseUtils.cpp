@@ -39,11 +39,15 @@
 #include <scai/lama/LAMAInterfaceRegistry.hpp>
 #include <scai/lama/openmp/OpenMP.hpp>
 
+#include <scai/common/Constants.hpp>
+
 // boost
 #include <boost/preprocessor.hpp>
 
 namespace scai
 {
+
+using common::Constants;
 
 namespace lama
 {
@@ -185,7 +189,7 @@ void OpenMPDenseUtils::setCSRValues(
         {
             DenseValueType& elem = denseValues[denseindex( i, j, numRows, numColumns )];
 
-            elem = 0.0;
+            elem = Constants<DenseValueType>::zero;
         }
 
         // fill up positions for which non-zero values are given
@@ -291,9 +295,7 @@ void OpenMPDenseUtils::scaleValue(
     const IndexType numColumns,
     const DenseValueType val )
 {
-    const DenseValueType zero = static_cast<DenseValueType>( 0.0 );
-
-    if( val == zero )
+    if( val == Constants<DenseValueType>::zero )
     {
         // this solution can also deal with undefined data
 
@@ -303,7 +305,7 @@ void OpenMPDenseUtils::scaleValue(
             for( IndexType j = 0; j < numColumns; ++j )
             {
                 DenseValueType& elem = denseValues[denseindex( i, j, numRows, numColumns )];
-                elem = zero;
+                elem = Constants<DenseValueType>::zero;
             }
         }
     }

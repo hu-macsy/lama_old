@@ -41,6 +41,7 @@
 
 // internal scai libraries
 #include <scai/common/macros/unused.hpp>
+#include <scai/common/Constants.hpp>
 
 #include <scai/tracing.hpp>
 
@@ -52,6 +53,8 @@
 
 namespace scai
 {
+
+using common::Constants;
 
 namespace lama
 {
@@ -128,7 +131,7 @@ ValueType OpenMPBLAS1::nrm2( const IndexType n, const ValueType* x, const IndexT
 
     if( incX <= 0 )
     {
-        return 0.0;
+        return Constants<ValueType>::zero;
     }
 
     if( syncToken )
@@ -136,7 +139,7 @@ ValueType OpenMPBLAS1::nrm2( const IndexType n, const ValueType* x, const IndexT
         SCAI_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
 
-    ValueType sumOfSquares = 0.0;
+    ValueType sumOfSquares = Constants<ValueType>::zero;
 
 // OpenMP reduction clause cannot be used as it doesn't support complex numbers
 
@@ -477,7 +480,7 @@ ValueType OpenMPBLAS1::dot(
 
     if( ( incX <= 0 ) || ( incY <= 0 ) )
     {
-        return 0.0;
+        return Constants<ValueType>::zero;
     }
 
     if( syncToken )

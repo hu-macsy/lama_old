@@ -36,8 +36,12 @@
 #include <scai/lama/Vector.hpp>
 #include <scai/lama/expression/Expression.hpp>
 
+#include <scai/common/Constants.hpp>
+
 namespace scai
 {
+
+using common::Constants;
 
 namespace lama
 {
@@ -82,7 +86,7 @@ inline Expression_SV operator/( const Vector& vector, const Scalar& alpha )
 {
     // build 1.0/ alpha as new scalar for a symbolic expression Scalar * Vector
 
-    return Expression_SV( Scalar( 1 ) / alpha, vector );
+    return Expression_SV( Scalar( Constants<IndexType>::one ) / alpha, vector );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -99,7 +103,7 @@ inline Expression_SV operator/( const Vector& vector, const Scalar& alpha )
  */
 inline Expression_SV_SV operator+( const Vector& x, const Vector& y )
 {
-    return Expression_SV_SV( Expression_SV( Scalar( 1 ), x ), Expression_SV( Scalar( 1 ), y ) );
+    return Expression_SV_SV( Expression_SV( Scalar( Constants<IndexType>::one ), x ), Expression_SV( Scalar( Constants<IndexType>::one ), y ) );
 }
 
 /**
@@ -112,7 +116,7 @@ inline Expression_SV_SV operator+( const Vector& x, const Vector& y )
 
 inline Expression_SV_SV operator+( const Vector& vector, const Expression_SV& exp )
 {
-    return Expression_SV_SV( Expression_SV( Scalar( 1 ), vector ), exp );
+    return Expression_SV_SV( Expression_SV( Scalar( Constants<IndexType>::one ), vector ), exp );
 }
 
 /**
@@ -125,7 +129,7 @@ inline Expression_SV_SV operator+( const Vector& vector, const Expression_SV& ex
 
 inline Expression_SV_SV operator+( const Expression_SV& exp, const Vector& vector )
 {
-    return Expression_SV_SV( exp, Expression_SV( Scalar( 1 ), vector ) );
+    return Expression_SV_SV( exp, Expression_SV( Scalar( Constants<IndexType>::one ), vector ) );
 }
 
 /**
@@ -156,7 +160,7 @@ inline Expression_SV_SV operator+( const Expression_SV& exp1, const Expression_S
 
 inline Expression_SV_SV operator-( const Vector& x, const Vector& y )
 {
-    return Expression_SV_SV( Expression_SV( Scalar( 1 ), x ), Expression_SV( Scalar( -1 ), y ) );
+    return Expression_SV_SV( Expression_SV( Scalar( Constants<IndexType>::one ), x ), Expression_SV( Scalar( Constants<IndexType>::minusone ), y ) );
 }
 
 /**
@@ -170,7 +174,7 @@ inline Expression_SV_SV operator-( const Vector& x, const Vector& y )
 
 inline Expression_SV_SV operator-( const Expression_SV& exp, const Vector& vector )
 {
-    return Expression_SV_SV( exp, Expression_SV( -1.0, vector ) );
+    return Expression_SV_SV( exp, Expression_SV( Constants<double>::minusone, vector ) );
 }
 
 /**
@@ -185,7 +189,7 @@ inline Expression_SV_SV operator-( const Vector& vector, const Expression_SV& ex
 {
     Expression_SV minusExp( -exp.getArg1(), exp.getArg2() );
 
-    return Expression_SV_SV( Expression_SV( 1.0, vector ), minusExp );
+    return Expression_SV_SV( Expression_SV( Constants<double>::one, vector ), minusExp );
 }
 
 /**

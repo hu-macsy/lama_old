@@ -51,6 +51,7 @@
 #include <scai/common/bind.hpp>
 
 #include <scai/common/cuda/CUDAError.hpp>
+#include <scai/common/Constants.hpp>
 
 // thrust
 #include <thrust/device_ptr.h>
@@ -65,6 +66,7 @@ namespace scai
 {
 
 using common::getScalarType;
+using common::Constants;
 
 namespace lama
 {
@@ -289,7 +291,7 @@ namespace lama
 
         // set result = beta * y, not needed if beta == 1 and y == result
 
-        if ( static_cast<ValueType>( 1 ) == beta && result == y )
+        if ( beta == Constants<ValueType>::one && result == y )
         {
             SCAI_LOG_DEBUG( logger, "normalGEMV is sparse, no init of result needed" )
         }
@@ -320,7 +322,7 @@ namespace lama
         {
             vectorBindTexture( x );
 
-            if ( alpha == 1 )
+            if ( alpha == Constants<ValueType>::one )
             {
                 cooGemvKernel_alpha_one<ValueType, true><<< dimGrid, dimBlock>>>
                 ( result, x, numValues, cooIA, cooJA, cooValues );
@@ -333,7 +335,7 @@ namespace lama
         }
         else
         {
-            if ( alpha == 1 )
+            if ( alpha == Constants<ValueType>::one )
             {
                 cooGemvKernel_alpha_one<ValueType, false><<< dimGrid, dimBlock>>>
                 ( result, x, numValues, cooIA, cooJA, cooValues );
@@ -409,7 +411,7 @@ namespace lama
 
         // set result = beta * y, not needed if beta == 1 and y == result
 
-        if ( static_cast<ValueType>( 1 ) == beta && result == y )
+        if ( beta == Constants<ValueType>::one && result == y )
         {
             SCAI_LOG_DEBUG( logger, "normalGEVM is sparse, no init of result needed" )
         }
@@ -438,7 +440,7 @@ namespace lama
         {
             vectorBindTexture( x );
 
-            if ( alpha == 1 )
+            if ( alpha == Constants<ValueType>::one )
             {
                 cooGevmKernel_alpha_one<ValueType, true><<< dimGrid, dimBlock>>>
                 ( result, x, numValues, cooIA, cooJA, cooValues );
@@ -451,7 +453,7 @@ namespace lama
         }
         else
         {
-            if ( alpha == 1 )
+            if ( alpha == Constants<ValueType>::one )
             {
                 cooGevmKernel_alpha_one<ValueType, false><<< dimGrid, dimBlock>>>
                 ( result, x, numValues, cooIA, cooJA, cooValues );

@@ -48,6 +48,7 @@
 #include <scai/common/bind.hpp>
 #include <scai/common/Assert.hpp>
 #include <scai/common/macros/unused.hpp>
+#include <scai/common/Constants.hpp>
 
 // external
 
@@ -62,6 +63,8 @@ namespace scai
 using tasking::SyncToken;
 
 using namespace hmemo;
+
+using common::Constants;
 
 namespace lama
 {
@@ -291,11 +294,11 @@ ValueType MICELLUtils::absMaxVal(
     const IndexType ia[],
     const ValueType values[] )
 {
-    ValueType maxValue = static_cast<ValueType>( 0.0 );
+    ValueType maxValue = Constants<ValueType>::zero;
 
     #pragma omp parallel
     {
-        ValueType threadVal = static_cast<ValueType>( 0.0 );
+        ValueType threadVal = Constants<ValueType>::zero;
 
         #pragma omp for
 
@@ -365,7 +368,7 @@ void MICELLUtils::getRow(
 
         for( IndexType j = 0; j < numColumns; ++j )
         {
-            row[j] = 0.0;
+            row[j] = Constants<OtherValueType>::zero;
         }
 
         #pragma omp parallel for
@@ -390,7 +393,7 @@ OtherValueType MICELLUtils::getValue(
 {
     SCAI_LOG_TRACE( logger, "get value i = " << i << ", j = " << j )
 
-    OtherValueType value = 0;
+    OtherValueType value = Constants<OtherValueType>::zero;
 
     const void* ellSizesPtr = ellSizes;
     const void* ellJAPtr = ellJA;
@@ -405,7 +408,7 @@ OtherValueType MICELLUtils::getValue(
         const IndexType* ellJA = static_cast<const IndexType*>( ellJAPtr );
         const ValueType* ellValues = static_cast<const ValueType*>( ellValuesPtr );
 
-        value = 0; // new intialiation, has not been copied in
+        value = Constants<OtherValueType>::zero; // new intialiation, has not been copied in
 
         for( IndexType jj = 0; jj < ellSizes[i]; ++jj )
         {
@@ -583,7 +586,7 @@ void MICELLUtils::fillELLValues(
             {
                 IndexType pos = ellindex( i, jj, numRows );
                 ellJA[pos] = j; // last used column index
-                ellValues[pos] = 0.0; // zero entry
+                ellValues[pos] = Constants<ValueType>::zero; // zero entry
             }
         }
     }
@@ -935,7 +938,7 @@ void MICELLUtils::jacobi(
         const IndexType* ellJA = static_cast<const IndexType*>( ellJAPtr );
         const ValueType* ellValues = static_cast<const ValueType*>( ellValuesPtr );
 
-        const ValueType oneMinusOmega = static_cast<ValueType>( 1 ) - omega;
+        const ValueType oneMinusOmega = Constants<ValueType>::one - omega;
 
         #pragma omp parallel for
 
@@ -951,7 +954,7 @@ void MICELLUtils::jacobi(
                 temp -= ellValues[pos] * oldSolution[ellJA[pos]];
             }
 
-            if( omega == 1.0 )
+            if( omega == Constants<ValueType>::one )
             {
                 solution[i] = temp / diag;
             }
@@ -1027,7 +1030,7 @@ void MICELLUtils::jacobiHalo(
                 i = rowIndexes[ii];
             }
 
-            ValueType temp = 0.0;
+            ValueType temp = Constants<ValueType>::zero;
             IndexType pos = i; // index for ellValues
 
             for( IndexType jj = 0; jj < ellSizes[i]; jj++ )
@@ -1103,7 +1106,7 @@ void MICELLUtils::normalGEMV(
 
         for( IndexType i = 0; i < numRows; ++i )
         {
-            ValueType temp = 0;
+            ValueType temp = Constants<ValueType>::zero;
 
             for( IndexType jj = 0; jj < ellSizes[i]; ++jj )
             {
@@ -1117,7 +1120,7 @@ void MICELLUtils::normalGEMV(
 
                 result[i] = alpha * temp;
             }
-            else if( 1 == alpha )
+            else if( alpha == Constants<ValueType>::one )
             {
                 result[i] = temp + beta * y[i];
             }
@@ -1189,7 +1192,7 @@ void MICELLUtils::sparseGEMV(
                 IndexType i = rowIndexes[ii];
 
                 //result is not initialized for performance reasons
-                ValueType temp = 0.0;
+                ValueType temp = Constants<ValueType>::zero;
 
                 for( IndexType jj = 0; jj < ellSizes[i]; ++jj )
                 {
@@ -1198,7 +1201,7 @@ void MICELLUtils::sparseGEMV(
                     temp += ellValues[pos] * x[j];
                 }
 
-                if( 1 == alpha )
+                if( alpha == Constants<ValueType>::one )
                 {
                     result[i] += temp;
                 }

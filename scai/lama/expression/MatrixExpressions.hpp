@@ -37,10 +37,14 @@
 #include <scai/lama/Vector.hpp>
 #include <scai/lama/Scalar.hpp>
 
+#include <scai/common/Constants.hpp>
+
 #include <scai/lama/expression/Expression.hpp>
 
 namespace scai
 {
+
+using common::Constants;
 
 namespace lama
 {
@@ -60,7 +64,7 @@ namespace lama
  */
 inline Expression_SM_SM operator+( const Matrix& matrixA, const Matrix& matrixB )
 {
-    return Expression_SM_SM( Expression_SM( Scalar( 1 ), matrixA ), Expression_SM( Scalar( 1 ), matrixB ) );
+    return Expression_SM_SM( Expression_SM( Scalar( Constants<IndexType>::one ), matrixA ), Expression_SM( Scalar( Constants<IndexType>::one ), matrixB ) );
 }
 
 /**
@@ -72,7 +76,7 @@ inline Expression_SM_SM operator+( const Matrix& matrixA, const Matrix& matrixB 
  */
 inline Expression_SM_SM operator-( const Matrix& matrixA, const Matrix& matrixB )
 {
-    return Expression_SM_SM( Expression_SM( Scalar( 1 ), matrixA ), Expression_SM( Scalar( -1 ), matrixB ) );
+    return Expression_SM_SM( Expression_SM( Scalar( Constants<IndexType>::one ), matrixA ), Expression_SM( Scalar( Constants<IndexType>::minusone ), matrixB ) );
 }
 
 /* --------------------------------------------------------------- */
@@ -119,7 +123,7 @@ inline Expression_SM operator/( const Matrix& matrix, const Scalar& alpha )
 {
     // build 1.0/ alpha as new scalar for a symbolic expression Scalar * Matrix
 
-    return Expression_SM( Scalar( 1.0 ) / alpha, matrix );
+    return Expression_SM( Scalar( Constants<double>::one ) / alpha, matrix );
 }
 
 /* --------------------------------------------------------------- */
@@ -138,7 +142,7 @@ inline Expression_SM operator/( const Matrix& matrix, const Scalar& alpha )
  */
 inline Expression_SMM operator*( const Matrix& m1, const Matrix& m2 )
 {
-    return Expression_SMM( Expression_SM( Scalar( 1 ), m1 ), m2 );
+    return Expression_SMM( Expression_SM( Scalar( Constants<IndexType>::one ), m1 ), m2 );
 }
 
 /**
@@ -280,7 +284,7 @@ inline Expression_SMM_SM operator-( const Expression_SM& exp2, const Expression_
  */
 inline Expression_SMM_SM operator+( const Expression_SMM& exp, const Matrix& matrix )
 {
-    return Expression_SMM_SM( exp, Expression_SM( Scalar( 1 ), matrix ) );
+    return Expression_SMM_SM( exp, Expression_SM( Scalar( Constants<IndexType>::one ), matrix ) );
 }
 
 /**
@@ -292,7 +296,7 @@ inline Expression_SMM_SM operator+( const Expression_SMM& exp, const Matrix& mat
  */
 inline Expression_SMM_SM operator+( const Matrix& matrix, const Expression_SMM& exp )
 {
-    return Expression_SMM_SM( exp, Expression_SM( Scalar( 1 ), matrix ) );
+    return Expression_SMM_SM( exp, Expression_SM( Scalar( Constants<IndexType>::one ), matrix ) );
 }
 
 /**
@@ -304,7 +308,7 @@ inline Expression_SMM_SM operator+( const Matrix& matrix, const Expression_SMM& 
  */
 inline Expression_SMM_SM operator-( const Expression_SMM& exp, const Matrix& matrix )
 {
-    return Expression_SMM_SM( exp, Expression_SM( Scalar( -1 ), matrix ) );
+    return Expression_SMM_SM( exp, Expression_SM( Scalar( Constants<IndexType>::minusone ), matrix ) );
 }
 
 /**
@@ -322,7 +326,7 @@ inline Expression_SMM_SM operator-( const Matrix& matrix, const Expression_SMM& 
 
     Expression_SMM minusExp( Expression_SM( -expSM.getArg1(), expSM.getArg2() ), exp.getArg2() );
 
-    return Expression_SMM_SM( minusExp, Expression_SM( Scalar( 1 ), matrix ) );
+    return Expression_SMM_SM( minusExp, Expression_SM( Scalar( Constants<IndexType>::one ), matrix ) );
 }
 
 /* --------------------------------------------------------------- */
@@ -380,7 +384,7 @@ inline Expression_SM_SM operator-( const Expression_SM& exp1, const Expression_S
 
 inline Expression_SM_SM operator+( const Matrix& matrix, const Expression_SM& exp )
 {
-    return Expression_SM_SM( Expression_SM( Scalar( 1 ), matrix ), exp );
+    return Expression_SM_SM( Expression_SM( Scalar( Constants<IndexType>::one ), matrix ), exp );
 }
 
 /**
@@ -395,7 +399,7 @@ inline Expression_SM_SM operator+( const Matrix& matrix, const Expression_SM& ex
 inline Expression_SM_SM operator-( const Matrix& matrix, const Expression_SM& exp )
 {
     Expression_SM minusExp( -exp.getArg1(), exp.getArg2() );
-    return Expression_SM_SM( Expression_SM( Scalar( 1 ), matrix ), minusExp );
+    return Expression_SM_SM( Expression_SM( Scalar( Constants<IndexType>::one ), matrix ), minusExp );
 }
 
 /**
@@ -409,7 +413,7 @@ inline Expression_SM_SM operator-( const Matrix& matrix, const Expression_SM& ex
 
 inline Expression_SM_SM operator+( const Expression_SM& exp, const Matrix& matrix )
 {
-    return Expression_SM_SM( exp, Expression_SM( Scalar( 1 ), matrix ) );
+    return Expression_SM_SM( exp, Expression_SM( Scalar( Constants<IndexType>::one ), matrix ) );
 }
 
 /**
@@ -423,7 +427,7 @@ inline Expression_SM_SM operator+( const Expression_SM& exp, const Matrix& matri
 
 inline Expression_SM_SM operator-( const Expression_SM& exp, const Matrix& matrix )
 {
-    return Expression_SM_SM( exp, Expression_SM( Scalar( -1 ), matrix ) );
+    return Expression_SM_SM( exp, Expression_SM( Scalar( Constants<IndexType>::minusone ), matrix ) );
 }
 
 } /* end namespace lama */

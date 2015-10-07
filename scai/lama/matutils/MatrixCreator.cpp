@@ -38,6 +38,8 @@
 #include <scai/lama/distribution/BlockDistribution.hpp>
 #include <scai/lama/distribution/GeneralDistribution.hpp>
 
+#include <scai/common/Constants.hpp>
+
 // internal scai libraries
 #include <scai/hmemo/WriteAccess.hpp>
 
@@ -49,6 +51,8 @@
 
 namespace scai
 {
+
+using common::Constants;
 
 namespace lama
 {
@@ -231,7 +235,7 @@ static inline void getStencil(
     values.clear(); // reset
 
     positions.push_back( getMatrixPosition( idX, idY, idZ, dimX, dimY, dimZ ) );
-    values.push_back( stencilType - 1.0 );
+    values.push_back( stencilType - Constants<ValueType>::one );
 
     IndexType leftX = getNumNeighbors( idX, dimX, -length );
     IndexType rightX = getNumNeighbors( idX, dimX, length );
@@ -270,7 +274,7 @@ static inline void getStencil(
                 }
 
                 positions.push_back( getMatrixPosition( jx, jy, jz, dimX, dimY, dimZ ) );
-                values.push_back( -1.0 );
+                values.push_back( Constants<ValueType>::minusone );
             }
         }
     }
@@ -488,7 +492,8 @@ void MatrixCreator<ValueType>::buildPoisson1D(
 {
     SCAI_LOG_INFO( logger, "build Poisson1D" << stencilType << "P( " << dim << ")" )
 
-    buildPoisson( matrix, 1, stencilType, dim, 1, 1 );
+    buildPoisson( matrix, Constants<IndexType>::one, stencilType, dim, Constants<IndexType>::one,
+                  Constants<IndexType>::one );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -502,7 +507,7 @@ void MatrixCreator<ValueType>::buildPoisson2D(
 {
     SCAI_LOG_INFO( logger, "build Poisson2D" << stencilType << "P( " << dim1 << ", " << dim2 << ")" )
 
-    buildPoisson( matrix, 2, stencilType, dim1, dim2, 1 );
+    buildPoisson( matrix, 2, stencilType, dim1, dim2, Constants<IndexType>::one );
 }
 
 /* ------------------------------------------------------------------------- */

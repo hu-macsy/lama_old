@@ -39,12 +39,17 @@
 
 // internal scai libraries
 #include <scai/common/unique_ptr.hpp>
+#include <scai/common/Constants.hpp>
 
 // std
 #include <fstream>
 
+#define MASTER Constants<IndexType>::zero
+
 namespace scai
 {
+
+using common::Constants;
 
 namespace lama
 {
@@ -82,9 +87,9 @@ void GenBlockDistribution::setOffsets( const IndexType rank, const IndexType num
 {
     common::scoped_array<IndexType> localSizes( new IndexType[numPartitions] );
 
-    const PartitionId root = 0;
-    mCommunicator->gather( localSizes.get(), 1, root, &mySize );
-    mCommunicator->bcast( localSizes.get(), numPartitions, root );
+	// rank 0 is root
+    mCommunicator->gather( localSizes.get(), Constants<IndexType>::one, Constants<IndexType>::zero, &mySize );
+    mCommunicator->bcast( localSizes.get(), numPartitions, Constants<IndexType>::zero );
 
     SCAI_ASSERT_EQUAL_DEBUG( localSizes[rank], mySize )
 
@@ -155,7 +160,7 @@ GenBlockDistribution::GenBlockDistribution(
 
     std::vector<float> allWeights( size );
 
-    communicator->allgather( &allWeights[0], 1, &weight );
+    communicator->allgather( &allWeights[0], Constants<IndexType>::one, &weight );
 
     float totalWeight = 0;
 
@@ -172,7 +177,7 @@ GenBlockDistribution::GenBlockDistribution(
     SCAI_LOG_INFO( logger,
                    "GenBlockDistribution of " << getGlobalSize() << " elements" << ", total weight = " << totalWeight )
     mOffsets.reset( new IndexType[size] );
-    float sumWeight = 0.0;
+    float sumWeight = 0.0f;
 
     for( PartitionId p = 0; p < size; p++ )
     {
@@ -332,9 +337,9 @@ void GenBlockDistribution::printDistributionVector( std::string name ) const
     IndexType parts = mCommunicator->getSize();
     IndexType myLocalSize = getLocalSize();
     std::vector<IndexType> localSizes( parts );
-    mCommunicator->gather( &localSizes[0], 1, 0/*MASTER*/, &myLocalSize );
+    mCommunicator->gather( &localSizes[0], Constants<IndexType>::one, MASTER, &myLocalSize );
 
-    if( myRank == 0 ) // process 0 is MASTER process
+    if( myRank == MASTER ) // process 0 is MASTER process
     {
         std::ofstream file;
         file.open( ( name + ".part" ).c_str() );

@@ -46,6 +46,7 @@
 
 #include <scai/common/bind.hpp>
 #include <scai/common/unique_ptr.hpp>
+#include <scai/common/Constants.hpp>
 
 // boost
 #include <boost/preprocessor.hpp>
@@ -57,6 +58,7 @@ namespace scai
 {
 
 using common::shared_ptr;
+using common::Constants;
 
 namespace lama
 {
@@ -601,18 +603,15 @@ void JDSStorage<ValueType>::setIdentity( const IndexType size )
     SCAI_CONTEXT_ACCESS( loc )
 
     {
-        ValueType one = static_cast<ValueType>( 1.0 );
         LAMA_INTERFACE_FN_T( setVal, loc, Utils, Setter, ValueType )
-
-        setVal( wValues.get(), mNumRows, one );
+        setVal( wValues.get(), mNumRows, Constants<ValueType>::one );
     }
 
-    IndexType one = 1;
     LAMA_INTERFACE_FN_T( setVal, loc, Utils, Setter, IndexType )
     LAMA_INTERFACE_FN_T( setOrder, loc, Utils, Setter, IndexType )
 
     setVal( wDlg.get(), 1, mNumRows );
-    setVal( wIlg.get(), mNumRows, one );
+    setVal( wIlg.get(), mNumRows, Constants<IndexType>::one );
     setOrder( wPerm.get(), mNumRows );
     setOrder( wJa.get(), mNumRows );
 
@@ -1432,7 +1431,7 @@ ValueType JDSStorage<ValueType>::l1Norm() const
 
     if( n == 0 )
     {
-        return 0.0f;
+        return Constants<ValueType>::zero;
     }
 
 	ContextPtr loc = getContextPtr();
@@ -1443,7 +1442,7 @@ ValueType JDSStorage<ValueType>::l1Norm() const
 
 	SCAI_CONTEXT_ACCESS( loc )
 
-	return asum( n, data.get(), 1, NULL );
+	return asum( n, data.get(), Constants<IndexType>::one, NULL );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1457,7 +1456,7 @@ ValueType JDSStorage<ValueType>::l2Norm() const
 
     if( n == 0 )
     {
-        return 0.0f;
+        return Constants<ValueType>::zero;
     }
 
 	ContextPtr loc = getContextPtr();
@@ -1468,7 +1467,7 @@ ValueType JDSStorage<ValueType>::l2Norm() const
 
 	SCAI_CONTEXT_ACCESS( loc )
 
-	return ::sqrt(dot( n, data.get(), 1, data.get(), 1, NULL ));
+	return ::sqrt(dot( n, data.get(), Constants<int>::one, data.get(), Constants<int>::one, NULL ));
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -1482,7 +1481,7 @@ ValueType JDSStorage<ValueType>::maxNorm() const
 
     if( n == 0 )
     {
-        return 0.0f;
+        return Constants<ValueType>::zero;
     }
 
     ContextPtr loc = getContextPtr();

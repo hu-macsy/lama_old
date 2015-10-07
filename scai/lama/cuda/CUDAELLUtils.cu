@@ -50,6 +50,7 @@
 #include <scai/common/bind.hpp>
 #include <scai/common/macros/unused.hpp>
 #include <scai/common/cuda/CUDAError.hpp>
+#include <scai/common/Constants.hpp>
 
 // CUDA
 #include <cuda.h>
@@ -79,6 +80,7 @@ namespace scai
 {
 
 using common::getScalarType;
+using common::Constants;
 
 namespace lama
 {
@@ -178,8 +180,9 @@ namespace lama
         SCAI_CHECK_CUDA_ACCESS
 
         thrust::device_ptr<IndexType> sizes_ptr( const_cast<IndexType*>( sizes ) );
-        IndexType counter = thrust::transform_reduce( sizes_ptr, sizes_ptr + numRows, greaterThan<IndexType>( 0 ), 0,
-                        thrust::plus<IndexType>() );
+        IndexType counter = thrust::transform_reduce( sizes_ptr, sizes_ptr + numRows,
+                            greaterThan<IndexType>( Constants<IndexType>::zero ),
+                            Constants<IndexType>::zero, thrust::plus<IndexType>() );
         return counter;
     }
 
@@ -201,12 +204,12 @@ namespace lama
         // Create device ptr and help variables
         thrust::device_ptr<IndexType> rowIndexes_ptr( const_cast<IndexType*>( rowIndexes ) );
         thrust::device_ptr<IndexType> sizes_ptr( const_cast<IndexType*>( sizes ) );
-        thrust::counting_iterator<IndexType> sequence( 0 );
+        thrust::counting_iterator<IndexType> sequence( Constants<IndexType>::zero );
         thrust::device_vector<IndexType> tmp( numRows );
 
         // transform array
-        thrust::transform( sizes_ptr, sizes_ptr + numRows, sequence, tmp.begin(), notEqual<IndexType>( 0 ) );
-        thrust::copy_if( tmp.begin(), tmp.end(), rowIndexes_ptr, greaterThanEqual<IndexType>( 0 ) );
+        thrust::transform( sizes_ptr, sizes_ptr + numRows, sequence, tmp.begin(), notEqual<IndexType>( Constants<IndexType>::zero ) );
+        thrust::copy_if( tmp.begin(), tmp.end(), rowIndexes_ptr, greaterThanEqual<IndexType>( Constants<IndexType>::zero ) );
     }
 
     /* ------------------------------------------------------------------------------------------------------------------ */
@@ -220,7 +223,7 @@ namespace lama
         SCAI_CHECK_CUDA_ACCESS
 
         thrust::device_ptr<IndexType> ellJA_ptr( const_cast<IndexType*>( ellJA ) );
-        thrust::counting_iterator<IndexType> sequence( 0 );
+        thrust::counting_iterator<IndexType> sequence( Constants<IndexType>::zero );
 
         if ( numDiagonals > 0 )
         {
@@ -346,7 +349,7 @@ namespace lama
         SCAI_CHECK_CUDA_ACCESS
 
         thrust::device_ptr<OtherValueType> rowPtr( const_cast<OtherValueType*>( row ) );
-        thrust::fill( rowPtr, rowPtr + numColumns, 0.0 );
+        thrust::fill( rowPtr, rowPtr + numColumns, Constants<ValueType>::zero );
 
         thrust::device_ptr<IndexType> iaPtr( const_cast<IndexType*>( ia ) );
         thrust::host_vector<IndexType> rowNumColumns( iaPtr + i, iaPtr + i + 1 );
@@ -411,7 +414,7 @@ namespace lama
         if ( rowNumColumns > 0 )
         {
             thrust::device_ptr<ValueType> resultPtr = thrust::device_malloc < ValueType > ( rowNumColumns );
-            thrust::fill( resultPtr, resultPtr + rowNumColumns, 0.0 );
+            thrust::fill( resultPtr, resultPtr + rowNumColumns, Constants<ValueType>::zero );
 
             ValueType *resultRawPtr = thrust::raw_pointer_cast( resultPtr );
 
@@ -426,7 +429,7 @@ namespace lama
 
             return thrust::reduce( resultPtr, resultPtr + rowNumColumns );
         }
-        return 0.0;
+        return Constants<OtherValueType>::zero;
     }
 
     /* ------------------------------------------------------------------------------------------------------------------ */
@@ -930,7 +933,7 @@ namespace lama
         {
             vectorBindTexture( x );
 
-            if( alpha == 1 && beta == 1 )
+            if( alpha == Constants<ValueType>::one && beta == Constants<ValueType>::one )
             {
                 SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gemv_kernel_alpha_one_beta_one<ValueType, true>, cudaFuncCachePreferL1 ),
                                 "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
@@ -938,7 +941,7 @@ namespace lama
                 normal_gemv_kernel_alpha_one_beta_one<ValueType, true> <<<dimGrid, dimBlock, 0, stream>>> (
                                 result, x, y, ellValues, ellJA, numRows, ellIA );
             }
-            else if ( alpha == 1 && beta == 0 )
+            else if ( alpha == Constants<ValueType>::one && beta == Constants<ValueType>::zero )
             {
                 SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gemv_kernel_alpha_one_beta_zero<ValueType, true>, cudaFuncCachePreferL1 ),
                                 "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
@@ -946,14 +949,14 @@ namespace lama
                 normal_gemv_kernel_alpha_one_beta_zero<ValueType, true> <<<dimGrid, dimBlock, 0, stream>>> (
                                 result, x, y, ellValues, ellJA, numRows, ellIA );
             }
-            else if ( alpha == 0 && beta == 1 )
+            else if ( alpha == Constants<ValueType>::zero && beta == Constants<ValueType>::one )
             {
                 SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( assign_kernel<ValueType, true>, cudaFuncCachePreferL1 ),
                                 "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
 
                 assign_kernel<ValueType, true> <<<dimGrid, dimBlock, 0, stream>>> (result, y, numRows);
             }
-            else if ( alpha == 1 )
+            else if ( alpha == Constants<ValueType>::one )
             {
                 SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gemv_kernel_alpha_one<ValueType, true>, cudaFuncCachePreferL1 ),
                                 "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
@@ -961,14 +964,14 @@ namespace lama
                 normal_gemv_kernel_alpha_one<ValueType, true> <<<dimGrid, dimBlock, 0, stream>>> (
                                 result, x, y, beta, ellValues, ellJA, numRows, ellIA );
             }
-            else if ( alpha == 0 )
+            else if ( alpha == Constants<ValueType>::zero )
             {
                 SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( scale_kernel<ValueType, true>, cudaFuncCachePreferL1 ),
                                 "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
 
                 scale_kernel<ValueType, true> <<<dimGrid, dimBlock, 0, stream>>> ( result, y, beta, numRows );
             }
-            else if ( beta == 1 )
+            else if ( beta == Constants<ValueType>::one )
             {
                 SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gemv_kernel_beta_one<ValueType, true>, cudaFuncCachePreferL1 ),
                                 "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
@@ -976,7 +979,7 @@ namespace lama
                 normal_gemv_kernel_beta_one<ValueType, true> <<<dimGrid, dimBlock, 0, stream>>> (
                                 result, x, y, alpha, ellValues, ellJA, numRows, ellIA );
             }
-            else if ( beta == 0 )
+            else if ( beta == Constants<ValueType>::zero )
             {
                 SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gemv_kernel_beta_zero<ValueType, true>, cudaFuncCachePreferL1 ),
                                 "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
@@ -995,7 +998,7 @@ namespace lama
         }
         else
         {
-            if( alpha == 1 && beta == 1 )
+            if( alpha == Constants<ValueType>::one && beta == Constants<ValueType>::one )
             {
                 SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gemv_kernel_alpha_one_beta_one<ValueType, false>, cudaFuncCachePreferL1 ),
                                 "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
@@ -1003,7 +1006,7 @@ namespace lama
                 normal_gemv_kernel_alpha_one_beta_one<ValueType, false> <<<dimGrid, dimBlock, 0, stream>>> (
                                 result, x, y, ellValues, ellJA, numRows, ellIA );
             }
-            else if ( alpha == 1 && beta == 0 )
+            else if ( alpha == Constants<ValueType>::one && beta == Constants<ValueType>::zero )
             {
                 SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gemv_kernel_alpha_one_beta_zero<ValueType, false>, cudaFuncCachePreferL1 ),
                                 "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
@@ -1011,14 +1014,14 @@ namespace lama
                 normal_gemv_kernel_alpha_one_beta_zero<ValueType, false> <<<dimGrid, dimBlock, 0, stream>>> (
                                 result, x, y, ellValues, ellJA, numRows, ellIA );
             }
-            else if ( alpha == 0 && beta == 1 )
+            else if ( alpha == Constants<ValueType>::zero && beta == Constants<ValueType>::one )
             {
                 SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( assign_kernel<ValueType, false>, cudaFuncCachePreferL1 ),
                                 "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
 
                 assign_kernel<ValueType, false> <<<dimGrid, dimBlock, 0, stream>>> (result, y, numRows );
             }
-            else if ( alpha == 1 )
+            else if ( alpha == Constants<ValueType>::one )
             {
                 SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gemv_kernel_alpha_one<ValueType, false>, cudaFuncCachePreferL1 ),
                                 "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
@@ -1026,14 +1029,14 @@ namespace lama
                 normal_gemv_kernel_alpha_one<ValueType, false> <<<dimGrid, dimBlock, 0, stream>>> (
                                 result, x, y, beta, ellValues, ellJA, numRows, ellIA );
             }
-            else if ( alpha == 0 )
+            else if ( alpha == Constants<ValueType>::zero )
             {
                 SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( scale_kernel<ValueType, false>, cudaFuncCachePreferL1 ),
                                 "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
 
                 scale_kernel<ValueType, false> <<<dimGrid, dimBlock, 0, stream>>> (result, y, beta, numRows );
             }
-            else if ( beta == 1 )
+            else if ( beta == Constants<ValueType>::one )
             {
                 SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gemv_kernel_beta_one<ValueType, false>, cudaFuncCachePreferL1 ),
                                 "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
@@ -1041,7 +1044,7 @@ namespace lama
                 normal_gemv_kernel_beta_one<ValueType, false> <<<dimGrid, dimBlock, 0, stream>>> (
                                 result, x, y, alpha, ellValues, ellJA, numRows, ellIA );
             }
-            else if ( beta == 0 )
+            else if ( beta == Constants<ValueType>::zero )
             {
                 SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gemv_kernel_beta_zero<ValueType, false>, cudaFuncCachePreferL1 ),
                                 "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
@@ -1416,7 +1419,7 @@ namespace lama
         {
             vectorBindTexture( x );
 
-            if( alpha == 1 && beta == 1 )
+            if( alpha == Constants<ValueType>::one && beta == Constants<ValueType>::one )
             {
                 SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gevm_kernel_alpha_one_beta_one<ValueType, true>, cudaFuncCachePreferL1 ),
                                 "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
@@ -1424,7 +1427,7 @@ namespace lama
                 normal_gevm_kernel_alpha_one_beta_one<ValueType, true> <<<dimGrid, dimBlock, 0, stream>>> (
                                 result, x, y, ellValues, ellJA, numRows, numColumns, ellSizes );
             }
-            else if ( alpha == 1 && beta == 0 )
+            else if ( alpha == Constants<ValueType>::one && beta == Constants<ValueType>::zero )
             {
                 SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gevm_kernel_alpha_one_beta_zero<ValueType, true>, cudaFuncCachePreferL1 ),
                                 "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
@@ -1432,7 +1435,7 @@ namespace lama
                 normal_gevm_kernel_alpha_one_beta_zero<ValueType, true> <<<dimGrid, dimBlock, 0, stream>>> (
                                 result, x, y, ellValues, ellJA, numRows, numColumns, ellSizes );
             }
-            else if ( alpha == 0 && beta == 1 )
+            else if ( alpha == Constants<ValueType>::zero && beta == Constants<ValueType>::one )
             {
                 SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gevm_kernel_alpha_zero_beta_one<ValueType, true>, cudaFuncCachePreferL1 ),
                                 "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
@@ -1440,7 +1443,7 @@ namespace lama
                 normal_gevm_kernel_alpha_zero_beta_one<ValueType, true> <<<dimGrid, dimBlock, 0, stream>>> (
                                 result, x, y, ellValues, ellJA, numRows, numColumns, ellSizes );
             }
-            else if ( alpha == 1 )
+            else if ( alpha == Constants<ValueType>::one )
             {
                 SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gevm_kernel_alpha_one<ValueType, true>, cudaFuncCachePreferL1 ),
                                 "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
@@ -1448,7 +1451,7 @@ namespace lama
                 normal_gevm_kernel_alpha_one<ValueType, true> <<<dimGrid, dimBlock, 0, stream>>> (
                                 result, x, y, beta, ellValues, ellJA, numRows, numColumns, ellSizes );
             }
-            else if ( alpha == 0 )
+            else if ( alpha == Constants<ValueType>::zero )
             {
                 SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gevm_kernel_alpha_zero<ValueType, true>, cudaFuncCachePreferL1 ),
                                 "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
@@ -1456,7 +1459,7 @@ namespace lama
                 normal_gevm_kernel_alpha_zero<ValueType, true> <<<dimGrid, dimBlock, 0, stream>>> (
                                 result, x, y, beta, ellValues, ellJA, numRows, numColumns, ellSizes );
             }
-            else if ( beta == 1 )
+            else if ( beta == Constants<ValueType>::one )
             {
                 SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gevm_kernel_beta_one<ValueType, true>, cudaFuncCachePreferL1 ),
                                 "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
@@ -1464,7 +1467,7 @@ namespace lama
                 normal_gevm_kernel_beta_one<ValueType, true> <<<dimGrid, dimBlock, 0, stream>>> (
                                 result, x, y, alpha, ellValues, ellJA, numRows, numColumns, ellSizes );
             }
-            else if ( beta == 0 )
+            else if ( beta == Constants<ValueType>::zero )
             {
                 SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gevm_kernel_beta_zero<ValueType, true>, cudaFuncCachePreferL1 ),
                                 "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
@@ -1483,7 +1486,7 @@ namespace lama
         }
         else
         {
-            if( alpha == 1 && beta == 1 )
+            if( alpha == Constants<ValueType>::one && beta == Constants<ValueType>::one )
             {
                 SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gevm_kernel_alpha_one_beta_one<ValueType, false>, cudaFuncCachePreferL1 ),
                                 "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
@@ -1491,7 +1494,7 @@ namespace lama
                 normal_gevm_kernel_alpha_one_beta_one<ValueType, false> <<<dimGrid, dimBlock, 0, stream>>> (
                                 result, x, y, ellValues, ellJA, numRows, numColumns, ellSizes );
             }
-            else if ( alpha == 1 && beta == 0 )
+            else if ( alpha == Constants<ValueType>::one && beta == Constants<ValueType>::zero )
             {
                 SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gevm_kernel_alpha_one_beta_zero<ValueType, false>, cudaFuncCachePreferL1 ),
                                 "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
@@ -1499,7 +1502,7 @@ namespace lama
                 normal_gevm_kernel_alpha_one_beta_zero<ValueType, false> <<<dimGrid, dimBlock, 0, stream>>> (
                                 result, x, y, ellValues, ellJA, numRows, numColumns, ellSizes );
             }
-            else if ( alpha == 0 && beta == 1 )
+            else if ( alpha == Constants<ValueType>::zero && beta == Constants<ValueType>::one )
             {
                 SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gevm_kernel_alpha_zero_beta_one<ValueType, false>, cudaFuncCachePreferL1 ),
                                 "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
@@ -1507,7 +1510,7 @@ namespace lama
                 normal_gevm_kernel_alpha_zero_beta_one<ValueType, false> <<<dimGrid, dimBlock, 0, stream>>> (
                                 result, x, y, ellValues, ellJA, numRows, numColumns, ellSizes );
             }
-            else if ( alpha == 1 )
+            else if ( alpha == Constants<ValueType>::one )
             {
                 SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gevm_kernel_alpha_one<ValueType, false>, cudaFuncCachePreferL1 ),
                                 "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
@@ -1515,7 +1518,7 @@ namespace lama
                 normal_gevm_kernel_alpha_one<ValueType, false> <<<dimGrid, dimBlock, 0, stream>>> (
                                 result, x, y, beta, ellValues, ellJA, numRows, numColumns, ellSizes );
             }
-            else if ( alpha == 0 )
+            else if ( alpha == Constants<ValueType>::zero )
             {
                 SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gevm_kernel_alpha_zero<ValueType, false>, cudaFuncCachePreferL1 ),
                                 "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
@@ -1523,7 +1526,7 @@ namespace lama
                 normal_gevm_kernel_alpha_zero<ValueType, false> <<<dimGrid, dimBlock, 0, stream>>> (
                                 result, x, y, beta, ellValues, ellJA, numRows, numColumns, ellSizes );
             }
-            else if ( beta == 1 )
+            else if ( beta == Constants<ValueType>::one )
             {
                 SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gevm_kernel_beta_one<ValueType, false>, cudaFuncCachePreferL1 ),
                                 "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
@@ -1531,7 +1534,7 @@ namespace lama
                 normal_gevm_kernel_beta_one<ValueType, false> <<<dimGrid, dimBlock, 0, stream>>> (
                                 result, x, y, alpha, ellValues, ellJA, numRows, numColumns, ellSizes );
             }
-            else if ( beta == 0 )
+            else if ( beta == Constants<ValueType>::zero )
             {
                 SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gevm_kernel_beta_zero<ValueType, false>, cudaFuncCachePreferL1 ),
                                 "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
@@ -1707,7 +1710,7 @@ namespace lama
 
         if ( useTexture )
         {
-            if ( alpha == 1 )
+            if ( alpha == Constants<ValueType>::one )
             {
                 SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( sparse_gemv_kernel_alpha_one<ValueType, true>, cudaFuncCachePreferL1),
                                 "cudaFuncSetCacheConfig failed" )
@@ -1726,7 +1729,7 @@ namespace lama
         }
         else
         {
-            if ( alpha == 1 )
+            if ( alpha == Constants<ValueType>::one )
             {
                 SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( sparse_gemv_kernel_alpha_one<ValueType, false>, cudaFuncCachePreferL1),
                                 "cudaFuncSetCacheConfig failed" )
@@ -1898,7 +1901,7 @@ namespace lama
 
         if ( useTexture )
         {
-            if( alpha == 1 )
+            if( alpha == Constants<ValueType>::one )
             {
                 sparse_gevm_kernel_alpha_one<ValueType, true> <<< dimGrid, dimBlock, 0, stream >>>
                 ( result, x, ellValues, ellSizes, ellJA, rowIndexes, numNonZeroRows, numRows, numColumns );
@@ -1911,7 +1914,7 @@ namespace lama
         }
         else
         {
-            if( alpha == 1 )
+            if( alpha == Constants<ValueType>::one )
             {
                 sparse_gevm_kernel_alpha_one<ValueType, false> <<< dimGrid, dimBlock, 0, stream >>>
                 ( result, x, ellValues, ellSizes, ellJA, rowIndexes, numNonZeroRows, numRows, numColumns );

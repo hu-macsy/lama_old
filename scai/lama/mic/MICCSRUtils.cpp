@@ -45,6 +45,7 @@
 
 #include <scai/common/Assert.hpp>
 #include <scai/common/bind.hpp>
+#include <scai/common/Constants.hpp>
 
 // extern
 #include <omp.h>
@@ -56,6 +57,8 @@ using tasking::SyncToken;
 using tasking::MICSyncToken;
 
 using hmemo::MICContext;
+
+using common::Constants;
 
 namespace lama
 {
@@ -610,7 +613,7 @@ void MICCSRUtils::normalGEMV(
 
             for( IndexType i = 0; i < numRows; ++i )
             {
-                ValueType temp = 0.0;
+                ValueType temp = Constants<ValueType>::zero;
 
                 for( IndexType jj = csrIA[i]; jj < csrIA[i + 1]; ++jj )
                 {
@@ -618,7 +621,7 @@ void MICCSRUtils::normalGEMV(
                     temp += csrValues[jj] * x[j];
                 }
 
-                if( 0 == beta )
+                if( beta == Constants<ValueType>::zero )
                 {
                     result[i] = alpha * temp;
                 }
@@ -682,7 +685,7 @@ void MICCSRUtils::sparseGEMV(
 
             for( IndexType ii = 0; ii < numNonZeroRows; ++ii )
             {
-                ValueType temp = 0.0;
+                ValueType temp = Constants<ValueType>::zero;
                 IndexType i = rowIndexes[ii];
 
                 for( IndexType jj = csrIA[i]; jj < csrIA[i + 1]; ++jj )
@@ -753,7 +756,7 @@ void MICCSRUtils::gemm(
         {
             for( IndexType k = 0; k < n; ++k )
             {
-                ValueType temp = 0.0;
+                ValueType temp = Constants<ValueType>::zero;
 
                 for( IndexType jj = csrIA[i]; jj < csrIA[i + 1]; ++jj )
                 {
@@ -817,7 +820,7 @@ void MICCSRUtils::jacobi(
         const IndexType* csrJA = (IndexType*) csrJAPtr;
         const ValueType* csrValues = (ValueType*) csrValuesPtr;
 
-        const ValueType oneMinusOmega = static_cast<ValueType>( 1 ) - omega;
+        const ValueType oneMinusOmega = Constants<ValueType>::one - omega;
 
         #pragma omp parallel
         {
@@ -835,7 +838,7 @@ void MICCSRUtils::jacobi(
 
                 // here we take advantange of a good branch precondiction
 
-                if( omega == 1.0 )
+                if( omega == Constants<ValueType>::one )
                 {
                     solution[i] = temp / diag;
                 }
@@ -907,7 +910,7 @@ void MICCSRUtils::jacobiHalo(
                 i = haloRowIndexes[ii];
             }
 
-            ValueType temp = 0.0;
+            ValueType temp = Constants<ValueType>::zero;
 
             const ValueType diag = localValues[localIA[i]];
 
@@ -916,7 +919,7 @@ void MICCSRUtils::jacobiHalo(
                 temp += haloValues[j] * oldSolution[haloJA[j]];
             }
 
-            if( omega == 1.0 )
+            if( omega == Constants<ValueType>::one )
             {
                 solution[i] -= temp / diag;
             }
@@ -969,7 +972,7 @@ void MICCSRUtils::jacobiHaloWithDiag(
         const ValueType* haloValues = (ValueType*) haloValuesPtr;
         const IndexType* haloRowIndexes = (IndexType*) haloRowIndexesPtr;
 
-        const ValueType oneMinusOmega = static_cast<ValueType>( 1 ) - omega;
+        const ValueType oneMinusOmega = Constants<ValueType>::one - omega;
 
         #pragma omp parallel
         {
@@ -984,7 +987,7 @@ void MICCSRUtils::jacobiHaloWithDiag(
                     i = haloRowIndexes[ii];
                 }
 
-                ValueType temp = 0.0;
+                ValueType temp = Constants<ValueType>::zero;
 
                 const ValueType diag = localDiagValues[i];
 
@@ -993,7 +996,7 @@ void MICCSRUtils::jacobiHaloWithDiag(
                     temp += haloValues[j] * oldSolution[haloJA[j]];
                 }
 
-                if( omega == 1.0 )
+                if( omega == Constants<ValueType>::one )
                 {
                     solution[i] -= temp / diag;
                 }
@@ -1353,7 +1356,7 @@ void MICCSRUtils::matrixAdd(
             for( IndexType j = 0; j < numColumns; j++ )
             {
                 indexList[j] = NINIT;
-                valueList[j] = 0.0;
+                valueList[j] = Constants<ValueType>::zero;
             }
 
             #pragma omp for
@@ -1413,7 +1416,7 @@ void MICCSRUtils::matrixAdd(
                 {
                     // first element is reserved for diagonal element
                     cJA[offset] = i;
-                    cValues[offset] = 0.0;
+                    cValues[offset] = Constants<ValueType>::zero;
                     ++offset;
                 }
 
@@ -1425,7 +1428,7 @@ void MICCSRUtils::matrixAdd(
                     ValueType val = valueList[firstCol];
 
                     indexList[firstCol] = NINIT;
-                    valueList[firstCol] = 0.0; // reset for next time
+                    valueList[firstCol] = Constants<ValueType>::zero; // reset for next time
 
                     if( diagonalProperty && firstCol == i )
                     {
@@ -1596,7 +1599,7 @@ void MICCSRUtils::matrixMultiply(
             for( IndexType jj = cIA[i]; jj < cIA[i + 1]; ++jj )
             {
                 IndexType j = cJA[jj];
-                cValues[jj] = 0.0;
+                cValues[jj] = Constants<ValueType>::zero;
 
                 if( j == -1 )
                 {
@@ -1605,7 +1608,7 @@ void MICCSRUtils::matrixMultiply(
 
                 for( IndexType kk = aIA[i]; kk < aIA[i + 1]; ++kk )
                 {
-                    ValueType b_kj = 0.0;
+                    ValueType b_kj = Constants<ValueType>::zero;
 
                     IndexType k = aJA[kk];
 
@@ -1681,7 +1684,7 @@ ValueType MICCSRUtils::absMaxDiffRowUnsorted(
 {
     // No assumption about any sorting in a row
 
-    ValueType val = static_cast<ValueType>( 0.0 );
+    ValueType val = Constants<ValueType>::zero;
 
     IndexType helpIndex = 0; // some kind of thread-safe global value for findCol
 
@@ -1743,14 +1746,14 @@ ValueType MICCSRUtils::absMaxDiffRowSorted(
 {
     // Note: the implementation assumes that rows are sorted according to column indexes
 
-    ValueType val = static_cast<ValueType>( 0.0 );
+    ValueType val = Constants<ValueType>::zero;
 
     IndexType i2 = 0;
     IndexType i1 = 0;
 
     while( i1 < n1 || i2 < n2 )
     {
-        ValueType diff = 0;
+        ValueType diff = Constants<ValueType>::zero;
 
         if( i1 >= n1 ) // row of matrix1 completely traversed
         {
@@ -1878,7 +1881,7 @@ ValueType MICCSRUtils::absMaxDiffVal(
                 IndexType n1 = csrIA1[i + 1] - offs1;
                 IndexType n2 = csrIA2[i + 1] - offs2;
 
-                ValueType maxRow = 0;
+                ValueType maxRow = Constants<ValueType>::zero;
 
                 maxRow = absMaxDiffRow( n1, &csrJA1[offs1], &csrValues1[offs1], n2, &csrJA2[offs2],
                                         &csrValues2[offs2] );

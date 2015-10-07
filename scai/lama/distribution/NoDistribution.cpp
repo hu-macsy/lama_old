@@ -37,11 +37,17 @@
 // local library
 #include <scai/lama/matrix/Matrix.hpp>
 
+#include <scai/common/Constants.hpp>
+
 // std
 #include <fstream>
 
+#define MASTER Constants<IndexType>::zero
+
 namespace scai
 {
+
+using common::Constants;
 
 namespace lama
 {
@@ -91,7 +97,7 @@ void NoDistribution::writeAt( std::ostream& stream ) const
 
 void NoDistribution::printDistributionVector( std::string name ) const
 {
-    if( mCommunicator->getRank() == 0 ) // process 0 ist MASTER process
+    if( mCommunicator->getRank() == MASTER ) // process 0 ist MASTER process
     {
         std::ofstream file;
         file.open( ( name + ".part" ).c_str() );

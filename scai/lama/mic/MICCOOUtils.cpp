@@ -49,6 +49,7 @@
 #include <scai/tracing.hpp>
 
 #include <scai/common/Assert.hpp>
+#include <scai/common/Constants.hpp>
 
 // std
 #include <cmath>
@@ -58,6 +59,7 @@ namespace scai
 
 using tasking::SyncToken;
 using tasking::MICSyncToken;
+using common::Constants;
 
 namespace lama
 {
@@ -402,13 +404,11 @@ void MICCOOUtils::jacobi(
         const IndexType* cooJA = static_cast<const IndexType*>( cooJAPtr );
         const ValueType* cooValues = static_cast<const ValueType*>( cooValuesPtr );
 
-        const ValueType oneMinusOmega = static_cast<ValueType>( 1.0 ) - omega;
-
         #pragma omp parallel for
 
         for( IndexType i = 0; i < numRows; ++i )
         {
-            solution[i] = omega * rhs[i] / cooValues[i] + oneMinusOmega * oldSolution[i];
+            solution[i] = omega * rhs[i] / cooValues[i] + ( Constants<ValueType>::one - omega ) * oldSolution[i];
         }
 
         #pragma omp parallel for

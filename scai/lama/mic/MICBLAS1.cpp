@@ -46,6 +46,7 @@
 #include <scai/tracing.hpp>
 
 #include <scai/common/SCAITypes.hpp>
+#include <scai/common/Constants.hpp>
 
 // external
 #include <omp.h>
@@ -58,6 +59,7 @@ namespace scai
 {
 
 using namespace hmemo;
+using common::Constants;
 
 namespace lama
 {
@@ -119,7 +121,7 @@ ValueType MICBLAS1::asum( const IndexType n, const ValueType* x, const IndexType
         SCAI_LOG_WARN( logger, "no asynchronous execution for mic possible at this level." )
     }
 
-    ValueType asum = 0;
+    ValueType asum = Constants<ValueType>::zero;
 
     if( n < 1 || incX < 1 )
     {
@@ -134,7 +136,7 @@ ValueType MICBLAS1::asum( const IndexType n, const ValueType* x, const IndexType
     {
         const ValueType* x = static_cast<const ValueType*>( xPtr );
 
-        asum = 0;
+        asum = Constants<ValueType>::zero;
 
         #pragma omp parallel for reduction( + : asum )
 
@@ -275,7 +277,7 @@ ValueType MICBLAS1::nrm2( const IndexType n, const ValueType* x, const IndexType
 
     const void* xPtr = x;
 
-    ValueType sum = 0;
+    ValueType sum = Constants<ValueType>::zero;
 
     if( n < 1 || incX < 1 )
     {
@@ -288,7 +290,7 @@ ValueType MICBLAS1::nrm2( const IndexType n, const ValueType* x, const IndexType
     {
         const ValueType* x = static_cast<const ValueType*>( xPtr );
 
-        sum = 0;
+        sum = Constants<ValueType>::zero;
 
         #pragma omp parallel for reduction( + : sum )
 
@@ -419,7 +421,7 @@ ValueType MICBLAS1::dot(
         COMMON_THROWEXCEPTION( "no asynchronous execution for MIC possible at this level." )
     }
 
-    ValueType val = 0;
+    ValueType val = Constants<ValueType>::zero;
 
     if ( n < 1 || incX < 1 || incY < 1 )
     {
@@ -436,7 +438,7 @@ ValueType MICBLAS1::dot(
         const ValueType* x = static_cast<const ValueType*>( xPtr );
         const ValueType* y = static_cast<const ValueType*>( yPtr );
 
-        val = 0;
+        val = Constants<ValueType>::zero;
 
         #pragma omp parallel for reduction( +:val )
 

@@ -50,6 +50,7 @@
 #include <scai/common/bind.hpp>
 #include <scai/common/Assert.hpp>
 #include <scai/common/cuda/CUDAError.hpp>
+#include <scai/common/Constants.hpp>
 
 // thrust
 #include <thrust/device_ptr.h>
@@ -75,6 +76,7 @@ namespace scai
 {
 
 using common::getScalarType;
+using common::Constants;
 
 namespace lama
 {
@@ -166,15 +168,15 @@ namespace lama
         thrust::device_ptr<OtherValueType> rowPtr( row );
         thrust::device_ptr<IndexType> permPtr( const_cast<IndexType*>( perm ) );
 
-        thrust::fill( rowPtr, rowPtr + numColumns, static_cast<OtherValueType>( 0 ) );
+        thrust::fill( rowPtr, rowPtr + numColumns, Constants<OtherValueType>::zero );
 
-        thrust::counting_iterator<IndexType> sequence( 0 );
+        thrust::counting_iterator<IndexType> sequence( Constants<IndexType>::zero );
 
         // correct index with permutation array
         IndexType ii = thrust::transform_reduce(
                         thrust::make_zip_iterator( thrust::make_tuple( permPtr, sequence ) ),
                         thrust::make_zip_iterator( thrust::make_tuple( permPtr + numRows, sequence + numRows ) ),
-                        identity<IndexType>( i ), 0, thrust::plus<IndexType>() );
+                        identity<IndexType>( i ), Constants<IndexType>::zero, thrust::plus<IndexType>() );
 
         const int blockSize = CUDASettings::getBlockSize();
 
@@ -486,7 +488,7 @@ namespace lama
 
         thrust::device_ptr<IndexType> ilgPtr( const_cast<IndexType*>( ilg ) );
 
-        IndexType sumIlg = thrust::reduce( ilgPtr, ilgPtr + numRows, 0, thrust::plus<IndexType>() );
+        IndexType sumIlg = thrust::reduce( ilgPtr, ilgPtr + numRows, Constants<IndexType>::zero, thrust::plus<IndexType>() );
 
         const int blockSize = CUDASettings::getBlockSize();
         dim3 dimBlock( blockSize, 1, 1 );
@@ -657,7 +659,7 @@ namespace lama
             thrust::device_ptr<IndexType> inversePermPtr( const_cast<IndexType*>( inversePerm ) );
             thrust::device_ptr<IndexType> permPtr( const_cast<IndexType*>( perm ) );
 
-            thrust::counting_iterator<IndexType> sequence( 0 );
+            thrust::counting_iterator<IndexType> sequence( Constants<IndexType>::zero );
 
             thrust::scatter( sequence, sequence + n, permPtr, inversePermPtr );
 
@@ -1661,7 +1663,7 @@ namespace lama
                     const ValueType jdsValues[],
                     SyncToken* syncToken )
     {
-        if ( ( beta == static_cast<ValueType>( 1 ) ) && ( result == y ) )
+        if ( ( beta == Constants<ValueType>::one ) && ( result == y ) )
         {
             // result = alpha * A * x + beta * y ->  result += alpha * A * x
 
@@ -1712,37 +1714,37 @@ namespace lama
 
             if ( useSharedMem )
             {
-                if( alpha == 1 && beta == 1 )
+                if( alpha == Constants<ValueType>::one && beta == Constants<ValueType>::one )
                 {
                     normal_gemv_kernel_alpha_one_beta_one<ValueType, true, true><<<dimGrid, dimBlock, sharedMemSize, stream>>>
                     ( result, x, y, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numRows, ndlg );
                 }
-                else if ( alpha == 1 && beta == 0 )
+                else if ( alpha == Constants<ValueType>::one && beta == Constants<ValueType>::zero )
                 {
                     normal_gemv_kernel_alpha_one_beta_zero<ValueType, true, true><<<dimGrid, dimBlock, sharedMemSize, stream>>>
                     ( result, x, y, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numRows, ndlg );
                 }
-                else if ( alpha == 0 && beta == 1 )
+                else if ( alpha == Constants<ValueType>::zero && beta == Constants<ValueType>::one )
                 {
                     assign_kernel<ValueType, true, true><<<dimGrid, dimBlock, sharedMemSize, stream>>>
                     ( result, y, jdsPerm, numRows );
                 }
-                else if ( alpha == 1 )
+                else if ( alpha == Constants<ValueType>::one )
                 {
                     normal_gemv_kernel_alpha_one<ValueType, true, true><<<dimGrid, dimBlock, sharedMemSize, stream>>>
                     ( result, x, y, beta, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numRows, ndlg );
                 }
-                else if ( alpha == 0 )
+                else if ( alpha == Constants<ValueType>::zero )
                 {
                     scale_kernel<ValueType, true, true><<<dimGrid, dimBlock, sharedMemSize, stream>>>
                     ( result, y, beta, jdsPerm, numRows);
                 }
-                else if ( beta == 1 )
+                else if ( beta == Constants<ValueType>::one )
                 {
                     normal_gemv_kernel_beta_one<ValueType, true, true><<<dimGrid, dimBlock, sharedMemSize, stream>>>
                     ( result, x, y, alpha, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numRows, ndlg );
                 }
-                else if ( beta == 0 )
+                else if ( beta == Constants<ValueType>::zero )
                 {
                     normal_gemv_kernel_beta_zero<ValueType, true, true><<<dimGrid, dimBlock, sharedMemSize, stream>>>
                     ( result, x, y, alpha, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numRows, ndlg );
@@ -1757,37 +1759,37 @@ namespace lama
             {
                 vectorBindTexture( jdsDLG );
 
-                if( alpha == 1 && beta == 1 )
+                if( alpha == Constants<ValueType>::one && beta == Constants<ValueType>::one )
                 {
                     normal_gemv_kernel_alpha_one_beta_one<ValueType, true, false><<<dimGrid, dimBlock, sharedMemSize, stream>>>
                     ( result, x, y, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numRows, ndlg );
                 }
-                else if ( alpha == 1 && beta == 0 )
+                else if ( alpha == Constants<ValueType>::one && beta == Constants<ValueType>::zero )
                 {
                     normal_gemv_kernel_alpha_one_beta_zero<ValueType, true, false><<<dimGrid, dimBlock, sharedMemSize, stream>>>
                     ( result, x, y, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numRows, ndlg );
                 }
-                else if ( alpha == 0 && beta == 1 )
+                else if ( alpha == Constants<ValueType>::zero && beta == Constants<ValueType>::one )
                 {
                     assign_kernel<ValueType, true, false><<<dimGrid, dimBlock, sharedMemSize, stream>>>
                     ( result, y, jdsPerm, numRows );
                 }
-                else if ( alpha == 1 )
+                else if ( alpha == Constants<ValueType>::one )
                 {
                     normal_gemv_kernel_alpha_one<ValueType, true, false><<<dimGrid, dimBlock, sharedMemSize, stream>>>
                     ( result, x, y, beta, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numRows, ndlg );
                 }
-                else if ( alpha == 0 )
+                else if ( alpha == Constants<ValueType>::zero )
                 {
                     scale_kernel<ValueType, true, false><<<dimGrid, dimBlock, sharedMemSize, stream>>>
                     ( result, y, beta, jdsPerm, numRows );
                 }
-                else if ( beta == 1 )
+                else if ( beta == Constants<ValueType>::one )
                 {
                     normal_gemv_kernel_beta_one<ValueType, true, false><<<dimGrid, dimBlock, sharedMemSize, stream>>>
                     ( result, x, y, alpha, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numRows, ndlg );
                 }
-                else if ( beta == 0 )
+                else if ( beta == Constants<ValueType>::zero )
                 {
                     normal_gemv_kernel_beta_zero<ValueType, true, false><<<dimGrid, dimBlock, sharedMemSize, stream>>>
                     ( result, x, y, alpha, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numRows, ndlg );
@@ -1831,37 +1833,37 @@ namespace lama
         {
             if ( useSharedMem )
             {
-                if( alpha == 1 && beta == 1 )
+                if( alpha == Constants<ValueType>::one && beta == Constants<ValueType>::one )
                 {
                     normal_gemv_kernel_alpha_one_beta_one<ValueType, false, true><<<dimGrid, dimBlock, sharedMemSize, stream>>>
                     ( result, x, y, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numRows, ndlg );
                 }
-                else if ( alpha == 1 && beta == 0 )
+                else if ( alpha == Constants<ValueType>::one && beta == Constants<ValueType>::zero )
                 {
                     normal_gemv_kernel_alpha_one_beta_zero<ValueType, false, true><<<dimGrid, dimBlock, sharedMemSize, stream>>>
                     ( result, x, y, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numRows, ndlg );
                 }
-                else if ( alpha == 0 && beta == 1 )
+                else if ( alpha == Constants<ValueType>::zero && beta == Constants<ValueType>::one )
                 {
                     assign_kernel<ValueType, true, true><<<dimGrid, dimBlock, sharedMemSize, stream>>>
                     ( result, y, jdsPerm, numRows );
                 }
-                else if ( alpha == 1 )
+                else if ( alpha == Constants<ValueType>::one )
                 {
                     normal_gemv_kernel_alpha_one<ValueType, false, true><<<dimGrid, dimBlock, sharedMemSize, stream>>>
                     ( result, x, y, beta, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numRows, ndlg );
                 }
-                else if ( alpha == 0 )
+                else if ( alpha == Constants<ValueType>::zero )
                 {
                     scale_kernel<ValueType, false, true><<<dimGrid, dimBlock, sharedMemSize, stream>>>
                     ( result, y, beta, jdsPerm, numRows );
                 }
-                else if ( beta == 1 )
+                else if ( beta == Constants<ValueType>::one )
                 {
                     normal_gemv_kernel_beta_one<ValueType, false, true><<<dimGrid, dimBlock, sharedMemSize, stream>>>
                     ( result, x, y, alpha, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numRows, ndlg );
                 }
-                else if ( beta == 0 )
+                else if ( beta == Constants<ValueType>::zero )
                 {
                     normal_gemv_kernel_beta_zero<ValueType, false, true><<<dimGrid, dimBlock, sharedMemSize, stream>>>
                     ( result, x, y, alpha, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numRows, ndlg );
@@ -1874,37 +1876,37 @@ namespace lama
             }
             else // no sharedMem
             {
-                if( alpha == 1 && beta == 1 )
+                if( alpha == Constants<ValueType>::one && beta == Constants<ValueType>::one )
                 {
                     normal_gemv_kernel_alpha_one_beta_one<ValueType, false, false><<<dimGrid, dimBlock, sharedMemSize, stream>>>
                     ( result, x, y, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numRows, ndlg );
                 }
-                else if ( alpha == 1 && beta == 0 )
+                else if ( alpha == Constants<ValueType>::one && beta == Constants<ValueType>::zero )
                 {
                     normal_gemv_kernel_alpha_one_beta_zero<ValueType, false, false><<<dimGrid, dimBlock, sharedMemSize, stream>>>
                     ( result, x, y, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numRows, ndlg );
                 }
-                else if ( alpha == 0 && beta == 1 )
+                else if ( alpha == Constants<ValueType>::zero && beta == Constants<ValueType>::one )
                 {
                     assign_kernel<ValueType, false, false><<<dimGrid, dimBlock, sharedMemSize, stream>>>
                     ( result, y, jdsPerm, numRows );
                 }
-                else if ( alpha == 1 )
+                else if ( alpha == Constants<ValueType>::one )
                 {
                     normal_gemv_kernel_alpha_one<ValueType, false, false><<<dimGrid, dimBlock, sharedMemSize, stream>>>
                     ( result, x, y, beta, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numRows, ndlg );
                 }
-                else if ( alpha == 0 )
+                else if ( alpha == Constants<ValueType>::zero )
                 {
                     scale_kernel<ValueType, false, false><<<dimGrid, dimBlock, sharedMemSize, stream>>>
                     ( result, y, beta, jdsPerm, numRows );
                 }
-                else if ( beta == 1 )
+                else if ( beta == Constants<ValueType>::one )
                 {
                     normal_gemv_kernel_beta_one<ValueType, false, false><<<dimGrid, dimBlock, sharedMemSize, stream>>>
                     ( result, x, y, alpha, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numRows, ndlg );
                 }
-                else if ( beta == 0 )
+                else if ( beta == Constants<ValueType>::zero )
                 {
                     normal_gemv_kernel_beta_zero<ValueType, false, false><<<dimGrid, dimBlock, sharedMemSize, stream>>>
                     ( result, x, y, alpha, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numRows, ndlg );
@@ -2325,7 +2327,7 @@ namespace lama
                     const ValueType jdsValues[],
                     SyncToken* syncToken )
     {
-        if ( ( beta == static_cast<ValueType>( 1 ) ) && ( result == y ) )
+        if ( ( beta == Constants<ValueType>::one ) && ( result == y ) )
         {
             // result = alpha * A * x + beta * y ->  result += alpha * A * x
 
@@ -2376,37 +2378,37 @@ namespace lama
 
             if ( useSharedMem )
             {
-                if( alpha == 1 && beta == 1 )
+                if( alpha == Constants<ValueType>::one && beta == Constants<ValueType>::one )
                 {
                     normal_gevm_kernel_alpha_one_beta_one<ValueType, true, true><<<dimGrid, dimBlock, sharedMemSize, stream>>>
                     ( result, x, y, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numColumns, ndlg );
                 }
-                else if ( alpha == 1 && beta == 0 )
+                else if ( alpha == Constants<ValueType>::one && beta == Constants<ValueType>::zero )
                 {
                     normal_gevm_kernel_alpha_one_beta_zero<ValueType, true, true><<<dimGrid, dimBlock, sharedMemSize, stream>>>
                     ( result, x, y, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numColumns, ndlg );
                 }
-                else if ( alpha == 0 && beta == 1 )
+                else if ( alpha == Constants<ValueType>::zero && beta == Constants<ValueType>::one )
                 {
                     assign_kernel<ValueType, true, true><<<dimGrid, dimBlock, sharedMemSize, stream>>>
                     ( result, y, jdsPerm, numColumns );
                 }
-                else if ( alpha == 1 )
+                else if ( alpha == Constants<ValueType>::one )
                 {
                     normal_gevm_kernel_alpha_one<ValueType, true, true><<<dimGrid, dimBlock, sharedMemSize, stream>>>
                     ( result, x, y, beta, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numColumns, ndlg );
                 }
-                else if ( alpha == 0 )
+                else if ( alpha == Constants<ValueType>::zero )
                 {
                     scale_kernel<ValueType, true, true><<<dimGrid, dimBlock, sharedMemSize, stream>>>
                     ( result, y, beta, jdsPerm, numColumns );
                 }
-                else if ( beta == 1 )
+                else if ( beta == Constants<ValueType>::one )
                 {
                     normal_gevm_kernel_beta_one<ValueType, true, true><<<dimGrid, dimBlock, sharedMemSize, stream>>>
                     ( result, x, y, alpha, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numColumns, ndlg );
                 }
-                else if ( beta == 0 )
+                else if ( beta == Constants<ValueType>::zero )
                 {
                     normal_gevm_kernel_beta_zero<ValueType, true, true><<<dimGrid, dimBlock, sharedMemSize, stream>>>
                     ( result, x, y, alpha, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numColumns, ndlg );
@@ -2421,37 +2423,37 @@ namespace lama
             {
                 vectorBindTexture( jdsDLG );
 
-                if( alpha == 1 && beta == 1 )
+                if( alpha == Constants<ValueType>::one && beta == Constants<ValueType>::one )
                 {
                     normal_gevm_kernel_alpha_one_beta_one<ValueType, true, false><<<dimGrid, dimBlock, sharedMemSize, stream>>>
                     ( result, x, y, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numColumns, ndlg );
                 }
-                else if ( alpha == 1 && beta == 0 )
+                else if ( alpha == Constants<ValueType>::one && beta == Constants<ValueType>::zero )
                 {
                     normal_gevm_kernel_alpha_one_beta_zero<ValueType, true, false><<<dimGrid, dimBlock, sharedMemSize, stream>>>
                     ( result, x, y, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numColumns, ndlg );
                 }
-                else if ( alpha == 0 && beta == 1 )
+                else if ( alpha == Constants<ValueType>::zero && beta == Constants<ValueType>::one )
                 {
                     assign_kernel<ValueType, true, false><<<dimGrid, dimBlock, sharedMemSize, stream>>>
                     ( result, y, jdsPerm, numColumns );
                 }
-                else if ( alpha == 1 )
+                else if ( alpha == Constants<ValueType>::one )
                 {
                     normal_gevm_kernel_alpha_one<ValueType, true, false><<<dimGrid, dimBlock, sharedMemSize, stream>>>
                     ( result, x, y, beta, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numColumns, ndlg );
                 }
-                else if ( alpha == 0 )
+                else if ( alpha == Constants<ValueType>::zero )
                 {
                     scale_kernel<ValueType, true, false><<<dimGrid, dimBlock, sharedMemSize, stream>>>
                     ( result, y, beta, jdsPerm, numColumns );
                 }
-                else if ( beta == 1 )
+                else if ( beta == Constants<ValueType>::one )
                 {
                     normal_gevm_kernel_beta_one<ValueType, true, false><<<dimGrid, dimBlock, sharedMemSize, stream>>>
                     ( result, x, y, alpha, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numColumns, ndlg );
                 }
-                else if ( beta == 0 )
+                else if ( beta == Constants<ValueType>::zero )
                 {
                     normal_gevm_kernel_beta_zero<ValueType, true, false><<<dimGrid, dimBlock, sharedMemSize, stream>>>
                     ( result, x, y, alpha, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numColumns, ndlg );
@@ -2495,37 +2497,37 @@ namespace lama
         {
             if ( useSharedMem )
             {
-                if( alpha == 1 && beta == 1 )
+                if( alpha == Constants<ValueType>::one && beta == Constants<ValueType>::one )
                 {
                     normal_gevm_kernel_alpha_one_beta_one<ValueType, false, true><<<dimGrid, dimBlock, sharedMemSize, stream>>>
                     ( result, x, y, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numColumns, ndlg );
                 }
-                else if ( alpha == 1 && beta == 0 )
+                else if ( alpha == Constants<ValueType>::one && beta == Constants<ValueType>::zero )
                 {
                     normal_gevm_kernel_alpha_one_beta_zero<ValueType, false, true><<<dimGrid, dimBlock, sharedMemSize, stream>>>
                     ( result, x, y, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numColumns, ndlg );
                 }
-                else if ( alpha == 0 && beta == 1 )
+                else if ( alpha == Constants<ValueType>::zero && beta == Constants<ValueType>::one )
                 {
                     assign_kernel<ValueType, true, true><<<dimGrid, dimBlock, sharedMemSize, stream>>>
                     ( result, y, jdsPerm, numColumns );
                 }
-                else if ( alpha == 1 )
+                else if ( alpha == Constants<ValueType>::one )
                 {
                     normal_gevm_kernel_alpha_one<ValueType, false, true><<<dimGrid, dimBlock, sharedMemSize, stream>>>
                     ( result, x, y, beta, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numColumns, ndlg );
                 }
-                else if ( alpha == 0 )
+                else if ( alpha == Constants<ValueType>::zero )
                 {
                     scale_kernel<ValueType, false, true><<<dimGrid, dimBlock, sharedMemSize, stream>>>
                     ( result, y, beta, jdsPerm, numColumns );
                 }
-                else if ( beta == 1 )
+                else if ( beta == Constants<ValueType>::one )
                 {
                     normal_gevm_kernel_beta_one<ValueType, false, true><<<dimGrid, dimBlock, sharedMemSize, stream>>>
                     ( result, x, y, alpha, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numColumns, ndlg );
                 }
-                else if ( beta == 0 )
+                else if ( beta == Constants<ValueType>::zero )
                 {
                     normal_gevm_kernel_beta_zero<ValueType, false, true><<<dimGrid, dimBlock, sharedMemSize, stream>>>
                     ( result, x, y, alpha, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numColumns, ndlg );
@@ -2538,37 +2540,37 @@ namespace lama
             }
             else // no sharedMem
             {
-                if( alpha == 1 && beta == 1 )
+                if( alpha == Constants<ValueType>::one && beta == Constants<ValueType>::one )
                 {
                     normal_gevm_kernel_alpha_one_beta_one<ValueType, false, false><<<dimGrid, dimBlock, sharedMemSize, stream>>>
                     ( result, x, y, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numColumns, ndlg );
                 }
-                else if ( alpha == 1 && beta == 0 )
+                else if ( alpha == Constants<ValueType>::one && beta == Constants<ValueType>::zero )
                 {
                     normal_gevm_kernel_alpha_one_beta_zero<ValueType, false, false><<<dimGrid, dimBlock, sharedMemSize, stream>>>
                     ( result, x, y, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numColumns, ndlg );
                 }
-                else if ( alpha == 0 && beta == 1 )
+                else if ( alpha == Constants<ValueType>::zero && beta == Constants<ValueType>::one )
                 {
                     assign_kernel<ValueType, false, false><<<dimGrid, dimBlock, sharedMemSize, stream>>>
                     ( result, y, jdsPerm, numColumns );
                 }
-                else if ( alpha == 1 )
+                else if ( alpha == Constants<ValueType>::one )
                 {
                     normal_gevm_kernel_alpha_one<ValueType, false, false><<<dimGrid, dimBlock, sharedMemSize, stream>>>
                     ( result, x, y, beta, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numColumns, ndlg );
                 }
-                else if ( alpha == 0 )
+                else if ( alpha == Constants<ValueType>::zero )
                 {
                     scale_kernel<ValueType, false, false><<<dimGrid, dimBlock, sharedMemSize, stream>>>
                     ( result, y, beta, jdsPerm, numColumns );
                 }
-                else if ( beta == 1 )
+                else if ( beta == Constants<ValueType>::one )
                 {
                     normal_gevm_kernel_beta_one<ValueType, false, false><<<dimGrid, dimBlock, sharedMemSize, stream>>>
                     ( result, x, y, alpha, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numColumns, ndlg );
                 }
-                else if ( beta == 0 )
+                else if ( beta == Constants<ValueType>::zero )
                 {
                     normal_gevm_kernel_beta_zero<ValueType, false, false><<<dimGrid, dimBlock, sharedMemSize, stream>>>
                     ( result, x, y, alpha, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numColumns, ndlg );

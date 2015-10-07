@@ -34,11 +34,18 @@
 // hpp
 #include <scai/lama/distribution/CyclicDistribution.hpp>
 
+// internal scai library
+#include <scai/common/Constants.hpp>
+
 // std
 #include <fstream>
 
+#define MASTER Constants<IndexType>::zero
+
 namespace scai
 {
+
+using common::Constants;
 
 namespace lama
 {
@@ -262,7 +269,7 @@ void CyclicDistribution::printDistributionVector( std::string name ) const
 
     IndexType totalNumChunks = getNumTotalChunks();
 
-    if( myRank == 0 ) // process 0 is MASTER process
+    if( myRank == MASTER ) // process 0 is MASTER process
     {
         std::ofstream file;
         file.open( ( name + ".part" ).c_str() );

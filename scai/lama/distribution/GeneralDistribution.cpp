@@ -36,15 +36,18 @@
 
 // internal scai libraries
 #include <scai/common/Assert.hpp>
+#include <scai/common/Constants.hpp>
 
 // std
 #include <algorithm>
 #include <functional>
 
-#define MASTER 0
+#define MASTER Constants<IndexType>::zero
 
 namespace scai
 {
+
+using common::Constants;
 
 namespace lama
 {
@@ -106,7 +109,7 @@ GeneralDistribution::GeneralDistribution(
     }
 
     // scatter partition sizes
-    mCommunicator->scatter( &numMyRows, 1, MASTER, &displ[1] );
+    mCommunicator->scatter( &numMyRows, Constants<IndexType>::one, MASTER, &displ[1] );
 
     if( myRank == MASTER )
     {
@@ -136,8 +139,8 @@ GeneralDistribution::GeneralDistribution(
     }
     else
     {
-        rows.resize( 1 );
-        curpos.resize( 1 );
+        rows.resize( Constants<IndexType>::one );
+        curpos.resize( Constants<IndexType>::one );
     }
 
     // scatter global indices of local rows
@@ -235,7 +238,7 @@ void GeneralDistribution::getDistributionVector( std::vector<IndexType>& row2Par
     // gather number of local rows
     IndexType numMyRows = static_cast<IndexType>( mLocal2Global.size() );
     std::vector<IndexType> numRows( parts );
-    mCommunicator->gather( &numRows[0], 1, MASTER, &numMyRows );
+    mCommunicator->gather( &numRows[0], Constants<IndexType>::one, MASTER, &numMyRows );
 
     std::vector<IndexType> displ;
 
@@ -288,7 +291,7 @@ void GeneralDistribution::printDistributionVector( std::string /*name*/) const
     // gather number of local rows
     IndexType numMyRows = static_cast<IndexType>( mLocal2Global.size() );
     std::vector<IndexType> numRows( parts );
-    mCommunicator->gather( &numRows[0], 1, MASTER, &numMyRows );
+    mCommunicator->gather( &numRows[0], Constants<IndexType>::one, MASTER, &numMyRows );
 
     // gather global indices of local rows
     std::vector<IndexType> rows( mGlobalSize );

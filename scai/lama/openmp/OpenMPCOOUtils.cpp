@@ -41,6 +41,8 @@
 #include <scai/lama/LAMAInterface.hpp>
 #include <scai/lama/LAMAInterfaceRegistry.hpp>
 
+#include <scai/common/Constants.hpp>
+
 // internal scai libraries
 #include <scai/tracing.hpp>
 
@@ -51,6 +53,7 @@ namespace scai
 {
 
 using common::getScalarType;
+using common::Constants;
 
 namespace lama
 {
@@ -339,13 +342,11 @@ void OpenMPCOOUtils::jacobi(
     // solution = omega * rhs * dinv + ( 1 - omega * oldSolution
     // solution -= omega * B * oldSolution * dinv
 
-    const ValueType oneMinusOmega = static_cast<ValueType>( 1.0 ) - omega;
-
     #pragma omp parallel for
 
     for( IndexType i = 0; i < numRows; ++i )
     {
-        solution[i] = omega * rhs[i] / cooValues[i] + oneMinusOmega * oldSolution[i];
+        solution[i] = omega * rhs[i] / cooValues[i] + ( Constants<ValueType>::one - omega ) * oldSolution[i];
     }
 
     #pragma omp parallel
