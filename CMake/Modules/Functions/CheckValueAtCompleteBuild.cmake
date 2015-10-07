@@ -53,7 +53,7 @@ checkValue ( ${SCAI_ASSERT_LEVEL} "${ASSERT_CHOICES}" )
 
 ## from SCAI_BLAS
 list ( FIND ${VAR_NAME} SCAI_BLAS test_var )
-message ( STATUS "test_var SCAI_BLAS ${test_var}" )
+#message ( STATUS "test_var SCAI_BLAS ${test_var}" )
 if    ( ${test_var} GREATER -1 )
 	LIST ( APPEND LIBRARY_CHOICES "auto" "MKL" "BLAS" "INTERNALBLAS" )
 	checkValue( ${SCAI_BLAS_LIBRARY} "${LIBRARY_CHOICES}" )
@@ -61,7 +61,7 @@ endif ( ${test_var} GREATER -1 )
 
 ## from SetNVCCFlags
 list ( FIND ${VAR_NAME} CUDA test_var )
-message ( STATUS "test_var CUDA ${test_var}" )
+#message ( STATUS "test_var CUDA ${test_var}" )
 if    ( ${test_var} GREATER -1 )
 	list ( APPEND CC_CHOICES "not-found" "13" "20" "21" "30" "32" "35" "50" )
 	checkValue( ${CUDA_COMPUTE_CAPABILITY} "${CC_CHOICES}" )
