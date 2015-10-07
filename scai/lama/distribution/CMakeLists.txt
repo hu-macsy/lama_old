@@ -31,8 +31,14 @@
  # @since 1.0.0
 ###
 
-### Add classes and header files ###
-set ( CLASSES
+if ( METIS_FOUND OR PARMETIS_FOUND )
+    set ( MetisDistribution MetisDistribution )
+endif ( METIS_FOUND OR PARMETIS_FOUND )
+
+scai_project ( 
+
+   CLASSES
+
         BlockDistribution
         CyclicDistribution
         Distribution
@@ -42,13 +48,7 @@ set ( CLASSES
         HaloBuilder
         NoDistribution
         Redistributor
-    )
+        ${MetisDistribution}
 
-if ( METIS_FOUND OR PARMETIS_FOUND )
-    set ( CLASSES ${CLASSES} MetisDistribution )
-endif ( METIS_FOUND OR PARMETIS_FOUND )
-
-lama_classes ( ${CLASSES} )
-
-### add sources and headers to parent scope ###
-lama_add ()
+    ADD_PARENT_SCOPE 
+)

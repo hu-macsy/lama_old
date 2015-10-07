@@ -69,6 +69,7 @@ namespace lama
 {
 
 const int MPICommunicator::defaultTag = 1;
+MPI_Op MPICommunicator::mSumComplexLongDouble = 0;
 
 SCAI_LOG_DEF_LOGGER( MPICommunicator::logger, "Communicator.MPICommunicator" )
 
@@ -184,6 +185,12 @@ void MPICommunicator::initialize( int& argc, char** & argv )
         }
     }
 
+	if( mSumComplexLongDouble == 0)
+	{
+		MPI_Op_create( &sum_complex_long_double, true, &mSumComplexLongDouble );
+		SCAI_LOG_DEBUG( logger, "MPI_Op_create for sum complex long double")
+	}
+
     mCommWorld = MPI_COMM_WORLD;
     MPI_Comm_dup( mCommWorld, &mComm );
     MPI_Comm_dup( mCommWorld, &mCommTask );
@@ -193,6 +200,17 @@ void MPICommunicator::initialize( int& argc, char** & argv )
 
     setNodeData(); // determine mNodeRank, mNodeSize
 }
+
+void MPICommunicator::sum_complex_long_double(void *in, void *out, int *count,
+                                 MPI_Datatype * UNUSED(dtype) )
+{
+  ComplexLongDouble *a = reinterpret_cast<ComplexLongDouble*>( in );
+  ComplexLongDouble *b = reinterpret_cast<ComplexLongDouble*>( out );
+  for(int i = 0; i < *count; ++i) {
+      b[i] += a[i];
+  }
+}
+
 
 /* ---------------------------------------------------------------------------------- */
 
@@ -654,9 +672,9 @@ ValueType MPICommunicator::sumImpl( const ValueType value ) const
 
     ValueType sum;
     MPI_Datatype commType = getMPIType<ValueType>();
-    LAMA_MPICALL( logger, MPI_Allreduce( (void* ) &value, (void* ) &sum, Constants<int>::one, commType,
-                                         MPI_SUM, selectMPIComm() ),
-                  "MPI_Allreduce(MPI_SUM)" )
+    MPI_Op opType = getMPISum<ValueType>();
+    LAMA_MPICALL( logger, MPI_Allreduce( (void* ) &value, (void* ) &sum, Constants<int>::one, commType, opType,
+                  selectMPIComm() ), "MPI_Allreduce(MPI_SUM)" )
     SCAI_LOG_DEBUG( logger, "sum: my value = " << value << ", sum = " << sum )
     return sum;
 }

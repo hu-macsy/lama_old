@@ -32,10 +32,11 @@
 ###
 
 ### set this dir as lama source dir ###
-lama_set_source_dir ()
 
-### Add classes and header files ###
-set ( CLASSES
+scai_project ( 
+
+    CLASSES
+
         Configuration
         Context
         MatrixStorageTest
@@ -43,15 +44,15 @@ set ( CLASSES
         SameMatrixHelper
         SparseMatrixHelper
         SparseMatrixTest
-    )
     
-set ( HEADERS
+    HEADERS
+
         EquationHelper
 #        TestMacros
         TestSparseMatrices
-    )
 
-set ( SOURCE_FILES
+    SOURCES
+
         BiCGstabTest
        # BiCGTest  : disabled as long as MatrixTranspose for DenseMatrix is
        # not supported
@@ -115,10 +116,6 @@ set ( SOURCE_FILES
         VectorTest
     )
 
-lama_classes ( ${CLASSES} )
-lama_headers ( ${HEADERS} )
-lama_sources ( ${SOURCE_FILES} )
-
 ### checks ####
 if ( ${SCAI_ASSERT_LEVEL} STREQUAL "OFF" )
    message ( STATUS "WARNING: tests will not check for exceptions (assertions are switched off)" )
@@ -130,7 +127,6 @@ endif ( NOT ( Boost_UNIT_TEST_FRAMEWORK_LIBRARY OR Boost_REGEX ) )
 
 ### set include directories ###
 include_directories ( .. ../lama ${Boost_INCLUDE_DIRS} )
-include_directories ( ${CMAKE_INSTALL_PREFIX}/include  )
 
 if ( SCAI_BLAS_NAME STREQUAL "MKL" )
     include_directories ( ${MKL_INCLUDE_DIRS} )

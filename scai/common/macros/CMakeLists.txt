@@ -30,6 +30,14 @@
  # @date 19.08.2015
 ###
 
-file ( GLOB LOCAL_HEADERS "*.hpp" )
+scai_project(
 
-install ( FILES ${LOCAL_HEADERS} DESTINATION include/scai/common/macros )
+    HEADERS
+
+        inline
+        interface
+        unique_name
+        unused
+
+    ADD_PARENT_SCOPE 
+)

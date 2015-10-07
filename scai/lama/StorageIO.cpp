@@ -787,6 +787,7 @@ void StorageIO<ValueType>::readCSRFromMMFile(
 
     if( !file )
     {
+    	SCAI_LOG_DEBUG( logger, "Could not open file " << fileName )
         COMMON_THROWEXCEPTION( "Could not open file '" << fileName << "'." )
     }
 
@@ -795,23 +796,27 @@ void StorageIO<ValueType>::readCSRFromMMFile(
 
     if( errorCode != 0 )
     {
+    	SCAI_LOG_DEBUG( logger, "Could not process Matrix Market banner")
         COMMON_THROWEXCEPTION( "Could not process Matrix Market banner. Cause: '" << getErrorString( errorCode ) << "'." );
     }
 
     bool isPattern = mm_is_pattern( matcode );
 
-    if( mm_is_complex( matcode ) )
-    {
-        COMMON_THROWEXCEPTION( "Unsupported data type in file '" << fileName << "'." )
-    }
+//    if( mm_is_complex( matcode ) )
+//    {
+//    	SCAI_LOG_DEBUG( logger, "Unsupported data type in file")
+//        COMMON_THROWEXCEPTION( "Unsupported data type in file '" << fileName << "'." )
+//    }
 
     if( !mm_is_matrix( matcode ) )
     {
+    	SCAI_LOG_DEBUG( logger, "file did not contain a matrix" )
         COMMON_THROWEXCEPTION( "'" << fileName << "' did not contain a matrix." )
     }
 
     if( !mm_is_sparse( matcode ) )
     {
+    	SCAI_LOG_DEBUG( logger, "matrix is not sparse")
         COMMON_THROWEXCEPTION( "'" << fileName << "' did not contain a sparse matrix." )
     }
 
@@ -827,6 +832,7 @@ void StorageIO<ValueType>::readCSRFromMMFile(
 
     if( errorCode != 0 )
     {
+    	SCAI_LOG_DEBUG( logger, "Could not read values from file")
         COMMON_THROWEXCEPTION(
                         "Could not read values from file '" << fileName << "'. Cause: '" << getErrorString( errorCode ) << "'." );
     }
@@ -845,6 +851,7 @@ void StorageIO<ValueType>::readCSRFromMMFile(
 
     if( ifile.fail() )
     {
+    	SCAI_LOG_DEBUG( logger, "Could not reopen file " )
         COMMON_THROWEXCEPTION( "Could not reopen file '" << fileName << "'." )
     }
 
@@ -884,16 +891,23 @@ void StorageIO<ValueType>::readCSRFromMMFile(
     //Create Input Vector
     MatrixValue<ValueType> val( 0, 0, 0 );
 
+    SCAI_LOG_DEBUG( logger, "beginning read in" )
+
+    std::string line;
+
     for( int l = 0; l < lines && !ifile.eof(); ++l )
     {
         //TODO Read Vector !!!
         // read ia
-        ifile >> val.i;
-        ifile >> val.j;
+    	std::getline(ifile, line);
+    	std::istringstream reader(line);
+
+        reader >> val.i;
+        reader >> val.j;
 
         if( !isPattern )
         {
-            ifile >> val.v;
+            reader >> val.v;
         }
 
         ++ia[val.i];
@@ -911,7 +925,8 @@ void StorageIO<ValueType>::readCSRFromMMFile(
             }
         }
 
-        ifile.ignore( 256, '\n' );
+//        not needed anymore, because it will be read line by line
+//        ifile.ignore( 256, '\n' );
         val.i--;
         val.j--;
         values.push_back( val );

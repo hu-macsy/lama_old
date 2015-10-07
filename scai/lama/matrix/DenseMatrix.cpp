@@ -824,17 +824,35 @@ case common::scalar::SCALAR_ARITHMETIC_TYPE##I:                                 
         }
 
         return;
-    }
-
-    const CRTPMatrix<SparseMatrix<ValueType>, ValueType>* sparseMatrix = dynamic_cast < const CRTPMatrix <
-            SparseMatrix<ValueType>, ValueType > * > ( &other );
-
-    if ( sparseMatrix )
+    } else if( other.getMatrixKind() == Matrix::SPARSE )
     {
-        assignSparse( *sparseMatrix );
-        return;
+    	SCAI_LOG_INFO( logger, "copy sparse matrix")
+
+		switch( other.getValueType() )
+		{
+
+#define LAMA_COPY_SPARSE_CALL( z, I, _ ) \
+		case common::scalar::SCALAR_ARITHMETIC_TYPE##I: \
+		{ \
+			SCAI_LOG_TRACE( logger, "convert from SparseMatrix<" << SCALAR_ARITHMETIC_TYPE##I << "> to DenseMatrix<" << getScalarType<ValueType>() << ">" ) \
+			const SparseMatrix<ARITHMETIC_HOST_TYPE_##I>* sparseMatrix = reinterpret_cast< const SparseMatrix<ARITHMETIC_HOST_TYPE_##I>* >( &other ); \
+			const CSRSparseMatrix<ValueType> tmp = *sparseMatrix; \
+			assignSparse( tmp );\
+			return; \
+		}
+
+		BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_COPY_SPARSE_CALL, _ )
+
+#undef LAMA_COPY_SPARSE_CALL
+
+		default:
+			COMMON_THROWEXCEPTION( "type of sparse matrix not supported --> " << other )
+
+		}
     }
 
+
+    SCAI_LOG_TRACE( logger, "Unsupported assign")
     COMMON_THROWEXCEPTION( "Unsupported: assign " << other << " to " << *this )
 }
 
@@ -1512,10 +1530,10 @@ void DenseMatrix<ValueType>::scale( const Vector& vector )
 template<typename ValueType>
 void DenseMatrix<ValueType>::scale( const Scalar scaleValue )
 {
-    if ( getDistribution() != getColDistribution() )
-    {
-        COMMON_THROWEXCEPTION( "Diagonal calculation only for equal distributions." )
-    }
+//    if ( getDistribution() != getColDistribution() )
+//    {
+//        COMMON_THROWEXCEPTION( "Diagonal calculation only for equal distributions." )
+//    }
 
     getLocalStorage().scale( scaleValue );
 }

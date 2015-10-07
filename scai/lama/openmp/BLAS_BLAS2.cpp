@@ -260,7 +260,7 @@ void BLAS_BLAS2::setInterface( BLASInterface& BLAS )
 #define LAMA_BLAS2_REGISTER(z, I, _)                                                   \
     LAMA_INTERFACE_REGISTER1_T( BLAS, gemv, ARITHMETIC_HOST_TYPE_##I )                 \
 
-    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_BLAS2_REGISTER, _ )
+    BOOST_PP_REPEAT( ARITHMETIC_HOST_EXT_TYPE_CNT, LAMA_BLAS2_REGISTER, _ )
 
 #undef LAMA_BLAS2_REGISTER
 

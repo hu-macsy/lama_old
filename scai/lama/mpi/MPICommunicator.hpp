@@ -48,6 +48,7 @@
 
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/Thread.hpp>
+#include <scai/common/macros/unused.hpp>
 
 // std
 #include <vector>
@@ -128,6 +129,9 @@ private:
 
     template<typename T1,typename T2>
     inline static MPI_Datatype getMPI2Type();
+
+    template<typename ValueType>
+	inline static MPI_Op getMPISum();
 
     template<typename ValueType>
     void bcastImpl( ValueType val[], const IndexType n, const PartitionId root ) const;
@@ -235,6 +239,11 @@ protected:
     MPI_Comm mComm;
     MPI_Comm mCommTask;
 
+    static MPI_Op mSumComplexLongDouble;
+
+    static void sum_complex_long_double(void *in, void *out, int *count,
+                                     MPI_Datatype *dtype);
+
     Communicator::ThreadSafetyLevel mThreadSafetyLevel;
 
     bool isCUDAAware;// if true data on CUDA context can be communicated
@@ -315,7 +324,7 @@ inline MPI_Datatype MPICommunicator::getMPIType<ComplexLongDouble>()
 {
     // Be careful: some MPI implementations do not provide MPI_DOUBLE_COMPLEX
     // May be helpful: MPI::DOUBLE_COMPLEX
-    return MPI_2DOUBLE_COMPLEX;
+    return MPI::LONG_DOUBLE_COMPLEX;
 }
 
 template<>
@@ -351,6 +360,23 @@ template<>
 inline MPI_Datatype MPICommunicator::getMPI2Type<int,int>()
 {
     return MPI_2INT;
+}
+
+/* ---------------------------------------------------------------------------------- */
+/*              getMPISum                                                           */
+/* ---------------------------------------------------------------------------------- */
+
+
+template<typename ValueType>
+inline MPI_Op MPICommunicator::getMPISum()
+{
+    return MPI_SUM;
+}
+
+template<>
+inline MPI_Op MPICommunicator::getMPISum<ComplexLongDouble>()
+{
+    return mSumComplexLongDouble;
 }
 
 } /* end namespace lama */

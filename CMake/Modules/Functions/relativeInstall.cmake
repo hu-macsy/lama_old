@@ -1,8 +1,8 @@
 ###
- # @file CMakeLists.txt
+ # @file relativeInstall.cmake
  #
  # @license
- # Copyright (c) 2009-2015
+ # Copyright (c) 2009-2013
  # Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  # for Fraunhofer-Gesellschaft
  #
@@ -25,41 +25,37 @@
  # SOFTWARE.
  # @endlicense
  #
- # @brief CMake configuration file for scai_hmemo tests
+ # @brief Own install command that uses relative path names
  # @author Thomas Brandes
- # @date 16.06.2015
+ # @date 01.10.2015
 ###
 
-set ( CXX_SOURCES
-      LAMAArrayRefTest.cpp  
-      MemoryTest.cpp
-      ContextTest.cpp  
-      HostContextTest.cpp  
-      LAMAArrayTest.cpp  
-) 
+# alternative version to install ( FILES f1 f2 ... DESTINATION <dest> )
+# this version keeps relative pathnames of f1 f2 ...
 
-# Boost is not required, but if not available tests are not built
+function ( relative_install )
 
-find_package ( Boost COMPONENTS unit_test_framework )
+   set ( options )
+   set ( oneValueArgs DESTINATION )
+   set ( multiValueArgs FILES )
 
-if ( Boost_UNIT_TEST_FRAMEWORK_FOUND )
+   cmake_parse_arguments ( relative_install "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN} )
 
-    include_directories ( ${Boost_INCLUDE_DIR} )
+   # message( STATUS "relative_install, FILES = ${relative_install_FILES}" )
+   # message( STATUS "relative_install, DESTINATION = ${relative_install_DESTINATION}" )
 
-    add_executable ( MemoryTest ${CXX_SOURCES} )
+   foreach   ( SOURCE_FILE ${relative_install_FILES} )
 
-    target_link_libraries ( MemoryTest 
-        ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}
-        scai_hmemo
-        )
+       if    ( CMAKE_VERSION VERSION_GREATER 2.8.11 )
+           get_filename_component( FILE_DIR ${SOURCE_FILE} DIRECTORY )
+       else  ( CMAKE_VERSION VERSION_GREATER 2.8.11 )
+           get_filename_component( FILE_DIR ${SOURCE_FILE} PATH )
+       endif ( CMAKE_VERSION VERSION_GREATER 2.8.11 )
 
-    if    ( CUDA_FOUND AND USE_CUDA )
-        add_subdirectory ( cuda )
-    endif ( CUDA_FOUND AND USE_CUDA )
+       # message( STATUS "install ${SOURCE_FILE} in ${relative_install_DESTINATION}/${FILE_DIR}" )
 
-    if    ( USE_MIC )
-        add_subdirectory ( mic )
-    endif ( USE_MIC )
+       install( FILES ${SOURCE_FILE} DESTINATION ${relative_install_DESTINATION}/${FILE_DIR} )
 
-endif ( Boost_UNIT_TEST_FRAMEWORK_FOUND )
+   endforeach ( )
 
+endfunction ( relative_install )

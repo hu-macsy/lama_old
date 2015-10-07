@@ -45,6 +45,9 @@ if    ( NOT SCAI_COMPLETE_BUILD )
 	include ( SetBuildFlags )
 	include ( SCAIAssert )
 	include ( SetCPPFlags )
+else  ( NOT SCAI_COMPLETE_BUILD )	
+	include ( Functions/CheckValueAtCompleteBuild )
+	CheckValueAtCompleteBuild ( tracing )
 endif ( NOT SCAI_COMPLETE_BUILD )
 
 ### include all search packages
@@ -80,15 +83,31 @@ endforeach ( module ${SCAI_TRACING_INTERNAL_DEPS} )
 
 ### build library
 
-## add subdirectories
-add_subdirectory ( examples )
+## set files in variables CXX_SOURCES and CXX_HEADERS
 
-## search for files
-file ( GLOB CPP_SOURCES "*.cpp" )
-file ( GLOB HPP_HEADERS "*.hpp" )
+include ( Functions/scaiProject )
+
+scai_project (
+
+    CLASSES
+
+        CallTreeTable
+        FileTable
+        RegionTable
+        TraceConfig
+        TraceData
+        TraceRegionRecord
+        VTInterface
+
+    HEADERS
+
+        CallStack
+        Counters
+        RegionEntry
+)
 
 ### add library
-add_library ( scai_tracing ${SCAI_LIBRARY_TYPE} ${CPP_SOURCES} )
+add_library ( scai_tracing ${SCAI_LIBRARY_TYPE} ${CXX_SOURCES} )
 
 ## add link libraries
 list ( REVERSE SCAI_TRACING_INTERNAL_DEPS )
@@ -98,9 +117,14 @@ foreach    ( module ${SCAI_TRACING_INTERNAL_DEPS} )
 endforeach    ( module ${SCAI_TRACING_INTERNAL_DEPS} )
 target_link_libraries ( scai_tracing ${SCAI_START_LINK_LIBRARIES} ${TRACING_LINK_LIBRARIES} ${SCAI_END_LINK_LIBRARIES} )
 
+## add subdirectories
+add_subdirectory ( examples )
+
 ### install ###
 install ( TARGETS scai_tracing DESTINATION lib/ )
-install ( FILES ${HPP_HEADERS} DESTINATION include/scai/tracing )
+
+include ( Functions/relativeInstall )
+relative_install ( FILES ${CXX_HEADERS} DESTINATION include/scai/tracing )
 
 if    ( CMAKE_VERSION VERSION_GREATER 2.8.11 ) 
 	add_subdirectory( gui )

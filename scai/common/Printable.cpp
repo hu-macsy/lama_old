@@ -42,13 +42,6 @@ namespace scai
 namespace common
 {
 
-bool Printable::extended = false;
-
-void Printable::enableExtended( const bool flag )
-{
-    extended = flag;
-}
-
 Printable::Printable()
 {
 }

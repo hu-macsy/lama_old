@@ -47,6 +47,9 @@ if    ( NOT SCAI_COMPLETE_BUILD )
 	include ( SetBuildFlags )
 	include ( SCAIAssert )
 	include ( SetCPPFlags )
+else  ( NOT SCAI_COMPLETE_BUILD )
+	include ( Functions/CheckValueAtCompleteBuild )
+	CheckValueAtCompleteBuild ( lama )
 endif ( NOT SCAI_COMPLETE_BUILD )
 
 ### include all search packages
@@ -98,13 +101,14 @@ include ( SCAIAssert )
 
 ### build lama library
 
-include ( Functions/lamaSourceSolution )
-
-### set this dir as lama source dir
-lama_set_source_dir ()
+include ( Functions/scaiProject )
 
 ### Add classes and header files
-set ( CLASSES
+
+scai_project(
+
+    CLASSES
+
         CommunicationPlan
         Communicator
         DenseVector
@@ -117,16 +121,13 @@ set ( CLASSES
         Scalar
         StorageIO
         Vector
-    )
 
-set ( HEADERS
+    HEADERS
+
         BLASInterface
         UtilsInterface
         CRTPCommunicator
     )
-
-lama_classes ( ${CLASSES} )
-lama_headers ( ${HEADERS} )
 
 ### add subdirectories ###
 
@@ -221,6 +222,12 @@ if ( USE_MIC )
     set_target_properties( ama PROPERTIES LINK_FLAGS
         "-offload-option,mic,compiler,\"-L${MKLROOT}/lib/mic -Wl,--start-group -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_core -Wl,--end-group\"" )
 endif ( USE_MIC )
+
+## install all Include files
+## install( FILES ${CXX_HEADERS} DESTINATION include/scai/lama ) does not work
+
+include( Functions/relativeInstall )
+relative_install( FILES ${CXX_HEADERS} DESTINATION include/scai/lama )
 
 ## install library.hpp
 configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/lama.hpp.in" "${CMAKE_CURRENT_BINARY_DIR}/include/lama.hpp" )

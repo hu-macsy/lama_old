@@ -32,7 +32,11 @@
 ###
 
 ### Add classes and header files ###
-set ( CLASSES
+
+scai_project (
+
+    CLASSES
+
           MICUtils
           MICCSRUtils
           MICMKLCSRUtils
@@ -43,9 +47,6 @@ set ( CLASSES
           MICBLAS1
           MICBLAS2
           MICBLAS3
-    )
 
-lama_classes ( ${CLASSES} )
-
-### add sources and headers to parent scope ###
-lama_add ()
+    ADD_PARENT_SCOPE
+)

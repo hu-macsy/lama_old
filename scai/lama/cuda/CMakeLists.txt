@@ -31,48 +31,45 @@
  # @since 1.0.0
 ###
 
+if    ( CUSPARSE_V2 )
+	set ( CUSparseCSRUtils CUSparseCSRUtils )
+else ( CUSPARSE_V2 )
+	set ( CUSparseCSRUtils )
+endif ( CUSPARSE_V2 )
+
 ### Add classes and header files ###
-set ( CLASSES
+
+scai_project(
+
+    CLASSES      # .cpp, .hpp
+
         CUDABLAS1
         CUDABLAS2
         CUDABLAS3
         CUDALAPACK
         CUDASettings
         CUDATexture
-    )
 
-### Add CUDA Sources ###
-set ( CUDA_SRC
-        blas1
+    CUDA_CLASSES  # .cu, .hpp
+
         CUDAUtils
         CUDACOOUtils
         CUDACSRUtils
         CUDADIAUtils
         CUDAELLUtils
         CUDAJDSUtils
-    )
+        ${CUSparseCSRUtils}
 
-set ( HEADERS
-		CUDACOOUtils
-		CUDACSRUtils
-		CUDADIAUtils
-        CUDAELLUtils
-        CUDAJDSUtils
+    CUDA_SOURCES   # .cu
+
+        blas1
+
+    HEADERS        # .hpp
+
         CUDATexVector
-        CUDAUtils
         lama_cublas
         launchHelper
-        #utils.cu.h
-	)
 
-if    ( CUSPARSE_V2 )
-	list ( APPEND CUDA_SRC CUSparseCSRUtils )
-	list  ( APPEND HEADERS CUSparseCSRUtils )
-endif ( CUSPARSE_V2 )
+    ADD_PARENT_SCOPE
+)
 
-lama_classes ( ${CLASSES} )
-lama_headers ( ${HEADERS} )
-lama_cuda_sources ( ${CUDA_SRC} )
-
-### add sources and headers to parent scope ###
-lama_add ()

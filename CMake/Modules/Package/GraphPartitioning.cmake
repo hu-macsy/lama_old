@@ -43,7 +43,7 @@ endif ( METIS_FOUND )
 
 ## ALLOW to switch off GRAPH_PART explicitly ( doing something linke setAndCheckCache )
 include ( Functions/setAndCheckCache )
-setAndCheckCache ( METIS GRAPHPARTIONING )
+setAndCheckCache ( METIS GRAPHPARTITIONING )
 
 if    ( METIS_FOUND )
 	set ( GRAPHPARTITIONING_INCLUDE_DIR ${METIS_INCLUDE_DIR} )
