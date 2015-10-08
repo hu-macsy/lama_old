@@ -1,8 +1,8 @@
 include ../make.inc
 
-INCLUDE_FLAGS = -I${BOOST_INCLUDE_DIR} -I${LAMA_ROOT}/include
+INCLUDE_FLAGS = -I${BOOST_INCLUDE_DIR} -I${SCAI_ROOT}/include
 
-LD_FLAGS = ${LAMA_LD_FLAGS} -Wl,-rpath=${LAMA_ROOT}/lib 
+LD_FLAGS = ${SCAI_LD_FLAGS} -Wl,-rpath=${SCAI_ROOT}/lib 
 
 EXECUTABLE: task0.exe task1a.exe task1b.exe task2.exe task2a.exe task3.exe task4.exe task5.exe
 
