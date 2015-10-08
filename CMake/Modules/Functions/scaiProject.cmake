@@ -48,7 +48,7 @@ include ( Functions/getRelativePath )
 ## Need to be macros not functions, because modifications of the parent scope
 
 # scai_extend_variable ( VAR <var> SUFFIX <suffix> PREFIX <path> FILES f1 f2 ... )
-# extends variable <var> with all files extended by relative path and the suffix
+# extends variable <var> with all files where prefix and suffix are utilized
 
 macro ( scai_extend_variable )
 
@@ -85,82 +85,83 @@ endmacro ( scai_extend_variable )
 
 macro    ( scai_project ) 
 
-   set ( options ADD ADD_PARENT_SCOPE )
-   set ( oneValueArgs )
-   set ( multiValueArgs CLASSES HEADERS SOURCES CUDA_CLASSES CUDA_SOURCES )
+    # specify the keywors supported in arguments 
 
-   cmake_parse_arguments ( scai_project "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN} )
-
-   message ( STATUS "scai_project HEADERS = ${scai_project_HEADERS}" )
-   message ( STATUS "scai_project CLASSES = ${scai_project_CLASSES}" )
-   message ( STATUS "scai_project SOURCES = ${scai_project_SOURCES}" )
-   message ( STATUS "scai_project CUDA_CLASSES = ${scai_project_CUDA_CLASSES}" )
-   message ( STATUS "scai_project CUDA_SOURCES = ${scai_project_CUDA_SOURCES}" )
-   message ( STATUS "scai_project ADD = ${scai_project_ADD}" )
-   message ( STATUS "scai_project ADD_PARENT_SCOPE = ${scai_project_ADD_PARENT_SCOPE}" )
-
-   if ( ( scai_project_ADD_PARENT_SCOPE ) OR ( scai_project_ADD ) )
-
-       # nothing to do at beginning, but check that project has started
-
-       if ( DEFINED SCAI_PROJECT_START_DIR )
-           # that is okay
-       else ()
-           message( FATAL_ERROR "scai_project with ADD but not initialized before" )
-       endif ()
-
-   else ()
-
-       # clear variables and set SCAI_PROJECT_START_DIR
-       # sets the globally used variable SCAI_PROJECT_START_DIR 
-       # needed to get relative path in source sub-directories 
-
-       set ( SCAI_PROJECT_START_DIR ${CMAKE_CURRENT_SOURCE_DIR} )
-
-       # initialize the variables for all files
-
-       set ( CXX_SOURCES "" )
-       set ( CXX_HEADERS "" )
-       set ( CUDA_SOURCES "" )
-
-   endif ()
-
-   # get the relative path of the current source directory in relation to the dir where project started
-
-   get_relative_path ( RELATIVE_PATH ${SCAI_PROJECT_START_DIR} ${CMAKE_CURRENT_SOURCE_DIR} )
-
-   # CXX_SOURCES: cpp sources
-
-   scai_extend_variable ( VAR CXX_SOURCES
-                          PREFIX ${RELATIVE_PATH} 
-                          SUFFIX .cpp
-                          FILES  ${scai_project_SOURCES} ${scai_project_CLASSES} 
-                        )
-
-   # CXX_HEADERS: hpp headers
-
-   scai_extend_variable ( VAR CXX_HEADERS
-                          PREFIX ${RELATIVE_PATH} 
-                          SUFFIX .hpp
-                          FILES  ${scai_project_HEADERS} ${scai_project_CLASSES} ${scai_project_CUDA_CLASSES} 
-                        )
-
-   # CUDA_SOURCES: cu for CUDA compilation
+    set ( options ADD ADD_PARENT_SCOPE )
+    set ( oneValueArgs )
+    set ( multiValueArgs CLASSES HEADERS SOURCES CUDA_CLASSES CUDA_SOURCES )
  
-   scai_extend_variable ( VAR CUDA_SOURCES
-                          PREFIX ${RELATIVE_PATH} 
-                          SUFFIX .cu
-                          FILES  ${scai_project_CUDA_CLASSES} ${scai_project_CUDA_SOURCES}
-                        )
-                     
-   # make GLOBAL variables visible in parent scope if required
-   # if option ADD_PARENT_SCOPE is set we make values visible in parent scope
+    cmake_parse_arguments ( scai_project "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN} )
 
-   if ( scai_project_ADD_PARENT_SCOPE )
-       set ( CXX_SOURCES ${CXX_SOURCES} PARENT_SCOPE )
-       set ( CXX_HEADERS ${CXX_HEADERS} PARENT_SCOPE )
-       set ( CUDA_SOURCES ${CUDA_SOURCES} PARENT_SCOPE )
-   endif ()
+    # message ( STATUS "scai_project HEADERS = ${scai_project_HEADERS}" )
+    # message ( STATUS "scai_project CLASSES = ${scai_project_CLASSES}" )
+    # message ( STATUS "scai_project SOURCES = ${scai_project_SOURCES}" )
+    # message ( STATUS "scai_project CUDA_CLASSES = ${scai_project_CUDA_CLASSES}" )
+    # message ( STATUS "scai_project CUDA_SOURCES = ${scai_project_CUDA_SOURCES}" )
+    # message ( STATUS "scai_project ADD = ${scai_project_ADD}" )
+    # message ( STATUS "scai_project ADD_PARENT_SCOPE = ${scai_project_ADD_PARENT_SCOPE}" )
 
+    if ( ( scai_project_ADD_PARENT_SCOPE ) OR ( scai_project_ADD ) )
+
+        # nothing to do at beginning, but check that project has started
+
+        if ( DEFINED SCAI_PROJECT_START_DIR )
+            # that is okay
+        else ()
+            message( FATAL_ERROR "scai_project with ADD but not initialized before" )
+        endif ()
+
+    else ()
+
+        # clear variables and set SCAI_PROJECT_START_DIR
+        # sets the globally used variable SCAI_PROJECT_START_DIR 
+        # needed to get relative path in source sub-directories 
+ 
+        set ( SCAI_PROJECT_START_DIR ${CMAKE_CURRENT_SOURCE_DIR} )
+
+        # initialize the variables for all files
+
+        set ( CXX_SOURCES "" )
+        set ( CXX_HEADERS "" )
+        set ( CUDA_SOURCES "" )
+ 
+    endif ()
+
+    # get the relative path of the current source directory in relation to the dir where project started
+
+    get_relative_path ( RELATIVE_PATH ${SCAI_PROJECT_START_DIR} ${CMAKE_CURRENT_SOURCE_DIR} )
+
+    # CXX_SOURCES: cpp sources
+
+    scai_extend_variable ( VAR CXX_SOURCES
+                           PREFIX ${RELATIVE_PATH} 
+                           SUFFIX .cpp
+                           FILES  ${scai_project_SOURCES} ${scai_project_CLASSES} 
+                         )
+
+    # CXX_HEADERS: hpp headers
+
+    scai_extend_variable ( VAR CXX_HEADERS
+                           PREFIX ${RELATIVE_PATH} 
+                           SUFFIX .hpp
+                           FILES  ${scai_project_HEADERS} ${scai_project_CLASSES} ${scai_project_CUDA_CLASSES} 
+                         )
+ 
+    # CUDA_SOURCES: cu for CUDA compilation
+  
+    scai_extend_variable ( VAR CUDA_SOURCES
+                           PREFIX ${RELATIVE_PATH} 
+                           SUFFIX .cu
+                           FILES  ${scai_project_CUDA_CLASSES} ${scai_project_CUDA_SOURCES}
+                         )
+                      
+    # make GLOBAL variables visible in parent scope if required
+    # if option ADD_PARENT_SCOPE is set we make values visible in parent scope
+ 
+    if ( scai_project_ADD_PARENT_SCOPE )
+        set ( CXX_SOURCES ${CXX_SOURCES} PARENT_SCOPE )
+        set ( CXX_HEADERS ${CXX_HEADERS} PARENT_SCOPE )
+        set ( CUDA_SOURCES ${CUDA_SOURCES} PARENT_SCOPE )
+    endif ()
+ 
 endmacro ( scai_project ) 
-
