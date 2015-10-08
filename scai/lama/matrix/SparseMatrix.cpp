@@ -558,10 +558,22 @@ void SparseMatrix<ValueType>::assign( const SparseMatrix<ValueType>& matrix )
     // TODO: allow flexibility regarding the context, e.g. format conversion should be done on GPU
 
     mLocalData->assign( matrix.getLocalStorage() );
-    if( mHaloData->getNumRows() * mHaloData->getNumColumns()  > 0 )
+
+    const MatrixStorage<ValueType>&  matrixHaloData = matrix.getHaloStorage();
+
+    SCAI_LOG_INFO( logger, "assign halo storage, only if available, halo = " << matrixHaloData )
+
+    if ( matrixHaloData.getNumRows() * matrixHaloData.getNumColumns()  > 0 )
     {
-    	mHaloData->assign( matrix.getHaloStorage() );
+        mHaloData->assign( matrixHaloData );
     }
+    else
+    {
+        // we set the halo size to 0 x 0 instead of n x 0 to avoid allocation of ia data
+
+        mHaloData->clear();   
+    }
+
     mHalo = matrix.getHalo();
 }
 
