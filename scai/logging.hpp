@@ -246,8 +246,17 @@
  *******************************************************/
 
 #ifdef SCAI_LOG_TRACE_ENABLED
-#define SCAI_LOG_TRACE(logger,msg) { if (&logger && logger.isTraceEnabled()) \
-        { std::ostringstream omsg; omsg << msg; logger.trace(LOG4SCAI_LOCATION, omsg.str()); } }
+#define SCAI_LOG_TRACE( logger, msg )                       \
+    {                                                       \
+        scai::logging::Logger& cLogger = logger;            \
+                                                            \
+        if ( &cLogger && cLogger.isTraceEnabled() )         \
+        {                                                   \
+            std::ostringstream omsg;                        \
+            omsg << msg;                                    \
+            cLogger.trace( LOG4SCAI_LOCATION, omsg.str());  \
+        }                                                   \
+    }                               
 #else
 #define SCAI_LOG_TRACE(logger,msg) { if (false){ std::cout<<msg; } }
 #endif
@@ -257,10 +266,24 @@
  *******************************************************/
 
 #ifdef SCAI_LOG_DEBUG_ENABLED
-#define SCAI_LOG_DEBUG(logger,msg) { if (&logger && logger.isDebugEnabled()) \
-        { std::ostringstream omsg; omsg << msg; logger.debug(LOG4SCAI_LOCATION, omsg.str()); } }
+#define SCAI_LOG_DEBUG( logger, msg )                       \
+    {                                                       \
+        scai::logging::Logger& cLogger = logger;            \
+        if ( &cLogger && cLogger.isDebugEnabled() )         \
+        {                                                   \
+            std::ostringstream omsg;                        \
+            omsg << msg;                                    \
+            cLogger.debug( LOG4SCAI_LOCATION, omsg.str());  \
+        }                                                   \
+    }                               
 #else
-#define SCAI_LOG_DEBUG(logger,msg) { if (false){ std::cout<<msg; } }
+#define SCAI_LOG_DEBUG( logger, msg )                       \
+    {                                                       \
+        if ( false )                                        \
+        {                                                   \
+            std::cout << msg;                               \
+        }                                                   \
+    }
 #endif
 
 /*******************************************************
@@ -268,10 +291,24 @@
  *******************************************************/
 
 #ifdef SCAI_LOG_INFO_ENABLED
-#define SCAI_LOG_INFO(logger,msg) { if (&logger && logger.isInfoEnabled()) \
-        { std::ostringstream omsg; omsg << msg; logger.info(LOG4SCAI_LOCATION, omsg.str()); } }
+#define SCAI_LOG_INFO( logger, msg )                        \
+    {                                                       \
+        scai::logging::Logger& cLogger = logger;            \
+        if ( &cLogger && cLogger.isInfoEnabled() )          \
+        {                                                   \
+            std::ostringstream omsg;                        \
+            omsg << msg;                                    \
+            cLogger.info( LOG4SCAI_LOCATION, omsg.str());   \
+        }                                                   \
+    }                               
 #else
-#define SCAI_LOG_INFO(logger,msg) { if (false){ std::cout<<msg; } }
+#define SCAI_LOG_INFO( logger, msg )                        \
+    {                                                       \
+        if ( false )                                        \
+        {                                                   \
+            std::cout << msg;                               \
+        }                                                   \
+    }
 #endif
 
 /*******************************************************
@@ -279,10 +316,18 @@
  *******************************************************/
 
 #ifdef SCAI_LOG_WARN_ENABLED
-#define SCAI_LOG_WARN(logger,msg) { if (&logger && logger.isWarnEnabled()) \
-        { std::ostringstream omsg; omsg << msg; logger.warn(LOG4SCAI_LOCATION, omsg.str()); } }
+#define SCAI_LOG_WARN( logger, msg )                        \
+    {                                                       \
+        scai::logging::Logger& cLogger = logger;            \
+        if ( &cLogger && cLogger.isWarnEnabled() )          \
+        {                                                   \
+            std::ostringstream omsg;                        \
+            omsg << msg;                                    \
+            cLogger.warn( LOG4SCAI_LOCATION, omsg.str());   \
+        }                                                   \
+    }                               
 #else
-#define SCAI_LOG_WARN(logger,msg) { if (false){ std::cout<<msg; } }
+#define SCAI_LOG_WARN( logger, msg ) { if ( false ) { std::cout << msg; }  }
 #endif
 
 /*******************************************************
@@ -290,10 +335,24 @@
  *******************************************************/
 
 #ifdef SCAI_LOG_ERROR_ENABLED
-#define SCAI_LOG_ERROR(logger,msg) { if (&logger && logger.isErrorEnabled()) \
-        { std::ostringstream omsg; omsg << msg; logger.error(LOG4SCAI_LOCATION, omsg.str()); } }
+#define SCAI_LOG_ERROR( logger, msg )                       \
+    {                                                       \
+        scai::logging::Logger& cLogger = logger;            \
+        if ( &cLogger && cLogger.isErrorEnabled() )         \
+        {                                                   \
+            std::ostringstream omsg;                        \
+            omsg << msg;                                    \
+            cLogger.error( LOG4SCAI_LOCATION, omsg.str());  \
+        }                                                   \
+    }                               
 #else
-#define SCAI_LOG_ERROR(logger,msg) { if (false){ std::cout<<msg; } }
+#define SCAI_LOG_ERROR( logger, msg )                       \
+    {                                                       \
+        if ( false )                                        \
+        {                                                   \
+            std::cout << msg;                               \
+        }                                                   \
+    }
 #endif
 
 /*******************************************************
@@ -301,10 +360,24 @@
  *******************************************************/
 
 #ifdef SCAI_LOG_FATAL_ENABLED
-#define SCAI_LOG_FATAL(logger,msg) { if (&logger && logger.isFatalEnabled()) \
-        { std::ostringstream omsg; omsg << msg; logger.fatal(LOG4SCAI_LOCATION, omsg.str()); } }
+#define SCAI_LOG_FATAL( logger, msg )                       \
+    {                                                       \
+        scai::logging::Logger& cLogger = logger;            \
+        if ( &cLogger && cLogger.isFatalEnabled() )         \
+        {                                                   \
+            std::ostringstream omsg;                        \
+            omsg << msg;                                    \
+            cLogger.fatal( LOG4SCAI_LOCATION, omsg.str());  \
+        }                                                   \
+    }                               
 #else
-#define SCAI_LOG_FATAL(logger,msg) { if (false){ std::cout<<msg; } }
+#define SCAI_LOG_FATAL( logger, msg )                       \
+    {                                                       \
+        if ( false )                                        \
+        {                                                   \
+            std::cout << msg;                               \
+        }                                                   \
+    }
 #endif
 
 /*******************************************************
