@@ -78,6 +78,10 @@ public:
      */
     static bool getEnvironment( std::string& val, const char* envVarName );
 
+    static void putEnvironment( const char* envVarName, const char* val, bool replace = true );
+
+    static void putEnvironment( const char* envVarName, const int val, bool replace = true );
+
     /** Set a string by value of its environment variable
      *
      *  @param[out]  val is string that will be set
