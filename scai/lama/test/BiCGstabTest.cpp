@@ -75,8 +75,6 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.BiCGstabTest" )
 
 BOOST_AUTO_TEST_CASE( CtorTest )
 {
-	BOOST_CHECK( 5 == 3 );
-
     LoggerPtr slogger(
         new CommonLogger( "<BiCGstab>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly ) );
 
