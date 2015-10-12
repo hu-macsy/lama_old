@@ -168,7 +168,7 @@ void CallTreeTable::open( const char* prefix, const char* threadSuffix )
 
     std::string rank;
 
-    if ( scai::common::Settings::getEnvironment( rank, "COMM_RANK" ) )
+    if ( scai::common::Settings::getEnvironment( rank, "SCAI_RANK" ) )
     {
         mFileName += ".";
         mFileName += rank;
