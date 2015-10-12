@@ -800,14 +800,6 @@ public:
     Matrix* clone( DistributionPtr rowDistribution, DistributionPtr colDistribution ) const;
 
     /**
-     * @brief Constructor creates a distributed dense vector of same type as a given matrix.
-     *
-     * @param[in] distribution   TODO[doxy] Complete Description.
-     * @param[in] value          TODO[doxy] Complete Description.
-     */
-    Vector* createDenseVector( DistributionPtr distribution, const Scalar value ) const;
-
-    /**
      * @brief Constructor function which creates a copy of this matrix.
      *
      * \code
