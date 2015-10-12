@@ -44,6 +44,7 @@
 // internal scai libraries
 #include <scai/hmemo/ContextAccess.hpp>
 #include <scai/common/Constants.hpp>
+#include <scai/common/macros/print_string.hpp>
 
 using namespace scai::hmemo;
 
@@ -1285,13 +1286,13 @@ return new DenseStorage<ValueType>( *this );
     template<>                                                                          \
     const char* DenseStorage<ARITHMETIC_HOST_TYPE_##I>::typeName()                      \
     {                                                                                   \
-        return "DenseStorage<ARITHMETIC_HOST_TYPE_##I>";                                \
+        return "DenseStorage<" PRINT_STRING(ARITHMETIC_HOST_TYPE_##I) ">";                \
     }                                                                                   \
                                                                                         \
     template<>                                                                          \
     const char* DenseStorageView<ARITHMETIC_HOST_TYPE_##I>::typeName()                  \
     {                                                                                   \
-        return "DenseStorageView<ARITHMETIC_HOST_TYPE_##I>";                            \
+    	return "DenseStorage<" PRINT_STRING(ARITHMETIC_HOST_TYPE_##I) ">";                \
     }                                                                                   \
                                                                                         \
     template class COMMON_DLL_IMPORTEXPORT DenseStorage<ARITHMETIC_HOST_TYPE_##I> ;     \
