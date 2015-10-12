@@ -39,7 +39,7 @@ dirname=xmlresult$(date +%y_%m_%d-%H%M)
 echo "Create result directory: ${dirname}"
 mkdir ${dirname}
 
-ERROR_LEVEL=error
+ERROR_LEVEL=test_suite
 
 # Running tests serial
 echo "Running serial tests"
