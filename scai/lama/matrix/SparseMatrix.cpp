@@ -2059,7 +2059,7 @@ Scalar SparseMatrix<ValueType>::l2Norm() const
 
     const Communicator& comm = getDistribution().getCommunicator();
 
-    ValueType allValue = comm.max( myValue );
+    ValueType allValue = comm.sum( myValue );
 
 	allValue = ::sqrt( allValue );
 
