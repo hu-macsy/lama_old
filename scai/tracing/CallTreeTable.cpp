@@ -35,6 +35,7 @@
 
 // internal scai libraries
 #include <scai/common/exception/Exception.hpp>
+#include <scai/common/Settings.hpp>
 
 #include <unistd.h> // getpid required
 
@@ -164,6 +165,14 @@ void CallTreeTable::open( const char* prefix, const char* threadSuffix )
 
     mFileName = prefix;
     mFileName += ".ct";
+
+    std::string rank;
+
+    if ( scai::common::Settings::getEnvironment( rank, "COMM_RANK" ) )
+    {
+        mFileName += ".";
+        mFileName += rank;
+    }
 
     if ( threadSuffix != NULL )
     {

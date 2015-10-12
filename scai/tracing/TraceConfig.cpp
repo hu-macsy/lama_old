@@ -38,6 +38,7 @@
 #include <scai/tracing/TraceData.hpp>
 
 #include <scai/common/exception/Exception.hpp>
+#include <scai/common/Settings.hpp>
 
 // std
 #include <iostream>
@@ -277,14 +278,15 @@ TraceConfig::~TraceConfig()
 
     fileName << mTraceFilePrefix << ".time";
 
-    /* For parallel processes we should add suffix for rank
+    /* For parallel processes we should add suffix for rank */
 
-    if( mComm->getSize() > 1 )
+    int rank;
+
+    if ( scai::common::Settings::getEnvironment( rank, "SCAI_RANK" ) )
     {
-        fileName << "." << mComm->getRank();
+        fileName << "." << rank;
     }
 
-    */
     SCAI_LOG_INFO( logger, "~TraceConfig, output file = " << fileName.str() )
     std::ofstream outfile;
     outfile.open( fileName.str().c_str(), std::ios::out );
