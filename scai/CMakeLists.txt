@@ -106,7 +106,7 @@ foreach    ( CACHE_VAR ${CACHE_VARS} )
     
 endforeach ( CACHE_VAR ${CACHE_VARS} )
 
-message ( STATUS "Passed CMAKE_ARGS ${CMAKE_ARGS}" )
+#message ( STATUS "Passed CMAKE_ARGS ${CMAKE_ARGS}" )
 
 #message ( STATUS "Passed BOOST_ARGS ${BOOST_ARGS}" )
 #message ( STATUS "Passed CUDA_ARGS ${CUDA_ARGS}" )
