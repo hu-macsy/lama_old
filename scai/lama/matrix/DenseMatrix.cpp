@@ -51,6 +51,7 @@
 
 #include <scai/common/unique_ptr.hpp>
 #include <scai/common/ScalarType.hpp>
+#include <scai/common/macros/print_string.hpp>
 
 // boost
 #include <boost/preprocessor.hpp>
@@ -2279,7 +2280,7 @@ const char* DenseMatrix<ValueType>::getTypeName() const
     template<>                                                                  \
     const char* DenseMatrix<ARITHMETIC_HOST_TYPE_##I>::typeName()               \
     {                                                                           \
-        return "DenseMatrix<ARITHMETIC_HOST_TYPE_##I>";                         \
+        return "DenseMatrix<" PRINT_STRING(ARITHMETIC_HOST_TYPE_##I) ">";                         \
     }                                                                           \
     \
     template class COMMON_DLL_IMPORTEXPORT DenseMatrix<ARITHMETIC_HOST_TYPE_##I> ;

@@ -57,6 +57,7 @@
 
 #include <scai/common/bind.hpp>
 #include <scai/common/exception/Exception.hpp>
+#include <scai/common/macros/print_string.hpp>
 
 // boost
 #include <boost/preprocessor.hpp>
@@ -2058,7 +2059,7 @@ Scalar SparseMatrix<ValueType>::l2Norm() const
 
     const Communicator& comm = getDistribution().getCommunicator();
 
-    ValueType allValue = comm.max( myValue );
+    ValueType allValue = comm.sum( myValue );
 
 	allValue = ::sqrt( allValue );
 
@@ -2548,7 +2549,7 @@ void SparseMatrix<ValueType>::readFromFile( const std::string& fileName )
     template<>                                                                      \
     const char* SparseMatrix<ARITHMETIC_HOST_TYPE_##I>::typeName()                  \
     {                                                                               \
-        return "SparseMatrix<ARITHMETIC_HOST_TYPE_##I>";                            \
+        return "SparseMatrix<" PRINT_STRING(ARITHMETIC_HOST_TYPE_##I>) ">";     \
     }                                                                               \
                                                                                     \
     template class COMMON_DLL_IMPORTEXPORT SparseMatrix<ARITHMETIC_HOST_TYPE_##I> ;

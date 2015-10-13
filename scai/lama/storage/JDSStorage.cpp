@@ -46,6 +46,7 @@
 
 #include <scai/common/bind.hpp>
 #include <scai/common/unique_ptr.hpp>
+#include <scai/common/macros/print_string.hpp>
 
 // boost
 #include <boost/preprocessor.hpp>
@@ -1654,7 +1655,7 @@ JDSStorage<ValueType>* JDSStorage<ValueType>::copy() const
     template<>                                                                    \
     const char* JDSStorage<ARITHMETIC_HOST_TYPE_##I>::typeName()                  \
     {                                                                             \
-        return "JDSStorage<ARITHMETIC_HOST_TYPE_##I>";                            \
+        return "JDSStorage<" PRINT_STRING(ARITHMETIC_HOST_TYPE_##I) ">";                 \
     }                                                                             \
                                                                                   \
     template class COMMON_DLL_IMPORTEXPORT JDSStorage<ARITHMETIC_HOST_TYPE_##I> ;

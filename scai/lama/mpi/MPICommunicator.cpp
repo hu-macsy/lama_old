@@ -197,6 +197,16 @@ void MPICommunicator::initialize( int& argc, char** & argv )
     LAMA_MPICALL( logger, MPI_Comm_rank( mComm, &mRank ), "MPI_Comm_rank" )
 
     setNodeData(); // determine mNodeRank, mNodeSize
+
+    // set rank, output string in an environment variable 
+    // so it might be used by logging, tracing, etc.
+
+    std::ostringstream commVal;
+
+    commVal << *this;
+
+    common::Settings::putEnvironment( "SCAI_COMM", commVal.str().c_str() );
+    common::Settings::putEnvironment( "SCAI_RANK", mRank );
 }
 
 void MPICommunicator::sum_complex_long_double(void *in, void *out, int *count,

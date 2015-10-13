@@ -38,6 +38,7 @@
 #include <cstdio>
 #include <cstring>
 #include <cstdlib>
+#include <sstream>
 
 extern char **environ;
 
@@ -239,6 +240,36 @@ bool Settings::init()
     }
 
     return true;
+}
+
+void Settings::putEnvironment( const char* envVarName, const char* val, bool replace )
+{
+    int c_replace = 0;
+
+    if ( replace )
+    {
+        c_replace = 1;
+    }
+
+    // Note: use of putenv is unsafe for auto-strings
+
+#ifdef WIN32
+    if ( replace || ( getenv( envVarName ) == NULL ) )
+    {
+        _putenv_s( envVarName, val );
+    }
+#else
+    setenv ( envVarName, val, c_replace );
+#endif
+}
+
+void Settings::putEnvironment( const char* envVarName, int val, bool replace )
+{
+    std::ostringstream str_val;
+
+    str_val << val;
+
+    putEnvironment( envVarName, str_val.str().c_str(), replace );
 }
 
 } /* end namespace common */

@@ -35,12 +35,12 @@
 
 // internal scai libraries
 #include <scai/common/exception/Exception.hpp>
+#include <scai/common/Settings.hpp>
 
 // std
 #include <iostream>
 #include <sstream>
 
-#include <cstdlib>         // import getenv, setenv
 #include <cstdio>          // FILE
 #include <stdexcept>       // runtime_error
 #include <cstring>
@@ -51,6 +51,8 @@ using namespace std;
 
 namespace scai
 {
+
+using common::Settings;
 
 namespace logging
 {
@@ -237,17 +239,11 @@ static int evalEntry( char* line, int length, const char* /* filename */ )
     if ( strncmp( name.c_str(), "SCAI_", 5 ) == 0 )
     {
         // this is not a logging entry so take it as environment
-        // Note: use of putenv is unsafe for auto-strings
-#ifdef WIN32
-        if ( getenv( name.c_str() ) == 0 )
-        {
-            _putenv_s( name.c_str(), value.c_str() );
-        }
 
-#else
-        int replace = 0; // do not override if it has already been set by user
-        setenv( name.c_str(), value.c_str(), replace );
-#endif
+        bool replace = false;   // do not override existing settings
+
+        Settings::putEnvironment( name.c_str(), value.c_str(), replace );
+
         return 1;
     }
 
@@ -334,8 +330,6 @@ int GenLogger::readConfig( const char* fname )
 
 void GenLogger::configure()
 {
-    std::string configFileString;  // shoud not be auto-string as pointer on it is used
-
     if ( !rootLogger )
     {
         throw std::runtime_error( "configure: rootLogger not available yet" );
@@ -350,72 +344,70 @@ void GenLogger::configure()
         setFormat( "#date, #time #name @ #thread ( #func -> #file::#line ) #level #msg" );
     }
 
-    const char homeConfigFile[] = ".loggingrc";
-    const char* configFile = getenv( "SCAI_LOG" );
+    std::string configFile;  
 
-    if ( configFile == NULL )
+    bool logDefined = Settings::getEnvironment( configFile, "SCAI_LOG" );
+
+    if ( !logDefined )
     {
+        // environment variable SCAI_LOG not set, so we try it at $HOME/.loggingrc
 
-        // environment variable not set, so we try it at $HOME/.loggingrc
-
-        const char* home = getenv( "HOME" );
-
-        if ( home != NULL )
+        if ( Settings::getEnvironment( configFile, "HOME" ) )
         {
-            configFileString = home;
-            configFileString += "/";
-            configFileString += homeConfigFile;
+            configFile += "/.loggingrc";
 
-            FILE* fp = fopen ( configFileString.c_str(), "r" );
+            FILE* fp = fopen ( configFile.c_str(), "r" );
 
             if ( fp != NULL )
             {
                 fclose( fp );
-                configFile = configFileString.c_str();
+                logDefined = true;   // file exists, so we take this as SCAI_LOG specification
             }
         }
     }
 
-    if ( configFile == NULL )
+    if ( !logDefined )
     {
-        SCAI_LOG_WARN( ( *rootLogger ), "SCAI_LOG not set, no $HOME/" << homeConfigFile << ", so use default configuration" );
+        SCAI_LOG_WARN( *rootLogger, "SCAI_LOG not set, no $HOME/.loggingrc, so use default configuration" );
+        configFile.clear();
     }
-    else if ( strlen( configFile ) == 0 )
+
+    if ( configFile.length() == 0 )  
     {
         rootLogger->setLevel( level::WARN );
     }
-    else if ( strcmp( configFile, level2str( level::OFF ) ) == 0 )
+    else if ( configFile == level2str( level::OFF ) )
     {
         rootLogger->setLevel( level::OFF );
     }
-    else if ( strcmp( configFile, level2str( level::FATAL ) ) == 0 )
+    else if ( configFile == level2str( level::FATAL ) )
     {
         rootLogger->setLevel( level::FATAL );
     }
-    else if ( strcmp( configFile, level2str( level::SERROR ) ) == 0 )
+    else if ( configFile == level2str( level::SERROR ) ) 
     {
         rootLogger->setLevel( level::SERROR );
     }
-    else if ( strcmp( configFile, level2str( level::WARN ) ) == 0 )
+    else if ( configFile == level2str( level::WARN ) )
     {
         rootLogger->setLevel( level::WARN );
     }
-    else if ( strcmp( configFile, level2str( level::INFO ) ) == 0 )
+    else if ( configFile == level2str( level::INFO ) )
     {
         rootLogger->setLevel( level::INFO );
     }
-    else if ( strcmp( configFile, level2str( level::DEBUG ) ) == 0 )
+    else if ( configFile == level2str( level::DEBUG ) )
     {
         rootLogger->setLevel( level::DEBUG );
     }
-    else if ( strcmp( configFile, level2str( level::TRACE ) ) == 0 )
+    else if ( configFile == level2str( level::TRACE ) )
     {
         rootLogger->setLevel( level::TRACE );
     }
     else
     {
         SCAI_LOG_INFO( ( *rootLogger ), "read configuration from file " << configFile );
-        readConfig( configFile );
+        readConfig( configFile.c_str() );
     }
 
     rootLogger->traverse(); // traverse all loggers and might be print it
@@ -520,6 +512,17 @@ void GenLogger::log( const char* level, SourceLocation& loc, const string& msg )
         {
             // undocumented feature: print stack 
             scai::common::Exception::addCallStack( output );
+        }
+        else if ( formatTokens[i] == "#comm" )
+        {
+            // output of communicator rank/size
+
+            std::string val;
+
+            if ( scai::common::Settings::getEnvironment( val, "SCAI_COMM" ) )
+            {
+                output << val;
+            }
         }
         else
         {

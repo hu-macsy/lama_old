@@ -33,6 +33,8 @@
 // hpp
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 
+#include <scai/common/macros/print_string.hpp>
+
 // boost
 #include <boost/preprocessor.hpp>
 
@@ -383,24 +385,19 @@ std::pair<MatrixStorageFormat, common::ScalarType> CSRSparseMatrix<ValueType>::c
 /*       Template specializations and nstantiations                          */
 /* ========================================================================= */
 
-#define tmp_xstr(s) tmp_str(s)
-#define tmp_str(s) #s
-
-#define LAMA_CSR_SPARSE_MATRIX_INSTANTIATE(z, I, _)                             \
-                                                                                \
-    template<>                                                                  \
-    const char* CSRSparseMatrix<ARITHMETIC_HOST_TYPE_##I>::typeName()           \
-    {                                                                           \
-        return "CSRSparseMatrix<" tmp_xstr(ARITHMETIC_HOST_TYPE_##I) ">";       \
-    }                                                                           \
-                                                                                \
+#define LAMA_CSR_SPARSE_MATRIX_INSTANTIATE(z, I, _)                               \
+                                                                                  \
+    template<>                                                                    \
+    const char* CSRSparseMatrix<ARITHMETIC_HOST_TYPE_##I>::typeName()             \
+    {                                                                             \
+        return "CSRSparseMatrix<" PRINT_STRING(ARITHMETIC_HOST_TYPE_##I) ">"; \
+    }                                                                             \
+                                                                                  \
     template class COMMON_DLL_IMPORTEXPORT CSRSparseMatrix<ARITHMETIC_HOST_TYPE_##I> ;
 
 BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_CSR_SPARSE_MATRIX_INSTANTIATE, _ )
 
 #undef LAMA_CSR_SPARSE_MATRIX_INSTANTIATE
-#undef tmp_xstr
-#undef tmp_str
 
 } /* end namespace lama */
 
