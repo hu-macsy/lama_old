@@ -472,61 +472,63 @@ void GenLogger::log( const char* level, SourceLocation& loc, const string& msg )
         {
             output << formatTokens[i];
         }
-        else if ( token == "#name" )
+        else if ( token == "#NAME" )
         {
             output << getFullName();
         }
-        else if ( token == "#time" )
+        else if ( token == "#TIME" )
         {
             writeTime( output );
         }
-        else if ( token == "#date" )
+        else if ( token == "#DATE" )
         {
             writeDate( output );
         }
-        else if ( formatTokens[i] == "#thread" )
+        else if ( formatTokens[i] == "#THREAD" )
         {
             output << common::Thread::getCurrentThreadName();
         }
-        else if ( formatTokens[i] == "#file" )
+        else if ( formatTokens[i] == "#FILE" )
         {
             output << loc.mFileName;
         }
-        else if ( formatTokens[i] == "#line" )
+        else if ( formatTokens[i] == "#LINE" )
         {
             output << loc.mLine;
         }
-        else if ( formatTokens[i] == "#func" )
+        else if ( formatTokens[i] == "#FUNC" )
         {
             output << loc.mFuncName;
         }
-        else if ( formatTokens[i] == "#level" )
+        else if ( formatTokens[i] == "#LEVEL" )
         {
             output << level;
         }
-        else if ( formatTokens[i] == "#msg" )
+        else if ( formatTokens[i] == "#MSG" )
         {
             output << msg;
         }
-        else if ( formatTokens[i] == "#stack" )
+        else if ( formatTokens[i] == "#STACK" )
         {
             // undocumented feature: print stack 
             scai::common::Exception::addCallStack( output );
         }
-        else if ( formatTokens[i] == "#comm" )
+        else 
         {
-            // output of communicator rank/size
+            // ignore first character # and take it as environment variable
+
+            const char* var = formatTokens[i].c_str() + 1;
 
             std::string val;
 
-            if ( scai::common::Settings::getEnvironment( val, "SCAI_COMM" ) )
+            if ( scai::common::Settings::getEnvironment( val, var ) )
             {
                 output << val;
             }
-        }
-        else
-        {
-            output << formatTokens[i];
+            else
+            {
+                output << "${" << var << "}";
+            }
         }
     }
 
@@ -630,7 +632,7 @@ static void tokenize( std::vector<std::string>& tokens, const std::string& input
             tokens.push_back( input.substr( lastPos, pos - lastPos ) );
         }
 
-        lastPos = input.find_first_not_of( "abcdefghijklmnopqrstuvwxyz", pos + 1 );
+        lastPos = input.find_first_not_of( "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVXYZ_", pos + 1 );
  
         tokens.push_back( input.substr( pos, lastPos - pos ) );
 
@@ -646,6 +648,18 @@ static void tokenize( std::vector<std::string>& tokens, const std::string& input
 void GenLogger::setFormat( const std::string& format )
 {
     tokenize( formatTokens, format );
+
+    // convert all tokens to upper case
+
+    for ( size_t i = 0; i < formatTokens.size(); ++i )
+    {
+        std::string& val = formatTokens[i];
+
+        for ( std::string::iterator p = val.begin(); val.end() != p; ++p )
+        {
+            *p = toupper( *p );
+        }
+    }
 }
 
 } /* end namespace logging */

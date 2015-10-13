@@ -34,6 +34,7 @@
 
 // std
 #include <string>
+#include <vector>
 
 namespace scai
 {
@@ -74,22 +75,35 @@ public:
      *
      *  @param[out]  val is string that will be set
      *  @param[in]   envVarName is name of the environment variable
-     *  @return      true if environment variable has been used to set flag
+     *  @return      true if environment variable was set and provided an integer vlaue
      */
     static bool getEnvironment( std::string& val, const char* envVarName );
 
+    /** Get tokenized string from an environment variable 
+     *
+     *  @param[out] values is a vector of separated strings from the environment varialbe
+     *  @param[in]  envVarName is name of the environment variable
+     *  @param[in]  separator is the character used to separate
+     *  @return     true if environment variable was set
+     */
+    static bool getEnvironment( std::vector<std::string>& vals, const char* envVarName, const char separator );
+
+    /** Define an environment variable */
+
     static void putEnvironment( const char* envVarName, const char* val, bool replace = true );
+
+    /** Define an environment variable */
 
     static void putEnvironment( const char* envVarName, const int val, bool replace = true );
 
-    /** Set a string by value of its environment variable
+    /** Help routine to tokenize a string by a given separator
      *
-     *  @param[out]  val is string that will be set
-     *  @param[in]   envVarName is name of the environment variable
-     *  @param[in]   comm is communicator used to bcast setting of environment variable
-     *  @return      true if environment variable has been used to set flag
+     *  @param[out] values is a vector of separated strings from the input string
+     *  @param[in]  input is a string that will be tokenized
+     *  @param[in]  separator is the character used to separate
+     *
      */
-    //static bool getEnvironment( std::string& val, const char* envVarName, const Communicator& comm );
+    static void tokenize( std::vector<std::string>& values, const std::string& input, const char seperator );
 
 private:
 
