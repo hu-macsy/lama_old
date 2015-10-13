@@ -175,54 +175,34 @@ bool Settings::getEnvironment( std::string& val, const char* envVarName )
     return false;
 }
 
-/*bool Settings::getEnvironment( std::string& val, const char* envVarName, const Communicator& comm )
+void Settings::tokenize( std::vector<std::string>& values, const std::string& input, const char seperator )
 {
-    bool isRoot = comm.getRank() == 0;
+    values.clear();
 
-    bool hasSet = false;
+    size_t found = std::string::npos;
 
-    if( isRoot )
+    do
     {
-        hasSet = getEnvironment( val, envVarName );
-
-        if( hasSet )
-        {
-            comm.bcast( val, 0 );
-        }
-        else
-        {
-            std::string dummy = "";
-            comm.bcast( dummy, 0 );
-        }
+        const size_t prevFound = found + 1;
+        found = input.find( seperator, prevFound );
+        values.push_back( input.substr( prevFound, found - prevFound ) );
     }
-    else
+    while ( found != std::string::npos );
+}
+
+bool Settings::getEnvironment( std::vector<std::string>& vals, const char* envVarName, const char separator )
+{
+    std::string val;
+
+    bool found = getEnvironment( val, envVarName );
+
+    if ( found )
     {
-        std::string rootVal;
-
-        comm.bcast( rootVal, 0 );
-
-        bool hasRootSet = rootVal.length() > 0;
-
-        if( hasRootSet )
-        {
-            val = rootVal;
-
-            hasSet = true;
-
-            // if process has own environment variable, overwrite it
-
-            getEnvironment( val, envVarName );
-        }
-        else
-        {
-            hasSet = getEnvironment( val, envVarName );
-        }
+        tokenize( vals, val, separator );
     }
 
-    //SCAI_LOG_INFO( logger, comm << ": " << envVarName << "=" << val );
-
-    return hasSet;
-}*/
+    return found;
+}
 
 bool Settings::init()
 {
