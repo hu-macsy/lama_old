@@ -41,7 +41,7 @@ using namespace scai::hmemo;
  *  Planned version (avoids use of templates)                            *
  ************************************************************************/
 
-void verifySameMatrixAll( const Matrix& m1, const Matrix& m2 )
+/*void verifySameMatrixAll( const Matrix& m1, const Matrix& m2 )
 {
     const IndexType n = m1.getNumRows();
     BOOST_CHECK_EQUAL( n, m1.getNumColumns() );
@@ -66,13 +66,13 @@ void verifySameMatrixAll( const Matrix& m1, const Matrix& m2 )
         Scalar s2 = y2.getValue( i );
         BOOST_CHECK_CLOSE( s1.getValue<double>(), s2.getValue<double>(), 1.0e-5 );
     }
-}
+}*/
 
 /************************************************************************
  *  Planned version  (works on columns or rows)                          *
  ************************************************************************/
 
-void assertSameMatrix( const Matrix& m1, const Matrix& m2 )
+/*void assertSameMatrix( const Matrix& m1, const Matrix& m2 )
 {
     std::cout << "compare m1 = " << m1 << " with m2 = " << m2 << std::endl;
     const IndexType m = m1.getNumRows();
@@ -102,4 +102,4 @@ void assertSameMatrix( const Matrix& m1, const Matrix& m2 )
             SCAI_CHECK_CLOSE( ptrRow1->getValue( j ), ptrRow2->getValue( j ), 1 )
         }
     }
-}
+}*/

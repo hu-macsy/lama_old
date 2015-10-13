@@ -220,27 +220,6 @@ ContextArray* Matrix::createArray() const
 
 /* ---------------------------------------------------------------------------------*/
 
-Vector* Matrix::createDenseVector( DistributionPtr distribution, const Scalar value ) const
-{
-    common::ScalarType matrixValueType = getValueType();
-
-    SCAI_LOG_INFO( logger, "create vector of type " << matrixValueType )
-
-    switch ( matrixValueType )
-    {
-        case common::scalar::DOUBLE:
-            return new DenseVector<double>( distribution, value.getValue<double>() );
-
-        case common::scalar::FLOAT:
-            return new DenseVector<float>( distribution, value.getValue<float>() );
-
-        default:
-            COMMON_THROWEXCEPTION( "unsupported vector type : " << matrixValueType )
-    }
-}
-
-/* ---------------------------------------------------------------------------------*/
-
 Scalar Matrix::operator()( IndexType i, IndexType j ) const
 {
     return getValue( i, j );
