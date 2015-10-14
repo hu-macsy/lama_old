@@ -103,7 +103,7 @@ scai_project (
         ResidualThresholdTest
         RichardsonTest
         ScalarTest
-    #    SimpleAMGTest
+        SimpleAMGTest
         SolutionProxyTest
         SORTest
         SparseAssemblyStorageTest
