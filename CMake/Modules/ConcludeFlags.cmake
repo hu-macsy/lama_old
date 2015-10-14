@@ -49,8 +49,6 @@ string ( STRIP "${CMAKE_CXX_FLAGS_RELEASE}" CMAKE_CXX_FLAGS_RELEASE )
 string ( STRIP "${CMAKE_EXE_LINKER_FLAGS}" CMAKE_EXE_LINKER_FLAGS )
 string ( STRIP "${CMAKE_SHARED_LINKER_FLAGS}" CMAKE_SHARED_LINKER_FLAGS )
 
-message( STATUS "conclude CMAKE_CXX_FLAGS: ${CMAKE_CXX_FLAGS}" )
-
 if ( CUDA_FOUND AND USE_CUDA )
     
     # TODO: determine cuda compute capability and use highest
