@@ -92,10 +92,6 @@ typedef int PartitionId;
  */
 static const PartitionId nPartition = std::numeric_limits<PartitionId>::max();
 
-#define Zero scai::common::constants::ZERO
-#define One scai::common::constants::ONE
-#define Eps scai::common::constants::EPS
-
 // Number of supported arithmetic types, maximal number is currently 4
 
 // List here all arithmetic types for which matrices, storages might be created

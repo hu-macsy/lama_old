@@ -50,6 +50,7 @@
 #include <scai/tracing.hpp>
 
 #include <scai/common/bind.hpp>
+#include <scai/common/Constants.hpp>
 #include <scai/common/macros/print_string.hpp>
 
 // boost
@@ -248,14 +249,12 @@ void COOStorage<ValueType>::setIdentity( const IndexType size )
     WriteOnlyAccess<IndexType> ja( mJA, loc, mNumValues );
     WriteOnlyAccess<ValueType> values( mValues, loc, mNumValues );
 
-    ValueType one = static_cast<ValueType>( 1.0 );
-
     SCAI_CONTEXT_ACCESS( loc )
 
     setOrder( ia.get(), mNumValues );
     setOrder( ja.get(), mNumValues );
 
-    setVal( values.get(), mNumValues, one );
+    setVal( values.get(), mNumValues, static_cast<ValueType>(1.0) );
 
     mDiagonalProperty = true;
 }
@@ -507,7 +506,7 @@ ValueType COOStorage<ValueType>::getValue( const IndexType i, const IndexType j 
         }
     }
 
-    return 0.0;
+    return static_cast<ValueType>(0.0);
 }
 
 /* --------------------------------------------------------------------------- */
@@ -650,7 +649,7 @@ void COOStorage<ValueType>::getRowImpl( LAMAArray<OtherType>& row, const IndexTy
 
     for( IndexType j = 0; j < mNumColumns; ++j )
     {
-        wRow[j] = 0.0;
+        wRow[j] = static_cast<OtherType>(0.0);
     }
 
     for( IndexType kk = 0; kk < mNumValues; ++kk )
@@ -729,7 +728,7 @@ ValueType COOStorage<ValueType>::l1Norm() const
 
 	SCAI_CONTEXT_ACCESS( loc );
 
-	return asum( n, data.get(), 1, NULL );
+	return asum( n, data.get(), static_cast<IndexType>(1.0), NULL );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -763,7 +762,7 @@ ValueType COOStorage<ValueType>::maxNorm() const
 
     if( n == 0 )
     {
-        return 0.0f;
+        return static_cast<ValueType>(0.0);
     }
 
     ContextPtr loc = getContextPtr();
@@ -870,7 +869,7 @@ void COOStorage<ValueType>::vectorTimesMatrix(
     SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumRows )
     SCAI_ASSERT_EQUAL_ERROR( result.size(), mNumColumns )
 
-    if( ( beta != 0.0 ) && ( &result != &y ) )
+    if( ( beta != scai::common::constants::ZERO ) && ( &result != &y ) )
     {
         SCAI_ASSERT_EQUAL_ERROR( y.size(), mNumColumns )
     }
@@ -1055,7 +1054,7 @@ SyncToken* COOStorage<ValueType>::vectorTimesMatrixAsync(
     SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumRows )
     SCAI_ASSERT_EQUAL_ERROR( result.size(), mNumColumns )
 
-    if( ( beta != 0.0 ) && ( &result != &y ) )
+    if( ( beta != scai::common::constants::ZERO ) && ( &result != &y ) )
     {
         SCAI_ASSERT_EQUAL_ERROR( y.size(), mNumColumns )
     }

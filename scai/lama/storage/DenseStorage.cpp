@@ -286,13 +286,10 @@ void DenseStorageView<ValueType>::setIdentity()
 {
     WriteOnlyAccess<ValueType> data( mData, mNumRows * mNumColumns );
 
-    const ValueType zero = static_cast<ValueType>( 0.0 );
-    const ValueType one = static_cast<ValueType>( 1.0 );
-
     //  do not use something like scale, data can be completely undefined
 
-    OpenMPDenseUtils::scaleValue( data.get(), mNumRows, mNumColumns, zero );
-    OpenMPDenseUtils::setDiagonalValue( data.get(), mNumRows, mNumColumns, one );
+    OpenMPDenseUtils::scaleValue( data.get(), mNumRows, mNumColumns, static_cast<ValueType>(0.0) );
+    OpenMPDenseUtils::setDiagonalValue( data.get(), mNumRows, mNumColumns, static_cast<ValueType>(1.0) );
 
     SCAI_LOG_INFO( logger, *this << " has been set to identity" )
 }
@@ -304,7 +301,7 @@ void DenseStorageView<ValueType>::setZero()
 {
     WriteOnlyAccess<ValueType> data( mData, mNumRows * mNumColumns );
 
-    const ValueType zero = static_cast<ValueType>( 0.0 );
+    const ValueType zero = static_cast<ValueType>(0.0);
 
     //  do not use something like scale, data can be completely undefined
 
@@ -483,7 +480,7 @@ void DenseStorageView<ValueType>::matrixTimesVector(
 
     // using BLAS2 interface requires result and y to be aliased
 
-    if( beta == static_cast<ValueType>( 0 ) )
+    if( beta == scai::common::constants::ZERO )
     {
         SCAI_LOG_INFO( logger, "set result = 0 as y != result and beta = 0" )
 
@@ -493,7 +490,7 @@ void DenseStorageView<ValueType>::matrixTimesVector(
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        setVal( wResult.get(), mNumRows, static_cast<ValueType>( 0 ) );
+        setVal( wResult.get(), mNumRows, static_cast<ValueType>(0.0) );
     }
     else if( &result != &y )
     {
@@ -522,11 +519,11 @@ void DenseStorageView<ValueType>::matrixTimesVector(
     {
         SCAI_LOG_INFO( logger, "empty matrix, so compute result = " << beta << " * result " )
 
-        if( beta == static_cast<ValueType>( 0 ) )
+        if( beta == scai::common::constants::ZERO )
         {
             // nothing more to do, y is already 0
         }
-        else if( beta == static_cast<ValueType>( 1 ) )
+        else if( beta == scai::common::constants::ONE )
         {
             // no scaling required
         }
@@ -558,8 +555,8 @@ void DenseStorageView<ValueType>::matrixTimesVector(
 
         // gemv:  result = alpha * this * x + beta * result
 
-        gemv( CblasRowMajor, CblasNoTrans, mNumRows, mNumColumns, alpha, denseValues.get(), lda, rX.get(), 1, beta,
-              wResult.get(), 1, NULL );
+        gemv( CblasRowMajor, CblasNoTrans, mNumRows, mNumColumns, alpha, denseValues.get(), lda, rX.get(),
+              1, beta, wResult.get(), 1, NULL );
     }
 }
 
@@ -592,7 +589,7 @@ void DenseStorageView<ValueType>::vectorTimesMatrix(
 
     // using BLAS2 interface requires result and y to be aliased
 
-    if( beta == static_cast<ValueType>( 0 ) )
+    if( beta == scai::common::constants::ZERO )
     {
         SCAI_LOG_INFO( logger, "set result = 0 as y != result and beta = 0" )
 
@@ -602,7 +599,7 @@ void DenseStorageView<ValueType>::vectorTimesMatrix(
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        setVal( wResult.get(), mNumColumns, static_cast<ValueType>( 0 ) );
+        setVal( wResult.get(), mNumColumns, static_cast<ValueType>(0.0) );
     }
     else if( &result != &y )
     {
@@ -631,11 +628,11 @@ void DenseStorageView<ValueType>::vectorTimesMatrix(
     {
         SCAI_LOG_INFO( logger, "empty matrix, so compute result = " << beta << " * result " )
 
-        if( beta == static_cast<ValueType>( 0 ) )
+        if( beta == scai::common::constants::ZERO )
         {
             // nothing more to do, y is already 0
         }
-        else if( beta == static_cast<ValueType>( 1 ) )
+        else if( beta == scai::common::constants::ONE )
         {
             // no scaling required
         }
@@ -667,8 +664,8 @@ void DenseStorageView<ValueType>::vectorTimesMatrix(
 
         // gemv:  result = alpha * this * x + beta * result
 
-        gemv( CblasRowMajor, CblasTrans, mNumRows, mNumColumns, alpha, denseValues.get(), lda, rX.get(), 1, beta,
-              wResult.get(), 1, NULL );
+        gemv( CblasRowMajor, CblasTrans, mNumRows, mNumColumns, alpha, denseValues.get(), lda, rX.get(),
+              1, beta, wResult.get(), 1, NULL );
     }
 }
 
@@ -820,7 +817,7 @@ void DenseStorageView<ValueType>::matrixTimesMatrixDense(
 
     ContextPtr context = mContext;
 
-    if( beta == Zero )
+    if( beta == scai::common::constants::ZERO )
     {
         // do not care at all about C as it might be any dummy, or aliased to result
 
@@ -828,7 +825,7 @@ void DenseStorageView<ValueType>::matrixTimesMatrixDense(
         WriteOnlyAccess<ValueType> resAccess( getData(), context, m * n );
         LAMA_INTERFACE_FN_T( setVal, context, Utils, Setter, ValueType )
         SCAI_CONTEXT_ACCESS( context )
-        setVal( resAccess.get(), m * n, 0.0 );
+        setVal( resAccess.get(), m * n, static_cast<ValueType>(0.0) );
     }
     else if( this != &c )
     {
@@ -893,7 +890,7 @@ ValueType DenseStorageView<ValueType>::l1Norm() const
 
     if( n == 0 )
     {
-        return 0.0f;
+        return static_cast<ValueType>(0.0);
     }
 
 	ContextPtr loc = this->getContextPtr();
@@ -916,7 +913,7 @@ ValueType DenseStorageView<ValueType>::l2Norm() const
 
     if( n == 0 )
     {
-        return 0.0f;
+        return static_cast<ValueType>(0.0);
     }
 
 	ContextPtr loc = this->getContextPtr();
@@ -939,7 +936,7 @@ ValueType DenseStorageView<ValueType>::maxNorm() const
 
     if( n == 0 )
     {
-        return 0.0f;
+        return static_cast<ValueType>(0.0);
     }
 
     ContextPtr loc = this->getContextPtr();
@@ -993,7 +990,7 @@ ValueType DenseStorageView<ValueType>::maxDiffNormImpl( const DenseStorageView<V
 
     if( n == 0 )
     {
-        return 0.0f;
+        return static_cast<ValueType>(0.0);
     }
 
     ContextPtr loc = mContext;
@@ -1161,9 +1158,7 @@ mNumColumns = numColumns;
 
 WriteOnlyAccess<ValueType> data( mData, numRows * numColumns );
 
-const ValueType zero = static_cast<ValueType>( 0 );
-
-OpenMPUtils::setVal( data.get(), numRows * numColumns, zero );
+OpenMPUtils::setVal( data.get(), numRows * numColumns, static_cast<ValueType>(0.0) );
 }
 
 /* --------------------------------------------------------------------------- */

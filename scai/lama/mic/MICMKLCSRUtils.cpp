@@ -45,6 +45,7 @@
 
 #include <scai/common/Assert.hpp>
 #include <scai/common/Settings.hpp>
+#include <scai/common/Constants.hpp>
 
 // external
 #include <mkl.h>
@@ -134,7 +135,7 @@ void MICMKLCSRUtils::normalGEMV(
     SCAI_LOG_INFO( logger,
                    "normalGEMV<double>, result[" << numRows << "] = " << alpha << " * A * x + " << beta << " * y " )
 
-    if( y != result && beta != 0 )
+    if( y != result && beta != scai::common::constants::ZERO )
     {
         MICUtils::set( result, y, numRows );
     }

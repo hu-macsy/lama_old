@@ -56,6 +56,7 @@
 
 #include <scai/common/unique_ptr.hpp>
 #include <scai/common/exception/UnsupportedException.hpp>
+#include <scai/common/Constants.hpp>
 
 // boost
 #include <boost/preprocessor.hpp>
@@ -435,7 +436,7 @@ template<typename ValueType>
 Scalar DenseVector<ValueType>::getValue( IndexType globalIndex ) const
 {
     SCAI_LOG_TRACE( logger, *this << ": getValue( globalIndex = " << globalIndex << " )" )
-    ValueType myValue = 0.0;
+    ValueType myValue = static_cast<ValueType>(0.0);
     const IndexType localIndex = getDistribution().global2local( globalIndex );
 
     if( localIndex != nIndex )
@@ -510,7 +511,7 @@ Scalar DenseVector<ValueType>::l1Norm() const
 {
     IndexType nnu = mLocalValues.size();
 
-    ValueType localL1Norm = static_cast<ValueType>( 0 );
+    ValueType localL1Norm = static_cast<ValueType>(0.0);
 
     if( nnu > 0 )
     {
@@ -539,7 +540,7 @@ Scalar DenseVector<ValueType>::l2Norm() const
 {
     IndexType nnu = mLocalValues.size();
 
-    ValueType localDotProduct = static_cast<ValueType>( 0 );
+    ValueType localDotProduct = static_cast<ValueType>(0.0);
 
     if( nnu > 0 )
     {
@@ -570,7 +571,7 @@ Scalar DenseVector<ValueType>::maxNorm() const
 {
     IndexType nnu = mLocalValues.size(); // number of local rows
 
-    ValueType localMaxNorm = static_cast<ValueType>( 0 );
+    ValueType localMaxNorm = static_cast<ValueType>(0.0);
 
     if( nnu > 0 )
     {
@@ -663,11 +664,11 @@ void DenseVector<ValueType>::vectorPlusVector(
         ReadAccess<ValueType> yAccess( y, context );
         WriteAccess<ValueType> resultAccess( result, context, true );
 
-        if( beta == 0.0 )
+        if( beta == scai::common::constants::ZERO )
         {
             SCAI_LOG_DEBUG( logger, "vectorPlusVector: result *= alpha" )
 
-            if( alpha != 1.0 ) // result *= alpha
+            if( alpha != scai::common::constants::ONE ) // result *= alpha
             {
                 SCAI_CONTEXT_ACCESS( context )
                 scale( resultAccess.get(), alpha, nnu );
@@ -677,11 +678,11 @@ void DenseVector<ValueType>::vectorPlusVector(
                 // do nothing: result = 1 * result
             }
         }
-        else if( beta == 1.0 ) // result = alpha * result + y
+        else if( beta == scai::common::constants::ONE ) // result = alpha * result + y
         {
             SCAI_LOG_DEBUG( logger, "vectorPlusVector: result = alpha * result + y" )
 
-            if( alpha != 1.0 ) // result = alpha * result + y
+            if( alpha != scai::common::constants::ONE ) // result = alpha * result + y
             {
                 // result *= alpha
                 SCAI_CONTEXT_ACCESS( context )
@@ -690,14 +691,14 @@ void DenseVector<ValueType>::vectorPlusVector(
 
             // result += y
             SCAI_CONTEXT_ACCESS( context )
-            axpy( nnu, 1/*alpha*/, yAccess.get(), 1, resultAccess.get(), 1, NULL );
+            axpy( nnu, static_cast<ValueType>(1.0)/*alpha*/, yAccess.get(), 1, resultAccess.get(), 1, NULL );
         }
         else // beta != 1.0 && beta != 0.0 --> result = alpha * result + beta * y
         {
             SCAI_LOG_DEBUG( logger,
                             "vectorPlusVector: result = alpha(" << alpha << ")" << " * result + beta(" << beta << ") * y" )
 
-            if( alpha != 1.0 )
+            if( alpha != scai::common::constants::ONE )
             {
                 SCAI_CONTEXT_ACCESS( context )
                 scale( resultAccess.get(), alpha, nnu );
@@ -717,14 +718,14 @@ void DenseVector<ValueType>::vectorPlusVector(
         ReadAccess<ValueType> xAccess( x, context );
         WriteAccess<ValueType> resultAccess( result, context, true );
 
-        if( beta != 1.0 ) // result = [alpha * x + ] beta * result
+        if( beta != scai::common::constants::ONE ) // result = [alpha * x + ] beta * result
         {
             // result *= beta
             SCAI_CONTEXT_ACCESS( context )
             scale( resultAccess.get(), beta, nnu );
         }
 
-        if( alpha != 0.0 )
+        if( alpha != scai::common::constants::ZERO )
         {
             // result = alpha * x + result
             SCAI_CONTEXT_ACCESS( context )

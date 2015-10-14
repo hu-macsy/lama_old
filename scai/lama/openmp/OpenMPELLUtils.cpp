@@ -46,6 +46,7 @@
 #include <scai/common/bind.hpp>
 #include <scai/common/Assert.hpp>
 #include <scai/common/macros/unused.hpp>
+#include <scai/common/Constants.hpp>
 
 // boost
 #include <boost/preprocessor.hpp>
@@ -227,11 +228,11 @@ ValueType OpenMPELLUtils::absMaxVal(
     const IndexType ellSizes[],
     const ValueType values[] )
 {
-    ValueType maxValue = static_cast<ValueType>( 0.0 );
+    ValueType maxValue = static_cast<ValueType>(0.0);
 
     #pragma omp parallel
     {
-        ValueType threadVal = static_cast<ValueType>( 0.0 );
+        ValueType threadVal = static_cast<ValueType>(0.0);
 
         #pragma omp for schedule( SCAI_OMP_SCHEDULE )
 
@@ -286,7 +287,7 @@ void OpenMPELLUtils::getRow(
 
     for( IndexType j = 0; j < numColumns; ++j )
     {
-        row[j] = 0.0;
+        row[j] = static_cast<OtherValueType>(0.0);
     }
 
     #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
@@ -320,7 +321,7 @@ OtherValueType OpenMPELLUtils::getValue(
         }
     }
 
-    return 0.0;
+    return static_cast<OtherValueType>(0.0);
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -410,7 +411,7 @@ void OpenMPELLUtils::setCSRValues(
             {
                 IndexType pos = ellindex( i, jj, numRows, numValuesPerRow );
                 ellJA[pos] = j; // last used column index
-                ellValues[pos] = 0.0; // zero entry
+                ellValues[pos] = static_cast<ELLValueType>(0.0); // zero entry
             }
         }
     }
@@ -450,7 +451,7 @@ void OpenMPELLUtils::fillELLValues(
             {
                 IndexType pos = ellindex( i, jj, numRows, numValuesPerRow );
                 ellJA[pos] = j; // last used column index
-                ellValues[pos] = 0.0; // zero entry
+                ellValues[pos] = static_cast<ValueType>(0.0); // zero entry
             }
         }
     }
@@ -813,7 +814,6 @@ void OpenMPELLUtils::jacobi(
         SCAI_LOG_ERROR( logger, "jacobi called asynchronously, not supported here" )
     }
 
-    const ValueType oneMinusOmega = static_cast<ValueType>( 1.0 - omega );
     #pragma omp parallel
     {
         SCAI_REGION( "OpenMP.ELL.jacobi" )
@@ -831,7 +831,7 @@ void OpenMPELLUtils::jacobi(
                 temp -= ellValues[pos] * oldSolution[ellJA[pos]];
             }
 
-            if( omega == 1.0 )
+            if( omega == scai::common::constants::ONE )
             {
                 solution[i] = temp / diag;
             }
@@ -841,7 +841,7 @@ void OpenMPELLUtils::jacobi(
             }
             else
             {
-                solution[i] = omega * ( temp / diag ) + oneMinusOmega * oldSolution[i];
+                solution[i] = omega * ( temp / diag ) + ( static_cast<ValueType>(1.0) - omega ) * oldSolution[i];
             }
         }
     }
@@ -884,7 +884,7 @@ void OpenMPELLUtils::jacobiHalo(
                 i = rowIndexes[ii];
             }
 
-            ValueType temp = 0.0;
+            ValueType temp = static_cast<ValueType>(0.0);
 
             for( IndexType jj = 0; jj < ellSizes[i]; jj++ )
             {
@@ -938,7 +938,7 @@ void OpenMPELLUtils::normalGEMV(
 
         for( IndexType i = 0; i < numRows; ++i )
         {
-            ValueType temp = 0.0;
+            ValueType temp = static_cast<ValueType>(0.0);
 
             for( IndexType jj = 0; jj < ellSizes[i]; ++jj )
             {
@@ -953,13 +953,13 @@ void OpenMPELLUtils::normalGEMV(
 
             SCAI_LOG_TRACE( logger, "row = " << i << ", temp = " << temp )
 
-            if( static_cast<ValueType>( 0 ) == beta )
+            if( beta == scai::common::constants::ZERO )
             {
                 // must be handled separately as y[i] might be uninitialized
 
                 result[i] = alpha * temp;
             }
-            else if( static_cast<ValueType>( 1 ) == alpha )
+            else if( alpha == scai::common::constants::ONE )
             {
                 result[i] = temp + beta * y[i];
             }
@@ -1006,7 +1006,7 @@ void OpenMPELLUtils::sparseGEMV(
             IndexType i = rowIndexes[ii];
 
             //result is not initialized for performance reasons
-            ValueType temp = 0.0;
+            ValueType temp = static_cast<ValueType>(0.0);
 
             for( IndexType jj = 0; jj < ellSizes[i]; ++jj )
             {
@@ -1015,7 +1015,7 @@ void OpenMPELLUtils::sparseGEMV(
                 temp += ellValues[pos] * x[j];
             }
 
-            if( 1 == alpha )
+            if( alpha == scai::common::constants::ONE )
             {
                 result[i] += temp;
             }
@@ -1059,7 +1059,7 @@ void OpenMPELLUtils::normalGEVM(
         //#pragma omp for schedule(SCAI_OMP_SCHEDULE)
         for( IndexType i = 0; i < numColumns; ++i )
         {
-            ValueType temp = 0.0;
+            ValueType temp = static_cast<ValueType>(0.0);
 
             for( IndexType j = 0; j < numRows; ++j )
             {
@@ -1078,13 +1078,13 @@ void OpenMPELLUtils::normalGEVM(
 
             SCAI_LOG_TRACE( logger, "column = " << i << ", temp = " << temp )
 
-            if( 0.0 == beta )
+            if( beta == scai::common::constants::ZERO )
             {
                 // must be handled separately as y[i] might be uninitialized
 
                 result[i] = alpha * temp;
             }
-            else if( 1.0 == alpha )
+            else if( alpha == scai::common::constants::ONE )
             {
                 result[i] = temp + beta * y[i];
             }
@@ -1141,7 +1141,7 @@ void OpenMPELLUtils::sparseGEVM(
 
         for( IndexType i = 0; i < numColumns; ++i )
         {
-            ValueType temp = 0.0;
+            ValueType temp = static_cast<ValueType>(0.0);
 
             for( IndexType jj = 0; jj < numNonZeroRows; ++jj )
             {
@@ -1162,7 +1162,7 @@ void OpenMPELLUtils::sparseGEVM(
 
             }
 
-            if( 1 == alpha )
+            if( alpha == scai::common::constants::ONE )
             {
                 result[i] += temp;
             }

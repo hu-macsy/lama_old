@@ -75,11 +75,11 @@ ValueType MICDIAUtils::absMaxVal(
     const IndexType diaOffsets[],
     const ValueType diaValues[] )
 {
-    ValueType maxValue = static_cast<ValueType>( 0.0 );
+    ValueType maxValue = static_cast<ValueType>(0.0);
 
     #pragma omp parallel
     {
-        ValueType threadVal = static_cast<ValueType>( 0.0 );
+        ValueType threadVal = static_cast<ValueType>(0.0);
 
         #pragma omp for
 
@@ -150,7 +150,7 @@ void MICDIAUtils::getCSRValues(
             for( IndexType i = 0; i < n; i++ )
             {
                 csrJA[i] = i;
-                csrValues[i] = 0.0;
+                csrValues[i] = static_cast<ValueType>(0.0);
             }
         }
         else
@@ -340,7 +340,7 @@ void MICDIAUtils::normalGEMV(
 
         for( IndexType i = 0; i < numRows; i++ )
         {
-            ValueType accu = 0.0;
+            ValueType accu = static_cast<ValueType>(0.0);
 
             for( IndexType ii = 0; ii < numDiagonals; ++ii )
             {
@@ -416,8 +416,7 @@ void MICDIAUtils::jacobi(
             const ValueType* rhs = static_cast<const ValueType*>( rhsPtr );
             ValueType* solution = static_cast<ValueType*>( solutionPtr );
 
-            const ValueType one = 1;
-            const ValueType oneMinusOmega = one - omega;
+            const ValueType oneMinusOmega = static_cast<ValueType>(1.0) - omega;
 
             #pragma omp parallel for
 

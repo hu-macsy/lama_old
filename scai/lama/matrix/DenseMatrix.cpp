@@ -51,6 +51,7 @@
 
 #include <scai/common/unique_ptr.hpp>
 #include <scai/common/ScalarType.hpp>
+#include <scai/common/Constants.hpp>
 #include <scai/common/macros/print_string.hpp>
 
 // boost
@@ -1552,7 +1553,7 @@ const std::vector<typename DenseMatrix<ValueType>::DenseStoragePtr>& DenseMatrix
 template<typename ValueType>
 Scalar DenseMatrix<ValueType>::getValue( IndexType i, IndexType j ) const
 {
-    ValueType myValue = 0.0;
+    ValueType myValue = static_cast<ValueType>(0.0);
 
     const Distribution& colDist = getColDistribution();
     const Distribution& rowDist = getDistribution();
@@ -1678,8 +1679,6 @@ void DenseMatrix<ValueType>::matrixTimesVectorImpl(
     LAMAArray<ValueType>* sendValues = &mSendValues;
     LAMAArray<ValueType>* recvValues = &mReceiveValues;
 
-    const ValueType one = 1.0;
-
     {
 // resize the receive buffer to be big enough for largest part of X
 
@@ -1699,7 +1698,7 @@ void DenseMatrix<ValueType>::matrixTimesVectorImpl(
 
         for ( ; i < size; ++i )
         {
-            wSendValues[i] = 0.0;
+            wSendValues[i] = static_cast<ValueType>(0.0);
         }
     }
 
@@ -1760,7 +1759,7 @@ void DenseMatrix<ValueType>::matrixTimesVectorImpl(
                 copy( mData[actualPartition]->getNumColumns(), readSend.get(), 1, writeX.get(), 1, NULL );
             }
 
-            mData[actualPartition]->matrixTimesVector( localResult, alphaValue, x, one, localResult );
+            mData[actualPartition]->matrixTimesVector( localResult, alphaValue, x, static_cast<ValueType>(1.0), localResult );
             st->wait();
             std::swap( sendValues, recvValues );
         }
@@ -1799,7 +1798,7 @@ void DenseMatrix<ValueType>::matrixTimesVectorImpl(
             SCAI_LOG_INFO( logger,
                            comm << ": matrixTimesVector, actual dense block [" << actualPartition << "] = " << *mData[actualPartition] << ", sendX = " << *sendValues << ", localResult = " << localResult )
 
-            mData[actualPartition]->matrixTimesVector( localResult, alphaValue, *sendValues, one, localResult );
+            mData[actualPartition]->matrixTimesVector( localResult, alphaValue, *sendValues, static_cast<ValueType>(1.0), localResult );
             std::swap( sendValues, recvValues );
         }
     }
@@ -1983,7 +1982,7 @@ void DenseMatrix<ValueType>::matrixTimesMatrix(
 template<typename ValueType>
 Scalar DenseMatrix<ValueType>::maxNorm() const
 {
-    ValueType myMaxDiff = 0.0;
+    ValueType myMaxDiff = static_cast<ValueType>(0.0);
 
     for ( size_t i = 0; i < mData.size(); ++i )
     {
@@ -2007,7 +2006,7 @@ Scalar DenseMatrix<ValueType>::l1Norm() const
 {
     const Communicator& comm = getDistribution().getCommunicator();
 
-    ValueType mySum = 0.0;
+    ValueType mySum = static_cast<ValueType>(0.0);
 
     IndexType n = mData.size();
 
@@ -2026,7 +2025,7 @@ Scalar DenseMatrix<ValueType>::l2Norm() const
 {
     const Communicator& comm = getDistribution().getCommunicator();
 
-    ValueType mySum = 0.0;
+    ValueType mySum = static_cast<ValueType>(0.0);
     ValueType tmp;
 
     IndexType n = mData.size();
@@ -2077,7 +2076,7 @@ ValueType DenseMatrix<ValueType>::maxDiffNormImpl( const DenseMatrix<ValueType>&
     SCAI_ASSERT_EQUAL_ERROR( getDistribution(), other.getDistribution() )
     SCAI_ASSERT_EQUAL_ERROR( getColDistribution(), other.getColDistribution() )
 
-    ValueType myMaxDiff = 0.0;
+    ValueType myMaxDiff = static_cast<ValueType>(0.0);
 
     for ( unsigned int i = 0; i < mData.size(); ++i )
     {

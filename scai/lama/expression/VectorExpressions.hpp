@@ -82,7 +82,7 @@ inline Expression_SV operator/( const Vector& vector, const Scalar& alpha )
 {
     // build 1.0/ alpha as new scalar for a symbolic expression Scalar * Vector
 
-    return Expression_SV( Scalar( 1 ) / alpha, vector );
+    return Expression_SV( Scalar( 1.0 ) / alpha, vector );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -99,7 +99,7 @@ inline Expression_SV operator/( const Vector& vector, const Scalar& alpha )
  */
 inline Expression_SV_SV operator+( const Vector& x, const Vector& y )
 {
-    return Expression_SV_SV( Expression_SV( Scalar( 1 ), x ), Expression_SV( Scalar( 1 ), y ) );
+    return Expression_SV_SV( Expression_SV( Scalar( 1.0 ), x ), Expression_SV( Scalar( 1.0 ), y ) );
 }
 
 /**
@@ -112,7 +112,7 @@ inline Expression_SV_SV operator+( const Vector& x, const Vector& y )
 
 inline Expression_SV_SV operator+( const Vector& vector, const Expression_SV& exp )
 {
-    return Expression_SV_SV( Expression_SV( Scalar( 1 ), vector ), exp );
+    return Expression_SV_SV( Expression_SV( Scalar( 1.0 ), vector ), exp );
 }
 
 /**
@@ -125,7 +125,7 @@ inline Expression_SV_SV operator+( const Vector& vector, const Expression_SV& ex
 
 inline Expression_SV_SV operator+( const Expression_SV& exp, const Vector& vector )
 {
-    return Expression_SV_SV( exp, Expression_SV( Scalar( 1 ), vector ) );
+    return Expression_SV_SV( exp, Expression_SV( Scalar( 1.0 ), vector ) );
 }
 
 /**
@@ -156,7 +156,7 @@ inline Expression_SV_SV operator+( const Expression_SV& exp1, const Expression_S
 
 inline Expression_SV_SV operator-( const Vector& x, const Vector& y )
 {
-    return Expression_SV_SV( Expression_SV( Scalar( 1 ), x ), Expression_SV( Scalar( -1 ), y ) );
+    return Expression_SV_SV( Expression_SV( Scalar( 1.0 ), x ), Expression_SV( Scalar( -1.0 ), y ) );
 }
 
 /**

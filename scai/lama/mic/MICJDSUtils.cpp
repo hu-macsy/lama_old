@@ -45,6 +45,7 @@
 #include <scai/hmemo/mic/MICContext.hpp>
 #include <scai/hmemo/mic/MICSyncToken.hpp>
 #include <scai/common/Assert.hpp>
+#include <scai/common/Constants.hpp>
 
 #include <scai/tracing.hpp>
 
@@ -102,7 +103,7 @@ void MICJDSUtils::getRow(
 
         for( IndexType j = 0; j < numColumns; ++j )
         {
-            row[j] = 0.0;
+            row[j] = static_cast<OtherValueType>(0.0);
         }
 
         // one thread will set the row, but every thread searches
@@ -146,12 +147,12 @@ ValueType MICJDSUtils::getValue(
     const void* jaPtr = ja;
     const void* valuesPtr = values;
 
-    ValueType val = 0;
+    ValueType val = static_cast<ValueType>(0.0);
 
 #pragma offload target( mic : device ) in( permPtr, ilgPtr, dlgPtr, jaPtr, valuesPtr, \
                                                i, j, numRows ), out( val )
     {
-        val = 0;
+        val = static_cast<ValueType>(0.0);
 
         const IndexType* perm = static_cast<const IndexType*>( permPtr );
         const IndexType* ilg = static_cast<const IndexType*>( ilgPtr );
@@ -661,16 +662,15 @@ void MICJDSUtils::normalGEMV(
     SCAI_LOG_INFO( logger,
                    "normalGEMV<" << common::getScalarType<ValueType>() << ">, result[" << numRows << "] = " << alpha << " * A( jds, ndlg = " << ndlg << " ) * x + " << beta << " * y " )
 
-    if( beta == 0 )
+    if( beta == scai::common::constants::ZERO )
     {
-        ValueType zero = 0;
-        MICUtils::setVal( result, numRows, zero );
+        MICUtils::setVal( result, numRows, static_cast<ValueType>(0.0) );
     }
     else if( result == y )
     {
         // result = result * beta
 
-        if( beta != 1 )
+        if( beta != scai::common::constants::ONE )
         {
             MICUtils::scale( result, beta, numRows );
         }
@@ -721,7 +721,7 @@ void MICJDSUtils::normalGEMV(
 
         for( IndexType ii = 0; ii < nonEmptyRows; ii++ )
         {
-            ValueType value = 0.0; // sums up final value
+            ValueType value = static_cast<ValueType>(0.0); // sums up final value
             IndexType offset = ii;
 
             for( IndexType jj = 0; jj < jdsILG[ii]; jj++ )
@@ -792,8 +792,7 @@ void MICJDSUtils::jacobi(
         const IndexType* jdsILG = static_cast<const IndexType*>( jdsILGPtr );
         const ValueType* jdsValues = static_cast<const ValueType*>( jdsValuesPtr );
 
-        const ValueType one = 1;
-        const ValueType oneMinusOmega = one - omega;
+        const ValueType oneMinusOmega = static_cast<ValueType>(1.0) - omega;
 
         #pragma omp parallel for
 
@@ -811,7 +810,7 @@ void MICJDSUtils::jacobi(
                 pos += jdsDLG[j];
             }
 
-            if( 1.0 == omega )
+            if( omega == scai::common::constants::ONE )
             {
                 solution[i] = temp / diag;
             }
@@ -898,7 +897,7 @@ void MICJDSUtils::jacobiHalo(
 
         for( IndexType ii = 0; ii < numNonEmptyRows; ++ii )
         {
-            ValueType temp = 0.0;
+            ValueType temp = static_cast<ValueType>(0.0);
 
             const IndexType i = jdsHaloPerm[ii];
             const ValueType diag = localDiagonal[i];

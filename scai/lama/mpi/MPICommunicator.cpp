@@ -407,8 +407,8 @@ void MPICommunicator::all2all( IndexType recvSizes[], const IndexType sendSizes[
     MPI_Datatype commType = getMPIType<IndexType>();
 
     LAMA_MPICALL( logger,
-                  MPI_Alltoall( const_cast<IndexType*>( sendSizes ), 1, commType, recvSizes, 1, commType,
-                                selectMPIComm() ),
+                  MPI_Alltoall( const_cast<IndexType*>( sendSizes ), 1, commType, recvSizes,
+                                1, commType, selectMPIComm() ),
                   "MPI_Alltoall" )
 }
 
@@ -681,8 +681,8 @@ ValueType MPICommunicator::sumImpl( const ValueType value ) const
     ValueType sum;
     MPI_Datatype commType = getMPIType<ValueType>();
     MPI_Op opType = getMPISum<ValueType>();
-    LAMA_MPICALL( logger, MPI_Allreduce( (void* ) &value, (void* ) &sum, 1, commType, opType, selectMPIComm() ),
-                  "MPI_Allreduce(MPI_SUM)" )
+    LAMA_MPICALL( logger, MPI_Allreduce( (void* ) &value, (void* ) &sum, 1, commType, opType,
+                  selectMPIComm() ), "MPI_Allreduce(MPI_SUM)" )
     SCAI_LOG_DEBUG( logger, "sum: my value = " << value << ", sum = " << sum )
     return sum;
 }
@@ -700,8 +700,8 @@ ValueType MPICommunicator::minImpl( const ValueType value ) const
 
     ValueType globalMin; // no initialization needed, done in MPI call
 
-    LAMA_MPICALL( logger, MPI_Allreduce( (void* ) &value, (void* ) &globalMin, 1, commType, MPI_MIN, selectMPIComm() ),
-                  "MPI_Allreduce( MPI_MIN )" )
+    LAMA_MPICALL( logger, MPI_Allreduce( (void* ) &value, (void* ) &globalMin, 1, commType,
+                                         MPI_MIN, selectMPIComm() ), "MPI_Allreduce( MPI_MIN )" )
     return globalMin;
 }
 
@@ -716,8 +716,8 @@ ValueType MPICommunicator::maxImpl( const ValueType value ) const
 
     SCAI_LOG_DEBUG( logger, "maxImpl: local value = " << value )
 
-    LAMA_MPICALL( logger, MPI_Allreduce( (void* ) &value, (void* ) &globalMax, 1, commType, MPI_MAX, selectMPIComm() ),
-                  "MPI_Allreduce( MPI_MAX )" )
+    LAMA_MPICALL( logger, MPI_Allreduce( (void* ) &value, (void* ) &globalMax, 1, commType, MPI_MAX,
+                                         selectMPIComm() ), "MPI_Allreduce( MPI_MAX )" )
 
     SCAI_LOG_DEBUG( logger, "maxImpl: global value = " << globalMax )
 

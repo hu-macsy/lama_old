@@ -93,7 +93,14 @@ template<typename ValueType>
 bool operator==( const ValueType& x, const enum ConstantType& c )
 {
     using std::fabs;
-    return ::fabs( x - getConstant<ValueType>( c ) ) < getConstant<ValueType>( EPS );
+    return fabs( x - getConstant<ValueType>( c ) ) < getConstant<ValueType>( EPS );
+}
+
+template<typename ValueType>
+bool operator!=( const ValueType& x, const enum ConstantType& c )
+{
+    using std::fabs;
+    return !(fabs( x - getConstant<ValueType>( c ) ) < getConstant<ValueType>( EPS ));
 }
 
 } /* end namespace constants */

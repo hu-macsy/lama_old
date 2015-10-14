@@ -367,7 +367,6 @@ void CUDABLAS3::trsm(
     const IndexType ldb,
     SyncToken* syncToken )
 {
-    IndexType RowMajorStrg = 0;
     cublasSideMode_t side = ' ';
     cublasFillMode_t uplo = ' ';
     cublasOperation_t transA = ' ';
@@ -390,8 +389,7 @@ void CUDABLAS3::trsm(
     }
     else
     {
-        BLASHelper::XERBLA_cpu( RowMajorStrg, 4, "cblas_strsm_cuda", "Illegal Trans setting, %d\n", transA );
-        RowMajorStrg = 0;
+        BLASHelper::XERBLA_cpu( 0, 4, "cblas_strsm_cuda", "Illegal Trans setting, %d\n", transA );
         return;
     }
 
@@ -407,8 +405,7 @@ void CUDABLAS3::trsm(
     }
     else
     {
-        BLASHelper::XERBLA_cpu( RowMajorStrg, 5, "cblas_strsm_cuda", "Illegal Diag setting, %d\n", diagarg );
-        RowMajorStrg = 0;
+        BLASHelper::XERBLA_cpu( 0, 5, "cblas_strsm_cuda", "Illegal Diag setting, %d\n", diagarg );
         return;
     }
 
@@ -426,8 +423,7 @@ void CUDABLAS3::trsm(
         }
         else
         {
-            BLASHelper::XERBLA_cpu( RowMajorStrg, 2, "cblas_strsm_cuda", "Illegal Side setting, %d\n", sidearg );
-            RowMajorStrg = 0;
+            BLASHelper::XERBLA_cpu( 0, 2, "cblas_strsm_cuda", "Illegal Side setting, %d\n", sidearg );
             return;
         }
 
@@ -443,14 +439,12 @@ void CUDABLAS3::trsm(
         }
         else
         {
-            BLASHelper::XERBLA_cpu( RowMajorStrg, 3, "cblas_strsm_cuda", "Illegal Uplo setting, %d\n", uploarg );
-            RowMajorStrg = 0;
+            BLASHelper::XERBLA_cpu( 0, 3, "cblas_strsm_cuda", "Illegal Uplo setting, %d\n", uploarg );
             return;
         }
     }
     else if( Order == CblasRowMajor )
     {
-        RowMajorStrg = 1;
 
         if( sidearg == CblasRight )
         {
@@ -464,8 +458,7 @@ void CUDABLAS3::trsm(
         }
         else
         {
-            BLASHelper::XERBLA_cpu( RowMajorStrg, 2, "cblas_strsm_cuda", "Illegal Side setting, %d\n", sidearg );
-            RowMajorStrg = 0;
+            BLASHelper::XERBLA_cpu( 1, 2, "cblas_strsm_cuda", "Illegal Side setting, %d\n", sidearg );
             return;
         }
 
@@ -481,15 +474,13 @@ void CUDABLAS3::trsm(
         }
         else
         {
-            BLASHelper::XERBLA_cpu( RowMajorStrg, 3, "cblas_strsm_cuda", "Illegal Uplo setting, %d\n", uploarg );
-            RowMajorStrg = 0;
+            BLASHelper::XERBLA_cpu( 1, 3, "cblas_strsm_cuda", "Illegal Uplo setting, %d\n", uploarg );
             return;
         }
     }
     else
     {
-        BLASHelper::XERBLA_cpu( RowMajorStrg, 1, "cblas_strsm_cuda", "Illegal order setting, %d\n", Order );
-        RowMajorStrg = 0;
+        BLASHelper::XERBLA_cpu( 0, 1, "cblas_strsm_cuda", "Illegal order setting, %d\n", Order );
         return;
     }
 

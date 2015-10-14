@@ -47,6 +47,7 @@
 #include <scai/common/macros/unused.hpp>
 #include <scai/common/unique_ptr.hpp>
 #include <scai/common/Assert.hpp>
+#include <scai/common/Constants.hpp>
 
 // boost
 #include <boost/preprocessor.hpp>
@@ -84,7 +85,7 @@ void OpenMPJDSUtils::getRow(
     //TODO: use OpenMP
     for( IndexType j = 0; j < numColumns; ++j )
     {
-        row[j] = 0.0;
+        row[j] = static_cast<OtherValueType>(0.0);
     }
 
     IndexType ii;
@@ -147,7 +148,7 @@ ValueType OpenMPJDSUtils::getValue(
         k += dlg[jj];
     }
 
-    return 0.0;
+    return static_cast<ValueType>(0.0);
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -495,7 +496,7 @@ void OpenMPJDSUtils::normalGEMV(
     SCAI_LOG_INFO( logger,
                    "normalGEMV<" << common::getScalarType<ValueType>() << ", #threads = " << omp_get_max_threads() << ">, result[" << numRows << "] = " << alpha << " * A( jds, ndlg = " << ndlg << " ) * x + " << beta << " * y " )
 
-    if( beta == 0.0 )
+    if( beta == scai::common::constants::ZERO )
     {
         SCAI_LOG_DEBUG( logger, "set result = 0.0" )
 
@@ -503,14 +504,14 @@ void OpenMPJDSUtils::normalGEMV(
 
         for( IndexType i = 0; i < numRows; ++i )
         {
-            result[i] = 0.0;
+            result[i] = static_cast<ValueType>(0.0);
         }
     }
     else if( result == y )
     {
         // result = result * beta
 
-        if( beta != 1.0 )
+        if( beta != scai::common::constants::ONE )
         {
             SCAI_LOG_DEBUG( logger, "set result *= beta" )
 
@@ -557,7 +558,7 @@ void OpenMPJDSUtils::normalGEMV(
 
         for( IndexType ii = 0; ii < nonEmptyRows; ii++ )
         {
-            ValueType value = 0.0; // sums up final value
+            ValueType value = static_cast<ValueType>(0.0); // sums up final value
             IndexType offset = ii;
 
             for( IndexType jj = 0; jj < jdsILG[ii]; jj++ )
@@ -597,7 +598,7 @@ void OpenMPJDSUtils::normalGEVM(
     SCAI_LOG_INFO( logger,
                    "normalGEVM<" << common::getScalarType<ValueType>() << ", #threads = " << omp_get_max_threads() << ">, result[" << numColumns << "] = " << alpha << " * A( jds, ndlg = " << ndlg << " ) * x + " << beta << " * y " )
 
-    if( beta == 0.0 )
+    if( beta == scai::common::constants::ZERO )
     {
         SCAI_LOG_DEBUG( logger, "set result = 0.0" )
 
@@ -605,14 +606,14 @@ void OpenMPJDSUtils::normalGEVM(
 
         for( IndexType i = 0; i < numColumns; ++i )
         {
-            result[i] = 0.0;
+            result[i] = static_cast<ValueType>(0.0);
         }
     }
     else if( result == y )
     {
         // result = result * beta
 
-        if( beta != 1.0 )
+        if( beta != scai::common::constants::ONE )
         {
             SCAI_LOG_DEBUG( logger, "set result *= beta" )
 
@@ -659,7 +660,7 @@ void OpenMPJDSUtils::normalGEVM(
 
         for( IndexType k = 0; k < numColumns; ++k )
         {
-            ValueType value = 0.0; // sums up final value
+            ValueType value = static_cast<ValueType>(0.0); // sums up final value
 
             for( IndexType ii = 0; ii < nonEmptyRows; ii++ )
             {
@@ -712,8 +713,6 @@ void OpenMPJDSUtils::jacobi(
         SCAI_LOG_ERROR( logger, "jacobi called asynchronously, not supported here" )
     }
 
-    const ValueType oneMinusOmega = static_cast<ValueType>( 1.0 - omega );
-
     #pragma omp parallel
     {
         SCAI_REGION( "OpenMP.JDS.jacobi" )
@@ -734,7 +733,7 @@ void OpenMPJDSUtils::jacobi(
                 pos += jdsDLG[j];
             }
 
-            if( 1.0 == omega )
+            if( omega == scai::common::constants::ONE )
             {
                 solution[i] = temp / diag;
             }
@@ -744,7 +743,7 @@ void OpenMPJDSUtils::jacobi(
             }
             else
             {
-                solution[i] = omega * ( temp / diag ) + oneMinusOmega * oldSolution[i];
+                solution[i] = omega * ( temp / diag ) + ( static_cast<ValueType>(1.0) - omega ) * oldSolution[i];
             }
         }
     }
@@ -799,7 +798,7 @@ void OpenMPJDSUtils::jacobiHalo(
 
         for( IndexType ii = 0; ii < numNonEmptyRows; ++ii )
         {
-            ValueType temp = 0.0;
+            ValueType temp = static_cast<ValueType>(0.0);
 
             const IndexType i = jdsHaloPerm[ii];
             const ValueType diag = localDiagonal[i];

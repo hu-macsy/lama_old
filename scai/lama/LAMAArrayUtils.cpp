@@ -43,6 +43,7 @@
 #include <scai/tracing.hpp>
 
 #include <scai/common/SCAITypes.hpp>
+#include <scai/common/Constants.hpp>
 
 // boost
 #include <boost/preprocessor.hpp>
@@ -271,7 +272,7 @@ void LAMAArrayUtils::assignScaled(
 // beta = 0    : saves the need of a read access for y
 // result == y : only one write access needed ( write + read not possible)
 
-    if( beta == 0 )
+    if( beta == scai::common::constants::ZERO )
     {
 // result := 0
 
@@ -281,11 +282,11 @@ void LAMAArrayUtils::assignScaled(
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        setVal( wResult.get(), n, 0 );
+        setVal( wResult.get(), n, static_cast<ValueType>(0.0) );
     }
     else if( &result == &y )
     {
-        if( beta == 1 )
+        if( beta == scai::common::constants::ONE )
         {
             return;
         }

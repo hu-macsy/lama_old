@@ -80,9 +80,6 @@ void OpenMPBLAS3::gemm(
                      << ", k = " << k << ", lda = " << lda << ", ldb = " << ldb << ", ldc = " << ldc 
                      << ", alpha = " << alpha << ", beta = " << beta )
 
-    IndexType RowMajorStrg;
-    RowMajorStrg = 0;
-
     if( order == CblasColMajor )
     {
         if( TransA == CblasTrans )
@@ -90,14 +87,14 @@ void OpenMPBLAS3::gemm(
             //'T'
             if( TransB == CblasNoTrans )
             {
-                ValueType temp = 0.0;
+                ValueType temp;
                 #pragma omp parallel for collapse(2) private(temp) schedule( SCAI_OMP_SCHEDULE )
 
                 for( int h = 0; h < n; h++ )
                 {
                     for( int i = 0; i < m; i++ )
                     {
-                        temp = 0.0;
+                        temp = static_cast<ValueType>(0.0);
 
                         for( int j = 0; j < k; j++ )
                         {
@@ -114,14 +111,14 @@ void OpenMPBLAS3::gemm(
             }
             else if( TransB == CblasTrans )
             {
-                ValueType temp = 0.0;
+                ValueType temp;
                 #pragma omp parallel for collapse(2) private(temp) schedule( SCAI_OMP_SCHEDULE )
 
                 for( int h = 0; h < n; h++ )
                 {
                     for( int i = 0; i < m; i++ )
                     {
-                        temp = 0.0;
+                        temp = static_cast<ValueType>(0.0);
 
                         for( int j = 0; j < k; j++ )
                         {
@@ -134,8 +131,7 @@ void OpenMPBLAS3::gemm(
             }
             else
             {
-                BLASHelper::XERBLA_cpu( RowMajorStrg, 2, "cblas_sgemm", "Illegal TransA setting, %d\n", TransA );
-                RowMajorStrg = 0;
+                BLASHelper::XERBLA_cpu( 0, 2, "cblas_sgemm", "Illegal TransA setting, %d\n", TransA );
                 return;
             }
         }
@@ -158,8 +154,7 @@ void OpenMPBLAS3::gemm(
             }
             else
             {
-                BLASHelper::XERBLA_cpu( RowMajorStrg, 2, "cblas_sgemm", "Illegal TransA setting, %d\n", TransA );
-                RowMajorStrg = 0;
+                BLASHelper::XERBLA_cpu( 0, 2, "cblas_sgemm", "Illegal TransA setting, %d\n", TransA );
                 return;
             }
         }
@@ -167,14 +162,14 @@ void OpenMPBLAS3::gemm(
         {
             if( TransB == CblasNoTrans )
             {
-                ValueType temp = 0.0;
+                ValueType temp;
                 #pragma omp parallel for collapse(2) private(temp) schedule( SCAI_OMP_SCHEDULE )
 
                 for( int h = 0; h < n; h++ )
                 {
                     for( int i = 0; i < m; i++ )
                     {
-                        temp = 0.0;
+                        temp = static_cast<ValueType>(0.0);
 
                         for( int j = 0; j < k; j++ )
                         {
@@ -191,14 +186,14 @@ void OpenMPBLAS3::gemm(
             }
             else if( TransB == CblasTrans )
             {
-                ValueType temp = 0.0;
+                ValueType temp;
                 #pragma omp parallel for collapse(2) private(temp) schedule( SCAI_OMP_SCHEDULE )
 
                 for( int h = 0; h < n; h++ )
                 {
                     for( int i = 0; i < m; i++ )
                     {
-                        temp = 0.0;
+                        temp = static_cast<ValueType>(0.0);
 
                         for( int j = 0; j < k; j++ )
                         {
@@ -211,34 +206,30 @@ void OpenMPBLAS3::gemm(
             }
             else
             {
-                BLASHelper::XERBLA_cpu( RowMajorStrg, 2, "cblas_sgemm", "Illegal TransA setting, %d\n", TransA );
-                RowMajorStrg = 0;
+                BLASHelper::XERBLA_cpu( 0, 2, "cblas_sgemm", "Illegal TransA setting, %d\n", TransA );
                 return;
             }
         }
         else
         {
-            BLASHelper::XERBLA_cpu( RowMajorStrg, 2, "cblas_sgemm", "Illegal TransA setting, %d\n", TransA );
-            RowMajorStrg = 0;
+            BLASHelper::XERBLA_cpu( 0, 2, "cblas_sgemm", "Illegal TransA setting, %d\n", TransA );
             return;
         }
     }
     else if( order == CblasRowMajor )
     {
-        RowMajorStrg = 1;
-
         if( TransA == CblasTrans )
         {
             if( TransB == CblasNoTrans )
             {
-                ValueType temp = 0.0;
+                ValueType temp;
                 #pragma omp parallel for collapse(2) private(temp) schedule( SCAI_OMP_SCHEDULE )
 
                 for( int h = 0; h < n; h++ )
                 {
                     for( int i = 0; i < m; i++ )
                     {
-                        temp = 0.0;
+                        temp = static_cast<ValueType>(0.0);
 
                         for( int j = 0; j < k; j++ )
                         {
@@ -255,14 +246,14 @@ void OpenMPBLAS3::gemm(
             }
             else if( TransB == CblasTrans )
             {
-                ValueType temp = 0.0;
+                ValueType temp;
                 #pragma omp parallel for collapse(2) private(temp) schedule( SCAI_OMP_SCHEDULE )
 
                 for( int h = 0; h < n; h++ )
                 {
                     for( int i = 0; i < m; i++ )
                     {
-                        temp = 0.0;
+                        temp = static_cast<ValueType>(0.0);
 
                         for( int j = 0; j < k; j++ )
                         {
@@ -275,8 +266,7 @@ void OpenMPBLAS3::gemm(
             }
             else
             {
-                BLASHelper::XERBLA_cpu( RowMajorStrg, 2, "cblas_sgemm", "Illegal TransA setting, %d\n", TransA );
-                RowMajorStrg = 0;
+                BLASHelper::XERBLA_cpu( 1, 2, "cblas_sgemm", "Illegal TransA setting, %d\n", TransA );
                 return;
             }
         }
@@ -287,13 +277,14 @@ void OpenMPBLAS3::gemm(
                 // A = 'N'; B = 'N'
                 //std::cout << "lda:" << lda << ", ldb:" << ldb << ", ldc:" << ldc << "\n";
                 //std::cout << "n:" << n << ", m:" << m << ", k:" << k << "\n";
+                ValueType temp;
 
-                #pragma omp parallel for collapse(2) schedule( SCAI_OMP_SCHEDULE )
+                #pragma omp parallel for collapse(2) private(temp) schedule( SCAI_OMP_SCHEDULE )
                 for( int h = 0; h < n; h++ )
                 {
                     for( int i = 0; i < m; i++ )
                     {
-                        ValueType temp = 0.0;
+                        temp = static_cast<ValueType>(0.0);
 
                         for( int j = 0; j < k; j++ )
                         {
@@ -306,14 +297,14 @@ void OpenMPBLAS3::gemm(
             }
             else if( TransB == CblasTrans )
             {
-                ValueType temp = 0.0;
+                ValueType temp;
                 #pragma omp parallel for collapse(2) private(temp) schedule( SCAI_OMP_SCHEDULE )
 
                 for( int h = 0; h < n; h++ )
                 {
                     for( int i = 0; i < m; i++ )
                     {
-                        temp = 0.0;
+                        temp = static_cast<ValueType>(0.0);
 
                         for( int j = 0; j < k; j++ )
                         {
@@ -330,8 +321,7 @@ void OpenMPBLAS3::gemm(
             }
             else
             {
-                BLASHelper::XERBLA_cpu( RowMajorStrg, 2, "cblas_sgemm", "Illegal TransA setting, %d\n", TransA );
-                RowMajorStrg = 0;
+                BLASHelper::XERBLA_cpu( 1, 2, "cblas_sgemm", "Illegal TransA setting, %d\n", TransA );
                 return;
             }
         }
@@ -353,18 +343,16 @@ void OpenMPBLAS3::gemm(
             }
             else
             {
-                BLASHelper::XERBLA_cpu( RowMajorStrg, 2, "cblas_sgemm", "Illegal TransA setting, %d\n", TransA );
-                RowMajorStrg = 0;
+                BLASHelper::XERBLA_cpu( 1, 2, "cblas_sgemm", "Illegal TransA setting, %d\n", TransA );
                 return;
             }
         }
     }
     else
     {
-        BLASHelper::XERBLA_cpu( RowMajorStrg, 1, "cblas_sgemm", "Illegal order setting, %d\n", order );
+        BLASHelper::XERBLA_cpu( 0, 1, "cblas_sgemm", "Illegal order setting, %d\n", order );
     }
 
-    RowMajorStrg = 0;
     return;
 }
 

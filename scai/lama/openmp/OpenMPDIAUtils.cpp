@@ -78,11 +78,11 @@ ValueType OpenMPDIAUtils::absMaxVal(
     const IndexType diaOffsets[],
     const ValueType diaValues[] )
 {
-    ValueType maxValue = static_cast<ValueType>( 0.0 );
+    ValueType maxValue = static_cast<ValueType>(0.0);
 
     #pragma omp parallel
     {
-        ValueType threadVal = static_cast<ValueType>( 0.0 );
+        ValueType threadVal = static_cast<ValueType>(0.0);
 
         #pragma omp for schedule( SCAI_OMP_SCHEDULE )
 
@@ -155,7 +155,7 @@ void OpenMPDIAUtils::getCSRValues(
             for( IndexType i = 0; i < n; i++ )
             {
                 csrJA[i] = i;
-                csrValues[i] = 0.0;
+                csrValues[i] = static_cast<CSRValueType>(0.0);
             }
         }
         else
@@ -334,7 +334,7 @@ void OpenMPDIAUtils::normalGEMV(
 
         for( IndexType i = 0; i < numRows; i++ )
         {
-            ValueType accu = 0.0;
+            ValueType accu = static_cast<ValueType>(0.0);
 
             for( IndexType ii = 0; ii < numDiagonals; ++ii )
             {
@@ -435,7 +435,7 @@ void OpenMPDIAUtils::normalGEVM(
 
         for( IndexType k = 0; k < numColumns; ++k )
         {
-            ValueType accu = 0.0;
+            ValueType accu = static_cast<ValueType>(0.0);
 
             for( IndexType i = 0; i < numRows; i++ )
             {
@@ -500,8 +500,6 @@ void OpenMPDIAUtils::jacobi(
         SCAI_LOG_ERROR( logger, "jacobi called asynchronously, not supported here" )
     }
 
-    const ValueType oneMinusOmega = static_cast<ValueType>( 1.0 - omega );
-
     #pragma omp parallel
     {
         SCAI_REGION( "OpenMP.DIA.Jacobi" )
@@ -528,7 +526,7 @@ void OpenMPDIAUtils::jacobi(
                 }
             }
 
-            solution[i] = omega * ( temp / diag ) + oneMinusOmega * oldSolution[i];
+            solution[i] = omega * ( temp / diag ) + (static_cast<ValueType>(1.0) - omega ) * oldSolution[i];
         }
     }
 }

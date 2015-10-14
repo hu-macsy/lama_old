@@ -339,13 +339,11 @@ void OpenMPCOOUtils::jacobi(
     // solution = omega * rhs * dinv + ( 1 - omega * oldSolution
     // solution -= omega * B * oldSolution * dinv
 
-    const ValueType oneMinusOmega = static_cast<ValueType>( 1.0 ) - omega;
-
     #pragma omp parallel for
 
     for( IndexType i = 0; i < numRows; ++i )
     {
-        solution[i] = omega * rhs[i] / cooValues[i] + oneMinusOmega * oldSolution[i];
+        solution[i] = omega * rhs[i] / cooValues[i] + ( static_cast<ValueType>(1.0) - omega ) * oldSolution[i];
     }
 
     #pragma omp parallel

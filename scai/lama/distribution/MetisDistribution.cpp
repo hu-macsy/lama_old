@@ -107,7 +107,7 @@ void MetisDistribution::normWeights( std::vector<float>& weights )
         sum += weights[i];
     }
 
-    float sumNorm = 0;
+    float sumNorm = 0.0f;
 
     for( size_t i = 0; i < numPartitions - 1; ++i )
     {

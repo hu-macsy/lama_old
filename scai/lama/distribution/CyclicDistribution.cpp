@@ -37,6 +37,8 @@
 // std
 #include <fstream>
 
+#define MASTER 0
+
 namespace scai
 {
 
@@ -262,7 +264,7 @@ void CyclicDistribution::printDistributionVector( std::string name ) const
 
     IndexType totalNumChunks = getNumTotalChunks();
 
-    if( myRank == 0 ) // process 0 is MASTER process
+    if( myRank == MASTER ) // process 0 is MASTER process
     {
         std::ofstream file;
         file.open( ( name + ".part" ).c_str() );
