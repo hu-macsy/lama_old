@@ -100,7 +100,8 @@ SimpleAMG::SimpleAMGRuntime::~SimpleAMGRuntime()
 
 void SimpleAMG::loadSetupLibs()
 {
-    std::string amgSetupLibrary;
+    // todo: need general concept for dynamical loading of libraries
+    /*std::string amgSetupLibrary;
 
     bool isSet = common::Settings::getEnvironment( amgSetupLibrary, "LAMA_AMG_SETUP_LIBRARY" );
 
@@ -117,12 +118,12 @@ void SimpleAMG::loadSetupLibs()
                            << ": error = " << error << ", lib handle = " << handle )
         }
 
-        SCAI_LOG_ERROR( logger, amgSetupLibrary << " loaded successfully." )
+        SCAI_LOG_INFO( logger, amgSetupLibrary << " loaded successfully." )
     }
     else
     {
         SCAI_LOG_WARN( logger, "LAMA_AMG_SETUP_LIBRARY not set, take SingleGridSetup" )
-    }
+    }*/
 }
 
 void SimpleAMG::initialize( const Matrix& coefficients )
