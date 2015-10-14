@@ -147,10 +147,8 @@ relative_install ( FILES ${CXX_HEADERS} DESTINATION include/scai/common )
 ## install library.hpp
 install ( FILES ../common.hpp DESTINATION include/scai )
 
-## add custum target distClean, but only if this project is not included
-if    ( NOT SCAI_COMPLETE_BUILD )
-	include ( DistClean )
-endif ( NOT SCAI_COMPLETE_BUILD )
+## add custum target distClean
+include ( DistClean )
 
 if    ( DEFINED SCAI_CMAKE_VERBOSE OR NOT DEFINED SCAI_COMPLETE_BUILD )
 	include ( Summaries/common )

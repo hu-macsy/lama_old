@@ -132,13 +132,18 @@ relative_install ( FILES ${CXX_HEADERS} DESTINATION include/scai/logging )
 ## install library.hpp
 install ( FILES ../logging.hpp DESTINATION include/scai )
 
+## add test
+enable_testing()
+add_test ( logging_test test/test.sh )
+
 ### add userdoc
 include ( Package/Sphinx )
 
-## add custum target distClean, but only if this project is not included
-if    ( NOT SCAI_COMPLETE_BUILD )
-	include ( DistClean )
-endif ( NOT SCAI_COMPLETE_BUILD )
+## add custom target docclean
+include ( DocClean )
+
+## add custum target distClean
+include ( DistClean )
 
 if    ( DEFINED SCAI_CMAKE_VERBOSE OR NOT DEFINED SCAI_COMPLETE_BUILD )
 	include ( Summaries/logging )

@@ -34,10 +34,11 @@ if ( TARGET distclean )
     # Target already available, do no create it then anymore
 else ( TARGET distclean )
     add_custom_target ( distclean )
-    file ( GLOB_RECURSE BUILD_GLOB_RES ${CMAKE_BINARY_DIR}/* )
     add_custom_command (
         TARGET distclean
         DEPENDS clean
-        COMMAND ${CMAKE_COMMAND} -E remove ${BUILD_GLOB_RES}
+        COMMAND sh ${CMAKE_MODULE_PATH}/docclean.sh ${CMAKE_CURRENT_BINARY_DIR}/doc
+        COMMAND cd ${CMAKE_CURRENT_BINARY_DIR}
+        COMMAND sh ${CMAKE_MODULE_PATH}/distclean.sh
     )
 endif ( TARGET distclean )

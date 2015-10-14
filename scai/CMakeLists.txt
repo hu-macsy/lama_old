@@ -201,3 +201,9 @@ ExternalProject_Add ( scai_lama
             CMAKE_CACHE_ARGS "${CMAKE_ARGS};${CACHE_ARGS}"
 	    	BINARY_DIR lama
             )
+
+## add custom target docclean
+include ( DocClean )
+
+## add custom target distclean
+include ( DistClean )

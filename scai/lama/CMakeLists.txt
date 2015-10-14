@@ -241,10 +241,8 @@ install ( FILES "${CMAKE_CURRENT_BINARY_DIR}/examples/make.inc" DESTINATION shar
 file ( COPY ${CMAKE_CURRENT_SOURCE_DIR}/examples DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
 install ( DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/examples DESTINATION share )
 
-## add custum target distClean, but only if this project is not included
-if    ( NOT SCAI_COMPLETE_BUILD )
-	include ( DistClean )
-endif ( NOT SCAI_COMPLETE_BUILD )
+## add custum target distClean
+include ( DistClean )
 
 ### install
 install ( TARGETS ama DESTINATION lib )
