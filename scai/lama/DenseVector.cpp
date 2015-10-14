@@ -71,7 +71,6 @@ namespace scai
 {
 
 using common::Complex;
-using common::Constants;
 
 namespace lama
 {
@@ -437,7 +436,7 @@ template<typename ValueType>
 Scalar DenseVector<ValueType>::getValue( IndexType globalIndex ) const
 {
     SCAI_LOG_TRACE( logger, *this << ": getValue( globalIndex = " << globalIndex << " )" )
-    ValueType myValue = Constants<ValueType>::zero;
+    ValueType myValue = static_cast<ValueType>(0.0);
     const IndexType localIndex = getDistribution().global2local( globalIndex );
 
     if( localIndex != nIndex )
@@ -512,7 +511,7 @@ Scalar DenseVector<ValueType>::l1Norm() const
 {
     IndexType nnu = mLocalValues.size();
 
-    ValueType localL1Norm = Constants<ValueType>::zero;
+    ValueType localL1Norm = static_cast<ValueType>(0.0);
 
     if( nnu > 0 )
     {
@@ -528,7 +527,7 @@ Scalar DenseVector<ValueType>::l1Norm() const
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        localL1Norm = asum( nnu, read.get(), Constants<IndexType>::one, NULL );
+        localL1Norm = asum( nnu, read.get(), 1, NULL );
     }
 
     return getDistribution().getCommunicator().sum( localL1Norm );
@@ -541,7 +540,7 @@ Scalar DenseVector<ValueType>::l2Norm() const
 {
     IndexType nnu = mLocalValues.size();
 
-    ValueType localDotProduct = Constants<ValueType>::zero;
+    ValueType localDotProduct = static_cast<ValueType>(0.0);
 
     if( nnu > 0 )
     {
@@ -557,7 +556,7 @@ Scalar DenseVector<ValueType>::l2Norm() const
 
         SCAI_CONTEXT_ACCESS( mContext )
 
-        localDotProduct = dot( nnu, read.get(), Constants<IndexType>::one, read.get(), Constants<IndexType>::one, NULL );
+        localDotProduct = dot( nnu, read.get(), 1, read.get(), 1, NULL );
     }
 
     ValueType globalDotProduct = getDistribution().getCommunicator().sum( localDotProduct );
@@ -572,7 +571,7 @@ Scalar DenseVector<ValueType>::maxNorm() const
 {
     IndexType nnu = mLocalValues.size(); // number of local rows
 
-    ValueType localMaxNorm = Constants<ValueType>::zero;
+    ValueType localMaxNorm = static_cast<ValueType>(0.0);
 
     if( nnu > 0 )
     {
@@ -665,11 +664,11 @@ void DenseVector<ValueType>::vectorPlusVector(
         ReadAccess<ValueType> yAccess( y, context );
         WriteAccess<ValueType> resultAccess( result, context, true );
 
-        if( beta == Constants<ValueType>::zero )
+        if( beta == scai::common::constants::ZERO )
         {
             SCAI_LOG_DEBUG( logger, "vectorPlusVector: result *= alpha" )
 
-            if( alpha != Constants<ValueType>::one ) // result *= alpha
+            if( alpha != scai::common::constants::ONE ) // result *= alpha
             {
                 SCAI_CONTEXT_ACCESS( context )
                 scale( resultAccess.get(), alpha, nnu );
@@ -679,11 +678,11 @@ void DenseVector<ValueType>::vectorPlusVector(
                 // do nothing: result = 1 * result
             }
         }
-        else if( beta == Constants<ValueType>::one ) // result = alpha * result + y
+        else if( beta == scai::common::constants::ONE ) // result = alpha * result + y
         {
             SCAI_LOG_DEBUG( logger, "vectorPlusVector: result = alpha * result + y" )
 
-            if( alpha != Constants<ValueType>::one ) // result = alpha * result + y
+            if( alpha != scai::common::constants::ONE ) // result = alpha * result + y
             {
                 // result *= alpha
                 SCAI_CONTEXT_ACCESS( context )
@@ -692,21 +691,21 @@ void DenseVector<ValueType>::vectorPlusVector(
 
             // result += y
             SCAI_CONTEXT_ACCESS( context )
-            axpy( nnu, Constants<ValueType>::one/*alpha*/, yAccess.get(), Constants<IndexType>::one, resultAccess.get(), Constants<IndexType>::one, NULL );
+            axpy( nnu, static_cast<ValueType>(1.0)/*alpha*/, yAccess.get(), 1, resultAccess.get(), 1, NULL );
         }
         else // beta != 1.0 && beta != 0.0 --> result = alpha * result + beta * y
         {
             SCAI_LOG_DEBUG( logger,
                             "vectorPlusVector: result = alpha(" << alpha << ")" << " * result + beta(" << beta << ") * y" )
 
-            if( alpha != Constants<ValueType>::one )
+            if( alpha != scai::common::constants::ONE )
             {
                 SCAI_CONTEXT_ACCESS( context )
                 scale( resultAccess.get(), alpha, nnu );
             }
 
             SCAI_CONTEXT_ACCESS( context )
-            axpy( nnu, beta, yAccess.get(), Constants<IndexType>::one, resultAccess.get(), Constants<IndexType>::one, NULL );
+            axpy( nnu, beta, yAccess.get(), 1, resultAccess.get(), 1, NULL );
         }
     }
     else if( &result == &y ) // result = alpha * x + beta * result
@@ -719,18 +718,18 @@ void DenseVector<ValueType>::vectorPlusVector(
         ReadAccess<ValueType> xAccess( x, context );
         WriteAccess<ValueType> resultAccess( result, context, true );
 
-        if( beta != Constants<ValueType>::one ) // result = [alpha * x + ] beta * result
+        if( beta != scai::common::constants::ONE ) // result = [alpha * x + ] beta * result
         {
             // result *= beta
             SCAI_CONTEXT_ACCESS( context )
             scale( resultAccess.get(), beta, nnu );
         }
 
-        if( alpha != Constants<ValueType>::zero )
+        if( alpha != scai::common::constants::ZERO )
         {
             // result = alpha * x + result
             SCAI_CONTEXT_ACCESS( context )
-            axpy( nnu, alpha, xAccess.get(), Constants<IndexType>::one, resultAccess.get(), Constants<IndexType>::one, NULL );
+            axpy( nnu, alpha, xAccess.get(), 1, resultAccess.get(), 1, NULL );
         }
     }
     else // result = alpha * x + beta * y
@@ -859,8 +858,7 @@ SCAI_REGION( "Vector.Dense.dotP" )
 
         SCAI_ASSERT_EQUAL_DEBUG( localSize, getDistribution().getLocalSize() )
 
-        const ValueType localDotProduct = dot( localSize, localRead.get(), Constants<IndexType>::one, otherRead.get(),
-                                               Constants<IndexType>::one, NULL );
+        const ValueType localDotProduct = dot( localSize, localRead.get(), 1, otherRead.get(), 1, NULL );
 
         SCAI_LOG_DEBUG( logger, "Calculating global dot product form local dot product = " << localDotProduct )
 

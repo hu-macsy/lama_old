@@ -56,8 +56,6 @@ using namespace scai::hmemo;
 namespace scai
 {
 
-using common::Constants;
-
 namespace lama
 {
 
@@ -257,7 +255,7 @@ void LAMAArrayUtils::setVal( LAMAArray<ValueType>& target, const IndexType index
 
     SCAI_CONTEXT_ACCESS( loc )
 
-    setVal( wTarget.get() + index, Constants<IndexType>::one, val );
+    setVal( wTarget.get() + index, 1, val );
 }
 
 template<typename ValueType>
@@ -274,7 +272,7 @@ void LAMAArrayUtils::assignScaled(
 // beta = 0    : saves the need of a read access for y
 // result == y : only one write access needed ( write + read not possible)
 
-    if( beta == Constants<ValueType>::zero )
+    if( beta == scai::common::constants::ZERO )
     {
 // result := 0
 
@@ -284,11 +282,11 @@ void LAMAArrayUtils::assignScaled(
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        setVal( wResult.get(), n, Constants<IndexType>::zero );
+        setVal( wResult.get(), n, static_cast<ValueType>(0.0) );
     }
     else if( &result == &y )
     {
-        if( beta == Constants<ValueType>::one )
+        if( beta == scai::common::constants::ONE )
         {
             return;
         }

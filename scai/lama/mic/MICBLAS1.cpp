@@ -46,7 +46,6 @@
 #include <scai/tracing.hpp>
 
 #include <scai/common/SCAITypes.hpp>
-#include <scai/common/Constants.hpp>
 
 // external
 #include <omp.h>
@@ -59,7 +58,6 @@ namespace scai
 {
 
 using namespace hmemo;
-using common::Constants;
 
 namespace lama
 {
@@ -121,7 +119,7 @@ ValueType MICBLAS1::asum( const IndexType n, const ValueType* x, const IndexType
         SCAI_LOG_WARN( logger, "no asynchronous execution for mic possible at this level." )
     }
 
-    ValueType asum = Constants<ValueType>::zero;
+    ValueType asum = static_cast<ValueType>(0.0);
 
     if( n < 1 || incX < 1 )
     {
@@ -136,7 +134,7 @@ ValueType MICBLAS1::asum( const IndexType n, const ValueType* x, const IndexType
     {
         const ValueType* x = static_cast<const ValueType*>( xPtr );
 
-        asum = Constants<ValueType>::zero;
+        asum = static_cast<ValueType>(0.0);
 
         #pragma omp parallel for reduction( + : asum )
 
@@ -277,7 +275,7 @@ ValueType MICBLAS1::nrm2( const IndexType n, const ValueType* x, const IndexType
 
     const void* xPtr = x;
 
-    ValueType sum = Constants<ValueType>::zero;
+    ValueType sum = static_cast<ValueType>(0.0);
 
     if( n < 1 || incX < 1 )
     {
@@ -290,7 +288,7 @@ ValueType MICBLAS1::nrm2( const IndexType n, const ValueType* x, const IndexType
     {
         const ValueType* x = static_cast<const ValueType*>( xPtr );
 
-        sum = Constants<ValueType>::zero;
+        sum = static_cast<ValueType>(0.0);
 
         #pragma omp parallel for reduction( + : sum )
 
@@ -421,7 +419,7 @@ ValueType MICBLAS1::dot(
         COMMON_THROWEXCEPTION( "no asynchronous execution for MIC possible at this level." )
     }
 
-    ValueType val = Constants<ValueType>::zero;
+    ValueType val = static_cast<ValueType>(0.0);
 
     if ( n < 1 || incX < 1 || incY < 1 )
     {
@@ -438,7 +436,7 @@ ValueType MICBLAS1::dot(
         const ValueType* x = static_cast<const ValueType*>( xPtr );
         const ValueType* y = static_cast<const ValueType*>( yPtr );
 
-        val = Constants<ValueType>::zero;
+        val = static_cast<ValueType>(0.0);
 
         #pragma omp parallel for reduction( +:val )
 

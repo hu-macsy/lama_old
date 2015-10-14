@@ -56,7 +56,6 @@
 
 #include <scai/common/bind.hpp>
 #include <scai/common/SCAITypes.hpp>
-#include <scai/common/Constants.hpp>
 
 // boost
 #include <boost/preprocessor.hpp>
@@ -70,7 +69,6 @@ namespace scai
 
 using tasking::SyncToken;
 using tasking::TaskSyncToken;
-using common::Constants;
 
 namespace lama
 {
@@ -714,7 +712,7 @@ void MatrixStorage<ValueType>::splitHalo(
             localData.assign( *this );
         }
 
-        haloData.allocate( mNumRows, Constants<int>::zero );
+        haloData.allocate( mNumRows, 0 );
         halo = Halo(); // empty halo schedule
         return;
     }
@@ -1185,7 +1183,7 @@ void MatrixStorage<ValueType>::setRawDenseData(
     const OtherValueType values[],
     const ValueType epsilon )
 {
-    SCAI_ASSERT_ERROR( epsilon >= Constants<ValueType>::zero, "epsilon = " << epsilon << ", must not be negative" )
+    SCAI_ASSERT_ERROR( epsilon >= 0, "epsilon = " << epsilon << ", must not be negative" )
     mEpsilon = epsilon;
     // wrap all the data in a dense storage and make just an assign
     SCAI_LOG_INFO( logger, "set dense storage " << numRows << " x " << numColumns )

@@ -47,8 +47,6 @@
 namespace scai
 {
 
-using common::Constants;
-
 namespace lama
 {
 
@@ -189,7 +187,7 @@ void OpenMPDenseUtils::setCSRValues(
         {
             DenseValueType& elem = denseValues[denseindex( i, j, numRows, numColumns )];
 
-            elem = Constants<DenseValueType>::zero;
+            elem = static_cast<DenseValueType>(0.0);
         }
 
         // fill up positions for which non-zero values are given
@@ -295,7 +293,7 @@ void OpenMPDenseUtils::scaleValue(
     const IndexType numColumns,
     const DenseValueType val )
 {
-    if( val == Constants<DenseValueType>::zero )
+    if( val == scai::common::constants::ZERO )
     {
         // this solution can also deal with undefined data
 
@@ -305,7 +303,7 @@ void OpenMPDenseUtils::scaleValue(
             for( IndexType j = 0; j < numColumns; ++j )
             {
                 DenseValueType& elem = denseValues[denseindex( i, j, numRows, numColumns )];
-                elem = Constants<DenseValueType>::zero;
+                elem = static_cast<DenseValueType>(0.0);
             }
         }
     }

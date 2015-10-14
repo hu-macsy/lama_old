@@ -45,7 +45,6 @@
 
 #include <scai/common/cuda/CUDAError.hpp>
 #include <scai/common/macros/unused.hpp>
-#include <scai/common/Constants.hpp>
 
 // boost
 #include <boost/preprocessor.hpp>
@@ -57,7 +56,6 @@ namespace scai
 {
 
 using common::getScalarType;
-using common::Constants;
 
 extern cublasHandle_t CUDAContext_cublasHandle;
 
@@ -391,7 +389,7 @@ void CUDABLAS3::trsm(
     }
     else
     {
-        BLASHelper::XERBLA_cpu( Constants<IndexType>::zero, 4, "cblas_strsm_cuda", "Illegal Trans setting, %d\n", transA );
+        BLASHelper::XERBLA_cpu( 0, 4, "cblas_strsm_cuda", "Illegal Trans setting, %d\n", transA );
         return;
     }
 
@@ -407,7 +405,7 @@ void CUDABLAS3::trsm(
     }
     else
     {
-        BLASHelper::XERBLA_cpu( Constants<IndexType>::zero, 5, "cblas_strsm_cuda", "Illegal Diag setting, %d\n", diagarg );
+        BLASHelper::XERBLA_cpu( 0, 5, "cblas_strsm_cuda", "Illegal Diag setting, %d\n", diagarg );
         return;
     }
 
@@ -425,7 +423,7 @@ void CUDABLAS3::trsm(
         }
         else
         {
-            BLASHelper::XERBLA_cpu( Constants<IndexType>::zero, 2, "cblas_strsm_cuda", "Illegal Side setting, %d\n", sidearg );
+            BLASHelper::XERBLA_cpu( 0, 2, "cblas_strsm_cuda", "Illegal Side setting, %d\n", sidearg );
             return;
         }
 
@@ -441,7 +439,7 @@ void CUDABLAS3::trsm(
         }
         else
         {
-            BLASHelper::XERBLA_cpu( Constants<IndexType>::zero, 3, "cblas_strsm_cuda", "Illegal Uplo setting, %d\n", uploarg );
+            BLASHelper::XERBLA_cpu( 0, 3, "cblas_strsm_cuda", "Illegal Uplo setting, %d\n", uploarg );
             return;
         }
     }
@@ -460,7 +458,7 @@ void CUDABLAS3::trsm(
         }
         else
         {
-            BLASHelper::XERBLA_cpu( Constants<IndexType>::one, 2, "cblas_strsm_cuda", "Illegal Side setting, %d\n", sidearg );
+            BLASHelper::XERBLA_cpu( 1, 2, "cblas_strsm_cuda", "Illegal Side setting, %d\n", sidearg );
             return;
         }
 
@@ -476,13 +474,13 @@ void CUDABLAS3::trsm(
         }
         else
         {
-            BLASHelper::XERBLA_cpu( Constants<IndexType>::one, 3, "cblas_strsm_cuda", "Illegal Uplo setting, %d\n", uploarg );
+            BLASHelper::XERBLA_cpu( 1, 3, "cblas_strsm_cuda", "Illegal Uplo setting, %d\n", uploarg );
             return;
         }
     }
     else
     {
-        BLASHelper::XERBLA_cpu( Constants<IndexType>::zero, Constants<IndexType>::one, "cblas_strsm_cuda", "Illegal order setting, %d\n", Order );
+        BLASHelper::XERBLA_cpu( 0, 1, "cblas_strsm_cuda", "Illegal order setting, %d\n", Order );
         return;
     }
 

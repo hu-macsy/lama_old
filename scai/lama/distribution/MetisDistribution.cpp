@@ -41,8 +41,6 @@
 // internal scai libraries
 #include <scai/tracing.hpp>
 
-#include <scai/common/Constants.hpp>
-
 extern "C"
 {
 #include <metis.h>
@@ -51,14 +49,12 @@ extern "C"
 namespace scai
 {
 
-using common::Constants;
-
 namespace lama
 {
 
 SCAI_LOG_DEF_LOGGER( MetisDistribution::logger, "Distribution.MetisDistribution" )
 
-#define MASTER Constants<IndexType>::zero
+#define MASTER 0
 
 MetisDistribution::MetisDistribution( const CommunicatorPtr comm, const Matrix& matrix, std::vector<float>& weights )
 
@@ -81,7 +77,7 @@ MetisDistribution::MetisDistribution( const CommunicatorPtr comm, const Matrix& 
 
     SCAI_LOG_INFO( logger, "#weights = " << weights.size() )
 
-    comm->gather( &weights[0], Constants<IndexType>::one, MASTER, &weight );
+    comm->gather( &weights[0], 1, MASTER, &weight );
     comm->bcast( &weights[0], numPartitions, MASTER );
 
     // norm weights so that sum gives exactly 1.0
@@ -218,7 +214,7 @@ void MetisDistribution::computeIt( const CommunicatorPtr comm, const Matrix& mat
 
     // scatter local rows
     int numMyRows = 0;
-    comm->scatter( &numMyRows, Constants<IndexType>::one, MASTER, &numRowsPerOwner[0] );
+    comm->scatter( &numMyRows, 1, MASTER, &numRowsPerOwner[0] );
     mLocal2Global.resize( numMyRows );
     comm->scatterV( &mLocal2Global[0], numMyRows, MASTER, &rows[0], &numRowsPerOwner[0] );
 

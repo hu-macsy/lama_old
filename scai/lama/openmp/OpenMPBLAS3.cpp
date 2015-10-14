@@ -40,15 +40,12 @@
 
 // internal scai libraries
 #include <scai/common/macros/unused.hpp>
-#include <scai/common/Constants.hpp>
 
 // boost
 #include <boost/preprocessor.hpp>
 
 namespace scai
 {
-
-using common::Constants;
 
 namespace lama
 {
@@ -97,7 +94,7 @@ void OpenMPBLAS3::gemm(
                 {
                     for( int i = 0; i < m; i++ )
                     {
-                        temp = Constants<ValueType>::zero;
+                        temp = static_cast<ValueType>(0.0);
 
                         for( int j = 0; j < k; j++ )
                         {
@@ -121,7 +118,7 @@ void OpenMPBLAS3::gemm(
                 {
                     for( int i = 0; i < m; i++ )
                     {
-                        temp = Constants<ValueType>::zero;
+                        temp = static_cast<ValueType>(0.0);
 
                         for( int j = 0; j < k; j++ )
                         {
@@ -134,7 +131,7 @@ void OpenMPBLAS3::gemm(
             }
             else
             {
-                BLASHelper::XERBLA_cpu( Constants<IndexType>::zero, 2, "cblas_sgemm", "Illegal TransA setting, %d\n", TransA );
+                BLASHelper::XERBLA_cpu( 0, 2, "cblas_sgemm", "Illegal TransA setting, %d\n", TransA );
                 return;
             }
         }
@@ -157,7 +154,7 @@ void OpenMPBLAS3::gemm(
             }
             else
             {
-                BLASHelper::XERBLA_cpu( Constants<IndexType>::zero, 2, "cblas_sgemm", "Illegal TransA setting, %d\n", TransA );
+                BLASHelper::XERBLA_cpu( 0, 2, "cblas_sgemm", "Illegal TransA setting, %d\n", TransA );
                 return;
             }
         }
@@ -172,7 +169,7 @@ void OpenMPBLAS3::gemm(
                 {
                     for( int i = 0; i < m; i++ )
                     {
-                        temp = Constants<ValueType>::zero;
+                        temp = static_cast<ValueType>(0.0);
 
                         for( int j = 0; j < k; j++ )
                         {
@@ -196,7 +193,7 @@ void OpenMPBLAS3::gemm(
                 {
                     for( int i = 0; i < m; i++ )
                     {
-                        temp = Constants<ValueType>::zero;
+                        temp = static_cast<ValueType>(0.0);
 
                         for( int j = 0; j < k; j++ )
                         {
@@ -209,13 +206,13 @@ void OpenMPBLAS3::gemm(
             }
             else
             {
-                BLASHelper::XERBLA_cpu( Constants<IndexType>::zero, 2, "cblas_sgemm", "Illegal TransA setting, %d\n", TransA );
+                BLASHelper::XERBLA_cpu( 0, 2, "cblas_sgemm", "Illegal TransA setting, %d\n", TransA );
                 return;
             }
         }
         else
         {
-            BLASHelper::XERBLA_cpu( Constants<IndexType>::zero, 2, "cblas_sgemm", "Illegal TransA setting, %d\n", TransA );
+            BLASHelper::XERBLA_cpu( 0, 2, "cblas_sgemm", "Illegal TransA setting, %d\n", TransA );
             return;
         }
     }
@@ -232,7 +229,7 @@ void OpenMPBLAS3::gemm(
                 {
                     for( int i = 0; i < m; i++ )
                     {
-                        temp = Constants<ValueType>::zero;
+                        temp = static_cast<ValueType>(0.0);
 
                         for( int j = 0; j < k; j++ )
                         {
@@ -256,7 +253,7 @@ void OpenMPBLAS3::gemm(
                 {
                     for( int i = 0; i < m; i++ )
                     {
-                        temp = Constants<ValueType>::zero;
+                        temp = static_cast<ValueType>(0.0);
 
                         for( int j = 0; j < k; j++ )
                         {
@@ -269,7 +266,7 @@ void OpenMPBLAS3::gemm(
             }
             else
             {
-                BLASHelper::XERBLA_cpu( Constants<IndexType>::one, 2, "cblas_sgemm", "Illegal TransA setting, %d\n", TransA );
+                BLASHelper::XERBLA_cpu( 1, 2, "cblas_sgemm", "Illegal TransA setting, %d\n", TransA );
                 return;
             }
         }
@@ -287,7 +284,7 @@ void OpenMPBLAS3::gemm(
                 {
                     for( int i = 0; i < m; i++ )
                     {
-                        temp = Constants<ValueType>::zero;
+                        temp = static_cast<ValueType>(0.0);
 
                         for( int j = 0; j < k; j++ )
                         {
@@ -307,7 +304,7 @@ void OpenMPBLAS3::gemm(
                 {
                     for( int i = 0; i < m; i++ )
                     {
-                        temp = Constants<ValueType>::zero;
+                        temp = static_cast<ValueType>(0.0);
 
                         for( int j = 0; j < k; j++ )
                         {
@@ -324,7 +321,7 @@ void OpenMPBLAS3::gemm(
             }
             else
             {
-                BLASHelper::XERBLA_cpu( Constants<IndexType>::one, 2, "cblas_sgemm", "Illegal TransA setting, %d\n", TransA );
+                BLASHelper::XERBLA_cpu( 1, 2, "cblas_sgemm", "Illegal TransA setting, %d\n", TransA );
                 return;
             }
         }
@@ -346,14 +343,14 @@ void OpenMPBLAS3::gemm(
             }
             else
             {
-                BLASHelper::XERBLA_cpu( Constants<IndexType>::one, 2, "cblas_sgemm", "Illegal TransA setting, %d\n", TransA );
+                BLASHelper::XERBLA_cpu( 1, 2, "cblas_sgemm", "Illegal TransA setting, %d\n", TransA );
                 return;
             }
         }
     }
     else
     {
-        BLASHelper::XERBLA_cpu( Constants<IndexType>::zero, Constants<int>::one, "cblas_sgemm", "Illegal order setting, %d\n", order );
+        BLASHelper::XERBLA_cpu( 0, 1, "cblas_sgemm", "Illegal order setting, %d\n", order );
     }
 
     return;

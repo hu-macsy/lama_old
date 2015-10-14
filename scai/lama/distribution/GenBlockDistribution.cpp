@@ -39,17 +39,14 @@
 
 // internal scai libraries
 #include <scai/common/unique_ptr.hpp>
-#include <scai/common/Constants.hpp>
 
 // std
 #include <fstream>
 
-#define MASTER Constants<IndexType>::zero
+#define MASTER 0
 
 namespace scai
 {
-
-using common::Constants;
 
 namespace lama
 {
@@ -88,8 +85,8 @@ void GenBlockDistribution::setOffsets( const IndexType rank, const IndexType num
     common::scoped_array<IndexType> localSizes( new IndexType[numPartitions] );
 
 	// rank 0 is root
-    mCommunicator->gather( localSizes.get(), Constants<IndexType>::one, Constants<IndexType>::zero, &mySize );
-    mCommunicator->bcast( localSizes.get(), numPartitions, Constants<IndexType>::zero );
+    mCommunicator->gather( localSizes.get(), 1, 0, &mySize );
+    mCommunicator->bcast( localSizes.get(), numPartitions, 0 );
 
     SCAI_ASSERT_EQUAL_DEBUG( localSizes[rank], mySize )
 
@@ -160,7 +157,7 @@ GenBlockDistribution::GenBlockDistribution(
 
     std::vector<float> allWeights( size );
 
-    communicator->allgather( &allWeights[0], Constants<IndexType>::one, &weight );
+    communicator->allgather( &allWeights[0], 1, &weight );
 
     float totalWeight = 0;
 
@@ -337,7 +334,7 @@ void GenBlockDistribution::printDistributionVector( std::string name ) const
     IndexType parts = mCommunicator->getSize();
     IndexType myLocalSize = getLocalSize();
     std::vector<IndexType> localSizes( parts );
-    mCommunicator->gather( &localSizes[0], Constants<IndexType>::one, MASTER, &myLocalSize );
+    mCommunicator->gather( &localSizes[0], 1, MASTER, &myLocalSize );
 
     if( myRank == MASTER ) // process 0 is MASTER process
     {

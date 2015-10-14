@@ -34,18 +34,13 @@
 // hpp
 #include <scai/lama/distribution/CyclicDistribution.hpp>
 
-// internal scai library
-#include <scai/common/Constants.hpp>
-
 // std
 #include <fstream>
 
-#define MASTER Constants<IndexType>::zero
+#define MASTER 0
 
 namespace scai
 {
-
-using common::Constants;
 
 namespace lama
 {

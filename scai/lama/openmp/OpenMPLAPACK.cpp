@@ -45,7 +45,6 @@
 
 #include <scai/common/unique_ptr.hpp>
 #include <scai/common/macros/unused.hpp>
-#include <scai/common/Constants.hpp>
 
 // boost
 #include <boost/preprocessor.hpp>
@@ -55,8 +54,6 @@
 
 namespace scai
 {
-
-using common::Constants;
 
 namespace lama
 {
@@ -211,7 +208,7 @@ int OpenMPLAPACK::getri( const CBLAS_ORDER order, const int n, ValueType* const 
 
     for( int i = 0; i < n * n; i++ )
     {
-        A_inv[i] = Constants<ValueType>::zero;
+        A_inv[i] = static_cast<ValueType>(0.0);
     }
 
     if( order == CblasRowMajor )
@@ -264,7 +261,7 @@ int OpenMPLAPACK::getri( const CBLAS_ORDER order, const int n, ValueType* const 
             //Columns of Matrix A^-1
             for( int h = 0; h < n; h++ )
             {
-                A_inv[n * ipiv[i] + h] = Constants<ValueType>::zero;
+                A_inv[n * ipiv[i] + h] = static_cast<ValueType>(0.0);
             }
 
             A_inv[n * i + i] = 1;
@@ -535,8 +532,7 @@ void OpenMPLAPACK::laswp(
     }
     else
     {
-        BLASHelper::XERBLA_cpu( Constants<int>::zero, Constants<int>::one, "cblas_slaswp",
-                                "Illegal order setting, %d\n", order );
+        BLASHelper::XERBLA_cpu( 0, 1, "cblas_slaswp", "Illegal order setting, %d\n", order );
     }
 }
 

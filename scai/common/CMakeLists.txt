@@ -91,7 +91,6 @@ scai_project (
     CLASSES
 
         Complex
-        Constants
         Printable
         ScalarType
         Settings

@@ -59,7 +59,6 @@ namespace scai
 {
 
 using common::shared_ptr;
-using common::Constants;
 
 namespace lama
 {
@@ -605,14 +604,14 @@ void JDSStorage<ValueType>::setIdentity( const IndexType size )
 
     {
         LAMA_INTERFACE_FN_T( setVal, loc, Utils, Setter, ValueType )
-        setVal( wValues.get(), mNumRows, Constants<ValueType>::one );
+        setVal( wValues.get(), mNumRows, static_cast<ValueType>(1.0) );
     }
 
     LAMA_INTERFACE_FN_T( setVal, loc, Utils, Setter, IndexType )
     LAMA_INTERFACE_FN_T( setOrder, loc, Utils, Setter, IndexType )
 
     setVal( wDlg.get(), 1, mNumRows );
-    setVal( wIlg.get(), mNumRows, Constants<IndexType>::one );
+    setVal( wIlg.get(), mNumRows, 1 );
     setOrder( wPerm.get(), mNumRows );
     setOrder( wJa.get(), mNumRows );
 
@@ -1424,7 +1423,7 @@ ValueType JDSStorage<ValueType>::l1Norm() const
 
     if( n == 0 )
     {
-        return Constants<ValueType>::zero;
+        return static_cast<ValueType>(0.0);
     }
 
 	ContextPtr loc = getContextPtr();
@@ -1435,7 +1434,7 @@ ValueType JDSStorage<ValueType>::l1Norm() const
 
 	SCAI_CONTEXT_ACCESS( loc )
 
-	return asum( n, data.get(), Constants<IndexType>::one, NULL );
+	return asum( n, data.get(), 1, NULL );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1449,7 +1448,7 @@ ValueType JDSStorage<ValueType>::l2Norm() const
 
     if( n == 0 )
     {
-        return Constants<ValueType>::zero;
+        return static_cast<ValueType>(0.0);
     }
 
 	ContextPtr loc = getContextPtr();
@@ -1460,7 +1459,7 @@ ValueType JDSStorage<ValueType>::l2Norm() const
 
 	SCAI_CONTEXT_ACCESS( loc )
 
-	return ::sqrt(dot( n, data.get(), Constants<int>::one, data.get(), Constants<int>::one, NULL ));
+	return ::sqrt(dot( n, data.get(), 1, data.get(), 1, NULL ));
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -1474,7 +1473,7 @@ ValueType JDSStorage<ValueType>::maxNorm() const
 
     if( n == 0 )
     {
-        return Constants<ValueType>::zero;
+        return static_cast<ValueType>(0.0);
     }
 
     ContextPtr loc = getContextPtr();

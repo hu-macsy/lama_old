@@ -47,8 +47,6 @@ using namespace scai::common;
 namespace scai
 {
 
-using common::Constants;
-
 namespace lama
 {
 
@@ -168,9 +166,9 @@ Matrix::Matrix( DistributionPtr distribution )
 }
 
 Matrix::Matrix()
-    : Distributed( DistributionPtr( new NoDistribution( Constants<IndexType>::zero ) ) ), mColDistribution(
-        DistributionPtr( new NoDistribution( Constants<IndexType>::zero ) ) ), mNumRows( Constants<IndexType>::zero ),
-        mNumColumns( Constants<IndexType>::zero )
+    : Distributed( DistributionPtr( new NoDistribution( 0 ) ) ), mColDistribution(
+        DistributionPtr( new NoDistribution( 0 ) ) ), mNumRows( 0 ),
+        mNumColumns( 0 )
 {
     setDefaultKind();
 }
@@ -312,7 +310,7 @@ Matrix& Matrix::operator+=( const Expression_SM& exp )
 {
     // this += alpha * A  -> this = alpha * A + 1.0 * this
 
-    *this = Expression_SM_SM( exp, Expression_SM( Scalar( Constants<IndexType>::one ), *this ) );
+    *this = Expression_SM_SM( exp, Expression_SM( Scalar( 1.0 ), *this ) );
 
     return *this;
 }
@@ -325,7 +323,7 @@ Matrix& Matrix::operator-=( const Expression_SM& exp )
 
     Expression_SM minusExp( -exp.getArg1(), exp.getArg2() );
 
-    *this = Expression_SM_SM( Expression_SM( Scalar( Constants<IndexType>::one ), *this ), minusExp );
+    *this = Expression_SM_SM( Expression_SM( Scalar( 1.0 ), *this ), minusExp );
 
     return *this;
 }
@@ -336,7 +334,7 @@ Matrix& Matrix::operator+=( const Matrix& exp )
 {
     // this += A  -> this = 1.0 * A + 1.0 * this
 
-    *this = Expression_SM_SM( Expression_SM( Scalar( Constants<IndexType>::one ), *this ), Expression_SM( Scalar( Constants<IndexType>::one ), exp ) );
+    *this = Expression_SM_SM( Expression_SM( Scalar( 1.0 ), *this ), Expression_SM( Scalar( 1.0 ), exp ) );
 
     return *this;
 }
@@ -347,7 +345,7 @@ Matrix& Matrix::operator-=( const Matrix& exp )
 {
     // this -= A  -> this = -1.0 * A + 1.0 * this
 
-    *this = Expression_SM_SM( Expression_SM( Scalar( Constants<IndexType>::one ), *this ), Expression_SM( Scalar( Constants<IndexType>::minusone ), exp ) );
+    *this = Expression_SM_SM( Expression_SM( Scalar( 1.0 ), *this ), Expression_SM( Scalar( -1.0 ), exp ) );
 
     return *this;
 }
@@ -359,7 +357,7 @@ Matrix& Matrix::operator=( const Expression_SMM& exp )
     // exp is Expression object that stands for A * B with matrices A * B
     //   ->   1.0 * A * B + 0.0 * A
 
-    Expression_SM exp2( Scalar( Constants<IndexType>::zero ), *this );
+    Expression_SM exp2( Scalar( 0.0 ), *this );
 
     *this = Expression_SMM_SM( exp, exp2 );
 
@@ -495,7 +493,7 @@ Matrix& Matrix::operator=( const Expression_SMM_SM& exp )
     SCAI_LOG_INFO( logger,
                    "operator=:  " << alpha << " * A * B  + " << beta << " * C" " with A = " << A << ", B = " << B << ", C = " << C )
 
-    const Scalar zero( Constants<IndexType>::zero );
+    const Scalar zero( 0 );
 
     if ( beta == zero )
     {
@@ -530,7 +528,7 @@ Matrix& Matrix::operator=( const Expression_SM_SM& exp )
     const Matrix& B = exp.getArg2().getArg2();
     const Scalar& alpha = exp.getArg1().getArg1();
     const Scalar& beta = exp.getArg2().getArg1();
-    const Scalar zero( Constants<double>::zero );
+    const Scalar zero( 0.0 );
 
     if ( beta == zero )
     {

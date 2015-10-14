@@ -56,8 +56,6 @@ using tasking::SyncToken;
 
 using namespace hmemo;
 
-using common::Constants;
-
 namespace lama
 {
 
@@ -105,7 +103,7 @@ void MICJDSUtils::getRow(
 
         for( IndexType j = 0; j < numColumns; ++j )
         {
-            row[j] = Constants<OtherValueType>::zero;
+            row[j] = static_cast<OtherValueType>(0.0);
         }
 
         // one thread will set the row, but every thread searches
@@ -149,12 +147,12 @@ ValueType MICJDSUtils::getValue(
     const void* jaPtr = ja;
     const void* valuesPtr = values;
 
-    ValueType val = Constants<ValueType>::zero;
+    ValueType val = static_cast<ValueType>(0.0);
 
 #pragma offload target( mic : device ) in( permPtr, ilgPtr, dlgPtr, jaPtr, valuesPtr, \
                                                i, j, numRows ), out( val )
     {
-        val = Constants<ValueType>::zero;
+        val = static_cast<ValueType>(0.0);
 
         const IndexType* perm = static_cast<const IndexType*>( permPtr );
         const IndexType* ilg = static_cast<const IndexType*>( ilgPtr );
@@ -253,7 +251,7 @@ bool MICJDSUtils::checkDiagonalProperty(
     {
         // offload dlg[0]
 
-        IndexType dlg0 = MICUtils::getValue( dlg, Constants<IndexType>::zero );
+        IndexType dlg0 = MICUtils::getValue( dlg, 0 );
 
         if( dlg0 < std::min( numDiagonals, numColumns ) )
         {
@@ -664,15 +662,15 @@ void MICJDSUtils::normalGEMV(
     SCAI_LOG_INFO( logger,
                    "normalGEMV<" << common::getScalarType<ValueType>() << ">, result[" << numRows << "] = " << alpha << " * A( jds, ndlg = " << ndlg << " ) * x + " << beta << " * y " )
 
-    if( beta == Constants<ValueType>::zero )
+    if( beta == scai::common::constants::ZERO )
     {
-        MICUtils::setVal( result, numRows, Constants<ValueType>::zero );
+        MICUtils::setVal( result, numRows, static_cast<ValueType>(0.0) );
     }
     else if( result == y )
     {
         // result = result * beta
 
-        if( beta != Constants<ValueType>::one )
+        if( beta != scai::common::constants::ONE )
         {
             MICUtils::scale( result, beta, numRows );
         }
@@ -723,7 +721,7 @@ void MICJDSUtils::normalGEMV(
 
         for( IndexType ii = 0; ii < nonEmptyRows; ii++ )
         {
-            ValueType value = Constants<ValueType>::zero; // sums up final value
+            ValueType value = static_cast<ValueType>(0.0); // sums up final value
             IndexType offset = ii;
 
             for( IndexType jj = 0; jj < jdsILG[ii]; jj++ )
@@ -794,7 +792,7 @@ void MICJDSUtils::jacobi(
         const IndexType* jdsILG = static_cast<const IndexType*>( jdsILGPtr );
         const ValueType* jdsValues = static_cast<const ValueType*>( jdsValuesPtr );
 
-        const ValueType oneMinusOmega = Constants<ValueType>::one - omega;
+        const ValueType oneMinusOmega = static_cast<ValueType>(1.0) - omega;
 
         #pragma omp parallel for
 
@@ -812,7 +810,7 @@ void MICJDSUtils::jacobi(
                 pos += jdsDLG[j];
             }
 
-            if( omega == Constants<ValueType>::one )
+            if( omega == scai::common::constants::ONE )
             {
                 solution[i] = temp / diag;
             }
@@ -899,7 +897,7 @@ void MICJDSUtils::jacobiHalo(
 
         for( IndexType ii = 0; ii < numNonEmptyRows; ++ii )
         {
-            ValueType temp = Constants<ValueType>::zero;
+            ValueType temp = static_cast<ValueType>(0.0);
 
             const IndexType i = jdsHaloPerm[ii];
             const ValueType diag = localDiagonal[i];

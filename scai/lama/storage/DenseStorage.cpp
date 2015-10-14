@@ -46,8 +46,6 @@
 #include <scai/common/Constants.hpp>
 #include <scai/common/macros/print_string.hpp>
 
-#include <scai/common/Constants.hpp>
-
 using namespace scai::hmemo;
 
 using std::abs;
@@ -57,7 +55,6 @@ namespace scai
 {
 
 using common::shared_ptr;
-using common::Constants;
 
 namespace lama
 {
@@ -291,8 +288,8 @@ void DenseStorageView<ValueType>::setIdentity()
 
     //  do not use something like scale, data can be completely undefined
 
-    OpenMPDenseUtils::scaleValue( data.get(), mNumRows, mNumColumns, Constants<ValueType>::zero );
-    OpenMPDenseUtils::setDiagonalValue( data.get(), mNumRows, mNumColumns, Constants<ValueType>::one );
+    OpenMPDenseUtils::scaleValue( data.get(), mNumRows, mNumColumns, static_cast<ValueType>(0.0) );
+    OpenMPDenseUtils::setDiagonalValue( data.get(), mNumRows, mNumColumns, static_cast<ValueType>(1.0) );
 
     SCAI_LOG_INFO( logger, *this << " has been set to identity" )
 }
@@ -304,7 +301,7 @@ void DenseStorageView<ValueType>::setZero()
 {
     WriteOnlyAccess<ValueType> data( mData, mNumRows * mNumColumns );
 
-    const ValueType zero = Constants<ValueType>::zero;
+    const ValueType zero = static_cast<ValueType>(0.0);
 
     //  do not use something like scale, data can be completely undefined
 
@@ -483,7 +480,7 @@ void DenseStorageView<ValueType>::matrixTimesVector(
 
     // using BLAS2 interface requires result and y to be aliased
 
-    if( beta == Constants<ValueType>::zero )
+    if( beta == scai::common::constants::ZERO )
     {
         SCAI_LOG_INFO( logger, "set result = 0 as y != result and beta = 0" )
 
@@ -493,7 +490,7 @@ void DenseStorageView<ValueType>::matrixTimesVector(
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        setVal( wResult.get(), mNumRows, Constants<ValueType>::zero );
+        setVal( wResult.get(), mNumRows, static_cast<ValueType>(0.0) );
     }
     else if( &result != &y )
     {
@@ -509,7 +506,7 @@ void DenseStorageView<ValueType>::matrixTimesVector(
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        copy( mNumRows, rY.get(), Constants<int>::one, wResult.get(), Constants<int>::one, NULL );
+        copy( mNumRows, rY.get(), 1, wResult.get(), 1, NULL );
     }
     else
     {
@@ -522,11 +519,11 @@ void DenseStorageView<ValueType>::matrixTimesVector(
     {
         SCAI_LOG_INFO( logger, "empty matrix, so compute result = " << beta << " * result " )
 
-        if( beta == Constants<ValueType>::zero )
+        if( beta == scai::common::constants::ZERO )
         {
             // nothing more to do, y is already 0
         }
-        else if( beta == Constants<ValueType>::one )
+        else if( beta == scai::common::constants::ONE )
         {
             // no scaling required
         }
@@ -538,7 +535,7 @@ void DenseStorageView<ValueType>::matrixTimesVector(
 
             SCAI_CONTEXT_ACCESS( loc )
 
-            scal( mNumRows, beta, wResult.get(), Constants<int>::one, NULL );
+            scal( mNumRows, beta, wResult.get(), 1, NULL );
         }
     }
     else
@@ -559,7 +556,7 @@ void DenseStorageView<ValueType>::matrixTimesVector(
         // gemv:  result = alpha * this * x + beta * result
 
         gemv( CblasRowMajor, CblasNoTrans, mNumRows, mNumColumns, alpha, denseValues.get(), lda, rX.get(),
-              Constants<int>::one, beta, wResult.get(), Constants<int>::one, NULL );
+              1, beta, wResult.get(), 1, NULL );
     }
 }
 
@@ -592,7 +589,7 @@ void DenseStorageView<ValueType>::vectorTimesMatrix(
 
     // using BLAS2 interface requires result and y to be aliased
 
-    if( beta == Constants<ValueType>::zero )
+    if( beta == scai::common::constants::ZERO )
     {
         SCAI_LOG_INFO( logger, "set result = 0 as y != result and beta = 0" )
 
@@ -602,7 +599,7 @@ void DenseStorageView<ValueType>::vectorTimesMatrix(
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        setVal( wResult.get(), mNumColumns, Constants<ValueType>::zero );
+        setVal( wResult.get(), mNumColumns, static_cast<ValueType>(0.0) );
     }
     else if( &result != &y )
     {
@@ -618,7 +615,7 @@ void DenseStorageView<ValueType>::vectorTimesMatrix(
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        copy( mNumColumns, rY.get(), Constants<int>::one, wResult.get(), Constants<int>::one, NULL );
+        copy( mNumColumns, rY.get(), 1, wResult.get(), 1, NULL );
     }
     else
     {
@@ -631,11 +628,11 @@ void DenseStorageView<ValueType>::vectorTimesMatrix(
     {
         SCAI_LOG_INFO( logger, "empty matrix, so compute result = " << beta << " * result " )
 
-        if( beta == Constants<ValueType>::zero )
+        if( beta == scai::common::constants::ZERO )
         {
             // nothing more to do, y is already 0
         }
-        else if( beta == Constants<ValueType>::one )
+        else if( beta == scai::common::constants::ONE )
         {
             // no scaling required
         }
@@ -647,7 +644,7 @@ void DenseStorageView<ValueType>::vectorTimesMatrix(
 
             SCAI_CONTEXT_ACCESS( loc )
 
-            scal( mNumColumns, beta, wResult.get(), Constants<int>::one, NULL );
+            scal( mNumColumns, beta, wResult.get(), 1, NULL );
         }
     }
     else
@@ -668,7 +665,7 @@ void DenseStorageView<ValueType>::vectorTimesMatrix(
         // gemv:  result = alpha * this * x + beta * result
 
         gemv( CblasRowMajor, CblasTrans, mNumRows, mNumColumns, alpha, denseValues.get(), lda, rX.get(),
-              Constants<int>::one, beta, wResult.get(), Constants<int>::one, NULL );
+              1, beta, wResult.get(), 1, NULL );
     }
 }
 
@@ -820,7 +817,7 @@ void DenseStorageView<ValueType>::matrixTimesMatrixDense(
 
     ContextPtr context = mContext;
 
-    if( beta == Constants<ValueType>::zero )
+    if( beta == scai::common::constants::ZERO )
     {
         // do not care at all about C as it might be any dummy, or aliased to result
 
@@ -828,7 +825,7 @@ void DenseStorageView<ValueType>::matrixTimesMatrixDense(
         WriteOnlyAccess<ValueType> resAccess( getData(), context, m * n );
         LAMA_INTERFACE_FN_T( setVal, context, Utils, Setter, ValueType )
         SCAI_CONTEXT_ACCESS( context )
-        setVal( resAccess.get(), m * n, Constants<ValueType>::zero );
+        setVal( resAccess.get(), m * n, static_cast<ValueType>(0.0) );
     }
     else if( this != &c )
     {
@@ -843,7 +840,7 @@ void DenseStorageView<ValueType>::matrixTimesMatrixDense(
         WriteOnlyAccess<ValueType> resAccess( getData(), context, m * n );
         SCAI_LOG_TRACE( logger, "Copying: res = c " )
         SCAI_CONTEXT_ACCESS( context )
-        copy( n * m, cAccess.get(), Constants<int>::one, resAccess.get(), Constants<int>::one, NULL );
+        copy( n * m, cAccess.get(), 1, resAccess.get(), 1, NULL );
     }
     else
     {
@@ -893,7 +890,7 @@ ValueType DenseStorageView<ValueType>::l1Norm() const
 
     if( n == 0 )
     {
-        return Constants<ValueType>::zero;
+        return static_cast<ValueType>(0.0);
     }
 
 	ContextPtr loc = this->getContextPtr();
@@ -904,7 +901,7 @@ ValueType DenseStorageView<ValueType>::l1Norm() const
 
 	SCAI_CONTEXT_ACCESS( loc );
 
-	return asum( n, data.get(), Constants<int>::one, NULL );
+	return asum( n, data.get(), 1, NULL );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -916,7 +913,7 @@ ValueType DenseStorageView<ValueType>::l2Norm() const
 
     if( n == 0 )
     {
-        return Constants<ValueType>::zero;
+        return static_cast<ValueType>(0.0);
     }
 
 	ContextPtr loc = this->getContextPtr();
@@ -927,7 +924,7 @@ ValueType DenseStorageView<ValueType>::l2Norm() const
 
 	SCAI_CONTEXT_ACCESS( loc );
 
-	return ::sqrt(dot( n, data.get(), Constants<int>::one, data.get(), Constants<int>::one, NULL ));
+	return ::sqrt(dot( n, data.get(), 1, data.get(), 1, NULL ));
 }
 
 /* --------------------------------------------------------------------------- */
@@ -939,7 +936,7 @@ ValueType DenseStorageView<ValueType>::maxNorm() const
 
     if( n == 0 )
     {
-        return Constants<ValueType>::zero;
+        return static_cast<ValueType>(0.0);
     }
 
     ContextPtr loc = this->getContextPtr();
@@ -993,7 +990,7 @@ ValueType DenseStorageView<ValueType>::maxDiffNormImpl( const DenseStorageView<V
 
     if( n == 0 )
     {
-        return Constants<ValueType>::zero;
+        return static_cast<ValueType>(0.0);
     }
 
     ContextPtr loc = mContext;
@@ -1161,7 +1158,7 @@ mNumColumns = numColumns;
 
 WriteOnlyAccess<ValueType> data( mData, numRows * numColumns );
 
-OpenMPUtils::setVal( data.get(), numRows * numColumns, Constants<ValueType>::zero );
+OpenMPUtils::setVal( data.get(), numRows * numColumns, static_cast<ValueType>(0.0) );
 }
 
 /* --------------------------------------------------------------------------- */

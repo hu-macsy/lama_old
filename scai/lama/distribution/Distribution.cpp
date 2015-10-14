@@ -43,7 +43,6 @@
 
 #include <scai/common/Assert.hpp>
 #include <scai/common/unique_ptr.hpp>
-#include <scai/common/Constants.hpp>
 
 // boost
 #include <boost/preprocessor.hpp>
@@ -52,8 +51,6 @@ using namespace scai::hmemo;
 
 namespace scai
 {
-
-using common::Constants;
 
 namespace lama
 {
@@ -233,8 +230,8 @@ void Distribution::replicate( T1* allValues, const T2* localValues ) const
 
     for( PartitionId ip = 0; ip < np - 1; ++ip )
     {
-        comm.shiftArray( indexesReceive, indexesSend, Constants<IndexType>::one );
-        comm.shiftArray( valuesReceive, valuesSend, Constants<IndexType>::one );
+        comm.shiftArray( indexesReceive, indexesSend, 1 );
+        comm.shiftArray( valuesReceive, valuesSend, 1 );
 
         SCAI_ASSERT_EQUAL_DEBUG( valuesReceive.size(), indexesReceive.size() )
 
@@ -347,10 +344,10 @@ void Distribution::replicateN( T1* allValues, const T2* localValues, const Index
 
     for( PartitionId ip = 0; ip < np - 1; ++ip )
     {
-        comm.shiftArray( indexesReceive, indexesSend, Constants<IndexType>::one );
+        comm.shiftArray( indexesReceive, indexesSend, 1 );
         currentSize = indexesReceive.size(); // next numbe of lines to deal with
 
-        comm.shiftArray( valuesReceive, valuesSend, Constants<IndexType>::one );
+        comm.shiftArray( valuesReceive, valuesSend, 1 );
 
         SCAI_ASSERT_EQUAL_DEBUG( currentSize * n, valuesReceive.size() )
 
@@ -501,8 +498,8 @@ void Distribution::replicateRagged(
 
     for( PartitionId ip = 0; ip < np - 1; ++ip )
     {
-        comm.shiftArray( indexesReceive, indexesSend, Constants<IndexType>::one );
-        comm.shiftArray( valuesReceive, valuesSend, Constants<IndexType>::one );
+        comm.shiftArray( indexesReceive, indexesSend, 1 );
+        comm.shiftArray( valuesReceive, valuesSend, 1 );
 
         IndexType newSize1 = indexesReceive.size();
         IndexType newSize2 = valuesReceive.size();

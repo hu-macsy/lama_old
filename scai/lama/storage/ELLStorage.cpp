@@ -63,7 +63,6 @@ namespace lama
 {
 
 using common::shared_ptr;
-using common::Constants;
 
 /* --------------------------------------------------------------------------- */
 
@@ -268,7 +267,7 @@ void ELLStorage<ValueType>::setIdentity( const IndexType size )
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        setVal( ia.get(), mNumRows, Constants<IndexType>::one );
+        setVal( ia.get(), mNumRows, 1 );
         setOrder( ja.get(), mNumRows );
     }
 
@@ -280,7 +279,7 @@ void ELLStorage<ValueType>::setIdentity( const IndexType size )
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        setVal( data.get(), mNumRows, Constants<ValueType>::one );
+        setVal( data.get(), mNumRows, static_cast<ValueType>(1.0) );
     }
 
     mDiagonalProperty = true;
@@ -797,7 +796,7 @@ void ELLStorage<ValueType>::allocate( IndexType numRows, IndexType numColumns )
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        setVal( ia.get(), mNumRows, Constants<IndexType>::zero );
+        setVal( ia.get(), mNumRows, 0 );
     }
 
     mDiagonalProperty = checkDiagonalProperty();
@@ -1022,7 +1021,7 @@ void ELLStorage<ValueType>::matrixTimesVector(
 
         WriteAccess<ValueType> wResult( result, loc );
 
-        if( mRowIndexes.size() > 0 && ( beta == Constants<ValueType>::one ) )
+        if( mRowIndexes.size() > 0 && ( beta == scai::common::constants::ONE ) )
         {
             // y += alpha * thisMatrix * x, can take advantage of row indexes
 
@@ -1071,7 +1070,7 @@ void ELLStorage<ValueType>::vectorTimesMatrix(
     SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumRows )
     SCAI_ASSERT_EQUAL_ERROR( result.size(), mNumColumns )
 
-    if( ( beta != Constants<ValueType>::zero ) && ( &result != &y ) )
+    if( ( beta != scai::common::constants::ZERO ) && ( &result != &y ) )
     {
         SCAI_ASSERT_EQUAL_ERROR( y.size(), mNumColumns )
     }
@@ -1097,7 +1096,7 @@ void ELLStorage<ValueType>::vectorTimesMatrix(
 
         WriteAccess<ValueType> wResult( result, loc );
 
-        if( mRowIndexes.size() > 0 && ( beta == Constants<ValueType>::one ) )
+        if( mRowIndexes.size() > 0 && ( beta == scai::common::constants::ONE ) )
         {
             // y += alpha * thisMatrix * x, can take advantage of row indexes
 
@@ -1201,7 +1200,7 @@ SyncToken* ELLStorage<ValueType>::matrixTimesVectorAsync(
 
         shared_ptr<WriteAccess<ValueType> > wResult( new WriteAccess<ValueType>( result, loc ) );
 
-        if( mRowIndexes.size() > 0 && ( beta == Constants<ValueType>::one ) )
+        if( mRowIndexes.size() > 0 && ( beta == scai::common::constants::ONE ) )
         {
             // y += alpha * thisMatrix * x, can take advantage of row indexes
 
@@ -1297,7 +1296,7 @@ SyncToken* ELLStorage<ValueType>::vectorTimesMatrixAsync(
     SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumRows )
     SCAI_ASSERT_EQUAL_ERROR( result.size(), mNumColumns )
 
-    if ( ( beta != Constants<ValueType>::zero ) && ( &result != &y ) )
+    if ( ( beta != scai::common::constants::ZERO ) && ( &result != &y ) )
     {
         SCAI_ASSERT_EQUAL_ERROR( y.size(), mNumColumns )
     }
@@ -1323,7 +1322,7 @@ SyncToken* ELLStorage<ValueType>::vectorTimesMatrixAsync(
 
         shared_ptr<WriteAccess<ValueType> > wResult( new WriteAccess<ValueType>( result, loc ) );
 
-        if( mRowIndexes.size() > 0 && ( beta == Constants<ValueType>::one ) )
+        if( mRowIndexes.size() > 0 && ( beta == scai::common::constants::ONE ) )
         {
             // y += alpha * thisMatrix * x, can take advantage of row indexes
 
@@ -1604,7 +1603,7 @@ ValueType ELLStorage<ValueType>::l1Norm() const
 
     if( mNumRows == 0 || mNumValuesPerRow == 0 )
     {
-        return Constants<ValueType>::zero;
+        return static_cast<ValueType>(0.0);
     }
 
     ContextPtr loc = getContextPtr();
@@ -1615,7 +1614,7 @@ ValueType ELLStorage<ValueType>::l1Norm() const
 
 	SCAI_CONTEXT_ACCESS( loc );
 
-	return asum( mValues.size(), data.get(), Constants<IndexType>::one, NULL );
+	return asum( mValues.size(), data.get(), 1, NULL );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1627,7 +1626,7 @@ ValueType ELLStorage<ValueType>::l2Norm() const
 
     if( mNumRows == 0 || mNumValuesPerRow == 0 )
     {
-        return Constants<ValueType>::zero;
+        return static_cast<ValueType>(0.0);
     }
 
     ContextPtr loc = getContextPtr();
@@ -1638,7 +1637,7 @@ ValueType ELLStorage<ValueType>::l2Norm() const
 
 	SCAI_CONTEXT_ACCESS( loc );
 
-	return ::sqrt(dot( mValues.size(), data.get(), Constants<int>::one, data.get(), Constants<int>::one, NULL ));
+	return ::sqrt(dot( mValues.size(), data.get(), 1, data.get(), 1, NULL ));
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1650,7 +1649,7 @@ ValueType ELLStorage<ValueType>::maxNorm() const
 
     if( mNumRows == 0 || mNumValuesPerRow == 0 )
     {
-        return Constants<ValueType>::zero;
+        return static_cast<ValueType>(0.0);
     }
 
     ContextPtr loc = getContextPtr();
@@ -1716,7 +1715,7 @@ void ELLStorage<ValueType>::matrixTimesMatrix(
         return;
     }
 
-    if( beta != Constants<ValueType>::zero )
+    if( beta != scai::common::constants::ZERO )
     {
         if( ( c.getFormat() == Format::ELL ) && ( &c != this ) )
         {
@@ -1735,10 +1734,10 @@ void ELLStorage<ValueType>::matrixTimesMatrix(
     ELLStorage<ValueType> tmp;
     tmp.matrixTimesMatrixELL( alpha, *ellA, *ellB );
 
-    if( beta != Constants<ValueType>::zero )
+    if( beta != scai::common::constants::ZERO )
     {
         ELLStorage<ValueType> tmp1;
-        tmp1.matrixAddMatrixELL( Constants<ValueType>::one, tmp, beta, *ellC );
+        tmp1.matrixAddMatrixELL( static_cast<ValueType>(1.0), tmp, beta, *ellC );
         swap( tmp1 );
     }
     else

@@ -46,7 +46,6 @@
 
 #include <scai/common/cuda/CUDAError.hpp>
 #include <scai/common/macros/unused.hpp>
-#include <scai/common/Constants.hpp>
 
 // boost
 #include <boost/preprocessor.hpp>
@@ -58,7 +57,6 @@ namespace scai
 {
 
 using common::getScalarType;
-using common::Constants;
 
 extern cublasHandle_t CUDAContext_cublasHandle;
 
@@ -172,7 +170,7 @@ ComplexFloat cublasWrapperNrm2( int n, const ComplexFloat* x_d, int incX )
     float nrm2;
     SCAI_CUBLAS_CALL( cublasScnrm2( CUDAContext_cublasHandle, n, cublasCast( x_d ), incX, &nrm2 ),
                       "cublasWrapperNrm2<ComplexFloat>" );
-    return ComplexFloat( nrm2, Constants<float>::zero );
+    return ComplexFloat( nrm2, 0.0f );
 }
 
 template<>
@@ -182,7 +180,7 @@ ComplexDouble cublasWrapperNrm2( int n, const ComplexDouble* x_d, int incX )
     double nrm2;
     SCAI_CUBLAS_CALL( cublasDznrm2( CUDAContext_cublasHandle, n, cublasCast( x_d ), incX, &nrm2 ),
                       "cublasWrapperNrm2<ComplexDouble>" );
-    return ComplexDouble( nrm2, Constants<double>::zero );
+    return ComplexDouble( nrm2, 0.0 );
 }
 
 template<typename ValueType>
@@ -192,7 +190,7 @@ ValueType CUDABLAS1::nrm2( IndexType n, const ValueType* x_d, IndexType incX, Sy
 
     if( incX <= 0 )
     {
-        return Constants<ValueType>::zero;
+        return static_cast<ValueType>(0.0);
     }
 
     SCAI_LOG_DEBUG( logger, "nrm2<" << getScalarType<ValueType>() << "> of x[" << n << "]" )
@@ -254,7 +252,7 @@ ComplexFloat cublasWrapperAsum( int n, const ComplexFloat* x_d, int incX )
     float asum;
     SCAI_CUBLAS_CALL( cublasScasum( CUDAContext_cublasHandle, n, cublasCast( x_d ), incX, &asum ),
                       "cublasWrapperAsum<ComplexFloat>" );
-    return ComplexFloat( asum, Constants<float>::zero );
+    return ComplexFloat( asum, 0.0f );
 }
 
 template<>
@@ -264,7 +262,7 @@ ComplexDouble cublasWrapperAsum( int n, const ComplexDouble* x_d, int incX )
     double asum;
     SCAI_CUBLAS_CALL( cublasDzasum( CUDAContext_cublasHandle, n, cublasCast( x_d ), incX, &asum ),
                       "cublasWrapperAsum<ComplexDouble>" );
-    return ComplexDouble( asum, Constants<double>::zero );
+    return ComplexDouble( asum, 0.0 );
 }
 
 template<typename ValueType>
@@ -274,7 +272,7 @@ ValueType CUDABLAS1::asum( const IndexType n, const ValueType* x_d, const IndexT
 
     if( incX <= 0 )
     {
-        return Constants<ValueType>::zero;
+        return static_cast<ValueType>(0.0);
     }
 
     SCAI_LOG_DEBUG( logger, "asum<" << getScalarType<ValueType>() << "> of x[" << n << "]" )
@@ -687,7 +685,7 @@ ValueType CUDABLAS1::dot(
 
     if( ( incX <= 0 ) || ( incY <= 0 ) )
     {
-        return Constants<ValueType>::zero;
+        return static_cast<ValueType>(0.0);
     }
 
     SCAI_CHECK_CUDA_ACCESS

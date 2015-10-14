@@ -58,6 +58,7 @@
 #include <scai/common/bind.hpp>
 #include <scai/common/exception/Exception.hpp>
 #include <scai/common/macros/print_string.hpp>
+#include <scai/common/Constants.hpp>
 
 // boost
 #include <boost/preprocessor.hpp>
@@ -348,7 +349,7 @@ void SparseMatrix<ValueType>::allocate( const IndexType numRows, const IndexType
     Matrix::setReplicatedMatrix( numRows, numColumns );
 
     mLocalData->allocate( numRows, numColumns );
-    mHaloData->allocate( numRows, Constants<IndexType>::zero );
+    mHaloData->allocate( numRows, 0 );
     mHalo.clear();
 }
 
@@ -528,7 +529,7 @@ void SparseMatrix<ValueType>::assignTransposeImpl( const SparseMatrix<ValueType>
 
         // Now this partition has all sparse data from other partitions to build my new halo
 
-        mHaloData->setCompressThreshold( Constants<double>::one ); // halo rows might be compressed
+        mHaloData->setCompressThreshold( static_cast<ValueType>(1.0) ); // halo rows might be compressed
 
         _MatrixStorage::sizes2offsets( haloRowSizes );
 
@@ -593,7 +594,7 @@ void SparseMatrix<ValueType>::assign( const _MatrixStorage& storage )
     // TODO: allow flexibility regarding the context, e.g. format conversion should be done on GPU
 
     mLocalData->assign( storage );
-    mHaloData->allocate( numRows, Constants<IndexType>::zero ); // empty halo storage, halo
+    mHaloData->allocate( numRows, 0 ); // empty halo storage, halo
     mHalo.clear();
 }
 
@@ -739,7 +740,7 @@ void SparseMatrix<ValueType>::redistribute( DistributionPtr rowDistributionPtr, 
 
         mLocalData->joinHalo( *mLocalData, *mHaloData, mHalo, *oldColDistributionPtr, keepDiagonalProperty );
 
-        mHaloData->allocate( mLocalData->getNumRows(), Constants<IndexType>::zero );
+        mHaloData->allocate( mLocalData->getNumRows(), 0 );
 
         mHalo.clear();
 
@@ -1060,7 +1061,7 @@ void SparseMatrix<ValueType>::matrixTimesMatrix(
 
         const DenseMatrix<ValueType>* typedC = dynamic_cast<const DenseMatrix<ValueType>*>( &C );
 
-        if( betaVal != Constants<ValueType>::zero )
+        if( betaVal != scai::common::constants::ZERO )
         {
             SCAI_ASSERT_ERROR( typedC, "Must be dense matrix<" << getValueType() << "> : " << C )
         }
@@ -1148,7 +1149,7 @@ void SparseMatrix<ValueType>::matrixPlusMatrixImpl(
 
     // replicated columns, so no halo needed
 
-    mHaloData->allocate( mNumRows, Constants<IndexType>::zero );
+    mHaloData->allocate( mNumRows, 0 );
     mHalo.clear();
 }
 
@@ -1175,7 +1176,7 @@ void SparseMatrix<ValueType>::matrixTimesMatrixImpl(
 
     SCAI_ASSERT_EQUAL_DEBUG( A.getColDistribution(), B.getDistribution() )
 
-    if( beta != Constants<ValueType>::zero )
+    if( beta != scai::common::constants::ZERO )
     {
         SCAI_ASSERT_ERROR( C.getDistribution() == A.getDistribution(),
                            "Row distribution must be " << A.getDistribution() << ": " << C )
@@ -1203,12 +1204,12 @@ void SparseMatrix<ValueType>::matrixTimesMatrixImpl(
 
         // local = alpha * A_local * B_local + alpha * A_halo * B_halo + C_local
 
-        mLocalData->matrixTimesMatrix( alpha, *A.mHaloData, haloB, Constants<ValueType>::one, *mLocalData );
+        mLocalData->matrixTimesMatrix( alpha, *A.mHaloData, haloB, static_cast<ValueType>(1.0), *mLocalData );
     }
 
     // replicated columns, so no halo
 
-    mHaloData->allocate( mNumRows, Constants<IndexType>::zero );
+    mHaloData->allocate( mNumRows, 0 );
     mHalo.clear();
 
     SCAI_LOG_DEBUG( logger, "Context lhs after mult " << mLocalData->getContext() )
@@ -1345,7 +1346,7 @@ void SparseMatrix<ValueType>::vectorHaloOperationSync(
 
     std::vector<IndexType> sizes( numParts );
     std::vector<IndexType> offsets;
-    comm.allgather( &sizes[0], Constants<IndexType>::one, &xSize );
+    comm.allgather( &sizes[0], 1, &xSize );
     offsets = sizes;
     offsets.resize( numParts + 1 );
     sizes2offsets( &offsets[0], numParts );
@@ -1380,7 +1381,7 @@ void SparseMatrix<ValueType>::vectorHaloOperationSync(
                     }
                     else
                     {
-                        o[i] = Constants<ValueType>::zero;
+                        o[i] = static_cast<ValueType>(0.0);
                     }
                 }
             }
@@ -1589,7 +1590,7 @@ void SparseMatrix<ValueType>::vectorHaloOperationAsync(
 
     std::vector<IndexType> sizes( numParts );
     std::vector<IndexType> offsets;
-    comm.allgather( &sizes[0], Constants<IndexType>::one, &xSize );
+    comm.allgather( &sizes[0], 1, &xSize );
     offsets = sizes;
     offsets.resize( numParts + 1 );
     sizes2offsets( &offsets[0], numParts );
@@ -1624,7 +1625,7 @@ void SparseMatrix<ValueType>::vectorHaloOperationAsync(
                 }
                 else
                 {
-                    o[i] = Constants<ValueType>::zero;
+                    o[i] = static_cast<ValueType>(0.0);
                 }
             }
         }
@@ -1744,7 +1745,7 @@ void SparseMatrix<ValueType>::matrixTimesVectorImpl(
 
             // bind( matrixTimesVector, _1, _2, alphaValue, _3, one, cref( localResult ) );
 
-            bind( matrixTimesVector, _1, _2, alphaValue, _3, Constants<ValueType>::one, _2 );
+            bind( matrixTimesVector, _1, _2, alphaValue, _3, static_cast<ValueType>(1.0), _2 );
 
     if( Matrix::SYNCHRONOUS == getCommunicationKind() )
     {
@@ -1836,8 +1837,8 @@ void SparseMatrix<ValueType>::vectorTimesMatrixImpl(
         void(
             const MatrixStorage<ValueType>* localMatrix,
             LAMAArray<ValueType>& localResult,
-            const LAMAArray<ValueType>& localX )> calcF = bind( vectorTimesMatrix, _1, _2, Constants<ValueType>::one,
-                    _3, Constants<ValueType>::zero, _2 );
+            const LAMAArray<ValueType>& localX )> calcF = bind( vectorTimesMatrix, _1, _2, static_cast<ValueType>(1.0),
+                    _3, static_cast<ValueType>(0.0), _2 );
 
         function<
         void(
@@ -1855,7 +1856,7 @@ void SparseMatrix<ValueType>::vectorTimesMatrixImpl(
             const MatrixStorage<ValueType>* localMatrix,
             LAMAArray<ValueType>& localResult,
             const LAMAArray<ValueType>& localX )> calcAsyncF = bind( vectorTimesMatrixAsync, _1,
-                    _2, Constants<ValueType>::one, _3, Constants<ValueType>::zero, _2 );
+                    _2, static_cast<ValueType>(1.0), _3, static_cast<ValueType>(0.0), _2 );
 
         function<
         /*SyncToken**/void(
@@ -1920,7 +1921,7 @@ void SparseMatrix<ValueType>::matrixTimesVector(
 {
     SCAI_LOG_INFO( logger, result << " = " << alpha << " * " << *this << " * " << x << " + " << beta << " * " << y )
 
-    if( ( &result == &y ) && ( beta != Scalar( Constants<double>::zero ) ) )
+    if( ( &result == &y ) && ( beta != Scalar( 0.0 ) ) )
     {
         SCAI_LOG_DEBUG( logger, "alias: result = y is well handled" )
     }
@@ -1967,7 +1968,7 @@ void SparseMatrix<ValueType>::vectorTimesMatrix(
 {
     SCAI_LOG_INFO( logger, result << " = " << alpha << " * " << x << " * " << *this << " + " << beta << " * " << y )
 
-    if( ( &result == &y ) && ( beta != Scalar( Constants<double>::zero ) ) )
+    if( ( &result == &y ) && ( beta != Scalar( 0.0 ) ) )
     {
         SCAI_LOG_DEBUG( logger, "alias: result = y is well handled" )
     }
@@ -2185,7 +2186,7 @@ Scalar SparseMatrix<ValueType>::getValue( IndexType i, IndexType j ) const
     const Distribution& distributionRow = getDistribution();
     const Distribution& distributionCol = getColDistribution();
     SCAI_LOG_TRACE( logger, "this(" << i << "," << j << ")" )
-    ValueType myValue = Constants<ValueType>::zero;
+    ValueType myValue = static_cast<ValueType>(0.0);
     const IndexType iLocal = distributionRow.global2local( i );
 
     if( iLocal != nIndex )
@@ -2352,7 +2353,7 @@ void SparseMatrix<ValueType>::setIdentity( DistributionPtr dist )
     const IndexType localNumRows = getDistributionPtr()->getLocalSize();
 
     mLocalData->setIdentity( localNumRows );
-    mHaloData->allocate( localNumRows, Constants<IndexType>::zero );
+    mHaloData->allocate( localNumRows, 0 );
 
     mHalo.clear(); // no exchange needed
 
@@ -2383,7 +2384,7 @@ void SparseMatrix<ValueType>::setDenseData(
     }
     else
     {
-        mHaloData->allocate( localNumRows, Constants<IndexType>::zero );
+        mHaloData->allocate( localNumRows, 0 );
         mHalo.clear();
     }
 
@@ -2416,7 +2417,7 @@ void SparseMatrix<ValueType>::setCSRData(
     }
     else
     {
-        mHaloData->allocate( localNumRows, Constants<IndexType>::zero );
+        mHaloData->allocate( localNumRows, 0 );
         mHalo.clear();
     }
 
@@ -2519,8 +2520,8 @@ void SparseMatrix<ValueType>::readFromFile( const std::string& fileName )
         mHalo.clear();
     }
 
-    comm->bcast( &numRows, Constants<IndexType>::one, host );
-    comm->bcast( &numCols, Constants<IndexType>::one, host );
+    comm->bcast( &numRows, 1, host );
+    comm->bcast( &numCols, 1, host );
 
     DistributionPtr dist( new CyclicDistribution( numRows, numRows, comm ) );
     DistributionPtr colDist( new NoDistribution( numCols ) );

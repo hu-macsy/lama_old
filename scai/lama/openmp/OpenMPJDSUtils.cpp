@@ -55,8 +55,6 @@
 namespace scai
 {
 
-using common::Constants;
-
 namespace lama
 {
 
@@ -87,7 +85,7 @@ void OpenMPJDSUtils::getRow(
     //TODO: use OpenMP
     for( IndexType j = 0; j < numColumns; ++j )
     {
-        row[j] = Constants<OtherValueType>::zero;
+        row[j] = static_cast<OtherValueType>(0.0);
     }
 
     IndexType ii;
@@ -150,7 +148,7 @@ ValueType OpenMPJDSUtils::getValue(
         k += dlg[jj];
     }
 
-    return Constants<ValueType>::zero;
+    return static_cast<ValueType>(0.0);
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -498,7 +496,7 @@ void OpenMPJDSUtils::normalGEMV(
     SCAI_LOG_INFO( logger,
                    "normalGEMV<" << common::getScalarType<ValueType>() << ", #threads = " << omp_get_max_threads() << ">, result[" << numRows << "] = " << alpha << " * A( jds, ndlg = " << ndlg << " ) * x + " << beta << " * y " )
 
-    if( beta == Constants<ValueType>::zero )
+    if( beta == scai::common::constants::ZERO )
     {
         SCAI_LOG_DEBUG( logger, "set result = 0.0" )
 
@@ -506,14 +504,14 @@ void OpenMPJDSUtils::normalGEMV(
 
         for( IndexType i = 0; i < numRows; ++i )
         {
-            result[i] = Constants<ValueType>::zero;
+            result[i] = static_cast<ValueType>(0.0);
         }
     }
     else if( result == y )
     {
         // result = result * beta
 
-        if( beta != Constants<ValueType>::one )
+        if( beta != scai::common::constants::ONE )
         {
             SCAI_LOG_DEBUG( logger, "set result *= beta" )
 
@@ -560,7 +558,7 @@ void OpenMPJDSUtils::normalGEMV(
 
         for( IndexType ii = 0; ii < nonEmptyRows; ii++ )
         {
-            ValueType value = Constants<ValueType>::zero; // sums up final value
+            ValueType value = static_cast<ValueType>(0.0); // sums up final value
             IndexType offset = ii;
 
             for( IndexType jj = 0; jj < jdsILG[ii]; jj++ )
@@ -600,7 +598,7 @@ void OpenMPJDSUtils::normalGEVM(
     SCAI_LOG_INFO( logger,
                    "normalGEVM<" << common::getScalarType<ValueType>() << ", #threads = " << omp_get_max_threads() << ">, result[" << numColumns << "] = " << alpha << " * A( jds, ndlg = " << ndlg << " ) * x + " << beta << " * y " )
 
-    if( beta == Constants<ValueType>::zero )
+    if( beta == scai::common::constants::ZERO )
     {
         SCAI_LOG_DEBUG( logger, "set result = 0.0" )
 
@@ -608,14 +606,14 @@ void OpenMPJDSUtils::normalGEVM(
 
         for( IndexType i = 0; i < numColumns; ++i )
         {
-            result[i] = Constants<ValueType>::zero;
+            result[i] = static_cast<ValueType>(0.0);
         }
     }
     else if( result == y )
     {
         // result = result * beta
 
-        if( beta != Constants<ValueType>::one )
+        if( beta != scai::common::constants::ONE )
         {
             SCAI_LOG_DEBUG( logger, "set result *= beta" )
 
@@ -662,7 +660,7 @@ void OpenMPJDSUtils::normalGEVM(
 
         for( IndexType k = 0; k < numColumns; ++k )
         {
-            ValueType value = Constants<ValueType>::zero; // sums up final value
+            ValueType value = static_cast<ValueType>(0.0); // sums up final value
 
             for( IndexType ii = 0; ii < nonEmptyRows; ii++ )
             {
@@ -735,7 +733,7 @@ void OpenMPJDSUtils::jacobi(
                 pos += jdsDLG[j];
             }
 
-            if( omega == Constants<ValueType>::one )
+            if( omega == scai::common::constants::ONE )
             {
                 solution[i] = temp / diag;
             }
@@ -745,7 +743,7 @@ void OpenMPJDSUtils::jacobi(
             }
             else
             {
-                solution[i] = omega * ( temp / diag ) + ( Constants<ValueType>::one - omega ) * oldSolution[i];
+                solution[i] = omega * ( temp / diag ) + ( static_cast<ValueType>(1.0) - omega ) * oldSolution[i];
             }
         }
     }
@@ -800,7 +798,7 @@ void OpenMPJDSUtils::jacobiHalo(
 
         for( IndexType ii = 0; ii < numNonEmptyRows; ++ii )
         {
-            ValueType temp = Constants<ValueType>::zero;
+            ValueType temp = static_cast<ValueType>(0.0);
 
             const IndexType i = jdsHaloPerm[ii];
             const ValueType diag = localDiagonal[i];

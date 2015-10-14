@@ -50,11 +50,8 @@
 #include <scai/tracing.hpp>
 
 #include <scai/common/bind.hpp>
-<<<<<<< HEAD
 #include <scai/common/Constants.hpp>
-=======
 #include <scai/common/macros/print_string.hpp>
->>>>>>> f18159ea63efcd2e3313202a982d3ad55300f549
 
 // boost
 #include <boost/preprocessor.hpp>
@@ -66,7 +63,6 @@ namespace scai
 
 using common::unique_ptr;
 using common::shared_ptr;
-using common::Constants;
 
 namespace lama
 {
@@ -258,7 +254,7 @@ void COOStorage<ValueType>::setIdentity( const IndexType size )
     setOrder( ia.get(), mNumValues );
     setOrder( ja.get(), mNumValues );
 
-    setVal( values.get(), mNumValues, Constants<ValueType>::one );
+    setVal( values.get(), mNumValues, static_cast<ValueType>(1.0) );
 
     mDiagonalProperty = true;
 }
@@ -510,7 +506,7 @@ ValueType COOStorage<ValueType>::getValue( const IndexType i, const IndexType j 
         }
     }
 
-    return Constants<ValueType>::zero;
+    return static_cast<ValueType>(0.0);
 }
 
 /* --------------------------------------------------------------------------- */
@@ -653,7 +649,7 @@ void COOStorage<ValueType>::getRowImpl( LAMAArray<OtherType>& row, const IndexTy
 
     for( IndexType j = 0; j < mNumColumns; ++j )
     {
-        wRow[j] = Constants<OtherType>::zero;
+        wRow[j] = static_cast<OtherType>(0.0);
     }
 
     for( IndexType kk = 0; kk < mNumValues; ++kk )
@@ -732,7 +728,7 @@ ValueType COOStorage<ValueType>::l1Norm() const
 
 	SCAI_CONTEXT_ACCESS( loc );
 
-	return asum( n, data.get(), Constants<IndexType>::one, NULL );
+	return asum( n, data.get(), static_cast<IndexType>(1.0), NULL );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -752,7 +748,7 @@ ValueType COOStorage<ValueType>::l2Norm() const
 
 	SCAI_CONTEXT_ACCESS( loc );
 
-	return ::sqrt(dot( n, data.get(), Constants<IndexType>::one, data.get(), Constants<IndexType>::one, NULL ));
+	return ::sqrt(dot( n, data.get(), 1, data.get(), 1, NULL ));
 }
 
 /* --------------------------------------------------------------------------- */
@@ -766,7 +762,7 @@ ValueType COOStorage<ValueType>::maxNorm() const
 
     if( n == 0 )
     {
-        return Constants<ValueType>::zero;
+        return static_cast<ValueType>(0.0);
     }
 
     ContextPtr loc = getContextPtr();
@@ -873,7 +869,7 @@ void COOStorage<ValueType>::vectorTimesMatrix(
     SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumRows )
     SCAI_ASSERT_EQUAL_ERROR( result.size(), mNumColumns )
 
-    if( ( beta != Constants<ValueType>::zero ) && ( &result != &y ) )
+    if( ( beta != scai::common::constants::ZERO ) && ( &result != &y ) )
     {
         SCAI_ASSERT_EQUAL_ERROR( y.size(), mNumColumns )
     }
@@ -1058,7 +1054,7 @@ SyncToken* COOStorage<ValueType>::vectorTimesMatrixAsync(
     SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumRows )
     SCAI_ASSERT_EQUAL_ERROR( result.size(), mNumColumns )
 
-    if( ( beta != Constants<ValueType>::zero ) && ( &result != &y ) )
+    if( ( beta != scai::common::constants::ZERO ) && ( &result != &y ) )
     {
         SCAI_ASSERT_EQUAL_ERROR( y.size(), mNumColumns )
     }

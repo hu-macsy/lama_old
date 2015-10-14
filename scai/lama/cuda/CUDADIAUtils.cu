@@ -65,7 +65,6 @@ namespace scai
 {
 
 using common::getScalarType;
-using common::Constants;
 
 namespace lama
 {
@@ -519,37 +518,37 @@ namespace lama
 
             if( useSharedMem )
             {
-                if( alpha == Constants<ValueType>::one && beta == Constants<ValueType>::one )
+                if( alpha == scai::common::constants::ONE && beta == scai::common::constants::ONE )
                 {
                     normal_gemv_kernel_alpha_one_beta_one<ValueType, true, true><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
                                     result, x, y, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
                 }
-                else if ( alpha == Constants<ValueType>::one && beta == Constants<ValueType>::zero )
+                else if ( alpha == scai::common::constants::ONE && beta == scai::common::constants::ZERO )
                 {
                     normal_gemv_kernel_alpha_one_beta_zero<ValueType, true, true><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
                                     result, x, y, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
                 }
-                else if ( alpha == Constants<ValueType>::zero && beta == Constants<ValueType>::one )
+                else if ( alpha == scai::common::constants::ZERO && beta == scai::common::constants::ONE )
                 {
                     assign_kernel<ValueType, true, true><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
                                     result, y, numRows );
                 }
-                else if ( alpha == Constants<ValueType>::one )
+                else if ( alpha == scai::common::constants::ONE )
                 {
                     normal_gemv_kernel_alpha_one<ValueType, true, true><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
                                     result, x, y, beta, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
                 }
-                else if ( alpha == Constants<ValueType>::zero )
+                else if ( alpha == scai::common::constants::ZERO )
                 {
                     normal_gemv_kernel_alpha_zero<ValueType, true, true><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
                                     result, x, y, beta, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
                 }
-                else if ( beta == Constants<ValueType>::one )
+                else if ( beta == scai::common::constants::ONE )
                 {
                     normal_gemv_kernel_beta_one<ValueType, true, true><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
                                     result, x, y, alpha, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
                 }
-                else if ( beta == Constants<ValueType>::zero )
+                else if ( beta == scai::common::constants::ZERO )
                 {
                     normal_gemv_kernel_beta_zero<ValueType, true, true><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
                                     result, x, y, alpha, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
@@ -562,37 +561,37 @@ namespace lama
             }
             else
             {
-                if( alpha == Constants<ValueType>::one && beta == Constants<ValueType>::one )
+                if( alpha == scai::common::constants::ONE && beta == scai::common::constants::ONE )
                 {
                     normal_gemv_kernel_alpha_one_beta_one<ValueType, true, false><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
                                     result, x, y, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
                 }
-                else if ( alpha == Constants<ValueType>::one && beta == Constants<ValueType>::zero )
+                else if ( alpha == scai::common::constants::ONE && beta == scai::common::constants::ZERO )
                 {
                     normal_gemv_kernel_alpha_one_beta_zero<ValueType, true, false><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
                                     result, x, y, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
                 }
-                else if ( alpha == Constants<ValueType>::zero && beta == Constants<ValueType>::one )
+                else if ( alpha == scai::common::constants::ZERO && beta == scai::common::constants::ONE )
                 {
                     assign_kernel<ValueType, true, false><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
                                     result, y, numRows );
                 }
-                else if ( alpha == Constants<ValueType>::one )
+                else if ( alpha == scai::common::constants::ONE )
                 {
                     normal_gemv_kernel_alpha_one<ValueType, true, false><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
                                     result, x, y, beta, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
                 }
-                else if ( alpha == Constants<ValueType>::zero )
+                else if ( alpha == scai::common::constants::ZERO )
                 {
                     normal_gemv_kernel_alpha_zero<ValueType, true, false><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
                                     result, x, y, beta, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
                 }
-                else if ( beta == Constants<ValueType>::one )
+                else if ( beta == scai::common::constants::ONE )
                 {
                     normal_gemv_kernel_beta_one<ValueType, true, false><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
                                     result, x, y, alpha, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
                 }
-                else if ( beta == Constants<ValueType>::zero )
+                else if ( beta == scai::common::constants::ZERO )
                 {
                     normal_gemv_kernel_beta_zero<ValueType, true, false><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
                                     result, x, y, alpha, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
@@ -608,37 +607,37 @@ namespace lama
         {
             if( useSharedMem )
             {
-                if( alpha == Constants<ValueType>::one && beta == Constants<ValueType>::one )
+                if( alpha == scai::common::constants::ONE && beta == scai::common::constants::ONE )
                 {
                     normal_gemv_kernel_alpha_one_beta_one<ValueType, false, true><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
                                     result, x, y, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
                 }
-                else if ( alpha == Constants<ValueType>::one && beta == Constants<ValueType>::zero )
+                else if ( alpha == scai::common::constants::ONE && beta == scai::common::constants::ZERO )
                 {
                     normal_gemv_kernel_alpha_one_beta_zero<ValueType, false, true><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
                                     result, x, y, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
                 }
-                else if ( alpha == Constants<ValueType>::zero && beta == Constants<ValueType>::one )
+                else if ( alpha == scai::common::constants::ZERO && beta == scai::common::constants::ONE )
                 {
                     assign_kernel<ValueType, false, true><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
                                     result, y, numRows );
                 }
-                else if ( alpha == Constants<ValueType>::one )
+                else if ( alpha == scai::common::constants::ONE )
                 {
                     normal_gemv_kernel_alpha_one<ValueType, false, true><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
                                     result, x, y, beta, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
                 }
-                else if ( alpha == Constants<ValueType>::zero )
+                else if ( alpha == scai::common::constants::ZERO )
                 {
                     normal_gemv_kernel_alpha_zero<ValueType, false, true><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
                                     result, x, y, beta, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
                 }
-                else if ( beta == Constants<ValueType>::one )
+                else if ( beta == scai::common::constants::ONE )
                 {
                     normal_gemv_kernel_beta_one<ValueType, false, true><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
                                     result, x, y, alpha, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
                 }
-                else if ( beta == Constants<ValueType>::zero )
+                else if ( beta == scai::common::constants::ZERO )
                 {
                     normal_gemv_kernel_beta_zero<ValueType, false, true><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
                                     result, x, y, alpha, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
@@ -651,37 +650,37 @@ namespace lama
             }
             else
             {
-                if( alpha == Constants<ValueType>::one && beta == Constants<ValueType>::one )
+                if( alpha == scai::common::constants::ONE && beta == scai::common::constants::ONE )
                 {
                     normal_gemv_kernel_alpha_one_beta_one<ValueType, false, false><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
                                     result, x, y, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
                 }
-                else if ( alpha == Constants<ValueType>::one && beta == Constants<ValueType>::zero )
+                else if ( alpha == scai::common::constants::ONE && beta == scai::common::constants::ZERO )
                 {
                     normal_gemv_kernel_alpha_one_beta_zero<ValueType, false, false><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
                                     result, x, y, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
                 }
-                else if ( alpha == Constants<ValueType>::zero && beta == Constants<ValueType>::one )
+                else if ( alpha == scai::common::constants::ZERO && beta == scai::common::constants::ONE )
                 {
                     assign_kernel<ValueType, false, false><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
                                     result, y, numRows );
                 }
-                else if ( alpha == Constants<ValueType>::one )
+                else if ( alpha == scai::common::constants::ONE )
                 {
                     normal_gemv_kernel_alpha_one<ValueType, false, false><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
                                     result, x, y, beta, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
                 }
-                else if ( alpha == Constants<ValueType>::zero )
+                else if ( alpha == scai::common::constants::ZERO )
                 {
                     normal_gemv_kernel_alpha_zero<ValueType, false, false><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
                                     result, x, y, beta, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
                 }
-                else if ( beta == Constants<ValueType>::one )
+                else if ( beta == scai::common::constants::ONE )
                 {
                     normal_gemv_kernel_beta_one<ValueType, false, false><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
                                     result, x, y, alpha, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
                 }
-                else if ( beta == Constants<ValueType>::zero )
+                else if ( beta == scai::common::constants::ZERO )
                 {
                     normal_gemv_kernel_beta_zero<ValueType, false, false><<< dimGrid, dimBlock, sharedMemSize, stream >>>(
                                     result, x, y, alpha, diaValues, diaOffsets, numRows, numColumns, numDiagonals );

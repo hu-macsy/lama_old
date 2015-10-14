@@ -45,7 +45,6 @@
 #include <scai/tracing.hpp>
 
 #include <scai/common/Assert.hpp>
-#include <scai/common/Constants.hpp>
 
 // boost
 #include <boost/preprocessor.hpp>
@@ -55,8 +54,6 @@
 
 namespace scai
 {
-
-using common::Constants;
 
 namespace lama
 {
@@ -81,11 +78,11 @@ ValueType OpenMPDIAUtils::absMaxVal(
     const IndexType diaOffsets[],
     const ValueType diaValues[] )
 {
-    ValueType maxValue = Constants<ValueType>::zero;
+    ValueType maxValue = static_cast<ValueType>(0.0);
 
     #pragma omp parallel
     {
-        ValueType threadVal = Constants<ValueType>::zero;
+        ValueType threadVal = static_cast<ValueType>(0.0);
 
         #pragma omp for schedule( SCAI_OMP_SCHEDULE )
 
@@ -158,7 +155,7 @@ void OpenMPDIAUtils::getCSRValues(
             for( IndexType i = 0; i < n; i++ )
             {
                 csrJA[i] = i;
-                csrValues[i] = Constants<CSRValueType>::zero;
+                csrValues[i] = static_cast<CSRValueType>(0.0);
             }
         }
         else
@@ -337,7 +334,7 @@ void OpenMPDIAUtils::normalGEMV(
 
         for( IndexType i = 0; i < numRows; i++ )
         {
-            ValueType accu = Constants<ValueType>::zero;
+            ValueType accu = static_cast<ValueType>(0.0);
 
             for( IndexType ii = 0; ii < numDiagonals; ++ii )
             {
@@ -438,7 +435,7 @@ void OpenMPDIAUtils::normalGEVM(
 
         for( IndexType k = 0; k < numColumns; ++k )
         {
-            ValueType accu = Constants<ValueType>::zero;
+            ValueType accu = static_cast<ValueType>(0.0);
 
             for( IndexType i = 0; i < numRows; i++ )
             {
@@ -529,7 +526,7 @@ void OpenMPDIAUtils::jacobi(
                 }
             }
 
-            solution[i] = omega * ( temp / diag ) + (Constants<ValueType>::one - omega ) * oldSolution[i];
+            solution[i] = omega * ( temp / diag ) + (static_cast<ValueType>(1.0) - omega ) * oldSolution[i];
         }
     }
 }

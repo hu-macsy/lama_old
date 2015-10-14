@@ -64,7 +64,6 @@ namespace scai
 
 using common::unique_ptr;
 using common::scoped_array;
-using common::Constants;
 
 namespace lama
 {
@@ -131,8 +130,8 @@ void DenseMatrix<ValueType>::computeOwners()
 template<typename ValueType>
 DenseMatrix<ValueType>::DenseMatrix()
 {
-    mData.resize( Constants<IndexType>::one );
-    mData[0].reset( new DenseStorage<ValueType>( Constants<IndexType>::zero, Constants<IndexType>::zero ) );
+    mData.resize( 1 );
+    mData[0].reset( new DenseStorage<ValueType>( 0, 0 ) );
 }
 
 template<typename ValueType>
@@ -140,7 +139,7 @@ DenseMatrix<ValueType>::DenseMatrix( const IndexType numRows, const IndexType nu
 
     : CRTPMatrix<DenseMatrix<ValueType>, ValueType>( numRows, numColumns )
 {
-    mData.resize( Constants<IndexType>::one );
+    mData.resize( 1 );
     mData[0].reset( new DenseStorage<ValueType>( numRows, numColumns ) );
     computeOwners();
 }
@@ -258,7 +257,7 @@ DenseMatrix<ValueType>::DenseMatrix( const std::string& fileName )
 
     SCAI_LOG_INFO( logger, "read dense storage from file " << fileName << ": " << denseStorage )
 
-    mData.resize( Constants<IndexType>::one );
+    mData.resize( 1 );
     mData[0] = denseStorage;
 
     Matrix::setReplicatedMatrix( denseStorage->getNumRows(), denseStorage->getNumColumns() );
@@ -279,7 +278,7 @@ void DenseMatrix<ValueType>::readFromFile( const std::string& fileName )
 
     SCAI_LOG_INFO( logger, "read dense storage from file " << fileName << ": " << denseStorage )
 
-    mData.resize( Constants<IndexType>::one );
+    mData.resize( 1 );
     mData[0] = denseStorage;
 
     Matrix::setReplicatedMatrix( denseStorage->getNumRows(), denseStorage->getNumColumns() );
@@ -716,9 +715,9 @@ void DenseMatrix<ValueType>::setCSRDataLocal(
 template<typename ValueType>
 void DenseMatrix<ValueType>::clear()
 {
-    Matrix::setReplicatedMatrix( Constants<IndexType>::zero, Constants<IndexType>::zero ); // clear Matrix
+    Matrix::setReplicatedMatrix( 0, 0 ); // clear Matrix
 
-    mData.resize( Constants<IndexType>::one ); // clear Data
+    mData.resize( 1 ); // clear Data
 
     mData[0]->clear();
 }
@@ -743,7 +742,7 @@ void DenseMatrix<ValueType>::allocate( DistributionPtr rowDistribution, Distribu
 
     if ( colDistribution->isReplicated() )
     {
-        mData.resize( Constants<IndexType>::one ); // all other storages will be freed
+        mData.resize( 1 ); // all other storages will be freed
 
         if ( mData[0] )
         {
@@ -885,7 +884,7 @@ void DenseMatrix<ValueType>::assignSparse( const CRTPMatrix<SparseMatrix<ValueTy
 
     Matrix::setDistributedMatrix( other.getDistributionPtr(), other.getColDistributionPtr() );
 
-    mData.resize( Constants<IndexType>::one );
+    mData.resize( 1 );
 
     mData[0].reset( new DenseStorage<ValueType>( other.getLocalStorage() ) );
 
@@ -918,7 +917,7 @@ void DenseMatrix<ValueType>::assign( const _MatrixStorage& storage )
 
     Matrix::setReplicatedMatrix( numRows, numColumns );
 
-    mData.resize( Constants<IndexType>::one );
+    mData.resize( 1 );
     mData[0].reset( new DenseStorage<ValueType>( storage ) );
 }
 
@@ -947,7 +946,7 @@ void DenseMatrix<ValueType>::assign( const _MatrixStorage& storage, Distribution
         }
         else if ( colDist->isReplicated() )
         {
-            mData.resize( Constants<IndexType>::one );
+            mData.resize( 1 );
             mData[0].reset( new DenseStorage<ValueType>( storage ) );
         }
         else
@@ -1030,7 +1029,7 @@ void DenseMatrix<ValueType>::joinColumnData(
         SCAI_LOG_DEBUG( logger, "column chunk[" << p << "] : " << *chunks[p] )
     }
 
-    std::vector<IndexType> chunkOffset( numColPartitions, Constants<IndexType>::zero ); // offset for each chunk
+    std::vector<IndexType> chunkOffset( numColPartitions, 0 ); // offset for each chunk
 
     WriteAccess<ValueType> resultWrite( result.getData(), hostContext );
 
@@ -1121,7 +1120,7 @@ void DenseMatrix<ValueType>::splitColumnData(
 
     SCAI_ASSERT_EQUAL_ERROR( static_cast<IndexType>( columnOwners.size() ), numColumns )
 
-    std::vector<PartitionId> numCols( numChunks, Constants<IndexType>::zero );
+    std::vector<PartitionId> numCols( numChunks, 0 );
 
     for ( std::vector<PartitionId>::size_type i = 0; i < columnOwners.size(); ++i )
     {
@@ -1147,7 +1146,7 @@ void DenseMatrix<ValueType>::splitColumnData(
         SCAI_LOG_DEBUG( logger, "column chunk[" << p << "] : " << *chunks[p] )
     }
 
-    std::vector<IndexType> chunkOffset( numChunks, Constants<IndexType>::zero ); // offset for each chunk
+    std::vector<IndexType> chunkOffset( numChunks, 0 ); // offset for each chunk
 
     ReadAccess<ValueType> columnDataRead( columnData.getData(), contextPtr );
 
@@ -1185,7 +1184,7 @@ void DenseMatrix<ValueType>::redistribute( DistributionPtr rowDistribution, Dist
 
 // Currently we only support redistribution of rows, col distribution must be replicated
 
-    if ( getColDistribution().getNumPartitions() != Constants<IndexType>::one )
+    if ( getColDistribution().getNumPartitions() != 1 )
     {
 // Join all column data
 
@@ -1197,7 +1196,7 @@ void DenseMatrix<ValueType>::redistribute( DistributionPtr rowDistribution, Dist
         joinColumnData( *colData, mData, mOwners );
 
         mData.clear();
-        mData.resize( Constants<IndexType>::one );
+        mData.resize( 1 );
         mData[0] = colData;
         this->mColDistribution.reset( new NoDistribution( getNumColumns() ) );
     }
@@ -1554,7 +1553,7 @@ const std::vector<typename DenseMatrix<ValueType>::DenseStoragePtr>& DenseMatrix
 template<typename ValueType>
 Scalar DenseMatrix<ValueType>::getValue( IndexType i, IndexType j ) const
 {
-    ValueType myValue = Constants<ValueType>::zero;
+    ValueType myValue = static_cast<ValueType>(0.0);
 
     const Distribution& colDist = getColDistribution();
     const Distribution& rowDist = getDistribution();
@@ -1699,7 +1698,7 @@ void DenseMatrix<ValueType>::matrixTimesVectorImpl(
 
         for ( ; i < size; ++i )
         {
-            wSendValues[i] = Constants<ValueType>::zero;
+            wSendValues[i] = static_cast<ValueType>(0.0);
         }
     }
 
@@ -1757,10 +1756,10 @@ void DenseMatrix<ValueType>::matrixTimesVectorImpl(
                 ReadAccess<ValueType> readSend( *sendValues, loc );
                 WriteAccess<ValueType> writeX( x, loc );
 
-                copy( mData[actualPartition]->getNumColumns(), readSend.get(), Constants<IndexType>::one, writeX.get(), Constants<IndexType>::one, NULL );
+                copy( mData[actualPartition]->getNumColumns(), readSend.get(), 1, writeX.get(), 1, NULL );
             }
 
-            mData[actualPartition]->matrixTimesVector( localResult, alphaValue, x, Constants<ValueType>::one, localResult );
+            mData[actualPartition]->matrixTimesVector( localResult, alphaValue, x, static_cast<ValueType>(1.0), localResult );
             st->wait();
             std::swap( sendValues, recvValues );
         }
@@ -1799,7 +1798,7 @@ void DenseMatrix<ValueType>::matrixTimesVectorImpl(
             SCAI_LOG_INFO( logger,
                            comm << ": matrixTimesVector, actual dense block [" << actualPartition << "] = " << *mData[actualPartition] << ", sendX = " << *sendValues << ", localResult = " << localResult )
 
-            mData[actualPartition]->matrixTimesVector( localResult, alphaValue, *sendValues, Constants<ValueType>::one, localResult );
+            mData[actualPartition]->matrixTimesVector( localResult, alphaValue, *sendValues, static_cast<ValueType>(1.0), localResult );
             std::swap( sendValues, recvValues );
         }
     }
@@ -1952,7 +1951,7 @@ void DenseMatrix<ValueType>::matrixTimesMatrix(
     {
         SCAI_LOG_DEBUG( logger, "result is aliased with B matrix" )
     }
-    else if ( res == Cp && beta != Constants<ValueType>::zero )
+    else if ( res == Cp && beta != 0.0 )
     {
         SCAI_LOG_DEBUG( logger, "result is aliased with C matrix" )
     }
@@ -1983,7 +1982,7 @@ void DenseMatrix<ValueType>::matrixTimesMatrix(
 template<typename ValueType>
 Scalar DenseMatrix<ValueType>::maxNorm() const
 {
-    ValueType myMaxDiff = Constants<ValueType>::zero;
+    ValueType myMaxDiff = static_cast<ValueType>(0.0);
 
     for ( size_t i = 0; i < mData.size(); ++i )
     {
@@ -2007,7 +2006,7 @@ Scalar DenseMatrix<ValueType>::l1Norm() const
 {
     const Communicator& comm = getDistribution().getCommunicator();
 
-    ValueType mySum = Constants<ValueType>::zero;
+    ValueType mySum = static_cast<ValueType>(0.0);
 
     IndexType n = mData.size();
 
@@ -2026,7 +2025,7 @@ Scalar DenseMatrix<ValueType>::l2Norm() const
 {
     const Communicator& comm = getDistribution().getCommunicator();
 
-    ValueType mySum = Constants<ValueType>::zero;
+    ValueType mySum = static_cast<ValueType>(0.0);
     ValueType tmp;
 
     IndexType n = mData.size();
@@ -2077,7 +2076,7 @@ ValueType DenseMatrix<ValueType>::maxDiffNormImpl( const DenseMatrix<ValueType>&
     SCAI_ASSERT_EQUAL_ERROR( getDistribution(), other.getDistribution() )
     SCAI_ASSERT_EQUAL_ERROR( getColDistribution(), other.getColDistribution() )
 
-    ValueType myMaxDiff = Constants<ValueType>::zero;
+    ValueType myMaxDiff = static_cast<ValueType>(0.0);
 
     for ( unsigned int i = 0; i < mData.size(); ++i )
     {

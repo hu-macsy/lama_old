@@ -40,15 +40,12 @@
 
 // internal scai libraries
 #include <scai/common/macros/unused.hpp>
-#include <scai/common/Constants.hpp>
 
 // boost
 #include <boost/preprocessor.hpp>
 
 namespace scai
 {
-
-using common::Constants;
 
 namespace lama
 {
@@ -104,7 +101,7 @@ void OpenMPBLAS2::gemv(
 
                 for( int i = 0; i < M; i++ )
                 {
-                    Z = Constants<ValueType>::zero;
+                    Z = static_cast<ValueType>(0.0);
 
                     for( int j = 0; j < N; j++ )
                     {
@@ -120,7 +117,7 @@ void OpenMPBLAS2::gemv(
                 #pragma omp parallel for private(Z) schedule( SCAI_OMP_SCHEDULE )
                 for( int i = 0; i < M; i++ )
                 {
-                    Z = Constants<ValueType>::zero;
+                    Z = static_cast<ValueType>(0.0);
 
                     for( int j = 0; j < N; j++ )
                     {
@@ -144,7 +141,7 @@ void OpenMPBLAS2::gemv(
 
                 for( int i = 0; i < N; i++ )
                 {
-                    Z = Constants<ValueType>::zero;
+                    Z = static_cast<ValueType>(0.0);
 
                     for( int j = 0; j < M; j++ )
                     {
@@ -160,7 +157,7 @@ void OpenMPBLAS2::gemv(
                 #pragma omp parallel for private(Z) schedule( SCAI_OMP_SCHEDULE )
                 for( int i = 0; i < N; i++ )
                 {
-                    Z = Constants<ValueType>::zero;
+                    Z = static_cast<ValueType>(0.0);
 
                     for( int j = 0; j < M; j++ )
                     {
@@ -178,7 +175,7 @@ void OpenMPBLAS2::gemv(
         }
         else
         {
-            BLASHelper::XERBLA_cpu( Constants<IndexType>::zero, 2, "cblas_sgemv", "Illegal TransA setting, %d\n", TransA );
+            BLASHelper::XERBLA_cpu( 0, 2, "cblas_sgemv", "Illegal TransA setting, %d\n", TransA );
         }
 
     }
@@ -195,7 +192,7 @@ void OpenMPBLAS2::gemv(
 
                 for( int i = 0; i < M; i++ )
                 {
-                    Z = Constants<ValueType>::zero;
+                    Z = static_cast<ValueType>(0.0);
 
                     for( int j = 0; j < N; j++ )
                     {
@@ -211,7 +208,7 @@ void OpenMPBLAS2::gemv(
                 #pragma omp parallel for private(Z) schedule( SCAI_OMP_SCHEDULE )
                 for( int i = 0; i < M; i++ )
                 {
-                    Z = Constants<ValueType>::zero;
+                    Z = static_cast<ValueType>(0.0);
 
                     for( int j = 0; j < N; j++ )
                     {
@@ -234,7 +231,7 @@ void OpenMPBLAS2::gemv(
 
                 for( int i = 0; i < N; i++ )
                 {
-                    Z = Constants<ValueType>::zero;
+                    Z = static_cast<ValueType>(0.0);
 
                     for( int j = 0; j < M; j++ )
                     {
@@ -250,7 +247,7 @@ void OpenMPBLAS2::gemv(
                 #pragma omp parallel for private(Z) schedule( SCAI_OMP_SCHEDULE )
                 for( int i = 0; i < N; i++ )
                 {
-                    Z = Constants<ValueType>::zero;
+                    Z = static_cast<ValueType>(0.0);
 
                     for( int j = 0; j < M; j++ )
                     {
@@ -267,14 +264,14 @@ void OpenMPBLAS2::gemv(
         }
         else
         {
-            BLASHelper::XERBLA_cpu( Constants<IndexType>::one, 2, "cblas_sgemv", "Illegal TransA setting, %d\n", TransA );
+            BLASHelper::XERBLA_cpu( 1, 2, "cblas_sgemv", "Illegal TransA setting, %d\n", TransA );
             return;
         }
 
     }
     else
     {
-        BLASHelper::XERBLA_cpu( Constants<IndexType>::zero, Constants<IndexType>::one, "cblas_sgemv", "Illegal order setting, %d\n", order );
+        BLASHelper::XERBLA_cpu( 0, 1, "cblas_sgemv", "Illegal order setting, %d\n", order );
     }
 
     return;

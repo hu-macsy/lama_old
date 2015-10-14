@@ -37,18 +37,13 @@
 // local library
 #include <scai/lama/matrix/Matrix.hpp>
 
-// internal scai library
-#include <scai/common/Constants.hpp>
-
 // std
 #include <fstream>
 
-#define MASTER Constants<IndexType>::zero
+#define MASTER 0
 
 namespace scai
 {
-
-using common::Constants;
 
 namespace lama
 {
@@ -168,7 +163,7 @@ void BlockDistribution::printDistributionVector( std::string name ) const
     PartitionId parts = mCommunicator->getSize();
     IndexType myLocalSize = getLocalSize();
     std::vector<IndexType> localSizes( parts );
-    mCommunicator->gather( &localSizes[0], Constants<IndexType>::one, MASTER, &myLocalSize );
+    mCommunicator->gather( &localSizes[0], 1, MASTER, &myLocalSize );
 
     if( myRank == MASTER ) // process 0 is MASTER process
     {

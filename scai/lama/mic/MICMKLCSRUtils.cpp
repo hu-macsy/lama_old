@@ -55,8 +55,6 @@ namespace scai
 
 using namespace hmemo;
 
-using common::Constants;
-
 namespace lama
 {
 
@@ -137,7 +135,7 @@ void MICMKLCSRUtils::normalGEMV(
     SCAI_LOG_INFO( logger,
                    "normalGEMV<double>, result[" << numRows << "] = " << alpha << " * A * x + " << beta << " * y " )
 
-    if( y != result && beta != Constants<ValueType>::zero )
+    if( y != result && beta != scai::common::constants::ZERO )
     {
         MICUtils::set( result, y, numRows );
     }

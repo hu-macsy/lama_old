@@ -69,8 +69,6 @@ using namespace scai::hmemo;
 namespace scai
 {
 
-using common::Constants;
-
 namespace lama
 {
 
@@ -270,7 +268,7 @@ void CSRStorage<ValueType>::setIdentity( const IndexType size )
 
     OpenMPUtils::setOrder( ia.get(), mNumRows + 1 );
     OpenMPUtils::setOrder( ja.get(), mNumRows );
-    OpenMPUtils::setVal( values.get(), mNumRows, Constants<ValueType>::one );
+    OpenMPUtils::setVal( values.get(), mNumRows, static_cast<ValueType>(1.0) );
 
     mDiagonalProperty = true; // obviously given for identity matrix
     mSortedRows = true; // obviously given for identity matrix
@@ -626,7 +624,7 @@ void CSRStorage<ValueType>::allocate( IndexType numRows, IndexType numColumns )
 
     // make a correct initialization for the offset array
 
-    OpenMPUtils::setVal( ia.get(), mNumRows + 1, Constants<int>::zero );
+    OpenMPUtils::setVal( ia.get(), mNumRows + 1, 0 );
 
     mDiagonalProperty = false;
 }
@@ -782,7 +780,7 @@ ValueType CSRStorage<ValueType>::getValue( const IndexType i, const IndexType j 
     const ReadAccess<IndexType> ia( mIa );
     const ReadAccess<IndexType> ja( mJa );
     const ReadAccess<ValueType> values( mValues );
-    ValueType myValue = Constants<ValueType>::zero;
+    ValueType myValue = static_cast<ValueType>(0.0);
 
     SCAI_LOG_TRACE( logger, "search column in ja from " << ia[i] << ":" << ia[i + 1] )
 
@@ -927,7 +925,7 @@ void CSRStorage<ValueType>::getRowImpl( LAMAArray<OtherType>& row, const IndexTy
 
     for( IndexType j = 0; j < mNumColumns; ++j )
     {
-        wRow[j] = Constants<OtherType>::zero;
+        wRow[j] = static_cast<OtherType>(0.0);
     }
 
     for( IndexType jj = ia[i]; jj < ia[i + 1]; ++jj )
@@ -1195,7 +1193,7 @@ void CSRStorage<ValueType>::splitHalo(
             localData.assign( *this );
         }
 
-        haloData.allocate( mNumRows, Constants<IndexType>::zero );
+        haloData.allocate( mNumRows, 0 );
 
         halo = Halo(); // empty halo schedule
 
@@ -1277,7 +1275,7 @@ void CSRStorage<ValueType>::matrixTimesVector(
     SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumColumns )
     SCAI_ASSERT_EQUAL_ERROR( result.size(), mNumRows )
 
-    if( ( beta != Constants<ValueType>::zero ) && ( &result != &y ) )
+    if( ( beta != scai::common::constants::ZERO ) && ( &result != &y ) )
     {
         SCAI_ASSERT_EQUAL_ERROR( y.size(), mNumRows )
     }
@@ -1303,7 +1301,7 @@ void CSRStorage<ValueType>::matrixTimesVector(
 
         WriteAccess<ValueType> wResult( result, loc );
 
-        if( mRowIndexes.size() > 0 && ( beta == Constants<ValueType>::one ) )
+        if( mRowIndexes.size() > 0 && ( beta == scai::common::constants::ONE ) )
         {
             // y += alpha * thisMatrix * x, can take advantage of row indexes
 
@@ -1352,7 +1350,7 @@ void CSRStorage<ValueType>::vectorTimesMatrix(
     SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumRows )
     SCAI_ASSERT_EQUAL_ERROR( result.size(), mNumColumns )
 
-    if( ( beta != Constants<ValueType>::zero ) && ( &result != &y ) )
+    if( ( beta != scai::common::constants::ZERO ) && ( &result != &y ) )
     {
         SCAI_ASSERT_EQUAL_ERROR( y.size(), mNumColumns )
     }
@@ -1378,7 +1376,7 @@ void CSRStorage<ValueType>::vectorTimesMatrix(
 
         WriteAccess<ValueType> wResult( result, loc );
 
-        if( mRowIndexes.size() > 0 && ( beta == Constants<ValueType>::one ) )
+        if( mRowIndexes.size() > 0 && ( beta == scai::common::constants::ONE ) )
         {
             // y += alpha * thisMatrix * x, can take advantage of row indexes
 
@@ -1428,7 +1426,7 @@ void CSRStorage<ValueType>::matrixTimesVectorN(
     SCAI_ASSERT_EQUAL_ERROR( x.size(), n * mNumColumns )
     SCAI_ASSERT_EQUAL_ERROR( result.size(), n * mNumRows )
 
-    if( ( beta != Constants<ValueType>::zero ) && ( &result != &y ) )
+    if( ( beta != scai::common::constants::ZERO ) && ( &result != &y ) )
     {
         SCAI_ASSERT_EQUAL_ERROR( y.size(), n * mNumRows )
     }
@@ -1517,7 +1515,7 @@ SyncToken* CSRStorage<ValueType>::matrixTimesVectorAsync(
     SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumColumns )
     SCAI_ASSERT_EQUAL_ERROR( result.size(), mNumRows )
 
-    if( ( beta != Constants<ValueType>::zero ) && ( &result != &y ) )
+    if( ( beta != scai::common::constants::ZERO ) && ( &result != &y ) )
     {
         SCAI_ASSERT_EQUAL_ERROR( y.size(), mNumRows )
     }
@@ -1543,7 +1541,7 @@ SyncToken* CSRStorage<ValueType>::matrixTimesVectorAsync(
 
         shared_ptr<WriteAccess<ValueType> > wResult( new WriteAccess<ValueType>( result, loc ) );
 
-        if( mRowIndexes.size() > 0 && ( beta == Constants<ValueType>::one ) )
+        if( mRowIndexes.size() > 0 && ( beta == scai::common::constants::ONE ) )
         {
             // y += alpha * thisMatrix * x, can take advantage of row indexes
 
@@ -1639,7 +1637,7 @@ SyncToken* CSRStorage<ValueType>::vectorTimesMatrixAsync(
     SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumRows )
     SCAI_ASSERT_EQUAL_ERROR( result.size(), mNumColumns )
 
-    if( ( beta != Constants<ValueType>::zero ) && ( &result != &y ) )
+    if( ( beta != scai::common::constants::ZERO ) && ( &result != &y ) )
     {
         SCAI_ASSERT_EQUAL_ERROR( y.size(), mNumColumns )
     }
@@ -1665,7 +1663,7 @@ SyncToken* CSRStorage<ValueType>::vectorTimesMatrixAsync(
 
         shared_ptr<WriteAccess<ValueType> > wResult( new WriteAccess<ValueType>( result, loc ) );
 
-        if( mRowIndexes.size() > 0 && ( beta == Constants<ValueType>::one ) )
+        if( mRowIndexes.size() > 0 && ( beta == scai::common::constants::ONE ) )
         {
             // y += alpha * thisMatrix * x, can take advantage of row indexes
 
@@ -1987,7 +1985,7 @@ void CSRStorage<ValueType>::matrixTimesMatrix(
         csrB = tmpB.get();
     }
 
-    if( beta != Constants<ValueType>::zero )
+    if( beta != scai::common::constants::ZERO )
     {
         // c temporary needed if not correct format/type or aliased to this
 
@@ -2020,10 +2018,10 @@ void CSRStorage<ValueType>::matrixTimesMatrix(
     tmp1.matrixTimesMatrixCSR( alpha, *csrA, *csrB, loc );
     tmp1.setContext( loc );
 
-    if( beta != Constants<ValueType>::zero )
+    if( beta != scai::common::constants::ZERO )
     {
         CSRStorage<ValueType> tmp2;
-        tmp2.matrixAddMatrixCSR( Constants<ValueType>::one, tmp1, beta, *csrC, loc );
+        tmp2.matrixAddMatrixCSR( static_cast<ValueType>(1.0), tmp1, beta, *csrC, loc );
         swap( tmp2 );
     }
     else
@@ -2188,7 +2186,7 @@ ValueType CSRStorage<ValueType>::l1Norm() const
 
     if( mNumValues == 0 )
     {
-        return Constants<ValueType>::zero;
+        return static_cast<ValueType>(0.0);
     }
 
 	ContextPtr loc = getContextPtr();
@@ -2199,7 +2197,7 @@ ValueType CSRStorage<ValueType>::l1Norm() const
 
 	SCAI_CONTEXT_ACCESS( loc );
 
-	return asum( mNumValues, data.get(), Constants<IndexType>::one, NULL );
+	return asum( mNumValues, data.get(), 1, NULL );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -2211,7 +2209,7 @@ ValueType CSRStorage<ValueType>::l2Norm() const
 
     if( mNumValues == 0 )
     {
-        return Constants<ValueType>::zero;
+        return static_cast<ValueType>(0.0);
     }
 
 	ContextPtr loc = getContextPtr();
@@ -2222,7 +2220,7 @@ ValueType CSRStorage<ValueType>::l2Norm() const
 
 	SCAI_CONTEXT_ACCESS( loc );
 
-	return ::sqrt(dot( mNumValues, data.get(), Constants<IndexType>::one, data.get(), Constants<IndexType>::one, NULL ));
+	return ::sqrt(dot( mNumValues, data.get(), 1, data.get(), 1, NULL ));
 }
 
 /* --------------------------------------------------------------------------- */
@@ -2236,7 +2234,7 @@ ValueType CSRStorage<ValueType>::maxNorm() const
 
     if( mNumValues == 0 )
     {
-        return Constants<ValueType>::zero;
+        return static_cast<ValueType>(0.0);
     }
 
     ContextPtr loc = getContextPtr();
@@ -2294,7 +2292,7 @@ ValueType CSRStorage<ValueType>::maxDiffNormImpl( const CSRStorage<ValueType>& o
 
     if( mNumRows == 0 )
     {
-        return Constants<ValueType>::zero;
+        return static_cast<ValueType>(0.0);
     }
 
     ContextPtr loc = getContextPtr();

@@ -46,9 +46,6 @@
 
 #include <scai/common/unique_ptr.hpp>
 #include <scai/common/macros/unused.hpp>
-#include <scai/common/Constants.hpp>
-
-using scai::common::Constants;
 
 //fallback if nothing is set in cmake
 #if !defined(LAMA_FORTRAN_BLAS_STYLE_UNDERSCORE)
@@ -716,7 +713,7 @@ void LAPACK_LAPACK::laswp(
     }
     else
     {
-        BLASHelper::XERBLA_cpu( Constants<int>::zero, Constants<int>::one, "cblas_slaswp", "Illegal order setting, %d\n", order );
+        BLASHelper::XERBLA_cpu( 0, 1, "cblas_slaswp", "Illegal order setting, %d\n", order );
     }
 }
 

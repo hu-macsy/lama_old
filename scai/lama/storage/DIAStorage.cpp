@@ -61,7 +61,6 @@ namespace scai
 using common::scoped_array;
 // Allow for shared_ptr<ValueType> instead of common::shared_ptr<ValueType>
 using common::shared_ptr;
-using common::Constants;
 
 namespace lama
 {
@@ -231,7 +230,7 @@ void DIAStorage<ValueType>::getRowImpl( LAMAArray<OtherType>& row, const IndexTy
 
     for( IndexType j = 0; j < mNumColumns; ++j )
     {
-        wRow[j] = Constants<OtherType>::zero;
+        wRow[j] = static_cast<OtherType>(0.0);
     }
 
     for( IndexType d = 0; d < mNumDiagonals; ++d )
@@ -415,7 +414,7 @@ void DIAStorage<ValueType>::setIdentity( const IndexType size )
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        setVal( wOffset.get(), Constants<int>::one, Constants<IndexType>::zero );
+        setVal( wOffset.get(), 1, 0 );
     }
 
     {
@@ -424,7 +423,7 @@ void DIAStorage<ValueType>::setIdentity( const IndexType size )
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        setVal( values.get(), mNumRows, Constants<ValueType>::one );
+        setVal( values.get(), mNumRows, static_cast<ValueType>(1.0) );
     }
 
     mDiagonalProperty = true;
@@ -485,7 +484,7 @@ void DIAStorage<ValueType>::buildCSR(
 
     // TODO: Check if eps = 0.0 is correct
     OpenMPDIAUtils::getCSRSizes( csrIA.get(), mDiagonalProperty, mNumRows, mNumColumns, mNumDiagonals, diaOffsets.get(),
-                                 diaValues.get(), Constants<ValueType>::zero );
+                                 diaValues.get(), static_cast<ValueType>(0.0) );
 
     if( ja == NULL || values == NULL )
     {
@@ -502,7 +501,7 @@ void DIAStorage<ValueType>::buildCSR(
 
     // TOOD: Check if eps = 0.0 is correct
     OpenMPDIAUtils::getCSRValues( csrJA.get(), csrValues.get(), csrIA.get(), mDiagonalProperty, mNumRows, mNumColumns,
-                                  mNumDiagonals, diaOffsets.get(), diaValues.get(), Constants<ValueType>::zero );
+                                  mNumDiagonals, diaOffsets.get(), diaValues.get(), static_cast<ValueType>(0.0) );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -582,7 +581,7 @@ void DIAStorage<ValueType>::setCSRDataImpl(
 
                 // check for j >= 0 and j < mNumColumns not needed here
 
-                addrValue = Constants<ValueType>::zero;
+                addrValue = static_cast<ValueType>(0.0);
 
                 for( IndexType jj = csrIA[i]; jj < csrIA[i + 1]; ++jj )
                 {
@@ -751,7 +750,7 @@ ValueType DIAStorage<ValueType>::l2Norm() const
 
 	SCAI_CONTEXT_ACCESS( loc );
 
-	return ::sqrt(dot( mValues.size(), data.get(), Constants<int>::one, data.get(), Constants<int>::one, NULL ));
+	return ::sqrt(dot( mValues.size(), data.get(), 1, data.get(), 1, NULL ));
 }
 
 /* --------------------------------------------------------------------------- */
@@ -784,7 +783,7 @@ ValueType DIAStorage<ValueType>::getValue( const IndexType i, const IndexType j 
 
     const ReadAccess<IndexType> offset( mOffset );
 
-    ValueType myValue = Constants<ValueType>::zero;
+    ValueType myValue = static_cast<ValueType>(0.0);
 
     // check for a matching diagonal element in the row i
 
@@ -945,7 +944,7 @@ void DIAStorage<ValueType>::vectorTimesMatrix(
     SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumRows )
     SCAI_ASSERT_EQUAL_ERROR( result.size(), mNumColumns )
 
-    if( ( beta != Constants<ValueType>::zero ) && ( &result != &y ) )
+    if( ( beta != scai::common::constants::ZERO ) && ( &result != &y ) )
     {
         SCAI_ASSERT_EQUAL_ERROR( y.size(), mNumColumns )
     }
@@ -1131,7 +1130,7 @@ SyncToken* DIAStorage<ValueType>::vectorTimesMatrixAsync(
     SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumRows )
     SCAI_ASSERT_EQUAL_ERROR( result.size(), mNumColumns )
 
-    if( ( beta != Constants<ValueType>::zero ) && ( &result != &y ) )
+    if( ( beta != scai::common::constants::ZERO ) && ( &result != &y ) )
     {
         SCAI_ASSERT_EQUAL_ERROR( y.size(), mNumColumns )
     }

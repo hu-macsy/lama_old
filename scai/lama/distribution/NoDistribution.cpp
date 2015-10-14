@@ -37,17 +37,13 @@
 // local library
 #include <scai/lama/matrix/Matrix.hpp>
 
-#include <scai/common/Constants.hpp>
-
 // std
 #include <fstream>
 
-#define MASTER Constants<IndexType>::zero
+#define MASTER 0
 
 namespace scai
 {
-
-using common::Constants;
 
 namespace lama
 {

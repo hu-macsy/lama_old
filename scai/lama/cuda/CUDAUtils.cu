@@ -66,8 +66,6 @@ using namespace scai::hmemo;
 namespace scai
 {
 
-using common::Constants;
-
 namespace lama
 {
 
@@ -105,7 +103,7 @@ namespace lama
             return;
         }
 
-        if ( scale == Constants<ValueType>::zero )
+        if ( scale == scai::common::constants::ZERO )
         {
             setVal( values, n, scale );
         }
@@ -183,7 +181,7 @@ namespace lama
 
         thrust::device_ptr<ValueType> data( const_cast<ValueType*>( array ) );
 
-        ValueType result = thrust::reduce( data, data + n, Constants<ValueType>::zero, thrust::plus<ValueType>() );
+        ValueType result = thrust::reduce( data, data + n, static_cast<ValueType>(0.0), thrust::plus<ValueType>() );
 
         SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
 
@@ -280,7 +278,7 @@ namespace lama
 
         thrust::device_ptr<ValueType> data( const_cast<ValueType*>( array ) );
 
-        ValueType result = thrust::transform_reduce( data, data + n, absolute_value<ValueType>(), Constants<ValueType>::zero,
+        ValueType result = thrust::transform_reduce( data, data + n, absolute_value<ValueType>(), static_cast<ValueType>(0.0),
                         thrust::maximum<ValueType>() );
 
         SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
@@ -308,7 +306,7 @@ namespace lama
 
         thrust::transform( data1, data1 + n, data2, temp.begin(), thrust::minus<ValueType>() );
 
-        ValueType result = thrust::transform_reduce( temp.begin(), temp.end(), absolute_value<ValueType>(), Constants<ValueType>::zero,
+        ValueType result = thrust::transform_reduce( temp.begin(), temp.end(), absolute_value<ValueType>(), static_cast<ValueType>(0.0),
                         thrust::maximum<ValueType>() );
 
         /* Not available, but would be useful:
@@ -507,7 +505,7 @@ namespace lama
             return;
         }
 
-        if ( beta == Constants<ValueType1>::zero )
+        if ( beta == scai::common::constants::ZERO )
         {
             // in array might be undefined
 

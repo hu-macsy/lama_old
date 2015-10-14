@@ -66,7 +66,6 @@ namespace scai
 {
 
 using common::getScalarType;
-using common::Constants;
 
 namespace lama
 {
@@ -291,7 +290,7 @@ namespace lama
 
         // set result = beta * y, not needed if beta == 1 and y == result
 
-        if ( beta == Constants<ValueType>::one && result == y )
+        if ( beta == scai::common::constants::ONE && result == y )
         {
             SCAI_LOG_DEBUG( logger, "normalGEMV is sparse, no init of result needed" )
         }
@@ -322,7 +321,7 @@ namespace lama
         {
             vectorBindTexture( x );
 
-            if ( alpha == Constants<ValueType>::one )
+            if ( alpha == scai::common::constants::ONE )
             {
                 cooGemvKernel_alpha_one<ValueType, true><<< dimGrid, dimBlock>>>
                 ( result, x, numValues, cooIA, cooJA, cooValues );
@@ -335,7 +334,7 @@ namespace lama
         }
         else
         {
-            if ( alpha == Constants<ValueType>::one )
+            if ( alpha == scai::common::constants::ONE )
             {
                 cooGemvKernel_alpha_one<ValueType, false><<< dimGrid, dimBlock>>>
                 ( result, x, numValues, cooIA, cooJA, cooValues );
@@ -411,7 +410,7 @@ namespace lama
 
         // set result = beta * y, not needed if beta == 1 and y == result
 
-        if ( beta == Constants<ValueType>::one && result == y )
+        if ( beta == scai::common::constants::ONE && result == y )
         {
             SCAI_LOG_DEBUG( logger, "normalGEVM is sparse, no init of result needed" )
         }
@@ -440,7 +439,7 @@ namespace lama
         {
             vectorBindTexture( x );
 
-            if ( alpha == Constants<ValueType>::one )
+            if ( alpha == scai::common::constants::ONE )
             {
                 cooGevmKernel_alpha_one<ValueType, true><<< dimGrid, dimBlock>>>
                 ( result, x, numValues, cooIA, cooJA, cooValues );
@@ -453,7 +452,7 @@ namespace lama
         }
         else
         {
-            if ( alpha == Constants<ValueType>::one )
+            if ( alpha == scai::common::constants::ONE )
             {
                 cooGevmKernel_alpha_one<ValueType, false><<< dimGrid, dimBlock>>>
                 ( result, x, numValues, cooIA, cooJA, cooValues );
