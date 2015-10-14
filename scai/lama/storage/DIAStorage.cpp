@@ -48,6 +48,7 @@
 #include <scai/tracing.hpp>
 
 #include <scai/common/macros/unused.hpp>
+#include <scai/common/macros/print_string.hpp>
 #include <scai/common/bind.hpp>
 #include <scai/common/unique_ptr.hpp>
 #include <scai/common/Constants.hpp>
@@ -1242,7 +1243,7 @@ DIAStorage<ValueType>* DIAStorage<ValueType>::copy() const
     template<>                                                                    \
     const char* DIAStorage<ARITHMETIC_HOST_TYPE_##I>::typeName()                  \
     {                                                                             \
-        return "DIAStorage<ARITHMETIC_HOST_TYPE_##I>";                            \
+        return "DIAStorage<" PRINT_STRING(ARITHMETIC_HOST_TYPE_##I) ">";      \
     }                                                                             \
                                                                                   \
     template class COMMON_DLL_IMPORTEXPORT DIAStorage<ARITHMETIC_HOST_TYPE_##I> ;

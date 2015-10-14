@@ -492,7 +492,9 @@ ContextPtr ContextDataManager::getValidContext( const ContextType preferredType 
 
     if ( !result.get() )
     {
-        SCAI_LOG_WARN( logger, "no valid context found for LAMAArray" )
+        // might happen for uninitialized arrays
+
+        SCAI_LOG_INFO( logger, "no valid context found for LAMAArray" )
 
         if ( Context::hasContext( preferredType ) )
         {
@@ -752,8 +754,10 @@ void ContextDataManager::prefetch( ContextPtr context, size_t size )
     }
     else
     {
-        // no valid data is not serious, but might be worth a warning 
-        SCAI_LOG_WARN( logger, "prefetch on array with no valid data" )
+        // no valid data is not serious
+        // might be worth a warning but happens very often in LAMA
+
+        SCAI_LOG_INFO( logger, "prefetch on array with no valid data" )
     }
 }
 

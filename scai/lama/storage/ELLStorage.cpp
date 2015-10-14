@@ -48,6 +48,7 @@
 #include <scai/common/bind.hpp>
 #include <scai/common/unique_ptr.hpp>
 #include <scai/common/Constants.hpp>
+#include <scai/common/macros/print_string.hpp>
 
 // boost
 #include <boost/preprocessor.hpp>
@@ -1902,7 +1903,7 @@ ELLStorage<ValueType>* ELLStorage<ValueType>::copy() const
     template<>                                                                    \
     const char* ELLStorage<ARITHMETIC_HOST_TYPE_##I>::typeName()                  \
     {                                                                             \
-        return "ELLStorage<ARITHMETIC_HOST_TYPE_##I>";                            \
+        return "ELLStorage<" PRINT_STRING(ARITHMETIC_HOST_TYPE_##I) ">";      \
     }                                                                             \
                                                                                   \
     template class COMMON_DLL_IMPORTEXPORT ELLStorage<ARITHMETIC_HOST_TYPE_##I> ;

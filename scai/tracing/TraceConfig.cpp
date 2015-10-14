@@ -38,6 +38,7 @@
 #include <scai/tracing/TraceData.hpp>
 
 #include <scai/common/exception/Exception.hpp>
+#include <scai/common/Settings.hpp>
 
 // std
 #include <iostream>
@@ -63,24 +64,6 @@ bool TraceConfig::globalTraceFlag = true;
 /* -------------------------------------------------------------------------- */
 
 SCAI_LOG_DEF_LOGGER( TraceConfig::logger, "TraceConfig" )
-
-/* -------------------------------------------------------------------------- */
-
-static std::vector<std::string> split( const std::string& params, const char seperator )
-{
-    std::vector<std::string> args;
-    size_t found = std::string::npos;
-
-    do
-    {
-        const size_t prevFound = found + 1;
-        found = params.find( seperator, prevFound );
-        args.push_back( params.substr( prevFound, found - prevFound ) );
-    }
-    while ( found != std::string::npos );
-
-    return args;
-}
 
 /* -------------------------------------------------------------------------- */
 
@@ -175,13 +158,14 @@ TraceConfig::TraceConfig()
     mCallTreeEnabled = false;
     mTraceFilePrefix = "_";
     // value of environmentvariable:  param1:param2=valx:param3:param4=valy
-    std::string params;
-    const char* env = getenv( SCAI_ENV_TRACE_CONFIG );
 
-    if ( env )
+    std::vector<std::string> values;
+
+    // get all values separated by :
+
+    if ( scai::common::Settings::getEnvironment( values, SCAI_ENV_TRACE_CONFIG, ':' ) )
     {
-        params = env;
-        std::vector<std::string> values = split( params, ':' );
+        // SCAI_TRACE=key1:key2:key3=val3:key4
 
         if ( values.size() != 1 || values[0] != "OFF" )
         {
@@ -189,7 +173,10 @@ TraceConfig::TraceConfig()
 
             for ( size_t i = 0; i < values.size(); ++i )
             {
-                std::vector<std::string> keys = split( values[i], '=' );
+                std::vector<std::string> keys;
+
+                scai::common::Settings::tokenize( keys, values[i], '=' );
+
                 std::string& key = keys[0];
 
                 // make upper case of key
@@ -277,14 +264,15 @@ TraceConfig::~TraceConfig()
 
     fileName << mTraceFilePrefix << ".time";
 
-    /* For parallel processes we should add suffix for rank
+    /* For parallel processes we should add suffix for rank */
 
-    if( mComm->getSize() > 1 )
+    int rank;
+
+    if ( scai::common::Settings::getEnvironment( rank, "SCAI_RANK" ) )
     {
-        fileName << "." << mComm->getRank();
+        fileName << "." << rank;
     }
 
-    */
     SCAI_LOG_INFO( logger, "~TraceConfig, output file = " << fileName.str() )
     std::ofstream outfile;
     outfile.open( fileName.str().c_str(), std::ios::out );

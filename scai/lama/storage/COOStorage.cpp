@@ -50,7 +50,11 @@
 #include <scai/tracing.hpp>
 
 #include <scai/common/bind.hpp>
+<<<<<<< HEAD
 #include <scai/common/Constants.hpp>
+=======
+#include <scai/common/macros/print_string.hpp>
+>>>>>>> f18159ea63efcd2e3313202a982d3ad55300f549
 
 // boost
 #include <boost/preprocessor.hpp>
@@ -1180,7 +1184,7 @@ COOStorage<ValueType>* COOStorage<ValueType>::copy() const
     template<>                                                                    \
     const char* COOStorage<ARITHMETIC_HOST_TYPE_##I>::typeName()                  \
     {                                                                             \
-        return "COOStorage<ARITHMETIC_HOST_TYPE_##I>";                            \
+        return "COOStorage<" PRINT_STRING(ARITHMETIC_HOST_TYPE_##I) ">";      \
     }                                                                             \
                                                                                   \
     template class COMMON_DLL_IMPORTEXPORT COOStorage<ARITHMETIC_HOST_TYPE_##I> ;

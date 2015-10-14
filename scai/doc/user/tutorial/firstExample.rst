@@ -27,7 +27,7 @@ The following C++ program shows a very simple example program of how to use LAMA
         return 0;
     }
 
-:download:`Download source file <../../../examples/tutorial/simple.cpp>`
+:download:`Download source file <../../../lama/examples/tutorial/simple.cpp>`
 
 The include file lama.hpp contains some definitions how far assertions, logging and tracing statements
 are compiled into your code. The definitions will be the same as used for the installation.

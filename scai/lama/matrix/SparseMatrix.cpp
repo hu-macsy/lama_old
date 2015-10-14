@@ -57,6 +57,7 @@
 
 #include <scai/common/bind.hpp>
 #include <scai/common/exception/Exception.hpp>
+#include <scai/common/macros/print_string.hpp>
 
 // boost
 #include <boost/preprocessor.hpp>
@@ -558,10 +559,22 @@ void SparseMatrix<ValueType>::assign( const SparseMatrix<ValueType>& matrix )
     // TODO: allow flexibility regarding the context, e.g. format conversion should be done on GPU
 
     mLocalData->assign( matrix.getLocalStorage() );
-    if( mHaloData->getNumRows() * mHaloData->getNumColumns()  > 0 )
+
+    const MatrixStorage<ValueType>&  matrixHaloData = matrix.getHaloStorage();
+
+    SCAI_LOG_INFO( logger, "assign halo storage, only if available, halo = " << matrixHaloData )
+
+    if ( matrixHaloData.getNumRows() * matrixHaloData.getNumColumns()  > 0 )
     {
-    	mHaloData->assign( matrix.getHaloStorage() );
+        mHaloData->assign( matrixHaloData );
     }
+    else
+    {
+        // we set the halo size to 0 x 0 instead of n x 0 to avoid allocation of ia data
+
+        mHaloData->clear();   
+    }
+
     mHalo = matrix.getHalo();
 }
 
@@ -2041,7 +2054,7 @@ Scalar SparseMatrix<ValueType>::l2Norm() const
 
     const Communicator& comm = getDistribution().getCommunicator();
 
-    ValueType allValue = comm.max( myValue );
+    ValueType allValue = comm.sum( myValue );
 
 	allValue = ::sqrt( allValue );
 
@@ -2531,7 +2544,7 @@ void SparseMatrix<ValueType>::readFromFile( const std::string& fileName )
     template<>                                                                      \
     const char* SparseMatrix<ARITHMETIC_HOST_TYPE_##I>::typeName()                  \
     {                                                                               \
-        return "SparseMatrix<ARITHMETIC_HOST_TYPE_##I>";                            \
+        return "SparseMatrix<" PRINT_STRING(ARITHMETIC_HOST_TYPE_##I>) ">";     \
     }                                                                               \
                                                                                     \
     template class COMMON_DLL_IMPORTEXPORT SparseMatrix<ARITHMETIC_HOST_TYPE_##I> ;

@@ -103,16 +103,17 @@ scai_project (
         Assert
         bind     
         config
-        function
-        TypeTraits
-        weak_ptr
+        Constants
+        Factory
         Factory1
+        function
+        OpenMP
         NonCopyable
         SCAITypes
         shared_ptr
+        TypeTraits
         unique_ptr
-        Factory
-        OpenMP
+        weak_ptr
 )
 
 ## add CUDA if supported

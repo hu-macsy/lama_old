@@ -35,12 +35,12 @@
 
 // internal scai libraries
 #include <scai/common/exception/Exception.hpp>
+#include <scai/common/Settings.hpp>
 
 // std
 #include <iostream>
 #include <sstream>
 
-#include <cstdlib>         // import getenv, setenv
 #include <cstdio>          // FILE
 #include <stdexcept>       // runtime_error
 #include <cstring>
@@ -51,6 +51,8 @@ using namespace std;
 
 namespace scai
 {
+
+using common::Settings;
 
 namespace logging
 {
@@ -237,17 +239,11 @@ static int evalEntry( char* line, int length, const char* /* filename */ )
     if ( strncmp( name.c_str(), "SCAI_", 5 ) == 0 )
     {
         // this is not a logging entry so take it as environment
-        // Note: use of putenv is unsafe for auto-strings
-#ifdef WIN32
-        if ( getenv( name.c_str() ) == 0 )
-        {
-            _putenv_s( name.c_str(), value.c_str() );
-        }
 
-#else
-        int replace = 0; // do not override if it has already been set by user
-        setenv( name.c_str(), value.c_str(), replace );
-#endif
+        bool replace = false;   // do not override existing settings
+
+        Settings::putEnvironment( name.c_str(), value.c_str(), replace );
+
         return 1;
     }
 
@@ -334,8 +330,6 @@ int GenLogger::readConfig( const char* fname )
 
 void GenLogger::configure()
 {
-    std::string configFileString;  // shoud not be auto-string as pointer on it is used
-
     if ( !rootLogger )
     {
         throw std::runtime_error( "configure: rootLogger not available yet" );
@@ -350,72 +344,70 @@ void GenLogger::configure()
         setFormat( "#date, #time #name @ #thread ( #func -> #file::#line ) #level #msg" );
     }
 
-    const char homeConfigFile[] = ".loggingrc";
-    const char* configFile = getenv( "SCAI_LOG" );
+    std::string configFile;  
 
-    if ( configFile == NULL )
+    bool logDefined = Settings::getEnvironment( configFile, "SCAI_LOG" );
+
+    if ( !logDefined )
     {
+        // environment variable SCAI_LOG not set, so we try it at $HOME/.loggingrc
 
-        // environment variable not set, so we try it at $HOME/.loggingrc
-
-        const char* home = getenv( "HOME" );
-
-        if ( home != NULL )
+        if ( Settings::getEnvironment( configFile, "HOME" ) )
         {
-            configFileString = home;
-            configFileString += "/";
-            configFileString += homeConfigFile;
+            configFile += "/.loggingrc";
 
-            FILE* fp = fopen ( configFileString.c_str(), "r" );
+            FILE* fp = fopen ( configFile.c_str(), "r" );
 
             if ( fp != NULL )
             {
                 fclose( fp );
-                configFile = configFileString.c_str();
+                logDefined = true;   // file exists, so we take this as SCAI_LOG specification
             }
         }
     }
 
-    if ( configFile == NULL )
+    if ( !logDefined )
     {
-        SCAI_LOG_WARN( ( *rootLogger ), "SCAI_LOG not set, no $HOME/" << homeConfigFile << ", so use default configuration" );
+        SCAI_LOG_WARN( *rootLogger, "SCAI_LOG not set, no $HOME/.loggingrc, so use default configuration" );
+        configFile.clear();
     }
-    else if ( strlen( configFile ) == 0 )
+
+    if ( configFile.length() == 0 )  
     {
         rootLogger->setLevel( level::WARN );
     }
-    else if ( strcmp( configFile, level2str( level::OFF ) ) == 0 )
+    else if ( configFile == level2str( level::OFF ) )
     {
         rootLogger->setLevel( level::OFF );
     }
-    else if ( strcmp( configFile, level2str( level::FATAL ) ) == 0 )
+    else if ( configFile == level2str( level::FATAL ) )
     {
         rootLogger->setLevel( level::FATAL );
     }
-    else if ( strcmp( configFile, level2str( level::SERROR ) ) == 0 )
+    else if ( configFile == level2str( level::SERROR ) ) 
     {
         rootLogger->setLevel( level::SERROR );
     }
-    else if ( strcmp( configFile, level2str( level::WARN ) ) == 0 )
+    else if ( configFile == level2str( level::WARN ) )
     {
         rootLogger->setLevel( level::WARN );
     }
-    else if ( strcmp( configFile, level2str( level::INFO ) ) == 0 )
+    else if ( configFile == level2str( level::INFO ) )
     {
         rootLogger->setLevel( level::INFO );
     }
-    else if ( strcmp( configFile, level2str( level::DEBUG ) ) == 0 )
+    else if ( configFile == level2str( level::DEBUG ) )
     {
         rootLogger->setLevel( level::DEBUG );
     }
-    else if ( strcmp( configFile, level2str( level::TRACE ) ) == 0 )
+    else if ( configFile == level2str( level::TRACE ) )
     {
         rootLogger->setLevel( level::TRACE );
     }
     else
     {
         SCAI_LOG_INFO( ( *rootLogger ), "read configuration from file " << configFile );
-        readConfig( configFile );
+        readConfig( configFile.c_str() );
     }
 
     rootLogger->traverse(); // traverse all loggers and might be print it
@@ -480,50 +472,63 @@ void GenLogger::log( const char* level, SourceLocation& loc, const string& msg )
         {
             output << formatTokens[i];
         }
-        else if ( token == "#name" )
+        else if ( token == "#NAME" )
         {
             output << getFullName();
         }
-        else if ( token == "#time" )
+        else if ( token == "#TIME" )
         {
             writeTime( output );
         }
-        else if ( token == "#date" )
+        else if ( token == "#DATE" )
         {
             writeDate( output );
         }
-        else if ( formatTokens[i] == "#thread" )
+        else if ( formatTokens[i] == "#THREAD" )
         {
             output << common::Thread::getCurrentThreadName();
         }
-        else if ( formatTokens[i] == "#file" )
+        else if ( formatTokens[i] == "#FILE" )
         {
             output << loc.mFileName;
         }
-        else if ( formatTokens[i] == "#line" )
+        else if ( formatTokens[i] == "#LINE" )
         {
             output << loc.mLine;
         }
-        else if ( formatTokens[i] == "#func" )
+        else if ( formatTokens[i] == "#FUNC" )
         {
             output << loc.mFuncName;
         }
-        else if ( formatTokens[i] == "#level" )
+        else if ( formatTokens[i] == "#LEVEL" )
         {
             output << level;
         }
-        else if ( formatTokens[i] == "#msg" )
+        else if ( formatTokens[i] == "#MSG" )
         {
             output << msg;
         }
-        else if ( formatTokens[i] == "#stack" )
+        else if ( formatTokens[i] == "#STACK" )
         {
             // undocumented feature: print stack 
             scai::common::Exception::addCallStack( output );
         }
-        else
+        else 
         {
-            output << formatTokens[i];
+            // ignore first character # and take it as environment variable
+
+            const char* var = formatTokens[i].c_str() + 1;
+
+            std::string val;
+
+            if ( scai::common::Settings::getEnvironment( val, var ) )
+            {
+                output << val;
+            }
+            else
+            {
+                output << "${" << var << "}";
+            }
         }
     }
 
@@ -627,7 +632,7 @@ static void tokenize( std::vector<std::string>& tokens, const std::string& input
             tokens.push_back( input.substr( lastPos, pos - lastPos ) );
         }
 
-        lastPos = input.find_first_not_of( "abcdefghijklmnopqrstuvwxyz", pos + 1 );
+        lastPos = input.find_first_not_of( "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVXYZ_", pos + 1 );
  
         tokens.push_back( input.substr( pos, lastPos - pos ) );
 
@@ -643,6 +648,18 @@ static void tokenize( std::vector<std::string>& tokens, const std::string& input
 void GenLogger::setFormat( const std::string& format )
 {
     tokenize( formatTokens, format );
+
+    // convert all tokens to upper case
+
+    for ( size_t i = 0; i < formatTokens.size(); ++i )
+    {
+        std::string& val = formatTokens[i];
+
+        for ( std::string::iterator p = val.begin(); val.end() != p; ++p )
+        {
+            *p = toupper( *p );
+        }
+    }
 }
 
 } /* end namespace logging */

@@ -56,6 +56,7 @@
 #include <scai/common/Assert.hpp>
 #include <scai/common/bind.hpp>
 #include <scai/common/Constants.hpp>
+#include <scai/common/macros/print_string.hpp>
 
 // boost
 #include <boost/preprocessor.hpp>
@@ -2368,7 +2369,7 @@ void CSRStorage<ValueType>::buildSparseRowData(
     template<>                                                                     \
     const char* CSRStorage<ARITHMETIC_HOST_TYPE_##I>::typeName()                   \
     {                                                                              \
-        return "CSRStorage<ARITHMETIC_HOST_TYPE_##I>";                             \
+        return "CSRStorage<" PRINT_STRING(ARITHMETIC_HOST_TYPE_##I) ">";       \
     }                                                                              \
                                                                                    \
     template class COMMON_DLL_IMPORTEXPORT CSRStorage<ARITHMETIC_HOST_TYPE_##I> ;  \

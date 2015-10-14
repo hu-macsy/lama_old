@@ -283,6 +283,19 @@ It is possible to change this default output format by a line in the config file
 
 The output format cannot be redefined individually for different loggers.
 
+Other tokens starting with a ``#`` will be handled as follows:
+
+- ``#stack`` will print the call stack at the time when  the logging is done
+- ``#<var>`` any other value will print the corresponding environment variable.
+
+Printing the stack might be especially helpful for warnings as it helps to identify
+the reason for the warning.
+
+Printing an environment variable is very useful to print important values set by certain routines
+in the program. E.g. in LAMA it might be used for communicators; there the
+MPI communicator will set the variable ``SCAI_COMM`` or ``SCAI_RANK`` and so these variables
+help to identify which processor printed the statement.
+
 Compile Flags for Logging
 -------------------------
 
