@@ -30,7 +30,13 @@
  # @date 14.09.2015
 ###
 
-file ( GLOB CPP_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp" )
+scai_project (
+
+    SOURCES
+
+        MICTest
+        MICContextTest
+)
 
 find_package ( Boost COMPONENTS unit_test_framework )
 
@@ -38,7 +44,7 @@ if ( Boost_UNIT_TEST_FRAMEWORK_FOUND )
 
     include_directories ( ${Boost_INCLUDE_DIR} )
 
-    add_executable ( MICTest ${CPP_SOURCES} )
+    add_executable ( MICTest ${CXX_SOURCES} )
 
     target_link_libraries ( MICTest 
         ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}

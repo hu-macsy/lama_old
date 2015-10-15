@@ -51,6 +51,8 @@
 
 #include <scai/common/unique_ptr.hpp>
 #include <scai/common/ScalarType.hpp>
+#include <scai/common/Constants.hpp>
+#include <scai/common/macros/print_string.hpp>
 
 // boost
 #include <boost/preprocessor.hpp>
@@ -822,17 +824,35 @@ case common::scalar::SCALAR_ARITHMETIC_TYPE##I:                                 
         }
 
         return;
-    }
-
-    const CRTPMatrix<SparseMatrix<ValueType>, ValueType>* sparseMatrix = dynamic_cast < const CRTPMatrix <
-            SparseMatrix<ValueType>, ValueType > * > ( &other );
-
-    if ( sparseMatrix )
+    } else if( other.getMatrixKind() == Matrix::SPARSE )
     {
-        assignSparse( *sparseMatrix );
-        return;
+    	SCAI_LOG_INFO( logger, "copy sparse matrix")
+
+		switch( other.getValueType() )
+		{
+
+#define LAMA_COPY_SPARSE_CALL( z, I, _ ) \
+		case common::scalar::SCALAR_ARITHMETIC_TYPE##I: \
+		{ \
+			SCAI_LOG_TRACE( logger, "convert from SparseMatrix<" << SCALAR_ARITHMETIC_TYPE##I << "> to DenseMatrix<" << getScalarType<ValueType>() << ">" ) \
+			const SparseMatrix<ARITHMETIC_HOST_TYPE_##I>* sparseMatrix = reinterpret_cast< const SparseMatrix<ARITHMETIC_HOST_TYPE_##I>* >( &other ); \
+			const CSRSparseMatrix<ValueType> tmp = *sparseMatrix; \
+			assignSparse( tmp );\
+			return; \
+		}
+
+		BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_COPY_SPARSE_CALL, _ )
+
+#undef LAMA_COPY_SPARSE_CALL
+
+		default:
+			COMMON_THROWEXCEPTION( "type of sparse matrix not supported --> " << other )
+
+		}
     }
 
+
+    SCAI_LOG_TRACE( logger, "Unsupported assign")
     COMMON_THROWEXCEPTION( "Unsupported: assign " << other << " to " << *this )
 }
 
@@ -997,19 +1017,21 @@ void DenseMatrix<ValueType>::joinColumnData(
 
     std::vector<ReadAccessPtr> chunkRead( numColPartitions );
 
-// Get read access to all chunks, make some assertions for each chunk
+    ContextPtr hostContext = Context::getContextPtr( context::Host );
+
+    // Get read access to all chunks, make some assertions for each chunk
 
     for ( PartitionId p = 0; p < numColPartitions; ++p )
     {
         SCAI_ASSERT_ERROR( chunks[p], "no chunk data for partition " << p )
         SCAI_ASSERT_EQUAL_ERROR( chunks[p]->getNumRows(), numRows )
-        chunkRead[p].reset( new ReadAccess<ValueType>( chunks[p]->getData() ) );
+        chunkRead[p].reset( new ReadAccess<ValueType>( chunks[p]->getData(), hostContext ) );
         SCAI_LOG_DEBUG( logger, "column chunk[" << p << "] : " << *chunks[p] )
     }
 
     std::vector<IndexType> chunkOffset( numColPartitions, 0 ); // offset for each chunk
 
-    WriteAccess<ValueType> resultWrite( result.getData() );
+    WriteAccess<ValueType> resultWrite( result.getData(), hostContext );
 
     for ( IndexType i = 0; i < numRows; ++i )
     {
@@ -1113,18 +1135,20 @@ void DenseMatrix<ValueType>::splitColumnData(
 
     std::vector<WriteAccessPtr> chunkWrite( numChunks );
 
-// Get write access to all chunks, make some assertions for each chunk
+    // Get write access to all chunks, make some assertions for each chunk
+
+    ContextPtr contextPtr = Context::getContextPtr( context :: Host );
 
     for ( PartitionId p = 0; p < numChunks; ++p )
     {
         chunks[p].reset( new DenseStorage<ValueType>( numRows, numCols[p] ) );
-        chunkWrite[p].reset( new WriteAccess<ValueType>( chunks[p]->getData() ) );
+        chunkWrite[p].reset( new WriteAccess<ValueType>( chunks[p]->getData(), contextPtr ) );
         SCAI_LOG_DEBUG( logger, "column chunk[" << p << "] : " << *chunks[p] )
     }
 
     std::vector<IndexType> chunkOffset( numChunks, 0 ); // offset for each chunk
 
-    ReadAccess<ValueType> columnDataRead( columnData.getData() );
+    ReadAccess<ValueType> columnDataRead( columnData.getData(), contextPtr );
 
     for ( IndexType i = 0; i < numRows; ++i )
     {
@@ -1217,8 +1241,10 @@ void DenseMatrix<ValueType>::localize(
 
     local.allocate( numLocalRows, numColumns );
 
-    ReadAccess<ValueType> repData( global.getData() );
-    WriteAccess<ValueType> distData( local.getData() );
+    ContextPtr contextPtr = Context::getContextPtr( context :: Host );
+
+    ReadAccess<ValueType> repData( global.getData(), contextPtr );
+    WriteAccess<ValueType> distData( local.getData(), contextPtr );
 
     for ( IndexType irow = 0; irow < numLocalRows; ++irow )
     {
@@ -1247,8 +1273,10 @@ static void replicate(
     SCAI_ASSERT_EQUAL_DEBUG( replicatedData.getNumRows(), distribution.getGlobalSize() )
     SCAI_ASSERT_EQUAL_DEBUG( distributedData.getNumRows(), distribution.getLocalSize() )
 
-    WriteAccess<ValueType> globalVals( replicatedData.getData() );
-    ReadAccess<ValueType> localVals( distributedData.getData() );
+    ContextPtr contextPtr = Context::getContextPtr( context :: Host );
+
+    WriteAccess<ValueType> globalVals( replicatedData.getData(), contextPtr );
+    ReadAccess<ValueType> localVals( distributedData.getData(), contextPtr );
 
 // replicate distributed rows, each row has numCols entries
 
@@ -1502,10 +1530,10 @@ void DenseMatrix<ValueType>::scale( const Vector& vector )
 template<typename ValueType>
 void DenseMatrix<ValueType>::scale( const Scalar scaleValue )
 {
-    if ( getDistribution() != getColDistribution() )
-    {
-        COMMON_THROWEXCEPTION( "Diagonal calculation only for equal distributions." )
-    }
+//    if ( getDistribution() != getColDistribution() )
+//    {
+//        COMMON_THROWEXCEPTION( "Diagonal calculation only for equal distributions." )
+//    }
 
     getLocalStorage().scale( scaleValue );
 }
@@ -1525,7 +1553,7 @@ const std::vector<typename DenseMatrix<ValueType>::DenseStoragePtr>& DenseMatrix
 template<typename ValueType>
 Scalar DenseMatrix<ValueType>::getValue( IndexType i, IndexType j ) const
 {
-    ValueType myValue = 0.0;
+    ValueType myValue = static_cast<ValueType>(0.0);
 
     const Distribution& colDist = getColDistribution();
     const Distribution& rowDist = getDistribution();
@@ -1612,8 +1640,8 @@ void DenseMatrix<ValueType>::matrixTimesVectorImpl(
 
     mData[0]->prefetch();
 
-//It makes no sense to prefetch denseX because, if a transfer is started
-//the halo update needs to wait for this transfer to finish
+    // It makes no sense to prefetch denseX because, if a transfer is started
+    // the halo update needs to wait for this transfer to finish
 
     if ( betaValue != zero )
     {
@@ -1646,18 +1674,18 @@ void DenseMatrix<ValueType>::matrixTimesVectorImpl(
     mSendValues.clear();
     mReceiveValues.clear();
 
+    ContextPtr contextPtr = Context::getContextPtr( context :: Host );
+
     LAMAArray<ValueType>* sendValues = &mSendValues;
     LAMAArray<ValueType>* recvValues = &mReceiveValues;
-
-    const ValueType one = 1.0;
 
     {
 // resize the receive buffer to be big enough for largest part of X
 
-        WriteOnlyAccess<ValueType> wRecvValues( *recvValues, size );
+        WriteOnlyAccess<ValueType> wRecvValues( *recvValues, contextPtr, size );
 
-        WriteOnlyAccess<ValueType> wSendValues( *sendValues, size );
-        ReadAccess<ValueType> rLocalX( localX );
+        WriteOnlyAccess<ValueType> wSendValues( *sendValues, contextPtr, size );
+        ReadAccess<ValueType> rLocalX( localX, contextPtr );
 
 // fill send buffer with local X of this processor
 
@@ -1670,7 +1698,7 @@ void DenseMatrix<ValueType>::matrixTimesVectorImpl(
 
         for ( ; i < size; ++i )
         {
-            wSendValues[i] = 0.0;
+            wSendValues[i] = static_cast<ValueType>(0.0);
         }
     }
 
@@ -1731,7 +1759,7 @@ void DenseMatrix<ValueType>::matrixTimesVectorImpl(
                 copy( mData[actualPartition]->getNumColumns(), readSend.get(), 1, writeX.get(), 1, NULL );
             }
 
-            mData[actualPartition]->matrixTimesVector( localResult, alphaValue, x, one, localResult );
+            mData[actualPartition]->matrixTimesVector( localResult, alphaValue, x, static_cast<ValueType>(1.0), localResult );
             st->wait();
             std::swap( sendValues, recvValues );
         }
@@ -1770,7 +1798,7 @@ void DenseMatrix<ValueType>::matrixTimesVectorImpl(
             SCAI_LOG_INFO( logger,
                            comm << ": matrixTimesVector, actual dense block [" << actualPartition << "] = " << *mData[actualPartition] << ", sendX = " << *sendValues << ", localResult = " << localResult )
 
-            mData[actualPartition]->matrixTimesVector( localResult, alphaValue, *sendValues, one, localResult );
+            mData[actualPartition]->matrixTimesVector( localResult, alphaValue, *sendValues, static_cast<ValueType>(1.0), localResult );
             std::swap( sendValues, recvValues );
         }
     }
@@ -1954,7 +1982,7 @@ void DenseMatrix<ValueType>::matrixTimesMatrix(
 template<typename ValueType>
 Scalar DenseMatrix<ValueType>::maxNorm() const
 {
-    ValueType myMaxDiff = 0.0;
+    ValueType myMaxDiff = static_cast<ValueType>(0.0);
 
     for ( size_t i = 0; i < mData.size(); ++i )
     {
@@ -1978,7 +2006,7 @@ Scalar DenseMatrix<ValueType>::l1Norm() const
 {
     const Communicator& comm = getDistribution().getCommunicator();
 
-    ValueType mySum = 0.0;
+    ValueType mySum = static_cast<ValueType>(0.0);
 
     IndexType n = mData.size();
 
@@ -1997,7 +2025,7 @@ Scalar DenseMatrix<ValueType>::l2Norm() const
 {
     const Communicator& comm = getDistribution().getCommunicator();
 
-    ValueType mySum = 0.0;
+    ValueType mySum = static_cast<ValueType>(0.0);
     ValueType tmp;
 
     IndexType n = mData.size();
@@ -2048,7 +2076,7 @@ ValueType DenseMatrix<ValueType>::maxDiffNormImpl( const DenseMatrix<ValueType>&
     SCAI_ASSERT_EQUAL_ERROR( getDistribution(), other.getDistribution() )
     SCAI_ASSERT_EQUAL_ERROR( getColDistribution(), other.getColDistribution() )
 
-    ValueType myMaxDiff = 0.0;
+    ValueType myMaxDiff = static_cast<ValueType>(0.0);
 
     for ( unsigned int i = 0; i < mData.size(); ++i )
     {
@@ -2251,7 +2279,7 @@ const char* DenseMatrix<ValueType>::getTypeName() const
     template<>                                                                  \
     const char* DenseMatrix<ARITHMETIC_HOST_TYPE_##I>::typeName()               \
     {                                                                           \
-        return "DenseMatrix<ARITHMETIC_HOST_TYPE_##I>";                         \
+        return "DenseMatrix<" PRINT_STRING(ARITHMETIC_HOST_TYPE_##I) ">";                         \
     }                                                                           \
     \
     template class COMMON_DLL_IMPORTEXPORT DenseMatrix<ARITHMETIC_HOST_TYPE_##I> ;

@@ -1,5 +1,5 @@
 /**
- * @file TracingTest.hpp
+ * @file print_string.hpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,64 +25,13 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Test for multiple LAMA contexts and transfering context array data
- * @author Alexander Büchel, Thomas Brandes
- * @date 03.02.2012
- * @since 1.0.0
+ * @brief Macro for printing macros, even if they are used in a for macro
+ * @author Eric Schricker
+ * @date 12.10.2015
+ * @since 1.1.0
  */
 
-#include <boost/test/unit_test.hpp>
+#pragma once
 
-#include <scai/tracing.hpp>
-
-#ifdef _WIN32
-#include <Windows.h>
-#endif //WIN32
-/* --------------------------------------------------------------------- */
-
-BOOST_AUTO_TEST_SUITE( TracingTest )
-
-/* --------------------------------------------------------------------- */
-
-void work( int n )
-{
-#ifdef _WIN32
-    Sleep( n );
-#else
-    sleep( n );
-#endif
-}
-;
-
-void bar()
-{
-    SCAI_REGION_START( "bar" )
-    work( 1 );
-    SCAI_REGION_END( "bar" )
-}
-;
-
-void foo( bool call )
-{
-    SCAI_REGION( "foo" )
-    work( 1 );
-
-    if ( call )
-    {
-        bar();
-        work( 1 );
-    }
-}
-;
-
-/* --------------------------------------------------------------------- */
-
-BOOST_AUTO_TEST_CASE( regionTest )
-{
-    foo( false );
-    bar();
-    foo( true );
-}
-/* --------------------------------------------------------------------- */
-
-BOOST_AUTO_TEST_SUITE_END();
+#define _PRINT_STRING( x ) #x
+#define PRINT_STRING( x ) _PRINT_STRING( x )

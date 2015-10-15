@@ -30,8 +30,17 @@
  # @date 16.06.2015
 ###
 
-file ( GLOB CU_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/*.cu" )
-file ( GLOB CPP_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp" )
+scai_project (
+
+    SOURCES
+
+        CUDATest
+        CUDAContextTest
+ 
+    CUDA_SOURCES
+
+        LAMAArrayTest
+)
 
 find_package ( Boost COMPONENTS unit_test_framework )
 
@@ -39,7 +48,7 @@ if ( Boost_UNIT_TEST_FRAMEWORK_FOUND )
 
     include_directories ( ${Boost_INCLUDE_DIR} )
 
-    cuda_add_executable ( CUDATest ${CU_SOURCES} ${CPP_SOURCES} )
+    cuda_add_executable ( CUDATest ${CUDA_SOURCES} ${CXX_SOURCES} )
 
     target_link_libraries ( CUDATest 
         ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}

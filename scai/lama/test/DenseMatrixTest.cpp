@@ -34,9 +34,9 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/mpl/list.hpp>
 
-#include <test/TestSparseMatrices.hpp>
+#include <scai/lama/test/TestSparseMatrices.hpp>
 #include <scai/common/test/TestMacros.hpp>
-#include <test/SameMatrixHelper.hpp>
+#include <scai/lama/test/SameMatrixHelper.hpp>
 
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 #include <scai/lama/matrix/DenseMatrix.hpp>

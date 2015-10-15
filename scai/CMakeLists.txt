@@ -138,7 +138,7 @@ ExternalProject_Add ( scai_common
             PREFIX common
             SOURCE_DIR ${CMAKE_SOURCE_DIR}/common
             CMAKE_ARGS "-DSCAI_COMPLETE_BUILD=1"
-            CMAKE_CACHE_ARGS "${CMAKE_ARGS} ${CACHE_ARGS}"
+            CMAKE_CACHE_ARGS "${CMAKE_ARGS};${CACHE_ARGS}"
 	    	BINARY_DIR common
             )
 
@@ -150,7 +150,7 @@ ExternalProject_Add ( scai_logging
             PREFIX logging
             SOURCE_DIR ${CMAKE_SOURCE_DIR}/logging
             CMAKE_ARGS "-DSCAI_COMPLETE_BUILD=1"
-            CMAKE_CACHE_ARGS "${CMAKE_ARGS} ${CACHE_ARGS}"
+            CMAKE_CACHE_ARGS "${CMAKE_ARGS};${CACHE_ARGS}"
 	    	BINARY_DIR logging
             )
 
@@ -162,7 +162,7 @@ ExternalProject_Add ( scai_tracing
             PREFIX tracing
             SOURCE_DIR ${CMAKE_SOURCE_DIR}/tracing
             CMAKE_ARGS "-DSCAI_COMPLETE_BUILD=1"
-            CMAKE_CACHE_ARGS "${CMAKE_ARGS} ${CACHE_ARGS}"
+            CMAKE_CACHE_ARGS "${CMAKE_ARGS};${CACHE_ARGS}"
 	    	BINARY_DIR tracing
             )
 
@@ -174,7 +174,7 @@ ExternalProject_Add ( scai_tasking
             PREFIX tasking
             SOURCE_DIR ${CMAKE_SOURCE_DIR}/tasking
             CMAKE_ARGS "-DSCAI_COMPLETE_BUILD=1"
-            CMAKE_CACHE_ARGS "${CMAKE_ARGS} ${CACHE_ARGS}"
+            CMAKE_CACHE_ARGS "${CMAKE_ARGS};${CACHE_ARGS}"
 	    	BINARY_DIR tasking
             )
 
@@ -186,7 +186,7 @@ ExternalProject_Add ( scai_hmemo
             PREFIX hmemo
             SOURCE_DIR ${CMAKE_SOURCE_DIR}/hmemo
             CMAKE_ARGS "-DSCAI_COMPLETE_BUILD=1"
-            CMAKE_CACHE_ARGS "${CMAKE_ARGS} ${CACHE_ARGS}"
+            CMAKE_CACHE_ARGS "${CMAKE_ARGS};${CACHE_ARGS}"
 	    	BINARY_DIR hmemo
             )
 
@@ -198,6 +198,12 @@ ExternalProject_Add ( scai_lama
             PREFIX lama
             SOURCE_DIR ${CMAKE_SOURCE_DIR}/lama
             CMAKE_ARGS "-DSCAI_COMPLETE_BUILD=1"
-            CMAKE_CACHE_ARGS "${CMAKE_ARGS} ${CACHE_ARGS}"
+            CMAKE_CACHE_ARGS "${CMAKE_ARGS};${CACHE_ARGS}"
 	    	BINARY_DIR lama
             )
+
+## add custom target docclean
+include ( DocClean )
+
+## add custom target distclean
+include ( DistClean )

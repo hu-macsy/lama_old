@@ -45,6 +45,9 @@ if    ( NOT SCAI_COMPLETE_BUILD )
 	include ( SetBuildFlags )
 	include ( SCAIAssert )
 	include ( SetCPPFlags )
+else  ( NOT SCAI_COMPLETE_BUILD )
+	include ( Functions/CheckValueAtCompleteBuild )
+	CheckValueAtCompleteBuild ( tasking )
 endif ( NOT SCAI_COMPLETE_BUILD )
 
 ### include all search packages
@@ -85,12 +88,24 @@ endforeach ( module ${SCAI_TASKING_INTERNAL_DEPS} )
 ## add subdirectories
 add_subdirectory ( examples )
 
-## search for files
-file ( GLOB CPP_SOURCES "*.cpp" )
-file ( GLOB HPP_HEADERS "*.hpp" )
+include( Functions/scaiProject )
+
+scai_project (
+
+    HEADERS
+
+        NoSyncToken
+
+    CLASSES
+
+        SyncToken
+        TaskSyncToken
+        Task
+        ThreadPool
+)
 
 ### add library
-add_library ( scai_tasking ${SCAI_LIBRARY_TYPE} ${CPP_SOURCES} )
+add_library ( scai_tasking ${SCAI_LIBRARY_TYPE} ${CXX_SOURCES} )
 
 ## add link libraries
 list ( REVERSE SCAI_TASKING_INTERNAL_DEPS )
@@ -102,15 +117,16 @@ target_link_libraries ( scai_tasking ${SCAI_START_LINK_LIBRARIES} ${TASKING_LINK
 
 ### install ###
 install ( TARGETS scai_tasking DESTINATION lib )
-install ( FILES ${HPP_HEADERS} DESTINATION include/scai/tasking )
+
+include( Functions/relativeInstall )
+
+relative_install ( FILES ${CXX_HEADERS} DESTINATION include/scai/tasking )
 
 ## install library.hpp
 install ( FILES ../tasking.hpp DESTINATION include/scai )
 
-## add custum target distClean, but only if this project is not included
-if    ( NOT SCAI_COMPLETE_BUILD )
-	include ( DistClean )
-endif ( NOT SCAI_COMPLETE_BUILD )
+## add custum target distClean
+include ( DistClean )
 
 if    ( DEFINED SCAI_CMAKE_VERBOSE OR NOT DEFINED SCAI_COMPLETE_BUILD )
 	include ( Summaries/tasking )

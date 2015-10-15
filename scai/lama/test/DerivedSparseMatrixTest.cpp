@@ -40,7 +40,7 @@
 #include <scai/lama/matrix/ELLSparseMatrix.hpp>
 #include <scai/lama/matrix/JDSSparseMatrix.hpp>
 
-#include <test/SparseMatrixTest.hpp>
+#include <scai/lama/test/SparseMatrixTest.hpp>
 
 using namespace scai::lama;
 using namespace scai::hmemo;

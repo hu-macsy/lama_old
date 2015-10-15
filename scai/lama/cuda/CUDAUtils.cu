@@ -44,6 +44,7 @@
 // internal scai libraries
 #include <scai/common/Assert.hpp>
 #include <scai/common/cuda/CUDAError.hpp>
+#include <scai/common/Constants.hpp>
 
 // thrust
 #include <thrust/device_vector.h>
@@ -102,7 +103,7 @@ namespace lama
             return;
         }
 
-        if ( scale == static_cast<ValueType>( 0 ) )
+        if ( scale == scai::common::constants::ZERO )
         {
             setVal( values, n, scale );
         }
@@ -180,9 +181,7 @@ namespace lama
 
         thrust::device_ptr<ValueType> data( const_cast<ValueType*>( array ) );
 
-        ValueType zero = static_cast<ValueType>( 0 );
-
-        ValueType result = thrust::reduce( data, data + n, zero, thrust::plus<ValueType>() );
+        ValueType result = thrust::reduce( data, data + n, static_cast<ValueType>(0.0), thrust::plus<ValueType>() );
 
         SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
 
@@ -279,9 +278,7 @@ namespace lama
 
         thrust::device_ptr<ValueType> data( const_cast<ValueType*>( array ) );
 
-        ValueType zero = static_cast<ValueType>( 0 );
-
-        ValueType result = thrust::transform_reduce( data, data + n, absolute_value<ValueType>(), zero,
+        ValueType result = thrust::transform_reduce( data, data + n, absolute_value<ValueType>(), static_cast<ValueType>(0.0),
                         thrust::maximum<ValueType>() );
 
         SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
@@ -309,9 +306,7 @@ namespace lama
 
         thrust::transform( data1, data1 + n, data2, temp.begin(), thrust::minus<ValueType>() );
 
-        ValueType zero = static_cast<ValueType>( 0 );
-
-        ValueType result = thrust::transform_reduce( temp.begin(), temp.end(), absolute_value<ValueType>(), zero,
+        ValueType result = thrust::transform_reduce( temp.begin(), temp.end(), absolute_value<ValueType>(), static_cast<ValueType>(0.0),
                         thrust::maximum<ValueType>() );
 
         /* Not available, but would be useful:
@@ -510,7 +505,7 @@ namespace lama
             return;
         }
 
-        if ( beta == static_cast<ValueType1>( 0 ) )
+        if ( beta == scai::common::constants::ZERO )
         {
             // in array might be undefined
 

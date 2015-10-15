@@ -57,9 +57,9 @@
 
 #include <scai/lama/distribution/NoDistribution.hpp>
 
-#include <test/Configuration.hpp>
-#include <test/TestSparseMatrices.hpp>
-#include <test/EquationHelper.hpp>
+#include <scai/lama/test/Configuration.hpp>
+#include <scai/lama/test/TestSparseMatrices.hpp>
+#include <scai/lama/test/EquationHelper.hpp>
 
 #include <scai/common/test/TestMacros.hpp>
 

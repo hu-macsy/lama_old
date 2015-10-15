@@ -139,7 +139,7 @@ void testSolveWithPreconditionmethod( ContextPtr context )
     Scalar s = maxNorm( diff );
     SCAI_LOG_INFO( logger,
                    "maxNorm of diff = " << diff << " = ( solution - exactSolution ) = " << s.getValue<ValueType>() );
-    BOOST_CHECK( s.getValue<ValueType>() < 1E-4 );
+    BOOST_CHECK( s.getValue<ValueType>() < eps<ValueType>() );
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( testSolveWithPrecondition, T, test_types ) {
@@ -207,7 +207,7 @@ void testSolveWithoutPreconditionmethod( ContextPtr context )
     DenseVector<ValueType> diff( solution - exactSolution );
     Scalar s = maxNorm( diff );
     SCAI_LOG_INFO( logger, "maxNorm of ( solution - exactSolution ) = " << s.getValue<ValueType>() );
-    BOOST_CHECK( s.getValue<ValueType>() < 1E-4 );
+    BOOST_CHECK( s.getValue<ValueType>() < eps<ValueType>() );
 }
 
 /* --------------------------------------------------------------------- */

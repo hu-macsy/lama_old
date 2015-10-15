@@ -100,7 +100,7 @@ void _MatrixStorage::setDimension( const IndexType numRows, const IndexType numC
 
 _MatrixStorage::~_MatrixStorage()
 {
-    SCAI_LOG_DEBUG( logger, "_MatrixStorage" )
+    SCAI_LOG_DEBUG( logger, "~_MatrixStorage" )
 }
 
 /* ---------------------------------------------------------------------------------- */
@@ -114,7 +114,7 @@ void _MatrixStorage::writeAt( std::ostream& stream ) const
 
 void _MatrixStorage::setCompressThreshold( float ratio )
 {
-    if ( ratio < 0.0 || ratio > 1.0 )
+    if ( ratio < 0.0f || ratio > 1.0f )
     {
         COMMON_THROWEXCEPTION( "Illegal threshold " << ratio << ", must be from 0.0 to 1.0" )
     }
@@ -1183,7 +1183,7 @@ void MatrixStorage<ValueType>::setRawDenseData(
     const OtherValueType values[],
     const ValueType epsilon )
 {
-    SCAI_ASSERT_ERROR( epsilon >= 0.0, "epsilon = " << epsilon << ", must not be negative" )
+    SCAI_ASSERT_ERROR( epsilon >= 0, "epsilon = " << epsilon << ", must not be negative" )
     mEpsilon = epsilon;
     // wrap all the data in a dense storage and make just an assign
     SCAI_LOG_INFO( logger, "set dense storage " << numRows << " x " << numColumns )

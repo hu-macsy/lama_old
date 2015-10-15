@@ -223,7 +223,9 @@ void DefaultJacobi::iterate()
     {
         SCAI_LOG_TRACE( logger, "Solution " << *runtime.mSolution )
         const DenseVector<ValueType>& sol = dynamic_cast<const DenseVector<ValueType>&>( *runtime.mSolution );
-        ReadAccess<ValueType> rsol( sol.getLocalValues() );
+
+        ReadAccess<ValueType> rsol( sol.getLocalValues(), Context::getHostPtr() );
+
         std::cout << "Solution: ";
 
         for( IndexType i = 0; i < rsol.size(); ++i )

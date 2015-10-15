@@ -1040,6 +1040,7 @@ protected:
      * csr.swap( csr1 ); // NOT ALLOWED, different type
      * \endcode
      */
+
     void swap( MatrixStorage<ValueType>& other );
 };
 

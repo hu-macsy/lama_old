@@ -100,7 +100,7 @@ The hierarchy of the loggers makes it more comfortable to configure the loggers.
 
 These definitions of the loggers result in the following hierarchy:
 
-.. figure:: /_images/Logging1.png
+.. figure:: _images/Logging1.png
     :width: 500px
     :align: center
     :alt: Hierarchical structure of loggers.
@@ -246,7 +246,7 @@ level has been specified in the configuration file. The RootLogger can be refere
 If the environment variable ``SCAI_LOG`` is not set, a logging file with the name .loggingrc is searched 
 in the home directory of the user. If this file is also not available, the default configuration is chosen.
 
-.. figure:: /_images/Logging2.png
+.. figure:: _images/Logging2.png
     :width: 500px
     :align: center
     :alt: Inheritance of logging levels.
@@ -282,6 +282,19 @@ It is possible to change this default output format by a line in the config file
     format = "logger = #name, msg: #msg"
 
 The output format cannot be redefined individually for different loggers.
+
+Other tokens starting with a ``#`` will be handled as follows:
+
+- ``#stack`` will print the call stack at the time when  the logging is done
+- ``#<var>`` any other value will print the corresponding environment variable.
+
+Printing the stack might be especially helpful for warnings as it helps to identify
+the reason for the warning.
+
+Printing an environment variable is very useful to print important values set by certain routines
+in the program. E.g. in LAMA it might be used for communicators; there the
+MPI communicator will set the variable ``SCAI_COMM`` or ``SCAI_RANK`` and so these variables
+help to identify which processor printed the statement.
 
 Compile Flags for Logging
 -------------------------

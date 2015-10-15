@@ -47,13 +47,18 @@
 // std
 #include <cmath>
 
-using namespace scai::hmemo;
-
 namespace scai
 {
 
+using namespace hmemo;
+
 namespace lama
 {
+
+// abs should be put in this namespace so Scalar::abs will not rule it out
+// The use of ::abs is not recommended as not supported in C++11
+
+using std::abs;
 
 /* --------------------------------------------------------------------------- */
 
@@ -242,13 +247,13 @@ void SparseAssemblyStorage<ValueType>::check( const char* msg ) const
 template<typename ValueType>
 ValueType SparseAssemblyStorage<ValueType>::l1Norm() const
 {
-    ValueType val = static_cast<ValueType>( 0.0 );
+    ValueType val = static_cast<ValueType>(0.0);
 
     for( IndexType i = 0; i < mNumRows; ++i )
     {
         for( size_t jj = 0; jj < mRows[i].values.size(); ++jj )
         {
-            val += ::abs( mRows[i].values[jj] );
+            val += abs( mRows[i].values[jj] );
         }
     }
 
@@ -260,13 +265,13 @@ ValueType SparseAssemblyStorage<ValueType>::l1Norm() const
 template<typename ValueType>
 ValueType SparseAssemblyStorage<ValueType>::l2Norm() const
 {
-    ValueType val = static_cast<ValueType>( 0.0 );
+    ValueType val = static_cast<ValueType>(0.0);
 	ValueType tmp;
     for( IndexType i = 0; i < mNumRows; ++i )
     {
         for( size_t jj = 0; jj < mRows[i].values.size(); ++jj )
         {
-			tmp = ::abs( mRows[i].values[jj] );
+			tmp = abs( mRows[i].values[jj] );
             val += tmp * tmp;
         }
     }
@@ -280,7 +285,9 @@ ValueType SparseAssemblyStorage<ValueType>::l2Norm() const
 template<typename ValueType>
 ValueType SparseAssemblyStorage<ValueType>::maxNorm() const
 {
-    ValueType maxval = static_cast<ValueType>( 0.0 );
+    // SparseAssemblyStorage not supported on GPUs
+
+    ValueType maxval = static_cast<ValueType>(0.0);
 
     for( IndexType i = 0; i < mNumRows; ++i )
     {
@@ -288,7 +295,8 @@ ValueType SparseAssemblyStorage<ValueType>::maxNorm() const
 
         for( size_t jj = 0; jj < values.size(); ++jj )
         {
-            const ValueType val = ::abs( mRows[i].values[jj] );
+            ValueType val = mRows[i].values[jj];
+            val = abs( val );
 
             if( val > maxval )
             {
@@ -406,7 +414,7 @@ ValueType SparseAssemblyStorage<ValueType>::operator()( const IndexType i, const
         }
     }
 
-    return 0.0;
+    return static_cast<ValueType>(0.0);
 }
 
 /* --------------------------------------------------------------------------- */
@@ -559,7 +567,7 @@ void SparseAssemblyStorage<ValueType>::fixDiagonalProperty( const IndexType i )
         #pragma omp atomic
         ++mNumValues;
         mRows[i].ja.push_back( i );
-        mRows[i].values.push_back( 0.0 );
+        mRows[i].values.push_back( static_cast<ValueType>(0.0) );
         return;
     }
 
@@ -588,7 +596,7 @@ void SparseAssemblyStorage<ValueType>::fixDiagonalProperty( const IndexType i )
         #pragma omp atomic
         ++mNumValues;
         wJA.push_back( i );
-        wValues.push_back( 0.0 );
+        wValues.push_back( static_cast<ValueType>(0.0) );
         std::swap( wValues[0], wValues[wValues.size() - 1] );
         std::swap( wJA[0], wJA[wValues.size() - 1] );
     }
@@ -609,11 +617,9 @@ void SparseAssemblyStorage<ValueType>::setIdentity( const IndexType n )
 {
     allocate( n, n );
 
-    ValueType one = static_cast<ValueType>( 1.0 );
-
     for( IndexType i = 0; i < mNumRows; ++i )
     {
-        set( i, i, one );
+        set( i, i, static_cast<ValueType>(1.0) );
     }
 }
 
@@ -776,7 +782,7 @@ void SparseAssemblyStorage<ValueType>::getRowImpl( LAMAArray<OtherType>& row, co
 
     for( IndexType j = 0; j < mNumColumns; ++j )
     {
-        wRow[j] = 0.0;
+        wRow[j] = static_cast<OtherType>(0.0);
     }
 
     const std::vector<IndexType>& ja = mRows[i].ja;

@@ -46,6 +46,7 @@
 #include <scai/common/bind.hpp>
 #include <scai/common/unique_ptr.hpp>
 #include <scai/common/macros/unused.hpp>
+#include <scai/common/Constants.hpp>
 
 // boost
 #include <boost/preprocessor.hpp>
@@ -536,7 +537,7 @@ void OpenMPCSRUtils::normalGEMV(
 
         for( IndexType i = 0; i < numRows; ++i )
         {
-            ValueType temp = 0.0;
+            ValueType temp = static_cast<ValueType>(0.0);
 
             for( IndexType jj = csrIA[i]; jj < csrIA[i + 1]; ++jj )
             {
@@ -544,7 +545,7 @@ void OpenMPCSRUtils::normalGEMV(
                 temp += csrValues[jj] * x[j];
             }
 
-            if( 0 == beta )
+            if( beta == scai::common::constants::ZERO )
             {
                 result[i] = alpha * temp;
             }
@@ -605,7 +606,7 @@ void OpenMPCSRUtils::normalGEVM(
 
         for( IndexType i = 0; i < numColumns; ++i )
         {
-            ValueType sum = 0.0;
+            ValueType sum = static_cast<ValueType>(0.0);
             bool diag = false;
 
             if( i < numRows && csrIA[i] != csrIA[i + 1] && csrJA[csrIA[i]] == i )
@@ -630,7 +631,7 @@ void OpenMPCSRUtils::normalGEVM(
         }
     }
 
-    if( 0 != beta )
+    if( beta != scai::common::constants::ZERO )
     {
         #pragma omp for schedule(SCAI_OMP_SCHEDULE)
 
@@ -682,7 +683,7 @@ void OpenMPCSRUtils::sparseGEMV(
 
         for( IndexType ii = 0; ii < numNonZeroRows; ++ii )
         {
-            ValueType temp = 0.0;
+            ValueType temp = static_cast<ValueType>(0.0);
             IndexType i = rowIndexes[ii];
 
             for( IndexType jj = csrIA[i]; jj < csrIA[i + 1]; ++jj )
@@ -739,7 +740,7 @@ void OpenMPCSRUtils::sparseGEVM(
 
         for( IndexType i = 0; i < numColumns; ++i )
         {
-            ValueType sum = 0.0;
+            ValueType sum = static_cast<ValueType>(0.0);
 
             for( IndexType jj = 0; jj < numNonZeroRows; ++jj )
             {
@@ -803,7 +804,7 @@ void OpenMPCSRUtils::gemm(
     {
         for( IndexType k = 0; k < n; ++k )
         {
-            ValueType temp = 0.0;
+            ValueType temp = static_cast<ValueType>(0.0);
 
             for( IndexType jj = csrIA[i]; jj < csrIA[i + 1]; ++jj )
             {
@@ -844,8 +845,6 @@ void OpenMPCSRUtils::jacobi(
         COMMON_THROWEXCEPTION( "asynchronous execution should be done by LAMATask before" )
     }
 
-    const ValueType oneMinusOmega = static_cast<ValueType>( 1.0 ) - omega;
-
     #pragma omp parallel
     {
         SCAI_REGION( "OpenMP.CSR.jacobi" )
@@ -864,7 +863,7 @@ void OpenMPCSRUtils::jacobi(
 
             // here we take advantange of a good branch precondiction
 
-            if( omega == 1.0 )
+            if( omega == scai::common::constants::ONE )
             {
                 solution[i] = temp / diag;
             }
@@ -874,7 +873,7 @@ void OpenMPCSRUtils::jacobi(
             }
             else
             {
-                solution[i] = omega * ( temp / diag ) + oneMinusOmega * oldSolution[i];
+                solution[i] = omega * ( temp / diag ) + ( static_cast<ValueType>(1.0) - omega ) * oldSolution[i];
             }
         }
     }
@@ -913,7 +912,7 @@ void OpenMPCSRUtils::jacobiHalo(
                 i = haloRowIndexes[ii];
             }
 
-            ValueType temp = 0.0;
+            ValueType temp = static_cast<ValueType>(0.0);
 
             const ValueType diag = localValues[localIA[i]];
 
@@ -922,7 +921,7 @@ void OpenMPCSRUtils::jacobiHalo(
                 temp += haloValues[j] * oldSolution[haloJA[j]];
             }
 
-            if( omega == 1.0 )
+            if( omega == scai::common::constants::ONE )
             {
                 solution[i] -= temp / diag;
             }
@@ -966,7 +965,7 @@ void OpenMPCSRUtils::jacobiHaloWithDiag(
                 i = haloRowIndexes[ii];
             }
 
-            ValueType temp = 0.0;
+            ValueType temp = static_cast<ValueType>(0.0);
 
             const ValueType diag = localDiagValues[i];
 
@@ -975,7 +974,7 @@ void OpenMPCSRUtils::jacobiHaloWithDiag(
                 temp += haloValues[j] * oldSolution[haloJA[j]];
             }
 
-            if( omega == 1.0 )
+            if( omega == scai::common::constants::ONE )
             {
                 solution[i] -= temp / diag;
             }
@@ -1267,7 +1266,7 @@ void OpenMPCSRUtils::matrixAdd(
         for( IndexType j = 0; j < numColumns; j++ )
         {
             indexList[j] = NINIT;
-            valueList[j] = 0.0;
+            valueList[j] = static_cast<ValueType>(0.0);
         }
 
         #pragma omp for
@@ -1332,7 +1331,7 @@ void OpenMPCSRUtils::matrixAdd(
                 // first element is reserved for diagonal element
                 SCAI_LOG_TRACE( logger, "entry for [" << i << "," << i << "] as diagonal" )
                 cJA[offset] = i;
-                cValues[offset] = 0.0;
+                cValues[offset] = static_cast<ValueType>(0.0);
                 ++offset;
             }
 
@@ -1344,7 +1343,7 @@ void OpenMPCSRUtils::matrixAdd(
                 ValueType val = valueList[firstCol];
 
                 indexList[firstCol] = NINIT;
-                valueList[firstCol] = 0.0; // reset for next time
+                valueList[firstCol] = static_cast<ValueType>(0.0); // reset for next time
 
                 if( diagonalProperty && firstCol == i )
                 {
@@ -1662,7 +1661,7 @@ void OpenMPCSRUtils::matrixMultiply(
         for( IndexType jj = cIA[i]; jj < cIA[i + 1]; ++jj )
         {
             IndexType j = cJA[jj];
-            cValues[jj] = 0.0;
+            cValues[jj] = static_cast<ValueType>(0.0);
 
             if( j == -1 )
             {
@@ -1671,7 +1670,7 @@ void OpenMPCSRUtils::matrixMultiply(
 
             for( IndexType kk = aIA[i]; kk < aIA[i + 1]; ++kk )
             {
-                ValueType b_kj = 0.0;
+                ValueType b_kj = static_cast<ValueType>(0.0);
 
                 IndexType k = aJA[kk];
 
@@ -1739,7 +1738,7 @@ ValueType OpenMPCSRUtils::absMaxDiffRowUnsorted(
 {
     // No assumption about any sorting in a row
 
-    ValueType val = static_cast<ValueType>( 0.0 );
+    ValueType val = static_cast<ValueType>(0.0);
 
     IndexType helpIndex = 0; // some kind of thread-safe global value for findCol
 
@@ -1801,7 +1800,7 @@ ValueType OpenMPCSRUtils::absMaxDiffRowSorted(
 {
     // Note: the implementation assumes that rows are sorted according to column indexes
 
-    ValueType val = static_cast<ValueType>( 0.0 );
+    ValueType val = static_cast<ValueType>(0.0);
 
     IndexType i2 = 0;
     IndexType i1 = 0;
@@ -1899,11 +1898,11 @@ ValueType OpenMPCSRUtils::absMaxDiffVal(
         absMaxDiffRow = OpenMPCSRUtils::absMaxDiffRowUnsorted<ValueType>;
     }
 
-    ValueType val = static_cast<ValueType>( 0.0 );
+    ValueType val = static_cast<ValueType>(0.0);
 
     #pragma omp parallel
     {
-        ValueType threadVal = static_cast<ValueType>( 0.0 );
+        ValueType threadVal = static_cast<ValueType>(0.0);
 
         #pragma omp for schedule( SCAI_OMP_SCHEDULE )
 
@@ -1914,7 +1913,7 @@ ValueType OpenMPCSRUtils::absMaxDiffVal(
             IndexType n1 = csrIA1[i + 1] - offs1;
             IndexType n2 = csrIA2[i + 1] - offs2;
 
-            ValueType maxRow = 0.0;
+            ValueType maxRow = static_cast<ValueType>(0.0);
 
             maxRow = absMaxDiffRow( n1, &csrJA1[offs1], &csrValues1[offs1], n2, &csrJA2[offs2], &csrValues2[offs2] );
 

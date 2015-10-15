@@ -36,7 +36,7 @@
 
 #include <scai/lama/distribution/CyclicDistribution.hpp>
 
-#include <test/distributed/DistributionTest.hpp>
+#include <scai/lama/test/distributed/DistributionTest.hpp>
 #include <scai/common/test/TestMacros.hpp>
 
 using namespace scai::lama;

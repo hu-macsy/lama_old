@@ -28,7 +28,6 @@
  * @brief Richardson.hpp
  * @author David Schissler
  * @date 17.04.2015
- * @since 
  */
 
 #pragma once
@@ -66,18 +65,17 @@ public:
 
     virtual ~Richardson();
 
-
     /**
      * @param coefficients  The matrix A from A*u=f
      *
      *This method converges if      omega < 2 / ||A||_2     holds.
      *To assure this we choose omega s.t. the lower bound holds
-     *        omega < 2 / ||A||_F <= 2 / ||A||_2 
-     *with 
+     *        omega < 2 / ||A||_F <= 2 / ||A||_2
+     *with
      *||.||_2 ...... spectral norm,
      *||.||_F ...... Frobenius norm.
      *
-     *In particular, we take omega = (2/3) * 2 / ||A||_F  in initialize() 
+     *In particular, we take omega = (2/3) * 2 / ||A||_F  in initialize()
      *if there is no initialized omega.
     */
 
@@ -112,7 +110,7 @@ public:
      * @brief Returns the complete const configuration of the derived class
      */
     virtual const RichardsonRuntime& getConstRuntime() const;
-    
+
 
 protected:
     RichardsonRuntime mRichardsonRuntime;
@@ -122,7 +120,7 @@ protected:
     /**
      * @brief Performs one Richardson iteration based on Matrix/Vector operations
      *
-     * 
+     *
      */
     virtual void iterate();
 
@@ -131,7 +129,7 @@ protected:
 private:
 
     template<typename T>
-    void initialize(const Matrix& coefficients);
+    void initialize( const Matrix& coefficients );
 
     template<typename T>
     void iterate();

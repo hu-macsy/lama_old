@@ -32,7 +32,11 @@
 ###
 
 ### Add classes and header files ###
-set ( CLASSES
+
+scai_project (
+
+    CLASSES
+
         COOSparseMatrix
         CSRSparseMatrix
         DenseMatrix
@@ -41,12 +45,11 @@ set ( CLASSES
         JDSSparseMatrix
         Matrix
         SparseMatrix
-    )
 
-set ( HEADERS all CRTPMatrix )
+    HEADERS 
+ 
+        all 
+        CRTPMatrix 
 
-lama_classes ( ${CLASSES} )
-lama_headers ( ${HEADERS} )
-
-### add sources and headers to parent scope ###
-lama_add ()
+    ADD_PARENT_SCOPE
+)

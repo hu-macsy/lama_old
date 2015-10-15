@@ -240,7 +240,8 @@ void testSolveWithoutPreconditionmethod( ContextPtr context )
     DenseVector<ValueType> diff( solution - exactSolution );
     Scalar s = maxNorm( diff );
     SCAI_LOG_INFO( logger, "maxNorm of ( solution - exactSolution ) = " << s.getValue<ValueType>() );
-    BOOST_CHECK( s.getValue<ValueType>() < 1E-4 );
+	BOOST_CHECK_SMALL( s.getValue<ValueType>(), eps<ValueType>() );
+//    BOOST_CHECK( s.getValue<ValueType>() < eps<ValueType>() );
 }
 
 /* --------------------------------------------------------------------- */
@@ -294,10 +295,15 @@ BOOST_AUTO_TEST_CASE_TEMPLATE ( simpleTest, ValueType, test_types )
     bicgstabSolver.initialize( matrix );
     bicgstabSolver.solve( solution, rhs );
     BOOST_CHECK( expectedIterations >= bicgstabSolver.getIterationCount() );
+
+	SCAI_LOG_INFO( logger, "number of iterations " << bicgstabSolver.getIterationCount() );
+
     DenseVector<ValueType> diff( solution - exactSolution );
     Scalar s = maxNorm( diff );
     SCAI_LOG_INFO( logger, "maxNorm of ( solution - exactSolution ) = " << s.getValue<ValueType>() );
-    BOOST_CHECK( s.getValue<ValueType>() < 1E-4 );
+   // BOOST_CHECK( s.getValue<ValueType>() < eps<ValueType>() );
+//	BOOST_CHECK_SMALL( s.getValue<ValueType>(), eps<ValueType>() );
+	BOOST_CHECK_SMALL( s.getValue<ValueType>(), ValueType(1e-4) );
 }
 
 /* --------------------------------------------------------------------- */

@@ -67,6 +67,7 @@ namespace lama
 {
 
 const int MPICommunicator::defaultTag = 1;
+MPI_Op MPICommunicator::mSumComplexLongDouble = 0;
 
 SCAI_LOG_DEF_LOGGER( MPICommunicator::logger, "Communicator.MPICommunicator" )
 
@@ -182,6 +183,12 @@ void MPICommunicator::initialize( int& argc, char** & argv )
         }
     }
 
+	if( mSumComplexLongDouble == 0)
+	{
+		MPI_Op_create( &sum_complex_long_double, true, &mSumComplexLongDouble );
+		SCAI_LOG_DEBUG( logger, "MPI_Op_create for sum complex long double")
+	}
+
     mCommWorld = MPI_COMM_WORLD;
     MPI_Comm_dup( mCommWorld, &mComm );
     MPI_Comm_dup( mCommWorld, &mCommTask );
@@ -190,7 +197,28 @@ void MPICommunicator::initialize( int& argc, char** & argv )
     LAMA_MPICALL( logger, MPI_Comm_rank( mComm, &mRank ), "MPI_Comm_rank" )
 
     setNodeData(); // determine mNodeRank, mNodeSize
+
+    // set rank, output string in an environment variable 
+    // so it might be used by logging, tracing, etc.
+
+    std::ostringstream commVal;
+
+    commVal << *this;
+
+    common::Settings::putEnvironment( "SCAI_COMM", commVal.str().c_str() );
+    common::Settings::putEnvironment( "SCAI_RANK", mRank );
 }
+
+void MPICommunicator::sum_complex_long_double(void *in, void *out, int *count,
+                                 MPI_Datatype * UNUSED(dtype) )
+{
+  ComplexLongDouble *a = reinterpret_cast<ComplexLongDouble*>( in );
+  ComplexLongDouble *b = reinterpret_cast<ComplexLongDouble*>( out );
+  for(int i = 0; i < *count; ++i) {
+      b[i] += a[i];
+  }
+}
+
 
 /* ---------------------------------------------------------------------------------- */
 
@@ -379,8 +407,8 @@ void MPICommunicator::all2all( IndexType recvSizes[], const IndexType sendSizes[
     MPI_Datatype commType = getMPIType<IndexType>();
 
     LAMA_MPICALL( logger,
-                  MPI_Alltoall( const_cast<IndexType*>( sendSizes ), 1, commType, recvSizes, 1, commType,
-                                selectMPIComm() ),
+                  MPI_Alltoall( const_cast<IndexType*>( sendSizes ), 1, commType, recvSizes,
+                                1, commType, selectMPIComm() ),
                   "MPI_Alltoall" )
 }
 
@@ -652,8 +680,9 @@ ValueType MPICommunicator::sumImpl( const ValueType value ) const
 
     ValueType sum;
     MPI_Datatype commType = getMPIType<ValueType>();
-    LAMA_MPICALL( logger, MPI_Allreduce( (void* ) &value, (void* ) &sum, 1, commType, MPI_SUM, selectMPIComm() ),
-                  "MPI_Allreduce(MPI_SUM)" )
+    MPI_Op opType = getMPISum<ValueType>();
+    LAMA_MPICALL( logger, MPI_Allreduce( (void* ) &value, (void* ) &sum, 1, commType, opType,
+                  selectMPIComm() ), "MPI_Allreduce(MPI_SUM)" )
     SCAI_LOG_DEBUG( logger, "sum: my value = " << value << ", sum = " << sum )
     return sum;
 }
@@ -671,8 +700,8 @@ ValueType MPICommunicator::minImpl( const ValueType value ) const
 
     ValueType globalMin; // no initialization needed, done in MPI call
 
-    LAMA_MPICALL( logger, MPI_Allreduce( (void* ) &value, (void* ) &globalMin, 1, commType, MPI_MIN, selectMPIComm() ),
-                  "MPI_Allreduce( MPI_MIN )" )
+    LAMA_MPICALL( logger, MPI_Allreduce( (void* ) &value, (void* ) &globalMin, 1, commType,
+                                         MPI_MIN, selectMPIComm() ), "MPI_Allreduce( MPI_MIN )" )
     return globalMin;
 }
 
@@ -687,8 +716,8 @@ ValueType MPICommunicator::maxImpl( const ValueType value ) const
 
     SCAI_LOG_DEBUG( logger, "maxImpl: local value = " << value )
 
-    LAMA_MPICALL( logger, MPI_Allreduce( (void* ) &value, (void* ) &globalMax, 1, commType, MPI_MAX, selectMPIComm() ),
-                  "MPI_Allreduce( MPI_MAX )" )
+    LAMA_MPICALL( logger, MPI_Allreduce( (void* ) &value, (void* ) &globalMax, 1, commType, MPI_MAX,
+                                         selectMPIComm() ), "MPI_Allreduce( MPI_MAX )" )
 
     SCAI_LOG_DEBUG( logger, "maxImpl: global value = " << globalMax )
 

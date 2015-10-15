@@ -37,8 +37,8 @@
 #include <scai/lama/distribution/MetisDistribution.hpp>
 
 #include <scai/common/test/TestMacros.hpp>
-#include <test/Configuration.hpp>
-#include <test/distributed/DistributionTest.hpp>
+#include <scai/lama/test/Configuration.hpp>
+#include <scai/lama/test/distributed/DistributionTest.hpp>
 
 #include <scai/lama/matrix/ELLSparseMatrix.hpp>
 #include <scai/lama/matrix/JDSSparseMatrix.hpp>
@@ -130,7 +130,6 @@ BOOST_AUTO_TEST_CASE( commonTestCases )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( isEqualTest, MatrixType, MatrixTypes )
 {
-    typedef typename MatrixType::MatrixValueType ValueType;
     MatrixType distMatrix( matrix );
     DistributionPtr generaldist1( new MetisDistribution( comm, distMatrix, parts ) );
     DistributionPtr generaldist2( generaldist1 );

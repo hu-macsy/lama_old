@@ -93,5 +93,5 @@ The result is:
     0 \\
     -14.6 \end{matrix}\right)    
     
-The full example program can be found here :download:`matrix.cpp <../../../examples/tutorial/matrix.cpp>`
+The full example program can be found here :download:`matrix.cpp <../../../lama/examples/tutorial/matrix.cpp>`
 	

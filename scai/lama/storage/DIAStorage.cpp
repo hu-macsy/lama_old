@@ -48,8 +48,10 @@
 #include <scai/tracing.hpp>
 
 #include <scai/common/macros/unused.hpp>
+#include <scai/common/macros/print_string.hpp>
 #include <scai/common/bind.hpp>
 #include <scai/common/unique_ptr.hpp>
+#include <scai/common/Constants.hpp>
 
 using namespace scai::hmemo;
 
@@ -228,7 +230,7 @@ void DIAStorage<ValueType>::getRowImpl( LAMAArray<OtherType>& row, const IndexTy
 
     for( IndexType j = 0; j < mNumColumns; ++j )
     {
-        wRow[j] = 0.0;
+        wRow[j] = static_cast<OtherType>(0.0);
     }
 
     for( IndexType d = 0; d < mNumDiagonals; ++d )
@@ -410,22 +412,18 @@ void DIAStorage<ValueType>::setIdentity( const IndexType size )
 
         WriteOnlyAccess<IndexType> wOffset( mOffset, loc, mNumDiagonals );
 
-        IndexType zero = 0;
-
         SCAI_CONTEXT_ACCESS( loc )
 
-        setVal( wOffset.get(), 1, zero );
+        setVal( wOffset.get(), 1, 0 );
     }
 
     {
         LAMA_INTERFACE_FN_T( setVal, loc, Utils, Setter, ValueType )
         WriteOnlyAccess<ValueType> values( mValues, loc, mNumRows );
 
-        ValueType one = 1;
-
         SCAI_CONTEXT_ACCESS( loc )
 
-        setVal( values.get(), mNumRows, one );
+        setVal( values.get(), mNumRows, static_cast<ValueType>(1.0) );
     }
 
     mDiagonalProperty = true;
@@ -482,12 +480,11 @@ void DIAStorage<ValueType>::buildCSR(
     ReadAccess<IndexType> diaOffsets( mOffset );
     ReadAccess<ValueType> diaValues( mValues );
 
-    ValueType eps = 0.0;
-
     WriteOnlyAccess<IndexType> csrIA( ia, mNumRows + 1 );
 
+    // TODO: Check if eps = 0.0 is correct
     OpenMPDIAUtils::getCSRSizes( csrIA.get(), mDiagonalProperty, mNumRows, mNumColumns, mNumDiagonals, diaOffsets.get(),
-                                 diaValues.get(), eps );
+                                 diaValues.get(), static_cast<ValueType>(0.0) );
 
     if( ja == NULL || values == NULL )
     {
@@ -502,8 +499,9 @@ void DIAStorage<ValueType>::buildCSR(
     WriteOnlyAccess<IndexType> csrJA( *ja, numValues );
     WriteOnlyAccess<OtherValueType> csrValues( *values, numValues );
 
+    // TOOD: Check if eps = 0.0 is correct
     OpenMPDIAUtils::getCSRValues( csrJA.get(), csrValues.get(), csrIA.get(), mDiagonalProperty, mNumRows, mNumColumns,
-                                  mNumDiagonals, diaOffsets.get(), diaValues.get(), eps );
+                                  mNumDiagonals, diaOffsets.get(), diaValues.get(), static_cast<ValueType>(0.0) );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -583,7 +581,7 @@ void DIAStorage<ValueType>::setCSRDataImpl(
 
                 // check for j >= 0 and j < mNumColumns not needed here
 
-                addrValue = 0.0;
+                addrValue = static_cast<ValueType>(0.0);
 
                 for( IndexType jj = csrIA[i]; jj < csrIA[i + 1]; ++jj )
                 {
@@ -785,7 +783,7 @@ ValueType DIAStorage<ValueType>::getValue( const IndexType i, const IndexType j 
 
     const ReadAccess<IndexType> offset( mOffset );
 
-    ValueType myValue = 0.0;
+    ValueType myValue = static_cast<ValueType>(0.0);
 
     // check for a matching diagonal element in the row i
 
@@ -946,7 +944,7 @@ void DIAStorage<ValueType>::vectorTimesMatrix(
     SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumRows )
     SCAI_ASSERT_EQUAL_ERROR( result.size(), mNumColumns )
 
-    if( ( beta != 0.0 ) && ( &result != &y ) )
+    if( ( beta != scai::common::constants::ZERO ) && ( &result != &y ) )
     {
         SCAI_ASSERT_EQUAL_ERROR( y.size(), mNumColumns )
     }
@@ -1132,7 +1130,7 @@ SyncToken* DIAStorage<ValueType>::vectorTimesMatrixAsync(
     SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumRows )
     SCAI_ASSERT_EQUAL_ERROR( result.size(), mNumColumns )
 
-    if( ( beta != 0.0 ) && ( &result != &y ) )
+    if( ( beta != scai::common::constants::ZERO ) && ( &result != &y ) )
     {
         SCAI_ASSERT_EQUAL_ERROR( y.size(), mNumColumns )
     }
@@ -1244,7 +1242,7 @@ DIAStorage<ValueType>* DIAStorage<ValueType>::copy() const
     template<>                                                                    \
     const char* DIAStorage<ARITHMETIC_HOST_TYPE_##I>::typeName()                  \
     {                                                                             \
-        return "DIAStorage<ARITHMETIC_HOST_TYPE_##I>";                            \
+        return "DIAStorage<" PRINT_STRING(ARITHMETIC_HOST_TYPE_##I) ">";      \
     }                                                                             \
                                                                                   \
     template class COMMON_DLL_IMPORTEXPORT DIAStorage<ARITHMETIC_HOST_TYPE_##I> ;

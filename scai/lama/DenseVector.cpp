@@ -56,6 +56,7 @@
 
 #include <scai/common/unique_ptr.hpp>
 #include <scai/common/exception/UnsupportedException.hpp>
+#include <scai/common/Constants.hpp>
 
 // boost
 #include <boost/preprocessor.hpp>
@@ -435,12 +436,14 @@ template<typename ValueType>
 Scalar DenseVector<ValueType>::getValue( IndexType globalIndex ) const
 {
     SCAI_LOG_TRACE( logger, *this << ": getValue( globalIndex = " << globalIndex << " )" )
-    ValueType myValue = 0.0;
+    ValueType myValue = static_cast<ValueType>(0.0);
     const IndexType localIndex = getDistribution().global2local( globalIndex );
 
     if( localIndex != nIndex )
     {
-        ReadAccess<ValueType> localAccess( mLocalValues );
+        ContextPtr contextPtr = Context::getContextPtr( context::Host );
+
+        ReadAccess<ValueType> localAccess( mLocalValues, contextPtr );
 
         SCAI_LOG_TRACE( logger, "index "<< globalIndex << " is local " << localIndex )
         myValue = localAccess[localIndex];
@@ -455,14 +458,22 @@ template<typename ValueType>
 Scalar DenseVector<ValueType>::min() const
 {
     //TODO: need a interface function for this
-    ReadAccess<ValueType> localValues( mLocalValues );
+
+    ContextPtr contextPtr = Context::getContextPtr( context::Host );
+
+    ReadAccess<ValueType> readLocalValues( mLocalValues, contextPtr );
+ 
+    IndexType n = mLocalValues.size();
+
+    const ValueType* localValues = readLocalValues.get();
+
     ValueType localMin = localValues[0];
 #pragma omp parallel
     {
         ValueType myLocalMin = localMin;
 #pragma omp for
 
-        for( IndexType i = 0; i < localValues.size(); ++i )
+        for( IndexType i = 0; i < n; ++i )
         {
             myLocalMin = std::min( localValues[i], myLocalMin );
         }
@@ -478,26 +489,18 @@ Scalar DenseVector<ValueType>::min() const
 template<typename ValueType>
 Scalar DenseVector<ValueType>::max() const
 {
-    SCAI_ASSERT_ERROR( mLocalValues.size() > 0, "no local values for max" )
+    IndexType nnu = mLocalValues.size();
 
-    //TODO: need a interface function for this
-    ReadAccess<ValueType> localValues( mLocalValues );
-    ValueType localMax = localValues[0];
-#pragma omp parallel
-    {
-        ValueType myLocalMax = localMax;
-#pragma omp for
+    SCAI_ASSERT_GT( nnu, 0, "no local values for max" )
 
-        for( IndexType i = 0; i < localValues.size(); ++i )
-        {
-            myLocalMax = std::max( localValues[i], myLocalMax );
-        }
+    ContextPtr loc = mLocalValues.getValidContext();
 
-#pragma omp critical
-        {
-            localMax = std::max( localMax, myLocalMax );
-        }
-    }
+    LAMA_INTERFACE_FN_DEFAULT_T( maxval, loc, Utils, Reductions, ValueType )
+
+    ReadAccess<ValueType> localValues( mLocalValues, loc );
+
+    ValueType localMax = maxval( localValues.get(), localValues.size() );
+
     return getDistribution().getCommunicator().max( localMax );
 }
 
@@ -508,7 +511,7 @@ Scalar DenseVector<ValueType>::l1Norm() const
 {
     IndexType nnu = mLocalValues.size();
 
-    ValueType localL1Norm = static_cast<ValueType>( 0 );
+    ValueType localL1Norm = static_cast<ValueType>(0.0);
 
     if( nnu > 0 )
     {
@@ -537,7 +540,7 @@ Scalar DenseVector<ValueType>::l2Norm() const
 {
     IndexType nnu = mLocalValues.size();
 
-    ValueType localDotProduct = static_cast<ValueType>( 0 );
+    ValueType localDotProduct = static_cast<ValueType>(0.0);
 
     if( nnu > 0 )
     {
@@ -568,7 +571,7 @@ Scalar DenseVector<ValueType>::maxNorm() const
 {
     IndexType nnu = mLocalValues.size(); // number of local rows
 
-    ValueType localMaxNorm = static_cast<ValueType>( 0 );
+    ValueType localMaxNorm = static_cast<ValueType>(0.0);
 
     if( nnu > 0 )
     {
@@ -661,11 +664,11 @@ void DenseVector<ValueType>::vectorPlusVector(
         ReadAccess<ValueType> yAccess( y, context );
         WriteAccess<ValueType> resultAccess( result, context, true );
 
-        if( beta == 0.0 )
+        if( beta == scai::common::constants::ZERO )
         {
             SCAI_LOG_DEBUG( logger, "vectorPlusVector: result *= alpha" )
 
-            if( alpha != 1.0 ) // result *= alpha
+            if( alpha != scai::common::constants::ONE ) // result *= alpha
             {
                 SCAI_CONTEXT_ACCESS( context )
                 scale( resultAccess.get(), alpha, nnu );
@@ -675,11 +678,11 @@ void DenseVector<ValueType>::vectorPlusVector(
                 // do nothing: result = 1 * result
             }
         }
-        else if( beta == 1.0 ) // result = alpha * result + y
+        else if( beta == scai::common::constants::ONE ) // result = alpha * result + y
         {
             SCAI_LOG_DEBUG( logger, "vectorPlusVector: result = alpha * result + y" )
 
-            if( alpha != 1.0 ) // result = alpha * result + y
+            if( alpha != scai::common::constants::ONE ) // result = alpha * result + y
             {
                 // result *= alpha
                 SCAI_CONTEXT_ACCESS( context )
@@ -688,14 +691,14 @@ void DenseVector<ValueType>::vectorPlusVector(
 
             // result += y
             SCAI_CONTEXT_ACCESS( context )
-            axpy( nnu, 1/*alpha*/, yAccess.get(), 1, resultAccess.get(), 1, NULL );
+            axpy( nnu, static_cast<ValueType>(1.0)/*alpha*/, yAccess.get(), 1, resultAccess.get(), 1, NULL );
         }
         else // beta != 1.0 && beta != 0.0 --> result = alpha * result + beta * y
         {
             SCAI_LOG_DEBUG( logger,
                             "vectorPlusVector: result = alpha(" << alpha << ")" << " * result + beta(" << beta << ") * y" )
 
-            if( alpha != 1.0 )
+            if( alpha != scai::common::constants::ONE )
             {
                 SCAI_CONTEXT_ACCESS( context )
                 scale( resultAccess.get(), alpha, nnu );
@@ -715,14 +718,14 @@ void DenseVector<ValueType>::vectorPlusVector(
         ReadAccess<ValueType> xAccess( x, context );
         WriteAccess<ValueType> resultAccess( result, context, true );
 
-        if( beta != 1.0 ) // result = [alpha * x + ] beta * result
+        if( beta != scai::common::constants::ONE ) // result = [alpha * x + ] beta * result
         {
             // result *= beta
             SCAI_CONTEXT_ACCESS( context )
             scale( resultAccess.get(), beta, nnu );
         }
 
-        if( alpha != 0.0 )
+        if( alpha != scai::common::constants::ZERO )
         {
             // result = alpha * x + result
             SCAI_CONTEXT_ACCESS( context )
@@ -978,11 +981,13 @@ void DenseVector<ValueType>::redistribute( DistributionPtr distribution )
 
         LAMAArray<ValueType> newLocalValues;
 
+        ContextPtr hostContext = Context::getContextPtr( context::Host );
+
         {
             const IndexType newSize = distribution->getLocalSize();
 
-            ReadAccess<ValueType> rLocalValues( mLocalValues );
-            WriteOnlyAccess<ValueType> wNewLocalValues( newLocalValues, newSize );
+            ReadAccess<ValueType> rLocalValues( mLocalValues, hostContext );
+            WriteOnlyAccess<ValueType> wNewLocalValues( newLocalValues, hostContext, newSize );
 
 #pragma omp parallel for
 
@@ -1009,9 +1014,11 @@ void DenseVector<ValueType>::redistribute( DistributionPtr distribution )
 
         LAMAArray<ValueType> globalValues;
 
+        ContextPtr hostContext = Context::getContextPtr( context::Host );
+
         {
-            ReadAccess<ValueType> localData( mLocalValues );
-            WriteOnlyAccess<ValueType> globalData( globalValues, size() );
+            ReadAccess<ValueType> localData( mLocalValues, hostContext );
+            WriteOnlyAccess<ValueType> globalData( globalValues, hostContext, size() );
             getDistribution().replicate( globalData.get(), localData.get() );
         }
 
@@ -1241,7 +1248,9 @@ void DenseVector<ValueType>::writeVectorToMMFile( const std::string& filename, c
         COMMON_THROWEXCEPTION( "DenseVector<ValueType>::writeVectorToMMFile: '" + filename + "' could not be reopened." )
     }
 
-    ReadAccess<ValueType> dataRead( mLocalValues );
+    ContextPtr hostContext = Context::getContextPtr( context::Host );
+
+    ReadAccess<ValueType> dataRead( mLocalValues, hostContext );
 
     for( IndexType ii = 0; ii < numRows; ++ii )
     {
@@ -1303,7 +1312,9 @@ void DenseVector<ValueType>::writeVectorToXDRFile( const std::string& file, cons
     outFile.write( &nnu );
     outFile.write( &dataTypeSize );
 
-    ReadAccess<ValueType> dataRead( mLocalValues );
+    ContextPtr hostContext = Context::getContextPtr( context::Host );
+
+    ReadAccess<ValueType> dataRead( mLocalValues, hostContext );
 
     switch( dataType )
     {
@@ -1374,7 +1385,9 @@ void DenseVector<ValueType>::writeVectorDataToBinaryFile( std::fstream& outFile,
 {
     IndexType numRows = size();
 
-    ReadAccess<ValueType> dataRead( mLocalValues );
+    ContextPtr contextPtr = Context::getContextPtr( context::Host );
+
+    ReadAccess<ValueType> dataRead( mLocalValues, contextPtr );
 
     switch( type )
     {
@@ -1410,8 +1423,11 @@ void DenseVector<ValueType>::writeVectorDataToBinaryFile( std::fstream& outFile,
 template<typename ValueType>
 void DenseVector<ValueType>::writeVectorToFormattedFile( const std::string& file ) const
 {
+    ContextPtr hostContext = Context::getContextPtr( context::Host );
+
     std::fstream outFile( file.c_str(), std::ios::out );
-    ReadAccess<ValueType> dataRead( mLocalValues );
+
+    ReadAccess<ValueType> dataRead( mLocalValues, hostContext );
 
     for( IndexType i = 0; i < size(); ++i )
     {
@@ -1424,6 +1440,8 @@ void DenseVector<ValueType>::writeVectorToFormattedFile( const std::string& file
 template<typename ValueType>
 void DenseVector<ValueType>::readVectorFromFormattedFile( const std::string& fileName )
 {
+    ContextPtr hostContext = Context::getContextPtr( context::Host );
+
     std::ifstream inFile( fileName.c_str(), std::ios::in );
 
     if( !inFile.is_open() )
@@ -1433,7 +1451,7 @@ void DenseVector<ValueType>::readVectorFromFormattedFile( const std::string& fil
 
     const IndexType n = size();
 
-    WriteOnlyAccess<ValueType> dataWrite( mLocalValues, n );
+    WriteOnlyAccess<ValueType> dataWrite( mLocalValues, hostContext, n );
 
     for( IndexType i = 0; i < n; ++i )
     {

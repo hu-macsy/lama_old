@@ -179,6 +179,7 @@ The tracing library itself is built with CMake.
 For using the tracing library an CMake module ``Findscai_tracing.cmake`` is provided.
 
 ::
+
     # find installation of tracing library
 
     find_package( scai_tracing REQUIRED )

@@ -48,8 +48,4 @@ set ( HEADERS
         CRTPMatrixStorage
     )
     
-lama_classes ( ${CLASSES} )
-lama_headers ( ${HEADERS} )
-
-### add sources and headers to parent scope ###
-lama_add ()
+scai_project ( CLASSES ${CLASSES} HEADERS ${HEADERS} ADD_PARENT_SCOPE )

@@ -231,7 +231,7 @@ static inline void getStencil(
     values.clear(); // reset
 
     positions.push_back( getMatrixPosition( idX, idY, idZ, dimX, dimY, dimZ ) );
-    values.push_back( stencilType - 1.0 );
+    values.push_back( stencilType - static_cast<ValueType>(1.0) );
 
     IndexType leftX = getNumNeighbors( idX, dimX, -length );
     IndexType rightX = getNumNeighbors( idX, dimX, length );
@@ -270,7 +270,7 @@ static inline void getStencil(
                 }
 
                 positions.push_back( getMatrixPosition( jx, jy, jz, dimX, dimY, dimZ ) );
-                values.push_back( -1.0 );
+                values.push_back( static_cast<ValueType>(-1.0) );
             }
         }
     }

@@ -87,21 +87,23 @@ BOOST_AUTO_TEST_CASE( ConstructorTest )
     // gives a warning as there is no valid data
 
     {
-        ReadAccess<float>read( array1 );
+        ReadAccess<float>read( array1, host );
     }
 
     {
-        ReadAccess<float> read( array2 );
+        ReadAccess<float> read( array2, host );
         readTest<float>( read.get(), N, N * 5 );
     }
 }
 
 BOOST_AUTO_TEST_CASE( releaseTest )
 {
+    ContextPtr hostContext = Context::getContextPtr( context::Host );
+
     LAMAArray<IndexType> lamaArray; // default, not allocated at all
-    ReadAccess<IndexType> readTestAccess( lamaArray );
+    ReadAccess<IndexType> readTestAccess( lamaArray, hostContext );
     readTestAccess.release();
-    WriteAccess<IndexType> writeAccess( lamaArray );
+    WriteAccess<IndexType> writeAccess( lamaArray, hostContext );
     writeAccess.resize( 10 );
 
     IndexType* data = writeAccess.get();
@@ -114,7 +116,7 @@ BOOST_AUTO_TEST_CASE( releaseTest )
     writeAccess.release();
     BOOST_CHECK_THROW( { writeAccess.resize( 20 ); }, Exception );
     BOOST_CHECK_THROW( { writeAccess.get()[0] = static_cast<IndexType> ( 5.0 ); }, Exception );
-    ReadAccess<IndexType> readAccess( lamaArray );
+    ReadAccess<IndexType> readAccess( lamaArray, hostContext );
     const IndexType* readData = readAccess.get();
 
     for ( IndexType i = 0; i < 5; i++ )
@@ -129,9 +131,11 @@ BOOST_AUTO_TEST_CASE( releaseTest )
 
 BOOST_AUTO_TEST_CASE( resizeTest )
 {
+    ContextPtr contextPtr = Context::getContextPtr( context::Host );
+
     LAMAArray<IndexType> lamaArray; // default, not allocated at all
     {
-        WriteAccess<IndexType> writeAccess( lamaArray );
+        WriteAccess<IndexType> writeAccess( lamaArray, contextPtr );
         // Possible problem: fetch from any location not possible
         writeAccess.resize( 10 );
         IndexType* data = writeAccess.get();
@@ -143,7 +147,7 @@ BOOST_AUTO_TEST_CASE( resizeTest )
     }
     lamaArray.purge();
     {
-        WriteAccess<IndexType> writeAccess( lamaArray );
+        WriteAccess<IndexType> writeAccess( lamaArray, contextPtr );
         // Possible problem: fetch from any location not possible
         writeAccess.resize( 10 );
     }
@@ -164,8 +168,10 @@ BOOST_AUTO_TEST_CASE( swapTest )
     BOOST_CHECK_EQUAL( arr2.size(), n1 );
     BOOST_CHECK_EQUAL( arr1.size(), n2 );
 
+    ContextPtr contextPtr = Context::getContextPtr( context::Host );
+
     {
-        ReadAccess<double> read( arr1 );
+        ReadAccess<double> read( arr1, contextPtr );
         for ( IndexType i = 0; i < arr1.size(); ++i )
         {
             BOOST_CHECK_EQUAL( 2, read[i] );
@@ -173,7 +179,7 @@ BOOST_AUTO_TEST_CASE( swapTest )
     }
 
     {
-        ReadAccess<double> read( arr2 );
+        ReadAccess<double> read( arr2, contextPtr );
         for ( IndexType i = 0; i < arr2.size(); ++i )
         {
             BOOST_CHECK_EQUAL( 1, read[i] );
@@ -188,29 +194,32 @@ BOOST_AUTO_TEST_CASE( accessTest )
     const IndexType n = 10;
     const double value = 1.0;
     const double value2 = 2.0;
+
+    ContextPtr contextPtr = Context::getContextPtr( context::Host );
+
     LAMAArray<double> lamaArray( n, value );
     {
-        ReadAccess<double> lamaArrayRAccess( lamaArray );
+        ReadAccess<double> lamaArrayRAccess( lamaArray, contextPtr );
 
         for ( IndexType i = 0; i < n; ++i )
         {
             BOOST_CHECK_EQUAL( value, lamaArrayRAccess.get()[i] );
         }
 
-        WriteAccess<double> tmpWriteAccess( lamaArray );
+        WriteAccess<double> tmpWriteAccess( lamaArray, contextPtr );
     }
     {
-        WriteAccess<double> lamaArrayWAccess( lamaArray );
+        WriteAccess<double> lamaArrayWAccess( lamaArray, contextPtr );
 
         for ( IndexType i = 0; i < n; ++i )
         {
             lamaArrayWAccess.get()[i] = value2;
         }
 
-        ReadAccess<double> tmpReadAccess( lamaArray );
+        ReadAccess<double> tmpReadAccess( lamaArray, contextPtr );
 
         lamaArrayWAccess.release();
-        ReadAccess<double> lamaArrayRAccess( lamaArray );
+        ReadAccess<double> lamaArrayRAccess( lamaArray, contextPtr );
 
         for ( IndexType i = 0; i < n; ++i )
         {
@@ -227,11 +236,13 @@ BOOST_AUTO_TEST_CASE( aliasTest )
     const double value = 1.0;
     LAMAArray<double> lamaArray( N, value );
 
+    ContextPtr contextPtr = Context::getContextPtr( context::Host );
+
     {
         // read and write access at same time by same thread
 
-        ReadAccess<double> read( lamaArray );
-        WriteAccess<double> write( lamaArray );
+        ReadAccess<double> read( lamaArray, contextPtr );
+        WriteAccess<double> write( lamaArray, contextPtr );
 
         for ( IndexType i = 0; i < N; ++i )
         {
@@ -241,20 +252,20 @@ BOOST_AUTO_TEST_CASE( aliasTest )
     {
         // verify that operation was really on the same array
 
-        ReadAccess<double> read( lamaArray );
+        ReadAccess<double> read( lamaArray, contextPtr );
         readTest<double>( read.get(), N, N * value * 2.0 );
     }
     {
         // with a single write access resize is possilbe
 
-        WriteAccess<double> write( lamaArray );
+        WriteAccess<double> write( lamaArray, contextPtr );
         write.resize( 2 * N );
     }
     {
         // with read and write at the same time resize throws Exception
 
-        WriteAccess<double> write( lamaArray );
-        ReadAccess<double> read( lamaArray );
+        WriteAccess<double> write( lamaArray, contextPtr );
+        ReadAccess<double> read( lamaArray, contextPtr );
         BOOST_CHECK_THROW(
         { 
             write.resize( 3 * N );
@@ -263,8 +274,8 @@ BOOST_AUTO_TEST_CASE( aliasTest )
     {
         // read and write access at same time by same thread
 
-        WriteAccess<double> write( lamaArray );
-        ReadAccess<double> read( lamaArray );
+        WriteAccess<double> write( lamaArray, contextPtr );
+        ReadAccess<double> read( lamaArray, contextPtr );
 
         // a clear is not possible as it affects the other access
         // Note: clear is the same as resize( 0 )
@@ -321,6 +332,8 @@ BOOST_AUTO_TEST_CASE( validTest )
 {
     LAMAArray<float> A( 10 );
 
+    ContextPtr hostContext = Context::getContextPtr( context::Host );
+
     // Array not allocated at all, should also give some default for validContext
 
     ContextPtr validContext = A.getValidContext();
@@ -330,12 +343,12 @@ BOOST_AUTO_TEST_CASE( validTest )
     LAMAArray<float> B;
     {
         // read access on zero sized array, should be okay
-        ReadAccess<float> read( B );
+        ReadAccess<float> read( B, hostContext );
     }
     LAMAArray<float> C( 10 );
     {
         // read access on undefined array, might give warning
-        ReadAccess<float> read( C );
+        ReadAccess<float> read( C, hostContext );
     }
 }
 

@@ -46,6 +46,8 @@
 
 #include <scai/common/bind.hpp>
 #include <scai/common/unique_ptr.hpp>
+#include <scai/common/Constants.hpp>
+#include <scai/common/macros/print_string.hpp>
 
 // boost
 #include <boost/preprocessor.hpp>
@@ -601,18 +603,15 @@ void JDSStorage<ValueType>::setIdentity( const IndexType size )
     SCAI_CONTEXT_ACCESS( loc )
 
     {
-        ValueType one = static_cast<ValueType>( 1.0 );
         LAMA_INTERFACE_FN_T( setVal, loc, Utils, Setter, ValueType )
-
-        setVal( wValues.get(), mNumRows, one );
+        setVal( wValues.get(), mNumRows, static_cast<ValueType>(1.0) );
     }
 
-    IndexType one = 1;
     LAMA_INTERFACE_FN_T( setVal, loc, Utils, Setter, IndexType )
     LAMA_INTERFACE_FN_T( setOrder, loc, Utils, Setter, IndexType )
 
     setVal( wDlg.get(), 1, mNumRows );
-    setVal( wIlg.get(), mNumRows, one );
+    setVal( wIlg.get(), mNumRows, 1 );
     setOrder( wPerm.get(), mNumRows );
     setOrder( wJa.get(), mNumRows );
 
@@ -870,15 +869,7 @@ void JDSStorage<ValueType>::writeAt( std::ostream& stream ) const
 {
     stream << "JDSStorage<" << common::getScalarType<ValueType>()
            << ">( size = " << mNumRows << " x " << mNumColumns
-           << ", jd = " << mNumDiagonals << ", nnz = " << mNumValues;
-
-    if ( Printable::extended )
-    {
-        stream << ", context = " << getContext() << ", dlg = " << mDlg << ", ilg = " << mIlg << ", perm = " << mPerm
-               << ", ja = " << mJa << ", vales = " << mValues;
-    }
-
-    stream << " )";
+           << ", jd = " << mNumDiagonals << ", nnz = " << mNumValues << " )";
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -1432,7 +1423,7 @@ ValueType JDSStorage<ValueType>::l1Norm() const
 
     if( n == 0 )
     {
-        return 0.0f;
+        return static_cast<ValueType>(0.0);
     }
 
 	ContextPtr loc = getContextPtr();
@@ -1457,7 +1448,7 @@ ValueType JDSStorage<ValueType>::l2Norm() const
 
     if( n == 0 )
     {
-        return 0.0f;
+        return static_cast<ValueType>(0.0);
     }
 
 	ContextPtr loc = getContextPtr();
@@ -1482,7 +1473,7 @@ ValueType JDSStorage<ValueType>::maxNorm() const
 
     if( n == 0 )
     {
-        return 0.0f;
+        return static_cast<ValueType>(0.0);
     }
 
     ContextPtr loc = getContextPtr();
@@ -1662,7 +1653,7 @@ JDSStorage<ValueType>* JDSStorage<ValueType>::copy() const
     template<>                                                                    \
     const char* JDSStorage<ARITHMETIC_HOST_TYPE_##I>::typeName()                  \
     {                                                                             \
-        return "JDSStorage<ARITHMETIC_HOST_TYPE_##I>";                            \
+        return "JDSStorage<" PRINT_STRING(ARITHMETIC_HOST_TYPE_##I) ">";                 \
     }                                                                             \
                                                                                   \
     template class COMMON_DLL_IMPORTEXPORT JDSStorage<ARITHMETIC_HOST_TYPE_##I> ;

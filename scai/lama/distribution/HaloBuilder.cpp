@@ -96,9 +96,11 @@ void HaloBuilder::build( const Distribution& distribution, const std::vector<Ind
         counts[requiredPlan[p].partitionId] = requiredPlan[p].offset;
     }
 
+    ContextPtr contextPtr = Context::getContextPtr( context::Host );
+
     // allocate array for the required indexes sorted by owner
 
-    WriteAccess<IndexType> requiredIndexesByOwner( halo.mRequiredIndexes );
+    WriteAccess<IndexType> requiredIndexesByOwner( halo.mRequiredIndexes, contextPtr );
 
     requiredIndexesByOwner.resize( requiredPlan.totalQuantity() );
 
@@ -142,10 +144,11 @@ void HaloBuilder::build( const Distribution& distribution, const std::vector<Ind
     communicator.exchangeByPlan( halo.mProvidesIndexes, providesPlan, halo.mRequiredIndexes, requiredPlan );
 
     SCAI_LOG_INFO( logger, "exchanged plan indexes" )
+
 #ifdef SCAI_LOG_TRACE
     {
-        ReadAccess<IndexType> provide( halo.mProvidesIndexes );
-        ReadAccess<IndexType> required( halo.mRequiredIndexes );
+        ReadAccess<IndexType> provide( halo.mProvidesIndexes, contextPtr );
+        ReadAccess<IndexType> required( halo.mRequiredIndexes, contextPtr );
 
         for( int i = 0; i < provide.size(); ++i )
         {
@@ -161,7 +164,7 @@ void HaloBuilder::build( const Distribution& distribution, const std::vector<Ind
 
     // localize the provides indexes that are still global from other processors
 
-    WriteAccess<IndexType> providesIndexes( halo.mProvidesIndexes );
+    WriteAccess<IndexType> providesIndexes( halo.mProvidesIndexes, contextPtr );
 
     for( PartitionId p = 0; p < providesPlan.size(); ++p )
     {

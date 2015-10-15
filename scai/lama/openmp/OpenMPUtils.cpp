@@ -41,6 +41,8 @@
 // internal scai libraries
 #include <scai/tracing.hpp>
 
+#include <scai/common/Constants.hpp>
+
 // boost
 #include <boost/preprocessor.hpp>
 
@@ -65,18 +67,18 @@ void OpenMPUtils::scale( ValueType mValues[], const ValueType value, const Index
 
     SCAI_LOG_INFO( logger, "scale, #n = " << n << ", value = " << value )
 
-    if( value == static_cast<ValueType>( 1 ) )
+    if( value == scai::common::constants::ONE )
     {
         return;
     }
 
-    if( value == 0 )
+    if( value == scai::common::constants::ZERO )
     {
         #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
 
         for( IndexType i = 0; i < n; i++ )
         {
-            mValues[i] = 0;
+            mValues[i] = static_cast<ValueType>(0.0);
         }
     }
     else
@@ -105,14 +107,14 @@ void OpenMPUtils::setScale(
 
     // alias of outValues == inValues is no problem
 
-    if( value == static_cast<ValueType>( 0 ) )
+    if( value == scai::common::constants::ZERO )
     {
         // Important : inValues might be undefined
         setVal( outValues, n, value );
         return;
     }
 
-    if( value == static_cast<ValueType>( 1 ) )
+    if( value == scai::common::constants::ONE )
     {
         set( outValues, inValues, n );
         return;
@@ -134,11 +136,11 @@ ValueType OpenMPUtils::sum( const ValueType array[], const IndexType n )
     SCAI_REGION( "OpenMP.Utils.sum" )
 
     SCAI_LOG_INFO( logger, "sum # array = " << array << ", n = " << n )
-    ValueType val = static_cast<ValueType>( 0 );
+    ValueType val = static_cast<ValueType>(0.0);
 
     #pragma omp parallel shared( val )
     {
-        ValueType tVal = static_cast<ValueType>( 0 );
+        ValueType tVal = static_cast<ValueType>(0.0);
 
         #pragma omp for schedule( SCAI_OMP_SCHEDULE )
 
@@ -207,11 +209,11 @@ ValueType OpenMPUtils::maxval( const ValueType array[], const IndexType n )
 
     SCAI_LOG_DEBUG( logger, "maxval<" << getScalarType<ValueType>() << ">: " << "array[" << n << "]" )
 
-    ValueType val = static_cast<ValueType>( 0.0 );
+    ValueType val = static_cast<ValueType>(0.0);
 
     #pragma omp parallel
     {
-        ValueType threadVal = static_cast<ValueType>( 0.0 );
+        ValueType threadVal = static_cast<ValueType>(0.0);
 
         #pragma omp for schedule( SCAI_OMP_SCHEDULE )
 
@@ -246,11 +248,11 @@ ValueType OpenMPUtils::absMaxVal( const ValueType array[], const IndexType n )
 
     SCAI_LOG_DEBUG( logger, "absMaxVal<" << getScalarType<ValueType>() << ">: " << "array[" << n << "]" )
 
-    ValueType val = static_cast<ValueType>( 0.0 );
+    ValueType val = static_cast<ValueType>(0.0);
 
     #pragma omp parallel
     {
-        ValueType threadVal = static_cast<ValueType>( 0.0 );
+        ValueType threadVal = static_cast<ValueType>(0.0);
 
         #pragma omp for schedule( SCAI_OMP_SCHEDULE )
 
@@ -287,11 +289,11 @@ ValueType OpenMPUtils::absMaxDiffVal( const ValueType array1[], const ValueType 
 
     SCAI_LOG_DEBUG( logger, "absMaxDiffVal<" << getScalarType<ValueType>() << ">: " << "array[" << n << "]" )
 
-    ValueType val = static_cast<ValueType>( 0.0 );
+    ValueType val = static_cast<ValueType>(0.0);
 
     #pragma omp parallel
     {
-        ValueType threadVal = static_cast<ValueType>( 0.0 );
+        ValueType threadVal = static_cast<ValueType>(0.0);
 
         #pragma omp for schedule( SCAI_OMP_SCHEDULE )
 
@@ -450,13 +452,11 @@ void OpenMPUtils::invert( ValueType array[], const IndexType n )
 
     SCAI_LOG_INFO( logger, "invert array[ " << n << " ]" )
 
-    ValueType one = static_cast<ValueType>( 1.0 );
-
     #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
 
     for( IndexType i = 0; i < n; ++i )
     {
-        array[i] = one / array[i];
+        array[i] = static_cast<ValueType>(1.0) / array[i];
     }
 }
 

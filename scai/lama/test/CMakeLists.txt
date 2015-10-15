@@ -32,10 +32,11 @@
 ###
 
 ### set this dir as lama source dir ###
-lama_set_source_dir ()
 
-### Add classes and header files ###
-set ( CLASSES
+scai_project ( 
+
+    CLASSES
+
         Configuration
         Context
         MatrixStorageTest
@@ -43,15 +44,15 @@ set ( CLASSES
         SameMatrixHelper
         SparseMatrixHelper
         SparseMatrixTest
-    )
     
-set ( HEADERS
+    HEADERS
+
         EquationHelper
 #        TestMacros
         TestSparseMatrices
-    )
 
-set ( SOURCE_FILES
+    SOURCES
+
         BiCGstabTest
        # BiCGTest  : disabled as long as MatrixTranspose for DenseMatrix is
        # not supported
@@ -102,7 +103,7 @@ set ( SOURCE_FILES
         ResidualThresholdTest
         RichardsonTest
         ScalarTest
-    #    SimpleAMGTest
+        SimpleAMGTest
         SolutionProxyTest
         SORTest
         SparseAssemblyStorageTest
@@ -111,14 +112,9 @@ set ( SOURCE_FILES
         TaskSyncTokenTest
         TFQMRTest
         TimerTest
-        TracingTest
 #        UtilsTest
         VectorTest
     )
-
-lama_classes ( ${CLASSES} )
-lama_headers ( ${HEADERS} )
-lama_sources ( ${SOURCE_FILES} )
 
 ### checks ####
 if ( ${SCAI_ASSERT_LEVEL} STREQUAL "OFF" )
@@ -131,7 +127,6 @@ endif ( NOT ( Boost_UNIT_TEST_FRAMEWORK_LIBRARY OR Boost_REGEX ) )
 
 ### set include directories ###
 include_directories ( .. ../lama ${Boost_INCLUDE_DIRS} )
-include_directories ( ${CMAKE_INSTALL_PREFIX}/include  )
 
 if ( SCAI_BLAS_NAME STREQUAL "MKL" )
     include_directories ( ${MKL_INCLUDE_DIRS} )
@@ -147,7 +142,7 @@ if ( CUDA_FOUND AND USE_CUDA AND CUDA_HAVE_GPU )
 endif ( CUDA_FOUND AND USE_CUDA AND CUDA_HAVE_GPU )
  
 ### add definitions ###
-add_definitions ( -DLAMA_TESTFILE_PATH="${CMAKE_SOURCE_DIR}/../../res/testfiles" )
+add_definitions ( -DLAMA_TESTFILE_PATH="${CMAKE_CURRENT_SOURCE_DIR}/../../../res/testfiles" )
 
 ### add link directories ###
 if ( WIN32 )
@@ -164,13 +159,12 @@ else ( WIN32 )
     target_link_libraries ( lama_test ama ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} ${Boost_REGEX_LIBRARY} )
 endif ( WIN32 )
 
-
 ### Copy the README and xmltest.sh file in build directory ### 
-file ( COPY README DESTINATION ${CMAKE_BINARY_DIR}/test )
-file ( COPY xmltest.sh DESTINATION ${CMAKE_BINARY_DIR}/test ) 
+file ( COPY README DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
+file ( COPY xmltest.sh DESTINATION ${CMAKE_CURRENT_BINARY_DIR} ) 
 
 if ( USE_CODE_COVERAGE )
     ### Copy the cca.sh and ccajen.sh file in build directory ###
-    configure_file( "${CMAKE_SOURCE_DIR}/test/cca.sh.in" "${CMAKE_CURRENT_BINARY_DIR}/cca.sh" @ONLY)
-    configure_file( "${CMAKE_SOURCE_DIR}/test/ccajen.sh.in" "${CMAKE_CURRENT_BINARY_DIR}/ccajen.sh" @ONLY)
+    configure_file( "${CMAKE_CURRENT_SOURCE_DIR}/cca.sh.in" "${CMAKE_CURRENT_BINARY_DIR}/cca.sh" @ONLY)
+    configure_file( "${CMAKE_CURRENT_SOURCE_DIR}/ccajen.sh.in" "${CMAKE_CURRENT_BINARY_DIR}/ccajen.sh" @ONLY)
 endif ( USE_CODE_COVERAGE )

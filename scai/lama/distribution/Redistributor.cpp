@@ -131,9 +131,11 @@ Redistributor::Redistributor( DistributionPtr targetDistribution, DistributionPt
 
     const CommunicationPlan& providesPlan = halo.getProvidesPlan();
 
-    WriteAccess<IndexType> haloSourceIndexes( mHaloSourceIndexes );
-    WriteAccess<IndexType> haloTargetIndexes( mHaloTargetIndexes );
-    ReadAccess<IndexType> haloProvidesIndexes( halo.getProvidesIndexes() );
+    ContextPtr contextPtr = Context::getContextPtr( context::Host );
+
+    WriteAccess<IndexType> haloSourceIndexes( mHaloSourceIndexes, contextPtr );
+    WriteAccess<IndexType> haloTargetIndexes( mHaloTargetIndexes, contextPtr );
+    ReadAccess<IndexType> haloProvidesIndexes( halo.getProvidesIndexes(), contextPtr );
 
     haloSourceIndexes.resize( providesPlan.totalQuantity() );
 
@@ -262,11 +264,13 @@ void Redistributor::buildRowPlans(
     scoped_array<IndexType> provideQuantities( new IndexType[numProvides] );
     scoped_array<IndexType> requiredQuantities( new IndexType[numRequired] );
 
+    ContextPtr contextPtr = Context::getContextPtr( context::Host );
+
     // For building the new schedule we need the sizes, can be calculated by the offsets
 
     {
-        ReadAccess<IndexType> indexes( mHaloSourceIndexes );
-        ReadAccess<IndexType> sizes( sourceSizes );
+        ReadAccess<IndexType> indexes( mHaloSourceIndexes, contextPtr );
+        ReadAccess<IndexType> sizes( sourceSizes, contextPtr );
 
         for( IndexType i = 0; i < numProvides; i++ )
         {
@@ -277,8 +281,8 @@ void Redistributor::buildRowPlans(
     }
 
     {
-        ReadAccess<IndexType> indexes( mHaloTargetIndexes );
-        ReadAccess<IndexType> sizes( targetSizes );
+        ReadAccess<IndexType> indexes( mHaloTargetIndexes, contextPtr );
+        ReadAccess<IndexType> sizes( targetSizes, contextPtr );
 
         for( IndexType i = 0; i < numRequired; i++ )
         {

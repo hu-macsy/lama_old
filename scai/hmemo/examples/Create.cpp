@@ -56,6 +56,8 @@ int main()
 {
     SCAI_LOG_THREAD( "Main" )
 
+    ContextPtr contextPtr = Context::getContextPtr( context::Host );
+
     static IndexType N =  100;
 
     LAMAArray<float> lamaArray ( N, 1.0 );
@@ -64,8 +66,8 @@ int main()
 
     *lamaArray1 = lamaArray;
 
-    ReadAccess<float> read( lamaArray );
-    ReadAccess<float> read1( *lamaArray1 );
+    ReadAccess<float> read( lamaArray, contextPtr );
+    ReadAccess<float> read1( *lamaArray1, contextPtr );
    
     const float* data = read.get();
     const float* data1 = read1.get();

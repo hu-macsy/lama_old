@@ -219,6 +219,13 @@ public:
      */
     static ContextPtr getContextPtr( const ContextType type = context::Host, int deviceNr = -1 );
 
+    /** @brief getHostPtr() as abbreviation of getContextPtr( context::Host ) */
+
+    static ContextPtr getHostPtr()
+    {
+        return getContextPtr( context::Host );
+    }
+
     /** Checks if a context of the passed type is available.
      *
      * @param[in] type  is the type of context that is wanted

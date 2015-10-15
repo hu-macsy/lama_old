@@ -33,7 +33,7 @@
 
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 #include <scai/hmemo.hpp>
-#include <test/SparseMatrixHelper.hpp>
+#include <scai/lama/test/SparseMatrixHelper.hpp>
 
 template<typename ValueType>
 bool compareMatrices( const scai::lama::CSRSparseMatrix<ValueType>& matrix, const scai::lama::CSRSparseMatrix<ValueType>& other )

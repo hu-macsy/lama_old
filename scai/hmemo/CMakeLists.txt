@@ -45,6 +45,9 @@ if    ( NOT SCAI_COMPLETE_BUILD )
 	include ( SetBuildFlags )
 	include ( SCAIAssert )
 	include ( SetCPPFlags )
+else  ( NOT SCAI_COMPLETE_BUILD )	
+	include ( Functions/CheckValueAtCompleteBuild )
+	CheckValueAtCompleteBuild ( hmemo )
 endif ( NOT SCAI_COMPLETE_BUILD )
 
 ### include all search packages
@@ -86,9 +89,32 @@ endforeach ( module ${SCAI_HMEMO_INTERNAL_DEPS} ${SCAI_HMEMO_EXTERNAL_DEPS} )
 
 ### build library
 
-## search for files
-file ( GLOB CPP_SOURCES "*.cpp" )
-file ( GLOB HPP_HEADERS "*.hpp" )
+include ( Functions/scaiProject )
+
+### Add classes/headers to source files CXX_SOURCES, CXX_HEADERS, ...
+
+scai_project (
+
+    CLASSES                  # .cpp, .hpp
+
+         Access
+         ContextAccess
+         Context
+         ContextData
+         ContextDataManager
+         HostContext
+         HostMemory
+         Memory
+
+    HEADERS                  # .hpp only
+
+         ContextArray
+         LAMAArray
+         LAMAArrayRef
+         ReadAccess
+         WriteAccess
+         WriteOnlyAccess
+)
 
 ## add CUDA if supported
 if    ( CUDA_FOUND AND USE_CUDA )
@@ -106,7 +132,7 @@ add_subdirectory ( examples )
 add_subdirectory ( test )
 
 ## add library
-add_library ( scai_hmemo ${SCAI_LIBRARY_TYPE} ${CPP_SOURCES} ${CUDA_SOURCES} ${MIC_SOURCES} )
+add_library ( scai_hmemo ${SCAI_LIBRARY_TYPE} ${CXX_SOURCES} )
 
 ## add link libraries
 list ( REVERSE SCAI_HMEMO_INTERNAL_DEPS )
@@ -122,16 +148,20 @@ foreach    ( module ${SCAI_HMEMO_EXTERNAL_DEPS} )
 endforeach ( module ${SCAI_HMEMO_EXTERNAL_DEPS} )
 
 ### install
+
 install ( TARGETS scai_hmemo DESTINATION lib )
-install ( FILES ${HPP_HEADERS} DESTINATION include/scai/hmemo )
+
+## install all Include files
+## install( FILES ${CXX_HEADERS} DESTINATION include/scai/hmemo ) does not work
+
+include( Functions/relativeInstall )
+relative_install( FILES ${CXX_HEADERS} DESTINATION include/scai/hmemo )
 
 ## install library.hpp
 install ( FILES ../hmemo.hpp DESTINATION include/scai )
 
-## add custum target distClean, but only if this project is not included
-if    ( NOT SCAI_COMPLETE_BUILD )
-	include ( DistClean )
-endif ( NOT SCAI_COMPLETE_BUILD )
+## add custum target distClean
+include ( DistClean )
 
 if    ( DEFINED SCAI_CMAKE_VERBOSE OR NOT DEFINED SCAI_COMPLETE_BUILD )
 	include ( Summaries/hmemo )

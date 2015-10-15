@@ -50,6 +50,8 @@
 #include <scai/tracing.hpp>
 
 #include <scai/common/bind.hpp>
+#include <scai/common/Constants.hpp>
+#include <scai/common/macros/print_string.hpp>
 
 // boost
 #include <boost/preprocessor.hpp>
@@ -153,8 +155,10 @@ bool COOStorage<ValueType>::checkDiagonalProperty() const
     {
         diagonalProperty = true; // intialization for reduction
 
-        ReadAccess<IndexType> ia( mIA );
-        ReadAccess<IndexType> ja( mJA );
+        ContextPtr contextPtr = Context::getHostPtr();
+
+        ReadAccess<IndexType> ia( mIA, contextPtr );
+        ReadAccess<IndexType> ja( mJA, contextPtr );
 
         // The diagonal property is given if the first numDiags entries
         // are the diagonal elements
@@ -245,14 +249,12 @@ void COOStorage<ValueType>::setIdentity( const IndexType size )
     WriteOnlyAccess<IndexType> ja( mJA, loc, mNumValues );
     WriteOnlyAccess<ValueType> values( mValues, loc, mNumValues );
 
-    ValueType one = static_cast<ValueType>( 1.0 );
-
     SCAI_CONTEXT_ACCESS( loc )
 
     setOrder( ia.get(), mNumValues );
     setOrder( ja.get(), mNumValues );
 
-    setVal( values.get(), mNumValues, one );
+    setVal( values.get(), mNumValues, static_cast<ValueType>(1.0) );
 
     mDiagonalProperty = true;
 }
@@ -488,9 +490,11 @@ ValueType COOStorage<ValueType>::getValue( const IndexType i, const IndexType j 
 {
     // only supported on Host at this time
 
-    const ReadAccess<IndexType> ia( mIA );
-    const ReadAccess<IndexType> ja( mJA );
-    const ReadAccess<ValueType> values( mValues );
+    ContextPtr loc = Context::getHostPtr();
+
+    const ReadAccess<IndexType> ia( mIA, loc );
+    const ReadAccess<IndexType> ja( mJA, loc );
+    const ReadAccess<ValueType> values( mValues, loc );
 
     SCAI_LOG_DEBUG( logger, "get value (" << i << ", " << j << ") from " << *this )
 
@@ -502,7 +506,7 @@ ValueType COOStorage<ValueType>::getValue( const IndexType i, const IndexType j 
         }
     }
 
-    return 0.0;
+    return static_cast<ValueType>(0.0);
 }
 
 /* --------------------------------------------------------------------------- */
@@ -554,9 +558,12 @@ void COOStorage<ValueType>::setDiagonalImpl( const Scalar scalar )
 {
     IndexType numDiagonalElements = std::min( mNumColumns, mNumRows );
 
-    WriteAccess<ValueType> wValues( mValues );
-    ReadAccess<IndexType> rJa( mJA );
-    ReadAccess<IndexType> rIa( mIA );
+    ContextPtr loc = Context::getHostPtr();
+
+    WriteAccess<ValueType> wValues( mValues, loc );
+    ReadAccess<IndexType> rJa( mJA, loc );
+    ReadAccess<IndexType> rIa( mIA, loc );
+
     ValueType value = scalar.getValue<ValueType>();
 
     for( IndexType i = 0; i < numDiagonalElements; ++i )
@@ -585,9 +592,13 @@ template<typename ValueType>
 template<typename OtherType>
 void COOStorage<ValueType>::scaleImpl( const LAMAArray<OtherType>& values )
 {
-    ReadAccess<OtherType> rValues( values );
-    WriteAccess<ValueType> wValues( mValues );
-    ReadAccess<IndexType> rIa( mIA );
+    ContextPtr loc = Context::getHostPtr();
+
+    ReadAccess<OtherType> rValues( values, loc );
+    WriteAccess<ValueType> wValues( mValues, loc );  // update
+    ReadAccess<IndexType> rIa( mIA, loc );
+
+    // Only host implementation available
 
     for( IndexType i = 0; i < mNumValues; ++i )
     {
@@ -626,15 +637,19 @@ void COOStorage<ValueType>::getRowImpl( LAMAArray<OtherType>& row, const IndexTy
 {
     SCAI_ASSERT_DEBUG( i >= 0 && i < mNumRows, "row index " << i << " out of range" )
 
+    ContextPtr hostContext = Context::getHostPtr();
+
     WriteOnlyAccess<OtherType> wRow( row, mNumColumns );
 
-    const ReadAccess<IndexType> ia( mIA );
-    const ReadAccess<IndexType> ja( mJA );
-    const ReadAccess<ValueType> values( mValues );
+    const ReadAccess<IndexType> ia( mIA, hostContext );
+    const ReadAccess<IndexType> ja( mJA, hostContext );
+    const ReadAccess<ValueType> values( mValues, hostContext );
+
+    // ToDo: OpenMP parallelization, interface
 
     for( IndexType j = 0; j < mNumColumns; ++j )
     {
-        wRow[j] = 0.0;
+        wRow[j] = static_cast<OtherType>(0.0);
     }
 
     for( IndexType kk = 0; kk < mNumValues; ++kk )
@@ -713,7 +728,7 @@ ValueType COOStorage<ValueType>::l1Norm() const
 
 	SCAI_CONTEXT_ACCESS( loc );
 
-	return asum( n, data.get(), 1, NULL );
+	return asum( n, data.get(), static_cast<IndexType>(1.0), NULL );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -747,7 +762,7 @@ ValueType COOStorage<ValueType>::maxNorm() const
 
     if( n == 0 )
     {
-        return 0.0f;
+        return static_cast<ValueType>(0.0);
     }
 
     ContextPtr loc = getContextPtr();
@@ -854,7 +869,7 @@ void COOStorage<ValueType>::vectorTimesMatrix(
     SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumRows )
     SCAI_ASSERT_EQUAL_ERROR( result.size(), mNumColumns )
 
-    if( ( beta != 0.0 ) && ( &result != &y ) )
+    if( ( beta != scai::common::constants::ZERO ) && ( &result != &y ) )
     {
         SCAI_ASSERT_EQUAL_ERROR( y.size(), mNumColumns )
     }
@@ -1039,7 +1054,7 @@ SyncToken* COOStorage<ValueType>::vectorTimesMatrixAsync(
     SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumRows )
     SCAI_ASSERT_EQUAL_ERROR( result.size(), mNumColumns )
 
-    if( ( beta != 0.0 ) && ( &result != &y ) )
+    if( ( beta != scai::common::constants::ZERO ) && ( &result != &y ) )
     {
         SCAI_ASSERT_EQUAL_ERROR( y.size(), mNumColumns )
     }
@@ -1165,7 +1180,7 @@ COOStorage<ValueType>* COOStorage<ValueType>::copy() const
     template<>                                                                    \
     const char* COOStorage<ARITHMETIC_HOST_TYPE_##I>::typeName()                  \
     {                                                                             \
-        return "COOStorage<ARITHMETIC_HOST_TYPE_##I>";                            \
+        return "COOStorage<" PRINT_STRING(ARITHMETIC_HOST_TYPE_##I) ">";      \
     }                                                                             \
                                                                                   \
     template class COMMON_DLL_IMPORTEXPORT COOStorage<ARITHMETIC_HOST_TYPE_##I> ;

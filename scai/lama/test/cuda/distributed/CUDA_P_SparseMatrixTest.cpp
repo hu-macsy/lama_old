@@ -48,7 +48,7 @@
 
 #include <scai/lama/matutils/MatrixCreator.hpp>
 
-#include <test/cuda/CUDAContext.hpp>
+#include <scai/lama/test/cuda/CUDAContext.hpp>
 
 #include <scai/common/test/TestMacros.hpp>
 

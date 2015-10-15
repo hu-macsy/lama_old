@@ -54,6 +54,7 @@
 namespace scai
 {
 
+
     /* --------------------------------------------------------------------------- */
     /*     cusparse handle is needed, set by CUDAContext                           */
     /* --------------------------------------------------------------------------- */
@@ -171,7 +172,7 @@ namespace lama
                             "cusparseSetStream" )
         }
 
-        if ( y != result && beta != 0 )
+        if ( y != result && beta != 0.0f )
         {
             SCAI_CUDA_RT_CALL( cudaMemcpy( result, y, numRows * sizeof( float ), cudaMemcpyDeviceToDevice ),
                             "cudaMemcpy for result = y" )
@@ -240,7 +241,7 @@ namespace lama
                             "cusparseSetStream" )
         }
 
-        if ( y != result && beta != 0 )
+        if ( y != result && beta != 0.0 )
         {
             SCAI_CUDA_RT_CALL( cudaMemcpy( result, y, numRows * sizeof( double ), cudaMemcpyDeviceToDevice ),
                             "cudaMemcpy for result = y" )
@@ -537,7 +538,7 @@ namespace lama
         cudaMemcpy( &nnzA, &aIA[m], sizeof( IndexType ), cudaMemcpyDeviceToHost );
         cudaMemcpy( &nnzB, &bIA[k], sizeof( IndexType ), cudaMemcpyDeviceToHost );
 
-        SCAI_ASSERT_EQUAL_ERROR( static_cast<float>( 1 ), alpha );
+        SCAI_ASSERT_EQUAL_ERROR( 0.0f, alpha );
 
         SCAI_CUSPARSE_CALL(
                         cusparseScsrgemm( CUDAContext_cusparseHandle,
@@ -591,7 +592,7 @@ namespace lama
         cudaMemcpy( &nnzA, &aIA[m], sizeof( IndexType ), cudaMemcpyDeviceToHost );
         cudaMemcpy( &nnzB, &bIA[k], sizeof( IndexType ), cudaMemcpyDeviceToHost );
 
-        SCAI_ASSERT_EQUAL_ERROR( static_cast<double>( 1 ), alpha );
+        SCAI_ASSERT_EQUAL_ERROR( 0.0, alpha );
 
         SCAI_CUSPARSE_CALL(
                         cusparseDcsrgemm( CUDAContext_cusparseHandle,

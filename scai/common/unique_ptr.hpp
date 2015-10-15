@@ -63,6 +63,9 @@ namespace common
         scoped_array( T* ptr ) : std::unique_ptr<T[]>( ptr )
         {
         }
+        scoped_array() : std::unique_ptr<T[]>()
+        {
+        }
     };
 
 #else

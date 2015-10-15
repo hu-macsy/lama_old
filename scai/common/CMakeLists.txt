@@ -44,6 +44,9 @@ if    ( NOT SCAI_COMPLETE_BUILD )
 	include ( SetBuildFlags )
 	include ( SCAIAssert )
 	include ( SetCPPFlags )
+else  ( NOT SCAI_COMPLETE_BUILD )
+	include ( Functions/CheckValueAtCompleteBuild )
+	CheckValueAtCompleteBuild ( common )
 endif ( NOT SCAI_COMPLETE_BUILD )
 
 include ( CheckC++11 )
@@ -79,9 +82,38 @@ include_directories ( ../.. )
 ## add subdirectories
 add_subdirectory ( examples )
 
-## search for files
-file ( GLOB CPP_SOURCES "*.cpp" )
-file ( GLOB HPP_HEADERS "*.hpp" )
+## add source files
+
+include ( Functions/scaiProject )
+
+scai_project (
+
+    CLASSES
+
+        Complex
+        Printable
+        ScalarType
+        Settings
+        Thread
+        Walltime
+
+    HEADERS
+
+        Assert
+        bind     
+        config
+        Constants
+        Factory
+        Factory1
+        function
+        OpenMP
+        NonCopyable
+        SCAITypes
+        shared_ptr
+        TypeTraits
+        unique_ptr
+        weak_ptr
+)
 
 ## add CUDA if supported
 if    ( CUDA_FOUND AND USE_CUDA )
@@ -98,7 +130,7 @@ add_subdirectory ( exception )
 add_subdirectory ( test )
 
 ## add library
-add_library ( scai_common ${SCAI_LIBRARY_TYPE} ${CPP_SOURCES} ${CUDA_SOURCES} )
+add_library ( scai_common ${SCAI_LIBRARY_TYPE} ${CXX_SOURCES} )
 
 ## add link libraries
 foreach    ( module ${SCAI_COMMON_EXTERNAL_DEPS} )
@@ -108,15 +140,15 @@ endforeach ( module ${SCAI_COMMON_EXTERNAL_DEPS} )
 
 ### install ###
 install ( TARGETS scai_common DESTINATION lib )
-install ( FILES ${HPP_HEADERS} DESTINATION include/scai/common )
+
+include ( Functions/relativeInstall )
+relative_install ( FILES ${CXX_HEADERS} DESTINATION include/scai/common )
 
 ## install library.hpp
 install ( FILES ../common.hpp DESTINATION include/scai )
 
-## add custum target distClean, but only if this project is not included
-if    ( NOT SCAI_COMPLETE_BUILD )
-	include ( DistClean )
-endif ( NOT SCAI_COMPLETE_BUILD )
+## add custum target distClean
+include ( DistClean )
 
 if    ( DEFINED SCAI_CMAKE_VERBOSE OR NOT DEFINED SCAI_COMPLETE_BUILD )
 	include ( Summaries/common )

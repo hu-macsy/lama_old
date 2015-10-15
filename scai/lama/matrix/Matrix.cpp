@@ -40,6 +40,7 @@
 
 // internal scai libraries
 #include <scai/common/Assert.hpp>
+#include <scai/common/Constants.hpp>
 
 using namespace scai::common;
 
@@ -166,7 +167,8 @@ Matrix::Matrix( DistributionPtr distribution )
 
 Matrix::Matrix()
     : Distributed( DistributionPtr( new NoDistribution( 0 ) ) ), mColDistribution(
-        DistributionPtr( new NoDistribution( 0 ) ) ), mNumRows( 0 ), mNumColumns( 0 )
+        DistributionPtr( new NoDistribution( 0 ) ) ), mNumRows( 0 ),
+        mNumColumns( 0 )
 {
     setDefaultKind();
 }
@@ -216,27 +218,6 @@ ContextArray* Matrix::createArray() const
     // Static method of ContextArray provides exactly the needed functionality.
 
     return ContextArray::create( getValueType() );
-}
-
-/* ---------------------------------------------------------------------------------*/
-
-Vector* Matrix::createDenseVector( DistributionPtr distribution, const Scalar value ) const
-{
-    common::ScalarType matrixValueType = getValueType();
-
-    SCAI_LOG_INFO( logger, "create vector of type " << matrixValueType )
-
-    switch ( matrixValueType )
-    {
-        case common::scalar::DOUBLE:
-            return new DenseVector<double>( distribution, value.getValue<double>() );
-
-        case common::scalar::FLOAT:
-            return new DenseVector<float>( distribution, value.getValue<float>() );
-
-        default:
-            COMMON_THROWEXCEPTION( "unsupported vector type : " << matrixValueType )
-    }
 }
 
 /* ---------------------------------------------------------------------------------*/
@@ -329,7 +310,7 @@ Matrix& Matrix::operator+=( const Expression_SM& exp )
 {
     // this += alpha * A  -> this = alpha * A + 1.0 * this
 
-    *this = Expression_SM_SM( exp, Expression_SM( Scalar( 1 ), *this ) );
+    *this = Expression_SM_SM( exp, Expression_SM( Scalar( 1.0 ), *this ) );
 
     return *this;
 }
@@ -342,7 +323,7 @@ Matrix& Matrix::operator-=( const Expression_SM& exp )
 
     Expression_SM minusExp( -exp.getArg1(), exp.getArg2() );
 
-    *this = Expression_SM_SM( Expression_SM( Scalar( 1 ), *this ), minusExp );
+    *this = Expression_SM_SM( Expression_SM( Scalar( 1.0 ), *this ), minusExp );
 
     return *this;
 }
@@ -353,7 +334,7 @@ Matrix& Matrix::operator+=( const Matrix& exp )
 {
     // this += A  -> this = 1.0 * A + 1.0 * this
 
-    *this = Expression_SM_SM( Expression_SM( Scalar( 1 ), *this ), Expression_SM( Scalar( 1 ), exp ) );
+    *this = Expression_SM_SM( Expression_SM( Scalar( 1.0 ), *this ), Expression_SM( Scalar( 1.0 ), exp ) );
 
     return *this;
 }
@@ -364,7 +345,7 @@ Matrix& Matrix::operator-=( const Matrix& exp )
 {
     // this -= A  -> this = -1.0 * A + 1.0 * this
 
-    *this = Expression_SM_SM( Expression_SM( Scalar( 1 ), *this ), Expression_SM( Scalar( -1 ), exp ) );
+    *this = Expression_SM_SM( Expression_SM( Scalar( 1.0 ), *this ), Expression_SM( Scalar( -1.0 ), exp ) );
 
     return *this;
 }
@@ -376,7 +357,7 @@ Matrix& Matrix::operator=( const Expression_SMM& exp )
     // exp is Expression object that stands for A * B with matrices A * B
     //   ->   1.0 * A * B + 0.0 * A
 
-    Expression_SM exp2( Scalar( 0 ), *this );
+    Expression_SM exp2( Scalar( 0.0 ), *this );
 
     *this = Expression_SMM_SM( exp, exp2 );
 

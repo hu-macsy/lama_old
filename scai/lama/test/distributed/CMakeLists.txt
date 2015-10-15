@@ -31,19 +31,26 @@
  # @since 1.0.0
 ###
 
-### set this dir as lama source dir ###
-lama_set_source_dir ()
-
 ### set include directories ### 
 #include_directories ( . .. )
 
 ### Add classes and header files ###
-set ( CLASSES
+
+if ( METIS_FOUND OR PARMETIS_FOUND )
+    set ( MetisDistributionTest MetisDistributionTest )
+else( METIS_FOUND OR PARMETIS_FOUND )
+    set ( MetisDistributionTest )
+endif ( METIS_FOUND OR PARMETIS_FOUND )
+
+scai_project (
+
+   CLASSES
+
         DistributionTest
         P_SparseMatrixTest
-    )
 
-set ( SOURCE_FILES
+   SOURCES
+
         BlockDistributionTest
         CyclicDistributionTest
         GenBlockDistributionTest
@@ -67,24 +74,20 @@ set ( SOURCE_FILES
         P_SpecializedJacobiTest
         P_VectorTest
         P_NormTest
+
+        ${MetisDistributionTest}
+
         #TODO: REMOVE!
         ../Configuration
         ../SameMatrixHelper
         ../SparseMatrixHelper
         ../CommunicatorTest
-    )
+)
     
-if ( METIS_FOUND OR PARMETIS_FOUND )
-    set ( SOURCE_FILES ${SOURCE_FILES} MetisDistributionTest )
-endif ( METIS_FOUND OR PARMETIS_FOUND )
-
-lama_classes ( ${CLASSES} )
-lama_sources ( ${SOURCE_FILES} )
-
 # individual preprocessor definition 
 
 set_property( SOURCE ../Configuration.cpp 
-              PROPERTY COMPILE_DEFINITIONS LAMA_TESTFILE_PATH="${CMAKE_SOURCE_DIR}/../res/testfiles" 
+              PROPERTY COMPILE_DEFINITIONS LAMA_TESTFILE_PATH="${CMAKE_CURRENT_SOURCE_DIR}/../../../../res/testfiles" 
             )
 
 ### add definitions ###

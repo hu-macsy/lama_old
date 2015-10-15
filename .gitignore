@@ -1,10 +1,12 @@
 .svn
 build/
+Debug/
 .cproject
 .project
 .settings/
 doc/doxygen
-src/lama/solver/amg
 scai/doc/user/conf.py
+scai/logging/doc/user/conf.py
+scai/lama/solver/amg
 .*.swp
 *.*~

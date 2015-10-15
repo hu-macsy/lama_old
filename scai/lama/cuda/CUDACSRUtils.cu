@@ -53,6 +53,7 @@
 
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/bind.hpp>
+#include <scai/common/Constants.hpp>
 
 #include <scai/common/cuda/CUDAError.hpp>
 
@@ -278,7 +279,7 @@ namespace lama
 
         // cscJA is now sorted, can become an offset array
 
-        CUDACOOUtils::ia2offsets( cscIA, numColumns, numDiagonals, cooIA, numValues );
+        CUDACOOUtils::ia2offsets( cscIA, numColumns, 0, cooIA, numValues );
 
         SCAI_CUDA_RT_CALL( cudaFree( cooIA ), "free tmp cooIA" )
     }
@@ -1012,7 +1013,7 @@ namespace lama
         {
             vectorBindTexture( x );
 
-            if ( alpha == 1 && beta == 1 )
+            if ( alpha == scai::common::constants::ONE && beta == scai::common::constants::ONE )
             {
                 // result = A * x_d + y_d
 
@@ -1022,7 +1023,7 @@ namespace lama
                 normal_gemv_kernel_alpha_one_beta_one<ValueType, true> <<< dimGrid, dimBlock, 0, stream >>>
                 ( result, x, y, csrValues, csrIA, csrJA, numRows );
             }
-            else if ( alpha == 1 && beta == 0 )
+            else if ( alpha == scai::common::constants::ONE && beta == scai::common::constants::ZERO )
             {
                 // result = A * x_d
 
@@ -1032,7 +1033,7 @@ namespace lama
                 normal_gemv_kernel_alpha_one_beta_zero<ValueType, true> <<< dimGrid, dimBlock, 0, stream >>>
                 ( result, x, y, csrValues, csrIA, csrJA, numRows );
             }
-            else if ( alpha == 0 && beta == 1 )
+            else if ( alpha == scai::common::constants::ZERO && beta == scai::common::constants::ONE )
             {
                 // result = y_d
 
@@ -1041,7 +1042,7 @@ namespace lama
 
                 assign_kernel<ValueType, true> <<< dimGrid, dimBlock, 0, stream >>>( result, y, numRows );
             }
-            else if ( alpha == 1 )
+            else if ( alpha == scai::common::constants::ONE )
             {
                 // result = A * x_d + beta * y_d
                 SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gemv_kernel_alpha_one<ValueType, true>, cudaFuncCachePreferL1 ),
@@ -1050,7 +1051,7 @@ namespace lama
                 normal_gemv_kernel_alpha_one<ValueType, true> <<< dimGrid, dimBlock, 0, stream >>>
                 ( result, x, y, beta, csrValues, csrIA, csrJA, numRows );
             }
-            else if ( alpha == 0 )
+            else if ( alpha == scai::common::constants::ZERO )
             {
                 // result = A * x_d + beta * y_d
                 SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( scale_kernel<ValueType, true>, cudaFuncCachePreferL1 ),
@@ -1058,7 +1059,7 @@ namespace lama
 
                 scale_kernel<ValueType, true> <<< dimGrid, dimBlock, 0, stream >>>( result, y, beta, numRows );
             }
-            else if ( beta == 1 )
+            else if ( beta == scai::common::constants::ONE )
             {
                 // result = alpha * A * x_d + y_d
                 SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gemv_kernel_beta_one<ValueType, true>, cudaFuncCachePreferL1 ),
@@ -1067,7 +1068,7 @@ namespace lama
                 normal_gemv_kernel_beta_one<ValueType, true> <<< dimGrid, dimBlock, 0, stream >>>
                 ( result, x, y, alpha, csrValues, csrIA, csrJA, numRows );
             }
-            else if ( beta == 0 )
+            else if ( beta == scai::common::constants::ZERO )
             {
                 // result = alpha * A * x_d + y_d
                 SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gemv_kernel_beta_zero<ValueType, true>, cudaFuncCachePreferL1 ),
@@ -1088,7 +1089,7 @@ namespace lama
         }
         else
         {
-            if ( alpha == 1 && beta == 1 )
+            if ( alpha == scai::common::constants::ONE && beta == scai::common::constants::ONE )
             {
                 // result = A * x_d + y_d
 
@@ -1098,7 +1099,7 @@ namespace lama
                 normal_gemv_kernel_alpha_one_beta_one<ValueType, false> <<< dimGrid, dimBlock, 0, stream >>>
                 ( result, x, y, csrValues, csrIA, csrJA, numRows );
             }
-            else if ( alpha == 1 && beta == 0 )
+            else if ( alpha == scai::common::constants::ONE && beta == scai::common::constants::ZERO )
             {
                 // result = A * x_d
 
@@ -1108,7 +1109,7 @@ namespace lama
                 normal_gemv_kernel_alpha_one_beta_zero<ValueType, false> <<< dimGrid, dimBlock, 0, stream >>>
                 ( result, x, y, csrValues, csrIA, csrJA, numRows );
             }
-            else if ( alpha == 0 && beta == 1 )
+            else if ( alpha == scai::common::constants::ZERO && beta == scai::common::constants::ONE )
             {
                 // result = y_d
 
@@ -1117,7 +1118,7 @@ namespace lama
 
                 assign_kernel<ValueType, false> <<< dimGrid, dimBlock, 0, stream >>>( result, y, numRows );
             }
-            else if ( alpha == 1 )
+            else if ( alpha == scai::common::constants::ONE )
             {
                 // result = A * x_d + beta * y_d
                 SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gemv_kernel_alpha_one<ValueType, false>, cudaFuncCachePreferL1 ),
@@ -1126,7 +1127,7 @@ namespace lama
                 normal_gemv_kernel_alpha_one<ValueType, false> <<< dimGrid, dimBlock, 0, stream >>>
                 ( result, x, y, beta, csrValues, csrIA, csrJA, numRows );
             }
-            else if ( alpha == 0 )
+            else if ( alpha == scai::common::constants::ZERO )
             {
                 // result = beta * y_d
                 SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( scale_kernel<ValueType, false>, cudaFuncCachePreferL1 ),
@@ -1134,7 +1135,7 @@ namespace lama
 
                 scale_kernel<ValueType, false> <<< dimGrid, dimBlock, 0, stream >>>( result, y, beta, numRows );
             }
-            else if ( beta == 1 )
+            else if ( beta == scai::common::constants::ONE )
             {
                 // result = alpha * A * x_d + y_d
                 SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gemv_kernel_beta_one<ValueType, false>, cudaFuncCachePreferL1 ),
@@ -1143,7 +1144,7 @@ namespace lama
                 normal_gemv_kernel_beta_one<ValueType, false> <<< dimGrid, dimBlock, 0, stream >>>
                 ( result, x, y, alpha, csrValues, csrIA, csrJA, numRows );
             }
-            else if ( beta == 0 )
+            else if ( beta == scai::common::constants::ZERO )
             {
                 // result = alpha * A * x_d
                 SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gemv_kernel_beta_zero<ValueType, false>, cudaFuncCachePreferL1 ),
@@ -1233,7 +1234,7 @@ namespace lama
         {
             vectorBindTexture( x );
 
-            if ( alpha == 1 && beta == 1 )
+            if ( alpha == scai::common::constants::ONE && beta == scai::common::constants::ONE )
             {
                 // result = A * x_d + y_d
 
@@ -1243,7 +1244,7 @@ namespace lama
                 normal_gevm_kernel_alpha_one_beta_one<ValueType, true> <<< dimGrid, dimBlock, 0, stream >>>
                 ( result, x, y, csrValues, csrIA, csrJA, numRows, numColumns );
             }
-            else if ( alpha == 1 && beta == 0 )
+            else if ( alpha == scai::common::constants::ONE && beta == scai::common::constants::ZERO )
             {
                 // result = A * x_d
 
@@ -1253,7 +1254,7 @@ namespace lama
                 normal_gevm_kernel_alpha_one_beta_zero<ValueType, true> <<< dimGrid, dimBlock, 0, stream >>>
                 ( result, x, y, csrValues, csrIA, csrJA, numRows, numColumns );
             }
-            else if ( alpha == 0 && beta == 1 )
+            else if ( alpha == scai::common::constants::ZERO && beta == scai::common::constants::ONE )
             {
                 // result = y_d
 
@@ -1262,7 +1263,7 @@ namespace lama
 
                 assign_kernel<ValueType, true> <<< dimGrid, dimBlock, 0, stream >>>( result, y, numColumns );
             }
-            else if ( alpha == 1 )
+            else if ( alpha == scai::common::constants::ONE )
             {
                 // result = A * x_d + beta * y_d
                 SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gevm_kernel_alpha_one<ValueType, true>, cudaFuncCachePreferL1 ),
@@ -1271,7 +1272,7 @@ namespace lama
                 normal_gevm_kernel_alpha_one<ValueType, true> <<< dimGrid, dimBlock, 0, stream >>>
                 ( result, x, y, beta, csrValues, csrIA, csrJA, numRows, numColumns );
             }
-            else if ( alpha == 0 )
+            else if ( alpha == scai::common::constants::ZERO )
             {
                 // result = beta * y_d
                 SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( scale_kernel<ValueType, true>, cudaFuncCachePreferL1 ),
@@ -1279,7 +1280,7 @@ namespace lama
 
                 scale_kernel<ValueType, true> <<< dimGrid, dimBlock, 0, stream >>>( result, y, beta, numColumns );
             }
-            else if ( beta == 1 )
+            else if ( beta == scai::common::constants::ONE )
             {
                 // result = alpha * A * x_d + y_d
                 SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gevm_kernel_beta_one<ValueType, true>, cudaFuncCachePreferL1 ),
@@ -1288,7 +1289,7 @@ namespace lama
                 normal_gevm_kernel_beta_one<ValueType, true> <<< dimGrid, dimBlock, 0, stream >>>
                 ( result, x, y, alpha, csrValues, csrIA, csrJA, numRows, numColumns );
             }
-            else if ( beta == 0 )
+            else if ( beta == scai::common::constants::ZERO )
             {
                 // result = alpha * A * x_d + y_d
                 SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gevm_kernel_beta_zero<ValueType, true>, cudaFuncCachePreferL1 ),
@@ -1309,7 +1310,7 @@ namespace lama
         }
         else
         {
-            if ( alpha == 1 && beta == 1 )
+            if ( alpha == scai::common::constants::ONE && beta == scai::common::constants::ONE )
             {
                 // result = A * x_d + y_d
 
@@ -1319,7 +1320,7 @@ namespace lama
                 normal_gevm_kernel_alpha_one_beta_one<ValueType, false> <<< dimGrid, dimBlock, 0, stream >>>
                 ( result, x, y, csrValues, csrIA, csrJA, numRows, numColumns );
             }
-            else if ( alpha == 1 && beta == 0 )
+            else if ( alpha == scai::common::constants::ONE && beta == scai::common::constants::ZERO )
             {
                 // result = A * x_d
 
@@ -1329,7 +1330,7 @@ namespace lama
                 normal_gevm_kernel_alpha_one_beta_zero<ValueType, false> <<< dimGrid, dimBlock, 0, stream >>>
                 ( result, x, y, csrValues, csrIA, csrJA, numRows, numColumns );
             }
-            else if ( alpha == 0 && beta == 1 )
+            else if ( alpha == scai::common::constants::ZERO && beta == scai::common::constants::ONE )
             {
                 // result = y_d
 
@@ -1338,7 +1339,7 @@ namespace lama
 
                 assign_kernel<ValueType, false> <<< dimGrid, dimBlock, 0, stream >>>( result, y, numColumns );
             }
-            else if ( alpha == 1 )
+            else if ( alpha == scai::common::constants::ONE )
             {
                 // result = A * x_d + beta * y_d
                 SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gevm_kernel_alpha_one<ValueType, false>, cudaFuncCachePreferL1 ),
@@ -1347,7 +1348,7 @@ namespace lama
                 normal_gevm_kernel_alpha_one<ValueType, false> <<< dimGrid, dimBlock, 0, stream >>>
                 ( result, x, y, beta, csrValues, csrIA, csrJA, numRows, numColumns );
             }
-            else if ( alpha == 0 )
+            else if ( alpha == scai::common::constants::ZERO )
             {
                 // result = beta * y_d
                 SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( scale_kernel<ValueType, false>, cudaFuncCachePreferL1 ),
@@ -1355,7 +1356,7 @@ namespace lama
 
                 scale_kernel<ValueType, false> <<< dimGrid, dimBlock, 0, stream >>>( result, y, beta, numColumns );
             }
-            else if ( beta == 1 )
+            else if ( beta == scai::common::constants::ONE )
             {
                 // result = alpha * A * x_d + y_d
                 SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gevm_kernel_beta_one<ValueType, false>, cudaFuncCachePreferL1 ),
@@ -1364,7 +1365,7 @@ namespace lama
                 normal_gevm_kernel_beta_one<ValueType, false> <<< dimGrid, dimBlock, 0, stream >>>
                 ( result, x, y, alpha, csrValues, csrIA, csrJA, numRows, numColumns );
             }
-            else if ( beta == 0 )
+            else if ( beta == scai::common::constants::ZERO )
             {
                 // result = alpha * A * x_d
                 SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gevm_kernel_beta_zero<ValueType, false>, cudaFuncCachePreferL1 ),
@@ -1449,7 +1450,7 @@ namespace lama
         {
             vectorBindTexture( x );
 
-            if ( alpha == 1 )
+            if ( alpha == scai::common::constants::ONE )
             {
                 sparse_gemv_kernel_alpha_one<ValueType, true> <<< dimGrid, dimBlock, 0, stream >>>
                 ( result, x, alpha, csrValues, csrIA, csrJA, rowIndexes, numNonZeroRows );
@@ -1462,7 +1463,7 @@ namespace lama
         }
         else
         {
-            if ( alpha == 1 )
+            if ( alpha == scai::common::constants::ONE )
             {
                 sparse_gemv_kernel_alpha_one<ValueType, false> <<< dimGrid, dimBlock, 0, stream >>>
                 ( result, x, alpha, csrValues, csrIA, csrJA, rowIndexes, numNonZeroRows );
@@ -1538,7 +1539,7 @@ namespace lama
         {
             vectorBindTexture( x );
 
-            if ( alpha == 1 )
+            if ( alpha == scai::common::constants::ONE )
             {
                 sparse_gevm_kernel_alpha_one<ValueType, true> <<< dimGrid, dimBlock, 0, stream >>>
                 ( result, x, csrValues, csrIA, csrJA, rowIndexes, numColumns, numNonZeroRows );
@@ -1551,7 +1552,7 @@ namespace lama
         }
         else
         {
-            if ( alpha == 1 )
+            if ( alpha == scai::common::constants::ONE )
             {
                 sparse_gevm_kernel_alpha_one<ValueType, false> <<< dimGrid, dimBlock, 0, stream >>>
                 ( result, x, csrValues, csrIA, csrJA, rowIndexes, numColumns, numNonZeroRows );

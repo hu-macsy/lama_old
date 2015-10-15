@@ -190,7 +190,7 @@ ValueType CUDABLAS1::nrm2( IndexType n, const ValueType* x_d, IndexType incX, Sy
 
     if( incX <= 0 )
     {
-        return 0.0;
+        return static_cast<ValueType>(0.0);
     }
 
     SCAI_LOG_DEBUG( logger, "nrm2<" << getScalarType<ValueType>() << "> of x[" << n << "]" )
@@ -272,7 +272,7 @@ ValueType CUDABLAS1::asum( const IndexType n, const ValueType* x_d, const IndexT
 
     if( incX <= 0 )
     {
-        return 0.0;
+        return static_cast<ValueType>(0.0);
     }
 
     SCAI_LOG_DEBUG( logger, "asum<" << getScalarType<ValueType>() << "> of x[" << n << "]" )
@@ -685,7 +685,7 @@ ValueType CUDABLAS1::dot(
 
     if( ( incX <= 0 ) || ( incY <= 0 ) )
     {
-        return 0.0;
+        return static_cast<ValueType>(0.0);
     }
 
     SCAI_CHECK_CUDA_ACCESS

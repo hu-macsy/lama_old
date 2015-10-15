@@ -38,10 +38,10 @@
 #include <boost/regex.hpp>
 
 /* Including all headerfiles of testcases */
-#include <test/NormTest.hpp>
-#include <test/MatrixStorageTest.hpp>
-#include <test/SparseMatrixTest.hpp>
-#include <test/distributed/CommunicatorTest.hpp>
+#include <scai/lama/test/NormTest.hpp>
+#include <scai/lama/test/MatrixStorageTest.hpp>
+#include <scai/lama/test/SparseMatrixTest.hpp>
+#include <scai/lama/test/distributed/CommunicatorTest.hpp>
 
 #include <list>
 #include <string>

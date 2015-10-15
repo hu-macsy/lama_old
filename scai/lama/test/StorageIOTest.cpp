@@ -37,7 +37,7 @@
 #include <scai/lama/StorageIO.hpp>
 #include <scai/lama/storage/CSRStorage.hpp>
 
-#include "Configuration.hpp"
+#include <scai/lama/test/Configuration.hpp>
 
 using namespace scai::lama;
 using namespace scai::hmemo;

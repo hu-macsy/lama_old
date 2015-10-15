@@ -41,8 +41,8 @@
 #include <scai/lama/distribution/NoDistribution.hpp>
 #include <scai/lama/expression/MatrixExpressions.hpp>
 
-#include <test/Configuration.hpp>
-#include <test/TestSparseMatrices.hpp>
+#include <scai/lama/test/Configuration.hpp>
+#include <scai/lama/test/TestSparseMatrices.hpp>
 
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 #include <scai/lama/matrix/ELLSparseMatrix.hpp>
@@ -53,8 +53,8 @@
 
 #include <scai/lama/matutils/MatrixCreator.hpp>
 
-#include <test/SameMatrixHelper.hpp>
-#include <test/TestSparseMatrices.hpp>
+#include <scai/lama/test/SameMatrixHelper.hpp>
+#include <scai/lama/test/TestSparseMatrices.hpp>
 
 using namespace scai::lama;
 using namespace scai::hmemo;
@@ -360,7 +360,29 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( FullConstructorTest, MatrixType, SparseMatrixType
     for ( IndexType i = 0; i < numLocalRows + 1; ++i )
     {
         iaLocal[i] = iaLocalRead[i];
-        iaHalo[i] = iaHaloRead[i];
+        SCAI_LOG_INFO( logger, "local: ia[ " << i << " ] = " << iaLocal[i] )
+    }
+
+    // Be careful, halo might be 0 x 0, so we have now iaHalo
+
+    if ( haloSt.getNumRows() == 0 )
+    {
+        SCAI_LOG_INFO( logger, "local: ia[ 0 .. " << numLocalRows << " + 1 ] = 0 " )
+
+        for ( IndexType i = 0; i < numLocalRows + 1; ++i )
+        {
+            iaHalo[i] = 0;
+        }
+    }
+    else
+    {
+        BOOST_REQUIRE_EQUAL( numLocalRows, haloSt.getNumRows() );
+
+        for ( IndexType i = 0; i < numLocalRows + 1; ++i )
+        {
+            iaHalo[i] = iaHaloRead[i];
+            SCAI_LOG_INFO( logger, "halo: ia[ " << i << " ] = " << iaHalo[i] )
+        }
     }
 
     for ( IndexType i = 0; i < numLocalValues; ++i )

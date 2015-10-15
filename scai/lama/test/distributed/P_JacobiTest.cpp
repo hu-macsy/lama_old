@@ -28,7 +28,6 @@
  * @brief Contains the implementation of the class P_JacobiTest.
  * @author: Alexander Büchel, Matthias Makulla
  * @date 27.02.2012
- * @since 1.0.0
  **/
 
 #include <boost/test/unit_test.hpp>
@@ -37,6 +36,7 @@
 #include <scai/lama/solver/DefaultJacobi.hpp>
 #include <scai/lama/solver/criteria/IterationCount.hpp>
 #include <scai/lama/solver/TrivialPreconditioner.hpp>
+#include <scai/lama/solver/logger/CommonLogger.hpp>
 
 #include <scai/lama/DenseVector.hpp>
 
@@ -92,7 +92,18 @@ void testSolveWithoutPreconditionMethod( ContextPtr loc )
     const IndexType N1 = 4;
     const IndexType N2 = 4;
     SCAI_LOG_INFO( logger, "Problem size = " << N1 << " x " << N2 );
+
     DefaultJacobi jacobiSolver( "JacobiTestSolver" );
+
+    if ( SCAI_LOG_INFO_ON( logger ) )
+    {
+        LoggerPtr slogger( new CommonLogger(
+                               "<Jacobi>: ",
+                               scai::lama::LogLevel::solverInformation,
+                               scai::lama::LoggerWriteBehaviour::toConsoleOnly ) );
+        jacobiSolver.setLogger( slogger );
+    }
+
     CSRSparseMatrix<ValueType> helpcoefficients;
     MatrixCreator<ValueType>::buildPoisson2D( helpcoefficients, 9, N1, N2 );
     // created matrix must have diagonal property
@@ -105,8 +116,8 @@ void testSolveWithoutPreconditionMethod( ContextPtr loc )
     // converted redistributed matrix must have kept the diagonal property
     BOOST_REQUIRE( coefficients.hasDiagonalProperty() );
     coefficients.setContext( loc );
-    DenseVector<ValueType> solution( dist, 2.0 );
-    const DenseVector<ValueType> exactSolution( dist, 1.0 );
+    DenseVector<ValueType> solution( dist, 1.0 );
+    const DenseVector<ValueType> exactSolution( dist, 2.0 );
     DenseVector<ValueType> rhs( dist, 1.0 );
     rhs = coefficients * exactSolution;
     //initialize
@@ -130,10 +141,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( testSolveWithoutPreconditioning, ValueType, test_
         GETCONTEXT( context );
         testSolveWithoutPreconditionMethod< CSRSparseMatrix<ValueType> >( context );
         testSolveWithoutPreconditionMethod< ELLSparseMatrix<ValueType> >( context );
-        //testSolveWithoutPreconditionMethod< DIASparseMatrix<ValueType> >( context );
+        // testSolveWithoutPreconditionMethod< DIASparseMatrix<ValueType> >( context );
         testSolveWithoutPreconditionMethod< JDSSparseMatrix<ValueType> >( context );
         testSolveWithoutPreconditionMethod< COOSparseMatrix<ValueType> >( context );
-        //testSolveWithoutPreconditionMethod< DenseMatrix<ValueType> >( context );
+        // testSolveWithoutPreconditionMethod< DenseMatrix<ValueType> >( context );
     }
 }
 
@@ -143,11 +154,19 @@ template<typename MatrixType>
 void testSolveWithPreconditionMethod( ContextPtr loc )
 {
     typedef typename MatrixType::MatrixValueType ValueType;
-//    LoggerPtr slogger( new CommonLogger(
-//        "<SOR>: ",
-//        lama::LogLevel::solverInformation,
-//        lama::LoggerWriteBehaviour::toConsoleOnly ) );
-    DefaultJacobi jacobiSolver( "JacobiTestSolver"/*, slogger */ );
+
+    DefaultJacobi jacobiSolver( "JacobiTestSolver" );
+
+    if ( SCAI_LOG_INFO_ON( logger ) )
+    {
+        LoggerPtr slogger( new CommonLogger(
+                               "<Jacobi + Precond>: ",
+                               scai::lama::LogLevel::solverInformation,
+                               scai::lama::LoggerWriteBehaviour::toConsoleOnly ) );
+        jacobiSolver.setLogger( slogger );
+    }
+
+    CSRSparseMatrix<ValueType> helpcoefficients;
     const IndexType N1 = 4;
     const IndexType N2 = 4;
     SCAI_LOG_INFO( logger, "Problem size = " << N1 << " x " << N2 );
@@ -158,7 +177,7 @@ void testSolveWithPreconditionMethod( ContextPtr loc )
     coefficients.setContext( loc );
     DenseVector<ValueType> solution( dist, 1.0 );
     const DenseVector<ValueType> exactSolution( dist, 2.0 );
-    DenseVector<ValueType> rhs( dist, 0.0 );
+    DenseVector<ValueType> rhs( dist, 1.0 );
     rhs = coefficients * exactSolution;
     IndexType expectedIterations = 100;
     CriterionPtr criterion( new IterationCount( expectedIterations ) );
@@ -170,6 +189,7 @@ void testSolveWithPreconditionMethod( ContextPtr loc )
     BOOST_CHECK_EQUAL( expectedIterations, jacobiSolver.getIterationCount() );
     DenseVector<ValueType> diff( solution - exactSolution );
     Scalar s = maxNorm( diff );
+    SCAI_LOG_INFO( logger, "max norm ( solution - exactSolution ) = " << s.getValue<ValueType>() );
     BOOST_CHECK( s.getValue<ValueType>() < 1E-6 );
 }
 
@@ -182,10 +202,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( testSolveWithPrecondition, ValueType, test_types 
         testSolveWithPreconditionMethod< ELLSparseMatrix<ValueType> >( context );
         testSolveWithPreconditionMethod< COOSparseMatrix<ValueType> >( context );
         //@todo: DIA has problems with diagonal property after redistribute
-        //testSolveWithPreconditionMethod< DIASparseMatrix<ValueType> >( context );
+        // testSolveWithPreconditionMethod< DIASparseMatrix<ValueType> >( context );
         testSolveWithPreconditionMethod< JDSSparseMatrix<ValueType> >( context );
         //@todo: Dense cannot be constructed by SparseMatrix
-        testSolveWithPreconditionMethod< DenseMatrix<ValueType> >( context );
+        // testSolveWithPreconditionMethod< DenseMatrix<ValueType> >( context );
     }
 }
 

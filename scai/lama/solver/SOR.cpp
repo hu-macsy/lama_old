@@ -191,18 +191,20 @@ void SOR::iterateImpl()
         x.updateHalo( Ahalo );
     }
 
-    WriteAccess<ValueType> xAcc( x.getLocalValues() );
-    ReadAccess<ValueType> bAcc( b.getLocalValues() );
-    ReadAccess<ValueType> aValues( csrA.getValues() );
-    ReadAccess<IndexType> ia( csrA.getIA() );
-    ReadAccess<IndexType> ja( csrA.getJA() );
+    ContextPtr hostContext = Context::getHostPtr();
+
+    WriteAccess<ValueType> xAcc( x.getLocalValues(), hostContext );
+    ReadAccess<ValueType> bAcc( b.getLocalValues(), hostContext );
+    ReadAccess<ValueType> aValues( csrA.getValues(), hostContext );
+    ReadAccess<IndexType> ia( csrA.getIA(), hostContext );
+    ReadAccess<IndexType> ja( csrA.getJA(), hostContext );
 
     // Getting access to arrays is safe even if not needed
 
-    ReadAccess<ValueType> aHaloValues( csrAHalo.getValues() );
-    ReadAccess<IndexType> haloIa( csrAHalo.getIA() );
-    ReadAccess<IndexType> haloJa( csrAHalo.getJA() );
-    ReadAccess<ValueType> xHalo( x.getHaloValues() );
+    ReadAccess<ValueType> aHaloValues( csrAHalo.getValues(), hostContext );
+    ReadAccess<IndexType> haloIa( csrAHalo.getIA(), hostContext );
+    ReadAccess<IndexType> haloJa( csrAHalo.getJA(), hostContext );
+    ReadAccess<ValueType> xHalo( x.getHaloValues(), hostContext );
 
     ValueType omega = mOmega.getValue<ValueType>();
 

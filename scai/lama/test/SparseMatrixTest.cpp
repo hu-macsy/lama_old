@@ -31,7 +31,7 @@
  * @since 1.0.0
  */
 
-#include "SparseMatrixTest.hpp"
+#include <scai/lama/test/SparseMatrixTest.hpp>
 
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 #include <scai/lama/matrix/COOSparseMatrix.hpp>
@@ -46,8 +46,8 @@
 #include <scai/lama/distribution/BlockDistribution.hpp>
 #include <scai/lama/distribution/CyclicDistribution.hpp>
 
-#include <test/TestSparseMatrices.hpp>
-#include <test/Configuration.hpp>
+#include <scai/lama/test/TestSparseMatrices.hpp>
+#include <scai/lama/test/Configuration.hpp>
 
 #include <scai/lama/NoCommunicator.hpp>
 
@@ -55,8 +55,8 @@
 #include <scai/lama/expression/MatrixExpressions.hpp>
 
 #include <scai/common/test/TestMacros.hpp>
-#include <test/SparseMatrixHelper.hpp>
-#include <test/SameMatrixHelper.hpp>
+#include <scai/lama/test/SparseMatrixHelper.hpp>
+#include <scai/lama/test/SameMatrixHelper.hpp>
 
 using namespace scai::lama;
 using namespace scai::hmemo;

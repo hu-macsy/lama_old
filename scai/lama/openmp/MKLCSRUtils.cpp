@@ -88,7 +88,7 @@ void MKLCSRUtils::normalGEMV(
         COMMON_THROWEXCEPTION( "asynchronous execution should be done by LAMATask before" )
     }
 
-    if( y != result && beta != 0 )
+    if( y != result && beta != 0.0f )
     {
         OpenMPUtils::set( result, y, numRows );
     }
@@ -141,7 +141,7 @@ void MKLCSRUtils::normalGEMV(
         COMMON_THROWEXCEPTION( "asynchronous execution should be done by LAMATask before" )
     }
 
-    if( y != result && beta != 0 )
+    if( y != result && beta != 0.0 )
     {
         OpenMPUtils::set( result, y, numRows );
     }

@@ -131,6 +131,9 @@ message ( STATUS "LAMA Version : ${LAMA_VERSION} ${LAMA_VERSION_NAME}" )
 message ( STATUS "Build Type   : ${CMAKE_BUILD_TYPE}" )
 message ( STATUS "Library Type : ${SCAI_LIBRARY_TYPE}" )
 message ( STATUS "ASSERT Level : ${SCAI_ASSERT_LEVEL}" )
+if    ( USE_CODE_COVERAGE )
+	message ( STATUS "CODE COVERAGE: ${USE_CODE_COVERAGE}" )
+endif ( USE_CODE_COVERAGE )
 message ( STATUS "" )
 
 # LAMA Cuda
