@@ -87,6 +87,16 @@ set ( SCAI_TASKING_LIBRARY scai_tasking
 set ( SCAI_TASKING_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/tasking
       CACHE PATH "tasking include directory" )
 
+add_subdirectory( kernel )
+
+### Set variables for Findscai_kernel so other projects can use it 
+
+set ( SCAI_TASKING_LIBRARY scai_kernel
+      CACHE FILEPATH  "library for thread kernel" )
+
+set ( SCAI_TASKING_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/kernel
+      CACHE PATH "kernel include directory" )
+
 add_subdirectory( hmemo )
 
 ### Set variables for Findscai_hmemo so further projects can use it 
