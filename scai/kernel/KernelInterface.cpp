@@ -38,66 +38,6 @@ namespace scai
 namespace interface
 {
 
-_ContextFunction:: _ContextFunction()
-{
-    for ( int i = 0; i < context::MaxContext; ++i )
-    {
-        mContextFuncArray[i] =  NULL;
-    }
-}
-
-_ContextFunction::_ContextFunction( const _ContextFunction& other )
-{
-    std::cout << "copy constructor _kernel routine" << std::endl;
-
-    for ( int i = 0; i < context::MaxContext; ++i )
-    {
-        mContextFuncArray[i] = other.mContextFuncArray[i];
-    }
-}
-
-ContextType _ContextFunction::validContext( ContextType preferedCtx )
-{
-    if ( mContextFuncArray[preferedCtx] != NULL )
-    {
-        return preferedCtx;
-    }
-
-    for ( int i = 0; i < context::MaxContext; ++i )
-    {
-        if ( mContextFuncArray[i] != NULL )
-        {
-            return static_cast<ContextType>( i );
-        }
-    }
-
-    // throw exception
-
-    return static_cast<ContextType>( context::MaxContext );
-}
-
-ContextType _ContextFunction::validContext( const _ContextFunction& other, ContextType preferedCtx )
-{
-    if ( mContextFuncArray[preferedCtx] != NULL && other.mContextFuncArray[preferedCtx] != NULL )
-    {
-        std::cout << "both valid at context = " << preferedCtx << std::endl;
-
-        return preferedCtx;
-    }
-
-    for ( int i = 0; i < context::MaxContext; ++i )
-    {
-        if ( mContextFuncArray[i] != NULL && other.mContextFuncArray[i] != NULL )
-        {
-            return static_cast<ContextType>( i );
-        }
-    }
-
-    // throw exception
-
-    return static_cast<ContextType>( context::MaxContext );
-}
-
 // define static variable for InterfaceMap here
 
 KernelInterface::InterfaceMap KernelInterface::theInterfaceMap;

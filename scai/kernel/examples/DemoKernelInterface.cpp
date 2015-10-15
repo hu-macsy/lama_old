@@ -1,0 +1,175 @@
+
+#include <scai/kernel/KernelInterface.hpp>
+
+#include <iostream>
+
+using namespace scai::interface;
+
+struct UtilsInterface
+{
+    template<typename ValueType>
+    struct isSorted
+    {
+        typedef bool ( *FuncType ) ( const ValueType array[], const int n, bool ascending );
+
+        static inline const char* getId() { return "Utils.IsSorted"; }
+    };
+};
+
+static bool isSorted( const double a[], int N, bool ascending )
+{
+    std::cout << "isSorted<double>, N = " << N << ", ascending = " << ascending << std::endl;
+
+    bool is = true;
+    for ( int i = 0; i < N-1; ++i )
+    {
+        if ( ascending )
+        {
+            is = a[i] <= a[i+1];
+        }
+        else
+        {
+            is = a[i] >= a[i+1];
+        }
+        if ( !is )
+        {
+            break;
+        }
+    }
+ 
+    return is;
+}
+
+template<typename ValueType>
+void scale( ValueType mValues[], const ValueType value, const int n )
+{
+    if( value == static_cast<ValueType>( 1 ) )
+    {
+        return;
+    }
+
+    if ( value == 0 )
+    {
+        for( int i = 0; i < n; i++ )
+        {
+            mValues[i] = 0;
+        }
+    }
+    else
+    {
+        for( int i = 0; i < n; i++ )
+        {
+            mValues[i] *= value;
+        }
+    }
+}
+
+static void setInterface()
+{
+    std::cout << std::endl;
+    std::cout << "setInterface: start" << std::endl;
+
+    // KernelInterface::set<UtilsInterface::isSorted<double> >( isSorted, context::Host );
+ 
+    KernelInterface::set( isSorted, "Utils.isSorted", context::Host );
+
+    KernelInterface::set( scale<float>, "Utils.scale", context::Host );
+    KernelInterface::set( scale<float>, "Utils.scale", context::CUDA );
+    KernelInterface::set( scale<double>, "Utils.scale", context::Host );
+    KernelInterface::set( scale<double>, "Utils.scale", context::CUDA );
+
+    std::cout << "setInterface: done" << std::endl;
+    KernelInterface::printAll();
+}
+
+static void example1()
+{
+    std::cout << std::endl;
+    std::cout << "Example 1:" << std::endl;
+    std::cout << "==========" << std::endl;
+
+    typedef bool ( *SigIsSorted ) ( const double*, int N, bool ascending );
+
+    SigIsSorted isSorted;
+
+    // double ( *isSorted ) ( const double*, int, bool );
+    
+    KernelInterface::get( isSorted, "Utils.isSorted", context::Host );
+
+    double a[] = { 3.0, 4.0, 5.0 };
+  
+    bool okay = isSorted( a, 3, true );
+
+    std::cout << "example1: isSorted = " << okay << std::endl;
+}
+
+static void example2()
+{
+    std::cout << std::endl;
+    std::cout << "Example 2:" << std::endl;
+    std::cout << "==========" << std::endl;
+
+    /* Alternative use ( not recommended for LAMA ):
+
+        typedef bool ( *SigIsSorted ) ( const double*, int, bool );
+    
+        static ContextFunction< SigIsSorted > isSorted( "Utils.isSorted" );
+    */
+
+    ContextFunctionByTrait< UtilsInterface::isSorted<double> > isSorted;
+
+    double a[] = { 3.0, 4.0, 2.0 };
+  
+    bool okay = isSorted( context::Host )( a, 3, true );
+
+    std::cout << "example2: isSorted = " << okay << std::endl;
+}
+
+template<typename ValueType>
+static void example3()
+{
+    std::cout << std::endl;
+    std::cout << "Example 3:" << std::endl;
+    std::cout << "==========" << std::endl;
+
+    std::cout << "example3, ValueType = " << typeid( ValueType ).name() << std::endl;
+
+    typedef void ( *SigScale ) ( ValueType*, ValueType, int );
+
+    ValueType a[] = { 3, 4, 2 };
+    
+    static ContextFunction< SigScale > scale ( "Utils.scale" ) ;
+
+    scale( context::Host )( a, 10, 3 );
+
+    std::cout << "example3: scale: " << a[0] << ", " << a[1] << ", " << a[2] << std::endl;
+}
+
+static void example4()
+{
+    std::cout << std::endl;
+    std::cout << "Example 4:" << std::endl;
+    std::cout << "==========" << std::endl;
+
+    static ContextFunction< bool (*) ( const double*, int, bool ) > isSorted( "Utils.isSorted" );
+    static ContextFunction< void (*) ( double*, double, int ) > scale( "Utils.scale" );
+
+    std::cout << "isSorted: valid context = " << isSorted.validContext( context::CUDA ) << std::endl;
+    std::cout << "scale: valid context = " << scale.validContext( context::CUDA ) << std::endl;
+    std::cout << "scale, isSorted: valid context = " << scale.validContext( isSorted, context::CUDA ) << std::endl;
+
+    std::cout << std::endl;
+}
+
+int main()
+{
+    setInterface();
+
+    example1();
+    example2();
+
+    example3<float>();
+    example3<double>();
+
+    example4();
+}

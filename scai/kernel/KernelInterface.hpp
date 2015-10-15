@@ -31,7 +31,7 @@
  */
 #pragma once
 
-#include "ContextType.hpp"
+#include <scai/kernel/ContextFunction.hpp>
 
 #include <map>
 #include <string>
@@ -45,53 +45,6 @@ namespace scai
 
 namespace interface
 {
-
-/** Type definition of un untyped function pointer */
-
-typedef void ( *VoidFunction )();
-
-/* --------------------------------------------------------------------------- *
- * common base class for ContextFunction                                         *
- * --------------------------------------------------------------------------- */
-
-/** Common base class for template class ContextFunction 
- *
- *  An object of _ContextFunction contains a function pointer for each context
- *  where the function pointer might be NULL for unsupported context
- */
-
-class _ContextFunction
-{
-public:
-
-    /** Default constructor initializes all function pointers with NULL */
-
-    _ContextFunction();
-
-    _ContextFunction( const _ContextFunction& other );
-
-    void clear();   // sets all function pointers to NULL
-
-    inline VoidFunction get( ContextType ctx ) const
-    {
-        return mContextFuncArray[ ctx ];
-    }
-
-    inline void set( ContextType ctx, VoidFunction fn )
-    {
-        mContextFuncArray[ ctx ] = fn;
-    }
-
-    ContextType validContext( ContextType preferedCtx );
-
-    ContextType validContext( const _ContextFunction& other, ContextType preferedCtx );
-
-protected:
-
-    // array with function pointer for each context
-
-    VoidFunction mContextFuncArray[context::MaxContext];
-};
 
 /* --------------------------------------------------------------------------- *
  * template class for ContextFunction                                            *
@@ -180,7 +133,7 @@ private:
     {
         std::cout << "registerContextFunction, name = " << key.first.name() << ", " << key.second  << std::endl;
 
-        typename InterfaceMap::iterator it = theInterfaceMap.find( key );
+        InterfaceMap::iterator it = theInterfaceMap.find( key );
 
         if ( it == theInterfaceMap.end() )
         {
@@ -204,7 +157,7 @@ private:
 
     static void getContextFunction( _ContextFunction& contextFunction, const InterfaceKey& key )
     {
-        typename InterfaceMap::const_iterator it = theInterfaceMap.find( key );
+        InterfaceMap::const_iterator it = theInterfaceMap.find( key );
 
         if ( it != theInterfaceMap.end() )
         {
@@ -237,14 +190,26 @@ public:
     template<typename FunctionType>
     static void get( FunctionType& fn, const std::string& name, ContextType ctx )
     {
+        std::cout << "get function pointer for kernel routine " << name 
+                  << ", func type = " << typeid( FunctionType ).name() 
+                  << ", context = " << ctx << std::endl;
+
         InterfaceKey key( typeid( FunctionType ), name );
 
         typename InterfaceMap::const_iterator it = theInterfaceMap.find( key );
 
         if ( it != theInterfaceMap.end() )
         {
+            std::cout << "function registered" << std::endl;
+
             const _ContextFunction& routine = it->second;
             fn = ( FunctionType ) routine.get( ctx );   // cast required
+
+            std::cout << "function for context = " << fn << std::endl;
+        }
+        else
+        {
+            std::cout << "function never registered." << std::endl;
         }
     }
 
@@ -282,6 +247,17 @@ public:
 
             std::cout << "STOP" << std::endl;
             exit( - 1 );
+        }
+    }
+
+    static void printAll()
+    {
+        InterfaceMap::const_iterator it;
+
+        for ( it = theInterfaceMap.begin(); it != theInterfaceMap.end(); ++it )
+        {
+            std::cout << "Entry: id = " << it->first.second 
+                      << ", type = " << it->first.first.name() << std::endl; 
         }
     }
 
