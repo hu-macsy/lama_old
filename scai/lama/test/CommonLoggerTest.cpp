@@ -39,7 +39,7 @@
 
 #include <scai/lama/solver/logger/LoggerWriteBehaviour.hpp>
 
-#include <test/Configuration.hpp>
+#include <scai/lama/test/Configuration.hpp>
 
 using namespace scai::lama;
 using namespace scai::hmemo;

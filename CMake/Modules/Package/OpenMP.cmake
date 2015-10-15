@@ -31,8 +31,11 @@
  # @since 1.0.0
 ###
 
+### This module returns the following variables regarding OpenMP:
+###
 ### OPENMP_FOUND           - if OpenMP is found
 ### USE_OPENMP             - if OpenMP is enabled
+### OpenMP_CXX_FLAGS       - flags to be used for compiling/linking C++ code with OpenMP pragmas
 ### SCAI_OMP_SCHEDULE_FLAG - needed OpenMP scheduling flag 
 
 if    ( CMAKE_VERSION VERSION_LESS 2.8.7 )

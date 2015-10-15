@@ -31,7 +31,7 @@
  * @since 1.0.0
  */
 
-#include <test/distributed/P_SparseMatrixTest.hpp>
+#include <scai/lama/test/distributed/P_SparseMatrixTest.hpp>
 
 #include <boost/test/unit_test.hpp>
 #include <boost/mpl/list.hpp>

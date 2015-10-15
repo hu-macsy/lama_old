@@ -34,7 +34,7 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/mpl/list.hpp>
 
-#include <test/MatrixStorageTest.hpp>
+#include <scai/lama/test/MatrixStorageTest.hpp>
 #include <scai/common/test/TestMacros.hpp>
 
 #include <scai/lama/LAMAArrayUtils.hpp>

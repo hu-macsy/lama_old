@@ -37,8 +37,8 @@
 #include <scai/lama/distribution/MetisDistribution.hpp>
 
 #include <scai/common/test/TestMacros.hpp>
-#include <test/Configuration.hpp>
-#include <test/distributed/DistributionTest.hpp>
+#include <scai/lama/test/Configuration.hpp>
+#include <scai/lama/test/distributed/DistributionTest.hpp>
 
 #include <scai/lama/matrix/ELLSparseMatrix.hpp>
 #include <scai/lama/matrix/JDSSparseMatrix.hpp>

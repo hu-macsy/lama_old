@@ -31,8 +31,8 @@
  * @since 1.0.0
  **/
 
-#include <test/distributed/P_SparseMatrixTest.hpp>
-#include <test/SameMatrixHelper.hpp>
+#include <scai/lama/test/distributed/P_SparseMatrixTest.hpp>
+#include <scai/lama/test/SameMatrixHelper.hpp>
 
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 #include <scai/lama/matrix/ELLSparseMatrix.hpp>

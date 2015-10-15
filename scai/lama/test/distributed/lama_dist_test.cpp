@@ -38,9 +38,9 @@
 #include <boost/test/included/unit_test.hpp>
 #include <boost/regex.hpp>
 
-#include <test/distributed/CommunicatorTest.hpp>
-#include <test/distributed/P_SparseMatrixTest.hpp>
-#include <test/distributed/DistributionTest.hpp>
+#include <scai/lama/test/distributed/CommunicatorTest.hpp>
+#include <scai/lama/test/distributed/P_SparseMatrixTest.hpp>
+#include <scai/lama/test/distributed/DistributionTest.hpp>
 
 #include <list>
 #include <string>

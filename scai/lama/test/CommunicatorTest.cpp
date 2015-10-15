@@ -31,7 +31,7 @@
  * @since 1.0.0
  **/
 
-#include <test/distributed/CommunicatorTest.hpp>
+#include <scai/lama/test/distributed/CommunicatorTest.hpp>
 
 #include <scai/common/test/TestMacros.hpp>
 

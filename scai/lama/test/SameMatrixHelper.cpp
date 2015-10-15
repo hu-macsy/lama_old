@@ -31,7 +31,7 @@
  * @since 1.0.0
  */
 
-#include <test/SameMatrixHelper.hpp>
+#include <scai/lama/test/SameMatrixHelper.hpp>
 #include <scai/common/test/TestMacros.hpp>
 
 using namespace scai::lama;

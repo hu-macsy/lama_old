@@ -30,7 +30,7 @@
  * @date 22.02.2011
  * @since 1.0.0
  */
-#include <test/Configuration.hpp>
+#include <scai/lama/test/Configuration.hpp>
 
 #include <scai/logging.hpp>
 

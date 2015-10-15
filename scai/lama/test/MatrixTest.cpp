@@ -48,10 +48,10 @@
 #include <scai/lama/matutils/MatrixCreator.hpp>
 
 #include <scai/common/test/TestMacros.hpp>
-#include <test/SparseMatrixHelper.hpp>
-#include <test/Configuration.hpp>
-#include <test/SameMatrixHelper.hpp>
-#include <test/TestSparseMatrices.hpp>
+#include <scai/lama/test/SparseMatrixHelper.hpp>
+#include <scai/lama/test/Configuration.hpp>
+#include <scai/lama/test/SameMatrixHelper.hpp>
+#include <scai/lama/test/TestSparseMatrices.hpp>
 
 #include <cstring>
 

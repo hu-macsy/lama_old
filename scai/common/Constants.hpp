@@ -81,7 +81,7 @@ inline ComplexLongDouble getEps()
 template<typename ValueType>
 inline ValueType getConstant( const enum ConstantType& c )
 {
-    ValueType val;
+    ValueType val = -1;
     switch( c )
     {
         case ONE:
