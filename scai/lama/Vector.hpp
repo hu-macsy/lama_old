@@ -537,10 +537,6 @@ ContextPtr Vector::getContext() const
     return mContext;
 }
 
-} /* end namespace lama */
-
-} /* end namespace scai */
-
 /** @brief  stream output for key values of creator  */
 
 inline std::ostream& operator<<( std::ostream& stream, const scai::lama::VectorCreateKeyType& key )
@@ -548,3 +544,7 @@ inline std::ostream& operator<<( std::ostream& stream, const scai::lama::VectorC
     stream << "<" << key.first << ", " << key.second << ">";
     return stream;
 }
+
+} /* end namespace lama */
+
+} /* end namespace scai */
