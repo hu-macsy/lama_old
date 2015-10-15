@@ -65,22 +65,13 @@
     imag( static_cast<ValueType>( t.imag() ) );                                                         \
     return *this;
 
-#define COMPLEX_PLUS_REAL                                                                               \
-    real( real() + static_cast<ValueType>( t ) );                                                       \
+#define COMPLEX_OP_REAL( op )                                                                            \
+    real( real() op static_cast<ValueType>( t ) );                                                       \
     return *this;
 
-#define COMPLEX_PLUS_COMPLEX                                                                            \
-    real( real() + static_cast<ValueType>( t.real() ) );                                                \
-    imag( imag() + static_cast<ValueType>( t.imag() ) );                                                \
-    return *this;
-
-#define COMPLEX_MINUS_REAL                                                                              \
-    real( real() - static_cast<ValueType>( t ) );                                                       \
-    return *this;
-
-#define COMPLEX_MINUS_COMPLEX                                                                           \
-    real( real() - static_cast<ValueType>( t.real() ) );                                                \
-    imag( imag() - static_cast<ValueType>( t.imag() ) );                                                \
+#define COMPLEX_OP_COMPLEX( op )                                                                         \
+    real( real() op static_cast<ValueType>( t.real() ) );                                                \
+    imag( imag() op static_cast<ValueType>( t.imag() ) );                                                \
     return *this;
 
 #define COMPLEX_MULTIPLY_REAL                                                                           \
@@ -122,6 +113,14 @@
     this->real( static_cast<ValueType>( value ) );                                                      \
     this->imag( static_cast<ValueType>( 0 ) );
 
+#define COMPLEX_CONSTRUCTOR_REAL2                                                                       \
+    this->real( static_cast<ValueType>( value1 ) );                                                     \
+    this->imag( static_cast<ValueType>( value2 ) );
+
+#define COMPLEX_CONSTRUCTOR_COMPLEX                                                                     \
+    this->real( static_cast<ValueType>( value.real() ) );                                               \
+    this->imag( static_cast<ValueType>( value.imag() ) );
+
 /*
  * Macros which build the operators, the macros above will be used for the functionality
  * The macros with the suffix CUDA are getting in an cuda environment the prefix __host__ __device__
@@ -133,14 +132,26 @@
 
 #define COMPLEX_CONSTRUCTOR_CUDA( type, method )                                                        \
     CUDA_CALLABLE_MEMBER                                                                                \
-    inline Complex( const type value )                                                                  \
+    inline Complex( type value )                                                                        \
     {                                                                                                   \
         method                                                                                          \
     }
 
 #define COMPLEX_CONSTRUCTOR_NONCUDA( type, method )                                                     \
-                                                                                                        \
-    inline Complex( const type value )                                                                  \
+    inline Complex( type value )                                                                        \
+    {                                                                                                   \
+        method                                                                                          \
+    }
+
+#define COMPLEX_CONSTRUCTOR_2_CUDA( type1, type2, method )                                              \
+    CUDA_CALLABLE_MEMBER                                                                                \
+    inline Complex( type1 value1, type2 value2 )                                                        \
+    {                                                                                                   \
+        method                                                                                          \
+    }
+
+#define COMPLEX_CONSTRUCTOR_2_NONCUDA( type1, type2, method )                                           \
+    inline Complex( type1 value1, type2 value2 )                                                        \
     {                                                                                                   \
         method                                                                                          \
     }
@@ -372,35 +383,11 @@ public:
      *
      * @param[in] real the real part this complex should represent
      */
-    COMPLEX_CONSTRUCTOR_CUDA(int, COMPLEX_CONSTRUCTOR_REAL)
-
-    /**
-     * @brief Constructs a complex representing the passed real
-     *
-     * @param[in] real the real part this complex should represent
-     */
-    COMPLEX_CONSTRUCTOR_CUDA(long, COMPLEX_CONSTRUCTOR_REAL)
-
-    /**
-     * @brief Constructs a complex representing the passed real
-     *
-     * @param[in] real the real part this complex should represent
-     */
-    COMPLEX_CONSTRUCTOR_CUDA(float, COMPLEX_CONSTRUCTOR_REAL)
-
-    /**
-     * @brief Constructs a complex representing the passed real
-     *
-     * @param[in] real the real part this complex should represent
-     */
-    COMPLEX_CONSTRUCTOR_CUDA(double, COMPLEX_CONSTRUCTOR_REAL)
-
-    /**
-     * @brief Constructs a complex representing the passed real
-     *
-     * @param[in] real the real part this complex should represent
-     */
-    COMPLEX_CONSTRUCTOR_NONCUDA(long double, COMPLEX_CONSTRUCTOR_REAL)
+    COMPLEX_CONSTRUCTOR_CUDA( const int, COMPLEX_CONSTRUCTOR_REAL)
+    COMPLEX_CONSTRUCTOR_CUDA( const long, COMPLEX_CONSTRUCTOR_REAL)
+    COMPLEX_CONSTRUCTOR_CUDA( const float, COMPLEX_CONSTRUCTOR_REAL)
+    COMPLEX_CONSTRUCTOR_CUDA( const double, COMPLEX_CONSTRUCTOR_REAL)
+    COMPLEX_CONSTRUCTOR_NONCUDA( const long double, COMPLEX_CONSTRUCTOR_REAL)
 
     /**
      * @brief Constructs a complex representing the passed real and imaginary part
@@ -408,46 +395,51 @@ public:
      * @param[in] real the real part this complex should represent
      * @param[in] imag the imaginary part this complex should represent
      */
-    template<typename OtherValueType1,typename OtherValueType2>
-    CUDA_CALLABLE_MEMBER inline Complex( const OtherValueType1 real, const OtherValueType2 imag )
-    {
-        this->real( static_cast<ValueType>( real ) );
-        this->imag( static_cast<ValueType>( imag ) );
-    }
+	COMPLEX_CONSTRUCTOR_2_CUDA( const int, const int, COMPLEX_CONSTRUCTOR_REAL2 )
+	COMPLEX_CONSTRUCTOR_2_CUDA( const int, const long, COMPLEX_CONSTRUCTOR_REAL2 )
+	COMPLEX_CONSTRUCTOR_2_CUDA( const int, const float, COMPLEX_CONSTRUCTOR_REAL2 )
+	COMPLEX_CONSTRUCTOR_2_CUDA( const int, const double, COMPLEX_CONSTRUCTOR_REAL2 )
+	COMPLEX_CONSTRUCTOR_2_NONCUDA( const int, const long double, COMPLEX_CONSTRUCTOR_REAL2 )
+
+	COMPLEX_CONSTRUCTOR_2_CUDA( const long, const int, COMPLEX_CONSTRUCTOR_REAL2 )
+	COMPLEX_CONSTRUCTOR_2_CUDA( const long, const long, COMPLEX_CONSTRUCTOR_REAL2 )
+	COMPLEX_CONSTRUCTOR_2_CUDA( const long, const float, COMPLEX_CONSTRUCTOR_REAL2 )
+	COMPLEX_CONSTRUCTOR_2_CUDA( const long, const double, COMPLEX_CONSTRUCTOR_REAL2 )
+	COMPLEX_CONSTRUCTOR_2_NONCUDA( const long, const long double, COMPLEX_CONSTRUCTOR_REAL2 )
+
+	COMPLEX_CONSTRUCTOR_2_CUDA( const float, const int, COMPLEX_CONSTRUCTOR_REAL2 )
+	COMPLEX_CONSTRUCTOR_2_CUDA( const float, const long, COMPLEX_CONSTRUCTOR_REAL2 )
+	COMPLEX_CONSTRUCTOR_2_CUDA( const float, const float, COMPLEX_CONSTRUCTOR_REAL2 )
+	COMPLEX_CONSTRUCTOR_2_CUDA( const float, const double, COMPLEX_CONSTRUCTOR_REAL2 )
+	COMPLEX_CONSTRUCTOR_2_NONCUDA( const float, const long double, COMPLEX_CONSTRUCTOR_REAL2 )
+
+	COMPLEX_CONSTRUCTOR_2_CUDA( const double, const int, COMPLEX_CONSTRUCTOR_REAL2 )
+	COMPLEX_CONSTRUCTOR_2_CUDA( const double, const long, COMPLEX_CONSTRUCTOR_REAL2 )
+	COMPLEX_CONSTRUCTOR_2_CUDA( const double, const float, COMPLEX_CONSTRUCTOR_REAL2 )
+	COMPLEX_CONSTRUCTOR_2_CUDA( const double, const double, COMPLEX_CONSTRUCTOR_REAL2 )
+	COMPLEX_CONSTRUCTOR_2_NONCUDA( const double, const long double, COMPLEX_CONSTRUCTOR_REAL2 )
+
+	COMPLEX_CONSTRUCTOR_2_NONCUDA( const long double, const int, COMPLEX_CONSTRUCTOR_REAL2 )
+	COMPLEX_CONSTRUCTOR_2_NONCUDA( const long double, const long, COMPLEX_CONSTRUCTOR_REAL2 )
+	COMPLEX_CONSTRUCTOR_2_NONCUDA( const long double, const float, COMPLEX_CONSTRUCTOR_REAL2 )
+	COMPLEX_CONSTRUCTOR_2_NONCUDA( const long double, const double, COMPLEX_CONSTRUCTOR_REAL2 )
+	COMPLEX_CONSTRUCTOR_2_NONCUDA( const long double, const long double, COMPLEX_CONSTRUCTOR_REAL2 )
 
     /**
      * @brief Constructs a scalar representing the passed complex value.
      *
      * @param[in]   value the value this complex should represent
      */
-    template<typename OtherValueType>
-    CUDA_CALLABLE_MEMBER inline Complex( const Complex<OtherValueType>& value )
-    {
-        this->real( static_cast<ValueType>( value.real() ) );
-        this->imag( static_cast<ValueType>( value.imag() ) );
-    }
-
-#ifdef __CUDACC__
-    template<typename OtherValueType>
-    CUDA_CALLABLE_MEMBER inline Complex( const thrust::device_reference<Complex<OtherValueType> >& value )
-    {
-        *this = static_cast<Complex<ValueType> >(value);
-        //this->real( static_cast<ValueType>( (value()).real() ) );
-        //this->imag( static_cast<ValueType>( (value()).imag() ) );
-    }
-#endif
-
-    /**
-     * @brief Constructs a scalar representing the passed complex value.
-     *
-     * @param[in]   value the value this complex should represent
-     */
-    CUDA_CALLABLE_MEMBER
-    inline Complex( volatile const Complex<ValueType>& value )
-    {
-        this->real( value.real() );
-        this->imag( value.imag() );
-    }
+	COMPLEX_CONSTRUCTOR_CUDA( const Complex<int>&, COMPLEX_CONSTRUCTOR_COMPLEX )
+	COMPLEX_CONSTRUCTOR_CUDA( volatile const Complex<int>&, COMPLEX_CONSTRUCTOR_COMPLEX )
+	COMPLEX_CONSTRUCTOR_CUDA( const Complex<long>&, COMPLEX_CONSTRUCTOR_COMPLEX )
+	COMPLEX_CONSTRUCTOR_CUDA( volatile const Complex<long>&, COMPLEX_CONSTRUCTOR_COMPLEX )
+	COMPLEX_CONSTRUCTOR_CUDA( const Complex<float>&, COMPLEX_CONSTRUCTOR_COMPLEX )
+	COMPLEX_CONSTRUCTOR_CUDA( volatile const Complex<float>&, COMPLEX_CONSTRUCTOR_COMPLEX )
+	COMPLEX_CONSTRUCTOR_CUDA( const Complex<double>&, COMPLEX_CONSTRUCTOR_COMPLEX )
+	COMPLEX_CONSTRUCTOR_CUDA( volatile const Complex<double>&, COMPLEX_CONSTRUCTOR_COMPLEX )
+	COMPLEX_CONSTRUCTOR_NONCUDA( const Complex<long double>&, COMPLEX_CONSTRUCTOR_COMPLEX )
+	COMPLEX_CONSTRUCTOR_NONCUDA( volatile const Complex<long double>&, COMPLEX_CONSTRUCTOR_COMPLEX )
 
     /*
      * Creation of the member operators through macros
@@ -466,27 +458,27 @@ public:
     COMPLEX_OPERATOR_CUDA(operator=, Complex<double>, COMPLEX_SET_COMPLEX)
     COMPLEX_OPERATOR_NONCUDA(operator=, Complex<long double>, COMPLEX_SET_COMPLEX)
 
-    COMPLEX_OPERATOR_CUDA(operator+=, int, COMPLEX_PLUS_REAL)
-    COMPLEX_OPERATOR_CUDA(operator+=, long, COMPLEX_PLUS_REAL)
-    COMPLEX_OPERATOR_CUDA(operator+=, float, COMPLEX_PLUS_REAL)
-    COMPLEX_OPERATOR_CUDA(operator+=, double, COMPLEX_PLUS_REAL)
-    COMPLEX_OPERATOR_NONCUDA(operator+=, long double, COMPLEX_PLUS_REAL)
-    COMPLEX_OPERATOR_CUDA(operator+=, Complex<int>, COMPLEX_PLUS_COMPLEX)
-    COMPLEX_OPERATOR_CUDA(operator+=, Complex<long>, COMPLEX_PLUS_COMPLEX)
-    COMPLEX_OPERATOR_CUDA(operator+=, Complex<float>, COMPLEX_PLUS_COMPLEX)
-    COMPLEX_OPERATOR_CUDA(operator+=, Complex<double>, COMPLEX_PLUS_COMPLEX)
-    COMPLEX_OPERATOR_NONCUDA(operator+=, Complex<long double>, COMPLEX_PLUS_COMPLEX)
+    COMPLEX_OPERATOR_CUDA(operator+=, int, COMPLEX_OP_REAL( + ) )
+    COMPLEX_OPERATOR_CUDA(operator+=, long, COMPLEX_OP_REAL( + ) )
+    COMPLEX_OPERATOR_CUDA(operator+=, float, COMPLEX_OP_REAL( + ) )
+    COMPLEX_OPERATOR_CUDA(operator+=, double, COMPLEX_OP_REAL( + ) )
+    COMPLEX_OPERATOR_NONCUDA(operator+=, long double, COMPLEX_OP_REAL( + ) )
+    COMPLEX_OPERATOR_CUDA(operator+=, Complex<int>, COMPLEX_OP_COMPLEX( + ) )
+    COMPLEX_OPERATOR_CUDA(operator+=, Complex<long>, COMPLEX_OP_COMPLEX( + ) )
+    COMPLEX_OPERATOR_CUDA(operator+=, Complex<float>, COMPLEX_OP_COMPLEX( + ) )
+    COMPLEX_OPERATOR_CUDA(operator+=, Complex<double>, COMPLEX_OP_COMPLEX( + ) )
+    COMPLEX_OPERATOR_NONCUDA(operator+=, Complex<long double>, COMPLEX_OP_COMPLEX( + ) )
 
-    COMPLEX_OPERATOR_CUDA(operator-=, int, COMPLEX_MINUS_REAL)
-    COMPLEX_OPERATOR_CUDA(operator-=, long, COMPLEX_MINUS_REAL)
-    COMPLEX_OPERATOR_CUDA(operator-=, float, COMPLEX_MINUS_REAL)
-    COMPLEX_OPERATOR_CUDA(operator-=, double, COMPLEX_MINUS_REAL)
-    COMPLEX_OPERATOR_NONCUDA(operator-=, long double, COMPLEX_MINUS_REAL)
-    COMPLEX_OPERATOR_CUDA(operator-=, Complex<int>, COMPLEX_MINUS_COMPLEX)
-    COMPLEX_OPERATOR_CUDA(operator-=, Complex<long>, COMPLEX_MINUS_COMPLEX)
-    COMPLEX_OPERATOR_CUDA(operator-=, Complex<float>, COMPLEX_MINUS_COMPLEX)
-    COMPLEX_OPERATOR_CUDA(operator-=, Complex<double>, COMPLEX_MINUS_COMPLEX)
-    COMPLEX_OPERATOR_NONCUDA(operator-=, Complex<long double>, COMPLEX_MINUS_COMPLEX)
+    COMPLEX_OPERATOR_CUDA(operator-=, int, COMPLEX_OP_REAL( - ) )
+    COMPLEX_OPERATOR_CUDA(operator-=, long, COMPLEX_OP_REAL( - ) )
+    COMPLEX_OPERATOR_CUDA(operator-=, float, COMPLEX_OP_REAL( - ) )
+    COMPLEX_OPERATOR_CUDA(operator-=, double, COMPLEX_OP_REAL( - ) )
+    COMPLEX_OPERATOR_NONCUDA(operator-=, long double, COMPLEX_OP_REAL( - ) )
+    COMPLEX_OPERATOR_CUDA(operator-=, Complex<int>, COMPLEX_OP_COMPLEX( - ) )
+    COMPLEX_OPERATOR_CUDA(operator-=, Complex<long>, COMPLEX_OP_COMPLEX( - ) )
+    COMPLEX_OPERATOR_CUDA(operator-=, Complex<float>, COMPLEX_OP_COMPLEX( - ) )
+    COMPLEX_OPERATOR_CUDA(operator-=, Complex<double>, COMPLEX_OP_COMPLEX( - ) )
+    COMPLEX_OPERATOR_NONCUDA(operator-=, Complex<long double>, COMPLEX_OP_COMPLEX( - ) )
 
     COMPLEX_OPERATOR_CUDA(operator*=, int, COMPLEX_MULTIPLY_REAL)
     COMPLEX_OPERATOR_CUDA(operator*=, long, COMPLEX_MULTIPLY_REAL)
@@ -518,13 +510,6 @@ public:
     COMPLEX_OPERATOR_CAST_CUDA(float, COMPLEX_CAST_REAL(float))
     COMPLEX_OPERATOR_CAST_CUDA(double, COMPLEX_CAST_REAL(double))
     COMPLEX_OPERATOR_CAST_NONCUDA(long double, COMPLEX_CAST_REAL(long double))
-
-    template<typename OtherValueType>
-    CUDA_CALLABLE_MEMBER
-    operator Complex<OtherValueType>() const
-    {
-        return Complex<OtherValueType>(static_cast<OtherValueType>(real()), static_cast<OtherValueType>(imag()));
-    }
 
     /**
      * @brief Returns the metric for a complex number which is used to determine an order for complex numbers. Through this it is possible to use functions like min or max. This one is callable from CUDA space.
@@ -901,10 +886,8 @@ std::ostream& operator<<( std::ostream& stream, const Complex<ValueType>& object
 #undef CUDA_CALLABLE_MEMBER
 #undef COMPLEX_SET_REAL
 #undef COMPLEX_SET_COMPLEX
-#undef COMPLEX_PLUS_REAL
-#undef COMPLEX_PLUS_COMPLEX
-#undef COMPLEX_MINUS_REAL
-#undef COMPLEX_MINUS_COMPLEX
+#undef COMPLEX_OP_REAL
+#undef COMPLEX_OP_COMPLEX
 #undef COMPLEX_MULTIPLY_REAL
 #undef COMPLEX_MULTIPLY_COMPLEX
 #undef COMPLEX_DIVIDE_REAL
@@ -912,7 +895,11 @@ std::ostream& operator<<( std::ostream& stream, const Complex<ValueType>& object
 #undef COMPLEX_CAST_REAL
 #undef COMPLEX_CAST_COMPLEX
 #undef COMPLEX_CONSTRUCTOR_REAL
+#undef COMPLEX_CONSTRUCTOR_REAL2
+#undef COMPLEX_CONSTRUCTOR_COMPLEX
 #undef COMPLEX_CONSTRUCTOR_CUDA
+#undef COMPLEX_CONSTRUCTOR_2_NONCUDA
+#undef COMPLEX_CONSTRUCTOR_2_CUDA
 #undef COMPLEX_CONSTRUCTOR_NONCUDA
 #undef COMPLEX_OPERATOR_CUDA
 #undef COMPLEX_OPERATOR_NONCUDA

@@ -40,9 +40,9 @@ namespace scai
 namespace common
 {
 
-template class COMMON_DLL_IMPORTEXPORT Complex<float> ;
-template class COMMON_DLL_IMPORTEXPORT Complex<double> ;
-template class COMMON_DLL_IMPORTEXPORT Complex<long double> ;
+//template class COMMON_DLL_IMPORTEXPORT Complex<float> ;
+//template class COMMON_DLL_IMPORTEXPORT Complex<double> ;
+//template class COMMON_DLL_IMPORTEXPORT Complex<long double> ;
 
 } /* end namespace common */
 
