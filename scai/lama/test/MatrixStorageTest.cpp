@@ -30,7 +30,7 @@
  * @date 02.03.2012
  */
 
-#include <test/MatrixStorageTest.hpp>
+#include <scai/lama/test/MatrixStorageTest.hpp>
 
 #include <scai/lama/storage/DenseStorage.hpp>
 #include <scai/lama/storage/CSRStorage.hpp>
@@ -38,7 +38,7 @@
 
 #include <scai/common/test/TestMacros.hpp>
 
-#include <test/Configuration.hpp>
+#include <scai/lama/test/Configuration.hpp>
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 #include <scai/lama/DenseVector.hpp>
 

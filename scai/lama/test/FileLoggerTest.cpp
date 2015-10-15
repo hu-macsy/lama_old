@@ -38,7 +38,7 @@
 #include <fstream>
 
 #include <scai/common/test/TestMacros.hpp>
-#include <test/Configuration.hpp>
+#include <scai/lama/test/Configuration.hpp>
 #include <scai/common/unique_ptr.hpp>
 #include <scai/common/SCAITypes.hpp>
 

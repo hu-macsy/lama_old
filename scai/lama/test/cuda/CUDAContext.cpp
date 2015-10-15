@@ -30,7 +30,7 @@
  * @date 05.04.2012
  * @since 1.0.0
  */
-#include <test/cuda/CUDAContext.hpp>
+#include <scai/lama/test/cuda/CUDAContext.hpp>
 
 #include <scai/hmemo/Context.hpp>
 

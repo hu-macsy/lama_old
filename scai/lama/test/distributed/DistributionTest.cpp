@@ -31,7 +31,7 @@
  * @since 1.0.0
  */
 
-#include <test/distributed/DistributionTest.hpp>
+#include <scai/lama/test/distributed/DistributionTest.hpp>
 
 #include <scai/common/test/TestMacros.hpp>
 

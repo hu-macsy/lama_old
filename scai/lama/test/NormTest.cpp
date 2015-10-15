@@ -31,7 +31,7 @@
  * @since 1.0.0
  */
 
-#include <test/NormTest.hpp>
+#include <scai/lama/test/NormTest.hpp>
 
 #include <scai/lama/DenseVector.hpp>
 #include <scai/lama/Scalar.hpp>

@@ -37,7 +37,7 @@
 #include <scai/lama/storage/JDSStorage.hpp>
 #include <scai/lama/LAMAArrayUtils.hpp>
 
-#include <test/MatrixStorageTest.hpp>
+#include <scai/lama/test/MatrixStorageTest.hpp>
 #include <scai/common/test/TestMacros.hpp>
 
 using namespace scai::lama;

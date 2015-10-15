@@ -36,7 +36,7 @@
 
 #include <scai/lama/storage/DIAStorage.hpp>
 
-#include <test/MatrixStorageTest.hpp>
+#include <scai/lama/test/MatrixStorageTest.hpp>
 #include <scai/common/test/TestMacros.hpp>
 
 using namespace scai::lama;

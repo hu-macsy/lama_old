@@ -30,7 +30,7 @@
  * @date 12.04.2012
  * @since 1.0.0
  */
-#include <test/Context.hpp>
+#include <scai/lama/test/Context.hpp>
 
 #include <scai/hmemo/Context.hpp>
 

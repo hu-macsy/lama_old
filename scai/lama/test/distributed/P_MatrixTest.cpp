@@ -41,8 +41,8 @@
 #include <scai/lama/distribution/NoDistribution.hpp>
 #include <scai/lama/expression/MatrixExpressions.hpp>
 
-#include <test/Configuration.hpp>
-#include <test/TestSparseMatrices.hpp>
+#include <scai/lama/test/Configuration.hpp>
+#include <scai/lama/test/TestSparseMatrices.hpp>
 
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 #include <scai/lama/matrix/ELLSparseMatrix.hpp>
@@ -53,8 +53,8 @@
 
 #include <scai/lama/matutils/MatrixCreator.hpp>
 
-#include <test/SameMatrixHelper.hpp>
-#include <test/TestSparseMatrices.hpp>
+#include <scai/lama/test/SameMatrixHelper.hpp>
+#include <scai/lama/test/TestSparseMatrices.hpp>
 
 using namespace scai::lama;
 using namespace scai::hmemo;

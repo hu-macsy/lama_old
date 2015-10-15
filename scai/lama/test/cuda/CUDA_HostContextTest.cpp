@@ -44,7 +44,7 @@
 
 #include <scai/lama/ContextAccess.hpp>
 
-#include <test/cuda/CUDAContext.hpp>
+#include <scai/lama/test/cuda/CUDAContext.hpp>
 
 using namespace scai::lama;
 using namespace scai::hmemo;

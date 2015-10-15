@@ -41,8 +41,8 @@
 #include <scai/lama/storage/COOStorage.hpp>
 #include <scai/lama/storage/DenseStorage.hpp>
 
-#include <test/TestSparseMatrices.hpp>
-#include <test/MatrixStorageTest.hpp>
+#include <scai/lama/test/TestSparseMatrices.hpp>
+#include <scai/lama/test/MatrixStorageTest.hpp>
 
 #include <scai/lama/storage/SparseAssemblyStorage.hpp>
 

@@ -34,7 +34,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include <scai/lama/matrix/DIASparseMatrix.hpp>
-#include <test/SparseMatrixTest.hpp>
+#include <scai/lama/test/SparseMatrixTest.hpp>
 #include <scai/common/test/TestMacros.hpp>
 
 using namespace scai::lama;

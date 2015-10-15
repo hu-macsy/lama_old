@@ -34,7 +34,7 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/mpl/list.hpp>
 
-#include <test/distributed/CommunicatorTest.hpp>
+#include <scai/lama/test/distributed/CommunicatorTest.hpp>
 #include <scai/common/test/TestMacros.hpp>
 
 using namespace scai::lama;

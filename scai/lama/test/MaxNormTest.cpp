@@ -38,7 +38,7 @@
 #include <scai/lama/Scalar.hpp>
 #include <scai/lama/norm/MaxNorm.hpp>
 
-#include <test/NormTest.hpp>
+#include <scai/lama/test/NormTest.hpp>
 #include <scai/common/test/TestMacros.hpp>
 
 using namespace scai::lama;
