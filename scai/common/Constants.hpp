@@ -55,6 +55,30 @@ enum ConstantType
 };
 
 template<typename ValueType>
+inline ValueType getEps()
+{
+	return std::numeric_limits<ValueType>::epsilon();
+}
+
+template<>
+inline ComplexFloat getEps()
+{
+	return std::numeric_limits<float>::epsilon();
+}
+
+template<>
+inline ComplexDouble getEps()
+{
+	return std::numeric_limits<double>::epsilon();
+}
+
+template<>
+inline ComplexLongDouble getEps()
+{
+	return std::numeric_limits<long double>::epsilon();
+}
+
+template<typename ValueType>
 inline ValueType getConstant( const enum ConstantType& c )
 {
     ValueType val;
@@ -67,24 +91,8 @@ inline ValueType getConstant( const enum ConstantType& c )
             val = ValueType( 0.0 );
             break;
         case EPS:
-        {
-            switch( getScalarType<ValueType>())
-            {
-                case common::scalar::COMPLEX:
-                    val = ComplexFloat( std::numeric_limits<float>::epsilon(), 0.0 );
-                    break;
-                case common::scalar::DOUBLE_COMPLEX:
-                    val = ComplexDouble( std::numeric_limits<double>::epsilon(), 0.0 );
-                    break;
-                case common::scalar::LONG_DOUBLE_COMPLEX:
-                    val = ComplexLongDouble( std::numeric_limits<long double>::epsilon(), 0.0 );
-                    break;
-                default:
-                    val = std::numeric_limits<ValueType>::epsilon();
-                    break;
-            }
+        	val = getEps<ValueType>();
             break;
-        }
     }
     return val;
 }
