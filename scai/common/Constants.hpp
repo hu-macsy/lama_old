@@ -79,9 +79,33 @@ inline ComplexLongDouble getEps()
 }
 
 template<typename ValueType>
+inline ValueType getMax()
+{
+	return std::numeric_limits<ValueType>::max();
+}
+
+template<>
+inline ComplexFloat getMax()
+{
+	return std::numeric_limits<float>::max();
+}
+
+template<>
+inline ComplexDouble getMax()
+{
+	return std::numeric_limits<double>::max();
+}
+
+template<>
+inline ComplexLongDouble getMax()
+{
+	return std::numeric_limits<long double>::max();
+}
+
+template<typename ValueType>
 inline ValueType getConstant( const enum ConstantType& c )
 {
-    ValueType val = -1;
+    ValueType val = getMax<ValueType>();
     switch( c )
     {
         case ONE:

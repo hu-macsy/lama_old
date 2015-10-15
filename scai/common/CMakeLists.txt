@@ -90,7 +90,6 @@ scai_project (
 
     CLASSES
 
-       #Complex
         Printable
         ScalarType
         Settings
@@ -101,6 +100,7 @@ scai_project (
 
         Assert
         bind     
+        Complex
         config
         Constants
         Factory

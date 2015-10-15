@@ -448,7 +448,8 @@ public:
     /**
      * @brief Binary operator
      */
-    COMPLEX_OPERATOR_CUDA(operator=, int, COMPLEX_SET_REAL)COMPLEX_OPERATOR_CUDA(operator=, long, COMPLEX_SET_REAL)
+    COMPLEX_OPERATOR_CUDA(operator=, int, COMPLEX_SET_REAL)
+	COMPLEX_OPERATOR_CUDA(operator=, long, COMPLEX_SET_REAL)
     COMPLEX_OPERATOR_CUDA(operator=, float, COMPLEX_SET_REAL)
     COMPLEX_OPERATOR_CUDA(operator=, double, COMPLEX_SET_REAL)
     COMPLEX_OPERATOR_NONCUDA(operator=, long double, COMPLEX_SET_REAL)
