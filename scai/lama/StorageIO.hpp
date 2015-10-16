@@ -93,6 +93,24 @@ public:
         File::FileType& fileType,
         const std::string& fileName );
 
+    static void writeMMHeader(
+    	const bool& vector,
+		const IndexType& numRows,
+		const IndexType& numColumns,
+		const IndexType& numValues,
+		const std::string& fileName,
+		const File::DataType& dataType);
+
+    static void readMMHeader(
+		const bool& vector,
+		IndexType& numRows,
+		IndexType& numColumns,
+		IndexType& numValues,
+		bool& isPattern,
+		bool& isSymmetric,
+		const std::string& fileName	);
+
+
     /** This method determines some properties of an input file containing matrix data.
      *
      *  param[out] fileType is the type of the file.

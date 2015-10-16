@@ -455,6 +455,8 @@ private    :
                     const std::string& fileName,
                     const long dataTypeSizeHeader );
 
+    void readVectorFromMMFile( const std::string& fileName );
+
     void readVectorDataFromBinaryFile(
                     std::fstream &inFile,
                     const File::DataType dataType );

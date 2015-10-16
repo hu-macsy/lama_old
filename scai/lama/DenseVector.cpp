@@ -45,6 +45,7 @@
 #include <scai/lama/matrix/Matrix.hpp>
 
 #include <scai/lama/expression/Expression.hpp>
+#include <scai/lama/StorageIO.hpp>
 
 #include <scai/lama/io/FileIO.hpp>
 #include <scai/lama/io/FileType.hpp>
@@ -156,28 +157,54 @@ void DenseVector<ValueType>::readFromFile( const std::string& filename )
 
     IndexType numElements = 0; // will be the size of the vector
 
-    File::FileType fileType = File::XDR;
+    File::FileType fileType; // = File::XDR;
+    std::string suffix;
+	std::string baseFileName = filename;
+	std::string vecFileName;
     long dataTypeSize = -1;
-    std::string vecFileName( filename + ".vec" );
+    File::DataType dataType;
 
-    if( myRank == host )
+//    std::string vecFileName( filename + ".vec" );
+
+    if( filename.size() >= 4 )
     {
-        readVectorHeader( filename + ".frv", fileType, dataTypeSize );
-
-        // broadcast the size to all other processors
-
-        numElements = size();
+        suffix = filename.substr( filename.size() - 4, 4 );
     }
 
-    comm->bcast( &numElements, 1, host );
+    if( suffix == ".frv" )
+    {
+        baseFileName = filename.substr( 0, filename.size() - 4 );
+    }
 
-    File::DataType dataType = getDataType<ValueType>( dataTypeSize );
+    if( suffix == ".mtx" )
+    {
+    	fileType = File::MATRIX_MARKET;
+    } else
+    {
+    	std::string frvFileName = baseFileName + ".frv";
 
-    // host gets all elements
+		if( myRank == host )
+		{
+			readVectorHeader( frvFileName, fileType, dataTypeSize );
 
-    DistributionPtr dist( new CyclicDistribution( numElements, numElements, comm ) );
+			// broadcast the size to all other processors
 
-    allocate( dist );
+			numElements = size();
+		}
+
+		vecFileName = baseFileName + ".vec";
+
+		comm->bcast( &numElements, 1, host );
+
+		dataType = getDataType<ValueType>( dataTypeSize );
+
+		// host gets all elements
+
+		DistributionPtr dist( new CyclicDistribution( numElements, numElements, comm ) );
+
+		allocate( dist );
+    }
+
 
     if( myRank == host )
     {
@@ -196,6 +223,9 @@ void DenseVector<ValueType>::readFromFile( const std::string& filename )
             case File::XDR: //XDR following the IEEE standard
                 readVectorFromXDRFile( vecFileName, dataTypeSize );
                 break;
+            case File::MATRIX_MARKET:
+            	readVectorFromMMFile( filename );
+            	break;
 
             default:
                 COMMON_THROWEXCEPTION( "Unknown File Type." );
@@ -1135,7 +1165,7 @@ void DenseVector<ValueType>::writeToFile(
 
         case File::MATRIX_MARKET:
         {
-            writeVectorToMMFile( file, dataType );
+            writeVectorToMMFile( fileBaseName, dataType );
             break;
         }
 
@@ -1145,7 +1175,10 @@ void DenseVector<ValueType>::writeToFile(
 
     long dataTypeSize = getDataTypeSize<ValueType>( dataType );
 
-    writeVectorHeader( fileBaseName + ".frv", fileType, dataTypeSize );
+    if( fileType != File::MATRIX_MARKET )
+    {
+		writeVectorHeader( fileBaseName + ".frv", fileType, dataTypeSize );
+    }
 }
 
 template<typename ValueType>
@@ -1194,51 +1227,9 @@ void DenseVector<ValueType>::writeVectorHeader(
 template<typename ValueType>
 void DenseVector<ValueType>::writeVectorToMMFile( const std::string& filename, const File::DataType& dataType ) const
 {
-    MM_typecode veccode;
-    mm_initialize_typecode( &veccode );
-    mm_set_array( &veccode );
-    mm_set_dense( &veccode );
+	IndexType numRows = size();
 
-    if( dataType == File::DOUBLE || dataType == File::FLOAT )
-    {
-        mm_set_real( &veccode );
-    }
-    else if( dataType == File::COMPLEX )
-    {
-        mm_set_complex( &veccode );
-    }
-    else if( dataType == File::INTEGER )
-    {
-        mm_set_integer( &veccode );
-    }
-    else if( dataType == File::PATTERN )
-    {
-        mm_set_pattern( &veccode );
-    }
-    else
-    {
-        COMMON_THROWEXCEPTION( "DenseVector<ValueType>::writeVectorToMMFile: "
-                             "Unknown datatype." )
-    }
-
-    std::FILE* file;
-
-    if( !( file = std::fopen( filename.c_str(), "w+" ) ) )
-    {
-        COMMON_THROWEXCEPTION( "DenseVector<ValueType>::writeVectorToMMFile: '" + filename + "' could not be opened." )
-    }
-
-    IndexType numRows = size();
-
-    mm_write_banner( file, veccode );
-    mm_write_mtx_array_size( file, numRows, numRows );
-
-    if( std::fclose( file ) != 0 )
-    {
-        COMMON_THROWEXCEPTION( "DenseVector<ValueType>::writeVectorToMMFile: '" + filename + "' could not be closed." )
-    }
-
-    file = 0;
+	_StorageIO::writeMMHeader( true, numRows, 1, numRows, filename, dataType );
 
     std::ofstream ofile;
     ofile.open( filename.c_str(), std::ios::out | std::ios::app );
@@ -1498,6 +1489,82 @@ static void readXDRData( XDRFileStream& inFile, UserDataType data[], const Index
     {
         data[i] = static_cast<UserDataType>( buffer[i] );
     }
+}
+
+template<typename ValueType>
+void DenseVector<ValueType>::readVectorFromMMFile( const std::string& fileName )
+{
+    bool isSymmetric, isPattern;
+    IndexType numRows, numColumns, numValues;
+
+    _StorageIO::readMMHeader( true, numRows, numColumns, numValues, isPattern, isSymmetric, fileName );
+
+    SCAI_ASSERT_EQUAL_ERROR( numColumns, 1 )
+
+    std::ifstream ifile;
+    ifile.open( fileName.c_str(), std::ios::in );
+
+    if( ifile.fail() )
+    {
+        COMMON_THROWEXCEPTION( "Could not reopen file '" << fileName << "'." )
+    }
+
+    CommunicatorPtr comm = Communicator::get();
+    DistributionPtr dist( new CyclicDistribution( numRows, numRows, comm ) );
+
+    allocate( dist );
+
+    // First reading in the beginning of the rows
+    // then reading in the values and columns of the rows
+    //Jump to the beginning of the Values
+    char c = '%';
+
+    while( c == '%' )
+    {
+        ifile >> c;
+        ifile.ignore( 1024, '\n' );
+    }
+
+    IndexType lines = numValues;
+
+    IndexType i;
+    ValueType val;
+
+    std::string line;
+
+    WriteOnlyAccess<ValueType> vector( mLocalValues, numValues );
+    ValueType* vPtr = vector.get();
+
+    for( int l = 0; l < lines && !ifile.eof(); ++l )
+    {
+        std::getline( ifile, line );
+        std::istringstream reader( line );
+
+        reader >> i;
+
+	if( isPattern )
+        {
+            val = 1.0;
+        }
+        else
+	{
+            reader >> val;
+	}
+
+        i--;
+
+        vPtr[i] = val;
+
+    }
+
+    if( ifile.eof() )
+    {
+    	COMMON_THROWEXCEPTION( "'" << fileName << "': reached end of file, before having read all data." )
+    }
+
+    ifile.close();
+    ifile.close();
+    SCAI_LOG_INFO( logger, "construct vector " << numRows )
 }
 
 template<typename ValueType>

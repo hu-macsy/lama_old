@@ -187,12 +187,12 @@ BOOST_AUTO_TEST_CASE( ReadAndWriteVectorTest )
     DenseVector<double> vector5( prefix + "/" + testfilename );
     verifySameVector<double>( vector5, result );
     cleanupfiles( testfilename );
-//    TODO: Fix bug in mm_typecode_to_str
-//    Write and read MMFile
-//    vector.writeToFile( prefix + "/" + testfilename, MATRIX_MARKET, DOUBLE );
-//    DenseVector<double> vector6( prefix + "/" + testfilename );
-//    verifySameVector<double>( vector6, result );
-//    cleanupfiles( testfilename );
+	// write and read mtx
+    vector.writeToFile( prefix + "/" + testfilename + ".mtx", File::MATRIX_MARKET, File::DOUBLE );
+    DenseVector<double> vector6( prefix + "/" + testfilename + ".mtx" );
+    verifySameVector<double>( vector6, result );
+    //cleanupfiles( testfilename + ".mtx" );
+    std::remove( ( prefix + "/" + testfilename + ".mtx" ).c_str() );
 }
 
 /* ------------------------------------------------------------------------- */
