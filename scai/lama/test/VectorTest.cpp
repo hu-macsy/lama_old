@@ -188,7 +188,7 @@ BOOST_AUTO_TEST_CASE( ReadAndWriteVectorTest )
     verifySameVector<double>( vector5, result );
     cleanupfiles( testfilename );
 	// write and read mtx
-    vector.writeToFile( prefix + "/" + testfilename + ".mtx", File::MATRIX_MARKET, File::DOUBLE );
+    vector.writeToFile( prefix + "/" + testfilename, File::MATRIX_MARKET, File::DOUBLE );
     DenseVector<double> vector6( prefix + "/" + testfilename + ".mtx" );
     verifySameVector<double>( vector6, result );
     //cleanupfiles( testfilename + ".mtx" );
