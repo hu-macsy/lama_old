@@ -649,7 +649,7 @@ template<typename ValueType>
 void DenseVector<ValueType>::writeAt( std::ostream& stream ) const
 {
     stream << "DenseVector<" << getValueType() << ">" << "( size = " << size() << ", local = " << mLocalValues.size()
-                   << ", dist = " << getDistribution() << ", loc  = " << *getContext() << " )";
+                   << ", dist = " << getDistribution() << ", loc  = " << getContext() << " )";
 }
 
 template<typename ValueType>
@@ -968,7 +968,7 @@ void DenseVector<ValueType>::invert()
 {
     const IndexType size = mLocalValues.size();
 
-    const ContextPtr loc = getContext();
+    const ContextPtr loc = getContextPtr();
 
     LAMA_INTERFACE_FN_T( invert, loc, Utils, Math, ValueType )
 
@@ -1229,14 +1229,16 @@ void DenseVector<ValueType>::writeVectorToMMFile( const std::string& filename, c
 {
 	IndexType numRows = size();
 
-	_StorageIO::writeMMHeader( true, numRows, 1, numRows, filename, dataType );
+	std::string fullFilename = filename + ".mtx";
+
+	_StorageIO::writeMMHeader( true, numRows, 1, numRows, fullFilename, dataType );
 
     std::ofstream ofile;
-    ofile.open( filename.c_str(), std::ios::out | std::ios::app );
+    ofile.open( fullFilename.c_str(), std::ios::out | std::ios::app );
 
     if( ofile.fail() )
     {
-        COMMON_THROWEXCEPTION( "DenseVector<ValueType>::writeVectorToMMFile: '" + filename + "' could not be reopened." )
+        COMMON_THROWEXCEPTION( "DenseVector<ValueType>::writeVectorToMMFile: '" + fullFilename + "' could not be reopened." )
     }
 
     ContextPtr hostContext = Context::getContextPtr( context::Host );

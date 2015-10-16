@@ -133,7 +133,7 @@ void DefaultJacobi::initialize( const Matrix& coefficients )
     runtime.mDiagonalInverted->setDiagonal( *runtime.mDiagonalTimesRhs );
 
     runtime.mOldSolution.reset( runtime.mDiagonalTimesRhs->clone() );
-    runtime.mOldSolution->setContext( runtime.mDiagonalTimesRhs->getContext() );
+    runtime.mOldSolution->setContext( runtime.mDiagonalTimesRhs->getContextPtr() );
 
     OmegaSolver::initialize( coefficients );
 

@@ -115,7 +115,7 @@ Vector::Vector( DistributionPtr distribution, ContextPtr context )
 }
 
 Vector::Vector( const Vector& other )
-                : Distributed( other ), mContext( other.getContext() )
+                : Distributed( other ), mContext( other.getContextPtr() )
 {
     SCAI_ASSERT_ERROR( mContext, "NULL context not allowed" )
     SCAI_LOG_INFO( logger, "Vector(" << other.getDistribution().getGlobalSize() << "), distributed, copied" )

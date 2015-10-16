@@ -497,8 +497,8 @@ void AssignmentVectorExpressionTestmethod( ContextPtr context )
     DenseVector<ValueType> vectorResult10( n, -14.0 );
     vectorA.setContext( context );
     vectorB.setContext( context );
-    SCAI_LOG_DEBUG( logger, "Using context vecA = " << vectorA.getContext()->getType() );
-    SCAI_LOG_DEBUG( logger, "Using context vecB = " << vectorB.getContext()->getType() );
+    SCAI_LOG_DEBUG( logger, "Using context vecA = " << vectorA.getContextPtr()->getType() );
+    SCAI_LOG_DEBUG( logger, "Using context vecB = " << vectorB.getContextPtr()->getType() );
     Scalar s = 2.0;
     Scalar t = 4.0;
     DenseVector<ValueType> vector( n, 0.0 );
