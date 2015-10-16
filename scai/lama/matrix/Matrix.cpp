@@ -378,7 +378,7 @@ void Matrix::swapMatrix( Matrix& other )
 
 double Matrix::getSparsityRate() const
 {
-    return ( double ) getNumValues() / mNumRows / mNumColumns;
+    return ( double ) getNumValues() / getNumRows() / getNumColumns();
 }
 
 /* ---------------------------------------------------------------------------------*/
