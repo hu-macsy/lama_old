@@ -1,9 +1,10 @@
 
-#include <scai/kernel/KernelInterface.hpp>
+#include <scai/kernel/KernelContextFunction.hpp>
 
 #include <iostream>
 
 using namespace scai::interface;
+using namespace scai::common;
 
 struct UtilsInterface
 {
@@ -11,7 +12,6 @@ struct UtilsInterface
     struct isSorted
     {
         typedef bool ( *FuncType ) ( const ValueType array[], const int n, bool ascending );
-
         static inline const char* getId() { return "Utils.IsSorted"; }
     };
 };
@@ -69,8 +69,7 @@ static void setInterface()
     std::cout << std::endl;
     std::cout << "setInterface: start" << std::endl;
 
-    // KernelInterface::set<UtilsInterface::isSorted<double> >( isSorted, context::Host );
- 
+    KernelInterface::set<UtilsInterface::isSorted<double> >( isSorted, context::Host );
     KernelInterface::set( isSorted, "Utils.isSorted", context::Host );
 
     KernelInterface::set( scale<float>, "Utils.scale", context::Host );
@@ -113,10 +112,10 @@ static void example2()
 
         typedef bool ( *SigIsSorted ) ( const double*, int, bool );
     
-        static ContextFunction< SigIsSorted > isSorted( "Utils.isSorted" );
+        static KernelContextFunction< SigIsSorted > isSorted( "Utils.isSorted" );
     */
 
-    ContextFunctionByTrait< UtilsInterface::isSorted<double> > isSorted;
+    KernelTraitContextFunction< UtilsInterface::isSorted<double> > isSorted;
 
     double a[] = { 3.0, 4.0, 2.0 };
   
@@ -138,7 +137,7 @@ static void example3()
 
     ValueType a[] = { 3, 4, 2 };
     
-    static ContextFunction< SigScale > scale ( "Utils.scale" ) ;
+    static KernelContextFunction< SigScale > scale ( "Utils.scale" ) ;
 
     scale( context::Host )( a, 10, 3 );
 
@@ -151,8 +150,8 @@ static void example4()
     std::cout << "Example 4:" << std::endl;
     std::cout << "==========" << std::endl;
 
-    static ContextFunction< bool (*) ( const double*, int, bool ) > isSorted( "Utils.isSorted" );
-    static ContextFunction< void (*) ( double*, double, int ) > scale( "Utils.scale" );
+    static KernelContextFunction< bool (*) ( const double*, int, bool ) > isSorted( "Utils.isSorted" );
+    static KernelContextFunction< void (*) ( double*, double, int ) > scale( "Utils.scale" );
 
     std::cout << "isSorted: valid context = " << isSorted.validContext( context::CUDA ) << std::endl;
     std::cout << "scale: valid context = " << scale.validContext( context::CUDA ) << std::endl;

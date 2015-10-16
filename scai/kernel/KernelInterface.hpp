@@ -33,10 +33,14 @@
 
 #include <scai/kernel/ContextFunction.hpp>
 
+#include <scai/logging.hpp>
+#include <scai/common/exception/Exception.hpp>
+
 #include <map>
 #include <string>
 #include <typeinfo>
 #include <cstdlib>
+#include <cstring>
 
 #include <iostream>
 
@@ -46,75 +50,15 @@ namespace scai
 namespace interface
 {
 
-/* --------------------------------------------------------------------------- *
- * template class for ContextFunction                                            *
- * --------------------------------------------------------------------------- */
+typedef std::pair<const std::type_info&, const char*> InterfaceKey;
 
-template<typename FunctionType> 
-class ContextFunction : public _ContextFunction
+// Output operator for kernel inteface key
+
+static std::ostream& operator<<( std::ostream& stream, const InterfaceKey& key )
 {
-public:
-
-    /** Constructor with name of the routine, searches for registered functions. */
-
-    ContextFunction( const std::string& name );
-
-    /** Override default copy constructor */
-
-    ContextFunction( const ContextFunction& other ) : _ContextFunction( other )
-    {
-    }
-
-    FunctionType get( ContextType ctx ) const
-    {
-        return ( FunctionType ) mContextFuncArray[ ctx ];
-    }
-
-    void set( ContextType ctx, FunctionType fn )
-    {
-        mContextFuncArray[ ctx ] = ( VoidFunction ) fn;
-    }
-
-    FunctionType operator() ( ContextType ctx )
-    {
-        if ( mContextFuncArray[ ctx ] == NULL )
-        {
-            // Throw exception
-            std::cout << "kernel routine not available context = " << ctx << std::endl;
-            std::cout << "STOP" << std::endl;
-            exit( - 1 );
-        }
-
-        return ( FunctionType ) mContextFuncArray[ ctx ];
-    }
-
-    using _ContextFunction::validContext;
-};
-
-/**
- * Template class for ContextFunction by using a Trait 
- *
- * @tname <ContextFunctionTrait>  struct that constains signature and name of the context function.
- *
- * \begincode
- *     // Example of ContextFunctionTrait
- *     struct isSorted
- *     {
- *         bool ( *FuncType ) ( const double* array, int n, bool ascending );
- *         static inline const char* getId() { return "isSorted" };
- *     };
- * \endcode
- */
-
-template<typename ContextFunctionTrait> 
-class ContextFunctionByTrait : public ContextFunction<typename ContextFunctionTrait::FuncType>
-{
-public:
-
-    typedef typename ContextFunctionTrait::FuncType ContextFunctionType;
-
-    ContextFunctionByTrait();
-};
+    stream << "InterfaceKey( id = " << key.second << ", type = " << key.first.name() << " )";
+    return stream;
+}
 
 /* --------------------------------------------------------------------------- *
  *  KernelInterface ( static class )                                           *
@@ -122,34 +66,31 @@ public:
 
 class KernelInterface
 {
-
 private:
 
-    // Interface as map requires one common function type
-
-    typedef std::pair<const std::type_info&, const std::string> InterfaceKey;
+    /** Type for unique key in registration */
 
     static void registerContextFunction( const InterfaceKey& key, ContextType ctx, VoidFunction fn )
     {
-        std::cout << "registerContextFunction, name = " << key.first.name() << ", " << key.second  << std::endl;
+        SCAI_LOG_INFO( logger, "register ctx = " << ctx << " with " << key )
 
         InterfaceMap::iterator it = theInterfaceMap.find( key );
 
         if ( it == theInterfaceMap.end() )
         {
-            std::cout << "registerContextFunction: new routine" << std::endl;
+            SCAI_LOG_DEBUG( logger, "register: no entry yet, will add it" )
 
             _ContextFunction routine;
 
             routine.set( ctx, fn );
 
-            theInterfaceMap.insert( std::make_pair( key, routine ) );
+            theInterfaceMap.insert( std::pair<InterfaceKey, _ContextFunction>( key, routine ) );
 
-            std::cout << "added" << std::endl;
+            SCAI_LOG_DEBUG( logger, "added" ) 
         }
         else
         {
-            std::cout << "registerContextFunction: routine with next context" << std::endl;
+            SCAI_LOG_DEBUG( logger, "register: entry available, set it for ctx = " << ctx )
 
             it->second.set( ctx, fn );
         }
@@ -165,6 +106,9 @@ private:
         }
         else
         {
+            SCAI_LOG_ERROR( logger, "no context function with name = " << key.second 
+                               << ", type = " << key.first.name() << " available" )
+
             // maybe we should throw an exception
 
             contextFunction.clear();
@@ -173,26 +117,26 @@ private:
 
 public:
 
-    template<typename ContextFunctionTrait>
-    static void set( typename ContextFunctionTrait::FuncType fn, ContextType ctx )
+    template<typename KernelTrait>
+    static void set( typename KernelTrait::FuncType fn, ContextType ctx )
     {
-        InterfaceKey key( typeid( typename ContextFunctionTrait::FuncType ), ContextFunctionTrait::getId() );
+        InterfaceKey key( typeid( typename KernelTrait::FuncType ), KernelTrait::getId() );
         registerContextFunction( key, ctx, ( VoidFunction ) fn );
     }
 
     template<typename FunctionType>
-    static void set( FunctionType fn, const std::string& name, ContextType ctx )
+    static void set( FunctionType fn, const char* name, ContextType ctx )
     {
         InterfaceKey key( typeid( FunctionType ), name );
         registerContextFunction( key, ctx, ( VoidFunction ) fn );
     }
 
     template<typename FunctionType>
-    static void get( FunctionType& fn, const std::string& name, ContextType ctx )
+    static void get( FunctionType& fn, const char* name, ContextType ctx )
     {
-        std::cout << "get function pointer for kernel routine " << name 
-                  << ", func type = " << typeid( FunctionType ).name() 
-                  << ", context = " << ctx << std::endl;
+        SCAI_LOG_INFO( logger, "get function pointer for kernel routine " << name 
+                                << ", func type = " << typeid( FunctionType ).name() 
+                                << ", context = " << ctx  )
 
         InterfaceKey key( typeid( FunctionType ), name );
 
@@ -200,122 +144,88 @@ public:
 
         if ( it != theInterfaceMap.end() )
         {
-            std::cout << "function registered" << std::endl;
+            SCAI_LOG_DEBUG( logger, "function registered" )
 
             const _ContextFunction& routine = it->second;
             fn = ( FunctionType ) routine.get( ctx );   // cast required
 
-            std::cout << "function for context = " << fn << std::endl;
+            SCAI_LOG_DEBUG( logger, "function for context = " << fn )
         }
         else
         {
-            std::cout << "function never registered." << std::endl;
+            SCAI_LOG_INFO( logger, "function never registered." )
         }
     }
 
     /** Get all function pointers for a certain kernel routine */
 
     template<typename FunctionType>
-    static void get( FunctionType mContextFuncArray[], const std::string& name )
+    static void get( ContextFunction<FunctionType>& contextFunction, const char* name )
     {
-        std::cout << "get all function pointers for kernel routine " << name 
-                  << ", func type = " << typeid( FunctionType ).name() << std::endl;
-
         InterfaceKey key( typeid( FunctionType ), name );
+
+        SCAI_LOG_INFO( logger, "get all function pointers for kernel routine by " << key )
 
         typename InterfaceMap::const_iterator it = theInterfaceMap.find( key );
 
         if ( it != theInterfaceMap.end() )
         {
-            std::cout << "entry found in interface" << std::endl;
+            SCAI_LOG_DEBUG( logger, "entry found in interface" )
 
-            const _ContextFunction& routine = it->second;
-
-            for ( int i = 0; i < context::MaxContext; ++i )
-            {
-                mContextFuncArray[i] = ( FunctionType ) routine.get( static_cast<ContextType>( i ) );
-            }
+            contextFunction.assign( it->second );
         }
         else
         {
-            std::cout << "entry not found in interface, set all NULL" << std::endl;
+            SCAI_LOG_DEBUG( logger, "entry not found in interface, set all NULL" )
 
-            for ( int i = 0; i < context::MaxContext; ++i )
-            {
-                mContextFuncArray[i] = NULL;
-            }
+            contextFunction.clear();   // just for safety
 
-            std::cout << "STOP" << std::endl;
-            exit( - 1 );
+            COMMON_THROWEXCEPTION( "No context function registered, name = " << name 
+                                     << ", type = " << typeid( FunctionType ).name() )
         }
     }
+
+    /** Help routine that prints all registered kernel routines */
 
     static void printAll()
     {
         InterfaceMap::const_iterator it;
 
+        std::cout << "KernelInterface:" << std::endl;
+        std::cout << "================" << std::endl;
+
         for ( it = theInterfaceMap.begin(); it != theInterfaceMap.end(); ++it )
         {
-            std::cout << "Entry: id = " << it->first.second 
-                      << ", type = " << it->first.first.name() << std::endl; 
+            std::cout << "Entry: key = " << it->first;
+            std::cout << ", ctx = " << it->second.printIt();
+            std::cout << std::endl; 
         }
+
+        std::cout << "================" << std::endl;
     }
 
 protected:
 
     KernelInterface();
 
+    SCAI_LOG_DECL_STATIC_LOGGER( logger )
+
 private:
 
     class Compare
     {
     public:
+
         // return x > y
-        bool operator()( const InterfaceKey& x, const InterfaceKey& y )
-        {
-            const std::string& xstr = x.second;
-            const std::string& ystr = y.second;
 
-            if ( xstr > ystr )
-            {
-                 return true;
-            }
+        bool operator()( const InterfaceKey& x, const InterfaceKey& y );
 
-            if ( xstr < ystr )
-            {
-                 return false;
-            }
-            
-            // both have same id, so take typename to distinguish
-
-            return x.first.name() > y.first.name();
-        }
     };
 
     typedef std::map<InterfaceKey, _ContextFunction, Compare> InterfaceMap;
 
     static InterfaceMap theInterfaceMap;
 };
-
-/* --------------------------------------------------------------------------- */
-
-template<typename FunctionType> 
-ContextFunction<FunctionType>::ContextFunction( const std::string& name )
-{
-    std::cout << "ContextFunction<" << typeid( FunctionType ).name() << ">" << std::endl;
-
-    KernelInterface::get( ( FunctionType* ) mContextFuncArray, name );
-}
-
-template<typename ContextFunctionTrait> 
-ContextFunctionByTrait<ContextFunctionTrait>::ContextFunctionByTrait() 
-
-  : ContextFunction<ContextFunctionType>( ContextFunctionTrait::getId() )
-
-{
-    std::cout << "ContextFunctionByTrait<" << typeid( ContextFunctionType ).name()
-              << ", id = " << ContextFunctionTrait::getId() << std::endl;
-}
 
 } /* end namespace interface */
 

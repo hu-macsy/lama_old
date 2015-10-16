@@ -97,6 +97,10 @@ scai_project (
 
         ContextFunction
         KernelInterface
+
+    HEADERS
+
+        KernelContextFunction
 )
 
 ## add CUDA if supported

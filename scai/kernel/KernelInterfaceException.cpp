@@ -1,5 +1,5 @@
 /**
- * @file KernelInterface.cpp
+ * @file KernelInterfaceException.hpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,53 +25,39 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Implementation of routines for KernelInterface
- * @author Thomas Brandes
- * @date 13.10.2015
+ * @brief Implementation of methods for KernelInterfaceException
+ * @author Eric Schricker
+ * @date 10.08.2015
+ * @since 2.0.0
  */
 
-#include "KernelInterface.hpp"
+// hpp
+#include <scai/common/kernel/KernelInterfaceException.hpp>
 
 namespace scai
 {
 
-namespace interface
+namespace kernel
 {
-
-/* -----------------------------------------------------------------------------*/
-
-SCAI_LOG_DEF_LOGGER( KernelInterface::logger, "KernelInterface" )
-
-// define static variable for InterfaceMap here
-
-/* -----------------------------------------------------------------------------*/
-
-KernelInterface::InterfaceMap KernelInterface::theInterfaceMap;
-
-/* -----------------------------------------------------------------------------*/
-
-bool KernelInterface::Compare::operator()( const InterfaceKey& x, const InterfaceKey& y )
+    
+KernelInterfaceException::KernelInterfaceException()
 {
-    // first compare the id of the routine (is second key argument)
-
-    int compareName = std::strcmp( x.second, y.second );
-
-    if ( compareName < 0 )
-    {
-         return true;
-    }
-
-    if ( compareName > 0 )
-    {
-         return false;
-    }
-
-    // both have same id, so take typename to distinguish
-
-    return x.first.name() > y.first.name();
 }
 
-} /* end namespace interface */
+KernelInterfaceException::KernelInterfaceException( const std::string& message )
+    : mMessage( message )
+{
+}
 
-} /* end namespace scai */
+KernelInterfaceException::~KernelInterfaceException() throw()
+{
+}
 
+const char* KernelInterfaceException::what() const throw ()
+{
+    return mMessage.c_str();
+}
+
+} /* end kernel */
+
+} /* end scai */

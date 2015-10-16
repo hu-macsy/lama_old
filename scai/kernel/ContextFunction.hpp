@@ -46,21 +46,17 @@ namespace scai
 namespace interface
 {
 
-using namespace scai::common;
-
 /** Type definition of un untyped function pointer */
 
 typedef void ( *VoidFunction )();
-
-/* --------------------------------------------------------------------------- *
- * common base class for ContextFunction                                         *
- * --------------------------------------------------------------------------- */
 
 /** Common base class for template class ContextFunction 
  *
  *  An object of _ContextFunction contains a function pointer for each context
  *  where the function pointer might be NULL for unsupported context
  */
+
+using scai::common::ContextType;
 
 class _ContextFunction
 {
@@ -74,6 +70,8 @@ public:
 
     void clear();   // sets all function pointers to NULL
 
+    void assign( const _ContextFunction& other );
+
     inline VoidFunction get( ContextType ctx ) const
     {
         return mContextFuncArray[ ctx ];
@@ -84,6 +82,8 @@ public:
         mContextFuncArray[ ctx ] = fn;
     }
 
+    std::string printIt() const;
+
     ContextType validContext( ContextType preferedCtx );
 
     ContextType validContext( const _ContextFunction& other, ContextType preferedCtx );
@@ -92,7 +92,45 @@ protected:
 
     // array with function pointer for each context
 
-    VoidFunction mContextFuncArray[context::MaxContext];
+    VoidFunction mContextFuncArray[scai::common::context::MaxContext];
+};
+
+/* --------------------------------------------------------------------------- *
+ * template class for ContextFunction                                            *
+ * --------------------------------------------------------------------------- */
+
+template<typename FunctionType>
+class ContextFunction : public _ContextFunction
+{
+public:
+
+    /** Only default Constructor at this time */
+
+    ContextFunction()
+    {
+    }
+
+    /** Override default copy constructor */
+
+    ContextFunction( const ContextFunction& other ) : _ContextFunction( other )
+    {
+    }
+
+    // provide typed get
+
+    FunctionType get( ContextType ctx ) const
+    {
+        return ( FunctionType ) mContextFuncArray[ ctx ];
+    }
+
+    // provide typed set
+
+    void set( ContextType ctx, FunctionType fn )
+    {
+        mContextFuncArray[ ctx ] = ( VoidFunction ) fn;
+    }
+
+    using _ContextFunction::validContext;
 };
 
 } /* end namespace interface */

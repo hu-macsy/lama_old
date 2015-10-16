@@ -1,5 +1,5 @@
 /**
- * @file KernelInterface.cpp
+ * @file ContextType.cpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,53 +25,77 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Implementation of routines for KernelInterface
- * @author Thomas Brandes
- * @date 13.10.2015
+ * @brief Implementation of operations on ScalarType.
+ * @author Jiri Kraus
+ * @date 07.11.2011
  */
 
-#include "KernelInterface.hpp"
+// hpp
+#include <scai/common/ContextType.hpp>
 
 namespace scai
 {
 
-namespace interface
+namespace common
 {
 
-/* -----------------------------------------------------------------------------*/
-
-SCAI_LOG_DEF_LOGGER( KernelInterface::logger, "KernelInterface" )
-
-// define static variable for InterfaceMap here
-
-/* -----------------------------------------------------------------------------*/
-
-KernelInterface::InterfaceMap KernelInterface::theInterfaceMap;
-
-/* -----------------------------------------------------------------------------*/
-
-bool KernelInterface::Compare::operator()( const InterfaceKey& x, const InterfaceKey& y )
+namespace context
 {
-    // first compare the id of the routine (is second key argument)
 
-    int compareName = std::strcmp( x.second, y.second );
-
-    if ( compareName < 0 )
+std::ostream& operator<<( std::ostream& stream, const ContextType& type )
+{
+    switch ( type )
     {
-         return true;
+        case Host :
+            stream << "Host";
+            break;
+
+        case CUDA :
+            stream << "CUDA";
+            break;
+
+        case MIC :
+            stream << "MIC";
+            break;
+
+        case OpenCL :
+            stream << "OpenCL";
+            break;
+
+        case UserContext :
+            stream << "UserContext";
+            break;
+
+        default:
+            stream << "ContextType_" << (int) type;
     }
 
-    if ( compareName > 0 )
-    {
-         return false;
-    }
-
-    // both have same id, so take typename to distinguish
-
-    return x.first.name() > y.first.name();
+    return stream;
 }
 
-} /* end namespace interface */
+/* -----------------------------------------------------------------------------*/
+
+std::ostream& operator<<( std::ostream& stream, const AccessKind& kind )
+{
+    switch ( kind )
+    {
+        case Write :
+            stream << "Write";
+            break;
+
+        case Read :
+            stream << "Read";
+            break;
+
+        default:
+            stream << "AccessKind_" << (int) kind;
+    }
+
+    return stream;
+}
+
+} /* end namespace context */
+
+} /* end namespace common */
 
 } /* end namespace scai */
-

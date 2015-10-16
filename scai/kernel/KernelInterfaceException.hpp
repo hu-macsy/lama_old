@@ -1,5 +1,5 @@
 /**
- * @file KernelInterface.cpp
+ * @file LAMAInterface.hpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,12 +25,15 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Implementation of routines for KernelInterface
+ * @brief Interface class for context dependent operations to be implemented.
  * @author Thomas Brandes
- * @date 13.10.2015
+ * @date 10.10.2015
  */
 
-#include "KernelInterface.hpp"
+#pragma once
+
+// base class
+#include <scai/common/exception/Exception.hpp>
 
 namespace scai
 {
@@ -38,40 +41,27 @@ namespace scai
 namespace interface
 {
 
-/* -----------------------------------------------------------------------------*/
-
-SCAI_LOG_DEF_LOGGER( KernelInterface::logger, "KernelInterface" )
-
-// define static variable for InterfaceMap here
-
-/* -----------------------------------------------------------------------------*/
-
-KernelInterface::InterfaceMap KernelInterface::theInterfaceMap;
-
-/* -----------------------------------------------------------------------------*/
-
-bool KernelInterface::Compare::operator()( const InterfaceKey& x, const InterfaceKey& y )
+class COMMON_DLL_IMPORTEXPORT KernelInterfaceException : public Exception
 {
-    // first compare the id of the routine (is second key argument)
+public:
 
-    int compareName = std::strcmp( x.second, y.second );
+    KernelInterfaceException();
+    
+    KernelInterfaceException( const std::string& message );
 
-    if ( compareName < 0 )
-    {
-         return true;
-    }
+    virtual ~KernelInterfaceException() throw();
+    
+    virtual const char* what() const throw();
+    
+protected:
+        
+    std::string mMessage;
 
-    if ( compareName > 0 )
-    {
-         return false;
-    }
+private:
 
-    // both have same id, so take typename to distinguish
+    static UnsupportedType unsupportedSetting;
+};
 
-    return x.first.name() > y.first.name();
-}
-
-} /* end namespace interface */
+} /* end namespace common */
 
 } /* end namespace scai */
-

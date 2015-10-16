@@ -32,15 +32,24 @@
 
 #include <scai/kernel/ContextFunction.hpp>
 
+#include <sstream>
+
 namespace scai
 {
 
 namespace interface
 {
 
+using scai::common::context::MaxContext;
+
 _ContextFunction:: _ContextFunction()
 {
-    for ( int i = 0; i < context::MaxContext; ++i )
+    clear();
+}
+
+void _ContextFunction::clear()
+{
+    for ( int i = 0; i < MaxContext; ++i )
     {
         mContextFuncArray[i] =  NULL;
     }
@@ -48,11 +57,14 @@ _ContextFunction:: _ContextFunction()
 
 _ContextFunction::_ContextFunction( const _ContextFunction& other )
 {
-    std::cout << "copy constructor _kernel routine" << std::endl;
+    assign( other );
+}
 
-    for ( int i = 0; i < context::MaxContext; ++i )
+void _ContextFunction::assign( const _ContextFunction& other )
+{
+    for ( int i = 0; i < MaxContext; ++i )
     {
-        mContextFuncArray[i] = other.mContextFuncArray[i];
+        mContextFuncArray[i] =  other.mContextFuncArray[i];
     }
 }
 
@@ -63,7 +75,7 @@ ContextType _ContextFunction::validContext( ContextType preferedCtx )
         return preferedCtx;
     }
 
-    for ( int i = 0; i < context::MaxContext; ++i )
+    for ( int i = 0; i < MaxContext; ++i )
     {
         if ( mContextFuncArray[i] != NULL )
         {
@@ -73,7 +85,7 @@ ContextType _ContextFunction::validContext( ContextType preferedCtx )
 
     // throw exception
 
-    return static_cast<ContextType>( context::MaxContext );
+    return static_cast<ContextType>( MaxContext );
 }
 
 ContextType _ContextFunction::validContext( const _ContextFunction& other, ContextType preferedCtx )
@@ -85,7 +97,7 @@ ContextType _ContextFunction::validContext( const _ContextFunction& other, Conte
         return preferedCtx;
     }
 
-    for ( int i = 0; i < context::MaxContext; ++i )
+    for ( int i = 0; i < MaxContext; ++i )
     {
         if ( mContextFuncArray[i] != NULL && other.mContextFuncArray[i] != NULL )
         {
@@ -95,7 +107,22 @@ ContextType _ContextFunction::validContext( const _ContextFunction& other, Conte
 
     // throw exception
 
-    return static_cast<ContextType>( context::MaxContext );
+    return static_cast<ContextType>( MaxContext );
+}
+
+std::string _ContextFunction::printIt() const
+{
+    std::ostringstream msg;
+
+    for ( int i = 0; i < MaxContext; ++i )
+    {
+        if ( mContextFuncArray[i] != NULL )
+        {
+            msg << "+" << static_cast<ContextType>( i ) << "+";
+        }
+    }
+
+    return msg.str();
 }
 
 } /* end namespace interface */
