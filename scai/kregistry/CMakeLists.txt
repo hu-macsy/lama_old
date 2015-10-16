@@ -1,5 +1,5 @@
 ###
- # @file scai/kernel/CMakeLists.txt
+ # @file scai/kregistry/CMakeLists.txt
  #
  # @license
  # Copyright (c) 2009-2015
@@ -25,7 +25,7 @@
  # SOFTWARE.
  # @endlicense
  #
- # @brief scai/kernel/CMakeLists.txt
+ # @brief scai/kregistry/CMakeLists.txt
  # @author Thomas Brandes
  # @date 30.06.2015
  # @since 2.0.0
@@ -35,7 +35,7 @@
 cmake_minimum_required ( VERSION 2.8 )
 
 ### Set PROJECT NAME / supported LANGUAGES
-project( scai_kernel CXX )
+project( scai_kregistry CXX )
 
 ### Set Module Path
 set ( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../CMake/Modules" )
@@ -47,7 +47,7 @@ if    ( NOT SCAI_COMPLETE_BUILD )
 	include ( SetCPPFlags )
 else  ( NOT SCAI_COMPLETE_BUILD )	
 	include ( Functions/CheckValueAtCompleteBuild )
-	CheckValueAtCompleteBuild ( kernel )
+	CheckValueAtCompleteBuild ( kregistry )
 endif ( NOT SCAI_COMPLETE_BUILD )
 
 ### include all search packages
@@ -96,8 +96,8 @@ scai_project (
     CLASSES                  # .cpp, .hpp
 
         ContextFunction
-        KernelInterface
-        KernelInterfaceException
+        KernelRegistry
+        KernelRegistryException
 
     HEADERS
 
@@ -115,7 +115,7 @@ add_subdirectory ( examples )
 add_subdirectory ( test )
 
 ## add library
-add_library ( scai_kernel ${SCAI_LIBRARY_TYPE} ${CXX_SOURCES} )
+add_library ( scai_kregistry ${SCAI_LIBRARY_TYPE} ${CXX_SOURCES} )
 
 ## add link libraries
 list ( REVERSE SCAI_KERNEL_INTERNAL_DEPS )
@@ -123,22 +123,22 @@ foreach    ( module ${SCAI_KERNEL_INTERNAL_DEPS} )
 	string ( TOUPPER ${module} upper_module )
 	set ( KERNEL_LINK_LIBRARIES ${KERNEL_LINK_LIBRARIES} ${${upper_module}_LIBRARY} )
 endforeach ( module ${SCAI_KERNEL_INTERNAL_DEPS} )
-target_link_libraries ( scai_kernel ${SCAI_START_LINK_LIBRARIES} ${KERNEL_LINK_LIBRARIES} ${SCAI_END_LINK_LIBRARIES} )
+target_link_libraries ( scai_kregistry ${SCAI_START_LINK_LIBRARIES} ${KERNEL_LINK_LIBRARIES} ${SCAI_END_LINK_LIBRARIES} )
 
 foreach    ( module ${SCAI_KERNEL_EXTERNAL_DEPS} )
 	string ( TOUPPER ${module} upper_module )
-    target_link_libraries ( scai_kernel ${SCAI_${upper_module}_LIBRARIES} )
+    target_link_libraries ( scai_kregistry ${SCAI_${upper_module}_LIBRARIES} )
 endforeach ( module ${SCAI_KERNEL_EXTERNAL_DEPS} )
 
 ### install
 
-install ( TARGETS scai_kernel DESTINATION lib )
+install ( TARGETS scai_kregistry DESTINATION lib )
 
 include( Functions/relativeInstall )
-relative_install( FILES ${CXX_HEADERS} DESTINATION include/scai/kernel )
+relative_install( FILES ${CXX_HEADERS} DESTINATION include/scai/kregistry )
 
 ## install library.hpp
-install ( FILES ../kernel.hpp DESTINATION include/scai )
+install ( FILES ../kregistry.hpp DESTINATION include/scai )
 
 ## add custum target distClean
 include ( DistClean )

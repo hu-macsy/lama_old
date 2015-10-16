@@ -1,9 +1,9 @@
 #include <boost/test/unit_test.hpp>
 
-#include <scai/kernel/KernelContextFunction.hpp>
+#include <scai/kregistry/KernelContextFunction.hpp>
 
 using namespace scai::common;
-using namespace scai::interface;
+using namespace scai::kregistry;
 
 template<typename ValueType>
 static ValueType add1( const ValueType x )
@@ -17,7 +17,7 @@ static ValueType minus1( const ValueType x )
     return x - 1.0;
 }
 
-/** Trait to handle function ValueType ( fn ) ( ValueType ) in KernelInterface. */
+/** Trait to handle function ValueType ( fn ) ( ValueType ) in KernelRegistry. */
 
 template<typename ValueType>
 struct UnaryOpTrait
@@ -30,13 +30,13 @@ BOOST_AUTO_TEST_CASE( ReplaceTest )
 {
     // register unary operator for double
 
-    KernelInterface::set<UnaryOpTrait<double> >( add1<double>, context::Host );
-    KernelInterface::set<UnaryOpTrait<double> >( minus1<double>, context::Host );  // does not overwrite add1
+    KernelRegistry::set<UnaryOpTrait<double> >( add1<double>, context::Host );
+    KernelRegistry::set<UnaryOpTrait<double> >( minus1<double>, context::Host );  // does not overwrite add1
   
     // register unary operator for float
 
-    KernelInterface::set<UnaryOpTrait<float> >( add1<float>, context::Host );
-    KernelInterface::set<UnaryOpTrait<float> >( minus1<float>, context::Host, true );  // overrides add1
+    KernelRegistry::set<UnaryOpTrait<float> >( add1<float>, context::Host );
+    KernelRegistry::set<UnaryOpTrait<float> >( minus1<float>, context::Host, true );  // overrides add1
 
     KernelTraitContextFunction<UnaryOpTrait<float> > opFloat;
     KernelTraitContextFunction<UnaryOpTrait<double> > opDouble;

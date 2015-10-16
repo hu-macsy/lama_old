@@ -1,9 +1,9 @@
 
-#include <scai/kernel/KernelContextFunction.hpp>
+#include <scai/kregistry/KernelContextFunction.hpp>
 
 #include <iostream>
 
-using namespace scai::interface;
+using namespace scai::kregistry;
 using namespace scai::common;
 
 struct UtilsInterface
@@ -69,16 +69,16 @@ static void setInterface()
     std::cout << std::endl;
     std::cout << "setInterface: start" << std::endl;
 
-    KernelInterface::set<UtilsInterface::isSorted<double> >( isSorted, context::Host );
-    KernelInterface::set( isSorted, "Utils.isSorted", context::Host );
+    KernelRegistry::set<UtilsInterface::isSorted<double> >( isSorted, context::Host );
+    KernelRegistry::set( isSorted, "Utils.isSorted", context::Host );
 
-    KernelInterface::set( scale<float>, "Utils.scale", context::Host );
-    KernelInterface::set( scale<float>, "Utils.scale", context::CUDA );
-    KernelInterface::set( scale<double>, "Utils.scale", context::Host );
-    KernelInterface::set( scale<double>, "Utils.scale", context::CUDA );
+    KernelRegistry::set( scale<float>, "Utils.scale", context::Host );
+    KernelRegistry::set( scale<float>, "Utils.scale", context::CUDA );
+    KernelRegistry::set( scale<double>, "Utils.scale", context::Host );
+    KernelRegistry::set( scale<double>, "Utils.scale", context::CUDA );
 
     std::cout << "setInterface: done" << std::endl;
-    KernelInterface::printAll();
+    KernelRegistry::printAll();
 }
 
 static void example1()
@@ -93,7 +93,7 @@ static void example1()
 
     // double ( *isSorted ) ( const double*, int, bool );
     
-    KernelInterface::get( isSorted, "Utils.isSorted", context::Host );
+    KernelRegistry::get( isSorted, "Utils.isSorted", context::Host );
 
     double a[] = { 3.0, 4.0, 5.0 };
   

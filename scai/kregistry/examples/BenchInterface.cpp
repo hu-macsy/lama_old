@@ -1,10 +1,10 @@
 
-#include <scai/kernel/KernelContextFunction.hpp>
+#include <scai/kregistry/KernelContextFunction.hpp>
 #include <scai/common/Walltime.hpp>
 
 #include <iostream>
 
-using namespace scai::interface;
+using namespace scai::kregistry;
 using namespace scai::common;
 
 template<typename ValueType>
@@ -26,10 +26,10 @@ static void setInterface()
 {
     for ( int i = 0; i < 20; ++i )
     {
-        KernelInterface::set(add<float>, names[i], context::Host );
-        KernelInterface::set(add<double>, names[i], context::Host );
-        KernelInterface::set(sub<float>, names[i], context::Host );
-        KernelInterface::set(sub<double>, names[i], context::Host );
+        KernelRegistry::set(add<float>, names[i], context::Host );
+        KernelRegistry::set(add<double>, names[i], context::Host );
+        KernelRegistry::set(sub<float>, names[i], context::Host );
+        KernelRegistry::set(sub<double>, names[i], context::Host );
     }
 }
 
@@ -55,7 +55,7 @@ int main()
 
     setInterface();
 
-    KernelInterface::printAll();
+    KernelRegistry::printAll();
  
     double x = 0.0;
 

@@ -30,14 +30,14 @@
  * @date 13.10.2015
  */
 
-#include <scai/kernel/ContextFunction.hpp>
+#include <scai/kregistry/ContextFunction.hpp>
 
 #include <sstream>
 
 namespace scai
 {
 
-namespace interface
+namespace kregistry
 {
 
 using scai::common::context::MaxContext;
@@ -125,7 +125,7 @@ std::string _ContextFunction::printIt() const
     return msg.str();
 }
 
-} /* end namespace interface */
+} /* end namespace kregistry */
 
 } /* end namespace scai */
 

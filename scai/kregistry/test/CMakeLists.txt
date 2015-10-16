@@ -25,7 +25,7 @@
  # SOFTWARE.
  # @endlicense
  #
- # @brief CMake configuration file for scai_kernel tests
+ # @brief CMake configuration file for scai_kregistry tests
  # @author Thomas Brandes
  # @date 16.06.2015
 ###
@@ -50,7 +50,7 @@ if ( Boost_UNIT_TEST_FRAMEWORK_FOUND )
 
     target_link_libraries ( KernelInterfaceTest 
         ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}
-        scai_kernel
+        scai_kregistry
         )
 
 endif ( Boost_UNIT_TEST_FRAMEWORK_FOUND )

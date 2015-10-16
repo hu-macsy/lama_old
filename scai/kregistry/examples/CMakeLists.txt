@@ -25,14 +25,14 @@
  # SOFTWARE.
  # @endlicense
  #
- # @brief CMake configuration file for scai_kernel examples
+ # @brief CMake configuration file for scai_kregistry examples
  # @author Thomas Brandes
  # @date 16.06.2015
 ###
 
 add_executable( DemoKernelInterface DemoKernelInterface.cpp )
-target_link_libraries( DemoKernelInterface scai_kernel )
+target_link_libraries( DemoKernelInterface scai_kregistry )
 
 add_executable( BenchInterface BenchInterface.cpp )
-target_link_libraries( BenchInterface scai_kernel )
+target_link_libraries( BenchInterface scai_kregistry )
 

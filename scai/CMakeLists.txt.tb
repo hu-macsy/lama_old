@@ -82,20 +82,20 @@ add_subdirectory( tasking )
 ### Set variables for Findscai_tasking so other projects can use it 
 
 set ( SCAI_TASKING_LIBRARY scai_tasking 
-      CACHE FILEPATH  "library for thread tasking" )
+      CACHE FILEPATH  "library for tasking" )
 
 set ( SCAI_TASKING_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/tasking
       CACHE PATH "tasking include directory" )
 
-add_subdirectory( kernel )
+add_subdirectory( kregistry )
 
-### Set variables for Findscai_kernel so other projects can use it 
+### Set variables for Findscai_kregistry so other projects can use it 
 
-set ( SCAI_TASKING_LIBRARY scai_kernel
-      CACHE FILEPATH  "library for thread kernel" )
+set ( SCAI_KERNEL_LIBRARY scai_kregistry
+      CACHE FILEPATH  "library for kernel registry" )
 
-set ( SCAI_TASKING_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/kernel
-      CACHE PATH "kernel include directory" )
+set ( SCAI_KERNEL_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/kregistry
+      CACHE PATH "kernel registry include directory" )
 
 add_subdirectory( hmemo )
 

@@ -1,9 +1,9 @@
 #include <boost/test/unit_test.hpp>
 
-#include <scai/kernel/KernelContextFunction.hpp>
+#include <scai/kregistry/KernelContextFunction.hpp>
 
 using namespace scai::common;
-using namespace scai::interface;
+using namespace scai::kregistry;
 
 static double add1( const double x )
 {
@@ -15,7 +15,7 @@ static double minus1( const double x )
     return x - 1.0;
 }
 
-/** Trait to handle function double ( fn ) ( double ) in KernelInterface. */
+/** Trait to handle function double ( fn ) ( double ) in KernelRegistry. */
 
 struct UnaryAddTrait
 {
@@ -33,23 +33,23 @@ BOOST_AUTO_TEST_CASE( ContextTest )
 {
     // register context::Host
 
-    KernelInterface::set<UnaryAddTrait>( add1, context::Host );
-    KernelInterface::set<UnaryMinusTrait>( minus1, context::Host );
+    KernelRegistry::set<UnaryAddTrait>( add1, context::Host );
+    KernelRegistry::set<UnaryMinusTrait>( minus1, context::Host );
 
     // register context::CUDA
 
-    KernelInterface::set<UnaryAddTrait>( add1, context::CUDA );
-    KernelInterface::set<UnaryMinusTrait>( minus1, context::CUDA );
+    KernelRegistry::set<UnaryAddTrait>( add1, context::CUDA );
+    KernelRegistry::set<UnaryMinusTrait>( minus1, context::CUDA );
 
     // register context::MIC, only add1
 
-    KernelInterface::set<UnaryAddTrait>( add1, context::MIC );
+    KernelRegistry::set<UnaryAddTrait>( add1, context::MIC );
 
     // register context::UserContext, only minus1
 
-    KernelInterface::set<UnaryMinusTrait>( minus1, context::UserContext );
+    KernelRegistry::set<UnaryMinusTrait>( minus1, context::UserContext );
 
-    KernelInterface::printAll();
+    KernelRegistry::printAll();
 
     KernelTraitContextFunction<UnaryAddTrait> add;
     KernelTraitContextFunction<UnaryMinusTrait> minus;

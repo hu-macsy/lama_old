@@ -178,16 +178,16 @@ ExternalProject_Add ( scai_tasking
 	    	BINARY_DIR tasking
             )
 
-concatCacheArguments ( scai_kernel "CACHE_ARGS" )
-#message ( STATUS "kernel CACHE_ARGS ${CACHE_ARGS}" )
+concatCacheArguments ( scai_kregistry "CACHE_ARGS" )
+#message ( STATUS "kregistry CACHE_ARGS ${CACHE_ARGS}" )
 
-ExternalProject_Add ( scai_kernel
-            DEPENDS ${SCAI_HMEMO_INTERNAL_DEPS}
-            PREFIX kernel
-            SOURCE_DIR ${CMAKE_SOURCE_DIR}/kernel
+ExternalProject_Add ( scai_kregistry
+            DEPENDS ${SCAI_KREGISTRY_INTERNAL_DEPS}
+            PREFIX kregistry
+            SOURCE_DIR ${CMAKE_SOURCE_DIR}/kregistry
             CMAKE_ARGS "-DSCAI_COMPLETE_BUILD=1"
             CMAKE_CACHE_ARGS "${CMAKE_ARGS};${CACHE_ARGS}"
-	    	BINARY_DIR kernel
+	    	BINARY_DIR kregistry
             )
 
 concatCacheArguments ( scai_lama "CACHE_ARGS" )

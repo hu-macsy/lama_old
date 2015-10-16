@@ -25,19 +25,19 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Class that stores a context function from the kernel interface
+ * @brief Class that stores a context function from the kernel registry
  * @author Thomas Brandes
  * @date 14.10.2015
  */
 #pragma once
 
-#include <scai/kernel/ContextFunction.hpp>
-#include <scai/kernel/KernelInterface.hpp>
+#include <scai/kregistry/ContextFunction.hpp>
+#include <scai/kregistry/KernelRegistry.hpp>
 
 namespace scai
 {
 
-namespace interface
+namespace kregistry
 {
 
 template<typename FunctionType> 
@@ -53,9 +53,9 @@ public:
         mName ( name ) 
 
     {
-        // get this context function pointers via the kernel interface
+        // get this context function pointers via the kernel registry
 
-        KernelInterface::get( *this, mName );
+        KernelRegistry::get( *this, mName );
     }
 
     FunctionType operator[] ( ContextType ctx )
@@ -110,6 +110,6 @@ public:
     using KernelContextFunction<ContextFunctionType>::operator[];
 };
 
-} /* end namespace interface */
+} /* end namespace kregistry */
 
 } /* end namespace scai */

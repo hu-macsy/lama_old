@@ -1,5 +1,5 @@
 /**
- * @file KernelInterface.hpp
+ * @file ContextFunction.hpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Interface class for context dependent operations to be implemented.
+ * @brief Definition of class for typed function pointers, one for each context
  * @author Thomas Brandes
  * @date 14.10.2015
  */
@@ -43,7 +43,7 @@
 namespace scai
 {
 
-namespace interface
+namespace kregistry
 {
 
 /** Type definition of un untyped function pointer */
@@ -133,6 +133,6 @@ public:
     using _ContextFunction::validContext;
 };
 
-} /* end namespace interface */
+} /* end namespace kregistry */
 
 } /* end namespace scai */

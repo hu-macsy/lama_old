@@ -1,9 +1,9 @@
 #include <boost/test/unit_test.hpp>
 
-#include <scai/kernel/KernelContextFunction.hpp>
+#include <scai/kregistry/KernelContextFunction.hpp>
 
 using namespace scai::common;
-using namespace scai::interface;
+using namespace scai::kregistry;
 
 static void dummyRoutine()
 {
@@ -11,9 +11,9 @@ static void dummyRoutine()
 
 BOOST_AUTO_TEST_CASE( SimpleTest )
 {
-    // This simple test registers a function in the interface and uses it later
+    // This simple test registers a function in the kernel registry and uses it later
 
-    KernelInterface::set( dummyRoutine, "dummy", scai::common::context::Host );
+    KernelRegistry::set( dummyRoutine, "dummy", scai::common::context::Host );
   
     KernelContextFunction<void(*)()> f( "dummy" );
 
@@ -39,4 +39,3 @@ BOOST_AUTO_TEST_CASE( SimpleTest )
 
     }, Exception );
 }
-

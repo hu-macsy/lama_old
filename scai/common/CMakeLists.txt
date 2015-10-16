@@ -93,6 +93,7 @@ scai_project (
         Complex
         Printable
         ScalarType
+        ContextType
         Settings
         Thread
         Walltime
