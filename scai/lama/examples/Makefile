@@ -2,11 +2,12 @@ all: makeAll
 
 clean: makeAllClean
 
-DIRS = lecture \
-       tutorial \
-       bench \
+DIRS = bench \
+	   labelrank \
+	   lecture \
+       solver \
        spy \
-       solver
+       tutorial
 
 makeAll:
 	for dir in $(DIRS); do \
