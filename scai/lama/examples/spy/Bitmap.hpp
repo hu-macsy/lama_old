@@ -36,6 +36,7 @@
 #define PNG_DEBUG 3
 
 #include <scai/lama.hpp>
+#include <scai/common/Assert.hpp>
 #include <scai/common/exception/Exception.hpp>
 
 #include <cstdlib>
