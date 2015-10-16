@@ -579,16 +579,6 @@ public:
     virtual ContextPtr getContextPtr() const = 0;
 
     /**
-     * @brief Method returns a reference to the constant context.
-     *
-     * @return    reference to the constant context.
-     */
-    virtual const Context& getContext() const
-    {
-        return *getContextPtr();
-    }
-
-    /**
      * @brief SyncKind describes if the communication and computation should be done synchronously or asynchronously.
      */
     typedef enum

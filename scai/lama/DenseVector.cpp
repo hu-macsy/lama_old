@@ -649,7 +649,7 @@ template<typename ValueType>
 void DenseVector<ValueType>::writeAt( std::ostream& stream ) const
 {
     stream << "DenseVector<" << getValueType() << ">" << "( size = " << size() << ", local = " << mLocalValues.size()
-                   << ", dist = " << getDistribution() << ", loc  = " << getContext() << " )";
+                   << ", dist = " << getDistribution() << ", loc  = " << *getContextPtr() << " )";
 }
 
 template<typename ValueType>

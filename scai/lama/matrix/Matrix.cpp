@@ -504,13 +504,13 @@ Matrix& Matrix::operator=( const Expression_SMM_SM& exp )
         sanityCheck( Expression<Matrix, Matrix, Times>( A, B ), C );
     }
 
-    SCAI_LOG_INFO( logger, "Context of this before matrixTimesMatrix = " << this->getContext() )
+    SCAI_LOG_INFO( logger, "Context of this before matrixTimesMatrix = " << *getContextPtr() )
 
     A.matrixTimesMatrix( *this, alpha, B, beta, C );
 
     SCAI_LOG_INFO( logger, "end operator=:  A * B * alpha + C * beta " )
 
-    SCAI_LOG_INFO( logger, "Context of this after matrixTimesMatrix = " << this->getContext() )
+    SCAI_LOG_INFO( logger, "Context of this after matrixTimesMatrix = " << *getContextPtr() )
 
     return *this;
 }

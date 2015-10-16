@@ -460,14 +460,6 @@ public:
     inline hmemo::ContextPtr getContextPtr() const;
 
     /**
-     * @brief Getter function for the context (pointer) of a vector.
-     */
-    virtual const hmemo::Context& getContext() const
-    {
-        return *getContextPtr();
-    }
-
-    /**
      * @brief Returns the global memory that is allocated to hold this vector.
      * For a distributed vector all partitions are summed together.
      *
