@@ -25,14 +25,33 @@
  # SOFTWARE.
  # @endlicense
  #
- # @brief CMake configuration file for scai_kernel examples
+ # @brief CMake configuration file for scai_kernel tests
  # @author Thomas Brandes
  # @date 16.06.2015
 ###
 
-add_executable( DemoKernelInterface DemoKernelInterface.cpp )
-target_link_libraries( DemoKernelInterface scai_kernel )
+set ( CXX_SOURCES
+      KernelInterfaceTest.cpp
+      SimpleTest.cpp  
+      TraitTest.cpp  
+      ReplaceTest.cpp  
+      ContextTest.cpp  
+) 
 
-add_executable( BenchInterface BenchInterface.cpp )
-target_link_libraries( BenchInterface scai_kernel )
+# Boost is not required, but if not available tests are not built
+
+find_package ( Boost COMPONENTS unit_test_framework )
+
+if ( Boost_UNIT_TEST_FRAMEWORK_FOUND )
+
+    include_directories ( ${Boost_INCLUDE_DIR} )
+
+    add_executable ( KernelInterfaceTest ${CXX_SOURCES} )
+
+    target_link_libraries ( KernelInterfaceTest 
+        ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}
+        scai_kernel
+        )
+
+endif ( Boost_UNIT_TEST_FRAMEWORK_FOUND )
 

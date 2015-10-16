@@ -58,7 +58,7 @@ public:
         KernelInterface::get( *this, mName );
     }
 
-    FunctionType operator() ( ContextType ctx )
+    FunctionType operator[] ( ContextType ctx )
     {
         FunctionType fn = ContextFunction<FunctionType>::get( ctx );
 
@@ -106,6 +106,8 @@ public:
         KernelContextFunction<ContextFunctionType>( KernelTrait::getId() )
     {
     }
+
+    using KernelContextFunction<ContextFunctionType>::operator[];
 };
 
 } /* end namespace interface */

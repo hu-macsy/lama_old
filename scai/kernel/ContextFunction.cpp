@@ -92,7 +92,7 @@ ContextType _ContextFunction::validContext( const _ContextFunction& other, Conte
 {
     if ( mContextFuncArray[preferedCtx] != NULL && other.mContextFuncArray[preferedCtx] != NULL )
     {
-        std::cout << "both valid at context = " << preferedCtx << std::endl;
+        // std::cout << "both valid at context = " << preferedCtx << std::endl;
 
         return preferedCtx;
     }

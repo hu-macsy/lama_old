@@ -26,27 +26,27 @@
  * @endlicense
  *
  * @brief Implementation of methods for KernelInterfaceException
- * @author Eric Schricker
- * @date 10.08.2015
- * @since 2.0.0
+ * @author Thomas Brandes
+ * @date 16.10.2015
  */
 
-// hpp
-#include <scai/common/kernel/KernelInterfaceException.hpp>
+#include <scai/kernel/KernelInterfaceException.hpp>
 
 namespace scai
 {
 
-namespace kernel
+namespace interface
 {
     
 KernelInterfaceException::KernelInterfaceException()
 {
+    mMessage = "KernelInterfaceException";
 }
 
 KernelInterfaceException::KernelInterfaceException( const std::string& message )
     : mMessage( message )
 {
+    mMessage += " @KernelInterface";
 }
 
 KernelInterfaceException::~KernelInterfaceException() throw()

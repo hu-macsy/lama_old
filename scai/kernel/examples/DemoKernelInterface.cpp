@@ -119,7 +119,7 @@ static void example2()
 
     double a[] = { 3.0, 4.0, 2.0 };
   
-    bool okay = isSorted( context::Host )( a, 3, true );
+    bool okay = isSorted[ context::Host ]( a, 3, true );
 
     std::cout << "example2: isSorted = " << okay << std::endl;
 }
@@ -139,7 +139,7 @@ static void example3()
     
     static KernelContextFunction< SigScale > scale ( "Utils.scale" ) ;
 
-    scale( context::Host )( a, 10, 3 );
+    scale[ context::Host ]( a, 10, 3 );
 
     std::cout << "example3: scale: " << a[0] << ", " << a[1] << ", " << a[2] << std::endl;
 }

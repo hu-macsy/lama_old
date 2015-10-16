@@ -97,6 +97,7 @@ scai_project (
 
         ContextFunction
         KernelInterface
+        KernelInterfaceException
 
     HEADERS
 
@@ -111,7 +112,7 @@ endif ( CUDA_FOUND AND USE_CUDA )
 
 ## add subdirectories
 add_subdirectory ( examples )
-# add_subdirectory ( test )
+add_subdirectory ( test )
 
 ## add library
 add_library ( scai_kernel ${SCAI_LIBRARY_TYPE} ${CXX_SOURCES} )

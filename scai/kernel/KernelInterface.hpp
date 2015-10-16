@@ -32,9 +32,9 @@
 #pragma once
 
 #include <scai/kernel/ContextFunction.hpp>
+#include <scai/kernel/KernelInterfaceException.hpp>
 
 #include <scai/logging.hpp>
-#include <scai/common/exception/Exception.hpp>
 
 #include <map>
 #include <string>
@@ -70,7 +70,7 @@ private:
 
     /** Type for unique key in registration */
 
-    static void registerContextFunction( const InterfaceKey& key, ContextType ctx, VoidFunction fn )
+    static void registerContextFunction( const InterfaceKey& key, ContextType ctx, VoidFunction fn, bool replace )
     {
         SCAI_LOG_INFO( logger, "register ctx = " << ctx << " with " << key )
 
@@ -90,9 +90,26 @@ private:
         }
         else
         {
+            VoidFunction old_fn = it->second.get( ctx );
+
+            if ( old_fn != NULL )
+            {
+                if ( fn == old_fn ) 
+                {
+                    SCAI_LOG_WARN( logger, "same function registered again, " << key )
+                }
+                else if ( replace )
+                {
+                    SCAI_LOG_INFO( logger, "interface function replaced, " << key )
+                }
+            }
+
             SCAI_LOG_DEBUG( logger, "register: entry available, set it for ctx = " << ctx )
 
-            it->second.set( ctx, fn );
+            if ( old_fn == NULL || replace )
+            {
+                it->second.set( ctx, fn );
+            }
         }
     }
 
@@ -118,17 +135,17 @@ private:
 public:
 
     template<typename KernelTrait>
-    static void set( typename KernelTrait::FuncType fn, ContextType ctx )
+    static void set( typename KernelTrait::FuncType fn, ContextType ctx, bool replace = false )
     {
         InterfaceKey key( typeid( typename KernelTrait::FuncType ), KernelTrait::getId() );
-        registerContextFunction( key, ctx, ( VoidFunction ) fn );
+        registerContextFunction( key, ctx, ( VoidFunction ) fn, replace );
     }
 
     template<typename FunctionType>
-    static void set( FunctionType fn, const char* name, ContextType ctx )
+    static void set( FunctionType fn, const char* name, ContextType ctx, bool replace = false )
     {
         InterfaceKey key( typeid( FunctionType ), name );
-        registerContextFunction( key, ctx, ( VoidFunction ) fn );
+        registerContextFunction( key, ctx, ( VoidFunction ) fn, replace );
     }
 
     template<typename FunctionType>
@@ -180,8 +197,7 @@ public:
 
             contextFunction.clear();   // just for safety
 
-            COMMON_THROWEXCEPTION( "No context function registered, name = " << name 
-                                     << ", type = " << typeid( FunctionType ).name() )
+            SCAI_THROWEXCEPTION( KernelInterfaceException, "No context function registered, " << key )
         }
     }
 

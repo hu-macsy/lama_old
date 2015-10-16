@@ -1,5 +1,5 @@
 /**
- * @file LAMAInterface.hpp
+ * @file KernelInterfaceException.hpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Interface class for context dependent operations to be implemented.
+ * @brief Derived exception class to allow specific exceptions thrown at KernelInterface 
  * @author Thomas Brandes
  * @date 10.10.2015
  */
@@ -41,7 +41,9 @@ namespace scai
 namespace interface
 {
 
-class COMMON_DLL_IMPORTEXPORT KernelInterfaceException : public Exception
+/** Derived class needed to catch exception only from KernelInterface */
+
+class COMMON_DLL_IMPORTEXPORT KernelInterfaceException : public scai::common::Exception
 {
 public:
 
@@ -56,10 +58,6 @@ public:
 protected:
         
     std::string mMessage;
-
-private:
-
-    static UnsupportedType unsupportedSetting;
 };
 
 } /* end namespace common */
