@@ -149,7 +149,6 @@ void DenseVector<ValueType>::readFromFile( const std::string& filename )
     SCAI_LOG_INFO( logger, "read dense vector from file " << filename )
 
     // Take the current default communicator
-
     CommunicatorPtr comm = Communicator::get();
 
     IndexType myRank = comm->getRank();
@@ -162,9 +161,6 @@ void DenseVector<ValueType>::readFromFile( const std::string& filename )
 	std::string baseFileName = filename;
 	std::string vecFileName;
     long dataTypeSize = -1;
-    File::DataType dataType;
-
-//    std::string vecFileName( filename + ".vec" );
 
     if( filename.size() >= 4 )
     {
@@ -196,15 +192,12 @@ void DenseVector<ValueType>::readFromFile( const std::string& filename )
 
 		comm->bcast( &numElements, 1, host );
 
-		dataType = getDataType<ValueType>( dataTypeSize );
-
 		// host gets all elements
 
 		DistributionPtr dist( new CyclicDistribution( numElements, numElements, comm ) );
 
 		allocate( dist );
     }
-
 
     if( myRank == host )
     {
@@ -217,7 +210,7 @@ void DenseVector<ValueType>::readFromFile( const std::string& filename )
                 break;
 
             case File::BINARY: //Binary without number of elements in the vector file
-                readVectorFromBinaryFile( vecFileName, dataType );
+                readVectorFromBinaryFile( vecFileName, getDataType<ValueType>( dataTypeSize ) );
                 break;
 
             case File::XDR: //XDR following the IEEE standard
