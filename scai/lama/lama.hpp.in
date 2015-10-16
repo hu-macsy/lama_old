@@ -42,7 +42,7 @@
 #endif //LAMA_LINKED_BOOST_VERSION != BOOST_VERSION
 
 
-#define LAMA_REVISION ${LAMA_VERSION}
+#define LAMA_REVISION ${LAMA_VERSION_MAJOR}.{LAMA_VERSION_MINOR}
 
 extern "C" inline int lama_getRevision()
 {
