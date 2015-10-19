@@ -76,6 +76,6 @@ namespace context
 // Make ContexType and AccessKind visible, but not enum values. 
 
 using context::ContextType;
-using context::AccessKind;
+// using context::AccessKind;
 
 } /* end namespace scai */

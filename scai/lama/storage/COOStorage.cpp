@@ -37,6 +37,7 @@
 // local library
 #include <scai/lama/LAMAInterface.hpp>
 #include <scai/lama/LAMAArrayUtils.hpp>
+#include <scai/lama/kernel_registry.hpp>
 
 #include <scai/lama/openmp/OpenMPUtils.hpp>
 #include <scai/lama/openmp/OpenMPCOOUtils.hpp>
@@ -212,19 +213,20 @@ void COOStorage<ValueType>::check( const char* msg ) const
     // check row indexes in IA and column indexes in JA
 
     {
-        ContextPtr loc = getContextPtr();
+        scai::kregistry::KernelTraitContextFunction<UtilsInterface::validIndexes> validIndexes;
 
-        LAMA_INTERFACE_FN_DEFAULT( validIndexes, loc, Utils, Indexes )
+        ContextPtr  loc = getValidContext( getContextPtr(), validIndexes );  // find location where routine is available
+        ContextType ctx = loc->getType();
 
         ReadAccess<IndexType> rJA( mJA, loc );
         ReadAccess<IndexType> rIA( mIA, loc );
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        SCAI_ASSERT_ERROR( validIndexes( rIA.get(), mNumValues, mNumRows ),
+        SCAI_ASSERT_ERROR( validIndexes[ ctx ]( rIA.get(), mNumValues, mNumRows ),
                            *this << " @ " << msg << ": illegel indexes in IA" )
 
-        SCAI_ASSERT_ERROR( validIndexes( rJA.get(), mNumValues, mNumColumns ),
+        SCAI_ASSERT_ERROR( validIndexes[ ctx ]( rJA.get(), mNumValues, mNumColumns ),
                            *this << " @ " << msg << ": illegel indexes in JA" )
     }
 }
@@ -240,10 +242,12 @@ void COOStorage<ValueType>::setIdentity( const IndexType size )
     mNumColumns = size;
     mNumValues = mNumRows;
 
-    ContextPtr loc = getContextPtr();
+    scai::kregistry::KernelTraitContextFunction<UtilsInterface::setOrder<IndexType> > setOrder;
+    scai::kregistry::KernelTraitContextFunction<UtilsInterface::setVal<ValueType> > setVal;
 
-    LAMA_INTERFACE_FN_T( setOrder, loc, Utils, Setter, IndexType )
-    LAMA_INTERFACE_FN_T( setVal, loc, Utils, Setter, ValueType )
+    ContextPtr loc = getValidContext( getContextPtr(), setOrder );
+
+    scai::context::ContextType ctx = loc->getType();
 
     WriteOnlyAccess<IndexType> ia( mIA, loc, mNumValues );
     WriteOnlyAccess<IndexType> ja( mJA, loc, mNumValues );
@@ -251,10 +255,10 @@ void COOStorage<ValueType>::setIdentity( const IndexType size )
 
     SCAI_CONTEXT_ACCESS( loc )
 
-    setOrder( ia.get(), mNumValues );
-    setOrder( ja.get(), mNumValues );
+    setOrder[ ctx ]( ia.get(), mNumValues );
+    setOrder[ ctx ]( ja.get(), mNumValues );
 
-    setVal( values.get(), mNumValues, static_cast<ValueType>(1.0) );
+    setVal[ ctx ]( values.get(), mNumValues, static_cast<ValueType>(1.0) );
 
     mDiagonalProperty = true;
 }
@@ -673,9 +677,9 @@ void COOStorage<ValueType>::getDiagonalImpl( LAMAArray<OtherType>& diagonal ) co
 {
     const IndexType numDiagonalElements = std::min( mNumColumns, mNumRows );
 
-    ContextPtr loc = getContextPtr();
+    static kregistry::KernelTraitContextFunction<UtilsInterface::set<OtherType, ValueType> > set;
 
-    LAMA_INTERFACE_FN_TT( set, loc, Utils, Copy, OtherType, ValueType )
+    ContextPtr loc = getValidContext( this->getContextPtr(), set );
 
     WriteOnlyAccess<OtherType> wDiagonal( diagonal, loc, numDiagonalElements );
     ReadAccess<ValueType> rValues( mValues, loc );
@@ -684,7 +688,7 @@ void COOStorage<ValueType>::getDiagonalImpl( LAMAArray<OtherType>& diagonal ) co
 
     // diagonal elements are the first entries of mValues
 
-    set( wDiagonal.get(), rValues.get(), numDiagonalElements );
+    set[ loc->getType() ]( wDiagonal.get(), rValues.get(), numDiagonalElements );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -697,9 +701,9 @@ void COOStorage<ValueType>::setDiagonalImpl( const LAMAArray<OtherType>& diagona
 {
     const IndexType numDiagonalElements = std::min( mNumColumns, mNumRows );
 
-    ContextPtr loc = getContextPtr();
+    static kregistry::KernelTraitContextFunction<UtilsInterface::set<ValueType, OtherType> > set;
 
-    LAMA_INTERFACE_FN_TT( set, loc, Utils, Copy, ValueType, OtherType )
+    ContextPtr loc = getValidContext( this->getContextPtr(), set );
 
     ReadAccess<OtherType> rDiagonal( diagonal, loc );
     WriteAccess<ValueType> wValues( mValues, loc );
@@ -708,7 +712,7 @@ void COOStorage<ValueType>::setDiagonalImpl( const LAMAArray<OtherType>& diagona
 
     // diagonal elements are the first entries of mValues
 
-    set( wValues.get(), rDiagonal.get(), numDiagonalElements );
+    set[ loc->getType() ]( wValues.get(), rDiagonal.get(), numDiagonalElements );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -765,15 +769,15 @@ ValueType COOStorage<ValueType>::maxNorm() const
         return static_cast<ValueType>(0.0);
     }
 
-    ContextPtr loc = getContextPtr();
+    static kregistry::KernelTraitContextFunction<UtilsInterface::absMaxVal<ValueType> > absMaxVal;
 
-    LAMA_INTERFACE_FN_DEFAULT_T( absMaxVal, loc, Utils, Reductions, ValueType )
+    ContextPtr loc = getValidContext( this->getContextPtr(), absMaxVal );
 
     ReadAccess<ValueType> cooValues( mValues, loc );
 
     SCAI_CONTEXT_ACCESS( loc )
 
-    ValueType maxval = absMaxVal( cooValues.get(), n );
+    ValueType maxval = absMaxVal[ loc->getType() ]( cooValues.get(), n );
 
     return maxval;
 }

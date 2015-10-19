@@ -36,6 +36,7 @@
 
 // local library
 #include <scai/lama/LAMAInterface.hpp>
+#include <scai/lama/kernel_registry.hpp>
 
 #include <scai/lama/openmp/OpenMPDenseUtils.hpp>
 #include <scai/lama/openmp/OpenMPCSRUtils.hpp>
@@ -484,13 +485,13 @@ void DenseStorageView<ValueType>::matrixTimesVector(
     {
         SCAI_LOG_INFO( logger, "set result = 0 as y != result and beta = 0" )
 
-        LAMA_INTERFACE_FN_T( setVal, loc, Utils, Setter, ValueType )
+        static kregistry::KernelTraitContextFunction<UtilsInterface::setVal<ValueType> > setVal;
 
         WriteOnlyAccess<ValueType> wResult( result, loc, mNumRows );
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        setVal( wResult.get(), mNumRows, static_cast<ValueType>(0.0) );
+        setVal[ loc->getType() ]( wResult.get(), mNumRows, static_cast<ValueType>(0.0) );
     }
     else if( &result != &y )
     {
@@ -593,13 +594,13 @@ void DenseStorageView<ValueType>::vectorTimesMatrix(
     {
         SCAI_LOG_INFO( logger, "set result = 0 as y != result and beta = 0" )
 
-        LAMA_INTERFACE_FN_T( setVal, loc, Utils, Setter, ValueType )
+        static kregistry::KernelTraitContextFunction<UtilsInterface::setVal<ValueType> > setVal;
 
         WriteOnlyAccess<ValueType> wResult( result, loc, mNumColumns );
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        setVal( wResult.get(), mNumColumns, static_cast<ValueType>(0.0) );
+        setVal[ loc->getType() ]( wResult.get(), mNumColumns, static_cast<ValueType>(0.0) );
     }
     else if( &result != &y )
     {
@@ -823,9 +824,9 @@ void DenseStorageView<ValueType>::matrixTimesMatrixDense(
 
         SCAI_LOG_INFO( logger, "init this result with 0, size = " << m * n )
         WriteOnlyAccess<ValueType> resAccess( getData(), context, m * n );
-        LAMA_INTERFACE_FN_T( setVal, context, Utils, Setter, ValueType )
+        static kregistry::KernelTraitContextFunction<UtilsInterface::setVal<ValueType> > setVal;
         SCAI_CONTEXT_ACCESS( context )
-        setVal( resAccess.get(), m * n, static_cast<ValueType>(0.0) );
+        setVal[ context->getType() ]( resAccess.get(), m * n, static_cast<ValueType>(0.0) );
     }
     else if( this != &c )
     {
@@ -939,15 +940,15 @@ ValueType DenseStorageView<ValueType>::maxNorm() const
         return static_cast<ValueType>(0.0);
     }
 
-    ContextPtr loc = this->getContextPtr();
+    static kregistry::KernelTraitContextFunction<UtilsInterface::absMaxVal<ValueType> > absMaxVal;
 
-    LAMA_INTERFACE_FN_DEFAULT_T( absMaxVal, loc, Utils, Reductions, ValueType )
+    ContextPtr loc = getValidContext( this->getContextPtr(), absMaxVal );
 
     ReadAccess<ValueType> read1( mData, loc );
 
     SCAI_CONTEXT_ACCESS( loc )
 
-    ValueType maxval = absMaxVal( read1.get(), n );
+    ValueType maxval = absMaxVal[ loc->getType() ]( read1.get(), n );
 
     return maxval;
 }
@@ -993,16 +994,16 @@ ValueType DenseStorageView<ValueType>::maxDiffNormImpl( const DenseStorageView<V
         return static_cast<ValueType>(0.0);
     }
 
-    ContextPtr loc = mContext;
+    static kregistry::KernelTraitContextFunction<UtilsInterface::absMaxDiffVal<ValueType> > absMaxDiffVal;
 
-    LAMA_INTERFACE_FN_DEFAULT_T( absMaxDiffVal, loc, Utils, Reductions, ValueType )
+    ContextPtr loc = getValidContext( this->getContextPtr(), absMaxDiffVal );
+
+    SCAI_CONTEXT_ACCESS( loc )
 
     ReadAccess<ValueType> read1( mData, loc );
     ReadAccess<ValueType> read2( other.mData, loc );
 
-    SCAI_CONTEXT_ACCESS( loc )
-
-    ValueType maxval = absMaxDiffVal( read1.get(), read2.get(), n );
+    ValueType maxval = absMaxDiffVal[ loc->getType() ]( read1.get(), read2.get(), n );
 
     return maxval;
 }

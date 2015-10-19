@@ -101,7 +101,7 @@ public:
      *  @returns  index to a corresponding entry for ContextData.
      */
 
-    ContextDataIndex acquireAccess( ContextPtr context, AccessKind kind, size_t allocSize, size_t validSize );
+    ContextDataIndex acquireAccess( ContextPtr context, context::AccessKind kind, size_t allocSize, size_t validSize );
 
     /** This routine must be called when an access is released, otherwise further accesses are not allowed. 
      *
@@ -109,7 +109,7 @@ public:
      *  @param[in] kind    kind of access, read or write
      */
 
-    void releaseAccess( ContextDataIndex index, AccessKind kind );
+    void releaseAccess( ContextDataIndex index, context::AccessKind kind );
 
     /**
      * @brief Query the capacity ( in number of elements ) at a certain context.
@@ -133,7 +133,7 @@ public:
 
     /** Return true if there is at least one write access to any context data. */
 
-    bool locked( AccessKind kind ) const;
+    bool locked( context::AccessKind kind ) const;
 
     void invalidateAll();
 
@@ -217,9 +217,9 @@ private:
     mutable common::Thread::Mutex mAccessMutex; // needed to make accesses thread-safe, must not be recursive 
     mutable common::Thread::Condition mAccessCondition;  // notify if all accesses are released
 
-    void lockAccess( AccessKind kind, ContextPtr context );
+    void lockAccess( context::AccessKind kind, ContextPtr context );
 
-    void unlockAccess( AccessKind kind );
+    void unlockAccess( context::AccessKind kind );
 
     int mLock[context::MaxAccessKind];
 
@@ -229,7 +229,7 @@ private:
     bool  multiContext;   // multiple reads at different Context
     bool  multiThreaded;  // multiple reads by different threads
 
-    bool hasAccessConflict( AccessKind kind ) const;
+    bool hasAccessConflict( context::AccessKind kind ) const;
 };
 
 

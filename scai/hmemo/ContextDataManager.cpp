@@ -87,14 +87,14 @@ bool ContextDataManager::locked() const
 
 /* ---------------------------------------------------------------------------------*/
 
-bool ContextDataManager::locked( AccessKind kind ) const
+bool ContextDataManager::locked( context::AccessKind kind ) const
 {
     return ( mLock[kind] > 0 );
 }
 
 /* ---------------------------------------------------------------------------------*/
 
-bool ContextDataManager::hasAccessConflict( AccessKind kind ) const
+bool ContextDataManager::hasAccessConflict( context::AccessKind kind ) const
 {
     bool conflict = false;
 
@@ -111,7 +111,7 @@ bool ContextDataManager::hasAccessConflict( AccessKind kind ) const
 
 /* ---------------------------------------------------------------------------------*/
 
-void ContextDataManager::lockAccess( AccessKind kind, ContextPtr context )
+void ContextDataManager::lockAccess( context::AccessKind kind, ContextPtr context )
 {
     common::Thread::ScopedLock lock( mAccessMutex );
 
@@ -186,7 +186,7 @@ void ContextDataManager::lockAccess( AccessKind kind, ContextPtr context )
 
 /* ---------------------------------------------------------------------------------*/
 
-void ContextDataManager::unlockAccess( AccessKind kind )
+void ContextDataManager::unlockAccess( context::AccessKind kind )
 {
     common::Thread::ScopedLock lock( mAccessMutex );
 
@@ -208,7 +208,7 @@ void ContextDataManager::unlockAccess( AccessKind kind )
 
 /* ---------------------------------------------------------------------------------*/
 
-void ContextDataManager::releaseAccess( ContextDataIndex index, AccessKind kind )
+void ContextDataManager::releaseAccess( ContextDataIndex index, context::AccessKind kind )
 {
     // we should check that this is really the context data for which access was reserved
  
@@ -511,7 +511,7 @@ ContextPtr ContextDataManager::getValidContext( const ContextType preferredType 
 
 /* ---------------------------------------------------------------------------------*/
 
-ContextDataIndex ContextDataManager::acquireAccess( ContextPtr context, AccessKind kind,
+ContextDataIndex ContextDataManager::acquireAccess( ContextPtr context, context::AccessKind kind,
         size_t allocSize, size_t validSize )
 {
     SCAI_ASSERT( context, "NULL pointer for context" )

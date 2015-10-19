@@ -35,6 +35,7 @@
 #include <scai/lama/cuda/CUDAUtils.hpp>
 
 // local library
+#include <scai/kregistry/KernelRegistry.hpp>
 #include <scai/lama/LAMAInterface.hpp>
 #include <scai/lama/LAMAInterfaceRegistry.hpp>
 
@@ -570,47 +571,48 @@ namespace lama
 
     void CUDAUtils::setInterface( UtilsInterface& Utils )
     {
+        using namespace scai::kregistry;
+
+        scai::context::ContextType ctx = scai::context::CUDA;
+
         SCAI_LOG_INFO( logger, "set general utilty routines for CUDA in Interface" )
 
-        LAMA_INTERFACE_REGISTER( Utils, validIndexes )
+        KernelRegistry::set<UtilsInterface::validIndexes>( validIndexes, ctx );
+        KernelRegistry::set<UtilsInterface::sum<IndexType> >( sum, ctx );
 
-        LAMA_INTERFACE_REGISTER_T( Utils, sum, IndexType )
+        KernelRegistry::set<UtilsInterface::setVal<IndexType> >( setVal, ctx );
+        KernelRegistry::set<UtilsInterface::setOrder<IndexType> >( setOrder, ctx );
+        KernelRegistry::set<UtilsInterface::getValue<IndexType> >( getValue, ctx );
 
-        LAMA_INTERFACE_REGISTER_T( Utils, setVal, IndexType )
-        LAMA_INTERFACE_REGISTER_T( Utils, setOrder, IndexType )
+        KernelRegistry::set<UtilsInterface::maxval<IndexType> >( maxval, ctx );
+        KernelRegistry::set<UtilsInterface::absMaxVal<IndexType> >( absMaxVal, ctx );
+        KernelRegistry::set<UtilsInterface::absMaxDiffVal<IndexType> >( absMaxDiffVal, ctx );
+        KernelRegistry::set<UtilsInterface::isSorted<IndexType> >( isSorted, ctx );
+    
+        KernelRegistry::set<UtilsInterface::setScatter<IndexType, IndexType> >( setScatter, ctx );
+        KernelRegistry::set<UtilsInterface::setGather<IndexType, IndexType> >( setGather, ctx );
+        KernelRegistry::set<UtilsInterface::set<IndexType, IndexType> >( set, ctx );
 
-        LAMA_INTERFACE_REGISTER_T( Utils, getValue, IndexType )
-        LAMA_INTERFACE_REGISTER_T( Utils, maxval, IndexType )
-        LAMA_INTERFACE_REGISTER_T( Utils, absMaxVal, IndexType )
-        LAMA_INTERFACE_REGISTER_T( Utils, absMaxDiffVal, IndexType )
+#define LAMA_UTILS2_REGISTER(z, J, TYPE )                                             \
+    KernelRegistry::set<UtilsInterface::setScale<TYPE, ARITHMETIC_CUDA_TYPE_##J> >( setScale, ctx );  \
+    KernelRegistry::set<UtilsInterface::setGather<TYPE, ARITHMETIC_CUDA_TYPE_##J> >( setGather, ctx );  \
+    KernelRegistry::set<UtilsInterface::setScatter<TYPE, ARITHMETIC_CUDA_TYPE_##J> >( setScatter, ctx );  \
+    KernelRegistry::set<UtilsInterface::set<TYPE, ARITHMETIC_CUDA_TYPE_##J> >( set, ctx );  \
 
-        LAMA_INTERFACE_REGISTER_T( Utils, isSorted, IndexType )
-
-        LAMA_INTERFACE_REGISTER_TT( Utils, set, int, int )
-
-        LAMA_INTERFACE_REGISTER_TT( Utils, setScatter, int, int )
-        LAMA_INTERFACE_REGISTER_TT( Utils, setGather, int, int )
-
-#define LAMA_UTILS2_REGISTER(z, J, TYPE )                                                  \
-    LAMA_INTERFACE_REGISTER_TT( Utils, setScale, TYPE, ARITHMETIC_CUDA_TYPE_##J )          \
-    LAMA_INTERFACE_REGISTER_TT( Utils, set, TYPE, ARITHMETIC_CUDA_TYPE_##J )               \
-    LAMA_INTERFACE_REGISTER_TT( Utils, setScatter, TYPE, ARITHMETIC_CUDA_TYPE_##J )        \
-    LAMA_INTERFACE_REGISTER_TT( Utils, setGather, TYPE, ARITHMETIC_CUDA_TYPE_##J )         \
-
-#define LAMA_UTILS_REGISTER(z, I, _)                                                       \
-    LAMA_INTERFACE_REGISTER_T( Utils, invert, ARITHMETIC_CUDA_TYPE_##I )                   \
-    LAMA_INTERFACE_REGISTER_T( Utils, isSorted, ARITHMETIC_CUDA_TYPE_##I )                 \
-    LAMA_INTERFACE_REGISTER_T( Utils, absMaxDiffVal, ARITHMETIC_CUDA_TYPE_##I )            \
-    LAMA_INTERFACE_REGISTER_T( Utils, absMaxVal, ARITHMETIC_CUDA_TYPE_##I )                \
-    LAMA_INTERFACE_REGISTER_T( Utils, maxval, ARITHMETIC_CUDA_TYPE_##I )                   \
-    LAMA_INTERFACE_REGISTER_T( Utils, sum, ARITHMETIC_CUDA_TYPE_##I )                      \
-    LAMA_INTERFACE_REGISTER_T( Utils, setVal, ARITHMETIC_CUDA_TYPE_##I )                   \
-    LAMA_INTERFACE_REGISTER_T( Utils, getValue, ARITHMETIC_CUDA_TYPE_##I )                 \
-    LAMA_INTERFACE_REGISTER_T( Utils, scale, ARITHMETIC_CUDA_TYPE_##I )                    \
-                                                                                           \
-    BOOST_PP_REPEAT( ARITHMETIC_CUDA_TYPE_CNT,                                             \
-                     LAMA_UTILS2_REGISTER,                                                 \
-                     ARITHMETIC_CUDA_TYPE_##I )                                            \
+#define LAMA_UTILS_REGISTER(z, I, _)                                                                     \
+    KernelRegistry::set<UtilsInterface::scale<ARITHMETIC_CUDA_TYPE_##I> >( scale, ctx );                 \
+    KernelRegistry::set<UtilsInterface::sum<ARITHMETIC_CUDA_TYPE_##I> >( sum, ctx );                     \
+    KernelRegistry::set<UtilsInterface::setVal<ARITHMETIC_CUDA_TYPE_##I> >( setVal, ctx );               \
+    KernelRegistry::set<UtilsInterface::setOrder<ARITHMETIC_CUDA_TYPE_##I> >( setOrder, ctx );           \
+    KernelRegistry::set<UtilsInterface::getValue<ARITHMETIC_CUDA_TYPE_##I> >( getValue, ctx );           \
+    KernelRegistry::set<UtilsInterface::maxval<ARITHMETIC_CUDA_TYPE_##I> >( maxval, ctx );               \
+    KernelRegistry::set<UtilsInterface::absMaxVal<ARITHMETIC_CUDA_TYPE_##I> >( absMaxVal, ctx );         \
+    KernelRegistry::set<UtilsInterface::absMaxDiffVal<ARITHMETIC_CUDA_TYPE_##I> >( absMaxDiffVal, ctx ); \
+    KernelRegistry::set<UtilsInterface::isSorted<ARITHMETIC_CUDA_TYPE_##I> >( isSorted, ctx );           \
+    KernelRegistry::set<UtilsInterface::invert<ARITHMETIC_CUDA_TYPE_##I> >( invert, ctx );               \
+    BOOST_PP_REPEAT( ARITHMETIC_CUDA_TYPE_CNT,                                                           \
+                     LAMA_UTILS2_REGISTER,                                                               \
+                     ARITHMETIC_CUDA_TYPE_##I )                                                          \
 
     BOOST_PP_REPEAT( ARITHMETIC_CUDA_TYPE_CNT, LAMA_UTILS_REGISTER, _ )
 

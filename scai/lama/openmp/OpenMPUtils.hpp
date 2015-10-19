@@ -133,7 +133,7 @@ private:
      *  param[inout] UtilsInterface struct to register all routines implemented in OpenMP
      */
 
-    static void setInterface( struct UtilsInterface& Utils );
+    static void setInterface();
 
     static bool initialized;
 

@@ -37,7 +37,7 @@
 // local library
 #include <scai/lama/LAMAInterface.hpp>
 #include <scai/lama/LAMAArrayUtils.hpp>
-
+#include <scai/lama/kernel_registry.hpp>
 
 #include <scai/lama/storage/StorageMethods.hpp>
 
@@ -175,10 +175,13 @@ void CSRStorage<ValueType>::check( const char* msg ) const
     // check ascending values in offset array mIa
 
     {
-        ContextPtr loc = getContextPtr();
+        static kregistry::KernelTraitContextFunction<UtilsInterface::isSorted<IndexType> > isSorted;
+        static kregistry::KernelTraitContextFunction<UtilsInterface::getValue<IndexType> > getValue;
 
-        LAMA_INTERFACE_FN_DEFAULT_T( isSorted, loc, Utils, Reductions, IndexType )
-        LAMA_INTERFACE_FN_T( getValue, loc, Utils, Getter, IndexType )
+        ContextPtr loc = getValidContext( this->getContextPtr(), isSorted );
+        loc = getValidContext( loc, getValue );
+
+        scai::context::ContextType ctx = loc->getType();
 
         ReadAccess<IndexType> csrIA( mIa, loc );
 
@@ -186,28 +189,28 @@ void CSRStorage<ValueType>::check( const char* msg ) const
 
         bool ascending = true; // check for ascending
 
-        IndexType numValues = getValue( csrIA.get(), mNumRows );
+        IndexType numValues = getValue[ ctx ]( csrIA.get(), mNumRows );
 
         SCAI_ASSERT_ERROR(
             numValues == mNumValues,
             "ia[" << mNumRows << "] = " << numValues << ", expected " << mNumValues << ", msg = " << msg )
 
-        SCAI_ASSERT_ERROR( isSorted( csrIA.get(), mNumRows + 1, ascending ),
+        SCAI_ASSERT_ERROR( isSorted[ ctx ]( csrIA.get(), mNumRows + 1, ascending ),
                            *this << " @ " << msg << ": IA is illegal offset array" )
     }
 
     // check column indexes in JA
 
     {
-        ContextPtr loc = getContextPtr();
+        static kregistry::KernelTraitContextFunction<UtilsInterface::validIndexes> validIndexes;
 
-        LAMA_INTERFACE_FN_DEFAULT( validIndexes, loc, Utils, Indexes )
+        ContextPtr loc = getValidContext( this->getContextPtr(), validIndexes );
 
         ReadAccess<IndexType> rJA( mJa, loc );
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        SCAI_ASSERT_ERROR( validIndexes( rJA.get(), mNumValues, mNumColumns ),
+        SCAI_ASSERT_ERROR( validIndexes[ loc->getType() ]( rJA.get(), mNumValues, mNumColumns ),
                            *this << " @ " << msg << ": illegel indexes in JA" )
     }
 }
@@ -301,13 +304,15 @@ void CSRStorage<ValueType>::setCSRDataImpl(
 
         // we assume that ia contains the sizes, verify it by summing up
 
-        LAMA_INTERFACE_FN_DEFAULT_T( sum, loc1, Utils, Reductions, IndexType )
+        static kregistry::KernelTraitContextFunction<UtilsInterface::sum<IndexType> > sum;
+
+        loc1 = getValidContext( loc1, sum );
 
         ReadAccess<IndexType> csrIA( ia, loc1 );
 
         SCAI_CONTEXT_ACCESS( loc1 )
 
-        IndexType n = sum( csrIA.get(), numRows );
+        IndexType n = sum[ loc1->getType() ]( csrIA.get(), numRows );
 
         if( n != numValues )
         {
@@ -340,15 +345,17 @@ void CSRStorage<ValueType>::setCSRDataImpl(
     SCAI_ASSERT_EQUAL_ERROR( numValues, values.size() );
 
     {
-        LAMA_INTERFACE_FN( validIndexes, loc, Utils, Indexes )
+        static kregistry::KernelTraitContextFunction<UtilsInterface::validIndexes> validIndexes;
+
+        ContextPtr loc1 = getValidContext( loc, validIndexes );
 
         // make sure that column indexes in JA are all valid
 
-        ReadAccess<IndexType> csrJA( ja, loc );
+        ReadAccess<IndexType> csrJA( ja, loc1 );
 
-        SCAI_CONTEXT_ACCESS( loc )
+        SCAI_CONTEXT_ACCESS( loc1 )
 
-        if( !validIndexes( csrJA.get(), numValues, numColumns ) )
+        if( !validIndexes[ loc1->getType() ]( csrJA.get(), numValues, numColumns ) )
         {
             COMMON_THROWEXCEPTION( "invalid column indexes in ja = " << ja << ", #columns = " << numColumns )
         }
@@ -942,28 +949,17 @@ void CSRStorage<ValueType>::getDiagonalImpl( LAMAArray<OtherValueType>& diagonal
 {
     const IndexType numDiagonalElements = std::min( mNumColumns, mNumRows );
 
-    ContextPtr loc = getContextPtr();
+    static kregistry::KernelTraitContextFunction<UtilsInterface::setGather<OtherValueType, ValueType> > setGather;
+
+    ContextPtr loc = getValidContext( this->getContextPtr(), setGather );
+
+    SCAI_CONTEXT_ACCESS( loc )
+
     WriteOnlyAccess<OtherValueType> wDiagonal( diagonal, loc, numDiagonalElements );
     ReadAccess<IndexType> csrIA( mIa, loc );
     ReadAccess<ValueType> rValues( mValues, loc );
 
-    SCAI_CONTEXT_ACCESS( loc )
-    LAMA_INTERFACE_FN_TT( setGather, loc, Utils, Copy, OtherValueType, ValueType )
-
-    setGather( wDiagonal.get(), rValues.get(), csrIA.get(), numDiagonalElements );
-
-    /*
-     const IndexType numDiagonalElements = std::min( mNumColumns, mNumRows );
-
-     WriteOnlyAccess<OtherValueType> wDiagonal( diagonal, numDiagonalElements );
-
-     ReadAccess<IndexType> csrIA( mIa );
-     ReadAccess<ValueType> rValues( mValues );
-
-     //  diagonal[ i ] = rValues[ csrIA[ i ] ], diagonal values are at the offsets
-
-     OpenMPUtils::setGather( wDiagonal.get(), rValues.get(), csrIA.get(), numDiagonalElements );
-     */
+    setGather[ loc->getType() ]( wDiagonal.get(), rValues.get(), csrIA.get(), numDiagonalElements );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -971,17 +967,17 @@ void CSRStorage<ValueType>::getDiagonalImpl( LAMAArray<OtherValueType>& diagonal
 template<typename ValueType>
 void CSRStorage<ValueType>::scaleImpl( const Scalar scalar )
 {
-    ContextPtr loc = getContextPtr();
+    static kregistry::KernelTraitContextFunction<UtilsInterface::scale<ValueType> > scale;
 
-    LAMA_INTERFACE_FN_DEFAULT_T( scale, loc, Utils, Transform, ValueType )
-
-    WriteAccess<ValueType> csrValues( mValues, loc );
+    ContextPtr loc = getValidContext( this->getContextPtr(), scale );
 
 	SCAI_CONTEXT_ACCESS( loc )
 
+    WriteAccess<ValueType> csrValues( mValues, loc );
+
     ValueType value = scalar.getValue<ValueType>();
 
-    scale( csrValues.get(), value, mNumValues );
+    scale[ loc->getType() ]( csrValues.get(), value, mNumValues );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1128,24 +1124,32 @@ void CSRStorage<ValueType>::buildCSR(
 
     // copy the offset array ia and ja
     {
+        static kregistry::KernelTraitContextFunction<UtilsInterface::set<IndexType, IndexType> > set;
+
+        SCAI_CONTEXT_ACCESS( loc )
+
         ReadAccess<IndexType> inJA( mJa, loc );
         WriteOnlyAccess<IndexType> csrIA( ia, loc, mNumRows + 1 );
         WriteOnlyAccess<IndexType> csrJA( *ja, loc, mNumValues );
 
-        SCAI_CONTEXT_ACCESS( loc )
-        LAMA_INTERFACE_FN_TT( set, loc, Utils, Copy, IndexType, IndexType )
-        set( csrIA.get(), inIA.get(), mNumRows + 1 );
-        set( csrJA.get(), inJA.get(), mNumValues );
+        scai::context::ContextType ctx = loc->getType();
+
+        set[ ctx ]( csrIA.get(), inIA.get(), mNumRows + 1 );
+        set[ ctx ]( csrJA.get(), inJA.get(), mNumValues );
     }
 
     // copy values
     {
+        static kregistry::KernelTraitContextFunction<UtilsInterface::set<OtherValueType, ValueType> > set;
+
+        // Attention: no fallback here for other context
+
+        SCAI_CONTEXT_ACCESS( loc )
+
         ReadAccess<ValueType> inValues( mValues, loc );
         WriteOnlyAccess<OtherValueType> csrValues( *values, loc, mNumValues );
 
-        SCAI_CONTEXT_ACCESS( loc )
-        LAMA_INTERFACE_FN_TT( set, loc, Utils, Copy, OtherValueType, ValueType )
-        set( csrValues.get(), inValues.get(), mNumValues );
+        set[ loc->getType() ]( csrValues.get(), inValues.get(), mNumValues );
     }
 }
 
@@ -2237,15 +2241,15 @@ ValueType CSRStorage<ValueType>::maxNorm() const
         return static_cast<ValueType>(0.0);
     }
 
-    ContextPtr loc = getContextPtr();
+    static kregistry::KernelTraitContextFunction<UtilsInterface::absMaxVal<ValueType> > absMaxVal;
 
-    LAMA_INTERFACE_FN_DEFAULT_T( absMaxVal, loc, Utils, Reductions, ValueType )
+    ContextPtr loc = getValidContext( this->getContextPtr(), absMaxVal );
 
     ReadAccess<ValueType> csrValues( mValues, loc );
 
     SCAI_CONTEXT_ACCESS( loc )
 
-    ValueType maxval = absMaxVal( csrValues.get(), mNumValues );
+    ValueType maxval = absMaxVal[ loc->getType() ]( csrValues.get(), mNumValues );
 
     return maxval;
 }

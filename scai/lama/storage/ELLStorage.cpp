@@ -36,6 +36,7 @@
 // local library
 #include <scai/lama/LAMAArrayUtils.hpp>
 #include <scai/lama/LAMAInterface.hpp>
+#include <scai/lama/kernel_registry.hpp>
 
 // internal scai libraries
 #include <scai/hmemo.hpp>
@@ -86,13 +87,13 @@ ELLStorage<ValueType>::ELLStorage(
 
     // Initialization requires correct values for the IA array with 0
 
-    LAMA_INTERFACE_FN_T( setVal, loc, Utils, Setter, IndexType )
+    static kregistry::KernelTraitContextFunction<UtilsInterface::setVal<IndexType> > setVal;
 
     WriteOnlyAccess<IndexType> ellSizes( mIA, loc, mNumRows );
 
     SCAI_CONTEXT_ACCESS( loc )
 
-    setVal( ellSizes.get(), mNumRows, 0 );
+    setVal[ loc->getType() ]( ellSizes.get(), mNumRows, 0 );
 
     SCAI_LOG_DEBUG( logger, "ELLStorage for matrix " << mNumRows << " x " << mNumColumns << ", no elements" )
 }
@@ -213,15 +214,15 @@ IndexType ELLStorage<ValueType>::getNumValues() const
 {
     SCAI_LOG_INFO( logger, "getNumValues" )
 
-    const ContextPtr loc = getContextPtr();
+    static kregistry::KernelTraitContextFunction<UtilsInterface::sum<IndexType> > sum;
 
-    LAMA_INTERFACE_FN_T( sum, loc, Utils, Reductions, IndexType )
+    ContextPtr loc = getValidContext( this->getContextPtr(), sum );
 
     ReadAccess<IndexType> ia( mIA, loc );
 
     SCAI_CONTEXT_ACCESS( loc )
 
-    IndexType numValues = sum( ia.get(), mNumRows );
+    IndexType numValues = sum[ loc->getType() ]( ia.get(), mNumRows );
 
     return numValues;
 }
@@ -252,34 +253,45 @@ void ELLStorage<ValueType>::setIdentity( const IndexType size )
 {
     SCAI_LOG_INFO( logger, "set identity # size = " << size )
 
-    ContextPtr loc = getContextPtr();
-
     mNumRows = size;
     mNumColumns = size;
     mNumValuesPerRow = 1;
 
     {
-        WriteOnlyAccess<IndexType> ia( mIA, loc, mNumRows );
-        WriteOnlyAccess<IndexType> ja( mJA, loc, mNumRows );
+        static kregistry::KernelTraitContextFunction<UtilsInterface::setVal<IndexType> > setVal;
 
-        LAMA_INTERFACE_FN_T( setVal, loc, Utils, Setter, IndexType )
-        LAMA_INTERFACE_FN_T( setOrder, loc, Utils, Setter, IndexType )
+        ContextPtr loc = getValidContext( this->getContextPtr(), setVal );
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        setVal( ia.get(), mNumRows, 1 );
-        setOrder( ja.get(), mNumRows );
+        WriteOnlyAccess<IndexType> ia( mIA, loc, mNumRows );
+
+        setVal[ loc->getType() ]( ia.get(), mNumRows, 1 );
+    }
+
+    {
+        static kregistry::KernelTraitContextFunction<UtilsInterface::setOrder<IndexType> > setOrder;
+
+        ContextPtr loc = getValidContext( this->getContextPtr(), setOrder );
+
+        SCAI_CONTEXT_ACCESS( loc )
+
+        WriteOnlyAccess<IndexType> ja( mJA, loc, mNumRows );
+
+        setOrder[ loc->getType() ]( ja.get(), mNumRows );
     }
 
     // extra block caused by differnt types of setVal()
     {
-        WriteOnlyAccess<ValueType> data( mValues, loc, mNumRows );
+        static kregistry::KernelTraitContextFunction<UtilsInterface::setVal<ValueType> > setVal;
 
-        LAMA_INTERFACE_FN_T( setVal, loc, Utils, Setter, ValueType )
+        ContextPtr loc = getValidContext( this->getContextPtr(), setVal );
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        setVal( data.get(), mNumRows, static_cast<ValueType>(1.0) );
+        WriteOnlyAccess<ValueType> data( mValues, loc, mNumRows );
+
+        setVal[ loc->getType() ]( data.get(), mNumRows, static_cast<ValueType>( 1.0 ) );
     }
 
     mDiagonalProperty = true;
@@ -363,7 +375,9 @@ void ELLStorage<ValueType>::buildCSR(
                    "buildCSR<" << common::getScalarType<OtherValueType>() << ">" << " from ELL<" << common::getScalarType<ValueType>() << ">" << " on " << *loc )
 
     LAMA_INTERFACE_FN( sizes2offsets, loc, CSRUtils, Offsets )
-    LAMA_INTERFACE_FN_TT( set, loc, Utils, Copy, IndexType, IndexType )
+
+    static kregistry::KernelTraitContextFunction<UtilsInterface::set<IndexType, IndexType> > set;
+
     LAMA_INTERFACE_FN_TT( getCSRValues, loc, ELLUtils, Conversions, ValueType, OtherValueType )
 
     ReadAccess<IndexType> ellSizes( mIA, loc );
@@ -372,8 +386,10 @@ void ELLStorage<ValueType>::buildCSR(
     csrIA.resize( mNumRows + 1 );
 
     SCAI_CONTEXT_ACCESS( loc )
+
     // just copy the size array mIA
-    set( csrIA.get(), ellSizes.get(), mNumRows );
+
+    set[ loc->getType() ]( csrIA.get(), ellSizes.get(), mNumRows );
 
     if( ja == NULL || values == NULL )
     {
@@ -427,7 +443,7 @@ void ELLStorage<ValueType>::setCSRDataImpl(
 
     LAMA_INTERFACE_FN( offsets2sizes, loc, CSRUtils, Offsets )
     LAMA_INTERFACE_FN( hasDiagonalProperty, loc, ELLUtils, Operations )
-    LAMA_INTERFACE_FN_T( maxval, loc, Utils, Reductions, IndexType )
+    static kregistry::KernelTraitContextFunction<UtilsInterface::maxval<IndexType> > maxval;
     LAMA_INTERFACE_FN_TT( setCSRValues, loc, ELLUtils, Conversions, ValueType, OtherValueType )
 
     // build array with non-zero values per row
@@ -445,7 +461,7 @@ void ELLStorage<ValueType>::setCSRDataImpl(
     {
         ReadAccess<IndexType> ellSizes( mIA, loc );
         SCAI_CONTEXT_ACCESS( loc )
-        mNumValuesPerRow = maxval( ellSizes.get(), mNumRows );
+        mNumValuesPerRow = maxval[ loc->getType() ]( ellSizes.get(), mNumRows );
     }
 
     SCAI_LOG_INFO( logger, "setCSRData, #values/row = " << mNumValuesPerRow )
@@ -586,20 +602,19 @@ void ELLStorage<ValueType>::setDiagonalImpl( const Scalar scalar )
 {
     SCAI_LOG_INFO( logger, "setDiagonalImpl # scalar = " << scalar )
 
-    ContextPtr loc = getContextPtr();
+    static kregistry::KernelTraitContextFunction<UtilsInterface::setVal<ValueType> > setVal;
 
-    LAMA_INTERFACE_FN_T( setVal, loc, Utils, Setter, ValueType )
+    ContextPtr loc = getValidContext( this->getContextPtr(), setVal );
 
     IndexType numDiagonalElements = std::min( mNumColumns, mNumRows );
 
-    ReadAccess<IndexType> rIa( mIA, loc );
-    ReadAccess<IndexType> rJa( mJA, loc );
+    SCAI_CONTEXT_ACCESS( loc )
+
     WriteAccess<ValueType> wValues( mValues, loc );
 
     ValueType value = scalar.getValue<ValueType>();
 
-    SCAI_CONTEXT_ACCESS( loc )
-    setVal( wValues.get(), numDiagonalElements, value );
+    setVal[ loc->getType() ]( wValues.get(), numDiagonalElements, value );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -612,18 +627,18 @@ void ELLStorage<ValueType>::setDiagonalImpl( const LAMAArray<OtherType>& diagona
 
     IndexType numDiagonalElements = std::min( mNumColumns, mNumRows );
 
-    ContextPtr loc = getContextPtr();
+    static kregistry::KernelTraitContextFunction<UtilsInterface::set<ValueType, OtherType> > set;
 
-    LAMA_INTERFACE_FN_TT( set, loc, Utils, Copy, ValueType, OtherType )
+    ContextPtr loc = getValidContext( this->getContextPtr(), set );
+
+    SCAI_CONTEXT_ACCESS( loc )
 
     ReadAccess<OtherType> rDiagonal( diagonal, loc );
     WriteAccess<ValueType> wValues( mValues, loc );
 
     // ELL format with diagonal property: diagonal is just the first column in mValues
 
-    SCAI_CONTEXT_ACCESS( loc )
-
-    set( wValues.get(), rDiagonal.get(), numDiagonalElements );
+    set[ loc->getType() ]( wValues.get(), rDiagonal.get(), numDiagonalElements );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -660,9 +675,9 @@ void ELLStorage<ValueType>::getDiagonalImpl( LAMAArray<OtherType>& diagonal ) co
 
     IndexType numDiagonalElements = std::min( mNumColumns, mNumRows );
 
-    ContextPtr loc = getContextPtr();
+    static kregistry::KernelTraitContextFunction<UtilsInterface::set<OtherType, ValueType> > set;
 
-    LAMA_INTERFACE_FN_TT( set, loc, Utils, Copy, OtherType, ValueType )
+    ContextPtr loc = getValidContext( this->getContextPtr(), set );
 
     WriteOnlyAccess<OtherType> wDiagonal( diagonal, loc, numDiagonalElements );
     ReadAccess<ValueType> rValues( mValues, loc );
@@ -671,7 +686,7 @@ void ELLStorage<ValueType>::getDiagonalImpl( LAMAArray<OtherType>& diagonal ) co
 
     SCAI_CONTEXT_ACCESS( loc )
 
-    set( wDiagonal.get(), rValues.get(), numDiagonalElements );
+    set[ loc->getType() ]( wDiagonal.get(), rValues.get(), numDiagonalElements );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -681,9 +696,9 @@ void ELLStorage<ValueType>::scaleImpl( const Scalar scalar )
 {
     SCAI_LOG_INFO( logger, "scaleImpl # scalar = " << scalar )
 
-    ContextPtr loc = getContextPtr();
+    static kregistry::KernelTraitContextFunction<UtilsInterface::scale<ValueType> > scale;
 
-    LAMA_INTERFACE_FN_T( scale, loc, Utils, Transform, ValueType )
+    ContextPtr loc = getValidContext( this->getContextPtr(), scale );
 
     WriteAccess<ValueType> wValues( mValues, loc );
 
@@ -691,7 +706,7 @@ void ELLStorage<ValueType>::scaleImpl( const Scalar scalar )
 
     SCAI_CONTEXT_ACCESS( loc )
 
-    scale( wValues.get(), value, mValues.size() );
+    scale[ loc->getType() ]( wValues.get(), value, mValues.size() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -788,15 +803,15 @@ void ELLStorage<ValueType>::allocate( IndexType numRows, IndexType numColumns )
     {
         // Intialize array mIA with 0
 
-        ContextPtr loc = getContextPtr();
+        static kregistry::KernelTraitContextFunction<UtilsInterface::setVal<IndexType> > setVal;
 
-        LAMA_INTERFACE_FN_T( setVal, loc, Utils, Setter, IndexType )
-
-        WriteOnlyAccess<IndexType> ia( mIA, loc, mNumRows );
+        ContextPtr loc = getValidContext( getContextPtr(), setVal );
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        setVal( ia.get(), mNumRows, 0 );
+        WriteOnlyAccess<IndexType> ia( mIA, loc, mNumRows );
+
+        setVal[ loc->getType() ]( ia.get(), mNumRows, 0 );
     }
 
     mDiagonalProperty = checkDiagonalProperty();
@@ -910,7 +925,7 @@ void ELLStorage<ValueType>::compress( const ValueType eps /* = 0.0 */)
     ContextPtr loc = Context::getContextPtr( context::Host );
 
     LAMA_INTERFACE_FN_T( compressIA, loc, ELLUtils, Helper, ValueType )
-    LAMA_INTERFACE_FN_T( maxval, loc, Utils, Reductions, IndexType )
+    static kregistry::KernelTraitContextFunction<UtilsInterface::maxval<IndexType> > maxval;
     LAMA_INTERFACE_FN_T( compressValues, loc, ELLUtils, Helper, ValueType )
 
     ReadAccess<IndexType> IA( mIA, loc );
@@ -924,7 +939,7 @@ void ELLStorage<ValueType>::compress( const ValueType eps /* = 0.0 */)
     compressIA( IA.get(), JA.get(), values.get(), mNumRows, mNumValuesPerRow, eps, newIA.get() );
 
     // 2. Step: compute length of longest row
-    IndexType newNumValuesPerRow = maxval( IA.get(), mNumRows );
+    IndexType newNumValuesPerRow = maxval[ loc->getType() ]( IA.get(), mNumRows );
 
     // Do further steps, if new array could be smaller
     if( newNumValuesPerRow < mNumValuesPerRow )
@@ -1758,10 +1773,10 @@ void ELLStorage<ValueType>::matrixTimesMatrixELL(
                    *this << ": = " << alpha << " * A * B, with " << "A = " << a << ", B = " << b << ", all are ELL" )
 
     // TODO: Implement for CUDA
-    ContextPtr loc = Context::getContextPtr( context::Host );
+    ContextPtr loc = Context::getHostPtr();
 
     LAMA_INTERFACE_FN( matrixMultiplySizes, loc, ELLUtils, MatrixExpBuild )
-    LAMA_INTERFACE_FN_T( maxval, loc, Utils, Reductions, IndexType )
+    static kregistry::KernelTraitContextFunction<UtilsInterface::maxval<IndexType> > maxval;
     LAMA_INTERFACE_FN_T( matrixMultiply, loc, ELLUtils, MatrixExp, ValueType )
 
     SCAI_ASSERT_ERROR( &a != this, "matrixTimesMatrix: alias of a with this result matrix" )
@@ -1793,7 +1808,7 @@ void ELLStorage<ValueType>::matrixTimesMatrixELL(
                              a.getNumValuesPerRow(), bIA.get(), bJA.get(), b.getNumValuesPerRow() );
 
         // 2. Step: compute length of longest row
-        mNumValuesPerRow = maxval( cIA.get(), mNumRows );
+        mNumValuesPerRow = maxval[ loc->getType() ]( cIA.get(), mNumRows );
 
         // 3. Step: Allocate IA and Values arrays with new size
         WriteOnlyAccess<IndexType> cJA( mJA, loc, mNumValuesPerRow * mNumRows );
@@ -1823,7 +1838,7 @@ void ELLStorage<ValueType>::matrixAddMatrixELL(
     ContextPtr loc = Context::getContextPtr( context::Host );
 
     LAMA_INTERFACE_FN( matrixAddSizes, loc, ELLUtils, MatrixExpBuild )
-    LAMA_INTERFACE_FN_T( maxval, loc, Utils, Reductions, IndexType )
+    static kregistry::KernelTraitContextFunction<UtilsInterface::maxval<IndexType> > maxval;
     LAMA_INTERFACE_FN_T( matrixAdd, loc, ELLUtils, MatrixExp, ValueType )
 
     SCAI_ASSERT_ERROR( &a != this, "matrixAddMatrix: alias of a with this result matrix" )
@@ -1854,7 +1869,7 @@ void ELLStorage<ValueType>::matrixAddMatrixELL(
                         a.getNumValuesPerRow(), bIA.get(), bJA.get(), b.getNumValuesPerRow() );
 
         // 2. Step: compute length of longest row
-        mNumValuesPerRow = maxval( cIA.get(), mNumRows );
+        mNumValuesPerRow = maxval[ loc->getType() ]( cIA.get(), mNumRows );
 
         // 3. Step: Allocate IA and Values arrays with new size
         WriteOnlyAccess<IndexType> cJA( mJA, loc, mNumValuesPerRow * mNumRows );

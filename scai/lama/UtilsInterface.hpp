@@ -58,9 +58,9 @@ namespace lama
 
 struct UtilsInterface
 {
-    /** @brief Structure with function pointer type definitions for methods on indexes */
+    /** @brief Trait for register kernel function validIndexes */
 
-    struct Indexes
+    struct validIndexes
     {
         /** Check that all values in array are in a certain range.
          *
@@ -70,18 +70,16 @@ struct UtilsInterface
          *  @return true if \f$ 0 \le array[i] < size \forall i = 0, ..., n-1\f$
          */
 
-        typedef bool (*validIndexes)( const IndexType array[], const IndexType n, const IndexType size );
+        typedef bool ( *FuncType )( const IndexType array[], const IndexType n, const IndexType size );
+        static const char* getId() { return "validIndexes"; }
     };
 
-    LAMA_INTERFACE_DEFINE( Indexes, validIndexes )
-
-    /** @brief Structure with functiooń pointer type defintions for all reduction methods.
+    /** @brief Trait for register kernel function sum that sums elements of an array
      *
-     *  @tparam ValueType specifies the value type used in the reduction.
+     *  @tparam ValueType specifies the value type used in the sum reduction.
      */
-
-template    <typename ValueType>
-    struct Reductions
+    template <typename ValueType>
+    struct sum
     {
         /** @brief Sum n contiguously stored values.
          *
@@ -89,9 +87,13 @@ template    <typename ValueType>
          *  @param[in] n is the size of array
          *  @return sum of all values in array
          */
+        typedef ValueType ( *FuncType ) ( const ValueType array[], const IndexType n );
+        static const char* getId () { return "sum"; }
+    };
 
-        typedef ValueType ( *sum ) ( const ValueType array[], const IndexType n );
-
+    template <typename ValueType>
+    struct maxval
+    {
         /** @brief Find maximal value of n contiguously stored values.
          *
          *  @param[in] array is an array of values
@@ -99,12 +101,22 @@ template    <typename ValueType>
          *  @return maximum of all values in array
          */
 
-        typedef ValueType ( *maxval ) ( const ValueType array[], const IndexType n );
+        typedef ValueType ( *FuncType ) ( const ValueType array[], const IndexType n );
+        static const char* getId() { return "maxval"; }
+    };
 
+    template <typename ValueType>
+    struct absMaxVal
+    {
         /** @brief Find absolute maximal value of n contiguously stored values. */
 
-        typedef ValueType ( *absMaxVal ) ( const ValueType array[], const IndexType n );
+        typedef ValueType ( *FuncType ) ( const ValueType array[], const IndexType n );
+        static const char* getId() { return "absMaxVal"; }
+    };
 
+    template <typename ValueType>
+    struct absMaxDiffVal
+    {
         /** @brief Building absolute maximum of element-wise difference of vector elements.
          *
          *  @param array1i[in] first array
@@ -115,8 +127,13 @@ template    <typename ValueType>
          *  Function is helpful to compute maximum norm for vectors and matrices
          */
 
-        typedef ValueType ( *absMaxDiffVal ) ( const ValueType array1[], const ValueType array2[], const IndexType n );
+        typedef ValueType ( *FuncType ) ( const ValueType array1[], const ValueType array2[], const IndexType n );
+        static const char* getId() { return "absMaxDiffVal"; }
+    };
 
+    template <typename ValueType>
+    struct isSorted
+    {
         /** @brief Predicate that tests whether a sequene is sorted.
          *
          *  @param[in] array values to be checked
@@ -124,14 +141,9 @@ template    <typename ValueType>
          *  @param[in] ascending if true check for ascending order, otherwise for descending
          */
 
-        typedef bool ( *isSorted) ( const ValueType array[], const IndexType n, bool ascending );
+        typedef bool ( *FuncType ) ( const ValueType array[], const IndexType n, bool ascending );
+        static const char* getId() { return "isSorted"; }
     };
-
-    LAMA_INTERFACE_DEFINE_T( Reductions, sum )
-    LAMA_INTERFACE_DEFINE_T( Reductions, maxval )
-    LAMA_INTERFACE_DEFINE_T( Reductions, absMaxVal )
-    LAMA_INTERFACE_DEFINE_T( Reductions, absMaxDiffVal )
-    LAMA_INTERFACE_DEFINE_T( Reductions, isSorted )
 
     /** @brief Structure with functiooń pointer type defintions for setter methods.
      *
@@ -139,37 +151,42 @@ template    <typename ValueType>
      */
 
     template<typename ValueType>
-    struct Setter
+    struct setVal
     {
         /** Set all elements of a contiguous array with a value. */
 
-        typedef void ( *setVal ) ( ValueType array[], const IndexType n, const ValueType val );
-
-        /** Set all elements of a contiguous array with its order number 0, 1, 2, ... */
-
-        typedef void ( *setOrder ) ( ValueType array[], const IndexType n );
+        typedef void ( *FuncType ) ( ValueType array[], const IndexType n, const ValueType val );
+        static const char* getId() { return "setVal"; }
     };
-
-    LAMA_INTERFACE_DEFINE_T( Setter, setVal )
-    LAMA_INTERFACE_DEFINE_T( Setter, setOrder )
 
     template<typename ValueType>
-    struct Getter
+    struct setOrder
     {
-        typedef ValueType ( *getValue ) ( const ValueType* array, const IndexType i );
+        /** Set all elements of a contiguous array with its order number 0, 1, 2, ... */
+
+        typedef void ( *FuncType ) ( ValueType array[], const IndexType n );
+        static const char* getId() { return "setOrder"; }
     };
 
-    LAMA_INTERFACE_DEFINE_T( Getter, getValue )
+    template<typename ValueType>
+    struct getValue
+    {
+        typedef ValueType ( *FuncType ) ( const ValueType* array, const IndexType i );
+        static const char* getId() { return "getValue"; }
+    };
 
     template<typename ValueType1, typename ValueType2>
-    struct Copy
+    struct set
     {
         /** Set out[i] = in[i],  0 <= i < n */
 
-        typedef void ( *set ) ( ValueType1 out[],
-                        const ValueType2 in[],
-                        const IndexType n );
+        typedef void ( *FuncType ) ( ValueType1 out[], const ValueType2 in[], const IndexType n );
+        static const char* getId() { return "set"; }
+    };
 
+    template<typename ValueType1, typename ValueType2>
+    struct setScale
+    {
         /** @brief scaled array assignment, out = in * value
          *
          *  Set out[i] = scale * in[i],  0 <= i < n
@@ -179,28 +196,42 @@ template    <typename ValueType>
          *  @param[in,out]  inValues   is the array with entries to scale
          *  @param[in]      n          is the number of entries
          */
-        typedef void ( *setScale ) ( ValueType1 outValues[],
+        typedef void ( *FuncType ) ( ValueType1 outValues[],
                         const ValueType1 scaleValue,
                         const ValueType2 inValues[],
                         const IndexType n );
+ 
+         static const char* getId() { return "setScale"; } 
+    };
 
+    template<typename ValueType1, typename ValueType2>
+    struct setGather
+    {
         /** Set out[i] = in[ indexes[i] ],  \f$0 \le i < n\f$ */
 
-        typedef void ( *setGather ) ( ValueType1 out[],
+        typedef void ( *FuncType ) ( ValueType1 out[],
                         const ValueType2 in[],
                         const IndexType indexes[],
                         const IndexType n );
 
+        static const char* getId() { return "setGather"; } 
+    };
+
+    template<typename ValueType1, typename ValueType2>
+    struct setScatter
+    {
         /** Set out[ indexes[i] ] = in [i] */
 
-        typedef void ( *setScatter ) ( ValueType1 out[],
+        typedef void ( *FuncType ) ( ValueType1 out[],
                         const IndexType indexes[],
                         const ValueType2 in[],
                         const IndexType n );
+
+        static const char* getId() { return "setScatter"; }
     };
 
     template<typename ValueType>
-    struct Math
+    struct invert
     {
         /** @brief Set array[i] = 1.0 / array[i],  0 <= i < n
          *
@@ -208,13 +239,13 @@ template    <typename ValueType>
          *  @param         n     is the number of entries to invert
          */
 
-        typedef void ( *invert ) ( ValueType array[], const IndexType n );
+        typedef void ( *FuncType ) ( ValueType array[], const IndexType n );
+
+        static const char* getId() { return "invert"; }
     };
 
-    LAMA_INTERFACE_DEFINE_T( Math, invert )
-
     template<typename ValueType>
-    struct Transform
+    struct scale
     {
         /** @brief scale array of values with a value in place
          *
@@ -222,17 +253,12 @@ template    <typename ValueType>
          *  @param[in]      value  is the scaling factor
          *  @param[in]      n      is the number of entries in values
          */
-        typedef void ( *scale ) ( ValueType values[],
+        typedef void ( *FuncType ) ( ValueType values[],
                         const ValueType value,
                         const IndexType n );
+
+        static const char* getId() { return "scale"; }
     };
-
-    LAMA_INTERFACE_DEFINE_TT( Copy, setGather )
-    LAMA_INTERFACE_DEFINE_TT( Copy, setScatter )
-    LAMA_INTERFACE_DEFINE_TT( Copy, set )
-    LAMA_INTERFACE_DEFINE_TT( Copy, setScale )
-
-    LAMA_INTERFACE_DEFINE_T( Transform, scale )
 
     /** Constructor initializes all function pointers with nullPtr */
 

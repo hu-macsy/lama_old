@@ -37,6 +37,7 @@
 // local library
 #include <scai/lama/openmp/OpenMP.hpp>
 #include <scai/lama/LAMAInterfaceRegistry.hpp>
+#include <scai/kregistry/KernelRegistry.hpp>
 
 // internal scai libraries
 #include <scai/tracing.hpp>
@@ -464,43 +465,52 @@ void OpenMPUtils::invert( ValueType array[], const IndexType n )
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void OpenMPUtils::setInterface( UtilsInterface& Utils )
+void OpenMPUtils::setInterface()
 {
+    using namespace scai::kregistry;
+
+    // ctx will contain the context for which registration is done, here Host
+
+    scai::context::ContextType ctx = scai::context::Host;
+
     // Instantations for IndexType, not done by ARITHMETIC_TYPE macrods
 
-    LAMA_INTERFACE_REGISTER( Utils, validIndexes )
+    KernelRegistry::set<UtilsInterface::validIndexes>( validIndexes, ctx );
 
     // we keep the registrations for IndexType as we do not need conversions
 
-    LAMA_INTERFACE_REGISTER_T( Utils, sum, IndexType )
-    LAMA_INTERFACE_REGISTER_T( Utils, setVal, IndexType )
-    LAMA_INTERFACE_REGISTER_T( Utils, setOrder, IndexType )
-    LAMA_INTERFACE_REGISTER_T( Utils, getValue, IndexType )
-    LAMA_INTERFACE_REGISTER_T( Utils, maxval, IndexType )
-    LAMA_INTERFACE_REGISTER_T( Utils, isSorted, IndexType )
+    KernelRegistry::set<UtilsInterface::sum<IndexType> >( sum, ctx );
 
-    LAMA_INTERFACE_REGISTER_TT( Utils, setScatter, IndexType, IndexType )
-    LAMA_INTERFACE_REGISTER_TT( Utils, setGather, IndexType, IndexType )
-    LAMA_INTERFACE_REGISTER_TT( Utils, set, IndexType, IndexType )
+    KernelRegistry::set<UtilsInterface::setVal<IndexType> >( setVal, ctx );
+    KernelRegistry::set<UtilsInterface::setOrder<IndexType> >( setOrder, ctx );
+    KernelRegistry::set<UtilsInterface::getValue<IndexType> >( getValue, ctx );
+
+    KernelRegistry::set<UtilsInterface::maxval<IndexType> >( maxval, ctx );
+    KernelRegistry::set<UtilsInterface::isSorted<IndexType> >( isSorted, ctx );
+
+    KernelRegistry::set<UtilsInterface::setScatter<IndexType, IndexType> >( setScatter, ctx );
+    KernelRegistry::set<UtilsInterface::setGather<IndexType, IndexType> >( setGather, ctx );
+    KernelRegistry::set<UtilsInterface::set<IndexType, IndexType> >( set, ctx );
 
 #define LAMA_UTILS2_REGISTER(z, J, TYPE )                                             \
-    LAMA_INTERFACE_REGISTER_TT( Utils, setScale, TYPE, ARITHMETIC_HOST_TYPE_##J )     \
-    LAMA_INTERFACE_REGISTER_TT( Utils, setGather, TYPE, ARITHMETIC_HOST_TYPE_##J )    \
-    LAMA_INTERFACE_REGISTER_TT( Utils, setScatter, TYPE, ARITHMETIC_HOST_TYPE_##J )   \
-    LAMA_INTERFACE_REGISTER_TT( Utils, set, TYPE, ARITHMETIC_HOST_TYPE_##J )          \
+    KernelRegistry::set<UtilsInterface::setScale<TYPE, ARITHMETIC_HOST_TYPE_##J> >( setScale, ctx );  \
+    KernelRegistry::set<UtilsInterface::setGather<TYPE, ARITHMETIC_HOST_TYPE_##J> >( setGather, ctx );  \
+    KernelRegistry::set<UtilsInterface::setScatter<TYPE, ARITHMETIC_HOST_TYPE_##J> >( setScatter, ctx );  \
+    KernelRegistry::set<UtilsInterface::set<TYPE, ARITHMETIC_HOST_TYPE_##J> >( set, ctx );  \
 
-#define LAMA_UTILS_REGISTER(z, I, _)                                                       \
-    LAMA_INTERFACE_REGISTER_T( Utils, scale, ARITHMETIC_HOST_TYPE_##I )                    \
-    LAMA_INTERFACE_REGISTER_T( Utils, sum, ARITHMETIC_HOST_TYPE_##I )                      \
-    LAMA_INTERFACE_REGISTER_T( Utils, setVal, ARITHMETIC_HOST_TYPE_##I )                   \
-    LAMA_INTERFACE_REGISTER_T( Utils, getValue, ARITHMETIC_HOST_TYPE_##I )                 \
-    LAMA_INTERFACE_REGISTER_T( Utils, maxval, ARITHMETIC_HOST_TYPE_##I )                   \
-    LAMA_INTERFACE_REGISTER_T( Utils, absMaxVal, ARITHMETIC_HOST_TYPE_##I )                \
-    LAMA_INTERFACE_REGISTER_T( Utils, absMaxDiffVal, ARITHMETIC_HOST_TYPE_##I )            \
-    LAMA_INTERFACE_REGISTER_T( Utils, isSorted, ARITHMETIC_HOST_TYPE_##I )                 \
-    LAMA_INTERFACE_REGISTER_T( Utils, invert, ARITHMETIC_HOST_TYPE_##I )                   \
-    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT,                                             \
-                     LAMA_UTILS2_REGISTER,                                                 \
+#define LAMA_UTILS_REGISTER(z, I, _)                                                                     \
+    KernelRegistry::set<UtilsInterface::scale<ARITHMETIC_HOST_TYPE_##I> >( scale, ctx );                 \
+    KernelRegistry::set<UtilsInterface::sum<ARITHMETIC_HOST_TYPE_##I> >( sum, ctx );                     \
+    KernelRegistry::set<UtilsInterface::setVal<ARITHMETIC_HOST_TYPE_##I> >( setVal, ctx );               \
+    KernelRegistry::set<UtilsInterface::setOrder<ARITHMETIC_HOST_TYPE_##I> >( setOrder, ctx );           \
+    KernelRegistry::set<UtilsInterface::getValue<ARITHMETIC_HOST_TYPE_##I> >( getValue, ctx );           \
+    KernelRegistry::set<UtilsInterface::maxval<ARITHMETIC_HOST_TYPE_##I> >( maxval, ctx );               \
+    KernelRegistry::set<UtilsInterface::absMaxVal<ARITHMETIC_HOST_TYPE_##I> >( absMaxVal, ctx );         \
+    KernelRegistry::set<UtilsInterface::absMaxDiffVal<ARITHMETIC_HOST_TYPE_##I> >( absMaxDiffVal, ctx ); \
+    KernelRegistry::set<UtilsInterface::isSorted<ARITHMETIC_HOST_TYPE_##I> >( isSorted, ctx );           \
+    KernelRegistry::set<UtilsInterface::invert<ARITHMETIC_HOST_TYPE_##I> >( invert, ctx );               \
+    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT,                                                           \
+                     LAMA_UTILS2_REGISTER,                                                               \
                      ARITHMETIC_HOST_TYPE_##I )
 
     BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_UTILS_REGISTER, _ )
@@ -516,8 +526,7 @@ void OpenMPUtils::setInterface( UtilsInterface& Utils )
 
 bool OpenMPUtils::registerInterface()
 {
-    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( context::Host );
-    setInterface( interface.Utils );
+    setInterface();
     return true;
 }
 
