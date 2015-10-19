@@ -2,7 +2,7 @@
 
 #include <scai/kregistry/KernelContextFunction.hpp>
 
-using namespace scai::common;
+using namespace scai;
 using namespace scai::kregistry;
 
 static int dummyRoutine()
@@ -35,7 +35,7 @@ BOOST_AUTO_TEST_CASE( TraitTest )
     { 
         x = f[ context::MIC ](); 
 
-    }, Exception );
+    }, KernelRegistryException );
 
     // misspelling of name or signature is no more possible here, so no further test for failure
 }

@@ -4,7 +4,7 @@
 #include <iostream>
 
 using namespace scai::kregistry;
-using namespace scai::common;
+using namespace scai;
 
 struct UtilsInterface
 {

@@ -2,6 +2,7 @@
 
 #include <scai/kregistry/KernelContextFunction.hpp>
 
+using namespace scai;
 using namespace scai::common;
 using namespace scai::kregistry;
 
@@ -13,7 +14,7 @@ BOOST_AUTO_TEST_CASE( SimpleTest )
 {
     // This simple test registers a function in the kernel registry and uses it later
 
-    KernelRegistry::set( dummyRoutine, "dummy", scai::common::context::Host );
+    KernelRegistry::set( dummyRoutine, "dummy", context::Host );
   
     KernelContextFunction<void(*)()> f( "dummy" );
 
@@ -25,17 +26,17 @@ BOOST_AUTO_TEST_CASE( SimpleTest )
     { 
         f[ context::CUDA ](); 
 
-    }, Exception );
+    }, KernelRegistryException );
 
     BOOST_CHECK_THROW( 
     { 
         KernelContextFunction<void(*)()> g( "dummy1" );  // wrong name
 
-    }, Exception );
+    }, KernelRegistryException );
 
     BOOST_CHECK_THROW( 
     { 
         KernelContextFunction<int(*)()> g( "dummy" );   // wrong signature
 
-    }, Exception );
+    }, KernelRegistryException );
 }

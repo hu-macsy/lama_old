@@ -2,7 +2,7 @@
 
 #include <scai/kregistry/KernelContextFunction.hpp>
 
-using namespace scai::common;
+using namespace scai;
 using namespace scai::kregistry;
 
 template<typename ValueType>

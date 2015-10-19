@@ -4,8 +4,8 @@
 
 #include <iostream>
 
+using namespace scai;
 using namespace scai::kregistry;
-using namespace scai::common;
 
 template<typename ValueType>
 static ValueType add( ValueType x )

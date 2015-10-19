@@ -56,7 +56,7 @@ typedef void ( *VoidFunction )();
  *  where the function pointer might be NULL for unsupported context
  */
 
-using scai::common::ContextType;
+using scai::ContextType;
 
 class _ContextFunction
 {
@@ -92,7 +92,7 @@ protected:
 
     // array with function pointer for each context
 
-    VoidFunction mContextFuncArray[scai::common::context::MaxContext];
+    VoidFunction mContextFuncArray[scai::context::MaxContext];
 };
 
 /* --------------------------------------------------------------------------- *

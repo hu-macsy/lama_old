@@ -36,9 +36,6 @@
 namespace scai
 {
 
-namespace common
-{
-
 namespace context
 {
 
@@ -95,7 +92,5 @@ std::ostream& operator<<( std::ostream& stream, const AccessKind& kind )
 }
 
 } /* end namespace context */
-
-} /* end namespace common */
 
 } /* end namespace scai */
