@@ -435,7 +435,7 @@ void GMRES::updateX( unsigned int i )
 
     // ContextPtr context = getCoefficients().getContextPtr();
 
-    hmemo::ContextPtr context = hmemo::Context::getContextPtr( hmemo::context::Host );
+    hmemo::ContextPtr context = hmemo::Context::getHostPtr();
 
     LAMA_INTERFACE_FN_t( tptrs, context, BLAS, LAPACK, double );
 

@@ -121,67 +121,6 @@ ContextPtr Context::getContextPtr( ContextType type, int deviceNr )
     return create( type, deviceNr );
 }
 
-namespace context
-{
-
-std::ostream& operator<<( std::ostream& stream, const ContextType& type )
-{
-    using namespace scai::hmemo;
-
-    switch ( type )
-    {
-        case Host :
-            stream << "Host";
-            break;
-
-        case CUDA :
-            stream << "CUDA";
-            break;
-
-        case MIC :
-            stream << "MIC";
-            break;
-
-        case OpenCL :
-            stream << "OpenCL";
-            break;
-
-        case UserContext :
-            stream << "UserContext";
-            break;
-
-        default:
-            stream << "ContextType_" << (int) type;
-    }
-
-    return stream;
-}
-
-/* -----------------------------------------------------------------------------*/
-
-std::ostream& operator<<( std::ostream& stream, const AccessKind& kind )
-{
-    using namespace scai::hmemo;
-
-    switch ( kind )
-    {
-        case Write :
-            stream << "Write";
-            break;
-
-        case Read :
-            stream << "Read";
-            break;
-
-        default:
-            stream << "AccessKind_" << (int) kind;
-    }
-
-    return stream;
-}
-
-} /* end namespace context */
-
 } /* end namespace hmemo */
 
 } /* end namespace scai */

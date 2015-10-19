@@ -952,23 +952,23 @@ hmemo::ContextPtr MPICommunicator::getCommunicationContext( const hmemo::Context
 {
     // get a valid context, i.e. a context that contains valid data
 
-    hmemo::ContextPtr validContext = array.getValidContext( hmemo::context::Host );
+    hmemo::ContextPtr validContext = array.getValidContext( context::Host );
 
     SCAI_LOG_DEBUG( logger, "CommunicationContext: valid context for " << array << ": " << *validContext )
 
-    if ( validContext->getType() == hmemo::context::Host )
+    if ( validContext->getType() == context::Host )
     {
         return validContext;
     }
 
     // This can only be used for CUDAaware MPI
 
-    if( isCUDAAware && ( validContext->getType() == hmemo::context::CUDA ) )
+    if( isCUDAAware && ( validContext->getType() == context::CUDA ) )
     {
         return validContext;
     }
 
-    return hmemo::Context::getContextPtr( hmemo::context::Host );
+    return hmemo::Context::getHostPtr();
 }
 
 /* ---------------------------------------------------------------------------------- */

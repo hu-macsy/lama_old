@@ -66,7 +66,9 @@ public:
         {
             // Throw exception
 
-            COMMON_THROWEXCEPTION( "Context function " << mName << " not available for context = " << ctx )
+            SCAI_THROWEXCEPTION( KernelRegistryException, 
+                                 "Context function " << mName << " not available for context = " << ctx 
+                                 << ", registered is " <<  this->printIt() )
         }
 
         return fn;

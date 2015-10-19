@@ -49,7 +49,7 @@ using namespace scai::hmemo;
 
 void readJob( LAMAArray<double>& X )
 {
-    ContextPtr contextPtr = Context::getContextPtr( context::Host );
+    ContextPtr contextPtr = Context::getHostPtr();
 
     ReadAccess<double> read( X, contextPtr );
     const double* data = read.get();
@@ -80,7 +80,7 @@ void writeJob( LAMAArray<double>& X )
 {
     // Note: different thread on same context will wait until other access is released
 
-    ContextPtr contextPtr = Context::getContextPtr( context::Host );
+    ContextPtr contextPtr = Context::getHostPtr();
 
     WriteAccess<double> write( X, contextPtr );
  

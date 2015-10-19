@@ -66,7 +66,7 @@ NoCommunicator::~NoCommunicator()
 
 hmemo::ContextPtr NoCommunicator::getCommunicationContext( const hmemo::ContextArray& ) const
 {
-    return hmemo::Context::getContextPtr( hmemo::context::Host );
+    return hmemo::Context::getHostPtr();
 }
 
 bool NoCommunicator::isEqual( const Communicator& other ) const

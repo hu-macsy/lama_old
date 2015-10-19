@@ -56,7 +56,7 @@ int main()
 {
     SCAI_LOG_THREAD( "Main" )
 
-    ContextPtr contextPtr = Context::getContextPtr( context::Host );
+    ContextPtr contextPtr = Context::getHostPtr();
 
     static IndexType N =  100;
 

@@ -41,9 +41,9 @@ using namespace scai::hmemo;
 
 SCAI_LOG_DEF_LOGGER( logger, "ContextTest" )
 
-using namespace scai::hmemo;
+using namespace scai;
 
-typedef LAMAArray<double> Array;
+typedef hmemo::LAMAArray<double> Array;
 
 void add ( Array& res, const Array& a, const Array& b )
 {
@@ -52,11 +52,11 @@ void add ( Array& res, const Array& a, const Array& b )
 
     IndexType n = res.size();
 
-    ContextPtr host = Context::getContextPtr( context::Host );
+    ContextPtr host = hmemo::Context::getContextPtr( context::Host );
 
-    WriteOnlyAccess<double> write( res, host );
-    ReadAccess<double>read1( a, host );
-    ReadAccess<double>read2( b, host );
+    hmemo::WriteOnlyAccess<double> write( res, host );
+    hmemo::ReadAccess<double>read1( a, host );
+    hmemo::ReadAccess<double>read2( b, host );
  
     double* resPtr = write.get();
     const double* aPtr = read1.get();

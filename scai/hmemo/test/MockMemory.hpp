@@ -78,7 +78,7 @@ public:
 
     virtual ContextPtr getContextPtr() const
     {
-        return Context::getContextPtr( context::UserContext, mDeviceNr );
+        return Context::getContextPtr( scai::context::UserContext, mDeviceNr );
     }
 
     virtual MemoryType getType() const

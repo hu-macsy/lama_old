@@ -114,10 +114,10 @@ void conversion( ContextPtr loc )
 
 /* ------------------------------------------------------------------------- */
 
-static ContextPtr host = Context::getContextPtr( context::Host );
+static ContextPtr host = Context::getHostPtr();
 
 static ContextPtr cuda =
-    Context::hasContext( context::CUDA ) ? Context::getContextPtr( context::CUDA ) :
+    Context::hasContext( scai::context::CUDA ) ? Context::getContextPtr( scai::context::CUDA ) :
     ContextPtr();
 
 /* ------------------------------------------------------------------------- */

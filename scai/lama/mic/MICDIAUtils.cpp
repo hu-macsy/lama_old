@@ -489,7 +489,7 @@ void MICDIAUtils::setInterface( DIAUtilsInterface& DIAUtils )
 
 bool MICDIAUtils::registerInterface()
 {
-    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( hmemo::context::MIC );
+    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( context::MIC );
     setInterface( interface.DIAUtils );
     return true;
 }

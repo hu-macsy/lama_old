@@ -67,7 +67,7 @@ void readTest( const ValueType values[], const IndexType N, const ValueType sum 
 
 BOOST_AUTO_TEST_CASE( ConstructorTest )
 {
-    ContextPtr host = Context::getContextPtr( context::Host );
+    ContextPtr host = Context::getHostPtr();
 
     const IndexType N = 100;
 
@@ -98,7 +98,7 @@ BOOST_AUTO_TEST_CASE( ConstructorTest )
 
 BOOST_AUTO_TEST_CASE( releaseTest )
 {
-    ContextPtr hostContext = Context::getContextPtr( context::Host );
+    ContextPtr hostContext = Context::getHostPtr();
 
     LAMAArray<IndexType> lamaArray; // default, not allocated at all
     ReadAccess<IndexType> readTestAccess( lamaArray, hostContext );
@@ -131,7 +131,7 @@ BOOST_AUTO_TEST_CASE( releaseTest )
 
 BOOST_AUTO_TEST_CASE( resizeTest )
 {
-    ContextPtr contextPtr = Context::getContextPtr( context::Host );
+    ContextPtr contextPtr = Context::getHostPtr();
 
     LAMAArray<IndexType> lamaArray; // default, not allocated at all
     {
@@ -168,7 +168,7 @@ BOOST_AUTO_TEST_CASE( swapTest )
     BOOST_CHECK_EQUAL( arr2.size(), n1 );
     BOOST_CHECK_EQUAL( arr1.size(), n2 );
 
-    ContextPtr contextPtr = Context::getContextPtr( context::Host );
+    ContextPtr contextPtr = Context::getHostPtr();
 
     {
         ReadAccess<double> read( arr1, contextPtr );
@@ -195,7 +195,7 @@ BOOST_AUTO_TEST_CASE( accessTest )
     const double value = 1.0;
     const double value2 = 2.0;
 
-    ContextPtr contextPtr = Context::getContextPtr( context::Host );
+    ContextPtr contextPtr = Context::getHostPtr();
 
     LAMAArray<double> lamaArray( n, value );
     {
@@ -236,7 +236,7 @@ BOOST_AUTO_TEST_CASE( aliasTest )
     const double value = 1.0;
     LAMAArray<double> lamaArray( N, value );
 
-    ContextPtr contextPtr = Context::getContextPtr( context::Host );
+    ContextPtr contextPtr = Context::getHostPtr();
 
     {
         // read and write access at same time by same thread
@@ -332,7 +332,7 @@ BOOST_AUTO_TEST_CASE( validTest )
 {
     LAMAArray<float> A( 10 );
 
-    ContextPtr hostContext = Context::getContextPtr( context::Host );
+    ContextPtr hostContext = Context::getHostPtr();
 
     // Array not allocated at all, should also give some default for validContext
 

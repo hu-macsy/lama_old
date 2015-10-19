@@ -463,7 +463,7 @@ void MICCOOUtils::setInterface( COOUtilsInterface& COOUtils )
 
 bool MICCOOUtils::registerInterface()
 {
-    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( hmemo::context::MIC );
+    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( context::MIC );
     setInterface( interface.COOUtils );
     return true;
 }

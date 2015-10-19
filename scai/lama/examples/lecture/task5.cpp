@@ -32,7 +32,7 @@ int main( int argc, char* argv[] )
     std::cout << "Read matrix m : " << m << std::endl;
     IndexType size = m.getNumRows();
 
-    ContextPtr cudaContext = Context::getContextPtr( scai::hmemo::context::CUDA, 0 ); 
+    ContextPtr cudaContext = Context::getContextPtr( scai::context::CUDA, 0 ); 
     m.setContext( cudaContext );
 
     DenseVector<double> rhs( size , 0.0 );

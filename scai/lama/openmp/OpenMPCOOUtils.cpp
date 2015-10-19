@@ -403,7 +403,7 @@ void OpenMPCOOUtils::setInterface( COOUtilsInterface& COOUtils )
 
 bool OpenMPCOOUtils::registerInterface()
 {
-    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( hmemo::context::Host );
+    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( context::Host );
     setInterface( interface.COOUtils );
     return true;
 }

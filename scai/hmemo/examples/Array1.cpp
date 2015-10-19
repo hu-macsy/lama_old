@@ -39,6 +39,7 @@
 #include <iostream> 
 
 using namespace std;
+using namespace scai;
 using namespace scai::hmemo;
 
 SCAI_LOG_DEF_LOGGER( logger, "MemoryTest" )

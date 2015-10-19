@@ -29,7 +29,7 @@ public:
 
         mCommunicationKind = scai::lama::Matrix::SYNCHRONOUS;
         mComm              = scai::lama::Communicator::get();
-        mContext           = scai::hmemo::Context::getContextPtr( scai::hmemo::context::Host );
+        mContext           = scai::hmemo::Context::getContextPtr( scai::context::Host );
         mMaxIters          = 1000;
     }
 
@@ -60,13 +60,13 @@ public:
         }
         else if ( "HOST" == val )
         { 
-            mContext = scai::hmemo::Context::getContextPtr( scai::hmemo::context::Host );
+            mContext = scai::hmemo::Context::getContextPtr( scai::context::Host );
         }
         else if ( ( "CUDA" == val ) || ( "GPU" == val ) )
         { 
             // int device = mComm->getNodeRank();
             int device = 0;
-            mContext = scai::hmemo::Context::getContextPtr( scai::hmemo::context::CUDA, device );
+            mContext = scai::hmemo::Context::getContextPtr( scai::context::CUDA, device );
         }
         else if ( "SYNC" == val )
         {
@@ -92,7 +92,7 @@ public:
         {
             // choose default format by context: Host -> CSR, CUDA -> ELL
 
-            if ( mContext->getType() == scai::hmemo::context::CUDA )
+            if ( mContext->getType() == scai::context::CUDA )
             {
                 return "ELL";
             }

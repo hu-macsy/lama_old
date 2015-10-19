@@ -45,7 +45,7 @@ hmemo::ContextPtr CUDAContext::getContext()
 {
     if ( !cudaContext )
     {
-        cudaContext = hmemo::Context::getContextPtr( hmemo::context::CUDA, 0 );
+        cudaContext = hmemo::Context::getHostPtr();
     }
 
     return cudaContext;

@@ -1969,7 +1969,7 @@ void MICCSRUtils::setInterface( CSRUtilsInterface& CSRUtils )
 
 bool MICCSRUtils::registerInterface()
 {
-    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( hmemo::context::MIC );
+    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( context::MIC );
     setInterface( interface.CSRUtils );
     return true;
 }

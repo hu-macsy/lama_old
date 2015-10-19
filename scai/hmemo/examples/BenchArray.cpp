@@ -62,7 +62,7 @@ void routineLAMA( double& res, IndexType n )
 {
     SCAI_LOG_TRACE( logger, "routineLAMA, n = " << n )
 
-    ContextPtr contextPtr = Context::getContextPtr( context::Host );
+    ContextPtr contextPtr = Context::getHostPtr();
 
     LAMAArray<double> X( contextPtr );
 
@@ -84,7 +84,7 @@ void routineSCAI_1( double& res )
 
 void routineSCAI_2( double& res, IndexType n )
 {
-    ContextPtr contextPtr = Context::getContextPtr( context::Host );
+    ContextPtr contextPtr = Context::getHostPtr();
 
     LAMAArray<double> X;
 
@@ -96,7 +96,7 @@ void routineSCAI_2( double& res, IndexType n )
 
 void routineSCAI_3( double& res, IndexType n )
 {
-    ContextPtr contextPtr = Context::getContextPtr( context::Host );
+    ContextPtr contextPtr = Context::getHostPtr();
 
     LAMAArray<double> X;
 
@@ -120,7 +120,7 @@ void routineSimple( double& res, IndexType n )
 
 int main()
 {
-    ContextPtr host = Context::getContextPtr( context::Host );
+    ContextPtr host = Context::getHostPtr();
     MemoryPtr hostMem = host->getMemoryPtr();
 
     static int ITER_VEC[] = { 1000000, 100000, 10000, 1000, 100, 10, 1 };

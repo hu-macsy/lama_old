@@ -10,9 +10,11 @@ static int dummyRoutine()
     return 15;
 }
 
+/** Trait structure for registration of int routine with name "MyDummy" */
+
 struct TraitDummyRoutine
 {
-    typedef int ( *FuncType ) ();
+    typedef int ( *FuncType ) ();    // signature of the function
     static const char* getId() { return "MyDummy"; }
 };
 

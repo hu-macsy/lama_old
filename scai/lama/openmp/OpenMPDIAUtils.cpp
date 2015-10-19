@@ -566,7 +566,7 @@ void OpenMPDIAUtils::setInterface( DIAUtilsInterface& DIAUtils )
 
 bool OpenMPDIAUtils::registerInterface()
 {
-    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( hmemo::context::Host );
+    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( context::Host );
     setInterface( interface.DIAUtils );
     return true;
 }

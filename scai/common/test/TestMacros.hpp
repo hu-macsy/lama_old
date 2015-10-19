@@ -171,15 +171,15 @@ inline std::string getEnvContext()
  * @return the current context as a ContextType from a std::string
  */
 
-inline scai::hmemo::ContextType mapEnvContexttoContextType( std::string contextname )
+inline scai::context::ContextType mapEnvContexttoContextType( std::string contextname )
 {
-	scai::hmemo::ContextType myContext;
-    std::map<std::string, scai::hmemo::ContextType> contextmap =
-        boost::assign::map_list_of ( "Host", scai::hmemo::context::Host )
-        ( "CUDA", scai::hmemo::context::CUDA )
-        ( "OPENCL", scai::hmemo::context::OpenCL )
-        ( "MIC", scai::hmemo::context::MIC )
-        ( "MaxContext", scai::hmemo::context::MaxContext );
+	scai::context::ContextType myContext;
+    std::map<std::string, scai::context::ContextType> contextmap =
+        boost::assign::map_list_of ( "Host", scai::context::Host )
+        ( "CUDA", scai::context::CUDA )
+        ( "OPENCL", scai::context::OpenCL )
+        ( "MIC", scai::context::MIC )
+        ( "MaxContext", scai::context::MaxContext );
     myContext = contextmap[contextname];
     return myContext;
 }
@@ -283,22 +283,23 @@ inline scai::hmemo::ContextType mapEnvContexttoContextType( std::string contextn
  */
 
 #define CONTEXTLOOP()                                                                                                  \
-    std::list<ContextType> listofcontexts;                                                                             \
-    std::list<ContextType>::iterator Iter;                                                                             \
+    std::list<scai::context::ContextType> listofcontexts;                                                                             \
+    std::list<scai::context::ContextType>::iterator Iter;                                                                             \
     std::string contexttype;                                                                                           \
     contexttype = getEnvContext();                                                                                     \
     if ( contexttype == "*" )                                                                                          \
     {                                                                                                                  \
         SCAI_LOG_INFO( logger, "LAMA_TEST_CONTEXT is not set or has value '*', so all available contexts will be used." );  \
-        for ( ContextType i = context::Host; i < context::MaxContext; i = static_cast<ContextType>( i + 1 ) )          \
+        for ( int i = 0; i < scai::context::MaxContext; ++i )                                                          \
         {                                                                                                              \
-            if ( Context::hasContext( i ) )                                                                            \
+            scai::context::ContextType ctx = static_cast<scai::context::ContextType>( i + 1 );                         \
+            if ( Context::hasContext( ctx ) )                                                                          \
             {                                                                                                          \
-                listofcontexts.push_back( i );                                                                         \
-                SCAI_LOG_DEBUG( logger, "Context " << i << " is available");                                           \
+                listofcontexts.push_back( ctx );                                                                       \
+                SCAI_LOG_DEBUG( logger, "Context " << ctx << " is available");                                           \
             }                                                                                                          \
             else                                                                                                       \
-                SCAI_LOG_INFO( logger, "The following context will be skipped, because it is not available: " << i );  \
+                SCAI_LOG_INFO( logger, "The following context will be skipped, because it is not available: " << ctx );\
         }                                                                                                              \
     } else {                                                                                                           \
         listofcontexts.push_back( mapEnvContexttoContextType( contexttype ) );                                         \
@@ -384,7 +385,7 @@ inline scai::hmemo::ContextType mapEnvContexttoContextType( std::string contextn
 #define LAMA_RUN_TEST(z, I, method )                                                                 			\
     try                                                                                              			\
     {                 																				 			\
-    	if( context->getType() == scai::hmemo::context::CUDA ) 										 			\
+    	if( context->getType() == scai::context::CUDA ) 										 			    \
 		{ 																							 			\
     		switch( scai::common::getScalarType<ARITHMETIC_HOST_TYPE_##I>() ) 									\
 			{ 																						 			\

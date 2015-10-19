@@ -239,7 +239,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( vectorTimesMatrixTest, ValueType, test_types )
     Vector& result = denseResult;
     SCAI_LOG_INFO( logger, "Vector(NoDist) = Vector(BlockDist) * Matrix(BlockDist, NoDist)" )
     result = vector * matrix;
-    ContextPtr host = Context::getContextPtr( context::Host );
+    ContextPtr host = Context::getHostPtr();
     matrixTypeMatrix.setContext( host, host );
 
     for ( IndexType i = 0; i < result.size(); ++i )
@@ -327,7 +327,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matrixTimesVectorTest, ValueType, test_types )
     const Vector& vector = denseVector;
     Vector& result = denseResult;
     result = matrix * vector;
-    ContextPtr host = Context::getContextPtr( context::Host );
+    ContextPtr host = Context::getHostPtr();
     matrixTypeMatrix.setContext( host, host );
 
     for ( IndexType i = 0; i < result.size(); ++i )

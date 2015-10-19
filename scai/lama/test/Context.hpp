@@ -44,12 +44,12 @@ namespace lama_test
 class Context
 {
 public:
-    static scai::hmemo::ContextPtr getContext( const scai::hmemo::ContextType type );
+    static scai::hmemo::ContextPtr getContext( const scai::context::ContextType type );
 private:
     Context();
     virtual ~Context();
 
-    static std::map<scai::hmemo::ContextType, scai::hmemo::ContextPtr> contexts;
+    static std::map<scai::context::ContextType, scai::hmemo::ContextPtr> contexts;
 };
 
 } /* end namespace lama_test */

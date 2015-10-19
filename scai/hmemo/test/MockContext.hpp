@@ -105,9 +105,9 @@ public:
         // return &memory == getMemory().get();
     }
 
-    virtual ContextType getType() const
+    virtual scai::context::ContextType getType() const
     {
-        return context::UserContext;
+        return scai::context::UserContext;
     }
 
     virtual TaskSyncToken* getSyncToken() const
@@ -122,16 +122,16 @@ public:
 
     static ContextPtr create( int deviceNr );
 
-    static ContextType createValue() 
+    static scai::context::ContextType createValue() 
     { 
-        return context::UserContext; 
+        return scai::context::UserContext; 
     }
 
 private:
 
     // MockContext uses the type UserContext as its type
 
-    MockContext( int deviceNr ) : Context( context::UserContext )
+    MockContext( int deviceNr ) : Context( scai::context::UserContext )
     {
         mDeviceNr = deviceNr;
     }

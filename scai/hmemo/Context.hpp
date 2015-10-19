@@ -41,6 +41,7 @@
 #include <scai/common/Factory1.hpp>
 #include <scai/common/Printable.hpp>
 #include <scai/common/NonCopyable.hpp>
+#include <scai/common/ContextType.hpp>
 
 // internal scai libraries
 #include <scai/logging.hpp>
@@ -75,46 +76,6 @@ class Context;   // forward declaration
 /** Context pointers will be always const, so context can never be modified. */
 
 typedef scai::common::shared_ptr<const Context> ContextPtr;
-
-/** Namespace for enumeration of context types and access kinds. */
-
-namespace context
-{
-    /** Enumeration type for the supported contexts. The type is used to select
-     *  the appropriate code that will be used for the computations in the context.
-     *
-     *  The same context type does not imply that two different contexts can use
-     *  the same data. Two CUDA contexts might allocate their own data where data
-     *  must be transfered explicitly.
-     */
-    enum ContextType
-    {
-        Host,          //!< context for cpu + main memory
-        CUDA,          //!< CUDA GPU device
-        OpenCL,        //!< OpenCL GPU device, currently not supported
-        MIC,           //!< Intel MIC
-        UserContext,   //!< can be used for a new derived Context class
-        MaxContext     //!< used for dimension of ContextType arrays
-    };
-
-    /** Enumeration type for access kind, may be read or write */
-
-    enum AccessKind
-    {
-        Read, //!<  read access to the array, can be multiple
-        Write, //!<  write access to the array, only one at a time
-        MaxAccessKind //!<  internal use for dimension of arrays
-    };
-
-    COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const ContextType& type );
-
-    COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const AccessKind& kind );
-}
-
-// Make ContexType and AccessKind visible, but not enum values. 
-
-using context::ContextType;
-using context::AccessKind;
 
 /** @brief This class is a common base class for all possible contexts.
  *
