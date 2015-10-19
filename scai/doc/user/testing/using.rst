@@ -34,8 +34,7 @@ You can take a look at the summary with all runtime parameters and environment v
 
 .. _here: http://www.boost.org/doc/libs/1_45_0/libs/test/doc/html/utf/user-guide/runtime-config/reference.html
 
-- context: Additionally we have implement this runtime parameter. LAMA can execute calculations on different hardware 
-architectures. For testing it is helpful to run a test just on a specific architecture.
+- context: Additionally we have implement this runtime parameter. LAMA can execute calculations on different hardware architectures. For testing it is helpful to run a test just on a specific architecture.
 
 Valid contexts are:
  

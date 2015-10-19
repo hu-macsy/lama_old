@@ -458,7 +458,6 @@ The C++ code for the matrix vector multiplication using a COO matrix:
 Sparse Matrix Converters
 ------------------------
 
-In some cases it is necessary to convert the matrix storage formats into other ones. Therefore storage converters are
-created in each class (e.g. for ELL to CSR there is the function setELLData in the CSRStorage.hpp). All conversions
-from each sparse matrix format to any other sparse matrix format and from the dense format to any matrix format have
-been implemented.
+In some cases it is necessary to convert the matrix storage formats into other ones. Therefore every storage can be 
+converted to CSR and can be initialized from CSR. Through this mechanism every sparse matrix format can be converted
+in another one. 

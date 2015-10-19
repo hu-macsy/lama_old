@@ -22,14 +22,17 @@ Selfmade assertions of LAMA:
 - SCAI_CHECK_SCALAR_SMALL_EPS( x, ValueType ) : Checks if a Scalar is equal to 0 with a default absolute tolerance given by LAMA. This default tolerance is 1E-5.
 
 
+These two macros are used by nearly all tests for objects, which inherit by class printable.
+
 - LAMA_WRITEAT_TEST( printable ) : Checks if an object of type printable prints something (the content is not compared). 
 - LAMA_WRITEAT_TEST_PTR( printable ) : Checks if an object of type printable prints something (the content is not compared).
 
-These two makros are used by nearly all tests for objects, which inherit by class printable.
 
-- LAMA_AUTO_TEST_CASE_TDUMMY( functionname, classname ) : This makro creates a functioncall of a templated testmethod with a dummy template
-- LAMA_AUTO_TEST_CASE_T( functionname, classname ) : This makro creates a call of a single templated testmethod for each supported ValueType
-- LAMA_AUTO_TEST_CASE_TT( functionname, classname ) : This makro creates a call of a double templated testmethod for each supported ValueType. This is helpful to test methods with casts of different valuetypes.
+Testcase macros: 
 
-All theses three makros implement the CONTEXTLOOP() to call testmethods on different contexts automatically. The argument classname is used to call the correct testmethod of the given namespace of a testclass.
-Those makro are especially used in Utiltest-classes, like ELLUtilsTest, JDSUtilsTest, etc. 
+- LAMA_AUTO_TEST_CASE_TDUMMY( functionname, classname ) : This macro creates a functioncall of a templated testmethod with a dummy template
+- LAMA_AUTO_TEST_CASE_T( functionname, classname ) : This macro creates a call of a single templated testmethod for each supported ValueType
+- LAMA_AUTO_TEST_CASE_TT( functionname, classname ) : This macro creates a call of a double templated testmethod for each supported ValueType. This is helpful to test methods with casts of different valuetypes.
+
+All theses three macros implement the CONTEXTLOOP() to call testmethods on different contexts automatically. The argument classname is used to call the correct testmethod of the given namespace of a testclass.
+Those macro are especially used in Utiltest-classes, like ELLUtilsTest, JDSUtilsTest, etc. 

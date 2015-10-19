@@ -22,15 +22,12 @@ At the moment there are three different test hierarchies:
 
 .. _Boost: www.boost.org 
 
-For each class in lama/src/ there is a corresponding testclass with the same name (e.g. MaxNorm.cpp -> MaxNormTest.cpp).
+For each class in scai/lama/ there is a corresponding testclass with the same name (e.g. MaxNorm.cpp -> MaxNormTest.cpp).
  
 In every testclass there is exactly one testsuite, which groups testcases, that are made for testing functions from
 this sourceclass. All names of testcases in a testsuite should be unique.
 
 There are some conventions about name-giving as well:
 
- - Each TestSuiteName should be equal to the FileName. This makes it easy and intuitive to call testcases by using the 
-runtime parameter --run_test. 
- - Each TestFixtureName is created by adding "Config" to the TestSuiteName. It seems that Boost.Test has some problems 
-with equal Fixturenames of different Testclasses. With this convention we make sure that there are just unique 
-names of testclasses and testfixtures.
+ - Each TestSuiteName should be equal to the FileName. This makes it easy and intuitive to call testcases by using the runtime parameter --run_test. 
+ - Each TestFixtureName is created by adding "Config" to the TestSuiteName. It seems that Boost.Test has some problems with equal Fixturenames of different Testclasses. With this convention we make sure that there are just unique names of testclasses and testfixtures.

@@ -4,30 +4,9 @@ Solver Example
 The following C++ program shows how to use a linear equation solver like the Conjugate Gradient 
 Method.
 
-::
-   
-   typedef double ValueType;
-
-   DenseVector<ValueType> solution( 10000, 2.0 );
-   const DenseVector<ValueType> rhs( solution.getDistributionPtr(), 1.0 );
-
-   CSRSparseMatrix<ValueType> matrix;
-   MatrixCreator<ValueType>::buildPoisson2D( matrix, 9, 100, 100 );
-
-   LoggerPtr logger(
-      new CommonLogger(
-         "<CG>: ",
-         LogLevel::solverInformation,
-         LoggerWriteBehaviour::toConsoleOnly,
-         std::auto_ptr<Timer>( new Timer() ) ) );
-
-   CriterionPtr criterion( new IterationCount( 10 ) );
-
-   CG solver( "mySolverName", logger );
-
-   solver.setStoppingCriterion( criterion );
-   solver.initialize( matrix );
-   solver.solve( solution, rhs );  
+.. literalinclude:: ../../../lama/examples/tutorial/solver.cpp 
+   :language: c++
+   :lines: 54-98
 
 :download:`Download source file <../../../lama/examples/tutorial/solver.cpp>`
 
