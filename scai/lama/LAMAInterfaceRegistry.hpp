@@ -76,7 +76,7 @@ public:
 
     /** @brief Get const reference to an interface for a certain context type. */
 
-    const LAMAInterface* getInterface( const hmemo::ContextType location ) const;
+    const LAMAInterface* getInterface( const hmemo::context::ContextType location ) const;
 
     /** @brief Get a modify reference for a LAMAInterface; if not available an
      *         new interface is generated.
@@ -87,11 +87,11 @@ public:
      *  If an interface is not available a default one will be created
      *  (all function pointers are set to NULL).
      */
-    LAMAInterface& modifyInterface( const hmemo::ContextType location );
+    LAMAInterface& modifyInterface( const hmemo::context::ContextType location );
 
     /** @brief Query whether an interface for a certain context is available  */
 
-    bool hasInterface( const hmemo::ContextType location ) const;
+    bool hasInterface( const hmemo::context::ContextType location ) const;
 
 private:
 
@@ -99,7 +99,7 @@ private:
 
     static LAMAInterfaceRegistry* instance;
 
-    typedef std::map<hmemo::ContextType,LAMAInterface*> InterfaceMapType;
+    typedef std::map<hmemo::context::ContextType,LAMAInterface*> InterfaceMapType;
 
     InterfaceMapType mInterfaceMap;
 

@@ -73,9 +73,9 @@ std::string Logger::getFullName() const
     return fullname;
 }
 
-Level Logger::getEffectiveLevel() const
+level::Level Logger::getEffectiveLevel() const
 {
-    Level level = mLevel;
+    level::Level level = mLevel;
 
     if ( !mSetFlag && mParent != NULL )
     {
@@ -85,7 +85,7 @@ Level Logger::getEffectiveLevel() const
     return level;
 }
 
-void Logger::setLevel( const Level level, const bool force/*= true*/ )
+void Logger::setLevel( const level::Level level, const bool force/*= true*/ )
 {
     // if level is already set and there is no force => return
     if ( !force && mSetFlag )

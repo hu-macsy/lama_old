@@ -52,7 +52,7 @@ namespace hmemo
 
 SCAI_LOG_DEF_LOGGER( Context::logger, "Context" )
 
-Context::Context( ContextType type )
+Context::Context( context::ContextType type )
                 : mContextType( type ), mEnabled( false ), mFile( NULL ), mLine( 0 )
 {
     SCAI_LOG_DEBUG( logger, "Context( type = " << mContextType << " )" )
@@ -116,7 +116,7 @@ MemoryPtr Context::getHostMemoryPtr() const
 
 /* ---------------------------------------------------------------------------------*/
 
-ContextPtr Context::getContextPtr( ContextType type, int deviceNr )
+ContextPtr Context::getContextPtr( context::ContextType type, int deviceNr )
 {
     return create( type, deviceNr );
 }

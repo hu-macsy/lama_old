@@ -139,7 +139,7 @@ public:
      * 
      * Note: NULL pointer is returned if no valid data is available
      */
-    ContextPtr getValidContext( const ContextType preferredType = context::Host ) const;
+    ContextPtr getValidContext( const context::ContextType preferredType = context::Host ) const;
 
     /**
      * @brief Prefetches the contents of the container to the passed context.
@@ -307,7 +307,7 @@ inline IndexType ContextArray::capacity( ContextDataIndex index ) const
 
 /* ---------------------------------------------------------------------------------*/
 
-inline ContextPtr ContextArray::getValidContext( const ContextType preferredType ) const
+inline ContextPtr ContextArray::getValidContext( const context::ContextType preferredType ) const
 {
     return mContextDataManager.getValidContext( preferredType );
 }

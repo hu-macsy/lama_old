@@ -46,10 +46,6 @@
 namespace scai
 {
 
-using hmemo::ContextArray;
-using hmemo::LAMAArray;
-using hmemo::ContextPtr;
-
 namespace lama
 {
 
@@ -75,22 +71,22 @@ public:
      *  \endcode
      *  Size of target array will be the same as the source array.
      */
-    static void assign( ContextArray& target, const ContextArray& source, ContextPtr context = ContextPtr() );
+    static void assign( hmemo::ContextArray& target, const hmemo::ContextArray& source, hmemo::ContextPtr context = hmemo::ContextPtr() );
 
     template<typename ValueType1,typename ValueType2>
-    static void assignImpl( LAMAArray<ValueType1>& target, const LAMAArray<ValueType2>& source, ContextPtr context );
+    static void assignImpl( hmemo::LAMAArray<ValueType1>& target, const hmemo::LAMAArray<ValueType2>& source, hmemo::ContextPtr context );
 
     template<typename ValueType1,typename ValueType2>
     static void gather(
-        LAMAArray<ValueType1>& target,
-        const LAMAArray<ValueType2>& source,
-        const LAMAArray<IndexType>& index );
+        hmemo::LAMAArray<ValueType1>& target,
+        const hmemo::LAMAArray<ValueType2>& source,
+        const hmemo::LAMAArray<IndexType>& index );
 
     template<typename ValueType1>
-    static void assignScalar( LAMAArray<ValueType1>& target, const Scalar& value, ContextPtr context )
+    static void assignScalar( hmemo::LAMAArray<ValueType1>& target, const Scalar& value, hmemo::ContextPtr context )
                     __attribute__( ( noinline ) );
 
-    static void assignScalar( ContextArray& target, const Scalar& value, ContextPtr context );
+    static void assignScalar( hmemo::ContextArray& target, const Scalar& value, hmemo::ContextPtr context );
 
     /** This method sets a single value in a LAMA array.
      *
@@ -100,7 +96,7 @@ public:
      */
 
     template<typename ValueType>
-    static void setVal( LAMAArray<ValueType>& target, const IndexType index, ValueType val );
+    static void setVal( hmemo::LAMAArray<ValueType>& target, const IndexType index, ValueType val );
 
     /** Scaled assignment on LAMAArray.
      *
@@ -112,15 +108,15 @@ public:
 
     template<typename ValueType>
     static void assignScaled(
-        LAMAArray<ValueType>& result,
+        hmemo::LAMAArray<ValueType>& result,
         const ValueType beta,
-        const LAMAArray<ValueType>& y,
-        ContextPtr context );
+        const hmemo::LAMAArray<ValueType>& y,
+        hmemo::ContextPtr context );
 
 private:
 
     template<typename ValueType>
-    static void assignImpl1( LAMAArray<ValueType>& target, const ContextArray& source, ContextPtr context );
+    static void assignImpl1( hmemo::LAMAArray<ValueType>& target, const hmemo::ContextArray& source, hmemo::ContextPtr context );
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )};
 

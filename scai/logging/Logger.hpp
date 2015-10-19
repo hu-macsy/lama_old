@@ -121,7 +121,7 @@ public:
 
     /** Getter routine for the logging level of this object. */
 
-    inline Level getLevel() const
+    inline level::Level getLevel() const
     {
         return mLevel;
     }
@@ -131,7 +131,7 @@ public:
      will ask the ancestors for the level
      */
 
-    Level getEffectiveLevel() const;
+    level::Level getEffectiveLevel() const;
 
     /** Setter routine for the logging level of this object.
 
@@ -142,7 +142,7 @@ public:
      for the descendants whose level has not been set explicitly.
      */
 
-    void setLevel( const Level level, const bool force = true );
+    void setLevel( const level::Level level, const bool force = true );
 
     /** Logging output for level TRACE. This routine should
      only be called if TraceEnabled() returns true.
@@ -234,7 +234,7 @@ protected:
 
     bool mSetFlag; //!< This flag indicates that level has been set explicitly.
 
-    Level mLevel; //!< Current level of this logger.
+    level::Level mLevel; //!< Current level of this logger.
 
     class Logger* const mParent; //!< points back to the parent logger, NULL for root
 

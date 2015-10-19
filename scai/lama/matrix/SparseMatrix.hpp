@@ -180,16 +180,6 @@ public:
         return mLocalData->getContextPtr();
     }
 
-    /**
-     * @brief Method returns a reference to the constant context.
-     *
-     * @return    reference to the constant context.
-     */
-    virtual const Context& getContext() const
-    {
-        return mLocalData->getContext();
-    }
-
     /** Implementation for Matrix::setDenseData */
 
     virtual void setDenseData(

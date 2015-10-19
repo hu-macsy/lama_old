@@ -138,14 +138,14 @@ void NoCommunicator::exchangeByPlanImpl(
 }
 
 template<typename ValueType>
-SyncToken* NoCommunicator::exchangeByPlanAsyncImpl(
+tasking::SyncToken* NoCommunicator::exchangeByPlanAsyncImpl(
     ValueType recvData[],
     const CommunicationPlan& recvPlan,
     const ValueType sendData[],
     const CommunicationPlan& sendPlan ) const
 {
     exchangeByPlanImpl( recvData, recvPlan, sendData, sendPlan );
-    return new NoSyncToken();
+    return new tasking::NoSyncToken();
 }
 
 /* ---------------------------------------------------------------------------------- */
@@ -165,7 +165,7 @@ IndexType NoCommunicator::shiftImpl(
 }
 
 template<typename ValueType>
-SyncToken* NoCommunicator::shiftAsyncImpl(
+tasking::SyncToken* NoCommunicator::shiftAsyncImpl(
     ValueType[],
     const PartitionId,
     const ValueType[],

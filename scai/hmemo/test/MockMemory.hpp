@@ -75,7 +75,7 @@ public:
         return scai::hmemo::Context::getContextPtr( scai::hmemo::context::UserContext, mDeviceNr );
     }
 
-    virtual scai::hmemo::MemoryType getType() const
+    virtual scai::hmemo::memtype::MemoryType getType() const
     {
         return scai::hmemo::memtype::UserMemory;
     }

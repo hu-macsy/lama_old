@@ -141,10 +141,10 @@ inline std::string getEnvContext()
  * @return the current context as a ContextType from a std::string
  */
 
-inline scai::hmemo::ContextType mapEnvContexttoContextType( std::string contextname )
+inline scai::hmemo::context::ContextType mapEnvContexttoContextType( std::string contextname )
 {
-	scai::hmemo::ContextType myContext;
-    std::map<std::string, scai::hmemo::ContextType> contextmap =
+	scai::hmemo::context::ContextType myContext;
+    std::map<std::string, scai::hmemo::context::ContextType> contextmap =
         boost::assign::map_list_of ( "Host", scai::hmemo::context::Host )
         ( "CUDA", scai::hmemo::context::CUDA )
         ( "OPENCL", scai::hmemo::context::OpenCL )
@@ -253,14 +253,14 @@ inline scai::hmemo::ContextType mapEnvContexttoContextType( std::string contextn
  */
 
 #define CONTEXTLOOP()                                                                                                  \
-    std::list<ContextType> listofcontexts;                                                                             \
-    std::list<ContextType>::iterator Iter;                                                                             \
+    std::list<context::ContextType> listofcontexts;                                                                             \
+    std::list<context::ContextType>::iterator Iter;                                                                             \
     std::string contexttype;                                                                                           \
     contexttype = getEnvContext();                                                                                     \
     if ( contexttype == "*" )                                                                                          \
     {                                                                                                                  \
         SCAI_LOG_INFO( logger, "LAMA_TEST_CONTEXT is not set or has value '*', so all available contexts will be used." );  \
-        for ( ContextType i = context::Host; i < context::MaxContext; i = static_cast<ContextType>( i + 1 ) )          \
+        for ( context::ContextType i = context::Host; i < context::MaxContext; i = static_cast<context::ContextType>( i + 1 ) )          \
         {                                                                                                              \
             if ( Context::hasContext( i ) )                                                                            \
             {                                                                                                          \

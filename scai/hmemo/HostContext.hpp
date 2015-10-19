@@ -78,7 +78,7 @@ public:
 
     /** Static method required for Context::Register */
 
-    static ContextType createValue();
+    static context::ContextType createValue();
 
     /** Override Printable::writeAt with version for this class. */
 
@@ -99,7 +99,7 @@ private:
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 };
 
-inline ContextType HostContext::createValue() 
+inline context::ContextType HostContext::createValue()
 {
     return context::Host;
 }

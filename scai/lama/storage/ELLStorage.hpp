@@ -87,7 +87,7 @@ public:
      * @param[in] con           the context type where conversion should be done
      */
     ELLStorage( const IndexType numRows, const IndexType numColumns, 
-                const hmemo::ContextType con = hmemo::context::Host );
+                const hmemo::context::ContextType con = hmemo::context::Host );
 
     /** Constructor for ELL storage by corresponding arrays.
      *

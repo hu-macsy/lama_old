@@ -355,7 +355,7 @@ bool CUDAMemory::canCopyFrom( const Memory& other ) const
 {
     bool supported = false;
 
-    MemoryType otherType = other.getType();
+    memtype::MemoryType otherType = other.getType();
 
     if ( otherType == memtype::HostMemory )
     {
@@ -421,7 +421,7 @@ bool CUDAMemory::canCopyTo( const Memory& other ) const
 {
     bool supported = false;
 
-    MemoryType otherType = other.getType();
+    memtype::MemoryType otherType = other.getType();
 
     if ( otherType == memtype::HostMemory )
     {

@@ -64,8 +64,6 @@
 namespace scai
 {
 
-using common::Complex;
-
 namespace hmemo
 {
 	template<typename ValueType> class LAMAArray;
@@ -795,10 +793,6 @@ tasking::SyncToken* Communicator::exchangeByPlanAsync(
     const hmemo::LAMAArray<ValueType>& sendArray,
     const CommunicationPlan& sendPlan ) const
 {
-    using scai::hmemo::ReadAccess;
-    using scai::hmemo::WriteAccess;
-    using scai::hmemo::WriteOnlyAccess;
-
     SCAI_ASSERT_EQUAL_ERROR( sendArray.size(), sendPlan.totalQuantity() )
 
     IndexType recvSize = recvPlan.totalQuantity();
@@ -809,14 +803,14 @@ tasking::SyncToken* Communicator::exchangeByPlanAsync(
 
     SCAI_LOG_DEBUG( logger, *this << ": exchangeByPlanAsync, comCtx = " << *comCtx )
 
-    common::shared_ptr<ReadAccess<ValueType> > sendData( new ReadAccess<ValueType>( sendArray, comCtx ) );
-    common::shared_ptr<WriteAccess<ValueType> > recvData(
-                    new WriteOnlyAccess<ValueType>( recvArray, comCtx, recvSize ) );
+    common::shared_ptr<hmemo::ReadAccess<ValueType> > sendData( new hmemo::ReadAccess<ValueType>( sendArray, comCtx ) );
+    common::shared_ptr<hmemo::WriteAccess<ValueType> > recvData(
+                    new hmemo::WriteOnlyAccess<ValueType>( recvArray, comCtx, recvSize ) );
 
     tasking::SyncToken* token( exchangeByPlanAsync( recvData->get(), recvPlan, sendData->get(), sendPlan ) );
 
     // Add the read and write access to the sync token to get it freed after successful wait
-    // conversion common::shared_ptr<HostWriteAccess<ValueType> > -> common::shared_ptr<BaseAccess> supported
+    // conversion common::shared_ptr<hmemo::HostWriteAccess<ValueType> > -> common::shared_ptr<BaseAccess> supported
 
     token->pushToken( recvData );
     token->pushToken( sendData );

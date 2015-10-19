@@ -97,7 +97,7 @@ private    :
                     const PartitionId dest ) const;
 
     template<typename T>
-    SyncToken* shiftAsyncImpl(
+    tasking::SyncToken* shiftAsyncImpl(
                     T newvals[],
                     const PartitionId source,
                     const T oldVals[],
@@ -154,7 +154,7 @@ private    :
                     const CommunicationPlan& sendPlan ) const;
 
     template<typename T>
-    SyncToken* exchangeByPlanAsyncImpl(
+    tasking::SyncToken* exchangeByPlanAsyncImpl(
                     T recvData[],
                     const CommunicationPlan& recvPlan,
                     const T sendData[],
