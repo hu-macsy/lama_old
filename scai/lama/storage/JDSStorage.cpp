@@ -52,7 +52,6 @@
 // boost
 #include <boost/preprocessor.hpp>
 
-using namespace scai::tasking;
 using namespace scai::hmemo;
 
 namespace scai
@@ -1019,7 +1018,7 @@ void JDSStorage<ValueType>::vectorTimesMatrix(
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
-SyncToken* JDSStorage<ValueType>::matrixTimesVectorAsync(
+tasking::SyncToken* JDSStorage<ValueType>::matrixTimesVectorAsync(
     LAMAArray<ValueType>& result,
     const ValueType alpha,
     const LAMAArray<ValueType>& x,
@@ -1046,7 +1045,7 @@ SyncToken* JDSStorage<ValueType>::matrixTimesVectorAsync(
         using scai::common::ref;
         using scai::common::cref;
 
-        return new TaskSyncToken( bind( mv, this, ref( result ), alpha, cref( x ), beta, cref( y ) ) );
+        return new tasking::TaskSyncToken( bind( mv, this, ref( result ), alpha, cref( x ), beta, cref( y ) ) );
     }
 
     // For CUDA a solution using stream synchronization is more efficient than using a task
@@ -1063,7 +1062,7 @@ SyncToken* JDSStorage<ValueType>::matrixTimesVectorAsync(
 
     LAMA_INTERFACE_FN_T( normalGEMV, loc, JDSUtils, Mult, ValueType )
 
-    common::unique_ptr<SyncToken> syncToken( loc->getSyncToken() );
+    common::unique_ptr<tasking::SyncToken> syncToken( loc->getSyncToken() );
 
     // all accesses will be pushed to the sync token as LAMA arrays have to be protected up
     // to the end of the computations.
@@ -1122,7 +1121,7 @@ SyncToken* JDSStorage<ValueType>::matrixTimesVectorAsync(
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
-SyncToken* JDSStorage<ValueType>::vectorTimesMatrixAsync(
+tasking::SyncToken* JDSStorage<ValueType>::vectorTimesMatrixAsync(
     LAMAArray<ValueType>& result,
     const ValueType alpha,
     const LAMAArray<ValueType>& x,
@@ -1149,7 +1148,7 @@ SyncToken* JDSStorage<ValueType>::vectorTimesMatrixAsync(
         using scai::common::ref;
         using scai::common::cref;
 
-        return new TaskSyncToken( bind( vm, this, ref( result ), alpha, cref( x ), beta, cref( y ) ) );
+        return new tasking::TaskSyncToken( bind( vm, this, ref( result ), alpha, cref( x ), beta, cref( y ) ) );
     }
 
     // For CUDA a solution using stream synchronization is more efficient than using a task
@@ -1166,7 +1165,7 @@ SyncToken* JDSStorage<ValueType>::vectorTimesMatrixAsync(
 
     LAMA_INTERFACE_FN_T( normalGEVM, loc, JDSUtils, Mult, ValueType )
 
-    common::unique_ptr<SyncToken> syncToken( loc->getSyncToken() );
+    common::unique_ptr<tasking::SyncToken> syncToken( loc->getSyncToken() );
 
     // all accesses will be pushed to the sync token as LAMA arrays have to be protected up
     // to the end of the computations.
@@ -1273,7 +1272,7 @@ void JDSStorage<ValueType>::jacobiIterate(
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
-SyncToken* JDSStorage<ValueType>::jacobiIterateAsync(
+tasking::SyncToken* JDSStorage<ValueType>::jacobiIterateAsync(
     LAMAArray<ValueType>& solution,
     const LAMAArray<ValueType>& oldSolution,
     const LAMAArray<ValueType>& rhs,
@@ -1299,7 +1298,7 @@ SyncToken* JDSStorage<ValueType>::jacobiIterateAsync(
         using scai::common::ref;
         using scai::common::cref;
 
-        return new TaskSyncToken( bind( jb, this, ref( solution ), cref( oldSolution ), cref( rhs ), omega ) );
+        return new tasking::TaskSyncToken( bind( jb, this, ref( solution ), cref( oldSolution ), cref( rhs ), omega ) );
     }
 
     // For CUDA a solution using stream synchronization is more efficient than using a task
@@ -1320,7 +1319,7 @@ SyncToken* JDSStorage<ValueType>::jacobiIterateAsync(
     SCAI_ASSERT_EQUAL_DEBUG( mNumRows, mNumColumns )
     // matrix must be square
 
-    common::unique_ptr<SyncToken> syncToken( loc->getSyncToken() );
+    common::unique_ptr<tasking::SyncToken> syncToken( loc->getSyncToken() );
 
     shared_ptr<WriteAccess<ValueType> > wSolution( new WriteAccess<ValueType>( solution, loc ) );
     syncToken->pushToken( wSolution );

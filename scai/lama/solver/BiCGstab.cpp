@@ -85,7 +85,7 @@ void BiCGstab::initialize( const Matrix& coefficients ){
     runtime.mResNorm = 1.0;
     runtime.mEps = std::numeric_limits<double>::epsilon()*3;                    //CAREFUL: No abstract type
 
-    common::ScalarType type = coefficients.getValueType();
+    common::scalar::ScalarType type = coefficients.getValueType();
 
     runtime.mRes0.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
     runtime.mVecV.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );

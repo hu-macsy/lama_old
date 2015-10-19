@@ -916,7 +916,7 @@ void COOStorage<ValueType>::vectorTimesMatrix(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-SyncToken* COOStorage<ValueType>::matrixTimesVectorAsync(
+tasking::SyncToken* COOStorage<ValueType>::matrixTimesVectorAsync(
     LAMAArray<ValueType>& result,
     const ValueType alpha,
     const LAMAArray<ValueType>& x,
@@ -952,14 +952,14 @@ SyncToken* COOStorage<ValueType>::matrixTimesVectorAsync(
 
         SCAI_LOG_INFO( logger, *this << ": matrixTimesVectorAsync on Host by own thread" )
 
-        return new TaskSyncToken( bind( pf, this, ref( result ), alpha, cref( x ), beta, cref( y ) ) );
+        return new tasking::TaskSyncToken( bind( pf, this, ref( result ), alpha, cref( x ), beta, cref( y ) ) );
     }
 
     SCAI_LOG_INFO( logger, *this << ": matrixTimesVectorAsync on " << *loc )
 
     LAMA_INTERFACE_FN_T( normalGEMV, loc, COOUtils, Mult, ValueType )
 
-    unique_ptr<SyncToken> syncToken( loc->getSyncToken() );
+    unique_ptr<tasking::SyncToken> syncToken( loc->getSyncToken() );
 
     // all accesses will be pushed to the sync token as LAMA arrays have to be protected up
     // to the end of the computations.
@@ -1011,7 +1011,7 @@ SyncToken* COOStorage<ValueType>::matrixTimesVectorAsync(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-SyncToken* COOStorage<ValueType>::vectorTimesMatrixAsync(
+tasking::SyncToken* COOStorage<ValueType>::vectorTimesMatrixAsync(
     LAMAArray<ValueType>& result,
     const ValueType alpha,
     const LAMAArray<ValueType>& x,
@@ -1048,7 +1048,7 @@ SyncToken* COOStorage<ValueType>::vectorTimesMatrixAsync(
         using scai::common::bind;
         using scai::common::ref;
 
-        return new TaskSyncToken( bind( pf, this, ref( result ), alpha, ref( x ), beta, ref( y ) ) );
+        return new tasking::TaskSyncToken( bind( pf, this, ref( result ), alpha, ref( x ), beta, ref( y ) ) );
     }
 
     SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumRows )
@@ -1061,7 +1061,7 @@ SyncToken* COOStorage<ValueType>::vectorTimesMatrixAsync(
 
     LAMA_INTERFACE_FN_T( normalGEVM, loc, COOUtils, Mult, ValueType )
 
-    unique_ptr<SyncToken> syncToken( loc->getSyncToken() );
+    unique_ptr<tasking::SyncToken> syncToken( loc->getSyncToken() );
 
     // all accesses will be pushed to the sync token as LAMA arrays have to be protected up
     // to the end of the computations.

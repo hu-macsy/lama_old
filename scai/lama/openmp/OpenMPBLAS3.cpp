@@ -68,7 +68,7 @@ void OpenMPBLAS3::gemm(
     const ValueType beta,
     ValueType* C,
     const IndexType ldc,
-    SyncToken* syncToken )
+    tasking::SyncToken* syncToken )
 {
     if( syncToken )
     {

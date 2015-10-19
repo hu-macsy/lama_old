@@ -1130,7 +1130,7 @@ void ELLStorage<ValueType>::vectorTimesMatrix(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-SyncToken* ELLStorage<ValueType>::matrixTimesVectorAsync(
+tasking::SyncToken* ELLStorage<ValueType>::matrixTimesVectorAsync(
     LAMAArray<ValueType>& result,
     const ValueType alpha,
     const LAMAArray<ValueType>& x,
@@ -1162,7 +1162,7 @@ SyncToken* ELLStorage<ValueType>::matrixTimesVectorAsync(
 
         SCAI_LOG_INFO( logger, *this << ": matrixTimesVectorAsync on Host by own thread" )
 
-        return new TaskSyncToken( bind( pf, this, ref( result ), alpha, cref( x ), beta, cref( y ) ) );
+        return new tasking::TaskSyncToken( bind( pf, this, ref( result ), alpha, cref( x ), beta, cref( y ) ) );
     }
 
     SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumColumns )
@@ -1182,7 +1182,7 @@ SyncToken* ELLStorage<ValueType>::matrixTimesVectorAsync(
     LAMA_INTERFACE_FN_T( sparseGEMV, loc, ELLUtils, Mult, ValueType )
     LAMA_INTERFACE_FN_T( normalGEMV, loc, ELLUtils, Mult, ValueType )
 
-    common::unique_ptr<SyncToken> syncToken( loc->getSyncToken() );
+    common::unique_ptr<tasking::SyncToken> syncToken( loc->getSyncToken() );
 
     // all accesses will be pushed to the sync token as LAMA arrays have to be protected up
     // to the end of the computations.
@@ -1252,7 +1252,7 @@ SyncToken* ELLStorage<ValueType>::matrixTimesVectorAsync(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-SyncToken* ELLStorage<ValueType>::vectorTimesMatrixAsync(
+tasking::SyncToken* ELLStorage<ValueType>::vectorTimesMatrixAsync(
     LAMAArray<ValueType>& result,
     const ValueType alpha,
     const LAMAArray<ValueType>& x,
@@ -1290,7 +1290,7 @@ SyncToken* ELLStorage<ValueType>::vectorTimesMatrixAsync(
 
         SCAI_LOG_INFO( logger, *this << ": vectorTimesMatrixAsync on Host by own thread" )
 
-        return new TaskSyncToken( bind( pf, this, ref( result ), alpha, cref( x ), beta, cref( y ) ) );
+        return new tasking::TaskSyncToken( bind( pf, this, ref( result ), alpha, cref( x ), beta, cref( y ) ) );
     }
 
     SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumRows )
@@ -1304,7 +1304,7 @@ SyncToken* ELLStorage<ValueType>::vectorTimesMatrixAsync(
     LAMA_INTERFACE_FN_T( sparseGEVM, loc, ELLUtils, Mult, ValueType )
     LAMA_INTERFACE_FN_T( normalGEVM, loc, ELLUtils, Mult, ValueType )
 
-    common::unique_ptr<SyncToken> syncToken( loc->getSyncToken() );
+    common::unique_ptr<tasking::SyncToken> syncToken( loc->getSyncToken() );
 
     // all accesses will be pushed to the sync token as LAMA arrays have to be protected up
     // to the end of the computations.
@@ -1418,7 +1418,7 @@ void ELLStorage<ValueType>::jacobiIterate(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-SyncToken* ELLStorage<ValueType>::jacobiIterateAsync(
+tasking::SyncToken* ELLStorage<ValueType>::jacobiIterateAsync(
     LAMAArray<ValueType>& solution,
     const LAMAArray<ValueType>& oldSolution,
     const LAMAArray<ValueType>& rhs,
@@ -1444,7 +1444,7 @@ SyncToken* ELLStorage<ValueType>::jacobiIterateAsync(
         using scai::common::cref;
         using scai::common::ref;
 
-        return new TaskSyncToken( bind( jb, this, ref( solution ), cref( oldSolution ), cref( rhs ), omega ) );
+        return new tasking::TaskSyncToken( bind( jb, this, ref( solution ), cref( oldSolution ), cref( rhs ), omega ) );
     }
 
     // For CUDA a solution using stream synchronization is more efficient than using a task
@@ -1465,7 +1465,7 @@ SyncToken* ELLStorage<ValueType>::jacobiIterateAsync(
 
     LAMA_INTERFACE_FN_T( jacobi, loc, ELLUtils, Solver, ValueType )
 
-    common::unique_ptr<SyncToken> syncToken( loc->getSyncToken() );
+    common::unique_ptr<tasking::SyncToken> syncToken( loc->getSyncToken() );
 
     // make all needed data available at loc
 

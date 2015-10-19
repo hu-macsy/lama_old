@@ -58,8 +58,6 @@
 // std
 #include <fstream>
 
-using namespace scai::tasking;
-
 namespace scai
 {
 
@@ -258,7 +256,7 @@ public:
      */
     void readFromFile( const std::string& filename );
 
-    virtual common::ScalarType getValueType() const;
+    virtual common::scalar::ScalarType getValueType() const;
 
     /**
      * Implementation of pure method.
@@ -343,7 +341,7 @@ public:
      * @param[in] halo  the halo which describes which remote values should be put into the halo cache.
      * @return          a SyncToken which can be used to synchronize to the asynchronous update.
      */
-    SyncToken* updateHaloAsync( const Halo& halo ) const;
+    tasking::SyncToken* updateHaloAsync( const Halo& halo ) const;
 
     virtual Scalar getValue( IndexType globalIndex ) const;
 
@@ -365,7 +363,7 @@ public:
         const ValueType beta,
         const LAMAArray<ValueType>& y );
 
-    static SyncToken* vectorPlusVectorAsync(
+    static tasking::SyncToken* vectorPlusVectorAsync(
         ContextPtr context,
         LAMAArray<ValueType>& result,
         const ValueType alpha,
@@ -473,7 +471,7 @@ public:
 
     // key for factory 
 
-    static std::pair<VectorKind, common::ScalarType> createValue();
+    static std::pair<VectorKind, common::scalar::ScalarType> createValue();
 };
 
 /* ------------------------------------------------------------------------- */

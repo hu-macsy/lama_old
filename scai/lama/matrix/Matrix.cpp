@@ -56,7 +56,7 @@ SCAI_LOG_DEF_LOGGER( Matrix::logger, "Matrix" )
 /*    Factory to create a matrix                                                          */
 /* ---------------------------------------------------------------------------------------*/
 
-Matrix* Matrix::getMatrix( const MatrixStorageFormat format, common::ScalarType type )
+Matrix* Matrix::getMatrix( const MatrixStorageFormat format, common::scalar::ScalarType type )
 {
     MatrixCreateKeyType val( format, type );
     SCAI_LOG_INFO( logger, "getMatrix uses Factory::create " << val )

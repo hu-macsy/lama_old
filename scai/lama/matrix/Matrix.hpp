@@ -67,7 +67,7 @@ typedef common::shared_ptr<class Matrix> MatrixPtr;
 
 /** For convenience: add the key type used for the Matrix factory. */
 
-typedef std::pair<Format::MatrixStorageFormat, scai::common::ScalarType> MatrixCreateKeyType;
+typedef std::pair<Format::MatrixStorageFormat, common::scalar::ScalarType> MatrixCreateKeyType;
 
 /**
  * @brief The class Matrix is a abstract type that represents a distributed 2D real or complex matrix.
@@ -105,7 +105,7 @@ public:
      *
      * Note: the format of the matrix decides whether the matrix will be DENSE or SPARSE.
      */
-    static Matrix* getMatrix( const Format::MatrixStorageFormat format, const common::ScalarType type );
+    static Matrix* getMatrix( const Format::MatrixStorageFormat format, const common::scalar::ScalarType type );
 
     /**
      * @brief Checks for a given matrix whether the content of its data is sound.
@@ -806,7 +806,7 @@ public:
     /**
      * @brief Queries the value type of the matrix elements, e.g. DOUBLE or FLOAT.
      */
-    virtual common::ScalarType getValueType() const = 0;
+    virtual common::scalar::ScalarType getValueType() const = 0;
 
     /**
      * @brief Query the size of one matrix element

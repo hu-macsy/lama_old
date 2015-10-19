@@ -145,7 +145,7 @@ namespace lama
                     const IndexType csrIA[],
                     const IndexType csrJA[],
                     const float csrValues[],
-                    SyncToken* syncToken )
+                    tasking::SyncToken* syncToken )
     {
         SCAI_LOG_INFO( logger, "normalGEMV<float>" <<
                         " result[ " << numRows << "] = " << alpha << " * A(csr) * x + " << beta << " * y " )
@@ -165,7 +165,7 @@ namespace lama
 
         if ( syncToken )
         {
-            CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
+            tasking::CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<tasking::CUDAStreamSyncToken*>( syncToken );
             SCAI_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
             stream = cudaStreamSyncToken->getCUDAStream();
             SCAI_CUSPARSE_CALL( cusparseSetStream( CUDAContext_cusparseHandle, stream ),
@@ -214,7 +214,7 @@ namespace lama
                     const IndexType csrIA[],
                     const IndexType csrJA[],
                     const double csrValues[],
-                    SyncToken* syncToken )
+                    tasking::SyncToken* syncToken )
     {
         SCAI_LOG_INFO( logger, "normalGEMV<double>" <<
                         " result[ " << numRows << "] = " << alpha << " * A(csr) * x + " << beta << " * y " )
@@ -234,7 +234,7 @@ namespace lama
 
         if ( syncToken )
         {
-            CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
+            tasking::CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<tasking::CUDAStreamSyncToken*>( syncToken );
             SCAI_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
             stream = cudaStreamSyncToken->getCUDAStream();
             SCAI_CUSPARSE_CALL( cusparseSetStream( CUDAContext_cusparseHandle, stream ),

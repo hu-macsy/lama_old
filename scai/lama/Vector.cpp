@@ -66,7 +66,7 @@ SCAI_LOG_DEF_LOGGER( Vector::logger, "Vector" )
 /*    Factory to create a vector                                                          */
 /* ---------------------------------------------------------------------------------------*/
 
-Vector* Vector::getVector( const VectorKind kind, common::ScalarType type )
+Vector* Vector::getVector( const VectorKind kind, common::scalar::ScalarType type )
 {
 	using ::operator<<;
 
@@ -79,7 +79,7 @@ Vector* Vector::getVector( const VectorKind kind, common::ScalarType type )
     return create( key );
 }
 
-Vector* Vector::createVector( const common::ScalarType valueType, DistributionPtr distribution )
+Vector* Vector::createVector( const common::scalar::ScalarType valueType, DistributionPtr distribution )
 {
     Vector* v = getVector( DENSE, valueType );
 

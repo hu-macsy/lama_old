@@ -90,7 +90,7 @@ void CG::initialize( const Matrix& coefficients )
 
     runtime.mPScalar = 0.0;
 
-    common::ScalarType type = coefficients.getValueType();
+    common::scalar::ScalarType type = coefficients.getValueType();
 
     runtime.mP.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
     runtime.mQ.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );

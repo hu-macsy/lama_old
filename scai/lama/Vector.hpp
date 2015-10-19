@@ -79,7 +79,7 @@ typedef enum
 
 /** For convenience: add the key type used for the Vector factory. */
 
-typedef std::pair<VectorKind, common::ScalarType> VectorCreateKeyType;
+typedef std::pair<VectorKind, common::scalar::ScalarType> VectorCreateKeyType;
 
 /**
  * @brief The class Vector is a abstract type that represents a distributed 1D real or complex vector.
@@ -114,13 +114,13 @@ public:
      * This factory operation allows to create a vector at runtime of any format or any type.
      * Internally, all vector classes must register their create operation.
      */
-    static Vector* getVector( const VectorKind kind, const common::ScalarType valueType );
+    static Vector* getVector( const VectorKind kind, const common::scalar::ScalarType valueType );
 
     /** @brief Create a dense vector of a certain value type and a given distribution.
      *
      *  This method keeps compatibility with an older method that did know which vectors were supported.
      */
-    static Vector* createVector( const common::ScalarType valueType, DistributionPtr distribution );
+    static Vector* createVector( const common::scalar::ScalarType valueType, DistributionPtr distribution );
 
     /**
      * @brief ExpressionMemberType is the type that is used the template Expression to store a Vector.
@@ -293,7 +293,7 @@ public:
     /**
      * @brief Queries the value type of the vector elements, e.g. DOUBLE or FLOAT.
      */
-    virtual common::ScalarType getValueType() const = 0;
+    virtual common::scalar::ScalarType getValueType() const = 0;
 
     /**
      * @brief Returns a copy of the value at the passed global index.

@@ -376,11 +376,11 @@ void StorageIO<ValueType>::writeCSRToXDRFile(
     {
         writeData<IndexType,IndexType,1>( outFile, iaRead.get(), numRows + 1 );
     }
-    else if( indexDataTypeSizeIA == TypeTraits<long>::size )
+    else if( indexDataTypeSizeIA == common::TypeTraits<long>::size )
     {
         writeData<long,IndexType,1>( outFile, iaRead.get(), numRows + 1 );
     }
-    else if( indexDataTypeSizeIA == TypeTraits<int>::size )
+    else if( indexDataTypeSizeIA == common::TypeTraits<int>::size )
     {
         writeData<int,IndexType,1>( outFile, iaRead.get(), numRows + 1 );
     }
@@ -397,11 +397,11 @@ void StorageIO<ValueType>::writeCSRToXDRFile(
     {
         writeData<IndexType,IndexType,0>( outFile, jaRead.get(), numValues );
     }
-    else if( indexDataTypeSizeJA == TypeTraits<long>::size )
+    else if( indexDataTypeSizeJA == common::TypeTraits<long>::size )
     {
         writeData<long,IndexType,0>( outFile, jaRead.get(), numValues );
     }
-    else if( indexDataTypeSizeJA == TypeTraits<int>::size )
+    else if( indexDataTypeSizeJA == common::TypeTraits<int>::size )
     {
         writeData<int,IndexType,0>( outFile, jaRead.get(), numValues );
     }
@@ -416,19 +416,19 @@ void StorageIO<ValueType>::writeCSRToXDRFile(
     {
         writeData<ValueType,ValueType,0>( outFile, dataRead.get(), numValues );
     }
-    else if( dataTypeSize == TypeTraits<double>::size )
+    else if( dataTypeSize == common::TypeTraits<double>::size )
     {
         writeData<double,ValueType,0>( outFile, dataRead.get(), numValues );
     }
-    else if( dataTypeSize == TypeTraits<float>::size )
+    else if( dataTypeSize == common::TypeTraits<float>::size )
     {
         writeData<float,ValueType,0>( outFile, dataRead.get(), numValues );
     }
-    else if( dataTypeSize == TypeTraits<ComplexFloat>::size )
+    else if( dataTypeSize == common::TypeTraits<ComplexFloat>::size )
     {
         writeData<ComplexFloat,ValueType,0>( outFile, dataRead.get(), numValues );
     }
-    else if( dataTypeSize == TypeTraits<ComplexDouble>::size )
+    else if( dataTypeSize == common::TypeTraits<ComplexDouble>::size )
     {
         writeData<ComplexDouble,ValueType,0>( outFile, dataRead.get(), numValues );
     }
@@ -476,11 +476,11 @@ void StorageIO<ValueType>::readCSRFromXDRFile(
     {
         readData<IndexType,IndexType, -1>( xdrFile, m_ia, numRows + 1 );
     }
-    else if( indexDataTypeSizeIA == TypeTraits<int>::size )
+    else if( indexDataTypeSizeIA == common::TypeTraits<int>::size )
     {
         readData<int,IndexType, -1>( xdrFile, m_ia, numRows + 1 );
     }
-    else if( indexDataTypeSizeIA == TypeTraits<long>::size )
+    else if( indexDataTypeSizeIA == common::TypeTraits<long>::size )
     {
         readData<long,IndexType, -1>( xdrFile, m_ia, numRows + 1 );
     }
@@ -515,11 +515,11 @@ void StorageIO<ValueType>::readCSRFromXDRFile(
     {
         readData<IndexType,IndexType,0>( xdrFile, m_ja.get(), numValues );
     }
-    else if( indexDataTypeSizeJA == TypeTraits<long>::size )
+    else if( indexDataTypeSizeJA == common::TypeTraits<long>::size )
     {
         readData<long,IndexType,0>( xdrFile, m_ja.get(), numValues );
     }
-    else if( indexDataTypeSizeJA == TypeTraits<int>::size )
+    else if( indexDataTypeSizeJA == common::TypeTraits<int>::size )
     {
         readData<int,IndexType,0>( xdrFile, m_ja.get(), numValues );
     }
@@ -548,19 +548,19 @@ void StorageIO<ValueType>::readCSRFromXDRFile(
 
     WriteOnlyAccess<ValueType> m_data( csrValues, numValues );
 
-    if( dataTypeSize == TypeTraits<double>::size )
+    if( dataTypeSize == common::TypeTraits<double>::size )
     {
         readData<double,ValueType,0>( xdrFile, m_data.get(), numValues );
     }
-    else if( dataTypeSize == TypeTraits<float>::size )
+    else if( dataTypeSize == common::TypeTraits<float>::size )
     {
         readData<float,ValueType,0>( xdrFile, m_data.get(), numValues );
     }
-    else if( dataTypeSize == TypeTraits<ComplexFloat>::size )
+    else if( dataTypeSize == common::TypeTraits<ComplexFloat>::size )
     {
         readData<ComplexFloat,ValueType,0>( xdrFile, m_data.get(), numValues );
     }
-    else if( dataTypeSize == TypeTraits<ComplexDouble>::size )
+    else if( dataTypeSize == common::TypeTraits<ComplexDouble>::size )
     {
         readData<ComplexDouble,ValueType,0>( xdrFile, m_data.get(), numValues );
     }
@@ -611,11 +611,11 @@ void StorageIO<ValueType>::writeCSRToBinaryFile(
 
     // write ia, add offset 1
 
-    if( indexDataTypeSizeIA == TypeTraits<int>::size || sizeof(long) == TypeTraits<int>::size )
+    if( indexDataTypeSizeIA == common::TypeTraits<int>::size || sizeof(long) == common::TypeTraits<int>::size )
     {
         writeBinaryData<int,IndexType,1>( outFile, iaRead.get(), numRows + 1 );
     }
-    else if( indexDataTypeSizeIA == TypeTraits<long>::size )
+    else if( indexDataTypeSizeIA == common::TypeTraits<long>::size )
     {
         writeBinaryData<long,IndexType,1>( outFile, iaRead.get(), numRows + 1 );
     }
@@ -626,11 +626,11 @@ void StorageIO<ValueType>::writeCSRToBinaryFile(
 
     // write m_ja
 
-    if( indexDataTypeSizeJA == TypeTraits<int>::size || sizeof(long) == TypeTraits<int>::size )
+    if( indexDataTypeSizeJA == common::TypeTraits<int>::size || sizeof(long) == common::TypeTraits<int>::size )
     {
         writeBinaryData<int,IndexType,1>( outFile, jaRead.get(), numValues );
     }
-    else if( indexDataTypeSizeJA == TypeTraits<long>::size )
+    else if( indexDataTypeSizeJA == common::TypeTraits<long>::size )
     {
         writeBinaryData<long,IndexType,1>( outFile, jaRead.get(), numValues );
     }
@@ -639,19 +639,19 @@ void StorageIO<ValueType>::writeCSRToBinaryFile(
         COMMON_THROWEXCEPTION( "(write unformatted) Unknown index data type size of JA." )
     }
 
-    if( dataTypeSize == TypeTraits<double>::size )
+    if( dataTypeSize == common::TypeTraits<double>::size )
     {
         writeBinaryData<double,ValueType,0>( outFile, dataRead.get(), numValues );
     }
-    else if( dataTypeSize == TypeTraits<float>::size )
+    else if( dataTypeSize == common::TypeTraits<float>::size )
     {
         writeBinaryData<float,ValueType,0>( outFile, dataRead.get(), numValues );
     }
-    else if( dataTypeSize == TypeTraits<ComplexFloat>::size )
+    else if( dataTypeSize == common::TypeTraits<ComplexFloat>::size )
     {
         writeBinaryData<ComplexFloat,ValueType,0>( outFile, dataRead.get(), numValues );
     }
-    else if( dataTypeSize == TypeTraits<ComplexDouble>::size )
+    else if( dataTypeSize == common::TypeTraits<ComplexDouble>::size )
     {
         writeBinaryData<ComplexDouble,ValueType,0>( outFile, dataRead.get(), numValues );
     }

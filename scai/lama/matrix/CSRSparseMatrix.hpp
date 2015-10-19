@@ -253,7 +253,7 @@ public:
 
     // key for factory 
 
-    static std::pair<MatrixStorageFormat, common::ScalarType> createValue();
+    static std::pair<MatrixStorageFormat, common::scalar::ScalarType> createValue();
 };
 
 template<typename ValueType>

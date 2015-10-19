@@ -37,8 +37,6 @@
 
 #include <scai/common/test/TestMacros.hpp>
 
-using namespace scai::lama;
-
 static std::string sparsematrixtestclasses[] =
 {
     "CSRSparseMatrixTest", "ELLSparseMatrixTest", "DIASparseMatrixTest", "JDSSParseMatrixTest", "COOSparseMatrixTest",
@@ -92,7 +90,7 @@ public:
     void setUp();
 
     template<typename mt> void testConversionsImpl();
-    void matrixMultTestImpl( const Matrix& a, const Matrix& b, const Matrix& result );
+    void matrixMultTestImpl( const scai::lama::Matrix& a, const scai::lama::Matrix& b, const scai::lama::Matrix& result );
     void matrixEqualityCheck( const MatrixType& a, const MatrixType& b );
 
     //bool testDiagonalProperty( const MatrixType& a);

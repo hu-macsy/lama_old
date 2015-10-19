@@ -328,7 +328,7 @@ MatrixStorage<ValueType>::~MatrixStorage()
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-common::ScalarType MatrixStorage<ValueType>::getValueType() const
+common::scalar::ScalarType MatrixStorage<ValueType>::getValueType() const
 {
     return common::getScalarType<ValueType>();
 }
@@ -1211,7 +1211,7 @@ void MatrixStorage<ValueType>::setDenseData(
     {
 
 #define LAMA_DENSE_ASSIGN( z, I, _ )                                                                   \
-case common::scalar::SCALAR_ARITHMETIC_TYPE##I :                                                       \
+case SCALAR_ARITHMETIC_TYPE##I :                                                                       \
 {                                                                                                      \
     LAMAArray<ARITHMETIC_HOST_TYPE_##I>& typedValues =                                                 \
             dynamic_cast<LAMAArray<ARITHMETIC_HOST_TYPE_##I>&>( mValues );                             \

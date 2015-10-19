@@ -368,7 +368,7 @@ DenseVector<ValueType>& DenseVector<ValueType>::operator=( const Scalar value )
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-common::ScalarType DenseVector<ValueType>::getValueType() const
+common::scalar::ScalarType DenseVector<ValueType>::getValueType() const
 {
     return common::getScalarType<ValueType>();
 }
@@ -442,7 +442,7 @@ void DenseVector<ValueType>::updateHalo( const Halo& halo ) const
 }
 
 template<typename ValueType>
-SyncToken* DenseVector<ValueType>::updateHaloAsync( const Halo& halo ) const
+tasking::SyncToken* DenseVector<ValueType>::updateHaloAsync( const Halo& halo ) const
 {
     const IndexType haloSize = halo.getHaloSize();
 
@@ -773,7 +773,7 @@ void DenseVector<ValueType>::vectorPlusVector(
 }
 
 template<typename ValueType>
-SyncToken* DenseVector<ValueType>::vectorPlusVectorAsync(
+tasking::SyncToken* DenseVector<ValueType>::vectorPlusVectorAsync(
     ContextPtr /*context*/,
     LAMAArray<ValueType>& /*result*/,
     const ValueType /*alpha*/,
@@ -1660,7 +1660,7 @@ void DenseVector<ValueType>::readVectorDataFromBinaryFile( std::fstream &inFile,
     IndexType n = size();
 
     SCAI_LOG_INFO( logger,
-                   "read DenseVector<" << common::getScalarType<ValueType>() << "> from binary file, size = " << n << ", dataType = " << ( ( common::ScalarType ) type ) )
+                   "read DenseVector<" << common::getScalarType<ValueType>() << "> from binary file, size = " << n << ", dataType = " << ( ( common::scalar::ScalarType ) type ) )
 
     WriteOnlyAccess<ValueType> writeData( mLocalValues, n );
 
@@ -1704,10 +1704,10 @@ Vector* DenseVector<ValueType>::create()
 }
 
 template<typename ValueType>
-std::pair<VectorKind, common::ScalarType> DenseVector<ValueType>::createValue()
+std::pair<VectorKind, common::scalar::ScalarType> DenseVector<ValueType>::createValue()
 {
-    common::ScalarType skind = common::getScalarType<ValueType>();
-    return std::pair<VectorKind, common::ScalarType> ( DENSE, skind );
+    common::scalar::ScalarType skind = common::getScalarType<ValueType>();
+    return std::pair<VectorKind, common::scalar::ScalarType> ( DENSE, skind );
 }
 
 /* ---------------------------------------------------------------------------------*/

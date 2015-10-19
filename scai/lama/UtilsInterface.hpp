@@ -292,7 +292,7 @@ template    <typename ValueType>
                         const ValueType rhs[],
                         const ValueType omega,
                         const IndexType numRows,
-                        SyncToken* syncToken );
+                        tasking::SyncToken* syncToken );
 
         /** Method to compute one iteration step in Jacobi method
          *
@@ -570,7 +570,7 @@ template    <typename ValueType>
                         const IndexType csrIA[],
                         const IndexType csrJA[],
                         const ValueType csrValues[],
-                        SyncToken* syncToken );
+                        tasking::SyncToken* syncToken );
 
         typedef void ( *normalGEVM ) ( ValueType result[],
                         const ValueType alpha,
@@ -582,7 +582,7 @@ template    <typename ValueType>
                         const IndexType csrIA[],
                         const IndexType csrJA[],
                         const ValueType csrValues[],
-                        SyncToken* syncToken );
+                        tasking::SyncToken* syncToken );
 
         /** result = alpha * CSR-Matrix * x, CSR matrix has only some non-zero rows
          *
@@ -606,7 +606,7 @@ template    <typename ValueType>
                         const IndexType csrIA[],
                         const IndexType csrJA[],
                         const ValueType csrValues[],
-                        SyncToken* syncToken );
+                        tasking::SyncToken* syncToken );
 
         typedef void ( *sparseGEVM ) ( ValueType result[],
                         const ValueType alpha,
@@ -617,7 +617,7 @@ template    <typename ValueType>
                         const IndexType csrIA[],
                         const IndexType csrJA[],
                         const ValueType csrValues[],
-                        SyncToken* syncToken );
+                        tasking::SyncToken* syncToken );
 
         /**  This method computes result = alpha * CSR * x + beta * y  with dense result, x, y
          *
@@ -643,7 +643,7 @@ template    <typename ValueType>
                         const IndexType csrIA[],
                         const IndexType csrJA[],
                         const ValueType csrValues[],
-                        SyncToken* syncToken );
+                        tasking::SyncToken* syncToken );
 
         /** computes c = alpha * a + beta * b for CSR sparse matrices a, b, c
          *
@@ -876,7 +876,7 @@ template    <typename DenseValueType, typename CSRValueType>
                         const IndexType numRows,
                         const IndexType numColumns,
                         const ValueType denseValues[],
-                        SyncToken* syncToken );
+                        tasking::SyncToken* syncToken );
     };
 
     LAMA_INTERFACE_DEFINE_T( Mult, normalGEMV )
@@ -922,7 +922,7 @@ struct ELLUtilsInterface
             const ValueType oldSolution[],
             const ValueType rhs[],
             const ValueType omega,
-            SyncToken* syncToken );
+            tasking::SyncToken* syncToken );
 
         typedef void (*jacobiHalo)(
             ValueType solution[],
@@ -936,7 +936,7 @@ struct ELLUtilsInterface
             const IndexType numNonEmptyRows,
             const ValueType oldSolution[],
             const ValueType omega,
-            SyncToken* syncToken );
+            tasking::SyncToken* syncToken );
 
         /**
          *  This method fills up the arrays ja and values of the ELL format with
@@ -1146,7 +1146,7 @@ struct ELLUtilsInterface
                         const IndexType ellSizes[],
                         const IndexType ellJA[],
                         const ValueType ellValues[],
-                        SyncToken* syncToken );
+                        tasking::SyncToken* syncToken );
 
         /** result = alpha * ELL-Matrix * x, CSR matrix has only some non-zero rows
          *
@@ -1172,7 +1172,7 @@ struct ELLUtilsInterface
                         const IndexType ellSizes[],
                         const IndexType ellJA[],
                         const ValueType ellValues[],
-                        SyncToken* syncToken );
+                        tasking::SyncToken* syncToken );
 
         /** Implementation for ELLUtilsInterface::Mult::normalGEVM  */
 
@@ -1187,7 +1187,7 @@ struct ELLUtilsInterface
                         const IndexType ellSizes[],
                         const IndexType ellJA[],
                         const ValueType ellValues[],
-                        SyncToken* syncToken );
+                        tasking::SyncToken* syncToken );
 
         /** Implementation for ELLUtilsInterface::Mult::sparseGEVM  */
 
@@ -1202,7 +1202,7 @@ struct ELLUtilsInterface
                         const IndexType ellSizes[],
                         const IndexType ellJA[],
                         const ValueType ellValues[],
-                        SyncToken* syncToken );
+                        tasking::SyncToken* syncToken );
     };
 
     LAMA_INTERFACE_DEFINE_T( Mult, normalGEMV )
@@ -1404,7 +1404,7 @@ struct JDSUtilsInterface
             const ValueType oldSolution[],
             const ValueType rhs[],
             const ValueType omega,
-            SyncToken* syncToken );
+            tasking::SyncToken* syncToken );
 
         /** Method to compute one iteration step in Jacobi method with halo.  */
 
@@ -1420,7 +1420,7 @@ struct JDSUtilsInterface
             const ValueType jdsHaloValues[],
             const ValueType oldSolution[],
             const ValueType omega,
-            SyncToken* syncToken );
+            tasking::SyncToken* syncToken );
     };
 
     LAMA_INTERFACE_DEFINE_T( Solver, jacobi )LAMA_INTERFACE_DEFINE_T( Solver, jacobiHalo )
@@ -1577,7 +1577,7 @@ struct JDSUtilsInterface
                         const IndexType jdsDLG[],
                         const IndexType jdsJA[],
                         const ValueType jdsValues[],
-                        SyncToken* syncToken );
+                        tasking::SyncToken* syncToken );
 
         typedef void ( *normalGEVM ) ( ValueType result[],
                         const ValueType alpha,
@@ -1591,7 +1591,7 @@ struct JDSUtilsInterface
                         const IndexType jdsDLG[],
                         const IndexType jdsJA[],
                         const ValueType jdsValues[],
-                        SyncToken* syncToken );
+                        tasking::SyncToken* syncToken );
     };
 
     LAMA_INTERFACE_DEFINE_T( Mult, normalGEMV )
@@ -1755,7 +1755,7 @@ template    <typename DIAValueType, typename CSRValueType>
                         const IndexType numDiagonals,
                         const IndexType diaOffsets[],
                         const ValueType diaValues[],
-                        SyncToken* syncToken );
+                        tasking::SyncToken* syncToken );
 
         /** result = alpha * x * CSR-Matrix + b * y.
          *
@@ -1780,7 +1780,7 @@ template    <typename DIAValueType, typename CSRValueType>
                         const IndexType numDiagonals,
                         const IndexType diaOffsets[],
                         const ValueType diaValues[],
-                        SyncToken* syncToken );
+                        tasking::SyncToken* syncToken );
     };
 
     LAMA_INTERFACE_DEFINE_T( Mult, normalGEMV )
@@ -1805,7 +1805,7 @@ template    <typename DIAValueType, typename CSRValueType>
                         const ValueType rhs[],
                         const ValueType omega,
                         const IndexType numRows,
-                        SyncToken* syncToken );
+                        tasking::SyncToken* syncToken );
     };
 
     LAMA_INTERFACE_DEFINE_T( Solver, jacobi )
@@ -1953,7 +1953,7 @@ struct COOUtilsInterface
                         const IndexType cooIA[],
                         const IndexType cooJA[],
                         const ValueType cooValues[],
-                        SyncToken* syncToken );
+                        tasking::SyncToken* syncToken );
 
         typedef void ( *normalGEVM ) ( ValueType result[],
                         const ValueType alpha,
@@ -1965,7 +1965,7 @@ struct COOUtilsInterface
                         const IndexType cooIA[],
                         const IndexType cooJA[],
                         const ValueType cooValues[],
-                        SyncToken* syncToken );
+                        tasking::SyncToken* syncToken );
     };
 
     LAMA_INTERFACE_DEFINE_T( Mult, normalGEMV )
@@ -1989,7 +1989,7 @@ struct COOUtilsInterface
                         const ValueType rhs[],
                         const ValueType omega,
                         const IndexType numRows,
-                        SyncToken* syncToken );
+                        tasking::SyncToken* syncToken );
 
         /** Method to compute one iteration step in Jacobi method
          *

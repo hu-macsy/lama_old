@@ -68,7 +68,7 @@ void OpenMPBLAS2::gemv(
     const ValueType beta,
     ValueType* Y,
     const IndexType incY,
-    SyncToken* syncToken )
+    tasking::SyncToken* syncToken )
 {
     SCAI_LOG_INFO( logger,
                    "gemv<" << common::getScalarType<ValueType>()<< ">: M = " << M << ", N = " << N 

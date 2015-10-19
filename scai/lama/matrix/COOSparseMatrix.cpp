@@ -375,10 +375,10 @@ Matrix* COOSparseMatrix<ValueType>::create()
 }
 
 template<typename ValueType>
-std::pair<MatrixStorageFormat, common::ScalarType> COOSparseMatrix<ValueType>::createValue()
+std::pair<MatrixStorageFormat, common::scalar::ScalarType> COOSparseMatrix<ValueType>::createValue()
 {
-    common::ScalarType skind = common::getScalarType<ValueType>();
-    return std::pair<MatrixStorageFormat, common::ScalarType> ( Format::COO, skind );
+    common::scalar::ScalarType skind = common::getScalarType<ValueType>();
+    return std::pair<MatrixStorageFormat, common::scalar::ScalarType> ( Format::COO, skind );
 }
 
 /* ========================================================================= */

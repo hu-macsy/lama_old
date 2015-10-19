@@ -227,7 +227,7 @@ void OpenMPCOOUtils::normalGEMV(
     const IndexType cooIA[],
     const IndexType cooJA[],
     const ValueType cooValues[],
-    SyncToken* syncToken )
+    tasking::SyncToken* syncToken )
 {
     SCAI_LOG_INFO( logger,
                    "normalGEMV<" << getScalarType<ValueType>() << ", #threads = " << omp_get_max_threads() << ">, result[" << numRows << "] = " << alpha << " * A( coo, #vals = " << numValues << " ) * x + " << beta << " * y " )
@@ -275,7 +275,7 @@ void OpenMPCOOUtils::normalGEVM(
     const IndexType cooIA[],
     const IndexType cooJA[],
     const ValueType cooValues[],
-    SyncToken* syncToken )
+    tasking::SyncToken* syncToken )
 {
     SCAI_LOG_INFO( logger,
                    "normalGEMV<" << getScalarType<ValueType>() << ", #threads = " << omp_get_max_threads() << ">, result[" << numColumns << "] = " << alpha << " * A( coo, #vals = " << numValues << " ) * x + " << beta << " * y " )
@@ -324,7 +324,7 @@ void OpenMPCOOUtils::jacobi(
     const ValueType rhs[],
     const ValueType omega,
     const IndexType numRows,
-    class SyncToken* syncToken )
+    tasking::SyncToken* syncToken )
 {
     SCAI_LOG_INFO( logger,
                    "jacobi<" << getScalarType<ValueType>() << ">" << ", #rows = " << numRows << ", omega = " << omega )

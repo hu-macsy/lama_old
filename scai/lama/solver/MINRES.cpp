@@ -43,6 +43,8 @@
 
 #include <scai/lama/DenseVector.hpp>
 
+#include <scai/common/ScalarType.hpp>
+
 // std
 #include <limits>
 
@@ -85,7 +87,7 @@ void MINRES::initialize( const Matrix& coefficients ){
     runtime.mS = 0.0;
     runtime.mSNew = 0.0;
 
-    ScalarType type = coefficients.getValueType();
+    common::scalar::ScalarType type = coefficients.getValueType();
     
     runtime.mVecV.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
     runtime.mVecVOld.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );

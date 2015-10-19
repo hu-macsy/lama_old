@@ -94,7 +94,7 @@ public:
         const LAMAArray<IndexType>& ja,
         const ContextArray& values )
     {
-        common::ScalarType arrayType = values.getValueType();
+        common::scalar::ScalarType arrayType = values.getValueType();
 
         switch ( arrayType )
         {
@@ -102,10 +102,10 @@ public:
 /** Call implementation routine with the type of the values array */
 
 #define LAMA_SET_CSR_CALL( z, I, _ )                                                      \
-case common::scalar::SCALAR_ARITHMETIC_TYPE##I:                                           \
+case SCALAR_ARITHMETIC_TYPE##I:                                                           \
 {                                                                                         \
-    const LAMAArray<ARITHMETIC_HOST_TYPE_##I>& typedValues =                                    \
-            dynamic_cast<const LAMAArray<ARITHMETIC_HOST_TYPE_##I>&>( values );                 \
+    const LAMAArray<ARITHMETIC_HOST_TYPE_##I>& typedValues =                              \
+            dynamic_cast<const LAMAArray<ARITHMETIC_HOST_TYPE_##I>&>( values );           \
     static_cast<Derived*>( this )->setCSRDataImpl(                                        \
             numRows, numColumns, numValues, ia, ja, typedValues, this->getContextPtr() ); \
     break;                                                                                \
@@ -136,20 +136,20 @@ case common::scalar::SCALAR_ARITHMETIC_TYPE##I:                                 
 
     void buildCSRData( LAMAArray<IndexType>& csrIA, LAMAArray<IndexType>& csrJA, ContextArray& csrValues ) const
     {
-        common::ScalarType arrayType = csrValues.getValueType();
+        common::scalar::ScalarType arrayType = csrValues.getValueType();
 
         switch ( arrayType )
         {
 #define LAMA_BUILD_CSR_CALL( z, I, _ )                                        \
-case common::scalar::SCALAR_ARITHMETIC_TYPE##I:                               \
-{                                                                     \
-    LAMAArray<ARITHMETIC_HOST_TYPE_##I>& typedValues =                      \
-            dynamic_cast<LAMAArray<ARITHMETIC_HOST_TYPE_##I>&>( csrValues );    \
-    static_cast<const Derived*>( this )->buildCSR(                    \
-            csrIA, &csrJA, &typedValues, this->getContextPtr() );         \
-    break;                                                            \
-}                                                                     \
- 
+case SCALAR_ARITHMETIC_TYPE##I:                                               \
+{                                                                             \
+    LAMAArray<ARITHMETIC_HOST_TYPE_##I>& typedValues =                        \
+            dynamic_cast<LAMAArray<ARITHMETIC_HOST_TYPE_##I>&>( csrValues );  \
+    static_cast<const Derived*>( this )->buildCSR(                            \
+            csrIA, &csrJA, &typedValues, this->getContextPtr() );             \
+    break;                                                                    \
+}
+
             BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_BUILD_CSR_CALL, _ )
 
 #undef LAMA_BUILD_CSR_CALL
@@ -167,18 +167,18 @@ case common::scalar::SCALAR_ARITHMETIC_TYPE##I:                               \
 
     void getRow( ContextArray& row, const IndexType irow ) const
     {
-        common::ScalarType arrayType = row.getValueType();
+        common::scalar::ScalarType arrayType = row.getValueType();
 
         switch ( arrayType )
         {
-#define LAMA_GET_ROW_CALL( z, I, _ )                                           \
-case common::scalar::SCALAR_ARITHMETIC_TYPE##I:                                \
-{                                                                      \
-    LAMAArray<ARITHMETIC_HOST_TYPE_##I>& typedRow =                          \
-            dynamic_cast<LAMAArray<ARITHMETIC_HOST_TYPE_##I>&>( row );           \
-    static_cast<const Derived*>( this )->getRowImpl( typedRow, irow ); \
-    break;                                                             \
-}                                                                      \
+#define LAMA_GET_ROW_CALL( z, I, _ )                                    \
+case SCALAR_ARITHMETIC_TYPE##I:                                         \
+{                                                                       \
+    LAMAArray<ARITHMETIC_HOST_TYPE_##I>& typedRow =                     \
+            dynamic_cast<LAMAArray<ARITHMETIC_HOST_TYPE_##I>&>( row );  \
+    static_cast<const Derived*>( this )->getRowImpl( typedRow, irow );  \
+    break;                                                              \
+}
  
             BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_GET_ROW_CALL, _ )
 
@@ -199,18 +199,18 @@ case common::scalar::SCALAR_ARITHMETIC_TYPE##I:                                \
             COMMON_THROWEXCEPTION( *this << ": has not diagonal property, cannot get diagonal" )
         }
 
-        common::ScalarType arrayType = diagonal.getValueType();
+        common::scalar::ScalarType arrayType = diagonal.getValueType();
 
         switch ( arrayType )
         {
-#define LAMA_GET_DIAGONAL_CALL( z, I, _ )                                           \
-case common::scalar::SCALAR_ARITHMETIC_TYPE##I:                                     \
+#define LAMA_GET_DIAGONAL_CALL( z, I, _ )                                   \
+case SCALAR_ARITHMETIC_TYPE##I:                                             \
 {                                                                           \
-    LAMAArray<ARITHMETIC_HOST_TYPE_##I>& typedDiagonal =                          \
-            dynamic_cast<LAMAArray<ARITHMETIC_HOST_TYPE_##I>&>( diagonal );           \
+    LAMAArray<ARITHMETIC_HOST_TYPE_##I>& typedDiagonal =                    \
+            dynamic_cast<LAMAArray<ARITHMETIC_HOST_TYPE_##I>&>( diagonal ); \
     static_cast<const Derived*>( this )->getDiagonalImpl( typedDiagonal );  \
-    break;                                                             \
-}                                                                           \
+    break;                                                                  \
+}
  
             BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_GET_DIAGONAL_CALL, _ )
 
@@ -246,18 +246,18 @@ case common::scalar::SCALAR_ARITHMETIC_TYPE##I:                                 
             COMMON_THROWEXCEPTION( *this << ": has not diagonal property, cannot set diagonal" )
         }
 
-        common::ScalarType arrayType = diagonal.getValueType();
+        common::scalar::ScalarType arrayType = diagonal.getValueType();
 
         switch ( arrayType )
         {
-#define LAMA_SET_DIAGONAL_CALL( z, I, _ )                                           \
-case common::scalar::SCALAR_ARITHMETIC_TYPE##I:                                     \
-{                                                                           \
+#define LAMA_SET_DIAGONAL_CALL( z, I, _ )                                         \
+case SCALAR_ARITHMETIC_TYPE##I:                                                   \
+{                                                                                 \
     const LAMAArray<ARITHMETIC_HOST_TYPE_##I>& typedDiagonal =                    \
-            dynamic_cast<const LAMAArray<ARITHMETIC_HOST_TYPE_##I>&>( diagonal );     \
-    static_cast<Derived*>( this )->setDiagonalImpl( typedDiagonal );        \
-    break;                                                                  \
-}                                                                           \
+            dynamic_cast<const LAMAArray<ARITHMETIC_HOST_TYPE_##I>&>( diagonal ); \
+    static_cast<Derived*>( this )->setDiagonalImpl( typedDiagonal );              \
+    break;                                                                        \
+}
  
             BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_SET_DIAGONAL_CALL, _ )
 
@@ -279,18 +279,18 @@ case common::scalar::SCALAR_ARITHMETIC_TYPE##I:                                 
     {
         SCAI_ASSERT_EQUAL_ERROR( this->getNumRows(), diagonal.size() )
 
-        common::ScalarType arrayType = diagonal.getValueType();
+        common::scalar::ScalarType arrayType = diagonal.getValueType();
 
         switch ( arrayType )
         {
-#define LAMA_SCALE_CALL( z, I, _ )                                                  \
-case common::scalar::SCALAR_ARITHMETIC_TYPE##I:                                     \
-{                                                                           \
+#define LAMA_SCALE_CALL( z, I, _ )                                                \
+case SCALAR_ARITHMETIC_TYPE##I:                                                   \
+{                                                                                 \
     const LAMAArray<ARITHMETIC_HOST_TYPE_##I>& typedDiagonal =                    \
-            dynamic_cast<const LAMAArray<ARITHMETIC_HOST_TYPE_##I>&>( diagonal );     \
-    static_cast<Derived*>( this )->scaleImpl( typedDiagonal );              \
-    break;                                                                  \
-}                                                                           \
+            dynamic_cast<const LAMAArray<ARITHMETIC_HOST_TYPE_##I>&>( diagonal ); \
+    static_cast<Derived*>( this )->scaleImpl( typedDiagonal );                    \
+    break;                                                                        \
+}
  
             BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_SCALE_CALL, _ )
 

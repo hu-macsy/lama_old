@@ -49,12 +49,8 @@
 // std
 #include <cstdio>
 
-using namespace scai::common;
-
 namespace scai
 {
-
-using namespace common::scalar;
 
 namespace lama
 {
@@ -70,7 +66,7 @@ namespace lama
  * also supported to allow a high flexibility. But for efficiency
  * these operations should be avoided in all critical code parts.
  */
-class COMMON_DLL_IMPORTEXPORT Scalar: public Printable
+class COMMON_DLL_IMPORTEXPORT Scalar: public common::Printable
 {
 public:
 
@@ -148,7 +144,7 @@ public:
      * @param[in]   value the value this scalar should represent
      */
     template<typename ValueType>
-    inline Scalar( const Complex<ValueType> value );
+    inline Scalar( const common::Complex<ValueType> value );
 
     /**
      * @brief Releases all allocated resources.
@@ -194,7 +190,7 @@ public:
      * @param[in] type    the given ScalarType.
      * @return            the size of the given ScalarType.
      */
-    inline static size_t getTypeSize( const common::ScalarType type );
+    inline static size_t getTypeSize( const common::scalar::ScalarType type );
 
 protected:
 
@@ -255,7 +251,7 @@ inline Scalar::Scalar( const LongDouble real, const LongDouble imag )
 }
 
 template<typename ValueType>
-inline Scalar::Scalar( const Complex<ValueType> value )
+inline Scalar::Scalar( const common::Complex<ValueType> value )
                 : mValue( value.real(), value.imag() )
 {
 }
@@ -310,33 +306,33 @@ inline void Scalar::writeAt( std::ostream& stream ) const
     }
 }
 
-inline size_t Scalar::getTypeSize( const common::ScalarType type )
+inline size_t Scalar::getTypeSize( const common::scalar::ScalarType type )
 {
     size_t typeSize = 0;
 
     switch( type )
     {
-        case FLOAT:
+        case common::scalar::FLOAT:
             typeSize = sizeof(float);
             break;
 
-        case DOUBLE:
+        case common::scalar::DOUBLE:
             typeSize = sizeof(double);
             break;
 
-        case LONG_DOUBLE:
+        case common::scalar::LONG_DOUBLE:
             typeSize = sizeof(LongDouble);
             break;
 
-        case COMPLEX:
+        case common::scalar::COMPLEX:
             typeSize = sizeof(ComplexFloat);
             break;
 
-        case DOUBLE_COMPLEX:
+        case common::scalar::DOUBLE_COMPLEX:
             typeSize = sizeof(ComplexDouble);
             break;
 
-        case LONG_DOUBLE_COMPLEX:
+        case common::scalar::LONG_DOUBLE_COMPLEX:
             typeSize = sizeof(ComplexLongDouble);
             break;
 

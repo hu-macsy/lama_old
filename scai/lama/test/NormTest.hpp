@@ -36,8 +36,6 @@
 #include <scai/lama/norm/Norm.hpp>
 #include <scai/common/test/TestMacros.hpp>
 
-using namespace scai::lama;
-
 /** Common test class for all derived classes of class Norm.
  *
  *  Each norm has to fulfill some kind of properties, to be correct.
@@ -54,7 +52,7 @@ class NormTest
 {
 public:
 
-    NormTest( const Norm& norm )
+    NormTest( const scai::lama::Norm& norm )
         : mNorm( norm )
     {
     }
@@ -64,7 +62,7 @@ public:
     void ZeroVectorTest();
     void runTests();
 
-    const Norm& mNorm;
+    const scai::lama::Norm& mNorm;
 };
 
 #define NORMTEST_COMMONTESTCASES( testinstance )                        \

@@ -37,8 +37,6 @@
 
 #include <scai/lama/distribution/Distribution.hpp>
 
-using namespace scai::lama;
-
 static std::string distclasses[] =
 {
     "BlockDistributionTest", "GeneralDistributionTest", "NoDistributionTest", "CyclicDistributionTest",
@@ -52,7 +50,7 @@ class DistributionTest
 {
 public:
 
-    DistributionTest( DistributionPtr& dist )
+    DistributionTest( scai::lama::DistributionPtr& dist )
         : mDistributionPtr( dist )
     {
     }
@@ -66,10 +64,10 @@ public:
     void runTests();
 
 private:
-    const DistributionPtr& mDistributionPtr;
+    const scai::lama::DistributionPtr& mDistributionPtr;
 };
 
-#define DISTRIBUTION_COMMONTESTCASES( testinstance )                    \
+#define DISTRIBUTION_COMMONTESTCASES( testinstance )                        \
     {   COMMONTESTCASEINVOKER( testinstance, writeAtTest );                 \
         COMMONTESTCASEINVOKER( testinstance, localSizeTest );               \
         COMMONTESTCASEINVOKER( testinstance, local2GlobalTest );            \

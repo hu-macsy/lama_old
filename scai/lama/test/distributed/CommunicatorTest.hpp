@@ -35,20 +35,16 @@
 
 #include <scai/lama/Communicator.hpp>
 
-using namespace scai::lama;
-
 /* --------------------------------------------------------------------- */
 
-static std::string commtestclasses[] =
-{ "NoCommunicatorTest" };
+static std::string commtestclasses[] = { "NoCommunicatorTest" };
 static std::string commtestmethods[] =
 {
     "swapTest", "gatherTest", "gatherVTest", "scatterTest", "scatterVTest", "bcastTest", "shiftASyncTest", "shiftTest",
     "updateHaloTest", "bcastStringTest", "buildHaloTest", "allocatePlanTest", "computeOwnersTest", "CommunicatorCtorTest"
 };
 
-static std::string pcommtestclasses[] =
-{ "P_MPICommunicatorTest" };
+static std::string pcommtestclasses[] = { "P_MPICommunicatorTest" };
 
 class CommunicatorTest
 {
@@ -80,12 +76,12 @@ public:
 private:
     std::string mCommunicatorType;
 
-    CommunicatorPtr comm;
+    scai::lama::CommunicatorPtr comm;
     PartitionId rank;
     PartitionId size;
 };
 
-#define COMMUNICATORTEST_COMMONTESTCASES( testinstance )                                 \
+#define COMMUNICATORTEST_COMMONTESTCASES( testinstance )                                     \
     {   COMMONTESTCASEINVOKER_TEMPLATE( testinstance, swapTest, float );                     \
         COMMONTESTCASEINVOKER_TEMPLATE( testinstance, gatherTest, float );                   \
         COMMONTESTCASEINVOKER_TEMPLATE( testinstance, gatherVTest, float );                  \

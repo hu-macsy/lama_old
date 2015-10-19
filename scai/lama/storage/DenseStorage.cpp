@@ -257,7 +257,7 @@ size_t DenseStorageView<ValueType>::getMemoryUsageImpl() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-common::ScalarType DenseStorageView<ValueType>::getValueType() const
+common::scalar::ScalarType DenseStorageView<ValueType>::getValueType() const
 {
     return common::getScalarType<ValueType>();
 }
@@ -1046,13 +1046,13 @@ void DenseStorageView<ValueType>::assign( const _MatrixStorage& other )
     {
         // more efficient solution for assigment of dense storage
 
-        ScalarType arrayType = other.getValueType();
+        common::scalar::ScalarType arrayType = other.getValueType();
 
         switch( arrayType )
         {
 
 #define LAMA_ASSIGN_DENSE_CALL( z, I, _ )                                                \
-case common::scalar::SCALAR_ARITHMETIC_TYPE##I:                                          \
+case SCALAR_ARITHMETIC_TYPE##I:                                                          \
 {                                                                                        \
     const DenseStorageView<ARITHMETIC_HOST_TYPE_##I>* otherTyped =                       \
             dynamic_cast<const DenseStorageView<ARITHMETIC_HOST_TYPE_##I>*>( &other );   \

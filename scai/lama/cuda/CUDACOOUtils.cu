@@ -262,7 +262,7 @@ namespace lama
                     const IndexType cooIA[],
                     const IndexType cooJA[],
                     const ValueType cooValues[],
-                    class SyncToken* syncToken )
+                    tasking::SyncToken* syncToken )
     {
         SCAI_REGION( "CUDA.COO.normalGEMV" )
 
@@ -276,7 +276,7 @@ namespace lama
 
         if ( syncToken )
         {
-            CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
+            tasking::CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<tasking::CUDAStreamSyncToken*>( syncToken );
             SCAI_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
             stream = cudaStreamSyncToken->getCUDAStream();
             SCAI_LOG_INFO( logger, "asyncronous execution on stream " << stream );
@@ -384,7 +384,7 @@ namespace lama
                     const IndexType cooIA[],
                     const IndexType cooJA[],
                     const ValueType cooValues[],
-                    class SyncToken* syncToken )
+                    tasking::SyncToken* syncToken )
     {
         SCAI_REGION( "CUDA.COO.normalGEVM" )
 
@@ -396,7 +396,7 @@ namespace lama
 
         if ( syncToken )
         {
-            CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
+            tasking::CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<tasking::CUDAStreamSyncToken*>( syncToken );
             SCAI_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
             stream = cudaStreamSyncToken->getCUDAStream();
             SCAI_LOG_INFO( logger, "asyncronous execution on stream " << stream );

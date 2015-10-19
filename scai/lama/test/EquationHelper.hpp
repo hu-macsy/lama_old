@@ -37,8 +37,6 @@
 
 #include <scai/lama/DenseVector.hpp>
 
-using namespace scai::lama;
-
 class EquationHelper
 {
 public:
@@ -46,9 +44,9 @@ public:
     template<typename ValueType>
     struct EquationSystem
     {
-        CSRSparseMatrix<ValueType> coefficients;
-        DenseVector<ValueType> rhs;
-        DenseVector<ValueType> solution;
+        scai::lama::CSRSparseMatrix<ValueType> coefficients;
+        scai::lama::DenseVector<ValueType> rhs;
+        scai::lama::DenseVector<ValueType> solution;
     };
 
     typedef EquationSystem<float> ( *ssystem )();
@@ -105,10 +103,10 @@ EquationHelper::EquationSystem<ValueType> EquationHelper::get3x3SystemA()
     { 9.0f, 11.0f, -7.0f };
     ValueType solutionValues[] =
     { 1.0f, 2.0f, -1.0f };
-    CSRSparseMatrix<ValueType> coefficients;
+    scai::lama::CSRSparseMatrix<ValueType> coefficients;
     coefficients.setRawDenseData( dim, dim, coefficientValues );
-    DenseVector<ValueType> rhs( dim, rhsValues );
-    DenseVector<ValueType> solution( dim, solutionValues );
+    scai::lama::DenseVector<ValueType> rhs( dim, rhsValues );
+    scai::lama::DenseVector<ValueType> solution( dim, solutionValues );
     EquationSystem<ValueType> equationSystem =
     { coefficients, rhs, solution };
     return equationSystem;
@@ -124,10 +122,10 @@ EquationHelper::EquationSystem<ValueType> EquationHelper::get4x4SystemA()
     { 8.0f, 13.0f, 12.0f, -16.0f };
     ValueType solutionValues[] =
     { 1.0f, 3.0f, -1.0f, 2.0f };
-    CSRSparseMatrix<ValueType> coefficients;
+    scai::lama::CSRSparseMatrix<ValueType> coefficients;
     coefficients.setRawDenseData( dim, dim, coefficientValues );
-    DenseVector<ValueType> rhs( dim, rhsValues );
-    DenseVector<ValueType> solution( dim, solutionValues );
+    scai::lama::DenseVector<ValueType> rhs( dim, rhsValues );
+    scai::lama::DenseVector<ValueType> solution( dim, solutionValues );
     EquationSystem<ValueType> equationSystem =
     { coefficients, rhs, solution };
     return equationSystem;
@@ -148,10 +146,10 @@ EquationHelper::EquationSystem<ValueType> EquationHelper::get8x8SystemA()
     { 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f };
     ValueType solutionValues[] =
     { 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f };
-    CSRSparseMatrix<ValueType> coefficients;
+    scai::lama::CSRSparseMatrix<ValueType> coefficients;
     coefficients.setRawDenseData( dim, dim, matrixValues );
-    DenseVector<ValueType> rhs( dim, rhsValues );
-    DenseVector<ValueType> solution( dim, solutionValues );
+    scai::lama::DenseVector<ValueType> rhs( dim, rhsValues );
+    scai::lama::DenseVector<ValueType> solution( dim, solutionValues );
     EquationSystem<ValueType> equationSystem =
     { coefficients, rhs, solution };
     return equationSystem;
@@ -172,9 +170,9 @@ EquationHelper::EquationSystem<ValueType> EquationHelper::get8x8EmptyDiagonal()
     { 28.0f, 22.0f, 18.0f, 16.0f, 16.0f, 18.0f, 22.0f, 28.0f };
     ValueType solutionValues[] =
     { 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f };
-    CSRSparseMatrix<ValueType> coefficients( dim, dim, values );
-    DenseVector<ValueType> rhs( dim, rhsValues );
-    DenseVector<ValueType> solution( dim, solutionValues );
+    scai::lama::CSRSparseMatrix<ValueType> coefficients( dim, dim, values );
+    scai::lama::DenseVector<ValueType> rhs( dim, rhsValues );
+    scai::lama::DenseVector<ValueType> solution( dim, solutionValues );
     EquationSystem<ValueType> equationSystem =
     { coefficients, rhs, solution };
     return equationSystem;
@@ -190,9 +188,9 @@ EquationHelper::EquationSystem<ValueType> EquationHelper::get4x4SystemB()
     { 8.0f, 8.0f, 6.0f, 6.0f };
     ValueType solutionValues[] =
     { 1.0f, 1.0f, 1.0f, 1.0f };
-    CSRSparseMatrix<ValueType> coefficients( dim, dim, values );
-    DenseVector<ValueType> rhs( dim, rhsValues );
-    DenseVector<ValueType> solution( dim, solutionValues );
+    scai::lama::CSRSparseMatrix<ValueType> coefficients( dim, dim, values );
+    scai::lama::DenseVector<ValueType> rhs( dim, rhsValues );
+    scai::lama::DenseVector<ValueType> solution( dim, solutionValues );
     EquationSystem<ValueType> equationSystem =
     { coefficients, rhs, solution };
     return equationSystem;
@@ -217,9 +215,9 @@ EquationHelper::EquationSystem<ValueType> EquationHelper::get8x8SystemB()
     { 28.0f, 22.0f, 18.0f, 28.0f, 16.0f, 16.0f, 18.0f, 22.0f };
     ValueType solutionValues[] =
     { 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f };
-    CSRSparseMatrix<ValueType> coefficients( dim, dim, values );
-    DenseVector<ValueType> rhs( dim, rhsValues );
-    DenseVector<ValueType> solution( dim, solutionValues );
+    scai::lama::CSRSparseMatrix<ValueType> coefficients( dim, dim, values );
+    scai::lama::DenseVector<ValueType> rhs( dim, rhsValues );
+    scai::lama::DenseVector<ValueType> solution( dim, solutionValues );
     EquationSystem<ValueType> equationSystem =
     { coefficients, rhs, solution };
     return equationSystem;
@@ -241,9 +239,9 @@ EquationHelper::EquationSystem<ValueType> EquationHelper::get8x8SystemC()
     { 28.0f, 28.0f, 22.0f, 18.0f, 16.0f, 16.0f, 18.0f, 22.0f };
     ValueType solutionValues[] =
     { 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f };
-    CSRSparseMatrix<ValueType> coefficients( dim, dim, values );
-    DenseVector<ValueType> rhs( dim, rhsValues );
-    DenseVector<ValueType> solution( dim, solutionValues );
+    scai::lama::CSRSparseMatrix<ValueType> coefficients( dim, dim, values );
+    scai::lama::DenseVector<ValueType> rhs( dim, rhsValues );
+    scai::lama::DenseVector<ValueType> solution( dim, solutionValues );
     EquationSystem<ValueType> equationSystem =
     { coefficients, rhs, solution };
     return equationSystem;
@@ -269,9 +267,9 @@ EquationHelper::EquationSystem<ValueType> EquationHelper::get8x8SystemD()
     { 28.0f, 22.0f, 18.0f, 28.0f, 16.0f, 16.0f, 18.0f, 22.0f };
     ValueType solutionValues[] =
     { 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f };
-    CSRSparseMatrix<ValueType> coefficients( dim, dim, values );
-    DenseVector<ValueType> rhs( dim, rhsValues );
-    DenseVector<ValueType> solution( dim, solutionValues );
+    scai::lama::CSRSparseMatrix<ValueType> coefficients( dim, dim, values );
+    scai::lama::DenseVector<ValueType> rhs( dim, rhsValues );
+    scai::lama::DenseVector<ValueType> solution( dim, solutionValues );
     EquationSystem<ValueType> equationSystem =
     { coefficients, rhs, solution };
     return equationSystem;

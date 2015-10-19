@@ -375,10 +375,10 @@ Matrix* XXXSparseMatrix<ValueType>::create()
 }
 
 template<typename ValueType>
-std::pair<MatrixStorageFormat, common::ScalarType> XXXSparseMatrix<ValueType>::createValue()
+std::pair<MatrixStorageFormat, common::scalar::ScalarType> XXXSparseMatrix<ValueType>::createValue()
 {
-    common::ScalarType skind = common::getScalarType<ValueType>();
-    return std::pair<MatrixStorageFormat, common::ScalarType> ( Format::XXX, skind );
+    common::scalar::ScalarType skind = common::getScalarType<ValueType>();
+    return std::pair<MatrixStorageFormat, common::scalar::ScalarType> ( Format::XXX, skind );
 }
 
 /* ========================================================================= */

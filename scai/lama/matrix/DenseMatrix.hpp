@@ -527,7 +527,7 @@ public:
 
     /* Implementation of pure method of class Matrix. */
 
-    virtual common::ScalarType getValueType() const;
+    virtual common::scalar::ScalarType getValueType() const;
 
     virtual size_t getValueTypeSize() const;
 
@@ -688,7 +688,7 @@ public:
 
     // key for factory 
 
-    static std::pair<MatrixStorageFormat, common::ScalarType> createValue();
+    static std::pair<MatrixStorageFormat, common::scalar::ScalarType> createValue();
 };
 
 /*  template methods implementations */

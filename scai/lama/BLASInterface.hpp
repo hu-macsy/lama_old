@@ -49,8 +49,6 @@ namespace tasking
     class SyncToken;
 }
 
-using namespace scai::tasking;
-
 namespace lama
 {
 
@@ -95,7 +93,7 @@ struct BLASInterface
             const ValueType alpha,
             ValueType* x,
             const IndexType incX,
-            SyncToken* syncToken );
+            tasking::SyncToken* syncToken );
 
         /**
          * @brief nrm2 computes the Euclidean norm of the n-vector x
@@ -109,7 +107,7 @@ struct BLASInterface
          * return            the Euclidian norm within considered elements
          *                   of x (returns zero if n <=0, incX <= 0).
          */
-        typedef ValueType (*nrm2)( const IndexType n, const ValueType* x, const IndexType incX, SyncToken* syncToken );
+        typedef ValueType (*nrm2)( const IndexType n, const ValueType* x, const IndexType incX, tasking::SyncToken* syncToken );
 
         /**
          * @brief asum computes the sum of the absolute values of the elements
@@ -123,7 +121,7 @@ struct BLASInterface
          * return            the sum of absolute values within considered elements
          *                   of x (returns zero if n<=0 or incX <= 0).
          */
-        typedef ValueType (*asum)( const IndexType n, const ValueType* x, const IndexType incX, SyncToken* syncToken );
+        typedef ValueType (*asum)( const IndexType n, const ValueType* x, const IndexType incX, tasking::SyncToken* syncToken );
 
         /** max norm: maxnorm(x) = max( x_i ) */
 
@@ -138,7 +136,7 @@ struct BLASInterface
          * return            the smallest index of the maximum magnitude
          *                   within considered elements of x (returns zero if n <=0 or incX <=0).
          */
-        typedef IndexType (*iamax)( const IndexType n, const ValueType* x, const IndexType incX, SyncToken* syncToken );
+        typedef IndexType (*iamax)( const IndexType n, const ValueType* x, const IndexType incX, tasking::SyncToken* syncToken );
 
         /**
          * @brief swap interchanges considered elements of vector x with vector y.
@@ -159,7 +157,7 @@ struct BLASInterface
             const IndexType incX,
             ValueType* y,
             const IndexType incY,
-            SyncToken* syncToken );
+            tasking::SyncToken* syncToken );
 
         /**
          * @brief copy copies the vector x to the vector y.
@@ -179,7 +177,7 @@ struct BLASInterface
             const IndexType incX,
             ValueType* y,
             const IndexType incY,
-            SyncToken* syncToken );
+            tasking::SyncToken* syncToken );
 
         /**
          * @brief axpy multiplies scalar alpha by vector x and
@@ -202,7 +200,7 @@ struct BLASInterface
             const IndexType incX,
             ValueType* y,
             const IndexType incY,
-            SyncToken* syncToken );
+            tasking::SyncToken* syncToken );
 
         /**
          * @brief dot computes the dot product of two vectors.
@@ -224,7 +222,7 @@ struct BLASInterface
             const IndexType incX,
             const ValueType* y,
             const IndexType inc,
-            SyncToken* syncToken );
+            tasking::SyncToken* syncToken );
 
         /**
          * @brief sum adds the multiplication of scalar alpha by vector x and the multiplication of
@@ -246,7 +244,7 @@ struct BLASInterface
             ValueType beta,
             const ValueType* y,
             ValueType* z,
-            SyncToken* syncToken );
+            tasking::SyncToken* syncToken );
     };
 
     // declare variables of function pointers, i.e. arrays indexed by each type
@@ -312,7 +310,7 @@ struct BLASInterface
                         const ValueType beta,
                         ValueType *y,
                         const IndexType incY,
-                        SyncToken* syncToken );
+                        tasking::SyncToken* syncToken );
     };
 
     LAMA_INTERFACE_DEFINE_T( BLAS2, gemv )
@@ -388,7 +386,7 @@ struct BLASInterface
                         const ValueType beta,
                         ValueType* C,
                         const IndexType ldc,
-                        SyncToken* syncToken );
+                        tasking::SyncToken* syncToken );
 
     };
 
@@ -544,7 +542,7 @@ struct BLASInterface
                         const IndexType k2,
                         const IndexType* ipiv,
                         const IndexType incx,
-                        SyncToken* syncToken);
+                        tasking::SyncToken* syncToken);
     };
 
     LAMA_INTERFACE_DEFINE_T( LAPACK, getrf )

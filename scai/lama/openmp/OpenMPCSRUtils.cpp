@@ -509,7 +509,7 @@ void OpenMPCSRUtils::normalGEMV(
     const IndexType csrIA[],
     const IndexType csrJA[],
     const ValueType csrValues[],
-    SyncToken* syncToken )
+    tasking::SyncToken* syncToken )
 {
     SCAI_LOG_INFO( logger,
                    "normalGEMV<" << getScalarType<ValueType>() << ", #threads = " << omp_get_max_threads() 
@@ -583,7 +583,7 @@ void OpenMPCSRUtils::normalGEVM(
     const IndexType csrIA[],
     const IndexType csrJA[],
     const ValueType csrValues[],
-    SyncToken* syncToken )
+    tasking::SyncToken* syncToken )
 {
     SCAI_LOG_INFO( logger,
                    "normalGEVM<" << getScalarType<ValueType>() << ", #threads = " << omp_get_max_threads() << ">, result[" << numColumns << "] = " << alpha << " * x * A + " << beta << " * y " )
@@ -666,7 +666,7 @@ void OpenMPCSRUtils::sparseGEMV(
     const IndexType csrIA[],
     const IndexType csrJA[],
     const ValueType csrValues[],
-    SyncToken* syncToken )
+    tasking::SyncToken* syncToken )
 {
     if( syncToken )
     {
@@ -723,7 +723,7 @@ void OpenMPCSRUtils::sparseGEVM(
     const IndexType csrIA[],
     const IndexType csrJA[],
     const ValueType csrValues[],
-    SyncToken* syncToken )
+    tasking::SyncToken* syncToken )
 {
     if( syncToken )
     {
@@ -788,7 +788,7 @@ void OpenMPCSRUtils::gemm(
     const IndexType csrIA[],
     const IndexType csrJA[],
     const ValueType csrValues[],
-    SyncToken* syncToken )
+    tasking::SyncToken* syncToken )
 {
     SCAI_LOG_INFO( logger,
                    "gemm<" << getScalarType<ValueType>() << ">, " << " result " << m << " x " << n << " CSR " << m << " x " << p )
@@ -835,7 +835,7 @@ void OpenMPCSRUtils::jacobi(
     const ValueType rhs[],
     const ValueType omega,
     const IndexType numRows,
-    class SyncToken* syncToken )
+    tasking::SyncToken* syncToken )
 {
     SCAI_LOG_INFO( logger,
                    "jacobi<" << getScalarType<ValueType>() << ">" << ", #rows = " << numRows << ", omega = " << omega )

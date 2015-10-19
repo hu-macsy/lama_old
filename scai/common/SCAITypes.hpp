@@ -45,8 +45,8 @@
  *  classes and routines or utilize the using directive of C++.
  *
  *  \code
- *     using namespace lama;
  *     scai::lama::DenseVector<float> V;
+ *     using namespace scai::lama;
  *     DenseVector<float> V;
  *  \endcode
  */
@@ -116,12 +116,12 @@ static const PartitionId nPartition = std::numeric_limits<PartitionId>::max();
 // Define for the arithmetic types the counterparts of enum Scalar::Tyep
 // Sorry, we cannot use the routine getType<ARITHMETIC_TYPE##I> in case stmt
 
-#define SCALAR_ARITHMETIC_TYPE0 FLOAT
-#define SCALAR_ARITHMETIC_TYPE1 COMPLEX
-#define SCALAR_ARITHMETIC_TYPE2 DOUBLE
-#define SCALAR_ARITHMETIC_TYPE3 DOUBLE_COMPLEX
-#define SCALAR_ARITHMETIC_TYPE4 LONG_DOUBLE
-#define SCALAR_ARITHMETIC_TYPE5 LONG_DOUBLE_COMPLEX
+#define SCALAR_ARITHMETIC_TYPE0 scai::common::scalar::FLOAT
+#define SCALAR_ARITHMETIC_TYPE1 scai::common::scalar::COMPLEX
+#define SCALAR_ARITHMETIC_TYPE2 scai::common::scalar::DOUBLE
+#define SCALAR_ARITHMETIC_TYPE3 scai::common::scalar::DOUBLE_COMPLEX
+#define SCALAR_ARITHMETIC_TYPE4 scai::common::scalar::LONG_DOUBLE
+#define SCALAR_ARITHMETIC_TYPE5 scai::common::scalar::LONG_DOUBLE_COMPLEX
 
 // For convenience we define ARRAY_TYPE
 

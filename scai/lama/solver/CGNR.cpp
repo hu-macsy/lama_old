@@ -80,7 +80,7 @@ void CGNR::initialize( const Matrix& coefficients ){
     Solver::initialize(coefficients);
  	CGNRRuntime& runtime = getRuntime();
 
-    common::ScalarType type = coefficients.getValueType();
+    common::scalar::ScalarType type = coefficients.getValueType();
     runtime.mEps = std::numeric_limits<double>::epsilon()*3;   //CAREFUL: No abstract type 
 
     runtime.mTransposedMat.reset( coefficients.clone() );
