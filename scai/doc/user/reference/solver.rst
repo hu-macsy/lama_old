@@ -1,7 +1,7 @@
 Solver
 ======
 
-LAMA provides different linear equation solvers. These are available in the ``src/lama/solver/`` directory.
+LAMA provides different linear equation solvers. These are available in the ``scai/lama/solver/`` directory.
 
 See the example for a short introduction how the solvers can be used. For writing your own solver see
 :doc:`here <solver/writingSolver>`.
@@ -11,27 +11,45 @@ Available Solvers
 
 - Direct Solver
 
+  - InverseSolver
+
 .. - LUSolver
- 
- - InverseSolver
 
 - Iterative Solver
 
-  - Jacobi 
+  - Splitting Methods
+  
+    - Jacobi 
  
-    - DefaultJacobi
+      - DefaultJacobi
    
-    - SpecializedJacobi
+      - SpecializedJacobi
+      
+    - Richardson
+    
+    - SOR
+    
+  - Krylov Subspace Methods
    
-  - CG
+    - BiCG
+    
+    - BiCGstab
+   
+    - CG
+    
+    - CGNR
+    
+    - CGS
  
-  - GMRES
+    - GMRES
+    
+    - MINRES
+    
+    - TFQMR
+    
+  - Multigrid Methods
  
-  - AMG
- 
-  - SOR
- 
-  - SimpleAMG
+    - SimpleAMG
 
 - Generative Solver
 
@@ -40,7 +58,7 @@ Available Solvers
 Usage
 -----
 
-For using one of the predifined solver you create an instance of it, initialize it with the matrix, set a stopping
+For using one of the predefined solver you create an instance of it, initialize it with the matrix, set a stopping
 criteria and start to solve it.
 
 ::
@@ -94,8 +112,8 @@ new solver.
 Solver Logging
 --------------
 
-The solver logging is an additional logggin to the general LAMA logging. They can be used both together or standalone.
-The solver logging gives information about the state of solver, e.g. actual iteration count or residual.
+The solver logging is an additional logging to the general LAMA logging. They can be used both together or standalone.
+The solver logging gives information about the state of the solver, e.g. actual iteration count or residual.
 
 Create a *CommonLogger* and pass it to the solver.
 
@@ -106,7 +124,7 @@ Create a *CommonLogger* and pass it to the solver.
          
    CG cgWithLogger( "CGSolver", logger );
 
-You can choose between five log level:
+You can choose between five log levels:
 
 - noLogging: no solver logging (same as used passing no LoggerPtr)
 
@@ -118,7 +136,8 @@ You can choose between five log level:
 
 - completeInformation: logs every log message of the solver
 
-There you three write behaviour:
+.. There you three write behaviour:
+Additonally you have to select one of the three logger behaviours:
 
 - toConsoleOnly: log messages will be written to standard out only
 

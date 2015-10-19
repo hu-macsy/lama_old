@@ -33,7 +33,7 @@ You create a BlockDistribution by just passing the global distribution size and 
 
 ::
 
-   CommunicatorPtr comm( CommunicatorFactory::get( "MPI" ) );
+   CommunicatorPtr comm( Communicator::get( "MPI" ) );
    
    DistributionPtr block( new BlockDistribution( numRows, comm ) );
 
