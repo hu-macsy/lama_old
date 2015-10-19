@@ -136,7 +136,6 @@ You can choose between five log levels:
 
 - completeInformation: logs every log message of the solver
 
-.. There you three write behaviour:
 Additonally you have to select one of the three logger behaviours:
 
 - toConsoleOnly: log messages will be written to standard out only

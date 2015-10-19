@@ -29,8 +29,5 @@ this sourceclass. All names of testcases in a testsuite should be unique.
 
 There are some conventions about name-giving as well:
 
- - Each TestSuiteName should be equal to the FileName. This makes it easy and intuitive to call testcases by using the 
-runtime parameter --run_test. 
- - Each TestFixtureName is created by adding "Config" to the TestSuiteName. It seems that Boost.Test has some problems 
-with equal Fixturenames of different Testclasses. With this convention we make sure that there are just unique 
-names of testclasses and testfixtures.
+ - Each TestSuiteName should be equal to the FileName. This makes it easy and intuitive to call testcases by using the runtime parameter --run_test. 
+ - Each TestFixtureName is created by adding "Config" to the TestSuiteName. It seems that Boost.Test has some problems with equal Fixturenames of different Testclasses. With this convention we make sure that there are just unique names of testclasses and testfixtures.
