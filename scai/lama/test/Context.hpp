@@ -38,20 +38,21 @@
 
 namespace scai
 {
+
 namespace lama_test
 {
 
 class Context
 {
 public:
-    static scai::hmemo::ContextPtr getContext( const scai::hmemo::ContextType type );
+    static scai::hmemo::ContextPtr getContext( const scai::hmemo::context::ContextType type );
 private:
     Context();
     virtual ~Context();
 
-    static std::map<scai::hmemo::ContextType, scai::hmemo::ContextPtr> contexts;
+    static std::map<scai::hmemo::context::ContextType, scai::hmemo::ContextPtr> contexts;
 };
 
 } /* end namespace lama_test */
-} /* end namespace scai */
 
+} /* end namespace scai */

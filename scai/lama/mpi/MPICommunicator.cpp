@@ -495,7 +495,7 @@ void MPICommunicator::exchangeByPlanImpl(
 /* ---------------------------------------------------------------------------------- */
 
 template<typename ValueType>
-SyncToken* MPICommunicator::exchangeByPlanAsyncImpl(
+tasking::SyncToken* MPICommunicator::exchangeByPlanAsyncImpl(
     ValueType* const recvData,
     const CommunicationPlan& recvPlan,
     const ValueType* const sendData,
@@ -646,7 +646,7 @@ IndexType MPICommunicator::shiftImpl(
 /* ---------------------------------------------------------------------------------- */
 
 template<typename ValueType>
-SyncToken* MPICommunicator::shiftAsyncImpl(
+tasking::SyncToken* MPICommunicator::shiftAsyncImpl(
     ValueType recvVals[],
     const PartitionId source,
     const ValueType sendVals[],

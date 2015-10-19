@@ -99,7 +99,7 @@ public:
         // return &memory == getMemory().get();
     }
 
-    virtual scai::hmemo::ContextType getType() const
+    virtual scai::hmemo::context::ContextType getType() const
     {
         return scai::hmemo::context::UserContext;
     }
@@ -116,7 +116,7 @@ public:
 
     static scai::hmemo::ContextPtr create( int deviceNr );
 
-    static scai::hmemo::ContextType createValue()
+    static scai::hmemo::context::ContextType createValue()
     { 
         return scai::hmemo::context::UserContext;
     }

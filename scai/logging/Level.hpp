@@ -71,16 +71,14 @@ COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& os, const Level&
 
 } /* end namespace level */
 
-using level::Level;
-
-Level str2level( const std::string& value );
+level::Level str2level( const std::string& value );
 
 /** Translate level to a string.
  *
  *  \return the logging level as a string.
  */
 
-const char* level2str( const Level level );
+const char* level2str( const level::Level level );
 
 } /* end namespace logging */
 

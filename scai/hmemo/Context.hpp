@@ -111,11 +111,6 @@ namespace context
     COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const AccessKind& kind );
 }
 
-// Make ContexType and AccessKind visible, but not enum values. 
-
-using context::ContextType;
-using context::AccessKind;
-
 /** @brief This class is a common base class for all possible contexts.
  *
  *  A context stands for a compute and data environment to run certain code.
@@ -130,7 +125,7 @@ using context::AccessKind;
  */
 class COMMON_DLL_IMPORTEXPORT Context: 
   
-    public  scai::common::Factory1<ContextType, int, ContextPtr>,
+    public  scai::common::Factory1<context::ContextType, int, ContextPtr>,
     public  scai::common::Printable,
     private scai::common::NonCopyable
 {
@@ -140,7 +135,7 @@ public:
 
     /** Method to get the type of the context. */
 
-    ContextType getType() const;
+    context::ContextType getType() const;
 
     /** @brief  Predicate to check in a context whether a certain memory class can be used.
      *
@@ -217,7 +212,7 @@ public:
      *
      *  @throws Exception if the context of the requested type is not available
      */
-    static ContextPtr getContextPtr( const ContextType type = context::Host, int deviceNr = -1 );
+    static ContextPtr getContextPtr( const context::ContextType type = context::Host, int deviceNr = -1 );
 
     /** @brief getHostPtr() as abbreviation of getContextPtr( context::Host ) */
 
@@ -231,17 +226,17 @@ public:
      * @param[in] type  is the type of context that is wanted
      * @return          if a context of the passed type is available
      */
-    static bool hasContext( const ContextType type );
+    static bool hasContext( const context::ContextType type );
 
 protected:
 
     /** Default constructor, can only be called by base classes. */
 
-    Context( ContextType type );
+    Context( context::ContextType type );
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
-    ContextType mContextType;
+    context::ContextType mContextType;
 
     mutable bool mEnabled; //!<  if true the context is currently accessed
 
@@ -250,12 +245,12 @@ protected:
     mutable int mLine;//!< Line number where context has been enabled
 };
 
-inline ContextType Context::getType() const
+inline context::ContextType Context::getType() const
 {
     return mContextType;
 }
 
-inline bool Context::hasContext( const ContextType type )
+inline bool Context::hasContext( const context::ContextType type )
 {
     return canCreate( type );
 }

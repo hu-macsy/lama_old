@@ -248,7 +248,7 @@ static int evalEntry( char* line, int length, const char* /* filename */ )
     }
 
     // get the logger from the provider and set its level
-    Level level = str2level( value );
+    level::Level level = str2level( value );
 
     if ( level == level::MAXLEVEL )
     {

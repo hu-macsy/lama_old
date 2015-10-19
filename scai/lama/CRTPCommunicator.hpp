@@ -51,9 +51,6 @@
 namespace scai
 {
 
-using tasking::SyncToken;
-using tasking::NoSyncToken;
-
 namespace lama
 {
 
@@ -182,7 +179,7 @@ public:
         return this->shiftDataT( recvVals, recvSize, sendVals, sendSize, direction );   \
     }                                                                                   \
     \
-    virtual SyncToken* shiftDataAsync(                                                  \
+    virtual tasking::SyncToken* shiftDataAsync(                                                  \
             ARRAY_TYPE##I recvVals[],                                                       \
             const ARRAY_TYPE##I sendVals[],                                                 \
             const IndexType size,                                                           \
@@ -203,7 +200,7 @@ public:
      *  exchangeByPlanAsync                                        *                    \
      **************************************************************/                    \
     \
-    virtual SyncToken* exchangeByPlanAsync(                                             \
+    virtual tasking::SyncToken* exchangeByPlanAsync(                                             \
             ARRAY_TYPE##I recvVals[],                                                       \
             const CommunicationPlan& recvPlan,                                              \
             const ARRAY_TYPE##I sendVals[],                                                 \
@@ -264,12 +261,12 @@ private:
     }
 
     template<typename T>
-    SyncToken* shiftDataAsyncT( T recvVals[], const T sendVals[], const IndexType size, const int direction ) const
+    tasking::SyncToken* shiftDataAsyncT( T recvVals[], const T sendVals[], const IndexType size, const int direction ) const
     {
         if( direction % getSize() == 0 )
         {
             shift0( recvVals, size, sendVals, size );
-            return new NoSyncToken();
+            return new tasking::NoSyncToken();
         }
 
         PartitionId dest = getNeighbor( direction );
