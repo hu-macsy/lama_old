@@ -28,9 +28,10 @@ are comfortable with it and it offers a couple of nice features as there are plu
 
 	JAVA_HOME=<install/dir/java>/bin
 	
-We recommend Eclipse CDT `Indigo`_ now at least with the `EGit`_ plugin. Optional you can install the
-`CMake Plugin`_ and `ReST`_ editor. 
+We recommend Eclipse for Parallel Application Developers `Mars`_ which has built-in git support. 
+Optional you can install the `CMake Plugin`_ and `ReST`_ editor.   
 
+.. _Mars: http://www.eclipse.org/downloads/packages/eclipse-parallel-application-developers/mars1
 .. _Indigo: http://www.eclipse.org/downloads/packages/eclipse-ide-cc-developers-includes-incubating-components/indigosr2
 .. _EGit: http://www.eclipse.org/egit
 .. _CMake Plugin: http://www.cthing.com
