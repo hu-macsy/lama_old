@@ -22,7 +22,7 @@ At the moment there are three different test hierarchies:
 
 .. _Boost: www.boost.org 
 
-For each class in lama/src/ there is a corresponding testclass with the same name (e.g. MaxNorm.cpp -> MaxNormTest.cpp).
+For each class in scai/lama/ there is a corresponding testclass with the same name (e.g. MaxNorm.cpp -> MaxNormTest.cpp).
  
 In every testclass there is exactly one testsuite, which groups testcases, that are made for testing functions from
 this sourceclass. All names of testcases in a testsuite should be unique.
