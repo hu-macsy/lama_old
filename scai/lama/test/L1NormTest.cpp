@@ -1,5 +1,5 @@
 /**
- * @file L1NormTest.hpp
+ * @file L1NormTest.cpp
  *
  * @license
  * Copyright (c) 2009-2015

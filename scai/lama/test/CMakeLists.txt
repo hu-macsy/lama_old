@@ -38,12 +38,12 @@ scai_project (
     CLASSES
 
         Configuration
-        Context
         MatrixStorageTest
         NormTest
         SameMatrixHelper
         SparseMatrixHelper
         SparseMatrixTest
+        TestContext
     
     HEADERS
 
@@ -91,7 +91,6 @@ scai_project (
         JDSUtilsTest
         L1NormTest
         L2NormTest
-        LAMAArrayTest
         LAPACKTest
         MatrixNormTest
         MatrixStorageConversionTest

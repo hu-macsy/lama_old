@@ -33,10 +33,10 @@
 
 // local library
 #include <scai/lama/cuda/CUDABLAS1.hpp>
-#include <scai/lama/cuda/launchHelper.hpp>
 #include <scai/lama/cuda/utils.cu.h>
 
 // internal scai libraries
+#include <scai/common/cuda/launchHelper.hpp>
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/Assert.hpp>
 

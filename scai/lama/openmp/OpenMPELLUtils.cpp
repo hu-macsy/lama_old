@@ -35,8 +35,6 @@
 #include <scai/lama/openmp/OpenMPELLUtils.hpp>
 
 // local library
-#include <scai/lama/openmp/OpenMP.hpp>
-
 #include <scai/lama/LAMAInterface.hpp>
 #include <scai/lama/LAMAInterfaceRegistry.hpp>
 
@@ -45,6 +43,7 @@
 
 #include <scai/common/bind.hpp>
 #include <scai/common/Assert.hpp>
+#include <scai/common/OpenMP.hpp>
 #include <scai/common/macros/unused.hpp>
 #include <scai/common/Constants.hpp>
 

@@ -46,7 +46,7 @@
 #include <scai/lama/matrix/Matrix.hpp>
 
 #include <scai/lama/solver/SolutionProxy.hpp>
-#include <scai/lama/solver/logger/Logger.hpp>
+#include <scai/lama/solver/logger/SolverLogger.hpp>
 
 // logging
 #include <scai/logging.hpp>

@@ -1,5 +1,5 @@
 /**
- * @file SolutionProxyTest.hpp
+ * @file SolutionProxyTest.cpp
  *
  * @license
  * Copyright (c) 2009-2015

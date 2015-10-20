@@ -37,9 +37,9 @@
 // local library
 #include <scai/lama/LAMAInterface.hpp>
 #include <scai/lama/LAMAInterfaceRegistry.hpp>
-#include <scai/lama/openmp/OpenMP.hpp>
 
 #include <scai/common/Constants.hpp>
+#include <scai/common/OpenMP.hpp>
 
 // boost
 #include <boost/preprocessor.hpp>

@@ -375,7 +375,7 @@ SHOW_INCLUDE_FILES     = YES
 # will list include files with double quotes in the documentation
 # rather than with sharp brackets.
 
-FORCE_LOCAL_INCLUDES   = NO
+#FORCE_LOCAL_INCLUDES   = NO # unsupported tag
 
 # If the INLINE_INFO tag is set to YES (the default) then a tag [inline]
 # is inserted in the documentation for inline members.
@@ -557,8 +557,8 @@ INPUT                  = ${CMAKE_SOURCE_DIR}/doc/system \
                          ${CMAKE_SOURCE_DIR}/common  \
                          ${CMAKE_SOURCE_DIR}/logging  \
                          ${CMAKE_SOURCE_DIR}/tracing  \
+                         ${CMAKE_SOURCE_DIR}/hmemo  \
                          ${CMAKE_SOURCE_DIR}/tasking  \
-                         ${CMAKE_SOURCE_DIR}/memory  \
                          ${CMAKE_SOURCE_DIR}/lama
 
 #                        add additional directories
@@ -941,13 +941,13 @@ QHG_LOCATION           =
 # the directory within the plugins directory should be the same as
 # the ECLIPSE_DOC_ID value. After copying Eclipse needs to be restarted before the help appears.
 
-GENERATE_ECLIPSEHELP   = NO
+#GENERATE_ECLIPSEHELP   = NO # unsupported tag
 
 # A unique identifier for the eclipse help plugin. When installing the plugin
 # the directory name containing the HTML and XML files should also have
 # this name.
 
-ECLIPSE_DOC_ID         = org.doxygen.Project
+# ECLIPSE_DOC_ID         = org.doxygen.Project # unsupported tag
 
 # The DISABLE_INDEX tag can be used to turn on/off the condensed index at
 # top of each HTML page. The value NO (the default) enables the index and
@@ -1000,7 +1000,7 @@ SEARCHENGINE           = NO
 # file to put on the web server. The advantage of the server based approach is that it scales better to large projects and allows full text search. The disadvances is that it is more difficult to setup
 # and does not have live searching capabilities.
 
-SERVER_BASED_SEARCH    = NO
+#SERVER_BASED_SEARCH    = NO # unsupported tag
 
 #---------------------------------------------------------------------------
 # configuration options related to the LaTeX output

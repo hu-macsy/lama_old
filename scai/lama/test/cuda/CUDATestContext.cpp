@@ -1,5 +1,5 @@
 /**
- * @file CUDAContext.cpp
+ * @file CUDATestContext.cpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,12 +25,12 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief CUDAContext.cpp
+ * @brief CUDATestContext.cpp
  * @author Jiri Kraus
  * @date 05.04.2012
  * @since 1.0.0
  */
-#include <scai/lama/test/cuda/CUDAContext.hpp>
+#include <scai/lama/test/cuda/CUDATestContext.hpp>
 
 #include <scai/hmemo/Context.hpp>
 
@@ -39,9 +39,9 @@ namespace scai
 namespace lama_test
 {
 
-hmemo::ContextPtr CUDAContext::cudaContext;
+hmemo::ContextPtr CUDATestContext::cudaContext;
 
-hmemo::ContextPtr CUDAContext::getContext()
+hmemo::ContextPtr CUDATestContext::getContext()
 {
     if ( !cudaContext )
     {

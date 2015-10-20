@@ -1,5 +1,5 @@
 /**
- * @file TaskSyncTokenTest.hpp
+ * @file TaskSyncTokenTest.cpp
  *
  * @license
  * Copyright (c) 2009-2015

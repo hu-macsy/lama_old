@@ -45,7 +45,7 @@ CommonLogger::CommonLogger(
     LogLevel::LogLevel level,
     LoggerWriteBehaviour::LoggerWriteBehaviour writeBehaviour,
     bool ignoreRank )
-    : Logger( id, level, writeBehaviour, ignoreRank )
+    : SolverLogger( id, level, writeBehaviour, ignoreRank )
 {
 }
 
@@ -55,7 +55,7 @@ CommonLogger::CommonLogger(
     LoggerWriteBehaviour::LoggerWriteBehaviour writeBehaviour,
     common::shared_ptr<Timer> timer,
     bool ignoreRank )
-    : Logger( id, level, writeBehaviour, timer, ignoreRank )
+    : SolverLogger( id, level, writeBehaviour, timer, ignoreRank )
 {
 }
 
@@ -66,7 +66,7 @@ CommonLogger::CommonLogger(
     const std::string& logFileName,
     common::shared_ptr<Timer> timer,
     bool ignoreRank )
-    : Logger( id, level, writeBehaviour, logFileName, timer, ignoreRank )
+    : SolverLogger( id, level, writeBehaviour, logFileName, timer, ignoreRank )
 {
 }
 

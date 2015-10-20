@@ -1,5 +1,5 @@
 /**
- * @file CriterionTest.hpp
+ * @file CriterionTest.cpp
  *
  * @license
  * Copyright (c) 2009-2015

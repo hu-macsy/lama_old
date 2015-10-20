@@ -1,5 +1,5 @@
 /**
- * @file P_SpecializedJacobi.cpp
+ * @file P_SpecializedJacobiTest.cpp
  *
  * @license
  * Copyright (c) 2009-2015
