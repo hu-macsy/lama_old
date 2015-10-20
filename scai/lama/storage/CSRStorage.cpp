@@ -469,7 +469,7 @@ void CSRStorage<ValueType>::buildRowIndexes()
         return;
     }
 
-    if( getContext().getType() != context::Host )
+    if( getContextPtr()->getType() != context::Host )
     {
         SCAI_LOG_INFO( logger, "CSRStorage: build row indices is currently only implemented on host" )
     }
@@ -1737,7 +1737,7 @@ void CSRStorage<ValueType>::jacobiIterate(
 
     ContextPtr loc = getContextPtr();
 
-    // loc = ContextFactory::getContext( context::Host );  // does not run on other devices
+    // loc = ContextFactory::getContextPtr( context::Host );  // does not run on other devices
 
     LAMA_INTERFACE_FN_T( jacobi, loc, CSRUtils, Solver, ValueType )
 
@@ -2005,7 +2005,7 @@ void CSRStorage<ValueType>::matrixTimesMatrix(
 
     ContextPtr loc = Context::getContextPtr( context::Host );
 
-    if( a.getContext().getType() == b.getContext().getType() )
+    if( a.getContextPtr()->getType() == b.getContextPtr()->getType() )
     {
         loc = a.getContextPtr();
     }
@@ -2014,7 +2014,7 @@ void CSRStorage<ValueType>::matrixTimesMatrix(
 
     CSRStorage<ValueType> tmp1;
     tmp1.matrixTimesMatrixCSR( alpha, *csrA, *csrB, loc );
-    tmp1.setContext( loc );
+    tmp1.setContextPtr( loc );
 
     if( beta != scai::common::constants::ZERO )
     {
@@ -2027,7 +2027,7 @@ void CSRStorage<ValueType>::matrixTimesMatrix(
         swap( tmp1 );
     }
 
-    this->setContext( saveContext );
+    this->setContextPtr( saveContext );
 }
 
 /* --------------------------------------------------------------------------- */

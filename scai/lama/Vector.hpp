@@ -452,7 +452,7 @@ public:
     /**
      * @brief Sets the 'preferred' context where data resides and computations are done.
      */
-    void setContext( hmemo::ContextPtr location );
+    void setContextPtr( hmemo::ContextPtr location );
 
     /**
      * @brief Getter function for the context (pointer) of a vector.

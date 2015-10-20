@@ -59,7 +59,7 @@ void commonTestCases( ContextPtr loc )
 {
     COOStorage<ValueType> cooStorage;
     MatrixStorageTest<ValueType> storageTest( cooStorage );
-    storageTest.mMatrixStorage.setContext( loc );
+    storageTest.mMatrixStorage.setContextPtr( loc );
 
     if ( base_test_case )
     {
@@ -170,7 +170,7 @@ void checkTest( ContextPtr loc )
         LAMAArrayRef<IndexType> cooJA( numValues, ja );
         LAMAArray<ValueType> cooValues( numValues, 1.0 ); // values needed, but do not matter here
         COOStorage<ValueType> cooStorage;
-        cooStorage.setContext( loc );
+        cooStorage.setContextPtr( loc );
         cooStorage.setCOOData( numRows, numColumns, numValues, cooIA, cooJA, cooValues );
 
         if ( icase == 0 )

@@ -108,7 +108,7 @@ void testSolveMethod( ContextPtr loc )
     DistributionPtr dist( new BlockDistribution( helpcoefficients.getNumRows(), comm ) );
     helpcoefficients.redistribute( dist, dist );
     MatrixType coefficients( helpcoefficients );
-    coefficients.setContext( loc );
+    coefficients.setContextPtr( loc );
     std::stringstream loggerName;
     loggerName << " <SpecializedJacobi<" << typeid( coefficients ).name() << ">> ";
 //    LoggerPtr slogger( new CommonLogger(

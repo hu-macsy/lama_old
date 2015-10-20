@@ -57,7 +57,7 @@ void commonTestCases( ContextPtr loc )
 {
     DenseMatrix<ValueType> denseMatrix;
     SparseMatrixTest< DenseMatrix<ValueType> > denseSparseMatrixTest( denseMatrix );
-    denseSparseMatrixTest.mMatrix.setContext( loc );
+    denseSparseMatrixTest.mMatrix.setContextPtr( loc );
 
     if ( base_test_case )
     {

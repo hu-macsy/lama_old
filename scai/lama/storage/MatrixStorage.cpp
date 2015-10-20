@@ -175,7 +175,7 @@ void _MatrixStorage::resetDiagonalProperty()
 
 /* --------------------------------------------------------------------------- */
 
-void _MatrixStorage::setContext( ContextPtr context )
+void _MatrixStorage::setContextPtr( ContextPtr context )
 {
     if ( context.get() != mContext.get() )
     {

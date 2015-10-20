@@ -111,7 +111,7 @@ void testSolveWithPreconditionmethod( ContextPtr context )
     // convert to the corresponding matrix type, keep distribution
     MatrixType coefficients( helpcoefficients );
     SCAI_LOG_INFO( logger, "coefficients matrix = " << coefficients );
-    coefficients.setContext( context );
+    coefficients.setContextPtr( context );
     SCAI_LOG_INFO( logger, "BiCGTest uses context = " << context->getType() );
     DenseVector<ValueType> solution( coefficients.getDistributionPtr(), 1.0 );
     const DenseVector<ValueType> exactSolution( coefficients.getDistributionPtr(), 2.0 );
@@ -161,7 +161,7 @@ void testSolveWithoutPreconditionmethod( ContextPtr context )
     MatrixCreator<ValueType>::buildPoisson2D( helpcoefficients, 9, N1, N2 );
     MatrixType coefficients( helpcoefficients );
     SCAI_LOG_INFO( logger, "coefficient matrix = " << coefficients );
-    coefficients.setContext( context );
+    coefficients.setContextPtr( context );
     SCAI_LOG_INFO( logger, "BiCGTest uses context = " << context->getType() );
     DenseVector<ValueType> solution( coefficients.getColDistributionPtr(), 2.0 );
     const DenseVector<ValueType> exactSolution( coefficients.getColDistributionPtr(), 1.0 );

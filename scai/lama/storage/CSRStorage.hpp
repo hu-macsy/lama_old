@@ -113,7 +113,7 @@ public:
 
     CSRStorage( const _MatrixStorage& other, const ContextPtr context )
     {
-        _MatrixStorage::setContext( context );
+        _MatrixStorage::setContextPtr( context );
         assign( other );
     }
 
@@ -526,7 +526,6 @@ public:
     void buildSparseRowData( LAMAArray<IndexType>& ja, LAMAArray<ValueType>& values ) const;
 
     using MatrixStorage<ValueType>::prefetch;
-    using MatrixStorage<ValueType>::getContext;
     using MatrixStorage<ValueType>::getContextPtr;
 
 protected:

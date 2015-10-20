@@ -421,7 +421,7 @@ void Vector::writeAt( std::ostream& stream ) const
     stream << "Vector(" << getDistributionPtr()->getGlobalSize() << ")";
 }
 
-void Vector::setContext( ContextPtr context )
+void Vector::setContextPtr( ContextPtr context )
 {
     SCAI_ASSERT_DEBUG( context, "NULL context invalid" )
 

@@ -104,7 +104,7 @@ void testSolveWithoutPreconditionmethod( ContextPtr loc )
     SCAI_LOG_INFO( logger, "Poisson2D matrix (converted to MatrixType)  = " << helpcoefficients );
     DistributionPtr dist( new BlockDistribution( coefficients.getNumRows(), comm ) );
     coefficients.redistribute( dist, dist );
-    coefficients.setContext( loc );
+    coefficients.setContextPtr( loc );
     DenseVector<ValueType> solution( dist, 2.0 );
     const DenseVector<ValueType> exactSolution( dist, 1.0 );
     DenseVector<ValueType> rhs( dist, 1.0 );
@@ -171,7 +171,7 @@ void testSolveWithPreconditionmethod( ContextPtr loc )
     MatrixType coefficients( csrCoefficients );
     DistributionPtr dist( new BlockDistribution( coefficients.getNumRows(), comm ) );
     coefficients.redistribute( dist, dist );
-    coefficients.setContext( loc );
+    coefficients.setContextPtr( loc );
     DenseVector<ValueType> solution( dist, 1.0 );
     const DenseVector<ValueType> exactSolution( dist, 2.0 );
     DenseVector<ValueType> rhs( dist, 0.0 );

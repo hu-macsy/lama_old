@@ -360,7 +360,7 @@ void SparseMatrix<ValueType>::assign( const Matrix& matrix )
 {
     SCAI_LOG_INFO( logger, "assign " << matrix << " to " << *this )
 
-    this->setContext( matrix.getContextPtr() );
+    this->setContextPtr( matrix.getContextPtr() );
 
     const SparseMatrix<ValueType>* sparseMatrix = dynamic_cast<const SparseMatrix<ValueType>*>( &matrix );
 
@@ -751,8 +751,8 @@ void SparseMatrix<ValueType>::redistribute( DistributionPtr rowDistributionPtr, 
 
     set( *mLocalData, oldRowDistributionPtr );
 
-    mLocalData->setContext( localCtx );
-    mHaloData->setContext( haloCtx );
+    mLocalData->setContextPtr( localCtx );
+    mHaloData->setContextPtr( haloCtx );
 }
 
 /* -------------------------------------------------------------------------- */
@@ -2311,7 +2311,7 @@ SparseMatrix<ValueType>* SparseMatrix<ValueType>::clone() const
 
     // inherit the context for local and halo storage
 
-    newSparseMatrix->setContext( mLocalData->getContextPtr(), mHaloData->getContextPtr() );
+    newSparseMatrix->setContextPtr( mLocalData->getContextPtr(), mHaloData->getContextPtr() );
 
     newSparseMatrix->setCommunicationKind( this->getCommunicationKind() );
 

@@ -96,12 +96,12 @@ void MINRES::initialize( const Matrix& coefficients ){
     runtime.mVecPOld.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
     runtime.mVecPNew.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
 
-    runtime.mVecV->setContext( coefficients.getContextPtr() );   
-    runtime.mVecVOld->setContext( coefficients.getContextPtr() );
-    runtime.mVecVNew->setContext( coefficients.getContextPtr() );
-    runtime.mVecP->setContext( coefficients.getContextPtr() );
-    runtime.mVecPOld->setContext( coefficients.getContextPtr() );
-    runtime.mVecPNew->setContext(coefficients.getContextPtr());
+    runtime.mVecV->setContextPtr( coefficients.getContextPtr() );
+    runtime.mVecVOld->setContextPtr( coefficients.getContextPtr() );
+    runtime.mVecVNew->setContextPtr( coefficients.getContextPtr() );
+    runtime.mVecP->setContextPtr( coefficients.getContextPtr() );
+    runtime.mVecPOld->setContextPtr( coefficients.getContextPtr() );
+    runtime.mVecPNew->setContextPtr(coefficients.getContextPtr());
 }
 
 void MINRES::solveInit( Vector& solution, const Vector& rhs ){

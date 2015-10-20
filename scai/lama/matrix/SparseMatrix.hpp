@@ -160,17 +160,17 @@ public:
 
     /* Implementation of pure method of class Matrix. */
 
-    virtual void setContext( const ContextPtr context )
+    virtual void setContextPtr( const ContextPtr context )
     {
-        setContext( context, context );
+        setContextPtr( context, context );
     }
 
     /* Implementation of pure method of class Matrix. */
 
-    virtual void setContext( const ContextPtr localContext, const ContextPtr haloContext )
+    virtual void setContextPtr( const ContextPtr localContext, const ContextPtr haloContext )
     {
-        mLocalData->setContext( localContext );
-        mHaloData->setContext( haloContext );
+        mLocalData->setContextPtr( localContext );
+        mHaloData->setContextPtr( haloContext );
     }
 
     /* Implementation of pure method of class Matrix. */

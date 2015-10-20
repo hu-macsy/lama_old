@@ -131,23 +131,23 @@ void doMatrixTimesVectorLocationTests( Vector& y, MatrixType& A, const Vector& x
     //1. Host, Host
     ContextPtr hostContext = ContextFactory::getContext( Context::Host );
     SCAI_LOG_INFO( logger, "Run local on Host, halo on Host" )
-    A.setContext( hostContext, hostContext );
+    A.setContextPtr( hostContext, hostContext );
     doMatrixTimesVectorSyncAsyncTests( y, A, x, corResult );
     ContextPtr cudaContext = lama_test::CUDAContext::getContext();
     //2. CUDA, Host
     SCAI_LOG_INFO( logger, "Run local on CUDA, halo on Host" )
-    A.setContext( cudaContext, hostContext );
+    A.setContextPtr( cudaContext, hostContext );
     doMatrixTimesVectorSyncAsyncTests( y, A, x, corResult );
     //3. Host, CUDA
     SCAI_LOG_INFO( logger, "Run local on Host, halo on Cuda" )
-    A.setContext( hostContext, cudaContext );
+    A.setContextPtr( hostContext, cudaContext );
     doMatrixTimesVectorSyncAsyncTests( y, A, x, corResult );
     //4. CUDA, CUDA
     SCAI_LOG_INFO( logger, "Run local on CUDA, halo on CUDA" )
-    A.setContext( cudaContext, cudaContext );
+    A.setContextPtr( cudaContext, cudaContext );
     doMatrixTimesVectorSyncAsyncTests( y, A, x, corResult );
     //reset to defaults
-    A.setContext( hostContext, hostContext );
+    A.setContextPtr( hostContext, hostContext );
 }
 
 template<typename MatrixType>
@@ -258,23 +258,23 @@ void doVectorTimesMatrixLocationTests( Vector& y, MatrixType& A, const Vector& x
     //1. Host, Host
     ContextPtr hostContext = ContextFactory::getContext( Context::Host );
     SCAI_LOG_INFO( logger, "Run local on Host, halo on Host" )
-    A.setContext( hostContext, hostContext );
+    A.setContextPtr( hostContext, hostContext );
     doVectorTimesMatrixSyncAsyncTests( y, A, x, corResult );
     ContextPtr cudaContext = lama_test::CUDAContext::getContext();
     //2. CUDA, Host
     SCAI_LOG_INFO( logger, "Run local on CUDA, halo on Host" )
-    A.setContext( cudaContext, hostContext );
+    A.setContextPtr( cudaContext, hostContext );
     doVectorTimesMatrixSyncAsyncTests( y, A, x, corResult );
     //3. Host, CUDA
     SCAI_LOG_INFO( logger, "Run local on Host, halo on Cuda" )
-    A.setContext( hostContext, cudaContext );
+    A.setContextPtr( hostContext, cudaContext );
     doVectorTimesMatrixSyncAsyncTests( y, A, x, corResult );
     //4. CUDA, CUDA
     SCAI_LOG_INFO( logger, "Run local on CUDA, halo on CUDA" )
-    A.setContext( cudaContext, cudaContext );
+    A.setContextPtr( cudaContext, cudaContext );
     doVectorTimesMatrixSyncAsyncTests( y, A, x, corResult );
     //reset to defaults
-    A.setContext( hostContext, hostContext );
+    A.setContextPtr( hostContext, hostContext );
 }
 
 template<typename MatrixType>
@@ -374,8 +374,8 @@ BOOST_AUTO_TEST_CASE( cTorTest )
     ContextPtr cuda = lama_test::CUDAContext::getContext();
     DenseVector<double> cudaVectorA( m, valuesD.data() );
     DenseVector<double> cudaVectorB( hostVector );
-    cudaVectorA.setContext( cuda );
-    cudaVectorB.setContext( cuda );
+    cudaVectorA.setContextPtr( cuda );
+    cudaVectorB.setContextPtr( cuda );
 
     for ( IndexType i = 0; i < cudaVectorA.size(); i++ )
     {
@@ -393,8 +393,8 @@ BOOST_AUTO_TEST_CASE( dotProductTest )
     DenseVector<float> vec1( n, 1.0 );
     DenseVector<float> vec2( n, 2.0 );
     ContextPtr cuda = lama_test::CUDAContext::getContext();
-    vec1.setContext( cuda );
-    vec2.setContext( cuda );
+    vec1.setContextPtr( cuda );
+    vec2.setContextPtr( cuda );
     Scalar result = vec1.dotProduct( vec2 );
     BOOST_CHECK( result == ( 2.0 * n ) );
 }
@@ -410,8 +410,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scaleVectorTest, ValueType, test_types )
     DenseVector<ValueType> vec1( n, 1.0 );
     DenseVector<ValueType> vec2( n, 0.25 );
     ContextPtr cuda = lama_test::CUDAContext::getContext();
-    vec1.setContext( cuda );
-    vec2.setContext( cuda );
+    vec1.setContextPtr( cuda );
+    vec2.setContextPtr( cuda );
     ValueType alpha = 0.5;
     vec1 *= alpha - 0.25;
 
@@ -435,12 +435,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( vectorDifferenceTest, ValueType, test_types )
     DenseVector<ValueType> vec6( n, 1.0 );
     DenseVector<ValueType> vec7( n, 0.0 );
     ContextPtr cuda = lama_test::CUDAContext::getContext();
-    vec1.setContext( cuda );
-    vec2.setContext( cuda );
-    vec3.setContext( cuda );
-    vec4.setContext( cuda );
-    vec6.setContext( cuda );
-    vec7.setContext( cuda );
+    vec1.setContextPtr( cuda );
+    vec2.setContextPtr( cuda );
+    vec3.setContextPtr( cuda );
+    vec4.setContextPtr( cuda );
+    vec6.setContextPtr( cuda );
+    vec7.setContextPtr( cuda );
     MaxNorm maxnorm;
     vec4 = vec1 - vec2;
     DenseVector<ValueType> resultA = vec4 - vec3;
@@ -469,32 +469,32 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scaledVectorsDifferenceTest, ValueType, test_type
     DenseVector<ValueType> vec2( n, 2.0 );
     DenseVector<ValueType> result( n, 1.0 );
     ContextPtr cuda = lama_test::CUDAContext::getContext();
-    vec1.setContext( cuda );
-    vec2.setContext( cuda );
-    result.setContext( cuda );
+    vec1.setContextPtr( cuda );
+    vec2.setContextPtr( cuda );
+    result.setContextPtr( cuda );
     DenseVector<ValueType> vecCalc1( n, 0.0 );
-    vecCalc1.setContext( cuda );
+    vecCalc1.setContextPtr( cuda );
     vecCalc1 = alpha * vec1 - beta * vec2;
     DenseVector<ValueType> resultA = vecCalc1 - result;
     Scalar resultnormA = maxnorm( resultA );
     BOOST_CHECK( resultnormA == 0.0 );
     DenseVector<ValueType> vecCalc2( vec1 );
-    vecCalc2.setContext( cuda );
+    vecCalc2.setContextPtr( cuda );
     vecCalc2 = alpha * vecCalc2 - beta * vec2;
     DenseVector<ValueType> resultB = vecCalc2 - result;
     Scalar resultnormB = maxnorm( resultB );
     BOOST_CHECK( resultnormB == 0.0 );
     DenseVector<ValueType> vecCalc3( vec2 );
-    vecCalc3.setContext( cuda );
+    vecCalc3.setContextPtr( cuda );
     vecCalc3 = alpha * vec1 - beta * vecCalc3;
     DenseVector<ValueType> resultC = vecCalc3 - result;
     Scalar resultnormC = maxnorm( resultC );
     BOOST_CHECK( resultnormC == 0.0 );
     const ValueType gamma = 1.0;
     DenseVector<ValueType> result2( n, 3.0 );
-    result2.setContext( cuda );
+    result2.setContextPtr( cuda );
     DenseVector<ValueType> vecCalc4( n, 6.0 );
-    vecCalc4.setContext( cuda );
+    vecCalc4.setContextPtr( cuda );
     vecCalc4 = gamma * vecCalc4 - alpha * vecCalc4;
     DenseVector<ValueType> resultD = vecCalc4 - result2;
     Scalar resultnormD = maxnorm( resultD );
@@ -516,7 +516,7 @@ void operatorMatrixTimeVectorTestMethod()
         CSRSparseMatrix<ValueType> matrixAtmp;
         matrixAtmp.setRawDenseData( n, n, matrixAValues );
         MatrixType matrixA( matrixAtmp );
-        matrixA.setContext( cuda );
+        matrixA.setContextPtr( cuda );
         DenseVector<ValueType> inputVector( n, 1.0 );
         ValueType resultVectorValues[] =
         { 1.0, 1.1, 1.3, 1.0 };
@@ -532,7 +532,7 @@ void operatorMatrixTimeVectorTestMethod()
         IndexType n = 8;
         const CSRSparseMatrix<ValueType> bigMatrixAtmp = TestSparseMatrices::n8m8Laplace1D<ValueType>();
         MatrixType bigMatrixA( bigMatrixAtmp );
-        bigMatrixA.setContext( cuda );
+        bigMatrixA.setContextPtr( cuda );
         ValueType bigInputVectorValues[] =
         { 1.0, 5.0, 3.0, 2.0, 9.0, 4.0, 7.0, 0.0 };
         DenseVector<ValueType> bigInputVector( n, bigInputVectorValues );
@@ -570,7 +570,7 @@ void assignmentVectorSubtractExprMatrixTimeVectorTestMethod()
     {
         EquationHelper::EquationSystem<ValueType> system3x3 = EquationHelper::get3x3SystemA<ValueType>();
         MatrixType matrix3x3( system3x3.coefficients );
-        matrix3x3.setContext( cuda );
+        matrix3x3.setContextPtr( cuda );
         DenseVector<ValueType> x3x3( system3x3.solution );
         DenseVector<ValueType> y3x3( system3x3.rhs );
         DenseVector<ValueType> result3x3_0( x3x3.size(), 1.0 );
@@ -603,7 +603,7 @@ void assignmentVectorSubtractExprMatrixTimeVectorTestMethod()
         BOOST_CHECK( maxNorm( result4x4_3 ) < 1e-16 );
         EquationHelper::EquationSystem<ValueType> system8x8 = EquationHelper::get8x8SystemA<ValueType>();
         MatrixType matrix8x8( system8x8.coefficients );
-        matrix8x8.setContext( cuda );
+        matrix8x8.setContextPtr( cuda );
         DenseVector<ValueType> x8x8( system8x8.solution );
         DenseVector<ValueType> y8x8( system8x8.rhs );
         DenseVector<ValueType> result8x8_0( x8x8.size(), 1.0 );

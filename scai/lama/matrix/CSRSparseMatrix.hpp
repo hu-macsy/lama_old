@@ -227,7 +227,7 @@ public:
 
     virtual const char* getTypeName() const;
 
-    using SparseMatrix<ValueType>::setContext;
+    using SparseMatrix<ValueType>::setContextPtr;
 
 protected:
 

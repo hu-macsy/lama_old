@@ -469,7 +469,7 @@ bool JDSStorage<ValueType>::checkDiagonalProperty() const
 template<typename ValueType>
 void JDSStorage<ValueType>::check( const char* msg ) const
 {
-    SCAI_LOG_DEBUG( logger, "check at " << getContext() << ", msg = " << msg )
+    SCAI_LOG_DEBUG( logger, "check at " << *getContextPtr() << ", msg = " << msg )
 
     SCAI_ASSERT_EQUAL_ERROR( mNumRows, mIlg.size() )
     SCAI_ASSERT_EQUAL_ERROR( mNumRows, mPerm.size() )

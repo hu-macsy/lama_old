@@ -205,7 +205,7 @@ public:
      *
      * @param[in] context   the context where this solver should be executed.
      */
-    virtual void setContext( ContextPtr context );
+    virtual void setContextPtr( ContextPtr context );
 
     /**
      * @brief Copies the status independent solver informations to create a new instance of the same

@@ -94,11 +94,11 @@ void BiCGstab::initialize( const Matrix& coefficients ){
     runtime.mVecT.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
 
 
-    runtime.mRes0->setContext( coefficients.getContextPtr() );   
-    runtime.mVecV->setContext( coefficients.getContextPtr() );
-    runtime.mVecP->setContext( coefficients.getContextPtr() );
-    runtime.mVecS->setContext( coefficients.getContextPtr() );
-    runtime.mVecT->setContext( coefficients.getContextPtr() );
+    runtime.mRes0->setContextPtr( coefficients.getContextPtr() );
+    runtime.mVecV->setContextPtr( coefficients.getContextPtr() );
+    runtime.mVecP->setContextPtr( coefficients.getContextPtr() );
+    runtime.mVecS->setContextPtr( coefficients.getContextPtr() );
+    runtime.mVecT->setContextPtr( coefficients.getContextPtr() );
 }
 
 

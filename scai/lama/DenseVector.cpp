@@ -398,7 +398,7 @@ DenseVector<ValueType>* DenseVector<ValueType>::clone() const
 
     DenseVector<ValueType>* newDenseVector = new DenseVector<ValueType>();
 
-    newDenseVector->setContext( mContext );
+    newDenseVector->setContextPtr( mContext );
 
     return newDenseVector;
 }
@@ -410,7 +410,7 @@ DenseVector<ValueType>* DenseVector<ValueType>::clone( DistributionPtr distribut
 
     DenseVector<ValueType>* newDenseVector = new DenseVector<ValueType>( distribution );
 
-    newDenseVector->setContext( mContext );
+    newDenseVector->setContextPtr( mContext );
 
     // give back the new vector and its ownership
 

@@ -82,7 +82,7 @@ ELLStorage<ValueType>::ELLStorage(
 
     ContextPtr loc = Context::getContextPtr( con );
 
-    setContext( loc );
+    setContextPtr( loc );
 
     // Initialization requires correct values for the IA array with 0
 

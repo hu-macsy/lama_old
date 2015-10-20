@@ -236,7 +236,7 @@ void Matrix::setCommunicationKind( SyncKind communicationKind )
 
 /* ---------------------------------------------------------------------------------*/
 
-void Matrix::setContext( ContextPtr localContext, ContextPtr haloContext )
+void Matrix::setContextPtr( ContextPtr localContext, ContextPtr haloContext )
 {
     SCAI_ASSERT_DEBUG( localContext, "localContext == NULL" )
     SCAI_ASSERT_DEBUG( haloContext, "haloContext == NULL" )
@@ -248,7 +248,7 @@ void Matrix::setContext( ContextPtr localContext, ContextPtr haloContext )
         SCAI_LOG_WARN( logger, *this << ": halo context = " << *haloContext << " ignored" )
     }
 
-    setContext( localContext );
+    setContextPtr( localContext );
 }
 
 /* ---------------------------------------------------------------------------------*/
@@ -256,7 +256,7 @@ void Matrix::setContext( ContextPtr localContext, ContextPtr haloContext )
 void Matrix::inheritAttributes( const Matrix& other )
 {
     setCommunicationKind( other.getCommunicationKind() );
-    setContext( other.getContextPtr() );
+    setContextPtr( other.getContextPtr() );
 }
 
 /* ---------------------------------------------------------------------------------*/

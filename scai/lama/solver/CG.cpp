@@ -98,9 +98,9 @@ void CG::initialize( const Matrix& coefficients )
 
     // 'force' vector operations to be computed at the same location where coefficients reside
 
-    runtime.mP->setContext( coefficients.getContextPtr() );
-    runtime.mQ->setContext( coefficients.getContextPtr() );
-    runtime.mZ->setContext( coefficients.getContextPtr() );
+    runtime.mP->setContextPtr( coefficients.getContextPtr() );
+    runtime.mQ->setContextPtr( coefficients.getContextPtr() );
+    runtime.mZ->setContextPtr( coefficients.getContextPtr() );
 
     totalIterationTime = 0.0;
     totalPreconditionerTime = 0.0;

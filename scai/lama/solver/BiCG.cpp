@@ -99,10 +99,10 @@ void BiCG::initialize( const Matrix& coefficients )
     runtime.mTransposeA->assignTranspose( coefficients );
 
     // 'force' vector operations to be computed at the same location where coefficients reside
-    runtime.mTransposeA->setContext( coefficients.getContextPtr() );
-    runtime.mP2->setContext( coefficients.getContextPtr() );
-    runtime.mQ2->setContext( coefficients.getContextPtr() );
-    runtime.mZ2->setContext( coefficients.getContextPtr() );
+    runtime.mTransposeA->setContextPtr( coefficients.getContextPtr() );
+    runtime.mP2->setContextPtr( coefficients.getContextPtr() );
+    runtime.mQ2->setContextPtr( coefficients.getContextPtr() );
+    runtime.mZ2->setContextPtr( coefficients.getContextPtr() );
 }
 
 void BiCG::iterate()

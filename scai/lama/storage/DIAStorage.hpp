@@ -101,7 +101,7 @@ public:
 
     DIAStorage( const _MatrixStorage& other, const ContextPtr context )
     {
-        setContext( context );
+        setContextPtr( context );
         assign( other );
     }
 
@@ -340,7 +340,7 @@ public:
     using MatrixStorage<ValueType>::prefetch;
     using MatrixStorage<ValueType>::getContextPtr;
     using MatrixStorage<ValueType>::assign;
-    using MatrixStorage<ValueType>::setContext;
+    using MatrixStorage<ValueType>::setContextPtr;
 
 protected:
 

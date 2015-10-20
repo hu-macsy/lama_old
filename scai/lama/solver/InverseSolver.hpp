@@ -94,7 +94,7 @@ public:
      */
     virtual void solveImpl();
 
-    virtual void setContext( ContextPtr context );
+    virtual void setContextPtr( ContextPtr context );
 
     /** This method returns the inverse of the coefficient matrix.
      *

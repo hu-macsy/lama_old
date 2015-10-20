@@ -55,7 +55,7 @@ void commonTestCases( ContextPtr loc )
 {
     ELLSparseMatrix<ValueType> ellMatrix;
     SparseMatrixTest< ELLSparseMatrix<ValueType> > ellSparseMatrixTest( ellMatrix );
-    ellSparseMatrixTest.mMatrix.setContext( loc );
+    ellSparseMatrixTest.mMatrix.setContextPtr( loc );
 
     if ( base_test_case )
     {

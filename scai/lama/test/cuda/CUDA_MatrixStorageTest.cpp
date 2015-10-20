@@ -98,7 +98,7 @@ void setCSRData( StorageType& storage )
     myData.release();
     ContextPtr host = Context::getContextPtr( context::Host );
     ContextPtr cuda = scai::lama_test::CUDAContext::getContext();
-    storage.setContext( host );
+    storage.setContextPtr( host );
     storage.setCSRData( numRows, numColumns, numValues, csrIas, csrJas, csrValues );
 
     // fill with the csr sparse data
@@ -111,7 +111,7 @@ void setCSRData( StorageType& storage )
         }
     }
 
-    storage.setContext( cuda );
+    storage.setContextPtr( cuda );
     storage.setCSRData( numRows, numColumns, numValues, csrIas, csrJas, csrValues );
 
     // fill with the csr sparse data

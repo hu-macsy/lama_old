@@ -59,7 +59,7 @@ void commonTestCases( ContextPtr loc )
 {
     ELLStorage<ValueType> ellStorage;
     MatrixStorageTest<ValueType> storageTest( ellStorage );
-    storageTest.mMatrixStorage.setContext( loc );
+    storageTest.mMatrixStorage.setContextPtr( loc );
 
     if ( base_test_case )
     {
@@ -206,7 +206,7 @@ void checkTest( ContextPtr loc )
         LAMAArrayRef<IndexType> ellJA( ja, numValues );
         LAMAArray<ValueType> ellValues( numValues, 1.0 ); // values needed, but do not matter here
         ELLStorage<ValueType> ellStorage;
-        ellStorage.setContext( loc );
+        ellStorage.setContextPtr( loc );
         ellStorage.setELLData( numRows, numColumns, numValuesPerRow, ellIA, ellJA, ellValues );
 
         if ( icase == 0 )

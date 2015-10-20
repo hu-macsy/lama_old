@@ -129,7 +129,7 @@ void testSolveWithPreconditionmethod( ContextPtr context )
     MatrixType coefficients( helpcoefficients );
     SCAI_LOG_INFO( logger, "coefficients matrix = " << coefficients );
 
-    coefficients.setContext( context );
+    coefficients.setContextPtr( context );
     SCAI_LOG_INFO( logger, "RichardsonTest uses context = " << context->getType() );
 
     DenseVector<ValueType> solution( coefficients.getDistributionPtr(), 1.0 );
@@ -199,7 +199,7 @@ void testSolveWithoutPreconditionmethod( ContextPtr context )
     MatrixType coefficients( helpcoefficients );
     SCAI_LOG_INFO( logger, "coefficient matrix = " << coefficients );
 
-    coefficients.setContext( context );
+    coefficients.setContextPtr( context );
     SCAI_LOG_INFO( logger, "RichardsonTest uses context = " << context->getType() );
 
     Richardson rSolver( "RichardsonTestSolver",slogger);    

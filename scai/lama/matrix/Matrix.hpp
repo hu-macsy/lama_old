@@ -559,7 +559,7 @@ public:
      * Note: Only for sparse matrices it is possible to specify separate locations for
      *       local and halo computations.
      */
-    virtual void setContext( const ContextPtr context ) = 0;
+    virtual void setContextPtr( const ContextPtr context ) = 0;
 
     /**
      * @brief Set individual context for local and halo part of the matrix.
@@ -569,7 +569,7 @@ public:
      *
      *  Note: Only sparse matrices will override this method, others will ignore second argument.
      */
-    virtual void setContext( const ContextPtr localContext, const ContextPtr haloContext );
+    virtual void setContextPtr( const ContextPtr localContext, const ContextPtr haloContext );
 
     /**
      *  @brief Getter routine for the context.
