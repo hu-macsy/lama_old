@@ -48,7 +48,7 @@ scai_project (
     HEADERS
 
         EquationHelper
-#        TestMacros
+#        TestMacros : in common
         TestSparseMatrices
 
     SOURCES
@@ -92,9 +92,9 @@ scai_project (
         L1NormTest
         L2NormTest
         LAMAArrayTest
-      #  LAPACKTest
-        MatrixStorageConversionTest
+        LAPACKTest
         MatrixNormTest
+        MatrixStorageConversionTest
         MatrixTest
         MaxNormTest
         MINRESTest
@@ -112,7 +112,7 @@ scai_project (
         TaskSyncTokenTest
         TFQMRTest
         TimerTest
-#        UtilsTest
+        UtilsTest
         VectorTest
     )
 

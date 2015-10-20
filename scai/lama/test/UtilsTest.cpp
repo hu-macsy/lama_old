@@ -50,10 +50,11 @@ typedef bool NoType;
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-namespace lama
-
+namespace scai
 {
-/* ------------------------------------------------------------------------------------------------------------------ */
+
+namespace lama
+{
 
 namespace UtilsTest
 {
@@ -256,7 +257,10 @@ void invertTest( ContextPtr loc )
 // TODO: add SPMV tests
 
 }//namespace UtilsTest
-} //namespace lama
+
+} /* end namespace lama */
+
+} /* end namespace scai */
 
 /* ------------------------------------------------------------------------------------------ */
 
@@ -264,13 +268,13 @@ BOOST_AUTO_TEST_SUITE( UtilsTest )
 
 SCAI_LOG_DEF_LOGGER( logger, "Test.UtilsTest" )
 
-LAMA_AUTO_TEST_CASE_CT( sumTest, UtilsTest )
-LAMA_AUTO_TEST_CASE_CT( isSortedTest, UtilsTest )
-LAMA_AUTO_TEST_CASE_CT( setValTest, UtilsTest )
-LAMA_AUTO_TEST_CASE_CT( invertTest, UtilsTest )
+LAMA_AUTO_TEST_CASE_CT( sumTest, UtilsTest, scai::lama )
+LAMA_AUTO_TEST_CASE_CT( isSortedTest, UtilsTest, scai::lama )
+LAMA_AUTO_TEST_CASE_CT( setValTest, UtilsTest, scai::lama )
+LAMA_AUTO_TEST_CASE_CT( invertTest, UtilsTest, scai::lama )
 
 LAMA_AUTO_TEST_CASE_CTDUMMY( setOrderTest, UtilsTest )
 
-LAMA_AUTO_TEST_CASE_CT( scaleTest, UtilsTest )
+LAMA_AUTO_TEST_CASE_CT( scaleTest, UtilsTest, scai::lama )
 
 /* ------------------------------------------------------------------------------------------------------------------ */BOOST_AUTO_TEST_SUITE_END()
