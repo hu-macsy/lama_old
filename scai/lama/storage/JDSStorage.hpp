@@ -176,7 +176,7 @@ public:
         LAMAArray<IndexType>& ia,
         LAMAArray<IndexType>* ja,
         LAMAArray<OtherValueType>* values,
-        const ContextPtr /* loc */) const;
+        const ContextPtr loc ) const;
 
     /**
      * Template version with given value type.

@@ -387,13 +387,14 @@ public:
         LAMAArray<IndexType>& ia,
         LAMAArray<IndexType>* ja,
         LAMAArray<OtherValueType>* values,
-        const ContextPtr /* loc */) const;
+        const ContextPtr loc ) const;
 
     /**
      *   This routine builds compressed sparse column format data.
      *
      *   Note: this routine does not support type conversion
      */
+     
     virtual void buildCSCData(
         LAMAArray<IndexType>& colIA,
         LAMAArray<IndexType>& colJA,

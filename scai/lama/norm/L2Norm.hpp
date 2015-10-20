@@ -111,7 +111,7 @@ COMMON_DLL_IMPORTEXPORT Scalar l2Norm( const Vector& vector );
 /**
  * @brief calculates the l2 norm of the passed Matrix.
  *
- * @param[in] vector    the Matrix to calculate the l2 norm of.
+ * @param[in] matrix    the Matrix to calculate the l2 norm of.
  *
  * @return              the l2 norm of the Matrix matrix.
  */
