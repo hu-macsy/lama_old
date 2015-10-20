@@ -173,7 +173,7 @@ void CUDALAPACK::setInterface( BLASInterface& BLAS )
 
 bool CUDALAPACK::registerInterface()
 {
-    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( context::CUDA );
+    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( common::context::CUDA );
     setInterface( interface.BLAS );
     return true;
 }

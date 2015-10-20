@@ -3,6 +3,7 @@
 #include <scai/kregistry/KernelContextFunction.hpp>
 
 using namespace scai;
+using namespace scai::common;
 using namespace scai::kregistry;
 
 static int dummyRoutine()

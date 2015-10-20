@@ -537,7 +537,7 @@ void CUDABLAS3::setInterface( BLASInterface& BLAS )
 
 bool CUDABLAS3::registerInterface()
 {
-    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( context::CUDA );
+    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( common::context::CUDA );
     setInterface( interface.BLAS );
     return true;
 }

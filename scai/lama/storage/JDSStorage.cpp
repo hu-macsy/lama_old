@@ -616,7 +616,7 @@ void JDSStorage<ValueType>::setIdentity( const IndexType size )
 
     ContextPtr loc = getValidContext( getValidContext( getContextPtr(), setVal ), setOrder );
 
-    scai::context::ContextType ctx = loc->getType();
+    common::ContextType ctx = loc->getType();
 
     WriteOnlyAccess<IndexType> wDlg( mDlg, loc, mNumDiagonals );
     WriteOnlyAccess<IndexType> wIlg( mIlg, loc, mNumRows );

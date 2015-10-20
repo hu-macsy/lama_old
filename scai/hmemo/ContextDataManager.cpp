@@ -42,6 +42,10 @@
 namespace scai
 {
 
+using common::ContextType;
+
+namespace context = common::context;
+
 namespace hmemo
 {
 

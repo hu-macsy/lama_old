@@ -247,7 +247,7 @@ void COOStorage<ValueType>::setIdentity( const IndexType size )
 
     ContextPtr loc = getValidContext( getContextPtr(), setOrder );
 
-    scai::context::ContextType ctx = loc->getType();
+    common::ContextType ctx = loc->getType();
 
     WriteOnlyAccess<IndexType> ia( mIA, loc, mNumValues );
     WriteOnlyAccess<IndexType> ja( mJA, loc, mNumValues );

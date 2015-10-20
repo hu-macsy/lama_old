@@ -65,7 +65,7 @@ LAMAInterfaceRegistry::~LAMAInterfaceRegistry()
     }
 }
 
-const LAMAInterface* LAMAInterfaceRegistry::getInterface( const context::ContextType location ) const
+const LAMAInterface* LAMAInterfaceRegistry::getInterface( const common::ContextType location ) const
 {
     InterfaceMapType::const_iterator loc = mInterfaceMap.find( location );
 
@@ -77,7 +77,7 @@ const LAMAInterface* LAMAInterfaceRegistry::getInterface( const context::Context
     return loc->second;
 }
 
-LAMAInterface& LAMAInterfaceRegistry::modifyInterface( const context::ContextType location )
+LAMAInterface& LAMAInterfaceRegistry::modifyInterface( const common::ContextType location )
 {
     InterfaceMapType::const_iterator loc = mInterfaceMap.find( location );
 
@@ -93,7 +93,7 @@ LAMAInterface& LAMAInterfaceRegistry::modifyInterface( const context::ContextTyp
     return *loc->second;
 }
 
-bool LAMAInterfaceRegistry::hasInterface( const context::ContextType location ) const
+bool LAMAInterfaceRegistry::hasInterface( const common::ContextType location ) const
 {
     bool hasInterface = false;
 

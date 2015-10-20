@@ -1224,7 +1224,7 @@ void OpenMPELLUtils::setInterface( ELLUtilsInterface& ELLUtils )
 
 bool OpenMPELLUtils::registerInterface()
 {
-    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( context::Host );
+    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( common::context::Host );
     setInterface( interface.ELLUtils );
     return true;
 }

@@ -72,8 +72,8 @@ void addHost( ValueType array[], const IndexType n )
 template<typename ValueType>
 void doBench( LAMAArray<ValueType>& array, const IndexType N )
 {
-    ContextPtr hostContext = Context::getContextPtr( context::Host );
-    ContextPtr cudaContext = Context::getContextPtr( context::CUDA );
+    ContextPtr hostContext = Context::getContextPtr( common::context::Host );
+    ContextPtr cudaContext = Context::getContextPtr( common::context::CUDA );
 
     int nhost = 1;
     int ncuda = 1;
@@ -137,8 +137,8 @@ int main()
 {
     const IndexType N = 8 * 1024 * 1024;  // 8 MB data
 
-    ContextPtr hostContextPtr = Context::getContextPtr( context::Host );
-    ContextPtr cudaContextPtr = Context::getContextPtr( context::CUDA );
+    ContextPtr hostContextPtr = Context::getContextPtr( common::context::Host );
+    ContextPtr cudaContextPtr = Context::getContextPtr( common::context::CUDA );
 
     // First touch on host memory, never uses CUDA host memory
 

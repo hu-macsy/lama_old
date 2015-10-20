@@ -66,8 +66,8 @@ static void update( ValueType* data, size_t size )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( refTest, ValueType, test_types )
 {
-    ContextPtr context = Context::create( scai::context::UserContext, 0 );
-    ContextPtr host = Context::create( scai::context::Host, -1 );
+    ContextPtr context = Context::create( context::UserContext, 0 );
+    ContextPtr host = Context::create( context::Host, -1 );
 
     BOOST_CHECK( context );
     BOOST_CHECK( host );

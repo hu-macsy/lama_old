@@ -801,7 +801,7 @@ void LAPACK_LAPACK::setInterface( BLASInterface& BLAS )
 
 bool LAPACK_LAPACK::registerInterface()
 {
-    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( scai::context::Host );
+    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( common::context::Host );
     setInterface( interface.BLAS );
     return true;
 }

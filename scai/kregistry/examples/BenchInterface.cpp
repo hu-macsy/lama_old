@@ -7,6 +7,8 @@
 using namespace scai;
 using namespace scai::kregistry;
 
+using namespace scai::common::context;
+
 template<typename ValueType>
 static ValueType add( ValueType x )
 {
@@ -26,10 +28,10 @@ static void setInterface()
 {
     for ( int i = 0; i < 20; ++i )
     {
-        KernelRegistry::set(add<float>, names[i], context::Host );
-        KernelRegistry::set(add<double>, names[i], context::Host );
-        KernelRegistry::set(sub<float>, names[i], context::Host );
-        KernelRegistry::set(sub<double>, names[i], context::Host );
+        KernelRegistry::set(add<float>, names[i], Host );
+        KernelRegistry::set(add<double>, names[i], Host );
+        KernelRegistry::set(sub<float>, names[i], Host );
+        KernelRegistry::set(sub<double>, names[i], Host );
     }
 }
 
@@ -38,7 +40,7 @@ static void doIt1 ( double x )
     KernelContextFunction< double (*) ( double ) > add( "E" );
     KernelContextFunction< double (*) ( double ) > sub( "S" );
 
-    x = add[context::Host]( sub[context::Host]( x ) );
+    x = add[Host]( sub[Host]( x ) );
 }
 
 static void doIt2 ( double x ) 
@@ -46,7 +48,7 @@ static void doIt2 ( double x )
     static KernelContextFunction< double (*) ( double ) > add( "E" );
     static KernelContextFunction< double (*) ( double ) > sub( "S" );
 
-    x = add[context::Host]( sub[context::Host]( x ) );
+    x = add[Host]( sub[Host]( x ) );
 }
 
 int main()

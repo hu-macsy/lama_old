@@ -156,7 +156,7 @@ ContextPtr CUDAHostMemory::getContextPtr() const
     // Possible extension: the corresponding CUDA device can also access the host memory
     //                     with limited PCIe bandwidth (Zero Copy, e.g. on Tegra K1)
 
-    ContextPtr host = Context::getContextPtr( context::Host );
+    ContextPtr host = Context::getContextPtr( common::context::Host );
     return host;
 }
 

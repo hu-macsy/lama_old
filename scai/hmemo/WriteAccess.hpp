@@ -203,7 +203,7 @@ WriteAccess<ValueType>::WriteAccess( LAMAArray<ValueType>& array, const bool kee
 {
     SCAI_ASSERT( !array.constFlag, "WriteAccess on const array not allowed: " << array )
 
-    ContextPtr contextPtr = Context::getContextPtr( context::Host );
+    ContextPtr contextPtr = Context::getContextPtr( common::context::Host );
 
     SCAI_LOG_DEBUG( logger, "acquire write access for " << *mArray << " at " << *contextPtr << ", keep = " << keep )
     mContextDataIndex = mArray->acquireWriteAccess( contextPtr, keep );

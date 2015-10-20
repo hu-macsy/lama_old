@@ -78,7 +78,7 @@ int CUDAContext::numUsedDevices = 0;
 
 CUDAContext::CUDAContext( int deviceNr ) : 
 
-    Context( context::CUDA ), 
+    Context( common::context::CUDA ), 
     mDeviceNr( deviceNr )
 
 {

@@ -52,11 +52,11 @@ void add ( Array& res, const Array& a, const Array& b )
 
     IndexType n = res.size();
 
-    ContextPtr host = hmemo::Context::getContextPtr( context::Host );
+    ContextPtr hostCtx = hmemo::Context::getHostPtr();
 
-    hmemo::WriteOnlyAccess<double> write( res, host );
-    hmemo::ReadAccess<double>read1( a, host );
-    hmemo::ReadAccess<double>read2( b, host );
+    hmemo::WriteOnlyAccess<double> write( res, hostCtx );
+    hmemo::ReadAccess<double>read1( a, hostCtx );
+    hmemo::ReadAccess<double>read2( b, hostCtx );
  
     double* resPtr = write.get();
     const double* aPtr = read1.get();

@@ -97,7 +97,7 @@ void bench( ContextPtr host, ContextPtr device )
 
 int main()
 {
-    using namespace scai::context;  // CUDA, MIC
+    using namespace scai::common::context;  // CUDA, MIC
 
     ContextPtr host = Context::getHostPtr();
 

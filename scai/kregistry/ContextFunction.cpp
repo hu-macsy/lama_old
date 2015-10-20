@@ -37,10 +37,11 @@
 namespace scai
 {
 
+using common::context::MaxContext;
+using common::ContextType;
+
 namespace kregistry
 {
-
-using scai::context::MaxContext;
 
 _ContextFunction:: _ContextFunction()
 {

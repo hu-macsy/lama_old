@@ -52,6 +52,7 @@ using tasking::SyncToken;
 using tasking::CUDAStreamSyncToken;
 
 using namespace hmemo;
+namespace context = common::context;
 
 typedef boost::mpl::list<double, float> test_types;
 

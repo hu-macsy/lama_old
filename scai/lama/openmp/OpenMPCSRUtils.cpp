@@ -1987,7 +1987,7 @@ void OpenMPCSRUtils::setInterface( CSRUtilsInterface& CSRUtils )
 
 bool OpenMPCSRUtils::registerInterface()
 {
-    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( context::Host );
+    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( common::context::Host );
     setInterface( interface.CSRUtils );
     return true;
 }

@@ -471,7 +471,7 @@ void OpenMPUtils::setInterface()
 
     // ctx will contain the context for which registration is done, here Host
 
-    scai::context::ContextType ctx = scai::context::Host;
+    common::ContextType ctx = common::context::Host;
 
     // Instantations for IndexType, not done by ARITHMETIC_TYPE macrods
 

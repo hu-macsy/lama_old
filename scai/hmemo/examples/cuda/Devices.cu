@@ -70,11 +70,11 @@ int main()
 {
     for ( int deviceNr = 0; deviceNr < 8; ++ deviceNr )
     {
-        cout << "try to get " << context::CUDA << " context from factory" << endl;
+        cout << "try to get " << common::context::CUDA << " context from factory" << endl;
 
         try 
         {
-            ContextPtr cudaContext = Context::create( context::CUDA, deviceNr );
+            ContextPtr cudaContext = Context::create( common::context::CUDA, deviceNr );
             cout << "cudaContext for device " << deviceNr << " = " << *cudaContext << endl;
             sub( cudaContext );
         }

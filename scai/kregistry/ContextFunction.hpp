@@ -56,8 +56,6 @@ typedef void ( *VoidFunction )();
  *  where the function pointer might be NULL for unsupported context
  */
 
-using scai::ContextType;
-
 class _ContextFunction
 {
 public:
@@ -72,27 +70,27 @@ public:
 
     void assign( const _ContextFunction& other );
 
-    inline VoidFunction get( ContextType ctx ) const
+    inline VoidFunction get( common::ContextType ctx ) const
     {
         return mContextFuncArray[ ctx ];
     }
 
-    inline void set( ContextType ctx, VoidFunction fn )
+    inline void set( common::ContextType ctx, VoidFunction fn )
     {
         mContextFuncArray[ ctx ] = fn;
     }
 
     std::string printIt() const;
 
-    ContextType validContext( ContextType preferedCtx );
+    common::ContextType validContext( common::ContextType preferedCtx );
 
-    ContextType validContext( const _ContextFunction& other, ContextType preferedCtx );
+    common::ContextType validContext( const _ContextFunction& other, common::ContextType preferedCtx );
 
 protected:
 
     // array with function pointer for each context
 
-    VoidFunction mContextFuncArray[scai::context::MaxContext];
+    VoidFunction mContextFuncArray[common::context::MaxContext];
 };
 
 /* --------------------------------------------------------------------------- *
@@ -118,14 +116,14 @@ public:
 
     // provide typed get
 
-    FunctionType get( ContextType ctx ) const
+    FunctionType get( common::ContextType ctx ) const
     {
         return ( FunctionType ) mContextFuncArray[ ctx ];
     }
 
     // provide typed set
 
-    void set( ContextType ctx, FunctionType fn )
+    void set( common::ContextType ctx, FunctionType fn )
     {
         mContextFuncArray[ ctx ] = ( VoidFunction ) fn;
     }

@@ -171,7 +171,7 @@ public:
     {
         using namespace scai::hmemo;
 
-        ContextPtr loc = Context::getContextPtr( context::Host );
+        ContextPtr loc = Context::getHostPtr();
 
         WriteAccess<ValueType> target( targetArray, loc );
         ReadAccess<ValueType> source( sourceArray, loc );
@@ -206,7 +206,7 @@ public:
     {
         using namespace scai::hmemo;
 
-        ContextPtr loc = Context::getContextPtr( context::Host );
+        ContextPtr loc = Context::getHostPtr();
 
         WriteAccess<ValueType> target( targetArray, loc );
         ReadAccess<IndexType> indexes( targetIndexes, loc );
@@ -229,7 +229,7 @@ public:
     {
         using namespace scai::hmemo;
 
-        ContextPtr loc = Context::getContextPtr( context::Host );
+        ContextPtr loc = Context::getHostPtr();
 
         WriteAccess<ValueType> target( targetArray, loc );
         ReadAccess<IndexType> indexes( targetIndexes, loc );
@@ -265,7 +265,7 @@ public:
     {
         using namespace scai::hmemo;
 
-        ContextPtr loc = Context::getContextPtr( context::Host );
+        ContextPtr loc = Context::getHostPtr();
 
         WriteAccess<ValueType> target( targetArray, loc );
         ReadAccess<ValueType> source( sourceArray, loc );
@@ -293,7 +293,7 @@ public:
     {
         using namespace scai::hmemo;
 
-        ContextPtr loc = Context::getContextPtr( context::Host );
+        ContextPtr loc = Context::getHostPtr();
 
         WriteAccess<ValueType> target( targetArray, loc );
         ReadAccess<ValueType> source( sourceArray, loc );
@@ -457,7 +457,7 @@ void Redistributor::redistributeN(
 
     SCAI_REGION( "Redistributor.redistributeN" )
 
-    ContextPtr loc = Context::getContextPtr( context::Host );
+    ContextPtr loc = Context::getHostPtr();
 
     {
         // make sure that target array has sufficient memory
@@ -523,7 +523,7 @@ void Redistributor::gatherV(
 
     const IndexType n = sourceIndexes.size();
 
-    ContextPtr loc = Context::getContextPtr( context::Host );
+    ContextPtr loc = Context::getHostPtr();
 
     WriteAccess<ValueType> wTargetArray( targetArray, loc );
     ReadAccess<ValueType> rSourceArray( sourceArray, loc );
@@ -556,7 +556,7 @@ void Redistributor::scatterV(
 {
     using namespace scai::hmemo;
 
-    ContextPtr loc = Context::getContextPtr( context::Host );
+    ContextPtr loc = Context::getHostPtr();
 
     const IndexType n = targetIndexes.size();
 
@@ -595,7 +595,7 @@ void Redistributor::copyV(
 
     SCAI_ASSERT_EQUAL_ERROR( targetIndexes.size(), sourceIndexes.size() )
 
-    ContextPtr loc = Context::getContextPtr( context::Host );
+    ContextPtr loc = Context::getHostPtr();
 
     const IndexType n = targetIndexes.size();
 

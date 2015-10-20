@@ -181,7 +181,7 @@ void CSRStorage<ValueType>::check( const char* msg ) const
         ContextPtr loc = getValidContext( this->getContextPtr(), isSorted );
         loc = getValidContext( loc, getValue );
 
-        scai::context::ContextType ctx = loc->getType();
+        common::ContextType ctx = loc->getType();
 
         ReadAccess<IndexType> csrIA( mIa, loc );
 
@@ -1132,7 +1132,7 @@ void CSRStorage<ValueType>::buildCSR(
         WriteOnlyAccess<IndexType> csrIA( ia, loc, mNumRows + 1 );
         WriteOnlyAccess<IndexType> csrJA( *ja, loc, mNumValues );
 
-        scai::context::ContextType ctx = loc->getType();
+        common::ContextType ctx = loc->getType();
 
         set[ ctx ]( csrIA.get(), inIA.get(), mNumRows + 1 );
         set[ ctx ]( csrJA.get(), inJA.get(), mNumValues );

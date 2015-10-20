@@ -45,6 +45,8 @@
 namespace scai
 {
 
+using common::ContextType;
+
 namespace hmemo
 {
 
@@ -110,7 +112,7 @@ MemoryPtr Context::getHostMemoryPtr() const
 {
     // take the host memory of the memory factory
 
-    ContextPtr hostContextPtr = Context::getContextPtr( context::Host );
+    ContextPtr hostContextPtr = Context::getContextPtr( common::context::Host );
     return hostContextPtr->getMemoryPtr();
 }
 

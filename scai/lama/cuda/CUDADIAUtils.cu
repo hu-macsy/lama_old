@@ -920,7 +920,7 @@ namespace lama
 
 bool CUDADIAUtils::registerInterface()
 {
-    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( context::CUDA );
+    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( common::context::CUDA );
     setInterface( interface.DIAUtils );
     return true;
 }

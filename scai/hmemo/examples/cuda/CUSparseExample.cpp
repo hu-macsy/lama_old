@@ -54,7 +54,7 @@ void outArray( const LAMAArray<ValueType>& array, const char* name )
 {
     std::cout << name << "[ " << array.size() << " ] = {";
 
-    ContextPtr contextPtr = Context::getContextPtr( context::Host );
+    ContextPtr contextPtr = Context::getContextPtr( common::context::Host );
 
     ReadAccess<ValueType> read( array, contextPtr );
 
@@ -67,7 +67,7 @@ void outArray( const LAMAArray<ValueType>& array, const char* name )
 
 int main()
 {
-    ContextPtr cuda = Context::getContextPtr( context::CUDA );
+    ContextPtr cuda = Context::getContextPtr( common::context::CUDA );
 
     /***********************************************************************
      *  Definition of input data via LAMA arrays                           *

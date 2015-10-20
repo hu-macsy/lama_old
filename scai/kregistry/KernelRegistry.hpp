@@ -75,26 +75,26 @@ private:
      *  @param[in] replace if TRUE a registered entry might be overwritten
      */
 
-    static void registerContextFunction( const KernelRegistryKey& key, ContextType ctx, VoidFunction fn, bool replace );
+    static void registerContextFunction( const KernelRegistryKey& key, common::ContextType ctx, VoidFunction fn, bool replace );
 
 public:
 
     template<typename KernelTrait>
-    static void set( typename KernelTrait::FuncType fn, ContextType ctx, bool replace = false )
+    static void set( typename KernelTrait::FuncType fn, common::ContextType ctx, bool replace = false )
     {
         KernelRegistryKey key( typeid( typename KernelTrait::FuncType ), KernelTrait::getId() );
         registerContextFunction( key, ctx, ( VoidFunction ) fn, replace );
     }
 
     template<typename FunctionType>
-    static void set( FunctionType fn, const char* name, ContextType ctx, bool replace = false )
+    static void set( FunctionType fn, const char* name, common::ContextType ctx, bool replace = false )
     {
         KernelRegistryKey key( typeid( FunctionType ), name );
         registerContextFunction( key, ctx, ( VoidFunction ) fn, replace );
     }
 
     template<typename FunctionType>
-    static void get( FunctionType& fn, const char* name, ContextType ctx )
+    static void get( FunctionType& fn, const char* name, common::ContextType ctx )
     {
         KernelRegistryKey key( typeid( FunctionType ), name );
 

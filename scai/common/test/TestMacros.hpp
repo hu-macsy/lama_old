@@ -171,15 +171,17 @@ inline std::string getEnvContext()
  * @return the current context as a ContextType from a std::string
  */
 
-inline scai::context::ContextType mapEnvContexttoContextType( std::string contextname )
+inline scai::common::ContextType mapEnvContexttoContextType( std::string contextname )
 {
-	scai::context::ContextType myContext;
-    std::map<std::string, scai::context::ContextType> contextmap =
-        boost::assign::map_list_of ( "Host", scai::context::Host )
-        ( "CUDA", scai::context::CUDA )
-        ( "OPENCL", scai::context::OpenCL )
-        ( "MIC", scai::context::MIC )
-        ( "MaxContext", scai::context::MaxContext );
+    using namespace scai::common;
+
+	ContextType myContext;
+    std::map<std::string, scai::common::ContextType> contextmap =
+        boost::assign::map_list_of ( "Host", context::Host )
+        ( "CUDA", context::CUDA )
+        ( "OPENCL", context::OpenCL )
+        ( "MIC", context::MIC )
+        ( "MaxContext", context::MaxContext );
     myContext = contextmap[contextname];
     return myContext;
 }
@@ -283,16 +285,16 @@ inline scai::context::ContextType mapEnvContexttoContextType( std::string contex
  */
 
 #define CONTEXTLOOP()                                                                                                  \
-    std::list<scai::context::ContextType> listofcontexts;                                                                             \
-    std::list<scai::context::ContextType>::iterator Iter;                                                                             \
+    std::list<scai::common::ContextType> listofcontexts;                                                                             \
+    std::list<scai::common::ContextType>::iterator Iter;                                                                             \
     std::string contexttype;                                                                                           \
     contexttype = getEnvContext();                                                                                     \
     if ( contexttype == "*" )                                                                                          \
     {                                                                                                                  \
         SCAI_LOG_INFO( logger, "LAMA_TEST_CONTEXT is not set or has value '*', so all available contexts will be used." );  \
-        for ( int i = 0; i < scai::context::MaxContext; ++i )                                                          \
+        for ( int i = 0; i < scai::common::context::MaxContext; ++i )                                                  \
         {                                                                                                              \
-            scai::context::ContextType ctx = static_cast<scai::context::ContextType>( i + 1 );                         \
+            scai::common::ContextType ctx = static_cast<scai::common::ContextType>( i + 1 );                         \
             if ( Context::hasContext( ctx ) )                                                                          \
             {                                                                                                          \
                 listofcontexts.push_back( ctx );                                                                       \
@@ -385,7 +387,7 @@ inline scai::context::ContextType mapEnvContexttoContextType( std::string contex
 #define LAMA_RUN_TEST(z, I, method )                                                                 			\
     try                                                                                              			\
     {                 																				 			\
-    	if( context->getType() == scai::context::CUDA ) 										 			    \
+    	if( context->getType() == scai::common::context::CUDA ) 										 			    \
 		{ 																							 			\
     		switch( scai::common::getScalarType<ARITHMETIC_HOST_TYPE_##I>() ) 									\
 			{ 																						 			\

@@ -69,13 +69,13 @@ namespace hmemo
 
 class Memory;  // forward declaration
 
-typedef scai::common::shared_ptr<Memory> MemoryPtr;
+typedef common::shared_ptr<Memory> MemoryPtr;
 
 class Context;   // forward declaration
 
 /** Context pointers will be always const, so context can never be modified. */
 
-typedef scai::common::shared_ptr<const Context> ContextPtr;
+typedef common::shared_ptr<const Context> ContextPtr;
 
 /** @brief This class is a common base class for all possible contexts.
  *
@@ -91,9 +91,9 @@ typedef scai::common::shared_ptr<const Context> ContextPtr;
  */
 class COMMON_DLL_IMPORTEXPORT Context: 
   
-    public  scai::common::Factory1<ContextType, int, ContextPtr>,
-    public  scai::common::Printable,
-    private scai::common::NonCopyable
+    public  common::Factory1<common::ContextType, int, ContextPtr>,
+    public  common::Printable,
+    private common::NonCopyable
 {
 public:
 
@@ -101,7 +101,7 @@ public:
 
     /** Method to get the type of the context. */
 
-    ContextType getType() const;
+    common::ContextType getType() const;
 
     /** @brief  Predicate to check in a context whether a certain memory class can be used.
      *
@@ -178,13 +178,13 @@ public:
      *
      *  @throws Exception if the context of the requested type is not available
      */
-    static ContextPtr getContextPtr( const ContextType type = context::Host, int deviceNr = -1 );
+    static ContextPtr getContextPtr( const common::ContextType type = common::context::Host, int deviceNr = -1 );
 
     /** @brief getHostPtr() as abbreviation of getContextPtr( context::Host ) */
 
     static ContextPtr getHostPtr()
     {
-        return getContextPtr( context::Host );
+        return getContextPtr( common::context::Host );
     }
 
     /** Checks if a context of the passed type is available.
@@ -192,17 +192,17 @@ public:
      * @param[in] type  is the type of context that is wanted
      * @return          if a context of the passed type is available
      */
-    static bool hasContext( const ContextType type );
+    static bool hasContext( const common::ContextType type );
 
 protected:
 
     /** Default constructor, can only be called by base classes. */
 
-    Context( ContextType type );
+    Context( common::ContextType type );
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
-    ContextType mContextType;
+    common::ContextType mContextType;
 
     mutable bool mEnabled; //!<  if true the context is currently accessed
 
@@ -211,12 +211,12 @@ protected:
     mutable int mLine;//!< Line number where context has been enabled
 };
 
-inline ContextType Context::getType() const
+inline common::ContextType Context::getType() const
 {
     return mContextType;
 }
 
-inline bool Context::hasContext( const ContextType type )
+inline bool Context::hasContext( const common::ContextType type )
 {
     return canCreate( type );
 }

@@ -139,7 +139,7 @@ public:
      * 
      * Note: NULL pointer is returned if no valid data is available
      */
-    ContextPtr getValidContext( const ContextType preferredType = context::Host ) const;
+    ContextPtr getValidContext( const common::ContextType preferredType = common::context::Host ) const;
 
     /**
      * @brief Prefetches the contents of the container to the passed context.
@@ -307,7 +307,7 @@ inline IndexType ContextArray::capacity( ContextDataIndex index ) const
 
 /* ---------------------------------------------------------------------------------*/
 
-inline ContextPtr ContextArray::getValidContext( const ContextType preferredType ) const
+inline ContextPtr ContextArray::getValidContext( const common::ContextType preferredType ) const
 {
     return mContextDataManager.getValidContext( preferredType );
 }
@@ -319,14 +319,14 @@ inline ContextDataIndex ContextArray::acquireReadAccess( ContextPtr context ) co
     size_t allocSize = mSize * mValueSize;
     size_t validSize = allocSize;                   // read access needs valid data in any case
 
-    return mContextDataManager.acquireAccess( context, context::Read, allocSize, validSize );
+    return mContextDataManager.acquireAccess( context, common::context::Read, allocSize, validSize );
 }
 
 /* ---------------------------------------------------------------------------------*/
 
 inline void ContextArray::releaseReadAccess( ContextDataIndex index ) const
 {
-    mContextDataManager.releaseAccess( index, context::Read );
+    mContextDataManager.releaseAccess( index, common::context::Read );
 }
 
 /* ---------------------------------------------------------------------------------*/
@@ -336,14 +336,14 @@ inline ContextDataIndex ContextArray::acquireWriteAccess( ContextPtr context, bo
     size_t allocSize = mSize * mValueSize;
     size_t validSize = keepFlag ? allocSize : 0 ;    // valid data only if keepFlag is set
 
-    return mContextDataManager.acquireAccess( context, context::Write, allocSize, validSize );
+    return mContextDataManager.acquireAccess( context, common::context::Write, allocSize, validSize );
 }
 
 /* ---------------------------------------------------------------------------------*/
 
 inline void ContextArray::releaseWriteAccess( ContextDataIndex index )
 {
-    mContextDataManager.releaseAccess( index, context::Write );
+    mContextDataManager.releaseAccess( index, common::context::Write );
 }
 
 } /* end namespace hmemo */

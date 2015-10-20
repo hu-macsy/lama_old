@@ -40,6 +40,9 @@
 namespace scai
 {
 
+namespace common
+{
+
 namespace context
 {
     /** Enumeration type for the supported contexts. The type is used to select
@@ -75,7 +78,10 @@ namespace context
 
 // Make ContexType and AccessKind visible, but not enum values. 
 
+using context::AccessKind;
+
 using context::ContextType;
-// using context::AccessKind;
+
+} /* end namespace common */
 
 } /* end namespace scai */

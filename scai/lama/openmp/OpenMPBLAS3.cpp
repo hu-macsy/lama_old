@@ -379,7 +379,7 @@ void OpenMPBLAS3::setInterface( BLASInterface& blas )
 
 bool OpenMPBLAS3::registerInterface()
 {
-    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( context::Host );
+    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( common::context::Host );
     setInterface( interface.BLAS );
     return true;
 }

@@ -54,7 +54,7 @@ namespace hmemo
 
 SCAI_LOG_DEF_LOGGER( HostContext::logger, "Context.HostContext" )
 
-HostContext::HostContext() : Context( context::Host )
+HostContext::HostContext() : Context( common::context::Host )
 {
     SCAI_LOG_INFO( logger, "HostContext created" )
 }
@@ -122,7 +122,7 @@ bool HostContext::canUseMemory( const Memory& other ) const
     {
         canUseIt = true;
     }
-    else if ( other.getContext().getType() == context::Host )
+    else if ( other.getContext().getType() == common::context::Host )
     {
         // If other memory can be used on Host it is okay
 

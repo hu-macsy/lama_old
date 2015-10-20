@@ -4,6 +4,7 @@
 
 using namespace scai;
 using namespace scai::kregistry;
+using namespace scai::common;
 
 template<typename ValueType>
 static ValueType add1( const ValueType x )

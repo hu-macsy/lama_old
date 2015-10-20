@@ -41,6 +41,7 @@
 
 using namespace scai::hmemo;
 using namespace scai::tasking;
+using namespace scai::common;
 
 /** Exampes of a new context class that implements all relevant routines. */
 
@@ -105,9 +106,9 @@ public:
         // return &memory == getMemory().get();
     }
 
-    virtual scai::context::ContextType getType() const
+    virtual ContextType getType() const
     {
-        return scai::context::UserContext;
+        return context::UserContext;
     }
 
     virtual TaskSyncToken* getSyncToken() const
@@ -122,16 +123,16 @@ public:
 
     static ContextPtr create( int deviceNr );
 
-    static scai::context::ContextType createValue() 
+    static ContextType createValue() 
     { 
-        return scai::context::UserContext; 
+        return context::UserContext; 
     }
 
 private:
 
     // MockContext uses the type UserContext as its type
 
-    MockContext( int deviceNr ) : Context( scai::context::UserContext )
+    MockContext( int deviceNr ) : Context( context::UserContext )
     {
         mDeviceNr = deviceNr;
     }

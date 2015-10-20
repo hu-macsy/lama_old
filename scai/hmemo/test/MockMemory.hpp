@@ -37,6 +37,7 @@
 #include <scai/common/weak_ptr.hpp>
 
 using namespace scai::hmemo;
+using namespace scai::common;
 using namespace scai::tasking;
 
 /** Exampes of a new memory class that implements all relevant routines. */
@@ -78,7 +79,7 @@ public:
 
     virtual ContextPtr getContextPtr() const
     {
-        return Context::getContextPtr( scai::context::UserContext, mDeviceNr );
+        return Context::getContextPtr( context::UserContext, mDeviceNr );
     }
 
     virtual MemoryType getType() const

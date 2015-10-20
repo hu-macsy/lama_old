@@ -7,7 +7,7 @@
 
 #include "MockContext.hpp"
 
-using namespace scai::context;
+using namespace scai::common::context;
 
 BOOST_AUTO_TEST_CASE( ContextTest )
 {

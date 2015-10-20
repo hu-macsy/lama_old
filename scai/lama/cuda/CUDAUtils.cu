@@ -70,535 +70,535 @@ namespace scai
 namespace lama
 {
 
-    SCAI_LOG_DEF_LOGGER( CUDAUtils::logger, "CUDA.Utils" )
+SCAI_LOG_DEF_LOGGER( CUDAUtils::logger, "CUDA.Utils" )
 
-    /* ------------------------------------------------------------------------------------------------------------------ */
-    /*   Kernel used for scale, set, setScale                                                                             */
-    /* ------------------------------------------------------------------------------------------------------------------ */
+/* ------------------------------------------------------------------------------------------------------------------ */
+/*   Kernel used for scale, set, setScale                                                                             */
+/* ------------------------------------------------------------------------------------------------------------------ */
 
-    template<typename T1, typename T2>
-    __global__
-    void setScaleKernel( T1* out, const T1 beta, const T2* in, IndexType n )
+template<typename T1, typename T2>
+__global__
+void setScaleKernel( T1* out, const T1 beta, const T2* in, IndexType n )
+{
+    // Note: out == in does not harm, also not for performance
+
+    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( i < n )
     {
-        // Note: out == in does not harm, also not for performance
+        out[i] = static_cast<T1>( in[i] * beta );
+    }
+}
 
-        const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+/* ------------------------------------------------------------------------------------------------------------------ */
+/*                                                  scale                                                             */
+/* ------------------------------------------------------------------------------------------------------------------ */
 
-        if ( i < n )
-        {
-            out[i] = static_cast<T1>( in[i] * beta );
-        }
+template<typename ValueType>
+void CUDAUtils::scale( ValueType* values, const ValueType scale, const IndexType n )
+{
+    SCAI_LOG_INFO( logger, "scale, #n = " << n << ", scale = " << scale )
+
+    if ( n == 0 )
+    {
+        return;
     }
 
-    /* ------------------------------------------------------------------------------------------------------------------ */
-    /*                                                  scale                                                             */
-    /* ------------------------------------------------------------------------------------------------------------------ */
-
-    template<typename ValueType>
-    void CUDAUtils::scale( ValueType *values, const ValueType scale, const IndexType n )
+    if ( scale == scai::common::constants::ZERO )
     {
-        SCAI_LOG_INFO( logger, "scale, #n = " << n << ", scale = " << scale )
+        setVal( values, n, scale );
+    }
 
-        if ( n == 0 )
-        {
-            return;
-        }
+    SCAI_CHECK_CUDA_ACCESS
 
-        if ( scale == scai::common::constants::ZERO )
-        {
-            setVal( values, n, scale );
-        }
+    const int blockSize = CUDASettings::getBlockSize( n );
+    dim3 dimBlock( blockSize, 1, 1 );
+    dim3 dimGrid = makeGrid( n, dimBlock.x );
 
+    // there is no performance loss in using same kernel as setScale
+    // kernel fits well even if in and out are aliased
+
+    setScaleKernel <<< dimGrid, dimBlock>>>( values, scale, values, n );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+struct InvalidIndex
+{
+    const ValueType size; //!< size of array for which index is checked
+
+    InvalidIndex( ValueType _size ) : size( _size )
+    {}
+
+    __host__ __device__
+    bool operator()( ValueType y )
+    {
+        return y >= size || y < 0;
+    }
+};
+
+/* --------------------------------------------------------------------------- */
+
+bool CUDAUtils::validIndexes( const IndexType array[], const IndexType n, const IndexType size )
+{
+    SCAI_LOG_DEBUG( logger, "validIndexes: array[" << n << "], size " << size )
+
+    bool validFlag = true;
+
+    if ( n > 0 )
+    {
         SCAI_CHECK_CUDA_ACCESS
 
-        const int blockSize = CUDASettings::getBlockSize( n );
-        dim3 dimBlock( blockSize, 1, 1 );
-        dim3 dimGrid = makeGrid( n, dimBlock.x );
+        thrust::device_ptr<IndexType> arrayPtr( const_cast<IndexType*> ( array ) );
 
-        // there is no performance loss in using same kernel as setScale
-        // kernel fits well even if in and out are aliased
+        bool error = false;
 
-        setScaleKernel<<<dimGrid, dimBlock>>>( values, scale, values, n );
+        // count invalid indexes
+
+        error = thrust::transform_reduce( arrayPtr,
+                                          arrayPtr + n,
+                                          InvalidIndex<IndexType>( size ),
+                                          false,
+                                          thrust::logical_or<bool>() );
+
+        if ( error )
+        {
+            validFlag = false;
+        }
     }
 
-    /* --------------------------------------------------------------------------- */
+    return validFlag;
+}
 
-    template<typename ValueType>
-    struct InvalidIndex
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+ValueType CUDAUtils::sum( const ValueType array[], const IndexType n )
+{
+    SCAI_LOG_INFO( logger, "sum # array = " << array << ", n = " << n )
+
+    SCAI_CHECK_CUDA_ACCESS
+
+    thrust::device_ptr<ValueType> data( const_cast<ValueType*>( array ) );
+
+    ValueType result = thrust::reduce( data, data + n, static_cast<ValueType>( 0.0 ), thrust::plus<ValueType>() );
+
+    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
+
+    SCAI_LOG_INFO( logger, "sum of " << n << " values = " << result )
+
+    return result;
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void CUDAUtils::setVal( ValueType array[], const IndexType n, const ValueType val )
+{
+    SCAI_LOG_INFO( logger, "setVal # array = " << array << ", n = " << n << ", val = " << val )
+
+    SCAI_CHECK_CUDA_ACCESS
+
+    if ( n > 0 )
     {
-        const ValueType size; //!< size of array for which index is checked
-
-        InvalidIndex( ValueType _size ) : size( _size )
-        {}
-
-        __host__ __device__
-        bool operator()( ValueType y )
-        {
-            return y >= size || y < 0;
-        }
-    };
-
-    /* --------------------------------------------------------------------------- */
-
-    bool CUDAUtils::validIndexes( const IndexType array[], const IndexType n, const IndexType size )
-    {
-        SCAI_LOG_DEBUG( logger, "validIndexes: array[" << n << "], size " << size )
-
-        bool validFlag = true;
-
-        if ( n > 0 )
-        {
-            SCAI_CHECK_CUDA_ACCESS
-
-            thrust::device_ptr<IndexType> arrayPtr( const_cast<IndexType*> ( array ) );
-
-            bool error = false;
-
-            // count invalid indexes
-
-            error = thrust::transform_reduce( arrayPtr,
-                            arrayPtr + n,
-                            InvalidIndex<IndexType>( size ),
-                            false,
-                            thrust::logical_or<bool>() );
-
-            if ( error )
-            {
-                validFlag = false;
-            }
-        }
-
-        return validFlag;
-    }
-
-    /* --------------------------------------------------------------------------- */
-
-    template<typename ValueType>
-    ValueType CUDAUtils::sum( const ValueType array[], const IndexType n )
-    {
-        SCAI_LOG_INFO( logger, "sum # array = " << array << ", n = " << n )
-
-        SCAI_CHECK_CUDA_ACCESS
-
         thrust::device_ptr<ValueType> data( const_cast<ValueType*>( array ) );
-
-        ValueType result = thrust::reduce( data, data + n, static_cast<ValueType>(0.0), thrust::plus<ValueType>() );
-
-        SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
-
-        SCAI_LOG_INFO( logger, "sum of " << n << " values = " << result )
-
-        return result;
-    }
-
-    /* --------------------------------------------------------------------------- */
-
-    template<typename ValueType>
-    void CUDAUtils::setVal( ValueType array[], const IndexType n, const ValueType val )
-    {
-        SCAI_LOG_INFO( logger, "setVal # array = " << array << ", n = " << n << ", val = " << val )
-
-        SCAI_CHECK_CUDA_ACCESS
-
-        if ( n > 0 )
-        {
-            thrust::device_ptr<ValueType> data( const_cast<ValueType*>( array ) );
-            thrust::fill( data, data + n, val );
-
-            SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
-        }
-    }
-
-    /* --------------------------------------------------------------------------- */
-
-    template<typename ValueType>
-    void CUDAUtils::setOrder( ValueType array[], const IndexType n )
-    {
-        SCAI_LOG_INFO( logger, "setOrder # array = " << array << ", n = " << n )
-        SCAI_CHECK_CUDA_ACCESS
-
-        thrust::device_ptr<ValueType> array_ptr( const_cast<ValueType*>( array ) );
-        thrust::sequence( array_ptr, array_ptr + n );
+        thrust::fill( data, data + n, val );
 
         SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
     }
+}
 
-    /* --------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------- */
 
-    template<typename ValueType>
-    ValueType CUDAUtils::getValue( const ValueType* array, const IndexType i )
+template<typename ValueType>
+void CUDAUtils::setOrder( ValueType array[], const IndexType n )
+{
+    SCAI_LOG_INFO( logger, "setOrder # array = " << array << ", n = " << n )
+    SCAI_CHECK_CUDA_ACCESS
+
+    thrust::device_ptr<ValueType> array_ptr( const_cast<ValueType*>( array ) );
+    thrust::sequence( array_ptr, array_ptr + n );
+
+    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+ValueType CUDAUtils::getValue( const ValueType* array, const IndexType i )
+{
+    SCAI_LOG_INFO( logger, "getValue # i = " << i )
+    SCAI_CHECK_CUDA_ACCESS
+
+    thrust::device_ptr<ValueType> arrayPtr( const_cast<ValueType*>( array ) );
+    thrust::host_vector<ValueType> arrayHost( arrayPtr + i, arrayPtr + i + 1 );
+
+    return arrayHost[0];
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+ValueType CUDAUtils::maxval( const ValueType array[], const IndexType n )
+{
+    SCAI_LOG_INFO( logger, "maxval for " << n << " elements " )
+
+    SCAI_CHECK_CUDA_ACCESS
+
+    thrust::device_ptr<ValueType> data( const_cast<ValueType*>( array ) );
+    ValueType zero = static_cast<ValueType>( 0 );
+    ValueType result = thrust::reduce( data, data + n, zero, thrust::maximum<ValueType>() );
+
+    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
+
+    SCAI_LOG_INFO( logger, "max of " << n << " values = " << result )
+
+    return result;
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+struct absolute_value: public thrust::unary_function<ValueType, ValueType>
+{
+    __host__ __device__
+    ValueType operator()( const ValueType& x ) const
     {
-        SCAI_LOG_INFO( logger, "getValue # i = " << i )
-        SCAI_CHECK_CUDA_ACCESS
-
-        thrust::device_ptr<ValueType> arrayPtr( const_cast<ValueType*>( array ) );
-        thrust::host_vector<ValueType> arrayHost( arrayPtr + i, arrayPtr + i + 1 );
-
-        return arrayHost[0];
+        // return x < ValueType( 0 ) ? -x : x;
+        return abs( x );
     }
+};
 
-    /* --------------------------------------------------------------------------- */
+template<typename ValueType>
+ValueType CUDAUtils::absMaxVal( const ValueType array[], const IndexType n )
+{
+    SCAI_LOG_INFO( logger, "absMaxVal for " << n << " elements " )
 
-    template<typename ValueType>
-    ValueType CUDAUtils::maxval( const ValueType array[], const IndexType n )
-    {
-        SCAI_LOG_INFO( logger, "maxval for " << n << " elements " )
+    SCAI_CHECK_CUDA_ACCESS
 
-        SCAI_CHECK_CUDA_ACCESS
+    thrust::device_ptr<ValueType> data( const_cast<ValueType*>( array ) );
 
-        thrust::device_ptr<ValueType> data( const_cast<ValueType*>( array ) );
-        ValueType zero = static_cast<ValueType>( 0 );
-        ValueType result = thrust::reduce( data, data + n, zero, thrust::maximum<ValueType>() );
+    ValueType result = thrust::transform_reduce( data, data + n, absolute_value<ValueType>(), static_cast<ValueType>( 0.0 ),
+                       thrust::maximum<ValueType>() );
 
-        SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
+    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
 
-        SCAI_LOG_INFO( logger, "max of " << n << " values = " << result )
+    SCAI_LOG_INFO( logger, "abs max of " << n << " values = " << result )
 
-        return result;
-    }
+    return result;
+}
 
-    /* --------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------- */
 
-    template<typename ValueType>
-    struct absolute_value: public thrust::unary_function<ValueType,ValueType>
-    {
-        __host__ __device__
-        ValueType operator()( const ValueType &x ) const
-        {
-            // return x < ValueType( 0 ) ? -x : x;
-            return abs( x );
-        }
-    };
+template<typename ValueType>
+ValueType CUDAUtils::absMaxDiffVal( const ValueType array1[], const ValueType array2[], const IndexType n )
+{
+    SCAI_LOG_INFO( logger, "absMaxDiffVal for " << n << " elements " )
 
-    template<typename ValueType>
-    ValueType CUDAUtils::absMaxVal( const ValueType array[], const IndexType n )
-    {
-        SCAI_LOG_INFO( logger, "absMaxVal for " << n << " elements " )
+    SCAI_CHECK_CUDA_ACCESS
 
-        SCAI_CHECK_CUDA_ACCESS
+    thrust::device_ptr<ValueType> data1( const_cast<ValueType*>( array1 ) );
+    thrust::device_ptr<ValueType> data2( const_cast<ValueType*>( array2 ) );
 
-        thrust::device_ptr<ValueType> data( const_cast<ValueType*>( array ) );
+    thrust::device_vector<ValueType> temp( n );
 
-        ValueType result = thrust::transform_reduce( data, data + n, absolute_value<ValueType>(), static_cast<ValueType>(0.0),
-                        thrust::maximum<ValueType>() );
+    // compute temp =  array1 - array2
 
-        SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
+    thrust::transform( data1, data1 + n, data2, temp.begin(), thrust::minus<ValueType>() );
 
-        SCAI_LOG_INFO( logger, "abs max of " << n << " values = " << result )
+    ValueType result = thrust::transform_reduce( temp.begin(), temp.end(), absolute_value<ValueType>(), static_cast<ValueType>( 0.0 ),
+                       thrust::maximum<ValueType>() );
 
-        return result;
-    }
+    /* Not available, but would be useful:
 
-    /* --------------------------------------------------------------------------- */
+     ValueType result = thrust::transform_reduce( data1, data1 + n,
+     data2,
+     thrust::minus<ValueType>(),
+     zero,
+     thrust::maximum<ValueType>());
+     */
 
-    template<typename ValueType>
-    ValueType CUDAUtils::absMaxDiffVal( const ValueType array1[], const ValueType array2[], const IndexType n )
-    {
-        SCAI_LOG_INFO( logger, "absMaxDiffVal for " << n << " elements " )
+    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" )
 
-        SCAI_CHECK_CUDA_ACCESS
+    SCAI_LOG_INFO( logger, "abs max diff of " << n << " values = " << result )
 
-        thrust::device_ptr<ValueType> data1( const_cast<ValueType*>( array1 ) );
-        thrust::device_ptr<ValueType> data2( const_cast<ValueType*>( array2 ) );
+    return result;
+}
 
-        thrust::device_vector<ValueType> temp( n );
-
-        // compute temp =  array1 - array2
-
-        thrust::transform( data1, data1 + n, data2, temp.begin(), thrust::minus<ValueType>() );
-
-        ValueType result = thrust::transform_reduce( temp.begin(), temp.end(), absolute_value<ValueType>(), static_cast<ValueType>(0.0),
-                        thrust::maximum<ValueType>() );
-
-        /* Not available, but would be useful:
-
-         ValueType result = thrust::transform_reduce( data1, data1 + n,
-         data2,
-         thrust::minus<ValueType>(),
-         zero,
-         thrust::maximum<ValueType>());
-         */
-
-        SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" )
-
-        SCAI_LOG_INFO( logger, "abs max diff of " << n << " values = " << result )
-
-        return result;
-    }
-
-    /* --------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------- */
 
 // template argument ascending: make two instantiations of kernel to avoid bool test
-    template<typename ValueType, bool ascending>
-    __global__
-    void isSortedKernel( bool* result, const IndexType numValues, const ValueType* values )
+template<typename ValueType, bool ascending>
+__global__
+void isSortedKernel( bool* result, const IndexType numValues, const ValueType* values )
+{
+    const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( i < numValues )
     {
-        const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
-
-        if ( i < numValues )
-        {
-            if ( ascending )
-            {
-                result[i] = values[i] <= values[i+1];
-            }
-            else
-            {
-                result[i] = values[i] >= values[i+1];
-            }
-        }
-    }
-
-    template<typename ValueType>
-    bool CUDAUtils::isSorted( const ValueType array[], const IndexType n, bool ascending )
-    {
-        SCAI_LOG_INFO( logger, "isSorted<" << getScalarType<ValueType>()
-                        << ">, n = " << n << ", ascending = " << ascending )
-
-        SCAI_CHECK_CUDA_ACCESS
-
-        if ( n < 2 )
-        {
-            return true; // 0 or 1 element is always sorted
-        }
-
-        // create a tempory bool array on device with n-1 entries
-
-        thrust::device_ptr<bool> resultPtr = thrust::device_malloc<bool>( n - 1 );
-
-        bool* resultRawPtr = thrust::raw_pointer_cast( resultPtr );
-
-        const int blockSize = 256;
-        dim3 dimBlock( blockSize, 1, 1 );
-        dim3 dimGrid = makeGrid( n - 1, dimBlock.x );
-
         if ( ascending )
         {
-            isSortedKernel<ValueType, true><<<dimGrid, dimBlock>>> ( resultRawPtr, n - 1, array );
+            result[i] = values[i] <= values[i + 1];
         }
         else
         {
-            isSortedKernel<ValueType, false><<<dimGrid, dimBlock>>> ( resultRawPtr, n - 1, array );
-        }
-
-        cudaStreamSynchronize( 0 );
-
-        SCAI_CHECK_CUDA_ERROR
-
-        return thrust::reduce( resultPtr, resultPtr + n - 1, true, thrust::logical_and<bool>() );
-    }
-
-    /* --------------------------------------------------------------------------- */
-
-    template<typename ValueType1,typename ValueType2>
-    __global__
-    void gatherKernel( ValueType1* out, const ValueType2* in, const IndexType* indexes, IndexType n )
-    {
-        // Kernel also supports implicit type conversions
-
-        const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
-
-        if ( i < n )
-        {
-            out[i] = static_cast<ValueType1>( in[indexes[i]] );
+            result[i] = values[i] >= values[i + 1];
         }
     }
+}
 
-    template<typename ValueType1,typename ValueType2>
-    void CUDAUtils::setGather( ValueType1 out[], const ValueType2 in[], const IndexType indexes[], const IndexType n )
+template<typename ValueType>
+bool CUDAUtils::isSorted( const ValueType array[], const IndexType n, bool ascending )
+{
+    SCAI_LOG_INFO( logger, "isSorted<" << getScalarType<ValueType>()
+                   << ">, n = " << n << ", ascending = " << ascending )
+
+    SCAI_CHECK_CUDA_ACCESS
+
+    if ( n < 2 )
     {
-        SCAI_LOG_INFO( logger,
-                        "setGather<" << getScalarType<ValueType1>() << "," << getScalarType<ValueType2>() << ">( ..., n = " << n << ")" )
-
-        SCAI_CHECK_CUDA_ACCESS
-
-        const int blockSize = 256;
-        dim3 dimBlock( blockSize, 1, 1 );
-        dim3 dimGrid = makeGrid( n, dimBlock.x );
-
-        gatherKernel<<<dimGrid, dimBlock>>>( out, in, indexes, n );
-
-        SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
+        return true; // 0 or 1 element is always sorted
     }
 
-    /* --------------------------------------------------------------------------- */
+    // create a tempory bool array on device with n-1 entries
 
-    template<typename T1,typename T2>
-    __global__
-    void scatter_kernel( T1* out, const IndexType* indexes, const T2* in, IndexType n )
+    thrust::device_ptr<bool> resultPtr = thrust::device_malloc<bool>( n - 1 );
+
+    bool* resultRawPtr = thrust::raw_pointer_cast( resultPtr );
+
+    const int blockSize = 256;
+    dim3 dimBlock( blockSize, 1, 1 );
+    dim3 dimGrid = makeGrid( n - 1, dimBlock.x );
+
+    if ( ascending )
     {
-        const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
-
-        if ( i < n )
-        {
-            out[indexes[i]] = in[i];
-        }
+        isSortedKernel<ValueType, true> <<< dimGrid, dimBlock>>> ( resultRawPtr, n - 1, array );
+    }
+    else
+    {
+        isSortedKernel<ValueType, false> <<< dimGrid, dimBlock>>> ( resultRawPtr, n - 1, array );
     }
 
-    template<typename ValueType1,typename ValueType2>
-    void CUDAUtils::setScatter( ValueType1 out[], const IndexType indexes[], const ValueType2 in[], const IndexType n )
+    cudaStreamSynchronize( 0 );
+
+    SCAI_CHECK_CUDA_ERROR
+
+    return thrust::reduce( resultPtr, resultPtr + n - 1, true, thrust::logical_and<bool>() );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType1, typename ValueType2>
+__global__
+void gatherKernel( ValueType1* out, const ValueType2* in, const IndexType* indexes, IndexType n )
+{
+    // Kernel also supports implicit type conversions
+
+    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( i < n )
     {
-        SCAI_LOG_INFO( logger,
-                        "setScatter<" << getScalarType<ValueType1>() << "," << getScalarType<ValueType2>() << ">( ..., n = " << n << ")" )
+        out[i] = static_cast<ValueType1>( in[indexes[i]] );
+    }
+}
 
-        SCAI_CHECK_CUDA_ACCESS
+template<typename ValueType1, typename ValueType2>
+void CUDAUtils::setGather( ValueType1 out[], const ValueType2 in[], const IndexType indexes[], const IndexType n )
+{
+    SCAI_LOG_INFO( logger,
+                   "setGather<" << getScalarType<ValueType1>() << "," << getScalarType<ValueType2>() << ">( ..., n = " << n << ")" )
 
-        const int blockSize = 256;
-        dim3 dimBlock( blockSize, 1, 1 );
-        dim3 dimGrid = makeGrid( n, dimBlock.x );
+    SCAI_CHECK_CUDA_ACCESS
 
-        scatter_kernel<<<dimGrid, dimBlock>>>( out, indexes, in, n );
+    const int blockSize = 256;
+    dim3 dimBlock( blockSize, 1, 1 );
+    dim3 dimGrid = makeGrid( n, dimBlock.x );
 
-        SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
+    gatherKernel <<< dimGrid, dimBlock>>>( out, in, indexes, n );
+
+    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename T1, typename T2>
+__global__
+void scatter_kernel( T1* out, const IndexType* indexes, const T2* in, IndexType n )
+{
+    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( i < n )
+    {
+        out[indexes[i]] = in[i];
+    }
+}
+
+template<typename ValueType1, typename ValueType2>
+void CUDAUtils::setScatter( ValueType1 out[], const IndexType indexes[], const ValueType2 in[], const IndexType n )
+{
+    SCAI_LOG_INFO( logger,
+                   "setScatter<" << getScalarType<ValueType1>() << "," << getScalarType<ValueType2>() << ">( ..., n = " << n << ")" )
+
+    SCAI_CHECK_CUDA_ACCESS
+
+    const int blockSize = 256;
+    dim3 dimBlock( blockSize, 1, 1 );
+    dim3 dimGrid = makeGrid( n, dimBlock.x );
+
+    scatter_kernel <<< dimGrid, dimBlock>>>( out, indexes, in, n );
+
+    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename T1, typename T2>
+__global__
+void setKernel( T1* out, const T2* in, IndexType n )
+{
+    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( i < n )
+    {
+        out[i] = static_cast<T1>( in[i] );
+    }
+}
+
+template<typename ValueType1, typename ValueType2>
+void CUDAUtils::set( ValueType1 out[], const ValueType2 in[], const IndexType n )
+{
+    SCAI_LOG_INFO( logger,
+                   "set<" << getScalarType<ValueType1>() << "," << getScalarType<ValueType2>() << ">( ..., n = " << n << ")" )
+
+    SCAI_LOG_DEBUG( logger, "out = " << out << ", in = " << in )
+
+    if ( n <= 0 )
+    {
+        return;
     }
 
-    /* --------------------------------------------------------------------------- */
+    SCAI_CHECK_CUDA_ACCESS
 
-    template<typename T1,typename T2>
-    __global__
-    void setKernel( T1* out, const T2* in, IndexType n )
+    const int blockSize = CUDASettings::getBlockSize( n );
+    dim3 dimBlock( blockSize, 1, 1 );
+    dim3 dimGrid = makeGrid( n, dimBlock.x );
+
+    setKernel <<< dimGrid, dimBlock>>>( out, in, n );
+
+    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType1, typename ValueType2>
+void CUDAUtils::setScale( ValueType1 out[],
+                          const ValueType1 beta,
+                          const ValueType2 in[], const IndexType n )
+{
+    SCAI_LOG_INFO( logger,
+                   "set<" << getScalarType<ValueType1>() << "," << getScalarType<ValueType2>() << ">( ..., n = " << n << ")" )
+
+    SCAI_LOG_DEBUG( logger, "out = " << out << ", in = " << in )
+
+    if ( n <= 0 )
     {
-        const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
-
-        if ( i < n )
-        {
-            out[i] = static_cast<T1>( in[i] );
-        }
+        return;
     }
 
-    template<typename ValueType1,typename ValueType2>
-    void CUDAUtils::set( ValueType1 out[], const ValueType2 in[], const IndexType n )
+    if ( beta == scai::common::constants::ZERO )
     {
-        SCAI_LOG_INFO( logger,
-                        "set<" << getScalarType<ValueType1>() << "," << getScalarType<ValueType2>() << ">( ..., n = " << n << ")" )
+        // in array might be undefined
 
-        SCAI_LOG_DEBUG( logger, "out = " << out << ", in = " << in )
-
-        if ( n <= 0 )
-        {
-            return;
-        }
-
-        SCAI_CHECK_CUDA_ACCESS
-
-        const int blockSize = CUDASettings::getBlockSize( n );
-        dim3 dimBlock( blockSize, 1, 1 );
-        dim3 dimGrid = makeGrid( n, dimBlock.x );
-
-        setKernel<<<dimGrid, dimBlock>>>( out, in, n );
-
-        SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
+        setVal( out, n, beta );
+        return;
     }
 
-    /* --------------------------------------------------------------------------- */
+    SCAI_CHECK_CUDA_ACCESS
 
-    template<typename ValueType1,typename ValueType2>
-    void CUDAUtils::setScale( ValueType1 out[],
-                    const ValueType1 beta,
-                    const ValueType2 in[], const IndexType n )
+    const int blockSize = CUDASettings::getBlockSize( n );
+    dim3 dimBlock( blockSize, 1, 1 );
+    dim3 dimGrid = makeGrid( n, dimBlock.x );
+
+    setScaleKernel <<< dimGrid, dimBlock>>>( out, beta, in, n );
+
+    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+__global__
+void invertVectorComponents_kernel( ValueType* array, IndexType n )
+{
+    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    ValueType one = 1.0;
+
+    if ( i < n )
     {
-        SCAI_LOG_INFO( logger,
-                        "set<" << getScalarType<ValueType1>() << "," << getScalarType<ValueType2>() << ">( ..., n = " << n << ")" )
+        array[i] = one / array[i];
+    }
+}
 
-        SCAI_LOG_DEBUG( logger, "out = " << out << ", in = " << in )
+/* --------------------------------------------------------------------------- */
 
-        if ( n <= 0 )
-        {
-            return;
-        }
+template<typename ValueType>
+void CUDAUtils::invert( ValueType array[], const IndexType n )
+{
+    SCAI_LOG_INFO( logger,
+                   "invert Vector components for vector of type " << getScalarType<ValueType>() << " and size n = " << n << "." )
 
-        if ( beta == scai::common::constants::ZERO )
-        {
-            // in array might be undefined
-
-            setVal( out, n, beta );
-            return;
-        }
-
-        SCAI_CHECK_CUDA_ACCESS
-
-        const int blockSize = CUDASettings::getBlockSize( n );
-        dim3 dimBlock( blockSize, 1, 1 );
-        dim3 dimGrid = makeGrid( n, dimBlock.x );
-
-        setScaleKernel<<<dimGrid, dimBlock>>>( out, beta, in, n );
-
-        SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
+    if ( n <= 0 )
+    {
+        return;
     }
 
-    /* --------------------------------------------------------------------------- */
+    SCAI_CHECK_CUDA_ACCESS
 
-    template<typename ValueType>
-    __global__
-    void invertVectorComponents_kernel( ValueType* array, IndexType n )
-    {
-        const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+    const int blockSize = 256;
+    dim3 dimBlock( blockSize, 1, 1 );
+    dim3 dimGrid = makeGrid( n, dimBlock.x );
 
-        ValueType one = 1.0;
+    invertVectorComponents_kernel <<< dimGrid, dimBlock>>>( array, n );
+    cudaStreamSynchronize( 0 );
+    SCAI_CHECK_CUDA_ERROR
+}
 
-        if ( i < n )
-        {
-            array[i] = one / array[i];
-        }
-    }
+/* --------------------------------------------------------------------------- */
+/*     Template instantiations via registration routine                        */
+/* --------------------------------------------------------------------------- */
 
-    /* --------------------------------------------------------------------------- */
+void CUDAUtils::setInterface( UtilsInterface& Utils )
+{
+    using namespace scai::kregistry;
 
-    template<typename ValueType>
-    void CUDAUtils::invert( ValueType array[], const IndexType n )
-    {
-        SCAI_LOG_INFO( logger,
-                        "invert Vector components for vector of type " << getScalarType<ValueType>() << " and size n = " << n << "." )
+    common::ContextType ctx = common::context::CUDA;
 
-        if ( n <= 0 )
-        {
-            return;
-        }
+    SCAI_LOG_INFO( logger, "set general utilty routines for CUDA in Interface" )
 
-        SCAI_CHECK_CUDA_ACCESS
+    KernelRegistry::set<UtilsInterface::validIndexes>( validIndexes, ctx );
+    KernelRegistry::set<UtilsInterface::sum<IndexType> >( sum, ctx );
 
-        const int blockSize = 256;
-        dim3 dimBlock( blockSize, 1, 1 );
-        dim3 dimGrid = makeGrid( n, dimBlock.x );
+    KernelRegistry::set<UtilsInterface::setVal<IndexType> >( setVal, ctx );
+    KernelRegistry::set<UtilsInterface::setOrder<IndexType> >( setOrder, ctx );
+    KernelRegistry::set<UtilsInterface::getValue<IndexType> >( getValue, ctx );
 
-        invertVectorComponents_kernel<<<dimGrid, dimBlock>>>( array, n );
-        cudaStreamSynchronize( 0 );
-        SCAI_CHECK_CUDA_ERROR
-    }
+    KernelRegistry::set<UtilsInterface::maxval<IndexType> >( maxval, ctx );
+    KernelRegistry::set<UtilsInterface::absMaxVal<IndexType> >( absMaxVal, ctx );
+    KernelRegistry::set<UtilsInterface::absMaxDiffVal<IndexType> >( absMaxDiffVal, ctx );
+    KernelRegistry::set<UtilsInterface::isSorted<IndexType> >( isSorted, ctx );
 
-    /* --------------------------------------------------------------------------- */
-    /*     Template instantiations via registration routine                        */
-    /* --------------------------------------------------------------------------- */
+    KernelRegistry::set<UtilsInterface::setScatter<IndexType, IndexType> >( setScatter, ctx );
+    KernelRegistry::set<UtilsInterface::setGather<IndexType, IndexType> >( setGather, ctx );
+    KernelRegistry::set<UtilsInterface::set<IndexType, IndexType> >( set, ctx );
 
-    void CUDAUtils::setInterface( UtilsInterface& Utils )
-    {
-        using namespace scai::kregistry;
-
-        scai::context::ContextType ctx = scai::context::CUDA;
-
-        SCAI_LOG_INFO( logger, "set general utilty routines for CUDA in Interface" )
-
-        KernelRegistry::set<UtilsInterface::validIndexes>( validIndexes, ctx );
-        KernelRegistry::set<UtilsInterface::sum<IndexType> >( sum, ctx );
-
-        KernelRegistry::set<UtilsInterface::setVal<IndexType> >( setVal, ctx );
-        KernelRegistry::set<UtilsInterface::setOrder<IndexType> >( setOrder, ctx );
-        KernelRegistry::set<UtilsInterface::getValue<IndexType> >( getValue, ctx );
-
-        KernelRegistry::set<UtilsInterface::maxval<IndexType> >( maxval, ctx );
-        KernelRegistry::set<UtilsInterface::absMaxVal<IndexType> >( absMaxVal, ctx );
-        KernelRegistry::set<UtilsInterface::absMaxDiffVal<IndexType> >( absMaxDiffVal, ctx );
-        KernelRegistry::set<UtilsInterface::isSorted<IndexType> >( isSorted, ctx );
-    
-        KernelRegistry::set<UtilsInterface::setScatter<IndexType, IndexType> >( setScatter, ctx );
-        KernelRegistry::set<UtilsInterface::setGather<IndexType, IndexType> >( setGather, ctx );
-        KernelRegistry::set<UtilsInterface::set<IndexType, IndexType> >( set, ctx );
-
-#define LAMA_UTILS2_REGISTER(z, J, TYPE )                                             \
-    KernelRegistry::set<UtilsInterface::setScale<TYPE, ARITHMETIC_CUDA_TYPE_##J> >( setScale, ctx );  \
-    KernelRegistry::set<UtilsInterface::setGather<TYPE, ARITHMETIC_CUDA_TYPE_##J> >( setGather, ctx );  \
-    KernelRegistry::set<UtilsInterface::setScatter<TYPE, ARITHMETIC_CUDA_TYPE_##J> >( setScatter, ctx );  \
-    KernelRegistry::set<UtilsInterface::set<TYPE, ARITHMETIC_CUDA_TYPE_##J> >( set, ctx );  \
-
+#define LAMA_UTILS2_REGISTER(z, J, TYPE )                                                                \
+    KernelRegistry::set<UtilsInterface::setScale<TYPE, ARITHMETIC_CUDA_TYPE_##J> >( setScale, ctx );     \
+    KernelRegistry::set<UtilsInterface::setGather<TYPE, ARITHMETIC_CUDA_TYPE_##J> >( setGather, ctx );   \
+    KernelRegistry::set<UtilsInterface::setScatter<TYPE, ARITHMETIC_CUDA_TYPE_##J> >( setScatter, ctx ); \
+    KernelRegistry::set<UtilsInterface::set<TYPE, ARITHMETIC_CUDA_TYPE_##J> >( set, ctx );               \
+     
 #define LAMA_UTILS_REGISTER(z, I, _)                                                                     \
     KernelRegistry::set<UtilsInterface::scale<ARITHMETIC_CUDA_TYPE_##I> >( scale, ctx );                 \
     KernelRegistry::set<UtilsInterface::sum<ARITHMETIC_CUDA_TYPE_##I> >( sum, ctx );                     \
@@ -613,13 +613,13 @@ namespace lama
     BOOST_PP_REPEAT( ARITHMETIC_CUDA_TYPE_CNT,                                                           \
                      LAMA_UTILS2_REGISTER,                                                               \
                      ARITHMETIC_CUDA_TYPE_##I )                                                          \
-
+     
     BOOST_PP_REPEAT( ARITHMETIC_CUDA_TYPE_CNT, LAMA_UTILS_REGISTER, _ )
 
 #undef LAMA_UTILS_REGISTER
 #undef LAMA_UTILS2_REGISTER
 
-    }
+}
 
 /* --------------------------------------------------------------------------- */
 /*    Static registration of the Utils routines                                */

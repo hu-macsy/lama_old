@@ -39,9 +39,9 @@ namespace scai
 namespace lama_test
 {
 
-std::map<scai::context::ContextType, scai::hmemo::ContextPtr> Context::contexts;
+std::map<scai::common::ContextType, scai::hmemo::ContextPtr> Context::contexts;
 
-scai::hmemo::ContextPtr Context::getContext( const scai::context::ContextType type )
+scai::hmemo::ContextPtr Context::getContext( const scai::common::ContextType type )
 {
     if ( !contexts[type] )
     {

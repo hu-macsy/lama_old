@@ -748,7 +748,7 @@ namespace lama
 
 bool CUDACOOUtils::registerInterface()
 {
-    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( context::CUDA );
+    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( common::context::CUDA );
     setInterface( interface.COOUtils );
     return true;
 }

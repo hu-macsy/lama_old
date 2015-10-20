@@ -78,7 +78,7 @@ public:
 
     /** Static method required for Context::Register */
 
-    static ContextType createValue();
+    static common::ContextType createValue();
 
     /** Override Printable::writeAt with version for this class. */
 
@@ -99,9 +99,9 @@ private:
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 };
 
-inline ContextType HostContext::createValue() 
+inline common::ContextType HostContext::createValue() 
 {
-    return context::Host;
+    return common::context::Host;
 }
 
 } /* end namespace hmemo */

@@ -154,7 +154,7 @@ ReadAccess<ValueType>::ReadAccess( const LAMAArray<ValueType>& array, ContextPtr
 template<typename ValueType>
 ReadAccess<ValueType>::ReadAccess( const LAMAArray<ValueType>& array ) : mArray( &array )
 {
-    ContextPtr contextPtr = Context::getContextPtr( context::Host );
+    ContextPtr contextPtr = Context::getContextPtr( common::context::Host );
 
     SCAI_LOG_DEBUG( logger, "ReadAccess<" << common::getScalarType<ValueType>()
                     << "> : create for " << array << " @ " << *contextPtr )

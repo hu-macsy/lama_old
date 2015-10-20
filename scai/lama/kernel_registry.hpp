@@ -39,15 +39,12 @@ namespace scai
 namespace lama
 {
 
-using scai::hmemo::Context;
-using scai::hmemo::ContextPtr;
-
 /** Help routine to update context. */
 
-static inline ContextPtr getValidContext( ContextPtr defaultContext, scai::kregistry::_ContextFunction f )
+static inline hmemo::ContextPtr getValidContext( hmemo::ContextPtr defaultContext, scai::kregistry::_ContextFunction f )
 {
-    ContextType defCtx = defaultContext->getType();
-    ContextType runCtx = f.validContext( defCtx );
+    common::ContextType defCtx = defaultContext->getType();
+    common::ContextType runCtx = f.validContext( defCtx );
 
     if ( runCtx == defCtx )
     {
@@ -55,7 +52,7 @@ static inline ContextPtr getValidContext( ContextPtr defaultContext, scai::kregi
     }
     else
     {
-        return Context::getHostPtr();  // do it on host
+        return hmemo::Context::getHostPtr();  // do it on host
     }
 }
 

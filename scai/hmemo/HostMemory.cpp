@@ -152,7 +152,7 @@ MemoryPtr HostMemory::getIt()
     {
         SCAI_LOG_DEBUG( logger, "Create instance for HostMemory" ) 
 
-        ContextPtr contextPtr = Context::getContextPtr( context::Host );
+        ContextPtr contextPtr = Context::getContextPtr( common::context::Host );
         common::shared_ptr<const HostContext> hostContextPtr = common::dynamic_pointer_cast<const HostContext>( contextPtr );
         SCAI_ASSERT( hostContextPtr.get(), "Serious: dynamic cast failed" )
         instancePtr.reset( new HostMemory( hostContextPtr ) );

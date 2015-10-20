@@ -273,7 +273,7 @@ void BLAS_BLAS2::setInterface( BLASInterface& BLAS )
 
 bool BLAS_BLAS2::registerInterface()
 {
-    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( context::Host );
+    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( common::context::Host );
     setInterface( interface.BLAS );
     return true;
 }

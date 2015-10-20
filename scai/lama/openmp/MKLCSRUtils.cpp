@@ -279,7 +279,7 @@ void MKLCSRUtils::setInterface( CSRUtilsInterface& CSRUtils )
 
 bool MKLCSRUtils::registerInterface()
 {
-    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( context::Host );
+    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( common::context::Host );
     setInterface( interface.CSRUtils );
     return true;
 }
