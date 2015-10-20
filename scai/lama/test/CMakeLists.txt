@@ -56,9 +56,9 @@ scai_project (
         BiCGstabTest
        # BiCGTest  : disabled as long as MatrixTranspose for DenseMatrix is
        # not supported
-       # BLAS1Test
-       # BLAS2Test
-       # BLAS3Test
+        BLAS1Test
+        BLAS2Test
+        BLAS3Test
         CGTest
        # not yet: CGNETest
         CGNRTest
