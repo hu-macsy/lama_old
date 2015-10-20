@@ -159,7 +159,7 @@ public:
         return mCommunicationKind;
     }
 
-    scai::common::ScalarType getValueType() const
+    scai::common::scalar::ScalarType getValueType() const
     {
         return mValueType;
     }
@@ -178,13 +178,13 @@ private:
 
     std::string              mMatrixFormat;
 
-    scai::hmemo::ContextType        mContextType;
+    scai::hmemo::context::ContextType        mContextType;
 
     mutable scai::hmemo::ContextPtr   mContext;
 
     scai::lama::Matrix::SyncKind     mCommunicationKind;
 
-    scai::common::ScalarType   mValueType;          // value type to use
+    scai::common::scalar::ScalarType   mValueType;          // value type to use
 
     scai::lama::CommunicatorPtr      mComm;
 

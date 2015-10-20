@@ -173,9 +173,9 @@ int main( int argc, char* argv[] )
         LamaTiming timer( comm, "Prefetching" );
 
         matrix.setCommunicationKind( lamaconf.getCommunicationKind() );
-        matrix.setContext( lamaconf.getContextPtr() );
-        rhs.setContext( lamaconf.getContextPtr() );
-        solution.setContext( lamaconf.getContextPtr() );
+        matrix.setContextPtr( lamaconf.getContextPtr() );
+        rhs.setContextPtr( lamaconf.getContextPtr() );
+        solution.setContextPtr( lamaconf.getContextPtr() );
 
         rhs.prefetch();
         matrix.prefetch();

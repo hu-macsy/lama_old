@@ -265,9 +265,9 @@ int main( int argc, char* argv[] ) {
 
     // do all operations on matrices at CUDA device where possible
 
-    labelsMatrix.setContext( config.getContextPtr() );
-    labelsMatrixNew.setContext( config.getContextPtr() );
-    affinityMatrix.setContext( config.getContextPtr() );
+    labelsMatrix.setContextPtr( config.getContextPtr() );
+    labelsMatrixNew.setContextPtr( config.getContextPtr() );
+    affinityMatrix.setContextPtr( config.getContextPtr() );
 
     double totalStart = Walltime::get();
 
