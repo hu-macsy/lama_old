@@ -41,7 +41,7 @@ Unique Pointers in LAMA
 LAMA uses unique pointers in all situations where ownership is limited to one scope or where
 ownership is exactly defined at one place, e.g. as a member variable of an object. It is not
 used when ownership changes and not in standard library containers (see 
-:ref:`container <Container of allocated objects>`),
+:ref:`container`),
 
 The ``std::uniqe_ptr`` is a new C++11 feature and has exactly the semantic as needed. 
 If it is used, the C++11 support must be explicitly enabled by the C++ compiler.
