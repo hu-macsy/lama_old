@@ -43,7 +43,7 @@
 
 #include <scai/lama/distribution/NoDistribution.hpp>
 
-#include <scai/lama/test/cuda/CUDAContext.hpp>
+#include <scai/lama/test/cuda/CUDATestContext.hpp>
 
 using namespace scai::lama;
 using namespace scai::hmemo;
