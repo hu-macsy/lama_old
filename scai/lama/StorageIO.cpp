@@ -745,7 +745,7 @@ void StorageIO<ValueType>::readCSRFromMMFile(
     bool isSymmetric, isPattern;
     IndexType numRows, numValues;
 
-    readMMHeader( false, numRows, numColumns, numValues, isPattern, isSymmetric, fileName );
+    readMMHeader( numRows, numColumns, numValues, isPattern, isSymmetric, fileName );
 
     std::ifstream ifile;
     ifile.open( fileName.c_str(), std::ios::in );
@@ -1164,7 +1164,6 @@ void _StorageIO::writeMMHeader(
 }
 
 void _StorageIO::readMMHeader(
-		const bool& vector,
 		IndexType& numRows,
 		IndexType& numColumns,
 		IndexType& numValues,
@@ -1198,24 +1197,16 @@ void _StorageIO::readMMHeader(
 		COMMON_THROWEXCEPTION( "'" << fileName << "' did not contain a matrix." )
 	}
 
-	if( !mm_is_sparse( matcode ) )
+	if( mm_is_sparse( matcode ) )
 	{
-		SCAI_LOG_DEBUG( logger, "matrix is not sparse")
-		COMMON_THROWEXCEPTION( "'" << fileName << "' did not contain a sparse matrix." )
-	}
-
-	/* symmetric matrices: only lower triangular matrix is stored */
-	/* skew matrices: symmetric and all diagonal entries are zero */
-
-	isSymmetric = mm_is_symmetric( matcode ) || mm_is_skew( matcode );
-
-	if( vector )
-	{
-		mm_read_mtx_array_size( file, &numRows, &numValues );
-		numColumns = 1;
-	}
-	else {
+		SCAI_LOG_DEBUG( logger, "data is sparse" )
 		errorCode = mm_read_mtx_crd_size( file, &numRows, &numColumns, &numValues );
+	}
+	else if( mm_is_dense( matcode ) )
+	{
+		SCAI_LOG_DEBUG( logger, "data is dense" )
+		errorCode = mm_read_mtx_array_size( file, &numRows, &numColumns );
+		numValues = numRows * numColumns;
 	}
 
 	if( errorCode != 0 )
@@ -1224,6 +1215,11 @@ void _StorageIO::readMMHeader(
 		COMMON_THROWEXCEPTION(
 						"Could not read values from file '" << fileName << "'. Cause: '" << getErrorString( errorCode ) << "'." );
 	}
+
+	/* symmetric matrices: only lower triangular matrix is stored */
+	/* skew matrices: symmetric and all diagonal entries are zero */
+
+	isSymmetric = mm_is_symmetric( matcode ) || mm_is_skew( matcode );
 
 	SCAI_LOG_INFO( logger,
 				   "mmx values: #rows = " << numRows << ", #cols = " << numColumns << ", #values = " << numValues )

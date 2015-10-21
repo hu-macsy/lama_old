@@ -1492,7 +1492,7 @@ void DenseVector<ValueType>::readVectorFromMMFile( const std::string& fileName )
     bool isSymmetric, isPattern;
     IndexType numRows, numColumns, numValues;
 
-    _StorageIO::readMMHeader( true, numRows, numColumns, numValues, isPattern, isSymmetric, fileName );
+    _StorageIO::readMMHeader( numRows, numColumns, numValues, isPattern, isSymmetric, fileName );
 
     SCAI_ASSERT_EQUAL_ERROR( numColumns, 1 )
 
