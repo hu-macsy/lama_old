@@ -37,6 +37,7 @@
 #include <scai/common/config.hpp>
 
 // base classes
+#include <scai/lama/solver/Solver.hpp>
 #include <scai/lama/solver/IterativeSolver.hpp>
 
 // logging
@@ -58,7 +59,9 @@ namespace lama
  * it has to be additionally computed in each iterate() (contrary to e.g. BiCGstab solver;
  * no higher costs). 
  */
-class COMMON_DLL_IMPORTEXPORT CGNR: public IterativeSolver
+class COMMON_DLL_IMPORTEXPORT CGNR:
+		public IterativeSolver,
+		public Solver::Register<CGNR>
 {
 public:
     /**
@@ -119,6 +122,8 @@ public:
     */
     virtual const CGNRRuntime& getConstRuntime() const;
     
+    static std::string createValue();
+    static Solver* create( const std::string name );
 
 protected:
 

@@ -264,6 +264,16 @@ const TFQMR::TFQMRRuntime& TFQMR::getConstRuntime() const{
     return mTFQMRRuntime;
 }
 
+std::string TFQMR::createValue()
+{
+	return "TFQMR";
+}
+
+Solver* TFQMR::create( const std::string name )
+{
+	return new TFQMR( name );
+}
+
 } /* end namespace lama */
 
 } /* end namespace scai */

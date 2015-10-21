@@ -209,6 +209,16 @@ const CGS::CGSRuntime& CGS::getConstRuntime() const{
     return mCGSRuntime;
 }
 
+std::string CGS::createValue()
+{
+	return "CGS";
+}
+
+Solver* CGS::create( const std::string name )
+{
+	return new CGS( name );
+}
+
 } /* end namespace lama */
 
 } /* end namespace scai */

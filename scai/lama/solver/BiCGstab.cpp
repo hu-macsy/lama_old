@@ -211,6 +211,16 @@ const BiCGstab::BiCGstabRuntime& BiCGstab::getConstRuntime() const{
     return mBiCGstabRuntime;
 }
 
+std::string BiCGstab::createValue()
+{
+	return "BiCGstab";
+}
+
+Solver* BiCGstab::create( const std::string name )
+{
+	return new BiCGstab( name );
+}
+
 } /* end namespace lama */
 
 } /* end namespace scai */

@@ -37,6 +37,7 @@
 #include <scai/common/config.hpp>
 
 // base classes
+#include <scai/lama/solver/Solver.hpp>
 #include <scai/lama/solver/IterativeSolver.hpp>
 
 namespace scai
@@ -49,7 +50,9 @@ namespace lama
  * @brief The class CG represents a IterativeSolver which uses the krylov subspace CG method
  *        to solve a system of linear equations iteratively.
  */
-class COMMON_DLL_IMPORTEXPORT CG: public IterativeSolver
+class COMMON_DLL_IMPORTEXPORT CG:
+	public IterativeSolver,
+	public Solver::Register<CG>
 {
 public:
     /**
@@ -107,6 +110,9 @@ public:
 
     double getAverageIterationTime() const;
     double getAveragePreconditionerTime() const;
+
+    static std::string createValue();
+    static Solver* create( const std::string name );
 
 protected:
 

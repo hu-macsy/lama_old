@@ -269,6 +269,16 @@ SolverPtr DefaultJacobi::copy()
     return SolverPtr( new DefaultJacobi( *this ) );
 }
 
+std::string DefaultJacobi::createValue()
+{
+	return "DefaultJacobi";
+}
+
+Solver* DefaultJacobi::create( const std::string name )
+{
+	return new DefaultJacobi( name );
+}
+
 } /* end namespace lama */
 
 } /* end namespace scai */

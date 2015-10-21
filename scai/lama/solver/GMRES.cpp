@@ -477,6 +477,16 @@ SolverPtr GMRES::copy()
     return SolverPtr( new GMRES( *this ) );
 }
 
+std::string GMRES::createValue()
+{
+	return "GMRES";
+}
+
+Solver* GMRES::create( const std::string name )
+{
+	return new GMRES( name );
+}
+
 } /* end namespace lama */
 
 } /* end namespace scai */

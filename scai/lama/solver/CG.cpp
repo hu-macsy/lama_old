@@ -234,6 +234,16 @@ const CG::CGRuntime& CG::getConstRuntime() const
     return mCGRuntime;
 }
 
+std::string CG::createValue()
+{
+	return "CG";
+}
+
+Solver* CG::create( const std::string name )
+{
+	return new CG( name );
+}
+
 } /* end namespace lama */
 
 } /* end namespace scai */

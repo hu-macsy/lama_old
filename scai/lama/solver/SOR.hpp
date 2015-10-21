@@ -37,6 +37,7 @@
 #include <scai/common/config.hpp>
 
 // base classes
+#include <scai/lama/solver/Solver.hpp>
 #include <scai/lama/solver/OmegaSolver.hpp>
 
 namespace scai
@@ -45,7 +46,9 @@ namespace scai
 namespace lama
 {
 
-class COMMON_DLL_IMPORTEXPORT SOR: public OmegaSolver
+class COMMON_DLL_IMPORTEXPORT SOR:
+		public OmegaSolver,
+		public Solver::Register<SOR>
 {
 public:
     SOR( const std::string& id );
@@ -90,6 +93,9 @@ public:
      * @return shared pointer of the copied solver
      */
     virtual SolverPtr copy();
+
+    static std::string createValue();
+    static Solver* create( const std::string name );
 
 protected:
 

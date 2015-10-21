@@ -37,6 +37,7 @@
 #include <scai/common/config.hpp>
 
 // base classes
+#include <scai/lama/solver/Solver.hpp>
 #include <scai/lama/solver/OmegaSolver.hpp>
 
 // local library
@@ -48,7 +49,9 @@ namespace scai
 namespace lama
 {
 
-class COMMON_DLL_IMPORTEXPORT SpecializedJacobi: public OmegaSolver
+class COMMON_DLL_IMPORTEXPORT SpecializedJacobi:
+	public OmegaSolver,
+	public Solver::Register<SpecializedJacobi>
 {
 public:
     SpecializedJacobi( const std::string& id );
@@ -97,6 +100,9 @@ public:
      * @return shared pointer of the copied solver
      */
     virtual SolverPtr copy();
+
+    static std::string createValue();
+    static Solver* create( const std::string name );
 
 protected:
     SpecializedJacobiRuntime mSpecializedJacobiRuntime;

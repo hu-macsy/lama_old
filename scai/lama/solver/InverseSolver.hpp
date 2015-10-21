@@ -54,7 +54,9 @@ namespace lama
 /**
  * @brief Solver class that uses matrix inverse to solve an equation system.
  */
-class COMMON_DLL_IMPORTEXPORT InverseSolver: public Solver
+class COMMON_DLL_IMPORTEXPORT InverseSolver:
+		public Solver,
+		public Solver::Register<InverseSolver>
 {
 public:
     /**
@@ -122,6 +124,9 @@ public:
      * @brief Returns the complete const configuration of the derived class
      */
     virtual const InverseSolverRuntime& getConstRuntime() const;
+
+    static std::string createValue();
+    static Solver* create( const std::string name );
 
 protected:
     InverseSolverRuntime mInverseSolverRuntime;

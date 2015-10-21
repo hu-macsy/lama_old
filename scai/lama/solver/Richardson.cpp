@@ -193,6 +193,16 @@ SolverPtr Richardson::copy()
     return SolverPtr( new Richardson( *this ) );
 }
 
+std::string Richardson::createValue()
+{
+	return "Richardson";
+}
+
+Solver* Richardson::create( const std::string name )
+{
+	return new Richardson( name );
+}
+
 } /* end namespace lama */
 
 } /* end namespace scai */
