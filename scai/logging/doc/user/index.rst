@@ -281,7 +281,8 @@ It is possible to change this default output format by a line in the config file
 
     format = "logger = #name, msg: #msg"
 
-The output format cannot be redefined individually for different loggers.
+The output format cannot be redefined individually for different loggers and the format string is not allowed to be
+empty.
 
 Other tokens starting with a ``#`` will be handled as follows:
 
