@@ -1115,7 +1115,15 @@ void _StorageIO::writeMMHeader(
 	MM_typecode matcode;
 	mm_initialize_typecode( &matcode );
 	mm_set_matrix( &matcode );
-	mm_set_sparse( &matcode );
+
+	if( vector )
+	{
+		mm_set_dense( &matcode );
+	}
+	else
+	{
+		mm_set_sparse( &matcode );
+	}
 
 	if( dataType == File::DOUBLE || dataType == File::FLOAT || dataType == File::INTERNAL )
 	{
@@ -1149,9 +1157,11 @@ void _StorageIO::writeMMHeader(
 
 	if( vector )
 	{
-		mm_write_mtx_array_size( file, numRows, numValues );
+		SCAI_LOG_DEBUG( logger, "write dense --> " << numRows << "x" << numColumns )
+		mm_write_mtx_array_size( file, numRows, numColumns );
 	} else
 	{
+		SCAI_LOG_DEBUG( logger, "write sparse --> " << numRows << "x" << numColumns << " (" << numValues << " values)" )
 		mm_write_mtx_crd_size( file, numRows, numColumns, numValues );
 	}
 
