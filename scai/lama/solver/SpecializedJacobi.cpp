@@ -372,6 +372,16 @@ SolverPtr SpecializedJacobi::copy()
     return SolverPtr( new SpecializedJacobi( *this ) );
 }
 
+std::string SpecializedJacobi::createValue()
+{
+	return "SpecializedJacobi";
+}
+
+Solver* SpecializedJacobi::create( const std::string name )
+{
+	return new SpecializedJacobi( name );
+}
+
 } /* end namespace lama */
 
 } /* end namespace scai */

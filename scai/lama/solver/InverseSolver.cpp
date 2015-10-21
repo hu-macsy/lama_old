@@ -187,6 +187,16 @@ SolverPtr InverseSolver::copy()
     return SolverPtr( new InverseSolver( *this ) );
 }
 
+std::string InverseSolver::createValue()
+{
+	return "InverseSolver";
+}
+
+Solver* InverseSolver::create( const std::string name )
+{
+	return new InverseSolver( name );
+}
+
 } /* end namespace lama */
 
 } /* end namespace scai */

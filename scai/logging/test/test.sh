@@ -51,36 +51,36 @@ if [ $? -ne 0 ]; then
     errors=$(($errors + 1))
 else
     for level in "TRACE" "DEBUG" "INFO" "WARN" "ERROR" "FATAL" "OFF"; do
-	export SCAI_LOG=$level
-	output=$( ./simpleLogging.exe | tr -d '\n' ) 
+        export SCAI_LOG=$level
+        output=$( ./simpleLogging.exe | tr -d '\n' ) 
 
-	pattern=^
-	case $level in
-	"TRACE")
-	    pattern+=${genericPatternSimple}" TRACE trace message"
-	    ;&
-	"DEBUG")
-	    pattern+=${genericPatternSimple}" DEBUG debug message"
-	    ;&
-	"INFO")
-	    pattern+=${genericPatternSimple}" INFO info message"
-	    ;&
-	"WARN")
-	    pattern+=${genericPatternSimple}" WARN warn message"
-	    ;&
-	"ERROR")
-	    pattern+=${genericPatternSimple}" ERROR error message"
-	    ;&
-	"FATAL")
-	    pattern+=${genericPatternSimple}" FATAL fatal message"
-	    ;&
-	esac
-	pattern+=$
+        pattern=^
+        case $level in
+        "TRACE")
+            pattern+=${genericPatternSimple}" TRACE trace message"
+            ;&
+        "DEBUG")
+            pattern+=${genericPatternSimple}" DEBUG debug message"
+            ;&
+        "INFO")
+            pattern+=${genericPatternSimple}" INFO info message"
+            ;&
+        "WARN")
+            pattern+=${genericPatternSimple}" WARN warn message"
+            ;&
+        "ERROR")
+            pattern+=${genericPatternSimple}" ERROR error message"
+            ;&
+        "FATAL")
+            pattern+=${genericPatternSimple}" FATAL fatal message"
+            ;&
+        esac
+        pattern+=$
 
-	if ! [[ "$output" =~ $pattern ]]; then
-	    echo "ERROR: Output of the log level $level is wrong."
-	    errors=$(($errors + 1))
-	fi
+        if ! [[ "$output" =~ $pattern ]]; then
+            echo "ERROR: Output of the log level $level is wrong."
+            errors=$(($errors + 1))
+        fi
     done
     echo "done"
 fi
@@ -99,38 +99,38 @@ for level in "TRACE" "DEBUG" "INFO" "WARN" "ERROR" "FATAL" "OFF"; do
     make clean > /dev/null
     make simple DEFINES="-DSCAI_LOG_LEVEL_${level}" > /dev/null
     if [ $? -ne 0 ]; then
-	echo "ERROR: Could not build executable using log level $level"
-	errors=$(($errors + 1))
+        echo "ERROR: Could not build executable using log level $level"
+        errors=$(($errors + 1))
     else
-	output=$( ./simpleLogging.exe | tr -d '\n' ) 
+        output=$( ./simpleLogging.exe | tr -d '\n' ) 
 
-	pattern=^
-	case $level in
-	"TRACE")
-	    pattern+=${genericPatternSimple}" TRACE trace message"
-	    ;&
-	"DEBUG")
-	    pattern+=${genericPatternSimple}" DEBUG debug message"
-	    ;&
-	"INFO")
-	    pattern+=${genericPatternSimple}" INFO info message"
-	    ;&
-	"WARN")
-	    pattern+=${genericPatternSimple}" WARN warn message"
-	    ;&
-	"ERROR")
-	    pattern+=${genericPatternSimple}" ERROR error message"
-	    ;&
-	"FATAL")
-	    pattern+=${genericPatternSimple}" FATAL fatal message"
-	    ;&
-	esac
-	pattern+=$
+        pattern=^
+        case $level in
+        "TRACE")
+            pattern+=${genericPatternSimple}" TRACE trace message"
+            ;&
+        "DEBUG")
+            pattern+=${genericPatternSimple}" DEBUG debug message"
+            ;&
+        "INFO")
+            pattern+=${genericPatternSimple}" INFO info message"
+            ;&
+        "WARN")
+            pattern+=${genericPatternSimple}" WARN warn message"
+            ;&
+        "ERROR")
+            pattern+=${genericPatternSimple}" ERROR error message"
+            ;&
+        "FATAL")
+            pattern+=${genericPatternSimple}" FATAL fatal message"
+            ;&
+        esac
+        pattern+=$
 
-	if ! [[ "$output" =~ $pattern ]]; then
-	    echo "ERROR: Output of the log level $level is wrong."
-	    errors=$(($errors + 1))
-	fi
+        if ! [[ "$output" =~ $pattern ]]; then
+            echo "ERROR: Output of the log level $level is wrong."
+            errors=$(($errors + 1))
+        fi
     fi
 done
 echo "done"
@@ -175,8 +175,8 @@ else
     pattern+=$
 
     if ! [[ "$output" =~ $pattern ]]; then
-	echo "ERROR: Wrong output!"
-	errors=$(($errors + 1))
+        echo "ERROR: Wrong output!"
+        errors=$(($errors + 1))
     fi
 
     rm loggerConfig.cfg
@@ -205,8 +205,9 @@ else
     output=$( ./simpleLogging.exe | tr -d '\n' )
     pattern=^[0-9]{4}-[0-9]{2}-[0-9]{2}$
     if ! [[ "$output" =~ $pattern ]]; then
-	echo "ERROR: Output wrong when using format string #date"
-	errors=$(($errors + 1))
+        echo "ERROR: Output wrong when using format string #date"
+        echo "Looking for pattern: \"$pattern\" but output was \"$output\""
+        errors=$(($errors + 1))
     fi
 
     # check format string: #time
@@ -214,8 +215,9 @@ else
     output=$( ./simpleLogging.exe | tr -d '\n' )
     pattern=^[0-9]{2}:[0-9]{2}:[0-9]{2}$
     if ! [[ "$output" =~ $pattern ]]; then
-	echo "ERROR: Output wrong when using format string #time"
-	errors=$(($errors + 1))
+        echo "ERROR: Output wrong when using format string #time"
+        echo "Looking for pattern: \"$pattern\" but output was \"$output\""
+        errors=$(($errors + 1))
     fi
 
     # check format string: #name
@@ -223,8 +225,9 @@ else
     output=$( ./simpleLogging.exe | tr -d '\n' )
     pattern=^"Test"$
     if ! [[ "$output" =~ $pattern ]]; then
-	echo "ERROR: Output wrong when using format string #name"
-	errors=$(($errors + 1))
+        echo "ERROR: Output wrong when using format string #name"
+        echo "Looking for pattern: \"$pattern\" but output was \"$output\""
+        errors=$(($errors + 1))
     fi
 
     # check format string: #func
@@ -232,8 +235,9 @@ else
     output=$( ./simpleLogging.exe | tr -d '\n' )
     pattern=^"main"$
     if ! [[ "$output" =~ $pattern ]]; then
-	echo "ERROR: Output wrong when using format string #func"
-	errors=$(($errors + 1))
+        echo "ERROR: Output wrong when using format string #func"
+        echo "Looking for pattern: \"$pattern\" but output was \"$output\""
+        errors=$(($errors + 1))
     fi
 
     # check format string: #file
@@ -241,8 +245,9 @@ else
     output=$( ./simpleLogging.exe | tr -d '\n' )
     pattern=^"simpleLogging.cpp"$
     if ! [[ "$output" =~ $pattern ]]; then
-	echo "ERROR: Output wrong when using format string #file"
-	errors=$(($errors + 1))
+        echo "ERROR: Output wrong when using format string #file"
+        echo "Looking for pattern: \"$pattern\" but output was \"$output\""
+        errors=$(($errors + 1))
     fi
 
     # check format string: #line
@@ -250,8 +255,9 @@ else
     output=$( ./simpleLogging.exe | tr -d '\n' )
     pattern=^[0-9]{1,2}$
     if ! [[ "$output" =~ $pattern ]]; then
-	echo "ERROR: Output wrong when using format string #line"
-	errors=$(($errors + 1))
+        echo "ERROR: Output wrong when using format string #line"
+        echo "Looking for pattern: \"$pattern\" but output was \"$output\""
+        errors=$(($errors + 1))
     fi
 
     # check format string: #level
@@ -259,8 +265,9 @@ else
     output=$( ./simpleLogging.exe | tr -d '\n' )
     pattern=^FATAL$
     if ! [[ "$output" =~ $pattern ]]; then
-	echo "ERROR: Output wrong when using format string #level"
-	errors=$(($errors + 1))
+        echo "ERROR: Output wrong when using format string #level"
+        echo "Looking for pattern: \"$pattern\" but output was \"$output\""
+        errors=$(($errors + 1))
     fi
 
     # check format string: #msg
@@ -268,10 +275,53 @@ else
     output=$( ./simpleLogging.exe | tr -d '\n' )
     pattern=^"fatal message"$
     if ! [[ "$output" =~ $pattern ]]; then
-	echo "ERROR: Output wrong when using format string #msg"
-	errors=$(($errors + 1))
+        echo "ERROR: Output wrong when using format string #msg"
+        echo "Looking for pattern: \"$pattern\" but output was \"$output\""
+        errors=$(($errors + 1))
     fi
-
+    
+    # check format string: #stack
+    echo 'format="#stack"' > loggerConfig.cfg
+    output=$( ./simpleLogging.exe | tr -d '\n' )
+    pattern=^"    stack\[1\] : scai::logging::GenLogger::log\(char const\*, scai::logging::SourceLocation&, std::string const&\)"
+    pattern+="    stack\[2\] : scai::logging::GenLogger::fatal\(scai::logging::SourceLocation, std::string const&\)"
+    pattern+=.*"\[0x"[0-9a-f]+"\]"$
+    if ! [[ "$output" =~ $pattern ]]; then
+        echo "ERROR: Output wrong when using format string #stack"
+        errors=$(($errors + 1))
+    fi
+    
+    # check format string: #<environmental variable> with existing variable
+    echo 'format="#ENV_TEST_VAR"' > loggerConfig.cfg
+    export ENV_TEST_VAR=scai_test
+    output=$( ./simpleLogging.exe | tr -d '\n' )
+    pattern=^"scai_test"$
+    if ! [[ "$output" =~ $pattern ]]; then
+        echo "ERROR: Output wrong when using format string #<environmental variable> with existing variable"
+        echo "Looking for pattern: \"$pattern\" but output was \"$output\""
+        errors=$(($errors + 1))
+    fi
+    
+    # check format string: #<environmental variable> with not existing variable
+    echo 'format="#ENV_TEST_VAR"' > loggerConfig.cfg
+    unset ENV_TEST_VAR
+    output=$( ./simpleLogging.exe | tr -d '\n' )
+    pattern=^"\\$\{ENV_TEST_VAR\}"$
+    if ! [[ "$output" =~ $pattern ]]; then
+        echo "ERROR: Output wrong when using format string #<environmental variable> with not existing variable"
+        echo "Looking for pattern: \"$pattern\" but output was \"$output\""
+        errors=$(($errors + 1))
+    fi
+    
+    # check format string: #MsG (check that variable parsing is case insensitive)
+    echo 'format="#msg"' > loggerConfig.cfg
+    output=$( ./simpleLogging.exe | tr -d '\n' )
+    pattern=^"fatal message"$
+    if ! [[ "$output" =~ $pattern ]]; then
+        echo "ERROR: Output wrong when using format string #MsG (variables case sensitive?)"
+        echo "Looking for pattern: \"$pattern\" but output was \"$output\""
+        errors=$(($errors + 1))
+    fi
 
     # check some combinations of variables
     # check combined format string: #msg #level #line
@@ -279,8 +329,9 @@ else
     output=$( ./simpleLogging.exe | tr -d '\n' )
     pattern=^"fatal message FATAL "[0-9]{1,2}$
     if ! [[ "$output" =~ $pattern ]]; then
-	echo "ERROR: Output wrong when using combined format string #msg #level #line"
-	errors=$(($errors + 1))
+        echo "ERROR: Output wrong when using combined format string #msg #level #line"
+        echo "Looking for pattern: \"$pattern\" but output was \"$output\""
+        errors=$(($errors + 1))
     fi
 
     # check combined format string: #file #msg #date
@@ -288,8 +339,9 @@ else
     output=$( ./simpleLogging.exe | tr -d '\n' )
     pattern=^"simpleLogging.cpp fatal message "[0-9]{4}-[0-9]{2}-[0-9]{2}$
     if ! [[ "$output" =~ $pattern ]]; then
-	echo "ERROR: Output wrong when using combined format string #file #msg #date"
-	errors=$(($errors + 1))
+        echo "ERROR: Output wrong when using combined format string #file #msg #date"
+        echo "Looking for pattern: \"$pattern\" but output was \"$output\""
+        errors=$(($errors + 1))
     fi
 
     # check format string with additional text in it
@@ -297,9 +349,12 @@ else
     output=$( ./simpleLogging.exe | tr -d '\n' )
     pattern=^"error message: fatal message"$
     if ! [[ "$output" =~ $pattern ]]; then
-	echo "ERROR: Output wrong when using additional text in format string"
-	errors=$(($errors + 1))
+        echo "ERROR: Output wrong when using additional text in format string."
+        echo "Looking for pattern: \"$pattern\" but output was \"$output\""
+        errors=$(($errors + 1))
     fi
+    
+    
 
     rm loggerConfig.cfg
     echo "done"

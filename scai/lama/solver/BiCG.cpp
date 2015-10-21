@@ -270,6 +270,16 @@ const BiCG::BiCGRuntime& BiCG::getConstRuntime() const
     return mBiCGRuntime;
 }
 
+std::string BiCG::createValue()
+{
+	return "BiCG";
+}
+
+Solver* BiCG::create( const std::string name )
+{
+	return new BiCG( name );
+}
+
 } /* end namespace lama */
 
 } /* end namespace scai */

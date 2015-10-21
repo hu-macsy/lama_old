@@ -37,6 +37,7 @@
 #include <scai/common/config.hpp>
 
 // base classes
+#include <scai/lama/solver/Solver.hpp>
 #include <scai/lama/solver/IterativeSolver.hpp>
 
 // local library
@@ -51,7 +52,9 @@ namespace scai
 namespace lama
 {
 
-class COMMON_DLL_IMPORTEXPORT SimpleAMG: public scai::lama::IterativeSolver
+class COMMON_DLL_IMPORTEXPORT SimpleAMG:
+		public IterativeSolver,
+		public Solver::Register<SimpleAMG>
 {
 public:
 
@@ -134,6 +137,9 @@ public:
     double getAverageSmootherTime() const;
     double getAverageTransferTime() const;
     double getAverageResidualTime() const;
+
+    static std::string createValue();
+    static Solver* create( const std::string name );
 
 protected:
 

@@ -195,6 +195,16 @@ const CGNR::CGNRRuntime& CGNR::getConstRuntime() const{
     return mCGNRRuntime;
 }
 
+std::string CGNR::createValue()
+{
+	return "CGNR";
+}
+
+Solver* CGNR::create( const std::string name )
+{
+	return new CGNR( name );
+}
+
 } /* end namespace lama */
 
 } /* end namespace scai */

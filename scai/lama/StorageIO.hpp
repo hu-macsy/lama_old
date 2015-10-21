@@ -100,7 +100,6 @@ public:
 		const File::DataType& dataType);
 
     static void readMMHeader(
-		const bool& vector,
 		IndexType& numRows,
 		IndexType& numColumns,
 		IndexType& numValues,

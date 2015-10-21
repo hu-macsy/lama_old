@@ -249,6 +249,16 @@ const MINRES::MINRESRuntime& MINRES::getConstRuntime() const{
     return mMINRESRuntime;
 }
 
+std::string MINRES::createValue()
+{
+	return "MINRES";
+}
+
+Solver* MINRES::create( const std::string name )
+{
+	return new MINRES( name );
+}
+
 } /* end namespace lama */
 
 } /* end namespace scai */

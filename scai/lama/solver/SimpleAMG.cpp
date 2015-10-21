@@ -690,6 +690,16 @@ SolverPtr SimpleAMG::copy()
     return SolverPtr( new SimpleAMG( *this ) );
 }
 
+std::string SimpleAMG::createValue()
+{
+	return "SimpleAMG";
+}
+
+Solver* SimpleAMG::create( const std::string name )
+{
+	return new SimpleAMG( name );
+}
+
 } /* end namespace lama */
 
 } /* end namespace scai */
