@@ -1371,11 +1371,11 @@ DenseMatrix<ValueType>::~DenseMatrix()
 }
 
 template<typename ValueType>
-void DenseMatrix<ValueType>::setContext( const ContextPtr context )
+void DenseMatrix<ValueType>::setContextPtr( const ContextPtr context )
 {
     for ( size_t i = 0; i < mData.size(); ++i )
     {
-        mData[i]->setContext( context );
+        mData[i]->setContextPtr( context );
     }
 }
 

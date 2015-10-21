@@ -106,7 +106,7 @@ void DefaultJacobi::initialize( const Matrix& coefficients )
     SCAI_LOG_DEBUG( logger, "Diagonal property of coefficients: " << coefficients.hasDiagonalProperty() )
 
     coefficients.getDiagonal( *runtime.mDiagonalTimesRhs );
-    runtime.mDiagonalTimesRhs->setContext( coefficients.getContextPtr() );
+    runtime.mDiagonalTimesRhs->setContextPtr( coefficients.getContextPtr() );
     SCAI_LOG_DEBUG( logger, "Got diagonalTimesRhs = " << *runtime.mDiagonalTimesRhs )
     runtime.mDiagonalTimesRhs->invert();
     SCAI_LOG_DEBUG( logger, "Inverted diagonalTimesRhs = " << *runtime.mDiagonalTimesRhs )
@@ -133,7 +133,7 @@ void DefaultJacobi::initialize( const Matrix& coefficients )
     runtime.mDiagonalInverted->setDiagonal( *runtime.mDiagonalTimesRhs );
 
     runtime.mOldSolution.reset( runtime.mDiagonalTimesRhs->clone() );
-    runtime.mOldSolution->setContext( runtime.mDiagonalTimesRhs->getContextPtr() );
+    runtime.mOldSolution->setContextPtr( runtime.mDiagonalTimesRhs->getContextPtr() );
 
     OmegaSolver::initialize( coefficients );
 

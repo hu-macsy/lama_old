@@ -574,15 +574,15 @@ BOOST_AUTO_TEST_SUITE( BLAS1Test )
 
 SCAI_LOG_DEF_LOGGER( logger, "Test.BLAS1Test" )
 
-LAMA_AUTO_TEST_CASE_CT( asumTest, BLAS1Test )
-LAMA_AUTO_TEST_CASE_CT( axpyTest, BLAS1Test )
-LAMA_AUTO_TEST_CASE_CT( copyTest, BLAS1Test )
-LAMA_AUTO_TEST_CASE_CT( dotTest, BLAS1Test )
-LAMA_AUTO_TEST_CASE_CT( iamaxTest, BLAS1Test )
-LAMA_AUTO_TEST_CASE_CT( nrm2Test, BLAS1Test )
-LAMA_AUTO_TEST_CASE_CT( scalTest, BLAS1Test )
-LAMA_AUTO_TEST_CASE_CT( sumTest, BLAS1Test )
-LAMA_AUTO_TEST_CASE_CT( swapTest, BLAS1Test )
+LAMA_AUTO_TEST_CASE_CT( asumTest, BLAS1Test, scai::lama )
+LAMA_AUTO_TEST_CASE_CT( axpyTest, BLAS1Test, scai::lama )
+LAMA_AUTO_TEST_CASE_CT( copyTest, BLAS1Test, scai::lama )
+LAMA_AUTO_TEST_CASE_CT( dotTest, BLAS1Test, scai::lama )
+LAMA_AUTO_TEST_CASE_CT( iamaxTest, BLAS1Test, scai::lama )
+LAMA_AUTO_TEST_CASE_CT( nrm2Test, BLAS1Test, scai::lama )
+LAMA_AUTO_TEST_CASE_CT( scalTest, BLAS1Test, scai::lama )
+LAMA_AUTO_TEST_CASE_CT( sumTest, BLAS1Test, scai::lama )
+LAMA_AUTO_TEST_CASE_CT( swapTest, BLAS1Test, scai::lama )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 

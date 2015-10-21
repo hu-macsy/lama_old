@@ -1,5 +1,5 @@
 /**
- * @file EquationHelper.h
+ * @file EquationHelper.hpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief EquationHelper.h
+ * @brief EquationHelper.hpp
  * @author Alexander Büchel, Matthias Makulla
  * @date 09.02.2012
  * @since 1.0.0
@@ -85,10 +85,12 @@ const std::vector<EquationHelper::EquationSystem<T> ( * )()>& EquationHelper::ge
     static std::vector<t_system> t_vec;
 
     if ( t_vec.empty() )
+    {
         for ( std::size_t i = 0; i < sizeof( t_arr ) / sizeof( t_system ); ++i )
         {
             t_vec.push_back( t_arr[i] );
         }
+    }
 
     return t_vec;
 }

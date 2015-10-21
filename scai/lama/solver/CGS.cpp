@@ -90,11 +90,11 @@ void CGS::initialize( const Matrix& coefficients ){
     runtime.mVecU.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
 
 
-    runtime.mRes0->setContext( coefficients.getContextPtr() );   
-    runtime.mVecP->setContext( coefficients.getContextPtr() );
-    runtime.mVecQ->setContext( coefficients.getContextPtr() );
-    runtime.mVecU->setContext( coefficients.getContextPtr() );
-    runtime.mVecT->setContext( coefficients.getContextPtr() );
+    runtime.mRes0->setContextPtr( coefficients.getContextPtr() );
+    runtime.mVecP->setContextPtr( coefficients.getContextPtr() );
+    runtime.mVecQ->setContextPtr( coefficients.getContextPtr() );
+    runtime.mVecU->setContextPtr( coefficients.getContextPtr() );
+    runtime.mVecT->setContextPtr( coefficients.getContextPtr() );
 }
 
 

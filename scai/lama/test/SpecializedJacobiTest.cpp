@@ -167,7 +167,7 @@ void testSolveMethod( std::string solverId, ContextPtr context )
     EquationHelper::EquationSystem<ValueType> system = EquationHelper::get3x3SystemA<ValueType>();
     CSRSparseMatrix<ValueType> matrix( system.coefficients );
     MatrixType coefficients( matrix );
-    coefficients.setContext( context );
+    coefficients.setContextPtr( context );
     SCAI_LOG_INFO( logger, "SpecializedJacobiTest uses context = " << context->getType() );
     const DenseVector<ValueType> rhs( system.rhs );
     DenseVector<ValueType> solution( system.coefficients.getNumRows(), static_cast<ValueType>( 2.1 ) );

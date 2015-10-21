@@ -205,7 +205,7 @@ void SimpleAMG::initialize( const Matrix& coefficients )
     {
         for( IndexType level = 0; level < (IndexType) amgSetup.getNumLevels() - 1; ++level )
         {
-            amgSetup.getSmoother( level ).setContext( mSmootherContext );
+            amgSetup.getSmoother( level ).setContextPtr( mSmootherContext );
         }
     }
 

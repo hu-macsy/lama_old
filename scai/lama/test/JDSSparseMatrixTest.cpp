@@ -57,7 +57,7 @@ void commonTestCases( ContextPtr loc )
 {
     JDSSparseMatrix<ValueType> jdsMatrix;
     SparseMatrixTest< JDSSparseMatrix<ValueType> > jdsSparseMatrixTest( jdsMatrix );
-    jdsSparseMatrixTest.mMatrix.setContext( loc );
+    jdsSparseMatrixTest.mMatrix.setContextPtr( loc );
 
     if ( base_test_case )
     {

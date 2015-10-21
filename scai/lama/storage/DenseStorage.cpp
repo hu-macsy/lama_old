@@ -1209,7 +1209,7 @@ DenseStorage<ValueType>::DenseStorage( const _MatrixStorage& other, const Contex
 : DenseStorageView<ValueType>( mDataArray, 0, 0, false )
 
 {
-_MatrixStorage::setContext( loc );
+_MatrixStorage::setContextPtr( loc );
 assign( other );
 }
 

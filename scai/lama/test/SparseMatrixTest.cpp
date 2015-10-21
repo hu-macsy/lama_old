@@ -560,7 +560,9 @@ LAMA_COMMON_TEST_CASE_TEMPLATE_END()
 
 /* ----------------------------------------------------------------------------- */
 
-LAMA_COMMON_TEST_CASE_TEMPLATE( SparseMatrixTest, MatrixType, scaleTest )MatrixType matrixA( TestSparseMatrices::n4m4MatrixA1<double>() );
+LAMA_COMMON_TEST_CASE_TEMPLATE( SparseMatrixTest, MatrixType, scaleTest )
+
+MatrixType matrixA( TestSparseMatrices::n4m4MatrixA1<double>() );
 double valuesResult[] =
 {
     1.2f, 0.0f, 0.0f, 0.8f,

@@ -75,7 +75,7 @@ void testSolveMethod( ContextPtr context )
     DenseVector<ValueType> solution( system.coefficients.getNumRows(), 0.0 );
     DenseVector<ValueType> reference( system.solution );
     MatrixType coefficients( system.coefficients );
-    coefficients.setContext( context );
+    coefficients.setContextPtr( context );
     SCAI_LOG_INFO( logger, "InverseSolverTest uses context = " << context->getType() );
     DenseVector<ValueType> rhs( system.rhs );
     InverseSolver inverseSolver( "InverseSolverTest solver" );

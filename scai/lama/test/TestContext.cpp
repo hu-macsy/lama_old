@@ -1,5 +1,5 @@
 /**
- * @file Context.hpp
+ * @file TestContext.cpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,15 +25,13 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Context.hpp
+ * @brief TestContext.cpp
  * @author Jiri Kraus
  * @date 12.04.2012
  * @since 1.0.0
  */
+#include <scai/lama/test/TestContext.hpp>
 
-#pragma once
-
-#include <map>
 #include <scai/hmemo/Context.hpp>
 
 namespace scai
@@ -42,16 +40,25 @@ namespace scai
 namespace lama_test
 {
 
-class Context
-{
-public:
-    static scai::hmemo::ContextPtr getContext( const scai::hmemo::context::ContextType type );
-private:
-    Context();
-    virtual ~Context();
+std::map<scai::hmemo::context::ContextType, scai::hmemo::ContextPtr> TestContext::contexts;
 
-    static std::map<scai::hmemo::context::ContextType, scai::hmemo::ContextPtr> contexts;
-};
+scai::hmemo::ContextPtr TestContext::getContext( const scai::hmemo::context::ContextType type )
+{
+    if ( !contexts[type] )
+    {
+        contexts[type] = scai::hmemo::Context::getContextPtr( type );
+    }
+
+    return contexts[type];
+}
+
+TestContext::TestContext()
+{
+}
+
+TestContext::~TestContext()
+{
+}
 
 } /* end namespace lama_test */
 

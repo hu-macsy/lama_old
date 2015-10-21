@@ -365,7 +365,7 @@ void AssignmentOpMatrixExpressionTestmethod( ContextPtr context )
     Scalar t = 1.0;
     const CSRSparseMatrix<ValueType> CSRn4m4IdentityMatrix( TestSparseMatrices::n4m4IdentityMatrix<ValueType>() );
     MatrixType n4m4IdentityMatrix( CSRn4m4IdentityMatrix );
-    n4m4IdentityMatrix.setContext( context );
+    n4m4IdentityMatrix.setContextPtr( context );
     DenseVector<ValueType> vectorResult( n, 8.0 );
     DenseVector<ValueType> vectorResult2( n, 6.0 );
     DenseVector<ValueType> vectorResult3( n, 3.0 );
@@ -495,8 +495,8 @@ void AssignmentVectorExpressionTestmethod( ContextPtr context )
     DenseVector<ValueType> vectorResult8( n, 1.0 );
     DenseVector<ValueType> vectorResult9( n, -7.0 );
     DenseVector<ValueType> vectorResult10( n, -14.0 );
-    vectorA.setContext( context );
-    vectorB.setContext( context );
+    vectorA.setContextPtr( context );
+    vectorB.setContextPtr( context );
     SCAI_LOG_DEBUG( logger, "Using context vecA = " << vectorA.getContextPtr()->getType() );
     SCAI_LOG_DEBUG( logger, "Using context vecB = " << vectorB.getContextPtr()->getType() );
     Scalar s = 2.0;
@@ -560,9 +560,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SpecialAssignmentTest, ValueType, test_types )
         DenseVector<ValueType> vectorA( n, 3.0 );
         DenseVector<ValueType> vectorB( n, 6.0 );
         DenseVector<ValueType> vectorC( n, 12.0 );
-        vectorA.setContext( context );
-        vectorB.setContext( context );
-        vectorC.setContext( context );
+        vectorA.setContextPtr( context );
+        vectorB.setContextPtr( context );
+        vectorC.setContextPtr( context );
         Scalar s = 2.0;
         SCAI_LOG_INFO( logger, "vectorA *= 2.0" );
         vectorA *= s;
@@ -597,8 +597,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( operatorDotProductTest, ValueType, test_types )
         IndexType n = 4;
         DenseVector<ValueType> v1( n, 4.0 );
         DenseVector<ValueType> v2( n, 8.0 );
-        v1.setContext( context );
-        v2.setContext( context );
+        v1.setContextPtr( context );
+        v2.setContextPtr( context );
         Scalar result = v1.dotProduct( v2 );
         BOOST_CHECK_EQUAL( 128.0, result );
         DenseVector<ValueType> v3( n, -2.0 );

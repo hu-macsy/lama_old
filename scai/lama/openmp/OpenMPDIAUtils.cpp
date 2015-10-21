@@ -36,7 +36,6 @@
 
 // local library
 #include <scai/lama/openmp/OpenMPDIAUtils.hpp>
-#include <scai/lama/openmp/OpenMP.hpp>
 
 #include <scai/lama/LAMAInterface.hpp>
 #include <scai/lama/LAMAInterfaceRegistry.hpp>
@@ -44,6 +43,7 @@
 // internal scai libraries
 #include <scai/tracing.hpp>
 
+#include <scai/common/OpenMP.hpp>
 #include <scai/common/Assert.hpp>
 
 // boost

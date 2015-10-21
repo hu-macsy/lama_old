@@ -85,7 +85,7 @@ void checkTest( ContextPtr context )
         LAMAArrayRef<IndexType> jdsILG( nIlg, valuesIlg );
         LAMAArrayRef<IndexType> jdsPerm( nPerm, valuesPerm );
         JDSStorage<ValueType> jdsStorage;
-        jdsStorage.setContext( context );
+        jdsStorage.setContextPtr( context );
         // setJDSData will copy/convert values up to the needed context
         jdsStorage.setJDSData( numRows, numColumns, numValues, numDiagonals, jdsDLG, jdsILG, jdsPerm, jdsJA,
                                jdsValues );
@@ -139,7 +139,7 @@ void commonTestCases( ContextPtr loc )
 {
     JDSStorage<ValueType> jdsStorage;
     MatrixStorageTest<ValueType> storageTest( jdsStorage );
-    storageTest.mMatrixStorage.setContext( loc );
+    storageTest.mMatrixStorage.setContextPtr( loc );
 
     if ( base_test_case )
     {

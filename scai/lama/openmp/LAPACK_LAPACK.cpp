@@ -44,6 +44,7 @@
 
 #include <scai/tracing.hpp>
 
+#include <scai/common/Assert.hpp>
 #include <scai/common/unique_ptr.hpp>
 #include <scai/common/macros/unused.hpp>
 
@@ -675,7 +676,7 @@ void LAPACK_LAPACK::laswp(
     const int K2,
     const int* ipiv,
     const int INCX,
-    SyncToken* syncToken )
+    tasking::SyncToken* syncToken )
 {
     SCAI_REGION( "LAPACK.LAPACK.laswp<float>" )
 
@@ -729,7 +730,7 @@ void LAPACK_LAPACK::laswp(
     const int K2,
     const int* ipiv,
     const int INCX,
-    SyncToken* syncToken )
+    tasking::SyncToken* syncToken )
 {
     SCAI_REGION( "LAPACK.LAPACK.laswp<double>" )
 

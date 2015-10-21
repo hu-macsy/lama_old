@@ -59,7 +59,7 @@ void commonTestCases( ContextPtr loc )
 {
     DenseStorage<ValueType> denseStorage;
     MatrixStorageTest<ValueType> storageTest( denseStorage );
-    storageTest.mMatrixStorage.setContext( loc );
+    storageTest.mMatrixStorage.setContextPtr( loc );
 
     if ( base_test_case )
     {

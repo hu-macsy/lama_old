@@ -38,17 +38,17 @@ scai_project (
     CLASSES
 
         Configuration
-        Context
         MatrixStorageTest
         NormTest
         SameMatrixHelper
         SparseMatrixHelper
         SparseMatrixTest
+        TestContext
     
     HEADERS
 
         EquationHelper
-#        TestMacros
+#        TestMacros : in common
         TestSparseMatrices
 
     SOURCES
@@ -56,9 +56,9 @@ scai_project (
         BiCGstabTest
        # BiCGTest  : disabled as long as MatrixTranspose for DenseMatrix is
        # not supported
-       # BLAS1Test
-       # BLAS2Test
-       # BLAS3Test
+        BLAS1Test
+        BLAS2Test
+        BLAS3Test
         CGTest
        # not yet: CGNETest
         CGNRTest
@@ -91,10 +91,9 @@ scai_project (
         JDSUtilsTest
         L1NormTest
         L2NormTest
-        LAMAArrayTest
-      #  LAPACKTest
-        MatrixStorageConversionTest
+        LAPACKTest
         MatrixNormTest
+        MatrixStorageConversionTest
         MatrixTest
         MaxNormTest
         MINRESTest
@@ -112,7 +111,7 @@ scai_project (
         TaskSyncTokenTest
         TFQMRTest
         TimerTest
-#        UtilsTest
+        UtilsTest
         VectorTest
     )
 

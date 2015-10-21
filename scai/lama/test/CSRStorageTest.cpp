@@ -57,7 +57,7 @@ void commonTestCases( ContextPtr loc )
 {
     CSRStorage<ValueType> csrStorage;
     MatrixStorageTest<ValueType> storageTest( csrStorage );
-    storageTest.mMatrixStorage.setContext( loc );
+    storageTest.mMatrixStorage.setContextPtr( loc );
 
     if ( base_test_case )
     {

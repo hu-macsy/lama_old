@@ -82,7 +82,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( Norm, ValueType, test_types )
             const ValueType VAL = 1.0;
             DenseVector<ValueType> repVector( size, VAL );
             DenseVector<ValueType> distVector;
-            distVector.setContext( context );
+            distVector.setContextPtr( context );
             distVector = repVector;
             distVector.redistribute( dist );
             Scalar l1norm = distVector.l1Norm();

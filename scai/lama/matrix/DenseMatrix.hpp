@@ -255,9 +255,9 @@ public:
 
     /* Implementation of pure method of class Matrix. */
 
-    virtual void setContext( const hmemo::ContextPtr context );
+    virtual void setContextPtr( const hmemo::ContextPtr context );
 
-    using CRTPMatrix<DenseMatrix<ValueType>,ValueType>::setContext; // setContext( localContext, haloContext )
+    using CRTPMatrix<DenseMatrix<ValueType>,ValueType>::setContextPtr; // setContextPtr( localContext, haloContext )
 
     /* Implementation of pure method of class Matrix. */
 

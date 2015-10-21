@@ -240,7 +240,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( vectorTimesMatrixTest, ValueType, test_types )
     SCAI_LOG_INFO( logger, "Vector(NoDist) = Vector(BlockDist) * Matrix(BlockDist, NoDist)" )
     result = vector * matrix;
     ContextPtr host = Context::getContextPtr( context::Host );
-    matrixTypeMatrix.setContext( host, host );
+    matrixTypeMatrix.setContextPtr( host, host );
 
     for ( IndexType i = 0; i < result.size(); ++i )
     {
@@ -295,7 +295,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( vectorTimesMatrixTest, ValueType, test_types )
         BOOST_CHECK_EQUAL( denseCorrectResult2.getValue( i ), denseResult0.getValue( i ) );
     }
 
-    repM.setContext( host, host );
+    repM.setContextPtr( host, host );
     CSRSparseMatrix<ValueType> matrixTypeMatrix2( repM, dist, dist );
     const Matrix& matrix2 = matrixTypeMatrix2;
     DenseVector<ValueType> denseVector2( dist, 1.0 );
@@ -309,7 +309,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( vectorTimesMatrixTest, ValueType, test_types )
         BOOST_CHECK_EQUAL( denseCorrectResult2.getValue( i ), result2.getValue( i ) );
     }
 
-    matrixTypeMatrix2.setContext( host, host );
+    matrixTypeMatrix2.setContextPtr( host, host );
 }
 
 /* --------------------------------------------------------------------- */
@@ -328,7 +328,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matrixTimesVectorTest, ValueType, test_types )
     Vector& result = denseResult;
     result = matrix * vector;
     ContextPtr host = Context::getContextPtr( context::Host );
-    matrixTypeMatrix.setContext( host, host );
+    matrixTypeMatrix.setContextPtr( host, host );
 
     for ( IndexType i = 0; i < result.size(); ++i )
     {
@@ -380,7 +380,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matrixTimesVectorTest, ValueType, test_types )
         BOOST_CHECK_EQUAL( denseCorrectResult2.getValue( i ), denseResult0.getValue( i ) );
     }
 
-    repM.setContext( host, host );
+    repM.setContextPtr( host, host );
     CSRSparseMatrix<ValueType> matrixTypeMatrix2( repM, dist, dist );
     const Matrix& matrix2 = matrixTypeMatrix2;
     DenseVector<ValueType> denseVector2( dist, 1.0 );
@@ -392,7 +392,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matrixTimesVectorTest, ValueType, test_types )
         BOOST_CHECK_EQUAL( denseCorrectResult2.getValue( i ), result2.getValue( i ) );
     }
 
-    matrixTypeMatrix2.setContext( host, host );
+    matrixTypeMatrix2.setContextPtr( host, host );
 }
 
 /* ------------------------------------------------------------------------- */

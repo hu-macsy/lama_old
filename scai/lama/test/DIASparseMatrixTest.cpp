@@ -55,7 +55,7 @@ void commonTestCases( ContextPtr loc )
 {
     DIASparseMatrix<ValueType> diaMatrix;
     SparseMatrixTest< DIASparseMatrix<ValueType> > diaSparseMatrixTest( diaMatrix );
-    diaSparseMatrixTest.mMatrix.setContext( loc );
+    diaSparseMatrixTest.mMatrix.setContextPtr( loc );
 
     if ( base_test_case )
     {

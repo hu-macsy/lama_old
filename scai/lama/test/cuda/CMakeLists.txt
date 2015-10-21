@@ -35,7 +35,7 @@ scai_project (
 
   CLASSES
 
-        CUDAContext
+        CUDATestContext
 
   SOURCES
 

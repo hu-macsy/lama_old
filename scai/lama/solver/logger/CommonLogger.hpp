@@ -38,7 +38,7 @@
 #include <scai/common/config.hpp>
 
 // base classes
-#include <scai/lama/solver/logger/Logger.hpp>
+#include <scai/lama/solver/logger/SolverLogger.hpp>
 
 namespace scai
 {
@@ -49,7 +49,7 @@ namespace lama
 /**
  * @brief A CommonLogger which adds no prefix to its messages.
  */
-class COMMON_DLL_IMPORTEXPORT CommonLogger: public Logger
+class COMMON_DLL_IMPORTEXPORT CommonLogger: public SolverLogger
 {
 public:
     /**

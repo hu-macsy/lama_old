@@ -1,5 +1,5 @@
 /**
- * @file OpenMP.hpp
+ * @file TestContext.hpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,44 +25,34 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Common defintions for optional use of OpenMP
- * @author Thomas Brandes
- * @date 11.06.2013
- * @since 1.0.1
+ * @brief TestContext.hpp
+ * @author Jiri Kraus
+ * @date 12.04.2012
+ * @since 1.0.0
  */
 
 #pragma once
 
-#ifdef _OPENMP
-#include <omp.h>
-#else
-#define omp_get_thread_num() 0
-#define omp_get_num_threads() 1
-#define omp_get_max_threads() 1
-#endif
+#include <map>
+#include <scai/hmemo/Context.hpp>
 
-/** atomicAdd used for reductions as reduction directive is unsupported for complex numbers.
- *
- *  Note: template specialization used for float and double
- */
-
-template<typename ValueType>
-inline void atomicAdd( ValueType& sharedResult, const ValueType& threadResult )
+namespace scai
 {
-    #pragma omp critical
-    sharedResult += threadResult;
-}
 
-template<>
-inline void atomicAdd( float& sharedResult, const float& threadResult )
+namespace lama_test
 {
-    #pragma omp atomic
-    sharedResult += threadResult;
-}
 
-template<>
-inline void atomicAdd( double& sharedResult, const double& threadResult )
+class TestContext
 {
-    #pragma omp atomic
-    sharedResult += threadResult;
-}
+public:
+    static scai::hmemo::ContextPtr getContext( const scai::hmemo::context::ContextType type );
+private:
+    TestContext();
+    virtual ~TestContext();
+
+    static std::map<scai::hmemo::context::ContextType, scai::hmemo::ContextPtr> contexts;
+};
+
+} /* end namespace lama_test */
+
+} /* end namespace scai */

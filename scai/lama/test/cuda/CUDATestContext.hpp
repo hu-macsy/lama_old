@@ -1,5 +1,5 @@
 /**
- * @file launchHelper.hpp
+ * @file CUDATestContext.hpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,43 +25,35 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief launchHelper.hpp
- * @author lschubert
- * @date 06.07.2012
+ * @brief CUDATestContext.hpp
+ * @author Jiri Kraus
+ * @date 05.04.2012
  * @since 1.0.0
  */
 
 #pragma once
 
-#include <cuda_runtime.h>
+#include <scai/hmemo/Context.hpp>
 
 namespace scai
 {
-
-namespace lama
+namespace lama_test
 {
 
-//defines some CUDA specific things for the Eclipse CDT_Parser
-//so we don't get syntax errors.
-#ifdef __CDT_PARSER__
-#define __global__
-#define __device__
-#define __shared__
-#define __host__
-#define __syncthreads()
-#define __threadfence_block()
-dim3 blockIdx;
-dim3 blockDim;
-dim3 threadIdx;
-dim3 gridDim;
-int warpSize;
-#define min(a,b) a
-#define max(a,b) a
-#endif
+class CUDATestContext
+{
+public:
+    static hmemo::ContextPtr getContext();
+private:
+    CUDATestContext();
+    CUDATestContext( const CUDATestContext& );
+    const CUDATestContext& operator=( const CUDATestContext& );
+    ~CUDATestContext();
 
-#define MIN(a,b) ((a>b)?b:a)
-#define MAX(a,b) ((a<b)?b:a)
+    static hmemo::ContextPtr cudaContext;
 
-} /* end namespace lama */
+};
+
+} /* end namespace lama_test */
 
 } /* end namespace scai */

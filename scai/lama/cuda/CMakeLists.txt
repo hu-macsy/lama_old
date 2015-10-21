@@ -68,7 +68,6 @@ scai_project(
 
         CUDATexVector
         lama_cublas
-        launchHelper
 
     ADD_PARENT_SCOPE
 )

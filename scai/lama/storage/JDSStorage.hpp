@@ -113,7 +113,7 @@ public:
 
     JDSStorage( const _MatrixStorage& other, const ContextPtr context )
     {
-        setContext( context );
+        setContextPtr( context );
         assign( other );
     }
 
@@ -176,7 +176,7 @@ public:
         LAMAArray<IndexType>& ia,
         LAMAArray<IndexType>* ja,
         LAMAArray<OtherValueType>* values,
-        const ContextPtr /* loc */) const;
+        const ContextPtr loc ) const;
 
     /**
      * Template version with given value type.
@@ -371,9 +371,8 @@ public:
 
     using MatrixStorage<ValueType>::assign;
     using MatrixStorage<ValueType>::prefetch;
-    using MatrixStorage<ValueType>::getContext;
     using MatrixStorage<ValueType>::getContextPtr;
-    using MatrixStorage<ValueType>::setContext;
+    using MatrixStorage<ValueType>::setContextPtr;
 
 protected:
 

@@ -90,9 +90,9 @@ void CGNR::initialize( const Matrix& coefficients ){
 
     runtime.mTransposedMat->assignTranspose( coefficients );
 
-    runtime.mVecD->setContext( coefficients.getContextPtr() );   
-    runtime.mVecW->setContext( coefficients.getContextPtr() );
-    runtime.mVecZ->setContext( coefficients.getContextPtr() );
+    runtime.mVecD->setContextPtr( coefficients.getContextPtr() );
+    runtime.mVecW->setContextPtr( coefficients.getContextPtr() );
+    runtime.mVecZ->setContextPtr( coefficients.getContextPtr() );
     
 
 }

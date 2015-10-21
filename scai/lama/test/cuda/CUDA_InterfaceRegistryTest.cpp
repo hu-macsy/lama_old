@@ -1,5 +1,5 @@
 /**
- * @file CUDA_InterfaceRegistry.cpp
+ * @file CUDA_InterfaceRegistryTest.cpp
  *
  * @license
  * Copyright (c) 2009-2015

@@ -89,7 +89,7 @@ void testSolveMethod( ContextPtr loc )
     CommunicatorPtr comm = Communicator::get();
     DistributionPtr dist( new BlockDistribution( coefficients.getNumRows(), comm ) );
     coefficients.redistribute( dist, dist );
-    coefficients.setContext( loc );
+    coefficients.setContextPtr( loc );
     DenseVector<ValueType> solution( dist, 2.0 );
     const DenseVector<ValueType> exactSolution( dist, 1.0 );
     DenseVector<ValueType> rhs( dist, 1.0 );
@@ -97,7 +97,7 @@ void testSolveMethod( ContextPtr loc )
     SCAI_LOG_INFO( logger, "created all stuff for inverse solver" )
     //initialize
     inverseSolver.initialize( coefficients );
-    inverseSolver.setContext( loc );
+    inverseSolver.setContextPtr( loc );
     inverseSolver.solve( solution, rhs );
     DenseVector<ValueType> diff( solution - exactSolution );
     Scalar s = maxNorm( diff );

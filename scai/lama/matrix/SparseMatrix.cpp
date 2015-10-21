@@ -360,7 +360,7 @@ void SparseMatrix<ValueType>::assign( const Matrix& matrix )
 {
     SCAI_LOG_INFO( logger, "assign " << matrix << " to " << *this )
 
-    this->setContext( matrix.getContextPtr() );
+    this->setContextPtr( matrix.getContextPtr() );
 
     const SparseMatrix<ValueType>* sparseMatrix = dynamic_cast<const SparseMatrix<ValueType>*>( &matrix );
 
@@ -751,8 +751,8 @@ void SparseMatrix<ValueType>::redistribute( DistributionPtr rowDistributionPtr, 
 
     set( *mLocalData, oldRowDistributionPtr );
 
-    mLocalData->setContext( localCtx );
-    mHaloData->setContext( haloCtx );
+    mLocalData->setContextPtr( localCtx );
+    mHaloData->setContextPtr( haloCtx );
 }
 
 /* -------------------------------------------------------------------------- */
@@ -1165,7 +1165,7 @@ void SparseMatrix<ValueType>::matrixTimesMatrixImpl(
 {
     SCAI_REGION( "Mat.timesMatrix" )
 
-    SCAI_LOG_DEBUG( logger, "Context lhs before mult " << mLocalData->getContext() )
+    SCAI_LOG_DEBUG( logger, "Context lhs before mult " << *(mLocalData->getContextPtr()) )
 
     if( !B.getColDistribution().isReplicated() )
     {
@@ -1212,7 +1212,7 @@ void SparseMatrix<ValueType>::matrixTimesMatrixImpl(
     mHaloData->allocate( mNumRows, 0 );
     mHalo.clear();
 
-    SCAI_LOG_DEBUG( logger, "Context lhs after mult " << mLocalData->getContext() )
+    SCAI_LOG_DEBUG( logger, "Context lhs after mult " << *(mLocalData->getContextPtr()) )
 }
 
 /* -------------------------------------------------------------------------- */
@@ -1266,7 +1266,7 @@ void SparseMatrix<ValueType>::haloOperationSync(
             SCAI_REGION( "Mat.Sp.syncPrefetchHalo" )
 
             SCAI_LOG_INFO( logger,
-                           comm << ": prefetch " << haloX.size() << " halo values of X to : " << mHaloData->getContext() );
+                           comm << ": prefetch " << haloX.size() << " halo values of X to : " << *(mHaloData->getContextPtr()) );
 
             // During the local computation we prefetch already haloX where it is need
 
@@ -1284,7 +1284,7 @@ void SparseMatrix<ValueType>::haloOperationSync(
         SCAI_REGION( "Mat.Sp.syncLocal" )
 
         SCAI_LOG_INFO( logger,
-                       comm << ": synchronous computation localResult[ " << localResult.size() << "] = localF( localMatrix, localX[ " << localX.size() << "] ) on " << mLocalData->getContext() )
+                       comm << ": synchronous computation localResult[ " << localResult.size() << "] = localF( localMatrix, localX[ " << localX.size() << "] ) on " << *(mLocalData->getContextPtr()) )
 
         localF( mLocalData.get(), localResult, localX );
     }
@@ -1294,7 +1294,7 @@ void SparseMatrix<ValueType>::haloOperationSync(
         SCAI_REGION( "Mat.Sp.syncHalo" )
 
         SCAI_LOG_INFO( logger,
-                       comm << ": compute with " << haloX.size() << " halo values on " << mHaloData->getContext() );
+                       comm << ": compute with " << haloX.size() << " halo values on " << *(mHaloData->getContextPtr()) );
 
         // now we can update the result with haloMatrix and halo values of X
 
@@ -1491,7 +1491,7 @@ void SparseMatrix<ValueType>::haloOperationAsync(
         SCAI_REGION( "Mat.Sp.asyncLocal" )
 
         SCAI_LOG_INFO( logger,
-                       comm << ": start async computation localResult[ " << localResult.size() << "] = localF( localMatrix, localX[ " << localX.size() << "] ) on " << mLocalData->getContext() )
+                       comm << ": start async computation localResult[ " << localResult.size() << "] = localF( localMatrix, localX[ " << localX.size() << "] ) on " << *(mLocalData->getContextPtr()) )
 
         localComputation.reset( localAsyncF( mLocalData.get(), localResult, localX ) );
     }
@@ -1540,7 +1540,7 @@ void SparseMatrix<ValueType>::haloOperationAsync(
         SCAI_REGION("Mat.Sp.asyncHalo")
 
         SCAI_LOG_INFO( logger,
-                       comm << ": compute with " << haloX.size() << " halo values on " << mHaloData->getContext() );
+                       comm << ": compute with " << haloX.size() << " halo values on " << *(mHaloData->getContextPtr()) );
 
         haloF( mHaloData.get(), localResult, haloX );
     }
@@ -2311,12 +2311,12 @@ SparseMatrix<ValueType>* SparseMatrix<ValueType>::clone() const
 
     // inherit the context for local and halo storage
 
-    newSparseMatrix->setContext( mLocalData->getContextPtr(), mHaloData->getContextPtr() );
+    newSparseMatrix->setContextPtr( mLocalData->getContextPtr(), mHaloData->getContextPtr() );
 
     newSparseMatrix->setCommunicationKind( this->getCommunicationKind() );
 
     SCAI_LOG_INFO( logger,
-                   *this << ": create -> " << *newSparseMatrix << " @ " << newSparseMatrix->getContext() << ", kind = " << newSparseMatrix->getCommunicationKind() );
+                   *this << ": create -> " << *newSparseMatrix << " @ " << *(newSparseMatrix->getContextPtr()) << ", kind = " << newSparseMatrix->getCommunicationKind() );
 
     return newSparseMatrix.release();
 }

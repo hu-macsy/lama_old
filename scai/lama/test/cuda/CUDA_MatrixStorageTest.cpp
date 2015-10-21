@@ -1,5 +1,5 @@
 /**
- * @file CUDAMatrixStorageTest.cpp
+ * @file CUDA_MatrixStorageTest.cpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -43,7 +43,7 @@
 
 #include <scai/lama/distribution/NoDistribution.hpp>
 
-#include <scai/lama/test/cuda/CUDAContext.hpp>
+#include <scai/lama/test/cuda/CUDATestContext.hpp>
 
 using namespace scai::lama;
 using namespace scai::hmemo;
@@ -97,8 +97,8 @@ void setCSRData( StorageType& storage )
     myJa.release();
     myData.release();
     ContextPtr host = Context::getContextPtr( context::Host );
-    ContextPtr cuda = scai::lama_test::CUDAContext::getContext();
-    storage.setContext( host );
+    ContextPtr cuda = scai::lama_test::CUDATestContext::getContext();
+    storage.setContextPtr( host );
     storage.setCSRData( numRows, numColumns, numValues, csrIas, csrJas, csrValues );
 
     // fill with the csr sparse data
@@ -111,7 +111,7 @@ void setCSRData( StorageType& storage )
         }
     }
 
-    storage.setContext( cuda );
+    storage.setContextPtr( cuda );
     storage.setCSRData( numRows, numColumns, numValues, csrIas, csrJas, csrValues );
 
     // fill with the csr sparse data

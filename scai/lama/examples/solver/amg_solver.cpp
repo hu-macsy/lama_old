@@ -63,9 +63,9 @@ void dummy( const LamaConfig& lamaconf )
     CSRSparseMatrix<double> m;
     m.setIdentity( 100 );
     DenseVector<double> v1( 100, 1.0  );
-    m.setContext( lamaconf.getContextPtr() );
+    m.setContextPtr( lamaconf.getContextPtr() );
     m.setCommunicationKind( lamaconf.getCommunicationKind() );
-    v1.setContext( lamaconf.getContextPtr() );
+    v1.setContextPtr( lamaconf.getContextPtr() );
     DenseVector<double> v2( m *  v1 );
 }
 
@@ -257,9 +257,9 @@ int main( int argc, char* argv[] )
     dummy( lamaconf );
 
     matrix.setCommunicationKind( lamaconf.getCommunicationKind() );
-    matrix.setContext( lamaconf.getContextPtr() );
-    rhs.setContext( lamaconf.getContextPtr() );
-    solution.setContext( lamaconf.getContextPtr() );
+    matrix.setContextPtr( lamaconf.getContextPtr() );
+    rhs.setContextPtr( lamaconf.getContextPtr() );
+    solution.setContextPtr( lamaconf.getContextPtr() );
 
     rhs.prefetch();
     matrix.prefetch();

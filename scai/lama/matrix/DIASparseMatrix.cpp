@@ -111,7 +111,7 @@ DIASparseMatrix<ValueType>::DIASparseMatrix( const DIASparseMatrix& other )
 
 {
     this->setCommunicationKind( other.getCommunicationKind() );
-    this->setContext( other.getContextPtr() );
+    this->setContextPtr( other.getContextPtr() );
 
     SparseMatrix<ValueType>::assign( other );
 }
@@ -124,7 +124,7 @@ DIASparseMatrix<ValueType>::DIASparseMatrix( const Matrix& other, bool transpose
     : SparseMatrix<ValueType>( createStorage() )
 
 {
-    this->setContext( other.getContextPtr() );
+    this->setContextPtr( other.getContextPtr() );
     this->setCommunicationKind( other.getCommunicationKind() );
 
     if( transposeFlag )
@@ -145,7 +145,7 @@ DIASparseMatrix<ValueType>::DIASparseMatrix( const Matrix& other, DistributionPt
     : SparseMatrix<ValueType>( createStorage() )
 
 {
-    this->setContext( other.getContextPtr() );
+    this->setContextPtr( other.getContextPtr() );
     this->setCommunicationKind( other.getCommunicationKind() );
 
     // this might be done more efficiently as assign introduces intermediate copy
@@ -192,7 +192,7 @@ DIASparseMatrix<ValueType>::DIASparseMatrix( const Expression_SM& expression )
 {
     const Matrix& master = expression.getArg2();
 
-    SparseMatrix<ValueType>::setContext( master.getContextPtr() );
+    SparseMatrix<ValueType>::setContextPtr( master.getContextPtr() );
     SparseMatrix<ValueType>::setCommunicationKind( master.getCommunicationKind() );
 
     Matrix::operator=( expression );
@@ -208,7 +208,7 @@ DIASparseMatrix<ValueType>::DIASparseMatrix( const Expression_SMM& expression )
 {
     const Matrix& master = expression.getArg1().getArg2();
 
-    SparseMatrix<ValueType>::setContext( master.getContextPtr() );
+    SparseMatrix<ValueType>::setContextPtr( master.getContextPtr() );
     SparseMatrix<ValueType>::setCommunicationKind( master.getCommunicationKind() );
 
     Matrix::operator=( expression );
@@ -225,7 +225,7 @@ DIASparseMatrix<ValueType>::DIASparseMatrix( const Expression_SM_SM& expression 
 
     const Matrix& master = expression.getArg1().getArg2();
 
-    SparseMatrix<ValueType>::setContext( master.getContextPtr() );
+    SparseMatrix<ValueType>::setContextPtr( master.getContextPtr() );
     SparseMatrix<ValueType>::setCommunicationKind( master.getCommunicationKind() );
 
     Matrix::operator=( expression );
@@ -336,7 +336,7 @@ DIASparseMatrix<ValueType>* DIASparseMatrix<ValueType>::clone() const
 
     // inherit the context, communication kind of this matrix for the new matrix
 
-    newSparseMatrix->setContext( this->getContextPtr() );
+    newSparseMatrix->setContextPtr( this->getContextPtr() );
     newSparseMatrix->setCommunicationKind( this->getCommunicationKind() );
 
     SCAI_LOG_INFO( logger, "create is " << *newSparseMatrix )
