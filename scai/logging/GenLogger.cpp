@@ -655,9 +655,12 @@ void GenLogger::setFormat( const std::string& format )
     {
         std::string& val = formatTokens[i];
 
-        for ( std::string::iterator p = val.begin(); val.end() != p; ++p )
+        if( val.length() > 0  && val[0] == '#' )
         {
-            *p = toupper( *p );
+            for ( std::string::iterator p = val.begin(); val.end() != p; ++p )
+            {
+                *p = toupper( *p );
+            }
         }
     }
 }
