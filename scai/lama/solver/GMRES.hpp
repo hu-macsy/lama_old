@@ -37,6 +37,7 @@
 #include <scai/common/config.hpp>
 
 // base classes
+#include <scai/lama/solver/Solver.hpp>
 #include <scai/lama/solver/IterativeSolver.hpp>
 
 // internal scai libraries
@@ -52,7 +53,9 @@ namespace lama
  * @brief The class GMRES represents a IterativeSolver which uses the krylov subspace GMRES method
  *        to solve a system of linear equations iteratively.
  */
-class COMMON_DLL_IMPORTEXPORT GMRES: public IterativeSolver
+class COMMON_DLL_IMPORTEXPORT GMRES:
+		public IterativeSolver,
+		public Solver::Register<GMRES>
 {
 public:
 
@@ -134,6 +137,9 @@ public:
 
     double getAverageIterationTime() const;
     double getAveragePreconditionerTime() const;
+
+    static std::string createValue();
+    static Solver* create( const std::string name );
 
 protected:
 

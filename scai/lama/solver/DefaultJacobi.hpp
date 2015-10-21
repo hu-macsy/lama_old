@@ -37,6 +37,7 @@
 #include <scai/common/config.hpp>
 
 // base classes
+#include <scai/lama/solver/Solver.hpp>
 #include <scai/lama/solver/OmegaSolver.hpp>
 
 // logging
@@ -48,7 +49,9 @@ namespace scai
 namespace lama
 {
 
-class COMMON_DLL_IMPORTEXPORT DefaultJacobi: public OmegaSolver
+class COMMON_DLL_IMPORTEXPORT DefaultJacobi:
+		public OmegaSolver,
+		public Solver::Register<DefaultJacobi>
 {
 public:
     DefaultJacobi( const std::string& id );
@@ -112,6 +115,9 @@ public:
      * @brief Returns the complete const configuration of the derived class
      */
     virtual const DefaultJacobiRuntime& getConstRuntime() const;
+
+    static std::string createValue();
+    static Solver* create( const std::string name );
 
 protected:
     DefaultJacobiRuntime mDefaultJacobiRuntime;

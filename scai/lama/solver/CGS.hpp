@@ -36,6 +36,7 @@
 #include <scai/common/config.hpp>
 
 // base classes
+#include <scai/lama/solver/Solver.hpp>
 #include <scai/lama/solver/IterativeSolver.hpp>
 
 // logging
@@ -59,7 +60,9 @@ namespace lama
  * 3. In this case it makes sense to take the residual since we have to update the residual in each
  * iterate() anyways (contrary to e.g. TFQMR solver).
  */
-class COMMON_DLL_IMPORTEXPORT CGS: public IterativeSolver
+class COMMON_DLL_IMPORTEXPORT CGS:
+		public IterativeSolver,
+		public Solver::Register<CGS>
 {
 public:
     /**
@@ -123,6 +126,9 @@ public:
      * @brief Returns the complete configuration of the derived class
      */
     virtual const CGSRuntime& getConstRuntime() const;
+
+    static std::string createValue();
+    static Solver* create( const std::string name );
 
 protected:
 

@@ -93,6 +93,16 @@ const TrivialPreconditioner::TrivialPreconditionerRuntime& TrivialPreconditioner
     return mTrivialPreconditionerRuntime;
 }
 
+std::string TrivialPreconditioner::createValue()
+{
+	return "TrivialPreconditioner";
+}
+
+Solver* TrivialPreconditioner::create( const std::string name )
+{
+	return new TrivialPreconditioner( name );
+}
+
 } /* end namespace lama */
 
 } /* end namespace scai */

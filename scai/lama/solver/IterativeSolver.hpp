@@ -51,10 +51,14 @@ namespace scai
 namespace lama
 {
 
+class IterativeSolver;
+typedef common::shared_ptr<IterativeSolver> IterativeSolverPtr;
+
 /**
  * @brief Uses iterative methods to solve the equation system.
  */
-class COMMON_DLL_IMPORTEXPORT IterativeSolver: public Solver
+class COMMON_DLL_IMPORTEXPORT IterativeSolver:
+		public Solver
 {
 public:
     /**
@@ -174,6 +178,8 @@ public:
      * @brief Returns the complete const configuration of the derived class
      */
     virtual const IterativeSolverRuntime& getConstRuntime() const =0;
+
+    static IterativeSolver* create( const std::string type, const std::string name );
 
 protected:
 
