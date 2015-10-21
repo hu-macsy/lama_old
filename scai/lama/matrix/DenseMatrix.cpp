@@ -2108,7 +2108,7 @@ void DenseMatrix<ValueType>::prefetch() const
 }
 
 template<typename ValueType>
-void DenseMatrix<ValueType>::prefetch( ContextPtr loc ) const
+void DenseMatrix<ValueType>::prefetch( hmemo::ContextPtr loc ) const
 {
     for ( unsigned int i = 0; i < mData.size(); ++i )
     {

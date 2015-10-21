@@ -1204,7 +1204,7 @@ assign( other );
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-DenseStorage<ValueType>::DenseStorage( const _MatrixStorage& other, const ContextPtr loc )
+DenseStorage<ValueType>::DenseStorage( const _MatrixStorage& other, const hmemo::ContextPtr loc )
 
 : DenseStorageView<ValueType>( mDataArray, 0, 0, false )
 

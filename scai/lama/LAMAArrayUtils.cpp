@@ -207,7 +207,7 @@ void LAMAArrayUtils::assignScalar( LAMAArray<ValueType>& target, const Scalar& v
     setVal( values.get(), n, val );
 }
 
-void LAMAArrayUtils::assignScalar( ContextArray& target, const Scalar& value, ContextPtr context )
+void LAMAArrayUtils::assignScalar( hmemo::ContextArray& target, const Scalar& value, hmemo::ContextPtr context )
 {
     common::scalar::ScalarType arrayType = target.getValueType();
 
@@ -321,21 +321,21 @@ void LAMAArrayUtils::assignScaled(
 
 // template instantiation for the supported data types
 
-template
-void LAMAArrayUtils::setVal( LAMAArray<IndexType>& target, const IndexType index, IndexType val );
+template<IndexType>
+void LAMAArrayUtils::setVal( hmemo::LAMAArray<IndexType>& target, const IndexType index, ValueType val );
 
-template
+template<IndexType>
 void LAMAArrayUtils::assignScaled(
-    LAMAArray<IndexType>& result,
+    hmemo::LAMAArray<IndexType>& result,
     const IndexType beta,
     const LAMAArray<IndexType>& y,
-    ContextPtr loc );
+    hmemo::ContextPtr loc );
 
-template
+template<IndexType>
 void LAMAArrayUtils::gather(
-    LAMAArray<IndexType>& target,
-    const LAMAArray<IndexType>& source,
-    const LAMAArray<IndexType>& indexes );
+    hmemo::LAMAArray<IndexType>& target,
+    const hmemo::LAMAArray<IndexType>& source,
+    const hmemo::LAMAArray<IndexType>& indexes );
 
 /** Macro instantiates operations that have also type conversion */
 
@@ -343,7 +343,7 @@ void LAMAArrayUtils::gather(
     template                                                                        \
     void LAMAArrayUtils::gather(                                                    \
             LAMAArray<TYPE>& target,                                                \
-            const LAMAArray<ARITHMETIC_HOST_TYPE_##J>& source,                            \
+            const LAMAArray<ARITHMETIC_HOST_TYPE_##J>& source,                      \
             const LAMAArray<IndexType>& indexes );                                  \
 
 /** Macro instantiates operations for supported arithmetic types */

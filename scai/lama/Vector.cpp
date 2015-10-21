@@ -102,7 +102,7 @@ Vector::Vector( const IndexType size, ContextPtr context )
     SCAI_LOG_INFO( logger, "Vector(" << size << "), replicated, on " << *mContext )
 }
 
-Vector::Vector( DistributionPtr distribution, ContextPtr context )
+Vector::Vector( DistributionPtr distribution, hmemo::ContextPtr context )
                 : Distributed( distribution ), mContext( context )
 {
     if( !mContext )

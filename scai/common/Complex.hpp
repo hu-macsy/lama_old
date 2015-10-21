@@ -378,7 +378,7 @@ public:
     template<typename OtherValueType>
     CUDA_CALLABLE_MEMBER explicit inline Complex( const OtherValueType value );
 
-    /**
+    /*
      * @brief Constructs a complex representing the passed real
      *
      * @param[in] real the real part this complex should represent
@@ -389,7 +389,7 @@ public:
     COMPLEX_CONSTRUCTOR_CUDA( const double, COMPLEX_CONSTRUCTOR_REAL)
     COMPLEX_CONSTRUCTOR_NONCUDA( const long double, COMPLEX_CONSTRUCTOR_REAL)
 
-    /**
+    /*
      * @brief Constructs a complex representing the passed real and imaginary part
      *
      * @param[in] real the real part this complex should represent
@@ -425,7 +425,7 @@ public:
 	COMPLEX_CONSTRUCTOR_2_NONCUDA( const long double, const double, COMPLEX_CONSTRUCTOR_REAL2 )
 	COMPLEX_CONSTRUCTOR_2_NONCUDA( const long double, const long double, COMPLEX_CONSTRUCTOR_REAL2 )
 
-    /**
+    /*
      * @brief Constructs a scalar representing the passed complex value.
      *
      * @param[in]   value the value this complex should represent
@@ -445,7 +445,7 @@ public:
      * Creation of the member operators through macros
      */
 
-    /**
+    /*
      * @brief Binary operator
      */
     COMPLEX_OPERATOR_CUDA(operator=, int, COMPLEX_SET_REAL)
@@ -503,7 +503,7 @@ public:
     COMPLEX_OPERATOR_CUDA(operator/=, Complex<double>, COMPLEX_DIVIDE_COMPLEX)
     COMPLEX_OPERATOR_NONCUDA(operator/=, Complex<long double>, COMPLEX_DIVIDE_COMPLEX)
 
-    /**
+    /*
      * @brief Casts operator
      */
     COMPLEX_OPERATOR_CAST_CUDA(int, COMPLEX_CAST_REAL(int))
@@ -512,21 +512,21 @@ public:
     COMPLEX_OPERATOR_CAST_CUDA(double, COMPLEX_CAST_REAL(double))
     COMPLEX_OPERATOR_CAST_NONCUDA(long double, COMPLEX_CAST_REAL(long double))
 
-    /**
+    /*
      * @brief Returns the metric for a complex number which is used to determine an order for complex numbers. Through this it is possible to use functions like min or max. This one is callable from CUDA space.
      *
      * @return      the metric of a complex number
      */
     CUDA_CALLABLE_MEMBER ValueType metrikCuda( void ) const;
 
-    /**
+    /*
      * @brief Returns the metric for a complex number which is used to determine an order for complex numbers. Through this it is possible to use functions like min or max. This one is not callable from CUDA space and used for long double operations.
      *
      * @return      the metric of a complex number
      */
     ValueType metrikHost( void ) const;
 
-    /**
+    /*
      * @brief Returns imaginary part of the complex number
      *
      * @return     the imaginary part of a complex number
@@ -555,10 +555,10 @@ public:
         return mParts[1];
     }
 
-    /**
+    /*
      * @brief Sets imaginary part of the complex number
      *
-     * @param[in]     the new imaginary part of the complex number
+     * @param[in] a    the new imaginary part of the complex number
      */
     CUDA_CALLABLE_MEMBER
     inline void imag( const ValueType a )
@@ -604,7 +604,7 @@ public:
     /**
      * @brief Sets real part of the complex number
      *
-     * @param[in]     the new real part of the complex number
+     * @param[in] a    the new real part of the complex number
      */
     CUDA_CALLABLE_MEMBER
     inline void real( const ValueType a )
@@ -672,7 +672,7 @@ CUDA_CALLABLE_MEMBER inline Complex<ValueType> fabs( const Complex<ValueType>& a
     return x;
 }
 
-/**
+/*
  * @brief Check if a is lower than b.
  *
  * @param[in] a     the 1st Complex to compare this to.
@@ -685,7 +685,7 @@ COMPLEX_OPERATOR_COMPARISON_CUDA( operator<, <, float )
 COMPLEX_OPERATOR_COMPARISON_CUDA( operator<, <, double )
 COMPLEX_OPERATOR_COMPARISON_NONCUDA( operator<, <, long double )
 
-/**
+/*
  * @brief Check if a is greater than b.
  *
  * @param[in] a     the 1st Complex to compare this to.
@@ -698,7 +698,7 @@ COMPLEX_OPERATOR_COMPARISON_CUDA( operator>, >, float )
 COMPLEX_OPERATOR_COMPARISON_CUDA( operator>, >, double )
 COMPLEX_OPERATOR_COMPARISON_NONCUDA( operator>, >, long double )
 
-/**
+/*
  * @brief Check if a is lower than b or equal to b.
  *
  * @param[in] a     the 1st Complex to compare this to.
@@ -711,7 +711,7 @@ COMPLEX_OPERATOR_COMPARISON_CUDA( operator<=, <=, float )
 COMPLEX_OPERATOR_COMPARISON_CUDA( operator<=, <=, double )
 COMPLEX_OPERATOR_COMPARISON_NONCUDA( operator<=, <=, long double )
 
-/**
+/*
  * @brief Check if a is greater than b or equal to b.
  *
  * @param[in] a     the 1st Complex to compare this to.
@@ -724,7 +724,7 @@ COMPLEX_OPERATOR_COMPARISON_CUDA( operator>=, >=, float )
 COMPLEX_OPERATOR_COMPARISON_CUDA( operator>=, >=, double )
 COMPLEX_OPERATOR_COMPARISON_NONCUDA( operator>=, >=, long double )
 
-/**
+/*
  * @brief Check equality of a and b.
  *
  * @param[in] a     the 1st Complex to compare this to.
@@ -737,7 +737,7 @@ COMPLEX_OPERATOR_EQUALITY_CUDA( operator==, ==, &&, float )
 COMPLEX_OPERATOR_EQUALITY_CUDA( operator==, ==, &&, double )
 COMPLEX_OPERATOR_EQUALITY_NONCUDA( operator==, ==, &&, long double )
 
-/**
+/*
  * @brief Check inequality of a and b.
  *
  * @param[in] a     the 1st Complex to compare this to.
@@ -759,7 +759,7 @@ CUDA_CALLABLE_MEMBER inline Complex<ValueType> operator-( const Complex<ValueTyp
     return x;
 }
 
-/**
+/*
  * @brief Add Complex a with Complex b
  *
  * @param[in] a     1st Complex.
@@ -772,7 +772,7 @@ COMPLEX_OPERATOR_NONMEMBER_CUDA( operator+, +=, float )
 COMPLEX_OPERATOR_NONMEMBER_CUDA( operator+, +=, double )
 COMPLEX_OPERATOR_NONMEMBER_NONCUDA( operator+, +=, long double )
 
-/**
+/*
  * @brief Subtract Complex a with Complex b
  *
  * @param[in] a     1st Complex.
@@ -785,7 +785,7 @@ COMPLEX_OPERATOR_NONMEMBER_CUDA( operator-, -=, float )
 COMPLEX_OPERATOR_NONMEMBER_CUDA( operator-, -=, double )
 COMPLEX_OPERATOR_NONMEMBER_NONCUDA( operator-, -=, long double )
 
-/**
+/*
  * @brief Multiply Complex a with Complex b
  *
  * @param[in] a     1st Complex.
@@ -798,7 +798,7 @@ COMPLEX_OPERATOR_NONMEMBER_CUDA( operator*, *=, float )
 COMPLEX_OPERATOR_NONMEMBER_CUDA( operator*, *=, double )
 COMPLEX_OPERATOR_NONMEMBER_NONCUDA( operator*, *=, long double )
 
-/**
+/*
  * @brief Divide Complex a with Complex b
  *
  * @param[in] a     1st Complex.

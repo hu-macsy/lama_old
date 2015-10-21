@@ -236,7 +236,7 @@ void Matrix::setCommunicationKind( SyncKind communicationKind )
 
 /* ---------------------------------------------------------------------------------*/
 
-void Matrix::setContextPtr( ContextPtr localContext, ContextPtr haloContext )
+void Matrix::setContextPtr( hmemo::ContextPtr localContext, hmemo::ContextPtr haloContext )
 {
     SCAI_ASSERT_DEBUG( localContext, "localContext == NULL" )
     SCAI_ASSERT_DEBUG( haloContext, "haloContext == NULL" )
