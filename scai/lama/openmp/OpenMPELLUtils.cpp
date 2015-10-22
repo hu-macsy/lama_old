@@ -43,6 +43,8 @@
 // internal scai libraries
 #include <scai/tracing.hpp>
 
+#include <scai/kregistry/KernelRegistry.hpp>
+
 #include <scai/common/bind.hpp>
 #include <scai/common/Assert.hpp>
 #include <scai/common/macros/unused.hpp>
@@ -299,8 +301,8 @@ void OpenMPELLUtils::getRow(
     }
 }
 
-template<typename ValueType,typename OtherValueType>
-OtherValueType OpenMPELLUtils::getValue(
+template<typename ValueType>
+ValueType OpenMPELLUtils::getValue(
     const IndexType i,
     const IndexType j,
     const IndexType numRows,
@@ -311,17 +313,20 @@ OtherValueType OpenMPELLUtils::getValue(
 {
     SCAI_LOG_TRACE( logger, "get value i = " << i << ", j = " << j )
 
+    ValueType val = 0.0;
+
     for( IndexType jj = 0; jj < ellSizes[i]; ++jj )
     {
         IndexType pos = ellindex( i, jj, numRows, numValuesPerRow );
 
         if( ellJA[pos] == j )
         {
-            return static_cast<OtherValueType>( ellValues[pos] );
+            val = ellValues[pos];
+            break;
         }
     }
 
-    return static_cast<OtherValueType>(0.0);
+    return val;
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -1176,40 +1181,46 @@ void OpenMPELLUtils::sparseGEVM(
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-void OpenMPELLUtils::setInterface( ELLUtilsInterface& ELLUtils )
+void OpenMPELLUtils::registerKernelRoutines()
 {
-    LAMA_INTERFACE_REGISTER( ELLUtils, countNonEmptyRowsBySizes )
-    LAMA_INTERFACE_REGISTER( ELLUtils, setNonEmptyRowsBySizes )
-    LAMA_INTERFACE_REGISTER( ELLUtils, hasDiagonalProperty )
-    LAMA_INTERFACE_REGISTER( ELLUtils, check )
+    using kregistry::KernelRegistry;
 
-    LAMA_INTERFACE_REGISTER( ELLUtils, matrixMultiplySizes )
-    LAMA_INTERFACE_REGISTER( ELLUtils, matrixAddSizes )
+    // ctx will contain the context for which registration is done, here Host
+
+    common::ContextType ctx = common::context::Host;
+
+    KernelRegistry::set<ELLUtilsInterface::countNonEmptyRowsBySizes>( countNonEmptyRowsBySizes, ctx );  
+    KernelRegistry::set<ELLUtilsInterface::setNonEmptyRowsBySizes>( setNonEmptyRowsBySizes, ctx );  
+    KernelRegistry::set<ELLUtilsInterface::hasDiagonalProperty>( hasDiagonalProperty, ctx );  
+    KernelRegistry::set<ELLUtilsInterface::check>( check, ctx );  
+
+    KernelRegistry::set<ELLUtilsInterface::matrixMultiplySizes>( matrixMultiplySizes, ctx );  
+    KernelRegistry::set<ELLUtilsInterface::matrixAddSizes>( matrixAddSizes, ctx );  
 
 #define LAMA_ELL_UTILS2_REGISTER(z, J, TYPE )                                             \
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getRow, TYPE, ARITHMETIC_HOST_TYPE_##J )        \
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getValue, TYPE, ARITHMETIC_HOST_TYPE_##J )      \
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, scaleValue, TYPE, ARITHMETIC_HOST_TYPE_##J )    \
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, setCSRValues, TYPE, ARITHMETIC_HOST_TYPE_##J )  \
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getCSRValues, TYPE, ARITHMETIC_HOST_TYPE_##J )  \
+    KernelRegistry::set<ELLUtilsInterface::getRow<TYPE, ARITHMETIC_HOST_TYPE_##J> >( getRow, ctx );       \
+    KernelRegistry::set<ELLUtilsInterface::scaleValue<TYPE, ARITHMETIC_HOST_TYPE_##J> >( scaleValue, ctx );       \
+    KernelRegistry::set<ELLUtilsInterface::setCSRValues<TYPE, ARITHMETIC_HOST_TYPE_##J> >( setCSRValues, ctx );       \
+    KernelRegistry::set<ELLUtilsInterface::getCSRValues<TYPE, ARITHMETIC_HOST_TYPE_##J> >( getCSRValues, ctx );       \
 
 #define LAMA_ELL_UTILS_REGISTER(z, I, _)                                                  \
-    LAMA_INTERFACE_REGISTER_T( ELLUtils, absMaxVal, ARITHMETIC_HOST_TYPE_##I )            \
-    LAMA_INTERFACE_REGISTER_T( ELLUtils, compressIA, ARITHMETIC_HOST_TYPE_##I )           \
-    LAMA_INTERFACE_REGISTER_T( ELLUtils, compressValues, ARITHMETIC_HOST_TYPE_##I )       \
-    LAMA_INTERFACE_REGISTER_T( ELLUtils, matrixAdd, ARITHMETIC_HOST_TYPE_##I )            \
-    LAMA_INTERFACE_REGISTER_T( ELLUtils, matrixMultiply, ARITHMETIC_HOST_TYPE_##I )       \
-    LAMA_INTERFACE_REGISTER_T( ELLUtils, normalGEMV, ARITHMETIC_HOST_TYPE_##I )           \
-    LAMA_INTERFACE_REGISTER_T( ELLUtils, normalGEVM, ARITHMETIC_HOST_TYPE_##I )           \
-    LAMA_INTERFACE_REGISTER_T( ELLUtils, sparseGEMV, ARITHMETIC_HOST_TYPE_##I )           \
-    LAMA_INTERFACE_REGISTER_T( ELLUtils, sparseGEVM, ARITHMETIC_HOST_TYPE_##I )           \
-    LAMA_INTERFACE_REGISTER_T( ELLUtils, jacobi, ARITHMETIC_HOST_TYPE_##I )               \
-    LAMA_INTERFACE_REGISTER_T( ELLUtils, jacobiHalo, ARITHMETIC_HOST_TYPE_##I )           \
-    LAMA_INTERFACE_REGISTER_T( ELLUtils, fillELLValues, ARITHMETIC_HOST_TYPE_##I )        \
-                                                                                          \
-    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT,                                            \
-                     LAMA_ELL_UTILS2_REGISTER,                                            \
-                     ARITHMETIC_HOST_TYPE_##I )                                           \
+    KernelRegistry::set<ELLUtilsInterface::absMaxVal<ARITHMETIC_HOST_TYPE_##I> >( absMaxVal, ctx );       \
+    KernelRegistry::set<ELLUtilsInterface::compressIA<ARITHMETIC_HOST_TYPE_##I> >( compressIA, ctx );       \
+    KernelRegistry::set<ELLUtilsInterface::compressValues<ARITHMETIC_HOST_TYPE_##I> >( compressValues, ctx );       \
+    KernelRegistry::set<ELLUtilsInterface::matrixAdd<ARITHMETIC_HOST_TYPE_##I> >( matrixAdd, ctx );       \
+    KernelRegistry::set<ELLUtilsInterface::matrixMultiply<ARITHMETIC_HOST_TYPE_##I> >( matrixMultiply, ctx );       \
+    KernelRegistry::set<ELLUtilsInterface::normalGEMV<ARITHMETIC_HOST_TYPE_##I> >( normalGEMV, ctx );       \
+    KernelRegistry::set<ELLUtilsInterface::sparseGEMV<ARITHMETIC_HOST_TYPE_##I> >( sparseGEMV, ctx );       \
+    KernelRegistry::set<ELLUtilsInterface::normalGEVM<ARITHMETIC_HOST_TYPE_##I> >( normalGEVM, ctx );       \
+    KernelRegistry::set<ELLUtilsInterface::sparseGEVM<ARITHMETIC_HOST_TYPE_##I> >( sparseGEVM, ctx );       \
+    KernelRegistry::set<ELLUtilsInterface::jacobi<ARITHMETIC_HOST_TYPE_##I> >( jacobi, ctx );       \
+    KernelRegistry::set<ELLUtilsInterface::jacobiHalo<ARITHMETIC_HOST_TYPE_##I> >( jacobiHalo, ctx );       \
+    KernelRegistry::set<ELLUtilsInterface::getValue<ARITHMETIC_HOST_TYPE_##I> >( getValue, ctx );       \
+    KernelRegistry::set<ELLUtilsInterface::fillELLValues<ARITHMETIC_HOST_TYPE_##I> >( fillELLValues, ctx );       \
+                                                                                                                  \
+    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT,                                                                    \
+                     LAMA_ELL_UTILS2_REGISTER,                                                                    \
+                     ARITHMETIC_HOST_TYPE_##I )                                                                   \
 
     BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_ELL_UTILS_REGISTER, _ )
 
@@ -1224,8 +1235,7 @@ void OpenMPELLUtils::setInterface( ELLUtilsInterface& ELLUtils )
 
 bool OpenMPELLUtils::registerInterface()
 {
-    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( common::context::Host );
-    setInterface( interface.ELLUtils );
+    registerKernelRoutines();
     return true;
 }
 

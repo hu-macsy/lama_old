@@ -37,6 +37,7 @@
 // others
 #include <scai/hmemo.hpp>
 #include <scai/lama/LAMAInterface.hpp>
+#include <scai/lama/kernel_registry.hpp>
 
 #include <scai/lama/openmp/OpenMPCSRUtils.hpp>
 
@@ -60,7 +61,8 @@ namespace CSRUtilsTest
 template<typename ValueType, typename OtherValueType>
 void absMaxDiffValTest( ContextPtr loc )
 {
-    LAMA_INTERFACE_FN_T( absMaxDiffVal, loc, CSRUtils, Reductions, ValueType );
+    LAMAKernel<CSRUtilsInterface::absMaxDiffVal<ValueType> > absMaxDiffVal;
+
     // input arrays
     //    Array1             Array2
     //
@@ -95,19 +97,20 @@ void absMaxDiffValTest( ContextPtr loc )
     ReadAccess<IndexType> rCSRJA2( csrJA2, loc );
     ReadAccess<ValueType> rCSRValues2( csrValues2, loc );
     SCAI_CONTEXT_ACCESS( loc );
-    ValueType maxVal = absMaxDiffVal( numRows, false, rCSRIA1.get(), rCSRJA1.get(), rCSRValues1.get(), rCSRIA2.get(),
-                                      rCSRJA2.get(), rCSRValues2.get() );
+    ValueType maxVal = absMaxDiffVal[loc]( numRows, false, rCSRIA1.get(), rCSRJA1.get(), rCSRValues1.get(), rCSRIA2.get(),
+                                           rCSRJA2.get(), rCSRValues2.get() );
     BOOST_CHECK_EQUAL( 3, maxVal );
     // rows are sorted, so we can also apply sortFlag = true
-    maxVal = absMaxDiffVal( numRows, true, rCSRIA1.get(), rCSRJA1.get(), rCSRValues1.get(), rCSRIA2.get(),
-                            rCSRJA2.get(), rCSRValues2.get() );
+    maxVal = absMaxDiffVal[loc]( numRows, true, rCSRIA1.get(), rCSRJA1.get(), rCSRValues1.get(), rCSRIA2.get(),
+                                rCSRJA2.get(), rCSRValues2.get() );
     BOOST_CHECK_EQUAL( 3, maxVal );
 }
 
 template<typename ValueType>
 void transposeTestSquare( ContextPtr loc )
 {
-    LAMA_INTERFACE_FN_T( convertCSR2CSC, loc, CSRUtils, Transpose, ValueType );
+    LAMAKernel<CSRUtilsInterface::convertCSR2CSC<ValueType> > convertCSR2CSC;
+
     //  input array           transpose
     //    1.0   -   2.0       1.0  0.5   -
     //    0.5  0.3   -         -   0.3   -
@@ -140,8 +143,8 @@ void transposeTestSquare( ContextPtr loc )
     WriteOnlyAccess<IndexType> wCSCJA( cscJA, loc, numValues );
     WriteOnlyAccess<ValueType> wCSCValues( cscValues, loc, numValues );
     SCAI_CONTEXT_ACCESS( loc );
-    convertCSR2CSC( wCSCIA.get(), wCSCJA.get(), wCSCValues.get(), rCSRIA.get(), rCSRJA.get(), rCSRValues.get(), numRows,
-                    numColumns, numValues );
+    convertCSR2CSC[loc]( wCSCIA.get(), wCSCJA.get(), wCSCValues.get(), rCSRIA.get(), rCSRJA.get(), rCSRValues.get(), numRows,
+                         numColumns, numValues );
     {
         ReadAccess<IndexType> rCSCIA( cscIA );
         WriteAccess<IndexType> wCSCJA( cscJA );
@@ -171,7 +174,7 @@ void transposeTestSquare( ContextPtr loc )
 template<typename ValueType>
 void transposeTestNonSquare( ContextPtr loc )
 {
-    LAMA_INTERFACE_FN_T( convertCSR2CSC, loc, CSRUtils, Transpose, ValueType );
+    LAMAKernel<CSRUtilsInterface::convertCSR2CSC<ValueType> > convertCSR2CSC;
     //  input array           transpose
     //    1.0   -   2.0       1.0  0.5   -    4.0
     //    0.5  0.3   -         -   0.3   -    1.5
@@ -205,8 +208,8 @@ void transposeTestNonSquare( ContextPtr loc )
     WriteOnlyAccess<IndexType> wCSCJA( cscJA, loc, numValues );
     WriteOnlyAccess<ValueType> wCSCValues( cscValues, loc, numValues );
     SCAI_CONTEXT_ACCESS( loc );
-    convertCSR2CSC( wCSCIA.get(), wCSCJA.get(), wCSCValues.get(), rCSRIA.get(), rCSRJA.get(), rCSRValues.get(), numRows,
-                    numColumns, numValues );
+    convertCSR2CSC[loc]( wCSCIA.get(), wCSCJA.get(), wCSCValues.get(), rCSRIA.get(), rCSRJA.get(), rCSRValues.get(), numRows,
+                         numColumns, numValues );
     {
         ReadAccess<IndexType> rCSCIA( cscIA );
         WriteAccess<IndexType> wCSCJA( cscJA );

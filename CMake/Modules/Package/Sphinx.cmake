@@ -70,23 +70,32 @@ if     ( SPHINX_FOUND )
         WORKING_DIRECTORY ${LAMA_DOC_DIR}
     )
    
-    add_custom_target (
-        userdoc
-        DEPENDS ${SPHINX_BUILD_ROOT}/html/index.html
-    )
-    
-    add_custom_target (
-        userdoc_json
-        DEPENDS ${SPHINX_BUILD_ROOT}/json/index.html
-    )
-    
-    add_custom_target (
-        install_userdoc
-        COMMAND mkdir -p ${SPHINX_INSTALL_ROOT}/share/doc/lama-${LAMA_VERSION}/user
-        COMMAND cp -r ${SPHINX_BUILD_ROOT}/html/* ${SPHINX_INSTALL_ROOT}/share/doc/lama-${LAMA_VERSION}/user
-        DEPENDS ${SPHINX_BUILD_ROOT}/html/index.html
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-    )
+    if ( TARGET userdoc )
+
+       # Target already available, do no create it then anymore
+
+    else ( TARGET userdoc )
+
+        add_custom_target (
+            userdoc
+            DEPENDS ${SPHINX_BUILD_ROOT}/html/index.html
+        )
+
+        add_custom_target (
+            userdoc_json
+            DEPENDS ${SPHINX_BUILD_ROOT}/json/index.html
+        )
+
+        add_custom_target (
+            install_userdoc
+            COMMAND mkdir -p ${SPHINX_INSTALL_ROOT}/share/doc/lama-${LAMA_VERSION}/user
+            COMMAND cp -r ${SPHINX_BUILD_ROOT}/html/* ${SPHINX_INSTALL_ROOT}/share/doc/lama-${LAMA_VERSION}/user
+            DEPENDS ${SPHINX_BUILD_ROOT}/html/index.html
+            WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+        )
+
+    endif ( TARGET userdoc )
+
 else  ( SPHINX_FOUND )
     if    ( SCAI_CMAKE_VERBOSE )
         message ( STATUS "Not building user documentation because Sphinx not found." )
