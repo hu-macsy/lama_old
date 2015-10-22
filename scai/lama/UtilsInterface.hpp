@@ -745,18 +745,28 @@ template    <typename ValueType>
     CSRUtilsInterface ();
 };
 
-/** Interface for utility functions to be used in Dense storage.
- *
- *  This interface contains function pointer type definitions for all used routines
- *  and tables with actual values for the functions.
- */
+    template<typename ValueType>
+    struct scale
+    {
+        /** @brief scale array of values with a value in place
+         *
+         *  @param[in,out]  values is the array with entries to scale
+         *  @param[in]      value  is the scaling factor
+         *  @param[in]      n      is the number of entries in values
+         */
+        typedef void ( *FuncType ) ( ValueType values[],
+                        const ValueType value,
+                        const IndexType n );
+
+        static const char* getId() { return "scale"; }
+    };
+
+/** Traits for utility functions to be used in Dense storage.   */
 
 struct DenseUtilsInterface
 {
-    /** Function pointer type definitions for dense storage. */
-
-    template<typename DenseValueType>
-    struct Counting
+    template <typename DenseValueType>
+    struct getCSRSizes
     {
         /** Counting non-zero values in dense storage for conversion to CSR
          *
@@ -770,21 +780,19 @@ struct DenseUtilsInterface
          *  The matrix values are stored row-wise in denseValues.
          */
 
-        typedef void (*getCSRSizes)(
+        typedef void ( *FuncType )(
             IndexType csrSizes[],
             bool diagonalFlag,
             const IndexType numRows,
             const IndexType numColumns,
             const DenseValueType denseValues[],
             const DenseValueType eps );
+
+        static const char* getId() { return "Dense.getCSRSizes"; }
     };
 
-    LAMA_INTERFACE_DEFINE_T( Counting, getCSRSizes )
-
-    /** Function pointer type definitions for conversion on dense storage. */
-
-template    <typename DenseValueType, typename CSRValueType>
-    struct Conversions
+    template <typename DenseValueType, typename CSRValueType>
+    struct getCSRValues
     {
         /** Convesion of dense matrix to CSR storage format
          *
@@ -800,7 +808,7 @@ template    <typename DenseValueType, typename CSRValueType>
          *  Very important: the offsets in csrIA must correspond to the csrSizes computed
          *                  by getCSRSizes.
          */
-        typedef void ( *getCSRValues ) ( IndexType csrJA[],
+        typedef void ( *FuncType ) ( IndexType csrJA[],
                         CSRValueType csrValues[],
                         const IndexType csrIA[],
                         const bool diagonalFlag,
@@ -809,77 +817,95 @@ template    <typename DenseValueType, typename CSRValueType>
                         const DenseValueType denseValues[],
                         const DenseValueType eps );
 
+        static const char* getId() { return "Dense.getCSRValues"; }
+    };
+
+    template <typename DenseValueType, typename CSRValueType>
+    struct setCSRValues
+    {
         /** Conversion of CSR format to dense matrix. */
 
-        typedef void ( *setCSRValues ) ( DenseValueType denseValues[],
+        typedef void ( *FuncType ) ( DenseValueType denseValues[],
                         const IndexType numRows,
                         const IndexType numColumns,
                         const IndexType csrIA[],
                         const IndexType csrJA[],
                         const CSRValueType csrValues[] );
+
+        static const char* getId() { return "Dense.setCSRValues"; }
     };
 
-    LAMA_INTERFACE_DEFINE_TT( Conversions, setCSRValues )
-    LAMA_INTERFACE_DEFINE_TT( Conversions, getCSRValues )
-
-    /** Function pointer type definitions for copying on dense storage. */
-
     template<typename DenseValueType1, typename DenseValueType2>
-    struct Copy
+    struct copyDenseValues
     {
         /** Copy values of dense matrix; supports also conversion. */
 
-        typedef void ( *copyDenseValues ) ( DenseValueType1 newValues[],
+        typedef void ( *FuncType ) ( DenseValueType1 newValues[],
                         const IndexType numRows,
                         const IndexType numColumns,
                         const DenseValueType2 oldValues[] );
 
+        static const char* getId() { return "Dense.copyDenseValues"; }
+    };
+
+    template<typename DenseValueType1, typename DenseValueType2>
+    struct getDiagonal
+    {
         /** Get diagonal of a dense matrix, type conversion is supported. */
 
-        typedef void ( *getDiagonal ) ( DenseValueType1 diagonalValues[],
+        typedef void ( *FuncType ) ( DenseValueType1 diagonalValues[],
                         const IndexType numDiagonalValues,
                         const DenseValueType2 denseValues[],
                         const IndexType numRows,
                         const IndexType numColumns );
 
+        static const char* getId() { return "Dense.getDiagonal"; }
+    };
+
+    template<typename DenseValueType1, typename DenseValueType2>
+    struct setDiagonal
+    {
         /** Set diagonal of a dense matrix, type conversion is supported. */
 
-        typedef void ( *setDiagonal ) ( DenseValueType1 denseValues[],
+        typedef void ( *FuncType ) ( DenseValueType1 denseValues[],
                         const IndexType numRows,
                         const IndexType numColumns,
                         const DenseValueType2 diagonalValues[],
                         const IndexType numDiagonalValues );
-    };
 
-    LAMA_INTERFACE_DEFINE_TT( Copy, copyDenseValues )
-    LAMA_INTERFACE_DEFINE_TT( Copy, setDiagonal )
-    LAMA_INTERFACE_DEFINE_TT( Copy, getDiagonal )
+        static const char* getId() { return "Dense.setDiagonal"; }
+    };
 
     /** Function pointer type definitions for modification of dense storage. */
 
     template<typename DenseValueType>
-    struct Modify
+    struct scaleValue
     {
         /** Scale all elements of the dense matrix with a value */
 
-        typedef void ( *scaleValue ) ( DenseValueType denseValues[],
+        typedef void ( *FuncType ) ( DenseValueType denseValues[],
                         const IndexType numRows,
                         const IndexType numColumns,
                         const DenseValueType val );
 
-        /** Set diagonal elements with one and the same value. */
-
-        typedef void ( *setDiagonalValue ) ( DenseValueType denseValues[],
-                        const IndexType numRows,
-                        const IndexType numColumns,
-                        const DenseValueType val );
+        static const char* getId() { return "Dense.scaleValue"; }
     };
 
-    LAMA_INTERFACE_DEFINE_T( Modify, scaleValue )
-    LAMA_INTERFACE_DEFINE_T( Modify, setDiagonalValue )
+    template<typename DenseValueType>
+    struct setDiagonalValue
+    {
+        /** Set diagonal elements with one and the same value. */
+
+        typedef void ( *FuncType ) ( DenseValueType denseValues[],
+                        const IndexType numRows,
+                        const IndexType numColumns,
+                        const DenseValueType val );
+
+        static const char* getId() { return "Dense.setDiagonalValue"; }
+    };
 
     template<typename ValueType>
-    struct Mult
+    struct normalGEMV
     {
         /** result = alpha * CSR-Matrix * x + b * y.
          *
@@ -894,7 +920,7 @@ template    <typename DenseValueType, typename CSRValueType>
          *  @param syncToken optional, if available starts asynchronous computation
          */
 
-        typedef void ( *normalGEMV ) ( ValueType result[],
+        typedef void ( *FuncType ) ( ValueType result[],
                         const ValueType alpha,
                         const ValueType x[],
                         const ValueType beta,
@@ -903,13 +929,9 @@ template    <typename DenseValueType, typename CSRValueType>
                         const IndexType numColumns,
                         const ValueType denseValues[],
                         SyncToken* syncToken );
+
+        static const char* getId() { return "Dense.normalGEMV"; }
     };
-
-    LAMA_INTERFACE_DEFINE_T( Mult, normalGEMV )
-
-    /** Default constructor initializes all function pointers with NULL. */
-
-    DenseUtilsInterface ();
 };
 
 /** Interface for utility functions to be used in ELL storage.
@@ -920,9 +942,8 @@ template    <typename DenseValueType, typename CSRValueType>
 
 struct ELLUtilsInterface
 {
-    /** Structure with type definitions for solver routines */
     template<typename ValueType>
-    struct Solver
+    struct jacobi
     {
         /**
          *
@@ -937,8 +958,7 @@ struct ELLUtilsInterface
          *
          *  The ELL storage stands for a square matrix and must have diagonal property.
          */
-
-        typedef void (*jacobi)(
+        typedef void ( *FuncType )(
             ValueType solution[],
             const IndexType numRows,
             const IndexType ellNumValuesPerRow,
@@ -950,7 +970,13 @@ struct ELLUtilsInterface
             const ValueType omega,
             SyncToken* syncToken );
 
-        typedef void (*jacobiHalo)(
+        static const char* getId() { return "ELL.jacobi"; }
+    };
+
+    template<typename ValueType>
+    struct jacobiHalo
+    {
+        typedef void ( *FuncType )(
             ValueType solution[],
             const IndexType numRows,
             const ValueType diagonal[],
@@ -964,6 +990,13 @@ struct ELLUtilsInterface
             const ValueType omega,
             SyncToken* syncToken );
 
+        static const char* getId() { return "ELL.jacobiHalo"; }
+    };
+
+    template<typename ValueType>
+    struct fillELLValues
+    {
+
         /**
          *  This method fills up the arrays ja and values of the ELL format with
          *  useful values to make matrix-vector multiplication efficient.
@@ -974,21 +1007,20 @@ struct ELLUtilsInterface
          *  @param[in]  numRows number of rows
          *  @param[in]  numValuesPerRow number of values in each row
          */
-        typedef void (*fillELLValues)(
+        typedef void ( *FuncType ) (
             IndexType ellJA[],
             ValueType ellValues[],
             const IndexType ellSizes[],
             const IndexType numRows,
             const IndexType numValuesPerRow );
-    };
 
-    LAMA_INTERFACE_DEFINE_T( Solver, jacobi )LAMA_INTERFACE_DEFINE_T( Solver, jacobiHalo )
-    LAMA_INTERFACE_DEFINE_T( Solver, fillELLValues )
+        static const char* getId() { return "ELL.fillELLValues"; }
+    };
 
     /** Conversion routines between ELL and CSR storage format. */
 
     template<typename ELLValueType, typename CSRValueType>
-    struct Conversions
+    struct getCSRValues
     {
         /** Conversion from ELL data to CSR data
          *
@@ -1000,36 +1032,40 @@ struct ELLUtilsInterface
          *  @param[in]  ellJA are the column indexes for ELL format
          *  @param[in]  ellValues are the stored matrix values for ELL format
          */
+        typedef void ( *FuncType ) ( 
+            IndexType csrJA[],
+            CSRValueType csrValues[],
+            const IndexType csrIA[],
+            const IndexType numRows,
+            const IndexType numValuesPerRow,
+            const IndexType ellSizes[],
+            const IndexType ellJA[],
+            const ELLValueType ellValues[] );
 
-        typedef void ( *getCSRValues ) ( IndexType csrJA[],
-                        CSRValueType csrValues[],
-                        const IndexType csrIA[],
-                        const IndexType numRows,
-                        const IndexType numValuesPerRow,
-                        const IndexType ellSizes[],
-                        const IndexType ellJA[],
-                        const ELLValueType ellValues[] );
-
-        /** Conversion from CSR data to ELL data      */
-
-        typedef void( *setCSRValues ) ( IndexType ellJA[],
-                        ELLValueType ellValues[],
-                        const IndexType ellSizes[],
-                        const IndexType numRows,
-                        const IndexType numValuesPerRow,
-                        const IndexType csrIA[],
-                        const IndexType csrJA[],
-                        const CSRValueType csrValues[] );
-
+        static const char* getId() { return "ELL.getCSRValues"; }
     };
 
-    LAMA_INTERFACE_DEFINE_TT( Conversions, setCSRValues )
-    LAMA_INTERFACE_DEFINE_TT( Conversions, getCSRValues )
+    template<typename ELLValueType, typename CSRValueType>
+    struct setCSRValues
+    {
+        /** Conversion from CSR data to ELL data      */
+
+        typedef void ( *FuncType ) ( 
+            IndexType ellJA[],
+            ELLValueType ellValues[],
+            const IndexType ellSizes[],
+            const IndexType numRows,
+            const IndexType numValuesPerRow,
+            const IndexType csrIA[],
+            const IndexType csrJA[],
+            const CSRValueType csrValues[] );
+
+        static const char* getId() { return "ELL.setCSRValues"; }
+    };
 
     template<typename ValueType>
-    struct Helper
+    struct compressIA
     {
-
         /** Compresses the given IA array using the values array and epsilon
          *
          * @param[in]  IA that should be compressed
@@ -1039,15 +1075,21 @@ struct ELLUtilsInterface
          * @param[in]  epsilon
          * @param[out] new created IA
          */
+        typedef void ( *FuncType ) ( 
+            const IndexType ellSizes[],
+            const IndexType ellJA[],
+            const ValueType ellValues[],
+            const IndexType numRows,
+            const IndexType numValuesPerRow,
+            const ValueType eps,
+            IndexType newIA[] );
 
-        typedef void ( *compressIA ) ( const IndexType ellSizes[],
-                        const IndexType ellJA[],
-                        const ValueType ellValues[],
-                        const IndexType numRows,
-                        const IndexType numValuesPerRow,
-                        const ValueType eps,
-                        IndexType newIA[] );
+        static const char* getId() { return "ELL.compressIA"; }
+    };
 
+    template<typename ValueType>
+    struct compressValues
+    {
         /** Compresses the given JA and values array using epsilon
          *
          * @param[in]  IA that should be compressed
@@ -1058,24 +1100,22 @@ struct ELLUtilsInterface
          * @param[out] new created JA
          * @param[out] new created values
          */
+        typedef void ( *FuncType ) ( 
+            const IndexType ellSizes[],
+            const IndexType ellJA[],
+            const ValueType ellValues[],
+            const IndexType numRows,
+            const IndexType numValuesPerRow,
+            const ValueType eps,
+            const IndexType newNumValuesPerRow,
+            IndexType newJA[],
+            ValueType newValues[] );
 
-        typedef void ( *compressValues ) ( const IndexType ellSizes[],
-                        const IndexType ellJA[],
-                        const ValueType ellValues[],
-                        const IndexType numRows,
-                        const IndexType numValuesPerRow,
-                        const ValueType eps,
-                        const IndexType newNumValuesPerRow,
-                        IndexType newJA[],
-                        ValueType newValues[] );
-
+        static const char* getId() { return "ELL.compressValues"; }
     };
 
-    LAMA_INTERFACE_DEFINE_T( Helper, compressIA )
-    LAMA_INTERFACE_DEFINE_T( Helper, compressValues )
-
     template<typename ValueType, typename OtherValueType>
-    struct Getter
+    struct getRow
     {
         /** Returns a row of the matrix as dense vector
          *
@@ -1088,67 +1128,90 @@ struct ELLUtilsInterface
          *  @param[in]  values is the ELL values array
          */
 
-        typedef void ( *getRow ) ( OtherValueType row[],
-                        const IndexType i,
-                        const IndexType numRows,
-                        const IndexType numColumns,
-                        const IndexType numValuesPerRow,
-                        const IndexType ellSizes[],
-                        const IndexType ellJA[],
-                        const ValueType ellValues[] );
+        typedef void ( *FuncType ) ( 
+            OtherValueType row[],
+            const IndexType i,
+            const IndexType numRows,
+            const IndexType numColumns,
+            const IndexType numValuesPerRow,
+            const IndexType ellSizes[],
+            const IndexType ellJA[],
+            const ValueType ellValues[] );
 
+        static const char* getId() { return "ELL.compressValues"; }
+    };
+
+    template<typename ValueType, typename OtherValueType>
+    struct getValue
+    {
         /** Returns one element of the matrix
          *
          *  @param[in] i is the row of the returned element
          *  @param[in] j is the column of the returned element
          *  @param[in] numRows is the number of rows of the matrix
-         *  @param[in] ia is the ELL sizes array
-         *  @param[in] ja is the ELL ja array
-         *  @param[in] values is the ELL values array
+         *  @param[in] ellSizes is the ELL sizes array
+         *  @param[in] ellJA is the ELL ja array
+         *  @param[in] ellValues is the ELL values array
          */
 
-        typedef OtherValueType ( *getValue ) ( const IndexType i,
-                        const IndexType j,
-                        const IndexType numRows,
-                        const IndexType numValuesPerRow,
-                        const IndexType ellSizes[],
-                        const IndexType ellJA[],
-                        const ValueType ellValues[] );
+        typedef OtherValueType ( *FuncType ) ( 
+            const IndexType i,
+            const IndexType j,
+            const IndexType numRows,
+            const IndexType numValuesPerRow,
+            const IndexType ellSizes[],
+            const IndexType ellJA[],
+            const ValueType ellValues[] );
+        
+        static const char* getId() { return "ELL.getValue"; }
     };
 
-    LAMA_INTERFACE_DEFINE_TT( Getter, getRow )
-    LAMA_INTERFACE_DEFINE_TT( Getter, getValue )
-
-    struct Operations
+    struct countNonEmptyRowsBySizes
     {
-        typedef IndexType ( *countNonEmptyRowsBySizes ) ( const IndexType ellSizes[],
-                        const IndexType numRows );
+        typedef IndexType ( *FuncType ) ( 
+            const IndexType ellSizes[],
+            const IndexType numRows );
 
-        typedef void ( *setNonEmptyRowsBySizes ) ( IndexType rowIndexes[],
-                        const IndexType numNonEmptyRows,
-                        const IndexType ellSizes[],
-                        const IndexType numRows );
-
-        typedef bool ( *hasDiagonalProperty ) ( const IndexType numDiagonals,
-                        const IndexType ellJA[] );
-
-        typedef void ( *check ) ( const IndexType mNumRows,
-                        const IndexType mNumValuesPerRow,
-                        const IndexType mNumColumns,
-                        const IndexType ellSizes[],
-                        const IndexType ellJA[],
-                        const char* msg );
+        static const char* getId() { return "ELL.countNonEmptyRowsBySizes"; }
     };
 
-    LAMA_INTERFACE_DEFINE( Operations, countNonEmptyRowsBySizes )
-    LAMA_INTERFACE_DEFINE( Operations, setNonEmptyRowsBySizes )
-    LAMA_INTERFACE_DEFINE( Operations, hasDiagonalProperty )
-    LAMA_INTERFACE_DEFINE( Operations, check )
+    struct setNonEmptyRowsBySizes
+    {
+        typedef void ( *FuncType ) ( 
+            IndexType rowIndexes[],
+            const IndexType numNonEmptyRows,
+            const IndexType ellSizes[],
+            const IndexType numRows );
+
+        static const char* getId() { return "ELL.setNonEmptyRowsBySizes"; }
+    };
+
+    struct hasDiagonalProperty
+    {
+        typedef bool ( *FuncType ) ( 
+            const IndexType numDiagonals,
+            const IndexType ellJA[] );
+
+        static const char* getId() { return "ELL.hasDiagonalProperty"; }
+    };
+
+    struct check
+    {
+        typedef void ( *FuncType ) ( 
+            const IndexType mNumRows,
+            const IndexType mNumValuesPerRow,
+            const IndexType mNumColumns,
+            const IndexType ellSizes[],
+            const IndexType ellJA[],
+            const char* msg );
+
+        static const char* getId() { return "ELL.check"; }
+    };
 
     /** Define structure for multiplication routines.  */
 
     template<typename ValueType>
-    struct Mult
+    struct normalGEMV
     {
         /** result = alpha * ELL-Matrix * x + b * y.
          *
@@ -1162,18 +1225,25 @@ struct ELLUtilsInterface
          *  @param syncToken optional, if available starts asynchronous computation
          */
 
-        typedef void ( *normalGEMV ) ( ValueType result[],
-                        const ValueType alpha,
-                        const ValueType x[],
-                        const ValueType beta,
-                        const ValueType y[],
-                        const IndexType numRows,
-                        const IndexType numValuesPerRow,
-                        const IndexType ellSizes[],
-                        const IndexType ellJA[],
-                        const ValueType ellValues[],
-                        SyncToken* syncToken );
+        typedef void ( *FuncType ) ( 
+            ValueType result[],
+            const ValueType alpha,
+            const ValueType x[],
+            const ValueType beta,
+            const ValueType y[],
+            const IndexType numRows,
+            const IndexType numValuesPerRow,
+            const IndexType ellSizes[],
+            const IndexType ellJA[],
+            const ValueType ellValues[],
+            SyncToken* syncToken );
 
+        static const char* getId() { return "ELL.normalGEMV"; }
+    };
+
+    template<typename ValueType>
+    struct sparseGEMV
+    {
         /** result = alpha * ELL-Matrix * x, CSR matrix has only some non-zero rows
          *
          *  @param result is the result vector
@@ -1188,83 +1258,97 @@ struct ELLUtilsInterface
          *        to run over the full result vector
          */
 
-        typedef void ( *sparseGEMV ) ( ValueType result[],
-                        const ValueType alpha,
-                        const ValueType x[],
-                        const IndexType numRows,
-                        const IndexType numValuesPerRow,
-                        const IndexType numNonZeroRows,
-                        const IndexType rowIndexes[],
-                        const IndexType ellSizes[],
-                        const IndexType ellJA[],
-                        const ValueType ellValues[],
-                        SyncToken* syncToken );
+        typedef void ( *FuncType ) ( 
+            ValueType result[],
+            const ValueType alpha,
+            const ValueType x[],
+            const IndexType numRows,
+            const IndexType numValuesPerRow,
+            const IndexType numNonZeroRows,
+            const IndexType rowIndexes[],
+            const IndexType ellSizes[],
+            const IndexType ellJA[],
+            const ValueType ellValues[],
+            SyncToken* syncToken );
 
-        /** Implementation for ELLUtilsInterface::Mult::normalGEVM  */
-
-        typedef void ( *normalGEVM ) ( ValueType result[],
-                        const ValueType alpha,
-                        const ValueType x[],
-                        const ValueType beta,
-                        const ValueType y[],
-                        const IndexType numRows,
-                        const IndexType numColumns,
-                        const IndexType numValuesPerRow,
-                        const IndexType ellSizes[],
-                        const IndexType ellJA[],
-                        const ValueType ellValues[],
-                        SyncToken* syncToken );
-
-        /** Implementation for ELLUtilsInterface::Mult::sparseGEVM  */
-
-        typedef void ( *sparseGEVM ) ( ValueType result[],
-                        const ValueType alpha,
-                        const ValueType x[],
-                        const IndexType numRows,
-                        const IndexType numColumns,
-                        const IndexType numValuesPerRow,
-                        const IndexType numNonZeroRows,
-                        const IndexType rowIndexes[],
-                        const IndexType ellSizes[],
-                        const IndexType ellJA[],
-                        const ValueType ellValues[],
-                        SyncToken* syncToken );
+        static const char* getId() { return "ELL.sparseGEMV"; }
     };
 
-    LAMA_INTERFACE_DEFINE_T( Mult, normalGEMV )
-    LAMA_INTERFACE_DEFINE_T( Mult, sparseGEMV )
-    LAMA_INTERFACE_DEFINE_T( Mult, normalGEVM )
-    LAMA_INTERFACE_DEFINE_T( Mult, sparseGEVM )
+    template<typename ValueType>
+    struct normalGEVM
+    {
+        /** Implementation for ELLUtilsInterface::Mult::normalGEVM  */
+
+        typedef void ( *FuncType ) ( 
+            ValueType result[],
+            const ValueType alpha,
+            const ValueType x[],
+            const ValueType beta,
+            const ValueType y[],
+            const IndexType numRows,
+            const IndexType numColumns,
+            const IndexType numValuesPerRow,
+            const IndexType ellSizes[],
+            const IndexType ellJA[],
+            const ValueType ellValues[],
+            SyncToken* syncToken );
+
+        static const char* getId() { return "ELL.normalGEVM"; }
+    };
+
+    template<typename ValueType>
+    struct sparseGEVM
+    {
+        /** Implementation for ELLUtilsInterface::Mult::sparseGEVM  */
+
+        typedef void ( *FuncType ) ( 
+            ValueType result[],
+            const ValueType alpha,
+            const ValueType x[],
+            const IndexType numRows,
+            const IndexType numColumns,
+            const IndexType numValuesPerRow,
+            const IndexType numNonZeroRows,
+            const IndexType rowIndexes[],
+            const IndexType ellSizes[],
+            const IndexType ellJA[],
+            const ValueType ellValues[],
+            SyncToken* syncToken );
+
+        static const char* getId() { return "ELL.sparseGEVM"; }
+    };
 
     /** Structure with type definitions for reduction routines */
 
     template<typename ValueType>
-    struct Reductions
+    struct absMaxVal
     {
         /** This method returns the maximal absolute value of an ELLPACK matrix. */
 
-        typedef ValueType ( *absMaxVal ) ( const IndexType numRows,
-                        const IndexType numValuesPerRow,
-                        const IndexType ellSizes[],
-                        const ValueType ellValues[]
+        typedef ValueType ( *FuncType ) ( 
+            const IndexType numRows,
+            const IndexType numValuesPerRow,
+            const IndexType ellSizes[],
+            const ValueType ellValues[]
         );
-    };
 
-    LAMA_INTERFACE_DEFINE_T( Reductions, absMaxVal )
+        static const char* getId() { return "ELL.absMaxVal"; }
+    };
 
     template<typename ValueType, typename OtherValueType>
-    struct Scale
+    struct scaleValue
     {
-        typedef void ( *scaleValue ) ( const IndexType numRows,
-                        const IndexType numValuesPerRow,
-                        const IndexType ellSizes[],
-                        ValueType ellValues[],
-                        const OtherValueType values[] );
+        typedef void ( *FuncType ) ( 
+            const IndexType numRows,
+            const IndexType numValuesPerRow,
+            const IndexType ellSizes[],
+            ValueType ellValues[],
+            const OtherValueType values[] );
+
+        static const char* getId() { return "ELL.scaleValue"; }
     };
 
-    LAMA_INTERFACE_DEFINE_TT( Scale, scaleValue )
-
-    struct MatrixExpBuild
+    struct matrixMultiplySizes
     {
         /** @brief Compute the row sizes of result matrix C for matrix multiplication A x B
          *
@@ -1283,7 +1367,7 @@ struct ELLUtilsInterface
          *  Note: this routines does not need any value array as only structure is computed
          */
 
-        typedef void ( *matrixMultiplySizes ) ( IndexType cSizes[],
+        typedef void ( *FuncType ) ( IndexType cSizes[],
                         const IndexType m,
                         const IndexType n,
                         const IndexType k,
@@ -1295,6 +1379,11 @@ struct ELLUtilsInterface
                         const IndexType bJA[],
                         const IndexType bNumValuesPerRow );
 
+        static const char* getId() { return "ELL.matrixMultiplySizes"; }
+    };
+
+    struct matrixAddSizes
+    {
         /** @brief Compute the row sizes of result matrix C for matrix addition A + B
          *
          *  @param[out] cSizes array of length m, will contain number of entries
@@ -1310,7 +1399,7 @@ struct ELLUtilsInterface
          *
          *  Note: this routines does not need any value array as only structure is computed
          */
-        typedef void ( *matrixAddSizes ) ( IndexType cSizes[],
+        typedef void ( *FuncType ) ( IndexType cSizes[],
                         const IndexType m,
                         const IndexType n,
                         const bool diagonalProperty,
@@ -1320,13 +1409,12 @@ struct ELLUtilsInterface
                         const IndexType bSizes[],
                         const IndexType bJA[],
                         const IndexType bNumValuesPerRow );
+
+        static const char* getId() { return "ELL.matrixAddSizes"; }
     };
 
-    LAMA_INTERFACE_DEFINE( MatrixExpBuild, matrixAddSizes )
-    LAMA_INTERFACE_DEFINE( MatrixExpBuild, matrixMultiplySizes )
-
     template<typename ValueType>
-    struct MatrixExp
+    struct matrixAdd
     {
         /** @brief computes c = alpha * a + beta * b for ELL sparse matrices a, b, c
          *
@@ -1343,24 +1431,31 @@ struct ELLUtilsInterface
          * Note: the size array cValues and cNumValuePerRow must already be available.
          */
 
-        typedef void ( *matrixAdd ) ( IndexType cJA[],
-                        ValueType cValues[],
-                        const IndexType cSizes[],
-                        const IndexType cNumValuesPerRow,
-                        const IndexType m,
-                        const IndexType n,
-                        const bool diagonalProperty,
-                        const ValueType alpha,
-                        const IndexType aSizes[],
-                        const IndexType aJA[],
-                        const ValueType aValues[],
-                        const IndexType aNumValuesPerRow,
-                        const ValueType beta,
-                        const IndexType bSizes[],
-                        const IndexType bJA[],
-                        const ValueType bValues[],
-                        const IndexType bNumValuesPerRow );
+        typedef void ( *FuncType ) ( 
+            IndexType cJA[],
+            ValueType cValues[],
+            const IndexType cSizes[],
+            const IndexType cNumValuesPerRow,
+            const IndexType m,
+            const IndexType n,
+            const bool diagonalProperty,
+            const ValueType alpha,
+            const IndexType aSizes[],
+            const IndexType aJA[],
+            const ValueType aValues[],
+            const IndexType aNumValuesPerRow,
+            const ValueType beta,
+            const IndexType bSizes[],
+            const IndexType bJA[],
+            const ValueType bValues[],
+            const IndexType bNumValuesPerRow );
 
+        static const char* getId() { return "ELL.matrixAdd"; }
+    };
+
+    template<typename ValueType>
+    struct matrixMultiply
+    {
         /** @brief computes c = alpha * a * b for ELL sparse matrices a, b, c
          *
          * @param[out] cJA is the column index array of c
@@ -1376,29 +1471,27 @@ struct ELLUtilsInterface
          * Note: the size array cValues and cNumValuePerRow must already be available.
          */
 
-        typedef void ( *matrixMultiply ) ( IndexType cJA[],
-                        ValueType cValues[],
-                        const IndexType cSizes[],
-                        const IndexType cNumValuesPerRow,
-                        const IndexType m,
-                        const IndexType n,
-                        const IndexType k,
-                        const bool diagonalProperty,
-                        const ValueType alpha,
-                        const IndexType aSizes[],
-                        const IndexType aJA[],
-                        const ValueType aValues[],
-                        const IndexType aNumValuesPerRow,
-                        const IndexType bSizes[],
-                        const IndexType bJA[],
-                        const ValueType bValues[],
-                        const IndexType bNumValuesPerRow );
+        typedef void ( *FuncType ) ( 
+            IndexType cJA[],
+            ValueType cValues[],
+            const IndexType cSizes[],
+            const IndexType cNumValuesPerRow,
+            const IndexType m,
+            const IndexType n,
+            const IndexType k,
+            const bool diagonalProperty,
+            const ValueType alpha,
+            const IndexType aSizes[],
+            const IndexType aJA[],
+            const ValueType aValues[],
+            const IndexType aNumValuesPerRow,
+            const IndexType bSizes[],
+            const IndexType bJA[],
+            const ValueType bValues[],
+            const IndexType bNumValuesPerRow );
+
+        static const char* getId() { return "ELL.matrixMultiply"; }
     };
-
-    LAMA_INTERFACE_DEFINE_T( MatrixExp, matrixAdd )
-    LAMA_INTERFACE_DEFINE_T( MatrixExp, matrixMultiply )
-
-    ELLUtilsInterface ();
 };
 
 /** Interface for utility functions to be used in JDS storage.

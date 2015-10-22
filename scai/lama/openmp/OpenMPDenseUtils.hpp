@@ -131,7 +131,7 @@ public:
         const IndexType numColumns,
         const DenseValueType val );
 
-    /** OpenMP implementation for DenseUtilsInterface::Modify::setDiagonalValue */
+    /** OpenMP implementation for DenseUtilsInterface::setDiagonalValue::FuncType */
 
     template<typename DenseValueType>
     static void setDiagonalValue(
@@ -140,9 +140,9 @@ public:
         const IndexType numColumns,
         const DenseValueType val );
 
-    /** Routine that registers all routines of this class at the LAMA interface. */
+    /** Routine that registers all routines of this class at the Kernel registry. */
 
-    static void setInterface( struct DenseUtilsInterface& DenseUtils );
+    static void registerKernelFunctions();
 
 private:
 

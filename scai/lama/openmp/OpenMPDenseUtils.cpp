@@ -39,6 +39,7 @@
 #include <scai/lama/LAMAInterfaceRegistry.hpp>
 #include <scai/lama/openmp/OpenMP.hpp>
 
+#include <scai/kregistry/KernelRegistry.hpp>
 #include <scai/common/Constants.hpp>
 
 // boost
@@ -326,32 +327,35 @@ void OpenMPDenseUtils::scaleValue(
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void OpenMPDenseUtils::setInterface( DenseUtilsInterface& DenseUtils )
+void OpenMPDenseUtils::registerKernelFunctions()
 {
+    using namespace scai::kregistry;
 
-#define LAMA_DENSE2_REGISTER(z, J, TYPE )                                                       \
-    /* Conversions  */                                                                          \
-    LAMA_INTERFACE_REGISTER_TT( DenseUtils, setCSRValues, TYPE, ARITHMETIC_HOST_TYPE_##J )      \
-    LAMA_INTERFACE_REGISTER_TT( DenseUtils, getCSRValues, TYPE, ARITHMETIC_HOST_TYPE_##J )      \
-    /* Copy  */                                                                                 \
-    LAMA_INTERFACE_REGISTER_TT( DenseUtils, copyDenseValues, TYPE, ARITHMETIC_HOST_TYPE_##J )   \
-    LAMA_INTERFACE_REGISTER_TT( DenseUtils, getDiagonal, TYPE, ARITHMETIC_HOST_TYPE_##J )       \
-    LAMA_INTERFACE_REGISTER_TT( DenseUtils, setDiagonal, TYPE, ARITHMETIC_HOST_TYPE_##J )       \
+    // ctx will contain the context for which registration is done, here Host
 
+    common::ContextType ctx = common::context::Host;
 
-#define LAMA_DENSE_REGISTER(z, I, _)                                                            \
-    /* Counting  */                                                                             \
-    LAMA_INTERFACE_REGISTER_T( DenseUtils, getCSRSizes, ARITHMETIC_HOST_TYPE_##I )              \
-    /* Modify  */                                                                               \
-    LAMA_INTERFACE_REGISTER_T( DenseUtils, setDiagonalValue, ARITHMETIC_HOST_TYPE_##I )         \
-    LAMA_INTERFACE_REGISTER_T( DenseUtils, scaleValue, ARITHMETIC_HOST_TYPE_##I )               \
-    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_DENSE2_REGISTER, ARITHMETIC_HOST_TYPE_##I ) \
+#define KREGISTRY_DENSE2_REGISTER(z, J, TYPE )                                                                          \
+    /* Conversions  */                                                                                                  \
+    KernelRegistry::set<DenseUtilsInterface::setCSRValues<TYPE, ARITHMETIC_HOST_TYPE_##J> >( setCSRValues, ctx );       \
+    KernelRegistry::set<DenseUtilsInterface::getCSRValues<TYPE, ARITHMETIC_HOST_TYPE_##J> >( getCSRValues, ctx );       \
+    /* Copy  */                                                                                                         \
+    KernelRegistry::set<DenseUtilsInterface::copyDenseValues<TYPE, ARITHMETIC_HOST_TYPE_##J> >( copyDenseValues, ctx ); \
+    KernelRegistry::set<DenseUtilsInterface::getDiagonal<TYPE, ARITHMETIC_HOST_TYPE_##J> >( getDiagonal, ctx );         \
+    KernelRegistry::set<DenseUtilsInterface::setDiagonal<TYPE, ARITHMETIC_HOST_TYPE_##J> >( setDiagonal, ctx );         \
 
+#define KREGISTRY_DENSE_REGISTER(z, I, _)                                                                               \
+    /* Counting  */                                                                                                     \
+    KernelRegistry::set<DenseUtilsInterface::getCSRSizes<ARITHMETIC_HOST_TYPE_##I> >( getCSRSizes, ctx );               \
+    /* Modify  */                                                                                                       \
+    KernelRegistry::set<DenseUtilsInterface::setDiagonalValue<ARITHMETIC_HOST_TYPE_##I> >( setDiagonalValue, ctx );     \
+    KernelRegistry::set<DenseUtilsInterface::scaleValue<ARITHMETIC_HOST_TYPE_##I> >( scaleValue, ctx );                 \
+    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, KREGISTRY_DENSE2_REGISTER, ARITHMETIC_HOST_TYPE_##I )                         \
 
-    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_DENSE_REGISTER, _ )
+    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, KREGISTRY_DENSE_REGISTER, _ )
 
-#undef LAMA_DENSE_REGISTER
-#undef LAMA_DENSE2_REGISTER
+#undef KREGISTRY_DENSE_REGISTER
+#undef KREGISTRY_DENSE2_REGISTER
 
 }
 
@@ -361,8 +365,7 @@ void OpenMPDenseUtils::setInterface( DenseUtilsInterface& DenseUtils )
 
 bool OpenMPDenseUtils::registerInterface()
 {
-    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( common::context::Host );
-    setInterface( interface.DenseUtils );
+    registerKernelFunctions();
     return true;
 }
 

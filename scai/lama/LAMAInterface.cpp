@@ -62,11 +62,6 @@ CSRUtilsInterface::CSRUtilsInterface()
     memset( this, 0, sizeof( *this ) );
 }
 
-ELLUtilsInterface::ELLUtilsInterface()
-{
-    memset( this, 0, sizeof( *this ) );
-}
-
 JDSUtilsInterface::JDSUtilsInterface()
 {
     memset( this, 0, sizeof( *this ) );
@@ -78,11 +73,6 @@ DIAUtilsInterface::DIAUtilsInterface()
 }
 
 COOUtilsInterface::COOUtilsInterface()
-{
-    memset( this, 0, sizeof( *this ) );
-}
-
-DenseUtilsInterface::DenseUtilsInterface()
 {
     memset( this, 0, sizeof( *this ) );
 }

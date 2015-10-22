@@ -324,15 +324,15 @@ bool ELLStorage<ValueType>::checkDiagonalProperty() const
     }
     else
     {
-        ContextPtr loc = getContextPtr();
+        static kregistry::KernelTraitContextFunction<ELLUtilsInterface::hasDiagonalProperty> hasDiagonalProperty;
 
-        LAMA_INTERFACE_FN( hasDiagonalProperty, loc, ELLUtils, Operations )
+        ContextPtr loc = getValidContext( this->getContextPtr(), hasDiagonalProperty );
 
         ReadAccess<IndexType> ja( mJA, loc );
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        diagonalProperty = hasDiagonalProperty( numDiagonals, ja.get() );
+        diagonalProperty = hasDiagonalProperty[ loc->getType() ]( numDiagonals, ja.get() );
     }
 
     SCAI_LOG_INFO( logger, *this << ": checkDiagonalProperty = " << diagonalProperty )

@@ -902,7 +902,9 @@ ValueType DenseStorageView<ValueType>::l1Norm() const
 
 	SCAI_CONTEXT_ACCESS( loc );
 
-	return asum( n, data.get(), 1, NULL );
+    IndexType inc = 1;
+
+	return asum( n, data.get(), inc, NULL );
 }
 
 /* --------------------------------------------------------------------------- */

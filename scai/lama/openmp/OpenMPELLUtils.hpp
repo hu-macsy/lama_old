@@ -59,9 +59,9 @@ class COMMON_DLL_IMPORTEXPORT OpenMPELLUtils
 
 public:
 
-    /** Routine that registers all routines of this class at the LAMA interface. */
+    /** Routine that registers all functions of this class at the Kernel Registry. */
 
-    static void setInterface( struct ELLUtilsInterface& ELLUtils );
+    static void registerKernelRoutines();
 
 private:
 
