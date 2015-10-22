@@ -48,6 +48,8 @@
 #include <scai/common/macros/unused.hpp>
 #include <scai/common/Constants.hpp>
 
+#include <scai/kregistry/KernelRegistry.hpp>
+
 // boost
 #include <boost/preprocessor.hpp>
 
@@ -1941,34 +1943,42 @@ ValueType OpenMPCSRUtils::absMaxDiffVal(
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void OpenMPCSRUtils::setInterface( CSRUtilsInterface& CSRUtils )
+void OpenMPCSRUtils::registerKernels()
 {
-    LAMA_INTERFACE_REGISTER( CSRUtils, sizes2offsets )
-    LAMA_INTERFACE_REGISTER( CSRUtils, offsets2sizes )
-    LAMA_INTERFACE_REGISTER( CSRUtils, validOffsets )
-    LAMA_INTERFACE_REGISTER( CSRUtils, hasDiagonalProperty )
+    using namespace scai::kregistry;
 
-    LAMA_INTERFACE_REGISTER( CSRUtils, matrixAddSizes )
-    LAMA_INTERFACE_REGISTER( CSRUtils, matrixMultiplySizes )
-    LAMA_INTERFACE_REGISTER( CSRUtils, matrixMultiplyJA )
+    // ctx will contain the context for which registration is done, here Host
 
-#define LAMA_CSR_UTILS2_REGISTER(z, J, TYPE )                                              \
-    LAMA_INTERFACE_REGISTER_TT( CSRUtils, scaleRows, TYPE, ARITHMETIC_HOST_TYPE_##J )      \
+    common::ContextType ctx = common::context::Host;
+
+    // Instantations for IndexType, not done by ARITHMETIC_TYPE macrods
+
+    KernelRegistry::set<CSRUtilsInterface::sizes2offsets>( sizes2offsets, ctx );
+    KernelRegistry::set<CSRUtilsInterface::offsets2sizes>( offsets2sizes, ctx );
+    KernelRegistry::set<CSRUtilsInterface::validOffsets>( validOffsets, ctx );
+    KernelRegistry::set<CSRUtilsInterface::hasDiagonalProperty>( hasDiagonalProperty, ctx );
+
+    KernelRegistry::set<CSRUtilsInterface::matrixAddSizes>( matrixAddSizes, ctx );
+    KernelRegistry::set<CSRUtilsInterface::matrixMultiplySizes>( matrixMultiplySizes, ctx );
+    KernelRegistry::set<CSRUtilsInterface::matrixMultiplyJA>( matrixMultiplyJA, ctx );
+
+#define LAMA_CSR_UTILS2_REGISTER(z, J, TYPE )                                                             \
+    KernelRegistry::set<CSRUtilsInterface::scaleRows<TYPE, ARITHMETIC_HOST_TYPE_##J> >( scaleRows, ctx ); \
 
 #define LAMA_CSR_UTILS_REGISTER(z, I, _)                                                   \
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, convertCSR2CSC, ARITHMETIC_HOST_TYPE_##I )        \
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, sortRowElements, ARITHMETIC_HOST_TYPE_##I )       \
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, normalGEMV, ARITHMETIC_HOST_TYPE_##I )            \
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, sparseGEMV, ARITHMETIC_HOST_TYPE_##I )            \
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, normalGEVM, ARITHMETIC_HOST_TYPE_##I )            \
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, sparseGEVM, ARITHMETIC_HOST_TYPE_##I )            \
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, gemm, ARITHMETIC_HOST_TYPE_##I )                  \
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, matrixAdd, ARITHMETIC_HOST_TYPE_##I )             \
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, matrixMultiply, ARITHMETIC_HOST_TYPE_##I )        \
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, jacobi, ARITHMETIC_HOST_TYPE_##I )                \
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, jacobiHalo, ARITHMETIC_HOST_TYPE_##I )            \
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, jacobiHaloWithDiag, ARITHMETIC_HOST_TYPE_##I )    \
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, absMaxDiffVal, ARITHMETIC_HOST_TYPE_##I )         \
+    KernelRegistry::set<CSRUtilsInterface::convertCSR2CSC<ARITHMETIC_HOST_TYPE_##I> >( convertCSR2CSC, ctx ); \
+    KernelRegistry::set<CSRUtilsInterface::sortRowElements<ARITHMETIC_HOST_TYPE_##I> >( sortRowElements, ctx ); \
+    KernelRegistry::set<CSRUtilsInterface::normalGEMV<ARITHMETIC_HOST_TYPE_##I> >( normalGEMV, ctx ); \
+    KernelRegistry::set<CSRUtilsInterface::sparseGEMV<ARITHMETIC_HOST_TYPE_##I> >( sparseGEMV, ctx ); \
+    KernelRegistry::set<CSRUtilsInterface::normalGEVM<ARITHMETIC_HOST_TYPE_##I> >( normalGEVM, ctx ); \
+    KernelRegistry::set<CSRUtilsInterface::sparseGEVM<ARITHMETIC_HOST_TYPE_##I> >( sparseGEVM, ctx ); \
+    KernelRegistry::set<CSRUtilsInterface::gemm<ARITHMETIC_HOST_TYPE_##I> >( gemm, ctx ); \
+    KernelRegistry::set<CSRUtilsInterface::matrixAdd<ARITHMETIC_HOST_TYPE_##I> >( matrixAdd, ctx ); \
+    KernelRegistry::set<CSRUtilsInterface::matrixMultiply<ARITHMETIC_HOST_TYPE_##I> >( matrixMultiply, ctx ); \
+    KernelRegistry::set<CSRUtilsInterface::jacobi<ARITHMETIC_HOST_TYPE_##I> >( jacobi, ctx ); \
+    KernelRegistry::set<CSRUtilsInterface::jacobiHalo<ARITHMETIC_HOST_TYPE_##I> >( jacobiHalo, ctx ); \
+    KernelRegistry::set<CSRUtilsInterface::jacobiHaloWithDiag<ARITHMETIC_HOST_TYPE_##I> >( jacobiHaloWithDiag, ctx ); \
+    KernelRegistry::set<CSRUtilsInterface::absMaxDiffVal<ARITHMETIC_HOST_TYPE_##I> >( absMaxDiffVal, ctx ); \
                                                                                            \
     BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT,                                             \
                      LAMA_CSR_UTILS2_REGISTER,                                             \
@@ -1985,10 +1995,9 @@ void OpenMPCSRUtils::setInterface( CSRUtilsInterface& CSRUtils )
 /*    Static registration of the Utils routines                                */
 /* --------------------------------------------------------------------------- */
 
-bool OpenMPCSRUtils::registerInterface()
+bool OpenMPCSRUtils::staticInit()
 {
-    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( common::context::Host );
-    setInterface( interface.CSRUtils );
+    registerKernels();
     return true;
 }
 
@@ -1996,7 +2005,7 @@ bool OpenMPCSRUtils::registerInterface()
 /*    Static initialiazion at program start                                    */
 /* --------------------------------------------------------------------------- */
 
-bool OpenMPCSRUtils::initialized = registerInterface();
+bool OpenMPCSRUtils::initialized = staticInit();
 
 } /* end namespace lama */
 

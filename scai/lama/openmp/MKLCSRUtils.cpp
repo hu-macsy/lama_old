@@ -46,6 +46,8 @@
 #include <scai/common/Settings.hpp>
 #include <scai/common/macros/unused.hpp>
 
+#include <scai/kregistry/KernelRegistry.hpp>
+
 #include <scai/tracing.hpp>
 
 // extern
@@ -245,8 +247,12 @@ void MKLCSRUtils::convertCSR2CSC(
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void MKLCSRUtils::setInterface( CSRUtilsInterface& CSRUtils )
+void MKLCSRUtils::registerKernels()
 {
+    using kregistry::KernelRegistry;
+
+    common::ContextType ctx = common::context::Host;
+
     bool useMKL = true;
 
     // using MKL for CSR might be disabled explicitly by environment variable
@@ -263,14 +269,14 @@ void MKLCSRUtils::setInterface( CSRUtilsInterface& CSRUtils )
 
     SCAI_LOG_INFO( logger, "set CSR routines for MKL in Host Interface" )
 
-    LAMA_INTERFACE_REGISTER1_T( CSRUtils, normalGEMV, float )
-    LAMA_INTERFACE_REGISTER1_T( CSRUtils, normalGEMV, double )
+    KernelRegistry::set<CSRUtilsInterface::normalGEMV<float> >( normalGEMV, ctx ); 
+    KernelRegistry::set<CSRUtilsInterface::normalGEMV<double> >( normalGEMV, ctx ); 
 
     // MKL conversion csr to csc has worse performance than our OpenMP Implementation
     // so we do not use it here.
 
-    // LAMA_INTERFACE_REGISTER1_T( CSRUtils, convertCSR2CSC, float )
-    // LAMA_INTERFACE_REGISTER1_T( CSRUtils, convertCSR2CSC, double )
+    // KernelRegistry::set<CSRUtilsInterface::convertCSR2CSC<float> >( convertCSR2CSC, ctx ); 
+    // KernelRegistry::set<CSRUtilsInterface::convertCSR2CSC<double> >( convertCSR2CSC, ctx ); 
 }
 
 /* --------------------------------------------------------------------------- */
@@ -279,8 +285,7 @@ void MKLCSRUtils::setInterface( CSRUtilsInterface& CSRUtils )
 
 bool MKLCSRUtils::registerInterface()
 {
-    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( common::context::Host );
-    setInterface( interface.CSRUtils );
+    registerKernels();
     return true;
 }
 

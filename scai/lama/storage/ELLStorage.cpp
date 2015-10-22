@@ -374,9 +374,8 @@ void ELLStorage<ValueType>::buildCSR(
     SCAI_LOG_INFO( logger,
                    "buildCSR<" << common::getScalarType<OtherValueType>() << ">" << " from ELL<" << common::getScalarType<ValueType>() << ">" << " on " << *loc )
 
-    LAMA_INTERFACE_FN( sizes2offsets, loc, CSRUtils, Offsets )
-
-    static kregistry::KernelTraitContextFunction<UtilsInterface::set<IndexType, IndexType> > set;
+    static LAMAKernel<CSRUtilsInterface::sizes2offsets> sizes2offsets;
+    static LAMAKernel<UtilsInterface::set<IndexType, IndexType> > set;
 
     LAMA_INTERFACE_FN_TT( getCSRValues, loc, ELLUtils, Conversions, ValueType, OtherValueType )
 
@@ -389,7 +388,7 @@ void ELLStorage<ValueType>::buildCSR(
 
     // just copy the size array mIA
 
-    set[ loc->getType() ]( csrIA.get(), ellSizes.get(), mNumRows );
+    set[loc]( csrIA.get(), ellSizes.get(), mNumRows );
 
     if( ja == NULL || values == NULL )
     {
@@ -397,7 +396,7 @@ void ELLStorage<ValueType>::buildCSR(
         return;
     }
 
-    IndexType numValues = sizes2offsets( csrIA.get(), mNumRows );
+    IndexType numValues = sizes2offsets[loc]( csrIA.get(), mNumRows );
 
     ReadAccess<IndexType> ellJA( mJA, loc );
     ReadAccess<ValueType> ellValues( mValues, loc );
@@ -407,7 +406,6 @@ void ELLStorage<ValueType>::buildCSR(
 
     getCSRValues( csrJA.get(), csrValues.get(), csrIA.get(), mNumRows, mNumValuesPerRow, ellSizes.get(), ellJA.get(),
                   ellValues.get() );
-
 }
 
 /* --------------------------------------------------------------------------- */
@@ -441,9 +439,9 @@ void ELLStorage<ValueType>::setCSRDataImpl(
 
     // Get function pointers for needed routines at the LAMA interface
 
-    LAMA_INTERFACE_FN( offsets2sizes, loc, CSRUtils, Offsets )
+    static LAMAKernel<CSRUtilsInterface::offsets2sizes > offsets2sizes;
     LAMA_INTERFACE_FN( hasDiagonalProperty, loc, ELLUtils, Operations )
-    static kregistry::KernelTraitContextFunction<UtilsInterface::maxval<IndexType> > maxval;
+    static LAMAKernel<UtilsInterface::maxval<IndexType> > maxval;
     LAMA_INTERFACE_FN_TT( setCSRValues, loc, ELLUtils, Conversions, ValueType, OtherValueType )
 
     // build array with non-zero values per row
@@ -453,7 +451,7 @@ void ELLStorage<ValueType>::setCSRDataImpl(
         WriteOnlyAccess<IndexType> ellSizes( mIA, loc, mNumRows );
 
         SCAI_CONTEXT_ACCESS( loc )
-        offsets2sizes( ellSizes.get(), csrIA.get(), mNumRows );
+        offsets2sizes[ loc ]( ellSizes.get(), csrIA.get(), mNumRows );
     }
 
     // determine the maximal number of non-zero in one row

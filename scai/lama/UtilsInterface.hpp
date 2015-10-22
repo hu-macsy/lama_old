@@ -54,7 +54,7 @@ namespace lama
 {
 
 
-/** Structure with pointers for all Utils methods. */
+/** Structure with traits for all Utils kernels. */
 
 struct UtilsInterface
 {
@@ -259,10 +259,6 @@ struct UtilsInterface
 
         static const char* getId() { return "scale"; }
     };
-
-    /** Constructor initializes all function pointers with nullPtr */
-
-    UtilsInterface ();
 };
 
 /** @brief Interface for utility functions to be used in CSR storage.
@@ -279,9 +275,9 @@ struct CSRUtilsInterface
      */
 
     template<typename ValueType>
-    struct Operations
+    struct sortRowElements
     {
-        /** This metod sorts the elemnts of a row by increasing column indexes.
+        /** This metod sorts the elements of a row by increasing column indexes.
          *
          *  @param[in,out] csrJA, csrValues  the CSR matrix data and their column indexes
          *  @param[in]     csrIA             row offsets
@@ -290,27 +286,27 @@ struct CSRUtilsInterface
          *
          *  Note: This routine does not force the diagonal property, only if each diagonal element is already available
          */
-        typedef void (*sortRowElements)(
+        typedef void (*FuncType)(
             IndexType csrJA[],
             ValueType csrValues[],
             const IndexType csrIA[],
             const IndexType numRows,
             const bool diagonalFlag );
-    };
 
-    LAMA_INTERFACE_DEFINE_T( Operations, sortRowElements )
+        static const char* getId() { return "CSR.sortRowElements"; }
+    };
 
     /** Structure with type definitions for solver routines */
 
-template    <typename ValueType>
-    struct Solver
+    template <typename ValueType>
+    struct jacobi
     {
         /** Method to compute one iteration step in Jacobi method
          *
          *  solution = omega * ( rhs + B * oldSolution) * dinv  + ( 1 - omega ) * oldSolution
          *
          */
-        typedef void ( *jacobi ) ( ValueType solution[],
+        typedef void ( *FuncType ) ( ValueType solution[],
                         const IndexType csrIA[],
                         const IndexType csrJA[],
                         const ValueType csrValues[],
@@ -320,12 +316,18 @@ template    <typename ValueType>
                         const IndexType numRows,
                         SyncToken* syncToken );
 
+        static const char* getId() { return "CSR.jacobi"; }
+    };
+
+    template <typename ValueType>
+    struct jacobiHalo
+    {
         /** Method to compute one iteration step in Jacobi method
          *
          *  solution -= omega * ( B(halo) * oldSolution) * dinv
          *
          */
-        typedef void ( *jacobiHalo ) ( ValueType solution[],
+        typedef void ( *FuncType ) ( ValueType solution[],
                         const IndexType localIA[],
                         const ValueType localValues[],
                         const IndexType haloIA[],
@@ -336,13 +338,19 @@ template    <typename ValueType>
                         const ValueType omega,
                         const IndexType numNonEmptyRows );
 
+        static const char* getId() { return "CSR.jacobiHalo"; }
+    };
+
+    template <typename ValueType>
+    struct jacobiHaloWithDiag
+    {
         /** Method to compute one iteration step in Jacobi method
          *
          *  solution -= omega * ( B(halo) * oldSolution) * dinv
          *
          *  @since 1.1.0
          */
-        typedef void ( *jacobiHaloWithDiag ) ( ValueType solution[],
+        typedef void ( *FuncType ) ( ValueType solution[],
                         const ValueType localDiagValues[],
                         const IndexType haloIA[],
                         const IndexType haloJA[],
@@ -351,15 +359,13 @@ template    <typename ValueType>
                         const ValueType oldSolution[],
                         const ValueType omega,
                         const IndexType numNonEmptyRows );
-    };
 
-    LAMA_INTERFACE_DEFINE_T( Solver, jacobi )
-    LAMA_INTERFACE_DEFINE_T( Solver, jacobiHalo )
-    LAMA_INTERFACE_DEFINE_T( Solver, jacobiHaloWithDiag )
+        static const char* getId() { return "CSR.jacobiHaloWithDiag"; }
+    };
 
     /** Structure with type definitions for offset routines. */
 
-    struct Offsets
+    struct sizes2offsets
     {
         /** This method makes an offset array from the sizes.
          *
@@ -376,8 +382,13 @@ template    <typename ValueType>
          *
          */
 
-        typedef IndexType ( *sizes2offsets ) ( IndexType array[], const IndexType n );
+        typedef IndexType ( *FuncType ) ( IndexType array[], const IndexType n );
 
+        static const char* getId() { return "CSR.sizes2offsets"; }
+    };
+
+    struct offsets2sizes
+    {
         /** This method computes size array from an offset array.
          *
          *  @param[out] sizes will contain the sizes (e.g. for each row ), has numRows entries
@@ -390,9 +401,13 @@ template    <typename ValueType>
          *  \endcode
          *
          */
+        typedef void ( *FuncType ) ( IndexType sizes[], const IndexType offsets[], const IndexType n );
 
-        typedef void ( *offsets2sizes ) ( IndexType sizes[], const IndexType offsets[], const IndexType n );
+        static const char* getId() { return "CSR.offsets2sizes"; }
+    };
 
+    struct validOffsets
+    {
         /** Check for a legal offset array.
          *
          *  @param[in] array is the array with offsets
@@ -403,8 +418,13 @@ template    <typename ValueType>
          *  Means: array[0] <= array[1] <= array[2] <= ... <= array[n] (= total)
          */
 
-        typedef bool ( *validOffsets ) ( const IndexType array[], const IndexType n, const IndexType total );
+        typedef bool ( *FuncType ) ( const IndexType array[], const IndexType n, const IndexType total );
 
+        static const char* getId() { return "CSR.validOffsets"; }
+    };
+
+    struct matrixAddSizes
+    {
         /** This method computes the row sizes for result matrix C of matrix add A + B
          *
          *  @param[out] cSizes array of length numRows, will contain number of entries
@@ -418,11 +438,16 @@ template    <typename ValueType>
          *        otherwise the row sizes/offsets will not match
          */
 
-        typedef IndexType ( *matrixAddSizes ) ( IndexType cIa[], const IndexType numRows,
+        typedef IndexType ( *FuncType ) ( IndexType cIa[], const IndexType numRows,
                         const IndexType numColumns, bool diagonalProperty,
                         const IndexType aIA[], const IndexType aJA[],
                         const IndexType bIA[], const IndexType bJA[] );
 
+        static const char* getId() { return "CSR.matrixAddSizes"; }
+    };
+
+    struct matrixMultiplySizes
+    {
         /** This method computes the row sizes for result matrix C of matrix multiplication A x B
          *
          *  @param[out] cSizes array of length numRows, will contain number of entries
@@ -434,7 +459,7 @@ template    <typename ValueType>
          *  @param[in]  bIA, bJA are the index arrays of matrix B
          */
 
-        typedef IndexType ( *matrixMultiplySizes ) ( IndexType cSizes[],
+        typedef IndexType ( *FuncType ) ( IndexType cSizes[],
                         const IndexType m,
                         const IndexType n,
                         const IndexType k,
@@ -442,6 +467,11 @@ template    <typename ValueType>
                         const IndexType aIA[], const IndexType aJA[],
                         const IndexType bIA[], const IndexType bJA[] );
 
+        static const char* getId() { return "CSR.matrixMultiplySizes"; }
+    };
+
+    struct matrixMultiplyJA
+    {
         /** This method computes the column indexes for result matrix C of matrix multiplication A x B
          *
          *  @param[out] cJA array will contain the column indexes, size is cIA[numRows]
@@ -453,12 +483,17 @@ template    <typename ValueType>
          *  @param[in]  bIA, bJA are the index arrays of matrix B
          */
 
-        typedef void ( *matrixMultiplyJA ) ( IndexType cJA[], const IndexType cIA[],
+        typedef void ( *FuncType ) ( IndexType cJA[], const IndexType cIA[],
                         const IndexType numRows, const IndexType numColumns,
                         bool diagonalProperty,
                         const IndexType aIA[], const IndexType aJA[],
                         const IndexType bIA[], const IndexType bJA[] );
 
+        static const char* getId() { return "CSR.matrixMultiplyJA"; }
+    };
+
+    struct hasDiagonalProperty
+    {
         /** This method checks whether the CSR structure data has the diagonal property.
          *
          *  @param[in] numDiagonals  number of first rows for which diagonal property is checked.
@@ -468,19 +503,12 @@ template    <typename ValueType>
          *
          *  The diagonal property is given if the first column index in the row is same as the row index.
          */
-        typedef bool ( *hasDiagonalProperty ) ( const IndexType numDiagonals,
+        typedef bool ( *FuncType ) ( const IndexType numDiagonals,
                         const IndexType csrIA[],
                         const IndexType csrJA[] );
 
+        static const char* getId() { return "CSR.hasDiagonalProperty"; }
     };
-
-    LAMA_INTERFACE_DEFINE( Offsets, sizes2offsets )
-    LAMA_INTERFACE_DEFINE( Offsets, offsets2sizes )
-    LAMA_INTERFACE_DEFINE( Offsets, validOffsets )
-    LAMA_INTERFACE_DEFINE( Offsets, matrixAddSizes )
-    LAMA_INTERFACE_DEFINE( Offsets, matrixMultiplySizes )
-    LAMA_INTERFACE_DEFINE( Offsets, matrixMultiplyJA )
-    LAMA_INTERFACE_DEFINE( Offsets, hasDiagonalProperty )
 
     /** Define structure that contains type definitions for the function pointers.
      *
@@ -490,7 +518,7 @@ template    <typename ValueType>
      */
 
     template<typename ValueType>
-    struct Transpose
+    struct convertCSR2CSC
     {
         /** Function pointer for CSR to CSC conversion routine.
          *
@@ -501,7 +529,7 @@ template    <typename ValueType>
          *  Arrays must be big enough for the corresponing sizes.
          */
 
-        typedef void( *convertCSR2CSC ) ( IndexType cscIA[],
+        typedef void( *FuncType ) ( IndexType cscIA[],
                         IndexType cscJA[],
                         ValueType cscValues[],
                         const IndexType csrIA[],
@@ -509,14 +537,14 @@ template    <typename ValueType>
                         const ValueType csrValues[],
                         IndexType numRows, IndexType numColumns,
                         IndexType numValues );
-    };
 
-    LAMA_INTERFACE_DEFINE_T( Transpose, convertCSR2CSC )
+        static const char* getId() { return "CSR.convertCSR2CSC"; }
+    };
 
     /** Define structure for multiplication routines.  */
 
     template<typename ValueType1, typename ValueType2>
-    struct Scale
+    struct scaleRows
     {
 
         /** This operation multiplies each row with an own value.
@@ -531,18 +559,18 @@ template    <typename ValueType>
          *  This routine supports different precision for matrix values and scale values.
          */
 
-        typedef void ( *scaleRows ) ( ValueType1 csrValues[],
+        typedef void ( *FuncType ) ( ValueType1 csrValues[],
                         const IndexType csrIA[],
                         const IndexType numRows,
                         const ValueType2 values[] );
-    };
 
-    LAMA_INTERFACE_DEFINE_TT( Scale, scaleRows )
+        static const char* getId() { return "CSR.scaleRows"; }
+    };
 
     /** Structure with type definitions for reduction routines. */
 
     template <typename ValueType>
-    struct Reductions
+    struct absMaxDiffVal
     {
         /** Get the maximal element-wise difference for two CSR matrices.
          *
@@ -553,12 +581,12 @@ template    <typename ValueType>
          *  @returns maximal value of absolute difference between two matrix elements
          */
 
-        typedef ValueType ( *absMaxDiffVal ) ( IndexType numRows, bool sortedRows,
+        typedef ValueType ( *FuncType ) ( IndexType numRows, bool sortedRows,
                         const IndexType csrIA1[], const IndexType csrJA1[], const ValueType csrValues1[],
                         const IndexType csrIA2[], const IndexType csrJA2[], const ValueType csrValues2[] );
-    };
 
-    LAMA_INTERFACE_DEFINE_T( Reductions, absMaxDiffVal )
+        static const char* getId() { return "CSR.absMaxDiffVal"; }
+    };
 
     /** Define structure for multiplication routines.
      *
@@ -566,7 +594,7 @@ template    <typename ValueType>
      */
 
     template<typename ValueType>
-    struct Mult
+    struct normalGEMV
     {
         /** result = alpha * CSR-Matrix * x + b * y.
          *
@@ -585,7 +613,7 @@ template    <typename ValueType>
          *  might be helpful to choose between different implementations.
          */
 
-        typedef void ( *normalGEMV ) ( ValueType result[],
+        typedef void ( *FuncType ) ( ValueType result[],
                         const ValueType alpha,
                         const ValueType x[],
                         const ValueType beta,
@@ -598,7 +626,13 @@ template    <typename ValueType>
                         const ValueType csrValues[],
                         SyncToken* syncToken );
 
-        typedef void ( *normalGEVM ) ( ValueType result[],
+        static const char* getId() { return "CSR.normalGEMV"; }
+    };
+
+    template<typename ValueType>
+    struct normalGEVM
+    {
+        typedef void ( *FuncType ) ( ValueType result[],
                         const ValueType alpha,
                         const ValueType x[],
                         const ValueType beta,
@@ -610,6 +644,12 @@ template    <typename ValueType>
                         const ValueType csrValues[],
                         SyncToken* syncToken );
 
+        static const char* getId() { return "CSR.normalGEVM"; }
+    };
+
+    template<typename ValueType>
+    struct sparseGEMV
+    {
         /** result = alpha * CSR-Matrix * x, CSR matrix has only some non-zero rows
          *
          *  @param result is the result vector
@@ -624,7 +664,7 @@ template    <typename ValueType>
          *        to run over the full result vector
          */
 
-        typedef void ( *sparseGEMV ) ( ValueType result[],
+        typedef void ( *FuncType ) ( ValueType result[],
                         const ValueType alpha,
                         const ValueType x[],
                         const IndexType numNonZeroRows,
@@ -634,7 +674,13 @@ template    <typename ValueType>
                         const ValueType csrValues[],
                         SyncToken* syncToken );
 
-        typedef void ( *sparseGEVM ) ( ValueType result[],
+        static const char* getId() { return "CSR.sparseGEMV"; }
+    };
+
+    template<typename ValueType>
+    struct sparseGEVM
+    {
+        typedef void ( *FuncType ) ( ValueType result[],
                         const ValueType alpha,
                         const ValueType x[],
                         const IndexType numColumns,
@@ -645,6 +691,12 @@ template    <typename ValueType>
                         const ValueType csrValues[],
                         SyncToken* syncToken );
 
+        static const char* getId() { return "CSR.sparseGEMV"; }
+    };
+
+    template<typename ValueType>
+    struct gemm
+    {
         /**  This method computes result = alpha * CSR * x + beta * y  with dense result, x, y
          *
          *   @param[out] result  has size m x n
@@ -658,7 +710,7 @@ template    <typename ValueType>
          *   @param[in,out] syncToken might be used for asynchronous execution
          */
 
-        typedef void ( *gemm ) ( ValueType result[],
+        typedef void ( *FuncType ) ( ValueType result[],
                         const ValueType alpha,
                         const ValueType x[],
                         const ValueType beta,
@@ -671,6 +723,12 @@ template    <typename ValueType>
                         const ValueType csrValues[],
                         SyncToken* syncToken );
 
+        static const char* getId() { return "CSR.gemm"; }
+    };
+
+    template<typename ValueType>
+    struct matrixAdd
+    {
         /** computes c = alpha * a + beta * b for CSR sparse matrices a, b, c
          *
          *  @param[out] cJA, cValues are the matrix values of output matrix
@@ -687,7 +745,7 @@ template    <typename ValueType>
          *  before.
          */
 
-        typedef void ( *matrixAdd ) ( IndexType cJA[],
+        typedef void ( *FuncType ) ( IndexType cJA[],
                         ValueType cValues[],
                         const IndexType cIA[],
                         const IndexType numRows,
@@ -702,6 +760,12 @@ template    <typename ValueType>
                         const IndexType bJA[],
                         const ValueType bValues[] );
 
+        static const char* getId() { return "CSR.matrixAdd"; }
+    };
+
+    template<typename ValueType>
+    struct matrixMultiply
+    {
         /** computes c = alpha * a * b for CSR sparse matrices a, b, c
          *
          *  @param[out] cValues are the matrix values of output matrix
@@ -718,7 +782,7 @@ template    <typename ValueType>
          *  an available entry.
          */
 
-        typedef void ( *matrixMultiply ) ( const IndexType cIa[],
+        typedef void ( *FuncType ) ( const IndexType cIa[],
                         IndexType cJA[],
                         ValueType cValues[],
                         const IndexType m,
@@ -732,17 +796,9 @@ template    <typename ValueType>
                         const IndexType bIA[],
                         const IndexType bJA[],
                         const ValueType bValues[] );
+
+        static const char* getId() { return "CSR.matrixMultiply"; }
     };
-
-    LAMA_INTERFACE_DEFINE_T( Mult, normalGEMV )
-    LAMA_INTERFACE_DEFINE_T( Mult, normalGEVM )
-    LAMA_INTERFACE_DEFINE_T( Mult, gemm )
-    LAMA_INTERFACE_DEFINE_T( Mult, sparseGEMV )
-    LAMA_INTERFACE_DEFINE_T( Mult, sparseGEVM )
-    LAMA_INTERFACE_DEFINE_T( Mult, matrixAdd )
-    LAMA_INTERFACE_DEFINE_T( Mult, matrixMultiply )
-
-    CSRUtilsInterface ();
 };
 
 /** Interface for utility functions to be used in Dense storage.

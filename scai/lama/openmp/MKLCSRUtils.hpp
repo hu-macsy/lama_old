@@ -87,9 +87,9 @@ public:
         const ValueType csrValues[],
         tasking::SyncToken* syncToken );
 
-    /** Routine that registers all routines of this class at the LAMA interface. */
+    /** Routine that registers all routines of this class at the Kernel registry. */
 
-    static void setInterface( struct CSRUtilsInterface& CSRUtils );
+    static void registerKernels();
 
 protected:
 

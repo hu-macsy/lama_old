@@ -52,16 +52,6 @@ LAMAInterface::~LAMAInterface()
 {
 }
 
-UtilsInterface::UtilsInterface()
-{
-    memset( this, 0, sizeof( *this ) );
-}
-
-CSRUtilsInterface::CSRUtilsInterface()
-{
-    memset( this, 0, sizeof( *this ) );
-}
-
 ELLUtilsInterface::ELLUtilsInterface()
 {
     memset( this, 0, sizeof( *this ) );

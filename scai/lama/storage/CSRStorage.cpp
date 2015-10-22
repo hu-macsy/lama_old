@@ -175,13 +175,10 @@ void CSRStorage<ValueType>::check( const char* msg ) const
     // check ascending values in offset array mIa
 
     {
-        static kregistry::KernelTraitContextFunction<UtilsInterface::isSorted<IndexType> > isSorted;
-        static kregistry::KernelTraitContextFunction<UtilsInterface::getValue<IndexType> > getValue;
+        static LAMAKernel<UtilsInterface::isSorted<IndexType> > isSorted;
+        static LAMAKernel<UtilsInterface::getValue<IndexType> > getValue;
 
-        ContextPtr loc = getValidContext( this->getContextPtr(), isSorted );
-        loc = getValidContext( loc, getValue );
-
-        common::ContextType ctx = loc->getType();
+        const ContextPtr loc = isSorted.getValidContext( getValue, this->getContextPtr() );
 
         ReadAccess<IndexType> csrIA( mIa, loc );
 
@@ -189,13 +186,13 @@ void CSRStorage<ValueType>::check( const char* msg ) const
 
         bool ascending = true; // check for ascending
 
-        IndexType numValues = getValue[ ctx ]( csrIA.get(), mNumRows );
+        IndexType numValues = getValue[ loc ]( csrIA.get(), mNumRows );
 
         SCAI_ASSERT_ERROR(
             numValues == mNumValues,
             "ia[" << mNumRows << "] = " << numValues << ", expected " << mNumValues << ", msg = " << msg )
 
-        SCAI_ASSERT_ERROR( isSorted[ ctx ]( csrIA.get(), mNumRows + 1, ascending ),
+        SCAI_ASSERT_ERROR( isSorted[ loc ]( csrIA.get(), mNumRows + 1, ascending ),
                            *this << " @ " << msg << ": IA is illegal offset array" )
     }
 
@@ -235,10 +232,9 @@ bool CSRStorage<ValueType>::checkDiagonalProperty() const
         return false;
     }
 
-    ContextPtr loc = getContextPtr(); // there we do the checks
+    static LAMAKernel<CSRUtilsInterface::hasDiagonalProperty> hasDiagonalProperty;
 
-    //get function pointer
-    LAMA_INTERFACE_FN( hasDiagonalProperty, loc, CSRUtils, Offsets )
+    ContextPtr loc = hasDiagonalProperty.getValidContext( this->getContextPtr() );
 
     //get read access
     ReadAccess<IndexType> csrIA( mIa, loc );
@@ -247,7 +243,7 @@ bool CSRStorage<ValueType>::checkDiagonalProperty() const
 
     IndexType numDiagonals = std::min( mNumRows, mNumColumns );
 
-    bool diagonalProperty = hasDiagonalProperty( numDiagonals, csrIA.get(), csrJA.get() );
+    bool diagonalProperty = hasDiagonalProperty[loc]( numDiagonals, csrIA.get(), csrJA.get() );
 
     SCAI_LOG_DEBUG( logger, *this << ": diagonalProperty = " << diagonalProperty );
 
@@ -265,13 +261,30 @@ void CSRStorage<ValueType>::setIdentity( const IndexType size )
 
     mNumValues = mNumRows;
 
-    WriteOnlyAccess<IndexType> ia( mIa, mNumRows + 1 );
-    WriteOnlyAccess<IndexType> ja( mJa, mNumValues );
-    WriteOnlyAccess<ValueType> values( mValues, mNumValues );
+    static LAMAKernel<UtilsInterface::setOrder<IndexType> > setOrder;
+    static LAMAKernel<UtilsInterface::setVal<ValueType> > setVal;
 
-    OpenMPUtils::setOrder( ia.get(), mNumRows + 1 );
-    OpenMPUtils::setOrder( ja.get(), mNumRows );
-    OpenMPUtils::setVal( values.get(), mNumRows, static_cast<ValueType>(1.0) );
+    {
+        ContextPtr loc = setOrder.getValidContext( this->getContextPtr() );
+
+        SCAI_CONTEXT_ACCESS( loc )
+
+        WriteOnlyAccess<IndexType> ia( mIa, loc, mNumRows + 1 );
+        WriteOnlyAccess<IndexType> ja( mJa, loc, mNumValues );
+
+        setOrder[ loc ]( ia.get(), mNumRows + 1 );
+        setOrder[ loc ]( ja.get(), mNumRows );
+    }
+
+    {
+        ContextPtr loc = setVal.getValidContext( this->getContextPtr() );
+
+        SCAI_CONTEXT_ACCESS( loc )
+
+        WriteOnlyAccess<ValueType> values( mValues, loc, mNumValues );
+        setVal[loc]( values.get(), mNumRows, static_cast<ValueType>(1.0) );
+    }
+
 
     mDiagonalProperty = true; // obviously given for identity matrix
     mSortedRows = true; // obviously given for identity matrix
@@ -298,21 +311,17 @@ void CSRStorage<ValueType>::setCSRDataImpl(
 
     if( ia.size() == numRows )
     {
+        static LAMAKernel<UtilsInterface::sum<IndexType> > sum;
+
         // checking is done where ia is already valid, preferred is loc
 
-        ContextPtr loc1 = ia.getValidContext( loc->getType() );
-
-        // we assume that ia contains the sizes, verify it by summing up
-
-        static kregistry::KernelTraitContextFunction<UtilsInterface::sum<IndexType> > sum;
-
-        loc1 = getValidContext( loc1, sum );
+        ContextPtr loc1 = sum.getValidContext( ia.getValidContext( loc->getType() ) );
 
         ReadAccess<IndexType> csrIA( ia, loc1 );
 
         SCAI_CONTEXT_ACCESS( loc1 )
 
-        IndexType n = sum[ loc1->getType() ]( csrIA.get(), numRows );
+        IndexType n = sum[loc1]( csrIA.get(), numRows );
 
         if( n != numValues )
         {
@@ -321,17 +330,17 @@ void CSRStorage<ValueType>::setCSRDataImpl(
     }
     else if( ia.size() == numRows + 1 )
     {
+        static LAMAKernel<CSRUtilsInterface::validOffsets> validOffsets;
+
         // checking is done where ia is already valid
 
-        ContextPtr loc1 = ia.getValidContext( loc->getType() );
-
-        LAMA_INTERFACE_FN_DEFAULT( validOffsets, loc1, CSRUtils, Offsets )
+        ContextPtr loc1 = validOffsets.getValidContext( ia.getValidContext( loc->getType() ) );
 
         ReadAccess<IndexType> csrIA( ia, loc1 );
 
         SCAI_CONTEXT_ACCESS( loc1 )
 
-        if( !validOffsets( csrIA.get(), numRows, numValues ) )
+        if( !validOffsets[loc1]( csrIA.get(), numRows, numValues ) )
         {
             COMMON_THROWEXCEPTION( "ia is invalid offset array" )
         }
@@ -345,9 +354,9 @@ void CSRStorage<ValueType>::setCSRDataImpl(
     SCAI_ASSERT_EQUAL_ERROR( numValues, values.size() );
 
     {
-        static kregistry::KernelTraitContextFunction<UtilsInterface::validIndexes> validIndexes;
+        static LAMAKernel<UtilsInterface::validIndexes> validIndexes;
 
-        ContextPtr loc1 = getValidContext( loc, validIndexes );
+        ContextPtr loc1 = validIndexes.getValidContext( loc );
 
         // make sure that column indexes in JA are all valid
 
@@ -355,7 +364,7 @@ void CSRStorage<ValueType>::setCSRDataImpl(
 
         SCAI_CONTEXT_ACCESS( loc1 )
 
-        if( !validIndexes[ loc1->getType() ]( csrJA.get(), numValues, numColumns ) )
+        if( !validIndexes[loc1]( csrJA.get(), numValues, numColumns ) )
         {
             COMMON_THROWEXCEPTION( "invalid column indexes in ja = " << ja << ", #columns = " << numColumns )
         }
@@ -382,15 +391,17 @@ void CSRStorage<ValueType>::setCSRDataImpl(
         LAMAArrayUtils::assign( mIa, ia, loc );
 
         {
-            ContextPtr loc1 = loc; // loc might change if sizes2offsets is not available
+            static LAMAKernel<CSRUtilsInterface::sizes2offsets> sizes2offsets;
 
-            LAMA_INTERFACE_FN_DEFAULT( sizes2offsets, loc1, CSRUtils, Offsets )
+            ContextPtr loc1 = sizes2offsets.getValidContext( loc );
 
             WriteAccess<IndexType> myIA( mIa, loc1 );
 
             myIA.resize( mNumRows + 1 ); // no realloc as capacity is sufficient
 
-            sizes2offsets( myIA.get(), numRows );
+            SCAI_CONTEXT_ACCESS( loc1 )
+
+            sizes2offsets[loc1]( myIA.get(), numRows );
         }
     }
     else
@@ -988,9 +999,9 @@ void CSRStorage<ValueType>::scaleImpl( const LAMAArray<OtherValueType>& diagonal
 {
     IndexType n = std::min( mNumRows, diagonal.size() );
 
-    ContextPtr loc = getContextPtr();
+    static LAMAKernel<CSRUtilsInterface::scaleRows<ValueType, OtherValueType> > scaleRows;
 
-    LAMA_INTERFACE_FN_TT( scaleRows, loc, CSRUtils, Scale, ValueType, OtherValueType )
+    ContextPtr loc = scaleRows.getValidContext( this->getContextPtr() );
 
     SCAI_CONTEXT_ACCESS( loc )
 
@@ -999,7 +1010,7 @@ void CSRStorage<ValueType>::scaleImpl( const LAMAArray<OtherValueType>& diagonal
         ReadAccess<IndexType> csrIA( mIa, loc );
         WriteAccess<ValueType> csrValues( mValues, loc ); // updateAccess
 
-        scaleRows( csrValues.get(), csrIA.get(), n, rDiagonal.get() );
+        scaleRows[loc]( csrValues.get(), csrIA.get(), n, rDiagonal.get() );
     }
 
     if( SCAI_LOG_TRACE_ON( logger ) )
@@ -1113,18 +1124,19 @@ void CSRStorage<ValueType>::buildCSR(
     //build number of values per row into ia
     if( ja == NULL || values == NULL )
     {
+        static LAMAKernel<CSRUtilsInterface::offsets2sizes> offsets2sizes;
+
         WriteOnlyAccess<IndexType> csrIA( ia, loc, mNumRows );
 
-        LAMA_INTERFACE_FN( offsets2sizes, loc, CSRUtils, Offsets )
         SCAI_CONTEXT_ACCESS( loc )
 
-        offsets2sizes( csrIA.get(), inIA.get(), mNumRows );
+        offsets2sizes[ loc ]( csrIA.get(), inIA.get(), mNumRows );
         return;
     }
 
     // copy the offset array ia and ja
     {
-        static kregistry::KernelTraitContextFunction<UtilsInterface::set<IndexType, IndexType> > set;
+        static LAMAKernel<UtilsInterface::set<IndexType, IndexType> > set;
 
         SCAI_CONTEXT_ACCESS( loc )
 
@@ -1132,15 +1144,13 @@ void CSRStorage<ValueType>::buildCSR(
         WriteOnlyAccess<IndexType> csrIA( ia, loc, mNumRows + 1 );
         WriteOnlyAccess<IndexType> csrJA( *ja, loc, mNumValues );
 
-        common::ContextType ctx = loc->getType();
-
-        set[ ctx ]( csrIA.get(), inIA.get(), mNumRows + 1 );
-        set[ ctx ]( csrJA.get(), inJA.get(), mNumValues );
+        set[ loc ]( csrIA.get(), inIA.get(), mNumRows + 1 );
+        set[ loc ]( csrJA.get(), inJA.get(), mNumValues );
     }
 
     // copy values
     {
-        static kregistry::KernelTraitContextFunction<UtilsInterface::set<OtherValueType, ValueType> > set;
+        static LAMAKernel<UtilsInterface::set<OtherValueType, ValueType> > set;
 
         // Attention: no fallback here for other context
 
@@ -1149,7 +1159,7 @@ void CSRStorage<ValueType>::buildCSR(
         ReadAccess<ValueType> inValues( mValues, loc );
         WriteOnlyAccess<OtherValueType> csrValues( *values, loc, mNumValues );
 
-        set[ loc->getType() ]( csrValues.get(), inValues.get(), mNumValues );
+        set[ loc ]( csrValues.get(), inValues.get(), mNumValues );
     }
 }
 
@@ -1288,8 +1298,8 @@ void CSRStorage<ValueType>::matrixTimesVector(
 
     SCAI_LOG_INFO( logger, *this << ": matrixTimesVector on " << *loc )
 
-    LAMA_INTERFACE_FN_T( sparseGEMV, loc, CSRUtils, Mult, ValueType )
-    LAMA_INTERFACE_FN_T( normalGEMV, loc, CSRUtils, Mult, ValueType )
+    static LAMAKernel<CSRUtilsInterface::sparseGEMV<ValueType> > sparseGEMV;
+    static LAMAKernel<CSRUtilsInterface::normalGEMV<ValueType> > normalGEMV;
 
     ReadAccess<IndexType> csrIA( mIa, loc );
     ReadAccess<IndexType> csrJA( mJa, loc );
@@ -1313,7 +1323,7 @@ void CSRStorage<ValueType>::matrixTimesVector(
             ReadAccess<IndexType> rows( mRowIndexes, loc );
 
             SCAI_CONTEXT_ACCESS( loc )
-            sparseGEMV( wResult.get(), alpha, rX.get(), numNonZeroRows, rows.get(), csrIA.get(), csrJA.get(),
+            sparseGEMV[loc]( wResult.get(), alpha, rX.get(), numNonZeroRows, rows.get(), csrIA.get(), csrJA.get(),
                         csrValues.get(), NULL );
         }
         else
@@ -1321,7 +1331,7 @@ void CSRStorage<ValueType>::matrixTimesVector(
             // we assume that normalGEMV can deal with the alias of result, y
 
             SCAI_CONTEXT_ACCESS( loc )
-            normalGEMV( wResult.get(), alpha, rX.get(), beta, wResult.get(), mNumRows, mNumColumns, mNumValues,
+            normalGEMV[loc]( wResult.get(), alpha, rX.get(), beta, wResult.get(), mNumRows, mNumColumns, mNumValues,
                         csrIA.get(), csrJA.get(), csrValues.get(), NULL );
         }
     }
@@ -1331,7 +1341,7 @@ void CSRStorage<ValueType>::matrixTimesVector(
         ReadAccess<ValueType> rY( y, loc );
 
         SCAI_CONTEXT_ACCESS( loc )
-        normalGEMV( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumRows, mNumColumns, mNumValues, csrIA.get(),
+        normalGEMV[loc]( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumRows, mNumColumns, mNumValues, csrIA.get(),
                     csrJA.get(), csrValues.get(), NULL );
     }
 }
@@ -1359,12 +1369,13 @@ void CSRStorage<ValueType>::vectorTimesMatrix(
         SCAI_ASSERT_EQUAL_ERROR( y.size(), mNumColumns )
     }
 
-    ContextPtr loc = getContextPtr();
+    static LAMAKernel<CSRUtilsInterface::sparseGEVM<ValueType> > sparseGEVM;
+    static LAMAKernel<CSRUtilsInterface::normalGEVM<ValueType> > normalGEVM;
+
+    ContextPtr preferedLoc = this->getContextPtr();
+    ContextPtr loc = sparseGEVM.getValidContext( normalGEVM, preferedLoc );
 
     SCAI_LOG_INFO( logger, *this << ": vectorTimesMatrix on " << *loc )
-
-    LAMA_INTERFACE_FN_T( sparseGEVM, loc, CSRUtils, Mult, ValueType )
-    LAMA_INTERFACE_FN_T( normalGEVM, loc, CSRUtils, Mult, ValueType )
 
     ReadAccess<IndexType> csrIA( mIa, loc );
     ReadAccess<IndexType> csrJA( mJa, loc );
@@ -1388,15 +1399,15 @@ void CSRStorage<ValueType>::vectorTimesMatrix(
             ReadAccess<IndexType> rows( mRowIndexes, loc );
 
             SCAI_CONTEXT_ACCESS( loc )
-            sparseGEVM( wResult.get(), alpha, rX.get(), mNumColumns, numNonZeroRows, rows.get(), csrIA.get(),
+            sparseGEVM[loc]( wResult.get(), alpha, rX.get(), mNumColumns, numNonZeroRows, rows.get(), csrIA.get(),
                         csrJA.get(), csrValues.get(), NULL );
         }
         else
         {
-            // we assume that normalGEMV can deal with the alias of result, y
+            // we assume that normalGEVV can deal with the alias of result, y
 
             SCAI_CONTEXT_ACCESS( loc )
-            normalGEVM( wResult.get(), alpha, rX.get(), beta, wResult.get(), mNumRows, mNumColumns, csrIA.get(),
+            normalGEVM[loc]( wResult.get(), alpha, rX.get(), beta, wResult.get(), mNumRows, mNumColumns, csrIA.get(),
                         csrJA.get(), csrValues.get(), NULL );
         }
     }
@@ -1406,7 +1417,7 @@ void CSRStorage<ValueType>::vectorTimesMatrix(
         ReadAccess<ValueType> rY( y, loc );
 
         SCAI_CONTEXT_ACCESS( loc )
-        normalGEVM( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumRows, mNumColumns, csrIA.get(), csrJA.get(),
+        normalGEVM[loc]( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumRows, mNumColumns, csrIA.get(), csrJA.get(),
                     csrValues.get(), NULL );
     }
 }
@@ -1439,7 +1450,7 @@ void CSRStorage<ValueType>::matrixTimesVectorN(
 
     SCAI_LOG_INFO( logger, *this << ": matrixTimesVectorN on " << *loc )
 
-    LAMA_INTERFACE_FN_T( gemm, loc, CSRUtils, Mult, ValueType )
+    static LAMAKernel<CSRUtilsInterface::gemm<ValueType> > gemm; 
 
     ReadAccess<IndexType> csrIA( mIa, loc );
     ReadAccess<IndexType> csrJA( mJa, loc );
@@ -1458,8 +1469,8 @@ void CSRStorage<ValueType>::matrixTimesVectorN(
         // we assume that normalGEMV can deal with the alias of result, y
 
         SCAI_CONTEXT_ACCESS( loc )
-        gemm( wResult.get(), alpha, rX.get(), beta, wResult.get(), mNumRows, n, mNumColumns, csrIA.get(), csrJA.get(),
-              csrValues.get(), NULL );
+        gemm[loc]( wResult.get(), alpha, rX.get(), beta, wResult.get(), mNumRows, n, mNumColumns, csrIA.get(), csrJA.get(),
+                   csrValues.get(), NULL );
     }
     else
     {
@@ -1467,8 +1478,8 @@ void CSRStorage<ValueType>::matrixTimesVectorN(
         ReadAccess<ValueType> rY( y, loc );
 
         SCAI_CONTEXT_ACCESS( loc )
-        gemm( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumRows, n, mNumColumns, csrIA.get(), csrJA.get(),
-              csrValues.get(), NULL );
+        gemm[loc]( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumRows, n, mNumColumns, csrIA.get(), csrJA.get(),
+                   csrValues.get(), NULL );
     }
 }
 
@@ -1524,8 +1535,8 @@ SyncToken* CSRStorage<ValueType>::matrixTimesVectorAsync(
         SCAI_ASSERT_EQUAL_ERROR( y.size(), mNumRows )
     }
 
-    LAMA_INTERFACE_FN_T( sparseGEMV, loc, CSRUtils, Mult, ValueType )
-    LAMA_INTERFACE_FN_T( normalGEMV, loc, CSRUtils, Mult, ValueType )
+    static LAMAKernel<CSRUtilsInterface::sparseGEMV<ValueType> > sparseGEMV;
+    static LAMAKernel<CSRUtilsInterface::normalGEMV<ValueType> > normalGEMV;
 
     unique_ptr<SyncToken> syncToken( loc->getSyncToken() );
 
@@ -1557,7 +1568,7 @@ SyncToken* CSRStorage<ValueType>::matrixTimesVectorAsync(
 
             SCAI_CONTEXT_ACCESS( loc )
 
-            sparseGEMV( wResult->get(), alpha, rX->get(), numNonZeroRows, rows->get(), csrIA->get(), csrJA->get(),
+            sparseGEMV[loc]( wResult->get(), alpha, rX->get(), numNonZeroRows, rows->get(), csrIA->get(), csrJA->get(),
                         csrValues->get(), syncToken.get() );
         }
         else
@@ -1566,7 +1577,7 @@ SyncToken* CSRStorage<ValueType>::matrixTimesVectorAsync(
 
             SCAI_CONTEXT_ACCESS( loc )
 
-            normalGEMV( wResult->get(), alpha, rX->get(), beta, wResult->get(), mNumRows, mNumColumns, mNumValues,
+            normalGEMV[loc]( wResult->get(), alpha, rX->get(), beta, wResult->get(), mNumRows, mNumColumns, mNumValues,
                         csrIA->get(), csrJA->get(), csrValues->get(), syncToken.get() );
         }
 
@@ -1579,7 +1590,7 @@ SyncToken* CSRStorage<ValueType>::matrixTimesVectorAsync(
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        normalGEMV( wResult->get(), alpha, rX->get(), beta, rY->get(), mNumRows, mNumColumns, mNumValues, csrIA->get(),
+        normalGEMV[loc]( wResult->get(), alpha, rX->get(), beta, rY->get(), mNumRows, mNumColumns, mNumValues, csrIA->get(),
                     csrJA->get(), csrValues->get(), syncToken.get() );
 
         syncToken->pushToken( wResult );
@@ -1646,8 +1657,8 @@ SyncToken* CSRStorage<ValueType>::vectorTimesMatrixAsync(
         SCAI_ASSERT_EQUAL_ERROR( y.size(), mNumColumns )
     }
 
-    LAMA_INTERFACE_FN_T( sparseGEVM, loc, CSRUtils, Mult, ValueType )
-    LAMA_INTERFACE_FN_T( normalGEVM, loc, CSRUtils, Mult, ValueType )
+    static LAMAKernel<CSRUtilsInterface::sparseGEVM<ValueType> > sparseGEVM;
+    static LAMAKernel<CSRUtilsInterface::normalGEVM<ValueType> > normalGEVM;
 
     unique_ptr<SyncToken> syncToken( loc->getSyncToken() );
 
@@ -1679,7 +1690,7 @@ SyncToken* CSRStorage<ValueType>::vectorTimesMatrixAsync(
 
             SCAI_CONTEXT_ACCESS( loc )
 
-            sparseGEVM( wResult->get(), alpha, rX->get(), mNumColumns, numNonZeroRows, rows->get(), csrIA->get(),
+            sparseGEVM[loc]( wResult->get(), alpha, rX->get(), mNumColumns, numNonZeroRows, rows->get(), csrIA->get(),
                         csrJA->get(), csrValues->get(), syncToken.get() );
         }
         else
@@ -1688,7 +1699,7 @@ SyncToken* CSRStorage<ValueType>::vectorTimesMatrixAsync(
 
             SCAI_CONTEXT_ACCESS( loc )
 
-            normalGEVM( wResult->get(), alpha, rX->get(), beta, wResult->get(), mNumRows, mNumColumns, csrIA->get(),
+            normalGEVM[loc]( wResult->get(), alpha, rX->get(), beta, wResult->get(), mNumRows, mNumColumns, csrIA->get(),
                         csrJA->get(), csrValues->get(), syncToken.get() );
         }
 
@@ -1701,7 +1712,7 @@ SyncToken* CSRStorage<ValueType>::vectorTimesMatrixAsync(
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        normalGEVM( wResult->get(), alpha, rX->get(), beta, rY->get(), mNumRows, mNumColumns, csrIA->get(),
+        normalGEVM[loc]( wResult->get(), alpha, rX->get(), beta, rY->get(), mNumRows, mNumColumns, csrIA->get(),
                     csrJA->get(), csrValues->get(), syncToken.get() );
 
         syncToken->pushToken( wResult );
@@ -1741,11 +1752,11 @@ void CSRStorage<ValueType>::jacobiIterate(
     SCAI_ASSERT_EQUAL_DEBUG( mNumRows, mNumColumns )
     // matrix must be square
 
-    ContextPtr loc = getContextPtr();
-
     // loc = ContextFactory::getContext( context::Host );  // does not run on other devices
 
-    LAMA_INTERFACE_FN_T( jacobi, loc, CSRUtils, Solver, ValueType )
+    static LAMAKernel<CSRUtilsInterface::jacobi<ValueType> > jacobi;
+
+    ContextPtr loc = jacobi.getValidContext( this->getContextPtr() );
 
     WriteAccess<ValueType> wSolution( solution, loc );
     ReadAccess<IndexType> csrIA( mIa, loc );
@@ -1758,8 +1769,8 @@ void CSRStorage<ValueType>::jacobiIterate(
 
     SCAI_CONTEXT_ACCESS( loc )
 
-    jacobi( wSolution.get(), csrIA.get(), csrJA.get(), csrValues.get(), rOldSolution.get(), rRhs.get(), omega, mNumRows,
-            NULL );
+    jacobi[loc]( wSolution.get(), csrIA.get(), csrJA.get(), csrValues.get(), 
+                 rOldSolution.get(), rRhs.get(), omega, mNumRows, NULL );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1795,9 +1806,9 @@ void CSRStorage<ValueType>::jacobiIterateHalo(
         COMMON_THROWEXCEPTION( "local stroage is not CSR" )
     }
 
-    ContextPtr loc = getContextPtr();
+    static LAMAKernel<CSRUtilsInterface::jacobiHalo<ValueType> > jacobiHalo;
 
-    LAMA_INTERFACE_FN_T( jacobiHalo, loc, CSRUtils, Solver, ValueType )
+    ContextPtr loc = jacobiHalo.getValidContext( this->getContextPtr() );
 
     {
         WriteAccess<ValueType> wSolution( localSolution, loc ); // will be updated
@@ -1818,16 +1829,15 @@ void CSRStorage<ValueType>::jacobiIterateHalo(
 
             SCAI_CONTEXT_ACCESS( loc )
 
-            jacobiHalo( wSolution.get(), localIA.get(), localValues.get(), haloIA.get(), haloJA.get(), haloValues.get(),
-                        haloRowIndexes.get(), rOldHaloSolution.get(), omega, numNonEmptyRows );
+            jacobiHalo[loc]( wSolution.get(), localIA.get(), localValues.get(), haloIA.get(), haloJA.get(), haloValues.get(),
+                             haloRowIndexes.get(), rOldHaloSolution.get(), omega, numNonEmptyRows );
         }
         else
         {
             SCAI_CONTEXT_ACCESS( loc )
 
-            jacobiHalo( wSolution.get(), localIA.get(), localValues.get(), haloIA.get(), haloJA.get(), haloValues.get(),
-                        NULL,
-                        rOldHaloSolution.get(), omega, mNumRows );
+            jacobiHalo[loc]( wSolution.get(), localIA.get(), localValues.get(), haloIA.get(), haloJA.get(), haloValues.get(),
+                             NULL, rOldHaloSolution.get(), omega, mNumRows );
         }
     }
 }
@@ -1848,9 +1858,9 @@ void CSRStorage<ValueType>::jacobiIterateHalo(
     SCAI_ASSERT_EQUAL_DEBUG( mNumRows, localSolution.size() )
     SCAI_ASSERT_EQUAL_DEBUG( mNumColumns, oldHaloSolution.size() )
 
-    ContextPtr loc = getContextPtr();
+    static LAMAKernel<CSRUtilsInterface::jacobiHaloWithDiag<ValueType> > jacobiHaloWithDiag;
 
-    LAMA_INTERFACE_FN_T( jacobiHaloWithDiag, loc, CSRUtils, Solver, ValueType )
+    ContextPtr loc = jacobiHaloWithDiag.getValidContext( this->getContextPtr() );
 
     {
         WriteAccess<ValueType> wSolution( localSolution, loc ); // will be updated
@@ -1870,16 +1880,15 @@ void CSRStorage<ValueType>::jacobiIterateHalo(
 
             SCAI_CONTEXT_ACCESS( loc )
 
-            jacobiHaloWithDiag( wSolution.get(), localDiagValues.get(), haloIA.get(), haloJA.get(), haloValues.get(),
-                                haloRowIndexes.get(), rOldHaloSolution.get(), omega, numNonEmptyRows );
+            jacobiHaloWithDiag[loc]( wSolution.get(), localDiagValues.get(), haloIA.get(), haloJA.get(), haloValues.get(),
+                                     haloRowIndexes.get(), rOldHaloSolution.get(), omega, numNonEmptyRows );
         }
         else
         {
             SCAI_CONTEXT_ACCESS( loc )
 
-            jacobiHaloWithDiag( wSolution.get(), localDiagValues.get(), haloIA.get(), haloJA.get(), haloValues.get(),
-                                NULL,
-                                rOldHaloSolution.get(), omega, mNumRows );
+            jacobiHaloWithDiag[loc]( wSolution.get(), localDiagValues.get(), haloIA.get(), haloJA.get(), haloValues.get(),
+                                     NULL, rOldHaloSolution.get(), omega, mNumRows );
         }
     }
 }
@@ -2044,7 +2053,7 @@ void CSRStorage<ValueType>::matrixAddMatrixCSR(
     const CSRStorage<ValueType>& a,
     const ValueType beta,
     const CSRStorage<ValueType>& b,
-    const ContextPtr loc )
+    const ContextPtr preferedLoc )
 {
     SCAI_LOG_INFO( logger,
                    "this = " << alpha << " * A + " << beta << " * B, with " << "A = " << a << ", B = " << b << ", all are CSR" )
@@ -2052,8 +2061,10 @@ void CSRStorage<ValueType>::matrixAddMatrixCSR(
 //    // TODO: just temporary, MAKE loc const again!
 //    loc = Context::getContextPtr( context::Host );
 
-    LAMA_INTERFACE_FN( matrixAddSizes, loc, CSRUtils, Offsets )
-    LAMA_INTERFACE_FN_T( matrixAdd, loc, CSRUtils, Mult, ValueType )
+    static LAMAKernel<CSRUtilsInterface::matrixAddSizes> matrixAddSizes;
+    static LAMAKernel<CSRUtilsInterface::matrixAdd<ValueType> > matrixAdd;
+
+    const ContextPtr loc = matrixAdd.getValidContext( matrixAddSizes, preferedLoc );
 
     if( &a == this || &b == this )
     {
@@ -2093,8 +2104,8 @@ void CSRStorage<ValueType>::matrixAddMatrixCSR(
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        mNumValues = matrixAddSizes( cIa.get(), mNumRows, mNumColumns, mDiagonalProperty, aIa.get(), aJa.get(),
-                                     bIa.get(), bJa.get() );
+        mNumValues = matrixAddSizes[loc] ( cIa.get(), mNumRows, mNumColumns, mDiagonalProperty, aIa.get(), aJa.get(),
+                                           bIa.get(), bJa.get() );
 
         // Step 2: fill in ja, values
 
@@ -2103,8 +2114,8 @@ void CSRStorage<ValueType>::matrixAddMatrixCSR(
         WriteOnlyAccess<IndexType> cJa( mJa, loc, mNumValues );
         WriteOnlyAccess<ValueType> cValues( mValues, loc, mNumValues );
 
-        matrixAdd( cJa.get(), cValues.get(), cIa.get(), mNumRows, mNumColumns, mDiagonalProperty, alpha, aIa.get(),
-                   aJa.get(), aValues.get(), beta, bIa.get(), bJa.get(), bValues.get() );
+        matrixAdd[loc]( cJa.get(), cValues.get(), cIa.get(), mNumRows, mNumColumns, mDiagonalProperty, alpha, aIa.get(),
+                        aJa.get(), aValues.get(), beta, bIa.get(), bJa.get(), bValues.get() );
     }
 
     SCAI_LOG_DEBUG( logger, *this << ": compress by removing zero elements" )
@@ -2130,13 +2141,19 @@ void CSRStorage<ValueType>::matrixTimesMatrixCSR(
     const ValueType alpha,
     const CSRStorage<ValueType>& a,
     const CSRStorage<ValueType>& b,
-    const ContextPtr loc )
+    const ContextPtr preferedLoc )
 {
     SCAI_LOG_INFO( logger,
-                   *this << ": = " << alpha << " * A * B, with " << "A = " << a << ", B = " << b << ", all are CSR" << ", Context = " << loc->getType() )
+                   *this << ": = " << alpha << " * A * B, with " << "A = " << a << ", B = " << b << ", all are CSR" << ", Context = " << preferedLoc->getType() )
 
-    LAMA_INTERFACE_FN( matrixMultiplySizes, loc, CSRUtils, Offsets )
-    LAMA_INTERFACE_FN_T( matrixMultiply, loc, CSRUtils, Mult, ValueType )
+    // get availabe implementations of needed kernel routines
+
+    static LAMAKernel<CSRUtilsInterface::matrixMultiplySizes> matrixMultiplySizes;
+    static LAMAKernel<CSRUtilsInterface::matrixMultiply<ValueType> > matrixMultiply;
+
+    // choose Context where all kernel routines are available
+
+    ContextPtr loc = matrixMultiply.getValidContext( matrixMultiplySizes, preferedLoc );
 
     SCAI_ASSERT_ERROR( &a != this, "matrixTimesMatrix: alias of a with this result matrix" )
     SCAI_ASSERT_ERROR( &b != this, "matrixTimesMatrix: alias of b with this result matrix" )
@@ -2164,14 +2181,14 @@ void CSRStorage<ValueType>::matrixTimesMatrixCSR(
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        mNumValues = matrixMultiplySizes( cIA.get(), mNumRows, mNumColumns, k, mDiagonalProperty, aIA.get(), aJA.get(),
+        mNumValues = matrixMultiplySizes[loc] ( cIA.get(), mNumRows, mNumColumns, k, mDiagonalProperty, aIA.get(), aJA.get(),
                                           bIA.get(), bJA.get() );
 
         WriteOnlyAccess<IndexType> cJa( mJa, loc, mNumValues );
         WriteOnlyAccess<ValueType> cValues( mValues, loc, mNumValues );
 
-        matrixMultiply( cIA.get(), cJa.get(), cValues.get(), mNumRows, mNumColumns, k, alpha, mDiagonalProperty,
-                        aIA.get(), aJA.get(), aValues.get(), bIA.get(), bJA.get(), bValues.get() );
+        matrixMultiply[loc]( cIA.get(), cJa.get(), cValues.get(), mNumRows, mNumColumns, k, alpha, mDiagonalProperty,
+                             aIA.get(), aJA.get(), aValues.get(), bIA.get(), bJA.get(), bValues.get() );
     }
 
     // TODO: check this!
@@ -2299,11 +2316,11 @@ ValueType CSRStorage<ValueType>::maxDiffNormImpl( const CSRStorage<ValueType>& o
         return static_cast<ValueType>(0.0);
     }
 
-    ContextPtr loc = getContextPtr();
-
     bool sorted = mSortedRows && other.mSortedRows && ( mDiagonalProperty == other.mDiagonalProperty );
 
-    LAMA_INTERFACE_FN_DEFAULT_T( absMaxDiffVal, loc, CSRUtils, Reductions, ValueType )
+    static LAMAKernel<CSRUtilsInterface::absMaxDiffVal<ValueType> > absMaxDiffVal;
+
+    ContextPtr loc = absMaxDiffVal.getValidContext( this->getContextPtr() );
 
     ReadAccess<IndexType> csrIA1( mIa, loc );
     ReadAccess<IndexType> csrJA1( mJa, loc );
@@ -2315,8 +2332,8 @@ ValueType CSRStorage<ValueType>::maxDiffNormImpl( const CSRStorage<ValueType>& o
 
     SCAI_CONTEXT_ACCESS( loc )
 
-    ValueType maxval = absMaxDiffVal( mNumRows, sorted, csrIA1.get(), csrJA1.get(), csrValues1.get(), csrIA2.get(),
-                                      csrJA2.get(), csrValues2.get() );
+    ValueType maxval = absMaxDiffVal[loc] ( mNumRows, sorted, csrIA1.get(), csrJA1.get(), csrValues1.get(), csrIA2.get(),
+                                            csrJA2.get(), csrValues2.get() );
 
     return maxval;
 }

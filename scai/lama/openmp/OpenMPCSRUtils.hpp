@@ -364,9 +364,9 @@ public:
         const IndexType csrJA2[],
         const ValueType csrValues2[] );
 
-    /** Routine that registers all routines of this class at the LAMA interface. */
+    /** Routine that registers all routines of this class at the Kernel Registry. */
 
-    static void setInterface( struct CSRUtilsInterface& CSRUtils );
+    static void registerKernels();
 
 protected:
 
@@ -376,7 +376,7 @@ private    :
 
     static bool initialized;
 
-    static bool registerInterface();
+    static bool staticInit();
 
     static IndexType scanSerial( IndexType array[], const IndexType numValues );
 
