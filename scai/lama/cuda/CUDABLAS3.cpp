@@ -35,8 +35,7 @@
 #include <scai/lama/cuda/CUDABLAS3.hpp>
 
 // local library
-#include <scai/lama/LAMAInterface.hpp>
-#include <scai/lama/LAMAInterfaceRegistry.hpp>
+#include <scai/lama/BLASInterface.hpp>
 #include <scai/lama/openmp/BLASHelper.hpp>
 #include <scai/lama/cuda/lama_cublas.hpp>
 

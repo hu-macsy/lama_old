@@ -37,15 +37,13 @@
 // local library
 #include <scai/lama/cuda/CUDABLAS1.hpp>
 
-#include <scai/lama/LAMAInterface.hpp>
-#include <scai/lama/LAMAInterfaceRegistry.hpp>
+#include <scai/lama/BLASInterface.hpp>
 
 // internal scai library
 #include <scai/kregistry/KernelRegistry.hpp>
 #include <scai/common/cuda/CUDAError.hpp>
 
 using namespace scai::tasking;
-using namespace scai::hmemo;
 
 namespace scai
 {

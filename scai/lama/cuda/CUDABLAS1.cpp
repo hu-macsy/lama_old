@@ -36,8 +36,7 @@
 
 // local library
 #include <scai/lama/cuda/lama_cublas.hpp>
-#include <scai/lama/LAMAInterface.hpp>
-#include <scai/lama/LAMAInterfaceRegistry.hpp>
+#include <scai/lama/BLASInterface.hpp>
 
 // internal scai libraries
 #include <scai/hmemo/cuda/CUDAStreamSyncToken.hpp>
