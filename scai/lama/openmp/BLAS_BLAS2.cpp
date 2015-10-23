@@ -233,8 +233,14 @@ void BLAS_BLAS2::gemv(
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void BLAS_BLAS2::setInterface( BLASInterface& BLAS )
+void BLAS_BLAS2::registerKernels()
 {
+    using scai::kregistry::KernelRegistry;
+
+    // ctx will contain the context for which registration is done, here Host
+
+    common::ContextType ctx = common::context::Host;
+
     // using BLAS wrappers might be disabled explicitly by environment variable
 
     int level = 0;
@@ -257,8 +263,8 @@ void BLAS_BLAS2::setInterface( BLASInterface& BLAS )
 
     // REGISTER1: give these routines priority in case of overriding
 
-#define LAMA_BLAS2_REGISTER(z, I, _)                                                   \
-    LAMA_INTERFACE_REGISTER1_T( BLAS, gemv, ARITHMETIC_HOST_TYPE_##I )                 \
+#define LAMA_BLAS2_REGISTER(z, I, _)                                                        \
+    KernelRegistry::set<BLASInterface::gemv<ARITHMETIC_HOST_TYPE_##I> >( gemv, ctx, true ); \
 
     BOOST_PP_REPEAT( ARITHMETIC_HOST_EXT_TYPE_CNT, LAMA_BLAS2_REGISTER, _ )
 
@@ -273,8 +279,7 @@ void BLAS_BLAS2::setInterface( BLASInterface& BLAS )
 
 bool BLAS_BLAS2::registerInterface()
 {
-    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( common::context::Host );
-    setInterface( interface.BLAS );
+    registerKernels();
     return true;
 }
 

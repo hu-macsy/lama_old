@@ -514,21 +514,21 @@ Scalar DenseVector<ValueType>::l1Norm() const
 
     ValueType localL1Norm = static_cast<ValueType>(0.0);
 
-    if( nnu > 0 )
+    if ( nnu > 0 )
     {
-        //choose preferred context
+        // get available kernel routines for "BLAS1.asum" 
 
-        ContextPtr loc = mContext;
+        static LAMAKernel<BLASInterface::asum<ValueType> > asum;
 
-        // get function pointer BLAS::BLAS1<ValueType>::asum in appropriate context
+        // find valid context, preferred is mContext
 
-        LAMA_INTERFACE_FN_DEFAULT_T( asum, loc, BLAS, BLAS1, ValueType )
+        ContextPtr loc = asum.getValidContext( mContext );
 
         ReadAccess<ValueType> read( mLocalValues, loc );
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        localL1Norm = asum( nnu, read.get(), 1, NULL );
+        localL1Norm = asum[loc]( nnu, read.get(), 1, NULL );
     }
 
     return getDistribution().getCommunicator().sum( localL1Norm );
@@ -545,19 +545,19 @@ Scalar DenseVector<ValueType>::l2Norm() const
 
     if( nnu > 0 )
     {
-        // choose preferred context as context of vector, might be changed by availability
+        // get available kernel routines for "BLAS1.dot" 
 
-        ContextPtr loc = mContext;
+        static LAMAKernel<BLASInterface::dot<ValueType> > dot;
 
-        // get function pointer BLAS::BLAS1<ValueType>::dot in appropriate context
+        // find valid context, preferred is mContext
 
-        LAMA_INTERFACE_FN_DEFAULT_T( dot, loc, BLAS, BLAS1, ValueType )
+        ContextPtr loc = dot.getValidContext( mContext );
 
         ReadAccess<ValueType> read( mLocalValues, loc );
 
-        SCAI_CONTEXT_ACCESS( mContext )
+        SCAI_CONTEXT_ACCESS( loc )
 
-        localDotProduct = dot( nnu, read.get(), 1, read.get(), 1, NULL );
+        localDotProduct = dot[loc]( nnu, read.get(), 1, read.get(), 1, NULL );
     }
 
     ValueType globalDotProduct = getDistribution().getCommunicator().sum( localDotProduct );
@@ -639,8 +639,8 @@ void DenseVector<ValueType>::vectorPlusVector(
 
     static kregistry::KernelTraitContextFunction<UtilsInterface::scale<ValueType> > scale;
 
-    LAMA_INTERFACE_FN_T( axpy, context, BLAS, BLAS1, ValueType )
-    LAMA_INTERFACE_FN_T( sum, context, BLAS, BLAS1, ValueType )
+    static LAMAKernel<BLASInterface::axpy<ValueType> > axpy;
+    static LAMAKernel<BLASInterface::sum<ValueType> > sum;
 
     const IndexType nnu = result.size();
 
@@ -844,9 +844,13 @@ SCAI_REGION( "Vector.Dense.dotP" )
 
         SCAI_LOG_DEBUG( logger, "Calculating local dot product at " << *mContext )
 
-        ContextPtr loc = mContext; // prefered location is context of this vector
+        // get available kernel routines for "BLAS1.dot" 
 
-        LAMA_INTERFACE_FN_DEFAULT_T( dot, loc, BLAS, BLAS1, ValueType );
+        static LAMAKernel<BLASInterface::dot<ValueType> > dot;
+
+        // find valid context, preferred is mContext
+
+        ContextPtr loc = dot.getValidContext( mContext );
 
         // Now do the dot production at location loc ( might have been changed to other location  )
 
@@ -859,7 +863,7 @@ SCAI_REGION( "Vector.Dense.dotP" )
 
         SCAI_ASSERT_EQUAL_DEBUG( localSize, getDistribution().getLocalSize() )
 
-        const ValueType localDotProduct = dot( localSize, localRead.get(), 1, otherRead.get(), 1, NULL );
+        const ValueType localDotProduct = dot[loc]( localSize, localRead.get(), 1, otherRead.get(), 1, NULL );
 
         SCAI_LOG_DEBUG( logger, "Calculating global dot product form local dot product = " << localDotProduct )
 

@@ -87,7 +87,7 @@ public:
      *  Note: this routine will make instantiations of the template routines.
      */
 
-    static void setInterface( struct BLASInterface& blas );
+    static void registerKernels();
 
 private:
 

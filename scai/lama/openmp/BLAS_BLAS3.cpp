@@ -236,6 +236,12 @@ void BLAS_BLAS3::gemm(
 
 void BLAS_BLAS3::setInterface( BLASInterface& BLAS )
 {
+    using scai::kregistry::KernelRegistry;
+
+    // ctx will contain the context for which registration is done, here Host
+
+    common::ContextType ctx = common::context::Host;
+
     // using BLAS wrappers might be disabled explicitly by environment variable
 
     int level = 0;
@@ -260,7 +266,7 @@ void BLAS_BLAS3::setInterface( BLASInterface& BLAS )
     //       ( e.g. routine CUDABLAS1::sum<ValueType> is set for BLAS::BLAS1::sum variable
 
 #define LAMA_BLAS3_REGISTER(z, I, _)                                                  \
-    LAMA_INTERFACE_REGISTER1_T( BLAS, gemm, ARITHMETIC_HOST_TYPE_##I )                \
+    KernelRegistry::set<BLASInterface::gemm<ARITHMETIC_HOST_TYPE_##I> >( gemm, ctx, true ); \
 
     BOOST_PP_REPEAT( ARITHMETIC_HOST_EXT_TYPE_CNT, LAMA_BLAS3_REGISTER, _ )
 

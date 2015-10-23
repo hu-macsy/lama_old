@@ -551,23 +551,29 @@ void OpenMPBLAS1::sum(
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void OpenMPBLAS1::setInterface( BLASInterface& BLAS )
+void OpenMPBLAS1::registerKernels()
 {
+    using scai::kregistry::KernelRegistry;
+
+    // ctx will contain the context for which registration is done, here Host
+
+    common::ContextType ctx = common::context::Host;
+
     SCAI_LOG_INFO( logger, "set BLAS1 routines for OpenMP in Interface" )
 
 // Note: macro takes advantage of same name for routines and type definitions
 //       ( e.g. routine CUDABLAS1::sum<ValueType> is set for BLAS::BLAS1::sum variable
 
 #define LAMA_BLAS1_REGISTER(z, I, _)                                        \
-    LAMA_INTERFACE_REGISTER_T( BLAS, scal, ARITHMETIC_HOST_TYPE_##I )       \
-    LAMA_INTERFACE_REGISTER_T( BLAS, nrm2, ARITHMETIC_HOST_TYPE_##I )       \
-    LAMA_INTERFACE_REGISTER_T( BLAS, asum, ARITHMETIC_HOST_TYPE_##I )       \
-    LAMA_INTERFACE_REGISTER_T( BLAS, iamax, ARITHMETIC_HOST_TYPE_##I )      \
-    LAMA_INTERFACE_REGISTER_T( BLAS, swap, ARITHMETIC_HOST_TYPE_##I )       \
-    LAMA_INTERFACE_REGISTER_T( BLAS, copy, ARITHMETIC_HOST_TYPE_##I )       \
-    LAMA_INTERFACE_REGISTER_T( BLAS, axpy, ARITHMETIC_HOST_TYPE_##I )       \
-    LAMA_INTERFACE_REGISTER_T( BLAS, dot, ARITHMETIC_HOST_TYPE_##I )        \
-    LAMA_INTERFACE_REGISTER_T( BLAS, sum, ARITHMETIC_HOST_TYPE_##I )        \
+    KernelRegistry::set<UtilsInterface::scal<ARITHMETIC_HOST_TYPE_##I> >( scal, ctx );    \
+    KernelRegistry::set<UtilsInterface::nrm2<ARITHMETIC_HOST_TYPE_##I> >( nrm2, ctx );    \
+    KernelRegistry::set<UtilsInterface::asum<ARITHMETIC_HOST_TYPE_##I> >( asum, ctx );    \
+    KernelRegistry::set<UtilsInterface::iamax<ARITHMETIC_HOST_TYPE_##I> >( iamax, ctx );  \
+    KernelRegistry::set<UtilsInterface::swap<ARITHMETIC_HOST_TYPE_##I> >( swap, ctx );    \
+    KernelRegistry::set<UtilsInterface::copy<ARITHMETIC_HOST_TYPE_##I> >( copy, ctx );    \
+    KernelRegistry::set<UtilsInterface::axpy<ARITHMETIC_HOST_TYPE_##I> >( axpy, ctx );    \
+    KernelRegistry::set<UtilsInterface::dot<ARITHMETIC_HOST_TYPE_##I> >( dot, ctx );      \
+    KernelRegistry::set<UtilsInterface::sum<ARITHMETIC_HOST_TYPE_##I> >( sum, ctx );      \
 
     BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_BLAS1_REGISTER, _ )
 
@@ -581,8 +587,7 @@ void OpenMPBLAS1::setInterface( BLASInterface& BLAS )
 
 bool OpenMPBLAS1::registerInterface()
 {
-    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( common::context::Host );
-    setInterface( interface.BLAS );
+    registerKernels();
     return true;
 }
 

@@ -589,6 +589,10 @@ void DenseMatrix<ValueType>::invert( const Matrix& other )
 template<typename ValueType>
 bool DenseMatrix<ValueType>::hasScalaPack()
 {
+    return false;
+
+    /* Original code:
+
     // check the LAMAInterface if ScalaPack is available ( at least on Host )
 
     ContextPtr loc = Context::getContextPtr( context::Host );
@@ -596,6 +600,8 @@ bool DenseMatrix<ValueType>::hasScalaPack()
     typename BLASInterface::SCALAPACK<ValueType>::inverse inverse = loc->getInterface().BLAS.inverse<ValueType>();
 
     return inverse != NULL;
+
+    */
 }
 
 /* ------------------------------------------------------------------ */
@@ -637,9 +643,10 @@ void DenseMatrix<ValueType>::invertCyclic()
 
     const int nb = cyclicDist->chunkSize(); // blocking factor
 
-    ContextPtr loc = getContextPtr(); // location where inverse computation will be done
+    static LAMAKernel<BLASInterface::inverse<ValueType> > inverse;
 
-    LAMA_INTERFACE_FN_DEFAULT_T( inverse, loc, BLAS, SCALAPACK, ValueType );
+    // location where inverse computation will be done
+    ContextPtr loc = inverse.getValidContext( this->getContextPtr() );
 
     // be careful: loc might have changed to location where 'inverse' is available
 
@@ -665,7 +672,7 @@ void DenseMatrix<ValueType>::invertCyclic()
 
     SCAI_CONTEXT_ACCESS( loc )
 
-    inverse( n, nb, data, comm );
+    inverse[loc]( n, nb, data, comm );
 }
 
 /* ------------------------------------------------------------------ */
@@ -1749,7 +1756,9 @@ void DenseMatrix<ValueType>::matrixTimesVectorImpl(
             {
                 ContextPtr loc = getContextPtr();
 
-                LAMA_INTERFACE_FN_DEFAULT_T( copy, loc, BLAS, BLAS1, ValueType );
+                static LAMAKernel<BLASInterface::copy<ValueType> > copy;
+
+                ContextPtr loc = copy.getValidContext( this->getContextPtr() );
 
                 SCAI_CONTEXT_ACCESS( loc )
 

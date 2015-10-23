@@ -542,15 +542,20 @@ void OpenMPLAPACK::laswp(
 
 void OpenMPLAPACK::setInterface( BLASInterface& BLAS )
 {
-    // Note: macro takes advantage of same name for routines and type definitions
-    //       ( e.g. routine CUDABLAS1::sum<ValueType> is set for BLAS::BLAS1::sum variable
+    using scai::kregistry::KernelRegistry;
+
+    // ctx will contain the context for which registration is done, here Host
+
+    common::ContextType ctx = common::context::Host;
+
+    SCAI_LOG_INFO( logger, "set LAPACK routines for OpenMP in Kernel Registry" )
 
 #define LAMA_LAPACK_REGISTER(z, I, _)                                                  \
-    LAMA_INTERFACE_REGISTER_T( BLAS, getrf, ARITHMETIC_HOST_TYPE_##I )                 \
-    LAMA_INTERFACE_REGISTER_T( BLAS, getri, ARITHMETIC_HOST_TYPE_##I )                 \
-    LAMA_INTERFACE_REGISTER_T( BLAS, getinv, ARITHMETIC_HOST_TYPE_##I )                \
-    LAMA_INTERFACE_REGISTER_T( BLAS, tptrs, ARITHMETIC_HOST_TYPE_##I )                 \
-    LAMA_INTERFACE_REGISTER_T( BLAS, laswp, ARITHMETIC_HOST_TYPE_##I )                 \
+    KernelRegistry::set<BLASInterface::getrf<ARITHMETIC_HOST_TYPE_##I> >( getrf, ctx ); \
+    KernelRegistry::set<BLASInterface::getri<ARITHMETIC_HOST_TYPE_##I> >( getri, ctx ); \
+    KernelRegistry::set<BLASInterface::getinv<ARITHMETIC_HOST_TYPE_##I> >( getinv, ctx ); \
+    KernelRegistry::set<BLASInterface::tptrs<ARITHMETIC_HOST_TYPE_##I> >( tptrs, ctx ); \
+    KernelRegistry::set<BLASInterface::laswp<ARITHMETIC_HOST_TYPE_##I> >( laswp, ctx ); \
 
     BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_LAPACK_REGISTER, _ )
 

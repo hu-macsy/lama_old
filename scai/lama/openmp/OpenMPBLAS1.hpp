@@ -152,7 +152,7 @@ public:
         ValueType* z,
         tasking::SyncToken* syncToken );
 
-    static void setInterface( struct BLASInterface& BLAS );
+    static void registerKernels();
 
 private:
 

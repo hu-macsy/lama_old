@@ -281,12 +281,18 @@ void OpenMPBLAS2::gemv(
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void OpenMPBLAS2::setInterface( BLASInterface& BLAS )
+void OpenMPBLAS2::registerKernels()
 {
-    SCAI_LOG_INFO( logger, "set BLAS2 routines for OpenMP in Interface" )
+    using scai::kregistry::KernelRegistry;
+
+    // ctx will contain the context for which registration is done, here Host
+
+    common::ContextType ctx = common::context::Host;
+
+    SCAI_LOG_INFO( logger, "register BLAS2 routines for OpenMP in Kernel Registry" )
 
 #define LAMA_BLAS2_REGISTER(z, I, _)                                                  \
-    LAMA_INTERFACE_REGISTER_T( BLAS, gemv, ARITHMETIC_HOST_TYPE_##I )                 \
+    KernelRegistry::set<BLASInterface::gemv<ARITHMETIC_HOST_TYPE_##I> >( gemv, ctx ); \
 
     BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_BLAS2_REGISTER, _ )
 
@@ -301,8 +307,7 @@ void OpenMPBLAS2::setInterface( BLASInterface& BLAS )
 
 bool OpenMPBLAS2::registerInterface()
 {
-    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( common::context::Host );
-    setInterface( interface.BLAS );
+    registerKernels();
     return true;
 }
 

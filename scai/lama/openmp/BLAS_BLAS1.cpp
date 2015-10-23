@@ -678,18 +678,21 @@ void BLAS_BLAS1::setInterface( BLASInterface& BLAS )
 
     // REGISTER1: give these routines priority in case of overriding
 
-    // Note: macro takes advantage of same name for routines and type definitions
-    //       ( e.g. routine CUDABLAS1::sum<ValueType> is set for BLAS::BLAS1::sum variable
+    using scai::kregistry::KernelRegistry;
+
+    // ctx will contain the context for which registration is done, here Host
+
+    common::ContextType ctx = common::context::Host;
 
 #define LAMA_BLAS1_REGISTER(z, I, _)                                          \
-    LAMA_INTERFACE_REGISTER1_T( BLAS, scal, ARITHMETIC_HOST_TYPE_##I )        \
-    LAMA_INTERFACE_REGISTER1_T( BLAS, nrm2, ARITHMETIC_HOST_TYPE_##I )        \
-    LAMA_INTERFACE_REGISTER1_T( BLAS, asum, ARITHMETIC_HOST_TYPE_##I )        \
-    LAMA_INTERFACE_REGISTER1_T( BLAS, iamax, ARITHMETIC_HOST_TYPE_##I )       \
-    LAMA_INTERFACE_REGISTER1_T( BLAS, swap, ARITHMETIC_HOST_TYPE_##I )        \
-    LAMA_INTERFACE_REGISTER1_T( BLAS, copy, ARITHMETIC_HOST_TYPE_##I )        \
-    LAMA_INTERFACE_REGISTER1_T( BLAS, axpy, ARITHMETIC_HOST_TYPE_##I )        \
-    LAMA_INTERFACE_REGISTER1_T( BLAS, dot, ARITHMETIC_HOST_TYPE_##I )         \
+    KernelRegistry::set<UtilsInterface::scal<ARITHMETIC_HOST_TYPE_##I> >( scal, ctx, true );    \
+    KernelRegistry::set<UtilsInterface::nrm2<ARITHMETIC_HOST_TYPE_##I> >( nrm2, ctx, true );    \
+    KernelRegistry::set<UtilsInterface::asum<ARITHMETIC_HOST_TYPE_##I> >( asum, ctx, true );    \
+    KernelRegistry::set<UtilsInterface::iamax<ARITHMETIC_HOST_TYPE_##I> >( iamax, ctx, true );  \
+    KernelRegistry::set<UtilsInterface::swap<ARITHMETIC_HOST_TYPE_##I> >( swap, ctx, true );    \
+    KernelRegistry::set<UtilsInterface::copy<ARITHMETIC_HOST_TYPE_##I> >( copy, ctx, true );    \
+    KernelRegistry::set<UtilsInterface::axpy<ARITHMETIC_HOST_TYPE_##I> >( axpy, ctx, true );    \
+    KernelRegistry::set<UtilsInterface::dot<ARITHMETIC_HOST_TYPE_##I> >( dot, ctx, true );      \
 
     BOOST_PP_REPEAT( ARITHMETIC_HOST_EXT_TYPE_CNT, LAMA_BLAS1_REGISTER, _ )
 
