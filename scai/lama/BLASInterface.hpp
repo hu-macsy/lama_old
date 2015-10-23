@@ -488,7 +488,7 @@ struct BLASInterface
     };
 
     template<typename ValueType>
-    struct LAPACK
+    struct getinv
     {
 
         /** Method computes the inverse of a matrix by using the LAPACK routines getrf and getri
@@ -501,7 +501,7 @@ struct BLASInterface
          *  Note that the storage order (column-wise or row-wise does not matter at all)
          */
 
-        typedef void (*getinv) ( const IndexType n, ValueType* a, const IndexType lda );
+        typedef void (*FuncType ) ( const IndexType n, ValueType* a, const IndexType lda );
 
         static const char* getId() { return "BLAS3.getinv"; }
     };
@@ -612,6 +612,23 @@ struct BLASInterface
             const IndexType* ipiv,
             const IndexType incx,
             SyncToken* syncToken);
+
+        static const char* getId() { return "LAPACK.laswp"; }
+    };
+
+    template<typename ValueType>
+    struct inverse
+    {
+        /** Function pointer for routine that computes the inverse of a cyclic(nB) distributed matrix.
+         *  (here SCALAPACK where kernel itself might call MPI, so it must be enabled before)
+         *
+         *  @param[in]  n  global size of the matrix,
+         *  @param[in]  a  is pointer to the values of the local dense storage
+         *  @param[in]  nb is the blocking factor of the cyclic distribution
+         *  @param[in]  comm is the communicator of the distribution
+         */
+
+        typedef void ( *FuncType ) ( const IndexType n, const IndexType nB, const ValueType* a, const class Communicator& comm );
 
         static const char* getId() { return "LAPACK.laswp"; }
     };

@@ -439,15 +439,15 @@ void DenseStorageView<ValueType>::invertDense( const DenseStorageView<ValueType>
 
     SCAI_ASSERT_EQUAL_ERROR( nRows, nCols )
 
-    ContextPtr loc = Context::getContextPtr( context::Host );
+    static LAMAKernel<BLASInterface::getinv<ValueType> > getinv;
 
-    LAMA_INTERFACE_FN_DEFAULT_T( getinv, loc, BLAS, LAPACK, ValueType );
+    ContextPtr loc = getinv.getValidContext( this->getContextPtr() );
 
     WriteAccess<ValueType> denseValues( this->getData(), loc );
 
     SCAI_CONTEXT_ACCESS( loc );
 
-    getinv( nRows, denseValues.get(), nCols );
+    getinv[loc]( nRows, denseValues.get(), nCols );
 
     SCAI_LOG_INFO( logger, "invertDense: this = " << *this )
 }
@@ -485,19 +485,19 @@ void DenseStorageView<ValueType>::matrixTimesVector(
     {
         SCAI_LOG_INFO( logger, "set result = 0 as y != result and beta = 0" )
 
-        static kregistry::KernelTraitContextFunction<UtilsInterface::setVal<ValueType> > setVal;
+        static LAMAKernel<UtilsInterface::setVal<ValueType> > setVal;
 
         WriteOnlyAccess<ValueType> wResult( result, loc, mNumRows );
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        setVal[ loc->getType() ]( wResult.get(), mNumRows, static_cast<ValueType>(0.0) );
+        setVal[loc]( wResult.get(), mNumRows, static_cast<ValueType>(0.0) );
     }
     else if( &result != &y )
     {
         SCAI_LOG_INFO( logger, "set result = y as y != result" )
 
-        LAMA_INTERFACE_FN_T( copy, loc, BLAS, BLAS1, ValueType )
+        static LAMAKernel<BLASInterface::copy<ValueType> > copy;
 
         WriteOnlyAccess<ValueType> wResult( result, loc, mNumRows );
 
@@ -507,7 +507,7 @@ void DenseStorageView<ValueType>::matrixTimesVector(
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        copy( mNumRows, rY.get(), 1, wResult.get(), 1, NULL );
+        copy[loc]( mNumRows, rY.get(), 1, wResult.get(), 1, NULL );
     }
     else
     {
@@ -530,20 +530,20 @@ void DenseStorageView<ValueType>::matrixTimesVector(
         }
         else
         {
-            LAMA_INTERFACE_FN_T( scal, loc, BLAS, BLAS1, ValueType )
+            static LAMAKernel<BLASInterface::scal<ValueType> > scal;
 
             WriteAccess<ValueType> wResult( result, loc );
 
             SCAI_CONTEXT_ACCESS( loc )
 
-            scal( mNumRows, beta, wResult.get(), 1, NULL );
+            scal[loc]( mNumRows, beta, wResult.get(), 1, NULL );
         }
     }
     else
     {
         // mNumColums > 0, mnumRows > 0, so we avoid problems for gemv with m==0 or n==0
 
-        LAMA_INTERFACE_FN_T( gemv, loc, BLAS, BLAS2, ValueType );
+        static LAMAKernel<BLASInterface::gemv<ValueType> > gemv;
 
         ReadAccess<ValueType> denseValues( mData, loc );
         ReadAccess<ValueType> rX( x, loc );
@@ -556,8 +556,8 @@ void DenseStorageView<ValueType>::matrixTimesVector(
 
         // gemv:  result = alpha * this * x + beta * result
 
-        gemv( CblasRowMajor, CblasNoTrans, mNumRows, mNumColumns, alpha, denseValues.get(), lda, rX.get(),
-              1, beta, wResult.get(), 1, NULL );
+        gemv[loc]( CblasRowMajor, CblasNoTrans, mNumRows, mNumColumns, alpha, denseValues.get(), lda, rX.get(),
+                   1, beta, wResult.get(), 1, NULL );
     }
 }
 
@@ -594,19 +594,19 @@ void DenseStorageView<ValueType>::vectorTimesMatrix(
     {
         SCAI_LOG_INFO( logger, "set result = 0 as y != result and beta = 0" )
 
-        static kregistry::KernelTraitContextFunction<UtilsInterface::setVal<ValueType> > setVal;
+        static LAMAKernel<UtilsInterface::setVal<ValueType> > setVal;
 
         WriteOnlyAccess<ValueType> wResult( result, loc, mNumColumns );
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        setVal[ loc->getType() ]( wResult.get(), mNumColumns, static_cast<ValueType>(0.0) );
+        setVal[loc]( wResult.get(), mNumColumns, static_cast<ValueType>(0.0) );
     }
     else if( &result != &y )
     {
         SCAI_LOG_INFO( logger, "set result = y as y != result" )
 
-        LAMA_INTERFACE_FN_T( copy, loc, BLAS, BLAS1, ValueType )
+        static LAMAKernel<BLASInterface::copy<ValueType> > copy;
 
         WriteOnlyAccess<ValueType> wResult( result, loc, mNumColumns );
 
@@ -616,7 +616,7 @@ void DenseStorageView<ValueType>::vectorTimesMatrix(
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        copy( mNumColumns, rY.get(), 1, wResult.get(), 1, NULL );
+        copy[loc]( mNumColumns, rY.get(), 1, wResult.get(), 1, NULL );
     }
     else
     {
@@ -639,20 +639,20 @@ void DenseStorageView<ValueType>::vectorTimesMatrix(
         }
         else
         {
-            LAMA_INTERFACE_FN_T( scal, loc, BLAS, BLAS1, ValueType )
+            static LAMAKernel<BLASInterface::scal<ValueType> > scal;
 
             WriteAccess<ValueType> wResult( result, loc );
 
             SCAI_CONTEXT_ACCESS( loc )
 
-            scal( mNumColumns, beta, wResult.get(), 1, NULL );
+            scal[loc]( mNumColumns, beta, wResult.get(), 1, NULL );
         }
     }
     else
     {
         // mNumColums > 0, mnumRows > 0, so we avoid problems for gevm with m==0 or n==0
 
-        LAMA_INTERFACE_FN_T( gemv, loc, BLAS, BLAS2, ValueType );
+        static LAMAKernel<BLASInterface::gemv<ValueType> > gemv;
 
         ReadAccess<ValueType> denseValues( mData, loc );
         ReadAccess<ValueType> rX( x, loc );
@@ -665,7 +665,7 @@ void DenseStorageView<ValueType>::vectorTimesMatrix(
 
         // gemv:  result = alpha * this * x + beta * result
 
-        gemv( CblasRowMajor, CblasTrans, mNumRows, mNumColumns, alpha, denseValues.get(), lda, rX.get(),
+        gemv[loc]( CblasRowMajor, CblasTrans, mNumRows, mNumColumns, alpha, denseValues.get(), lda, rX.get(),
               1, beta, wResult.get(), 1, NULL );
     }
 }
@@ -822,11 +822,12 @@ void DenseStorageView<ValueType>::matrixTimesMatrixDense(
     {
         // do not care at all about C as it might be any dummy, or aliased to result
 
+        static LAMAKernel<UtilsInterface::setVal<ValueType> > setVal;
+
         SCAI_LOG_INFO( logger, "init this result with 0, size = " << m * n )
         WriteOnlyAccess<ValueType> resAccess( getData(), context, m * n );
-        static kregistry::KernelTraitContextFunction<UtilsInterface::setVal<ValueType> > setVal;
         SCAI_CONTEXT_ACCESS( context )
-        setVal[ context->getType() ]( resAccess.get(), m * n, static_cast<ValueType>(0.0) );
+        setVal[context]( resAccess.get(), m * n, static_cast<ValueType>(0.0) );
     }
     else if( this != &c )
     {
@@ -836,12 +837,12 @@ void DenseStorageView<ValueType>::matrixTimesMatrixDense(
         SCAI_ASSERT_EQUAL_ERROR( n, c.getNumColumns() )
         mNumRows = m;
         mNumColumns = n;
-        LAMA_INTERFACE_FN_T( copy, context, BLAS, BLAS1, ValueType )
+        static LAMAKernel<BLASInterface::copy<ValueType> > copy;
         ReadAccess<ValueType> cAccess( c.getData(), context );
         WriteOnlyAccess<ValueType> resAccess( getData(), context, m * n );
         SCAI_LOG_TRACE( logger, "Copying: res = c " )
         SCAI_CONTEXT_ACCESS( context )
-        copy( n * m, cAccess.get(), 1, resAccess.get(), 1, NULL );
+        copy[context]( n * m, cAccess.get(), 1, resAccess.get(), 1, NULL );
     }
     else
     {
@@ -865,12 +866,12 @@ void DenseStorageView<ValueType>::matrixTimesMatrixDense(
 
     if( lda != 0 && n != 0 && m != 0 )
     {
-        LAMA_INTERFACE_FN_T( gemm, context, BLAS, BLAS3, ValueType );
+        static LAMAKernel<BLASInterface::gemm<ValueType> > gemm;
 
         SCAI_CONTEXT_ACCESS( context )
 
-        gemm( CblasRowMajor, CblasNoTrans, CblasNoTrans, m, n, k, alpha, aAccess.get(), lda, bAccess.get(), ldb, beta,
-              resAccess.get(), ldc, NULL );
+        gemm[context]( CblasRowMajor, CblasNoTrans, CblasNoTrans, m, n, k, alpha, aAccess.get(), lda, bAccess.get(), ldb, beta,
+                       resAccess.get(), ldc, NULL );
     }
 }
 
@@ -894,9 +895,9 @@ ValueType DenseStorageView<ValueType>::l1Norm() const
         return static_cast<ValueType>(0.0);
     }
 
-	ContextPtr loc = this->getContextPtr();
+    static LAMAKernel<BLASInterface::asum<ValueType> > asum;
 
-    LAMA_INTERFACE_FN_T( asum, loc, BLAS, BLAS1, ValueType )
+    ContextPtr loc = asum.getValidContext( this->getContextPtr() );
 
 	ReadAccess<ValueType> data( mData, loc );
 
@@ -904,7 +905,7 @@ ValueType DenseStorageView<ValueType>::l1Norm() const
 
     IndexType inc = 1;
 
-	return asum( n, data.get(), inc, NULL );
+	return asum[loc]( n, data.get(), inc, NULL );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -919,15 +920,15 @@ ValueType DenseStorageView<ValueType>::l2Norm() const
         return static_cast<ValueType>(0.0);
     }
 
-	ContextPtr loc = this->getContextPtr();
+    static LAMAKernel<BLASInterface::dot<ValueType> > dot;
 
-    LAMA_INTERFACE_FN_T( dot, loc, BLAS, BLAS1, ValueType )
+    ContextPtr loc = dot.getValidContext( this->getContextPtr() );
 
 	ReadAccess<ValueType> data( mData, loc );
 
 	SCAI_CONTEXT_ACCESS( loc );
 
-	return ::sqrt(dot( n, data.get(), 1, data.get(), 1, NULL ));
+	return ::sqrt(dot[loc]( n, data.get(), 1, data.get(), 1, NULL ));
 }
 
 /* --------------------------------------------------------------------------- */
@@ -942,7 +943,7 @@ ValueType DenseStorageView<ValueType>::maxNorm() const
         return static_cast<ValueType>(0.0);
     }
 
-    static kregistry::KernelTraitContextFunction<UtilsInterface::absMaxVal<ValueType> > absMaxVal;
+    static LAMAKernel<UtilsInterface::absMaxVal<ValueType> > absMaxVal;
 
     ContextPtr loc = getValidContext( this->getContextPtr(), absMaxVal );
 
@@ -950,7 +951,7 @@ ValueType DenseStorageView<ValueType>::maxNorm() const
 
     SCAI_CONTEXT_ACCESS( loc )
 
-    ValueType maxval = absMaxVal[ loc->getType() ]( read1.get(), n );
+    ValueType maxval = absMaxVal[loc]( read1.get(), n );
 
     return maxval;
 }
@@ -996,16 +997,16 @@ ValueType DenseStorageView<ValueType>::maxDiffNormImpl( const DenseStorageView<V
         return static_cast<ValueType>(0.0);
     }
 
-    static kregistry::KernelTraitContextFunction<UtilsInterface::absMaxDiffVal<ValueType> > absMaxDiffVal;
+    static LAMAKernel<UtilsInterface::absMaxDiffVal<ValueType> > absMaxDiffVal;
 
-    ContextPtr loc = getValidContext( this->getContextPtr(), absMaxDiffVal );
+    ContextPtr loc = absMaxDiffVal.getValidContext( this->getContextPtr() );
 
     SCAI_CONTEXT_ACCESS( loc )
 
     ReadAccess<ValueType> read1( mData, loc );
     ReadAccess<ValueType> read2( other.mData, loc );
 
-    ValueType maxval = absMaxDiffVal[ loc->getType() ]( read1.get(), read2.get(), n );
+    ValueType maxval = absMaxDiffVal[loc]( read1.get(), read2.get(), n );
 
     return maxval;
 }

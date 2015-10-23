@@ -39,6 +39,7 @@
 #include <scai/lama/LAMAInterfaceRegistry.hpp>
 
 // internal scai libraries
+#include <scai/kregistry/KernelRegistry.hpp>
 #include <scai/common/macros/unused.hpp>
 
 // boost

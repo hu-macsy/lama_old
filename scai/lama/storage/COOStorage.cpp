@@ -728,15 +728,15 @@ ValueType COOStorage<ValueType>::l1Norm() const
 
     const IndexType n = mNumValues;
 
-	ContextPtr loc = getContextPtr();
+    static LAMAKernel<BLASInterface::asum<ValueType> > asum;
 
-    LAMA_INTERFACE_FN_T( asum, loc, BLAS, BLAS1, ValueType )
+	ContextPtr loc = asum.getValidContext( this->getContextPtr() );
 
 	ReadAccess<ValueType> data( mValues, loc );
 
 	SCAI_CONTEXT_ACCESS( loc );
 
-	return asum( n, data.get(), static_cast<IndexType>(1.0), NULL );
+	return asum[loc]( n, data.get(), static_cast<IndexType>(1.0), NULL );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -748,15 +748,15 @@ ValueType COOStorage<ValueType>::l2Norm() const
 
     const IndexType n = mNumValues;
 
-	ContextPtr loc = getContextPtr();
+    static LAMAKernel<BLASInterface::dot<ValueType> > dot;
 
-    LAMA_INTERFACE_FN_T( dot, loc, BLAS, BLAS1, ValueType )
+	ContextPtr loc = dot.getValidContext( this->getContextPtr() );
 
 	ReadAccess<ValueType> data( mValues, loc );
 
 	SCAI_CONTEXT_ACCESS( loc );
 
-	return ::sqrt(dot( n, data.get(), 1, data.get(), 1, NULL ));
+	return ::sqrt(dot[loc]( n, data.get(), 1, data.get(), 1, NULL ));
 }
 
 /* --------------------------------------------------------------------------- */
@@ -773,15 +773,15 @@ ValueType COOStorage<ValueType>::maxNorm() const
         return static_cast<ValueType>(0.0);
     }
 
-    static kregistry::KernelTraitContextFunction<UtilsInterface::absMaxVal<ValueType> > absMaxVal;
+    static LAMAKernel<UtilsInterface::absMaxVal<ValueType> > absMaxVal;
 
-    ContextPtr loc = getValidContext( this->getContextPtr(), absMaxVal );
+    ContextPtr loc = absMaxVal.getValidContext( this->getContextPtr() );
 
     ReadAccess<ValueType> cooValues( mValues, loc );
 
     SCAI_CONTEXT_ACCESS( loc )
 
-    ValueType maxval = absMaxVal[ loc->getType() ]( cooValues.get(), n );
+    ValueType maxval = absMaxVal[loc]( cooValues.get(), n );
 
     return maxval;
 }

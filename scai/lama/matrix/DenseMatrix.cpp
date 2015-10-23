@@ -1754,8 +1754,6 @@ void DenseMatrix<ValueType>::matrixTimesVectorImpl(
 
             LAMAArray<ValueType> x( mData[actualPartition]->getNumColumns() );
             {
-                ContextPtr loc = getContextPtr();
-
                 static LAMAKernel<BLASInterface::copy<ValueType> > copy;
 
                 ContextPtr loc = copy.getValidContext( this->getContextPtr() );
@@ -1765,7 +1763,7 @@ void DenseMatrix<ValueType>::matrixTimesVectorImpl(
                 ReadAccess<ValueType> readSend( *sendValues, loc );
                 WriteAccess<ValueType> writeX( x, loc );
 
-                copy( mData[actualPartition]->getNumColumns(), readSend.get(), 1, writeX.get(), 1, NULL );
+                copy[loc]( mData[actualPartition]->getNumColumns(), readSend.get(), 1, writeX.get(), 1, NULL );
             }
 
             mData[actualPartition]->matrixTimesVector( localResult, alphaValue, x, static_cast<ValueType>(1.0), localResult );

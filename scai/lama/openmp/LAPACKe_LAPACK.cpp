@@ -41,6 +41,7 @@
 #include <scai/lama/openmp/BLASHelper.hpp>
 
 // internal scai libraries
+#include <scai/kregistry/KernelRegistry.hpp>
 #include <scai/common/unique_ptr.hpp>
 #include <scai/common/Assert.hpp>
 
@@ -694,16 +695,21 @@ int LAPACKe_LAPACK::tptrs(
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void LAPACKe_LAPACK::setInterface( BLASInterface& BLAS )
+void LAPACKe_LAPACK::registerKernels()
 {
-    // Note: macro takes advantage of same name for routines and type definitions
-    //       ( e.g. routine CUDABLAS1::sum<ValueType> is set for BLAS::BLAS1::sum variable
+    using scai::kregistry::KernelRegistry;
+
+    // ctx will contain the context for which registration is done, here Host
+
+    common::ContextType ctx = common::context::Host;
+
+    bool rpl = true;   // replace other registered kernel routine
 
 #define LAMA_LAPACK_REGISTER(z, I, _)                                      \
-    LAMA_INTERFACE_REGISTER1_T( BLAS, getrf, ARITHMETIC_HOST_TYPE_##I )     \
-    LAMA_INTERFACE_REGISTER1_T( BLAS, getri, ARITHMETIC_HOST_TYPE_##I )     \
-    LAMA_INTERFACE_REGISTER1_T( BLAS, getinv, ARITHMETIC_HOST_TYPE_##I )    \
-    LAMA_INTERFACE_REGISTER1_T( BLAS, tptrs, ARITHMETIC_HOST_TYPE_##I )     \
+    KernelRegistry::set<BLASInterface::getrf<ARITHMETIC_HOST_TYPE_##I> >( getrf, ctx, rpl );    \
+    KernelRegistry::set<BLASInterface::getri<ARITHMETIC_HOST_TYPE_##I> >( getri, ctx, rpl );    \
+    KernelRegistry::set<BLASInterface::getinv<ARITHMETIC_HOST_TYPE_##I> >( getinv, ctx, rpl );    \
+    KernelRegistry::set<BLASInterface::tptrs<ARITHMETIC_HOST_TYPE_##I> >( tptrs, ctx, rpl );    \
 
     BOOST_PP_REPEAT( ARITHMETIC_HOST_EXT_TYPE_CNT, LAMA_LAPACK_REGISTER, _ )
 
@@ -716,8 +722,7 @@ void LAPACKe_LAPACK::setInterface( BLASInterface& BLAS )
 
 bool LAPACKe_LAPACK::registerInterface()
 {
-    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( common::context::Host );
-    setInterface( interface.BLAS );
+    registerKernels();
     return true;
 }
 

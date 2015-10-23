@@ -83,12 +83,10 @@ public:
 
     /** Routine that sets functions pointers belonging to BLAS2 in a BLASInterface.
      *
-     *  param[inout] BLASInterface struct to register all routines implemented in CUDA
-     *
      *  Note: this routine will make instantiations of the template routines.
      */
 
-    static void setInterface( struct BLASInterface& BLAS );
+    static void registerKernels();
 
 private:
 

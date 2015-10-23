@@ -112,12 +112,10 @@ public:
 
     /** Routine that sets functions pointers belonging to LAPACK in a BLASInterface.
      *
-     *  param[inout] BLASInterface struct to register all routines implemented in OpenMP
-     *
      *  Note: this routine will make instantiations of the template routines.
      */
 
-    static void setInterface( struct BLASInterface& BLAS );
+    static void registerKernels();
 
 private:
 

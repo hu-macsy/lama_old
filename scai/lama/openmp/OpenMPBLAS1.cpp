@@ -41,6 +41,7 @@
 
 // internal scai libraries
 #include <scai/common/macros/unused.hpp>
+#include <scai/kregistry/KernelRegistry.hpp>
 
 #include <scai/tracing.hpp>
 
@@ -565,15 +566,15 @@ void OpenMPBLAS1::registerKernels()
 //       ( e.g. routine CUDABLAS1::sum<ValueType> is set for BLAS::BLAS1::sum variable
 
 #define LAMA_BLAS1_REGISTER(z, I, _)                                        \
-    KernelRegistry::set<UtilsInterface::scal<ARITHMETIC_HOST_TYPE_##I> >( scal, ctx );    \
-    KernelRegistry::set<UtilsInterface::nrm2<ARITHMETIC_HOST_TYPE_##I> >( nrm2, ctx );    \
-    KernelRegistry::set<UtilsInterface::asum<ARITHMETIC_HOST_TYPE_##I> >( asum, ctx );    \
-    KernelRegistry::set<UtilsInterface::iamax<ARITHMETIC_HOST_TYPE_##I> >( iamax, ctx );  \
-    KernelRegistry::set<UtilsInterface::swap<ARITHMETIC_HOST_TYPE_##I> >( swap, ctx );    \
-    KernelRegistry::set<UtilsInterface::copy<ARITHMETIC_HOST_TYPE_##I> >( copy, ctx );    \
-    KernelRegistry::set<UtilsInterface::axpy<ARITHMETIC_HOST_TYPE_##I> >( axpy, ctx );    \
-    KernelRegistry::set<UtilsInterface::dot<ARITHMETIC_HOST_TYPE_##I> >( dot, ctx );      \
-    KernelRegistry::set<UtilsInterface::sum<ARITHMETIC_HOST_TYPE_##I> >( sum, ctx );      \
+    KernelRegistry::set<BLASInterface::scal<ARITHMETIC_HOST_TYPE_##I> >( scal, ctx );    \
+    KernelRegistry::set<BLASInterface::nrm2<ARITHMETIC_HOST_TYPE_##I> >( nrm2, ctx );    \
+    KernelRegistry::set<BLASInterface::asum<ARITHMETIC_HOST_TYPE_##I> >( asum, ctx );    \
+    KernelRegistry::set<BLASInterface::iamax<ARITHMETIC_HOST_TYPE_##I> >( iamax, ctx );  \
+    KernelRegistry::set<BLASInterface::swap<ARITHMETIC_HOST_TYPE_##I> >( swap, ctx );    \
+    KernelRegistry::set<BLASInterface::copy<ARITHMETIC_HOST_TYPE_##I> >( copy, ctx );    \
+    KernelRegistry::set<BLASInterface::axpy<ARITHMETIC_HOST_TYPE_##I> >( axpy, ctx );    \
+    KernelRegistry::set<BLASInterface::dot<ARITHMETIC_HOST_TYPE_##I> >( dot, ctx );      \
+    KernelRegistry::set<BLASInterface::sum<ARITHMETIC_HOST_TYPE_##I> >( sum, ctx );      \
 
     BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_BLAS1_REGISTER, _ )
 

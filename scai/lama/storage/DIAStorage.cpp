@@ -726,15 +726,15 @@ ValueType DIAStorage<ValueType>::l1Norm() const
 {
     SCAI_LOG_INFO( logger, *this << ": l1Norm()" )
 
-    ContextPtr loc = getContextPtr();
+    static LAMAKernel<BLASInterface::asum<ValueType> > asum;
 
-    LAMA_INTERFACE_FN_T( asum, loc, BLAS, BLAS1, ValueType )
+    ContextPtr loc = asum.getValidContext( this->getContextPtr() );
 
 	ReadAccess<ValueType> data( mValues, loc );
 
 	SCAI_CONTEXT_ACCESS( loc );
 
-	return asum( mValues.size(), data.get(), 1, NULL );
+	return asum[loc]( mValues.size(), data.get(), 1, NULL );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -744,15 +744,15 @@ ValueType DIAStorage<ValueType>::l2Norm() const
 {
     SCAI_LOG_INFO( logger, *this << ": l2Norm()" )
 
-    ContextPtr loc = getContextPtr();
+    static LAMAKernel<BLASInterface::dot<ValueType> > dot;
 
-    LAMA_INTERFACE_FN_T( dot, loc, BLAS, BLAS1, ValueType )
+    ContextPtr loc = dot.getValidContext( this->getContextPtr() );
 
 	ReadAccess<ValueType> data( mValues, loc );
 
 	SCAI_CONTEXT_ACCESS( loc );
 
-	return ::sqrt(dot( mValues.size(), data.get(), 1, data.get(), 1, NULL ));
+	return ::sqrt(dot[loc]( mValues.size(), data.get(), 1, data.get(), 1, NULL ));
 }
 
 /* --------------------------------------------------------------------------- */

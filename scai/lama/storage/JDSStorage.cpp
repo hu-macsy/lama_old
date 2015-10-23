@@ -704,7 +704,7 @@ void JDSStorage<ValueType>::buildCSR(
     static LAMAKernel<CSRUtilsInterface::sizes2offsets> sizes2offsets;
     static LAMAKernel<JDSUtilsInterface::setInversePerm> setInversePerm;
 
-    ContextPtr loc = setScatter.getValidContext( preferredloc );
+    ContextPtr loc = setScatter.getValidContext( preferredLoc );
 
     loc = getCSRValues.getValidContext( loc );
     loc = sizes2offsets.getValidContext( loc );
@@ -998,11 +998,11 @@ void JDSStorage<ValueType>::vectorTimesMatrix(
     SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumRows )
     SCAI_ASSERT_EQUAL_ERROR( y.size(), mNumColumns )
 
-    SCAI_LOG_INFO( logger, *this << ": vectorTimesMatrix on " << *loc )
-
     static LAMAKernel<JDSUtilsInterface::normalGEVM<ValueType> > normalGEVM;
 
     ContextPtr loc = normalGEVM.getValidContext( this->getContextPtr() );
+
+    SCAI_LOG_INFO( logger, *this << ": vectorTimesMatrix on " << *loc )
 
     ReadAccess<IndexType> jdsPerm( mPerm, loc );
     ReadAccess<IndexType> jdsDLG( mDlg, loc );
@@ -1088,7 +1088,7 @@ SyncToken* JDSStorage<ValueType>::matrixTimesVectorAsync(
 
     static LAMAKernel<JDSUtilsInterface::normalGEMV<ValueType> > normalGEMV;
 
-    ContextPtr loc = normalGEMV.getValidContext( loc );
+    loc = normalGEMV.getValidContext( loc );
 
     common::unique_ptr<SyncToken> syncToken( loc->getSyncToken() );
 
@@ -1191,7 +1191,7 @@ SyncToken* JDSStorage<ValueType>::vectorTimesMatrixAsync(
 
     SCAI_LOG_INFO( logger, *this << ": matrixTimesVector on " << *loc )
 
-    static LAMAKernel<JDSUtilsInterface::normalGEVM<ValueType> > normalGEMV;
+    static LAMAKernel<JDSUtilsInterface::normalGEVM<ValueType> > normalGEVM;
 
     loc = normalGEVM.getValidContext( loc );
 
@@ -1454,15 +1454,15 @@ ValueType JDSStorage<ValueType>::l1Norm() const
         return static_cast<ValueType>(0.0);
     }
 
-	ContextPtr loc = getContextPtr();
+    static LAMAKernel<BLASInterface::asum<ValueType> > asum;
 
-    LAMA_INTERFACE_FN_T( asum, loc, BLAS, BLAS1, ValueType )
+    ContextPtr loc = asum.getValidContext( this->getContextPtr() );
 
 	ReadAccess<ValueType> data( mValues, loc );
 
 	SCAI_CONTEXT_ACCESS( loc )
 
-	return asum( n, data.get(), 1, NULL );
+	return asum[loc]( n, data.get(), 1, NULL );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1479,15 +1479,15 @@ ValueType JDSStorage<ValueType>::l2Norm() const
         return static_cast<ValueType>(0.0);
     }
 
-	ContextPtr loc = getContextPtr();
+    static LAMAKernel<BLASInterface::dot<ValueType> > dot;
 
-    LAMA_INTERFACE_FN_T( dot, loc, BLAS, BLAS1, ValueType )
+    ContextPtr loc = dot.getValidContext( this->getContextPtr() );
 
 	ReadAccess<ValueType> data( mValues, loc );
 
 	SCAI_CONTEXT_ACCESS( loc )
 
-	return ::sqrt(dot( n, data.get(), 1, data.get(), 1, NULL ));
+	return ::sqrt(dot[loc]( n, data.get(), 1, data.get(), 1, NULL ));
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

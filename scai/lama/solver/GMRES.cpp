@@ -40,6 +40,7 @@
 
 #include <scai/lama/DenseVector.hpp>
 #include <scai/lama/LAMAInterface.hpp>
+#include <scai/lama/kernel_registry.hpp>
 
 // tracing
 #include <scai/tracing.hpp>
@@ -437,10 +438,10 @@ void GMRES::updateX( unsigned int i )
 
     hmemo::ContextPtr context = hmemo::Context::getHostPtr();
 
-    LAMA_INTERFACE_FN_t( tptrs, context, BLAS, LAPACK, double );
+    static LAMAKernel<BLASInterface::tptrs<double> > tptrs;
 
-    int info = tptrs( CblasColMajor, CblasUpper, CblasNoTrans, CblasNonUnit, i + 1, 1, runtime.mH.get(),
-                      runtime.mY.get(), i + 1 );
+    int info = tptrs[context]( CblasColMajor, CblasUpper, CblasNoTrans, CblasNonUnit, i + 1, 1, runtime.mH.get(),
+                               runtime.mY.get(), i + 1 );
 
     SCAI_LOG_DEBUG( logger, "tptrs returned with code = " << info )
 

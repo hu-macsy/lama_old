@@ -41,6 +41,8 @@
 #include <scai/lama/BLASInterface.hpp>
 
 // internal scai libraries
+#include <scai/kregistry/KernelRegistry.hpp>
+
 #include <scai/tracing.hpp>
 
 #include <scai/common/unique_ptr.hpp>
@@ -540,7 +542,7 @@ void OpenMPLAPACK::laswp(
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void OpenMPLAPACK::setInterface( BLASInterface& BLAS )
+void OpenMPLAPACK::registerKernels()
 {
     using scai::kregistry::KernelRegistry;
 
@@ -570,8 +572,7 @@ void OpenMPLAPACK::setInterface( BLASInterface& BLAS )
 
 bool OpenMPLAPACK::registerInterface()
 {
-    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( common::context::Host );
-    setInterface( interface.BLAS );
+    registerKernels();
     return true;
 }
 

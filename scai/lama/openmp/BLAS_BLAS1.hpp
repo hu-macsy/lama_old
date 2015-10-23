@@ -135,14 +135,12 @@ public:
         const IndexType incY,
         tasking::SyncToken* syncToken );
 
-    /** Routine that sets functions pointers belonging to BLAS1 in a BLASInterface.
+    /** Routine that registers functions pointers belonging to BLAS1.
      *
-     *  param[inout] BLASInterface struct to register all routines implemented in CUDA
-     *
-     *  Note: this routine will make instantiations of the template routines.
+     *  Note: this routine also instantiates the template functions.
      */
 
-    static void setInterface( struct BLASInterface& BLAS );
+    static void registerKernels();
 
 private:
 

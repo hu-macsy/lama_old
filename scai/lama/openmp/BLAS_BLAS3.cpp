@@ -40,6 +40,9 @@
 #include <scai/lama/cblas.hpp>
 
 // internal scai libraries
+
+#include <scai/kregistry/KernelRegistry.hpp>
+
 #include <scai/tracing.hpp>
 
 #include <scai/common/Settings.hpp>

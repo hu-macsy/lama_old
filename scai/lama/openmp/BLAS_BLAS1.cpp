@@ -46,6 +46,8 @@
 #include <scai/common/Settings.hpp>
 #include <scai/common/macros/unused.hpp>
 
+#include <scai/kregistry/KernelRegistry.hpp>
+
 // boost
 #include <boost/preprocessor.hpp>
 
@@ -654,7 +656,7 @@ ValueType BLAS_BLAS1::dot(
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void BLAS_BLAS1::setInterface( BLASInterface& BLAS )
+void BLAS_BLAS1::registerKernels()
 {
     bool useBLAS = false;
     int level = 0;
@@ -685,14 +687,14 @@ void BLAS_BLAS1::setInterface( BLASInterface& BLAS )
     common::ContextType ctx = common::context::Host;
 
 #define LAMA_BLAS1_REGISTER(z, I, _)                                          \
-    KernelRegistry::set<UtilsInterface::scal<ARITHMETIC_HOST_TYPE_##I> >( scal, ctx, true );    \
-    KernelRegistry::set<UtilsInterface::nrm2<ARITHMETIC_HOST_TYPE_##I> >( nrm2, ctx, true );    \
-    KernelRegistry::set<UtilsInterface::asum<ARITHMETIC_HOST_TYPE_##I> >( asum, ctx, true );    \
-    KernelRegistry::set<UtilsInterface::iamax<ARITHMETIC_HOST_TYPE_##I> >( iamax, ctx, true );  \
-    KernelRegistry::set<UtilsInterface::swap<ARITHMETIC_HOST_TYPE_##I> >( swap, ctx, true );    \
-    KernelRegistry::set<UtilsInterface::copy<ARITHMETIC_HOST_TYPE_##I> >( copy, ctx, true );    \
-    KernelRegistry::set<UtilsInterface::axpy<ARITHMETIC_HOST_TYPE_##I> >( axpy, ctx, true );    \
-    KernelRegistry::set<UtilsInterface::dot<ARITHMETIC_HOST_TYPE_##I> >( dot, ctx, true );      \
+    KernelRegistry::set<BLASInterface::scal<ARITHMETIC_HOST_TYPE_##I> >( scal, ctx, true );    \
+    KernelRegistry::set<BLASInterface::nrm2<ARITHMETIC_HOST_TYPE_##I> >( nrm2, ctx, true );    \
+    KernelRegistry::set<BLASInterface::asum<ARITHMETIC_HOST_TYPE_##I> >( asum, ctx, true );    \
+    KernelRegistry::set<BLASInterface::iamax<ARITHMETIC_HOST_TYPE_##I> >( iamax, ctx, true );  \
+    KernelRegistry::set<BLASInterface::swap<ARITHMETIC_HOST_TYPE_##I> >( swap, ctx, true );    \
+    KernelRegistry::set<BLASInterface::copy<ARITHMETIC_HOST_TYPE_##I> >( copy, ctx, true );    \
+    KernelRegistry::set<BLASInterface::axpy<ARITHMETIC_HOST_TYPE_##I> >( axpy, ctx, true );    \
+    KernelRegistry::set<BLASInterface::dot<ARITHMETIC_HOST_TYPE_##I> >( dot, ctx, true );      \
 
     BOOST_PP_REPEAT( ARITHMETIC_HOST_EXT_TYPE_CNT, LAMA_BLAS1_REGISTER, _ )
 
@@ -705,8 +707,7 @@ void BLAS_BLAS1::setInterface( BLASInterface& BLAS )
 
 bool BLAS_BLAS1::registerInterface()
 {
-    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( common::context::Host );
-    setInterface( interface.BLAS );
+    registerKernels();
     return true;
 }
 

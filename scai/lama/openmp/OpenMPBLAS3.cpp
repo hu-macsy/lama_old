@@ -40,6 +40,7 @@
 
 // internal scai libraries
 #include <scai/common/macros/unused.hpp>
+#include <scai/kregistry/KernelRegistry.hpp>
 
 // boost
 #include <boost/preprocessor.hpp>
