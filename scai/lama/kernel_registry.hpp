@@ -94,6 +94,27 @@ public:
             COMMON_THROWEXCEPTION( "illegal registry" )
         }
     }
+
+    hmemo::ContextPtr getValidContext( kregistry::_ContextFunction other1, 
+                                       kregistry::_ContextFunction other2,
+                                       hmemo::ContextPtr defaultContext    )
+    {
+        common::ContextType defCtx = defaultContext->getType();
+        common::ContextType runCtx = kregistry::_ContextFunction::validContext( other1, other2, defCtx );
+
+        if ( runCtx == defCtx )
+        {
+            return defaultContext;
+        }
+        else if ( runCtx == common::context::Host )
+        {
+            return hmemo::Context::getHostPtr();  // do it on host
+        }
+        else
+        {
+            COMMON_THROWEXCEPTION( "illegal registry" )
+        }
+    }
 };
 
 /** Help routine to update context. */

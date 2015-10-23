@@ -37,6 +37,7 @@
 // others
 #include <scai/hmemo.hpp>
 #include <scai/lama/LAMAInterface.hpp>
+#include <scai/lama/kernel_registry.hpp>
 
 #include <scai/common/test/TestMacros.hpp>
 
@@ -62,7 +63,8 @@ namespace COOUtilsTest
 template<typename NoType>
 void offsets2iaTest( ContextPtr loc )
 {
-    LAMA_INTERFACE_FN( offsets2ia, loc, COOUtils, Counting );
+    LAMAKernel<COOUtilsInterface::offsets2ia> offsets2ia;
+
     // Test without diagonal property
     {
         const IndexType offsets_values[] =
@@ -81,7 +83,7 @@ void offsets2iaTest( ContextPtr loc )
         {
             WriteOnlyAccess<IndexType> wIA( ia, loc, numValues );
             SCAI_CONTEXT_ACCESS( loc );
-            offsets2ia( wIA.get(), numValues, rOffsets.get(), numRows, numDiagonals );
+            offsets2ia[loc]( wIA.get(), numValues, rOffsets.get(), numRows, numDiagonals );
         }
         ReadAccess<IndexType> rIA( ia );
 
@@ -110,7 +112,7 @@ void offsets2iaTest( ContextPtr loc )
         {
             WriteOnlyAccess<IndexType> wIA( ia, loc, numValues );
             SCAI_CONTEXT_ACCESS( loc );
-            offsets2ia( wIA.get(), numValues, rOffsets.get(), numRows, numDiagonals );
+            offsets2ia[loc]( wIA.get(), numValues, rOffsets.get(), numRows, numDiagonals );
         }
         ReadAccess<IndexType> rIA( ia );
 
@@ -125,7 +127,8 @@ void offsets2iaTest( ContextPtr loc )
 template<typename NoType>
 void setCSRDataTest( ContextPtr loc )
 {
-    LAMA_INTERFACE_FN_TT( setCSRData, loc, COOUtils, Conversions, IndexType, IndexType );
+    LAMAKernel<COOUtilsInterface::setCSRData<IndexType, IndexType> > setCSRData;
+
     // setCSRData is for conversion of CSR storage to COO storage
     // is usually just a copy but has some reordering if diagonal property is required
     // here we test only for csrJA
@@ -151,7 +154,7 @@ void setCSRDataTest( ContextPtr loc )
         {
             WriteOnlyAccess<IndexType> wCOOJA( cooJA, loc, numValues );
             SCAI_CONTEXT_ACCESS( loc );
-            setCSRData( wCOOJA.get(), rCSRJA.get(), numValues, rOffsets.get(), numRows, numDiagonals );
+            setCSRData[loc]( wCOOJA.get(), rCSRJA.get(), numValues, rOffsets.get(), numRows, numDiagonals );
         }
         ReadAccess<IndexType> rCOOJA( cooJA );
 

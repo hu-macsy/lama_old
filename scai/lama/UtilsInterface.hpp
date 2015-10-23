@@ -1861,7 +1861,7 @@ struct JDSUtilsInterface
 struct DIAUtilsInterface
 {
     template<typename ValueType>
-    struct Counting
+    struct getCSRSizes
     {
         /** Type definition of function pointer for counting sparse values in DIA storage
          *
@@ -1882,7 +1882,7 @@ struct DIAUtilsInterface
          *  - diaValues has numDiagonals x max(numRows, numColumns) entries
          */
 
-        typedef void (*getCSRSizes)(
+        typedef void ( *FuncType )(
             IndexType csrSizes[],
             bool diagonalFlag,
             const IndexType numRows,
@@ -1892,12 +1892,11 @@ struct DIAUtilsInterface
             const ValueType diaValues[],
             const ValueType eps );
 
+        static const char* getId() { return "DIA.getCSRSizes"; }
     };
 
-    LAMA_INTERFACE_DEFINE_T( Counting, getCSRSizes )
-
-template    <typename DIAValueType, typename CSRValueType>
-    struct Conversions
+    template<typename DIAValueType, typename CSRValueType>
+    struct getCSRValues
     {
         /** Type definition of function pointer for conversion of DIA storage data to CSR data.
          *
@@ -1915,22 +1914,23 @@ template    <typename DIAValueType, typename CSRValueType>
          *   - csrJA and csrValues must have at least numValues entries, numValues = csrIA[numRows]
          */
 
-        typedef void ( *getCSRValues ) ( IndexType csrJA[],
-                        CSRValueType csrValues[],
-                        const IndexType csrIA[],
-                        const bool diagonalFlag,
-                        const IndexType numRows,
-                        const IndexType numColumns,
-                        const IndexType numDiagonals,
-                        const IndexType diaOffsets[],
-                        const DIAValueType diaValues[],
-                        const DIAValueType eps );
+        typedef void ( *FuncType ) ( 
+            IndexType csrJA[],
+            CSRValueType csrValues[],
+            const IndexType csrIA[],
+            const bool diagonalFlag,
+            const IndexType numRows,
+            const IndexType numColumns,
+            const IndexType numDiagonals,
+            const IndexType diaOffsets[],
+            const DIAValueType diaValues[],
+            const DIAValueType eps );
+
+        static const char* getId() { return "DIA.getCSRValues"; }
     };
 
-    LAMA_INTERFACE_DEFINE_TT( Conversions, getCSRValues )
-
     template<typename ValueType>
-    struct Mult
+    struct normalGEMV
     {
         /** result = alpha * CSR-Matrix * x + b * y.
          *
@@ -1945,18 +1945,25 @@ template    <typename DIAValueType, typename CSRValueType>
          *  @param syncToken optional, if available starts asynchronous computation
          */
 
-        typedef void ( *normalGEMV ) ( ValueType result[],
-                        const ValueType alpha,
-                        const ValueType x[],
-                        const ValueType beta,
-                        const ValueType y[],
-                        const IndexType numRows,
-                        const IndexType numColumns,
-                        const IndexType numDiagonals,
-                        const IndexType diaOffsets[],
-                        const ValueType diaValues[],
-                        SyncToken* syncToken );
+        typedef void ( *FuncType ) ( 
+            ValueType result[],
+            const ValueType alpha,
+            const ValueType x[],
+            const ValueType beta,
+            const ValueType y[],
+            const IndexType numRows,
+            const IndexType numColumns,
+            const IndexType numDiagonals,
+            const IndexType diaOffsets[],
+            const ValueType diaValues[],
+            SyncToken* syncToken );
 
+        static const char* getId() { return "DIA.normalGEMV"; }
+    };
+
+    template<typename ValueType>
+    struct normalGEVM
+    {
         /** result = alpha * x * CSR-Matrix + b * y.
          *
          *  @param result is the result vector
@@ -1970,66 +1977,64 @@ template    <typename DIAValueType, typename CSRValueType>
          *  @param syncToken optional, if available starts asynchronous computation
          */
 
-        typedef void ( *normalGEVM ) ( ValueType result[],
-                        const ValueType alpha,
-                        const ValueType x[],
-                        const ValueType beta,
-                        const ValueType y[],
-                        const IndexType numRows,
-                        const IndexType numColumns,
-                        const IndexType numDiagonals,
-                        const IndexType diaOffsets[],
-                        const ValueType diaValues[],
-                        SyncToken* syncToken );
-    };
+        typedef void ( *FuncType ) ( 
+            ValueType result[],
+            const ValueType alpha,
+            const ValueType x[],
+            const ValueType beta,
+            const ValueType y[],
+            const IndexType numRows,
+            const IndexType numColumns,
+            const IndexType numDiagonals,
+            const IndexType diaOffsets[],
+            const ValueType diaValues[],
+            SyncToken* syncToken );
 
-    LAMA_INTERFACE_DEFINE_T( Mult, normalGEMV )
-    LAMA_INTERFACE_DEFINE_T( Mult, normalGEVM )
+        static const char* getId() { return "DIA.normalGEVM"; }
+    };
 
     /** Structure with type definitions for solver routines */
 
     template<typename ValueType>
-    struct Solver
+    struct jacobi
     {
         /** Method to compute one iteration step in Jacobi method
          *
          *  solution = omega * ( rhs + B * oldSolution) * dinv  + ( 1 - omega ) * oldSolution
          *
          */
-        typedef void ( *jacobi ) ( ValueType* const solution,
-                        const IndexType numColumns,
-                        const IndexType numDiagonals,
-                        const IndexType diaOffset[],
-                        const ValueType diaValues[],
-                        const ValueType oldSolution[],
-                        const ValueType rhs[],
-                        const ValueType omega,
-                        const IndexType numRows,
-                        SyncToken* syncToken );
-    };
+        typedef void ( *FuncType ) ( 
+            ValueType* solution,
+            const IndexType numColumns,
+            const IndexType numDiagonals,
+            const IndexType diaOffset[],
+            const ValueType diaValues[],
+            const ValueType oldSolution[],
+            const ValueType rhs[],
+            const ValueType omega,
+            const IndexType numRows,
+            SyncToken* syncToken );
 
-    LAMA_INTERFACE_DEFINE_T( Solver, jacobi )
+        static const char* getId() { return "DIA.jacobi"; }
+    };
 
     /** Structure with type definitions for reduction routines */
 
     template<typename ValueType>
-    struct Reductions
+    struct absMaxVal
     {
         /** This method returns the maximal absolute value of an ELLPACK matrix. */
 
-        typedef ValueType ( *absMaxVal ) ( const IndexType numRows,
-                        const IndexType numColumns,
-                        const IndexType numDiagonals,
-                        const IndexType diaOffsets[],
-                        const ValueType diaValues[]
+        typedef ValueType (  *FuncType ) ( 
+            const IndexType numRows,
+            const IndexType numColumns,
+            const IndexType numDiagonals,
+            const IndexType diaOffsets[],
+            const ValueType diaValues[]
         );
+
+        static const char* getId() { return "DIA.absMaxVal"; }
     };
-
-    LAMA_INTERFACE_DEFINE_T( Reductions, absMaxVal )
-
-    /** Constructur of interface sets all function pointers to nullPtr. */
-
-    DIAUtilsInterface ();
 };
 
 /** Interface for utility functions to be used in COO storage.
@@ -2040,7 +2045,7 @@ template    <typename DIAValueType, typename CSRValueType>
 
 struct COOUtilsInterface
 {
-    struct Counting
+    struct getCSRSizes
     {
         /** Helper routine for conversion of COO format to CSR format to get sparse row sizes.
          *
@@ -2050,12 +2055,17 @@ struct COOUtilsInterface
          *  @param[in] array with row indexes of COO storage (size is numValues)
          */
 
-        typedef void (*getCSRSizes)(
+        typedef void ( *FuncType )(
             IndexType csrSizes[],
             const IndexType numRows,
             const IndexType numValues,
             const IndexType cooIA[] );
 
+        static const char* getId() { return "COO.getCSRSizes"; }
+    };
+
+    struct offsets2ia
+    {
         /** Routine for conversion of CSR offset array to COO ia array
          *
          *  @param[out] cooIA is the array with all row indexes
@@ -2067,19 +2077,18 @@ struct COOUtilsInterface
          *  The diagonal values will be stored at the beginning of the array cooIA.
          */
 
-        typedef void (*offsets2ia)(
+        typedef void ( *FuncType )(
             IndexType cooIA[],
             const IndexType numValues,
             const IndexType csrIA[],
             const IndexType numRows,
             const IndexType numDiagonals );
 
+        static const char* getId() { return "COO.offsets2ia"; }
     };
 
-    LAMA_INTERFACE_DEFINE( Counting, getCSRSizes )LAMA_INTERFACE_DEFINE( Counting, offsets2ia )
-
     template<typename COOValueType, typename CSRValueType>
-    struct Conversions
+    struct getCSRValues
     {
         /** Helper routine for conversion COO to CSR
          *
@@ -2093,14 +2102,22 @@ struct COOUtilsInterface
          *  Note: this routine preserves the diagonal property of the COO format
          */
 
-        typedef void ( *getCSRValues )( IndexType csrJA[],
-                        CSRValueType csrValues[],
-                        IndexType csrIA[],
-                        const IndexType numRow,
-                        const IndexType numValues,
-                        const IndexType cooIA[],
-                        const IndexType cooJA[],
-                        const COOValueType cooValues[] );
+        typedef void ( *FuncType )( 
+            IndexType csrJA[],
+            CSRValueType csrValues[],
+            IndexType csrIA[],
+            const IndexType numRow,
+            const IndexType numValues,
+            const IndexType cooIA[],
+            const IndexType cooJA[],
+            const COOValueType cooValues[] );
+
+        static const char* getId() { return "COO.getCSRValues"; }
+    };
+
+    template<typename COOValueType, typename CSRValueType>
+    struct setCSRData
+    {
 
         /** Conversion of CSR data (ja, values) to COO data.
          *
@@ -2116,19 +2133,19 @@ struct COOUtilsInterface
          *  Note: For numDiagonals == 0, this routine can be replaced with Utils::set.
          */
 
-        typedef void ( *setCSRData ) ( COOValueType cooValues[],
-                        const CSRValueType csrValues[],
-                        const IndexType numValues,
-                        const IndexType csrIA[],
-                        const IndexType numRows,
-                        const IndexType numDiagonals );
+        typedef void ( *FuncType ) ( 
+            COOValueType cooValues[],
+            const CSRValueType csrValues[],
+            const IndexType numValues,
+            const IndexType csrIA[],
+            const IndexType numRows,
+            const IndexType numDiagonals );
+
+        static const char* getId() { return "COO.setCSRData"; }
     };
 
-    LAMA_INTERFACE_DEFINE_TT( Conversions, getCSRValues )
-    LAMA_INTERFACE_DEFINE_TT( Conversions, setCSRData )
-
     template<typename ValueType>
-    struct Mult
+    struct normalGEMV
     {
         /** result = alpha * CSR-Matrix * x + b * y.
          *
@@ -2143,76 +2160,86 @@ struct COOUtilsInterface
          *  @param syncToken optional, if available starts asynchronous computation
          */
 
-        typedef void ( *normalGEMV ) ( ValueType result[],
-                        const ValueType alpha,
-                        const ValueType x[],
-                        const ValueType beta,
-                        const ValueType y[],
-                        const IndexType numRows,
-                        const IndexType nnz,
-                        const IndexType cooIA[],
-                        const IndexType cooJA[],
-                        const ValueType cooValues[],
-                        SyncToken* syncToken );
+        typedef void ( *FuncType ) ( 
+            ValueType result[],
+            const ValueType alpha,
+            const ValueType x[],
+            const ValueType beta,
+            const ValueType y[],
+            const IndexType numRows,
+            const IndexType nnz,
+            const IndexType cooIA[],
+            const IndexType cooJA[],
+            const ValueType cooValues[],
+            SyncToken* syncToken );
 
-        typedef void ( *normalGEVM ) ( ValueType result[],
-                        const ValueType alpha,
-                        const ValueType x[],
-                        const ValueType beta,
-                        const ValueType y[],
-                        const IndexType numRows,
-                        const IndexType nnz,
-                        const IndexType cooIA[],
-                        const IndexType cooJA[],
-                        const ValueType cooValues[],
-                        SyncToken* syncToken );
+        static const char* getId() { return "COO.normalGEMV"; }
     };
 
-    LAMA_INTERFACE_DEFINE_T( Mult, normalGEMV )
-    LAMA_INTERFACE_DEFINE_T( Mult, normalGEVM )
+    template<typename ValueType>
+    struct normalGEVM
+    {
+        typedef void ( *FuncType ) ( 
+            ValueType result[],
+            const ValueType alpha,
+            const ValueType x[],
+            const ValueType beta,
+            const ValueType y[],
+            const IndexType numRows,
+            const IndexType nnz,
+            const IndexType cooIA[],
+            const IndexType cooJA[],
+            const ValueType cooValues[],
+            SyncToken* syncToken );
+
+        static const char* getId() { return "COO.normalGEVM"; }
+    };
 
     /** Structure with type definitions for solver routines */
     template<typename ValueType>
-    struct Solver
+    struct jacobi
     {
         /** Method to compute one iteration step in Jacobi method
          *
          *  solution = omega * ( rhs + B * oldSolution) * dinv  + ( 1 - omega ) * oldSolution
          *
          */
-        typedef void ( *jacobi ) ( ValueType* const solution,
-                        const IndexType cooNumValues,
-                        const IndexType cooIA[],
-                        const IndexType cooJA[],
-                        const ValueType cooValues[],
-                        const ValueType oldSolution[],
-                        const ValueType rhs[],
-                        const ValueType omega,
-                        const IndexType numRows,
-                        SyncToken* syncToken );
+        typedef void ( *FuncType ) ( 
+            ValueType* const solution,
+            const IndexType cooNumValues,
+            const IndexType cooIA[],
+            const IndexType cooJA[],
+            const ValueType cooValues[],
+            const ValueType oldSolution[],
+            const ValueType rhs[],
+            const ValueType omega,
+            const IndexType numRows,
+            SyncToken* syncToken );
 
+        static const char* getId() { return "COO.jacobi"; }
+    };
+
+    template<typename ValueType>
+    struct jacobiHalo
+    {
         /** Method to compute one iteration step in Jacobi method
          *
          *  solution -= omega * ( B(halo) * oldSolution) * dinv
          *
          */
-        typedef void ( *jacobiHalo ) ( ValueType solution[],
-                        const ValueType diaValues[],
-                        const IndexType haloIA[],
-                        const IndexType haloJA[],
-                        const ValueType haloValues[],
-                        const IndexType haloRowIndexes[],
-                        const ValueType oldSolution[],
-                        const ValueType omega,
-                        const IndexType numNonEmptyRows );
+        typedef void ( *FuncType ) ( 
+            ValueType solution[],
+            const ValueType diaValues[],
+            const IndexType haloIA[],
+            const IndexType haloJA[],
+            const ValueType haloValues[],
+            const IndexType haloRowIndexes[],
+            const ValueType oldSolution[],
+            const ValueType omega,
+            const IndexType numNonEmptyRows );
+
+        static const char* getId() { return "COO.jacobiHalo"; }
     };
-
-    LAMA_INTERFACE_DEFINE_T( Solver, jacobi )
-    LAMA_INTERFACE_DEFINE_T( Solver, jacobiHalo )
-
-    /** Default constructor initializes all function pointers with NULL. */
-
-    COOUtilsInterface ();
 };
 
 } /* end namespace lama */

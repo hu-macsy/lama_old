@@ -35,16 +35,16 @@
 #include <scai/lama/openmp/OpenMPUtils.hpp>
 
 // local library
+#include <scai/lama/UtilsInterface.hpp>
 #include <scai/lama/openmp/OpenMPDIAUtils.hpp>
 #include <scai/lama/openmp/OpenMP.hpp>
 
-#include <scai/lama/LAMAInterface.hpp>
-#include <scai/lama/LAMAInterfaceRegistry.hpp>
-
 // internal scai libraries
+#include <scai/kregistry/KernelRegistry.hpp>
 #include <scai/tracing.hpp>
 
 #include <scai/common/Assert.hpp>
+#include <scai/common/ScalarType.hpp>
 
 // boost
 #include <boost/preprocessor.hpp>
@@ -533,24 +533,29 @@ void OpenMPDIAUtils::jacobi(
 
 /* --------------------------------------------------------------------------- */
 
-void OpenMPDIAUtils::setInterface( DIAUtilsInterface& DIAUtils )
+void OpenMPDIAUtils::registerKernels()
 {
+    using kregistry::KernelRegistry;
 
-// use of nested BOOST_PP_REPEAT to get all conversions
+    // ctx will contain the context for which registration is done, here Host
 
-#define LAMA_DIA_UTILS2_REGISTER(z, J, TYPE )                                                  \
-    LAMA_INTERFACE_REGISTER_TT( DIAUtils, getCSRValues, TYPE, ARITHMETIC_HOST_TYPE_##J )       \
+    common::ContextType ctx = common::context::Host;
 
+    // use of BOOST_PP_REPEAT to register for all value types
+    // use of nested BOOST_PP_REPEAT to get all pairs of value types for conversions
 
-#define LAMA_DIA_UTILS_REGISTER(z, I, _)                                                       \
-    LAMA_INTERFACE_REGISTER_T( DIAUtils, getCSRSizes, ARITHMETIC_HOST_TYPE_##I )               \
-    LAMA_INTERFACE_REGISTER_T( DIAUtils, absMaxVal, ARITHMETIC_HOST_TYPE_##I )                 \
-    LAMA_INTERFACE_REGISTER_T( DIAUtils, normalGEMV, ARITHMETIC_HOST_TYPE_##I )                \
-    LAMA_INTERFACE_REGISTER_T( DIAUtils, normalGEVM, ARITHMETIC_HOST_TYPE_##I )                \
-    LAMA_INTERFACE_REGISTER_T( DIAUtils, jacobi, ARITHMETIC_HOST_TYPE_##I )                    \
-                                                                                               \
-    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT,                                                 \
-                     LAMA_DIA_UTILS2_REGISTER,                                                 \
+#define LAMA_DIA_UTILS2_REGISTER(z, J, TYPE )                                                                    \
+    KernelRegistry::set<DIAUtilsInterface::getCSRValues<TYPE, ARITHMETIC_HOST_TYPE_##J> >( getCSRValues, ctx );  \
+
+#define LAMA_DIA_UTILS_REGISTER(z, I, _)                                                                 \
+    KernelRegistry::set<DIAUtilsInterface::getCSRSizes<ARITHMETIC_HOST_TYPE_##I> >( getCSRSizes, ctx );  \
+    KernelRegistry::set<DIAUtilsInterface::absMaxVal<ARITHMETIC_HOST_TYPE_##I> >( absMaxVal, ctx );      \
+    KernelRegistry::set<DIAUtilsInterface::normalGEMV<ARITHMETIC_HOST_TYPE_##I> >( normalGEMV, ctx );    \
+    KernelRegistry::set<DIAUtilsInterface::normalGEVM<ARITHMETIC_HOST_TYPE_##I> >( normalGEVM, ctx );    \
+    KernelRegistry::set<DIAUtilsInterface::jacobi<ARITHMETIC_HOST_TYPE_##I> >( jacobi, ctx );            \
+                                                                                                         \
+    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT,                                                           \
+                     LAMA_DIA_UTILS2_REGISTER,                                                           \
                      ARITHMETIC_HOST_TYPE_##I )
 
     BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_DIA_UTILS_REGISTER, _ )
@@ -566,8 +571,7 @@ void OpenMPDIAUtils::setInterface( DIAUtilsInterface& DIAUtils )
 
 bool OpenMPDIAUtils::registerInterface()
 {
-    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( common::context::Host );
-    setInterface( interface.DIAUtils );
+    registerKernels();
     return true;
 }
 

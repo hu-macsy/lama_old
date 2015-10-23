@@ -762,16 +762,16 @@ ValueType DIAStorage<ValueType>::maxNorm() const
 {
     SCAI_LOG_INFO( logger, *this << ": maxNorm()" )
 
-    ContextPtr loc = getContextPtr();
+    static LAMAKernel<DIAUtilsInterface::absMaxVal<ValueType> > absMaxVal;
 
-    LAMA_INTERFACE_FN_DEFAULT_T( absMaxVal, loc, DIAUtils, Reductions, ValueType )
+    ContextPtr loc = absMaxVal.getValidContext( this->getContextPtr() );
 
     ReadAccess<IndexType> diaOffsets( mOffset, loc );
     ReadAccess<ValueType> diaValues( mValues, loc );
 
     SCAI_CONTEXT_ACCESS( loc )
 
-    ValueType maxval = absMaxVal( mNumRows, mNumColumns, mNumDiagonals, diaOffsets.get(), diaValues.get() );
+    ValueType maxval = absMaxVal[loc]( mNumRows, mNumColumns, mNumDiagonals, diaOffsets.get(), diaValues.get() );
 
     return maxval;
 }
@@ -882,15 +882,16 @@ void DIAStorage<ValueType>::matrixTimesVector(
 {
     SCAI_REGION( "Storage.DIA.timesVector" )
 
-    ContextPtr loc = getContextPtr();
-
     SCAI_LOG_INFO( logger,
-                   "Computing z = " << alpha << " * A * x + " << beta << " * y, with A = " << *this << ", x = " << x << ", y = " << y << ", z = " << result << " on " << *loc )
+                   "Computing z = " << alpha << " * A * x + " << beta << " * y" 
+                    << ", with A = " << *this << ", x = " << x << ", y = " << y << ", z = " << result )
 
     SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumColumns )
     SCAI_ASSERT_EQUAL_ERROR( y.size(), mNumRows )
 
-    LAMA_INTERFACE_FN_DEFAULT_T( normalGEMV, loc, DIAUtils, Mult, ValueType )
+    static LAMAKernel<DIAUtilsInterface::normalGEMV<ValueType> > normalGEMV;
+
+    ContextPtr loc = normalGEMV.getValidContext( this->getContextPtr() );
 
     ReadAccess<IndexType> diaOffsets( mOffset, loc );
     ReadAccess<ValueType> diaValues( mValues, loc );
@@ -911,8 +912,8 @@ void DIAStorage<ValueType>::matrixTimesVector(
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        normalGEMV( wResult.get(), alpha, rX.get(), beta, wResult.get(), mNumRows, mNumColumns, mNumDiagonals,
-                    diaOffsets.get(), diaValues.get(), NULL );
+        normalGEMV[loc]( wResult.get(), alpha, rX.get(), beta, wResult.get(), mNumRows, mNumColumns, mNumDiagonals,
+                         diaOffsets.get(), diaValues.get(), NULL );
     }
     else
     {
@@ -923,8 +924,8 @@ void DIAStorage<ValueType>::matrixTimesVector(
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        normalGEMV( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumRows, mNumColumns, mNumDiagonals,
-                    diaOffsets.get(), diaValues.get(), NULL );
+        normalGEMV[loc]( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumRows, mNumColumns, mNumDiagonals,
+                         diaOffsets.get(), diaValues.get(), NULL );
     }
 }
 
@@ -951,11 +952,11 @@ void DIAStorage<ValueType>::vectorTimesMatrix(
         SCAI_ASSERT_EQUAL_ERROR( y.size(), mNumColumns )
     }
 
-    ContextPtr loc = getContextPtr();
+    static LAMAKernel<DIAUtilsInterface::normalGEVM<ValueType> > normalGEVM;
+
+    ContextPtr loc = normalGEVM.getValidContext( this->getContextPtr() );
 
     SCAI_LOG_INFO( logger, *this << ": vectorTimesMatrix on " << *loc )
-
-    LAMA_INTERFACE_FN_DEFAULT_T( normalGEVM, loc, DIAUtils, Mult, ValueType )
 
     ReadAccess<IndexType> diaOffsets( mOffset, loc );
     ReadAccess<ValueType> diaValues( mValues, loc );
@@ -974,8 +975,8 @@ void DIAStorage<ValueType>::vectorTimesMatrix(
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        normalGEVM( wResult.get(), alpha, rX.get(), beta, wResult.get(), mNumRows, mNumColumns, mNumDiagonals,
-                    diaOffsets.get(), diaValues.get(), NULL );
+        normalGEVM[loc]( wResult.get(), alpha, rX.get(), beta, wResult.get(), mNumRows, mNumColumns, mNumDiagonals,
+                         diaOffsets.get(), diaValues.get(), NULL );
     }
     else
     {
@@ -984,8 +985,8 @@ void DIAStorage<ValueType>::vectorTimesMatrix(
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        normalGEVM( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumRows, mNumColumns, mNumDiagonals,
-                    diaOffsets.get(), diaValues.get(), NULL );
+        normalGEVM[loc]( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumRows, mNumColumns, mNumDiagonals,
+                         diaOffsets.get(), diaValues.get(), NULL );
     }
 }
 
@@ -1001,9 +1002,9 @@ SyncToken* DIAStorage<ValueType>::matrixTimesVectorAsync(
 {
     SCAI_REGION( "Storage.DIA.timesVectorAsync" )
 
-    ContextPtr loc = getContextPtr();
+    static LAMAKernel<DIAUtilsInterface::normalGEMV<ValueType> > normalGEMV;
 
-    LAMA_INTERFACE_FN_DEFAULT_T( normalGEMV, loc, DIAUtils, Mult, ValueType )
+    ContextPtr loc = normalGEMV.getValidContext( this->getContextPtr() );
 
     if( loc->getType() == context::Host )
     {
@@ -1059,8 +1060,8 @@ SyncToken* DIAStorage<ValueType>::matrixTimesVectorAsync(
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        normalGEMV( wResult->get(), alpha, rX->get(), beta, wResult->get(), mNumRows, mNumColumns, mNumDiagonals,
-                    diaOffsets->get(), diaValues->get(), syncToken.get() );
+        normalGEMV[loc]( wResult->get(), alpha, rX->get(), beta, wResult->get(), mNumRows, mNumColumns, mNumDiagonals,
+                         diaOffsets->get(), diaValues->get(), syncToken.get() );
     }
     else
     {
@@ -1074,8 +1075,8 @@ SyncToken* DIAStorage<ValueType>::matrixTimesVectorAsync(
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        normalGEMV( wResult->get(), alpha, rX->get(), beta, rY->get(), mNumRows, mNumColumns, mNumDiagonals,
-                    diaOffsets->get(), diaValues->get(), syncToken.get() );
+        normalGEMV[loc]( wResult->get(), alpha, rX->get(), beta, rY->get(), mNumRows, mNumColumns, mNumDiagonals,
+                         diaOffsets->get(), diaValues->get(), syncToken.get() );
     }
 
     syncToken->pushToken( rX );
@@ -1100,7 +1101,9 @@ SyncToken* DIAStorage<ValueType>::vectorTimesMatrixAsync(
 
     SCAI_REGION( "Storage.DIA.vectorTimesMatrixAsync" )
 
-    ContextPtr loc = getContextPtr();
+    static LAMAKernel<DIAUtilsInterface::normalGEVM<ValueType> > normalGEVM;
+
+    ContextPtr loc = normalGEVM.getValidContext( this->getContextPtr() );
 
     // Note: checks will be done by asynchronous task in any case
     //       and exception in tasks are handled correctly
@@ -1137,8 +1140,6 @@ SyncToken* DIAStorage<ValueType>::vectorTimesMatrixAsync(
         SCAI_ASSERT_EQUAL_ERROR( y.size(), mNumColumns )
     }
 
-    LAMA_INTERFACE_FN_T( normalGEVM, loc, DIAUtils, Mult, ValueType )
-
     common::unique_ptr<SyncToken> syncToken( loc->getSyncToken() );
 
     // all accesses will be pushed to the sync token as LAMA arrays have to be protected up
@@ -1161,8 +1162,8 @@ SyncToken* DIAStorage<ValueType>::vectorTimesMatrixAsync(
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        normalGEVM( wResult->get(), alpha, rX->get(), beta, wResult->get(), mNumRows, mNumColumns, mNumDiagonals,
-                    diaOffsets->get(), diaValues->get(), syncToken.get() );
+        normalGEVM[loc]( wResult->get(), alpha, rX->get(), beta, wResult->get(), mNumRows, mNumColumns, mNumDiagonals,
+                         diaOffsets->get(), diaValues->get(), syncToken.get() );
 
         syncToken->pushToken( wResult );
     }
@@ -1173,8 +1174,8 @@ SyncToken* DIAStorage<ValueType>::vectorTimesMatrixAsync(
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        normalGEVM( wResult->get(), alpha, rX->get(), beta, rY->get(), mNumRows, mNumColumns, mNumDiagonals,
-                    diaOffsets->get(), diaValues->get(), syncToken.get() );
+        normalGEVM[loc]( wResult->get(), alpha, rX->get(), beta, rY->get(), mNumRows, mNumColumns, mNumDiagonals,
+                         diaOffsets->get(), diaValues->get(), syncToken.get() );
 
         syncToken->pushToken( wResult );
         syncToken->pushToken( rY );

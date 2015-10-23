@@ -36,7 +36,6 @@
 
 // others
 #include <scai/lama/BLASInterface.hpp>
-#include <scai/lama/LAMAInterfaceRegistry.hpp>
 #include <scai/lama/cblas.hpp>
 
 // internal scai libraries
@@ -237,7 +236,7 @@ void BLAS_BLAS3::gemm(
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void BLAS_BLAS3::setInterface( BLASInterface& BLAS )
+void BLAS_BLAS3::registerKernels()
 {
     using scai::kregistry::KernelRegistry;
 
@@ -282,8 +281,7 @@ void BLAS_BLAS3::setInterface( BLASInterface& BLAS )
 
 bool BLAS_BLAS3::registerInterface()
 {
-    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( common::context::Host );
-    setInterface( interface.BLAS );
+    registerKernels();
     return true;
 }
 

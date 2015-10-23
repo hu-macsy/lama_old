@@ -86,6 +86,10 @@ public:
 
     common::ContextType validContext( const _ContextFunction& other, common::ContextType preferedCtx );
 
+    common::ContextType validContext( const _ContextFunction& other1, 
+                                      const _ContextFunction& other2, 
+                                      common::ContextType preferedCtx );
+
 protected:
 
     // array with function pointer for each context

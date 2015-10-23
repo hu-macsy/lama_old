@@ -111,6 +111,31 @@ ContextType _ContextFunction::validContext( const _ContextFunction& other, Conte
     return static_cast<ContextType>( MaxContext );
 }
 
+ContextType _ContextFunction::validContext( const _ContextFunction& other1, 
+                                            const _ContextFunction& other2,
+                                            ContextType preferedCtx )
+{
+    if ( mContextFuncArray[preferedCtx] != NULL && other1.mContextFuncArray[preferedCtx] != NULL 
+                                                && other2.mContextFuncArray[preferedCtx] != NULL )
+    {
+        // std::cout << "both valid at context = " << preferedCtx << std::endl;
+
+        return preferedCtx;
+    }
+
+    for ( int i = 0; i < MaxContext; ++i )
+    {
+        if ( mContextFuncArray[i] != NULL && other1.mContextFuncArray[i] != NULL && other2.mContextFuncArray[i] )
+        {
+            return static_cast<ContextType>( i );
+        }
+    }
+
+    // throw exception
+
+    return static_cast<ContextType>( MaxContext );
+}
+
 std::string _ContextFunction::printIt() const
 {
     std::ostringstream msg;

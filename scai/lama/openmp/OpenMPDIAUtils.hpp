@@ -139,9 +139,9 @@ public:
         const IndexType diaOffsets[],
         const ValueType diaValues[] );
 
-    /** Routine that registers all routines of this class at the LAMA interface. */
+    /** Routine that registers all routines of this class at the Kernel registry. */
 
-    static void setInterface( struct DIAUtilsInterface& DIAUtils );
+    static void registerKernels();
 
 private:
 

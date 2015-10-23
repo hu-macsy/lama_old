@@ -42,6 +42,7 @@
 #include <scai/lama/LAMAInterfaceRegistry.hpp>
 
 // internal scai libraries
+#include <scai/kregistry/KernelRegistry.hpp>
 #include <scai/tracing.hpp>
 
 // boost
@@ -370,21 +371,27 @@ void OpenMPCOOUtils::jacobi(
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void OpenMPCOOUtils::setInterface( COOUtilsInterface& COOUtils )
+void OpenMPCOOUtils::registerKernels()
 {
-    LAMA_INTERFACE_REGISTER( COOUtils, offsets2ia )
-    LAMA_INTERFACE_REGISTER( COOUtils, getCSRSizes )
+    using namespace scai::kregistry;
 
-    LAMA_INTERFACE_REGISTER_TT( COOUtils, setCSRData, IndexType, IndexType )
+    // ctx will contain the context for which registration is done, here Host
 
-#define LAMA_COO_UTILS2_REGISTER(z, J, TYPE )                                             \
-    LAMA_INTERFACE_REGISTER_TT( COOUtils, setCSRData, TYPE, ARITHMETIC_HOST_TYPE_##J )    \
-    LAMA_INTERFACE_REGISTER_TT( COOUtils, getCSRValues, TYPE, ARITHMETIC_HOST_TYPE_##J )  \
+    common::ContextType ctx = common::context::Host;
 
-#define LAMA_COO_UTILS_REGISTER(z, I, _)                                                  \
-    LAMA_INTERFACE_REGISTER_T( COOUtils, normalGEMV, ARITHMETIC_HOST_TYPE_##I )           \
-    LAMA_INTERFACE_REGISTER_T( COOUtils, normalGEVM, ARITHMETIC_HOST_TYPE_##I )           \
-    LAMA_INTERFACE_REGISTER_T( COOUtils, jacobi, ARITHMETIC_HOST_TYPE_##I )               \
+    KernelRegistry::set<COOUtilsInterface::offsets2ia>( offsets2ia, ctx );
+    KernelRegistry::set<COOUtilsInterface::getCSRSizes>( getCSRSizes, ctx );
+
+    KernelRegistry::set<COOUtilsInterface::setCSRData<IndexType, IndexType> >( setCSRData, ctx );
+
+#define LAMA_COO_UTILS2_REGISTER(z, J, TYPE )                                                                     \
+    KernelRegistry::set<COOUtilsInterface::setCSRData<TYPE, ARITHMETIC_HOST_TYPE_##J> >( setCSRData, ctx );       \
+    KernelRegistry::set<COOUtilsInterface::getCSRValues<TYPE, ARITHMETIC_HOST_TYPE_##J> >( getCSRValues, ctx );   \
+
+#define LAMA_COO_UTILS_REGISTER(z, I, _)                                                                \
+    KernelRegistry::set<COOUtilsInterface::normalGEMV<ARITHMETIC_HOST_TYPE_##I> >( normalGEMV, ctx );   \
+    KernelRegistry::set<COOUtilsInterface::normalGEVM<ARITHMETIC_HOST_TYPE_##I> >( normalGEVM, ctx );   \
+    KernelRegistry::set<COOUtilsInterface::jacobi<ARITHMETIC_HOST_TYPE_##I> >( jacobi, ctx );           \
                                                                                           \
     BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT,                                            \
                      LAMA_COO_UTILS2_REGISTER,                                            \
@@ -394,7 +401,6 @@ void OpenMPCOOUtils::setInterface( COOUtilsInterface& COOUtils )
 
 #undef LAMA_COO_UTILS_REGISTER
 #undef LAMA_COO_UTILS2_REGISTER
-
 }
 
 /* --------------------------------------------------------------------------- */
@@ -403,8 +409,7 @@ void OpenMPCOOUtils::setInterface( COOUtilsInterface& COOUtils )
 
 bool OpenMPCOOUtils::registerInterface()
 {
-    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( common::context::Host );
-    setInterface( interface.COOUtils );
+    registerKernels();
     return true;
 }
 

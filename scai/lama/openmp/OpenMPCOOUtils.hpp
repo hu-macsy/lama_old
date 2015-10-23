@@ -148,9 +148,11 @@ public:
         const IndexType numRows,
         tasking::SyncToken* syncToken );
 
-    /** Routine that registers all routines of this class at the LAMA interface. */
+    /** Routine that registers all routines of this class at the Kernel registry 
+     *  and does all instantiations implicitly. 
+     */
 
-    static void setInterface( struct COOUtilsInterface& COOUtils );
+    static void registerKernels();
 
 private:
 

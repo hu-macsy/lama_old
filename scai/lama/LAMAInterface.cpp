@@ -52,16 +52,6 @@ LAMAInterface::~LAMAInterface()
 {
 }
 
-DIAUtilsInterface::DIAUtilsInterface()
-{
-    memset( this, 0, sizeof( *this ) );
-}
-
-COOUtilsInterface::COOUtilsInterface()
-{
-    memset( this, 0, sizeof( *this ) );
-}
-
 void LAMAInterface::writeAt( std::ostream& stream ) const
 {
     // write identification of this object

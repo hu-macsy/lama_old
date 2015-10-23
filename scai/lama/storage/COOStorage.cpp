@@ -271,22 +271,22 @@ void COOStorage<ValueType>::buildCSR(
     LAMAArray<IndexType>& ia,
     LAMAArray<IndexType>* ja,
     LAMAArray<OtherValueType>* values,
-    const ContextPtr /* loc */) const
+    const ContextPtr preferredLoc ) const
 {
-    // multiple routines from interface needed, so do it on Host to be safe
+    // multiple kernel routines needed
 
-    ContextPtr loc = Context::getContextPtr( context::Host );
+    static LAMAKernel<CSRUtilsInterface::sizes2offsets> sizes2offsets;
+    static LAMAKernel<COOUtilsInterface::getCSRSizes> getCSRSizes;
+    static LAMAKernel<COOUtilsInterface::getCSRValues<ValueType, OtherValueType> > getCSRValues;
 
-    LAMA_INTERFACE_FN( getCSRSizes, loc, COOUtils, Counting )
+    // do it where all routines are avaialble
 
-    static kregistry::KernelTraitContextFunction<CSRUtilsInterface::sizes2offsets> sizes2offsets;
-
-    LAMA_INTERFACE_FN_TT( getCSRValues, loc, COOUtils, Conversions, ValueType, OtherValueType )
+    ContextPtr loc = sizes2offsets.getValidContext( getCSRSizes, getCSRValues, preferredLoc );
 
     WriteOnlyAccess<IndexType> csrIA( ia, loc, mNumRows + 1 );
     ReadAccess<IndexType> cooIA( mIA, loc );
 
-    getCSRSizes( csrIA.get(), mNumRows, mNumValues, cooIA.get() );
+    getCSRSizes[loc]( csrIA.get(), mNumRows, mNumValues, cooIA.get() );
 
     if( ja == NULL || values == NULL )
     {
@@ -294,7 +294,7 @@ void COOStorage<ValueType>::buildCSR(
         return;
     }
 
-    IndexType numValues = sizes2offsets[ loc->getType() ]( csrIA.get(), mNumRows );
+    IndexType numValues = sizes2offsets[loc]( csrIA.get(), mNumRows );
 
     SCAI_ASSERT_EQUAL_DEBUG( mNumValues, numValues )
 
@@ -304,8 +304,8 @@ void COOStorage<ValueType>::buildCSR(
     WriteOnlyAccess<IndexType> csrJA( *ja, loc, numValues );
     WriteOnlyAccess<OtherValueType> csrValues( *values, loc, numValues );
 
-    getCSRValues( csrJA.get(), csrValues.get(), csrIA.get(), mNumRows, mNumValues, cooIA.get(), cooJA.get(),
-                  cooValues.get() );
+    getCSRValues[loc]( csrJA.get(), csrValues.get(), csrIA.get(), 
+                       mNumRows, mNumValues, cooIA.get(), cooJA.get(), cooValues.get() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -407,18 +407,18 @@ void COOStorage<ValueType>::setCSRDataImpl(
                     "input csr data with " << mNumValues << "entries,  has diagonal property = " << mDiagonalProperty )
 
     {
-        LAMA_INTERFACE_FN( offsets2ia, loc, COOUtils, Counting );
+        static LAMAKernel<COOUtilsInterface::offsets2ia> offsets2ia;
 
         ReadAccess<IndexType> csrIA( ia, loc );
         WriteOnlyAccess<IndexType> cooIA( mIA, loc, mNumValues );
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        offsets2ia( cooIA.get(), mNumValues, csrIA.get(), mNumRows, numDiagonals );
+        offsets2ia[loc]( cooIA.get(), mNumValues, csrIA.get(), mNumRows, numDiagonals );
     }
 
     {
-        LAMA_INTERFACE_FN_TT( setCSRData, loc, COOUtils, Conversions, IndexType, IndexType );
+        static LAMAKernel<COOUtilsInterface::setCSRData<IndexType, IndexType> > setCSRData;
 
         ReadAccess<IndexType> csrIA( ia, loc );
         ReadAccess<IndexType> csrJA( ja, loc );
@@ -426,11 +426,11 @@ void COOStorage<ValueType>::setCSRDataImpl(
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        setCSRData( cooJA.get(), csrJA.get(), numValues, csrIA.get(), mNumRows, numDiagonals );
+        setCSRData[loc]( cooJA.get(), csrJA.get(), numValues, csrIA.get(), mNumRows, numDiagonals );
     }
 
     {
-        LAMA_INTERFACE_FN_TT( setCSRData, loc, COOUtils, Conversions, ValueType, OtherValueType );
+        static LAMAKernel<COOUtilsInterface::setCSRData<ValueType, OtherValueType> > setCSRData;
 
         ReadAccess<IndexType> csrIA( ia, loc );
         ReadAccess<OtherValueType> csrValues( values, loc );
@@ -438,7 +438,7 @@ void COOStorage<ValueType>::setCSRDataImpl(
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        setCSRData( cooValues.get(), csrValues.get(), numValues, csrIA.get(), mNumRows, numDiagonals );
+        setCSRData[loc]( cooValues.get(), csrValues.get(), numValues, csrIA.get(), mNumRows, numDiagonals );
     }
 }
 
@@ -821,11 +821,11 @@ void COOStorage<ValueType>::matrixTimesVector(
 
     // Method on CUDA is not safe due to atomic
 
-    ContextPtr loc = getContextPtr();
+    static LAMAKernel<COOUtilsInterface::normalGEMV<ValueType> > normalGEMV;
+
+    ContextPtr loc = normalGEMV.getValidContext( this->getContextPtr() );
 
     SCAI_LOG_INFO( logger, *this << ": matrixTimesVector on " << *loc )
-
-    LAMA_INTERFACE_FN_DEFAULT_T( normalGEMV, loc, COOUtils, Mult, ValueType )
 
     ReadAccess<IndexType> cooIA( mIA, loc );
     ReadAccess<IndexType> cooJA( mJA, loc );
@@ -844,8 +844,8 @@ void COOStorage<ValueType>::matrixTimesVector(
         // we assume that normalGEMV can deal with the alias of result, y
 
         SCAI_CONTEXT_ACCESS( loc )
-        normalGEMV( wResult.get(), alpha, rX.get(), beta, wResult.get(), mNumRows, mNumValues, cooIA.get(), cooJA.get(),
-                    cooValues.get(), NULL );
+        normalGEMV[loc]( wResult.get(), alpha, rX.get(), beta, wResult.get(), mNumRows, mNumValues, cooIA.get(), cooJA.get(),
+                         cooValues.get(), NULL );
     }
     else
     {
@@ -855,8 +855,8 @@ void COOStorage<ValueType>::matrixTimesVector(
         ReadAccess<ValueType> rY( y, loc );
 
         SCAI_CONTEXT_ACCESS( loc )
-        normalGEMV( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumRows, mNumValues, cooIA.get(), cooJA.get(),
-                    cooValues.get(), NULL );
+        normalGEMV[loc]( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumRows, mNumValues, cooIA.get(), cooJA.get(),
+                         cooValues.get(), NULL );
     }
 }
 /* --------------------------------------------------------------------------- */
@@ -882,11 +882,11 @@ void COOStorage<ValueType>::vectorTimesMatrix(
         SCAI_ASSERT_EQUAL_ERROR( y.size(), mNumColumns )
     }
 
-    ContextPtr loc = getContextPtr();
+    static LAMAKernel<COOUtilsInterface::normalGEVM<ValueType> > normalGEVM;
+
+    ContextPtr loc = normalGEVM.getValidContext( this->getContextPtr() );
 
     SCAI_LOG_INFO( logger, *this << ": vectorTimesMatrix on " << *loc )
-
-    LAMA_INTERFACE_FN_T( normalGEVM, loc, COOUtils, Mult, ValueType )
 
     ReadAccess<IndexType> cooIA( mIA, loc );
     ReadAccess<IndexType> cooJA( mJA, loc );
@@ -905,8 +905,8 @@ void COOStorage<ValueType>::vectorTimesMatrix(
         // we assume that normalGEVM can deal with the alias of result, y
 
         SCAI_CONTEXT_ACCESS( loc )
-        normalGEVM( wResult.get(), alpha, rX.get(), beta, wResult.get(), mNumColumns, mNumValues, cooIA.get(),
-                    cooJA.get(), cooValues.get(), NULL );
+        normalGEVM[loc]( wResult.get(), alpha, rX.get(), beta, wResult.get(), mNumColumns, mNumValues, cooIA.get(),
+                         cooJA.get(), cooValues.get(), NULL );
     }
     else
     {
@@ -916,8 +916,8 @@ void COOStorage<ValueType>::vectorTimesMatrix(
         ReadAccess<ValueType> rY( y, loc );
 
         SCAI_CONTEXT_ACCESS( loc )
-        normalGEVM( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumColumns, mNumValues, cooIA.get(), cooJA.get(),
-                    cooValues.get(), NULL );
+        normalGEVM[loc]( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumColumns, mNumValues, cooIA.get(), cooJA.get(),
+                         cooValues.get(), NULL );
     }
 }
 
@@ -965,7 +965,9 @@ SyncToken* COOStorage<ValueType>::matrixTimesVectorAsync(
 
     SCAI_LOG_INFO( logger, *this << ": matrixTimesVectorAsync on " << *loc )
 
-    LAMA_INTERFACE_FN_T( normalGEMV, loc, COOUtils, Mult, ValueType )
+    static LAMAKernel<COOUtilsInterface::normalGEMV<ValueType> > normalGEMV;
+
+    loc = normalGEMV.getValidContext( this->getContextPtr() );
 
     unique_ptr<SyncToken> syncToken( loc->getSyncToken() );
 
@@ -989,8 +991,8 @@ SyncToken* COOStorage<ValueType>::matrixTimesVectorAsync(
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        normalGEMV( wResult->get(), alpha, rX->get(), beta, wResult->get(), mNumRows, mNumValues, cooIA->get(),
-                    cooJA->get(), cooValues->get(), syncToken.get() );
+        normalGEMV[loc]( wResult->get(), alpha, rX->get(), beta, wResult->get(), mNumRows, mNumValues, cooIA->get(),
+                         cooJA->get(), cooValues->get(), syncToken.get() );
 
         syncToken->pushToken( wResult );
     }
@@ -1001,8 +1003,8 @@ SyncToken* COOStorage<ValueType>::matrixTimesVectorAsync(
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        normalGEMV( wResult->get(), alpha, rX->get(), beta, rY->get(), mNumRows, mNumValues, cooIA->get(), cooJA->get(),
-                    cooValues->get(), syncToken.get() );
+        normalGEMV[loc]( wResult->get(), alpha, rX->get(), beta, rY->get(), mNumRows, mNumValues, cooIA->get(), cooJA->get(),
+                         cooValues->get(), syncToken.get() );
 
         syncToken->pushToken( wResult );
         syncToken->pushToken( rY );
@@ -1031,7 +1033,9 @@ SyncToken* COOStorage<ValueType>::vectorTimesMatrixAsync(
 
     SCAI_REGION( "Storage.COO.vectorTimesMatrixAsync" )
 
-    ContextPtr loc = getContextPtr();
+    static LAMAKernel<COOUtilsInterface::normalGEVM<ValueType> > normalGEVM;
+
+    ContextPtr loc = normalGEVM.getValidContext( this->getContextPtr() );
 
     // Note: checks will be done by asynchronous task in any case
     //       and exception in tasks are handled correctly
@@ -1067,8 +1071,6 @@ SyncToken* COOStorage<ValueType>::vectorTimesMatrixAsync(
         SCAI_ASSERT_EQUAL_ERROR( y.size(), mNumColumns )
     }
 
-    LAMA_INTERFACE_FN_T( normalGEVM, loc, COOUtils, Mult, ValueType )
-
     unique_ptr<SyncToken> syncToken( loc->getSyncToken() );
 
     // all accesses will be pushed to the sync token as LAMA arrays have to be protected up
@@ -1087,12 +1089,12 @@ SyncToken* COOStorage<ValueType>::vectorTimesMatrixAsync(
 
         shared_ptr<WriteAccess<ValueType> > wResult( new WriteAccess<ValueType>( result, loc ) );
 
-        // we assume that normalGEMV can deal with the alias of result, y
+        // we assume that normalGEVM can deal with the alias of result, y
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        normalGEVM( wResult->get(), alpha, rX->get(), beta, wResult->get(), mNumRows, mNumValues, cooIA->get(),
-                    cooJA->get(), cooValues->get(), syncToken.get() );
+        normalGEVM[loc] ( wResult->get(), alpha, rX->get(), beta, wResult->get(), mNumRows, mNumValues, 
+                          cooIA->get(), cooJA->get(), cooValues->get(), syncToken.get() );
 
         syncToken->pushToken( wResult );
     }
@@ -1103,8 +1105,8 @@ SyncToken* COOStorage<ValueType>::vectorTimesMatrixAsync(
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        normalGEVM( wResult->get(), alpha, rX->get(), beta, rY->get(), mNumRows, mNumValues, cooIA->get(), cooJA->get(),
-                    cooValues->get(), syncToken.get() );
+        normalGEVM[loc]( wResult->get(), alpha, rX->get(), beta, rY->get(), mNumRows, mNumValues,
+                         cooIA->get(), cooJA->get(), cooValues->get(), syncToken.get() );
 
         syncToken->pushToken( wResult );
         syncToken->pushToken( rY );
@@ -1140,14 +1142,11 @@ void COOStorage<ValueType>::jacobiIterate(
 
     SCAI_ASSERT_EQUAL_DEBUG( mNumRows, oldSolution.size() )
     SCAI_ASSERT_EQUAL_DEBUG( mNumRows, solution.size() )
-    SCAI_ASSERT_EQUAL_DEBUG( mNumRows, mNumColumns )
-    // matrix must be square
+    SCAI_ASSERT_EQUAL_DEBUG( mNumRows, mNumColumns )              // matrix must be square
 
-    ContextPtr loc = getContextPtr();
+    static LAMAKernel<COOUtilsInterface::jacobi<ValueType> > jacobi;
 
-    // loc = Context::getContextPtr( context::Host );  // does not run on other devices
-
-    LAMA_INTERFACE_FN_DEFAULT_T( jacobi, loc, COOUtils, Solver, ValueType )
+    ContextPtr loc = jacobi.getValidContext( this->getContextPtr() );
 
     WriteAccess<ValueType> wSolution( solution, loc );
     ReadAccess<IndexType> cooIA( mIA, loc );
@@ -1160,8 +1159,8 @@ void COOStorage<ValueType>::jacobiIterate(
 
     SCAI_CONTEXT_ACCESS( loc )
 
-    jacobi( wSolution.get(), mNumValues, cooIA.get(), cooJA.get(), cooValues.get(), rOldSolution.get(), rRhs.get(),
-            omega, mNumRows, NULL );
+    jacobi[loc]( wSolution.get(), mNumValues, cooIA.get(), cooJA.get(), cooValues.get(), 
+                 rOldSolution.get(), rRhs.get(), omega, mNumRows, NULL );
 }
 
 /* --------------------------------------------------------------------------- */
