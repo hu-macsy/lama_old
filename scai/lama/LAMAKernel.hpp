@@ -1,5 +1,5 @@
 /**
- * @file kernel_registry.hpp
+ * @file LAMAKernel.hpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,10 +25,9 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Interface class for context dependent operations to be implemented.
+ * @brief Derived class of KernelContexFunction for more convenient use in LAMA
  * @author Thomas Brandes
- * @date 27.04.2011
- * @since 1.0.0
+ * @date 20.10.2015
  */
 #pragma once
 
@@ -116,23 +115,6 @@ public:
         }
     }
 };
-
-/** Help routine to update context. */
-
-static inline hmemo::ContextPtr getValidContext( hmemo::ContextPtr defaultContext, scai::kregistry::_ContextFunction f )
-{
-    common::ContextType defCtx = defaultContext->getType();
-    common::ContextType runCtx = f.validContext( defCtx );
-
-    if ( runCtx == defCtx )
-    {
-        return defaultContext;
-    }
-    else
-    {
-        return hmemo::Context::getHostPtr();  // do it on host
-    }
-}
 
 }
 

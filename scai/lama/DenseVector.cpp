@@ -37,7 +37,7 @@
 // local library
 #include <scai/lama/LAMAArrayUtils.hpp>
 #include <scai/lama/LAMAInterface.hpp>
-#include <scai/lama/kernel_registry.hpp>
+#include <scai/lama/LAMAKernel.hpp>
 
 #include <scai/lama/distribution/NoDistribution.hpp>
 #include <scai/lama/distribution/CyclicDistribution.hpp>
@@ -944,7 +944,7 @@ void DenseVector<ValueType>::invert()
 
     static LAMAKernel<UtilsInterface::invert<ValueType> > invert;
 
-    const ContextPtr loc = getValidContext( this->getContext(), invert );
+    const ContextPtr loc = invert.getValidContext( this->getContext() );
 
     SCAI_CONTEXT_ACCESS( loc );
 

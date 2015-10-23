@@ -36,7 +36,7 @@
 
 // local library
 #include <scai/lama/LAMAInterface.hpp>
-#include <scai/lama/kernel_registry.hpp>
+#include <scai/lama/LAMAKernel.hpp>
 
 // internal scai libraries
 #include <scai/hmemo.hpp>
@@ -66,7 +66,7 @@ template<typename ValueType1,typename ValueType2>
 void LAMAArrayUtils::assignImpl(
     LAMAArray<ValueType1>& target,
     const LAMAArray<ValueType2>& source,
-    const ContextPtr preferedLoc )
+    const ContextPtr prefContext )
 {
     // verify that dynamic cast operations went okay before
 
@@ -75,9 +75,9 @@ void LAMAArrayUtils::assignImpl(
 
     // set should be available on interface for each loc
 
-    static kregistry::KernelTraitContextFunction<UtilsInterface::set<ValueType1, ValueType2> > set;
+    static LAMAKernel<UtilsInterface::set<ValueType1, ValueType2> > set;
 
-    ContextPtr loc = getValidContext( preferedLoc, set );
+    ContextPtr loc = set.getValidContext( prefContext );
 
     const IndexType n = source.size();
 
@@ -88,7 +88,7 @@ void LAMAArrayUtils::assignImpl(
 
     // Implemenation of set @ loc is available
 
-    set[ loc->getType() ]( targetVals.get(), sourceVals.get(), n );
+    set[loc]( targetVals.get(), sourceVals.get(), n );
 }
 
 template<typename ValueType>
@@ -173,9 +173,9 @@ void LAMAArrayUtils::gather(
 
     // choose location for the operation where source array is currently valid
 
-    static kregistry::KernelTraitContextFunction<UtilsInterface::setGather<ValueType1, ValueType2> > setGather;
+    static LAMAKernel<UtilsInterface::setGather<ValueType1, ValueType2> > setGather;
 
-    ContextPtr context = getValidContext( source.getValidContext( context::Host ), setGather );
+    ContextPtr context = setGather.getValidContext( source.getValidContext( context::Host ) );
 
     const IndexType n = indexes.size();
 
@@ -188,7 +188,7 @@ void LAMAArrayUtils::gather(
 
     //  target[i] = source[ indexes[i] ]
 
-    setGather[context->getType()] ( wTarget.get(), rSource.get(), rIndexes.get(), n );
+    setGather[context] ( wTarget.get(), rSource.get(), rIndexes.get(), n );
 }
 
 template<typename ValueType>
@@ -198,7 +198,7 @@ void LAMAArrayUtils::assignScalar( LAMAArray<ValueType>& target, const Scalar& v
 
     SCAI_LOG_INFO( logger, target << " = " << value << ", to do at " << *context )
 
-    static kregistry::KernelTraitContextFunction<UtilsInterface::setVal<ValueType> > setVal;
+    static LAMAKernel<UtilsInterface::setVal<ValueType> > setVal;
 
     // assignment takes place at the specified context, no check here
 
@@ -210,7 +210,7 @@ void LAMAArrayUtils::assignScalar( LAMAArray<ValueType>& target, const Scalar& v
 
     SCAI_CONTEXT_ACCESS( context )
 
-    setVal[ context->getType() ]( values.get(), n, val );
+    setVal[context]( values.get(), n, val );
 }
 
 void LAMAArrayUtils::assignScalar( ContextArray& target, const Scalar& value, ContextPtr context )
@@ -255,13 +255,13 @@ void LAMAArrayUtils::setVal( LAMAArray<ValueType>& target, const IndexType index
 
     ContextPtr loc = target.getValidContext(); // best position where to fill
 
-    static kregistry::KernelTraitContextFunction<UtilsInterface::setVal<ValueType> > setVal;
+    static LAMAKernel<UtilsInterface::setVal<ValueType> > setVal;
 
     WriteAccess<ValueType> wTarget( target, loc );
 
     SCAI_CONTEXT_ACCESS( loc )
 
-    setVal[ loc->getType() ]( wTarget.get() + index, 1, val );
+    setVal[loc]( wTarget.get() + index, 1, val );
 }
 
 template<typename ValueType>
@@ -282,13 +282,13 @@ void LAMAArrayUtils::assignScaled(
     {
         // result := 0
 
-        static kregistry::KernelTraitContextFunction<UtilsInterface::setVal<ValueType> > setVal;
+        static LAMAKernel<UtilsInterface::setVal<ValueType> > setVal;
 
         WriteAccess<ValueType> wResult( result, loc );
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        setVal[ loc->getType() ]( wResult.get(), n, static_cast<ValueType>(0.0) );
+        setVal[loc]( wResult.get(), n, static_cast<ValueType>(0.0) );
     }
     else if( &result == &y )
     {
@@ -299,13 +299,13 @@ void LAMAArrayUtils::assignScaled(
 
         // result := beta * result, is result *= beta
 
-        static kregistry::KernelTraitContextFunction<UtilsInterface::scale<ValueType> > scale;
+        static LAMAKernel<UtilsInterface::scale<ValueType> > scale;
 
         WriteAccess<ValueType> wResult( result, loc );
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        scale[ loc->getType() ]( wResult.get(), beta, n );
+        scale[loc]( wResult.get(), beta, n );
     }
     else
     {
@@ -314,14 +314,14 @@ void LAMAArrayUtils::assignScaled(
         // Note: we do not use BLAS1:axpy here to guarantee same LAMA OpenMP schedule
         //       and to support type conversions in place for multiprecision support
         
-        static kregistry::KernelTraitContextFunction<UtilsInterface::setScale<ValueType, ValueType> > setScale;
+        static LAMAKernel<UtilsInterface::setScale<ValueType, ValueType> > setScale;
 
         SCAI_CONTEXT_ACCESS( loc )
 
         WriteAccess<ValueType> wResult( result, loc );
         ReadAccess<ValueType> rY( y, loc );
 
-        setScale[ loc->getType() ]( wResult.get(), beta, rY.get(), n );
+        setScale[loc]( wResult.get(), beta, rY.get(), n );
     }
 }
 

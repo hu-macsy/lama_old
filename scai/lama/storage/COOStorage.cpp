@@ -37,7 +37,7 @@
 // local library
 #include <scai/lama/LAMAInterface.hpp>
 #include <scai/lama/LAMAArrayUtils.hpp>
-#include <scai/lama/kernel_registry.hpp>
+#include <scai/lama/LAMAKernel.hpp>
 
 #include <scai/lama/openmp/OpenMPUtils.hpp>
 #include <scai/lama/openmp/OpenMPCOOUtils.hpp>
@@ -213,20 +213,19 @@ void COOStorage<ValueType>::check( const char* msg ) const
     // check row indexes in IA and column indexes in JA
 
     {
-        scai::kregistry::KernelTraitContextFunction<UtilsInterface::validIndexes> validIndexes;
+        static LAMAKernel<UtilsInterface::validIndexes> validIndexes;
 
-        ContextPtr  loc = getValidContext( getContextPtr(), validIndexes );  // find location where routine is available
-        ContextType ctx = loc->getType();
+        ContextPtr  loc = validIndexes.getValidContext( getContextPtr() );  // find location where routine is available
 
         ReadAccess<IndexType> rJA( mJA, loc );
         ReadAccess<IndexType> rIA( mIA, loc );
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        SCAI_ASSERT_ERROR( validIndexes[ ctx ]( rIA.get(), mNumValues, mNumRows ),
+        SCAI_ASSERT_ERROR( validIndexes[ loc ]( rIA.get(), mNumValues, mNumRows ),
                            *this << " @ " << msg << ": illegel indexes in IA" )
 
-        SCAI_ASSERT_ERROR( validIndexes[ ctx ]( rJA.get(), mNumValues, mNumColumns ),
+        SCAI_ASSERT_ERROR( validIndexes[ loc ]( rJA.get(), mNumValues, mNumColumns ),
                            *this << " @ " << msg << ": illegel indexes in JA" )
     }
 }
@@ -242,12 +241,10 @@ void COOStorage<ValueType>::setIdentity( const IndexType size )
     mNumColumns = size;
     mNumValues = mNumRows;
 
-    scai::kregistry::KernelTraitContextFunction<UtilsInterface::setOrder<IndexType> > setOrder;
-    scai::kregistry::KernelTraitContextFunction<UtilsInterface::setVal<ValueType> > setVal;
+    static LAMAKernel<UtilsInterface::setOrder<IndexType> > setOrder;
+    static LAMAKernel<UtilsInterface::setVal<ValueType> > setVal;
 
-    ContextPtr loc = getValidContext( getContextPtr(), setOrder );
-
-    common::ContextType ctx = loc->getType();
+    ContextPtr loc = setOrder.getValidContext( setVal, this->getContextPtr() );
 
     WriteOnlyAccess<IndexType> ia( mIA, loc, mNumValues );
     WriteOnlyAccess<IndexType> ja( mJA, loc, mNumValues );
@@ -255,10 +252,10 @@ void COOStorage<ValueType>::setIdentity( const IndexType size )
 
     SCAI_CONTEXT_ACCESS( loc )
 
-    setOrder[ ctx ]( ia.get(), mNumValues );
-    setOrder[ ctx ]( ja.get(), mNumValues );
+    setOrder[loc]( ia.get(), mNumValues );
+    setOrder[loc]( ja.get(), mNumValues );
 
-    setVal[ ctx ]( values.get(), mNumValues, static_cast<ValueType>(1.0) );
+    setVal[loc]( values.get(), mNumValues, static_cast<ValueType>(1.0) );
 
     mDiagonalProperty = true;
 }
@@ -384,16 +381,16 @@ void COOStorage<ValueType>::setCSRDataImpl(
         SCAI_LOG_DEBUG( logger,
                         "check CSR data " << numRows << " x " << numColumns << ", nnz = " << numValues << " for diagonal property, #diagonals = " << numDiagonals )
 
-        static kregistry::KernelTraitContextFunction<CSRUtilsInterface::hasDiagonalProperty> hasDiagonalProperty;
+        static LAMAKernel<CSRUtilsInterface::hasDiagonalProperty> hasDiagonalProperty;
 
-        ContextPtr loc = getValidContext( this->getContextPtr(), hasDiagonalProperty );
+        ContextPtr loc = hasDiagonalProperty.getValidContext( this->getContextPtr() );
 
         ReadAccess<IndexType> csrIA( ia, loc );
         ReadAccess<IndexType> csrJA( ja, loc );
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        mDiagonalProperty = hasDiagonalProperty[ loc->getType()] ( numDiagonals, csrIA.get(), csrJA.get() );
+        mDiagonalProperty = hasDiagonalProperty[loc] ( numDiagonals, csrIA.get(), csrJA.get() );
     }
 
     if( !mDiagonalProperty )
@@ -681,9 +678,9 @@ void COOStorage<ValueType>::getDiagonalImpl( LAMAArray<OtherType>& diagonal ) co
 {
     const IndexType numDiagonalElements = std::min( mNumColumns, mNumRows );
 
-    static kregistry::KernelTraitContextFunction<UtilsInterface::set<OtherType, ValueType> > set;
+    static LAMAKernel<UtilsInterface::set<OtherType, ValueType> > set;
 
-    ContextPtr loc = getValidContext( this->getContextPtr(), set );
+    ContextPtr loc = set.getValidContext( this->getContextPtr() );
 
     WriteOnlyAccess<OtherType> wDiagonal( diagonal, loc, numDiagonalElements );
     ReadAccess<ValueType> rValues( mValues, loc );
@@ -692,7 +689,7 @@ void COOStorage<ValueType>::getDiagonalImpl( LAMAArray<OtherType>& diagonal ) co
 
     // diagonal elements are the first entries of mValues
 
-    set[ loc->getType() ]( wDiagonal.get(), rValues.get(), numDiagonalElements );
+    set[loc]( wDiagonal.get(), rValues.get(), numDiagonalElements );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -705,9 +702,9 @@ void COOStorage<ValueType>::setDiagonalImpl( const LAMAArray<OtherType>& diagona
 {
     const IndexType numDiagonalElements = std::min( mNumColumns, mNumRows );
 
-    static kregistry::KernelTraitContextFunction<UtilsInterface::set<ValueType, OtherType> > set;
+    static LAMAKernel<UtilsInterface::set<ValueType, OtherType> > set;
 
-    ContextPtr loc = getValidContext( this->getContextPtr(), set );
+    ContextPtr loc = set.getValidContext( this->getContextPtr() );
 
     ReadAccess<OtherType> rDiagonal( diagonal, loc );
     WriteAccess<ValueType> wValues( mValues, loc );
@@ -716,7 +713,7 @@ void COOStorage<ValueType>::setDiagonalImpl( const LAMAArray<OtherType>& diagona
 
     // diagonal elements are the first entries of mValues
 
-    set[ loc->getType() ]( wValues.get(), rDiagonal.get(), numDiagonalElements );
+    set[loc]( wValues.get(), rDiagonal.get(), numDiagonalElements );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

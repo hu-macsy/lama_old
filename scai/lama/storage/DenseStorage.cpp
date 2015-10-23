@@ -36,7 +36,7 @@
 
 // local library
 #include <scai/lama/LAMAInterface.hpp>
-#include <scai/lama/kernel_registry.hpp>
+#include <scai/lama/LAMAKernel.hpp>
 
 #include <scai/lama/openmp/OpenMPDenseUtils.hpp>
 #include <scai/lama/openmp/OpenMPCSRUtils.hpp>
@@ -945,7 +945,7 @@ ValueType DenseStorageView<ValueType>::maxNorm() const
 
     static LAMAKernel<UtilsInterface::absMaxVal<ValueType> > absMaxVal;
 
-    ContextPtr loc = getValidContext( this->getContextPtr(), absMaxVal );
+    ContextPtr loc = absMaxVal.getValidContext( this->getContextPtr() );
 
     ReadAccess<ValueType> read1( mData, loc );
 

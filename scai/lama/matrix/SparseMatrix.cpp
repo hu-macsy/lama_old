@@ -37,7 +37,7 @@
 // local library
 #include <scai/lama/LAMAArrayUtils.hpp>
 
-#include <scai/lama/kernel_registry.hpp>
+#include <scai/lama/LAMAKernel.hpp>
 #include <scai/lama/matrix/DenseMatrix.hpp>
 
 #include <scai/lama/storage/MatrixStorage.hpp>
@@ -1343,7 +1343,7 @@ void SparseMatrix<ValueType>::vectorHaloOperationSync(
     SCAI_ASSERT( ySize == colDist->getLocalSize(),
                  "size mismatch of localY and columnDistribution" << ySize << " != " << colDist->getLocalSize() )
 
-    static kregistry::KernelTraitContextFunction<CSRUtilsInterface::sizes2offsets> sizes2offsets;
+    static LAMAKernel<CSRUtilsInterface::sizes2offsets> sizes2offsets;
 
     // will be done on the host
 
@@ -1352,7 +1352,7 @@ void SparseMatrix<ValueType>::vectorHaloOperationSync(
     comm.allgather( &sizes[0], 1, &xSize );
     offsets = sizes;
     offsets.resize( numParts + 1 );
-    sizes2offsets[ hostContext->getType() ]( &offsets[0], numParts );
+    sizes2offsets[ hostContext ]( &offsets[0], numParts );
 
     LAMAArray<ValueType> haloResult( mHalo.getHaloSize() );
     LAMAArray<ValueType> toOthersResult( xSize * numParts );
@@ -1589,14 +1589,14 @@ void SparseMatrix<ValueType>::vectorHaloOperationAsync(
     SCAI_ASSERT( ySize == colDist->getLocalSize(),
                  "size mismatch of localY and columnDistribution" << ySize << " != " << colDist->getLocalSize() )
 
-    static kregistry::KernelTraitContextFunction<CSRUtilsInterface::sizes2offsets> sizes2offsets;
+    static LAMAKernel<CSRUtilsInterface::sizes2offsets> sizes2offsets;
 
     std::vector<IndexType> sizes( numParts );
     std::vector<IndexType> offsets;
     comm.allgather( &sizes[0], 1, &xSize );
     offsets = sizes;
     offsets.resize( numParts + 1 );
-    sizes2offsets[ hostContext->getType() ]( &offsets[0], numParts );
+    sizes2offsets[ hostContext ]( &offsets[0], numParts );
 
     LAMAArray<ValueType> haloResult( mHalo.getHaloSize() );
     LAMAArray<ValueType> toOthersResult( xSize * numParts );

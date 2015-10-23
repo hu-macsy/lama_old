@@ -37,7 +37,7 @@
 // local library
 #include <scai/lama/LAMAInterface.hpp>
 #include <scai/lama/LAMAArrayUtils.hpp>
-#include <scai/lama/kernel_registry.hpp>
+#include <scai/lama/LAMAKernel.hpp>
 
 #include <scai/lama/storage/StorageMethods.hpp>
 
@@ -199,15 +199,15 @@ void CSRStorage<ValueType>::check( const char* msg ) const
     // check column indexes in JA
 
     {
-        static kregistry::KernelTraitContextFunction<UtilsInterface::validIndexes> validIndexes;
+        static LAMAKernel<UtilsInterface::validIndexes> validIndexes;
 
-        ContextPtr loc = getValidContext( this->getContextPtr(), validIndexes );
+        ContextPtr loc = validIndexes.getValidContext( this->getContextPtr() );
 
         ReadAccess<IndexType> rJA( mJa, loc );
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        SCAI_ASSERT_ERROR( validIndexes[ loc->getType() ]( rJA.get(), mNumValues, mNumColumns ),
+        SCAI_ASSERT_ERROR( validIndexes[loc]( rJA.get(), mNumValues, mNumColumns ),
                            *this << " @ " << msg << ": illegel indexes in JA" )
     }
 }
@@ -960,9 +960,9 @@ void CSRStorage<ValueType>::getDiagonalImpl( LAMAArray<OtherValueType>& diagonal
 {
     const IndexType numDiagonalElements = std::min( mNumColumns, mNumRows );
 
-    static kregistry::KernelTraitContextFunction<UtilsInterface::setGather<OtherValueType, ValueType> > setGather;
+    static LAMAKernel<UtilsInterface::setGather<OtherValueType, ValueType> > setGather;
 
-    ContextPtr loc = getValidContext( this->getContextPtr(), setGather );
+    ContextPtr loc = setGather.getValidContext( this->getContextPtr() );
 
     SCAI_CONTEXT_ACCESS( loc )
 
@@ -970,7 +970,7 @@ void CSRStorage<ValueType>::getDiagonalImpl( LAMAArray<OtherValueType>& diagonal
     ReadAccess<IndexType> csrIA( mIa, loc );
     ReadAccess<ValueType> rValues( mValues, loc );
 
-    setGather[ loc->getType() ]( wDiagonal.get(), rValues.get(), csrIA.get(), numDiagonalElements );
+    setGather[loc]( wDiagonal.get(), rValues.get(), csrIA.get(), numDiagonalElements );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -978,9 +978,9 @@ void CSRStorage<ValueType>::getDiagonalImpl( LAMAArray<OtherValueType>& diagonal
 template<typename ValueType>
 void CSRStorage<ValueType>::scaleImpl( const Scalar scalar )
 {
-    static kregistry::KernelTraitContextFunction<UtilsInterface::scale<ValueType> > scale;
+    static LAMAKernel<UtilsInterface::scale<ValueType> > scale;
 
-    ContextPtr loc = getValidContext( this->getContextPtr(), scale );
+    ContextPtr loc = scale.getValidContext( this->getContextPtr() );
 
 	SCAI_CONTEXT_ACCESS( loc )
 
@@ -988,7 +988,7 @@ void CSRStorage<ValueType>::scaleImpl( const Scalar scalar )
 
     ValueType value = scalar.getValue<ValueType>();
 
-    scale[ loc->getType() ]( csrValues.get(), value, mNumValues );
+    scale[loc]( csrValues.get(), value, mNumValues );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -2260,7 +2260,7 @@ ValueType CSRStorage<ValueType>::maxNorm() const
 
     static LAMAKernel<UtilsInterface::absMaxVal<ValueType> > absMaxVal;
 
-    ContextPtr loc = getValidContext( this->getContextPtr(), absMaxVal );
+    ContextPtr loc = absMaxVal.getValidContext( this->getContextPtr() );
 
     ReadAccess<ValueType> csrValues( mValues, loc );
 

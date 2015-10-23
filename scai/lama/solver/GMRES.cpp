@@ -40,7 +40,7 @@
 
 #include <scai/lama/DenseVector.hpp>
 #include <scai/lama/LAMAInterface.hpp>
-#include <scai/lama/kernel_registry.hpp>
+#include <scai/lama/LAMAKernel.hpp>
 
 // tracing
 #include <scai/tracing.hpp>

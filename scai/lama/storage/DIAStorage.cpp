@@ -39,7 +39,7 @@
 #include <scai/lama/openmp/OpenMPDIAUtils.hpp>
 
 #include <scai/lama/LAMAInterface.hpp>
-#include <scai/lama/kernel_registry.hpp>
+#include <scai/lama/LAMAKernel.hpp>
 
 // internal scai libraries
 #include <scai/hmemo/ContextAccess.hpp>
@@ -198,9 +198,11 @@ void DIAStorage<ValueType>::setDiagonalImpl( const Scalar scalar )
 
     IndexType numDiagonalElements = std::min( mNumColumns, mNumRows );
 
-    ContextPtr loc = getContextPtr(); // take context of this storage to set
+    static LAMAKernel<UtilsInterface::setVal<ValueType> > setVal;
 
-    static kregistry::KernelTraitContextFunction<UtilsInterface::setVal<ValueType> > setVal;
+    // take context of this storage to set
+
+    ContextPtr loc = setVal.getValidContext( this->getContextPtr() ); 
 
     {
         // not all values might be changed, so use WriteAccess instead of WriteOnlyAccess
@@ -212,7 +214,7 @@ void DIAStorage<ValueType>::setDiagonalImpl( const Scalar scalar )
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        setVal[ loc->getType() ]( wValues.get(), numDiagonalElements, value );
+        setVal[loc]( wValues.get(), numDiagonalElements, value );
     }
 }
 
@@ -253,9 +255,9 @@ template<typename ValueType>
 template<typename OtherType>
 void DIAStorage<ValueType>::getDiagonalImpl( LAMAArray<OtherType>& diagonal ) const
 {
-    static kregistry::KernelTraitContextFunction<UtilsInterface::set<OtherType, ValueType> > set;
+    static LAMAKernel<UtilsInterface::set<OtherType, ValueType> > set;
 
-    ContextPtr loc = getValidContext( getContextPtr(), set );
+    ContextPtr loc = set.getValidContext( getContextPtr() );
 
     IndexType numDiagonalElements = std::min( mNumColumns, mNumRows );
 
@@ -266,7 +268,7 @@ void DIAStorage<ValueType>::getDiagonalImpl( LAMAArray<OtherType>& diagonal ) co
 
     // Diagonal is first column
 
-    set[ loc->getType() ]( wDiagonal.get(), rValues.get(), numDiagonalElements );
+    set[ loc ]( wDiagonal.get(), rValues.get(), numDiagonalElements );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -279,16 +281,16 @@ void DIAStorage<ValueType>::setDiagonalImpl( const LAMAArray<OtherType>& diagona
 
     numDiagonalElements = std::min( numDiagonalElements, diagonal.size() );
 
-    static kregistry::KernelTraitContextFunction<UtilsInterface::set<ValueType, OtherType> > set;
+    static LAMAKernel<UtilsInterface::set<ValueType, OtherType> > set;
 
-    ContextPtr loc = getValidContext( getContextPtr(), set );
+    ContextPtr loc = set.getValidContext( getContextPtr() );
 
     SCAI_CONTEXT_ACCESS( loc )
 
     ReadAccess<OtherType> rDiagonal( diagonal, loc );
     WriteAccess<ValueType> wValues( mValues, loc );
 
-    set[ loc->getType() ]( wValues.get(), rDiagonal.get(), numDiagonalElements );
+    set[loc]( wValues.get(), rDiagonal.get(), numDiagonalElements );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -406,26 +408,28 @@ void DIAStorage<ValueType>::setIdentity( const IndexType size )
 
     mNumDiagonals = 1; // identity has exactly one diagonal
 
-    ContextPtr loc = getContextPtr();
-
     {
-        static kregistry::KernelTraitContextFunction<UtilsInterface::setVal<IndexType> > setVal;
+        static LAMAKernel<UtilsInterface::setVal<IndexType> > setVal;
+
+        ContextPtr loc = setVal.getValidContext( getContextPtr() );
 
         WriteOnlyAccess<IndexType> wOffset( mOffset, loc, mNumDiagonals );
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        setVal[ loc->getType() ]( wOffset.get(), 1, 0 );
+        setVal[ loc ]( wOffset.get(), 1, 0 );
     }
 
     {
-        static kregistry::KernelTraitContextFunction<UtilsInterface::setVal<ValueType> > setVal;
+        static LAMAKernel<UtilsInterface::setVal<ValueType> > setVal;
+
+        ContextPtr loc = setVal.getValidContext( getContextPtr() );
 
         WriteOnlyAccess<ValueType> values( mValues, loc, mNumRows );
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        setVal[ loc->getType() ]( values.get(), mNumRows, static_cast<ValueType>(1.0) );
+        setVal[ loc ]( values.get(), mNumRows, static_cast<ValueType>(1.0) );
     }
 
     mDiagonalProperty = true;
@@ -477,7 +481,8 @@ void DIAStorage<ValueType>::buildCSR(
     // TODO all done on host, so loc is unused
 
     SCAI_LOG_INFO( logger,
-                   "buildTypedCSRData<" << common::getScalarType<OtherValueType>() << ">" << " from DIA<" << common::getScalarType<ValueType>() << "> = " << *this << ", diagonal property = " << mDiagonalProperty )
+                   "buildTypedCSRData<" << common::getScalarType<OtherValueType>() << ">" 
+                    << " from DIA<" << common::getScalarType<ValueType>() << "> = " << *this << ", diagonal property = " << mDiagonalProperty )
 
     ReadAccess<IndexType> diaOffsets( mOffset );
     ReadAccess<ValueType> diaValues( mValues );

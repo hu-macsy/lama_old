@@ -43,7 +43,7 @@
 #include <scai/lama/distribution/Distribution.hpp>
 #include <scai/lama/distribution/Halo.hpp>
 #include <scai/lama/LAMAInterface.hpp>
-#include <scai/lama/kernel_registry.hpp>
+#include <scai/lama/LAMAKernel.hpp>
 
 // internal scai libraries
 #include <scai/hmemo/LAMAArray.hpp>

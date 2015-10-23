@@ -36,7 +36,7 @@
 
 // local library
 #include <scai/lama/LAMAInterface.hpp>
-#include <scai/lama/kernel_registry.hpp>
+#include <scai/lama/LAMAKernel.hpp>
 
 #include <scai/lama/LAMAArrayUtils.hpp>
 
@@ -75,8 +75,9 @@ SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, JDSStorage<ValueType
 template<typename ValueType>
 JDSStorage<ValueType>::JDSStorage( const IndexType numRows, const IndexType numColumns )
 
-    : CRTPMatrixStorage<JDSStorage<ValueType>,ValueType>( numRows, numColumns ), mNumDiagonals( 0 ), mNumValues(
-          0 )
+    : CRTPMatrixStorage<JDSStorage<ValueType>, ValueType>( numRows, numColumns ), 
+      mNumDiagonals( 0 ), 
+      mNumValues( 0 )
 {
     SCAI_LOG_DEBUG( logger, "JDSStorage for matrix " << mNumRows << " x " << mNumColumns << ", no non-zero elements" )
 
@@ -85,18 +86,18 @@ JDSStorage<ValueType>::JDSStorage( const IndexType numRows, const IndexType numC
         return;
     }
 
-    static kregistry::KernelTraitContextFunction<UtilsInterface::setVal<IndexType> > setVal;
-    static kregistry::KernelTraitContextFunction<UtilsInterface::setOrder<IndexType> > setOrder;
+    static LAMAKernel<UtilsInterface::setVal<IndexType> > setVal;
+    static LAMAKernel<UtilsInterface::setOrder<IndexType> > setOrder;
 
     // make sure that for both context functions implementations are available at the chosen context
 
-    ContextPtr loc = getValidContext( getValidContext( this->getContextPtr(), setVal ), setOrder );
+    ContextPtr loc = setVal.getValidContext( setOrder, this->getContextPtr() );
 
     WriteOnlyAccess<IndexType> ilg( mIlg, loc, mNumRows );
     WriteOnlyAccess<IndexType> perm( mPerm, loc, mNumRows );
 
-    setVal[ loc->getType() ]( ilg.get(), mNumRows, 0 );
-    setOrder[ loc->getType() ]( perm.get(), mNumRows );
+    setVal[loc]( ilg.get(), mNumRows, 0 );
+    setOrder[loc]( perm.get(), mNumRows );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -287,9 +288,9 @@ void JDSStorage<ValueType>::setDiagonalImpl( const Scalar scalar )
 
     SCAI_LOG_INFO( logger, "setDiagonalImpl with scalar = " << scalar )
 
-    static kregistry::KernelTraitContextFunction<UtilsInterface::setVal<ValueType> > setVal;
+    static LAMAKernel<UtilsInterface::setVal<ValueType> > setVal;
 
-    ContextPtr loc = getValidContext( this->getContextPtr(), setVal );
+    ContextPtr loc = setVal.getValidContext( this->getContextPtr() );
 
     IndexType numDiagonalValues = std::min( mNumColumns, mNumRows );
 
@@ -300,7 +301,7 @@ void JDSStorage<ValueType>::setDiagonalImpl( const Scalar scalar )
 
     SCAI_CONTEXT_ACCESS( loc )
 
-    setVal[ loc->getType() ]( wValues.get(), numDiagonalValues, scalar.getValue<ValueType>() );
+    setVal[loc]( wValues.get(), numDiagonalValues, scalar.getValue<ValueType>() );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -313,9 +314,9 @@ void JDSStorage<ValueType>::setDiagonalImpl( const LAMAArray<OtherValueType>& di
 
     SCAI_LOG_INFO( logger, "setDiagonalImpl" )
 
-    static kregistry::KernelTraitContextFunction<UtilsInterface::setGather<ValueType, OtherValueType> > setGather;
+    static LAMAKernel<UtilsInterface::setGather<ValueType, OtherValueType> > setGather;
 
-    ContextPtr loc = getValidContext( this->getContextPtr(), setGather );
+    ContextPtr loc = setGather.getValidContext( this->getContextPtr() );
 
     IndexType numDiagonal = std::min( mNumColumns, mNumRows );
 
@@ -328,7 +329,7 @@ void JDSStorage<ValueType>::setDiagonalImpl( const LAMAArray<OtherValueType>& di
     // diagonal is first column in JDS data
     // values[i] = diagonal[ ja[ i ] ]
 
-    setGather[ loc->getType() ]( wValues.get(), rDiagonal.get(), rJa.get(), numDiagonal );
+    setGather[loc]( wValues.get(), rDiagonal.get(), rJa.get(), numDiagonal );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -367,9 +368,9 @@ void JDSStorage<ValueType>::getDiagonalImpl( LAMAArray<OtherValueType>& diagonal
 
     //TODO: check diagonal property?
 
-    static kregistry::KernelTraitContextFunction<UtilsInterface::setScatter<OtherValueType, ValueType> > setScatter;
+    static LAMAKernel<UtilsInterface::setScatter<OtherValueType, ValueType> > setScatter;
 
-    ContextPtr loc = getValidContext( this->getContextPtr(), setScatter );
+    ContextPtr loc = setScatter.getValidContext( this->getContextPtr() );
 
     IndexType numDiagonal = std::min( mNumColumns, mNumRows );
 
@@ -382,7 +383,7 @@ void JDSStorage<ValueType>::getDiagonalImpl( LAMAArray<OtherValueType>& diagonal
     // diagonal is first column in JDS data
     // wDiagonal[ rJa[ i ] ] = rValues[ i ];
 
-    setScatter[ loc->getType() ]( wDiagonal.get(), rPerm.get(), rValues.get(), numDiagonal );
+    setScatter[loc]( wDiagonal.get(), rPerm.get(), rValues.get(), numDiagonal );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -487,15 +488,15 @@ void JDSStorage<ValueType>::check( const char* msg ) const
     // check column indexes in JA
 
     {
-        static kregistry::KernelTraitContextFunction<UtilsInterface::validIndexes> validIndexes;
+        static LAMAKernel<UtilsInterface::validIndexes> validIndexes;
 
-        ContextPtr loc = getValidContext( this->getContextPtr(), validIndexes );
+        ContextPtr loc = validIndexes.getValidContext( this->getContextPtr() );
 
         ReadAccess<IndexType> rJA( mJa, loc );
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        SCAI_ASSERT_ERROR( validIndexes[ loc->getType() ]( rJA.get(), mNumValues, mNumColumns ),
+        SCAI_ASSERT_ERROR( validIndexes[ loc ]( rJA.get(), mNumValues, mNumColumns ),
                            *this << " @ " << msg << ": illegel indexes in JA" )
     }
 
@@ -504,9 +505,9 @@ void JDSStorage<ValueType>::check( const char* msg ) const
     // check descending values in ILG, DLG
 
     {
-        static kregistry::KernelTraitContextFunction<UtilsInterface::isSorted<IndexType> > isSorted;
+        static LAMAKernel<UtilsInterface::isSorted<IndexType> > isSorted;
 
-        ContextPtr loc = getValidContext( this->getContextPtr(), isSorted );
+        ContextPtr loc = isSorted.getValidContext( this->getContextPtr() );
 
         ReadAccess<IndexType> rIlg( mIlg, loc );
         ReadAccess<IndexType> rDlg( mDlg, loc );
@@ -515,10 +516,10 @@ void JDSStorage<ValueType>::check( const char* msg ) const
 
         bool ascending = false; // check for descending
 
-        SCAI_ASSERT_ERROR( isSorted[ loc->getType() ]( rIlg.get(), mNumRows, ascending ),
+        SCAI_ASSERT_ERROR( isSorted[ loc ]( rIlg.get(), mNumRows, ascending ),
                            *this << " @ " << msg << ": not descending values in ILG" )
 
-        SCAI_ASSERT_ERROR( isSorted[ loc->getType() ]( rDlg.get(), mNumDiagonals, ascending ),
+        SCAI_ASSERT_ERROR( isSorted[ loc ]( rDlg.get(), mNumDiagonals, ascending ),
                            *this << " @ " << msg << ": not descending values in DLG" )
     }
 
@@ -598,34 +599,34 @@ void JDSStorage<ValueType>::setIdentity( const IndexType size )
     mNumValues = mNumRows;
 
     {
-        static kregistry::KernelTraitContextFunction<UtilsInterface::setVal<ValueType> > setVal;
+        static LAMAKernel<UtilsInterface::setVal<ValueType> > setVal;
 
-        ContextPtr loc = getValidContext( this->getContextPtr(), setVal );
+        ContextPtr loc = setVal.getValidContext( this->getContextPtr() );
 
         SCAI_CONTEXT_ACCESS( loc )
 
         WriteOnlyAccess<ValueType> wValues( mValues, loc, mNumValues );
 
-        setVal[ loc->getType() ]( wValues.get(), mNumRows, static_cast<ValueType>(1.0) );
+        setVal[loc]( wValues.get(), mNumRows, static_cast<ValueType>(1.0) );
 
     }
 
-    static kregistry::KernelTraitContextFunction<UtilsInterface::setVal<IndexType> > setVal;
-    static kregistry::KernelTraitContextFunction<UtilsInterface::setOrder<IndexType> > setOrder;
+    static LAMAKernel<UtilsInterface::setVal<IndexType> > setVal;
+    static LAMAKernel<UtilsInterface::setOrder<IndexType> > setOrder;
 
-    ContextPtr loc = getValidContext( getValidContext( getContextPtr(), setVal ), setOrder );
+    // get context where all implementations are available, if not on own context
 
-    common::ContextType ctx = loc->getType();
+    ContextPtr loc = setOrder.getValidContext( setVal, this->getContextPtr() );
 
     WriteOnlyAccess<IndexType> wDlg( mDlg, loc, mNumDiagonals );
     WriteOnlyAccess<IndexType> wIlg( mIlg, loc, mNumRows );
     WriteOnlyAccess<IndexType> wPerm( mPerm, loc, mNumRows );
     WriteOnlyAccess<IndexType> wJa( mJa, loc, mNumValues );
 
-    setVal[ ctx ]( wDlg.get(), 1, mNumRows );
-    setVal[ ctx ]( wIlg.get(), mNumRows, 1 );
-    setOrder[ ctx ]( wPerm.get(), mNumRows );
-    setOrder[ ctx ]( wJa.get(), mNumRows );
+    setVal[ loc ]( wDlg.get(), 1, mNumRows );
+    setVal[ loc ]( wIlg.get(), mNumRows, 1 );
+    setOrder[ loc ]( wPerm.get(), mNumRows );
+    setOrder[ loc ]( wJa.get(), mNumRows );
 
     mDiagonalProperty = true;
 }
@@ -865,10 +866,10 @@ void JDSStorage<ValueType>::allocate( IndexType numRows, IndexType numColumns )
     {
         // the arrays mIlg and mPerm need initialization
 
-        static kregistry::KernelTraitContextFunction<UtilsInterface::setVal<IndexType> > setVal;
-        static kregistry::KernelTraitContextFunction<UtilsInterface::setOrder<IndexType> > setOrder;
+        static LAMAKernel<UtilsInterface::setVal<IndexType> > setVal;
+        static LAMAKernel<UtilsInterface::setOrder<IndexType> > setOrder;
 
-        ContextPtr loc = getValidContext( getValidContext( getContextPtr(), setVal ), setOrder );
+        ContextPtr loc = setOrder.getValidContext( setVal, this->getContextPtr() );
 
         mNumRows = numRows;
         mNumColumns = numColumns;
@@ -880,8 +881,8 @@ void JDSStorage<ValueType>::allocate( IndexType numRows, IndexType numColumns )
         WriteOnlyAccess<IndexType> ilg( mIlg, loc, mNumRows );
         WriteOnlyAccess<IndexType> perm( mPerm, loc, mNumRows );
 
-        setVal[ loc->getType() ]( ilg.get(), mNumRows, 0 );
-        setOrder[ loc->getType() ]( perm.get(), mNumRows );
+        setVal[loc]( ilg.get(), mNumRows, 0 );
+        setOrder[loc]( perm.get(), mNumRows );
     }
 
     mDiagonalProperty = checkDiagonalProperty();
