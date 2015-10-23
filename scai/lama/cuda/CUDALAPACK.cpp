@@ -41,6 +41,7 @@
 #include <scai/lama/LAMAInterfaceRegistry.hpp>
 
 // internal scai library
+#include <scai/kregistry/KernelRegistry.hpp>
 #include <scai/common/cuda/CUDAError.hpp>
 
 using namespace scai::tasking;
@@ -156,13 +157,16 @@ void CUDALAPACK::laswp(
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void CUDALAPACK::setInterface( BLASInterface& BLAS )
+void CUDALAPACK::registerKernels()
 {
-    // Note: macro takes advantage of same name for routines and type definitions
-    //       ( e.g. routine CUDABLAS1::sum<ValueType> is set for BLAS::BLAS1::sum variable
+    using scai::kregistry::KernelRegistry;
 
-    LAMA_INTERFACE_REGISTER_T( BLAS, laswp, float )
-    LAMA_INTERFACE_REGISTER_T( BLAS, laswp, double )
+    // ctx will contain the context for which registration is done, here Host
+
+    common::ContextType ctx = common::context::CUDA;
+
+    KernelRegistry::set<BLASInterface::laswp<float> >( laswp, ctx );
+    KernelRegistry::set<BLASInterface::laswp<double> >( laswp, ctx ); 
 
     // other routines are not used by LAMA yet
 }
@@ -173,8 +177,7 @@ void CUDALAPACK::setInterface( BLASInterface& BLAS )
 
 bool CUDALAPACK::registerInterface()
 {
-    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( common::context::CUDA );
-    setInterface( interface.BLAS );
+    registerKernels();
     return true;
 }
 

@@ -91,9 +91,9 @@ public:
         const ValueType diaValues[],
         tasking::SyncToken* syncToken );
 
-    /** Routine that registers all routines of this class at the LAMA interface. */
+    /** Routine that instantiates and registers all functions at the kernel registry */
 
-    static void setInterface( struct DIAUtilsInterface& DIAUtils );
+    static void registerKernels();
 
 private:
 

@@ -88,7 +88,7 @@ public:
         const IndexType ja[],
         const ValueType values[] );
 
-    template<typename ValueType,typename NoType>
+    template<typename ValueType>
     static ValueType getValue(
         const IndexType i,
         const IndexType j,
@@ -252,13 +252,13 @@ public:
 
     /** Routine that registers all routines of this class at the LAMA interface. */
 
-    static void setInterface( struct JDSUtilsInterface& JDSUtils );
+    static void registerKernels();
 
 private:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
-    static    bool initialized; //!< static initialization used for registration
+    static bool initialized; //!< static initialization used for registration
 
     static bool registerInterface();//!< registration
 };

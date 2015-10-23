@@ -41,6 +41,7 @@
 
 // internal scai libraries
 #include <scai/hmemo/cuda/CUDAStreamSyncToken.hpp>
+#include <scai/kregistry/KernelRegistry.hpp>
 
 #include <scai/tracing.hpp>
 
@@ -766,26 +767,33 @@ void CUDABLAS1::sum(
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void CUDABLAS1::setInterface( BLASInterface& BLAS )
+void CUDABLAS1::registerKernels()
 {
-    // Note: macro takes advantage of same name for routines and type definitions
-    //       ( e.g. routine CUDABLAS1::sum<ValueType> is set for BLAS::BLAS1::sum variable
+    using scai::kregistry::KernelRegistry;
 
-#define LAMA_BLAS1_REGISTER(z, I, _)                                                  \
-    LAMA_INTERFACE_REGISTER_T( BLAS, scal, ARITHMETIC_CUDA_TYPE_##I )                 \
-    LAMA_INTERFACE_REGISTER_T( BLAS, nrm2, ARITHMETIC_CUDA_TYPE_##I )                 \
-    LAMA_INTERFACE_REGISTER_T( BLAS, asum, ARITHMETIC_CUDA_TYPE_##I )                 \
-    LAMA_INTERFACE_REGISTER_T( BLAS, iamax, ARITHMETIC_CUDA_TYPE_##I )                \
-    LAMA_INTERFACE_REGISTER_T( BLAS, swap, ARITHMETIC_CUDA_TYPE_##I )                 \
-    LAMA_INTERFACE_REGISTER_T( BLAS, copy, ARITHMETIC_CUDA_TYPE_##I )                 \
-    LAMA_INTERFACE_REGISTER_T( BLAS, axpy, ARITHMETIC_CUDA_TYPE_##I )                 \
-    LAMA_INTERFACE_REGISTER_T( BLAS, dot, ARITHMETIC_CUDA_TYPE_##I )                  \
-    LAMA_INTERFACE_REGISTER_T( BLAS, sum, ARITHMETIC_CUDA_TYPE_##I )                  \
+    // ctx will contain the context for which registration is done, here Host
+
+    common::ContextType ctx = common::context::CUDA;
+
+    SCAI_LOG_INFO( logger, "set BLAS1 routines for OpenMP in Interface" )
+
+// Note: macro takes advantage of same name for routines and type definitions
+//       ( e.g. routine CUDABLAS1::sum<ValueType> is set for BLAS::BLAS1::sum variable
+
+#define LAMA_BLAS1_REGISTER(z, I, _)                                        \
+    KernelRegistry::set<BLASInterface::scal<ARITHMETIC_CUDA_TYPE_##I> >( scal, ctx );    \
+    KernelRegistry::set<BLASInterface::nrm2<ARITHMETIC_CUDA_TYPE_##I> >( nrm2, ctx );    \
+    KernelRegistry::set<BLASInterface::asum<ARITHMETIC_CUDA_TYPE_##I> >( asum, ctx );    \
+    KernelRegistry::set<BLASInterface::iamax<ARITHMETIC_CUDA_TYPE_##I> >( iamax, ctx );  \
+    KernelRegistry::set<BLASInterface::swap<ARITHMETIC_CUDA_TYPE_##I> >( swap, ctx );    \
+    KernelRegistry::set<BLASInterface::copy<ARITHMETIC_CUDA_TYPE_##I> >( copy, ctx );    \
+    KernelRegistry::set<BLASInterface::axpy<ARITHMETIC_CUDA_TYPE_##I> >( axpy, ctx );    \
+    KernelRegistry::set<BLASInterface::dot<ARITHMETIC_CUDA_TYPE_##I> >( dot, ctx );      \
+    KernelRegistry::set<BLASInterface::sum<ARITHMETIC_CUDA_TYPE_##I> >( sum, ctx );      \
 
     BOOST_PP_REPEAT( ARITHMETIC_CUDA_TYPE_CNT, LAMA_BLAS1_REGISTER, _ )
 
 #undef LAMA_BLAS1_REGISTER
-
 }
 
 /* --------------------------------------------------------------------------- */
@@ -794,8 +802,7 @@ void CUDABLAS1::setInterface( BLASInterface& BLAS )
 
 bool CUDABLAS1::registerInterface()
 {
-    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( common::context::CUDA );
-    setInterface( interface.BLAS );
+    registerKernels();
     return true;
 }
 

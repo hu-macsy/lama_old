@@ -42,6 +42,7 @@
 
 // internal scai library
 #include <scai/hmemo/cuda/CUDAStreamSyncToken.hpp>
+#include <scai/kregistry/KernelRegistry.hpp>
 
 #include <scai/common/cuda/CUDAError.hpp>
 #include <scai/common/macros/unused.hpp>
@@ -514,21 +515,22 @@ void CUDABLAS3::trsm(
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void CUDABLAS3::setInterface( BLASInterface& BLAS )
+void CUDABLAS3::registerKernels()
 {
-    SCAI_LOG_INFO( logger, "set BLAS3 routines for CUDA in Interface" )
+    using scai::kregistry::KernelRegistry;
 
-    // Note: macro takes advantage of same name for routines and type definitions
-    //       ( e.g. routine CUDABLAS1::sum<ValueType> is set for BLAS::BLAS1::sum variable
+    // ctx will contain the context for which registration is done, here Host
 
-#define LAMA_BLAS3_REGISTER(z, I, _)                                            \
-    LAMA_INTERFACE_REGISTER_T( BLAS, gemm, ARITHMETIC_CUDA_TYPE_##I )                 \
+    common::ContextType ctx = common::context::CUDA;
+
+    SCAI_LOG_INFO( logger, "set BLAS3 routines for CUDA at Kernel Registry" )
+
+#define LAMA_BLAS3_REGISTER(z, I, _)                                                   \
+    KernelRegistry::set<BLASInterface::gemm<ARITHMETIC_CUDA_TYPE_##I> >( gemm, ctx );  \
 
     BOOST_PP_REPEAT( ARITHMETIC_CUDA_TYPE_CNT, LAMA_BLAS3_REGISTER, _ )
 
 #undef LAMA_BLAS3_REGISTER
-
-    // trsm routines are not used yet by LAMA
 }
 
 /* --------------------------------------------------------------------------- */
@@ -537,8 +539,7 @@ void CUDABLAS3::setInterface( BLASInterface& BLAS )
 
 bool CUDABLAS3::registerInterface()
 {
-    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( common::context::CUDA );
-    setInterface( interface.BLAS );
+    registerKernels();
     return true;
 }
 

@@ -494,13 +494,13 @@ Scalar DenseVector<ValueType>::max() const
 
     SCAI_ASSERT_GT( nnu, 0, "no local values for max" )
 
-    static kregistry::KernelTraitContextFunction<UtilsInterface::maxval<ValueType> > maxval;
+    static LAMAKernel<UtilsInterface::maxval<ValueType> > maxval;
 
-    ContextPtr loc = getValidContext( mLocalValues.getValidContext(), maxval );
+    ContextPtr loc = maxval.getValidContext( mLocalValues.getValidContext() );
 
     ReadAccess<ValueType> localValues( mLocalValues, loc );
 
-    ValueType localMax = maxval[ loc->getType() ]( localValues.get(), localValues.size() );
+    ValueType localMax = maxval[loc]( localValues.get(), localValues.size() );
 
     return getDistribution().getCommunicator().max( localMax );
 }
@@ -576,15 +576,15 @@ Scalar DenseVector<ValueType>::maxNorm() const
 
     if ( nnu > 0 )
     {
-        static kregistry::KernelTraitContextFunction<UtilsInterface::absMaxVal<ValueType> > absMaxVal;
+        static LAMAKernel<UtilsInterface::absMaxVal<ValueType> > absMaxVal;
 
-        ContextPtr loc = getValidContext( mContext, absMaxVal );  
+        ContextPtr loc = absMaxVal.getValidContext( mContext );  
 
         ReadAccess<ValueType> read( mLocalValues, loc );
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        localMaxNorm = absMaxVal[ loc->getType() ]( read.get(), nnu );
+        localMaxNorm = absMaxVal[loc]( read.get(), nnu );
     }
 
     const Communicator& comm = getDistribution().getCommunicator();
@@ -637,8 +637,7 @@ void DenseVector<ValueType>::vectorPlusVector(
 
     // get function pointers, do not use fallbacks here
 
-    static kregistry::KernelTraitContextFunction<UtilsInterface::scale<ValueType> > scale;
-
+    static LAMAKernel<UtilsInterface::scale<ValueType> > scale;
     static LAMAKernel<BLASInterface::axpy<ValueType> > axpy;
     static LAMAKernel<BLASInterface::sum<ValueType> > sum;
 
@@ -658,7 +657,7 @@ void DenseVector<ValueType>::vectorPlusVector(
         WriteAccess<ValueType> resultAccess( result, context, true );
 
         SCAI_CONTEXT_ACCESS( context )
-        scale[ context->getType() ]( resultAccess.get(), alpha + beta, nnu );
+        scale[context]( resultAccess.get(), alpha + beta, nnu );
     }
     else if( &result == &x ) //result = alpha * result + beta * y
     {
@@ -672,7 +671,7 @@ void DenseVector<ValueType>::vectorPlusVector(
             if( alpha != scai::common::constants::ONE ) // result *= alpha
             {
                 SCAI_CONTEXT_ACCESS( context )
-                scale[ context->getType() ]( resultAccess.get(), alpha, nnu );
+                scale[context]( resultAccess.get(), alpha, nnu );
             }
             else
             {
@@ -687,12 +686,12 @@ void DenseVector<ValueType>::vectorPlusVector(
             {
                 // result *= alpha
                 SCAI_CONTEXT_ACCESS( context )
-                scale[ context->getType() ]( resultAccess.get(), alpha, nnu );
+                scale[context]( resultAccess.get(), alpha, nnu );
             }
 
             // result += y
             SCAI_CONTEXT_ACCESS( context )
-            axpy( nnu, static_cast<ValueType>(1.0)/*alpha*/, yAccess.get(), 1, resultAccess.get(), 1, NULL );
+            axpy[context]( nnu, static_cast<ValueType>(1.0)/*alpha*/, yAccess.get(), 1, resultAccess.get(), 1, NULL );
         }
         else // beta != 1.0 && beta != 0.0 --> result = alpha * result + beta * y
         {
@@ -702,11 +701,11 @@ void DenseVector<ValueType>::vectorPlusVector(
             if( alpha != scai::common::constants::ONE )
             {
                 SCAI_CONTEXT_ACCESS( context )
-                scale[ context->getType() ]( resultAccess.get(), alpha, nnu );
+                scale[context]( resultAccess.get(), alpha, nnu );
             }
 
             SCAI_CONTEXT_ACCESS( context )
-            axpy( nnu, beta, yAccess.get(), 1, resultAccess.get(), 1, NULL );
+            axpy[context]( nnu, beta, yAccess.get(), 1, resultAccess.get(), 1, NULL );
         }
     }
     else if( &result == &y ) // result = alpha * x + beta * result
@@ -723,14 +722,14 @@ void DenseVector<ValueType>::vectorPlusVector(
         {
             // result *= beta
             SCAI_CONTEXT_ACCESS( context )
-            scale[ context->getType() ]( resultAccess.get(), beta, nnu );
+            scale[context]( resultAccess.get(), beta, nnu );
         }
 
         if( alpha != scai::common::constants::ZERO )
         {
             // result = alpha * x + result
             SCAI_CONTEXT_ACCESS( context )
-            axpy( nnu, alpha, xAccess.get(), 1, resultAccess.get(), 1, NULL );
+            axpy[context]( nnu, alpha, xAccess.get(), 1, resultAccess.get(), 1, NULL );
         }
     }
     else // result = alpha * x + beta * y
@@ -744,7 +743,7 @@ void DenseVector<ValueType>::vectorPlusVector(
         WriteAccess<ValueType> resultAccess( result, context, false );
 
         SCAI_CONTEXT_ACCESS( context )
-        sum( nnu, alpha, xAccess.get(), beta, yAccess.get(), resultAccess.get(), NULL );
+        sum[context]( nnu, alpha, xAccess.get(), beta, yAccess.get(), resultAccess.get(), NULL );
     }
 
     SCAI_LOG_INFO( logger, "vectorPlusVector done" )
@@ -943,7 +942,7 @@ void DenseVector<ValueType>::invert()
 {
     const IndexType size = mLocalValues.size();
 
-    static kregistry::KernelTraitContextFunction<UtilsInterface::invert<ValueType> > invert;
+    static LAMAKernel<UtilsInterface::invert<ValueType> > invert;
 
     const ContextPtr loc = getValidContext( this->getContext(), invert );
 
@@ -951,7 +950,7 @@ void DenseVector<ValueType>::invert()
 
     WriteAccess<ValueType> wValues( mLocalValues, loc );
 
-    invert[ loc->getType() ]( wValues.get(), size );
+    invert[loc]( wValues.get(), size );
 }
 
 template<typename ValueType>

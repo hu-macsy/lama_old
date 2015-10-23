@@ -42,6 +42,7 @@
 
 // internal scai libraries
 #include <scai/hmemo/cuda/CUDAStreamSyncToken.hpp>
+#include <scai/kregistry/KernelRegistry.hpp>
 
 #include <scai/common/macros/unused.hpp>
 #include <scai/common/cuda/CUDAError.hpp>
@@ -246,18 +247,22 @@ void CUDABLAS2::gemv(
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void CUDABLAS2::setInterface( BLASInterface& BLAS )
+void CUDABLAS2::registerKernels()
 {
-    SCAI_LOG_INFO( logger, "set BLAS2 routines for CUDA in Interface" )
+    using scai::kregistry::KernelRegistry;
 
-#define LAMA_BLAS2_REGISTER(z, I, _)                                            \
-    LAMA_INTERFACE_REGISTER_T( BLAS, gemv, ARITHMETIC_CUDA_TYPE_##I )                 \
+    // ctx will contain the context for which registration is done, here Host
+
+    common::ContextType ctx = common::context::CUDA;
+
+    SCAI_LOG_INFO( logger, "set BLAS2 routines for CUDA at Kernel Registry" )
+
+#define LAMA_BLAS2_REGISTER(z, I, _)                                                   \
+    KernelRegistry::set<BLASInterface::gemv<ARITHMETIC_CUDA_TYPE_##I> >( gemv, ctx );  \
 
     BOOST_PP_REPEAT( ARITHMETIC_CUDA_TYPE_CNT, LAMA_BLAS2_REGISTER, _ )
 
 #undef LAMA_BLAS2_REGISTER
-
-    // other routines are not used by LAMA yet
 }
 
 /* --------------------------------------------------------------------------- */
@@ -266,8 +271,7 @@ void CUDABLAS2::setInterface( BLASInterface& BLAS )
 
 bool CUDABLAS2::registerInterface()
 {
-    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( common::context::CUDA );
-    setInterface( interface.BLAS );
+    registerKernels();
     return true;
 }
 

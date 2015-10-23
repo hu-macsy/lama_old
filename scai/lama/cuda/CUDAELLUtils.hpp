@@ -104,8 +104,8 @@ public:
 
     /** Returns one value of the matrix */
 
-    template<typename ValueType,typename OtherValueType>
-    static OtherValueType getValue(
+    template<typename ValueType>
+    static ValueType getValue(
         const IndexType i,
         const IndexType j,
         const IndexType numRows,
@@ -256,9 +256,9 @@ public:
         const ValueType omega,
         tasking::SyncToken* syncToken );
 
-    /** Routine that registers all routines of this class at the LAMA interface. */
+    /** Routine that registers all routines of this class in the Kernel Registry */
 
-    static void setInterface( struct ELLUtilsInterface& ELLUtils );
+    static void registerKernels();
 
 private:
 

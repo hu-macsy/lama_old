@@ -44,6 +44,7 @@
 // internal scai library
 #include <scai/hmemo/cuda/CUDAStreamSyncToken.hpp>
 
+#include <scai/kregistry/KernelRegistry.hpp>
 #include <scai/tracing.hpp>
 
 #include <scai/common/Assert.hpp>
@@ -900,13 +901,19 @@ namespace lama
 
     /* --------------------------------------------------------------------------- */
 
-    void CUDADIAUtils::setInterface( DIAUtilsInterface& DIAUtils )
+    void CUDADIAUtils::registerKernels()
     {
+        using kregistry::KernelRegistry;
+
+        // ctx will contain the context for which registration is done, here Host
+
+        common::ContextType ctx = common::context::CUDA;
+
         SCAI_LOG_INFO( logger, "set DIA routines for CUDA in Interface" )
 
-#define LAMA_DIA_UTILS_REGISTER(z, I, _)                                                       \
-    LAMA_INTERFACE_REGISTER_T( DIAUtils, normalGEMV, ARITHMETIC_CUDA_TYPE_##I )                \
-    LAMA_INTERFACE_REGISTER_T( DIAUtils, normalGEVM, ARITHMETIC_CUDA_TYPE_##I )                \
+#define LAMA_DIA_UTILS_REGISTER(z, I, _)                                                              \
+    KernelRegistry::set<DIAUtilsInterface::normalGEMV<ARITHMETIC_CUDA_TYPE_##I> >( normalGEMV, ctx ); \
+    KernelRegistry::set<DIAUtilsInterface::normalGEVM<ARITHMETIC_CUDA_TYPE_##I> >( normalGEVM, ctx ); \
                                                                                          
     BOOST_PP_REPEAT( ARITHMETIC_CUDA_TYPE_CNT, LAMA_DIA_UTILS_REGISTER, _ )
 
@@ -920,8 +927,7 @@ namespace lama
 
 bool CUDADIAUtils::registerInterface()
 {
-    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( common::context::CUDA );
-    setInterface( interface.DIAUtils );
+    registerKernels();
     return true;
 }
 

@@ -111,7 +111,7 @@ scai_project(
 
         CommunicationPlan
         Communicator
-#       DenseVector
+        DenseVector
         Distributed
         LAMAArrayUtils
 #        LAMAArrayView
