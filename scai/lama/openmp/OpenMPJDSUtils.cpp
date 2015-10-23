@@ -111,7 +111,7 @@ void OpenMPJDSUtils::getRow(
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-template<typename ValueType,typename NoType>
+template<typename ValueType>
 ValueType OpenMPJDSUtils::getValue(
     const IndexType i,
     const IndexType j,
@@ -823,27 +823,34 @@ void OpenMPJDSUtils::jacobiHalo(
 
 /* --------------------------------------------------------------------------- */
 
-void OpenMPJDSUtils::setInterface( JDSUtilsInterface& JDSUtils )
+void OpenMPJDSUtils::registerKernelRoutines()
 {
-    // Register all CUDA routines of this class for the LAMA interface
+    using kregistry::KernelRegistry;
 
-    LAMA_INTERFACE_REGISTER( JDSUtils, sortRows )
-    LAMA_INTERFACE_REGISTER( JDSUtils, setInversePerm )
-    LAMA_INTERFACE_REGISTER( JDSUtils, ilg2dlg )
-    LAMA_INTERFACE_REGISTER( JDSUtils, checkDiagonalProperty )
+    // Register all OpenMP routines 
+
+    // ctx will contain the context for which registration is done, here Host
+
+    common::ContextType ctx = common::context::Host;
+
+    KernelRegistry::set<JDSUtilsInterface::sortRows>( sortRows, ctx );
+    KernelRegistry::set<JDSUtilsInterface::setInversePerm>( setInversePerm, ctx );
+
+    KernelRegistry::set<JDSUtilsInterface::ilg2dlg>( ilg2dlg, ctx );
+    KernelRegistry::set<JDSUtilsInterface::checkDiagonalProperty>( checkDiagonalProperty, ctx );
 
 #define LAMA_JDS_UTILS2_REGISTER(z, J, TYPE )                                             \
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getRow, TYPE, ARITHMETIC_HOST_TYPE_##J )        \
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getValue, TYPE, ARITHMETIC_HOST_TYPE_##J )      \
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, scaleValue, TYPE, ARITHMETIC_HOST_TYPE_##J )    \
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, setCSRValues, TYPE, ARITHMETIC_HOST_TYPE_##J )  \
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getCSRValues, TYPE, ARITHMETIC_HOST_TYPE_##J )  \
+    KernelRegistry::set<JDSUtilsInterface::getRow<TYPE, ARITHMETIC_HOST_TYPE_##J> >( getRow, ctx );       \
+    KernelRegistry::set<JDSUtilsInterface::scaleValue<TYPE, ARITHMETIC_HOST_TYPE_##J> >( scaleValue, ctx );       \
+    KernelRegistry::set<JDSUtilsInterface::setCSRValues<TYPE, ARITHMETIC_HOST_TYPE_##J> >( setCSRValues, ctx );       \
+    KernelRegistry::set<JDSUtilsInterface::getCSRValues<TYPE, ARITHMETIC_HOST_TYPE_##J> >( getCSRValues, ctx );       \
 
 #define LAMA_JDS_UTILS_REGISTER(z, I, _)                                                  \
-    LAMA_INTERFACE_REGISTER_T( JDSUtils, normalGEMV, ARITHMETIC_HOST_TYPE_##I )           \
-    LAMA_INTERFACE_REGISTER_T( JDSUtils, normalGEVM, ARITHMETIC_HOST_TYPE_##I )           \
-    LAMA_INTERFACE_REGISTER_T( JDSUtils, jacobi, ARITHMETIC_HOST_TYPE_##I )               \
-    LAMA_INTERFACE_REGISTER_T( JDSUtils, jacobiHalo, ARITHMETIC_HOST_TYPE_##I )           \
+    KernelRegistry::set<JDSUtilsInterface::getValue<ARITHMETIC_HOST_TYPE_##I> >( getValue, ctx );       \
+    KernelRegistry::set<JDSUtilsInterface::normalGEMV<ARITHMETIC_HOST_TYPE_##I> >( normalGEMV, ctx );       \
+    KernelRegistry::set<JDSUtilsInterface::normalGEVM<ARITHMETIC_HOST_TYPE_##I> >( normalGEVM, ctx );       \
+    KernelRegistry::set<JDSUtilsInterface::jacobi<ARITHMETIC_HOST_TYPE_##I> >( jacobi, ctx );       \
+    KernelRegistry::set<JDSUtilsInterface::jacobiHalo<ARITHMETIC_HOST_TYPE_##I> >( jacobiHalo, ctx );       \
     \
     BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT,                                            \
                      LAMA_JDS_UTILS2_REGISTER,                                            \
@@ -862,8 +869,7 @@ void OpenMPJDSUtils::setInterface( JDSUtilsInterface& JDSUtils )
 
 bool OpenMPJDSUtils::registerInterface()
 {
-    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( common::context::Host );
-    setInterface( interface.JDSUtils );
+    registerKernelRoutines();
     return true;
 }
 

@@ -39,6 +39,63 @@ namespace scai
 namespace lama
 {
 
+/** Define class LAMAKernel that deals always with KernelTraits;
+    it also combines it with ContexPtr instead of ContextType
+*/
+
+template<typename KernelTrait>
+class LAMAKernel : public kregistry::KernelTraitContextFunction<KernelTrait>
+{
+public:
+
+    typedef typename KernelTrait::FuncType ContextFunctionType;
+
+    LAMAKernel() : kregistry::KernelTraitContextFunction<KernelTrait>()
+    {
+    }
+
+    /** more convenient now is to access the routine by context pointer */
+
+    ContextFunctionType operator[] ( hmemo::ContextPtr context )
+    {
+        return kregistry::KernelTraitContextFunction<KernelTrait>::operator[]( context->getType() );
+    }
+
+    hmemo::ContextPtr getValidContext( hmemo::ContextPtr defaultContext )
+    {
+        common::ContextType defCtx = defaultContext->getType();
+        common::ContextType runCtx = kregistry::_ContextFunction::validContext( defCtx );
+
+        if ( runCtx == defCtx )
+        {
+            return defaultContext;
+        }
+        else
+        {
+            return hmemo::Context::getHostPtr();  // do it on host
+        }
+    }
+
+    hmemo::ContextPtr getValidContext( kregistry::_ContextFunction other, hmemo::ContextPtr defaultContext )
+    {
+        common::ContextType defCtx = defaultContext->getType();
+        common::ContextType runCtx = kregistry::_ContextFunction::validContext( other, defCtx );
+
+        if ( runCtx == defCtx )
+        {
+            return defaultContext;
+        }
+        else if ( runCtx == common::context::Host )
+        {
+            return hmemo::Context::getHostPtr();  // do it on host
+        }
+        else
+        {
+            COMMON_THROWEXCEPTION( "illegal registry" )
+        }
+    }
+};
+
 /** Help routine to update context. */
 
 static inline hmemo::ContextPtr getValidContext( hmemo::ContextPtr defaultContext, scai::kregistry::_ContextFunction f )

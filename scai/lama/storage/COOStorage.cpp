@@ -278,7 +278,9 @@ void COOStorage<ValueType>::buildCSR(
     ContextPtr loc = Context::getContextPtr( context::Host );
 
     LAMA_INTERFACE_FN( getCSRSizes, loc, COOUtils, Counting )
-    LAMA_INTERFACE_FN( sizes2offsets, loc, CSRUtils, Offsets )
+
+    static kregistry::KernelTraitContextFunction<CSRUtilsInterface::sizes2offsets> sizes2offsets;
+
     LAMA_INTERFACE_FN_TT( getCSRValues, loc, COOUtils, Conversions, ValueType, OtherValueType )
 
     WriteOnlyAccess<IndexType> csrIA( ia, loc, mNumRows + 1 );
@@ -292,7 +294,7 @@ void COOStorage<ValueType>::buildCSR(
         return;
     }
 
-    IndexType numValues = sizes2offsets( csrIA.get(), mNumRows );
+    IndexType numValues = sizes2offsets[ loc->getType() ]( csrIA.get(), mNumRows );
 
     SCAI_ASSERT_EQUAL_DEBUG( mNumValues, numValues )
 
@@ -382,14 +384,16 @@ void COOStorage<ValueType>::setCSRDataImpl(
         SCAI_LOG_DEBUG( logger,
                         "check CSR data " << numRows << " x " << numColumns << ", nnz = " << numValues << " for diagonal property, #diagonals = " << numDiagonals )
 
-        LAMA_INTERFACE_FN( hasDiagonalProperty, loc, CSRUtils, Offsets );
+        static kregistry::KernelTraitContextFunction<CSRUtilsInterface::hasDiagonalProperty> hasDiagonalProperty;
+
+        ContextPtr loc = getValidContext( this->getContextPtr(), hasDiagonalProperty );
 
         ReadAccess<IndexType> csrIA( ia, loc );
         ReadAccess<IndexType> csrJA( ja, loc );
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        mDiagonalProperty = hasDiagonalProperty( numDiagonals, csrIA.get(), csrJA.get() );
+        mDiagonalProperty = hasDiagonalProperty[ loc->getType()] ( numDiagonals, csrIA.get(), csrJA.get() );
     }
 
     if( !mDiagonalProperty )

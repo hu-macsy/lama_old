@@ -353,13 +353,15 @@ void MatrixStorage<ValueType>::convertCSR2CSC(
     const LAMAArray<IndexType>& rowIA,
     const LAMAArray<IndexType>& rowJA,
     const LAMAArray<ValueType>& rowValues,
-    const ContextPtr loc )
+    const ContextPtr preferredLoc )
 {
     // ContextPtr loc = Context::getContextPtr( context::Host );
     const IndexType numRows = rowIA.size() - 1;
     const IndexType numValues = rowJA.size();
     SCAI_ASSERT_EQUAL_DEBUG( rowJA.size(), rowValues.size() )
-    LAMA_INTERFACE_FN_T( convertCSR2CSC, loc, CSRUtils, Transpose, ValueType )
+
+    static LAMAKernel<CSRUtilsInterface::convertCSR2CSC<ValueType> > convertCSR2CSC;
+    ContextPtr loc = convertCSR2CSC.getValidContext( preferredLoc );
     SCAI_LOG_INFO( logger,
                    "MatrixStorage::CSR2CSC of matrix " << numRows << " x " << numColumns << ", #nnz = " << numValues << " on " << *loc )
     SCAI_REGION( "Storage.CSR2CSC" )
@@ -370,8 +372,8 @@ void MatrixStorage<ValueType>::convertCSR2CSC(
     ReadAccess<IndexType> rJA( rowJA, loc );
     ReadAccess<ValueType> rValues( rowValues, loc );
     SCAI_CONTEXT_ACCESS( loc )
-    convertCSR2CSC( cIA.get(), cJA.get(), cValues.get(), rIA.get(), rJA.get(), rValues.get(), numRows, numColumns,
-                    numValues );
+    convertCSR2CSC[loc]( cIA.get(), cJA.get(), cValues.get(),  // output args
+                         rIA.get(), rJA.get(), rValues.get(), numRows, numColumns, numValues );
 }
 
 /* --------------------------------------------------------------------------- */

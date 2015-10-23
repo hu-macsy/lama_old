@@ -301,8 +301,8 @@ void OpenMPELLUtils::getRow(
     }
 }
 
-template<typename ValueType,typename OtherValueType>
-OtherValueType OpenMPELLUtils::getValue(
+template<typename ValueType>
+ValueType OpenMPELLUtils::getValue(
     const IndexType i,
     const IndexType j,
     const IndexType numRows,
@@ -313,17 +313,20 @@ OtherValueType OpenMPELLUtils::getValue(
 {
     SCAI_LOG_TRACE( logger, "get value i = " << i << ", j = " << j )
 
+    ValueType val = 0.0;
+
     for( IndexType jj = 0; jj < ellSizes[i]; ++jj )
     {
         IndexType pos = ellindex( i, jj, numRows, numValuesPerRow );
 
         if( ellJA[pos] == j )
         {
-            return static_cast<OtherValueType>( ellValues[pos] );
+            val = ellValues[pos];
+            break;
         }
     }
 
-    return static_cast<OtherValueType>(0.0);
+    return val;
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -1180,7 +1183,7 @@ void OpenMPELLUtils::sparseGEVM(
 
 void OpenMPELLUtils::registerKernelRoutines()
 {
-    using namespace scai::kregistry;
+    using kregistry::KernelRegistry;
 
     // ctx will contain the context for which registration is done, here Host
 
@@ -1196,7 +1199,6 @@ void OpenMPELLUtils::registerKernelRoutines()
 
 #define LAMA_ELL_UTILS2_REGISTER(z, J, TYPE )                                             \
     KernelRegistry::set<ELLUtilsInterface::getRow<TYPE, ARITHMETIC_HOST_TYPE_##J> >( getRow, ctx );       \
-    KernelRegistry::set<ELLUtilsInterface::getValue<TYPE, ARITHMETIC_HOST_TYPE_##J> >( getValue, ctx );       \
     KernelRegistry::set<ELLUtilsInterface::scaleValue<TYPE, ARITHMETIC_HOST_TYPE_##J> >( scaleValue, ctx );       \
     KernelRegistry::set<ELLUtilsInterface::setCSRValues<TYPE, ARITHMETIC_HOST_TYPE_##J> >( setCSRValues, ctx );       \
     KernelRegistry::set<ELLUtilsInterface::getCSRValues<TYPE, ARITHMETIC_HOST_TYPE_##J> >( getCSRValues, ctx );       \
@@ -1213,6 +1215,7 @@ void OpenMPELLUtils::registerKernelRoutines()
     KernelRegistry::set<ELLUtilsInterface::sparseGEVM<ARITHMETIC_HOST_TYPE_##I> >( sparseGEVM, ctx );       \
     KernelRegistry::set<ELLUtilsInterface::jacobi<ARITHMETIC_HOST_TYPE_##I> >( jacobi, ctx );       \
     KernelRegistry::set<ELLUtilsInterface::jacobiHalo<ARITHMETIC_HOST_TYPE_##I> >( jacobiHalo, ctx );       \
+    KernelRegistry::set<ELLUtilsInterface::getValue<ARITHMETIC_HOST_TYPE_##I> >( getValue, ctx );       \
     KernelRegistry::set<ELLUtilsInterface::fillELLValues<ARITHMETIC_HOST_TYPE_##I> >( fillELLValues, ctx );       \
                                                                                                                   \
     BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT,                                                                    \

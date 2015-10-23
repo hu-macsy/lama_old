@@ -41,6 +41,7 @@
 
 // internal scai libraries
 #include <scai/tasking/SyncToken.hpp>
+#include <scai/kregistry/KernelRegistry.hpp>
 
 #include <scai/logging.hpp>
 
@@ -83,7 +84,7 @@ public:
         const IndexType ja[],
         const ValueType values[] );
 
-    template<typename ValueType,typename NoType>
+    template<typename ValueType>
     static ValueType getValue(
         const IndexType i,
         const IndexType j,
@@ -217,7 +218,7 @@ public:
 
     /** Method for registration of module routines at the interface. */
 
-    static void setInterface( struct JDSUtilsInterface& JDSUtils );
+    static void registerKernelRoutines();
 
 private:
 
