@@ -39,7 +39,7 @@
 #include <scai/lama/expression/MatrixVectorExpressions.hpp>
 
 #include <scai/lama/DenseVector.hpp>
-#include <scai/lama/LAMAInterface.hpp>
+#include <scai/lama/BLASInterface.hpp>
 #include <scai/lama/LAMAKernel.hpp>
 
 // tracing

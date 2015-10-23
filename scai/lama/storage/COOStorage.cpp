@@ -35,7 +35,7 @@
 #include <scai/lama/storage/COOStorage.hpp>
 
 // local library
-#include <scai/lama/LAMAInterface.hpp>
+#include <scai/lama/UtilsInterface.hpp>
 #include <scai/lama/LAMAArrayUtils.hpp>
 #include <scai/lama/LAMAKernel.hpp>
 

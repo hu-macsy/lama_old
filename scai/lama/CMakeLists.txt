@@ -115,8 +115,6 @@ scai_project(
         Distributed
         LAMAArrayUtils
 #        LAMAArrayView
-        LAMAInterface
-        LAMAInterfaceRegistry
         NoCommunicator
         Scalar
         StorageIO

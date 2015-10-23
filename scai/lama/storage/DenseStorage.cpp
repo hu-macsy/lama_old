@@ -35,7 +35,8 @@
 #include <scai/lama/storage/DenseStorage.hpp>
 
 // local library
-#include <scai/lama/LAMAInterface.hpp>
+#include <scai/lama/BLASInterface.hpp>
+#include <scai/lama/UtilsInterface.hpp>
 #include <scai/lama/LAMAKernel.hpp>
 
 #include <scai/lama/openmp/OpenMPDenseUtils.hpp>
@@ -46,6 +47,7 @@
 #include <scai/hmemo/ContextAccess.hpp>
 #include <scai/common/Constants.hpp>
 #include <scai/common/macros/print_string.hpp>
+#include <scai/common/exception/UnsupportedException.hpp>
 
 using namespace scai::hmemo;
 

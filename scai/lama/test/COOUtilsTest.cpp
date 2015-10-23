@@ -36,7 +36,7 @@
 
 // others
 #include <scai/hmemo.hpp>
-#include <scai/lama/LAMAInterface.hpp>
+#include <scai/lama/UtilsInterface.hpp>
 #include <scai/lama/LAMAKernel.hpp>
 
 #include <scai/common/test/TestMacros.hpp>

@@ -42,8 +42,7 @@
 #include <scai/lama/cuda/CUDATexture.hpp>
 #include <scai/lama/cuda/CUDASettings.hpp>
 
-#include <scai/lama/LAMAInterface.hpp>
-#include <scai/lama/LAMAInterfaceRegistry.hpp>
+#include <scai/lama/UtilsInterface.hpp>
 
 // internal scai library
 #include <scai/hmemo/Memory.hpp>

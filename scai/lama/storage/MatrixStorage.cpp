@@ -43,7 +43,7 @@
 #include <scai/lama/distribution/Redistributor.hpp>
 #include <scai/lama/distribution/Halo.hpp>
 
-#include <scai/lama/LAMAInterface.hpp>
+#include <scai/lama/UtilsInterface.hpp>
 #include <scai/lama/StorageIO.hpp>
 
 #include <scai/lama/openmp/OpenMPUtils.hpp>
@@ -56,6 +56,7 @@
 
 #include <scai/common/bind.hpp>
 #include <scai/common/SCAITypes.hpp>
+#include <scai/common/exception/UnsupportedException.hpp>
 
 // boost
 #include <boost/preprocessor.hpp>

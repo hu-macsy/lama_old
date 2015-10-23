@@ -37,7 +37,6 @@
 // local library
 #include <scai/lama/openmp/OpenMPBLAS1.hpp>
 #include <scai/lama/BLASInterface.hpp>
-#include <scai/lama/LAMAInterfaceRegistry.hpp>
 #include <scai/lama/openmp/BLASHelper.hpp>
 
 // internal scai libraries

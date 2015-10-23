@@ -36,8 +36,7 @@
 
 // local library
 #include <scai/kregistry/KernelRegistry.hpp>
-#include <scai/lama/LAMAInterface.hpp>
-#include <scai/lama/LAMAInterfaceRegistry.hpp>
+#include <scai/lama/UtilsInterface.hpp>
 
 #include <scai/lama/cuda/utils.cu.h>
 #include <scai/lama/cuda/CUDASettings.hpp>
@@ -62,7 +61,6 @@
 
 using namespace scai::common;
 using namespace scai::tasking;
-using namespace scai::hmemo;
 
 namespace scai
 {
@@ -569,7 +567,7 @@ void CUDAUtils::invert( ValueType array[], const IndexType n )
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void CUDAUtils::setInterface( UtilsInterface& Utils )
+void CUDAUtils::registerKernels()
 {
     using namespace scai::kregistry;
 
@@ -627,8 +625,7 @@ void CUDAUtils::setInterface( UtilsInterface& Utils )
 
 bool CUDAUtils::registerInterface()
 {
-    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( context::CUDA );
-    setInterface( interface.Utils );
+    registerKernels();
     return true;
 }
 

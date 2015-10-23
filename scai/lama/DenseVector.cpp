@@ -36,7 +36,7 @@
 
 // local library
 #include <scai/lama/LAMAArrayUtils.hpp>
-#include <scai/lama/LAMAInterface.hpp>
+#include <scai/lama/UtilsInterface.hpp>
 #include <scai/lama/LAMAKernel.hpp>
 
 #include <scai/lama/distribution/NoDistribution.hpp>

@@ -41,8 +41,6 @@
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 #include <scai/lama/matrix/DenseMatrix.hpp>
 
-#include <scai/lama/LAMAInterfaceRegistry.hpp>
-
 #include <scai/lama/expression/MatrixExpressions.hpp>
 #include <scai/lama/expression/all.hpp>
 

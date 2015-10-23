@@ -32,6 +32,7 @@
 #pragma once
 
 #include <scai/kregistry/KernelContextFunction.hpp>
+#include <scai/hmemo/Context.hpp>
 
 namespace scai
 {

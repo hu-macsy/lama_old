@@ -35,7 +35,8 @@
 #include <scai/lama/storage/CSRStorage.hpp>
 
 // local library
-#include <scai/lama/LAMAInterface.hpp>
+#include <scai/lama/UtilsInterface.hpp>
+#include <scai/lama/BLASInterface.hpp>
 #include <scai/lama/LAMAArrayUtils.hpp>
 #include <scai/lama/LAMAKernel.hpp>
 
@@ -57,6 +58,7 @@
 #include <scai/common/bind.hpp>
 #include <scai/common/Constants.hpp>
 #include <scai/common/macros/print_string.hpp>
+#include <scai/common/exception/UnsupportedException.hpp>
 
 // boost
 #include <boost/preprocessor.hpp>

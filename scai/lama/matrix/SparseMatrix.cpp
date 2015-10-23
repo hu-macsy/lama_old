@@ -47,7 +47,7 @@
 #include <scai/lama/distribution/CyclicDistribution.hpp>
 #include <scai/lama/distribution/Redistributor.hpp>
 
-#include <scai/lama/LAMAInterface.hpp>
+#include <scai/lama/UtilsInterface.hpp>
 #include <scai/lama/openmp/OpenMPCSRUtils.hpp>
 
 // internal libraries
@@ -58,6 +58,7 @@
 
 #include <scai/common/bind.hpp>
 #include <scai/common/exception/Exception.hpp>
+#include <scai/common/exception/UnsupportedException.hpp>
 #include <scai/common/macros/print_string.hpp>
 #include <scai/common/Constants.hpp>
 

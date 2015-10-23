@@ -35,7 +35,7 @@
 #include <scai/lama/storage/JDSStorage.hpp>
 
 // local library
-#include <scai/lama/LAMAInterface.hpp>
+#include <scai/lama/UtilsInterface.hpp>
 #include <scai/lama/LAMAKernel.hpp>
 
 #include <scai/lama/LAMAArrayUtils.hpp>

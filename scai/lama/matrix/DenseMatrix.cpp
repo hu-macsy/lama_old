@@ -38,7 +38,8 @@
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 
 #include <scai/lama/DenseVector.hpp>
-#include <scai/lama/LAMAInterface.hpp>
+#include <scai/lama/LAMAKernel.hpp>
+#include <scai/lama/BLASInterface.hpp>
 
 #include <scai/lama/distribution/NoDistribution.hpp>
 #include <scai/lama/distribution/CyclicDistribution.hpp>
@@ -53,6 +54,7 @@
 #include <scai/common/ScalarType.hpp>
 #include <scai/common/Constants.hpp>
 #include <scai/common/macros/print_string.hpp>
+#include <scai/common/exception/UnsupportedException.hpp>
 
 // boost
 #include <boost/preprocessor.hpp>

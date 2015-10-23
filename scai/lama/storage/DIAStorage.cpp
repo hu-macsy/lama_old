@@ -38,7 +38,7 @@
 #include <scai/lama/openmp/OpenMPCSRUtils.hpp>
 #include <scai/lama/openmp/OpenMPDIAUtils.hpp>
 
-#include <scai/lama/LAMAInterface.hpp>
+#include <scai/lama/UtilsInterface.hpp>
 #include <scai/lama/LAMAKernel.hpp>
 
 // internal scai libraries

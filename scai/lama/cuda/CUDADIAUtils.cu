@@ -35,8 +35,7 @@
 #include <scai/lama/cuda/CUDADIAUtils.hpp>
  
 // local library
-#include <scai/lama/LAMAInterface.hpp>
-#include <scai/lama/LAMAInterfaceRegistry.hpp>
+#include <scai/lama/UtilsInterface.hpp>
 
 #include <scai/lama/cuda/utils.cu.h>
 #include <scai/lama/cuda/CUDASettings.hpp>

@@ -36,10 +36,10 @@
 
 // local library
 #include <scai/lama/openmp/OpenMP.hpp>
-#include <scai/lama/LAMAInterfaceRegistry.hpp>
-#include <scai/kregistry/KernelRegistry.hpp>
+#include <scai/lama/UtilsInterface.hpp>
 
 // internal scai libraries
+#include <scai/kregistry/KernelRegistry.hpp>
 #include <scai/tracing.hpp>
 
 #include <scai/common/Constants.hpp>

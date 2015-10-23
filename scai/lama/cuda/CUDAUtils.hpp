@@ -122,12 +122,10 @@ public:
     template<typename ValueType>
     static void invert( ValueType array[], const IndexType n );
 
-    /** Routine that registers all routines of this class at the LAMA interface.
-     *
-     *  param[inout] UtilsInterface struct to register all routines implemented in CUDA
+    /** Routine that registers all routines of this class at the Kernel Registry.
      */
 
-    static void setInterface( struct UtilsInterface& Utils );
+    static void registerKernels();
 
 private:
 

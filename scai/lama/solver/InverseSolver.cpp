@@ -39,7 +39,7 @@
 
 #include <scai/lama/matrix/DenseMatrix.hpp>
 
-#include <scai/lama/LAMAInterface.hpp>
+#include <scai/lama/BLASInterface.hpp>
 #include <scai/lama/expression/MatrixVectorExpressions.hpp>
 
 // internal scai libraries

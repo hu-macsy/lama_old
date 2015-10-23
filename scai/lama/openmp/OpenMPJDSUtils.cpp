@@ -38,8 +38,7 @@
 #include <scai/lama/openmp/OpenMPUtils.hpp>
 #include <scai/lama/openmp/OpenMP.hpp>
 
-#include <scai/lama/LAMAInterface.hpp>
-#include <scai/lama/LAMAInterfaceRegistry.hpp>
+#include <scai/lama/UtilsInterface.hpp>
 
 // internal scai libraries
 #include <scai/tracing.hpp>

@@ -36,7 +36,6 @@
 
 // local library
 #include <scai/lama/BLASInterface.hpp>
-#include <scai/lama/LAMAInterfaceRegistry.hpp>
 #include <scai/lama/cblas.hpp>
 
 // internal scai libraries
