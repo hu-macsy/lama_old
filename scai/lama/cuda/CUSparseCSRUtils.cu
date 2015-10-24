@@ -35,12 +35,12 @@
 #include <scai/lama/cuda/CUSparseCSRUtils.hpp>
 
 // local library
-#include <scai/lama/LAMAInterface.hpp>
-#include <scai/lama/LAMAInterfaceRegistry.hpp>
+#include <scai/lama/UtilsInterface.hpp>
 #include <scai/lama/cuda/utils.cu.h>
 
 // internal scai libraries
 #include <scai/hmemo/cuda/CUDAStreamSyncToken.hpp>
+#include <scai/kregistry/KernelRegistry.hpp>
 
 #include <scai/tracing.hpp>
 
@@ -614,7 +614,7 @@ namespace lama
     /*     Template instantiations via registration routine                        */
     /* --------------------------------------------------------------------------- */
 
-    void CUSparseCSRUtils::setInterface( CSRUtilsInterface& CSRUtils )
+    void CUSparseCSRUtils::registerKernels()
     {
         SCAI_LOG_INFO( logger, "set CSR routines for CUSparse in Interface" )
 
@@ -631,20 +631,28 @@ namespace lama
 
         // REGISTER1: overwrites previous settings
 
-        LAMA_INTERFACE_REGISTER1_T( CSRUtils, normalGEMV, float )
-        LAMA_INTERFACE_REGISTER1_T( CSRUtils, normalGEMV, double )
+        using namespace scai::kregistry;
 
-        LAMA_INTERFACE_REGISTER1_T( CSRUtils, convertCSR2CSC, float )
-        LAMA_INTERFACE_REGISTER1_T( CSRUtils, convertCSR2CSC, double )
+        // ctx will contain the context for which registration is done, here Host
 
-        LAMA_INTERFACE_REGISTER1( CSRUtils, matrixAddSizes )
-        LAMA_INTERFACE_REGISTER1( CSRUtils, matrixMultiplySizes )
+        common::ContextType ctx = common::context::Host;
 
-        LAMA_INTERFACE_REGISTER1_T( CSRUtils, matrixAdd, float )
-        LAMA_INTERFACE_REGISTER1_T( CSRUtils, matrixAdd, double )
+        bool replace = true;  // overwrites settings of CUDACSRUtils
 
-        LAMA_INTERFACE_REGISTER1_T( CSRUtils, matrixMultiply, float )
-        LAMA_INTERFACE_REGISTER1_T( CSRUtils, matrixMultiply, double )
+        KernelRegistry::set<CSRUtilsInterface::normalGEMV<float> >( normalGEMV, ctx, replace ); 
+        KernelRegistry::set<CSRUtilsInterface::normalGEMV<double> >( normalGEMV, ctx, replace ); 
+
+        KernelRegistry::set<CSRUtilsInterface::convertCSR2CSC<float> >( convertCSR2CSC, ctx, replace ); 
+        KernelRegistry::set<CSRUtilsInterface::convertCSR2CSC<double> >( convertCSR2CSC, ctx, replace ); 
+
+        KernelRegistry::set<CSRUtilsInterface::matrixAddSizes>( matrixAddSizes, ctx, replace ); 
+        KernelRegistry::set<CSRUtilsInterface::matrixMultiplySizes>( matrixMultiplySizes, ctx, replace ); 
+
+        KernelRegistry::set<CSRUtilsInterface::matrixAdd<float> >( matrixAdd, ctx, replace ); 
+        KernelRegistry::set<CSRUtilsInterface::matrixAdd<double> >( matrixAdd, ctx, replace ); 
+
+        KernelRegistry::set<CSRUtilsInterface::matrixMultiply<float> >( matrixMultiply, ctx, replace ); 
+        KernelRegistry::set<CSRUtilsInterface::matrixMultiply<double> >( matrixMultiply, ctx, replace ); 
     }
 
     /* --------------------------------------------------------------------------- */
@@ -653,8 +661,7 @@ namespace lama
 
     bool CUSparseCSRUtils::registerInterface()
     {
-        LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( context::CUDA );
-        setInterface( interface.CSRUtils );
+        registerKernels();
         return true;
     }
 

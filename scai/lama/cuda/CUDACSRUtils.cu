@@ -3337,7 +3337,7 @@ void CUDACSRUtils::registerKernels()
 
 bool CUDACSRUtils::registerInterface()
 {
-    registerInterface();
+    registerKernels();
     return true;
 }
 
