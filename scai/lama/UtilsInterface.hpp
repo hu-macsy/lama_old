@@ -71,7 +71,7 @@ struct UtilsInterface
          */
 
         typedef bool ( *FuncType )( const IndexType array[], const IndexType n, const IndexType size );
-        static const char* getId() { return "validIndexes"; }
+        static const char* getId() { return "Util.validIndexes"; }
     };
 
     /** @brief Trait for register kernel function sum that sums elements of an array
@@ -88,7 +88,7 @@ struct UtilsInterface
          *  @return sum of all values in array
          */
         typedef ValueType ( *FuncType ) ( const ValueType array[], const IndexType n );
-        static const char* getId () { return "sum"; }
+        static const char* getId () { return "Util.sum"; }
     };
 
     template <typename ValueType>
@@ -102,7 +102,7 @@ struct UtilsInterface
          */
 
         typedef ValueType ( *FuncType ) ( const ValueType array[], const IndexType n );
-        static const char* getId() { return "maxval"; }
+        static const char* getId() { return "Util.maxval"; }
     };
 
     template <typename ValueType>
@@ -111,7 +111,7 @@ struct UtilsInterface
         /** @brief Find absolute maximal value of n contiguously stored values. */
 
         typedef ValueType ( *FuncType ) ( const ValueType array[], const IndexType n );
-        static const char* getId() { return "absMaxVal"; }
+        static const char* getId() { return "Util.absMaxVal"; }
     };
 
     template <typename ValueType>
@@ -128,7 +128,7 @@ struct UtilsInterface
          */
 
         typedef ValueType ( *FuncType ) ( const ValueType array1[], const ValueType array2[], const IndexType n );
-        static const char* getId() { return "absMaxDiffVal"; }
+        static const char* getId() { return "Util.absMaxDiffVal"; }
     };
 
     template <typename ValueType>
@@ -142,7 +142,7 @@ struct UtilsInterface
          */
 
         typedef bool ( *FuncType ) ( const ValueType array[], const IndexType n, bool ascending );
-        static const char* getId() { return "isSorted"; }
+        static const char* getId() { return "Util.isSorted"; }
     };
 
     /** @brief Structure with functiooń pointer type defintions for setter methods.
@@ -156,7 +156,7 @@ struct UtilsInterface
         /** Set all elements of a contiguous array with a value. */
 
         typedef void ( *FuncType ) ( ValueType array[], const IndexType n, const ValueType val );
-        static const char* getId() { return "setVal"; }
+        static const char* getId() { return "Util.setVal"; }
     };
 
     template<typename ValueType>
@@ -165,14 +165,14 @@ struct UtilsInterface
         /** Set all elements of a contiguous array with its order number 0, 1, 2, ... */
 
         typedef void ( *FuncType ) ( ValueType array[], const IndexType n );
-        static const char* getId() { return "setOrder"; }
+        static const char* getId() { return "Util.setOrder"; }
     };
 
     template<typename ValueType>
     struct getValue
     {
         typedef ValueType ( *FuncType ) ( const ValueType* array, const IndexType i );
-        static const char* getId() { return "getValue"; }
+        static const char* getId() { return "Util.getValue"; }
     };
 
     template<typename ValueType1, typename ValueType2>
@@ -181,7 +181,7 @@ struct UtilsInterface
         /** Set out[i] = in[i],  0 <= i < n */
 
         typedef void ( *FuncType ) ( ValueType1 out[], const ValueType2 in[], const IndexType n );
-        static const char* getId() { return "set"; }
+        static const char* getId() { return "Util.set"; }
     };
 
     template<typename ValueType1, typename ValueType2>
@@ -201,7 +201,7 @@ struct UtilsInterface
                         const ValueType2 inValues[],
                         const IndexType n );
  
-         static const char* getId() { return "setScale"; } 
+         static const char* getId() { return "Util.setScale"; } 
     };
 
     template<typename ValueType1, typename ValueType2>
@@ -214,7 +214,7 @@ struct UtilsInterface
                         const IndexType indexes[],
                         const IndexType n );
 
-        static const char* getId() { return "setGather"; } 
+        static const char* getId() { return "Util.setGather"; } 
     };
 
     template<typename ValueType1, typename ValueType2>
@@ -227,7 +227,7 @@ struct UtilsInterface
                         const ValueType2 in[],
                         const IndexType n );
 
-        static const char* getId() { return "setScatter"; }
+        static const char* getId() { return "Util.setScatter"; }
     };
 
     template<typename ValueType>
@@ -241,7 +241,7 @@ struct UtilsInterface
 
         typedef void ( *FuncType ) ( ValueType array[], const IndexType n );
 
-        static const char* getId() { return "invert"; }
+        static const char* getId() { return "Util.invert"; }
     };
 
     template<typename ValueType>
@@ -257,7 +257,7 @@ struct UtilsInterface
                         const ValueType value,
                         const IndexType n );
 
-        static const char* getId() { return "scale"; }
+        static const char* getId() { return "Util.scale"; }
     };
 };
 
