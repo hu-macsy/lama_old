@@ -67,9 +67,9 @@ class COMMON_DLL_IMPORTEXPORT CUDABLAS1
 
 public:
 
-    /** Routine that sets functions pointers belonging to BLAS1 in a BLASInterface.
+    /** Routine that sets functions pointers belonging to BLAS1 in a BLASKernelTrait.
      *
-     *  param[inout] BLASInterface struct to register all routines implemented in CUDA
+     *  param[inout] BLASKernelTrait struct to register all routines implemented in CUDA
      *
      *  Note: this routine will make instantiations of the template routines.
      */
@@ -79,7 +79,7 @@ public:
 private:
 
     /**
-     * This function is the CUDA implementation of scai::lama::BLASInterface::scal
+     * This function is the CUDA implementation of scai::lama::BLASKernelTrait::scal
      */
     template<typename ValueType>
     static void scal(
@@ -90,25 +90,25 @@ private:
         tasking::SyncToken* syncToken );
 
     /**
-     * This function is the CUDA implementation of scai::lama::BLASInterface::nrm2
+     * This function is the CUDA implementation of scai::lama::BLASKernelTrait::nrm2
      */
     template<typename ValueType>
     static ValueType nrm2( const IndexType n, const ValueType* x, const IndexType incX, tasking::SyncToken* syncToken );
 
     /**
-     * This function is the CUDA implementation of scai::lama::BLASInterface::asum
+     * This function is the CUDA implementation of scai::lama::BLASKernelTrait::asum
      */
     template<typename ValueType>
     static ValueType asum( const IndexType n, const ValueType* x, const IndexType incX, tasking::SyncToken* syncToken );
 
     /**
-     * This function is the CUDA implementation of scai::lama::BLASInterface::iamax
+     * This function is the CUDA implementation of scai::lama::BLASKernelTrait::iamax
      */
     template<typename ValueType>
     static IndexType iamax( const IndexType n, const ValueType* x, const IndexType incX, tasking::SyncToken* syncToken );
 
     /**
-     * This function is the CUDA implementation of scai::lama::BLASInterface::swap
+     * This function is the CUDA implementation of scai::lama::BLASKernelTrait::swap
      */
     template<typename ValueType>
     static void swap(
@@ -120,7 +120,7 @@ private:
         tasking::SyncToken* syncToken );
 
     /**
-     * This function is the CUDA implementation of scai::lama::BLASInterface::copy
+     * This function is the CUDA implementation of scai::lama::BLASKernelTrait::copy
      */
     template<typename ValueType>
     static void copy(
@@ -132,7 +132,7 @@ private:
         tasking::SyncToken* syncToken );
 
     /**
-     * This function is the CUDA implementation of scai::lama::BLASInterface::axpy
+     * This function is the CUDA implementation of scai::lama::BLASKernelTrait::axpy
      */
     template<typename ValueType>
     static void axpy(
@@ -145,7 +145,7 @@ private:
         tasking::SyncToken* syncToken );
 
     /**
-     * This function is the CUDA implementation of scai::lama::BLASInterface::dot
+     * This function is the CUDA implementation of scai::lama::BLASKernelTrait::dot
      */
     template<typename ValueType>
     static ValueType dot(
@@ -157,7 +157,7 @@ private:
         tasking::SyncToken* syncToken );
 
     /**
-     * This function is the CUDA implementation of scai::lama::BLASInterface::sum
+     * This function is the CUDA implementation of scai::lama::BLASKernelTrait::sum
      */
     template<typename ValueType>
     static void sum(

@@ -109,11 +109,11 @@ public:
         const IndexType ja[],
         const IndexType dlg[] );
 
-    /** Implementation for function type JDSUtilsInterface::sortRows  */
+    /** Implementation for function type JDSUtilKernelTrait::sortRows  */
 
     static void sortRows( IndexType array[], IndexType perm[], const IndexType n );
 
-    /** Compute dlg array from ilg array as specified in JDSUtilsInterface::Conversions::ilg2dlg */
+    /** Compute dlg array from ilg array as specified in JDSUtilKernelTrait::Conversions::ilg2dlg */
 
     static IndexType ilg2dlg(
         IndexType dlg[],
@@ -121,11 +121,11 @@ public:
         const IndexType ilg[],
         const IndexType numRows );
 
-    /** Compute the inverse permutation as specified in JDSUtilsInterface::Sort::setInversePerm */
+    /** Compute the inverse permutation as specified in JDSUtilKernelTrait::Sort::setInversePerm */
 
     static void setInversePerm( IndexType inversePerm[], const IndexType perm[], const IndexType n );
 
-    /** Conversion of JDS to CSR as specified in JDSUtilsInterface::Conversions::getCSRValues  */
+    /** Conversion of JDS to CSR as specified in JDSUtilKernelTrait::Conversions::getCSRValues  */
 
     template<typename JDSValueType,typename CSRValueType>
     static void getCSRValues(
@@ -154,7 +154,7 @@ public:
         const IndexType csrJA[],
         const CSRValueType csrValues[] );
 
-    /** Implementation for JDSUtilsInterface::Solver::jacobi(Halo)  */
+    /** Implementation for JDSUtilKernelTrait::Solver::jacobi(Halo)  */
 
     template<typename ValueType>
     static void jacobi(
@@ -186,7 +186,7 @@ public:
         const ValueType omega,
         tasking::SyncToken* syncToken );
 
-    /** Implementation for JDSUtilsInterface::Mult:normalGEMV with CUDA on GPU */
+    /** Implementation for JDSUtilKernelTrait::Mult:normalGEMV with CUDA on GPU */
 
     template<typename ValueType>
     static void normalGEMV(
@@ -204,7 +204,7 @@ public:
         const ValueType jdsValues[],
         tasking::SyncToken* syncToken );
 
-    /** Implementation for JDSUtilsInterface::Mult:normalGEVM with CUDA on GPU */
+    /** Implementation for JDSUtilKernelTrait::Mult:normalGEVM with CUDA on GPU */
 
     template<typename ValueType>
     static void normalGEVM(

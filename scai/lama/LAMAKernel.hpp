@@ -42,7 +42,7 @@ namespace scai
 namespace lama
 {
 
-/** Define class LAMAKernel that deals always with KernelTraits;
+/** Define class LAMAKernel that deals always with KernelTrait;
     it also combines it with ContexPtr instead of ContextType
 */
 

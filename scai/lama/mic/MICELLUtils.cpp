@@ -1214,7 +1214,7 @@ void MICELLUtils::sparseGEMV(
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-void MICELLUtils::setInterface( ELLUtilsInterface& ELLUtils )
+void MICELLUtils::setInterface( ELLKernelTrait& ELLUtils )
 {
     SCAI_LOG_INFO( logger, "set ELL routines for MIC in Interface" )
 

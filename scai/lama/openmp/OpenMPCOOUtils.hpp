@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief OpenMP implemenations for routines to be avaialble for COOUtilsInterface.
+ * @brief OpenMP implemenations for routines to be avaialble for COOKernelTrait.
  * @author Thomas Brandes
  * @date 24.06.2012
  * @since 1.0.0
@@ -50,7 +50,7 @@ namespace scai
 namespace lama
 {
 
-/** This class provides OpenMP implementations to be used for COOUtilsInterface.
+/** This class provides OpenMP implementations to be used for COOKernelTrait.
  *
  *  COOStorage is not well supported, but we provide conversions between COO
  *  and CSR as well as matrix times vector operation.
@@ -60,7 +60,7 @@ class COMMON_DLL_IMPORTEXPORT OpenMPCOOUtils
 {
 public:
 
-    /** OpenMP implementation for COOUtilsInterface::Counting::offsets2ia */
+    /** OpenMP implementation for COOKernelTrait::Counting::offsets2ia */
 
     static void offsets2ia(
         IndexType cooIA[],
@@ -69,7 +69,7 @@ public:
         const IndexType numRows,
         const IndexType numDiagonals );
 
-    /** OpenMP implementation for COOUtilsInterface::Counting::getCSRSizes */
+    /** OpenMP implementation for COOKernelTrait::Counting::getCSRSizes */
 
     static void getCSRSizes(
         IndexType csrSizes[],
@@ -77,7 +77,7 @@ public:
         const IndexType numValues,
         const IndexType cooIA[] );
 
-    /** OpenMP implementation for COOUtilsInterface::Conversions::getCSRValues */
+    /** OpenMP implementation for COOKernelTrait::Conversions::getCSRValues */
 
     template<typename COOValueType,typename CSRValueType>
     static void getCSRValues(
@@ -90,7 +90,7 @@ public:
         const IndexType cooJA[],
         const COOValueType cooValues[] );
 
-    /** OpenMP implementation for COOUtilsInterface::Conversions::setCSRData */
+    /** OpenMP implementation for COOKernelTrait::Conversions::setCSRData */
 
     template<typename COOValueType,typename CSRValueType>
     static void setCSRData(
@@ -101,7 +101,7 @@ public:
         const IndexType numRows,
         const IndexType numDiagonals );
 
-    /** Implementation for CSRUtilsInterface::Mult::normalGEMV  */
+    /** Implementation for CSRKernelTrait::Mult::normalGEMV  */
 
     template<typename ValueType>
     static void normalGEMV(
@@ -117,7 +117,7 @@ public:
         const ValueType cooValues[],
         tasking::SyncToken* syncToken );
 
-    /** Implementation for CSRUtilsInterface::Mult::normalGEVM  */
+    /** Implementation for CSRKernelTrait::Mult::normalGEVM  */
 
     template<typename ValueType>
     static void normalGEVM(
@@ -133,7 +133,7 @@ public:
         const ValueType cooValues[],
         tasking::SyncToken* syncToken );
 
-    /** Implementation for COOUtilsInterface::Solver::jacobi  */
+    /** Implementation for COOKernelTrait::Solver::jacobi  */
 
     template<typename ValueType>
     static void jacobi(

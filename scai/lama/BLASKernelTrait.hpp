@@ -1,5 +1,5 @@
 /**
- * @file BLASInterface.hpp
+ * @file BLASKernelTrait.hpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -36,7 +36,6 @@
 
 // internal scai libraries
 #include <scai/common/SCAITypes.hpp>
-#include <scai/common/macros/interface.hpp>
 
 // std
 #include <cstring>
@@ -62,7 +61,7 @@ namespace lama
  *  and tables with actual values for the functions.
  */
 
-struct BLASInterface
+struct BLASKernelTrait
 {
 
     template<typename ValueType>

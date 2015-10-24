@@ -62,7 +62,7 @@ class LAPACKe_LAPACK
 {
 public:
 
-    /** Implementation of BLASInterface::LAPACK::getrf by LAPACKe. */
+    /** Implementation of BLASKernelTrait::LAPACK::getrf by LAPACKe. */
 
     template<typename ValueType>
     static IndexType getrf(
@@ -73,7 +73,7 @@ public:
         const IndexType lda,
         IndexType* const ipiv );
 
-    /** Implementation of BLASInterface::LAPACK::getri by LAPACKe. */
+    /** Implementation of BLASKernelTrait::LAPACK::getri by LAPACKe. */
 
     template<typename ValueType>
     static IndexType getri(
@@ -83,12 +83,12 @@ public:
         const IndexType lda,
         IndexType* const ipiv );
 
-    /** Implementation of BLASInterface::LAPACK::getinv by LAPACKe. */
+    /** Implementation of BLASKernelTrait::LAPACK::getinv by LAPACKe. */
 
     template<typename ValueType>
     static void getinv( const IndexType n, ValueType* a, const IndexType lda );
 
-    /** Implementation of BLASInterface::LAPACK::tptrs by LAPACKe. */
+    /** Implementation of BLASKernelTrait::LAPACK::tptrs by LAPACKe. */
 
     template<typename ValueType>
     static IndexType tptrs(
@@ -102,7 +102,7 @@ public:
         ValueType* B,
         const IndexType ldb );
 
-    /** Routine that sets functions pointers belonging to LAPACK in a BLASInterface.
+    /** Routine that sets functions pointers belonging to LAPACK in a BLASKernelTrait.
      *
      *  Note: this routine will make instantiations of the template routines.
      */

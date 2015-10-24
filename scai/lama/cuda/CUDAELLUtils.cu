@@ -39,7 +39,7 @@
 #include <scai/lama/cuda/CUDAUtils.hpp>
 #include <scai/lama/cuda/CUDASettings.hpp>
 
-#include <scai/lama/UtilsInterface.hpp>
+#include <scai/lama/UtilKernelTrait.hpp>
 
 // internal scai library
 #include <scai/hmemo/cuda/CUDAStreamSyncToken.hpp>
@@ -79,6 +79,8 @@ namespace scai
 {
 
 using common::getScalarType;
+using tasking::SyncToken;
+using tasking::CUDAStreamSyncToken;
 
 namespace lama
 {
@@ -2225,26 +2227,26 @@ void CUDAELLUtils::registerKernels()
 
     common::ContextType ctx = common::context::CUDA;
 
-    KernelRegistry::set<ELLUtilsInterface::countNonEmptyRowsBySizes>( countNonEmptyRowsBySizes, ctx );
-    KernelRegistry::set<ELLUtilsInterface::setNonEmptyRowsBySizes>( setNonEmptyRowsBySizes, ctx );
-    KernelRegistry::set<ELLUtilsInterface::hasDiagonalProperty>( hasDiagonalProperty, ctx );
-    KernelRegistry::set<ELLUtilsInterface::check>( check, ctx );
+    KernelRegistry::set<ELLKernelTrait::countNonEmptyRowsBySizes>( countNonEmptyRowsBySizes, ctx );
+    KernelRegistry::set<ELLKernelTrait::setNonEmptyRowsBySizes>( setNonEmptyRowsBySizes, ctx );
+    KernelRegistry::set<ELLKernelTrait::hasDiagonalProperty>( hasDiagonalProperty, ctx );
+    KernelRegistry::set<ELLKernelTrait::check>( check, ctx );
 
 #define LAMA_ELL_UTILS2_REGISTER(z, J, TYPE )                                             \
-    KernelRegistry::set<ELLUtilsInterface::getRow<TYPE, ARITHMETIC_HOST_TYPE_##J> >( getRow, ctx );       \
-    KernelRegistry::set<ELLUtilsInterface::scaleValue<TYPE, ARITHMETIC_HOST_TYPE_##J> >( scaleValue, ctx );       \
-    KernelRegistry::set<ELLUtilsInterface::setCSRValues<TYPE, ARITHMETIC_HOST_TYPE_##J> >( setCSRValues, ctx );       \
-    KernelRegistry::set<ELLUtilsInterface::getCSRValues<TYPE, ARITHMETIC_HOST_TYPE_##J> >( getCSRValues, ctx );       \
+    KernelRegistry::set<ELLKernelTrait::getRow<TYPE, ARITHMETIC_HOST_TYPE_##J> >( getRow, ctx );       \
+    KernelRegistry::set<ELLKernelTrait::scaleValue<TYPE, ARITHMETIC_HOST_TYPE_##J> >( scaleValue, ctx );       \
+    KernelRegistry::set<ELLKernelTrait::setCSRValues<TYPE, ARITHMETIC_HOST_TYPE_##J> >( setCSRValues, ctx );       \
+    KernelRegistry::set<ELLKernelTrait::getCSRValues<TYPE, ARITHMETIC_HOST_TYPE_##J> >( getCSRValues, ctx );       \
      
 #define LAMA_ELL_UTILS_REGISTER(z, I, _)                                                  \
-    KernelRegistry::set<ELLUtilsInterface::normalGEMV<ARITHMETIC_HOST_TYPE_##I> >( normalGEMV, ctx );       \
-    KernelRegistry::set<ELLUtilsInterface::normalGEVM<ARITHMETIC_HOST_TYPE_##I> >( normalGEVM, ctx );       \
-    KernelRegistry::set<ELLUtilsInterface::sparseGEMV<ARITHMETIC_HOST_TYPE_##I> >( sparseGEMV, ctx );       \
-    KernelRegistry::set<ELLUtilsInterface::sparseGEVM<ARITHMETIC_HOST_TYPE_##I> >( sparseGEVM, ctx );       \
-    KernelRegistry::set<ELLUtilsInterface::jacobi<ARITHMETIC_HOST_TYPE_##I> >( jacobi, ctx );               \
-    KernelRegistry::set<ELLUtilsInterface::jacobiHalo<ARITHMETIC_HOST_TYPE_##I> >( jacobiHalo, ctx );       \
-    KernelRegistry::set<ELLUtilsInterface::getValue<ARITHMETIC_HOST_TYPE_##I> >( getValue, ctx );           \
-    KernelRegistry::set<ELLUtilsInterface::fillELLValues<ARITHMETIC_HOST_TYPE_##I> >( fillELLValues, ctx );  \
+    KernelRegistry::set<ELLKernelTrait::normalGEMV<ARITHMETIC_HOST_TYPE_##I> >( normalGEMV, ctx );       \
+    KernelRegistry::set<ELLKernelTrait::normalGEVM<ARITHMETIC_HOST_TYPE_##I> >( normalGEVM, ctx );       \
+    KernelRegistry::set<ELLKernelTrait::sparseGEMV<ARITHMETIC_HOST_TYPE_##I> >( sparseGEMV, ctx );       \
+    KernelRegistry::set<ELLKernelTrait::sparseGEVM<ARITHMETIC_HOST_TYPE_##I> >( sparseGEVM, ctx );       \
+    KernelRegistry::set<ELLKernelTrait::jacobi<ARITHMETIC_HOST_TYPE_##I> >( jacobi, ctx );               \
+    KernelRegistry::set<ELLKernelTrait::jacobiHalo<ARITHMETIC_HOST_TYPE_##I> >( jacobiHalo, ctx );       \
+    KernelRegistry::set<ELLKernelTrait::getValue<ARITHMETIC_HOST_TYPE_##I> >( getValue, ctx );           \
+    KernelRegistry::set<ELLKernelTrait::fillELLValues<ARITHMETIC_HOST_TYPE_##I> >( fillELLValues, ctx );  \
                                                                                                              \
     BOOST_PP_REPEAT( ARITHMETIC_CUDA_TYPE_CNT,                                            \
                      LAMA_ELL_UTILS2_REGISTER,                                            \

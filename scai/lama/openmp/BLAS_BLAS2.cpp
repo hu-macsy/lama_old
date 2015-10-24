@@ -35,7 +35,7 @@
 #include <scai/lama/openmp/BLAS_BLAS2.hpp>
 
 // local library
-#include <scai/lama/BLASInterface.hpp>
+#include <scai/lama/BLASKernelTrait.hpp>
 #include <scai/lama/cblas.hpp>
 
 // internal scai libraries
@@ -266,7 +266,7 @@ void BLAS_BLAS2::registerKernels()
     // REGISTER1: give these routines priority in case of overriding
 
 #define LAMA_BLAS2_REGISTER(z, I, _)                                                        \
-    KernelRegistry::set<BLASInterface::gemv<ARITHMETIC_HOST_TYPE_##I> >( gemv, ctx, true ); \
+    KernelRegistry::set<BLASKernelTrait::gemv<ARITHMETIC_HOST_TYPE_##I> >( gemv, ctx, true ); \
 
     BOOST_PP_REPEAT( ARITHMETIC_HOST_EXT_TYPE_CNT, LAMA_BLAS2_REGISTER, _ )
 

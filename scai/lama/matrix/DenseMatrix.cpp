@@ -39,7 +39,7 @@
 
 #include <scai/lama/DenseVector.hpp>
 #include <scai/lama/LAMAKernel.hpp>
-#include <scai/lama/BLASInterface.hpp>
+#include <scai/lama/BLASKernelTrait.hpp>
 
 #include <scai/lama/distribution/NoDistribution.hpp>
 #include <scai/lama/distribution/CyclicDistribution.hpp>
@@ -599,7 +599,7 @@ bool DenseMatrix<ValueType>::hasScalaPack()
 
     ContextPtr loc = Context::getContextPtr( context::Host );
 
-    typename BLASInterface::SCALAPACK<ValueType>::inverse inverse = loc->getInterface().BLAS.inverse<ValueType>();
+    typename BLASKernelTrait::SCALAPACK<ValueType>::inverse inverse = loc->getInterface().BLAS.inverse<ValueType>();
 
     return inverse != NULL;
 
@@ -645,7 +645,7 @@ void DenseMatrix<ValueType>::invertCyclic()
 
     const int nb = cyclicDist->chunkSize(); // blocking factor
 
-    static LAMAKernel<BLASInterface::inverse<ValueType> > inverse;
+    static LAMAKernel<BLASKernelTrait::inverse<ValueType> > inverse;
 
     // location where inverse computation will be done
     ContextPtr loc = inverse.getValidContext( this->getContextPtr() );
@@ -1756,7 +1756,7 @@ void DenseMatrix<ValueType>::matrixTimesVectorImpl(
 
             LAMAArray<ValueType> x( mData[actualPartition]->getNumColumns() );
             {
-                static LAMAKernel<BLASInterface::copy<ValueType> > copy;
+                static LAMAKernel<BLASKernelTrait::copy<ValueType> > copy;
 
                 ContextPtr loc = copy.getValidContext( this->getContextPtr() );
 

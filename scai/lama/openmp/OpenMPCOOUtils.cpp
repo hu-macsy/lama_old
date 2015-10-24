@@ -38,7 +38,7 @@
 #include <scai/lama/openmp/OpenMPUtils.hpp>
 #include <scai/lama/openmp/OpenMP.hpp>
 
-#include <scai/lama/UtilsInterface.hpp>
+#include <scai/lama/UtilKernelTrait.hpp>
 
 // internal scai libraries
 #include <scai/kregistry/KernelRegistry.hpp>
@@ -378,19 +378,19 @@ void OpenMPCOOUtils::registerKernels()
 
     common::ContextType ctx = common::context::Host;
 
-    KernelRegistry::set<COOUtilsInterface::offsets2ia>( offsets2ia, ctx );
-    KernelRegistry::set<COOUtilsInterface::getCSRSizes>( getCSRSizes, ctx );
+    KernelRegistry::set<COOKernelTrait::offsets2ia>( offsets2ia, ctx );
+    KernelRegistry::set<COOKernelTrait::getCSRSizes>( getCSRSizes, ctx );
 
-    KernelRegistry::set<COOUtilsInterface::setCSRData<IndexType, IndexType> >( setCSRData, ctx );
+    KernelRegistry::set<COOKernelTrait::setCSRData<IndexType, IndexType> >( setCSRData, ctx );
 
 #define LAMA_COO_UTILS2_REGISTER(z, J, TYPE )                                                                     \
-    KernelRegistry::set<COOUtilsInterface::setCSRData<TYPE, ARITHMETIC_HOST_TYPE_##J> >( setCSRData, ctx );       \
-    KernelRegistry::set<COOUtilsInterface::getCSRValues<TYPE, ARITHMETIC_HOST_TYPE_##J> >( getCSRValues, ctx );   \
+    KernelRegistry::set<COOKernelTrait::setCSRData<TYPE, ARITHMETIC_HOST_TYPE_##J> >( setCSRData, ctx );       \
+    KernelRegistry::set<COOKernelTrait::getCSRValues<TYPE, ARITHMETIC_HOST_TYPE_##J> >( getCSRValues, ctx );   \
 
 #define LAMA_COO_UTILS_REGISTER(z, I, _)                                                                \
-    KernelRegistry::set<COOUtilsInterface::normalGEMV<ARITHMETIC_HOST_TYPE_##I> >( normalGEMV, ctx );   \
-    KernelRegistry::set<COOUtilsInterface::normalGEVM<ARITHMETIC_HOST_TYPE_##I> >( normalGEVM, ctx );   \
-    KernelRegistry::set<COOUtilsInterface::jacobi<ARITHMETIC_HOST_TYPE_##I> >( jacobi, ctx );           \
+    KernelRegistry::set<COOKernelTrait::normalGEMV<ARITHMETIC_HOST_TYPE_##I> >( normalGEMV, ctx );   \
+    KernelRegistry::set<COOKernelTrait::normalGEVM<ARITHMETIC_HOST_TYPE_##I> >( normalGEVM, ctx );   \
+    KernelRegistry::set<COOKernelTrait::jacobi<ARITHMETIC_HOST_TYPE_##I> >( jacobi, ctx );           \
                                                                                           \
     BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT,                                            \
                      LAMA_COO_UTILS2_REGISTER,                                            \

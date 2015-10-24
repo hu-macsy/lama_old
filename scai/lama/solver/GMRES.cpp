@@ -39,7 +39,7 @@
 #include <scai/lama/expression/MatrixVectorExpressions.hpp>
 
 #include <scai/lama/DenseVector.hpp>
-#include <scai/lama/BLASInterface.hpp>
+#include <scai/lama/BLASKernelTrait.hpp>
 #include <scai/lama/LAMAKernel.hpp>
 
 // tracing
@@ -438,7 +438,7 @@ void GMRES::updateX( unsigned int i )
 
     hmemo::ContextPtr context = hmemo::Context::getHostPtr();
 
-    static LAMAKernel<BLASInterface::tptrs<double> > tptrs;
+    static LAMAKernel<BLASKernelTrait::tptrs<double> > tptrs;
 
     int info = tptrs[context]( CblasColMajor, CblasUpper, CblasNoTrans, CblasNonUnit, i + 1, 1, runtime.mH.get(),
                                runtime.mY.get(), i + 1 );

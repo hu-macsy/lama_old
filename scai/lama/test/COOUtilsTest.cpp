@@ -36,7 +36,7 @@
 
 // others
 #include <scai/hmemo.hpp>
-#include <scai/lama/UtilsInterface.hpp>
+#include <scai/lama/UtilKernelTrait.hpp>
 #include <scai/lama/LAMAKernel.hpp>
 
 #include <scai/common/test/TestMacros.hpp>
@@ -63,7 +63,7 @@ namespace COOUtilsTest
 template<typename NoType>
 void offsets2iaTest( ContextPtr loc )
 {
-    LAMAKernel<COOUtilsInterface::offsets2ia> offsets2ia;
+    LAMAKernel<COOKernelTrait::offsets2ia> offsets2ia;
 
     // Test without diagonal property
     {
@@ -127,7 +127,7 @@ void offsets2iaTest( ContextPtr loc )
 template<typename NoType>
 void setCSRDataTest( ContextPtr loc )
 {
-    LAMAKernel<COOUtilsInterface::setCSRData<IndexType, IndexType> > setCSRData;
+    LAMAKernel<COOKernelTrait::setCSRData<IndexType, IndexType> > setCSRData;
 
     // setCSRData is for conversion of CSR storage to COO storage
     // is usually just a copy but has some reordering if diagonal property is required

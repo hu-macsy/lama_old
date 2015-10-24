@@ -35,7 +35,6 @@ scai_project(
     HEADERS
 
         inline
-        interface
         unique_name
         unused
 

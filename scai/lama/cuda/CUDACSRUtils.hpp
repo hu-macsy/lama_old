@@ -75,7 +75,7 @@ public:
         int numColumns,
         int numValues );
 
-    /** Implementation for CSRUtilsInterface::Mult::scaleRows  */
+    /** Implementation for CSRKernelTrait::Mult::scaleRows  */
 
     template<typename ValueType1,typename ValueType2>
     static void scaleRows(
@@ -84,7 +84,7 @@ public:
         const IndexType numRows,
         const ValueType2 values[] );
 
-    /** Implementation for CSRUtilsInterface::Mult::normalGEMV  */
+    /** Implementation for CSRKernelTrait::Mult::normalGEMV  */
 
     template<typename ValueType>
     static void normalGEMV(
@@ -101,7 +101,7 @@ public:
         const ValueType csrValues[],
         tasking::SyncToken* syncToken );
 
-    /** Implementation for CSRUtilsInterface::Mult::normalGEVM  */
+    /** Implementation for CSRKernelTrait::Mult::normalGEVM  */
 
     template<typename ValueType>
     static void normalGEVM(
@@ -117,7 +117,7 @@ public:
         const ValueType csrValues[],
         tasking::SyncToken* syncToken );
 
-    /** Implementation for CSRUtilsInterface::Mult::sparseGEMV  */
+    /** Implementation for CSRKernelTrait::Mult::sparseGEMV  */
 
     template<typename ValueType>
     static void sparseGEMV(
@@ -131,7 +131,7 @@ public:
         const ValueType csrValues[],
         tasking::SyncToken* syncToken );
 
-    /** Implementation for CSRUtilsInterface::Mult::sparseGEVM  */
+    /** Implementation for CSRKernelTrait::Mult::sparseGEVM  */
 
     template<typename ValueType>
     static void sparseGEVM(
@@ -146,7 +146,7 @@ public:
         const ValueType csrValues[],
         tasking::SyncToken* syncToken );
 
-    /** Implementation for CSRUtilsInterface::Solver::jacobi  */
+    /** Implementation for CSRKernelTrait::Solver::jacobi  */
 
     template<typename ValueType>
     static void jacobi(
@@ -160,7 +160,7 @@ public:
         const IndexType numRows,
         tasking::SyncToken* syncToken );
 
-    /** Implementation for CSRUtilsInterface::Solver::jacobiHalo  */
+    /** Implementation for CSRKernelTrait::Solver::jacobiHalo  */
 
     template<typename ValueType>
     static void jacobiHalo(
@@ -175,7 +175,7 @@ public:
         const ValueType omega,
         const IndexType numNonEmptyRows );
 
-    /** Implementation for CSRUtilsInterface::Solver::jacobiHaloWithDiag
+    /** Implementation for CSRKernelTrait::Solver::jacobiHaloWithDiag
      *  @since 1.1.0
      */
 
@@ -191,7 +191,7 @@ public:
         const ValueType omega,
         const IndexType numNonEmptyRows );
 
-    /** Implementation for CSRUtilsInterface::Offsets::matrixAddSizes  */
+    /** Implementation for CSRKernelTrait::Offsets::matrixAddSizes  */
 
     static IndexType matrixAddSizes(
         IndexType cSizes[],
@@ -203,7 +203,7 @@ public:
         const IndexType bIA[],
         const IndexType bJA[] );
 
-    /** Implementation for CSRUtilsInterface::Offsets::matrixMultiplySizes  */
+    /** Implementation for CSRKernelTrait::Offsets::matrixMultiplySizes  */
 
     static IndexType matrixMultiplySizes(
         IndexType cSizes[],
@@ -216,7 +216,7 @@ public:
         const IndexType bIA[],
         const IndexType bJA[] );
 
-    /** Implementation for CSRUtilsInterface::Mult::matrixAdd */
+    /** Implementation for CSRKernelTrait::Mult::matrixAdd */
 
     template<typename ValueType>
     static void matrixAdd(
@@ -235,7 +235,7 @@ public:
         const IndexType bJA[],
         const ValueType bValues[] );
 
-    /** Implementation for CSRUtilsInterface::Mult::matrixMultiply */
+    /** Implementation for CSRKernelTrait::Mult::matrixMultiply */
 
     template<typename ValueType>
     static void matrixMultiply(

@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Class defintion for OpenMP routines to be used for DenseUtilsInterface.
+ * @brief Class defintion for OpenMP routines to be used for DenseKernelTrait.
  * @author Thomas Brandes
  * @date 03.07.2012
  * @since 1.0.0
@@ -51,14 +51,14 @@ namespace scai
 namespace lama
 {
 
-/** This class provides OpenMP implementations for methods in scai::lama::DenseUtilsInterface
+/** This class provides OpenMP implementations for methods in scai::lama::DenseKernelTrait
  */
 
 class COMMON_DLL_IMPORTEXPORT OpenMPDenseUtils
 {
 public:
 
-    /** OpenMP implementation for DenseUtilsInterface::Counting::getCSRSizes */
+    /** OpenMP implementation for DenseKernelTrait::Counting::getCSRSizes */
 
     template<typename DenseValueType>
     static void getCSRSizes(
@@ -69,7 +69,7 @@ public:
         const DenseValueType denseValues[],
         const DenseValueType eps );
 
-    /** OpenMP implementation for DenseUtilsInterface::Conversions::getCSRValues */
+    /** OpenMP implementation for DenseKernelTrait::Conversions::getCSRValues */
 
     template<typename DenseValueType,typename CSRValueType>
     static void getCSRValues(
@@ -82,7 +82,7 @@ public:
         const DenseValueType denseValues[],
         const DenseValueType eps );
 
-    /** OpenMP implementation for DenseUtilsInterface::Copy::copyDenseValues */
+    /** OpenMP implementation for DenseKernelTrait::Copy::copyDenseValues */
 
     template<typename DenseValueType1,typename DenseValueType2>
     static void copyDenseValues(
@@ -91,7 +91,7 @@ public:
         const IndexType numColumns,
         const DenseValueType2 oldValues[] );
 
-    /** OpenMP implementation for DenseUtilsInterface::Conversions::setCSRValues */
+    /** OpenMP implementation for DenseKernelTrait::Conversions::setCSRValues */
 
     template<typename DenseValueType,typename CSRValueType>
     static void setCSRValues(
@@ -102,7 +102,7 @@ public:
         const IndexType csrJA[],
         const CSRValueType csrValues[] );
 
-    /** OpenMP implementation for DenseUtilsInterface::Copy::getDiagonal */
+    /** OpenMP implementation for DenseKernelTrait::Copy::getDiagonal */
 
     template<typename DiagonalValueType,typename DenseValueType>
     static void getDiagonal(
@@ -112,7 +112,7 @@ public:
         const IndexType numRows,
         const IndexType numColumns );
 
-    /** OpenMP implementation for DenseUtilsInterface::Copy::setDiagonal */
+    /** OpenMP implementation for DenseKernelTrait::Copy::setDiagonal */
 
     template<typename DenseValueType,typename DiagonalValueType>
     static void setDiagonal(
@@ -122,7 +122,7 @@ public:
         const DiagonalValueType diagonalValues[],
         const IndexType numDiagonalValues );
 
-    /** OpenMP implementation for DenseUtilsInterface::Modify::scaleValue */
+    /** OpenMP implementation for DenseKernelTrait::Modify::scaleValue */
 
     template<typename DenseValueType>
     static void scaleValue(
@@ -131,7 +131,7 @@ public:
         const IndexType numColumns,
         const DenseValueType val );
 
-    /** OpenMP implementation for DenseUtilsInterface::setDiagonalValue::FuncType */
+    /** OpenMP implementation for DenseKernelTrait::setDiagonalValue::FuncType */
 
     template<typename DenseValueType>
     static void setDiagonalValue(

@@ -35,7 +35,7 @@
 #include <scai/lama/cuda/CUDADIAUtils.hpp>
  
 // local library
-#include <scai/lama/UtilsInterface.hpp>
+#include <scai/lama/UtilKernelTrait.hpp>
 
 #include <scai/lama/cuda/utils.cu.h>
 #include <scai/lama/cuda/CUDASettings.hpp>
@@ -911,8 +911,8 @@ namespace lama
         SCAI_LOG_INFO( logger, "set DIA routines for CUDA in Interface" )
 
 #define LAMA_DIA_UTILS_REGISTER(z, I, _)                                                              \
-    KernelRegistry::set<DIAUtilsInterface::normalGEMV<ARITHMETIC_CUDA_TYPE_##I> >( normalGEMV, ctx ); \
-    KernelRegistry::set<DIAUtilsInterface::normalGEVM<ARITHMETIC_CUDA_TYPE_##I> >( normalGEVM, ctx ); \
+    KernelRegistry::set<DIAKernelTrait::normalGEMV<ARITHMETIC_CUDA_TYPE_##I> >( normalGEMV, ctx ); \
+    KernelRegistry::set<DIAKernelTrait::normalGEVM<ARITHMETIC_CUDA_TYPE_##I> >( normalGEVM, ctx ); \
                                                                                          
     BOOST_PP_REPEAT( ARITHMETIC_CUDA_TYPE_CNT, LAMA_DIA_UTILS_REGISTER, _ )
 

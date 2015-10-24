@@ -37,7 +37,7 @@
 // local library
 #include <scai/lama/openmp/BLAS_BLAS1.hpp>
 #include <scai/lama/LAMAInterfaceRegistry.hpp>
-#include <scai/lama/BLASInterface.hpp>
+#include <scai/lama/BLASKernelTrait.hpp>
 #include <scai/lama/cblas.hpp>
 
 #include <scai/hmemo/Context.hpp>
@@ -772,7 +772,7 @@ void LAPACK_LAPACK::laswp(
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void LAPACK_LAPACK::setInterface( BLASInterface& BLAS )
+void LAPACK_LAPACK::setInterface( BLASKernelTrait& BLAS )
 {
     // Note: macro takes advantage of same name for routines and type definitions
     //       ( e.g. routine CUDABLAS1::sum<ValueType> is set for BLAS::BLAS1::sum variable

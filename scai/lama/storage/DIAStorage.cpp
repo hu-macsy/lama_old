@@ -38,7 +38,7 @@
 #include <scai/lama/openmp/OpenMPCSRUtils.hpp>
 #include <scai/lama/openmp/OpenMPDIAUtils.hpp>
 
-#include <scai/lama/UtilsInterface.hpp>
+#include <scai/lama/UtilKernelTrait.hpp>
 #include <scai/lama/LAMAKernel.hpp>
 
 // internal scai libraries
@@ -198,7 +198,7 @@ void DIAStorage<ValueType>::setDiagonalImpl( const Scalar scalar )
 
     IndexType numDiagonalElements = std::min( mNumColumns, mNumRows );
 
-    static LAMAKernel<UtilsInterface::setVal<ValueType> > setVal;
+    static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
 
     // take context of this storage to set
 
@@ -255,7 +255,7 @@ template<typename ValueType>
 template<typename OtherType>
 void DIAStorage<ValueType>::getDiagonalImpl( LAMAArray<OtherType>& diagonal ) const
 {
-    static LAMAKernel<UtilsInterface::set<OtherType, ValueType> > set;
+    static LAMAKernel<UtilKernelTrait::set<OtherType, ValueType> > set;
 
     ContextPtr loc = set.getValidContext( getContextPtr() );
 
@@ -281,7 +281,7 @@ void DIAStorage<ValueType>::setDiagonalImpl( const LAMAArray<OtherType>& diagona
 
     numDiagonalElements = std::min( numDiagonalElements, diagonal.size() );
 
-    static LAMAKernel<UtilsInterface::set<ValueType, OtherType> > set;
+    static LAMAKernel<UtilKernelTrait::set<ValueType, OtherType> > set;
 
     ContextPtr loc = set.getValidContext( getContextPtr() );
 
@@ -409,7 +409,7 @@ void DIAStorage<ValueType>::setIdentity( const IndexType size )
     mNumDiagonals = 1; // identity has exactly one diagonal
 
     {
-        static LAMAKernel<UtilsInterface::setVal<IndexType> > setVal;
+        static LAMAKernel<UtilKernelTrait::setVal<IndexType> > setVal;
 
         ContextPtr loc = setVal.getValidContext( getContextPtr() );
 
@@ -421,7 +421,7 @@ void DIAStorage<ValueType>::setIdentity( const IndexType size )
     }
 
     {
-        static LAMAKernel<UtilsInterface::setVal<ValueType> > setVal;
+        static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
 
         ContextPtr loc = setVal.getValidContext( getContextPtr() );
 
@@ -731,7 +731,7 @@ ValueType DIAStorage<ValueType>::l1Norm() const
 {
     SCAI_LOG_INFO( logger, *this << ": l1Norm()" )
 
-    static LAMAKernel<BLASInterface::asum<ValueType> > asum;
+    static LAMAKernel<BLASKernelTrait::asum<ValueType> > asum;
 
     ContextPtr loc = asum.getValidContext( this->getContextPtr() );
 
@@ -749,7 +749,7 @@ ValueType DIAStorage<ValueType>::l2Norm() const
 {
     SCAI_LOG_INFO( logger, *this << ": l2Norm()" )
 
-    static LAMAKernel<BLASInterface::dot<ValueType> > dot;
+    static LAMAKernel<BLASKernelTrait::dot<ValueType> > dot;
 
     ContextPtr loc = dot.getValidContext( this->getContextPtr() );
 
@@ -767,7 +767,7 @@ ValueType DIAStorage<ValueType>::maxNorm() const
 {
     SCAI_LOG_INFO( logger, *this << ": maxNorm()" )
 
-    static LAMAKernel<DIAUtilsInterface::absMaxVal<ValueType> > absMaxVal;
+    static LAMAKernel<DIAKernelTrait::absMaxVal<ValueType> > absMaxVal;
 
     ContextPtr loc = absMaxVal.getValidContext( this->getContextPtr() );
 
@@ -894,7 +894,7 @@ void DIAStorage<ValueType>::matrixTimesVector(
     SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumColumns )
     SCAI_ASSERT_EQUAL_ERROR( y.size(), mNumRows )
 
-    static LAMAKernel<DIAUtilsInterface::normalGEMV<ValueType> > normalGEMV;
+    static LAMAKernel<DIAKernelTrait::normalGEMV<ValueType> > normalGEMV;
 
     ContextPtr loc = normalGEMV.getValidContext( this->getContextPtr() );
 
@@ -957,7 +957,7 @@ void DIAStorage<ValueType>::vectorTimesMatrix(
         SCAI_ASSERT_EQUAL_ERROR( y.size(), mNumColumns )
     }
 
-    static LAMAKernel<DIAUtilsInterface::normalGEVM<ValueType> > normalGEVM;
+    static LAMAKernel<DIAKernelTrait::normalGEVM<ValueType> > normalGEVM;
 
     ContextPtr loc = normalGEVM.getValidContext( this->getContextPtr() );
 
@@ -1007,7 +1007,7 @@ SyncToken* DIAStorage<ValueType>::matrixTimesVectorAsync(
 {
     SCAI_REGION( "Storage.DIA.timesVectorAsync" )
 
-    static LAMAKernel<DIAUtilsInterface::normalGEMV<ValueType> > normalGEMV;
+    static LAMAKernel<DIAKernelTrait::normalGEMV<ValueType> > normalGEMV;
 
     ContextPtr loc = normalGEMV.getValidContext( this->getContextPtr() );
 
@@ -1106,7 +1106,7 @@ SyncToken* DIAStorage<ValueType>::vectorTimesMatrixAsync(
 
     SCAI_REGION( "Storage.DIA.vectorTimesMatrixAsync" )
 
-    static LAMAKernel<DIAUtilsInterface::normalGEVM<ValueType> > normalGEVM;
+    static LAMAKernel<DIAKernelTrait::normalGEVM<ValueType> > normalGEVM;
 
     ContextPtr loc = normalGEVM.getValidContext( this->getContextPtr() );
 

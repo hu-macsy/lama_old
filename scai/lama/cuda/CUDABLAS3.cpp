@@ -35,7 +35,7 @@
 #include <scai/lama/cuda/CUDABLAS3.hpp>
 
 // local library
-#include <scai/lama/BLASInterface.hpp>
+#include <scai/lama/BLASKernelTrait.hpp>
 #include <scai/lama/openmp/BLASHelper.hpp>
 #include <scai/lama/cuda/lama_cublas.hpp>
 
@@ -525,7 +525,7 @@ void CUDABLAS3::registerKernels()
     SCAI_LOG_INFO( logger, "set BLAS3 routines for CUDA at Kernel Registry" )
 
 #define LAMA_BLAS3_REGISTER(z, I, _)                                                   \
-    KernelRegistry::set<BLASInterface::gemm<ARITHMETIC_CUDA_TYPE_##I> >( gemm, ctx );  \
+    KernelRegistry::set<BLASKernelTrait::gemm<ARITHMETIC_CUDA_TYPE_##I> >( gemm, ctx );  \
 
     BOOST_PP_REPEAT( ARITHMETIC_CUDA_TYPE_CNT, LAMA_BLAS3_REGISTER, _ )
 

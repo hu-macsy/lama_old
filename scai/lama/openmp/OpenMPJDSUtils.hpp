@@ -53,7 +53,7 @@ namespace scai
 namespace lama
 {
 
-/** This class provides OpenMP implementations as needed for JDSUtilsInterface.  */
+/** This class provides OpenMP implementations as needed for JDSUtilKernelTrait.  */
 
 class COMMON_DLL_IMPORTEXPORT OpenMPJDSUtils
 {
@@ -109,11 +109,11 @@ public:
 
     static void sortRows( IndexType array[], IndexType perm[], const IndexType n );
 
-    /** Compute the inverse permutation as specified in JDSUtilsInterface::Sort::setInversePerm */
+    /** Compute the inverse permutation as specified in JDSUtilKernelTrait::Sort::setInversePerm */
 
     static void setInversePerm( IndexType inversePerm[], const IndexType perm[], const IndexType n );
 
-    /** Compute dlg array from ilg array as specified in JDSUtilsInterface::Conversions::ilg2dlg */
+    /** Compute dlg array from ilg array as specified in JDSUtilKernelTrait::Conversions::ilg2dlg */
 
     static IndexType ilg2dlg(
         IndexType dlg[],
@@ -121,7 +121,7 @@ public:
         const IndexType ilg[],
         const IndexType numRows );
 
-    /** Conversion of JDS to CSR as specified in JDSUtilsInterface::Conversions::getCSRValues  */
+    /** Conversion of JDS to CSR as specified in JDSUtilKernelTrait::Conversions::getCSRValues  */
 
     template<typename JDSValueType,typename CSRValueType>
     static void getCSRValues(
@@ -135,7 +135,7 @@ public:
         const IndexType jdsJA[],
         const JDSValueType jdsValues[] );
 
-    /** Conversion of CSR to JDS as specified in JDSUtilsInterface::Conversions::setCSRValues. */
+    /** Conversion of CSR to JDS as specified in JDSUtilKernelTrait::Conversions::setCSRValues. */
 
     template<typename JDSValueType,typename CSRValueType>
     static void setCSRValues(
@@ -150,7 +150,7 @@ public:
         const IndexType csrJA[],
         const CSRValueType csrValues[] );
 
-    /** Implementation for JDSUtilsInterface::Mult:normalGEMV with OpenMP on Host */
+    /** Implementation for JDSUtilKernelTrait::Mult:normalGEMV with OpenMP on Host */
 
     template<typename ValueType>
     static void normalGEMV(
@@ -168,7 +168,7 @@ public:
         const ValueType jdsValues[],
         tasking::SyncToken* syncToken );
 
-    /** Implementation for JDSUtilsInterface::Mult:normalGEVM with OpenMP on Host */
+    /** Implementation for JDSUtilKernelTrait::Mult:normalGEVM with OpenMP on Host */
 
     template<typename ValueType>
     static void normalGEVM(

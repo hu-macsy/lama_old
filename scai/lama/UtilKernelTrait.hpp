@@ -1,5 +1,5 @@
 /**
- * @file UtilsInterface.hpp
+ * @file UtilKernelTrait.hpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Interface classes for utilities and matrix storage routines
+ * @brief Struct with traits for all LAMA utilities provided as kernels.
  * @author Thomas Brandes
  * @date 03.04.2013
  * @since 1.0.0
@@ -35,28 +35,23 @@
 // for dll_import
 #include <scai/common/config.hpp>
 
-// local library
-#include <scai/lama/BLASInterface.hpp>
-
-// internal scai libraries
-#include <scai/common/macros/interface.hpp>
-
 namespace scai
 {
+
+// forward declaration
 
 namespace tasking
 {
     class SyncToken;
 }
 
-// forward declaration
 namespace lama
 {
 
 
 /** Structure with traits for all Utils kernels. */
 
-struct UtilsInterface
+struct UtilKernelTrait
 {
     /** @brief Trait for register kernel function validIndexes */
 
@@ -267,7 +262,7 @@ struct UtilsInterface
  *  and tables with actual values for the functions.
  */
 
-struct CSRUtilsInterface
+struct CSRKernelTrait
 {
     /** Structure defining function types for operations on CSR data
      *
@@ -314,7 +309,7 @@ struct CSRUtilsInterface
                         const ValueType rhs[],
                         const ValueType omega,
                         const IndexType numRows,
-                        SyncToken* syncToken );
+                        tasking::SyncToken* syncToken );
 
         static const char* getId() { return "CSR.jacobi"; }
     };
@@ -624,7 +619,7 @@ struct CSRUtilsInterface
                         const IndexType csrIA[],
                         const IndexType csrJA[],
                         const ValueType csrValues[],
-                        SyncToken* syncToken );
+                        tasking::SyncToken* syncToken );
 
         static const char* getId() { return "CSR.normalGEMV"; }
     };
@@ -642,7 +637,7 @@ struct CSRUtilsInterface
                         const IndexType csrIA[],
                         const IndexType csrJA[],
                         const ValueType csrValues[],
-                        SyncToken* syncToken );
+                        tasking::SyncToken* syncToken );
 
         static const char* getId() { return "CSR.normalGEVM"; }
     };
@@ -672,7 +667,7 @@ struct CSRUtilsInterface
                         const IndexType csrIA[],
                         const IndexType csrJA[],
                         const ValueType csrValues[],
-                        SyncToken* syncToken );
+                        tasking::SyncToken* syncToken );
 
         static const char* getId() { return "CSR.sparseGEMV"; }
     };
@@ -689,7 +684,7 @@ struct CSRUtilsInterface
                         const IndexType csrIA[],
                         const IndexType csrJA[],
                         const ValueType csrValues[],
-                        SyncToken* syncToken );
+                        tasking::SyncToken* syncToken );
 
         static const char* getId() { return "CSR.sparseGEMV"; }
     };
@@ -721,7 +716,7 @@ struct CSRUtilsInterface
                         const IndexType csrIA[],
                         const IndexType csrJA[],
                         const ValueType csrValues[],
-                        SyncToken* syncToken );
+                        tasking::SyncToken* syncToken );
 
         static const char* getId() { return "CSR.gemm"; }
     };
@@ -819,7 +814,7 @@ struct CSRUtilsInterface
 
 /** Traits for utility functions to be used in Dense storage.   */
 
-struct DenseUtilsInterface
+struct DenseKernelTrait
 {
     template <typename DenseValueType>
     struct getCSRSizes
@@ -984,7 +979,7 @@ struct DenseUtilsInterface
                         const IndexType numRows,
                         const IndexType numColumns,
                         const ValueType denseValues[],
-                        SyncToken* syncToken );
+                        tasking::SyncToken* syncToken );
 
         static const char* getId() { return "Dense.normalGEMV"; }
     };
@@ -996,7 +991,7 @@ struct DenseUtilsInterface
  *  and tables with actual values for the functions.
  */
 
-struct ELLUtilsInterface
+struct ELLKernelTrait
 {
     template<typename ValueType>
     struct jacobi
@@ -1024,7 +1019,7 @@ struct ELLUtilsInterface
             const ValueType oldSolution[],
             const ValueType rhs[],
             const ValueType omega,
-            SyncToken* syncToken );
+            tasking::SyncToken* syncToken );
 
         static const char* getId() { return "ELL.jacobi"; }
     };
@@ -1044,7 +1039,7 @@ struct ELLUtilsInterface
             const IndexType numNonEmptyRows,
             const ValueType oldSolution[],
             const ValueType omega,
-            SyncToken* syncToken );
+            tasking::SyncToken* syncToken );
 
         static const char* getId() { return "ELL.jacobiHalo"; }
     };
@@ -1292,7 +1287,7 @@ struct ELLUtilsInterface
             const IndexType ellSizes[],
             const IndexType ellJA[],
             const ValueType ellValues[],
-            SyncToken* syncToken );
+            tasking::SyncToken* syncToken );
 
         static const char* getId() { return "ELL.normalGEMV"; }
     };
@@ -1325,7 +1320,7 @@ struct ELLUtilsInterface
             const IndexType ellSizes[],
             const IndexType ellJA[],
             const ValueType ellValues[],
-            SyncToken* syncToken );
+            tasking::SyncToken* syncToken );
 
         static const char* getId() { return "ELL.sparseGEMV"; }
     };
@@ -1333,7 +1328,7 @@ struct ELLUtilsInterface
     template<typename ValueType>
     struct normalGEVM
     {
-        /** Implementation for ELLUtilsInterface::Mult::normalGEVM  */
+        /** Implementation for ELLKernelTrait::Mult::normalGEVM  */
 
         typedef void ( *FuncType ) ( 
             ValueType result[],
@@ -1347,7 +1342,7 @@ struct ELLUtilsInterface
             const IndexType ellSizes[],
             const IndexType ellJA[],
             const ValueType ellValues[],
-            SyncToken* syncToken );
+            tasking::SyncToken* syncToken );
 
         static const char* getId() { return "ELL.normalGEVM"; }
     };
@@ -1355,7 +1350,7 @@ struct ELLUtilsInterface
     template<typename ValueType>
     struct sparseGEVM
     {
-        /** Implementation for ELLUtilsInterface::Mult::sparseGEVM  */
+        /** Implementation for ELLKernelTrait::Mult::sparseGEVM  */
 
         typedef void ( *FuncType ) ( 
             ValueType result[],
@@ -1369,7 +1364,7 @@ struct ELLUtilsInterface
             const IndexType ellSizes[],
             const IndexType ellJA[],
             const ValueType ellValues[],
-            SyncToken* syncToken );
+            tasking::SyncToken* syncToken );
 
         static const char* getId() { return "ELL.sparseGEVM"; }
     };
@@ -1556,7 +1551,7 @@ struct ELLUtilsInterface
  *  and tables with actual values for the functions.
  */
 
-struct JDSUtilsInterface
+struct JDSUtilKernelTrait
 {
     template<typename ValueType>
     struct jacobi
@@ -1578,7 +1573,7 @@ struct JDSUtilsInterface
             const ValueType oldSolution[],
             const ValueType rhs[],
             const ValueType omega,
-            SyncToken* syncToken );
+            tasking::SyncToken* syncToken );
 
         static const char* getId() { return "JDS.jacobi"; }
     };
@@ -1601,7 +1596,7 @@ struct JDSUtilsInterface
             const ValueType jdsHaloValues[],
             const ValueType oldSolution[],
             const ValueType omega,
-            SyncToken* syncToken );
+            tasking::SyncToken* syncToken );
 
         static const char* getId() { return "JDS.jacobiHalo"; }
     };
@@ -1770,7 +1765,7 @@ struct JDSUtilsInterface
                         const IndexType jdsDLG[],
                         const IndexType jdsJA[],
                         const ValueType jdsValues[],
-                        SyncToken* syncToken );
+                        tasking::SyncToken* syncToken );
 
         static const char* getId() { return "JDS.normalGEMV"; }
     };
@@ -1790,7 +1785,7 @@ struct JDSUtilsInterface
                         const IndexType jdsDLG[],
                         const IndexType jdsJA[],
                         const ValueType jdsValues[],
-                        SyncToken* syncToken );
+                        tasking::SyncToken* syncToken );
 
         static const char* getId() { return "JDS.normalGEVM"; }
     };
@@ -1858,7 +1853,7 @@ struct JDSUtilsInterface
  *  and tables with actual values for the functions.
  */
 
-struct DIAUtilsInterface
+struct DIAKernelTrait
 {
     template<typename ValueType>
     struct getCSRSizes
@@ -1956,7 +1951,7 @@ struct DIAUtilsInterface
             const IndexType numDiagonals,
             const IndexType diaOffsets[],
             const ValueType diaValues[],
-            SyncToken* syncToken );
+            tasking::SyncToken* syncToken );
 
         static const char* getId() { return "DIA.normalGEMV"; }
     };
@@ -1988,7 +1983,7 @@ struct DIAUtilsInterface
             const IndexType numDiagonals,
             const IndexType diaOffsets[],
             const ValueType diaValues[],
-            SyncToken* syncToken );
+            tasking::SyncToken* syncToken );
 
         static const char* getId() { return "DIA.normalGEVM"; }
     };
@@ -2013,7 +2008,7 @@ struct DIAUtilsInterface
             const ValueType rhs[],
             const ValueType omega,
             const IndexType numRows,
-            SyncToken* syncToken );
+            tasking::SyncToken* syncToken );
 
         static const char* getId() { return "DIA.jacobi"; }
     };
@@ -2043,7 +2038,7 @@ struct DIAUtilsInterface
  *  and tables with actual values for the functions.
  */
 
-struct COOUtilsInterface
+struct COOKernelTrait
 {
     struct getCSRSizes
     {
@@ -2171,7 +2166,7 @@ struct COOUtilsInterface
             const IndexType cooIA[],
             const IndexType cooJA[],
             const ValueType cooValues[],
-            SyncToken* syncToken );
+            tasking::SyncToken* syncToken );
 
         static const char* getId() { return "COO.normalGEMV"; }
     };
@@ -2190,7 +2185,7 @@ struct COOUtilsInterface
             const IndexType cooIA[],
             const IndexType cooJA[],
             const ValueType cooValues[],
-            SyncToken* syncToken );
+            tasking::SyncToken* syncToken );
 
         static const char* getId() { return "COO.normalGEVM"; }
     };
@@ -2214,7 +2209,7 @@ struct COOUtilsInterface
             const ValueType rhs[],
             const ValueType omega,
             const IndexType numRows,
-            SyncToken* syncToken );
+            tasking::SyncToken* syncToken );
 
         static const char* getId() { return "COO.jacobi"; }
     };

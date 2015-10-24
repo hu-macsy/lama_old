@@ -35,7 +35,7 @@
 #include <boost/test/unit_test.hpp>
 
 // others
-#include <scai/lama/UtilsInterface.hpp>
+#include <scai/lama/UtilKernelTrait.hpp>
 #include <scai/lama/LAMAKernel.hpp>
 #include <scai/hmemo.hpp>
 
@@ -65,7 +65,7 @@ namespace ELLUtilsTest
 template<typename NoType>
 void countNonEmptyRowsBySizesTest( ContextPtr loc )
 {
-    LAMAKernel<ELLUtilsInterface::countNonEmptyRowsBySizes> countNonEmptyRowsBySizes;
+    LAMAKernel<ELLKernelTrait::countNonEmptyRowsBySizes> countNonEmptyRowsBySizes;
 
     // count valid array
     {
@@ -92,7 +92,7 @@ void countNonEmptyRowsBySizesTest( ContextPtr loc )
 template<typename NoType>
 void setNonEmptyRowsBySizesTest( ContextPtr loc )
 {
-    LAMAKernel<ELLUtilsInterface::setNonEmptyRowsBySizes> setNonEmptyRowsBySizes;
+    LAMAKernel<ELLKernelTrait::setNonEmptyRowsBySizes> setNonEmptyRowsBySizes;
 
     const IndexType values[] = { 3, 0, 1, 0, 0, 1, 0, 4, 3, 0 };
     const IndexType valuesResult[] = { 0, 2, 5, 7, 8 };
@@ -121,7 +121,7 @@ void setNonEmptyRowsBySizesTest( ContextPtr loc )
 template<typename NoType>
 void hasDiagonalPropertyTest( ContextPtr loc )
 {
-    LAMAKernel<ELLUtilsInterface::hasDiagonalProperty> hasDiagonalProperty;
+    LAMAKernel<ELLKernelTrait::hasDiagonalProperty> hasDiagonalProperty;
 
     // positive test
     {
@@ -161,7 +161,7 @@ void hasDiagonalPropertyTest( ContextPtr loc )
 template<typename NoType>
 void checkTest( ContextPtr loc )
 {
-    LAMAKernel<ELLUtilsInterface::check> check;
+    LAMAKernel<ELLKernelTrait::check> check;
     // check with correct values
     {
         const IndexType valuesIa[] = { 4, 3, 5, 2 };
@@ -244,7 +244,7 @@ void checkTest( ContextPtr loc )
 template<typename ValueType, typename OtherValueType>
 void getRowTest( ContextPtr loc )
 {
-    LAMAKernel<ELLUtilsInterface::getRow<ValueType, OtherValueType> > getRow;
+    LAMAKernel<ELLKernelTrait::getRow<ValueType, OtherValueType> > getRow;
 
     // check with valid dense values
     {
@@ -319,7 +319,7 @@ void getRowTest( ContextPtr loc )
 template<typename ValueType>
 void getValueTest( ContextPtr loc )
 {
-    LAMAKernel<ELLUtilsInterface::getValue<ValueType> > getValue;
+    LAMAKernel<ELLKernelTrait::getValue<ValueType> > getValue;
 
     ValueType valuesValues[] =
     { 0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4 };
@@ -358,7 +358,7 @@ void getValueTest( ContextPtr loc )
 template<typename ValueType, typename OtherValueType>
 void scaleValueTest( ContextPtr loc )
 {
-    LAMAKernel<ELLUtilsInterface::scaleValue<ValueType, OtherValueType> > scaleValue;
+    LAMAKernel<ELLKernelTrait::scaleValue<ValueType, OtherValueType> > scaleValue;
 
     ValueType mValues[] =
     { 1, 2, 3, 4, 5, 2, 2, 2, 2, 2, 4, 2, 0, 1, 3, 0, 0, 0, 0, 3 };
@@ -395,7 +395,7 @@ void scaleValueTest( ContextPtr loc )
 template<typename ValueType, typename OtherValueType>
 void getCSRValuesTest( ContextPtr loc )
 {
-    LAMAKernel<ELLUtilsInterface::getCSRValues<ValueType, OtherValueType> > getCSRValues;
+    LAMAKernel<ELLKernelTrait::getCSRValues<ValueType, OtherValueType> > getCSRValues;
 
     ValueType valuesELLValues[] =
     { 0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4 };
@@ -450,7 +450,7 @@ void getCSRValuesTest( ContextPtr loc )
 template<typename ValueType, typename OtherValueType>
 void setCSRValuesTest( ContextPtr loc )
 {
-    LAMAKernel<ELLUtilsInterface::setCSRValues<OtherValueType, ValueType> > setCSRValues;
+    LAMAKernel<ELLKernelTrait::setCSRValues<OtherValueType, ValueType> > setCSRValues;
 
     ValueType valuesCSRValues[] =
     { 0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4 };
@@ -504,7 +504,7 @@ void setCSRValuesTest( ContextPtr loc )
 template<typename ValueType>
 void compressIATest( ContextPtr loc )
 {
-    LAMAKernel<ELLUtilsInterface::compressIA<ValueType> > compressIA;
+    LAMAKernel<ELLKernelTrait::compressIA<ValueType> > compressIA;
 
     // Check without epsilon
     {
@@ -619,7 +619,7 @@ void compressIATest( ContextPtr loc )
 template<typename ValueType>
 void compressValuesTest( ContextPtr loc )
 {
-    LAMAKernel<ELLUtilsInterface::compressValues<ValueType> > compressValues;
+    LAMAKernel<ELLKernelTrait::compressValues<ValueType> > compressValues;
 
     // Check without epsilon
     {
@@ -758,7 +758,7 @@ void compressValuesTest( ContextPtr loc )
 template<typename NoType>
 void matrixMultiplySizesTest( ContextPtr loc )
 {
-    LAMAKernel<ELLUtilsInterface::matrixMultiplySizes> matrixMultiplySizes;
+    LAMAKernel<ELLKernelTrait::matrixMultiplySizes> matrixMultiplySizes;
 
     // Check with symmetric matrix
     {
@@ -854,7 +854,7 @@ void matrixMultiplySizesTest( ContextPtr loc )
 template<typename ValueType>
 void matrixMultiplyTest( ContextPtr loc )
 {
-    LAMAKernel<ELLUtilsInterface::matrixMultiply<ValueType> > matrixMultiply;
+    LAMAKernel<ELLKernelTrait::matrixMultiply<ValueType> > matrixMultiply;
 
     // Check with symmetric matrix
     {
@@ -1064,7 +1064,7 @@ void matrixMultiplyTest( ContextPtr loc )
 template<typename NoType>
 void matrixAddSizesTest( ContextPtr loc )
 {
-    LAMAKernel<ELLUtilsInterface::matrixAddSizes > matrixAddSizes;
+    LAMAKernel<ELLKernelTrait::matrixAddSizes > matrixAddSizes;
 
     IndexType valuesAIa[] =
     { 2, 3, 2, 3, 4 };
@@ -1118,7 +1118,7 @@ void matrixAddSizesTest( ContextPtr loc )
 template<typename ValueType>
 void matrixAddTest( ContextPtr loc )
 {
-    LAMAKernel<ELLUtilsInterface::matrixAdd<ValueType> > matrixAdd;
+    LAMAKernel<ELLKernelTrait::matrixAdd<ValueType> > matrixAdd;
     // Check with neutral beta
     {
         ValueType valuesAValues[] =

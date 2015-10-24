@@ -35,7 +35,7 @@
 #include <scai/lama/openmp/OpenMPBLAS3.hpp>
 
 // local library
-#include <scai/lama/BLASInterface.hpp>
+#include <scai/lama/BLASKernelTrait.hpp>
 
 // internal scai libraries
 #include <scai/common/macros/unused.hpp>
@@ -371,7 +371,7 @@ void OpenMPBLAS3::registerKernels()
     SCAI_LOG_INFO( logger, "set BLAS3 routines for OpenMP in Interface" )
 
 #define LAMA_BLAS3_REGISTER(z, I, _)                                                  \
-    KernelRegistry::set<BLASInterface::gemm<ARITHMETIC_HOST_TYPE_##I> >( gemm, ctx ); \
+    KernelRegistry::set<BLASKernelTrait::gemm<ARITHMETIC_HOST_TYPE_##I> >( gemm, ctx ); \
 
     BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_BLAS3_REGISTER, _ )
 

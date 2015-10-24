@@ -60,7 +60,7 @@ class COMMON_DLL_IMPORTEXPORT CUDACOOUtils
 {
 public:
 
-    /** Implementation for COOUtilsInterface::Counting::offsets2ia with CUDA on GPUs */
+    /** Implementation for COOKernelTrait::Counting::offsets2ia with CUDA on GPUs */
 
     static void offsets2ia(
         IndexType cooIA[],
@@ -69,7 +69,7 @@ public:
         const IndexType numRows,
         const IndexType numDiagonals );
 
-    /** Implementation for COOUtilsInterface::Conversions::setCSRData with CUDA on GPUs */
+    /** Implementation for COOKernelTrait::Conversions::setCSRData with CUDA on GPUs */
 
     template<typename COOValueType,typename CSRValueType>
     static void setCSRData(
@@ -80,7 +80,7 @@ public:
         const IndexType numRows,
         const IndexType numDiagonals );
 
-    /** Implementation for COOUtilsInterface::Counting::ia2offsets with CUDA on GPUs */
+    /** Implementation for COOKernelTrait::Counting::ia2offsets with CUDA on GPUs */
 
     static void ia2offsets(
         IndexType csrIA[],
@@ -89,8 +89,8 @@ public:
         const IndexType cooIA[],
         const IndexType numValues );
 
-    /** Implementation for COOUtilsInterface::Conversions::setCSRData with CUDA on GPUs */
-    /** Implementation for COOUtilsInterface::Mult:normalGEMV with CUDA on GPUs */
+    /** Implementation for COOKernelTrait::Conversions::setCSRData with CUDA on GPUs */
+    /** Implementation for COOKernelTrait::Mult:normalGEMV with CUDA on GPUs */
 
     template<typename ValueType>
     static void normalGEMV(
@@ -106,7 +106,7 @@ public:
         const ValueType cooValues[],
         tasking::SyncToken* syncToken );
 
-    /** Implementation for COOUtilsInterface::Mult:normalGEMV with CUDA on GPUs */
+    /** Implementation for COOKernelTrait::Mult:normalGEMV with CUDA on GPUs */
 
     template<typename ValueType>
     static void normalGEVM(

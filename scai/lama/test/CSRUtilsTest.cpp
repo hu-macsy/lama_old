@@ -36,7 +36,7 @@
 
 // others
 #include <scai/hmemo.hpp>
-#include <scai/lama/UtilsInterface.hpp>
+#include <scai/lama/UtilKernelTrait.hpp>
 #include <scai/lama/LAMAKernel.hpp>
 
 #include <scai/lama/openmp/OpenMPCSRUtils.hpp>
@@ -61,7 +61,7 @@ namespace CSRUtilsTest
 template<typename ValueType, typename OtherValueType>
 void absMaxDiffValTest( ContextPtr loc )
 {
-    LAMAKernel<CSRUtilsInterface::absMaxDiffVal<ValueType> > absMaxDiffVal;
+    LAMAKernel<CSRKernelTrait::absMaxDiffVal<ValueType> > absMaxDiffVal;
 
     // input arrays
     //    Array1             Array2
@@ -109,7 +109,7 @@ void absMaxDiffValTest( ContextPtr loc )
 template<typename ValueType>
 void transposeTestSquare( ContextPtr loc )
 {
-    LAMAKernel<CSRUtilsInterface::convertCSR2CSC<ValueType> > convertCSR2CSC;
+    LAMAKernel<CSRKernelTrait::convertCSR2CSC<ValueType> > convertCSR2CSC;
 
     //  input array           transpose
     //    1.0   -   2.0       1.0  0.5   -
@@ -174,7 +174,7 @@ void transposeTestSquare( ContextPtr loc )
 template<typename ValueType>
 void transposeTestNonSquare( ContextPtr loc )
 {
-    LAMAKernel<CSRUtilsInterface::convertCSR2CSC<ValueType> > convertCSR2CSC;
+    LAMAKernel<CSRKernelTrait::convertCSR2CSC<ValueType> > convertCSR2CSC;
     //  input array           transpose
     //    1.0   -   2.0       1.0  0.5   -    4.0
     //    0.5  0.3   -         -   0.3   -    1.5

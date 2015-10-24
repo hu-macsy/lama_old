@@ -35,7 +35,7 @@
 #include <scai/lama/openmp/BLAS_BLAS3.hpp>
 
 // others
-#include <scai/lama/BLASInterface.hpp>
+#include <scai/lama/BLASKernelTrait.hpp>
 #include <scai/lama/cblas.hpp>
 
 // internal scai libraries
@@ -268,7 +268,7 @@ void BLAS_BLAS3::registerKernels()
     //       ( e.g. routine CUDABLAS1::sum<ValueType> is set for BLAS::BLAS1::sum variable
 
 #define LAMA_BLAS3_REGISTER(z, I, _)                                                  \
-    KernelRegistry::set<BLASInterface::gemm<ARITHMETIC_HOST_TYPE_##I> >( gemm, ctx, true ); \
+    KernelRegistry::set<BLASKernelTrait::gemm<ARITHMETIC_HOST_TYPE_##I> >( gemm, ctx, true ); \
 
     BOOST_PP_REPEAT( ARITHMETIC_HOST_EXT_TYPE_CNT, LAMA_BLAS3_REGISTER, _ )
 

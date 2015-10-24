@@ -917,7 +917,7 @@ void MICJDSUtils::jacobiHalo(
 
 /* --------------------------------------------------------------------------- */
 
-void MICJDSUtils::setInterface( JDSUtilsInterface& JDSUtils )
+void MICJDSUtils::setInterface( JDSUtilKernelTrait& JDSUtils )
 {
     SCAI_LOG_INFO( logger, "set JDS routines for MIC in Interface" )
 

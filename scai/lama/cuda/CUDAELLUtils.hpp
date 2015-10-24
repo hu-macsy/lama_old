@@ -124,7 +124,7 @@ public:
         ValueType ellValues[],
         const OtherValueType values[] );
 
-    /** Implementation for ELLUtilsInterface::Conversions::getCSRValues */
+    /** Implementation for ELLKernelTrait::Conversions::getCSRValues */
 
     template<typename ELLValueType,typename CSRValueType>
     static void getCSRValues(
@@ -158,7 +158,7 @@ public:
         const IndexType csrJA[],
         const CSRValueType csrValues[] );
 
-    /** Implementation for ELLUtilsInterface::Mult::normalGEMV  */
+    /** Implementation for ELLKernelTrait::Mult::normalGEMV  */
 
     template<typename ValueType>
     static void normalGEMV(
@@ -174,7 +174,7 @@ public:
         const ValueType ellValues[],
         tasking::SyncToken* syncToken );
 
-    /** Implementation for CSRUtilsInterface::Mult::normalGEVM  */
+    /** Implementation for CSRKernelTrait::Mult::normalGEVM  */
 
     template<typename ValueType>
     static void normalGEVM(
@@ -191,7 +191,7 @@ public:
         const ValueType ellValues[],
         tasking::SyncToken* syncToken );
 
-    /** Implementation for ELLUtilsInterface::Mult::sparseGEMV  */
+    /** Implementation for ELLKernelTrait::Mult::sparseGEMV  */
 
     template<typename ValueType>
     static void sparseGEMV(
@@ -207,7 +207,7 @@ public:
         const ValueType ellValues[],
         tasking::SyncToken* syncToken );
 
-    /** Implementation for ELLUtilsInterface::Mult::sparseGEVM  */
+    /** Implementation for ELLKernelTrait::Mult::sparseGEVM  */
 
     template<typename ValueType>
     static void sparseGEVM(
@@ -224,7 +224,7 @@ public:
         const ValueType ellValues[],
         tasking::SyncToken* syncToken );
 
-    /** Implementation for ELLUtilsInterface::Solver::jacobi  */
+    /** Implementation for ELLKernelTrait::Solver::jacobi  */
 
     template<typename ValueType>
     static void jacobi(
@@ -239,7 +239,7 @@ public:
         const ValueType omega,
         tasking::SyncToken* syncToken );
 
-    /** Implementation for ELLUtilsInterface::Solver::jacobiHalo  */
+    /** Implementation for ELLKernelTrait::Solver::jacobiHalo  */
 
     template<typename ValueType>
     static void jacobiHalo(

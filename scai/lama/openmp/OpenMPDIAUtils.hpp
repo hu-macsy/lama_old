@@ -54,7 +54,7 @@ class COMMON_DLL_IMPORTEXPORT OpenMPDIAUtils
 {
 public:
 
-    /** OpenMP implementation for DIAUtilsInterface::Counting::getCSRSizes */
+    /** OpenMP implementation for DIAKernelTrait::Counting::getCSRSizes */
 
     template<typename ValueType>
     static void getCSRSizes(
@@ -67,7 +67,7 @@ public:
         const ValueType diaValues[],
         const ValueType eps );
 
-    /** OpenMP implementation for DIAUtilsInterface::Conversions::getCSRValues.  */
+    /** OpenMP implementation for DIAKernelTrait::Conversions::getCSRValues.  */
 
     template<typename DIAValueType,typename CSRValueType>
     static void getCSRValues(
@@ -82,7 +82,7 @@ public:
         const DIAValueType diaValues[],
         const DIAValueType eps );
 
-    /** Implementation for DIAUtilsInterface::Mult::normalGEMV  */
+    /** Implementation for DIAKernelTrait::Mult::normalGEMV  */
 
     template<typename ValueType>
     static void normalGEMV(
@@ -98,7 +98,7 @@ public:
         const ValueType diaValues[],
         tasking::SyncToken* syncToken );
 
-    /** Implementation for DIAUtilsInterface::Mult::normalGEVM  */
+    /** Implementation for DIAKernelTrait::Mult::normalGEVM  */
 
     template<typename ValueType>
     static void normalGEVM(
@@ -114,7 +114,7 @@ public:
         const ValueType diaValues[],
         tasking::SyncToken* syncToken );
 
-    /** Implementation for DIAUtilsInterface::Solver::jacobi  */
+    /** Implementation for DIAKernelTrait::Solver::jacobi  */
 
     template<typename ValueType>
     static void jacobi(
@@ -129,7 +129,7 @@ public:
         const IndexType numRows,
         tasking::SyncToken* syncToken );
 
-    /** Implemenatation for DIAUtilsInterface::Reductions::absMaxVal */
+    /** Implemenatation for DIAKernelTrait::Reductions::absMaxVal */
 
     template<typename ValueType>
     static ValueType absMaxVal(

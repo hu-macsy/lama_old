@@ -36,7 +36,7 @@
 
 // local library
 #include <scai/lama/LAMAArrayUtils.hpp>
-#include <scai/lama/UtilsInterface.hpp>
+#include <scai/lama/UtilKernelTrait.hpp>
 #include <scai/lama/LAMAKernel.hpp>
 
 #include <scai/lama/distribution/NoDistribution.hpp>
@@ -494,7 +494,7 @@ Scalar DenseVector<ValueType>::max() const
 
     SCAI_ASSERT_GT( nnu, 0, "no local values for max" )
 
-    static LAMAKernel<UtilsInterface::maxval<ValueType> > maxval;
+    static LAMAKernel<UtilKernelTrait::maxval<ValueType> > maxval;
 
     ContextPtr loc = maxval.getValidContext( mLocalValues.getValidContext() );
 
@@ -518,7 +518,7 @@ Scalar DenseVector<ValueType>::l1Norm() const
     {
         // get available kernel routines for "BLAS1.asum" 
 
-        static LAMAKernel<BLASInterface::asum<ValueType> > asum;
+        static LAMAKernel<BLASKernelTrait::asum<ValueType> > asum;
 
         // find valid context, preferred is mContext
 
@@ -547,7 +547,7 @@ Scalar DenseVector<ValueType>::l2Norm() const
     {
         // get available kernel routines for "BLAS1.dot" 
 
-        static LAMAKernel<BLASInterface::dot<ValueType> > dot;
+        static LAMAKernel<BLASKernelTrait::dot<ValueType> > dot;
 
         // find valid context, preferred is mContext
 
@@ -576,7 +576,7 @@ Scalar DenseVector<ValueType>::maxNorm() const
 
     if ( nnu > 0 )
     {
-        static LAMAKernel<UtilsInterface::absMaxVal<ValueType> > absMaxVal;
+        static LAMAKernel<UtilKernelTrait::absMaxVal<ValueType> > absMaxVal;
 
         ContextPtr loc = absMaxVal.getValidContext( mContext );  
 
@@ -637,9 +637,9 @@ void DenseVector<ValueType>::vectorPlusVector(
 
     // get function pointers, do not use fallbacks here
 
-    static LAMAKernel<UtilsInterface::scale<ValueType> > scale;
-    static LAMAKernel<BLASInterface::axpy<ValueType> > axpy;
-    static LAMAKernel<BLASInterface::sum<ValueType> > sum;
+    static LAMAKernel<UtilKernelTrait::scale<ValueType> > scale;
+    static LAMAKernel<BLASKernelTrait::axpy<ValueType> > axpy;
+    static LAMAKernel<BLASKernelTrait::sum<ValueType> > sum;
 
     ContextPtr context = sum.getValidContext( scale, axpy, prefContext );
 
@@ -847,7 +847,7 @@ SCAI_REGION( "Vector.Dense.dotP" )
 
         // get available kernel routines for "BLAS1.dot" 
 
-        static LAMAKernel<BLASInterface::dot<ValueType> > dot;
+        static LAMAKernel<BLASKernelTrait::dot<ValueType> > dot;
 
         // find valid context, preferred is mContext
 
@@ -944,7 +944,7 @@ void DenseVector<ValueType>::invert()
 {
     const IndexType size = mLocalValues.size();
 
-    static LAMAKernel<UtilsInterface::invert<ValueType> > invert;
+    static LAMAKernel<UtilKernelTrait::invert<ValueType> > invert;
 
     const ContextPtr loc = invert.getValidContext( this->getContext() );
 

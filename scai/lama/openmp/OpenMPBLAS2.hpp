@@ -329,9 +329,9 @@ public:
         double* y,
         tasking::SyncToken* syncToken );
 
-    /** Routine that sets functions pointers belonging to BLAS2 in a BLASInterface.
+    /** Routine that sets functions pointers belonging to BLAS2 in a BLASKernelTrait.
      *
-     *  param[inout] BLASInterface struct to register all routines implemented in CUDA
+     *  param[inout] BLASKernelTrait struct to register all routines implemented in CUDA
      *
      *  Note: this routine will make instantiations of the template routines.
      */

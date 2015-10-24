@@ -35,7 +35,7 @@
 #include <scai/lama/LAMAArrayUtils.hpp>
 
 // local library
-#include <scai/lama/UtilsInterface.hpp>
+#include <scai/lama/UtilKernelTrait.hpp>
 #include <scai/lama/LAMAKernel.hpp>
 
 // internal scai libraries
@@ -75,7 +75,7 @@ void LAMAArrayUtils::assignImpl(
 
     // set should be available on interface for each loc
 
-    static LAMAKernel<UtilsInterface::set<ValueType1, ValueType2> > set;
+    static LAMAKernel<UtilKernelTrait::set<ValueType1, ValueType2> > set;
 
     ContextPtr loc = set.getValidContext( prefContext );
 
@@ -173,7 +173,7 @@ void LAMAArrayUtils::gather(
 
     // choose location for the operation where source array is currently valid
 
-    static LAMAKernel<UtilsInterface::setGather<ValueType1, ValueType2> > setGather;
+    static LAMAKernel<UtilKernelTrait::setGather<ValueType1, ValueType2> > setGather;
 
     ContextPtr context = setGather.getValidContext( source.getValidContext( context::Host ) );
 
@@ -194,7 +194,7 @@ void LAMAArrayUtils::gather(
 template<typename ValueType>
 void LAMAArrayUtils::assignScalar( LAMAArray<ValueType>& target, const Scalar& value, ContextPtr prefContext )
 {
-    static LAMAKernel<UtilsInterface::setVal<ValueType> > setVal;
+    static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
 
     ContextPtr context = setVal.getValidContext( prefContext );
 
@@ -255,7 +255,7 @@ void LAMAArrayUtils::setVal( LAMAArray<ValueType>& target, const IndexType index
 
     ContextPtr loc = target.getValidContext();   // preferred location where to fill
 
-    static LAMAKernel<UtilsInterface::setVal<ValueType> > setVal;
+    static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
 
     loc = setVal.getValidContext( loc );
 
@@ -284,7 +284,7 @@ void LAMAArrayUtils::assignScaled(
     {
         // result := 0
 
-        static LAMAKernel<UtilsInterface::setVal<ValueType> > setVal;
+        static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
 
         ContextPtr loc = setVal.getValidContext( prefLoc );
 
@@ -303,7 +303,7 @@ void LAMAArrayUtils::assignScaled(
 
         // result := beta * result, is result *= beta
 
-        static LAMAKernel<UtilsInterface::scale<ValueType> > scale;
+        static LAMAKernel<UtilKernelTrait::scale<ValueType> > scale;
 
         ContextPtr loc = scale.getValidContext( prefLoc );
 
@@ -320,7 +320,7 @@ void LAMAArrayUtils::assignScaled(
         // Note: we do not use BLAS1:axpy here to guarantee same LAMA OpenMP schedule
         //       and to support type conversions in place for multiprecision support
         
-        static LAMAKernel<UtilsInterface::setScale<ValueType, ValueType> > setScale;
+        static LAMAKernel<UtilKernelTrait::setScale<ValueType, ValueType> > setScale;
 
         ContextPtr loc = setScale.getValidContext( prefLoc );
 

@@ -65,7 +65,7 @@ public:
 
     /** Routine that registers all routines of this class at the LAMA interface. */
 
-    static void setInterface( struct ELLUtilsInterface& ELLUtils );
+    static void setInterface( struct ELLKernelTrait& ELLUtils );
 
 private:
 
@@ -140,7 +140,7 @@ private:
 
     static bool hasDiagonalProperty( const IndexType numDiagonals, const IndexType csrJA[] );
 
-    /** Implementation for ELLUtilsInterface::Scale::scaleValue */
+    /** Implementation for ELLKernelTrait::Scale::scaleValue */
 
     template<typename ValueType,typename OtherValueType>
     static void scaleValue(
@@ -150,7 +150,7 @@ private:
         ValueType ellValues[],
         const OtherValueType values[] );
 
-    /** Implementation for ELLUtilsInterface::Conversions::compressIA */
+    /** Implementation for ELLKernelTrait::Conversions::compressIA */
 
     template<typename ValueType>
     static void compressIA(
@@ -161,7 +161,7 @@ private:
         const ValueType eps,
         IndexType newIA[] );
 
-    /** Implementation for ELLUtilsInterface::Conversions::compressValues */
+    /** Implementation for ELLKernelTrait::Conversions::compressValues */
 
     template<typename ValueType>
     static void compressValues(
@@ -173,7 +173,7 @@ private:
         IndexType newJA[],
         ValueType newValues[] );
 
-    /** Implementation for ELLUtilsInterface::Conversions::getCSRValues */
+    /** Implementation for ELLKernelTrait::Conversions::getCSRValues */
 
     template<typename ELLValueType,typename CSRValueType>
     static void getCSRValues(
@@ -194,7 +194,7 @@ private:
         const IndexType numRows,
         const IndexType numValuesPerRow );
 
-    /** Implementation for ELLUtilsInterface::Conversions::setCSRValues */
+    /** Implementation for ELLKernelTrait::Conversions::setCSRValues */
 
     template<typename ELLValueType,typename CSRValueType>
     static void setCSRValues(
@@ -207,7 +207,7 @@ private:
         const IndexType csrJA[],
         const CSRValueType csrValues[] );
 
-    /** Implementation for ELLUtilsInterface::MatrixTimesMatrix::computeIA */
+    /** Implementation for ELLKernelTrait::MatrixTimesMatrix::computeIA */
 
     template<typename ValueType>
     static void computeIA(
@@ -219,7 +219,7 @@ private:
         const IndexType bNumRows,
         IndexType cIA[] );
 
-    /** Implementation for ELLUtilsInterface::MatrixTimesMatrix::computeValues */
+    /** Implementation for ELLKernelTrait::MatrixTimesMatrix::computeValues */
 
     template<typename ValueType>
     static void computeValues(
@@ -236,7 +236,7 @@ private:
         IndexType cJA[],
         ValueType cValues[] );
 
-    /** Implementation for ELLUtilsInterface::MatrixTimesMatrix::addComputeIA */
+    /** Implementation for ELLKernelTrait::MatrixTimesMatrix::addComputeIA */
 
     template<typename ValueType>
     static void addComputeIA(
@@ -248,7 +248,7 @@ private:
         const IndexType bNumRows,
         IndexType cIA[] );
 
-    /** Implementation for ELLUtilsInterface::MatrixTimesMatrix::addComputeValues */
+    /** Implementation for ELLKernelTrait::MatrixTimesMatrix::addComputeValues */
 
     template<typename ValueType>
     static void addComputeValues(
@@ -265,7 +265,7 @@ private:
         IndexType cJA[],
         ValueType cValues[] );
 
-    /** Implementation for ELLUtilsInterface::Solver::jacobi */
+    /** Implementation for ELLKernelTrait::Solver::jacobi */
 
     template<typename ValueType>
     static void jacobi(
@@ -280,7 +280,7 @@ private:
         const ValueType omega,
         tasking::SyncToken* syncToken );
 
-    /** Implementation for ELLUtilsInterface::Solver::jacobiHalo */
+    /** Implementation for ELLKernelTrait::Solver::jacobiHalo */
 
     template<typename ValueType>
     static void jacobiHalo(
@@ -297,7 +297,7 @@ private:
         const ValueType omega,
         tasking::SyncToken* syncToken );
 
-    /** Implementation for ELLUtilsInterface::Mult::normalGEMV  */
+    /** Implementation for ELLKernelTrait::Mult::normalGEMV  */
 
     template<typename ValueType>
     static void normalGEMV(
@@ -313,7 +313,7 @@ private:
         const ValueType csrValues[],
         tasking::SyncToken* syncToken );
 
-    /** Implementation for ELLUtilsInterface::Mult::sparseGEMV  */
+    /** Implementation for ELLKernelTrait::Mult::sparseGEMV  */
 
     template<typename ValueType>
     static void sparseGEMV(

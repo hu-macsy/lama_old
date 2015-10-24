@@ -35,7 +35,7 @@
 #include <scai/lama/openmp/OpenMPBLAS2.hpp>
 
 // local library
-#include <scai/lama/BLASInterface.hpp>
+#include <scai/lama/BLASKernelTrait.hpp>
 
 // internal scai libraries
 #include <scai/kregistry/KernelRegistry.hpp>
@@ -292,7 +292,7 @@ void OpenMPBLAS2::registerKernels()
     SCAI_LOG_INFO( logger, "register BLAS2 routines for OpenMP in Kernel Registry" )
 
 #define LAMA_BLAS2_REGISTER(z, I, _)                                                  \
-    KernelRegistry::set<BLASInterface::gemv<ARITHMETIC_HOST_TYPE_##I> >( gemv, ctx ); \
+    KernelRegistry::set<BLASKernelTrait::gemv<ARITHMETIC_HOST_TYPE_##I> >( gemv, ctx ); \
 
     BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_BLAS2_REGISTER, _ )
 

@@ -59,7 +59,7 @@ class COMMON_DLL_IMPORTEXPORT MICMKLCSRUtils
 {
 public:
 
-    /** Implementation for CSRUtilsInterface::Mult::normalGEMV  */
+    /** Implementation for CSRKernelTrait::Mult::normalGEMV  */
 
     template<typename ValueType>
     static void normalGEMV(
@@ -78,7 +78,7 @@ public:
 
     /** Routine that registers all routines of this class at the LAMA interface. */
 
-    static void setInterface( struct CSRUtilsInterface& CSRUtils );
+    static void setInterface( struct CSRKernelTrait& CSRUtils );
 
 protected:
 

@@ -47,7 +47,7 @@
 #include <scai/lama/distribution/CyclicDistribution.hpp>
 #include <scai/lama/distribution/Redistributor.hpp>
 
-#include <scai/lama/UtilsInterface.hpp>
+#include <scai/lama/UtilKernelTrait.hpp>
 #include <scai/lama/openmp/OpenMPCSRUtils.hpp>
 
 // internal libraries
@@ -1344,7 +1344,7 @@ void SparseMatrix<ValueType>::vectorHaloOperationSync(
     SCAI_ASSERT( ySize == colDist->getLocalSize(),
                  "size mismatch of localY and columnDistribution" << ySize << " != " << colDist->getLocalSize() )
 
-    static LAMAKernel<CSRUtilsInterface::sizes2offsets> sizes2offsets;
+    static LAMAKernel<CSRKernelTrait::sizes2offsets> sizes2offsets;
 
     // will be done on the host
 
@@ -1590,7 +1590,7 @@ void SparseMatrix<ValueType>::vectorHaloOperationAsync(
     SCAI_ASSERT( ySize == colDist->getLocalSize(),
                  "size mismatch of localY and columnDistribution" << ySize << " != " << colDist->getLocalSize() )
 
-    static LAMAKernel<CSRUtilsInterface::sizes2offsets> sizes2offsets;
+    static LAMAKernel<CSRKernelTrait::sizes2offsets> sizes2offsets;
 
     std::vector<IndexType> sizes( numParts );
     std::vector<IndexType> offsets;

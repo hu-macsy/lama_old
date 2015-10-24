@@ -80,7 +80,7 @@ public:
         const IndexType ldc,
         tasking::SyncToken* syncToken );
 
-    /** Routine that sets functions pointers belonging to BLAS1 in a BLASInterface.
+    /** Routine that sets functions pointers belonging to BLAS1 in a BLASKernelTrait.
      *
      *  @param[in,out] blas struct to register all routines implemented in CUDA
      *

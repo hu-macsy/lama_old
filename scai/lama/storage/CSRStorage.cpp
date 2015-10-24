@@ -35,8 +35,8 @@
 #include <scai/lama/storage/CSRStorage.hpp>
 
 // local library
-#include <scai/lama/UtilsInterface.hpp>
-#include <scai/lama/BLASInterface.hpp>
+#include <scai/lama/UtilKernelTrait.hpp>
+#include <scai/lama/BLASKernelTrait.hpp>
 #include <scai/lama/LAMAArrayUtils.hpp>
 #include <scai/lama/LAMAKernel.hpp>
 
@@ -177,8 +177,8 @@ void CSRStorage<ValueType>::check( const char* msg ) const
     // check ascending values in offset array mIa
 
     {
-        static LAMAKernel<UtilsInterface::isSorted<IndexType> > isSorted;
-        static LAMAKernel<UtilsInterface::getValue<IndexType> > getValue;
+        static LAMAKernel<UtilKernelTrait::isSorted<IndexType> > isSorted;
+        static LAMAKernel<UtilKernelTrait::getValue<IndexType> > getValue;
 
         const ContextPtr loc = isSorted.getValidContext( getValue, this->getContextPtr() );
 
@@ -201,7 +201,7 @@ void CSRStorage<ValueType>::check( const char* msg ) const
     // check column indexes in JA
 
     {
-        static LAMAKernel<UtilsInterface::validIndexes> validIndexes;
+        static LAMAKernel<UtilKernelTrait::validIndexes> validIndexes;
 
         ContextPtr loc = validIndexes.getValidContext( this->getContextPtr() );
 
@@ -234,7 +234,7 @@ bool CSRStorage<ValueType>::checkDiagonalProperty() const
         return false;
     }
 
-    static LAMAKernel<CSRUtilsInterface::hasDiagonalProperty> hasDiagonalProperty;
+    static LAMAKernel<CSRKernelTrait::hasDiagonalProperty> hasDiagonalProperty;
 
     ContextPtr loc = hasDiagonalProperty.getValidContext( this->getContextPtr() );
 
@@ -263,8 +263,8 @@ void CSRStorage<ValueType>::setIdentity( const IndexType size )
 
     mNumValues = mNumRows;
 
-    static LAMAKernel<UtilsInterface::setOrder<IndexType> > setOrder;
-    static LAMAKernel<UtilsInterface::setVal<ValueType> > setVal;
+    static LAMAKernel<UtilKernelTrait::setOrder<IndexType> > setOrder;
+    static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
 
     {
         ContextPtr loc = setOrder.getValidContext( this->getContextPtr() );
@@ -313,7 +313,7 @@ void CSRStorage<ValueType>::setCSRDataImpl(
 
     if( ia.size() == numRows )
     {
-        static LAMAKernel<UtilsInterface::sum<IndexType> > sum;
+        static LAMAKernel<UtilKernelTrait::sum<IndexType> > sum;
 
         // checking is done where ia is already valid, preferred is loc
 
@@ -332,7 +332,7 @@ void CSRStorage<ValueType>::setCSRDataImpl(
     }
     else if( ia.size() == numRows + 1 )
     {
-        static LAMAKernel<CSRUtilsInterface::validOffsets> validOffsets;
+        static LAMAKernel<CSRKernelTrait::validOffsets> validOffsets;
 
         // checking is done where ia is already valid
 
@@ -356,7 +356,7 @@ void CSRStorage<ValueType>::setCSRDataImpl(
     SCAI_ASSERT_EQUAL_ERROR( numValues, values.size() );
 
     {
-        static LAMAKernel<UtilsInterface::validIndexes> validIndexes;
+        static LAMAKernel<UtilKernelTrait::validIndexes> validIndexes;
 
         ContextPtr loc1 = validIndexes.getValidContext( loc );
 
@@ -393,7 +393,7 @@ void CSRStorage<ValueType>::setCSRDataImpl(
         LAMAArrayUtils::assign( mIa, ia, loc );
 
         {
-            static LAMAKernel<CSRUtilsInterface::sizes2offsets> sizes2offsets;
+            static LAMAKernel<CSRKernelTrait::sizes2offsets> sizes2offsets;
 
             ContextPtr loc1 = sizes2offsets.getValidContext( loc );
 
@@ -962,7 +962,7 @@ void CSRStorage<ValueType>::getDiagonalImpl( LAMAArray<OtherValueType>& diagonal
 {
     const IndexType numDiagonalElements = std::min( mNumColumns, mNumRows );
 
-    static LAMAKernel<UtilsInterface::setGather<OtherValueType, ValueType> > setGather;
+    static LAMAKernel<UtilKernelTrait::setGather<OtherValueType, ValueType> > setGather;
 
     ContextPtr loc = setGather.getValidContext( this->getContextPtr() );
 
@@ -980,7 +980,7 @@ void CSRStorage<ValueType>::getDiagonalImpl( LAMAArray<OtherValueType>& diagonal
 template<typename ValueType>
 void CSRStorage<ValueType>::scaleImpl( const Scalar scalar )
 {
-    static LAMAKernel<UtilsInterface::scale<ValueType> > scale;
+    static LAMAKernel<UtilKernelTrait::scale<ValueType> > scale;
 
     ContextPtr loc = scale.getValidContext( this->getContextPtr() );
 
@@ -1001,7 +1001,7 @@ void CSRStorage<ValueType>::scaleImpl( const LAMAArray<OtherValueType>& diagonal
 {
     IndexType n = std::min( mNumRows, diagonal.size() );
 
-    static LAMAKernel<CSRUtilsInterface::scaleRows<ValueType, OtherValueType> > scaleRows;
+    static LAMAKernel<CSRKernelTrait::scaleRows<ValueType, OtherValueType> > scaleRows;
 
     ContextPtr loc = scaleRows.getValidContext( this->getContextPtr() );
 
@@ -1121,9 +1121,9 @@ void CSRStorage<ValueType>::buildCSR(
     LAMAArray<OtherValueType>* values,
     const ContextPtr prefLoc ) const
 {
-    static LAMAKernel<CSRUtilsInterface::offsets2sizes> offsets2sizes;
-    static LAMAKernel<UtilsInterface::set<IndexType, IndexType> > setIndexes;
-    static LAMAKernel<UtilsInterface::set<OtherValueType, ValueType> > setValues;
+    static LAMAKernel<CSRKernelTrait::offsets2sizes> offsets2sizes;
+    static LAMAKernel<UtilKernelTrait::set<IndexType, IndexType> > setIndexes;
+    static LAMAKernel<UtilKernelTrait::set<OtherValueType, ValueType> > setValues;
 
     ContextPtr loc = offsets2sizes.getValidContext( setIndexes, setValues, prefLoc );
 
@@ -1301,8 +1301,8 @@ void CSRStorage<ValueType>::matrixTimesVector(
         SCAI_ASSERT_EQUAL_ERROR( y.size(), mNumRows )
     }
 
-    static LAMAKernel<CSRUtilsInterface::sparseGEMV<ValueType> > sparseGEMV;
-    static LAMAKernel<CSRUtilsInterface::normalGEMV<ValueType> > normalGEMV;
+    static LAMAKernel<CSRKernelTrait::sparseGEMV<ValueType> > sparseGEMV;
+    static LAMAKernel<CSRKernelTrait::normalGEMV<ValueType> > normalGEMV;
 
     // run it only on context of this storage if both routines are available
 
@@ -1378,8 +1378,8 @@ void CSRStorage<ValueType>::vectorTimesMatrix(
         SCAI_ASSERT_EQUAL_ERROR( y.size(), mNumColumns )
     }
 
-    static LAMAKernel<CSRUtilsInterface::sparseGEVM<ValueType> > sparseGEVM;
-    static LAMAKernel<CSRUtilsInterface::normalGEVM<ValueType> > normalGEVM;
+    static LAMAKernel<CSRKernelTrait::sparseGEVM<ValueType> > sparseGEVM;
+    static LAMAKernel<CSRKernelTrait::normalGEVM<ValueType> > normalGEVM;
 
     ContextPtr preferedLoc = this->getContextPtr();
     ContextPtr loc = sparseGEVM.getValidContext( normalGEVM, preferedLoc );
@@ -1459,7 +1459,7 @@ void CSRStorage<ValueType>::matrixTimesVectorN(
 
     SCAI_LOG_INFO( logger, *this << ": matrixTimesVectorN on " << *loc )
 
-    static LAMAKernel<CSRUtilsInterface::gemm<ValueType> > gemm; 
+    static LAMAKernel<CSRKernelTrait::gemm<ValueType> > gemm; 
 
     ReadAccess<IndexType> csrIA( mIa, loc );
     ReadAccess<IndexType> csrJA( mJa, loc );
@@ -1510,8 +1510,8 @@ SyncToken* CSRStorage<ValueType>::matrixTimesVectorAsync(
     // Note: checks will be done by asynchronous task in any case
     //       and exception in tasks are handled correctly
 
-    static LAMAKernel<CSRUtilsInterface::sparseGEMV<ValueType> > sparseGEMV;
-    static LAMAKernel<CSRUtilsInterface::normalGEMV<ValueType> > normalGEMV;
+    static LAMAKernel<CSRKernelTrait::sparseGEMV<ValueType> > sparseGEMV;
+    static LAMAKernel<CSRKernelTrait::normalGEMV<ValueType> > normalGEMV;
 
     ContextPtr loc = normalGEMV.getValidContext( sparseGEMV, this->getContextPtr() );
 
@@ -1666,8 +1666,8 @@ SyncToken* CSRStorage<ValueType>::vectorTimesMatrixAsync(
         SCAI_ASSERT_EQUAL_ERROR( y.size(), mNumColumns )
     }
 
-    static LAMAKernel<CSRUtilsInterface::sparseGEVM<ValueType> > sparseGEVM;
-    static LAMAKernel<CSRUtilsInterface::normalGEVM<ValueType> > normalGEVM;
+    static LAMAKernel<CSRKernelTrait::sparseGEVM<ValueType> > sparseGEVM;
+    static LAMAKernel<CSRKernelTrait::normalGEVM<ValueType> > normalGEVM;
 
     unique_ptr<SyncToken> syncToken( loc->getSyncToken() );
 
@@ -1763,7 +1763,7 @@ void CSRStorage<ValueType>::jacobiIterate(
 
     // loc = ContextFactory::getContext( context::Host );  // does not run on other devices
 
-    static LAMAKernel<CSRUtilsInterface::jacobi<ValueType> > jacobi;
+    static LAMAKernel<CSRKernelTrait::jacobi<ValueType> > jacobi;
 
     ContextPtr loc = jacobi.getValidContext( this->getContextPtr() );
 
@@ -1815,7 +1815,7 @@ void CSRStorage<ValueType>::jacobiIterateHalo(
         COMMON_THROWEXCEPTION( "local stroage is not CSR" )
     }
 
-    static LAMAKernel<CSRUtilsInterface::jacobiHalo<ValueType> > jacobiHalo;
+    static LAMAKernel<CSRKernelTrait::jacobiHalo<ValueType> > jacobiHalo;
 
     ContextPtr loc = jacobiHalo.getValidContext( this->getContextPtr() );
 
@@ -1867,7 +1867,7 @@ void CSRStorage<ValueType>::jacobiIterateHalo(
     SCAI_ASSERT_EQUAL_DEBUG( mNumRows, localSolution.size() )
     SCAI_ASSERT_EQUAL_DEBUG( mNumColumns, oldHaloSolution.size() )
 
-    static LAMAKernel<CSRUtilsInterface::jacobiHaloWithDiag<ValueType> > jacobiHaloWithDiag;
+    static LAMAKernel<CSRKernelTrait::jacobiHaloWithDiag<ValueType> > jacobiHaloWithDiag;
 
     ContextPtr loc = jacobiHaloWithDiag.getValidContext( this->getContextPtr() );
 
@@ -2070,8 +2070,8 @@ void CSRStorage<ValueType>::matrixAddMatrixCSR(
 //    // TODO: just temporary, MAKE loc const again!
 //    loc = Context::getContextPtr( context::Host );
 
-    static LAMAKernel<CSRUtilsInterface::matrixAddSizes> matrixAddSizes;
-    static LAMAKernel<CSRUtilsInterface::matrixAdd<ValueType> > matrixAdd;
+    static LAMAKernel<CSRKernelTrait::matrixAddSizes> matrixAddSizes;
+    static LAMAKernel<CSRKernelTrait::matrixAdd<ValueType> > matrixAdd;
 
     const ContextPtr loc = matrixAdd.getValidContext( matrixAddSizes, preferedLoc );
 
@@ -2157,8 +2157,8 @@ void CSRStorage<ValueType>::matrixTimesMatrixCSR(
 
     // get availabe implementations of needed kernel routines
 
-    static LAMAKernel<CSRUtilsInterface::matrixMultiplySizes> matrixMultiplySizes;
-    static LAMAKernel<CSRUtilsInterface::matrixMultiply<ValueType> > matrixMultiply;
+    static LAMAKernel<CSRKernelTrait::matrixMultiplySizes> matrixMultiplySizes;
+    static LAMAKernel<CSRKernelTrait::matrixMultiply<ValueType> > matrixMultiply;
 
     // choose Context where all kernel routines are available
 
@@ -2219,7 +2219,7 @@ ValueType CSRStorage<ValueType>::l1Norm() const
         return static_cast<ValueType>(0.0);
     }
 
-    static LAMAKernel<BLASInterface::asum<ValueType> > asum;
+    static LAMAKernel<BLASKernelTrait::asum<ValueType> > asum;
 
     ContextPtr loc = asum.getValidContext( this->getContextPtr() );
 
@@ -2242,7 +2242,7 @@ ValueType CSRStorage<ValueType>::l2Norm() const
         return static_cast<ValueType>(0.0);
     }
 
-    static LAMAKernel<BLASInterface::dot<ValueType> > dot;
+    static LAMAKernel<BLASKernelTrait::dot<ValueType> > dot;
 
     ContextPtr loc = dot.getValidContext( this->getContextPtr() );
 
@@ -2267,7 +2267,7 @@ ValueType CSRStorage<ValueType>::maxNorm() const
         return static_cast<ValueType>(0.0);
     }
 
-    static LAMAKernel<UtilsInterface::absMaxVal<ValueType> > absMaxVal;
+    static LAMAKernel<UtilKernelTrait::absMaxVal<ValueType> > absMaxVal;
 
     ContextPtr loc = absMaxVal.getValidContext( this->getContextPtr() );
 
@@ -2327,7 +2327,7 @@ ValueType CSRStorage<ValueType>::maxDiffNormImpl( const CSRStorage<ValueType>& o
 
     bool sorted = mSortedRows && other.mSortedRows && ( mDiagonalProperty == other.mDiagonalProperty );
 
-    static LAMAKernel<CSRUtilsInterface::absMaxDiffVal<ValueType> > absMaxDiffVal;
+    static LAMAKernel<CSRKernelTrait::absMaxDiffVal<ValueType> > absMaxDiffVal;
 
     ContextPtr loc = absMaxDiffVal.getValidContext( this->getContextPtr() );
 

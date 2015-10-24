@@ -38,7 +38,7 @@
 #include <scai/lama/openmp/OpenMPUtils.hpp>
 #include <scai/lama/openmp/OpenMP.hpp>
 
-#include <scai/lama/UtilsInterface.hpp>
+#include <scai/lama/UtilKernelTrait.hpp>
 
 // internal scai libraries
 #include <scai/tracing.hpp>
@@ -832,24 +832,24 @@ void OpenMPJDSUtils::registerKernelRoutines()
 
     common::ContextType ctx = common::context::Host;
 
-    KernelRegistry::set<JDSUtilsInterface::sortRows>( sortRows, ctx );
-    KernelRegistry::set<JDSUtilsInterface::setInversePerm>( setInversePerm, ctx );
+    KernelRegistry::set<JDSUtilKernelTrait::sortRows>( sortRows, ctx );
+    KernelRegistry::set<JDSUtilKernelTrait::setInversePerm>( setInversePerm, ctx );
 
-    KernelRegistry::set<JDSUtilsInterface::ilg2dlg>( ilg2dlg, ctx );
-    KernelRegistry::set<JDSUtilsInterface::checkDiagonalProperty>( checkDiagonalProperty, ctx );
+    KernelRegistry::set<JDSUtilKernelTrait::ilg2dlg>( ilg2dlg, ctx );
+    KernelRegistry::set<JDSUtilKernelTrait::checkDiagonalProperty>( checkDiagonalProperty, ctx );
 
 #define LAMA_JDS_UTILS2_REGISTER(z, J, TYPE )                                             \
-    KernelRegistry::set<JDSUtilsInterface::getRow<TYPE, ARITHMETIC_HOST_TYPE_##J> >( getRow, ctx );       \
-    KernelRegistry::set<JDSUtilsInterface::scaleValue<TYPE, ARITHMETIC_HOST_TYPE_##J> >( scaleValue, ctx );       \
-    KernelRegistry::set<JDSUtilsInterface::setCSRValues<TYPE, ARITHMETIC_HOST_TYPE_##J> >( setCSRValues, ctx );       \
-    KernelRegistry::set<JDSUtilsInterface::getCSRValues<TYPE, ARITHMETIC_HOST_TYPE_##J> >( getCSRValues, ctx );       \
+    KernelRegistry::set<JDSUtilKernelTrait::getRow<TYPE, ARITHMETIC_HOST_TYPE_##J> >( getRow, ctx );       \
+    KernelRegistry::set<JDSUtilKernelTrait::scaleValue<TYPE, ARITHMETIC_HOST_TYPE_##J> >( scaleValue, ctx );       \
+    KernelRegistry::set<JDSUtilKernelTrait::setCSRValues<TYPE, ARITHMETIC_HOST_TYPE_##J> >( setCSRValues, ctx );       \
+    KernelRegistry::set<JDSUtilKernelTrait::getCSRValues<TYPE, ARITHMETIC_HOST_TYPE_##J> >( getCSRValues, ctx );       \
 
 #define LAMA_JDS_UTILS_REGISTER(z, I, _)                                                  \
-    KernelRegistry::set<JDSUtilsInterface::getValue<ARITHMETIC_HOST_TYPE_##I> >( getValue, ctx );       \
-    KernelRegistry::set<JDSUtilsInterface::normalGEMV<ARITHMETIC_HOST_TYPE_##I> >( normalGEMV, ctx );       \
-    KernelRegistry::set<JDSUtilsInterface::normalGEVM<ARITHMETIC_HOST_TYPE_##I> >( normalGEVM, ctx );       \
-    KernelRegistry::set<JDSUtilsInterface::jacobi<ARITHMETIC_HOST_TYPE_##I> >( jacobi, ctx );       \
-    KernelRegistry::set<JDSUtilsInterface::jacobiHalo<ARITHMETIC_HOST_TYPE_##I> >( jacobiHalo, ctx );       \
+    KernelRegistry::set<JDSUtilKernelTrait::getValue<ARITHMETIC_HOST_TYPE_##I> >( getValue, ctx );       \
+    KernelRegistry::set<JDSUtilKernelTrait::normalGEMV<ARITHMETIC_HOST_TYPE_##I> >( normalGEMV, ctx );       \
+    KernelRegistry::set<JDSUtilKernelTrait::normalGEVM<ARITHMETIC_HOST_TYPE_##I> >( normalGEVM, ctx );       \
+    KernelRegistry::set<JDSUtilKernelTrait::jacobi<ARITHMETIC_HOST_TYPE_##I> >( jacobi, ctx );       \
+    KernelRegistry::set<JDSUtilKernelTrait::jacobiHalo<ARITHMETIC_HOST_TYPE_##I> >( jacobiHalo, ctx );       \
     \
     BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT,                                            \
                      LAMA_JDS_UTILS2_REGISTER,                                            \

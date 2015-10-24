@@ -36,7 +36,7 @@
 
 // local library
 #include <scai/lama/openmp/OpenMPBLAS1.hpp>
-#include <scai/lama/BLASInterface.hpp>
+#include <scai/lama/BLASKernelTrait.hpp>
 #include <scai/lama/openmp/BLASHelper.hpp>
 
 // internal scai libraries
@@ -705,10 +705,10 @@ void LAPACKe_LAPACK::registerKernels()
     bool rpl = true;   // replace other registered kernel routine
 
 #define LAMA_LAPACK_REGISTER(z, I, _)                                      \
-    KernelRegistry::set<BLASInterface::getrf<ARITHMETIC_HOST_TYPE_##I> >( getrf, ctx, rpl );    \
-    KernelRegistry::set<BLASInterface::getri<ARITHMETIC_HOST_TYPE_##I> >( getri, ctx, rpl );    \
-    KernelRegistry::set<BLASInterface::getinv<ARITHMETIC_HOST_TYPE_##I> >( getinv, ctx, rpl );    \
-    KernelRegistry::set<BLASInterface::tptrs<ARITHMETIC_HOST_TYPE_##I> >( tptrs, ctx, rpl );    \
+    KernelRegistry::set<BLASKernelTrait::getrf<ARITHMETIC_HOST_TYPE_##I> >( getrf, ctx, rpl );    \
+    KernelRegistry::set<BLASKernelTrait::getri<ARITHMETIC_HOST_TYPE_##I> >( getri, ctx, rpl );    \
+    KernelRegistry::set<BLASKernelTrait::getinv<ARITHMETIC_HOST_TYPE_##I> >( getinv, ctx, rpl );    \
+    KernelRegistry::set<BLASKernelTrait::tptrs<ARITHMETIC_HOST_TYPE_##I> >( tptrs, ctx, rpl );    \
 
     BOOST_PP_REPEAT( ARITHMETIC_HOST_EXT_TYPE_CNT, LAMA_LAPACK_REGISTER, _ )
 

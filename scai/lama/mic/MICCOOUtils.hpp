@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief MIC implemenations for routines to be avaialble for COOUtilsInterface.
+ * @brief MIC implemenations for routines to be avaialble for COOKernelTrait.
  * @author Thomas Brandes
  * @date 04.07.2013
  * @since 1.1.0
@@ -52,7 +52,7 @@ namespace tasking
 namespace lama
 {
 
-/** This class provides MIC implementations to be used for COOUtilsInterface.
+/** This class provides MIC implementations to be used for COOKernelTrait.
  *
  *  COOStorage is not well supported, but we provide conversions between COO
  *  and CSR as well as matrix times vector operation.
@@ -62,7 +62,7 @@ class COMMON_DLL_IMPORTEXPORT MICCOOUtils
 {
 public:
 
-    /** MIC implementation for COOUtilsInterface::Counting::getCSRSizes */
+    /** MIC implementation for COOKernelTrait::Counting::getCSRSizes */
 
     static void getCSRSizes(
         IndexType csrSizes[],
@@ -70,7 +70,7 @@ public:
         const IndexType numValues,
         const IndexType cooIA[] );
 
-    /** MIC implementation for COOUtilsInterface::Conversions::getCSRValues */
+    /** MIC implementation for COOKernelTrait::Conversions::getCSRValues */
 
     template<typename COOValueType,typename CSRValueType>
     static void getCSRValues(
@@ -83,7 +83,7 @@ public:
         const IndexType cooJA[],
         const COOValueType cooValues[] );
 
-    /** MIC implementation for COOUtilsInterface::Counting::offsets2ia */
+    /** MIC implementation for COOKernelTrait::Counting::offsets2ia */
 
     static void offsets2ia(
         IndexType cooIA[],
@@ -92,7 +92,7 @@ public:
         const IndexType numRows,
         const IndexType numDiagonals );
 
-    /** MIC implementation for COOUtilsInterface::Conversions::setCSRData */
+    /** MIC implementation for COOKernelTrait::Conversions::setCSRData */
 
     template<typename COOValueType,typename CSRValueType>
     static void setCSRData(
@@ -103,7 +103,7 @@ public:
         const IndexType numRows,
         const IndexType numDiagonals );
 
-    /** Implementation for CSRUtilsInterface::Mult::normalGEMV  */
+    /** Implementation for CSRKernelTrait::Mult::normalGEMV  */
 
     template<typename ValueType>
     static void normalGEMV(
@@ -119,7 +119,7 @@ public:
         const ValueType cooValues[],
         tasking::SyncToken* syncToken );
 
-    /** Implementation for COOUtilsInterface::Solver::jacobi  */
+    /** Implementation for COOKernelTrait::Solver::jacobi  */
 
     template<typename ValueType>
     static void jacobi(
@@ -136,7 +136,7 @@ public:
 
     /** Routine that registers all routines of this class at the LAMA interface. */
 
-    static void setInterface( struct COOUtilsInterface& COOUtils );
+    static void setInterface( struct COOKernelTrait& COOUtils );
 
 private:
 

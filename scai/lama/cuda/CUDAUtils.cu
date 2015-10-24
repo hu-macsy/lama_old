@@ -36,7 +36,7 @@
 
 // local library
 #include <scai/kregistry/KernelRegistry.hpp>
-#include <scai/lama/UtilsInterface.hpp>
+#include <scai/lama/UtilKernelTrait.hpp>
 
 #include <scai/lama/cuda/utils.cu.h>
 #include <scai/lama/cuda/CUDASettings.hpp>
@@ -575,39 +575,39 @@ void CUDAUtils::registerKernels()
 
     SCAI_LOG_INFO( logger, "set general utilty routines for CUDA in Interface" )
 
-    KernelRegistry::set<UtilsInterface::validIndexes>( validIndexes, ctx );
-    KernelRegistry::set<UtilsInterface::sum<IndexType> >( sum, ctx );
+    KernelRegistry::set<UtilKernelTrait::validIndexes>( validIndexes, ctx );
+    KernelRegistry::set<UtilKernelTrait::sum<IndexType> >( sum, ctx );
 
-    KernelRegistry::set<UtilsInterface::setVal<IndexType> >( setVal, ctx );
-    KernelRegistry::set<UtilsInterface::setOrder<IndexType> >( setOrder, ctx );
-    KernelRegistry::set<UtilsInterface::getValue<IndexType> >( getValue, ctx );
+    KernelRegistry::set<UtilKernelTrait::setVal<IndexType> >( setVal, ctx );
+    KernelRegistry::set<UtilKernelTrait::setOrder<IndexType> >( setOrder, ctx );
+    KernelRegistry::set<UtilKernelTrait::getValue<IndexType> >( getValue, ctx );
 
-    KernelRegistry::set<UtilsInterface::maxval<IndexType> >( maxval, ctx );
-    KernelRegistry::set<UtilsInterface::absMaxVal<IndexType> >( absMaxVal, ctx );
-    KernelRegistry::set<UtilsInterface::absMaxDiffVal<IndexType> >( absMaxDiffVal, ctx );
-    KernelRegistry::set<UtilsInterface::isSorted<IndexType> >( isSorted, ctx );
+    KernelRegistry::set<UtilKernelTrait::maxval<IndexType> >( maxval, ctx );
+    KernelRegistry::set<UtilKernelTrait::absMaxVal<IndexType> >( absMaxVal, ctx );
+    KernelRegistry::set<UtilKernelTrait::absMaxDiffVal<IndexType> >( absMaxDiffVal, ctx );
+    KernelRegistry::set<UtilKernelTrait::isSorted<IndexType> >( isSorted, ctx );
 
-    KernelRegistry::set<UtilsInterface::setScatter<IndexType, IndexType> >( setScatter, ctx );
-    KernelRegistry::set<UtilsInterface::setGather<IndexType, IndexType> >( setGather, ctx );
-    KernelRegistry::set<UtilsInterface::set<IndexType, IndexType> >( set, ctx );
+    KernelRegistry::set<UtilKernelTrait::setScatter<IndexType, IndexType> >( setScatter, ctx );
+    KernelRegistry::set<UtilKernelTrait::setGather<IndexType, IndexType> >( setGather, ctx );
+    KernelRegistry::set<UtilKernelTrait::set<IndexType, IndexType> >( set, ctx );
 
 #define LAMA_UTILS2_REGISTER(z, J, TYPE )                                                                \
-    KernelRegistry::set<UtilsInterface::setScale<TYPE, ARITHMETIC_CUDA_TYPE_##J> >( setScale, ctx );     \
-    KernelRegistry::set<UtilsInterface::setGather<TYPE, ARITHMETIC_CUDA_TYPE_##J> >( setGather, ctx );   \
-    KernelRegistry::set<UtilsInterface::setScatter<TYPE, ARITHMETIC_CUDA_TYPE_##J> >( setScatter, ctx ); \
-    KernelRegistry::set<UtilsInterface::set<TYPE, ARITHMETIC_CUDA_TYPE_##J> >( set, ctx );               \
+    KernelRegistry::set<UtilKernelTrait::setScale<TYPE, ARITHMETIC_CUDA_TYPE_##J> >( setScale, ctx );     \
+    KernelRegistry::set<UtilKernelTrait::setGather<TYPE, ARITHMETIC_CUDA_TYPE_##J> >( setGather, ctx );   \
+    KernelRegistry::set<UtilKernelTrait::setScatter<TYPE, ARITHMETIC_CUDA_TYPE_##J> >( setScatter, ctx ); \
+    KernelRegistry::set<UtilKernelTrait::set<TYPE, ARITHMETIC_CUDA_TYPE_##J> >( set, ctx );               \
      
 #define LAMA_UTILS_REGISTER(z, I, _)                                                                     \
-    KernelRegistry::set<UtilsInterface::scale<ARITHMETIC_CUDA_TYPE_##I> >( scale, ctx );                 \
-    KernelRegistry::set<UtilsInterface::sum<ARITHMETIC_CUDA_TYPE_##I> >( sum, ctx );                     \
-    KernelRegistry::set<UtilsInterface::setVal<ARITHMETIC_CUDA_TYPE_##I> >( setVal, ctx );               \
-    KernelRegistry::set<UtilsInterface::setOrder<ARITHMETIC_CUDA_TYPE_##I> >( setOrder, ctx );           \
-    KernelRegistry::set<UtilsInterface::getValue<ARITHMETIC_CUDA_TYPE_##I> >( getValue, ctx );           \
-    KernelRegistry::set<UtilsInterface::maxval<ARITHMETIC_CUDA_TYPE_##I> >( maxval, ctx );               \
-    KernelRegistry::set<UtilsInterface::absMaxVal<ARITHMETIC_CUDA_TYPE_##I> >( absMaxVal, ctx );         \
-    KernelRegistry::set<UtilsInterface::absMaxDiffVal<ARITHMETIC_CUDA_TYPE_##I> >( absMaxDiffVal, ctx ); \
-    KernelRegistry::set<UtilsInterface::isSorted<ARITHMETIC_CUDA_TYPE_##I> >( isSorted, ctx );           \
-    KernelRegistry::set<UtilsInterface::invert<ARITHMETIC_CUDA_TYPE_##I> >( invert, ctx );               \
+    KernelRegistry::set<UtilKernelTrait::scale<ARITHMETIC_CUDA_TYPE_##I> >( scale, ctx );                 \
+    KernelRegistry::set<UtilKernelTrait::sum<ARITHMETIC_CUDA_TYPE_##I> >( sum, ctx );                     \
+    KernelRegistry::set<UtilKernelTrait::setVal<ARITHMETIC_CUDA_TYPE_##I> >( setVal, ctx );               \
+    KernelRegistry::set<UtilKernelTrait::setOrder<ARITHMETIC_CUDA_TYPE_##I> >( setOrder, ctx );           \
+    KernelRegistry::set<UtilKernelTrait::getValue<ARITHMETIC_CUDA_TYPE_##I> >( getValue, ctx );           \
+    KernelRegistry::set<UtilKernelTrait::maxval<ARITHMETIC_CUDA_TYPE_##I> >( maxval, ctx );               \
+    KernelRegistry::set<UtilKernelTrait::absMaxVal<ARITHMETIC_CUDA_TYPE_##I> >( absMaxVal, ctx );         \
+    KernelRegistry::set<UtilKernelTrait::absMaxDiffVal<ARITHMETIC_CUDA_TYPE_##I> >( absMaxDiffVal, ctx ); \
+    KernelRegistry::set<UtilKernelTrait::isSorted<ARITHMETIC_CUDA_TYPE_##I> >( isSorted, ctx );           \
+    KernelRegistry::set<UtilKernelTrait::invert<ARITHMETIC_CUDA_TYPE_##I> >( invert, ctx );               \
     BOOST_PP_REPEAT( ARITHMETIC_CUDA_TYPE_CNT,                                                           \
                      LAMA_UTILS2_REGISTER,                                                               \
                      ARITHMETIC_CUDA_TYPE_##I )                                                          \

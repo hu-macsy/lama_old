@@ -35,7 +35,7 @@
 #include <scai/lama/openmp/OpenMPUtils.hpp>
 
 // local library
-#include <scai/lama/UtilsInterface.hpp>
+#include <scai/lama/UtilKernelTrait.hpp>
 #include <scai/lama/openmp/OpenMPDIAUtils.hpp>
 #include <scai/lama/openmp/OpenMP.hpp>
 
@@ -545,14 +545,14 @@ void OpenMPDIAUtils::registerKernels()
     // use of nested BOOST_PP_REPEAT to get all pairs of value types for conversions
 
 #define LAMA_DIA_UTILS2_REGISTER(z, J, TYPE )                                                                    \
-    KernelRegistry::set<DIAUtilsInterface::getCSRValues<TYPE, ARITHMETIC_HOST_TYPE_##J> >( getCSRValues, ctx );  \
+    KernelRegistry::set<DIAKernelTrait::getCSRValues<TYPE, ARITHMETIC_HOST_TYPE_##J> >( getCSRValues, ctx );  \
 
 #define LAMA_DIA_UTILS_REGISTER(z, I, _)                                                                 \
-    KernelRegistry::set<DIAUtilsInterface::getCSRSizes<ARITHMETIC_HOST_TYPE_##I> >( getCSRSizes, ctx );  \
-    KernelRegistry::set<DIAUtilsInterface::absMaxVal<ARITHMETIC_HOST_TYPE_##I> >( absMaxVal, ctx );      \
-    KernelRegistry::set<DIAUtilsInterface::normalGEMV<ARITHMETIC_HOST_TYPE_##I> >( normalGEMV, ctx );    \
-    KernelRegistry::set<DIAUtilsInterface::normalGEVM<ARITHMETIC_HOST_TYPE_##I> >( normalGEVM, ctx );    \
-    KernelRegistry::set<DIAUtilsInterface::jacobi<ARITHMETIC_HOST_TYPE_##I> >( jacobi, ctx );            \
+    KernelRegistry::set<DIAKernelTrait::getCSRSizes<ARITHMETIC_HOST_TYPE_##I> >( getCSRSizes, ctx );  \
+    KernelRegistry::set<DIAKernelTrait::absMaxVal<ARITHMETIC_HOST_TYPE_##I> >( absMaxVal, ctx );      \
+    KernelRegistry::set<DIAKernelTrait::normalGEMV<ARITHMETIC_HOST_TYPE_##I> >( normalGEMV, ctx );    \
+    KernelRegistry::set<DIAKernelTrait::normalGEVM<ARITHMETIC_HOST_TYPE_##I> >( normalGEVM, ctx );    \
+    KernelRegistry::set<DIAKernelTrait::jacobi<ARITHMETIC_HOST_TYPE_##I> >( jacobi, ctx );            \
                                                                                                          \
     BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT,                                                           \
                      LAMA_DIA_UTILS2_REGISTER,                                                           \

@@ -37,7 +37,7 @@
 // local library
 #include <scai/lama/cuda/CUDABLAS1.hpp>
 
-#include <scai/lama/BLASInterface.hpp>
+#include <scai/lama/BLASKernelTrait.hpp>
 
 // internal scai library
 #include <scai/kregistry/KernelRegistry.hpp>
@@ -163,8 +163,8 @@ void CUDALAPACK::registerKernels()
 
     common::ContextType ctx = common::context::CUDA;
 
-    KernelRegistry::set<BLASInterface::laswp<float> >( laswp, ctx );
-    KernelRegistry::set<BLASInterface::laswp<double> >( laswp, ctx ); 
+    KernelRegistry::set<BLASKernelTrait::laswp<float> >( laswp, ctx );
+    KernelRegistry::set<BLASKernelTrait::laswp<double> >( laswp, ctx ); 
 
     // other routines are not used by LAMA yet
 }

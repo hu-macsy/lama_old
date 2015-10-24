@@ -36,7 +36,7 @@
 
 // local library
 #include <scai/lama/openmp/OpenMP.hpp>
-#include <scai/lama/BLASInterface.hpp>
+#include <scai/lama/BLASKernelTrait.hpp>
 
 // internal scai libraries
 #include <scai/common/macros/unused.hpp>
@@ -565,15 +565,15 @@ void OpenMPBLAS1::registerKernels()
 //       ( e.g. routine CUDABLAS1::sum<ValueType> is set for BLAS::BLAS1::sum variable
 
 #define LAMA_BLAS1_REGISTER(z, I, _)                                        \
-    KernelRegistry::set<BLASInterface::scal<ARITHMETIC_HOST_TYPE_##I> >( scal, ctx );    \
-    KernelRegistry::set<BLASInterface::nrm2<ARITHMETIC_HOST_TYPE_##I> >( nrm2, ctx );    \
-    KernelRegistry::set<BLASInterface::asum<ARITHMETIC_HOST_TYPE_##I> >( asum, ctx );    \
-    KernelRegistry::set<BLASInterface::iamax<ARITHMETIC_HOST_TYPE_##I> >( iamax, ctx );  \
-    KernelRegistry::set<BLASInterface::swap<ARITHMETIC_HOST_TYPE_##I> >( swap, ctx );    \
-    KernelRegistry::set<BLASInterface::copy<ARITHMETIC_HOST_TYPE_##I> >( copy, ctx );    \
-    KernelRegistry::set<BLASInterface::axpy<ARITHMETIC_HOST_TYPE_##I> >( axpy, ctx );    \
-    KernelRegistry::set<BLASInterface::dot<ARITHMETIC_HOST_TYPE_##I> >( dot, ctx );      \
-    KernelRegistry::set<BLASInterface::sum<ARITHMETIC_HOST_TYPE_##I> >( sum, ctx );      \
+    KernelRegistry::set<BLASKernelTrait::scal<ARITHMETIC_HOST_TYPE_##I> >( scal, ctx );    \
+    KernelRegistry::set<BLASKernelTrait::nrm2<ARITHMETIC_HOST_TYPE_##I> >( nrm2, ctx );    \
+    KernelRegistry::set<BLASKernelTrait::asum<ARITHMETIC_HOST_TYPE_##I> >( asum, ctx );    \
+    KernelRegistry::set<BLASKernelTrait::iamax<ARITHMETIC_HOST_TYPE_##I> >( iamax, ctx );  \
+    KernelRegistry::set<BLASKernelTrait::swap<ARITHMETIC_HOST_TYPE_##I> >( swap, ctx );    \
+    KernelRegistry::set<BLASKernelTrait::copy<ARITHMETIC_HOST_TYPE_##I> >( copy, ctx );    \
+    KernelRegistry::set<BLASKernelTrait::axpy<ARITHMETIC_HOST_TYPE_##I> >( axpy, ctx );    \
+    KernelRegistry::set<BLASKernelTrait::dot<ARITHMETIC_HOST_TYPE_##I> >( dot, ctx );      \
+    KernelRegistry::set<BLASKernelTrait::sum<ARITHMETIC_HOST_TYPE_##I> >( sum, ctx );      \
 
     BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_BLAS1_REGISTER, _ )
 

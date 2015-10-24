@@ -36,7 +36,7 @@
 
 // local library
 #include <scai/lama/openmp/BLASHelper.hpp>
-#include <scai/lama/BLASInterface.hpp>
+#include <scai/lama/BLASKernelTrait.hpp>
 #include <scai/lama/cblas.hpp>
 
 //Intel MPI need mpi.h to be included before stdio.h so this header comes first
@@ -686,14 +686,14 @@ void BLAS_BLAS1::registerKernels()
     common::ContextType ctx = common::context::Host;
 
 #define LAMA_BLAS1_REGISTER(z, I, _)                                          \
-    KernelRegistry::set<BLASInterface::scal<ARITHMETIC_HOST_TYPE_##I> >( scal, ctx, true );    \
-    KernelRegistry::set<BLASInterface::nrm2<ARITHMETIC_HOST_TYPE_##I> >( nrm2, ctx, true );    \
-    KernelRegistry::set<BLASInterface::asum<ARITHMETIC_HOST_TYPE_##I> >( asum, ctx, true );    \
-    KernelRegistry::set<BLASInterface::iamax<ARITHMETIC_HOST_TYPE_##I> >( iamax, ctx, true );  \
-    KernelRegistry::set<BLASInterface::swap<ARITHMETIC_HOST_TYPE_##I> >( swap, ctx, true );    \
-    KernelRegistry::set<BLASInterface::copy<ARITHMETIC_HOST_TYPE_##I> >( copy, ctx, true );    \
-    KernelRegistry::set<BLASInterface::axpy<ARITHMETIC_HOST_TYPE_##I> >( axpy, ctx, true );    \
-    KernelRegistry::set<BLASInterface::dot<ARITHMETIC_HOST_TYPE_##I> >( dot, ctx, true );      \
+    KernelRegistry::set<BLASKernelTrait::scal<ARITHMETIC_HOST_TYPE_##I> >( scal, ctx, true );    \
+    KernelRegistry::set<BLASKernelTrait::nrm2<ARITHMETIC_HOST_TYPE_##I> >( nrm2, ctx, true );    \
+    KernelRegistry::set<BLASKernelTrait::asum<ARITHMETIC_HOST_TYPE_##I> >( asum, ctx, true );    \
+    KernelRegistry::set<BLASKernelTrait::iamax<ARITHMETIC_HOST_TYPE_##I> >( iamax, ctx, true );  \
+    KernelRegistry::set<BLASKernelTrait::swap<ARITHMETIC_HOST_TYPE_##I> >( swap, ctx, true );    \
+    KernelRegistry::set<BLASKernelTrait::copy<ARITHMETIC_HOST_TYPE_##I> >( copy, ctx, true );    \
+    KernelRegistry::set<BLASKernelTrait::axpy<ARITHMETIC_HOST_TYPE_##I> >( axpy, ctx, true );    \
+    KernelRegistry::set<BLASKernelTrait::dot<ARITHMETIC_HOST_TYPE_##I> >( dot, ctx, true );      \
 
     BOOST_PP_REPEAT( ARITHMETIC_HOST_EXT_TYPE_CNT, LAMA_BLAS1_REGISTER, _ )
 

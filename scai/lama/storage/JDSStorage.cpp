@@ -35,7 +35,7 @@
 #include <scai/lama/storage/JDSStorage.hpp>
 
 // local library
-#include <scai/lama/UtilsInterface.hpp>
+#include <scai/lama/UtilKernelTrait.hpp>
 #include <scai/lama/LAMAKernel.hpp>
 
 #include <scai/lama/LAMAArrayUtils.hpp>
@@ -86,8 +86,8 @@ JDSStorage<ValueType>::JDSStorage( const IndexType numRows, const IndexType numC
         return;
     }
 
-    static LAMAKernel<UtilsInterface::setVal<IndexType> > setVal;
-    static LAMAKernel<UtilsInterface::setOrder<IndexType> > setOrder;
+    static LAMAKernel<UtilKernelTrait::setVal<IndexType> > setVal;
+    static LAMAKernel<UtilKernelTrait::setOrder<IndexType> > setOrder;
 
     // make sure that for both context functions implementations are available at the chosen context
 
@@ -288,7 +288,7 @@ void JDSStorage<ValueType>::setDiagonalImpl( const Scalar scalar )
 
     SCAI_LOG_INFO( logger, "setDiagonalImpl with scalar = " << scalar )
 
-    static LAMAKernel<UtilsInterface::setVal<ValueType> > setVal;
+    static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
 
     ContextPtr loc = setVal.getValidContext( this->getContextPtr() );
 
@@ -314,7 +314,7 @@ void JDSStorage<ValueType>::setDiagonalImpl( const LAMAArray<OtherValueType>& di
 
     SCAI_LOG_INFO( logger, "setDiagonalImpl" )
 
-    static LAMAKernel<UtilsInterface::setGather<ValueType, OtherValueType> > setGather;
+    static LAMAKernel<UtilKernelTrait::setGather<ValueType, OtherValueType> > setGather;
 
     ContextPtr loc = setGather.getValidContext( this->getContextPtr() );
 
@@ -342,7 +342,7 @@ void JDSStorage<ValueType>::getRowImpl( LAMAArray<OtherValueType>& row, const In
 
     SCAI_ASSERT_DEBUG( i >= 0 && i < mNumRows, "row index " << i << " out of range" )
 
-    static LAMAKernel<JDSUtilsInterface::getRow<ValueType, OtherValueType> > getRow;
+    static LAMAKernel<JDSUtilKernelTrait::getRow<ValueType, OtherValueType> > getRow;
 
     ContextPtr loc = getRow.getValidContext( this->getContextPtr() );
 
@@ -368,7 +368,7 @@ void JDSStorage<ValueType>::getDiagonalImpl( LAMAArray<OtherValueType>& diagonal
 
     //TODO: check diagonal property?
 
-    static LAMAKernel<UtilsInterface::setScatter<OtherValueType, ValueType> > setScatter;
+    static LAMAKernel<UtilKernelTrait::setScatter<OtherValueType, ValueType> > setScatter;
 
     ContextPtr loc = setScatter.getValidContext( this->getContextPtr() );
 
@@ -393,7 +393,7 @@ void JDSStorage<ValueType>::scaleImpl( const Scalar scalar )
 {
     SCAI_LOG_INFO( logger, "scaleImpl with scalar = " << scalar )
 
-    static LAMAKernel<UtilsInterface::scale<ValueType> > scale;
+    static LAMAKernel<UtilKernelTrait::scale<ValueType> > scale;
 
     ContextPtr loc = scale.getValidContext( this->getContextPtr() );
 
@@ -417,7 +417,7 @@ void JDSStorage<ValueType>::scaleImpl( const LAMAArray<OtherValueType>& diagonal
 {
     SCAI_LOG_INFO( logger, "scaleImpl" )
 
-    static LAMAKernel<JDSUtilsInterface::scaleValue<ValueType, OtherValueType> > scaleValue;
+    static LAMAKernel<JDSUtilKernelTrait::scaleValue<ValueType, OtherValueType> > scaleValue;
 
     ContextPtr loc = scaleValue.getValidContext( this->getContextPtr() );
 
@@ -455,7 +455,7 @@ bool JDSStorage<ValueType>::checkDiagonalProperty() const
     }
     else
     {
-        static LAMAKernel<JDSUtilsInterface::checkDiagonalProperty> checkDiagonalProperty;
+        static LAMAKernel<JDSUtilKernelTrait::checkDiagonalProperty> checkDiagonalProperty;
 
         ContextPtr loc = checkDiagonalProperty.getValidContext( this->getContextPtr() );
 
@@ -488,7 +488,7 @@ void JDSStorage<ValueType>::check( const char* msg ) const
     // check column indexes in JA
 
     {
-        static LAMAKernel<UtilsInterface::validIndexes> validIndexes;
+        static LAMAKernel<UtilKernelTrait::validIndexes> validIndexes;
 
         ContextPtr loc = validIndexes.getValidContext( this->getContextPtr() );
 
@@ -505,7 +505,7 @@ void JDSStorage<ValueType>::check( const char* msg ) const
     // check descending values in ILG, DLG
 
     {
-        static LAMAKernel<UtilsInterface::isSorted<IndexType> > isSorted;
+        static LAMAKernel<UtilKernelTrait::isSorted<IndexType> > isSorted;
 
         ContextPtr loc = isSorted.getValidContext( this->getContextPtr() );
 
@@ -526,7 +526,7 @@ void JDSStorage<ValueType>::check( const char* msg ) const
     // both, ILG and DLG, must sum up to mNumValues
 
     {
-        static LAMAKernel<UtilsInterface::sum<IndexType> > sum;
+        static LAMAKernel<UtilKernelTrait::sum<IndexType> > sum;
 
         ContextPtr loc = sum.getValidContext( this->getContextPtr() );
 
@@ -543,7 +543,7 @@ void JDSStorage<ValueType>::check( const char* msg ) const
 
     if( mNumRows > 0 )
     {
-        static LAMAKernel<UtilsInterface::validIndexes> validIndexes;
+        static LAMAKernel<UtilKernelTrait::validIndexes> validIndexes;
 
         ContextPtr loc = validIndexes.getValidContext( this->getContextPtr() );
 
@@ -566,8 +566,8 @@ void JDSStorage<ValueType>::check( const char* msg ) const
 
         LAMAArray<IndexType> invPermArray( mNumRows, mNumRows );
 
-        static LAMAKernel<JDSUtilsInterface::setInversePerm> setInversePerm;
-        static LAMAKernel<UtilsInterface::maxval<IndexType> > maxval;
+        static LAMAKernel<JDSUtilKernelTrait::setInversePerm> setInversePerm;
+        static LAMAKernel<UtilKernelTrait::maxval<IndexType> > maxval;
 
         ReadAccess<IndexType> rPerm( mPerm, loc );
         WriteAccess<IndexType> wInversePerm( invPermArray, loc );
@@ -599,7 +599,7 @@ void JDSStorage<ValueType>::setIdentity( const IndexType size )
     mNumValues = mNumRows;
 
     {
-        static LAMAKernel<UtilsInterface::setVal<ValueType> > setVal;
+        static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
 
         ContextPtr loc = setVal.getValidContext( this->getContextPtr() );
 
@@ -611,8 +611,8 @@ void JDSStorage<ValueType>::setIdentity( const IndexType size )
 
     }
 
-    static LAMAKernel<UtilsInterface::setVal<IndexType> > setVal;
-    static LAMAKernel<UtilsInterface::setOrder<IndexType> > setOrder;
+    static LAMAKernel<UtilKernelTrait::setVal<IndexType> > setVal;
+    static LAMAKernel<UtilKernelTrait::setOrder<IndexType> > setOrder;
 
     // get context where all implementations are available, if not on own context
 
@@ -640,8 +640,8 @@ void JDSStorage<ValueType>::setupData( ContextPtr preferredLoc )
 
     SCAI_ASSERT_EQUAL_ERROR( mIlg.size(), mNumRows )
 
-    static LAMAKernel<UtilsInterface::getValue<IndexType> > getValue;
-    static LAMAKernel<JDSUtilsInterface::ilg2dlg> ilg2dlg;
+    static LAMAKernel<UtilKernelTrait::getValue<IndexType> > getValue;
+    static LAMAKernel<JDSUtilKernelTrait::ilg2dlg> ilg2dlg;
 
     ContextPtr loc = getValue.getValidContext( ilg2dlg, preferredLoc );
 
@@ -668,8 +668,8 @@ void JDSStorage<ValueType>::sortRows( ContextPtr defaultLoc )
 {
     SCAI_LOG_INFO( logger, *this << "sortRows, number of jagged diagonals = " << mNumDiagonals )
 
-    static LAMAKernel<UtilsInterface::maxval<IndexType> > maxval;
-    static LAMAKernel<JDSUtilsInterface::sortRows> sortRows;
+    static LAMAKernel<UtilKernelTrait::maxval<IndexType> > maxval;
+    static LAMAKernel<JDSUtilKernelTrait::sortRows> sortRows;
 
     ContextPtr loc = maxval.getValidContext( sortRows, defaultLoc );
 
@@ -700,10 +700,10 @@ void JDSStorage<ValueType>::buildCSR(
                    "buildCSR<" << common::getScalarType<OtherValueType>() << ">" 
                     << " from JDS<" << common::getScalarType<ValueType>() << ">" << " on " << *preferredLoc )
 
-    static LAMAKernel<UtilsInterface::setScatter<IndexType, IndexType> > setScatter;
-    static LAMAKernel<JDSUtilsInterface::getCSRValues<ValueType, OtherValueType> > getCSRValues;
-    static LAMAKernel<CSRUtilsInterface::sizes2offsets> sizes2offsets;
-    static LAMAKernel<JDSUtilsInterface::setInversePerm> setInversePerm;
+    static LAMAKernel<UtilKernelTrait::setScatter<IndexType, IndexType> > setScatter;
+    static LAMAKernel<JDSUtilKernelTrait::getCSRValues<ValueType, OtherValueType> > getCSRValues;
+    static LAMAKernel<CSRKernelTrait::sizes2offsets> sizes2offsets;
+    static LAMAKernel<JDSUtilKernelTrait::setInversePerm> setInversePerm;
 
     ContextPtr loc = setScatter.getValidContext( preferredLoc );
 
@@ -770,9 +770,9 @@ void JDSStorage<ValueType>::setCSRDataImpl(
     SCAI_LOG_INFO( logger,
                    "setCSRDataImpl<" << common::getScalarType<ValueType>() << "," << common::getScalarType<OtherValueType>() << ">" << ", shape is " << numRows << " x " << numColumns << ", #values for CSR = " << numValues )
 
-    static LAMAKernel<CSRUtilsInterface::offsets2sizes> offsets2sizes;
-    static LAMAKernel<UtilsInterface::setOrder<IndexType> > setOrder;
-    static LAMAKernel<JDSUtilsInterface::setCSRValues<ValueType, OtherValueType> > setCSRValues;
+    static LAMAKernel<CSRKernelTrait::offsets2sizes> offsets2sizes;
+    static LAMAKernel<UtilKernelTrait::setOrder<IndexType> > setOrder;
+    static LAMAKernel<JDSUtilKernelTrait::setCSRValues<ValueType, OtherValueType> > setCSRValues;
 
     ContextPtr loc = offsets2sizes.getValidContext( setCSRValues, this->getContextPtr() );
 
@@ -866,8 +866,8 @@ void JDSStorage<ValueType>::allocate( IndexType numRows, IndexType numColumns )
     {
         // the arrays mIlg and mPerm need initialization
 
-        static LAMAKernel<UtilsInterface::setVal<IndexType> > setVal;
-        static LAMAKernel<UtilsInterface::setOrder<IndexType> > setOrder;
+        static LAMAKernel<UtilKernelTrait::setVal<IndexType> > setVal;
+        static LAMAKernel<UtilKernelTrait::setOrder<IndexType> > setOrder;
 
         ContextPtr loc = setOrder.getValidContext( setVal, this->getContextPtr() );
 
@@ -905,7 +905,7 @@ ValueType JDSStorage<ValueType>::getValue( const IndexType i, const IndexType j 
 {
     SCAI_LOG_TRACE( logger, "get value (" << i << ", " << j << ") from " << *this )
 
-    static LAMAKernel<JDSUtilsInterface::getValue<ValueType> > getValue;
+    static LAMAKernel<JDSUtilKernelTrait::getValue<ValueType> > getValue;
 
     ContextPtr loc = getValue.getValidContext( this->getContextPtr() );
 
@@ -938,7 +938,7 @@ void JDSStorage<ValueType>::matrixTimesVector(
     SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumColumns )
     SCAI_ASSERT_EQUAL_ERROR( y.size(), mNumRows )
 
-    static LAMAKernel<JDSUtilsInterface::normalGEMV<ValueType> > normalGEMV;
+    static LAMAKernel<JDSUtilKernelTrait::normalGEMV<ValueType> > normalGEMV;
 
     ContextPtr loc = normalGEMV.getValidContext( this->getContextPtr() );
 
@@ -999,7 +999,7 @@ void JDSStorage<ValueType>::vectorTimesMatrix(
     SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumRows )
     SCAI_ASSERT_EQUAL_ERROR( y.size(), mNumColumns )
 
-    static LAMAKernel<JDSUtilsInterface::normalGEVM<ValueType> > normalGEVM;
+    static LAMAKernel<JDSUtilKernelTrait::normalGEVM<ValueType> > normalGEVM;
 
     ContextPtr loc = normalGEVM.getValidContext( this->getContextPtr() );
 
@@ -1087,7 +1087,7 @@ SyncToken* JDSStorage<ValueType>::matrixTimesVectorAsync(
 
     SCAI_LOG_INFO( logger, *this << ": matrixTimesVector on " << *loc )
 
-    static LAMAKernel<JDSUtilsInterface::normalGEMV<ValueType> > normalGEMV;
+    static LAMAKernel<JDSUtilKernelTrait::normalGEMV<ValueType> > normalGEMV;
 
     loc = normalGEMV.getValidContext( loc );
 
@@ -1192,7 +1192,7 @@ SyncToken* JDSStorage<ValueType>::vectorTimesMatrixAsync(
 
     SCAI_LOG_INFO( logger, *this << ": matrixTimesVector on " << *loc )
 
-    static LAMAKernel<JDSUtilsInterface::normalGEVM<ValueType> > normalGEVM;
+    static LAMAKernel<JDSUtilKernelTrait::normalGEVM<ValueType> > normalGEVM;
 
     loc = normalGEVM.getValidContext( loc );
 
@@ -1265,7 +1265,7 @@ void JDSStorage<ValueType>::jacobiIterate(
 
     SCAI_LOG_INFO( logger, *this << ": Jacobi iteration for local matrix data." )
 
-    static LAMAKernel<JDSUtilsInterface::jacobi<ValueType> > jacobi;
+    static LAMAKernel<JDSUtilKernelTrait::jacobi<ValueType> > jacobi;
 
     ContextPtr loc = jacobi.getValidContext( this->getContextPtr() );
 
@@ -1334,7 +1334,7 @@ SyncToken* JDSStorage<ValueType>::jacobiIterateAsync(
 
     SCAI_LOG_INFO( logger, *this << ": Jacobi iteration for local matrix data." )
 
-    static LAMAKernel<JDSUtilsInterface::jacobi<ValueType> > jacobi;
+    static LAMAKernel<JDSUtilKernelTrait::jacobi<ValueType> > jacobi;
 
     loc = jacobi.getValidContext( loc );
 
@@ -1418,7 +1418,7 @@ void JDSStorage<ValueType>::jacobiIterateHalo(
 
     SCAI_REGION( "Storage.JDS.jacobiIterateHalo" )
 
-    static LAMAKernel<JDSUtilsInterface::jacobiHalo<ValueType> > jacobiHalo;
+    static LAMAKernel<JDSUtilKernelTrait::jacobiHalo<ValueType> > jacobiHalo;
 
     ContextPtr loc = jacobiHalo.getValidContext( this->getContextPtr());
 
@@ -1455,7 +1455,7 @@ ValueType JDSStorage<ValueType>::l1Norm() const
         return static_cast<ValueType>(0.0);
     }
 
-    static LAMAKernel<BLASInterface::asum<ValueType> > asum;
+    static LAMAKernel<BLASKernelTrait::asum<ValueType> > asum;
 
     ContextPtr loc = asum.getValidContext( this->getContextPtr() );
 
@@ -1480,7 +1480,7 @@ ValueType JDSStorage<ValueType>::l2Norm() const
         return static_cast<ValueType>(0.0);
     }
 
-    static LAMAKernel<BLASInterface::dot<ValueType> > dot;
+    static LAMAKernel<BLASKernelTrait::dot<ValueType> > dot;
 
     ContextPtr loc = dot.getValidContext( this->getContextPtr() );
 
@@ -1505,7 +1505,7 @@ ValueType JDSStorage<ValueType>::maxNorm() const
         return static_cast<ValueType>(0.0);
     }
 
-    static LAMAKernel<UtilsInterface::absMaxVal<ValueType> > absMaxVal;
+    static LAMAKernel<UtilKernelTrait::absMaxVal<ValueType> > absMaxVal;
 
     ContextPtr loc = absMaxVal.getValidContext( this->getContextPtr() );
 

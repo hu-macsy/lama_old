@@ -569,7 +569,7 @@ void MICUtils::invert( ValueType array[], const IndexType n )
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void MICUtils::setInterface( UtilsInterface& Utils )
+void MICUtils::setInterface( UtilKernelTrait& Utils )
 {
     SCAI_LOG_INFO( logger, "set Utils routines for MIC in Interface" )
 

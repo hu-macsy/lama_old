@@ -43,7 +43,7 @@
 #include <scai/lama/distribution/Redistributor.hpp>
 #include <scai/lama/distribution/Halo.hpp>
 
-#include <scai/lama/UtilsInterface.hpp>
+#include <scai/lama/UtilKernelTrait.hpp>
 #include <scai/lama/StorageIO.hpp>
 
 #include <scai/lama/openmp/OpenMPUtils.hpp>
@@ -361,7 +361,7 @@ void MatrixStorage<ValueType>::convertCSR2CSC(
     const IndexType numValues = rowJA.size();
     SCAI_ASSERT_EQUAL_DEBUG( rowJA.size(), rowValues.size() )
 
-    static LAMAKernel<CSRUtilsInterface::convertCSR2CSC<ValueType> > convertCSR2CSC;
+    static LAMAKernel<CSRKernelTrait::convertCSR2CSC<ValueType> > convertCSR2CSC;
     ContextPtr loc = convertCSR2CSC.getValidContext( preferredLoc );
     SCAI_LOG_INFO( logger,
                    "MatrixStorage::CSR2CSC of matrix " << numRows << " x " << numColumns << ", #nnz = " << numValues << " on " << *loc )

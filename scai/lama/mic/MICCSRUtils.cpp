@@ -1907,7 +1907,7 @@ ValueType MICCSRUtils::absMaxDiffVal(
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void MICCSRUtils::setInterface( CSRUtilsInterface& CSRUtils )
+void MICCSRUtils::setInterface( CSRKernelTrait& CSRUtils )
 {
     SCAI_LOG_INFO( logger, "set CSR routines for MIC in Interface" )
 

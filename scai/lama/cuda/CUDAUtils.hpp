@@ -54,7 +54,7 @@ class COMMON_DLL_IMPORTEXPORT CUDAUtils
 {
 public:
 
-    /*  CUDA implementation of UtilsInterface::validIndexes  */
+    /*  CUDA implementation of UtilKernelTrait::validIndexes  */
 
     static bool validIndexes( const IndexType array[], const IndexType n, const IndexType size );
 
@@ -70,12 +70,12 @@ public:
     template<typename ValueType>
     static ValueType getValue( const ValueType* array, const IndexType i );
 
-    /** CUDA implementation for UtilsInterface::Transform::scale. */
+    /** CUDA implementation for UtilKernelTrait::Transform::scale. */
 
     template<typename ValueType>
     static void scale( ValueType values[], const ValueType value, const IndexType n );
 
-    /** CUDA implementation for UtilsInterface::Copy::setScale. */
+    /** CUDA implementation for UtilKernelTrait::Copy::setScale. */
 
     template<typename ValueType,typename otherValueType>
     static void setScale(
@@ -84,22 +84,22 @@ public:
         const otherValueType inValues[],
         const IndexType n );
 
-    /** CUDA function implements UtilsInterface::Reductions::maxval */
+    /** CUDA function implements UtilKernelTrait::Reductions::maxval */
 
     template<typename ValueType>
     static ValueType maxval( const ValueType array[], const IndexType n );
 
-    /** CUDA function implements UtilsInterface::Reductions::absMaxVal */
+    /** CUDA function implements UtilKernelTrait::Reductions::absMaxVal */
 
     template<typename ValueType>
     static ValueType absMaxVal( const ValueType array[], const IndexType n );
 
-    /** CUDA function implements UtilsInterface::Reductions::absMaxDiffVal */
+    /** CUDA function implements UtilKernelTrait::Reductions::absMaxDiffVal */
 
     template<typename ValueType>
     static ValueType absMaxDiffVal( const ValueType array1[], const ValueType array2[], const IndexType n );
 
-    /** CUDA implementation for UtilsInterface::Reductions::isSorted */
+    /** CUDA implementation for UtilKernelTrait::Reductions::isSorted */
 
     template<typename ValueType>
     static bool isSorted( const ValueType array[], const IndexType n, bool acending );
@@ -117,7 +117,7 @@ public:
     template<typename ValueType,typename otherValueType>
     static void setScatter( ValueType out[], const IndexType indexes[], const otherValueType in[], const IndexType n );
 
-    /** CUDA implementation for UtilsInterface::Math::invert */
+    /** CUDA implementation for UtilKernelTrait::Math::invert */
 
     template<typename ValueType>
     static void invert( ValueType array[], const IndexType n );

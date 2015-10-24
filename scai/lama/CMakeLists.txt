@@ -122,8 +122,8 @@ scai_project(
 
     HEADERS
 
-        BLASInterface
-        UtilsInterface
+        BLASKernelTrait
+        UtilKernelTrait
         CRTPCommunicator
     )
 

@@ -43,7 +43,7 @@
 #include <scai/lama/distribution/Distribution.hpp>
 #include <scai/lama/distribution/Halo.hpp>
 #include <scai/lama/LAMAKernel.hpp>
-#include <scai/lama/UtilsInterface.hpp>
+#include <scai/lama/UtilKernelTrait.hpp>
 
 // internal scai libraries
 #include <scai/hmemo/LAMAArray.hpp>
@@ -149,7 +149,7 @@ public:
     {
         using namespace scai::hmemo;
 
-        static LAMAKernel<UtilsInterface::setGather<ValueType, ValueType> > setGather;
+        static LAMAKernel<UtilKernelTrait::setGather<ValueType, ValueType> > setGather;
 
         ContextPtr loc = Context::getHostPtr();   // do it on host
 

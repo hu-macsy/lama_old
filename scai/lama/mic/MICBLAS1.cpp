@@ -35,7 +35,7 @@
 #include <scai/lama/mic/MICBLAS1.hpp>
 
 // local library
-#include <scai/lama/BLASInterface.hpp>
+#include <scai/lama/BLASKernelTrait.hpp>
 #include <scai/lama/LAMAInterfaceRegistry.hpp>
 
 // internal scai libraries
@@ -500,7 +500,7 @@ void MICBLAS1::sum(
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void MICBLAS1::setInterface( BLASInterface& BLAS )
+void MICBLAS1::setInterface( BLASKernelTrait& BLAS )
 {
     SCAI_LOG_INFO( logger, "set BLAS1 routines for MIC in Interface" )
 

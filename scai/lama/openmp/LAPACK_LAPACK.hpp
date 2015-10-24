@@ -56,7 +56,7 @@ class LAPACK_LAPACK
 {
 public:
 
-    /** Implementation of BLASInterface::LAPACK::getrf by LAPACK. */
+    /** Implementation of BLASKernelTrait::LAPACK::getrf by LAPACK. */
 
     template<typename ValueType>
     static IndexType getrf(
@@ -67,7 +67,7 @@ public:
         const IndexType lda,
         IndexType* const ipiv );
 
-    /** Implementation of BLASInterface::LAPACK::getri by LAPACK. */
+    /** Implementation of BLASKernelTrait::LAPACK::getri by LAPACK. */
 
     template<typename ValueType>
     static IndexType getri(
@@ -77,12 +77,12 @@ public:
         const IndexType lda,
         IndexType* const ipiv );
 
-    /** Implementation of BLASInterface::LAPACK::getinv by LAPACK. */
+    /** Implementation of BLASKernelTrait::LAPACK::getinv by LAPACK. */
 
     template<typename ValueType>
     static void getinv( const IndexType n, ValueType* a, const IndexType lda );
 
-    /** Implementation of BLASInterface::LAPACK::tptrs vi LAPACK. */
+    /** Implementation of BLASKernelTrait::LAPACK::tptrs vi LAPACK. */
 
     template<typename ValueType>
     static IndexType tptrs(
@@ -96,7 +96,7 @@ public:
         ValueType* B,
         const IndexType ldb );
 
-    /** OpenMP implementation for BLASInterface::LAPACK::laswp */
+    /** OpenMP implementation for BLASKernelTrait::LAPACK::laswp */
 
     template<typename ValueType>
     static void laswp(
@@ -110,14 +110,14 @@ public:
         const IndexType incx,
         tasking::SyncToken* syncToken );
 
-    /** Routine that sets functions pointers belonging to LAPACK in a BLASInterface.
+    /** Routine that sets functions pointers belonging to LAPACK in a BLASKernelTrait.
      *
-     *  param[inout] BLASInterface struct to register all routines implemented in OpenMP
+     *  param[inout] BLASKernelTrait struct to register all routines implemented in OpenMP
      *
      *  Note: this routine will make instantiations of the template routines.
      */
 
-    static void setInterface( struct BLASInterface& BLAS );
+    static void setInterface( struct BLASKernelTrait& BLAS );
 
 private:
 

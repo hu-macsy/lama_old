@@ -457,7 +457,7 @@ void MICDIAUtils::jacobi(
 
 /* --------------------------------------------------------------------------- */
 
-void MICDIAUtils::setInterface( DIAUtilsInterface& DIAUtils )
+void MICDIAUtils::setInterface( DIAKernelTrait& DIAUtils )
 {
     // Register all CUDA routines of this class for the LAMA interface
 

@@ -180,7 +180,7 @@ void MICMKLCSRUtils::normalGEMV(
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void MICMKLCSRUtils::setInterface( CSRUtilsInterface& CSRUtils )
+void MICMKLCSRUtils::setInterface( CSRKernelTrait& CSRUtils )
 {
     bool useMKL = true;
 

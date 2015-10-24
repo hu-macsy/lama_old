@@ -35,7 +35,7 @@
 #include <scai/lama/cuda/CUSparseCSRUtils.hpp>
 
 // local library
-#include <scai/lama/UtilsInterface.hpp>
+#include <scai/lama/UtilKernelTrait.hpp>
 #include <scai/lama/cuda/utils.cu.h>
 
 // internal scai libraries
@@ -639,20 +639,20 @@ namespace lama
 
         bool replace = true;  // overwrites settings of CUDACSRUtils
 
-        KernelRegistry::set<CSRUtilsInterface::normalGEMV<float> >( normalGEMV, ctx, replace ); 
-        KernelRegistry::set<CSRUtilsInterface::normalGEMV<double> >( normalGEMV, ctx, replace ); 
+        KernelRegistry::set<CSRKernelTrait::normalGEMV<float> >( normalGEMV, ctx, replace ); 
+        KernelRegistry::set<CSRKernelTrait::normalGEMV<double> >( normalGEMV, ctx, replace ); 
 
-        KernelRegistry::set<CSRUtilsInterface::convertCSR2CSC<float> >( convertCSR2CSC, ctx, replace ); 
-        KernelRegistry::set<CSRUtilsInterface::convertCSR2CSC<double> >( convertCSR2CSC, ctx, replace ); 
+        KernelRegistry::set<CSRKernelTrait::convertCSR2CSC<float> >( convertCSR2CSC, ctx, replace ); 
+        KernelRegistry::set<CSRKernelTrait::convertCSR2CSC<double> >( convertCSR2CSC, ctx, replace ); 
 
-        KernelRegistry::set<CSRUtilsInterface::matrixAddSizes>( matrixAddSizes, ctx, replace ); 
-        KernelRegistry::set<CSRUtilsInterface::matrixMultiplySizes>( matrixMultiplySizes, ctx, replace ); 
+        KernelRegistry::set<CSRKernelTrait::matrixAddSizes>( matrixAddSizes, ctx, replace ); 
+        KernelRegistry::set<CSRKernelTrait::matrixMultiplySizes>( matrixMultiplySizes, ctx, replace ); 
 
-        KernelRegistry::set<CSRUtilsInterface::matrixAdd<float> >( matrixAdd, ctx, replace ); 
-        KernelRegistry::set<CSRUtilsInterface::matrixAdd<double> >( matrixAdd, ctx, replace ); 
+        KernelRegistry::set<CSRKernelTrait::matrixAdd<float> >( matrixAdd, ctx, replace ); 
+        KernelRegistry::set<CSRKernelTrait::matrixAdd<double> >( matrixAdd, ctx, replace ); 
 
-        KernelRegistry::set<CSRUtilsInterface::matrixMultiply<float> >( matrixMultiply, ctx, replace ); 
-        KernelRegistry::set<CSRUtilsInterface::matrixMultiply<double> >( matrixMultiply, ctx, replace ); 
+        KernelRegistry::set<CSRKernelTrait::matrixMultiply<float> >( matrixMultiply, ctx, replace ); 
+        KernelRegistry::set<CSRKernelTrait::matrixMultiply<double> >( matrixMultiply, ctx, replace ); 
     }
 
     /* --------------------------------------------------------------------------- */

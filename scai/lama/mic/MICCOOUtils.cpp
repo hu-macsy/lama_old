@@ -430,7 +430,7 @@ void MICCOOUtils::jacobi(
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void MICCOOUtils::setInterface( COOUtilsInterface& COOUtils )
+void MICCOOUtils::setInterface( COOKernelTrait& COOUtils )
 {
     SCAI_LOG_INFO( logger, "set COO routines for MIC in Interface" )
 

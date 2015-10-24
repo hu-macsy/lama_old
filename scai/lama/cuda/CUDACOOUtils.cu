@@ -38,7 +38,7 @@
 #include <scai/lama/cuda/CUDAUtils.hpp>
 #include <scai/lama/cuda/CUDASettings.hpp>
 
-#include <scai/lama/UtilsInterface.hpp>
+#include <scai/lama/UtilKernelTrait.hpp>
 
 // internal scai library
 #include <scai/hmemo/cuda/CUDAStreamSyncToken.hpp>
@@ -728,15 +728,15 @@ void CUDACOOUtils::registerKernels()
 
     common::ContextType ctx = common::context::CUDA;
 
-    KernelRegistry::set<COOUtilsInterface::offsets2ia>( offsets2ia, ctx );
-    KernelRegistry::set<COOUtilsInterface::setCSRData<IndexType, IndexType> >( setCSRData, ctx );
+    KernelRegistry::set<COOKernelTrait::offsets2ia>( offsets2ia, ctx );
+    KernelRegistry::set<COOKernelTrait::setCSRData<IndexType, IndexType> >( setCSRData, ctx );
 
 #define LAMA_COO_UTILS2_REGISTER(z, J, TYPE )                                                                \
-    KernelRegistry::set<COOUtilsInterface::setCSRData<TYPE, ARITHMETIC_HOST_TYPE_##J> >( setCSRData, ctx );  \
+    KernelRegistry::set<COOKernelTrait::setCSRData<TYPE, ARITHMETIC_HOST_TYPE_##J> >( setCSRData, ctx );  \
      
 #define LAMA_COO_UTILS_REGISTER(z, I, _)                                                              \
-    KernelRegistry::set<COOUtilsInterface::normalGEMV<ARITHMETIC_HOST_TYPE_##I> >( normalGEMV, ctx ); \
-    KernelRegistry::set<COOUtilsInterface::normalGEVM<ARITHMETIC_HOST_TYPE_##I> >( normalGEVM, ctx ); \
+    KernelRegistry::set<COOKernelTrait::normalGEMV<ARITHMETIC_HOST_TYPE_##I> >( normalGEMV, ctx ); \
+    KernelRegistry::set<COOKernelTrait::normalGEVM<ARITHMETIC_HOST_TYPE_##I> >( normalGEVM, ctx ); \
                                                                                                       \
     BOOST_PP_REPEAT( ARITHMETIC_CUDA_TYPE_CNT,                                                        \
                      LAMA_COO_UTILS2_REGISTER,                                                        \

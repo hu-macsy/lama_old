@@ -38,7 +38,7 @@
 #include <scai/lama/openmp/OpenMPUtils.hpp>
 #include <scai/lama/openmp/OpenMPCSRUtils.hpp>
 
-#include <scai/lama/UtilsInterface.hpp>
+#include <scai/lama/UtilKernelTrait.hpp>
 
 // internal scai libraries
 
@@ -269,14 +269,14 @@ void MKLCSRUtils::registerKernels()
 
     SCAI_LOG_INFO( logger, "set CSR routines for MKL in Host Interface" )
 
-    KernelRegistry::set<CSRUtilsInterface::normalGEMV<float> >( normalGEMV, ctx ); 
-    KernelRegistry::set<CSRUtilsInterface::normalGEMV<double> >( normalGEMV, ctx ); 
+    KernelRegistry::set<CSRKernelTrait::normalGEMV<float> >( normalGEMV, ctx ); 
+    KernelRegistry::set<CSRKernelTrait::normalGEMV<double> >( normalGEMV, ctx ); 
 
     // MKL conversion csr to csc has worse performance than our OpenMP Implementation
     // so we do not use it here.
 
-    // KernelRegistry::set<CSRUtilsInterface::convertCSR2CSC<float> >( convertCSR2CSC, ctx ); 
-    // KernelRegistry::set<CSRUtilsInterface::convertCSR2CSC<double> >( convertCSR2CSC, ctx ); 
+    // KernelRegistry::set<CSRKernelTrait::convertCSR2CSC<float> >( convertCSR2CSC, ctx ); 
+    // KernelRegistry::set<CSRKernelTrait::convertCSR2CSC<double> >( convertCSR2CSC, ctx ); 
 }
 
 /* --------------------------------------------------------------------------- */

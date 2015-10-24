@@ -37,7 +37,7 @@
 // local library
 #include <scai/lama/cuda/lama_cublas.hpp>
 
-#include <scai/lama/BLASInterface.hpp>
+#include <scai/lama/BLASKernelTrait.hpp>
 
 // internal scai libraries
 #include <scai/hmemo/cuda/CUDAStreamSyncToken.hpp>
@@ -257,7 +257,7 @@ void CUDABLAS2::registerKernels()
     SCAI_LOG_INFO( logger, "set BLAS2 routines for CUDA at Kernel Registry" )
 
 #define LAMA_BLAS2_REGISTER(z, I, _)                                                   \
-    KernelRegistry::set<BLASInterface::gemv<ARITHMETIC_CUDA_TYPE_##I> >( gemv, ctx );  \
+    KernelRegistry::set<BLASKernelTrait::gemv<ARITHMETIC_CUDA_TYPE_##I> >( gemv, ctx );  \
 
     BOOST_PP_REPEAT( ARITHMETIC_CUDA_TYPE_CNT, LAMA_BLAS2_REGISTER, _ )
 

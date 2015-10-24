@@ -35,7 +35,7 @@
 #include <scai/lama/mic/MICBLAS2.hpp>
 
 // local library
-#include <scai/lama/BLASInterface.hpp>
+#include <scai/lama/BLASKernelTrait.hpp>
 #include <scai/lama/LAMAInterfaceRegistry.hpp>
 
 // external
@@ -219,7 +219,7 @@ void MICBLAS2::gemv(
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void MICBLAS2::setInterface( BLASInterface& BLAS )
+void MICBLAS2::setInterface( BLASKernelTrait& BLAS )
 {
     SCAI_LOG_INFO( logger, "set BLAS2 routines for MIC in Interface" )
 

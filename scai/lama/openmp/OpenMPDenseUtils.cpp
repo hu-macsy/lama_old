@@ -35,7 +35,7 @@
 #include <scai/lama/openmp/OpenMPDenseUtils.hpp>
 
 // local library
-#include <scai/lama/UtilsInterface.hpp>
+#include <scai/lama/UtilKernelTrait.hpp>
 #include <scai/lama/openmp/OpenMP.hpp>
 
 #include <scai/kregistry/KernelRegistry.hpp>
@@ -336,19 +336,19 @@ void OpenMPDenseUtils::registerKernelFunctions()
 
 #define KREGISTRY_DENSE2_REGISTER(z, J, TYPE )                                                                          \
     /* Conversions  */                                                                                                  \
-    KernelRegistry::set<DenseUtilsInterface::setCSRValues<TYPE, ARITHMETIC_HOST_TYPE_##J> >( setCSRValues, ctx );       \
-    KernelRegistry::set<DenseUtilsInterface::getCSRValues<TYPE, ARITHMETIC_HOST_TYPE_##J> >( getCSRValues, ctx );       \
+    KernelRegistry::set<DenseKernelTrait::setCSRValues<TYPE, ARITHMETIC_HOST_TYPE_##J> >( setCSRValues, ctx );       \
+    KernelRegistry::set<DenseKernelTrait::getCSRValues<TYPE, ARITHMETIC_HOST_TYPE_##J> >( getCSRValues, ctx );       \
     /* Copy  */                                                                                                         \
-    KernelRegistry::set<DenseUtilsInterface::copyDenseValues<TYPE, ARITHMETIC_HOST_TYPE_##J> >( copyDenseValues, ctx ); \
-    KernelRegistry::set<DenseUtilsInterface::getDiagonal<TYPE, ARITHMETIC_HOST_TYPE_##J> >( getDiagonal, ctx );         \
-    KernelRegistry::set<DenseUtilsInterface::setDiagonal<TYPE, ARITHMETIC_HOST_TYPE_##J> >( setDiagonal, ctx );         \
+    KernelRegistry::set<DenseKernelTrait::copyDenseValues<TYPE, ARITHMETIC_HOST_TYPE_##J> >( copyDenseValues, ctx ); \
+    KernelRegistry::set<DenseKernelTrait::getDiagonal<TYPE, ARITHMETIC_HOST_TYPE_##J> >( getDiagonal, ctx );         \
+    KernelRegistry::set<DenseKernelTrait::setDiagonal<TYPE, ARITHMETIC_HOST_TYPE_##J> >( setDiagonal, ctx );         \
 
 #define KREGISTRY_DENSE_REGISTER(z, I, _)                                                                               \
     /* Counting  */                                                                                                     \
-    KernelRegistry::set<DenseUtilsInterface::getCSRSizes<ARITHMETIC_HOST_TYPE_##I> >( getCSRSizes, ctx );               \
+    KernelRegistry::set<DenseKernelTrait::getCSRSizes<ARITHMETIC_HOST_TYPE_##I> >( getCSRSizes, ctx );               \
     /* Modify  */                                                                                                       \
-    KernelRegistry::set<DenseUtilsInterface::setDiagonalValue<ARITHMETIC_HOST_TYPE_##I> >( setDiagonalValue, ctx );     \
-    KernelRegistry::set<DenseUtilsInterface::scaleValue<ARITHMETIC_HOST_TYPE_##I> >( scaleValue, ctx );                 \
+    KernelRegistry::set<DenseKernelTrait::setDiagonalValue<ARITHMETIC_HOST_TYPE_##I> >( setDiagonalValue, ctx );     \
+    KernelRegistry::set<DenseKernelTrait::scaleValue<ARITHMETIC_HOST_TYPE_##I> >( scaleValue, ctx );                 \
     BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, KREGISTRY_DENSE2_REGISTER, ARITHMETIC_HOST_TYPE_##I )                         \
 
     BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, KREGISTRY_DENSE_REGISTER, _ )

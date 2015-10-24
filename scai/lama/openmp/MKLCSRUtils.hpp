@@ -56,7 +56,7 @@ class COMMON_DLL_IMPORTEXPORT MKLCSRUtils
 {
 public:
 
-    /** Implementation for CSRUtilsInterface::Transpose::convertCSR2CSC using MKL */
+    /** Implementation for CSRKernelTrait::Transpose::convertCSR2CSC using MKL */
 
     template<typename ValueType>
     static void convertCSR2CSC(
@@ -70,7 +70,7 @@ public:
         IndexType numColumns,
         IndexType numValues );
 
-    /** Implementation for CSRUtilsInterface::Mult::normalGEMV  */
+    /** Implementation for CSRKernelTrait::Mult::normalGEMV  */
 
     template<typename ValueType>
     static void normalGEMV(
