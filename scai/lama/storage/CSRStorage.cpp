@@ -1119,26 +1119,31 @@ void CSRStorage<ValueType>::buildCSR(
     LAMAArray<IndexType>& ia,
     LAMAArray<IndexType>* ja,
     LAMAArray<OtherValueType>* values,
-    const ContextPtr loc ) const
+    const ContextPtr prefLoc ) const
 {
+    static LAMAKernel<CSRUtilsInterface::offsets2sizes> offsets2sizes;
+    static LAMAKernel<UtilsInterface::set<IndexType, IndexType> > setIndexes;
+    static LAMAKernel<UtilsInterface::set<OtherValueType, ValueType> > setValues;
+
+    ContextPtr loc = offsets2sizes.getValidContext( setIndexes, setValues, prefLoc );
+
     ReadAccess<IndexType> inIA( mIa, loc );
 
-    //build number of values per row into ia
+    // build number of values per row into ia
+
     if( ja == NULL || values == NULL )
     {
-        static LAMAKernel<CSRUtilsInterface::offsets2sizes> offsets2sizes;
-
         WriteOnlyAccess<IndexType> csrIA( ia, loc, mNumRows );
 
         SCAI_CONTEXT_ACCESS( loc )
 
         offsets2sizes[ loc ]( csrIA.get(), inIA.get(), mNumRows );
+
         return;
     }
 
     // copy the offset array ia and ja
     {
-        static LAMAKernel<UtilsInterface::set<IndexType, IndexType> > set;
 
         SCAI_CONTEXT_ACCESS( loc )
 
@@ -1146,13 +1151,12 @@ void CSRStorage<ValueType>::buildCSR(
         WriteOnlyAccess<IndexType> csrIA( ia, loc, mNumRows + 1 );
         WriteOnlyAccess<IndexType> csrJA( *ja, loc, mNumValues );
 
-        set[ loc ]( csrIA.get(), inIA.get(), mNumRows + 1 );
-        set[ loc ]( csrJA.get(), inJA.get(), mNumValues );
+        setIndexes[ loc ]( csrIA.get(), inIA.get(), mNumRows + 1 );
+        setIndexes[ loc ]( csrJA.get(), inJA.get(), mNumValues );
     }
 
     // copy values
     {
-        static LAMAKernel<UtilsInterface::set<OtherValueType, ValueType> > set;
 
         // Attention: no fallback here for other context
 
@@ -1161,7 +1165,7 @@ void CSRStorage<ValueType>::buildCSR(
         ReadAccess<ValueType> inValues( mValues, loc );
         WriteOnlyAccess<OtherValueType> csrValues( *values, loc, mNumValues );
 
-        set[ loc ]( csrValues.get(), inValues.get(), mNumValues );
+        setValues[ loc ]( csrValues.get(), inValues.get(), mNumValues );
     }
 }
 
@@ -1284,7 +1288,8 @@ void CSRStorage<ValueType>::matrixTimesVector(
     const LAMAArray<ValueType>& y ) const
 {
     SCAI_LOG_INFO( logger,
-                   *this << ": matrixTimesVector, result = " << result << ", alpha = " << alpha << ", x = " << x << ", beta = " << beta << ", y = " << y )
+                   *this << ": matrixTimesVector, result = " << result << ", alpha = " << alpha 
+                    << ", x = " << x << ", beta = " << beta << ", y = " << y )
 
     SCAI_REGION( "Storage.CSR.timesVector" )
 
@@ -1296,12 +1301,14 @@ void CSRStorage<ValueType>::matrixTimesVector(
         SCAI_ASSERT_EQUAL_ERROR( y.size(), mNumRows )
     }
 
-    ContextPtr loc = getContextPtr();
-
-    SCAI_LOG_INFO( logger, *this << ": matrixTimesVector on " << *loc )
-
     static LAMAKernel<CSRUtilsInterface::sparseGEMV<ValueType> > sparseGEMV;
     static LAMAKernel<CSRUtilsInterface::normalGEMV<ValueType> > normalGEMV;
+
+    // run it only on context of this storage if both routines are available
+
+    ContextPtr loc = normalGEMV.getValidContext( sparseGEMV, this->getContextPtr() );
+
+    SCAI_LOG_INFO( logger, *this << ": matrixTimesVector on " << *loc )
 
     ReadAccess<IndexType> csrIA( mIa, loc );
     ReadAccess<IndexType> csrJA( mJa, loc );
@@ -1500,10 +1507,13 @@ SyncToken* CSRStorage<ValueType>::matrixTimesVectorAsync(
 
     SCAI_REGION( "Storage.CSR.timesVectorAsync" )
 
-    ContextPtr loc = getContextPtr();
-
     // Note: checks will be done by asynchronous task in any case
     //       and exception in tasks are handled correctly
+
+    static LAMAKernel<CSRUtilsInterface::sparseGEMV<ValueType> > sparseGEMV;
+    static LAMAKernel<CSRUtilsInterface::normalGEMV<ValueType> > normalGEMV;
+
+    ContextPtr loc = normalGEMV.getValidContext( sparseGEMV, this->getContextPtr() );
 
     SCAI_LOG_INFO( logger, *this << ": matrixTimesVectorAsync on " << *loc )
 
@@ -1536,9 +1546,6 @@ SyncToken* CSRStorage<ValueType>::matrixTimesVectorAsync(
     {
         SCAI_ASSERT_EQUAL_ERROR( y.size(), mNumRows )
     }
-
-    static LAMAKernel<CSRUtilsInterface::sparseGEMV<ValueType> > sparseGEMV;
-    static LAMAKernel<CSRUtilsInterface::normalGEMV<ValueType> > normalGEMV;
 
     unique_ptr<SyncToken> syncToken( loc->getSyncToken() );
 

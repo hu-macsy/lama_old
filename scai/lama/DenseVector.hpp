@@ -358,7 +358,7 @@ public:
     virtual Scalar maxNorm() const;
 
     static void vectorPlusVector(
-        ContextPtr context,
+        ContextPtr prefContext,
         LAMAArray<ValueType>& result,
         const ValueType alpha,
         const LAMAArray<ValueType>& x,
@@ -366,7 +366,7 @@ public:
         const LAMAArray<ValueType>& y );
 
     static SyncToken* vectorPlusVectorAsync(
-        ContextPtr context,
+        ContextPtr prefContext,
         LAMAArray<ValueType>& result,
         const ValueType alpha,
         const LAMAArray<ValueType>& x,

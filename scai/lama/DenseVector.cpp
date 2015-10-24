@@ -625,7 +625,7 @@ void DenseVector<ValueType>::writeAt( std::ostream& stream ) const
 
 template<typename ValueType>
 void DenseVector<ValueType>::vectorPlusVector(
-    ContextPtr context,
+    ContextPtr prefContext,
     LAMAArray<ValueType>& result,
     const ValueType alpha,
     const LAMAArray<ValueType>& x,
@@ -640,6 +640,8 @@ void DenseVector<ValueType>::vectorPlusVector(
     static LAMAKernel<UtilsInterface::scale<ValueType> > scale;
     static LAMAKernel<BLASInterface::axpy<ValueType> > axpy;
     static LAMAKernel<BLASInterface::sum<ValueType> > sum;
+
+    ContextPtr context = sum.getValidContext( scale, axpy, prefContext );
 
     const IndexType nnu = result.size();
 

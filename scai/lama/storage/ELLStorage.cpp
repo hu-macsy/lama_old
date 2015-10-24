@@ -424,12 +424,13 @@ void ELLStorage<ValueType>::setCSRDataImpl(
     const LAMAArray<IndexType>& ia,
     const LAMAArray<IndexType>& ja,
     const LAMAArray<OtherValueType>& values,
-    const ContextPtr loc )
+    const ContextPtr prefLoc )
 {
     SCAI_REGION( "Storage.ELL<-CSR" )
 
     SCAI_LOG_INFO( logger,
-                   "set CSR data on " << *loc << ": numRows = " << numRows << ", numColumns = " << numColumns << ", numValues = " << numValues << ", compress threshold = " << mCompressThreshold )
+                   "set CSR data on " << *prefLoc << ": numRows = " << numRows << ", numColumns = " << numColumns 
+                   << ", numValues = " << numValues << ", compress threshold = " << mCompressThreshold )
 
     if( numRows == 0 )
     {
@@ -448,6 +449,8 @@ void ELLStorage<ValueType>::setCSRDataImpl(
     static LAMAKernel<ELLUtilsInterface::hasDiagonalProperty > hasDiagonalProperty;
     static LAMAKernel<UtilsInterface::maxval<IndexType> > maxval;
     static LAMAKernel<ELLUtilsInterface::setCSRValues<ValueType, OtherValueType> > setCSRValues;
+
+    ContextPtr loc = offsets2sizes.getValidContext( hasDiagonalProperty, setCSRValues, prefLoc );
 
     // build array with non-zero values per row
 
@@ -678,6 +681,8 @@ void ELLStorage<ValueType>::getDiagonalImpl( LAMAArray<OtherType>& diagonal ) co
 
     IndexType numDiagonalElements = std::min( mNumColumns, mNumRows );
 
+    // OtherType is output type, so use it as first template argument
+
     static LAMAKernel<UtilsInterface::set<OtherType, ValueType> > set;
 
     ContextPtr loc = set.getValidContext( this->getContextPtr() );
@@ -689,7 +694,7 @@ void ELLStorage<ValueType>::getDiagonalImpl( LAMAArray<OtherType>& diagonal ) co
 
     SCAI_CONTEXT_ACCESS( loc )
 
-    // set( wDiagonal.get(), rValues.get(), numDiagonalElements );
+    set[loc]( wDiagonal.get(), rValues.get(), numDiagonalElements );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1015,7 +1020,7 @@ void ELLStorage<ValueType>::matrixTimesVector(
     SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumColumns )
     SCAI_ASSERT_EQUAL_ERROR( y.size(), mNumRows )
 
-    ContextPtr loc = getContextPtr();
+    ContextPtr loc = this->getContextPtr();
 
     if( mNumValuesPerRow == 0 )
     {
@@ -1027,12 +1032,12 @@ void ELLStorage<ValueType>::matrixTimesVector(
 
     SCAI_REGION( "Storage.ELL.timesVector" )
 
-    SCAI_LOG_INFO( logger, *this << ": matrixTimesVector on " << *loc )
-
     static LAMAKernel<ELLUtilsInterface::sparseGEMV<ValueType> > sparseGEMV;
     static LAMAKernel<ELLUtilsInterface::normalGEMV<ValueType> > normalGEMV;
 
     loc = normalGEMV.getValidContext( sparseGEMV, loc );
+
+    SCAI_LOG_INFO( logger, *this << ": matrixTimesVector on " << *loc )
 
     ReadAccess<IndexType> ellIA( mIA, loc );
     ReadAccess<IndexType> ellJA( mJA, loc );
@@ -1136,7 +1141,7 @@ void ELLStorage<ValueType>::vectorTimesMatrix(
         }
         else
         {
-            // we assume that normalGEMV can deal with the alias of result, y
+            // we assume that normalGEVM can deal with the alias of result, y
 
             SCAI_CONTEXT_ACCESS( loc )
             normalGEVM[loc]( wResult.get(), alpha, rX.get(), beta, wResult.get(), mNumRows, mNumColumns, mNumValuesPerRow,
@@ -1166,7 +1171,10 @@ SyncToken* ELLStorage<ValueType>::matrixTimesVectorAsync(
 {
     SCAI_REGION( "Storage.ELL.timesVectorAsync" )
 
-    ContextPtr loc = getContextPtr();
+    static LAMAKernel<ELLUtilsInterface::sparseGEMV<ValueType> > sparseGEMV;
+    static LAMAKernel<ELLUtilsInterface::normalGEMV<ValueType> > normalGEMV;
+
+    ContextPtr loc = normalGEMV.getValidContext( sparseGEMV, this->getContextPtr() );
 
     SCAI_LOG_INFO( logger, *this << ": matrixTimesVectorAsync on " << *loc )
 
@@ -1205,11 +1213,6 @@ SyncToken* ELLStorage<ValueType>::matrixTimesVectorAsync(
     }
 
     SCAI_LOG_INFO( logger, *this << ": matrixTimesVectorAsync on " << *loc )
-
-    static LAMAKernel<ELLUtilsInterface::sparseGEMV<ValueType> > sparseGEMV;
-    static LAMAKernel<ELLUtilsInterface::normalGEMV<ValueType> > normalGEMV;
-
-    loc = normalGEMV.getValidContext( sparseGEMV, loc );
 
     common::unique_ptr<SyncToken> syncToken( loc->getSyncToken() );
 
@@ -1293,7 +1296,12 @@ SyncToken* ELLStorage<ValueType>::vectorTimesMatrixAsync(
 
     SCAI_REGION( "Storage.ELL.vectorTimesMatrixAsync" )
 
-    ContextPtr loc = getContextPtr();
+    static LAMAKernel<ELLUtilsInterface::sparseGEVM<ValueType> > sparseGEVM;
+    static LAMAKernel<ELLUtilsInterface::normalGEVM<ValueType> > normalGEVM;
+
+    // default location is context of this storage
+
+    ContextPtr loc = normalGEVM.getValidContext( sparseGEVM, this->getContextPtr() );
 
     // Note: checks will be done by asynchronous task in any case
     //       and exception in tasks are handled correctly
@@ -1329,11 +1337,6 @@ SyncToken* ELLStorage<ValueType>::vectorTimesMatrixAsync(
     {
         SCAI_ASSERT_EQUAL_ERROR( y.size(), mNumColumns )
     }
-
-    static LAMAKernel<ELLUtilsInterface::sparseGEVM<ValueType> > sparseGEVM;
-    static LAMAKernel<ELLUtilsInterface::normalGEVM<ValueType> > normalGEVM;
-
-    loc = normalGEVM.getValidContext( sparseGEVM, loc );
 
     common::unique_ptr<SyncToken> syncToken( loc->getSyncToken() );
 
@@ -1458,9 +1461,11 @@ SyncToken* ELLStorage<ValueType>::jacobiIterateAsync(
 {
     SCAI_REGION( "Storage.ELL.jacobiIterateAsync" )
 
-    ContextPtr loc = getContextPtr();
+    static LAMAKernel<ELLUtilsInterface::jacobi<ValueType> > jacobi;
 
-    if( loc->getType() == context::Host )
+    ContextPtr loc = jacobi.getValidContext( this->getContextPtr() );
+
+    if ( loc->getType() == context::Host )
     {
         // used later in OpenMP to generate a TaskSyncToken
 
@@ -1495,10 +1500,6 @@ SyncToken* ELLStorage<ValueType>::jacobiIterateAsync(
     SCAI_ASSERT_EQUAL_DEBUG( mNumRows, mNumColumns )
 
     // matrix must be square
-
-    static LAMAKernel<ELLUtilsInterface::jacobi<ValueType> > jacobi;
-
-    loc = jacobi.getValidContext( loc );
 
     common::unique_ptr<SyncToken> syncToken( loc->getSyncToken() );
 

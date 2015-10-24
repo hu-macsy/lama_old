@@ -192,13 +192,13 @@ void LAMAArrayUtils::gather(
 }
 
 template<typename ValueType>
-void LAMAArrayUtils::assignScalar( LAMAArray<ValueType>& target, const Scalar& value, ContextPtr context )
+void LAMAArrayUtils::assignScalar( LAMAArray<ValueType>& target, const Scalar& value, ContextPtr prefContext )
 {
-    SCAI_ASSERT( context.get(), "No context specified" )
+    static LAMAKernel<UtilsInterface::setVal<ValueType> > setVal;
+
+    ContextPtr context = setVal.getValidContext( prefContext );
 
     SCAI_LOG_INFO( logger, target << " = " << value << ", to do at " << *context )
-
-    static LAMAKernel<UtilsInterface::setVal<ValueType> > setVal;
 
     // assignment takes place at the specified context, no check here
 
@@ -253,9 +253,11 @@ void LAMAArrayUtils::setVal( LAMAArray<ValueType>& target, const IndexType index
 {
     SCAI_ASSERT_DEBUG( index < target.size(), "index = " << index << " out of range for target = " << target );
 
-    ContextPtr loc = target.getValidContext(); // best position where to fill
+    ContextPtr loc = target.getValidContext();   // preferred location where to fill
 
     static LAMAKernel<UtilsInterface::setVal<ValueType> > setVal;
+
+    loc = setVal.getValidContext( loc );
 
     WriteAccess<ValueType> wTarget( target, loc );
 
@@ -269,7 +271,7 @@ void LAMAArrayUtils::assignScaled(
     LAMAArray<ValueType>& result,
     const ValueType beta,
     const LAMAArray<ValueType>& y,
-    ContextPtr loc )
+    ContextPtr prefLoc )
 {
     const IndexType n = result.size();
 
@@ -283,6 +285,8 @@ void LAMAArrayUtils::assignScaled(
         // result := 0
 
         static LAMAKernel<UtilsInterface::setVal<ValueType> > setVal;
+
+        ContextPtr loc = setVal.getValidContext( prefLoc );
 
         WriteAccess<ValueType> wResult( result, loc );
 
@@ -301,6 +305,8 @@ void LAMAArrayUtils::assignScaled(
 
         static LAMAKernel<UtilsInterface::scale<ValueType> > scale;
 
+        ContextPtr loc = scale.getValidContext( prefLoc );
+
         WriteAccess<ValueType> wResult( result, loc );
 
         SCAI_CONTEXT_ACCESS( loc )
@@ -315,6 +321,8 @@ void LAMAArrayUtils::assignScaled(
         //       and to support type conversions in place for multiprecision support
         
         static LAMAKernel<UtilsInterface::setScale<ValueType, ValueType> > setScale;
+
+        ContextPtr loc = setScale.getValidContext( prefLoc );
 
         SCAI_CONTEXT_ACCESS( loc )
 

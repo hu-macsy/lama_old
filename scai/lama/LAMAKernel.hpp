@@ -32,7 +32,10 @@
 #pragma once
 
 #include <scai/kregistry/KernelContextFunction.hpp>
+
 #include <scai/hmemo/Context.hpp>
+#include <scai/common/Assert.hpp>
+
 
 namespace scai
 {
@@ -63,6 +66,8 @@ public:
 
     hmemo::ContextPtr getValidContext( hmemo::ContextPtr defaultContext )
     {
+        SCAI_ASSERT_DEBUG( defaultContext.get(), "NULL context" );
+
         common::ContextType defCtx = defaultContext->getType();
         common::ContextType runCtx = kregistry::_ContextFunction::validContext( defCtx );
 
@@ -78,6 +83,8 @@ public:
 
     hmemo::ContextPtr getValidContext( kregistry::_ContextFunction other, hmemo::ContextPtr defaultContext )
     {
+        SCAI_ASSERT_DEBUG( defaultContext.get(), "NULL context" );
+
         common::ContextType defCtx = defaultContext->getType();
         common::ContextType runCtx = kregistry::_ContextFunction::validContext( other, defCtx );
 
@@ -99,6 +106,8 @@ public:
                                        kregistry::_ContextFunction other2,
                                        hmemo::ContextPtr defaultContext    )
     {
+        SCAI_ASSERT_DEBUG( defaultContext.get(), "NULL context" );
+
         common::ContextType defCtx = defaultContext->getType();
         common::ContextType runCtx = kregistry::_ContextFunction::validContext( other1, other2, defCtx );
 
