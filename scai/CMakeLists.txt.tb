@@ -91,10 +91,10 @@ add_subdirectory( kregistry )
 
 ### Set variables for Findscai_kregistry so other projects can use it 
 
-set ( SCAI_KERNEL_LIBRARY scai_kregistry
+set ( SCAI_KREGISTRY_LIBRARY scai_kregistry
       CACHE FILEPATH  "library for kernel registry" )
 
-set ( SCAI_KERNEL_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/kregistry
+set ( SCAI_KREGISTRY_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/kregistry
       CACHE PATH "kernel registry include directory" )
 
 add_subdirectory( hmemo )
