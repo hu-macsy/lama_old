@@ -178,7 +178,7 @@ private:
 
     std::string              mMatrixFormat;
 
-    scai::context::ContextType        mContextType;
+    scai::common::ContextType        mContextType;
 
     mutable scai::hmemo::ContextPtr   mContext;
 
@@ -211,7 +211,7 @@ LamaConfig::LamaConfig()
 {
     mCommunicationKind = scai::lama::Matrix::SYNCHRONOUS;
     mComm              = scai::lama::Communicator::get();
-    mContextType       = scai::context::Host;
+    mContextType       = scai::common::context::Host;
     mMaxIter           = nIndex;
     mValueType         = scai::common::scalar::DOUBLE;
     mLogLevel          = scai::lama::LogLevel::convergenceHistory;
@@ -324,15 +324,15 @@ void LamaConfig::setArg( const char* arg )
     { 
         // Host does not require a device id
 
-        mContextType = scai::context::Host;
+        mContextType = scai::common::context::Host;
     }
     else if ( ( "MIC" == val ) || ( "PHI" == val ) )
     { 
-        mContextType = scai::context::MIC;
+        mContextType = scai::common::context::MIC;
     }
     else if ( ( "CUDA" == val ) || ( "GPU" == val ) )
     { 
-        mContextType = scai::context::CUDA;
+        mContextType = scai::common::context::CUDA;
     }
     else if ( "PINNED" == val )
     {
@@ -529,7 +529,7 @@ const char* LamaConfig::getFormat( ) const
     {
         // choose default format by context: Host -> CSR, CUDA -> ELL
 
-        if ( mContextType == scai::context::CUDA )
+        if ( mContextType == scai::common::context::CUDA )
         {
             return "ELL";
         }

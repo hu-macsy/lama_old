@@ -40,6 +40,7 @@
 
 // internal scai libraries
 #include <scai/common/macros/unused.hpp>
+#include <scai/common/ScalarType.hpp>
 #include <scai/kregistry/KernelRegistry.hpp>
 
 #include <scai/tracing.hpp>
@@ -53,6 +54,9 @@
 namespace scai
 {
 
+using tasking::SyncToken;
+using common::getScalarType;
+
 namespace lama
 {
 
@@ -65,9 +69,6 @@ using std::abs;
 // used for float, double
 using std::sqrt;
 // used for float, double
-
-using tasking::SyncToken;
-using common::getScalarType;
 
 SCAI_LOG_DEF_LOGGER( OpenMPBLAS1::logger, "OpenMP.BLAS1" )
 

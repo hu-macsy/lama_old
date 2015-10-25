@@ -124,6 +124,12 @@ scai_project(
 
         BLASKernelTrait
         UtilKernelTrait
+        CSRKernelTrait
+        DenseKernelTrait
+        DIAKernelTrait
+        ELLKernelTrait
+        COOKernelTrait
+        JDSKernelTrait
         CRTPCommunicator
     )
 

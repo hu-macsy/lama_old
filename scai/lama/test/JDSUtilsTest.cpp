@@ -60,7 +60,7 @@ namespace JDSUtilsTest
 template<typename ValueType, typename OtherValueType>
 void getRowTest( ContextPtr loc )
 {
-    LAMAKernel<JDSUtilKernelTrait::getRow<ValueType, OtherValueType> > getRow;
+    LAMAKernel<JDSKernelTrait::getRow<ValueType, OtherValueType> > getRow;
 
     ValueType valuesValues[] =
     { 1, 7, 12, 2, 8, 13, 3, 9, 14, 4, 10, 15, 5, 11, 6 };
@@ -111,7 +111,7 @@ void getRowTest( ContextPtr loc )
 template<typename ValueType, typename OtherValueType>
 void getValueTest( ContextPtr loc )
 {
-    LAMAKernel<JDSUtilKernelTrait::getValue<ValueType> > getValue;
+    LAMAKernel<JDSKernelTrait::getValue<ValueType> > getValue;
 
     ValueType valuesValues[] =
     { 1, 5, 4, 3, 1, 3, 2, 2, 2, 8, 4, 9, 9, 7, 8, 7, 2 };
@@ -166,7 +166,7 @@ void getValueTest( ContextPtr loc )
 template<typename ValueType, typename OtherValueType>
 void scaleValueTest( ContextPtr loc )
 {
-    LAMAKernel<JDSUtilKernelTrait::scaleValue<ValueType, OtherValueType> > scaleValue;
+    LAMAKernel<JDSKernelTrait::scaleValue<ValueType, OtherValueType> > scaleValue;
 
     ValueType valuesValues[] =
     { 1, 7, 12, 2, 8, 13, 3, 9, 14, 4, 10, 15, 5, 11, 6 };
@@ -213,7 +213,7 @@ void scaleValueTest( ContextPtr loc )
 template<typename NoType>
 void checkDiagonalPropertyTest( ContextPtr loc )
 {
-    LAMAKernel<JDSUtilKernelTrait::checkDiagonalProperty> checkDiagonalProperty;
+    LAMAKernel<JDSKernelTrait::checkDiagonalProperty> checkDiagonalProperty;
 
     // check with matrix without diagonal property
     {
@@ -302,7 +302,7 @@ void checkDiagonalPropertyTest( ContextPtr loc )
 template<typename NoType>
 void ilg2dlgTest( ContextPtr loc )
 {
-    LAMAKernel<JDSUtilKernelTrait::ilg2dlg> ilg2dlg;
+    LAMAKernel<JDSKernelTrait::ilg2dlg> ilg2dlg;
 
     {
         IndexType valuesIlg[] =
@@ -334,7 +334,7 @@ void ilg2dlgTest( ContextPtr loc )
 template<typename NoType>
 void sortRowsTest( ContextPtr loc )
 {
-    LAMAKernel<JDSUtilKernelTrait::sortRows> sortRows;
+    LAMAKernel<JDSKernelTrait::sortRows> sortRows;
 
     {
         IndexType valuesIlg[] =
@@ -383,7 +383,7 @@ void sortRowsTest( ContextPtr loc )
 template<typename NoType>
 void setInversePermTest( ContextPtr loc )
 {
-    LAMAKernel<JDSUtilKernelTrait::setInversePerm> setInversePerm;
+    LAMAKernel<JDSKernelTrait::setInversePerm> setInversePerm;
 
     {
         IndexType valuesPerm[] =
@@ -425,7 +425,7 @@ void setInversePermTest( ContextPtr loc )
 template<typename ValueType, typename OtherValueType>
 void setCSRValuesTest( ContextPtr loc )
 {
-    LAMAKernel<JDSUtilKernelTrait::setCSRValues<ValueType, OtherValueType> > setCSRValues;
+    LAMAKernel<JDSKernelTrait::setCSRValues<ValueType, OtherValueType> > setCSRValues;
 
     /*
      * Testmatrix:
@@ -496,7 +496,7 @@ void setCSRValuesTest( ContextPtr loc )
 template<typename ValueType, typename OtherValueType>
 void getCSRValuesTest( ContextPtr loc )
 {
-    LAMAKernel<JDSUtilKernelTrait::getCSRValues<ValueType, OtherValueType> > getCSRValues;
+    LAMAKernel<JDSKernelTrait::getCSRValues<ValueType, OtherValueType> > getCSRValues;
 
     /*
      * Testmatrix:

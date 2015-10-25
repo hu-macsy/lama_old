@@ -61,6 +61,8 @@ namespace scai
 using common::scoped_array;
 using common::getScalarType;
 
+using tasking::SyncToken;
+
 namespace lama
 {
 

@@ -37,6 +37,7 @@
 // local library
 #include <scai/lama/LAMAArrayUtils.hpp>
 #include <scai/lama/UtilKernelTrait.hpp>
+#include <scai/lama/BLASKernelTrait.hpp>
 #include <scai/lama/LAMAKernel.hpp>
 
 #include <scai/lama/distribution/NoDistribution.hpp>

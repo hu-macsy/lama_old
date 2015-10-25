@@ -43,6 +43,7 @@
 // internal scai libraries
 #include <scai/kregistry/KernelRegistry.hpp>
 #include <scai/tracing.hpp>
+#include <scai/common/ScalarType.hpp>
 
 // boost
 #include <boost/preprocessor.hpp>
@@ -51,6 +52,7 @@ namespace scai
 {
 
 using common::getScalarType;
+using tasking::SyncToken;
 
 namespace lama
 {

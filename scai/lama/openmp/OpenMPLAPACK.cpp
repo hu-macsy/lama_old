@@ -46,6 +46,7 @@
 
 #include <scai/common/unique_ptr.hpp>
 #include <scai/common/macros/unused.hpp>
+#include <scai/common/ScalarType.hpp>
 
 // boost
 #include <boost/preprocessor.hpp>

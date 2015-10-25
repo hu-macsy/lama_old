@@ -45,6 +45,7 @@
 
 #include <scai/common/cuda/CUDAError.hpp>
 #include <scai/common/macros/unused.hpp>
+#include <scai/common/ScalarType.hpp>
 
 // boost
 #include <boost/preprocessor.hpp>

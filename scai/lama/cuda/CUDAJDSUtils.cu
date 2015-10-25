@@ -2857,24 +2857,24 @@ namespace lama
 
     common::ContextType ctx = common::context::CUDA;
 
-    KernelRegistry::set<JDSUtilKernelTrait::sortRows>( sortRows, ctx );
-    KernelRegistry::set<JDSUtilKernelTrait::setInversePerm>( setInversePerm, ctx );
+    KernelRegistry::set<JDSKernelTrait::sortRows>( sortRows, ctx );
+    KernelRegistry::set<JDSKernelTrait::setInversePerm>( setInversePerm, ctx );
 
-    KernelRegistry::set<JDSUtilKernelTrait::ilg2dlg>( ilg2dlg, ctx );
-    KernelRegistry::set<JDSUtilKernelTrait::checkDiagonalProperty>( checkDiagonalProperty, ctx );
+    KernelRegistry::set<JDSKernelTrait::ilg2dlg>( ilg2dlg, ctx );
+    KernelRegistry::set<JDSKernelTrait::checkDiagonalProperty>( checkDiagonalProperty, ctx );
 
 #define LAMA_JDS_UTILS2_REGISTER(z, J, TYPE )                                             \
-    KernelRegistry::set<JDSUtilKernelTrait::getRow<TYPE, ARITHMETIC_CUDA_TYPE_##J> >( getRow, ctx );       \
-    KernelRegistry::set<JDSUtilKernelTrait::scaleValue<TYPE, ARITHMETIC_CUDA_TYPE_##J> >( scaleValue, ctx );       \
-    KernelRegistry::set<JDSUtilKernelTrait::setCSRValues<TYPE, ARITHMETIC_CUDA_TYPE_##J> >( setCSRValues, ctx );       \
-    KernelRegistry::set<JDSUtilKernelTrait::getCSRValues<TYPE, ARITHMETIC_CUDA_TYPE_##J> >( getCSRValues, ctx );       \
+    KernelRegistry::set<JDSKernelTrait::getRow<TYPE, ARITHMETIC_CUDA_TYPE_##J> >( getRow, ctx );       \
+    KernelRegistry::set<JDSKernelTrait::scaleValue<TYPE, ARITHMETIC_CUDA_TYPE_##J> >( scaleValue, ctx );       \
+    KernelRegistry::set<JDSKernelTrait::setCSRValues<TYPE, ARITHMETIC_CUDA_TYPE_##J> >( setCSRValues, ctx );       \
+    KernelRegistry::set<JDSKernelTrait::getCSRValues<TYPE, ARITHMETIC_CUDA_TYPE_##J> >( getCSRValues, ctx );       \
 
 #define LAMA_JDS_UTILS_REGISTER(z, I, _)                                                  \
-    KernelRegistry::set<JDSUtilKernelTrait::getValue<ARITHMETIC_CUDA_TYPE_##I> >( getValue, ctx );       \
-    KernelRegistry::set<JDSUtilKernelTrait::normalGEMV<ARITHMETIC_CUDA_TYPE_##I> >( normalGEMV, ctx );       \
-    KernelRegistry::set<JDSUtilKernelTrait::normalGEVM<ARITHMETIC_CUDA_TYPE_##I> >( normalGEVM, ctx );       \
-    KernelRegistry::set<JDSUtilKernelTrait::jacobi<ARITHMETIC_CUDA_TYPE_##I> >( jacobi, ctx );       \
-    KernelRegistry::set<JDSUtilKernelTrait::jacobiHalo<ARITHMETIC_CUDA_TYPE_##I> >( jacobiHalo, ctx );       \
+    KernelRegistry::set<JDSKernelTrait::getValue<ARITHMETIC_CUDA_TYPE_##I> >( getValue, ctx );       \
+    KernelRegistry::set<JDSKernelTrait::normalGEMV<ARITHMETIC_CUDA_TYPE_##I> >( normalGEMV, ctx );       \
+    KernelRegistry::set<JDSKernelTrait::normalGEVM<ARITHMETIC_CUDA_TYPE_##I> >( normalGEVM, ctx );       \
+    KernelRegistry::set<JDSKernelTrait::jacobi<ARITHMETIC_CUDA_TYPE_##I> >( jacobi, ctx );       \
+    KernelRegistry::set<JDSKernelTrait::jacobiHalo<ARITHMETIC_CUDA_TYPE_##I> >( jacobiHalo, ctx );       \
                                                                                           \
     BOOST_PP_REPEAT( ARITHMETIC_CUDA_TYPE_CNT,                                            \
                      LAMA_JDS_UTILS2_REGISTER,                                            \

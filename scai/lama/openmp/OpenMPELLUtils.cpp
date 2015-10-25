@@ -60,12 +60,13 @@
 namespace scai
 {
 
+using common::getScalarType;
+using tasking::SyncToken;
+
 namespace lama
 {
 
 using std::abs;
-
-using common::getScalarType;
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 

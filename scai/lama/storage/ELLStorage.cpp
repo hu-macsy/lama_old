@@ -34,9 +34,11 @@
 #include <scai/lama/storage/ELLStorage.hpp>
 
 // local library
-#include <scai/lama/LAMAArrayUtils.hpp>
-#include <scai/lama/UtilKernelTrait.hpp>
 #include <scai/lama/LAMAKernel.hpp>
+#include <scai/lama/UtilKernelTrait.hpp>
+#include <scai/lama/BLASKernelTrait.hpp>
+
+#include <scai/lama/LAMAArrayUtils.hpp>
 
 // internal scai libraries
 #include <scai/hmemo.hpp>

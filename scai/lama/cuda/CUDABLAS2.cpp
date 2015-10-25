@@ -43,6 +43,7 @@
 #include <scai/hmemo/cuda/CUDAStreamSyncToken.hpp>
 #include <scai/kregistry/KernelRegistry.hpp>
 
+#include <scai/common/ScalarType.hpp>
 #include <scai/common/macros/unused.hpp>
 #include <scai/common/cuda/CUDAError.hpp>
 

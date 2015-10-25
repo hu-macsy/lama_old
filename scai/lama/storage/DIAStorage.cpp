@@ -35,11 +35,11 @@
 #include <scai/lama/storage/DIAStorage.hpp>
 
 // local library
-#include <scai/lama/openmp/OpenMPCSRUtils.hpp>
-#include <scai/lama/openmp/OpenMPDIAUtils.hpp>
 
-#include <scai/lama/UtilKernelTrait.hpp>
 #include <scai/lama/LAMAKernel.hpp>
+#include <scai/lama/UtilKernelTrait.hpp>
+#include <scai/lama/BLASKernelTrait.hpp>
+#include <scai/lama/DIAKernelTrait.hpp>
 
 // internal scai libraries
 #include <scai/hmemo/ContextAccess.hpp>
@@ -60,7 +60,6 @@ namespace scai
 {
 
 using common::scoped_array;
-// Allow for shared_ptr<ValueType> instead of common::shared_ptr<ValueType>
 using common::shared_ptr;
 
 namespace lama
@@ -469,29 +468,38 @@ void DIAStorage<ValueType>::setUsedDiagonal(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-template<typename OtherValueType>
+template<typename CSRValueType>
 void DIAStorage<ValueType>::buildCSR(
     LAMAArray<IndexType>& ia,
     LAMAArray<IndexType>* ja,
-    LAMAArray<OtherValueType>* values,
-    const ContextPtr /* loc */) const
+    LAMAArray<CSRValueType>* values,
+    const ContextPtr prefLoc ) const
 {
     SCAI_REGION( "Storage.DIA->CSR" )
 
-    // TODO all done on host, so loc is unused
+    static LAMAKernel<CSRKernelTrait::sizes2offsets> sizes2offsets;
+    static LAMAKernel<DIAKernelTrait::getCSRSizes<ValueType> > getCSRSizes;
+    static LAMAKernel<DIAKernelTrait::getCSRValues<ValueType, CSRValueType> > getCSRValues;
+
+    // do it where all routines are avaialble
+
+    ContextPtr loc = sizes2offsets.getValidContext( getCSRSizes, getCSRValues, prefLoc );
 
     SCAI_LOG_INFO( logger,
-                   "buildTypedCSRData<" << common::getScalarType<OtherValueType>() << ">" 
+                   "buildTypedCSRData<" << common::getScalarType<CSRValueType>() << ">" 
                     << " from DIA<" << common::getScalarType<ValueType>() << "> = " << *this << ", diagonal property = " << mDiagonalProperty )
 
     ReadAccess<IndexType> diaOffsets( mOffset );
     ReadAccess<ValueType> diaValues( mValues );
 
-    WriteOnlyAccess<IndexType> csrIA( ia, mNumRows + 1 );
+    WriteOnlyAccess<IndexType> csrIA( ia, loc, mNumRows + 1 );
 
-    // TODO: Check if eps = 0.0 is correct
-    OpenMPDIAUtils::getCSRSizes( csrIA.get(), mDiagonalProperty, mNumRows, mNumColumns, mNumDiagonals, diaOffsets.get(),
-                                 diaValues.get(), static_cast<ValueType>(0.0) );
+    // In contrary to COO and CSR, the DIA format stores also some ZERO values like Dense
+
+    ValueType eps = static_cast<ValueType>( 0.0 );
+
+    getCSRSizes[loc]( csrIA.get(), mDiagonalProperty, mNumRows, mNumColumns, mNumDiagonals, diaOffsets.get(),
+                      diaValues.get(), eps );
 
     if( ja == NULL || values == NULL )
     {
@@ -499,16 +507,15 @@ void DIAStorage<ValueType>::buildCSR(
         return;
     }
 
-    IndexType numValues = OpenMPCSRUtils::sizes2offsets( csrIA.get(), mNumRows );
+    IndexType numValues = sizes2offsets[loc]( csrIA.get(), mNumRows );
 
     SCAI_LOG_INFO( logger, "CSR: #non-zero values = " << numValues )
 
-    WriteOnlyAccess<IndexType> csrJA( *ja, numValues );
-    WriteOnlyAccess<OtherValueType> csrValues( *values, numValues );
+    WriteOnlyAccess<IndexType> csrJA( *ja, loc, numValues );
+    WriteOnlyAccess<CSRValueType> csrValues( *values, loc, numValues );
 
-    // TOOD: Check if eps = 0.0 is correct
-    OpenMPDIAUtils::getCSRValues( csrJA.get(), csrValues.get(), csrIA.get(), mDiagonalProperty, mNumRows, mNumColumns,
-                                  mNumDiagonals, diaOffsets.get(), diaValues.get(), static_cast<ValueType>(0.0) );
+    getCSRValues[loc]( csrJA.get(), csrValues.get(), csrIA.get(), mDiagonalProperty, mNumRows, mNumColumns,
+                       mNumDiagonals, diaOffsets.get(), diaValues.get(), eps );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -522,15 +529,20 @@ void DIAStorage<ValueType>::setCSRDataImpl(
     const LAMAArray<IndexType>& ia,
     const LAMAArray<IndexType>& ja,
     const LAMAArray<OtherValueType>& values,
-    ContextPtr UNUSED( loc ) )
+    ContextPtr UNUSED( prefLoc ) )
 {
     SCAI_REGION( "Storage.DIA<-CSR" )
 
-    // loc is ignored, we do it on the Host
+    static LAMAKernel<CSRKernelTrait::hasDiagonalProperty> hasDiagonalProperty;
 
-    ReadAccess<IndexType> csrIA( ia );
-    ReadAccess<IndexType> csrJA( ja );
-    ReadAccess<OtherValueType> csrValues( values );
+    // prefLoc is ignored, we do it on the Host
+    // ToDo: replace Host code with kernels, implement kernels for other devices
+
+    ContextPtr loc = Context::getHostPtr();
+
+    ReadAccess<IndexType> csrIA( ia, loc );
+    ReadAccess<IndexType> csrJA( ja, loc );
+    ReadAccess<OtherValueType> csrValues( values, loc );
 
     _MatrixStorage::setDimension( numRows, numColumns );
 
@@ -560,7 +572,7 @@ void DIAStorage<ValueType>::setCSRDataImpl(
         }
     }
 
-    mDiagonalProperty = OpenMPCSRUtils::hasDiagonalProperty( numRows, csrIA.get(), csrJA.get() );
+    mDiagonalProperty = hasDiagonalProperty[loc]( numRows, csrIA.get(), csrJA.get() );
 
     // mDiagonalProperty forces upper diagonal to be the first one
 
@@ -1216,14 +1228,18 @@ void DIAStorage<ValueType>::jacobiIterate(
     SCAI_ASSERT_EQUAL_DEBUG( mNumRows, mNumColumns )
     // matrix must be square
 
-    WriteAccess<ValueType> wSolution( solution );
-    ReadAccess<IndexType> diaOffset( mOffset );
-    ReadAccess<ValueType> diaValues( mValues );
-    ReadAccess<ValueType> rOldSolution( oldSolution );
-    ReadAccess<ValueType> rRhs( rhs );
+    static LAMAKernel<DIAKernelTrait::jacobi<ValueType> > jacobi;
 
-    OpenMPDIAUtils::jacobi( wSolution.get(), mNumColumns, mNumDiagonals, diaOffset.get(), diaValues.get(),
-                            rOldSolution.get(), rRhs.get(), omega, mNumRows, NULL );
+    ContextPtr loc = jacobi.getValidContext( this->getContextPtr() );
+
+    WriteAccess<ValueType> wSolution( solution, loc );
+    ReadAccess<IndexType> diaOffset( mOffset, loc );
+    ReadAccess<ValueType> diaValues( mValues, loc );
+    ReadAccess<ValueType> rOldSolution( oldSolution, loc );
+    ReadAccess<ValueType> rRhs( rhs, loc );
+
+    jacobi[loc]( wSolution.get(), mNumColumns, mNumDiagonals, diaOffset.get(), diaValues.get(),
+                 rOldSolution.get(), rRhs.get(), omega, mNumRows, NULL );
 }
 
 /* --------------------------------------------------------------------------- */

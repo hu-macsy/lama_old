@@ -44,6 +44,7 @@
 
 #include <scai/common/Settings.hpp>
 #include <scai/common/macros/unused.hpp>
+#include <scai/common/ScalarType.hpp>
 
 #include <scai/kregistry/KernelRegistry.hpp>
 
@@ -56,11 +57,12 @@
 namespace scai
 {
 
+using namespace common;
+
 namespace lama
 {
 
 using tasking::SyncToken;
-using common::getScalarType;
 
 SCAI_LOG_DEF_LOGGER( BLAS_BLAS1::logger, "BLAS.BLAS1" )
 
