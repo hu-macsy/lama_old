@@ -1455,11 +1455,11 @@ void CSRStorage<ValueType>::matrixTimesVectorN(
         SCAI_ASSERT_EQUAL_ERROR( y.size(), n * mNumRows )
     }
 
-    ContextPtr loc = getContextPtr();
+    static LAMAKernel<CSRKernelTrait::gemm<ValueType> > gemm;
+
+    const ContextPtr loc = gemm.getValidContext( this->getContextPtr() );
 
     SCAI_LOG_INFO( logger, *this << ": matrixTimesVectorN on " << *loc )
-
-    static LAMAKernel<CSRKernelTrait::gemm<ValueType> > gemm; 
 
     ReadAccess<IndexType> csrIA( mIa, loc );
     ReadAccess<IndexType> csrJA( mJa, loc );
@@ -1629,7 +1629,10 @@ SyncToken* CSRStorage<ValueType>::vectorTimesMatrixAsync(
 
     SCAI_REGION( "Storage.CSR.vectorTimesMatrixAsync" )
 
-    ContextPtr loc = getContextPtr();
+    static LAMAKernel<CSRKernelTrait::sparseGEVM<ValueType> > sparseGEVM;
+    static LAMAKernel<CSRKernelTrait::normalGEVM<ValueType> > normalGEVM;
+
+    const ContextPtr loc = normalGEVM.getValidContext( sparseGEVM, this->getContextPtr() );
 
     // Note: checks will be done by asynchronous task in any case
     //       and exception in tasks are handled correctly
@@ -1665,9 +1668,6 @@ SyncToken* CSRStorage<ValueType>::vectorTimesMatrixAsync(
     {
         SCAI_ASSERT_EQUAL_ERROR( y.size(), mNumColumns )
     }
-
-    static LAMAKernel<CSRKernelTrait::sparseGEVM<ValueType> > sparseGEVM;
-    static LAMAKernel<CSRKernelTrait::normalGEVM<ValueType> > normalGEVM;
 
     unique_ptr<SyncToken> syncToken( loc->getSyncToken() );
 

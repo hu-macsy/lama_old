@@ -67,8 +67,10 @@ public:
             // Throw exception
 
             SCAI_THROWEXCEPTION( KernelRegistryException, 
-                                 "Context function " << mName << " not available for context = " << ctx 
+                                 "Context function " << mName << " - " << typeid( FunctionType ).name()
+                                 << " not available for context = " << ctx 
                                  << ", registered is " <<  this->printIt() )
+
         }
 
         return fn;

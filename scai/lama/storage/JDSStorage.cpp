@@ -623,6 +623,8 @@ void JDSStorage<ValueType>::setIdentity( const IndexType size )
     WriteOnlyAccess<IndexType> wPerm( mPerm, loc, mNumRows );
     WriteOnlyAccess<IndexType> wJa( mJa, loc, mNumValues );
 
+    SCAI_CONTEXT_ACCESS( loc )
+
     setVal[ loc ]( wDlg.get(), 1, mNumRows );
     setVal[ loc ]( wIlg.get(), mNumRows, 1 );
     setOrder[ loc ]( wPerm.get(), mNumRows );
