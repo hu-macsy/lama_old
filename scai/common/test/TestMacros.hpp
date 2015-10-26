@@ -1,5 +1,5 @@
 /**
- * @file TestMacros.hpp
+ * @file scai/common/TestMacros.hpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -38,7 +38,10 @@
 #include <scai/common/exception/UnsupportedException.hpp>
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/ScalarType.hpp>
+
+// TODO: no dependencies to project ahead
 #include <scai/hmemo/Context.hpp>
+#include <scai/lama/Scalar.hpp>
 
 // boost
 #include <boost/assign/list_of.hpp>

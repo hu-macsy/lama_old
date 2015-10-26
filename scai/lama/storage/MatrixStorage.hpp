@@ -140,7 +140,7 @@ public:
 
     /** Objects of this class should give info about their value type. */
 
-    virtual common::ScalarType getValueType() const = 0;
+    virtual common::scalar::ScalarType getValueType() const = 0;
 
     /** Clear the matrix storage, resets size to 0 x 0.
      *
@@ -173,15 +173,11 @@ public:
      *  @param[in] context specifies where the storage should be allocated and where operations should be done
      */
 
-    void setContext( ContextPtr context );
+    void setContextPtr( ContextPtr context );
 
     /** @brief Getter for the preferred context of the storage data, returns pointer. */
 
     inline ContextPtr getContextPtr() const;
-
-    /** @brief Getter for the preferred context of the storage data. */
-
-    inline const Context& getContext() const;
 
     /** @brief Pure method that prefetches storage data into a given context.
      *
@@ -556,7 +552,7 @@ public:
 
     /** Implementation of pure method. */
 
-    virtual common::ScalarType getValueType() const;
+    virtual common::scalar::ScalarType getValueType() const;
 
     /** Construct a matrix from a dense matrix in row-major order (C-style).
      *  Values of the matrix will be considered as zero if their absolute value is smaller than eps.
@@ -998,7 +994,6 @@ public:
 
     // Note: Asynchronous version of jacobiIterateHalo not supported
 
-    using _MatrixStorage::getContext;
     using _MatrixStorage::getContextPtr;
 
     // Use this method to change epsiolon temporarily
@@ -1051,11 +1046,6 @@ protected:
 ContextPtr _MatrixStorage::getContextPtr() const
 {
     return mContext;
-}
-
-const Context& _MatrixStorage::getContext() const
-{
-    return *mContext;
 }
 
 IndexType _MatrixStorage::getNumRows() const

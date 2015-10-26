@@ -62,9 +62,9 @@ static void bench( IndexType size, double fillRate )
     MatrixCreator<ValueType>::fillRandom( a, fillRate );
     MatrixCreator<ValueType>::fillRandom( b, fillRate );
  
-    a.setContext( host );
-    b.setContext( host );
-    c.setContext( host );
+    a.setContextPtr( host );
+    b.setContextPtr( host );
+    c.setContextPtr( host );
 
     a.prefetch();
     b.prefetch();
@@ -79,8 +79,8 @@ static void bench( IndexType size, double fillRate )
 
     ContextPtr gpu = Context::getContextPtr( scai::context::CUDA );
 
-    a.setContext( gpu );
-    b.setContext( gpu );
+    a.setContextPtr( gpu );
+    b.setContextPtr( gpu );
 
     CSRSparseMatrix<ValueType> c1( size, size );
 

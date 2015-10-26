@@ -35,13 +35,13 @@
 #include <scai/lama/openmp/OpenMPBLAS1.hpp>
 
 // local library
-#include <scai/lama/openmp/OpenMP.hpp>
 #include <scai/lama/BLASKernelTrait.hpp>
 
 // internal scai libraries
 #include <scai/common/macros/unused.hpp>
 #include <scai/common/ScalarType.hpp>
 #include <scai/kregistry/KernelRegistry.hpp>
+#include <scai/common/OpenMP.hpp>
 
 #include <scai/tracing.hpp>
 

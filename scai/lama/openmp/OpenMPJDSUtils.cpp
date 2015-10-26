@@ -36,13 +36,13 @@
 
 // local library
 #include <scai/lama/openmp/OpenMPUtils.hpp>
-#include <scai/lama/openmp/OpenMP.hpp>
 
 #include <scai/lama/UtilKernelTrait.hpp>
 
 // internal scai libraries
 #include <scai/tracing.hpp>
 
+#include <scai/common/OpenMP.hpp>
 #include <scai/common/macros/unused.hpp>
 #include <scai/common/unique_ptr.hpp>
 #include <scai/common/Assert.hpp>
@@ -491,7 +491,7 @@ void OpenMPJDSUtils::normalGEMV(
     const IndexType jdsDLG[],
     const IndexType jdsJA[],
     const ValueType jdsValues[],
-    class SyncToken* /* syncToken */)
+    tasking::SyncToken* /* syncToken */)
 {
     SCAI_LOG_INFO( logger,
                    "normalGEMV<" << common::getScalarType<ValueType>() << ", #threads = " << omp_get_max_threads() << ">, result[" << numRows << "] = " << alpha << " * A( jds, ndlg = " << ndlg << " ) * x + " << beta << " * y " )
@@ -593,7 +593,7 @@ void OpenMPJDSUtils::normalGEVM(
     const IndexType jdsDLG[],
     const IndexType jdsJA[],
     const ValueType jdsValues[],
-    class SyncToken* UNUSED( syncToken ) )
+    tasking::SyncToken* UNUSED( syncToken ) )
 {
     SCAI_LOG_INFO( logger,
                    "normalGEVM<" << common::getScalarType<ValueType>() << ", #threads = " << omp_get_max_threads() << ">, result[" << numColumns << "] = " << alpha << " * A( jds, ndlg = " << ndlg << " ) * x + " << beta << " * y " )
@@ -703,7 +703,7 @@ void OpenMPJDSUtils::jacobi(
     const ValueType oldSolution[],
     const ValueType rhs[],
     const ValueType omega,
-    class SyncToken* syncToken )
+    tasking::SyncToken* syncToken )
 {
     SCAI_LOG_INFO( logger,
                    "jacobi<" << common::getScalarType<ValueType>() << ">" << ", #rows = " << numRows << ", omega = " << omega )
@@ -764,7 +764,7 @@ void OpenMPJDSUtils::jacobiHalo(
     const ValueType jdsHaloValues[],
     const ValueType oldSolution[],
     const ValueType omega,
-    class SyncToken* syncToken )
+    tasking::SyncToken* syncToken )
 {
     SCAI_LOG_INFO( logger,
                    "jacobiHalo<" << common::getScalarType<ValueType>() << ">" << ", #rows = " << numRows << ", omega = " << omega )

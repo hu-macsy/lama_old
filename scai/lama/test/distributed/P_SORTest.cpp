@@ -106,7 +106,7 @@ void testSolveMethod( ContextPtr loc )
     // redistribution of coefficient: does not keep diagonal property for DIA
     DistributionPtr dist( new BlockDistribution( helpcoefficients.getNumRows(), comm ) );
     coefficients.redistribute( dist, dist );
-    coefficients.setContext( loc );
+    coefficients.setContextPtr( loc );
     SCAI_LOG_INFO( logger, "SOR: coefficients = " << coefficients );
     const DenseVector<ValueType> exactSolution( dist, static_cast<ValueType>( 1.1 ) );
     DenseVector<ValueType> rhs( dist );
@@ -240,7 +240,7 @@ void testSolve2Method( ContextPtr loc )
         // to csrCoefficients. But then the DIA format has problems as it does
         // not keep the diagonal property.
         MatrixType coefficients( csrCoefficients );
-        coefficients.setContext( loc );
+        coefficients.setContextPtr( loc );
         DenseVector<ValueType> rhs( dist );
         DenseVector<ValueType> exactSolution( dist, 1.0 );
         DenseVector<ValueType> solution( dist, 2.0 );

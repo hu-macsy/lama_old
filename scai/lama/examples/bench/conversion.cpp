@@ -54,8 +54,8 @@ static void bench( Matrix& b, Matrix& a )
 {
     ContextPtr host = Context::getHostPtr();
 
-    a.setContext( host );
-    b.setContext( host );
+    a.setContextPtr( host );
+    b.setContextPtr( host );
 
     a.prefetch();
     a.wait();
@@ -73,8 +73,8 @@ static void bench( Matrix& b, Matrix& a )
 
     ContextPtr gpu = Context::getContextPtr( scai::context::CUDA );
 
-    a.setContext( gpu );
-    b.setContext( gpu );
+    a.setContextPtr( gpu );
+    b.setContextPtr( gpu );
 
     a.prefetch();
     a.wait();

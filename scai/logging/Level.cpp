@@ -45,7 +45,7 @@ namespace logging
 // Attention: Do not use any static (string) variables here 
 // as init might be done after first loggings
 
-const char* level2str( const Level level )
+const char* level2str( const level::Level level )
 {
     switch ( level )
     {
@@ -75,10 +75,10 @@ const char* level2str( const Level level )
     }
 }
 
-Level str2level( const std::string& value )
+level::Level str2level( const std::string& value )
 {
     const char* cvalue = value.c_str();
-    Level level;
+    level::Level level;
 
     if ( strcmp( cvalue, "TRACE" ) == 0 )
     {

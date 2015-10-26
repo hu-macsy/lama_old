@@ -820,7 +820,7 @@ void DenseMatrix<ValueType>::assign( const Matrix& other )
         {
 
 #define LAMA_COPY_DENSE_CALL( z, I, _ )                                                        \
-case common::scalar::SCALAR_ARITHMETIC_TYPE##I:                                                \
+case SCALAR_ARITHMETIC_TYPE##I:                                                                \
     copyDenseMatrix( dynamic_cast<const DenseMatrix<ARITHMETIC_HOST_TYPE_##I>&>( other ) );    \
     break;                                                                                     \
      
@@ -833,21 +833,24 @@ case common::scalar::SCALAR_ARITHMETIC_TYPE##I:                                 
         }
 
         return;
-    } else if( other.getMatrixKind() == Matrix::SPARSE )
+    }
+    else if( other.getMatrixKind() == Matrix::SPARSE )
     {
     	SCAI_LOG_INFO( logger, "copy sparse matrix")
 
 		switch( other.getValueType() )
 		{
 
-#define LAMA_COPY_SPARSE_CALL( z, I, _ ) \
-		case common::scalar::SCALAR_ARITHMETIC_TYPE##I: \
-		{ \
-			SCAI_LOG_TRACE( logger, "convert from SparseMatrix<" << SCALAR_ARITHMETIC_TYPE##I << "> to DenseMatrix<" << getScalarType<ValueType>() << ">" ) \
-			const SparseMatrix<ARITHMETIC_HOST_TYPE_##I>* sparseMatrix = reinterpret_cast< const SparseMatrix<ARITHMETIC_HOST_TYPE_##I>* >( &other ); \
-			const CSRSparseMatrix<ValueType> tmp = *sparseMatrix; \
-			assignSparse( tmp );\
-			return; \
+#define LAMA_COPY_SPARSE_CALL( z, I, _ )                                                       \
+		case SCALAR_ARITHMETIC_TYPE##I:                                                        \
+		{                                                                                      \
+			SCAI_LOG_TRACE( logger, "convert from SparseMatrix<" << SCALAR_ARITHMETIC_TYPE##I  \
+		            << "> to DenseMatrix<" << common::getScalarType<ValueType>() << ">" )      \
+			const SparseMatrix<ARITHMETIC_HOST_TYPE_##I>* sparseMatrix =                       \
+		        reinterpret_cast< const SparseMatrix<ARITHMETIC_HOST_TYPE_##I>* >( &other );   \
+			const CSRSparseMatrix<ValueType> tmp = *sparseMatrix;                              \
+			assignSparse( tmp );                                                               \
+			return;                                                                            \
 		}
 
 		BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_COPY_SPARSE_CALL, _ )
@@ -1026,7 +1029,7 @@ void DenseMatrix<ValueType>::joinColumnData(
 
     std::vector<ReadAccessPtr> chunkRead( numColPartitions );
 
-    ContextPtr hostContext = Context::getContextPtr( context::Host );
+    ContextPtr hostContext = Context::getHostPtr();
 
     // Get read access to all chunks, make some assertions for each chunk
 
@@ -1146,7 +1149,7 @@ void DenseMatrix<ValueType>::splitColumnData(
 
     // Get write access to all chunks, make some assertions for each chunk
 
-    ContextPtr contextPtr = Context::getContextPtr( context :: Host );
+    ContextPtr contextPtr = Context::getHostPtr();
 
     for ( PartitionId p = 0; p < numChunks; ++p )
     {
@@ -1250,7 +1253,7 @@ void DenseMatrix<ValueType>::localize(
 
     local.allocate( numLocalRows, numColumns );
 
-    ContextPtr contextPtr = Context::getContextPtr( context :: Host );
+    ContextPtr contextPtr = Context::getHostPtr();
 
     ReadAccess<ValueType> repData( global.getData(), contextPtr );
     WriteAccess<ValueType> distData( local.getData(), contextPtr );
@@ -1282,7 +1285,7 @@ static void replicate(
     SCAI_ASSERT_EQUAL_DEBUG( replicatedData.getNumRows(), distribution.getGlobalSize() )
     SCAI_ASSERT_EQUAL_DEBUG( distributedData.getNumRows(), distribution.getLocalSize() )
 
-    ContextPtr contextPtr = Context::getContextPtr( context :: Host );
+    ContextPtr contextPtr = Context::getHostPtr();
 
     WriteAccess<ValueType> globalVals( replicatedData.getData(), contextPtr );
     ReadAccess<ValueType> localVals( distributedData.getData(), contextPtr );
@@ -1377,11 +1380,11 @@ DenseMatrix<ValueType>::~DenseMatrix()
 }
 
 template<typename ValueType>
-void DenseMatrix<ValueType>::setContext( const ContextPtr context )
+void DenseMatrix<ValueType>::setContextPtr( const ContextPtr context )
 {
     for ( size_t i = 0; i < mData.size(); ++i )
     {
-        mData[i]->setContext( context );
+        mData[i]->setContextPtr( context );
     }
 }
 
@@ -1477,7 +1480,7 @@ void DenseMatrix<ValueType>::getDiagonal( Vector& diagonal ) const
 // Dense vector with this row distribution, so we do not need a temporary array
 
 #define LAMA_GET_DIAGONAL_CALL( z, I, _ )                                            \
-    if ( diagonal.getValueType() == common::scalar::SCALAR_ARITHMETIC_TYPE##I )      \
+    if ( diagonal.getValueType() == SCALAR_ARITHMETIC_TYPE##I )                      \
     {                                                                                \
         DenseVector<ARITHMETIC_HOST_TYPE_##I>& denseDiagonal =                       \
                 dynamic_cast<DenseVector<ARITHMETIC_HOST_TYPE_##I>&>( diagonal );    \
@@ -1683,7 +1686,7 @@ void DenseMatrix<ValueType>::matrixTimesVectorImpl(
     mSendValues.clear();
     mReceiveValues.clear();
 
-    ContextPtr contextPtr = Context::getContextPtr( context :: Host );
+    ContextPtr contextPtr = Context::getHostPtr();
 
     LAMAArray<ValueType>* sendValues = &mSendValues;
     LAMAArray<ValueType>* recvValues = &mReceiveValues;
@@ -1746,7 +1749,7 @@ void DenseMatrix<ValueType>::matrixTimesVectorImpl(
             }
             else
             {
-                st.reset( new NoSyncToken() );
+                st.reset( new tasking::NoSyncToken() );
             }
 
             SCAI_LOG_INFO( logger,
@@ -2114,7 +2117,7 @@ void DenseMatrix<ValueType>::prefetch() const
 }
 
 template<typename ValueType>
-void DenseMatrix<ValueType>::prefetch( ContextPtr loc ) const
+void DenseMatrix<ValueType>::prefetch( hmemo::ContextPtr loc ) const
 {
     for ( unsigned int i = 0; i < mData.size(); ++i )
     {
@@ -2215,13 +2218,13 @@ void DenseMatrix<ValueType>::resetDiagonalProperty()
 template<typename ValueType>
 void DenseMatrix<ValueType>::writeAt( std::ostream& stream ) const
 {
-    common::ScalarType type = common::getScalarType<ValueType>();
+    common::scalar::ScalarType type = common::getScalarType<ValueType>();
     stream << "DenseMatrix<" << type << ">( size = " << mNumRows << " x " << mNumColumns << ", rowdist = "
            << getDistribution() << ", coldist = " << getColDistribution() << ")";
 }
 
 template<typename ValueType>
-common::ScalarType DenseMatrix<ValueType>::getValueType() const
+common::scalar::ScalarType DenseMatrix<ValueType>::getValueType() const
 {
     return common::getScalarType<ValueType>();
 }
@@ -2266,10 +2269,10 @@ Matrix* DenseMatrix<ValueType>::create()
 }
 
 template<typename ValueType>
-std::pair<MatrixStorageFormat, common::ScalarType> DenseMatrix<ValueType>::createValue()
+std::pair<MatrixStorageFormat, common::scalar::ScalarType> DenseMatrix<ValueType>::createValue()
 {
-    common::ScalarType skind = common::getScalarType<ValueType>();
-    return std::pair<MatrixStorageFormat, common::ScalarType> ( Format::DENSE, skind );
+    common::scalar::ScalarType skind = common::getScalarType<ValueType>();
+    return std::pair<MatrixStorageFormat, common::scalar::ScalarType> ( Format::DENSE, skind );
 }
 
 /* ========================================================================= */

@@ -85,7 +85,7 @@ public:
 
     DenseVector();
 
-    explicit DenseVector( ContextPtr context );
+    explicit DenseVector( hmemo::ContextPtr context );
 
     /**
      * @brief creates a not initialized distributed DenseVector of the passed global size.
@@ -101,7 +101,7 @@ public:
      * @param[in] value the value to assign to all elements of the new DenseVector.
      * @param[in] context   specifies optionally the context where dense vector should reside
      */
-    DenseVector( const IndexType size, const ValueType value, ContextPtr context = ContextPtr() );
+    DenseVector( const IndexType size, const ValueType value, hmemo::ContextPtr context = hmemo::ContextPtr() );
 
     /**
      * @brief creates a distributed DenseVector of the passed global size initialized to the passed value.
@@ -110,7 +110,7 @@ public:
      * @param[in] value         the value to assign to all elements of the new DenseVector.
      * @param[in] context   specifies optionally the context where dense vector should reside
      */
-    DenseVector( DistributionPtr distribution, const ValueType value, ContextPtr context = ContextPtr() );
+    DenseVector( DistributionPtr distribution, const ValueType value, hmemo::ContextPtr context = hmemo::ContextPtr() );
 
     /** Constructor of a replicated vector by replicated C++ array. */
 
@@ -122,7 +122,7 @@ public:
      * @param[in] context   specifies optionally the context where dense vector should reside
      */
     template<typename OtherValueType>
-    DenseVector( const IndexType size, const OtherValueType* values, ContextPtr context = ContextPtr() );
+    DenseVector( const IndexType size, const OtherValueType* values, hmemo::ContextPtr context = hmemo::ContextPtr() );
 
     /**
      * Override the default copy constructor to guarantee a deep copy.
@@ -155,7 +155,7 @@ public:
      * @param[in] localValues   the local values to initialize the new DenseVector with.
      * @param[in] distribution  the distribution the
      */
-    DenseVector( const ContextArray& localValues, DistributionPtr distribution );
+    DenseVector( const hmemo::ContextArray& localValues, DistributionPtr distribution );
 
     /**
      * @brief This constructor creates a vector with the size and values stored
@@ -263,12 +263,12 @@ public:
     /**
      * Implementation of pure method.
      */
-    virtual void buildValues( ContextArray& values ) const;
+    virtual void buildValues( hmemo::ContextArray& values ) const;
 
     /**
      * Implementation of pure method.
      */
-    virtual void setValues( const ContextArray& values );
+    virtual void setValues( const hmemo::ContextArray& values );
 
     /**
      * Implementation of Vector::clone with covariant return type.
@@ -303,7 +303,7 @@ public:
      * @return  a non constant reference to the local values of this.
      */
 
-    LAMAArray<ValueType>& getLocalValues()
+    hmemo::LAMAArray<ValueType>& getLocalValues()
     {
         return mLocalValues;
     }
@@ -313,7 +313,7 @@ public:
      *
      * @return  a constant reference to the local values of this.
      */
-    const LAMAArray<ValueType>& getLocalValues() const
+    const hmemo::LAMAArray<ValueType>& getLocalValues() const
     {
         return mLocalValues;
     }
@@ -325,7 +325,7 @@ public:
      *
      * Note: halo of a vector can also be used for writes in case of const vectors.
      */
-    LAMAArray<ValueType>& getHaloValues() const
+    hmemo::LAMAArray<ValueType>& getHaloValues() const
     {
         return mHaloValues;
     }
@@ -358,20 +358,20 @@ public:
     virtual Scalar maxNorm() const;
 
     static void vectorPlusVector(
-        ContextPtr prefContext,
-        LAMAArray<ValueType>& result,
+        hmemo::ContextPtr prefContext,
+        hmemo::LAMAArray<ValueType>& result,
         const ValueType alpha,
-        const LAMAArray<ValueType>& x,
+        const hmemo::LAMAArray<ValueType>& x,
         const ValueType beta,
-        const LAMAArray<ValueType>& y );
+        const hmemo::LAMAArray<ValueType>& y );
 
     static SyncToken* vectorPlusVectorAsync(
-        ContextPtr prefContext,
-        LAMAArray<ValueType>& result,
+        hmemo::ContextPtr prefContext,
+        hmemo::LAMAArray<ValueType>& result,
         const ValueType alpha,
-        const LAMAArray<ValueType>& x,
+        const hmemo::LAMAArray<ValueType>& x,
         const ValueType beta,
-        const LAMAArray<ValueType>& y );
+        const hmemo::LAMAArray<ValueType>& y );
 
     virtual void swap( Vector& other );
 
@@ -387,15 +387,15 @@ public:
 
     virtual void assign( const Vector& other );
 
-    virtual void assign( const ContextArray& localValues, DistributionPtr dist );
+    virtual void assign( const hmemo::ContextArray& localValues, DistributionPtr dist );
 
-    virtual void buildLocalValues( ContextArray& localValues ) const;
+    virtual void buildLocalValues( hmemo::ContextArray& localValues ) const;
 
     virtual Scalar dotProduct( const Vector& other ) const;
 
     using Vector::prefetch; // prefetch() with no arguments
 
-    virtual void prefetch( const ContextPtr location ) const;
+    virtual void prefetch( const hmemo::ContextPtr location ) const;
 
     virtual void wait() const;
 
@@ -455,13 +455,15 @@ private    :
                     const std::string& fileName,
                     const long dataTypeSizeHeader );
 
+    void readVectorFromMMFile( const std::string& fileName );
+
     void readVectorDataFromBinaryFile(
                     std::fstream &inFile,
                     const File::DataType dataType );
 
-    LAMAArray<ValueType> mLocalValues; //!< my local values of vector
+    hmemo::LAMAArray<ValueType> mLocalValues; //!< my local values of vector
 
-    mutable LAMAArray<ValueType> mHaloValues;//!< my halo values of vector
+    mutable hmemo::LAMAArray<ValueType> mHaloValues;//!< my halo values of vector
 
 public:
 
@@ -478,7 +480,7 @@ public:
 
 template<typename ValueType>
 template<typename OtherValueType>
-DenseVector<ValueType>::DenseVector( const IndexType size, const OtherValueType* values, ContextPtr context )
+DenseVector<ValueType>::DenseVector( const IndexType size, const OtherValueType* values, hmemo::ContextPtr context )
                 : Vector( size, context )
 {
     // use LAMA array reference to avoid copy of the raw data

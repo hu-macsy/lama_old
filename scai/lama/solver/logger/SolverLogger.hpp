@@ -1,5 +1,5 @@
 /**
- * @file Logger.hpp
+ * @file SolverLogger.hpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief contains the Logger header.
+ * @brief contains the SolverLogger header.
  * @author Matthias Makulla
  * @date 06.04.2011
  * @since 1.0.0
@@ -61,9 +61,9 @@ namespace lama
 {
 
 class Solver;
-class Logger;
+class SolverLogger;
 
-typedef common::shared_ptr<Logger> LoggerPtr;
+typedef common::shared_ptr<SolverLogger> LoggerPtr;
 
 /**
  * @brief A logger abstraction.
@@ -72,7 +72,7 @@ typedef common::shared_ptr<Logger> LoggerPtr;
  * operations. Derived classes may use the createPrefix() method to
  * customize messages.
  */
-class COMMON_DLL_IMPORTEXPORT Logger: private common::NonCopyable
+class COMMON_DLL_IMPORTEXPORT SolverLogger: private common::NonCopyable
 {
 public:
 
@@ -100,7 +100,7 @@ public:
      *                             console only
      * @param[in] ignoreRank       TODO[doxy] Complete Description.
      */
-    Logger(
+    SolverLogger(
         const std::string& id,
         LogLevel::LogLevel level,
         LoggerWriteBehaviour::LoggerWriteBehaviour writeBehaviour,
@@ -125,7 +125,7 @@ public:
      * @param[in] timer            The timer which shall be used by this logger.
      * @param[in] ignoreRank       TODO[doxy] Complete Description.
      */
-    Logger(
+    SolverLogger(
         const std::string& id,
         LogLevel::LogLevel level,
         LoggerWriteBehaviour::LoggerWriteBehaviour writeBehaviour,
@@ -157,7 +157,7 @@ public:
      * @param[in] timer            The timer which shall be used by this logger.
      * @param[in] ignoreRank       TODO[doxy] Complete Description.
      */
-    Logger(
+    SolverLogger(
         const std::string& id,
         LogLevel::LogLevel level,
         LoggerWriteBehaviour::LoggerWriteBehaviour writeBehaviour,
@@ -168,7 +168,7 @@ public:
     /**
      * Destructor.
      */
-    virtual ~Logger();
+    virtual ~SolverLogger();
 
     /**
      * @brief Returns the log level of this logger.
@@ -311,7 +311,7 @@ private    :
 };
 
 template<typename ValueType>
-void Logger::logType( LogLevel::LogLevel level, const std::string& message, ValueType arg )
+void SolverLogger::logType( LogLevel::LogLevel level, const std::string& message, ValueType arg )
 {
     if( level <= mLogLevel )
     {

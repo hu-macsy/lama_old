@@ -146,8 +146,8 @@ int main()
   {
       cudaContext = hmemo::Context::getContextPtr( context::Host );
   }
-  lama_vec1.setContext( cudaContext );
-  lama_vec2.setContext( cudaContext );
+  lama_vec1.setContextPtr( cudaContext );
+  lama_vec2.setContextPtr( cudaContext );
   lama_vec1.prefetch();
   lama_vec1.prefetch();
 

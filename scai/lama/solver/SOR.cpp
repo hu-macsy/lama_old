@@ -288,6 +288,16 @@ SolverPtr SOR::copy()
     return SolverPtr( new SOR( *this ) );
 }
 
+std::string SOR::createValue()
+{
+	return "SOR";
+}
+
+Solver* SOR::create( const std::string name )
+{
+	return new SOR( name );
+}
+
 } /* end namespace lama */
 
 } /* end namespace scai */

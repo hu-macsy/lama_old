@@ -35,7 +35,6 @@
 #include <scai/lama/openmp/OpenMPUtils.hpp>
 
 // local library
-#include <scai/lama/openmp/OpenMP.hpp>
 #include <scai/lama/UtilKernelTrait.hpp>
 
 // internal scai libraries
@@ -43,6 +42,7 @@
 #include <scai/tracing.hpp>
 
 #include <scai/common/Constants.hpp>
+#include <scai/common/OpenMP.hpp>
 
 // boost
 #include <boost/preprocessor.hpp>

@@ -66,20 +66,20 @@
 // std
 #include <cmath>
 
-using namespace scai::hmemo;
+using std::abs;
+
 
 namespace scai
 {
 
-namespace lama
-{
-
-using std::abs;
-
+using namespace hmemo;
 using common::unique_ptr;
 using common::shared_ptr;
 
-using tasking::TaskSyncToken;
+using tasking::SyncToken;
+
+namespace lama
+{
 
 /* --------------------------------------------------------------------------- */
 
@@ -491,14 +491,14 @@ void CSRStorage<ValueType>::buildRowIndexes()
         return;
     }
 
-    if( getContext().getType() != context::Host )
+    if( getContextPtr()->getType() != common::context::Host )
     {
         SCAI_LOG_INFO( logger, "CSRStorage: build row indices is currently only implemented on host" )
     }
 
     // This routine is only available on the Host
 
-    ContextPtr loc = Context::getContextPtr( context::Host );
+    ContextPtr loc = Context::getContextPtr( common::context::Host );
 
     ReadAccess<IndexType> csrIA( mIa, loc );
 
@@ -1517,7 +1517,7 @@ SyncToken* CSRStorage<ValueType>::matrixTimesVectorAsync(
 
     SCAI_LOG_INFO( logger, *this << ": matrixTimesVectorAsync on " << *loc )
 
-    if( loc->getType() == context::Host )
+    if( loc->getType() == common::context::Host )
     {
         // execution as separate thread
 
@@ -1536,7 +1536,7 @@ SyncToken* CSRStorage<ValueType>::matrixTimesVectorAsync(
 
         SCAI_LOG_INFO( logger, *this << ": matrixTimesVectorAsync on Host by own thread" )
 
-        return new TaskSyncToken( bind( pf, this, ref( result ), alpha, cref( x ), beta, cref( y ) ) );
+        return new tasking::TaskSyncToken( bind( pf, this, ref( result ), alpha, cref( x ), beta, cref( y ) ) );
     }
 
     SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumColumns )
@@ -1636,7 +1636,7 @@ SyncToken* CSRStorage<ValueType>::vectorTimesMatrixAsync(
 
     SCAI_LOG_INFO( logger, *this << ": vectorTimesMatrixAsync on " << *loc )
 
-    if( loc->getType() == context::Host )
+    if( loc->getType() == common::context::Host )
     {
         // execution as separate thread
 
@@ -1655,7 +1655,7 @@ SyncToken* CSRStorage<ValueType>::vectorTimesMatrixAsync(
 
         SCAI_LOG_INFO( logger, *this << ": vectorTimesMatrixAsync on Host by own thread" )
 
-        return new TaskSyncToken( bind( pf, this, ref( result ), alpha, cref( x ), beta, cref( y ) ) );
+        return new tasking::TaskSyncToken( bind( pf, this, ref( result ), alpha, cref( x ), beta, cref( y ) ) );
     }
 
     SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumRows )
@@ -1760,8 +1760,6 @@ void CSRStorage<ValueType>::jacobiIterate(
     SCAI_ASSERT_EQUAL_DEBUG( mNumRows, solution.size() )
     SCAI_ASSERT_EQUAL_DEBUG( mNumRows, mNumColumns )
     // matrix must be square
-
-    // loc = ContextFactory::getContext( context::Host );  // does not run on other devices
 
     static LAMAKernel<CSRKernelTrait::jacobi<ValueType> > jacobi;
 
@@ -2027,9 +2025,9 @@ void CSRStorage<ValueType>::matrixTimesMatrix(
 
     // now we have in any case all arguments as CSR Storage
 
-    ContextPtr loc = Context::getContextPtr( context::Host );
+    ContextPtr loc = Context::getHostPtr();
 
-    if( a.getContext().getType() == b.getContext().getType() )
+    if( a.getContextPtr()->getType() == b.getContextPtr()->getType() )
     {
         loc = a.getContextPtr();
     }
@@ -2038,7 +2036,7 @@ void CSRStorage<ValueType>::matrixTimesMatrix(
 
     CSRStorage<ValueType> tmp1;
     tmp1.matrixTimesMatrixCSR( alpha, *csrA, *csrB, loc );
-    tmp1.setContext( loc );
+    tmp1.setContextPtr( loc );
 
     if( beta != scai::common::constants::ZERO )
     {
@@ -2051,7 +2049,7 @@ void CSRStorage<ValueType>::matrixTimesMatrix(
         swap( tmp1 );
     }
 
-    this->setContext( saveContext );
+    this->setContextPtr( saveContext );
 }
 
 /* --------------------------------------------------------------------------- */

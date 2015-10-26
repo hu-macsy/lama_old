@@ -66,6 +66,8 @@ namespace scai
 using common::unique_ptr;
 using common::shared_ptr;
 
+using tasking::SyncToken;
+
 namespace lama
 {
 
@@ -935,11 +937,11 @@ SyncToken* COOStorage<ValueType>::matrixTimesVectorAsync(
     SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumColumns )
     SCAI_ASSERT_EQUAL_ERROR( y.size(), mNumRows )
 
-    // not yet available on other devices, so we take Host
+    static LAMAKernel<COOKernelTrait::normalGEMV<ValueType> > normalGEMV;
 
-    ContextPtr loc = Context::getContextPtr( context::Host );
+    ContextPtr loc = normalGEMV.getValidContext( this->getContextPtr() );
 
-    if ( loc->getType() == context::Host )
+    if ( loc->getType() == common::context::Host )
     {
         // execution as separate thread
 
@@ -958,14 +960,10 @@ SyncToken* COOStorage<ValueType>::matrixTimesVectorAsync(
 
         SCAI_LOG_INFO( logger, *this << ": matrixTimesVectorAsync on Host by own thread" )
 
-        return new TaskSyncToken( bind( pf, this, ref( result ), alpha, cref( x ), beta, cref( y ) ) );
+        return new tasking::TaskSyncToken( bind( pf, this, ref( result ), alpha, cref( x ), beta, cref( y ) ) );
     }
 
     SCAI_LOG_INFO( logger, *this << ": matrixTimesVectorAsync on " << *loc )
-
-    static LAMAKernel<COOKernelTrait::normalGEMV<ValueType> > normalGEMV;
-
-    loc = normalGEMV.getValidContext( this->getContextPtr() );
 
     unique_ptr<SyncToken> syncToken( loc->getSyncToken() );
 
@@ -1040,7 +1038,7 @@ SyncToken* COOStorage<ValueType>::vectorTimesMatrixAsync(
 
     SCAI_LOG_INFO( logger, *this << ": vectorTimesMatrixAsync on " << *loc )
 
-    if( loc->getType() == context::Host )
+    if( loc->getType() == common::context::Host )
     {
         // execution as separate thread
 
@@ -1058,7 +1056,7 @@ SyncToken* COOStorage<ValueType>::vectorTimesMatrixAsync(
         using scai::common::bind;
         using scai::common::ref;
 
-        return new TaskSyncToken( bind( pf, this, ref( result ), alpha, ref( x ), beta, ref( y ) ) );
+        return new tasking::TaskSyncToken( bind( pf, this, ref( result ), alpha, ref( x ), beta, ref( y ) ) );
     }
 
     SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumRows )

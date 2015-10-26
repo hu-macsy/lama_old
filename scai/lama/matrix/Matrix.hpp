@@ -67,7 +67,7 @@ typedef common::shared_ptr<class Matrix> MatrixPtr;
 
 /** For convenience: add the key type used for the Matrix factory. */
 
-typedef std::pair<Format::MatrixStorageFormat, scai::common::ScalarType> MatrixCreateKeyType;
+typedef std::pair<Format::MatrixStorageFormat, common::scalar::ScalarType> MatrixCreateKeyType;
 
 /**
  * @brief The class Matrix is a abstract type that represents a distributed 2D real or complex matrix.
@@ -105,7 +105,7 @@ public:
      *
      * Note: the format of the matrix decides whether the matrix will be DENSE or SPARSE.
      */
-    static Matrix* getMatrix( const Format::MatrixStorageFormat format, const common::ScalarType type );
+    static Matrix* getMatrix( const Format::MatrixStorageFormat format, const common::scalar::ScalarType type );
 
     /**
      * @brief Checks for a given matrix whether the content of its data is sound.
@@ -559,7 +559,7 @@ public:
      * Note: Only for sparse matrices it is possible to specify separate locations for
      *       local and halo computations.
      */
-    virtual void setContext( const ContextPtr context ) = 0;
+    virtual void setContextPtr( const ContextPtr context ) = 0;
 
     /**
      * @brief Set individual context for local and halo part of the matrix.
@@ -569,7 +569,7 @@ public:
      *
      *  Note: Only sparse matrices will override this method, others will ignore second argument.
      */
-    virtual void setContext( const ContextPtr localContext, const ContextPtr haloContext );
+    virtual void setContextPtr( const ContextPtr localContext, const ContextPtr haloContext );
 
     /**
      *  @brief Getter routine for the context.
@@ -577,16 +577,6 @@ public:
      *  Note: Only for SparseMatrix the context of the halo can be queried.
      */
     virtual ContextPtr getContextPtr() const = 0;
-
-    /**
-     * @brief Method returns a reference to the constant context.
-     *
-     * @return    reference to the constant context.
-     */
-    virtual const Context& getContext() const
-    {
-        return *getContextPtr();
-    }
 
     /**
      * @brief SyncKind describes if the communication and computation should be done synchronously or asynchronously.
@@ -816,7 +806,7 @@ public:
     /**
      * @brief Queries the value type of the matrix elements, e.g. DOUBLE or FLOAT.
      */
-    virtual common::ScalarType getValueType() const = 0;
+    virtual common::scalar::ScalarType getValueType() const = 0;
 
     /**
      * @brief Query the size of one matrix element

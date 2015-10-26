@@ -81,7 +81,7 @@ void CGS::initialize( const Matrix& coefficients ){
     runtime.mNormRes = 1.0;
     runtime.mEps = std::numeric_limits<double>::epsilon()*3;            //CAREFUL: No abstract type
 
-    common::ScalarType type = coefficients.getValueType();
+    common::scalar::ScalarType type = coefficients.getValueType();
 
     runtime.mRes0.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
     runtime.mVecT.reset(Vector::createVector( type, coefficients.getDistributionPtr() ));
@@ -90,11 +90,11 @@ void CGS::initialize( const Matrix& coefficients ){
     runtime.mVecU.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
 
 
-    runtime.mRes0->setContext( coefficients.getContextPtr() );   
-    runtime.mVecP->setContext( coefficients.getContextPtr() );
-    runtime.mVecQ->setContext( coefficients.getContextPtr() );
-    runtime.mVecU->setContext( coefficients.getContextPtr() );
-    runtime.mVecT->setContext( coefficients.getContextPtr() );
+    runtime.mRes0->setContextPtr( coefficients.getContextPtr() );
+    runtime.mVecP->setContextPtr( coefficients.getContextPtr() );
+    runtime.mVecQ->setContextPtr( coefficients.getContextPtr() );
+    runtime.mVecU->setContextPtr( coefficients.getContextPtr() );
+    runtime.mVecT->setContextPtr( coefficients.getContextPtr() );
 }
 
 
@@ -207,6 +207,16 @@ CGS::CGSRuntime& CGS::getRuntime(){
 
 const CGS::CGSRuntime& CGS::getConstRuntime() const{
     return mCGSRuntime;
+}
+
+std::string CGS::createValue()
+{
+	return "CGS";
+}
+
+Solver* CGS::create( const std::string name )
+{
+	return new CGS( name );
 }
 
 } /* end namespace lama */

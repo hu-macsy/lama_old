@@ -217,6 +217,18 @@ void IterativeSolver::logIterationStart()
     mLogger->startTimer( "IterationTimer" );
 }
 
+IterativeSolver* IterativeSolver::create( const std::string type, const std::string name )
+{
+	IterativeSolver* sov = dynamic_cast<IterativeSolver*>( Solver::create( type, name ) );
+
+	if( !sov )
+	{
+		COMMON_THROWEXCEPTION( "requested Solver is not inherited from IterativeSolver" )
+	}
+
+	return sov;
+}
+
 } /* end namespace lama */
 
 } /* end namespace scai */

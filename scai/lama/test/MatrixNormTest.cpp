@@ -63,7 +63,7 @@ void l1NormTestMethod( ContextPtr context )
 	MatrixType matrix;
 	matrix.setIdentity(8);
 
-	matrix.setContext( context );
+	matrix.setContextPtr( context );
 
 	matrix *= 2.0;
 
@@ -99,7 +99,7 @@ void l2NormTestMethod( ContextPtr context )
 	MatrixType matrix;
 	matrix.setIdentity(8);
 
-	matrix.setContext( context );
+	matrix.setContextPtr( context );
 
 	matrix *= 2.0;
 
@@ -135,7 +135,7 @@ void maxNormTestMethod( ContextPtr context )
 	MatrixType matrix;
 	matrix.setIdentity(8);
 
-	matrix.setContext( context );
+	matrix.setContextPtr( context );
 
 	matrix *= 2.0;
 

@@ -34,6 +34,7 @@
 #pragma once
 
 // base classes
+#include <scai/lama/solver/Solver.hpp>
 #include <scai/lama/solver/CG.hpp>
 
 // local library
@@ -49,7 +50,10 @@ namespace lama
  * @brief The class BiCG represents a IterativeSolver which uses the krylov subspace BiCG method
  *        to solve a system of linear equations iteratively.
  */
-class COMMON_DLL_IMPORTEXPORT BiCG: public CG
+class COMMON_DLL_IMPORTEXPORT BiCG:
+		public CG,
+		public Solver::Register<BiCG>
+		//public IterativeSolver::Register<BiCG>
 {
 public:
 
@@ -109,6 +113,9 @@ public:
      * @brief Returns the complete configuration of the derived class
      */
     virtual const BiCGRuntime& getConstRuntime() const;
+
+    static std::string createValue();
+    static Solver* create( const std::string name );
 
 protected:
 

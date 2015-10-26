@@ -47,6 +47,7 @@
 #include <scai/lama/matrix/Matrix.hpp>
 
 #include <scai/lama/expression/Expression.hpp>
+#include <scai/lama/StorageIO.hpp>
 
 #include <scai/lama/io/FileIO.hpp>
 #include <scai/lama/io/FileType.hpp>
@@ -150,7 +151,6 @@ void DenseVector<ValueType>::readFromFile( const std::string& filename )
     SCAI_LOG_INFO( logger, "read dense vector from file " << filename )
 
     // Take the current default communicator
-
     CommunicatorPtr comm = Communicator::get();
 
     IndexType myRank = comm->getRank();
@@ -158,28 +158,48 @@ void DenseVector<ValueType>::readFromFile( const std::string& filename )
 
     IndexType numElements = 0; // will be the size of the vector
 
-    File::FileType fileType = File::XDR;
+    File::FileType fileType; // = File::XDR;
+    std::string suffix;
+	std::string baseFileName = filename;
+	std::string vecFileName;
     long dataTypeSize = -1;
-    std::string vecFileName( filename + ".vec" );
 
-    if( myRank == host )
+    if( filename.size() >= 4 )
     {
-        readVectorHeader( filename + ".frv", fileType, dataTypeSize );
-
-        // broadcast the size to all other processors
-
-        numElements = size();
+        suffix = filename.substr( filename.size() - 4, 4 );
     }
 
-    comm->bcast( &numElements, 1, host );
+    if( suffix == ".frv" )
+    {
+        baseFileName = filename.substr( 0, filename.size() - 4 );
+    }
 
-    File::DataType dataType = getDataType<ValueType>( dataTypeSize );
+    if( suffix == ".mtx" )
+    {
+    	fileType = File::MATRIX_MARKET;
+    } else
+    {
+    	std::string frvFileName = baseFileName + ".frv";
 
-    // host gets all elements
+		if( myRank == host )
+		{
+			readVectorHeader( frvFileName, fileType, dataTypeSize );
 
-    DistributionPtr dist( new CyclicDistribution( numElements, numElements, comm ) );
+			// broadcast the size to all other processors
 
-    allocate( dist );
+			numElements = size();
+		}
+
+		vecFileName = baseFileName + ".vec";
+
+		comm->bcast( &numElements, 1, host );
+
+		// host gets all elements
+
+		DistributionPtr dist( new CyclicDistribution( numElements, numElements, comm ) );
+
+		allocate( dist );
+    }
 
     if( myRank == host )
     {
@@ -192,12 +212,15 @@ void DenseVector<ValueType>::readFromFile( const std::string& filename )
                 break;
 
             case File::BINARY: //Binary without number of elements in the vector file
-                readVectorFromBinaryFile( vecFileName, dataType );
+                readVectorFromBinaryFile( vecFileName, getDataType<ValueType>( dataTypeSize ) );
                 break;
 
             case File::XDR: //XDR following the IEEE standard
                 readVectorFromXDRFile( vecFileName, dataTypeSize );
                 break;
+            case File::MATRIX_MARKET:
+            	readVectorFromMMFile( filename );
+            	break;
 
             default:
                 COMMON_THROWEXCEPTION( "Unknown File Type." );
@@ -347,7 +370,7 @@ DenseVector<ValueType>& DenseVector<ValueType>::operator=( const Scalar value )
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-common::ScalarType DenseVector<ValueType>::getValueType() const
+common::scalar::ScalarType DenseVector<ValueType>::getValueType() const
 {
     return common::getScalarType<ValueType>();
 }
@@ -377,7 +400,7 @@ DenseVector<ValueType>* DenseVector<ValueType>::clone() const
 
     DenseVector<ValueType>* newDenseVector = new DenseVector<ValueType>();
 
-    newDenseVector->setContext( mContext );
+    newDenseVector->setContextPtr( mContext );
 
     return newDenseVector;
 }
@@ -389,7 +412,7 @@ DenseVector<ValueType>* DenseVector<ValueType>::clone( DistributionPtr distribut
 
     DenseVector<ValueType>* newDenseVector = new DenseVector<ValueType>( distribution );
 
-    newDenseVector->setContext( mContext );
+    newDenseVector->setContextPtr( mContext );
 
     // give back the new vector and its ownership
 
@@ -421,7 +444,7 @@ void DenseVector<ValueType>::updateHalo( const Halo& halo ) const
 }
 
 template<typename ValueType>
-SyncToken* DenseVector<ValueType>::updateHaloAsync( const Halo& halo ) const
+tasking::SyncToken* DenseVector<ValueType>::updateHaloAsync( const Halo& halo ) const
 {
     const IndexType haloSize = halo.getHaloSize();
 
@@ -621,7 +644,7 @@ template<typename ValueType>
 void DenseVector<ValueType>::writeAt( std::ostream& stream ) const
 {
     stream << "DenseVector<" << getValueType() << ">" << "( size = " << size() << ", local = " << mLocalValues.size()
-                   << ", dist = " << getDistribution() << ", loc  = " << *getContext() << " )";
+                   << ", dist = " << getDistribution() << ", loc  = " << *getContextPtr() << " )";
 }
 
 template<typename ValueType>
@@ -753,7 +776,7 @@ void DenseVector<ValueType>::vectorPlusVector(
 }
 
 template<typename ValueType>
-SyncToken* DenseVector<ValueType>::vectorPlusVectorAsync(
+tasking::SyncToken* DenseVector<ValueType>::vectorPlusVectorAsync(
     ContextPtr /*context*/,
     LAMAArray<ValueType>& /*result*/,
     const ValueType /*alpha*/,
@@ -947,7 +970,7 @@ void DenseVector<ValueType>::invert()
 
     static LAMAKernel<UtilKernelTrait::invert<ValueType> > invert;
 
-    const ContextPtr loc = invert.getValidContext( this->getContext() );
+    const ContextPtr loc = invert.getValidContext( this->getContextPtr() );
 
     SCAI_CONTEXT_ACCESS( loc );
 
@@ -1142,7 +1165,7 @@ void DenseVector<ValueType>::writeToFile(
 
         case File::MATRIX_MARKET:
         {
-            writeVectorToMMFile( file, dataType );
+            writeVectorToMMFile( fileBaseName, dataType );
             break;
         }
 
@@ -1152,7 +1175,10 @@ void DenseVector<ValueType>::writeToFile(
 
     long dataTypeSize = getDataTypeSize<ValueType>( dataType );
 
-    writeVectorHeader( fileBaseName + ".frv", fileType, dataTypeSize );
+    if( fileType != File::MATRIX_MARKET )
+    {
+		writeVectorHeader( fileBaseName + ".frv", fileType, dataTypeSize );
+    }
 }
 
 template<typename ValueType>
@@ -1201,58 +1227,18 @@ void DenseVector<ValueType>::writeVectorHeader(
 template<typename ValueType>
 void DenseVector<ValueType>::writeVectorToMMFile( const std::string& filename, const File::DataType& dataType ) const
 {
-    MM_typecode veccode;
-    mm_initialize_typecode( &veccode );
-    mm_set_array( &veccode );
-    mm_set_dense( &veccode );
+	IndexType numRows = size();
 
-    if( dataType == File::DOUBLE || dataType == File::FLOAT )
-    {
-        mm_set_real( &veccode );
-    }
-    else if( dataType == File::COMPLEX )
-    {
-        mm_set_complex( &veccode );
-    }
-    else if( dataType == File::INTEGER )
-    {
-        mm_set_integer( &veccode );
-    }
-    else if( dataType == File::PATTERN )
-    {
-        mm_set_pattern( &veccode );
-    }
-    else
-    {
-        COMMON_THROWEXCEPTION( "DenseVector<ValueType>::writeVectorToMMFile: "
-                             "Unknown datatype." )
-    }
+	std::string fullFilename = filename + ".mtx";
 
-    std::FILE* file;
-
-    if( !( file = std::fopen( filename.c_str(), "w+" ) ) )
-    {
-        COMMON_THROWEXCEPTION( "DenseVector<ValueType>::writeVectorToMMFile: '" + filename + "' could not be opened." )
-    }
-
-    IndexType numRows = size();
-
-    mm_write_banner( file, veccode );
-    mm_write_mtx_array_size( file, numRows, numRows );
-
-    if( std::fclose( file ) != 0 )
-    {
-        COMMON_THROWEXCEPTION( "DenseVector<ValueType>::writeVectorToMMFile: '" + filename + "' could not be closed." )
-    }
-
-    file = 0;
+	_StorageIO::writeMMHeader( true, numRows, 1, numRows, fullFilename, dataType );
 
     std::ofstream ofile;
-    ofile.open( filename.c_str(), std::ios::out | std::ios::app );
+    ofile.open( fullFilename.c_str(), std::ios::out | std::ios::app );
 
     if( ofile.fail() )
     {
-        COMMON_THROWEXCEPTION( "DenseVector<ValueType>::writeVectorToMMFile: '" + filename + "' could not be reopened." )
+        COMMON_THROWEXCEPTION( "DenseVector<ValueType>::writeVectorToMMFile: '" + fullFilename + "' could not be reopened." )
     }
 
     ContextPtr hostContext = Context::getContextPtr( context::Host );
@@ -1508,6 +1494,82 @@ static void readXDRData( XDRFileStream& inFile, UserDataType data[], const Index
 }
 
 template<typename ValueType>
+void DenseVector<ValueType>::readVectorFromMMFile( const std::string& fileName )
+{
+    bool isSymmetric, isPattern;
+    IndexType numRows, numColumns, numValues;
+
+    _StorageIO::readMMHeader( numRows, numColumns, numValues, isPattern, isSymmetric, fileName );
+
+    SCAI_ASSERT_EQUAL_ERROR( numColumns, 1 )
+
+    std::ifstream ifile;
+    ifile.open( fileName.c_str(), std::ios::in );
+
+    if( ifile.fail() )
+    {
+        COMMON_THROWEXCEPTION( "Could not reopen file '" << fileName << "'." )
+    }
+
+    CommunicatorPtr comm = Communicator::get();
+    DistributionPtr dist( new CyclicDistribution( numRows, numRows, comm ) );
+
+    allocate( dist );
+
+    // First reading in the beginning of the rows
+    // then reading in the values and columns of the rows
+    //Jump to the beginning of the Values
+    char c = '%';
+
+    while( c == '%' )
+    {
+        ifile >> c;
+        ifile.ignore( 1024, '\n' );
+    }
+
+    IndexType lines = numValues;
+
+    IndexType i;
+    ValueType val;
+
+    std::string line;
+
+    WriteOnlyAccess<ValueType> vector( mLocalValues, numValues );
+    ValueType* vPtr = vector.get();
+
+    for( int l = 0; l < lines && !ifile.eof(); ++l )
+    {
+        std::getline( ifile, line );
+        std::istringstream reader( line );
+
+        reader >> i;
+
+	if( isPattern )
+        {
+            val = 1.0;
+        }
+        else
+	{
+            reader >> val;
+	}
+
+        i--;
+
+        vPtr[i] = val;
+
+    }
+
+    if( ifile.eof() )
+    {
+    	COMMON_THROWEXCEPTION( "'" << fileName << "': reached end of file, before having read all data." )
+    }
+
+    ifile.close();
+    ifile.close();
+    SCAI_LOG_INFO( logger, "construct vector " << numRows )
+}
+
+template<typename ValueType>
 void DenseVector<ValueType>::readVectorFromXDRFile( const std::string& fileName, const long dataTypeSizeHeader )
 {
     XDRFileStream inFile( fileName.c_str(), std::ios::in | std::ios::binary );
@@ -1605,7 +1667,7 @@ void DenseVector<ValueType>::readVectorDataFromBinaryFile( std::fstream &inFile,
     IndexType n = size();
 
     SCAI_LOG_INFO( logger,
-                   "read DenseVector<" << common::getScalarType<ValueType>() << "> from binary file, size = " << n << ", dataType = " << ( ( common::ScalarType ) type ) )
+                   "read DenseVector<" << common::getScalarType<ValueType>() << "> from binary file, size = " << n << ", dataType = " << ( ( common::scalar::ScalarType ) type ) )
 
     WriteOnlyAccess<ValueType> writeData( mLocalValues, n );
 
@@ -1649,10 +1711,10 @@ Vector* DenseVector<ValueType>::create()
 }
 
 template<typename ValueType>
-std::pair<VectorKind, common::ScalarType> DenseVector<ValueType>::createValue()
+std::pair<VectorKind, common::scalar::ScalarType> DenseVector<ValueType>::createValue()
 {
-    common::ScalarType skind = common::getScalarType<ValueType>();
-    return std::pair<VectorKind, common::ScalarType> ( DENSE, skind );
+    common::scalar::ScalarType skind = common::getScalarType<ValueType>();
+    return std::pair<VectorKind, common::scalar::ScalarType> ( DENSE, skind );
 }
 
 /* ---------------------------------------------------------------------------------*/

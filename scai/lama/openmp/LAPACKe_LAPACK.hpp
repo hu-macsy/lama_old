@@ -37,11 +37,11 @@
 #include <scai/common/config.hpp>
 
 // local library
-#include <scai/lama/openmp/OpenMP.hpp>
 #include <scai/lama/cblas.hpp>
 
 // internal scai libraries
 #include <scai/common/SCAITypes.hpp>
+#include <scai/common/OpenMP.hpp>
 
 #include <scai/logging.hpp>
 

@@ -64,8 +64,6 @@
 namespace scai
 {
 
-using common::Complex;
-
 namespace hmemo
 {
 	template<typename ValueType> class LAMAArray;
@@ -243,7 +241,7 @@ public:
      *                                                                                    *
      *************************************************************************************/
 
-    /** @brief Exchange of data between all processors by communication plans.
+    /* @brief Exchange of data between all processors by communication plans.
      *
      *  @param[out] recvData   buffer for data received from other processors
      *  @param[in]  recvPlan   number of elements and offsets for receiving
@@ -263,7 +261,7 @@ public:
      *      const CommunicationPlan& sendPlan ) const = 0;
      */
 
-    /** @brief Asynchronous exchange of data between all processors by communication plans.
+    /* @brief Asynchronous exchange of data between all processors by communication plans.
      *
      *  @param[out] recvData   buffer for data received from other processors
      *  @param[in]  recvPlan   number of elements and offsets for receiving
@@ -285,7 +283,7 @@ public:
      *      const CommunicationPlan& sendPlan ) const = 0;
      */
 
-    /** @brief Broadcast a typed array from root to all other processors.
+    /* @brief Broadcast a typed array from root to all other processors.
      *
      *  @param[in,out] val  in on root, out on all other processors
      *  @param[in]     n    number of elements in vector val
@@ -294,7 +292,7 @@ public:
      *  virtual void bcast( TypeId val[], const IndexType n, const PartitionId root ) const = 0;
      */
 
-    /** @brief Scatter of an array of values from root to all other processors.
+    /* @brief Scatter of an array of values from root to all other processors.
      *
      *  @param[out]   myvals values that I receive
      *  @param[in]    n      number of elements in vector val
@@ -308,7 +306,7 @@ public:
      *      const TypeId allvals[] ) const = 0;
      */
 
-    /** @brief Scatter of an array of values from root to all other processors.
+    /* @brief Scatter of an array of values from root to all other processors.
      *
      *  @param[out]   myvals values that I receive
      *  @param[in]    n      number of elements in vector val
@@ -324,7 +322,7 @@ public:
      *      const IndexType sizes[] ) const = 0;
      */
 
-    /** @brief Gather of an array of values from all processors to root.
+    /* @brief Gather of an array of values from all processors to root.
      *
      *  @param[out]   allvals values that I receive (size must be n * size() )
      *  @param[in]    n      number of elements in vector val
@@ -338,7 +336,7 @@ public:
      *      const TypeId myvals[] ) const = 0;
      */
 
-    /** @brief Gather of an array of double values from all processors to root.
+    /* @brief Gather of an array of double values from all processors to root.
      *
      *  @param[out]   allvals values that I receive (size must be sum(sizes) )
      *  @param[in]    n      number of elements in myvals
@@ -357,7 +355,7 @@ public:
      *      const IndexType sizes[] ) const = 0;
      */
 
-    /** @brief Sum operations sum up one single value from each partition to a global value.
+    /* @brief Sum operations sum up one single value from each partition to a global value.
      *
      *  @param[in] value  value on the calling partition
      *  @returns   global value, available for all partitions.
@@ -367,7 +365,7 @@ public:
      *  virtual TypeId max( const TypeId value ) const = 0;
      */
 
-    /** @brief Maximal value combined with a location value where maximum was found.
+    /* @brief Maximal value combined with a location value where maximum was found.
      *
      *  @param[in,out] val        is a value on each processor, only out for root with maximal value
      *  @param[in,out] location   is an additional int value, only out for root
@@ -378,7 +376,7 @@ public:
      * virtual void maxloc( TypeId& val, IndexType& location, const PartitionId root ) const = 0;
      */
 
-    /** @brief Swap of an array with another processor.
+    /* @brief Swap of an array with another processor.
      *
      * @param[in,out] val is the data array to be swapped
      * @param[in] n is the number of entries in array val
@@ -389,7 +387,7 @@ public:
      * virtual void swap( TypeId val[], const IndexType n, const PartitionId partner ) const = 0;
      */
 
-    /** @brief This routine shifts data between neighbored processors.
+    /* @brief This routine shifts data between neighbored processors.
      *
      *  @param[out] newVals  array with data this partition get from neighbored partition
      *  @param[in]  newSize  allocated size of array newVals
@@ -409,7 +407,7 @@ public:
      *      const int direction ) const = 0;
      */
 
-    /** @brief Asynchronous version of shift.
+    /* @brief Asynchronous version of shift.
      *
      *  @param[out] newVals  array with data this partition get from neighbored partition
      *  @param[in]  oldVals  array with data this partition sends to neighbored partition
@@ -429,7 +427,7 @@ public:
      *      const int direction ) const = 0;
      */
 
-    /** @brief Exchange of data between all processors by communication plans.
+    /* @brief Exchange of data between all processors by communication plans.
      *
      *  @param[out] recvData   buffer for data received from other processors
      *  @param[in]  recvPlan   number of elements and offsets for receiving
@@ -795,10 +793,6 @@ tasking::SyncToken* Communicator::exchangeByPlanAsync(
     const hmemo::LAMAArray<ValueType>& sendArray,
     const CommunicationPlan& sendPlan ) const
 {
-    using scai::hmemo::ReadAccess;
-    using scai::hmemo::WriteAccess;
-    using scai::hmemo::WriteOnlyAccess;
-
     SCAI_ASSERT_EQUAL_ERROR( sendArray.size(), sendPlan.totalQuantity() )
 
     IndexType recvSize = recvPlan.totalQuantity();
@@ -809,14 +803,14 @@ tasking::SyncToken* Communicator::exchangeByPlanAsync(
 
     SCAI_LOG_DEBUG( logger, *this << ": exchangeByPlanAsync, comCtx = " << *comCtx )
 
-    common::shared_ptr<ReadAccess<ValueType> > sendData( new ReadAccess<ValueType>( sendArray, comCtx ) );
-    common::shared_ptr<WriteAccess<ValueType> > recvData(
-                    new WriteOnlyAccess<ValueType>( recvArray, comCtx, recvSize ) );
+    common::shared_ptr<hmemo::ReadAccess<ValueType> > sendData( new hmemo::ReadAccess<ValueType>( sendArray, comCtx ) );
+    common::shared_ptr<hmemo::WriteAccess<ValueType> > recvData(
+                    new hmemo::WriteOnlyAccess<ValueType>( recvArray, comCtx, recvSize ) );
 
     tasking::SyncToken* token( exchangeByPlanAsync( recvData->get(), recvPlan, sendData->get(), sendPlan ) );
 
     // Add the read and write access to the sync token to get it freed after successful wait
-    // conversion common::shared_ptr<HostWriteAccess<ValueType> > -> common::shared_ptr<BaseAccess> supported
+    // conversion common::shared_ptr<hmemo::HostWriteAccess<ValueType> > -> common::shared_ptr<BaseAccess> supported
 
     token->pushToken( recvData );
     token->pushToken( sendData );

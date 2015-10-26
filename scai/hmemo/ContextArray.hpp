@@ -84,7 +84,7 @@ class COMMON_DLL_IMPORTEXPORT ContextArray:
 
     public scai::common::Printable,
     public scai::tasking::SyncTokenMember,
-    public scai::common::Factory<common::ScalarType, ContextArray*>
+    public scai::common::Factory<common::scalar::ScalarType, ContextArray*>
 {
     // Member variables of this class
 
@@ -106,9 +106,9 @@ public:
     /**
      * @brief Query the value type of the array elements, e.g. DOUBLE or FLOAT.
      */
-    virtual common::ScalarType getValueType() const = 0;
+    virtual common::scalar::ScalarType getValueType() const = 0;
 
-    using common::Factory<common::ScalarType, ContextArray*>::create;
+    using common::Factory<common::scalar::ScalarType, ContextArray*>::create;
 
     /**
      *  Each derived class must provide a clone function. This will

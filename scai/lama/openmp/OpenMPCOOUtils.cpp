@@ -36,7 +36,6 @@
 
 // local library
 #include <scai/lama/openmp/OpenMPUtils.hpp>
-#include <scai/lama/openmp/OpenMP.hpp>
 
 #include <scai/lama/UtilKernelTrait.hpp>
 
@@ -44,6 +43,8 @@
 #include <scai/kregistry/KernelRegistry.hpp>
 #include <scai/tracing.hpp>
 #include <scai/common/ScalarType.hpp>
+
+#include <scai/common/OpenMP.hpp>
 
 // boost
 #include <boost/preprocessor.hpp>
@@ -229,7 +230,7 @@ void OpenMPCOOUtils::normalGEMV(
     const IndexType cooIA[],
     const IndexType cooJA[],
     const ValueType cooValues[],
-    SyncToken* syncToken )
+    tasking::SyncToken* syncToken )
 {
     SCAI_LOG_INFO( logger,
                    "normalGEMV<" << getScalarType<ValueType>() << ", #threads = " << omp_get_max_threads() << ">, result[" << numRows << "] = " << alpha << " * A( coo, #vals = " << numValues << " ) * x + " << beta << " * y " )
@@ -277,7 +278,7 @@ void OpenMPCOOUtils::normalGEVM(
     const IndexType cooIA[],
     const IndexType cooJA[],
     const ValueType cooValues[],
-    SyncToken* syncToken )
+    tasking::SyncToken* syncToken )
 {
     SCAI_LOG_INFO( logger,
                    "normalGEMV<" << getScalarType<ValueType>() << ", #threads = " << omp_get_max_threads() << ">, result[" << numColumns << "] = " << alpha << " * A( coo, #vals = " << numValues << " ) * x + " << beta << " * y " )
@@ -326,7 +327,7 @@ void OpenMPCOOUtils::jacobi(
     const ValueType rhs[],
     const ValueType omega,
     const IndexType numRows,
-    class SyncToken* syncToken )
+    tasking::SyncToken* syncToken )
 {
     SCAI_LOG_INFO( logger,
                    "jacobi<" << getScalarType<ValueType>() << ">" << ", #rows = " << numRows << ", omega = " << omega )

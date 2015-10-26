@@ -65,14 +65,14 @@ SCAI_LOG_DEF_LOGGER( SimpleAMG::SimpleAMGRuntime::logger, "Solver.IterativeSolve
 
 SimpleAMG::SimpleAMG( const std::string& id )
     : IterativeSolver( id ), mMaxLevels( 25 ), mMinVarsCoarseLevel( 100 ), mSmootherContext(
-          Context::getContextPtr( context::Host ) )
+          Context::getHostPtr() )
 {
     SCAI_LOG_INFO( logger, "SimpleAMG, id = " << id << " created, no logger" )
 }
 
 SimpleAMG::SimpleAMG( const std::string& id, LoggerPtr logger )
     : IterativeSolver( id, logger ), mMaxLevels( 25 ), mMinVarsCoarseLevel( 100 ), mSmootherContext(
-          Context::getContextPtr( context::Host ) )
+          Context::getHostPtr() )
 {
     SCAI_LOG_INFO( SimpleAMG::logger, "SimpleAMG, id = " << id << " created, with logger" )
 }
@@ -205,7 +205,7 @@ void SimpleAMG::initialize( const Matrix& coefficients )
     {
         for( IndexType level = 0; level < (IndexType) amgSetup.getNumLevels() - 1; ++level )
         {
-            amgSetup.getSmoother( level ).setContext( mSmootherContext );
+            amgSetup.getSmoother( level ).setContextPtr( mSmootherContext );
         }
     }
 
@@ -688,6 +688,16 @@ const SimpleAMG::SimpleAMGRuntime& SimpleAMG::getConstRuntime() const
 SolverPtr SimpleAMG::copy()
 {
     return SolverPtr( new SimpleAMG( *this ) );
+}
+
+std::string SimpleAMG::createValue()
+{
+	return "SimpleAMG";
+}
+
+Solver* SimpleAMG::create( const std::string name )
+{
+	return new SimpleAMG( name );
 }
 
 } /* end namespace lama */

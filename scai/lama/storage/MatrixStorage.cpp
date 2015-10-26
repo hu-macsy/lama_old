@@ -79,7 +79,7 @@ SCAI_LOG_DEF_LOGGER( _MatrixStorage::logger, "MatrixStorage" )
 _MatrixStorage::_MatrixStorage()
 
     : mNumRows( 0 ), mNumColumns( 0 ), mRowIndexes(), mCompressThreshold( 0.0f ), mDiagonalProperty(
-        false ), mContext( Context::getContextPtr( context::Host ) )
+        false ), mContext( Context::getHostPtr() )
 {
     SCAI_LOG_DEBUG( logger, "constructed MatrixStorage()" )
 }
@@ -176,7 +176,7 @@ void _MatrixStorage::resetDiagonalProperty()
 
 /* --------------------------------------------------------------------------- */
 
-void _MatrixStorage::setContext( ContextPtr context )
+void _MatrixStorage::setContextPtr( ContextPtr context )
 {
     if ( context.get() != mContext.get() )
     {
@@ -329,7 +329,7 @@ MatrixStorage<ValueType>::~MatrixStorage()
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-common::ScalarType MatrixStorage<ValueType>::getValueType() const
+common::scalar::ScalarType MatrixStorage<ValueType>::getValueType() const
 {
     return common::getScalarType<ValueType>();
 }
@@ -389,7 +389,7 @@ void MatrixStorage<ValueType>::buildCSCData(
     LAMAArray<IndexType> rowJA;
     LAMAArray<ValueType> rowValues;
     buildCSRData( rowIA, rowJA, rowValues );
-    ContextPtr loc = Context::getContextPtr( context::Host );
+    ContextPtr loc = Context::getHostPtr();
     convertCSR2CSC( colIA, colJA, colValues, mNumColumns, rowIA, rowJA, rowValues, loc );
 }
 
@@ -1214,7 +1214,7 @@ void MatrixStorage<ValueType>::setDenseData(
     {
 
 #define LAMA_DENSE_ASSIGN( z, I, _ )                                                                   \
-case common::scalar::SCALAR_ARITHMETIC_TYPE##I :                                                       \
+case SCALAR_ARITHMETIC_TYPE##I :                                                                       \
 {                                                                                                      \
     LAMAArray<ARITHMETIC_HOST_TYPE_##I>& typedValues =                                                 \
             dynamic_cast<LAMAArray<ARITHMETIC_HOST_TYPE_##I>&>( mValues );                             \

@@ -33,6 +33,7 @@
 
 #pragma once
 
+// check whether lama boost library is compatible with link library 
 #include <boost/version.hpp>
 #define LAMA_LINKED_BOOST_VERSION ${Boost_VERSION}
 
@@ -40,16 +41,8 @@
     #error "Included Boost version does not match linked Boost version ${Boost_VERSION}"
 #endif //LAMA_LINKED_BOOST_VERSION != BOOST_VERSION
 
-//#define LAMA_REVISION ${Project_WC_REVISION}
-#define LAMA_REVISION 1.0
 
-#define SCAI_ASSERT_LEVEL_${SCAI_ASSERT_LEVEL}
-#define SCAI_LOG_LEVEL_${SCAI_LOG_LEVEL}
-#define ${SCAI_TRACING_FLAG}
-
-#define SCAI_OMP_SCHEDULE ${SCAI_OMP_SCHEDULE}
-
-#define SCAI_CUDA_COMPUTE_CAPABILITY ${CUDA_COMPUTE_CAPABILITY}
+#define LAMA_REVISION ${LAMA_VERSION_MAJOR}.${LAMA_VERSION_MINOR}
 
 extern "C" inline int lama_getRevision()
 {

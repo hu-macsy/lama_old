@@ -839,7 +839,7 @@ namespace lama
                     const ValueType oldSolution[],
                     const ValueType rhs[],
                     const ValueType omega,
-                    SyncToken* syncToken )
+                    tasking::SyncToken* syncToken )
     {
         SCAI_REGION( "CUDA.JDS.jacobi" )
 
@@ -852,7 +852,7 @@ namespace lama
 
         if ( syncToken )
         {
-            CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
+            tasking::CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<tasking::CUDAStreamSyncToken*>( syncToken );
             SCAI_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
             stream = cudaStreamSyncToken->getCUDAStream();
         }
@@ -1030,7 +1030,7 @@ namespace lama
                     const ValueType jdsValuesHalo[],
                     const ValueType oldSolutionHalo[],
                     const ValueType omega,
-                    SyncToken* syncToken )
+                    tasking::SyncToken* syncToken )
     {
         SCAI_REGION( "CUDA.JDS.jacobiHalo" )
 
@@ -1660,7 +1660,7 @@ namespace lama
                     const IndexType jdsDLG[],
                     const IndexType jdsJA[],
                     const ValueType jdsValues[],
-                    SyncToken* syncToken )
+                    tasking::SyncToken* syncToken )
     {
         if ( ( beta == scai::common::constants::ONE ) && ( result == y ) )
         {
@@ -1696,7 +1696,7 @@ namespace lama
 
         if ( syncToken )
         {
-            CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
+            tasking::CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<tasking::CUDAStreamSyncToken*>( syncToken );
             SCAI_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
             stream = cudaStreamSyncToken->getCUDAStream();
         }
@@ -2324,7 +2324,7 @@ namespace lama
                     const IndexType jdsDLG[],
                     const IndexType jdsJA[],
                     const ValueType jdsValues[],
-                    SyncToken* syncToken )
+                    tasking::SyncToken* syncToken )
     {
         if ( ( beta == scai::common::constants::ONE ) && ( result == y ) )
         {
@@ -2360,7 +2360,7 @@ namespace lama
 
         if ( syncToken )
         {
-            CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
+            tasking::CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<tasking::CUDAStreamSyncToken*>( syncToken );
             SCAI_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
             stream = cudaStreamSyncToken->getCUDAStream();
         }
@@ -2601,7 +2601,7 @@ namespace lama
                     const IndexType jdsDLG[],
                     const IndexType jdsJA[],
                     const ValueType jdsValues[],
-                    SyncToken* syncToken )
+                    tasking::SyncToken* syncToken )
     {
         SCAI_REGION( "CUDA.JDS.sparseGEMV" )
 
@@ -2631,7 +2631,7 @@ namespace lama
 
         if ( syncToken )
         {
-            CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
+            tasking::CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<tasking::CUDAStreamSyncToken*>( syncToken );
             SCAI_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
             stream = cudaStreamSyncToken->getCUDAStream();
         }
@@ -2729,7 +2729,7 @@ namespace lama
                     const IndexType jdsDLG[],
                     const IndexType jdsJA[],
                     const ValueType jdsValues[],
-                    SyncToken* syncToken )
+                    tasking::SyncToken* syncToken )
     {
         SCAI_REGION( "CUDA.JDS.sparseGEVM" )
 
@@ -2759,7 +2759,7 @@ namespace lama
 
         if ( syncToken )
         {
-            CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
+            tasking::CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<tasking::CUDAStreamSyncToken*>( syncToken );
             SCAI_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
             stream = cudaStreamSyncToken->getCUDAStream();
         }

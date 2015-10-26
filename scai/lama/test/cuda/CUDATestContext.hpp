@@ -1,5 +1,5 @@
-/*
- * @file Complex.cpp
+/**
+ * @file CUDATestContext.hpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,25 +25,35 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Instantiations for complex types in LAMA
- * @author Eric Schricker
- * @date 09.12.2013
- * @since 1.1.0
+ * @brief CUDATestContext.hpp
+ * @author Jiri Kraus
+ * @date 05.04.2012
+ * @since 1.0.0
  */
 
-// hpp
-#include <scai/common/Complex.hpp>
+#pragma once
+
+#include <scai/hmemo/Context.hpp>
 
 namespace scai
 {
-
-namespace common
+namespace lama_test
 {
 
-template class COMMON_DLL_IMPORTEXPORT Complex<float> ;
-template class COMMON_DLL_IMPORTEXPORT Complex<double> ;
-template class COMMON_DLL_IMPORTEXPORT Complex<long double> ;
+class CUDATestContext
+{
+public:
+    static hmemo::ContextPtr getContext();
+private:
+    CUDATestContext();
+    CUDATestContext( const CUDATestContext& );
+    const CUDATestContext& operator=( const CUDATestContext& );
+    ~CUDATestContext();
 
-} /* end namespace common */
+    static hmemo::ContextPtr cudaContext;
+
+};
+
+} /* end namespace lama_test */
 
 } /* end namespace scai */

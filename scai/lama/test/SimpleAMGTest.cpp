@@ -80,7 +80,7 @@ void solverTestMethod( ContextPtr context )
     const DenseVector<ValueType> rhs( system.rhs );
     const DenseVector<ValueType> refSolution( system.solution );
     MatrixType coefficients( system.coefficients );
-    coefficients.setContext( context );
+    coefficients.setContextPtr( context );
     SCAI_LOG_INFO( logger, "SimpleAMGTest uses context = " << context->getType() );
     SimpleAMG amg( "AMGTest solver", consoleLogger );
     CriterionPtr minCriterion( new IterationCount( 10 ) );

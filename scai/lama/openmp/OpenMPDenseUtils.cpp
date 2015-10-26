@@ -36,10 +36,10 @@
 
 // local library
 #include <scai/lama/UtilKernelTrait.hpp>
-#include <scai/lama/openmp/OpenMP.hpp>
 
 #include <scai/kregistry/KernelRegistry.hpp>
 #include <scai/common/Constants.hpp>
+#include <scai/common/OpenMP.hpp>
 
 // boost
 #include <boost/preprocessor.hpp>

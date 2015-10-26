@@ -255,9 +255,9 @@ public:
 
     /* Implementation of pure method of class Matrix. */
 
-    virtual void setContext( const hmemo::ContextPtr context );
+    virtual void setContextPtr( const hmemo::ContextPtr context );
 
-    using CRTPMatrix<DenseMatrix<ValueType>,ValueType>::setContext; // setContext( localContext, haloContext )
+    using CRTPMatrix<DenseMatrix<ValueType>,ValueType>::setContextPtr; // setContextPtr( localContext, haloContext )
 
     /* Implementation of pure method of class Matrix. */
 
@@ -527,7 +527,7 @@ public:
 
     /* Implementation of pure method of class Matrix. */
 
-    virtual common::ScalarType getValueType() const;
+    virtual common::scalar::ScalarType getValueType() const;
 
     virtual size_t getValueTypeSize() const;
 
@@ -688,7 +688,7 @@ public:
 
     // key for factory 
 
-    static std::pair<MatrixStorageFormat, common::ScalarType> createValue();
+    static std::pair<MatrixStorageFormat, common::scalar::ScalarType> createValue();
 };
 
 /*  template methods implementations */

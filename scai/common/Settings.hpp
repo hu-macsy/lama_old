@@ -81,7 +81,7 @@ public:
 
     /** Get tokenized string from an environment variable 
      *
-     *  @param[out] values is a vector of separated strings from the environment varialbe
+     *  @param[out] vals is a vector of separated strings from the environment varialbe
      *  @param[in]  envVarName is name of the environment variable
      *  @param[in]  separator is the character used to separate
      *  @return     true if environment variable was set
@@ -100,7 +100,7 @@ public:
      *
      *  @param[out] values is a vector of separated strings from the input string
      *  @param[in]  input is a string that will be tokenized
-     *  @param[in]  separator is the character used to separate
+     *  @param[in]  seperator is the character used to separate
      *
      */
     static void tokenize( std::vector<std::string>& values, const std::string& input, const char seperator );

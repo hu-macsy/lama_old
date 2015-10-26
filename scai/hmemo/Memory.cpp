@@ -51,7 +51,7 @@ SCAI_LOG_DEF_LOGGER( Memory::logger, "Memory" )
 
 /* ---------------------------------------------------------------------------------*/
 
-Memory::Memory( MemoryType type ) : mMemoryType( type )
+Memory::Memory( memtype::MemoryType type ) : mMemoryType( type )
 {
     SCAI_LOG_DEBUG( logger, "Memory( type = " << mMemoryType << " )" )
 }

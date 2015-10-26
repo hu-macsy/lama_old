@@ -56,9 +56,6 @@
 namespace scai
 {
 
-// Not recommened, but here for convenience
-using hmemo::ContextPtr;
-
 namespace lama
 {
 
@@ -82,7 +79,7 @@ typedef enum
 
 /** For convenience: add the key type used for the Vector factory. */
 
-typedef std::pair<VectorKind, common::ScalarType> VectorCreateKeyType;
+typedef std::pair<VectorKind, common::scalar::ScalarType> VectorCreateKeyType;
 
 /**
  * @brief The class Vector is a abstract type that represents a distributed 1D real or complex vector.
@@ -117,13 +114,13 @@ public:
      * This factory operation allows to create a vector at runtime of any format or any type.
      * Internally, all vector classes must register their create operation.
      */
-    static Vector* getVector( const VectorKind kind, const common::ScalarType valueType );
+    static Vector* getVector( const VectorKind kind, const common::scalar::ScalarType valueType );
 
     /** @brief Create a dense vector of a certain value type and a given distribution.
      *
      *  This method keeps compatibility with an older method that did know which vectors were supported.
      */
-    static Vector* createVector( const common::ScalarType valueType, DistributionPtr distribution );
+    static Vector* createVector( const common::scalar::ScalarType valueType, DistributionPtr distribution );
 
     /**
      * @brief ExpressionMemberType is the type that is used the template Expression to store a Vector.
@@ -296,7 +293,7 @@ public:
     /**
      * @brief Queries the value type of the vector elements, e.g. DOUBLE or FLOAT.
      */
-    virtual common::ScalarType getValueType() const = 0;
+    virtual common::scalar::ScalarType getValueType() const = 0;
 
     /**
      * @brief Returns a copy of the value at the passed global index.
@@ -433,7 +430,7 @@ public:
      *
      * @param[in] context specifies the location to make this vector valid at
      */
-    virtual void prefetch( const ContextPtr context ) const = 0;
+    virtual void prefetch( const hmemo::ContextPtr context ) const = 0;
 
     /**
      * @brief Starts a prefetch to make data valid at the context of the vector.
@@ -455,12 +452,12 @@ public:
     /**
      * @brief Sets the 'preferred' context where data resides and computations are done.
      */
-    void setContext( ContextPtr location );
+    void setContextPtr( hmemo::ContextPtr location );
 
     /**
      * @brief Getter function for the context (pointer) of a vector.
      */
-    inline ContextPtr getContext() const;
+    inline hmemo::ContextPtr getContextPtr() const;
 
     /**
      * @brief Returns the global memory that is allocated to hold this vector.
@@ -493,7 +490,7 @@ protected:
     /**
      *  Constructor of Vector for derived classes by size and/or context
      */
-    explicit Vector( const IndexType size = 0, ContextPtr context = ContextPtr() );
+    explicit Vector( const IndexType size = 0, hmemo::ContextPtr context = hmemo::ContextPtr() );
 
     /**
      * @brief Constructor of Vector for derived classes by distribution
@@ -501,7 +498,7 @@ protected:
      * @param[in] distribution  the distribution to use for the new Vector.
      * @param[in] context       is optional, will be Host context.
      */
-    explicit Vector( DistributionPtr distribution, ContextPtr context = ContextPtr() );
+    explicit Vector( DistributionPtr distribution, hmemo::ContextPtr context = hmemo::ContextPtr() );
 
     /**
      * @brief Creates a copy of the passed Vector.
@@ -522,7 +519,7 @@ protected:
      */
     virtual void resizeImpl() = 0;
 
-    ContextPtr mContext; //!< decides about location of vector operations
+    hmemo::ContextPtr mContext; //!< decides about location of vector operations
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 };
@@ -532,14 +529,10 @@ IndexType Vector::size() const
     return getDistributionPtr()->getGlobalSize();
 }
 
-ContextPtr Vector::getContext() const
+hmemo::ContextPtr Vector::getContextPtr() const
 {
     return mContext;
 }
-
-} /* end namespace lama */
-
-} /* end namespace scai */
 
 /** @brief  stream output for key values of creator  */
 
@@ -548,3 +541,7 @@ inline std::ostream& operator<<( std::ostream& stream, const scai::lama::VectorC
     stream << "<" << key.first << ", " << key.second << ">";
     return stream;
 }
+
+} /* end namespace lama */
+
+} /* end namespace scai */

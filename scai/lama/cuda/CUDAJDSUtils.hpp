@@ -37,7 +37,7 @@
 #include <scai/common/config.hpp>
 
 // local library
-#include <scai/lama/Scalar.hpp>
+//#include <scai/lama/Scalar.hpp>
 
 // internal scai library
 #include <scai/logging.hpp>

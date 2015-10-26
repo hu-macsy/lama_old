@@ -46,7 +46,7 @@
 #include <scai/lama/matrix/Matrix.hpp>
 
 #include <scai/lama/solver/SolutionProxy.hpp>
-#include <scai/lama/solver/logger/Logger.hpp>
+#include <scai/lama/solver/logger/SolverLogger.hpp>
 
 // logging
 #include <scai/logging.hpp>
@@ -71,7 +71,9 @@ typedef common::shared_ptr<Solver> SolverPtr;
  * functionality for coefficient, rhs and solution storing, provides
  * a custom ID for a solver and a residual calculation capabilities.
  */
-class COMMON_DLL_IMPORTEXPORT Solver: public common::Printable
+class COMMON_DLL_IMPORTEXPORT Solver:
+		public common::Printable,
+		public common::Factory1<std::string, std::string, Solver*>
 {
 public:
     /**
@@ -205,7 +207,7 @@ public:
      *
      * @param[in] context   the context where this solver should be executed.
      */
-    virtual void setContext( ContextPtr context );
+    virtual void setContextPtr( ContextPtr context );
 
     /**
      * @brief Copies the status independent solver informations to create a new instance of the same

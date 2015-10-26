@@ -55,7 +55,7 @@ void commonTestCases( ContextPtr loc )
 {
     CSRSparseMatrix<ValueType> csrMatrix;
     SparseMatrixTest< CSRSparseMatrix<ValueType> > csrSparseMatrixTest( csrMatrix );
-    csrSparseMatrixTest.mMatrix.setContext( loc );
+    csrSparseMatrixTest.mMatrix.setContextPtr( loc );
 
     if ( base_test_case )
     {

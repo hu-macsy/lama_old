@@ -35,8 +35,6 @@
 #include <scai/lama/openmp/OpenMPELLUtils.hpp>
 
 // local library
-#include <scai/lama/openmp/OpenMP.hpp>
-
 #include <scai/lama/UtilKernelTrait.hpp>
 
 // internal scai libraries
@@ -46,6 +44,7 @@
 
 #include <scai/common/bind.hpp>
 #include <scai/common/Assert.hpp>
+#include <scai/common/OpenMP.hpp>
 #include <scai/common/macros/unused.hpp>
 #include <scai/common/Constants.hpp>
 
@@ -809,7 +808,7 @@ void OpenMPELLUtils::jacobi(
     const ValueType oldSolution[],
     const ValueType rhs[],
     const ValueType omega,
-    class SyncToken* syncToken )
+    tasking::SyncToken* syncToken )
 {
     SCAI_LOG_INFO( logger,
                    "jacobi<" << getScalarType<ValueType>() << ">" << ", #rows = " << numRows << ", omega = " << omega )
@@ -867,7 +866,7 @@ void OpenMPELLUtils::jacobiHalo(
     const IndexType numNonEmptyRows,
     const ValueType oldSolution[],
     const ValueType omega,
-    class SyncToken* syncToken )
+    tasking::SyncToken* syncToken )
 {
     if( syncToken != NULL )
     {
@@ -918,7 +917,7 @@ void OpenMPELLUtils::normalGEMV(
     const IndexType ellSizes[],
     const IndexType ellJA[],
     const ValueType ellValues[],
-    SyncToken* syncToken )
+    tasking::SyncToken* syncToken )
 {
     SCAI_LOG_INFO( logger,
                    "normalGEMV<" << getScalarType<ValueType>() << ", #threads = " << omp_get_max_threads() << ">, result[" << numRows << "] = " << alpha << " * A( ell, #maxNZ/row = " << numValuesPerRow << " ) * x + " << beta << " * y " )
@@ -990,7 +989,7 @@ void OpenMPELLUtils::sparseGEMV(
     const IndexType ellSizes[],
     const IndexType ellJA[],
     const ValueType ellValues[],
-    SyncToken* syncToken )
+    tasking::SyncToken* syncToken )
 {
     if( syncToken )
     {
@@ -1047,7 +1046,7 @@ void OpenMPELLUtils::normalGEVM(
     const IndexType ellSizes[],
     const IndexType ellJA[],
     const ValueType ellValues[],
-    SyncToken* syncToken )
+    tasking::SyncToken* syncToken )
 {
     SCAI_LOG_INFO( logger,
                    "normalGEVM<" << getScalarType<ValueType>() << ", #threads = " << omp_get_max_threads() << ">, result[" << numColumns << "] = " << alpha << " * x * A + " << beta << " * y " )
@@ -1128,7 +1127,7 @@ void OpenMPELLUtils::sparseGEVM(
     const IndexType ellSizes[],
     const IndexType ellJA[],
     const ValueType ellValues[],
-    SyncToken* syncToken )
+    tasking::SyncToken* syncToken )
 {
     SCAI_LOG_INFO( logger,
                    "sparseGEVM<" << getScalarType<ValueType>() << ", #threads = " << omp_get_max_threads() << ">, result[" << numColumns << "] = " << alpha << " * x * A " )

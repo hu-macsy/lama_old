@@ -56,7 +56,7 @@ SCAI_LOG_DEF_LOGGER( Matrix::logger, "Matrix" )
 /*    Factory to create a matrix                                                          */
 /* ---------------------------------------------------------------------------------------*/
 
-Matrix* Matrix::getMatrix( const MatrixStorageFormat format, common::ScalarType type )
+Matrix* Matrix::getMatrix( const MatrixStorageFormat format, common::scalar::ScalarType type )
 {
     MatrixCreateKeyType val( format, type );
     SCAI_LOG_INFO( logger, "getMatrix uses Factory::create " << val )
@@ -236,7 +236,7 @@ void Matrix::setCommunicationKind( SyncKind communicationKind )
 
 /* ---------------------------------------------------------------------------------*/
 
-void Matrix::setContext( ContextPtr localContext, ContextPtr haloContext )
+void Matrix::setContextPtr( hmemo::ContextPtr localContext, hmemo::ContextPtr haloContext )
 {
     SCAI_ASSERT_DEBUG( localContext, "localContext == NULL" )
     SCAI_ASSERT_DEBUG( haloContext, "haloContext == NULL" )
@@ -248,7 +248,7 @@ void Matrix::setContext( ContextPtr localContext, ContextPtr haloContext )
         SCAI_LOG_WARN( logger, *this << ": halo context = " << *haloContext << " ignored" )
     }
 
-    setContext( localContext );
+    setContextPtr( localContext );
 }
 
 /* ---------------------------------------------------------------------------------*/
@@ -256,7 +256,7 @@ void Matrix::setContext( ContextPtr localContext, ContextPtr haloContext )
 void Matrix::inheritAttributes( const Matrix& other )
 {
     setCommunicationKind( other.getCommunicationKind() );
-    setContext( other.getContextPtr() );
+    setContextPtr( other.getContextPtr() );
 }
 
 /* ---------------------------------------------------------------------------------*/
@@ -378,7 +378,7 @@ void Matrix::swapMatrix( Matrix& other )
 
 double Matrix::getSparsityRate() const
 {
-    return ( double ) getNumValues() / mNumRows / mNumColumns;
+    return ( double ) getNumValues() / getNumRows() / getNumColumns();
 }
 
 /* ---------------------------------------------------------------------------------*/
@@ -504,13 +504,13 @@ Matrix& Matrix::operator=( const Expression_SMM_SM& exp )
         sanityCheck( Expression<Matrix, Matrix, Times>( A, B ), C );
     }
 
-    SCAI_LOG_INFO( logger, "Context of this before matrixTimesMatrix = " << this->getContext() )
+    SCAI_LOG_INFO( logger, "Context of this before matrixTimesMatrix = " << *getContextPtr() )
 
     A.matrixTimesMatrix( *this, alpha, B, beta, C );
 
     SCAI_LOG_INFO( logger, "end operator=:  A * B * alpha + C * beta " )
 
-    SCAI_LOG_INFO( logger, "Context of this after matrixTimesMatrix = " << this->getContext() )
+    SCAI_LOG_INFO( logger, "Context of this after matrixTimesMatrix = " << *getContextPtr() )
 
     return *this;
 }

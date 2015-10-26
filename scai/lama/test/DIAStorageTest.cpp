@@ -57,7 +57,7 @@ void commonTestCases( ContextPtr loc )
 {
     DIAStorage<ValueType> diaStorage;
     MatrixStorageTest<ValueType> storageTest( diaStorage );
-    storageTest.mMatrixStorage.setContext( loc );
+    storageTest.mMatrixStorage.setContextPtr( loc );
 
     if ( base_test_case )
     {

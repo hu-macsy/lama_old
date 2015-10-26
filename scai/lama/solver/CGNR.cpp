@@ -80,7 +80,7 @@ void CGNR::initialize( const Matrix& coefficients ){
     Solver::initialize(coefficients);
  	CGNRRuntime& runtime = getRuntime();
 
-    common::ScalarType type = coefficients.getValueType();
+    common::scalar::ScalarType type = coefficients.getValueType();
     runtime.mEps = std::numeric_limits<double>::epsilon()*3;   //CAREFUL: No abstract type 
 
     runtime.mTransposedMat.reset( coefficients.clone() );
@@ -90,9 +90,9 @@ void CGNR::initialize( const Matrix& coefficients ){
 
     runtime.mTransposedMat->assignTranspose( coefficients );
 
-    runtime.mVecD->setContext( coefficients.getContextPtr() );   
-    runtime.mVecW->setContext( coefficients.getContextPtr() );
-    runtime.mVecZ->setContext( coefficients.getContextPtr() );
+    runtime.mVecD->setContextPtr( coefficients.getContextPtr() );
+    runtime.mVecW->setContextPtr( coefficients.getContextPtr() );
+    runtime.mVecZ->setContextPtr( coefficients.getContextPtr() );
     
 
 }
@@ -193,6 +193,16 @@ CGNR::CGNRRuntime& CGNR::getRuntime(){
 
 const CGNR::CGNRRuntime& CGNR::getConstRuntime() const{
     return mCGNRRuntime;
+}
+
+std::string CGNR::createValue()
+{
+	return "CGNR";
+}
+
+Solver* CGNR::create( const std::string name )
+{
+	return new CGNR( name );
 }
 
 } /* end namespace lama */

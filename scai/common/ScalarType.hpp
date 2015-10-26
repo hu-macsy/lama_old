@@ -70,7 +70,7 @@ namespace scalar
      *  It is especially useful when casting variables of base classes to derived classes.
      */
 
-    enum ScalarType
+    typedef enum
     {
         INDEX_TYPE, //!<  synonymous for IndexType
         FLOAT, //!<  synonymous for float
@@ -82,16 +82,19 @@ namespace scalar
         PATTERN, //!<  dummy type of size 0
         INTERNAL, //!<  take the type currently in use, getScalarType<ValueType>()
         UNKNOWN
-    };
+    } ScalarType;
 
     /*
      * Output of ScalarType in stream by writing strings instead of numbers
      */
     
     COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const ScalarType& object );
-}
 
-typedef scalar::ScalarType ScalarType;
+} /* end namespace scalar */
+
+// make ScalarType visible, but not the enum values
+
+using scalar::ScalarType;
 
 /**
  * @brief Conversion of a C type into value of enum ScalarType.
@@ -99,49 +102,49 @@ typedef scalar::ScalarType ScalarType;
  * @tparam ValueType    C++ type that should be converted
  * @return      value of enum type ScalarType that represents the C++ type.
  */
-template<typename ValueType> inline ScalarType getScalarType()
+template<typename ValueType> inline scalar::ScalarType getScalarType()
 {
     return scalar::UNKNOWN;
 }
     
 template<>
-inline ScalarType getScalarType<IndexType>()
+inline scalar::ScalarType getScalarType<IndexType>()
 {
     return scalar::INDEX_TYPE;
 }
 
 template<>
-inline ScalarType getScalarType<float>()
+inline scalar::ScalarType getScalarType<float>()
 {
     return scalar::FLOAT;
 }
 
 template<>
-inline ScalarType getScalarType<double>()
+inline scalar::ScalarType getScalarType<double>()
 {
     return scalar::DOUBLE;
 }
 
 template<>
-inline ScalarType getScalarType<LongDouble>()
+inline scalar::ScalarType getScalarType<LongDouble>()
 {
     return scalar::LONG_DOUBLE;
 }
 
 template<>
-inline ScalarType getScalarType<ComplexFloat>()
+inline scalar::ScalarType getScalarType<ComplexFloat>()
 {
     return scalar::COMPLEX;
 }
 
 template<>
-inline ScalarType getScalarType<ComplexDouble>()
+inline scalar::ScalarType getScalarType<ComplexDouble>()
 {
     return scalar::DOUBLE_COMPLEX;
 }
 
 template<>
-inline ScalarType getScalarType<ComplexLongDouble>()
+inline scalar::ScalarType getScalarType<ComplexLongDouble>()
 {
     return scalar::LONG_DOUBLE_COMPLEX;
 }

@@ -37,6 +37,7 @@
 #include <scai/common/config.hpp>
 
 // base classes
+#include <scai/lama/solver/Solver.hpp>
 #include <scai/lama/solver/IterativeSolver.hpp>
 
 // logging
@@ -51,7 +52,9 @@ namespace lama
  * @brief The class MINRES represents a IterativeSolver which uses the krylov subspace Minimum Residual (MINRES)
  * method to solve a system of linear equations iteratively.
  */
-class COMMON_DLL_IMPORTEXPORT MINRES: public IterativeSolver
+class COMMON_DLL_IMPORTEXPORT MINRES:
+	public IterativeSolver,
+	public Solver::Register<MINRES>
 {
 public:
     /**
@@ -122,6 +125,8 @@ public:
     */
     virtual const MINRESRuntime& getConstRuntime() const;
     
+    static std::string createValue();
+    static Solver* create( const std::string name );
 
 protected:
 

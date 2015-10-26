@@ -36,6 +36,7 @@
 #include <scai/common/config.hpp>
 
 // base classes
+#include <scai/lama/solver/Solver.hpp>
 #include <scai/lama/solver/OmegaSolver.hpp>
 
 // logging
@@ -47,7 +48,9 @@ namespace scai
 namespace lama
 {
 
-class COMMON_DLL_IMPORTEXPORT Richardson: public OmegaSolver
+class COMMON_DLL_IMPORTEXPORT Richardson:
+		public OmegaSolver,
+		public Solver::Register<Richardson>
 {
 public:
     Richardson( const std::string& id );
@@ -111,6 +114,8 @@ public:
      */
     virtual const RichardsonRuntime& getConstRuntime() const;
 
+    static std::string createValue();
+    static Solver* create( const std::string name );
 
 protected:
     RichardsonRuntime mRichardsonRuntime;

@@ -471,7 +471,7 @@ namespace lama
                     const IndexType numDiagonals,
                     const IndexType diaOffsets[],
                     const ValueType diaValues[],
-                    SyncToken* syncToken )
+                    tasking::SyncToken* syncToken )
     {
         SCAI_REGION( "CUDA.DIA.normalGEMV" )
 
@@ -489,7 +489,7 @@ namespace lama
 
         if ( syncToken )
         {
-            CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
+            tasking::CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<tasking::CUDAStreamSyncToken*>( syncToken );
             SCAI_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
             stream = cudaStreamSyncToken->getCUDAStream();
         }
@@ -792,7 +792,7 @@ namespace lama
                     const IndexType numDiagonals,
                     const IndexType diaOffsets[],
                     const ValueType diaValues[],
-                    SyncToken* syncToken )
+                    tasking::SyncToken* syncToken )
     {
         SCAI_REGION( "CUDA.DIA.normalGEVM" )
 
@@ -810,7 +810,7 @@ namespace lama
 
         if ( syncToken )
         {
-            CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
+            tasking::CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<tasking::CUDAStreamSyncToken*>( syncToken );
             SCAI_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
             stream = cudaStreamSyncToken->getCUDAStream();
         }

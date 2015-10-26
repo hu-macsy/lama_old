@@ -125,7 +125,7 @@ split the local rows into a local and a halo part.
 In most situations, the row and column distribution will be the
 same. This usually results in a rather small halo part.
 
-\image html SparseMatrix.png "SparseMatrix: rows and colums are distributed"
+\image html SparseMatrix.fig "SparseMatrix: rows and colums are distributed"
 
 @todo Add picture for sparse matrix-vector multiplication.
 

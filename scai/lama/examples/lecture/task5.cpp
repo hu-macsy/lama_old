@@ -32,8 +32,13 @@ int main( int argc, char* argv[] )
     std::cout << "Read matrix m : " << m << std::endl;
     IndexType size = m.getNumRows();
 
+<<<<<<< HEAD
     ContextPtr cudaContext = Context::getContextPtr( scai::context::CUDA, 0 ); 
     m.setContext( cudaContext );
+=======
+    ContextPtr cudaContext = Context::getContextPtr( scai::hmemo::context::CUDA, 0 ); 
+    m.setContextPtr( cudaContext );
+>>>>>>> develop
 
     DenseVector<double> rhs( size , 0.0 );
     WriteAccess<double> hwarhs( rhs.getLocalValues() );
@@ -45,9 +50,9 @@ int main( int argc, char* argv[] )
 
     std::cout << "Vector rhs : " << rhs << std::endl;
     hwarhs.release();
-    rhs.setContext( cudaContext );
+    rhs.setContextPtr( cudaContext );
     DenseVector<double> solution( size, 0.0 );
-    solution.setContext( cudaContext );
+    solution.setContextPtr( cudaContext );
     std::cout << "Vector solution : " << solution << std::endl;
     CG cgSolver( "CGTestSolver" );
     CriterionPtr criterion( new IterationCount ( 10 ) );

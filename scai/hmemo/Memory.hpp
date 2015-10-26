@@ -84,10 +84,6 @@ COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const Me
  
 }
 
-// make enumeration type visible but not the values
-
-using memtype::MemoryType;
-
 /** @brief This class is a common base class for all memory classes.
  *
  *  A memorys stands for memory management at a certain place.
@@ -110,7 +106,7 @@ public:
 
     /** Method to get the type of the memory. */
 
-    MemoryType getType() const;
+    memtype::MemoryType getType() const;
 
     /** Predicate to check whether copy from other memory to this memory is supported. 
      *  If the method returns true, a call of memcpyFrom with srcMemory is safe. 
@@ -218,18 +214,18 @@ protected:
 
     /** Constructor, can only be called by derived classes. */
 
-    Memory( MemoryType type );
+    Memory( memtype::MemoryType type );
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
-    MemoryType mMemoryType;
+    memtype::MemoryType mMemoryType;
 
 private:
 
     Memory();  // disable default constructor
 };
 
-inline MemoryType Memory::getType() const
+inline memtype::MemoryType Memory::getType() const
 {
     return mMemoryType;
 }

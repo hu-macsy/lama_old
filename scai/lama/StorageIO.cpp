@@ -96,7 +96,7 @@ void StorageIO<ValueType>::writeCSRToFormattedFile(
 
     std::ofstream amgfile( fileName.c_str(), std::ios::out ); // open .amg
 
-    ContextPtr host = Context::getContextPtr( context::Host );
+    ContextPtr host = Context::getHostPtr();
 
     ReadAccess<IndexType> ia( csrIA, host );
     ReadAccess<IndexType> ja( csrJA, host );
@@ -356,7 +356,7 @@ void StorageIO<ValueType>::writeCSRToXDRFile(
     IndexType numValues = csrJA.size();
     IndexType numRows = csrIA.size() - 1;
 
-    ContextPtr host = Context::getContextPtr( context::Host );
+    ContextPtr host = Context::getHostPtr();
 
     ReadAccess<IndexType> iaRead( csrIA, host );
     ReadAccess<IndexType> jaRead( csrJA, host );
@@ -376,11 +376,11 @@ void StorageIO<ValueType>::writeCSRToXDRFile(
     {
         writeData<IndexType,IndexType,1>( outFile, iaRead.get(), numRows + 1 );
     }
-    else if( indexDataTypeSizeIA == TypeTraits<long>::size )
+    else if( indexDataTypeSizeIA == common::TypeTraits<long>::size )
     {
         writeData<long,IndexType,1>( outFile, iaRead.get(), numRows + 1 );
     }
-    else if( indexDataTypeSizeIA == TypeTraits<int>::size )
+    else if( indexDataTypeSizeIA == common::TypeTraits<int>::size )
     {
         writeData<int,IndexType,1>( outFile, iaRead.get(), numRows + 1 );
     }
@@ -397,11 +397,11 @@ void StorageIO<ValueType>::writeCSRToXDRFile(
     {
         writeData<IndexType,IndexType,0>( outFile, jaRead.get(), numValues );
     }
-    else if( indexDataTypeSizeJA == TypeTraits<long>::size )
+    else if( indexDataTypeSizeJA == common::TypeTraits<long>::size )
     {
         writeData<long,IndexType,0>( outFile, jaRead.get(), numValues );
     }
-    else if( indexDataTypeSizeJA == TypeTraits<int>::size )
+    else if( indexDataTypeSizeJA == common::TypeTraits<int>::size )
     {
         writeData<int,IndexType,0>( outFile, jaRead.get(), numValues );
     }
@@ -416,19 +416,19 @@ void StorageIO<ValueType>::writeCSRToXDRFile(
     {
         writeData<ValueType,ValueType,0>( outFile, dataRead.get(), numValues );
     }
-    else if( dataTypeSize == TypeTraits<double>::size )
+    else if( dataTypeSize == common::TypeTraits<double>::size )
     {
         writeData<double,ValueType,0>( outFile, dataRead.get(), numValues );
     }
-    else if( dataTypeSize == TypeTraits<float>::size )
+    else if( dataTypeSize == common::TypeTraits<float>::size )
     {
         writeData<float,ValueType,0>( outFile, dataRead.get(), numValues );
     }
-    else if( dataTypeSize == TypeTraits<ComplexFloat>::size )
+    else if( dataTypeSize == common::TypeTraits<ComplexFloat>::size )
     {
         writeData<ComplexFloat,ValueType,0>( outFile, dataRead.get(), numValues );
     }
-    else if( dataTypeSize == TypeTraits<ComplexDouble>::size )
+    else if( dataTypeSize == common::TypeTraits<ComplexDouble>::size )
     {
         writeData<ComplexDouble,ValueType,0>( outFile, dataRead.get(), numValues );
     }
@@ -476,11 +476,11 @@ void StorageIO<ValueType>::readCSRFromXDRFile(
     {
         readData<IndexType,IndexType, -1>( xdrFile, m_ia, numRows + 1 );
     }
-    else if( indexDataTypeSizeIA == TypeTraits<int>::size )
+    else if( indexDataTypeSizeIA == common::TypeTraits<int>::size )
     {
         readData<int,IndexType, -1>( xdrFile, m_ia, numRows + 1 );
     }
-    else if( indexDataTypeSizeIA == TypeTraits<long>::size )
+    else if( indexDataTypeSizeIA == common::TypeTraits<long>::size )
     {
         readData<long,IndexType, -1>( xdrFile, m_ia, numRows + 1 );
     }
@@ -515,11 +515,11 @@ void StorageIO<ValueType>::readCSRFromXDRFile(
     {
         readData<IndexType,IndexType,0>( xdrFile, m_ja.get(), numValues );
     }
-    else if( indexDataTypeSizeJA == TypeTraits<long>::size )
+    else if( indexDataTypeSizeJA == common::TypeTraits<long>::size )
     {
         readData<long,IndexType,0>( xdrFile, m_ja.get(), numValues );
     }
-    else if( indexDataTypeSizeJA == TypeTraits<int>::size )
+    else if( indexDataTypeSizeJA == common::TypeTraits<int>::size )
     {
         readData<int,IndexType,0>( xdrFile, m_ja.get(), numValues );
     }
@@ -548,19 +548,19 @@ void StorageIO<ValueType>::readCSRFromXDRFile(
 
     WriteOnlyAccess<ValueType> m_data( csrValues, numValues );
 
-    if( dataTypeSize == TypeTraits<double>::size )
+    if( dataTypeSize == common::TypeTraits<double>::size )
     {
         readData<double,ValueType,0>( xdrFile, m_data.get(), numValues );
     }
-    else if( dataTypeSize == TypeTraits<float>::size )
+    else if( dataTypeSize == common::TypeTraits<float>::size )
     {
         readData<float,ValueType,0>( xdrFile, m_data.get(), numValues );
     }
-    else if( dataTypeSize == TypeTraits<ComplexFloat>::size )
+    else if( dataTypeSize == common::TypeTraits<ComplexFloat>::size )
     {
         readData<ComplexFloat,ValueType,0>( xdrFile, m_data.get(), numValues );
     }
-    else if( dataTypeSize == TypeTraits<ComplexDouble>::size )
+    else if( dataTypeSize == common::TypeTraits<ComplexDouble>::size )
     {
         readData<ComplexDouble,ValueType,0>( xdrFile, m_data.get(), numValues );
     }
@@ -595,7 +595,7 @@ void StorageIO<ValueType>::writeCSRToBinaryFile(
 {
     SCAI_REGION( "StorageIO.writeCSRToBinaryFile " )
 
-    ContextPtr host = Context::getContextPtr( context::Host );
+    ContextPtr host = Context::getHostPtr();
 
     ReadAccess<IndexType> iaRead( csrIA, host );
     ReadAccess<IndexType> jaRead( csrJA, host );
@@ -611,11 +611,11 @@ void StorageIO<ValueType>::writeCSRToBinaryFile(
 
     // write ia, add offset 1
 
-    if( indexDataTypeSizeIA == TypeTraits<int>::size || sizeof(long) == TypeTraits<int>::size )
+    if( indexDataTypeSizeIA == common::TypeTraits<int>::size || sizeof(long) == common::TypeTraits<int>::size )
     {
         writeBinaryData<int,IndexType,1>( outFile, iaRead.get(), numRows + 1 );
     }
-    else if( indexDataTypeSizeIA == TypeTraits<long>::size )
+    else if( indexDataTypeSizeIA == common::TypeTraits<long>::size )
     {
         writeBinaryData<long,IndexType,1>( outFile, iaRead.get(), numRows + 1 );
     }
@@ -626,11 +626,11 @@ void StorageIO<ValueType>::writeCSRToBinaryFile(
 
     // write m_ja
 
-    if( indexDataTypeSizeJA == TypeTraits<int>::size || sizeof(long) == TypeTraits<int>::size )
+    if( indexDataTypeSizeJA == common::TypeTraits<int>::size || sizeof(long) == common::TypeTraits<int>::size )
     {
         writeBinaryData<int,IndexType,1>( outFile, jaRead.get(), numValues );
     }
-    else if( indexDataTypeSizeJA == TypeTraits<long>::size )
+    else if( indexDataTypeSizeJA == common::TypeTraits<long>::size )
     {
         writeBinaryData<long,IndexType,1>( outFile, jaRead.get(), numValues );
     }
@@ -639,19 +639,19 @@ void StorageIO<ValueType>::writeCSRToBinaryFile(
         COMMON_THROWEXCEPTION( "(write unformatted) Unknown index data type size of JA." )
     }
 
-    if( dataTypeSize == TypeTraits<double>::size )
+    if( dataTypeSize == common::TypeTraits<double>::size )
     {
         writeBinaryData<double,ValueType,0>( outFile, dataRead.get(), numValues );
     }
-    else if( dataTypeSize == TypeTraits<float>::size )
+    else if( dataTypeSize == common::TypeTraits<float>::size )
     {
         writeBinaryData<float,ValueType,0>( outFile, dataRead.get(), numValues );
     }
-    else if( dataTypeSize == TypeTraits<ComplexFloat>::size )
+    else if( dataTypeSize == common::TypeTraits<ComplexFloat>::size )
     {
         writeBinaryData<ComplexFloat,ValueType,0>( outFile, dataRead.get(), numValues );
     }
-    else if( dataTypeSize == TypeTraits<ComplexDouble>::size )
+    else if( dataTypeSize == common::TypeTraits<ComplexDouble>::size )
     {
         writeBinaryData<ComplexDouble,ValueType,0>( outFile, dataRead.get(), numValues );
     }
@@ -679,48 +679,8 @@ void StorageIO<ValueType>::writeCSRToMMFile(
     const IndexType numRows = csrIA.size() - 1;
     const IndexType numValues = csrJA.size();
 
-    MM_typecode matcode;
-    mm_initialize_typecode( &matcode );
-    mm_set_matrix( &matcode );
-    mm_set_sparse( &matcode );
+    writeMMHeader( false, numRows, numColumns, numValues, fileName, dataType );
 
-    if( dataType == File::DOUBLE || dataType == File::FLOAT || dataType == File::INTERNAL )
-    {
-        mm_set_real( &matcode );
-    }
-    else if( dataType == File::COMPLEX )
-    {
-        mm_set_complex( &matcode );
-    }
-    else if( dataType == File::INTEGER )
-    {
-        mm_set_integer( &matcode );
-    }
-    else if( dataType == File::PATTERN )
-    {
-        mm_set_pattern( &matcode );
-    }
-    else
-    {
-        COMMON_THROWEXCEPTION( "SparseMatrix::writeMatrixToMMFile: " "unknown datatype." << dataType )
-    }
-
-    std::FILE* file;
-
-    if( !( file = std::fopen( fileName.c_str(), "w+" ) ) )
-    {
-        COMMON_THROWEXCEPTION( "SparseMatrix::writeMatrixToMMFile: '" + fileName + "' could not be opened." )
-    }
-
-    mm_write_banner( file, matcode );
-    mm_write_mtx_crd_size( file, numRows, numColumns, numValues );
-
-    if( std::fclose( file ) != 0 )
-    {
-        COMMON_THROWEXCEPTION( "SparseMatrix::writeMatrixToMMFile: '" + fileName + "' could not be closed." )
-    }
-
-    file = 0;
     std::ofstream ofile;
     ofile.open( fileName.c_str(), std::ios::out | std::ios::app );
 
@@ -731,7 +691,7 @@ void StorageIO<ValueType>::writeCSRToMMFile(
 
     // output code runs only for host context
 
-    ContextPtr host = Context::getContextPtr( context::Host );
+    ContextPtr host = Context::getHostPtr();
 
     ReadAccess<IndexType> ia( csrIA, host );
     ReadAccess<IndexType> ja( csrJA, host );
@@ -782,70 +742,11 @@ void StorageIO<ValueType>::readCSRFromMMFile(
     LAMAArray<ValueType>& csrValues,
     const std::string& fileName )
 {
-    std::FILE* file;
-    file = fopen( fileName.c_str(), "r" );
+    bool isSymmetric, isPattern;
+    IndexType numRows, numValues;
 
-    if( !file )
-    {
-    	SCAI_LOG_DEBUG( logger, "Could not open file " << fileName )
-        COMMON_THROWEXCEPTION( "Could not open file '" << fileName << "'." )
-    }
+    readMMHeader( numRows, numColumns, numValues, isPattern, isSymmetric, fileName );
 
-    MM_typecode matcode;
-    int errorCode = mm_read_banner( file, &matcode );
-
-    if( errorCode != 0 )
-    {
-    	SCAI_LOG_DEBUG( logger, "Could not process Matrix Market banner")
-        COMMON_THROWEXCEPTION( "Could not process Matrix Market banner. Cause: '" << getErrorString( errorCode ) << "'." );
-    }
-
-    bool isPattern = mm_is_pattern( matcode );
-
-//    if( mm_is_complex( matcode ) )
-//    {
-//    	SCAI_LOG_DEBUG( logger, "Unsupported data type in file")
-//        COMMON_THROWEXCEPTION( "Unsupported data type in file '" << fileName << "'." )
-//    }
-
-    if( !mm_is_matrix( matcode ) )
-    {
-    	SCAI_LOG_DEBUG( logger, "file did not contain a matrix" )
-        COMMON_THROWEXCEPTION( "'" << fileName << "' did not contain a matrix." )
-    }
-
-    if( !mm_is_sparse( matcode ) )
-    {
-    	SCAI_LOG_DEBUG( logger, "matrix is not sparse")
-        COMMON_THROWEXCEPTION( "'" << fileName << "' did not contain a sparse matrix." )
-    }
-
-    /* symmetric matrices: only lower triangular matrix is stored */
-    /* skew matrices: symmetric and all diagonal entries are zero */
-
-    bool symmetric = mm_is_symmetric( matcode ) || mm_is_skew( matcode );
-
-    IndexType numRows = 0;
-    IndexType numValues = 0;
-
-    errorCode = mm_read_mtx_crd_size( file, &numRows, &numColumns, &numValues );
-
-    if( errorCode != 0 )
-    {
-    	SCAI_LOG_DEBUG( logger, "Could not read values from file")
-        COMMON_THROWEXCEPTION(
-                        "Could not read values from file '" << fileName << "'. Cause: '" << getErrorString( errorCode ) << "'." );
-    }
-
-    SCAI_LOG_INFO( logger,
-                   "mmx values: #rows = " << numRows << ", #cols = " << numColumns << ", #values = " << numValues )
-
-    if( std::fclose( file ) != 0 )
-    {
-        COMMON_THROWEXCEPTION( "'" << fileName << "' could not be closed." )
-    }
-
-    file = 0;
     std::ifstream ifile;
     ifile.open( fileName.c_str(), std::ios::in );
 
@@ -855,7 +756,9 @@ void StorageIO<ValueType>::readCSRFromMMFile(
         COMMON_THROWEXCEPTION( "Could not reopen file '" << fileName << "'." )
     }
 
-    WriteOnlyAccess<IndexType> ia( csrIA, numRows + 1 );
+    ContextPtr host = Context::getHostPtr();
+
+    WriteOnlyAccess<IndexType> ia( csrIA, host, numRows + 1 );
     // initialize ia;
 
 	#pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
@@ -878,7 +781,7 @@ void StorageIO<ValueType>::readCSRFromMMFile(
     std::vector<MatrixValue<ValueType> > values;
 
     //Set the right size of the Vector
-    if( symmetric )
+    if( isSymmetric )
     {
         values.reserve( numValues * 2 - numRows );
     }
@@ -897,8 +800,6 @@ void StorageIO<ValueType>::readCSRFromMMFile(
 
     for( int l = 0; l < lines && !ifile.eof(); ++l )
     {
-        //TODO Read Vector !!!
-        // read ia
     	std::getline(ifile, line);
     	std::istringstream reader(line);
 
@@ -909,11 +810,15 @@ void StorageIO<ValueType>::readCSRFromMMFile(
         {
             reader >> val.v;
         }
+	else
+        {
+            val.v = ValueType( 1.0 );
+        }
 
         ++ia[val.i];
 
         // if the matrix is symmetric, the value appears in row 'column' again.
-        if( symmetric )
+        if( isSymmetric )
         {
             if( val.j != val.i )
             {
@@ -954,7 +859,6 @@ void StorageIO<ValueType>::readCSRFromMMFile(
     ia[numRows] = numValues;
     //initialize ia and data
 #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
-
     for( IndexType i = 0; i < numValues; i++ )
     {
         ja[i] = -1;
@@ -1200,6 +1104,142 @@ void _StorageIO::readCSRHeader(
     frmFile.close(); // explicitly, otherwise done by destructor
 }
 
+void _StorageIO::writeMMHeader(
+		const bool& vector,
+		const IndexType& numRows,
+		const IndexType& numColumns,
+		const IndexType& numValues,
+		const std::string& fileName,
+		const File::DataType& dataType )
+{
+	MM_typecode matcode;
+	mm_initialize_typecode( &matcode );
+	mm_set_matrix( &matcode );
+
+	if( vector )
+	{
+		mm_set_dense( &matcode );
+	}
+	else
+	{
+		mm_set_sparse( &matcode );
+	}
+
+	if( dataType == File::DOUBLE || dataType == File::FLOAT || dataType == File::INTERNAL )
+	{
+		mm_set_real( &matcode );
+	}
+	else if( dataType == File::COMPLEX || dataType == File::DOUBLE_COMPLEX || dataType == File::LONG_DOUBLE_COMPLEX)
+	{
+		mm_set_complex( &matcode );
+	}
+	else if( dataType == File::INTEGER )
+	{
+		mm_set_integer( &matcode );
+	}
+	else if( dataType == File::PATTERN )
+	{
+		mm_set_pattern( &matcode );
+	}
+	else
+	{
+		COMMON_THROWEXCEPTION( "_StorageIO::writeMMHeader: " "unknown datatype." << dataType )
+	}
+
+	std::FILE* file;
+
+	if( !( file = std::fopen( fileName.c_str(), "w+" ) ) )
+	{
+		COMMON_THROWEXCEPTION( "_StorageIO::writeMMHeader: '" + fileName + "' could not be opened." )
+	}
+
+	mm_write_banner( file, matcode );
+
+	if( vector )
+	{
+		SCAI_LOG_DEBUG( logger, "write dense --> " << numRows << "x" << numColumns )
+		mm_write_mtx_array_size( file, numRows, numColumns );
+	} else
+	{
+		SCAI_LOG_DEBUG( logger, "write sparse --> " << numRows << "x" << numColumns << " (" << numValues << " values)" )
+		mm_write_mtx_crd_size( file, numRows, numColumns, numValues );
+	}
+
+	if( std::fclose( file ) != 0 )
+	{
+		COMMON_THROWEXCEPTION( "_StorageIO::writeMMHeader: '" + fileName + "' could not be closed." )
+	}
+
+	file = 0;
+}
+
+void _StorageIO::readMMHeader(
+		IndexType& numRows,
+		IndexType& numColumns,
+		IndexType& numValues,
+		bool& isPattern,
+		bool& isSymmetric,
+		const std::string& fileName )
+{
+	std::FILE* file;
+	file = fopen( fileName.c_str(), "r" );
+
+	if( !file )
+	{
+		SCAI_LOG_DEBUG( logger, "Could not open file " << fileName )
+		COMMON_THROWEXCEPTION( "Could not open file '" << fileName << "'." )
+	}
+
+	MM_typecode matcode;
+	int errorCode = mm_read_banner( file, &matcode );
+
+	if( errorCode != 0 )
+	{
+		SCAI_LOG_DEBUG( logger, "Could not process Matrix Market banner")
+		COMMON_THROWEXCEPTION( "Could not process Matrix Market banner. Cause: '" << getErrorString( errorCode ) << "'." );
+	}
+
+	isPattern = mm_is_pattern( matcode );
+
+	if( !mm_is_matrix( matcode ) )
+	{
+		SCAI_LOG_DEBUG( logger, "file did not contain a matrix" )
+		COMMON_THROWEXCEPTION( "'" << fileName << "' did not contain a matrix." )
+	}
+
+	if( mm_is_sparse( matcode ) )
+	{
+		SCAI_LOG_DEBUG( logger, "data is sparse" )
+		errorCode = mm_read_mtx_crd_size( file, &numRows, &numColumns, &numValues );
+	}
+	else if( mm_is_dense( matcode ) )
+	{
+		SCAI_LOG_DEBUG( logger, "data is dense" )
+		errorCode = mm_read_mtx_array_size( file, &numRows, &numColumns );
+		numValues = numRows * numColumns;
+	}
+
+	if( errorCode != 0 )
+	{
+		SCAI_LOG_DEBUG( logger, "Could not read values from file")
+		COMMON_THROWEXCEPTION(
+						"Could not read values from file '" << fileName << "'. Cause: '" << getErrorString( errorCode ) << "'." );
+	}
+
+	/* symmetric matrices: only lower triangular matrix is stored */
+	/* skew matrices: symmetric and all diagonal entries are zero */
+
+	isSymmetric = mm_is_symmetric( matcode ) || mm_is_skew( matcode );
+
+	SCAI_LOG_INFO( logger,
+				   "mmx values: #rows = " << numRows << ", #cols = " << numColumns << ", #values = " << numValues )
+
+	if( std::fclose( file ) != 0 )
+	{
+		COMMON_THROWEXCEPTION( "'" << fileName << "' could not be closed." )
+	}
+}
+
 /* -------------------------------------------------------------------------- */
 
 static bool hasSuffix( const std::string& name, const char* suffix )
@@ -1320,40 +1360,41 @@ void StorageIO<ValueType>::readCSRFromFile(
     SCAI_REGION( "StorageIO.readCSRFromFile" )
 
     std::string suffix;
+    std::string baseFileName = fileName;
+    std::string amgFileName;
+    File::FileType fileType;
+
+    IndexType numRows;
+    IndexType numValues;
 
     if( fileName.size() >= 4 )
     {
         suffix = fileName.substr( fileName.size() - 4, 4 );
     }
 
-    if( suffix == ".mtx" )
-    {
-        readCSRFromMMFile( csrIA, numColumns, csrJA, csrValues, fileName );
-        return;
-    }
-
-    std::string baseFileName = fileName;
-
     if( suffix == ".frm" )
     {
         baseFileName = fileName.substr( 0, fileName.size() - 4 );
     }
 
-    File::FileType fileType;
+    if( suffix == ".mtx" )
+    {
+    	fileType = File::MATRIX_MARKET;
+    }
+    else
+    {
+		std::string frmFileName = baseFileName + ".frm";
 
-    IndexType numRows;
-    IndexType numValues;
+		PartitionId size = 1;
+		PartitionId rank = 0;
 
-    std::string frmFileName = baseFileName + ".frm";
-    std::string amgFileName = baseFileName + ".amg";
+		readCSRHeader( numRows, numColumns, numValues, size, rank, fileType, frmFileName );
 
-    PartitionId size = 1;
-    PartitionId rank = 0;
-
-    readCSRHeader( numRows, numColumns, numValues, size, rank, fileType, frmFileName );
-
-    SCAI_LOG_INFO( logger,
+		SCAI_LOG_INFO( logger,
                    "readCSRHeader( " << frmFileName << " ): " << numRows << " x " << numColumns << ", #values = " << numValues )
+
+		amgFileName = baseFileName + ".amg";
+    }
 
     switch( fileType )
     {
@@ -1374,6 +1415,12 @@ void StorageIO<ValueType>::readCSRFromFile(
         {
             readCSRFromXDRFile( csrIA, csrJA, csrValues, amgFileName, numRows );
             break;
+        }
+
+        case File::MATRIX_MARKET:
+        {
+        	readCSRFromMMFile( csrIA, numColumns, csrJA, csrValues, fileName );
+        	break;
         }
 
         default:

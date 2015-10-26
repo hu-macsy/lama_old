@@ -36,8 +36,8 @@
 // for dll_import
 #include <scai/common/config.hpp>
 
-// base classes
-#include <scai/lama/solver/logger/Timer.hpp>
+// internal scai libraries
+#include <scai/common/shared_ptr.hpp>
 
 // std
 #include <map>
@@ -48,6 +48,9 @@ namespace scai
 
 namespace lama
 {
+
+class Timer;
+typedef common::shared_ptr<Timer> TimerPtr;
 
 /**
  * @brief Timer class that offers a set of timers identified by their ids.

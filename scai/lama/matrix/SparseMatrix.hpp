@@ -160,17 +160,17 @@ public:
 
     /* Implementation of pure method of class Matrix. */
 
-    virtual void setContext( const ContextPtr context )
+    virtual void setContextPtr( const ContextPtr context )
     {
-        setContext( context, context );
+        setContextPtr( context, context );
     }
 
     /* Implementation of pure method of class Matrix. */
 
-    virtual void setContext( const ContextPtr localContext, const ContextPtr haloContext )
+    virtual void setContextPtr( const ContextPtr localContext, const ContextPtr haloContext )
     {
-        mLocalData->setContext( localContext );
-        mHaloData->setContext( haloContext );
+        mLocalData->setContextPtr( localContext );
+        mHaloData->setContextPtr( haloContext );
     }
 
     /* Implementation of pure method of class Matrix. */
@@ -178,16 +178,6 @@ public:
     virtual ContextPtr getContextPtr() const
     {
         return mLocalData->getContextPtr();
-    }
-
-    /**
-     * @brief Method returns a reference to the constant context.
-     *
-     * @return    reference to the constant context.
-     */
-    virtual const Context& getContext() const
-    {
-        return mLocalData->getContext();
     }
 
     /** Implementation for Matrix::setDenseData */
@@ -527,7 +517,7 @@ public:
 
     /* Implementation of pure method of class Matrix. */
 
-    virtual common::ScalarType getValueType() const;
+    virtual common::scalar::ScalarType getValueType() const;
 
     virtual size_t getValueTypeSize() const;
 

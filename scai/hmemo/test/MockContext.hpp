@@ -39,16 +39,9 @@
 #include <scai/common/weak_ptr.hpp>
 #include "MockMemory.hpp"
 
-using namespace scai::hmemo;
-using namespace scai::tasking;
-using namespace scai::common;
-
 /** Exampes of a new context class that implements all relevant routines. */
 
-class MockContext: 
-
-     public Context, 
-     public Context::Register<MockContext>
+class MockContext: public scai::hmemo::Context, public scai::hmemo::Context::Register<MockContext>
 
 {
 private: 
@@ -57,7 +50,7 @@ private:
 
     int mDeviceNr;     // MockContext with different device numbers are not equal
 
-    mutable scai::common::weak_ptr<Memory> mMemory;
+    mutable scai::common::weak_ptr<scai::hmemo::Memory> mMemory;
 
 public:
 
@@ -71,9 +64,9 @@ public:
         stream << "MockContext( dev = " << mDeviceNr << " )";
     }
 
-    virtual MemoryPtr getMemoryPtr() const
+    virtual scai::hmemo::MemoryPtr getMemoryPtr() const
     {
-        MemoryPtr memory;
+        scai::hmemo::MemoryPtr memory;
 
         if ( mMemory.expired() )
         {
@@ -88,11 +81,11 @@ public:
         return memory;
     }
 
-    virtual bool canUseMemory( const Memory& memory ) const
+    virtual bool canUseMemory( const scai::hmemo::Memory& memory ) const
     {
         SCAI_ASSERT( &memory, "NULL memory" )
 
-        if ( memory.getType() != memtype ::UserMemory )
+        if ( memory.getType() != scai::hmemo::memtype::UserMemory )
         {
             return false;
         }
@@ -106,14 +99,14 @@ public:
         // return &memory == getMemory().get();
     }
 
-    virtual ContextType getType() const
+    virtual scai::common::ContextType getType() const
     {
-        return context::UserContext;
+        return scai::common::context::UserContext;
     }
 
-    virtual TaskSyncToken* getSyncToken() const
+    virtual scai::tasking::TaskSyncToken* getSyncToken() const
     {
-        return new TaskSyncToken();
+        return new scai::tasking::TaskSyncToken();
     }
 
     /** Static method that delivers a MockContext for a certain device.
@@ -121,18 +114,18 @@ public:
      *  During the initialization this function will be registered at the base class Context
      */
 
-    static ContextPtr create( int deviceNr );
+    static scai::hmemo::ContextPtr create( int deviceNr );
 
-    static ContextType createValue() 
+    static scai::common::ContextType createValue()
     { 
-        return context::UserContext; 
+        return scai::common::context::UserContext;
     }
 
 private:
 
     // MockContext uses the type UserContext as its type
 
-    MockContext( int deviceNr ) : Context( context::UserContext )
+    MockContext( int deviceNr ) : scai::hmemo::Context( scai::common::context::UserContext )
     {
         mDeviceNr = deviceNr;
     }
@@ -144,9 +137,9 @@ static std::vector<scai::common::weak_ptr<class MockContext> > contextInstances(
 
 /* --------------------------------------------------------------------- */
 
-inline ContextPtr MockContext::create( int deviceNr )
+inline scai::hmemo::ContextPtr MockContext::create( int deviceNr )
 {
-	scai::common::shared_ptr<MockContext> context;
+    scai::common::shared_ptr<MockContext> context;
 
     SCAI_ASSERT( deviceNr < 6, "number of instances limited" )
 

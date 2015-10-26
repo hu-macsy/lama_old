@@ -143,7 +143,7 @@ void GEMMTestImpl( const int n, const int m, const int k, ValueType eps, Context
     }
 
     DenseMatrix<ValueType> A;
-    A.setContext( loc, loc );
+    A.setContextPtr( loc, loc );
     A.setRawDenseData( m, k, values.get() );
     DenseMatrix<ValueType> B; // not possible: const B
     B.setRawDenseData( k, n, values.get() );

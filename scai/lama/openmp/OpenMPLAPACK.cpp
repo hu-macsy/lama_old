@@ -64,7 +64,6 @@ using std::abs;
 // used for float, double
 
 using common::getScalarType;
-using tasking::SyncToken;
 
 /* ------------------------------------------------------------------------- */
 
@@ -502,7 +501,7 @@ void OpenMPLAPACK::laswp(
     const int K2,
     const int* ipiv,
     const int INCX,
-    SyncToken* syncToken )
+    tasking::SyncToken* syncToken )
 {
     SCAI_REGION( "OpenMP.LAPACK.laswp" )
 

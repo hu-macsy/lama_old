@@ -45,7 +45,9 @@ namespace scai
 namespace lama
 {
 
-class COMMON_DLL_IMPORTEXPORT TrivialPreconditioner: public Solver
+class COMMON_DLL_IMPORTEXPORT TrivialPreconditioner:
+		public Solver,
+		public Solver::Register<TrivialPreconditioner>
 {
 public:
     TrivialPreconditioner( const std::string& id );
@@ -69,6 +71,9 @@ public:
     virtual TrivialPreconditionerRuntime& getRuntime();
 
     virtual const TrivialPreconditionerRuntime& getConstRuntime() const;
+
+    static std::string createValue();
+    static Solver* create( const std::string name );
 
 protected:
     TrivialPreconditionerRuntime mTrivialPreconditionerRuntime;

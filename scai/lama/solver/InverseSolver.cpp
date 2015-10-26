@@ -100,7 +100,7 @@ void InverseSolver::initialize( const Matrix& coefficients )
 
     getRuntime().mInverse->invert( coefficients );
 
-    getRuntime().mInverse->setContext( coefficients.getContextPtr() );
+    getRuntime().mInverse->setContextPtr( coefficients.getContextPtr() );
 
     getRuntime().mInverse->prefetch();
 
@@ -133,17 +133,17 @@ void InverseSolver::solveImpl()
 
 /* --------------------------------------------------------------------------- */
 
-void InverseSolver::setContext( ContextPtr context )
+void InverseSolver::setContextPtr( ContextPtr context )
 {
-    Solver::setContext( context );
+    Solver::setContextPtr( context );
 
     if( getRuntime().mInverse )
     {
-        getRuntime().mInverse->setContext( mContext );
+        getRuntime().mInverse->setContextPtr( mContext );
     }
     else
     {
-        SCAI_LOG_WARN( logger, "setContext on uninitialized solver" )
+        SCAI_LOG_WARN( logger, "setContextPtr on uninitialized solver" )
     }
 }
 
@@ -185,6 +185,16 @@ const InverseSolver::InverseSolverRuntime& InverseSolver::getConstRuntime() cons
 SolverPtr InverseSolver::copy()
 {
     return SolverPtr( new InverseSolver( *this ) );
+}
+
+std::string InverseSolver::createValue()
+{
+	return "InverseSolver";
+}
+
+Solver* InverseSolver::create( const std::string name )
+{
+	return new InverseSolver( name );
 }
 
 } /* end namespace lama */

@@ -62,6 +62,8 @@ namespace scai
 using common::scoped_array;
 using common::shared_ptr;
 
+using tasking::SyncToken;
+
 namespace lama
 {
 
@@ -1023,7 +1025,7 @@ SyncToken* DIAStorage<ValueType>::matrixTimesVectorAsync(
 
     ContextPtr loc = normalGEMV.getValidContext( this->getContextPtr() );
 
-    if( loc->getType() == context::Host )
+    if( loc->getType() == common::context::Host )
     {
         // Start directly a task, avoids pushing of accesses
 
@@ -1040,7 +1042,7 @@ SyncToken* DIAStorage<ValueType>::matrixTimesVectorAsync(
         using scai::common::ref;
         using scai::common::cref;
 
-        return new TaskSyncToken( bind( mv, this, ref( result ), alpha, cref( x ), beta, cref( y ) ) );
+        return new tasking::TaskSyncToken( bind( mv, this, ref( result ), alpha, cref( x ), beta, cref( y ) ) );
     }
 
     // logging + checks not needed when started as a task
@@ -1127,7 +1129,7 @@ SyncToken* DIAStorage<ValueType>::vectorTimesMatrixAsync(
 
     SCAI_LOG_INFO( logger, *this << ": vectorTimesMatrixAsync on " << *loc )
 
-    if( loc->getType() == context::Host )
+    if( loc->getType() == common::context::Host )
     {
         // execution as separate thread
 
@@ -1146,7 +1148,7 @@ SyncToken* DIAStorage<ValueType>::vectorTimesMatrixAsync(
 
         SCAI_LOG_INFO( logger, *this << ": vectorTimesMatrixAsync on Host by own thread" )
 
-        return new TaskSyncToken( bind( pf, this, ref( result ), alpha, cref( x ), beta, cref( y ) ) );
+        return new tasking::TaskSyncToken( bind( pf, this, ref( result ), alpha, cref( x ), beta, cref( y ) ) );
     }
 
     SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumRows )

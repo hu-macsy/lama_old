@@ -295,7 +295,7 @@ BOOST_AUTO_TEST_CASE( createTest )
     LAMAArray<double> B( 10, 3.1415 );
     LAMAArray<IndexType> C( 10, 5 );
 
-    std::vector<ScalarType> values;
+    std::vector<scai::common::scalar::ScalarType> values;
 
     ContextArray::getCreateValues( values );
 

@@ -43,6 +43,8 @@
 
 #include <scai/lama/DenseVector.hpp>
 
+#include <scai/common/ScalarType.hpp>
+
 // std
 #include <limits>
 
@@ -85,7 +87,7 @@ void MINRES::initialize( const Matrix& coefficients ){
     runtime.mS = 0.0;
     runtime.mSNew = 0.0;
 
-    ScalarType type = coefficients.getValueType();
+    common::scalar::ScalarType type = coefficients.getValueType();
     
     runtime.mVecV.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
     runtime.mVecVOld.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
@@ -94,12 +96,12 @@ void MINRES::initialize( const Matrix& coefficients ){
     runtime.mVecPOld.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
     runtime.mVecPNew.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
 
-    runtime.mVecV->setContext( coefficients.getContextPtr() );   
-    runtime.mVecVOld->setContext( coefficients.getContextPtr() );
-    runtime.mVecVNew->setContext( coefficients.getContextPtr() );
-    runtime.mVecP->setContext( coefficients.getContextPtr() );
-    runtime.mVecPOld->setContext( coefficients.getContextPtr() );
-    runtime.mVecPNew->setContext(coefficients.getContextPtr());
+    runtime.mVecV->setContextPtr( coefficients.getContextPtr() );
+    runtime.mVecVOld->setContextPtr( coefficients.getContextPtr() );
+    runtime.mVecVNew->setContextPtr( coefficients.getContextPtr() );
+    runtime.mVecP->setContextPtr( coefficients.getContextPtr() );
+    runtime.mVecPOld->setContextPtr( coefficients.getContextPtr() );
+    runtime.mVecPNew->setContextPtr(coefficients.getContextPtr());
 }
 
 void MINRES::solveInit( Vector& solution, const Vector& rhs ){
@@ -245,6 +247,16 @@ MINRES::MINRESRuntime& MINRES::getRuntime(){
 
 const MINRES::MINRESRuntime& MINRES::getConstRuntime() const{
     return mMINRESRuntime;
+}
+
+std::string MINRES::createValue()
+{
+	return "MINRES";
+}
+
+Solver* MINRES::create( const std::string name )
+{
+	return new MINRES( name );
 }
 
 } /* end namespace lama */

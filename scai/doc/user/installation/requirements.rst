@@ -110,7 +110,7 @@ All tests are configured as release build.
    "gcc 4.6.0", "1.41", "blas 3", "5.0", "OpenMPI 1.4.3", "ok"
    "gcc 4.6.1 / 4.6.2", "1.49.0", "blas 3", "4.2 / 5.0", "mpich2 1.2.1p1 (Parastation 5.0.25-2)", "ok"
    "gcc 4.6.1 / 4.6.2", "1.49.0", "blas 3", "4.2", "mvapich2", "ok"
-   "gcc 4.8.2" "1.55.0", "MKL composer-xe-2013.1.117" "-" "OpenMPI 1.7.3" "(1)"
+   "gcc 4.8.2", "1.55.0", "MKL composer-xe-2013.1.117", "-", "OpenMPI 1.7.3", "(1)"
    "icc", "-", "-", "-", "-", "-"
    "icc 12.1.0 / 13.0.0", "1.46", "MKL composerxe-2011.2.137 / MKL 10.3.1 / MKL 11.0.0", "5.0", "OpenMPI 1.4.3 / OpenMPI 1.6.1 / IntelMPI 4.0.3.008 / IntelMPI 4.1.0.024", "ok"
    "pgi", "-", "-", "-", "-", "-"
@@ -141,7 +141,7 @@ for known issues and needed to add the following to boost/tuple/detail/tuple_bas
     +#endif
     +
 
-.. _`nvvc-boost_patch`: https://svn.boost.org/trac/boost/ticket/9392
+.. _`nvcc-boost-patch`: https://svn.boost.org/trac/boost/ticket/9392
 .. _`boost-patches`: http://gcc.gnu.org/ml/gcc/2013-07/msg00237.html
 
 

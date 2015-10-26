@@ -1,5 +1,5 @@
 /**
- * @file Logger.cpp
+ * @file SolverLogger.cpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,14 +25,14 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Implementation of the functionality of the Logger
+ * @brief Implementation of the functionality of the SolverLogger
  * @author Matthias Makulla
  * @date 06.04.2011
  * @since 1.0.0
  */
 
 // hpp
-#include <scai/lama/solver/logger/Logger.hpp>
+#include <scai/lama/solver/logger/SolverLogger.hpp>
 
 // local library
 #include <scai/lama/solver/logger/Timer.hpp>
@@ -48,15 +48,15 @@ namespace scai
 namespace lama
 {
 
-SCAI_LOG_DEF_LOGGER( Logger::logger, "Logger" );
+SCAI_LOG_DEF_LOGGER( SolverLogger::logger, "SolverLogger" );
 
-const std::string& Logger::id() const
+const std::string& SolverLogger::id() const
 {
-    //static const std::string id = "Logger";
+    //static const std::string id = "SolverLogger";
     return mId;
 }
 
-Logger::Logger(
+SolverLogger::SolverLogger(
     const std::string& id,
     LogLevel::LogLevel level,
     LoggerWriteBehaviour::LoggerWriteBehaviour writeBehaviour,
@@ -65,11 +65,11 @@ Logger::Logger(
 {
     mTimer.reset( new Timer() );
 
-    SCAI_LOG_INFO( logger, "Logger created, id = " << mId << ", level = " << mLogLevel << ", writeBehaviour = " 
+    SCAI_LOG_INFO( logger, "SolverLogger created, id = " << mId << ", level = " << mLogLevel << ", writeBehaviour = "
                            << mWriteBehaviour << ", ignore rank = " << mIgnoreRank )
 }
 
-Logger::Logger(
+SolverLogger::SolverLogger(
     const std::string& id,
     LogLevel::LogLevel level,
     LoggerWriteBehaviour::LoggerWriteBehaviour writeBehaviour,
@@ -78,11 +78,11 @@ Logger::Logger(
     : mTimer( timer ), mId( id ), mLogLevel( level ), mWriteBehaviour( writeBehaviour ), mIgnoreRank(
           ignoreRank )
 {
-    SCAI_LOG_INFO( logger, "Logger with timer created, id = " << mId << ", level = " << mLogLevel << ", writeBehaviour = " 
+    SCAI_LOG_INFO( logger, "SolverLogger with timer created, id = " << mId << ", level = " << mLogLevel << ", writeBehaviour = "
                            << mWriteBehaviour << ", ignore rank = " << mIgnoreRank )
 }
 
-Logger::Logger(
+SolverLogger::SolverLogger(
     const std::string& id,
     LogLevel::LogLevel level,
     LoggerWriteBehaviour::LoggerWriteBehaviour writeBehaviour,
@@ -94,26 +94,26 @@ Logger::Logger(
 {
     FileLogger::getFileLogger().setLogFile( logFileName );
 
-    SCAI_LOG_INFO( logger, "Logger for file " << logFileName << " created, id = " << mId 
+    SCAI_LOG_INFO( logger, "SolverLogger for file " << logFileName << " created, id = " << mId
                            << ", level = " << mLogLevel << ", writeBehaviour = " 
                            << mWriteBehaviour << ", ignore rank = " << mIgnoreRank )
 }
 
-Logger::~Logger()
+SolverLogger::~SolverLogger()
 {
 }
 
-LogLevel::LogLevel Logger::getLogLevel() const
+LogLevel::LogLevel SolverLogger::getLogLevel() const
 {
     return mLogLevel;
 }
 
-void Logger::setLogLevel( LogLevel::LogLevel level )
+void SolverLogger::setLogLevel( LogLevel::LogLevel level )
 {
     mLogLevel = level;
 }
 
-void Logger::logString( const std::string& message )
+void SolverLogger::logString( const std::string& message )
 {
     std::string logMessage = this->createPrefix() + message;
 
@@ -144,7 +144,7 @@ void Logger::logString( const std::string& message )
     }
 }
 
-void Logger::logString( LogLevel::LogLevel level, const std::string& message )
+void SolverLogger::logString( LogLevel::LogLevel level, const std::string& message )
 {
     if( level <= mLogLevel && !mIgnoreRank )
     {
@@ -152,19 +152,19 @@ void Logger::logString( LogLevel::LogLevel level, const std::string& message )
     }
 }
 
-void Logger::logMessage( LogLevel::LogLevel level, const std::string& message )
+void SolverLogger::logMessage( LogLevel::LogLevel level, const std::string& message )
 {
     SCAI_LOG_DEBUG( logger, "logMessage, level = " << level 
                              << " ( mLevel = " << mLogLevel << " ), msg = " << message )
     logString( level, message );
 }
 
-void Logger::logNewLine( LogLevel::LogLevel level )
+void SolverLogger::logNewLine( LogLevel::LogLevel level )
 {
     logString( level, "\n" );
 }
 
-void Logger::logResidual(
+void SolverLogger::logResidual(
     LogLevel::LogLevel level,
     const Solver& solver,
     const Norm& norm,
@@ -181,7 +181,7 @@ void Logger::logResidual(
     }
 }
 
-void Logger::logTime( const std::string& timerId, LogLevel::LogLevel level, const std::string& message )
+void SolverLogger::logTime( const std::string& timerId, LogLevel::LogLevel level, const std::string& message )
 {
     SCAI_ASSERT_DEBUG( mTimer.get(), "mTimer == NULL" );
 
@@ -197,21 +197,21 @@ void Logger::logTime( const std::string& timerId, LogLevel::LogLevel level, cons
     }
 }
 
-void Logger::startTimer( const std::string& timerId )
+void SolverLogger::startTimer( const std::string& timerId )
 {
     SCAI_ASSERT_DEBUG( mTimer.get(), "mTimer == NULL" );
 
     mTimer->start( timerId );
 }
 
-void Logger::stopTimer( const std::string& timerId )
+void SolverLogger::stopTimer( const std::string& timerId )
 {
     SCAI_ASSERT_DEBUG( mTimer.get(), "mTimer == NULL" );
 
     mTimer->stop( timerId );
 }
 
-void Logger::stopAndResetTimer( const std::string& timerId )
+void SolverLogger::stopAndResetTimer( const std::string& timerId )
 {
     SCAI_ASSERT_DEBUG( mTimer.get(), "mTimer == NULL" );
 

@@ -85,7 +85,7 @@ void BiCGstab::initialize( const Matrix& coefficients ){
     runtime.mResNorm = 1.0;
     runtime.mEps = std::numeric_limits<double>::epsilon()*3;                    //CAREFUL: No abstract type
 
-    common::ScalarType type = coefficients.getValueType();
+    common::scalar::ScalarType type = coefficients.getValueType();
 
     runtime.mRes0.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
     runtime.mVecV.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
@@ -94,11 +94,11 @@ void BiCGstab::initialize( const Matrix& coefficients ){
     runtime.mVecT.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
 
 
-    runtime.mRes0->setContext( coefficients.getContextPtr() );   
-    runtime.mVecV->setContext( coefficients.getContextPtr() );
-    runtime.mVecP->setContext( coefficients.getContextPtr() );
-    runtime.mVecS->setContext( coefficients.getContextPtr() );
-    runtime.mVecT->setContext( coefficients.getContextPtr() );
+    runtime.mRes0->setContextPtr( coefficients.getContextPtr() );
+    runtime.mVecV->setContextPtr( coefficients.getContextPtr() );
+    runtime.mVecP->setContextPtr( coefficients.getContextPtr() );
+    runtime.mVecS->setContextPtr( coefficients.getContextPtr() );
+    runtime.mVecT->setContextPtr( coefficients.getContextPtr() );
 }
 
 
@@ -209,6 +209,16 @@ BiCGstab::BiCGstabRuntime& BiCGstab::getRuntime(){
 
 const BiCGstab::BiCGstabRuntime& BiCGstab::getConstRuntime() const{
     return mBiCGstabRuntime;
+}
+
+std::string BiCGstab::createValue()
+{
+	return "BiCGstab";
+}
+
+Solver* BiCGstab::create( const std::string name )
+{
+	return new BiCGstab( name );
 }
 
 } /* end namespace lama */

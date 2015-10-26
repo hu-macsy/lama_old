@@ -1,5 +1,5 @@
 /**
- * @file CUDAContext.cpp
+ * @file TestContext.hpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,31 +25,33 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief CUDAContext.cpp
+ * @brief TestContext.hpp
  * @author Jiri Kraus
- * @date 05.04.2012
+ * @date 12.04.2012
  * @since 1.0.0
  */
-#include <scai/lama/test/cuda/CUDAContext.hpp>
 
+#pragma once
+
+#include <map>
 #include <scai/hmemo/Context.hpp>
 
 namespace scai
 {
+
 namespace lama_test
 {
 
-hmemo::ContextPtr CUDAContext::cudaContext;
-
-hmemo::ContextPtr CUDAContext::getContext()
+class TestContext
 {
-    if ( !cudaContext )
-    {
-        cudaContext = hmemo::Context::getHostPtr();
-    }
+public:
+    static hmemo::ContextPtr getContext( const common::ContextType type );
+private:
+    TestContext();
+    virtual ~TestContext();
 
-    return cudaContext;
-}
+    static std::map<common::ContextType, hmemo::ContextPtr> contexts;
+};
 
 } /* end namespace lama_test */
 

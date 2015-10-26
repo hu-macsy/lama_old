@@ -56,7 +56,7 @@ void commonTestCases( ContextPtr loc )
 {
     COOSparseMatrix<ValueType> cooMatrix;
     SparseMatrixTest< COOSparseMatrix<ValueType> > cooSparseMatrixTest( cooMatrix );
-    cooSparseMatrixTest.mMatrix.setContext( loc );
+    cooSparseMatrixTest.mMatrix.setContextPtr( loc );
 
     if ( base_test_case )
     {

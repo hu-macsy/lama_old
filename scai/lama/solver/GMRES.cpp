@@ -220,10 +220,10 @@ void GMRES::initialize( const Matrix& coefficients )
 
     // 'force' vector operations to be computed at the same location where coefficients reside
 
-    ( *runtime.mV )[0]->setContext( coefficients.getContextPtr() );
-    runtime.mW->setContext( coefficients.getContextPtr() );
-    runtime.mT->setContext( coefficients.getContextPtr() );
-    runtime.mX0->setContext( coefficients.getContextPtr() );
+    ( *runtime.mV )[0]->setContextPtr( coefficients.getContextPtr() );
+    runtime.mW->setContextPtr( coefficients.getContextPtr() );
+    runtime.mT->setContextPtr( coefficients.getContextPtr() );
+    runtime.mX0->setContextPtr( coefficients.getContextPtr() );
 
     totalIterationTime = 0.0;
     totalPreconditionerTime = 0.0;
@@ -298,7 +298,7 @@ void GMRES::iterate()
             }
         }
 
-        ( *runtime.mV )[krylovIndex + 1]->setContext( A.getContextPtr() );
+        ( *runtime.mV )[krylovIndex + 1]->setContextPtr( A.getContextPtr() );
     }
 
     // initialize in case of GMRES start/restart
@@ -476,6 +476,16 @@ const GMRES::GMRESRuntime& GMRES::getConstRuntime() const
 SolverPtr GMRES::copy()
 {
     return SolverPtr( new GMRES( *this ) );
+}
+
+std::string GMRES::createValue()
+{
+	return "GMRES";
+}
+
+Solver* GMRES::create( const std::string name )
+{
+	return new GMRES( name );
 }
 
 } /* end namespace lama */

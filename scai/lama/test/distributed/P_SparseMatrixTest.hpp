@@ -35,8 +35,6 @@
 #include <scai/lama/matrix/Matrix.hpp>
 #include <scai/common/test/TestMacros.hpp>
 
-using namespace scai::lama;
-
 static std::string psparseMatrixtestclasses[] =
 {
     "P_CSRSparseMatrixTest", "P_COOSparseMatrixTest", "P_ELLSparseMatrixTest", "P_DIASparseMatrixTest",
@@ -66,13 +64,13 @@ public:
     void createPoissonTest();
 
 private:
-    CommunicatorPtr comm;
+    scai::lama::CommunicatorPtr comm;
 
 protected:
     SCAI_LOG_DECL_STATIC_LOGGER( logger );
 };
 
-#define PSPARSEMATRIXTEST_COMMONTESTCASES( testinstance )               \
+#define PSPARSEMATRIXTEST_COMMONTESTCASES( testinstance )                   \
     {   COMMONTESTCASEINVOKER( testinstance, repDistTest );                 \
         COMMONTESTCASEINVOKER( testinstance, replicateTest );               \
         COMMONTESTCASEINVOKER( testinstance, assignTest );                  \

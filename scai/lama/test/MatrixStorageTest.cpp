@@ -36,6 +36,8 @@
 #include <scai/lama/storage/CSRStorage.hpp>
 #include <scai/lama/storage/ELLStorage.hpp>
 
+#include <scai/tasking/SyncToken.hpp>
+
 #include <scai/common/test/TestMacros.hpp>
 
 #include <scai/lama/test/Configuration.hpp>
@@ -503,7 +505,7 @@ SCAI_LOG_INFO( logger, "Test " << mMatrixStorage.getTypeName() << "::matrixTimes
     LAMAArray<ValueType> result( mMatrixStorage.getNumRows() );
     // asynchronous execution, only checks correct calling
     {
-        scai::common::unique_ptr<SyncToken> token ( mMatrixStorage.matrixTimesVectorAsync( result, alpha, x, beta, y ) );
+        scai::common::unique_ptr<scai::tasking::SyncToken> token ( mMatrixStorage.matrixTimesVectorAsync( result, alpha, x, beta, y ) );
         // unique pointer implies delete for token so 
         // destructor of the token does the synchronization at the end of this scope
     }
@@ -583,7 +585,7 @@ SCAI_LOG_INFO( logger, "Test vectorTimesMatrixAsync" )
     LAMAArray<ValueType> result ( m );
     // asynchronous execution, only checks correct calling
     {
-        scai::common::unique_ptr<SyncToken> token ( mMatrixStorage.vectorTimesMatrixAsync( result, alpha, x, beta, y ) );
+        scai::common::unique_ptr<scai::tasking::SyncToken> token ( mMatrixStorage.vectorTimesMatrixAsync( result, alpha, x, beta, y ) );
         // free of token at end of this scope does the synchronization
     }
     SCAI_LOG_TRACE( logger, "vectorTimesMatrixAsync synchronized" )
@@ -631,7 +633,7 @@ SCAI_LOG_INFO( logger, "Test vectorTimesMatrixAsync 2" )
     LAMAArray<ValueType> result ( m );
     // asynchronous execution, only checks correct calling
     {
-        scai::common::unique_ptr<SyncToken> token ( mMatrixStorage.vectorTimesMatrixAsync( result, alpha, x, beta, y ) );
+        scai::common::unique_ptr<scai::tasking::SyncToken> token ( mMatrixStorage.vectorTimesMatrixAsync( result, alpha, x, beta, y ) );
         // free of token at end of this scope does the synchronization
     }
     SCAI_LOG_TRACE( logger, "vectorTimesMatrixAsync synchronized" )
@@ -682,7 +684,7 @@ SCAI_LOG_INFO( logger, "Test vectorTimesMatrixAsync 3" )
     LAMAArray<ValueType> result ( m );
     // asynchronous execution, only checks correct calling
     {
-        scai::common::unique_ptr<SyncToken> token ( mMatrixStorage.vectorTimesMatrixAsync( result, alpha, x, beta, y ) );
+        scai::common::unique_ptr<scai::tasking::SyncToken> token ( mMatrixStorage.vectorTimesMatrixAsync( result, alpha, x, beta, y ) );
         // free of token at end of this scope does the synchronization
     }
     SCAI_LOG_TRACE( logger, "vectorTimesMatrixAsync synchronized" )
@@ -738,10 +740,10 @@ LAMAArray<ValueType> denseResult2 ( m );
 // asynchronous execution, only checks correct calling
 
 {
-    scai::common::unique_ptr<SyncToken> token ( mMatrixStorage.vectorTimesMatrixAsync( result, alpha, x, beta, y ) );
-    scai::common::unique_ptr<SyncToken> token2 ( mMatrixStorage.matrixTimesVectorAsync( result2, alpha, x, beta, y ) );
-    scai::common::unique_ptr<SyncToken> token3 ( denseStorage.vectorTimesMatrixAsync( denseResult, alpha, x, beta, y ) );
-    scai::common::unique_ptr<SyncToken> token4 ( denseStorage.matrixTimesVectorAsync( denseResult2, alpha, x, beta, y ) );
+    scai::common::unique_ptr<scai::tasking::SyncToken> token ( mMatrixStorage.vectorTimesMatrixAsync( result, alpha, x, beta, y ) );
+    scai::common::unique_ptr<scai::tasking::SyncToken> token2 ( mMatrixStorage.matrixTimesVectorAsync( result2, alpha, x, beta, y ) );
+    scai::common::unique_ptr<scai::tasking::SyncToken> token3 ( denseStorage.vectorTimesMatrixAsync( denseResult, alpha, x, beta, y ) );
+    scai::common::unique_ptr<scai::tasking::SyncToken> token4 ( denseStorage.matrixTimesVectorAsync( denseResult2, alpha, x, beta, y ) );
     // free of token at end of this scope does the synchronization
 }
 SCAI_LOG_TRACE( logger, "vectorTimesMatrixAsync and matrixTimesVectorAsync synchronized" )

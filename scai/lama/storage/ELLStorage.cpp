@@ -67,6 +67,7 @@ namespace lama
 {
 
 using common::shared_ptr;
+using tasking::SyncToken;
 
 /* --------------------------------------------------------------------------- */
 
@@ -78,7 +79,7 @@ template<typename ValueType>
 ELLStorage<ValueType>::ELLStorage(
     const IndexType numRows,
     const IndexType numColumns,
-    const ContextType con /* = Context::Host */)
+    const common::context::ContextType con /* = Context::Host */)
 
     : CRTPMatrixStorage<ELLStorage<ValueType>,ValueType>( numRows, numColumns ), mNumValuesPerRow( 0 )
 {
@@ -86,7 +87,7 @@ ELLStorage<ValueType>::ELLStorage(
 
     ContextPtr loc = Context::getContextPtr( con );
 
-    setContext( loc );
+    setContextPtr( loc );
 
     // Initialization requires correct values for the IA array with 0
 
@@ -1180,7 +1181,7 @@ SyncToken* ELLStorage<ValueType>::matrixTimesVectorAsync(
 
     SCAI_LOG_INFO( logger, *this << ": matrixTimesVectorAsync on " << *loc )
 
-    if( loc->getType() == context::Host )
+    if( loc->getType() == common::context::Host )
     {
         // execution as separate thread
 
@@ -1199,7 +1200,7 @@ SyncToken* ELLStorage<ValueType>::matrixTimesVectorAsync(
 
         SCAI_LOG_INFO( logger, *this << ": matrixTimesVectorAsync on Host by own thread" )
 
-        return new TaskSyncToken( bind( pf, this, ref( result ), alpha, cref( x ), beta, cref( y ) ) );
+        return new tasking::TaskSyncToken( bind( pf, this, ref( result ), alpha, cref( x ), beta, cref( y ) ) );
     }
 
     SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumColumns )
@@ -1310,7 +1311,7 @@ SyncToken* ELLStorage<ValueType>::vectorTimesMatrixAsync(
 
     SCAI_LOG_INFO( logger, *this << ": vectorTimesMatrixAsync on " << *loc )
 
-    if( loc->getType() == context::Host )
+    if( loc->getType() == common::context::Host )
     {
         // execution as separate thread
 
@@ -1329,7 +1330,7 @@ SyncToken* ELLStorage<ValueType>::vectorTimesMatrixAsync(
 
         SCAI_LOG_INFO( logger, *this << ": vectorTimesMatrixAsync on Host by own thread" )
 
-        return new TaskSyncToken( bind( pf, this, ref( result ), alpha, cref( x ), beta, cref( y ) ) );
+        return new tasking::TaskSyncToken( bind( pf, this, ref( result ), alpha, cref( x ), beta, cref( y ) ) );
     }
 
     SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumRows )
@@ -1467,7 +1468,7 @@ SyncToken* ELLStorage<ValueType>::jacobiIterateAsync(
 
     ContextPtr loc = jacobi.getValidContext( this->getContextPtr() );
 
-    if ( loc->getType() == context::Host )
+    if ( loc->getType() == common::context::Host )
     {
         // used later in OpenMP to generate a TaskSyncToken
 
@@ -1483,7 +1484,7 @@ SyncToken* ELLStorage<ValueType>::jacobiIterateAsync(
         using scai::common::cref;
         using scai::common::ref;
 
-        return new TaskSyncToken( bind( jb, this, ref( solution ), cref( oldSolution ), cref( rhs ), omega ) );
+        return new tasking::TaskSyncToken( bind( jb, this, ref( solution ), cref( oldSolution ), cref( rhs ), omega ) );
     }
 
     // For CUDA a solution using stream synchronization is more efficient than using a task
@@ -1855,12 +1856,11 @@ void ELLStorage<ValueType>::matrixAddMatrixELL(
     SCAI_LOG_INFO( logger,
                    "this = " << alpha << " * A + " << beta << " * B, with " << "A = " << a << ", B = " << b << ", all are ELL" )
 
-    // TODO: Implement for CUDA
-    ContextPtr loc = Context::getContextPtr( context::Host );
-
     static LAMAKernel<ELLKernelTrait::matrixAddSizes> matrixAddSizes;
     static LAMAKernel<UtilKernelTrait::maxval<IndexType> > maxval;
     static LAMAKernel<ELLKernelTrait::matrixAdd<ValueType> > matrixAdd;
+
+    ContextPtr loc = matrixAddSizes.getValidContext( maxval, matrixAdd, this->getContextPtr() );
 
     SCAI_ASSERT_ERROR( &a != this, "matrixAddMatrix: alias of a with this result matrix" )
     SCAI_ASSERT_ERROR( &b != this, "matrixAddMatrix: alias of b with this result matrix" )

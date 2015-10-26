@@ -316,41 +316,41 @@ int mm_read_mtx_crd_size( FILE* f, int* M, int* N, int* nz )
     return 0;
 }
 
-//int mm_read_mtx_array_size( FILE* f, int* M, int* N )
-//{
-//    char line[MM_MAX_LINE_LENGTH];
-//    int num_items_read;
-//    /* set return null parameter values, in case we exit with errors */
-//    *M = *N = 0;
-//
-//    /* now continue scanning until you reach the end-of-comments */
-//    do
-//    {
-//        if ( fgets( line, MM_MAX_LINE_LENGTH, f ) == NULL )
-//        {
-//            return MM_PREMATURE_EOF;
-//        }
-//    } while ( line[0] == '%' );
-//
-//    /* line[] is either blank or has M,N, nz */
-//    if ( sscanf( line, "%d %d", M, N ) == 2 )
-//    {
-//        return 0;
-//    }
-//    else
-//        /* we have a blank line */
-//        do
-//        {
-//            num_items_read = fscanf( f, "%d %d", M, N );
-//
-//            if ( num_items_read == EOF )
-//            {
-//                return MM_PREMATURE_EOF;
-//            }
-//        } while ( num_items_read != 2 );
-//
-//    return 0;
-//}
+int mm_read_mtx_array_size( FILE* f, int* M, int* N )
+{
+    char line[MM_MAX_LINE_LENGTH];
+    int num_items_read;
+    /* set return null parameter values, in case we exit with errors */
+    *M = *N = 0;
+
+    /* now continue scanning until you reach the end-of-comments */
+    do
+    {
+        if ( fgets( line, MM_MAX_LINE_LENGTH, f ) == NULL )
+        {
+            return MM_PREMATURE_EOF;
+        }
+    } while ( line[0] == '%' );
+
+    /* line[] is either blank or has M,N, nz */
+    if ( sscanf( line, "%d %d", M, N ) == 2 )
+    {
+        return 0;
+    }
+    else
+        /* we have a blank line */
+        do
+        {
+            num_items_read = fscanf( f, "%d %d", M, N );
+
+            if ( num_items_read == EOF )
+            {
+                return MM_PREMATURE_EOF;
+            }
+        } while ( num_items_read != 2 );
+
+    return 0;
+}
 
 int mm_write_mtx_array_size( FILE* f, int M, int N )
 {

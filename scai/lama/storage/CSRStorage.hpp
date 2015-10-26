@@ -113,7 +113,7 @@ public:
 
     CSRStorage( const _MatrixStorage& other, const ContextPtr context )
     {
-        _MatrixStorage::setContext( context );
+        _MatrixStorage::setContextPtr( context );
         assign( other );
     }
 
@@ -387,13 +387,14 @@ public:
         LAMAArray<IndexType>& ia,
         LAMAArray<IndexType>* ja,
         LAMAArray<OtherValueType>* values,
-        const ContextPtr /* loc */) const;
+        const ContextPtr loc ) const;
 
     /**
      *   This routine builds compressed sparse column format data.
      *
      *   Note: this routine does not support type conversion
      */
+     
     virtual void buildCSCData(
         LAMAArray<IndexType>& colIA,
         LAMAArray<IndexType>& colJA,
@@ -526,7 +527,6 @@ public:
     void buildSparseRowData( LAMAArray<IndexType>& ja, LAMAArray<ValueType>& values ) const;
 
     using MatrixStorage<ValueType>::prefetch;
-    using MatrixStorage<ValueType>::getContext;
     using MatrixStorage<ValueType>::getContextPtr;
 
 protected:

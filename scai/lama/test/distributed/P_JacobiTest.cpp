@@ -115,7 +115,7 @@ void testSolveWithoutPreconditionMethod( ContextPtr loc )
     coefficients.redistribute( dist, dist );
     // converted redistributed matrix must have kept the diagonal property
     BOOST_REQUIRE( coefficients.hasDiagonalProperty() );
-    coefficients.setContext( loc );
+    coefficients.setContextPtr( loc );
     DenseVector<ValueType> solution( dist, 1.0 );
     const DenseVector<ValueType> exactSolution( dist, 2.0 );
     DenseVector<ValueType> rhs( dist, 1.0 );
@@ -174,7 +174,7 @@ void testSolveWithPreconditionMethod( ContextPtr loc )
     MatrixCreator<ValueType>::buildPoisson2D( coefficients, 9, N1, N2 );
     DistributionPtr dist( new BlockDistribution( coefficients.getNumRows(), mComm ) );
     coefficients.redistribute( dist, dist );
-    coefficients.setContext( loc );
+    coefficients.setContextPtr( loc );
     DenseVector<ValueType> solution( dist, 1.0 );
     const DenseVector<ValueType> exactSolution( dist, 2.0 );
     DenseVector<ValueType> rhs( dist, 1.0 );

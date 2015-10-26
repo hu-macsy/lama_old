@@ -86,7 +86,7 @@ void TFQMR::initialize( const Matrix& coefficients ){
     runtime.mTheta = 0.0;
     runtime.mEps = std::numeric_limits<double>::epsilon()*3;            //CAREFUL: No abstract type
 
-    ScalarType type = coefficients.getValueType();
+    common::scalar::ScalarType type = coefficients.getValueType();
     
     runtime.mVecD.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
     runtime.mInitialR.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
@@ -95,12 +95,12 @@ void TFQMR::initialize( const Matrix& coefficients ){
     runtime.mVecW.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
     runtime.mVecZ.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
 
-    runtime.mVecD->setContext( coefficients.getContextPtr() );   
-    runtime.mInitialR->setContext( coefficients.getContextPtr() );
-    runtime.mVecVEven->setContext( coefficients.getContextPtr() );
-    runtime.mVecVOdd->setContext( coefficients.getContextPtr() );
-    runtime.mVecW->setContext( coefficients.getContextPtr() );
-    runtime.mVecZ->setContext( coefficients.getContextPtr() );
+    runtime.mVecD->setContextPtr( coefficients.getContextPtr() );
+    runtime.mInitialR->setContextPtr( coefficients.getContextPtr() );
+    runtime.mVecVEven->setContextPtr( coefficients.getContextPtr() );
+    runtime.mVecVOdd->setContextPtr( coefficients.getContextPtr() );
+    runtime.mVecW->setContextPtr( coefficients.getContextPtr() );
+    runtime.mVecZ->setContextPtr( coefficients.getContextPtr() );
 }
 
 void TFQMR::solveInit( Vector& solution, const Vector& rhs ){
@@ -262,6 +262,16 @@ TFQMR::TFQMRRuntime& TFQMR::getRuntime(){
 
 const TFQMR::TFQMRRuntime& TFQMR::getConstRuntime() const{
     return mTFQMRRuntime;
+}
+
+std::string TFQMR::createValue()
+{
+	return "TFQMR";
+}
+
+Solver* TFQMR::create( const std::string name )
+{
+	return new TFQMR( name );
 }
 
 } /* end namespace lama */

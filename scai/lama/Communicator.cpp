@@ -413,7 +413,7 @@ SyncToken* Communicator::shiftAsync(
 {
     SCAI_ASSERT_ERROR( &recvArray != &sendArray, "send and receive array are same, not allowed for shift" )
 
-    ContextPtr contextPtr = Context::getContextPtr( context::Host );
+    ContextPtr contextPtr = Context::getContextPtr( common::context::Host );
 
     recvArray.clear(); // do not keep any old data, keep capacities
 
@@ -511,7 +511,7 @@ SyncToken* Communicator::updateHaloAsync(
     // put together the (send) values to provide for other partitions
 
     {
-        ContextPtr contextPtr = Context::getContextPtr( context::Host );
+        ContextPtr contextPtr = Context::getContextPtr( common::context::Host );
 
         WriteAccess<ValueType> sendData( *sendValues, contextPtr );
         ReadAccess<ValueType> localData( localValues, contextPtr );
@@ -583,7 +583,7 @@ void Communicator::computeOwners(
     LAMAArray<IndexType> ownersSendArray( receiveSize );
     LAMAArray<IndexType> ownersReceiveArray( receiveSize );
 
-    ContextPtr contextPtr = Context::getContextPtr( context::Host );
+    ContextPtr contextPtr = Context::getContextPtr( common::context::Host );
 
     {
         WriteAccess<IndexType> indexesSend( indexesSendArray, contextPtr );

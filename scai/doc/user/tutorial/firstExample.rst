@@ -3,29 +3,11 @@ First LAMA Example Program
 
 The following C++ program shows a very simple example program of how to use LAMA.
 
-::
+.. literalinclude:: ../../../lama/examples/tutorial/simple.cpp 
+   :language: c++
+   :lines: 34-
 
-    #include <scai/lama.hpp> // Always include this file at the beginning
 
-    #include <scai/lama/DenseVector.hpp>
-    #include <scai/lama/Scalar.hpp>
-
-    #include <iostream>
-
-    using namespace lama;
-
-    int main()
-    {
-        typedef double ValueType;
-        
-        IndexType size = 8;
-        DenseVector<ValueType> v( size, 1.1 );
-        
-        Scalar s = v.l1Norm();
-        std::cout << "L1 norm of v = " << s.getValue<ValueType>() << std::endl;
-        
-        return 0;
-    }
 
 :download:`Download source file <../../../lama/examples/tutorial/simple.cpp>`
 

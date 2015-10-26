@@ -36,7 +36,8 @@
 
 // others
 #include <scai/hmemo.hpp>
-#include <scai/lama/LAMAInterface.hpp>
+#include <scai/lama/BLASKernelTrait.hpp>
+#include <scai/lama/LAMAKernel.hpp>
 #include <scai/lama/Scalar.hpp>
 
 #include <scai/common/test/TestMacros.hpp>
@@ -54,7 +55,8 @@ namespace BLAS2Test
 template<typename ValueType>
 void gemvTest( ContextPtr loc )
 {
-    LAMA_INTERFACE_FN_T( gemv, loc, BLAS, BLAS2, ValueType );
+    LAMAKernel<BLASKernelTrait::gemv<ValueType> > gemv;
+
     // CblasRowMajor and CblasNoTrans
     {
         ValueType matrix[] =
@@ -80,7 +82,7 @@ void gemvTest( ContextPtr loc )
             ReadAccess<ValueType> rAm( Am, loc );
             ReadAccess<ValueType> rAx( Ax, loc );
             WriteAccess<ValueType> wAy( Ay, loc );
-            gemv( CblasRowMajor, CblasNoTrans, m, n, alpha, rAm.get(), lda, rAx.get(), incX, beta, wAy.get(), incY,
+            gemv[loc]( CblasRowMajor, CblasNoTrans, m, n, alpha, rAm.get(), lda, rAx.get(), incX, beta, wAy.get(), incY,
                   NULL );
         }
         {
@@ -114,7 +116,7 @@ void gemvTest( ContextPtr loc )
             ReadAccess<ValueType> rAm( Am, loc );
             ReadAccess<ValueType> rAx( Ax, loc );
             WriteAccess<ValueType> wAy( Ay, loc );
-            gemv( CblasColMajor, CblasNoTrans, m, n, alpha, rAm.get(), lda, rAx.get(), incX, beta, wAy.get(), incY,
+            gemv[loc]( CblasColMajor, CblasNoTrans, m, n, alpha, rAm.get(), lda, rAx.get(), incX, beta, wAy.get(), incY,
                   NULL );
         }
         {
@@ -148,7 +150,7 @@ void gemvTest( ContextPtr loc )
             ReadAccess<ValueType> rAm( Am, loc );
             ReadAccess<ValueType> rAx( Ax, loc );
             WriteAccess<ValueType> wAy( Ay, loc );
-            gemv( CblasRowMajor, CblasTrans, m, n, alpha, rAm.get(), lda, rAx.get(), incX, beta, wAy.get(), incY,
+            gemv[loc]( CblasRowMajor, CblasTrans, m, n, alpha, rAm.get(), lda, rAx.get(), incX, beta, wAy.get(), incY,
                   NULL );
         }
         {
@@ -183,7 +185,7 @@ void gemvTest( ContextPtr loc )
             ReadAccess<ValueType> rAm( Am, loc );
             ReadAccess<ValueType> rAx( Ax, loc );
             WriteAccess<ValueType> wAy( Ay, loc );
-            gemv( CblasColMajor, CblasTrans, m, n, alpha, rAm.get(), lda, rAx.get(), incX, beta, wAy.get(), incY,
+            gemv[loc]( CblasColMajor, CblasTrans, m, n, alpha, rAm.get(), lda, rAx.get(), incX, beta, wAy.get(), incY,
                   NULL );
         }
         {
@@ -206,7 +208,7 @@ BOOST_AUTO_TEST_SUITE( BLAS2Test )
 
 SCAI_LOG_DEF_LOGGER( logger, "Test.BLAS2Test" )
 
-LAMA_AUTO_TEST_CASE_CT( gemvTest, BLAS2Test )
+LAMA_AUTO_TEST_CASE_CT( gemvTest, BLAS2Test, scai::lama )
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 BOOST_AUTO_TEST_SUITE_END()

@@ -467,7 +467,7 @@ ContextDataIndex ContextDataManager::findValidData() const
 
 /* ---------------------------------------------------------------------------------*/
 
-ContextPtr ContextDataManager::getValidContext( const ContextType preferredType )
+ContextPtr ContextDataManager::getValidContext( const context::ContextType preferredType )
 {
     ContextPtr result;
 

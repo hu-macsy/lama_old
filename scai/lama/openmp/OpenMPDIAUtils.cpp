@@ -37,12 +37,12 @@
 // local library
 #include <scai/lama/UtilKernelTrait.hpp>
 #include <scai/lama/openmp/OpenMPDIAUtils.hpp>
-#include <scai/lama/openmp/OpenMP.hpp>
 
 // internal scai libraries
 #include <scai/kregistry/KernelRegistry.hpp>
 #include <scai/tracing.hpp>
 
+#include <scai/common/OpenMP.hpp>
 #include <scai/common/Assert.hpp>
 #include <scai/common/ScalarType.hpp>
 

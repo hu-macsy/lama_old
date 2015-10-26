@@ -5,15 +5,18 @@ For using matrices and vectors from input files you can read the data on your ow
 vectors with the obtained data in csr or dense format. The other way round you can get access to the stored data and
 print it to file the way you like it.
 
-But LAMA offers to initialize matrices and vectors from file for some formats, too.
+Another possibility to initialize your matrices and vectors is to read data from file. 
 
 Supported Types
 ---------------
 
  - MatrixMarket (for descriptions on the format see here__) **(matices only)**
  - SAMG format **(matrices and vectors)**
+ 
    - FORMATTED (ASCII)
+   
    - XDR
+   
    - BINARY
  
 __ http://math.nist.gov/MatrixMarket/formats.html

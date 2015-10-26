@@ -48,8 +48,6 @@ namespace tasking
     class SyncToken;
 }
 
-using namespace scai::tasking;
-
 namespace lama
 {
 
@@ -83,7 +81,7 @@ struct BLASKernelTrait
             const ValueType alpha,
             ValueType* x,
             const IndexType incX,
-            SyncToken* syncToken );
+            tasking::SyncToken* syncToken );
 
         static const char* getId() { return "BLAS1.scal"; }
     };
@@ -103,7 +101,7 @@ struct BLASKernelTrait
          * return            the Euclidian norm within considered elements
          *                   of x (returns zero if n <=0, incX <= 0).
          */
-        typedef ValueType ( *FuncType )( const IndexType n, const ValueType* x, const IndexType incX, SyncToken* syncToken );
+        typedef ValueType ( *FuncType )( const IndexType n, const ValueType* x, const IndexType incX, tasking::SyncToken* syncToken );
 
         static const char* getId() { return "BLAS1.nrm2"; }
     };
@@ -124,7 +122,7 @@ struct BLASKernelTrait
          * return            the sum of absolute values within considered elements
          *                   of x (returns zero if n<=0 or incX <= 0).
          */
-        typedef ValueType ( *FuncType )( const IndexType n, const ValueType* x, const IndexType incX, SyncToken* syncToken );
+        typedef ValueType ( *FuncType )( const IndexType n, const ValueType* x, const IndexType incX, tasking::SyncToken* syncToken );
 
         static const char* getId() { return "BLAS1.asum"; }
     };
@@ -146,7 +144,7 @@ struct BLASKernelTrait
          * return            the smallest index of the maximum magnitude
          *                   within considered elements of x (returns zero if n <=0 or incX <=0).
          */
-        typedef IndexType ( *FuncType )( const IndexType n, const ValueType* x, const IndexType incX, SyncToken* syncToken );
+        typedef IndexType ( *FuncType )( const IndexType n, const ValueType* x, const IndexType incX, tasking::SyncToken* syncToken );
 
         static const char* getId() { return "BLAS1.iamax"; }
     };
@@ -174,7 +172,7 @@ struct BLASKernelTrait
             const IndexType incX,
             ValueType* y,
             const IndexType incY,
-            SyncToken* syncToken );
+            tasking::SyncToken* syncToken );
 
         static const char* getId() { return "BLAS1.copy"; }
     };
@@ -201,7 +199,7 @@ struct BLASKernelTrait
             const IndexType incX,
             ValueType* y,
             const IndexType incY,
-            SyncToken* syncToken );
+            tasking::SyncToken* syncToken );
 
         static const char* getId() { return "BLAS1.copy"; }
     };
@@ -231,7 +229,7 @@ struct BLASKernelTrait
             const IndexType incX,
             ValueType* y,
             const IndexType incY,
-            SyncToken* syncToken );
+            tasking::SyncToken* syncToken );
 
         static const char* getId() { return "BLAS1.axpy"; }
     };
@@ -260,7 +258,7 @@ struct BLASKernelTrait
             const IndexType incX,
             const ValueType* y,
             const IndexType inc,
-            SyncToken* syncToken );
+            tasking::SyncToken* syncToken );
 
         static const char* getId() { return "BLAS1.dot"; }
     };
@@ -289,7 +287,7 @@ struct BLASKernelTrait
             ValueType beta,
             const ValueType* y,
             ValueType* z,
-            SyncToken* syncToken );
+            tasking::SyncToken* syncToken );
 
         static const char* getId() { return "BLAS1.sum"; }
     };
@@ -345,7 +343,7 @@ struct BLASKernelTrait
             const ValueType beta,
             ValueType *y,
             const IndexType incY,
-            SyncToken* syncToken );
+            tasking::SyncToken* syncToken );
 
         static const char* getId() { return "BLAS2.gemv"; }
     };
@@ -421,7 +419,7 @@ struct BLASKernelTrait
                         const ValueType beta,
                         ValueType* C,
                         const IndexType ldc,
-                        SyncToken* syncToken );
+                        tasking::SyncToken* syncToken );
 
         static const char* getId() { return "BLAS3.gemm"; }
     };
@@ -610,7 +608,7 @@ struct BLASKernelTrait
             const IndexType k2,
             const IndexType* ipiv,
             const IndexType incx,
-            SyncToken* syncToken);
+            tasking::SyncToken* syncToken);
 
         static const char* getId() { return "LAPACK.laswp"; }
     };

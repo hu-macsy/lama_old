@@ -90,7 +90,7 @@ void CG::initialize( const Matrix& coefficients )
 
     runtime.mPScalar = 0.0;
 
-    common::ScalarType type = coefficients.getValueType();
+    common::scalar::ScalarType type = coefficients.getValueType();
 
     runtime.mP.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
     runtime.mQ.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
@@ -98,9 +98,9 @@ void CG::initialize( const Matrix& coefficients )
 
     // 'force' vector operations to be computed at the same location where coefficients reside
 
-    runtime.mP->setContext( coefficients.getContextPtr() );
-    runtime.mQ->setContext( coefficients.getContextPtr() );
-    runtime.mZ->setContext( coefficients.getContextPtr() );
+    runtime.mP->setContextPtr( coefficients.getContextPtr() );
+    runtime.mQ->setContextPtr( coefficients.getContextPtr() );
+    runtime.mZ->setContextPtr( coefficients.getContextPtr() );
 
     totalIterationTime = 0.0;
     totalPreconditionerTime = 0.0;
@@ -232,6 +232,16 @@ CG::CGRuntime& CG::getRuntime()
 const CG::CGRuntime& CG::getConstRuntime() const
 {
     return mCGRuntime;
+}
+
+std::string CG::createValue()
+{
+	return "CG";
+}
+
+Solver* CG::create( const std::string name )
+{
+	return new CG( name );
 }
 
 } /* end namespace lama */

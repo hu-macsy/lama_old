@@ -87,7 +87,7 @@ public:
      * @param[in] con           the context type where conversion should be done
      */
     ELLStorage( const IndexType numRows, const IndexType numColumns, 
-                const context::ContextType con = context::Host );
+                const common::context::ContextType con = common::context::Host );
 
     /** Constructor for ELL storage by corresponding arrays.
      *
@@ -121,7 +121,7 @@ public:
 
     ELLStorage( const _MatrixStorage& other, const ContextPtr context )
     {
-        setContext( context );
+        setContextPtr( context );
         assign( other );
     }
 
@@ -423,7 +423,7 @@ public:
     using MatrixStorage<ValueType>::assign;
     using MatrixStorage<ValueType>::prefetch;
     using MatrixStorage<ValueType>::getContextPtr;
-    using MatrixStorage<ValueType>::setContext;
+    using MatrixStorage<ValueType>::setContextPtr;
 
     /** Print out the ELL storage on std::out, use only for debug. */
 

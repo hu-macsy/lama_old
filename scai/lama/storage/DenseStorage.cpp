@@ -260,7 +260,7 @@ size_t DenseStorageView<ValueType>::getMemoryUsageImpl() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-common::ScalarType DenseStorageView<ValueType>::getValueType() const
+common::scalar::ScalarType DenseStorageView<ValueType>::getValueType() const
 {
     return common::getScalarType<ValueType>();
 }
@@ -367,7 +367,7 @@ void DenseStorageView<ValueType>::setCSRDataImpl(
 {
     // not yet suppored on other devices
 
-    ContextPtr loc = Context::getContextPtr( context::Host );
+    ContextPtr loc = Context::getHostPtr();
 
     SCAI_LOG_INFO( logger,
                    "setCRSData for dense storage " << numRows << " x " << numColumns << ", nnz = " << numValues )
@@ -1052,13 +1052,13 @@ void DenseStorageView<ValueType>::assign( const _MatrixStorage& other )
     {
         // more efficient solution for assigment of dense storage
 
-        ScalarType arrayType = other.getValueType();
+        common::scalar::ScalarType arrayType = other.getValueType();
 
         switch( arrayType )
         {
 
 #define LAMA_ASSIGN_DENSE_CALL( z, I, _ )                                                \
-case common::scalar::SCALAR_ARITHMETIC_TYPE##I:                                          \
+case SCALAR_ARITHMETIC_TYPE##I:                                                          \
 {                                                                                        \
     const DenseStorageView<ARITHMETIC_HOST_TYPE_##I>* otherTyped =                       \
             dynamic_cast<const DenseStorageView<ARITHMETIC_HOST_TYPE_##I>*>( &other );   \
@@ -1210,12 +1210,12 @@ assign( other );
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-DenseStorage<ValueType>::DenseStorage( const _MatrixStorage& other, const ContextPtr loc )
+DenseStorage<ValueType>::DenseStorage( const _MatrixStorage& other, const hmemo::ContextPtr loc )
 
 : DenseStorageView<ValueType>( mDataArray, 0, 0, false )
 
 {
-_MatrixStorage::setContext( loc );
+_MatrixStorage::setContextPtr( loc );
 assign( other );
 }
 

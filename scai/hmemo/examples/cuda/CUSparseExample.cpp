@@ -1,5 +1,5 @@
 /**
- * @file example/CUSparseExample.cpp
+ * @file CUSparseExample.cpp
  *
  * @license
  * Copyright (c) 2009-2015

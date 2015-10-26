@@ -36,7 +36,7 @@
 set ( CLASSES
         CommonLogger
         FileLogger
-        Logger
+        SolverLogger
         Timer
     )
 

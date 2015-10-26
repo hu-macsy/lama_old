@@ -206,7 +206,7 @@ public:
     /**
      * @brief Implementation of pure method.
      */
-    virtual common::ScalarType getValueType() const;
+    virtual common::scalar::ScalarType getValueType() const;
 
     /**
      * @brief reserve a certain amount of data at a specific context
@@ -224,7 +224,7 @@ public:
      *  the ContextArray factory. 
      */
 
-    static common::ScalarType createValue() 
+    static common::scalar::ScalarType createValue()
     {
         return common::getScalarType<ValueType>();
     }
@@ -432,7 +432,7 @@ LAMAArray<ValueType>* LAMAArray<ValueType>::copy()
 /* ---------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-common::ScalarType LAMAArray<ValueType>::getValueType() const
+common::scalar::ScalarType LAMAArray<ValueType>::getValueType() const
 {
     // Note: this is implementation of the pure method of base class ContextArray.
 

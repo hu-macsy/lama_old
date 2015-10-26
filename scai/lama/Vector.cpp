@@ -66,7 +66,7 @@ SCAI_LOG_DEF_LOGGER( Vector::logger, "Vector" )
 /*    Factory to create a vector                                                          */
 /* ---------------------------------------------------------------------------------------*/
 
-Vector* Vector::getVector( const VectorKind kind, common::ScalarType type )
+Vector* Vector::getVector( const VectorKind kind, common::scalar::ScalarType type )
 {
 	using ::operator<<;
 
@@ -79,7 +79,7 @@ Vector* Vector::getVector( const VectorKind kind, common::ScalarType type )
     return create( key );
 }
 
-Vector* Vector::createVector( const common::ScalarType valueType, DistributionPtr distribution )
+Vector* Vector::createVector( const common::scalar::ScalarType valueType, DistributionPtr distribution )
 {
     Vector* v = getVector( DENSE, valueType );
 
@@ -102,7 +102,7 @@ Vector::Vector( const IndexType size, ContextPtr context )
     SCAI_LOG_INFO( logger, "Vector(" << size << "), replicated, on " << *mContext )
 }
 
-Vector::Vector( DistributionPtr distribution, ContextPtr context )
+Vector::Vector( DistributionPtr distribution, hmemo::ContextPtr context )
                 : Distributed( distribution ), mContext( context )
 {
     if( !mContext )
@@ -115,7 +115,7 @@ Vector::Vector( DistributionPtr distribution, ContextPtr context )
 }
 
 Vector::Vector( const Vector& other )
-                : Distributed( other ), mContext( other.getContext() )
+                : Distributed( other ), mContext( other.getContextPtr() )
 {
     SCAI_ASSERT_ERROR( mContext, "NULL context not allowed" )
     SCAI_LOG_INFO( logger, "Vector(" << other.getDistribution().getGlobalSize() << "), distributed, copied" )
@@ -421,7 +421,7 @@ void Vector::writeAt( std::ostream& stream ) const
     stream << "Vector(" << getDistributionPtr()->getGlobalSize() << ")";
 }
 
-void Vector::setContext( ContextPtr context )
+void Vector::setContextPtr( ContextPtr context )
 {
     SCAI_ASSERT_DEBUG( context, "NULL context invalid" )
 
