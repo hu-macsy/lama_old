@@ -88,7 +88,7 @@ public:
         const IndexType ja[],
         const ValueType values[] );
 
-    template<typename ValueType,typename NoType>
+    template<typename ValueType>
     static ValueType getValue(
         const IndexType i,
         const IndexType j,

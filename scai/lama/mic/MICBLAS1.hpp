@@ -159,7 +159,7 @@ public:
      *  Note: this routine will make instantiations of the template routines.
      */
 
-    static void registerKernel();
+    static void registerKernels();
 
 private:
 

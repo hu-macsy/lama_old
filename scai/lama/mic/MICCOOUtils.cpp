@@ -48,6 +48,7 @@
 #include <scai/tracing.hpp>
 
 #include <scai/common/Assert.hpp>
+#include <scai/common/ScalarType.hpp>
 
 // std
 #include <cmath>

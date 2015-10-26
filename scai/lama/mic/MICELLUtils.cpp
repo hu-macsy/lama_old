@@ -35,7 +35,7 @@
 #include <scai/lama/mic/MICELLUtils.hpp>
 
 // local project
-#include <scai/lama/UtilKernelTraits.hpp>
+#include <scai/lama/UtilKernelTrait.hpp>
 
 // internal scai projects
 #include <scai/hmemo/mic/MICSyncToken.hpp>
@@ -61,6 +61,7 @@ namespace scai
 {
 
 using tasking::SyncToken;
+using tasking::MICSyncToken;
 
 using namespace hmemo;
 
@@ -379,8 +380,8 @@ void MICELLUtils::getRow(
     }
 }
 
-template<typename ValueType,typename OtherValueType>
-OtherValueType MICELLUtils::getValue(
+template<typename ValueType>
+ValueType MICELLUtils::getValue(
     const IndexType i,
     const IndexType j,
     const IndexType numRows,
@@ -391,7 +392,7 @@ OtherValueType MICELLUtils::getValue(
 {
     SCAI_LOG_TRACE( logger, "get value i = " << i << ", j = " << j )
 
-    OtherValueType value = static_cast<OtherValueType>(0.0);
+    ValueType value = 0;  // not really needed, just for safety
 
     const void* ellSizesPtr = ellSizes;
     const void* ellJAPtr = ellJA;
@@ -406,7 +407,7 @@ OtherValueType MICELLUtils::getValue(
         const IndexType* ellJA = static_cast<const IndexType*>( ellJAPtr );
         const ValueType* ellValues = static_cast<const ValueType*>( ellValuesPtr );
 
-        value = static_cast<OtherValueType>(0.0); // new intialiation, has not been copied in
+        value = 0;  // new initialiation, has not been copied in
 
         for( IndexType jj = 0; jj < ellSizes[i]; ++jj )
         {
@@ -414,7 +415,7 @@ OtherValueType MICELLUtils::getValue(
 
             if( ellJA[pos] == j )
             {
-                value = static_cast<OtherValueType>( ellValues[pos] );
+                value = ellValues[pos];
             }
         }
     }
@@ -1228,38 +1229,33 @@ void MICELLUtils::registerKernels()
 
     // Instantations for IndexType, not done by ARITHMETIC_TYPE macrods
 
-    KernelRegistry::set<UtilKernelTrait::validIndexes>( validIndexes, ctx );
+    KernelRegistry::set<ELLKernelTrait::countNonEmptyRowsBySizes>( countNonEmptyRowsBySizes, ctx );
+    KernelRegistry::set<ELLKernelTrait::setNonEmptyRowsBySizes>( setNonEmptyRowsBySizes, ctx );
+    KernelRegistry::set<ELLKernelTrait::hasDiagonalProperty>( hasDiagonalProperty, ctx );
+    KernelRegistry::set<ELLKernelTrait::check>( check, ctx );
 
-    LAMA_INTERFACE_REGISTER( ELLUtils, countNonEmptyRowsBySizes )
-    LAMA_INTERFACE_REGISTER( ELLUtils, setNonEmptyRowsBySizes )
+    KernelRegistry::set<ELLKernelTrait::getRow<float, float> >( getRow, ctx );
+    KernelRegistry::set<ELLKernelTrait::getRow<float, double> >( getRow, ctx );
+    KernelRegistry::set<ELLKernelTrait::getRow<double, float> >( getRow, ctx );
+    KernelRegistry::set<ELLKernelTrait::getRow<double, double> >( getRow, ctx );
 
-    LAMA_INTERFACE_REGISTER( ELLUtils, hasDiagonalProperty )
-    LAMA_INTERFACE_REGISTER( ELLUtils, check )
+    KernelRegistry::set<ELLKernelTrait::getValue<float> >( getValue, ctx );
+    KernelRegistry::set<ELLKernelTrait::getValue<double> >( getValue, ctx );
 
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getRow, float, float )
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getRow, float, double )
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getRow, double, float )
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getRow, double, double )
+    KernelRegistry::set<ELLKernelTrait::scaleValue<float, float> >( scaleValue, ctx );
+    KernelRegistry::set<ELLKernelTrait::scaleValue<float, double> >( scaleValue, ctx );
+    KernelRegistry::set<ELLKernelTrait::scaleValue<double, float> >( scaleValue, ctx );
+    KernelRegistry::set<ELLKernelTrait::scaleValue<double, double> >( scaleValue, ctx );
 
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getValue, float, float )
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getValue, float, double )
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getValue, double, float )
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getValue, double, double )
+    KernelRegistry::set<ELLKernelTrait::setCSRValues<float, float> >( setCSRValues, ctx );
+    KernelRegistry::set<ELLKernelTrait::setCSRValues<float, double> >( setCSRValues, ctx );
+    KernelRegistry::set<ELLKernelTrait::setCSRValues<double, float> >( setCSRValues, ctx );
+    KernelRegistry::set<ELLKernelTrait::setCSRValues<double, double> >( setCSRValues, ctx );
 
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, scaleValue, float, float )
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, scaleValue, double, float )
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, scaleValue, float, double )
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, scaleValue, double, double )
-
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, setCSRValues, float, float )
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, setCSRValues, float, double )
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, setCSRValues, double, float )
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, setCSRValues, double, double )
-
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getCSRValues, float, float )
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getCSRValues, float, double )
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getCSRValues, double, float )
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getCSRValues, double, double )
+    KernelRegistry::set<ELLKernelTrait::getCSRValues<float, float> >( getCSRValues, ctx );
+    KernelRegistry::set<ELLKernelTrait::getCSRValues<float, double> >( getCSRValues, ctx );
+    KernelRegistry::set<ELLKernelTrait::getCSRValues<double, float> >( getCSRValues, ctx );
+    KernelRegistry::set<ELLKernelTrait::getCSRValues<double, double> >( getCSRValues, ctx );
 
     /*
      LAMA_INTERFACE_REGISTER_T( ELLUtils, absMaxVal, float )
@@ -1281,17 +1277,17 @@ void MICELLUtils::registerKernels()
      LAMA_INTERFACE_REGISTER_T( ELLUtils, addComputeValues, double )
      */
 
-    LAMA_INTERFACE_REGISTER_T( ELLUtils, normalGEMV, float )
-    LAMA_INTERFACE_REGISTER_T( ELLUtils, normalGEMV, double )
+    KernelRegistry::set<ELLKernelTrait::normalGEMV<float> >( normalGEMV, ctx );
+    KernelRegistry::set<ELLKernelTrait::normalGEMV<double> >( normalGEMV, ctx );
 
-    LAMA_INTERFACE_REGISTER_T( ELLUtils, sparseGEMV, float )
-    LAMA_INTERFACE_REGISTER_T( ELLUtils, sparseGEMV, double )
+    KernelRegistry::set<ELLKernelTrait::sparseGEMV<float> >( sparseGEMV, ctx );
+    KernelRegistry::set<ELLKernelTrait::sparseGEMV<double> >( sparseGEMV, ctx );
 
-    LAMA_INTERFACE_REGISTER_T( ELLUtils, jacobi, float )
-    LAMA_INTERFACE_REGISTER_T( ELLUtils, jacobi, double )
+    KernelRegistry::set<ELLKernelTrait::jacobi<float> >( jacobi, ctx );
+    KernelRegistry::set<ELLKernelTrait::jacobi<double> >( jacobi, ctx );
 
-    LAMA_INTERFACE_REGISTER_T( ELLUtils, jacobiHalo, float )
-    LAMA_INTERFACE_REGISTER_T( ELLUtils, jacobiHalo, double )
+    KernelRegistry::set<ELLKernelTrait::jacobiHalo<float> >( jacobiHalo, ctx );
+    KernelRegistry::set<ELLKernelTrait::jacobiHalo<double> >( jacobiHalo, ctx );
 
     /*
      LAMA_INTERFACE_REGISTER_T( ELLUtils, fillELLValues, float )

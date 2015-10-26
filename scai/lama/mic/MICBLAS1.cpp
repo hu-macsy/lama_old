@@ -46,6 +46,7 @@
 #include <scai/tracing.hpp>
 
 #include <scai/common/SCAITypes.hpp>
+#include <scai/common/ScalarType.hpp>
 
 // external
 #include <omp.h>
@@ -500,7 +501,7 @@ void MICBLAS1::sum(
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void MICBLAS1::registerKernels();
+void MICBLAS1::registerKernels()
 {
     SCAI_LOG_INFO( logger, "register BLAS1 kernels for MIC in Kernel Registry" )
 

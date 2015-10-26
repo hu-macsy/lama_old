@@ -37,13 +37,13 @@
 // local project
 #include <scai/lama/mic/MICUtils.hpp>
 
-#include <scai/lama/LAMAInterface.hpp>
-#include <scai/lama/LAMAInterfaceRegistry.hpp>
+#include <scai/lama/UtilKernelTrait.hpp>
 #include <scai/lama/Scalar.hpp>
 
 // other scai libraries
 #include <scai/hmemo/mic/MICContext.hpp>
 #include <scai/hmemo/mic/MICSyncToken.hpp>
+#include <scai/kregistry/KernelRegistry.hpp>
 #include <scai/common/Assert.hpp>
 #include <scai/common/Constants.hpp>
 
@@ -53,6 +53,7 @@ namespace scai
 {
 
 using tasking::SyncToken;
+using tasking::MICSyncToken;
 
 using namespace hmemo;
 
@@ -128,7 +129,7 @@ void MICJDSUtils::getRow(
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-template<typename ValueType,typename NoType>
+template<typename ValueType>
 ValueType MICJDSUtils::getValue(
     const IndexType i,
     const IndexType j,
@@ -147,12 +148,12 @@ ValueType MICJDSUtils::getValue(
     const void* jaPtr = ja;
     const void* valuesPtr = values;
 
-    ValueType val = static_cast<ValueType>(0.0);
+    ValueType val = 0;
 
 #pragma offload target( mic : device ) in( permPtr, ilgPtr, dlgPtr, jaPtr, valuesPtr, \
                                                i, j, numRows ), out( val )
     {
-        val = static_cast<ValueType>(0.0);
+        val = 0;
 
         const IndexType* perm = static_cast<const IndexType*>( permPtr );
         const IndexType* ilg = static_cast<const IndexType*>( ilgPtr );
@@ -919,11 +920,7 @@ void MICJDSUtils::jacobiHalo(
 
 void MICJDSUtils::registerKernels()
 {
-    SCAI_LOG_INFO( logger, "set JDS routines for MIC in Interface" )
-
-    // Register all MIC routines of this class for the LAMA interface
-
-    SCAI_LOG_INFO( logger, "register Utils kernels for MIC in Kernel Registry" )
+    SCAI_LOG_INFO( logger, "register JDS kernels for MIC in Kernel Registry" )
 
     using namespace scai::kregistry;
 
@@ -931,51 +928,44 @@ void MICJDSUtils::registerKernels()
 
     common::ContextType ctx = common::context::MIC;
 
-    // Instantations for IndexType, not done by ARITHMETIC_TYPE macrods
+    KernelRegistry::set<JDSKernelTrait::sortRows>( sortRows, ctx );
 
-    KernelRegistry::set<UtilKernelTrait::validIndexes>( validIndexes, ctx );
+    KernelRegistry::set<JDSKernelTrait::setInversePerm>( setInversePerm, ctx );
+    KernelRegistry::set<JDSKernelTrait::ilg2dlg>( ilg2dlg, ctx );
 
+    KernelRegistry::set<JDSKernelTrait::checkDiagonalProperty>( checkDiagonalProperty, ctx );
 
-    LAMA_INTERFACE_REGISTER( JDSUtils, sortRows )
+    KernelRegistry::set<JDSKernelTrait::scaleValue<float, float> >( scaleValue, ctx );
+    KernelRegistry::set<JDSKernelTrait::scaleValue<float, double> >( scaleValue, ctx );
+    KernelRegistry::set<JDSKernelTrait::scaleValue<double, float> >( scaleValue, ctx );
+    KernelRegistry::set<JDSKernelTrait::scaleValue<double, double> >( scaleValue, ctx );
 
-    LAMA_INTERFACE_REGISTER( JDSUtils, setInversePerm )
-    LAMA_INTERFACE_REGISTER( JDSUtils, ilg2dlg )
+    KernelRegistry::set<JDSKernelTrait::getRow<float, float> >( getRow, ctx );
+    KernelRegistry::set<JDSKernelTrait::getRow<float, double> >( getRow, ctx );
+    KernelRegistry::set<JDSKernelTrait::getRow<double, float> >( getRow, ctx );
+    KernelRegistry::set<JDSKernelTrait::getRow<double, double> >( getRow, ctx );
 
-    LAMA_INTERFACE_REGISTER( JDSUtils, checkDiagonalProperty )
+    KernelRegistry::set<JDSKernelTrait::getValue<float> >( getValue, ctx );
+    KernelRegistry::set<JDSKernelTrait::getValue<double> >( getValue, ctx );
 
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, scaleValue, float, float )
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, scaleValue, float, double )
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, scaleValue, double, float )
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, scaleValue, double, double )
+    KernelRegistry::set<JDSKernelTrait::setCSRValues<float, float> >( setCSRValues, ctx );
+    KernelRegistry::set<JDSKernelTrait::setCSRValues<float, double> >( setCSRValues, ctx );
+    KernelRegistry::set<JDSKernelTrait::setCSRValues<double, float> >( setCSRValues, ctx );
+    KernelRegistry::set<JDSKernelTrait::setCSRValues<double, double> >( setCSRValues, ctx );
 
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getRow, float, float )
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getRow, float, double )
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getRow, double, float )
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getRow, double, double )
+    KernelRegistry::set<JDSKernelTrait::getCSRValues<float, float> >( getCSRValues, ctx );
+    KernelRegistry::set<JDSKernelTrait::getCSRValues<float, double> >( getCSRValues, ctx );
+    KernelRegistry::set<JDSKernelTrait::getCSRValues<double, float> >( getCSRValues, ctx );
+    KernelRegistry::set<JDSKernelTrait::getCSRValues<double, double> >( getCSRValues, ctx );
 
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getValue, float, float )
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getValue, float, double )
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getValue, double, float )
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getValue, double, double )
+    KernelRegistry::set<JDSKernelTrait::normalGEMV<float> >( normalGEMV, ctx );
+    KernelRegistry::set<JDSKernelTrait::normalGEMV<double> >( normalGEMV, ctx );
 
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, setCSRValues, float, float )
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, setCSRValues, float, double )
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, setCSRValues, double, float )
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, setCSRValues, double, double )
+    KernelRegistry::set<JDSKernelTrait::jacobi<float> >( jacobi, ctx );
+    KernelRegistry::set<JDSKernelTrait::jacobi<double> >( jacobi, ctx );
 
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getCSRValues, float, float )
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getCSRValues, float, double )
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getCSRValues, double, float )
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getCSRValues, double, double )
-
-    LAMA_INTERFACE_REGISTER_T( JDSUtils, normalGEMV, float )
-    LAMA_INTERFACE_REGISTER_T( JDSUtils, normalGEMV, double )
-
-    LAMA_INTERFACE_REGISTER_T( JDSUtils, jacobi, float )
-    LAMA_INTERFACE_REGISTER_T( JDSUtils, jacobi, double )
-
-    LAMA_INTERFACE_REGISTER_T( JDSUtils, jacobiHalo, float )
-    LAMA_INTERFACE_REGISTER_T( JDSUtils, jacobiHalo, double )
+    KernelRegistry::set<JDSKernelTrait::jacobiHalo<float> >( jacobiHalo, ctx );
+    KernelRegistry::set<JDSKernelTrait::jacobiHalo<double> >( jacobiHalo, ctx );
 }
 
 /* --------------------------------------------------------------------------- */

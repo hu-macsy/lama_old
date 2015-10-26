@@ -65,7 +65,7 @@ public:
 
     /** Routine that registers all routines of this class at the LAMA interface. */
 
-    static void registerInterface();
+    static void registerKernels();
 
 private:
 
@@ -126,8 +126,8 @@ private:
 
     /** Returns one value of the matrix */
 
-    template<typename ValueType,typename OtherValueType>
-    static OtherValueType getValue(
+    template<typename ValueType>
+    static ValueType getValue(
         const IndexType i,
         const IndexType j,
         const IndexType numRows,

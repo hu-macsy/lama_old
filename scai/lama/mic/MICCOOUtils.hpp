@@ -136,7 +136,7 @@ public:
 
     /** Routine that registers all routines of this class at the LAMA interface. */
 
-    static void registerInterface();
+    static void registerKernels();
 
 private:
 

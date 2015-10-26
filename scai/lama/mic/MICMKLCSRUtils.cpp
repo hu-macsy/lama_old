@@ -36,11 +36,12 @@
 
 // local library
 #include <scai/lama/mic/MICUtils.hpp>
-#include <scai/lama/UtilKernelTraits.hpp>
+#include <scai/lama/UtilKernelTrait.hpp>
 
 // internal scai libraries
 #include <scai/tracing.hpp>
 #include <scai/kregistry/KernelRegistry.hpp>
+#include <scai/tasking/SyncToken.hpp>
 
 #include <scai/common/Assert.hpp>
 #include <scai/common/Settings.hpp>
@@ -53,6 +54,7 @@ namespace scai
 {
 
 using namespace hmemo;
+using tasking::SyncToken;
 
 namespace lama
 {
@@ -196,7 +198,7 @@ void MICMKLCSRUtils::registerKernels()
 
     // LAMA_INTERFACE_REGISTER_T( CSRUtils, normalGEMV, float )
 
-    SCAI_LOG_INFO( logger, "register Utils kernels for MIC in Kernel Registry" )
+    SCAI_LOG_INFO( logger, "register some CSR kernels implemented by MKL for MIC in Kernel Registry" )
 
     using namespace scai::kregistry;
 
@@ -204,11 +206,8 @@ void MICMKLCSRUtils::registerKernels()
 
     common::ContextType ctx = common::context::MIC;
 
-    // Instantations for IndexType, not done by ARITHMETIC_TYPE macrods
-
-    KernelRegistry::set<UtilKernelTrait::validIndexes>( validIndexes, ctx );
-
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, normalGEMV, double )
+    KernelRegistry::set<CSRKernelTrait::normalGEMV<float> >( normalGEMV, ctx );
+    KernelRegistry::set<CSRKernelTrait::normalGEMV<double> >( normalGEMV, ctx );
 }
 
 /* --------------------------------------------------------------------------- */
