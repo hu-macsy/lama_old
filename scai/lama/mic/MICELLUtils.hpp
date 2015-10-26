@@ -65,7 +65,7 @@ public:
 
     /** Routine that registers all routines of this class at the LAMA interface. */
 
-    static void setInterface( struct ELLKernelTrait& ELLUtils );
+    static void registerInterface();
 
 private:
 

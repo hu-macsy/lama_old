@@ -37,11 +37,11 @@
 
 // local library
 #include <scai/lama/mic/MICUtils.hpp>
-#include <scai/lama/LAMAInterface.hpp>
-#include <scai/lama/LAMAInterfaceRegistry.hpp>
+#include <scai/lama/UtilKernelTraits.hpp>
 
 // internal scai libraries
 #include <scai/tasking/TaskSyncToken.hpp>
+#include <scai/kregistry/KernelRegistry.hpp>
 
 #include <scai/tracing.hpp>
 
@@ -457,11 +457,23 @@ void MICDIAUtils::jacobi(
 
 /* --------------------------------------------------------------------------- */
 
-void MICDIAUtils::setInterface( DIAKernelTrait& DIAUtils )
+void MICDIAUtils::registerKernels()
 {
     // Register all CUDA routines of this class for the LAMA interface
 
     SCAI_LOG_INFO( logger, "set DIA routines for MIC in Interface" )
+
+    SCAI_LOG_INFO( logger, "register Utils kernels for MIC in Kernel Registry" )
+
+    using namespace scai::kregistry;
+
+    // ctx will contain the context for which registration is done, here MIC
+
+    common::ContextType ctx = common::context::MIC;
+
+    // Instantations for IndexType, not done by ARITHMETIC_TYPE macrods
+
+    KernelRegistry::set<UtilKernelTrait::validIndexes>( validIndexes, ctx );
 
     /*
      LAMA_INTERFACE_REGISTER_T( DIAUtils, getCSRSizes, float )
@@ -489,8 +501,7 @@ void MICDIAUtils::setInterface( DIAKernelTrait& DIAUtils )
 
 bool MICDIAUtils::registerInterface()
 {
-    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( context::MIC );
-    setInterface( interface.DIAUtils );
+    registerKernels();
     return true;
 }
 

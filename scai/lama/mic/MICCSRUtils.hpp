@@ -325,7 +325,7 @@ public:
 
     /** Routine that registers all routines of this class at the LAMA interface. */
 
-    static void setInterface( struct CSRKernelTrait& CSRUtils );
+    static void registerKernels();
 
 protected:
 

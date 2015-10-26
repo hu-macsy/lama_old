@@ -68,7 +68,7 @@ int MICContext::numUsedDevices = 0;
 
 
 MICContext::MICContext( int deviceNr )
-    : Context( context::MIC ), mDeviceNr( deviceNr )
+    : Context( common::context::MIC ), mDeviceNr( deviceNr )
 {
     SCAI_LOG_INFO( logger, "construct MICContext, device nr = = " << deviceNr )
 

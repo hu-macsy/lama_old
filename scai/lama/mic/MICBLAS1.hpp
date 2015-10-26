@@ -159,7 +159,7 @@ public:
      *  Note: this routine will make instantiations of the template routines.
      */
 
-    static void setInterface( struct BLASKernelTrait& BLAS );
+    static void registerKernel();
 
 private:
 

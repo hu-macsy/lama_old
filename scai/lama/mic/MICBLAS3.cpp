@@ -36,10 +36,10 @@
 
 // local library
 #include <scai/lama/BLASKernelTrait.hpp>
-#include <scai/lama/LAMAInterfaceRegistry.hpp>
 
 // internal scai libraries
 #include <scai/tasking/SyncToken.hpp>
+#include <scai/kregistry/KernelRegistry.hpp>
 
 // external
 #include <mkl.h>
@@ -194,15 +194,18 @@ void MICBLAS3::gemm(
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void MICBLAS3::setInterface( BLASKernelTrait& BLAS )
+void MICBLAS3::registerKernels()
 {
-    SCAI_LOG_INFO( logger, "set BLAS3 routines for MIC in Interface" )
+    SCAI_LOG_INFO( logger, "register BLAS3 kernels for MIC in Kernel Registry" )
 
-    // Note: macro takes advantage of same name for routines and type definitions
-    //       ( e.g. routine CUDABLAS1::sum<ValueType> is set for BLAS::BLAS1::sum variable
+    using namespace scai::kregistry;
 
-    LAMA_INTERFACE_REGISTER_T( BLAS, gemm, float )
-    LAMA_INTERFACE_REGISTER_T( BLAS, gemm, double )
+    // ctx will contain the context for which registration is done, here MIC
+
+    common::ContextType ctx = common::context::MIC;
+
+    KernelRegistry::set<BLASKernelTrait::gemm<float> >( gemm, ctx );
+    KernelRegistry::set<BLASKernelTrait::gemm<double> >( gemm, ctx );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -211,8 +214,7 @@ void MICBLAS3::setInterface( BLASKernelTrait& BLAS )
 
 bool MICBLAS3::registerInterface()
 {
-    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( context::MIC );
-    setInterface( interface.BLAS );
+    registerKernels();
     return true;
 }
 

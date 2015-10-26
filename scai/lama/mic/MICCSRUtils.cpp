@@ -35,11 +35,11 @@
 #include <scai/lama/mic/MICCSRUtils.hpp>
 
 // local libray
-#include <scai/lama/LAMAInterface.hpp>
-#include <scai/lama/LAMAInterfaceRegistry.hpp>
+#include <scai/lama/UtilKernelTrait.hpp>
 
 // internal scai libraries
 #include <scai/hmemo/mic/MICSyncToken.hpp>
+#include <scai/kregistry/KernelRegistry.hpp>
 
 #include <scai/tracing.hpp>
 
@@ -1907,60 +1907,65 @@ ValueType MICCSRUtils::absMaxDiffVal(
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void MICCSRUtils::setInterface( CSRKernelTrait& CSRUtils )
+void MICCSRUtils::registerKernels()
 {
-    SCAI_LOG_INFO( logger, "set CSR routines for MIC in Interface" )
+    SCAI_LOG_INFO( logger, "register CSR kernels for MIC in Kernel Registry" )
 
-    LAMA_INTERFACE_REGISTER( CSRUtils, sizes2offsets )
+    using namespace scai::kregistry;
 
-    LAMA_INTERFACE_REGISTER( CSRUtils, validOffsets )
+    // ctx will contain the context for which registration is done, here MIC
 
-    LAMA_INTERFACE_REGISTER( CSRUtils, offsets2sizes )
-    LAMA_INTERFACE_REGISTER( CSRUtils, hasDiagonalProperty )
+    common::ContextType ctx = common::context::MIC;
 
-    LAMA_INTERFACE_REGISTER( CSRUtils, matrixAddSizes )
+    // Instantations for IndexType, not done by ARITHMETIC_TYPE macrods
 
-    LAMA_INTERFACE_REGISTER( CSRUtils, matrixMultiplySizes )
+    KernelRegistry::set<CSRKernelTrait::sizes2offsets>( sizes2offsets, ctx );
+    KernelRegistry::set<CSRKernelTrait::validOffsets>( validOffsets, ctx );
+
+    KernelRegistry::set<CSRKernelTrait::offsets2sizes>( offsets2sizes, ctx );
+    KernelRegistry::set<CSRKernelTrait::hasDiagonalProperty>( hasDiagonalProperty, ctx );
+    KernelRegistry::set<CSRKernelTrait::matrixAddSizes>( matrixAddSizes, ctx );
+    KernelRegistry::set<CSRKernelTrait::matrixMultiplySizes>( matrixMultiplySizes, ctx );
 
     /*
-     LAMA_INTERFACE_REGISTER_T( CSRUtils, convertCSR2CSC, float )
-     LAMA_INTERFACE_REGISTER_T( CSRUtils, convertCSR2CSC, double )
+      KernelRegistry::set<CSRKernelTrait::convertCSR2CSC<float> >( convertCSR2CSC, ctx );
+      KernelRegistry::set<CSRKernelTrait::convertCSR2CSC<double> >( convertCSR2CSC, ctx );
 
-     LAMA_INTERFACE_REGISTER_T( CSRUtils, sortRowElements, float )
-     LAMA_INTERFACE_REGISTER_T( CSRUtils, sortRowElements, double )
+      KernelRegistry::set<CSRKernelTrait::sortRowElements<float> >( sortRowElements, ctx );
+      KernelRegistry::set<CSRKernelTrait::sortRowElements<double> >( sortRowElements, ctx );
      */
 
-    LAMA_INTERFACE_REGISTER_TT( CSRUtils, scaleRows, float, float )
-    LAMA_INTERFACE_REGISTER_TT( CSRUtils, scaleRows, float, double )
-    LAMA_INTERFACE_REGISTER_TT( CSRUtils, scaleRows, double, float )
-    LAMA_INTERFACE_REGISTER_TT( CSRUtils, scaleRows, double, double )
+    KernelRegistry::set<CSRKernelTrait::scaleRows<float, float> >( scaleRows, ctx );
+    KernelRegistry::set<CSRKernelTrait::scaleRows<float, double> >( scaleRows, ctx );
+    KernelRegistry::set<CSRKernelTrait::scaleRows<double, float> >( scaleRows, ctx );
+    KernelRegistry::set<CSRKernelTrait::scaleRows<double, double> >( scaleRows, ctx );
 
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, normalGEMV, float )
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, normalGEMV, double )
+    KernelRegistry::set<CSRKernelTrait::normalGEMV<float> >( normalGEMV, ctx );
+    KernelRegistry::set<CSRKernelTrait::normalGEMV<double> >( normalGEMV, ctx );
 
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, sparseGEMV, float )
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, sparseGEMV, double )
+    KernelRegistry::set<CSRKernelTrait::sparseGEMV<float> >( sparseGEMV, ctx );
+    KernelRegistry::set<CSRKernelTrait::sparseGEMV<double> >( sparseGEMV, ctx );
 
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, gemm, float )
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, gemm, double )
+    KernelRegistry::set<CSRKernelTrait::gemm<float> >( gemm, ctx );
+    KernelRegistry::set<CSRKernelTrait::gemm<double> >( gemm, ctx );
 
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, matrixAdd, float )
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, matrixAdd, double )
+    KernelRegistry::set<CSRKernelTrait::matrixAdd<float> >( matrixAdd, ctx );
+    KernelRegistry::set<CSRKernelTrait::matrixAdd<double> >( matrixAdd, ctx );
 
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, matrixMultiply, float )
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, matrixMultiply, double )
+    KernelRegistry::set<CSRKernelTrait::matrixMultiply<float> >( matrixMultiply, ctx );
+    KernelRegistry::set<CSRKernelTrait::matrixMultiply<double> >( matrixMultiply, ctx );
 
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, jacobi, float )
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, jacobi, double )
+    KernelRegistry::set<CSRKernelTrait::jacobi<float> >( jacobi, ctx );
+    KernelRegistry::set<CSRKernelTrait::jacobi<double> >( jacobi, ctx );
 
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, jacobiHalo, float )
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, jacobiHalo, double )
+    KernelRegistry::set<CSRKernelTrait::jacobiHalo<float> >( jacobiHalo, ctx );
+    KernelRegistry::set<CSRKernelTrait::jacobiHalo<double> >( jacobiHalo, ctx );
 
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, jacobiHaloWithDiag, float )
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, jacobiHaloWithDiag, double )
+    KernelRegistry::set<CSRKernelTrait::jacobiHaloWithDiag<float> >( jacobiHaloWithDiag, ctx );
+    KernelRegistry::set<CSRKernelTrait::jacobiHaloWithDiag<double> >( jacobiHaloWithDiag, ctx );
 
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, absMaxDiffVal, float )
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, absMaxDiffVal, double )
+    KernelRegistry::set<CSRKernelTrait::absMaxDiffVal<float> >( absMaxDiffVal, ctx );
+    KernelRegistry::set<CSRKernelTrait::absMaxDiffVal<double> >( absMaxDiffVal, ctx );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1969,8 +1974,7 @@ void MICCSRUtils::setInterface( CSRKernelTrait& CSRUtils )
 
 bool MICCSRUtils::registerInterface()
 {
-    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( context::MIC );
-    setInterface( interface.CSRUtils );
+    registerKernels();
     return true;
 }
 

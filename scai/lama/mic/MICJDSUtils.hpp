@@ -204,7 +204,7 @@ public:
 
     /** Method for registration of module routines at the interface. */
 
-    static void setInterface( struct JDSUtilKernelTrait& JDSUtils );
+    static void registerKernels();
 
 private:
 

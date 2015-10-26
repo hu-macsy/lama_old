@@ -36,12 +36,11 @@
 
 // local library
 #include <scai/lama/mic/MICUtils.hpp>
-
-#include <scai/lama/LAMAInterface.hpp>
-#include <scai/lama/LAMAInterfaceRegistry.hpp>
+#include <scai/lama/UtilKernelTraits.hpp>
 
 // internal scai libraries
 #include <scai/tracing.hpp>
+#include <scai/kregistry/KernelRegistry.hpp>
 
 #include <scai/common/Assert.hpp>
 #include <scai/common/Settings.hpp>
@@ -180,7 +179,7 @@ void MICMKLCSRUtils::normalGEMV(
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void MICMKLCSRUtils::setInterface( CSRKernelTrait& CSRUtils )
+void MICMKLCSRUtils::registerKernels()
 {
     bool useMKL = true;
 
@@ -197,6 +196,18 @@ void MICMKLCSRUtils::setInterface( CSRKernelTrait& CSRUtils )
 
     // LAMA_INTERFACE_REGISTER_T( CSRUtils, normalGEMV, float )
 
+    SCAI_LOG_INFO( logger, "register Utils kernels for MIC in Kernel Registry" )
+
+    using namespace scai::kregistry;
+
+    // ctx will contain the context for which registration is done, here MIC
+
+    common::ContextType ctx = common::context::MIC;
+
+    // Instantations for IndexType, not done by ARITHMETIC_TYPE macrods
+
+    KernelRegistry::set<UtilKernelTrait::validIndexes>( validIndexes, ctx );
+
     LAMA_INTERFACE_REGISTER_T( CSRUtils, normalGEMV, double )
 }
 
@@ -206,8 +217,7 @@ void MICMKLCSRUtils::setInterface( CSRKernelTrait& CSRUtils )
 
 bool MICMKLCSRUtils::registerInterface()
 {
-    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( context::MIC );
-    setInterface( interface.CSRUtils );
+    registerKernels();
     return true;
 }
 

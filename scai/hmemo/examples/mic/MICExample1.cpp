@@ -8,6 +8,7 @@
 #include <unistd.h>
 
 using namespace scai;
+using namespace scai::common;
 using namespace scai::hmemo;
 
 SCAI_LOG_DEF_LOGGER( logger, "MICExample" )
@@ -66,7 +67,7 @@ void add( ValueType* array, const IndexType n )
 
 void printContextFactory()
 {
-    std::vector<context::ContextType> values;
+    std::vector<common::ContextType> values;
 
     Context::getCreateValues( values );
 

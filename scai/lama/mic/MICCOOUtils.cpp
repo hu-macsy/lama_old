@@ -38,13 +38,12 @@
 #include <scai/lama/mic/MICUtils.hpp>
 
 #include <scai/lama/openmp/OpenMP.hpp>
-
-#include <scai/lama/LAMAInterface.hpp>
-#include <scai/lama/LAMAInterfaceRegistry.hpp>
+#include <scai/lama/UtilKernelTrait.hpp>
 
 // internal scai libraries
 #include <scai/hmemo/mic/MICSyncToken.hpp>
 #include <scai/hmemo/mic/MICContext.hpp>
+#include <scai/kregistry/KernelRegistry.hpp>
 
 #include <scai/tracing.hpp>
 
@@ -430,31 +429,37 @@ void MICCOOUtils::jacobi(
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void MICCOOUtils::setInterface( COOKernelTrait& COOUtils )
+void MICCOOUtils::registerKernels()
 {
-    SCAI_LOG_INFO( logger, "set COO routines for MIC in Interface" )
+    SCAI_LOG_INFO( logger, "register COO kernels for MIC in Kernel Registry" )
 
-    LAMA_INTERFACE_REGISTER( COOUtils, offsets2ia )
+    using namespace scai::kregistry;
 
-    LAMA_INTERFACE_REGISTER_TT( COOUtils, setCSRData, IndexType, IndexType )
+    // ctx will contain the context for which registration is done, here MIC
 
-    LAMA_INTERFACE_REGISTER_TT( COOUtils, setCSRData, float, float )
-    LAMA_INTERFACE_REGISTER_TT( COOUtils, setCSRData, float, double )
-    LAMA_INTERFACE_REGISTER_TT( COOUtils, setCSRData, double, float )
-    LAMA_INTERFACE_REGISTER_TT( COOUtils, setCSRData, double, double )
+    common::ContextType ctx = common::context::MIC;
 
-    LAMA_INTERFACE_REGISTER( COOUtils, getCSRSizes )
+    KernelRegistry::set<COOKernelTrait::offsets2ia>( offsets2ia, ctx );
 
-    LAMA_INTERFACE_REGISTER_TT( COOUtils, getCSRValues, float, float )
-    LAMA_INTERFACE_REGISTER_TT( COOUtils, getCSRValues, float, double )
-    LAMA_INTERFACE_REGISTER_TT( COOUtils, getCSRValues, double, float )
-    LAMA_INTERFACE_REGISTER_TT( COOUtils, getCSRValues, double, double )
+    KernelRegistry::set<COOKernelTrait::setCSRData<IndexType, IndexType> >( setCSRData, ctx );
 
-    LAMA_INTERFACE_REGISTER_T( COOUtils, normalGEMV, float )
-    LAMA_INTERFACE_REGISTER_T( COOUtils, normalGEMV, double )
+    KernelRegistry::set<COOKernelTrait::setCSRData<float, float> >( setCSRData, ctx );
+    KernelRegistry::set<COOKernelTrait::setCSRData<float, double> >( setCSRData, ctx );
+    KernelRegistry::set<COOKernelTrait::setCSRData<double, float> >( setCSRData, ctx );
+    KernelRegistry::set<COOKernelTrait::setCSRData<double, double> >( setCSRData, ctx );
 
-    LAMA_INTERFACE_REGISTER_T( COOUtils, jacobi, float )
-    LAMA_INTERFACE_REGISTER_T( COOUtils, jacobi, double )
+    KernelRegistry::set<COOKernelTrait::getCSRSizes>( getCSRSizes, ctx );
+
+    KernelRegistry::set<COOKernelTrait::getCSRValues<float, float> >( getCSRValues, ctx );
+    KernelRegistry::set<COOKernelTrait::getCSRValues<float, double> >( getCSRValues, ctx );
+    KernelRegistry::set<COOKernelTrait::getCSRValues<double, float> >( getCSRValues, ctx );
+    KernelRegistry::set<COOKernelTrait::getCSRValues<double, double> >( getCSRValues, ctx );
+
+    KernelRegistry::set<COOKernelTrait::normalGEMV<float> >( normalGEMV, ctx );
+    KernelRegistry::set<COOKernelTrait::normalGEMV<double> >( normalGEMV, ctx );
+
+    KernelRegistry::set<COOKernelTrait::jacobi<float> >( jacobi, ctx );
+    KernelRegistry::set<COOKernelTrait::jacobi<double> >( jacobi, ctx );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -463,8 +468,7 @@ void MICCOOUtils::setInterface( COOKernelTrait& COOUtils )
 
 bool MICCOOUtils::registerInterface()
 {
-    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( context::MIC );
-    setInterface( interface.COOUtils );
+    registerKernels();
     return true;
 }
 

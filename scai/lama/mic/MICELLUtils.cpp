@@ -35,13 +35,13 @@
 #include <scai/lama/mic/MICELLUtils.hpp>
 
 // local project
-#include <scai/lama/LAMAInterface.hpp>
-#include <scai/lama/LAMAInterfaceRegistry.hpp>
+#include <scai/lama/UtilKernelTraits.hpp>
 
 // internal scai projects
 #include <scai/hmemo/mic/MICSyncToken.hpp>
 #include <scai/hmemo/mic/MICContext.hpp>
 #include <scai/tasking/NoSyncToken.hpp>
+#include <scai/kregistry/KernelRegistry.hpp>
 
 #include <scai/tracing.hpp>
 
@@ -1214,9 +1214,21 @@ void MICELLUtils::sparseGEMV(
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-void MICELLUtils::setInterface( ELLKernelTrait& ELLUtils )
+void MICELLUtils::registerKernels()
 {
     SCAI_LOG_INFO( logger, "set ELL routines for MIC in Interface" )
+
+    SCAI_LOG_INFO( logger, "register Utils kernels for MIC in Kernel Registry" )
+
+    using namespace scai::kregistry;
+
+    // ctx will contain the context for which registration is done, here MIC
+
+    common::ContextType ctx = common::context::MIC;
+
+    // Instantations for IndexType, not done by ARITHMETIC_TYPE macrods
+
+    KernelRegistry::set<UtilKernelTrait::validIndexes>( validIndexes, ctx );
 
     LAMA_INTERFACE_REGISTER( ELLUtils, countNonEmptyRowsBySizes )
     LAMA_INTERFACE_REGISTER( ELLUtils, setNonEmptyRowsBySizes )
@@ -1293,8 +1305,7 @@ void MICELLUtils::setInterface( ELLKernelTrait& ELLUtils )
 
 bool MICELLUtils::registerInterface()
 {
-    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( context::MIC );
-    setInterface( interface.ELLUtils );
+    registerKernels();
     return true;
 }
 

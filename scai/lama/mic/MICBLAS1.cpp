@@ -36,10 +36,10 @@
 
 // local library
 #include <scai/lama/BLASKernelTrait.hpp>
-#include <scai/lama/LAMAInterfaceRegistry.hpp>
 
 // internal scai libraries
 #include <scai/hmemo/mic/MICContext.hpp>
+#include <scai/kregistry/KernelRegistry.hpp>
 
 #include <scai/tasking/SyncToken.hpp>
 
@@ -500,39 +500,42 @@ void MICBLAS1::sum(
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void MICBLAS1::setInterface( BLASKernelTrait& BLAS )
+void MICBLAS1::registerKernels();
 {
-    SCAI_LOG_INFO( logger, "set BLAS1 routines for MIC in Interface" )
+    SCAI_LOG_INFO( logger, "register BLAS1 kernels for MIC in Kernel Registry" )
 
-    // Note: macro takes advantage of same name for routines and type definitions
-    //       ( e.g. routine CUDABLAS1::sum<ValueType> is set for BLAS::BLAS1::sum variable
+    using namespace scai::kregistry;
 
-    LAMA_INTERFACE_REGISTER_T( BLAS, scal, float )
-    LAMA_INTERFACE_REGISTER_T( BLAS, scal, double )
+    // ctx will contain the context for which registration is done, here MIC
 
-    LAMA_INTERFACE_REGISTER_T( BLAS, nrm2, float )
-    LAMA_INTERFACE_REGISTER_T( BLAS, nrm2, double )
+    common::ContextType ctx = common::context::MIC;
 
-    LAMA_INTERFACE_REGISTER_T( BLAS, asum, float )
-    LAMA_INTERFACE_REGISTER_T( BLAS, asum, double )
+    KernelRegistry::set<BLASKernelTrait::scal<float> >( scal, ctx );
+    KernelRegistry::set<BLASKernelTrait::scal<double> >( scal, ctx );
 
-    LAMA_INTERFACE_REGISTER_T( BLAS, iamax, float )
-    LAMA_INTERFACE_REGISTER_T( BLAS, iamax, double )
+    KernelRegistry::set<BLASKernelTrait::nrm2<float> >( nrm2, ctx );
+    KernelRegistry::set<BLASKernelTrait::nrm2<double> >( nrm2, ctx );
 
-    LAMA_INTERFACE_REGISTER_T( BLAS, swap, float )
-    LAMA_INTERFACE_REGISTER_T( BLAS, swap, double )
+    KernelRegistry::set<BLASKernelTrait::asum<float> >( asum, ctx );
+    KernelRegistry::set<BLASKernelTrait::asum<double> >( asum, ctx );
 
-    LAMA_INTERFACE_REGISTER_T( BLAS, copy, float )
-    LAMA_INTERFACE_REGISTER_T( BLAS, copy, double )
+    KernelRegistry::set<BLASKernelTrait::iamax<float> >( iamax, ctx );
+    KernelRegistry::set<BLASKernelTrait::iamax<double> >( iamax, ctx );
 
-    LAMA_INTERFACE_REGISTER_T( BLAS, axpy, float )
-    LAMA_INTERFACE_REGISTER_T( BLAS, axpy, double )
+    KernelRegistry::set<BLASKernelTrait::swap<float> >( swap, ctx );
+    KernelRegistry::set<BLASKernelTrait::swap<double> >( swap, ctx );
 
-    LAMA_INTERFACE_REGISTER_T( BLAS, dot, float )
-    LAMA_INTERFACE_REGISTER_T( BLAS, dot, double )
+    KernelRegistry::set<BLASKernelTrait::copy<float> >( copy, ctx );
+    KernelRegistry::set<BLASKernelTrait::copy<double> >( copy, ctx );
 
-    LAMA_INTERFACE_REGISTER_T( BLAS, sum, float )
-    LAMA_INTERFACE_REGISTER_T( BLAS, sum, double )
+    KernelRegistry::set<BLASKernelTrait::axpy<float> >( axpy, ctx );
+    KernelRegistry::set<BLASKernelTrait::axpy<double> >( axpy, ctx );
+
+    KernelRegistry::set<BLASKernelTrait::dot<float> >( dot, ctx );
+    KernelRegistry::set<BLASKernelTrait::dot<double> >( dot, ctx );
+
+    KernelRegistry::set<BLASKernelTrait::sum<float> >( sum, ctx );
+    KernelRegistry::set<BLASKernelTrait::sum<double> >( sum, ctx );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -541,8 +544,7 @@ void MICBLAS1::setInterface( BLASKernelTrait& BLAS )
 
 bool MICBLAS1::registerInterface()
 {
-    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( context::MIC );
-    setInterface( interface.BLAS );
+    registerKernels();
     return true;
 }
 

@@ -135,7 +135,7 @@ private:
      *  param[inout] UtilKernelTrait struct to register all routines implemented in MIC
      */
 
-    static void setInterface( struct UtilKernelTrait& Utils );
+    static void registerKernels();
 
     static bool initialized;
 

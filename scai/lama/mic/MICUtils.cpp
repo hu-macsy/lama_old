@@ -35,12 +35,13 @@
 #include <scai/lama/mic/MICUtils.hpp>
 
 // local project
-#include <scai/lama/LAMAInterfaceRegistry.hpp>
+#include <scai/lama/UtilKernelTrait.hpp>
 
 // other SCAI projects
 #include <scai/tracing.hpp>
 
 #include <scai/hmemo/mic/MICContext.hpp>
+#include <scai/kregistry/KernelRegistry.hpp>
 
 #include <scai/common/Constants.hpp>
 
@@ -569,73 +570,79 @@ void MICUtils::invert( ValueType array[], const IndexType n )
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void MICUtils::setInterface( UtilKernelTrait& Utils )
+void MICUtils::registerKernels()
 {
-    SCAI_LOG_INFO( logger, "set Utils routines for MIC in Interface" )
+    SCAI_LOG_INFO( logger, "register Utils kernels for MIC in Kernel Registry" )
 
-    LAMA_INTERFACE_REGISTER( Utils, validIndexes )
+    using namespace scai::kregistry;
 
-    LAMA_INTERFACE_REGISTER_T( Utils, scale, float )
-    LAMA_INTERFACE_REGISTER_T( Utils, scale, double )
+    // ctx will contain the context for which registration is done, here MIC
 
-    LAMA_INTERFACE_REGISTER_TT( Utils, setScale, float, float )
-    LAMA_INTERFACE_REGISTER_TT( Utils, setScale, double, float )
-    LAMA_INTERFACE_REGISTER_TT( Utils, setScale, float, double )
-    LAMA_INTERFACE_REGISTER_TT( Utils, setScale, double, double )
+    common::ContextType ctx = common::context::MIC;
 
-    LAMA_INTERFACE_REGISTER_T( Utils, sum, IndexType )
-    LAMA_INTERFACE_REGISTER_T( Utils, sum, float )
-    LAMA_INTERFACE_REGISTER_T( Utils, sum, double )
+    // Instantations for IndexType, not done by ARITHMETIC_TYPE macrods
 
-    LAMA_INTERFACE_REGISTER_T( Utils, setVal, IndexType )
-    LAMA_INTERFACE_REGISTER_T( Utils, setVal, float )
-    LAMA_INTERFACE_REGISTER_T( Utils, setVal, double )
+    KernelRegistry::set<UtilKernelTrait::validIndexes>( validIndexes, ctx );
 
-    LAMA_INTERFACE_REGISTER_T( Utils, setOrder, IndexType )
+    KernelRegistry::set<UtilKernelTrait::scale<float> >( scale, ctx );
+    KernelRegistry::set<UtilKernelTrait::scale<double> >( scale, ctx );
 
-    LAMA_INTERFACE_REGISTER_T( Utils, getValue, IndexType )
-    LAMA_INTERFACE_REGISTER_T( Utils, getValue, float )
-    LAMA_INTERFACE_REGISTER_T( Utils, getValue, double )
+    KernelRegistry::set<UtilKernelTrait::setScale<float, float> >( setScale, ctx );
+    KernelRegistry::set<UtilKernelTrait::setScale<double, float> >( setScale, ctx );
+    KernelRegistry::set<UtilKernelTrait::setScale<float, double> >( setScale, ctx );
+    KernelRegistry::set<UtilKernelTrait::setScale<double, double> >( setScale, ctx );
 
-    LAMA_INTERFACE_REGISTER_T( Utils, maxval, IndexType )
-    LAMA_INTERFACE_REGISTER_T( Utils, maxval, float )
-    LAMA_INTERFACE_REGISTER_T( Utils, maxval, double )
+    KernelRegistry::set<UtilKernelTrait::sum<IndexType> >( sum, ctx );
+    KernelRegistry::set<UtilKernelTrait::sum<float> >( sum, ctx );
+    KernelRegistry::set<UtilKernelTrait::sum<double> >( sum, ctx );
 
-    LAMA_INTERFACE_REGISTER_T( Utils, absMaxVal, float )
-    LAMA_INTERFACE_REGISTER_T( Utils, absMaxVal, double )
+    KernelRegistry::set<UtilKernelTrait::setVal<IndexType> >( setVal, ctx );
+    KernelRegistry::set<UtilKernelTrait::setVal<float> >( setVal, ctx );
+    KernelRegistry::set<UtilKernelTrait::setVal<double> >( setVal, ctx );
 
-    /*
-     LAMA_INTERFACE_REGISTER_T( Utils, absMaxDiffVal, float )
-     LAMA_INTERFACE_REGISTER_T( Utils, absMaxDiffVal, double )
-     */
+    KernelRegistry::set<UtilKernelTrait::setOrder<IndexType> >( setOrder, ctx );
 
-    LAMA_INTERFACE_REGISTER_T( Utils, isSorted, IndexType )
-    LAMA_INTERFACE_REGISTER_T( Utils, isSorted, float )
-    LAMA_INTERFACE_REGISTER_T( Utils, isSorted, double )
+    KernelRegistry::set<UtilKernelTrait::getValue<IndexType> >( getValue, ctx );
+    KernelRegistry::set<UtilKernelTrait::getValue<float> >( getValue, ctx );
+    KernelRegistry::set<UtilKernelTrait::getValue<double> >( getValue, ctx );
 
-    LAMA_INTERFACE_REGISTER_TT( Utils, setScatter, int, int )
+    KernelRegistry::set<UtilKernelTrait::maxval<IndexType> >( maxval, ctx );
+    KernelRegistry::set<UtilKernelTrait::maxval<float> >( maxval, ctx );
+    KernelRegistry::set<UtilKernelTrait::maxval<double> >( maxval, ctx );
 
-    LAMA_INTERFACE_REGISTER_TT( Utils, setScatter, float, float )
-    LAMA_INTERFACE_REGISTER_TT( Utils, setScatter, double, float )
-    LAMA_INTERFACE_REGISTER_TT( Utils, setScatter, float, double )
-    LAMA_INTERFACE_REGISTER_TT( Utils, setScatter, double, double )
+    KernelRegistry::set<UtilKernelTrait::absMaxVal<float> >( absMaxVal, ctx );
+    KernelRegistry::set<UtilKernelTrait::absMaxVal<double> >( absMaxVal, ctx );
 
-    LAMA_INTERFACE_REGISTER_TT( Utils, setGather, int, int )
+    KernelRegistry::set<UtilKernelTrait::absMaxDiffVal<float> >( absMaxDiffVal, ctx );
+    KernelRegistry::set<UtilKernelTrait::absMaxDiffVal<double> >( absMaxDiffVal, ctx );
 
-    LAMA_INTERFACE_REGISTER_TT( Utils, setGather, float, float )
-    LAMA_INTERFACE_REGISTER_TT( Utils, setGather, float, double )
-    LAMA_INTERFACE_REGISTER_TT( Utils, setGather, double, float )
-    LAMA_INTERFACE_REGISTER_TT( Utils, setGather, double, double )
+    KernelRegistry::set<UtilKernelTrait::isSorted<IndexType> >( isSorted, ctx );
+    KernelRegistry::set<UtilKernelTrait::isSorted<float> >( isSorted, ctx );
+    KernelRegistry::set<UtilKernelTrait::isSorted<double> >( isSorted, ctx );
 
-    LAMA_INTERFACE_REGISTER_TT( Utils, set, int, int )
+    KernelRegistry::set<UtilKernelTrait::setScatter<int, int> >( setScatter, ctx );
 
-    LAMA_INTERFACE_REGISTER_TT( Utils, set, float, float )
-    LAMA_INTERFACE_REGISTER_TT( Utils, set, float, double )
-    LAMA_INTERFACE_REGISTER_TT( Utils, set, double, float )
-    LAMA_INTERFACE_REGISTER_TT( Utils, set, double, double )
+    KernelRegistry::set<UtilKernelTrait::setScatter<float, float> >( setScatter, ctx );
+    KernelRegistry::set<UtilKernelTrait::setScatter<double, float> >( setScatter, ctx );
+    KernelRegistry::set<UtilKernelTrait::setScatter<float, double> >( setScatter, ctx );
+    KernelRegistry::set<UtilKernelTrait::setScatter<double, double> >( setScatter, ctx );
 
-    LAMA_INTERFACE_REGISTER_T( Utils, invert, float )
-    LAMA_INTERFACE_REGISTER_T( Utils, invert, double )
+    KernelRegistry::set<UtilKernelTrait::setGather<int, int> >( setGather, ctx );
+
+    KernelRegistry::set<UtilKernelTrait::setGather<float, float> >( setGather, ctx );
+    KernelRegistry::set<UtilKernelTrait::setGather<double, float> >( setGather, ctx );
+    KernelRegistry::set<UtilKernelTrait::setGather<float, double> >( setGather, ctx );
+    KernelRegistry::set<UtilKernelTrait::setGather<double, double> >( setGather, ctx );
+
+    KernelRegistry::set<UtilKernelTrait::set<int, int> >( set, ctx );
+
+    KernelRegistry::set<UtilKernelTrait::set<float, float> >( set, ctx );
+    KernelRegistry::set<UtilKernelTrait::set<double, float> >( set, ctx );
+    KernelRegistry::set<UtilKernelTrait::set<float, double> >( set, ctx );
+    KernelRegistry::set<UtilKernelTrait::set<double, double> >( set, ctx );
+
+    KernelRegistry::set<UtilKernelTrait::invert<float> >( invert, ctx );
+    KernelRegistry::set<UtilKernelTrait::invert<double> >( invert, ctx );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -644,8 +651,7 @@ void MICUtils::setInterface( UtilKernelTrait& Utils )
 
 bool MICUtils::registerInterface()
 {
-    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( context::MIC );
-    setInterface( interface.Utils );
+    registerKernels();
     return true;
 }
 

@@ -917,11 +917,24 @@ void MICJDSUtils::jacobiHalo(
 
 /* --------------------------------------------------------------------------- */
 
-void MICJDSUtils::setInterface( JDSUtilKernelTrait& JDSUtils )
+void MICJDSUtils::registerKernels()
 {
     SCAI_LOG_INFO( logger, "set JDS routines for MIC in Interface" )
 
     // Register all MIC routines of this class for the LAMA interface
+
+    SCAI_LOG_INFO( logger, "register Utils kernels for MIC in Kernel Registry" )
+
+    using namespace scai::kregistry;
+
+    // ctx will contain the context for which registration is done, here MIC
+
+    common::ContextType ctx = common::context::MIC;
+
+    // Instantations for IndexType, not done by ARITHMETIC_TYPE macrods
+
+    KernelRegistry::set<UtilKernelTrait::validIndexes>( validIndexes, ctx );
+
 
     LAMA_INTERFACE_REGISTER( JDSUtils, sortRows )
 
@@ -971,8 +984,7 @@ void MICJDSUtils::setInterface( JDSUtilKernelTrait& JDSUtils )
 
 bool MICJDSUtils::registerInterface()
 {
-    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( context::MIC );
-    setInterface( interface.JDSUtils );
+    registerKernels();
     return true;
 }
 
