@@ -3297,7 +3297,7 @@ void CUDACSRUtils::registerKernels()
 
     // ctx will contain the context for which registration is done, here Host
 
-    common::ContextType ctx = common::context::Host;
+    common::ContextType ctx = common::context::CUDA;
 
     // Instantations for IndexType, not done by ARITHMETIC_TYPE macrods
 
