@@ -595,11 +595,11 @@ bool DenseMatrix<ValueType>::hasScalaPack()
 
     /* Original code:
 
-    // check the LAMAInterface if ScalaPack is available ( at least on Host )
-
-    ContextPtr loc = Context::getContextPtr( context::Host );
+    // check the Kernel registry if ScalaPack is available ( at least on Host )
 
     typename BLASKernelTrait::SCALAPACK<ValueType>::inverse inverse = loc->getInterface().BLAS.inverse<ValueType>();
+
+    ContextPtr loc = Context::getContextPtr( context::Host );
 
     return inverse != NULL;
 

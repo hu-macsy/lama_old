@@ -670,7 +670,7 @@ private:
 
     void    computeOwners();
 
-    /** @brief Predicate to check if SCALapack is supported via LAMAInterface. */
+    /** @brief Predicate to check if SCALapack::inverse routine has been registered in kernel registry. */
 
     bool hasScalaPack();
 

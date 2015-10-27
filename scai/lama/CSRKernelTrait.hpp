@@ -25,10 +25,9 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Struct with traits for all LAMA utilities provided as kernels.
+ * @brief Struct with traits for all CSR utilities provided as kernels.
  * @author Thomas Brandes
- * @date 03.04.2013
- * @since 1.0.0
+ * @date 21.10.2015
  */
 #pragma once
 
@@ -48,11 +47,7 @@ namespace tasking
 namespace lama
 {
 
-/** @brief Interface for utility functions to be used in CSR storage.
- *
- *  This interface contains function pointer type definitions for all used routines
- *  and tables with actual values for the functions.
- */
+/** @brief Traits for kernel functions to be used in CSR storage.  */
 
 struct CSRKernelTrait
 {

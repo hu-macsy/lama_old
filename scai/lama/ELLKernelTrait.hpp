@@ -25,10 +25,9 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Struct with traits for all LAMA utilities provided as kernels.
+ * @brief Struct with traits for all ELL storage methods provided as kernels.
  * @author Thomas Brandes
- * @date 03.04.2013
- * @since 1.0.0
+ * @date 23.10.2015
  */
 #pragma once
 

@@ -1,5 +1,5 @@
 /**
- * @file CSRKernelTrait.hpp
+ * @file COOKernelTrait.hpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,10 +25,9 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Struct with traits for all LAMA utilities provided as kernels.
+ * @brief Struct with traits for all COO storage methods provided as kernels.
  * @author Thomas Brandes
- * @date 03.04.2013
- * @since 1.0.0
+ * @date 22.10.2015
  */
 #pragma once
 

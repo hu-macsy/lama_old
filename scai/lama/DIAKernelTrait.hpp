@@ -25,10 +25,9 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Struct with traits for all LAMA kernels needed by DIA storage 
+ * @brief Struct with traits for all DIA storage methods provided as kernels.
  * @author Thomas Brandes
- * @date 03.04.2013
- * @since 1.0.0
+ * @date 23.10.2015
  */
 #pragma once
 
@@ -215,7 +214,7 @@ struct DIAKernelTrait
     template<typename ValueType>
     struct absMaxVal
     {
-        /** This method returns the maximal absolute value of an ELLPACK matrix. */
+        /** This method returns the maximal absolute value of a DIA storage. */
 
         typedef ValueType (  *FuncType ) ( 
             const IndexType numRows,
