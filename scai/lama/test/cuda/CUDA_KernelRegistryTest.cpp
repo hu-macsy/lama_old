@@ -1,5 +1,5 @@
 /**
- * @file CUDA_InterfaceRegistryTest.cpp
+ * @file CUDA_KernelRegistryTest.cpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,18 +25,18 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Test of access to the LAMAInterface for CUDA device.
+ * @brief Test to verify that 'relevant' CUDA kernel implementations have been registered
  * @author: Thomas Brandes
- * @date 13.04.2013
- * @since 1.0.0
+ * @date 27.10.2015
  **/
 
 #include <boost/test/unit_test.hpp>
 #include <boost/mpl/list.hpp>
 
-#include <scai/lama/LAMAInterface.hpp>
-#include <scai/lama/LAMAInterfaceRegistry.hpp>
-#include <scai/lama/ContextFactory.hpp>
+#include <scai/lama/LAMAKernel.hpp>
+#include <scai/lama/UtilKernelTrait.hpp>
+
+#include <scai/hmemo/Context.hpp>
 
 using namespace scai::lama;
 using namespace scai::hmemo;
@@ -45,78 +45,52 @@ typedef boost::mpl::list<double, float> test_types;
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_SUITE( CUDA_InterfaceRegistry );
+BOOST_AUTO_TEST_SUITE( CUDA_KernelRegistry );
 
-SCAI_LOG_DEF_LOGGER( logger, "Test.CUDA_InterfaceRegistry" );
-
-/* --------------------------------------------------------------------- */
-
-BOOST_AUTO_TEST_CASE( hasInterfaceTest )
-{
-    // Test will take the default CUDA device
-    BOOST_CHECK( LAMAInterfaceRegistry::getRegistry().hasInterface( Context::CUDA ) );
-}
+SCAI_LOG_DEF_LOGGER( logger, "Test.CUDA_KernelRegistry" );
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( getInterfaceTest, ValueType, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( getKernelTest, ValueType, test_types )
 {
     // This test checks that CUDA routines have been registered correctly and are accessible
-    ContextPtr context = ContextFactory::getContext( Context::CUDA );
-    LAMA_INTERFACE_FN_T( scale, context, Utils, Transform, ValueType );
-    BOOST_CHECK( scale );
-    // normalGEMV is matrix-vector multiplication and is supported for each sparse matrix type
+
+    ContextPtr context = Context::getContextPtr( scai::common::context::CUDA );
+
     {
-        LAMA_INTERFACE_FN_T( normalGEMV, context, CSRUtils, Mult, ValueType );
-        BOOST_CHECK( normalGEMV );
+        LAMAKernel<UtilKernelTrait::scale<ValueType> > scale;
+        SCAI_LOG_INFO( logger, "scale = " << scale.printIt() )
+        BOOST_CHECK( scale[context] != NULL );
     }
+ 
     {
-        LAMA_INTERFACE_FN_T( normalGEMV, context, ELLUtils, Mult, ValueType );
-        BOOST_CHECK( normalGEMV );
+        LAMAKernel<CSRKernelTrait::normalGEMV<ValueType> > normalGEMV;
+        SCAI_LOG_INFO( logger, "CSR::normalGEMV = " << normalGEMV.printIt() )
+        BOOST_CHECK( normalGEMV[context] != NULL );
     }
+ 
     {
-        LAMA_INTERFACE_FN_T( normalGEMV, context, JDSUtils, Mult, ValueType );
-        BOOST_CHECK( normalGEMV );
+        LAMAKernel<ELLKernelTrait::normalGEMV<ValueType> > normalGEMV;
+        SCAI_LOG_INFO( logger, "ELL::normalGEMV = " << normalGEMV.printIt() )
+        BOOST_CHECK( normalGEMV[context] != NULL );
     }
+ 
     {
-        LAMA_INTERFACE_FN_T( normalGEMV, context, DIAUtils, Mult, ValueType );
-        BOOST_CHECK( normalGEMV );
+        LAMAKernel<JDSKernelTrait::normalGEMV<ValueType> > normalGEMV;
+        SCAI_LOG_INFO( logger, "JDS::normalGEMV = " << normalGEMV.printIt() )
+        BOOST_CHECK( normalGEMV[context] != NULL );
     }
+ 
     {
-        LAMA_INTERFACE_FN_T( normalGEMV, context, COOUtils, Mult, ValueType );
-        BOOST_CHECK( normalGEMV );
+        LAMAKernel<COOKernelTrait::normalGEMV<ValueType> > normalGEMV;
+        SCAI_LOG_INFO( logger, "COO::normalGEMV = " << normalGEMV.printIt() )
+        BOOST_CHECK( normalGEMV[context] != NULL );
     }
-    // gemv is matrix-vector multiplication from BLAS2 used for dense matrix times vector
+ 
     {
-        LAMA_INTERFACE_FN_T( gemv, context, BLAS, BLAS2, ValueType );
-        BOOST_CHECK( gemv );
+        LAMAKernel<DIAKernelTrait::normalGEMV<ValueType> > normalGEMV;
+        BOOST_CHECK( normalGEMV[context] != NULL );
     }
-    // normalGEVM is vector-matrix multiplication and is supported for each sparse matrix type
-    {
-        LAMA_INTERFACE_FN_T( normalGEVM, context, CSRUtils, Mult, ValueType );
-        BOOST_CHECK( normalGEVM );
-    }
-    {
-        LAMA_INTERFACE_FN_T( normalGEVM, context, ELLUtils, Mult, ValueType );
-        BOOST_CHECK( normalGEVM );
-    }
-    {
-        LAMA_INTERFACE_FN_T( normalGEVM, context, JDSUtils, Mult, ValueType );
-        BOOST_CHECK( normalGEVM );
-    }
-    {
-        LAMA_INTERFACE_FN_T( normalGEVM, context, DIAUtils, Mult, ValueType );
-        BOOST_CHECK( normalGEVM );
-    }
-    {
-        LAMA_INTERFACE_FN_T( normalGEVM, context, COOUtils, Mult, ValueType );
-        BOOST_CHECK( normalGEVM );
-    }
-    // BLAS.LAPACK<ValueType>.getrf is not availabe for CUDA
-    BOOST_CHECK_THROW( { LAMA_INTERFACE_FN_T( getrf, context, BLAS, LAPACK, ValueType ) }, Exception )
-    // BLAS.LAPACK<ValueType>.getrf is not availabe for CUDA but for Host
-    LAMA_INTERFACE_FN_DEFAULT_T( getrf, context, BLAS, LAPACK, ValueType )
-    BOOST_CHECK( getrf );
 }
 
 /* ------------------------------------------------------------------------- */
