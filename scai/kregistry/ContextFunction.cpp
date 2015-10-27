@@ -38,7 +38,7 @@ namespace scai
 {
 
 using common::context::MaxContext;
-using common::ContextType;
+using common::context::ContextType;
 
 namespace kregistry
 {

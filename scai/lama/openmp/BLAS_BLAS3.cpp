@@ -243,7 +243,7 @@ void BLAS_BLAS3::registerKernels()
 
     // ctx will contain the context for which registration is done, here Host
 
-    common::ContextType ctx = common::context::Host;
+    common::context::ContextType ctx = common::context::Host;
 
     // using BLAS wrappers might be disabled explicitly by environment variable
 

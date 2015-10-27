@@ -67,13 +67,15 @@
 // std
 #include <ostream>
 
-using namespace scai::common;
-using namespace scai::hmemo;
-
 namespace scai
 {
 
 using common::Complex;
+using common::scoped_array;
+
+namespace context = scai::common::context;
+
+using namespace hmemo;
 
 namespace lama
 {

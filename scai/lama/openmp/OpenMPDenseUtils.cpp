@@ -329,10 +329,11 @@ void OpenMPDenseUtils::scaleValue(
 void OpenMPDenseUtils::registerKernelFunctions()
 {
     using namespace scai::kregistry;
+    using namespace common::context;
 
     // ctx will contain the context for which registration is done, here Host
 
-    common::ContextType ctx = common::context::Host;
+    ContextType ctx = Host;
 
 #define KREGISTRY_DENSE2_REGISTER(z, J, TYPE )                                                                          \
     /* Conversions  */                                                                                                  \

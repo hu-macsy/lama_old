@@ -379,7 +379,7 @@ void OpenMPCOOUtils::registerKernels()
 
     // ctx will contain the context for which registration is done, here Host
 
-    common::ContextType ctx = common::context::Host;
+    common::context::ContextType ctx = common::context::Host;
 
     KernelRegistry::set<COOKernelTrait::offsets2ia>( offsets2ia, ctx );
     KernelRegistry::set<COOKernelTrait::getCSRSizes>( getCSRSizes, ctx );

@@ -57,9 +57,6 @@
 // boost
 #include <boost/preprocessor.hpp>
 
-using namespace scai::tasking;
-using namespace scai::hmemo;
-
 namespace scai
 {
 
@@ -68,6 +65,9 @@ namespace lama
 
 using common::shared_ptr;
 using tasking::SyncToken;
+
+using namespace scai::tasking;
+using namespace scai::hmemo;
 
 /* --------------------------------------------------------------------------- */
 
@@ -1537,7 +1537,7 @@ template<typename ValueType>
 void ELLStorage<ValueType>::jacobiIterateHalo(
     LAMAArray<ValueType>& localSolution,
     const MatrixStorage<ValueType>& localStorage,
-    const LAMAArray<ValueType>& oldHaloSolution,
+    const LAMAArray<ValueType>& haloOldSolution,
     const ValueType omega ) const
 {
     SCAI_REGION( "Storage.ELL.jacobiIterateHalo" )
@@ -1548,7 +1548,7 @@ void ELLStorage<ValueType>::jacobiIterateHalo(
     SCAI_ASSERT_EQUAL_DEBUG( mNumRows, localStorage.getNumRows() )
     SCAI_ASSERT_EQUAL_DEBUG( mNumRows, localStorage.getNumColumns() )
     SCAI_ASSERT_DEBUG( localStorage.hasDiagonalProperty(), localStorage << ": has not diagonal property" )
-    SCAI_ASSERT_EQUAL_DEBUG( mNumColumns, oldHaloSolution.size() )
+    SCAI_ASSERT_EQUAL_DEBUG( mNumColumns, haloOldSolution.size() )
 
     const LAMAArray<ValueType>* localDiagonal;
 
@@ -1577,7 +1577,7 @@ void ELLStorage<ValueType>::jacobiIterateHalo(
         // Note: tmpLocalDiagonal will be freed at end of routine
     }
 
-    jacobiIterateHalo( localSolution, *localDiagonal, oldHaloSolution, omega );
+    jacobiIterateHalo( localSolution, *localDiagonal, haloOldSolution, omega );
 
 }
 
@@ -1587,7 +1587,7 @@ template<typename ValueType>
 void ELLStorage<ValueType>::jacobiIterateHalo(
     LAMAArray<ValueType>& localSolution,
     const LAMAArray<ValueType>& localDiagonal,
-    const LAMAArray<ValueType>& oldHaloSolution,
+    const LAMAArray<ValueType>& haloOldSolution,
     const ValueType omega ) const
 {
     SCAI_REGION( "Storage.ELL.jacobiIterateHalo" )
@@ -1595,7 +1595,7 @@ void ELLStorage<ValueType>::jacobiIterateHalo(
     SCAI_LOG_INFO( logger, "HOST: Jacobi iteration on halo matrix data." )
 
     SCAI_ASSERT_EQUAL_DEBUG( mNumRows, localSolution.size() )
-    SCAI_ASSERT_EQUAL_DEBUG( mNumColumns, oldHaloSolution.size() )
+    SCAI_ASSERT_EQUAL_DEBUG( mNumColumns, haloOldSolution.size() )
 
     static LAMAKernel<ELLKernelTrait::jacobiHalo<ValueType> > jacobiHalo;
 
@@ -1609,7 +1609,7 @@ void ELLStorage<ValueType>::jacobiIterateHalo(
         ReadAccess<IndexType> haloIA( mIA, loc );
         ReadAccess<IndexType> haloJA( mJA, loc );
         ReadAccess<ValueType> haloValues( mValues, loc );
-        ReadAccess<ValueType> rOldHaloSolution( oldHaloSolution, loc );
+        ReadAccess<ValueType> rOldHaloSolution( haloOldSolution, loc );
 
         const IndexType numNonEmptyRows = mRowIndexes.size();
 

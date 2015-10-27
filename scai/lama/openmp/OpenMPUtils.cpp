@@ -471,7 +471,7 @@ void OpenMPUtils::setInterface()
 
     // ctx will contain the context for which registration is done, here Host
 
-    common::ContextType ctx = common::context::Host;
+    common::context::ContextType ctx = common::context::Host;
 
     // Instantations for IndexType, not done by ARITHMETIC_TYPE macrods
 

@@ -101,7 +101,7 @@ public:
      *  @returns  index to a corresponding entry for ContextData.
      */
 
-    ContextDataIndex acquireAccess( ContextPtr context, common::AccessKind kind, size_t allocSize, size_t validSize );
+    ContextDataIndex acquireAccess( ContextPtr context, common::context::AccessKind kind, size_t allocSize, size_t validSize );
 
     /** This routine must be called when an access is released, otherwise further accesses are not allowed. 
      *
@@ -109,7 +109,7 @@ public:
      *  @param[in] kind    kind of access, read or write
      */
 
-    void releaseAccess( ContextDataIndex index, common::AccessKind kind );
+    void releaseAccess( ContextDataIndex index, common::context::AccessKind kind );
 
     /**
      * @brief Query the capacity ( in number of elements ) at a certain context.
@@ -133,7 +133,7 @@ public:
 
     /** Return true if there is at least one write access to any context data. */
 
-    bool locked( common::AccessKind kind ) const;
+    bool locked( common::context::AccessKind kind ) const;
 
     void invalidateAll();
 
@@ -165,7 +165,7 @@ public:
 
     /** This routine tries to find a context where valid data is available */
 
-    ContextPtr getValidContext( const common::ContextType preferredType );
+    ContextPtr getValidContext( const common::context::ContextType preferredType );
 
     void reserve( ContextPtr context, const size_t size, const size_t validSize );
 
@@ -217,9 +217,9 @@ private:
     mutable common::Thread::Mutex mAccessMutex; // needed to make accesses thread-safe, must not be recursive 
     mutable common::Thread::Condition mAccessCondition;  // notify if all accesses are released
 
-    void lockAccess( common::AccessKind kind, ContextPtr context );
+    void lockAccess( common::context::AccessKind kind, ContextPtr context );
 
-    void unlockAccess( common::AccessKind kind );
+    void unlockAccess( common::context::AccessKind kind );
 
     int mLock[common::context::MaxAccessKind];
 
@@ -229,7 +229,7 @@ private:
     bool  multiContext;   // multiple reads at different Context
     bool  multiThreaded;  // multiple reads by different threads
 
-    bool hasAccessConflict( common::AccessKind kind ) const;
+    bool hasAccessConflict( common::context::AccessKind kind ) const;
 };
 
 

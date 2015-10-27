@@ -358,12 +358,12 @@ public:
     virtual Scalar maxNorm() const;
 
     static void vectorPlusVector(
-        hmemo::ContextPtr prefContext,
-        hmemo::LAMAArray<ValueType>& result,
+        scai::hmemo::ContextPtr prefContext,
+        scai::hmemo::LAMAArray<ValueType>& result,
         const ValueType alpha,
-        const hmemo::LAMAArray<ValueType>& x,
+        const scai::hmemo::LAMAArray<ValueType>& x,
         const ValueType beta,
-        const hmemo::LAMAArray<ValueType>& y );
+        const scai::hmemo::LAMAArray<ValueType>& y );
 
     static SyncToken* vectorPlusVectorAsync(
         hmemo::ContextPtr prefContext,

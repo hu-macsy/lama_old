@@ -571,7 +571,7 @@ void CUDAUtils::registerKernels()
 {
     using namespace scai::kregistry;
 
-    common::ContextType ctx = common::context::CUDA;
+    common::context::ContextType ctx = common::context::CUDA;
 
     SCAI_LOG_INFO( logger, "set general utilty routines for CUDA in Interface" )
 

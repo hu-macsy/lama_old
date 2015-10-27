@@ -70,25 +70,25 @@ public:
 
     void assign( const _ContextFunction& other );
 
-    inline VoidFunction get( common::ContextType ctx ) const
+    inline VoidFunction get( common::context::ContextType ctx ) const
     {
         return mContextFuncArray[ ctx ];
     }
 
-    inline void set( common::ContextType ctx, VoidFunction fn )
+    inline void set( common::context::ContextType ctx, VoidFunction fn )
     {
         mContextFuncArray[ ctx ] = fn;
     }
 
     std::string printIt() const;
 
-    common::ContextType validContext( common::ContextType preferedCtx );
+    common::context::ContextType validContext( common::context::ContextType preferedCtx );
 
-    common::ContextType validContext( const _ContextFunction& other, common::ContextType preferedCtx );
+    common::context::ContextType validContext( const _ContextFunction& other, common::context::ContextType preferedCtx );
 
-    common::ContextType validContext( const _ContextFunction& other1, 
+    common::context::ContextType validContext( const _ContextFunction& other1, 
                                       const _ContextFunction& other2, 
-                                      common::ContextType preferedCtx );
+                                      common::context::ContextType preferedCtx );
 
 protected:
 
@@ -120,14 +120,14 @@ public:
 
     // provide typed get
 
-    FunctionType get( common::ContextType ctx ) const
+    FunctionType get( common::context::ContextType ctx ) const
     {
         return ( FunctionType ) mContextFuncArray[ ctx ];
     }
 
     // provide typed set
 
-    void set( common::ContextType ctx, FunctionType fn )
+    void set( common::context::ContextType ctx, FunctionType fn )
     {
         mContextFuncArray[ ctx ] = ( VoidFunction ) fn;
     }

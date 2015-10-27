@@ -161,7 +161,7 @@ void CUDALAPACK::registerKernels()
 
     // ctx will contain the context for which registration is done, here Host
 
-    common::ContextType ctx = common::context::CUDA;
+    common::context::ContextType ctx = common::context::CUDA;
 
     KernelRegistry::set<BLASKernelTrait::laswp<float> >( laswp, ctx );
     KernelRegistry::set<BLASKernelTrait::laswp<double> >( laswp, ctx ); 

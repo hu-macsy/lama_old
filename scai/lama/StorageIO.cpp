@@ -54,11 +54,11 @@
 // boost
 #include <boost/preprocessor.hpp>
 
-using namespace scai::hmemo;
 
 namespace scai
 {
 
+using namespace hmemo;
 using common::unique_ptr;
 using common::scoped_array;
 

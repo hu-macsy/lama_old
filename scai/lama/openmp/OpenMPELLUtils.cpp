@@ -1186,7 +1186,7 @@ void OpenMPELLUtils::registerKernelRoutines()
 
     // ctx will contain the context for which registration is done, here Host
 
-    common::ContextType ctx = common::context::Host;
+    common::context::ContextType ctx = common::context::Host;
 
     KernelRegistry::set<ELLKernelTrait::countNonEmptyRowsBySizes>( countNonEmptyRowsBySizes, ctx );  
     KernelRegistry::set<ELLKernelTrait::setNonEmptyRowsBySizes>( setNonEmptyRowsBySizes, ctx );  

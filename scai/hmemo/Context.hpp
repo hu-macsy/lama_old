@@ -91,7 +91,7 @@ typedef common::shared_ptr<const Context> ContextPtr;
  */
 class COMMON_DLL_IMPORTEXPORT Context: 
   
-    public  common::Factory1<common::ContextType, int, ContextPtr>,
+    public  common::Factory1<common::context::ContextType, int, ContextPtr>,
     public  common::Printable,
     private common::NonCopyable
 {
@@ -101,7 +101,7 @@ public:
 
     /** Method to get the type of the context. */
 
-    common::ContextType getType() const;
+    common::context::ContextType getType() const;
 
     /** @brief  Predicate to check in a context whether a certain memory class can be used.
      *
@@ -178,7 +178,7 @@ public:
      *
      *  @throws Exception if the context of the requested type is not available
      */
-    static ContextPtr getContextPtr( const common::ContextType type = common::context::Host, int deviceNr = -1 );
+    static ContextPtr getContextPtr( const common::context::ContextType type = common::context::Host, int deviceNr = -1 );
 
     /** @brief getHostPtr() as abbreviation of getContextPtr( context::Host ) */
 
@@ -192,17 +192,17 @@ public:
      * @param[in] type  is the type of context that is wanted
      * @return          if a context of the passed type is available
      */
-    static bool hasContext( const common::ContextType type );
+    static bool hasContext( const common::context::ContextType type );
 
 protected:
 
     /** Default constructor, can only be called by base classes. */
 
-    Context( common::ContextType type );
+    Context( common::context::ContextType type );
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
-    common::ContextType mContextType;
+    common::context::ContextType mContextType;
 
     mutable bool mEnabled; //!<  if true the context is currently accessed
 
@@ -211,12 +211,12 @@ protected:
     mutable int mLine;//!< Line number where context has been enabled
 };
 
-inline common::ContextType Context::getType() const
+inline common::context::ContextType Context::getType() const
 {
     return mContextType;
 }
 
-inline bool Context::hasContext( const common::ContextType type )
+inline bool Context::hasContext( const common::context::ContextType type )
 {
     return canCreate( type );
 }

@@ -1,5 +1,5 @@
 /**
- * @file scai/common/TestMacros.hpp
+ * @file scai/common/test/TestMacros.hpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -174,17 +174,17 @@ inline std::string getEnvContext()
  * @return the current context as a ContextType from a std::string
  */
 
-inline scai::common::ContextType mapEnvContexttoContextType( std::string contextname )
+inline scai::common::context::ContextType mapEnvContexttoContextType( std::string contextname )
 {
-    using namespace scai::common;
+    using namespace scai::common::context;
 
 	ContextType myContext;
-    std::map<std::string, scai::common::ContextType> contextmap =
-        boost::assign::map_list_of ( "Host", context::Host )
-        ( "CUDA", context::CUDA )
-        ( "OPENCL", context::OpenCL )
-        ( "MIC", context::MIC )
-        ( "MaxContext", context::MaxContext );
+    std::map<std::string, ContextType> contextmap =
+        boost::assign::map_list_of ( "Host", Host )
+        ( "CUDA", CUDA )
+        ( "OPENCL", OpenCL )
+        ( "MIC", MIC )
+        ( "MaxContext", MaxContext );
     myContext = contextmap[contextname];
     return myContext;
 }
@@ -288,8 +288,8 @@ inline scai::common::ContextType mapEnvContexttoContextType( std::string context
  */
 
 #define CONTEXTLOOP()                                                                                                  \
-    std::list<scai::common::ContextType> listofcontexts;                                                                             \
-    std::list<scai::common::ContextType>::iterator Iter;                                                                             \
+    std::list<scai::common::context::ContextType> listofcontexts;                                                      \
+    std::list<scai::common::context::ContextType>::iterator Iter;                                                      \
     std::string contexttype;                                                                                           \
     contexttype = getEnvContext();                                                                                     \
     if ( contexttype == "*" )                                                                                          \
@@ -297,7 +297,7 @@ inline scai::common::ContextType mapEnvContexttoContextType( std::string context
         SCAI_LOG_INFO( logger, "LAMA_TEST_CONTEXT is not set or has value '*', so all available contexts will be used." );  \
         for ( int i = 0; i < scai::common::context::MaxContext; ++i )                                                  \
         {                                                                                                              \
-            scai::common::ContextType ctx = static_cast<scai::common::ContextType>( i + 1 );                         \
+            scai::common::context::ContextType ctx = static_cast<scai::common::context::ContextType>( i + 1 );         \
             if ( Context::hasContext( ctx ) )                                                                          \
             {                                                                                                          \
                 listofcontexts.push_back( ctx );                                                                       \

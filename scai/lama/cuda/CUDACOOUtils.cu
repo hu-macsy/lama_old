@@ -726,7 +726,7 @@ void CUDACOOUtils::registerKernels()
 
     // ctx will contain the context for which registration is done, here Host
 
-    common::ContextType ctx = common::context::CUDA;
+    common::context::ContextType ctx = common::context::CUDA;
 
     KernelRegistry::set<COOKernelTrait::offsets2ia>( offsets2ia, ctx );
     KernelRegistry::set<COOKernelTrait::setCSRData<IndexType, IndexType> >( setCSRData, ctx );

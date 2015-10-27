@@ -43,7 +43,7 @@ namespace lama
 {
 
 /** Define class LAMAKernel that deals always with KernelTrait;
-    it also combines it with ContexPtr instead of ContextType
+    it also combines it with ContexPtr instead of context::ContextType
 */
 
 template<typename KernelTrait>
@@ -68,8 +68,8 @@ public:
     {
         SCAI_ASSERT_DEBUG( defaultContext.get(), "NULL context" );
 
-        common::ContextType defCtx = defaultContext->getType();
-        common::ContextType runCtx = kregistry::_ContextFunction::validContext( defCtx );
+        common::context::ContextType defCtx = defaultContext->getType();
+        common::context::ContextType runCtx = kregistry::_ContextFunction::validContext( defCtx );
 
         if ( runCtx == defCtx )
         {
@@ -85,8 +85,8 @@ public:
     {
         SCAI_ASSERT_DEBUG( defaultContext.get(), "NULL context" );
 
-        common::ContextType defCtx = defaultContext->getType();
-        common::ContextType runCtx = kregistry::_ContextFunction::validContext( other, defCtx );
+        common::context::ContextType defCtx = defaultContext->getType();
+        common::context::ContextType runCtx = kregistry::_ContextFunction::validContext( other, defCtx );
 
         if ( runCtx == defCtx )
         {
@@ -108,8 +108,8 @@ public:
     {
         SCAI_ASSERT_DEBUG( defaultContext.get(), "NULL context" );
 
-        common::ContextType defCtx = defaultContext->getType();
-        common::ContextType runCtx = kregistry::_ContextFunction::validContext( other1, other2, defCtx );
+        common::context::ContextType defCtx = defaultContext->getType();
+        common::context::ContextType runCtx = kregistry::_ContextFunction::validContext( other1, other2, defCtx );
 
         if ( runCtx == defCtx )
         {

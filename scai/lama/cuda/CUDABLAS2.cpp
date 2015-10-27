@@ -253,7 +253,7 @@ void CUDABLAS2::registerKernels()
 
     // ctx will contain the context for which registration is done, here Host
 
-    common::ContextType ctx = common::context::CUDA;
+    common::context::ContextType ctx = common::context::CUDA;
 
     SCAI_LOG_INFO( logger, "set BLAS2 routines for CUDA at Kernel Registry" )
 

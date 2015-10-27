@@ -76,12 +76,6 @@ namespace context
     COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const AccessKind& kind );
 }
 
-// Make ContexType and AccessKind visible, but not enum values. 
-
-using context::AccessKind;
-
-using context::ContextType;
-
 } /* end namespace common */
 
 } /* end namespace scai */

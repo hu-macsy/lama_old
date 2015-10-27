@@ -906,7 +906,7 @@ namespace lama
 
         // ctx will contain the context for which registration is done, here Host
 
-        common::ContextType ctx = common::context::CUDA;
+        common::context::ContextType ctx = common::context::CUDA;
 
         SCAI_LOG_INFO( logger, "set DIA routines for CUDA in Interface" )
 

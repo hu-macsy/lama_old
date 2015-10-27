@@ -685,7 +685,7 @@ void BLAS_BLAS1::registerKernels()
 
     // ctx will contain the context for which registration is done, here Host
 
-    common::ContextType ctx = common::context::Host;
+    common::context::ContextType ctx = common::context::Host;
 
 #define LAMA_BLAS1_REGISTER(z, I, _)                                          \
     KernelRegistry::set<BLASKernelTrait::scal<ARITHMETIC_HOST_TYPE_##I> >( scal, ctx, true );    \

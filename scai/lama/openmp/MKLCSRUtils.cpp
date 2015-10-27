@@ -251,7 +251,7 @@ void MKLCSRUtils::registerKernels()
 {
     using kregistry::KernelRegistry;
 
-    common::ContextType ctx = common::context::Host;
+    common::context::ContextType ctx = common::context::Host;
 
     bool useMKL = true;
 

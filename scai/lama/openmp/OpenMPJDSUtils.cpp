@@ -829,7 +829,7 @@ void OpenMPJDSUtils::registerKernelRoutines()
 
     // ctx will contain the context for which registration is done, here Host
 
-    common::ContextType ctx = common::context::Host;
+    common::context::ContextType ctx = common::context::Host;
 
     KernelRegistry::set<JDSKernelTrait::sortRows>( sortRows, ctx );
     KernelRegistry::set<JDSKernelTrait::setInversePerm>( setInversePerm, ctx );

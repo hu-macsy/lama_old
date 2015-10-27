@@ -35,7 +35,7 @@
 namespace scai
 {
 
-using common::ContextType;
+using common::context::ContextType;
 
 namespace kregistry
 {

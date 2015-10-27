@@ -539,7 +539,7 @@ void OpenMPDIAUtils::registerKernels()
 
     // ctx will contain the context for which registration is done, here Host
 
-    common::ContextType ctx = common::context::Host;
+    common::context::ContextType ctx = common::context::Host;
 
     // use of BOOST_PP_REPEAT to register for all value types
     // use of nested BOOST_PP_REPEAT to get all pairs of value types for conversions
