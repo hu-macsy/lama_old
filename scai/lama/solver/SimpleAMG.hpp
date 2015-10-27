@@ -86,7 +86,7 @@ public:
     Solver& getSmoother( unsigned int level );
     Solver& getCoarseLevelSolver();
 
-    void setSmootherContext( ContextPtr smootherContext );
+    void setSmootherContext( hmemo::ContextPtr smootherContext );
 
     void setHostOnlyLevel( IndexType hostOnlyLevel );
 
@@ -149,7 +149,7 @@ protected:
     unsigned int mMinVarsCoarseLevel;
     SolverPtr mCoarseLevelSolver;
     SolverPtr mSmoother;
-    ContextPtr mSmootherContext;
+    hmemo::ContextPtr mSmootherContext;
 
 private:
 

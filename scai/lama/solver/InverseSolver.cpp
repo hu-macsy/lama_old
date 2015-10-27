@@ -133,7 +133,7 @@ void InverseSolver::solveImpl()
 
 /* --------------------------------------------------------------------------- */
 
-void InverseSolver::setContextPtr( ContextPtr context )
+void InverseSolver::setContextPtr( hmemo::ContextPtr context )
 {
     Solver::setContextPtr( context );
 

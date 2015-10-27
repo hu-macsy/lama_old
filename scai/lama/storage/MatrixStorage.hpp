@@ -47,12 +47,6 @@
 namespace scai
 {
 
-using hmemo::Context;
-using hmemo::ContextPtr;
-using hmemo::ContextArray;
-using hmemo::LAMAArray;
-using hmemo::LAMAArrayRef;
-
 namespace tasking
 {
 	class SyncToken;
@@ -173,18 +167,18 @@ public:
      *  @param[in] context specifies where the storage should be allocated and where operations should be done
      */
 
-    void setContextPtr( ContextPtr context );
+    void setContextPtr( hmemo::ContextPtr context );
 
     /** @brief Getter for the preferred context of the storage data, returns pointer. */
 
-    inline ContextPtr getContextPtr() const;
+    inline hmemo::ContextPtr getContextPtr() const;
 
     /** @brief Pure method that prefetches storage data into a given context.
      *
      *  @param context specifies location where data will resize
      */
 
-    virtual void prefetch( const ContextPtr context ) const = 0;
+    virtual void prefetch( const hmemo::ContextPtr context ) const = 0;
 
     /** @brief Method that prefetches storage data to its preferred location. */
 
@@ -231,7 +225,7 @@ public:
      *
      */
 
-    virtual void getRow( ContextArray& row, const IndexType i ) const = 0;
+    virtual void getRow( hmemo::ContextArray& row, const IndexType i ) const = 0;
 
     /** This method returns the diagonal of the matrix.
      *
@@ -241,13 +235,13 @@ public:
      * for which implicit conversion is available.
      */
 
-    virtual void getDiagonal( ContextArray& diagonal ) const = 0;
+    virtual void getDiagonal( hmemo::ContextArray& diagonal ) const = 0;
 
     /** This method sets the diagonal of a matrix storage.
      *
      * Implementation of this routine must be provided by all derived classes.
      */
-    virtual void setDiagonal( const ContextArray& diagonal ) = 0;
+    virtual void setDiagonal( const hmemo::ContextArray& diagonal ) = 0;
 
     virtual void setDiagonal( const Scalar value ) = 0;
 
@@ -267,7 +261,7 @@ public:
      *
      * Each row of the matrix is scaled with the corresponding value.
      */
-    virtual void scale( const ContextArray& values ) = 0;
+    virtual void scale( const hmemo::ContextArray& values ) = 0;
 
     /******************************************************************
      *  General operations on a matrix                                 *
@@ -305,7 +299,7 @@ public:
 
     virtual IndexType getNumValues() const;
 
-    inline const LAMAArray<IndexType>& getRowIndexes() const;
+    inline const hmemo::LAMAArray<IndexType>& getRowIndexes() const;
 
     /**
      * @brief Get the number of entries in each row.
@@ -323,7 +317,7 @@ public:
      * This routine must be provided by each matrix storage format.
      */
 
-    virtual void buildCSRSizes( LAMAArray<IndexType>& csrIA ) const = 0;
+    virtual void buildCSRSizes( hmemo::LAMAArray<IndexType>& csrIA ) const = 0;
 
     /**
      * @brief Get the matrix data of the storage in CSR format.
@@ -348,9 +342,9 @@ public:
      */
 
     virtual void buildCSRData(
-        LAMAArray<IndexType>& csrIA,
-        LAMAArray<IndexType>& csrJA,
-        ContextArray& csrValues ) const = 0;
+        hmemo::LAMAArray<IndexType>& csrIA,
+        hmemo::LAMAArray<IndexType>& csrJA,
+        hmemo::ContextArray& csrValues ) const = 0;
 
     /** Each storage class must provide a routine to set CSR storage data.
      *
@@ -366,9 +360,9 @@ public:
         const IndexType numRows,
         const IndexType numColumns,
         const IndexType numValues,
-        const LAMAArray<IndexType>& csrIA,
-        const LAMAArray<IndexType>& csrJA,
-        const ContextArray& csrValues ) = 0;
+        const hmemo::LAMAArray<IndexType>& csrIA,
+        const hmemo::LAMAArray<IndexType>& csrJA,
+        const hmemo::ContextArray& csrValues ) = 0;
 
     /** Assign of matrix storage with any format or value type.
      *
@@ -394,13 +388,13 @@ public:
 
     /** Help routines to convert arrays with sizes to offsets and vice versa */
 
-    static void offsets2sizes( LAMAArray<IndexType>& offsets );
+    static void offsets2sizes( hmemo::LAMAArray<IndexType>& offsets );
 
-    static void offsets2sizes( LAMAArray<IndexType>& sizes, const LAMAArray<IndexType>& offsets );
+    static void offsets2sizes( hmemo::LAMAArray<IndexType>& sizes, const hmemo::LAMAArray<IndexType>& offsets );
 
     /** Utitily to compute the offset array from a sizes array. */
 
-    static IndexType sizes2offsets( LAMAArray<IndexType>& sizes );
+    static IndexType sizes2offsets( hmemo::LAMAArray<IndexType>& sizes );
 
     /** Returns the number of bytes needed for the current matrix.
      *
@@ -496,7 +490,7 @@ protected:
 
     IndexType mNumColumns; //!< number of matrix columns
 
-    LAMAArray<IndexType> mRowIndexes; //!< used in case of sparse representation of ia
+    hmemo::LAMAArray<IndexType> mRowIndexes; //!< used in case of sparse representation of ia
 
     float mCompressThreshold; //!< ratio at which compression is done, 0 for never, 1 for always
 
@@ -504,7 +498,7 @@ protected:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger ) //!< logger for this matrix format
 
-    ContextPtr    mContext;//!< preferred context for the storage
+    hmemo::ContextPtr    mContext;//!< preferred context for the storage
 
 protected:
 
@@ -575,7 +569,7 @@ public:
     void setDenseData(
         const IndexType numRows,
         const IndexType numColumns,
-        const ContextArray& values,
+        const hmemo::ContextArray& values,
         const ValueType eps = 0.0 );
 
     /**
@@ -682,9 +676,9 @@ public:
      *  For efficiency a derived class might override this method, e.g. for CSR storage.
      */
     virtual void buildCSCData(
-        LAMAArray<IndexType>& cscIA,
-        LAMAArray<IndexType>& cscJA,
-        LAMAArray<ValueType>& cscValues ) const;
+        hmemo::LAMAArray<IndexType>& cscIA,
+        hmemo::LAMAArray<IndexType>& cscJA,
+        hmemo::LAMAArray<ValueType>& cscValues ) const;
 
     /** Format conversion of matrix storage. A default implementation is provided using CSR data.
      *  Derived clauses might override this method with more efficient solutions.
@@ -726,28 +720,28 @@ public:
     /** Conversion routine of Compressed Sparse Row data to Compressed Sparse Column.  */
 
     static void convertCSR2CSC(
-        LAMAArray<IndexType>& colIA,
-        LAMAArray<IndexType>& colJA,
-        LAMAArray<ValueType>& colValues,
+        hmemo::LAMAArray<IndexType>& colIA,
+        hmemo::LAMAArray<IndexType>& colJA,
+        hmemo::LAMAArray<ValueType>& colValues,
         const IndexType numColumns,
-        const LAMAArray<IndexType>& rowIA,
-        const LAMAArray<IndexType>& rowJA,
-        const LAMAArray<ValueType>& rowValues,
-        const ContextPtr loc );
+        const hmemo::LAMAArray<IndexType>& rowIA,
+        const hmemo::LAMAArray<IndexType>& rowJA,
+        const hmemo::LAMAArray<ValueType>& rowValues,
+        const hmemo::ContextPtr loc );
     /**
      *  Method that joins rows of another matrix storage
      *
      *   row(i) of out contains all elements of in(k) with rowIndexes[k] == i
      */
     static void joinRows(
-        LAMAArray<IndexType>& outIA,
-        LAMAArray<IndexType>& outJA,
-        LAMAArray<ValueType>& outValues,
+        hmemo::LAMAArray<IndexType>& outIA,
+        hmemo::LAMAArray<IndexType>& outJA,
+        hmemo::LAMAArray<ValueType>& outValues,
         const IndexType numRows,
-        const LAMAArray<IndexType>& rowIndexes,
-        const LAMAArray<IndexType>& inIA,
-        const LAMAArray<IndexType>& inJA,
-        const LAMAArray<ValueType>& inValues );
+        const hmemo::LAMAArray<IndexType>& rowIndexes,
+        const hmemo::LAMAArray<IndexType>& inIA,
+        const hmemo::LAMAArray<IndexType>& inJA,
+        const hmemo::LAMAArray<ValueType>& inValues );
 
     /**
      * Assignment operator for matrix storage. Using 'assign'
@@ -802,26 +796,26 @@ public:
      */
 
     virtual void matrixTimesVector(
-        LAMAArray<ValueType>& result,
+        hmemo::LAMAArray<ValueType>& result,
         const ValueType alpha,
-        const LAMAArray<ValueType>& x,
+        const hmemo::LAMAArray<ValueType>& x,
         const ValueType beta,
-        const LAMAArray<ValueType>& y ) const;
+        const hmemo::LAMAArray<ValueType>& y ) const;
 
     virtual void vectorTimesMatrix(
-        LAMAArray<ValueType>& result,
+        hmemo::LAMAArray<ValueType>& result,
         const ValueType alpha,
-        const LAMAArray<ValueType>& x,
+        const hmemo::LAMAArray<ValueType>& x,
         const ValueType beta,
-        const LAMAArray<ValueType>& y ) const;
+        const hmemo::LAMAArray<ValueType>& y ) const;
 
     virtual void matrixTimesVectorN(
-        LAMAArray<ValueType>& result,
+        hmemo::LAMAArray<ValueType>& result,
         const IndexType n,
         const ValueType alpha,
-        const LAMAArray<ValueType>& x,
+        const hmemo::LAMAArray<ValueType>& x,
         const ValueType beta,
-        const LAMAArray<ValueType>& y ) const;
+        const hmemo::LAMAArray<ValueType>& y ) const;
 
     /** This method implements result = alpha * thisMatrix * x + beta * y
      *  that is executed asynchronously.
@@ -833,18 +827,18 @@ public:
      */
 
     virtual tasking::SyncToken* matrixTimesVectorAsync(
-        LAMAArray<ValueType>& result,
+        hmemo::LAMAArray<ValueType>& result,
         const ValueType alpha,
-        const LAMAArray<ValueType>& x,
+        const hmemo::LAMAArray<ValueType>& x,
         const ValueType beta,
-        const LAMAArray<ValueType>& y ) const;
+        const hmemo::LAMAArray<ValueType>& y ) const;
 
     virtual tasking::SyncToken* vectorTimesMatrixAsync(
-        LAMAArray<ValueType>& result,
+        hmemo::LAMAArray<ValueType>& result,
         const ValueType alpha,
-        const LAMAArray<ValueType>& x,
+        const hmemo::LAMAArray<ValueType>& x,
         const ValueType beta,
-        const LAMAArray<ValueType>& y ) const;
+        const hmemo::LAMAArray<ValueType>& y ) const;
 
     /** Assign this = alpha * a
      *
@@ -942,17 +936,17 @@ public:
      */
 
     virtual void jacobiIterate(
-        LAMAArray<ValueType>& solution,
-        const LAMAArray<ValueType>& oldSolution,
-        const LAMAArray<ValueType>& rhs,
+        hmemo::LAMAArray<ValueType>& solution,
+        const hmemo::LAMAArray<ValueType>& oldSolution,
+        const hmemo::LAMAArray<ValueType>& rhs,
         const ValueType omega ) const;
 
     /** Asynchrounous version of jacobiIterate */
 
     virtual tasking::SyncToken* jacobiIterateAsync(
-        LAMAArray<ValueType>& solution,
-        const LAMAArray<ValueType>& oldSolution,
-        const LAMAArray<ValueType>& rhs,
+        hmemo::LAMAArray<ValueType>& solution,
+        const hmemo::LAMAArray<ValueType>& oldSolution,
+        const hmemo::LAMAArray<ValueType>& rhs,
         const ValueType omega ) const;
 
     /** Jacobi iteration step on a halo storage.
@@ -969,9 +963,9 @@ public:
      */
 
     virtual void jacobiIterateHalo(
-        LAMAArray<ValueType>& localSolution,
+        hmemo::LAMAArray<ValueType>& localSolution,
         const MatrixStorage<ValueType>& localStorage,
-        const LAMAArray<ValueType>& haloOldSolution,
+        const hmemo::LAMAArray<ValueType>& haloOldSolution,
         const ValueType omega ) const;
 
     /** Jacobi iteration step on a halo storage.
@@ -987,9 +981,9 @@ public:
      */
 
     virtual void jacobiIterateHalo(
-        LAMAArray<ValueType>& localSolution,
-        const LAMAArray<ValueType>& localDiagonal,
-        const LAMAArray<ValueType>& haloOldSolution,
+        hmemo::LAMAArray<ValueType>& localSolution,
+        const hmemo::LAMAArray<ValueType>& localDiagonal,
+        const hmemo::LAMAArray<ValueType>& haloOldSolution,
         const ValueType omega ) const;
 
     // Note: Asynchronous version of jacobiIterateHalo not supported
@@ -1043,7 +1037,7 @@ protected:
 /* ------------------------------------------------------------------------- */
 /* ------------------------------------------------------------------------- */
 
-ContextPtr _MatrixStorage::getContextPtr() const
+hmemo::ContextPtr _MatrixStorage::getContextPtr() const
 {
     return mContext;
 }
@@ -1063,7 +1057,7 @@ bool _MatrixStorage::hasDiagonalProperty() const
     return mDiagonalProperty;
 }
 
-const LAMAArray<IndexType>& _MatrixStorage::getRowIndexes() const
+const hmemo::LAMAArray<IndexType>& _MatrixStorage::getRowIndexes() const
 {
     return mRowIndexes;
 }
@@ -1080,6 +1074,8 @@ void MatrixStorage<ValueType>::setRawCSRData(
     const IndexType* const ja,
     const OtherValueType* const values )
 {
+    using hmemo::LAMAArrayRef;
+
     // wrap the pointer data into LAMA arrays ( without copies )
 
     LAMAArrayRef<IndexType> csrIA( numRows + 1, ia );

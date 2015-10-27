@@ -479,8 +479,6 @@ void DenseStorageView<ValueType>::matrixTimesVector(
 
     SCAI_LOG_INFO( logger, *this << ": matrixTimesVector on " << *loc )
 
-    // not used here: LAMA_INTERFACE_FN_T( normalGEMV, loc, DenseUtils, Mult, ValueType )
-
     // using BLAS2 interface requires result and y to be aliased
 
     if( beta == scai::common::constants::ZERO )

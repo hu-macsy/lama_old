@@ -80,7 +80,7 @@ public:
         //TODO: LAMAArray?
         common::shared_ptr<Vector> mOldSolution;
         SolutionProxy mProxyOldSolution;
-        common::shared_ptr<ContextArray> mDiagonal;
+        common::shared_ptr<hmemo::ContextArray> mDiagonal;
     };
 
     /**
@@ -112,20 +112,20 @@ private:
 
     template<typename ValueType>
     void iterateSync(
-        LAMAArray<ValueType>& solution,
+        hmemo::LAMAArray<ValueType>& solution,
         const SparseMatrix<ValueType>& coefficients,
-        const LAMAArray<ValueType>& localOldSolution,
-        LAMAArray<ValueType>& haloOldSolution,
-        const LAMAArray<ValueType>& rhs,
+        const hmemo::LAMAArray<ValueType>& localOldSolution,
+        hmemo::LAMAArray<ValueType>& haloOldSolution,
+        const hmemo::LAMAArray<ValueType>& rhs,
         const ValueType omega );
 
     template<typename ValueType>
     void iterateAsync(
-        LAMAArray<ValueType>& solution,
+        hmemo::LAMAArray<ValueType>& solution,
         const SparseMatrix<ValueType>& coefficients,
-        const LAMAArray<ValueType>& localOldSolution,
-        LAMAArray<ValueType>& haloOldSolution,
-        const LAMAArray<ValueType>& rhs,
+        const hmemo::LAMAArray<ValueType>& localOldSolution,
+        hmemo::LAMAArray<ValueType>& haloOldSolution,
+        const hmemo::LAMAArray<ValueType>& rhs,
         const ValueType omega );
 };
 

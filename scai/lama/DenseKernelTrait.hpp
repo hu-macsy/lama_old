@@ -190,35 +190,6 @@ struct DenseKernelTrait
 
         static const char* getId() { return "Dense.setDiagonalValue"; }
     };
-
-    template<typename ValueType>
-    struct normalGEMV
-    {
-        /** result = alpha * CSR-Matrix * x + b * y.
-         *
-         *  @param result is the result vector
-         *  @param alpha is scaling factor for matrix x vector
-         *  @param x is input vector for matrix multiplication
-         *  @param beta is scaling factor for additional vector
-         *  @param y is additional input vector to add
-         *  @param numRows is number of elements for all vectors and rows of matrix
-         *  @param numColumns is the number of columns, size of x
-         *  @param numValues, array with the dense matrix values
-         *  @param syncToken optional, if available starts asynchronous computation
-         */
-
-        typedef void ( *FuncType ) ( ValueType result[],
-                        const ValueType alpha,
-                        const ValueType x[],
-                        const ValueType beta,
-                        const ValueType y[],
-                        const IndexType numRows,
-                        const IndexType numColumns,
-                        const ValueType denseValues[],
-                        tasking::SyncToken* syncToken );
-
-        static const char* getId() { return "Dense.normalGEMV"; }
-    };
 };
 
 } /* end namespace lama */

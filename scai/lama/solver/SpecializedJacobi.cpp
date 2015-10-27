@@ -97,6 +97,8 @@ SpecializedJacobi::SpecializedJacobiRuntime::~SpecializedJacobiRuntime()
 
 void SpecializedJacobi::initialize( const Matrix& coefficients )
 {
+    using hmemo::ContextArray;
+
 //    {
 //        const _SparseMatrix* sparseMatrix = dynamic_cast<const _SparseMatrix*>( &coefficients );
 //
@@ -240,6 +242,8 @@ void SpecializedJacobi::iterate()
 template<typename ValueType>
 void SpecializedJacobi::iterateTyped( const SparseMatrix<ValueType>& coefficients )
 {
+    using hmemo::LAMAArray;
+
     SCAI_REGION( "Solver.SpJacobi.iterateTyped" )
 
     SCAI_LOG_INFO( logger,
@@ -274,7 +278,7 @@ void SpecializedJacobi::iterateTyped( const SparseMatrix<ValueType>& coefficient
         DenseVector<ValueType>& denseSolution = dynamic_cast<DenseVector<ValueType>&>( *getRuntime().mSolution );
         const DenseVector<ValueType>& denseRhs = dynamic_cast<const DenseVector<ValueType>&>( *getRuntime().mRhs );
 
-        ContextPtr localContext = coefficients.getLocalStorage().getContextPtr();
+        hmemo::ContextPtr localContext = coefficients.getLocalStorage().getContextPtr();
 
         if( mContext )
         {

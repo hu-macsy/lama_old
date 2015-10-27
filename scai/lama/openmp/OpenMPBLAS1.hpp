@@ -152,6 +152,9 @@ public:
         ValueType* z,
         tasking::SyncToken* syncToken );
 
+    /**
+     * @brief This method registers all OpenMP implementations of BLAS1 routines in kernel registry.
+     */
     static void registerKernels();
 
 private:

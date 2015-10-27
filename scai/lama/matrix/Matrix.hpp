@@ -134,13 +134,13 @@ public:
      *
      *  @return an auto pointer to the LAMA array.
      *
-     *  Same as ContextArray::create( this.getValueType() )
+     *  Same as hmemo::ContextArray::create( this.getValueType() )
      *
      *  Value type is known only at runtime, so pointer to the base class
      *  is returned. Auto pointer indicates that calling routine takes ownership of
      *  the allocated array.
      */
-    ContextArray* createArray() const;
+    hmemo::ContextArray* createArray() const;
 
     /**
      * @brief Clears the full matrix, resets global and local sizes to 0.
@@ -213,7 +213,7 @@ public:
      *
      *  The following must be valid: values.size() == rowDist->getLocalSize() * colDist->getGlobalSize()
      */
-    virtual void setDenseData( DistributionPtr rowDist, DistributionPtr colDist, const ContextArray& values, Scalar eps =
+    virtual void setDenseData( DistributionPtr rowDist, DistributionPtr colDist, const hmemo::ContextArray& values, Scalar eps =
                                    Scalar( 0 ) ) = 0;
 
     /** This method set a matrix with the values owned by this partition in CSR format
@@ -235,9 +235,9 @@ public:
         DistributionPtr rowDist,
         DistributionPtr colDist,
         const IndexType numValues,
-        const LAMAArray<IndexType>& ia,
-        const LAMAArray<IndexType>& ja,
-        const ContextArray& values ) = 0;
+        const hmemo::LAMAArray<IndexType>& ia,
+        const hmemo::LAMAArray<IndexType>& ja,
+        const hmemo::ContextArray& values ) = 0;
 
     /** This method sets raw dense data in the same way as setDenseData but with raw value array */
 
@@ -253,7 +253,7 @@ public:
 
         // use of LAMAArrayRef instead of LAMAArray avoids additional copying of values
 
-        const LAMAArrayRef<ValueType> valueArray( n * m, values );
+        const hmemo::LAMAArrayRef<ValueType> valueArray( n * m, values );
 
         setDenseData( rowDist, colDist, valueArray, Scalar( eps ) );
     }
@@ -273,9 +273,9 @@ public:
 
         // use of LAMAArrayRef instead of LAMAArray avoids additional copying of values
 
-        const LAMAArrayRef<IndexType> iaArray( n + 1, ia );
-        const LAMAArrayRef<IndexType> jaArray( numValues, ja );
-        const LAMAArrayRef<ValueType> valueArray( numValues, values );
+        const hmemo::LAMAArrayRef<IndexType> iaArray( n + 1, ia );
+        const hmemo::LAMAArrayRef<IndexType> jaArray( numValues, ja );
+        const hmemo::LAMAArrayRef<ValueType> valueArray( numValues, values );
 
         setCSRData( rowDist, colDist, numValues, iaArray, jaArray, valueArray );
     }
@@ -559,7 +559,7 @@ public:
      * Note: Only for sparse matrices it is possible to specify separate locations for
      *       local and halo computations.
      */
-    virtual void setContextPtr( const ContextPtr context ) = 0;
+    virtual void setContextPtr( const hmemo::ContextPtr context ) = 0;
 
     /**
      * @brief Set individual context for local and halo part of the matrix.
@@ -569,14 +569,14 @@ public:
      *
      *  Note: Only sparse matrices will override this method, others will ignore second argument.
      */
-    virtual void setContextPtr( const ContextPtr localContext, const ContextPtr haloContext );
+    virtual void setContextPtr( const hmemo::ContextPtr localContext, const hmemo::ContextPtr haloContext );
 
     /**
      *  @brief Getter routine for the context.
      *
      *  Note: Only for SparseMatrix the context of the halo can be queried.
      */
-    virtual ContextPtr getContextPtr() const = 0;
+    virtual hmemo::ContextPtr getContextPtr() const = 0;
 
     /**
      * @brief SyncKind describes if the communication and computation should be done synchronously or asynchronously.
