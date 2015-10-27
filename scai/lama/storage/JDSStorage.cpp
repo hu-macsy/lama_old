@@ -636,7 +636,7 @@ void JDSStorage<ValueType>::setIdentity( const IndexType size )
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
-void JDSStorage<ValueType>::setupData( ContextPtr preferredLoc )
+void JDSStorage<ValueType>::setupData( ContextPtr context )
 {
     SCAI_LOG_INFO( logger, "setupData" )
 
@@ -645,7 +645,7 @@ void JDSStorage<ValueType>::setupData( ContextPtr preferredLoc )
     static LAMAKernel<UtilKernelTrait::getValue<IndexType> > getValue;
     static LAMAKernel<JDSKernelTrait::ilg2dlg> ilg2dlg;
 
-    ContextPtr loc = getValue.getValidContext( ilg2dlg, preferredLoc );
+    ContextPtr loc = getValue.getValidContext( ilg2dlg, context );
 
     ReadAccess<IndexType> ilg( mIlg, loc );
     WriteOnlyAccess<IndexType> dlg( mDlg, loc, mNumDiagonals );
@@ -666,14 +666,14 @@ void JDSStorage<ValueType>::setupData( ContextPtr preferredLoc )
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
-void JDSStorage<ValueType>::sortRows( ContextPtr defaultLoc )
+void JDSStorage<ValueType>::sortRows( ContextPtr context )
 {
     SCAI_LOG_INFO( logger, *this << "sortRows, number of jagged diagonals = " << mNumDiagonals )
 
     static LAMAKernel<UtilKernelTrait::maxval<IndexType> > maxval;
     static LAMAKernel<JDSKernelTrait::sortRows> sortRows;
 
-    ContextPtr loc = maxval.getValidContext( sortRows, defaultLoc );
+    ContextPtr loc = maxval.getValidContext( sortRows, context );
 
     // sort the rows according to the array ilg, take sorting over in perm
     WriteAccess<IndexType> ilg( mIlg, loc );
@@ -694,20 +694,20 @@ void JDSStorage<ValueType>::buildCSR(
     LAMAArray<IndexType>& ia,
     LAMAArray<IndexType>* ja,
     LAMAArray<OtherValueType>* values,
-    const ContextPtr preferredLoc ) const
+    const ContextPtr context ) const
 {
     SCAI_REGION( "Storage.JDS->CSR" )
 
     SCAI_LOG_INFO( logger,
                    "buildCSR<" << common::getScalarType<OtherValueType>() << ">" 
-                    << " from JDS<" << common::getScalarType<ValueType>() << ">" << " on " << *preferredLoc )
+                    << " from JDS<" << common::getScalarType<ValueType>() << ">" << " on " << *context )
 
     static LAMAKernel<UtilKernelTrait::setScatter<IndexType, IndexType> > setScatter;
     static LAMAKernel<JDSKernelTrait::getCSRValues<ValueType, OtherValueType> > getCSRValues;
     static LAMAKernel<CSRKernelTrait::sizes2offsets> sizes2offsets;
     static LAMAKernel<JDSKernelTrait::setInversePerm> setInversePerm;
 
-    ContextPtr loc = setScatter.getValidContext( preferredLoc );
+    ContextPtr loc = setScatter.getValidContext( context );
 
     loc = getCSRValues.getValidContext( loc );
     loc = sizes2offsets.getValidContext( loc );
@@ -1563,13 +1563,13 @@ void JDSStorage<ValueType>::print() const
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
-void JDSStorage<ValueType>::prefetch( const ContextPtr location ) const
+void JDSStorage<ValueType>::prefetch( const ContextPtr context ) const
 {
-    mDlg.prefetch( location );
-    mIlg.prefetch( location );
-    mPerm.prefetch( location );
-    mJa.prefetch( location );
-    mValues.prefetch( location );
+    mDlg.prefetch( context );
+    mIlg.prefetch( context );
+    mPerm.prefetch( context );
+    mJa.prefetch( context );
+    mValues.prefetch( context );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

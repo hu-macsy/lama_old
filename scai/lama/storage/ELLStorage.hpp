@@ -184,14 +184,14 @@ public:
      * @param[out] ia is the CSR offset array
      * @param[out] ja is the array with the column indexes (optional)
      * @param[out] values is the array with the non-zero matrix values (optional)
-     * @param[in]  loc is the Context where conversion should be done
+     * @param[in]  context is the preferred context where conversion should be done
      */
     template<typename OtherValueType>
     void buildCSR(
         LAMAArray<IndexType>& ia,
         LAMAArray<IndexType>* ja,
         LAMAArray<OtherValueType>* values,
-        const ContextPtr loc ) const;
+        const ContextPtr context ) const;
 
     /**
      * @brief fills ELLPACK sparse matrix by csr sparse data.
@@ -202,7 +202,7 @@ public:
      * @param[in] ia         row pointer of the input csr sparse matrix
      * @param[in] ja         column indexes of the input csr sparse matrix
      * @param[in] values     the data values of the input csr sparse matrix
-     * @param[in]  loc is the Context where conversion should be done
+     * @param[in] context is the Context where conversion should be done
      */
     template<typename OtherValueType>
     void setCSRDataImpl(
@@ -212,7 +212,7 @@ public:
         const LAMAArray<IndexType>& ia,
         const LAMAArray<IndexType>& ja,
         const LAMAArray<OtherValueType>& values,
-        const ContextPtr loc );
+        const ContextPtr context );
 
     void setELLData(
         const IndexType numRows,
@@ -296,9 +296,9 @@ public:
 
     ValueType getValue( const IndexType i, const IndexType j ) const;
 
-    /** Initiate an asynchronous data transfer to a specified location. */
+    /** Initiate an asynchronous data transfer to a specified context. */
 
-    void prefetch( const ContextPtr location ) const;
+    void prefetch( const ContextPtr context ) const;
 
     /** Will wait for all outstanding asynchronous data transfers. */
 
@@ -466,7 +466,7 @@ private:
      *  a certain percentage ( mThreshold ).
      */
 
-    void buildRowIndexes( const ContextPtr loc );
+    void buildRowIndexes( const ContextPtr context );
 
     /** Logger for this class. */
 

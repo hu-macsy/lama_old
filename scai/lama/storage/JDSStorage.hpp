@@ -168,7 +168,7 @@ public:
      *  @param[out] ia is the CSR offset array
      *  @param[out] ja is the array with the column indexes (optional)
      *  @param[out] values is the array with the non-zero matrix values (optional)
-     *  @param[in]  loc is the Context where conversion should be done
+     *  @param[in]  context is the Context where conversion should be done
      */
 
     template<typename OtherValueType>
@@ -176,7 +176,7 @@ public:
         LAMAArray<IndexType>& ia,
         LAMAArray<IndexType>* ja,
         LAMAArray<OtherValueType>* values,
-        const ContextPtr loc ) const;
+        const ContextPtr context ) const;
 
     /**
      * Template version with given value type.
@@ -189,8 +189,11 @@ public:
         const LAMAArray<IndexType>& ia,
         const LAMAArray<IndexType>& ja,
         const LAMAArray<OtherValueType>& values,
-        const ContextPtr loc );
+        const ContextPtr context );
 
+     /**
+      * Fill up a JDS storage with the given arrays.
+      */
     void setJDSData(
         const IndexType numRows,
         const IndexType numColumns,
@@ -356,7 +359,7 @@ public:
 
     /** Initiate an asynchronous data transfer to a specified location. */
 
-    void prefetch( const ContextPtr location ) const;
+    void prefetch( const ContextPtr context ) const;
 
     /** Will wait for all outstanding asynchronous data transfers. */
 
@@ -404,12 +407,14 @@ private:
 
     /**
      *  @brief Help routine for stable sort of ilg and setting up perm correctly
+     *
+     *  @param context is the preferred context where to execute it
      */
-    void sortRows( ContextPtr loc );
+    void sortRows( ContextPtr context );
 
     /** Help routine that sets up mDlg and allocates mJa and mValues after mIlg defined. */
 
-    void setupData( ContextPtr loc );
+    void setupData( ContextPtr context );
 
     void print() const;
 

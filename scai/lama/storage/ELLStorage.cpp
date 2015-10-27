@@ -373,19 +373,20 @@ void ELLStorage<ValueType>::buildCSR(
     LAMAArray<IndexType>& ia,
     LAMAArray<IndexType>* ja,
     LAMAArray<OtherValueType>* values,
-    const ContextPtr preferredLoc ) const
+    const ContextPtr context ) const
 {
     SCAI_REGION( "Storage.ELL->CSR" )
 
-    SCAI_LOG_INFO( logger,
-                   "buildCSR<" << common::getScalarType<OtherValueType>() << ">" 
-                    << " from ELL<" << common::getScalarType<ValueType>() << ">" << " on " << *preferredLoc )
-
-    static LAMAKernel<CSRKernelTrait::sizes2offsets> sizes2offsets;
     static LAMAKernel<UtilKernelTrait::set<IndexType, IndexType> > set;
     static LAMAKernel<ELLKernelTrait::getCSRValues<ValueType, OtherValueType> > getCSRValues;
+    static LAMAKernel<CSRKernelTrait::sizes2offsets> sizes2offsets;
 
-    const ContextPtr loc = getCSRValues.getValidContext( sizes2offsets, preferredLoc );
+    const ContextPtr loc = getCSRValues.getValidContext( sizes2offsets, set, context );
+
+    SCAI_LOG_INFO( logger,
+                   "buildCSR<" << common::getScalarType<OtherValueType>() << ">" 
+                    << " from ELL<" << common::getScalarType<ValueType>() << ">" 
+                    << " on " << *loc << " ( preferred on " << *context << " )" )
 
     ReadAccess<IndexType> ellSizes( mIA, loc );
     WriteAccess<IndexType> csrIA( ia, loc );
@@ -412,8 +413,8 @@ void ELLStorage<ValueType>::buildCSR(
     WriteOnlyAccess<IndexType> csrJA( *ja, loc, numValues );
     WriteOnlyAccess<OtherValueType> csrValues( *values, loc, numValues );
 
-    getCSRValues[loc]( csrJA.get(), csrValues.get(), csrIA.get(), mNumRows, mNumValuesPerRow, ellSizes.get(), ellJA.get(),
-                       ellValues.get() );
+    getCSRValues[loc]( csrJA.get(), csrValues.get(), csrIA.get(), mNumRows, mNumValuesPerRow, 
+                       ellSizes.get(), ellJA.get(), ellValues.get() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -427,12 +428,12 @@ void ELLStorage<ValueType>::setCSRDataImpl(
     const LAMAArray<IndexType>& ia,
     const LAMAArray<IndexType>& ja,
     const LAMAArray<OtherValueType>& values,
-    const ContextPtr prefLoc )
+    const ContextPtr context )
 {
     SCAI_REGION( "Storage.ELL<-CSR" )
 
     SCAI_LOG_INFO( logger,
-                   "set CSR data on " << *prefLoc << ": numRows = " << numRows << ", numColumns = " << numColumns 
+                   "set CSR data on " << *context << ": numRows = " << numRows << ", numColumns = " << numColumns 
                    << ", numValues = " << numValues << ", compress threshold = " << mCompressThreshold )
 
     if( numRows == 0 )
@@ -453,7 +454,7 @@ void ELLStorage<ValueType>::setCSRDataImpl(
     static LAMAKernel<UtilKernelTrait::maxval<IndexType> > maxval;
     static LAMAKernel<ELLKernelTrait::setCSRValues<ValueType, OtherValueType> > setCSRValues;
 
-    ContextPtr loc = offsets2sizes.getValidContext( hasDiagonalProperty, setCSRValues, prefLoc );
+    ContextPtr loc = offsets2sizes.getValidContext( hasDiagonalProperty, setCSRValues, context );
 
     // build array with non-zero values per row
 
@@ -864,17 +865,17 @@ ValueType ELLStorage<ValueType>::getValue( const IndexType i, const IndexType j 
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void ELLStorage<ValueType>::prefetch( const ContextPtr location ) const
+void ELLStorage<ValueType>::prefetch( const ContextPtr context ) const
 {
-    SCAI_LOG_INFO( logger, "prefetch # location " << location )
-    SCAI_LOG_DEBUG( logger, "Starting prefetch of "<<*this<<" to "<<location )
+    SCAI_LOG_INFO( logger, "prefetch # context " << context )
+    SCAI_LOG_DEBUG( logger, "Starting prefetch of "<<*this<<" to "<<context )
 
-    mRowIndexes.prefetch( location );
-    mIA.prefetch( location );
-    mJA.prefetch( location );
-    mValues.prefetch( location );
+    mRowIndexes.prefetch( context );
+    mIA.prefetch( context );
+    mJA.prefetch( context );
+    mValues.prefetch( context );
 
-    SCAI_LOG_DEBUG( logger, "Finished prefetch of "<<*this<<" to "<<location )
+    SCAI_LOG_DEBUG( logger, "Finished prefetch of " << *this << " to " << context )
 }
 
 /* --------------------------------------------------------------------------- */
@@ -893,9 +894,9 @@ void ELLStorage<ValueType>::wait() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void ELLStorage<ValueType>::buildRowIndexes( const ContextPtr preferredLoc )
+void ELLStorage<ValueType>::buildRowIndexes( const ContextPtr context )
 {
-    SCAI_LOG_INFO( logger, "buildRowIndexes # loc = " << preferredLoc )
+    SCAI_LOG_INFO( logger, "buildRowIndexes # loc = " << context )
 
     mRowIndexes.clear();
 
@@ -911,7 +912,7 @@ void ELLStorage<ValueType>::buildRowIndexes( const ContextPtr preferredLoc )
 
     // choose location where both routines are available
 
-    ContextPtr loc = countNonEmptyRowsBySizes.getValidContext( setNonEmptyRowsBySizes, preferredLoc );
+    ContextPtr loc = countNonEmptyRowsBySizes.getValidContext( setNonEmptyRowsBySizes, context );
 
     ReadAccess<IndexType> ellIA( mIA, loc );
 
