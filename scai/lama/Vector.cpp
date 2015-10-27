@@ -91,8 +91,10 @@ Vector* Vector::createVector( const common::scalar::ScalarType valueType, Distri
 /*    Constructor / Destructor                                                            */
 /* ---------------------------------------------------------------------------------------*/
 
-Vector::Vector( const IndexType size, ContextPtr context )
-                : Distributed( shared_ptr<Distribution>( new NoDistribution( size ) ) ), mContext( context )
+Vector::Vector( const IndexType size, hmemo::ContextPtr context ) : 
+
+    Distributed( shared_ptr<Distribution>( new NoDistribution( size ) ) ), 
+    mContext( context )
 {
     if( !mContext )
     {

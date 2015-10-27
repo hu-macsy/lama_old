@@ -178,11 +178,7 @@ private:
 
     std::string              mMatrixFormat;
 
-<<<<<<< HEAD
-    scai::common::ContextType        mContextType;
-=======
-    scai::hmemo::context::ContextType        mContextType;
->>>>>>> develop
+    scai::common::context::ContextType        mContextType;
 
     mutable scai::hmemo::ContextPtr   mContext;
 

@@ -47,6 +47,7 @@ using namespace scai::lama;
 using namespace scai::hmemo;
 using namespace std;
 using scai::common::Walltime;
+namespace context = scai::common::context;
 
 static bool verboseFlag = false;
 
@@ -71,7 +72,7 @@ static void bench( Matrix& b, Matrix& a )
 
     timeHost = Walltime::get() - timeHost;
 
-    ContextPtr gpu = Context::getContextPtr( scai::context::CUDA );
+    ContextPtr gpu = Context::getContextPtr( context::CUDA );
 
     a.setContextPtr( gpu );
     b.setContextPtr( gpu );
