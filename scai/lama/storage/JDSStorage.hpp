@@ -39,9 +39,6 @@
 // base classes
 #include <scai/lama/storage/CRTPMatrixStorage.hpp>
 
-// local library
-#include <scai/lama/Scalar.hpp>
-
 // local scai libraries
 #include <scai/hmemo/LAMAArray.hpp>
 
@@ -320,7 +317,7 @@ public:
     template<typename OtherType>
     void setDiagonalImpl( const hmemo::LAMAArray<OtherType>& diagonal ) __attribute( ( noinline ) );
 
-    void setDiagonalImpl( const Scalar );
+    void setDiagonalImpl( const ValueType value );
 
     /******************************************************************
      *  Scaling of elements in a matrix                                *
@@ -333,7 +330,7 @@ public:
 
     /** Implementation of pure method.  */
 
-    void scaleImpl( const Scalar value );
+    void scaleImpl( const ValueType value );
 
     /** Implementation for MatrixStorage::l1Norm */
 

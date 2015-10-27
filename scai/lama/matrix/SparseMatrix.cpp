@@ -985,7 +985,7 @@ void SparseMatrix<ValueType>::setDiagonal( Scalar value )
         COMMON_THROWEXCEPTION( "Diagonal calculation only for equal distributions." )
     }
 
-    mLocalData->setDiagonal( value );
+    mLocalData->setDiagonal( value.getValue<ValueType>() );
 }
 
 /* -------------------------------------------------------------------------- */
@@ -1003,13 +1003,13 @@ void SparseMatrix<ValueType>::scale( const Vector& scaling )
 
     scaling.buildValues( localValues );
 
-    mLocalData->scale( localValues );
+    mLocalData->scaleRows( localValues );
 
     // scale Halo storage only if it is used; otherwise there might be a size mismatch
 
     if( mHaloData->getNumRows() )
     {
-        mHaloData->scale( localValues );
+        mHaloData->scaleRows( localValues );
     }
 }
 
@@ -1018,18 +1018,13 @@ void SparseMatrix<ValueType>::scale( const Vector& scaling )
 template<typename ValueType>
 void SparseMatrix<ValueType>::scale( Scalar scaling )
 {
-    /* removed: not required
-     if ( getDistribution() != getColDistribution() )
-     {
-     COMMON_THROWEXCEPTION( "Scale only for equal distributions." )
-     }
-     */
+    ValueType value = scaling.getValue<ValueType>();
 
-    mLocalData->scale( scaling );
+    mLocalData->scale( value );
 
-    if( mHaloData->getNumRows() )
+    if ( mHaloData->getNumRows() )
     {
-        mHaloData->scale( scaling );
+        mHaloData->scale( value );
     }
 }
 

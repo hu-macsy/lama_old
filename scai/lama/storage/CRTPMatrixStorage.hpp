@@ -222,7 +222,7 @@ case SCALAR_ARITHMETIC_TYPE##I:                                             \
         }
     }
 
-    void setDiagonal( const Scalar value )
+    void setDiagonal( const ValueType value )
     {
         if ( !this->hasDiagonalProperty() )
         {
@@ -268,14 +268,14 @@ case SCALAR_ARITHMETIC_TYPE##I:                                                 
         }
     }
 
-    void scale( const Scalar value )
+    void scale( const ValueType value )
     {
         static_cast<Derived*>( this )->scaleImpl( value );
     }
 
-    /** Polymorph implementation for MatrixStorage<ValueType>::scale */
+    /** Polymorph implementation for MatrixStorage<ValueType>::scaleRows */
 
-    void scale( const hmemo::ContextArray& diagonal )
+    void scaleRows( const hmemo::ContextArray& diagonal )
     {
         SCAI_ASSERT_EQUAL_ERROR( this->getNumRows(), diagonal.size() )
 

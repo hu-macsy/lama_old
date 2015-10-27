@@ -562,7 +562,7 @@ IndexType COOStorage<ValueType>::getNumValues() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void COOStorage<ValueType>::setDiagonalImpl( const Scalar scalar )
+void COOStorage<ValueType>::setDiagonalImpl( const ValueType value )
 {
     IndexType numDiagonalElements = std::min( mNumColumns, mNumRows );
 
@@ -571,8 +571,6 @@ void COOStorage<ValueType>::setDiagonalImpl( const Scalar scalar )
     WriteAccess<ValueType> wValues( mValues, loc );
     ReadAccess<IndexType> rJa( mJA, loc );
     ReadAccess<IndexType> rIa( mIA, loc );
-
-    ValueType value = scalar.getValue<ValueType>();
 
     for( IndexType i = 0; i < numDiagonalElements; ++i )
     {
@@ -583,10 +581,9 @@ void COOStorage<ValueType>::setDiagonalImpl( const Scalar scalar )
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void COOStorage<ValueType>::scaleImpl( const Scalar scalar )
+void COOStorage<ValueType>::scaleImpl( const ValueType value )
 {
     WriteAccess<ValueType> wValues( mValues );
-    ValueType value = scalar.getValue<ValueType>();
 
     for( IndexType i = 0; i < mNumValues; ++i )
     {

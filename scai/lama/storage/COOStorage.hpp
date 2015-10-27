@@ -255,7 +255,7 @@ public:
 
     /** Implementation of pure method. */
 
-    virtual void setDiagonalImpl( const Scalar scalar );
+    virtual void setDiagonalImpl( const ValueType value );
 
     /** Implementation of MatrixStorage::copy for derived class. */
 
@@ -326,7 +326,7 @@ public:
 
     /** Implementation of pure method.  */
 
-    void scaleImpl( const Scalar value );
+    void scaleImpl( const ValueType value );
 
     /** Implementation for MatrixStorage::l1Norm */
 

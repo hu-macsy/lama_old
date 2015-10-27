@@ -287,7 +287,7 @@ public:
      *
      * Calculations are dependent to the diagonal property
      */
-    void setDiagonalImpl( const Scalar scalar );
+    void setDiagonalImpl( const ValueType value );
 
     /******************************************************************
      *  Scaling of elements in a matrix                                *
@@ -300,7 +300,7 @@ public:
 
     /** Implementation of pure method.  */
 
-    virtual void scaleImpl( const Scalar value );
+    virtual void scaleImpl( const ValueType value );
 
     /** Implementation for MatrixStorage::l1Norm */
 

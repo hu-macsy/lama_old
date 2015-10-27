@@ -883,7 +883,7 @@ const LAMAArray<ValueType>& CSRStorage<ValueType>::getValues() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void CSRStorage<ValueType>::setDiagonalImpl( const Scalar value )
+void CSRStorage<ValueType>::setDiagonalImpl( const ValueType value )
 {
     const IndexType numDiagonalElements = std::min( mNumColumns, mNumRows );
 
@@ -892,14 +892,12 @@ void CSRStorage<ValueType>::setDiagonalImpl( const Scalar value )
         COMMON_THROWEXCEPTION( "setDiagonal: matrix storage has not diagonal property." )
     }
 
-    ValueType val = value.getValue<ValueType>();
-
     ReadAccess<IndexType> wIa( mIa );
     WriteAccess<ValueType> wValues( mValues );
 
     for( IndexType i = 0; i < numDiagonalElements; ++i )
     {
-        wValues[wIa[i]] = val;
+        wValues[wIa[i]] = value;
     }
 }
 
@@ -978,7 +976,7 @@ void CSRStorage<ValueType>::getDiagonalImpl( LAMAArray<OtherValueType>& diagonal
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void CSRStorage<ValueType>::scaleImpl( const Scalar scalar )
+void CSRStorage<ValueType>::scaleImpl( const ValueType value )
 {
     static LAMAKernel<UtilKernelTrait::scale<ValueType> > scale;
 
@@ -987,8 +985,6 @@ void CSRStorage<ValueType>::scaleImpl( const Scalar scalar )
 	SCAI_CONTEXT_ACCESS( loc )
 
     WriteAccess<ValueType> csrValues( mValues, loc );
-
-    ValueType value = scalar.getValue<ValueType>();
 
     scale[loc]( csrValues.get(), value, mNumValues );
 }

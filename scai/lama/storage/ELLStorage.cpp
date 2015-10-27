@@ -607,9 +607,9 @@ IndexType ELLStorage<ValueType>::getNumValuesPerRow() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void ELLStorage<ValueType>::setDiagonalImpl( const Scalar scalar )
+void ELLStorage<ValueType>::setDiagonalImpl( const ValueType value )
 {
-    SCAI_LOG_INFO( logger, "setDiagonalImpl # scalar = " << scalar )
+    SCAI_LOG_INFO( logger, "setDiagonalImpl # value = " << value )
 
     static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
 
@@ -620,8 +620,6 @@ void ELLStorage<ValueType>::setDiagonalImpl( const Scalar scalar )
     SCAI_CONTEXT_ACCESS( loc )
 
     WriteAccess<ValueType> wValues( mValues, loc );
-
-    ValueType value = scalar.getValue<ValueType>();
 
     setVal[ loc ]( wValues.get(), numDiagonalElements, value );
 }
@@ -704,17 +702,15 @@ void ELLStorage<ValueType>::getDiagonalImpl( LAMAArray<OtherType>& diagonal ) co
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void ELLStorage<ValueType>::scaleImpl( const Scalar scalar )
+void ELLStorage<ValueType>::scaleImpl( const ValueType value )
 {
-    SCAI_LOG_INFO( logger, "scaleImpl # scalar = " << scalar )
+    SCAI_LOG_INFO( logger, "scaleImpl # value = " << value )
 
     static LAMAKernel<UtilKernelTrait::scale<ValueType> > scale;
 
     ContextPtr loc = scale.getValidContext( this->getContextPtr() );
 
     WriteAccess<ValueType> wValues( mValues, loc );
-
-    const ValueType value = scalar.getValue<ValueType>();
 
     SCAI_CONTEXT_ACCESS( loc )
 

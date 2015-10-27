@@ -803,25 +803,21 @@ void SparseAssemblyStorage<ValueType>::getRowImpl( LAMAArray<OtherType>& row, co
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void SparseAssemblyStorage<ValueType>::setDiagonalImpl( const Scalar value )
+void SparseAssemblyStorage<ValueType>::setDiagonalImpl( const ValueType value )
 {
     const IndexType numDiagonalElements = std::min( mNumColumns, mNumRows );
 
-    ValueType val = value.getValue<ValueType>();
-
     for( IndexType i = 0; i < numDiagonalElements; ++i )
     {
-        set( i, i, val );
+        set( i, i, value );
     }
 }
 
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void SparseAssemblyStorage<ValueType>::scaleImpl( const Scalar scalar )
+void SparseAssemblyStorage<ValueType>::scaleImpl( const ValueType value )
 {
-    ValueType value = scalar.getValue<ValueType>();
-
     for( IndexType i = 0; i < mNumRows; ++i )
     {
         mRows[i].scale( value );

@@ -282,11 +282,11 @@ IndexType JDSStorage<ValueType>::getNumDiagonals() const
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
-void JDSStorage<ValueType>::setDiagonalImpl( const Scalar scalar )
+void JDSStorage<ValueType>::setDiagonalImpl( const ValueType value )
 {
     // diagonal property has already been checked
 
-    SCAI_LOG_INFO( logger, "setDiagonalImpl with scalar = " << scalar )
+    SCAI_LOG_INFO( logger, "setDiagonalImpl with value = " << value )
 
     static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
 
@@ -301,7 +301,7 @@ void JDSStorage<ValueType>::setDiagonalImpl( const Scalar scalar )
 
     SCAI_CONTEXT_ACCESS( loc )
 
-    setVal[loc]( wValues.get(), numDiagonalValues, scalar.getValue<ValueType>() );
+    setVal[loc]( wValues.get(), numDiagonalValues, value );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -389,9 +389,9 @@ void JDSStorage<ValueType>::getDiagonalImpl( LAMAArray<OtherValueType>& diagonal
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
-void JDSStorage<ValueType>::scaleImpl( const Scalar scalar )
+void JDSStorage<ValueType>::scaleImpl( const ValueType value )
 {
-    SCAI_LOG_INFO( logger, "scaleImpl with scalar = " << scalar )
+    SCAI_LOG_INFO( logger, "scaleImpl with value = " << value )
 
     static LAMAKernel<UtilKernelTrait::scale<ValueType> > scale;
 
@@ -402,7 +402,6 @@ void JDSStorage<ValueType>::scaleImpl( const Scalar scalar )
     SCAI_ASSERT_EQUAL_DEBUG( size, mNumValues )
 
     WriteAccess<ValueType> wValues( mValues, loc );
-    ValueType value = scalar.getValue<ValueType>();
 
     SCAI_CONTEXT_ACCESS( loc )
 

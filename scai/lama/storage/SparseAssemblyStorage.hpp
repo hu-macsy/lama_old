@@ -290,7 +290,7 @@ public:
 
     /** Implementation of pure method. */
 
-    void setDiagonalImpl( const Scalar scalar );
+    void setDiagonalImpl( const ValueType value );
 
     /******************************************************************
      *  Scaling of elements in a matrix                                *
@@ -303,7 +303,7 @@ public:
 
     /** Implementation of pure method.  */
 
-    void scaleImpl( const Scalar value );
+    void scaleImpl( const ValueType value );
 
     /** General routine to build any kind of CSR storage.
      *

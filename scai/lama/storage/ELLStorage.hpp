@@ -271,7 +271,7 @@ public:
      *
      * Calculations are dependent to the diagonal property
      */
-    void setDiagonalImpl( const Scalar scalar );
+    void setDiagonalImpl( const ValueType value );
 
     /******************************************************************
      *  Scaling of elements in a matrix                                *
@@ -284,7 +284,7 @@ public:
 
     /** Implementation of pure method.  */
 
-    void scaleImpl( const Scalar value );
+    void scaleImpl( const ValueType value );
 
     /** Get a value of the matrix.
      *

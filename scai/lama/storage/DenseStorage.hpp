@@ -39,9 +39,6 @@
 // base classes
 #include <scai/lama/storage/CRTPMatrixStorage.hpp>
 
-// local library
-#include <scai/lama/Scalar.hpp>
-
 // internal scai libraries
 #include <scai/hmemo.hpp>
 
@@ -302,7 +299,7 @@ public:
 
     /** Implementation of pure method. */
 
-    void setDiagonalImpl( const Scalar scalar );
+    void setDiagonalImpl( const ValueType value );
 
     /******************************************************************
      *  Scaling of elements in a matrix                                *
@@ -315,7 +312,7 @@ public:
 
     /** Implementation of pure method.  */
 
-    virtual void scaleImpl( const Scalar value );
+    virtual void scaleImpl( const ValueType value );
 
     virtual size_t getMemoryUsageImpl() const;
 

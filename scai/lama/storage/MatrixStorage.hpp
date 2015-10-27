@@ -36,7 +36,6 @@
 // local library
 #include <scai/lama/io/FileType.hpp>
 #include <scai/lama/Communicator.hpp>
-#include <scai/lama/Scalar.hpp>
 
 // internal scai libraries
 #include <scai/hmemo.hpp>
@@ -243,17 +242,9 @@ public:
      */
     virtual void setDiagonal( const hmemo::ContextArray& diagonal ) = 0;
 
-    virtual void setDiagonal( const Scalar value ) = 0;
-
     /******************************************************************
      *  Scaling of elements in a matrix                                *
      ******************************************************************/
-
-    /** This method scales all matrix values with a scalar
-     *
-     * @param[in] value is the source value
-     */
-    virtual void scale( const Scalar value ) = 0;
 
     /** This method scales each row of a matrix with a separate value.
      *
@@ -261,7 +252,7 @@ public:
      *
      * Each row of the matrix is scaled with the corresponding value.
      */
-    virtual void scale( const hmemo::ContextArray& values ) = 0;
+    virtual void scaleRows( const hmemo::ContextArray& values ) = 0;
 
     /******************************************************************
      *  General operations on a matrix                                 *
@@ -571,6 +562,13 @@ public:
         const IndexType numColumns,
         const hmemo::ContextArray& values,
         const ValueType eps = 0.0 );
+
+    /** This method scales all matrix values with a scalar
+     *
+     * @param[in] value is the source value
+     */
+    virtual void scale( const ValueType value ) = 0;
+    virtual void setDiagonal( const ValueType value ) = 0;
 
     /**
      * @brief fills matrix storage by csr sparse data.
@@ -989,6 +987,8 @@ public:
     // Note: Asynchronous version of jacobiIterateHalo not supported
 
     using _MatrixStorage::getContextPtr;
+    using _MatrixStorage::scaleRows;
+    using _MatrixStorage::setDiagonal;
 
     // Use this method to change epsiolon temporarily
 

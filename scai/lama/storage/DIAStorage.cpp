@@ -193,7 +193,7 @@ MatrixStorageFormat DIAStorage<ValueType>::getFormat() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DIAStorage<ValueType>::setDiagonalImpl( const Scalar scalar )
+void DIAStorage<ValueType>::setDiagonalImpl( const ValueType value )
 {
     SCAI_ASSERT_ERROR( mDiagonalProperty, *this << ": has not diagonal property, cannot set diagonal" )
 
@@ -210,8 +210,6 @@ void DIAStorage<ValueType>::setDiagonalImpl( const Scalar scalar )
 
         WriteAccess<ValueType> wValues( mValues, loc );
         ReadAccess<IndexType> rOffset( mOffset, loc );
-
-        ValueType value = scalar.getValue<ValueType>();
 
         SCAI_CONTEXT_ACCESS( loc )
 
@@ -297,11 +295,9 @@ void DIAStorage<ValueType>::setDiagonalImpl( const LAMAArray<OtherType>& diagona
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DIAStorage<ValueType>::scaleImpl( const Scalar scalar )
+void DIAStorage<ValueType>::scaleImpl( const ValueType value )
 {
     WriteAccess<ValueType> wValues( mValues );
-
-    ValueType value = scalar.getValue<ValueType>();
 
     for( IndexType i = 0; i < mValues.size(); i++ )
     {

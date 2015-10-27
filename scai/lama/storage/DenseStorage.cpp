@@ -148,11 +148,11 @@ void DenseStorageView<ValueType>::check( const char* /* msg */) const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DenseStorageView<ValueType>::setDiagonalImpl( const Scalar value )
+void DenseStorageView<ValueType>::setDiagonalImpl( const ValueType value )
 {
     WriteAccess<ValueType> wData( mData ); // use existing data
 
-    OpenMPDenseUtils::setDiagonalValue( wData.get(), mNumRows, mNumColumns, value.getValue<ValueType>() );
+    OpenMPDenseUtils::setDiagonalValue( wData.get(), mNumRows, mNumColumns, value );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -205,13 +205,11 @@ void DenseStorageView<ValueType>::setDiagonalImpl( const LAMAArray<OtherType>& d
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DenseStorageView<ValueType>::scaleImpl( const Scalar values )
+void DenseStorageView<ValueType>::scaleImpl( const ValueType value )
 {
     WriteAccess<ValueType> wData( mData );
 
-    const ValueType val = values.getValue<ValueType>();
-
-    OpenMPDenseUtils::scaleValue( wData.get(), mNumRows, mNumColumns, val );
+    OpenMPDenseUtils::scaleValue( wData.get(), mNumRows, mNumColumns, value );
 }
 
 /* --------------------------------------------------------------------------- */

@@ -1525,7 +1525,7 @@ void DenseMatrix<ValueType>::setDiagonal( const Scalar diagonalValue )
         COMMON_THROWEXCEPTION( "Diagonal calculation only for equal distributions." )
     }
 
-    getLocalStorage().setDiagonal( diagonalValue );
+    getLocalStorage().setDiagonal( diagonalValue.getValue<ValueType>() );
 }
 
 template<typename ValueType>
@@ -1536,7 +1536,7 @@ void DenseMatrix<ValueType>::scale( const Vector& vector )
         COMMON_THROWEXCEPTION( "Diagonal calculation only for equal distributions." )
     }
 
-    getLocalStorage().scale( vector.getLocalValues() );
+    getLocalStorage().scaleRows( vector.getLocalValues() );
 }
 
 template<typename ValueType>
@@ -1547,7 +1547,7 @@ void DenseMatrix<ValueType>::scale( const Scalar scaleValue )
 //        COMMON_THROWEXCEPTION( "Diagonal calculation only for equal distributions." )
 //    }
 
-    getLocalStorage().scale( scaleValue );
+    getLocalStorage().scale( scaleValue.getValue<ValueType>() );
 }
 
 template<typename ValueType>
