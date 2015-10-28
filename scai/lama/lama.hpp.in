@@ -47,4 +47,4 @@
 extern "C" inline int lama_getRevision()
 {
     return LAMA_REVISION;
-}
+} 
