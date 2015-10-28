@@ -204,7 +204,7 @@ void MICMKLCSRUtils::registerKernels()
 
     // ctx will contain the context for which registration is done, here MIC
 
-    common::ContextType ctx = common::context::MIC;
+    common::context::ContextType ctx = common::context::MIC;
 
     KernelRegistry::set<CSRKernelTrait::normalGEMV<float> >( normalGEMV, ctx );
     KernelRegistry::set<CSRKernelTrait::normalGEMV<double> >( normalGEMV, ctx );

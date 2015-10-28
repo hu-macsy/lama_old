@@ -1222,40 +1222,35 @@ void MICELLUtils::registerKernels()
     SCAI_LOG_INFO( logger, "register Utils kernels for MIC in Kernel Registry" )
 
     using namespace scai::kregistry;
+    using scai::common::context::MIC;
 
-    // ctx will contain the context for which registration is done, here MIC
+    KernelRegistry::set<ELLKernelTrait::countNonEmptyRowsBySizes>( countNonEmptyRowsBySizes, MIC );
+    KernelRegistry::set<ELLKernelTrait::setNonEmptyRowsBySizes>( setNonEmptyRowsBySizes, MIC );
+    KernelRegistry::set<ELLKernelTrait::hasDiagonalProperty>( hasDiagonalProperty, MIC );
+    KernelRegistry::set<ELLKernelTrait::check>( check, MIC );
 
-    common::ContextType ctx = common::context::MIC;
+    KernelRegistry::set<ELLKernelTrait::getRow<float, float> >( getRow, MIC );
+    KernelRegistry::set<ELLKernelTrait::getRow<float, double> >( getRow, MIC );
+    KernelRegistry::set<ELLKernelTrait::getRow<double, float> >( getRow, MIC );
+    KernelRegistry::set<ELLKernelTrait::getRow<double, double> >( getRow, MIC );
 
-    // Instantations for IndexType, not done by ARITHMETIC_TYPE macrods
+    KernelRegistry::set<ELLKernelTrait::getValue<float> >( getValue, MIC );
+    KernelRegistry::set<ELLKernelTrait::getValue<double> >( getValue, MIC );
 
-    KernelRegistry::set<ELLKernelTrait::countNonEmptyRowsBySizes>( countNonEmptyRowsBySizes, ctx );
-    KernelRegistry::set<ELLKernelTrait::setNonEmptyRowsBySizes>( setNonEmptyRowsBySizes, ctx );
-    KernelRegistry::set<ELLKernelTrait::hasDiagonalProperty>( hasDiagonalProperty, ctx );
-    KernelRegistry::set<ELLKernelTrait::check>( check, ctx );
+    KernelRegistry::set<ELLKernelTrait::scaleValue<float, float> >( scaleValue, MIC );
+    KernelRegistry::set<ELLKernelTrait::scaleValue<float, double> >( scaleValue, MIC );
+    KernelRegistry::set<ELLKernelTrait::scaleValue<double, float> >( scaleValue, MIC );
+    KernelRegistry::set<ELLKernelTrait::scaleValue<double, double> >( scaleValue, MIC );
 
-    KernelRegistry::set<ELLKernelTrait::getRow<float, float> >( getRow, ctx );
-    KernelRegistry::set<ELLKernelTrait::getRow<float, double> >( getRow, ctx );
-    KernelRegistry::set<ELLKernelTrait::getRow<double, float> >( getRow, ctx );
-    KernelRegistry::set<ELLKernelTrait::getRow<double, double> >( getRow, ctx );
+    KernelRegistry::set<ELLKernelTrait::setCSRValues<float, float> >( setCSRValues, MIC );
+    KernelRegistry::set<ELLKernelTrait::setCSRValues<float, double> >( setCSRValues, MIC );
+    KernelRegistry::set<ELLKernelTrait::setCSRValues<double, float> >( setCSRValues, MIC );
+    KernelRegistry::set<ELLKernelTrait::setCSRValues<double, double> >( setCSRValues, MIC );
 
-    KernelRegistry::set<ELLKernelTrait::getValue<float> >( getValue, ctx );
-    KernelRegistry::set<ELLKernelTrait::getValue<double> >( getValue, ctx );
-
-    KernelRegistry::set<ELLKernelTrait::scaleValue<float, float> >( scaleValue, ctx );
-    KernelRegistry::set<ELLKernelTrait::scaleValue<float, double> >( scaleValue, ctx );
-    KernelRegistry::set<ELLKernelTrait::scaleValue<double, float> >( scaleValue, ctx );
-    KernelRegistry::set<ELLKernelTrait::scaleValue<double, double> >( scaleValue, ctx );
-
-    KernelRegistry::set<ELLKernelTrait::setCSRValues<float, float> >( setCSRValues, ctx );
-    KernelRegistry::set<ELLKernelTrait::setCSRValues<float, double> >( setCSRValues, ctx );
-    KernelRegistry::set<ELLKernelTrait::setCSRValues<double, float> >( setCSRValues, ctx );
-    KernelRegistry::set<ELLKernelTrait::setCSRValues<double, double> >( setCSRValues, ctx );
-
-    KernelRegistry::set<ELLKernelTrait::getCSRValues<float, float> >( getCSRValues, ctx );
-    KernelRegistry::set<ELLKernelTrait::getCSRValues<float, double> >( getCSRValues, ctx );
-    KernelRegistry::set<ELLKernelTrait::getCSRValues<double, float> >( getCSRValues, ctx );
-    KernelRegistry::set<ELLKernelTrait::getCSRValues<double, double> >( getCSRValues, ctx );
+    KernelRegistry::set<ELLKernelTrait::getCSRValues<float, float> >( getCSRValues, MIC );
+    KernelRegistry::set<ELLKernelTrait::getCSRValues<float, double> >( getCSRValues, MIC );
+    KernelRegistry::set<ELLKernelTrait::getCSRValues<double, float> >( getCSRValues, MIC );
+    KernelRegistry::set<ELLKernelTrait::getCSRValues<double, double> >( getCSRValues, MIC );
 
     /*
      LAMA_INTERFACE_REGISTER_T( ELLUtils, absMaxVal, float )
@@ -1277,17 +1272,17 @@ void MICELLUtils::registerKernels()
      LAMA_INTERFACE_REGISTER_T( ELLUtils, addComputeValues, double )
      */
 
-    KernelRegistry::set<ELLKernelTrait::normalGEMV<float> >( normalGEMV, ctx );
-    KernelRegistry::set<ELLKernelTrait::normalGEMV<double> >( normalGEMV, ctx );
+    KernelRegistry::set<ELLKernelTrait::normalGEMV<float> >( normalGEMV, MIC );
+    KernelRegistry::set<ELLKernelTrait::normalGEMV<double> >( normalGEMV, MIC );
 
-    KernelRegistry::set<ELLKernelTrait::sparseGEMV<float> >( sparseGEMV, ctx );
-    KernelRegistry::set<ELLKernelTrait::sparseGEMV<double> >( sparseGEMV, ctx );
+    KernelRegistry::set<ELLKernelTrait::sparseGEMV<float> >( sparseGEMV, MIC );
+    KernelRegistry::set<ELLKernelTrait::sparseGEMV<double> >( sparseGEMV, MIC );
 
-    KernelRegistry::set<ELLKernelTrait::jacobi<float> >( jacobi, ctx );
-    KernelRegistry::set<ELLKernelTrait::jacobi<double> >( jacobi, ctx );
+    KernelRegistry::set<ELLKernelTrait::jacobi<float> >( jacobi, MIC );
+    KernelRegistry::set<ELLKernelTrait::jacobi<double> >( jacobi, MIC );
 
-    KernelRegistry::set<ELLKernelTrait::jacobiHalo<float> >( jacobiHalo, ctx );
-    KernelRegistry::set<ELLKernelTrait::jacobiHalo<double> >( jacobiHalo, ctx );
+    KernelRegistry::set<ELLKernelTrait::jacobiHalo<float> >( jacobiHalo, MIC );
+    KernelRegistry::set<ELLKernelTrait::jacobiHalo<double> >( jacobiHalo, MIC );
 
     /*
      LAMA_INTERFACE_REGISTER_T( ELLUtils, fillELLValues, float )

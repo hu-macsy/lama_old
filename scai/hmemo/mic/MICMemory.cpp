@@ -188,7 +188,7 @@ bool MICMemory::canCopyFrom( const Memory& other ) const
 {
     bool supported = false;
 
-    MemoryType otherType = other.getType();
+    memtype::MemoryType otherType = other.getType();
 
     if ( otherType == memtype::HostMemory )
     {
@@ -208,7 +208,7 @@ bool MICMemory::canCopyTo( const Memory& other ) const
 {
     bool supported = false;
 
-    MemoryType otherType = other.getType();
+    memtype::MemoryType otherType = other.getType();
 
     if ( otherType == memtype::HostMemory )
     {

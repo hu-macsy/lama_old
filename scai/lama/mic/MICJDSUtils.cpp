@@ -926,7 +926,7 @@ void MICJDSUtils::registerKernels()
 
     // ctx will contain the context for which registration is done, here MIC
 
-    common::ContextType ctx = common::context::MIC;
+    common::context::ContextType ctx = common::context::MIC;
 
     KernelRegistry::set<JDSKernelTrait::sortRows>( sortRows, ctx );
 

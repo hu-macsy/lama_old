@@ -202,7 +202,7 @@ void MICBLAS3::registerKernels()
 
     // ctx will contain the context for which registration is done, here MIC
 
-    common::ContextType ctx = common::context::MIC;
+    common::context::ContextType ctx = common::context::MIC;
 
     KernelRegistry::set<BLASKernelTrait::gemm<float> >( gemm, ctx );
     KernelRegistry::set<BLASKernelTrait::gemm<double> >( gemm, ctx );

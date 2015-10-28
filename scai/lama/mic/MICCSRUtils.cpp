@@ -1915,7 +1915,7 @@ void MICCSRUtils::registerKernels()
 
     // ctx will contain the context for which registration is done, here MIC
 
-    common::ContextType ctx = common::context::MIC;
+    common::context::ContextType ctx = common::context::MIC;
 
     // Instantations for IndexType, not done by ARITHMETIC_TYPE macrods
 
