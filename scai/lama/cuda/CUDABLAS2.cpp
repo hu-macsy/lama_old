@@ -175,8 +175,7 @@ void CUDABLAS2::gemv(
     const IndexType incx,
     const ValueType beta,
     ValueType* const y,
-    const IndexType incy,
-    SyncToken* syncToken )
+    const IndexType incy )
 {
     IndexType order_m = m;
     IndexType order_n = n;
@@ -218,11 +217,11 @@ void CUDABLAS2::gemv(
 
     cudaStream_t stream = 0; // default stream if no syncToken is given
 
-    if( syncToken )
+    CUDAStreamSyncToken* syncToken = CUDAStreamSyncToken::getCurrentSyncToken();
+
+    if ( syncToken )
     {
-        CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-        SCAI_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
-        stream = cudaStreamSyncToken->getCUDAStream();
+        stream = syncToken->getCUDAStream();
     }
 
     SCAI_CUBLAS_CALL( cublasSetStream( CUDAContext_cublasHandle, stream ),

@@ -37,11 +37,11 @@
 #include <scai/common/config.hpp>
 
 // local library
+#include <scai/logging.hpp>
 #include <scai/lama/openmp/BLASHelper.hpp>
 
 // internal scai libraries
 #include <scai/common/SCAITypes.hpp>
-#include <scai/tasking/SyncToken.hpp>
 
 namespace scai
 {
@@ -76,8 +76,7 @@ public:
         const IndexType ldb,
         const ValueType beta,
         ValueType* C,
-        const IndexType ldc,
-        tasking::SyncToken* syncToken );
+        const IndexType ldc );
 
     /**
      * @brief symm performs one of the matrix-matrix operations
@@ -162,8 +161,7 @@ public:
         const IndexType ldb,
         const ValueType beta,
         ValueType* C,
-        const IndexType ldc,
-        tasking::SyncToken* syncToken );
+        const IndexType ldc );
 
     /**
      * @brief trmm performs one of the matrix-matrix operations
@@ -242,8 +240,7 @@ public:
         const ValueType* A,
         const IndexType lda,
         ValueType* B,
-        const IndexType ldb,
-        tasking::SyncToken* syncToken );
+        const IndexType ldb );
 
     /**
      * @brief trsm solves one of the matrix equations
@@ -326,8 +323,7 @@ public:
         const ValueType* A,
         const IndexType lda,
         ValueType* B,
-        const IndexType ldb,
-        tasking::SyncToken* syncToken );
+        const IndexType ldb );
 
     /**
      * @brief syrk performs one of the symmetric rank k operations
@@ -410,8 +406,7 @@ public:
         const IndexType lda,
         const ValueType beta,
         ValueType* C,
-        const IndexType ldc,
-        tasking::SyncToken* syncToken );
+        const IndexType ldc );
 
     /**
      * @brief syrk2 performs one of the symmetric rank 2k operations
@@ -500,8 +495,7 @@ public:
         const IndexType ldb,
         const ValueType beta,
         ValueType* C,
-        const IndexType ldc,
-        tasking::SyncToken* syncToken );
+        const IndexType ldc );
 
     /** Routine that sets functions pointers belonging to BLAS1 in a BLASKernelTrait.
      *

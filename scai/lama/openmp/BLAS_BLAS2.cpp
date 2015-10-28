@@ -40,6 +40,7 @@
 
 // internal scai libraries
 
+#include <scai/tasking/TaskSyncToken.hpp>
 #include <scai/kregistry/KernelRegistry.hpp>
 
 #include <scai/tracing.hpp>
@@ -54,11 +55,12 @@
 namespace scai
 {
 
+using namespace tasking;    // for running kernels asynchronously
+
 namespace lama
 {
 
 using common::getScalarType;
-using tasking::SyncToken;
 
 SCAI_LOG_DEF_LOGGER( BLAS_BLAS2::logger, "BLAS.BLAS2" )
 
@@ -205,8 +207,7 @@ void BLAS_BLAS2::gemv(
     const IndexType incX,
     const ValueType beta,
     ValueType* y,
-    const IndexType incY,
-    SyncToken* syncToken )
+    const IndexType incY )
 {
     SCAI_REGION( "BLAS.BLAS2.gemv" )
 
@@ -220,9 +221,11 @@ void BLAS_BLAS2::gemv(
 
     // N == 0: empty A, but deal with X, Y, we can handle this here
 
-    if( syncToken )
+    TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
+
+    if ( syncToken )
     {
-        SCAI_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
+        SCAI_LOG_WARN( logger, "asynchronous execution not supported yet." )
     }
 
     // ToDo: error handling

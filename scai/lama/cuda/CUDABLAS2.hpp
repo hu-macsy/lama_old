@@ -39,9 +39,6 @@
 // local library
 #include <scai/lama/cblas.hpp> // CBLAS_ORDER, CBLAS_TRANSPOSE, ...
 
-// internal scai libraries
-#include <scai/tasking/SyncToken.hpp>
-
 #include <scai/logging.hpp>
 
 #include <scai/common/SCAITypes.hpp>
@@ -93,8 +90,7 @@ private:
         const IndexType incX,
         const ValueType beta,
         ValueType* y,
-        const IndexType incY,
-        tasking::SyncToken* syncToken );
+        const IndexType incY );
 
     /**
      * This function is the CUDA implementation of symv (no trait yet).
@@ -111,8 +107,7 @@ private:
         const IndexType incX,
         const ValueType beta,
         ValueType* y,
-        const IndexType incY,
-        tasking::SyncToken* syncToken );
+        const IndexType incY );
 
     /**
      * This function is the CUDA implementation of scai::lama::BLASKernelTrait::trmv
@@ -127,8 +122,7 @@ private:
         const ValueType* A,
         const IndexType lda,
         ValueType* x,
-        const IndexType incX,
-        tasking::SyncToken* syncToken );
+        const IndexType incX );
 
     /**
      * This function is the CUDA implementation of scai::lama::BLASKernelTrait::trsv
@@ -143,8 +137,7 @@ private:
         const ValueType* A,
         const IndexType lda,
         ValueType* x,
-        const IndexType incX,
-        tasking::SyncToken* syncToken );
+        const IndexType incX );
 
     /**
      * This function is the CUDA implementation of scai::lama::BLASKernelTrait::gbmv
@@ -164,8 +157,7 @@ private:
         const IndexType incX,
         const ValueType beta,
         ValueType* y,
-        const IndexType incY,
-        tasking::SyncToken* syncToken );
+        const IndexType incY );
 
     /**
      * This function is the CUDA implementation of scai::lama::BLASKernelTrait::sbmv
@@ -183,8 +175,7 @@ private:
         const IndexType incX,
         const ValueType beta,
         ValueType* y,
-        const IndexType incY,
-        tasking::SyncToken* syncToken );
+        const IndexType incY );
 
     /**
      * This function is the CUDA implementation of scai::lama::BLASKernelTrait::tbmv
@@ -200,8 +191,7 @@ private:
         const ValueType* A,
         const IndexType lda,
         ValueType* x,
-        const IndexType incX,
-        tasking::SyncToken* syncToken );
+        const IndexType incX );
 
     /**
      * This function is the CUDA implementation of scai::lama::BLASKernelTrait::tbsv
@@ -217,8 +207,7 @@ private:
         const ValueType* A,
         const IndexType lda,
         ValueType* x,
-        const IndexType incX,
-        tasking::SyncToken* syncToken );
+        const IndexType incX );
 
     /**
      * This function is the CUDA implementation of scai::lama::BLASKernelTrait::ger
@@ -234,8 +223,7 @@ private:
         const ValueType* y,
         const IndexType incY,
         ValueType* A,
-        const IndexType lda,
-        tasking::SyncToken* syncToken );
+        const IndexType lda );
 
     /**
      * This function is the CUDA implementation of scai::lama::BLASKernelTrait::syr
@@ -249,8 +237,7 @@ private:
         const ValueType* x,
         const IndexType incX,
         ValueType* A,
-        const IndexType lda,
-        tasking::SyncToken* syncToken );
+        const IndexType lda );
 
     /**
      * This function is the CUDA implementation of scai::lama::BLASKernelTrait::syr2
@@ -266,8 +253,7 @@ private:
         const ValueType* y,
         const IndexType incY,
         ValueType* A,
-        const IndexType lda,
-        tasking::SyncToken* syncToken );
+        const IndexType lda );
 
     /**
      * This function is the CUDA implementation of scai::lama::BLASKernelTrait::spr
@@ -280,8 +266,7 @@ private:
         const ValueType alpha,
         const ValueType* x,
         const IndexType incX,
-        ValueType* AP,
-        tasking::SyncToken* syncToken );
+        ValueType* AP );
 
     /**
      * This function is the CUDA implementation of scai::lama::BLASKernelTrait::spr2
@@ -296,8 +281,7 @@ private:
         const IndexType incX,
         const ValueType* y,
         const IndexType incY,
-        ValueType* AP,
-        tasking::SyncToken* syncToken );
+        ValueType* AP );
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 

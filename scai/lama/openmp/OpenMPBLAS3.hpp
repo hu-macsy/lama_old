@@ -40,8 +40,7 @@
 #include <scai/lama/openmp/BLASHelper.hpp>
 
 // internal scai libraries
-#include <scai/tasking/SyncToken.hpp>
-
+#include <scai/logging.hpp>
 #include <scai/common/SCAITypes.hpp>
 
 namespace scai
@@ -77,8 +76,7 @@ public:
         const IndexType ldb,
         const ValueType beta,
         ValueType* C,
-        const IndexType ldc,
-        tasking::SyncToken* syncToken );
+        const IndexType ldc );
 
     /** Routine that sets functions pointers belonging to BLAS1 in a BLASKernelTrait.
      *

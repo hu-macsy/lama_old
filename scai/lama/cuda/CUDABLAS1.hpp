@@ -48,11 +48,6 @@
 namespace scai
 {
 
-namespace tasking
-{
-    class SyncToken;   // forward declaration
-}
-
 namespace lama
 {
 
@@ -86,26 +81,25 @@ private:
         const IndexType n,
         const ValueType alpha,
         ValueType* x,
-        const IndexType incX,
-        tasking::SyncToken* syncToken );
+        const IndexType incX );
 
     /**
      * This function is the CUDA implementation of scai::lama::BLASKernelTrait::nrm2
      */
     template<typename ValueType>
-    static ValueType nrm2( const IndexType n, const ValueType* x, const IndexType incX, tasking::SyncToken* syncToken );
+    static ValueType nrm2( const IndexType n, const ValueType* x, const IndexType incX );
 
     /**
      * This function is the CUDA implementation of scai::lama::BLASKernelTrait::asum
      */
     template<typename ValueType>
-    static ValueType asum( const IndexType n, const ValueType* x, const IndexType incX, tasking::SyncToken* syncToken );
+    static ValueType asum( const IndexType n, const ValueType* x, const IndexType incX );
 
     /**
      * This function is the CUDA implementation of scai::lama::BLASKernelTrait::iamax
      */
     template<typename ValueType>
-    static IndexType iamax( const IndexType n, const ValueType* x, const IndexType incX, tasking::SyncToken* syncToken );
+    static IndexType iamax( const IndexType n, const ValueType* x, const IndexType incX );
 
     /**
      * This function is the CUDA implementation of scai::lama::BLASKernelTrait::swap
@@ -116,8 +110,7 @@ private:
         ValueType* y,
         const IndexType incY,
         ValueType* x,
-        const IndexType incX,
-        tasking::SyncToken* syncToken );
+        const IndexType incX );
 
     /**
      * This function is the CUDA implementation of scai::lama::BLASKernelTrait::copy
@@ -128,8 +121,7 @@ private:
         const ValueType* x,
         const IndexType incX,
         ValueType* y,
-        const IndexType incY,
-        tasking::SyncToken* syncToken );
+        const IndexType incY );
 
     /**
      * This function is the CUDA implementation of scai::lama::BLASKernelTrait::axpy
@@ -141,8 +133,7 @@ private:
         const ValueType* x,
         const IndexType incX,
         ValueType* y,
-        const IndexType incY,
-        tasking::SyncToken* syncToken );
+        const IndexType incY );
 
     /**
      * This function is the CUDA implementation of scai::lama::BLASKernelTrait::dot
@@ -153,8 +144,7 @@ private:
         const ValueType* x,
         const IndexType incX,
         const ValueType* y,
-        const IndexType incY,
-        tasking::SyncToken* syncToken );
+        const IndexType incY );
 
     /**
      * This function is the CUDA implementation of scai::lama::BLASKernelTrait::sum
@@ -166,8 +156,7 @@ private:
         const ValueType* x,
         ValueType beta,
         const ValueType* y,
-        ValueType* z,
-        tasking::SyncToken* syncToken );
+        ValueType* z );
 
 private:
 

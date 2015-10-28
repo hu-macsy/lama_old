@@ -505,7 +505,7 @@ void DenseStorageView<ValueType>::matrixTimesVector(
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        copy[loc]( mNumRows, rY.get(), 1, wResult.get(), 1, NULL );
+        copy[loc]( mNumRows, rY.get(), 1, wResult.get(), 1 );
     }
     else
     {
@@ -534,7 +534,7 @@ void DenseStorageView<ValueType>::matrixTimesVector(
 
             SCAI_CONTEXT_ACCESS( loc )
 
-            scal[loc]( mNumRows, beta, wResult.get(), 1, NULL );
+            scal[loc]( mNumRows, beta, wResult.get(), 1 );
         }
     }
     else
@@ -555,7 +555,7 @@ void DenseStorageView<ValueType>::matrixTimesVector(
         // gemv:  result = alpha * this * x + beta * result
 
         gemv[loc]( CblasRowMajor, CblasNoTrans, mNumRows, mNumColumns, alpha, denseValues.get(), lda, rX.get(),
-                   1, beta, wResult.get(), 1, NULL );
+                   1, beta, wResult.get(), 1 );
     }
 }
 
@@ -614,7 +614,7 @@ void DenseStorageView<ValueType>::vectorTimesMatrix(
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        copy[loc]( mNumColumns, rY.get(), 1, wResult.get(), 1, NULL );
+        copy[loc]( mNumColumns, rY.get(), 1, wResult.get(), 1 );
     }
     else
     {
@@ -643,7 +643,7 @@ void DenseStorageView<ValueType>::vectorTimesMatrix(
 
             SCAI_CONTEXT_ACCESS( loc )
 
-            scal[loc]( mNumColumns, beta, wResult.get(), 1, NULL );
+            scal[loc]( mNumColumns, beta, wResult.get(), 1 );
         }
     }
     else
@@ -664,7 +664,7 @@ void DenseStorageView<ValueType>::vectorTimesMatrix(
         // gemv:  result = alpha * this * x + beta * result
 
         gemv[loc]( CblasRowMajor, CblasTrans, mNumRows, mNumColumns, alpha, denseValues.get(), lda, rX.get(),
-              1, beta, wResult.get(), 1, NULL );
+              1, beta, wResult.get(), 1 );
     }
 }
 
@@ -840,7 +840,7 @@ void DenseStorageView<ValueType>::matrixTimesMatrixDense(
         WriteOnlyAccess<ValueType> resAccess( getData(), context, m * n );
         SCAI_LOG_TRACE( logger, "Copying: res = c " )
         SCAI_CONTEXT_ACCESS( context )
-        copy[context]( n * m, cAccess.get(), 1, resAccess.get(), 1, NULL );
+        copy[context]( n * m, cAccess.get(), 1, resAccess.get(), 1 );
     }
     else
     {
@@ -869,7 +869,7 @@ void DenseStorageView<ValueType>::matrixTimesMatrixDense(
         SCAI_CONTEXT_ACCESS( context )
 
         gemm[context]( CblasRowMajor, CblasNoTrans, CblasNoTrans, m, n, k, alpha, aAccess.get(), lda, bAccess.get(), ldb, beta,
-                       resAccess.get(), ldc, NULL );
+                       resAccess.get(), ldc );
     }
 }
 
@@ -903,7 +903,7 @@ ValueType DenseStorageView<ValueType>::l1Norm() const
 
     IndexType inc = 1;
 
-	return asum[loc]( n, data.get(), inc, NULL );
+	return asum[loc]( n, data.get(), inc );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -926,7 +926,7 @@ ValueType DenseStorageView<ValueType>::l2Norm() const
 
 	SCAI_CONTEXT_ACCESS( loc );
 
-	return ::sqrt(dot[loc]( n, data.get(), 1, data.get(), 1, NULL ));
+	return ::sqrt(dot[loc]( n, data.get(), 1, data.get(), 1 ));
 }
 
 /* --------------------------------------------------------------------------- */

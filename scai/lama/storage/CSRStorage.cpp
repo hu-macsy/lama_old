@@ -2208,9 +2208,9 @@ ValueType CSRStorage<ValueType>::l1Norm() const
 {
 	SCAI_LOG_INFO( logger, *this << ": l1Norm()" )
 
-    if( mNumValues == 0 )
+    if ( mNumValues == 0 )
     {
-        return static_cast<ValueType>(0.0);
+        return static_cast<ValueType>( 0 );
     }
 
     static LAMAKernel<BLASKernelTrait::asum<ValueType> > asum;
@@ -2221,7 +2221,7 @@ ValueType CSRStorage<ValueType>::l1Norm() const
 
 	SCAI_CONTEXT_ACCESS( loc );
 
-	return asum[loc]( mNumValues, data.get(), 1, NULL );
+	return asum[loc]( mNumValues, data.get(), 1 );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -2244,7 +2244,7 @@ ValueType CSRStorage<ValueType>::l2Norm() const
 
 	SCAI_CONTEXT_ACCESS( loc );
 
-	return ::sqrt(dot[loc]( mNumValues, data.get(), 1, data.get(), 1, NULL ));
+	return ::sqrt(dot[loc]( mNumValues, data.get(), 1, data.get(), 1 ));
 }
 
 /* --------------------------------------------------------------------------- */

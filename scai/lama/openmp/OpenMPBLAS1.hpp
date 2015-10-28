@@ -36,9 +36,6 @@
 // for dll_import
 #include <scai/common/config.hpp>
 
-// internal scai libraries
-#include <scai/tasking/SyncToken.hpp>
-
 #include <scai/logging.hpp>
 
 #include <scai/common/SCAITypes.hpp>
@@ -69,26 +66,25 @@ public:
         const IndexType n,
         const ValueType alpha,
         ValueType* x,
-        const IndexType incX,
-        tasking::SyncToken* syncToken );
+        const IndexType incX );
 
     /**
      * This function is the OpenMP implementation of scai::lama::BLASKernelTrait::nrm2
      */
     template<typename ValueType>
-    static ValueType nrm2( const IndexType n, const ValueType* x, const IndexType incX, tasking::SyncToken* syncToken );
+    static ValueType nrm2( const IndexType n, const ValueType* x, const IndexType incX );
 
     /**
      * This function is the OpenMP implementation of scai::lama::BLASKernelTrait::asum
      */
     template<typename ValueType>
-    static ValueType asum( const IndexType n, const ValueType* x, const IndexType incX, tasking::SyncToken* syncToken );
+    static ValueType asum( const IndexType n, const ValueType* x, const IndexType incX );
 
     /**
      * This function is the OpenMP implementation of scai::lama::BLASKernelTrait::iamax
      */
     template<typename ValueType>
-    static IndexType iamax( const IndexType n, const ValueType* x, const IndexType incX, tasking::SyncToken* syncToken );
+    static IndexType iamax( const IndexType n, const ValueType* x, const IndexType incX );
 
     /**
      * This function is the OpenMP implementation of scai::lama::BLASKernelTrait::swap
@@ -99,8 +95,7 @@ public:
         ValueType* y,
         const IndexType incY,
         ValueType* x,
-        const IndexType incX,
-        tasking::SyncToken* syncToken );
+        const IndexType incX );
 
     /**
      * This function is the OpenMP implementation of scai::lama::BLASKernelTrait::copy
@@ -111,8 +106,7 @@ public:
         const ValueType* x,
         const IndexType incX,
         ValueType* y,
-        const IndexType incY,
-        tasking::SyncToken* syncToken );
+        const IndexType incY );
 
     /**
      * This function is the OpenMP implementation of scai::lama::BLASKernelTrait::axpy
@@ -124,8 +118,7 @@ public:
         const ValueType* x,
         const IndexType incX,
         ValueType* y,
-        const IndexType incY,
-        tasking::SyncToken* syncToken );
+        const IndexType incY );
 
     /**
      * This function is the OpenMP implementation of scai::lama::BLASKernelTrait::dot
@@ -136,8 +129,7 @@ public:
         const ValueType* x,
         const IndexType incX,
         const ValueType* y,
-        const IndexType incY,
-        tasking::SyncToken* syncToken );
+        const IndexType incY );
 
     /**
      * This function is the OpenMP implementation of scai::lama::BLASKernelTrait::sum
@@ -149,8 +141,7 @@ public:
         const ValueType* x,
         ValueType beta,
         const ValueType* y,
-        ValueType* z,
-        tasking::SyncToken* syncToken );
+        ValueType* z );
 
     /**
      * @brief This method registers all OpenMP implementations of BLAS1 routines in kernel registry.

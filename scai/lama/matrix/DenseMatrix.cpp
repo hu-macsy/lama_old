@@ -1768,7 +1768,7 @@ void DenseMatrix<ValueType>::matrixTimesVectorImpl(
                 ReadAccess<ValueType> readSend( *sendValues, loc );
                 WriteAccess<ValueType> writeX( x, loc );
 
-                copy[loc]( mData[actualPartition]->getNumColumns(), readSend.get(), 1, writeX.get(), 1, NULL );
+                copy[loc]( mData[actualPartition]->getNumColumns(), readSend.get(), 1, writeX.get(), 1 );
             }
 
             mData[actualPartition]->matrixTimesVector( localResult, alphaValue, x, static_cast<ValueType>(1.0), localResult );

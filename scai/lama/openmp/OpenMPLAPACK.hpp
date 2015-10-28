@@ -40,8 +40,6 @@
 #include <scai/lama/openmp/BLASHelper.hpp>
 
 // internal scai libraries
-#include <scai/tasking/SyncToken.hpp>
-
 #include <scai/logging.hpp>
 
 #include <scai/common/SCAITypes.hpp>
@@ -107,8 +105,7 @@ public:
         const IndexType k1,
         const IndexType k2,
         const IndexType* ipiv,
-        const IndexType incx,
-        tasking::SyncToken* syncToken );
+        const IndexType incx );
 
     /** Routine that sets functions pointers belonging to LAPACK in a BLASKernelTrait.
      *

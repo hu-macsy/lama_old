@@ -749,7 +749,7 @@ ValueType DIAStorage<ValueType>::l1Norm() const
 
 	SCAI_CONTEXT_ACCESS( loc );
 
-	return asum[loc]( mValues.size(), data.get(), 1, NULL );
+	return asum[loc]( mValues.size(), data.get(), 1 );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -767,7 +767,7 @@ ValueType DIAStorage<ValueType>::l2Norm() const
 
 	SCAI_CONTEXT_ACCESS( loc );
 
-	return ::sqrt(dot[loc]( mValues.size(), data.get(), 1, data.get(), 1, NULL ));
+	return ::sqrt(dot[loc]( mValues.size(), data.get(), 1, data.get(), 1 ));
 }
 
 /* --------------------------------------------------------------------------- */

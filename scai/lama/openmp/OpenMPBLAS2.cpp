@@ -38,8 +38,10 @@
 #include <scai/lama/BLASKernelTrait.hpp>
 
 // internal scai libraries
+#include <scai/tasking/TaskSyncToken.hpp>
 #include <scai/kregistry/KernelRegistry.hpp>
 #include <scai/common/macros/unused.hpp>
+#include <scai/common/bind.hpp>
 #include <scai/common/ScalarType.hpp>
 
 // boost
@@ -47,6 +49,8 @@
 
 namespace scai
 {
+
+using tasking::TaskSyncToken;
 
 namespace lama
 {
@@ -68,8 +72,7 @@ void OpenMPBLAS2::gemv(
     const IndexType incX,
     const ValueType beta,
     ValueType* Y,
-    const IndexType incY,
-    tasking::SyncToken* syncToken )
+    const IndexType incY )
 {
     SCAI_LOG_INFO( logger,
                    "gemv<" << common::getScalarType<ValueType>()<< ">: M = " << M << ", N = " << N 
@@ -83,7 +86,9 @@ void OpenMPBLAS2::gemv(
 
     // N == 0: empty A, but deal with X, Y, we can handle this here
 
-    if( syncToken )
+    TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
+
+    if ( syncToken )
     {
         SCAI_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }

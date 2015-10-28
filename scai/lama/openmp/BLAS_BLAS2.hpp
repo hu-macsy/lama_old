@@ -42,8 +42,6 @@
 // internal scai libraries
 #include <scai/common/SCAITypes.hpp>
 
-#include <scai/tasking/SyncToken.hpp>
-
 #include <scai/logging.hpp>
 
 namespace scai
@@ -78,8 +76,7 @@ public:
         const IndexType incX,
         const ValueType beta,
         ValueType* y,
-        const IndexType incY,
-        tasking::SyncToken* syncToken );
+        const IndexType incY );
 
     /** Routine that sets functions pointers belonging to BLAS2 in a BLASKernelTrait.
      *

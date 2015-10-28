@@ -104,7 +104,7 @@ void cublasWrapperScale( int n, ComplexDouble alpha, ComplexDouble* x_d, int inc
 }
 
 template<typename ValueType>
-void CUDABLAS1::scal( IndexType n, const ValueType alpha, ValueType* x_d, const IndexType incX, SyncToken* syncToken )
+void CUDABLAS1::scal( IndexType n, const ValueType alpha, ValueType* x_d, const IndexType incX )
 {
     SCAI_REGION( "CUDA.BLAS1.scal" )
 
@@ -119,7 +119,9 @@ void CUDABLAS1::scal( IndexType n, const ValueType alpha, ValueType* x_d, const 
 
     cudaStream_t stream = NULL;
 
-    if( syncToken )
+    SyncToken* syncToken = SyncToken::getCurrentSyncToken();
+
+    if ( syncToken )
     {
         CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
         SCAI_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
@@ -185,7 +187,7 @@ ComplexDouble cublasWrapperNrm2( int n, const ComplexDouble* x_d, int incX )
 }
 
 template<typename ValueType>
-ValueType CUDABLAS1::nrm2( IndexType n, const ValueType* x_d, IndexType incX, SyncToken* syncToken )
+ValueType CUDABLAS1::nrm2( IndexType n, const ValueType* x_d, IndexType incX )
 {
     SCAI_REGION( "CUDA.BLAS1.nrm2" )
 
@@ -200,12 +202,14 @@ ValueType CUDABLAS1::nrm2( IndexType n, const ValueType* x_d, IndexType incX, Sy
 
     cudaStream_t stream = NULL;
 
-    if( syncToken )
+    CUDAStreamSyncToken* syncToken = CUDAStreamSyncToken::getCurrentSyncToken();
+
+    if ( syncToken )
     {
-        CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-        SCAI_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
-        stream = cudaStreamSyncToken->getCUDAStream();
+        stream = syncToken->getCUDAStream();
     }
+
+    // Note: we have to switch cublas Stream, this might be done globally later
 
     SCAI_CUBLAS_CALL( cublasSetStream( CUDAContext_cublasHandle, stream ), "CUDABLAS1::nrm2 set stream" );
 
@@ -220,6 +224,7 @@ ValueType CUDABLAS1::nrm2( IndexType n, const ValueType* x_d, IndexType incX, Sy
     }
 
     SCAI_CUBLAS_CALL( cublasSetStream( CUDAContext_cublasHandle, NULL ), "CUDABLAS1::nrm2 set stream null" );
+
     return res;
 }
 
@@ -267,7 +272,7 @@ ComplexDouble cublasWrapperAsum( int n, const ComplexDouble* x_d, int incX )
 }
 
 template<typename ValueType>
-ValueType CUDABLAS1::asum( const IndexType n, const ValueType* x_d, const IndexType incX, SyncToken* syncToken )
+ValueType CUDABLAS1::asum( const IndexType n, const ValueType* x_d, const IndexType incX )
 {
     SCAI_REGION( "CUDA.BLAS1.asum" )
 
@@ -282,11 +287,11 @@ ValueType CUDABLAS1::asum( const IndexType n, const ValueType* x_d, const IndexT
 
     cudaStream_t stream = NULL;
 
-    if( syncToken )
+    CUDAStreamSyncToken* syncToken = CUDAStreamSyncToken::getCurrentSyncToken();
+
+    if ( syncToken )
     {
-        CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-        SCAI_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
-        stream = cudaStreamSyncToken->getCUDAStream();
+        stream = syncToken->getCUDAStream();
     }
 
     SCAI_CUBLAS_CALL( cublasSetStream( CUDAContext_cublasHandle, stream ), "CUDABLAS1::asum set stream" );
@@ -347,7 +352,7 @@ int cublasWrapperIamax( int n, const ComplexDouble* x_d, int incX )
 }
 
 template<typename ValueType>
-IndexType CUDABLAS1::iamax( const IndexType n, const ValueType* x_d, const IndexType incX, SyncToken* syncToken )
+IndexType CUDABLAS1::iamax( const IndexType n, const ValueType* x_d, const IndexType incX )
 {
     SCAI_REGION( "CUDA.BLAS1.iamax" )
 
@@ -357,11 +362,11 @@ IndexType CUDABLAS1::iamax( const IndexType n, const ValueType* x_d, const Index
 
     cudaStream_t stream = NULL;
 
-    if( syncToken )
+    CUDAStreamSyncToken* syncToken = CUDAStreamSyncToken::getCurrentSyncToken();
+
+    if ( syncToken )
     {
-        CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-        SCAI_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
-        stream = cudaStreamSyncToken->getCUDAStream();
+        stream = syncToken->getCUDAStream();
     }
 
     SCAI_CUBLAS_CALL( cublasSetStream( CUDAContext_cublasHandle, stream ), "CUABLAS1::iamax set stream" );
@@ -419,8 +424,7 @@ void CUDABLAS1::swap(
     ValueType* x_d,
     const IndexType incX,
     ValueType* y_d,
-    const IndexType incY,
-    SyncToken* syncToken )
+    const IndexType incY )
 {
     SCAI_REGION( "CUDA.BLAS1.swap" )
 
@@ -435,11 +439,11 @@ void CUDABLAS1::swap(
 
     cudaStream_t stream = NULL;
 
-    if( syncToken )
+    CUDAStreamSyncToken* syncToken = CUDAStreamSyncToken::getCurrentSyncToken();
+
+    if ( syncToken )
     {
-        CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-        SCAI_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
-        stream = cudaStreamSyncToken->getCUDAStream();
+        stream = syncToken->getCUDAStream();
     }
 
     SCAI_CUBLAS_CALL( cublasSetStream( CUDAContext_cublasHandle, stream ), "CUDABLAS::swap set stream" );
@@ -496,8 +500,7 @@ void CUDABLAS1::copy(
     const ValueType* x_d,
     IndexType incX,
     ValueType* y_d,
-    IndexType incY,
-    SyncToken* syncToken )
+    IndexType incY )
 {
     SCAI_REGION( "CUDA.BLAS1.copy" )
 
@@ -512,11 +515,11 @@ void CUDABLAS1::copy(
 
     cudaStream_t stream = NULL;
 
-    if( syncToken )
+    CUDAStreamSyncToken* syncToken = CUDAStreamSyncToken::getCurrentSyncToken();
+
+    if ( syncToken )
     {
-        CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-        SCAI_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
-        stream = cudaStreamSyncToken->getCUDAStream();
+        stream = syncToken->getCUDAStream();
     }
 
     SCAI_CUBLAS_CALL( cublasSetStream( CUDAContext_cublasHandle, stream ), "CUDABLAS1::copy set stream" );
@@ -586,8 +589,7 @@ void CUDABLAS1::axpy(
     const ValueType* x_d,
     int incX,
     ValueType* y_d,
-    const int incY,
-    SyncToken* syncToken )
+    const int incY )
 {
     SCAI_REGION( "CUDA.BLAS1.axpy" )
 
@@ -602,11 +604,11 @@ void CUDABLAS1::axpy(
 
     cudaStream_t stream = NULL;
 
-    if( syncToken )
+    CUDAStreamSyncToken* syncToken = CUDAStreamSyncToken::getCurrentSyncToken();
+
+    if ( syncToken )
     {
-        CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-        SCAI_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
-        stream = cudaStreamSyncToken->getCUDAStream();
+        stream = syncToken->getCUDAStream();
     }
 
     SCAI_CUBLAS_CALL( cublasSetStream( CUDAContext_cublasHandle, stream ), "CUDABLAS1::axpy set stream" );
@@ -676,8 +678,7 @@ ValueType CUDABLAS1::dot(
     const ValueType* x_d,
     IndexType incX,
     const ValueType* y_d,
-    IndexType incY,
-    SyncToken* syncToken )
+    IndexType incY )
 {
     SCAI_REGION( "CUDA.BLAS1.dot" )
 
@@ -693,11 +694,11 @@ ValueType CUDABLAS1::dot(
 
     cudaStream_t stream = NULL;
 
-    if( syncToken )
+    CUDAStreamSyncToken* syncToken = CUDAStreamSyncToken::getCurrentSyncToken();
+
+    if ( syncToken )
     {
-        CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-        SCAI_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
-        stream = cudaStreamSyncToken->getCUDAStream();
+        stream = syncToken->getCUDAStream();
     }
 
     SCAI_CUBLAS_CALL( cublasSetStream( CUDAContext_cublasHandle, stream ), "CUDABLAS1::dot set stream" );
@@ -728,8 +729,7 @@ void CUDABLAS1::sum(
     const ValueType* x,
     ValueType beta,
     const ValueType* y,
-    ValueType* z,
-    SyncToken* syncToken )
+    ValueType* z )
 {
     SCAI_REGION( "CUDA.BLAS1.sum" )
 
@@ -745,11 +745,11 @@ void CUDABLAS1::sum(
 
     cudaStream_t stream = 0; // default stream if no syncToken is given
 
-    if( syncToken )
+    CUDAStreamSyncToken* syncToken = CUDAStreamSyncToken::getCurrentSyncToken();
+
+    if ( syncToken )
     {
-        CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-        SCAI_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
-        stream = cudaStreamSyncToken->getCUDAStream();
+        stream = syncToken->getCUDAStream();
     }
 
     sum_launcher( n, alpha, x, beta, y, z, stream );
@@ -776,6 +776,16 @@ void CUDABLAS1::registerKernels()
     common::context::ContextType ctx = common::context::CUDA;
 
     SCAI_LOG_INFO( logger, "set BLAS1 routines for OpenMP in Interface" )
+
+    KernelRegistry::set<BLASKernelTrait::scal<float> >( scal, ctx );
+    KernelRegistry::set<BLASKernelTrait::nrm2<float> >( nrm2, ctx );
+    KernelRegistry::set<BLASKernelTrait::asum<float> >( asum, ctx ); 
+    KernelRegistry::set<BLASKernelTrait::iamax<float> >( iamax, ctx );
+    KernelRegistry::set<BLASKernelTrait::swap<float> >( swap, ctx );  
+    KernelRegistry::set<BLASKernelTrait::copy<float> >( copy, ctx );    
+    KernelRegistry::set<BLASKernelTrait::axpy<float> >( axpy, ctx );    
+    KernelRegistry::set<BLASKernelTrait::dot<float> >( dot, ctx );     
+    KernelRegistry::set<BLASKernelTrait::sum<float> >( sum, ctx );      
 
 // Note: macro takes advantage of same name for routines and type definitions
 //       ( e.g. routine CUDABLAS1::sum<ValueType> is set for BLAS::BLAS1::sum variable

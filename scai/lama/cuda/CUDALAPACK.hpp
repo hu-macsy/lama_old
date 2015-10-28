@@ -45,11 +45,6 @@
 namespace scai
 {
 
-namespace tasking
-{
-    class SyncToken;
-}
-
 namespace lama
 {
 
@@ -82,8 +77,7 @@ private:
         const IndexType k1,
         const IndexType k2,
         const IndexType* ipiv,
-        const IndexType incx,
-        tasking::SyncToken* syncToken );
+        const IndexType incx );
 };
 
 } /* end namespace lama */

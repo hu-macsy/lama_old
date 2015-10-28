@@ -500,14 +500,13 @@ void OpenMPLAPACK::laswp(
     const int K1,
     const int K2,
     const int* ipiv,
-    const int INCX,
-    tasking::SyncToken* syncToken )
+    const int INCX )
 {
     SCAI_REGION( "OpenMP.LAPACK.laswp" )
 
     int i = K1;
 
-    if( order == CblasRowMajor )
+    if ( order == CblasRowMajor )
     {
         for( i = K1; i < K2; ++i )
         {
@@ -516,10 +515,10 @@ void OpenMPLAPACK::laswp(
                 continue;
             }
 
-            OpenMPBLAS1::swap<ValueType>( N, &A[ipiv[i * INCX] * LDA], INCX, &A[i * LDA], INCX, syncToken );
+            OpenMPBLAS1::swap<ValueType>( N, &A[ipiv[i * INCX] * LDA], INCX, &A[i * LDA], INCX );
         }
     }
-    else if( order == CblasColMajor )
+    else if ( order == CblasColMajor )
     {
         for( i = K1; i < K2; ++i )
         {
@@ -528,7 +527,7 @@ void OpenMPLAPACK::laswp(
                 continue;
             }
 
-            OpenMPBLAS1::swap<ValueType>( N, &A[ipiv[i * INCX] * LDA], INCX, &A[i * LDA], INCX, syncToken );
+            OpenMPBLAS1::swap<ValueType>( N, &A[ipiv[i * INCX] * LDA], INCX, &A[i * LDA], INCX );
         }
     }
     else

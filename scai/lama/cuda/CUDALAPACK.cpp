@@ -43,8 +43,6 @@
 #include <scai/kregistry/KernelRegistry.hpp>
 #include <scai/common/cuda/CUDAError.hpp>
 
-using namespace scai::tasking;
-
 namespace scai
 {
 
@@ -60,8 +58,7 @@ void CUDALAPACK::laswp(
     const IndexType k1,
     const IndexType k2,
     const IndexType* ipiv_h,
-    const IndexType incx,
-    SyncToken* syncToken )
+    const IndexType incx )
 {
     int info = 0;
     int i = k1;
@@ -77,7 +74,7 @@ void CUDALAPACK::laswp(
                 continue;
             }
 
-            CUDABLAS1::swap( n, &A_d[ipiv_h[i * incx] * lda], incx, &A_d[i * lda], incx, syncToken );
+            CUDABLAS1::swap( n, &A_d[ipiv_h[i * incx] * lda], incx, &A_d[i * lda], incx );
             SCAI_CHECK_CUDA_ERROR
         }
 
@@ -110,8 +107,7 @@ void CUDALAPACK::laswp(
     const IndexType k1,
     const IndexType k2,
     const IndexType* ipiv_h,
-    const IndexType incx,
-    SyncToken* syncToken )
+    const IndexType incx )
 {
     int info = 0;
     int i = k1;
@@ -127,7 +123,7 @@ void CUDALAPACK::laswp(
                 continue;
             }
 
-            CUDABLAS1::swap( n, &A_d[ipiv_h[i * incx] * lda], incx, &A_d[i * lda], incx, syncToken );
+            CUDABLAS1::swap( n, &A_d[ipiv_h[i * incx] * lda], incx, &A_d[i * lda], incx );
             SCAI_CHECK_CUDA_ERROR
         }
 

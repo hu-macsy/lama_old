@@ -38,9 +38,11 @@
 #include <scai/lama/BLASKernelTrait.hpp>
 
 // internal scai libraries
+#include <scai/tasking/TaskSyncToken.hpp>
 #include <scai/common/macros/unused.hpp>
 #include <scai/common/ScalarType.hpp>
 #include <scai/kregistry/KernelRegistry.hpp>
+#include <scai/common/bind.hpp>
 #include <scai/common/OpenMP.hpp>
 
 #include <scai/tracing.hpp>
@@ -54,7 +56,7 @@
 namespace scai
 {
 
-using tasking::SyncToken;
+using tasking::TaskSyncToken;
 using common::getScalarType;
 
 namespace lama
@@ -79,23 +81,27 @@ void OpenMPBLAS1::scal(
     const IndexType n,
     const ValueType alpha,
     ValueType* x,
-    const IndexType incX,
-    SyncToken* syncToken )
+    const IndexType incX )
 {
-    if( incX <= 0 )
+    SCAI_REGION( "OpenMP.BLAS1.scal" )
+
+    TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
+
+    if ( syncToken )
+    {
+        // run this routine with same arguments by another thread, running thread will have syncToken == NULL
+
+        syncToken->run( common::bind( scal<ValueType>, n, alpha, x, incX ) );
+        return;
+    }
+
+    if ( incX <= 0 )
     {
         return;
     }
 
-    SCAI_REGION( "OpenMP.BLAS1.scal" )
-
     SCAI_LOG_DEBUG( logger,
                     "scal<" << getScalarType<ValueType>()<< ">, n = " << n << ", alpha = " << alpha << ", x = " << x << ", incX = " << incX )
-
-    if( syncToken )
-    {
-        SCAI_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
-    }
 
     if( incX == 1 )
     {
@@ -114,32 +120,34 @@ void OpenMPBLAS1::scal(
         {
             x[i * incX] = x[i * incX] * alpha;
         }
-    }
+   }
 }
 
 /** nrm2 */
 
 template<typename ValueType>
-ValueType OpenMPBLAS1::nrm2( const IndexType n, const ValueType* x, const IndexType incX, SyncToken* syncToken )
+ValueType OpenMPBLAS1::nrm2( const IndexType n, const ValueType* x, const IndexType incX )
 {
     SCAI_REGION( "OpenMP.BLAS1.nrm2" )
 
     SCAI_LOG_DEBUG( logger,
                     "nrm2<" << getScalarType<ValueType>()<< ">, n = " << n << ", x = " << x << ", incX = " << incX )
 
-    if( incX <= 0 )
+    if ( incX <= 0 )
     {
-        return static_cast<ValueType>(0.0);
+        return static_cast<ValueType>( 0 );
     }
 
-    if( syncToken )
+    TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
+
+    if ( syncToken )
     {
-        SCAI_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
+        SCAI_LOG_WARN( logger, "asynchronous execution not supported yet." )
     }
 
-    ValueType sumOfSquares = static_cast<ValueType>(0.0);
+    ValueType sumOfSquares = static_cast<ValueType>( 0 );
 
-// OpenMP reduction clause cannot be used as it doesn't support complex numbers
+    // OpenMP reduction clause cannot be used as it doesn't support complex numbers
 
     #pragma omp parallel shared( sumOfSquares )
     {
@@ -172,16 +180,18 @@ ValueType OpenMPBLAS1::nrm2( const IndexType n, const ValueType* x, const IndexT
 /** asum (l1 norm) */
 
 template<typename ValueType>
-ValueType OpenMPBLAS1::asum( const IndexType n, const ValueType* x, const IndexType incX, SyncToken* syncToken )
+ValueType OpenMPBLAS1::asum( const IndexType n, const ValueType* x, const IndexType incX )
 {
     SCAI_REGION( "OpenMP.BLAS1.asum" )
 
     SCAI_LOG_DEBUG( logger,
                     "asum<" << getScalarType<ValueType>()<< ">, n = " << n << ", x = " << x << ", incX = " << incX )
 
+    TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
+
     if( syncToken )
     {
-        SCAI_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
+        SCAI_LOG_WARN( logger, "asynchronous execution not supported yet" )
     }
 
     ValueType result = 0;
@@ -225,16 +235,18 @@ ValueType OpenMPBLAS1::asum( const IndexType n, const ValueType* x, const IndexT
 /** iamax */
 
 template<typename ValueType>
-IndexType OpenMPBLAS1::iamax( const IndexType n, const ValueType* x, const IndexType incX, SyncToken* syncToken )
+IndexType OpenMPBLAS1::iamax( const IndexType n, const ValueType* x, const IndexType incX )
 {
     SCAI_REGION( "OpenMP.BLAS1.iamax" )
 
     SCAI_LOG_INFO( logger,
                    "iamax<" << getScalarType<ValueType>()<< ">, n = " << n << ", x = " << x << ", incX = " << incX )
 
+    TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
+
     if( syncToken )
     {
-        SCAI_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
+        SCAI_LOG_WARN( logger, "asynchronous execution not supported here" )
     }
 
     if( n <= 0 || incX <= 0 )
@@ -294,8 +306,7 @@ void OpenMPBLAS1::swap(
     ValueType* x,
     const IndexType incX,
     ValueType* y,
-    const IndexType incY,
-    SyncToken* syncToken )
+    const IndexType incY )
 {
     SCAI_REGION( "OpenMP.BLAS1.swap" )
 
@@ -307,9 +318,11 @@ void OpenMPBLAS1::swap(
         return;
     }
 
+    TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
+
     if( syncToken )
     {
-        SCAI_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
+        SCAI_LOG_WARN( logger, "asynchronous execution not supported here" )
     }
 
     ValueType *temp = 0;
@@ -380,8 +393,7 @@ void OpenMPBLAS1::copy(
     const ValueType* x,
     const IndexType incX,
     ValueType* y,
-    const IndexType incY,
-    SyncToken* UNUSED(syncToken) )
+    const IndexType incY )
 {
     SCAI_REGION( "OpenMP.BLAS1.copy" )
 
@@ -422,8 +434,7 @@ void OpenMPBLAS1::axpy(
     const ValueType* x,
     const IndexType incX,
     ValueType* y,
-    const IndexType incY,
-    SyncToken* syncToken )
+    const IndexType incY )
 {
     SCAI_REGION( "OpenMP.BLAS1.axpy" )
 
@@ -435,9 +446,11 @@ void OpenMPBLAS1::axpy(
         return;
     }
 
+    TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
+
     if( syncToken )
     {
-        SCAI_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
+        SCAI_LOG_WARN( logger, "asynchronous execution not supported here" )
     }
 
     if( incX == 1 && incY == 1 )
@@ -468,8 +481,7 @@ ValueType OpenMPBLAS1::dot(
     const ValueType* x,
     const IndexType incX,
     const ValueType* y,
-    const IndexType incY,
-    SyncToken* syncToken )
+    const IndexType incY )
 {
     SCAI_REGION( "OpenMP.BLAS1.sdot" )
 
@@ -481,9 +493,11 @@ ValueType OpenMPBLAS1::dot(
         return static_cast<ValueType>(0.0);
     }
 
+    TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
+
     if( syncToken )
     {
-        SCAI_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
+        SCAI_LOG_WARN( logger, "asynchronous execution not supported here" )
     }
 
     ValueType result = 0;
@@ -525,17 +539,18 @@ void OpenMPBLAS1::sum(
     const ValueType* x,
     ValueType beta,
     const ValueType* y,
-    ValueType* z,
-    SyncToken* syncToken )
+    ValueType* z )
 {
     SCAI_REGION( "OpenMP.BLAS1.dot" )
 
     SCAI_LOG_DEBUG( logger,
                     "sum<" << getScalarType<ValueType>() << ">, n = " << n << ", alpha = " << alpha << ", x = " << x << ", beta = " << beta << ", y = " << y << ", z = " << z )
 
+    TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
+
     if( syncToken )
     {
-        SCAI_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
+        SCAI_LOG_WARN( logger, "asynchronous execution not supported here" )
     }
 
     #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )

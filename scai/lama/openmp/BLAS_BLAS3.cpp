@@ -44,6 +44,8 @@
 
 #include <scai/tracing.hpp>
 
+#include <scai/tasking/TaskSyncToken.hpp>
+
 #include <scai/common/Settings.hpp>
 #include <scai/common/macros/unused.hpp>
 #include <scai/common/ScalarType.hpp>
@@ -57,8 +59,8 @@ namespace scai
 namespace lama
 {
 
-using tasking::SyncToken;
 using common::getScalarType;
+using tasking::TaskSyncToken;
 
 SCAI_LOG_DEF_LOGGER( BLAS_BLAS3::logger, "BLAS.BLAS3" )
 
@@ -217,17 +219,19 @@ void BLAS_BLAS3::gemm(
     const IndexType ldb,
     const ValueType beta,
     ValueType* C,
-    const IndexType ldc,
-    SyncToken* syncToken )
+    const IndexType ldc )
 {
     SCAI_REGION( "BLAS.BLAS3.gemm" )
 
     SCAI_LOG_INFO( logger,
-                   "gemm<" << getScalarType<ValueType>() << ">: " << "m = " << m << ", n = " << n << ", k = " << k << ", lda = " << lda << ", ldb = " << ldb << ", ldc = " << ldc << ", alpha = " << alpha << ", beta = " << beta )
+                   "gemm<" << getScalarType<ValueType>() << ">: " << "m = " << m << ", n = " << n << ", k = " << k 
+                   << ", lda = " << lda << ", ldb = " << ldb << ", ldc = " << ldc << ", alpha = " << alpha << ", beta = " << beta )
 
-    if( syncToken )
+    TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
+
+    if ( syncToken )
     {
-        SCAI_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
+        SCAI_LOG_WARN( logger, "asynchronous execution not supported yet" )
     }
 
     wrapperGemm( order, transA, transB, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc );

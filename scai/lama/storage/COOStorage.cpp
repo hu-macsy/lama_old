@@ -733,7 +733,7 @@ ValueType COOStorage<ValueType>::l1Norm() const
 
 	SCAI_CONTEXT_ACCESS( loc );
 
-	return asum[loc]( n, data.get(), static_cast<IndexType>(1.0), NULL );
+	return asum[loc]( n, data.get(), static_cast<IndexType>(1.0) );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -753,7 +753,7 @@ ValueType COOStorage<ValueType>::l2Norm() const
 
 	SCAI_CONTEXT_ACCESS( loc );
 
-	return ::sqrt(dot[loc]( n, data.get(), 1, data.get(), 1, NULL ));
+	return ::sqrt(dot[loc]( n, data.get(), 1, data.get(), 1 ));
 }
 
 /* --------------------------------------------------------------------------- */

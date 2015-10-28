@@ -47,11 +47,6 @@
 namespace scai
 {
 
-namespace tasking
-{
-    class SyncToken;
-}
-
 namespace lama
 {
 
@@ -139,8 +134,7 @@ private:
         const IndexType ldb,
         const ValueType beta,
         ValueType* C,
-        const IndexType ldc,
-        tasking::SyncToken* syncToken );
+        const IndexType ldc );
 
     /**
      * @brief trsm solves one of the matrix equations
@@ -223,9 +217,7 @@ private:
         const ValueType* A,
         const IndexType lda,
         ValueType* B,
-        const IndexType ldb,
-        tasking::SyncToken* syncToken );
-
+        const IndexType ldb );
 private:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )

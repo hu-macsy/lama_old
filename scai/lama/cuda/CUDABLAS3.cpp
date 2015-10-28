@@ -191,8 +191,7 @@ void CUDABLAS3::gemm(
     const IndexType ldb,
     const ValueType beta,
     ValueType* const C,
-    const IndexType ldc,
-    SyncToken* syncToken )
+    const IndexType ldc )
 {
     cublasOperation_t transA_char = CUBLAS_OP_N;
     cublasOperation_t transB_char = CUBLAS_OP_N;
@@ -240,11 +239,11 @@ void CUDABLAS3::gemm(
 
     cudaStream_t stream = 0; // default stream if no syncToken is given
 
-    if( syncToken )
+    CUDAStreamSyncToken* syncToken = CUDAStreamSyncToken::getCurrentSyncToken();
+
+    if ( syncToken )
     {
-        CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-        SCAI_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
-        stream = cudaStreamSyncToken->getCUDAStream();
+        stream = syncToken->getCUDAStream();
     }
 
     SCAI_CUBLAS_CALL( cublasSetStream( CUDAContext_cublasHandle, stream ),
@@ -365,8 +364,7 @@ void CUDABLAS3::trsm(
     const ValueType* A,
     const IndexType lda,
     ValueType* B,
-    const IndexType ldb,
-    SyncToken* syncToken )
+    const IndexType ldb )
 {
     cublasSideMode_t side = ' ';
     cublasFillMode_t uplo = ' ';
@@ -489,11 +487,11 @@ void CUDABLAS3::trsm(
 
     cudaStream_t stream = 0; // default stream if no syncToken is given
 
-    if( syncToken )
+    CUDAStreamSyncToken* syncToken = CUDAStreamSyncToken::getCurrentSyncToken();
+
+    if ( syncToken )
     {
-        CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-        SCAI_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
-        stream = cudaStreamSyncToken->getCUDAStream();
+        stream = syncToken->getCUDAStream();
     }
 
     SCAI_CUBLAS_CALL( cublasSetStream( CUDAContext_cublasHandle, stream ),

@@ -90,7 +90,7 @@ void gemmTest( ContextPtr loc )
             ReadAccess<ValueType> rAmB( AmB, loc );
             WriteAccess<ValueType> wAmC( AmC, loc );
             gemm[loc]( CblasRowMajor, CblasNoTrans, CblasNoTrans, m, n, k, alpha, rAmA.get(), lda, rAmB.get(), ldb, beta,
-                  wAmC.get(), ldc, NULL );
+                       wAmC.get(), ldc );
         }
         {
             ReadAccess<ValueType> rAmC( AmC );
@@ -121,7 +121,7 @@ void gemmTest( ContextPtr loc )
             ReadAccess<ValueType> rAmB( AmB, loc );
             WriteAccess<ValueType> wAmC( AmC, loc );
             gemm[loc]( CblasColMajor, CblasNoTrans, CblasNoTrans, m, n, k, alpha, rAmA.get(), lda, rAmB.get(), ldb, beta,
-                  wAmC.get(), ldc, NULL );
+                       wAmC.get(), ldc );
         }
         {
             ReadAccess<ValueType> rAmC( AmC );
@@ -152,7 +152,7 @@ void gemmTest( ContextPtr loc )
             ReadAccess<ValueType> rAmB( AmB, loc );
             WriteAccess<ValueType> wAmC( AmC, loc );
             gemm[loc]( CblasRowMajor, CblasNoTrans, CblasTrans, m, n, k, alpha, rAmA.get(), lda, rAmB.get(), ldb, beta,
-                  wAmC.get(), ldc, NULL );
+                       wAmC.get(), ldc );
         }
         {
             ReadAccess<ValueType> rAmC( AmC );
@@ -183,7 +183,7 @@ void gemmTest( ContextPtr loc )
             ReadAccess<ValueType> rAmB( AmB, loc );
             WriteAccess<ValueType> wAmC( AmC, loc );
             gemm[loc]( CblasColMajor, CblasNoTrans, CblasTrans, m, n, k, alpha, rAmA.get(), lda, rAmB.get(), ldb, beta,
-                  wAmC.get(), ldc, NULL );
+                  wAmC.get(), ldc );
         }
         {
             ReadAccess<ValueType> rAmC( AmC );
@@ -214,7 +214,7 @@ void gemmTest( ContextPtr loc )
             ReadAccess<ValueType> rAmB( AmB, loc );
             WriteAccess<ValueType> wAmC( AmC, loc );
             gemm[loc]( CblasRowMajor, CblasTrans, CblasNoTrans, m, n, k, alpha, rAmA.get(), lda, rAmB.get(), ldb, beta,
-                  wAmC.get(), ldc, NULL );
+                       wAmC.get(), ldc );
         }
         {
             ReadAccess<ValueType> rAmC( AmC );
@@ -245,7 +245,7 @@ void gemmTest( ContextPtr loc )
             ReadAccess<ValueType> rAmB( AmB, loc );
             WriteAccess<ValueType> wAmC( AmC, loc );
             gemm[loc]( CblasColMajor, CblasTrans, CblasNoTrans, m, n, k, alpha, rAmA.get(), lda, rAmB.get(), ldb, beta,
-                  wAmC.get(), ldc, NULL );
+                       wAmC.get(), ldc );
         }
         {
             ReadAccess<ValueType> rAmC( AmC );
@@ -276,7 +276,7 @@ void gemmTest( ContextPtr loc )
             ReadAccess<ValueType> rAmB( AmB, loc );
             WriteAccess<ValueType> wAmC( AmC, loc );
             gemm[loc]( CblasRowMajor, CblasTrans, CblasTrans, m, n, k, alpha, rAmA.get(), lda, rAmB.get(), ldb, beta,
-                  wAmC.get(), ldc, NULL );
+                       wAmC.get(), ldc );
         }
         {
             ReadAccess<ValueType> rAmC( AmC );
@@ -307,7 +307,7 @@ void gemmTest( ContextPtr loc )
             ReadAccess<ValueType> rAmB( AmB, loc );
             WriteAccess<ValueType> wAmC( AmC, loc );
             gemm[loc]( CblasColMajor, CblasTrans, CblasTrans, m, n, k, alpha, rAmA.get(), lda, rAmB.get(), ldb, beta,
-                  wAmC.get(), ldc, NULL );
+                       wAmC.get(), ldc );
         }
         {
             ReadAccess<ValueType> rAmC( AmC );

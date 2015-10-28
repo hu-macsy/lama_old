@@ -538,7 +538,7 @@ Scalar DenseVector<ValueType>::l1Norm() const
 {
     IndexType nnu = mLocalValues.size();
 
-    ValueType localL1Norm = static_cast<ValueType>(0.0);
+    ValueType localL1Norm = 0;
 
     if ( nnu > 0 )
     {
@@ -554,7 +554,7 @@ Scalar DenseVector<ValueType>::l1Norm() const
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        localL1Norm = asum[loc]( nnu, read.get(), 1, NULL );
+        localL1Norm = asum[loc]( nnu, read.get(), 1 );
     }
 
     return getDistribution().getCommunicator().sum( localL1Norm );
@@ -567,7 +567,7 @@ Scalar DenseVector<ValueType>::l2Norm() const
 {
     IndexType nnu = mLocalValues.size();
 
-    ValueType localDotProduct = static_cast<ValueType>(0.0);
+    ValueType localDotProduct = 0;
 
     if( nnu > 0 )
     {
@@ -583,7 +583,7 @@ Scalar DenseVector<ValueType>::l2Norm() const
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        localDotProduct = dot[loc]( nnu, read.get(), 1, read.get(), 1, NULL );
+        localDotProduct = dot[loc]( nnu, read.get(), 1, read.get(), 1 );
     }
 
     ValueType globalDotProduct = getDistribution().getCommunicator().sum( localDotProduct );
@@ -719,7 +719,7 @@ void DenseVector<ValueType>::vectorPlusVector(
 
             // result += y
             SCAI_CONTEXT_ACCESS( context )
-            axpy[context]( nnu, static_cast<ValueType>(1.0)/*alpha*/, yAccess.get(), 1, resultAccess.get(), 1, NULL );
+            axpy[context]( nnu, static_cast<ValueType>(1.0)/*alpha*/, yAccess.get(), 1, resultAccess.get(), 1 );
         }
         else // beta != 1.0 && beta != 0.0 --> result = alpha * result + beta * y
         {
@@ -733,7 +733,7 @@ void DenseVector<ValueType>::vectorPlusVector(
             }
 
             SCAI_CONTEXT_ACCESS( context )
-            axpy[context]( nnu, beta, yAccess.get(), 1, resultAccess.get(), 1, NULL );
+            axpy[context]( nnu, beta, yAccess.get(), 1, resultAccess.get(), 1 );
         }
     }
     else if( &result == &y ) // result = alpha * x + beta * result
@@ -757,7 +757,7 @@ void DenseVector<ValueType>::vectorPlusVector(
         {
             // result = alpha * x + result
             SCAI_CONTEXT_ACCESS( context )
-            axpy[context]( nnu, alpha, xAccess.get(), 1, resultAccess.get(), 1, NULL );
+            axpy[context]( nnu, alpha, xAccess.get(), 1, resultAccess.get(), 1 );
         }
     }
     else // result = alpha * x + beta * y
@@ -771,7 +771,7 @@ void DenseVector<ValueType>::vectorPlusVector(
         WriteAccess<ValueType> resultAccess( result, context, false );
 
         SCAI_CONTEXT_ACCESS( context )
-        sum[context]( nnu, alpha, xAccess.get(), beta, yAccess.get(), resultAccess.get(), NULL );
+        sum[context]( nnu, alpha, xAccess.get(), beta, yAccess.get(), resultAccess.get() );
     }
 
     SCAI_LOG_INFO( logger, "vectorPlusVector done" )
@@ -890,7 +890,7 @@ SCAI_REGION( "Vector.Dense.dotP" )
 
         SCAI_ASSERT_EQUAL_DEBUG( localSize, getDistribution().getLocalSize() )
 
-        const ValueType localDotProduct = dot[loc]( localSize, localRead.get(), 1, otherRead.get(), 1, NULL );
+        const ValueType localDotProduct = dot[loc]( localSize, localRead.get(), 1, otherRead.get(), 1 );
 
         SCAI_LOG_DEBUG( logger, "Calculating global dot product form local dot product = " << localDotProduct )
 

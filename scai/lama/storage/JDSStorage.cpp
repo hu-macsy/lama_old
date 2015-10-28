@@ -1460,7 +1460,7 @@ ValueType JDSStorage<ValueType>::l1Norm() const
 
 	SCAI_CONTEXT_ACCESS( loc )
 
-	return asum[loc]( n, data.get(), 1, NULL );
+	return asum[loc]( n, data.get(), 1 );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1485,7 +1485,7 @@ ValueType JDSStorage<ValueType>::l2Norm() const
 
 	SCAI_CONTEXT_ACCESS( loc )
 
-	return ::sqrt(dot[loc]( n, data.get(), 1, data.get(), 1, NULL ));
+	return ::sqrt(dot[loc]( n, data.get(), 1, data.get(), 1 ));
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

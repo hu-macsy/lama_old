@@ -40,11 +40,15 @@
 #include <scai/lama/cblas.hpp>
 
 //Intel MPI need mpi.h to be included before stdio.h so this header comes first
+
+#include <scai/tasking/TaskSyncToken.hpp>
+
 #include <scai/tracing.hpp>
 
 #include <scai/common/Settings.hpp>
 #include <scai/common/macros/unused.hpp>
 #include <scai/common/ScalarType.hpp>
+#include <scai/common/bind.hpp>
 
 #include <scai/kregistry/KernelRegistry.hpp>
 
@@ -58,11 +62,10 @@ namespace scai
 {
 
 using namespace common;
+using namespace tasking;
 
 namespace lama
 {
-
-using tasking::SyncToken;
 
 SCAI_LOG_DEF_LOGGER( BLAS_BLAS1::logger, "BLAS.BLAS1" )
 
@@ -119,8 +122,7 @@ void BLAS_BLAS1::scal(
     const IndexType n,
     const ValueType alpha,
     ValueType* x,
-    const IndexType incX,
-    SyncToken* syncToken )
+    const IndexType incX )
 {
     if( incX <= 0 )
     {
@@ -132,7 +134,9 @@ void BLAS_BLAS1::scal(
     SCAI_LOG_DEBUG( logger,
                     "scal<" << getScalarType<ValueType>() << " n = " << n << ", alpha = " << alpha << ", x = " << x << ", incX = " << incX )
 
-    if( syncToken )
+    TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
+
+    if ( syncToken )
     {
         SCAI_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
@@ -188,7 +192,7 @@ ComplexLongDouble wrapperNrm2( const int, const ComplexLongDouble*, const int )
 }
 
 template<typename ValueType>
-ValueType BLAS_BLAS1::nrm2( const IndexType n, const ValueType* x, const IndexType incX, SyncToken* syncToken )
+ValueType BLAS_BLAS1::nrm2( const IndexType n, const ValueType* x, const IndexType incX )
 {
     if( incX <= 0 )
     {
@@ -199,6 +203,8 @@ ValueType BLAS_BLAS1::nrm2( const IndexType n, const ValueType* x, const IndexTy
 
     SCAI_LOG_DEBUG( logger,
                     "nrm2<" << getScalarType<ValueType>() << ">, n = " << n << ", x = " << x << ", incX = " << incX )
+
+    TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
     if( syncToken )
     {
@@ -256,12 +262,14 @@ ComplexLongDouble wrapperAsum( const int, const ComplexLongDouble*, const int )
 }
 
 template<typename ValueType>
-ValueType BLAS_BLAS1::asum( const IndexType n, const ValueType* x, const IndexType incX, SyncToken* syncToken )
+ValueType BLAS_BLAS1::asum( const IndexType n, const ValueType* x, const IndexType incX )
 {
     SCAI_REGION( "BLAS.BLAS1.asum" )
 
     SCAI_LOG_DEBUG( logger,
                     "asum<" << getScalarType<ValueType>() << ">,  n = " << n << ", x = " << x << ", incX = " << incX )
+
+    TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
     if( syncToken )
     {
@@ -323,12 +331,14 @@ IndexType wrapperIamax( const int, const ComplexLongDouble*, const int )
 }
 
 template<typename ValueType>
-IndexType BLAS_BLAS1::iamax( const IndexType n, const ValueType* x, const IndexType incX, SyncToken* syncToken )
+IndexType BLAS_BLAS1::iamax( const IndexType n, const ValueType* x, const IndexType incX )
 {
     SCAI_REGION( "BLAS.BLAS1.iamax" )
 
     SCAI_LOG_INFO( logger,
                    "iamax<" << getScalarType<ValueType>() << ">, " << "n = " << n << ", x = " << x << ", incX = " << incX )
+
+    TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
     if( syncToken )
     {
@@ -387,8 +397,7 @@ void BLAS_BLAS1::swap(
     ValueType* x,
     const IndexType incX,
     ValueType* y,
-    const IndexType incY,
-    SyncToken* syncToken )
+    const IndexType incY )
 {
     SCAI_REGION( "BLAS.BLAS1.swap" )
 
@@ -399,6 +408,8 @@ void BLAS_BLAS1::swap(
     {
         return;
     }
+
+    TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
     if( syncToken )
     {
@@ -458,8 +469,7 @@ void BLAS_BLAS1::copy(
     const ValueType* x,
     const IndexType incX,
     ValueType* y,
-    const IndexType incY,
-    SyncToken* syncToken )
+    const IndexType incY )
 {
     SCAI_REGION( "BLAS.BLAS1.copy" )
 
@@ -470,6 +480,8 @@ void BLAS_BLAS1::copy(
     {
         return;
     }
+
+    TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
     if( syncToken )
     {
@@ -551,8 +563,7 @@ void BLAS_BLAS1::axpy(
     const ValueType* x,
     const IndexType incX,
     ValueType* y,
-    const IndexType incY,
-    SyncToken* syncToken )
+    const IndexType incY )
 {
     SCAI_REGION( "BLAS.BLAS1.axpy" )
 
@@ -564,12 +575,18 @@ void BLAS_BLAS1::axpy(
         return;
     }
 
-    if( syncToken )
-    {
-        SCAI_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
-    }
+    TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
-    wrapperAxpy( n, alpha, x, incX, y, incY );
+    if ( syncToken )
+    {
+        // just set call to this routine as task to be executed; new thread will have syncToken == NULL
+
+        syncToken->run( common::bind( wrapperAxpy<ValueType>, n, alpha, x, incX, y, incY ) );
+    }
+    else
+    {
+        wrapperAxpy( n, alpha, x, incX, y, incY );
+    }
 }
 
 /* ---------------------------------------------------------------------------------------*/
@@ -632,8 +649,7 @@ ValueType BLAS_BLAS1::dot(
     const ValueType* x,
     const IndexType incX,
     const ValueType* y,
-    const IndexType incY,
-    SyncToken* syncToken )
+    const IndexType incY )
 {
     SCAI_REGION( "BLAS.BLAS1.dot" )
 
@@ -644,6 +660,8 @@ ValueType BLAS_BLAS1::dot(
     {
         return static_cast<ValueType>(0.0);
     }
+
+    TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
     if( syncToken )
     {

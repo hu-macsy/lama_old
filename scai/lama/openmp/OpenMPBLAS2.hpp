@@ -40,8 +40,6 @@
 #include <scai/lama/openmp/BLASHelper.hpp>
 
 // internal scai libraries
-#include <scai/tasking/SyncToken.hpp>
-
 #include <scai/logging.hpp>
 
 #include <scai/common/SCAITypes.hpp>
@@ -78,8 +76,7 @@ public:
         const IndexType incX,
         const ValueType beta,
         ValueType* y,
-        const IndexType incY,
-        tasking::SyncToken* syncToken );
+        const IndexType incY );
 
     /**
      * This function is the OpenMP implementation of scai::lama::BLAS2Interface::trmv
@@ -94,8 +91,7 @@ public:
         const ValueType* A,
         const IndexType lda,
         ValueType* x,
-        const IndexType incX,
-        tasking::SyncToken* syncToken );
+        const IndexType incX );
 
     /**
      * This function is the OpenMP implementation of scai::lama::BLAS2Interface::trsv
@@ -110,8 +106,7 @@ public:
         const ValueType* A,
         const IndexType lda,
         ValueType* x,
-        const IndexType incX,
-        tasking::SyncToken* syncToken );
+        const IndexType incX );
 
     /**
      * This function is the OpenMP implementation of scai::lama::BLAS2Interface::gbmv
@@ -131,8 +126,7 @@ public:
         const IndexType incX,
         const ValueType beta,
         ValueType* y,
-        const IndexType incY,
-        tasking::SyncToken* syncToken );
+        const IndexType incY );
 
     /**
      * This function is the OpenMP implementation of scai::lama::BLAS2Interface::sbmv
@@ -150,8 +144,7 @@ public:
         const IndexType incX,
         const ValueType beta,
         ValueType* y,
-        const IndexType incY,
-        tasking::SyncToken* syncToken );
+        const IndexType incY );
 
     /**
      * This function is the OpenMP implementation of scai::lama::BLAS2Interface::tbmv
@@ -167,8 +160,7 @@ public:
         const ValueType* A,
         const IndexType lda,
         ValueType* x,
-        const IndexType incX,
-        tasking::SyncToken* syncToken );
+        const IndexType incX );
 
     /**
      * This function is the OpenMP implementation of scai::lama::BLAS2Interface::tbsv
@@ -184,8 +176,7 @@ public:
         const ValueType* A,
         const IndexType lda,
         ValueType* x,
-        const IndexType incX,
-        tasking::SyncToken* syncToken );
+        const IndexType incX );
 
     /**
      * This function is the OpenMP implementation of scai::lama::BLAS2Interface::ger
@@ -201,8 +192,7 @@ public:
         const ValueType* y,
         const IndexType incY,
         ValueType* A,
-        const IndexType lda,
-        tasking::SyncToken* syncToken );
+        const IndexType lda );
 
     /**
      * This function is the OpenMP implementation of scai::lama::BLAS2Interface::syr
@@ -216,8 +206,7 @@ public:
         const ValueType* x,
         const IndexType incX,
         ValueType* A,
-        const IndexType lda,
-        tasking::SyncToken* syncToken );
+        const IndexType lda );
 
     /**
      * This function is the OpenMP implementation of scai::lama::BLAS2Interface::syr2
@@ -233,8 +222,7 @@ public:
         const ValueType* y,
         const IndexType incY,
         ValueType* A,
-        const IndexType lda,
-        tasking::SyncToken* syncToken );
+        const IndexType lda );
 
     /**
      * This function is the OpenMP implementation of scai::lama::BLAS2Interface::spmv
@@ -250,8 +238,7 @@ public:
         const IndexType incX,
         const ValueType beta,
         ValueType* y,
-        const IndexType incY,
-        tasking::SyncToken* syncToken );
+        const IndexType incY );
 
     /**
      * This function is the OpenMP implementation of scai::lama::BLAS2Interface::spr
@@ -264,8 +251,7 @@ public:
         const ValueType alpha,
         const ValueType* x,
         const IndexType incX,
-        ValueType* AP,
-        tasking::SyncToken* syncToken );
+        ValueType* AP );
 
     /**
      * This function is the OpenMP implementation of scai::lama::BLAS2Interface::spr2
@@ -280,8 +266,7 @@ public:
         const IndexType incX,
         const ValueType* y,
         const IndexType incY,
-        ValueType* AP,
-        tasking::SyncToken* syncToken );
+        ValueType* AP );
 
     /**
      * This function is the OpenMP implementation of scai::lama::BLAS2Interface::tpmv
@@ -295,8 +280,7 @@ public:
         const IndexType n,
         const ValueType* AP,
         ValueType* x,
-        const IndexType incX,
-        tasking::SyncToken* syncToken );
+        const IndexType incX );
 
     /**
      * This function is the OpenMP implementation of scai::lama::BLAS2Interface::tpsv
@@ -310,8 +294,7 @@ public:
         const IndexType n,
         const ValueType* Ap,
         ValueType* x,
-        const IndexType incX,
-        tasking::SyncToken* syncToken );
+        const IndexType incX );
 
     /**
      * @todo add doxygen comment
@@ -326,8 +309,7 @@ public:
         const double* const x,
         const double beta,
         const double* const z,
-        double* y,
-        tasking::SyncToken* syncToken );
+        double* y );
 
     /** Routine that sets functions pointers belonging to BLAS2 in a BLASKernelTrait.
      *
