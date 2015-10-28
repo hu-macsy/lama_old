@@ -39,6 +39,7 @@
 
 // scai library
 #include <scai/kregistry/KernelRegistry.hpp>
+#include <scai/tasking/SyncToken.hpp>
 
 // external
 #include <mkl.h>
@@ -107,7 +108,7 @@ void MICBLAS2::gemv(
     const float beta,
     float* y,
     const IndexType incY,
-    SyncToken* syncToken )
+    tasking::SyncToken* syncToken )
 {
     SCAI_LOG_INFO( logger,
                    "gemv<float>: m = " << m << ", n = " << n << ", lda = " << lda << ", incX = " << incX << ", incY = " << incY << ", alpha = " << alpha << ", beta = " << beta )
@@ -169,7 +170,7 @@ void MICBLAS2::gemv(
     const double beta,
     double* y,
     const IndexType incY,
-    SyncToken* syncToken )
+    tasking::SyncToken* syncToken )
 {
     SCAI_LOG_INFO( logger,
                    "gemv<double>: m = " << m << ", n = " << n << ", lda = " << lda << ", incX = " << incX << ", incY = " << incY << ", alpha = " << alpha << ", beta = " << beta )
@@ -229,7 +230,7 @@ void MICBLAS2::registerKernels()
 
     // ctx will contain the context for which registration is done, here MIC
 
-    common::ContextType ctx = common::context::MIC;
+    common::context::ContextType ctx = common::context::MIC;
 
     KernelRegistry::set<BLASKernelTrait::gemv<float> >( gemv, ctx );
     KernelRegistry::set<BLASKernelTrait::gemv<double> >( gemv, ctx );

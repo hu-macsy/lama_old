@@ -58,6 +58,9 @@
 // boost
 #include <boost/preprocessor.hpp>
 
+// sqrt for all value types
+#include <cmath> 
+
 using namespace scai::hmemo;
 
 namespace scai

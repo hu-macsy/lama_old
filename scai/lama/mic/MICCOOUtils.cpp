@@ -37,7 +37,7 @@
 // local library
 #include <scai/lama/mic/MICUtils.hpp>
 
-#include <scai/lama/openmp/OpenMP.hpp>
+#include <scai/common/OpenMP.hpp>
 #include <scai/lama/UtilKernelTrait.hpp>
 
 // internal scai libraries
@@ -438,7 +438,7 @@ void MICCOOUtils::registerKernels()
 
     // ctx will contain the context for which registration is done, here MIC
 
-    common::ContextType ctx = common::context::MIC;
+    common::context::ContextType ctx = common::context::MIC;
 
     KernelRegistry::set<COOKernelTrait::offsets2ia>( offsets2ia, ctx );
 

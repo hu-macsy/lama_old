@@ -509,7 +509,7 @@ void MICBLAS1::registerKernels()
 
     // ctx will contain the context for which registration is done, here MIC
 
-    common::ContextType ctx = common::context::MIC;
+    common::context::ContextType ctx = common::context::MIC;
 
     KernelRegistry::set<BLASKernelTrait::scal<float> >( scal, ctx );
     KernelRegistry::set<BLASKernelTrait::scal<double> >( scal, ctx );

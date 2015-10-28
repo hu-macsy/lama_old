@@ -47,10 +47,13 @@
 namespace scai
 {
 
+namespace tasking
+{
+    class SyncToken;
+}
+
 namespace lama
 {
-
-class SyncToken;
 
 /** Implementations of methods for scai::lama::BLAS2Interface with MIC.
  *
@@ -79,7 +82,7 @@ public:
         const ValueType beta,
         ValueType* y,
         const IndexType incY,
-        SyncToken* syncToken );
+        tasking::SyncToken* syncToken );
 
     /** Routine that sets functions pointers belonging to BLAS2 in a BLASKernelTrait.
      *

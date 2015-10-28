@@ -67,7 +67,7 @@ void add( ValueType* array, const IndexType n )
 
 void printContextFactory()
 {
-    std::vector<common::ContextType> values;
+    std::vector<common::context::ContextType> values;
 
     Context::getCreateValues( values );
 
