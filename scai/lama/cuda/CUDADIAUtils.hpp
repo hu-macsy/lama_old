@@ -59,7 +59,7 @@ class COMMON_DLL_IMPORTEXPORT CUDADIAUtils
 {
 public:
 
-    /** Implementation for DIAKernelTrait::Mult:normalGEMV with CUDA on GPUs */
+    /** Implementation for DIAKernelTrait::normalGEMV with CUDA on GPUs */
 
     template<typename ValueType>
     static void normalGEMV(
@@ -75,7 +75,7 @@ public:
         const ValueType diaValues[],
         tasking::SyncToken* syncToken );
 
-    /** Implementation for DIAKernelTrait::Mult:normalGEVM with CUDA on GPUs */
+    /** Implementation for DIAKernelTrait::normalGEVM with CUDA on GPUs */
 
     template<typename ValueType>
     static void normalGEVM(

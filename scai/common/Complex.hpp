@@ -356,9 +356,6 @@
         return x;                                                                                       \
     }
 
-/**
- * @brief The class Complex represents complex numbers.
- */
 namespace scai
 {
 
@@ -367,6 +364,10 @@ namespace common
 
 using std::sqrt;
 using std::abs;
+
+/**
+ * @brief The class Complex represents complex numbers.
+ */
 
 template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT Complex

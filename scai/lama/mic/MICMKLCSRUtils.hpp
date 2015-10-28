@@ -59,7 +59,7 @@ class COMMON_DLL_IMPORTEXPORT MICMKLCSRUtils
 {
 public:
 
-    /** Implementation for CSRKernelTrait::Mult::normalGEMV  */
+    /** Implementation for CSRKernelTrait::normalGEMV  */
 
     template<typename ValueType>
     static void normalGEMV(

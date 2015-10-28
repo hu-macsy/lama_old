@@ -86,9 +86,9 @@ private:
 /**
  * Template class for ContextFunction by using a Kernel Trait 
  *
- * @tname <KernelTrait>  struct that constains signature and name of the context function.
+ * @tparam KernelTrait struct that constains signature (function type defintion) and name of the context function.
  *
- * \begincode
+ * \code
  *     // Example of KernelTrait
  *     struct isSorted
  *     {
@@ -102,6 +102,8 @@ template<typename KernelTrait>
 class KernelTraitContextFunction : public KernelContextFunction<typename KernelTrait::FuncType>
 {
 public:
+
+    /** Take over the function type of the trait. */
 
     typedef typename KernelTrait::FuncType ContextFunctionType;
 

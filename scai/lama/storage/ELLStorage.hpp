@@ -265,9 +265,9 @@ public:
     template<typename OtherType>
     void setDiagonalImpl( const hmemo::LAMAArray<OtherType>& diagonal ) __attribute( ( noinline ) );
 
-    /** This method replaces the diagonal by a diagonal value
+    /** This method replaces the diagonal by a new value
      *
-     * @param[in] scalar  is the source value
+     * @param[in] value  is the new value for the diagonal elements
      *
      * Calculations are dependent to the diagonal property
      */

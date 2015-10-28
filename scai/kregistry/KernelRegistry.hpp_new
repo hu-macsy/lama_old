@@ -62,7 +62,7 @@ typedef std::pair<const std::type_info&, const char*> KernelRegistryKey;
 
 /** Output operator for kregistry inteface key */
 
-inline std::ostream& operator<<( std::ostream& stream, const KernelRegistryKey& key )
+static std::ostream& operator<<( std::ostream& stream, const KernelRegistryKey& key )
 {
     stream << "KernelRegistryKey( id = " << key.second << ", type = " << key.first.name() << " )";
     return stream;

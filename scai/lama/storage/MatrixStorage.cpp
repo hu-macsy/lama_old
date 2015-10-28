@@ -787,7 +787,7 @@ void MatrixStorage<ValueType>::buildHalo( Halo& halo, const Distribution& colDis
 
 /* --------------------------------------------------------------------------- */
 
-void _MatrixStorage::scale( const ContextArray& )
+void _MatrixStorage::scaleRows( const ContextArray& )
 {
     COMMON_THROWEXCEPTION( "scale of rows not supported yet, matrix = " << *this )
 }

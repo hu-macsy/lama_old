@@ -54,7 +54,7 @@ namespace tasking
 namespace lama
 {
 
-/** Implementations of methods for scai::lama::BLAS3Interface with MIC.
+/** Implementations of methods for BLASKernelTrait with MIC.
  *
  *  @todo Move all method documentations to LAMAInterface and make references here
  *  @todo Add information here about use of native BLAS3 libraries
@@ -64,7 +64,7 @@ class COMMON_DLL_IMPORTEXPORT MICBLAS3
 {
 public:
 
-    /** MIC implementation for BLAS3Interface<ValueType>::gemm */
+    /** MIC implementation for BLAS3KernelTrait::gemm */
 
     template<typename ValueType>
     static void gemm(
@@ -84,11 +84,9 @@ public:
         const IndexType ldc,
         tasking::SyncToken* syncToken );
 
-    /** Routine that sets functions pointers belonging to BLAS3 in a BLASKernelTrait.
+    /** Routine that sets functions pointers belonging to BLAS3 in the kernel registry.
      *
-     *  param[inout] BLASKernelTrait struct to register all routines implemented in CUDA
-     *
-     *  Note: this routine will make instantiations of the template routines.
+     *  Note: this method will also instantiate the template routines.
      */
 
     static void registerKernels();

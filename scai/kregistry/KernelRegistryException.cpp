@@ -1,5 +1,5 @@
 /**
- * @file KernelRegistryException.hpp
+ * @file KernelRegistryException.cpp
  *
  * @license
  * Copyright (c) 2009-2015

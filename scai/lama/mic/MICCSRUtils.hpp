@@ -90,11 +90,11 @@ public:
 
     static IndexType scan( IndexType array[], const IndexType numValues );
 
-    /** Implementation for CSRKernelTrait::Offsets::sizes2offsets */
+    /** Implementation for CSRKernelTrait::sizes2offsets */
 
     static IndexType sizes2offsets( IndexType sizes[], const IndexType numRows );
 
-    /** Implementation for CSRKernelTrait::Offsets::offsets2sizes */
+    /** Implementation for CSRKernelTrait::offsets2sizes */
 
     static void offsets2sizes( IndexType sizes[], const IndexType offsets[], const IndexType n );
 
@@ -133,7 +133,7 @@ public:
         const IndexType numRows,
         const bool diagonalFlag );
 
-    /** Implementation for CSRKernelTrait::Transpose::convertCSR2CSC  */
+    /** Implementation for CSRKernelTrait::convertCSR2CSC  */
 
     template<typename ValueType>
     static void convertCSR2CSC(
@@ -147,7 +147,7 @@ public:
         IndexType numColumns,
         IndexType numValues );
 
-    /** Implementation for CSRKernelTrait::Mult::scaleRows  */
+    /** Implementation for CSRKernelTrait::scaleRows  */
 
     template<typename ValueType1,typename ValueType2>
     static void scaleRows(
@@ -156,7 +156,7 @@ public:
         const IndexType numRows,
         const ValueType2 values[] );
 
-    /** Implementation for CSRKernelTrait::Mult::normalGEMV  */
+    /** Implementation for CSRKernelTrait::normalGEMV  */
 
     template<typename ValueType>
     static void normalGEMV(
@@ -173,7 +173,7 @@ public:
         const ValueType csrValues[],
         tasking::SyncToken* syncToken );
 
-    /** Implementation for CSRKernelTrait::Mult::sparseGEMV  */
+    /** Implementation for CSRKernelTrait::sparseGEMV  */
 
     template<typename ValueType>
     static void sparseGEMV(
@@ -187,7 +187,7 @@ public:
         const ValueType csrValues[],
         tasking::SyncToken* syncToken );
 
-    /** Implementation for CSRKernelTrait::Mult::gemm  */
+    /** Implementation for CSRKernelTrait::gemm  */
 
     template<typename ValueType>
     static void gemm(
@@ -204,7 +204,7 @@ public:
         const ValueType csrValues[],
         tasking::SyncToken* syncToken );
 
-    /** Implementation for CSRKernelTrait::Jacobi::jacobi(Async/Halo) */
+    /** Implementation for CSRKernelTrait::jacobi */
 
     template<typename ValueType>
     static void jacobi(
@@ -217,6 +217,8 @@ public:
         const ValueType omega,
         const IndexType numRows,
         tasking::SyncToken* syncToken );
+
+    /** Implementation for CSRKernelTrait::jacobiHalo on Intel MIC */
 
     template<typename ValueType>
     static void jacobiHalo(
@@ -231,9 +233,7 @@ public:
         const ValueType omega,
         const IndexType numNonEmptyRows );
 
-    /** Implementation for CSRKernelTrait::Jacobi::jacobiHaloWithDiag
-     *  @since 1.1.0
-     */
+    /** Implementation for CSRKernelTrait::jacobiHaloWithDiag */
 
     template<typename ValueType>
     static void jacobiHaloWithDiag(
@@ -247,7 +247,7 @@ public:
         const ValueType omega,
         const IndexType numNonEmptyRows );
 
-    /** Implementation for CSRKernelTrait::Offsets::matrixAddSizes  */
+    /** Implementation for CSRKernelTrait::matrixAddSizes  */
 
     static IndexType matrixAddSizes(
         IndexType cSizes[],
@@ -259,7 +259,7 @@ public:
         const IndexType bIA[],
         const IndexType bJA[] );
 
-    /** Implementation for CSRKernelTrait::Offsets::matrixMultiplySizes  */
+    /** Implementation for CSRKernelTrait::matrixMultiplySizes  */
 
     static IndexType matrixMultiplySizes(
         IndexType cSizes[],
@@ -272,7 +272,7 @@ public:
         const IndexType bIA[],
         const IndexType bJA[] );
 
-    /** Implementation for CSRKernelTrait::Mult::matrixAdd */
+    /** Implementation for CSRKernelTrait::matrixAdd */
 
     template<typename ValueType>
     static void matrixAdd(
@@ -291,7 +291,7 @@ public:
         const IndexType bJA[],
         const ValueType bValues[] );
 
-    /** Implementation for CSRKernelTrait::Mult::matrixMultiply */
+    /** Implementation for CSRKernelTrait::matrixMultiply */
 
     template<typename ValueType>
     static void matrixMultiply(
@@ -310,7 +310,7 @@ public:
         const IndexType bJA[],
         const ValueType bValues[] );
 
-    /** Implementation for CSRKernelTrait::Reductions::absMaxDiffVal */
+    /** Implementation for CSRKernelTrait::absMaxDiffVal */
 
     template<typename ValueType>
     static ValueType absMaxDiffVal(

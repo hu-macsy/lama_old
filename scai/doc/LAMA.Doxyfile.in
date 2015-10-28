@@ -557,6 +557,7 @@ INPUT                  = ${CMAKE_SOURCE_DIR}/doc/system \
                          ${CMAKE_SOURCE_DIR}/common  \
                          ${CMAKE_SOURCE_DIR}/logging  \
                          ${CMAKE_SOURCE_DIR}/tracing  \
+                         ${CMAKE_SOURCE_DIR}/kregistry  \
                          ${CMAKE_SOURCE_DIR}/hmemo  \
                          ${CMAKE_SOURCE_DIR}/tasking  \
                          ${CMAKE_SOURCE_DIR}/lama
@@ -595,7 +596,7 @@ RECURSIVE              = YES
 # excluded from the INPUT source files. This way you can easily exclude a
 # subdirectory from a directory tree whose root is specified with the INPUT tag.
 
-EXCLUDE                =
+EXCLUDE                =  */test/*
 
 # The EXCLUDE_SYMLINKS tag can be used select whether or not files or
 # directories that are symbolic links (a Unix filesystem feature) are excluded

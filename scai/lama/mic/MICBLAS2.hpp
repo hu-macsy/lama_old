@@ -63,7 +63,7 @@ class COMMON_DLL_IMPORTEXPORT MICBLAS2
 public:
 
     /**
-     * This function is the MIC implementation of scai::lama::BLAS2Interface::gemv
+     * This function is the MIC implementation of BLASKernelTrait::gemv
      */
     template<typename ValueType>
     static void gemv(

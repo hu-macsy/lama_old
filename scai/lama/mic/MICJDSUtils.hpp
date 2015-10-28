@@ -125,7 +125,7 @@ public:
         const IndexType ilg[],
         const IndexType numRows );
 
-    /** Conversion of JDS to CSR as specified in JDSUtilKernelTrait::Conversions::getCSRValues  */
+    /** Conversion of JDS to CSR as specified in JDSKernelTrait::getCSRValues  */
 
     template<typename JDSValueType,typename CSRValueType>
     static void getCSRValues(
@@ -139,7 +139,7 @@ public:
         const IndexType jdsJA[],
         const JDSValueType jdsValues[] );
 
-    /** Conversion of CSR to JDS as specified in JDSUtilKernelTrait::Conversions::setCSRValues. */
+    /** Conversion of CSR to JDS as specified in JDSKernelTrait::setCSRValues. */
 
     template<typename JDSValueType,typename CSRValueType>
     static void setCSRValues(
@@ -154,7 +154,7 @@ public:
         const IndexType csrJA[],
         const CSRValueType csrValues[] );
 
-    /** Implementation for JDSUtilKernelTrait::Mult:normalGEMV with MIC on Host */
+    /** Implementation for JDSKernelTrait::normalGEMV on Intel MIC architecture */
 
     template<typename ValueType>
     static void normalGEMV(
@@ -172,6 +172,8 @@ public:
         const ValueType jdsValues[],
         tasking::SyncToken* syncToken );
 
+    /** Implementation for JDSKernelTrait::jacobi on Intel MIC architecture */
+
     template<typename ValueType>
     static void jacobi(
         ValueType solution[],
@@ -186,6 +188,8 @@ public:
         const ValueType rhs[],
         const ValueType omega,
         tasking::SyncToken* syncToken );
+
+    /** Implementation for JDSKernelTrait::jacobiHalo on Intel MIC architecture */
 
     template<typename ValueType>
     static void jacobiHalo(
@@ -210,7 +214,7 @@ private:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
-    static    bool initialized;
+    static bool initialized;
 
     static bool registerInterface();
 };

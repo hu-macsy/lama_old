@@ -78,7 +78,7 @@ public:
 private:
 
     /**
-     * This function is the CUDA implementation of scai::lama::BLAS2Interface::gemv
+     * This function is the CUDA implementation of BLASKernelTrait::gemv
      */
     template<typename ValueType>
     static void gemv(
@@ -97,7 +97,7 @@ private:
         tasking::SyncToken* syncToken );
 
     /**
-     * This function is the CUDA implementation of scai::lama::BLAS2Interface::symv
+     * This function is the CUDA implementation of symv (no trait yet).
      */
     template<typename ValueType>
     static void symv(
@@ -115,7 +115,7 @@ private:
         tasking::SyncToken* syncToken );
 
     /**
-     * This function is the CUDA implementation of scai::lama::BLAS2Interface::trmv
+     * This function is the CUDA implementation of scai::lama::BLASKernelTrait::trmv
      */
     template<typename ValueType>
     static void trmv(
@@ -131,7 +131,7 @@ private:
         tasking::SyncToken* syncToken );
 
     /**
-     * This function is the CUDA implementation of scai::lama::BLAS2Interface::trsv
+     * This function is the CUDA implementation of scai::lama::BLASKernelTrait::trsv
      */
     template<typename ValueType>
     static void trsv(
@@ -147,7 +147,7 @@ private:
         tasking::SyncToken* syncToken );
 
     /**
-     * This function is the CUDA implementation of scai::lama::BLAS2Interface::gbmv
+     * This function is the CUDA implementation of scai::lama::BLASKernelTrait::gbmv
      */
     template<typename ValueType>
     static void gbmv(
@@ -168,7 +168,7 @@ private:
         tasking::SyncToken* syncToken );
 
     /**
-     * This function is the CUDA implementation of scai::lama::BLAS2Interface::sbmv
+     * This function is the CUDA implementation of scai::lama::BLASKernelTrait::sbmv
      */
     template<typename ValueType>
     static void sbmv(
@@ -187,7 +187,7 @@ private:
         tasking::SyncToken* syncToken );
 
     /**
-     * This function is the CUDA implementation of scai::lama::BLAS2Interface::tbmv
+     * This function is the CUDA implementation of scai::lama::BLASKernelTrait::tbmv
      */
     template<typename ValueType>
     static void tbmv(
@@ -204,7 +204,7 @@ private:
         tasking::SyncToken* syncToken );
 
     /**
-     * This function is the CUDA implementation of scai::lama::BLAS2Interface::tbsv
+     * This function is the CUDA implementation of scai::lama::BLASKernelTrait::tbsv
      */
     template<typename ValueType>
     static void tbsv(
@@ -221,7 +221,7 @@ private:
         tasking::SyncToken* syncToken );
 
     /**
-     * This function is the CUDA implementation of scai::lama::BLAS2Interface::ger
+     * This function is the CUDA implementation of scai::lama::BLASKernelTrait::ger
      */
     template<typename ValueType>
     static void ger(
@@ -238,7 +238,7 @@ private:
         tasking::SyncToken* syncToken );
 
     /**
-     * This function is the CUDA implementation of scai::lama::BLAS2Interface::syr
+     * This function is the CUDA implementation of scai::lama::BLASKernelTrait::syr
      */
     template<typename ValueType>
     static void syr(
@@ -253,7 +253,7 @@ private:
         tasking::SyncToken* syncToken );
 
     /**
-     * This function is the CUDA implementation of scai::lama::BLAS2Interface::syr2
+     * This function is the CUDA implementation of scai::lama::BLASKernelTrait::syr2
      */
     template<typename ValueType>
     static void syr2(
@@ -270,7 +270,7 @@ private:
         tasking::SyncToken* syncToken );
 
     /**
-     * This function is the CUDA implementation of scai::lama::BLAS2Interface::spr
+     * This function is the CUDA implementation of scai::lama::BLASKernelTrait::spr
      */
     template<typename ValueType>
     static void spr(
@@ -284,7 +284,7 @@ private:
         tasking::SyncToken* syncToken );
 
     /**
-     * This function is the CUDA implementation of scai::lama::BLAS2Interface::spr2
+     * This function is the CUDA implementation of scai::lama::BLASKernelTrait::spr2
      */
     template<typename ValueType>
     static void spr2(

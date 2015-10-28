@@ -58,24 +58,32 @@ public:
 
     static bool validIndexes( const IndexType array[], const IndexType n, const IndexType size );
 
+    /*  CUDA implementation of UtilKernelTrait::sum  */
+
     template<typename ValueType>
     static ValueType sum( const ValueType array[], const IndexType n );
+
+    /*  CUDA implementation of UtilKernelTrait::setVal  */
 
     template<typename ValueType>
     static void setVal( ValueType array[], const IndexType n, const ValueType val );
 
+    /*  CUDA implementation of UtilKernelTrait::setOrder  */
+
     template<typename ValueType>
     static void setOrder( ValueType array[], const IndexType n );
+
+    /*  CUDA implementation of UtilKernelTrait::getValue  */
 
     template<typename ValueType>
     static ValueType getValue( const ValueType* array, const IndexType i );
 
-    /** CUDA implementation for UtilKernelTrait::Transform::scale. */
+    /** CUDA implementation for UtilKernelTrait::scale. */
 
     template<typename ValueType>
     static void scale( ValueType values[], const ValueType value, const IndexType n );
 
-    /** CUDA implementation for UtilKernelTrait::Copy::setScale. */
+    /** CUDA implementation for UtilKernelTrait::setScale. */
 
     template<typename ValueType,typename otherValueType>
     static void setScale(
@@ -84,46 +92,47 @@ public:
         const otherValueType inValues[],
         const IndexType n );
 
-    /** CUDA function implements UtilKernelTrait::Reductions::maxval */
+    /** CUDA function implements UtilKernelTrait::maxval */
 
     template<typename ValueType>
     static ValueType maxval( const ValueType array[], const IndexType n );
 
-    /** CUDA function implements UtilKernelTrait::Reductions::absMaxVal */
+    /** CUDA function implements UtilKernelTrait::absMaxVal */
 
     template<typename ValueType>
     static ValueType absMaxVal( const ValueType array[], const IndexType n );
 
-    /** CUDA function implements UtilKernelTrait::Reductions::absMaxDiffVal */
+    /** CUDA function implements UtilKernelTrait::absMaxDiffVal */
 
     template<typename ValueType>
     static ValueType absMaxDiffVal( const ValueType array1[], const ValueType array2[], const IndexType n );
 
-    /** CUDA implementation for UtilKernelTrait::Reductions::isSorted */
+    /** CUDA implementation for UtilKernelTrait::isSorted */
 
     template<typename ValueType>
     static bool isSorted( const ValueType array[], const IndexType n, bool acending );
 
+    /** CUDA implementation for UtilKernelTrait::set */
+
     template<typename ValueType,typename otherValueType>
     static void set( ValueType out[], const otherValueType in[], const IndexType n );
 
-    /** Set out[i] = in[ indexes[i] ],  0 <= i < n */
+    /** CUDA implementation for UtilKernelTrait::setGather, out[i]] = in[ indexes[i] ] */
 
     template<typename ValueType,typename otherValueType>
     static void setGather( ValueType out[], const otherValueType in[], const IndexType indexes[], const IndexType n );
 
-    /** Set out[ indexes[i] ] = in [i] */
+    /** CUDA implementation for UtilKernelTrait::setScatter, out[ indexes[i] ] = in [i] */
 
     template<typename ValueType,typename otherValueType>
     static void setScatter( ValueType out[], const IndexType indexes[], const otherValueType in[], const IndexType n );
 
-    /** CUDA implementation for UtilKernelTrait::Math::invert */
+    /** CUDA implementation for UtilKernelTrait::invert */
 
     template<typename ValueType>
     static void invert( ValueType array[], const IndexType n );
 
-    /** Routine that registers all routines of this class at the Kernel Registry.
-     */
+    /** Routine that registers all routines of this class at the Kernel Registry.  */
 
     static void registerKernels();
 

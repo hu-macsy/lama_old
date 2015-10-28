@@ -51,8 +51,6 @@ namespace tasking
 namespace lama
 {
 
-// forward declaration
-
 /** Struct with all kernel traits for BLAS routines.
  *
  *  This interface contains function pointer type definitions for all used routines

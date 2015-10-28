@@ -109,11 +109,11 @@ public:
         const IndexType ja[],
         const IndexType dlg[] );
 
-    /** Implementation for function type JDSUtilKernelTrait::sortRows  */
+    /** Implementation for function type JDSKernelTrait::sortRows  */
 
     static void sortRows( IndexType array[], IndexType perm[], const IndexType n );
 
-    /** Compute dlg array from ilg array as specified in JDSUtilKernelTrait::Conversions::ilg2dlg */
+    /** Compute dlg array from ilg array as specified in JDSKernelTrait::ilg2dlg */
 
     static IndexType ilg2dlg(
         IndexType dlg[],
@@ -121,11 +121,11 @@ public:
         const IndexType ilg[],
         const IndexType numRows );
 
-    /** Compute the inverse permutation as specified in JDSUtilKernelTrait::Sort::setInversePerm */
+    /** Compute the inverse permutation as specified in JDSKernelTrait::setInversePerm */
 
     static void setInversePerm( IndexType inversePerm[], const IndexType perm[], const IndexType n );
 
-    /** Conversion of JDS to CSR as specified in JDSUtilKernelTrait::Conversions::getCSRValues  */
+    /** Conversion of JDS to CSR as specified in JDSKernelTrait::getCSRValues  */
 
     template<typename JDSValueType,typename CSRValueType>
     static void getCSRValues(
@@ -139,7 +139,7 @@ public:
         const IndexType jdsJA[],
         const JDSValueType jdsValues[] );
 
-    /** Conversion of CSR to JDS on CUDA devices */
+    /** Conversion of CSR to JDS in CUDA as specified in JDSKernelTrait::getCSRValues  */
 
     template<typename JDSValueType,typename CSRValueType>
     static void setCSRValues(
@@ -154,7 +154,7 @@ public:
         const IndexType csrJA[],
         const CSRValueType csrValues[] );
 
-    /** Implementation for JDSUtilKernelTrait::Solver::jacobi(Halo)  */
+    /** Implementation for JDSKernelTrait::jacobi  */
 
     template<typename ValueType>
     static void jacobi(
@@ -171,6 +171,8 @@ public:
         const ValueType omega,
         tasking::SyncToken* syncToken );
 
+    /** Implementation for JDSKernelTrait::jacobiHalo  */
+
     template<typename ValueType>
     static void jacobiHalo(
         ValueType solutionLocal[],
@@ -186,7 +188,7 @@ public:
         const ValueType omega,
         tasking::SyncToken* syncToken );
 
-    /** Implementation for JDSUtilKernelTrait::Mult:normalGEMV with CUDA on GPU */
+    /** Implementation for JDSKernelTrait::normalGEMV with CUDA on GPU */
 
     template<typename ValueType>
     static void normalGEMV(
@@ -204,7 +206,7 @@ public:
         const ValueType jdsValues[],
         tasking::SyncToken* syncToken );
 
-    /** Implementation for JDSUtilKernelTrait::Mult:normalGEVM with CUDA on GPU */
+    /** Implementation for JDSKernelTrait::normalGEVM with CUDA on GPU */
 
     template<typename ValueType>
     static void normalGEVM(
@@ -222,6 +224,8 @@ public:
         const ValueType jdsValues[],
         tasking::SyncToken* syncToken );
 
+    /** Implementation for JDSKernelTrait::sparseGEMV with CUDA on GPU */
+
     template<typename ValueType>
     static void sparseGEMV(
         ValueType result[],
@@ -235,6 +239,8 @@ public:
         const IndexType jdsJA[],
         const ValueType jdsValues[],
         tasking::SyncToken* syncToken );
+
+    /** Implementation for JDSKernelTrait::sparseGEVM with CUDA on GPU */
 
     template<typename ValueType>
     static void sparseGEVM(

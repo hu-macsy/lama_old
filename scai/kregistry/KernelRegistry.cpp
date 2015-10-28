@@ -118,6 +118,25 @@ bool KernelRegistry::Compare::operator()( const KernelRegistryKey& x, const Kern
     return x.first.name() > y.first.name();
 }
 
+/* -----------------------------------------------------------------------------*/
+
+void KernelRegistry::printAll()
+{
+    KernelMap::const_iterator it;
+
+    std::cout << "KernelRegistry:" << std::endl;
+    std::cout << "================" << std::endl;
+
+    for ( it = theKernelMap.begin(); it != theKernelMap.end(); ++it )
+    {
+        std::cout << "Entry: key = " << it->first;
+        std::cout << ", ctx = " << it->second.printIt();
+        std::cout << std::endl;
+    }
+
+    std::cout << "================" << std::endl;
+}
+
 } /* end namespace kregistry */
 
 } /* end namespace scai */

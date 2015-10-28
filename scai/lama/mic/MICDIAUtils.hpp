@@ -54,7 +54,7 @@ class COMMON_DLL_IMPORTEXPORT MICDIAUtils
 {
 public:
 
-    /** MIC implementation for DIAKernelTrait::Counting::getCSRSizes */
+    /** MIC implementation for DIAKernelTrait::getCSRSizes */
 
     template<typename ValueType>
     static void getCSRSizes(
@@ -67,7 +67,7 @@ public:
         const ValueType diaValues[],
         const ValueType eps );
 
-    /** MIC implementation for DIAKernelTrait::Conversions::getCSRValues.  */
+    /** MIC implementation for DIAKernelTrait::getCSRValues.  */
 
     template<typename DIAValueType,typename CSRValueType>
     static void getCSRValues(
@@ -82,7 +82,7 @@ public:
         const DIAValueType diaValues[],
         const DIAValueType eps );
 
-    /** Implementation for DIAKernelTrait::Mult::normalGEMV  */
+    /** Implementation for DIAKernelTrait::normalGEMV  */
 
     template<typename ValueType>
     static void normalGEMV(
@@ -98,7 +98,7 @@ public:
         const ValueType diaValues[],
         tasking::SyncToken* syncToken );
 
-    /** Implementation for DIAKernelTrait::Solver::jacobi  */
+    /** Implementation for DIAKernelTrait::jacobi  */
 
     template<typename ValueType>
     static void jacobi(
@@ -113,7 +113,7 @@ public:
         const IndexType numRows,
         tasking::SyncToken* syncToken );
 
-    /** Implemenatation for DIAKernelTrait::Reductions::absMaxVal */
+    /** Implemenatation for DIAKernelTrait::absMaxVal */
 
     template<typename ValueType>
     static ValueType absMaxVal(
@@ -123,7 +123,7 @@ public:
         const IndexType diaOffsets[],
         const ValueType diaValues[] );
 
-    /** Routine that registers all routines of this class at the LAMA interface. */
+    /** Routine that registers all routines of this class at the Kernel registry. */
 
     static void registerKernels();
 

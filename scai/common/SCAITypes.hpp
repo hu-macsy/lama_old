@@ -39,6 +39,12 @@
 #include <limits>
 #include <stdint.h>
 
+/** Common namespace for all projects of Fraunhofer SCAI. */
+
+namespace scai
+{
+}
+
 /** LAMA uses for all its classes and routines an own namespace.
  *
  *  Applications using LAMA must either put \c scai::lama:: before the used

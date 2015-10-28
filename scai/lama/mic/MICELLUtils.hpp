@@ -140,7 +140,7 @@ private:
 
     static bool hasDiagonalProperty( const IndexType numDiagonals, const IndexType csrJA[] );
 
-    /** Implementation for ELLKernelTrait::Scale::scaleValue */
+    /** Implementation for ELLKernelTrait::scaleValue */
 
     template<typename ValueType,typename OtherValueType>
     static void scaleValue(
@@ -150,7 +150,7 @@ private:
         ValueType ellValues[],
         const OtherValueType values[] );
 
-    /** Implementation for ELLKernelTrait::Conversions::compressIA */
+    /** Implementation for ELLKernelTrait::compressIA */
 
     template<typename ValueType>
     static void compressIA(
@@ -161,7 +161,7 @@ private:
         const ValueType eps,
         IndexType newIA[] );
 
-    /** Implementation for ELLKernelTrait::Conversions::compressValues */
+    /** Implementation for ELLKernelTrait::compressValues */
 
     template<typename ValueType>
     static void compressValues(
@@ -173,7 +173,7 @@ private:
         IndexType newJA[],
         ValueType newValues[] );
 
-    /** Implementation for ELLKernelTrait::Conversions::getCSRValues */
+    /** Implementation for ELLKernelTrait::getCSRValues */
 
     template<typename ELLValueType,typename CSRValueType>
     static void getCSRValues(
@@ -194,7 +194,7 @@ private:
         const IndexType numRows,
         const IndexType numValuesPerRow );
 
-    /** Implementation for ELLKernelTrait::Conversions::setCSRValues */
+    /** Implementation for ELLKernelTrait::setCSRValues */
 
     template<typename ELLValueType,typename CSRValueType>
     static void setCSRValues(
@@ -207,7 +207,7 @@ private:
         const IndexType csrJA[],
         const CSRValueType csrValues[] );
 
-    /** Implementation for ELLKernelTrait::MatrixTimesMatrix::computeIA */
+    /** Implementation for ELLKernelTrait::computeIA */
 
     template<typename ValueType>
     static void computeIA(
@@ -219,7 +219,7 @@ private:
         const IndexType bNumRows,
         IndexType cIA[] );
 
-    /** Implementation for ELLKernelTrait::MatrixTimesMatrix::computeValues */
+    /** Implementation for ELLKernelTrait::computeValues */
 
     template<typename ValueType>
     static void computeValues(
@@ -236,7 +236,7 @@ private:
         IndexType cJA[],
         ValueType cValues[] );
 
-    /** Implementation for ELLKernelTrait::MatrixTimesMatrix::addComputeIA */
+    /** Implementation for ELLKernelTrait::addComputeIA */
 
     template<typename ValueType>
     static void addComputeIA(
@@ -248,7 +248,7 @@ private:
         const IndexType bNumRows,
         IndexType cIA[] );
 
-    /** Implementation for ELLKernelTrait::MatrixTimesMatrix::addComputeValues */
+    /** Implementation for ELLKernelTrait::addComputeValues */
 
     template<typename ValueType>
     static void addComputeValues(
@@ -265,7 +265,7 @@ private:
         IndexType cJA[],
         ValueType cValues[] );
 
-    /** Implementation for ELLKernelTrait::Solver::jacobi */
+    /** Implementation for ELLKernelTrait::jacobi */
 
     template<typename ValueType>
     static void jacobi(
@@ -280,7 +280,7 @@ private:
         const ValueType omega,
         tasking::SyncToken* syncToken );
 
-    /** Implementation for ELLKernelTrait::Solver::jacobiHalo */
+    /** Implementation for ELLKernelTrait::jacobiHalo */
 
     template<typename ValueType>
     static void jacobiHalo(
@@ -297,7 +297,7 @@ private:
         const ValueType omega,
         tasking::SyncToken* syncToken );
 
-    /** Implementation for ELLKernelTrait::Mult::normalGEMV  */
+    /** Implementation for ELLKernelTrait::normalGEMV  */
 
     template<typename ValueType>
     static void normalGEMV(
@@ -313,7 +313,7 @@ private:
         const ValueType csrValues[],
         tasking::SyncToken* syncToken );
 
-    /** Implementation for ELLKernelTrait::Mult::sparseGEMV  */
+    /** Implementation for ELLKernelTrait::sparseGEMV  */
 
     template<typename ValueType>
     static void sparseGEMV(
@@ -328,30 +328,6 @@ private:
         const IndexType csrJA[],
         const ValueType csrValues[],
         tasking::SyncToken* syncToken );
-
-    template<typename ValueType>
-    static void normalGEMV(
-        ValueType result[],
-        const ValueType alpha,
-        const ValueType x[],
-        const ValueType beta,
-        const ValueType y[],
-        const IndexType numRows,
-        const IndexType csrIA[],
-        const IndexType csrJA[],
-        const ValueType csrValues[] );
-
-    template<typename ValueType>
-    static void sparseGEMV(
-        ValueType result[],
-        const IndexType numRows,
-        const ValueType alpha,
-        const ValueType x[],
-        const IndexType numNonZeroRows,
-        const IndexType rowIndexes[],
-        const IndexType csrIA[],
-        const IndexType csrJA[],
-        const ValueType csrValues[] );
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 

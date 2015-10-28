@@ -62,7 +62,7 @@ class COMMON_DLL_IMPORTEXPORT MICCOOUtils
 {
 public:
 
-    /** MIC implementation for COOKernelTrait::Counting::getCSRSizes */
+    /** MIC implementation for COOKernelTrait::getCSRSizes */
 
     static void getCSRSizes(
         IndexType csrSizes[],
@@ -70,7 +70,7 @@ public:
         const IndexType numValues,
         const IndexType cooIA[] );
 
-    /** MIC implementation for COOKernelTrait::Conversions::getCSRValues */
+    /** MIC implementation for COOKernelTrait::getCSRValues */
 
     template<typename COOValueType,typename CSRValueType>
     static void getCSRValues(
@@ -83,7 +83,7 @@ public:
         const IndexType cooJA[],
         const COOValueType cooValues[] );
 
-    /** MIC implementation for COOKernelTrait::Counting::offsets2ia */
+    /** MIC implementation for COOKernelTrait::offsets2ia */
 
     static void offsets2ia(
         IndexType cooIA[],
@@ -92,7 +92,7 @@ public:
         const IndexType numRows,
         const IndexType numDiagonals );
 
-    /** MIC implementation for COOKernelTrait::Conversions::setCSRData */
+    /** MIC implementation for COOKernelTrait::setCSRData */
 
     template<typename COOValueType,typename CSRValueType>
     static void setCSRData(
@@ -103,7 +103,7 @@ public:
         const IndexType numRows,
         const IndexType numDiagonals );
 
-    /** Implementation for CSRKernelTrait::Mult::normalGEMV  */
+    /** Implementation for CSRKernelTrait::normalGEMV  */
 
     template<typename ValueType>
     static void normalGEMV(
@@ -119,7 +119,7 @@ public:
         const ValueType cooValues[],
         tasking::SyncToken* syncToken );
 
-    /** Implementation for COOKernelTrait::Solver::jacobi  */
+    /** Implementation for COOKernelTrait::jacobi  */
 
     template<typename ValueType>
     static void jacobi(

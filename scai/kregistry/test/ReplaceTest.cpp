@@ -9,13 +9,13 @@ using namespace scai::common;
 template<typename ValueType>
 static ValueType add1( const ValueType x )
 {
-    return x + 1.0;
+    return x + static_cast<ValueType>( 1 );
 }
 
 template<typename ValueType>
 static ValueType minus1( const ValueType x ) 
 {
-    return x - 1.0;
+    return x - static_cast<ValueType>( 1 );
 }
 
 /** Trait to handle function ValueType ( fn ) ( ValueType ) in KernelRegistry. */

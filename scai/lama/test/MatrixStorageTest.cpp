@@ -1059,7 +1059,7 @@ local->getDiagonal( diagonal );
 
 // scale the halo with the diagonal
 
-tmp.scale( diagonal );
+tmp.scaleRows( diagonal );
 
 // solution2 = - omega * tmp * oldSolution + solution2
 

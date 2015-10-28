@@ -158,7 +158,7 @@ public:
         const IndexType csrJA[],
         const CSRValueType csrValues[] );
 
-    /** Implementation for ELLKernelTrait::Mult::normalGEMV  */
+    /** Implementation for ELLKernelTrait::normalGEMV on CUDA devices. */
 
     template<typename ValueType>
     static void normalGEMV(
@@ -174,7 +174,7 @@ public:
         const ValueType ellValues[],
         tasking::SyncToken* syncToken );
 
-    /** Implementation for CSRKernelTrait::Mult::normalGEVM  */
+    /** Implementation for ELLKernelTrait::normalGEVM  */
 
     template<typename ValueType>
     static void normalGEVM(
@@ -191,7 +191,7 @@ public:
         const ValueType ellValues[],
         tasking::SyncToken* syncToken );
 
-    /** Implementation for ELLKernelTrait::Mult::sparseGEMV  */
+    /** Implementation for ELLKernelTrait::sparseGEMV  */
 
     template<typename ValueType>
     static void sparseGEMV(
@@ -207,7 +207,7 @@ public:
         const ValueType ellValues[],
         tasking::SyncToken* syncToken );
 
-    /** Implementation for ELLKernelTrait::Mult::sparseGEVM  */
+    /** Implementation for ELLKernelTrait::sparseGEVM  */
 
     template<typename ValueType>
     static void sparseGEVM(
@@ -224,7 +224,7 @@ public:
         const ValueType ellValues[],
         tasking::SyncToken* syncToken );
 
-    /** Implementation for ELLKernelTrait::Solver::jacobi  */
+    /** Implementation for ELLKernelTrait::jacobi  */
 
     template<typename ValueType>
     static void jacobi(
@@ -264,7 +264,7 @@ private:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
-    static    bool initialized; //!< static initialization used for registration
+    static bool initialized; //!< static initialization used for registration
 
     static bool registerInterface();//!< registration
 };
