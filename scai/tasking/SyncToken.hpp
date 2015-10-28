@@ -141,6 +141,28 @@ public:
 
     void pushRoutine( common::function<void()> routine );
 
+    /** 
+     *  Set this SyncToken as the current one of this thread.
+     *
+     *  Only one SyncToken can be the current one.
+     *
+     *  Global access to the current sync token makes design easier
+     *  as it can be decided locally where and how to start an 
+     *  asynchronous operation.
+     *
+     *  Be careful: SyncToken is not current for the executing thread
+     *              but for the parent thread that will run it.
+     */
+
+    void setCurrent();
+
+    void unsetCurrent();
+
+    /**
+     *  Get the current sync token of this thread.
+     */
+    static SyncToken* getCurrentSyncToken();
+ 
 protected:
 
     /** Default constructor can only be called by derived classes. */
@@ -178,6 +200,8 @@ private:
 
     static CGuard cguard;//!< required to call routine at its destructor
 
+    static SyncToken* currentSyncToken;  // not yet thread-private
+
     /** Vector of shared pointers  that will be released after completion. */
 
     std::vector< common::shared_ptr<SyncTokenMember > > mTokens;
@@ -186,6 +210,7 @@ private:
 
     std::vector< common::function<void()> > mSynchronizedFunctions;
 };
+
 
 } /* end namespace tasking */
 

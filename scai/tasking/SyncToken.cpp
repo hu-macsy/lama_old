@@ -156,6 +156,29 @@ void SyncToken::setSynchronized()
     }
 }
 
+/* ----------------------------------------------------------------------- */
+
+/** ToDo: make this implementation thread-safe */
+
+void SyncToken::setCurrent()
+{
+    currentSyncToken = this;
+}
+
+void SyncToken::unsetCurrent()
+{
+    currentSyncToken = NULL;
+}
+
+SyncToken* SyncToken::getCurrentSyncToken()
+{
+    return currentSyncToken;
+}
+
+SyncToken* SyncToken::currentSyncToken = NULL;
+
+/* ----------------------------------------------------------------------- */
+
 } /* end namespace tasking */
 
 } /* end namespace scai */
