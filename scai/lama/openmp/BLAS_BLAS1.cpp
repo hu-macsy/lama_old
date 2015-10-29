@@ -695,7 +695,7 @@ void BLAS_BLAS1::registerKernels()
         return;
     }
 
-    SCAI_LOG_INFO( logger, "set BLAS1 wrapper routines for Host Context in Interface" )
+    SCAI_LOG_INFO( logger, "register BLAS1 wrapper routines for Host at kernel registry" )
 
     // REGISTER1: give these routines priority in case of overriding
 

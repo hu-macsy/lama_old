@@ -33,16 +33,10 @@
 
 // for dll_import
 #include <scai/common/config.hpp>
+#include <scai/common/SCAITypes.hpp>
 
 namespace scai
 {
-
-// forward declaration
-
-namespace tasking
-{
-    class SyncToken;
-}
 
 namespace lama
 {
@@ -70,8 +64,7 @@ struct JDSKernelTrait
             const ValueType jdsValues[],
             const ValueType oldSolution[],
             const ValueType rhs[],
-            const ValueType omega,
-            tasking::SyncToken* syncToken );
+            const ValueType omega );
 
         static const char* getId() { return "JDS.jacobi"; }
     };
@@ -93,8 +86,7 @@ struct JDSKernelTrait
             const IndexType jdsHaloJA[],
             const ValueType jdsHaloValues[],
             const ValueType oldSolution[],
-            const ValueType omega,
-            tasking::SyncToken* syncToken );
+            const ValueType omega );
 
         static const char* getId() { return "JDS.jacobiHalo"; }
     };
@@ -262,8 +254,7 @@ struct JDSKernelTrait
                         const IndexType ndlg,
                         const IndexType jdsDLG[],
                         const IndexType jdsJA[],
-                        const ValueType jdsValues[],
-                        tasking::SyncToken* syncToken );
+                        const ValueType jdsValues[] );
 
         static const char* getId() { return "JDS.normalGEMV"; }
     };
@@ -282,8 +273,7 @@ struct JDSKernelTrait
                         const IndexType ndlg,
                         const IndexType jdsDLG[],
                         const IndexType jdsJA[],
-                        const ValueType jdsValues[],
-                        tasking::SyncToken* syncToken );
+                        const ValueType jdsValues[] );
 
         static const char* getId() { return "JDS.normalGEVM"; }
     };

@@ -44,6 +44,7 @@
 #include <scai/lama/distribution/Halo.hpp>
 
 #include <scai/lama/UtilKernelTrait.hpp>
+#include <scai/lama/CSRKernelTrait.hpp>
 #include <scai/lama/StorageIO.hpp>
 
 #include <scai/lama/openmp/OpenMPUtils.hpp>

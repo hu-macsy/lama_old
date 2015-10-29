@@ -48,6 +48,7 @@
 #include <scai/lama/distribution/Redistributor.hpp>
 
 #include <scai/lama/UtilKernelTrait.hpp>
+#include <scai/lama/CSRKernelTrait.hpp>
 #include <scai/lama/openmp/OpenMPCSRUtils.hpp>
 
 // internal libraries

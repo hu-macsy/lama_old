@@ -36,7 +36,7 @@
 
 // others
 #include <scai/hmemo.hpp>
-#include <scai/lama/UtilKernelTrait.hpp>
+#include <scai/lama/CSRKernelTrait.hpp>
 #include <scai/lama/LAMAKernel.hpp>
 
 #include <scai/lama/openmp/OpenMPCSRUtils.hpp>

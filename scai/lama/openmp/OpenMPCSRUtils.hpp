@@ -36,9 +36,6 @@
 // for dll_import
 #include <scai/common/config.hpp>
 
-// internal scai libraries
-#include <scai/tasking/SyncToken.hpp>
-
 #include <scai/logging.hpp>
 
 #include <scai/common/SCAITypes.hpp>
@@ -167,10 +164,9 @@ public:
         const IndexType nnz,
         const IndexType csrIA[],
         const IndexType csrJA[],
-        const ValueType csrValues[],
-        tasking::SyncToken* syncToken );
+        const ValueType csrValues[] );
 
-    /** Implementation for CSRKernelTrait::Mult::sparseGEMV  */
+    /** Implementation for CSRKernelTrait::sparseGEMV  */
 
     template<typename ValueType>
     static void sparseGEMV(
@@ -181,10 +177,9 @@ public:
         const IndexType rowIndexes[],
         const IndexType csrIA[],
         const IndexType csrJA[],
-        const ValueType csrValues[],
-        tasking::SyncToken* syncToken );
+        const ValueType csrValues[] );
 
-    /** Implementation for CSRKernelTrait::Mult:normalGEVM */
+    /** Implementation for CSRKernelTrait::normalGEVM */
 
     template<typename ValueType>
     static void normalGEVM(
@@ -197,10 +192,9 @@ public:
         const IndexType numColumns,
         const IndexType csrIA[],
         const IndexType csrJA[],
-        const ValueType csrValues[],
-        tasking::SyncToken* syncToken );
+        const ValueType csrValues[] );
 
-    /** Implementation for CSRKernelTrait::Mult::sparseGEVM  */
+    /** Implementation for CSRKernelTrait::sparseGEVM  */
 
     template<typename ValueType>
     static void sparseGEVM(
@@ -212,8 +206,7 @@ public:
         const IndexType rowIndexes[],
         const IndexType csrIA[],
         const IndexType csrJA[],
-        const ValueType csrValues[],
-        tasking::SyncToken* syncToken );
+        const ValueType csrValues[] );
 
     /** Implementation for CSRKernelTrait::Mult::gemm  */
 
@@ -229,8 +222,7 @@ public:
         const IndexType p,
         const IndexType csrIA[],
         const IndexType csrJA[],
-        const ValueType csrValues[],
-        tasking::SyncToken* syncToken );
+        const ValueType csrValues[] );
 
     /** Implementation for CSRKernelTrait::Jacobi::jacobi(Async/Halo) */
 
@@ -243,8 +235,7 @@ public:
         const ValueType rhs[],
         const ValueType oldSolution[],
         const ValueType omega,
-        const IndexType numRows,
-        tasking::SyncToken* syncToken );
+        const IndexType numRows );
 
     template<typename ValueType>
     static void jacobiHalo(
@@ -382,27 +373,6 @@ private    :
 
     static IndexType scanParallel( PartitionId numThreads, IndexType array[], const IndexType numValues );
 
-    template <typename ValueType>
-    static void normalGEMV( ValueType result[],
-                            const ValueType alpha,
-                            const ValueType x[],
-                            const ValueType beta,
-                            const ValueType y[],
-                            const IndexType numRows,
-                            const IndexType csrIA[],
-                            const IndexType csrJA[],
-                            const ValueType csrValues[] );
-
-    template <typename ValueType>
-    static void sparseGEMV( ValueType result[],
-                            const ValueType alpha,
-                            const ValueType x[],
-                            const IndexType numNonZeroRows,
-                            const IndexType rowIndexes[],
-                            const IndexType csrIA[],
-                            const IndexType csrJA[],
-                            const ValueType csrValues[] );
-
     template<typename ValueType>
     static ValueType absMaxDiffRowSorted(
         const IndexType n1, const IndexType csrJA1[], const ValueType csrValues1[],
@@ -412,6 +382,20 @@ private    :
     static ValueType absMaxDiffRowUnsorted(
         const IndexType n1, const IndexType csrJA1[], const ValueType csrValues1[],
         const IndexType n2, const IndexType csrJA2[], const ValueType csrValues2[] );
+
+    /** Help routine to use normalGEMV with maximal 9 args. */
+
+    template<typename ValueType>
+    static void normalGEMV_s(
+        ValueType result[],
+        const ValueType alpha,
+        const ValueType x[],
+        const ValueType beta,
+        const ValueType y[],
+        const IndexType numRows,
+        const IndexType csrIA[],
+        const IndexType csrJA[],
+        const ValueType csrValues[] );
 };
 
 } /* end namespace lama */

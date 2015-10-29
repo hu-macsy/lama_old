@@ -37,6 +37,9 @@
 // local library
 #include <scai/lama/UtilKernelTrait.hpp>
 #include <scai/lama/BLASKernelTrait.hpp>
+#include <scai/lama/COOKernelTrait.hpp>
+#include <scai/lama/CSRKernelTrait.hpp>
+
 #include <scai/lama/LAMAArrayUtils.hpp>
 #include <scai/lama/LAMAKernel.hpp>
 
@@ -845,7 +848,7 @@ void COOStorage<ValueType>::matrixTimesVector(
 
         SCAI_CONTEXT_ACCESS( loc )
         normalGEMV[loc]( wResult.get(), alpha, rX.get(), beta, wResult.get(), mNumRows, mNumValues, cooIA.get(), cooJA.get(),
-                         cooValues.get(), NULL );
+                         cooValues.get() );
     }
     else
     {
@@ -856,7 +859,7 @@ void COOStorage<ValueType>::matrixTimesVector(
 
         SCAI_CONTEXT_ACCESS( loc )
         normalGEMV[loc]( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumRows, mNumValues, cooIA.get(), cooJA.get(),
-                         cooValues.get(), NULL );
+                         cooValues.get() );
     }
 }
 /* --------------------------------------------------------------------------- */
@@ -906,7 +909,7 @@ void COOStorage<ValueType>::vectorTimesMatrix(
 
         SCAI_CONTEXT_ACCESS( loc )
         normalGEVM[loc]( wResult.get(), alpha, rX.get(), beta, wResult.get(), mNumColumns, mNumValues, cooIA.get(),
-                         cooJA.get(), cooValues.get(), NULL );
+                         cooJA.get(), cooValues.get() );
     }
     else
     {
@@ -917,7 +920,7 @@ void COOStorage<ValueType>::vectorTimesMatrix(
 
         SCAI_CONTEXT_ACCESS( loc )
         normalGEVM[loc]( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumColumns, mNumValues, cooIA.get(), cooJA.get(),
-                         cooValues.get(), NULL );
+                         cooValues.get() );
     }
 }
 
@@ -967,6 +970,8 @@ SyncToken* COOStorage<ValueType>::matrixTimesVectorAsync(
 
     unique_ptr<SyncToken> syncToken( loc->getSyncToken() );
 
+    syncToken->setCurrent();
+
     // all accesses will be pushed to the sync token as LAMA arrays have to be protected up
     // to the end of the computations.
 
@@ -988,7 +993,7 @@ SyncToken* COOStorage<ValueType>::matrixTimesVectorAsync(
         SCAI_CONTEXT_ACCESS( loc )
 
         normalGEMV[loc]( wResult->get(), alpha, rX->get(), beta, wResult->get(), mNumRows, mNumValues, cooIA->get(),
-                         cooJA->get(), cooValues->get(), syncToken.get() );
+                         cooJA->get(), cooValues->get() );
 
         syncToken->pushToken( wResult );
     }
@@ -1000,7 +1005,7 @@ SyncToken* COOStorage<ValueType>::matrixTimesVectorAsync(
         SCAI_CONTEXT_ACCESS( loc )
 
         normalGEMV[loc]( wResult->get(), alpha, rX->get(), beta, rY->get(), mNumRows, mNumValues, cooIA->get(), cooJA->get(),
-                         cooValues->get(), syncToken.get() );
+                         cooValues->get() );
 
         syncToken->pushToken( wResult );
         syncToken->pushToken( rY );
@@ -1010,6 +1015,8 @@ SyncToken* COOStorage<ValueType>::matrixTimesVectorAsync(
     syncToken->pushToken( cooJA );
     syncToken->pushToken( cooValues );
     syncToken->pushToken( rX );
+
+    syncToken->unsetCurrent();
 
     return syncToken.release();
 }
@@ -1069,6 +1076,8 @@ SyncToken* COOStorage<ValueType>::vectorTimesMatrixAsync(
 
     unique_ptr<SyncToken> syncToken( loc->getSyncToken() );
 
+    syncToken->setCurrent();
+
     // all accesses will be pushed to the sync token as LAMA arrays have to be protected up
     // to the end of the computations.
 
@@ -1090,7 +1099,7 @@ SyncToken* COOStorage<ValueType>::vectorTimesMatrixAsync(
         SCAI_CONTEXT_ACCESS( loc )
 
         normalGEVM[loc] ( wResult->get(), alpha, rX->get(), beta, wResult->get(), mNumRows, mNumValues, 
-                          cooIA->get(), cooJA->get(), cooValues->get(), syncToken.get() );
+                          cooIA->get(), cooJA->get(), cooValues->get() );
 
         syncToken->pushToken( wResult );
     }
@@ -1102,7 +1111,7 @@ SyncToken* COOStorage<ValueType>::vectorTimesMatrixAsync(
         SCAI_CONTEXT_ACCESS( loc )
 
         normalGEVM[loc]( wResult->get(), alpha, rX->get(), beta, rY->get(), mNumRows, mNumValues,
-                         cooIA->get(), cooJA->get(), cooValues->get(), syncToken.get() );
+                         cooIA->get(), cooJA->get(), cooValues->get() );
 
         syncToken->pushToken( wResult );
         syncToken->pushToken( rY );
@@ -1112,6 +1121,8 @@ SyncToken* COOStorage<ValueType>::vectorTimesMatrixAsync(
     syncToken->pushToken( cooJA );
     syncToken->pushToken( cooValues );
     syncToken->pushToken( rX );
+
+    syncToken->unsetCurrent();
 
     return syncToken.release();
 }
@@ -1156,7 +1167,7 @@ void COOStorage<ValueType>::jacobiIterate(
     SCAI_CONTEXT_ACCESS( loc )
 
     jacobi[loc]( wSolution.get(), mNumValues, cooIA.get(), cooJA.get(), cooValues.get(), 
-                 rOldSolution.get(), rRhs.get(), omega, mNumRows, NULL );
+                 rOldSolution.get(), rRhs.get(), omega, mNumRows );
 }
 
 /* --------------------------------------------------------------------------- */

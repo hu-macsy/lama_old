@@ -60,7 +60,6 @@
 #include <boost/preprocessor.hpp>
 
 using namespace scai::common;
-using namespace scai::tasking;
 
 namespace scai
 {

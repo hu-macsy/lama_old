@@ -37,14 +37,15 @@
 // local library
 #include <scai/lama/openmp/OpenMPUtils.hpp>
 
-#include <scai/lama/UtilKernelTrait.hpp>
+#include <scai/lama/COOKernelTrait.hpp>
 
 // internal scai libraries
 #include <scai/kregistry/KernelRegistry.hpp>
 #include <scai/tracing.hpp>
 #include <scai/common/ScalarType.hpp>
-
 #include <scai/common/OpenMP.hpp>
+
+#include <scai/tasking/TaskSyncToken.hpp>
 
 // boost
 #include <boost/preprocessor.hpp>
@@ -53,7 +54,7 @@ namespace scai
 {
 
 using common::getScalarType;
-using tasking::SyncToken;
+using tasking::TaskSyncToken;
 
 namespace lama
 {
@@ -229,11 +230,12 @@ void OpenMPCOOUtils::normalGEMV(
     const IndexType numValues,
     const IndexType cooIA[],
     const IndexType cooJA[],
-    const ValueType cooValues[],
-    tasking::SyncToken* syncToken )
+    const ValueType cooValues[] )
 {
     SCAI_LOG_INFO( logger,
                    "normalGEMV<" << getScalarType<ValueType>() << ", #threads = " << omp_get_max_threads() << ">, result[" << numRows << "] = " << alpha << " * A( coo, #vals = " << numValues << " ) * x + " << beta << " * y " )
+
+    TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
     if( syncToken )
     {
@@ -277,11 +279,12 @@ void OpenMPCOOUtils::normalGEVM(
     const IndexType numValues,
     const IndexType cooIA[],
     const IndexType cooJA[],
-    const ValueType cooValues[],
-    tasking::SyncToken* syncToken )
+    const ValueType cooValues[] )
 {
     SCAI_LOG_INFO( logger,
                    "normalGEMV<" << getScalarType<ValueType>() << ", #threads = " << omp_get_max_threads() << ">, result[" << numColumns << "] = " << alpha << " * A( coo, #vals = " << numValues << " ) * x + " << beta << " * y " )
+
+    TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
     if( syncToken )
     {
@@ -326,11 +329,12 @@ void OpenMPCOOUtils::jacobi(
     const ValueType oldSolution[],
     const ValueType rhs[],
     const ValueType omega,
-    const IndexType numRows,
-    tasking::SyncToken* syncToken )
+    const IndexType numRows )
 {
     SCAI_LOG_INFO( logger,
                    "jacobi<" << getScalarType<ValueType>() << ">" << ", #rows = " << numRows << ", omega = " << omega )
+
+    TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
     if( syncToken )
     {

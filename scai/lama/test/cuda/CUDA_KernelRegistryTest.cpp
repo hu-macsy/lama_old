@@ -35,6 +35,11 @@
 
 #include <scai/lama/LAMAKernel.hpp>
 #include <scai/lama/UtilKernelTrait.hpp>
+#include <scai/lama/CSRKernelTrait.hpp>
+#include <scai/lama/ELLKernelTrait.hpp>
+#include <scai/lama/COOKernelTrait.hpp>
+#include <scai/lama/DIAKernelTrait.hpp>
+#include <scai/lama/JDSKernelTrait.hpp>
 
 #include <scai/hmemo/Context.hpp>
 

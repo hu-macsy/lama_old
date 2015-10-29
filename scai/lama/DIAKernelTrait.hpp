@@ -37,13 +37,6 @@
 namespace scai
 {
 
-// forward declaration
-
-namespace tasking
-{
-    class SyncToken;
-}
-
 namespace lama
 {
 
@@ -146,8 +139,7 @@ struct DIAKernelTrait
             const IndexType numColumns,
             const IndexType numDiagonals,
             const IndexType diaOffsets[],
-            const ValueType diaValues[],
-            tasking::SyncToken* syncToken );
+            const ValueType diaValues[] );
 
         static const char* getId() { return "DIA.normalGEMV"; }
     };
@@ -178,8 +170,7 @@ struct DIAKernelTrait
             const IndexType numColumns,
             const IndexType numDiagonals,
             const IndexType diaOffsets[],
-            const ValueType diaValues[],
-            tasking::SyncToken* syncToken );
+            const ValueType diaValues[] );
 
         static const char* getId() { return "DIA.normalGEVM"; }
     };
@@ -203,8 +194,7 @@ struct DIAKernelTrait
             const ValueType oldSolution[],
             const ValueType rhs[],
             const ValueType omega,
-            const IndexType numRows,
-            tasking::SyncToken* syncToken );
+            const IndexType numRows );
 
         static const char* getId() { return "DIA.jacobi"; }
     };

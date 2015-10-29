@@ -33,16 +33,10 @@
 
 // for dll_import
 #include <scai/common/config.hpp>
+#include <scai/common/SCAITypes.hpp>
 
 namespace scai
 {
-
-// forward declaration
-
-namespace tasking
-{
-    class SyncToken;
-}
 
 namespace lama
 {
@@ -95,8 +89,7 @@ struct CSRKernelTrait
                         const ValueType oldSolution[],
                         const ValueType rhs[],
                         const ValueType omega,
-                        const IndexType numRows,
-                        tasking::SyncToken* syncToken );
+                        const IndexType numRows );
 
         static const char* getId() { return "CSR.jacobi"; }
     };
@@ -209,7 +202,7 @@ struct CSRKernelTrait
     {
         /** This method computes the row sizes for result matrix C of matrix add A + B
          *
-         *  @param[out] cSizes array of length numRows, will contain number of entries
+         *  @param[out] cIa array of length numRows, will contain number of entries in each row for C
          *  @param[in]  numRows number of rows for matrix A and B
          *  @param[in]  numColumns number of columns for matrix A and B
          *  @param[in]  diagonalProperty if true, diagonal elements will count in any case
@@ -220,10 +213,15 @@ struct CSRKernelTrait
          *        otherwise the row sizes/offsets will not match
          */
 
-        typedef IndexType ( *FuncType ) ( IndexType cIa[], const IndexType numRows,
-                        const IndexType numColumns, bool diagonalProperty,
-                        const IndexType aIA[], const IndexType aJA[],
-                        const IndexType bIA[], const IndexType bJA[] );
+        typedef IndexType ( *FuncType ) ( 
+            IndexType cIa[], 
+            const IndexType numRows,
+            const IndexType numColumns, 
+            bool diagonalProperty,
+            const IndexType aIA[], 
+            const IndexType aJA[],
+            const IndexType bIA[], 
+            const IndexType bJA[] );
 
         static const char* getId() { return "CSR.matrixAddSizes"; }
     };
@@ -405,8 +403,7 @@ struct CSRKernelTrait
                         const IndexType nnz,
                         const IndexType csrIA[],
                         const IndexType csrJA[],
-                        const ValueType csrValues[],
-                        tasking::SyncToken* syncToken );
+                        const ValueType csrValues[] );
 
         static const char* getId() { return "CSR.normalGEMV"; }
     };
@@ -423,8 +420,7 @@ struct CSRKernelTrait
                         const IndexType numColumns,
                         const IndexType csrIA[],
                         const IndexType csrJA[],
-                        const ValueType csrValues[],
-                        tasking::SyncToken* syncToken );
+                        const ValueType csrValues[] );
 
         static const char* getId() { return "CSR.normalGEVM"; }
     };
@@ -453,8 +449,7 @@ struct CSRKernelTrait
                         const IndexType rowIndexes[],
                         const IndexType csrIA[],
                         const IndexType csrJA[],
-                        const ValueType csrValues[],
-                        tasking::SyncToken* syncToken );
+                        const ValueType csrValues[] );
 
         static const char* getId() { return "CSR.sparseGEMV"; }
     };
@@ -470,8 +465,7 @@ struct CSRKernelTrait
                         const IndexType rowIndexes[],
                         const IndexType csrIA[],
                         const IndexType csrJA[],
-                        const ValueType csrValues[],
-                        tasking::SyncToken* syncToken );
+                        const ValueType csrValues[] );
 
         static const char* getId() { return "CSR.sparseGEMV"; }
     };
@@ -502,8 +496,7 @@ struct CSRKernelTrait
                         const IndexType p,
                         const IndexType csrIA[],
                         const IndexType csrJA[],
-                        const ValueType csrValues[],
-                        tasking::SyncToken* syncToken );
+                        const ValueType csrValues[] );
 
         static const char* getId() { return "CSR.gemm"; }
     };

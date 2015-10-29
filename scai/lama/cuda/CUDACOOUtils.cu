@@ -38,14 +38,13 @@
 #include <scai/lama/cuda/CUDAUtils.hpp>
 #include <scai/lama/cuda/CUDASettings.hpp>
 
-#include <scai/lama/UtilKernelTrait.hpp>
+#include <scai/lama/COOKernelTrait.hpp>
 
 // internal scai library
 #include <scai/hmemo/cuda/CUDAStreamSyncToken.hpp>
 #include <scai/kregistry/KernelRegistry.hpp>
 
 #include <scai/tracing.hpp>
-#include <scai/tasking/SyncToken.hpp>
 
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/bind.hpp>
@@ -263,8 +262,7 @@ void CUDACOOUtils::normalGEMV(
     const IndexType numValues,
     const IndexType cooIA[],
     const IndexType cooJA[],
-    const ValueType cooValues[],
-    class SyncToken* syncToken )
+    const ValueType cooValues[] )
 {
     SCAI_REGION( "CUDA.COO.normalGEMV" )
 
@@ -276,11 +274,11 @@ void CUDACOOUtils::normalGEMV(
 
     cudaStream_t stream = 0;
 
+    CUDAStreamSyncToken* syncToken = CUDAStreamSyncToken::getCurrentSyncToken();
+
     if ( syncToken )
     {
-        CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-        SCAI_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
-        stream = cudaStreamSyncToken->getCUDAStream();
+        stream = syncToken->getCUDAStream();
         SCAI_LOG_INFO( logger, "asyncronous execution on stream " << stream );
     }
 
@@ -385,8 +383,7 @@ void CUDACOOUtils::normalGEVM(
     const IndexType numValues,
     const IndexType cooIA[],
     const IndexType cooJA[],
-    const ValueType cooValues[],
-    class SyncToken* syncToken )
+    const ValueType cooValues[] )
 {
     SCAI_REGION( "CUDA.COO.normalGEVM" )
 
@@ -396,11 +393,11 @@ void CUDACOOUtils::normalGEVM(
 
     cudaStream_t stream = 0;
 
+    CUDAStreamSyncToken* syncToken = CUDAStreamSyncToken::getCurrentSyncToken();
+
     if ( syncToken )
     {
-        CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-        SCAI_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
-        stream = cudaStreamSyncToken->getCUDAStream();
+        stream = syncToken->getCUDAStream();
         SCAI_LOG_INFO( logger, "asyncronous execution on stream " << stream );
     }
 

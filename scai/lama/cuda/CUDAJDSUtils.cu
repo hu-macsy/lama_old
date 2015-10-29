@@ -39,7 +39,7 @@
 #include <scai/lama/cuda/CUDAUtils.hpp>
 #include <scai/lama/cuda/CUDASettings.hpp>
 
-#include <scai/lama/UtilKernelTrait.hpp>
+#include <scai/lama/JDSKernelTrait.hpp>
 
 // internal scai library
 #include <scai/hmemo/cuda/CUDAStreamSyncToken.hpp>
@@ -70,7 +70,7 @@
 #include <boost/preprocessor.hpp>
 
 using namespace scai::hmemo;
-using namespace scai::tasking;
+using scai::tasking::CUDAStreamSyncToken;
 
 namespace scai
 {
@@ -838,8 +838,7 @@ namespace lama
                     const ValueType jdsValues[],
                     const ValueType oldSolution[],
                     const ValueType rhs[],
-                    const ValueType omega,
-                    tasking::SyncToken* syncToken )
+                    const ValueType omega )
     {
         SCAI_REGION( "CUDA.JDS.jacobi" )
 
@@ -850,11 +849,11 @@ namespace lama
 
         SCAI_CHECK_CUDA_ACCESS
 
+        CUDAStreamSyncToken* syncToken = CUDAStreamSyncToken::getCurrentSyncToken();
+
         if ( syncToken )
         {
-            tasking::CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<tasking::CUDAStreamSyncToken*>( syncToken );
-            SCAI_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
-            stream = cudaStreamSyncToken->getCUDAStream();
+            stream = syncToken->getCUDAStream();
         }
 
         const bool useTexture = CUDASettings::useTexture();
@@ -1029,13 +1028,14 @@ namespace lama
                     const IndexType jdsJAHalo[],
                     const ValueType jdsValuesHalo[],
                     const ValueType oldSolutionHalo[],
-                    const ValueType omega,
-                    tasking::SyncToken* syncToken )
+                    const ValueType omega )
     {
         SCAI_REGION( "CUDA.JDS.jacobiHalo" )
 
         SCAI_LOG_INFO( logger, "jacobiHalo<" << getScalarType<ValueType>() << ">"
                         << ", #rows = " << numRows << ", omega = " << omega )
+
+        CUDAStreamSyncToken* syncToken = CUDAStreamSyncToken::getCurrentSyncToken();
 
         if ( syncToken )
         {
@@ -1659,14 +1659,13 @@ namespace lama
                     const IndexType ndlg,
                     const IndexType jdsDLG[],
                     const IndexType jdsJA[],
-                    const ValueType jdsValues[],
-                    tasking::SyncToken* syncToken )
+                    const ValueType jdsValues[] )
     {
         if ( ( beta == scai::common::constants::ONE ) && ( result == y ) )
         {
             // result = alpha * A * x + beta * y ->  result += alpha * A * x
 
-            sparseGEMV( result, alpha, x, numRows, jdsPerm, jdsILG, ndlg, jdsDLG, jdsJA, jdsValues, syncToken );
+            sparseGEMV( result, alpha, x, numRows, jdsPerm, jdsILG, ndlg, jdsDLG, jdsJA, jdsValues );
 
             return;
         }
@@ -1694,11 +1693,11 @@ namespace lama
                         << "> <<< blockSize = " << blockSize << ", stream = " << stream
                         << ", useTexture = " << useTexture << ", useSharedMem = " << useSharedMem << ">>>" );
 
+        CUDAStreamSyncToken* syncToken = CUDAStreamSyncToken::getCurrentSyncToken();
+
         if ( syncToken )
         {
-            tasking::CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<tasking::CUDAStreamSyncToken*>( syncToken );
-            SCAI_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
-            stream = cudaStreamSyncToken->getCUDAStream();
+            stream = syncToken->getCUDAStream();
         }
 
         int sharedMemSize = 0;
@@ -2323,14 +2322,13 @@ namespace lama
                     const IndexType ndlg,
                     const IndexType jdsDLG[],
                     const IndexType jdsJA[],
-                    const ValueType jdsValues[],
-                    tasking::SyncToken* syncToken )
+                    const ValueType jdsValues[] )
     {
         if ( ( beta == scai::common::constants::ONE ) && ( result == y ) )
         {
             // result = alpha * A * x + beta * y ->  result += alpha * A * x
 
-            sparseGEVM( result, alpha, x, numColumns, jdsPerm, jdsILG, ndlg, jdsDLG, jdsJA, jdsValues, syncToken );
+            sparseGEVM( result, alpha, x, numColumns, jdsPerm, jdsILG, ndlg, jdsDLG, jdsJA, jdsValues );
 
             return;
         }
@@ -2358,11 +2356,11 @@ namespace lama
                         << "> <<< blockSize = " << blockSize << ", stream = " << stream
                         << ", useTexture = " << useTexture << ", useSharedMem = " << useSharedMem << ">>>" );
 
+        CUDAStreamSyncToken* syncToken = CUDAStreamSyncToken::getCurrentSyncToken();
+
         if ( syncToken )
         {
-            tasking::CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<tasking::CUDAStreamSyncToken*>( syncToken );
-            SCAI_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
-            stream = cudaStreamSyncToken->getCUDAStream();
+            stream = syncToken->getCUDAStream();
         }
 
         int sharedMemSize = 0;
@@ -2600,8 +2598,7 @@ namespace lama
                     const IndexType ndlg,
                     const IndexType jdsDLG[],
                     const IndexType jdsJA[],
-                    const ValueType jdsValues[],
-                    tasking::SyncToken* syncToken )
+                    const ValueType jdsValues[] )
     {
         SCAI_REGION( "CUDA.JDS.sparseGEMV" )
 
@@ -2629,11 +2626,11 @@ namespace lama
 
         cudaStream_t stream = 0;// default stream if no SyncToken is available
 
+        CUDAStreamSyncToken* syncToken = CUDAStreamSyncToken::getCurrentSyncToken();
+
         if ( syncToken )
         {
-            tasking::CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<tasking::CUDAStreamSyncToken*>( syncToken );
-            SCAI_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
-            stream = cudaStreamSyncToken->getCUDAStream();
+            stream = syncToken->getCUDAStream();
         }
 
         SCAI_LOG_INFO( logger, "Start jdsgemvSparseKernel<" << getScalarType<ValueType>()
@@ -2728,8 +2725,7 @@ namespace lama
                     const IndexType ndlg,
                     const IndexType jdsDLG[],
                     const IndexType jdsJA[],
-                    const ValueType jdsValues[],
-                    tasking::SyncToken* syncToken )
+                    const ValueType jdsValues[] )
     {
         SCAI_REGION( "CUDA.JDS.sparseGEVM" )
 
@@ -2757,11 +2753,11 @@ namespace lama
 
         cudaStream_t stream = 0;// default stream if no SyncToken is available
 
+        CUDAStreamSyncToken* syncToken = CUDAStreamSyncToken::getCurrentSyncToken();
+
         if ( syncToken )
         {
-            tasking::CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<tasking::CUDAStreamSyncToken*>( syncToken );
-            SCAI_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
-            stream = cudaStreamSyncToken->getCUDAStream();
+            stream = syncToken->getCUDAStream();
         }
 
         SCAI_LOG_INFO( logger, "Start jdsgevMSparseKernel<" << getScalarType<ValueType>()

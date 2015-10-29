@@ -36,7 +36,7 @@
 
 // others
 #include <scai/hmemo.hpp>
-#include <scai/lama/UtilKernelTrait.hpp>
+#include <scai/lama/COOKernelTrait.hpp>
 #include <scai/lama/LAMAKernel.hpp>
 
 #include <scai/common/test/TestMacros.hpp>

@@ -436,21 +436,24 @@ void OpenMPBLAS1::axpy(
     ValueType* y,
     const IndexType incY )
 {
-    SCAI_REGION( "OpenMP.BLAS1.axpy" )
+    TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
-    SCAI_LOG_DEBUG( logger,
-                    "axpy<" << getScalarType<ValueType>() << ">, n = " << n << ", alpha = " << alpha << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
-
-    if( ( incX <= 0 ) || ( incY <= 0 ) )
+    if ( syncToken )
     {
+        SCAI_LOG_WARN( logger, "asynchronous execution starts now" )
+        syncToken->run( common::bind( axpy<ValueType>,  n, alpha, x, incX, y, incY ) );
         return;
     }
 
-    TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
+    SCAI_REGION( "OpenMP.BLAS1.axpy" )
 
-    if( syncToken )
+    SCAI_LOG_DEBUG( logger,
+                    "axpy<" << getScalarType<ValueType>() << ">, n = " << n << ", alpha = " << alpha 
+                     << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
+
+    if ( ( incX <= 0 ) || ( incY <= 0 ) )
     {
-        SCAI_LOG_WARN( logger, "asynchronous execution not supported here" )
+        return;
     }
 
     if( incX == 1 && incY == 1 )

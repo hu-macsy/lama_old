@@ -35,19 +35,22 @@
 #include <scai/lama/openmp/OpenMPCSRUtils.hpp>
 
 // local library
-#include <scai/lama/UtilKernelTrait.hpp>
+#include <scai/lama/CSRKernelTrait.hpp>
 
 // internal scai libraries
+
 #include <scai/tracing.hpp>
 
 #include <scai/common/Assert.hpp>
 #include <scai/common/OpenMP.hpp>
 #include <scai/common/bind.hpp>
+#include <scai/common/function.hpp>
 #include <scai/common/unique_ptr.hpp>
 #include <scai/common/macros/unused.hpp>
 #include <scai/common/Constants.hpp>
 
 #include <scai/kregistry/KernelRegistry.hpp>
+#include <scai/tasking/TaskSyncToken.hpp>
 
 // boost
 #include <boost/preprocessor.hpp>
@@ -61,7 +64,7 @@ namespace scai
 using common::scoped_array;
 using common::getScalarType;
 
-using tasking::SyncToken;
+using tasking::TaskSyncToken;
 
 namespace lama
 {
@@ -499,29 +502,23 @@ void OpenMPCSRUtils::convertCSR2CSC(
 
 /* --------------------------------------------------------------------------- */
 
+// Alternative routine is needed as bind can only deal with up to 9 arguments
+
 template<typename ValueType>
-void OpenMPCSRUtils::normalGEMV(
+void OpenMPCSRUtils::normalGEMV_s(
     ValueType result[],
     const ValueType alpha,
     const ValueType x[],
     const ValueType beta,
     const ValueType y[],
     const IndexType numRows,
-    const IndexType UNUSED( numColumns ),
-    const IndexType UNUSED( nnz ),
     const IndexType csrIA[],
     const IndexType csrJA[],
-    const ValueType csrValues[],
-    tasking::SyncToken* syncToken )
+    const ValueType csrValues[] )
 {
     SCAI_LOG_INFO( logger,
                    "normalGEMV<" << getScalarType<ValueType>() << ", #threads = " << omp_get_max_threads() 
                     << ">, result[" << numRows << "] = " << alpha << " * A * x + " << beta << " * y " )
-
-    if( syncToken )
-    {
-        COMMON_THROWEXCEPTION( "asynchronous execution should be done by LAMATask before" )
-    }
 
     // ToDo: for efficiency the following cases should be considered
     // result = y, beta = 1.0 : result += alpha * A * x
@@ -572,7 +569,62 @@ void OpenMPCSRUtils::normalGEMV(
     }
 }
 
+template<typename ValueType>
+void OpenMPCSRUtils::normalGEMV(
+    ValueType result[],
+    const ValueType alpha,
+    const ValueType x[],
+    const ValueType beta,
+    const ValueType y[],
+    const IndexType numRows,
+    const IndexType UNUSED( numColumns ),
+    const IndexType UNUSED( nnz ),
+    const IndexType csrIA[],
+    const IndexType csrJA[],
+    const ValueType csrValues[] )
+{
+    TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
+
+    if ( syncToken )
+    {
+        syncToken->run( common::bind( normalGEMV_s<ValueType>, result, alpha, x, beta, y, 
+                                      numRows, csrIA, csrJA, csrValues ) );
+
+    }
+    else
+    {
+        normalGEMV_s( result, alpha, x, beta, y, numRows, csrIA, csrJA, csrValues );
+    }
+}
+
 /* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+struct VectorData
+{
+    ValueType scalar;
+    const ValueType* vector;
+
+    VectorData( ValueType scalar, const ValueType* vector )
+    {
+        this->scalar = scalar;
+        this->vector = vector;
+    }
+};
+
+template<typename ValueType>
+static void normalGEVM_s(
+    ValueType result[],
+    VectorData<ValueType> ax, 
+    VectorData<ValueType> by, 
+    const IndexType numRows,
+    const IndexType numColumns,
+    const IndexType csrIA[],
+    const IndexType csrJA[],
+    const ValueType csrValues[] )
+{
+    OpenMPCSRUtils::normalGEVM( result, ax.scalar, ax.vector, by.scalar, by.vector, numRows, numColumns, csrIA, csrJA, csrValues );
+}
 
 template<typename ValueType>
 void OpenMPCSRUtils::normalGEVM(
@@ -585,16 +637,23 @@ void OpenMPCSRUtils::normalGEVM(
     const IndexType numColumns,
     const IndexType csrIA[],
     const IndexType csrJA[],
-    const ValueType csrValues[],
-    tasking::SyncToken* syncToken )
+    const ValueType csrValues[] )
 {
-    SCAI_LOG_INFO( logger,
-                   "normalGEVM<" << getScalarType<ValueType>() << ", #threads = " << omp_get_max_threads() << ">, result[" << numColumns << "] = " << alpha << " * x * A + " << beta << " * y " )
+    TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
-    if( syncToken )
+    if ( syncToken )
     {
-        COMMON_THROWEXCEPTION( "asynchronous execution should be done by LAMATask before" )
+        // bind takes maximal 9 arguments, so we put (alpha, x) and (beta, y) in a struct
+
+        syncToken->run( common::bind( normalGEVM_s<ValueType>, result, 
+                                      VectorData<ValueType>( alpha, x ), 
+                                      VectorData<ValueType>( beta, y ), 
+                                      numRows, numColumns, csrIA, csrJA, csrValues ) );
     }
+
+    SCAI_LOG_INFO( logger,
+                   "normalGEVM<" << getScalarType<ValueType>() << ", #threads = " << omp_get_max_threads() << ">, result[" << numColumns << "] = " 
+                    << alpha << " * x * A + " << beta << " * y " )
 
     // ToDo: for efficiency the cases of alpha and beta = 1.0 / 0.0 should be considered
 
@@ -668,12 +727,14 @@ void OpenMPCSRUtils::sparseGEMV(
     const IndexType rowIndexes[],
     const IndexType csrIA[],
     const IndexType csrJA[],
-    const ValueType csrValues[],
-    tasking::SyncToken* syncToken )
+    const ValueType csrValues[] )
 {
-    if( syncToken )
+    TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
+
+    if ( syncToken )
     {
-        COMMON_THROWEXCEPTION( "asynchronous execution should be done by LAMATask before" )
+        syncToken->run( common::bind( sparseGEMV<ValueType>, result, alpha,
+                                      x, numNonZeroRows, rowIndexes, csrIA, csrJA, csrValues ) );
     }
 
     #pragma omp parallel
@@ -725,12 +786,13 @@ void OpenMPCSRUtils::sparseGEVM(
     const IndexType rowIndexes[],
     const IndexType csrIA[],
     const IndexType csrJA[],
-    const ValueType csrValues[],
-    tasking::SyncToken* syncToken )
+    const ValueType csrValues[] )
 {
-    if( syncToken )
+    TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
+
+    if ( syncToken )
     {
-        COMMON_THROWEXCEPTION( "asynchronous execution should be done by LAMATask before" )
+        SCAI_LOG_ERROR( logger, "asynchronous execution not supported here" )
     }
 
     #pragma omp parallel
@@ -790,15 +852,16 @@ void OpenMPCSRUtils::gemm(
     const IndexType p,
     const IndexType csrIA[],
     const IndexType csrJA[],
-    const ValueType csrValues[],
-    tasking::SyncToken* syncToken )
+    const ValueType csrValues[] )
 {
     SCAI_LOG_INFO( logger,
                    "gemm<" << getScalarType<ValueType>() << ">, " << " result " << m << " x " << n << " CSR " << m << " x " << p )
 
-    if( syncToken )
+    TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
+
+    if ( syncToken )
     {
-        COMMON_THROWEXCEPTION( "asynchronous execution should be done by LAMATask before" )
+        SCAI_LOG_ERROR( logger, "asynchronous execution not supported here" )
     }
 
     #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
@@ -837,15 +900,16 @@ void OpenMPCSRUtils::jacobi(
     const ValueType oldSolution[],
     const ValueType rhs[],
     const ValueType omega,
-    const IndexType numRows,
-    tasking::SyncToken* syncToken )
+    const IndexType numRows )
 {
     SCAI_LOG_INFO( logger,
                    "jacobi<" << getScalarType<ValueType>() << ">" << ", #rows = " << numRows << ", omega = " << omega )
 
-    if( syncToken )
+    TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
+
+    if ( syncToken )
     {
-        COMMON_THROWEXCEPTION( "asynchronous execution should be done by LAMATask before" )
+        syncToken->run( common::bind( jacobi<ValueType>, solution, csrIA, csrJA, csrValues, oldSolution, rhs, omega, numRows ) );
     }
 
     #pragma omp parallel

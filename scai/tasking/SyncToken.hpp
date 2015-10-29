@@ -42,6 +42,7 @@
 // internal scai library
 #include <scai/common/shared_ptr.hpp>
 #include <scai/common/function.hpp>
+#include <scai/common/Thread.hpp>
 
 #include <scai/logging.hpp>
 
@@ -156,6 +157,9 @@ public:
 
     void setCurrent();
 
+    /**
+     *  Current SyncToken will be no more current one.
+     */
     void unsetCurrent();
 
     /**
@@ -201,6 +205,8 @@ private:
     static CGuard cguard;//!< required to call routine at its destructor
 
     static SyncToken* currentSyncToken;  // not yet thread-private
+
+    static common::Thread::Id currentLaunchThread;  // thread launching applications
 
     /** Vector of shared pointers  that will be released after completion. */
 

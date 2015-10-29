@@ -775,17 +775,7 @@ void CUDABLAS1::registerKernels()
 
     common::context::ContextType ctx = common::context::CUDA;
 
-    SCAI_LOG_INFO( logger, "set BLAS1 routines for OpenMP in Interface" )
-
-    KernelRegistry::set<BLASKernelTrait::scal<float> >( scal, ctx );
-    KernelRegistry::set<BLASKernelTrait::nrm2<float> >( nrm2, ctx );
-    KernelRegistry::set<BLASKernelTrait::asum<float> >( asum, ctx ); 
-    KernelRegistry::set<BLASKernelTrait::iamax<float> >( iamax, ctx );
-    KernelRegistry::set<BLASKernelTrait::swap<float> >( swap, ctx );  
-    KernelRegistry::set<BLASKernelTrait::copy<float> >( copy, ctx );    
-    KernelRegistry::set<BLASKernelTrait::axpy<float> >( axpy, ctx );    
-    KernelRegistry::set<BLASKernelTrait::dot<float> >( dot, ctx );     
-    KernelRegistry::set<BLASKernelTrait::sum<float> >( sum, ctx );      
+    SCAI_LOG_INFO( logger, "register BLAS1 routines implemented by CuBLAS in KernelRegistry" )
 
 // Note: macro takes advantage of same name for routines and type definitions
 //       ( e.g. routine CUDABLAS1::sum<ValueType> is set for BLAS::BLAS1::sum variable

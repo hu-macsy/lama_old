@@ -40,7 +40,6 @@
 #include <scai/lama/Scalar.hpp>
 
 // internal scai libraries
-#include <scai/tasking/SyncToken.hpp>
 #include <scai/kregistry/KernelRegistry.hpp>
 
 #include <scai/logging.hpp>
@@ -165,8 +164,7 @@ public:
         const IndexType ndlg,
         const IndexType jdsDLG[],
         const IndexType jdsJA[],
-        const ValueType jdsValues[],
-        tasking::SyncToken* syncToken );
+        const ValueType jdsValues[] );
 
     /** Implementation for JDSUtilKernelTrait::Mult:normalGEVM with OpenMP on Host */
 
@@ -183,8 +181,7 @@ public:
         const IndexType ndlg,
         const IndexType jdsDLG[],
         const IndexType jdsJA[],
-        const ValueType jdsValues[],
-        tasking::SyncToken* syncToken );
+        const ValueType jdsValues[] );
 
     template<typename ValueType>
     static void jacobi(
@@ -198,8 +195,7 @@ public:
         const ValueType jdsValues[],
         const ValueType oldSolution[],
         const ValueType rhs[],
-        const ValueType omega,
-        tasking::SyncToken* syncToken );
+        const ValueType omega );
 
     template<typename ValueType>
     static void jacobiHalo(
@@ -213,8 +209,7 @@ public:
         const IndexType jdsHaloJA[],
         const ValueType jdsHaloValues[],
         const ValueType oldSolution[],
-        const ValueType omega,
-        tasking::SyncToken* syncToken );
+        const ValueType omega );
 
     /** Method for registration of module routines at the interface. */
 

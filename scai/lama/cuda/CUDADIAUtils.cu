@@ -35,7 +35,7 @@
 #include <scai/lama/cuda/CUDADIAUtils.hpp>
  
 // local library
-#include <scai/lama/UtilKernelTrait.hpp>
+#include <scai/lama/DIAKernelTrait.hpp>
 
 #include <scai/lama/cuda/utils.cu.h>
 #include <scai/lama/cuda/CUDASettings.hpp>
@@ -470,8 +470,7 @@ namespace lama
                     const IndexType numColumns,
                     const IndexType numDiagonals,
                     const IndexType diaOffsets[],
-                    const ValueType diaValues[],
-                    tasking::SyncToken* syncToken )
+                    const ValueType diaValues[] )
     {
         SCAI_REGION( "CUDA.DIA.normalGEMV" )
 
@@ -487,11 +486,11 @@ namespace lama
 
         cudaStream_t stream = 0;
 
+        CUDAStreamSyncToken* syncToken = CUDAStreamSyncToken::getCurrentSyncToken();
+
         if ( syncToken )
         {
-            tasking::CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<tasking::CUDAStreamSyncToken*>( syncToken );
-            SCAI_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
-            stream = cudaStreamSyncToken->getCUDAStream();
+            stream = syncToken->getCUDAStream();
         }
 
         const bool useSharedMem = CUDASettings::useSharedMem();
@@ -791,8 +790,7 @@ namespace lama
                     const IndexType numColumns,
                     const IndexType numDiagonals,
                     const IndexType diaOffsets[],
-                    const ValueType diaValues[],
-                    tasking::SyncToken* syncToken )
+                    const ValueType diaValues[] )
     {
         SCAI_REGION( "CUDA.DIA.normalGEVM" )
 
@@ -808,11 +806,11 @@ namespace lama
 
         cudaStream_t stream = 0;
 
+        CUDAStreamSyncToken* syncToken = CUDAStreamSyncToken::getCurrentSyncToken();
+
         if ( syncToken )
         {
-            tasking::CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<tasking::CUDAStreamSyncToken*>( syncToken );
-            SCAI_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
-            stream = cudaStreamSyncToken->getCUDAStream();
+            stream = syncToken->getCUDAStream();
         }
 
         const bool useSharedMem = CUDASettings::useSharedMem();

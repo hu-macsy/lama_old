@@ -35,7 +35,7 @@
 #include <boost/test/unit_test.hpp>
 
 // others
-#include <scai/lama/UtilKernelTrait.hpp>
+#include <scai/lama/JDSKernelTrait.hpp>
 #include <scai/lama/LAMAKernel.hpp>
 #include <scai/hmemo.hpp>
 #include <scai/common/test/TestMacros.hpp>

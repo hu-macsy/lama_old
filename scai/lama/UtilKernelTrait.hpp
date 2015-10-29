@@ -36,22 +36,8 @@
 #include <scai/common/config.hpp>
 #include <scai/common/SCAITypes.hpp>
 
-#include <scai/lama/CSRKernelTrait.hpp>
-#include <scai/lama/ELLKernelTrait.hpp>
-#include <scai/lama/JDSKernelTrait.hpp>
-#include <scai/lama/DIAKernelTrait.hpp>
-#include <scai/lama/DenseKernelTrait.hpp>
-#include <scai/lama/COOKernelTrait.hpp>
-
 namespace scai
 {
-
-// forward declaration
-
-namespace tasking
-{
-    class SyncToken;
-}
 
 namespace lama
 {

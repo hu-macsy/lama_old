@@ -107,8 +107,7 @@ void MICBLAS2::gemv(
     const IndexType incX,
     const float beta,
     float* y,
-    const IndexType incY,
-    tasking::SyncToken* syncToken )
+    const IndexType incY )
 {
     SCAI_LOG_INFO( logger,
                    "gemv<float>: m = " << m << ", n = " << n << ", lda = " << lda << ", incX = " << incX << ", incY = " << incY << ", alpha = " << alpha << ", beta = " << beta )
@@ -120,7 +119,9 @@ void MICBLAS2::gemv(
 
     // n == 0: empty A, but deal with X, Y, we can handle this here
 
-    if( syncToken )
+    TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
+
+    if ( syncToken )
     {
         SCAI_LOG_WARN( logger, "asynchronous execution for MIC not supported yet." )
     }
@@ -169,8 +170,7 @@ void MICBLAS2::gemv(
     const IndexType incX,
     const double beta,
     double* y,
-    const IndexType incY,
-    tasking::SyncToken* syncToken )
+    const IndexType incY )
 {
     SCAI_LOG_INFO( logger,
                    "gemv<double>: m = " << m << ", n = " << n << ", lda = " << lda << ", incX = " << incX << ", incY = " << incY << ", alpha = " << alpha << ", beta = " << beta )
@@ -182,7 +182,9 @@ void MICBLAS2::gemv(
 
     // n == 0: empty A, but deal with X, Y, we can handle this here
 
-    if( syncToken )
+    TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
+
+    if ( syncToken )
     {
         SCAI_LOG_WARN( logger, "asynchronous execution for MIC not supported yet." )
     }

@@ -40,6 +40,7 @@
 #include <scai/lama/UtilKernelTrait.hpp>
 #include <scai/lama/BLASKernelTrait.hpp>
 #include <scai/lama/DIAKernelTrait.hpp>
+#include <scai/lama/CSRKernelTrait.hpp>
 
 // internal scai libraries
 #include <scai/hmemo/ContextAccess.hpp>
@@ -928,7 +929,7 @@ void DIAStorage<ValueType>::matrixTimesVector(
         SCAI_CONTEXT_ACCESS( loc )
 
         normalGEMV[loc]( wResult.get(), alpha, rX.get(), beta, wResult.get(), mNumRows, mNumColumns, mNumDiagonals,
-                         diaOffsets.get(), diaValues.get(), NULL );
+                         diaOffsets.get(), diaValues.get() );
     }
     else
     {
@@ -940,7 +941,7 @@ void DIAStorage<ValueType>::matrixTimesVector(
         SCAI_CONTEXT_ACCESS( loc )
 
         normalGEMV[loc]( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumRows, mNumColumns, mNumDiagonals,
-                         diaOffsets.get(), diaValues.get(), NULL );
+                         diaOffsets.get(), diaValues.get() );
     }
 }
 
@@ -991,7 +992,7 @@ void DIAStorage<ValueType>::vectorTimesMatrix(
         SCAI_CONTEXT_ACCESS( loc )
 
         normalGEVM[loc]( wResult.get(), alpha, rX.get(), beta, wResult.get(), mNumRows, mNumColumns, mNumDiagonals,
-                         diaOffsets.get(), diaValues.get(), NULL );
+                         diaOffsets.get(), diaValues.get() );
     }
     else
     {
@@ -1001,7 +1002,7 @@ void DIAStorage<ValueType>::vectorTimesMatrix(
         SCAI_CONTEXT_ACCESS( loc )
 
         normalGEVM[loc]( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumRows, mNumColumns, mNumDiagonals,
-                         diaOffsets.get(), diaValues.get(), NULL );
+                         diaOffsets.get(), diaValues.get() );
     }
 }
 
@@ -1051,6 +1052,8 @@ SyncToken* DIAStorage<ValueType>::matrixTimesVectorAsync(
 
     common::unique_ptr<SyncToken> syncToken( loc->getSyncToken() );
 
+    syncToken->setCurrent();
+
     // all accesses will be pushed to the sync token as LAMA arrays have to be protected up
     // to the end of the computations.
 
@@ -1076,7 +1079,7 @@ SyncToken* DIAStorage<ValueType>::matrixTimesVectorAsync(
         SCAI_CONTEXT_ACCESS( loc )
 
         normalGEMV[loc]( wResult->get(), alpha, rX->get(), beta, wResult->get(), mNumRows, mNumColumns, mNumDiagonals,
-                         diaOffsets->get(), diaValues->get(), syncToken.get() );
+                         diaOffsets->get(), diaValues->get() );
     }
     else
     {
@@ -1091,12 +1094,14 @@ SyncToken* DIAStorage<ValueType>::matrixTimesVectorAsync(
         SCAI_CONTEXT_ACCESS( loc )
 
         normalGEMV[loc]( wResult->get(), alpha, rX->get(), beta, rY->get(), mNumRows, mNumColumns, mNumDiagonals,
-                         diaOffsets->get(), diaValues->get(), syncToken.get() );
+                         diaOffsets->get(), diaValues->get() );
     }
 
     syncToken->pushToken( rX );
     syncToken->pushToken( diaValues );
     syncToken->pushToken( diaOffsets );
+
+    syncToken->unsetCurrent();
 
     return syncToken.release();
 }
@@ -1157,6 +1162,8 @@ SyncToken* DIAStorage<ValueType>::vectorTimesMatrixAsync(
 
     common::unique_ptr<SyncToken> syncToken( loc->getSyncToken() );
 
+    syncToken->setCurrent();
+
     // all accesses will be pushed to the sync token as LAMA arrays have to be protected up
     // to the end of the computations.
 
@@ -1178,7 +1185,7 @@ SyncToken* DIAStorage<ValueType>::vectorTimesMatrixAsync(
         SCAI_CONTEXT_ACCESS( loc )
 
         normalGEVM[loc]( wResult->get(), alpha, rX->get(), beta, wResult->get(), mNumRows, mNumColumns, mNumDiagonals,
-                         diaOffsets->get(), diaValues->get(), syncToken.get() );
+                         diaOffsets->get(), diaValues->get() );
 
         syncToken->pushToken( wResult );
     }
@@ -1190,7 +1197,7 @@ SyncToken* DIAStorage<ValueType>::vectorTimesMatrixAsync(
         SCAI_CONTEXT_ACCESS( loc )
 
         normalGEVM[loc]( wResult->get(), alpha, rX->get(), beta, rY->get(), mNumRows, mNumColumns, mNumDiagonals,
-                         diaOffsets->get(), diaValues->get(), syncToken.get() );
+                         diaOffsets->get(), diaValues->get() );
 
         syncToken->pushToken( wResult );
         syncToken->pushToken( rY );
@@ -1199,6 +1206,8 @@ SyncToken* DIAStorage<ValueType>::vectorTimesMatrixAsync(
     syncToken->pushToken( rX );
     syncToken->pushToken( diaValues );
     syncToken->pushToken( diaOffsets );
+
+    syncToken->unsetCurrent();
 
     return syncToken.release();
 }
@@ -1237,7 +1246,7 @@ void DIAStorage<ValueType>::jacobiIterate(
     ReadAccess<ValueType> rRhs( rhs, loc );
 
     jacobi[loc]( wSolution.get(), mNumColumns, mNumDiagonals, diaOffset.get(), diaValues.get(),
-                 rOldSolution.get(), rRhs.get(), omega, mNumRows, NULL );
+                 rOldSolution.get(), rRhs.get(), omega, mNumRows );
 }
 
 /* --------------------------------------------------------------------------- */

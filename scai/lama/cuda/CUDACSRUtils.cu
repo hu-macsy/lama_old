@@ -42,12 +42,13 @@
 #include <scai/lama/cuda/CUDATexture.hpp>
 #include <scai/lama/cuda/CUDASettings.hpp>
 
-#include <scai/lama/UtilKernelTrait.hpp>
+#include <scai/lama/CSRKernelTrait.hpp>
 
 // internal scai library
 #include <scai/hmemo/Memory.hpp>
-#include <scai/hmemo/cuda/CUDAStreamSyncToken.hpp>
 #include <scai/kregistry/KernelRegistry.hpp>
+
+#include <scai/hmemo/cuda/CUDAStreamSyncToken.hpp>
 
 #include <scai/tracing.hpp>
 
@@ -996,8 +997,7 @@ void CUDACSRUtils::normalGEMV(
     const IndexType UNUSED( nnz ),
     const IndexType csrIA[],
     const IndexType csrJA[],
-    const ValueType csrValues[],
-    SyncToken* syncToken )
+    const ValueType csrValues[] )
 {
     SCAI_REGION( "CUDA.CSRUtils.normalGEMV" )
 
@@ -1018,11 +1018,13 @@ void CUDACSRUtils::normalGEMV(
 
     bool useTexture = CUDASettings::useTexture();
 
+    CUDAStreamSyncToken* syncToken = CUDAStreamSyncToken::getCurrentSyncToken();
+
     if ( syncToken )
     {
-        CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-        SCAI_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
-        stream = cudaStreamSyncToken->getCUDAStream();
+        // asynchronous execution takes other stream and will not synchronize later
+
+        stream = syncToken->getCUDAStream();
     }
 
     SCAI_LOG_INFO( logger, "Start normal_gemv_kernel<" << getScalarType<ValueType>()
@@ -1219,8 +1221,7 @@ void CUDACSRUtils::normalGEVM(
     const IndexType numColumns,
     const IndexType csrIA[],
     const IndexType csrJA[],
-    const ValueType csrValues[],
-    SyncToken* syncToken )
+    const ValueType csrValues[] )
 {
     SCAI_LOG_INFO( logger, "normalGEVM<" << getScalarType<ValueType>() << ">" <<
                    " result[ " << numColumns << "] = " << alpha << " * A(csr) * x + " << beta << " * y " )
@@ -1239,11 +1240,11 @@ void CUDACSRUtils::normalGEVM(
 
     bool useTexture = CUDASettings::useTexture();
 
+    CUDAStreamSyncToken* syncToken = CUDAStreamSyncToken::getCurrentSyncToken();
+
     if ( syncToken )
     {
-        CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-        SCAI_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
-        stream = cudaStreamSyncToken->getCUDAStream();
+        stream = syncToken->getCUDAStream();
     }
 
     SCAI_LOG_INFO( logger, "Start normal_gevm_kernel<" << getScalarType<ValueType>()
@@ -1438,8 +1439,7 @@ void CUDACSRUtils::sparseGEMV(
     const IndexType rowIndexes[],
     const IndexType csrIA[],
     const IndexType csrJA[],
-    const ValueType csrValues[],
-    SyncToken* syncToken )
+    const ValueType csrValues[] )
 {
     SCAI_REGION( "CUDA.CSRUtils.sparseGEMV" )
 
@@ -1450,11 +1450,11 @@ void CUDACSRUtils::sparseGEMV(
 
     cudaStream_t stream = 0;
 
+    CUDAStreamSyncToken* syncToken = CUDAStreamSyncToken::getCurrentSyncToken();
+
     if ( syncToken )
     {
-        CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-        SCAI_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
-        stream = cudaStreamSyncToken->getCUDAStream();
+        stream = syncToken->getCUDAStream();
     }
 
     const int blockSize = CUDASettings::getBlockSize( numNonZeroRows );
@@ -1529,8 +1529,7 @@ void CUDACSRUtils::sparseGEVM(
     const IndexType rowIndexes[],
     const IndexType csrIA[],
     const IndexType csrJA[],
-    const ValueType csrValues[],
-    SyncToken* syncToken )
+    const ValueType csrValues[] )
 {
     SCAI_LOG_INFO( logger,
                    "sparseGEVM<" << getScalarType<ValueType>() << ">" << ", #non-zero rows = " << numNonZeroRows )
@@ -1539,11 +1538,13 @@ void CUDACSRUtils::sparseGEVM(
 
     cudaStream_t stream = 0;
 
+    // check if asynchronous execution is wanted
+
+    CUDAStreamSyncToken* syncToken = CUDAStreamSyncToken::getCurrentSyncToken();
+
     if ( syncToken )
     {
-        CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-        SCAI_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
-        stream = cudaStreamSyncToken->getCUDAStream();
+        stream = syncToken->getCUDAStream();
     }
 
     const int blockSize = CUDASettings::getBlockSize( numNonZeroRows );
@@ -1760,8 +1761,7 @@ void CUDACSRUtils::jacobi(
     const ValueType* const oldSolution,
     const ValueType* const rhs,
     const ValueType omega,
-    const IndexType numRows,
-    SyncToken* syncToken )
+    const IndexType numRows )
 {
     SCAI_LOG_INFO( logger, "jacobi, #rows = " << numRows )
 
@@ -1771,11 +1771,11 @@ void CUDACSRUtils::jacobi(
 
     bool useTexture = CUDASettings::useTexture();
 
+    CUDAStreamSyncToken* syncToken = CUDAStreamSyncToken::getCurrentSyncToken();
+
     if ( syncToken )
     {
-        CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
-        SCAI_ASSERT_DEBUG( cudaStreamSyncToken, "no cuda stream sync token provided" )
-        stream = cudaStreamSyncToken->getCUDAStream();
+        stream = syncToken->getCUDAStream();
 
         useTexture = false; // not yet supported
     }

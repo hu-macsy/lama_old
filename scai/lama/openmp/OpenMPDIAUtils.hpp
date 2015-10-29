@@ -37,7 +37,6 @@
 #include <scai/common/config.hpp>
 
 // internal scai libraries
-#include <scai/tasking/SyncToken.hpp>
 
 #include <scai/common/SCAITypes.hpp>
 
@@ -54,7 +53,7 @@ class COMMON_DLL_IMPORTEXPORT OpenMPDIAUtils
 {
 public:
 
-    /** OpenMP implementation for DIAKernelTrait::Counting::getCSRSizes */
+    /** OpenMP implementation for DIAKernelTrait::getCSRSizes */
 
     template<typename ValueType>
     static void getCSRSizes(
@@ -67,7 +66,7 @@ public:
         const ValueType diaValues[],
         const ValueType eps );
 
-    /** OpenMP implementation for DIAKernelTrait::Conversions::getCSRValues.  */
+    /** OpenMP implementation for DIAKernelTrait::getCSRValues.  */
 
     template<typename DIAValueType,typename CSRValueType>
     static void getCSRValues(
@@ -82,7 +81,7 @@ public:
         const DIAValueType diaValues[],
         const DIAValueType eps );
 
-    /** Implementation for DIAKernelTrait::Mult::normalGEMV  */
+    /** Implementation for DIAKernelTrait::normalGEMV  */
 
     template<typename ValueType>
     static void normalGEMV(
@@ -95,10 +94,9 @@ public:
         const IndexType numColumns,
         const IndexType numDiagonals,
         const IndexType diaOffsets[],
-        const ValueType diaValues[],
-        tasking::SyncToken* syncToken );
+        const ValueType diaValues[] );
 
-    /** Implementation for DIAKernelTrait::Mult::normalGEVM  */
+    /** Implementation for DIAKernelTrait::normalGEVM  */
 
     template<typename ValueType>
     static void normalGEVM(
@@ -111,10 +109,9 @@ public:
         const IndexType numColumns,
         const IndexType numDiagonals,
         const IndexType diaOffsets[],
-        const ValueType diaValues[],
-        tasking::SyncToken* syncToken );
+        const ValueType diaValues[] );
 
-    /** Implementation for DIAKernelTrait::Solver::jacobi  */
+    /** Implementation for DIAKernelTrait::jacobi  */
 
     template<typename ValueType>
     static void jacobi(
@@ -126,8 +123,7 @@ public:
         const ValueType oldSolution[],
         const ValueType rhs[],
         const ValueType omega,
-        const IndexType numRows,
-        tasking::SyncToken* syncToken );
+        const IndexType numRows );
 
     /** Implemenatation for DIAKernelTrait::Reductions::absMaxVal */
 
@@ -146,7 +142,7 @@ public:
 private:
 
     template<typename ValueType>
-    static void normalGEMV(
+    static void normalGEMV_s(
         ValueType result[],
         const ValueType alpha,
         const ValueType x[],

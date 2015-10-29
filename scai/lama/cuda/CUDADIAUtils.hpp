@@ -43,11 +43,6 @@
 namespace scai
 {
 
-namespace tasking
-{
-    class SyncToken;
-}
-
 namespace lama
 {
 
@@ -72,8 +67,7 @@ public:
         const IndexType numColumns,
         const IndexType numDiagonals,
         const IndexType diaOffsets[],
-        const ValueType diaValues[],
-        tasking::SyncToken* syncToken );
+        const ValueType diaValues[] );
 
     /** Implementation for DIAKernelTrait::normalGEVM with CUDA on GPUs */
 
@@ -88,8 +82,7 @@ public:
         const IndexType numColumns,
         const IndexType numDiagonals,
         const IndexType diaOffsets[],
-        const ValueType diaValues[],
-        tasking::SyncToken* syncToken );
+        const ValueType diaValues[] );
 
     /** Routine that instantiates and registers all functions at the kernel registry */
 

@@ -35,7 +35,7 @@
 #include <scai/lama/openmp/OpenMPDenseUtils.hpp>
 
 // local library
-#include <scai/lama/UtilKernelTrait.hpp>
+#include <scai/lama/DenseKernelTrait.hpp>
 
 #include <scai/kregistry/KernelRegistry.hpp>
 #include <scai/common/Constants.hpp>

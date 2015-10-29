@@ -37,10 +37,8 @@
 #include <scai/common/config.hpp>
 
 // internal scai libraries
-#include <scai/tasking/SyncToken.hpp>
 
 #include <scai/logging.hpp>
-
 #include <scai/common/SCAITypes.hpp>
 
 namespace scai
@@ -84,8 +82,7 @@ public:
         const IndexType nnz,
         const IndexType csrIA[],
         const IndexType csrJA[],
-        const ValueType csrValues[],
-        tasking::SyncToken* syncToken );
+        const ValueType csrValues[] );
 
     /** Routine that registers all routines of this class at the Kernel registry. */
 

@@ -47,11 +47,6 @@
 namespace scai
 {
 
-namespace tasking
-{
-    class SyncToken;
-}
-
 namespace lama
 {
 
@@ -81,8 +76,7 @@ public:
         const IndexType incX,
         const ValueType beta,
         ValueType* y,
-        const IndexType incY,
-        tasking::SyncToken* syncToken );
+        const IndexType incY );
 
     /** Routine that sets functions pointers belonging to BLAS2 in a BLASKernelTrait.
      *

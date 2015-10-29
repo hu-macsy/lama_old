@@ -34,15 +34,10 @@
 // for dll_import
 #include <scai/common/config.hpp>
 
+#include <scai/common/SCAITypes.hpp>
+
 namespace scai
 {
-
-// forward declaration
-
-namespace tasking
-{
-    class SyncToken;
-}
 
 namespace lama
 {
@@ -76,8 +71,7 @@ struct ELLKernelTrait
             const ValueType ellValues[],
             const ValueType oldSolution[],
             const ValueType rhs[],
-            const ValueType omega,
-            tasking::SyncToken* syncToken );
+            const ValueType omega );
 
         static const char* getId() { return "ELL.jacobi"; }
     };
@@ -96,8 +90,7 @@ struct ELLKernelTrait
             const IndexType rowIndexes[],
             const IndexType numNonEmptyRows,
             const ValueType oldSolution[],
-            const ValueType omega,
-            tasking::SyncToken* syncToken );
+            const ValueType omega );
 
         static const char* getId() { return "ELL.jacobiHalo"; }
     };
@@ -344,8 +337,7 @@ struct ELLKernelTrait
             const IndexType numValuesPerRow,
             const IndexType ellSizes[],
             const IndexType ellJA[],
-            const ValueType ellValues[],
-            tasking::SyncToken* syncToken );
+            const ValueType ellValues[] );
 
         static const char* getId() { return "ELL.normalGEMV"; }
     };
@@ -377,8 +369,7 @@ struct ELLKernelTrait
             const IndexType rowIndexes[],
             const IndexType ellSizes[],
             const IndexType ellJA[],
-            const ValueType ellValues[],
-            tasking::SyncToken* syncToken );
+            const ValueType ellValues[] );
 
         static const char* getId() { return "ELL.sparseGEMV"; }
     };
@@ -386,7 +377,7 @@ struct ELLKernelTrait
     template<typename ValueType>
     struct normalGEVM
     {
-        /** Implementation for ELLKernelTrait::Mult::normalGEVM  */
+        /** Matrix vector multiplication for ELL format */
 
         typedef void ( *FuncType ) ( 
             ValueType result[],
@@ -399,8 +390,7 @@ struct ELLKernelTrait
             const IndexType numValuesPerRow,
             const IndexType ellSizes[],
             const IndexType ellJA[],
-            const ValueType ellValues[],
-            tasking::SyncToken* syncToken );
+            const ValueType ellValues[] );
 
         static const char* getId() { return "ELL.normalGEVM"; }
     };
@@ -408,7 +398,7 @@ struct ELLKernelTrait
     template<typename ValueType>
     struct sparseGEVM
     {
-        /** Implementation for ELLKernelTrait::Mult::sparseGEVM  */
+        /** Matrix vector multiplication for ELL format, sparse rows */
 
         typedef void ( *FuncType ) ( 
             ValueType result[],
@@ -421,8 +411,7 @@ struct ELLKernelTrait
             const IndexType rowIndexes[],
             const IndexType ellSizes[],
             const IndexType ellJA[],
-            const ValueType ellValues[],
-            tasking::SyncToken* syncToken );
+            const ValueType ellValues[] );
 
         static const char* getId() { return "ELL.sparseGEVM"; }
     };

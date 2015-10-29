@@ -36,9 +36,6 @@
 // for dll_import
 #include <scai/common/config.hpp>
 
-// internal scai libraries
-#include <scai/tasking/SyncToken.hpp>
-
 #include <scai/logging.hpp>
 
 #include <scai/common/SCAITypes.hpp>
@@ -143,7 +140,7 @@ private:
         ValueType ellValues[],
         const OtherValueType values[] );
 
-    /** Implementation for ELLKernelTrait::Conversions::compressIA */
+    /** Implementation for ELLKernelTrait::compressIA */
 
     template<typename ValueType>
     static void compressIA(
@@ -155,7 +152,7 @@ private:
         const ValueType eps,
         IndexType newIA[] );
 
-    /** Implementation for ELLKernelTrait::Conversions::compressValues */
+    /** Implementation for ELLKernelTrait::compressValues */
 
     template<typename ValueType>
     static void compressValues(
@@ -169,7 +166,7 @@ private:
         IndexType newJA[],
         ValueType newValues[] );
 
-    /** Implementation for ELLKernelTrait::Conversions::getCSRValues */
+    /** Implementation for ELLKernelTrait::getCSRValues */
 
     template<typename ELLValueType,typename CSRValueType>
     static void getCSRValues(
@@ -190,7 +187,7 @@ private:
         const IndexType numRows,
         const IndexType numValuesPerRow );
 
-    /** Implementation for ELLKernelTrait::Conversions::setCSRValues */
+    /** Implementation for ELLKernelTrait::setCSRValues */
 
     template<typename ELLValueType,typename CSRValueType>
     static void setCSRValues(
@@ -203,7 +200,7 @@ private:
         const IndexType csrJA[],
         const CSRValueType csrValues[] );
 
-    /** Implementation for ELLKernelTrait::MatrixExpBuild::matrixMultiplySizes */
+    /** Implementation for ELLKernelTrait::matrixMultiplySizes */
 
     static void matrixMultiplySizes(
         IndexType cSizes[],
@@ -218,7 +215,7 @@ private:
         const IndexType bJA[],
         const IndexType bNumValuesPerRow );
 
-    /** Implementation for ELLKernelTrait::MatrixExp::matrixMultiply */
+    /** Implementation for ELLKernelTrait::matrixMultiply */
 
     template<typename ValueType>
     static void matrixMultiply(
@@ -240,7 +237,7 @@ private:
         const ValueType bValues[],
         const IndexType bNumValuesPerRow );
 
-    /** Implementation for ELLKernelTrait::MatrixExpBuild::matrixAddSizes */
+    /** Implementation for ELLKernelTrait::matrixAddSizes */
 
     static void matrixAddSizes(
         IndexType csizes[],
@@ -254,7 +251,7 @@ private:
         const IndexType bJA[],
         const IndexType bNumValuesPerRow );
 
-    /** Implementation for ELLKernelTrait::MatrixExp::matrixAdd */
+    /** Implementation for ELLKernelTrait::matrixAdd */
 
     template<typename ValueType>
     static void matrixAdd(
@@ -276,7 +273,7 @@ private:
         const ValueType bValues[],
         const IndexType bNumValuesPerRow );
 
-    /** Implementation for ELLKernelTrait::Solver::jacobi */
+    /** Implementation for ELLKernelTrait::jacobi */
 
     template<typename ValueType>
     static void jacobi(
@@ -288,10 +285,9 @@ private:
         const ValueType ellValues[],
         const ValueType oldSolution[],
         const ValueType rhs[],
-        const ValueType omega,
-        tasking::SyncToken* syncToken );
+        const ValueType omega );
 
-    /** Implementation for ELLKernelTrait::Solver::jacobiHalo */
+    /** Implementation for ELLKernelTrait::jacobiHalo */
 
     template<typename ValueType>
     static void jacobiHalo(
@@ -305,10 +301,9 @@ private:
         const IndexType rowIndexes[],
         const IndexType numNonEmptyRows,
         const ValueType oldSolution[],
-        const ValueType omega,
-        tasking::SyncToken* syncToken );
+        const ValueType omega );
 
-    /** Implementation for ELLKernelTrait::Mult::normalGEMV  */
+    /** Implementation for ELLKernelTrait::normalGEMV  */
 
     template<typename ValueType>
     static void normalGEMV(
@@ -321,10 +316,9 @@ private:
         const IndexType numNonZerosPerRow,
         const IndexType csrIA[],
         const IndexType csrJA[],
-        const ValueType csrValues[],
-        tasking::SyncToken* syncToken );
+        const ValueType csrValues[] );
 
-    /** Implementation for ELLKernelTrait::Mult::sparseGEMV  */
+    /** Implementation for ELLKernelTrait::sparseGEMV  */
 
     template<typename ValueType>
     static void sparseGEMV(
@@ -337,10 +331,9 @@ private:
         const IndexType rowIndexes[],
         const IndexType csrIA[],
         const IndexType csrJA[],
-        const ValueType csrValues[],
-        tasking::SyncToken* syncToken );
+        const ValueType csrValues[] );
 
-    /** Implementation for CSRKernelTrait::Mult:normalGEVM */
+    /** Implementation for CSRKernelTrait::normalGEVM */
 
     template<typename ValueType>
     static void normalGEVM(
@@ -354,10 +347,9 @@ private:
         const IndexType numValuesPerRow,
         const IndexType ellSizes[],
         const IndexType ellJA[],
-        const ValueType ellValues[],
-        tasking::SyncToken* syncToken );
+        const ValueType ellValues[] );
 
-    /** Implementation for CSRKernelTrait::Mult::sparseGEVM  */
+    /** Implementation for CSRKernelTrait::sparseGEVM  */
 
     template<typename ValueType>
     static void sparseGEVM(
@@ -371,8 +363,7 @@ private:
         const IndexType rowIndexes[],
         const IndexType ellSizes[],
         const IndexType ellJA[],
-        const ValueType ellValues[],
-        tasking::SyncToken* syncToken );
+        const ValueType ellValues[] );
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 

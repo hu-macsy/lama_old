@@ -38,7 +38,7 @@
 #include <scai/lama/openmp/OpenMPUtils.hpp>
 #include <scai/lama/openmp/OpenMPCSRUtils.hpp>
 
-#include <scai/lama/UtilKernelTrait.hpp>
+#include <scai/lama/CSRKernelTrait.hpp>
 
 // internal scai libraries
 
@@ -48,6 +48,8 @@
 #include <scai/common/Settings.hpp>
 #include <scai/common/macros/unused.hpp>
 
+#include <scai/tasking/TaskSyncToken.hpp>
+
 #include <scai/tracing.hpp>
 
 // extern
@@ -56,7 +58,7 @@
 namespace scai
 {
 
-using tasking::SyncToken;
+using tasking::TaskSyncToken;
 
 namespace lama
 {
@@ -77,13 +79,14 @@ void MKLCSRUtils::normalGEMV(
     const IndexType /* nnz */,
     const IndexType csrIA[],
     const IndexType csrJA[],
-    const float csrValues[],
-    SyncToken* syncToken )
+    const float csrValues[] )
 {
     SCAI_REGION( "MKL.scsrmv" )
 
     SCAI_LOG_INFO( logger,
                    "normalGEMV<float>, result[" << numRows << "] = " << alpha << " * A * x + " << beta << " * y " )
+
+    TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
     if( syncToken )
     {
@@ -130,15 +133,16 @@ void MKLCSRUtils::normalGEMV(
     const IndexType /* nnz */,
     const IndexType csrIA[],
     const IndexType csrJA[],
-    const double csrValues[],
-    SyncToken* syncToken )
+    const double csrValues[] )
 {
     SCAI_REGION( "MKL.dcsrmv" )
 
     SCAI_LOG_INFO( logger,
                    "normalGEMV<double>, result[" << numRows << "] = " << alpha << " * A * x + " << beta << " * y " )
 
-    if( syncToken )
+    TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
+
+    if ( syncToken )
     {
         COMMON_THROWEXCEPTION( "asynchronous execution should be done by LAMATask before" )
     }

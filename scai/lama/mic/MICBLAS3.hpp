@@ -46,11 +46,6 @@
 namespace scai
 {
 
-namespace tasking
-{
-   class SyncToken;  // forward declaration
-}
-
 namespace lama
 {
 
@@ -81,8 +76,7 @@ public:
         const IndexType ldb,
         const ValueType beta,
         ValueType* C,
-        const IndexType ldc,
-        tasking::SyncToken* syncToken );
+        const IndexType ldc );
 
     /** Routine that sets functions pointers belonging to BLAS3 in the kernel registry.
      *

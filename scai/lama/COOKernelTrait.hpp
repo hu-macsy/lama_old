@@ -37,13 +37,6 @@
 namespace scai
 {
 
-// forward declaration
-
-namespace tasking
-{
-    class SyncToken;
-}
-
 namespace lama
 {
 
@@ -176,8 +169,7 @@ struct COOKernelTrait
             const IndexType nnz,
             const IndexType cooIA[],
             const IndexType cooJA[],
-            const ValueType cooValues[],
-            tasking::SyncToken* syncToken );
+            const ValueType cooValues[] );
 
         static const char* getId() { return "COO.normalGEMV"; }
     };
@@ -195,8 +187,7 @@ struct COOKernelTrait
             const IndexType nnz,
             const IndexType cooIA[],
             const IndexType cooJA[],
-            const ValueType cooValues[],
-            tasking::SyncToken* syncToken );
+            const ValueType cooValues[] );
 
         static const char* getId() { return "COO.normalGEVM"; }
     };
@@ -219,8 +210,7 @@ struct COOKernelTrait
             const ValueType oldSolution[],
             const ValueType rhs[],
             const ValueType omega,
-            const IndexType numRows,
-            tasking::SyncToken* syncToken );
+            const IndexType numRows );
 
         static const char* getId() { return "COO.jacobi"; }
     };

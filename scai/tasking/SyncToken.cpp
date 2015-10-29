@@ -162,20 +162,60 @@ void SyncToken::setSynchronized()
 
 void SyncToken::setCurrent()
 {
+    if ( currentSyncToken != NULL )
+    {
+        SCAI_LOG_ERROR( logger, "setCurrent: " << *this << ", but current is: " << currentSyncToken )
+    }
+
     currentSyncToken = this;
+
+    currentLaunchThread = common::Thread::getSelf();
 }
 
 void SyncToken::unsetCurrent()
 {
-    currentSyncToken = NULL;
+    if ( currentSyncToken == NULL )
+    {
+        SCAI_LOG_WARN( logger, "unset current sync token, not available" )
+    } 
+    else if ( currentLaunchThread == common::Thread::getSelf() )
+    {
+        SCAI_LOG_INFO( logger, "no more current sync token " << *currentSyncToken )
+        currentSyncToken = NULL;
+    }
+    else
+    {
+        SCAI_LOG_ERROR( logger, "current sync token " << *currentSyncToken << " cannot be unset by other thread" )
+    }
 }
 
 SyncToken* SyncToken::getCurrentSyncToken()
 {
-    return currentSyncToken;
+    if ( currentSyncToken == NULL )
+    {
+        SCAI_LOG_ERROR( logger, "getCurrentSyncToken = NULL" )
+
+        return currentSyncToken;
+    }
+
+    SCAI_LOG_ERROR( logger, "current sync token = " << *currentSyncToken )
+
+    // only same thread can access its sync token
+
+    if ( currentLaunchThread == common::Thread::getSelf() )
+    {
+        SCAI_LOG_ERROR( logger, "current sync token set by same thread" )
+        return currentSyncToken;
+    }
+
+    SCAI_LOG_ERROR( logger, "current sync token set by other thread, return NULL" )
+
+    return NULL;
 }
 
 SyncToken* SyncToken::currentSyncToken = NULL;
+
+common::Thread::Id SyncToken::currentLaunchThread;  // only set if currentSyncToken is defined
 
 /* ----------------------------------------------------------------------- */
 

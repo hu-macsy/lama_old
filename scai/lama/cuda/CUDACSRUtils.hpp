@@ -36,9 +36,6 @@
 // for dll_import
 #include <scai/common/config.hpp>
 
-// internal scai library
-#include <scai/tasking/SyncToken.hpp>
-
 #include <scai/logging.hpp>
 
 #include <scai/common/Assert.hpp>
@@ -98,8 +95,7 @@ public:
         const IndexType nnz,
         const IndexType csrIA[],
         const IndexType csrJA[],
-        const ValueType csrValues[],
-        tasking::SyncToken* syncToken );
+        const ValueType csrValues[] );
 
     /** Implementation for CSRKernelTrait::Mult::normalGEVM  */
 
@@ -114,8 +110,7 @@ public:
         const IndexType numColumns,
         const IndexType csrIA[],
         const IndexType csrJA[],
-        const ValueType csrValues[],
-        tasking::SyncToken* syncToken );
+        const ValueType csrValues[] );
 
     /** Implementation for CSRKernelTrait::Mult::sparseGEMV  */
 
@@ -128,8 +123,7 @@ public:
         const IndexType rowIndexes[],
         const IndexType csrIA[],
         const IndexType csrJA[],
-        const ValueType csrValues[],
-        tasking::SyncToken* syncToken );
+        const ValueType csrValues[] );
 
     /** Implementation for CSRKernelTrait::Mult::sparseGEVM  */
 
@@ -143,8 +137,7 @@ public:
         const IndexType rowIndexes[],
         const IndexType csrIA[],
         const IndexType csrJA[],
-        const ValueType csrValues[],
-        tasking::SyncToken* syncToken );
+        const ValueType csrValues[] );
 
     /** Implementation for CSRKernelTrait::Solver::jacobi  */
 
@@ -157,8 +150,7 @@ public:
         const ValueType rhs[],
         const ValueType oldSolution[],
         const ValueType omega,
-        const IndexType numRows,
-        tasking::SyncToken* syncToken );
+        const IndexType numRows );
 
     /** Implementation for CSRKernelTrait::Solver::jacobiHalo  */
 

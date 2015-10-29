@@ -47,11 +47,6 @@
 namespace scai
 {
 
-namespace tasking
-{
-   class SyncToken;
-}
-
 namespace lama
 {
 
@@ -168,8 +163,7 @@ public:
         const ValueType jdsValues[],
         const ValueType oldSolution[],
         const ValueType rhs[],
-        const ValueType omega,
-        tasking::SyncToken* syncToken );
+        const ValueType omega );
 
     /** Implementation for JDSKernelTrait::jacobiHalo  */
 
@@ -185,8 +179,7 @@ public:
         const IndexType jdsJAHalo[],
         const ValueType jdsValuesHalo[],
         const ValueType oldSolutionHalo[],
-        const ValueType omega,
-        tasking::SyncToken* syncToken );
+        const ValueType omega );
 
     /** Implementation for JDSKernelTrait::normalGEMV with CUDA on GPU */
 
@@ -203,8 +196,7 @@ public:
         const IndexType ndlg,
         const IndexType jdsDLG[],
         const IndexType jdsJA[],
-        const ValueType jdsValues[],
-        tasking::SyncToken* syncToken );
+        const ValueType jdsValues[] );
 
     /** Implementation for JDSKernelTrait::normalGEVM with CUDA on GPU */
 
@@ -221,8 +213,7 @@ public:
         const IndexType ndlg,
         const IndexType jdsDLG[],
         const IndexType jdsJA[],
-        const ValueType jdsValues[],
-        tasking::SyncToken* syncToken );
+        const ValueType jdsValues[] );
 
     /** Implementation for JDSKernelTrait::sparseGEMV with CUDA on GPU */
 
@@ -237,8 +228,7 @@ public:
         const IndexType ndlg,
         const IndexType jdsDLG[],
         const IndexType jdsJA[],
-        const ValueType jdsValues[],
-        tasking::SyncToken* syncToken );
+        const ValueType jdsValues[] );
 
     /** Implementation for JDSKernelTrait::sparseGEVM with CUDA on GPU */
 
@@ -253,8 +243,7 @@ public:
         const IndexType ndlg,
         const IndexType jdsDLG[],
         const IndexType jdsJA[],
-        const ValueType jdsValues[],
-        tasking::SyncToken* syncToken );
+        const ValueType jdsValues[] );
 
     /** Routine that registers all routines of this class at the LAMA interface. */
 

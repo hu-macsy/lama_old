@@ -39,8 +39,6 @@
 // internal scai library
 #include <scai/common/SCAITypes.hpp>
 
-#include <scai/tasking/SyncToken.hpp>
-
 #include <scai/logging.hpp>
 
 namespace scai
@@ -171,8 +169,7 @@ public:
         const IndexType numValuesPerRow,
         const IndexType ellIA[],
         const IndexType ellJA[],
-        const ValueType ellValues[],
-        tasking::SyncToken* syncToken );
+        const ValueType ellValues[] );
 
     /** Implementation for ELLKernelTrait::normalGEVM  */
 
@@ -188,8 +185,7 @@ public:
         const IndexType numValuesPerRow,
         const IndexType ellSizes[],
         const IndexType ellJA[],
-        const ValueType ellValues[],
-        tasking::SyncToken* syncToken );
+        const ValueType ellValues[] );
 
     /** Implementation for ELLKernelTrait::sparseGEMV  */
 
@@ -204,8 +200,7 @@ public:
         const IndexType rowIndexes[],
         const IndexType ellSizes[],
         const IndexType ellJA[],
-        const ValueType ellValues[],
-        tasking::SyncToken* syncToken );
+        const ValueType ellValues[] );
 
     /** Implementation for ELLKernelTrait::sparseGEVM  */
 
@@ -221,8 +216,7 @@ public:
         const IndexType rowIndexes[],
         const IndexType ellIA[],
         const IndexType ellJA[],
-        const ValueType ellValues[],
-        tasking::SyncToken* syncToken );
+        const ValueType ellValues[] );
 
     /** Implementation for ELLKernelTrait::jacobi  */
 
@@ -236,8 +230,7 @@ public:
         const ValueType ellValues[],
         const ValueType oldSolution[],
         const ValueType rhs[],
-        const ValueType omega,
-        tasking::SyncToken* syncToken );
+        const ValueType omega );
 
     /** Implementation for ELLKernelTrait::Solver::jacobiHalo  */
 
@@ -253,8 +246,7 @@ public:
         const IndexType rowIndexes[],
         const IndexType numNonEmptyRows,
         const ValueType oldSolution[],
-        const ValueType omega,
-        tasking::SyncToken* syncToken );
+        const ValueType omega );
 
     /** Routine that registers all routines of this class in the Kernel Registry */
 

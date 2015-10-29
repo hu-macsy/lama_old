@@ -34,9 +34,13 @@
 #include <scai/lama/storage/ELLStorage.hpp>
 
 // local library
+
 #include <scai/lama/LAMAKernel.hpp>
+
 #include <scai/lama/UtilKernelTrait.hpp>
 #include <scai/lama/BLASKernelTrait.hpp>
+#include <scai/lama/ELLKernelTrait.hpp>
+#include <scai/lama/CSRKernelTrait.hpp>
 
 #include <scai/lama/LAMAArrayUtils.hpp>
 
@@ -1062,7 +1066,7 @@ void ELLStorage<ValueType>::matrixTimesVector(
 
             SCAI_CONTEXT_ACCESS( loc )
             sparseGEMV[loc]( wResult.get(), alpha, rX.get(), mNumRows, mNumValuesPerRow, numNonZeroRows, rows.get(),
-                        ellIA.get(), ellJA.get(), ellValues.get(), NULL );
+                        ellIA.get(), ellJA.get(), ellValues.get() );
         }
         else
         {
@@ -1070,7 +1074,7 @@ void ELLStorage<ValueType>::matrixTimesVector(
 
             SCAI_CONTEXT_ACCESS( loc )
             normalGEMV[loc]( wResult.get(), alpha, rX.get(), beta, wResult.get(), mNumRows, mNumValuesPerRow, ellIA.get(),
-                        ellJA.get(), ellValues.get(), NULL );
+                        ellJA.get(), ellValues.get() );
         }
     }
     else
@@ -1080,7 +1084,7 @@ void ELLStorage<ValueType>::matrixTimesVector(
 
         SCAI_CONTEXT_ACCESS( loc )
         normalGEMV[loc]( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumRows, mNumValuesPerRow, ellIA.get(),
-                         ellJA.get(), ellValues.get(), NULL );
+                         ellJA.get(), ellValues.get() );
     }
 }
 
@@ -1137,7 +1141,7 @@ void ELLStorage<ValueType>::vectorTimesMatrix(
 
             SCAI_CONTEXT_ACCESS( loc )
             sparseGEVM[loc]( wResult.get(), alpha, rX.get(), mNumRows, mNumColumns, mNumValuesPerRow, numNonZeroRows,
-                             rows.get(), ellSizes.get(), ellJA.get(), ellValues.get(), NULL );
+                             rows.get(), ellSizes.get(), ellJA.get(), ellValues.get() );
         }
         else
         {
@@ -1145,7 +1149,7 @@ void ELLStorage<ValueType>::vectorTimesMatrix(
 
             SCAI_CONTEXT_ACCESS( loc )
             normalGEVM[loc]( wResult.get(), alpha, rX.get(), beta, wResult.get(), mNumRows, mNumColumns, mNumValuesPerRow,
-                             ellSizes.get(), ellJA.get(), ellValues.get(), NULL );
+                             ellSizes.get(), ellJA.get(), ellValues.get() );
         }
     }
     else
@@ -1155,7 +1159,7 @@ void ELLStorage<ValueType>::vectorTimesMatrix(
 
         SCAI_CONTEXT_ACCESS( loc )
         normalGEVM[loc]( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumRows, mNumColumns, mNumValuesPerRow,
-                         ellSizes.get(), ellJA.get(), ellValues.get(), NULL );
+                         ellSizes.get(), ellJA.get(), ellValues.get() );
     }
 }
 
@@ -1216,6 +1220,8 @@ SyncToken* ELLStorage<ValueType>::matrixTimesVectorAsync(
 
     common::unique_ptr<SyncToken> syncToken( loc->getSyncToken() );
 
+    syncToken->setCurrent();
+
     // all accesses will be pushed to the sync token as LAMA arrays have to be protected up
     // to the end of the computations.
 
@@ -1245,7 +1251,7 @@ SyncToken* ELLStorage<ValueType>::matrixTimesVectorAsync(
             SCAI_CONTEXT_ACCESS( loc )
 
             sparseGEMV[loc]( wResult->get(), alpha, rX->get(), mNumRows, mNumValuesPerRow, numNonZeroRows,
-                             rRowIndexes->get(), ellIA->get(), ellJA->get(), ellValues->get(), syncToken.get() );
+                             rRowIndexes->get(), ellIA->get(), ellJA->get(), ellValues->get() );
         }
         else
         {
@@ -1254,7 +1260,7 @@ SyncToken* ELLStorage<ValueType>::matrixTimesVectorAsync(
             SCAI_CONTEXT_ACCESS( loc )
 
             normalGEMV[loc]( wResult->get(), alpha, rX->get(), beta, wResult->get(), mNumRows, mNumValuesPerRow,
-                             ellIA->get(), ellJA->get(), ellValues->get(), syncToken.get() );
+                             ellIA->get(), ellJA->get(), ellValues->get() );
         }
 
         syncToken->pushToken( wResult );
@@ -1267,7 +1273,7 @@ SyncToken* ELLStorage<ValueType>::matrixTimesVectorAsync(
         SCAI_CONTEXT_ACCESS( loc )
 
         normalGEMV[loc]( wResult->get(), alpha, rX->get(), beta, rY->get(), mNumRows, mNumValuesPerRow, ellIA->get(),
-                         ellJA->get(), ellValues->get(), syncToken.get() );
+                         ellJA->get(), ellValues->get() );
 
         syncToken->pushToken( wResult );
         syncToken->pushToken( rY );
@@ -1277,6 +1283,8 @@ SyncToken* ELLStorage<ValueType>::matrixTimesVectorAsync(
     syncToken->pushToken( ellJA );
     syncToken->pushToken( ellValues );
     syncToken->pushToken( rX );
+
+    syncToken->unsetCurrent();
 
     return syncToken.release();
 }
@@ -1340,6 +1348,8 @@ SyncToken* ELLStorage<ValueType>::vectorTimesMatrixAsync(
 
     common::unique_ptr<SyncToken> syncToken( loc->getSyncToken() );
 
+    syncToken->setCurrent();
+
     // all accesses will be pushed to the sync token as LAMA arrays have to be protected up
     // to the end of the computations.
 
@@ -1369,7 +1379,7 @@ SyncToken* ELLStorage<ValueType>::vectorTimesMatrixAsync(
             SCAI_CONTEXT_ACCESS( loc )
 
             sparseGEVM[loc]( wResult->get(), alpha, rX->get(), mNumRows, mNumColumns, mNumValuesPerRow, numNonZeroRows,
-                             rows->get(), ellSizes->get(), ellJA->get(), ellValues->get(), syncToken.get() );
+                             rows->get(), ellSizes->get(), ellJA->get(), ellValues->get() );
         }
         else
         {
@@ -1378,7 +1388,7 @@ SyncToken* ELLStorage<ValueType>::vectorTimesMatrixAsync(
             SCAI_CONTEXT_ACCESS( loc )
 
             normalGEVM[loc]( wResult->get(), alpha, rX->get(), beta, wResult->get(), mNumRows, mNumColumns, mNumValuesPerRow,
-                             ellSizes->get(), ellJA->get(), ellValues->get(), syncToken.get() );
+                             ellSizes->get(), ellJA->get(), ellValues->get() );
         }
 
         syncToken->pushToken( wResult );
@@ -1391,7 +1401,7 @@ SyncToken* ELLStorage<ValueType>::vectorTimesMatrixAsync(
         SCAI_CONTEXT_ACCESS( loc )
 
         normalGEVM[loc]( wResult->get(), alpha, rX->get(), beta, rY->get(), mNumRows, mNumColumns, mNumValuesPerRow,
-                         ellSizes->get(), ellJA->get(), ellValues->get(), syncToken.get() );
+                         ellSizes->get(), ellJA->get(), ellValues->get() );
 
         syncToken->pushToken( wResult );
         syncToken->pushToken( rY );
@@ -1401,6 +1411,8 @@ SyncToken* ELLStorage<ValueType>::vectorTimesMatrixAsync(
     syncToken->pushToken( ellJA );
     syncToken->pushToken( ellValues );
     syncToken->pushToken( rX );
+
+    syncToken->unsetCurrent();
 
     return syncToken.release();
 }
@@ -1447,7 +1459,7 @@ void ELLStorage<ValueType>::jacobiIterate(
     ReadAccess<ValueType> rRhs( rhs, loc );
 
     jacobi[loc] ( wSolution.get(), mNumRows, mNumValuesPerRow, ellSizes.get(), ellJA.get(), ellValues.get(),
-                  rOldSolution.get(), rRhs.get(), omega, NULL );
+                  rOldSolution.get(), rRhs.get(), omega );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1503,19 +1515,22 @@ SyncToken* ELLStorage<ValueType>::jacobiIterateAsync(
 
     common::unique_ptr<SyncToken> syncToken( loc->getSyncToken() );
 
+    syncToken->setCurrent();
+
     // make all needed data available at loc
 
-    shared_ptr<WriteAccess<ValueType> > wSolution( new WriteAccess<ValueType>( solution, loc ) );
     shared_ptr<ReadAccess<IndexType> > ellSizes( new ReadAccess<IndexType>( mIA, loc ) );
     shared_ptr<ReadAccess<IndexType> > ellJA( new ReadAccess<IndexType>( mJA, loc ) );
     shared_ptr<ReadAccess<ValueType> > ellValues( new ReadAccess<ValueType>( mValues, loc ) );
     shared_ptr<ReadAccess<ValueType> > rOldSolution( new ReadAccess<ValueType>( oldSolution, loc ) );
     shared_ptr<ReadAccess<ValueType> > rRhs( new ReadAccess<ValueType>( rhs, loc ) );
 
+    shared_ptr<WriteAccess<ValueType> > wSolution( new WriteAccess<ValueType>( solution, loc ) );
+
     SCAI_CONTEXT_ACCESS( loc )
 
     jacobi[loc]( wSolution->get(), mNumRows, mNumValuesPerRow, ellSizes->get(), ellJA->get(), ellValues->get(),
-                 rOldSolution->get(), rRhs->get(), omega, syncToken.get() );
+                 rOldSolution->get(), rRhs->get(), omega );
 
     syncToken->pushToken( rRhs );
     syncToken->pushToken( rOldSolution );
@@ -1523,6 +1538,8 @@ SyncToken* ELLStorage<ValueType>::jacobiIterateAsync(
     syncToken->pushToken( ellJA );
     syncToken->pushToken( ellSizes );
     syncToken->pushToken( wSolution );
+
+    syncToken->unsetCurrent();
 
     return syncToken.release();
 }
@@ -1614,7 +1631,7 @@ void ELLStorage<ValueType>::jacobiIterateHalo(
             ReadAccess<IndexType> haloRowIndexes( mRowIndexes, loc );
 
             jacobiHalo[loc]( wSolution.get(), mNumRows, rLocalDiagonal.get(), mNumValuesPerRow, haloIA.get(), haloJA.get(),
-                             haloValues.get(), haloRowIndexes.get(), numNonEmptyRows, rOldHaloSolution.get(), omega, NULL );
+                             haloValues.get(), haloRowIndexes.get(), numNonEmptyRows, rOldHaloSolution.get(), omega );
         }
         else
         {
@@ -1623,7 +1640,7 @@ void ELLStorage<ValueType>::jacobiIterateHalo(
             const IndexType numNonEmptyRows = mNumRows;
 
             jacobiHalo[loc]( wSolution.get(), mNumRows, rLocalDiagonal.get(), mNumValuesPerRow, haloIA.get(), haloJA.get(),
-                             haloValues.get(), NULL, numNonEmptyRows, rOldHaloSolution.get(), omega, NULL );
+                             haloValues.get(), NULL, numNonEmptyRows, rOldHaloSolution.get(), omega );
         }
     }
 }

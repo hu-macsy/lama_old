@@ -78,11 +78,15 @@ void KernelRegistry::registerContextFunction( const KernelRegistryKey& key, Cont
         {
             if ( fn == old_fn )
             {
-                SCAI_LOG_WARN( logger, "same function registered again, " << key )
+                SCAI_LOG_WARN( logger, "same function registered again, " << key << ", context = " << ctx )
             }
             else if ( replace )
             {
-                SCAI_LOG_INFO( logger, "kernel function replaced, " << key )
+                SCAI_LOG_INFO( logger, "kernel function replaced, " << key << ", context = " << ctx )
+            }
+            else 
+            {
+                SCAI_LOG_INFO( logger, "kernel function not replaced, " << key << ", context = " << ctx )
             }
         }
 

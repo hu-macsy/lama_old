@@ -37,7 +37,6 @@
 #include <scai/common/config.hpp>
 
 // internal scai libraries
-#include <scai/tasking/SyncToken.hpp>
 
 #include <scai/logging.hpp>
 
@@ -114,8 +113,7 @@ public:
         const IndexType numValues,
         const IndexType cooIA[],
         const IndexType cooJA[],
-        const ValueType cooValues[],
-        tasking::SyncToken* syncToken );
+        const ValueType cooValues[] );
 
     /** Implementation for CSRKernelTrait::Mult::normalGEVM  */
 
@@ -130,8 +128,7 @@ public:
         const IndexType numValues,
         const IndexType cooIA[],
         const IndexType cooJA[],
-        const ValueType cooValues[],
-        tasking::SyncToken* syncToken );
+        const ValueType cooValues[] );
 
     /** Implementation for COOKernelTrait::Solver::jacobi  */
 
@@ -145,8 +142,7 @@ public:
         const ValueType oldSolution[],
         const ValueType rhs[],
         const ValueType omega,
-        const IndexType numRows,
-        tasking::SyncToken* syncToken );
+        const IndexType numRows );
 
     /** Routine that registers all routines of this class at the Kernel registry 
      *  and does all instantiations implicitly. 

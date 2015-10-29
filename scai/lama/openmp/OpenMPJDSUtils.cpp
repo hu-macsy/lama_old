@@ -37,7 +37,7 @@
 // local library
 #include <scai/lama/openmp/OpenMPUtils.hpp>
 
-#include <scai/lama/UtilKernelTrait.hpp>
+#include <scai/lama/JDSKernelTrait.hpp>
 
 // internal scai libraries
 #include <scai/tracing.hpp>
@@ -48,6 +48,8 @@
 #include <scai/common/Assert.hpp>
 #include <scai/common/Constants.hpp>
 
+#include <scai/tasking/TaskSyncToken.hpp>
+
 // boost
 #include <boost/preprocessor.hpp>
 
@@ -55,7 +57,7 @@ namespace scai
 {
 
 using common::scoped_array;
-using tasking::SyncToken;
+using tasking::TaskSyncToken;
 
 namespace lama
 {
@@ -490,8 +492,7 @@ void OpenMPJDSUtils::normalGEMV(
     const IndexType ndlg,
     const IndexType jdsDLG[],
     const IndexType jdsJA[],
-    const ValueType jdsValues[],
-    tasking::SyncToken* /* syncToken */)
+    const ValueType jdsValues[] )
 {
     SCAI_LOG_INFO( logger,
                    "normalGEMV<" << common::getScalarType<ValueType>() << ", #threads = " << omp_get_max_threads() << ">, result[" << numRows << "] = " << alpha << " * A( jds, ndlg = " << ndlg << " ) * x + " << beta << " * y " )
@@ -592,8 +593,7 @@ void OpenMPJDSUtils::normalGEVM(
     const IndexType ndlg,
     const IndexType jdsDLG[],
     const IndexType jdsJA[],
-    const ValueType jdsValues[],
-    tasking::SyncToken* UNUSED( syncToken ) )
+    const ValueType jdsValues[] )
 {
     SCAI_LOG_INFO( logger,
                    "normalGEVM<" << common::getScalarType<ValueType>() << ", #threads = " << omp_get_max_threads() << ">, result[" << numColumns << "] = " << alpha << " * A( jds, ndlg = " << ndlg << " ) * x + " << beta << " * y " )
@@ -702,11 +702,12 @@ void OpenMPJDSUtils::jacobi(
     const ValueType jdsValues[],
     const ValueType oldSolution[],
     const ValueType rhs[],
-    const ValueType omega,
-    tasking::SyncToken* syncToken )
+    const ValueType omega )
 {
     SCAI_LOG_INFO( logger,
                    "jacobi<" << common::getScalarType<ValueType>() << ">" << ", #rows = " << numRows << ", omega = " << omega )
+
+    TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
     if( syncToken != NULL )
     {
@@ -763,11 +764,12 @@ void OpenMPJDSUtils::jacobiHalo(
     const IndexType jdsHaloJA[],
     const ValueType jdsHaloValues[],
     const ValueType oldSolution[],
-    const ValueType omega,
-    tasking::SyncToken* syncToken )
+    const ValueType omega )
 {
     SCAI_LOG_INFO( logger,
                    "jacobiHalo<" << common::getScalarType<ValueType>() << ">" << ", #rows = " << numRows << ", omega = " << omega )
+
+    TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
     if( syncToken != NULL )
     {

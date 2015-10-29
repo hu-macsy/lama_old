@@ -36,6 +36,8 @@
 
 // local library
 #include <scai/lama/UtilKernelTrait.hpp>
+#include <scai/lama/JDSKernelTrait.hpp>
+#include <scai/lama/CSRKernelTrait.hpp>
 #include <scai/lama/BLASKernelTrait.hpp>
 #include <scai/lama/LAMAKernel.hpp>
 
@@ -966,7 +968,7 @@ void JDSStorage<ValueType>::matrixTimesVector(
         // this call will finish the computation, syncToken == NULL
 
         normalGEMV[loc]( wResult.get(), alpha, rX.get(), beta, wResult.get(), mNumRows, jdsPerm.get(), jdsILG.get(),
-                         mNumDiagonals, jdsDLG.get(), jdsJA.get(), jdsValues.get(), NULL );
+                         mNumDiagonals, jdsDLG.get(), jdsJA.get(), jdsValues.get() );
     }
     else
     {
@@ -978,7 +980,7 @@ void JDSStorage<ValueType>::matrixTimesVector(
         // this call will finish the computation, syncToken == NULL
 
         normalGEMV[loc]( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumRows, jdsPerm.get(), jdsILG.get(),
-                         mNumDiagonals, jdsDLG.get(), jdsJA.get(), jdsValues.get(), NULL );
+                         mNumDiagonals, jdsDLG.get(), jdsJA.get(), jdsValues.get() );
     }
 }
 
@@ -1027,7 +1029,7 @@ void JDSStorage<ValueType>::vectorTimesMatrix(
         // this call will finish the computation, syncToken == NULL
 
         normalGEVM[loc]( wResult.get(), alpha, rX.get(), beta, wResult.get(), mNumColumns, jdsPerm.get(), jdsILG.get(),
-                         mNumDiagonals, jdsDLG.get(), jdsJA.get(), jdsValues.get(), NULL );
+                         mNumDiagonals, jdsDLG.get(), jdsJA.get(), jdsValues.get() );
     }
     else
     {
@@ -1039,7 +1041,7 @@ void JDSStorage<ValueType>::vectorTimesMatrix(
         // this call will finish the computation, syncToken == NULL
 
         normalGEVM[loc]( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumColumns, jdsPerm.get(), jdsILG.get(),
-                         mNumDiagonals, jdsDLG.get(), jdsJA.get(), jdsValues.get(), NULL );
+                         mNumDiagonals, jdsDLG.get(), jdsJA.get(), jdsValues.get() );
     }
 }
 
@@ -1094,6 +1096,8 @@ tasking::SyncToken* JDSStorage<ValueType>::matrixTimesVectorAsync(
 
     common::unique_ptr<tasking::SyncToken> syncToken( loc->getSyncToken() );
 
+    syncToken->setCurrent();
+
     // all accesses will be pushed to the sync token as LAMA arrays have to be protected up
     // to the end of the computations.
 
@@ -1120,7 +1124,7 @@ tasking::SyncToken* JDSStorage<ValueType>::matrixTimesVectorAsync(
         // this call will only start the computation
 
         normalGEMV[loc]( wResult->get(), alpha, rX->get(), beta, wResult->get(), mNumRows, jdsPerm->get(), jdsILG->get(),
-                         mNumDiagonals, jdsDLG->get(), jdsJA->get(), jdsValues->get(), syncToken.get() );
+                         mNumDiagonals, jdsDLG->get(), jdsJA->get(), jdsValues->get() );
     }
     else
     {
@@ -1135,7 +1139,7 @@ tasking::SyncToken* JDSStorage<ValueType>::matrixTimesVectorAsync(
         // this call will only start the computation
 
         normalGEMV[loc]( wResult->get(), alpha, rX->get(), beta, rY->get(), mNumRows, jdsPerm->get(), jdsILG->get(),
-                         mNumDiagonals, jdsDLG->get(), jdsJA->get(), jdsValues->get(), syncToken.get() );
+                         mNumDiagonals, jdsDLG->get(), jdsJA->get(), jdsValues->get() );
     }
 
     syncToken->pushToken( jdsPerm );
@@ -1144,6 +1148,8 @@ tasking::SyncToken* JDSStorage<ValueType>::matrixTimesVectorAsync(
     syncToken->pushToken( jdsJA );
     syncToken->pushToken( jdsValues );
     syncToken->pushToken( rX );
+
+    syncToken->unsetCurrent();
 
     return syncToken.release();
 }
@@ -1197,6 +1203,8 @@ tasking::SyncToken* JDSStorage<ValueType>::vectorTimesMatrixAsync(
 
     common::unique_ptr<tasking::SyncToken> syncToken( loc->getSyncToken() );
 
+    syncToken->setCurrent();
+
     // all accesses will be pushed to the sync token as LAMA arrays have to be protected up
     // to the end of the computations.
 
@@ -1223,7 +1231,7 @@ tasking::SyncToken* JDSStorage<ValueType>::vectorTimesMatrixAsync(
         // this call will only start the computation
 
         normalGEVM[loc]( wResult->get(), alpha, rX->get(), beta, wResult->get(), mNumColumns, jdsPerm->get(), jdsILG->get(),
-                         mNumDiagonals, jdsDLG->get(), jdsJA->get(), jdsValues->get(), syncToken.get() );
+                         mNumDiagonals, jdsDLG->get(), jdsJA->get(), jdsValues->get() );
     }
     else
     {
@@ -1238,7 +1246,7 @@ tasking::SyncToken* JDSStorage<ValueType>::vectorTimesMatrixAsync(
         // this call will only start the computation
 
         normalGEVM[loc]( wResult->get(), alpha, rX->get(), beta, rY->get(), mNumColumns, jdsPerm->get(), jdsILG->get(),
-                         mNumDiagonals, jdsDLG->get(), jdsJA->get(), jdsValues->get(), syncToken.get() );
+                         mNumDiagonals, jdsDLG->get(), jdsJA->get(), jdsValues->get() );
     }
 
     syncToken->pushToken( jdsPerm );
@@ -1247,6 +1255,8 @@ tasking::SyncToken* JDSStorage<ValueType>::vectorTimesMatrixAsync(
     syncToken->pushToken( jdsJA );
     syncToken->pushToken( jdsValues );
     syncToken->pushToken( rX );
+
+    syncToken->unsetCurrent();
 
     return syncToken.release();
 }
@@ -1293,7 +1303,7 @@ void JDSStorage<ValueType>::jacobiIterate(
         SCAI_CONTEXT_ACCESS( loc )
 
         jacobi[loc]( wSolution.get(), mNumRows, jdsPerm.get(), jdsIlg.get(), mNumDiagonals, jdsDlg.get(), jdsJA.get(),
-                     jdsValues.get(), rOldSolution.get(), rRhs.get(), omega, NULL );
+                     jdsValues.get(), rOldSolution.get(), rRhs.get(), omega );
     }
 }
 
@@ -1349,6 +1359,8 @@ tasking::SyncToken* JDSStorage<ValueType>::jacobiIterateAsync(
 
     common::unique_ptr<tasking::SyncToken> syncToken( loc->getSyncToken() );
 
+    syncToken->setCurrent();
+
     shared_ptr<WriteAccess<ValueType> > wSolution( new WriteAccess<ValueType>( solution, loc ) );
     syncToken->pushToken( wSolution );
     shared_ptr<ReadAccess<IndexType> > jdsDLG( new ReadAccess<IndexType>( mDlg, loc ) );
@@ -1369,7 +1381,9 @@ tasking::SyncToken* JDSStorage<ValueType>::jacobiIterateAsync(
     SCAI_CONTEXT_ACCESS( loc )
 
     jacobi[loc]( wSolution->get(), mNumRows, jdsPerm->get(), jdsILG->get(), mNumDiagonals, jdsDLG->get(), jdsJA->get(),
-                 jdsValues->get(), rOldSolution->get(), rRhs->get(), omega, syncToken.get() );
+                 jdsValues->get(), rOldSolution->get(), rRhs->get(), omega );
+
+    syncToken->unsetCurrent();
 
     return syncToken.release();
 }
@@ -1434,7 +1448,7 @@ void JDSStorage<ValueType>::jacobiIterateHalo(
     SCAI_CONTEXT_ACCESS( loc )
 
     jacobiHalo[loc]( wSolution.get(), mNumRows, diagonal.get(), mNumDiagonals, jdsHaloPerm.get(), jdsHaloIlg.get(),
-                     jdsHaloDlg.get(), jdsHaloJA.get(), jdsHaloValues.get(), rOldHaloSolution.get(), omega, NULL );
+                     jdsHaloDlg.get(), jdsHaloJA.get(), jdsHaloValues.get(), rOldHaloSolution.get(), omega );
 
 }
 

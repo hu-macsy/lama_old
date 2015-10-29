@@ -130,6 +130,11 @@ scai_project(
         ELLKernelTrait
         COOKernelTrait
         JDSKernelTrait
+
+        LAMAKernel
+
+        cblas
+
         CRTPCommunicator
     )
 

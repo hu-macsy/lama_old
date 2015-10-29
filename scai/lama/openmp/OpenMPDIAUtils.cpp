@@ -35,12 +35,13 @@
 #include <scai/lama/openmp/OpenMPUtils.hpp>
 
 // local library
-#include <scai/lama/UtilKernelTrait.hpp>
+#include <scai/lama/DIAKernelTrait.hpp>
 #include <scai/lama/openmp/OpenMPDIAUtils.hpp>
 
 // internal scai libraries
 #include <scai/kregistry/KernelRegistry.hpp>
 #include <scai/tracing.hpp>
+#include <scai/tasking/TaskSyncToken.hpp>
 
 #include <scai/common/OpenMP.hpp>
 #include <scai/common/Assert.hpp>
@@ -60,7 +61,7 @@ namespace lama
 
 using std::abs;
 using common::getScalarType;
-using tasking::SyncToken;
+using tasking::TaskSyncToken;
 
 SCAI_LOG_DEF_LOGGER( OpenMPDIAUtils::logger, "OpenMP.DIAUtils" )
 
@@ -316,6 +317,13 @@ void OpenMPDIAUtils::normalGEMV(
     const IndexType diaOffsets[],
     const ValueType diaValues[] )
 {
+    TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
+
+    if ( syncToken )
+    {
+        COMMON_THROWEXCEPTION( "asynchronous execution not supported yet" )
+    }
+
     SCAI_LOG_INFO( logger,
                    "normalGEMV<" << getScalarType<ValueType>() << ", #threads = " << omp_get_max_threads() << ">, result[" << numRows << "] = " << alpha << " * A( dia, #diags = " << numDiagonals << " ) * x + " << beta << " * y " )
 
@@ -371,34 +379,6 @@ void OpenMPDIAUtils::normalGEMV(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void OpenMPDIAUtils::normalGEMV(
-    ValueType result[],
-    const ValueType alpha,
-    const ValueType x[],
-    const ValueType beta,
-    const ValueType y[],
-    const IndexType numRows,
-    const IndexType numColumns,
-    const IndexType numDiagonals,
-    const IndexType diaOffsets[],
-    const ValueType diaValues[],
-    SyncToken* syncToken )
-{
-    if( !syncToken )
-    {
-        normalGEMV( result, alpha, x, beta, y, numRows, numColumns, numDiagonals, diaOffsets, diaValues );
-    }
-    else
-    {
-        COMMON_THROWEXCEPTION( "no asynchronous support due to boost problem" )
-
-        // asynchronous execution is done by calling an own thread at higher level
-    }
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
 void OpenMPDIAUtils::normalGEVM(
     ValueType result[],
     const ValueType alpha,
@@ -409,8 +389,7 @@ void OpenMPDIAUtils::normalGEVM(
     const IndexType numColumns,
     const IndexType numDiagonals,
     const IndexType diaOffsets[],
-    const ValueType diaValues[],
-    SyncToken* syncToken )
+    const ValueType diaValues[] )
 {
     SCAI_LOG_INFO( logger,
                    "normalGEVM<" << getScalarType<ValueType>() << ", #threads = " << omp_get_max_threads() << ">, result[" << numRows << "] = " << alpha << " * A( dia, #diags = " << numDiagonals << " ) * x + " << beta << " * y " )
@@ -418,7 +397,9 @@ void OpenMPDIAUtils::normalGEVM(
     SCAI_LOG_INFO( logger,
                    "normalGEVM<" << getScalarType<ValueType>() << ">, n = " << numRows << ", d = " << numDiagonals )
 
-    if( syncToken )
+    TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
+
+    if ( syncToken )
     {
         COMMON_THROWEXCEPTION( "asynchronous execution should be done by LAMATask before" )
     }
@@ -486,14 +467,15 @@ void OpenMPDIAUtils::jacobi(
     const ValueType oldSolution[],
     const ValueType rhs[],
     const ValueType omega,
-    const IndexType numRows,
-    class SyncToken* syncToken )
+    const IndexType numRows )
 {
     SCAI_LOG_INFO( logger,
                    "jacobi<" << getScalarType<ValueType>() << ">" << ", #rows = " << numRows << ", #cols = " << numColumns << ", #diagonals = " << numDiagonals << ", omega = " << omega )
 
     SCAI_ASSERT_EQUAL_DEBUG( 0, diaOffset[0] )
     // main diagonal must be first
+
+    TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
     if( syncToken != NULL )
     {

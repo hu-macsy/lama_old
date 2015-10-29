@@ -35,7 +35,7 @@
 #include <scai/lama/openmp/OpenMPELLUtils.hpp>
 
 // local library
-#include <scai/lama/UtilKernelTrait.hpp>
+#include <scai/lama/ELLKernelTrait.hpp>
 
 // internal scai libraries
 #include <scai/tracing.hpp>
@@ -47,6 +47,8 @@
 #include <scai/common/OpenMP.hpp>
 #include <scai/common/macros/unused.hpp>
 #include <scai/common/Constants.hpp>
+
+#include <scai/tasking/TaskSyncToken.hpp>
 
 // boost
 #include <boost/preprocessor.hpp>
@@ -60,7 +62,7 @@ namespace scai
 {
 
 using common::getScalarType;
-using tasking::SyncToken;
+using tasking::TaskSyncToken;
 
 namespace lama
 {
@@ -807,11 +809,12 @@ void OpenMPELLUtils::jacobi(
     const ValueType ellValues[],
     const ValueType oldSolution[],
     const ValueType rhs[],
-    const ValueType omega,
-    tasking::SyncToken* syncToken )
+    const ValueType omega )
 {
     SCAI_LOG_INFO( logger,
                    "jacobi<" << getScalarType<ValueType>() << ">" << ", #rows = " << numRows << ", omega = " << omega )
+
+    TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
     if( syncToken != NULL )
     {
@@ -865,9 +868,10 @@ void OpenMPELLUtils::jacobiHalo(
     const IndexType rowIndexes[],
     const IndexType numNonEmptyRows,
     const ValueType oldSolution[],
-    const ValueType omega,
-    tasking::SyncToken* syncToken )
+    const ValueType omega )
 {
+    TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
+
     if( syncToken != NULL )
     {
         SCAI_LOG_WARN( logger, "jacobi called asynchronously, not supported here" )
@@ -916,8 +920,7 @@ void OpenMPELLUtils::normalGEMV(
     const IndexType numValuesPerRow,
     const IndexType ellSizes[],
     const IndexType ellJA[],
-    const ValueType ellValues[],
-    tasking::SyncToken* syncToken )
+    const ValueType ellValues[] )
 {
     SCAI_LOG_INFO( logger,
                    "normalGEMV<" << getScalarType<ValueType>() << ", #threads = " << omp_get_max_threads() << ">, result[" << numRows << "] = " << alpha << " * A( ell, #maxNZ/row = " << numValuesPerRow << " ) * x + " << beta << " * y " )
@@ -928,6 +931,8 @@ void OpenMPELLUtils::normalGEMV(
 
         // only compute: result = beta * y
     }
+
+    TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
     if( syncToken )
     {
@@ -988,9 +993,10 @@ void OpenMPELLUtils::sparseGEMV(
     const IndexType rowIndexes[],
     const IndexType ellSizes[],
     const IndexType ellJA[],
-    const ValueType ellValues[],
-    tasking::SyncToken* syncToken )
+    const ValueType ellValues[] )
 {
+    TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
+
     if( syncToken )
     {
         SCAI_LOG_WARN( logger, "Host: asynchronous execution by task should be done at higher level" )
@@ -1045,11 +1051,12 @@ void OpenMPELLUtils::normalGEVM(
     const IndexType UNUSED(numValuesPerRow),
     const IndexType ellSizes[],
     const IndexType ellJA[],
-    const ValueType ellValues[],
-    tasking::SyncToken* syncToken )
+    const ValueType ellValues[] )
 {
     SCAI_LOG_INFO( logger,
                    "normalGEVM<" << getScalarType<ValueType>() << ", #threads = " << omp_get_max_threads() << ">, result[" << numColumns << "] = " << alpha << " * x * A + " << beta << " * y " )
+
+    TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
     if( syncToken )
     {
@@ -1126,13 +1133,14 @@ void OpenMPELLUtils::sparseGEVM(
     const IndexType rowIndexes[],
     const IndexType ellSizes[],
     const IndexType ellJA[],
-    const ValueType ellValues[],
-    tasking::SyncToken* syncToken )
+    const ValueType ellValues[] )
 {
     SCAI_LOG_INFO( logger,
                    "sparseGEVM<" << getScalarType<ValueType>() << ", #threads = " << omp_get_max_threads() << ">, result[" << numColumns << "] = " << alpha << " * x * A " )
 
-    if( syncToken )
+    TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
+
+    if ( syncToken )
     {
         COMMON_THROWEXCEPTION( "asynchronous execution should be done by LAMATask before" )
     }

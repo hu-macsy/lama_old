@@ -37,6 +37,8 @@
 // local library
 #include <scai/lama/UtilKernelTrait.hpp>
 #include <scai/lama/BLASKernelTrait.hpp>
+#include <scai/lama/CSRKernelTrait.hpp>
+
 #include <scai/lama/LAMAArrayUtils.hpp>
 #include <scai/lama/LAMAKernel.hpp>
 
@@ -1329,7 +1331,7 @@ void CSRStorage<ValueType>::matrixTimesVector(
 
             SCAI_CONTEXT_ACCESS( loc )
             sparseGEMV[loc]( wResult.get(), alpha, rX.get(), numNonZeroRows, rows.get(), csrIA.get(), csrJA.get(),
-                        csrValues.get(), NULL );
+                        csrValues.get() );
         }
         else
         {
@@ -1337,7 +1339,7 @@ void CSRStorage<ValueType>::matrixTimesVector(
 
             SCAI_CONTEXT_ACCESS( loc )
             normalGEMV[loc]( wResult.get(), alpha, rX.get(), beta, wResult.get(), mNumRows, mNumColumns, mNumValues,
-                        csrIA.get(), csrJA.get(), csrValues.get(), NULL );
+                        csrIA.get(), csrJA.get(), csrValues.get() );
         }
     }
     else
@@ -1347,7 +1349,7 @@ void CSRStorage<ValueType>::matrixTimesVector(
 
         SCAI_CONTEXT_ACCESS( loc )
         normalGEMV[loc]( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumRows, mNumColumns, mNumValues, csrIA.get(),
-                    csrJA.get(), csrValues.get(), NULL );
+                    csrJA.get(), csrValues.get() );
     }
 }
 
@@ -1405,7 +1407,7 @@ void CSRStorage<ValueType>::vectorTimesMatrix(
 
             SCAI_CONTEXT_ACCESS( loc )
             sparseGEVM[loc]( wResult.get(), alpha, rX.get(), mNumColumns, numNonZeroRows, rows.get(), csrIA.get(),
-                        csrJA.get(), csrValues.get(), NULL );
+                        csrJA.get(), csrValues.get() );
         }
         else
         {
@@ -1413,7 +1415,7 @@ void CSRStorage<ValueType>::vectorTimesMatrix(
 
             SCAI_CONTEXT_ACCESS( loc )
             normalGEVM[loc]( wResult.get(), alpha, rX.get(), beta, wResult.get(), mNumRows, mNumColumns, csrIA.get(),
-                        csrJA.get(), csrValues.get(), NULL );
+                        csrJA.get(), csrValues.get() );
         }
     }
     else
@@ -1423,7 +1425,7 @@ void CSRStorage<ValueType>::vectorTimesMatrix(
 
         SCAI_CONTEXT_ACCESS( loc )
         normalGEVM[loc]( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumRows, mNumColumns, csrIA.get(), csrJA.get(),
-                    csrValues.get(), NULL );
+                    csrValues.get() );
     }
 }
 
@@ -1475,7 +1477,7 @@ void CSRStorage<ValueType>::matrixTimesVectorN(
 
         SCAI_CONTEXT_ACCESS( loc )
         gemm[loc]( wResult.get(), alpha, rX.get(), beta, wResult.get(), mNumRows, n, mNumColumns, csrIA.get(), csrJA.get(),
-                   csrValues.get(), NULL );
+                   csrValues.get() );
     }
     else
     {
@@ -1484,7 +1486,7 @@ void CSRStorage<ValueType>::matrixTimesVectorN(
 
         SCAI_CONTEXT_ACCESS( loc )
         gemm[loc]( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumRows, n, mNumColumns, csrIA.get(), csrJA.get(),
-                   csrValues.get(), NULL );
+                   csrValues.get() );
     }
 }
 
@@ -1545,6 +1547,8 @@ SyncToken* CSRStorage<ValueType>::matrixTimesVectorAsync(
 
     unique_ptr<SyncToken> syncToken( loc->getSyncToken() );
 
+    syncToken->setCurrent();
+
     // all accesses will be pushed to the sync token as LAMA arrays have to be protected up
     // to the end of the computations.
 
@@ -1574,7 +1578,7 @@ SyncToken* CSRStorage<ValueType>::matrixTimesVectorAsync(
             SCAI_CONTEXT_ACCESS( loc )
 
             sparseGEMV[loc]( wResult->get(), alpha, rX->get(), numNonZeroRows, rows->get(), csrIA->get(), csrJA->get(),
-                        csrValues->get(), syncToken.get() );
+                        csrValues->get() );
         }
         else
         {
@@ -1583,7 +1587,7 @@ SyncToken* CSRStorage<ValueType>::matrixTimesVectorAsync(
             SCAI_CONTEXT_ACCESS( loc )
 
             normalGEMV[loc]( wResult->get(), alpha, rX->get(), beta, wResult->get(), mNumRows, mNumColumns, mNumValues,
-                        csrIA->get(), csrJA->get(), csrValues->get(), syncToken.get() );
+                        csrIA->get(), csrJA->get(), csrValues->get() );
         }
 
         syncToken->pushToken( wResult );
@@ -1596,7 +1600,7 @@ SyncToken* CSRStorage<ValueType>::matrixTimesVectorAsync(
         SCAI_CONTEXT_ACCESS( loc )
 
         normalGEMV[loc]( wResult->get(), alpha, rX->get(), beta, rY->get(), mNumRows, mNumColumns, mNumValues, csrIA->get(),
-                    csrJA->get(), csrValues->get(), syncToken.get() );
+                    csrJA->get(), csrValues->get() );
 
         syncToken->pushToken( wResult );
         syncToken->pushToken( rY );
@@ -1606,6 +1610,8 @@ SyncToken* CSRStorage<ValueType>::matrixTimesVectorAsync(
     syncToken->pushToken( csrJA );
     syncToken->pushToken( csrValues );
     syncToken->pushToken( rX );
+
+    syncToken->unsetCurrent();
 
     return syncToken.release();
 }
@@ -1667,6 +1673,8 @@ SyncToken* CSRStorage<ValueType>::vectorTimesMatrixAsync(
 
     unique_ptr<SyncToken> syncToken( loc->getSyncToken() );
 
+    syncToken->setCurrent();
+
     // all accesses will be pushed to the sync token as LAMA arrays have to be protected up
     // to the end of the computations.
 
@@ -1696,7 +1704,7 @@ SyncToken* CSRStorage<ValueType>::vectorTimesMatrixAsync(
             SCAI_CONTEXT_ACCESS( loc )
 
             sparseGEVM[loc]( wResult->get(), alpha, rX->get(), mNumColumns, numNonZeroRows, rows->get(), csrIA->get(),
-                        csrJA->get(), csrValues->get(), syncToken.get() );
+                        csrJA->get(), csrValues->get() );
         }
         else
         {
@@ -1705,7 +1713,7 @@ SyncToken* CSRStorage<ValueType>::vectorTimesMatrixAsync(
             SCAI_CONTEXT_ACCESS( loc )
 
             normalGEVM[loc]( wResult->get(), alpha, rX->get(), beta, wResult->get(), mNumRows, mNumColumns, csrIA->get(),
-                        csrJA->get(), csrValues->get(), syncToken.get() );
+                        csrJA->get(), csrValues->get() );
         }
 
         syncToken->pushToken( wResult );
@@ -1718,7 +1726,7 @@ SyncToken* CSRStorage<ValueType>::vectorTimesMatrixAsync(
         SCAI_CONTEXT_ACCESS( loc )
 
         normalGEVM[loc]( wResult->get(), alpha, rX->get(), beta, rY->get(), mNumRows, mNumColumns, csrIA->get(),
-                    csrJA->get(), csrValues->get(), syncToken.get() );
+                    csrJA->get(), csrValues->get() );
 
         syncToken->pushToken( wResult );
         syncToken->pushToken( rY );
@@ -1728,6 +1736,8 @@ SyncToken* CSRStorage<ValueType>::vectorTimesMatrixAsync(
     syncToken->pushToken( csrJA );
     syncToken->pushToken( csrValues );
     syncToken->pushToken( rX );
+
+    syncToken->unsetCurrent();
 
     return syncToken.release();
 }
@@ -1773,7 +1783,7 @@ void CSRStorage<ValueType>::jacobiIterate(
     SCAI_CONTEXT_ACCESS( loc )
 
     jacobi[loc]( wSolution.get(), csrIA.get(), csrJA.get(), csrValues.get(), 
-                 rOldSolution.get(), rRhs.get(), omega, mNumRows, NULL );
+                 rOldSolution.get(), rRhs.get(), omega, mNumRows );
 }
 
 /* --------------------------------------------------------------------------- */

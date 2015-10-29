@@ -44,11 +44,6 @@
 namespace scai
 {
 
-namespace tasking
-{
-    class SyncToken;
-}
-
 namespace lama
 {
 
@@ -102,8 +97,7 @@ public:
         const IndexType numValues,
         const IndexType cooIA[],
         const IndexType cooJA[],
-        const ValueType cooValues[],
-        tasking::SyncToken* syncToken );
+        const ValueType cooValues[] );
 
     /** Implementation for COOKernelTrait::normalGEVM with CUDA on GPUs */
 
@@ -118,8 +112,7 @@ public:
         const IndexType numValues,
         const IndexType cooIA[],
         const IndexType cooJA[],
-        const ValueType cooValues[],
-        tasking::SyncToken* syncToken );
+        const ValueType cooValues[] );
 
     /** Routine that registers all routines of this class at the LAMA interface. */
 
