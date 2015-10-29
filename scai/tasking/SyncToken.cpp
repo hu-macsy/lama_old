@@ -193,22 +193,18 @@ SyncToken* SyncToken::getCurrentSyncToken()
 {
     if ( currentSyncToken == NULL )
     {
-        SCAI_LOG_ERROR( logger, "getCurrentSyncToken = NULL" )
-
         return currentSyncToken;
     }
-
-    SCAI_LOG_ERROR( logger, "current sync token = " << *currentSyncToken )
 
     // only same thread can access its sync token
 
     if ( currentLaunchThread == common::Thread::getSelf() )
     {
-        SCAI_LOG_ERROR( logger, "current sync token set by same thread" )
+        SCAI_LOG_INFO( logger, "ge current sync token set by same thread: " << *currentSyncToken )
         return currentSyncToken;
     }
 
-    SCAI_LOG_ERROR( logger, "current sync token set by other thread, return NULL" )
+    SCAI_LOG_ERROR( logger, "current sync token " << *currentSyncToken << " set by other thread, return NULL" )
 
     return NULL;
 }
