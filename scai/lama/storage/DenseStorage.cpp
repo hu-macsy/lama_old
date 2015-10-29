@@ -239,6 +239,54 @@ void DenseStorageView<ValueType>::scaleImpl( const LAMAArray<OtherType>& values 
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void DenseStorageView<ValueType>::transposeImpl(){
+    // Compute transpostion A^t of A via A^t = A^t * I, where * is implemented by LAPACK
+    ContextPtr context = Context::getContextPtr( context::Host );
+    WriteAccess<ValueType> wData( mData, context );
+    // transpose quadratic matrix
+
+    if(mNumColumns == mNumRows)
+    {
+        for(IndexType i=0;i<mNumColumns;++i)
+        {
+            for(IndexType j=i+1; j<mNumColumns;++j)
+                std::swap(wData[i+mNumColumns*j], wData[j+mNumColumns*i]);
+        }  
+    }
+    else //tranpose rectangular matrix
+    {
+        for(IndexType start=0; start< mNumColumns*mNumRows;++start)
+        {
+            IndexType next = start;
+            IndexType i = 0;
+            do{
+                ++i;
+                next= (next % mNumRows) * mNumColumns + next / mNumRows;
+            } while(next > start);
+
+            if(next >= start && i != 1)
+            {
+                const ValueType tmp= wData[start];
+                next = start;
+                do{
+                    i = (next % mNumRows) * mNumColumns + next / mNumRows;
+                    wData[next] = (i == start ) ? tmp :  wData[i];
+                    next = i;
+                } while(next > start);
+            }
+        }
+    }
+
+    //swap dimensions of transposed matrix
+    IndexType rows = mNumRows;
+    mNumRows = mNumColumns;
+    mNumColumns = rows;
+};
+
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
 bool DenseStorageView<ValueType>::checkDiagonalProperty() const
 {
     return mNumRows == mNumColumns;

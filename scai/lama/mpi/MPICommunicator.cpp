@@ -602,6 +602,31 @@ void MPICommunicator::bcastImpl( ValueType val[], const IndexType n, const Parti
 }
 
 /* ---------------------------------------------------------------------------------- */
+/*           all2allv                                                                 */
+/* ---------------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void MPICommunicator::all2allvImpl( ValueType* recvBuffer[], IndexType recvCount[], ValueType* sendBuffer[], IndexType sendCount[] ) const
+{
+    SCAI_REGION( "Communicator.MPI.all2allv" )
+        int noReceives = 0;
+        scoped_array<MPI_Request> commRequest( new MPI_Request[mSize] );
+           
+    for(IndexType i=0;i<mSize;++i){
+        commRequest[noReceives] = startrecv(recvBuffer[i],recvCount[i],i);
+        noReceives++;
+           
+    }
+    for(IndexType i=0;i<mSize;++i){
+        send(sendBuffer[i],sendCount[i],i);    
+    }
+    // wait for completion of receives
+    scoped_array<MPI_Status> statuses( new MPI_Status[noReceives] );
+    LAMA_MPICALL( logger, MPI_Waitall( noReceives, commRequest.get(), statuses.get() ), "MPI_Waitall" )
+
+}
+
+/* ---------------------------------------------------------------------------------- */
 /*              shift                                                                 */
 /* ---------------------------------------------------------------------------------- */
 

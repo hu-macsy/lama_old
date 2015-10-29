@@ -479,7 +479,13 @@ public:
             const IndexType n,                                                \
             const PartitionId root ) const = 0;                               \
     \
-    virtual void scatter(                                                 \
+        virtual void all2allv(                                                \
+            ARRAY_TYPE##I* recvVal[],                                         \
+            IndexType recvCount[],                                            \
+             ARRAY_TYPE##I* sendVal[],                                        \
+            IndexType sendCount[] ) const = 0;                                \
+    \
+        virtual void scatter(                                                 \
             ARRAY_TYPE##I myvals[],                                           \
             const IndexType n,                                                \
             const PartitionId root,                                           \
@@ -576,6 +582,10 @@ public:
      *  This class provides one implementation, but derived classes might override it.
      */
     virtual void bcast( std::string&, const PartitionId root ) const;
+
+
+    template<typename ValueType>
+    void all2allv( ValueType* recvBuffer[], IndexType recvCount[],  ValueType* sendBuffer[], IndexType sendCount[] ) const;   
 
     /** @brief allgather is combination of gather and broadcast
      *

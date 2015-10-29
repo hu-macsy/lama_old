@@ -127,6 +127,14 @@ public:
         static_cast<const Derived*>( this )->bcastImpl( val, n, root);                  \
     }                                                                                   \
     \
+    virtual void all2allv(ARRAY_TYPE##I* recvVal[],IndexType recvCount[],               \
+                        ARRAY_TYPE##I* sendVal[],                                       \
+                            IndexType sendCount[]) const                                \
+    {                                                                                   \
+        return static_cast<const Derived*>( this )->all2allvImpl(recvVal,recvCount,     \
+                                                  sendVal,sendCount);                   \
+    }                                                                                   \
+    \
     virtual void maxloc( ARRAY_TYPE##I& val, IndexType& location, PartitionId root ) const     \
     {                                                                                   \
         static_cast<const Derived*>( this )->maxlocImpl( val, location, root );         \
