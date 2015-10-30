@@ -39,9 +39,9 @@
 
 // internal scai libraries
 #include <scai/hmemo/mic/MICContext.hpp>
-#include <scai/kregistry/KernelRegistry.hpp>
+#include <scai/hmemo/mic/MICSyncToken.hpp>
 
-#include <scai/tasking/TaskSyncToken.hpp>
+#include <scai/kregistry/KernelRegistry.hpp>
 
 #include <scai/tracing.hpp>
 
@@ -76,19 +76,19 @@ void MICBLAS1::scal(
     ValueType* x,
     const IndexType incX )
 {
+    MICSyncToken* syncToken = MICSyncToken::getCurrentSyncToken();
+
+    if ( syncToken )
+    {
+        SCAI_LOG_WARN( logger, "asynchronous execution for MIC not supported yet." )
+    }
+
     SCAI_LOG_DEBUG( logger,
                     "scal<" << common::getScalarType<ValueType>() << ">, n = " << n << ", alpha = " << alpha << ", x = " << x << ", incX = " << incX )
 
     if( n < 1 || incX < 1 )
     {
         return;
-    }
-
-    TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
-
-    if ( syncToken )
-    {
-        SCAI_LOG_WARN( logger, "asynchronous execution for MIC not supported yet." )
     }
 
     void* xPtr = x;
@@ -113,15 +113,15 @@ void MICBLAS1::scal(
 template<typename ValueType>
 ValueType MICBLAS1::asum( const IndexType n, const ValueType* x, const IndexType incX )
 {
-    SCAI_LOG_DEBUG( logger,
-                    "asum<" << common::getScalarType<ValueType>() << ">, n = " << n << ", x = " << x << ", incX = " << incX )
-
-    TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
+    MICSyncToken* syncToken = MICSyncToken::getCurrentSyncToken();
 
     if ( syncToken )
     {
-        SCAI_LOG_WARN( logger, "asynchronous execution not supported yet" )
+        SCAI_LOG_WARN( logger, "asynchronous execution for MIC not supported yet." )
     }
+
+    SCAI_LOG_DEBUG( logger,
+                    "asum<" << common::getScalarType<ValueType>() << ">, n = " << n << ", x = " << x << ", incX = " << incX )
 
     ValueType asum = static_cast<ValueType>(0.0);
 
@@ -156,15 +156,15 @@ ValueType MICBLAS1::asum( const IndexType n, const ValueType* x, const IndexType
 template<typename ValueType>
 IndexType MICBLAS1::iamax( const IndexType n, const ValueType* x, const IndexType incX )
 {
-    SCAI_LOG_INFO( logger,
-                   "iamax<" << common::getScalarType<ValueType>() << " >, n = " << n << ", x = " << x << ", incX = " << incX )
-
-    TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
+    MICSyncToken* syncToken = MICSyncToken::getCurrentSyncToken();
 
     if ( syncToken )
     {
-        SCAI_LOG_WARN( logger, "no asynchronous execution for mic possible at this level." )
+        SCAI_LOG_WARN( logger, "asynchronous execution for MIC not supported yet." )
     }
+
+    SCAI_LOG_INFO( logger,
+                   "iamax<" << common::getScalarType<ValueType>() << " >, n = " << n << ", x = " << x << ", incX = " << incX )
 
     IndexType maxIndex = 0;
 
@@ -234,15 +234,15 @@ void MICBLAS1::swap(
     ValueType* y,
     const IndexType incY )
 {
-    SCAI_LOG_DEBUG( logger,
-                    "iamax<long double>, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
-
-    TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
+    MICSyncToken* syncToken = MICSyncToken::getCurrentSyncToken();
 
     if ( syncToken )
     {
-        SCAI_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
+        SCAI_LOG_WARN( logger, "asynchronous execution for MIC not supported yet." )
     }
+
+    SCAI_LOG_DEBUG( logger,
+                    "iamax<long double>, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
 
     if( n < 1 || incX < 1 || incY < 1 )
     {
@@ -275,11 +275,11 @@ ValueType MICBLAS1::nrm2( const IndexType n, const ValueType* x, const IndexType
 {
     SCAI_LOG_INFO( logger, "nrm2<" << common::getScalarType<ValueType>() << ">( n = " << n << " )" )
 
-    TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
+    MICSyncToken* syncToken = MICSyncToken::getCurrentSyncToken();
 
     if ( syncToken )
     {
-        SCAI_LOG_WARN( logger, "no asynchronous execution for mic possible at this level." )
+        SCAI_LOG_WARN( logger, "asynchronous execution for MIC not supported yet." )
     }
 
     const void* xPtr = x;
@@ -325,7 +325,7 @@ void MICBLAS1::copy(
     SCAI_LOG_DEBUG( logger,
                     "copy<" << common::getScalarType<ValueType>() << ">, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
 
-    TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
+    MICSyncToken* syncToken = MICSyncToken::getCurrentSyncToken();
 
     if ( syncToken )
     {
@@ -376,7 +376,7 @@ void MICBLAS1::axpy(
     SCAI_LOG_INFO( logger,
                    "axpy<" << common::getScalarType<ValueType>() << ",  n = " << n << ", alpha = " << alpha << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
 
-    TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
+    MICSyncToken* syncToken = MICSyncToken::getCurrentSyncToken();
 
     if ( syncToken )
     {
@@ -424,9 +424,11 @@ ValueType MICBLAS1::dot(
     SCAI_LOG_INFO( logger, "dot<" << common::getScalarType<ValueType>() << ">" 
                            << ", n = " << n << ", incX = " << incX << ", incY = " << incY );
 
+    MICSyncToken* syncToken = MICSyncToken::getCurrentSyncToken();
+
     if ( syncToken )
     {
-        COMMON_THROWEXCEPTION( "no asynchronous execution for MIC possible at this level." )
+        SCAI_LOG_WARN( logger, "asynchronous execution for MIC not supported yet." )
     }
 
     ValueType val = static_cast<ValueType>(0.0);
@@ -475,7 +477,7 @@ void MICBLAS1::sum(
     SCAI_LOG_DEBUG( logger,
                     "sum<" << common::getScalarType<ValueType>() << ">, n = " << n << ", alpha = " << alpha << ", x = " << x << ", beta = " << beta << ", y = " << y << ", z = " << z )
 
-    TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
+    MICSyncToken* syncToken = MICSyncToken::getCurrentSyncToken();
 
     if ( syncToken )
     {

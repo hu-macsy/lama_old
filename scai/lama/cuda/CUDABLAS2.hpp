@@ -53,10 +53,9 @@ namespace scai
 namespace lama
 {
 
-/** Static class that provides CUDA implementaions for the BLAS2 routines of the BLAS interface.
+/** Static class that provides CUDA implementaions for the BLAS2 routines as specified in BLASKernelTrait.
  *
- *  The BLAS2 routines are all private and can only be accessed via registration at an interface.
- *
+ *  The BLAS2 routines are all private and can only be accessed via kernel registry.
  */
 
 class COMMON_DLL_IMPORTEXPORT CUDABLAS2

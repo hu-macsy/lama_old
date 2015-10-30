@@ -44,11 +44,6 @@
 namespace scai
 {
 
-namespace tasking
-{
-class SyncToken;
-}
-
 namespace lama
 {
 
@@ -170,8 +165,7 @@ public:
         const IndexType nnz,
         const IndexType csrIA[],
         const IndexType csrJA[],
-        const ValueType csrValues[],
-        tasking::SyncToken* syncToken );
+        const ValueType csrValues[] );
 
     /** Implementation for CSRKernelTrait::sparseGEMV  */
 
@@ -184,8 +178,7 @@ public:
         const IndexType rowIndexes[],
         const IndexType csrIA[],
         const IndexType csrJA[],
-        const ValueType csrValues[],
-        tasking::SyncToken* syncToken );
+        const ValueType csrValues[] );
 
     /** Implementation for CSRKernelTrait::gemm  */
 
@@ -201,8 +194,7 @@ public:
         const IndexType p,
         const IndexType csrIA[],
         const IndexType csrJA[],
-        const ValueType csrValues[],
-        tasking::SyncToken* syncToken );
+        const ValueType csrValues[] );
 
     /** Implementation for CSRKernelTrait::jacobi */
 
@@ -215,8 +207,7 @@ public:
         const ValueType rhs[],
         const ValueType oldSolution[],
         const ValueType omega,
-        const IndexType numRows,
-        tasking::SyncToken* syncToken );
+        const IndexType numRows );
 
     /** Implementation for CSRKernelTrait::jacobiHalo on Intel MIC */
 
@@ -341,11 +332,15 @@ private    :
 
     static IndexType scanParallel( PartitionId numThreads, IndexType array[], const IndexType numValues );
 
+    /** Help routine called and executed on MIC device */
+
     template<typename ValueType>
     __attribute__( ( target( mic ) ) )
     static ValueType absMaxDiffRowSorted(
         const IndexType n1, const IndexType csrJA1[], const ValueType csrValues1[],
         const IndexType n2, const IndexType csrJA2[], const ValueType csrValues2[] );
+
+    /** Help routine called and executed on MIC device */
 
     template<typename ValueType>
     __attribute__( ( target( mic ) ) )

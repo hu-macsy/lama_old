@@ -39,13 +39,15 @@
 
 // scai library
 #include <scai/kregistry/KernelRegistry.hpp>
-#include <scai/tasking/SyncToken.hpp>
+#include <scai/hmemo/mic/MICSyncToken.hpp>
 
 // external
 #include <mkl.h>
 
 namespace scai
 {
+
+using tasking::MICSyncToken;
 
 namespace lama
 {
@@ -119,7 +121,7 @@ void MICBLAS2::gemv(
 
     // n == 0: empty A, but deal with X, Y, we can handle this here
 
-    TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
+    MICSyncToken* syncToken = MICSyncToken::getCurrentSyncToken();
 
     if ( syncToken )
     {
@@ -182,7 +184,7 @@ void MICBLAS2::gemv(
 
     // n == 0: empty A, but deal with X, Y, we can handle this here
 
-    TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
+    MICSyncToken* syncToken = MICSyncToken::getCurrentSyncToken();
 
     if ( syncToken )
     {

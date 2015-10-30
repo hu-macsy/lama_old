@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Interface class for context dependent BLAS operations used in LAMA.
+ * @brief Kernel traits for BLAS operations used in LAMA.
  * @author Thomas Brandes
  * @date 02.04.2013
  */
@@ -47,14 +47,17 @@ namespace lama
 {
 
 /** Struct with all kernel traits for BLAS routines.
- *
- *  This interface contains function pointer type definitions for all used routines
- *  and tables with actual values for the functions.
+ *  It could have been just a namespace but struct disables
+ *  'using namespace BLASKerneltrait'.
  */
 
 struct BLASKernelTrait
 {
 
+    /** Kernel trait for BLAS1 routine scal.
+     *
+     *  @tparam ValueType stands for the arithmetic type used for scal
+     */
     template<typename ValueType>
     struct scal
     {
@@ -75,9 +78,16 @@ struct BLASKernelTrait
             ValueType* x,
             const IndexType incX );
 
-        static const char* getId() { return "BLAS1.scal"; }
+        static const char* getId()
+        {
+            return "BLAS1.scal";
+        }
     };
 
+    /** Kernel trait for BLAS routine nrm2.
+     *
+     *  @tparam ValueType stands for the arithmetic type used for nrm2
+     */
     template<typename ValueType>
     struct nrm2
     {
@@ -96,9 +106,16 @@ struct BLASKernelTrait
 
         typedef ValueType ( *FuncType )( const IndexType n, const ValueType* x, const IndexType incX );
 
-        static const char* getId() { return "BLAS1.nrm2"; }
+        static const char* getId()
+        {
+            return "BLAS1.nrm2";
+        }
     };
 
+    /** Kernel trait for BLAS routine asum.
+     *
+     *  @tparam ValueType stands for the arithmetic type used for asum
+     */
     template<typename ValueType>
     struct asum
     {
@@ -117,9 +134,16 @@ struct BLASKernelTrait
          */
         typedef ValueType ( *FuncType )( const IndexType n, const ValueType* x, const IndexType incX );
 
-        static const char* getId() { return "BLAS1.asum"; }
+        static const char* getId()
+        {
+            return "BLAS1.asum";
+        }
     };
 
+    /** Kernel trait for BLAS routine iamax.
+     *
+     *  @tparam ValueType stands for the arithmetic type used for iamax
+     */
     template<typename ValueType>
     struct iamax
     {
@@ -139,9 +163,16 @@ struct BLASKernelTrait
          */
         typedef IndexType ( *FuncType )( const IndexType n, const ValueType* x, const IndexType incX );
 
-        static const char* getId() { return "BLAS1.iamax"; }
+        static const char* getId()
+        {
+            return "BLAS1.iamax";
+        }
     };
 
+    /** Kernel trait for BLAS1 routine swap.
+     *
+     *  @tparam ValueType stands for the arithmetic type used for iamax
+     */
     template<typename ValueType>
     struct swap
     {
@@ -166,9 +197,16 @@ struct BLASKernelTrait
             ValueType* y,
             const IndexType incY );
 
-        static const char* getId() { return "BLAS1.copy"; }
+        static const char* getId()
+        {
+            return "BLAS1.copy";
+        }
     };
 
+    /** Kernel trait for BLAS1 routine copy.
+     *
+     *  @tparam ValueType stands for the arithmetic type used for copy
+     */
     template<typename ValueType>
     struct copy
     {
@@ -192,9 +230,16 @@ struct BLASKernelTrait
             ValueType* y,
             const IndexType incY );
 
-        static const char* getId() { return "BLAS1.copy"; }
+        static const char* getId()
+        {
+            return "BLAS1.copy";
+        }
     };
 
+    /** Kernel trait for BLAS1 routine axpy.
+     *
+     *  @tparam ValueType stands for the arithmetic type used for axpy.
+     */
     template<typename ValueType>
     struct axpy
     {
@@ -203,15 +248,14 @@ struct BLASKernelTrait
          * @brief axpy multiplies scalar alpha by vector x and
          * adds the result to vector y.
          *
-         *            y = alpha * x + y
+         *            y = y + alpha * x 
          *
          * @param[in] n      number of considered elements in input vectors.
          * @param[in] alpha  scalar multiplier
          * @param[in] x      vector with minimum (n - 1) * incX + 1 elements.
          * @param[in] incX   storage spacing between elements of x
-         * @param[in] y      vector with minimum (n - 1) * incY + 1 elements.
+         * @param[in,out] y  vector with minimum (n - 1) * incY + 1 elements.
          * @param[in] incY   storage spacing between elements of y
-         * @param[out] y     result (unchanged if n<=0, incX <=0 or or incY <=0)
          */
         typedef void ( *FuncType )(
             const IndexType n,
@@ -221,9 +265,16 @@ struct BLASKernelTrait
             ValueType* y,
             const IndexType incY );
 
-        static const char* getId() { return "BLAS1.axpy"; }
+        static const char* getId()
+        {
+            return "BLAS1.axpy";
+        }
     };
 
+    /** Kernel trait for BLAS1 routine dot.
+     *
+     *  @tparam ValueType stands for the arithmetic type used for dot.
+     */
     template<typename ValueType>
     struct dot
     {
@@ -240,7 +291,7 @@ struct BLASKernelTrait
          * @param[in] incX   storage spacing between elements of x.
          * @param[in] y      vector with minimum (n - 1) * incY + 1 elements.
          * @param[in] incY   storage spacing between elements of y.
-         * return            dot product (returns zero if n <= 0, incX <=0 or or incY <=0).
+         * @return           dot product (returns zero if n <= 0, incX <=0 or or incY <=0).
          */
         typedef ValueType ( *FuncType )(
             const IndexType n,
@@ -249,9 +300,17 @@ struct BLASKernelTrait
             const ValueType* y,
             const IndexType inc );
 
-        static const char* getId() { return "BLAS1.dot"; }
+        static const char* getId()
+        {
+            return "BLAS1.dot";
+        }
     };
 
+    /** Kernel trait for LAMA specific sum routine.
+     *
+     *  @tparam ValueType stands for the arithmetic type used for scal
+     */
+    template<typename ValueType>
     template<typename ValueType>
     struct sum
     {
@@ -277,9 +336,17 @@ struct BLASKernelTrait
             const ValueType* y,
             ValueType* z );
 
-        static const char* getId() { return "BLAS1.sum"; }
+        static const char* getId()
+        {
+            return "BLAS1.sum";
+        }
     };
 
+    /** Kernel trait for BLAS2 routine gemv.
+     *
+     *  @tparam ValueType stands for the arithmetic type used in this operation.
+     */
+    template<typename ValueType>
     template<typename ValueType>
     struct gemv
     {
@@ -318,23 +385,31 @@ struct BLASKernelTrait
          * @param[in] syncToken allows to start asynchronous execution
          *
          */
-        typedef void ( *FuncType ) ( 
+        typedef void ( *FuncType ) (
             const CBLAS_ORDER order,
             const CBLAS_TRANSPOSE trans,
             const IndexType m,
             const IndexType n,
             const ValueType alpha,
-            const ValueType *A,
+            const ValueType* A,
             const IndexType lda,
-            const ValueType *x,
+            const ValueType* x,
             const IndexType incX,
             const ValueType beta,
-            ValueType *y,
+            ValueType* y,
             const IndexType incY );
 
-        static const char* getId() { return "BLAS2.gemv"; }
+        static const char* getId()
+        {
+            return "BLAS2.gemv";
+        }
     };
 
+    /** Kernel trait for BLAS3 routine gemm.
+     *
+     *  @tparam ValueType stands for the arithmetic type used in this operation.
+     */
+    template<typename ValueType>
     template<typename ValueType>
     struct gemm
     {
@@ -392,26 +467,32 @@ struct BLASKernelTrait
          * @param[in,out] syncToken is optional synchronization taken that might be used for asynchronous execution
          */
 
-        typedef void ( *FuncType ) ( const CBLAS_ORDER order,
-                        const CBLAS_TRANSPOSE transA,
-                        const CBLAS_TRANSPOSE transB,
-                        const IndexType m,
-                        const IndexType n,
-                        const IndexType k,
-                        const ValueType alpha,
-                        const ValueType* A,
-                        const IndexType lda,
-                        const ValueType* B,
-                        const IndexType ldb,
-                        const ValueType beta,
-                        ValueType* C,
-                        const IndexType ldc );
+        typedef void ( *FuncType ) ( 
+            const CBLAS_ORDER order,
+            const CBLAS_TRANSPOSE transA,
+            const CBLAS_TRANSPOSE transB,
+            const IndexType m,
+            const IndexType n,
+            const IndexType k,
+            const ValueType alpha,
+            const ValueType* A,
+            const IndexType lda,
+            const ValueType* B,
+            const IndexType ldb,
+            const ValueType beta,
+            ValueType* C,
+            const IndexType ldc );
 
-        static const char* getId() { return "BLAS3.gemm"; }
+        static const char* getId()
+        {
+            return "BLAS3.gemm";
+        }
     };
 
-    /** Structure with pointers for routines using LAPACK. */
-
+    /** Kernel trait for LAPACK routine getrf.
+     *
+     *  @tparam ValueType stands for the arithmetic type used in this operation.
+     */
     template<typename ValueType>
     struct getrf
     {
@@ -460,17 +541,23 @@ struct BLASKernelTrait
          */
 
         typedef IndexType ( *FuncType ) (
-            const CBLAS_ORDER order, 
-            const IndexType m, 
-            const IndexType n, 
+            const CBLAS_ORDER order,
+            const IndexType m,
+            const IndexType n,
             ValueType* a,
-            const IndexType lda, 
-            IndexType* ipivot);
+            const IndexType lda,
+            IndexType* ipivot );
 
-        static const char* getId() { return "BLAS3.getrf"; }
+        static const char* getId()
+        {
+            return "LAPACK.getrf";
+        }
     };
 
-    template<typename ValueType>
+    /** Kernel trait for getinv as concatenation of getrf and getri.
+     *
+     *  @tparam ValueType stands for the arithmetic type used in this operation.
+     */
     struct getinv
     {
 
@@ -484,24 +571,38 @@ struct BLASKernelTrait
          *  Note that the storage order (column-wise or row-wise does not matter at all)
          */
 
-        typedef void (*FuncType ) ( const IndexType n, ValueType* a, const IndexType lda );
+        typedef void ( *FuncType ) ( const IndexType n, ValueType* a, const IndexType lda );
 
-        static const char* getId() { return "BLAS3.getinv"; }
+        static const char* getId()
+        {
+            return "LAPACK.getinv";
+        }
     };
 
+    /** Kernel trait for LAPACK routine getri.
+     *
+     *  @tparam ValueType stands for the arithmetic type used in this operation.
+     */
     template<typename ValueType>
     struct getri
     {
-        typedef IndexType ( *FuncType ) ( 
-            const CBLAS_ORDER , 
-            const IndexType n, 
+        typedef IndexType ( *FuncType ) (
+            const CBLAS_ORDER ,
+            const IndexType n,
             ValueType* a,
-            const IndexType lda, 
-            IndexType* ipivot);
+            const IndexType lda,
+            IndexType* ipivot );
 
-        static const char* getId() { return "BLAS3.getri"; }
+        static const char* getId()
+        {
+            return "LAPACK.getri";
+        }
     };
 
+    /** Kernel trait for LAPACK routine tptrs.
+     *
+     *  @tparam ValueType stands for the arithmetic type used in this operation.
+     */
     template<typename ValueType>
     struct tptrs
     {
@@ -538,7 +639,7 @@ struct BLASKernelTrait
          *                     of B.
          */
 
-        typedef IndexType ( *FuncType ) ( 
+        typedef IndexType ( *FuncType ) (
             const CBLAS_ORDER order,
             const CBLAS_UPLO uplo,
             const CBLAS_TRANSPOSE trans,
@@ -549,9 +650,16 @@ struct BLASKernelTrait
             ValueType* B,
             const IndexType ldb );
 
-        static const char* getId() { return "BLAS3.tptrs"; }
+        static const char* getId()
+        {
+            return "BLAS3.tptrs";
+        }
     };
 
+    /** Kernel trait for LAPACK routine laswp.
+     *
+     *  @tparam ValueType stands for the arithmetic type used in this operation.
+     */
     template<typename ValueType>
     struct laswp
     {
@@ -584,7 +692,7 @@ struct BLASKernelTrait
          * @param[in] incx       The increment between successive values of ipiv. If ipiv
          *                       is negative, the pivots are applied in reverse order.
          */
-        typedef void ( *FuncType ) ( 
+        typedef void ( *FuncType ) (
             const CBLAS_ORDER order,
             const IndexType n,
             ValueType* A,
@@ -594,9 +702,16 @@ struct BLASKernelTrait
             const IndexType* ipiv,
             const IndexType incx );
 
-        static const char* getId() { return "LAPACK.laswp"; }
+        static const char* getId()
+        {
+            return "LAPACK.laswp";
+        }
     };
 
+    /** Kernel trait for using SCALAPACK to compute inverse.
+     *
+     *  @tparam ValueType stands for the arithmetic type used in this operation.
+     */
     template<typename ValueType>
     struct inverse
     {
@@ -611,7 +726,10 @@ struct BLASKernelTrait
 
         typedef void ( *FuncType ) ( const IndexType n, const IndexType nB, const ValueType* a, const class Communicator& comm );
 
-        static const char* getId() { return "LAPACK.laswp"; }
+        static const char* getId()
+        {
+            return "SCALAPACK.inverse";
+        }
     };
 };
 

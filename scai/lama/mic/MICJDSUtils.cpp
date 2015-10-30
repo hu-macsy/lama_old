@@ -37,7 +37,7 @@
 // local project
 #include <scai/lama/mic/MICUtils.hpp>
 
-#include <scai/lama/UtilKernelTrait.hpp>
+#include <scai/lama/JDSKernelTrait.hpp>
 #include <scai/lama/Scalar.hpp>
 
 // other scai libraries
@@ -657,11 +657,17 @@ void MICJDSUtils::normalGEMV(
     const IndexType ndlg,
     const IndexType jdsDLG[],
     const IndexType jdsJA[],
-    const ValueType jdsValues[],
-    class SyncToken* /* syncToken */)
+    const ValueType jdsValues[] )
 {
     SCAI_LOG_INFO( logger,
                    "normalGEMV<" << common::getScalarType<ValueType>() << ">, result[" << numRows << "] = " << alpha << " * A( jds, ndlg = " << ndlg << " ) * x + " << beta << " * y " )
+
+    MICSyncToken* syncToken = MICSyncToken::getCurrentSyncToken();
+
+    if ( syncToken )
+    {
+        SCAI_LOG_WARN( logger, "asynchronous execution for for MIC not supported yet" )
+    }
 
     if( beta == scai::common::constants::ZERO )
     {
@@ -755,19 +761,18 @@ void MICJDSUtils::jacobi(
     const ValueType jdsValues[],
     const ValueType oldSolution[],
     const ValueType rhs[],
-    const ValueType omega,
-    class SyncToken* syncToken )
+    const ValueType omega )
 {
     // SCAI_REGION( "MIC.JDS.jacobi" )
 
     SCAI_LOG_INFO( logger,
                    "jacobi<" << common::getScalarType<ValueType>() << ">" << ", #rows = " << numRows << ", omega = " << omega )
 
-    if( syncToken )
+    MICSyncToken* syncToken = MICSyncToken::getCurrentSyncToken();
+
+    if ( syncToken )
     {
-        MICSyncToken* micSyncToken = dynamic_cast<MICSyncToken*>( syncToken );
-        SCAI_ASSERT_ERROR( micSyncToken, "no MIC sync token provided" )
-        SCAI_LOG_WARN( logger, "jacobi called asynchronously, not supported yet" )
+        SCAI_LOG_WARN( logger, "asynchronous execution of JDS jacobi iteration for MIC not supported yet" )
     }
 
     void* solutionPtr = solution;
@@ -841,17 +846,18 @@ void MICJDSUtils::jacobiHalo(
     const IndexType jdsHaloJA[],
     const ValueType jdsHaloValues[],
     const ValueType oldSolution[],
-    const ValueType omega,
-    class SyncToken* syncToken )
+    const ValueType omega )
 {
     SCAI_LOG_INFO( logger,
                    "jacobiHalo<" << common::getScalarType<ValueType>() << ">" << ", #rows = " << numRows << ", omega = " << omega )
 
     // SCAI_REGION( "MIC.JDS.jacobiHalo" )
 
-    if( syncToken != NULL )
+    MICSyncToken* syncToken = MICSyncToken::getCurrentSyncToken();
+
+    if ( syncToken )
     {
-        SCAI_LOG_WARN( logger, "jacobi called asynchronously, not supported here" )
+        SCAI_LOG_WARN( logger, "asynchronous execution for for MIC not supported yet" )
     }
 
     if( numRows == 0 )

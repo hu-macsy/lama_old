@@ -40,19 +40,11 @@
 #include <scai/lama/Scalar.hpp>
 
 // internal scai libraries
-#include <scai/tasking/SyncToken.hpp>
-
 #include <scai/logging.hpp>
-
 #include <scai/common/SCAITypes.hpp>
 
 namespace scai
 {
-
-namespace tasking
-{
-    class SyncToken;   // forward declaration
-}
 
 namespace lama
 {
@@ -169,8 +161,7 @@ public:
         const IndexType ndlg,
         const IndexType jdsDLG[],
         const IndexType jdsJA[],
-        const ValueType jdsValues[],
-        tasking::SyncToken* syncToken );
+        const ValueType jdsValues[] );
 
     /** Implementation for JDSKernelTrait::jacobi on Intel MIC architecture */
 
@@ -186,8 +177,7 @@ public:
         const ValueType jdsValues[],
         const ValueType oldSolution[],
         const ValueType rhs[],
-        const ValueType omega,
-        tasking::SyncToken* syncToken );
+        const ValueType omega );
 
     /** Implementation for JDSKernelTrait::jacobiHalo on Intel MIC architecture */
 
@@ -203,8 +193,7 @@ public:
         const IndexType jdsHaloJA[],
         const ValueType jdsHaloValues[],
         const ValueType oldSolution[],
-        const ValueType omega,
-        tasking::SyncToken* syncToken );
+        const ValueType omega );
 
     /** Method for registration of module routines at the interface. */
 

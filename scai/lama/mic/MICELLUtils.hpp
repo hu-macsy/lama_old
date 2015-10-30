@@ -45,11 +45,6 @@
 namespace scai
 {
 
-namespace tasking
-{
-    class SyncToken;   // forward declaration
-}
-
 namespace lama
 {
 
@@ -277,8 +272,7 @@ private:
         const ValueType ellValues[],
         const ValueType oldSolution[],
         const ValueType rhs[],
-        const ValueType omega,
-        tasking::SyncToken* syncToken );
+        const ValueType omega );
 
     /** Implementation for ELLKernelTrait::jacobiHalo */
 
@@ -294,8 +288,7 @@ private:
         const IndexType rowIndexes[],
         const IndexType numNonEmptyRows,
         const ValueType oldSolution[],
-        const ValueType omega,
-        tasking::SyncToken* syncToken );
+        const ValueType omega );
 
     /** Implementation for ELLKernelTrait::normalGEMV  */
 
@@ -310,8 +303,7 @@ private:
         const IndexType numNonZerosPerRow,
         const IndexType csrIA[],
         const IndexType csrJA[],
-        const ValueType csrValues[],
-        tasking::SyncToken* syncToken );
+        const ValueType csrValues[] );
 
     /** Implementation for ELLKernelTrait::sparseGEMV  */
 
@@ -326,8 +318,7 @@ private:
         const IndexType rowIndexes[],
         const IndexType csrIA[],
         const IndexType csrJA[],
-        const ValueType csrValues[],
-        tasking::SyncToken* syncToken );
+        const ValueType csrValues[] );
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 

@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief General conversion routines for CSR sparse matrices.
+ * @brief General conversion routines for CSR sparse matrices implemented in CUDA.
  * @author Thomas Brandes
  * @date 03.07.2012
  * @since 1.0.0
@@ -47,6 +47,10 @@ namespace scai
 namespace lama
 {
 
+/** Static class that provides CUDA implementaions for the routines
+ *  needed for operations on CSR storage as specified in CSRKernelTrait.
+ *  Routines will be registered at KernelRegistry during the static initialization.
+ */
 class COMMON_DLL_IMPORTEXPORT CUDACSRUtils
 {
 public:

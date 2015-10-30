@@ -143,9 +143,6 @@ public:
      * @param[in] C       array of dimensions (ldc,n);
      * @param[in] ldc     leading dimension of C.
      *                    ldc must be at least max(1,m)
-     * TODO[doxy] Is the following description correct?
-     * @param[out] syncToken  updated according to C = alpha * A * B + beta * C
-     *                                          or C = alpha * B * A + beta * C
      */
     template<typename ValueType>
     static void symm(
@@ -223,9 +220,6 @@ public:
      *                    It is overwritten with the transformed matrix on exit
      * @param[in] ldb     leading dimension of B;
      *                    ldb must be at least max(1,m).
-     * TODO[doxy] Is the following description correct?
-     * @param[out] syncToken      updated according to B = alpha * op(A) * B
-     *                                              or B = alpha * B * op(A)
      */
     template<typename ValueType>
     static void trmm(
@@ -305,10 +299,6 @@ public:
      *                    On exit B is overwritten by the solution matrix X.
      * @param[in] ldb     leading dimension of the two-dimensional array containing B;
      *                    ldb must be at least max(1, m).
-     * TODO[doxy] Is the following description correct?
-     * @param[out] syncToken   contains the solution matrix X satisfying
-     *                            op(A) * X = alpha * B
-     *                         or X * op(A) = alpha * B
      */
     template<typename ValueType>
     static void trsm(
@@ -390,9 +380,6 @@ public:
      *                    by the lower triangular part of the updated matrix.
      * @param[in] ldc     leading dimension of C.
      *                    ldc must be at least max(1,n)
-     * TODO[doxy] Is the following description correct?
-     * @param[out] syncToken   updated according to C = alpha * A * AT + beta * C
-     *                                           or C = alpha * AT * A + beta * C
      */
     template<typename ValueType>
     static void syrk(
@@ -477,9 +464,6 @@ public:
      *                    by the lower triangular part of the updated matrix.
      * @param[in] ldc     leading dimension of C.
      *                    ldc must be at least max(1,n)
-     * TODO[doxy] Is the following description correct?
-     * @param[out] syncToken updated according to C = alpha * A * BT + alpha * B * AT + beta * C
-     *                                         or C = alpha * AT * B + alpha * BT * A + beta * C
      */
     template<typename ValueType>
     static void syrk2(

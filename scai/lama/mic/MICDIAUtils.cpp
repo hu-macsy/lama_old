@@ -37,10 +37,10 @@
 
 // local library
 #include <scai/lama/mic/MICUtils.hpp>
-#include <scai/lama/UtilKernelTrait.hpp>
+#include <scai/lama/DIAKernelTrait.hpp>
 
 // internal scai libraries
-#include <scai/tasking/TaskSyncToken.hpp>
+#include <scai/hmemo/mic/MICSyncToken.hpp>
 #include <scai/kregistry/KernelRegistry.hpp>
 #include <scai/common/ScalarType.hpp>
 
@@ -55,7 +55,7 @@ namespace scai
 {
 
 using namespace hmemo;
-using tasking::SyncToken;
+using tasking::MICSyncToken;
 
 namespace lama
 {
@@ -309,11 +309,17 @@ void MICDIAUtils::normalGEMV(
     const IndexType numColumns,
     const IndexType numDiagonals,
     const IndexType diaOffsets[],
-    const ValueType diaValues[],
-    SyncToken* syncToken )
+    const ValueType diaValues[] )
 {
     SCAI_LOG_INFO( logger,
                    "normalGEMV<" << common::getScalarType<ValueType>() << ">, result[" << numRows << "] = " << alpha << " * A( dia, #diags = " << numDiagonals << " ) * x + " << beta << " * y " )
+
+    MICSyncToken* syncToken = MICSyncToken::getCurrentSyncToken();
+
+    if ( syncToken )
+    {
+        SCAI_LOG_WARN( logger, "asynchronous execution for for MIC not supported yet" )
+    }
 
     // result := alpha * A * x + beta * y -> result:= beta * y; result += alpha * A
 
@@ -377,8 +383,7 @@ void MICDIAUtils::jacobi(
     const ValueType oldSolution[],
     const ValueType rhs[],
     const ValueType omega,
-    const IndexType numRows,
-    class SyncToken* syncToken )
+    const IndexType numRows )
 {
     // SCAI_REGION( "MIC.DIA.Jacobi" )
 
@@ -387,9 +392,11 @@ void MICDIAUtils::jacobi(
 
     // main diagonal must be first
 
-    if( syncToken != NULL )
+    MICSyncToken* syncToken = MICSyncToken::getCurrentSyncToken();
+
+    if ( syncToken )
     {
-        SCAI_LOG_ERROR( logger, "jacobi called asynchronously, not supported here" )
+        SCAI_LOG_WARN( logger, "asynchronous execution for for MIC not supported yet" )
     }
 
     void* solutionPtr = solution;

@@ -35,7 +35,7 @@
 #include <scai/lama/mic/MICCSRUtils.hpp>
 
 // local libray
-#include <scai/lama/UtilKernelTrait.hpp>
+#include <scai/lama/CSRKernelTrait.hpp>
 
 // internal scai libraries
 #include <scai/hmemo/mic/MICSyncToken.hpp>
@@ -571,17 +571,16 @@ void MICCSRUtils::normalGEMV(
     const IndexType /* nnz */,
     const IndexType csrIA[],
     const IndexType csrJA[],
-    const ValueType csrValues[],
-    SyncToken* syncToken )
+    const ValueType csrValues[] )
 {
     SCAI_LOG_INFO( logger,
                    "normalGEMV<" << common::getScalarType<ValueType>() << ">, result[" << numRows << "] = " << alpha << " * A * x + " << beta << " * y " )
 
-    if( syncToken )
+    MICSyncToken* syncToken = MICSyncToken::getCurrentSyncToken();
+
+    if ( syncToken )
     {
-        MICSyncToken* micSyncToken = dynamic_cast<MICSyncToken*>( syncToken );
-        SCAI_ASSERT_ERROR( micSyncToken, "no MIC sync token provided" )
-        // not yet implemented: run the offload computation asynchronously
+        SCAI_LOG_WARN( logger, "asynchronous execution for for MIC not supported yet" )
     }
 
     // SCAI_REGION( "MIC.CSR.normalGEMV" )
@@ -643,14 +642,13 @@ void MICCSRUtils::sparseGEMV(
     const IndexType rowIndexes[],
     const IndexType csrIA[],
     const IndexType csrJA[],
-    const ValueType csrValues[],
-    SyncToken* syncToken )
+    const ValueType csrValues[] )
 {
-    if( syncToken )
+    MICSyncToken* syncToken = MICSyncToken::getCurrentSyncToken();
+
+    if ( syncToken )
     {
-        MICSyncToken* micSyncToken = dynamic_cast<MICSyncToken*>( syncToken );
-        SCAI_ASSERT_ERROR( micSyncToken, "no MIC sync token provided" )
-        // not yet implemented: run the offload computation asynchronously
+        SCAI_LOG_WARN( logger, "asynchronous execution for for MIC not supported yet" )
     }
 
     // SCAI_REGION( "MIC.CSR.sparseGEMV" )
@@ -712,17 +710,16 @@ void MICCSRUtils::gemm(
     const IndexType p,
     const IndexType csrIA[],
     const IndexType csrJA[],
-    const ValueType csrValues[],
-    SyncToken* syncToken )
+    const ValueType csrValues[] )
 {
     SCAI_LOG_INFO( logger,
                    "gemm<" << common::getScalarType<ValueType>() << ">, " << " result " << m << " x " << n << " CSR " << m << " x " << p )
 
-    if( syncToken )
+    MICSyncToken* syncToken = MICSyncToken::getCurrentSyncToken();
+
+    if ( syncToken )
     {
-        MICSyncToken* micSyncToken = dynamic_cast<MICSyncToken*>( syncToken );
-        SCAI_ASSERT_ERROR( micSyncToken, "no MIC sync token provided" )
-        // not yet implemented: run the offload computation asynchronously
+        SCAI_LOG_WARN( logger, "asynchronous execution for for MIC not supported yet" )
     }
 
     void* resultPtr = result;
@@ -785,17 +782,16 @@ void MICCSRUtils::jacobi(
     const ValueType oldSolution[],
     const ValueType rhs[],
     const ValueType omega,
-    const IndexType numRows,
-    class SyncToken* syncToken )
+    const IndexType numRows )
 {
     SCAI_LOG_INFO( logger,
                    "jacobi<" << common::getScalarType<ValueType>() << ">" << ", #rows = " << numRows << ", omega = " << omega )
 
-    if( syncToken )
+    MICSyncToken* syncToken = MICSyncToken::getCurrentSyncToken();
+
+    if ( syncToken )
     {
-        MICSyncToken* micSyncToken = dynamic_cast<MICSyncToken*>( syncToken );
-        SCAI_ASSERT_ERROR( micSyncToken, "no MIC sync token provided" )
-        // not yet implemented: run the offload computation asynchronously
+        SCAI_LOG_WARN( logger, "asynchronous execution for for MIC not supported yet" )
     }
 
     // SCAI_REGION( "MIC.CSR.jacobi" )

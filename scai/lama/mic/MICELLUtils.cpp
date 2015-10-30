@@ -35,7 +35,7 @@
 #include <scai/lama/mic/MICELLUtils.hpp>
 
 // local project
-#include <scai/lama/UtilKernelTrait.hpp>
+#include <scai/lama/ELLKernelTrait.hpp>
 
 // internal scai projects
 #include <scai/hmemo/mic/MICSyncToken.hpp>
@@ -904,19 +904,18 @@ void MICELLUtils::jacobi(
     const ValueType ellValues[],
     const ValueType oldSolution[],
     const ValueType rhs[],
-    const ValueType omega,
-    class SyncToken* syncToken )
+    const ValueType omega )
 {
     // SCAI_REGION( "MIC.ELL.jacobi" )
 
     SCAI_LOG_INFO( logger,
                    "jacobi<" << common::getScalarType<ValueType>() << ">" << ", #rows = " << numRows << ", omega = " << omega )
 
-    if( syncToken )
+    MICSyncToken* syncToken = MICSyncToken::getCurrentSyncToken();
+
+    if ( syncToken )
     {
-        MICSyncToken* micSyncToken = dynamic_cast<MICSyncToken*>( syncToken );
-        SCAI_ASSERT_ERROR( micSyncToken, "no MIC sync token provided" )
-        SCAI_LOG_WARN( logger, "asynchronous execution on MIC not supported yet" )
+        SCAI_LOG_WARN( logger, "asynchronous execution for for MIC not supported yet" )
     }
 
     void* solutionPtr = solution;
@@ -984,13 +983,12 @@ void MICELLUtils::jacobiHalo(
     const IndexType numNonEmptyRows,
     const ValueType oldSolution[],
     const ValueType omega,
-    class SyncToken* syncToken )
 {
-    if( syncToken )
+    MICSyncToken* syncToken = MICSyncToken::getCurrentSyncToken();
+
+    if ( syncToken )
     {
-        MICSyncToken* micSyncToken = dynamic_cast<MICSyncToken*>( syncToken );
-        SCAI_ASSERT_ERROR( micSyncToken, "no MIC sync token provided" )
-        // not yet implemented: run the offload computation asynchronously
+        SCAI_LOG_WARN( logger, "asynchronous execution for for MIC not supported yet" )
     }
 
     // SCAI_REGION( "MIC.ELL.jacobiHalo" )

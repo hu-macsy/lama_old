@@ -38,7 +38,7 @@
 #include <scai/lama/BLASKernelTrait.hpp>
 
 // internal scai libraries
-#include <scai/tasking/SyncToken.hpp>
+#include <scai/hmemo/mic/MICSyncToken.hpp>
 #include <scai/kregistry/KernelRegistry.hpp>
 
 // external
@@ -47,7 +47,7 @@
 namespace scai
 {
 
-using tasking::SyncToken;
+using tasking::MICSyncToken;
 
 namespace lama
 {
@@ -89,12 +89,13 @@ void MICBLAS3::gemm(
     const IndexType ldb,
     const float beta,
     float* c,
-    const IndexType ldc,
-    SyncToken* syncToken )
+    const IndexType ldc )
 {
-    if( syncToken )
+    MICSyncToken* syncToken = MICSyncToken::getCurrentSyncToken();
+
+    if ( syncToken )
     {
-        SCAI_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
+        SCAI_LOG_WARN( logger, "asynchronous execution for for MIC not supported yet" )
     }
 
     char ta = trans2C( transA );
@@ -147,12 +148,13 @@ void MICBLAS3::gemm(
     const IndexType ldb,
     const double beta,
     double* c,
-    const IndexType ldc,
-    SyncToken* syncToken )
+    const IndexType ldc )
 {
-    if( syncToken )
+    MICSyncToken* syncToken = MICSyncToken::getCurrentSyncToken();
+
+    if ( syncToken )
     {
-        SCAI_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
+        SCAI_LOG_WARN( logger, "asynchronous execution for for MIC not supported yet" )
     }
 
     char ta = trans2C( transA );

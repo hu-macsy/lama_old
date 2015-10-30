@@ -48,6 +48,8 @@ namespace scai
 namespace lama
 {
 
+/** Static class that provides CUDA implementaions for some LAPACK routines as specified in BLASKernelTrait.
+ */
 
 class COMMON_DLL_IMPORTEXPORT CUDALAPACK
 {

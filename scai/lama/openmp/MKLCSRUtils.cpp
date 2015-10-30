@@ -88,9 +88,10 @@ void MKLCSRUtils::normalGEMV(
 
     TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
-    if( syncToken )
+    if ( syncToken )
     {
-        COMMON_THROWEXCEPTION( "asynchronous execution should be done by LAMATask before" )
+        SCAI_LOG_ERROR( logger, "asynchronous execution not supported yet" )
+        // ToDo: workaround required as boost::bind supports only up to 9 arguments
     }
 
     if( y != result && beta != 0.0f )
@@ -144,7 +145,7 @@ void MKLCSRUtils::normalGEMV(
 
     if ( syncToken )
     {
-        COMMON_THROWEXCEPTION( "asynchronous execution should be done by LAMATask before" )
+        SCAI_LOG_ERROR( logger, "asynchronous execution not supported yet" )
     }
 
     if( y != result && beta != 0.0 )

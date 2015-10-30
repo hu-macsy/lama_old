@@ -37,8 +37,6 @@
 #include <scai/common/config.hpp>
 
 // internal scai libraries
-#include <scai/tasking/SyncToken.hpp>
-
 #include <scai/common/SCAITypes.hpp>
 
 namespace scai
@@ -95,8 +93,7 @@ public:
         const IndexType numColumns,
         const IndexType numDiagonals,
         const IndexType diaOffsets[],
-        const ValueType diaValues[],
-        tasking::SyncToken* syncToken );
+        const ValueType diaValues[] );
 
     /** Implementation for DIAKernelTrait::jacobi  */
 
@@ -110,8 +107,7 @@ public:
         const ValueType oldSolution[],
         const ValueType rhs[],
         const ValueType omega,
-        const IndexType numRows,
-        tasking::SyncToken* syncToken );
+        const IndexType numRows );
 
     /** Implemenatation for DIAKernelTrait::absMaxVal */
 

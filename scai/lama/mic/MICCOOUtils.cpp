@@ -38,7 +38,7 @@
 #include <scai/lama/mic/MICUtils.hpp>
 
 #include <scai/common/OpenMP.hpp>
-#include <scai/lama/UtilKernelTrait.hpp>
+#include <scai/lama/COOKernelTrait.hpp>
 
 // internal scai libraries
 #include <scai/hmemo/mic/MICSyncToken.hpp>
@@ -56,7 +56,6 @@
 namespace scai
 {
 
-using tasking::SyncToken;
 using tasking::MICSyncToken;
 
 namespace lama
@@ -299,19 +298,19 @@ void MICCOOUtils::normalGEMV(
     const IndexType numValues,
     const IndexType cooIA[],
     const IndexType cooJA[],
-    const ValueType cooValues[],
-    SyncToken* syncToken )
+    const ValueType cooValues[] )
 {
     // SCAI_REGION( "MIC.COO.normalGEMV" )
 
     SCAI_LOG_INFO( logger,
-                   "normalGEMV<" << common::getScalarType<ValueType>() << ">, result[" << numRows << "] = " << alpha << " * A( coo, #vals = " << numValues << " ) * x + " << beta << " * y " )
+                   "normalGEMV<" << common::getScalarType<ValueType>() << ">, result[" << numRows << "] = " 
+                    << alpha << " * A( coo, #vals = " << numValues << " ) * x + " << beta << " * y " )
 
-    if( syncToken )
+    MICSyncToken* syncToken = MICSyncToken::getCurrentSyncToken();
+
+    if ( syncToken )
     {
-        MICSyncToken* micSyncToken = dynamic_cast<MICSyncToken*>( syncToken );
-        SCAI_ASSERT_ERROR( micSyncToken, "no MIC sync token provided" )
-        // not yet implemented: run the offload computation asynchronously
+        SCAI_LOG_WARN( logger, "asynchronous execution for for MIC not supported yet" )
     }
 
     // result := alpha * A * x + beta * y -> result:= beta * y; result += alpha * A
@@ -364,19 +363,18 @@ void MICCOOUtils::jacobi(
     const ValueType oldSolution[],
     const ValueType rhs[],
     const ValueType omega,
-    const IndexType numRows,
-    class SyncToken* syncToken )
+    const IndexType numRows )
 {
     // SCAI_REGION( "MIC.COO.jacobi" )
 
     SCAI_LOG_INFO( logger,
                    "jacobi<" << common::getScalarType<ValueType>() << ">" << ", #rows = " << numRows << ", omega = " << omega )
 
-    if( syncToken )
+    MICSyncToken* syncToken = MICSyncToken::getCurrentSyncToken();
+
+    if ( syncToken )
     {
-        MICSyncToken* micSyncToken = dynamic_cast<MICSyncToken*>( syncToken );
-        SCAI_ASSERT_ERROR( micSyncToken, "no MIC sync token provided" )
-        // not yet implemented: run the offload computation asynchronously
+        SCAI_LOG_WARN( logger, "asynchronous execution for for MIC not supported yet" )
     }
 
     // solution = omega * ( rhs - B * oldSolution ) * dinv + ( 1 - omega * oldSolution

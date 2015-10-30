@@ -36,12 +36,12 @@
 
 // local library
 #include <scai/lama/mic/MICUtils.hpp>
-#include <scai/lama/UtilKernelTrait.hpp>
+#include <scai/lama/CSRKernelTrait.hpp>
 
 // internal scai libraries
 #include <scai/tracing.hpp>
 #include <scai/kregistry/KernelRegistry.hpp>
-#include <scai/tasking/SyncToken.hpp>
+#include <scai/hmemo/mic/MICSyncToken.hpp>
 
 #include <scai/common/Assert.hpp>
 #include <scai/common/Settings.hpp>
@@ -54,7 +54,7 @@ namespace scai
 {
 
 using namespace hmemo;
-using tasking::SyncToken;
+using tasking::MICSyncToken;
 
 namespace lama
 {
@@ -75,17 +75,18 @@ void MICMKLCSRUtils::normalGEMV(
     const IndexType /* nnz */,
     const IndexType csrIA[],
     const IndexType csrJA[],
-    const float csrValues[],
-    SyncToken* syncToken )
+    const float csrValues[] )
 {
     // SCAI_REGION( "MIC.MKLscsrmv" )
 
     SCAI_LOG_INFO( logger,
                    "normalGEMV<float>, result[" << numRows << "] = " << alpha << " * A * x + " << beta << " * y " )
 
-    if( syncToken )
+    MICSyncToken* syncToken = MICSyncToken::getCurrentSyncToken();
+
+    if ( syncToken )
     {
-        COMMON_THROWEXCEPTION( "asynchronous execution should be done by LAMATask before" )
+        SCAI_LOG_WARN( logger, "asynchronous execution for MIC not supported yet" )
     }
 
     if( y != result && beta != 0 )
@@ -128,9 +129,15 @@ void MICMKLCSRUtils::normalGEMV(
     const IndexType /* nnz */,
     const IndexType csrIA[],
     const IndexType csrJA[],
-    const double csrValues[],
-    SyncToken* syncToken )
+    const double csrValues[] )
 {
+    MICSyncToken* syncToken = MICSyncToken::getCurrentSyncToken();
+
+    if ( syncToken )
+    {
+        SCAI_LOG_WARN( logger, "asynchronous execution for MIC not supported yet" )
+    }
+
     // SCAI_REGION( "MIC.MKLdcsrmv" )
 
     SCAI_LOG_INFO( logger,

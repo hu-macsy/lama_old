@@ -44,11 +44,6 @@
 namespace scai
 {
 
-namespace tasking
-{
-    class SyncToken;
-}
-
 namespace lama
 {
 
@@ -116,8 +111,7 @@ public:
         const IndexType numValues,
         const IndexType cooIA[],
         const IndexType cooJA[],
-        const ValueType cooValues[],
-        tasking::SyncToken* syncToken );
+        const ValueType cooValues[] );
 
     /** Implementation for COOKernelTrait::jacobi  */
 
@@ -131,8 +125,7 @@ public:
         const ValueType oldSolution[],
         const ValueType rhs[],
         const ValueType omega,
-        const IndexType numRows,
-        tasking::SyncToken* syncToken );
+        const IndexType numRows);
 
     /** Routine that registers all routines of this class at the LAMA interface. */
 

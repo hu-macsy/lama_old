@@ -50,6 +50,11 @@ namespace scai
 namespace lama
 {
 
+/** Static class that provides CUDA implementaions for the BLAS3 routines as specified in BLASKernelTrait.
+ *
+ *  The BLAS3 routines are all private and can only be accessed via kernel registry.
+ */
+
 class COMMON_DLL_IMPORTEXPORT CUDABLAS3
 {
 public:
@@ -116,8 +121,6 @@ private:
      * @param[in] C       array of dimensions (ldc,n);
      *                    ldc must be at least max(1,m).
      * @param[in] ldc     leading dimension of two-dimensional array used to store matrix C.
-     * TODO[doxy] Is the following description correct?
-     * @param[out] syncToken updated based on C = alpha * op(A) * op(B) + beta * C
      */
     template<typename ValueType>
     static void gemm(
@@ -199,10 +202,6 @@ private:
      *                    On exit B is overwritten by the solution matrix X.
      * @param[in] ldb     leading dimension of the two-dimensional array containing B;
      *                    ldb must be at least max(1, m).
-     * TODO[doxy] Is the following description correct?
-     * @param[out] syncToken  contains the solution matrix X satisfying
-     *                              op(A) * X = alpha * B
-     *                           or X * op(A) = alpha * B
      */
     template<typename ValueType>
     static void trsm(
