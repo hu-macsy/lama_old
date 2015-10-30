@@ -125,15 +125,13 @@ public:
 
     void wait();
   
-    /** Return true if there is at least one access to any context data. 
-     *  For a locked array further write access is not possible.
-     */
+    /** Return number of all accesses. */
 
-    bool locked() const;
+    int locked() const;
 
-    /** Return true if there is at least one write access to any context data. */
+    /** Return number of accesses for a certain kind. */
 
-    bool locked( common::context::AccessKind kind ) const;
+    int locked( common::context::AccessKind kind ) const;
 
     void invalidateAll();
 

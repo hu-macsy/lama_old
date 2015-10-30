@@ -39,6 +39,22 @@ using namespace scai::hmemo;
 
 /* --------------------------------------------------------------------- */
 
+template<typename ValueType>
+__global__
+void add_kernel( ValueType* array, IndexType n )
+{
+    const IndexType i = blockIdx.x * blockDim.x + threadIdx.x;
+
+    ValueType one = 1;
+
+    if ( i < n )
+    {
+        array[i] += one;
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
 SCAI_LOG_DEF_LOGGER( logger, "AliasTest" )
 
 using namespace scai;
@@ -73,7 +89,7 @@ void add ( Array& res, const Array& a, const Array& b )
 
 void add1 ( Array& a )
 {
-    ContextPtr gpuCtx = hmemo::Context::getContextPtr( common::context::Host );
+    ContextPtr gpuCtx = hmemo::Context::getContextPtr( common::context::CUDA );
 
     int n = a.size();
 
@@ -83,10 +99,13 @@ void add1 ( Array& a )
 
     double* aPtr = write.get();
 
-    for ( IndexType i = 0; i < n; ++i )
-    {
-        aPtr[i] += 1;
-    }
+    const int blockSize = 256;
+    const int nblocks   = ( n + blockSize - 1 ) / blockSize;
+
+    dim3 block( blockSize, 1, 1 );
+    dim3 grid( nblocks, 1, 1 );
+
+    add_kernel<<<grid, block>>>( aPtr, n );
 }
 
 void printIt( const Array& a )
@@ -121,9 +140,9 @@ int main()
     
     // now make sure that we have only a valid copy on GPU
 
-    add1( a );
+    add1( a );  // done on GPU, invalid values at host
 
-    add( a, a, c );  // might use the old Host values
+    add( a, a, c );  // might use the old invalid Host values if WriteOnlyAccess is done first
 
     printIt( a );  // should be 1 + 2 + 1 + 1 + 2 = 7
 }

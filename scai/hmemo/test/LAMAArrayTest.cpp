@@ -37,6 +37,7 @@
 #include <scai/hmemo/LAMAArray.hpp>
 #include <scai/hmemo/LAMAArrayRef.hpp>
 #include <scai/hmemo/WriteAccess.hpp>
+#include <scai/hmemo/WriteOnlyAccess.hpp>
 #include <scai/hmemo/ReadAccess.hpp>
 
 using namespace boost;
@@ -216,9 +217,10 @@ BOOST_AUTO_TEST_CASE( accessTest )
             lamaArrayWAccess.get()[i] = value2;
         }
 
+        lamaArrayWAccess.release();
+
         ReadAccess<double> tmpReadAccess( lamaArray, contextPtr );
 
-        lamaArrayWAccess.release();
         ReadAccess<double> lamaArrayRAccess( lamaArray, contextPtr );
 
         for ( IndexType i = 0; i < n; ++i )
@@ -262,10 +264,21 @@ BOOST_AUTO_TEST_CASE( aliasTest )
         write.resize( 2 * N );
     }
     {
+        // read and write access at same time by same thread
+
+        WriteOnlyAccess<double> write( lamaArray, contextPtr, 2 * N );
+        BOOST_CHECK_THROW(
+        { 
+           // read access no more possible as write only did not take care about valid data
+
+           ReadAccess<double> read( lamaArray, contextPtr );
+        }, Exception );
+    }
+    {
         // with read and write at the same time resize throws Exception
 
-        WriteAccess<double> write( lamaArray, contextPtr );
         ReadAccess<double> read( lamaArray, contextPtr );
+        WriteAccess<double> write( lamaArray, contextPtr );
         BOOST_CHECK_THROW(
         { 
             write.resize( 3 * N );
@@ -274,8 +287,8 @@ BOOST_AUTO_TEST_CASE( aliasTest )
     {
         // read and write access at same time by same thread
 
-        WriteAccess<double> write( lamaArray, contextPtr );
         ReadAccess<double> read( lamaArray, contextPtr );
+        WriteAccess<double> write( lamaArray, contextPtr );
 
         // a clear is not possible as it affects the other access
         // Note: clear is the same as resize( 0 )

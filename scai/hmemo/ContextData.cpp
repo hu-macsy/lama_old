@@ -177,7 +177,7 @@ void ContextData::realloc( const size_t newSize, const size_t validSize )
     }
 }
 
-void ContextData::reserve( const size_t newSize, const size_t validSize )
+void ContextData::reserve( const size_t newSize, const size_t validSize, bool inUse )
 {
     if ( newSize <= size )
     {
@@ -186,6 +186,8 @@ void ContextData::reserve( const size_t newSize, const size_t validSize )
         // current capacity is sufficient
         return;
     }
+
+    SCAI_ASSERT( !inUse, "reserve/reallocate required on array that is already in use" )
 
     if ( size == 0 )
     {

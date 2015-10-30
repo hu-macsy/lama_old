@@ -82,16 +82,16 @@ void ContextDataManager::wait()
 
 /* ---------------------------------------------------------------------------------*/
 
-bool ContextDataManager::locked() const
+int ContextDataManager::locked() const
 {
-    return ( mLock[Write] > 0 ) || ( mLock[Read] > 0 );
+    return mLock[Write] + mLock[Read];
 }
 
 /* ---------------------------------------------------------------------------------*/
 
-bool ContextDataManager::locked( AccessKind kind ) const
+int ContextDataManager::locked( AccessKind kind ) const
 {
-    return ( mLock[kind] > 0 );
+    return mLock[kind];
 }
 
 /* ---------------------------------------------------------------------------------*/
@@ -134,6 +134,10 @@ void ContextDataManager::lockAccess( AccessKind kind, ContextPtr context )
         SCAI_LOG_DEBUG( logger, "first access, set context = " << *context << ", set thread = " << id )
 
     } 
+    else if ( locked( Write ) > 0 )
+    {
+        COMMON_THROWEXCEPTION( "Access conflict, no further access after a write access, data might have been reallocated" )
+    }
     else if ( !hasAccessConflict( kind ) )
     {
         // multiple reads
@@ -174,7 +178,7 @@ void ContextDataManager::lockAccess( AccessKind kind, ContextPtr context )
         multiContext   = false;
         multiThreaded  = false;
     }
-    else
+    else 
     {
         SCAI_LOG_DEBUG( logger, "same thread, same context, multiThreaded = " << multiThreaded << ", multiContext = " << multiContext )
         // same thread, same context, that is okay for now
@@ -531,7 +535,11 @@ ContextDataIndex ContextDataManager::acquireAccess( ContextPtr context, AccessKi
         SCAI_LOG_DEBUG( logger, "data not valid at " << data.getMemory() )
         // make sure that we have enough memory on the target context
         // old data is invalid so it must not be saved.
-        data.reserve( allocSize, 0 );  // do not save any old values
+
+        size_t validSizeHere = 0;   // no values to save here in this context
+        bool inUse = false;         // no other access here, so realloc is okay
+
+        data.reserve( allocSize, validSizeHere, inUse );  // do not save any old values, no other use
 
         if ( validSize )
         {
@@ -591,7 +599,7 @@ void ContextDataManager::fetch( ContextData& target, const ContextData& source, 
 
         if ( ! hostEntry.isValid() )
         {
-            hostEntry.reserve( size, 0 );  // reserve it
+            hostEntry.reserve( size, 0, false );  // reserve it
             hostEntry.copyFrom( source, size );
             hostEntry.setValid( true );
         }
@@ -629,7 +637,7 @@ SyncToken* ContextDataManager::fetchAsync( ContextData& target, const ContextDat
 
         if ( ! hostEntry.isValid() )
         {
-            hostEntry.reserve( size, 0 );  // reserve it
+            hostEntry.reserve( size, 0, false );  // reserve it
             hostEntry.copyFrom( source, size );
             hostEntry.setValid( true );
         }
@@ -658,7 +666,7 @@ void ContextDataManager::copyAllValidEntries( const ContextDataManager& other, c
 
         if ( size > 0 )
         {
-            data.reserve( size, 0 );
+            data.reserve( size, 0, false );
             fetch( data, otherData, size );
         }
 
@@ -677,7 +685,9 @@ void ContextDataManager::setValidData( ContextPtr context, const ContextDataMana
         return;
     }
 
-    data.reserve( size, 0 );   // reserve even if no valid data is available
+    bool inUse = false;   // no other access
+
+    data.reserve( size, 0, inUse );   // reserve even if no valid data is available
 
     ContextDataIndex validIndex = other.findValidData();
 
@@ -734,7 +744,7 @@ void ContextDataManager::prefetch( ContextPtr context, size_t size )
 
     wait();
 
-    data.reserve( size, 0 ); 
+    data.reserve( size, 0, false ); 
 
     ContextDataIndex validIndex = findValidData();
 
@@ -771,15 +781,17 @@ void ContextDataManager::reserve( ContextPtr context, const size_t size, const s
 
     ContextData& data = ( *this )[context];
 
+    bool inUse = false;
+
     // ToDo: must have a write access here SCAI_ASSERT( !data.locked( Write ), "no reserve on write locked data." )
 
     if ( data.isValid() )
     {
-        data.reserve( size, validSize );
+        data.reserve( size, validSize, inUse );
     }
     else
     {
-        data.reserve( size, 0 );  // no valid data
+        data.reserve( size, 0, inUse );  // no valid data
     }
 }
 
@@ -787,7 +799,7 @@ void ContextDataManager::reserve( ContextPtr context, const size_t size, const s
 
 void ContextDataManager::resize( const size_t size, const size_t validSize )
 {
-    SCAI_ASSERT( !locked(), "Array is locked, no resize possible" )
+    bool inUse = locked();   // do not 'really' resize for if there are any write/read accesses
 
     wait();  // valid is checked so outstanding transfers must be finished
 
@@ -797,7 +809,7 @@ void ContextDataManager::resize( const size_t size, const size_t validSize )
 
         if ( data.isValid() )
         {
-            data.reserve( size, validSize );
+            data.reserve( size, validSize, inUse );
         }
     }
 }

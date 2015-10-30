@@ -575,12 +575,9 @@ void LAMAArray<ValueType>::clear( const ContextDataIndex index )
 template<typename ValueType>
 void LAMAArray<ValueType>::resize( ContextDataIndex index, const IndexType size )
 {
-    ContextData& data = mContextDataManager[index];
-
-    SCAI_ASSERT_EQUAL( 1, mContextDataManager.locked( common::context::Write ), "multiple write access for resize" << data )
-    SCAI_ASSERT_EQUAL( 0, mContextDataManager.locked( common::context::Read ), "further read access, cannot resize" << data )
-
     ContextData& entry = mContextDataManager[index];
+
+    bool inUse =  mContextDataManager.locked() > 1;   // further accesses on this array
 
     // SCAI_ASSERT( entry.locked( common::context::Write ), "resize illegal here " << entry )
 
@@ -596,7 +593,7 @@ void LAMAArray<ValueType>::resize( ContextDataIndex index, const IndexType size 
     SCAI_LOG_INFO( logger, *this << ": resize, needed = " << allocSize << " bytes, used = " 
                          << validSize << " bytes, capacity = " << entry.capacity() << " bytes" )
 
-    entry.reserve( allocSize, validSize );
+    entry.reserve( allocSize, validSize, inUse );
 
     // capacity is now sufficient for size elements
 
@@ -613,12 +610,16 @@ void LAMAArray<ValueType>::reserve( ContextDataIndex index, const IndexType size
         return;   // nothing to do
     }
 
+    bool inUse =  mContextDataManager.locked() > 1;   // further accesses on this array
+
     ContextData& entry = mContextDataManager[index];
    
     size_t allocSize = size * mValueSize;
     size_t validSize = mSize * mValueSize;
 
-    entry.reserve( allocSize, validSize );
+    entry.reserve( allocSize, validSize, inUse );
+
+    // Note: mSize does not change by the reserve
 }
 
 /* ---------------------------------------------------------------------------------*/
