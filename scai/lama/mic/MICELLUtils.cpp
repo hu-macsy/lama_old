@@ -982,7 +982,7 @@ void MICELLUtils::jacobiHalo(
     const IndexType rowIndexes[],
     const IndexType numNonEmptyRows,
     const ValueType oldSolution[],
-    const ValueType omega,
+    const ValueType omega )
 {
     MICSyncToken* syncToken = MICSyncToken::getCurrentSyncToken();
 
@@ -1056,8 +1056,7 @@ void MICELLUtils::normalGEMV(
     const IndexType numNonZerosPerRow,
     const IndexType ellSizes[],
     const IndexType ellJA[],
-    const ValueType ellValues[],
-    SyncToken* syncToken )
+    const ValueType ellValues[] )
 {
     SCAI_LOG_INFO( logger,
                    "normalGEMV<" << common::getScalarType<ValueType>() << ">, result[" << numRows << "] = " << alpha << " * A( ell, #maxNZ/row = " << numNonZerosPerRow << " ) * x + " << beta << " * y " )
@@ -1069,11 +1068,11 @@ void MICELLUtils::normalGEMV(
         // only compute: result = beta * y
     }
 
-    if( syncToken )
+    MICSyncToken* syncToken = MICSyncToken::getCurrentSyncToken();
+
+    if ( syncToken )
     {
-        MICSyncToken* micSyncToken = dynamic_cast<MICSyncToken*>( syncToken );
-        SCAI_ASSERT_ERROR( micSyncToken, "no MIC sync token provided" )
-        // not yet implemented: run the offload computation asynchronously
+        SCAI_LOG_WARN( logger, "asynchronous execution of JDS jacobi iteration for MIC not supported yet" )
     }
 
     // SCAI_REGION( "MIC.ELL.normalGEMV" )
@@ -1142,14 +1141,13 @@ void MICELLUtils::sparseGEMV(
     const IndexType rowIndexes[],
     const IndexType ellSizes[],
     const IndexType ellJA[],
-    const ValueType ellValues[],
-    SyncToken* syncToken )
+    const ValueType ellValues[] )
 {
-    if( syncToken )
+    MICSyncToken* syncToken = MICSyncToken::getCurrentSyncToken();
+
+    if ( syncToken )
     {
-        MICSyncToken* micSyncToken = dynamic_cast<MICSyncToken*>( syncToken );
-        SCAI_ASSERT_ERROR( micSyncToken, "no MIC sync token provided" )
-        // not yet implemented: run the offload computation asynchronously
+        SCAI_LOG_WARN( logger, "asynchronous execution of JDS jacobi iteration for MIC not supported yet" )
     }
 
     // SCAI_REGION( "MIC.ELL.sparseGEMV" )

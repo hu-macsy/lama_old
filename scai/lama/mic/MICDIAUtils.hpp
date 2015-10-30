@@ -38,6 +38,7 @@
 
 // internal scai libraries
 #include <scai/common/SCAITypes.hpp>
+#include <scai/logging.hpp>
 
 namespace scai
 {
@@ -125,6 +126,7 @@ public:
 
 private:
 
+    /*
     template<typename ValueType>
     static void normalGEMV(
         ValueType result[],
@@ -137,6 +139,7 @@ private:
         const IndexType numDiagonals,
         const IndexType diaOffsets[],
         const ValueType diaValues[] );
+   */
 
     static bool initialized;
 

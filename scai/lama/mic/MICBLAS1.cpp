@@ -59,6 +59,7 @@ namespace scai
 {
 
 using namespace hmemo;
+using tasking::MICSyncToken;
 
 namespace lama
 {

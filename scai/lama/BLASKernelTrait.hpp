@@ -311,7 +311,6 @@ struct BLASKernelTrait
      *  @tparam ValueType stands for the arithmetic type used for scal
      */
     template<typename ValueType>
-    template<typename ValueType>
     struct sum
     {
 
@@ -346,7 +345,6 @@ struct BLASKernelTrait
      *
      *  @tparam ValueType stands for the arithmetic type used in this operation.
      */
-    template<typename ValueType>
     template<typename ValueType>
     struct gemv
     {
@@ -409,7 +407,6 @@ struct BLASKernelTrait
      *
      *  @tparam ValueType stands for the arithmetic type used in this operation.
      */
-    template<typename ValueType>
     template<typename ValueType>
     struct gemm
     {
@@ -558,6 +555,7 @@ struct BLASKernelTrait
      *
      *  @tparam ValueType stands for the arithmetic type used in this operation.
      */
+    template<typename ValueType>
     struct getinv
     {
 
