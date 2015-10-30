@@ -800,7 +800,7 @@ void DenseVector<ValueType>::assign( const Expression_SV_SV& expression )
     const ValueType beta = exp2.getArg1().getValue<ValueType>();
     const Vector& y = exp2.getArg2();
 
-    SCAI_LOG_INFO( logger, *this << ": assign" << alpha << " * x:" << x << " + " << beta << " * y:" << y )
+    SCAI_LOG_INFO( logger, "z = " << alpha << " * x + " << beta << " * y, with  x = " << x << ", y = " << y << ", z = " << *this )
 
     SCAI_LOG_DEBUG( logger, "dist of x = " << x.getDistribution() )
     SCAI_LOG_DEBUG( logger, "dist of y = " << y.getDistribution() )
@@ -823,22 +823,25 @@ void DenseVector<ValueType>::assign( const Expression_SV_SV& expression )
 
         if( mLocalValues.size() != denseX.mLocalValues.size() )
         {
+            SCAI_LOG_DEBUG( logger, "resize local values of z = this" )
             mLocalValues.clear();
             WriteAccess<ValueType> localAccess( mLocalValues, mContext );
             localAccess.resize( denseX.mLocalValues.size() );
         }
 
-#ifdef SCAI_LOG_DEBUG_ENABLED
+#ifdef NOT_SWITCHED_ON
         {
-            // useful output to identify aliases between arguments
+            // useful output to identify aliases between arguments, write should be the last one
 
-            WriteAccess<ValueType> rZ( mLocalValues, mContext );
             ReadAccess<ValueType> rX( denseX.mLocalValues, mContext );
             ReadAccess<ValueType> rY( denseY.mLocalValues, mContext );
+            WriteAccess<ValueType> rZ( mLocalValues, mContext );
 
             SCAI_LOG_DEBUG( logger, " z = " << rZ.get() << ", x = " << rX.get() << ", y = " << rY.get() )
         }
 #endif
+
+        SCAI_LOG_DEBUG( logger, "call vectorPlusVector" )
 
         vectorPlusVector( mContext, mLocalValues, alpha, denseX.mLocalValues, beta, denseY.mLocalValues );
     }

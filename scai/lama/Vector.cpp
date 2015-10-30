@@ -324,7 +324,7 @@ Vector& Vector::operator=( const Expression_SVM_SV& expression )
 
 Vector& Vector::operator=( const Expression_SV& expression )
 {
-    SCAI_LOG_DEBUG( logger, "a * vector1 -> a * vector1 + 0.0 * vector1" )
+    SCAI_LOG_DEBUG( logger, "operator=, SV (  s * vector )  -> SV_SV ( s * vector  + 0 * vector )" )
 
     Expression_SV_SV tmpExp( expression, Expression_SV( Scalar( 0 ), expression.getArg2() ) );
 
