@@ -76,6 +76,10 @@ public:
 
     virtual bool probe() const;
 
+    /** Get sync token in case of asynchronous execution should be started. */
+
+    static MICSyncToken* getCurrentSyncToken();
+
 private:
 
     MICContextPtr mMICContext; // needed for synchronization
