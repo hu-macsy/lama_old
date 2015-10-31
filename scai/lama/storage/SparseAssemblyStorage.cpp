@@ -40,6 +40,7 @@
 
 // internal scai libraries
 #include <scai/hmemo.hpp>
+#include <scai/common/macros/print_string.hpp>
 
 // boost
 #include <boost/preprocessor.hpp>
@@ -850,23 +851,17 @@ void SparseAssemblyStorage<ValueType>::writeAt( std::ostream& stream ) const
            << ", #values = " << mNumValues << ", diag = " << mDiagonalProperty << " )";
 }
 
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
-const char* SparseAssemblyStorage<ValueType>::typeName()
-{
-    std::ostringstream name;
-
-    name << "SparseAssemblyStorage<" << common::getScalarType<ValueType>() << ">";
-
-    return name.str().c_str();
-}
-
 /* ========================================================================= */
 /*       Template specializattions and instantiations                        */
 /* ========================================================================= */
 
+
 #define LAMA_ASSEMBLY_STORAGE_INSTANTIATE(z, I, _)                                           \
+    template<>                                                                               \
+    const char* SparseAssemblyStorage<ARITHMETIC_HOST_TYPE_##I>::typeName()                  \
+    {                                                                                        \
+        return "SparseAssemblyStorage<" PRINT_STRING(ARITHMETIC_HOST_TYPE_##I) ">";          \
+    }                                                                                        \
                                                                                              \
     template class COMMON_DLL_IMPORTEXPORT SparseAssemblyStorage<ARITHMETIC_HOST_TYPE_##I> ;
 

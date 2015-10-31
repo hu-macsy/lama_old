@@ -59,7 +59,7 @@ class COMMON_DLL_IMPORTEXPORT OpenMPBLAS3
 {
 public:
 
-    /** OpenMP implementation for BLAS3Interface<ValueType>::gemm */
+    /** OpenMP implementation for BLASKernelTrait::gemm */
 
     template<typename ValueType>
     static void gemm(
@@ -78,9 +78,7 @@ public:
         ValueType* C,
         const IndexType ldc );
 
-    /** Routine that sets functions pointers belonging to BLAS1 in a BLASKernelTrait.
-     *
-     *  @param[in,out] blas struct to register all routines implemented in CUDA
+    /** Routine that registers the OpenMP implementations of Utils kernel at registry.
      *
      *  Note: this routine will make instantiations of the template routines.
      */
