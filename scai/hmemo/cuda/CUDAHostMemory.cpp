@@ -129,7 +129,7 @@ SyncToken* CUDAHostMemory::memcpyAsync( void* dst, const void* src, const size_t
 {
     SCAI_CONTEXT_ACCESS( mCUDAContext )
 
-    std::auto_ptr<CUDAStreamSyncToken> syncToken( mCUDAContext->getTransferSyncToken() );
+    common::unique_ptr<CUDAStreamSyncToken> syncToken( mCUDAContext->getTransferSyncToken() );
 
     SCAI_LOG_INFO( logger, "copy async " << size << " bytes from " << src << " (host) to " << dst << " (host) " )
 

@@ -427,16 +427,16 @@ SyncToken* Communicator::shiftAsync(
     // For shifting of data we use the pure virtual methods implemened by each communicator
     // Note: get is the method of the accesses and not of the auto_ptr
 
-    SyncToken* syncToken = shiftDataAsync( recvData->get(), sendData->get(), numElems, direction );
+    common::unique_ptr<SyncToken> syncToken( shiftDataAsync( recvData->get(), sendData->get(), numElems, direction ) );
 
-    SCAI_ASSERT_DEBUG( syncToken, "NULL pointer for sync token" )
+    SCAI_ASSERT_DEBUG( syncToken.get(), "NULL pointer for sync token" )
 
     // accesses are pushed in the sync token so they are freed after synchronization
 
     syncToken->pushToken( sendData );
     syncToken->pushToken( recvData );
 
-    return syncToken;
+    return syncToken.release();
 }
 
 /* -------------------------------------------------------------------------- */

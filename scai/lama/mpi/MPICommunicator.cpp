@@ -510,7 +510,7 @@ tasking::SyncToken* MPICommunicator::exchangeByPlanAsyncImpl(
                     << ", send to " << sendPlan.size() << " processors, recv from " << recvPlan.size() )
     int noRequests = sendPlan.size() + recvPlan.size();
 
-    // create MPIToken as auto_ptr, so it will be freed in case of exception
+    // create MPIToken as unique_ptr, so it will be freed in case of exception
 
     scai::common::unique_ptr<MPISyncToken> pSyncToken( new MPISyncToken( noRequests ) );
 

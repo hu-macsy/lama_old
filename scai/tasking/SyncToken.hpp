@@ -88,7 +88,7 @@ public:
  * absolutely mandatory and can be done in the following ways:
  *
  * \code
- *    auto_ptr<SyncToken> token = new XXXSyncToken( ... )
+ *    common::unique_ptr<SyncToken> token ( new XXXSyncToken( ...) )
  *    ! synchronization is alway done when object will be deleted at the end of the scope
  *
  *    token->wait();     // explicit wait
