@@ -87,7 +87,7 @@ typedef scai::common::Complex<long double> ComplexLongDouble;
 
 /** Definition for a constant value that indicates a non-available index.
  */
-static const IndexType nIndex = std::numeric_limits<IndexType>::max();
+extern const IndexType nIndex;
 
 /** Data type that is used for numbering of partitions.
  *
@@ -96,7 +96,7 @@ typedef int PartitionId;
 
 /** Definition for a constant value that indicates a non-available partition.
  */
-static const PartitionId nPartition = std::numeric_limits<PartitionId>::max();
+extern const PartitionId nPartition;
 
 // Number of supported arithmetic types, maximal number is currently 4
 

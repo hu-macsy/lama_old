@@ -92,6 +92,7 @@ scai_project (
 
         Printable
         ScalarType
+        SCAITypes
         ContextType
         Settings
         Thread
@@ -109,7 +110,6 @@ scai_project (
         function
         OpenMP
         NonCopyable
-        SCAITypes
         shared_ptr
         TypeTraits
         unique_ptr
