@@ -36,6 +36,7 @@ set ( CXX_SOURCES
       ContextTest.cpp  
       HostContextTest.cpp  
       LAMAArrayTest.cpp  
+      DelayedReleaseTest.cpp
 ) 
 
 # Boost is not required, but if not available tests are not built

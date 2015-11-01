@@ -30,6 +30,8 @@
  * @date 05.07.2015
  **/
 
+#include "MockMemory.hpp"
+
 #include <scai/hmemo/Context.hpp>
 #include <scai/hmemo/Memory.hpp>
  
@@ -37,7 +39,7 @@
 
 #include <scai/common/bind.hpp>
 #include <scai/common/weak_ptr.hpp>
-#include "MockMemory.hpp"
+#include <scai/common/Assert.hpp>
 
 /** Exampes of a new context class that implements all relevant routines. */
 
