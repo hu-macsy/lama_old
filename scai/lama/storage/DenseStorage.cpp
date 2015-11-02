@@ -303,6 +303,8 @@ void DenseStorageView<ValueType>::setIdentity()
 
     WriteOnlyAccess<ValueType> data( mData, loc, mNumRows * mNumColumns );
 
+    SCAI_CONTEXT_ACCESS( loc )
+
     setValue[loc]( data.get(), mNumRows, mNumColumns, static_cast<ValueType>( 0 ) );
     setDiagonalValue[loc]( data.get(), mNumRows, mNumColumns, static_cast<ValueType>( 1 ) );
 
@@ -317,6 +319,8 @@ void DenseStorageView<ValueType>::setZero()
     LAMAKernel<DenseKernelTrait::setValue<ValueType> > setValue;
 
     ContextPtr loc = setValue.getValidContext( this->getContextPtr() );
+
+    SCAI_CONTEXT_ACCESS( loc )
 
     WriteOnlyAccess<ValueType> data( mData, loc, mNumRows * mNumColumns );
 
@@ -403,6 +407,8 @@ void DenseStorageView<ValueType>::setCSRDataImpl(
         ReadAccess<IndexType> csrIA( ia, loc );
         ReadAccess<IndexType> csrJA( ja, loc );
         ReadAccess<OtherValueType> csrValues( values, loc );
+
+        SCAI_CONTEXT_ACCESS( loc )
 
         if ( !validOffsets[loc]( csrIA.get(), numRows, numValues ) )
         {

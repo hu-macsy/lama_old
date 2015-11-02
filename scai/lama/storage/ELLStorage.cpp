@@ -1180,8 +1180,6 @@ SyncToken* ELLStorage<ValueType>::matrixTimesVectorAsync(
 
     ContextPtr loc = normalGEMV.getValidContext( sparseGEMV, this->getContextPtr() );
 
-    SCAI_LOG_INFO( logger, *this << ": matrixTimesVectorAsync on " << *loc )
-
     if( loc->getType() == common::context::Host )
     {
         // execution as separate thread
@@ -1204,6 +1202,8 @@ SyncToken* ELLStorage<ValueType>::matrixTimesVectorAsync(
         return new tasking::TaskSyncToken( bind( pf, this, ref( result ), alpha, cref( x ), beta, cref( y ) ) );
     }
 
+    SCAI_LOG_INFO( logger, *this << ": matrixTimesVectorAsync on " << *loc )
+
     SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumColumns )
     SCAI_ASSERT_EQUAL_ERROR( y.size(), mNumRows )
 
@@ -1220,15 +1220,15 @@ SyncToken* ELLStorage<ValueType>::matrixTimesVectorAsync(
 
     common::unique_ptr<SyncToken> syncToken( loc->getSyncToken() );
 
-    syncToken->setCurrent();
+    SCAI_ASYNCHRONOUS( *syncToken )
 
     // all accesses will be pushed to the sync token as LAMA arrays have to be protected up
     // to the end of the computations.
 
-    shared_ptr<ReadAccess<IndexType> > ellIA( new ReadAccess<IndexType>( mIA, loc ) );
-    shared_ptr<ReadAccess<IndexType> > ellJA( new ReadAccess<IndexType>( mJA, loc ) );
-    shared_ptr<ReadAccess<ValueType> > ellValues( new ReadAccess<ValueType>( mValues, loc ) );
-    shared_ptr<ReadAccess<ValueType> > rX( new ReadAccess<ValueType>( x, loc ) );
+    ReadAccess<IndexType> ellIA( mIA, loc );
+    ReadAccess<IndexType> ellJA( mJA, loc );
+    ReadAccess<ValueType> ellValues( mValues, loc );
+    ReadAccess<ValueType> rX( x, loc );
 
     // Possible alias of result and y must be handled by coressponding accesses
 
@@ -1236,7 +1236,7 @@ SyncToken* ELLStorage<ValueType>::matrixTimesVectorAsync(
     {
         // only write access for y, no read access for result
 
-        shared_ptr<WriteAccess<ValueType> > wResult( new WriteAccess<ValueType>( result, loc ) );
+        WriteAccess<ValueType> wResult( result, loc );
 
         if( mRowIndexes.size() > 0 && ( beta == scai::common::constants::ONE ) )
         {
@@ -1244,14 +1244,14 @@ SyncToken* ELLStorage<ValueType>::matrixTimesVectorAsync(
 
             IndexType numNonZeroRows = mRowIndexes.size();
 
-            shared_ptr<ReadAccess<IndexType> > rRowIndexes( new ReadAccess<IndexType>( mRowIndexes, loc ) );
-
-            syncToken->pushToken( rRowIndexes );
+            ReadAccess<IndexType> rRowIndexes( mRowIndexes, loc );
 
             SCAI_CONTEXT_ACCESS( loc )
 
-            sparseGEMV[loc]( wResult->get(), alpha, rX->get(), mNumRows, mNumValuesPerRow, numNonZeroRows,
-                             rRowIndexes->get(), ellIA->get(), ellJA->get(), ellValues->get() );
+            sparseGEMV[loc]( wResult.get(), alpha, rX.get(), mNumRows, mNumValuesPerRow, numNonZeroRows,
+                             rRowIndexes.get(), ellIA.get(), ellJA.get(), ellValues.get() );
+
+            syncToken->pushRoutine( rRowIndexes.releaseDelayed() );
         }
         else
         {
@@ -1259,32 +1259,30 @@ SyncToken* ELLStorage<ValueType>::matrixTimesVectorAsync(
 
             SCAI_CONTEXT_ACCESS( loc )
 
-            normalGEMV[loc]( wResult->get(), alpha, rX->get(), beta, wResult->get(), mNumRows, mNumValuesPerRow,
-                             ellIA->get(), ellJA->get(), ellValues->get() );
+            normalGEMV[loc]( wResult.get(), alpha, rX.get(), beta, wResult.get(), mNumRows, mNumValuesPerRow,
+                             ellIA.get(), ellJA.get(), ellValues.get() );
         }
 
-        syncToken->pushToken( wResult );
+        syncToken->pushRoutine( wResult.releaseDelayed() );
     }
     else
     {
-        shared_ptr<WriteAccess<ValueType> > wResult( new WriteOnlyAccess<ValueType>( result, loc, mNumRows ) );
-        shared_ptr<ReadAccess<ValueType> > rY( new ReadAccess<ValueType>( y, loc ) );
+        WriteOnlyAccess<ValueType> wResult( result, loc, mNumRows );
+        ReadAccess<ValueType> rY( y, loc );
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        normalGEMV[loc]( wResult->get(), alpha, rX->get(), beta, rY->get(), mNumRows, mNumValuesPerRow, ellIA->get(),
-                         ellJA->get(), ellValues->get() );
+        normalGEMV[loc]( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumRows, mNumValuesPerRow, ellIA.get(),
+                         ellJA.get(), ellValues.get() );
 
-        syncToken->pushToken( wResult );
-        syncToken->pushToken( rY );
+        syncToken->pushRoutine( wResult.releaseDelayed() );
+        syncToken->pushRoutine( rY.releaseDelayed() );
     }
 
-    syncToken->pushToken( ellIA );
-    syncToken->pushToken( ellJA );
-    syncToken->pushToken( ellValues );
-    syncToken->pushToken( rX );
-
-    syncToken->unsetCurrent();
+    syncToken->pushRoutine( ellIA.releaseDelayed() );
+    syncToken->pushRoutine( ellJA.releaseDelayed() );
+    syncToken->pushRoutine( ellValues.releaseDelayed() );
+    syncToken->pushRoutine( rX.releaseDelayed() );
 
     return syncToken.release();
 }
@@ -1353,10 +1351,10 @@ SyncToken* ELLStorage<ValueType>::vectorTimesMatrixAsync(
     // all accesses will be pushed to the sync token as LAMA arrays have to be protected up
     // to the end of the computations.
 
-    shared_ptr<ReadAccess<IndexType> > ellSizes( new ReadAccess<IndexType>( mIA, loc ) );
-    shared_ptr<ReadAccess<IndexType> > ellJA( new ReadAccess<IndexType>( mJA, loc ) );
-    shared_ptr<ReadAccess<ValueType> > ellValues( new ReadAccess<ValueType>( mValues, loc ) );
-    shared_ptr<ReadAccess<ValueType> > rX( new ReadAccess<ValueType>( x, loc ) );
+    ReadAccess<IndexType> ellSizes( mIA, loc );
+    ReadAccess<IndexType> ellJA( mJA, loc );
+    ReadAccess<ValueType> ellValues( mValues, loc );
+    ReadAccess<ValueType> rX( x, loc );
 
     // Possible alias of result and y must be handled by coressponding accesses
 
@@ -1364,7 +1362,7 @@ SyncToken* ELLStorage<ValueType>::vectorTimesMatrixAsync(
     {
         // only write access for y, no read access for result
 
-        shared_ptr<WriteAccess<ValueType> > wResult( new WriteAccess<ValueType>( result, loc ) );
+        WriteAccess<ValueType> wResult( result, loc );
 
         if( mRowIndexes.size() > 0 && ( beta == scai::common::constants::ONE ) )
         {
@@ -1372,14 +1370,14 @@ SyncToken* ELLStorage<ValueType>::vectorTimesMatrixAsync(
 
             IndexType numNonZeroRows = mRowIndexes.size();
 
-            shared_ptr<ReadAccess<IndexType> > rows( new ReadAccess<IndexType>( mRowIndexes, loc ) );
-
-            syncToken->pushToken( rows );
+            ReadAccess<IndexType> rows( mRowIndexes, loc );
 
             SCAI_CONTEXT_ACCESS( loc )
 
-            sparseGEVM[loc]( wResult->get(), alpha, rX->get(), mNumRows, mNumColumns, mNumValuesPerRow, numNonZeroRows,
-                             rows->get(), ellSizes->get(), ellJA->get(), ellValues->get() );
+            sparseGEVM[loc]( wResult.get(), alpha, rX.get(), mNumRows, mNumColumns, mNumValuesPerRow, numNonZeroRows,
+                             rows.get(), ellSizes.get(), ellJA.get(), ellValues.get() );
+
+            syncToken->pushRoutine( rows.releaseDelayed() );
         }
         else
         {
@@ -1387,30 +1385,30 @@ SyncToken* ELLStorage<ValueType>::vectorTimesMatrixAsync(
 
             SCAI_CONTEXT_ACCESS( loc )
 
-            normalGEVM[loc]( wResult->get(), alpha, rX->get(), beta, wResult->get(), mNumRows, mNumColumns, mNumValuesPerRow,
-                             ellSizes->get(), ellJA->get(), ellValues->get() );
+            normalGEVM[loc]( wResult.get(), alpha, rX.get(), beta, wResult.get(), mNumRows, mNumColumns, mNumValuesPerRow,
+                             ellSizes.get(), ellJA.get(), ellValues.get() );
         }
 
-        syncToken->pushToken( wResult );
+        syncToken->pushRoutine( wResult.releaseDelayed() );
     }
     else
     {
-        shared_ptr<WriteAccess<ValueType> > wResult( new WriteOnlyAccess<ValueType>( result, loc, mNumColumns ) );
-        shared_ptr<ReadAccess<ValueType> > rY( new ReadAccess<ValueType>( y, loc ) );
+        WriteOnlyAccess<ValueType> wResult( result, loc, mNumColumns );
+        ReadAccess<ValueType> rY( y, loc );
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        normalGEVM[loc]( wResult->get(), alpha, rX->get(), beta, rY->get(), mNumRows, mNumColumns, mNumValuesPerRow,
-                         ellSizes->get(), ellJA->get(), ellValues->get() );
+        normalGEVM[loc]( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumRows, mNumColumns, mNumValuesPerRow,
+                         ellSizes.get(), ellJA.get(), ellValues.get() );
 
-        syncToken->pushToken( wResult );
-        syncToken->pushToken( rY );
+        syncToken->pushRoutine( wResult.releaseDelayed() );
+        syncToken->pushRoutine( rY.releaseDelayed() );
     }
 
-    syncToken->pushToken( ellSizes );
-    syncToken->pushToken( ellJA );
-    syncToken->pushToken( ellValues );
-    syncToken->pushToken( rX );
+    syncToken->pushRoutine( ellSizes.releaseDelayed() );
+    syncToken->pushRoutine( ellJA.releaseDelayed() );
+    syncToken->pushRoutine( ellValues.releaseDelayed() );
+    syncToken->pushRoutine( rX.releaseDelayed() );
 
     syncToken->unsetCurrent();
 
@@ -1507,11 +1505,11 @@ SyncToken* ELLStorage<ValueType>::jacobiIterateAsync(
         COMMON_THROWEXCEPTION( "alias of solution and oldSolution unsupported" )
     }
 
+    // matrix must be square, solution vectors must have right size
+
     SCAI_ASSERT_EQUAL_DEBUG( mNumRows, oldSolution.size() )
     SCAI_ASSERT_EQUAL_DEBUG( mNumRows, solution.size() )
     SCAI_ASSERT_EQUAL_DEBUG( mNumRows, mNumColumns )
-
-    // matrix must be square
 
     common::unique_ptr<SyncToken> syncToken( loc->getSyncToken() );
 
@@ -1519,25 +1517,25 @@ SyncToken* ELLStorage<ValueType>::jacobiIterateAsync(
 
     // make all needed data available at loc
 
-    shared_ptr<ReadAccess<IndexType> > ellSizes( new ReadAccess<IndexType>( mIA, loc ) );
-    shared_ptr<ReadAccess<IndexType> > ellJA( new ReadAccess<IndexType>( mJA, loc ) );
-    shared_ptr<ReadAccess<ValueType> > ellValues( new ReadAccess<ValueType>( mValues, loc ) );
-    shared_ptr<ReadAccess<ValueType> > rOldSolution( new ReadAccess<ValueType>( oldSolution, loc ) );
-    shared_ptr<ReadAccess<ValueType> > rRhs( new ReadAccess<ValueType>( rhs, loc ) );
+    ReadAccess<IndexType> ellSizes( mIA, loc );
+    ReadAccess<IndexType> ellJA( mJA, loc );
+    ReadAccess<ValueType> ellValues( mValues, loc );
+    ReadAccess<ValueType> rOldSolution( oldSolution, loc );
+    ReadAccess<ValueType> rRhs( rhs, loc );
 
-    shared_ptr<WriteAccess<ValueType> > wSolution( new WriteAccess<ValueType>( solution, loc ) );
+    WriteAccess<ValueType> wSolution(  solution, loc );
 
     SCAI_CONTEXT_ACCESS( loc )
 
-    jacobi[loc]( wSolution->get(), mNumRows, mNumValuesPerRow, ellSizes->get(), ellJA->get(), ellValues->get(),
-                 rOldSolution->get(), rRhs->get(), omega );
+    jacobi[loc]( wSolution.get(), mNumRows, mNumValuesPerRow, ellSizes.get(), ellJA.get(), ellValues.get(),
+                 rOldSolution.get(), rRhs.get(), omega );
 
-    syncToken->pushToken( rRhs );
-    syncToken->pushToken( rOldSolution );
-    syncToken->pushToken( ellValues );
-    syncToken->pushToken( ellJA );
-    syncToken->pushToken( ellSizes );
-    syncToken->pushToken( wSolution );
+    syncToken->pushRoutine( rRhs.releaseDelayed() );
+    syncToken->pushRoutine( rOldSolution.releaseDelayed() );
+    syncToken->pushRoutine( ellValues.releaseDelayed() );
+    syncToken->pushRoutine( ellJA.releaseDelayed() );
+    syncToken->pushRoutine( ellSizes.releaseDelayed() );
+    syncToken->pushRoutine( wSolution.releaseDelayed() );
 
     syncToken->unsetCurrent();
 
