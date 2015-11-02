@@ -181,7 +181,7 @@ void wrapperGemm(
     LongDouble*,
     const int )
 {
-    COMMON_THROWEXCEPTION( "LongDouble not supported by BLAS, please set USE_BLAS=0" )
+    COMMON_THROWEXCEPTION( "LongDouble not supported by BLAS, please set SCAI_USE_BLAS=0" )
 }
 
 template<>
@@ -201,7 +201,7 @@ void wrapperGemm(
     ComplexLongDouble*,
     const int )
 {
-    COMMON_THROWEXCEPTION( "ComplexLongDouble not supported by BLAS, please set USE_BLAS=0" )
+    COMMON_THROWEXCEPTION( "ComplexLongDouble not supported by BLAS, please set SCAI_USE_BLAS=0" )
 }
 
 template<typename ValueType>
@@ -253,17 +253,17 @@ void BLAS_BLAS3::registerKernels()
 
     int level = 0;
 
-    bool useBLAS = common::Settings::getEnvironment( level, "USE_BLAS" );
+    bool useBLAS = common::Settings::getEnvironment( level, "SCAI_USE_BLAS" );
 
     if( !useBLAS || ( level <= 0 ) )
     {
-        SCAI_LOG_INFO( logger, "BLAS3 wrapper routines for Host Interface are disabled (USE_BLAS not set or 0)" )
+        SCAI_LOG_INFO( logger, "BLAS3 wrapper routines for Host Interface are disabled (SCAI_USE_BLAS not set or 0)" )
         return;
     }
     else if( level > 2 )
     {
         SCAI_LOG_INFO( logger,
-                       "BLAS3 wrapper routines for Host Interface are disabled (USE_BLAS = " << level << ")" )
+                       "BLAS3 wrapper routines for Host Interface are disabled (SCAI_USE_BLAS = " << level << ")" )
         return;
     }
 

@@ -104,13 +104,13 @@ void wrapperScal( const int n, const ComplexDouble alpha, ComplexDouble* x, cons
 template<>
 void wrapperScal( const int, const LongDouble, LongDouble*, const int )
 {
-    COMMON_THROWEXCEPTION( "LongDouble not supported by BLAS, please set USE_BLAS=0" )
+    COMMON_THROWEXCEPTION( "LongDouble not supported by BLAS, please set SCAI_USE_BLAS=0" )
 }
 
 template<>
 void wrapperScal( const int, const ComplexLongDouble, ComplexLongDouble*, const int )
 {
-    COMMON_THROWEXCEPTION( "ComplexLongDouble not supported by BLAS, please set USE_BLAS=0" )
+    COMMON_THROWEXCEPTION( "ComplexLongDouble not supported by BLAS, please set SCAI_USE_BLAS=0" )
 }
 
 /* ---------------------------------------------------------------------------------------*/
@@ -180,14 +180,14 @@ ComplexDouble wrapperNrm2( const int n, const ComplexDouble* x, const int incX )
 template<>
 LongDouble wrapperNrm2( const int, const LongDouble*, const int )
 {
-    COMMON_THROWEXCEPTION( "LongDouble not supported by BLAS, please set USE_BLAS=0" )
+    COMMON_THROWEXCEPTION( "LongDouble not supported by BLAS, please set SCAI_USE_BLAS=0" )
     return static_cast<LongDouble>(0.0);
 }
 
 template<>
 ComplexLongDouble wrapperNrm2( const int, const ComplexLongDouble*, const int )
 {
-    COMMON_THROWEXCEPTION( "LongDouble not supported by BLAS, please set USE_BLAS=0" )
+    COMMON_THROWEXCEPTION( "LongDouble not supported by BLAS, please set SCAI_USE_BLAS=0" )
     return static_cast<ComplexLongDouble>(0.0);
 }
 
@@ -250,14 +250,14 @@ ComplexDouble wrapperAsum( const int n, const ComplexDouble* x, const int incX )
 template<>
 LongDouble wrapperAsum( const int, const LongDouble*, const int )
 {
-    COMMON_THROWEXCEPTION( "LongDouble not supported by BLAS, please set USE_BLAS=0" )
+    COMMON_THROWEXCEPTION( "LongDouble not supported by BLAS, please set SCAI_USE_BLAS=0" )
     return static_cast<LongDouble>(0.0);
 }
 
 template<>
 ComplexLongDouble wrapperAsum( const int, const ComplexLongDouble*, const int )
 {
-    COMMON_THROWEXCEPTION( "LongDouble not supported by BLAS, please set USE_BLAS=0" )
+    COMMON_THROWEXCEPTION( "LongDouble not supported by BLAS, please set SCAI_USE_BLAS=0" )
     return static_cast<ComplexLongDouble>(0.0);
 }
 
@@ -319,14 +319,14 @@ IndexType wrapperIamax( const int n, const ComplexDouble* x, const int incX )
 template<>
 IndexType wrapperIamax( const int, const LongDouble*, const int )
 {
-    COMMON_THROWEXCEPTION( "LongDouble not supported by BLAS, please set USE_BLAS=0" )
+    COMMON_THROWEXCEPTION( "LongDouble not supported by BLAS, please set SCAI_USE_BLAS=0" )
     return 0;
 }
 
 template<>
 IndexType wrapperIamax( const int, const ComplexLongDouble*, const int )
 {
-    COMMON_THROWEXCEPTION( "LongDouble not supported by BLAS, please set USE_BLAS=0" )
+    COMMON_THROWEXCEPTION( "LongDouble not supported by BLAS, please set SCAI_USE_BLAS=0" )
     return 0;
 }
 
@@ -382,13 +382,13 @@ void wrapperSwap( const int n, ComplexDouble* x, const int incX, ComplexDouble* 
 template<>
 void wrapperSwap( const int, LongDouble*, const int, LongDouble*, const int )
 {
-    COMMON_THROWEXCEPTION( "LongDouble not supported by BLAS, please set USE_BLAS=0" )
+    COMMON_THROWEXCEPTION( "LongDouble not supported by BLAS, please set SCAI_USE_BLAS=0" )
 }
 
 template<>
 void wrapperSwap( const int, ComplexLongDouble*, const int, ComplexLongDouble*, const int )
 {
-    COMMON_THROWEXCEPTION( "LongDouble not supported by BLAS, please set USE_BLAS=0" )
+    COMMON_THROWEXCEPTION( "LongDouble not supported by BLAS, please set SCAI_USE_BLAS=0" )
 }
 
 template<typename ValueType>
@@ -453,14 +453,14 @@ void wrapperCopy( const int n, const ComplexDouble* x, const int incX, ComplexDo
 template<>
 void wrapperCopy( const int, const LongDouble*, const int, LongDouble*, const int )
 {
-    COMMON_THROWEXCEPTION( "LongDouble not supported by BLAS, please set USE_BLAS=0" )
+    COMMON_THROWEXCEPTION( "LongDouble not supported by BLAS, please set SCAI_USE_BLAS=0" )
 }
 
 
 template<>
 void wrapperCopy( const int, const ComplexLongDouble*, const int, ComplexLongDouble*, const int )
 {
-    COMMON_THROWEXCEPTION( "LongDouble not supported by BLAS, please set USE_BLAS=0" )
+    COMMON_THROWEXCEPTION( "LongDouble not supported by BLAS, please set SCAI_USE_BLAS=0" )
 }
 
 template<typename ValueType>
@@ -547,13 +547,13 @@ void wrapperAxpy(
 template<>
 void wrapperAxpy( const int, LongDouble, const LongDouble*, const int, LongDouble*, const int )
 {
-    COMMON_THROWEXCEPTION( "LongDouble not supported by BLAS, please set USE_BLAS=0" )
+    COMMON_THROWEXCEPTION( "LongDouble not supported by BLAS, please set SCAI_USE_BLAS=0" )
 }
 
 template<>
 void wrapperAxpy( const int, ComplexLongDouble, const ComplexLongDouble*, const int, ComplexLongDouble*, const int )
 {
-    COMMON_THROWEXCEPTION( "LongDouble not supported by BLAS, please set USE_BLAS=0" )
+    COMMON_THROWEXCEPTION( "LongDouble not supported by BLAS, please set SCAI_USE_BLAS=0" )
 }
 
 template<typename ValueType>
@@ -632,14 +632,14 @@ ComplexDouble wrapperDot( const int n, const ComplexDouble* x, const int incX, c
 template<>
 LongDouble wrapperDot( const int, const LongDouble*, const int, const LongDouble*, const int )
 {
-    COMMON_THROWEXCEPTION( "LongDouble not supported by BLAS, please set USE_BLAS=0" )
+    COMMON_THROWEXCEPTION( "LongDouble not supported by BLAS, please set SCAI_USE_BLAS=0" )
     return static_cast<LongDouble>(0.0);
 }
 
 template<>
 ComplexLongDouble wrapperDot( const int, const ComplexLongDouble*, const int, const ComplexLongDouble*, const int )
 {
-    COMMON_THROWEXCEPTION( "LongDouble not supported by BLAS, please set USE_BLAS=0" )
+    COMMON_THROWEXCEPTION( "LongDouble not supported by BLAS, please set SCAI_USE_BLAS=0" )
     return static_cast<ComplexLongDouble>(0.0);
 }
 
@@ -680,18 +680,18 @@ void BLAS_BLAS1::registerKernels()
     bool useBLAS = false;
     int level = 0;
 
-    useBLAS = common::Settings::getEnvironment( level, "USE_BLAS" );
+    useBLAS = common::Settings::getEnvironment( level, "SCAI_USE_BLAS" );
 
     if( !useBLAS || ( level <= 0 ) )
     {
-        SCAI_LOG_INFO( logger, "BLAS1 wrapper routines for Host Interface are disabled (USE_BLAS not set or 0)" )
+        SCAI_LOG_INFO( logger, "BLAS1 wrapper routines for Host Interface are disabled (SCAI_USE_BLAS not set or 0)" )
         return;
     }
     else if( level > 1 )
     {
         // only level 2 or level 3 wrappers might be used
         SCAI_LOG_INFO( logger,
-                       "BLAS1 wrapper routines for Host Interface are disabled (USE_BLAS = " << level << ")" )
+                       "BLAS1 wrapper routines for Host Interface are disabled (SCAI_USE_BLAS = " << level << ")" )
         return;
     }
 
