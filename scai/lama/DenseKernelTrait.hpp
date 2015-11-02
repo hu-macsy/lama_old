@@ -38,13 +38,6 @@
 namespace scai
 {
 
-// forward declaration
-
-namespace tasking
-{
-    class SyncToken;
-}
-
 namespace lama
 {
 
@@ -52,6 +45,27 @@ namespace lama
 
 struct DenseKernelTrait
 {
+    template <typename DenseValueType>
+    struct nonZeroValues
+    {
+        /** Counting non-zero values in dense storage.
+         *
+         *  @param[in]  denseValues size is numRows x numColumns, array with all matrix elements of dense format
+         *  @param[in]  numRows number of rows
+         *  @param[in]  numColumns number of columns
+         *  @param[in]  eps is threshold when an element is to be considered as non-zero
+         *  @return     number of values whole absolute value is larger than eps
+         */
+
+        typedef IndexType ( *FuncType )(
+            const DenseValueType denseValues[],
+            const IndexType numRows,
+            const IndexType numColumns,
+            const DenseValueType eps );
+
+        static const char* getId() { return "Dense.nonZeroValues"; }
+    };
+
     template <typename DenseValueType>
     struct getCSRSizes
     {
@@ -135,6 +149,21 @@ struct DenseKernelTrait
         static const char* getId() { return "Dense.copyDenseValues"; }
     };
 
+    template<typename RowValueType, typename DenseValueType>
+    struct getRow
+    {
+        /** Get diagonal of a dense matrix, type conversion is supported. */
+
+        typedef void ( *FuncType ) (
+            RowValueType rowValues[],
+            const DenseValueType denseValues[],
+            const IndexType irow,
+            const IndexType numRows,
+            const IndexType numColumns );
+
+        static const char* getId() { return "Dense.getRow"; }
+    };
+
     template<typename DenseValueType1, typename DenseValueType2>
     struct getDiagonal
     {
@@ -163,17 +192,30 @@ struct DenseKernelTrait
         static const char* getId() { return "Dense.setDiagonal"; }
     };
 
-    /** Function pointer type definitions for modification of dense storage. */
+    template<typename DenseValueType>
+    struct setValue
+    {
+        /** Set all elements of the dense matrix with a value */
+
+        typedef void ( *FuncType ) ( 
+            DenseValueType denseValues[],
+            const IndexType numRows,
+            const IndexType numColumns,
+            const DenseValueType val );
+
+        static const char* getId() { return "Dense.setValue"; }
+    };
 
     template<typename DenseValueType>
     struct scaleValue
     {
         /** Scale all elements of the dense matrix with a value */
 
-        typedef void ( *FuncType ) ( DenseValueType denseValues[],
-                        const IndexType numRows,
-                        const IndexType numColumns,
-                        const DenseValueType val );
+        typedef void ( *FuncType ) (
+            DenseValueType denseValues[],
+            const IndexType numRows,
+            const IndexType numColumns,
+            const DenseValueType val );
 
         static const char* getId() { return "Dense.scaleValue"; }
     };
@@ -183,12 +225,33 @@ struct DenseKernelTrait
     {
         /** Set diagonal elements with one and the same value. */
 
-        typedef void ( *FuncType ) ( DenseValueType denseValues[],
-                        const IndexType numRows,
-                        const IndexType numColumns,
-                        const DenseValueType val );
+        typedef void ( *FuncType ) ( 
+            DenseValueType denseValues[],
+            const IndexType numRows,
+            const IndexType numColumns,
+            const DenseValueType val );
 
         static const char* getId() { return "Dense.setDiagonalValue"; }
+    };
+
+    template<typename DenseValueType, typename OtherValueType>
+    struct scaleRows
+    {
+        /** Scale rows of the matrix individually.
+         *
+         *  @param[in,out] denseValues  data of the dense matrix, size is numRows * numColumns
+         *  @param[in]     numRows      number of rows
+         *  @param[in]     numColumns   number of columns
+         *  @param[in]     rowValues    scale values for each row, size is numRows
+         */
+
+        typedef void ( *FuncType ) ( 
+            DenseValueType denseValues[],
+            const IndexType numRows,
+            const IndexType numColumns,
+            const OtherValueType rowValues[] );
+
+        static const char* getId() { return "Dense.scaleRows"; }
     };
 };
 

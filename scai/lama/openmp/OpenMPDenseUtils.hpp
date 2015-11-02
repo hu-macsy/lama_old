@@ -58,7 +58,16 @@ class COMMON_DLL_IMPORTEXPORT OpenMPDenseUtils
 {
 public:
 
-    /** OpenMP implementation for DenseKernelTrait::Counting::getCSRSizes */
+    /** OpenMP implementation for DenseKernelTrait::nonZeroValues */
+
+    template<typename DenseValueType>
+    static IndexType nonZeroValues(
+        const DenseValueType denseValues[],
+        const IndexType numRows,
+        const IndexType numColumns,
+        const DenseValueType eps );
+
+    /** OpenMP implementation for DenseKernelTrait::getCSRSizes */
 
     template<typename DenseValueType>
     static void getCSRSizes(
@@ -69,7 +78,7 @@ public:
         const DenseValueType denseValues[],
         const DenseValueType eps );
 
-    /** OpenMP implementation for DenseKernelTrait::Conversions::getCSRValues */
+    /** OpenMP implementation for DenseKernelTrait::getCSRValues */
 
     template<typename DenseValueType,typename CSRValueType>
     static void getCSRValues(
@@ -82,7 +91,7 @@ public:
         const DenseValueType denseValues[],
         const DenseValueType eps );
 
-    /** OpenMP implementation for DenseKernelTrait::Copy::copyDenseValues */
+    /** OpenMP implementation for DenseKernelTrait::copyDenseValues */
 
     template<typename DenseValueType1,typename DenseValueType2>
     static void copyDenseValues(
@@ -91,7 +100,7 @@ public:
         const IndexType numColumns,
         const DenseValueType2 oldValues[] );
 
-    /** OpenMP implementation for DenseKernelTrait::Conversions::setCSRValues */
+    /** OpenMP implementation for DenseKernelTrait::setCSRValues */
 
     template<typename DenseValueType,typename CSRValueType>
     static void setCSRValues(
@@ -102,7 +111,17 @@ public:
         const IndexType csrJA[],
         const CSRValueType csrValues[] );
 
-    /** OpenMP implementation for DenseKernelTrait::Copy::getDiagonal */
+    /** OpenMP implementation for DenseKernelTrait::getRow */
+
+    template<typename RowValueType, typename DenseValueType>
+    static void getRow(
+        RowValueType rowValues[],
+        const DenseValueType denseValues[],
+        const IndexType irow, 
+        const IndexType numRows,
+        const IndexType numColumns );
+
+    /** OpenMP implementation for DenseKernelTrait::getDiagonal */
 
     template<typename DiagonalValueType,typename DenseValueType>
     static void getDiagonal(
@@ -112,7 +131,7 @@ public:
         const IndexType numRows,
         const IndexType numColumns );
 
-    /** OpenMP implementation for DenseKernelTrait::Copy::setDiagonal */
+    /** OpenMP implementation for DenseKernelTrait::setDiagonal */
 
     template<typename DenseValueType,typename DiagonalValueType>
     static void setDiagonal(
@@ -122,7 +141,16 @@ public:
         const DiagonalValueType diagonalValues[],
         const IndexType numDiagonalValues );
 
-    /** OpenMP implementation for DenseKernelTrait::Modify::scaleValue */
+    /** OpenMP implementation for DenseKernelTrait::setValue */
+
+    template<typename DenseValueType>
+    static void setValue(
+        DenseValueType denseValues[],
+        const IndexType numRows,
+        const IndexType numColumns,
+        const DenseValueType val );
+
+    /** OpenMP implementation for DenseKernelTrait::scaleValue */
 
     template<typename DenseValueType>
     static void scaleValue(
@@ -139,6 +167,15 @@ public:
         const IndexType numRows,
         const IndexType numColumns,
         const DenseValueType val );
+
+    /** OpenMP implementation for DenseKernelTrait::scaleRows */
+
+    template<typename DenseValueType, typename OtherType>
+    static void scaleRows(
+        DenseValueType denseValues[],
+        const IndexType numRows,
+        const IndexType numColumns,
+        const OtherType rowValues[] );
 
     /** Routine that registers all routines of this class at the Kernel registry. */
 

@@ -62,6 +62,31 @@ SCAI_LOG_DEF_LOGGER( OpenMPDenseUtils::logger, "OpenMP.DenseUtils" )
 /* --------------------------------------------------------------------------- */
 
 template<typename DenseValueType>
+IndexType OpenMPDenseUtils::nonZeroValues(
+    const DenseValueType denseValues[],
+    const IndexType numRows,
+    const IndexType numColumns,
+    const DenseValueType eps )
+{
+    IndexType count = 0;
+
+    #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE ) reduction( + : count )
+
+    for ( IndexType i = 0; i < numRows; ++i )
+    {
+        for ( IndexType j = 0; j < numColumns; ++j )
+        {
+            if ( abs( denseValues[denseindex( i, j, numRows, numColumns )] ) > eps )
+            {
+                count++;
+            }
+        }
+    }
+ 
+    return count;
+}
+
+template<typename DenseValueType>
 void OpenMPDenseUtils::getCSRSizes(
     IndexType csrSizes[],
     bool diagonalFlag,
@@ -228,6 +253,26 @@ void OpenMPDenseUtils::copyDenseValues(
 
 /* --------------------------------------------------------------------------- */
 
+template<typename RowValueType, typename DenseValueType>
+void OpenMPDenseUtils::getRow(
+    RowValueType rowValues[],
+    const DenseValueType denseValues[],
+    const IndexType irow,
+    const IndexType numRows,
+    const IndexType numColumns )
+{
+    SCAI_ASSERT_LT( irow, numRows, "illegal row index" )
+
+    #pragma omp parallel for schedule (SCAI_OMP_SCHEDULE)
+
+    for ( IndexType j = 0; j < numColumns; ++j )
+    {
+        rowValues[j] = static_cast<RowValueType>( denseValues[irow * numColumns + j] );
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
 template<typename DiagonalValueType,typename DenseValueType>
 void OpenMPDenseUtils::getDiagonal(
     DiagonalValueType diagonalValues[],
@@ -287,25 +332,39 @@ void OpenMPDenseUtils::setDiagonalValue(
 /* --------------------------------------------------------------------------- */
 
 template<typename DenseValueType>
+void OpenMPDenseUtils::setValue(
+    DenseValueType denseValues[],
+    const IndexType numRows,
+    const IndexType numColumns,
+    const DenseValueType val )
+{
+    // Parallel initialization very important for efficient  allocation
+
+    #pragma omp parallel for schedule ( SCAI_OMP_SCHEDULE )
+
+    for ( IndexType i = 0; i < numRows; ++i )
+    {
+        for ( IndexType j = 0; j < numColumns; ++j )
+        {
+            denseValues[denseindex( i, j, numRows, numColumns )] = val;
+        }
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename DenseValueType>
 void OpenMPDenseUtils::scaleValue(
     DenseValueType denseValues[],
     const IndexType numRows,
     const IndexType numColumns,
     const DenseValueType val )
 {
-    if( val == scai::common::constants::ZERO )
+    if ( val == scai::common::constants::ZERO )
     {
-        // this solution can also deal with undefined data
+        // use setValue, as scaleValue might not work correctly on uninitialized data
 
-        #pragma omp parallel for schedule (SCAI_OMP_SCHEDULE)
-        for( IndexType i = 0; i < numRows; ++i )
-        {
-            for( IndexType j = 0; j < numColumns; ++j )
-            {
-                DenseValueType& elem = denseValues[denseindex( i, j, numRows, numColumns )];
-                elem = static_cast<DenseValueType>(0.0);
-            }
-        }
+        setValue( denseValues, numRows, numColumns, val );
     }
     else
     {
@@ -323,6 +382,30 @@ void OpenMPDenseUtils::scaleValue(
 }
 
 /* --------------------------------------------------------------------------- */
+
+template<typename DenseValueType, typename OtherValueType>
+void OpenMPDenseUtils::scaleRows(
+    DenseValueType denseValues[],
+    const IndexType numRows,
+    const IndexType numColumns,
+    const OtherValueType rowValues[] )
+{
+    #pragma omp parallel for schedule ( SCAI_OMP_SCHEDULE )
+
+    for ( IndexType i = 0; i < numRows; ++i )
+    {
+        const OtherValueType scaleValue = static_cast<OtherValueType>( rowValues[i] );
+
+        // scale the whole row with this value
+
+        for ( IndexType j = 0; j < numColumns; ++j )
+        {
+            denseValues[denseindex( i, j, numRows, numColumns )] = scaleValue;
+        }
+    }
+}
+
+/* --------------------------------------------------------------------------- */
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
@@ -331,26 +414,24 @@ void OpenMPDenseUtils::registerKernelFunctions()
     using namespace scai::kregistry;
     using namespace common::context;
 
-    // ctx will contain the context for which registration is done, here Host
+/*
+*/
 
-    ContextType ctx = Host;
+#define KREGISTRY_DENSE2_REGISTER(z, J, TYPE )                                                                        \
+    KernelRegistry::set<DenseKernelTrait::setCSRValues<TYPE, ARITHMETIC_HOST_TYPE_##J> >( setCSRValues, Host );       \
+    KernelRegistry::set<DenseKernelTrait::getCSRValues<TYPE, ARITHMETIC_HOST_TYPE_##J> >( getCSRValues, Host );       \
+    KernelRegistry::set<DenseKernelTrait::copyDenseValues<TYPE, ARITHMETIC_HOST_TYPE_##J> >( copyDenseValues, Host ); \
+    KernelRegistry::set<DenseKernelTrait::getDiagonal<TYPE, ARITHMETIC_HOST_TYPE_##J> >( getDiagonal, Host );         \
+    KernelRegistry::set<DenseKernelTrait::setDiagonal<TYPE, ARITHMETIC_HOST_TYPE_##J> >( setDiagonal, Host );         \
+    KernelRegistry::set<DenseKernelTrait::getRow<TYPE, ARITHMETIC_HOST_TYPE_##J> >( getRow, Host );                   \
 
-#define KREGISTRY_DENSE2_REGISTER(z, J, TYPE )                                                                          \
-    /* Conversions  */                                                                                                  \
-    KernelRegistry::set<DenseKernelTrait::setCSRValues<TYPE, ARITHMETIC_HOST_TYPE_##J> >( setCSRValues, ctx );       \
-    KernelRegistry::set<DenseKernelTrait::getCSRValues<TYPE, ARITHMETIC_HOST_TYPE_##J> >( getCSRValues, ctx );       \
-    /* Copy  */                                                                                                         \
-    KernelRegistry::set<DenseKernelTrait::copyDenseValues<TYPE, ARITHMETIC_HOST_TYPE_##J> >( copyDenseValues, ctx ); \
-    KernelRegistry::set<DenseKernelTrait::getDiagonal<TYPE, ARITHMETIC_HOST_TYPE_##J> >( getDiagonal, ctx );         \
-    KernelRegistry::set<DenseKernelTrait::setDiagonal<TYPE, ARITHMETIC_HOST_TYPE_##J> >( setDiagonal, ctx );         \
-
-#define KREGISTRY_DENSE_REGISTER(z, I, _)                                                                               \
-    /* Counting  */                                                                                                     \
-    KernelRegistry::set<DenseKernelTrait::getCSRSizes<ARITHMETIC_HOST_TYPE_##I> >( getCSRSizes, ctx );               \
-    /* Modify  */                                                                                                       \
-    KernelRegistry::set<DenseKernelTrait::setDiagonalValue<ARITHMETIC_HOST_TYPE_##I> >( setDiagonalValue, ctx );     \
-    KernelRegistry::set<DenseKernelTrait::scaleValue<ARITHMETIC_HOST_TYPE_##I> >( scaleValue, ctx );                 \
-    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, KREGISTRY_DENSE2_REGISTER, ARITHMETIC_HOST_TYPE_##I )                         \
+#define KREGISTRY_DENSE_REGISTER(z, I, _)                                                                             \
+    KernelRegistry::set<DenseKernelTrait::nonZeroValues<ARITHMETIC_HOST_TYPE_##I> >( nonZeroValues, Host );           \
+    KernelRegistry::set<DenseKernelTrait::getCSRSizes<ARITHMETIC_HOST_TYPE_##I> >( getCSRSizes, Host );               \
+    KernelRegistry::set<DenseKernelTrait::setValue<ARITHMETIC_HOST_TYPE_##I> >( setValue, Host );                     \
+    KernelRegistry::set<DenseKernelTrait::scaleValue<ARITHMETIC_HOST_TYPE_##I> >( scaleValue, Host );                 \
+    KernelRegistry::set<DenseKernelTrait::setDiagonalValue<ARITHMETIC_HOST_TYPE_##I> >( setDiagonalValue, Host );     \
+    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, KREGISTRY_DENSE2_REGISTER, ARITHMETIC_HOST_TYPE_##I )                  \
 
     BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, KREGISTRY_DENSE_REGISTER, _ )
 
