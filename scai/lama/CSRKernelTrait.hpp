@@ -387,7 +387,6 @@ struct CSRKernelTrait
          *  @param numColums is the number of columns of matrix
          *  @param nnz number of nonZeros, same as csrIA[ numRows ]
          *  @param csrIA, csrJA, csrValues are arrays of CSR storage
-         *  @param syncToken optional, if available starts asynchronous computation
          *
          *  The number of columns is not really needed to implement the operation but
          *  might be helpful to choose between different implementations.
@@ -436,7 +435,6 @@ struct CSRKernelTrait
          *  @param numNonZeroRows is size of rowIndexes
          *  @param rowIndexes are indexes of non-empty rows in matrix
          *  @param csrIA, csrJA, csrValues are arrays of CSR storage
-         *  @param syncToken optional, if available starts asynchronous computation
          *
          *  Note: this routine does not provide the term 'beta * y' as it would require
          *        to run over the full result vector
@@ -483,7 +481,6 @@ struct CSRKernelTrait
          *   @param[in]  csrIA offset array of CSR matrix, has size m + 1
          *   @param[in]  csrJA has size csrIA[m], values between 0 and p-1
          *   @param[in]  csrVaues is value array of CSR matrix
-         *   @param[in,out] syncToken might be used for asynchronous execution
          */
 
         typedef void ( *FuncType ) ( ValueType result[],

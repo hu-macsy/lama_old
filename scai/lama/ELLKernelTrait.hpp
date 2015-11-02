@@ -58,7 +58,6 @@ struct ELLKernelTrait
          *  @param[in]  oldSolution is the old solution, size is numRows
          *  @param[in]  rhs is right hand side vector, size is numRows
          *  @param[in]  omega is scaling factor
-         *  @param[in]  syncToken optional, NULL synchronous execution, otherwise asynchronous
          *
          *  The ELL storage stands for a square matrix and must have diagonal property.
          */
@@ -324,7 +323,6 @@ struct ELLKernelTrait
          *  @param y is additional input vector to add
          *  @param numRows is number of elements for all vectors and rows of matrix
          *  @param ellIA, ellJA, csrValues are arrays of ELL storage
-         *  @param syncToken optional, if available starts asynchronous computation
          */
 
         typedef void ( *FuncType ) ( 
@@ -353,7 +351,6 @@ struct ELLKernelTrait
          *  @param numNonZeroRows is size of rowIndexes
          *  @param rowIndexes are indexes of non-empty rows in matrix
          *  @param ellIA, ellJA, csrValues are arrays of ELL storage
-         *  @param syncToken optional, if available starts asynchronous computation
          *
          *  Note: this routine does not provide the term 'beta * y' as it would require
          *        to run over the full result vector

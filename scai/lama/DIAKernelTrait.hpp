@@ -126,7 +126,6 @@ struct DIAKernelTrait
          *  @param numRows is number of elements for all vectors and rows of matrix
          *  @param numValues is the number of diagonals in DIA storage
          *  @param diaOffsets, diaValues are arrays of DIA storage
-         *  @param syncToken optional, if available starts asynchronous computation
          */
 
         typedef void ( *FuncType ) ( 

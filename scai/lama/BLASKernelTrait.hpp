@@ -380,7 +380,6 @@ struct BLASKernelTrait
          *                      else at least (1 + ( n - 1) * incY)
          * @param[in] incY      the storage spacing between elements of y; incY must be >= 0.
          * @param[out] y        updated according to y = alpha * op(A) * x + beta * y
-         * @param[in] syncToken allows to start asynchronous execution
          *
          */
         typedef void ( *FuncType ) (
@@ -461,7 +460,6 @@ struct BLASKernelTrait
          * @param[in,out] C   array of dimensions (ldc,n); ldc must be at least max(1,m).
          *                    updated based on C = alpha * op(A) * op(B) + beta * C
          * @param[in] ldc     leading dimension of two-dimensional array used to store matrix C.
-         * @param[in,out] syncToken is optional synchronization taken that might be used for asynchronous execution
          */
 
         typedef void ( *FuncType ) ( 

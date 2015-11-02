@@ -240,7 +240,6 @@ struct JDSKernelTrait
          *  @param numRows is number of elements for all vectors and rows of matrix
          *  @param numDiagonals are number of diagonals, is size of jdsDLG
          *  @param jdsPerm, jdsILG, jdsDLG, jdsJA, jdsValues are arrays of JDS storage
-         *  @param syncToken optional, if available starts asynchronous computation
          */
 
         typedef void ( *FuncType ) ( ValueType result[],

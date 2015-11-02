@@ -156,7 +156,6 @@ struct COOKernelTrait
          *  @param numRows is number of elements for all vectors and rows of matrix
          *  @param cooIA, cooJA, cooValues are arrays of COO storage
          *  @param numValues is the size of the coo arrays
-         *  @param syncToken optional, if available starts asynchronous computation
          */
 
         typedef void ( *FuncType ) ( 
