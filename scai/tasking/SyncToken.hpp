@@ -215,9 +215,36 @@ private:
     bool mSynchronized;  //!< if true the token has already been synchronized.
 
     std::vector< common::function<void()> > mSynchronizedFunctions;
-};
 
+public:
+ 
+    class ScopedAsynchronous 
+    {
+    public:
+
+        ScopedAsynchronous( SyncToken& token ) : mToken( &token )
+        {
+            mToken->setCurrent();
+        }
+    
+        ScopedAsynchronous( SyncToken* token ) : mToken( token )
+        {
+            mToken->setCurrent();
+        }
+    
+        ~ScopedAsynchronous()
+        {
+            mToken->unsetCurrent();
+        }
+
+    private:
+  
+        SyncToken* mToken;
+    };
+};
 
 } /* end namespace tasking */
 
 } /* end namespace scai */
+
+#define SCAI_ASYNCHRONOUS( token ) scai::tasking::SyncToken::ScopedAsynchronous _SCAIAsyncScope( token );
