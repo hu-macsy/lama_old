@@ -1101,21 +1101,19 @@ tasking::SyncToken* JDSStorage<ValueType>::matrixTimesVectorAsync(
     // all accesses will be pushed to the sync token as LAMA arrays have to be protected up
     // to the end of the computations.
 
-    shared_ptr<ReadAccess<IndexType> > jdsPerm( new ReadAccess<IndexType>( mPerm, loc ) );
-    shared_ptr<ReadAccess<IndexType> > jdsDLG( new ReadAccess<IndexType>( mDlg, loc ) );
-    shared_ptr<ReadAccess<IndexType> > jdsILG( new ReadAccess<IndexType>( mIlg, loc ) );
-    shared_ptr<ReadAccess<IndexType> > jdsJA( new ReadAccess<IndexType>( mJa, loc ) );
-    shared_ptr<ReadAccess<ValueType> > jdsValues( new ReadAccess<ValueType>( mValues, loc ) );
+    ReadAccess<IndexType> jdsPerm( mPerm, loc );
+    ReadAccess<IndexType> jdsDLG( mDlg, loc );
+    ReadAccess<IndexType> jdsILG( mIlg, loc );
+    ReadAccess<IndexType> jdsJA( mJa, loc );
+    ReadAccess<ValueType> jdsValues( mValues, loc );
 
-    shared_ptr<ReadAccess<ValueType> > rX( new ReadAccess<ValueType>( x, loc ) );
+    ReadAccess<ValueType> rX( x, loc );
 
     // Possible alias of result and y must be handled by coressponding accesses
 
     if ( &result == &y )
     {
-        shared_ptr<WriteAccess<ValueType> > wResult( new WriteAccess<ValueType>( result, loc ) );
-
-        syncToken->pushToken( wResult );
+        WriteAccess<ValueType> wResult( result, loc );
 
         // we assume that normalGEMV can deal with the alias of result, y
 
@@ -1123,31 +1121,33 @@ tasking::SyncToken* JDSStorage<ValueType>::matrixTimesVectorAsync(
 
         // this call will only start the computation
 
-        normalGEMV[loc]( wResult->get(), alpha, rX->get(), beta, wResult->get(), mNumRows, jdsPerm->get(), jdsILG->get(),
-                         mNumDiagonals, jdsDLG->get(), jdsJA->get(), jdsValues->get() );
+        normalGEMV[loc]( wResult.get(), alpha, rX.get(), beta, wResult.get(), mNumRows, jdsPerm.get(), jdsILG.get(),
+                         mNumDiagonals, jdsDLG.get(), jdsJA.get(), jdsValues.get() );
+
+        syncToken->pushRoutine( wResult.releaseDelayed() );
     }
     else
     {
-        shared_ptr<WriteOnlyAccess<ValueType> > wResult( new WriteOnlyAccess<ValueType>( result, loc, mNumRows ) );
-        shared_ptr<ReadAccess<ValueType> > rY( new ReadAccess<ValueType>( y, loc ) );
-
-        syncToken->pushToken( wResult );
-        syncToken->pushToken( rY );
+        WriteOnlyAccess<ValueType> wResult( result, loc, mNumRows );
+        ReadAccess<ValueType> rY( y, loc );
 
         SCAI_CONTEXT_ACCESS( loc )
 
         // this call will only start the computation
 
-        normalGEMV[loc]( wResult->get(), alpha, rX->get(), beta, rY->get(), mNumRows, jdsPerm->get(), jdsILG->get(),
-                         mNumDiagonals, jdsDLG->get(), jdsJA->get(), jdsValues->get() );
+        normalGEMV[loc]( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumRows, jdsPerm.get(), jdsILG.get(),
+                         mNumDiagonals, jdsDLG.get(), jdsJA.get(), jdsValues.get() );
+
+        syncToken->pushRoutine( wResult.releaseDelayed() );
+        syncToken->pushRoutine( rY.releaseDelayed() );
     }
 
-    syncToken->pushToken( jdsPerm );
-    syncToken->pushToken( jdsDLG );
-    syncToken->pushToken( jdsILG );
-    syncToken->pushToken( jdsJA );
-    syncToken->pushToken( jdsValues );
-    syncToken->pushToken( rX );
+    syncToken->pushRoutine( jdsPerm.releaseDelayed() );
+    syncToken->pushRoutine( jdsDLG.releaseDelayed() );
+    syncToken->pushRoutine( jdsILG.releaseDelayed() );
+    syncToken->pushRoutine( jdsJA.releaseDelayed() );
+    syncToken->pushRoutine( jdsValues.releaseDelayed() );
+    syncToken->pushRoutine( rX.releaseDelayed() );
 
     syncToken->unsetCurrent();
 
@@ -1208,21 +1208,19 @@ tasking::SyncToken* JDSStorage<ValueType>::vectorTimesMatrixAsync(
     // all accesses will be pushed to the sync token as LAMA arrays have to be protected up
     // to the end of the computations.
 
-    shared_ptr<ReadAccess<IndexType> > jdsPerm( new ReadAccess<IndexType>( mPerm, loc ) );
-    shared_ptr<ReadAccess<IndexType> > jdsDLG( new ReadAccess<IndexType>( mDlg, loc ) );
-    shared_ptr<ReadAccess<IndexType> > jdsILG( new ReadAccess<IndexType>( mIlg, loc ) );
-    shared_ptr<ReadAccess<IndexType> > jdsJA( new ReadAccess<IndexType>( mJa, loc ) );
-    shared_ptr<ReadAccess<ValueType> > jdsValues( new ReadAccess<ValueType>( mValues, loc ) );
+    ReadAccess<IndexType> jdsPerm( mPerm, loc );
+    ReadAccess<IndexType> jdsDLG( mDlg, loc );
+    ReadAccess<IndexType> jdsILG( mIlg, loc );
+    ReadAccess<IndexType> jdsJA( mJa, loc );
+    ReadAccess<ValueType> jdsValues( mValues, loc );
 
-    shared_ptr<ReadAccess<ValueType> > rX( new ReadAccess<ValueType>( x, loc ) );
+    ReadAccess<ValueType> rX( x, loc );
 
     // Possible alias of result and y must be handled by coressponding accesses
 
     if ( &result == &y )
     {
-        shared_ptr<WriteAccess<ValueType> > wResult( new WriteAccess<ValueType>( result, loc ) );
-
-        syncToken->pushToken( wResult );
+        WriteAccess<ValueType> wResult( result, loc );
 
         // we assume that normalGEVM can deal with the alias of result, y
 
@@ -1230,31 +1228,33 @@ tasking::SyncToken* JDSStorage<ValueType>::vectorTimesMatrixAsync(
 
         // this call will only start the computation
 
-        normalGEVM[loc]( wResult->get(), alpha, rX->get(), beta, wResult->get(), mNumColumns, jdsPerm->get(), jdsILG->get(),
-                         mNumDiagonals, jdsDLG->get(), jdsJA->get(), jdsValues->get() );
+        normalGEVM[loc]( wResult.get(), alpha, rX.get(), beta, wResult.get(), mNumColumns, jdsPerm.get(), jdsILG.get(),
+                         mNumDiagonals, jdsDLG.get(), jdsJA.get(), jdsValues.get() );
+
+        syncToken->pushRoutine( wResult.releaseDelayed() );
     }
     else
     {
-        shared_ptr<WriteOnlyAccess<ValueType> > wResult( new WriteOnlyAccess<ValueType>( result, loc, mNumColumns ) );
-        shared_ptr<ReadAccess<ValueType> > rY( new ReadAccess<ValueType>( y, loc ) );
-
-        syncToken->pushToken( wResult );
-        syncToken->pushToken( rY );
+        WriteOnlyAccess<ValueType> wResult( result, loc, mNumColumns );
+        ReadAccess<ValueType> rY( y, loc );
 
         SCAI_CONTEXT_ACCESS( loc )
 
         // this call will only start the computation
 
-        normalGEVM[loc]( wResult->get(), alpha, rX->get(), beta, rY->get(), mNumColumns, jdsPerm->get(), jdsILG->get(),
-                         mNumDiagonals, jdsDLG->get(), jdsJA->get(), jdsValues->get() );
+        normalGEVM[loc]( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumColumns, jdsPerm.get(), jdsILG.get(),
+                         mNumDiagonals, jdsDLG.get(), jdsJA.get(), jdsValues.get() );
+
+        syncToken->pushRoutine( wResult.releaseDelayed() );
+        syncToken->pushRoutine( rY.releaseDelayed() );
     }
 
-    syncToken->pushToken( jdsPerm );
-    syncToken->pushToken( jdsDLG );
-    syncToken->pushToken( jdsILG );
-    syncToken->pushToken( jdsJA );
-    syncToken->pushToken( jdsValues );
-    syncToken->pushToken( rX );
+    syncToken->pushRoutine( jdsPerm.releaseDelayed() );
+    syncToken->pushRoutine( jdsDLG.releaseDelayed() );
+    syncToken->pushRoutine( jdsILG.releaseDelayed() );
+    syncToken->pushRoutine( jdsJA.releaseDelayed() );
+    syncToken->pushRoutine( jdsValues.releaseDelayed() );
+    syncToken->pushRoutine( rX.releaseDelayed() );
 
     syncToken->unsetCurrent();
 
@@ -1353,35 +1353,36 @@ tasking::SyncToken* JDSStorage<ValueType>::jacobiIterateAsync(
     }
 
     SCAI_ASSERT_EQUAL_DEBUG( mNumRows, oldSolution.size() )
-    SCAI_ASSERT_EQUAL_DEBUG( mNumRows, solution.size() )
     SCAI_ASSERT_EQUAL_DEBUG( mNumRows, mNumColumns )
+
     // matrix must be square
 
     common::unique_ptr<tasking::SyncToken> syncToken( loc->getSyncToken() );
 
     syncToken->setCurrent();
 
-    shared_ptr<WriteAccess<ValueType> > wSolution( new WriteAccess<ValueType>( solution, loc ) );
-    syncToken->pushToken( wSolution );
-    shared_ptr<ReadAccess<IndexType> > jdsDLG( new ReadAccess<IndexType>( mDlg, loc ) );
-    syncToken->pushToken( jdsDLG );
-    shared_ptr<ReadAccess<IndexType> > jdsILG( new ReadAccess<IndexType>( mIlg, loc ) );
-    syncToken->pushToken( jdsILG );
-    shared_ptr<ReadAccess<IndexType> > jdsPerm( new ReadAccess<IndexType>( mPerm, loc ) );
-    syncToken->pushToken( jdsPerm );
-    shared_ptr<ReadAccess<IndexType> > jdsJA( new ReadAccess<IndexType>( mJa, loc ) );
-    syncToken->pushToken( jdsJA );
-    shared_ptr<ReadAccess<ValueType> > jdsValues( new ReadAccess<ValueType>( mValues, loc ) );
-    syncToken->pushToken( jdsValues );
-    shared_ptr<ReadAccess<ValueType> > rOldSolution( new ReadAccess<ValueType>( oldSolution, loc ) );
-    syncToken->pushToken( rOldSolution );
-    shared_ptr<ReadAccess<ValueType> > rRhs( new ReadAccess<ValueType>( rhs, loc ) );
-    syncToken->pushToken( rRhs );
+    WriteOnlyAccess<ValueType> wSolution( solution, loc, mNumRows );
+    ReadAccess<IndexType> jdsDLG( mDlg, loc );
+    ReadAccess<IndexType> jdsILG( mIlg, loc );
+    ReadAccess<IndexType> jdsPerm( mPerm, loc );
+    ReadAccess<IndexType> jdsJA( mJa, loc );
+    ReadAccess<ValueType> jdsValues( mValues, loc );
+    ReadAccess<ValueType> rOldSolution( oldSolution, loc );
+    ReadAccess<ValueType> rRhs( rhs, loc );
 
     SCAI_CONTEXT_ACCESS( loc )
 
-    jacobi[loc]( wSolution->get(), mNumRows, jdsPerm->get(), jdsILG->get(), mNumDiagonals, jdsDLG->get(), jdsJA->get(),
-                 jdsValues->get(), rOldSolution->get(), rRhs->get(), omega );
+    jacobi[loc]( wSolution.get(), mNumRows, jdsPerm.get(), jdsILG.get(), mNumDiagonals, jdsDLG.get(), jdsJA.get(),
+                 jdsValues.get(), rOldSolution.get(), rRhs.get(), omega );
+
+    syncToken->pushRoutine( wSolution.releaseDelayed() );
+    syncToken->pushRoutine( jdsDLG.releaseDelayed() );
+    syncToken->pushRoutine( jdsILG.releaseDelayed() );
+    syncToken->pushRoutine( jdsPerm.releaseDelayed() );
+    syncToken->pushRoutine( jdsJA.releaseDelayed() );
+    syncToken->pushRoutine( jdsValues.releaseDelayed() );
+    syncToken->pushRoutine( rOldSolution.releaseDelayed() );
+    syncToken->pushRoutine( rRhs.releaseDelayed() );
 
     syncToken->unsetCurrent();
 
