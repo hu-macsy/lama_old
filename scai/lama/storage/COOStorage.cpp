@@ -970,15 +970,17 @@ SyncToken* COOStorage<ValueType>::matrixTimesVectorAsync(
 
     unique_ptr<SyncToken> syncToken( loc->getSyncToken() );
 
-    syncToken->setCurrent();
+    // Kernels will be started asynchronously
+
+    SCAI_ASYNCHRONOUS( *syncToken )
 
     // all accesses will be pushed to the sync token as LAMA arrays have to be protected up
     // to the end of the computations.
 
-    shared_ptr<ReadAccess<IndexType> > cooIA( new ReadAccess<IndexType>( mIA, loc ) );
-    shared_ptr<ReadAccess<IndexType> > cooJA( new ReadAccess<IndexType>( mJA, loc ) );
-    shared_ptr<ReadAccess<ValueType> > cooValues( new ReadAccess<ValueType>( mValues, loc ) );
-    shared_ptr<ReadAccess<ValueType> > rX( new ReadAccess<ValueType>( x, loc ) );
+    ReadAccess<IndexType> cooIA( mIA, loc );
+    ReadAccess<IndexType> cooJA( mJA, loc );
+    ReadAccess<ValueType> cooValues( mValues, loc );
+    ReadAccess<ValueType> rX( x, loc );
 
     // Possible alias of result and y must be handled by coressponding accesses
 
@@ -986,37 +988,35 @@ SyncToken* COOStorage<ValueType>::matrixTimesVectorAsync(
     {
         // only write access for y, no read access for result
 
-        shared_ptr<WriteAccess<ValueType> > wResult( new WriteAccess<ValueType>( result, loc ) );
+        WriteAccess<ValueType> wResult( result, loc );
 
         // we assume that normalGEMV can deal with the alias of result, y
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        normalGEMV[loc]( wResult->get(), alpha, rX->get(), beta, wResult->get(), mNumRows, mNumValues, cooIA->get(),
-                         cooJA->get(), cooValues->get() );
+        normalGEMV[loc]( wResult.get(), alpha, rX.get(), beta, wResult.get(), mNumRows, mNumValues, cooIA.get(),
+                         cooJA.get(), cooValues.get() );
 
-        syncToken->pushToken( wResult );
+        syncToken->pushRoutine( wResult.releaseDelayed() );
     }
     else
     {
-        shared_ptr<WriteAccess<ValueType> > wResult( new WriteOnlyAccess<ValueType>( result, loc, mNumRows ) );
-        shared_ptr<ReadAccess<ValueType> > rY( new ReadAccess<ValueType>( y, loc ) );
+        WriteOnlyAccess<ValueType> wResult( result, loc, mNumRows );
+        ReadAccess<ValueType> rY( y, loc );
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        normalGEMV[loc]( wResult->get(), alpha, rX->get(), beta, rY->get(), mNumRows, mNumValues, cooIA->get(), cooJA->get(),
-                         cooValues->get() );
+        normalGEMV[loc]( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumRows, mNumValues, cooIA.get(), cooJA.get(),
+                         cooValues.get() );
 
-        syncToken->pushToken( wResult );
-        syncToken->pushToken( rY );
+        syncToken->pushRoutine( wResult.releaseDelayed() );
+        syncToken->pushRoutine( rY.releaseDelayed() );
     }
 
-    syncToken->pushToken( cooIA );
-    syncToken->pushToken( cooJA );
-    syncToken->pushToken( cooValues );
-    syncToken->pushToken( rX );
-
-    syncToken->unsetCurrent();
+    syncToken->pushRoutine( cooIA.releaseDelayed() );
+    syncToken->pushRoutine( cooJA.releaseDelayed() );
+    syncToken->pushRoutine( cooValues.releaseDelayed() );
+    syncToken->pushRoutine( rX.releaseDelayed() );
 
     return syncToken.release();
 }
@@ -1040,11 +1040,6 @@ SyncToken* COOStorage<ValueType>::vectorTimesMatrixAsync(
 
     ContextPtr loc = normalGEVM.getValidContext( this->getContextPtr() );
 
-    // Note: checks will be done by asynchronous task in any case
-    //       and exception in tasks are handled correctly
-
-    SCAI_LOG_INFO( logger, *this << ": vectorTimesMatrixAsync on " << *loc )
-
     if( loc->getType() == common::context::Host )
     {
         // execution as separate thread
@@ -1066,6 +1061,11 @@ SyncToken* COOStorage<ValueType>::vectorTimesMatrixAsync(
         return new tasking::TaskSyncToken( bind( pf, this, ref( result ), alpha, ref( x ), beta, ref( y ) ) );
     }
 
+    // Note: checks will be done by asynchronous task in any case
+    //       and exception in tasks are handled correctly
+
+    SCAI_LOG_INFO( logger, *this << ": vectorTimesMatrixAsync on " << *loc )
+
     SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumRows )
     SCAI_ASSERT_EQUAL_ERROR( result.size(), mNumColumns )
 
@@ -1081,10 +1081,10 @@ SyncToken* COOStorage<ValueType>::vectorTimesMatrixAsync(
     // all accesses will be pushed to the sync token as LAMA arrays have to be protected up
     // to the end of the computations.
 
-    shared_ptr<ReadAccess<IndexType> > cooIA( new ReadAccess<IndexType>( mIA, loc ) );
-    shared_ptr<ReadAccess<IndexType> > cooJA( new ReadAccess<IndexType>( mJA, loc ) );
-    shared_ptr<ReadAccess<ValueType> > cooValues( new ReadAccess<ValueType>( mValues, loc ) );
-    shared_ptr<ReadAccess<ValueType> > rX( new ReadAccess<ValueType>( x, loc ) );
+    ReadAccess<IndexType> cooIA( mIA, loc );
+    ReadAccess<IndexType> cooJA( mJA, loc );
+    ReadAccess<ValueType> cooValues( mValues, loc );
+    ReadAccess<ValueType> rX(  x, loc );
 
     // Possible alias of result and y must be handled by coressponding accesses
 
@@ -1092,35 +1092,35 @@ SyncToken* COOStorage<ValueType>::vectorTimesMatrixAsync(
     {
         // only write access for y, no read access for result
 
-        shared_ptr<WriteAccess<ValueType> > wResult( new WriteAccess<ValueType>( result, loc ) );
+        WriteAccess<ValueType> wResult( result, loc );
 
         // we assume that normalGEVM can deal with the alias of result, y
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        normalGEVM[loc] ( wResult->get(), alpha, rX->get(), beta, wResult->get(), mNumRows, mNumValues, 
-                          cooIA->get(), cooJA->get(), cooValues->get() );
+        normalGEVM[loc] ( wResult.get(), alpha, rX.get(), beta, wResult.get(), mNumRows, mNumValues, 
+                          cooIA.get(), cooJA.get(), cooValues.get() );
 
-        syncToken->pushToken( wResult );
+        syncToken->pushRoutine( wResult.releaseDelayed() );
     }
     else
     {
-        shared_ptr<WriteAccess<ValueType> > wResult( new WriteOnlyAccess<ValueType>( result, loc, mNumColumns ) );
-        shared_ptr<ReadAccess<ValueType> > rY( new ReadAccess<ValueType>( y, loc ) );
+        WriteOnlyAccess<ValueType> wResult( result, loc, mNumColumns );
+        ReadAccess<ValueType> rY( y, loc );
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        normalGEVM[loc]( wResult->get(), alpha, rX->get(), beta, rY->get(), mNumRows, mNumValues,
-                         cooIA->get(), cooJA->get(), cooValues->get() );
+        normalGEVM[loc]( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumRows, mNumValues,
+                         cooIA.get(), cooJA.get(), cooValues.get() );
 
-        syncToken->pushToken( wResult );
-        syncToken->pushToken( rY );
+        syncToken->pushRoutine( wResult.releaseDelayed() );
+        syncToken->pushRoutine( rY.releaseDelayed() );
     }
 
-    syncToken->pushToken( cooIA );
-    syncToken->pushToken( cooJA );
-    syncToken->pushToken( cooValues );
-    syncToken->pushToken( rX );
+    syncToken->pushRoutine( cooIA.releaseDelayed() );
+    syncToken->pushRoutine( cooJA.releaseDelayed() );
+    syncToken->pushRoutine( cooValues.releaseDelayed() );
+    syncToken->pushRoutine( rX.releaseDelayed() );
 
     syncToken->unsetCurrent();
 

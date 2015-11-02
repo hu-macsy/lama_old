@@ -1346,7 +1346,7 @@ SyncToken* ELLStorage<ValueType>::vectorTimesMatrixAsync(
 
     common::unique_ptr<SyncToken> syncToken( loc->getSyncToken() );
 
-    syncToken->setCurrent();
+    SCAI_ASYNCHRONOUS( *syncToken )
 
     // all accesses will be pushed to the sync token as LAMA arrays have to be protected up
     // to the end of the computations.
@@ -1409,8 +1409,6 @@ SyncToken* ELLStorage<ValueType>::vectorTimesMatrixAsync(
     syncToken->pushRoutine( ellJA.releaseDelayed() );
     syncToken->pushRoutine( ellValues.releaseDelayed() );
     syncToken->pushRoutine( rX.releaseDelayed() );
-
-    syncToken->unsetCurrent();
 
     return syncToken.release();
 }
@@ -1513,7 +1511,7 @@ SyncToken* ELLStorage<ValueType>::jacobiIterateAsync(
 
     common::unique_ptr<SyncToken> syncToken( loc->getSyncToken() );
 
-    syncToken->setCurrent();
+    SCAI_ASYNCHRONOUS( *syncToken )
 
     // make all needed data available at loc
 
@@ -1536,8 +1534,6 @@ SyncToken* ELLStorage<ValueType>::jacobiIterateAsync(
     syncToken->pushRoutine( ellJA.releaseDelayed() );
     syncToken->pushRoutine( ellSizes.releaseDelayed() );
     syncToken->pushRoutine( wSolution.releaseDelayed() );
-
-    syncToken->unsetCurrent();
 
     return syncToken.release();
 }

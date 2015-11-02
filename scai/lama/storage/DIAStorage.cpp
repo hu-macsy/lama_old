@@ -1052,15 +1052,15 @@ SyncToken* DIAStorage<ValueType>::matrixTimesVectorAsync(
 
     common::unique_ptr<SyncToken> syncToken( loc->getSyncToken() );
 
-    syncToken->setCurrent();
+    SCAI_ASYNCHRONOUS( *syncToken ) 
 
     // all accesses will be pushed to the sync token as LAMA arrays have to be protected up
     // to the end of the computations.
 
-    shared_ptr<ReadAccess<IndexType> > diaOffsets( new ReadAccess<IndexType>( mOffset, loc ) );
-    shared_ptr<ReadAccess<ValueType> > diaValues( new ReadAccess<ValueType>( mValues, loc ) );
+    ReadAccess<IndexType> diaOffsets( mOffset, loc );
+    ReadAccess<ValueType> diaValues( mValues, loc );
 
-    shared_ptr<ReadAccess<ValueType> > rX( new ReadAccess<ValueType>( x, loc ) );
+    ReadAccess<ValueType> rX( x, loc );
 
     // Possible alias of result and y is handled by coressponding accesses
 
@@ -1070,38 +1070,36 @@ SyncToken* DIAStorage<ValueType>::matrixTimesVectorAsync(
 
         // only write access for y, no read access for result
 
-        shared_ptr<WriteAccess<ValueType> > wResult( new WriteAccess<ValueType>( result, loc ) );
-
-        syncToken->pushToken( wResult );
+        WriteAccess<ValueType> wResult( result, loc );
 
         // we assume that normalGEMV can deal with the alias of result, y
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        normalGEMV[loc]( wResult->get(), alpha, rX->get(), beta, wResult->get(), mNumRows, mNumColumns, mNumDiagonals,
-                         diaOffsets->get(), diaValues->get() );
+        normalGEMV[loc]( wResult.get(), alpha, rX.get(), beta, wResult.get(), mNumRows, mNumColumns, mNumDiagonals,
+                         diaOffsets.get(), diaValues.get() );
+
+        syncToken->pushRoutine( wResult.releaseDelayed() );
     }
     else
     {
         SCAI_LOG_DEBUG( logger, "result != y" )
 
-        shared_ptr<WriteOnlyAccess<ValueType> > wResult( new WriteOnlyAccess<ValueType>( result, loc, mNumRows ) );
-        shared_ptr<ReadAccess<ValueType> > rY( new ReadAccess<ValueType>( y, loc ) );
-
-        syncToken->pushToken( rY );
-        syncToken->pushToken( wResult );
+        WriteOnlyAccess<ValueType> wResult( result, loc, mNumRows );
+        ReadAccess<ValueType> rY( y, loc );
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        normalGEMV[loc]( wResult->get(), alpha, rX->get(), beta, rY->get(), mNumRows, mNumColumns, mNumDiagonals,
-                         diaOffsets->get(), diaValues->get() );
+        normalGEMV[loc]( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumRows, mNumColumns, mNumDiagonals,
+                         diaOffsets.get(), diaValues.get() );
+
+        syncToken->pushRoutine( rY.releaseDelayed() );
+        syncToken->pushRoutine( wResult.releaseDelayed() );
     }
 
-    syncToken->pushToken( rX );
-    syncToken->pushToken( diaValues );
-    syncToken->pushToken( diaOffsets );
-
-    syncToken->unsetCurrent();
+    syncToken->pushRoutine( rX.releaseDelayed() );
+    syncToken->pushRoutine( diaValues.releaseDelayed() );
+    syncToken->pushRoutine( diaOffsets.releaseDelayed() );
 
     return syncToken.release();
 }
@@ -1167,10 +1165,10 @@ SyncToken* DIAStorage<ValueType>::vectorTimesMatrixAsync(
     // all accesses will be pushed to the sync token as LAMA arrays have to be protected up
     // to the end of the computations.
 
-    shared_ptr<ReadAccess<IndexType> > diaOffsets( new ReadAccess<IndexType>( mOffset, loc ) );
-    shared_ptr<ReadAccess<ValueType> > diaValues( new ReadAccess<ValueType>( mValues, loc ) );
+    ReadAccess<IndexType> diaOffsets( mOffset, loc );
+    ReadAccess<ValueType> diaValues(  mValues, loc );
 
-    shared_ptr<ReadAccess<ValueType> > rX( new ReadAccess<ValueType>( x, loc ) );
+    ReadAccess<ValueType> rX( x, loc );
 
     // Possible alias of result and y must be handled by coressponding accesses
 
@@ -1178,34 +1176,34 @@ SyncToken* DIAStorage<ValueType>::vectorTimesMatrixAsync(
     {
         // only write access for y, no read access for result
 
-        shared_ptr<WriteAccess<ValueType> > wResult( new WriteAccess<ValueType>( result, loc ) );
+        WriteAccess<ValueType> wResult( result, loc );
 
         // we assume that normalGEMV can deal with the alias of result, y
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        normalGEVM[loc]( wResult->get(), alpha, rX->get(), beta, wResult->get(), mNumRows, mNumColumns, mNumDiagonals,
-                         diaOffsets->get(), diaValues->get() );
+        normalGEVM[loc]( wResult.get(), alpha, rX.get(), beta, wResult.get(), mNumRows, mNumColumns, mNumDiagonals,
+                         diaOffsets.get(), diaValues.get() );
 
-        syncToken->pushToken( wResult );
+        syncToken->pushRoutine( wResult.releaseDelayed() );
     }
     else
     {
-        shared_ptr<WriteAccess<ValueType> > wResult( new WriteOnlyAccess<ValueType>( result, loc, mNumColumns ) );
-        shared_ptr<ReadAccess<ValueType> > rY( new ReadAccess<ValueType>( y, loc ) );
+        WriteOnlyAccess<ValueType> wResult( result, loc, mNumColumns );
+        ReadAccess<ValueType> rY( y, loc );
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        normalGEVM[loc]( wResult->get(), alpha, rX->get(), beta, rY->get(), mNumRows, mNumColumns, mNumDiagonals,
-                         diaOffsets->get(), diaValues->get() );
+        normalGEVM[loc]( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumRows, mNumColumns, mNumDiagonals,
+                         diaOffsets.get(), diaValues.get() );
 
-        syncToken->pushToken( wResult );
-        syncToken->pushToken( rY );
+        syncToken->pushRoutine( wResult.releaseDelayed() );
+        syncToken->pushRoutine( rY.releaseDelayed() );
     }
 
-    syncToken->pushToken( rX );
-    syncToken->pushToken( diaValues );
-    syncToken->pushToken( diaOffsets );
+    syncToken->pushRoutine( rX.releaseDelayed() );
+    syncToken->pushRoutine( diaValues.releaseDelayed() );
+    syncToken->pushRoutine( diaOffsets.releaseDelayed() );
 
     syncToken->unsetCurrent();
 
