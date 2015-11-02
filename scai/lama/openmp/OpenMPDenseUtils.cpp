@@ -424,6 +424,7 @@ void OpenMPDenseUtils::registerKernelFunctions()
     KernelRegistry::set<DenseKernelTrait::getDiagonal<TYPE, ARITHMETIC_HOST_TYPE_##J> >( getDiagonal, Host );         \
     KernelRegistry::set<DenseKernelTrait::setDiagonal<TYPE, ARITHMETIC_HOST_TYPE_##J> >( setDiagonal, Host );         \
     KernelRegistry::set<DenseKernelTrait::getRow<TYPE, ARITHMETIC_HOST_TYPE_##J> >( getRow, Host );                   \
+    KernelRegistry::set<DenseKernelTrait::scaleRows<TYPE, ARITHMETIC_HOST_TYPE_##J> >( scaleRows, Host );             \
 
 #define KREGISTRY_DENSE_REGISTER(z, I, _)                                                                             \
     KernelRegistry::set<DenseKernelTrait::nonZeroValues<ARITHMETIC_HOST_TYPE_##I> >( nonZeroValues, Host );           \
