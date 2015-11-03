@@ -81,9 +81,9 @@ IndexType OpenMPELLUtils::countNonEmptyRowsBySizes( const IndexType sizes[], con
 
     #pragma omp parallel for reduction( +:counter )
 
-    for( IndexType i = 0; i < numRows; ++i )
+    for ( IndexType i = 0; i < numRows; ++i )
     {
-        if( sizes[i] > 0 )
+        if ( sizes[i] > 0 )
         {
             counter++;
         }
@@ -106,9 +106,9 @@ void OpenMPELLUtils::setNonEmptyRowsBySizes(
 
     // Note: this routine is not easy to parallelize, no offsets for rowIndexes available
 
-    for( IndexType i = 0; i < numRows; ++i )
+    for ( IndexType i = 0; i < numRows; ++i )
     {
-        if( sizes[i] > 0 )
+        if ( sizes[i] > 0 )
         {
             rowIndexes[counter] = i;
             counter++;
@@ -126,7 +126,7 @@ bool OpenMPELLUtils::hasDiagonalProperty( const IndexType numDiagonals, const In
 {
     SCAI_LOG_INFO( logger, "hasDiagonalProperty, #numDiagonals = " << numDiagonals )
 
-    if( numDiagonals == 0 )
+    if ( numDiagonals == 0 )
     {
         return false;
     }
@@ -135,14 +135,14 @@ bool OpenMPELLUtils::hasDiagonalProperty( const IndexType numDiagonals, const In
 
     #pragma omp parallel for reduction( && : diagonalProperty )
 
-    for( IndexType i = 0; i < numDiagonals; ++i )
+    for ( IndexType i = 0; i < numDiagonals; ++i )
     {
-        if( !diagonalProperty )
+        if ( !diagonalProperty )
         {
             continue;
         }
 
-        if( ellJA[i] != i )
+        if ( ellJA[i] != i )
         {
             diagonalProperty = false;
         }
@@ -153,7 +153,7 @@ bool OpenMPELLUtils::hasDiagonalProperty( const IndexType numDiagonals, const In
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-template<typename ValueType,typename OtherValueType>
+template<typename ValueType, typename OtherValueType>
 void OpenMPELLUtils::scaleValue(
     const IndexType numRows,
     const IndexType numValuesPerRow,
@@ -166,9 +166,9 @@ void OpenMPELLUtils::scaleValue(
 
     #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
 
-    for( IndexType i = 0; i < numRows; i++ ) //rows
+    for ( IndexType i = 0; i < numRows; i++ ) //rows
     {
-        for( IndexType jj = 0; jj < ellSizes[i]; jj++ ) //elements in row
+        for ( IndexType jj = 0; jj < ellSizes[i]; jj++ ) //elements in row
         {
             IndexType pos = ellindex( i, jj, numRows, numValuesPerRow );
             ellValues[pos] *= static_cast<ValueType>( values[i] );
@@ -189,18 +189,18 @@ void OpenMPELLUtils::check(
     SCAI_LOG_INFO( logger,
                    "check # numRows = " << numRows << ", numValuesPerRow = " << numValuesPerRow << ", numColumns = " << numColumns )
 
-    if( numRows > 0 )
+    if ( numRows > 0 )
     {
         bool integrityIA = true;
         bool integrityJA = true;
 
         #pragma omp parallel for reduction( && : integrityIA, integrityJA ) schedule( SCAI_OMP_SCHEDULE )
 
-        for( IndexType i = 0; i < numRows; i++ )
+        for ( IndexType i = 0; i < numRows; i++ )
         {
-            if( ellSizes[i] >= 0 && ellSizes[i] <= numValuesPerRow )
+            if ( ellSizes[i] >= 0 && ellSizes[i] <= numValuesPerRow )
             {
-                for( IndexType jj = 0; jj < ellSizes[i]; jj++ )
+                for ( IndexType jj = 0; jj < ellSizes[i]; jj++ )
                 {
                     IndexType pos = ellindex( i, jj, numRows, numValuesPerRow );
                     IndexType j = ellJA[pos];
@@ -231,22 +231,22 @@ ValueType OpenMPELLUtils::absMaxVal(
     const IndexType ellSizes[],
     const ValueType values[] )
 {
-    ValueType maxValue = static_cast<ValueType>(0.0);
+    ValueType maxValue = static_cast<ValueType>( 0.0 );
 
     #pragma omp parallel
     {
-        ValueType threadVal = static_cast<ValueType>(0.0);
+        ValueType threadVal = static_cast<ValueType>( 0.0 );
 
         #pragma omp for schedule( SCAI_OMP_SCHEDULE )
 
-        for( IndexType i = 0; i < numRows; ++i )
+        for ( IndexType i = 0; i < numRows; ++i )
         {
-            for( IndexType jj = 0; jj < ellSizes[i]; ++jj )
+            for ( IndexType jj = 0; jj < ellSizes[i]; ++jj )
             {
                 IndexType pos = ellindex( i, jj, numRows, numValuesPerRow );
                 ValueType val = abs( values[pos] );
 
-                if( val > threadVal )
+                if ( val > threadVal )
                 {
                     threadVal = val;
                 }
@@ -259,7 +259,7 @@ ValueType OpenMPELLUtils::absMaxVal(
         {
             SCAI_LOG_DEBUG( logger, "absMaxVal, threadVal = " << threadVal << ", maxVal = " << maxValue )
 
-            if( threadVal > maxValue )
+            if ( threadVal > maxValue )
             {
                 maxValue = threadVal;
             }
@@ -273,7 +273,7 @@ ValueType OpenMPELLUtils::absMaxVal(
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-template<typename ValueType,typename OtherValueType>
+template<typename ValueType, typename OtherValueType>
 void OpenMPELLUtils::getRow(
     OtherValueType row[],
     const IndexType i,
@@ -288,14 +288,14 @@ void OpenMPELLUtils::getRow(
 
     #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
 
-    for( IndexType j = 0; j < numColumns; ++j )
+    for ( IndexType j = 0; j < numColumns; ++j )
     {
-        row[j] = static_cast<OtherValueType>(0.0);
+        row[j] = static_cast<OtherValueType>( 0.0 );
     }
 
     #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
 
-    for( IndexType jj = 0; jj < ellSizes[i]; ++jj )
+    for ( IndexType jj = 0; jj < ellSizes[i]; ++jj )
     {
         IndexType pos = ellindex( i, jj, numRows, numValuesPerRow );
         row[ellJA[pos]] = static_cast<OtherValueType>( values[pos] );
@@ -316,11 +316,11 @@ ValueType OpenMPELLUtils::getValue(
 
     ValueType val = 0.0;
 
-    for( IndexType jj = 0; jj < ellSizes[i]; ++jj )
+    for ( IndexType jj = 0; jj < ellSizes[i]; ++jj )
     {
         IndexType pos = ellindex( i, jj, numRows, numValuesPerRow );
 
-        if( ellJA[pos] == j )
+        if ( ellJA[pos] == j )
         {
             val = ellValues[pos];
             break;
@@ -332,7 +332,7 @@ ValueType OpenMPELLUtils::getValue(
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-template<typename ELLValueType,typename CSRValueType>
+template<typename ELLValueType, typename CSRValueType>
 void OpenMPELLUtils::getCSRValues(
     IndexType csrJA[],
     CSRValueType csrValues[],
@@ -354,7 +354,7 @@ void OpenMPELLUtils::getCSRValues(
 
         #pragma omp for schedule( SCAI_OMP_SCHEDULE )
 
-        for( IndexType i = 0; i < numRows; i++ )
+        for ( IndexType i = 0; i < numRows; i++ )
         {
             IndexType rowSize = ellSizes[i];
             IndexType offset = csrIA[i];
@@ -363,7 +363,7 @@ void OpenMPELLUtils::getCSRValues(
 
             SCAI_ASSERT_EQUAL_DEBUG( csrIA[i] + rowSize, csrIA[i + 1] )
 
-            for( IndexType jj = 0; jj < rowSize; ++jj )
+            for ( IndexType jj = 0; jj < rowSize; ++jj )
             {
                 IndexType pos = ellindex( i, jj, numRows, numValuesPerRow );
                 csrJA[offset + jj] = ellJA[pos];
@@ -375,7 +375,7 @@ void OpenMPELLUtils::getCSRValues(
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-template<typename ELLValueType,typename CSRValueType>
+template<typename ELLValueType, typename CSRValueType>
 void OpenMPELLUtils::setCSRValues(
     IndexType ellJA[],
     ELLValueType ellValues[],
@@ -397,13 +397,13 @@ void OpenMPELLUtils::setCSRValues(
 
         #pragma omp for schedule( SCAI_OMP_SCHEDULE )
 
-        for( IndexType i = 0; i < numRows; i++ )
+        for ( IndexType i = 0; i < numRows; i++ )
         {
             IndexType rowSize = ellSizes[i];
             IndexType offset = csrIA[i];
             IndexType j = 0; // will be last column index
 
-            for( IndexType jj = 0; jj < rowSize; ++jj )
+            for ( IndexType jj = 0; jj < rowSize; ++jj )
             {
                 IndexType pos = ellindex( i, jj, numRows, numValuesPerRow );
                 j = csrJA[offset + jj];
@@ -413,11 +413,11 @@ void OpenMPELLUtils::setCSRValues(
 
             // fill up the remaining entries with something useful
 
-            for( IndexType jj = rowSize; jj < numValuesPerRow; ++jj )
+            for ( IndexType jj = rowSize; jj < numValuesPerRow; ++jj )
             {
                 IndexType pos = ellindex( i, jj, numRows, numValuesPerRow );
                 ellJA[pos] = j; // last used column index
-                ellValues[pos] = static_cast<ELLValueType>(0.0); // zero entry
+                ellValues[pos] = static_cast<ELLValueType>( 0.0 ); // zero entry
             }
         }
     }
@@ -439,13 +439,13 @@ void OpenMPELLUtils::fillELLValues(
     {
         #pragma omp for schedule( SCAI_OMP_SCHEDULE )
 
-        for( IndexType i = 0; i < numRows; i++ )
+        for ( IndexType i = 0; i < numRows; i++ )
         {
             IndexType rowSize = ellSizes[i];
 
             IndexType j = 0; // will be last column index
 
-            if( rowSize > 0 && rowSize < numValuesPerRow )
+            if ( rowSize > 0 && rowSize < numValuesPerRow )
             {
                 IndexType pos = ellindex( i, rowSize - 1, numRows, numValuesPerRow );
                 j = ellJA[pos];
@@ -453,11 +453,11 @@ void OpenMPELLUtils::fillELLValues(
 
             // fill up the remaining entries with something useful
 
-            for( IndexType jj = rowSize; jj < numValuesPerRow; ++jj )
+            for ( IndexType jj = rowSize; jj < numValuesPerRow; ++jj )
             {
                 IndexType pos = ellindex( i, jj, numRows, numValuesPerRow );
                 ellJA[pos] = j; // last used column index
-                ellValues[pos] = static_cast<ValueType>(0.0); // zero entry
+                ellValues[pos] = static_cast<ValueType>( 0.0 ); // zero entry
             }
         }
     }
@@ -481,20 +481,20 @@ void OpenMPELLUtils::compressIA(
     {
         #pragma omp for
 
-        for( IndexType i = 0; i < numRows; i++ )
+        for ( IndexType i = 0; i < numRows; i++ )
         {
             IndexType length = IA[i];
 
-            for( IndexType jj = 0; jj < IA[i]; jj++ )
+            for ( IndexType jj = 0; jj < IA[i]; jj++ )
             {
                 IndexType pos = ellindex( i, jj, numRows, numValuesPerRow );
 
-                if( JA[pos] == i )
+                if ( JA[pos] == i )
                 {
                     continue;
                 }
 
-                if( abs( ellValues[pos] ) <= eps )
+                if ( abs( ellValues[pos] ) <= eps )
                 {
                     length--;
                 }
@@ -525,15 +525,15 @@ void OpenMPELLUtils::compressValues(
     {
         #pragma omp for
 
-        for( IndexType i = 0; i < numRows; i++ )
+        for ( IndexType i = 0; i < numRows; i++ )
         {
             IndexType gap = 0;
 
-            for( IndexType j = 0; j < IA[i]; j++ )
+            for ( IndexType j = 0; j < IA[i]; j++ )
             {
                 IndexType pos = ellindex( i, j, numRows, numValuesPerRow );
 
-                if( abs( values[pos] ) <= eps && JA[pos] != i )
+                if ( abs( values[pos] ) <= eps && JA[pos] != i )
                 {
                     gap++;
                     continue;
@@ -568,24 +568,24 @@ void OpenMPELLUtils::matrixMultiplySizes(
     {
         #pragma omp for
 
-        for( IndexType i = 0; i < aNumRows; i++ )
+        for ( IndexType i = 0; i < aNumRows; i++ )
         {
             std::set<IndexType> newElements;
-            std::pair<std::set<IndexType>::iterator,bool> ret;
+            std::pair<std::set<IndexType>::iterator, bool> ret;
             IndexType length = 0;
 
-            for( IndexType j = 0; j < aSizes[i]; j++ )
+            for ( IndexType j = 0; j < aSizes[i]; j++ )
             {
                 IndexType posA = ellindex( i, j, aNumRows, aNumValuesPerRow );
                 IndexType jj = aJA[posA];
 
-                for( IndexType k = 0; k < bSizes[jj]; k++ )
+                for ( IndexType k = 0; k < bSizes[jj]; k++ )
                 {
                     IndexType posB = ellindex( jj, k, bNumRows, bNumValuesPerRow );
                     IndexType kk = bJA[posB];
                     ret = newElements.insert( kk );
 
-                    if( ret.second == true )
+                    if ( ret.second == true )
                     {
                         length++;
                     }
@@ -625,27 +625,27 @@ void OpenMPELLUtils::matrixMultiply(
     {
         #pragma omp for
 
-        for( IndexType i = 0; i < aNumRows; i++ )
+        for ( IndexType i = 0; i < aNumRows; i++ )
         {
             std::set<IndexType> jaRow;
-            std::map<IndexType,ValueType> valuesRow;
-            std::pair<std::set<IndexType>::iterator,bool> ret;
+            std::map<IndexType, ValueType> valuesRow;
+            std::pair<std::set<IndexType>::iterator, bool> ret;
 
-            for( IndexType j = 0; j < aSizes[i]; j++ )
+            for ( IndexType j = 0; j < aSizes[i]; j++ )
             {
                 IndexType posA = ellindex( i, j, aNumRows, aNumValuesPerRow );
                 IndexType jj = aJA[posA];
 
-                for( IndexType k = 0; k < bSizes[jj]; k++ )
+                for ( IndexType k = 0; k < bSizes[jj]; k++ )
                 {
                     IndexType posB = ellindex( jj, k, bNumRows, bNumValuesPerRow );
                     IndexType kk = bJA[posB];
                     ret = jaRow.insert( kk );
                     ValueType mult = alpha * aValues[posA] * bValues[posB];
 
-                    if( ret.second == true )
+                    if ( ret.second == true )
                     {
-                        valuesRow.insert( std::pair<IndexType,ValueType>( kk, mult ) );
+                        valuesRow.insert( std::pair<IndexType, ValueType>( kk, mult ) );
                     }
                     else
                     {
@@ -655,12 +655,12 @@ void OpenMPELLUtils::matrixMultiply(
             }
 
             std::set<IndexType>::iterator jaIter;
-            typename std::map<IndexType,ValueType>::iterator valuesIter;
+            typename std::map<IndexType, ValueType>::iterator valuesIter;
 
             jaIter = jaRow.begin();
             valuesIter = valuesRow.begin();
 
-            for( IndexType j = 0; j < cSizes[i]; j++ )
+            for ( IndexType j = 0; j < cSizes[i]; j++ )
             {
                 // note: cNumRows == aNumRows
                 IndexType posC = ellindex( i, j, aNumRows, cNumValuesPerRow );
@@ -693,25 +693,25 @@ void OpenMPELLUtils::matrixAddSizes(
     {
         #pragma omp for
 
-        for( IndexType i = 0; i < m; i++ )
+        for ( IndexType i = 0; i < m; i++ )
         {
             std::set<IndexType> iaRow;
-            std::pair<std::set<IndexType>::iterator,bool> ret;
+            std::pair<std::set<IndexType>::iterator, bool> ret;
             IndexType length = 0;
 
-            for( IndexType j = 0; j < aSizes[i]; j++ )
+            for ( IndexType j = 0; j < aSizes[i]; j++ )
             {
                 IndexType posA = ellindex( i, j, m, aNumValuesPerRow );
                 iaRow.insert( aJA[posA] );
                 length++;
             }
 
-            for( IndexType j = 0; j < bSizes[i]; j++ )
+            for ( IndexType j = 0; j < bSizes[i]; j++ )
             {
                 IndexType posB = ellindex( i, j, m, bNumValuesPerRow );
                 ret = iaRow.insert( bJA[posB] );
 
-                if( ret.second == true )
+                if ( ret.second == true )
                 {
                     length++;
                 }
@@ -750,27 +750,27 @@ void OpenMPELLUtils::matrixAdd(
     {
         #pragma omp for
 
-        for( IndexType i = 0; i < m; i++ )
+        for ( IndexType i = 0; i < m; i++ )
         {
             std::set<IndexType> jaRow;
-            std::map<IndexType,ValueType> valuesRow;
-            std::pair<std::set<IndexType>::iterator,bool> ret;
+            std::map<IndexType, ValueType> valuesRow;
+            std::pair<std::set<IndexType>::iterator, bool> ret;
 
-            for( IndexType j = 0; j < aSizes[i]; j++ )
+            for ( IndexType j = 0; j < aSizes[i]; j++ )
             {
                 IndexType posA = ellindex( i, j, m, aNumValuesPerRow );
                 jaRow.insert( aJA[posA] );
-                valuesRow.insert( std::pair<IndexType,ValueType>( aJA[posA], aValues[posA] ) );
+                valuesRow.insert( std::pair<IndexType, ValueType>( aJA[posA], aValues[posA] ) );
             }
 
-            for( IndexType j = 0; j < bSizes[i]; j++ )
+            for ( IndexType j = 0; j < bSizes[i]; j++ )
             {
                 IndexType posB = ellindex( i, j, m, bNumValuesPerRow );
                 ret = jaRow.insert( bJA[posB] );
 
-                if( ret.second == true )
+                if ( ret.second == true )
                 {
-                    valuesRow.insert( std::pair<IndexType,ValueType>( bJA[posB], beta * bValues[posB] ) );
+                    valuesRow.insert( std::pair<IndexType, ValueType>( bJA[posB], beta * bValues[posB] ) );
                 }
                 else
                 {
@@ -779,12 +779,12 @@ void OpenMPELLUtils::matrixAdd(
             }
 
             std::set<IndexType>::iterator jaIter;
-            typename std::map<IndexType,ValueType>::iterator valuesIter;
+            typename std::map<IndexType, ValueType>::iterator valuesIter;
 
             jaIter = jaRow.begin();
             valuesIter = valuesRow.begin();
 
-            for( IndexType j = 0; j < cSizes[i]; j++ )
+            for ( IndexType j = 0; j < cSizes[i]; j++ )
             {
                 // Note: cNumRows == aNumRows
                 IndexType posC = ellindex( i, j, m, cNumValuesPerRow );
@@ -816,7 +816,7 @@ void OpenMPELLUtils::jacobi(
 
     TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
-    if( syncToken != NULL )
+    if ( syncToken != NULL )
     {
         SCAI_LOG_ERROR( logger, "jacobi called asynchronously, not supported here" )
     }
@@ -826,29 +826,29 @@ void OpenMPELLUtils::jacobi(
         SCAI_REGION( "OpenMP.ELL.jacobi" )
         #pragma omp for schedule(SCAI_OMP_SCHEDULE)
 
-        for( IndexType i = 0; i < numRows; i++ )
+        for ( IndexType i = 0; i < numRows; i++ )
         {
             ValueType temp = rhs[i];
             IndexType pos = ellindex( i, 0, numRows, ellNumValuesPerRow );
             ValueType diag = ellValues[pos]; //getDiagonal
 
-            for( IndexType j = 1; j < ellSizes[i]; j++ )
+            for ( IndexType j = 1; j < ellSizes[i]; j++ )
             {
                 pos = ellindex( i, j, numRows, ellNumValuesPerRow );
                 temp -= ellValues[pos] * oldSolution[ellJA[pos]];
             }
 
-            if( omega == scai::common::constants::ONE )
+            if ( omega == scai::common::constants::ONE )
             {
                 solution[i] = temp / diag;
             }
-            else if( omega == 0.5 )
+            else if ( omega == 0.5 )
             {
                 solution[i] = omega * ( temp / diag + oldSolution[i] );
             }
             else
             {
-                solution[i] = omega * ( temp / diag ) + ( static_cast<ValueType>(1.0) - omega ) * oldSolution[i];
+                solution[i] = omega * ( temp / diag ) + ( static_cast<ValueType>( 1.0 ) - omega ) * oldSolution[i];
             }
         }
     }
@@ -872,7 +872,7 @@ void OpenMPELLUtils::jacobiHalo(
 {
     TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
-    if( syncToken != NULL )
+    if ( syncToken != NULL )
     {
         SCAI_LOG_WARN( logger, "jacobi called asynchronously, not supported here" )
     }
@@ -883,18 +883,18 @@ void OpenMPELLUtils::jacobiHalo(
 
         #pragma omp for schedule( SCAI_OMP_SCHEDULE )
 
-        for( IndexType ii = 0; ii < numNonEmptyRows; ++ii )
+        for ( IndexType ii = 0; ii < numNonEmptyRows; ++ii )
         {
             IndexType i = ii; // rowIndexes == NULL stands for all rows
 
-            if( rowIndexes )
+            if ( rowIndexes )
             {
                 i = rowIndexes[ii];
             }
 
-            ValueType temp = static_cast<ValueType>(0.0);
+            ValueType temp = static_cast<ValueType>( 0.0 );
 
-            for( IndexType jj = 0; jj < ellSizes[i]; jj++ )
+            for ( IndexType jj = 0; jj < ellSizes[i]; jj++ )
             {
                 IndexType pos = ellindex( i, jj, numRows, ellNumValuesPerRow );
                 temp += ellValues[pos] * oldSolution[ellJA[pos]];
@@ -925,7 +925,7 @@ void OpenMPELLUtils::normalGEMV(
     SCAI_LOG_INFO( logger,
                    "normalGEMV<" << getScalarType<ValueType>() << ", #threads = " << omp_get_max_threads() << ">, result[" << numRows << "] = " << alpha << " * A( ell, #maxNZ/row = " << numValuesPerRow << " ) * x + " << beta << " * y " )
 
-    if( numValuesPerRow == 0 )
+    if ( numValuesPerRow == 0 )
     {
         COMMON_THROWEXCEPTION( "normalGEMV should not have been called, no entries" )
 
@@ -934,7 +934,7 @@ void OpenMPELLUtils::normalGEMV(
 
     TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
-    if( syncToken )
+    if ( syncToken )
     {
         SCAI_LOG_WARN( logger, "Host: asynchronous execution by task should be done at higher level" )
     }
@@ -945,11 +945,11 @@ void OpenMPELLUtils::normalGEMV(
 
         #pragma omp for schedule(SCAI_OMP_SCHEDULE)
 
-        for( IndexType i = 0; i < numRows; ++i )
+        for ( IndexType i = 0; i < numRows; ++i )
         {
-            ValueType temp = static_cast<ValueType>(0.0);
+            ValueType temp = static_cast<ValueType>( 0.0 );
 
-            for( IndexType jj = 0; jj < ellSizes[i]; ++jj )
+            for ( IndexType jj = 0; jj < ellSizes[i]; ++jj )
             {
                 IndexType pos = ellindex( i, jj, numRows, numValuesPerRow );
                 IndexType j = ellJA[pos];
@@ -962,13 +962,13 @@ void OpenMPELLUtils::normalGEMV(
 
             SCAI_LOG_TRACE( logger, "row = " << i << ", temp = " << temp )
 
-            if( beta == scai::common::constants::ZERO )
+            if ( beta == scai::common::constants::ZERO )
             {
                 // must be handled separately as y[i] might be uninitialized
 
                 result[i] = alpha * temp;
             }
-            else if( alpha == scai::common::constants::ONE )
+            else if ( alpha == scai::common::constants::ONE )
             {
                 result[i] = temp + beta * y[i];
             }
@@ -997,7 +997,7 @@ void OpenMPELLUtils::sparseGEMV(
 {
     TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
-    if( syncToken )
+    if ( syncToken )
     {
         SCAI_LOG_WARN( logger, "Host: asynchronous execution by task should be done at higher level" )
     }
@@ -1011,21 +1011,21 @@ void OpenMPELLUtils::sparseGEMV(
 
         #pragma omp for schedule( SCAI_OMP_SCHEDULE )
 
-        for( IndexType ii = 0; ii < numNonZeroRows; ++ii )
+        for ( IndexType ii = 0; ii < numNonZeroRows; ++ii )
         {
             IndexType i = rowIndexes[ii];
 
             //result is not initialized for performance reasons
-            ValueType temp = static_cast<ValueType>(0.0);
+            ValueType temp = static_cast<ValueType>( 0.0 );
 
-            for( IndexType jj = 0; jj < ellSizes[i]; ++jj )
+            for ( IndexType jj = 0; jj < ellSizes[i]; ++jj )
             {
                 IndexType pos = ellindex( i, jj, numRows, numValuesPerRow );
                 IndexType j = ellJA[pos];
                 temp += ellValues[pos] * x[j];
             }
 
-            if( alpha == scai::common::constants::ONE )
+            if ( alpha == scai::common::constants::ONE )
             {
                 result[i] += temp;
             }
@@ -1048,7 +1048,7 @@ void OpenMPELLUtils::normalGEVM(
     const ValueType y[],
     const IndexType numRows,
     const IndexType numColumns,
-    const IndexType UNUSED(numValuesPerRow),
+    const IndexType UNUSED( numValuesPerRow ),
     const IndexType ellSizes[],
     const IndexType ellJA[],
     const ValueType ellValues[] )
@@ -1058,9 +1058,9 @@ void OpenMPELLUtils::normalGEVM(
 
     TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
-    if( syncToken )
+    if ( syncToken )
     {
-        COMMON_THROWEXCEPTION( "asynchronous execution should be done by LAMATask before" )
+        SCAI_LOG_INFO( logger, "asynchronous execution not supported here" )
     }
 
     //#pragma omp parallel
@@ -1068,15 +1068,15 @@ void OpenMPELLUtils::normalGEVM(
         SCAI_REGION( "OpenMP.ELL.normalGEVM" )
 
         //#pragma omp for schedule(SCAI_OMP_SCHEDULE)
-        for( IndexType i = 0; i < numColumns; ++i )
+        for ( IndexType i = 0; i < numColumns; ++i )
         {
-            ValueType temp = static_cast<ValueType>(0.0);
+            ValueType temp = static_cast<ValueType>( 0.0 );
 
-            for( IndexType j = 0; j < numRows; ++j )
+            for ( IndexType j = 0; j < numRows; ++j )
             {
-                for( IndexType k = 0; k < ellSizes[j]; ++k )
+                for ( IndexType k = 0; k < ellSizes[j]; ++k )
                 {
-                    if( ellJA[k * numRows + j] == i )
+                    if ( ellJA[k * numRows + j] == i )
                     {
                         SCAI_LOG_TRACE( logger, "temp += dataAccess[k * numRows + j] * xAccess[j]; j = " << j )
                         SCAI_LOG_TRACE( logger, ", dataAccess[k * numRows + j] = " << ellValues[ k * numRows + j ] )
@@ -1089,13 +1089,13 @@ void OpenMPELLUtils::normalGEVM(
 
             SCAI_LOG_TRACE( logger, "column = " << i << ", temp = " << temp )
 
-            if( beta == scai::common::constants::ZERO )
+            if ( beta == scai::common::constants::ZERO )
             {
                 // must be handled separately as y[i] might be uninitialized
 
                 result[i] = alpha * temp;
             }
-            else if( alpha == scai::common::constants::ONE )
+            else if ( alpha == scai::common::constants::ONE )
             {
                 result[i] = temp + beta * y[i];
             }
@@ -1106,11 +1106,11 @@ void OpenMPELLUtils::normalGEVM(
         }
     }
 
-    if( SCAI_LOG_TRACE_ON( logger ) )
+    if ( SCAI_LOG_TRACE_ON( logger ) )
     {
         std::cout << "NormalGEVM: result = ";
 
-        for( IndexType i = 0; i < numColumns; ++i )
+        for ( IndexType i = 0; i < numColumns; ++i )
         {
             std::cout << " " << result[i];
         }
@@ -1126,9 +1126,9 @@ void OpenMPELLUtils::sparseGEVM(
     ValueType result[],
     const ValueType alpha,
     const ValueType x[],
-    const IndexType UNUSED(numRows),
+    const IndexType UNUSED( numRows ),
     const IndexType numColumns,
-    const IndexType UNUSED(numValuesPerRow),
+    const IndexType UNUSED( numValuesPerRow ),
     const IndexType numNonZeroRows,
     const IndexType rowIndexes[],
     const IndexType ellSizes[],
@@ -1151,17 +1151,17 @@ void OpenMPELLUtils::sparseGEVM(
 
         #pragma omp for schedule(SCAI_OMP_SCHEDULE)
 
-        for( IndexType i = 0; i < numColumns; ++i )
+        for ( IndexType i = 0; i < numColumns; ++i )
         {
-            ValueType temp = static_cast<ValueType>(0.0);
+            ValueType temp = static_cast<ValueType>( 0.0 );
 
-            for( IndexType jj = 0; jj < numNonZeroRows; ++jj )
+            for ( IndexType jj = 0; jj < numNonZeroRows; ++jj )
             {
                 IndexType j = rowIndexes[jj];
 
-                for( IndexType k = 0; k < ellSizes[j]; ++k )
+                for ( IndexType k = 0; k < ellSizes[j]; ++k )
                 {
-                    if( ellJA[k * numNonZeroRows + j] == i )
+                    if ( ellJA[k * numNonZeroRows + j] == i )
                     {
                         SCAI_LOG_TRACE( logger, "temp += dataAccess[k * numNonZeroRows + j] * xAccess[j]; i = " << j )
                         SCAI_LOG_TRACE( logger,
@@ -1174,7 +1174,7 @@ void OpenMPELLUtils::sparseGEVM(
 
             }
 
-            if( alpha == scai::common::constants::ONE )
+            if ( alpha == scai::common::constants::ONE )
             {
                 result[i] += temp;
             }
@@ -1196,20 +1196,20 @@ void OpenMPELLUtils::registerKernelRoutines()
 
     common::context::ContextType ctx = common::context::Host;
 
-    KernelRegistry::set<ELLKernelTrait::countNonEmptyRowsBySizes>( countNonEmptyRowsBySizes, ctx );  
-    KernelRegistry::set<ELLKernelTrait::setNonEmptyRowsBySizes>( setNonEmptyRowsBySizes, ctx );  
-    KernelRegistry::set<ELLKernelTrait::hasDiagonalProperty>( hasDiagonalProperty, ctx );  
-    KernelRegistry::set<ELLKernelTrait::check>( check, ctx );  
+    KernelRegistry::set<ELLKernelTrait::countNonEmptyRowsBySizes>( countNonEmptyRowsBySizes, ctx );
+    KernelRegistry::set<ELLKernelTrait::setNonEmptyRowsBySizes>( setNonEmptyRowsBySizes, ctx );
+    KernelRegistry::set<ELLKernelTrait::hasDiagonalProperty>( hasDiagonalProperty, ctx );
+    KernelRegistry::set<ELLKernelTrait::check>( check, ctx );
 
-    KernelRegistry::set<ELLKernelTrait::matrixMultiplySizes>( matrixMultiplySizes, ctx );  
-    KernelRegistry::set<ELLKernelTrait::matrixAddSizes>( matrixAddSizes, ctx );  
+    KernelRegistry::set<ELLKernelTrait::matrixMultiplySizes>( matrixMultiplySizes, ctx );
+    KernelRegistry::set<ELLKernelTrait::matrixAddSizes>( matrixAddSizes, ctx );
 
 #define LAMA_ELL_UTILS2_REGISTER(z, J, TYPE )                                             \
     KernelRegistry::set<ELLKernelTrait::getRow<TYPE, ARITHMETIC_HOST_TYPE_##J> >( getRow, ctx );       \
     KernelRegistry::set<ELLKernelTrait::scaleValue<TYPE, ARITHMETIC_HOST_TYPE_##J> >( scaleValue, ctx );       \
     KernelRegistry::set<ELLKernelTrait::setCSRValues<TYPE, ARITHMETIC_HOST_TYPE_##J> >( setCSRValues, ctx );       \
     KernelRegistry::set<ELLKernelTrait::getCSRValues<TYPE, ARITHMETIC_HOST_TYPE_##J> >( getCSRValues, ctx );       \
-
+     
 #define LAMA_ELL_UTILS_REGISTER(z, I, _)                                                  \
     KernelRegistry::set<ELLKernelTrait::absMaxVal<ARITHMETIC_HOST_TYPE_##I> >( absMaxVal, ctx );       \
     KernelRegistry::set<ELLKernelTrait::compressIA<ARITHMETIC_HOST_TYPE_##I> >( compressIA, ctx );       \
@@ -1224,11 +1224,11 @@ void OpenMPELLUtils::registerKernelRoutines()
     KernelRegistry::set<ELLKernelTrait::jacobiHalo<ARITHMETIC_HOST_TYPE_##I> >( jacobiHalo, ctx );       \
     KernelRegistry::set<ELLKernelTrait::getValue<ARITHMETIC_HOST_TYPE_##I> >( getValue, ctx );       \
     KernelRegistry::set<ELLKernelTrait::fillELLValues<ARITHMETIC_HOST_TYPE_##I> >( fillELLValues, ctx );       \
-                                                                                                                  \
+    \
     BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT,                                                                    \
                      LAMA_ELL_UTILS2_REGISTER,                                                                    \
                      ARITHMETIC_HOST_TYPE_##I )                                                                   \
-
+     
     BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_ELL_UTILS_REGISTER, _ )
 
 #undef LAMA_ELL_UTILS_REGISTER

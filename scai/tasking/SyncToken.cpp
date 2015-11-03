@@ -158,7 +158,7 @@ void SyncToken::setSynchronized()
 
 /* ----------------------------------------------------------------------- */
 
-/** ToDo: make this implementation thread-safe */
+/** ToDo: make crrentSyncToken to a thread-private variable */
 
 void SyncToken::setCurrent()
 {
