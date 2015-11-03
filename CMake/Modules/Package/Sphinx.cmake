@@ -35,10 +35,14 @@ find_package ( Sphinx ${SCAI_FIND_PACKAGE_FLAGS} )
 
 ### SPHINX DOCUMENTATION ###
 
-if     ( SPHINX_FOUND )
+if ( SPHINX_FOUND AND BUILD_DOC )
+
+
     ### install ###
     set ( LAMA_DOC_DIR "${CMAKE_SOURCE_DIR}/doc" )
     set ( SPHINX_BUILD_ROOT "${CMAKE_CURRENT_BINARY_DIR}/doc/user" )
+    #set ( SPHINX_BUILD_ROOT ${CMAKE_INSTALL_PREFIX}/share/doc/lama-${LAMA_VERSION}/user)
+    #set ( SPHINX_BUILD_ROOT ${CMAKE_INSTALL_PREFIX}/share/doc/scai-lama-1.0.1)
     set ( SPHINX_INSTALL_ROOT ${CMAKE_INSTALL_PREFIX})
     # file ( MAKE_DIRECTORY ${DOXYGEN_BUILD_ROOT} )
     
@@ -87,8 +91,9 @@ if     ( SPHINX_FOUND )
         DEPENDS ${SPHINX_BUILD_ROOT}/html/index.html
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
     )
-else  ( SPHINX_FOUND )
+    
+else  ( SPHINX_FOUND AND BUILD_DOC )
     if    ( SCAI_CMAKE_VERBOSE )
         message ( STATUS "Not building user documentation because Sphinx not found." )
     endif ( SCAI_CMAKE_VERBOSE )
-endif ( SPHINX_FOUND )
+endif ( SPHINX_FOUND AND BUILD_DOC )

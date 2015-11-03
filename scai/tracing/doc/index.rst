@@ -1,3 +1,5 @@
+.. _main-page:
+
 Tracing
 =======
 
@@ -127,7 +129,7 @@ Example
 The following example shows a C++ program where the main program and the two subroutines have been
 instrumented.
 
-.. literalinclude:: ../../../tracing/examples/TraceCalls.cpp
+.. literalinclude:: ../examples/TraceCalls.cpp
 
 ::
 
@@ -196,7 +198,7 @@ By default, tracing is enabled. It can be disabled by the boolean CMake variable
 ``SCAI_TRACING``. All macros used for instrumentation will be ignored if tracing
 is disabled at compile time.
 
-The tracing library itself uses also the logging library. This logging is only intended
+The tracing library itself uses also the :ref:`SCAI logging library <scailogging:main-page>`. This logging is only intended
 for code development. But by setting corresponding levels of the used loggers it is possible
 to see which instrumented regions are entered and left.
 

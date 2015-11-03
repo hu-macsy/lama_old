@@ -1,3 +1,5 @@
+.. _main-page:
+
 Logging
 =======
 
@@ -364,7 +366,7 @@ Examples
 
 The first example shows a simple example with logging statements of all different levels.
 
-.. literalinclude:: ../../../logging/examples/LogLevels.cpp
+.. literalinclude:: ../../logging/examples/LogLevels.cpp
 
 At runtime it can be decided which logging will be printed:
 
@@ -406,7 +408,7 @@ level of the logger *Demo*.
 
 The next example demonstrates the use of logging with multiple threads.
 
-.. literalinclude:: ../../../logging/examples/LogOpenMP.cpp
+.. literalinclude:: ../../logging/examples/LogOpenMP.cpp
 
 ::
 

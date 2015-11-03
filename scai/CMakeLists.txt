@@ -66,9 +66,6 @@ include ( ConcludeFlags )
 
 ## documentation
 
-# user docu --> make userdoc, make userdoc_json, make install_userdoc
-include ( Package/Sphinx )
-
 #system docu --> make doc
 include ( Package/Doxygen )
 

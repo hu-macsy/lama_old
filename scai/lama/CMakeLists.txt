@@ -131,6 +131,8 @@ scai_project(
 
 ### add subdirectories ###
 
+add_subdirectory( doc )
+
 if    ( NOT SCAI_BLAS_NAME STREQUAL "MKL" AND NOT INTERNALBLAS_FOUND )
     add_subdirectory( cblas )
 endif ( NOT SCAI_BLAS_NAME STREQUAL "MKL" AND NOT INTERNALBLAS_FOUND )
@@ -169,6 +171,7 @@ add_subdirectory ( storage )
 if ( FOUND_BOOST_TEST AND BUILD_TEST )
     add_subdirectory ( test )
 endif ( FOUND_BOOST_TEST AND BUILD_TEST )
+
 
 ### set link directories ###
 if ( WIN32 )

@@ -34,6 +34,16 @@
 ### Set required CMake version
 cmake_minimum_required ( VERSION 2.8 )
 
+### Set version of Logging
+# TOOD: where is the best place to define this?
+set ( SCAI_TRACING_VERSION_NAME "Alpamayo" )
+set ( SCAI_TRACING_COPYRIGHT_YEAR 2015 )
+set ( SCAI_TRACING_VERSION_MAJOR 1 )
+set ( SCAI_TRACING_VERSION_MINOR 0 )
+set ( SCAI_TRACING_VERSION_PATCH 1 )
+set ( SCAI_TRACING_VERSION_COUNT 3 )
+set ( SCAI_TRACING_VERSION ${SCAI_TRACING_VERSION_MAJOR}.${SCAI_TRACING_VERSION_MINOR}.${SCAI_TRACING_VERSION_PATCH} )
+
 ### Set PROJECT NAME / supported LANGUAGES
 project( scai_tracing CXX )
 
@@ -132,6 +142,9 @@ endif ( CMAKE_VERSION VERSION_GREATER 2.8.11 )
 
 ## install library.hpp
 install ( FILES ../tracing.hpp DESTINATION include/scai )
+
+### add documentation
+add_subdirectory( doc )
 
 ## add custum target distClean
 include ( DistClean )
