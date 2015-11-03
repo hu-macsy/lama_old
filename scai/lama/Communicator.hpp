@@ -803,17 +803,16 @@ tasking::SyncToken* Communicator::exchangeByPlanAsync(
 
     SCAI_LOG_DEBUG( logger, *this << ": exchangeByPlanAsync, comCtx = " << *comCtx )
 
-    common::shared_ptr<hmemo::ReadAccess<ValueType> > sendData( new hmemo::ReadAccess<ValueType>( sendArray, comCtx ) );
-    common::shared_ptr<hmemo::WriteAccess<ValueType> > recvData(
-                    new hmemo::WriteOnlyAccess<ValueType>( recvArray, comCtx, recvSize ) );
+    hmemo::ReadAccess<ValueType> sendData( sendArray, comCtx );
+    hmemo::WriteOnlyAccess<ValueType> recvData( recvArray, comCtx, recvSize );
 
-    tasking::SyncToken* token( exchangeByPlanAsync( recvData->get(), recvPlan, sendData->get(), sendPlan ) );
+    tasking::SyncToken* token( exchangeByPlanAsync( recvData.get(), recvPlan, sendData.get(), sendPlan ) );
 
     // Add the read and write access to the sync token to get it freed after successful wait
     // conversion common::shared_ptr<hmemo::HostWriteAccess<ValueType> > -> common::shared_ptr<BaseAccess> supported
 
-    token->pushToken( recvData );
-    token->pushToken( sendData );
+    token->pushRoutine( recvData.releaseDelayed() );
+    token->pushRoutine( sendData.releaseDelayed() );
 
     // return ownership of new created object
 

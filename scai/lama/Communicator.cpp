@@ -417,24 +417,24 @@ SyncToken* Communicator::shiftAsync(
 
     recvArray.clear(); // do not keep any old data, keep capacities
 
-    common::shared_ptr<WriteAccess<ValueType> > recvData( new WriteAccess<ValueType>( recvArray, contextPtr ) );
-    common::shared_ptr<ReadAccess<ValueType> > sendData( new ReadAccess<ValueType>( sendArray, contextPtr ) );
+    WriteAccess<ValueType> recvData( recvArray, contextPtr );
+    ReadAccess<ValueType> sendData( sendArray, contextPtr );
 
-    IndexType numElems = sendData->size();
+    IndexType numElems = sendData.size();
 
-    recvData->resize( numElems ); // size should fit at least to keep own data
+    recvData.resize( numElems ); // size should fit at least to keep own data
 
     // For shifting of data we use the pure virtual methods implemened by each communicator
     // Note: get is the method of the accesses and not of the auto_ptr
 
-    common::unique_ptr<SyncToken> syncToken( shiftDataAsync( recvData->get(), sendData->get(), numElems, direction ) );
+    common::unique_ptr<SyncToken> syncToken( shiftDataAsync( recvData.get(), sendData.get(), numElems, direction ) );
 
     SCAI_ASSERT_DEBUG( syncToken.get(), "NULL pointer for sync token" )
 
-    // accesses are pushed in the sync token so they are freed after synchronization
+    // release of accesses are delayed, add routines  in the sync token so they are called at synchonization
 
-    syncToken->pushToken( sendData );
-    syncToken->pushToken( recvData );
+    syncToken->pushRoutine( sendData.releaseDelayed() );
+    syncToken->pushRoutine( recvData.releaseDelayed() );
 
     return syncToken.release();
 }
@@ -474,6 +474,13 @@ void Communicator::updateHalo(
     LAMAArrayUtils::gather( sendValues, localValues, halo.getProvidesIndexes() );
 
     exchangeByPlan( haloValues, requiredPlan, sendValues, providesPlan );
+}
+
+/* -------------------------------------------------------------------------- */
+
+static void releaseArray( common::shared_ptr<ContextArray> array )
+{
+    array->clear();
 }
 
 /* -------------------------------------------------------------------------- */
@@ -531,7 +538,7 @@ SyncToken* Communicator::updateHaloAsync(
 
     // Note: it is guaranteed that access to sendValues is freed before sendValues
 
-    token->pushToken( sendValues );
+    token->pushRoutine( common::bind( releaseArray, sendValues ) );
 
     return token;
 }
