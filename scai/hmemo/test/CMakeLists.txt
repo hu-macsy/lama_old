@@ -38,28 +38,19 @@ set ( CXX_SOURCES
       LAMAArrayTest.cpp  
 ) 
 
-# Boost is not required, but if not available tests are not built
+include_directories ( ${Boost_INCLUDE_DIR} )
 
-find_package ( Boost COMPONENTS unit_test_framework )
+add_executable ( MemoryTest ${CXX_SOURCES} )
 
-if ( Boost_UNIT_TEST_FRAMEWORK_FOUND )
+target_link_libraries ( MemoryTest 
+    ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}
+    scai_hmemo
+    )
 
-    include_directories ( ${Boost_INCLUDE_DIR} )
+if    ( CUDA_FOUND AND USE_CUDA )
+    add_subdirectory ( cuda )
+endif ( CUDA_FOUND AND USE_CUDA )
 
-    add_executable ( MemoryTest ${CXX_SOURCES} )
-
-    target_link_libraries ( MemoryTest 
-        ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}
-        scai_hmemo
-        )
-
-    if    ( CUDA_FOUND AND USE_CUDA )
-        add_subdirectory ( cuda )
-    endif ( CUDA_FOUND AND USE_CUDA )
-
-    if    ( USE_MIC )
-        add_subdirectory ( mic )
-    endif ( USE_MIC )
-
-endif ( Boost_UNIT_TEST_FRAMEWORK_FOUND )
-
+if    ( USE_MIC )
+    add_subdirectory ( mic )
+endif ( USE_MIC )
