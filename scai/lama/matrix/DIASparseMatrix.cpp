@@ -375,10 +375,10 @@ Matrix* DIASparseMatrix<ValueType>::create()
 }
 
 template<typename ValueType>
-std::pair<MatrixStorageFormat, common::scalar::ScalarType> DIASparseMatrix<ValueType>::createValue()
+MatrixCreateKeyType DIASparseMatrix<ValueType>::createValue()
 {
     common::scalar::ScalarType skind = common::getScalarType<ValueType>();
-    return std::pair<MatrixStorageFormat, common::scalar::ScalarType> ( Format::DIA, skind );
+    return MatrixCreateKeyType( Format::DIA, skind );
 }
 
 /* ========================================================================= */

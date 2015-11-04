@@ -375,10 +375,10 @@ Matrix* JDSSparseMatrix<ValueType>::create()
 }
 
 template<typename ValueType>
-std::pair<MatrixStorageFormat, common::scalar::ScalarType> JDSSparseMatrix<ValueType>::createValue()
+MatrixCreateKeyType JDSSparseMatrix<ValueType>::createValue()
 {
     common::scalar::ScalarType skind = common::getScalarType<ValueType>();
-    return std::pair<MatrixStorageFormat, common::scalar::ScalarType> ( Format::JDS, skind );
+    return MatrixCreateKeyType( Format::JDS, skind );
 }
 
 /* ========================================================================= */

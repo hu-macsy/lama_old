@@ -176,7 +176,7 @@ OutputType Factory<InputType, OutputType>::create( const InputType type )
     {
         // Be careful: operator<< for InputType must be available
 
-        COMMON_THROWEXCEPTION( "Factory: no creator for " << typeid(type).name() << " available" )
+        COMMON_THROWEXCEPTION( "Factory: no creator for " << type << " available" )
     }
 
     return value;

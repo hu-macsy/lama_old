@@ -375,10 +375,10 @@ Matrix* ELLSparseMatrix<ValueType>::create()
 }
 
 template<typename ValueType>
-std::pair<MatrixStorageFormat, common::scalar::ScalarType> ELLSparseMatrix<ValueType>::createValue()
+MatrixCreateKeyType ELLSparseMatrix<ValueType>::createValue()
 {
     common::scalar::ScalarType skind = common::getScalarType<ValueType>();
-    return std::pair<MatrixStorageFormat, common::scalar::ScalarType> ( Format::ELL, skind );
+    return MatrixCreateKeyType( Format::ELL, skind );
 }
 
 /* ========================================================================= */

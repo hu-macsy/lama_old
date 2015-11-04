@@ -2269,10 +2269,10 @@ Matrix* DenseMatrix<ValueType>::create()
 }
 
 template<typename ValueType>
-std::pair<MatrixStorageFormat, common::scalar::ScalarType> DenseMatrix<ValueType>::createValue()
+MatrixCreateKeyType DenseMatrix<ValueType>::createValue()
 {
     common::scalar::ScalarType skind = common::getScalarType<ValueType>();
-    return std::pair<MatrixStorageFormat, common::scalar::ScalarType> ( Format::DENSE, skind );
+    return MatrixCreateKeyType ( Format::DENSE, skind );
 }
 
 /* ========================================================================= */
