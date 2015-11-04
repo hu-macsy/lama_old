@@ -1508,6 +1508,28 @@ SyncToken* CSRStorage<ValueType>::matrixTimesVectorAsync(
 
     ContextPtr loc = normalGEMV.getValidContext( sparseGEMV, this->getContextPtr() );
 
+    if ( loc->getType() == context::Host )
+    {
+        // execution as separate thread
+
+        void ( CSRStorage::*pf )(
+            LAMAArray<ValueType>&,
+            const ValueType,
+            const LAMAArray<ValueType>&,
+            const ValueType,
+            const LAMAArray<ValueType>& ) const
+
+           = &CSRStorage<ValueType>::matrixTimesVector;
+-
+        using scai::common::bind;
+        using scai::common::ref;
+        using scai::common::cref;
+ 
+        SCAI_LOG_INFO( logger, *this << ": matrixTimesVectorAsync on Host by own thread" )
+
+        return new tasking::TaskSyncToken( bind( pf, this, ref( result ), alpha, cref( x ), beta, cref( y ) ) );
+    }
+
     SCAI_LOG_INFO( logger,
                    "GEMV, result = " << alpha << " * A * x + " << beta << " * y "
                    << ", async on " << *loc << ", result = " << result << ", x = " << x << ", y = " << y 
@@ -1611,6 +1633,28 @@ SyncToken* CSRStorage<ValueType>::vectorTimesMatrixAsync(
 
     const ContextPtr loc = normalGEVM.getValidContext( sparseGEVM, this->getContextPtr() );
 
+    if ( loc->getType() == context::Host )
+    {
+        // execution as separate thread
+
+        void ( CSRStorage::*pf )(
+            LAMAArray<ValueType>&,
+            const ValueType,
+            const LAMAArray<ValueType>&,
+            const ValueType,
+            const LAMAArray<ValueType>& ) const
+
+            = &CSRStorage<ValueType>::vectorTimesMatrix;
+
+        using scai::common::bind;
+        using scai::common::ref;
+        using scai::common::cref;
+
+        SCAI_LOG_INFO( logger, *this << ": vectorTimesMatrixAsync on Host by own thread" )
+
+        return new tasking::TaskSyncToken( bind( pf, this, ref( result ), alpha, cref( x ), beta, cref( y ) ) );
+    }
+
     // Note: checks will be done by asynchronous task in any case
     //       and exception in tasks are handled correctly
 
@@ -1619,7 +1663,7 @@ SyncToken* CSRStorage<ValueType>::vectorTimesMatrixAsync(
     SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumRows )
     SCAI_ASSERT_EQUAL_ERROR( result.size(), mNumColumns )
 
-    if( ( beta != scai::common::constants::ZERO ) && ( &result != &y ) )
+    if ( ( beta != scai::common::constants::ZERO ) && ( &result != &y ) )
     {
         SCAI_ASSERT_EQUAL_ERROR( y.size(), mNumColumns )
     }
