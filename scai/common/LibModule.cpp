@@ -34,13 +34,71 @@
 #include <scai/common/LibModule.hpp>
 
 #include <scai/common/exception/Exception.hpp>
+
 #include <dlfcn.h>
+#include <dirent.h>
+
+#include <iostream>
+#include <vector>
+#include <string>
+
+#undef DEBUG_HERE
 
 namespace scai
 {
 
 namespace common
 {
+
+static void getFilesFromDirectory( const char* dir, const char* suffix, std::vector<std::string>& files )
+{
+#ifdef DEBUG_HERE
+    std::cout << "getFilesfromDirectory " << dir << std::endl;
+#endif
+
+    DIR *dp = opendir( dir );
+
+    if ( dp == NULL )
+    {
+        COMMON_THROWEXCEPTION( "Error (" /* << errno */ << " ) opening directory " << dir ) 
+    }
+
+    const std::string directory( dir );
+
+    std::string slash;
+
+    if ( *directory.rbegin() != '/' )
+    {
+        slash = "/";
+    }
+    else
+    {
+        slash = "";
+    }
+
+    for (;;) 
+    {
+        struct dirent *dirp = readdir( dp ); 
+  
+        if ( dirp == NULL )
+        {
+           break;
+        }
+
+        std::string filename = dirp->d_name;
+
+#ifdef DEBUG_HERE
+        std::cout << "File in dir " << dir << ": " << filename << std::endl;
+#endif
+
+        if ( filename.substr( filename.find_last_of( "." ) + 1 ) == suffix )
+        {
+            files.push_back( directory + slash + filename );
+        }
+    }
+
+    closedir( dp );
+}
 
 LibModule::LibHandle LibModule::loadLib( const char* filename )
 {
@@ -62,6 +120,33 @@ void LibModule::freeLib( LibHandle handle )
         COMMON_THROWEXCEPTION( "Unload library failed, " << dlerror() )
     }
 };
+
+void LibModule::loadLibsInDir( const char* dir, const char* /* pattern */ )
+{
+    std::vector<std::string> moduleNames;
+
+    getFilesFromDirectory( dir, "so", moduleNames );
+
+    for ( size_t i = 0; i < moduleNames.size(); ++i )
+    {
+
+#ifdef DEBUG_HERE
+        std::cout << "try to load module " << moduleNames[i] << std::endl;
+#endif
+
+        // continue if name does not match the pattern
+ 
+        try 
+        {
+            loadLib( moduleNames[i].c_str() );
+        }
+        catch ( scai::common::Exception& e )
+        {
+            std::cerr << "Could not load libary " << moduleNames[i] << " in " << dir
+                      << ", " << e.what() << std::endl;
+        }
+    }
+}
 
 } /* end namespace common */
 

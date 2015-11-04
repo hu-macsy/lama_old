@@ -48,11 +48,32 @@ class LibModule
 {
 public:
 
+    /** Data type defintion for library handle, might be OS specifici. */
+
     typedef void* LibHandle;
+
+    /** Load a libary with its full name (might be absolute or relative) */
 
     static LibHandle loadLib( const char* filename );
 
+    /** Unload a libray 
+     *
+     *  Note: It is very likely that the libary is not unloaded now, e.g. there is no
+     *        guarantee that the destructors of static objects are called.
+     */
     static void freeLib( LibHandle handle );
+
+    /** This routine reads a directory and tries to load all library modules in it that match the pattern. 
+     *
+     *  throws an exception if directory does not exist or is not readable
+     *
+     */
+
+    static void loadLibsInDir( const char* dir, const char* pattern );
+
+    /** multiple directory/libaries by patterns <pattern1>:<pattern2>:<pattern3>  */
+
+    // todo: static void loadLibsByPath( const char* path );
 };
 
 } /* end namespace common */

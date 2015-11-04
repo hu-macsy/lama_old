@@ -1,32 +1,57 @@
 
 #include <scai/common/LibModule.hpp>
 #include <scai/common/exception/Exception.hpp>
+#include <scai/common/Settings.hpp>
 
 #include "DynRoutine.hpp"
 
 using namespace scai::common;
 
-int main( int, const char** )
+void runIt()
 {
-    // this should not be available yet
+    // as long as module is not loaded,  Function1 is not registered at factory
 
-    std::cout << "Function1 available (before loadLib): " << DynRoutine::canCreate( "Function1" ) << std::endl;
+    if ( !DynRoutine::canCreate( "Function1" ) )
+    {
+        std::cout << "Function1 not available" << std::endl;
+        return;
+    }
 
-    LibModule::LibHandle handle = LibModule::loadLib( "libmodule.so" );
-
-    std::cout << "Function1 available (after loadLib): " << DynRoutine::canCreate( "Function1" ) << std::endl;
-
-    // Now we can get it
+    std::cout << "Function1 can be created." << std::endl;
 
     DynRoutine* d = DynRoutine::create( "Function1" );
 
-    // We can use the object created by routines of the library module
-
     d->doIt();
 
-    LibModule::freeLib( handle );
+    delete d;
+}
 
-    // unclear what happens because entry in factory has not been deleted
+int main( int, const char** )
+{
+    runIt();  // shoud not work
 
-    std::cout << "Function1 available (freed loadLib): " << DynRoutine::canCreate( "Function1" ) << std::endl;
+    std::string directory;
+
+    if ( Settings::getEnvironment( directory, "SCAI_LIBRARY_PATH" ) )
+    {
+        std::cout << "Load all module libraries in directory " << directory << std::endl;
+
+        LibModule::loadLibsInDir( directory.c_str(), "" );
+
+        runIt();   // should now work
+    }
+    else
+    {
+        std::cout << "Load libmodule.s0" << std::endl;
+
+        LibModule::LibHandle handle = LibModule::loadLib( "libmodule.so" );
+
+        runIt();   // should now work
+
+        LibModule::freeLib( handle );
+
+        std::cout << "Library freed, still try to use it" << std::endl;
+
+        runIt();   // undefined whether it works
+    }
 }
