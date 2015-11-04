@@ -97,6 +97,7 @@ scai_project (
         Settings
         Thread
         Walltime
+        LibModule
 
     HEADERS
 
@@ -138,6 +139,11 @@ foreach    ( module ${SCAI_COMMON_EXTERNAL_DEPS} )
 	string ( TOUPPER ${module} upper_module )
     target_link_libraries ( scai_common ${SCAI_${upper_module}_LIBRARIES} )
 endforeach ( module ${SCAI_COMMON_EXTERNAL_DEPS} )
+
+## add DL library (ToDo: add it to SCAI_COMMON_EXTERNAL_DEPS)
+
+find_library( SCAI_DL_LIBRARIES dl )
+target_link_libraries( scai_common ${SCAI_DL_LIBRARIES} )
 
 ### install ###
 install ( TARGETS scai_common DESTINATION lib )
