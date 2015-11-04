@@ -1292,7 +1292,7 @@ void CSRStorage<ValueType>::matrixTimesVector(
     SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumColumns )
     SCAI_ASSERT_EQUAL_ERROR( result.size(), mNumRows )
 
-    if( ( beta != scai::common::constants::ZERO ) && ( &result != &y ) )
+    if( ( beta != common::constants::ZERO ) && ( &result != &y ) )
     {
         SCAI_ASSERT_EQUAL_ERROR( y.size(), mNumRows )
     }
@@ -1320,7 +1320,7 @@ void CSRStorage<ValueType>::matrixTimesVector(
 
         WriteAccess<ValueType> wResult( result, loc );
 
-        if( mRowIndexes.size() > 0 && ( beta == scai::common::constants::ONE ) )
+        if( mRowIndexes.size() > 0 && ( beta == common::constants::ONE ) )
         {
             // y += alpha * thisMatrix * x, can take advantage of row indexes
 
@@ -1369,7 +1369,7 @@ void CSRStorage<ValueType>::vectorTimesMatrix(
     SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumRows )
     SCAI_ASSERT_EQUAL_ERROR( result.size(), mNumColumns )
 
-    if( ( beta != scai::common::constants::ZERO ) && ( &result != &y ) )
+    if( ( beta != common::constants::ZERO ) && ( &result != &y ) )
     {
         SCAI_ASSERT_EQUAL_ERROR( y.size(), mNumColumns )
     }
@@ -1396,7 +1396,7 @@ void CSRStorage<ValueType>::vectorTimesMatrix(
 
         WriteAccess<ValueType> wResult( result, loc );
 
-        if( mRowIndexes.size() > 0 && ( beta == scai::common::constants::ONE ) )
+        if( mRowIndexes.size() > 0 && ( beta == common::constants::ONE ) )
         {
             // y += alpha * thisMatrix * x, can take advantage of row indexes
 
@@ -1446,7 +1446,7 @@ void CSRStorage<ValueType>::matrixTimesVectorN(
     SCAI_ASSERT_EQUAL_ERROR( x.size(), n * mNumColumns )
     SCAI_ASSERT_EQUAL_ERROR( result.size(), n * mNumRows )
 
-    if( ( beta != scai::common::constants::ZERO ) && ( &result != &y ) )
+    if( ( beta != common::constants::ZERO ) && ( &result != &y ) )
     {
         SCAI_ASSERT_EQUAL_ERROR( y.size(), n * mNumRows )
     }
@@ -1508,7 +1508,7 @@ SyncToken* CSRStorage<ValueType>::matrixTimesVectorAsync(
 
     ContextPtr loc = normalGEMV.getValidContext( sparseGEMV, this->getContextPtr() );
 
-    if ( loc->getType() == context::Host )
+    if ( loc->getType() == common::context::Host )
     {
         // execution as separate thread
 
@@ -1520,10 +1520,10 @@ SyncToken* CSRStorage<ValueType>::matrixTimesVectorAsync(
             const LAMAArray<ValueType>& ) const
 
            = &CSRStorage<ValueType>::matrixTimesVector;
--
-        using scai::common::bind;
-        using scai::common::ref;
-        using scai::common::cref;
+ 
+        using common::bind;
+        using common::ref;
+        using common::cref;
  
         SCAI_LOG_INFO( logger, *this << ": matrixTimesVectorAsync on Host by own thread" )
 
@@ -1538,7 +1538,7 @@ SyncToken* CSRStorage<ValueType>::matrixTimesVectorAsync(
     SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumColumns )
     SCAI_ASSERT_EQUAL_ERROR( result.size(), mNumRows )
 
-    if( ( beta != scai::common::constants::ZERO ) && ( &result != &y ) )
+    if( ( beta != common::constants::ZERO ) && ( &result != &y ) )
     {
         SCAI_ASSERT_EQUAL_ERROR( y.size(), mNumRows )
     }
@@ -1564,7 +1564,7 @@ SyncToken* CSRStorage<ValueType>::matrixTimesVectorAsync(
 
         WriteAccess<ValueType> wResult( result, loc );
 
-        if( mRowIndexes.size() > 0 && ( beta == scai::common::constants::ONE ) )
+        if( mRowIndexes.size() > 0 && ( beta == common::constants::ONE ) )
         {
             // y += alpha * thisMatrix * x, can take advantage of row indexes
 
@@ -1633,7 +1633,7 @@ SyncToken* CSRStorage<ValueType>::vectorTimesMatrixAsync(
 
     const ContextPtr loc = normalGEVM.getValidContext( sparseGEVM, this->getContextPtr() );
 
-    if ( loc->getType() == context::Host )
+    if ( loc->getType() == common::context::Host )
     {
         // execution as separate thread
 
@@ -1646,9 +1646,9 @@ SyncToken* CSRStorage<ValueType>::vectorTimesMatrixAsync(
 
             = &CSRStorage<ValueType>::vectorTimesMatrix;
 
-        using scai::common::bind;
-        using scai::common::ref;
-        using scai::common::cref;
+        using common::bind;
+        using common::ref;
+        using common::cref;
 
         SCAI_LOG_INFO( logger, *this << ": vectorTimesMatrixAsync on Host by own thread" )
 
@@ -1663,7 +1663,7 @@ SyncToken* CSRStorage<ValueType>::vectorTimesMatrixAsync(
     SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumRows )
     SCAI_ASSERT_EQUAL_ERROR( result.size(), mNumColumns )
 
-    if ( ( beta != scai::common::constants::ZERO ) && ( &result != &y ) )
+    if ( ( beta != common::constants::ZERO ) && ( &result != &y ) )
     {
         SCAI_ASSERT_EQUAL_ERROR( y.size(), mNumColumns )
     }
@@ -1688,7 +1688,7 @@ SyncToken* CSRStorage<ValueType>::vectorTimesMatrixAsync(
 
         WriteAccess<ValueType> wResult( result, loc );
 
-        if( mRowIndexes.size() > 0 && ( beta == scai::common::constants::ONE ) )
+        if( mRowIndexes.size() > 0 && ( beta == common::constants::ONE ) )
         {
             // y += alpha * thisMatrix * x, can take advantage of row indexes
 
@@ -2006,7 +2006,7 @@ void CSRStorage<ValueType>::matrixTimesMatrix(
         csrB = tmpB.get();
     }
 
-    if( beta != scai::common::constants::ZERO )
+    if( beta != common::constants::ZERO )
     {
         // c temporary needed if not correct format/type or aliased to this
 
@@ -2039,7 +2039,7 @@ void CSRStorage<ValueType>::matrixTimesMatrix(
     tmp1.matrixTimesMatrixCSR( alpha, *csrA, *csrB, loc );
     tmp1.setContextPtr( loc );
 
-    if( beta != scai::common::constants::ZERO )
+    if( beta != common::constants::ZERO )
     {
         CSRStorage<ValueType> tmp2;
         tmp2.matrixAddMatrixCSR( static_cast<ValueType>(1.0), tmp1, beta, *csrC, loc );
