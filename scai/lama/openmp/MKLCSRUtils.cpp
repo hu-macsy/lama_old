@@ -46,6 +46,8 @@
 
 #include <scai/common/Assert.hpp>
 #include <scai/common/Settings.hpp>
+#include <scai/common/Constants.hpp>
+#include <scai/common/exception/UnsupportedException.hpp>
 #include <scai/common/macros/unused.hpp>
 
 #include <scai/tasking/TaskSyncToken.hpp>
@@ -90,11 +92,11 @@ void MKLCSRUtils::normalGEMV(
 
     if ( syncToken )
     {
-        SCAI_LOG_ERROR( logger, "asynchronous execution not supported yet" )
+        SCAI_UNSUPPORTED( "asynchronous execution not supported yet" )
         // ToDo: workaround required as boost::bind supports only up to 9 arguments
     }
 
-    if( y != result && beta != 0.0f )
+    if ( y != result && beta != scai::common::constants::ZERO )
     {
         OpenMPUtils::set( result, y, numRows );
     }
@@ -145,7 +147,7 @@ void MKLCSRUtils::normalGEMV(
 
     if ( syncToken )
     {
-        SCAI_LOG_ERROR( logger, "asynchronous execution not supported yet" )
+        SCAI_UNSUPPORTED( "asynchronous execution not supported yet" )
     }
 
     if( y != result && beta != 0.0 )
