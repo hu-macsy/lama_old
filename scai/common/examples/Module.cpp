@@ -33,6 +33,8 @@ public:
     }
 };
 
+DynRoutine::Register<Function1>::RegisterGuard DynRoutine::Register<Function1>::registerGuard;
+
 /** Guard class to call functions for load/unload of the module */
 
 struct CGuard
@@ -48,4 +50,4 @@ struct CGuard
     }
 };
 
-static CGuard MyModuleGuard;
+static CGuard ModuleGuard;

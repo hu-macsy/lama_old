@@ -69,11 +69,11 @@ public:
      *
      */
 
-    static void loadLibsInDir( const char* dir, const char* pattern );
+    static void loadLibsInDir( const char* dir );
 
     /** multiple directory/libaries by patterns <pattern1>:<pattern2>:<pattern3>  */
 
-    // todo: static void loadLibsByPath( const char* path );
+    static void loadLibsByPath( const char* path );
 };
 
 } /* end namespace common */

@@ -44,11 +44,27 @@
 
 #undef DEBUG_HERE
 
+#define SUFFIX "so"
+
 namespace scai
 {
 
 namespace common
 {
+
+static bool isDirectory( const char* dir )
+{
+    DIR *dp = opendir( dir );
+
+    if ( dp == NULL )
+    {
+        return false;
+    }
+
+    closedir( dp );
+
+    return true;
+}
 
 static void getFilesFromDirectory( const char* dir, const char* suffix, std::vector<std::string>& files )
 {
@@ -100,6 +116,8 @@ static void getFilesFromDirectory( const char* dir, const char* suffix, std::vec
     closedir( dp );
 }
 
+/* -------------------------------------------------------------------------- */
+
 LibModule::LibHandle LibModule::loadLib( const char* filename )
 {
     LibHandle handle = dlopen( filename,RTLD_LAZY|RTLD_GLOBAL );
@@ -111,6 +129,8 @@ LibModule::LibHandle LibModule::loadLib( const char* filename )
     return handle;
 }
 
+/* -------------------------------------------------------------------------- */
+
 void LibModule::freeLib( LibHandle handle )
 {
     int rc = dlclose( handle );
@@ -121,11 +141,13 @@ void LibModule::freeLib( LibHandle handle )
     }
 };
 
-void LibModule::loadLibsInDir( const char* dir, const char* /* pattern */ )
+/* -------------------------------------------------------------------------- */
+
+void LibModule::loadLibsInDir( const char* dir )
 {
     std::vector<std::string> moduleNames;
 
-    getFilesFromDirectory( dir, "so", moduleNames );
+    getFilesFromDirectory( dir, SUFFIX, moduleNames );
 
     for ( size_t i = 0; i < moduleNames.size(); ++i )
     {
@@ -144,6 +166,53 @@ void LibModule::loadLibsInDir( const char* dir, const char* /* pattern */ )
         {
             std::cerr << "Could not load libary " << moduleNames[i] << " in " << dir
                       << ", " << e.what() << std::endl;
+        }
+    }
+}
+
+/* -------------------------------------------------------------------------- */
+
+static void tokenize( std::vector<std::string>& tokens,
+                      const std::string& str,
+                      const std::string& delimiters = " ")
+{
+    // Skip delimiters at beginning.
+    std::string::size_type lastPos = str.find_first_not_of( delimiters, 0 );
+    // Find first "non-delimiter".
+    std::string::size_type pos     = str.find_first_of( delimiters, lastPos );
+
+    while ( std::string::npos != pos || std::string::npos != lastPos )
+    {
+        // Found a token, add it to the vector.
+        tokens.push_back(str.substr( lastPos, pos - lastPos ) );
+        // Skip delimiters.  Note the "not_of"
+        lastPos = str.find_first_not_of( delimiters, pos );
+        // Find next "non-delimiter"
+        pos = str.find_first_of( delimiters, lastPos );
+    }
+}
+
+/* -------------------------------------------------------------------------- */
+
+void LibModule::loadLibsByPath( const char *path )
+{
+    std::vector<std::string> tokens;
+
+    std::string input = path;
+ 
+    tokenize( tokens, input, ":" );
+
+    for ( size_t i = 0; i < tokens.size(); ++i )
+    {
+        const char* item = tokens[i].c_str();
+
+        if ( isDirectory( item ) )
+        {
+            loadLibsInDir( item );
+        }
+        else
+        {
+            loadLib( item );
         }
     }
 }

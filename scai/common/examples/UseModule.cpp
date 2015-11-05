@@ -1,9 +1,11 @@
 
+#include "DynRoutine.hpp"
+
 #include <scai/common/LibModule.hpp>
 #include <scai/common/exception/Exception.hpp>
 #include <scai/common/Settings.hpp>
 
-#include "DynRoutine.hpp"
+#include <iostream>
 
 using namespace scai::common;
 
@@ -26,27 +28,36 @@ void runIt()
     delete d;
 }
 
-int main( int, const char** )
+int main( int argc, const char** argv )
 {
     runIt();  // shoud not work
 
-    std::string directory;
+    std::string loadPath;
 
-    if ( Settings::getEnvironment( directory, "SCAI_LIBRARY_PATH" ) )
+    if ( Settings::getEnvironment( loadPath, "SCAI_LIBRARY_PATH" ) )
     {
-        std::cout << "Load all module libraries in directory " << directory << std::endl;
+        std::cout << "Load all module libraries in loadPath " << loadPath << std::endl;
 
-        LibModule::loadLibsInDir( directory.c_str(), "" );
+        LibModule::loadLibsByPath( loadPath.c_str() );
 
         runIt();   // should now work
     }
     else
     {
-        std::cout << "Load libmodule.s0" << std::endl;
+        if ( argc != 2 )
+        {
+            COMMON_THROWEXCEPTION( "UseModule <libname>" )
+        }
 
-        LibModule::LibHandle handle = LibModule::loadLib( "libmodule.so" );
+        const char* lib = argv[1];
 
-        runIt();   // should now work
+        std::cout << "Load " << lib << std::endl;
+
+        LibModule::LibHandle handle = LibModule::loadLib( lib );
+
+        runIt();
+
+        std::cout << "Library loaded successfully, now unload" << std::endl;
 
         LibModule::freeLib( handle );
 

@@ -28,4 +28,8 @@ public:
     /** This routine must be provided by all derived classes. */
 
     virtual void doIt() = 0;
+
+    virtual ~DynRoutine()
+    {
+    }
 };
