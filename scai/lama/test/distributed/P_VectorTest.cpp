@@ -544,7 +544,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gatherTest, ValueType, test_types )
 
     for ( IndexType i = 0; i < vectorSize; i++ )
     {
-        vectorData[i] = i;
+        vectorData[i] = static_cast<ValueType>( i );
     }
 
     DenseVector<ValueType> replicatedVector( vectorSize, vectorData.get() );

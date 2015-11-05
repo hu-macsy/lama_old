@@ -79,8 +79,6 @@ int main()
   
     std::cout << "Create finished" << std::endl;
 
-    std::cout << "LAMAArray<float>::initialized = " << LAMAArray<float>::initialized << std::endl;
-
     shared_ptr<ContextArray> lamaArray2( ContextArray::create( scalar::FLOAT ) );
 
     std::cout << "lamaArray2 = " << *lamaArray2 << std::endl;
