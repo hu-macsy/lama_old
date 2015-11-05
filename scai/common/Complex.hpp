@@ -426,6 +426,16 @@ public:
 	COMPLEX_CONSTRUCTOR_2_NONCUDA( const long double, const double, COMPLEX_CONSTRUCTOR_REAL2 )
 	COMPLEX_CONSTRUCTOR_2_NONCUDA( const long double, const long double, COMPLEX_CONSTRUCTOR_REAL2 )
 
+#ifdef __CUDACC__
+    template<typename OtherValueType>
+    CUDA_CALLABLE_MEMBER inline Complex( const thrust::device_reference<Complex<OtherValueType> >& value )
+    {
+        *this = static_cast<Complex<ValueType> >(value);
+        //this->real( static_cast<ValueType>( (value()).real() ) );
+        //this->imag( static_cast<ValueType>( (value()).imag() ) );
+    }
+#endif
+
     /*
      * @brief Constructs a scalar representing the passed complex value.
      *
