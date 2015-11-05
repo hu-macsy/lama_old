@@ -204,6 +204,10 @@ protected:
     {
     }
 
+    // The following routines are used by read/write accesses
+
+public:
+
     /** Complete handling to get read access for a certain context.
      *
      *  @param[in] context is the context where the read access is needed
