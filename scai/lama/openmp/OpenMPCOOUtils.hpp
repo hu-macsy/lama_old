@@ -76,10 +76,23 @@ public:
         const IndexType numValues,
         const IndexType cooIA[] );
 
+    /** Serial implementation for COOKernelTrait::Conversions::getCSRValues */
+
+    template<typename COOValueType,typename CSRValueType>
+    static void getCSRValuesS(
+        IndexType csrJA[],
+        CSRValueType csrValues[],
+        IndexType csrIA[],
+        const IndexType numRow,
+        const IndexType numValues,
+        const IndexType cooIA[],
+        const IndexType cooJA[],
+        const COOValueType cooValues[] );
+
     /** OpenMP implementation for COOKernelTrait::Conversions::getCSRValues */
 
     template<typename COOValueType,typename CSRValueType>
-    static void getCSRValues(
+    static void getCSRValuesP(
         IndexType csrJA[],
         CSRValueType csrValues[],
         IndexType csrIA[],
