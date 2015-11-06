@@ -140,7 +140,8 @@ Factory1<InputType, ValueType, OutputType>::Register<Derived>::Register()
 
     if ( !registerGuard.initialized )
     {
-        COMMON_THROWEXCEPTION( "Register without Guard" )
+        // Attention: caused problems on Intel MIC with dlopen
+        // COMMON_THROWEXCEPTION( "Register without Guard" )
     }
 }
 
