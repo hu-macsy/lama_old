@@ -33,8 +33,10 @@
 // local library
 #include <scai/common/SCAITypes.hpp>
 
+__declspec( target(mic) )
 const IndexType nIndex = std::numeric_limits<IndexType>::max();
 
+__declspec( target(mic) )
 const PartitionId nPartition = std::numeric_limits<PartitionId>::max();
 
 

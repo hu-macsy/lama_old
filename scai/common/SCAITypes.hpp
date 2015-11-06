@@ -87,6 +87,8 @@ typedef scai::common::Complex<long double> ComplexLongDouble;
 
 /** Definition for a constant value that indicates a non-available index.
  */
+
+__declspec( target(mic) )
 extern const IndexType nIndex;
 
 /** Data type that is used for numbering of partitions.
@@ -96,6 +98,7 @@ typedef int PartitionId;
 
 /** Definition for a constant value that indicates a non-available partition.
  */
+__declspec( target(mic) )
 extern const PartitionId nPartition;
 
 // Number of supported arithmetic types, maximal number is currently 4
