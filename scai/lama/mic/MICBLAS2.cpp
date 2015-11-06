@@ -40,6 +40,7 @@
 // scai library
 #include <scai/kregistry/KernelRegistry.hpp>
 #include <scai/hmemo/mic/MICSyncToken.hpp>
+#include <scai/hmemo/mic/MICContext.hpp>
 
 // external
 #include <mkl.h>
@@ -48,6 +49,7 @@ namespace scai
 {
 
 using tasking::MICSyncToken;
+using hmemo::MICContext;
 
 namespace lama
 {
@@ -125,7 +127,7 @@ void MICBLAS2::gemv(
 
     if ( syncToken )
     {
-        SCAI_LOG_WARN( logger, "asynchronous execution for MIC not supported yet." )
+        SCAI_LOG_INFO( logger, "asynchronous execution for MIC not supported yet." )
     }
 
     char ta = ' ';
@@ -149,7 +151,9 @@ void MICBLAS2::gemv(
     const void* xPtr = x;
     const void* aPtr = a;
 
-#pragma offload target( mic ), in( ta, m, n, alpha, aPtr, lda, xPtr, incX, beta, yPtr, incY )
+    int device = MICContext::getCurrentDevice();
+
+#pragma offload target( mic : device ), in( ta, m, n, alpha, aPtr, lda, xPtr, incX, beta, yPtr, incY )
     {
         const float* x = static_cast<const float*>( xPtr );
         const float* a = static_cast<const float*>( aPtr );
@@ -188,7 +192,7 @@ void MICBLAS2::gemv(
 
     if ( syncToken )
     {
-        SCAI_LOG_WARN( logger, "asynchronous execution for MIC not supported yet." )
+        SCAI_LOG_INFO( logger, "asynchronous execution for MIC not supported yet." )
     }
 
     char ta = ' ';
@@ -212,7 +216,9 @@ void MICBLAS2::gemv(
     const void* xPtr = x;
     const void* aPtr = a;
 
-#pragma offload target( mic ), in( ta, m, n, alpha, aPtr, lda, xPtr, incX, beta, yPtr, incY )
+    int device = MICContext::getCurrentDevice();
+
+#pragma offload target( mic : device ), in( ta, m, n, alpha, aPtr, lda, xPtr, incX, beta, yPtr, incY )
     {
         const double* x = static_cast<const double*>( xPtr );
         const double* a = static_cast<const double*>( aPtr );

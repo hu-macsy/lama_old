@@ -318,7 +318,7 @@ void MICDIAUtils::normalGEMV(
 
     if ( syncToken )
     {
-        SCAI_LOG_WARN( logger, "asynchronous execution for for MIC not supported yet" )
+        SCAI_LOG_INFO( logger, "asynchronous execution for for MIC not supported yet" )
     }
 
     // result := alpha * A * x + beta * y -> result:= beta * y; result += alpha * A
@@ -396,7 +396,7 @@ void MICDIAUtils::jacobi(
 
     if ( syncToken )
     {
-        SCAI_LOG_WARN( logger, "asynchronous execution for for MIC not supported yet" )
+        SCAI_LOG_INFO( logger, "asynchronous execution for for MIC not supported yet" )
     }
 
     void* solutionPtr = solution;

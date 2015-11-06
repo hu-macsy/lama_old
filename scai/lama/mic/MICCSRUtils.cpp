@@ -573,6 +573,8 @@ void MICCSRUtils::normalGEMV(
     const IndexType csrJA[],
     const ValueType csrValues[] )
 {
+    SCAI_REGION( "MIC.CSRUtils.normalGEMV" )
+
     SCAI_LOG_INFO( logger,
                    "normalGEMV<" << common::getScalarType<ValueType>() << ">, result[" << numRows << "] = " << alpha << " * A * x + " << beta << " * y " )
 
@@ -580,7 +582,7 @@ void MICCSRUtils::normalGEMV(
 
     if ( syncToken )
     {
-        SCAI_LOG_WARN( logger, "asynchronous execution for for MIC not supported yet" )
+        SCAI_LOG_INFO( logger, "asynchronous execution for for MIC not supported yet" )
     }
 
     // SCAI_REGION( "MIC.CSR.normalGEMV" )
@@ -648,7 +650,7 @@ void MICCSRUtils::sparseGEMV(
 
     if ( syncToken )
     {
-        SCAI_LOG_WARN( logger, "asynchronous execution for for MIC not supported yet" )
+        SCAI_LOG_INFO( logger, "asynchronous execution for for MIC not supported yet" )
     }
 
     // SCAI_REGION( "MIC.CSR.sparseGEMV" )
@@ -719,7 +721,7 @@ void MICCSRUtils::gemm(
 
     if ( syncToken )
     {
-        SCAI_LOG_WARN( logger, "asynchronous execution for for MIC not supported yet" )
+        SCAI_LOG_INFO( logger, "asynchronous execution for for MIC not supported yet" )
     }
 
     void* resultPtr = result;
@@ -791,7 +793,7 @@ void MICCSRUtils::jacobi(
 
     if ( syncToken )
     {
-        SCAI_LOG_WARN( logger, "asynchronous execution for for MIC not supported yet" )
+        SCAI_LOG_INFO( logger, "asynchronous execution for for MIC not supported yet" )
     }
 
     // SCAI_REGION( "MIC.CSR.jacobi" )
@@ -1831,9 +1833,11 @@ ValueType MICCSRUtils::absMaxDiffVal(
     const void* csrJA2Ptr = csrJA2;
     const void* csrValues2Ptr = csrValues2;
 
-#pragma offload target( mic ), in( csrIA1Ptr, csrJA1Ptr, csrValues1Ptr,  \
-                                       csrIA2Ptr, csrJA2Ptr, csrValues2Ptr,  \
-                                       numRows, sortedRows ), out ( val )
+    int device = MICContext::getCurrentDevice();
+
+#pragma offload target( mic : device ), in( csrIA1Ptr, csrJA1Ptr, csrValues1Ptr,  \
+                                            csrIA2Ptr, csrJA2Ptr, csrValues2Ptr,  \
+                                            numRows, sortedRows ), out ( val )
     {
         const IndexType* csrIA1 = static_cast<const IndexType*>( csrIA1Ptr );
         const IndexType* csrJA1 = static_cast<const IndexType*>( csrJA1Ptr );

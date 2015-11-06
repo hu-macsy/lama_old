@@ -915,7 +915,7 @@ void MICELLUtils::jacobi(
 
     if ( syncToken )
     {
-        SCAI_LOG_WARN( logger, "asynchronous execution for for MIC not supported yet" )
+        SCAI_LOG_INFO( logger, "asynchronous execution for for MIC not supported yet" )
     }
 
     void* solutionPtr = solution;
@@ -988,7 +988,7 @@ void MICELLUtils::jacobiHalo(
 
     if ( syncToken )
     {
-        SCAI_LOG_WARN( logger, "asynchronous execution for for MIC not supported yet" )
+        SCAI_LOG_INFO( logger, "asynchronous execution for for MIC not supported yet" )
     }
 
     // SCAI_REGION( "MIC.ELL.jacobiHalo" )
@@ -1072,7 +1072,7 @@ void MICELLUtils::normalGEMV(
 
     if ( syncToken )
     {
-        SCAI_LOG_WARN( logger, "asynchronous execution of JDS jacobi iteration for MIC not supported yet" )
+        SCAI_LOG_INFO( logger, "asynchronous execution of JDS jacobi iteration for MIC not supported yet" )
     }
 
     // SCAI_REGION( "MIC.ELL.normalGEMV" )
@@ -1147,7 +1147,7 @@ void MICELLUtils::sparseGEMV(
 
     if ( syncToken )
     {
-        SCAI_LOG_WARN( logger, "asynchronous execution of JDS jacobi iteration for MIC not supported yet" )
+        SCAI_LOG_INFO( logger, "asynchronous execution of JDS jacobi iteration for MIC not supported yet" )
     }
 
     // SCAI_REGION( "MIC.ELL.sparseGEMV" )

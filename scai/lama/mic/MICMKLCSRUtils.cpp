@@ -28,7 +28,6 @@
  * @brief Implementation of CSR utilities with MICMKL
  * @author Thomas Brandes
  * @date 02.07.2012
- * @since 1.0.0
  */
 
 // hpp
@@ -86,7 +85,7 @@ void MICMKLCSRUtils::normalGEMV(
 
     if ( syncToken )
     {
-        SCAI_LOG_WARN( logger, "asynchronous execution for MIC not supported yet" )
+        SCAI_LOG_INFO( logger, "asynchronous execution for MIC not supported yet" )
     }
 
     if( y != result && beta != 0 )
@@ -135,7 +134,7 @@ void MICMKLCSRUtils::normalGEMV(
 
     if ( syncToken )
     {
-        SCAI_LOG_WARN( logger, "asynchronous execution for MIC not supported yet" )
+        SCAI_LOG_INFO( logger, "asynchronous execution for MIC not supported yet" )
     }
 
     // SCAI_REGION( "MIC.MKLdcsrmv" )
@@ -213,8 +212,10 @@ void MICMKLCSRUtils::registerKernels()
 
     common::context::ContextType ctx = common::context::MIC;
 
-    KernelRegistry::set<CSRKernelTrait::normalGEMV<float> >( normalGEMV, ctx );
-    KernelRegistry::set<CSRKernelTrait::normalGEMV<double> >( normalGEMV, ctx );
+    // ToDo : routine causes problems
+
+    // KernelRegistry::set<CSRKernelTrait::normalGEMV<float> >( normalGEMV, ctx );
+    // KernelRegistry::set<CSRKernelTrait::normalGEMV<double> >( normalGEMV, ctx );
 }
 
 /* --------------------------------------------------------------------------- */

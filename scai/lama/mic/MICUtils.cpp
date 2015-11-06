@@ -188,6 +188,8 @@ void MICUtils::setVal( ValueType array[], const IndexType n, const ValueType val
             array[i] = val;
         }
     }
+
+    SCAI_LOG_DEBUG( logger, "Ready:: setVal<" << common::getScalarType<ValueType>() << ">: " << "array[" << n << "] = " << val )
 }
 
 /* --------------------------------------------------------------------------- */

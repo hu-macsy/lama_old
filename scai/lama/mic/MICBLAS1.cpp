@@ -81,7 +81,7 @@ void MICBLAS1::scal(
 
     if ( syncToken )
     {
-        SCAI_LOG_WARN( logger, "asynchronous execution for MIC not supported yet." )
+        SCAI_LOG_INFO( logger, "asynchronous execution for MIC not supported yet." )
     }
 
     SCAI_LOG_DEBUG( logger,
@@ -118,7 +118,7 @@ ValueType MICBLAS1::asum( const IndexType n, const ValueType* x, const IndexType
 
     if ( syncToken )
     {
-        SCAI_LOG_WARN( logger, "asynchronous execution for MIC not supported yet." )
+        SCAI_LOG_INFO( logger, "asynchronous execution for MIC not supported yet." )
     }
 
     SCAI_LOG_DEBUG( logger,
@@ -161,7 +161,7 @@ IndexType MICBLAS1::iamax( const IndexType n, const ValueType* x, const IndexTyp
 
     if ( syncToken )
     {
-        SCAI_LOG_WARN( logger, "asynchronous execution for MIC not supported yet." )
+        SCAI_LOG_INFO( logger, "asynchronous execution for MIC not supported yet." )
     }
 
     SCAI_LOG_INFO( logger,
@@ -239,7 +239,7 @@ void MICBLAS1::swap(
 
     if ( syncToken )
     {
-        SCAI_LOG_WARN( logger, "asynchronous execution for MIC not supported yet." )
+        SCAI_LOG_INFO( logger, "asynchronous execution for MIC not supported yet." )
     }
 
     SCAI_LOG_DEBUG( logger,
@@ -280,7 +280,7 @@ ValueType MICBLAS1::nrm2( const IndexType n, const ValueType* x, const IndexType
 
     if ( syncToken )
     {
-        SCAI_LOG_WARN( logger, "asynchronous execution for MIC not supported yet." )
+        SCAI_LOG_INFO( logger, "asynchronous execution for MIC not supported yet." )
     }
 
     const void* xPtr = x;
@@ -330,7 +330,7 @@ void MICBLAS1::copy(
 
     if ( syncToken )
     {
-        SCAI_LOG_WARN( logger, "asynchronous execution for MIC not supported yet." )
+        SCAI_LOG_INFO( logger, "asynchronous execution for MIC not supported yet." )
     }
 
     // SCAI_REGION( "MIC.BLAS1.copy" )
@@ -381,7 +381,7 @@ void MICBLAS1::axpy(
 
     if ( syncToken )
     {
-        SCAI_LOG_WARN( logger, "asynchronous execution for MIC not supported yet." )
+        SCAI_LOG_INFO( logger, "asynchronous execution for MIC not supported yet." )
     }
 
     if( n < 1 || incX < 1 || incY < 1 )
@@ -429,7 +429,7 @@ ValueType MICBLAS1::dot(
 
     if ( syncToken )
     {
-        SCAI_LOG_WARN( logger, "asynchronous execution for MIC not supported yet." )
+        SCAI_LOG_INFO( logger, "asynchronous execution for MIC not supported yet." )
     }
 
     ValueType val = static_cast<ValueType>(0.0);
@@ -482,7 +482,7 @@ void MICBLAS1::sum(
 
     if ( syncToken )
     {
-        SCAI_LOG_WARN( logger, "asynchronous execution for MIC not supported yet." )
+        SCAI_LOG_INFO( logger, "asynchronous execution for MIC not supported yet." )
     }
 
     // SCAI_REGION( "MIC.BLAS1.sum" )
