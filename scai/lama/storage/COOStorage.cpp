@@ -289,6 +289,8 @@ void COOStorage<ValueType>::buildCSR(
 
     ContextPtr loc = sizes2offsets.getValidContext( getCSRSizes, getCSRValues, preferredLoc );
 
+    SCAI_CONTEXT_ACCESS( loc )
+
     WriteOnlyAccess<IndexType> csrIA( ia, loc, mNumRows + 1 );
     ReadAccess<IndexType> cooIA( mIA, loc );
 

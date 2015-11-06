@@ -1223,7 +1223,7 @@ void DIAStorage<ValueType>::jacobiIterate(
 
     SCAI_ASSERT_ERROR( mDiagonalProperty, *this << ": jacobiIterate requires diagonal property" )
 
-    if( &solution == &oldSolution )
+    if ( &solution == &oldSolution )
     {
         COMMON_THROWEXCEPTION( "alias of solution and oldSolution unsupported" )
     }
@@ -1236,6 +1236,8 @@ void DIAStorage<ValueType>::jacobiIterate(
     static LAMAKernel<DIAKernelTrait::jacobi<ValueType> > jacobi;
 
     ContextPtr loc = jacobi.getValidContext( this->getContextPtr() );
+
+    SCAI_CONTEXT_ACCESS( loc )
 
     WriteAccess<ValueType> wSolution( solution, loc );
     ReadAccess<IndexType> diaOffset( mOffset, loc );
