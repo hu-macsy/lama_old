@@ -293,23 +293,26 @@ void MKLCSRUtils::registerKernels( bool deleteFlag )
 }
 
 /* --------------------------------------------------------------------------- */
-/*    Static registration of the Utils routines                                */
+/*    Constructor/Desctructor with registration                                */
 /* --------------------------------------------------------------------------- */
 
-MKLCSRUtils::RegisterGuard::RegisterGuard()
+MKLCSRUtils::MKLCSRUtils()
 {
     bool deleteFlag = false;
     registerKernels( deleteFlag );
 }
 
-MKLCSRUtils::RegisterGuard::~RegisterGuard()
+MKLCSRUtils::~MKLCSRUtils()
 {
     bool deleteFlag = true;
     registerKernels( deleteFlag );
 }
 
-MKLCSRUtils::RegisterGuard MKLCSRUtils::guard;    // guard variable for registration
+/* --------------------------------------------------------------------------- */
+/*    Static variable to force registration during static initialization      */
+/* --------------------------------------------------------------------------- */
 
+MKLCSRUtils MKLCSRUtils::guard;
 
 } /* end namespace lama */
 

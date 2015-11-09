@@ -113,16 +113,17 @@ private:
 
     static void registerKernels( bool deleteFlag );
 
-    /** Helper class for (un) registration of kernel routines at static initialization. */
+    /** Constructor for registration. */
 
-    class RegisterGuard
-    {
-    public:
-        RegisterGuard();
-        ~RegisterGuard();
-    };
+    OpenMPLAPACK();
 
-    static RegisterGuard guard;  // registration of kernels @ static initialization
+    /** Destructor for unregistration. */
+
+    ~OpenMPLAPACK();
+
+    /** Static variable for registration at static initialization. */
+
+    static OpenMPLAPACK guard;
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 

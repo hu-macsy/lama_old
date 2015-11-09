@@ -569,23 +569,26 @@ void OpenMPLAPACK::registerKernels( bool deleteFlag )
 }
 
 /* --------------------------------------------------------------------------- */
-/*    Static registration of the Utils routines                                */
+/*    Constructor/Desctructor with registration                                */
 /* --------------------------------------------------------------------------- */
 
-OpenMPLAPACK::RegisterGuard::RegisterGuard()
+OpenMPLAPACK::OpenMPLAPACK()
 {
     bool deleteFlag = false;
     registerKernels( deleteFlag );
 }
 
-OpenMPLAPACK::RegisterGuard::~RegisterGuard()
+OpenMPLAPACK::~OpenMPLAPACK()
 {
     bool deleteFlag = true;
     registerKernels( deleteFlag );
 }
 
-OpenMPLAPACK::RegisterGuard OpenMPLAPACK::guard;    // guard variable for registration
+/* --------------------------------------------------------------------------- */
+/*    Static variable to force registration during static initialization      */
+/* --------------------------------------------------------------------------- */
 
+OpenMPLAPACK OpenMPLAPACK::guard;
 
 } /* end namespace lama */
 
