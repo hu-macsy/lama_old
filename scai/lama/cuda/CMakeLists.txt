@@ -33,7 +33,6 @@
 
 set( CLASSES      # .cpp, .hpp
 
-        CUDABLAS1
         CUDABLAS2
         CUDABLAS3
         CUDALAPACK
@@ -43,6 +42,7 @@ set( CLASSES      # .cpp, .hpp
 
 set( CUDA_CLASSES  # .cu, .hpp
 
+        CUDABLAS1
         CUDAUtils
         CUDACOOUtils
         CUDACSRUtils
@@ -52,15 +52,10 @@ set( CUDA_CLASSES  # .cu, .hpp
         CUSparseCSRUtils
 )
 
-set( CUDA_SOURCES   # .cu
-
-        blas1
-) 
-
 set ( HEADERS        # .hpp
 
         CUDATexVector
-        lama_cublas
+        cublas_cast
 )
 
 
@@ -74,7 +69,6 @@ scai_project(
 
     CLASSES ${CLASSES} 
     CUDA_CLASSES ${CUDA_CLASSES}
-    CUDA_SOURCES ${CUDA_SOURCES}
     HEADERS ${HEADERS}
 
     ADD_PARENT_SCOPE

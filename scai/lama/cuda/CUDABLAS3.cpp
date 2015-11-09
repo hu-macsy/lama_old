@@ -37,7 +37,7 @@
 // local library
 #include <scai/lama/BLASKernelTrait.hpp>
 #include <scai/lama/openmp/BLASHelper.hpp>
-#include <scai/lama/cuda/lama_cublas.hpp>
+#include <scai/lama/cuda/cublas_cast.hpp>
 
 // internal scai library
 #include <scai/hmemo/cuda/CUDAStreamSyncToken.hpp>

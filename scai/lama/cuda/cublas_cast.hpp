@@ -1,5 +1,5 @@
 /**
- * @file lama_cublas.hpp
+ * @file cublas_cast.hpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Help routines for interface from LAMA to cuBLAS
+ * @brief Help routines for interface from CUDA Kernels to cuBLAS
  * @author Thomas Brandes
  * @date 05.06.2014
  * @since 1.1.0

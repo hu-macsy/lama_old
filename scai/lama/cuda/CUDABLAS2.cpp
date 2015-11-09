@@ -35,7 +35,7 @@
 #include <scai/lama/cuda/CUDABLAS2.hpp>
 
 // local library
-#include <scai/lama/cuda/lama_cublas.hpp>
+#include <scai/lama/cuda/cublas_cast.hpp>
 
 #include <scai/lama/BLASKernelTrait.hpp>
 

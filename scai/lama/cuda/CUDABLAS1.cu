@@ -35,7 +35,7 @@
 #include <scai/lama/cuda/CUDABLAS1.hpp>
 
 // local library
-#include <scai/lama/cuda/lama_cublas.hpp>
+#include <scai/lama/cuda/cublas_cast.hpp>
 #include <scai/lama/BLASKernelTrait.hpp>
 
 // internal scai libraries
@@ -45,6 +45,7 @@
 #include <scai/tracing.hpp>
 
 #include <scai/common/cuda/CUDAError.hpp>
+#include <scai/common/cuda/launchHelper.hpp>
 #include <scai/common/macros/unused.hpp>
 #include <scai/common/ScalarType.hpp>
 
@@ -65,6 +66,69 @@ namespace lama
 {
 
 SCAI_LOG_DEF_LOGGER( CUDABLAS1::logger, "CUDA.BLAS1" )
+
+/* ---------------------------------------------------------------------------------------*/
+/*    sum                                                                                 */
+/* ---------------------------------------------------------------------------------------*/
+
+template<typename T>
+__global__
+void sum_kernel( const int n, T alpha, const T* x, T beta, const T* y, T* z )
+{
+    const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( i < n )
+    {
+        z[i] = alpha * x[i] + beta * y[i];
+    }
+}
+
+/* ---------------------------------------------------------------------------------------*/
+/*    sum                                                                                 */
+/* ---------------------------------------------------------------------------------------*/
+
+template<typename ValueType>
+void CUDABLAS1::sum(
+    const IndexType n,
+    ValueType alpha,
+    const ValueType* x,
+    ValueType beta,
+    const ValueType* y,
+    ValueType* z )
+{
+    SCAI_REGION( "CUDA.BLAS1.sum" )
+
+    if ( n <= 0 )
+    {
+        return;
+    }
+
+    SCAI_LOG_DEBUG( logger,
+                    "sum<" << getScalarType<ValueType>() << ">, n = " << n << ", " << alpha << " * x + " << beta << " * y " )
+
+    SCAI_CHECK_CUDA_ACCESS
+
+    cudaStream_t stream = 0; // default stream if no syncToken is given
+
+    CUDAStreamSyncToken* syncToken = CUDAStreamSyncToken::getCurrentSyncToken();
+
+    if ( syncToken )
+    {
+        stream = syncToken->getCUDAStream();
+    }
+
+    const int blockSize = 256;
+    dim3 dimBlock( blockSize, 1, 1 );
+    dim3 dimGrid = makeGrid( n, dimBlock.x );
+
+    sum_kernel <<< dimGrid, dimBlock, 0, stream>>> ( n, alpha, x, beta, y, z );
+
+    if( !syncToken )
+    {
+        cudaStreamSynchronize( stream );
+        SCAI_CHECK_CUDA_ERROR
+    }
+}
 
 /* ---------------------------------------------------------------------------------------*/
 /*    scale                                                                               */
@@ -716,51 +780,6 @@ ValueType CUDABLAS1::dot(
 
     SCAI_CUBLAS_CALL( cublasSetStream( CUDAContext_cublasHandle, NULL ), "CUDABLAS1::dot set stream NULL" );
     return res;
-}
-
-/* ---------------------------------------------------------------------------------------*/
-/*    sum                                                                                 */
-/* ---------------------------------------------------------------------------------------*/
-
-template<typename ValueType>
-void CUDABLAS1::sum(
-    const IndexType n,
-    ValueType alpha,
-    const ValueType* x,
-    ValueType beta,
-    const ValueType* y,
-    ValueType* z )
-{
-    SCAI_REGION( "CUDA.BLAS1.sum" )
-
-    if( n <= 0 )
-    {
-        return;
-    }
-
-    SCAI_LOG_DEBUG( logger,
-                    "sum<" << getScalarType<ValueType>() << ">, n = " << n << ", " << alpha << " * x + " << beta << " * y " )
-
-    SCAI_CHECK_CUDA_ACCESS
-
-    cudaStream_t stream = 0; // default stream if no syncToken is given
-
-    CUDAStreamSyncToken* syncToken = CUDAStreamSyncToken::getCurrentSyncToken();
-
-    if ( syncToken )
-    {
-        stream = syncToken->getCUDAStream();
-    }
-
-    sum_launcher( n, alpha, x, beta, y, z, stream );
-
-    // No error check here possible as kernel is started asynchronously
-
-    if( !syncToken )
-    {
-        cudaStreamSynchronize( stream );
-        SCAI_CHECK_CUDA_ERROR
-    }
 }
 
 /* --------------------------------------------------------------------------- */
