@@ -542,20 +542,19 @@ void OpenMPLAPACK::laswp(
 
 void OpenMPLAPACK::registerKernels()
 {
-    using scai::kregistry::KernelRegistry;
+    using kregistry::KernelRegistry;
+    using common::context::Host;       // context for registration
 
-    // ctx will contain the context for which registration is done, here Host
-
-    common::context::ContextType ctx = common::context::Host;
+    KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // lower priority
 
     SCAI_LOG_INFO( logger, "set LAPACK routines for OpenMP in Kernel Registry" )
 
 #define LAMA_LAPACK_REGISTER(z, I, _)                                                  \
-    KernelRegistry::set<BLASKernelTrait::getrf<ARITHMETIC_HOST_TYPE_##I> >( getrf, ctx ); \
-    KernelRegistry::set<BLASKernelTrait::getri<ARITHMETIC_HOST_TYPE_##I> >( getri, ctx ); \
-    KernelRegistry::set<BLASKernelTrait::getinv<ARITHMETIC_HOST_TYPE_##I> >( getinv, ctx ); \
-    KernelRegistry::set<BLASKernelTrait::tptrs<ARITHMETIC_HOST_TYPE_##I> >( tptrs, ctx ); \
-    KernelRegistry::set<BLASKernelTrait::laswp<ARITHMETIC_HOST_TYPE_##I> >( laswp, ctx ); \
+    KernelRegistry::set<BLASKernelTrait::getrf<ARITHMETIC_HOST_TYPE_##I> >( getrf, Host, flag ); \
+    KernelRegistry::set<BLASKernelTrait::getri<ARITHMETIC_HOST_TYPE_##I> >( getri, Host, flag ); \
+    KernelRegistry::set<BLASKernelTrait::getinv<ARITHMETIC_HOST_TYPE_##I> >( getinv, Host, flag ); \
+    KernelRegistry::set<BLASKernelTrait::tptrs<ARITHMETIC_HOST_TYPE_##I> >( tptrs, Host, flag ); \
+    KernelRegistry::set<BLASKernelTrait::laswp<ARITHMETIC_HOST_TYPE_##I> >( laswp, Host, flag ); \
 
     BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_LAPACK_REGISTER, _ )
 

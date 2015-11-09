@@ -828,33 +828,35 @@ void OpenMPJDSUtils::jacobiHalo(
 void OpenMPJDSUtils::registerKernelRoutines()
 {
     using kregistry::KernelRegistry;
+    using common::context::Host;      // context for registration
 
-    // ctx will contain the context for which registration is done, here Host
+    KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // lower priority
 
-    common::context::ContextType ctx = common::context::Host;
+    KernelRegistry::set<JDSKernelTrait::sortRows>( sortRows, Host, flag );
+    KernelRegistry::set<JDSKernelTrait::setInversePerm>( setInversePerm, Host, flag );
 
-    KernelRegistry::set<JDSKernelTrait::sortRows>( sortRows, ctx );
-    KernelRegistry::set<JDSKernelTrait::setInversePerm>( setInversePerm, ctx );
+    KernelRegistry::set<JDSKernelTrait::ilg2dlg>( ilg2dlg, Host, flag );
+    KernelRegistry::set<JDSKernelTrait::checkDiagonalProperty>( checkDiagonalProperty, Host, flag );
 
-    KernelRegistry::set<JDSKernelTrait::ilg2dlg>( ilg2dlg, ctx );
-    KernelRegistry::set<JDSKernelTrait::checkDiagonalProperty>( checkDiagonalProperty, ctx );
+    // register for type pair ARITHMETIC_HOST_TYPE_iii, ARITHMETIC_HOST_TYPE_jjj
 
-#define LAMA_JDS_UTILS2_REGISTER(z, J, TYPE )                                             \
-    KernelRegistry::set<JDSKernelTrait::getRow<TYPE, ARITHMETIC_HOST_TYPE_##J> >( getRow, ctx );              \
-    KernelRegistry::set<JDSKernelTrait::scaleValue<TYPE, ARITHMETIC_HOST_TYPE_##J> >( scaleValue, ctx );      \
-    KernelRegistry::set<JDSKernelTrait::setCSRValues<TYPE, ARITHMETIC_HOST_TYPE_##J> >( setCSRValues, ctx );  \
-    KernelRegistry::set<JDSKernelTrait::getCSRValues<TYPE, ARITHMETIC_HOST_TYPE_##J> >( getCSRValues, ctx );  \
+#define LAMA_JDS_UTILS2_REGISTER(z, J, TYPE )                                                                        \
+    KernelRegistry::set<JDSKernelTrait::getRow<TYPE, ARITHMETIC_HOST_TYPE_##J> >( getRow, Host, flag );              \
+    KernelRegistry::set<JDSKernelTrait::scaleValue<TYPE, ARITHMETIC_HOST_TYPE_##J> >( scaleValue, Host, flag );      \
+    KernelRegistry::set<JDSKernelTrait::setCSRValues<TYPE, ARITHMETIC_HOST_TYPE_##J> >( setCSRValues, Host, flag );  \
+    KernelRegistry::set<JDSKernelTrait::getCSRValues<TYPE, ARITHMETIC_HOST_TYPE_##J> >( getCSRValues, Host, flag );  \
 
-#define LAMA_JDS_UTILS_REGISTER(z, I, _)                                                             \
-    KernelRegistry::set<JDSKernelTrait::getValue<ARITHMETIC_HOST_TYPE_##I> >( getValue, ctx );       \
-    KernelRegistry::set<JDSKernelTrait::normalGEMV<ARITHMETIC_HOST_TYPE_##I> >( normalGEMV, ctx );   \
-    KernelRegistry::set<JDSKernelTrait::normalGEVM<ARITHMETIC_HOST_TYPE_##I> >( normalGEVM, ctx );   \
-    KernelRegistry::set<JDSKernelTrait::jacobi<ARITHMETIC_HOST_TYPE_##I> >( jacobi, ctx );           \
-    KernelRegistry::set<JDSKernelTrait::jacobiHalo<ARITHMETIC_HOST_TYPE_##I> >( jacobiHalo, ctx );   \
-                                                                                                     \
-    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT,                                                       \
-                     LAMA_JDS_UTILS2_REGISTER,                                                       \
-                     ARITHMETIC_HOST_TYPE_##I )                                                      \
+    // register for one value type ARITHMETIC_HOST_TYPE_iii and loop for second type
+
+#define LAMA_JDS_UTILS_REGISTER(z, I, _)                                                                    \
+    KernelRegistry::set<JDSKernelTrait::getValue<ARITHMETIC_HOST_TYPE_##I> >( getValue, Host, flag );       \
+    KernelRegistry::set<JDSKernelTrait::normalGEMV<ARITHMETIC_HOST_TYPE_##I> >( normalGEMV, Host, flag );   \
+    KernelRegistry::set<JDSKernelTrait::normalGEVM<ARITHMETIC_HOST_TYPE_##I> >( normalGEVM, Host, flag );   \
+    KernelRegistry::set<JDSKernelTrait::jacobi<ARITHMETIC_HOST_TYPE_##I> >( jacobi, Host, flag );           \
+    KernelRegistry::set<JDSKernelTrait::jacobiHalo<ARITHMETIC_HOST_TYPE_##I> >( jacobiHalo, Host, flag );   \
+    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT,                                                              \
+                     LAMA_JDS_UTILS2_REGISTER,                                                              \
+                     ARITHMETIC_HOST_TYPE_##I )                                                             \
 
     BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_JDS_UTILS_REGISTER, _ )
 

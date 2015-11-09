@@ -267,10 +267,10 @@ void BLAS_BLAS2::registerKernels()
 
     SCAI_LOG_INFO( logger, "set BLAS2 wrapper routines for Host Context in Interface" )
 
-    // REGISTER1: give these routines priority in case of overriding
+    KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_REPLACE;   // priority over OpenMPBLAS
 
 #define LAMA_BLAS2_REGISTER(z, I, _)                                                        \
-    KernelRegistry::set<BLASKernelTrait::gemv<ARITHMETIC_HOST_TYPE_##I> >( gemv, ctx, true ); \
+    KernelRegistry::set<BLASKernelTrait::gemv<ARITHMETIC_HOST_TYPE_##I> >( gemv, ctx, flag ); \
 
     BOOST_PP_REPEAT( ARITHMETIC_HOST_EXT_TYPE_CNT, LAMA_BLAS2_REGISTER, _ )
 

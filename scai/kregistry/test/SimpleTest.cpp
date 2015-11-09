@@ -14,7 +14,7 @@ BOOST_AUTO_TEST_CASE( SimpleTest )
 {
     // This simple test registers a function in the kernel registry and uses it later
 
-    KernelRegistry::set( dummyRoutine, "dummy", context::Host );
+    KernelRegistry::set( dummyRoutine, "dummy", context::Host, KernelRegistry::KERNEL_ADD );
   
     KernelContextFunction<void(*)()> f( "dummy" );
 

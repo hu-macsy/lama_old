@@ -153,14 +153,13 @@ void CUDALAPACK::laswp(
 
 void CUDALAPACK::registerKernels()
 {
-    using scai::kregistry::KernelRegistry;
+    using kregistry::KernelRegistry;
+    using common::context::CUDA;
 
-    // ctx will contain the context for which registration is done, here Host
+    KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD;
 
-    common::context::ContextType ctx = common::context::CUDA;
-
-    KernelRegistry::set<BLASKernelTrait::laswp<float> >( laswp, ctx );
-    KernelRegistry::set<BLASKernelTrait::laswp<double> >( laswp, ctx ); 
+    KernelRegistry::set<BLASKernelTrait::laswp<float> >( laswp, CUDA, flag );
+    KernelRegistry::set<BLASKernelTrait::laswp<double> >( laswp, CUDA, flag ); 
 
     // other routines are not used by LAMA yet
 }

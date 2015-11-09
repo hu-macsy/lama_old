@@ -38,14 +38,16 @@ const char* sub_names[] = { "A-", "B-", "C-", "D-", "E-", "F-", "G-", "H-", "I-"
 
 static void setInterface()
 {
+    KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD;
+
     // register 20  x 4 routines at the kernel registry
 
     for ( int i = 0; i < 20; ++i )
     {
-        KernelRegistry::set( add<float>, add_names[i], Host );
-        KernelRegistry::set( add<double>, add_names[i], Host );
-        KernelRegistry::set( sub<float>, sub_names[i], Host );
-        KernelRegistry::set( sub<double>, sub_names[i], Host );
+        KernelRegistry::set( add<float>, add_names[i], Host, flag );
+        KernelRegistry::set( add<double>, add_names[i], Host, flag );
+        KernelRegistry::set( sub<float>, sub_names[i], Host, flag );
+        KernelRegistry::set( sub<double>, sub_names[i], Host, flag );
     }
 }
 

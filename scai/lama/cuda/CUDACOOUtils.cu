@@ -720,24 +720,23 @@ void CUDACOOUtils::registerKernels()
     SCAI_LOG_INFO( logger, "set COO routines for CUDA in Interface" )
 
     using namespace scai::kregistry;
+    using common::context::CUDA;
 
-    // ctx will contain the context for which registration is done, here Host
+    KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // lower priority
 
-    common::context::ContextType ctx = common::context::CUDA;
+    KernelRegistry::set<COOKernelTrait::offsets2ia>( offsets2ia, CUDA, flag );
+    KernelRegistry::set<COOKernelTrait::setCSRData<IndexType, IndexType> >( setCSRData, CUDA, flag );
 
-    KernelRegistry::set<COOKernelTrait::offsets2ia>( offsets2ia, ctx );
-    KernelRegistry::set<COOKernelTrait::setCSRData<IndexType, IndexType> >( setCSRData, ctx );
-
-#define LAMA_COO_UTILS2_REGISTER(z, J, TYPE )                                                                \
-    KernelRegistry::set<COOKernelTrait::setCSRData<TYPE, ARITHMETIC_HOST_TYPE_##J> >( setCSRData, ctx );  \
+#define LAMA_COO_UTILS2_REGISTER(z, J, TYPE )                                                                    \
+    KernelRegistry::set<COOKernelTrait::setCSRData<TYPE, ARITHMETIC_CUDA_TYPE_##J> >( setCSRData, CUDA, flag );  \
      
-#define LAMA_COO_UTILS_REGISTER(z, I, _)                                                              \
-    KernelRegistry::set<COOKernelTrait::normalGEMV<ARITHMETIC_HOST_TYPE_##I> >( normalGEMV, ctx ); \
-    KernelRegistry::set<COOKernelTrait::normalGEVM<ARITHMETIC_HOST_TYPE_##I> >( normalGEVM, ctx ); \
-                                                                                                      \
-    BOOST_PP_REPEAT( ARITHMETIC_CUDA_TYPE_CNT,                                                        \
-                     LAMA_COO_UTILS2_REGISTER,                                                        \
-                     ARITHMETIC_CUDA_TYPE_##I )                                                       \
+#define LAMA_COO_UTILS_REGISTER(z, I, _)                                                                  \
+    KernelRegistry::set<COOKernelTrait::normalGEMV<ARITHMETIC_CUDA_TYPE_##I> >( normalGEMV, CUDA, flag ); \
+    KernelRegistry::set<COOKernelTrait::normalGEVM<ARITHMETIC_CUDA_TYPE_##I> >( normalGEVM, CUDA, flag ); \
+                                                                                                          \
+    BOOST_PP_REPEAT( ARITHMETIC_CUDA_TYPE_CNT,                                                            \
+                     LAMA_COO_UTILS2_REGISTER,                                                            \
+                     ARITHMETIC_CUDA_TYPE_##I )                                                           \
      
     BOOST_PP_REPEAT( ARITHMETIC_CUDA_TYPE_CNT, LAMA_COO_UTILS_REGISTER, _ )
 

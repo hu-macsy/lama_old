@@ -248,16 +248,17 @@ void CUDABLAS2::gemv(
 
 void CUDABLAS2::registerKernels()
 {
-    using scai::kregistry::KernelRegistry;
+    using kregistry::KernelRegistry;
+    using common::context::CUDA;
 
-    // ctx will contain the context for which registration is done, here Host
+    KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD;
 
-    common::context::ContextType ctx = common::context::CUDA;
+    SCAI_LOG_INFO( logger, "register BLAS2 routines implemented by CuBLAS in KernelRegistry" )
 
-    SCAI_LOG_INFO( logger, "set BLAS2 routines for CUDA at Kernel Registry" )
+    // register for one CUDA type: ARITHMETIC_CUDA_TYPE_xxx
 
-#define LAMA_BLAS2_REGISTER(z, I, _)                                                   \
-    KernelRegistry::set<BLASKernelTrait::gemv<ARITHMETIC_CUDA_TYPE_##I> >( gemv, ctx );  \
+#define LAMA_BLAS2_REGISTER(z, I, _)                                                            \
+    KernelRegistry::set<BLASKernelTrait::gemv<ARITHMETIC_CUDA_TYPE_##I> >( gemv, CUDA, flag );  \
 
     BOOST_PP_REPEAT( ARITHMETIC_CUDA_TYPE_CNT, LAMA_BLAS2_REGISTER, _ )
 

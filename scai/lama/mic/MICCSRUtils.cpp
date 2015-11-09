@@ -1911,61 +1911,60 @@ void MICCSRUtils::registerKernels()
 {
     SCAI_LOG_INFO( logger, "register CSR kernels for MIC in Kernel Registry" )
 
-    using namespace scai::kregistry;
+    using kregistry::KernelRegistry;
+    using common::context::MIC;
 
-    // ctx will contain the context for which registration is done, here MIC
-
-    common::context::ContextType ctx = common::context::MIC;
+    KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // add it or delete it
 
     // Instantations for IndexType, not done by ARITHMETIC_TYPE macrods
 
-    KernelRegistry::set<CSRKernelTrait::sizes2offsets>( sizes2offsets, ctx );
-    KernelRegistry::set<CSRKernelTrait::validOffsets>( validOffsets, ctx );
+    KernelRegistry::set<CSRKernelTrait::sizes2offsets>( sizes2offsets, MIC, flag );
+    KernelRegistry::set<CSRKernelTrait::validOffsets>( validOffsets, MIC, flag );
 
-    KernelRegistry::set<CSRKernelTrait::offsets2sizes>( offsets2sizes, ctx );
-    KernelRegistry::set<CSRKernelTrait::hasDiagonalProperty>( hasDiagonalProperty, ctx );
-    KernelRegistry::set<CSRKernelTrait::matrixAddSizes>( matrixAddSizes, ctx );
-    KernelRegistry::set<CSRKernelTrait::matrixMultiplySizes>( matrixMultiplySizes, ctx );
+    KernelRegistry::set<CSRKernelTrait::offsets2sizes>( offsets2sizes, MIC, flag );
+    KernelRegistry::set<CSRKernelTrait::hasDiagonalProperty>( hasDiagonalProperty, MIC, flag );
+    KernelRegistry::set<CSRKernelTrait::matrixAddSizes>( matrixAddSizes, MIC, flag );
+    KernelRegistry::set<CSRKernelTrait::matrixMultiplySizes>( matrixMultiplySizes, MIC, flag );
 
     /*
-      KernelRegistry::set<CSRKernelTrait::convertCSR2CSC<float> >( convertCSR2CSC, ctx );
-      KernelRegistry::set<CSRKernelTrait::convertCSR2CSC<double> >( convertCSR2CSC, ctx );
+      KernelRegistry::set<CSRKernelTrait::convertCSR2CSC<float> >( convertCSR2CSC, MIC, flag );
+      KernelRegistry::set<CSRKernelTrait::convertCSR2CSC<double> >( convertCSR2CSC, MIC, flag );
 
-      KernelRegistry::set<CSRKernelTrait::sortRowElements<float> >( sortRowElements, ctx );
-      KernelRegistry::set<CSRKernelTrait::sortRowElements<double> >( sortRowElements, ctx );
+      KernelRegistry::set<CSRKernelTrait::sortRowElements<float> >( sortRowElements, MIC, flag );
+      KernelRegistry::set<CSRKernelTrait::sortRowElements<double> >( sortRowElements, MIC, flag );
      */
 
-    KernelRegistry::set<CSRKernelTrait::scaleRows<float, float> >( scaleRows, ctx );
-    KernelRegistry::set<CSRKernelTrait::scaleRows<float, double> >( scaleRows, ctx );
-    KernelRegistry::set<CSRKernelTrait::scaleRows<double, float> >( scaleRows, ctx );
-    KernelRegistry::set<CSRKernelTrait::scaleRows<double, double> >( scaleRows, ctx );
+    KernelRegistry::set<CSRKernelTrait::scaleRows<float, float> >( scaleRows, MIC, flag );
+    KernelRegistry::set<CSRKernelTrait::scaleRows<float, double> >( scaleRows, MIC, flag );
+    KernelRegistry::set<CSRKernelTrait::scaleRows<double, float> >( scaleRows, MIC, flag );
+    KernelRegistry::set<CSRKernelTrait::scaleRows<double, double> >( scaleRows, MIC, flag );
 
-    KernelRegistry::set<CSRKernelTrait::normalGEMV<float> >( normalGEMV, ctx );
-    KernelRegistry::set<CSRKernelTrait::normalGEMV<double> >( normalGEMV, ctx );
+    KernelRegistry::set<CSRKernelTrait::normalGEMV<float> >( normalGEMV, MIC, flag );
+    KernelRegistry::set<CSRKernelTrait::normalGEMV<double> >( normalGEMV, MIC, flag );
 
-    KernelRegistry::set<CSRKernelTrait::sparseGEMV<float> >( sparseGEMV, ctx );
-    KernelRegistry::set<CSRKernelTrait::sparseGEMV<double> >( sparseGEMV, ctx );
+    KernelRegistry::set<CSRKernelTrait::sparseGEMV<float> >( sparseGEMV, MIC, flag );
+    KernelRegistry::set<CSRKernelTrait::sparseGEMV<double> >( sparseGEMV, MIC, flag );
 
-    KernelRegistry::set<CSRKernelTrait::gemm<float> >( gemm, ctx );
-    KernelRegistry::set<CSRKernelTrait::gemm<double> >( gemm, ctx );
+    KernelRegistry::set<CSRKernelTrait::gemm<float> >( gemm, MIC, flag );
+    KernelRegistry::set<CSRKernelTrait::gemm<double> >( gemm, MIC, flag );
 
-    KernelRegistry::set<CSRKernelTrait::matrixAdd<float> >( matrixAdd, ctx );
-    KernelRegistry::set<CSRKernelTrait::matrixAdd<double> >( matrixAdd, ctx );
+    KernelRegistry::set<CSRKernelTrait::matrixAdd<float> >( matrixAdd, MIC, flag );
+    KernelRegistry::set<CSRKernelTrait::matrixAdd<double> >( matrixAdd, MIC, flag );
 
-    KernelRegistry::set<CSRKernelTrait::matrixMultiply<float> >( matrixMultiply, ctx );
-    KernelRegistry::set<CSRKernelTrait::matrixMultiply<double> >( matrixMultiply, ctx );
+    KernelRegistry::set<CSRKernelTrait::matrixMultiply<float> >( matrixMultiply, MIC, flag );
+    KernelRegistry::set<CSRKernelTrait::matrixMultiply<double> >( matrixMultiply, MIC, flag );
 
-    KernelRegistry::set<CSRKernelTrait::jacobi<float> >( jacobi, ctx );
-    KernelRegistry::set<CSRKernelTrait::jacobi<double> >( jacobi, ctx );
+    KernelRegistry::set<CSRKernelTrait::jacobi<float> >( jacobi, MIC, flag );
+    KernelRegistry::set<CSRKernelTrait::jacobi<double> >( jacobi, MIC, flag );
 
-    KernelRegistry::set<CSRKernelTrait::jacobiHalo<float> >( jacobiHalo, ctx );
-    KernelRegistry::set<CSRKernelTrait::jacobiHalo<double> >( jacobiHalo, ctx );
+    KernelRegistry::set<CSRKernelTrait::jacobiHalo<float> >( jacobiHalo, MIC, flag );
+    KernelRegistry::set<CSRKernelTrait::jacobiHalo<double> >( jacobiHalo, MIC, flag );
 
-    KernelRegistry::set<CSRKernelTrait::jacobiHaloWithDiag<float> >( jacobiHaloWithDiag, ctx );
-    KernelRegistry::set<CSRKernelTrait::jacobiHaloWithDiag<double> >( jacobiHaloWithDiag, ctx );
+    KernelRegistry::set<CSRKernelTrait::jacobiHaloWithDiag<float> >( jacobiHaloWithDiag, MIC, flag );
+    KernelRegistry::set<CSRKernelTrait::jacobiHaloWithDiag<double> >( jacobiHaloWithDiag, MIC, flag );
 
-    KernelRegistry::set<CSRKernelTrait::absMaxDiffVal<float> >( absMaxDiffVal, ctx );
-    KernelRegistry::set<CSRKernelTrait::absMaxDiffVal<double> >( absMaxDiffVal, ctx );
+    KernelRegistry::set<CSRKernelTrait::absMaxDiffVal<float> >( absMaxDiffVal, MIC, flag );
+    KernelRegistry::set<CSRKernelTrait::absMaxDiffVal<double> >( absMaxDiffVal, MIC, flag );
 }
 
 /* --------------------------------------------------------------------------- */

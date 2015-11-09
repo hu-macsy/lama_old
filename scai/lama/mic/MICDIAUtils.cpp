@@ -469,8 +469,10 @@ void MICDIAUtils::registerKernels()
 {
     SCAI_LOG_INFO( logger, "register DIA kernels for MIC in Kernel Registry" )
 
-    using namespace scai::kregistry;
-    using scai::common::context::MIC;
+    using kregistry::KernelRegistry;
+    using common::context::MIC;
+
+    KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // add it or delete it
 
     /*
      LAMA_INTERFACE_REGISTER_T( DIAUtils, getCSRSizes, float )
@@ -485,11 +487,11 @@ void MICDIAUtils::registerKernels()
      LAMA_INTERFACE_REGISTER_T( DIAUtils, absMaxVal, double )
      */
 
-    KernelRegistry::set<DIAKernelTrait::normalGEMV<float> >( normalGEMV, MIC );
-    KernelRegistry::set<DIAKernelTrait::normalGEMV<double> >( normalGEMV, MIC );
+    KernelRegistry::set<DIAKernelTrait::normalGEMV<float> >( normalGEMV, MIC, flag );
+    KernelRegistry::set<DIAKernelTrait::normalGEMV<double> >( normalGEMV, MIC, flag );
 
-    KernelRegistry::set<DIAKernelTrait::jacobi<float> >( jacobi, MIC );
-    KernelRegistry::set<DIAKernelTrait::jacobi<double> >( jacobi, MIC );
+    KernelRegistry::set<DIAKernelTrait::jacobi<float> >( jacobi, MIC, flag );
+    KernelRegistry::set<DIAKernelTrait::jacobi<double> >( jacobi, MIC, flag );
 }
 
 /* --------------------------------------------------------------------------- */

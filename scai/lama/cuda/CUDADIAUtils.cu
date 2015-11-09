@@ -901,16 +901,15 @@ namespace lama
     void CUDADIAUtils::registerKernels()
     {
         using kregistry::KernelRegistry;
+        using common::context::CUDA;
 
-        // ctx will contain the context for which registration is done, here Host
-
-        common::context::ContextType ctx = common::context::CUDA;
-
+        KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // lower priority
+   
         SCAI_LOG_INFO( logger, "set DIA routines for CUDA in Interface" )
 
-#define LAMA_DIA_UTILS_REGISTER(z, I, _)                                                              \
-    KernelRegistry::set<DIAKernelTrait::normalGEMV<ARITHMETIC_CUDA_TYPE_##I> >( normalGEMV, ctx ); \
-    KernelRegistry::set<DIAKernelTrait::normalGEVM<ARITHMETIC_CUDA_TYPE_##I> >( normalGEVM, ctx ); \
+#define LAMA_DIA_UTILS_REGISTER(z, I, _)                                                                  \
+    KernelRegistry::set<DIAKernelTrait::normalGEMV<ARITHMETIC_CUDA_TYPE_##I> >( normalGEMV, CUDA, flag ); \
+    KernelRegistry::set<DIAKernelTrait::normalGEVM<ARITHMETIC_CUDA_TYPE_##I> >( normalGEVM, CUDA, flag ); \
                                                                                          
     BOOST_PP_REPEAT( ARITHMETIC_CUDA_TYPE_CNT, LAMA_DIA_UTILS_REGISTER, _ )
 

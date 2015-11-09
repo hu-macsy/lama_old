@@ -86,7 +86,25 @@ private:
 
     static void registerContextFunction( const KernelRegistryKey& key, common::context::ContextType ctx, VoidFunction fn, bool replace );
 
+    /** Method that unregisters a function pointer for a given context in the registry.  
+     *
+     *  @param[in] key is key ( pair of name and function type )
+     *  @param[in] ctx is the context for which fn has been registered
+     *  @param[in] fn is the pointer to the function that has been registered
+     */
+
+    static void unregisterContextFunction( const KernelRegistryKey& key, common::context::ContextType ctx, VoidFunction fn );
+
 public:
+
+    /** Enumeration type for possible registration flags */
+
+    enum KernelRegistryFlag
+    {
+        KERNEL_ERASE,
+        KERNEL_ADD,
+        KERNEL_REPLACE
+    };
 
     /** This method registers a kernel routine for a given context by its name and signature.  
      *
@@ -94,15 +112,23 @@ public:
      *  @param[in] fn is the function to register
      *  @param[in] name is the name of the function
      *  @param[in] ctx is the context type for which the function is implemented
-     *  @param[in] replace if true an existing entry will be overwritte
+     *  @param[in] flag specifies kind of registration
      *
      */
 
     template<typename FunctionType>
-    static void set( FunctionType fn, const char* name, common::context::ContextType ctx, bool replace = false )
+    static void set( FunctionType fn, const char* name, const common::context::ContextType ctx, const KernelRegistryFlag flag )
     {
         KernelRegistryKey key( typeid( FunctionType ), name );
-        registerContextFunction( key, ctx, ( VoidFunction ) fn, replace );
+        if ( flag == KERNEL_ERASE )
+        {
+            unregisterContextFunction( key, ctx, ( VoidFunction ) fn );
+        }
+        else
+        {
+            bool replace = ( flag == KERNEL_REPLACE );
+            registerContextFunction( key, ctx, ( VoidFunction ) fn, replace );
+        }
     }
 
     /** This  method registers a kernel routine for a given context by its kernel trait.
@@ -111,15 +137,15 @@ public:
      *
      *  @param[in] fn is the function to register
      *  @param[in] ctx is the context type for which the function is implemented
-     *  @param[in] replace if true an existing entry will be overwritte
+     *  @param[in] flag specifies kind of registration
      *
      *  For the registration, the trait avoid mainly misspelling of names.
      */
 
     template<typename KernelTrait>
-    static void set( typename KernelTrait::FuncType fn, common::context::ContextType ctx, bool replace = false )
+    static void set( typename KernelTrait::FuncType fn, const common::context::ContextType ctx, const KernelRegistryFlag flag )
     {
-        set( fn, KernelTrait::getId(), ctx, replace );
+        set( fn, KernelTrait::getId(), ctx, flag );
     }
 
     template<typename FunctionType>

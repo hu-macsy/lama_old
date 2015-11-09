@@ -702,13 +702,13 @@ void LAPACKe_LAPACK::registerKernels()
 
     common::context::ContextType ctx = common::context::Host;
 
-    bool rpl = true;   // replace other registered kernel routine
+    KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_REPLACE;   // priority over OpenMPBLAS
 
 #define LAMA_LAPACK_REGISTER(z, I, _)                                      \
-    KernelRegistry::set<BLASKernelTrait::getrf<ARITHMETIC_HOST_TYPE_##I> >( getrf, ctx, rpl );    \
-    KernelRegistry::set<BLASKernelTrait::getri<ARITHMETIC_HOST_TYPE_##I> >( getri, ctx, rpl );    \
-    KernelRegistry::set<BLASKernelTrait::getinv<ARITHMETIC_HOST_TYPE_##I> >( getinv, ctx, rpl );    \
-    KernelRegistry::set<BLASKernelTrait::tptrs<ARITHMETIC_HOST_TYPE_##I> >( tptrs, ctx, rpl );    \
+    KernelRegistry::set<BLASKernelTrait::getrf<ARITHMETIC_HOST_TYPE_##I> >( getrf, ctx, flag );    \
+    KernelRegistry::set<BLASKernelTrait::getri<ARITHMETIC_HOST_TYPE_##I> >( getri, ctx, flag );    \
+    KernelRegistry::set<BLASKernelTrait::getinv<ARITHMETIC_HOST_TYPE_##I> >( getinv, ctx, flag );    \
+    KernelRegistry::set<BLASKernelTrait::tptrs<ARITHMETIC_HOST_TYPE_##I> >( tptrs, ctx, flag );    \
 
     BOOST_PP_REPEAT( ARITHMETIC_HOST_EXT_TYPE_CNT, LAMA_LAPACK_REGISTER, _ )
 

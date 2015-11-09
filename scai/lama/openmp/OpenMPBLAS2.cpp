@@ -297,8 +297,10 @@ void OpenMPBLAS2::registerKernels()
 
     SCAI_LOG_INFO( logger, "register BLAS2 routines for OpenMP in Kernel Registry" )
 
-#define LAMA_BLAS2_REGISTER(z, I, _)                                                  \
-    KernelRegistry::set<BLASKernelTrait::gemv<ARITHMETIC_HOST_TYPE_##I> >( gemv, ctx ); \
+    KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // lower priority
+
+#define LAMA_BLAS2_REGISTER(z, I, _)                                                          \
+    KernelRegistry::set<BLASKernelTrait::gemv<ARITHMETIC_HOST_TYPE_##I> >( gemv, ctx, flag ); \
 
     BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_BLAS2_REGISTER, _ )
 

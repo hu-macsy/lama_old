@@ -2846,35 +2846,32 @@ namespace lama
         SCAI_LOG_INFO( logger, "set JDS routines for CUDA in Interface" )
 
     using kregistry::KernelRegistry;
+    using common::context::CUDA;
 
-    // Register all OpenMP routines 
+    KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // lower priority
 
-    // ctx will contain the context for which registration is done, here Host
+    KernelRegistry::set<JDSKernelTrait::sortRows>( sortRows, CUDA, flag );
+    KernelRegistry::set<JDSKernelTrait::setInversePerm>( setInversePerm, CUDA, flag );
 
-    common::context::ContextType ctx = common::context::CUDA;
+    KernelRegistry::set<JDSKernelTrait::ilg2dlg>( ilg2dlg, CUDA, flag );
+    KernelRegistry::set<JDSKernelTrait::checkDiagonalProperty>( checkDiagonalProperty, CUDA, flag );
 
-    KernelRegistry::set<JDSKernelTrait::sortRows>( sortRows, ctx );
-    KernelRegistry::set<JDSKernelTrait::setInversePerm>( setInversePerm, ctx );
+#define LAMA_JDS_UTILS2_REGISTER(z, J, TYPE )                                                                        \
+    KernelRegistry::set<JDSKernelTrait::getRow<TYPE, ARITHMETIC_CUDA_TYPE_##J> >( getRow, CUDA, flag );              \
+    KernelRegistry::set<JDSKernelTrait::scaleValue<TYPE, ARITHMETIC_CUDA_TYPE_##J> >( scaleValue, CUDA, flag );      \
+    KernelRegistry::set<JDSKernelTrait::setCSRValues<TYPE, ARITHMETIC_CUDA_TYPE_##J> >( setCSRValues, CUDA, flag );  \
+    KernelRegistry::set<JDSKernelTrait::getCSRValues<TYPE, ARITHMETIC_CUDA_TYPE_##J> >( getCSRValues, CUDA, flag );  \
 
-    KernelRegistry::set<JDSKernelTrait::ilg2dlg>( ilg2dlg, ctx );
-    KernelRegistry::set<JDSKernelTrait::checkDiagonalProperty>( checkDiagonalProperty, ctx );
-
-#define LAMA_JDS_UTILS2_REGISTER(z, J, TYPE )                                             \
-    KernelRegistry::set<JDSKernelTrait::getRow<TYPE, ARITHMETIC_CUDA_TYPE_##J> >( getRow, ctx );       \
-    KernelRegistry::set<JDSKernelTrait::scaleValue<TYPE, ARITHMETIC_CUDA_TYPE_##J> >( scaleValue, ctx );       \
-    KernelRegistry::set<JDSKernelTrait::setCSRValues<TYPE, ARITHMETIC_CUDA_TYPE_##J> >( setCSRValues, ctx );       \
-    KernelRegistry::set<JDSKernelTrait::getCSRValues<TYPE, ARITHMETIC_CUDA_TYPE_##J> >( getCSRValues, ctx );       \
-
-#define LAMA_JDS_UTILS_REGISTER(z, I, _)                                                  \
-    KernelRegistry::set<JDSKernelTrait::getValue<ARITHMETIC_CUDA_TYPE_##I> >( getValue, ctx );       \
-    KernelRegistry::set<JDSKernelTrait::normalGEMV<ARITHMETIC_CUDA_TYPE_##I> >( normalGEMV, ctx );       \
-    KernelRegistry::set<JDSKernelTrait::normalGEVM<ARITHMETIC_CUDA_TYPE_##I> >( normalGEVM, ctx );       \
-    KernelRegistry::set<JDSKernelTrait::jacobi<ARITHMETIC_CUDA_TYPE_##I> >( jacobi, ctx );       \
-    KernelRegistry::set<JDSKernelTrait::jacobiHalo<ARITHMETIC_CUDA_TYPE_##I> >( jacobiHalo, ctx );       \
-                                                                                          \
-    BOOST_PP_REPEAT( ARITHMETIC_CUDA_TYPE_CNT,                                            \
-                     LAMA_JDS_UTILS2_REGISTER,                                            \
-                     ARITHMETIC_CUDA_TYPE_##I )                                           \
+#define LAMA_JDS_UTILS_REGISTER(z, I, _)                                                                    \
+    KernelRegistry::set<JDSKernelTrait::getValue<ARITHMETIC_CUDA_TYPE_##I> >( getValue, CUDA, flag );       \
+    KernelRegistry::set<JDSKernelTrait::normalGEMV<ARITHMETIC_CUDA_TYPE_##I> >( normalGEMV, CUDA, flag );   \
+    KernelRegistry::set<JDSKernelTrait::normalGEVM<ARITHMETIC_CUDA_TYPE_##I> >( normalGEVM, CUDA, flag );   \
+    KernelRegistry::set<JDSKernelTrait::jacobi<ARITHMETIC_CUDA_TYPE_##I> >( jacobi, CUDA, flag );           \
+    KernelRegistry::set<JDSKernelTrait::jacobiHalo<ARITHMETIC_CUDA_TYPE_##I> >( jacobiHalo, CUDA, flag );   \
+                                                                                                            \
+    BOOST_PP_REPEAT( ARITHMETIC_CUDA_TYPE_CNT,                                                              \
+                     LAMA_JDS_UTILS2_REGISTER,                                                              \
+                     ARITHMETIC_CUDA_TYPE_##I )                                                             \
 
     BOOST_PP_REPEAT( ARITHMETIC_CUDA_TYPE_CNT, LAMA_JDS_UTILS_REGISTER, _ )
 

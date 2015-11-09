@@ -206,16 +206,15 @@ void MICMKLCSRUtils::registerKernels()
 
     SCAI_LOG_INFO( logger, "register some CSR kernels implemented by MKL for MIC in Kernel Registry" )
 
-    using namespace scai::kregistry;
+    using kregistry::KernelRegistry;
+    using common::context::MIC;
 
-    // ctx will contain the context for which registration is done, here MIC
-
-    common::context::ContextType ctx = common::context::MIC;
+    KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // add it or delete it
 
     // ToDo : routine causes problems
 
-    // KernelRegistry::set<CSRKernelTrait::normalGEMV<float> >( normalGEMV, ctx );
-    // KernelRegistry::set<CSRKernelTrait::normalGEMV<double> >( normalGEMV, ctx );
+    // KernelRegistry::set<CSRKernelTrait::normalGEMV<float> >( normalGEMV, MIC, flag );
+    // KernelRegistry::set<CSRKernelTrait::normalGEMV<double> >( normalGEMV, MIC, flag );
 }
 
 /* --------------------------------------------------------------------------- */

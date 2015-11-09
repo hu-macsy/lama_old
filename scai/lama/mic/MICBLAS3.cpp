@@ -207,14 +207,13 @@ void MICBLAS3::registerKernels()
 {
     SCAI_LOG_INFO( logger, "register BLAS3 kernels for MIC in Kernel Registry" )
 
-    using namespace scai::kregistry;
+    using kregistry::KernelRegistry;
+    using common::context::MIC;
 
-    // ctx will contain the context for which registration is done, here MIC
+    KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // add it or delete it
 
-    common::context::ContextType ctx = common::context::MIC;
-
-    KernelRegistry::set<BLASKernelTrait::gemm<float> >( gemm, ctx );
-    KernelRegistry::set<BLASKernelTrait::gemm<double> >( gemm, ctx );
+    KernelRegistry::set<BLASKernelTrait::gemm<float> >( gemm, MIC, flag );
+    KernelRegistry::set<BLASKernelTrait::gemm<double> >( gemm, MIC, flag );
 }
 
 /* --------------------------------------------------------------------------- */

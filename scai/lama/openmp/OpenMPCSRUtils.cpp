@@ -2011,43 +2011,42 @@ ValueType OpenMPCSRUtils::absMaxDiffVal(
 void OpenMPCSRUtils::registerKernels()
 {
     using namespace scai::kregistry;
+    using common::context::Host;       // context for registration
 
-    // ctx will contain the context for which registration is done, here Host
+    KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // lower priority
 
-    common::context::ContextType ctx = common::context::Host;
+    // Instantations for IndexType, not done by ARITHMETIC_TYPE macros
 
-    // Instantations for IndexType, not done by ARITHMETIC_TYPE macrods
+    KernelRegistry::set<CSRKernelTrait::sizes2offsets>( sizes2offsets, Host, flag );
+    KernelRegistry::set<CSRKernelTrait::offsets2sizes>( offsets2sizes, Host, flag );
+    KernelRegistry::set<CSRKernelTrait::validOffsets>( validOffsets, Host, flag );
+    KernelRegistry::set<CSRKernelTrait::hasDiagonalProperty>( hasDiagonalProperty, Host, flag );
 
-    KernelRegistry::set<CSRKernelTrait::sizes2offsets>( sizes2offsets, ctx );
-    KernelRegistry::set<CSRKernelTrait::offsets2sizes>( offsets2sizes, ctx );
-    KernelRegistry::set<CSRKernelTrait::validOffsets>( validOffsets, ctx );
-    KernelRegistry::set<CSRKernelTrait::hasDiagonalProperty>( hasDiagonalProperty, ctx );
+    KernelRegistry::set<CSRKernelTrait::matrixAddSizes>( matrixAddSizes, Host, flag );
+    KernelRegistry::set<CSRKernelTrait::matrixMultiplySizes>( matrixMultiplySizes, Host, flag );
+    KernelRegistry::set<CSRKernelTrait::matrixMultiplyJA>( matrixMultiplyJA, Host, flag );
 
-    KernelRegistry::set<CSRKernelTrait::matrixAddSizes>( matrixAddSizes, ctx );
-    KernelRegistry::set<CSRKernelTrait::matrixMultiplySizes>( matrixMultiplySizes, ctx );
-    KernelRegistry::set<CSRKernelTrait::matrixMultiplyJA>( matrixMultiplyJA, ctx );
-
-#define LAMA_CSR_UTILS2_REGISTER(z, J, TYPE )                                                             \
-    KernelRegistry::set<CSRKernelTrait::scaleRows<TYPE, ARITHMETIC_HOST_TYPE_##J> >( scaleRows, ctx ); \
+#define LAMA_CSR_UTILS2_REGISTER(z, J, TYPE )                                                                             \
+    KernelRegistry::set<CSRKernelTrait::scaleRows<TYPE, ARITHMETIC_HOST_TYPE_##J> >( scaleRows, Host, flag );             \
 
 #define LAMA_CSR_UTILS_REGISTER(z, I, _)                                                   \
-    KernelRegistry::set<CSRKernelTrait::convertCSR2CSC<ARITHMETIC_HOST_TYPE_##I> >( convertCSR2CSC, ctx ); \
-    KernelRegistry::set<CSRKernelTrait::sortRowElements<ARITHMETIC_HOST_TYPE_##I> >( sortRowElements, ctx ); \
-    KernelRegistry::set<CSRKernelTrait::normalGEMV<ARITHMETIC_HOST_TYPE_##I> >( normalGEMV, ctx ); \
-    KernelRegistry::set<CSRKernelTrait::sparseGEMV<ARITHMETIC_HOST_TYPE_##I> >( sparseGEMV, ctx ); \
-    KernelRegistry::set<CSRKernelTrait::normalGEVM<ARITHMETIC_HOST_TYPE_##I> >( normalGEVM, ctx ); \
-    KernelRegistry::set<CSRKernelTrait::sparseGEVM<ARITHMETIC_HOST_TYPE_##I> >( sparseGEVM, ctx ); \
-    KernelRegistry::set<CSRKernelTrait::gemm<ARITHMETIC_HOST_TYPE_##I> >( gemm, ctx ); \
-    KernelRegistry::set<CSRKernelTrait::matrixAdd<ARITHMETIC_HOST_TYPE_##I> >( matrixAdd, ctx ); \
-    KernelRegistry::set<CSRKernelTrait::matrixMultiply<ARITHMETIC_HOST_TYPE_##I> >( matrixMultiply, ctx ); \
-    KernelRegistry::set<CSRKernelTrait::jacobi<ARITHMETIC_HOST_TYPE_##I> >( jacobi, ctx ); \
-    KernelRegistry::set<CSRKernelTrait::jacobiHalo<ARITHMETIC_HOST_TYPE_##I> >( jacobiHalo, ctx ); \
-    KernelRegistry::set<CSRKernelTrait::jacobiHaloWithDiag<ARITHMETIC_HOST_TYPE_##I> >( jacobiHaloWithDiag, ctx ); \
-    KernelRegistry::set<CSRKernelTrait::absMaxDiffVal<ARITHMETIC_HOST_TYPE_##I> >( absMaxDiffVal, ctx ); \
-                                                                                           \
-    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT,                                             \
-                     LAMA_CSR_UTILS2_REGISTER,                                             \
-                     ARITHMETIC_HOST_TYPE_##I )                                            \
+    KernelRegistry::set<CSRKernelTrait::convertCSR2CSC<ARITHMETIC_HOST_TYPE_##I> >( convertCSR2CSC, Host, flag );         \
+    KernelRegistry::set<CSRKernelTrait::sortRowElements<ARITHMETIC_HOST_TYPE_##I> >( sortRowElements, Host, flag );       \
+    KernelRegistry::set<CSRKernelTrait::normalGEMV<ARITHMETIC_HOST_TYPE_##I> >( normalGEMV, Host, flag );                 \
+    KernelRegistry::set<CSRKernelTrait::sparseGEMV<ARITHMETIC_HOST_TYPE_##I> >( sparseGEMV, Host, flag );                 \
+    KernelRegistry::set<CSRKernelTrait::normalGEVM<ARITHMETIC_HOST_TYPE_##I> >( normalGEVM, Host, flag );                 \
+    KernelRegistry::set<CSRKernelTrait::sparseGEVM<ARITHMETIC_HOST_TYPE_##I> >( sparseGEVM, Host, flag );                 \
+    KernelRegistry::set<CSRKernelTrait::gemm<ARITHMETIC_HOST_TYPE_##I> >( gemm, Host, flag );                             \
+    KernelRegistry::set<CSRKernelTrait::matrixAdd<ARITHMETIC_HOST_TYPE_##I> >( matrixAdd, Host, flag );                   \
+    KernelRegistry::set<CSRKernelTrait::matrixMultiply<ARITHMETIC_HOST_TYPE_##I> >( matrixMultiply, Host, flag );         \
+    KernelRegistry::set<CSRKernelTrait::jacobi<ARITHMETIC_HOST_TYPE_##I> >( jacobi, Host, flag );                         \
+    KernelRegistry::set<CSRKernelTrait::jacobiHalo<ARITHMETIC_HOST_TYPE_##I> >( jacobiHalo, Host, flag );                 \
+    KernelRegistry::set<CSRKernelTrait::jacobiHaloWithDiag<ARITHMETIC_HOST_TYPE_##I> >( jacobiHaloWithDiag, Host, flag ); \
+    KernelRegistry::set<CSRKernelTrait::absMaxDiffVal<ARITHMETIC_HOST_TYPE_##I> >( absMaxDiffVal, Host, flag );           \
+                                                                                                                          \
+    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT,                                                                            \
+                     LAMA_CSR_UTILS2_REGISTER,                                                                            \
+                     ARITHMETIC_HOST_TYPE_##I )                                                                           \
 
     BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_CSR_UTILS_REGISTER, _ )
 

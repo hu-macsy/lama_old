@@ -576,75 +576,74 @@ void MICUtils::registerKernels()
 {
     SCAI_LOG_INFO( logger, "register Utils kernels for MIC in Kernel Registry" )
 
-    using namespace scai::kregistry;
+    using kregistry::KernelRegistry;
+    using common::context::MIC;
 
-    // ctx will contain the context for which registration is done, here MIC
-
-    common::context::ContextType ctx = common::context::MIC;
+    KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // add it or delete it
 
     // Instantations for IndexType, not done by ARITHMETIC_TYPE macrods
 
-    KernelRegistry::set<UtilKernelTrait::validIndexes>( validIndexes, ctx );
+    KernelRegistry::set<UtilKernelTrait::validIndexes>( validIndexes, MIC, flag );
 
-    KernelRegistry::set<UtilKernelTrait::scale<float> >( scale, ctx );
-    KernelRegistry::set<UtilKernelTrait::scale<double> >( scale, ctx );
+    KernelRegistry::set<UtilKernelTrait::scale<float> >( scale, MIC, flag );
+    KernelRegistry::set<UtilKernelTrait::scale<double> >( scale, MIC, flag );
 
-    KernelRegistry::set<UtilKernelTrait::setScale<float, float> >( setScale, ctx );
-    KernelRegistry::set<UtilKernelTrait::setScale<double, float> >( setScale, ctx );
-    KernelRegistry::set<UtilKernelTrait::setScale<float, double> >( setScale, ctx );
-    KernelRegistry::set<UtilKernelTrait::setScale<double, double> >( setScale, ctx );
+    KernelRegistry::set<UtilKernelTrait::setScale<float, float> >( setScale, MIC, flag );
+    KernelRegistry::set<UtilKernelTrait::setScale<double, float> >( setScale, MIC, flag );
+    KernelRegistry::set<UtilKernelTrait::setScale<float, double> >( setScale, MIC, flag );
+    KernelRegistry::set<UtilKernelTrait::setScale<double, double> >( setScale, MIC, flag );
 
-    KernelRegistry::set<UtilKernelTrait::sum<IndexType> >( sum, ctx );
-    KernelRegistry::set<UtilKernelTrait::sum<float> >( sum, ctx );
-    KernelRegistry::set<UtilKernelTrait::sum<double> >( sum, ctx );
+    KernelRegistry::set<UtilKernelTrait::sum<IndexType> >( sum, MIC, flag );
+    KernelRegistry::set<UtilKernelTrait::sum<float> >( sum, MIC, flag );
+    KernelRegistry::set<UtilKernelTrait::sum<double> >( sum, MIC, flag );
 
-    KernelRegistry::set<UtilKernelTrait::setVal<IndexType> >( setVal, ctx );
-    KernelRegistry::set<UtilKernelTrait::setVal<float> >( setVal, ctx );
-    KernelRegistry::set<UtilKernelTrait::setVal<double> >( setVal, ctx );
+    KernelRegistry::set<UtilKernelTrait::setVal<IndexType> >( setVal, MIC, flag );
+    KernelRegistry::set<UtilKernelTrait::setVal<float> >( setVal, MIC, flag );
+    KernelRegistry::set<UtilKernelTrait::setVal<double> >( setVal, MIC, flag );
 
-    KernelRegistry::set<UtilKernelTrait::setOrder<IndexType> >( setOrder, ctx );
+    KernelRegistry::set<UtilKernelTrait::setOrder<IndexType> >( setOrder, MIC, flag );
 
-    KernelRegistry::set<UtilKernelTrait::getValue<IndexType> >( getValue, ctx );
-    KernelRegistry::set<UtilKernelTrait::getValue<float> >( getValue, ctx );
-    KernelRegistry::set<UtilKernelTrait::getValue<double> >( getValue, ctx );
+    KernelRegistry::set<UtilKernelTrait::getValue<IndexType> >( getValue, MIC, flag );
+    KernelRegistry::set<UtilKernelTrait::getValue<float> >( getValue, MIC, flag );
+    KernelRegistry::set<UtilKernelTrait::getValue<double> >( getValue, MIC, flag );
 
-    KernelRegistry::set<UtilKernelTrait::maxval<IndexType> >( maxval, ctx );
-    KernelRegistry::set<UtilKernelTrait::maxval<float> >( maxval, ctx );
-    KernelRegistry::set<UtilKernelTrait::maxval<double> >( maxval, ctx );
+    KernelRegistry::set<UtilKernelTrait::maxval<IndexType> >( maxval, MIC, flag );
+    KernelRegistry::set<UtilKernelTrait::maxval<float> >( maxval, MIC, flag );
+    KernelRegistry::set<UtilKernelTrait::maxval<double> >( maxval, MIC, flag );
 
-    KernelRegistry::set<UtilKernelTrait::absMaxVal<float> >( absMaxVal, ctx );
-    KernelRegistry::set<UtilKernelTrait::absMaxVal<double> >( absMaxVal, ctx );
+    KernelRegistry::set<UtilKernelTrait::absMaxVal<float> >( absMaxVal, MIC, flag );
+    KernelRegistry::set<UtilKernelTrait::absMaxVal<double> >( absMaxVal, MIC, flag );
 
-    KernelRegistry::set<UtilKernelTrait::absMaxDiffVal<float> >( absMaxDiffVal, ctx );
-    KernelRegistry::set<UtilKernelTrait::absMaxDiffVal<double> >( absMaxDiffVal, ctx );
+    KernelRegistry::set<UtilKernelTrait::absMaxDiffVal<float> >( absMaxDiffVal, MIC, flag );
+    KernelRegistry::set<UtilKernelTrait::absMaxDiffVal<double> >( absMaxDiffVal, MIC, flag );
 
-    KernelRegistry::set<UtilKernelTrait::isSorted<IndexType> >( isSorted, ctx );
-    KernelRegistry::set<UtilKernelTrait::isSorted<float> >( isSorted, ctx );
-    KernelRegistry::set<UtilKernelTrait::isSorted<double> >( isSorted, ctx );
+    KernelRegistry::set<UtilKernelTrait::isSorted<IndexType> >( isSorted, MIC, flag );
+    KernelRegistry::set<UtilKernelTrait::isSorted<float> >( isSorted, MIC, flag );
+    KernelRegistry::set<UtilKernelTrait::isSorted<double> >( isSorted, MIC, flag );
 
-    KernelRegistry::set<UtilKernelTrait::setScatter<int, int> >( setScatter, ctx );
+    KernelRegistry::set<UtilKernelTrait::setScatter<int, int> >( setScatter, MIC, flag );
 
-    KernelRegistry::set<UtilKernelTrait::setScatter<float, float> >( setScatter, ctx );
-    KernelRegistry::set<UtilKernelTrait::setScatter<double, float> >( setScatter, ctx );
-    KernelRegistry::set<UtilKernelTrait::setScatter<float, double> >( setScatter, ctx );
-    KernelRegistry::set<UtilKernelTrait::setScatter<double, double> >( setScatter, ctx );
+    KernelRegistry::set<UtilKernelTrait::setScatter<float, float> >( setScatter, MIC, flag );
+    KernelRegistry::set<UtilKernelTrait::setScatter<double, float> >( setScatter, MIC, flag );
+    KernelRegistry::set<UtilKernelTrait::setScatter<float, double> >( setScatter, MIC, flag );
+    KernelRegistry::set<UtilKernelTrait::setScatter<double, double> >( setScatter, MIC, flag );
 
-    KernelRegistry::set<UtilKernelTrait::setGather<int, int> >( setGather, ctx );
+    KernelRegistry::set<UtilKernelTrait::setGather<int, int> >( setGather, MIC, flag );
 
-    KernelRegistry::set<UtilKernelTrait::setGather<float, float> >( setGather, ctx );
-    KernelRegistry::set<UtilKernelTrait::setGather<double, float> >( setGather, ctx );
-    KernelRegistry::set<UtilKernelTrait::setGather<float, double> >( setGather, ctx );
-    KernelRegistry::set<UtilKernelTrait::setGather<double, double> >( setGather, ctx );
+    KernelRegistry::set<UtilKernelTrait::setGather<float, float> >( setGather, MIC, flag );
+    KernelRegistry::set<UtilKernelTrait::setGather<double, float> >( setGather, MIC, flag );
+    KernelRegistry::set<UtilKernelTrait::setGather<float, double> >( setGather, MIC, flag );
+    KernelRegistry::set<UtilKernelTrait::setGather<double, double> >( setGather, MIC, flag );
 
-    KernelRegistry::set<UtilKernelTrait::set<int, int> >( set, ctx );
+    KernelRegistry::set<UtilKernelTrait::set<int, int> >( set, MIC, flag );
 
-    KernelRegistry::set<UtilKernelTrait::set<float, float> >( set, ctx );
-    KernelRegistry::set<UtilKernelTrait::set<double, float> >( set, ctx );
-    KernelRegistry::set<UtilKernelTrait::set<float, double> >( set, ctx );
-    KernelRegistry::set<UtilKernelTrait::set<double, double> >( set, ctx );
+    KernelRegistry::set<UtilKernelTrait::set<float, float> >( set, MIC, flag );
+    KernelRegistry::set<UtilKernelTrait::set<double, float> >( set, MIC, flag );
+    KernelRegistry::set<UtilKernelTrait::set<float, double> >( set, MIC, flag );
+    KernelRegistry::set<UtilKernelTrait::set<double, double> >( set, MIC, flag );
 
-    KernelRegistry::set<UtilKernelTrait::invert<float> >( invert, ctx );
-    KernelRegistry::set<UtilKernelTrait::invert<double> >( invert, ctx );
+    KernelRegistry::set<UtilKernelTrait::invert<float> >( invert, MIC, flag );
+    KernelRegistry::set<UtilKernelTrait::invert<double> >( invert, MIC, flag );
 }
 
 /* --------------------------------------------------------------------------- */

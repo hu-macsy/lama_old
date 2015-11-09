@@ -24,7 +24,7 @@ BOOST_AUTO_TEST_CASE( TraitTest )
     // Same as simple test but uses a Trait for registration
     // The trait avoids misspelling of the routine name and the signature
 
-    KernelRegistry::set<TraitDummyRoutine>( dummyRoutine, context::CUDA );
+    KernelRegistry::set<TraitDummyRoutine>( dummyRoutine, context::CUDA, KernelRegistry::KERNEL_ADD );
 
     KernelTraitContextFunction<TraitDummyRoutine> f;
 

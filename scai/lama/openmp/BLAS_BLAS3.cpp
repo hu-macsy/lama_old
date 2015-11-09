@@ -269,11 +269,13 @@ void BLAS_BLAS3::registerKernels()
 
     SCAI_LOG_INFO( logger, "set BLAS3 wrapper routines for Host Context in Interface" )
 
+    KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_REPLACE;   // priority over OpenMPBLAS
+
     // Note: macro takes advantage of same name for routines and type definitions
     //       ( e.g. routine CUDABLAS1::sum<ValueType> is set for BLAS::BLAS1::sum variable
 
-#define LAMA_BLAS3_REGISTER(z, I, _)                                                  \
-    KernelRegistry::set<BLASKernelTrait::gemm<ARITHMETIC_HOST_TYPE_##I> >( gemm, ctx, true ); \
+#define LAMA_BLAS3_REGISTER(z, I, _)                                                           \
+    KernelRegistry::set<BLASKernelTrait::gemm<ARITHMETIC_HOST_TYPE_##I> >( gemm, ctx, flag );  \
 
     BOOST_PP_REPEAT( ARITHMETIC_HOST_EXT_TYPE_CNT, LAMA_BLAS3_REGISTER, _ )
 

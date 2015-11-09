@@ -518,38 +518,37 @@ void MICBLAS1::registerKernels()
 {
     SCAI_LOG_INFO( logger, "register BLAS1 kernels for MIC in Kernel Registry" )
 
-    using namespace scai::kregistry;
+    using kregistry::KernelRegistry;
+    using common::context::MIC;
 
-    // ctx will contain the context for which registration is done, here MIC
+    KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // add it or delete it
 
-    common::context::ContextType ctx = common::context::MIC;
+    KernelRegistry::set<BLASKernelTrait::scal<float> >( scal, MIC, flag );
+    KernelRegistry::set<BLASKernelTrait::scal<double> >( scal, MIC, flag );
 
-    KernelRegistry::set<BLASKernelTrait::scal<float> >( scal, ctx );
-    KernelRegistry::set<BLASKernelTrait::scal<double> >( scal, ctx );
+    KernelRegistry::set<BLASKernelTrait::nrm2<float> >( nrm2, MIC, flag );
+    KernelRegistry::set<BLASKernelTrait::nrm2<double> >( nrm2, MIC, flag );
 
-    KernelRegistry::set<BLASKernelTrait::nrm2<float> >( nrm2, ctx );
-    KernelRegistry::set<BLASKernelTrait::nrm2<double> >( nrm2, ctx );
+    KernelRegistry::set<BLASKernelTrait::asum<float> >( asum, MIC, flag );
+    KernelRegistry::set<BLASKernelTrait::asum<double> >( asum, MIC, flag );
 
-    KernelRegistry::set<BLASKernelTrait::asum<float> >( asum, ctx );
-    KernelRegistry::set<BLASKernelTrait::asum<double> >( asum, ctx );
+    KernelRegistry::set<BLASKernelTrait::iamax<float> >( iamax, MIC, flag );
+    KernelRegistry::set<BLASKernelTrait::iamax<double> >( iamax, MIC, flag );
 
-    KernelRegistry::set<BLASKernelTrait::iamax<float> >( iamax, ctx );
-    KernelRegistry::set<BLASKernelTrait::iamax<double> >( iamax, ctx );
+    KernelRegistry::set<BLASKernelTrait::swap<float> >( swap, MIC, flag );
+    KernelRegistry::set<BLASKernelTrait::swap<double> >( swap, MIC, flag );
 
-    KernelRegistry::set<BLASKernelTrait::swap<float> >( swap, ctx );
-    KernelRegistry::set<BLASKernelTrait::swap<double> >( swap, ctx );
+    KernelRegistry::set<BLASKernelTrait::copy<float> >( copy, MIC, flag );
+    KernelRegistry::set<BLASKernelTrait::copy<double> >( copy, MIC, flag );
 
-    KernelRegistry::set<BLASKernelTrait::copy<float> >( copy, ctx );
-    KernelRegistry::set<BLASKernelTrait::copy<double> >( copy, ctx );
+    KernelRegistry::set<BLASKernelTrait::axpy<float> >( axpy, MIC, flag );
+    KernelRegistry::set<BLASKernelTrait::axpy<double> >( axpy, MIC, flag );
 
-    KernelRegistry::set<BLASKernelTrait::axpy<float> >( axpy, ctx );
-    KernelRegistry::set<BLASKernelTrait::axpy<double> >( axpy, ctx );
+    KernelRegistry::set<BLASKernelTrait::dot<float> >( dot, MIC, flag );
+    KernelRegistry::set<BLASKernelTrait::dot<double> >( dot, MIC, flag );
 
-    KernelRegistry::set<BLASKernelTrait::dot<float> >( dot, ctx );
-    KernelRegistry::set<BLASKernelTrait::dot<double> >( dot, ctx );
-
-    KernelRegistry::set<BLASKernelTrait::sum<float> >( sum, ctx );
-    KernelRegistry::set<BLASKernelTrait::sum<double> >( sum, ctx );
+    KernelRegistry::set<BLASKernelTrait::sum<float> >( sum, MIC, flag );
+    KernelRegistry::set<BLASKernelTrait::sum<double> >( sum, MIC, flag );
 }
 
 /* --------------------------------------------------------------------------- */

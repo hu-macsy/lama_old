@@ -256,10 +256,6 @@ void MKLCSRUtils::convertCSR2CSC(
 
 void MKLCSRUtils::registerKernels()
 {
-    using kregistry::KernelRegistry;
-
-    common::context::ContextType ctx = common::context::Host;
-
     bool useMKL = true;
 
     // using MKL for CSR might be disabled explicitly by environment variable
@@ -276,14 +272,19 @@ void MKLCSRUtils::registerKernels()
 
     SCAI_LOG_INFO( logger, "set CSR routines for MKL in Host Interface" )
 
-    KernelRegistry::set<CSRKernelTrait::normalGEMV<float> >( normalGEMV, ctx ); 
-    KernelRegistry::set<CSRKernelTrait::normalGEMV<double> >( normalGEMV, ctx ); 
+    using kregistry::KernelRegistry;
+    using common::context::Host;       // context for registration
+
+    KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_REPLACE ;   // higher priority
+
+    KernelRegistry::set<CSRKernelTrait::normalGEMV<float> >( normalGEMV, Host, flag ); 
+    KernelRegistry::set<CSRKernelTrait::normalGEMV<double> >( normalGEMV, Host, flag ); 
 
     // MKL conversion csr to csc has worse performance than our OpenMP Implementation
     // so we do not use it here.
 
-    // KernelRegistry::set<CSRKernelTrait::convertCSR2CSC<float> >( convertCSR2CSC, ctx ); 
-    // KernelRegistry::set<CSRKernelTrait::convertCSR2CSC<double> >( convertCSR2CSC, ctx ); 
+    // KernelRegistry::set<CSRKernelTrait::convertCSR2CSC<float> >( convertCSR2CSC, Host, flag ); 
+    // KernelRegistry::set<CSRKernelTrait::convertCSR2CSC<double> >( convertCSR2CSC, Host, flag ); 
 }
 
 /* --------------------------------------------------------------------------- */

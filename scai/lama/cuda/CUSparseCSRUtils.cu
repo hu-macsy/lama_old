@@ -637,22 +637,22 @@ namespace lama
 
         common::ContextType ctx = common::context::Host;
 
-        bool replace = true;  // overwrites settings of CUDACSRUtils
+        KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_REPLACE;   // priority over OpenMPBLAS
 
-        KernelRegistry::set<CSRKernelTrait::normalGEMV<float> >( normalGEMV, ctx, replace ); 
-        KernelRegistry::set<CSRKernelTrait::normalGEMV<double> >( normalGEMV, ctx, replace ); 
+        KernelRegistry::set<CSRKernelTrait::normalGEMV<float> >( normalGEMV, ctx, flag ); 
+        KernelRegistry::set<CSRKernelTrait::normalGEMV<double> >( normalGEMV, ctx, flag ); 
 
-        KernelRegistry::set<CSRKernelTrait::convertCSR2CSC<float> >( convertCSR2CSC, ctx, replace ); 
-        KernelRegistry::set<CSRKernelTrait::convertCSR2CSC<double> >( convertCSR2CSC, ctx, replace ); 
+        KernelRegistry::set<CSRKernelTrait::convertCSR2CSC<float> >( convertCSR2CSC, ctx, flag ); 
+        KernelRegistry::set<CSRKernelTrait::convertCSR2CSC<double> >( convertCSR2CSC, ctx, flag ); 
 
-        KernelRegistry::set<CSRKernelTrait::matrixAddSizes>( matrixAddSizes, ctx, replace ); 
-        KernelRegistry::set<CSRKernelTrait::matrixMultiplySizes>( matrixMultiplySizes, ctx, replace ); 
+        KernelRegistry::set<CSRKernelTrait::matrixAddSizes>( matrixAddSizes, ctx, flag ); 
+        KernelRegistry::set<CSRKernelTrait::matrixMultiplySizes>( matrixMultiplySizes, ctx, flag ); 
 
-        KernelRegistry::set<CSRKernelTrait::matrixAdd<float> >( matrixAdd, ctx, replace ); 
-        KernelRegistry::set<CSRKernelTrait::matrixAdd<double> >( matrixAdd, ctx, replace ); 
+        KernelRegistry::set<CSRKernelTrait::matrixAdd<float> >( matrixAdd, ctx, flag ); 
+        KernelRegistry::set<CSRKernelTrait::matrixAdd<double> >( matrixAdd, ctx, flag ); 
 
-        KernelRegistry::set<CSRKernelTrait::matrixMultiply<float> >( matrixMultiply, ctx, replace ); 
-        KernelRegistry::set<CSRKernelTrait::matrixMultiply<double> >( matrixMultiply, ctx, replace ); 
+        KernelRegistry::set<CSRKernelTrait::matrixMultiply<float> >( matrixMultiply, ctx, flag ); 
+        KernelRegistry::set<CSRKernelTrait::matrixMultiply<double> >( matrixMultiply, ctx, flag ); 
     }
 
     /* --------------------------------------------------------------------------- */

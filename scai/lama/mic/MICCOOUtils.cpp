@@ -515,37 +515,36 @@ void MICCOOUtils::registerKernels()
 {
     SCAI_LOG_INFO( logger, "register COO kernels for MIC in Kernel Registry" )
 
-    using namespace scai::kregistry;
+    using kregistry::KernelRegistry;
+    using common::context::MIC;
 
-    // ctx will contain the context for which registration is done, here MIC
+    KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // add it or delete it
 
-    common::context::ContextType ctx = common::context::MIC;
+    KernelRegistry::set<COOKernelTrait::offsets2ia>( offsets2ia, MIC, flag );
 
-    KernelRegistry::set<COOKernelTrait::offsets2ia>( offsets2ia, ctx );
+    KernelRegistry::set<COOKernelTrait::setCSRData<IndexType, IndexType> >( setCSRData, MIC, flag );
 
-    KernelRegistry::set<COOKernelTrait::setCSRData<IndexType, IndexType> >( setCSRData, ctx );
+    KernelRegistry::set<COOKernelTrait::setCSRData<float, float> >( setCSRData, MIC, flag );
+    KernelRegistry::set<COOKernelTrait::setCSRData<float, double> >( setCSRData, MIC, flag );
+    KernelRegistry::set<COOKernelTrait::setCSRData<double, float> >( setCSRData, MIC, flag );
+    KernelRegistry::set<COOKernelTrait::setCSRData<double, double> >( setCSRData, MIC, flag );
 
-    KernelRegistry::set<COOKernelTrait::setCSRData<float, float> >( setCSRData, ctx );
-    KernelRegistry::set<COOKernelTrait::setCSRData<float, double> >( setCSRData, ctx );
-    KernelRegistry::set<COOKernelTrait::setCSRData<double, float> >( setCSRData, ctx );
-    KernelRegistry::set<COOKernelTrait::setCSRData<double, double> >( setCSRData, ctx );
-
-    KernelRegistry::set<COOKernelTrait::getCSRSizes>( getCSRSizes, ctx );
+    KernelRegistry::set<COOKernelTrait::getCSRSizes>( getCSRSizes, MIC, flag );
 
     // ToDo: routine does not work yet
 
-    // KernelRegistry::set<COOKernelTrait::getCSRValues<float, float> >( getCSRValuesS, ctx );
-    // KernelRegistry::set<COOKernelTrait::getCSRValues<float, double> >( getCSRValuesS, ctx );
-    // KernelRegistry::set<COOKernelTrait::getCSRValues<double, float> >( getCSRValuesS, ctx );
-    // KernelRegistry::set<COOKernelTrait::getCSRValues<double, double> >( getCSRValuesS, ctx );
+    // KernelRegistry::set<COOKernelTrait::getCSRValues<float, float> >( getCSRValuesS, MIC, flag );
+    // KernelRegistry::set<COOKernelTrait::getCSRValues<float, double> >( getCSRValuesS, MIC, flag );
+    // KernelRegistry::set<COOKernelTrait::getCSRValues<double, float> >( getCSRValuesS, MIC, flag );
+    // KernelRegistry::set<COOKernelTrait::getCSRValues<double, double> >( getCSRValuesS, MIC, flag );
 
-    KernelRegistry::set<COOKernelTrait::normalGEMV<float> >( normalGEMV, ctx );
-    KernelRegistry::set<COOKernelTrait::normalGEMV<double> >( normalGEMV, ctx );
+    KernelRegistry::set<COOKernelTrait::normalGEMV<float> >( normalGEMV, MIC, flag );
+    KernelRegistry::set<COOKernelTrait::normalGEMV<double> >( normalGEMV, MIC, flag );
 
     // ToDo: jacobi does not work yet
 
-    // KernelRegistry::set<COOKernelTrait::jacobi<float> >( jacobi, ctx );
-    // KernelRegistry::set<COOKernelTrait::jacobi<double> >( jacobi, ctx );
+    // KernelRegistry::set<COOKernelTrait::jacobi<float> >( jacobi, MIC, flag );
+    // KernelRegistry::set<COOKernelTrait::jacobi<double> >( jacobi, MIC, flag );
 }
 
 /* --------------------------------------------------------------------------- */

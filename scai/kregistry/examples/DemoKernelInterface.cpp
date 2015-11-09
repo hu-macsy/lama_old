@@ -70,13 +70,15 @@ static void setInterface()
     std::cout << std::endl;
     std::cout << "setInterface: start" << std::endl;
 
-    KernelRegistry::set<UtilsInterface::isSorted<double> >( isSorted, Host );
-    KernelRegistry::set( isSorted, "Utils.isSorted", Host );
+    KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD;
 
-    KernelRegistry::set( scale<float>, "Utils.scale", Host );
-    KernelRegistry::set( scale<float>, "Utils.scale", CUDA );
-    KernelRegistry::set( scale<double>, "Utils.scale", Host );
-    KernelRegistry::set( scale<double>, "Utils.scale", CUDA );
+    KernelRegistry::set<UtilsInterface::isSorted<double> >( isSorted, Host, flag );
+    KernelRegistry::set( isSorted, "Utils.isSorted", Host, flag );
+
+    KernelRegistry::set( scale<float>, "Utils.scale", Host, flag );
+    KernelRegistry::set( scale<float>, "Utils.scale", CUDA, flag );
+    KernelRegistry::set( scale<double>, "Utils.scale", Host, flag );
+    KernelRegistry::set( scale<double>, "Utils.scale", CUDA, flag );
 
     std::cout << "setInterface: done" << std::endl;
     KernelRegistry::printAll();

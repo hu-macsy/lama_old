@@ -515,16 +515,15 @@ void CUDABLAS3::trsm(
 
 void CUDABLAS3::registerKernels()
 {
-    using scai::kregistry::KernelRegistry;
+    using kregistry::KernelRegistry;
+    using common::context::CUDA;
 
-    // ctx will contain the context for which registration is done, here Host
+    KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD;
 
-    common::context::ContextType ctx = common::context::CUDA;
+    SCAI_LOG_INFO( logger, "register BLAS3 routines implemented by CuBLAS in KernelRegistry" )
 
-    SCAI_LOG_INFO( logger, "set BLAS3 routines for CUDA at Kernel Registry" )
-
-#define LAMA_BLAS3_REGISTER(z, I, _)                                                   \
-    KernelRegistry::set<BLASKernelTrait::gemm<ARITHMETIC_CUDA_TYPE_##I> >( gemm, ctx );  \
+#define LAMA_BLAS3_REGISTER(z, I, _)                                                            \
+    KernelRegistry::set<BLASKernelTrait::gemm<ARITHMETIC_CUDA_TYPE_##I> >( gemm, CUDA, flag );  \
 
     BOOST_PP_REPEAT( ARITHMETIC_CUDA_TYPE_CNT, LAMA_BLAS3_REGISTER, _ )
 

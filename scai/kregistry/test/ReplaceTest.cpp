@@ -31,13 +31,13 @@ BOOST_AUTO_TEST_CASE( ReplaceTest )
 {
     // register unary operator for double
 
-    KernelRegistry::set<UnaryOpTrait<double> >( add1<double>, context::Host );
-    KernelRegistry::set<UnaryOpTrait<double> >( minus1<double>, context::Host );  // does not overwrite add1
+    KernelRegistry::set<UnaryOpTrait<double> >( add1<double>, context::Host, KernelRegistry::KERNEL_ADD );
+    KernelRegistry::set<UnaryOpTrait<double> >( minus1<double>, context::Host, KernelRegistry::KERNEL_ADD );  // does not overwrite add1
   
     // register unary operator for float
 
-    KernelRegistry::set<UnaryOpTrait<float> >( add1<float>, context::Host );
-    KernelRegistry::set<UnaryOpTrait<float> >( minus1<float>, context::Host, true );  // overrides add1
+    KernelRegistry::set<UnaryOpTrait<float> >( add1<float>, context::Host, KernelRegistry::KERNEL_ADD );
+    KernelRegistry::set<UnaryOpTrait<float> >( minus1<float>, context::Host, KernelRegistry::KERNEL_REPLACE );  // overrides add1
 
     KernelTraitContextFunction<UnaryOpTrait<float> > opFloat;
     KernelTraitContextFunction<UnaryOpTrait<double> > opDouble;
