@@ -117,7 +117,9 @@ void KernelRegistry::unregisterContextFunction( const KernelRegistryKey& key, Co
 
         if ( old_fn == NULL )
         {
-            SCAI_LOG_ERROR( logger, "unregister: entry for key = " << key << " available, but not for " << ctx );
+            // rather likely to happen for multiple versions of kernel routines
+
+            SCAI_LOG_INFO( logger, "unregister: entry for key = " << key << " available, but not for " << ctx );
         }
         else if ( old_fn != fn )
         {

@@ -97,13 +97,18 @@ private:
 
 public:
 
-    /** Enumeration type for possible registration flags */
+    /** Enumeration type for possible registration flags.
+     *
+     *  KERNEL_ADD should be used for kernels with lower priority and KERNEL_REPLACE
+     *  for kernels with higher priority. This might be used to prefer optimized kernels
+     *  when they are available.
+     */
 
     enum KernelRegistryFlag
     {
-        KERNEL_ERASE,
-        KERNEL_ADD,
-        KERNEL_REPLACE
+        KERNEL_ERASE,    //!< Kernel routine will be removed from registry
+        KERNEL_ADD,      //!< Kernel routine will be added if no other one is registered
+        KERNEL_REPLACE   //!< Kernel routine will be added and will replace an existing one
     };
 
     /** This method registers a kernel routine for a given context by its name and signature.  

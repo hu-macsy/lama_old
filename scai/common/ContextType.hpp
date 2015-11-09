@@ -43,6 +43,14 @@ namespace scai
 namespace common
 {
 
+/** Own namespace for the enumeration type ContextType and its values. 
+ *
+ *  Note: This enumeration type was originally defined in the class Context so
+ *        it did not require an own namespace. But this is no longer possible as
+ *        Context is now a factory where ContextType is the input type to create
+ *        a new Context.
+ */
+
 namespace context
 {
     /** Enumeration type for the supported contexts. The type is used to select
