@@ -34,7 +34,6 @@
 #include <scai/lama/cuda/CUDACOOUtils.hpp>
 
 // local library
-#include <scai/lama/cuda/utils.cu.h>
 #include <scai/lama/cuda/CUDAUtils.hpp>
 #include <scai/lama/cuda/CUDASettings.hpp>
 
@@ -50,6 +49,7 @@
 #include <scai/common/bind.hpp>
 
 #include <scai/common/cuda/CUDAError.hpp>
+#include <scai/common/cuda/launchHelper.hpp>
 #include <scai/common/Constants.hpp>
 
 // thrust

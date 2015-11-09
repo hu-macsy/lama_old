@@ -68,7 +68,7 @@ public:
         int numColumns,
         int numValues );
 
-    /** Implementation for CSRKernelTrait::Mult::normalGEMV  */
+    /** Implementation for CSRKernelTrait::normalGEMV  */
 
     template<typename ValueType>
     static void normalGEMV(
@@ -82,10 +82,9 @@ public:
         const IndexType nnz,
         const IndexType csrIA[],
         const IndexType csrJA[],
-        const ValueType csrValues[],
-        tasking::SyncToken* syncToken );
+        const ValueType csrValues[] );
 
-    /** Implementation for CSRKernelTrait::Offsets::matrixAddSizes  */
+    /** Implementation for CSRKernelTrait::matrixAddSizes  */
 
     static IndexType matrixAddSizes(
         IndexType cSizes[],
@@ -97,7 +96,7 @@ public:
         const IndexType bIA[],
         const IndexType bJA[] );
 
-    /** Implementation for CSRKernelTrait::Offsets::matrixMultiplySizes  */
+    /** Implementation for CSRKernelTrait::matrixMultiplySizes  */
 
     static IndexType matrixMultiplySizes(
         IndexType cSizes[],
@@ -110,7 +109,7 @@ public:
         const IndexType bIA[],
         const IndexType bJA[] );
 
-    /** Implementation for CSRKernelTrait::Mult::matrixAdd */
+    /** Implementation for CSRKernelTrait::matrixAdd */
 
     template<typename ValueType>
     static void matrixAdd(
@@ -129,7 +128,7 @@ public:
         const IndexType bJA[],
         const ValueType bValues[] );
 
-    /** Implementation for CSRKernelTrait::Mult::matrixMultiply */
+    /** Implementation for CSRKernelTrait::matrixMultiply */
 
     template<typename ValueType>
     static void matrixMultiply(
@@ -148,17 +147,25 @@ public:
         const IndexType bJA[],
         const ValueType bValues[] );
 
-    /** Routine that registers all routines of this class at the LAMA interface. */
-
-    static void registerKernels();
-
 private:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
-    static    bool initialized; //!< static initialization used for registration
+    /** Routine that registers all methods at the kernel registry. */
 
-    static bool registerInterface();//!< registration
+    static void registerKernels( bool deleteFlag );
+
+    /** Constructor for registration. */
+
+    CUSparseCSRUtils();
+
+    /** Destructor for unregistration. */
+
+    ~CUSparseCSRUtils();
+
+    /** Static variable for registration at static initialization. */
+
+    static CUSparseCSRUtils guard;
 };
 
 /* --------------------------------------------------------------------------- */

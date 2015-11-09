@@ -132,17 +132,25 @@ public:
     template<typename ValueType>
     static void invert( ValueType array[], const IndexType n );
 
-    /** Routine that registers all routines of this class at the Kernel Registry.  */
-
-    static void registerKernels( bool deleteFlag );
-
 private:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
-    static    bool initialized; //!< static initialization used for registration
+    /** Routine that registers all methods at the kernel registry. */
 
-    static bool registerInterface();//!< registration
+    static void registerKernels( bool deleteFlag );
+
+    /** Constructor for registration. */
+
+    CUDAUtils();
+
+    /** Destructor for unregistration. */
+
+    ~CUDAUtils();
+
+    /** Static variable for registration at static initialization. */
+
+    static CUDAUtils guard;
 };
 
 } /* end namespace lama */

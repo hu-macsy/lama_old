@@ -38,12 +38,12 @@
 #include <scai/kregistry/KernelRegistry.hpp>
 #include <scai/lama/UtilKernelTrait.hpp>
 
-#include <scai/lama/cuda/utils.cu.h>
 #include <scai/lama/cuda/CUDASettings.hpp>
 
 // internal scai libraries
 #include <scai/common/Assert.hpp>
 #include <scai/common/cuda/CUDAError.hpp>
+#include <scai/common/cuda/launchHelper.hpp>
 #include <scai/common/Constants.hpp>
 
 // thrust
@@ -625,20 +625,22 @@ void CUDAUtils::registerKernels( bool deleteFlag )
 }
 
 /* --------------------------------------------------------------------------- */
-/*    Static registration of the Utils routines                                */
+/*    Constructor/Desctructor with registration                                */
 /* --------------------------------------------------------------------------- */
 
-bool CUDAUtils::registerInterface()
+CUDAUtils::CUDAUtils()
 {
-    registerKernels( false );
-    return true;
+    bool deleteFlag = false;
+    registerKernels( deleteFlag );
 }
 
-/* --------------------------------------------------------------------------- */
-/*    Static initialiazion at program start                                    */
-/* --------------------------------------------------------------------------- */
+CUDAUtils::~CUDAUtils()
+{
+    bool deleteFlag = true;
+    registerKernels( deleteFlag );
+}
 
-bool CUDAUtils::initialized = registerInterface();
+CUDAUtils CUDAUtils::guard;    // guard variable for registration
 
 } /* end namespace lama */
 
