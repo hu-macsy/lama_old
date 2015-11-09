@@ -78,18 +78,22 @@ public:
         ValueType* C,
         const IndexType ldc );
 
-    /** Routine that sets functions pointers belonging to BLAS3 in the kernel registry.
-     *
-     *  Note: this method will also instantiate the template routines.
-     */
-
-    static void registerKernels();
-
 private:
 
-    static bool initialized;
+    /** Routine that registers all methods at the kernel registry. */
 
-    static bool registerInterface();
+    static void registerKernels( bool deleteFlag );
+
+    /** Helper class for (un) registration of kernel routines at static initialization. */
+
+    class RegisterGuard
+    {
+    public:
+        RegisterGuard();
+        ~RegisterGuard();
+    };
+
+    static RegisterGuard guard;  // registration of kernels @ static initialization
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 };

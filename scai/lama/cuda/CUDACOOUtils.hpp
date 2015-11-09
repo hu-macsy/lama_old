@@ -114,17 +114,25 @@ public:
         const IndexType cooJA[],
         const ValueType cooValues[] );
 
-    /** Routine that registers all routines of this class at the LAMA interface. */
-
-    static void registerKernels();
-
 private:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
-    static    bool initialized; //!< static initialization used for registration
+    /** Routine that registers all methods at the kernel registry. */
 
-    static bool registerInterface();//!< registration of methods at interface
+    static void registerKernels( bool deleteFlag );
+
+    /** Constructor for registration. */
+
+    CUDACOOUtils();
+
+    /** Destructor for unregistration. */
+
+    ~CUDACOOUtils();
+
+    /** Static variable for registration at static initialization. */
+
+    static CUDACOOUtils guard;
 };
 
 /* --------------------------------------------------------------------------- */

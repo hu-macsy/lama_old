@@ -409,12 +409,17 @@ void OpenMPDenseUtils::scaleRows(
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void OpenMPDenseUtils::registerKernelFunctions()
+void OpenMPDenseUtils::registerKernels( bool deleteFlag )
 {
-    using namespace scai::kregistry;
+    using kregistry::KernelRegistry;
     using common::context::Host;
 
     KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // lower priority
+
+    if ( deleteFlag )
+    {
+        flag = KernelRegistry::KERNEL_ERASE;
+    }
 
 #define KREGISTRY_DENSE2_REGISTER(z, J, TYPE )                                                                              \
     KernelRegistry::set<DenseKernelTrait::setCSRValues<TYPE, ARITHMETIC_HOST_TYPE_##J> >( setCSRValues, Host, flag );       \
@@ -441,20 +446,22 @@ void OpenMPDenseUtils::registerKernelFunctions()
 }
 
 /* --------------------------------------------------------------------------- */
-/*    Static registration of the DenseUtils routines                           */
+/*    Static registration of the Utils routines                                */
 /* --------------------------------------------------------------------------- */
 
-bool OpenMPDenseUtils::registerInterface()
+OpenMPDenseUtils::RegisterGuard::RegisterGuard()
 {
-    registerKernelFunctions();
-    return true;
+    bool deleteFlag = false;
+    registerKernels( deleteFlag );
 }
 
-/* --------------------------------------------------------------------------- */
-/*    Static initialiazion at program start                                    */
-/* --------------------------------------------------------------------------- */
+OpenMPDenseUtils::RegisterGuard::~RegisterGuard()
+{
+    bool deleteFlag = true;
+    registerKernels( deleteFlag );
+}
 
-bool OpenMPDenseUtils::initialized = registerInterface();
+OpenMPDenseUtils::RegisterGuard OpenMPDenseUtils::guard;    // guard variable for registration
 
 /* --------------------------------------------------------------------------- */
 

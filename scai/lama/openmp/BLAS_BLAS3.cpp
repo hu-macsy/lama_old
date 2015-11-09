@@ -241,13 +241,10 @@ void BLAS_BLAS3::gemm(
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void BLAS_BLAS3::registerKernels()
+void BLAS_BLAS3::registerKernels( bool deleteFlag )
 {
-    using scai::kregistry::KernelRegistry;
-
-    // ctx will contain the context for which registration is done, here Host
-
-    common::context::ContextType ctx = common::context::Host;
+    using kregistry::KernelRegistry;
+    using common::context::Host;
 
     // using BLAS wrappers might be disabled explicitly by environment variable
 
@@ -271,11 +268,16 @@ void BLAS_BLAS3::registerKernels()
 
     KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_REPLACE;   // priority over OpenMPBLAS
 
+    if ( deleteFlag )
+    {
+        flag = KernelRegistry::KERNEL_ERASE;
+    }
+
     // Note: macro takes advantage of same name for routines and type definitions
     //       ( e.g. routine CUDABLAS1::sum<ValueType> is set for BLAS::BLAS1::sum variable
 
 #define LAMA_BLAS3_REGISTER(z, I, _)                                                           \
-    KernelRegistry::set<BLASKernelTrait::gemm<ARITHMETIC_HOST_TYPE_##I> >( gemm, ctx, flag );  \
+    KernelRegistry::set<BLASKernelTrait::gemm<ARITHMETIC_HOST_TYPE_##I> >( gemm, Host, flag );  \
 
     BOOST_PP_REPEAT( ARITHMETIC_HOST_EXT_TYPE_CNT, LAMA_BLAS3_REGISTER, _ )
 
@@ -283,20 +285,22 @@ void BLAS_BLAS3::registerKernels()
 }
 
 /* --------------------------------------------------------------------------- */
-/*    Static registration of the BLAS3 routines                                */
+/*    Static initialization with registration                                  */
 /* --------------------------------------------------------------------------- */
 
-bool BLAS_BLAS3::registerInterface()
+BLAS_BLAS3::RegisterGuard::RegisterGuard()
 {
-    registerKernels();
-    return true;
+    bool deleteFlag = false;
+    registerKernels( deleteFlag );
 }
 
-/* --------------------------------------------------------------------------- */
-/*    Static initialiazion at program start                                    */
-/* --------------------------------------------------------------------------- */
+BLAS_BLAS3::RegisterGuard::~RegisterGuard()
+{
+    bool deleteFlag = true;
+    registerKernels( deleteFlag );
+}
 
-bool BLAS_BLAS3::initialized = registerInterface();
+BLAS_BLAS3::RegisterGuard BLAS_BLAS3::guard;    // guard variable for registration
 
 } /* end namespace lama */
 

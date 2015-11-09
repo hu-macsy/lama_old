@@ -1907,7 +1907,7 @@ ValueType MICCSRUtils::absMaxDiffVal(
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void MICCSRUtils::registerKernels()
+void MICCSRUtils::registerKernels( bool deleteFlag )
 {
     SCAI_LOG_INFO( logger, "register CSR kernels for MIC in Kernel Registry" )
 
@@ -1915,6 +1915,11 @@ void MICCSRUtils::registerKernels()
     using common::context::MIC;
 
     KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // add it or delete it
+
+    if ( deleteFlag )
+    {
+        flag = KernelRegistry::KERNEL_ERASE;
+    }
 
     // Instantations for IndexType, not done by ARITHMETIC_TYPE macrods
 
@@ -1968,20 +1973,22 @@ void MICCSRUtils::registerKernels()
 }
 
 /* --------------------------------------------------------------------------- */
-/*    Static registration of the Utils routines                                */
+/*    Static initialization with registration                                  */
 /* --------------------------------------------------------------------------- */
 
-bool MICCSRUtils::registerInterface()
+MICCSRUtils::RegisterGuard::RegisterGuard()
 {
-    registerKernels();
-    return true;
+    bool deleteFlag = false;
+    registerKernels( deleteFlag );
 }
 
-/* --------------------------------------------------------------------------- */
-/*    Static initialiazion at program start                                    */
-/* --------------------------------------------------------------------------- */
+MICCSRUtils::RegisterGuard::~RegisterGuard()
+{
+    bool deleteFlag = true;
+    registerKernels( deleteFlag );
+}
 
-bool MICCSRUtils::initialized = registerInterface();
+MICCSRUtils::RegisterGuard MICCSRUtils::guard;    // guard variable for registration
 
 } /* end namespace lama */
 

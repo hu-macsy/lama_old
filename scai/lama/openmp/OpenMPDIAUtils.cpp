@@ -515,12 +515,17 @@ void OpenMPDIAUtils::jacobi(
 
 /* --------------------------------------------------------------------------- */
 
-void OpenMPDIAUtils::registerKernels()
+void OpenMPDIAUtils::registerKernels( bool deleteFlag )
 {
     using kregistry::KernelRegistry;
     using common::context::Host;       // context for registration
 
     KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // lower priority
+
+    if ( deleteFlag )
+    {
+        flag = KernelRegistry::KERNEL_ERASE;
+    }
 
     // use of BOOST_PP_REPEAT to register for all value types
     // use of nested BOOST_PP_REPEAT to get all pairs of value types for conversions
@@ -547,20 +552,22 @@ void OpenMPDIAUtils::registerKernels()
 }
 
 /* --------------------------------------------------------------------------- */
-/*    Static registration of the DIAUtils routines                             */
+/*    Static registration of the Utils routines                                */
 /* --------------------------------------------------------------------------- */
 
-bool OpenMPDIAUtils::registerInterface()
+OpenMPDIAUtils::RegisterGuard::RegisterGuard()
 {
-    registerKernels();
-    return true;
+    bool deleteFlag = false;
+    registerKernels( deleteFlag );
 }
 
-/* --------------------------------------------------------------------------- */
-/*    Static initialiazion at program start                                    */
-/* --------------------------------------------------------------------------- */
+OpenMPDIAUtils::RegisterGuard::~RegisterGuard()
+{
+    bool deleteFlag = true;
+    registerKernels( deleteFlag );
+}
 
-bool OpenMPDIAUtils::initialized = registerInterface();
+OpenMPDIAUtils::RegisterGuard OpenMPDIAUtils::guard;    // guard variable for registration
 
 } /* end namespace lama */
 

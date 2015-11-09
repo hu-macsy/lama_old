@@ -513,12 +513,17 @@ void CUDABLAS3::trsm(
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void CUDABLAS3::registerKernels()
+void CUDABLAS3::registerKernels( bool deleteFlag )
 {
     using kregistry::KernelRegistry;
     using common::context::CUDA;
 
     KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD;
+
+    if ( deleteFlag )
+    {
+        flag = KernelRegistry::KERNEL_ERASE;
+    }
 
     SCAI_LOG_INFO( logger, "register BLAS3 routines implemented by CuBLAS in KernelRegistry" )
 
@@ -531,20 +536,22 @@ void CUDABLAS3::registerKernels()
 }
 
 /* --------------------------------------------------------------------------- */
-/*    Static registration of the Utils routines                                */
+/*    Constructor/Desctructor with registration                                */
 /* --------------------------------------------------------------------------- */
 
-bool CUDABLAS3::registerInterface()
+CUDABLAS3::CUDABLAS3()
 {
-    registerKernels();
-    return true;
+    bool deleteFlag = false;
+    registerKernels( deleteFlag );
 }
 
-/* --------------------------------------------------------------------------- */
-/*    Static initialiazion at program start                                    */
-/* --------------------------------------------------------------------------- */
+CUDABLAS3::~CUDABLAS3()
+{
+    bool deleteFlag = true;
+    registerKernels( deleteFlag );
+}
 
-bool CUDABLAS3::initialized = registerInterface();
+CUDABLAS3 CUDABLAS3::guard;    // guard variable for registration
 
 } /* end namespace lama */
 

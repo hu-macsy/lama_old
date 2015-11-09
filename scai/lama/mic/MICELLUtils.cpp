@@ -1211,7 +1211,7 @@ void MICELLUtils::sparseGEMV(
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-void MICELLUtils::registerKernels()
+void MICELLUtils::registerKernels( bool deleteFlag )
 {
     SCAI_LOG_INFO( logger, "set ELL routines for MIC in Interface" )
 
@@ -1221,6 +1221,11 @@ void MICELLUtils::registerKernels()
     using common::context::MIC;
 
     KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // add it or delete it
+
+    if ( deleteFlag )
+    {
+        flag = KernelRegistry::KERNEL_ERASE;
+    }
 
     KernelRegistry::set<ELLKernelTrait::countNonEmptyRowsBySizes>( countNonEmptyRowsBySizes, MIC, flag );
     KernelRegistry::set<ELLKernelTrait::setNonEmptyRowsBySizes>( setNonEmptyRowsBySizes, MIC, flag );
@@ -1289,20 +1294,22 @@ void MICELLUtils::registerKernels()
 }
 
 /* --------------------------------------------------------------------------- */
-/*    Static registration of the ELLUtils routines                             */
+/*    Static initialization with registration                                  */
 /* --------------------------------------------------------------------------- */
 
-bool MICELLUtils::registerInterface()
+MICELLUtils::RegisterGuard::RegisterGuard()
 {
-    registerKernels();
-    return true;
+    bool deleteFlag = false;
+    registerKernels( deleteFlag );
 }
 
-/* --------------------------------------------------------------------------- */
-/*    Static initialiazion at program start                                    */
-/* --------------------------------------------------------------------------- */
+MICELLUtils::RegisterGuard::~RegisterGuard()
+{
+    bool deleteFlag = true;
+    registerKernels( deleteFlag );
+}
 
-bool MICELLUtils::initialized = registerInterface();
+MICELLUtils::RegisterGuard MICELLUtils::guard;    // guard variable for registration
 
 } /* end namespace lama */
 

@@ -540,12 +540,17 @@ void OpenMPLAPACK::laswp(
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void OpenMPLAPACK::registerKernels()
+void OpenMPLAPACK::registerKernels( bool deleteFlag )
 {
     using kregistry::KernelRegistry;
     using common::context::Host;       // context for registration
 
     KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // lower priority
+
+    if ( deleteFlag )
+    {
+        flag = KernelRegistry::KERNEL_ERASE;
+    }
 
     SCAI_LOG_INFO( logger, "set LAPACK routines for OpenMP in Kernel Registry" )
 
@@ -564,20 +569,23 @@ void OpenMPLAPACK::registerKernels()
 }
 
 /* --------------------------------------------------------------------------- */
-/*    Static registration of the LAPACK routines                               */
+/*    Static registration of the Utils routines                                */
 /* --------------------------------------------------------------------------- */
 
-bool OpenMPLAPACK::registerInterface()
+OpenMPLAPACK::RegisterGuard::RegisterGuard()
 {
-    registerKernels();
-    return true;
+    bool deleteFlag = false;
+    registerKernels( deleteFlag );
 }
 
-/* --------------------------------------------------------------------------- */
-/*    Static initialiazion at program start                                    */
-/* --------------------------------------------------------------------------- */
+OpenMPLAPACK::RegisterGuard::~RegisterGuard()
+{
+    bool deleteFlag = true;
+    registerKernels( deleteFlag );
+}
 
-bool OpenMPLAPACK::initialized = registerInterface();
+OpenMPLAPACK::RegisterGuard OpenMPLAPACK::guard;    // guard variable for registration
+
 
 } /* end namespace lama */
 

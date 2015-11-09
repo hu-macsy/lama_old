@@ -444,29 +444,31 @@ void OpenMPCOOUtils::jacobi(
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void OpenMPCOOUtils::registerKernels()
+void OpenMPCOOUtils::registerKernels( bool deleteFlag )
 {
     using namespace scai::kregistry;
-
-    // ctx will contain the context for which registration is done, here Host
-
-    common::context::ContextType ctx = common::context::Host;
+    using common::context::Host;
 
     KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // lower priority
 
-    KernelRegistry::set<COOKernelTrait::offsets2ia>( offsets2ia, ctx, flag );
-    KernelRegistry::set<COOKernelTrait::getCSRSizes>( getCSRSizes, ctx, flag );
+    if ( deleteFlag )
+    {
+        flag = KernelRegistry::KERNEL_ERASE;
+    }
 
-    KernelRegistry::set<COOKernelTrait::setCSRData<IndexType, IndexType> >( setCSRData, ctx, flag );
+    KernelRegistry::set<COOKernelTrait::offsets2ia>( offsets2ia, Host, flag );
+    KernelRegistry::set<COOKernelTrait::getCSRSizes>( getCSRSizes, Host, flag );
+
+    KernelRegistry::set<COOKernelTrait::setCSRData<IndexType, IndexType> >( setCSRData, Host, flag );
 
 #define LAMA_COO_UTILS2_REGISTER(z, J, TYPE )                                                                        \
-    KernelRegistry::set<COOKernelTrait::setCSRData<TYPE, ARITHMETIC_HOST_TYPE_##J> >( setCSRData, ctx, flag );       \
-    KernelRegistry::set<COOKernelTrait::getCSRValues<TYPE, ARITHMETIC_HOST_TYPE_##J> >( getCSRValuesS, ctx, flag );  \
+    KernelRegistry::set<COOKernelTrait::setCSRData<TYPE, ARITHMETIC_HOST_TYPE_##J> >( setCSRData, Host, flag );       \
+    KernelRegistry::set<COOKernelTrait::getCSRValues<TYPE, ARITHMETIC_HOST_TYPE_##J> >( getCSRValuesS, Host, flag );  \
 
 #define LAMA_COO_UTILS_REGISTER(z, I, _)                                                                   \
-    KernelRegistry::set<COOKernelTrait::normalGEMV<ARITHMETIC_HOST_TYPE_##I> >( normalGEMV, ctx, flag );   \
-    KernelRegistry::set<COOKernelTrait::normalGEVM<ARITHMETIC_HOST_TYPE_##I> >( normalGEVM, ctx, flag );   \
-    KernelRegistry::set<COOKernelTrait::jacobi<ARITHMETIC_HOST_TYPE_##I> >( jacobi, ctx, flag );           \
+    KernelRegistry::set<COOKernelTrait::normalGEMV<ARITHMETIC_HOST_TYPE_##I> >( normalGEMV, Host, flag );   \
+    KernelRegistry::set<COOKernelTrait::normalGEVM<ARITHMETIC_HOST_TYPE_##I> >( normalGEVM, Host, flag );   \
+    KernelRegistry::set<COOKernelTrait::jacobi<ARITHMETIC_HOST_TYPE_##I> >( jacobi, Host, flag );           \
                                                                                                            \
     BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT,                                                             \
                      LAMA_COO_UTILS2_REGISTER,                                                             \
@@ -482,17 +484,19 @@ void OpenMPCOOUtils::registerKernels()
 /*    Static registration of the Utils routines                                */
 /* --------------------------------------------------------------------------- */
 
-bool OpenMPCOOUtils::registerInterface()
+OpenMPCOOUtils::RegisterGuard::RegisterGuard()
 {
-    registerKernels();
-    return true;
+    bool deleteFlag = false;
+    registerKernels( deleteFlag );
 }
 
-/* --------------------------------------------------------------------------- */
-/*    Static initialiazion at program start                                    */
-/* --------------------------------------------------------------------------- */
+OpenMPCOOUtils::RegisterGuard::~RegisterGuard()
+{
+    bool deleteFlag = true;
+    registerKernels( deleteFlag );
+}
 
-bool OpenMPCOOUtils::initialized = registerInterface();
+OpenMPCOOUtils::RegisterGuard OpenMPCOOUtils::guard;    // guard variable for registration
 
 } /* end namespace lama */
 

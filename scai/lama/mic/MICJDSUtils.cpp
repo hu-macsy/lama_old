@@ -924,7 +924,7 @@ void MICJDSUtils::jacobiHalo(
 
 /* --------------------------------------------------------------------------- */
 
-void MICJDSUtils::registerKernels()
+void MICJDSUtils::registerKernels( bool deleteFlag )
 {
     SCAI_LOG_INFO( logger, "register JDS kernels for MIC in Kernel Registry" )
 
@@ -932,6 +932,11 @@ void MICJDSUtils::registerKernels()
     using common::context::MIC;        // context for which kernels will be added
 
     KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // add it or delete it
+
+    if ( deleteFlag )
+    {
+        flag = KernelRegistry::KERNEL_ERASE;
+    }
 
     KernelRegistry::set<JDSKernelTrait::sortRows>( sortRows, MIC, flag );
 
@@ -974,20 +979,22 @@ void MICJDSUtils::registerKernels()
 }
 
 /* --------------------------------------------------------------------------- */
-/*    Static registration of the JDSUtils routines                             */
+/*    Static initialization with registration                                  */
 /* --------------------------------------------------------------------------- */
 
-bool MICJDSUtils::registerInterface()
+MICJDSUtils::RegisterGuard::RegisterGuard()
 {
-    registerKernels();
-    return true;
+    bool deleteFlag = false;
+    registerKernels( deleteFlag );
 }
 
-/* --------------------------------------------------------------------------- */
-/*    Static initialiazion at program start                                    */
-/* --------------------------------------------------------------------------- */
+MICJDSUtils::RegisterGuard::~RegisterGuard()
+{
+    bool deleteFlag = true;
+    registerKernels( deleteFlag );
+}
 
-bool MICJDSUtils::initialized = registerInterface();
+MICJDSUtils::RegisterGuard MICJDSUtils::guard;    // guard variable for registration
 
 } /* end namespace lama */
 

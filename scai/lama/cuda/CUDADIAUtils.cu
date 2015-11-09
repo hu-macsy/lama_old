@@ -898,12 +898,17 @@ namespace lama
 
     /* --------------------------------------------------------------------------- */
 
-    void CUDADIAUtils::registerKernels()
+    void CUDADIAUtils::registerKernels( bool deleteFlag )
     {
         using kregistry::KernelRegistry;
         using common::context::CUDA;
 
         KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // lower priority
+
+    if ( deleteFlag )
+    {
+        flag = KernelRegistry::KERNEL_ERASE;
+    }
    
         SCAI_LOG_INFO( logger, "set DIA routines for CUDA in Interface" )
 
@@ -918,20 +923,22 @@ namespace lama
     }
 
 /* --------------------------------------------------------------------------- */
-/*    Static registration of the Utils routines                                */
+/*    Constructor/Desctructor with registration                                */
 /* --------------------------------------------------------------------------- */
 
-bool CUDADIAUtils::registerInterface()
+CUDADIAUtils::CUDADIAUtils()
 {
-    registerKernels();
-    return true;
+    bool deleteFlag = false;
+    registerKernels( deleteFlag );
 }
 
-/* --------------------------------------------------------------------------- */
-/*    Static initialiazion at program start                                    */
-/* --------------------------------------------------------------------------- */
+CUDADIAUtils::~CUDADIAUtils()
+{
+    bool deleteFlag = true;
+    registerKernels( deleteFlag );
+}
 
-bool CUDADIAUtils::initialized = registerInterface();
+CUDADIAUtils CUDADIAUtils::guard;    // guard variable for registration
 
 } /* end namespace lama */
 

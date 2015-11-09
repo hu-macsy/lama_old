@@ -84,17 +84,25 @@ public:
         const IndexType diaOffsets[],
         const ValueType diaValues[] );
 
-    /** Routine that instantiates and registers all functions at the kernel registry */
-
-    static void registerKernels();
-
 private:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
-    static    bool initialized; //!< static initialization used for registration
+    /** Routine that registers all methods at the kernel registry. */
 
-    static bool registerInterface();//!< registration
+    static void registerKernels( bool deleteFlag );
+
+    /** Constructor for registration. */
+
+    CUDADIAUtils();
+
+    /** Destructor for unregistration. */
+
+    ~CUDADIAUtils();
+
+    /** Static variable for registration at static initialization. */
+
+    static CUDADIAUtils guard;
 };
 
 /* --------------------------------------------------------------------------- */

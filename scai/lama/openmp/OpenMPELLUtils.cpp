@@ -1188,12 +1188,17 @@ void OpenMPELLUtils::sparseGEVM(
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-void OpenMPELLUtils::registerKernelRoutines()
+void OpenMPELLUtils::registerKernels( bool deleteFlag )
 {
     using kregistry::KernelRegistry;
     using common::context::Host;      // context for registration
 
     KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // lower priority
+
+    if ( deleteFlag )
+    {
+        flag = KernelRegistry::KERNEL_ERASE;
+    }
 
     KernelRegistry::set<ELLKernelTrait::countNonEmptyRowsBySizes>( countNonEmptyRowsBySizes, Host, flag );
     KernelRegistry::set<ELLKernelTrait::setNonEmptyRowsBySizes>( setNonEmptyRowsBySizes, Host, flag );
@@ -1236,20 +1241,22 @@ void OpenMPELLUtils::registerKernelRoutines()
 }
 
 /* --------------------------------------------------------------------------- */
-/*    Static registration of the ELLUtils routines                             */
+/*    Static registration of the Utils routines                                */
 /* --------------------------------------------------------------------------- */
 
-bool OpenMPELLUtils::registerInterface()
+OpenMPELLUtils::RegisterGuard::RegisterGuard()
 {
-    registerKernelRoutines();
-    return true;
+    bool deleteFlag = false;
+    registerKernels( deleteFlag );
 }
 
-/* --------------------------------------------------------------------------- */
-/*    Static initialiazion at program start                                    */
-/* --------------------------------------------------------------------------- */
+OpenMPELLUtils::RegisterGuard::~RegisterGuard()
+{
+    bool deleteFlag = true;
+    registerKernels( deleteFlag );
+}
 
-bool OpenMPELLUtils::initialized = registerInterface();
+OpenMPELLUtils::RegisterGuard OpenMPELLUtils::guard;    // guard variable for registration
 
 } /* end namespace lama */
 

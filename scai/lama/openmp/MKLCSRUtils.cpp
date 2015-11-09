@@ -254,7 +254,7 @@ void MKLCSRUtils::convertCSR2CSC(
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void MKLCSRUtils::registerKernels()
+void MKLCSRUtils::registerKernels( bool deleteFlag )
 {
     bool useMKL = true;
 
@@ -277,6 +277,11 @@ void MKLCSRUtils::registerKernels()
 
     KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_REPLACE ;   // higher priority
 
+    if ( deleteFlag )
+    {
+        flag = KernelRegistry::KERNEL_ERASE;
+    }
+
     KernelRegistry::set<CSRKernelTrait::normalGEMV<float> >( normalGEMV, Host, flag ); 
     KernelRegistry::set<CSRKernelTrait::normalGEMV<double> >( normalGEMV, Host, flag ); 
 
@@ -291,17 +296,20 @@ void MKLCSRUtils::registerKernels()
 /*    Static registration of the Utils routines                                */
 /* --------------------------------------------------------------------------- */
 
-bool MKLCSRUtils::registerInterface()
+MKLCSRUtils::RegisterGuard::RegisterGuard()
 {
-    registerKernels();
-    return true;
+    bool deleteFlag = false;
+    registerKernels( deleteFlag );
 }
 
-/* --------------------------------------------------------------------------- */
-/*    Static initialiazion at program start                                    */
-/* --------------------------------------------------------------------------- */
+MKLCSRUtils::RegisterGuard::~RegisterGuard()
+{
+    bool deleteFlag = true;
+    registerKernels( deleteFlag );
+}
 
-bool MKLCSRUtils::initialized = registerInterface();
+MKLCSRUtils::RegisterGuard MKLCSRUtils::guard;    // guard variable for registration
+
 
 } /* end namespace lama */
 

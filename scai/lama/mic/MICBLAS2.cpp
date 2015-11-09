@@ -232,7 +232,7 @@ void MICBLAS2::gemv(
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void MICBLAS2::registerKernels()
+void MICBLAS2::registerKernels( bool deleteFlag )
 {
     SCAI_LOG_INFO( logger, "register BLAS2 kernels for MIC in Kernel Registry" )
 
@@ -241,6 +241,11 @@ void MICBLAS2::registerKernels()
 
     KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // add it or delete it
 
+    if ( deleteFlag )
+    {
+        flag = KernelRegistry::KERNEL_ERASE;
+    }
+
     KernelRegistry::set<BLASKernelTrait::gemv<float> >( gemv, MIC, flag );
     KernelRegistry::set<BLASKernelTrait::gemv<double> >( gemv, MIC, flag );
 
@@ -248,20 +253,22 @@ void MICBLAS2::registerKernels()
 }
 
 /* --------------------------------------------------------------------------- */
-/*    Static registration of the BLAS2 routines                                */
+/*    Static initialization with registration                                  */
 /* --------------------------------------------------------------------------- */
 
-bool MICBLAS2::registerInterface()
+MICBLAS2::RegisterGuard::RegisterGuard()
 {
-    registerKernels();
-    return true;
+    bool deleteFlag = false;
+    registerKernels( deleteFlag );
 }
 
-/* --------------------------------------------------------------------------- */
-/*    Static initialiazion at program start                                    */
-/* --------------------------------------------------------------------------- */
+MICBLAS2::RegisterGuard::~RegisterGuard()
+{
+    bool deleteFlag = true;
+    registerKernels( deleteFlag );
+}
 
-bool MICBLAS2::initialized = registerInterface();
+MICBLAS2::RegisterGuard MICBLAS2::guard;    // guard variable for registration
 
 } /* end namespace lama */
 

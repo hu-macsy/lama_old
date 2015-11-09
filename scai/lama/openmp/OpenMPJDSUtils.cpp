@@ -825,12 +825,17 @@ void OpenMPJDSUtils::jacobiHalo(
 
 /* --------------------------------------------------------------------------- */
 
-void OpenMPJDSUtils::registerKernelRoutines()
+void OpenMPJDSUtils::registerKernels( bool deleteFlag )
 {
     using kregistry::KernelRegistry;
     using common::context::Host;      // context for registration
 
     KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // lower priority
+
+    if ( deleteFlag )
+    {
+        flag = KernelRegistry::KERNEL_ERASE;
+    }
 
     KernelRegistry::set<JDSKernelTrait::sortRows>( sortRows, Host, flag );
     KernelRegistry::set<JDSKernelTrait::setInversePerm>( setInversePerm, Host, flag );
@@ -866,20 +871,22 @@ void OpenMPJDSUtils::registerKernelRoutines()
 }
 
 /* --------------------------------------------------------------------------- */
-/*    Static registration of the JDSUtils routines                             */
+/*    Static registration of the Utils routines                                */
 /* --------------------------------------------------------------------------- */
 
-bool OpenMPJDSUtils::registerInterface()
+OpenMPJDSUtils::RegisterGuard::RegisterGuard()
 {
-    registerKernelRoutines();
-    return true;
+    bool deleteFlag = false;
+    registerKernels( deleteFlag );
 }
 
-/* --------------------------------------------------------------------------- */
-/*    Static initialiazion at program start                                    */
-/* --------------------------------------------------------------------------- */
+OpenMPJDSUtils::RegisterGuard::~RegisterGuard()
+{
+    bool deleteFlag = true;
+    registerKernels( deleteFlag );
+}
 
-bool OpenMPJDSUtils::initialized = registerInterface();
+OpenMPJDSUtils::RegisterGuard OpenMPJDSUtils::guard;    // guard variable for registration
 
 } /* end namespace lama */
 

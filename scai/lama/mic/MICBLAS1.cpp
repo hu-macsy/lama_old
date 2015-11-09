@@ -514,7 +514,7 @@ void MICBLAS1::sum(
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void MICBLAS1::registerKernels()
+void MICBLAS1::registerKernels( bool deleteFlag )
 {
     SCAI_LOG_INFO( logger, "register BLAS1 kernels for MIC in Kernel Registry" )
 
@@ -522,6 +522,11 @@ void MICBLAS1::registerKernels()
     using common::context::MIC;
 
     KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // add it or delete it
+
+    if ( deleteFlag )
+    {
+        flag = KernelRegistry::KERNEL_ERASE;
+    }
 
     KernelRegistry::set<BLASKernelTrait::scal<float> >( scal, MIC, flag );
     KernelRegistry::set<BLASKernelTrait::scal<double> >( scal, MIC, flag );
@@ -552,20 +557,22 @@ void MICBLAS1::registerKernels()
 }
 
 /* --------------------------------------------------------------------------- */
-/*    Static registration of the BLAS1 routines                                */
+/*    Static intialization with registration                                   */
 /* --------------------------------------------------------------------------- */
 
-bool MICBLAS1::registerInterface()
+MICBLAS1::RegisterGuard::RegisterGuard()
 {
-    registerKernels();
-    return true;
+    bool deleteFlag = false;
+    registerKernels( deleteFlag );
 }
 
-/* --------------------------------------------------------------------------- */
-/*    Static initialiazion at program start                                    */
-/* --------------------------------------------------------------------------- */
+MICBLAS1::RegisterGuard::~RegisterGuard()
+{
+    bool deleteFlag = true;
+    registerKernels( deleteFlag );
+}
 
-bool MICBLAS1::initialized = registerInterface();
+MICBLAS1::RegisterGuard MICBLAS1::guard;    // guard variable for registration
 
 } /* end namespace lama */
 

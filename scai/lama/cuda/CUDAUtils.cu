@@ -566,12 +566,17 @@ void CUDAUtils::invert( ValueType array[], const IndexType n )
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void CUDAUtils::registerKernels()
+void CUDAUtils::registerKernels( bool deleteFlag )
 {
     using kregistry::KernelRegistry;
     using common::context::CUDA;
 
     KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // lower priority
+
+    if ( deleteFlag )
+    {
+        flag = KernelRegistry::KERNEL_ERASE;
+    }
 
     SCAI_LOG_INFO( logger, "set general utilty routines for CUDA in Interface" )
 
@@ -625,7 +630,7 @@ void CUDAUtils::registerKernels()
 
 bool CUDAUtils::registerInterface()
 {
-    registerKernels();
+    registerKernels( false );
     return true;
 }
 

@@ -3290,7 +3290,7 @@ void CUDACSRUtils::matrixMultiply(
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void CUDACSRUtils::registerKernels()
+void CUDACSRUtils::registerKernels( bool deleteFlag )
 {
     SCAI_LOG_INFO( logger, "set CSR routines for CUDA in Interface" )
 
@@ -3298,6 +3298,11 @@ void CUDACSRUtils::registerKernels()
     using common::context::CUDA;
 
     KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // lower priority
+
+    if ( deleteFlag )
+    {
+        flag = KernelRegistry::KERNEL_ERASE;
+    }
 
     // Instantations for IndexType, not done by ARITHMETIC_TYPE macrods
 
@@ -3335,20 +3340,27 @@ void CUDACSRUtils::registerKernels()
 }
 
 /* --------------------------------------------------------------------------- */
-/*    Static registration of the Utils routines                                */
+/*    Constructor/Desctructor with registration                                */
 /* --------------------------------------------------------------------------- */
 
-bool CUDACSRUtils::registerInterface()
+CUDACSRUtils::CUDACSRUtils()
 {
-    registerKernels();
-    return true;
+    bool deleteFlag = false;
+    registerKernels( deleteFlag );
 }
+
+CUDACSRUtils::~CUDACSRUtils()
+{
+    bool deleteFlag = true;
+    registerKernels( deleteFlag );
+}
+
+CUDACSRUtils CUDACSRUtils::guard;    // guard variable for registration
 
 /* --------------------------------------------------------------------------- */
 /*    Static initialiazion at program start                                    */
 /* --------------------------------------------------------------------------- */
 
-bool CUDACSRUtils::initialized = registerInterface();
 unsigned int CUDACSRUtils::lastHashTableSize = 1024;
 
 } /* end namespace lama */

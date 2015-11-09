@@ -2210,7 +2210,7 @@ void CUDAELLUtils::jacobiHalo(
 /*                                Template instantiations via registration routine                                    */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-void CUDAELLUtils::registerKernels()
+void CUDAELLUtils::registerKernels( bool deleteFlag )
 {
     SCAI_LOG_INFO( logger, "register ELL routines for CUDA in KernelRegistry" )
 
@@ -2219,6 +2219,11 @@ void CUDAELLUtils::registerKernels()
     using common::context::CUDA;
 
     KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // lower priority
+
+    if ( deleteFlag )
+    {
+        flag = KernelRegistry::KERNEL_ERASE;
+    }
 
     KernelRegistry::set<ELLKernelTrait::countNonEmptyRowsBySizes>( countNonEmptyRowsBySizes, CUDA, flag );
     KernelRegistry::set<ELLKernelTrait::setNonEmptyRowsBySizes>( setNonEmptyRowsBySizes, CUDA, flag );
@@ -2253,20 +2258,22 @@ void CUDAELLUtils::registerKernels()
 }
 
 /* --------------------------------------------------------------------------- */
-/*    Static registration of the Utils routines                                */
+/*    Constructor/Desctructor with registration                                */
 /* --------------------------------------------------------------------------- */
 
-bool CUDAELLUtils::registerInterface()
+CUDAELLUtils::CUDAELLUtils()
 {
-    registerKernels();
-    return true;
+    bool deleteFlag = false;
+    registerKernels( deleteFlag );
 }
 
-/* --------------------------------------------------------------------------- */
-/*    Static initialiazion at program start                                    */
-/* --------------------------------------------------------------------------- */
+CUDAELLUtils::~CUDAELLUtils()
+{
+    bool deleteFlag = true;
+    registerKernels( deleteFlag );
+}
 
-bool CUDAELLUtils::initialized = registerInterface();
+CUDAELLUtils CUDAELLUtils::guard;    // guard variable for registration
 
 } /* end namespace lama */
 

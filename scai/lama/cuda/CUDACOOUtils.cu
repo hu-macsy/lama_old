@@ -715,7 +715,7 @@ void CUDACOOUtils::setCSRData(
 
 /* --------------------------------------------------------------------------- */
 
-void CUDACOOUtils::registerKernels()
+void CUDACOOUtils::registerKernels( bool deleteFlag )
 {
     SCAI_LOG_INFO( logger, "set COO routines for CUDA in Interface" )
 
@@ -723,6 +723,11 @@ void CUDACOOUtils::registerKernels()
     using common::context::CUDA;
 
     KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // lower priority
+
+    if ( deleteFlag )
+    {
+        flag = KernelRegistry::KERNEL_ERASE;
+    }
 
     KernelRegistry::set<COOKernelTrait::offsets2ia>( offsets2ia, CUDA, flag );
     KernelRegistry::set<COOKernelTrait::setCSRData<IndexType, IndexType> >( setCSRData, CUDA, flag );
@@ -746,20 +751,22 @@ void CUDACOOUtils::registerKernels()
 }
 
 /* --------------------------------------------------------------------------- */
-/*    Static registration of the Utils routines                                */
+/*    Constructor/Desctructor with registration                                */
 /* --------------------------------------------------------------------------- */
 
-bool CUDACOOUtils::registerInterface()
+CUDACOOUtils::CUDACOOUtils()
 {
-    registerKernels();
-    return true;
+    bool deleteFlag = false;
+    registerKernels( deleteFlag );
 }
 
-/* --------------------------------------------------------------------------- */
-/*    Static initialiazion at program start                                    */
-/* --------------------------------------------------------------------------- */
+CUDACOOUtils::~CUDACOOUtils()
+{
+    bool deleteFlag = true;
+    registerKernels( deleteFlag );
+}
 
-bool CUDACOOUtils::initialized = registerInterface();
+CUDACOOUtils CUDACOOUtils::guard;    // guard variable for registration
 
 } /* end namespace lama */
 

@@ -511,7 +511,7 @@ void MICCOOUtils::jacobi(
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void MICCOOUtils::registerKernels()
+void MICCOOUtils::registerKernels( bool deleteFlag )
 {
     SCAI_LOG_INFO( logger, "register COO kernels for MIC in Kernel Registry" )
 
@@ -519,6 +519,11 @@ void MICCOOUtils::registerKernels()
     using common::context::MIC;
 
     KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // add it or delete it
+
+    if ( deleteFlag )
+    {
+        flag = KernelRegistry::KERNEL_ERASE;
+    }
 
     KernelRegistry::set<COOKernelTrait::offsets2ia>( offsets2ia, MIC, flag );
 
@@ -548,20 +553,22 @@ void MICCOOUtils::registerKernels()
 }
 
 /* --------------------------------------------------------------------------- */
-/*    Static registration of the Utils routines                                */
+/*    Static initialization with registration                                  */
 /* --------------------------------------------------------------------------- */
 
-bool MICCOOUtils::registerInterface()
+MICCOOUtils::RegisterGuard::RegisterGuard()
 {
-    registerKernels();
-    return true;
+    bool deleteFlag = false;
+    registerKernels( deleteFlag );
 }
 
-/* --------------------------------------------------------------------------- */
-/*    Static initialiazion at program start                                    */
-/* --------------------------------------------------------------------------- */
+MICCOOUtils::RegisterGuard::~RegisterGuard()
+{
+    bool deleteFlag = true;
+    registerKernels( deleteFlag );
+}
 
-bool MICCOOUtils::initialized = registerInterface();
+MICCOOUtils::RegisterGuard MICCOOUtils::guard;    // guard variable for registration
 
 } /* end namespace lama */
 

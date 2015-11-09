@@ -246,12 +246,17 @@ void CUDABLAS2::gemv(
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void CUDABLAS2::registerKernels()
+void CUDABLAS2::registerKernels( bool deleteFlag )
 {
     using kregistry::KernelRegistry;
     using common::context::CUDA;
 
     KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD;
+
+    if ( deleteFlag )
+    {
+        flag = KernelRegistry::KERNEL_ERASE;
+    }
 
     SCAI_LOG_INFO( logger, "register BLAS2 routines implemented by CuBLAS in KernelRegistry" )
 
@@ -266,20 +271,22 @@ void CUDABLAS2::registerKernels()
 }
 
 /* --------------------------------------------------------------------------- */
-/*    Static registration of the Utils routines                                */
+/*    Constructor/Desctructor with registration                                */
 /* --------------------------------------------------------------------------- */
 
-bool CUDABLAS2::registerInterface()
+CUDABLAS2::CUDABLAS2()
 {
-    registerKernels();
-    return true;
+    bool deleteFlag = false;
+    registerKernels( deleteFlag );
 }
 
-/* --------------------------------------------------------------------------- */
-/*    Static initialiazion at program start                                    */
-/* --------------------------------------------------------------------------- */
+CUDABLAS2::~CUDABLAS2()
+{
+    bool deleteFlag = true;
+    registerKernels( deleteFlag );
+}
 
-bool CUDABLAS2::initialized = registerInterface();
+CUDABLAS2 CUDABLAS2::guard;    // guard variable for registration
 
 } /* end namespace lama */
 

@@ -250,19 +250,27 @@ public:
         const IndexType bJA[],
         const ValueType bValues[] );
 
-    /** Routine that registers all routines of this class at the LAMA interface. */
-
-    static void registerKernels();
-
 private:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
-    static bool initialized; //!< static initialization used for registration
-
     static unsigned int lastHashTableSize;// local variable to handhover hash table size for multiply
 
-    static bool registerInterface();//!< registration
+    /** Routine that registers all methods at the kernel registry. */
+
+    static void registerKernels( bool deleteFlag );
+
+    /** Constructor for registration. */
+
+    CUDACSRUtils();
+
+    /** Destructor for unregistration. */
+
+    ~CUDACSRUtils();
+
+    /** Static variable for registration at static initialization. */
+
+    static CUDACSRUtils guard;
 };
 
 /* --------------------------------------------------------------------------- */

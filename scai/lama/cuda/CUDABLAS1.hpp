@@ -64,17 +64,6 @@ class COMMON_DLL_IMPORTEXPORT CUDABLAS1
 
     friend class CUDALAPACK;
 
-public:
-
-    /** Routine that sets functions pointers belonging to BLAS1 in a BLASKernelTrait.
-     *
-     *  param[inout] BLASKernelTrait struct to register all routines implemented in CUDA
-     *
-     *  Note: this routine will make instantiations of the template routines.
-     */
-
-    static void registerKernels();
-
 private:
 
     /**
@@ -169,9 +158,21 @@ private:
     template    <typename ValueType>
     static void sum_launcher( const int n, ValueType alpha, const ValueType* x, ValueType beta, const ValueType* y, ValueType* z, cudaStream_t stream );
 
-    static bool initialized; //!< static initialization used for registration
+    /** Register or unregister all kernel implementations of this class. */
 
-    static bool registerInterface();//!< registration
+    static void registerKernels( bool deleteFlag );
+
+    /** Constructor for registration. */
+
+    CUDABLAS1();
+
+    /** Destructor for unregistration. */
+
+    ~CUDABLAS1();
+
+    /** Static variable for registration at static initialization. */
+
+    static CUDABLAS1 guard;
 };
 
 } /* end namespace lama */

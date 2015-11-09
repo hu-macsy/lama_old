@@ -2008,12 +2008,17 @@ ValueType OpenMPCSRUtils::absMaxDiffVal(
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void OpenMPCSRUtils::registerKernels()
+void OpenMPCSRUtils::registerKernels( bool deleteFlag )
 {
-    using namespace scai::kregistry;
+    using kregistry::KernelRegistry;
     using common::context::Host;       // context for registration
 
     KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // lower priority
+
+    if ( deleteFlag )
+    {
+        flag = KernelRegistry::KERNEL_ERASE; 
+    }
 
     // Instantations for IndexType, not done by ARITHMETIC_TYPE macros
 
@@ -2059,17 +2064,19 @@ void OpenMPCSRUtils::registerKernels()
 /*    Static registration of the Utils routines                                */
 /* --------------------------------------------------------------------------- */
 
-bool OpenMPCSRUtils::staticInit()
+OpenMPCSRUtils::RegisterGuard::RegisterGuard()
 {
-    registerKernels();
-    return true;
+    bool deleteFlag = false;
+    registerKernels( deleteFlag );
 }
 
-/* --------------------------------------------------------------------------- */
-/*    Static initialiazion at program start                                    */
-/* --------------------------------------------------------------------------- */
+OpenMPCSRUtils::RegisterGuard::~RegisterGuard()
+{
+    bool deleteFlag = true;
+    registerKernels( deleteFlag );
+}
 
-bool OpenMPCSRUtils::initialized = staticInit();
+OpenMPCSRUtils::RegisterGuard OpenMPCSRUtils::guard;    // guard variable for registration
 
 } /* end namespace lama */
 

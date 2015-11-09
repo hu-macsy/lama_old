@@ -465,7 +465,7 @@ void MICDIAUtils::jacobi(
 
 /* --------------------------------------------------------------------------- */
 
-void MICDIAUtils::registerKernels()
+void MICDIAUtils::registerKernels( bool deleteFlag )
 {
     SCAI_LOG_INFO( logger, "register DIA kernels for MIC in Kernel Registry" )
 
@@ -473,6 +473,11 @@ void MICDIAUtils::registerKernels()
     using common::context::MIC;
 
     KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // add it or delete it
+
+    if ( deleteFlag )
+    {
+        flag = KernelRegistry::KERNEL_ERASE;
+    }
 
     /*
      LAMA_INTERFACE_REGISTER_T( DIAUtils, getCSRSizes, float )
@@ -495,20 +500,22 @@ void MICDIAUtils::registerKernels()
 }
 
 /* --------------------------------------------------------------------------- */
-/*    Static registration of the DIAUtils routines                             */
+/*    Static initialization with registration                                  */
 /* --------------------------------------------------------------------------- */
 
-bool MICDIAUtils::registerInterface()
+MICDIAUtils::RegisterGuard::RegisterGuard()
 {
-    registerKernels();
-    return true;
+    bool deleteFlag = false;
+    registerKernels( deleteFlag );
 }
 
-/* --------------------------------------------------------------------------- */
-/*    Static initialiazion at program start                                    */
-/* --------------------------------------------------------------------------- */
+MICDIAUtils::RegisterGuard::~RegisterGuard()
+{
+    bool deleteFlag = true;
+    registerKernels( deleteFlag );
+}
 
-bool MICDIAUtils::initialized = registerInterface();
+MICDIAUtils::RegisterGuard MICDIAUtils::guard;    // guard variable for registration
 
 } /* end namespace lama */
 

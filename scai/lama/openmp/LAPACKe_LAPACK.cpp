@@ -694,21 +694,23 @@ int LAPACKe_LAPACK::tptrs(
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void LAPACKe_LAPACK::registerKernels()
+void LAPACKe_LAPACK::registerKernels( bool deleteFlag )
 {
-    using scai::kregistry::KernelRegistry;
-
-    // ctx will contain the context for which registration is done, here Host
-
-    common::context::ContextType ctx = common::context::Host;
+    using kregistry::KernelRegistry;
+    using common::context::Host;
 
     KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_REPLACE;   // priority over OpenMPBLAS
 
+    if ( deleteFlag )
+    {
+        flag = KernelRegistry::KERNEL_ERASE;
+    }
+
 #define LAMA_LAPACK_REGISTER(z, I, _)                                      \
-    KernelRegistry::set<BLASKernelTrait::getrf<ARITHMETIC_HOST_TYPE_##I> >( getrf, ctx, flag );    \
-    KernelRegistry::set<BLASKernelTrait::getri<ARITHMETIC_HOST_TYPE_##I> >( getri, ctx, flag );    \
-    KernelRegistry::set<BLASKernelTrait::getinv<ARITHMETIC_HOST_TYPE_##I> >( getinv, ctx, flag );    \
-    KernelRegistry::set<BLASKernelTrait::tptrs<ARITHMETIC_HOST_TYPE_##I> >( tptrs, ctx, flag );    \
+    KernelRegistry::set<BLASKernelTrait::getrf<ARITHMETIC_HOST_TYPE_##I> >( getrf, Host, flag );    \
+    KernelRegistry::set<BLASKernelTrait::getri<ARITHMETIC_HOST_TYPE_##I> >( getri, Host, flag );    \
+    KernelRegistry::set<BLASKernelTrait::getinv<ARITHMETIC_HOST_TYPE_##I> >( getinv, Host, flag );    \
+    KernelRegistry::set<BLASKernelTrait::tptrs<ARITHMETIC_HOST_TYPE_##I> >( tptrs, Host, flag );    \
 
     BOOST_PP_REPEAT( ARITHMETIC_HOST_EXT_TYPE_CNT, LAMA_LAPACK_REGISTER, _ )
 
@@ -719,17 +721,19 @@ void LAPACKe_LAPACK::registerKernels()
 /*    Static registration of the LAPACK routines                               */
 /* --------------------------------------------------------------------------- */
 
-bool LAPACKe_LAPACK::registerInterface()
+LAPACKe_LAPACK::RegisterGuard::RegisterGuard()
 {
-    registerKernels();
-    return true;
+    bool deleteFlag = false;
+    registerKernels( deleteFlag );
 }
 
-/* --------------------------------------------------------------------------- */
-/*    Static initialiazion at program start                                    */
-/* --------------------------------------------------------------------------- */
+LAPACKe_LAPACK::RegisterGuard::~RegisterGuard()
+{
+    bool deleteFlag = true;
+    registerKernels( deleteFlag );
+}
 
-bool LAPACKe_LAPACK::initialized = registerInterface();
+LAPACKe_LAPACK::RegisterGuard LAPACKe_LAPACK::guard;    // guard variable for registration
 
 } /* end namespace lama */
 

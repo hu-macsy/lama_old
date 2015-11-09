@@ -2841,7 +2841,7 @@ namespace lama
 
     /* --------------------------------------------------------------------------- */
 
-    void CUDAJDSUtils::registerKernels()
+    void CUDAJDSUtils::registerKernels( bool deleteFlag )
     {
         SCAI_LOG_INFO( logger, "set JDS routines for CUDA in Interface" )
 
@@ -2849,6 +2849,11 @@ namespace lama
     using common::context::CUDA;
 
     KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // lower priority
+
+    if ( deleteFlag )
+    {
+        flag = KernelRegistry::KERNEL_ERASE;
+    }
 
     KernelRegistry::set<JDSKernelTrait::sortRows>( sortRows, CUDA, flag );
     KernelRegistry::set<JDSKernelTrait::setInversePerm>( setInversePerm, CUDA, flag );
@@ -2881,20 +2886,22 @@ namespace lama
     }
 
 /* --------------------------------------------------------------------------- */
-/*    Static registration of the Utils routines                                */
+/*    Constructor/Desctructor with registration                                */
 /* --------------------------------------------------------------------------- */
 
-bool CUDAJDSUtils::registerInterface()
+CUDAJDSUtils::CUDAJDSUtils()
 {
-    registerKernels();
-    return true;
+    bool deleteFlag = false;
+    registerKernels( deleteFlag );
 }
 
-/* --------------------------------------------------------------------------- */
-/*    Static initialiazion at program start                                    */
-/* --------------------------------------------------------------------------- */
+CUDAJDSUtils::~CUDAJDSUtils()
+{
+    bool deleteFlag = true;
+    registerKernels( deleteFlag );
+}
 
-bool CUDAJDSUtils::initialized = registerInterface();
+CUDAJDSUtils CUDAJDSUtils::guard;    // guard variable for registration
 
 } /* end namespace lama */
 

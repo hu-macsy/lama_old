@@ -614,7 +614,7 @@ namespace lama
     /*     Template instantiations via registration routine                        */
     /* --------------------------------------------------------------------------- */
 
-    void CUSparseCSRUtils::registerKernels()
+    void CUSparseCSRUtils::registerKernels( bool deleteFlag )
     {
         SCAI_LOG_INFO( logger, "set CSR routines for CUSparse in Interface" )
 
@@ -631,28 +631,25 @@ namespace lama
 
         // REGISTER1: overwrites previous settings
 
-        using namespace scai::kregistry;
-
-        // ctx will contain the context for which registration is done, here Host
-
-        common::ContextType ctx = common::context::Host;
+        using kregistry::KernelRegistry;
+        using common::context::Host;
 
         KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_REPLACE;   // priority over OpenMPBLAS
 
-        KernelRegistry::set<CSRKernelTrait::normalGEMV<float> >( normalGEMV, ctx, flag ); 
-        KernelRegistry::set<CSRKernelTrait::normalGEMV<double> >( normalGEMV, ctx, flag ); 
+        KernelRegistry::set<CSRKernelTrait::normalGEMV<float> >( normalGEMV, Host, flag ); 
+        KernelRegistry::set<CSRKernelTrait::normalGEMV<double> >( normalGEMV, Host, flag ); 
 
-        KernelRegistry::set<CSRKernelTrait::convertCSR2CSC<float> >( convertCSR2CSC, ctx, flag ); 
-        KernelRegistry::set<CSRKernelTrait::convertCSR2CSC<double> >( convertCSR2CSC, ctx, flag ); 
+        KernelRegistry::set<CSRKernelTrait::convertCSR2CSC<float> >( convertCSR2CSC, Host, flag ); 
+        KernelRegistry::set<CSRKernelTrait::convertCSR2CSC<double> >( convertCSR2CSC, Host, flag ); 
 
-        KernelRegistry::set<CSRKernelTrait::matrixAddSizes>( matrixAddSizes, ctx, flag ); 
-        KernelRegistry::set<CSRKernelTrait::matrixMultiplySizes>( matrixMultiplySizes, ctx, flag ); 
+        KernelRegistry::set<CSRKernelTrait::matrixAddSizes>( matrixAddSizes, Host, flag ); 
+        KernelRegistry::set<CSRKernelTrait::matrixMultiplySizes>( matrixMultiplySizes, Host, flag ); 
 
-        KernelRegistry::set<CSRKernelTrait::matrixAdd<float> >( matrixAdd, ctx, flag ); 
-        KernelRegistry::set<CSRKernelTrait::matrixAdd<double> >( matrixAdd, ctx, flag ); 
+        KernelRegistry::set<CSRKernelTrait::matrixAdd<float> >( matrixAdd, Host, flag ); 
+        KernelRegistry::set<CSRKernelTrait::matrixAdd<double> >( matrixAdd, Host, flag ); 
 
-        KernelRegistry::set<CSRKernelTrait::matrixMultiply<float> >( matrixMultiply, ctx, flag ); 
-        KernelRegistry::set<CSRKernelTrait::matrixMultiply<double> >( matrixMultiply, ctx, flag ); 
+        KernelRegistry::set<CSRKernelTrait::matrixMultiply<float> >( matrixMultiply, Host, flag ); 
+        KernelRegistry::set<CSRKernelTrait::matrixMultiply<double> >( matrixMultiply, Host, flag ); 
     }
 
     /* --------------------------------------------------------------------------- */
@@ -661,7 +658,7 @@ namespace lama
 
     bool CUSparseCSRUtils::registerInterface()
     {
-        registerKernels();
+        registerKernels( false );
         return true;
     }
 

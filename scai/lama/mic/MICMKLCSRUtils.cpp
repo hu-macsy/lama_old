@@ -187,7 +187,7 @@ void MICMKLCSRUtils::normalGEMV(
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void MICMKLCSRUtils::registerKernels()
+void MICMKLCSRUtils::registerKernels( bool deleteFlag )
 {
     bool useMKL = true;
 
@@ -211,6 +211,11 @@ void MICMKLCSRUtils::registerKernels()
 
     KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // add it or delete it
 
+    if ( deleteFlag )
+    {
+        flag = KernelRegistry::KERNEL_ERASE;
+    }
+
     // ToDo : routine causes problems
 
     // KernelRegistry::set<CSRKernelTrait::normalGEMV<float> >( normalGEMV, MIC, flag );
@@ -218,20 +223,24 @@ void MICMKLCSRUtils::registerKernels()
 }
 
 /* --------------------------------------------------------------------------- */
-/*    Static registration of the Utils routines                                */
+/*    Static initialization with registration                                  */
 /* --------------------------------------------------------------------------- */
 
-bool MICMKLCSRUtils::registerInterface()
+MICMKLCSRUtils::RegisterGuard::RegisterGuard()
 {
-    registerKernels();
-    return true;
+    bool deleteFlag = false;
+    registerKernels( deleteFlag );
 }
 
-/* --------------------------------------------------------------------------- */
-/*    Static initialiazion at program start                                    */
-/* --------------------------------------------------------------------------- */
+MICMKLCSRUtils::RegisterGuard::~RegisterGuard()
+{
+    bool deleteFlag = true;
+    registerKernels( deleteFlag );
+}
 
-bool MICMKLCSRUtils::initialized = registerInterface();
+MICMKLCSRUtils::RegisterGuard MICMKLCSRUtils::guard;    // guard variable for registration
+
+
 
 } /* end namespace lama */
 

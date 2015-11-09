@@ -134,7 +134,7 @@ public:
 
     /** Routine that registers all routines of this class at the Kernel Registry.  */
 
-    static void registerKernels();
+    static void registerKernels( bool deleteFlag );
 
 private:
 
