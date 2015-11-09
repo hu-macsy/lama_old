@@ -48,15 +48,15 @@ class LibModule
 {
 public:
 
-    /** Data type defintion for library handle, might be OS specifici. */
+    /** Data type definition for library handle, might be OS specific. */
 
     typedef void* LibHandle;
 
-    /** Load a libary with its full name (might be absolute or relative) */
+    /** Load a library with its full name i.e. include suffix .so, might be absolute or relative */
 
     static LibHandle loadLib( const char* filename );
 
-    /** Unload a libray 
+    /** Unload a library 
      *
      *  Note: It is very likely that the libary is not unloaded now, e.g. there is no
      *        guarantee that the destructors of static objects are called.
