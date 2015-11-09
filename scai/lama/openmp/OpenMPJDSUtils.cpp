@@ -871,22 +871,26 @@ void OpenMPJDSUtils::registerKernels( bool deleteFlag )
 }
 
 /* --------------------------------------------------------------------------- */
-/*    Static registration of the Utils routines                                */
+/*    Constructor/Desctructor with registration                                */
 /* --------------------------------------------------------------------------- */
 
-OpenMPJDSUtils::RegisterGuard::RegisterGuard()
+OpenMPJDSUtils::OpenMPJDSUtils()
 {
     bool deleteFlag = false;
     registerKernels( deleteFlag );
 }
 
-OpenMPJDSUtils::RegisterGuard::~RegisterGuard()
+OpenMPJDSUtils::~OpenMPJDSUtils()
 {
     bool deleteFlag = true;
     registerKernels( deleteFlag );
 }
 
-OpenMPJDSUtils::RegisterGuard OpenMPJDSUtils::guard;    // guard variable for registration
+/* --------------------------------------------------------------------------- */
+/*    Static variable to force registration during static initialization      */
+/* --------------------------------------------------------------------------- */
+
+OpenMPJDSUtils OpenMPJDSUtils::guard;
 
 } /* end namespace lama */
 

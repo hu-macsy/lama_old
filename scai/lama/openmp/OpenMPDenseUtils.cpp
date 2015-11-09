@@ -446,22 +446,26 @@ void OpenMPDenseUtils::registerKernels( bool deleteFlag )
 }
 
 /* --------------------------------------------------------------------------- */
-/*    Static registration of the Utils routines                                */
+/*    Constructor/Desctructor with registration                                */
 /* --------------------------------------------------------------------------- */
 
-OpenMPDenseUtils::RegisterGuard::RegisterGuard()
+OpenMPDenseUtils::OpenMPDenseUtils()
 {
     bool deleteFlag = false;
     registerKernels( deleteFlag );
 }
 
-OpenMPDenseUtils::RegisterGuard::~RegisterGuard()
+OpenMPDenseUtils::~OpenMPDenseUtils()
 {
     bool deleteFlag = true;
     registerKernels( deleteFlag );
 }
 
-OpenMPDenseUtils::RegisterGuard OpenMPDenseUtils::guard;    // guard variable for registration
+/* --------------------------------------------------------------------------- */
+/*    Static variable to force registration during static initialization      */
+/* --------------------------------------------------------------------------- */
+
+OpenMPDenseUtils OpenMPDenseUtils::guard;
 
 /* --------------------------------------------------------------------------- */
 

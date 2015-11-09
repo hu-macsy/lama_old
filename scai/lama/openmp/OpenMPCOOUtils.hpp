@@ -163,16 +163,17 @@ private:
 
     static void registerKernels( bool deleteFlag );
 
-    /** Helper class for (un) registration of kernel routines at static initialization. */
+    /** Constructor for registration. */
 
-    class RegisterGuard
-    {
-    public:
-        RegisterGuard();
-        ~RegisterGuard();
-    };
+    OpenMPCOOUtils();
 
-    static RegisterGuard guard;  // registration of kernels @ static initialization
+    /** Destructor for unregistration. */
+
+    ~OpenMPCOOUtils();
+
+    /** Static variable for registration at static initialization. */
+
+    static OpenMPCOOUtils guard;
 
     /** Logger for this class. */
 

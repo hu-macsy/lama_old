@@ -365,16 +365,17 @@ private:
 
     static void registerKernels( bool deleteFlag );
 
-    /** Helper class for (un) registration of kernel routines at static initialization. */
+    /** Constructor for registration. */
 
-    class RegisterGuard
-    {
-    public:
-        RegisterGuard();
-        ~RegisterGuard();
-    };
+    OpenMPCSRUtils();
 
-    static RegisterGuard guard;  // registration of kernels @ static initialization
+    /** Destructor for unregistration. */
+
+    ~OpenMPCSRUtils();
+
+    /** Static variable for registration at static initialization. */
+
+    static OpenMPCSRUtils guard;
 
     static IndexType scanSerial( IndexType array[], const IndexType numValues );
 

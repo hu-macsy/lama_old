@@ -717,23 +717,23 @@ void LAPACKe_LAPACK::registerKernels( bool deleteFlag )
 #undef LAMA_LAPACK_REGISTER
 }
 
-/* --------------------------------------------------------------------------- */
-/*    Static registration of the LAPACK routines                               */
-/* --------------------------------------------------------------------------- */
-
-LAPACKe_LAPACK::RegisterGuard::RegisterGuard()
+LAPACKe_LAPACK::LAPACKe_LAPACK()
 {
     bool deleteFlag = false;
     registerKernels( deleteFlag );
 }
 
-LAPACKe_LAPACK::RegisterGuard::~RegisterGuard()
+LAPACKe_LAPACK::~LAPACKe_LAPACK()
 {
     bool deleteFlag = true;
     registerKernels( deleteFlag );
 }
 
-LAPACKe_LAPACK::RegisterGuard LAPACKe_LAPACK::guard;    // guard variable for registration
+/* --------------------------------------------------------------------------- */
+/*    Static variable to force registration during static initialization      */
+/* --------------------------------------------------------------------------- */
+
+LAPACKe_LAPACK LAPACKe_LAPACK::guard;
 
 } /* end namespace lama */
 

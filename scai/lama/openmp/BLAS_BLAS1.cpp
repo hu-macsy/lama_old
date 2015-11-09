@@ -725,22 +725,26 @@ void BLAS_BLAS1::registerKernels( bool deleteFlag )
 }
 
 /* --------------------------------------------------------------------------- */
-/*    Static registration of the Utils routines                                */
+/*    Constructor/Desctructor with registration                                */
 /* --------------------------------------------------------------------------- */
 
-BLAS_BLAS1::RegisterGuard::RegisterGuard()
+BLAS_BLAS1::BLAS_BLAS1()
 {
     bool deleteFlag = false;
     registerKernels( deleteFlag );
 }
 
-BLAS_BLAS1::RegisterGuard::~RegisterGuard()
+BLAS_BLAS1::~BLAS_BLAS1()
 {
     bool deleteFlag = true;
     registerKernels( deleteFlag );
 }
 
-BLAS_BLAS1::RegisterGuard BLAS_BLAS1::guard;    // guard variable for registration
+/* --------------------------------------------------------------------------- */
+/*    Static variable to force registration during static initialization      */
+/* --------------------------------------------------------------------------- */
+
+BLAS_BLAS1 BLAS_BLAS1::guard;
 
 } /* end namespace lama */
 

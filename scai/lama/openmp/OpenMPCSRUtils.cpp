@@ -2061,22 +2061,26 @@ void OpenMPCSRUtils::registerKernels( bool deleteFlag )
 }
 
 /* --------------------------------------------------------------------------- */
-/*    Static registration of the Utils routines                                */
+/*    Constructor/Desctructor with registration                                */
 /* --------------------------------------------------------------------------- */
 
-OpenMPCSRUtils::RegisterGuard::RegisterGuard()
+OpenMPCSRUtils::OpenMPCSRUtils()
 {
     bool deleteFlag = false;
     registerKernels( deleteFlag );
 }
 
-OpenMPCSRUtils::RegisterGuard::~RegisterGuard()
+OpenMPCSRUtils::~OpenMPCSRUtils()
 {
     bool deleteFlag = true;
     registerKernels( deleteFlag );
 }
 
-OpenMPCSRUtils::RegisterGuard OpenMPCSRUtils::guard;    // guard variable for registration
+/* --------------------------------------------------------------------------- */
+/*    Static variable to force registration during static initialization      */
+/* --------------------------------------------------------------------------- */
+
+OpenMPCSRUtils OpenMPCSRUtils::guard;
 
 } /* end namespace lama */
 

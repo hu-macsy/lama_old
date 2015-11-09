@@ -552,22 +552,26 @@ void OpenMPDIAUtils::registerKernels( bool deleteFlag )
 }
 
 /* --------------------------------------------------------------------------- */
-/*    Static registration of the Utils routines                                */
+/*    Constructor/Desctructor with registration                                */
 /* --------------------------------------------------------------------------- */
 
-OpenMPDIAUtils::RegisterGuard::RegisterGuard()
+OpenMPDIAUtils::OpenMPDIAUtils()
 {
     bool deleteFlag = false;
     registerKernels( deleteFlag );
 }
 
-OpenMPDIAUtils::RegisterGuard::~RegisterGuard()
+OpenMPDIAUtils::~OpenMPDIAUtils()
 {
     bool deleteFlag = true;
     registerKernels( deleteFlag );
 }
 
-OpenMPDIAUtils::RegisterGuard OpenMPDIAUtils::guard;    // guard variable for registration
+/* --------------------------------------------------------------------------- */
+/*    Static variable to force registration during static initialization      */
+/* --------------------------------------------------------------------------- */
+
+OpenMPDIAUtils OpenMPDIAUtils::guard;
 
 } /* end namespace lama */
 

@@ -388,22 +388,26 @@ void OpenMPBLAS3::registerKernels( bool deleteFlag )
 }
 
 /* --------------------------------------------------------------------------- */
-/*    Static registration of the Utils routines                                */
+/*    Constructor/Desctructor with registration                                */
 /* --------------------------------------------------------------------------- */
 
-OpenMPBLAS3::RegisterGuard::RegisterGuard()
+OpenMPBLAS3::OpenMPBLAS3()
 {
     bool deleteFlag = false;
     registerKernels( deleteFlag );
 }
 
-OpenMPBLAS3::RegisterGuard::~RegisterGuard()
+OpenMPBLAS3::~OpenMPBLAS3()
 {
     bool deleteFlag = true;
     registerKernels( deleteFlag );
 }
 
-OpenMPBLAS3::RegisterGuard OpenMPBLAS3::guard;    // guard variable for registration
+/* --------------------------------------------------------------------------- */
+/*    Static variable to force registration during static initialization      */
+/* --------------------------------------------------------------------------- */
+
+OpenMPBLAS3 OpenMPBLAS3::guard;
 
 } /* end namespace lama */
 

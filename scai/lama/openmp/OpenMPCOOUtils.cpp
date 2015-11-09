@@ -481,22 +481,26 @@ void OpenMPCOOUtils::registerKernels( bool deleteFlag )
 }
 
 /* --------------------------------------------------------------------------- */
-/*    Static registration of the Utils routines                                */
+/*    Constructor/Desctructor with registration                                */
 /* --------------------------------------------------------------------------- */
 
-OpenMPCOOUtils::RegisterGuard::RegisterGuard()
+OpenMPCOOUtils::OpenMPCOOUtils()
 {
     bool deleteFlag = false;
     registerKernels( deleteFlag );
 }
 
-OpenMPCOOUtils::RegisterGuard::~RegisterGuard()
+OpenMPCOOUtils::~OpenMPCOOUtils()
 {
     bool deleteFlag = true;
     registerKernels( deleteFlag );
 }
 
-OpenMPCOOUtils::RegisterGuard OpenMPCOOUtils::guard;    // guard variable for registration
+/* --------------------------------------------------------------------------- */
+/*    Static variable to force registration during static initialization      */
+/* --------------------------------------------------------------------------- */
+
+OpenMPCOOUtils OpenMPCOOUtils::guard;
 
 } /* end namespace lama */
 

@@ -1241,22 +1241,26 @@ void OpenMPELLUtils::registerKernels( bool deleteFlag )
 }
 
 /* --------------------------------------------------------------------------- */
-/*    Static registration of the Utils routines                                */
+/*    Constructor/Desctructor with registration                                */
 /* --------------------------------------------------------------------------- */
 
-OpenMPELLUtils::RegisterGuard::RegisterGuard()
+OpenMPELLUtils::OpenMPELLUtils()
 {
     bool deleteFlag = false;
     registerKernels( deleteFlag );
 }
 
-OpenMPELLUtils::RegisterGuard::~RegisterGuard()
+OpenMPELLUtils::~OpenMPELLUtils()
 {
     bool deleteFlag = true;
     registerKernels( deleteFlag );
 }
 
-OpenMPELLUtils::RegisterGuard OpenMPELLUtils::guard;    // guard variable for registration
+/* --------------------------------------------------------------------------- */
+/*    Static variable to force registration during static initialization      */
+/* --------------------------------------------------------------------------- */
+
+OpenMPELLUtils OpenMPELLUtils::guard;
 
 } /* end namespace lama */
 

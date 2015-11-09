@@ -117,16 +117,17 @@ private:
 
     static void registerKernels( bool deleteFlag );
 
-    /** Helper class for (un) registration of kernel routines at static initialization. */
+    /** Constructor for registration. */
 
-    class RegisterGuard
-    {
-    public:
-        RegisterGuard();
-        ~RegisterGuard();
-    };
+    LAPACK_LAPACK();
 
-    static RegisterGuard guard;  // registration of kernels @ static initialization
+    /** Destructor for unregistration. */
+
+    ~LAPACK_LAPACK();
+
+    /** Static variable for registration at static initialization. */
+
+    static LAPACK_LAPACK guard;
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
