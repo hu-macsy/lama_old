@@ -71,7 +71,7 @@ public:
 
     static void loadLibsInDir( const char* dir );
 
-    /** multiple directory/libaries by patterns <pattern1>:<pattern2>:<pattern3>  */
+    /** multiple directory/libaries by path string like module_1:module_2:module_directory  */
 
     static void loadLibsByPath( const char* path );
 };
