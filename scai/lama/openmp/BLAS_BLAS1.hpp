@@ -129,18 +129,23 @@ public:
         const ValueType* y,
         const IndexType incY );
 
-    /** Routine that registers functions pointers belonging to BLAS1.
-     *
-     *  Note: this routine also instantiates the template functions.
-     */
-
-    static void registerKernels();
-
 private:
 
-    static bool initialized;
+    /** Routine that registers all methods at the kernel registry. */
 
-    static bool registerInterface();
+    static void registerKernels( bool deleteFlag );
+
+    /** Constructor for registration. */
+
+    BLAS_BLAS1();
+
+    /** Destructor for unregistration. */
+
+    ~BLAS_BLAS1();
+
+    /** Static variable for registration at static initialization. */
+
+    static BLAS_BLAS1 guard;
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 };

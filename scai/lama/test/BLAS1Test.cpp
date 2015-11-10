@@ -572,9 +572,11 @@ void swapTest( ContextPtr loc )
 } // swapTest
 
 } // namespace BLAS1Test
+
 } /* end namespace lama */
 
 } /* end namespace scai */
+
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 BOOST_AUTO_TEST_SUITE( BLAS1Test )

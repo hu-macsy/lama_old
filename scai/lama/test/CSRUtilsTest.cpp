@@ -136,15 +136,18 @@ void transposeTestSquare( ContextPtr loc )
     LAMAArray<IndexType> cscIA;
     LAMAArray<IndexType> cscJA;
     LAMAArray<ValueType> cscValues;
-    ReadAccess<IndexType> rCSRIA( csrIA, loc );
-    ReadAccess<IndexType> rCSRJA( csrJA, loc );
-    ReadAccess<ValueType> rCSRValues( csrValues, loc );
-    WriteOnlyAccess<IndexType> wCSCIA( cscIA, loc, numColumns + 1 );
-    WriteOnlyAccess<IndexType> wCSCJA( cscJA, loc, numValues );
-    WriteOnlyAccess<ValueType> wCSCValues( cscValues, loc, numValues );
-    SCAI_CONTEXT_ACCESS( loc );
-    convertCSR2CSC[loc]( wCSCIA.get(), wCSCJA.get(), wCSCValues.get(), rCSRIA.get(), rCSRJA.get(), rCSRValues.get(), numRows,
-                         numColumns, numValues );
+  
+    {
+        ReadAccess<IndexType> rCSRIA( csrIA, loc );
+        ReadAccess<IndexType> rCSRJA( csrJA, loc );
+        ReadAccess<ValueType> rCSRValues( csrValues, loc );
+        WriteOnlyAccess<IndexType> wCSCIA( cscIA, loc, numColumns + 1 );
+        WriteOnlyAccess<IndexType> wCSCJA( cscJA, loc, numValues );
+        WriteOnlyAccess<ValueType> wCSCValues( cscValues, loc, numValues );
+        SCAI_CONTEXT_ACCESS( loc );
+        convertCSR2CSC[loc]( wCSCIA.get(), wCSCJA.get(), wCSCValues.get(), rCSRIA.get(), rCSRJA.get(), rCSRValues.get(), numRows,
+                             numColumns, numValues );
+    }
     {
         ReadAccess<IndexType> rCSCIA( cscIA );
         WriteAccess<IndexType> wCSCJA( cscJA );
@@ -201,19 +204,29 @@ void transposeTestNonSquare( ContextPtr loc )
     LAMAArray<IndexType> cscIA;
     LAMAArray<IndexType> cscJA;
     LAMAArray<ValueType> cscValues;
-    ReadAccess<IndexType> rCSRIA( csrIA, loc );
-    ReadAccess<IndexType> rCSRJA( csrJA, loc );
-    ReadAccess<ValueType> rCSRValues( csrValues, loc );
-    WriteOnlyAccess<IndexType> wCSCIA( cscIA, loc, numColumns + 1 );
-    WriteOnlyAccess<IndexType> wCSCJA( cscJA, loc, numValues );
-    WriteOnlyAccess<ValueType> wCSCValues( cscValues, loc, numValues );
-    SCAI_CONTEXT_ACCESS( loc );
-    convertCSR2CSC[loc]( wCSCIA.get(), wCSCJA.get(), wCSCValues.get(), rCSRIA.get(), rCSRJA.get(), rCSRValues.get(), numRows,
-                         numColumns, numValues );
+
+    // CSC <- transpose CSR
+
     {
-        ReadAccess<IndexType> rCSCIA( cscIA );
-        WriteAccess<IndexType> wCSCJA( cscJA );
-        WriteAccess<ValueType> wCSCValues( cscValues );
+        ReadAccess<IndexType> rCSRIA( csrIA, loc );
+        ReadAccess<IndexType> rCSRJA( csrJA, loc );
+        ReadAccess<ValueType> rCSRValues( csrValues, loc );
+        WriteOnlyAccess<IndexType> wCSCIA( cscIA, loc, numColumns + 1 );
+        WriteOnlyAccess<IndexType> wCSCJA( cscJA, loc, numValues );
+        WriteOnlyAccess<ValueType> wCSCValues( cscValues, loc, numValues );
+        SCAI_CONTEXT_ACCESS( loc );
+        convertCSR2CSC[loc]( wCSCIA.get(), wCSCJA.get(), wCSCValues.get(), rCSRIA.get(), rCSRJA.get(), rCSRValues.get(), numRows,
+                             numColumns, numValues );
+    }
+  
+    // check CSC for correctness
+
+    {
+        ContextPtr host = Context::getHostPtr();
+
+        ReadAccess<IndexType> rCSCIA( cscIA, host );
+        WriteAccess<IndexType> wCSCJA( cscJA, host );
+        WriteAccess<ValueType> wCSCValues( cscValues, host );
 
         for ( int j = 0; j <= numColumns; ++j )
         {

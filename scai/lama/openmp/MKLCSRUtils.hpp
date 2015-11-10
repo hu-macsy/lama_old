@@ -84,20 +84,27 @@ public:
         const IndexType csrJA[],
         const ValueType csrValues[] );
 
-    /** Routine that registers all routines of this class at the Kernel registry. */
-
-    static void registerKernels();
-
 protected:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
-private    :
+private:
 
-    static bool initialized;
+    /** Routine that registers all methods at the kernel registry. */
 
-    static bool registerInterface();
+    static void registerKernels( bool deleteFlag );
 
+    /** Constructor for registration. */
+
+    MKLCSRUtils();
+
+    /** Destructor for unregistration. */
+
+    ~MKLCSRUtils();
+
+    /** Static variable for registration at static initialization. */
+
+    static MKLCSRUtils guard;
 };
 
 } /* end namespace lama */

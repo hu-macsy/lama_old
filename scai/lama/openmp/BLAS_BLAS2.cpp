@@ -239,13 +239,10 @@ void BLAS_BLAS2::gemv(
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void BLAS_BLAS2::registerKernels()
+void BLAS_BLAS2::registerKernels( bool deleteFlag )
 {
-    using scai::kregistry::KernelRegistry;
-
-    // ctx will contain the context for which registration is done, here Host
-
-    common::context::ContextType ctx = common::context::Host;
+    using kregistry::KernelRegistry;
+    using common::context::Host;
 
     // using BLAS wrappers might be disabled explicitly by environment variable
 
@@ -267,10 +264,15 @@ void BLAS_BLAS2::registerKernels()
 
     SCAI_LOG_INFO( logger, "set BLAS2 wrapper routines for Host Context in Interface" )
 
-    // REGISTER1: give these routines priority in case of overriding
+    KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_REPLACE;   // priority over OpenMPBLAS
+
+    if ( deleteFlag )
+    {
+        flag = KernelRegistry::KERNEL_ERASE;
+    }
 
 #define LAMA_BLAS2_REGISTER(z, I, _)                                                        \
-    KernelRegistry::set<BLASKernelTrait::gemv<ARITHMETIC_HOST_TYPE_##I> >( gemv, ctx, true ); \
+    KernelRegistry::set<BLASKernelTrait::gemv<ARITHMETIC_HOST_TYPE_##I> >( gemv, Host, flag ); \
 
     BOOST_PP_REPEAT( ARITHMETIC_HOST_EXT_TYPE_CNT, LAMA_BLAS2_REGISTER, _ )
 
@@ -280,20 +282,26 @@ void BLAS_BLAS2::registerKernels()
 }
 
 /* --------------------------------------------------------------------------- */
-/*    Static registration of the BLAS2 routines                                */
+/*    Constructor/Desctructor with registration                                */
 /* --------------------------------------------------------------------------- */
 
-bool BLAS_BLAS2::registerInterface()
+BLAS_BLAS2::BLAS_BLAS2()
 {
-    registerKernels();
-    return true;
+    bool deleteFlag = false;
+    registerKernels( deleteFlag );
+}
+
+BLAS_BLAS2::~BLAS_BLAS2()
+{
+    bool deleteFlag = true;
+    registerKernels( deleteFlag );
 }
 
 /* --------------------------------------------------------------------------- */
-/*    Static initialiazion at program start                                    */
+/*    Static variable to force registration during static initialization      */
 /* --------------------------------------------------------------------------- */
 
-bool BLAS_BLAS2::initialized = registerInterface();
+BLAS_BLAS2 BLAS_BLAS2::guard;
 
 } /* end namespace lama */
 

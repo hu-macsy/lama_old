@@ -211,17 +211,25 @@ public:
         const ValueType oldSolution[],
         const ValueType omega );
 
-    /** Method for registration of module routines at the interface. */
-
-    static void registerKernelRoutines();
-
 private:
 
+    /** Routine that registers all methods at the kernel registry. */
+
+    static void registerKernels( bool deleteFlag );
+
+    /** Constructor for registration. */
+
+    OpenMPJDSUtils();
+
+    /** Destructor for unregistration. */
+
+    ~OpenMPJDSUtils();
+
+    /** Static variable for registration at static initialization. */
+
+    static OpenMPJDSUtils guard;
+
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
-
-    static    bool initialized;
-
-    static bool registerInterface();
 };
 
 /* --------------------------------------------------------------------------- */

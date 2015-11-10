@@ -135,10 +135,6 @@ public:
         const IndexType diaOffsets[],
         const ValueType diaValues[] );
 
-    /** Routine that registers all routines of this class at the Kernel registry. */
-
-    static void registerKernels();
-
 private:
 
     template<typename ValueType>
@@ -154,9 +150,21 @@ private:
         const IndexType diaOffsets[],
         const ValueType diaValues[] );
 
-    static bool initialized;
+    /** Routine that registers all methods at the kernel registry. */
 
-    static bool registerInterface();
+    static void registerKernels( bool deleteFlag );
+
+    /** Constructor for registration. */
+
+    OpenMPDIAUtils();
+
+    /** Destructor for unregistration. */
+
+    ~OpenMPDIAUtils();
+
+    /** Static variable for registration at static initialization. */
+
+    static OpenMPDIAUtils guard;
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 };

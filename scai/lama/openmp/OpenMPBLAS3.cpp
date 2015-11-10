@@ -365,40 +365,49 @@ void OpenMPBLAS3::gemm(
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void OpenMPBLAS3::registerKernels()
+void OpenMPBLAS3::registerKernels( bool deleteFlag )
 {
-    using scai::kregistry::KernelRegistry;
-
-    // ctx will contain the context for which registration is done, here Host
-
-    common::context::ContextType ctx = common::context::Host;
+    using kregistry::KernelRegistry;
+    using common::context::Host;
 
     SCAI_LOG_INFO( logger, "set BLAS3 routines for OpenMP in Interface" )
 
-#define LAMA_BLAS3_REGISTER(z, I, _)                                                  \
-    KernelRegistry::set<BLASKernelTrait::gemm<ARITHMETIC_HOST_TYPE_##I> >( gemm, ctx ); \
+    KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // lower priority
+
+    if ( deleteFlag )
+    {
+        flag = KernelRegistry::KERNEL_ERASE;
+    }
+
+#define LAMA_BLAS3_REGISTER(z, I, _)                                                           \
+    KernelRegistry::set<BLASKernelTrait::gemm<ARITHMETIC_HOST_TYPE_##I> >( gemm, Host, flag ); \
 
     BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_BLAS3_REGISTER, _ )
 
 #undef LAMA_BLAS3_REGISTER
-
 }
 
 /* --------------------------------------------------------------------------- */
-/*    Static registration of the BLAS3 routines                                */
+/*    Constructor/Desctructor with registration                                */
 /* --------------------------------------------------------------------------- */
 
-bool OpenMPBLAS3::registerInterface()
+OpenMPBLAS3::OpenMPBLAS3()
 {
-    registerKernels();
-    return true;
+    bool deleteFlag = false;
+    registerKernels( deleteFlag );
+}
+
+OpenMPBLAS3::~OpenMPBLAS3()
+{
+    bool deleteFlag = true;
+    registerKernels( deleteFlag );
 }
 
 /* --------------------------------------------------------------------------- */
-/*    Static initialiazion at program start                                    */
+/*    Static variable to force registration during static initialization      */
 /* --------------------------------------------------------------------------- */
 
-bool OpenMPBLAS3::initialized = registerInterface();
+OpenMPBLAS3 OpenMPBLAS3::guard;
 
 } /* end namespace lama */
 

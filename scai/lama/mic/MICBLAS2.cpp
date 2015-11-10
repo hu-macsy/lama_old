@@ -40,6 +40,7 @@
 // scai library
 #include <scai/kregistry/KernelRegistry.hpp>
 #include <scai/hmemo/mic/MICSyncToken.hpp>
+#include <scai/hmemo/mic/MICContext.hpp>
 
 // external
 #include <mkl.h>
@@ -48,6 +49,7 @@ namespace scai
 {
 
 using tasking::MICSyncToken;
+using hmemo::MICContext;
 
 namespace lama
 {
@@ -125,7 +127,7 @@ void MICBLAS2::gemv(
 
     if ( syncToken )
     {
-        SCAI_LOG_WARN( logger, "asynchronous execution for MIC not supported yet." )
+        SCAI_LOG_INFO( logger, "asynchronous execution for MIC not supported yet." )
     }
 
     char ta = ' ';
@@ -149,7 +151,9 @@ void MICBLAS2::gemv(
     const void* xPtr = x;
     const void* aPtr = a;
 
-#pragma offload target( mic ), in( ta, m, n, alpha, aPtr, lda, xPtr, incX, beta, yPtr, incY )
+    int device = MICContext::getCurrentDevice();
+
+#pragma offload target( mic : device ), in( ta, m, n, alpha, aPtr, lda, xPtr, incX, beta, yPtr, incY )
     {
         const float* x = static_cast<const float*>( xPtr );
         const float* a = static_cast<const float*>( aPtr );
@@ -188,7 +192,7 @@ void MICBLAS2::gemv(
 
     if ( syncToken )
     {
-        SCAI_LOG_WARN( logger, "asynchronous execution for MIC not supported yet." )
+        SCAI_LOG_INFO( logger, "asynchronous execution for MIC not supported yet." )
     }
 
     char ta = ' ';
@@ -212,7 +216,9 @@ void MICBLAS2::gemv(
     const void* xPtr = x;
     const void* aPtr = a;
 
-#pragma offload target( mic ), in( ta, m, n, alpha, aPtr, lda, xPtr, incX, beta, yPtr, incY )
+    int device = MICContext::getCurrentDevice();
+
+#pragma offload target( mic : device ), in( ta, m, n, alpha, aPtr, lda, xPtr, incX, beta, yPtr, incY )
     {
         const double* x = static_cast<const double*>( xPtr );
         const double* a = static_cast<const double*>( aPtr );
@@ -226,37 +232,43 @@ void MICBLAS2::gemv(
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void MICBLAS2::registerKernels()
+void MICBLAS2::registerKernels( bool deleteFlag )
 {
     SCAI_LOG_INFO( logger, "register BLAS2 kernels for MIC in Kernel Registry" )
 
-    using namespace scai::kregistry;
+    using kregistry::KernelRegistry;
+    using common::context::MIC;
 
-    // ctx will contain the context for which registration is done, here MIC
+    KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // add it or delete it
 
-    common::context::ContextType ctx = common::context::MIC;
+    if ( deleteFlag )
+    {
+        flag = KernelRegistry::KERNEL_ERASE;
+    }
 
-    KernelRegistry::set<BLASKernelTrait::gemv<float> >( gemv, ctx );
-    KernelRegistry::set<BLASKernelTrait::gemv<double> >( gemv, ctx );
+    KernelRegistry::set<BLASKernelTrait::gemv<float> >( gemv, MIC, flag );
+    KernelRegistry::set<BLASKernelTrait::gemv<double> >( gemv, MIC, flag );
 
     // all other routines are not used in LAMA yet
 }
 
 /* --------------------------------------------------------------------------- */
-/*    Static registration of the BLAS2 routines                                */
+/*    Static initialization with registration                                  */
 /* --------------------------------------------------------------------------- */
 
-bool MICBLAS2::registerInterface()
+MICBLAS2::RegisterGuard::RegisterGuard()
 {
-    registerKernels();
-    return true;
+    bool deleteFlag = false;
+    registerKernels( deleteFlag );
 }
 
-/* --------------------------------------------------------------------------- */
-/*    Static initialiazion at program start                                    */
-/* --------------------------------------------------------------------------- */
+MICBLAS2::RegisterGuard::~RegisterGuard()
+{
+    bool deleteFlag = true;
+    registerKernels( deleteFlag );
+}
 
-bool MICBLAS2::initialized = registerInterface();
+MICBLAS2::RegisterGuard MICBLAS2::guard;    // guard variable for registration
 
 } /* end namespace lama */
 

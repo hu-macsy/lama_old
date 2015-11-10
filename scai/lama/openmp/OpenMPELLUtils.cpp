@@ -1188,46 +1188,50 @@ void OpenMPELLUtils::sparseGEVM(
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-void OpenMPELLUtils::registerKernelRoutines()
+void OpenMPELLUtils::registerKernels( bool deleteFlag )
 {
     using kregistry::KernelRegistry;
+    using common::context::Host;      // context for registration
 
-    // ctx will contain the context for which registration is done, here Host
+    KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // lower priority
 
-    common::context::ContextType ctx = common::context::Host;
+    if ( deleteFlag )
+    {
+        flag = KernelRegistry::KERNEL_ERASE;
+    }
 
-    KernelRegistry::set<ELLKernelTrait::countNonEmptyRowsBySizes>( countNonEmptyRowsBySizes, ctx );
-    KernelRegistry::set<ELLKernelTrait::setNonEmptyRowsBySizes>( setNonEmptyRowsBySizes, ctx );
-    KernelRegistry::set<ELLKernelTrait::hasDiagonalProperty>( hasDiagonalProperty, ctx );
-    KernelRegistry::set<ELLKernelTrait::check>( check, ctx );
+    KernelRegistry::set<ELLKernelTrait::countNonEmptyRowsBySizes>( countNonEmptyRowsBySizes, Host, flag );
+    KernelRegistry::set<ELLKernelTrait::setNonEmptyRowsBySizes>( setNonEmptyRowsBySizes, Host, flag );
+    KernelRegistry::set<ELLKernelTrait::hasDiagonalProperty>( hasDiagonalProperty, Host, flag );
+    KernelRegistry::set<ELLKernelTrait::check>( check, Host, flag );
 
-    KernelRegistry::set<ELLKernelTrait::matrixMultiplySizes>( matrixMultiplySizes, ctx );
-    KernelRegistry::set<ELLKernelTrait::matrixAddSizes>( matrixAddSizes, ctx );
+    KernelRegistry::set<ELLKernelTrait::matrixMultiplySizes>( matrixMultiplySizes, Host, flag );
+    KernelRegistry::set<ELLKernelTrait::matrixAddSizes>( matrixAddSizes, Host, flag );
 
-#define LAMA_ELL_UTILS2_REGISTER(z, J, TYPE )                                             \
-    KernelRegistry::set<ELLKernelTrait::getRow<TYPE, ARITHMETIC_HOST_TYPE_##J> >( getRow, ctx );       \
-    KernelRegistry::set<ELLKernelTrait::scaleValue<TYPE, ARITHMETIC_HOST_TYPE_##J> >( scaleValue, ctx );       \
-    KernelRegistry::set<ELLKernelTrait::setCSRValues<TYPE, ARITHMETIC_HOST_TYPE_##J> >( setCSRValues, ctx );       \
-    KernelRegistry::set<ELLKernelTrait::getCSRValues<TYPE, ARITHMETIC_HOST_TYPE_##J> >( getCSRValues, ctx );       \
-     
-#define LAMA_ELL_UTILS_REGISTER(z, I, _)                                                  \
-    KernelRegistry::set<ELLKernelTrait::absMaxVal<ARITHMETIC_HOST_TYPE_##I> >( absMaxVal, ctx );       \
-    KernelRegistry::set<ELLKernelTrait::compressIA<ARITHMETIC_HOST_TYPE_##I> >( compressIA, ctx );       \
-    KernelRegistry::set<ELLKernelTrait::compressValues<ARITHMETIC_HOST_TYPE_##I> >( compressValues, ctx );       \
-    KernelRegistry::set<ELLKernelTrait::matrixAdd<ARITHMETIC_HOST_TYPE_##I> >( matrixAdd, ctx );       \
-    KernelRegistry::set<ELLKernelTrait::matrixMultiply<ARITHMETIC_HOST_TYPE_##I> >( matrixMultiply, ctx );       \
-    KernelRegistry::set<ELLKernelTrait::normalGEMV<ARITHMETIC_HOST_TYPE_##I> >( normalGEMV, ctx );       \
-    KernelRegistry::set<ELLKernelTrait::sparseGEMV<ARITHMETIC_HOST_TYPE_##I> >( sparseGEMV, ctx );       \
-    KernelRegistry::set<ELLKernelTrait::normalGEVM<ARITHMETIC_HOST_TYPE_##I> >( normalGEVM, ctx );       \
-    KernelRegistry::set<ELLKernelTrait::sparseGEVM<ARITHMETIC_HOST_TYPE_##I> >( sparseGEVM, ctx );       \
-    KernelRegistry::set<ELLKernelTrait::jacobi<ARITHMETIC_HOST_TYPE_##I> >( jacobi, ctx );       \
-    KernelRegistry::set<ELLKernelTrait::jacobiHalo<ARITHMETIC_HOST_TYPE_##I> >( jacobiHalo, ctx );       \
-    KernelRegistry::set<ELLKernelTrait::getValue<ARITHMETIC_HOST_TYPE_##I> >( getValue, ctx );       \
-    KernelRegistry::set<ELLKernelTrait::fillELLValues<ARITHMETIC_HOST_TYPE_##I> >( fillELLValues, ctx );       \
-    \
-    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT,                                                                    \
-                     LAMA_ELL_UTILS2_REGISTER,                                                                    \
-                     ARITHMETIC_HOST_TYPE_##I )                                                                   \
+#define LAMA_ELL_UTILS2_REGISTER(z, J, TYPE )                                                                        \
+    KernelRegistry::set<ELLKernelTrait::getRow<TYPE, ARITHMETIC_HOST_TYPE_##J> >( getRow, Host, flag );              \
+    KernelRegistry::set<ELLKernelTrait::scaleValue<TYPE, ARITHMETIC_HOST_TYPE_##J> >( scaleValue, Host, flag );      \
+    KernelRegistry::set<ELLKernelTrait::setCSRValues<TYPE, ARITHMETIC_HOST_TYPE_##J> >( setCSRValues, Host, flag );  \
+    KernelRegistry::set<ELLKernelTrait::getCSRValues<TYPE, ARITHMETIC_HOST_TYPE_##J> >( getCSRValues, Host, flag );  \
+
+#define LAMA_ELL_UTILS_REGISTER(z, I, _)                                                                             \
+    KernelRegistry::set<ELLKernelTrait::absMaxVal<ARITHMETIC_HOST_TYPE_##I> >( absMaxVal, Host, flag );              \
+    KernelRegistry::set<ELLKernelTrait::compressIA<ARITHMETIC_HOST_TYPE_##I> >( compressIA, Host, flag );            \
+    KernelRegistry::set<ELLKernelTrait::compressValues<ARITHMETIC_HOST_TYPE_##I> >( compressValues, Host, flag );    \
+    KernelRegistry::set<ELLKernelTrait::matrixAdd<ARITHMETIC_HOST_TYPE_##I> >( matrixAdd, Host, flag );              \
+    KernelRegistry::set<ELLKernelTrait::matrixMultiply<ARITHMETIC_HOST_TYPE_##I> >( matrixMultiply, Host, flag );    \
+    KernelRegistry::set<ELLKernelTrait::normalGEMV<ARITHMETIC_HOST_TYPE_##I> >( normalGEMV, Host, flag );            \
+    KernelRegistry::set<ELLKernelTrait::sparseGEMV<ARITHMETIC_HOST_TYPE_##I> >( sparseGEMV, Host, flag );            \
+    KernelRegistry::set<ELLKernelTrait::normalGEVM<ARITHMETIC_HOST_TYPE_##I> >( normalGEVM, Host, flag );            \
+    KernelRegistry::set<ELLKernelTrait::sparseGEVM<ARITHMETIC_HOST_TYPE_##I> >( sparseGEVM, Host, flag );            \
+    KernelRegistry::set<ELLKernelTrait::jacobi<ARITHMETIC_HOST_TYPE_##I> >( jacobi, Host, flag );                    \
+    KernelRegistry::set<ELLKernelTrait::jacobiHalo<ARITHMETIC_HOST_TYPE_##I> >( jacobiHalo, Host, flag );            \
+    KernelRegistry::set<ELLKernelTrait::getValue<ARITHMETIC_HOST_TYPE_##I> >( getValue, Host, flag );                \
+    KernelRegistry::set<ELLKernelTrait::fillELLValues<ARITHMETIC_HOST_TYPE_##I> >( fillELLValues, Host, flag );      \
+                                                                                                                     \
+    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT,                                                                       \
+                     LAMA_ELL_UTILS2_REGISTER,                                                                       \
+                     ARITHMETIC_HOST_TYPE_##I )                                                                      \
      
     BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_ELL_UTILS_REGISTER, _ )
 
@@ -1237,20 +1241,26 @@ void OpenMPELLUtils::registerKernelRoutines()
 }
 
 /* --------------------------------------------------------------------------- */
-/*    Static registration of the ELLUtils routines                             */
+/*    Constructor/Desctructor with registration                                */
 /* --------------------------------------------------------------------------- */
 
-bool OpenMPELLUtils::registerInterface()
+OpenMPELLUtils::OpenMPELLUtils()
 {
-    registerKernelRoutines();
-    return true;
+    bool deleteFlag = false;
+    registerKernels( deleteFlag );
+}
+
+OpenMPELLUtils::~OpenMPELLUtils()
+{
+    bool deleteFlag = true;
+    registerKernels( deleteFlag );
 }
 
 /* --------------------------------------------------------------------------- */
-/*    Static initialiazion at program start                                    */
+/*    Static variable to force registration during static initialization      */
 /* --------------------------------------------------------------------------- */
 
-bool OpenMPELLUtils::initialized = registerInterface();
+OpenMPELLUtils OpenMPELLUtils::guard;
 
 } /* end namespace lama */
 

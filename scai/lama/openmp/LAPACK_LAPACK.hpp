@@ -110,22 +110,26 @@ public:
         const IndexType incx,
         tasking::SyncToken* syncToken );
 
-    /** Routine that sets functions pointers belonging to LAPACK in a BLASKernelTrait.
-     *
-     *  param[inout] BLASKernelTrait struct to register all routines implemented in OpenMP
-     *
-     *  Note: this routine will make instantiations of the template routines.
-     */
-
-    static void setInterface( struct BLASKernelTrait& BLAS );
-
 private:
 
+
+    /** Routine that registers all methods at the kernel registry. */
+
+    static void registerKernels( bool deleteFlag );
+
+    /** Constructor for registration. */
+
+    LAPACK_LAPACK();
+
+    /** Destructor for unregistration. */
+
+    ~LAPACK_LAPACK();
+
+    /** Static variable for registration at static initialization. */
+
+    static LAPACK_LAPACK guard;
+
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
-
-    static bool initialized;
-
-    static bool registerInterface();
 
 }; /* LAPACK_LAPACK */
 

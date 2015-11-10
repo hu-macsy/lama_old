@@ -53,25 +53,13 @@ namespace scai
 namespace lama
 {
 
-/** Static class that provides CUDA implementaions for the BLAS2 routines as specified in BLASKernelTrait.
+/** Static class that provides CUDA implementaions for the BLAS2 routines as specified in BLASKernelTrait. 
  *
- *  The BLAS2 routines are all private and can only be accessed via kernel registry.
  */
 
 class COMMON_DLL_IMPORTEXPORT CUDABLAS2
 {
 public:
-
-    /** Routine that sets functions pointers belonging to BLAS1 in a BLASKernelTrait.
-     *
-     *  param[inout] BLASKernelTrait struct to register all routines implemented in CUDA
-     *
-     *  Note: this routine will make instantiations of the template routines.
-     */
-
-    static void registerKernels();
-
-private:
 
     /**
      * This function is the CUDA implementation of BLASKernelTrait::gemv
@@ -284,9 +272,24 @@ private:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
-    static    bool initialized; //!< static initialization used for registration
+private:
 
-    static bool registerInterface();//!< registration
+    /** Registration of methods  at kernel registry. */
+
+    static void registerKernels( bool deleteFlag );
+
+    /** Constructor for registration. */
+
+    CUDABLAS2();
+
+    /** Destructor for unregistration. */
+
+    ~CUDABLAS2();
+
+    /** Static variable for registration at static initialization. */
+
+    static CUDABLAS2 guard;
+
 };
 
 } /* end namespace lama */

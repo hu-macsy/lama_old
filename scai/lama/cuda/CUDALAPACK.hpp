@@ -55,21 +55,6 @@ class COMMON_DLL_IMPORTEXPORT CUDALAPACK
 {
 public:
 
-    /** Routine that sets functions pointers belonging to BLAS1 in a BLASKernelTrait.
-     *
-     *  param[inout] BLASKernelTrait struct to register all routines implemented in CUDA
-     *
-     *  Note: this routine will make instantiations of the template routines.
-     */
-
-    static void registerKernels();
-
-private:
-
-    static bool initialized; //!< static initialization used for registration
-
-    static bool registerInterface(); //!< registration
-
     template<typename ValueType>
     static void laswp(
         const CBLAS_ORDER order,
@@ -80,6 +65,24 @@ private:
         const IndexType k2,
         const IndexType* ipiv,
         const IndexType incx );
+
+private:
+
+    /** Routine that registers all methods at the kernel registry. */
+
+    static void registerKernels( bool deleteFlag );
+
+    /** Constructor for registration. */
+
+    CUDALAPACK();
+
+    /** Destructor for unregistration. */
+
+    ~CUDALAPACK();
+
+    /** Static variable for registration at static initialization. */
+
+    static CUDALAPACK guard;
 };
 
 } /* end namespace lama */

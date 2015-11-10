@@ -128,16 +128,21 @@ public:
 
 private:
 
-    /** Routine that registers all routines of this class at the LAMA interface.
-     *
-     *  param[inout] UtilKernelTrait struct to register all routines implemented in OpenMP
-     */
+    /** Routine that registers all methods at the kernel registry. */
 
-    static void setInterface();
+    static void registerKernels( bool deleteFlag );
 
-    static bool initialized;
+    /** Constructor for registration. */
 
-    static bool registerInterface();
+    OpenMPUtils();
+
+    /** Destructor for unregistration. */
+
+    ~OpenMPUtils();
+
+    /** Static variable for registration at static initialization. */
+
+    static OpenMPUtils guard;
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 };

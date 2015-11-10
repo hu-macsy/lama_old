@@ -35,7 +35,6 @@
 #include <scai/lama/cuda/CUDAELLUtils.hpp>
 
 // local library
-#include <scai/lama/cuda/utils.cu.h>
 #include <scai/lama/cuda/CUDAUtils.hpp>
 #include <scai/lama/cuda/CUDASettings.hpp>
 
@@ -49,6 +48,7 @@
 #include <scai/common/bind.hpp>
 #include <scai/common/macros/unused.hpp>
 #include <scai/common/cuda/CUDAError.hpp>
+#include <scai/common/cuda/launchHelper.hpp>
 #include <scai/common/Constants.hpp>
 
 // CUDA
@@ -2210,40 +2210,45 @@ void CUDAELLUtils::jacobiHalo(
 /*                                Template instantiations via registration routine                                    */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-void CUDAELLUtils::registerKernels()
+void CUDAELLUtils::registerKernels( bool deleteFlag )
 {
     SCAI_LOG_INFO( logger, "register ELL routines for CUDA in KernelRegistry" )
 
     using kregistry::KernelRegistry;
 
-    // ctx will contain the context for which registration is done, here Host
+    using common::context::CUDA;
 
-    common::context::ContextType ctx = common::context::CUDA;
+    KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // lower priority
 
-    KernelRegistry::set<ELLKernelTrait::countNonEmptyRowsBySizes>( countNonEmptyRowsBySizes, ctx );
-    KernelRegistry::set<ELLKernelTrait::setNonEmptyRowsBySizes>( setNonEmptyRowsBySizes, ctx );
-    KernelRegistry::set<ELLKernelTrait::hasDiagonalProperty>( hasDiagonalProperty, ctx );
-    KernelRegistry::set<ELLKernelTrait::check>( check, ctx );
+    if ( deleteFlag )
+    {
+        flag = KernelRegistry::KERNEL_ERASE;
+    }
 
-#define LAMA_ELL_UTILS2_REGISTER(z, J, TYPE )                                             \
-    KernelRegistry::set<ELLKernelTrait::getRow<TYPE, ARITHMETIC_HOST_TYPE_##J> >( getRow, ctx );       \
-    KernelRegistry::set<ELLKernelTrait::scaleValue<TYPE, ARITHMETIC_HOST_TYPE_##J> >( scaleValue, ctx );       \
-    KernelRegistry::set<ELLKernelTrait::setCSRValues<TYPE, ARITHMETIC_HOST_TYPE_##J> >( setCSRValues, ctx );       \
-    KernelRegistry::set<ELLKernelTrait::getCSRValues<TYPE, ARITHMETIC_HOST_TYPE_##J> >( getCSRValues, ctx );       \
+    KernelRegistry::set<ELLKernelTrait::countNonEmptyRowsBySizes>( countNonEmptyRowsBySizes, CUDA, flag );
+    KernelRegistry::set<ELLKernelTrait::setNonEmptyRowsBySizes>( setNonEmptyRowsBySizes, CUDA, flag );
+    KernelRegistry::set<ELLKernelTrait::hasDiagonalProperty>( hasDiagonalProperty, CUDA, flag );
+    KernelRegistry::set<ELLKernelTrait::check>( check, CUDA, flag );
+
+#define LAMA_ELL_UTILS2_REGISTER(z, J, TYPE )                                                                       \
+    KernelRegistry::set<ELLKernelTrait::getRow<TYPE, ARITHMETIC_HOST_TYPE_##J> >( getRow, CUDA, flag );             \
+    KernelRegistry::set<ELLKernelTrait::scaleValue<TYPE, ARITHMETIC_HOST_TYPE_##J> >( scaleValue, CUDA, flag );     \
+    KernelRegistry::set<ELLKernelTrait::setCSRValues<TYPE, ARITHMETIC_HOST_TYPE_##J> >( setCSRValues, CUDA, flag ); \
+    KernelRegistry::set<ELLKernelTrait::getCSRValues<TYPE, ARITHMETIC_HOST_TYPE_##J> >( getCSRValues, CUDA, flag ); \
      
-#define LAMA_ELL_UTILS_REGISTER(z, I, _)                                                  \
-    KernelRegistry::set<ELLKernelTrait::normalGEMV<ARITHMETIC_HOST_TYPE_##I> >( normalGEMV, ctx );       \
-    KernelRegistry::set<ELLKernelTrait::normalGEVM<ARITHMETIC_HOST_TYPE_##I> >( normalGEVM, ctx );       \
-    KernelRegistry::set<ELLKernelTrait::sparseGEMV<ARITHMETIC_HOST_TYPE_##I> >( sparseGEMV, ctx );       \
-    KernelRegistry::set<ELLKernelTrait::sparseGEVM<ARITHMETIC_HOST_TYPE_##I> >( sparseGEVM, ctx );       \
-    KernelRegistry::set<ELLKernelTrait::jacobi<ARITHMETIC_HOST_TYPE_##I> >( jacobi, ctx );               \
-    KernelRegistry::set<ELLKernelTrait::jacobiHalo<ARITHMETIC_HOST_TYPE_##I> >( jacobiHalo, ctx );       \
-    KernelRegistry::set<ELLKernelTrait::getValue<ARITHMETIC_HOST_TYPE_##I> >( getValue, ctx );           \
-    KernelRegistry::set<ELLKernelTrait::fillELLValues<ARITHMETIC_HOST_TYPE_##I> >( fillELLValues, ctx );  \
-                                                                                                             \
-    BOOST_PP_REPEAT( ARITHMETIC_CUDA_TYPE_CNT,                                            \
-                     LAMA_ELL_UTILS2_REGISTER,                                            \
-                     ARITHMETIC_CUDA_TYPE_##I )                                           \
+#define LAMA_ELL_UTILS_REGISTER(z, I, _)                                                                        \
+    KernelRegistry::set<ELLKernelTrait::normalGEMV<ARITHMETIC_HOST_TYPE_##I> >( normalGEMV, CUDA, flag );       \
+    KernelRegistry::set<ELLKernelTrait::normalGEVM<ARITHMETIC_HOST_TYPE_##I> >( normalGEVM, CUDA, flag );       \
+    KernelRegistry::set<ELLKernelTrait::sparseGEMV<ARITHMETIC_HOST_TYPE_##I> >( sparseGEMV, CUDA, flag );       \
+    KernelRegistry::set<ELLKernelTrait::sparseGEVM<ARITHMETIC_HOST_TYPE_##I> >( sparseGEVM, CUDA, flag );       \
+    KernelRegistry::set<ELLKernelTrait::jacobi<ARITHMETIC_HOST_TYPE_##I> >( jacobi, CUDA, flag );               \
+    KernelRegistry::set<ELLKernelTrait::jacobiHalo<ARITHMETIC_HOST_TYPE_##I> >( jacobiHalo, CUDA, flag );       \
+    KernelRegistry::set<ELLKernelTrait::getValue<ARITHMETIC_HOST_TYPE_##I> >( getValue, CUDA, flag );           \
+    KernelRegistry::set<ELLKernelTrait::fillELLValues<ARITHMETIC_HOST_TYPE_##I> >( fillELLValues, CUDA, flag ); \
+                                                                                                                \
+    BOOST_PP_REPEAT( ARITHMETIC_CUDA_TYPE_CNT,                                                                  \
+                     LAMA_ELL_UTILS2_REGISTER,                                                                  \
+                     ARITHMETIC_CUDA_TYPE_##I )                                                                 \
      
     BOOST_PP_REPEAT( ARITHMETIC_CUDA_TYPE_CNT, LAMA_ELL_UTILS_REGISTER, _ )
 
@@ -2253,20 +2258,22 @@ void CUDAELLUtils::registerKernels()
 }
 
 /* --------------------------------------------------------------------------- */
-/*    Static registration of the Utils routines                                */
+/*    Constructor/Desctructor with registration                                */
 /* --------------------------------------------------------------------------- */
 
-bool CUDAELLUtils::registerInterface()
+CUDAELLUtils::CUDAELLUtils()
 {
-    registerKernels();
-    return true;
+    bool deleteFlag = false;
+    registerKernels( deleteFlag );
 }
 
-/* --------------------------------------------------------------------------- */
-/*    Static initialiazion at program start                                    */
-/* --------------------------------------------------------------------------- */
+CUDAELLUtils::~CUDAELLUtils()
+{
+    bool deleteFlag = true;
+    registerKernels( deleteFlag );
+}
 
-bool CUDAELLUtils::initialized = registerInterface();
+CUDAELLUtils CUDAELLUtils::guard;    // guard variable for registration
 
 } /* end namespace lama */
 

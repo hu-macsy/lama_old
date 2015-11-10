@@ -34,7 +34,6 @@
 #include <scai/lama/cuda/CUDACOOUtils.hpp>
 
 // local library
-#include <scai/lama/cuda/utils.cu.h>
 #include <scai/lama/cuda/CUDAUtils.hpp>
 #include <scai/lama/cuda/CUDASettings.hpp>
 
@@ -50,6 +49,7 @@
 #include <scai/common/bind.hpp>
 
 #include <scai/common/cuda/CUDAError.hpp>
+#include <scai/common/cuda/launchHelper.hpp>
 #include <scai/common/Constants.hpp>
 
 // thrust
@@ -715,29 +715,33 @@ void CUDACOOUtils::setCSRData(
 
 /* --------------------------------------------------------------------------- */
 
-void CUDACOOUtils::registerKernels()
+void CUDACOOUtils::registerKernels( bool deleteFlag )
 {
     SCAI_LOG_INFO( logger, "set COO routines for CUDA in Interface" )
 
     using namespace scai::kregistry;
+    using common::context::CUDA;
 
-    // ctx will contain the context for which registration is done, here Host
+    KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // lower priority
 
-    common::context::ContextType ctx = common::context::CUDA;
+    if ( deleteFlag )
+    {
+        flag = KernelRegistry::KERNEL_ERASE;
+    }
 
-    KernelRegistry::set<COOKernelTrait::offsets2ia>( offsets2ia, ctx );
-    KernelRegistry::set<COOKernelTrait::setCSRData<IndexType, IndexType> >( setCSRData, ctx );
+    KernelRegistry::set<COOKernelTrait::offsets2ia>( offsets2ia, CUDA, flag );
+    KernelRegistry::set<COOKernelTrait::setCSRData<IndexType, IndexType> >( setCSRData, CUDA, flag );
 
-#define LAMA_COO_UTILS2_REGISTER(z, J, TYPE )                                                                \
-    KernelRegistry::set<COOKernelTrait::setCSRData<TYPE, ARITHMETIC_HOST_TYPE_##J> >( setCSRData, ctx );  \
+#define LAMA_COO_UTILS2_REGISTER(z, J, TYPE )                                                                    \
+    KernelRegistry::set<COOKernelTrait::setCSRData<TYPE, ARITHMETIC_CUDA_TYPE_##J> >( setCSRData, CUDA, flag );  \
      
-#define LAMA_COO_UTILS_REGISTER(z, I, _)                                                              \
-    KernelRegistry::set<COOKernelTrait::normalGEMV<ARITHMETIC_HOST_TYPE_##I> >( normalGEMV, ctx ); \
-    KernelRegistry::set<COOKernelTrait::normalGEVM<ARITHMETIC_HOST_TYPE_##I> >( normalGEVM, ctx ); \
-                                                                                                      \
-    BOOST_PP_REPEAT( ARITHMETIC_CUDA_TYPE_CNT,                                                        \
-                     LAMA_COO_UTILS2_REGISTER,                                                        \
-                     ARITHMETIC_CUDA_TYPE_##I )                                                       \
+#define LAMA_COO_UTILS_REGISTER(z, I, _)                                                                  \
+    KernelRegistry::set<COOKernelTrait::normalGEMV<ARITHMETIC_CUDA_TYPE_##I> >( normalGEMV, CUDA, flag ); \
+    KernelRegistry::set<COOKernelTrait::normalGEVM<ARITHMETIC_CUDA_TYPE_##I> >( normalGEVM, CUDA, flag ); \
+                                                                                                          \
+    BOOST_PP_REPEAT( ARITHMETIC_CUDA_TYPE_CNT,                                                            \
+                     LAMA_COO_UTILS2_REGISTER,                                                            \
+                     ARITHMETIC_CUDA_TYPE_##I )                                                           \
      
     BOOST_PP_REPEAT( ARITHMETIC_CUDA_TYPE_CNT, LAMA_COO_UTILS_REGISTER, _ )
 
@@ -747,20 +751,22 @@ void CUDACOOUtils::registerKernels()
 }
 
 /* --------------------------------------------------------------------------- */
-/*    Static registration of the Utils routines                                */
+/*    Constructor/Desctructor with registration                                */
 /* --------------------------------------------------------------------------- */
 
-bool CUDACOOUtils::registerInterface()
+CUDACOOUtils::CUDACOOUtils()
 {
-    registerKernels();
-    return true;
+    bool deleteFlag = false;
+    registerKernels( deleteFlag );
 }
 
-/* --------------------------------------------------------------------------- */
-/*    Static initialiazion at program start                                    */
-/* --------------------------------------------------------------------------- */
+CUDACOOUtils::~CUDACOOUtils()
+{
+    bool deleteFlag = true;
+    registerKernels( deleteFlag );
+}
 
-bool CUDACOOUtils::initialized = registerInterface();
+CUDACOOUtils CUDACOOUtils::guard;    // guard variable for registration
 
 } /* end namespace lama */
 

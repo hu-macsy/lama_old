@@ -33,7 +33,7 @@ public:
     }
 };
 
-DynRoutine::Register<Function1>::RegisterGuard DynRoutine::Register<Function1>::registerGuard;
+template DynRoutine::Register<Function1>::RegisterGuard DynRoutine::Register<Function1>::registerGuard;
 
 /** Guard class to call functions for load/unload of the module */
 

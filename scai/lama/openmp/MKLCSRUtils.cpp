@@ -254,12 +254,8 @@ void MKLCSRUtils::convertCSR2CSC(
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void MKLCSRUtils::registerKernels()
+void MKLCSRUtils::registerKernels( bool deleteFlag )
 {
-    using kregistry::KernelRegistry;
-
-    common::context::ContextType ctx = common::context::Host;
-
     bool useMKL = true;
 
     // using MKL for CSR might be disabled explicitly by environment variable
@@ -276,31 +272,47 @@ void MKLCSRUtils::registerKernels()
 
     SCAI_LOG_INFO( logger, "set CSR routines for MKL in Host Interface" )
 
-    KernelRegistry::set<CSRKernelTrait::normalGEMV<float> >( normalGEMV, ctx ); 
-    KernelRegistry::set<CSRKernelTrait::normalGEMV<double> >( normalGEMV, ctx ); 
+    using kregistry::KernelRegistry;
+    using common::context::Host;       // context for registration
+
+    KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_REPLACE ;   // higher priority
+
+    if ( deleteFlag )
+    {
+        flag = KernelRegistry::KERNEL_ERASE;
+    }
+
+    KernelRegistry::set<CSRKernelTrait::normalGEMV<float> >( normalGEMV, Host, flag ); 
+    KernelRegistry::set<CSRKernelTrait::normalGEMV<double> >( normalGEMV, Host, flag ); 
 
     // MKL conversion csr to csc has worse performance than our OpenMP Implementation
     // so we do not use it here.
 
-    // KernelRegistry::set<CSRKernelTrait::convertCSR2CSC<float> >( convertCSR2CSC, ctx ); 
-    // KernelRegistry::set<CSRKernelTrait::convertCSR2CSC<double> >( convertCSR2CSC, ctx ); 
+    // KernelRegistry::set<CSRKernelTrait::convertCSR2CSC<float> >( convertCSR2CSC, Host, flag ); 
+    // KernelRegistry::set<CSRKernelTrait::convertCSR2CSC<double> >( convertCSR2CSC, Host, flag ); 
 }
 
 /* --------------------------------------------------------------------------- */
-/*    Static registration of the Utils routines                                */
+/*    Constructor/Desctructor with registration                                */
 /* --------------------------------------------------------------------------- */
 
-bool MKLCSRUtils::registerInterface()
+MKLCSRUtils::MKLCSRUtils()
 {
-    registerKernels();
-    return true;
+    bool deleteFlag = false;
+    registerKernels( deleteFlag );
+}
+
+MKLCSRUtils::~MKLCSRUtils()
+{
+    bool deleteFlag = true;
+    registerKernels( deleteFlag );
 }
 
 /* --------------------------------------------------------------------------- */
-/*    Static initialiazion at program start                                    */
+/*    Static variable to force registration during static initialization      */
 /* --------------------------------------------------------------------------- */
 
-bool MKLCSRUtils::initialized = registerInterface();
+MKLCSRUtils MKLCSRUtils::guard;
 
 } /* end namespace lama */
 

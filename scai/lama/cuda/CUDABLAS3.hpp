@@ -57,17 +57,6 @@ namespace lama
 
 class COMMON_DLL_IMPORTEXPORT CUDABLAS3
 {
-public:
-
-    /** Routine that sets functions pointers belonging to BLAS1 in a BLASKernelTrait.
-     *
-     *  param[inout] BLASKernelTrait struct to register all routines implemented in CUDA
-     *
-     *  Note: this routine will make instantiations of the template routines.
-     */
-
-    static void registerKernels();
-
 private:
 
     /**
@@ -217,13 +206,27 @@ private:
         const IndexType lda,
         ValueType* B,
         const IndexType ldb );
+
 private:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
-    static    bool initialized; //!< static initialization used for registration
+    /** Registration of methods  at kernel registry. */
 
-    static bool registerInterface();//!< registration
+    static void registerKernels( bool deleteFlag );
+
+    /** Constructor for registration. */
+
+    CUDABLAS3();
+
+    /** Destructor for unregistration. */
+
+    ~CUDABLAS3();
+
+    /** Static variable for registration at static initialization. */
+
+    static CUDABLAS3 guard;
+
 };
 
 } /* end namespace lama */

@@ -177,10 +177,6 @@ public:
         const IndexType numColumns,
         const OtherType rowValues[] );
 
-    /** Routine that registers all routines of this class at the Kernel registry. */
-
-    static void registerKernelFunctions();
-
 private:
 
     static inline IndexType denseindex(
@@ -194,9 +190,22 @@ private:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
-    static    bool initialized;
+    /** Routine that registers all methods at the kernel registry. */
 
-    static bool registerInterface();
+    static void registerKernels( bool deleteFlag );
+
+    /** Constructor for registration. */
+
+    OpenMPDenseUtils();
+
+    /** Destructor for unregistration. */
+
+    ~OpenMPDenseUtils();
+
+    /** Static variable for registration at static initialization. */
+
+    static OpenMPDenseUtils guard;
+
 };
 
 /* --------------------------------------------------------------------------- */

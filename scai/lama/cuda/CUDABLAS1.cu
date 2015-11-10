@@ -35,7 +35,7 @@
 #include <scai/lama/cuda/CUDABLAS1.hpp>
 
 // local library
-#include <scai/lama/cuda/lama_cublas.hpp>
+#include <scai/lama/cuda/cublas_cast.hpp>
 #include <scai/lama/BLASKernelTrait.hpp>
 
 // internal scai libraries
@@ -45,6 +45,7 @@
 #include <scai/tracing.hpp>
 
 #include <scai/common/cuda/CUDAError.hpp>
+#include <scai/common/cuda/launchHelper.hpp>
 #include <scai/common/macros/unused.hpp>
 #include <scai/common/ScalarType.hpp>
 
@@ -65,6 +66,69 @@ namespace lama
 {
 
 SCAI_LOG_DEF_LOGGER( CUDABLAS1::logger, "CUDA.BLAS1" )
+
+/* ---------------------------------------------------------------------------------------*/
+/*    sum                                                                                 */
+/* ---------------------------------------------------------------------------------------*/
+
+template<typename T>
+__global__
+void sum_kernel( const int n, T alpha, const T* x, T beta, const T* y, T* z )
+{
+    const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( i < n )
+    {
+        z[i] = alpha * x[i] + beta * y[i];
+    }
+}
+
+/* ---------------------------------------------------------------------------------------*/
+/*    sum                                                                                 */
+/* ---------------------------------------------------------------------------------------*/
+
+template<typename ValueType>
+void CUDABLAS1::sum(
+    const IndexType n,
+    ValueType alpha,
+    const ValueType* x,
+    ValueType beta,
+    const ValueType* y,
+    ValueType* z )
+{
+    SCAI_REGION( "CUDA.BLAS1.sum" )
+
+    if ( n <= 0 )
+    {
+        return;
+    }
+
+    SCAI_LOG_DEBUG( logger,
+                    "sum<" << getScalarType<ValueType>() << ">, n = " << n << ", " << alpha << " * x + " << beta << " * y " )
+
+    SCAI_CHECK_CUDA_ACCESS
+
+    cudaStream_t stream = 0; // default stream if no syncToken is given
+
+    CUDAStreamSyncToken* syncToken = CUDAStreamSyncToken::getCurrentSyncToken();
+
+    if ( syncToken )
+    {
+        stream = syncToken->getCUDAStream();
+    }
+
+    const int blockSize = 256;
+    dim3 dimBlock( blockSize, 1, 1 );
+    dim3 dimGrid = makeGrid( n, dimBlock.x );
+
+    sum_kernel <<< dimGrid, dimBlock, 0, stream>>> ( n, alpha, x, beta, y, z );
+
+    if( !syncToken )
+    {
+        cudaStreamSynchronize( stream );
+        SCAI_CHECK_CUDA_ERROR
+    }
+}
 
 /* ---------------------------------------------------------------------------------------*/
 /*    scale                                                                               */
@@ -718,78 +782,38 @@ ValueType CUDABLAS1::dot(
     return res;
 }
 
-/* ---------------------------------------------------------------------------------------*/
-/*    sum                                                                                 */
-/* ---------------------------------------------------------------------------------------*/
-
-template<typename ValueType>
-void CUDABLAS1::sum(
-    const IndexType n,
-    ValueType alpha,
-    const ValueType* x,
-    ValueType beta,
-    const ValueType* y,
-    ValueType* z )
-{
-    SCAI_REGION( "CUDA.BLAS1.sum" )
-
-    if( n <= 0 )
-    {
-        return;
-    }
-
-    SCAI_LOG_DEBUG( logger,
-                    "sum<" << getScalarType<ValueType>() << ">, n = " << n << ", " << alpha << " * x + " << beta << " * y " )
-
-    SCAI_CHECK_CUDA_ACCESS
-
-    cudaStream_t stream = 0; // default stream if no syncToken is given
-
-    CUDAStreamSyncToken* syncToken = CUDAStreamSyncToken::getCurrentSyncToken();
-
-    if ( syncToken )
-    {
-        stream = syncToken->getCUDAStream();
-    }
-
-    sum_launcher( n, alpha, x, beta, y, z, stream );
-
-    // No error check here possible as kernel is started asynchronously
-
-    if( !syncToken )
-    {
-        cudaStreamSynchronize( stream );
-        SCAI_CHECK_CUDA_ERROR
-    }
-}
-
 /* --------------------------------------------------------------------------- */
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void CUDABLAS1::registerKernels()
+void CUDABLAS1::registerKernels( bool deleteFlag )
 {
-    using scai::kregistry::KernelRegistry;
+    using kregistry::KernelRegistry;
+    using common::context::CUDA;
 
-    // ctx will contain the context for which registration is done, here Host
+    KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD;
 
-    common::context::ContextType ctx = common::context::CUDA;
+    if ( deleteFlag )
+    {
+        flag = KernelRegistry::KERNEL_ERASE;
+    }
 
     SCAI_LOG_INFO( logger, "register BLAS1 routines implemented by CuBLAS in KernelRegistry" )
 
-// Note: macro takes advantage of same name for routines and type definitions
-//       ( e.g. routine CUDABLAS1::sum<ValueType> is set for BLAS::BLAS1::sum variable
+    // register for one CUDA type: ARITHMETIC_CUDA_TYPE_xxx
 
-#define LAMA_BLAS1_REGISTER(z, I, _)                                        \
-    KernelRegistry::set<BLASKernelTrait::scal<ARITHMETIC_CUDA_TYPE_##I> >( scal, ctx );    \
-    KernelRegistry::set<BLASKernelTrait::nrm2<ARITHMETIC_CUDA_TYPE_##I> >( nrm2, ctx );    \
-    KernelRegistry::set<BLASKernelTrait::asum<ARITHMETIC_CUDA_TYPE_##I> >( asum, ctx );    \
-    KernelRegistry::set<BLASKernelTrait::iamax<ARITHMETIC_CUDA_TYPE_##I> >( iamax, ctx );  \
-    KernelRegistry::set<BLASKernelTrait::swap<ARITHMETIC_CUDA_TYPE_##I> >( swap, ctx );    \
-    KernelRegistry::set<BLASKernelTrait::copy<ARITHMETIC_CUDA_TYPE_##I> >( copy, ctx );    \
-    KernelRegistry::set<BLASKernelTrait::axpy<ARITHMETIC_CUDA_TYPE_##I> >( axpy, ctx );    \
-    KernelRegistry::set<BLASKernelTrait::dot<ARITHMETIC_CUDA_TYPE_##I> >( dot, ctx );      \
-    KernelRegistry::set<BLASKernelTrait::sum<ARITHMETIC_CUDA_TYPE_##I> >( sum, ctx );      \
+#define LAMA_BLAS1_REGISTER(z, I, _)                                                              \
+    KernelRegistry::set<BLASKernelTrait::scal<ARITHMETIC_CUDA_TYPE_##I> >( scal, CUDA, flag );    \
+    KernelRegistry::set<BLASKernelTrait::nrm2<ARITHMETIC_CUDA_TYPE_##I> >( nrm2, CUDA, flag );    \
+    KernelRegistry::set<BLASKernelTrait::asum<ARITHMETIC_CUDA_TYPE_##I> >( asum, CUDA, flag );    \
+    KernelRegistry::set<BLASKernelTrait::iamax<ARITHMETIC_CUDA_TYPE_##I> >( iamax, CUDA, flag );  \
+    KernelRegistry::set<BLASKernelTrait::swap<ARITHMETIC_CUDA_TYPE_##I> >( swap, CUDA, flag );    \
+    KernelRegistry::set<BLASKernelTrait::copy<ARITHMETIC_CUDA_TYPE_##I> >( copy, CUDA, flag );    \
+    KernelRegistry::set<BLASKernelTrait::axpy<ARITHMETIC_CUDA_TYPE_##I> >( axpy, CUDA, flag );    \
+    KernelRegistry::set<BLASKernelTrait::dot<ARITHMETIC_CUDA_TYPE_##I> >( dot, CUDA, flag );      \
+    KernelRegistry::set<BLASKernelTrait::sum<ARITHMETIC_CUDA_TYPE_##I> >( sum, CUDA, flag );      \
+
+    // loop over all supported CUDA types
 
     BOOST_PP_REPEAT( ARITHMETIC_CUDA_TYPE_CNT, LAMA_BLAS1_REGISTER, _ )
 
@@ -797,20 +821,22 @@ void CUDABLAS1::registerKernels()
 }
 
 /* --------------------------------------------------------------------------- */
-/*    Static registration of the Utils routines                                */
+/*    Constructor/Desctructor with registration                                */
 /* --------------------------------------------------------------------------- */
 
-bool CUDABLAS1::registerInterface()
+CUDABLAS1::CUDABLAS1()
 {
-    registerKernels();
-    return true;
+    bool deleteFlag = false;
+    registerKernels( deleteFlag );
 }
 
-/* --------------------------------------------------------------------------- */
-/*    Static initialiazion at program start                                    */
-/* --------------------------------------------------------------------------- */
+CUDABLAS1::~CUDABLAS1()
+{
+    bool deleteFlag = true;
+    registerKernels( deleteFlag );
+}
 
-bool CUDABLAS1::initialized = registerInterface();
+CUDABLAS1 CUDABLAS1::guard;    // guard variable for registration
 
 } /* end namespace lama */
 

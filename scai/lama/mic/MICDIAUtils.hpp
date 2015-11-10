@@ -120,11 +120,22 @@ public:
         const IndexType diaOffsets[],
         const ValueType diaValues[] );
 
-    /** Routine that registers all routines of this class at the Kernel registry. */
-
-    static void registerKernels();
-
 private:
+
+    /** Routine that registers all methods at the kernel registry. */
+
+    static void registerKernels( bool deleteFlag );
+
+    /** Helper class for (un) registration of kernel routines at static initialization. */
+
+    class RegisterGuard
+    {
+    public:
+        RegisterGuard();
+        ~RegisterGuard();
+    };
+
+    static RegisterGuard guard;  // registration of kernels @ static initialization
 
     /*
     template<typename ValueType>

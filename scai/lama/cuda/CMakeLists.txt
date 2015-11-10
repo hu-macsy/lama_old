@@ -31,43 +31,45 @@
  # @since 1.0.0
 ###
 
-if    ( CUSPARSE_V2 )
-	set ( CUSparseCSRUtils CUSparseCSRUtils )
-else ( CUSPARSE_V2 )
-	set ( CUSparseCSRUtils )
-endif ( CUSPARSE_V2 )
+set( CLASSES      # .cpp, .hpp
 
-### Add classes and header files ###
-
-scai_project(
-
-    CLASSES      # .cpp, .hpp
-
-        CUDABLAS1
         CUDABLAS2
         CUDABLAS3
         CUDALAPACK
         CUDASettings
         CUDATexture
+)
 
-    CUDA_CLASSES  # .cu, .hpp
+set( CUDA_CLASSES  # .cu, .hpp
 
+        CUDABLAS1
         CUDAUtils
         CUDACOOUtils
         CUDACSRUtils
         CUDADIAUtils
         CUDAELLUtils
         CUDAJDSUtils
-        ${CUSparseCSRUtils}
+        CUSparseCSRUtils
+)
 
-    CUDA_SOURCES   # .cu
-
-        blas1
-
-    HEADERS        # .hpp
+set ( HEADERS        # .hpp
 
         CUDATexVector
-        lama_cublas
+        cublas_cast
+)
+
+
+if    ( CUSPARSE_V2 )
+	set ( set CLASSES ${CLASSES} CUSparseCSRUtils )
+endif ( CUSPARSE_V2 )
+
+### Add classes and header files ###
+
+scai_project(
+
+    CLASSES ${CLASSES} 
+    CUDA_CLASSES ${CUDA_CLASSES}
+    HEADERS ${HEADERS}
 
     ADD_PARENT_SCOPE
 )

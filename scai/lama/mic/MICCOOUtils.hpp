@@ -68,7 +68,20 @@ public:
     /** MIC implementation for COOKernelTrait::getCSRValues */
 
     template<typename COOValueType,typename CSRValueType>
-    static void getCSRValues(
+    static void getCSRValuesP(
+        IndexType csrJA[],
+        CSRValueType csrValues[],
+        IndexType csrIA[],
+        const IndexType numRow,
+        const IndexType numValues,
+        const IndexType cooIA[],
+        const IndexType cooJA[],
+        const COOValueType cooValues[] );
+
+    /** MIC serial implementation for COOKernelTrait::getCSRValues */
+
+    template<typename COOValueType,typename CSRValueType>
+    static void getCSRValuesS(
         IndexType csrJA[],
         CSRValueType csrValues[],
         IndexType csrIA[],
@@ -127,15 +140,22 @@ public:
         const ValueType omega,
         const IndexType numRows);
 
-    /** Routine that registers all routines of this class at the LAMA interface. */
-
-    static void registerKernels();
-
 private:
 
-    static bool initialized;
+    /** Routine that registers all methods at the kernel registry. */
 
-    static bool registerInterface();
+    static void registerKernels( bool deleteFlag );
+
+    /** Helper class for (un) registration of kernel routines at static initialization. */
+
+    class RegisterGuard
+    {
+    public:
+        RegisterGuard();
+        ~RegisterGuard();
+    };
+
+    static RegisterGuard guard;  // registration of kernels @ static initialization
 
     /** Logger for this class. */
 

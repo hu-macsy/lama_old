@@ -28,7 +28,6 @@
  * @brief Implementation of CSR utilities with MICMKL
  * @author Thomas Brandes
  * @date 02.07.2012
- * @since 1.0.0
  */
 
 // hpp
@@ -86,7 +85,7 @@ void MICMKLCSRUtils::normalGEMV(
 
     if ( syncToken )
     {
-        SCAI_LOG_WARN( logger, "asynchronous execution for MIC not supported yet" )
+        SCAI_LOG_INFO( logger, "asynchronous execution for MIC not supported yet" )
     }
 
     if( y != result && beta != 0 )
@@ -135,7 +134,7 @@ void MICMKLCSRUtils::normalGEMV(
 
     if ( syncToken )
     {
-        SCAI_LOG_WARN( logger, "asynchronous execution for MIC not supported yet" )
+        SCAI_LOG_INFO( logger, "asynchronous execution for MIC not supported yet" )
     }
 
     // SCAI_REGION( "MIC.MKLdcsrmv" )
@@ -188,7 +187,7 @@ void MICMKLCSRUtils::normalGEMV(
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void MICMKLCSRUtils::registerKernels()
+void MICMKLCSRUtils::registerKernels( bool deleteFlag )
 {
     bool useMKL = true;
 
@@ -207,31 +206,41 @@ void MICMKLCSRUtils::registerKernels()
 
     SCAI_LOG_INFO( logger, "register some CSR kernels implemented by MKL for MIC in Kernel Registry" )
 
-    using namespace scai::kregistry;
+    using kregistry::KernelRegistry;
+    using common::context::MIC;
 
-    // ctx will contain the context for which registration is done, here MIC
+    KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // add it or delete it
 
-    common::context::ContextType ctx = common::context::MIC;
+    if ( deleteFlag )
+    {
+        flag = KernelRegistry::KERNEL_ERASE;
+    }
 
-    KernelRegistry::set<CSRKernelTrait::normalGEMV<float> >( normalGEMV, ctx );
-    KernelRegistry::set<CSRKernelTrait::normalGEMV<double> >( normalGEMV, ctx );
+    // ToDo : routine causes problems
+
+    // KernelRegistry::set<CSRKernelTrait::normalGEMV<float> >( normalGEMV, MIC, flag );
+    // KernelRegistry::set<CSRKernelTrait::normalGEMV<double> >( normalGEMV, MIC, flag );
 }
 
 /* --------------------------------------------------------------------------- */
-/*    Static registration of the Utils routines                                */
+/*    Static initialization with registration                                  */
 /* --------------------------------------------------------------------------- */
 
-bool MICMKLCSRUtils::registerInterface()
+MICMKLCSRUtils::RegisterGuard::RegisterGuard()
 {
-    registerKernels();
-    return true;
+    bool deleteFlag = false;
+    registerKernels( deleteFlag );
 }
 
-/* --------------------------------------------------------------------------- */
-/*    Static initialiazion at program start                                    */
-/* --------------------------------------------------------------------------- */
+MICMKLCSRUtils::RegisterGuard::~RegisterGuard()
+{
+    bool deleteFlag = true;
+    registerKernels( deleteFlag );
+}
 
-bool MICMKLCSRUtils::initialized = registerInterface();
+MICMKLCSRUtils::RegisterGuard MICMKLCSRUtils::guard;    // guard variable for registration
+
+
 
 } /* end namespace lama */
 

@@ -35,7 +35,7 @@
 #include <scai/lama/cuda/CUDABLAS2.hpp>
 
 // local library
-#include <scai/lama/cuda/lama_cublas.hpp>
+#include <scai/lama/cuda/cublas_cast.hpp>
 
 #include <scai/lama/BLASKernelTrait.hpp>
 
@@ -246,18 +246,24 @@ void CUDABLAS2::gemv(
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void CUDABLAS2::registerKernels()
+void CUDABLAS2::registerKernels( bool deleteFlag )
 {
-    using scai::kregistry::KernelRegistry;
+    using kregistry::KernelRegistry;
+    using common::context::CUDA;
 
-    // ctx will contain the context for which registration is done, here Host
+    KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD;
 
-    common::context::ContextType ctx = common::context::CUDA;
+    if ( deleteFlag )
+    {
+        flag = KernelRegistry::KERNEL_ERASE;
+    }
 
-    SCAI_LOG_INFO( logger, "set BLAS2 routines for CUDA at Kernel Registry" )
+    SCAI_LOG_INFO( logger, "register BLAS2 routines implemented by CuBLAS in KernelRegistry" )
 
-#define LAMA_BLAS2_REGISTER(z, I, _)                                                   \
-    KernelRegistry::set<BLASKernelTrait::gemv<ARITHMETIC_CUDA_TYPE_##I> >( gemv, ctx );  \
+    // register for one CUDA type: ARITHMETIC_CUDA_TYPE_xxx
+
+#define LAMA_BLAS2_REGISTER(z, I, _)                                                            \
+    KernelRegistry::set<BLASKernelTrait::gemv<ARITHMETIC_CUDA_TYPE_##I> >( gemv, CUDA, flag );  \
 
     BOOST_PP_REPEAT( ARITHMETIC_CUDA_TYPE_CNT, LAMA_BLAS2_REGISTER, _ )
 
@@ -265,20 +271,22 @@ void CUDABLAS2::registerKernels()
 }
 
 /* --------------------------------------------------------------------------- */
-/*    Static registration of the Utils routines                                */
+/*    Constructor/Desctructor with registration                                */
 /* --------------------------------------------------------------------------- */
 
-bool CUDABLAS2::registerInterface()
+CUDABLAS2::CUDABLAS2()
 {
-    registerKernels();
-    return true;
+    bool deleteFlag = false;
+    registerKernels( deleteFlag );
 }
 
-/* --------------------------------------------------------------------------- */
-/*    Static initialiazion at program start                                    */
-/* --------------------------------------------------------------------------- */
+CUDABLAS2::~CUDABLAS2()
+{
+    bool deleteFlag = true;
+    registerKernels( deleteFlag );
+}
 
-bool CUDABLAS2::initialized = registerInterface();
+CUDABLAS2 CUDABLAS2::guard;    // guard variable for registration
 
 } /* end namespace lama */
 

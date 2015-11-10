@@ -507,9 +507,7 @@ void DenseStorageView<ValueType>::matrixTimesVector(
         return; // nothing to do
     }
 
-    ContextPtr loc = mContext;
-
-    SCAI_LOG_INFO( logger, *this << ": matrixTimesVector on " << *loc )
+    SCAI_LOG_INFO( logger, *this << ": matrixTimesVector, try on " << *mContext )
 
     // using BLAS2 interface requires result and y to be aliased
 
@@ -518,6 +516,8 @@ void DenseStorageView<ValueType>::matrixTimesVector(
         SCAI_LOG_INFO( logger, "set result = 0 as y != result and beta = 0" )
 
         static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
+
+        ContextPtr loc = setVal.getValidContext( mContext );
 
         WriteOnlyAccess<ValueType> wResult( result, loc, mNumRows );
 
@@ -530,6 +530,8 @@ void DenseStorageView<ValueType>::matrixTimesVector(
         SCAI_LOG_INFO( logger, "set result = y as y != result" )
 
         static LAMAKernel<BLASKernelTrait::copy<ValueType> > copy;
+
+        ContextPtr loc = copy.getValidContext( mContext );
 
         WriteOnlyAccess<ValueType> wResult( result, loc, mNumRows );
 
@@ -564,6 +566,8 @@ void DenseStorageView<ValueType>::matrixTimesVector(
         {
             static LAMAKernel<BLASKernelTrait::scal<ValueType> > scal;
 
+            ContextPtr loc = scal.getValidContext( mContext );
+
             WriteAccess<ValueType> wResult( result, loc );
 
             SCAI_CONTEXT_ACCESS( loc )
@@ -576,6 +580,8 @@ void DenseStorageView<ValueType>::matrixTimesVector(
         // mNumColums > 0, mnumRows > 0, so we avoid problems for gemv with m==0 or n==0
 
         static LAMAKernel<BLASKernelTrait::gemv<ValueType> > gemv;
+
+        ContextPtr loc = gemv.getValidContext( mContext );
 
         ReadAccess<ValueType> denseValues( mData, loc );
         ReadAccess<ValueType> rX( x, loc );
@@ -614,9 +620,7 @@ void DenseStorageView<ValueType>::vectorTimesMatrix(
         return; // nothing to do
     }
 
-    ContextPtr loc = mContext;
-
-    SCAI_LOG_INFO( logger, *this << ": matrixTimesVector on " << *loc )
+    SCAI_LOG_INFO( logger, *this << ": matrixTimesVector try on " << *mContext )
 
     // not used here: LAMA_INTERFACE_FN_T( normalGEVM, loc, DenseUtils, Mult, ValueType )
 
@@ -627,6 +631,8 @@ void DenseStorageView<ValueType>::vectorTimesMatrix(
         SCAI_LOG_INFO( logger, "set result = 0 as y != result and beta = 0" )
 
         static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
+
+        ContextPtr loc = setVal.getValidContext( mContext );
 
         WriteOnlyAccess<ValueType> wResult( result, loc, mNumColumns );
 
@@ -639,6 +645,8 @@ void DenseStorageView<ValueType>::vectorTimesMatrix(
         SCAI_LOG_INFO( logger, "set result = y as y != result" )
 
         static LAMAKernel<BLASKernelTrait::copy<ValueType> > copy;
+
+        ContextPtr loc = copy.getValidContext( mContext );
 
         WriteOnlyAccess<ValueType> wResult( result, loc, mNumColumns );
 
@@ -673,6 +681,8 @@ void DenseStorageView<ValueType>::vectorTimesMatrix(
         {
             static LAMAKernel<BLASKernelTrait::scal<ValueType> > scal;
 
+            ContextPtr loc = scal.getValidContext( mContext );
+
             WriteAccess<ValueType> wResult( result, loc );
 
             SCAI_CONTEXT_ACCESS( loc )
@@ -685,6 +695,8 @@ void DenseStorageView<ValueType>::vectorTimesMatrix(
         // mNumColums > 0, mnumRows > 0, so we avoid problems for gevm with m==0 or n==0
 
         static LAMAKernel<BLASKernelTrait::gemv<ValueType> > gemv;
+
+        ContextPtr loc = gemv.getValidContext( mContext );
 
         ReadAccess<ValueType> denseValues( mData, loc );
         ReadAccess<ValueType> rX( x, loc );
@@ -848,13 +860,13 @@ void DenseStorageView<ValueType>::matrixTimesMatrixDense(
     mNumRows = m;
     mNumColumns = n;
 
-    ContextPtr context = mContext;
-
     if ( beta == scai::common::constants::ZERO )
     {
         // do not care at all about C as it might be any dummy, or aliased to result
 
         static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
+
+        ContextPtr context = setVal.getValidContext( mContext );
 
         SCAI_LOG_INFO( logger, "init this result with 0, size = " << m * n )
         WriteOnlyAccess<ValueType> resAccess( getData(), context, m * n );
@@ -870,6 +882,7 @@ void DenseStorageView<ValueType>::matrixTimesMatrixDense(
         mNumRows = m;
         mNumColumns = n;
         static LAMAKernel<BLASKernelTrait::copy<ValueType> > copy;
+        ContextPtr context = copy.getValidContext( mContext );
         ReadAccess<ValueType> cAccess( c.getData(), context );
         WriteOnlyAccess<ValueType> resAccess( getData(), context, m * n );
         SCAI_LOG_TRACE( logger, "Copying: res = c " )
@@ -883,10 +896,6 @@ void DenseStorageView<ValueType>::matrixTimesMatrixDense(
 
     // now C used for BLAS3 call of GEMM is this matrix
 
-    ReadAccess<ValueType> aAccess( ptrA->getData(), context );
-    ReadAccess<ValueType> bAccess( ptrB->getData(), context );
-    WriteAccess<ValueType> resAccess( getData(), context );
-
     int lda = a.getNumColumns();
     int ldb = b.getNumColumns();
     int ldc = mNumColumns;
@@ -899,6 +908,12 @@ void DenseStorageView<ValueType>::matrixTimesMatrixDense(
     if ( lda != 0 && n != 0 && m != 0 )
     {
         static LAMAKernel<BLASKernelTrait::gemm<ValueType> > gemm;
+
+        ContextPtr context = gemm.getValidContext( mContext );
+
+        ReadAccess<ValueType> aAccess( ptrA->getData(), context );
+        ReadAccess<ValueType> bAccess( ptrB->getData(), context );
+        WriteAccess<ValueType> resAccess( getData(), context );
 
         SCAI_CONTEXT_ACCESS( context )
 

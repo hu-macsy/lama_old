@@ -248,17 +248,25 @@ public:
         const ValueType oldSolution[],
         const ValueType omega );
 
-    /** Routine that registers all routines of this class in the Kernel Registry */
-
-    static void registerKernels();
-
 private:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
-    static bool initialized; //!< static initialization used for registration
+    /** Routine that registers all methods at the kernel registry. */
 
-    static bool registerInterface();//!< registration
+    static void registerKernels( bool deleteFlag );
+
+    /** Constructor for registration. */
+
+    CUDAELLUtils();
+
+    /** Destructor for unregistration. */
+
+    ~CUDAELLUtils();
+
+    /** Static variable for registration at static initialization. */
+
+    static CUDAELLUtils guard;
 };
 
 /* --------------------------------------------------------------------------- */

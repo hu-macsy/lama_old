@@ -195,17 +195,26 @@ public:
         const ValueType oldSolution[],
         const ValueType omega );
 
-    /** Method for registration of module routines at the interface. */
-
-    static void registerKernels();
-
-private:
+protected:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
-    static bool initialized;
+private:
 
-    static bool registerInterface();
+    /** Routine that registers all methods at the kernel registry. */
+
+    static void registerKernels( bool deleteFlag );
+
+    /** Helper class for (un) registration of kernel routines at static initialization. */
+
+    class RegisterGuard
+    {
+    public:
+        RegisterGuard();
+        ~RegisterGuard();
+    };
+
+    static RegisterGuard guard;  // registration of kernels @ static initialization
 };
 
 /* --------------------------------------------------------------------------- */

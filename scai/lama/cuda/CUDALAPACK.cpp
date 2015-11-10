@@ -151,35 +151,41 @@ void CUDALAPACK::laswp(
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void CUDALAPACK::registerKernels()
+void CUDALAPACK::registerKernels( bool deleteFlag )
 {
-    using scai::kregistry::KernelRegistry;
+    using kregistry::KernelRegistry;
+    using common::context::CUDA;
 
-    // ctx will contain the context for which registration is done, here Host
+    KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD;
 
-    common::context::ContextType ctx = common::context::CUDA;
+    if ( deleteFlag )
+    {
+        flag = KernelRegistry::KERNEL_ERASE;
+    }
 
-    KernelRegistry::set<BLASKernelTrait::laswp<float> >( laswp, ctx );
-    KernelRegistry::set<BLASKernelTrait::laswp<double> >( laswp, ctx ); 
+    KernelRegistry::set<BLASKernelTrait::laswp<float> >( laswp, CUDA, flag );
+    KernelRegistry::set<BLASKernelTrait::laswp<double> >( laswp, CUDA, flag ); 
 
     // other routines are not used by LAMA yet
 }
 
 /* --------------------------------------------------------------------------- */
-/*    Static registration of the Utils routines                                */
+/*    Constructor/Desctructor with registration                                */
 /* --------------------------------------------------------------------------- */
 
-bool CUDALAPACK::registerInterface()
+CUDALAPACK::CUDALAPACK()
 {
-    registerKernels();
-    return true;
+    bool deleteFlag = false;
+    registerKernels( deleteFlag );
 }
 
-/* --------------------------------------------------------------------------- */
-/*    Static initialiazion at program start                                    */
-/* --------------------------------------------------------------------------- */
+CUDALAPACK::~CUDALAPACK()
+{
+    bool deleteFlag = true;
+    registerKernels( deleteFlag );
+}
 
-bool CUDALAPACK::initialized = registerInterface();
+CUDALAPACK CUDALAPACK::guard;    // guard variable for registration
 
 } /* end namespace lama */
 

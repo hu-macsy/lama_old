@@ -143,16 +143,23 @@ public:
         const ValueType* y,
         ValueType* z );
 
-    /**
-     * @brief This method registers all OpenMP implementations of BLAS1 routines in kernel registry.
-     */
-    static void registerKernels();
-
 private:
 
-    static bool initialized;
+    /** Routine that registers all methods at the kernel registry. */
 
-    static bool registerInterface();
+    static void registerKernels( bool deleteFlag );
+
+    /** Constructor for registration. */
+
+    OpenMPBLAS1();
+
+    /** Destructor for unregistration. */
+
+    ~OpenMPBLAS1();
+
+    /** Static variable for registration at static initialization. */
+
+    static OpenMPBLAS1 guard;
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 };

@@ -81,7 +81,7 @@ void MICBLAS1::scal(
 
     if ( syncToken )
     {
-        SCAI_LOG_WARN( logger, "asynchronous execution for MIC not supported yet." )
+        SCAI_LOG_INFO( logger, "asynchronous execution for MIC not supported yet." )
     }
 
     SCAI_LOG_DEBUG( logger,
@@ -118,7 +118,7 @@ ValueType MICBLAS1::asum( const IndexType n, const ValueType* x, const IndexType
 
     if ( syncToken )
     {
-        SCAI_LOG_WARN( logger, "asynchronous execution for MIC not supported yet." )
+        SCAI_LOG_INFO( logger, "asynchronous execution for MIC not supported yet." )
     }
 
     SCAI_LOG_DEBUG( logger,
@@ -161,7 +161,7 @@ IndexType MICBLAS1::iamax( const IndexType n, const ValueType* x, const IndexTyp
 
     if ( syncToken )
     {
-        SCAI_LOG_WARN( logger, "asynchronous execution for MIC not supported yet." )
+        SCAI_LOG_INFO( logger, "asynchronous execution for MIC not supported yet." )
     }
 
     SCAI_LOG_INFO( logger,
@@ -239,7 +239,7 @@ void MICBLAS1::swap(
 
     if ( syncToken )
     {
-        SCAI_LOG_WARN( logger, "asynchronous execution for MIC not supported yet." )
+        SCAI_LOG_INFO( logger, "asynchronous execution for MIC not supported yet." )
     }
 
     SCAI_LOG_DEBUG( logger,
@@ -280,7 +280,7 @@ ValueType MICBLAS1::nrm2( const IndexType n, const ValueType* x, const IndexType
 
     if ( syncToken )
     {
-        SCAI_LOG_WARN( logger, "asynchronous execution for MIC not supported yet." )
+        SCAI_LOG_INFO( logger, "asynchronous execution for MIC not supported yet." )
     }
 
     const void* xPtr = x;
@@ -330,7 +330,7 @@ void MICBLAS1::copy(
 
     if ( syncToken )
     {
-        SCAI_LOG_WARN( logger, "asynchronous execution for MIC not supported yet." )
+        SCAI_LOG_INFO( logger, "asynchronous execution for MIC not supported yet." )
     }
 
     // SCAI_REGION( "MIC.BLAS1.copy" )
@@ -381,7 +381,7 @@ void MICBLAS1::axpy(
 
     if ( syncToken )
     {
-        SCAI_LOG_WARN( logger, "asynchronous execution for MIC not supported yet." )
+        SCAI_LOG_INFO( logger, "asynchronous execution for MIC not supported yet." )
     }
 
     if( n < 1 || incX < 1 || incY < 1 )
@@ -429,7 +429,7 @@ ValueType MICBLAS1::dot(
 
     if ( syncToken )
     {
-        SCAI_LOG_WARN( logger, "asynchronous execution for MIC not supported yet." )
+        SCAI_LOG_INFO( logger, "asynchronous execution for MIC not supported yet." )
     }
 
     ValueType val = static_cast<ValueType>(0.0);
@@ -482,7 +482,7 @@ void MICBLAS1::sum(
 
     if ( syncToken )
     {
-        SCAI_LOG_WARN( logger, "asynchronous execution for MIC not supported yet." )
+        SCAI_LOG_INFO( logger, "asynchronous execution for MIC not supported yet." )
     }
 
     // SCAI_REGION( "MIC.BLAS1.sum" )
@@ -514,59 +514,65 @@ void MICBLAS1::sum(
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void MICBLAS1::registerKernels()
+void MICBLAS1::registerKernels( bool deleteFlag )
 {
     SCAI_LOG_INFO( logger, "register BLAS1 kernels for MIC in Kernel Registry" )
 
-    using namespace scai::kregistry;
+    using kregistry::KernelRegistry;
+    using common::context::MIC;
 
-    // ctx will contain the context for which registration is done, here MIC
+    KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // add it or delete it
 
-    common::context::ContextType ctx = common::context::MIC;
+    if ( deleteFlag )
+    {
+        flag = KernelRegistry::KERNEL_ERASE;
+    }
 
-    KernelRegistry::set<BLASKernelTrait::scal<float> >( scal, ctx );
-    KernelRegistry::set<BLASKernelTrait::scal<double> >( scal, ctx );
+    KernelRegistry::set<BLASKernelTrait::scal<float> >( scal, MIC, flag );
+    KernelRegistry::set<BLASKernelTrait::scal<double> >( scal, MIC, flag );
 
-    KernelRegistry::set<BLASKernelTrait::nrm2<float> >( nrm2, ctx );
-    KernelRegistry::set<BLASKernelTrait::nrm2<double> >( nrm2, ctx );
+    KernelRegistry::set<BLASKernelTrait::nrm2<float> >( nrm2, MIC, flag );
+    KernelRegistry::set<BLASKernelTrait::nrm2<double> >( nrm2, MIC, flag );
 
-    KernelRegistry::set<BLASKernelTrait::asum<float> >( asum, ctx );
-    KernelRegistry::set<BLASKernelTrait::asum<double> >( asum, ctx );
+    KernelRegistry::set<BLASKernelTrait::asum<float> >( asum, MIC, flag );
+    KernelRegistry::set<BLASKernelTrait::asum<double> >( asum, MIC, flag );
 
-    KernelRegistry::set<BLASKernelTrait::iamax<float> >( iamax, ctx );
-    KernelRegistry::set<BLASKernelTrait::iamax<double> >( iamax, ctx );
+    KernelRegistry::set<BLASKernelTrait::iamax<float> >( iamax, MIC, flag );
+    KernelRegistry::set<BLASKernelTrait::iamax<double> >( iamax, MIC, flag );
 
-    KernelRegistry::set<BLASKernelTrait::swap<float> >( swap, ctx );
-    KernelRegistry::set<BLASKernelTrait::swap<double> >( swap, ctx );
+    KernelRegistry::set<BLASKernelTrait::swap<float> >( swap, MIC, flag );
+    KernelRegistry::set<BLASKernelTrait::swap<double> >( swap, MIC, flag );
 
-    KernelRegistry::set<BLASKernelTrait::copy<float> >( copy, ctx );
-    KernelRegistry::set<BLASKernelTrait::copy<double> >( copy, ctx );
+    KernelRegistry::set<BLASKernelTrait::copy<float> >( copy, MIC, flag );
+    KernelRegistry::set<BLASKernelTrait::copy<double> >( copy, MIC, flag );
 
-    KernelRegistry::set<BLASKernelTrait::axpy<float> >( axpy, ctx );
-    KernelRegistry::set<BLASKernelTrait::axpy<double> >( axpy, ctx );
+    KernelRegistry::set<BLASKernelTrait::axpy<float> >( axpy, MIC, flag );
+    KernelRegistry::set<BLASKernelTrait::axpy<double> >( axpy, MIC, flag );
 
-    KernelRegistry::set<BLASKernelTrait::dot<float> >( dot, ctx );
-    KernelRegistry::set<BLASKernelTrait::dot<double> >( dot, ctx );
+    KernelRegistry::set<BLASKernelTrait::dot<float> >( dot, MIC, flag );
+    KernelRegistry::set<BLASKernelTrait::dot<double> >( dot, MIC, flag );
 
-    KernelRegistry::set<BLASKernelTrait::sum<float> >( sum, ctx );
-    KernelRegistry::set<BLASKernelTrait::sum<double> >( sum, ctx );
+    KernelRegistry::set<BLASKernelTrait::sum<float> >( sum, MIC, flag );
+    KernelRegistry::set<BLASKernelTrait::sum<double> >( sum, MIC, flag );
 }
 
 /* --------------------------------------------------------------------------- */
-/*    Static registration of the BLAS1 routines                                */
+/*    Static intialization with registration                                   */
 /* --------------------------------------------------------------------------- */
 
-bool MICBLAS1::registerInterface()
+MICBLAS1::RegisterGuard::RegisterGuard()
 {
-    registerKernels();
-    return true;
+    bool deleteFlag = false;
+    registerKernels( deleteFlag );
 }
 
-/* --------------------------------------------------------------------------- */
-/*    Static initialiazion at program start                                    */
-/* --------------------------------------------------------------------------- */
+MICBLAS1::RegisterGuard::~RegisterGuard()
+{
+    bool deleteFlag = true;
+    registerKernels( deleteFlag );
+}
 
-bool MICBLAS1::initialized = registerInterface();
+MICBLAS1::RegisterGuard MICBLAS1::guard;    // guard variable for registration
 
 } /* end namespace lama */
 

@@ -36,6 +36,7 @@
 
 // local library
 #include <scai/lama/openmp/OpenMPUtils.hpp>
+#include <scai/lama/openmp/OpenMPCSRUtils.hpp>
 
 #include <scai/lama/COOKernelTrait.hpp>
 
@@ -95,20 +96,21 @@ void OpenMPCOOUtils::getCSRSizes(
 /* --------------------------------------------------------------------------- */
 
 template<typename COOValueType,typename CSRValueType>
-void OpenMPCOOUtils::getCSRValues( IndexType csrJA[], CSRValueType csrValues[], IndexType csrIA[], // used as tmp, remains unchanged
-                                   const IndexType numRows,
-                                   const IndexType numValues,
-                                   const IndexType cooIA[],
-                                   const IndexType cooJA[],
-                                   const COOValueType cooValues[] )
+void OpenMPCOOUtils::getCSRValuesS( IndexType csrJA[], CSRValueType csrValues[], IndexType csrIA[], // used as tmp, remains unchanged
+                                    const IndexType numRows,
+                                    const IndexType numValues,
+                                    const IndexType cooIA[],
+                                    const IndexType cooJA[],
+                                    const COOValueType cooValues[] )
 {
     SCAI_LOG_INFO( logger,
-                   "get CSRValues<" << getScalarType<COOValueType>() << ", " 
+                   "get CSRValues<" << getScalarType<COOValueType>() << ", "
                     << getScalarType<CSRValueType>() << ">" << ", #rows = " << numRows << ", #values = " << numValues )
 
     // traverse the non-zero values and put data at the right places
+    // serial execution guarantees that order in one row is not destroyed
 
-    for( IndexType k = 0; k < numValues; k++ )
+    for ( IndexType k = 0; k < numValues; k++ )
     {
         IndexType i = cooIA[k];
 
@@ -124,7 +126,7 @@ void OpenMPCOOUtils::getCSRValues( IndexType csrJA[], CSRValueType csrValues[], 
 
     // set back the old offsets in csrIA
 
-    for( IndexType i = numRows; i > 0; --i )
+    for ( IndexType i = numRows; i > 0; --i )
     {
         csrIA[i] = csrIA[i - 1];
     }
@@ -132,6 +134,71 @@ void OpenMPCOOUtils::getCSRValues( IndexType csrJA[], CSRValueType csrValues[], 
     csrIA[0] = 0;
 
     SCAI_ASSERT_EQUAL_DEBUG( csrIA[numRows], numValues )
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename COOValueType,typename CSRValueType>
+void OpenMPCOOUtils::getCSRValuesP( IndexType csrJA[], CSRValueType csrValues[], IndexType csrIA[], // used as tmp, remains unchanged
+                                    const IndexType numRows,
+                                    const IndexType numValues,
+                                    const IndexType cooIA[],
+                                    const IndexType cooJA[],
+                                    const COOValueType cooValues[] )
+{
+    SCAI_LOG_INFO( logger,
+                   "get CSRValues<" << getScalarType<COOValueType>() << ", " 
+                    << getScalarType<CSRValueType>() << ">" << ", #rows = " << numRows << ", #values = " << numValues )
+
+    std::vector<IndexType> rowOffset( numRows ); // temp copy of csrIA
+
+    // Note: diagonal property if csrIA[i] == i && csrJA[i] == i 
+
+    bool diagonalProperty =  numValues >= numRows;
+
+    #pragma omp parallel
+    {
+        #pragma omp for
+
+        for( IndexType i = 0; i < numRows; ++i )
+        {
+            rowOffset[i] = csrIA[i];
+
+            if ( diagonalProperty )
+            {
+                // implies that i is legal index value
+
+                if ( csrJA[ i ] != i  || csrIA[ i ] != i  )
+                {
+                    // for cache optimization: write is much more expensive than only read 
+                    diagonalProperty = false;
+                }
+            }
+        }
+
+        // traverse the non-zero values and put data in the corresponding rows,
+
+        #pragma omp for
+
+        for ( IndexType k = 0; k < numValues; k++ )
+        {
+            IndexType i = cooIA[k];
+            IndexType offset;
+
+            #pragma omp critical
+            {
+                offset = rowOffset[i];
+                rowOffset[i]++;
+            }
+
+            csrJA[offset] = cooJA[k];
+            csrValues[offset] = static_cast<CSRValueType>( cooValues[k] );
+        }
+    }
+
+    OpenMPCSRUtils::sortRowElements( csrJA, csrValues, csrIA, numRows, diagonalProperty );
+
+    // ToDo: Attention: there are still some problems with diagonal property here
 }
 
 /* --------------------------------------------------------------------------- */
@@ -377,31 +444,35 @@ void OpenMPCOOUtils::jacobi(
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void OpenMPCOOUtils::registerKernels()
+void OpenMPCOOUtils::registerKernels( bool deleteFlag )
 {
     using namespace scai::kregistry;
+    using common::context::Host;
 
-    // ctx will contain the context for which registration is done, here Host
+    KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // lower priority
 
-    common::context::ContextType ctx = common::context::Host;
+    if ( deleteFlag )
+    {
+        flag = KernelRegistry::KERNEL_ERASE;
+    }
 
-    KernelRegistry::set<COOKernelTrait::offsets2ia>( offsets2ia, ctx );
-    KernelRegistry::set<COOKernelTrait::getCSRSizes>( getCSRSizes, ctx );
+    KernelRegistry::set<COOKernelTrait::offsets2ia>( offsets2ia, Host, flag );
+    KernelRegistry::set<COOKernelTrait::getCSRSizes>( getCSRSizes, Host, flag );
 
-    KernelRegistry::set<COOKernelTrait::setCSRData<IndexType, IndexType> >( setCSRData, ctx );
+    KernelRegistry::set<COOKernelTrait::setCSRData<IndexType, IndexType> >( setCSRData, Host, flag );
 
-#define LAMA_COO_UTILS2_REGISTER(z, J, TYPE )                                                                     \
-    KernelRegistry::set<COOKernelTrait::setCSRData<TYPE, ARITHMETIC_HOST_TYPE_##J> >( setCSRData, ctx );       \
-    KernelRegistry::set<COOKernelTrait::getCSRValues<TYPE, ARITHMETIC_HOST_TYPE_##J> >( getCSRValues, ctx );   \
+#define LAMA_COO_UTILS2_REGISTER(z, J, TYPE )                                                                        \
+    KernelRegistry::set<COOKernelTrait::setCSRData<TYPE, ARITHMETIC_HOST_TYPE_##J> >( setCSRData, Host, flag );       \
+    KernelRegistry::set<COOKernelTrait::getCSRValues<TYPE, ARITHMETIC_HOST_TYPE_##J> >( getCSRValuesS, Host, flag );  \
 
-#define LAMA_COO_UTILS_REGISTER(z, I, _)                                                                \
-    KernelRegistry::set<COOKernelTrait::normalGEMV<ARITHMETIC_HOST_TYPE_##I> >( normalGEMV, ctx );   \
-    KernelRegistry::set<COOKernelTrait::normalGEVM<ARITHMETIC_HOST_TYPE_##I> >( normalGEVM, ctx );   \
-    KernelRegistry::set<COOKernelTrait::jacobi<ARITHMETIC_HOST_TYPE_##I> >( jacobi, ctx );           \
-                                                                                          \
-    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT,                                            \
-                     LAMA_COO_UTILS2_REGISTER,                                            \
-                     ARITHMETIC_HOST_TYPE_##I )                                           \
+#define LAMA_COO_UTILS_REGISTER(z, I, _)                                                                   \
+    KernelRegistry::set<COOKernelTrait::normalGEMV<ARITHMETIC_HOST_TYPE_##I> >( normalGEMV, Host, flag );   \
+    KernelRegistry::set<COOKernelTrait::normalGEVM<ARITHMETIC_HOST_TYPE_##I> >( normalGEVM, Host, flag );   \
+    KernelRegistry::set<COOKernelTrait::jacobi<ARITHMETIC_HOST_TYPE_##I> >( jacobi, Host, flag );           \
+                                                                                                           \
+    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT,                                                             \
+                     LAMA_COO_UTILS2_REGISTER,                                                             \
+                     ARITHMETIC_HOST_TYPE_##I )                                                            \
 
     BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_COO_UTILS_REGISTER, _ )
 
@@ -410,20 +481,26 @@ void OpenMPCOOUtils::registerKernels()
 }
 
 /* --------------------------------------------------------------------------- */
-/*    Static registration of the Utils routines                                */
+/*    Constructor/Desctructor with registration                                */
 /* --------------------------------------------------------------------------- */
 
-bool OpenMPCOOUtils::registerInterface()
+OpenMPCOOUtils::OpenMPCOOUtils()
 {
-    registerKernels();
-    return true;
+    bool deleteFlag = false;
+    registerKernels( deleteFlag );
+}
+
+OpenMPCOOUtils::~OpenMPCOOUtils()
+{
+    bool deleteFlag = true;
+    registerKernels( deleteFlag );
 }
 
 /* --------------------------------------------------------------------------- */
-/*    Static initialiazion at program start                                    */
+/*    Static variable to force registration during static initialization      */
 /* --------------------------------------------------------------------------- */
 
-bool OpenMPCOOUtils::initialized = registerInterface();
+OpenMPCOOUtils OpenMPCOOUtils::guard;
 
 } /* end namespace lama */
 

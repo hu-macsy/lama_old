@@ -53,13 +53,6 @@ namespace lama
 
 class COMMON_DLL_IMPORTEXPORT OpenMPELLUtils
 {
-
-public:
-
-    /** Routine that registers all functions of this class at the Kernel Registry. */
-
-    static void registerKernelRoutines();
-
 private:
 
     /** This method computes the total number of non-zero rows by the size array  */
@@ -365,11 +358,25 @@ private:
         const IndexType ellJA[],
         const ValueType ellValues[] );
 
+private:
+
+    /** Routine that registers all methods at the kernel registry. */
+
+    static void registerKernels( bool deleteFlag );
+
+    /** Constructor for registration. */
+
+    OpenMPELLUtils();
+
+    /** Destructor for unregistration. */
+
+    ~OpenMPELLUtils();
+
+    /** Static variable for registration at static initialization. */
+
+    static OpenMPELLUtils guard;
+
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
-
-    static    bool initialized;
-
-    static bool registerInterface();
 };
 
 /* --------------------------------------------------------------------------- */

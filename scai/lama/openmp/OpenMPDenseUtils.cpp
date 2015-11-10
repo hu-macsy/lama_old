@@ -409,30 +409,34 @@ void OpenMPDenseUtils::scaleRows(
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void OpenMPDenseUtils::registerKernelFunctions()
+void OpenMPDenseUtils::registerKernels( bool deleteFlag )
 {
-    using namespace scai::kregistry;
-    using namespace common::context;
+    using kregistry::KernelRegistry;
+    using common::context::Host;
 
-/*
-*/
+    KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // lower priority
 
-#define KREGISTRY_DENSE2_REGISTER(z, J, TYPE )                                                                        \
-    KernelRegistry::set<DenseKernelTrait::setCSRValues<TYPE, ARITHMETIC_HOST_TYPE_##J> >( setCSRValues, Host );       \
-    KernelRegistry::set<DenseKernelTrait::getCSRValues<TYPE, ARITHMETIC_HOST_TYPE_##J> >( getCSRValues, Host );       \
-    KernelRegistry::set<DenseKernelTrait::copyDenseValues<TYPE, ARITHMETIC_HOST_TYPE_##J> >( copyDenseValues, Host ); \
-    KernelRegistry::set<DenseKernelTrait::getDiagonal<TYPE, ARITHMETIC_HOST_TYPE_##J> >( getDiagonal, Host );         \
-    KernelRegistry::set<DenseKernelTrait::setDiagonal<TYPE, ARITHMETIC_HOST_TYPE_##J> >( setDiagonal, Host );         \
-    KernelRegistry::set<DenseKernelTrait::getRow<TYPE, ARITHMETIC_HOST_TYPE_##J> >( getRow, Host );                   \
-    KernelRegistry::set<DenseKernelTrait::scaleRows<TYPE, ARITHMETIC_HOST_TYPE_##J> >( scaleRows, Host );             \
+    if ( deleteFlag )
+    {
+        flag = KernelRegistry::KERNEL_ERASE;
+    }
 
-#define KREGISTRY_DENSE_REGISTER(z, I, _)                                                                             \
-    KernelRegistry::set<DenseKernelTrait::nonZeroValues<ARITHMETIC_HOST_TYPE_##I> >( nonZeroValues, Host );           \
-    KernelRegistry::set<DenseKernelTrait::getCSRSizes<ARITHMETIC_HOST_TYPE_##I> >( getCSRSizes, Host );               \
-    KernelRegistry::set<DenseKernelTrait::setValue<ARITHMETIC_HOST_TYPE_##I> >( setValue, Host );                     \
-    KernelRegistry::set<DenseKernelTrait::scaleValue<ARITHMETIC_HOST_TYPE_##I> >( scaleValue, Host );                 \
-    KernelRegistry::set<DenseKernelTrait::setDiagonalValue<ARITHMETIC_HOST_TYPE_##I> >( setDiagonalValue, Host );     \
-    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, KREGISTRY_DENSE2_REGISTER, ARITHMETIC_HOST_TYPE_##I )                  \
+#define KREGISTRY_DENSE2_REGISTER(z, J, TYPE )                                                                              \
+    KernelRegistry::set<DenseKernelTrait::setCSRValues<TYPE, ARITHMETIC_HOST_TYPE_##J> >( setCSRValues, Host, flag );       \
+    KernelRegistry::set<DenseKernelTrait::getCSRValues<TYPE, ARITHMETIC_HOST_TYPE_##J> >( getCSRValues, Host, flag );       \
+    KernelRegistry::set<DenseKernelTrait::copyDenseValues<TYPE, ARITHMETIC_HOST_TYPE_##J> >( copyDenseValues, Host, flag ); \
+    KernelRegistry::set<DenseKernelTrait::getDiagonal<TYPE, ARITHMETIC_HOST_TYPE_##J> >( getDiagonal, Host, flag );         \
+    KernelRegistry::set<DenseKernelTrait::setDiagonal<TYPE, ARITHMETIC_HOST_TYPE_##J> >( setDiagonal, Host, flag );         \
+    KernelRegistry::set<DenseKernelTrait::getRow<TYPE, ARITHMETIC_HOST_TYPE_##J> >( getRow, Host, flag );                   \
+    KernelRegistry::set<DenseKernelTrait::scaleRows<TYPE, ARITHMETIC_HOST_TYPE_##J> >( scaleRows, Host, flag );             \
+
+#define KREGISTRY_DENSE_REGISTER(z, I, _)                                                                                   \
+    KernelRegistry::set<DenseKernelTrait::nonZeroValues<ARITHMETIC_HOST_TYPE_##I> >( nonZeroValues, Host, flag );           \
+    KernelRegistry::set<DenseKernelTrait::getCSRSizes<ARITHMETIC_HOST_TYPE_##I> >( getCSRSizes, Host, flag );               \
+    KernelRegistry::set<DenseKernelTrait::setValue<ARITHMETIC_HOST_TYPE_##I> >( setValue, Host, flag );                     \
+    KernelRegistry::set<DenseKernelTrait::scaleValue<ARITHMETIC_HOST_TYPE_##I> >( scaleValue, Host, flag );                 \
+    KernelRegistry::set<DenseKernelTrait::setDiagonalValue<ARITHMETIC_HOST_TYPE_##I> >( setDiagonalValue, Host, flag );     \
+    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, KREGISTRY_DENSE2_REGISTER, ARITHMETIC_HOST_TYPE_##I )                        \
 
     BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, KREGISTRY_DENSE_REGISTER, _ )
 
@@ -442,20 +446,26 @@ void OpenMPDenseUtils::registerKernelFunctions()
 }
 
 /* --------------------------------------------------------------------------- */
-/*    Static registration of the DenseUtils routines                           */
+/*    Constructor/Desctructor with registration                                */
 /* --------------------------------------------------------------------------- */
 
-bool OpenMPDenseUtils::registerInterface()
+OpenMPDenseUtils::OpenMPDenseUtils()
 {
-    registerKernelFunctions();
-    return true;
+    bool deleteFlag = false;
+    registerKernels( deleteFlag );
+}
+
+OpenMPDenseUtils::~OpenMPDenseUtils()
+{
+    bool deleteFlag = true;
+    registerKernels( deleteFlag );
 }
 
 /* --------------------------------------------------------------------------- */
-/*    Static initialiazion at program start                                    */
+/*    Static variable to force registration during static initialization      */
 /* --------------------------------------------------------------------------- */
 
-bool OpenMPDenseUtils::initialized = registerInterface();
+OpenMPDenseUtils OpenMPDenseUtils::guard;
 
 /* --------------------------------------------------------------------------- */
 

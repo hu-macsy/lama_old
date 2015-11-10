@@ -314,19 +314,26 @@ public:
         const IndexType csrJA2[],
         const ValueType csrValues2[] );
 
-    /** Routine that registers all routines of this class at the LAMA interface. */
-
-    static void registerKernels();
-
 protected:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
 private    :
 
-    static bool initialized;
+    /** Routine that registers all methods at the kernel registry. */
 
-    static bool registerInterface();
+    static void registerKernels( bool deleteFlag );
+
+    /** Helper class for (un) registration of kernel routines at static initialization. */
+
+    class RegisterGuard
+    {
+    public:
+        RegisterGuard();
+        ~RegisterGuard();
+    };
+
+    static RegisterGuard guard;  // registration of kernels @ static initialization
 
     static IndexType scanSerial( IndexType array[], const IndexType numValues );
 

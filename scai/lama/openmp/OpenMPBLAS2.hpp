@@ -311,20 +311,23 @@ public:
         const double* const z,
         double* y );
 
-    /** Routine that sets functions pointers belonging to BLAS2 in a BLASKernelTrait.
-     *
-     *  param[inout] BLASKernelTrait struct to register all routines implemented in CUDA
-     *
-     *  Note: this routine will make instantiations of the template routines.
-     */
-
-    static void registerKernels();
-
 private:
 
-    static bool initialized;
+    /** Routine that registers all methods at the kernel registry. */
 
-    static bool registerInterface();
+    static void registerKernels( bool deleteFlag );
+
+    /** Constructor for registration. */
+
+    OpenMPBLAS2();
+
+    /** Destructor for unregistration. */
+
+    ~OpenMPBLAS2();
+
+    /** Static variable for registration at static initialization. */
+
+    static OpenMPBLAS2 guard;
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 };

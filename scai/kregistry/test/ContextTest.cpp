@@ -33,23 +33,25 @@ struct UnaryMinusTrait
 
 BOOST_AUTO_TEST_CASE( ContextTest )
 {
+    KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD;
+
     // register context::Host
 
-    KernelRegistry::set<UnaryAddTrait>( add1, context::Host );
-    KernelRegistry::set<UnaryMinusTrait>( minus1, context::Host );
+    KernelRegistry::set<UnaryAddTrait>( add1, context::Host, flag );
+    KernelRegistry::set<UnaryMinusTrait>( minus1, context::Host, flag );
 
     // register context::CUDA
 
-    KernelRegistry::set<UnaryAddTrait>( add1, context::CUDA );
-    KernelRegistry::set<UnaryMinusTrait>( minus1, context::CUDA );
+    KernelRegistry::set<UnaryAddTrait>( add1, context::CUDA, flag );
+    KernelRegistry::set<UnaryMinusTrait>( minus1, context::CUDA, flag );
 
     // register context::MIC, only add1
 
-    KernelRegistry::set<UnaryAddTrait>( add1, context::MIC );
+    KernelRegistry::set<UnaryAddTrait>( add1, context::MIC, flag );
 
     // register context::UserContext, only minus1
 
-    KernelRegistry::set<UnaryMinusTrait>( minus1, context::UserContext );
+    KernelRegistry::set<UnaryMinusTrait>( minus1, context::UserContext, flag );
 
     KernelRegistry::printAll();
 

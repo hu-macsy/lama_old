@@ -113,7 +113,7 @@ private:
 
 // Some compilers require explicit instantiation of the register guard
 
-Base::Register<Derived2>::RegisterGuard Base::Register<Derived2>::registerGuard;
+template Base::Register<Derived2>::RegisterGuard Base::Register<Derived2>::registerGuard;
 
 int main()
 {

@@ -101,6 +101,41 @@ void KernelRegistry::registerContextFunction( const KernelRegistryKey& key, Cont
 
 /* -----------------------------------------------------------------------------*/
 
+void KernelRegistry::unregisterContextFunction( const KernelRegistryKey& key, ContextType ctx, VoidFunction fn )
+{
+    SCAI_LOG_INFO( logger, "unregister ctx = " << ctx << " with " << key )
+
+    KernelMap::iterator it = theKernelMap.find( key );
+
+    if ( it == theKernelMap.end() )
+    {
+        SCAI_LOG_ERROR( logger, "unregister: no entry for key = " << key )
+    }
+    else
+    {
+        VoidFunction old_fn = it->second.get( ctx );
+
+        if ( old_fn == NULL )
+        {
+            // rather likely to happen for multiple versions of kernel routines
+
+            SCAI_LOG_INFO( logger, "unregister: entry for key = " << key << " available, but not for " << ctx );
+        }
+        else if ( old_fn != fn )
+        {
+            // rather likely to happen if kernel routines have been replaced
+
+            SCAI_LOG_INFO( logger, "unregister: entry for key = " << key << " and ctx = " << ctx << " available, but does not match" )
+        }
+        else
+        {
+            it->second.set( ctx, NULL );
+        }
+    }
+}
+
+/* -----------------------------------------------------------------------------*/
+
 bool KernelRegistry::Compare::operator()( const KernelRegistryKey& x, const KernelRegistryKey& y )
 {
     // first compare the id of the routine (is second key argument)

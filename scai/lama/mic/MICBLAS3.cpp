@@ -39,6 +39,8 @@
 
 // internal scai libraries
 #include <scai/hmemo/mic/MICSyncToken.hpp>
+#include <scai/hmemo/mic/MICContext.hpp>
+
 #include <scai/kregistry/KernelRegistry.hpp>
 
 // external
@@ -48,6 +50,7 @@ namespace scai
 {
 
 using tasking::MICSyncToken;
+using hmemo::MICContext;
 
 namespace lama
 {
@@ -95,7 +98,7 @@ void MICBLAS3::gemm(
 
     if ( syncToken )
     {
-        SCAI_LOG_WARN( logger, "asynchronous execution for for MIC not supported yet" )
+        SCAI_LOG_INFO( logger, "asynchronous execution for for MIC not supported yet" )
     }
 
     char ta = trans2C( transA );
@@ -123,7 +126,9 @@ void MICBLAS3::gemm(
 
     SCAI_LOG_INFO( logger, "gemm, ta = " << ta << ", tb = " << tb << ", a has shape " << m << " x " << n )
 
-#pragma offload target( mic ), in( ta, tb, m, n, k, alpha, aPtr, lda, bPtr, ldb, beta, cPtr, ldc )
+    int device = MICContext::getCurrentDevice();
+
+#pragma offload target( mic : device ), in( ta, tb, m, n, k, alpha, aPtr, lda, bPtr, ldb, beta, cPtr, ldc )
     {
         const float* a = static_cast<const float*>( aPtr );
         const float* b = static_cast<const float*>( bPtr );
@@ -154,7 +159,7 @@ void MICBLAS3::gemm(
 
     if ( syncToken )
     {
-        SCAI_LOG_WARN( logger, "asynchronous execution for for MIC not supported yet" )
+        SCAI_LOG_INFO( logger, "asynchronous execution for for MIC not supported yet" )
     }
 
     char ta = trans2C( transA );
@@ -182,7 +187,9 @@ void MICBLAS3::gemm(
 
     SCAI_LOG_INFO( logger, "gemm, ta = " << ta << ", tb = " << tb << ", a has shape " << m << " x " << n )
 
-#pragma offload target( mic ), in( ta, tb, m, n, k, alpha, aPtr, lda, bPtr, ldb, beta, cPtr, ldc )
+    int device = MICContext::getCurrentDevice();
+
+#pragma offload target( mic : device ), in( ta, tb, m, n, k, alpha, aPtr, lda, bPtr, ldb, beta, cPtr, ldc )
     {
         const double* a = static_cast<const double*>( aPtr );
         const double* b = static_cast<const double*>( bPtr );
@@ -196,35 +203,41 @@ void MICBLAS3::gemm(
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void MICBLAS3::registerKernels()
+void MICBLAS3::registerKernels( bool deleteFlag )
 {
     SCAI_LOG_INFO( logger, "register BLAS3 kernels for MIC in Kernel Registry" )
 
-    using namespace scai::kregistry;
+    using kregistry::KernelRegistry;
+    using common::context::MIC;
 
-    // ctx will contain the context for which registration is done, here MIC
+    KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // add it or delete it
 
-    common::context::ContextType ctx = common::context::MIC;
+    if ( deleteFlag )
+    {
+        flag = KernelRegistry::KERNEL_ERASE;
+    }
 
-    KernelRegistry::set<BLASKernelTrait::gemm<float> >( gemm, ctx );
-    KernelRegistry::set<BLASKernelTrait::gemm<double> >( gemm, ctx );
+    KernelRegistry::set<BLASKernelTrait::gemm<float> >( gemm, MIC, flag );
+    KernelRegistry::set<BLASKernelTrait::gemm<double> >( gemm, MIC, flag );
 }
 
 /* --------------------------------------------------------------------------- */
-/*    Static registration of the BLAS3 routines                                */
+/*    Static initialization with registration                                  */
 /* --------------------------------------------------------------------------- */
 
-bool MICBLAS3::registerInterface()
+MICBLAS3::RegisterGuard::RegisterGuard()
 {
-    registerKernels();
-    return true;
+    bool deleteFlag = false;
+    registerKernels( deleteFlag );
 }
 
-/* --------------------------------------------------------------------------- */
-/*    Static initialiazion at program start                                    */
-/* --------------------------------------------------------------------------- */
+MICBLAS3::RegisterGuard::~RegisterGuard()
+{
+    bool deleteFlag = true;
+    registerKernels( deleteFlag );
+}
 
-bool MICBLAS3::initialized = registerInterface();
+MICBLAS3::RegisterGuard MICBLAS3::guard;    // guard variable for registration
 
 } /* end namespace lama */
 

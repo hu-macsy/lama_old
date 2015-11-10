@@ -515,29 +515,33 @@ void OpenMPDIAUtils::jacobi(
 
 /* --------------------------------------------------------------------------- */
 
-void OpenMPDIAUtils::registerKernels()
+void OpenMPDIAUtils::registerKernels( bool deleteFlag )
 {
     using kregistry::KernelRegistry;
+    using common::context::Host;       // context for registration
 
-    // ctx will contain the context for which registration is done, here Host
+    KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // lower priority
 
-    common::context::ContextType ctx = common::context::Host;
+    if ( deleteFlag )
+    {
+        flag = KernelRegistry::KERNEL_ERASE;
+    }
 
     // use of BOOST_PP_REPEAT to register for all value types
     // use of nested BOOST_PP_REPEAT to get all pairs of value types for conversions
 
-#define LAMA_DIA_UTILS2_REGISTER(z, J, TYPE )                                                                    \
-    KernelRegistry::set<DIAKernelTrait::getCSRValues<TYPE, ARITHMETIC_HOST_TYPE_##J> >( getCSRValues, ctx );  \
+#define LAMA_DIA_UTILS2_REGISTER(z, J, TYPE )                                                                        \
+    KernelRegistry::set<DIAKernelTrait::getCSRValues<TYPE, ARITHMETIC_HOST_TYPE_##J> >( getCSRValues, Host, flag );  \
 
-#define LAMA_DIA_UTILS_REGISTER(z, I, _)                                                                 \
-    KernelRegistry::set<DIAKernelTrait::getCSRSizes<ARITHMETIC_HOST_TYPE_##I> >( getCSRSizes, ctx );  \
-    KernelRegistry::set<DIAKernelTrait::absMaxVal<ARITHMETIC_HOST_TYPE_##I> >( absMaxVal, ctx );      \
-    KernelRegistry::set<DIAKernelTrait::normalGEMV<ARITHMETIC_HOST_TYPE_##I> >( normalGEMV, ctx );    \
-    KernelRegistry::set<DIAKernelTrait::normalGEVM<ARITHMETIC_HOST_TYPE_##I> >( normalGEVM, ctx );    \
-    KernelRegistry::set<DIAKernelTrait::jacobi<ARITHMETIC_HOST_TYPE_##I> >( jacobi, ctx );            \
-                                                                                                         \
-    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT,                                                           \
-                     LAMA_DIA_UTILS2_REGISTER,                                                           \
+#define LAMA_DIA_UTILS_REGISTER(z, I, _)                                                                     \
+    KernelRegistry::set<DIAKernelTrait::getCSRSizes<ARITHMETIC_HOST_TYPE_##I> >( getCSRSizes, Host, flag );  \
+    KernelRegistry::set<DIAKernelTrait::absMaxVal<ARITHMETIC_HOST_TYPE_##I> >( absMaxVal, Host, flag );      \
+    KernelRegistry::set<DIAKernelTrait::normalGEMV<ARITHMETIC_HOST_TYPE_##I> >( normalGEMV, Host, flag );    \
+    KernelRegistry::set<DIAKernelTrait::normalGEVM<ARITHMETIC_HOST_TYPE_##I> >( normalGEVM, Host, flag );    \
+    KernelRegistry::set<DIAKernelTrait::jacobi<ARITHMETIC_HOST_TYPE_##I> >( jacobi, Host, flag );            \
+                                                                                                             \
+    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT,                                                               \
+                     LAMA_DIA_UTILS2_REGISTER,                                                               \
                      ARITHMETIC_HOST_TYPE_##I )
 
     BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_DIA_UTILS_REGISTER, _ )
@@ -548,20 +552,26 @@ void OpenMPDIAUtils::registerKernels()
 }
 
 /* --------------------------------------------------------------------------- */
-/*    Static registration of the DIAUtils routines                             */
+/*    Constructor/Desctructor with registration                                */
 /* --------------------------------------------------------------------------- */
 
-bool OpenMPDIAUtils::registerInterface()
+OpenMPDIAUtils::OpenMPDIAUtils()
 {
-    registerKernels();
-    return true;
+    bool deleteFlag = false;
+    registerKernels( deleteFlag );
+}
+
+OpenMPDIAUtils::~OpenMPDIAUtils()
+{
+    bool deleteFlag = true;
+    registerKernels( deleteFlag );
 }
 
 /* --------------------------------------------------------------------------- */
-/*    Static initialiazion at program start                                    */
+/*    Static variable to force registration during static initialization      */
 /* --------------------------------------------------------------------------- */
 
-bool OpenMPDIAUtils::initialized = registerInterface();
+OpenMPDIAUtils OpenMPDIAUtils::guard;
 
 } /* end namespace lama */
 

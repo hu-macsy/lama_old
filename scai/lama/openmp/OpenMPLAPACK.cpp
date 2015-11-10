@@ -540,22 +540,26 @@ void OpenMPLAPACK::laswp(
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void OpenMPLAPACK::registerKernels()
+void OpenMPLAPACK::registerKernels( bool deleteFlag )
 {
-    using scai::kregistry::KernelRegistry;
+    using kregistry::KernelRegistry;
+    using common::context::Host;       // context for registration
 
-    // ctx will contain the context for which registration is done, here Host
+    KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // lower priority
 
-    common::context::ContextType ctx = common::context::Host;
+    if ( deleteFlag )
+    {
+        flag = KernelRegistry::KERNEL_ERASE;
+    }
 
     SCAI_LOG_INFO( logger, "set LAPACK routines for OpenMP in Kernel Registry" )
 
 #define LAMA_LAPACK_REGISTER(z, I, _)                                                  \
-    KernelRegistry::set<BLASKernelTrait::getrf<ARITHMETIC_HOST_TYPE_##I> >( getrf, ctx ); \
-    KernelRegistry::set<BLASKernelTrait::getri<ARITHMETIC_HOST_TYPE_##I> >( getri, ctx ); \
-    KernelRegistry::set<BLASKernelTrait::getinv<ARITHMETIC_HOST_TYPE_##I> >( getinv, ctx ); \
-    KernelRegistry::set<BLASKernelTrait::tptrs<ARITHMETIC_HOST_TYPE_##I> >( tptrs, ctx ); \
-    KernelRegistry::set<BLASKernelTrait::laswp<ARITHMETIC_HOST_TYPE_##I> >( laswp, ctx ); \
+    KernelRegistry::set<BLASKernelTrait::getrf<ARITHMETIC_HOST_TYPE_##I> >( getrf, Host, flag ); \
+    KernelRegistry::set<BLASKernelTrait::getri<ARITHMETIC_HOST_TYPE_##I> >( getri, Host, flag ); \
+    KernelRegistry::set<BLASKernelTrait::getinv<ARITHMETIC_HOST_TYPE_##I> >( getinv, Host, flag ); \
+    KernelRegistry::set<BLASKernelTrait::tptrs<ARITHMETIC_HOST_TYPE_##I> >( tptrs, Host, flag ); \
+    KernelRegistry::set<BLASKernelTrait::laswp<ARITHMETIC_HOST_TYPE_##I> >( laswp, Host, flag ); \
 
     BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_LAPACK_REGISTER, _ )
 
@@ -565,20 +569,26 @@ void OpenMPLAPACK::registerKernels()
 }
 
 /* --------------------------------------------------------------------------- */
-/*    Static registration of the LAPACK routines                               */
+/*    Constructor/Desctructor with registration                                */
 /* --------------------------------------------------------------------------- */
 
-bool OpenMPLAPACK::registerInterface()
+OpenMPLAPACK::OpenMPLAPACK()
 {
-    registerKernels();
-    return true;
+    bool deleteFlag = false;
+    registerKernels( deleteFlag );
+}
+
+OpenMPLAPACK::~OpenMPLAPACK()
+{
+    bool deleteFlag = true;
+    registerKernels( deleteFlag );
 }
 
 /* --------------------------------------------------------------------------- */
-/*    Static initialiazion at program start                                    */
+/*    Static variable to force registration during static initialization      */
 /* --------------------------------------------------------------------------- */
 
-bool OpenMPLAPACK::initialized = registerInterface();
+OpenMPLAPACK OpenMPLAPACK::guard;
 
 } /* end namespace lama */
 

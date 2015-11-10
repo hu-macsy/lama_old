@@ -76,10 +76,23 @@ public:
         const IndexType numValues,
         const IndexType cooIA[] );
 
+    /** Serial implementation for COOKernelTrait::Conversions::getCSRValues */
+
+    template<typename COOValueType,typename CSRValueType>
+    static void getCSRValuesS(
+        IndexType csrJA[],
+        CSRValueType csrValues[],
+        IndexType csrIA[],
+        const IndexType numRow,
+        const IndexType numValues,
+        const IndexType cooIA[],
+        const IndexType cooJA[],
+        const COOValueType cooValues[] );
+
     /** OpenMP implementation for COOKernelTrait::Conversions::getCSRValues */
 
     template<typename COOValueType,typename CSRValueType>
-    static void getCSRValues(
+    static void getCSRValuesP(
         IndexType csrJA[],
         CSRValueType csrValues[],
         IndexType csrIA[],
@@ -144,17 +157,23 @@ public:
         const ValueType omega,
         const IndexType numRows );
 
-    /** Routine that registers all routines of this class at the Kernel registry 
-     *  and does all instantiations implicitly. 
-     */
-
-    static void registerKernels();
-
 private:
 
-    static bool initialized;
+    /** Routine that registers all methods at the kernel registry. */
 
-    static bool registerInterface();
+    static void registerKernels( bool deleteFlag );
+
+    /** Constructor for registration. */
+
+    OpenMPCOOUtils();
+
+    /** Destructor for unregistration. */
+
+    ~OpenMPCOOUtils();
+
+    /** Static variable for registration at static initialization. */
+
+    static OpenMPCOOUtils guard;
 
     /** Logger for this class. */
 

@@ -38,12 +38,12 @@
 #include <scai/kregistry/KernelRegistry.hpp>
 #include <scai/lama/UtilKernelTrait.hpp>
 
-#include <scai/lama/cuda/utils.cu.h>
 #include <scai/lama/cuda/CUDASettings.hpp>
 
 // internal scai libraries
 #include <scai/common/Assert.hpp>
 #include <scai/common/cuda/CUDAError.hpp>
+#include <scai/common/cuda/launchHelper.hpp>
 #include <scai/common/Constants.hpp>
 
 // thrust
@@ -566,50 +566,56 @@ void CUDAUtils::invert( ValueType array[], const IndexType n )
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void CUDAUtils::registerKernels()
+void CUDAUtils::registerKernels( bool deleteFlag )
 {
-    using namespace scai::kregistry;
+    using kregistry::KernelRegistry;
+    using common::context::CUDA;
 
-    common::context::ContextType ctx = common::context::CUDA;
+    KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // lower priority
+
+    if ( deleteFlag )
+    {
+        flag = KernelRegistry::KERNEL_ERASE;
+    }
 
     SCAI_LOG_INFO( logger, "set general utilty routines for CUDA in Interface" )
 
-    KernelRegistry::set<UtilKernelTrait::validIndexes>( validIndexes, ctx );
-    KernelRegistry::set<UtilKernelTrait::sum<IndexType> >( sum, ctx );
+    KernelRegistry::set<UtilKernelTrait::validIndexes>( validIndexes, CUDA, flag );
+    KernelRegistry::set<UtilKernelTrait::sum<IndexType> >( sum, CUDA, flag );
 
-    KernelRegistry::set<UtilKernelTrait::setVal<IndexType> >( setVal, ctx );
-    KernelRegistry::set<UtilKernelTrait::setOrder<IndexType> >( setOrder, ctx );
-    KernelRegistry::set<UtilKernelTrait::getValue<IndexType> >( getValue, ctx );
+    KernelRegistry::set<UtilKernelTrait::setVal<IndexType> >( setVal, CUDA, flag );
+    KernelRegistry::set<UtilKernelTrait::setOrder<IndexType> >( setOrder, CUDA, flag );
+    KernelRegistry::set<UtilKernelTrait::getValue<IndexType> >( getValue, CUDA, flag );
 
-    KernelRegistry::set<UtilKernelTrait::maxval<IndexType> >( maxval, ctx );
-    KernelRegistry::set<UtilKernelTrait::absMaxVal<IndexType> >( absMaxVal, ctx );
-    KernelRegistry::set<UtilKernelTrait::absMaxDiffVal<IndexType> >( absMaxDiffVal, ctx );
-    KernelRegistry::set<UtilKernelTrait::isSorted<IndexType> >( isSorted, ctx );
+    KernelRegistry::set<UtilKernelTrait::maxval<IndexType> >( maxval, CUDA, flag );
+    KernelRegistry::set<UtilKernelTrait::absMaxVal<IndexType> >( absMaxVal, CUDA, flag );
+    KernelRegistry::set<UtilKernelTrait::absMaxDiffVal<IndexType> >( absMaxDiffVal, CUDA, flag );
+    KernelRegistry::set<UtilKernelTrait::isSorted<IndexType> >( isSorted, CUDA, flag );
 
-    KernelRegistry::set<UtilKernelTrait::setScatter<IndexType, IndexType> >( setScatter, ctx );
-    KernelRegistry::set<UtilKernelTrait::setGather<IndexType, IndexType> >( setGather, ctx );
-    KernelRegistry::set<UtilKernelTrait::set<IndexType, IndexType> >( set, ctx );
+    KernelRegistry::set<UtilKernelTrait::setScatter<IndexType, IndexType> >( setScatter, CUDA, flag );
+    KernelRegistry::set<UtilKernelTrait::setGather<IndexType, IndexType> >( setGather, CUDA, flag );
+    KernelRegistry::set<UtilKernelTrait::set<IndexType, IndexType> >( set, CUDA, flag );
 
-#define LAMA_UTILS2_REGISTER(z, J, TYPE )                                                                \
-    KernelRegistry::set<UtilKernelTrait::setScale<TYPE, ARITHMETIC_CUDA_TYPE_##J> >( setScale, ctx );     \
-    KernelRegistry::set<UtilKernelTrait::setGather<TYPE, ARITHMETIC_CUDA_TYPE_##J> >( setGather, ctx );   \
-    KernelRegistry::set<UtilKernelTrait::setScatter<TYPE, ARITHMETIC_CUDA_TYPE_##J> >( setScatter, ctx ); \
-    KernelRegistry::set<UtilKernelTrait::set<TYPE, ARITHMETIC_CUDA_TYPE_##J> >( set, ctx );               \
+#define LAMA_UTILS2_REGISTER(z, J, TYPE )                                                                        \
+    KernelRegistry::set<UtilKernelTrait::setScale<TYPE, ARITHMETIC_CUDA_TYPE_##J> >( setScale, CUDA, flag );     \
+    KernelRegistry::set<UtilKernelTrait::setGather<TYPE, ARITHMETIC_CUDA_TYPE_##J> >( setGather, CUDA, flag );   \
+    KernelRegistry::set<UtilKernelTrait::setScatter<TYPE, ARITHMETIC_CUDA_TYPE_##J> >( setScatter, CUDA, flag ); \
+    KernelRegistry::set<UtilKernelTrait::set<TYPE, ARITHMETIC_CUDA_TYPE_##J> >( set, CUDA, flag );               \
      
-#define LAMA_UTILS_REGISTER(z, I, _)                                                                     \
-    KernelRegistry::set<UtilKernelTrait::scale<ARITHMETIC_CUDA_TYPE_##I> >( scale, ctx );                 \
-    KernelRegistry::set<UtilKernelTrait::sum<ARITHMETIC_CUDA_TYPE_##I> >( sum, ctx );                     \
-    KernelRegistry::set<UtilKernelTrait::setVal<ARITHMETIC_CUDA_TYPE_##I> >( setVal, ctx );               \
-    KernelRegistry::set<UtilKernelTrait::setOrder<ARITHMETIC_CUDA_TYPE_##I> >( setOrder, ctx );           \
-    KernelRegistry::set<UtilKernelTrait::getValue<ARITHMETIC_CUDA_TYPE_##I> >( getValue, ctx );           \
-    KernelRegistry::set<UtilKernelTrait::maxval<ARITHMETIC_CUDA_TYPE_##I> >( maxval, ctx );               \
-    KernelRegistry::set<UtilKernelTrait::absMaxVal<ARITHMETIC_CUDA_TYPE_##I> >( absMaxVal, ctx );         \
-    KernelRegistry::set<UtilKernelTrait::absMaxDiffVal<ARITHMETIC_CUDA_TYPE_##I> >( absMaxDiffVal, ctx ); \
-    KernelRegistry::set<UtilKernelTrait::isSorted<ARITHMETIC_CUDA_TYPE_##I> >( isSorted, ctx );           \
-    KernelRegistry::set<UtilKernelTrait::invert<ARITHMETIC_CUDA_TYPE_##I> >( invert, ctx );               \
-    BOOST_PP_REPEAT( ARITHMETIC_CUDA_TYPE_CNT,                                                           \
-                     LAMA_UTILS2_REGISTER,                                                               \
-                     ARITHMETIC_CUDA_TYPE_##I )                                                          \
+#define LAMA_UTILS_REGISTER(z, I, _)                                                                             \
+    KernelRegistry::set<UtilKernelTrait::scale<ARITHMETIC_CUDA_TYPE_##I> >( scale, CUDA, flag );                 \
+    KernelRegistry::set<UtilKernelTrait::sum<ARITHMETIC_CUDA_TYPE_##I> >( sum, CUDA, flag );                     \
+    KernelRegistry::set<UtilKernelTrait::setVal<ARITHMETIC_CUDA_TYPE_##I> >( setVal, CUDA, flag );               \
+    KernelRegistry::set<UtilKernelTrait::setOrder<ARITHMETIC_CUDA_TYPE_##I> >( setOrder, CUDA, flag );           \
+    KernelRegistry::set<UtilKernelTrait::getValue<ARITHMETIC_CUDA_TYPE_##I> >( getValue, CUDA, flag );           \
+    KernelRegistry::set<UtilKernelTrait::maxval<ARITHMETIC_CUDA_TYPE_##I> >( maxval, CUDA, flag );               \
+    KernelRegistry::set<UtilKernelTrait::absMaxVal<ARITHMETIC_CUDA_TYPE_##I> >( absMaxVal, CUDA, flag );         \
+    KernelRegistry::set<UtilKernelTrait::absMaxDiffVal<ARITHMETIC_CUDA_TYPE_##I> >( absMaxDiffVal, CUDA, flag ); \
+    KernelRegistry::set<UtilKernelTrait::isSorted<ARITHMETIC_CUDA_TYPE_##I> >( isSorted, CUDA, flag );           \
+    KernelRegistry::set<UtilKernelTrait::invert<ARITHMETIC_CUDA_TYPE_##I> >( invert, CUDA, flag );               \
+    BOOST_PP_REPEAT( ARITHMETIC_CUDA_TYPE_CNT,                                                                   \
+                     LAMA_UTILS2_REGISTER,                                                                       \
+                     ARITHMETIC_CUDA_TYPE_##I )                                                                  \
      
     BOOST_PP_REPEAT( ARITHMETIC_CUDA_TYPE_CNT, LAMA_UTILS_REGISTER, _ )
 
@@ -619,20 +625,22 @@ void CUDAUtils::registerKernels()
 }
 
 /* --------------------------------------------------------------------------- */
-/*    Static registration of the Utils routines                                */
+/*    Constructor/Desctructor with registration                                */
 /* --------------------------------------------------------------------------- */
 
-bool CUDAUtils::registerInterface()
+CUDAUtils::CUDAUtils()
 {
-    registerKernels();
-    return true;
+    bool deleteFlag = false;
+    registerKernels( deleteFlag );
 }
 
-/* --------------------------------------------------------------------------- */
-/*    Static initialiazion at program start                                    */
-/* --------------------------------------------------------------------------- */
+CUDAUtils::~CUDAUtils()
+{
+    bool deleteFlag = true;
+    registerKernels( deleteFlag );
+}
 
-bool CUDAUtils::initialized = registerInterface();
+CUDAUtils CUDAUtils::guard;    // guard variable for registration
 
 } /* end namespace lama */
 

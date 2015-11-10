@@ -37,7 +37,7 @@
 // local library
 #include <scai/lama/BLASKernelTrait.hpp>
 #include <scai/lama/openmp/BLASHelper.hpp>
-#include <scai/lama/cuda/lama_cublas.hpp>
+#include <scai/lama/cuda/cublas_cast.hpp>
 
 // internal scai library
 #include <scai/hmemo/cuda/CUDAStreamSyncToken.hpp>
@@ -513,18 +513,22 @@ void CUDABLAS3::trsm(
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void CUDABLAS3::registerKernels()
+void CUDABLAS3::registerKernels( bool deleteFlag )
 {
-    using scai::kregistry::KernelRegistry;
+    using kregistry::KernelRegistry;
+    using common::context::CUDA;
 
-    // ctx will contain the context for which registration is done, here Host
+    KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD;
 
-    common::context::ContextType ctx = common::context::CUDA;
+    if ( deleteFlag )
+    {
+        flag = KernelRegistry::KERNEL_ERASE;
+    }
 
-    SCAI_LOG_INFO( logger, "set BLAS3 routines for CUDA at Kernel Registry" )
+    SCAI_LOG_INFO( logger, "register BLAS3 routines implemented by CuBLAS in KernelRegistry" )
 
-#define LAMA_BLAS3_REGISTER(z, I, _)                                                   \
-    KernelRegistry::set<BLASKernelTrait::gemm<ARITHMETIC_CUDA_TYPE_##I> >( gemm, ctx );  \
+#define LAMA_BLAS3_REGISTER(z, I, _)                                                            \
+    KernelRegistry::set<BLASKernelTrait::gemm<ARITHMETIC_CUDA_TYPE_##I> >( gemm, CUDA, flag );  \
 
     BOOST_PP_REPEAT( ARITHMETIC_CUDA_TYPE_CNT, LAMA_BLAS3_REGISTER, _ )
 
@@ -532,20 +536,22 @@ void CUDABLAS3::registerKernels()
 }
 
 /* --------------------------------------------------------------------------- */
-/*    Static registration of the Utils routines                                */
+/*    Constructor/Desctructor with registration                                */
 /* --------------------------------------------------------------------------- */
 
-bool CUDABLAS3::registerInterface()
+CUDABLAS3::CUDABLAS3()
 {
-    registerKernels();
-    return true;
+    bool deleteFlag = false;
+    registerKernels( deleteFlag );
 }
 
-/* --------------------------------------------------------------------------- */
-/*    Static initialiazion at program start                                    */
-/* --------------------------------------------------------------------------- */
+CUDABLAS3::~CUDABLAS3()
+{
+    bool deleteFlag = true;
+    registerKernels( deleteFlag );
+}
 
-bool CUDABLAS3::initialized = registerInterface();
+CUDABLAS3 CUDABLAS3::guard;    // guard variable for registration
 
 } /* end namespace lama */
 

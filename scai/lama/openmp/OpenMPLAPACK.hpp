@@ -107,20 +107,25 @@ public:
         const IndexType* ipiv,
         const IndexType incx );
 
-    /** Routine that sets functions pointers belonging to LAPACK in a BLASKernelTrait.
-     *
-     *  Note: this routine will make instantiations of the template routines.
-     */
-
-    static void registerKernels();
-
 private:
 
+    /** Routine that registers all methods at the kernel registry. */
+
+    static void registerKernels( bool deleteFlag );
+
+    /** Constructor for registration. */
+
+    OpenMPLAPACK();
+
+    /** Destructor for unregistration. */
+
+    ~OpenMPLAPACK();
+
+    /** Static variable for registration at static initialization. */
+
+    static OpenMPLAPACK guard;
+
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
-
-    static    bool initialized;
-
-    static bool registerInterface();
 
 }; /* OpenMPLAPACK */
 

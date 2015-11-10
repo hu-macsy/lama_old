@@ -355,19 +355,27 @@ public:
         const IndexType csrJA2[],
         const ValueType csrValues2[] );
 
-    /** Routine that registers all routines of this class at the Kernel Registry. */
-
-    static void registerKernels();
-
 protected:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
-private    :
+private:
 
-    static bool initialized;
+    /** Routine that registers all methods of this class at the Kernel Registry. */
 
-    static bool staticInit();
+    static void registerKernels( bool deleteFlag );
+
+    /** Constructor for registration. */
+
+    OpenMPCSRUtils();
+
+    /** Destructor for unregistration. */
+
+    ~OpenMPCSRUtils();
+
+    /** Static variable for registration at static initialization. */
+
+    static OpenMPCSRUtils guard;
 
     static IndexType scanSerial( IndexType array[], const IndexType numValues );
 

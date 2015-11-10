@@ -481,20 +481,23 @@ public:
         ValueType* C,
         const IndexType ldc );
 
-    /** Routine that sets functions pointers belonging to BLAS1 in a BLASKernelTrait.
-     *
-     *  param[inout] BLASKernelTrait struct to register all routines implemented in CUDA
-     *
-     *  Note: this routine will make instantiations of the template routines.
-     */
-
-    static void registerKernels();
-
 private:
 
-    static bool initialized;
+    /** Routine that registers all methods at the kernel registry. */
 
-    static bool registerInterface();
+    static void registerKernels( bool deleteFlag );
+
+    /** Constructor for registration. */
+
+    BLAS_BLAS3();
+
+    /** Destructor for unregistration. */
+
+    ~BLAS_BLAS3();
+
+    /** Static variable for registration at static initialization. */
+
+    static BLAS_BLAS3 guard;
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 };

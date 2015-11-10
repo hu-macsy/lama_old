@@ -78,18 +78,23 @@ public:
         ValueType* C,
         const IndexType ldc );
 
-    /** Routine that registers the OpenMP implementations of Utils kernel at registry.
-     *
-     *  Note: this routine will make instantiations of the template routines.
-     */
-
-    static void registerKernels();
-
 private:
 
-    static bool initialized;
+    /** Routine that registers all methods at the kernel registry. */
 
-    static bool registerInterface();
+    static void registerKernels( bool deleteFlag );
+
+    /** Constructor for registration. */
+
+    OpenMPBLAS3();
+
+    /** Destructor for unregistration. */
+
+    ~OpenMPBLAS3();
+
+    /** Static variable for registration at static initialization. */
+
+    static OpenMPBLAS3 guard;
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 };
