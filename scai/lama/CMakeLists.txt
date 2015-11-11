@@ -81,9 +81,12 @@ else   ( )
     add_definitions( -DADD_ )
 endif  ( )
 
-add_definitions ( -D${SCAI_OMP_SCHEDULE_FLAG} )
 add_definitions ( -D${SCAI_LOGGING_FLAG} )
 add_definitions ( -D${SCAI_TRACING_FLAG} )
+
+if ( SCAI_OMP_SCHEDULE_FLAG )
+    add_definitions ( -D${SCAI_OMP_SCHEDULE_FLAG} )
+endif ( SCAI_OMP_SCHEDULE_FLAG )
 
 if ( WIN32 )
 	add_definitions ( -DCOMMON_COMPILING_DLL )
