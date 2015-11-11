@@ -156,15 +156,17 @@ public:
     template<typename FunctionType>
     static void get( FunctionType& fn, const char* name, common::context::ContextType ctx )
     {
+    	KernelRegistry& kreg = getInstance();
+
         KernelRegistryKey key( typeid( FunctionType ), name );
 
         SCAI_LOG_INFO( logger, "get function pointer for kregistry routine " 
                                 << ", key = " << key 
                                 << ", context = " << ctx  )
 
-        typename KernelMap::const_iterator it = theKernelMap.find( key );
+        typename KernelMap::const_iterator it = kreg.theKernelMap.find( key );
 
-        if ( it != theKernelMap.end() )
+        if ( it != kreg.theKernelMap.end() )
         {
             const _ContextFunction& routine = it->second;
             fn = ( FunctionType ) routine.get( ctx );   // cast required
@@ -185,13 +187,15 @@ public:
     template<typename FunctionType>
     static void get( ContextFunction<FunctionType>& contextFunction, const char* name )
     {
+    	KernelRegistry& kreg = getInstance();
+
         KernelRegistryKey key( typeid( FunctionType ), name );
 
         SCAI_LOG_INFO( logger, "get all function pointers for kernel routine by " << key )
 
-        typename KernelMap::const_iterator it = theKernelMap.find( key );
+        typename KernelMap::const_iterator it = kreg.theKernelMap.find( key );
 
-        if ( it != theKernelMap.end() )
+        if ( it != kreg.theKernelMap.end() )
         {
             SCAI_LOG_DEBUG( logger, "entry found in kernel registry" )
 
@@ -213,11 +217,14 @@ public:
 
 protected:
 
-    KernelRegistry();
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
 private:
+
+    KernelRegistry(){}
+    KernelRegistry( const KernelRegistry& );
+    ~KernelRegistry(){}
 
     class Compare
     {
@@ -231,7 +238,41 @@ private:
 
     typedef std::map<KernelRegistryKey, _ContextFunction, Compare> KernelMap;
 
-    static KernelMap theKernelMap;
+    KernelMap theKernelMap;
+
+    static KernelRegistry* mInstance;
+
+    static KernelRegistry& getInstance()
+    {
+    	static Guardian g;
+
+    	return *mInstance;
+    }
+
+    class Guardian
+    {
+    public:
+    	Guardian()
+    	{
+    		if( !KernelRegistry::mInstance )
+    		{
+    			SCAI_LOG_INFO( KernelRegistry::logger, "Guardian --> create Instance")
+    			KernelRegistry::mInstance = new KernelRegistry();
+    		}
+    	}
+
+    	~Guardian()
+    	{
+    		if( KernelRegistry::mInstance )
+    		{
+    			SCAI_LOG_INFO( KernelRegistry::logger, "Guardian --> delete Instance")
+
+				printAll();
+
+    			delete KernelRegistry::mInstance;
+    		}
+    	}
+    };
 };
 
 } /* end namespace kregistry */

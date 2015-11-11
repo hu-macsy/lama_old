@@ -32,6 +32,7 @@
 #pragma once
 
 #include <scai/common/ContextType.hpp>
+#include <scai/common/SCAITypes.hpp>
 
 #include <map>
 #include <string>
@@ -78,6 +79,21 @@ public:
     inline void set( common::context::ContextType ctx, VoidFunction fn )
     {
         mContextFuncArray[ ctx ] = fn;
+    }
+
+    inline bool isEmpty()
+    {
+    	bool status = true;
+    	for(IndexType i = 0; i < common::context::MaxContext; ++i)
+    	{
+    		if ( mContextFuncArray[i] != NULL )
+    		{
+    			status = false;
+    			break;
+    		}
+    	}
+
+    	return status;
     }
 
     std::string printIt() const;
