@@ -87,6 +87,20 @@ scai_summary_message ( "FOUND"
                        "" )
 
 message ( STATUS "" )
+scai_status_message ( HEADLINE "DOCUMENTATION:" )
+# DOC
+message ( STATUS "" )
+scai_summary_message ( "USE"
+                       "BUILD_DOC"
+                       "DOC"
+                       "" )
+                                     
+scai_summary_message ( "FOUND"
+                       "SPHINX_FOUND"
+                       "Sphinx"
+                       "Version ${Sphinx_VERSION_STRING} at ${Sphinx-build_EXECUTABLE}: 'make doc' to build user documentation" )
+
+message ( STATUS "" )
 
 scai_status_message ( HEADLINE "INFO:" )
 message ( STATUS "LAMA Version : ${LAMA_VERSION} ${LAMA_VERSION_NAME}" )

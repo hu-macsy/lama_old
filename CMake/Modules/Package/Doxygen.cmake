@@ -57,7 +57,7 @@ if    ( DOXYGEN_FOUND )
     )
 
     add_custom_target (
-        doc
+        doxygendoc
         DEPENDS
         ${DOXYGEN_BUILD_ROOT}/html/index.html
     )

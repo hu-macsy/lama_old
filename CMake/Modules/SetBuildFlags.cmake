@@ -80,5 +80,4 @@ checkValue ( ${SCAI_LIBRARY_TYPE} "${SCAI_LIBRARY_TYPE_OPTIONS}" )
 
 set ( TRUE_FALSE_CHOICE TRUE FALSE )
 set ( USE_CODE_COVERAGE FALSE CACHE BOOL "Enable / Disable use of Code Coverage" )
-set ( BUILD_DOC TRUE CACHE BOOL "Enable / Disable build of the documentation" )
 checkValue ( ${USE_CODE_COVERAGE} "${TRUE_FALSE_CHOICE}" )

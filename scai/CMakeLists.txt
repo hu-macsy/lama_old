@@ -68,6 +68,7 @@ include ( ConcludeFlags )
 
 #system docu --> make doc
 include ( Package/Doxygen )
+include ( Package/Sphinx )
 
 ## summary of what is found
 include ( Summaries/scai )
