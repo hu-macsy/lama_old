@@ -95,33 +95,85 @@ void OpenMPCOOUtils::getCSRSizes(
 
 /* --------------------------------------------------------------------------- */
 
+bool OpenMPCOOUtils::hasDiagonalProperty(
+    const IndexType cooIA[],
+    const IndexType cooJA[],
+    const IndexType n )
+{
+    bool diagonalProperty = true;
+
+    // The diagonal property is given if the first n entries
+    // are the diagonal elements
+
+    #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
+
+    for ( IndexType i = 0; i < n; ++i )
+    {
+        if ( !diagonalProperty )
+        {
+            continue;
+        }
+
+        if ( cooIA[i] != i || cooJA[i] != i )
+        {
+            diagonalProperty = false;
+        }
+    }
+
+    return diagonalProperty;
+}
+
+/* --------------------------------------------------------------------------- */
+
 template<typename COOValueType,typename CSRValueType>
-void OpenMPCOOUtils::getCSRValuesS( IndexType csrJA[], CSRValueType csrValues[], IndexType csrIA[], // used as tmp, remains unchanged
-                                    const IndexType numRows,
-                                    const IndexType numValues,
-                                    const IndexType cooIA[],
-                                    const IndexType cooJA[],
-                                    const COOValueType cooValues[] )
+void OpenMPCOOUtils::getCSRValues( IndexType csrJA[], 
+                                   CSRValueType csrValues[], 
+                                   IndexType csrIA[], // used as tmp, remains unchanged
+                                   const IndexType numRows,
+                                   const IndexType numValues,
+                                   const IndexType cooIA[],
+                                   const IndexType cooJA[],
+                                   const COOValueType cooValues[] )
 {
     SCAI_LOG_INFO( logger,
                    "get CSRValues<" << getScalarType<COOValueType>() << ", "
                     << getScalarType<CSRValueType>() << ">" << ", #rows = " << numRows << ", #values = " << numValues )
 
     // traverse the non-zero values and put data at the right places
-    // serial execution guarantees that order in one row is not destroyed
+    // each thread reads all COO indexes but takes care for a certain range of CSR rows
 
-    for ( IndexType k = 0; k < numValues; k++ )
+    #pragma omp parallel
     {
-        IndexType i = cooIA[k];
+        // get thread rank, size
 
-        IndexType& offset = csrIA[i];
+        PartitionId rank = omp_get_thread_num();
+        PartitionId nthreads = omp_get_num_threads();
 
-        csrJA[offset] = cooJA[k];
-        csrValues[offset] = static_cast<CSRValueType>( cooValues[k] );
+        // compute range for which this thread is responsbile
 
-        SCAI_LOG_DEBUG( logger, "row " << i << ": new offset = " << offset )
+        IndexType blockSize = ( numRows + nthreads - 1 ) / nthreads;
+        IndexType lb = rank * blockSize;
+        IndexType ub = ( rank + 1 ) * blockSize - 1;
+        ub = std::min( ub, numRows - 1 );
 
-        offset++;
+        for ( IndexType k = 0; k < numValues; k++ )
+        {
+            IndexType i = cooIA[k];
+    
+            if ( i < lb || i > ub ) 
+            {
+                continue;
+            }
+
+            IndexType& offset = csrIA[i];
+    
+            csrJA[offset] = cooJA[k];
+            csrValues[offset] = static_cast<CSRValueType>( cooValues[k] );
+    
+            SCAI_LOG_DEBUG( logger, "row " << i << ": new offset = " << offset )
+    
+            offset++;
+        }
     }
 
     // set back the old offsets in csrIA
@@ -134,71 +186,6 @@ void OpenMPCOOUtils::getCSRValuesS( IndexType csrJA[], CSRValueType csrValues[],
     csrIA[0] = 0;
 
     SCAI_ASSERT_EQUAL_DEBUG( csrIA[numRows], numValues )
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename COOValueType,typename CSRValueType>
-void OpenMPCOOUtils::getCSRValuesP( IndexType csrJA[], CSRValueType csrValues[], IndexType csrIA[], // used as tmp, remains unchanged
-                                    const IndexType numRows,
-                                    const IndexType numValues,
-                                    const IndexType cooIA[],
-                                    const IndexType cooJA[],
-                                    const COOValueType cooValues[] )
-{
-    SCAI_LOG_INFO( logger,
-                   "get CSRValues<" << getScalarType<COOValueType>() << ", " 
-                    << getScalarType<CSRValueType>() << ">" << ", #rows = " << numRows << ", #values = " << numValues )
-
-    std::vector<IndexType> rowOffset( numRows ); // temp copy of csrIA
-
-    // Note: diagonal property if csrIA[i] == i && csrJA[i] == i 
-
-    bool diagonalProperty =  numValues >= numRows;
-
-    #pragma omp parallel
-    {
-        #pragma omp for
-
-        for( IndexType i = 0; i < numRows; ++i )
-        {
-            rowOffset[i] = csrIA[i];
-
-            if ( diagonalProperty )
-            {
-                // implies that i is legal index value
-
-                if ( csrJA[ i ] != i  || csrIA[ i ] != i  )
-                {
-                    // for cache optimization: write is much more expensive than only read 
-                    diagonalProperty = false;
-                }
-            }
-        }
-
-        // traverse the non-zero values and put data in the corresponding rows,
-
-        #pragma omp for
-
-        for ( IndexType k = 0; k < numValues; k++ )
-        {
-            IndexType i = cooIA[k];
-            IndexType offset;
-
-            #pragma omp critical
-            {
-                offset = rowOffset[i];
-                rowOffset[i]++;
-            }
-
-            csrJA[offset] = cooJA[k];
-            csrValues[offset] = static_cast<CSRValueType>( cooValues[k] );
-        }
-    }
-
-    OpenMPCSRUtils::sortRowElements( csrJA, csrValues, csrIA, numRows, diagonalProperty );
-
-    // ToDo: Attention: there are still some problems with diagonal property here
 }
 
 /* --------------------------------------------------------------------------- */
@@ -456,19 +443,20 @@ void OpenMPCOOUtils::registerKernels( bool deleteFlag )
         flag = KernelRegistry::KERNEL_ERASE;
     }
 
+    KernelRegistry::set<COOKernelTrait::hasDiagonalProperty>( hasDiagonalProperty, Host, flag );
     KernelRegistry::set<COOKernelTrait::offsets2ia>( offsets2ia, Host, flag );
     KernelRegistry::set<COOKernelTrait::getCSRSizes>( getCSRSizes, Host, flag );
 
     KernelRegistry::set<COOKernelTrait::setCSRData<IndexType, IndexType> >( setCSRData, Host, flag );
 
-#define LAMA_COO_UTILS2_REGISTER(z, J, TYPE )                                                                        \
-    KernelRegistry::set<COOKernelTrait::setCSRData<TYPE, ARITHMETIC_HOST_TYPE_##J> >( setCSRData, Host, flag );       \
-    KernelRegistry::set<COOKernelTrait::getCSRValues<TYPE, ARITHMETIC_HOST_TYPE_##J> >( getCSRValuesS, Host, flag );  \
+#define LAMA_COO_UTILS2_REGISTER(z, J, TYPE )                                                                       \
+    KernelRegistry::set<COOKernelTrait::setCSRData<TYPE, ARITHMETIC_HOST_TYPE_##J> >( setCSRData, Host, flag );     \
+    KernelRegistry::set<COOKernelTrait::getCSRValues<TYPE, ARITHMETIC_HOST_TYPE_##J> >( getCSRValues, Host, flag ); \
 
 #define LAMA_COO_UTILS_REGISTER(z, I, _)                                                                   \
-    KernelRegistry::set<COOKernelTrait::normalGEMV<ARITHMETIC_HOST_TYPE_##I> >( normalGEMV, Host, flag );   \
-    KernelRegistry::set<COOKernelTrait::normalGEVM<ARITHMETIC_HOST_TYPE_##I> >( normalGEVM, Host, flag );   \
-    KernelRegistry::set<COOKernelTrait::jacobi<ARITHMETIC_HOST_TYPE_##I> >( jacobi, Host, flag );           \
+    KernelRegistry::set<COOKernelTrait::normalGEMV<ARITHMETIC_HOST_TYPE_##I> >( normalGEMV, Host, flag );  \
+    KernelRegistry::set<COOKernelTrait::normalGEVM<ARITHMETIC_HOST_TYPE_##I> >( normalGEVM, Host, flag );  \
+    KernelRegistry::set<COOKernelTrait::jacobi<ARITHMETIC_HOST_TYPE_##I> >( jacobi, Host, flag );          \
                                                                                                            \
     BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT,                                                             \
                      LAMA_COO_UTILS2_REGISTER,                                                             \

@@ -165,28 +165,14 @@ bool COOStorage<ValueType>::checkDiagonalProperty() const
     {
         diagonalProperty = true; // intialization for reduction
 
-        ContextPtr contextPtr = Context::getHostPtr();
+        static LAMAKernel<COOKernelTrait::hasDiagonalProperty> hasDiagonalProperty;
+
+        ContextPtr contextPtr = hasDiagonalProperty.getValidContext( this->getContextPtr() );
 
         ReadAccess<IndexType> ia( mIA, contextPtr );
         ReadAccess<IndexType> ja( mJA, contextPtr );
 
-        // The diagonal property is given if the first numDiags entries
-        // are the diagonal elements
-
-        #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
-
-        for( IndexType i = 0; i < mNumRows; ++i )
-        {
-            if( !diagonalProperty )
-            {
-                continue;
-            }
-
-            if( ia[i] != i || ja[i] != i )
-            {
-                diagonalProperty = false;
-            }
-        }
+        diagonalProperty = hasDiagonalProperty[contextPtr]( ia.get(), ja.get(), mNumRows );
     }
 
     SCAI_LOG_INFO( logger, *this << ": checkDiagonalProperty -> " << diagonalProperty )
