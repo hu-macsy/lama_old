@@ -39,7 +39,8 @@ set ( CMAKE_THREAD_PREFER_PTHREAD 1 )
 set ( THREADS_PREFER_PTHREAD_FLAG 1 )
 
 find_package( Threads ${SCAI_FIND_PACKAGE_FLAGS} REQUIRED )
-set ( SCAI_THREAD_LIBRARY ${CMAKE_THREAD_LIBS_INIT} )
+set ( SCAI_THREAD_LIBRARIES ${CMAKE_THREAD_LIBS_INIT} CACHE PATH "Pthread library" )
+mark_as_advanced( SCAI_THREAD_LIBRARIES )
 
 ###  Here we use PThread library for threads
 ###  Note: FindThreads in CMake is available as Module, but is buggy, needs update of CheckIncludeFiles.cmake
