@@ -103,12 +103,6 @@ scai_project (
         KernelContextFunction
 )
 
-## add CUDA if supported
-if    ( CUDA_FOUND AND USE_CUDA )
-    add_subdirectory ( cuda )
-    include_directories ( ${CUDA_TOOLKIT_INCLUDE} )
-endif ( CUDA_FOUND AND USE_CUDA )
-
 ## add exception dir
 add_subdirectory ( exception )
 
