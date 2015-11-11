@@ -36,6 +36,7 @@
 #include <scai/tracing/CallTreeTable.hpp>
 
 // internal scai libraries
+#include <scai/common/macros/throw.hpp>
 #include <scai/common/macros/assert.hpp>
 
 namespace scai
