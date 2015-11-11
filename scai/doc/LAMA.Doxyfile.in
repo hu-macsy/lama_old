@@ -600,7 +600,7 @@ EXCLUDE                =  ${CMAKE_SOURCE_DIR}/lama/test \
                           ${CMAKE_SOURCE_DIR}/common/examples \
                           ${CMAKE_SOURCE_DIR}/common/test \
                           ${CMAKE_SOURCE_DIR}/hmemo/examples \
-                          ${CMAKE_SOURCE_DIR}/hmemo/ test
+                          ${CMAKE_SOURCE_DIR}/hmemo/test
 
 # The EXCLUDE_SYMLINKS tag can be used select whether or not files or
 # directories that are symbolic links (a Unix filesystem feature) are excluded
