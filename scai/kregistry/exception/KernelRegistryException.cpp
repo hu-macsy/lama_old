@@ -30,7 +30,7 @@
  * @date 16.10.2015
  */
 
-#include <scai/kregistry/KernelRegistryException.hpp>
+#include <scai/kregistry/exception/KernelRegistryException.hpp>
 
 namespace scai
 {

@@ -32,7 +32,7 @@
 #pragma once
 
 #include <scai/kregistry/ContextFunction.hpp>
-#include <scai/kregistry/KernelRegistryException.hpp>
+#include <scai/kregistry/exception/KernelRegistryException.hpp>
 
 #include <scai/logging.hpp>
 

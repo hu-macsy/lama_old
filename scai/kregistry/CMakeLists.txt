@@ -97,7 +97,6 @@ scai_project (
 
         ContextFunction
         KernelRegistry
-        KernelRegistryException
 
     HEADERS
 
@@ -109,6 +108,9 @@ if    ( CUDA_FOUND AND USE_CUDA )
     add_subdirectory ( cuda )
     include_directories ( ${CUDA_TOOLKIT_INCLUDE} )
 endif ( CUDA_FOUND AND USE_CUDA )
+
+## add exception dir
+add_subdirectory ( exception )
 
 ## add subdirectories
 add_subdirectory ( examples )

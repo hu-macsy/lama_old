@@ -30,7 +30,7 @@
  * @date 13.10.2015
  */
 
-#include "KernelRegistry.hpp"
+#include <scai/kregistry/KernelRegistry.hpp>
 
 namespace scai
 {
