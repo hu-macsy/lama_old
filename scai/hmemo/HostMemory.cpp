@@ -32,6 +32,7 @@
 
 // hpp
 #include <scai/hmemo/HostMemory.hpp>
+#include <scai/hmemo/exception/MemoryException.hpp>
 
 // local library
 #include <scai/hmemo/HostContext.hpp>
@@ -98,7 +99,7 @@ void* HostMemory::allocate( const size_t size ) const
 
     if( pointer == NULL )
     {
-        COMMON_THROWEXCEPTION( "malloc failed for size = " << size )
+        SCAI_THROWEXCEPTION( MemoryException, "malloc failed for size = " << size )
     }
 
     // allocate must be thread-safe in case where multiple threads use LAMA arrays

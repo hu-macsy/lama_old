@@ -38,7 +38,7 @@
 #include <scai/hmemo/ContextAccess.hpp>
 
 // internal scai libraries
-#include <scai/common/Assert.hpp>
+#include <scai/common/macros/assert.hpp>
 #include <scai/common/cuda/CUDAError.hpp>
 
 namespace scai

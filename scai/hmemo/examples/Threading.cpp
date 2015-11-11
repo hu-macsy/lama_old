@@ -59,7 +59,7 @@ void readJob( LAMAArray<double>& X )
 
     for ( int k = 0; k < 100; ++k )
     {
-        for ( int i = 1; i < X.size(); ++i )
+        for ( IndexType i = 1; i < X.size(); ++i )
         {
             double v = data[i];
 
@@ -88,7 +88,7 @@ void writeJob( LAMAArray<double>& X )
 
     SCAI_LOG_INFO( logger, "Do Write job, size = " << write.size() << ", val = " << data[0] )
 
-    for ( int i = 0; i < write.size(); ++i )
+    for ( IndexType i = 0; i < write.size(); ++i )
     {
         data[i] = data[i] + 1.0;
     }

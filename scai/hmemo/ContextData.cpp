@@ -95,7 +95,8 @@ void ContextData::allocate( const size_t size )
 
     if ( !pointer )
     {
-        COMMON_THROWEXCEPTION( "Could not allocate ContextData of size = " << size << " on " << *mMemory )
+        SCAI_THROWEXCEPTION( MemoryException,
+                             "Could not allocate ContextData of size = " << size << " on " << *mMemory )
     }
 
     this->size = size;

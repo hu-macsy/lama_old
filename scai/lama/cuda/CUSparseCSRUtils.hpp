@@ -64,9 +64,9 @@ public:
         const IndexType csrIA[],
         const IndexType csrJA[],
         const ValueType csrValues[],
-        int numRows,
-        int numColumns,
-        int numValues );
+        IndexType numRows,
+        IndexType numColumns,
+        IndexType numValues );
 
     /** Implementation for CSRKernelTrait::normalGEMV  */
 

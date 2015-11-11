@@ -57,7 +57,7 @@ void sumArray( const LAMAArray<T>& array )
  
     T sum = 0;
 
-    for ( int i = 0; i < array.size(); ++i )
+    for ( IndexType i = 0; i < array.size(); ++i )
     {
         sum += data[i];
     }

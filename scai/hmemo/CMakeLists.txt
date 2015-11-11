@@ -131,6 +131,7 @@ if    ( USE_MIC )
 endif ( USE_MIC )
 
 ## add subdirectories
+add_subdirectory ( exception )
 add_subdirectory ( examples )
 add_subdirectory ( test )
 

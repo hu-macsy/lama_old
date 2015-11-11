@@ -32,7 +32,7 @@
 #pragma once
 
 // local library
-#include <scai/common/macros/throw.hpp>
+// #include <scai/common/macros/throw.hpp>
 #include <scai/common/exception/AssertException.hpp>
 
 template<typename ValueType>

@@ -32,6 +32,7 @@
 
 // hpp
 #include <scai/hmemo/Memory.hpp>
+#include <scai/hmemo/exception/MemoryException.hpp>
 
 // internal scai libraries
 #include <scai/common/macros/throw.hpp>
@@ -104,7 +105,8 @@ void Memory::memcpyFrom( void* dst, const Memory& srcMemory, const void* src, si
         return;
     }
 
-    COMMON_THROWEXCEPTION( "copy from " << srcMemory << " to this " << *this << " is UNSUPPORTED, "
+    SCAI_THROWEXCEPTION( MemoryException,
+                         "copy from " << srcMemory << " to this " << *this << " is UNSUPPORTED, "
                            << "dst = " << dst << ", src = " << src << ", size = " << size )
 }
 
@@ -116,8 +118,9 @@ void Memory::memcpyTo( const Memory& dstMemory, void* dst, const void* src, size
         return;
     }
 
-    COMMON_THROWEXCEPTION( "copy to " << dstMemory << " from this " << *this << " is UNSUPPORTED, "
-                            << "dst = " << dst << ", src = " << src << ", size = " << size )
+    SCAI_THROWEXCEPTION( MemoryException,
+                         "copy to " << dstMemory << " from this " << *this << " is UNSUPPORTED, "
+                         << "dst = " << dst << ", src = " << src << ", size = " << size )
 }
 
 /* ---------------------------------------------------------------------------------*/

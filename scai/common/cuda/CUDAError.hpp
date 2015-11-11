@@ -32,8 +32,7 @@
 #pragma once
 
 // local library
-#include <scai/common/Assert.hpp>
-
+#include <scai/common/macros/assert.hpp>
 #include <scai/common/macros/throw.hpp>
 
 // CUDA

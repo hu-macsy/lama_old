@@ -119,7 +119,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( refTest, ValueType, test_types )
 
             LAMAArrayRef<ValueType> lamaArray( 10, myConstData );
 
-            BOOST_CHECK_EQUAL( 10, lamaArray.size() );
+            BOOST_CHECK_EQUAL( lamaArray.size(), static_cast<IndexType>( 10 ) );
             // Write access should not be allowed
             BOOST_CHECK_THROW(
             {

@@ -749,7 +749,9 @@ PartitionId Communicator::getNeighbor( int pos ) const
     PartitionId size = getSize();
     PartitionId rank = getRank();
 
-    SCAI_ASSERT( std::abs( pos ) <= size, "neighbor pos "<<pos<<" out of range ("<<size<<")" )
+    PartitionId apos = std::abs( pos );
+
+    SCAI_ASSERT( apos <= size, "neighbor pos " << pos << " out of range (" << size << ")" )
 
     return ( size + rank + pos ) % size;
 }

@@ -75,7 +75,7 @@ void add1 ( Array& a )
 {
     ContextPtr gpuCtx = hmemo::Context::getContextPtr( common::context::Host );
 
-    int n = a.size();
+    IndexType n = a.size();
 
     SCAI_LOG_INFO( logger, "a = a + 1, n = " << n << ", on " << *gpuCtx )
 
@@ -95,7 +95,7 @@ void printIt( const Array& a )
 
     ContextPtr hostCtx = hmemo::Context::getHostPtr();
 
-    int n = a.size();
+    IndexType n = a.size();
 
     hmemo::ReadAccess<double>read( a, hostCtx );
 

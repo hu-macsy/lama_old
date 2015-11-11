@@ -278,7 +278,7 @@ LAMAArray<ValueType>::LAMAArray( const IndexType n, const OtherValueType* const 
 
 #pragma omp parallel for
 
-    for( int i = 0; i < mSize; ++i )
+    for( IndexType i = 0; i < mSize; ++i )
     {
         hostData[i] = static_cast<ValueType>( values[i] );
     }
@@ -373,7 +373,7 @@ LAMAArray<ValueType>::LAMAArray( const IndexType n, const ValueType& value ) : C
 
 #pragma omp parallel for 
 
-        for ( int i = 0; i < mSize; ++i )
+        for ( IndexType i = 0; i < mSize; ++i )
         {
             hostData[i] = value;
         }

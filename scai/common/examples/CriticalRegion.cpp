@@ -33,6 +33,7 @@
 
 #include <scai/common/Thread.hpp>
 #include <scai/common/Walltime.hpp>
+#include <scai/common/macros/throw.hpp>
 #include <scai/common/macros/assert.hpp>
 
 #include <iostream>

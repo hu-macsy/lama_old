@@ -58,7 +58,7 @@ void outArray( const LAMAArray<ValueType>& array, const char* name )
 
     ReadAccess<ValueType> read( array, contextPtr );
 
-    for ( int i = 0; i < array.size(); ++i )
+    for ( IndexType i = 0; i < array.size(); ++i )
     {
         std::cout << " " << read.get()[i];
     }

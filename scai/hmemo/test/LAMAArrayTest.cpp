@@ -122,7 +122,7 @@ BOOST_AUTO_TEST_CASE( releaseTest )
 
     for ( IndexType i = 0; i < 5; i++ )
     {
-        BOOST_CHECK_EQUAL( 3, readData[i] );
+        BOOST_CHECK_EQUAL( static_cast<IndexType>( 3 ), readData[i] );
     }
 
     readAccess.release();
