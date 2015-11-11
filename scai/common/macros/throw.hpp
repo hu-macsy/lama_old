@@ -1,5 +1,5 @@
 /**
- * @file MPIException.hpp
+ * @file throw.hpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,34 +25,33 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief MPIException.hpp
+ * @brief Definition of macros that throw exceptions
  * @author Thomas Brandes
- * @date 01.03.2011
- * @since 1.0.0
+ * @date 11.11.2015
  */
-
 #pragma once
 
-// for dll_import
-#include <scai/common/config.hpp>
+#include <scai/common/exception/Exception.hpp>
 
-// base classes
-#include <scai/common/macros/throw.hpp>
+/**
+ * @brief The macro SCAI_THROWEXCEPTION throws an exception that contains
+ *        source code file and line as well as call stack in its message.
+ *
+ * @param[in] ExceptionClass must be same or derived class from scai::common::Exception
+ * @param[in] msg   message to indicate reason for the exception
+ * @throws    ExceptionClass (derived from scai::common:Exception, derived from std::exception)
+ */
 
-namespace scai
-{
+#define SCAI_THROWEXCEPTION( ExceptionClass, msg )                             \
+{                                                                              \
+    std::ostringstream errorStr;                                               \
+    errorStr<<"Exception in line "<<__LINE__<<" of file "<<__FILE__<<"\n";     \
+    errorStr<<"    Message: "<<msg<<"\n";                                      \
+    scai::common::Exception::addCallStack( errorStr );                         \
+    throw ExceptionClass( errorStr.str() );                                    \
+}
 
-namespace lama
-{
+/** COMMON_THROWEXCEPTION just throws a simple exception */
 
-class COMMON_DLL_IMPORTEXPORT MPIException: public common::Exception
-{
-public:
-    MPIException( const std::string& message, const int mpiStatus );
-
-    virtual ~MPIException() throw ();
-};
-
-} /* end namespace lama */
-
-} /* end namespace scai */
+#define COMMON_THROWEXCEPTION( msg )   \
+        SCAI_THROWEXCEPTION( scai::common::Exception, msg )

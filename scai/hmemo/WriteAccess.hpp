@@ -45,7 +45,7 @@
 // internal scai libraries
 #include <scai/logging.hpp>
 
-#include <scai/common/exception/Exception.hpp>
+#include <scai/common/macros/throw.hpp>
 #include <scai/common/function.hpp>
 #include <scai/common/bind.hpp>
 

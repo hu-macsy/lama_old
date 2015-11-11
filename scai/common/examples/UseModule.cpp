@@ -2,7 +2,7 @@
 #include "DynRoutine.hpp"
 
 #include <scai/common/LibModule.hpp>
-#include <scai/common/exception/Exception.hpp>
+#include <scai/common/macros/throw.hpp>
 #include <scai/common/Settings.hpp>
 
 #include <iostream>

@@ -33,7 +33,7 @@
 #include <scai/hmemo/Context.hpp>
 #include <scai/hmemo/ReadAccess.hpp>
 #include <scai/hmemo/WriteAccess.hpp>
-#include <scai/common/exception/Exception.hpp>
+#include <scai/common/macros/throw.hpp>
 #include <scai/tasking/ThreadPool.hpp>
 #include <scai/tasking/Task.hpp>
 #include <scai/common/bind.hpp>

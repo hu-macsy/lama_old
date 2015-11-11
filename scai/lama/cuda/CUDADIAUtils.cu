@@ -45,7 +45,7 @@
 #include <scai/kregistry/KernelRegistry.hpp>
 #include <scai/tracing.hpp>
 
-#include <scai/common/Assert.hpp>
+#include <scai/common/macros/assert.hpp>
 #include <scai/common/bind.hpp>
 #include <scai/common/cuda/CUDAError.hpp>
 #include <scai/common/cuda/launchHelper.hpp>

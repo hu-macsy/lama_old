@@ -34,7 +34,9 @@ scai_project(
 
     HEADERS
 
+        assert
         inline
+        throw
         unique_name
         unused
 

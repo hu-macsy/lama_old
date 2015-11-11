@@ -39,7 +39,7 @@
 // internal scai libraries
 #include <scai/tasking/TaskSyncToken.hpp>
 
-#include <scai/common/exception/Exception.hpp>
+#include <scai/common/macros/throw.hpp>
 #include <scai/common/OpenMP.hpp>
 #include <scai/common/weak_ptr.hpp>
 

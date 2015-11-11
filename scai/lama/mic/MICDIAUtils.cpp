@@ -46,7 +46,7 @@
 
 #include <scai/tracing.hpp>
 
-#include <scai/common/Assert.hpp>
+#include <scai/common/macros/assert.hpp>
 
 // std
 #include <cmath>

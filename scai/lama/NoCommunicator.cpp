@@ -40,7 +40,7 @@
 // internal scai libraries
 #include <scai/tasking/NoSyncToken.hpp>
 
-#include <scai/common/Assert.hpp>
+#include <scai/common/macros/assert.hpp>
 #include <scai/common/weak_ptr.hpp>
 
 using namespace std;

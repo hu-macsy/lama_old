@@ -101,7 +101,6 @@ scai_project (
 
     HEADERS
 
-        Assert
         bind     
         Complex
         config

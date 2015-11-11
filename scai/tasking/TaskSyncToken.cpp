@@ -35,7 +35,7 @@
 
 // internal scai libraries
 #include <scai/common/bind.hpp>
-#include <scai/common/exception/Exception.hpp>
+#include <scai/common/macros/throw.hpp>
 
 namespace scai
 {

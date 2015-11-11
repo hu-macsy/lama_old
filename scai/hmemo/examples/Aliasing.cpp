@@ -33,7 +33,7 @@
 #include <scai/hmemo/Context.hpp>
 #include <scai/hmemo/ReadAccess.hpp>
 #include <scai/hmemo/WriteOnlyAccess.hpp>
-#include <scai/common/Assert.hpp>
+#include <scai/common/macros/assert.hpp>
 
 using namespace scai::hmemo;
 

@@ -47,7 +47,7 @@
 
 #include <scai/tracing.hpp>
 
-#include <scai/common/Assert.hpp>
+#include <scai/common/macros/assert.hpp>
 #include <scai/common/ScalarType.hpp>
 
 // std

@@ -34,7 +34,7 @@
 #include <scai/hmemo/Memory.hpp>
 
 // internal scai libraries
-#include <scai/common/exception/Exception.hpp>
+#include <scai/common/macros/throw.hpp>
 
 // std
 #include <map>

@@ -40,7 +40,7 @@
 #include <scai/logging.hpp>
 
 #include <scai/common/config.hpp>
-#include <scai/common/Assert.hpp>
+#include <scai/common/macros/assert.hpp>
 #include <scai/common/function.hpp>
 #include <scai/common/bind.hpp>
 

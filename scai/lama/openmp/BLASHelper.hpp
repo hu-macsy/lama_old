@@ -39,7 +39,7 @@
 // internal scai libraries
 #include <scai/common/macros/inline.hpp>
 #include <scai/common/SCAITypes.hpp>
-#include <scai/common/exception/Exception.hpp>
+#include <scai/common/macros/throw.hpp>
 
 namespace scai
 {

@@ -34,7 +34,7 @@
 // local library
 #include <scai/common/Assert.hpp>
 
-#include <scai/common/exception/Exception.hpp>
+#include <scai/common/macros/throw.hpp>
 
 // CUDA
 #include <cuda.h>
