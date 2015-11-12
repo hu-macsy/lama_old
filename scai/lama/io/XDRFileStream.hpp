@@ -37,7 +37,7 @@
 #include <scai/common/config.hpp>
 
 // internal scai libraries
-#include <scai/common/exception/Exception.hpp>
+#include <scai/common/macros/throw.hpp>
 
 // std
 #include <fstream>

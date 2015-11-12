@@ -41,7 +41,7 @@
 // internal scai libraries
 #include <scai/kregistry/KernelRegistry.hpp>
 #include <scai/common/unique_ptr.hpp>
-#include <scai/common/Assert.hpp>
+#include <scai/common/macros/assert.hpp>
 
 // external
 #include <mkl_lapacke.h>

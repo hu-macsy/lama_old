@@ -563,7 +563,7 @@ void Communicator::computeOwners(
         COMMON_THROWEXCEPTION( "The distribution has a different Communicator." )
     }
 
-    int nonLocal = 0;
+    IndexType nonLocal = 0;
 
     // Check for own ownership. Mark needed Owners. Only exchange requests for unknown indexes.
     for ( IndexType i = 0; i < nIndexes; ++i )
@@ -575,7 +575,7 @@ void Communicator::computeOwners(
         else
         {
             nonLocal++;
-            owners[i] = -1;
+            owners[i] = nIndex;
         }
     }
 
@@ -600,7 +600,7 @@ void Communicator::computeOwners(
 
         for ( IndexType i = 0; i < static_cast<IndexType>( nIndexes ); ++i )
         {
-            if ( owners[i] == -1 )
+            if ( owners[i] == nPartition )
             {
                 indexesSend[nonLocal++] = requiredIndexes[i];
             }
@@ -610,12 +610,12 @@ void Communicator::computeOwners(
 
         for ( IndexType i = 0; i < receiveSize; ++i )
         {
-            ownersSend[i] = -1;
+            ownersSend[i] = nIndex;
         }
     }
 
-    int ownersSize = -1;
-    int currentSize = nonLocal;
+    IndexType ownersSize = nIndex;
+    IndexType currentSize = nonLocal;
 
     const int direction = 1; // send to right, recv from left
 
@@ -632,20 +632,20 @@ void Communicator::computeOwners(
 
         currentSize = shiftData( indexesReceive.get(), receiveSize, indexesSend.get(), currentSize, direction );
 
-        SCAI_ASSERT_ERROR( ownersSize == -1 || currentSize == ownersSize, "Communication corrupted." )
+        SCAI_ASSERT_ERROR( ownersSize == nIndex || currentSize == ownersSize, "Communication corrupted." )
 
         SCAI_LOG_DEBUG( logger, "owners size = " << ownersSize << ", current size = " << currentSize )
         IndexType* indexes = indexesReceive.get();
-        int* currentOwners = ownersSend.get();
+        IndexType* currentOwners = ownersSend.get();
         SCAI_LOG_DEBUG( logger, "check buffer with " << currentSize << " global indexes whether I am owner" )
 
-        for ( int i = 0; i < currentSize; ++i )
+        for ( IndexType i = 0; i < currentSize; ++i )
         {
             //TODO there should be a blockwise implementation of isLocal
             SCAI_LOG_TRACE( logger,
                             "check global index " << indexes[i] << " with current owner " << currentOwners[i] << ", is local = " << distribution.isLocal( indexes[i] ) )
 
-            if ( currentOwners[i] == -1 && distribution.isLocal( indexes[i] ) )
+            if ( currentOwners[i] == nIndex && distribution.isLocal( indexes[i] ) )
             {
                 SCAI_LOG_TRACE( logger, *this << ": me is owner of global index " << indexes[i] )
                 currentOwners[i] = rank;
@@ -659,7 +659,7 @@ void Communicator::computeOwners(
 
         SCAI_LOG_DEBUG( logger, *this << ": send array with " << currentSize << " owners to right" )
 
-        for ( int i = 0; i < currentSize; i++ )
+        for ( IndexType i = 0; i < currentSize; i++ )
         {
             SCAI_LOG_TRACE( logger, *this << " send currentOwner[" << i << "] = " << ownersSend[i] )
         }
@@ -669,7 +669,7 @@ void Communicator::computeOwners(
 
         SCAI_LOG_DEBUG( logger, *this << ": recvd array with " << ownersSize << " owners from left" )
 
-        for ( int i = 0; i < ownersSize; i++ )
+        for ( IndexType i = 0; i < ownersSize; i++ )
         {
             SCAI_LOG_TRACE( logger, *this << ": recv currentOwner[" << i << "] = " << ownersReceive[i] )
         }
@@ -694,7 +694,7 @@ void Communicator::computeOwners(
 
     for ( IndexType i = 0; i < nIndexes; ++i )
     {
-        if ( owners[i] == -1 )
+        if ( owners[i] == nIndex )
         {
             owners[i] = ownersSend[nn++];
 
@@ -711,14 +711,14 @@ void Communicator::computeOwners(
 
 bool Communicator::all( const bool flag ) const
 {
-    int val = 0; // flag is true
+    IndexType val = 0; // flag is true
 
     if ( !flag )
     {
         val = 1;
     }
 
-    int allval = sum( val ); // count flags == false
+    IndexType allval = sum( val ); // count flags == false
 
     SCAI_LOG_DEBUG( logger, "sum( " << val << " ) = " << allval )
 
@@ -729,9 +729,9 @@ bool Communicator::all( const bool flag ) const
 
 bool Communicator::any( const bool flag ) const
 {
-    int val = flag ? 1 : 0; //  1 if flag is true
+    IndexType val = flag ? 1 : 0; //  1 if flag is true
 
-    int allval = sum( val ); // count flags == false
+    IndexType allval = sum( val ); // count flags == false
 
     SCAI_LOG_DEBUG( logger, "sum( " << val << " ) = " << allval )
 
@@ -746,7 +746,7 @@ void Communicator::bcast( std::string& val, const PartitionId root ) const
 
     bool isRoot = getRank() == root;
 
-    int len = 0;
+    IndexType len = 0;    // IndexType is supported by bcast
 
     if ( isRoot )
     {

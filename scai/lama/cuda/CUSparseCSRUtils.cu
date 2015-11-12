@@ -79,9 +79,9 @@ void CUSparseCSRUtils::convertCSR2CSC(
     const IndexType csrIA[],
     const IndexType csrJA[],
     const float csrValues[],
-    int numRows,
-    int numColumns,
-    int numValues )
+    IndexType numRows,
+    IndexType numColumns,
+    IndexType numValues )
 {
     SCAI_LOG_INFO( logger,
                    "convertCSR2CSC<float> -> cusparseScsr2csc" << ", matrix size = "
@@ -110,9 +110,9 @@ void CUSparseCSRUtils::convertCSR2CSC(
     const IndexType csrIA[],
     const IndexType csrJA[],
     const double csrValues[],
-    int numRows,
-    int numColumns,
-    int numValues )
+    IndexType numRows,
+    IndexType numColumns,
+    IndexType numValues )
 {
     SCAI_LOG_INFO( logger,
                    "convertCSR2CSC<double> -> cusparseDcsr2csc" << ", matrix size = "

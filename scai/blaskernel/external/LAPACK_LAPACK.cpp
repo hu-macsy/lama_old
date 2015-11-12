@@ -44,7 +44,7 @@
 
 #include <scai/tracing.hpp>
 
-#include <scai/common/Assert.hpp>
+#include <scai/common/macros/assert.hpp>
 #include <scai/common/unique_ptr.hpp>
 #include <scai/common/macros/unused.hpp>
 

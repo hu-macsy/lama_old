@@ -41,7 +41,7 @@
 // local library
 #include <scai/common/SCAITypes.hpp>
 
-#include <scai/common/exception/Exception.hpp>
+#include <scai/common/macros/throw.hpp>
 
 // std
 #include <iostream>

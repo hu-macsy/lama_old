@@ -1,5 +1,5 @@
 /**
- * @file LibModule.hpp
+ * @file throw.hpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,57 +25,33 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Class to search and load library modules
- *
+ * @brief Definition of macros that throw exceptions
  * @author Thomas Brandes
- * @date 04.11.2015
+ * @date 11.11.2015
  */
-
 #pragma once
 
-#include <dlfcn.h> 
+#include <scai/common/exception/Exception.hpp>
 
+/**
+ * @brief The macro SCAI_THROWEXCEPTION throws an exception that contains
+ *        source code file and line as well as call stack in its message.
+ *
+ * @param[in] ExceptionClass must be same or derived class from scai::common::Exception
+ * @param[in] msg   message to indicate reason for the exception
+ * @throws    ExceptionClass (derived from scai::common:Exception, derived from std::exception)
+ */
 
-namespace scai
-{
+#define SCAI_THROWEXCEPTION( ExceptionClass, msg )                             \
+{                                                                              \
+    std::ostringstream errorStr;                                               \
+    errorStr<<"Exception in line "<<__LINE__<<" of file "<<__FILE__<<"\n";     \
+    errorStr<<"    Message: "<<msg<<"\n";                                      \
+    scai::common::Exception::addCallStack( errorStr );                         \
+    throw ExceptionClass( errorStr.str() );                                    \
+}
 
-namespace common
-{
+/** COMMON_THROWEXCEPTION just throws a simple exception */
 
-/** Static class that provides methods to find, load and unload library modules. */
-
-class LibModule
-{
-public:
-
-    /** Data type defintion for library handle, might be OS specifici. */
-
-    typedef void* LibHandle;
-
-    /** Load a libary with its full name (might be absolute or relative) */
-
-    static LibHandle loadLib( const char* filename );
-
-    /** Unload a libray 
-     *
-     *  Note: It is very likely that the libary is not unloaded now, e.g. there is no
-     *        guarantee that the destructors of static objects are called.
-     */
-    static void freeLib( LibHandle handle );
-
-    /** This routine reads a directory and tries to load all library modules in it that match the pattern. 
-     *
-     *  throws an exception if directory does not exist or is not readable
-     *
-     */
-
-    static void loadLibsInDir( const char* dir );
-
-    /** multiple directory/libaries by path string like module_1:module_2:module_directory  */
-
-    static void loadLibsByPath( const char* path );
-};
-
-} /* end namespace common */
-
-} /* end namespace scai */
+#define COMMON_THROWEXCEPTION( msg )   \
+        SCAI_THROWEXCEPTION( scai::common::Exception, msg )

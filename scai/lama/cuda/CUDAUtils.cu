@@ -41,7 +41,7 @@
 #include <scai/lama/cuda/CUDASettings.hpp>
 
 // internal scai libraries
-#include <scai/common/Assert.hpp>
+#include <scai/common/macros/assert.hpp>
 #include <scai/common/cuda/CUDAError.hpp>
 #include <scai/common/cuda/launchHelper.hpp>
 #include <scai/common/Constants.hpp>

@@ -1,5 +1,5 @@
 /**
- * @file LibModule.hpp
+ * @file MemoryException.cpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,57 +25,39 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Class to search and load library modules
- *
+ * @brief Implementation of methods for MemoryException
  * @author Thomas Brandes
- * @date 04.11.2015
+ * @date 16.10.2015
  */
 
-#pragma once
-
-#include <dlfcn.h> 
-
+#include <scai/hmemo/exception/MemoryException.hpp>
 
 namespace scai
 {
 
-namespace common
+namespace hmemo
 {
-
-/** Static class that provides methods to find, load and unload library modules. */
-
-class LibModule
+    
+MemoryException::MemoryException()
 {
-public:
+    mMessage = "MemoryException";
+}
 
-    /** Data type defintion for library handle, might be OS specifici. */
+MemoryException::MemoryException( const std::string& message )
+    : mMessage( message )
+{
+    mMessage += " @Memory";
+}
 
-    typedef void* LibHandle;
+MemoryException::~MemoryException() throw()
+{
+}
 
-    /** Load a libary with its full name (might be absolute or relative) */
+const char* MemoryException::what() const throw ()
+{
+    return mMessage.c_str();
+}
 
-    static LibHandle loadLib( const char* filename );
+} /* end hmemo */
 
-    /** Unload a libray 
-     *
-     *  Note: It is very likely that the libary is not unloaded now, e.g. there is no
-     *        guarantee that the destructors of static objects are called.
-     */
-    static void freeLib( LibHandle handle );
-
-    /** This routine reads a directory and tries to load all library modules in it that match the pattern. 
-     *
-     *  throws an exception if directory does not exist or is not readable
-     *
-     */
-
-    static void loadLibsInDir( const char* dir );
-
-    /** multiple directory/libaries by path string like module_1:module_2:module_directory  */
-
-    static void loadLibsByPath( const char* path );
-};
-
-} /* end namespace common */
-
-} /* end namespace scai */
+} /* end scai */

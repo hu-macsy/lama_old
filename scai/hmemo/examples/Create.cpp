@@ -36,7 +36,7 @@
 
 #include <scai/logging.hpp>
 
-#include <scai/common/exception/Exception.hpp>
+#include <scai/common/macros/throw.hpp>
 
 #include <scai/common/shared_ptr.hpp>
 

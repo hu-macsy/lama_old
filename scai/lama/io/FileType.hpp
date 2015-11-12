@@ -35,7 +35,6 @@
 
 // internal scai libraries
 #include <scai/common/SCAITypes.hpp>
-#include <scai/common/TypeTraits.hpp>
 
 namespace scai
 {
@@ -115,19 +114,19 @@ long getDataTypeSize( const File::DataType dataType )
     switch( dataType )
     {
         case File::DOUBLE:
-            return common::TypeTraits<double>::size;
+            return sizeof( double );
 
         case File::FLOAT:
-            return common::TypeTraits<float>::size;
+            return sizeof( float );
 
         case File::COMPLEX:
-            return common::TypeTraits<ComplexFloat>::size;
+            return sizeof( ComplexFloat );
 
         case File::DOUBLE_COMPLEX:
-            return common::TypeTraits<ComplexDouble>::size;
+            return sizeof( ComplexDouble );
 
         case File::INTERNAL:
-            return common::TypeTraits<ValueType>::size;
+            return sizeof( ValueType );
 
         case File::PATTERN:
             return 0;
@@ -146,7 +145,7 @@ long getDataTypeSize( const File::DataType dataType )
 template<typename ValueType>
 File::DataType getDataType( const long dataTypeSize )
 {
-    if( dataTypeSize == common::TypeTraits<ValueType>::size )
+    if( dataTypeSize == sizeof( ValueType ) )
     {
         return File::INTERNAL;
     }
@@ -154,27 +153,27 @@ File::DataType getDataType( const long dataTypeSize )
     {
         return File::PATTERN;
     }
-    else if( dataTypeSize == common::TypeTraits<float>::size )
+    else if( dataTypeSize == sizeof( float ) )
     {
         return File::FLOAT;
     }
-    else if( dataTypeSize == common::TypeTraits<double>::size )
+    else if( dataTypeSize == sizeof( double ) )
     {
         return File::DOUBLE;
     }
-    else if( dataTypeSize == common::TypeTraits<ComplexFloat>::size )
+    else if( dataTypeSize == sizeof( ComplexFloat ) )
     {
-        // never be here as: TypeTraits<double>::size == TypeTraits<ComplexFloat>::size
+        // never be here as: size( double ) == size( ComplexFloat )
         // Complex files are only used by INTERNAL
         return File::COMPLEX;
     }
-    else if( dataTypeSize == common::TypeTraits<ComplexDouble>::size )
+    else if( dataTypeSize == sizeof( ComplexDouble ) )
     {
         return File::DOUBLE_COMPLEX;
     }
-    else if( dataTypeSize == common::TypeTraits<LongDouble>::size )
+    else if( dataTypeSize == sizeof( LongDouble ) )
     {
-        // never be here as: TypeTraits<ComplexDouble>::size == TypeTraits<LongDouble>::size
+        // never be here as: size( ComplexDouble ) == size( LongDouble )
         // LongDouble files are only used by INTERNAL
         return File::LONG_DOUBLE;
     }
@@ -190,10 +189,10 @@ long getIndexDataTypeSize( const File::IndexDataType indexDataType )
     switch( indexDataType )
     {
         case File::LONG:
-            return common::TypeTraits<long>::size;
+            return sizeof( long );
 
         case File::INT:
-            return common::TypeTraits<int>::size;
+            return sizeof( int );
 
         default:
             return 0;

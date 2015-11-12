@@ -39,7 +39,7 @@
 #include <scai/lama/distribution/NoDistribution.hpp>
 
 // internal scai libraries
-#include <scai/common/Assert.hpp>
+#include <scai/common/macros/assert.hpp>
 #include <scai/common/Constants.hpp>
 
 using namespace scai::common;

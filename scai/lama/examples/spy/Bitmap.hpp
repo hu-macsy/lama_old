@@ -36,8 +36,8 @@
 #define PNG_DEBUG 3
 
 #include <scai/lama.hpp>
-#include <scai/common/Assert.hpp>
-#include <scai/common/exception/Exception.hpp>
+#include <scai/common/macros/assert.hpp>
+#include <scai/common/macros/throw.hpp>
 
 #include <cstdlib>
 #include <vector>

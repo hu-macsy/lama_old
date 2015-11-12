@@ -34,7 +34,7 @@
 #include <scai/kregistry/KernelContextFunction.hpp>
 
 #include <scai/hmemo/Context.hpp>
-#include <scai/common/Assert.hpp>
+#include <scai/common/macros/assert.hpp>
 
 
 namespace scai

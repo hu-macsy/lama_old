@@ -41,7 +41,7 @@
 #include <scai/lama/openmp/OpenMPCSRUtils.hpp>
 
 // internal scai libraries
-#include <scai/common/Assert.hpp>
+#include <scai/common/macros/assert.hpp>
 
 #include <scai/tracing.hpp>
 

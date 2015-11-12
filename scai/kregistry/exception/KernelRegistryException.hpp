@@ -33,7 +33,7 @@
 #pragma once
 
 // base class
-#include <scai/common/exception/Exception.hpp>
+#include <scai/common/macros/throw.hpp>
 
 namespace scai
 {

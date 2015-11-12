@@ -1,5 +1,5 @@
 /**
- * @file LibModule.hpp
+ * @file MemoryException.hpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,55 +25,39 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Class to search and load library modules
- *
+ * @brief Derived exception class for exceptions in memory allocation/deallocation
  * @author Thomas Brandes
- * @date 04.11.2015
+ * @date 10.10.2015
  */
 
 #pragma once
 
-#include <dlfcn.h> 
-
+// base class
+#include <scai/common/exception/Exception.hpp>
 
 namespace scai
 {
 
-namespace common
+namespace hmemo
 {
 
-/** Static class that provides methods to find, load and unload library modules. */
+/** Derived class needed to catch exception for memory problems */
 
-class LibModule
+class COMMON_DLL_IMPORTEXPORT MemoryException : public scai::common::Exception
 {
 public:
 
-    /** Data type defintion for library handle, might be OS specifici. */
+    MemoryException();
+    
+    MemoryException( const std::string& message );
 
-    typedef void* LibHandle;
-
-    /** Load a libary with its full name (might be absolute or relative) */
-
-    static LibHandle loadLib( const char* filename );
-
-    /** Unload a libray 
-     *
-     *  Note: It is very likely that the libary is not unloaded now, e.g. there is no
-     *        guarantee that the destructors of static objects are called.
-     */
-    static void freeLib( LibHandle handle );
-
-    /** This routine reads a directory and tries to load all library modules in it that match the pattern. 
-     *
-     *  throws an exception if directory does not exist or is not readable
-     *
-     */
-
-    static void loadLibsInDir( const char* dir );
-
-    /** multiple directory/libaries by path string like module_1:module_2:module_directory  */
-
-    static void loadLibsByPath( const char* path );
+    virtual ~MemoryException() throw();
+    
+    virtual const char* what() const throw();
+    
+protected:
+        
+    std::string mMessage;
 };
 
 } /* end namespace common */
