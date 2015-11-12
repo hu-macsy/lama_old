@@ -38,11 +38,12 @@
 
 #include <scai/lama/LAMAKernel.hpp>
 #include <scai/lama/UtilKernelTrait.hpp>
-#include <scai/lama/BLASKernelTrait.hpp>
 #include <scai/lama/DIAKernelTrait.hpp>
 #include <scai/lama/CSRKernelTrait.hpp>
 
 // internal scai libraries
+#include <scai/blaskernel/BLASKernelTrait.hpp>
+
 #include <scai/hmemo/ContextAccess.hpp>
 
 #include <scai/tasking/TaskSyncToken.hpp>
@@ -742,7 +743,7 @@ ValueType DIAStorage<ValueType>::l1Norm() const
 {
     SCAI_LOG_INFO( logger, *this << ": l1Norm()" )
 
-    static LAMAKernel<BLASKernelTrait::asum<ValueType> > asum;
+    static LAMAKernel<blaskernel::BLASKernelTrait::asum<ValueType> > asum;
 
     ContextPtr loc = asum.getValidContext( this->getContextPtr() );
 
@@ -760,7 +761,7 @@ ValueType DIAStorage<ValueType>::l2Norm() const
 {
     SCAI_LOG_INFO( logger, *this << ": l2Norm()" )
 
-    static LAMAKernel<BLASKernelTrait::dot<ValueType> > dot;
+    static LAMAKernel<blaskernel::BLASKernelTrait::dot<ValueType> > dot;
 
     ContextPtr loc = dot.getValidContext( this->getContextPtr() );
 

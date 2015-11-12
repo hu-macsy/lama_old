@@ -38,9 +38,9 @@
 #include <boost/test/unit_test.hpp>
 
 // others
+#include <scai/blaskernel/BLASKernelTrait.hpp>
 #include <scai/hmemo.hpp>
 #include <scai/lama/LAMAKernel.hpp>
-#include <scai/lama/BLASKernelTrait.hpp>
 #include <scai/lama/Scalar.hpp>
 
 #include <scai/common/test/TestMacros.hpp>
@@ -58,7 +58,7 @@ namespace BLAS1Test
 template<typename ValueType>
 void asumTest( ContextPtr loc )
 {
-    LAMAKernel<BLASKernelTrait::asum<ValueType> > asum;
+    LAMAKernel<blaskernel::BLASKernelTrait::asum<ValueType> > asum;
     {
         ValueType values[] =
         { 1.0, 2.0, -3.0, 4.0, 5.0, -6.0 };
@@ -92,7 +92,7 @@ void asumTest( ContextPtr loc )
 template<typename ValueType>
 void axpyTest( ContextPtr loc )
 {
-    LAMAKernel<BLASKernelTrait::axpy<ValueType> > axpy;
+    LAMAKernel<blaskernel::BLASKernelTrait::axpy<ValueType> > axpy;
     // check with n <= 0
     {
         ValueType x[] =
@@ -175,7 +175,7 @@ void axpyTest( ContextPtr loc )
 template<typename ValueType>
 void copyTest( ContextPtr loc )
 {
-    LAMAKernel<BLASKernelTrait::copy<ValueType> > copy;
+    LAMAKernel<blaskernel::BLASKernelTrait::copy<ValueType> > copy;
 
     // check with n <= 0
     {
@@ -260,7 +260,7 @@ void copyTest( ContextPtr loc )
 template<typename ValueType>
 void dotTest( ContextPtr loc )
 {
-    LAMAKernel<BLASKernelTrait::dot<ValueType> > dot;
+    LAMAKernel<blaskernel::BLASKernelTrait::dot<ValueType> > dot;
     {
         ValueType x[] =
         { 1.0, 2.0, -3.0, 4.0, 5.0, -6.0 };
@@ -292,7 +292,7 @@ void dotTest( ContextPtr loc )
 template<typename ValueType>
 void iamaxTest( ContextPtr loc )
 {
-    LAMAKernel<BLASKernelTrait::iamax<ValueType> > iamax;
+    LAMAKernel<blaskernel::BLASKernelTrait::iamax<ValueType> > iamax;
 
     {
         ValueType values[] =
@@ -326,7 +326,7 @@ void iamaxTest( ContextPtr loc )
 template<typename ValueType>
 void nrm2Test( ContextPtr loc )
 {
-    LAMAKernel<BLASKernelTrait::nrm2<ValueType> > nrm2;
+    LAMAKernel<blaskernel::BLASKernelTrait::nrm2<ValueType> > nrm2;
 
     {
         ValueType values[] =
@@ -360,7 +360,7 @@ void nrm2Test( ContextPtr loc )
 template<typename ValueType>
 void scalTest( ContextPtr loc )
 {
-    LAMAKernel<BLASKernelTrait::scal<ValueType> > scal;
+    LAMAKernel<blaskernel::BLASKernelTrait::scal<ValueType> > scal;
 
     // check with n <= 0
     {
@@ -425,7 +425,7 @@ void scalTest( ContextPtr loc )
 template<typename ValueType>
 void sumTest( ContextPtr loc )
 {
-    LAMAKernel<BLASKernelTrait::sum<ValueType> > sum;
+    LAMAKernel<blaskernel::BLASKernelTrait::sum<ValueType> > sum;
 
     // check with n <= 0
     {
@@ -486,7 +486,7 @@ void sumTest( ContextPtr loc )
 template<typename ValueType>
 void swapTest( ContextPtr loc )
 {
-    LAMAKernel<BLASKernelTrait::swap<ValueType> > swap;
+    LAMAKernel<blaskernel::BLASKernelTrait::swap<ValueType> > swap;
 
     // check with n <= 0
     {

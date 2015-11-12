@@ -30,7 +30,7 @@
  * @date 13.10.2015
  */
 
-#include "KernelRegistry.hpp"
+#include <scai/kregistry/KernelRegistry.hpp>
 
 namespace scai
 {
@@ -48,7 +48,8 @@ SCAI_LOG_DEF_LOGGER( KernelRegistry::logger, "KernelRegistry" )
 
 // define static variable for KernelMap here
 
-KernelRegistry::KernelMap KernelRegistry::theKernelMap;
+//KernelRegistry::KernelMap KernelRegistry::theKernelMap;
+KernelRegistry* KernelRegistry::mInstance;
 
 /* -----------------------------------------------------------------------------*/
 
@@ -56,9 +57,11 @@ void KernelRegistry::registerContextFunction( const KernelRegistryKey& key, Cont
 {
     SCAI_LOG_INFO( logger, "register ctx = " << ctx << " with " << key )
 
-    KernelMap::iterator it = theKernelMap.find( key );
+	KernelRegistry& kreg = getInstance();
 
-    if ( it == theKernelMap.end() )
+    KernelMap::iterator it = kreg.theKernelMap.find( key );
+
+    if ( it == kreg.theKernelMap.end() )
     {
         SCAI_LOG_DEBUG( logger, "register: no entry yet, will add it" )
 
@@ -66,7 +69,7 @@ void KernelRegistry::registerContextFunction( const KernelRegistryKey& key, Cont
 
         routine.set( ctx, fn );
 
-        theKernelMap.insert( std::pair<KernelRegistryKey, _ContextFunction>( key, routine ) );
+        kreg.theKernelMap.insert( std::pair<KernelRegistryKey, _ContextFunction>( key, routine ) );
 
         SCAI_LOG_DEBUG( logger, "added" )
     }
@@ -105,11 +108,14 @@ void KernelRegistry::unregisterContextFunction( const KernelRegistryKey& key, Co
 {
     SCAI_LOG_INFO( logger, "unregister ctx = " << ctx << " with " << key )
 
-    KernelMap::iterator it = theKernelMap.find( key );
+	KernelRegistry& kreg = getInstance();
 
-    if ( it == theKernelMap.end() )
+    KernelMap::iterator it = kreg.theKernelMap.find( key );
+
+    if ( it == kreg.theKernelMap.end() )
     {
-        SCAI_LOG_ERROR( logger, "unregister: no entry for key = " << key )
+//        SCAI_LOG_ERROR( logger, "unregister: no entry for key = " << key )
+    	SCAI_LOG_INFO( logger, "unregister: entry for key = " << key << " not found")
     }
     else
     {
@@ -129,7 +135,14 @@ void KernelRegistry::unregisterContextFunction( const KernelRegistryKey& key, Co
         }
         else
         {
+        	SCAI_LOG_INFO( logger, "unregister: setting ctx to NULL" )
             it->second.set( ctx, NULL );
+        }
+
+        if( it->second.isEmpty() )
+        {
+        	SCAI_LOG_INFO( logger, "erasing complete entry" )
+        	kreg.theKernelMap.erase( it );
         }
     }
 }
@@ -161,12 +174,14 @@ bool KernelRegistry::Compare::operator()( const KernelRegistryKey& x, const Kern
 
 void KernelRegistry::printAll()
 {
+	KernelRegistry& kreg = getInstance();
+
     KernelMap::const_iterator it;
 
     std::cout << "KernelRegistry:" << std::endl;
     std::cout << "================" << std::endl;
 
-    for ( it = theKernelMap.begin(); it != theKernelMap.end(); ++it )
+    for ( it = kreg.theKernelMap.begin(); it != kreg.theKernelMap.end(); ++it )
     {
         std::cout << "Entry: key = " << it->first;
         std::cout << ", ctx = " << it->second.printIt();

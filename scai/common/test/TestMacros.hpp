@@ -42,7 +42,7 @@
 // TODO: no dependencies to project ahead
 #include <scai/hmemo/Context.hpp>
 #include <scai/lama/Scalar.hpp>
-#include <scai/kregistry/KernelRegistryException.hpp>
+#include <scai/kregistry/exception/KernelRegistryException.hpp>
 
 // boost
 #include <boost/assign/list_of.hpp>

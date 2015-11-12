@@ -36,7 +36,6 @@
 
 // local library
 #include <scai/lama/UtilKernelTrait.hpp>
-#include <scai/lama/BLASKernelTrait.hpp>
 #include <scai/lama/CSRKernelTrait.hpp>
 
 #include <scai/lama/LAMAArrayUtils.hpp>
@@ -50,6 +49,8 @@
 #include <scai/lama/openmp/OpenMPCSRUtils.hpp>
 
 // internal scai libraries
+#include <scai/blaskernel/BLASKernelTrait.hpp>
+
 #include <scai/hmemo.hpp>
 
 #include <scai/tracing.hpp>
@@ -2218,7 +2219,7 @@ ValueType CSRStorage<ValueType>::l1Norm() const
         return static_cast<ValueType>( 0 );
     }
 
-    static LAMAKernel<BLASKernelTrait::asum<ValueType> > asum;
+    static LAMAKernel<blaskernel::BLASKernelTrait::asum<ValueType> > asum;
 
     ContextPtr loc = asum.getValidContext( this->getContextPtr() );
 
@@ -2241,7 +2242,7 @@ ValueType CSRStorage<ValueType>::l2Norm() const
         return static_cast<ValueType>(0.0);
     }
 
-    static LAMAKernel<BLASKernelTrait::dot<ValueType> > dot;
+    static LAMAKernel<blaskernel::BLASKernelTrait::dot<ValueType> > dot;
 
     ContextPtr loc = dot.getValidContext( this->getContextPtr() );
 

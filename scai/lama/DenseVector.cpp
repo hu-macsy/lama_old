@@ -37,7 +37,7 @@
 // local library
 #include <scai/lama/LAMAArrayUtils.hpp>
 #include <scai/lama/UtilKernelTrait.hpp>
-#include <scai/lama/BLASKernelTrait.hpp>
+#include <scai/blaskernel/BLASKernelTrait.hpp>
 #include <scai/lama/LAMAKernel.hpp>
 
 #include <scai/lama/distribution/NoDistribution.hpp>
@@ -544,7 +544,7 @@ Scalar DenseVector<ValueType>::l1Norm() const
     {
         // get available kernel routines for "BLAS1.asum" 
 
-        static LAMAKernel<BLASKernelTrait::asum<ValueType> > asum;
+        static LAMAKernel<blaskernel::BLASKernelTrait::asum<ValueType> > asum;
 
         // find valid context, preferred is mContext
 
@@ -573,7 +573,7 @@ Scalar DenseVector<ValueType>::l2Norm() const
     {
         // get available kernel routines for "BLAS1.dot" 
 
-        static LAMAKernel<BLASKernelTrait::dot<ValueType> > dot;
+        static LAMAKernel<blaskernel::BLASKernelTrait::dot<ValueType> > dot;
 
         // find valid context, preferred is mContext
 
@@ -664,8 +664,8 @@ void DenseVector<ValueType>::vectorPlusVector(
     // get function pointers, do not use fallbacks here
 
     static LAMAKernel<UtilKernelTrait::scale<ValueType> > scale;
-    static LAMAKernel<BLASKernelTrait::axpy<ValueType> > axpy;
-    static LAMAKernel<BLASKernelTrait::sum<ValueType> > sum;
+    static LAMAKernel<blaskernel::BLASKernelTrait::axpy<ValueType> > axpy;
+    static LAMAKernel<blaskernel::BLASKernelTrait::sum<ValueType> > sum;
 
     ContextPtr context = sum.getValidContext( scale, axpy, prefContext );
 
@@ -876,7 +876,7 @@ SCAI_REGION( "Vector.Dense.dotP" )
 
         // get available kernel routines for "BLAS1.dot" 
 
-        static LAMAKernel<BLASKernelTrait::dot<ValueType> > dot;
+        static LAMAKernel<blaskernel::BLASKernelTrait::dot<ValueType> > dot;
 
         // find valid context, preferred is mContext
 

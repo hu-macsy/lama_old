@@ -33,16 +33,12 @@
 
 set( CLASSES      # .cpp, .hpp
 
-        CUDABLAS2
-        CUDABLAS3
-        CUDALAPACK
         CUDASettings
         CUDATexture
 )
 
 set( CUDA_CLASSES  # .cu, .hpp
 
-        CUDABLAS1
         CUDAUtils
         CUDACOOUtils
         CUDACSRUtils
@@ -55,7 +51,6 @@ set( CUDA_CLASSES  # .cu, .hpp
 set ( HEADERS        # .hpp
 
         CUDATexVector
-        cublas_cast
 )
 
 
