@@ -33,6 +33,7 @@
 
 // hpp
 #include <scai/hmemo/ContextData.hpp>
+#include <scai/hmemo/exception/MemoryException.hpp>
 
 // local library
 #include <scai/hmemo/Context.hpp>
