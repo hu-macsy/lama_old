@@ -34,7 +34,7 @@
 #include <scai/tasking/Task.hpp>
 
 // internal scai libraries
-#include <scai/common/exception/Exception.hpp>
+#include <scai/common/macros/throw.hpp>
 #include <scai/common/bind.hpp>
 
 // std

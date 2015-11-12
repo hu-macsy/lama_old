@@ -32,7 +32,7 @@
  */
 
 #include <scai/common/Thread.hpp>
-#include <scai/common/Assert.hpp>
+#include <scai/common/macros/assert.hpp>
 
 #include <iostream>
 #include <cstdlib>

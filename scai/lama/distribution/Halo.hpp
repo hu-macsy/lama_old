@@ -45,7 +45,7 @@
 // internal scai libraries
 #include <scai/hmemo.hpp>
 
-#include <scai/common/Assert.hpp>
+#include <scai/common/macros/assert.hpp>
 
 // std
 #include <map>

@@ -52,8 +52,7 @@
 
 #include <scai/tasking/SyncToken.hpp>
 
-#include <scai/common/TypeTraits.hpp>
-#include <scai/common/exception/Exception.hpp>
+#include <scai/common/macros/throw.hpp>
 
 // std
 #include <fstream>

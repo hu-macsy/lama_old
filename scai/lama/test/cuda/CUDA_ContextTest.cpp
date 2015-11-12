@@ -42,7 +42,7 @@
 #include <scai/lama/HostWriteAccess.hpp>
 #include <scai/lama/ContextAccess.hpp>
 
-#include <scai/lama/exception/LAMAAssert.hpp>
+#include <scai/lama/exception/LAMAmacros/assert.hpp>
 
 #include <scai/tasking/Task.hpp>
 

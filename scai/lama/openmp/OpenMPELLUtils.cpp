@@ -43,7 +43,7 @@
 #include <scai/kregistry/KernelRegistry.hpp>
 
 #include <scai/common/bind.hpp>
-#include <scai/common/Assert.hpp>
+#include <scai/common/macros/assert.hpp>
 #include <scai/common/OpenMP.hpp>
 #include <scai/common/macros/unused.hpp>
 #include <scai/common/Constants.hpp>

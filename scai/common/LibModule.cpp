@@ -33,7 +33,7 @@
 
 #include <scai/common/LibModule.hpp>
 
-#include <scai/common/exception/Exception.hpp>
+#include <scai/common/macros/throw.hpp>
 
 #include <dlfcn.h>
 #include <dirent.h>

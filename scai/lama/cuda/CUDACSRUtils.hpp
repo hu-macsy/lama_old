@@ -38,7 +38,7 @@
 
 #include <scai/logging.hpp>
 
-#include <scai/common/Assert.hpp>
+#include <scai/common/macros/assert.hpp>
 #include <scai/common/SCAITypes.hpp>
 
 namespace scai

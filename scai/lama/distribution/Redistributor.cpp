@@ -37,7 +37,7 @@
 #include <scai/lama/distribution/HaloBuilder.hpp>
 
 // internal scai libraries
-#include <scai/common/Assert.hpp>
+#include <scai/common/macros/assert.hpp>
 #include <scai/common/unique_ptr.hpp>
 
 using namespace scai::hmemo;

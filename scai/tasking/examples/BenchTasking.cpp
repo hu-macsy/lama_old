@@ -35,7 +35,7 @@
 
 #include <scai/common/Walltime.hpp>
 #include <scai/common/Thread.hpp>
-#include <scai/common/exception/Exception.hpp>
+#include <scai/common/macros/throw.hpp>
 
 #include <scai/common/bind.hpp>
 

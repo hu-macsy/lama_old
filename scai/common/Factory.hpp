@@ -37,7 +37,7 @@
 #include <scai/common/config.hpp>
 #include <scai/common/unique_ptr.hpp>
 
-#include <scai/common/exception/Exception.hpp>
+#include <scai/common/macros/throw.hpp>
 
 // std
 #include <typeinfo>

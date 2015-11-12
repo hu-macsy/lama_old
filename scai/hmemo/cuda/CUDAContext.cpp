@@ -42,7 +42,7 @@
 #include <scai/tasking/TaskSyncToken.hpp>
 
 #include <scai/common/cuda/CUDAError.hpp>
-#include <scai/common/Assert.hpp>
+#include <scai/common/macros/assert.hpp>
 
 // CUDA
 #include <cublas_v2.h>

@@ -96,7 +96,7 @@ extern const IndexType nIndex;
 /** Data type that is used for numbering of partitions.
  *
  */
-typedef int PartitionId;
+typedef IndexType PartitionId;
 
 /** Definition for a constant value that indicates a non-available partition.
  */
@@ -140,7 +140,7 @@ extern const PartitionId nPartition;
 
 #define ARRAY_TYPE_CNT 7
 
-#define ARRAY_TYPE0    int
+#define ARRAY_TYPE0    IndexType
 #define ARRAY_TYPE1    float
 #define ARRAY_TYPE2    double
 #define ARRAY_TYPE3    ComplexFloat

@@ -25,20 +25,17 @@
  # SOFTWARE.
  # @endlicense
  #
- # @brief CMakeLists of common/macros
+ # @brief CMakeLists of hmemo/exception
  # @author Eric Schricker
- # @date 19.08.2015
+ # @date 11.11.2015
 ###
 
 scai_project(
 
-    HEADERS
+    CLASSES
 
-        assert
-        inline
-        throw
-        unique_name
-        unused
+        MemoryException
 
-    ADD_PARENT_SCOPE 
+    ADD_PARENT_SCOPE
 )
+

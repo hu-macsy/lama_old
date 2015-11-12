@@ -1,5 +1,5 @@
 /**
- * @file FileIO.cpp
+ * @file MemoryException.cpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,46 +25,39 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Implementation of static IO routines for matrix storage
+ * @brief Implementation of methods for MemoryException
  * @author Thomas Brandes
- * @date 10.06.2013
- * @since 1.0.1
+ * @date 16.10.2015
  */
 
-// hpp
-#include <scai/lama/io/FileIO.hpp>
-
-// internal scai libraries
-#include <scai/common/macros/assert.hpp>
+#include <scai/hmemo/exception/MemoryException.hpp>
 
 namespace scai
 {
 
-namespace lama
+namespace hmemo
 {
-
-// Help function to get the size of a file
-
-FileIO::file_size_t FileIO::getFileSize( const char* filename )
+    
+MemoryException::MemoryException()
 {
-    FILE* pFile = fopen( filename, "rb" );
-
-    file_size_t size = 0;
-
-    if( pFile == NULL )
-    {
-        COMMON_THROWEXCEPTION( "File " << filename << " could not be opened" )
-    }
-    else
-    {
-        fseek( pFile, 0, SEEK_END ); // non-portable
-        size = ftell( pFile );
-        fclose( pFile );
-    }
-
-    return size;
+    mMessage = "MemoryException";
 }
 
-} /* end namespace lama */
+MemoryException::MemoryException( const std::string& message )
+    : mMessage( message )
+{
+    mMessage += " @Memory";
+}
 
-} /* end namespace scai */
+MemoryException::~MemoryException() throw()
+{
+}
+
+const char* MemoryException::what() const throw ()
+{
+    return mMessage.c_str();
+}
+
+} /* end hmemo */
+
+} /* end scai */

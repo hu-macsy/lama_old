@@ -41,7 +41,7 @@
 #include <scai/logging.hpp>
 
 #include <scai/common/SCAITypes.hpp>
-#include <scai/common/Assert.hpp>
+#include <scai/common/macros/assert.hpp>
 
 namespace scai
 {
@@ -59,7 +59,14 @@ class COMMON_DLL_IMPORTEXPORT OpenMPCOOUtils
 {
 public:
 
-    /** OpenMP implementation for COOKernelTrait::Counting::offsets2ia */
+    /** OpenMP implementation for COOKernelTrait::hasDiagonalProperty */
+
+    static bool hasDiagonalProperty (
+        const IndexType cooIA[],
+        const IndexType cooJA[],
+        const IndexType n );
+
+    /** OpenMP implementation for COOKernelTrait::offsets2ia */
 
     static void offsets2ia(
         IndexType cooIA[],
@@ -68,7 +75,7 @@ public:
         const IndexType numRows,
         const IndexType numDiagonals );
 
-    /** OpenMP implementation for COOKernelTrait::Counting::getCSRSizes */
+    /** OpenMP implementation for COOKernelTrait::getCSRSizes */
 
     static void getCSRSizes(
         IndexType csrSizes[],
@@ -76,10 +83,10 @@ public:
         const IndexType numValues,
         const IndexType cooIA[] );
 
-    /** Serial implementation for COOKernelTrait::Conversions::getCSRValues */
+    /** Serial implementation for COOKernelTrait::getCSRValues */
 
     template<typename COOValueType,typename CSRValueType>
-    static void getCSRValuesS(
+    static void getCSRValues(
         IndexType csrJA[],
         CSRValueType csrValues[],
         IndexType csrIA[],
@@ -89,20 +96,7 @@ public:
         const IndexType cooJA[],
         const COOValueType cooValues[] );
 
-    /** OpenMP implementation for COOKernelTrait::Conversions::getCSRValues */
-
-    template<typename COOValueType,typename CSRValueType>
-    static void getCSRValuesP(
-        IndexType csrJA[],
-        CSRValueType csrValues[],
-        IndexType csrIA[],
-        const IndexType numRow,
-        const IndexType numValues,
-        const IndexType cooIA[],
-        const IndexType cooJA[],
-        const COOValueType cooValues[] );
-
-    /** OpenMP implementation for COOKernelTrait::Conversions::setCSRData */
+    /** OpenMP implementation for COOKernelTrait::setCSRData */
 
     template<typename COOValueType,typename CSRValueType>
     static void setCSRData(
@@ -113,7 +107,7 @@ public:
         const IndexType numRows,
         const IndexType numDiagonals );
 
-    /** Implementation for CSRKernelTrait::Mult::normalGEMV  */
+    /** Implementation for COOKernelTrait::normalGEMV  */
 
     template<typename ValueType>
     static void normalGEMV(
@@ -128,7 +122,7 @@ public:
         const IndexType cooJA[],
         const ValueType cooValues[] );
 
-    /** Implementation for CSRKernelTrait::Mult::normalGEVM  */
+    /** Implementation for COOKernelTrait::normalGEVM  */
 
     template<typename ValueType>
     static void normalGEVM(
@@ -143,7 +137,7 @@ public:
         const IndexType cooJA[],
         const ValueType cooValues[] );
 
-    /** Implementation for COOKernelTrait::Solver::jacobi  */
+    /** Implementation for COOKernelTrait::jacobi  */
 
     template<typename ValueType>
     static void jacobi(

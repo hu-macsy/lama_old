@@ -37,7 +37,7 @@
 #include <scai/tracing/VTInterface.hpp>
 #include <scai/tracing/TraceData.hpp>
 
-#include <scai/common/exception/Exception.hpp>
+#include <scai/common/macros/throw.hpp>
 #include <scai/common/Settings.hpp>
 
 // std

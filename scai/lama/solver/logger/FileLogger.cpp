@@ -35,7 +35,7 @@
 #include <scai/lama/solver/logger/FileLogger.hpp>
 
 // internal scai libraries
-#include <scai/common/exception/Exception.hpp>
+#include <scai/common/macros/throw.hpp>
 
 // std
 #include <sstream>

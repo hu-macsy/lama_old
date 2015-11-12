@@ -1,5 +1,5 @@
 /**
- * @file FileIO.cpp
+ * @file MemoryException.hpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,46 +25,41 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Implementation of static IO routines for matrix storage
+ * @brief Derived exception class for exceptions in memory allocation/deallocation
  * @author Thomas Brandes
- * @date 10.06.2013
- * @since 1.0.1
+ * @date 10.10.2015
  */
 
-// hpp
-#include <scai/lama/io/FileIO.hpp>
+#pragma once
 
-// internal scai libraries
-#include <scai/common/macros/assert.hpp>
+// base class
+#include <scai/common/exception/Exception.hpp>
 
 namespace scai
 {
 
-namespace lama
+namespace hmemo
 {
 
-// Help function to get the size of a file
+/** Derived class needed to catch exception for memory problems */
 
-FileIO::file_size_t FileIO::getFileSize( const char* filename )
+class COMMON_DLL_IMPORTEXPORT MemoryException : public scai::common::Exception
 {
-    FILE* pFile = fopen( filename, "rb" );
+public:
 
-    file_size_t size = 0;
+    MemoryException();
+    
+    MemoryException( const std::string& message );
 
-    if( pFile == NULL )
-    {
-        COMMON_THROWEXCEPTION( "File " << filename << " could not be opened" )
-    }
-    else
-    {
-        fseek( pFile, 0, SEEK_END ); // non-portable
-        size = ftell( pFile );
-        fclose( pFile );
-    }
+    virtual ~MemoryException() throw();
+    
+    virtual const char* what() const throw();
+    
+protected:
+        
+    std::string mMessage;
+};
 
-    return size;
-}
-
-} /* end namespace lama */
+} /* end namespace common */
 
 } /* end namespace scai */

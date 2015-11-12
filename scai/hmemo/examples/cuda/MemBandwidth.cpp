@@ -54,7 +54,7 @@ void bench( LAMAArray<ValueType>& array )
     ContextPtr hostContext = Context::getContextPtr( common::context::Host );
 
     const IndexType N = 8 * 1024 * 1024;
-    const IndexType NITER = 128;
+    const int NITER = 128;
 
     {
         WriteOnlyAccess<ValueType> write( array, N );
