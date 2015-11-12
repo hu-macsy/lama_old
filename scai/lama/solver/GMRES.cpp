@@ -45,8 +45,8 @@
 // tracing
 #include <scai/tracing.hpp>
 
-// external
-#include <omp.h>
+// common
+#include <scai/common/Walltime.hpp>
 
 namespace scai
 {
@@ -264,7 +264,7 @@ void GMRES::iterate()
 
     GMRESRuntime& runtime = getRuntime();
 
-    double iterationTimeStart = omp_get_wtime();
+    double iterationTimeStart = common::Walltime::get();
 
     unsigned int krylovIndex = this->getIterationCount() % mKrylovDim;
     unsigned int hIdxStart = krylovIndex * ( krylovIndex + 1 ) / 2;
@@ -324,9 +324,9 @@ void GMRES::iterate()
         {
             SCAI_REGION( "Solver.GMRES.start.solvePreconditioner" )
             vCurrent = 0.0;
-            double preconditionerTimeStart = omp_get_wtime();
+            double preconditionerTimeStart = common::Walltime::get();
             mPreconditioner->solve( vCurrent, residual );
-            totalPreconditionerTime += omp_get_wtime() - preconditionerTimeStart;
+            totalPreconditionerTime += common::Walltime::get() - preconditionerTimeStart;
         }
 
         // normalize vCurrent
@@ -351,9 +351,9 @@ void GMRES::iterate()
         SCAI_REGION( "Solver.GMRES.solvePreconditioner" )
         tmp = A * vCurrent;
         w = 0.0;
-        double preconditionerTimeStart = omp_get_wtime();
+        double preconditionerTimeStart = common::Walltime::get();
         mPreconditioner->solve( w, tmp );
-        totalPreconditionerTime += omp_get_wtime() - preconditionerTimeStart;
+        totalPreconditionerTime += common::Walltime::get() - preconditionerTimeStart;
     }
 
     // orthogonalization loop
@@ -415,7 +415,7 @@ void GMRES::iterate()
     //if (krylovIndex == mKrylovDim-1)
     updateX( krylovIndex );
 
-    totalIterationTime += omp_get_wtime() - iterationTimeStart;
+    totalIterationTime += common::Walltime::get() - iterationTimeStart;
 }
 
 void GMRES::updateX( unsigned int i )

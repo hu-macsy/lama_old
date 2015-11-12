@@ -42,11 +42,9 @@
 
 // internal scai libraries
 #include <scai/common/Settings.hpp>
+#include <scai/common/Walltime.hpp>
 
 #include <scai/tracing.hpp>
-
-// external
-#include <omp.h>
 
 // std
 #include <cstdlib>
@@ -367,21 +365,21 @@ void SimpleAMG::cycle()
 
         // PreSmoothing
         SCAI_LOG_DEBUG( logger, "Pre smoothing on level "<< runtime.mCurrentLevel )
-        double smootherStartTime = omp_get_wtime();
+        double smootherStartTime = common::Walltime::get();
         curSmoother.solve( curSolution, curRhs );
-        totalSmootherTime += omp_get_wtime() - smootherStartTime;
+        totalSmootherTime += common::Walltime::get() - smootherStartTime;
 
         // Restrict residual to next coarser grid
         // and initialize solution
         SCAI_LOG_DEBUG( logger, "curTmpRhs=curRhs - curGalerkin * curSolution on level "<< runtime.mCurrentLevel )
-        double residualStartTime = omp_get_wtime();
+        double residualStartTime = common::Walltime::get();
         curTmpRhs = curRhs - curGalerkin * curSolution;
-        totalResidualTime += omp_get_wtime() - residualStartTime;
+        totalResidualTime += common::Walltime::get() - residualStartTime;
         SCAI_LOG_DEBUG( logger, "curCoarseRhs = curRestriction * curTmpRhs on level "<< runtime.mCurrentLevel )
-        double transferStartTime = omp_get_wtime();
+        double transferStartTime = common::Walltime::get();
         curCoarseRhs = curRestriction * curTmpRhs;
         curCoarseSolution = 0.0;
-        totalTransferTime += omp_get_wtime() - transferStartTime;
+        totalTransferTime += common::Walltime::get() - transferStartTime;
 
         ++runtime.mCurrentLevel;
 
@@ -391,14 +389,14 @@ void SimpleAMG::cycle()
 
         SCAI_LOG_DEBUG( logger,
                         "curSolution = curSolution + curInterpolation * curCoarseSolution on level "<< runtime.mCurrentLevel )
-        transferStartTime = omp_get_wtime();
+        transferStartTime = common::Walltime::get();
         curSolution = curSolution + curInterpolation * curCoarseSolution;
-        totalTransferTime += omp_get_wtime() - transferStartTime;
+        totalTransferTime += common::Walltime::get() - transferStartTime;
 
         SCAI_LOG_DEBUG( logger, "Post smoothing on level "<< runtime.mCurrentLevel )
-        smootherStartTime = omp_get_wtime();
+        smootherStartTime = common::Walltime::get();
         curSmoother.solve( curSolution, curRhs );
-        totalSmootherTime += omp_get_wtime() - smootherStartTime;
+        totalSmootherTime += common::Walltime::get() - smootherStartTime;
     }
 }
 
