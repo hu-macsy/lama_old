@@ -95,7 +95,7 @@ void BLAS_BLAS3::gemm(
         SCAI_LOG_WARN( logger, "asynchronous execution not supported yet" )
     }
 
-    BLASWrapper::gemm( order, transA, transB, static_cast<BLASWrapper::IndexType>( m ), static_cast<BLASWrapper::IndexType>( n ), static_cast<BLASWrapper::IndexType>( k ), alpha, A, static_cast<BLASWrapper::IndexType>( lda ), B, static_cast<BLASWrapper::IndexType>( ldb ), beta, C, static_cast<BLASWrapper::IndexType>( ldc ));
+    BLASWrapper::gemm( order, transA, transB, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
 }
 
 /* --------------------------------------------------------------------------- */

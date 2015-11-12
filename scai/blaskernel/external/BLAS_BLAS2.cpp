@@ -105,7 +105,7 @@ void BLAS_BLAS2::gemv(
 
     // ToDo: error handling
 
-    BLASWrapper::gemv( order, transA, static_cast<BLASWrapper::IndexType>( m ), static_cast<BLASWrapper::IndexType>( n ), alpha, a, static_cast<BLASWrapper::IndexType>( lda ), x, static_cast<BLASWrapper::IndexType>( incX ), beta, y, static_cast<BLASWrapper::IndexType>( incY ));
+    BLASWrapper::gemv( order, transA, m, n, alpha, a, lda, x, incX, beta, y, incY);
 
     return;
 }
