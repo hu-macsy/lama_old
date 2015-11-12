@@ -122,7 +122,6 @@ scai_project(
 
     HEADERS
 
-        BLASKernelTrait
         UtilKernelTrait
         CSRKernelTrait
         DenseKernelTrait
@@ -133,16 +132,10 @@ scai_project(
 
         LAMAKernel
 
-        cblas
-
         CRTPCommunicator
     )
 
 ### add subdirectories ###
-
-if    ( NOT SCAI_BLAS_NAME STREQUAL "MKL" AND NOT INTERNALBLAS_FOUND )
-    add_subdirectory( cblas )
-endif ( NOT SCAI_BLAS_NAME STREQUAL "MKL" AND NOT INTERNALBLAS_FOUND )
 
 ## CUDA
 if ( CUDA_FOUND AND USE_CUDA AND CUDA_HAVE_GPU )

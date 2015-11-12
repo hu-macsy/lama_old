@@ -37,12 +37,13 @@
 #include <boost/mpl/list.hpp>
 
 #include <scai/lama/LAMAKernel.hpp>
-#include <scai/lama/BLASKernelTrait.hpp>
+#include <scai/blaskernel/BLASKernelTrait.hpp>
 
 #include <scai/common/test/TestMacros.hpp>
 
 using namespace scai::lama;
 using namespace scai::hmemo;
+
 
 // extern bool base_test_case;
 // extern std::string testcase;
@@ -70,7 +71,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( inverseTest, ValueType, test_types )
     ContextPtr loc = Context::getHostPtr();
     {
         WriteAccess<ValueType> wA( a, loc );
-        LAMAKernel<BLASKernelTrait::getinv<ValueType> > getinv;
+        LAMAKernel<scai::blaskernel::BLASKernelTrait::getinv<ValueType> > getinv;
         getinv[loc]( n, wA.get(), n );
     }
     {
@@ -87,8 +88,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( inverseTest, ValueType, test_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( getrifTest, ValueType, test_types )
 {
-    static LAMAKernel<BLASKernelTrait::getrf<ValueType> > getrf;
-    static LAMAKernel<BLASKernelTrait::getri<ValueType> > getri;
+    static LAMAKernel<scai::blaskernel::BLASKernelTrait::getrf<ValueType> > getrf;
+    static LAMAKernel<scai::blaskernel::BLASKernelTrait::getri<ValueType> > getri;
 
     const IndexType n = 3;
 // set up values for A and B with A * B = identiy
@@ -150,7 +151,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getrifTest, ValueType, test_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( tptrsTest, ValueType, test_types )
 {
-    static LAMAKernel<BLASKernelTrait::tptrs<ValueType> > tptrs;
+    static LAMAKernel<scai::blaskernel::BLASKernelTrait::tptrs<ValueType> > tptrs;
 
     {
         const IndexType n = 3;

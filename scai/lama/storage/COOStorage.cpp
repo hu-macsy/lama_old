@@ -36,7 +36,6 @@
 
 // local library
 #include <scai/lama/UtilKernelTrait.hpp>
-#include <scai/lama/BLASKernelTrait.hpp>
 #include <scai/lama/COOKernelTrait.hpp>
 #include <scai/lama/CSRKernelTrait.hpp>
 
@@ -48,6 +47,8 @@
 #include <scai/lama/openmp/OpenMPCSRUtils.hpp>
 
 // internal scai libraries
+#include <scai/blaskernel/BLASKernelTrait.hpp>
+
 #include <scai/hmemo.hpp>
 
 #include <scai/tasking/TaskSyncToken.hpp>
@@ -733,7 +734,7 @@ ValueType COOStorage<ValueType>::l1Norm() const
 
     const IndexType n = mNumValues;
 
-    static LAMAKernel<BLASKernelTrait::asum<ValueType> > asum;
+    static LAMAKernel<blaskernel::BLASKernelTrait::asum<ValueType> > asum;
 
 	ContextPtr loc = asum.getValidContext( this->getContextPtr() );
 
@@ -753,7 +754,7 @@ ValueType COOStorage<ValueType>::l2Norm() const
 
     const IndexType n = mNumValues;
 
-    static LAMAKernel<BLASKernelTrait::dot<ValueType> > dot;
+    static LAMAKernel<blaskernel::BLASKernelTrait::dot<ValueType> > dot;
 
 	ContextPtr loc = dot.getValidContext( this->getContextPtr() );
 

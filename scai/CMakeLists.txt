@@ -202,6 +202,18 @@ ExternalProject_Add ( scai_kregistry
 	    	BINARY_DIR kregistry
             )
 
+concatCacheArguments ( scai_blaskernel "CACHE_ARGS" )
+#message ( STATUS "blaskernel CACHE_ARGS ${CACHE_ARGS}" )
+
+ExternalProject_Add ( scai_blaskernel
+            DEPENDS ${SCAI_BLASKERNEL_INTERNAL_DEPS}
+            PREFIX blaskernel
+            SOURCE_DIR ${CMAKE_SOURCE_DIR}/blaskernel
+            CMAKE_ARGS "-DSCAI_COMPLETE_BUILD=1"
+            CMAKE_CACHE_ARGS "${CMAKE_ARGS};${CACHE_ARGS}"
+	    	BINARY_DIR blaskernel
+            )
+
 concatCacheArguments ( scai_lama "CACHE_ARGS" )
 #message ( STATUS "lama CACHE_ARGS ${CACHE_ARGS}" )
 

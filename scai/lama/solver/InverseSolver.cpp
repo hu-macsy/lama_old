@@ -39,7 +39,6 @@
 
 #include <scai/lama/matrix/DenseMatrix.hpp>
 
-#include <scai/lama/BLASKernelTrait.hpp>
 #include <scai/lama/expression/MatrixVectorExpressions.hpp>
 
 // internal scai libraries

@@ -38,13 +38,14 @@
 #include <scai/lama/LAMAKernel.hpp>
 
 #include <scai/lama/UtilKernelTrait.hpp>
-#include <scai/lama/BLASKernelTrait.hpp>
 #include <scai/lama/ELLKernelTrait.hpp>
 #include <scai/lama/CSRKernelTrait.hpp>
 
 #include <scai/lama/LAMAArrayUtils.hpp>
 
 // internal scai libraries
+#include <scai/blaskernel/BLASKernelTrait.hpp>
+
 #include <scai/hmemo.hpp>
 
 #include <scai/tasking/TaskSyncToken.hpp>
@@ -1651,7 +1652,7 @@ ValueType ELLStorage<ValueType>::l1Norm() const
         return static_cast<ValueType>(0.0);
     }
 
-    static LAMAKernel<BLASKernelTrait::asum<ValueType> > asum;
+    static LAMAKernel<blaskernel::BLASKernelTrait::asum<ValueType> > asum;
 
     ContextPtr loc = asum.getValidContext( this->getContextPtr() );
 
@@ -1674,7 +1675,7 @@ ValueType ELLStorage<ValueType>::l2Norm() const
         return static_cast<ValueType>(0.0);
     }
 
-    static LAMAKernel<BLASKernelTrait::dot<ValueType> > dot;
+    static LAMAKernel<blaskernel::BLASKernelTrait::dot<ValueType> > dot;
 
     ContextPtr loc = dot.getValidContext( this->getContextPtr() );
 

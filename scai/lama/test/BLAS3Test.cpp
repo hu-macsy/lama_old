@@ -35,9 +35,9 @@
 #include <boost/test/unit_test.hpp>
 
 // others
+#include <scai/blaskernel/BLASKernelTrait.hpp>
 #include <scai/hmemo.hpp>
 #include <scai/lama/LAMAKernel.hpp>
-#include <scai/lama/BLASKernelTrait.hpp>
 
 #include <scai/common/test/TestMacros.hpp>
 
@@ -59,7 +59,7 @@ void gemmTest( ContextPtr loc )
     // 17.0 * ( 1.0  2.0 -3.0 ) * ( -1.0 1.0 ) - 13.0 * ( 15.0 13.0 ) =  (-9.0 -1.0)
     //        ( 4.0  5.0 -6.0 )   (  4.0 5.0 )          ( 27.0 17.0 )    (-6.0  0.0)
 
-    LAMAKernel<BLASKernelTrait::gemm<ValueType> > gemm;
+    LAMAKernel<blaskernel::BLASKernelTrait::gemm<ValueType> > gemm;
 
     const ValueType alpha = 17.0;
     const ValueType beta = 13.0;
