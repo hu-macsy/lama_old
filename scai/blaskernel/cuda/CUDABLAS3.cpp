@@ -145,8 +145,8 @@ void CUDABLAS3::gemm(
 
     SCAI_LOG_INFO( logger, "cublasSgemm: m = " << m_call << " x " << n_call )
 
-    CUBLASWrapper::gemm( transA_char, transB_char,  m_call ,  n_call ,  k , alpha, A_call,  lda_call , B_call,  ldb_call , beta, C,
-    		 ldc );
+    CUBLASWrapper::gemm( transA_char, transB_char,  static_cast<CUBLASWrapper::BLASIndexType>(m_call) ,  static_cast<CUBLASWrapper::BLASIndexType>(n_call) ,  static_cast<CUBLASWrapper::BLASIndexType>(k) , alpha, A_call,  static_cast<CUBLASWrapper::BLASIndexType>(lda_call) , B_call,  static_cast<CUBLASWrapper::BLASIndexType>(ldb_call) , beta, C,
+    		static_cast<CUBLASWrapper::BLASIndexType>(ldc) );
 
     // No error check here possible as kernel is started asynchronously in any case
 
