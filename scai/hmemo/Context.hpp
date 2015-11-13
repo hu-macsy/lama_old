@@ -57,11 +57,6 @@ namespace tasking
     class SyncToken;    // forward declaration
 }
 
-namespace lama
-{
-    class LAMAInterface;
-}
-
 /** Namespace for all data structures of the context memory management. */
 
 namespace hmemo
@@ -138,10 +133,6 @@ public:
      * @brief Disable computations in the context.
      */
     virtual void disable( const char* file, int line ) const;
-
-    /** This method returns the LAMA interface for a given context. */
-
-    const lama::LAMAInterface& getInterface() const;
 
     /** This method returns the memory that can be used at this context. 
      *

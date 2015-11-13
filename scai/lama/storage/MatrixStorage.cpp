@@ -200,11 +200,15 @@ void _MatrixStorage::localize( const _MatrixStorage& global, const Distribution&
 
 IndexType _MatrixStorage::getNumValues() const
 {
-    // Default implementation builds sum of row sizes
+    // Default implementation builds sum of row sizes, derived classes have more efficient routines
+
     LAMAArray<IndexType> sizes;
     buildCSRSizes( sizes );
-    ReadAccess<IndexType> csrSizes( sizes );
-    IndexType numValues = OpenMPUtils::sum( csrSizes.get(), mNumRows );
+
+    static LAMAKernel<UtilsKernelTrait::sum<IndexType> > sum;
+    ContextPtr loc = sum.getValidContext( sizes.getValidContext() );
+    ReadAccess<IndexType> csrSizes( sizes, loc );
+    IndexType numValues = sum[ loc ]( csrSizes.get(), mNumRows );
     return numValues;
 }
 
