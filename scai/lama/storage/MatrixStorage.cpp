@@ -205,7 +205,7 @@ IndexType _MatrixStorage::getNumValues() const
     LAMAArray<IndexType> sizes;
     buildCSRSizes( sizes );
 
-    static LAMAKernel<UtilsKernelTrait::sum<IndexType> > sum;
+    static LAMAKernel<UtilKernelTrait::sum<IndexType> > sum;
     ContextPtr loc = sum.getValidContext( sizes.getValidContext() );
     ReadAccess<IndexType> csrSizes( sizes, loc );
     IndexType numValues = sum[ loc ]( csrSizes.get(), mNumRows );
