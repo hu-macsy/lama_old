@@ -786,11 +786,11 @@ template<typename ValueType>
 void DenseMatrix<ValueType>::assignTranspose( const Matrix& other  )
 {
     SCAI_LOG_INFO( logger, "assign transposed " << other << " to " << *this )
-
+/*
         std::string rowDistKind = other.getDistribution().getDistributionKind();
         std::string colDistKind = other.getColDistribution().getDistributionKind();
 
-/*
+
         if( rowDistKind != "BLOCK" || colDistKind != "BLOCK")
         {
         COMMON_THROWEXCEPTION( "DenseMatrix::assignTranspose currently only implemented for dense matrices with BlockDistribution" )
