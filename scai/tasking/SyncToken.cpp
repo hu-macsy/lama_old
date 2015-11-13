@@ -34,6 +34,8 @@
 #include <scai/tasking/SyncToken.hpp>
 
 // internal scai libraries
+
+#include <scai/common/Thread.hpp>
 #include <scai/common/macros/throw.hpp>
 #include <scai/common/macros/assert.hpp>
 
@@ -159,60 +161,41 @@ void SyncToken::setSynchronized()
 
 /* ----------------------------------------------------------------------- */
 
-/** ToDo: make crrentSyncToken to a thread-private variable */
-
 void SyncToken::setCurrent()
 {
-    if ( currentSyncToken != NULL )
+    SyncToken* current = currentSyncToken.get();
+
+    if ( current != NULL )
     {
-        SCAI_LOG_ERROR( logger, "setCurrent: " << *this << ", but current is: " << currentSyncToken )
+        SCAI_LOG_ERROR( logger, "setCurrent: " << *this << ", but current is: " << *current )
     }
 
-    currentSyncToken = this;
-
-    currentLaunchThread = common::Thread::getSelf();
+    currentSyncToken.set( this );
 }
 
 void SyncToken::unsetCurrent()
 {
-    if ( currentSyncToken == NULL )
+    SyncToken* current = currentSyncToken.get();
+
+    if ( current == NULL )
     {
         SCAI_LOG_WARN( logger, "unset current sync token, not available" )
     } 
-    else if ( currentLaunchThread == common::Thread::getSelf() )
+    else 
     {
-        SCAI_LOG_INFO( logger, "no more current sync token " << *currentSyncToken )
-        currentSyncToken = NULL;
-    }
-    else
-    {
-        SCAI_LOG_ERROR( logger, "current sync token " << *currentSyncToken << " cannot be unset by other thread" )
+        SCAI_LOG_INFO( logger, "no more current sync token " << *current )
+        currentSyncToken.set( NULL );
     }
 }
 
 SyncToken* SyncToken::getCurrentSyncToken()
 {
-    if ( currentSyncToken == NULL )
-    {
-        return currentSyncToken;
-    }
-
-    // only same thread can access its sync token
-
-    if ( currentLaunchThread == common::Thread::getSelf() )
-    {
-        SCAI_LOG_INFO( logger, "ge current sync token set by same thread: " << *currentSyncToken )
-        return currentSyncToken;
-    }
-
-    SCAI_LOG_ERROR( logger, "current sync token " << *currentSyncToken << " set by other thread, return NULL" )
-
-    return NULL;
+    return currentSyncToken.get();
 }
 
-SyncToken* SyncToken::currentSyncToken = NULL;
+// we can rely on the fact that thread-private variable is initialized with NULL 
 
-common::Thread::Id SyncToken::currentLaunchThread;  // only set if currentSyncToken is defined
+common::ThreadPrivatePtr<SyncToken> SyncToken::currentSyncToken;
 
 /* ----------------------------------------------------------------------- */
 

@@ -83,6 +83,8 @@ Task::Task( common::function<void()> taskFunction, int numOmpThreads /* = 0 */ )
 Task::~Task()
 {
     SCAI_LOG_INFO( logger, "~Task" )
+
+    synchronize();
 }
 
 /* ------------------------------------------------------------------------- */

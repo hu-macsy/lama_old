@@ -204,9 +204,9 @@ private:
 
     static CGuard cguard;//!< required to call routine at its destructor
 
-    static SyncToken* currentSyncToken;  // not yet thread-private
+    /** Each thread can set globally (thread-private) a SyncToken */
 
-    static common::Thread::Id currentLaunchThread;  // thread launching applications
+    static common::ThreadPrivatePtr<SyncToken> currentSyncToken;
 
     /** Vector of shared pointers  that will be released after completion. */
 
