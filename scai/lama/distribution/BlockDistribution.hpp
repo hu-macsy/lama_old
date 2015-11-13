@@ -84,6 +84,12 @@ public:
      */
     virtual PartitionId getOwner( const IndexType globalIndex ) const;
 
+
+    virtual std::string getDistributionKind() const
+    {
+        return "BLOCK";
+    }
+
     virtual IndexType getLocalSize() const;
 
     virtual IndexType local2global( const IndexType localIndex ) const;

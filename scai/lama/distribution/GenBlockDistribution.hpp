@@ -116,6 +116,11 @@ public:
 
     virtual ~GenBlockDistribution();
 
+    virtual std::string getDistributionKind() const
+    {
+        return "GEN_BLOCK";
+    }
+
     /** Get the local range of the calling partition. */
 
     void getLocalRange( IndexType& lb, IndexType& ub ) const;

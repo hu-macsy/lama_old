@@ -46,6 +46,8 @@
 
 // boost
 #include <boost/preprocessor.hpp>
+//#include <boost/range/algorithm/copy.hpp>
+#include <algorithm>
 
 using namespace scai::hmemo;
 
@@ -612,6 +614,26 @@ Distribution* Distribution::getDistribution(
     return newDistribution;
 }
 
+  
+/*   
+struct RetrieveKey{
+    template <typename T>
+    typename T::first_type operator()(T keyValuePair) const{
+        return keyValuePair.first;
+    }
+};
+
+
+std::string Distribution::getDistributionKind()
+{
+    std::vector<std::string> keys;
+    std::transform(getFactory().begin(), getFactory().end(), back_inserter(keys), RetrieveKey());
+    return keys;
+
+    boost::copy(m | boost::adaptors::map_keys, std::back_inserter(keys));
+   /SCAI_LOG_TRACE( logger, "Returning Distribution Kind" << )
+}
+*/
 /* ---------------------------------------------------------------------- */
 
 // Instantiation of all relevant replicate routines

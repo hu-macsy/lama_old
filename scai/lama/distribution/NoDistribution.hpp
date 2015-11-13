@@ -78,6 +78,12 @@ public:
 
     virtual void writeAt( std::ostream& stream ) const;
 
+    virtual std::string getDistributionKind() const
+    {
+        return "NO";
+    }
+
+
     void printDistributionVector( std::string name ) const;
 
     /** Static methods to create a NoDistribution. */

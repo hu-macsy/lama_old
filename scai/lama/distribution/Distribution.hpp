@@ -45,7 +45,7 @@
 
 // internal scai libraries
 #include <scai/logging.hpp>
-
+#include <scai/common/Factory.hpp>
 // boost
 #include <scai/common/shared_ptr.hpp>
 #include <scai/common/SCAITypes.hpp>
@@ -72,7 +72,7 @@ class Matrix;
  *
  * Default and copy constructor are not available for this class (noncopyable).
  */
-class COMMON_DLL_IMPORTEXPORT Distribution: public common::Printable, private common::NonCopyable
+class COMMON_DLL_IMPORTEXPORT Distribution: public common::Printable, private common::NonCopyable, public common::Factory< std::string, std::pair<Distribution,Distribution> >
 {
 
 public:
@@ -147,6 +147,8 @@ public:
 
     const Communicator& getCommunicator() const;
 
+//    std::vector<std::string> getKind() const;
+
     /** Getter routine for the communicator as shared pointer. */
 
     CommunicatorPtr getCommunicatorPtr() const;
@@ -154,6 +156,9 @@ public:
     /** Query for the number of partitions onto which the distribution is done. */
 
     PartitionId getNumPartitions() const;
+
+    virtual std::string getDistributionKind()  const = 0;
+
 
     /** Query whether the distribution is a replication. */
 

@@ -71,6 +71,10 @@ public:
      */
     virtual bool isLocal( const IndexType index ) const;
 
+    virtual std::string getDistributionKind() const
+    {
+        return "CYCLIC";
+    }
     /**
      * @brief Computes the owner of the passed globalIndex.
      *

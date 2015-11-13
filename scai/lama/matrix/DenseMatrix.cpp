@@ -787,6 +787,15 @@ void DenseMatrix<ValueType>::assignTranspose( const Matrix& other  )
 {
     SCAI_LOG_INFO( logger, "assign transposed " << other << " to " << *this )
 
+        std::string rowDistKind = other.getDistribution().getDistributionKind();
+        std::string colDistKind = other.getColDistribution().getDistributionKind();
+
+
+        if( rowDistKind != "BLOCK" || colDistKind != "BLOCK")
+        {
+        COMMON_THROWEXCEPTION( "DenseMatrix::assignTranspose currently only implemented for dense matrices with BlockDistribution" )
+        }
+
         const DenseMatrix<ValueType>* denseMatrix = dynamic_cast<const DenseMatrix<ValueType>*>( &other );
 
         if( denseMatrix )
@@ -796,7 +805,7 @@ void DenseMatrix<ValueType>::assignTranspose( const Matrix& other  )
         }
         else
         {
-        COMMON_THROWEXCEPTION( "DenseMatrix::assign currently only implemented for dense matrices of same type" )
+        COMMON_THROWEXCEPTION( "DenseMatrix::assignTranspose currently only implemented for dense matrices of same type" )
         }
 
 }
@@ -805,11 +814,10 @@ template<typename ValueType>
 void DenseMatrix<ValueType>::assignTransposeImpl( const DenseMatrix<ValueType>& Mat)
 {
     const Communicator& comm = Mat.getDistribution().getCommunicator();
-    IndexType size = comm.getSize();
-    //get Distribution
-    CommunicatorPtr commu = Communicator::get( "MPI" );
-    common::shared_ptr<Distribution> distRow( new BlockDistribution( Mat.getNumRows(), commu ) );
-    common::shared_ptr<Distribution> distCol( new BlockDistribution( Mat.getNumColumns(), commu));
+    IndexType size = comm.getSize();  
+    DistributionPtr distRow = Mat.getDistributionPtr();
+    DistributionPtr distCol = Mat.getColDistributionPtr();
+
 
     if(size == 1){          // localTranspose == globalTranpose, if processor nr == 1
         if(this != &Mat)

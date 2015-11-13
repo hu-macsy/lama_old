@@ -88,6 +88,12 @@ public:
         const Matrix& matrix,
         const float weight = 1.0 );
 
+
+    virtual std::string getDistributionKind() const
+    {
+        return "METIS";
+    }
+
 private:
 
     MetisDistribution();

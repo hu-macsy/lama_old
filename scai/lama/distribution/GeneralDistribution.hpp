@@ -98,6 +98,11 @@ public:
 
     virtual IndexType getLocalSize() const;
 
+    virtual std::string getDistributionKind() const
+    {
+        return "GENERAL";
+    }
+
     virtual std::vector<IndexType>& getLocalRows();
 
     virtual IndexType local2global( const IndexType localIndex ) const;
