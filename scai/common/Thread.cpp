@@ -41,6 +41,7 @@
 #include <map>
 #include <string>
 #include <iostream>
+#include <string.h>
 
 // define LOCAL_DEBUG for debugging this source code
 
@@ -65,11 +66,11 @@ static map<Thread::Id, string> mapThreads;
 
 Thread::Mutex::Mutex( bool isRecursive )
 {
-    pthread_mutexattr_init( &p_mutexattr);
+    pthread_mutexattr_init( &p_mutexattr );
 
     if ( isRecursive )
     {
-        pthread_mutexattr_settype( &p_mutexattr, PTHREAD_MUTEX_RECURSIVE);
+        pthread_mutexattr_settype( &p_mutexattr, PTHREAD_MUTEX_RECURSIVE );
     }
 
     int rc = pthread_mutex_init( &p_mutex, &p_mutexattr );
@@ -223,9 +224,12 @@ const char* Thread::getCurrentThreadName()
 
 void Thread::start( pthread_routine start_routine, void* arg )
 {
-    int rc = pthread_create( &tid, NULL, start_routine, arg );
- 
-    SCAI_ASSERT_EQUAL( 0, rc, "pthread_create failed" )
+    int rc = pthread_create( &mTId, NULL, start_routine, arg );
+
+    if ( rc != 0 )
+    {
+        COMMON_THROWEXCEPTION( "pthread_create failed, err = " << rc << ", " << strerror( rc ) )
+    }
 
     running = true;
 }
@@ -234,10 +238,10 @@ void Thread::join()
 {
     if ( running )
     {
-        int rc = pthread_join( tid, NULL );
+        int rc = pthread_join( mTId, NULL );
         SCAI_ASSERT_EQUAL( 0, rc, "pthread_join failed" )
 
-        // std::cout << "PThread " << std::hex << tid << " terminated." << std::endl;
+        // std::cout << "PThread " << std::hex << mTId << " terminated." << std::endl;
     }
 
     running = false;

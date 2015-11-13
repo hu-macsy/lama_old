@@ -105,7 +105,17 @@ set ( SCAI_HMEMO_LIBRARY scai_hmemo
       CACHE FILEPATH  "library for hybrid memory on multiple devices" )
 
 set ( SCAI_HMEMO_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/hmemo
-      CACHE PATH "tracing include directory" )
+      CACHE PATH "hmemo include directory" )
+
+add_subdirectory( blaskernel )
+
+### Set variables for Findscai_blaskernel so further projects can use it 
+
+set ( SCAI_BLASKERNEL_LIBRARY scai_blaskernel
+      CACHE FILEPATH  "library for kernels implemented by BLAS" )
+
+set ( SCAI_BLASKERNEL_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/blaskernel
+      CACHE PATH "blaskernel include directory" )
 
 ### Final: lama project
 

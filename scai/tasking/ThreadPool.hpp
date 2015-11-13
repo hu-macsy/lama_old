@@ -40,9 +40,9 @@
 #include <scai/common/NonCopyable.hpp>
 #include <scai/common/function.hpp>
 #include <scai/common/shared_ptr.hpp>
+#include <scai/common/unique_ptr.hpp>
 
 // std
-#include <pthread.h>
 #include <climits>
 #include <queue>
 
@@ -148,12 +148,14 @@ private:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
-    unsigned    int mTaskId; // last given task id
+    unsigned int mTaskId; // last given task id
 
-    int mMaxSize;// number of worker threads
+    int mMaxSize;         // number of worker threads
 
-    std::vector<pthread_t> mThreads;     // worker threads of this pool
-    std::vector<ThreadData> mThreadArgs; // arguments for each worker thread
+    // use scoped array instead of vector as no copy constructor is available
+
+    common::scoped_array<common::Thread> mThreads;    // worker threads of this pool
+    common::scoped_array<ThreadData> mThreadArgs;     // arguments for each worker thread
 
     std::queue<common::shared_ptr<ThreadTask> > mTaskQueue;
 

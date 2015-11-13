@@ -4,6 +4,7 @@
 #include <scai/common/LibModule.hpp>
 #include <scai/common/macros/throw.hpp>
 #include <scai/common/Settings.hpp>
+#include <scai/common/unique_ptr.hpp>
 
 #include <iostream>
 
@@ -21,11 +22,9 @@ void runIt()
 
     std::cout << "Function1 can be created." << std::endl;
 
-    DynRoutine* d = DynRoutine::create( "Function1" );
+    unique_ptr<DynRoutine> d( DynRoutine::create( "Function1" ) );
 
     d->doIt();
-
-    delete d;
 }
 
 int main( int argc, const char** argv )

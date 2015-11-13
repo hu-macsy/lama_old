@@ -40,7 +40,7 @@
 #include <scai/common/Printable.hpp>
 #include <scai/lama/matrix/all.hpp>
 #include <scai/lama/solver/logger/LogLevel.hpp>
-#include <omp.h>
+#include <scai/common/OpenMP.hpp>
 
 #include <cstring>
 #include <vector>
