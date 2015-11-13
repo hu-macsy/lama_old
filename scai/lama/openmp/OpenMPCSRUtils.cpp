@@ -215,11 +215,25 @@ IndexType OpenMPCSRUtils::sizes2offsets( IndexType array[], const IndexType numV
 
 void OpenMPCSRUtils::offsets2sizes( IndexType sizes[], const IndexType offsets[], const IndexType numRows )
 {
-    #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
-
-    for( IndexType i = 0; i < numRows; i++ )
+    if ( sizes == offsets )
     {
-        sizes[i] = offsets[i + 1] - offsets[i];
+        // when using the same array we do it sequential
+
+        for ( IndexType i = 0; i < numRows; i++ )
+        {
+            sizes[i] = sizes[i + 1] - sizes[i];
+        }
+    }
+
+    else
+  
+    {
+        #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
+
+        for ( IndexType i = 0; i < numRows; i++ )
+        {
+            sizes[i] = offsets[i + 1] - offsets[i];
+        }
     }
 }
 

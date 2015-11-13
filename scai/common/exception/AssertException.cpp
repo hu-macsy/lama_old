@@ -14,16 +14,24 @@ namespace scai
 namespace common
 {
 
-AssertException::AssertException()
+AssertException::AssertException() :
+		mMessage( "AssertException" )
 {
 }
 
-AssertException::AssertException( const std::string& message ) : Exception( message )
+AssertException::AssertException( const std::string& message ) :
+		mMessage( message )
 {
+	mMessage += "@AssertException";
 }
 
 AssertException::~AssertException() throw ()
 {
+}
+
+const char* AssertException::what() const throw ()
+{
+    return mMessage.c_str();
 }
 
 } /* end namespace common */

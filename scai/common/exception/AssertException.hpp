@@ -31,6 +31,12 @@ public:
      * @brief The destructor destroys this AssertException.
      */
     virtual ~AssertException() throw ();
+
+    virtual const char* what() const throw();
+
+protected:
+
+    std::string mMessage;
 };
 
 } /* end namespace common */

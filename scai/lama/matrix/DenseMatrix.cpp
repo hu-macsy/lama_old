@@ -39,7 +39,7 @@
 
 #include <scai/lama/DenseVector.hpp>
 #include <scai/lama/LAMAKernel.hpp>
-#include <scai/lama/BLASKernelTrait.hpp>
+#include <scai/blaskernel/BLASKernelTrait.hpp>
 
 #include <scai/lama/distribution/NoDistribution.hpp>
 #include <scai/lama/distribution/CyclicDistribution.hpp>
@@ -597,7 +597,7 @@ bool DenseMatrix<ValueType>::hasScalaPack()
 
     // check the Kernel registry if ScalaPack is available ( at least on Host )
 
-    typename BLASKernelTrait::SCALAPACK<ValueType>::inverse inverse = loc->getInterface().BLAS.inverse<ValueType>();
+    typename blaskernel::BLASKernelTrait::SCALAPACK<ValueType>::inverse inverse = loc->getInterface().BLAS.inverse<ValueType>();
 
     ContextPtr loc = Context::getContextPtr( context::Host );
 
@@ -633,48 +633,50 @@ void DenseMatrix<ValueType>::invertReplicated()
 template<typename ValueType>
 void DenseMatrix<ValueType>::invertCyclic()
 {
-    SCAI_REGION( "Mat.Dense.invertCyclic" )
+	// ToDO: invertCyclic uses function invert from Scalapack, interface should not know Communicator
 
-    const Communicator& comm = getDistribution().getCommunicator();
-
-    const Distribution& rowDist = getDistribution();
-
-    const CyclicDistribution* cyclicDist = dynamic_cast<const CyclicDistribution*>( &rowDist );
-
-    SCAI_ASSERT_ERROR( cyclicDist, "no cyclic distribution: " << rowDist )
-
-    const int nb = cyclicDist->chunkSize(); // blocking factor
-
-    static LAMAKernel<BLASKernelTrait::inverse<ValueType> > inverse;
-
-    // location where inverse computation will be done
-    ContextPtr loc = inverse.getValidContext( this->getContextPtr() );
-
-    // be careful: loc might have changed to location where 'inverse' is available
-
-    const int n = getNumRows();
-
-    // assert square matrix
-
-    SCAI_ASSERT_EQUAL_ERROR( getNumColumns(), n )
-
-    DenseStorage<ValueType>& denseStorage = getLocalStorage();
-
-    const IndexType localSize = denseStorage.getData().size();
-
-    SCAI_ASSERT_EQUAL_ERROR( localSize, denseStorage.getNumRows() * n )
-
-    SCAI_LOG_INFO( logger, "local dense data = " << denseStorage << ", localSize = " << localSize )
-
-    WriteAccess<ValueType> localValues( denseStorage.getData(), loc );
-
-    ValueType* data = localValues.get();
-
-    SCAI_LOG_INFO( logger, "now call inverse" )
-
-    SCAI_CONTEXT_ACCESS( loc )
-
-    inverse[loc]( n, nb, data, comm );
+//    SCAI_REGION( "Mat.Dense.invertCyclic" )
+//
+//    const Communicator& comm = getDistribution().getCommunicator();
+//
+//    const Distribution& rowDist = getDistribution();
+//
+//    const CyclicDistribution* cyclicDist = dynamic_cast<const CyclicDistribution*>( &rowDist );
+//
+//    SCAI_ASSERT_ERROR( cyclicDist, "no cyclic distribution: " << rowDist )
+//
+//    const int nb = cyclicDist->chunkSize(); // blocking factor
+//
+//    static LAMAKernel<blaskernel::BLASKernelTrait::inverse<ValueType> > inverse;
+//
+//    // location where inverse computation will be done
+//    ContextPtr loc = inverse.getValidContext( this->getContextPtr() );
+//
+//    // be careful: loc might have changed to location where 'inverse' is available
+//
+//    const int n = getNumRows();
+//
+//    // assert square matrix
+//
+//    SCAI_ASSERT_EQUAL_ERROR( getNumColumns(), n )
+//
+//    DenseStorage<ValueType>& denseStorage = getLocalStorage();
+//
+//    const IndexType localSize = denseStorage.getData().size();
+//
+//    SCAI_ASSERT_EQUAL_ERROR( localSize, denseStorage.getNumRows() * n )
+//
+//    SCAI_LOG_INFO( logger, "local dense data = " << denseStorage << ", localSize = " << localSize )
+//
+//    WriteAccess<ValueType> localValues( denseStorage.getData(), loc );
+//
+//    ValueType* data = localValues.get();
+//
+//    SCAI_LOG_INFO( logger, "now call inverse" )
+//
+//    SCAI_CONTEXT_ACCESS( loc )
+//
+//    inverse[loc]( n, nb, data, comm );
 }
 
 /* ------------------------------------------------------------------ */
@@ -1759,7 +1761,7 @@ void DenseMatrix<ValueType>::matrixTimesVectorImpl(
 
             LAMAArray<ValueType> x( mData[actualPartition]->getNumColumns() );
             {
-                static LAMAKernel<BLASKernelTrait::copy<ValueType> > copy;
+                static LAMAKernel<blaskernel::BLASKernelTrait::copy<ValueType> > copy;
 
                 ContextPtr loc = copy.getValidContext( this->getContextPtr() );
 

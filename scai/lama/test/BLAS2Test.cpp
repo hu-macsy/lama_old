@@ -35,8 +35,8 @@
 #include <boost/test/unit_test.hpp>
 
 // others
+#include <scai/blaskernel/BLASKernelTrait.hpp>
 #include <scai/hmemo.hpp>
-#include <scai/lama/BLASKernelTrait.hpp>
 #include <scai/lama/LAMAKernel.hpp>
 #include <scai/lama/Scalar.hpp>
 
@@ -55,7 +55,7 @@ namespace BLAS2Test
 template<typename ValueType>
 void gemvTest( ContextPtr loc )
 {
-    LAMAKernel<BLASKernelTrait::gemv<ValueType> > gemv;
+    LAMAKernel<blaskernel::BLASKernelTrait::gemv<ValueType> > gemv;
 
     // CblasRowMajor and CblasNoTrans
     {
