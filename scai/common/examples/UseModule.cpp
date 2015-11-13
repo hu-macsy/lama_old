@@ -22,7 +22,7 @@ void runIt()
 
     std::cout << "Function1 can be created." << std::endl;
 
-    unique_ptr<DynRoutine> d = DynRoutine::create( "Function1" );
+    unique_ptr<DynRoutine> d( DynRoutine::create( "Function1" ) );
 
     d->doIt();
 }
