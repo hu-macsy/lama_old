@@ -34,9 +34,9 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/mpl/list.hpp>
 
-#include <scai/lama/test/TestSparseMatrices.hpp>
+#include <test/TestSparseMatrices.hpp>
 #include <scai/common/test/TestMacros.hpp>
-#include <scai/lama/test/SameMatrixHelper.hpp>
+#include <test/SameMatrixHelper.hpp>
 
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 #include <scai/lama/matrix/DenseMatrix.hpp>
@@ -46,11 +46,20 @@
 #include <scai/lama/expression/MatrixExpressions.hpp>
 #include <scai/lama/expression/all.hpp>
 
+//-------------------------
+#include <scai/lama/distribution/BlockDistribution.hpp>
+#include <scai/common/shared_ptr.hpp>   
+//-------------------------
+#include <scai/lama/matutils/MatrixCreator.hpp> 
+
+
+
+
 using namespace scai::lama;
 using namespace scai::hmemo;
 using scai::common::unique_ptr;
 using scai::common::scoped_array;
-
+using scai::common::shared_ptr;
 namespace scai
 {
 namespace lama
@@ -713,7 +722,6 @@ void gemmTest( ContextPtr loc )
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
-
 template<typename ValueType>
 void swapTest( )
 {
@@ -728,6 +736,141 @@ void swapTest( )
     matrixA1.swap( matrixB1 );
     verifySameMatrix<ValueType>( matrixA1, matrixB2 );
     verifySameMatrix<ValueType>( matrixB1, matrixA2 );
+}
+
+
+
+template<typename ValueType>
+void transposeTest( )
+{
+
+    CommunicatorPtr comm = Communicator::get( "MPI" );
+
+    CSRSparseMatrix<ValueType> MatrixA = TestSparseMatrices::n6m6Full<ValueType>();
+
+   DenseMatrix<ValueType> matrixA1(MatrixA);
+
+   IndexType dist[] = { 2,3,2,0,1,2};
+
+
+//    IndexType dist[] = { 1, 2, 0, 2, 0, 1};
+    std::vector<IndexType> row2part;
+    row2part.assign( dist, dist + 6 );
+    DistributionPtr gen( new GeneralDistribution( row2part, 6, comm ) );
+    matrixA1.redistribute(gen,gen);
+
+    std::cout<<"Vorher\n";
+    for ( int i = 0; i < matrixA1.getNumRows(); i++ ){
+        for ( int j = 0; j < matrixA1.getNumColumns(); j++ ){
+           std::cout<< matrixA1.getValue(i,j)<<" ";
+        }
+        std::cout<<"\n";
+    }
+    std::cout<<"ENDE\n";
+
+
+
+    matrixA1.assignTranspose(matrixA1 );
+
+/*    CSRSparseMatrix<ValueType> SMatrixA = TestSparseMatrices::n4m6MatrixD2<ValueType>();
+    DenseMatrix<ValueType> matrixA1( SMatrixA );
+    shared_ptr<Distribution> dist( new BlockDistribution( matrixA1.getNumRows(), comm ) );
+    shared_ptr<Distribution> distCol( new BlockDistribution( matrixA1.getNumColumns(), comm ) );
+
+    matrixA1.redistribute( dist, distCol );
+
+    CSRSparseMatrix<ValueType> helpcoefficients;
+    MatrixCreator<ValueType>::buildPoisson2D( helpcoefficients, 5, 4, 4 );
+    DenseMatrix<ValueType> coefficients( helpcoefficients );
+
+
+    scai::common::shared_ptr<Distribution> distRow1( new BlockDistribution( coefficients.getNumRows(), comm ) );
+    scai::common::shared_ptr<Distribution> distCol1( new BlockDistribution( coefficients.getNumColumns(), comm));
+    coefficients.redistribute(distRow1,distCol1);
+*/
+
+    std::cout<<"Nachher\n";
+    for ( int i = 0; i < matrixA1.getNumRows(); i++ ){
+        for ( int j = 0; j < matrixA1.getNumColumns(); j++ ){
+           std::cout<< matrixA1.getValue(i,j)<<" ";
+        }
+        std::cout<<"\n";
+    }
+    std::cout<<"ENDE\n";
+
+/*
+    CSRSparseMatrix<ValueType> SMatrixB = TestSparseMatrices::n16m16<ValueType>();
+    DenseMatrix<ValueType> matrixA2( SMatrixB );
+    shared_ptr<Distribution> distB( new BlockDistribution( matrixA2.getNumRows(), comm ) );
+    shared_ptr<Distribution> distColB( new BlockDistribution( matrixA2.getNumColumns(), comm ) );
+
+    matrixA2.redistribute( distB, distColB );
+/
+//    testSameMatrix( coefficients,matrixA2);
+
+
+    std::cout << "MatrixA2 = " << matrixA2 << std::endl;
+    std::cout << "coefficients = " << coefficients << std::endl;
+
+//    
+//     matrixA1.assignTranspose( matrixA2 );
+     std::cout<<"\n\n\ncoefficients\n\n\n";
+*/
+//     matrixA1.assignTranspose(matrixA1 );
+/*         std::cout<<"1\n";
+    for ( int i = 0; i < matrixA1.getNumRows(); i++ ){
+        for ( int j = 0; j < matrixA1.getNumColumns(); j++ ){
+           std::cout<< matrixA1.getValue(i,j)<<" ";
+        }
+        std::cout<<"\n";
+    }
+    std::cout<<"\n"; 
+     matrixA1.assignTranspose(coefficients );
+              std::cout<<"2\n";
+    for ( int i = 0; i < matrixA1.getNumRows(); i++ ){
+        for ( int j = 0; j < matrixA1.getNumColumns(); j++ ){
+           std::cout<< matrixA1.getValue(i,j)<<" ";
+        }
+        std::cout<<"\n";
+    }
+    std::cout<<"\n"; 
+     coefficients.assignTranspose(coefficients);
+                   std::cout<<"3\n";
+    for ( int i = 0; i < coefficients.getNumRows(); i++ ){
+        for ( int j = 0; j < coefficients.getNumColumns(); j++ ){
+           std::cout<< coefficients.getValue(i,j)<<" ";
+        }
+        std::cout<<"\n";
+    }
+    std::cout<<"\n"; 
+*/
+  /*
+
+     matrixA1.assignTranspose(matrixA1);
+
+    testSameMatrix( coefficients,matrixA1);
+*/
+
+
+    BOOST_CHECK_EQUAL( 9.0, 9.0 );
+//    matrixA1.assignTranspose(matrixA1);
+//    testSameMatrix( coefficients,matrixA1);
+/*
+    CSRSparseMatrix<ValueType> SMatrixA = TestSparseMatrices::n4m6MatrixD2<ValueType>();
+    DenseMatrix<ValueType> matrixA1( SMatrixA );
+    CommunicatorPtr comm = Communicator::get( "MPI" );
+    shared_ptr<Distribution> distA( new BlockDistribution( matrixA1.getNumRows(), comm ) );
+    shared_ptr<Distribution> distColA( new BlockDistribution( matrixA1.getNumColumns(), comm ) );
+
+    matrixA1.redistribute( distA, distColA );
+
+    CSRSparseMatrix<ValueType> SMatrixB = TestSparseMatrices::n16m16<ValueType>();
+    DenseMatrix<ValueType> matrixA2( SMatrixB );
+    shared_ptr<Distribution> distB( new BlockDistribution( matrixA2.getNumRows(), comm ) );
+    shared_ptr<Distribution> distColB( new BlockDistribution( matrixA2.getNumColumns(), comm ) );
+
+    matrixA2.redistribute( distB, distColB );
+*/
 }
 
 } /* end namespace DenseMatrixTest */

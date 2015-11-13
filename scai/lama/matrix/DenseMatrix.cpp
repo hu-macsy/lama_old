@@ -790,12 +790,12 @@ void DenseMatrix<ValueType>::assignTranspose( const Matrix& other  )
         std::string rowDistKind = other.getDistribution().getDistributionKind();
         std::string colDistKind = other.getColDistribution().getDistributionKind();
 
-
+/*
         if( rowDistKind != "BLOCK" || colDistKind != "BLOCK")
         {
         COMMON_THROWEXCEPTION( "DenseMatrix::assignTranspose currently only implemented for dense matrices with BlockDistribution" )
         }
-
+*/
         const DenseMatrix<ValueType>* denseMatrix = dynamic_cast<const DenseMatrix<ValueType>*>( &other );
 
         if( denseMatrix )
