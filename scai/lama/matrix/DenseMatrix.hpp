@@ -48,7 +48,7 @@
 #include <scai/common/shared_ptr.hpp>
 
 //boost
-#include <boost/lexical_cast.hpp>
+//#include <boost/lexical_cast.hpp>
 
 namespace scai
 {

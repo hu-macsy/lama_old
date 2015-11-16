@@ -101,7 +101,8 @@ void DenseMatrix<ValueType>::computeOwners()
 
             for ( unsigned int i = 0; i < requiredIndexes.size(); ++i )
             {
-                s += " " + boost::lexical_cast<std::string>( requiredIndexes[i] );
+//                s += " " + boost::lexical_cast<std::string>( requiredIndexes[i] );
+                  s += " " + requiredIndexes[i];
             }
 
             s += " }";
@@ -117,7 +118,8 @@ void DenseMatrix<ValueType>::computeOwners()
 
         for ( std::vector<PartitionId>::size_type i = 0; i < mOwners.size(); ++i )
         {
-            s += " " + boost::lexical_cast<std::string>( mOwners[i] );
+//            s += " " + boost::lexical_cast<std::string>( mOwners[i] );
+            s += " " + mOwners[i];
         }
 
         s += " }";
