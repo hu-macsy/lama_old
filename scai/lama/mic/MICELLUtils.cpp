@@ -952,7 +952,7 @@ void MICELLUtils::jacobi(
                 temp -= ellValues[pos] * oldSolution[ellJA[pos]];
             }
 
-            if( omega == scai::common::constants::ONE )
+            if( omega == static_cast<ValueType>( 1.0 ) )
             {
                 solution[i] = temp / diag;
             }
@@ -1116,7 +1116,7 @@ void MICELLUtils::normalGEMV(
 
                 result[i] = alpha * temp;
             }
-            else if( alpha == scai::common::constants::ONE )
+            else if( alpha == static_cast<ValueType>( 1.0 ) )
             {
                 result[i] = temp + beta * y[i];
             }
@@ -1196,7 +1196,7 @@ void MICELLUtils::sparseGEMV(
                     temp += ellValues[pos] * x[j];
                 }
 
-                if( alpha == scai::common::constants::ONE )
+                if( alpha == static_cast<ValueType>( 1.0 ) )
                 {
                     result[i] += temp;
                 }

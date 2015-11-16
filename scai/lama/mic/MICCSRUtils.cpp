@@ -620,7 +620,7 @@ void MICCSRUtils::normalGEMV(
                     temp += csrValues[jj] * x[j];
                 }
 
-                if( beta == scai::common::constants::ZERO )
+                if( beta == static_cast<ValueType>( 0.0 ) )
                 {
                     result[i] = alpha * temp;
                 }
@@ -834,7 +834,7 @@ void MICCSRUtils::jacobi(
 
                 // here we take advantange of a good branch precondiction
 
-                if( omega == scai::common::constants::ONE )
+                if( omega == static_cast<ValueType>( 1.0 ) )
                 {
                     solution[i] = temp / diag;
                 }
@@ -915,7 +915,7 @@ void MICCSRUtils::jacobiHalo(
                 temp += haloValues[j] * oldSolution[haloJA[j]];
             }
 
-            if( omega == scai::common::constants::ONE )
+            if( omega == static_cast<ValueType>( 1.0 ) )
             {
                 solution[i] -= temp / diag;
             }
@@ -992,7 +992,7 @@ void MICCSRUtils::jacobiHaloWithDiag(
                     temp += haloValues[j] * oldSolution[haloJA[j]];
                 }
 
-                if( omega == scai::common::constants::ONE )
+                if( omega == static_cast<ValueType>( 1.0 ) )
                 {
                     solution[i] -= temp / diag;
                 }

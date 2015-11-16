@@ -669,7 +669,7 @@ void MICJDSUtils::normalGEMV(
         SCAI_LOG_INFO( logger, "asynchronous execution for for MIC not supported yet" )
     }
 
-    if( beta == scai::common::constants::ZERO )
+    if( beta == static_cast<ValueType>( 0.0 ) )
     {
         MICUtils::setVal( result, numRows, static_cast<ValueType>(0.0) );
     }
@@ -677,7 +677,7 @@ void MICJDSUtils::normalGEMV(
     {
         // result = result * beta
 
-        if( beta != scai::common::constants::ONE )
+        if( beta != static_cast<ValueType>( 1.0 ) )
         {
             MICUtils::scale( result, beta, numRows );
         }
@@ -816,7 +816,7 @@ void MICJDSUtils::jacobi(
                 pos += jdsDLG[j];
             }
 
-            if( omega == scai::common::constants::ONE )
+            if( omega == static_cast<ValueType>( 1.0 ) )
             {
                 solution[i] = temp / diag;
             }
