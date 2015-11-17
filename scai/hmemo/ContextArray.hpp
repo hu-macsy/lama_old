@@ -142,12 +142,12 @@ public:
     ContextPtr getValidContext( const common::context::ContextType preferredType = common::context::Host ) const;
 
     /**
-     * @brief Prefetches the contents of the container to the passed context.
+     * @brief Prefetches the content of the container to a certain location.
      *
-     * @param[in] context  the context to prefetch to
+     * @param[in] context  the location to prefetch to
      *
-     * This method prefetches the contents of the container to the context.
-     * If this valid at location nothing happens,if not a transfer from a valid location
+     * This method prefetches the content of the container to context.
+     * If it is already valid at location nothing happens, otherwise a transfer from a valid location
      * to the passed location is started. Because the transfer is handled by LAMAArray and to
      * maintain the consistency of the container only one running transfer can exist at any
      * point in time. There for if two prefetches to two different invalid locations are
