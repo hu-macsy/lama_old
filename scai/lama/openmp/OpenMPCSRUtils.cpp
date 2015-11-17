@@ -603,7 +603,6 @@ void OpenMPCSRUtils::normalGEMV(
     {
         syncToken->run( common::bind( normalGEMV_s<ValueType>, result, alpha, x, beta, y, 
                                       numRows, csrIA, csrJA, csrValues ) );
-
     }
     else
     {

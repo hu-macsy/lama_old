@@ -1057,7 +1057,7 @@ tasking::SyncToken* JDSStorage<ValueType>::matrixTimesVectorAsync(
 {
     ContextPtr loc = getContextPtr();
 
-    if ( loc->getType() == common::context::Host )
+    if ( loc->getType() == common::context::MaxContext )
     {
         // workaround as common::bind has limited number of arguments and cannot be
         // used later in OpenMP to generate a TaskSyncToken

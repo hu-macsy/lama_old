@@ -47,6 +47,7 @@
 #include <scai/common/unique_ptr.hpp>
 #include <scai/common/macros/assert.hpp>
 #include <scai/common/Constants.hpp>
+#include <scai/common/bind.hpp>
 
 #include <scai/tasking/TaskSyncToken.hpp>
 
@@ -480,6 +481,24 @@ void OpenMPJDSUtils::setCSRValues(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void OpenMPJDSUtils::normalGEMV_a(
+    ValueType result[],
+    const std::pair<ValueType, const ValueType*> ax, 
+    const std::pair<ValueType, const ValueType*> by,
+    const std::pair<IndexType, const IndexType*> rows,
+    const IndexType perm[],
+    const std::pair<IndexType, const IndexType*> dlg,
+    const IndexType jdsJA[],
+    const ValueType jdsValues[] )
+{
+    normalGEMV( result, ax.first, ax.second, by.first, by.second, 
+                rows.first, perm, rows.second, dlg.first, dlg.second,
+                jdsJA, jdsValues );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void OpenMPJDSUtils::normalGEMV(
     ValueType result[],
     const ValueType alpha,
@@ -494,51 +513,26 @@ void OpenMPJDSUtils::normalGEMV(
     const IndexType jdsJA[],
     const ValueType jdsValues[] )
 {
+    TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
+ 
+    if ( syncToken )
+    {
+        syncToken->run( common::bind( normalGEMV_a<ValueType>, 
+                                      result,
+                                      std::pair<ValueType, const ValueType*>( alpha, x ),
+                                      std::pair<ValueType, const ValueType*>( beta, y ),
+                                      std::pair<IndexType, const IndexType*>( numRows, jdsILG ),
+                                      perm,
+                                      std::pair<IndexType, const IndexType*>( ndlg, jdsDLG ),
+                                      jdsJA, jdsValues ) );
+        return;
+    }
+
     SCAI_LOG_INFO( logger,
-                   "normalGEMV<" << common::getScalarType<ValueType>() << ", #threads = " << omp_get_max_threads() << ">, result[" << numRows << "] = " << alpha << " * A( jds, ndlg = " << ndlg << " ) * x + " << beta << " * y " )
+                   "normalGEMV<" << common::getScalarType<ValueType>() << ", #threads = " << omp_get_max_threads() 
+                    << ">, result[" << numRows << "] = " << alpha << " * A( jds, ndlg = " << ndlg << " ) * x + " << beta << " * y " )
 
-    if( beta == scai::common::constants::ZERO )
-    {
-        SCAI_LOG_DEBUG( logger, "set result = 0.0" )
-
-        #pragma omp parallel for
-
-        for( IndexType i = 0; i < numRows; ++i )
-        {
-            result[i] = static_cast<ValueType>(0.0);
-        }
-    }
-    else if( result == y )
-    {
-        // result = result * beta
-
-        if( beta != scai::common::constants::ONE )
-        {
-            SCAI_LOG_DEBUG( logger, "set result *= beta" )
-
-            #pragma omp parallel for
-
-            for( IndexType i = 0; i < numRows; ++i )
-            {
-                result[i] *= beta;
-            }
-        }
-        else
-        {
-            SCAI_LOG_DEBUG( logger, "result remains unchanged" )
-        }
-    }
-    else
-    {
-        SCAI_LOG_DEBUG( logger, "set result = beta * y" )
-
-        #pragma omp parallel for
-
-        for( IndexType i = 0; i < numRows; ++i )
-        {
-            result[i] = beta * y[i];
-        }
-    }
+    OpenMPUtils::setScale( result, beta, y, numRows );  // z = alpha * JDS * x + beta * y, remains: z += alpha * JDS * x
 
     if( ndlg == 0 )
     {

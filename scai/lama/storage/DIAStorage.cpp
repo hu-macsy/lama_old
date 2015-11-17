@@ -914,36 +914,14 @@ void DIAStorage<ValueType>::matrixTimesVector(
     ReadAccess<ValueType> diaValues( mValues, loc );
 
     ReadAccess<ValueType> rX( x, loc );
+    ReadAccess<ValueType> rY( y, loc );
 
-    // Possible alias of result and y is handled by coressponding accesses
+    WriteOnlyAccess<ValueType> wResult( result, loc, mNumRows );  // result might be aliased to y
 
-    if( &result == &y )
-    {
-        SCAI_LOG_DEBUG( logger, "result == y" )
+    SCAI_CONTEXT_ACCESS( loc )
 
-        // only write access for y, no read access for result
-
-        WriteAccess<ValueType> wResult( result, loc );
-
-        // we assume that normalGEMV can deal with the alias of result, y
-
-        SCAI_CONTEXT_ACCESS( loc )
-
-        normalGEMV[loc]( wResult.get(), alpha, rX.get(), beta, wResult.get(), mNumRows, mNumColumns, mNumDiagonals,
-                         diaOffsets.get(), diaValues.get() );
-    }
-    else
-    {
-        SCAI_LOG_DEBUG( logger, "result != y" )
-
-        WriteOnlyAccess<ValueType> wResult( result, loc, mNumRows );
-        ReadAccess<ValueType> rY( y, loc );
-
-        SCAI_CONTEXT_ACCESS( loc )
-
-        normalGEMV[loc]( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumRows, mNumColumns, mNumDiagonals,
-                         diaOffsets.get(), diaValues.get() );
-    }
+    normalGEMV[loc]( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumRows, mNumColumns, mNumDiagonals,
+                     diaOffsets.get(), diaValues.get() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1023,26 +1001,6 @@ SyncToken* DIAStorage<ValueType>::matrixTimesVectorAsync(
 
     ContextPtr loc = normalGEMV.getValidContext( this->getContextPtr() );
 
-    if( loc->getType() == common::context::Host )
-    {
-        // Start directly a task, avoids pushing of accesses
-
-        void (DIAStorage::*mv)(
-            LAMAArray<ValueType>&,
-            const ValueType,
-            const LAMAArray<ValueType>&,
-            const ValueType,
-            const LAMAArray<ValueType>& ) const
-
-            = &DIAStorage<ValueType>::matrixTimesVector;
-
-        using scai::common::bind;
-        using scai::common::ref;
-        using scai::common::cref;
-
-        return new tasking::TaskSyncToken( bind( mv, this, ref( result ), alpha, cref( x ), beta, cref( y ) ) );
-    }
-
     // logging + checks not needed when started as a task
 
     SCAI_LOG_INFO( logger,
@@ -1062,42 +1020,17 @@ SyncToken* DIAStorage<ValueType>::matrixTimesVectorAsync(
     ReadAccess<ValueType> diaValues( mValues, loc );
 
     ReadAccess<ValueType> rX( x, loc );
+    ReadAccess<ValueType> rY( y, loc );
 
-    // Possible alias of result and y is handled by coressponding accesses
+    WriteOnlyAccess<ValueType> wResult( result, loc, mNumRows );
 
-    if( &result == &y )
-    {
-        SCAI_LOG_DEBUG( logger, "result == y" )
+    SCAI_CONTEXT_ACCESS( loc )
 
-        // only write access for y, no read access for result
+    normalGEMV[loc]( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumRows, mNumColumns, mNumDiagonals,
+                     diaOffsets.get(), diaValues.get() );
 
-        WriteAccess<ValueType> wResult( result, loc );
-
-        // we assume that normalGEMV can deal with the alias of result, y
-
-        SCAI_CONTEXT_ACCESS( loc )
-
-        normalGEMV[loc]( wResult.get(), alpha, rX.get(), beta, wResult.get(), mNumRows, mNumColumns, mNumDiagonals,
-                         diaOffsets.get(), diaValues.get() );
-
-        syncToken->pushRoutine( wResult.releaseDelayed() );
-    }
-    else
-    {
-        SCAI_LOG_DEBUG( logger, "result != y" )
-
-        WriteOnlyAccess<ValueType> wResult( result, loc, mNumRows );
-        ReadAccess<ValueType> rY( y, loc );
-
-        SCAI_CONTEXT_ACCESS( loc )
-
-        normalGEMV[loc]( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumRows, mNumColumns, mNumDiagonals,
-                         diaOffsets.get(), diaValues.get() );
-
-        syncToken->pushRoutine( rY.releaseDelayed() );
-        syncToken->pushRoutine( wResult.releaseDelayed() );
-    }
-
+    syncToken->pushRoutine( rY.releaseDelayed() );
+    syncToken->pushRoutine( wResult.releaseDelayed() );
     syncToken->pushRoutine( rX.releaseDelayed() );
     syncToken->pushRoutine( diaValues.releaseDelayed() );
     syncToken->pushRoutine( diaOffsets.releaseDelayed() );

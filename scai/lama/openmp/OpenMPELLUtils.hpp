@@ -40,6 +40,8 @@
 
 #include <scai/common/SCAITypes.hpp>
 
+#include <utility>
+
 namespace scai
 {
 
@@ -359,6 +361,30 @@ private:
         const ValueType ellValues[] );
 
 private:
+
+    /** Help routine with combined arguments for asynchronous execution. */
+
+    template<typename ValueType>
+    static void normalGEMV_a(
+        ValueType result[],
+        const std::pair<ValueType, const ValueType*> ax,
+        const std::pair<ValueType, const ValueType*> by,
+        const IndexType numRows,
+        const IndexType numValuesPerRow,
+        const IndexType ellSizes[],
+        const IndexType ellJA[],
+        const ValueType ellValues[] );
+
+    template<typename ValueType>
+    static void sparseGEMV_a(
+        ValueType result[],
+        const std::pair<ValueType, const ValueType*> ax,
+        const IndexType numRows,
+        const IndexType numValuesPerRow,
+        const std::pair<IndexType, const IndexType*> rows,
+        const IndexType ellSizes[],
+        const IndexType ellJA[],
+        const ValueType ellValues[] );
 
     /** Routine that registers all methods at the kernel registry. */
 

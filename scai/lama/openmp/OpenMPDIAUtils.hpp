@@ -137,13 +137,13 @@ public:
 
 private:
 
+    /** Help routine with max 9 arguments required */
+
     template<typename ValueType>
-    static void normalGEMV_s(
+    static void normalGEMV_a(
         ValueType result[],
-        const ValueType alpha,
-        const ValueType x[],
-        const ValueType beta,
-        const ValueType y[],
+        const std::pair<ValueType, const ValueType*> ax,  // alpha, x
+        const std::pair<ValueType, const ValueType*> by,  // beta, y
         const IndexType numRows,
         const IndexType numColumns,
         const IndexType numDiagonals,

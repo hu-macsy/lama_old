@@ -153,6 +153,17 @@ public:
 
 private:
 
+    template<typename ValueType>
+    static void normalGEMV_a(
+        ValueType result[],
+        const std::pair<ValueType, const ValueType*> ax,
+        const std::pair<ValueType, const ValueType*> by,
+        const IndexType numRows,
+        const IndexType numValues,
+        const IndexType cooIA[],
+        const IndexType cooJA[],
+        const ValueType cooValues[] );
+
     /** Routine that registers all methods at the kernel registry. */
 
     static void registerKernels( bool deleteFlag );

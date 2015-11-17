@@ -742,7 +742,7 @@ void ContextDataManager::prefetch( ContextPtr context, size_t size )
         return;
     }
 
-    wait();
+    wait();   // wait on previous transfers
 
     data.reserve( size, 0, false ); 
 

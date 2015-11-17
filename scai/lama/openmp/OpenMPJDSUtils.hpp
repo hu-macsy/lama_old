@@ -46,6 +46,8 @@
 
 #include <scai/common/SCAITypes.hpp>
 
+#include <utility>
+
 namespace scai
 {
 
@@ -212,6 +214,19 @@ public:
         const ValueType omega );
 
 private:
+
+    // We need for asynchronous execution versions with max 9 args 
+
+    template<typename ValueType>
+    static void normalGEMV_a( 
+        ValueType result[],
+        const std::pair<ValueType, const ValueType*> ax,     // alpha, x
+        const std::pair<ValueType, const ValueType*> by,     // beta, y
+        const std::pair<IndexType, const IndexType*> rows,   // nrows, jdsILG,
+        const IndexType perm[],
+        const std::pair<IndexType, const IndexType*> dlg,    // ndlg, jdsDLG
+        const IndexType jdsJA[],
+        const ValueType jdsValues[] );
 
     /** Routine that registers all methods at the kernel registry. */
 

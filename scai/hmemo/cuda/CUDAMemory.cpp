@@ -44,6 +44,7 @@
 
 #include <scai/common/cuda/CUDAError.hpp>
 #include <scai/common/macros/assert.hpp>
+#include <scai/common/bind.hpp>
 
 // CUDA
 #include <cuda.h>
@@ -256,11 +257,17 @@ SyncToken* CUDAMemory::memcpyAsyncFromHost( void* dst, const void* src, const si
 {
     SCAI_LOG_INFO( logger, "async copy " << size << " bytes from " << src << " (host) to " << dst << " (device) " )
 
-    // as current thread has disabled the context, another thread might use it
+    const size_t THRESHOLD_SIZE = 16 * 1024;   // number of bytes where new thread might be useful
 
-    memcpyFromHost( dst, src, size );
-
-    return NULL;
+    if ( size > THRESHOLD_SIZE )
+    {
+        return new tasking::TaskSyncToken( common::bind( &CUDAMemory::memcpyFromHost, this, dst, src, size ) );
+    }
+    else
+    {
+        memcpyFromHost( dst, src, size );
+        return NULL;
+    }
 }
 
 /* ----------------------------------------------------------------------------- */
@@ -281,11 +288,17 @@ SyncToken* CUDAMemory::memcpyAsyncToHost( void* dst, const void* src, const size
 {
     SCAI_LOG_INFO( logger, "async copy " << size << " bytes from " << src << " (device) to " << dst << " (host) " )
 
-    // as current thread has disabled the context, another thread might use it
+    const size_t THRESHOLD_SIZE = 16 * 1024;   // number of bytes where new thread might be useful
 
-    memcpyToHost( dst, src, size );
-
-    return NULL;
+    if ( size > THRESHOLD_SIZE )
+    {
+        return new tasking::TaskSyncToken( common::bind( &CUDAMemory::memcpyToHost, this, dst, src, size ) );
+    }
+    else
+    {
+        memcpyToHost( dst, src, size );
+        return NULL;
+    }
 }
 
 /* ----------------------------------------------------------------------------- */
@@ -478,6 +491,37 @@ void CUDAMemory::memcpyFrom( void* dst, const Memory& srcMemory, const void* src
 
 /* ----------------------------------------------------------------------------- */
 
+SyncToken* CUDAMemory::memcpyFromAsync( void* dst, const Memory& srcMemory, const void* src, size_t size ) const
+{
+    if ( srcMemory.getType() == memtype::HostMemory )
+    {
+        // here we have no asynchronous transfer
+
+        return memcpyAsyncFromHost( dst, src, size );
+    }
+    else if ( srcMemory.getType() == memtype::CUDAHostMemory )
+    {
+        return memcpyAsyncFromCUDAHost( dst, src, size );
+    }
+    else if ( srcMemory.getType() == memtype::CUDAMemory )
+    {
+        const CUDAMemory* srcCUDAMemory = dynamic_cast<const CUDAMemory*>( &srcMemory );
+
+        SCAI_ASSERT( srcCUDAMemory, "dynamic_cast<CUDAMemory*> failed" )
+
+        memcpyFromCUDA( dst, *srcCUDAMemory, src, size );
+    }
+    else
+    {
+        SCAI_LOG_ERROR( logger, "copy from " << srcMemory << " to " << *this << " not supported" )
+        COMMON_THROWEXCEPTION( "copy from " << srcMemory << " to " << *this << " not supported" )
+    }
+
+    return NULL;
+}
+
+/* ----------------------------------------------------------------------------- */
+
 void CUDAMemory::memcpyTo( const Memory& dstMemory, void* dst, const void* src, size_t size ) const
 {
     if ( dstMemory.getType() == memtype::HostMemory )
@@ -501,6 +545,35 @@ void CUDAMemory::memcpyTo( const Memory& dstMemory, void* dst, const void* src, 
         SCAI_LOG_ERROR( logger, "copy to " << dstMemory << " from " << *this << " not supported" )
         COMMON_THROWEXCEPTION( "copy to " << dstMemory << " from " << *this << " not supported" )
     }
+}
+
+/* ----------------------------------------------------------------------------- */
+
+SyncToken* CUDAMemory::memcpyToAsync( const Memory& dstMemory, void* dst, const void* src, size_t size ) const
+{
+    if ( dstMemory.getType() == memtype::HostMemory )
+    {
+        return memcpyAsyncToHost( dst, src, size );
+    }
+    else if ( dstMemory.getType() == memtype::CUDAHostMemory )
+    {
+        return memcpyAsyncToCUDAHost( dst, src, size );
+    }
+    else if ( dstMemory.getType() == memtype::CUDAMemory )
+    {
+        const CUDAMemory* dstCUDAMemory = dynamic_cast<const CUDAMemory*>( &dstMemory );
+
+        SCAI_ASSERT( dstCUDAMemory, "dynamic_cast<CUDAMemory*> failed" )
+
+        memcpyToCUDA( *dstCUDAMemory, dst, src, size );
+    }
+    else
+    {
+        SCAI_LOG_ERROR( logger, "copy to " << dstMemory << " from " << *this << " not supported" )
+        COMMON_THROWEXCEPTION( "copy to " << dstMemory << " from " << *this << " not supported" )
+    }
+
+    return NULL;
 }
 
 /* ----------------------------------------------------------------------------- */

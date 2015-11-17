@@ -60,6 +60,7 @@
 #include <scai/common/Constants.hpp>
 #include <scai/common/macros/print_string.hpp>
 #include <scai/common/exception/UnsupportedException.hpp>
+#include <scai/tasking/NoSyncToken.hpp>
 
 // boost
 #include <boost/preprocessor.hpp>
@@ -121,9 +122,11 @@ void CSRStorage<ValueType>::print() const
 
     cout << "CSRStorage " << mNumRows << " x " << mNumColumns << ", #values = " << mNumValues << endl;
 
-    ReadAccess<IndexType> ia( mIa );
-    ReadAccess<IndexType> ja( mJa );
-    ReadAccess<ValueType> values( mValues );
+    ContextPtr host = Context::getHostPtr();
+
+    ReadAccess<IndexType> ia( mIa, host );
+    ReadAccess<IndexType> ja( mJa, host );
+    ReadAccess<ValueType> values( mValues, host );
 
     for( IndexType i = 0; i < mNumRows; i++ )
     {
@@ -936,21 +939,37 @@ void CSRStorage<ValueType>::getRowImpl( LAMAArray<OtherType>& row, const IndexTy
 {
     SCAI_ASSERT_DEBUG( i >= 0 && i < mNumRows, "row index " << i << " out of range" )
 
-    WriteOnlyAccess<OtherType> wRow( row, mNumColumns );
-
-    const ReadAccess<IndexType> ia( mIa );
-    const ReadAccess<IndexType> ja( mJa );
-    const ReadAccess<ValueType> values( mValues );
-
-    for( IndexType j = 0; j < mNumColumns; ++j )
+    IndexType n1;     // offset for row i in ja, values
+    IndexType nrow;   // number of nonzero entries in row i
+ 
     {
-        wRow[j] = static_cast<OtherType>(0.0);
+        static LAMAKernel<UtilKernelTrait::getValue<IndexType> > getValue;
+
+        // get ia[i], ia[i+1] from any location with valid values
+
+        ContextPtr loc = getValue.getValidContext( mIa.getValidContext() );
+
+        SCAI_CONTEXT_ACCESS( loc )
+
+        ReadAccess<IndexType> ia( mIa, loc );
+
+        n1 = getValue[loc]( ia.get(), i );
+        nrow = getValue[loc]( ia.get(), i + 1 ) - n1;
     }
 
-    for( IndexType jj = ia[i]; jj < ia[i + 1]; ++jj )
-    {
-        wRow[ja[jj]] = static_cast<OtherType>( values[jj] );
-    }
+    static LAMAKernel<UtilKernelTrait::setVal<OtherType> > setVal;
+    static LAMAKernel<UtilKernelTrait::setScatter<OtherType, ValueType> > setScatter;
+
+    ContextPtr loc = setVal.getValidContext( setScatter, this->getContextPtr() );
+
+    SCAI_CONTEXT_ACCESS( loc )
+
+    WriteOnlyAccess<OtherType> wRow( row, loc, mNumColumns );
+    ReadAccess<IndexType> ja( mJa, loc );
+    ReadAccess<ValueType> values( mValues, loc );
+
+    setVal[loc]    ( wRow.get(), mNumColumns, static_cast<OtherType>( 0 ) );
+    setScatter[loc]( wRow.get(), ja.get() + n1, values.get() + n1, nrow );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -983,7 +1002,7 @@ void CSRStorage<ValueType>::scaleImpl( const ValueType value )
 
     ContextPtr loc = scale.getValidContext( this->getContextPtr() );
 
-	SCAI_CONTEXT_ACCESS( loc )
+    SCAI_CONTEXT_ACCESS( loc )
 
     WriteAccess<ValueType> csrValues( mValues, loc );
 
@@ -1284,72 +1303,11 @@ void CSRStorage<ValueType>::matrixTimesVector(
     const ValueType beta,
     const LAMAArray<ValueType>& y ) const
 {
-    SCAI_LOG_INFO( logger,
-                   *this << ": matrixTimesVector, result = " << result << ", alpha = " << alpha 
-                    << ", x = " << x << ", beta = " << beta << ", y = " << y )
+    bool async = false; // synchronously execution, no SyncToken required
 
-    SCAI_REGION( "Storage.CSR.timesVector" )
+    SyncToken* token = gemv( result, alpha, x, beta, y, async );
 
-    SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumColumns )
-    SCAI_ASSERT_EQUAL_ERROR( result.size(), mNumRows )
-
-    if( ( beta != common::constants::ZERO ) && ( &result != &y ) )
-    {
-        SCAI_ASSERT_EQUAL_ERROR( y.size(), mNumRows )
-    }
-
-    static LAMAKernel<CSRKernelTrait::sparseGEMV<ValueType> > sparseGEMV;
-    static LAMAKernel<CSRKernelTrait::normalGEMV<ValueType> > normalGEMV;
-
-    // run it only on context of this storage if both routines are available
-
-    ContextPtr loc = normalGEMV.getValidContext( sparseGEMV, this->getContextPtr() );
-
-    SCAI_LOG_INFO( logger, *this << ": matrixTimesVector on " << *loc )
-
-    ReadAccess<IndexType> csrIA( mIa, loc );
-    ReadAccess<IndexType> csrJA( mJa, loc );
-    ReadAccess<ValueType> csrValues( mValues, loc );
-
-    ReadAccess<ValueType> rX( x, loc );
-
-    // Possible alias of result and y must be handled by coressponding accesses
-
-    if( &result == &y )
-    {
-        // only write access for y, no read access for result
-
-        WriteAccess<ValueType> wResult( result, loc );
-
-        if( mRowIndexes.size() > 0 && ( beta == common::constants::ONE ) )
-        {
-            // y += alpha * thisMatrix * x, can take advantage of row indexes
-
-            IndexType numNonZeroRows = mRowIndexes.size();
-            ReadAccess<IndexType> rows( mRowIndexes, loc );
-
-            SCAI_CONTEXT_ACCESS( loc )
-            sparseGEMV[loc]( wResult.get(), alpha, rX.get(), numNonZeroRows, rows.get(), csrIA.get(), csrJA.get(),
-                        csrValues.get() );
-        }
-        else
-        {
-            // we assume that normalGEMV can deal with the alias of result, y
-
-            SCAI_CONTEXT_ACCESS( loc )
-            normalGEMV[loc]( wResult.get(), alpha, rX.get(), beta, wResult.get(), mNumRows, mNumColumns, mNumValues,
-                        csrIA.get(), csrJA.get(), csrValues.get() );
-        }
-    }
-    else
-    {
-        WriteOnlyAccess<ValueType> wResult( result, loc, mNumRows );
-        ReadAccess<ValueType> rY( y, loc );
-
-        SCAI_CONTEXT_ACCESS( loc )
-        normalGEMV[loc]( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumRows, mNumColumns, mNumValues, csrIA.get(),
-                    csrJA.get(), csrValues.get() );
-    }
+    SCAI_ASSERT( token == NULL, "There should be no sync token for synchronous execution" )
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1463,29 +1421,230 @@ void CSRStorage<ValueType>::matrixTimesVectorN(
     ReadAccess<ValueType> csrValues( mValues, loc );
 
     ReadAccess<ValueType> rX( x, loc );
+    ReadAccess<ValueType> rY( y, loc );
 
-    // Possible alias of result and y must be handled by coressponding accesses
+    // due to possible alias of result and y, write access must follow read(y)
 
-    if( &result == &y )
+    WriteOnlyAccess<ValueType> wResult( result, loc, mNumRows );
+
+    SCAI_CONTEXT_ACCESS( loc )
+
+    gemm[loc]( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumRows, n, mNumColumns, 
+               csrIA.get(), csrJA.get(), csrValues.get() );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+SyncToken* CSRStorage<ValueType>::sparseGEMV(
+    LAMAArray<ValueType>& result,
+    const ValueType alpha,
+    const LAMAArray<ValueType>& x,
+    bool async ) const
+{
+    static LAMAKernel<CSRKernelTrait::sparseGEMV<ValueType> > sparseGEMV;
+
+    ContextPtr loc = sparseGEMV.getValidContext( sparseGEMV, this->getContextPtr() );
+
+    unique_ptr<SyncToken> syncToken;
+
+    if ( async )
     {
-        // only write access for y, no read access for result
-
-        WriteAccess<ValueType> wResult( result, loc );
-
-        // we assume that normalGEMV can deal with the alias of result, y
-
-        SCAI_CONTEXT_ACCESS( loc )
-        gemm[loc]( wResult.get(), alpha, rX.get(), beta, wResult.get(), mNumRows, n, mNumColumns, csrIA.get(), csrJA.get(),
-                   csrValues.get() );
+        syncToken.reset( loc->getSyncToken() );
+        syncToken->setCurrent();
     }
-    else
-    {
-        WriteOnlyAccess<ValueType> wResult( result, loc, mNumRows );
-        ReadAccess<ValueType> rY( y, loc );
 
-        SCAI_CONTEXT_ACCESS( loc )
-        gemm[loc]( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumRows, n, mNumColumns, csrIA.get(), csrJA.get(),
-                   csrValues.get() );
+    SCAI_CONTEXT_ACCESS( loc )
+
+    ReadAccess<IndexType> csrIA( mIa, loc );
+    ReadAccess<IndexType> csrJA( mJa, loc );
+    ReadAccess<ValueType> csrValues( mValues, loc );
+    ReadAccess<ValueType> rX( x, loc );
+
+    WriteAccess<ValueType> wResult( result, loc );
+
+    // result += alpha * thisMatrix * x, can take advantage of row indexes
+
+    IndexType numNonZeroRows = mRowIndexes.size();
+
+    ReadAccess<IndexType> rows( mRowIndexes, loc );
+
+    sparseGEMV[loc]( wResult.get(), alpha, rX.get(), numNonZeroRows, rows.get(), csrIA.get(), csrJA.get(),
+                     csrValues.get() );
+
+    if ( async )
+    {
+        syncToken->pushRoutine( rows.releaseDelayed() );
+        syncToken->pushRoutine( wResult.releaseDelayed() );
+        syncToken->pushRoutine( rX.releaseDelayed() );
+        syncToken->pushRoutine( csrIA.releaseDelayed() );
+        syncToken->pushRoutine( csrJA.releaseDelayed() );
+        syncToken->pushRoutine( csrValues.releaseDelayed() );
+        syncToken->unsetCurrent();
+    }
+
+    return syncToken.release();
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+SyncToken* CSRStorage<ValueType>::normalGEMV(
+    LAMAArray<ValueType>& result,
+    const ValueType alpha,
+    const LAMAArray<ValueType>& x,
+    const ValueType beta,
+    const LAMAArray<ValueType>& y,
+    bool async ) const
+{
+    static LAMAKernel<CSRKernelTrait::normalGEMV<ValueType> > normalGEMV;
+
+    ContextPtr loc = normalGEMV.getValidContext( normalGEMV, this->getContextPtr() );
+
+    unique_ptr<SyncToken> syncToken;
+
+    if ( async )
+    {
+        syncToken.reset( loc->getSyncToken() );
+        syncToken->setCurrent();
+    }
+
+    SCAI_CONTEXT_ACCESS( loc )
+
+    // Note: alias &result == &y possible
+    //       ReadAccess on y before WriteOnlyAccess on result guarantees valid data
+
+    ReadAccess<IndexType> csrIA( mIa, loc );
+    ReadAccess<IndexType> csrJA( mJa, loc );
+    ReadAccess<ValueType> csrValues( mValues, loc );
+    ReadAccess<ValueType> rX( x, loc );
+    ReadAccess<ValueType> rY( y, loc );
+
+    WriteOnlyAccess<ValueType> wResult( result, loc, mNumRows );
+
+    normalGEMV[loc]( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumRows, mNumColumns, mNumValues, csrIA.get(),
+                     csrJA.get(), csrValues.get() );
+
+    if ( async )
+    {
+        syncToken->pushRoutine( wResult.releaseDelayed() );
+        syncToken->pushRoutine( rY.releaseDelayed() );
+        syncToken->pushRoutine( rX.releaseDelayed() );
+        syncToken->pushRoutine( csrIA.releaseDelayed() );
+        syncToken->pushRoutine( csrJA.releaseDelayed() );
+        syncToken->pushRoutine( csrValues.releaseDelayed() );
+        syncToken->unsetCurrent();
+    }
+
+    return syncToken.release();
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+SyncToken* CSRStorage<ValueType>::normalGEMV(
+    LAMAArray<ValueType>& result,
+    const ValueType alpha,
+    const LAMAArray<ValueType>& x,
+    bool async ) const
+{
+    static LAMAKernel<CSRKernelTrait::normalGEMV<ValueType> > normalGEMV;
+
+    ContextPtr loc = normalGEMV.getValidContext( normalGEMV, this->getContextPtr() );
+
+    unique_ptr<SyncToken> syncToken;
+
+    if ( async )
+    {
+        syncToken.reset( loc->getSyncToken() );
+        syncToken->setCurrent();
+    }
+
+    SCAI_CONTEXT_ACCESS( loc )
+
+    ReadAccess<IndexType> csrIA( mIa, loc );
+    ReadAccess<IndexType> csrJA( mJa, loc );
+    ReadAccess<ValueType> csrValues( mValues, loc );
+    ReadAccess<ValueType> rX( x, loc );
+
+    WriteOnlyAccess<ValueType> wResult( result, loc, mNumRows );
+
+    ValueType beta = 0;
+
+    normalGEMV[loc]( wResult.get(), alpha, rX.get(), beta, NULL, mNumRows, mNumColumns, mNumValues, 
+                     csrIA.get(), csrJA.get(), csrValues.get() );
+
+    if ( async )
+    {
+        syncToken->pushRoutine( wResult.releaseDelayed() );
+        syncToken->pushRoutine( rX.releaseDelayed() );
+        syncToken->pushRoutine( csrIA.releaseDelayed() );
+        syncToken->pushRoutine( csrJA.releaseDelayed() );
+        syncToken->pushRoutine( csrValues.releaseDelayed() );
+        syncToken->unsetCurrent();
+    }
+
+    return syncToken.release();
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+SyncToken* CSRStorage<ValueType>::gemv(
+    LAMAArray<ValueType>& result,
+    const ValueType alpha,
+    const LAMAArray<ValueType>& x,
+    const ValueType beta,
+    const LAMAArray<ValueType>& y,
+    bool  async ) const
+{
+    SCAI_REGION( "Storage.CSR.gemv" )
+
+    SCAI_LOG_INFO( logger,
+                   "GEMV ( async = " << async << " ), result = " << alpha << " * A * x + " << beta << " * y "
+                   << ", result = " << result << ", x = " << x << ", y = " << y 
+                   << ", A (this) = " << *this );
+
+    if ( alpha == common::constants::ZERO || ( mNumValues == 0 ) )
+    {
+        // so we just have result = beta * y, will be done synchronously
+
+        LAMAArrayUtils::assignScaled( result, beta, y, this->getContextPtr() );
+
+        if ( async )
+        {
+            return new tasking::NoSyncToken();
+        }
+        else
+        {
+            return NULL;
+        }
+    }
+
+    // check for correct sizes of x
+
+    SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumColumns )
+
+    if ( beta == common::constants::ZERO )
+    {
+        // take version that does not access y at all (can be undefined or aliased to result)
+
+        return normalGEMV( result, alpha, x, async );
+    }
+
+    // y is relevant, so it must have correct size
+
+    SCAI_ASSERT_EQUAL_ERROR( y.size(), mNumRows )
+
+    if ( &result == &y && ( beta == common::constants::ONE ) && ( mRowIndexes.size() > 0 ) )
+    {
+        // y += A * x,  where only some rows in A are filled, uses more efficient routine
+
+        return sparseGEMV( result, alpha, x, async );
+    }
+    else 
+    {
+        return normalGEMV( result, alpha, x, beta, y, async );
     }
 }
 
@@ -1499,119 +1658,13 @@ SyncToken* CSRStorage<ValueType>::matrixTimesVectorAsync(
     const ValueType beta,
     const LAMAArray<ValueType>& y ) const
 {
-    SCAI_REGION( "Storage.CSR.timesVectorAsync" )
+    bool async = true;
 
-    // Note: checks will be done by asynchronous task in any case
-    //       and exception in tasks are handled correctly
+    SyncToken* token = gemv( result, alpha, x, beta, y, async );
 
-    static LAMAKernel<CSRKernelTrait::sparseGEMV<ValueType> > sparseGEMV;
-    static LAMAKernel<CSRKernelTrait::normalGEMV<ValueType> > normalGEMV;
+    SCAI_ASSERT( token, "NULL token not allowed for asynchronous execution gemv, alpha = " << alpha << ", beta = " << beta )
 
-    ContextPtr loc = normalGEMV.getValidContext( sparseGEMV, this->getContextPtr() );
-
-    if ( loc->getType() == common::context::Host )
-    {
-        // execution as separate thread
-
-        void ( CSRStorage::*pf )(
-            LAMAArray<ValueType>&,
-            const ValueType,
-            const LAMAArray<ValueType>&,
-            const ValueType,
-            const LAMAArray<ValueType>& ) const
-
-           = &CSRStorage<ValueType>::matrixTimesVector;
- 
-        using common::bind;
-        using common::ref;
-        using common::cref;
- 
-        SCAI_LOG_INFO( logger, *this << ": matrixTimesVectorAsync on Host by own thread" )
-
-        return new tasking::TaskSyncToken( bind( pf, this, ref( result ), alpha, cref( x ), beta, cref( y ) ) );
-    }
-
-    SCAI_LOG_INFO( logger,
-                   "GEMV, result = " << alpha << " * A * x + " << beta << " * y "
-                   << ", async on " << *loc << ", result = " << result << ", x = " << x << ", y = " << y 
-                   << ", A (this) = " << *this );
-
-    SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumColumns )
-    SCAI_ASSERT_EQUAL_ERROR( result.size(), mNumRows )
-
-    if( ( beta != common::constants::ZERO ) && ( &result != &y ) )
-    {
-        SCAI_ASSERT_EQUAL_ERROR( y.size(), mNumRows )
-    }
-
-    unique_ptr<SyncToken> syncToken( loc->getSyncToken() );
-
-    SCAI_ASYNCHRONOUS( *syncToken )
-
-    // all accesses will be pushed to the sync token as LAMA arrays have to be protected up
-    // to the end of the computations.
-
-    ReadAccess<IndexType> csrIA( mIa, loc );
-    ReadAccess<IndexType> csrJA( mJa, loc );
-    ReadAccess<ValueType> csrValues( mValues, loc );
-
-    ReadAccess<ValueType>  rX( x, loc );
-
-    // Possible alias of result and y must be handled by coressponding accesses
-
-    if( &result == &y )
-    {
-        // only write access for y, no read access for result
-
-        WriteAccess<ValueType> wResult( result, loc );
-
-        if( mRowIndexes.size() > 0 && ( beta == common::constants::ONE ) )
-        {
-            // y += alpha * thisMatrix * x, can take advantage of row indexes
-
-            IndexType numNonZeroRows = mRowIndexes.size();
-
-            ReadAccess<IndexType> rows( mRowIndexes, loc );
-
-            SCAI_CONTEXT_ACCESS( loc )
-
-            sparseGEMV[loc]( wResult.get(), alpha, rX.get(), numNonZeroRows, rows.get(), csrIA.get(), csrJA.get(),
-                        csrValues.get() );
-
-            syncToken->pushRoutine( rows.releaseDelayed() );
-        }
-        else
-        {
-            // we assume that normalGEMV can deal with the alias of result, y
-
-            SCAI_CONTEXT_ACCESS( loc )
-
-            normalGEMV[loc]( wResult.get(), alpha, rX.get(), beta, wResult.get(), mNumRows, mNumColumns, mNumValues,
-                        csrIA.get(), csrJA.get(), csrValues.get() );
-        }
-
-        syncToken->pushRoutine( wResult.releaseDelayed() );
-    }
-    else
-    {
-        WriteOnlyAccess<ValueType> wResult( result, loc, mNumRows );
-        ReadAccess<ValueType> rY( y, loc );
-
-        SCAI_CONTEXT_ACCESS( loc )
-
-        normalGEMV[loc]( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumRows, mNumColumns, mNumValues, csrIA.get(),
-                    csrJA.get(), csrValues.get() );
-
-        syncToken->pushRoutine( wResult.releaseDelayed() );
-        syncToken->pushRoutine( rY.releaseDelayed() );
-    }
-
-    syncToken->pushRoutine( csrIA.releaseDelayed() );
-    syncToken->pushRoutine( csrJA.releaseDelayed() );
-    syncToken->pushRoutine( csrValues.releaseDelayed() );
-    syncToken->pushRoutine( rX.releaseDelayed() );
-
-    return syncToken.release();
+    return token;
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1634,7 +1687,7 @@ SyncToken* CSRStorage<ValueType>::vectorTimesMatrixAsync(
 
     const ContextPtr loc = normalGEVM.getValidContext( sparseGEVM, this->getContextPtr() );
 
-    if ( loc->getType() == common::context::Host )
+    if ( loc->getType() == common::context::MaxContext )
     {
         // execution as separate thread
 
@@ -2212,7 +2265,7 @@ void CSRStorage<ValueType>::matrixTimesMatrixCSR(
 template<typename ValueType>
 ValueType CSRStorage<ValueType>::l1Norm() const
 {
-	SCAI_LOG_INFO( logger, *this << ": l1Norm()" )
+    SCAI_LOG_INFO( logger, *this << ": l1Norm()" )
 
     if ( mNumValues == 0 )
     {
@@ -2223,11 +2276,11 @@ ValueType CSRStorage<ValueType>::l1Norm() const
 
     ContextPtr loc = asum.getValidContext( this->getContextPtr() );
 
-	ReadAccess<ValueType> data( mValues, loc );
+    ReadAccess<ValueType> data( mValues, loc );
 
-	SCAI_CONTEXT_ACCESS( loc );
+    SCAI_CONTEXT_ACCESS( loc );
 
-	return asum[loc]( mNumValues, data.get(), 1 );
+    return asum[loc]( mNumValues, data.get(), 1 );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -2235,7 +2288,7 @@ ValueType CSRStorage<ValueType>::l1Norm() const
 template<typename ValueType>
 ValueType CSRStorage<ValueType>::l2Norm() const
 {
-	SCAI_LOG_INFO( logger, *this << ": l2Norm()" )
+    SCAI_LOG_INFO( logger, *this << ": l2Norm()" )
 
     if( mNumValues == 0 )
     {
@@ -2246,11 +2299,11 @@ ValueType CSRStorage<ValueType>::l2Norm() const
 
     ContextPtr loc = dot.getValidContext( this->getContextPtr() );
 
-	ReadAccess<ValueType> data( mValues, loc );
+    ReadAccess<ValueType> data( mValues, loc );
 
-	SCAI_CONTEXT_ACCESS( loc );
+    SCAI_CONTEXT_ACCESS( loc );
 
-	return ::sqrt(dot[loc]( mNumValues, data.get(), 1, data.get(), 1 ));
+    return ::sqrt(dot[loc]( mNumValues, data.get(), 1, data.get(), 1 ));
 }
 
 /* --------------------------------------------------------------------------- */
