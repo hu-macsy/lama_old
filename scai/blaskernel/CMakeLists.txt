@@ -65,8 +65,16 @@ endforeach ( PACKAGE_TO_FIND ${REQUIRED_PACKAGES_TO_FIND} )
 ## finalize build flags
 include ( ConcludeFlags )
 
-### add definitions
+## MKL FOUND
+if     ( SCAI_BLAS_NAME STREQUAL "MKL" )
+    add_definitions( -DSCAI_MKL_BLAS )
+elseif ( INTERNALBLAS_FOUND )
+    add_definitions( -DSCAI_INTERNAL_BLAS )
+else   ( )
+    add_definitions( -DADD_ )
+endif  ( )
 
+### add definitions
 add_definitions( ${ADDITIONAL_WARNING_FLAGS} )
 
 add_definitions ( -D${SCAI_LOGGING_FLAG} )
@@ -145,6 +153,12 @@ foreach    ( module ${SCAI_BLASKERNEL_EXTERNAL_DEPS} )
 	string ( TOUPPER ${module} upper_module )
     target_link_libraries ( scai_blaskernel ${SCAI_${upper_module}_LIBRARIES} )
 endforeach ( module ${SCAI_BLASKERNEL_EXTERNAL_DEPS} )
+
+if ( USE_MIC )
+    set ( MKLROOT $ENV{MKLROOT} )
+    set ( CMAKE_SHARED_LINKER_FLAGS ${CMAKE_SHARED_LINKER_FLAGS} "-offload-option,mic,compiler,\"-L${MKLROOT}/lib/mic -Wl,--start-group -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_core -Wl,--end-group\"" )
+    #ToDo: set_target_properties not working, any better way?
+endif ( USE_MIC )
 
 ### install
 
