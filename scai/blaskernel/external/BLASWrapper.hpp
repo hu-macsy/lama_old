@@ -55,54 +55,54 @@ public:
 
 	// ------------- BLAS1 -------------
 	template<typename ValueType>
-	static void scal(const IndexType UNUSED(n), const ValueType UNUSED(alpha),
-			ValueType *UNUSED(x), const IndexType UNUSED(incX)) {
+	static void scal(const BLASIndexType UNUSED(n), const ValueType UNUSED(alpha),
+			ValueType *UNUSED(x), const BLASIndexType UNUSED(incX)) {
 		SCAI_THROWEXCEPTION(common::NotSupportedValueTypeException, "scal");
 	}
 
 	template<typename ValueType>
-	static ValueType nrm2(const IndexType UNUSED(n), const ValueType *UNUSED(x),
-			const IndexType UNUSED(incX)) {
+	static ValueType nrm2(const BLASIndexType UNUSED(n), const ValueType *UNUSED(x),
+			const BLASIndexType UNUSED(incX)) {
 		SCAI_THROWEXCEPTION(common::NotSupportedValueTypeException, "nrm2");
 	}
 
 	template<typename ValueType>
-	static ValueType asum(const IndexType UNUSED(n), const ValueType *UNUSED(x),
-			IndexType UNUSED(incX)) {
+	static ValueType asum(const BLASIndexType UNUSED(n), const ValueType *UNUSED(x),
+			BLASIndexType UNUSED(incX)) {
 		SCAI_THROWEXCEPTION(common::NotSupportedValueTypeException, "asum");
 	}
 
 	template<typename ValueType>
-	static IndexType iamax(const IndexType UNUSED(n),
-			const ValueType *UNUSED(x), const IndexType UNUSED(incX)) {
+	static BLASIndexType iamax(const BLASIndexType UNUSED(n),
+			const ValueType *UNUSED(x), const BLASIndexType UNUSED(incX)) {
 		SCAI_THROWEXCEPTION(common::NotSupportedValueTypeException, "iamax");
 	}
 
 	template<typename ValueType>
-	static void swap(const IndexType UNUSED(n), ValueType *UNUSED(x),
-			const IndexType UNUSED(incX), ValueType *UNUSED(y),
-			const IndexType UNUSED(incY)) {
+	static void swap(const BLASIndexType UNUSED(n), ValueType *UNUSED(x),
+			const BLASIndexType UNUSED(incX), ValueType *UNUSED(y),
+			const BLASIndexType UNUSED(incY)) {
 		SCAI_THROWEXCEPTION(common::NotSupportedValueTypeException, "swap");
 	}
 
 	template<typename ValueType>
-	static void copy(const IndexType UNUSED(n), const ValueType *UNUSED(x),
-			const IndexType UNUSED(incX), ValueType *UNUSED(y),
-			const IndexType UNUSED(incY)) {
+	static void copy(const BLASIndexType UNUSED(n), const ValueType *UNUSED(x),
+			const BLASIndexType UNUSED(incX), ValueType *UNUSED(y),
+			const BLASIndexType UNUSED(incY)) {
 		SCAI_THROWEXCEPTION(common::NotSupportedValueTypeException, "copy");
 	}
 
 	template<typename ValueType>
-	static void axpy(const IndexType UNUSED(n), const ValueType UNUSED(alpha),
-			const ValueType *UNUSED(x), const IndexType UNUSED(incX),
-			ValueType *UNUSED(y), const IndexType UNUSED(incY)) {
+	static void axpy(const BLASIndexType UNUSED(n), const ValueType UNUSED(alpha),
+			const ValueType *UNUSED(x), const BLASIndexType UNUSED(incX),
+			ValueType *UNUSED(y), const BLASIndexType UNUSED(incY)) {
 		SCAI_THROWEXCEPTION(common::NotSupportedValueTypeException, "axpy");
 	}
 
 	template<typename ValueType>
-	static ValueType dot(const IndexType UNUSED(n), const ValueType *UNUSED(x),
-			const IndexType UNUSED(incX), const ValueType *UNUSED(y),
-			const IndexType UNUSED(incY)) {
+	static ValueType dot(const BLASIndexType UNUSED(n), const ValueType *UNUSED(x),
+			const BLASIndexType UNUSED(incX), const ValueType *UNUSED(y),
+			const BLASIndexType UNUSED(incY)) {
 		SCAI_THROWEXCEPTION(common::NotSupportedValueTypeException, "dot");
 	}
 
@@ -110,11 +110,11 @@ public:
 	template<typename ValueType>
 	static void gemv(const CBLAS_ORDER order,
 			const CBLAS_TRANSPOSE UNUSED(transA_char),
-			const IndexType UNUSED(m), const IndexType UNUSED(n),
+			const BLASIndexType UNUSED(m), const BLASIndexType UNUSED(n),
 			const ValueType UNUSED(alpha), const ValueType* UNUSED(A),
-			const IndexType UNUSED(lda), const ValueType* UNUSED(x),
-			const IndexType UNUSED(incX), const ValueType UNUSED(beta),
-			ValueType* UNUSED(y), const IndexType UNUSED(incY)) {
+			const BLASIndexType UNUSED(lda), const ValueType* UNUSED(x),
+			const BLASIndexType UNUSED(incX), const ValueType UNUSED(beta),
+			ValueType* UNUSED(y), const BLASIndexType UNUSED(incY)) {
 		SCAI_THROWEXCEPTION(common::NotSupportedValueTypeException, "gemv");
 	}
 
@@ -123,12 +123,12 @@ public:
 	static void gemm(const CBLAS_ORDER UNUSED(order),
 			const CBLAS_TRANSPOSE UNUSED(transA_char),
 			const CBLAS_TRANSPOSE UNUSED(transB_char),
-			const IndexType UNUSED(m), const IndexType UNUSED(n),
-			const IndexType UNUSED(k), const ValueType UNUSED(alpha),
-			const ValueType* UNUSED(A), const IndexType UNUSED(lda),
-			const ValueType* UNUSED(B), const IndexType UNUSED(ldb),
+			const BLASIndexType UNUSED(m), const BLASIndexType UNUSED(n),
+			const BLASIndexType UNUSED(k), const ValueType UNUSED(alpha),
+			const ValueType* UNUSED(A), const BLASIndexType UNUSED(lda),
+			const ValueType* UNUSED(B), const BLASIndexType UNUSED(ldb),
 			const ValueType UNUSED(beta), ValueType* UNUSED(C),
-			const IndexType UNUSED(ldc)) {
+			const BLASIndexType UNUSED(ldc)) {
 		SCAI_THROWEXCEPTION(common::NotSupportedValueTypeException, "gemm");
 	}
 
@@ -138,363 +138,363 @@ private:
 
 // -------------- scal --------------
 template<>
-inline void BLASWrapper::scal<float>(const IndexType n, const float alpha,
-		float *x, const IndexType incX) {
-	cblas_sscal(static_cast<BLASIndexType>(n), alpha, x,
-			static_cast<BLASIndexType>(incX));
+inline void BLASWrapper::scal<float>(const BLASIndexType n, const float alpha,
+		float *x, const BLASIndexType incX) {
+	cblas_sscal(n, alpha, x,
+			incX);
 }
 
 template<>
-inline void BLASWrapper::scal<double>(const IndexType n, const double alpha,
-		double *x, const IndexType incX) {
-	cblas_dscal(static_cast<BLASIndexType>(n), alpha, x,
-			static_cast<BLASIndexType>(incX));
+inline void BLASWrapper::scal<double>(const BLASIndexType n, const double alpha,
+		double *x, const BLASIndexType incX) {
+	cblas_dscal(n, alpha, x,
+			incX);
 }
 
 template<>
-inline void BLASWrapper::scal<ComplexFloat>(const IndexType n,
-		const ComplexFloat alpha, ComplexFloat *x, const IndexType incX) {
+inline void BLASWrapper::scal<ComplexFloat>(const BLASIndexType n,
+		const ComplexFloat alpha, ComplexFloat *x, const BLASIndexType incX) {
 	// Attention: alpha is here passed by a pointer
-	cblas_cscal(static_cast<BLASIndexType>(n), &alpha, x,
-			static_cast<BLASIndexType>(incX));
+	cblas_cscal(n, &alpha, x,
+			incX);
 }
 
 template<>
-inline void BLASWrapper::scal<ComplexDouble>(const IndexType n,
-		const ComplexDouble alpha, ComplexDouble *x, const IndexType incX) {
+inline void BLASWrapper::scal<ComplexDouble>(const BLASIndexType n,
+		const ComplexDouble alpha, ComplexDouble *x, const BLASIndexType incX) {
 	// Attention: alpha is here passed by a pointer
-	cblas_zscal(static_cast<BLASIndexType>(n), &alpha, x,
-			static_cast<BLASIndexType>(incX));
+	cblas_zscal(n, &alpha, x,
+			incX);
 }
 
 // -------------- nrm2 --------------
 template<>
-inline float BLASWrapper::nrm2<float>(const IndexType n, const float *x,
-		const IndexType incX) {
-	return cblas_snrm2(static_cast<BLASIndexType>(n), x,
-			static_cast<BLASIndexType>(incX));
+inline float BLASWrapper::nrm2<float>(const BLASIndexType n, const float *x,
+		const BLASIndexType incX) {
+	return cblas_snrm2(n, x,
+			incX);
 }
 
 template<>
-inline double BLASWrapper::nrm2<double>(const IndexType n, const double *x,
-		const IndexType incX) {
-	return cblas_dnrm2(static_cast<BLASIndexType>(n), x,
-			static_cast<BLASIndexType>(incX));
+inline double BLASWrapper::nrm2<double>(const BLASIndexType n, const double *x,
+		const BLASIndexType incX) {
+	return cblas_dnrm2(n, x,
+			incX);
 }
 
 template<>
-inline ComplexFloat BLASWrapper::nrm2<ComplexFloat>(const IndexType n,
-		const ComplexFloat *x, const IndexType incX) {
-	float res = cblas_scnrm2(static_cast<BLASIndexType>(n), x,
-			static_cast<BLASIndexType>(incX));
+inline ComplexFloat BLASWrapper::nrm2<ComplexFloat>(const BLASIndexType n,
+		const ComplexFloat *x, const BLASIndexType incX) {
+	float res = cblas_scnrm2(n, x,
+			incX);
 	return ComplexFloat(res);
 }
 
 template<>
-inline ComplexDouble BLASWrapper::nrm2<ComplexDouble>(const IndexType n,
-		const ComplexDouble *x, const IndexType incX) {
-	double res = cblas_dznrm2(static_cast<BLASIndexType>(n), x,
-			static_cast<BLASIndexType>(incX));
+inline ComplexDouble BLASWrapper::nrm2<ComplexDouble>(const BLASIndexType n,
+		const ComplexDouble *x, const BLASIndexType incX) {
+	double res = cblas_dznrm2(n, x,
+			incX);
 	return ComplexDouble(res);
 }
 
 // -------------- asum --------------
 template<>
-inline float BLASWrapper::asum<float>(const IndexType n, const float *x,
-		IndexType incX) {
-	return cblas_sasum(static_cast<BLASIndexType>(n), x,
-			static_cast<BLASIndexType>(incX));
+inline float BLASWrapper::asum<float>(const BLASIndexType n, const float *x,
+		BLASIndexType incX) {
+	return cblas_sasum(n, x,
+			incX);
 }
 
 template<>
-inline double BLASWrapper::asum<double>(const IndexType n, const double *x,
-		IndexType incX) {
-	return cblas_dasum(static_cast<BLASIndexType>(n), x,
-			static_cast<BLASIndexType>(incX));
+inline double BLASWrapper::asum<double>(const BLASIndexType n, const double *x,
+		BLASIndexType incX) {
+	return cblas_dasum(n, x,
+			incX);
 }
 
 template<>
-inline ComplexFloat BLASWrapper::asum<ComplexFloat>(const IndexType n,
-		const ComplexFloat *x, IndexType incX) {
-	float res = cblas_scasum(static_cast<BLASIndexType>(n), x,
-			static_cast<BLASIndexType>(incX));
+inline ComplexFloat BLASWrapper::asum<ComplexFloat>(const BLASIndexType n,
+		const ComplexFloat *x, BLASIndexType incX) {
+	float res = cblas_scasum(n, x,
+			incX);
 	return ComplexFloat(res);
 }
 
 template<>
-inline ComplexDouble BLASWrapper::asum<ComplexDouble>(const IndexType n,
-		const ComplexDouble *x, IndexType incX) {
-	double res = cblas_dzasum(static_cast<BLASIndexType>(n), x,
-			static_cast<BLASIndexType>(incX));
+inline ComplexDouble BLASWrapper::asum<ComplexDouble>(const BLASIndexType n,
+		const ComplexDouble *x, BLASIndexType incX) {
+	double res = cblas_dzasum(n, x,
+			incX);
 	return ComplexDouble(res);
 }
 
 // -------------- iamax --------------
 template<>
-inline IndexType BLASWrapper::iamax<float>(const IndexType n, const float *x,
-		const IndexType incX) {
-	return cblas_isamax(static_cast<BLASIndexType>(n), x,
-			static_cast<BLASIndexType>(incX));
+inline BLASWrapper::BLASIndexType BLASWrapper::iamax<float>(const BLASIndexType n, const float *x,
+		const BLASIndexType incX) {
+	return cblas_isamax(n, x,
+			incX);
 }
 
 template<>
-inline IndexType BLASWrapper::iamax<double>(const IndexType n, const double *x,
-		const IndexType incX) {
-	return cblas_idamax(static_cast<BLASIndexType>(n), x,
-			static_cast<BLASIndexType>(incX));
+inline BLASWrapper::BLASIndexType BLASWrapper::iamax<double>(const BLASIndexType n, const double *x,
+		const BLASIndexType incX) {
+	return cblas_idamax(n, x,
+			incX);
 }
 
 template<>
-inline IndexType BLASWrapper::iamax<ComplexFloat>(const IndexType n,
-		const ComplexFloat *x, const IndexType incX) {
-	return cblas_icamax(static_cast<BLASIndexType>(n), x,
-			static_cast<BLASIndexType>(incX));
+inline BLASWrapper::BLASIndexType BLASWrapper::iamax<ComplexFloat>(const BLASIndexType n,
+		const ComplexFloat *x, const BLASIndexType incX) {
+	return cblas_icamax(n, x,
+			incX);
 }
 
 template<>
-inline IndexType BLASWrapper::iamax<ComplexDouble>(const IndexType n,
-		const ComplexDouble *x, const IndexType incX) {
-	return cblas_izamax(static_cast<BLASIndexType>(n), x,
-			static_cast<BLASIndexType>(incX));
+inline BLASWrapper::BLASIndexType BLASWrapper::iamax<ComplexDouble>(const BLASIndexType n,
+		const ComplexDouble *x, const BLASIndexType incX) {
+	return cblas_izamax(n, x,
+			incX);
 }
 
 // -------------- swap --------------
 template<>
-inline void BLASWrapper::swap<float>(const IndexType n, float *x,
-		const IndexType incX, float *y, const IndexType incY) {
-	cblas_sswap(static_cast<BLASIndexType>(n), x,
-			static_cast<BLASIndexType>(incX), y,
-			static_cast<BLASIndexType>(incY));
+inline void BLASWrapper::swap<float>(const BLASIndexType n, float *x,
+		const BLASIndexType incX, float *y, const BLASIndexType incY) {
+	cblas_sswap(n, x,
+			incX, y,
+			incY);
 }
 
 template<>
-inline void BLASWrapper::swap<double>(const IndexType n, double *x,
-		const IndexType incX, double *y, const IndexType incY) {
-	cblas_dswap(static_cast<BLASIndexType>(n), x,
-			static_cast<BLASIndexType>(incX), y,
-			static_cast<BLASIndexType>(incY));
+inline void BLASWrapper::swap<double>(const BLASIndexType n, double *x,
+		const BLASIndexType incX, double *y, const BLASIndexType incY) {
+	cblas_dswap(n, x,
+			incX, y,
+			incY);
 }
 
 template<>
-inline void BLASWrapper::swap<ComplexFloat>(const IndexType n, ComplexFloat *x,
-		const IndexType incX, ComplexFloat *y, const IndexType incY) {
-	cblas_cswap(static_cast<BLASIndexType>(n), x,
-			static_cast<BLASIndexType>(incX), y,
-			static_cast<BLASIndexType>(incY));
+inline void BLASWrapper::swap<ComplexFloat>(const BLASIndexType n, ComplexFloat *x,
+		const BLASIndexType incX, ComplexFloat *y, const BLASIndexType incY) {
+	cblas_cswap(n, x,
+			incX, y,
+			incY);
 }
 
 template<>
-inline void BLASWrapper::swap<ComplexDouble>(const IndexType n,
-		ComplexDouble *x, const IndexType incX, ComplexDouble *y,
-		const IndexType incY) {
-	cblas_zswap(static_cast<BLASIndexType>(n), x,
-			static_cast<BLASIndexType>(incX), y,
-			static_cast<BLASIndexType>(incY));
+inline void BLASWrapper::swap<ComplexDouble>(const BLASIndexType n,
+		ComplexDouble *x, const BLASIndexType incX, ComplexDouble *y,
+		const BLASIndexType incY) {
+	cblas_zswap(n, x,
+			incX, y,
+			incY);
 }
 
 // -------------- copy --------------
 template<>
-inline void BLASWrapper::copy<float>(const IndexType n, const float *x,
-		const IndexType incX, float *y, const IndexType incY) {
-	cblas_scopy(static_cast<BLASIndexType>(n), x,
-			static_cast<BLASIndexType>(incX), y,
-			static_cast<BLASIndexType>(incY));
+inline void BLASWrapper::copy<float>(const BLASIndexType n, const float *x,
+		const BLASIndexType incX, float *y, const BLASIndexType incY) {
+	cblas_scopy(n, x,
+			incX, y,
+			incY);
 }
 
 template<>
-inline void BLASWrapper::copy<double>(const IndexType n, const double *x,
-		const IndexType incX, double *y, const IndexType incY) {
-	cblas_dcopy(static_cast<BLASIndexType>(n), x,
-			static_cast<BLASIndexType>(incX), y,
-			static_cast<BLASIndexType>(incY));
+inline void BLASWrapper::copy<double>(const BLASIndexType n, const double *x,
+		const BLASIndexType incX, double *y, const BLASIndexType incY) {
+	cblas_dcopy(n, x,
+			incX, y,
+			incY);
 }
 
 template<>
-inline void BLASWrapper::copy<ComplexFloat>(const IndexType n,
-		const ComplexFloat *x, const IndexType incX, ComplexFloat *y,
-		const IndexType incY) {
-	cblas_ccopy(static_cast<BLASIndexType>(n), x,
-			static_cast<BLASIndexType>(incX), y,
-			static_cast<BLASIndexType>(incY));
+inline void BLASWrapper::copy<ComplexFloat>(const BLASIndexType n,
+		const ComplexFloat *x, const BLASIndexType incX, ComplexFloat *y,
+		const BLASIndexType incY) {
+	cblas_ccopy(n, x,
+			incX, y,
+			incY);
 }
 
 template<>
-inline void BLASWrapper::copy<ComplexDouble>(const IndexType n,
-		const ComplexDouble *x, const IndexType incX, ComplexDouble *y,
-		const IndexType incY) {
-	cblas_zcopy(static_cast<BLASIndexType>(n), x,
-			static_cast<BLASIndexType>(incX), y,
-			static_cast<BLASIndexType>(incY));
+inline void BLASWrapper::copy<ComplexDouble>(const BLASIndexType n,
+		const ComplexDouble *x, const BLASIndexType incX, ComplexDouble *y,
+		const BLASIndexType incY) {
+	cblas_zcopy(n, x,
+			incX, y,
+			incY);
 }
 
 // -------------- axpy --------------
 template<>
-inline void BLASWrapper::axpy<float>(const IndexType n, const float alpha,
-		const float *x, const IndexType incX, float *y, const IndexType incY) {
-	cblas_saxpy(static_cast<BLASIndexType>(n), alpha, x,
-			static_cast<BLASIndexType>(incX), y,
-			static_cast<BLASIndexType>(incY));
+inline void BLASWrapper::axpy<float>(const BLASIndexType n, const float alpha,
+		const float *x, const BLASIndexType incX, float *y, const BLASIndexType incY) {
+	cblas_saxpy(n, alpha, x,
+			incX, y,
+			incY);
 }
 
 template<>
-inline void BLASWrapper::axpy<double>(const IndexType n, const double alpha,
-		const double *x, const IndexType incX, double *y,
-		const IndexType incY) {
-	cblas_daxpy(static_cast<BLASIndexType>(n), alpha, x,
-			static_cast<BLASIndexType>(incX), y,
-			static_cast<BLASIndexType>(incY));
+inline void BLASWrapper::axpy<double>(const BLASIndexType n, const double alpha,
+		const double *x, const BLASIndexType incX, double *y,
+		const BLASIndexType incY) {
+	cblas_daxpy(n, alpha, x,
+			incX, y,
+			incY);
 }
 
 template<>
-inline void BLASWrapper::axpy<ComplexFloat>(const IndexType n,
-		const ComplexFloat alpha, const ComplexFloat *x, const IndexType incX,
-		ComplexFloat *y, const IndexType incY) {
+inline void BLASWrapper::axpy<ComplexFloat>(const BLASIndexType n,
+		const ComplexFloat alpha, const ComplexFloat *x, const BLASIndexType incX,
+		ComplexFloat *y, const BLASIndexType incY) {
 	// Attention: alpha is here passed by a pointer
-	cblas_caxpy(static_cast<BLASIndexType>(n), &alpha, x,
-			static_cast<BLASIndexType>(incX), y,
-			static_cast<BLASIndexType>(incY));
+	cblas_caxpy(n, &alpha, x,
+			incX, y,
+			incY);
 }
 
 template<>
-inline void BLASWrapper::axpy<ComplexDouble>(const IndexType n,
-		const ComplexDouble alpha, const ComplexDouble *x, const IndexType incX,
-		ComplexDouble *y, const IndexType incY) {
+inline void BLASWrapper::axpy<ComplexDouble>(const BLASIndexType n,
+		const ComplexDouble alpha, const ComplexDouble *x, const BLASIndexType incX,
+		ComplexDouble *y, const BLASIndexType incY) {
 	// Attention: alpha is here passed by a pointer
-	cblas_zaxpy(static_cast<BLASIndexType>(n), &alpha, x,
-			static_cast<BLASIndexType>(incX), y,
-			static_cast<BLASIndexType>(incY));
+	cblas_zaxpy(n, &alpha, x,
+			incX, y,
+			incY);
 }
 
 // -------------- dot --------------
 template<>
-inline float BLASWrapper::dot<float>(const IndexType n, const float *x,
-		const IndexType incX, const float *y, const IndexType incY) {
-	return cblas_sdot(static_cast<BLASIndexType>(n), x,
-			static_cast<BLASIndexType>(incX), y,
-			static_cast<BLASIndexType>(incY));
+inline float BLASWrapper::dot<float>(const BLASIndexType n, const float *x,
+		const BLASIndexType incX, const float *y, const BLASIndexType incY) {
+	return cblas_sdot(n, x,
+			incX, y,
+			incY);
 }
 
 template<>
-inline double BLASWrapper::dot<double>(const IndexType n, const double *x,
-		const IndexType incX, const double *y, const IndexType incY) {
-	return cblas_ddot(static_cast<BLASIndexType>(n), x,
-			static_cast<BLASIndexType>(incX), y,
-			static_cast<BLASIndexType>(incY));
+inline double BLASWrapper::dot<double>(const BLASIndexType n, const double *x,
+		const BLASIndexType incX, const double *y, const BLASIndexType incY) {
+	return cblas_ddot(n, x,
+			incX, y,
+			incY);
 }
 
 template<>
-inline ComplexFloat BLASWrapper::dot<ComplexFloat>(const IndexType n,
-		const ComplexFloat *x, const IndexType incX, const ComplexFloat *y,
-		const IndexType incY) {
+inline ComplexFloat BLASWrapper::dot<ComplexFloat>(const BLASIndexType n,
+		const ComplexFloat *x, const BLASIndexType incX, const ComplexFloat *y,
+		const BLASIndexType incY) {
 	ComplexFloat dotu;
-	cblas_cdotu_sub(static_cast<BLASIndexType>(n), x,
-			static_cast<BLASIndexType>(incX), y,
-			static_cast<BLASIndexType>(incY), &dotu);
+	cblas_cdotu_sub(n, x,
+			incX, y,
+			incY, &dotu);
 	return dotu;
 }
 
 template<>
-inline ComplexDouble BLASWrapper::dot<ComplexDouble>(const IndexType n,
-		const ComplexDouble *x, const IndexType incX, const ComplexDouble *y,
-		const IndexType incY) {
+inline ComplexDouble BLASWrapper::dot<ComplexDouble>(const BLASIndexType n,
+		const ComplexDouble *x, const BLASIndexType incX, const ComplexDouble *y,
+		const BLASIndexType incY) {
 	ComplexDouble dotu;
-	cblas_zdotu_sub(static_cast<BLASIndexType>(n), x,
-			static_cast<BLASIndexType>(incX), y,
-			static_cast<BLASIndexType>(incY), &dotu);
+	cblas_zdotu_sub(n, x,
+			incX, y,
+			incY, &dotu);
 	return dotu;
 }
 
 // -------------- gemv --------------
 template<>
 inline void BLASWrapper::gemv<float>(const CBLAS_ORDER order,
-		const CBLAS_TRANSPOSE transA, const IndexType m, const IndexType n,
-		const float alpha, const float* A, const IndexType lda, const float* x,
-		const IndexType incX, const float beta, float* y,
-		const IndexType incY) {
-	cblas_sgemv(order, transA, m, static_cast<BLASIndexType>(n), alpha, A, lda,
-			x, static_cast<BLASIndexType>(incX), beta, y,
-			static_cast<BLASIndexType>(incY));
+		const CBLAS_TRANSPOSE transA, const BLASIndexType m, const BLASIndexType n,
+		const float alpha, const float* A, const BLASIndexType lda, const float* x,
+		const BLASIndexType incX, const float beta, float* y,
+		const BLASIndexType incY) {
+	cblas_sgemv(order, transA, m, n, alpha, A, lda,
+			x, incX, beta, y,
+			incY);
 }
 
 template<>
 inline void BLASWrapper::gemv<double>(const CBLAS_ORDER order,
-		const CBLAS_TRANSPOSE transA, const IndexType m, const IndexType n,
-		const double alpha, const double* A, const IndexType lda,
-		const double* x, const IndexType incX, const double beta, double* y,
-		const IndexType incY) {
-	cblas_dgemv(order, transA, m, static_cast<BLASIndexType>(n), alpha, A, lda,
-			x, static_cast<BLASIndexType>(incX), beta, y,
-			static_cast<BLASIndexType>(incY));
+		const CBLAS_TRANSPOSE transA, const BLASIndexType m, const BLASIndexType n,
+		const double alpha, const double* A, const BLASIndexType lda,
+		const double* x, const BLASIndexType incX, const double beta, double* y,
+		const BLASIndexType incY) {
+	cblas_dgemv(order, transA, m, n, alpha, A, lda,
+			x, incX, beta, y,
+			incY);
 }
 
 template<>
 inline void BLASWrapper::gemv<ComplexFloat>(const CBLAS_ORDER order,
-		const CBLAS_TRANSPOSE transA, const IndexType m, const IndexType n,
-		const ComplexFloat alpha, const ComplexFloat* A, const IndexType lda,
-		const ComplexFloat* x, const IndexType incX, const ComplexFloat beta,
-		ComplexFloat* y, const IndexType incY) {
+		const CBLAS_TRANSPOSE transA, const BLASIndexType m, const BLASIndexType n,
+		const ComplexFloat alpha, const ComplexFloat* A, const BLASIndexType lda,
+		const ComplexFloat* x, const BLASIndexType incX, const ComplexFloat beta,
+		ComplexFloat* y, const BLASIndexType incY) {
 	// Attention: alpha, beta must be passed here as a pointer
-	cblas_cgemv(order, transA, m, static_cast<BLASIndexType>(n), &alpha, A, lda,
-			x, static_cast<BLASIndexType>(incX), &beta, y,
-			static_cast<BLASIndexType>(incY));
+	cblas_cgemv(order, transA, m, n, &alpha, A, lda,
+			x, incX, &beta, y,
+			incY);
 }
 
 template<>
 inline void BLASWrapper::gemv<ComplexDouble>(const CBLAS_ORDER order,
-		const CBLAS_TRANSPOSE transA, const IndexType m, const IndexType n,
-		const ComplexDouble alpha, const ComplexDouble* A, const IndexType lda,
-		const ComplexDouble* x, const IndexType incX, const ComplexDouble beta,
-		ComplexDouble* y, const IndexType incY) {
+		const CBLAS_TRANSPOSE transA, const BLASIndexType m, const BLASIndexType n,
+		const ComplexDouble alpha, const ComplexDouble* A, const BLASIndexType lda,
+		const ComplexDouble* x, const BLASIndexType incX, const ComplexDouble beta,
+		ComplexDouble* y, const BLASIndexType incY) {
 	// Attention: alpha, beta must be passed here as a pointer
-	cblas_zgemv(order, transA, m, static_cast<BLASIndexType>(n), &alpha, A, lda,
-			x, static_cast<BLASIndexType>(incX), &beta, y,
-			static_cast<BLASIndexType>(incY));
+	cblas_zgemv(order, transA, m, n, &alpha, A, lda,
+			x, incX, &beta, y,
+			incY);
 }
 
 // -------------- gemm --------------
 template<>
 inline void BLASWrapper::gemm<float>(const CBLAS_ORDER order,
 		const CBLAS_TRANSPOSE transA, const CBLAS_TRANSPOSE transB,
-		const IndexType m, const IndexType n, const IndexType k,
-		const float alpha, const float* A, const IndexType lda, const float* B,
-		const IndexType ldb, const float beta, float* C, const IndexType ldc) {
-	cblas_sgemm(order, transA, transB, static_cast<BLASIndexType>(m), static_cast<BLASIndexType>(n), static_cast<BLASIndexType>(k),
-			alpha, A, static_cast<BLASIndexType>(lda), B, static_cast<BLASIndexType>(ldb), beta, C, static_cast<BLASIndexType>(ldc));
+		const BLASIndexType m, const BLASIndexType n, const BLASIndexType k,
+		const float alpha, const float* A, const BLASIndexType lda, const float* B,
+		const BLASIndexType ldb, const float beta, float* C, const BLASIndexType ldc) {
+	cblas_sgemm(order, transA, transB, m, n, k,
+			alpha, A, lda, B, ldb, beta, C, ldc);
 }
 
 template<>
 inline void BLASWrapper::gemm<double>(const CBLAS_ORDER order,
 		const CBLAS_TRANSPOSE transA, const CBLAS_TRANSPOSE transB,
-		const IndexType m, const IndexType n, const IndexType k,
-		const double alpha, const double* A, const IndexType lda,
-		const double* B, const IndexType ldb, const double beta, double* C,
-		const IndexType ldc) {
-	cblas_dgemm(order, transA, transB, static_cast<BLASIndexType>(m), static_cast<BLASIndexType>(n), static_cast<BLASIndexType>(k),
-			alpha, A, static_cast<BLASIndexType>(lda), B, static_cast<BLASIndexType>(ldb), beta, C, static_cast<BLASIndexType>(ldc));
+		const BLASIndexType m, const BLASIndexType n, const BLASIndexType k,
+		const double alpha, const double* A, const BLASIndexType lda,
+		const double* B, const BLASIndexType ldb, const double beta, double* C,
+		const BLASIndexType ldc) {
+	cblas_dgemm(order, transA, transB, m, n, k,
+			alpha, A, lda, B, ldb, beta, C, ldc);
 }
 
 template<>
 inline void BLASWrapper::gemm<ComplexFloat>(const CBLAS_ORDER order,
 		const CBLAS_TRANSPOSE transA, const CBLAS_TRANSPOSE transB,
-		const IndexType m, const IndexType n, const IndexType k,
-		const ComplexFloat alpha, const ComplexFloat* A, const IndexType lda,
-		const ComplexFloat* B, const IndexType ldb, const ComplexFloat beta,
-		ComplexFloat* C, const IndexType ldc) {
+		const BLASIndexType m, const BLASIndexType n, const BLASIndexType k,
+		const ComplexFloat alpha, const ComplexFloat* A, const BLASIndexType lda,
+		const ComplexFloat* B, const BLASIndexType ldb, const ComplexFloat beta,
+		ComplexFloat* C, const BLASIndexType ldc) {
 	// Attention: alpha and beta are passed by a pointer
-	cblas_cgemm(order, transA, transB, static_cast<BLASIndexType>(m), static_cast<BLASIndexType>(n), static_cast<BLASIndexType>(k),
-			&alpha, A, static_cast<BLASIndexType>(lda), B, static_cast<BLASIndexType>(ldb), &beta, C, static_cast<BLASIndexType>(ldc));
+	cblas_cgemm(order, transA, transB, m, n, k,
+			&alpha, A, lda, B, ldb, &beta, C, ldc);
 }
 
 template<>
 inline void BLASWrapper::gemm<ComplexDouble>(const CBLAS_ORDER order,
 		const CBLAS_TRANSPOSE transA, const CBLAS_TRANSPOSE transB,
-		const IndexType m, const IndexType n, const IndexType k,
-		const ComplexDouble alpha, const ComplexDouble* A, const IndexType lda,
-		const ComplexDouble* B, const IndexType ldb, const ComplexDouble beta,
-		ComplexDouble* C, const IndexType ldc) {
+		const BLASIndexType m, const BLASIndexType n, const BLASIndexType k,
+		const ComplexDouble alpha, const ComplexDouble* A, const BLASIndexType lda,
+		const ComplexDouble* B, const BLASIndexType ldb, const ComplexDouble beta,
+		ComplexDouble* C, const BLASIndexType ldc) {
 	// Attention: alpha and beta are passed by a pointer
-	cblas_zgemm(order, transA, transB, static_cast<BLASIndexType>(m), static_cast<BLASIndexType>(n), static_cast<BLASIndexType>(k),
-			&alpha, A, static_cast<BLASIndexType>(lda), B, static_cast<BLASIndexType>(ldb), &beta, C, static_cast<BLASIndexType>(ldc));
+	cblas_zgemm(order, transA, transB, m, n, k,
+			&alpha, A, lda, B, ldb, &beta, C, ldc);
 }
 
 } /* end namespace blaskernel */

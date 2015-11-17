@@ -37,18 +37,20 @@
 // local library
 #include <scai/blaskernel/BLASKernelTrait.hpp>
 #include <scai/blaskernel/external/BLASHelper.hpp>
+#include <scai/blaskernel/external/LAPACKeWrapper.hpp>
+#include <scai/blaskernel/openmp/OpenMPBLAS1.hpp>
 
 // internal scai libraries
 #include <scai/kregistry/KernelRegistry.hpp>
 #include <scai/common/unique_ptr.hpp>
 #include <scai/common/macros/assert.hpp>
+#include <scai/common/ScalarType.hpp>
 
 // external
 #include <mkl_lapacke.h>
 
 // boost
 #include <boost/preprocessor.hpp>
-#include "../../blaskernel/openmp/OpenMPBLAS1.hpp"
 
 namespace scai
 {
@@ -65,25 +67,7 @@ namespace blaskernel
  *  are internally represented in the same way.
  */
 
-static inline MKL_Complex8* mklCast( ComplexFloat* x )
-{
-    return reinterpret_cast<MKL_Complex8*>( x );
-}
 
-static inline const MKL_Complex8* mklCast( const ComplexFloat* x )
-{
-    return reinterpret_cast<const MKL_Complex8*>( x );
-}
-
-static inline MKL_Complex16* mklCast( ComplexDouble* x )
-{
-    return reinterpret_cast<MKL_Complex16*>( x );
-}
-
-static inline const MKL_Complex16* mklCast( const ComplexDouble* x )
-{
-    return reinterpret_cast<const MKL_Complex16*>( x );
-}
 
 /* ------------------------------------------------------------------------- */
 
@@ -115,18 +99,24 @@ SCAI_LOG_DEF_LOGGER( LAPACKe_LAPACK::logger, "LAPACKe.LAPACK" )
 /*      getrf<float>                                                         */
 /* ------------------------------------------------------------------------- */
 
-template<>
+template<typename ValueType>
 IndexType LAPACKe_LAPACK::getrf(
     const CBLAS_ORDER order,
-    const int m,
-    const int n,
-    float* const A,
-    const int lda,
-    int* const ipiv )
+    const IndexType m,
+    const IndexType n,
+    ValueType* const A,
+    const IndexType lda,
+    IndexType* const ipiv )
 {
     SCAI_LOG_INFO( logger, "getrf<float> for A of size " << m << " x " << n )
 
-    int info = LAPACKE_sgetrf( lapack_order( order ), m, n, A, lda, ipiv );
+	if( common::getScalarType<IndexType>() != common::getScalarType<LAPACKeWrapper::LAPACKIndexType>() )
+	{
+		// ToDo: convert ipiv array
+		COMMON_THROWEXCEPTION( "indextype mismatch" );
+	}
+
+    int info = LAPACKeWrapper::getrf<ValueType>( lapack_order( order ), static_cast<LAPACKeWrapper::LAPACKIndexType>(m), static_cast<LAPACKeWrapper::LAPACKIndexType>(n), A, static_cast<LAPACKeWrapper::LAPACKIndexType>(lda), ipiv );
 
     if( info < 0 )
     {
@@ -138,135 +128,24 @@ IndexType LAPACKe_LAPACK::getrf(
     }
 
     return info;
-}
-
-/* ------------------------------------------------------------------------- */
-/*      getrf<double>                                                        */
-/* ------------------------------------------------------------------------- */
-
-template<>
-IndexType LAPACKe_LAPACK::getrf(
-    const CBLAS_ORDER order,
-    const int m,
-    const int n,
-    double* const A,
-    const int lda,
-    int* const ipiv )
-{
-    SCAI_LOG_INFO( logger, "getrf<double> for A of size " << m << " x " << n )
-
-    int matrix_order = lapack_order( order );
-
-    int info = LAPACKE_dgetrf( matrix_order, m, n, A, lda, ipiv );
-
-    if( info < 0 )
-    {
-        COMMON_THROWEXCEPTION( "illegal argument " << ( -info ) )
-    }
-    else if( info > 0 )
-    {
-        COMMON_THROWEXCEPTION( "value(" << info << "," << info << ")" << " is exactly zero" )
-    }
-
-    return info;
-}
-
-/* ------------------------------------------------------------------------- */
-/*      getrf<ComplexFloat>                                                  */
-/* ------------------------------------------------------------------------- */
-
-template<>
-IndexType LAPACKe_LAPACK::getrf(
-    const CBLAS_ORDER order,
-    const int m,
-    const int n,
-    ComplexFloat* const a,
-    const int lda,
-    int* const ipiv )
-{
-    SCAI_LOG_INFO( logger, "getrf<ComplexFloat> for a of size " << m << " x " << n )
-
-    int info = LAPACKE_cgetrf( lapack_order( order ), m, n, mklCast( a ), lda, ipiv );
-
-    if( info < 0 )
-    {
-        COMMON_THROWEXCEPTION( "illegal argument " << ( -info ) )
-    }
-    else if( info > 0 )
-    {
-        COMMON_THROWEXCEPTION( "value(" << info << "," << info << ")" << " is exactly zero" )
-    }
-
-    return info;
-}
-
-/* ------------------------------------------------------------------------- */
-/*      getrf<ComplexDouble>                                                 */
-/* ------------------------------------------------------------------------- */
-
-template<>
-IndexType LAPACKe_LAPACK::getrf(
-    const CBLAS_ORDER order,
-    const int m,
-    const int n,
-    ComplexDouble* const a,
-    const int lda,
-    int* const ipiv )
-{
-    SCAI_LOG_INFO( logger, "getrf<ComplexFloat> for a of size " << m << " x " << n )
-
-    int info = LAPACKE_zgetrf( lapack_order( order ), m, n, mklCast( a ), lda, ipiv );
-
-    if( info < 0 )
-    {
-        COMMON_THROWEXCEPTION( "illegal argument " << ( -info ) )
-    }
-    else if( info > 0 )
-    {
-        COMMON_THROWEXCEPTION( "value(" << info << "," << info << ")" << " is exactly zero" )
-    }
-
-    return info;
-}
-
-/* ------------------------------------------------------------------------- */
-/*      getrf<LongDouble>                                                    */
-/* ------------------------------------------------------------------------- */
-
-template<>
-IndexType LAPACKe_LAPACK::getrf( const CBLAS_ORDER, const int, const int, LongDouble* const, const int, int* const )
-{
-    // LongDouble not supported by LAPACK, should give a serious runtime error
-    COMMON_THROWEXCEPTION( "getrf<LongDouble> unsupported" )
-}
-
-/* ------------------------------------------------------------------------- */
-/*      getrf<ComplexLongDouble>                                                    */
-/* ------------------------------------------------------------------------- */
-
-template<>
-IndexType LAPACKe_LAPACK::getrf( const CBLAS_ORDER, const int, const int, ComplexLongDouble* const, const int, int* const )
-{
-    // ComplexLongDouble not supported by LAPACK, should give a serious runtime error
-    COMMON_THROWEXCEPTION( "getrf<ComplexLongDouble> unsupported" )
 }
 
 /* ------------------------------------------------------------------------- */
 /*      getinv<float>                                                        */
 /* ------------------------------------------------------------------------- */
 
-template<>
-void LAPACKe_LAPACK::getinv( const IndexType n, float* a, const IndexType lda )
+template<typename ValueType>
+void LAPACKe_LAPACK::getinv( const IndexType n, ValueType* a, const IndexType lda )
 {
     int info = 0;
 
     // scoped_array, will also be freed in case of exception
 
-    scoped_array<IndexType> ipiv( new IndexType[n] );
+    scoped_array<LAPACKeWrapper::LAPACKIndexType> ipiv( new LAPACKeWrapper::LAPACKIndexType[n] );
 
     SCAI_LOG_INFO( logger, "getinv<float> for " << n << " x " << n << " matrix, uses MKL" )
 
-    info = LAPACKE_sgetrf( LAPACK_COL_MAJOR, n, n, a, lda, ipiv.get() );
+    info = LAPACKeWrapper::getrf( LAPACK_COL_MAJOR, static_cast<LAPACKeWrapper::LAPACKIndexType>(n), static_cast<LAPACKeWrapper::LAPACKIndexType>(n), a, static_cast<LAPACKeWrapper::LAPACKIndexType>(lda), ipiv.get() );
 
     // return error if factorization did not work
 
@@ -275,167 +154,32 @@ void LAPACKe_LAPACK::getinv( const IndexType n, float* a, const IndexType lda )
         COMMON_THROWEXCEPTION( "MKL sgetrf failed, info = " << info )
     }
 
-    info = LAPACKE_sgetri( LAPACK_COL_MAJOR, n, a, lda, ipiv.get() );
+    info = LAPACKeWrapper::getri( LAPACK_COL_MAJOR, static_cast<LAPACKeWrapper::LAPACKIndexType>(n), a, static_cast<LAPACKeWrapper::LAPACKIndexType>(lda), ipiv.get() );
 
     if( info )
     {
         COMMON_THROWEXCEPTION( "MKL sgetri failed, info = " << info )
     }
-}
-
-/* ------------------------------------------------------------------------- */
-/*      getinv<double>                                                       */
-/* ------------------------------------------------------------------------- */
-
-template<>
-void LAPACKe_LAPACK::getinv( const IndexType n, double* a, const IndexType lda )
-{
-    int info = 0;
-
-    scoped_array<IndexType> ipiv( new IndexType[n] );
-
-    SCAI_LOG_INFO( logger, "getinv<double> for " << n << " x " << n << " matrix, uses MKL" )
-
-    int matrix_order = LAPACK_COL_MAJOR;
-
-    info = LAPACKE_dgetrf( matrix_order, n, n, a, lda, ipiv.get() );
-
-    // return error if factorization did not work
-
-    if( info )
-    {
-        COMMON_THROWEXCEPTION( "MKL dgetrf failed, info = " << info )
-    }
-
-    info = LAPACKE_dgetri( matrix_order, n, a, lda, ipiv.get() );
-
-    if( info )
-    {
-        COMMON_THROWEXCEPTION( "MKL dgetri failed, info = " << info )
-    }
-}
-
-/* ------------------------------------------------------------------------- */
-/*      getinv<ComplexFloat>                                                        */
-/* ------------------------------------------------------------------------- */
-
-template<>
-void LAPACKe_LAPACK::getinv( const IndexType n, ComplexFloat* a, const IndexType lda )
-{
-    int info = 0;
-
-    // scoped_array: delete by destructor, works also for exceptions
-
-    scoped_array<IndexType> ipiv( new IndexType[n] );
-
-    SCAI_LOG_INFO( logger, "getinv<ComplexFloat> for " << n << " x " << n << " matrix, uses MKL" )
-
-    info = LAPACKE_cgetrf( LAPACK_COL_MAJOR, n, n, mklCast( a ), lda, ipiv.get() );
-
-    // return error if factorization did not work
-
-    if( info )
-    {
-        COMMON_THROWEXCEPTION( "MKL sgetrf failed, info = " << info )
-    }
-
-    info = LAPACKE_cgetri( LAPACK_COL_MAJOR, n, mklCast( a ), lda, ipiv.get() );
-
-    if( info )
-    {
-        COMMON_THROWEXCEPTION( "MKL sgetri failed, info = " << info )
-    }
-}
-
-/* ------------------------------------------------------------------------- */
-/*      getinv<ComplexDouble>                                                */
-/* ------------------------------------------------------------------------- */
-
-template<>
-void LAPACKe_LAPACK::getinv( const IndexType n, ComplexDouble* a, const IndexType lda )
-{
-    int info = 0;
-
-    scoped_array<IndexType> ipiv( new IndexType[n] );
-
-    SCAI_LOG_INFO( logger, "getinv<ComplexDouble> for " << n << " x " << n << " matrix, uses MKL" )
-
-    info = LAPACKE_zgetrf( LAPACK_COL_MAJOR, n, n, mklCast( a ), lda, ipiv.get() );
-
-    // return error if factorization did not work
-
-    if( info )
-    {
-        COMMON_THROWEXCEPTION( "MKL sgetrf failed, info = " << info )
-    }
-
-    info = LAPACKE_zgetri( LAPACK_COL_MAJOR, n, mklCast( a ), lda, ipiv.get() );
-
-    if( info )
-    {
-        COMMON_THROWEXCEPTION( "MKL sgetri failed, info = " << info )
-    }
-}
-
-/* ------------------------------------------------------------------------- */
-/*      getinv<LongDouble>                                                   */
-/* ------------------------------------------------------------------------- */
-
-template<>
-void LAPACKe_LAPACK::getinv( const IndexType, LongDouble*, const IndexType )
-{
-    // LongDouble not supported by LAPACK, should give a serious runtime error
-    COMMON_THROWEXCEPTION( "getinv<LongDouble> unsupported" )
-}
-
-/* ------------------------------------------------------------------------- */
-/*      getinv<ComplexLongDouble>                                                   */
-/* ------------------------------------------------------------------------- */
-
-template<>
-void LAPACKe_LAPACK::getinv( const IndexType, ComplexLongDouble*, const IndexType )
-{
-    // ComplexLongDouble not supported by LAPACK, should give a serious runtime error
-    COMMON_THROWEXCEPTION( "getinv<ComplexLongDouble> unsupported" )
 }
 
 /* ------------------------------------------------------------------------- */
 /*      getri<float>                                                         */
 /* ------------------------------------------------------------------------- */
 
-template<>
-int LAPACKe_LAPACK::getri( const CBLAS_ORDER order, const int n, float* const a, const int lda, int* const ipiv )
+template<typename ValueType>
+int LAPACKe_LAPACK::getri( const CBLAS_ORDER order, const IndexType n, ValueType* const a, const IndexType lda, IndexType* const ipiv )
 {
     SCAI_LOG_INFO( logger, "getri<float> for A of size " << n << " x " << n )
 
-    int matrix_order = lapack_order( order );
+	if( common::getScalarType<IndexType>() != common::getScalarType<LAPACKeWrapper::LAPACKIndexType >() )
+	{
+		// ToDo: convert ipiv array
+		COMMON_THROWEXCEPTION( "indextype mismatch" );
+	}
 
-    int info = LAPACKE_sgetri( matrix_order, n, a, lda, ipiv );
+    LAPACKeWrapper::LAPACKOrder matrix_order = lapack_order( order );
 
-    if( info < 0 )
-    {
-        COMMON_THROWEXCEPTION( "illegal argument " << ( -info ) )
-    }
-    else if( info > 0 )
-    {
-        COMMON_THROWEXCEPTION( "value(" << info << "," << info << ")" << " is exactly zero" )
-    }
-
-    return info;
-}
-
-/* ------------------------------------------------------------------------- */
-/*      getri<double>                                                        */
-/* ------------------------------------------------------------------------- */
-
-template<>
-int LAPACKe_LAPACK::getri( const CBLAS_ORDER order, const int n, double* const a, const int lda, int* const ipiv )
-{
-    SCAI_LOG_INFO( logger, "getri<double> for A of size " << n << " x " << n )
-
-    int matrix_order = lapack_order( order );
-
-    int info = LAPACKE_dgetri( matrix_order, n, a, lda, ipiv );
+    int info = LAPACKeWrapper::getri( matrix_order, static_cast<LAPACKeWrapper::LAPACKIndexType>(n), a, static_cast<LAPACKeWrapper::LAPACKIndexType>(lda), ipiv );
 
     if( info < 0 )
     {
@@ -447,247 +191,44 @@ int LAPACKe_LAPACK::getri( const CBLAS_ORDER order, const int n, double* const a
     }
 
     return info;
-}
-
-/* ------------------------------------------------------------------------- */
-/*      getri<ComplexFloat>                                                         */
-/* ------------------------------------------------------------------------- */
-
-template<>
-int LAPACKe_LAPACK::getri( const CBLAS_ORDER order, const int n, ComplexFloat* const a, const int lda, int* const ipiv )
-{
-    SCAI_LOG_INFO( logger, "getri<ComplexFloat> for A of size " << n << " x " << n )
-
-    int matrix_order = lapack_order( order );
-
-    int info = LAPACKE_cgetri( matrix_order, n, mklCast( a ), lda, ipiv );
-
-    if( info < 0 )
-    {
-        COMMON_THROWEXCEPTION( "illegal argument " << ( -info ) )
-    }
-    else if( info > 0 )
-    {
-        COMMON_THROWEXCEPTION( "value(" << info << "," << info << ")" << " is exactly zero" )
-    }
-
-    return info;
-}
-
-/* ------------------------------------------------------------------------- */
-/*      getri<ComplexDouble>                                                 */
-/* ------------------------------------------------------------------------- */
-
-template<>
-int LAPACKe_LAPACK::getri(
-    const CBLAS_ORDER order,
-    const int n,
-    ComplexDouble* const a,
-    const int lda,
-    int* const ipiv )
-{
-    SCAI_LOG_INFO( logger, "getri<ComplexDouble> for A of size " << n << " x " << n )
-
-    int matrix_order = lapack_order( order );
-
-    int info = LAPACKE_zgetri( matrix_order, n, mklCast( a ), lda, ipiv );
-
-    if( info < 0 )
-    {
-        COMMON_THROWEXCEPTION( "illegal argument " << ( -info ) )
-    }
-    else if( info > 0 )
-    {
-        COMMON_THROWEXCEPTION( "value(" << info << "," << info << ")" << " is exactly zero" )
-    }
-
-    return info;
-}
-
-/* ------------------------------------------------------------------------- */
-/*      getri<LongDouble>                                                    */
-/* ------------------------------------------------------------------------- */
-
-template<>
-IndexType LAPACKe_LAPACK::getri( const CBLAS_ORDER, const int, LongDouble* const, const int, int* const )
-{
-    // LongDouble not supported by LAPACK, should give a serious runtime error
-    COMMON_THROWEXCEPTION( "getri<LongDouble> unsupported" )
-}
-
-/* ------------------------------------------------------------------------- */
-/*      getri<ComplexLongDouble>                                                    */
-/* ------------------------------------------------------------------------- */
-
-template<>
-IndexType LAPACKe_LAPACK::getri( const CBLAS_ORDER, const int, ComplexLongDouble* const, const int, int* const )
-{
-    // ComplexLongDouble not supported by LAPACK, should give a serious runtime error
-    COMMON_THROWEXCEPTION( "getri<ComplexLongDouble> unsupported" )
 }
 
 /* ------------------------------------------------------------------------- */
 /*      tptrs<float>                                                         */
 /* ------------------------------------------------------------------------- */
 
-template<>
+template<typename ValueType>
 int LAPACKe_LAPACK::tptrs(
     const CBLAS_ORDER order,
     const CBLAS_UPLO uplo,
     const CBLAS_TRANSPOSE trans,
     const CBLAS_DIAG diag,
-    const int n,
-    const int nrhs,
-    const float* AP,
-    float* B,
-    const int ldb )
+    const IndexType n,
+    const IndexType nrhs,
+    const ValueType* AP,
+    ValueType* B,
+    const IndexType ldb )
 {
-    char UL = BLASHelper::lapack_uplo( uplo );
-    char TA = BLASHelper::lapack_transpose( trans );
-    char DI = BLASHelper::lapack_diag( diag );
+    LAPACKeWrapper::LAPACKFlag UL = BLASHelper::lapack_uplo( uplo );
+    LAPACKeWrapper::LAPACKFlag TA = BLASHelper::lapack_transpose( trans );
+    LAPACKeWrapper::LAPACKFlag DI = BLASHelper::lapack_diag( diag );
 
-    int matrix_order = lapack_order( order );
+    LAPACKeWrapper::LAPACKOrder matrix_order = lapack_order( order );
+
+	if( common::getScalarType<IndexType>() != common::getScalarType<LAPACKeWrapper::LAPACKIndexType>() )
+	{
+		// ToDo: convert ipiv array
+		COMMON_THROWEXCEPTION( "indextype mismatch" );
+	}
 
     SCAI_LOG_INFO( logger,
                    "tptrs<float>, n = " << n << ", nrhs = " << nrhs << ", order = " << matrix_order << ", UL = " << UL << ", TA = " << TA << ", DI = " << DI );
 
     SCAI_ASSERT_ERROR( ldb >= std::max( 1, n ), "ldb = " << ldb << " out of range" );
 
-    int info = LAPACKE_stptrs( matrix_order, UL, TA, DI, n, nrhs, AP, B, ldb );
+    int info = LAPACKeWrapper::tptrs( matrix_order, UL, TA, DI, static_cast<LAPACKeWrapper::LAPACKIndexType>(n), static_cast<LAPACKeWrapper::LAPACKIndexType>(nrhs), AP, B, static_cast<LAPACKeWrapper::LAPACKIndexType>(ldb) );
 
     return info;
-}
-
-/* ------------------------------------------------------------------------- */
-/*      tptrs<double>                                                        */
-/* ------------------------------------------------------------------------- */
-
-template<>
-int LAPACKe_LAPACK::tptrs(
-    const CBLAS_ORDER order,
-    const CBLAS_UPLO uplo,
-    const CBLAS_TRANSPOSE trans,
-    const CBLAS_DIAG diag,
-    const int n,
-    const int nrhs,
-    const double* AP,
-    double* B,
-    const int ldb )
-{
-    char UL = BLASHelper::lapack_uplo( uplo );
-    char TA = BLASHelper::lapack_transpose( trans );
-    char DI = BLASHelper::lapack_diag( diag );
-
-    int matrix_order = lapack_order( order );
-
-    SCAI_LOG_INFO( logger,
-                   "tptrs<double>, n = " << n << ", nrhs = " << nrhs << ", order = " << matrix_order << ", UL = " << UL << ", TA = " << TA << ", DI = " << DI );
-
-    int info = LAPACKE_dtptrs( matrix_order, UL, TA, DI, n, nrhs, AP, B, ldb );
-
-    return info;
-}
-
-/* ------------------------------------------------------------------------- */
-/*      tptrs<ComplexFloat>                                                  */
-/* ------------------------------------------------------------------------- */
-
-template<>
-int LAPACKe_LAPACK::tptrs(
-    const CBLAS_ORDER order,
-    const CBLAS_UPLO uplo,
-    const CBLAS_TRANSPOSE trans,
-    const CBLAS_DIAG diag,
-    const int n,
-    const int nrhs,
-    const ComplexFloat* AP,
-    ComplexFloat* B,
-    const int ldb )
-{
-    char UL = BLASHelper::lapack_uplo( uplo );
-    char TA = BLASHelper::lapack_transpose( trans );
-    char DI = BLASHelper::lapack_diag( diag );
-
-    int matrix_order = lapack_order( order );
-
-    SCAI_LOG_INFO( logger,
-                   "tptrs<ComplexFloat>, n = " << n << ", nrhs = " << nrhs << ", order = " << matrix_order << ", UL = " << UL << ", TA = " << TA << ", DI = " << DI );
-
-    SCAI_ASSERT_ERROR( ldb >= std::max( 1, n ), "ldb = " << ldb << " out of range" );
-
-    int info = LAPACKE_ctptrs( matrix_order, UL, TA, DI, n, nrhs, mklCast( AP ), mklCast( B ), ldb );
-
-    return info;
-}
-
-/* ------------------------------------------------------------------------- */
-/*      tptrs<ComplexDouble>                                                 */
-/* ------------------------------------------------------------------------- */
-
-template<>
-int LAPACKe_LAPACK::tptrs(
-    const CBLAS_ORDER order,
-    const CBLAS_UPLO uplo,
-    const CBLAS_TRANSPOSE trans,
-    const CBLAS_DIAG diag,
-    const int n,
-    const int nrhs,
-    const ComplexDouble* AP,
-    ComplexDouble* B,
-    const int ldb )
-{
-    char UL = BLASHelper::lapack_uplo( uplo );
-    char TA = BLASHelper::lapack_transpose( trans );
-    char DI = BLASHelper::lapack_diag( diag );
-
-    int matrix_order = lapack_order( order );
-
-    SCAI_LOG_INFO( logger,
-                   "tptrs<ComplexDouble>, n = " << n << ", nrhs = " << nrhs << ", order = " << matrix_order << ", UL = " << UL << ", TA = " << TA << ", DI = " << DI );
-
-    SCAI_ASSERT_ERROR( ldb >= std::max( 1, n ), "ldb = " << ldb << " out of range" );
-
-    int info = LAPACKE_ztptrs( matrix_order, UL, TA, DI, n, nrhs, mklCast( AP ), mklCast( B ), ldb );
-
-    return info;
-}
-
-/* ------------------------------------------------------------------------- */
-/*      tptrs<LongDouble>                                                 */
-/* ------------------------------------------------------------------------- */
-
-template<>
-int LAPACKe_LAPACK::tptrs(
-    const CBLAS_ORDER,
-    const CBLAS_UPLO,
-    const CBLAS_TRANSPOSE,
-    const CBLAS_DIAG,
-    const int,
-    const int,
-    const LongDouble*,
-    LongDouble*,
-    const int )
-{
-    COMMON_THROWEXCEPTION( "tptrs<LongDouble> unsupported" )
-}
-
-/* ------------------------------------------------------------------------- */
-/*      tptrs<ComplexLongDouble>                                                 */
-/* ------------------------------------------------------------------------- */
-
-template<>
-int LAPACKe_LAPACK::tptrs(
-    const CBLAS_ORDER,
-    const CBLAS_UPLO,
-    const CBLAS_TRANSPOSE,
-    const CBLAS_DIAG,
-    const int,
-    const int,
-    const ComplexLongDouble*,
-    ComplexLongDouble*,
-    const int )
-{
-    COMMON_THROWEXCEPTION( "tptrs<ComplexLongDouble> unsupported" )
 }
 
 /* --------------------------------------------------------------------------- */
@@ -706,15 +247,15 @@ void LAPACKe_LAPACK::registerKernels( bool deleteFlag )
         flag = KernelRegistry::KERNEL_ERASE;
     }
 
-#define LAMA_LAPACK_REGISTER(z, I, _)                                      \
+#define LAMA_LAPACKE_REGISTER(z, I, _)                                      \
     KernelRegistry::set<BLASKernelTrait::getrf<ARITHMETIC_HOST_TYPE_##I> >( getrf, Host, flag );    \
     KernelRegistry::set<BLASKernelTrait::getri<ARITHMETIC_HOST_TYPE_##I> >( getri, Host, flag );    \
     KernelRegistry::set<BLASKernelTrait::getinv<ARITHMETIC_HOST_TYPE_##I> >( getinv, Host, flag );    \
     KernelRegistry::set<BLASKernelTrait::tptrs<ARITHMETIC_HOST_TYPE_##I> >( tptrs, Host, flag );    \
 
-    BOOST_PP_REPEAT( ARITHMETIC_HOST_EXT_TYPE_CNT, LAMA_LAPACK_REGISTER, _ )
+    BOOST_PP_REPEAT( ARITHMETIC_HOST_EXT_TYPE_CNT, LAMA_LAPACKE_REGISTER, _ )
 
-#undef LAMA_LAPACK_REGISTER
+#undef LAMA_LAPACKE_REGISTER
 }
 
 LAPACKe_LAPACK::LAPACKe_LAPACK()

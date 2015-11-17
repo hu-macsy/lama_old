@@ -37,7 +37,7 @@
 #include <scai/common/config.hpp>
 
 // local library
-#include <scai/lama/openmp/BLASHelper.hpp>
+#include <scai/blaskernel/external/BLASHelper.hpp>
 
 // internal scai libraries
 #include <scai/tasking/SyncToken.hpp>
@@ -107,8 +107,7 @@ public:
         const IndexType k1,
         const IndexType k2,
         const IndexType* ipiv,
-        const IndexType incx,
-        tasking::SyncToken* syncToken );
+        const IndexType incx );
 
 private:
 

@@ -140,7 +140,7 @@ void CUDABLAS2::gemv(
     SCAI_LOG_INFO( logger,
                    "gemv<" << getScalarType<ValueType>() << "> with cuBLAS: m = " << order_m << " x " << order_n )
 
-    CUBLASWrapper::gemv( trans_char,  order_m ,  order_n , alpha, A,  lda , x,  incx , beta, y,  incy );
+    CUBLASWrapper::gemv( trans_char,  order_m ,  order_n , alpha, A,  static_cast<CUBLASWrapper::BLASIndexType>(lda ), x,  static_cast<CUBLASWrapper::BLASIndexType>(incx) , beta, y,  static_cast<CUBLASWrapper::BLASIndexType>(incy) );
 
     // No error check here possible as kernel is started asynchronously
 

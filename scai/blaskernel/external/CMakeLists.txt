@@ -39,6 +39,8 @@ set( CLASSES
 
 set( HEADERS
         BLASWrapper
+        LAPACKWrapper
+        LAPACKeWrapper
 )
 
 if ( SCAI_BLAS_NAME STREQUAL "MKL" )
