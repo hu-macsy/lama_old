@@ -35,7 +35,7 @@
 
 // Note: LAMA uses these type definitions:
 
-#ifdef LAMA_MKL_BLAS
+#if defined( SCAI_MKL_BLAS ) or defined( __MIC__ )
 
 #include <mkl_cblas.h>
 
