@@ -910,6 +910,23 @@ void OpenMPELLUtils::jacobiHalo(
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
+void OpenMPELLUtils::normalGEMV_a(
+    ValueType result[],
+    const std::pair<ValueType, const ValueType*> ax,
+    const std::pair<ValueType, const ValueType*> by,
+    const IndexType numRows,
+    const IndexType numValuesPerRow,
+    const IndexType ellSizes[],
+    const IndexType ellJA[],
+    const ValueType ellValues[] )
+{
+    normalGEMV( result, ax.first, ax.second, by.first, by.second,
+                numRows, numValuesPerRow, ellSizes, ellJA, ellValues );
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+template<typename ValueType>
 void OpenMPELLUtils::normalGEMV(
     ValueType result[],
     const ValueType alpha,
@@ -922,9 +939,6 @@ void OpenMPELLUtils::normalGEMV(
     const IndexType ellJA[],
     const ValueType ellValues[] )
 {
-    SCAI_LOG_INFO( logger,
-                   "normalGEMV<" << getScalarType<ValueType>() << ", #threads = " << omp_get_max_threads() << ">, result[" << numRows << "] = " << alpha << " * A( ell, #maxNZ/row = " << numValuesPerRow << " ) * x + " << beta << " * y " )
-
     if ( numValuesPerRow == 0 )
     {
         COMMON_THROWEXCEPTION( "normalGEMV should not have been called, no entries" )
@@ -936,8 +950,18 @@ void OpenMPELLUtils::normalGEMV(
 
     if ( syncToken )
     {
-        SCAI_LOG_WARN( logger, "Host: asynchronous execution by task should be done at higher level" )
+        // combine the vectors with their scaling factors to reduze number of args
+
+        syncToken->run( common::bind( normalGEMV_a<ValueType>, result, 
+                                      std::pair<ValueType, const ValueType*>( alpha, x ),
+                                      std::pair<ValueType, const ValueType*> ( beta, y ),
+                                      numRows, numValuesPerRow, ellSizes, ellJA, ellValues ) );
+        return;
     }
+
+    SCAI_LOG_INFO( logger,
+                   "normalGEMV<" << getScalarType<ValueType>() << ", #threads = " << omp_get_max_threads() 
+                   << ">, result[" << numRows << "] = " << alpha << " * A( ell, #maxNZ/row = " << numValuesPerRow << " ) * x + " << beta << " * y " )
 
     #pragma omp parallel
     {
@@ -983,6 +1007,21 @@ void OpenMPELLUtils::normalGEMV(
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
+void OpenMPELLUtils::sparseGEMV_a(
+    ValueType result[],
+    const std::pair<ValueType, const ValueType*> ax,
+    const IndexType numRows,
+    const IndexType numValuesPerRow,
+    const std::pair<IndexType, const IndexType*> rows,
+    const IndexType ellSizes[],
+    const IndexType ellJA[],
+    const ValueType ellValues[] )
+{
+    sparseGEMV( result, ax.first, ax.second, numRows, numValuesPerRow,
+                rows.first, rows.second, ellSizes, ellJA, ellValues );
+}
+
+template<typename ValueType>
 void OpenMPELLUtils::sparseGEMV(
     ValueType result[],
     const ValueType alpha,
@@ -999,11 +1038,17 @@ void OpenMPELLUtils::sparseGEMV(
 
     if ( syncToken )
     {
-        SCAI_LOG_WARN( logger, "Host: asynchronous execution by task should be done at higher level" )
+        syncToken->run( common::bind( sparseGEMV_a<ValueType>, result,
+                                      std::pair<ValueType, const ValueType*>( alpha, x ),
+                                      numRows, numValuesPerRow,
+                                      std::pair<IndexType, const IndexType*>( numNonZeroRows, rowIndexes ),
+                                      ellSizes, ellJA, ellValues ) );
+        return; 
     }
 
     SCAI_LOG_INFO( logger,
-                   "sparseGEMV<" << getScalarType<ValueType>() << ">, n = " << numRows << ", nonZeroRows = " << numNonZeroRows << ", alpha = " << alpha )
+                   "sparseGEMV<" << getScalarType<ValueType>() << ">, n = " << numRows 
+                    << ", nonZeroRows = " << numNonZeroRows << ", alpha = " << alpha )
 
     #pragma omp parallel
     {

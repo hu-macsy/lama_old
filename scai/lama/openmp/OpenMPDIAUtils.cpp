@@ -46,6 +46,7 @@
 #include <scai/common/OpenMP.hpp>
 #include <scai/common/macros/assert.hpp>
 #include <scai/common/ScalarType.hpp>
+#include <scai/common/bind.hpp>
 
 // boost
 #include <boost/preprocessor.hpp>
@@ -305,6 +306,23 @@ void OpenMPDIAUtils::getCSRSizes(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void OpenMPDIAUtils::normalGEMV_a(
+    ValueType result[],
+    const std::pair<ValueType, const ValueType*> ax,
+    const std::pair<ValueType, const ValueType*> by,
+    const IndexType numRows,
+    const IndexType numColumns,
+    const IndexType numDiagonals,
+    const IndexType diaOffsets[],
+    const ValueType diaValues[] )
+{
+    normalGEMV( result, ax.first, ax.second, by.first, by.second,
+                numRows, numColumns, numDiagonals, diaOffsets, diaValues );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void OpenMPDIAUtils::normalGEMV(
     ValueType result[],
     const ValueType alpha,
@@ -317,18 +335,28 @@ void OpenMPDIAUtils::normalGEMV(
     const IndexType diaOffsets[],
     const ValueType diaValues[] )
 {
+    // Note: launching thread gets token here, asynchronous thread will get NULL
+
     TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
     if ( syncToken )
     {
-        COMMON_THROWEXCEPTION( "asynchronous execution not supported yet" )
+        // bind has limited number of arguments, so take help routine for call
+
+        SCAI_LOG_INFO( logger, 
+                       "normalGEMV<" << getScalarType<ValueType>() << "> launch it asynchronously" )
+
+        syncToken->run( common::bind( normalGEMV_a<ValueType>,
+                                      result,
+                                      std::pair<ValueType, const ValueType*>( alpha, x ),
+                                      std::pair<ValueType, const ValueType*>( beta, y ),
+                                      numRows, numColumns, numDiagonals, diaOffsets, diaValues ) );
+        return;
     }
 
     SCAI_LOG_INFO( logger,
-                   "normalGEMV<" << getScalarType<ValueType>() << ", #threads = " << omp_get_max_threads() << ">, result[" << numRows << "] = " << alpha << " * A( dia, #diags = " << numDiagonals << " ) * x + " << beta << " * y " )
-
-    SCAI_LOG_INFO( logger,
-                   "normalGEMV<" << getScalarType<ValueType>() << ">, n = " << numRows << ", d = " << numDiagonals )
+                   "normalGEMV<" << getScalarType<ValueType>() << ", #threads = " << omp_get_max_threads() 
+                    << ">, result[" << numRows << "] = " << alpha << " * A( dia, #diags = " << numDiagonals << " ) * x + " << beta << " * y " )
 
     // result := alpha * A * x + beta * y -> result:= beta * y; result += alpha * A
 

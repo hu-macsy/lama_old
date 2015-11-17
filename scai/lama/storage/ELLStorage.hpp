@@ -483,6 +483,38 @@ private:
                                const ELLStorage<ValueType>& a,
                                const ELLStorage<ValueType>& b );
 
+    /** result += alpha (*this) * x, where this storage has sparse rows */
+
+    tasking::SyncToken* sparseGEMV( hmemo::LAMAArray<ValueType>& result,
+                                    const ValueType alpha,
+                                    const hmemo::LAMAArray<ValueType>& x,
+                                    bool async ) const;
+
+    /** result = alpha * (*this) * x  */
+
+    tasking::SyncToken* normalGEMV( hmemo::LAMAArray<ValueType>& result,
+                                    const ValueType alpha,
+                                    const hmemo::LAMAArray<ValueType>& x,
+                                    bool async ) const;
+
+    /** result = alpha * (*this) * x + beta * y */
+
+    tasking::SyncToken* normalGEMV( hmemo::LAMAArray<ValueType>& result,
+                                    const ValueType alpha,
+                                    const hmemo::LAMAArray<ValueType>& x,
+                                    const ValueType beta,
+                                    const hmemo::LAMAArray<ValueType>& y,
+                                    bool async ) const;
+
+    /** matrixTimesVector for synchronous and asynchronous execution */
+
+    virtual tasking::SyncToken* gemv(
+        hmemo::LAMAArray<ValueType>& result,
+        const ValueType alpha,
+        const hmemo::LAMAArray<ValueType>& x,
+        const ValueType beta,
+        const hmemo::LAMAArray<ValueType>& y,
+        bool async ) const;
 };
 
 } /* end namespace lama */

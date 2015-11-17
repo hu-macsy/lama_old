@@ -45,6 +45,7 @@
 #include <scai/tracing.hpp>
 #include <scai/common/ScalarType.hpp>
 #include <scai/common/OpenMP.hpp>
+#include <scai/common/bind.hpp>
 
 #include <scai/tasking/TaskSyncToken.hpp>
 
@@ -274,6 +275,23 @@ void OpenMPCOOUtils::setCSRData(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void OpenMPCOOUtils::normalGEMV_a(
+    ValueType result[],
+    const std::pair<ValueType, const ValueType*> ax,
+    const std::pair<ValueType, const ValueType*> by,
+    const IndexType numRows,
+    const IndexType numValues,
+    const IndexType cooIA[],
+    const IndexType cooJA[],
+    const ValueType cooValues[] )
+{
+    normalGEMV( result, ax.first, ax.second, by.first, by.second,
+                numRows, numValues, cooIA, cooJA, cooValues );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void OpenMPCOOUtils::normalGEMV(
     ValueType result[],
     const ValueType alpha,
@@ -286,15 +304,26 @@ void OpenMPCOOUtils::normalGEMV(
     const IndexType cooJA[],
     const ValueType cooValues[] )
 {
-    SCAI_LOG_INFO( logger,
-                   "normalGEMV<" << getScalarType<ValueType>() << ", #threads = " << omp_get_max_threads() << ">, result[" << numRows << "] = " << alpha << " * A( coo, #vals = " << numValues << " ) * x + " << beta << " * y " )
-
     TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
-    if( syncToken )
+    if ( syncToken )
     {
-        COMMON_THROWEXCEPTION( "asynchronous execution not supported here, do it by a task" )
+        // bind has limited number of arguments, so take help routine for call
+
+        SCAI_LOG_INFO( logger,
+                       "normalGEMV<" << getScalarType<ValueType>() << "> launch it asynchronously" )
+
+        syncToken->run( common::bind( normalGEMV_a<ValueType>,
+                                      result,
+                                      std::pair<ValueType, const ValueType*>( alpha, x ),
+                                      std::pair<ValueType, const ValueType*>( beta, y ),
+                                      numRows, numValues, cooIA, cooJA, cooValues ) );
+        return;
     }
+
+    SCAI_LOG_INFO( logger,
+                   "normalGEMV<" << getScalarType<ValueType>() << ", #threads = " << omp_get_max_threads() << ">," 
+                    << " result[" << numRows << "] = " << alpha << " * A( coo, #vals = " << numValues << " ) * x + " << beta << " * y " )
 
     // result := alpha * A * x + beta * y -> result:= beta * y; result += alpha * A
 

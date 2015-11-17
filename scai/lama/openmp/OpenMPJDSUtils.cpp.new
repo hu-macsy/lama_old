@@ -492,7 +492,7 @@ void OpenMPJDSUtils::normalGEMV_a(
     const ValueType jdsValues[] )
 {
     normalGEMV( result, ax.first, ax.second, by.first, by.second, 
-                rows.first, perm, rows.second, dlg.first, dlg.second,
+                rows.first, rows.second, perm, dlg.first, dlg.second,
                 jdsJA, jdsValues );
 }
 
@@ -514,9 +514,11 @@ void OpenMPJDSUtils::normalGEMV(
     const ValueType jdsValues[] )
 {
     TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
- 
-    if ( syncToken )
+
+    if ( syncToken != NULL )
     {
+        // bind has limited number of arguments (max = 9), so use help routine with pairs
+
         syncToken->run( common::bind( normalGEMV_a<ValueType>, 
                                       result,
                                       std::pair<ValueType, const ValueType*>( alpha, x ),
@@ -527,14 +529,14 @@ void OpenMPJDSUtils::normalGEMV(
                                       jdsJA, jdsValues ) );
         return;
     }
-
+ 
     SCAI_LOG_INFO( logger,
                    "normalGEMV<" << common::getScalarType<ValueType>() << ", #threads = " << omp_get_max_threads() 
                     << ">, result[" << numRows << "] = " << alpha << " * A( jds, ndlg = " << ndlg << " ) * x + " << beta << " * y " )
 
-    OpenMPUtils::setScale( result, beta, y, numRows );  // z = alpha * JDS * x + beta * y, remains: z += alpha * JDS * x
+    OpenMPUtils::setScale( result, beta, y, numRows );
 
-    if( ndlg == 0 )
+    if ( ndlg == 0 )
     {
         return; // definitively empty matrix
     }

@@ -108,14 +108,14 @@ void OpenMPUtils::setScale(
 
     // alias of outValues == inValues is no problem
 
-    if( value == scai::common::constants::ZERO )
+    if ( value == scai::common::constants::ZERO )
     {
         // Important : inValues might be undefined
         setVal( outValues, n, value );
         return;
     }
 
-    if( value == scai::common::constants::ONE )
+    if ( value == scai::common::constants::ONE )
     {
         set( outValues, inValues, n );
         return;
