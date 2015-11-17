@@ -134,7 +134,7 @@ bool HostContext::canUseMemory( const Memory& other ) const
 
 /* ------------------------------------------------------------------------- */
 
-MemoryPtr HostContext::getMemoryPtr() const
+MemoryPtr HostContext::getLocalMemoryPtr() const
 {
     return HostMemory::getIt();
 }

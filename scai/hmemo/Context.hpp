@@ -112,7 +112,7 @@ public:
 
     virtual void writeAt( std::ostream& stream ) const;
 
-    /** Getter routine for a new sync token that allows to asynchronous computations on the context.
+    /** Getter routine for a new sync token that allows to asynchronous computations on the context.  //!< if true getMemoryPtr() returns HostMemory
      *
      *  @returns new SyncToken object
      */
@@ -142,7 +142,7 @@ public:
      *  method should return the memory that gives the best performance.
      */
 
-    virtual MemoryPtr getMemoryPtr() const = 0;
+    virtual MemoryPtr getLocalMemoryPtr() const = 0;
 
     /** Get the preferred host memory for a context.
      *
@@ -154,6 +154,16 @@ public:
      */
 
     virtual MemoryPtr getHostMemoryPtr() const;
+
+    /** Get the memory on which the context will work. */
+
+    MemoryPtr getMemoryPtr() const;
+
+    /** If zero copy is enabled, the default memory is not the local memory
+     *  but the host memory so Host and this context can work on the same memory. 
+     */
+
+    virtual void enableZeroCopy( bool flag ) const;
  
     /** @brief Get a context of a certain type from the Context factory.
      *
@@ -194,6 +204,8 @@ protected:
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
     common::context::ContextType mContextType;
+
+    mutable bool mUseZeroCopy;   //!< if true getMemoryPtr() returns HostMemory
 
     mutable bool mEnabled; //!<  if true the context is currently accessed
 

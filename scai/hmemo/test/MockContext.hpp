@@ -66,7 +66,7 @@ public:
         stream << "MockContext( dev = " << mDeviceNr << " )";
     }
 
-    virtual scai::hmemo::MemoryPtr getMemoryPtr() const
+    virtual scai::hmemo::MemoryPtr getLocalMemoryPtr() const
     {
         scai::hmemo::MemoryPtr memory;
 

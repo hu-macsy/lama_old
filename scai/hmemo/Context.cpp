@@ -55,7 +55,7 @@ namespace hmemo
 SCAI_LOG_DEF_LOGGER( Context::logger, "Context" )
 
 Context::Context( ContextType type )
-                : mContextType( type ), mEnabled( false ), mFile( NULL ), mLine( 0 )
+                : mContextType( type ), mUseZeroCopy( false ), mEnabled( false ), mFile( NULL ), mLine( 0 )
 {
     SCAI_LOG_DEBUG( logger, "Context( type = " << mContextType << " )" )
 }
@@ -108,12 +108,47 @@ void Context::disable( const char* file, int line ) const
 
 /* ---------------------------------------------------------------------------------*/
 
+void Context::enableZeroCopy( bool flag ) const
+{
+    if ( flag == mUseZeroCopy )
+    {
+        return;
+    }
+
+    if ( flag )
+    {
+        if ( !this->canUseMemory( *this->getHostMemoryPtr() ) )
+        {
+            SCAI_LOG_WARN( logger, *this << ": does not support zero copy" )
+            return;
+        }
+    }
+
+    mUseZeroCopy = flag;
+}
+
+/* ---------------------------------------------------------------------------------*/
+
 MemoryPtr Context::getHostMemoryPtr() const
 {
     // take the host memory of the memory factory
 
     ContextPtr hostContextPtr = Context::getContextPtr( common::context::Host );
     return hostContextPtr->getMemoryPtr();
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+MemoryPtr Context::getMemoryPtr() const
+{
+    if ( mUseZeroCopy )
+    {
+        return getHostMemoryPtr();
+    }
+    else
+    {
+        return getLocalMemoryPtr();
+    }
 }
 
 /* ---------------------------------------------------------------------------------*/
