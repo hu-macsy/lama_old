@@ -33,7 +33,7 @@
 #pragma once
 
 // std
-#if __cplusplus > 199711L
+#if __cplusplus > 199711L or defined(__GXX_EXPERIMENTAL_CXX0X__)
 #include <functional>
 #else
 #include <boost/bind.hpp>
@@ -45,7 +45,7 @@ namespace scai
 
 namespace common
 {
-#if __cplusplus > 199711L
+#if __cplusplus > 199711L or defined(__GXX_EXPERIMENTAL_CXX0X__)
     using std::bind;
     using std::ref;
     using std::cref;

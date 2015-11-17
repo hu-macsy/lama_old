@@ -32,7 +32,7 @@
 
 #pragma once
 
-#if __cplusplus > 199711L
+#if __cplusplus > 199711L or defined(__GXX_EXPERIMENTAL_CXX0X__)
 #include <memory>
 #else
 #include <boost/weak_ptr.hpp>
@@ -43,7 +43,7 @@ namespace scai
 
 namespace common
 {
-#if __cplusplus > 199711L
+#if __cplusplus > 199711L or defined(__GXX_EXPERIMENTAL_CXX0X__)
     using std::weak_ptr;
 #else
     using boost::weak_ptr;

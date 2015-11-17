@@ -32,7 +32,7 @@
 
 #pragma once
 
-#if __cplusplus > 199711L
+#if __cplusplus > 199711L or defined(__GXX_EXPERIMENTAL_CXX0X__)
 #include <functional>
 #else
 #include <boost/function.hpp>
@@ -43,7 +43,7 @@ namespace scai
 
 namespace common
 {
-#if __cplusplus > 199711L
+#if __cplusplus > 199711L or defined(__GXX_EXPERIMENTAL_CXX0X__)
     using std::function;
 #else
     using boost::function;
