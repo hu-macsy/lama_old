@@ -96,7 +96,9 @@ void MICBLAS1::scal(
 
     int device = MICContext::getCurrentDevice();
 
-#pragma offload target( MIC : device ) in( xPtr, n, alpha, incX )
+    const ValueType* alphaPtr = &alpha;
+
+#pragma offload target( MIC : device ) in( xPtr, n, alphaPtr[0:1], incX )
     {
         ValueType* x = static_cast<ValueType*>( xPtr );
 
@@ -104,7 +106,7 @@ void MICBLAS1::scal(
 
         for( IndexType i = 0; i < n; ++i )
         {
-            x[i * incX] *= alpha;
+            x[i * incX] *= *alphaPtr;
         }
     }
 }
@@ -135,18 +137,27 @@ ValueType MICBLAS1::asum( const IndexType n, const ValueType* x, const IndexType
 
     int device = MICContext::getCurrentDevice();
 
-#pragma offload target( MIC : device ) in( xPtr, n, incX ), out( asum )
+    ValueType* asumPtr = &asum;
+
+#pragma offload target( MIC : device ) in( xPtr, n, incX ), out( asumPtr[0:1] )
     {
         const ValueType* x = static_cast<const ValueType*>( xPtr );
 
-        asum = static_cast<ValueType>(0.0);
+        *asumPtr = static_cast<ValueType>(0.0);
 
-        #pragma omp parallel for reduction( + : asum )
+        #pragma omp parallel
+	{
+		ValueType local_asum = static_cast<ValueType>( 0.0 );
 
-        for( int i = 0; i < n; ++i )
-        {
-            asum += std::abs( x[i * incX] );
-        }
+		#pragma omp for
+	        for( int i = 0; i < n; ++i )
+	        {
+	            local_asum += ::fabs( x[i * incX] );
+        	}
+
+		#pragma omp critical
+		*asumPtr += local_asum;
+	}
     }
 
     return asum;
@@ -293,22 +304,29 @@ ValueType MICBLAS1::nrm2( const IndexType n, const ValueType* x, const IndexType
     }
 
     int device = MICContext::getCurrentDevice();
+    ValueType* sumPtr = &sum;
 
-#pragma offload target( mic : device ) in( xPtr, n, incX ), out( sum )
+#pragma offload target( mic : device ) in( xPtr, n, incX ), out( sumPtr[0:1] )
     {
         const ValueType* x = static_cast<const ValueType*>( xPtr );
 
-        sum = static_cast<ValueType>(0.0);
+        *sumPtr = static_cast<ValueType>(0.0);
 
-        #pragma omp parallel for reduction( + : sum )
+        #pragma omp parallel 
+	{
+		ValueType local_sum = static_cast<ValueType>( 0.0 );
+		#pragma omp for
+        	for( int i = 0; i < n; ++i )
+	        {
+	            local_sum += x[i * incX] * x[i * incX];
+	        }
 
-        for( int i = 0; i < n; ++i )
-        {
-            sum += x[i * incX] * x[i * incX];
-        }
+		#pragma omp critical
+		*sumPtr += local_sum;
+	}
     }
 
-    return std::sqrt( sum );
+    return sqrt( sum );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -394,7 +412,9 @@ void MICBLAS1::axpy(
 
     int device = MICContext::getCurrentDevice();
 
-#pragma offload target( mic : device ), in( xPtr, yPtr, n, alpha, incX, incY )
+    const ValueType* alphaPtr = &alpha;
+
+#pragma offload target( mic : device ), in( xPtr, yPtr, n, alphaPtr[0:1], incX, incY )
     {
         const ValueType* x = static_cast<const ValueType*>( xPtr );
         ValueType* y = static_cast<ValueType*>( yPtr );
@@ -403,7 +423,7 @@ void MICBLAS1::axpy(
 
         for( IndexType i = 0; i < n; ++i )
         {
-            y[i * incY] += alpha * x[i * incX];
+            y[i * incY] += *alphaPtr * x[i * incX];
         }
     }
 }
@@ -444,19 +464,29 @@ ValueType MICBLAS1::dot(
     const void* xPtr = x;
     const void* yPtr = y;
 
-#pragma offload target( MIC : device ), out( val ), in( xPtr, yPtr, n, incX, incY )
+    ValueType* valPtr = &val;
+
+#pragma offload target( MIC : device ), out( valPtr[0:1] ), in( xPtr, yPtr, n, incX, incY )
     {
         const ValueType* x = static_cast<const ValueType*>( xPtr );
         const ValueType* y = static_cast<const ValueType*>( yPtr );
 
-        val = static_cast<ValueType>(0.0);
+        *valPtr = static_cast<ValueType>(0.0);
 
-        #pragma omp parallel for reduction( +:val )
+        #pragma omp parallel
+	{
+		ValueType local_val = static_cast<ValueType>( 0.0 );
+		*valPtr  = static_cast<ValueType>( 0.0 );
+		
+		#pragma omp for
+        	for( IndexType i = 0; i < n; ++i )
+        	{
+	            local_val += x[i * incX] * y[i * incY];
+	        }
 
-        for( IndexType i = 0; i < n; ++i )
-        {
-            val += x[i * incX] * y[i * incY];
-        }
+		#pragma omp critical
+		*valPtr += local_val;
+	}
     }
 
     SCAI_LOG_INFO( logger, "dot: result = " << val )
@@ -490,10 +520,12 @@ void MICBLAS1::sum(
     const void* xPtr = x;
     const void* yPtr = y;
     void* zPtr = z;
+    const ValueType* alphaPtr = &alpha;
+    const ValueType* betaPtr = &beta;
 
     int device = MICContext::getCurrentDevice();
 
-#pragma offload target( MIC : device ), in( xPtr, yPtr, zPtr, alpha, beta )
+#pragma offload target( MIC : device ), in( xPtr, yPtr, zPtr, alphaPtr[0:1], betaPtr[0:1] )
     {
         const ValueType* x = static_cast<const ValueType*>( xPtr );
         const ValueType* y = static_cast<const ValueType*>( yPtr );
@@ -503,7 +535,7 @@ void MICBLAS1::sum(
 
         for( int i = 0; i < n; i++ )
         {
-            z[i] = alpha * x[i] + beta * y[i];
+            z[i] = *alphaPtr * x[i] + *betaPtr * y[i];
         }
     }
 
@@ -528,8 +560,11 @@ void MICBLAS1::registerKernels( bool deleteFlag )
         flag = KernelRegistry::KERNEL_ERASE;
     }
 
-    KernelRegistry::set<BLASKernelTrait::scal<float> >( scal, MIC, flag );
+/*    KernelRegistry::set<BLASKernelTrait::scal<float> >( scal, MIC, flag );
     KernelRegistry::set<BLASKernelTrait::scal<double> >( scal, MIC, flag );
+
+    KernelRegistry::set<BLASKernelTrait::scal<ComplexFloat> >( scal, MIC, flag );
+    KernelRegistry::set<BLASKernelTrait::scal<ComplexDouble> >( scal, MIC, flag );
 
     KernelRegistry::set<BLASKernelTrait::nrm2<float> >( nrm2, MIC, flag );
     KernelRegistry::set<BLASKernelTrait::nrm2<double> >( nrm2, MIC, flag );
@@ -554,6 +589,23 @@ void MICBLAS1::registerKernels( bool deleteFlag )
 
     KernelRegistry::set<BLASKernelTrait::sum<float> >( sum, MIC, flag );
     KernelRegistry::set<BLASKernelTrait::sum<double> >( sum, MIC, flag );
+*/
+    
+#define LAMA_BLAS1_REGISTER(z, I, _)                                                             \
+        KernelRegistry::set<BLASKernelTrait::scal<ARITHMETIC_HOST_TYPE_##I> >( scal, MIC, flag );    \
+        KernelRegistry::set<BLASKernelTrait::nrm2<ARITHMETIC_HOST_TYPE_##I> >( nrm2, MIC, flag );    \
+        KernelRegistry::set<BLASKernelTrait::asum<ARITHMETIC_HOST_TYPE_##I> >( asum, MIC, flag );    \
+        KernelRegistry::set<BLASKernelTrait::iamax<ARITHMETIC_HOST_TYPE_##I> >( iamax, MIC, flag );  \
+        KernelRegistry::set<BLASKernelTrait::swap<ARITHMETIC_HOST_TYPE_##I> >( swap, MIC, flag );    \
+        KernelRegistry::set<BLASKernelTrait::copy<ARITHMETIC_HOST_TYPE_##I> >( copy, MIC, flag );    \
+        KernelRegistry::set<BLASKernelTrait::axpy<ARITHMETIC_HOST_TYPE_##I> >( axpy, MIC, flag );    \
+        KernelRegistry::set<BLASKernelTrait::dot<ARITHMETIC_HOST_TYPE_##I> >( dot, MIC, flag );      \
+    	KernelRegistry::set<BLASKernelTrait::sum<ARITHMETIC_HOST_TYPE_##I> >( sum, MIC, flag );
+
+        BOOST_PP_REPEAT( ARITHMETIC_HOST_EXT_TYPE_CNT, LAMA_BLAS1_REGISTER, _ )
+
+#undef LAMA_BLAS1_REGISTER
+
 }
 
 /* --------------------------------------------------------------------------- */
