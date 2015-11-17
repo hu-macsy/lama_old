@@ -35,7 +35,7 @@
 #   - include_directories are taken over from project
 #
 
-foreach ( executable CUSparseExample MemBandwidth )
+foreach ( executable CUSparseExample MemBandwidth Prefetch )
     add_executable( ${executable} ${executable}.cpp )
     target_link_libraries( ${executable} scai_hmemo )
 endforeach ( executable )
