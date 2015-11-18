@@ -42,6 +42,7 @@
 #include <scai/blaskernel/BLASKernelTrait.hpp>
 
 #include <scai/lama/distribution/NoDistribution.hpp>
+#include <scai/lama/distribution/BlockDistribution.hpp>
 #include <scai/lama/distribution/CyclicDistribution.hpp>
 #include <scai/lama/distribution/Redistributor.hpp>
 
@@ -795,9 +796,89 @@ void DenseMatrix<ValueType>::swap( DenseMatrix<ValueType>& other )
 }
 
 template<typename ValueType>
-void DenseMatrix<ValueType>::assignTranspose( const Matrix& /* other */ )
+void DenseMatrix<ValueType>::assignTranspose( const Matrix& other  )
 {
-    COMMON_THROWEXCEPTION( "assignTranspose for dense matrices not supported yet" )
+    SCAI_LOG_INFO( logger, "assign transposed " << other << " to " << *this )
+
+        const DenseMatrix<ValueType>* denseMatrix = dynamic_cast<const DenseMatrix<ValueType>*>( &other );
+
+        if( denseMatrix )
+        {
+                assignTransposeImpl( *denseMatrix);
+
+        }
+        else
+        {
+        COMMON_THROWEXCEPTION( "DenseMatrix::assign currently only implemented for dense matrices of same type" )
+        }
+
+}
+
+template<typename ValueType>
+void DenseMatrix<ValueType>::assignTransposeImpl( const DenseMatrix<ValueType>& Mat)
+{
+    const Communicator& comm = Mat.getDistribution().getCommunicator();
+    IndexType size = comm.getSize();
+    //get Distribution
+    CommunicatorPtr commu = Communicator::get( "MPI" );
+    common::shared_ptr<Distribution> distRow( new BlockDistribution( Mat.getNumRows(), commu ) );
+    common::shared_ptr<Distribution> distCol( new BlockDistribution( Mat.getNumColumns(), commu));
+
+    if(size == 1){          // localTranspose == globalTranpose, if processor nr == 1
+        if(this != &Mat)
+            assign(Mat); 
+        mData[0]->transposeImpl();
+        redistribute(distCol,distRow);
+    }
+    else{
+        //new storage, distribution already changed
+        DenseMatrix<ValueType> targetMat(distCol,distRow);
+        
+        //local transpose of Mat
+        for(IndexType i=0; i<size;++i)
+            Mat.mData[i]->transposeImpl();    
+ 
+        //preparation for mpi all2allv
+        IndexType* receiveSizes = new IndexType[size];  
+        ValueType **recvBuffer = new ValueType*[size];
+    
+        for(IndexType i=0;i<size;++i){
+            IndexType localSize = targetMat.mData[i]->getData().size();
+            recvBuffer[i] = new ValueType[localSize];
+            WriteAccess<ValueType> wData(targetMat.mData[i]->getData() );  
+            //local data
+            recvBuffer[i] = wData.get();
+            //local data sizes
+            receiveSizes[i] = localSize;
+        }
+
+        IndexType* sendSizes = new IndexType[size];
+        ValueType** sendBuffer = new ValueType*[size];
+
+        for(IndexType i=0;i<size;++i){
+            IndexType localSize =  Mat.mData[i]->getData().size();
+            sendBuffer[i] = new ValueType[ localSize];    
+            WriteAccess<ValueType> wDatas( Mat.mData[i]->getData() );
+            //local datal
+            sendBuffer[i] = wDatas.get();
+            //local data sizes
+            sendSizes[i] = localSize;
+        }
+        //MPI call
+        comm.all2allv(recvBuffer,receiveSizes,sendBuffer,sendSizes);
+
+        //transpose back of Mat (A^t)^t = A 
+        if(this != &Mat){ // no need if we override Mat anyways
+            for(IndexType i=0; i<size;++i)
+                Mat.mData[i]->transposeImpl();    
+        }
+
+        *this = targetMat;
+
+        delete [] sendSizes;
+        delete [] receiveSizes;
+
+    }
 }
 
 template<typename ValueType>

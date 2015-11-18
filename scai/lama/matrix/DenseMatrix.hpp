@@ -333,7 +333,9 @@ public:
 
     /* Implementation of pure method of class Matrix. */
 
-    virtual void assignTranspose( const Matrix& other );
+    virtual void assignTranspose( const Matrix& other );  
+
+    void assignTransposeImpl( const DenseMatrix<ValueType>& Mat );
 
     /** @brief Swap will swap all member variables of the two dense matrices.
      *

@@ -189,6 +189,12 @@ void NoCommunicator::bcastImpl( ValueType[], const IndexType, const PartitionId 
 }
 
 template<typename ValueType>
+void NoCommunicator::all2allvImpl( ValueType**, IndexType[], ValueType**, IndexType[] /*sendCount[]*/ ) const
+{
+   // SCAI_ASSERT_EQUAL_ERROR(sendCount,0)
+}
+
+template<typename ValueType>
 void NoCommunicator::scatterImpl(
     ValueType myvals[],
     const IndexType n,

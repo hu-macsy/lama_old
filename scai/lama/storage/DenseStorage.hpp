@@ -103,6 +103,8 @@ public:
 
     virtual void assign( const _MatrixStorage& other );
 
+    void transposeImpl();
+    
     /** Getter routine for the data type of the elements. */
 
     virtual common::scalar::ScalarType getValueType() const;

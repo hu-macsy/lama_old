@@ -107,6 +107,9 @@ private    :
     template<typename T>
     void bcastImpl( T val[], const IndexType n, const PartitionId root ) const;
 
+    template<typename ValueType>
+    void all2allvImpl( ValueType* recvBuffer[], IndexType recvCount[], ValueType* sendBuffer[], IndexType sendCount[] ) const;
+
     template<typename T>
     void scatterImpl( T myvals[], const IndexType n, const PartitionId root, const T allvals[] ) const;
 
