@@ -48,7 +48,7 @@ if ( BUILD_DOC )
     # Add custom command for building the userdoc
     add_custom_command (
         OUTPUT ${SPHINX_BUILD_ROOT}/index.html
-        COMMAND ${Sphinx-build_EXECUTABLE} -b html -c ${SPHINX_BUILD_ROOT} ${LAMA_DOC_DIR} ${SPHINX_BUILD_ROOT}
+        COMMAND ${Sphinx-build_EXECUTABLE} -b ${SCAI_DOC_TYPE} -c ${SPHINX_BUILD_ROOT} ${LAMA_DOC_DIR} ${SPHINX_BUILD_ROOT}
         DEPENDS ${SPHINX_BUILD_ROOT}/conf.py
         WORKING_DIRECTORY ${LAMA_DOC_DIR}
     )

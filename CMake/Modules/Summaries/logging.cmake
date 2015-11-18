@@ -89,7 +89,6 @@ scai_summary_message ( "FOUND"
 message ( STATUS "" )
 scai_status_message ( HEADLINE "DOCUMENTATION:" )
 # DOC
-message ( STATUS "" )
 scai_summary_message ( "USE"
                        "BUILD_DOC"
                        "DOC"

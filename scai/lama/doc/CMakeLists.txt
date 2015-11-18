@@ -40,8 +40,10 @@ if ( BUILD_DOC )
     set ( SPHINX_INSTALL_ROOT ${CMAKE_INSTALL_PREFIX}/share/doc/scai-lama-${LAMA_VERSION} )
     
     # TODO: In future we need to use the proper version number of the specific subproject
+    set ( SCAI_COMMON_DOC_DIR ${CMAKE_INSTALL_PREFIX}/share/doc/scai-common-${LAMA_VERSION}/ )
     set ( SCAI_LOGGING_DOC_DIR ${CMAKE_INSTALL_PREFIX}/share/doc/scai-logging-${LAMA_VERSION}/ )
     set ( SCAI_TRACING_DOC_DIR ${CMAKE_INSTALL_PREFIX}/share/doc/scai-tracing-${LAMA_VERSION}/ )
+    set ( SCAI_HMEMO_DOC_DIR ${CMAKE_INSTALL_PREFIX}/share/doc/scai-hmemo-${LAMA_VERSION}/ )
     
     # Sphinx configuration file conf.py will be generated with correct LAMA version, copyright, etc.
     # must be in same directory as Sphinx source files
@@ -50,7 +52,7 @@ if ( BUILD_DOC )
     # Add custom command for building the userdoc
     add_custom_command (
         OUTPUT ${SPHINX_BUILD_ROOT}/index.html
-        COMMAND ${Sphinx-build_EXECUTABLE} -b html -c ${SPHINX_BUILD_ROOT} ${LAMA_DOC_DIR} ${SPHINX_BUILD_ROOT}
+        COMMAND ${Sphinx-build_EXECUTABLE} -b ${SCAI_DOC_TYPE} -c ${SPHINX_BUILD_ROOT} ${LAMA_DOC_DIR} ${SPHINX_BUILD_ROOT}
         DEPENDS ${SPHINX_BUILD_ROOT}/conf.py
         WORKING_DIRECTORY ${LAMA_DOC_DIR}
     )

@@ -31,6 +31,7 @@
  # @since 1.0.1
 ###
 
+#find_package ( Sphinx ${SCAI_FIND_PACKAGE_FLAGS} )
 
 ### SPHINX DOCUMENTATION ###
 
@@ -38,10 +39,7 @@ if ( BUILD_DOC )
     ### install ###
     set ( LAMA_DOC_DIR "${CMAKE_SOURCE_DIR}/doc" )
     set ( SPHINX_BUILD_ROOT "${CMAKE_CURRENT_BINARY_DIR}" )
-    set ( SPHINX_INSTALL_ROOT ${CMAKE_INSTALL_PREFIX}/share/doc/scai-tracing-${SCAI_TRACING_VERSION} )
-    
-    # TODO: In future we need to use the proper version number of the specific subproject
-    set ( SCAI_LOGGING_DOC_DIR ${CMAKE_INSTALL_PREFIX}/share/doc/scai-logging-${SCAI_TRACING_VERSION}/ )
+    set ( SPHINX_INSTALL_ROOT ${CMAKE_INSTALL_PREFIX}/share/doc/scai-hmemo-${SCAI_HMEMO_VERSION} )
     
     # Sphinx configuration file conf.py will be generated with correct LAMA version, copyright, etc.
     # must be in same directory as Sphinx source files
