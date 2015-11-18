@@ -32,3 +32,5 @@ Settings                Access to environment variables
 OpenMP                  Dummy routines if OpenMP is disabled
 SCAIType
 ====================    ==========================================
+
+work in progress

@@ -1,6 +1,6 @@
 .. _main-page:
 
-SCAI Hmemo
+SCAI Tasking
 ===========
 
 work in progress

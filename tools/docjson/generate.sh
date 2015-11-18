@@ -11,21 +11,34 @@ fi
 rm -rf output
 mkdir output
 
-# copy all files from the lama build folder into the output folder
-find $1/lama/doc/ \( -name "*.fjson" -o -name "*.json" \) -exec cp {} output \;
-# copy all lama images
-cp -R $1/lama/doc/_images output
-cp -R $1/lama/doc/_downloads output
 
-# copy other documentations linked by intersphinx
-cp -R $1/logging/doc/index.fjson output/scaiLogging.fjson
-cp -R $1/tracing/doc/index.fjson output/scaiTracing.fjson
+docs="common logging tracing tasking hmemo kregistry lama"
 
 
+#create all docs
+for doc in $docs; do
+    # create output folder
+    mkdir output/$doc
+    
+    # copy all json files to the main folder
+    find $1/$doc/doc/ \( -name "*.fjson" -o -name "*.json" \) -exec cp {} output/$doc \;
+    
+    # copy all additional files
+    if [ -e $1/$doc/doc/_images ]; then
+        cp -R $1/$doc/doc/_images output/$doc
+    fi
+    if [ -e $1/$doc/doc/_downloads ]; then
+        cp -R $1/$doc/doc/_downloads output/$doc
+    fi
+    
+    # rename main index file to fit the guidelines of the rest plugin
+    mv output/$doc/index.fjson output/$doc/Index.fjson
+    
+    # fix download urls
+    find output/$doc/* \( -name "*.fjson" -o -name "*.json" \) -exec sed -i 's/href=\\\"[\.\/]*_downloads/href=\\\"http:\/\/www.libama.org\/fileadmin\/LAMA\/docs\/$doc\/_downloads/g' {} \;
 
-# post processing
-mv output/index.fjson output/Index.fjson
-
-find output/* \( -name "*.fjson" -o -name "*.json" \) -exec sed -i 's/href=\\\"[\.\/]*_downloads/href=\\\"http:\/\/www.libama.eu\/fileadmin\/LAMA\/json\/_downloads/g' {} \; 
-find output/* \( -name "*.fjson" -o -name "*.json" \) -exec sed -i 's/href=\\\"[\.\/0-9a-Z_-]*\/share\/doc\/scai-logging-[0-9\.]*\/#main-page/href=\\\"scaiLogging\//g' {} \;
-find output/* \( -name "*.fjson" -o -name "*.json" \) -exec sed -i 's/href=\\\"[\.\/0-9a-Z_-]*\/share\/doc\/scai-tracing-[0-9\.]*\/#main-page/href=\\\"scaiTracing\//g' {} \;
+    # replace all inter-sphinx links with the corresponding links on the website
+    for doc2 in $docs; do
+        find output/$doc/* \( -name "*.fjson" -o -name "*.json" \) -exec sed -i 's/href=\\\"[\.\/0-9a-Z_-]*\/share\/doc\/scai-'"${doc2}"'-[0-9\.]*\/#main-page/href=\\\"http:\/\/www.libama.org\/documentation\/'"${doc2}"'.html\//g' {} \;
+    done
+done
