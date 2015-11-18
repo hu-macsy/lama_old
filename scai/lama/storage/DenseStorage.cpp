@@ -253,7 +253,7 @@ void DenseStorageView<ValueType>::scaleImpl( const LAMAArray<OtherType>& values 
 template<typename ValueType>
 void DenseStorageView<ValueType>::transposeImpl(){
     // Compute transpostion A^t of A via A^t = A^t * I, where * is implemented by LAPACK
-    ContextPtr context = Context::getContextPtr( context::Host );
+    ContextPtr context = Context::getHostPtr();
     WriteAccess<ValueType> wData( mData, context );
     // transpose quadratic matrix
 
