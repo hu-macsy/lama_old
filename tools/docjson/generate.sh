@@ -37,8 +37,11 @@ for doc in $docs; do
     # fix download urls
     find output/$doc/* \( -name "*.fjson" -o -name "*.json" \) -exec sed -i 's/href=\\\"[\.\/]*_downloads/href=\\\"http:\/\/www.libama.org\/fileadmin\/LAMA\/docs\/$doc\/_downloads/g' {} \;
 
+    # flatten all internal references to the top level (fixes problems with the rest plugin    
+    find output/$doc/* \( -name "*.fjson" -o -name "*.json" \) -exec sed -i 's/class=\\\"reference internal\\\" href=\\\"\([/.]*\)[a-Z0-9/]*\/\([a-Z0-9+]\+\)\/\?\\\"/class=\\\"reference internal\\\" href=\\\"\1\2\\\"/g' {} \;
+
     # replace all inter-sphinx links with the corresponding links on the website
     for doc2 in $docs; do
-        find output/$doc/* \( -name "*.fjson" -o -name "*.json" \) -exec sed -i 's/href=\\\"[\.\/0-9a-Z_-]*\/share\/doc\/scai-'"${doc2}"'-[0-9\.]*\/#main-page/href=\\\"http:\/\/www.libama.org\/documentation\/'"${doc2}"'.html\//g' {} \;
+        find output/$doc/* \( -name "*.fjson" -o -name "*.json" \) -exec sed -i 's/href=\\\"[\.\/0-9a-Z_-]*\/share\/doc\/scai-'"${doc2}"'-[0-9\.]*\/#main-page/href=\\\"http:\/\/www.libama.org\/documentation\/'"${doc2}"'.html/g' {} \;
     done
 done
