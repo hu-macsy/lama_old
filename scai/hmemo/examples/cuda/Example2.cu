@@ -13,6 +13,8 @@
 using namespace scai;
 using namespace scai::hmemo;
 
+namespace context = common::context;
+
 SCAI_LOG_DEF_LOGGER( logger, "CudaExample" )
 
 template<typename ValueType>

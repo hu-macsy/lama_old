@@ -39,13 +39,14 @@
 #include <scai/lama/expression/MatrixVectorExpressions.hpp>
 
 #include <scai/lama/DenseVector.hpp>
-#include <scai/lama/LAMAInterface.hpp>
+#include <scai/blaskernel/BLASKernelTrait.hpp>
+#include <scai/lama/LAMAKernel.hpp>
 
 // tracing
 #include <scai/tracing.hpp>
 
-// external
-#include <omp.h>
+// common
+#include <scai/common/Walltime.hpp>
 
 namespace scai
 {
@@ -263,7 +264,7 @@ void GMRES::iterate()
 
     GMRESRuntime& runtime = getRuntime();
 
-    double iterationTimeStart = omp_get_wtime();
+    double iterationTimeStart = common::Walltime::get();
 
     unsigned int krylovIndex = this->getIterationCount() % mKrylovDim;
     unsigned int hIdxStart = krylovIndex * ( krylovIndex + 1 ) / 2;
@@ -323,9 +324,9 @@ void GMRES::iterate()
         {
             SCAI_REGION( "Solver.GMRES.start.solvePreconditioner" )
             vCurrent = 0.0;
-            double preconditionerTimeStart = omp_get_wtime();
+            double preconditionerTimeStart = common::Walltime::get();
             mPreconditioner->solve( vCurrent, residual );
-            totalPreconditionerTime += omp_get_wtime() - preconditionerTimeStart;
+            totalPreconditionerTime += common::Walltime::get() - preconditionerTimeStart;
         }
 
         // normalize vCurrent
@@ -350,9 +351,9 @@ void GMRES::iterate()
         SCAI_REGION( "Solver.GMRES.solvePreconditioner" )
         tmp = A * vCurrent;
         w = 0.0;
-        double preconditionerTimeStart = omp_get_wtime();
+        double preconditionerTimeStart = common::Walltime::get();
         mPreconditioner->solve( w, tmp );
-        totalPreconditionerTime += omp_get_wtime() - preconditionerTimeStart;
+        totalPreconditionerTime += common::Walltime::get() - preconditionerTimeStart;
     }
 
     // orthogonalization loop
@@ -414,7 +415,7 @@ void GMRES::iterate()
     //if (krylovIndex == mKrylovDim-1)
     updateX( krylovIndex );
 
-    totalIterationTime += omp_get_wtime() - iterationTimeStart;
+    totalIterationTime += common::Walltime::get() - iterationTimeStart;
 }
 
 void GMRES::updateX( unsigned int i )
@@ -435,12 +436,12 @@ void GMRES::updateX( unsigned int i )
 
     // ContextPtr context = getCoefficients().getContextPtr();
 
-    hmemo::ContextPtr context = hmemo::Context::getContextPtr( hmemo::context::Host );
+    hmemo::ContextPtr context = hmemo::Context::getHostPtr();
 
-    LAMA_INTERFACE_FN_t( tptrs, context, BLAS, LAPACK, double );
+    static LAMAKernel<blaskernel::BLASKernelTrait::tptrs<double> > tptrs;
 
-    int info = tptrs( CblasColMajor, CblasUpper, CblasNoTrans, CblasNonUnit, i + 1, 1, runtime.mH.get(),
-                      runtime.mY.get(), i + 1 );
+    int info = tptrs[context]( CblasColMajor, CblasUpper, CblasNoTrans, CblasNonUnit, i + 1, 1, runtime.mH.get(),
+                               runtime.mY.get(), i + 1 );
 
     SCAI_LOG_DEBUG( logger, "tptrs returned with code = " << info )
 

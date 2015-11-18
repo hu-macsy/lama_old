@@ -35,14 +35,20 @@
 #include <scai/lama/storage/COOStorage.hpp>
 
 // local library
-#include <scai/lama/LAMAInterface.hpp>
+#include <scai/lama/UtilKernelTrait.hpp>
+#include <scai/lama/COOKernelTrait.hpp>
+#include <scai/lama/CSRKernelTrait.hpp>
+
 #include <scai/lama/LAMAArrayUtils.hpp>
+#include <scai/lama/LAMAKernel.hpp>
 
 #include <scai/lama/openmp/OpenMPUtils.hpp>
 #include <scai/lama/openmp/OpenMPCOOUtils.hpp>
 #include <scai/lama/openmp/OpenMPCSRUtils.hpp>
 
 // internal scai libraries
+#include <scai/blaskernel/BLASKernelTrait.hpp>
+
 #include <scai/hmemo.hpp>
 
 #include <scai/tasking/TaskSyncToken.hpp>
@@ -56,6 +62,9 @@
 // boost
 #include <boost/preprocessor.hpp>
 
+// sqrt for all value types
+#include <cmath> 
+
 using namespace scai::hmemo;
 
 namespace scai
@@ -63,6 +72,8 @@ namespace scai
 
 using common::unique_ptr;
 using common::shared_ptr;
+
+using tasking::SyncToken;
 
 namespace lama
 {
@@ -155,28 +166,14 @@ bool COOStorage<ValueType>::checkDiagonalProperty() const
     {
         diagonalProperty = true; // intialization for reduction
 
-        ContextPtr contextPtr = Context::getHostPtr();
+        static LAMAKernel<COOKernelTrait::hasDiagonalProperty> hasDiagonalProperty;
+
+        ContextPtr contextPtr = hasDiagonalProperty.getValidContext( this->getContextPtr() );
 
         ReadAccess<IndexType> ia( mIA, contextPtr );
         ReadAccess<IndexType> ja( mJA, contextPtr );
 
-        // The diagonal property is given if the first numDiags entries
-        // are the diagonal elements
-
-        #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
-
-        for( IndexType i = 0; i < mNumRows; ++i )
-        {
-            if( !diagonalProperty )
-            {
-                continue;
-            }
-
-            if( ia[i] != i || ja[i] != i )
-            {
-                diagonalProperty = false;
-            }
-        }
+        diagonalProperty = hasDiagonalProperty[contextPtr]( ia.get(), ja.get(), mNumRows );
     }
 
     SCAI_LOG_INFO( logger, *this << ": checkDiagonalProperty -> " << diagonalProperty )
@@ -212,19 +209,19 @@ void COOStorage<ValueType>::check( const char* msg ) const
     // check row indexes in IA and column indexes in JA
 
     {
-        ContextPtr loc = getContextPtr();
+        static LAMAKernel<UtilKernelTrait::validIndexes> validIndexes;
 
-        LAMA_INTERFACE_FN_DEFAULT( validIndexes, loc, Utils, Indexes )
+        ContextPtr  loc = validIndexes.getValidContext( getContextPtr() );  // find location where routine is available
 
         ReadAccess<IndexType> rJA( mJA, loc );
         ReadAccess<IndexType> rIA( mIA, loc );
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        SCAI_ASSERT_ERROR( validIndexes( rIA.get(), mNumValues, mNumRows ),
+        SCAI_ASSERT_ERROR( validIndexes[ loc ]( rIA.get(), mNumValues, mNumRows ),
                            *this << " @ " << msg << ": illegel indexes in IA" )
 
-        SCAI_ASSERT_ERROR( validIndexes( rJA.get(), mNumValues, mNumColumns ),
+        SCAI_ASSERT_ERROR( validIndexes[ loc ]( rJA.get(), mNumValues, mNumColumns ),
                            *this << " @ " << msg << ": illegel indexes in JA" )
     }
 }
@@ -240,10 +237,10 @@ void COOStorage<ValueType>::setIdentity( const IndexType size )
     mNumColumns = size;
     mNumValues = mNumRows;
 
-    ContextPtr loc = getContextPtr();
+    static LAMAKernel<UtilKernelTrait::setOrder<IndexType> > setOrder;
+    static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
 
-    LAMA_INTERFACE_FN_T( setOrder, loc, Utils, Setter, IndexType )
-    LAMA_INTERFACE_FN_T( setVal, loc, Utils, Setter, ValueType )
+    ContextPtr loc = setOrder.getValidContext( setVal, this->getContextPtr() );
 
     WriteOnlyAccess<IndexType> ia( mIA, loc, mNumValues );
     WriteOnlyAccess<IndexType> ja( mJA, loc, mNumValues );
@@ -251,10 +248,10 @@ void COOStorage<ValueType>::setIdentity( const IndexType size )
 
     SCAI_CONTEXT_ACCESS( loc )
 
-    setOrder( ia.get(), mNumValues );
-    setOrder( ja.get(), mNumValues );
+    setOrder[loc]( ia.get(), mNumValues );
+    setOrder[loc]( ja.get(), mNumValues );
 
-    setVal( values.get(), mNumValues, static_cast<ValueType>(1.0) );
+    setVal[loc]( values.get(), mNumValues, static_cast<ValueType>(1.0) );
 
     mDiagonalProperty = true;
 }
@@ -267,20 +264,24 @@ void COOStorage<ValueType>::buildCSR(
     LAMAArray<IndexType>& ia,
     LAMAArray<IndexType>* ja,
     LAMAArray<OtherValueType>* values,
-    const ContextPtr /* loc */) const
+    const ContextPtr preferredLoc ) const
 {
-    // multiple routines from interface needed, so do it on Host to be safe
+    // multiple kernel routines needed
 
-    ContextPtr loc = Context::getContextPtr( context::Host );
+    static LAMAKernel<CSRKernelTrait::sizes2offsets> sizes2offsets;
+    static LAMAKernel<COOKernelTrait::getCSRSizes> getCSRSizes;
+    static LAMAKernel<COOKernelTrait::getCSRValues<ValueType, OtherValueType> > getCSRValues;
 
-    LAMA_INTERFACE_FN( getCSRSizes, loc, COOUtils, Counting )
-    LAMA_INTERFACE_FN( sizes2offsets, loc, CSRUtils, Offsets )
-    LAMA_INTERFACE_FN_TT( getCSRValues, loc, COOUtils, Conversions, ValueType, OtherValueType )
+    // do it where all routines are avaialble
+
+    ContextPtr loc = sizes2offsets.getValidContext( getCSRSizes, getCSRValues, preferredLoc );
+
+    SCAI_CONTEXT_ACCESS( loc )
 
     WriteOnlyAccess<IndexType> csrIA( ia, loc, mNumRows + 1 );
     ReadAccess<IndexType> cooIA( mIA, loc );
 
-    getCSRSizes( csrIA.get(), mNumRows, mNumValues, cooIA.get() );
+    getCSRSizes[loc]( csrIA.get(), mNumRows, mNumValues, cooIA.get() );
 
     if( ja == NULL || values == NULL )
     {
@@ -288,7 +289,7 @@ void COOStorage<ValueType>::buildCSR(
         return;
     }
 
-    IndexType numValues = sizes2offsets( csrIA.get(), mNumRows );
+    IndexType numValues = sizes2offsets[loc]( csrIA.get(), mNumRows );
 
     SCAI_ASSERT_EQUAL_DEBUG( mNumValues, numValues )
 
@@ -298,8 +299,8 @@ void COOStorage<ValueType>::buildCSR(
     WriteOnlyAccess<IndexType> csrJA( *ja, loc, numValues );
     WriteOnlyAccess<OtherValueType> csrValues( *values, loc, numValues );
 
-    getCSRValues( csrJA.get(), csrValues.get(), csrIA.get(), mNumRows, mNumValues, cooIA.get(), cooJA.get(),
-                  cooValues.get() );
+    getCSRValues[loc]( csrJA.get(), csrValues.get(), csrIA.get(), 
+                       mNumRows, mNumValues, cooIA.get(), cooJA.get(), cooValues.get() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -378,14 +379,16 @@ void COOStorage<ValueType>::setCSRDataImpl(
         SCAI_LOG_DEBUG( logger,
                         "check CSR data " << numRows << " x " << numColumns << ", nnz = " << numValues << " for diagonal property, #diagonals = " << numDiagonals )
 
-        LAMA_INTERFACE_FN( hasDiagonalProperty, loc, CSRUtils, Offsets );
+        static LAMAKernel<CSRKernelTrait::hasDiagonalProperty> hasDiagonalProperty;
+
+        ContextPtr loc = hasDiagonalProperty.getValidContext( this->getContextPtr() );
 
         ReadAccess<IndexType> csrIA( ia, loc );
         ReadAccess<IndexType> csrJA( ja, loc );
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        mDiagonalProperty = hasDiagonalProperty( numDiagonals, csrIA.get(), csrJA.get() );
+        mDiagonalProperty = hasDiagonalProperty[loc] ( numDiagonals, csrIA.get(), csrJA.get() );
     }
 
     if( !mDiagonalProperty )
@@ -399,18 +402,18 @@ void COOStorage<ValueType>::setCSRDataImpl(
                     "input csr data with " << mNumValues << "entries,  has diagonal property = " << mDiagonalProperty )
 
     {
-        LAMA_INTERFACE_FN( offsets2ia, loc, COOUtils, Counting );
+        static LAMAKernel<COOKernelTrait::offsets2ia> offsets2ia;
 
         ReadAccess<IndexType> csrIA( ia, loc );
         WriteOnlyAccess<IndexType> cooIA( mIA, loc, mNumValues );
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        offsets2ia( cooIA.get(), mNumValues, csrIA.get(), mNumRows, numDiagonals );
+        offsets2ia[loc]( cooIA.get(), mNumValues, csrIA.get(), mNumRows, numDiagonals );
     }
 
     {
-        LAMA_INTERFACE_FN_TT( setCSRData, loc, COOUtils, Conversions, IndexType, IndexType );
+        static LAMAKernel<COOKernelTrait::setCSRData<IndexType, IndexType> > setCSRData;
 
         ReadAccess<IndexType> csrIA( ia, loc );
         ReadAccess<IndexType> csrJA( ja, loc );
@@ -418,11 +421,11 @@ void COOStorage<ValueType>::setCSRDataImpl(
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        setCSRData( cooJA.get(), csrJA.get(), numValues, csrIA.get(), mNumRows, numDiagonals );
+        setCSRData[loc]( cooJA.get(), csrJA.get(), numValues, csrIA.get(), mNumRows, numDiagonals );
     }
 
     {
-        LAMA_INTERFACE_FN_TT( setCSRData, loc, COOUtils, Conversions, ValueType, OtherValueType );
+        static LAMAKernel<COOKernelTrait::setCSRData<ValueType, OtherValueType> > setCSRData;
 
         ReadAccess<IndexType> csrIA( ia, loc );
         ReadAccess<OtherValueType> csrValues( values, loc );
@@ -430,7 +433,7 @@ void COOStorage<ValueType>::setCSRDataImpl(
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        setCSRData( cooValues.get(), csrValues.get(), numValues, csrIA.get(), mNumRows, numDiagonals );
+        setCSRData[loc]( cooValues.get(), csrValues.get(), numValues, csrIA.get(), mNumRows, numDiagonals );
     }
 }
 
@@ -554,7 +557,7 @@ IndexType COOStorage<ValueType>::getNumValues() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void COOStorage<ValueType>::setDiagonalImpl( const Scalar scalar )
+void COOStorage<ValueType>::setDiagonalImpl( const ValueType value )
 {
     IndexType numDiagonalElements = std::min( mNumColumns, mNumRows );
 
@@ -563,8 +566,6 @@ void COOStorage<ValueType>::setDiagonalImpl( const Scalar scalar )
     WriteAccess<ValueType> wValues( mValues, loc );
     ReadAccess<IndexType> rJa( mJA, loc );
     ReadAccess<IndexType> rIa( mIA, loc );
-
-    ValueType value = scalar.getValue<ValueType>();
 
     for( IndexType i = 0; i < numDiagonalElements; ++i )
     {
@@ -575,10 +576,9 @@ void COOStorage<ValueType>::setDiagonalImpl( const Scalar scalar )
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void COOStorage<ValueType>::scaleImpl( const Scalar scalar )
+void COOStorage<ValueType>::scaleImpl( const ValueType value )
 {
     WriteAccess<ValueType> wValues( mValues );
-    ValueType value = scalar.getValue<ValueType>();
 
     for( IndexType i = 0; i < mNumValues; ++i )
     {
@@ -673,9 +673,9 @@ void COOStorage<ValueType>::getDiagonalImpl( LAMAArray<OtherType>& diagonal ) co
 {
     const IndexType numDiagonalElements = std::min( mNumColumns, mNumRows );
 
-    ContextPtr loc = getContextPtr();
+    static LAMAKernel<UtilKernelTrait::set<OtherType, ValueType> > set;
 
-    LAMA_INTERFACE_FN_TT( set, loc, Utils, Copy, OtherType, ValueType )
+    ContextPtr loc = set.getValidContext( this->getContextPtr() );
 
     WriteOnlyAccess<OtherType> wDiagonal( diagonal, loc, numDiagonalElements );
     ReadAccess<ValueType> rValues( mValues, loc );
@@ -684,7 +684,7 @@ void COOStorage<ValueType>::getDiagonalImpl( LAMAArray<OtherType>& diagonal ) co
 
     // diagonal elements are the first entries of mValues
 
-    set( wDiagonal.get(), rValues.get(), numDiagonalElements );
+    set[loc]( wDiagonal.get(), rValues.get(), numDiagonalElements );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -697,9 +697,9 @@ void COOStorage<ValueType>::setDiagonalImpl( const LAMAArray<OtherType>& diagona
 {
     const IndexType numDiagonalElements = std::min( mNumColumns, mNumRows );
 
-    ContextPtr loc = getContextPtr();
+    static LAMAKernel<UtilKernelTrait::set<ValueType, OtherType> > set;
 
-    LAMA_INTERFACE_FN_TT( set, loc, Utils, Copy, ValueType, OtherType )
+    ContextPtr loc = set.getValidContext( this->getContextPtr() );
 
     ReadAccess<OtherType> rDiagonal( diagonal, loc );
     WriteAccess<ValueType> wValues( mValues, loc );
@@ -708,7 +708,7 @@ void COOStorage<ValueType>::setDiagonalImpl( const LAMAArray<OtherType>& diagona
 
     // diagonal elements are the first entries of mValues
 
-    set( wValues.get(), rDiagonal.get(), numDiagonalElements );
+    set[loc]( wValues.get(), rDiagonal.get(), numDiagonalElements );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -720,15 +720,15 @@ ValueType COOStorage<ValueType>::l1Norm() const
 
     const IndexType n = mNumValues;
 
-	ContextPtr loc = getContextPtr();
+    static LAMAKernel<blaskernel::BLASKernelTrait::asum<ValueType> > asum;
 
-    LAMA_INTERFACE_FN_T( asum, loc, BLAS, BLAS1, ValueType )
+	ContextPtr loc = asum.getValidContext( this->getContextPtr() );
 
 	ReadAccess<ValueType> data( mValues, loc );
 
 	SCAI_CONTEXT_ACCESS( loc );
 
-	return asum( n, data.get(), static_cast<IndexType>(1.0), NULL );
+	return asum[loc]( n, data.get(), static_cast<IndexType>(1.0) );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -740,15 +740,15 @@ ValueType COOStorage<ValueType>::l2Norm() const
 
     const IndexType n = mNumValues;
 
-	ContextPtr loc = getContextPtr();
+    static LAMAKernel<blaskernel::BLASKernelTrait::dot<ValueType> > dot;
 
-    LAMA_INTERFACE_FN_T( dot, loc, BLAS, BLAS1, ValueType )
+	ContextPtr loc = dot.getValidContext( this->getContextPtr() );
 
 	ReadAccess<ValueType> data( mValues, loc );
 
 	SCAI_CONTEXT_ACCESS( loc );
 
-	return ::sqrt(dot( n, data.get(), 1, data.get(), 1, NULL ));
+	return ::sqrt(dot[loc]( n, data.get(), 1, data.get(), 1 ));
 }
 
 /* --------------------------------------------------------------------------- */
@@ -765,15 +765,15 @@ ValueType COOStorage<ValueType>::maxNorm() const
         return static_cast<ValueType>(0.0);
     }
 
-    ContextPtr loc = getContextPtr();
+    static LAMAKernel<UtilKernelTrait::absMaxVal<ValueType> > absMaxVal;
 
-    LAMA_INTERFACE_FN_DEFAULT_T( absMaxVal, loc, Utils, Reductions, ValueType )
+    ContextPtr loc = absMaxVal.getValidContext( this->getContextPtr() );
 
     ReadAccess<ValueType> cooValues( mValues, loc );
 
     SCAI_CONTEXT_ACCESS( loc )
 
-    ValueType maxval = absMaxVal( cooValues.get(), n );
+    ValueType maxval = absMaxVal[loc]( cooValues.get(), n );
 
     return maxval;
 }
@@ -813,11 +813,11 @@ void COOStorage<ValueType>::matrixTimesVector(
 
     // Method on CUDA is not safe due to atomic
 
-    ContextPtr loc = getContextPtr();
+    static LAMAKernel<COOKernelTrait::normalGEMV<ValueType> > normalGEMV;
+
+    ContextPtr loc = normalGEMV.getValidContext( this->getContextPtr() );
 
     SCAI_LOG_INFO( logger, *this << ": matrixTimesVector on " << *loc )
-
-    LAMA_INTERFACE_FN_DEFAULT_T( normalGEMV, loc, COOUtils, Mult, ValueType )
 
     ReadAccess<IndexType> cooIA( mIA, loc );
     ReadAccess<IndexType> cooJA( mJA, loc );
@@ -836,8 +836,8 @@ void COOStorage<ValueType>::matrixTimesVector(
         // we assume that normalGEMV can deal with the alias of result, y
 
         SCAI_CONTEXT_ACCESS( loc )
-        normalGEMV( wResult.get(), alpha, rX.get(), beta, wResult.get(), mNumRows, mNumValues, cooIA.get(), cooJA.get(),
-                    cooValues.get(), NULL );
+        normalGEMV[loc]( wResult.get(), alpha, rX.get(), beta, wResult.get(), mNumRows, mNumValues, cooIA.get(), cooJA.get(),
+                         cooValues.get() );
     }
     else
     {
@@ -847,8 +847,8 @@ void COOStorage<ValueType>::matrixTimesVector(
         ReadAccess<ValueType> rY( y, loc );
 
         SCAI_CONTEXT_ACCESS( loc )
-        normalGEMV( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumRows, mNumValues, cooIA.get(), cooJA.get(),
-                    cooValues.get(), NULL );
+        normalGEMV[loc]( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumRows, mNumValues, cooIA.get(), cooJA.get(),
+                         cooValues.get() );
     }
 }
 /* --------------------------------------------------------------------------- */
@@ -874,11 +874,11 @@ void COOStorage<ValueType>::vectorTimesMatrix(
         SCAI_ASSERT_EQUAL_ERROR( y.size(), mNumColumns )
     }
 
-    ContextPtr loc = getContextPtr();
+    static LAMAKernel<COOKernelTrait::normalGEVM<ValueType> > normalGEVM;
+
+    ContextPtr loc = normalGEVM.getValidContext( this->getContextPtr() );
 
     SCAI_LOG_INFO( logger, *this << ": vectorTimesMatrix on " << *loc )
-
-    LAMA_INTERFACE_FN_T( normalGEVM, loc, COOUtils, Mult, ValueType )
 
     ReadAccess<IndexType> cooIA( mIA, loc );
     ReadAccess<IndexType> cooJA( mJA, loc );
@@ -897,8 +897,8 @@ void COOStorage<ValueType>::vectorTimesMatrix(
         // we assume that normalGEVM can deal with the alias of result, y
 
         SCAI_CONTEXT_ACCESS( loc )
-        normalGEVM( wResult.get(), alpha, rX.get(), beta, wResult.get(), mNumColumns, mNumValues, cooIA.get(),
-                    cooJA.get(), cooValues.get(), NULL );
+        normalGEVM[loc]( wResult.get(), alpha, rX.get(), beta, wResult.get(), mNumColumns, mNumValues, cooIA.get(),
+                         cooJA.get(), cooValues.get() );
     }
     else
     {
@@ -908,15 +908,15 @@ void COOStorage<ValueType>::vectorTimesMatrix(
         ReadAccess<ValueType> rY( y, loc );
 
         SCAI_CONTEXT_ACCESS( loc )
-        normalGEVM( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumColumns, mNumValues, cooIA.get(), cooJA.get(),
-                    cooValues.get(), NULL );
+        normalGEVM[loc]( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumColumns, mNumValues, cooIA.get(), cooJA.get(),
+                         cooValues.get() );
     }
 }
 
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-tasking::SyncToken* COOStorage<ValueType>::matrixTimesVectorAsync(
+SyncToken* COOStorage<ValueType>::matrixTimesVectorAsync(
     LAMAArray<ValueType>& result,
     const ValueType alpha,
     const LAMAArray<ValueType>& x,
@@ -929,81 +929,43 @@ tasking::SyncToken* COOStorage<ValueType>::matrixTimesVectorAsync(
     SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumColumns )
     SCAI_ASSERT_EQUAL_ERROR( y.size(), mNumRows )
 
-    // not yet available on other devices, so we take Host
+    static LAMAKernel<COOKernelTrait::normalGEMV<ValueType> > normalGEMV;
 
-    ContextPtr loc = Context::getContextPtr( context::Host );
-
-    if ( loc->getType() == context::Host )
-    {
-        // execution as separate thread
-
-        void (COOStorage::*pf)(
-            LAMAArray<ValueType>&,
-            const ValueType,
-            const LAMAArray<ValueType>&,
-            const ValueType,
-            const LAMAArray<ValueType>& ) const
-
-            = &COOStorage<ValueType>::matrixTimesVector;
-
-        using scai::common::bind;
-        using scai::common::ref;
-        using scai::common::cref;
-
-        SCAI_LOG_INFO( logger, *this << ": matrixTimesVectorAsync on Host by own thread" )
-
-        return new tasking::TaskSyncToken( bind( pf, this, ref( result ), alpha, cref( x ), beta, cref( y ) ) );
-    }
+    ContextPtr loc = normalGEMV.getValidContext( this->getContextPtr() );
 
     SCAI_LOG_INFO( logger, *this << ": matrixTimesVectorAsync on " << *loc )
 
-    LAMA_INTERFACE_FN_T( normalGEMV, loc, COOUtils, Mult, ValueType )
+    unique_ptr<SyncToken> syncToken( loc->getSyncToken() );
 
-    unique_ptr<tasking::SyncToken> syncToken( loc->getSyncToken() );
+    // Kernels will be started asynchronously
+
+    SCAI_ASYNCHRONOUS( *syncToken )
 
     // all accesses will be pushed to the sync token as LAMA arrays have to be protected up
     // to the end of the computations.
 
-    shared_ptr<ReadAccess<IndexType> > cooIA( new ReadAccess<IndexType>( mIA, loc ) );
-    shared_ptr<ReadAccess<IndexType> > cooJA( new ReadAccess<IndexType>( mJA, loc ) );
-    shared_ptr<ReadAccess<ValueType> > cooValues( new ReadAccess<ValueType>( mValues, loc ) );
-    shared_ptr<ReadAccess<ValueType> > rX( new ReadAccess<ValueType>( x, loc ) );
+    ReadAccess<IndexType> cooIA( mIA, loc );
+    ReadAccess<IndexType> cooJA( mJA, loc );
+    ReadAccess<ValueType> cooValues( mValues, loc );
+    ReadAccess<ValueType> rX( x, loc );
+    ReadAccess<ValueType> rY( y, loc );
 
-    // Possible alias of result and y must be handled by coressponding accesses
+    // Possible alias of result and y is no problem if WriteOnlyAccess follows ReadAccess 
 
-    if( &result == &y )
-    {
-        // only write access for y, no read access for result
+    WriteOnlyAccess<ValueType> wResult( result, loc, mNumRows );
 
-        shared_ptr<WriteAccess<ValueType> > wResult( new WriteAccess<ValueType>( result, loc ) );
+    SCAI_CONTEXT_ACCESS( loc )
 
-        // we assume that normalGEMV can deal with the alias of result, y
+    normalGEMV[loc]( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumRows, mNumValues, cooIA.get(), cooJA.get(),
+                     cooValues.get() );
 
-        SCAI_CONTEXT_ACCESS( loc )
+    syncToken->pushRoutine( wResult.releaseDelayed() );
+    syncToken->pushRoutine( rY.releaseDelayed() );
 
-        normalGEMV( wResult->get(), alpha, rX->get(), beta, wResult->get(), mNumRows, mNumValues, cooIA->get(),
-                    cooJA->get(), cooValues->get(), syncToken.get() );
-
-        syncToken->pushToken( wResult );
-    }
-    else
-    {
-        shared_ptr<WriteAccess<ValueType> > wResult( new WriteOnlyAccess<ValueType>( result, loc, mNumRows ) );
-        shared_ptr<ReadAccess<ValueType> > rY( new ReadAccess<ValueType>( y, loc ) );
-
-        SCAI_CONTEXT_ACCESS( loc )
-
-        normalGEMV( wResult->get(), alpha, rX->get(), beta, rY->get(), mNumRows, mNumValues, cooIA->get(), cooJA->get(),
-                    cooValues->get(), syncToken.get() );
-
-        syncToken->pushToken( wResult );
-        syncToken->pushToken( rY );
-    }
-
-    syncToken->pushToken( cooIA );
-    syncToken->pushToken( cooJA );
-    syncToken->pushToken( cooValues );
-    syncToken->pushToken( rX );
+    syncToken->pushRoutine( cooIA.releaseDelayed() );
+    syncToken->pushRoutine( cooJA.releaseDelayed() );
+    syncToken->pushRoutine( cooValues.releaseDelayed() );
+    syncToken->pushRoutine( rX.releaseDelayed() );
 
     return syncToken.release();
 }
@@ -1011,7 +973,7 @@ tasking::SyncToken* COOStorage<ValueType>::matrixTimesVectorAsync(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-tasking::SyncToken* COOStorage<ValueType>::vectorTimesMatrixAsync(
+SyncToken* COOStorage<ValueType>::vectorTimesMatrixAsync(
     LAMAArray<ValueType>& result,
     const ValueType alpha,
     const LAMAArray<ValueType>& x,
@@ -1023,14 +985,11 @@ tasking::SyncToken* COOStorage<ValueType>::vectorTimesMatrixAsync(
 
     SCAI_REGION( "Storage.COO.vectorTimesMatrixAsync" )
 
-    ContextPtr loc = getContextPtr();
+    static LAMAKernel<COOKernelTrait::normalGEVM<ValueType> > normalGEVM;
 
-    // Note: checks will be done by asynchronous task in any case
-    //       and exception in tasks are handled correctly
+    ContextPtr loc = normalGEVM.getValidContext( this->getContextPtr() );
 
-    SCAI_LOG_INFO( logger, *this << ": vectorTimesMatrixAsync on " << *loc )
-
-    if( loc->getType() == context::Host )
+    if( loc->getType() == common::context::Host )
     {
         // execution as separate thread
 
@@ -1051,6 +1010,11 @@ tasking::SyncToken* COOStorage<ValueType>::vectorTimesMatrixAsync(
         return new tasking::TaskSyncToken( bind( pf, this, ref( result ), alpha, ref( x ), beta, ref( y ) ) );
     }
 
+    // Note: checks will be done by asynchronous task in any case
+    //       and exception in tasks are handled correctly
+
+    SCAI_LOG_INFO( logger, *this << ": vectorTimesMatrixAsync on " << *loc )
+
     SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumRows )
     SCAI_ASSERT_EQUAL_ERROR( result.size(), mNumColumns )
 
@@ -1059,17 +1023,17 @@ tasking::SyncToken* COOStorage<ValueType>::vectorTimesMatrixAsync(
         SCAI_ASSERT_EQUAL_ERROR( y.size(), mNumColumns )
     }
 
-    LAMA_INTERFACE_FN_T( normalGEVM, loc, COOUtils, Mult, ValueType )
+    unique_ptr<SyncToken> syncToken( loc->getSyncToken() );
 
-    unique_ptr<tasking::SyncToken> syncToken( loc->getSyncToken() );
+    syncToken->setCurrent();
 
     // all accesses will be pushed to the sync token as LAMA arrays have to be protected up
     // to the end of the computations.
 
-    shared_ptr<ReadAccess<IndexType> > cooIA( new ReadAccess<IndexType>( mIA, loc ) );
-    shared_ptr<ReadAccess<IndexType> > cooJA( new ReadAccess<IndexType>( mJA, loc ) );
-    shared_ptr<ReadAccess<ValueType> > cooValues( new ReadAccess<ValueType>( mValues, loc ) );
-    shared_ptr<ReadAccess<ValueType> > rX( new ReadAccess<ValueType>( x, loc ) );
+    ReadAccess<IndexType> cooIA( mIA, loc );
+    ReadAccess<IndexType> cooJA( mJA, loc );
+    ReadAccess<ValueType> cooValues( mValues, loc );
+    ReadAccess<ValueType> rX(  x, loc );
 
     // Possible alias of result and y must be handled by coressponding accesses
 
@@ -1077,35 +1041,37 @@ tasking::SyncToken* COOStorage<ValueType>::vectorTimesMatrixAsync(
     {
         // only write access for y, no read access for result
 
-        shared_ptr<WriteAccess<ValueType> > wResult( new WriteAccess<ValueType>( result, loc ) );
+        WriteAccess<ValueType> wResult( result, loc );
 
-        // we assume that normalGEMV can deal with the alias of result, y
+        // we assume that normalGEVM can deal with the alias of result, y
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        normalGEVM( wResult->get(), alpha, rX->get(), beta, wResult->get(), mNumRows, mNumValues, cooIA->get(),
-                    cooJA->get(), cooValues->get(), syncToken.get() );
+        normalGEVM[loc] ( wResult.get(), alpha, rX.get(), beta, wResult.get(), mNumRows, mNumValues, 
+                          cooIA.get(), cooJA.get(), cooValues.get() );
 
-        syncToken->pushToken( wResult );
+        syncToken->pushRoutine( wResult.releaseDelayed() );
     }
     else
     {
-        shared_ptr<WriteAccess<ValueType> > wResult( new WriteOnlyAccess<ValueType>( result, loc, mNumColumns ) );
-        shared_ptr<ReadAccess<ValueType> > rY( new ReadAccess<ValueType>( y, loc ) );
+        WriteOnlyAccess<ValueType> wResult( result, loc, mNumColumns );
+        ReadAccess<ValueType> rY( y, loc );
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        normalGEVM( wResult->get(), alpha, rX->get(), beta, rY->get(), mNumRows, mNumValues, cooIA->get(), cooJA->get(),
-                    cooValues->get(), syncToken.get() );
+        normalGEVM[loc]( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumRows, mNumValues,
+                         cooIA.get(), cooJA.get(), cooValues.get() );
 
-        syncToken->pushToken( wResult );
-        syncToken->pushToken( rY );
+        syncToken->pushRoutine( wResult.releaseDelayed() );
+        syncToken->pushRoutine( rY.releaseDelayed() );
     }
 
-    syncToken->pushToken( cooIA );
-    syncToken->pushToken( cooJA );
-    syncToken->pushToken( cooValues );
-    syncToken->pushToken( rX );
+    syncToken->pushRoutine( cooIA.releaseDelayed() );
+    syncToken->pushRoutine( cooJA.releaseDelayed() );
+    syncToken->pushRoutine( cooValues.releaseDelayed() );
+    syncToken->pushRoutine( rX.releaseDelayed() );
+
+    syncToken->unsetCurrent();
 
     return syncToken.release();
 }
@@ -1132,14 +1098,11 @@ void COOStorage<ValueType>::jacobiIterate(
 
     SCAI_ASSERT_EQUAL_DEBUG( mNumRows, oldSolution.size() )
     SCAI_ASSERT_EQUAL_DEBUG( mNumRows, solution.size() )
-    SCAI_ASSERT_EQUAL_DEBUG( mNumRows, mNumColumns )
-    // matrix must be square
+    SCAI_ASSERT_EQUAL_DEBUG( mNumRows, mNumColumns )              // matrix must be square
 
-    ContextPtr loc = getContextPtr();
+    static LAMAKernel<COOKernelTrait::jacobi<ValueType> > jacobi;
 
-    // loc = Context::getContextPtr( context::Host );  // does not run on other devices
-
-    LAMA_INTERFACE_FN_DEFAULT_T( jacobi, loc, COOUtils, Solver, ValueType )
+    ContextPtr loc = jacobi.getValidContext( this->getContextPtr() );
 
     WriteAccess<ValueType> wSolution( solution, loc );
     ReadAccess<IndexType> cooIA( mIA, loc );
@@ -1152,8 +1115,8 @@ void COOStorage<ValueType>::jacobiIterate(
 
     SCAI_CONTEXT_ACCESS( loc )
 
-    jacobi( wSolution.get(), mNumValues, cooIA.get(), cooJA.get(), cooValues.get(), rOldSolution.get(), rRhs.get(),
-            omega, mNumRows, NULL );
+    jacobi[loc]( wSolution.get(), mNumValues, cooIA.get(), cooJA.get(), cooValues.get(), 
+                 rOldSolution.get(), rRhs.get(), omega, mNumRows );
 }
 
 /* --------------------------------------------------------------------------- */

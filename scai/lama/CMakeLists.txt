@@ -82,9 +82,12 @@ else   ( )
     add_definitions( -DADD_ )
 endif  ( )
 
-add_definitions ( -D${SCAI_OMP_SCHEDULE_FLAG} )
 add_definitions ( -D${SCAI_LOGGING_FLAG} )
 add_definitions ( -D${SCAI_TRACING_FLAG} )
+
+if ( SCAI_OMP_SCHEDULE_FLAG )
+    add_definitions ( -D${SCAI_OMP_SCHEDULE_FLAG} )
+endif ( SCAI_OMP_SCHEDULE_FLAG )
 
 if ( WIN32 )
 	add_definitions ( -DCOMMON_COMPILING_DLL )
@@ -116,8 +119,6 @@ scai_project(
         Distributed
         LAMAArrayUtils
 #        LAMAArrayView
-        LAMAInterface
-        LAMAInterfaceRegistry
         NoCommunicator
         Scalar
         StorageIO
@@ -125,18 +126,21 @@ scai_project(
 
     HEADERS
 
-        BLASInterface
-        UtilsInterface
+        UtilKernelTrait
+        CSRKernelTrait
+        DenseKernelTrait
+        DIAKernelTrait
+        ELLKernelTrait
+        COOKernelTrait
+        JDSKernelTrait
+
+        LAMAKernel
+
         CRTPCommunicator
     )
 
 ### add subdirectories ###
-
 add_subdirectory( doc )
-
-if    ( NOT SCAI_BLAS_NAME STREQUAL "MKL" AND NOT INTERNALBLAS_FOUND )
-    add_subdirectory( cblas )
-endif ( NOT SCAI_BLAS_NAME STREQUAL "MKL" AND NOT INTERNALBLAS_FOUND )
 
 ## CUDA
 if ( CUDA_FOUND AND USE_CUDA AND CUDA_HAVE_GPU )

@@ -188,6 +188,30 @@ ExternalProject_Add ( scai_hmemo
 	    	BINARY_DIR hmemo
             )
 
+concatCacheArguments ( scai_kregistry "CACHE_ARGS" )
+#message ( STATUS "kregistry CACHE_ARGS ${CACHE_ARGS}" )
+
+ExternalProject_Add ( scai_kregistry
+            DEPENDS ${SCAI_KREGISTRY_INTERNAL_DEPS}
+            PREFIX kregistry
+            SOURCE_DIR ${CMAKE_SOURCE_DIR}/kregistry
+            CMAKE_ARGS "-DSCAI_COMPLETE_BUILD=1"
+            CMAKE_CACHE_ARGS "${CMAKE_ARGS};${CACHE_ARGS}"
+	    	BINARY_DIR kregistry
+            )
+
+concatCacheArguments ( scai_blaskernel "CACHE_ARGS" )
+#message ( STATUS "blaskernel CACHE_ARGS ${CACHE_ARGS}" )
+
+ExternalProject_Add ( scai_blaskernel
+            DEPENDS ${SCAI_BLASKERNEL_INTERNAL_DEPS}
+            PREFIX blaskernel
+            SOURCE_DIR ${CMAKE_SOURCE_DIR}/blaskernel
+            CMAKE_ARGS "-DSCAI_COMPLETE_BUILD=1"
+            CMAKE_CACHE_ARGS "${CMAKE_ARGS};${CACHE_ARGS}"
+	    	BINARY_DIR blaskernel
+            )
+
 concatCacheArguments ( scai_lama "CACHE_ARGS" )
 #message ( STATUS "lama CACHE_ARGS ${CACHE_ARGS}" )
 

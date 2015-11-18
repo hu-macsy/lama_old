@@ -44,9 +44,6 @@ scai_project (
           MICJDSUtils
           MICDIAUtils
           MICCOOUtils
-          MICBLAS1
-          MICBLAS2
-          MICBLAS3
 
     ADD_PARENT_SCOPE
 )

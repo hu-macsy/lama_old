@@ -38,13 +38,19 @@
 #include <scai/lama/openmp/OpenMPUtils.hpp>
 #include <scai/lama/openmp/OpenMPCSRUtils.hpp>
 
-#include <scai/lama/LAMAInterface.hpp>
-#include <scai/lama/LAMAInterfaceRegistry.hpp>
+#include <scai/lama/CSRKernelTrait.hpp>
 
 // internal scai libraries
-#include <scai/common/Assert.hpp>
+
+#include <scai/kregistry/KernelRegistry.hpp>
+
+#include <scai/common/macros/assert.hpp>
 #include <scai/common/Settings.hpp>
+#include <scai/common/Constants.hpp>
+#include <scai/common/exception/UnsupportedException.hpp>
 #include <scai/common/macros/unused.hpp>
+
+#include <scai/tasking/TaskSyncToken.hpp>
 
 #include <scai/tracing.hpp>
 
@@ -54,7 +60,7 @@
 namespace scai
 {
 
-using tasking::SyncToken;
+using tasking::TaskSyncToken;
 
 namespace lama
 {
@@ -75,20 +81,22 @@ void MKLCSRUtils::normalGEMV(
     const IndexType /* nnz */,
     const IndexType csrIA[],
     const IndexType csrJA[],
-    const float csrValues[],
-    SyncToken* syncToken )
+    const float csrValues[] )
 {
     SCAI_REGION( "MKL.scsrmv" )
 
     SCAI_LOG_INFO( logger,
                    "normalGEMV<float>, result[" << numRows << "] = " << alpha << " * A * x + " << beta << " * y " )
 
-    if( syncToken )
+    TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
+
+    if ( syncToken )
     {
-        COMMON_THROWEXCEPTION( "asynchronous execution should be done by LAMATask before" )
+        SCAI_UNSUPPORTED( "asynchronous execution not supported yet" )
+        // ToDo: workaround required as boost::bind supports only up to 9 arguments
     }
 
-    if( y != result && beta != 0.0f )
+    if ( y != result && beta != scai::common::constants::ZERO )
     {
         OpenMPUtils::set( result, y, numRows );
     }
@@ -128,17 +136,18 @@ void MKLCSRUtils::normalGEMV(
     const IndexType /* nnz */,
     const IndexType csrIA[],
     const IndexType csrJA[],
-    const double csrValues[],
-    SyncToken* syncToken )
+    const double csrValues[] )
 {
     SCAI_REGION( "MKL.dcsrmv" )
 
     SCAI_LOG_INFO( logger,
                    "normalGEMV<double>, result[" << numRows << "] = " << alpha << " * A * x + " << beta << " * y " )
 
-    if( syncToken )
+    TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
+
+    if ( syncToken )
     {
-        COMMON_THROWEXCEPTION( "asynchronous execution should be done by LAMATask before" )
+        SCAI_UNSUPPORTED( "asynchronous execution not supported yet" )
     }
 
     if( y != result && beta != 0.0 )
@@ -245,13 +254,13 @@ void MKLCSRUtils::convertCSR2CSC(
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void MKLCSRUtils::setInterface( CSRUtilsInterface& CSRUtils )
+void MKLCSRUtils::registerKernels( bool deleteFlag )
 {
     bool useMKL = true;
 
     // using MKL for CSR might be disabled explicitly by environment variable
 
-    common::Settings::getEnvironment( useMKL, "USE_MKL" );
+    common::Settings::getEnvironment( useMKL, "SCAI_USE_MKL" );
 
     if( !useMKL )
     {
@@ -263,32 +272,47 @@ void MKLCSRUtils::setInterface( CSRUtilsInterface& CSRUtils )
 
     SCAI_LOG_INFO( logger, "set CSR routines for MKL in Host Interface" )
 
-    LAMA_INTERFACE_REGISTER1_T( CSRUtils, normalGEMV, float )
-    LAMA_INTERFACE_REGISTER1_T( CSRUtils, normalGEMV, double )
+    using kregistry::KernelRegistry;
+    using common::context::Host;       // context for registration
+
+    KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_REPLACE ;   // higher priority
+
+    if ( deleteFlag )
+    {
+        flag = KernelRegistry::KERNEL_ERASE;
+    }
+
+    KernelRegistry::set<CSRKernelTrait::normalGEMV<float> >( normalGEMV, Host, flag ); 
+    KernelRegistry::set<CSRKernelTrait::normalGEMV<double> >( normalGEMV, Host, flag ); 
 
     // MKL conversion csr to csc has worse performance than our OpenMP Implementation
     // so we do not use it here.
 
-    // LAMA_INTERFACE_REGISTER1_T( CSRUtils, convertCSR2CSC, float )
-    // LAMA_INTERFACE_REGISTER1_T( CSRUtils, convertCSR2CSC, double )
+    // KernelRegistry::set<CSRKernelTrait::convertCSR2CSC<float> >( convertCSR2CSC, Host, flag ); 
+    // KernelRegistry::set<CSRKernelTrait::convertCSR2CSC<double> >( convertCSR2CSC, Host, flag ); 
 }
 
 /* --------------------------------------------------------------------------- */
-/*    Static registration of the Utils routines                                */
+/*    Constructor/Desctructor with registration                                */
 /* --------------------------------------------------------------------------- */
 
-bool MKLCSRUtils::registerInterface()
+MKLCSRUtils::MKLCSRUtils()
 {
-    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( hmemo::context::Host );
-    setInterface( interface.CSRUtils );
-    return true;
+    bool deleteFlag = false;
+    registerKernels( deleteFlag );
+}
+
+MKLCSRUtils::~MKLCSRUtils()
+{
+    bool deleteFlag = true;
+    registerKernels( deleteFlag );
 }
 
 /* --------------------------------------------------------------------------- */
-/*    Static initialiazion at program start                                    */
+/*    Static variable to force registration during static initialization      */
 /* --------------------------------------------------------------------------- */
 
-bool MKLCSRUtils::initialized = registerInterface();
+MKLCSRUtils MKLCSRUtils::guard;
 
 } /* end namespace lama */
 

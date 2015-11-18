@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief MIC implemenations for routines to be avaialble for COOUtilsInterface.
+ * @brief MIC implemenations for routines to be avaialble for COOKernelTrait.
  * @author Thomas Brandes
  * @date 04.07.2013
  * @since 1.1.0
@@ -44,15 +44,10 @@
 namespace scai
 {
 
-namespace tasking
-{
-    class SyncToken;
-}
-
 namespace lama
 {
 
-/** This class provides MIC implementations to be used for COOUtilsInterface.
+/** This class provides MIC implementations to be used for COOKernelTrait.
  *
  *  COOStorage is not well supported, but we provide conversions between COO
  *  and CSR as well as matrix times vector operation.
@@ -62,7 +57,7 @@ class COMMON_DLL_IMPORTEXPORT MICCOOUtils
 {
 public:
 
-    /** MIC implementation for COOUtilsInterface::Counting::getCSRSizes */
+    /** MIC implementation for COOKernelTrait::getCSRSizes */
 
     static void getCSRSizes(
         IndexType csrSizes[],
@@ -70,10 +65,10 @@ public:
         const IndexType numValues,
         const IndexType cooIA[] );
 
-    /** MIC implementation for COOUtilsInterface::Conversions::getCSRValues */
+    /** MIC implementation for COOKernelTrait::getCSRValues */
 
     template<typename COOValueType,typename CSRValueType>
-    static void getCSRValues(
+    static void getCSRValuesP(
         IndexType csrJA[],
         CSRValueType csrValues[],
         IndexType csrIA[],
@@ -83,7 +78,20 @@ public:
         const IndexType cooJA[],
         const COOValueType cooValues[] );
 
-    /** MIC implementation for COOUtilsInterface::Counting::offsets2ia */
+    /** MIC serial implementation for COOKernelTrait::getCSRValues */
+
+    template<typename COOValueType,typename CSRValueType>
+    static void getCSRValuesS(
+        IndexType csrJA[],
+        CSRValueType csrValues[],
+        IndexType csrIA[],
+        const IndexType numRow,
+        const IndexType numValues,
+        const IndexType cooIA[],
+        const IndexType cooJA[],
+        const COOValueType cooValues[] );
+
+    /** MIC implementation for COOKernelTrait::offsets2ia */
 
     static void offsets2ia(
         IndexType cooIA[],
@@ -92,7 +100,7 @@ public:
         const IndexType numRows,
         const IndexType numDiagonals );
 
-    /** MIC implementation for COOUtilsInterface::Conversions::setCSRData */
+    /** MIC implementation for COOKernelTrait::setCSRData */
 
     template<typename COOValueType,typename CSRValueType>
     static void setCSRData(
@@ -103,7 +111,7 @@ public:
         const IndexType numRows,
         const IndexType numDiagonals );
 
-    /** Implementation for CSRUtilsInterface::Mult::normalGEMV  */
+    /** Implementation for CSRKernelTrait::normalGEMV  */
 
     template<typename ValueType>
     static void normalGEMV(
@@ -116,10 +124,9 @@ public:
         const IndexType numValues,
         const IndexType cooIA[],
         const IndexType cooJA[],
-        const ValueType cooValues[],
-        tasking::SyncToken* syncToken );
+        const ValueType cooValues[] );
 
-    /** Implementation for COOUtilsInterface::Solver::jacobi  */
+    /** Implementation for COOKernelTrait::jacobi  */
 
     template<typename ValueType>
     static void jacobi(
@@ -131,18 +138,24 @@ public:
         const ValueType oldSolution[],
         const ValueType rhs[],
         const ValueType omega,
-        const IndexType numRows,
-        tasking::SyncToken* syncToken );
-
-    /** Routine that registers all routines of this class at the LAMA interface. */
-
-    static void setInterface( struct COOUtilsInterface& COOUtils );
+        const IndexType numRows);
 
 private:
 
-    static bool initialized;
+    /** Routine that registers all methods at the kernel registry. */
 
-    static bool registerInterface();
+    static void registerKernels( bool deleteFlag );
+
+    /** Helper class for (un) registration of kernel routines at static initialization. */
+
+    class RegisterGuard
+    {
+    public:
+        RegisterGuard();
+        ~RegisterGuard();
+    };
+
+    static RegisterGuard guard;  // registration of kernels @ static initialization
 
     /** Logger for this class. */
 

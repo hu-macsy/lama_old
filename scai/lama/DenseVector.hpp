@@ -52,11 +52,12 @@
 
 #include <scai/tasking/SyncToken.hpp>
 
-#include <scai/common/TypeTraits.hpp>
-#include <scai/common/exception/Exception.hpp>
+#include <scai/common/macros/throw.hpp>
 
 // std
 #include <fstream>
+
+using namespace scai::tasking;
 
 namespace scai
 {
@@ -256,7 +257,7 @@ public:
      */
     void readFromFile( const std::string& filename );
 
-    virtual common::scalar::ScalarType getValueType() const;
+    virtual common::ScalarType getValueType() const;
 
     /**
      * Implementation of pure method.
@@ -341,7 +342,7 @@ public:
      * @param[in] halo  the halo which describes which remote values should be put into the halo cache.
      * @return          a SyncToken which can be used to synchronize to the asynchronous update.
      */
-    tasking::SyncToken* updateHaloAsync( const Halo& halo ) const;
+    SyncToken* updateHaloAsync( const Halo& halo ) const;
 
     virtual Scalar getValue( IndexType globalIndex ) const;
 
@@ -356,15 +357,15 @@ public:
     virtual Scalar maxNorm() const;
 
     static void vectorPlusVector(
-        hmemo::ContextPtr context,
-        hmemo::LAMAArray<ValueType>& result,
+        scai::hmemo::ContextPtr prefContext,
+        scai::hmemo::LAMAArray<ValueType>& result,
         const ValueType alpha,
-        const hmemo::LAMAArray<ValueType>& x,
+        const scai::hmemo::LAMAArray<ValueType>& x,
         const ValueType beta,
-        const hmemo::LAMAArray<ValueType>& y );
+        const scai::hmemo::LAMAArray<ValueType>& y );
 
-    static tasking::SyncToken* vectorPlusVectorAsync(
-        hmemo::ContextPtr context,
+    static SyncToken* vectorPlusVectorAsync(
+        hmemo::ContextPtr prefContext,
         hmemo::LAMAArray<ValueType>& result,
         const ValueType alpha,
         const hmemo::LAMAArray<ValueType>& x,
@@ -471,7 +472,7 @@ public:
 
     // key for factory 
 
-    static std::pair<VectorKind, common::scalar::ScalarType> createValue();
+    static std::pair<VectorKind, common::ScalarType> createValue();
 };
 
 /* ------------------------------------------------------------------------- */

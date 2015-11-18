@@ -40,7 +40,7 @@
 // internal scai libraries
 #include <scai/tasking/NoSyncToken.hpp>
 
-#include <scai/common/Assert.hpp>
+#include <scai/common/macros/assert.hpp>
 #include <scai/common/weak_ptr.hpp>
 
 using namespace std;
@@ -66,7 +66,7 @@ NoCommunicator::~NoCommunicator()
 
 hmemo::ContextPtr NoCommunicator::getCommunicationContext( const hmemo::ContextArray& ) const
 {
-    return hmemo::Context::getContextPtr( hmemo::context::Host );
+    return hmemo::Context::getHostPtr();
 }
 
 bool NoCommunicator::isEqual( const Communicator& other ) const
@@ -186,6 +186,12 @@ template<typename ValueType>
 void NoCommunicator::bcastImpl( ValueType[], const IndexType, const PartitionId root ) const
 {
     SCAI_ASSERT_EQUAL_ERROR( root, 0 )
+}
+
+template<typename ValueType>
+void NoCommunicator::all2allvImpl( ValueType**, IndexType[], ValueType**, IndexType[] /*sendCount[]*/ ) const
+{
+   // SCAI_ASSERT_EQUAL_ERROR(sendCount,0)
 }
 
 template<typename ValueType>

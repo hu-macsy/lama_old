@@ -34,8 +34,9 @@ scai_project(
 
     CLASSES
 
-        Exception
         AssertException
+        Exception
+        NotSupportedValueTypeException
         UnsupportedException
 
     ADD_PARENT_SCOPE

@@ -37,15 +37,16 @@
 
 // local library
 #include <scai/lama/mic/MICUtils.hpp>
-#include <scai/lama/LAMAInterface.hpp>
-#include <scai/lama/LAMAInterfaceRegistry.hpp>
+#include <scai/lama/DIAKernelTrait.hpp>
 
 // internal scai libraries
-#include <scai/tasking/TaskSyncToken.hpp>
+#include <scai/hmemo/mic/MICSyncToken.hpp>
+#include <scai/kregistry/KernelRegistry.hpp>
+#include <scai/common/ScalarType.hpp>
 
 #include <scai/tracing.hpp>
 
-#include <scai/common/Assert.hpp>
+#include <scai/common/macros/assert.hpp>
 
 // std
 #include <cmath>
@@ -54,7 +55,7 @@ namespace scai
 {
 
 using namespace hmemo;
-using tasking::SyncToken;
+using tasking::MICSyncToken;
 
 namespace lama
 {
@@ -308,11 +309,17 @@ void MICDIAUtils::normalGEMV(
     const IndexType numColumns,
     const IndexType numDiagonals,
     const IndexType diaOffsets[],
-    const ValueType diaValues[],
-    SyncToken* syncToken )
+    const ValueType diaValues[] )
 {
     SCAI_LOG_INFO( logger,
                    "normalGEMV<" << common::getScalarType<ValueType>() << ">, result[" << numRows << "] = " << alpha << " * A( dia, #diags = " << numDiagonals << " ) * x + " << beta << " * y " )
+
+    MICSyncToken* syncToken = MICSyncToken::getCurrentSyncToken();
+
+    if ( syncToken )
+    {
+        SCAI_LOG_INFO( logger, "asynchronous execution for for MIC not supported yet" )
+    }
 
     // result := alpha * A * x + beta * y -> result:= beta * y; result += alpha * A
 
@@ -376,8 +383,7 @@ void MICDIAUtils::jacobi(
     const ValueType oldSolution[],
     const ValueType rhs[],
     const ValueType omega,
-    const IndexType numRows,
-    class SyncToken* syncToken )
+    const IndexType numRows )
 {
     // SCAI_REGION( "MIC.DIA.Jacobi" )
 
@@ -386,9 +392,11 @@ void MICDIAUtils::jacobi(
 
     // main diagonal must be first
 
-    if( syncToken != NULL )
+    MICSyncToken* syncToken = MICSyncToken::getCurrentSyncToken();
+
+    if ( syncToken )
     {
-        SCAI_LOG_ERROR( logger, "jacobi called asynchronously, not supported here" )
+        SCAI_LOG_INFO( logger, "asynchronous execution for for MIC not supported yet" )
     }
 
     void* solutionPtr = solution;
@@ -457,11 +465,19 @@ void MICDIAUtils::jacobi(
 
 /* --------------------------------------------------------------------------- */
 
-void MICDIAUtils::setInterface( DIAUtilsInterface& DIAUtils )
+void MICDIAUtils::registerKernels( bool deleteFlag )
 {
-    // Register all CUDA routines of this class for the LAMA interface
+    SCAI_LOG_INFO( logger, "register DIA kernels for MIC in Kernel Registry" )
 
-    SCAI_LOG_INFO( logger, "set DIA routines for MIC in Interface" )
+    using kregistry::KernelRegistry;
+    using common::context::MIC;
+
+    KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // add it or delete it
+
+    if ( deleteFlag )
+    {
+        flag = KernelRegistry::KERNEL_ERASE;
+    }
 
     /*
      LAMA_INTERFACE_REGISTER_T( DIAUtils, getCSRSizes, float )
@@ -476,29 +492,30 @@ void MICDIAUtils::setInterface( DIAUtilsInterface& DIAUtils )
      LAMA_INTERFACE_REGISTER_T( DIAUtils, absMaxVal, double )
      */
 
-    LAMA_INTERFACE_REGISTER_T( DIAUtils, normalGEMV, float )
-    LAMA_INTERFACE_REGISTER_T( DIAUtils, normalGEMV, double )
+    KernelRegistry::set<DIAKernelTrait::normalGEMV<float> >( normalGEMV, MIC, flag );
+    KernelRegistry::set<DIAKernelTrait::normalGEMV<double> >( normalGEMV, MIC, flag );
 
-    LAMA_INTERFACE_REGISTER_T( DIAUtils, jacobi, float )
-    LAMA_INTERFACE_REGISTER_T( DIAUtils, jacobi, double )
+    KernelRegistry::set<DIAKernelTrait::jacobi<float> >( jacobi, MIC, flag );
+    KernelRegistry::set<DIAKernelTrait::jacobi<double> >( jacobi, MIC, flag );
 }
 
 /* --------------------------------------------------------------------------- */
-/*    Static registration of the DIAUtils routines                             */
+/*    Static initialization with registration                                  */
 /* --------------------------------------------------------------------------- */
 
-bool MICDIAUtils::registerInterface()
+MICDIAUtils::RegisterGuard::RegisterGuard()
 {
-    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( hmemo::context::MIC );
-    setInterface( interface.DIAUtils );
-    return true;
+    bool deleteFlag = false;
+    registerKernels( deleteFlag );
 }
 
-/* --------------------------------------------------------------------------- */
-/*    Static initialiazion at program start                                    */
-/* --------------------------------------------------------------------------- */
+MICDIAUtils::RegisterGuard::~RegisterGuard()
+{
+    bool deleteFlag = true;
+    registerKernels( deleteFlag );
+}
 
-bool MICDIAUtils::initialized = registerInterface();
+MICDIAUtils::RegisterGuard MICDIAUtils::guard;    // guard variable for registration
 
 } /* end namespace lama */
 

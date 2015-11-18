@@ -97,11 +97,13 @@ void bench( ContextPtr host, ContextPtr device )
 
 int main()
 {
-    ContextPtr host = Context::getContextPtr( context::Host );
+    using namespace scai::common::context;  // CUDA, MIC
 
-    if ( Context::canCreate( context::CUDA ) )
+    ContextPtr host = Context::getHostPtr();
+
+    if ( Context::canCreate( CUDA ) )
     {
-        ContextPtr cuda = Context::getContextPtr( context :: CUDA );
+        ContextPtr cuda = Context::getContextPtr( CUDA );
         std::cout << "CUDA bench test, context = " << *cuda << std::endl;
         bench( host, cuda );
     }
@@ -110,9 +112,9 @@ int main()
         std::cout << "No CUDA bench test, CUDA context not available" << std::endl;
     }
 
-    if ( Context::canCreate( context::MIC ) )
+    if ( Context::canCreate( MIC ) )
     {
-        ContextPtr mic = Context::getContextPtr( context :: MIC );
+        ContextPtr mic = Context::getContextPtr( MIC );
         std::cout << "MIC bench test, context = " << *mic << std::endl;
         bench( host, mic );
     }

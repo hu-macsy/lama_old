@@ -48,7 +48,7 @@
 
 #include <scai/logging.hpp>
 
-#include <scai/common/Assert.hpp>
+#include <scai/common/macros/assert.hpp>
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/shared_ptr.hpp>
 
@@ -479,7 +479,13 @@ public:
             const IndexType n,                                                \
             const PartitionId root ) const = 0;                               \
     \
-    virtual void scatter(                                                 \
+        virtual void all2allv(                                                \
+            ARRAY_TYPE##I* recvVal[],                                         \
+            IndexType recvCount[],                                            \
+             ARRAY_TYPE##I* sendVal[],                                        \
+            IndexType sendCount[] ) const = 0;                                \
+    \
+        virtual void scatter(                                                 \
             ARRAY_TYPE##I myvals[],                                           \
             const IndexType n,                                                \
             const PartitionId root,                                           \
@@ -576,6 +582,10 @@ public:
      *  This class provides one implementation, but derived classes might override it.
      */
     virtual void bcast( std::string&, const PartitionId root ) const;
+
+
+    template<typename ValueType>
+    void all2allv( ValueType* recvBuffer[], IndexType recvCount[],  ValueType* sendBuffer[], IndexType sendCount[] ) const;   
 
     /** @brief allgather is combination of gather and broadcast
      *
@@ -749,7 +759,9 @@ PartitionId Communicator::getNeighbor( int pos ) const
     PartitionId size = getSize();
     PartitionId rank = getRank();
 
-    SCAI_ASSERT( std::abs( pos ) <= size, "neighbor pos "<<pos<<" out of range ("<<size<<")" )
+    PartitionId apos = std::abs( pos );
+
+    SCAI_ASSERT( apos <= size, "neighbor pos " << pos << " out of range (" << size << ")" )
 
     return ( size + rank + pos ) % size;
 }
@@ -803,17 +815,16 @@ tasking::SyncToken* Communicator::exchangeByPlanAsync(
 
     SCAI_LOG_DEBUG( logger, *this << ": exchangeByPlanAsync, comCtx = " << *comCtx )
 
-    common::shared_ptr<hmemo::ReadAccess<ValueType> > sendData( new hmemo::ReadAccess<ValueType>( sendArray, comCtx ) );
-    common::shared_ptr<hmemo::WriteAccess<ValueType> > recvData(
-                    new hmemo::WriteOnlyAccess<ValueType>( recvArray, comCtx, recvSize ) );
+    hmemo::ReadAccess<ValueType> sendData( sendArray, comCtx );
+    hmemo::WriteOnlyAccess<ValueType> recvData( recvArray, comCtx, recvSize );
 
-    tasking::SyncToken* token( exchangeByPlanAsync( recvData->get(), recvPlan, sendData->get(), sendPlan ) );
+    tasking::SyncToken* token( exchangeByPlanAsync( recvData.get(), recvPlan, sendData.get(), sendPlan ) );
 
     // Add the read and write access to the sync token to get it freed after successful wait
     // conversion common::shared_ptr<hmemo::HostWriteAccess<ValueType> > -> common::shared_ptr<BaseAccess> supported
 
-    token->pushToken( recvData );
-    token->pushToken( sendData );
+    token->pushRoutine( recvData.releaseDelayed() );
+    token->pushRoutine( sendData.releaseDelayed() );
 
     // return ownership of new created object
 

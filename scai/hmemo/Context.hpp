@@ -41,6 +41,7 @@
 #include <scai/common/Factory1.hpp>
 #include <scai/common/Printable.hpp>
 #include <scai/common/NonCopyable.hpp>
+#include <scai/common/ContextType.hpp>
 
 // internal scai libraries
 #include <scai/logging.hpp>
@@ -56,11 +57,6 @@ namespace tasking
     class SyncToken;    // forward declaration
 }
 
-namespace lama
-{
-    class LAMAInterface;
-}
-
 /** Namespace for all data structures of the context memory management. */
 
 namespace hmemo
@@ -68,48 +64,13 @@ namespace hmemo
 
 class Memory;  // forward declaration
 
-typedef scai::common::shared_ptr<Memory> MemoryPtr;
+typedef common::shared_ptr<Memory> MemoryPtr;
 
 class Context;   // forward declaration
 
 /** Context pointers will be always const, so context can never be modified. */
 
-typedef scai::common::shared_ptr<const Context> ContextPtr;
-
-/** Namespace for enumeration of context types and access kinds. */
-
-namespace context
-{
-    /** Enumeration type for the supported contexts. The type is used to select
-     *  the appropriate code that will be used for the computations in the context.
-     *
-     *  The same context type does not imply that two different contexts can use
-     *  the same data. Two CUDA contexts might allocate their own data where data
-     *  must be transfered explicitly.
-     */
-    enum ContextType
-    {
-        Host,          //!< context for cpu + main memory
-        CUDA,          //!< CUDA GPU device
-        OpenCL,        //!< OpenCL GPU device, currently not supported
-        MIC,           //!< Intel MIC
-        UserContext,   //!< can be used for a new derived Context class
-        MaxContext     //!< used for dimension of ContextType arrays
-    };
-
-    /** Enumeration type for access kind, may be read or write */
-
-    enum AccessKind
-    {
-        Read, //!<  read access to the array, can be multiple
-        Write, //!<  write access to the array, only one at a time
-        MaxAccessKind //!<  internal use for dimension of arrays
-    };
-
-    COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const ContextType& type );
-
-    COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const AccessKind& kind );
-}
+typedef common::shared_ptr<const Context> ContextPtr;
 
 /** @brief This class is a common base class for all possible contexts.
  *
@@ -125,9 +86,9 @@ namespace context
  */
 class COMMON_DLL_IMPORTEXPORT Context: 
   
-    public  scai::common::Factory1<context::ContextType, int, ContextPtr>,
-    public  scai::common::Printable,
-    private scai::common::NonCopyable
+    public  common::Factory1<common::context::ContextType, int, ContextPtr>,
+    public  common::Printable,
+    private common::NonCopyable
 {
 public:
 
@@ -135,7 +96,7 @@ public:
 
     /** Method to get the type of the context. */
 
-    context::ContextType getType() const;
+    common::context::ContextType getType() const;
 
     /** @brief  Predicate to check in a context whether a certain memory class can be used.
      *
@@ -173,10 +134,6 @@ public:
      */
     virtual void disable( const char* file, int line ) const;
 
-    /** This method returns the LAMA interface for a given context. */
-
-    const lama::LAMAInterface& getInterface() const;
-
     /** This method returns the memory that can be used at this context. 
      *
      *  Note: canUseMemory( *getMemory() ) must be true.
@@ -212,13 +169,13 @@ public:
      *
      *  @throws Exception if the context of the requested type is not available
      */
-    static ContextPtr getContextPtr( const context::ContextType type = context::Host, int deviceNr = -1 );
+    static ContextPtr getContextPtr( const common::context::ContextType type = common::context::Host, int deviceNr = -1 );
 
     /** @brief getHostPtr() as abbreviation of getContextPtr( context::Host ) */
 
     static ContextPtr getHostPtr()
     {
-        return getContextPtr( context::Host );
+        return getContextPtr( common::context::Host );
     }
 
     /** Checks if a context of the passed type is available.
@@ -226,17 +183,17 @@ public:
      * @param[in] type  is the type of context that is wanted
      * @return          if a context of the passed type is available
      */
-    static bool hasContext( const context::ContextType type );
+    static bool hasContext( const common::context::ContextType type );
 
 protected:
 
     /** Default constructor, can only be called by base classes. */
 
-    Context( context::ContextType type );
+    Context( common::context::ContextType type );
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
-    context::ContextType mContextType;
+    common::context::ContextType mContextType;
 
     mutable bool mEnabled; //!<  if true the context is currently accessed
 
@@ -245,12 +202,12 @@ protected:
     mutable int mLine;//!< Line number where context has been enabled
 };
 
-inline context::ContextType Context::getType() const
+inline common::context::ContextType Context::getType() const
 {
     return mContextType;
 }
 
-inline bool Context::hasContext( const context::ContextType type )
+inline bool Context::hasContext( const common::context::ContextType type )
 {
     return canCreate( type );
 }

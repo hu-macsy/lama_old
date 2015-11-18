@@ -38,7 +38,7 @@
 #include <scai/hmemo/ContextAccess.hpp>
 
 // internal scai libraries
-#include <scai/common/Assert.hpp>
+#include <scai/common/macros/assert.hpp>
 #include <scai/common/cuda/CUDAError.hpp>
 
 namespace scai
@@ -155,6 +155,31 @@ void CUDAStreamSyncToken::synchronizeEvent( const CUevent event ) const
     SCAI_CONTEXT_ACCESS( mCUDAContext )
     SCAI_CUDA_DRV_CALL( cuEventSynchronize( event ), "cuEventSynchronize failed for CUevent "<<event<<'.' )
 }
+
+CUDAStreamSyncToken* CUDAStreamSyncToken::getCurrentSyncToken()
+{
+    SyncToken* syncToken = SyncToken::getCurrentSyncToken();
+   
+    if ( syncToken == NULL )
+    {
+        return NULL;
+    }
+
+    // make a dynamic CAST
+
+    CUDAStreamSyncToken* cudaStreamSyncToken = dynamic_cast<CUDAStreamSyncToken*>( syncToken );
+
+    // If the current sync token is not a CUDA stream token it is very likely an error
+
+    if ( cudaStreamSyncToken == NULL )
+    {
+        SCAI_LOG_ERROR( logger, "Current sync token = " << *syncToken << " not CUDAStreamSyncToken as expected" )
+    }
+
+    // But might not be too serious so probably NULL results in synchronous execution
+
+    return cudaStreamSyncToken;
+}   
 
 } /* end namespace hmemo */
 

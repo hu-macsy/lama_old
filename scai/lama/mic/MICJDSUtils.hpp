@@ -40,24 +40,16 @@
 #include <scai/lama/Scalar.hpp>
 
 // internal scai libraries
-#include <scai/tasking/SyncToken.hpp>
-
 #include <scai/logging.hpp>
-
 #include <scai/common/SCAITypes.hpp>
 
 namespace scai
 {
 
-namespace tasking
-{
-    class SyncToken;   // forward declaration
-}
-
 namespace lama
 {
 
-/** This class provides MIC implementations as needed for JDSUtilsInterface.  */
+/** This class provides MIC implementations as needed for JDSUtilKernelTrait.  */
 
 class COMMON_DLL_IMPORTEXPORT MICJDSUtils
 {
@@ -88,7 +80,7 @@ public:
         const IndexType ja[],
         const ValueType values[] );
 
-    template<typename ValueType,typename NoType>
+    template<typename ValueType>
     static ValueType getValue(
         const IndexType i,
         const IndexType j,
@@ -113,11 +105,11 @@ public:
 
     static void sortRows( IndexType array[], IndexType perm[], const IndexType n );
 
-    /** Compute the inverse permutation as specified in JDSUtilsInterface::Sort::setInversePerm */
+    /** Compute the inverse permutation as specified in JDSUtilKernelTrait::Sort::setInversePerm */
 
     static void setInversePerm( IndexType inversePerm[], const IndexType perm[], const IndexType n );
 
-    /** Compute dlg array from ilg array as specified in JDSUtilsInterface::Conversions::ilg2dlg */
+    /** Compute dlg array from ilg array as specified in JDSUtilKernelTrait::Conversions::ilg2dlg */
 
     static IndexType ilg2dlg(
         IndexType dlg[],
@@ -125,7 +117,7 @@ public:
         const IndexType ilg[],
         const IndexType numRows );
 
-    /** Conversion of JDS to CSR as specified in JDSUtilsInterface::Conversions::getCSRValues  */
+    /** Conversion of JDS to CSR as specified in JDSKernelTrait::getCSRValues  */
 
     template<typename JDSValueType,typename CSRValueType>
     static void getCSRValues(
@@ -139,7 +131,7 @@ public:
         const IndexType jdsJA[],
         const JDSValueType jdsValues[] );
 
-    /** Conversion of CSR to JDS as specified in JDSUtilsInterface::Conversions::setCSRValues. */
+    /** Conversion of CSR to JDS as specified in JDSKernelTrait::setCSRValues. */
 
     template<typename JDSValueType,typename CSRValueType>
     static void setCSRValues(
@@ -154,7 +146,7 @@ public:
         const IndexType csrJA[],
         const CSRValueType csrValues[] );
 
-    /** Implementation for JDSUtilsInterface::Mult:normalGEMV with MIC on Host */
+    /** Implementation for JDSKernelTrait::normalGEMV on Intel MIC architecture */
 
     template<typename ValueType>
     static void normalGEMV(
@@ -169,8 +161,9 @@ public:
         const IndexType ndlg,
         const IndexType jdsDLG[],
         const IndexType jdsJA[],
-        const ValueType jdsValues[],
-        tasking::SyncToken* syncToken );
+        const ValueType jdsValues[] );
+
+    /** Implementation for JDSKernelTrait::jacobi on Intel MIC architecture */
 
     template<typename ValueType>
     static void jacobi(
@@ -184,8 +177,9 @@ public:
         const ValueType jdsValues[],
         const ValueType oldSolution[],
         const ValueType rhs[],
-        const ValueType omega,
-        tasking::SyncToken* syncToken );
+        const ValueType omega );
+
+    /** Implementation for JDSKernelTrait::jacobiHalo on Intel MIC architecture */
 
     template<typename ValueType>
     static void jacobiHalo(
@@ -199,20 +193,28 @@ public:
         const IndexType jdsHaloJA[],
         const ValueType jdsHaloValues[],
         const ValueType oldSolution[],
-        const ValueType omega,
-        tasking::SyncToken* syncToken );
+        const ValueType omega );
 
-    /** Method for registration of module routines at the interface. */
-
-    static void setInterface( struct JDSUtilsInterface& JDSUtils );
-
-private:
+protected:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
-    static    bool initialized;
+private:
 
-    static bool registerInterface();
+    /** Routine that registers all methods at the kernel registry. */
+
+    static void registerKernels( bool deleteFlag );
+
+    /** Helper class for (un) registration of kernel routines at static initialization. */
+
+    class RegisterGuard
+    {
+    public:
+        RegisterGuard();
+        ~RegisterGuard();
+    };
+
+    static RegisterGuard guard;  // registration of kernels @ static initialization
 };
 
 /* --------------------------------------------------------------------------- */

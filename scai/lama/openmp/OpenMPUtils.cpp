@@ -35,9 +35,10 @@
 #include <scai/lama/openmp/OpenMPUtils.hpp>
 
 // local library
-#include <scai/lama/LAMAInterfaceRegistry.hpp>
+#include <scai/lama/UtilKernelTrait.hpp>
 
 // internal scai libraries
+#include <scai/kregistry/KernelRegistry.hpp>
 #include <scai/tracing.hpp>
 
 #include <scai/common/Constants.hpp>
@@ -107,14 +108,14 @@ void OpenMPUtils::setScale(
 
     // alias of outValues == inValues is no problem
 
-    if( value == scai::common::constants::ZERO )
+    if ( value == scai::common::constants::ZERO )
     {
         // Important : inValues might be undefined
         setVal( outValues, n, value );
         return;
     }
 
-    if( value == scai::common::constants::ONE )
+    if ( value == scai::common::constants::ONE )
     {
         set( outValues, inValues, n );
         return;
@@ -464,43 +465,56 @@ void OpenMPUtils::invert( ValueType array[], const IndexType n )
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void OpenMPUtils::setInterface( UtilsInterface& Utils )
+void OpenMPUtils::registerKernels( bool deleteFlag )
 {
+    using namespace scai::kregistry;
+    using common::context::Host;
+
+    KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // add it or delete it
+ 
+    if ( deleteFlag )
+    {
+        flag = KernelRegistry::KERNEL_ERASE;
+    }
+
     // Instantations for IndexType, not done by ARITHMETIC_TYPE macrods
 
-    LAMA_INTERFACE_REGISTER( Utils, validIndexes )
+    KernelRegistry::set<UtilKernelTrait::validIndexes>( validIndexes, Host, flag );
 
     // we keep the registrations for IndexType as we do not need conversions
 
-    LAMA_INTERFACE_REGISTER_T( Utils, sum, IndexType )
-    LAMA_INTERFACE_REGISTER_T( Utils, setVal, IndexType )
-    LAMA_INTERFACE_REGISTER_T( Utils, setOrder, IndexType )
-    LAMA_INTERFACE_REGISTER_T( Utils, getValue, IndexType )
-    LAMA_INTERFACE_REGISTER_T( Utils, maxval, IndexType )
-    LAMA_INTERFACE_REGISTER_T( Utils, isSorted, IndexType )
+    KernelRegistry::set<UtilKernelTrait::sum<IndexType> >( sum, Host, flag );
 
-    LAMA_INTERFACE_REGISTER_TT( Utils, setScatter, IndexType, IndexType )
-    LAMA_INTERFACE_REGISTER_TT( Utils, setGather, IndexType, IndexType )
-    LAMA_INTERFACE_REGISTER_TT( Utils, set, IndexType, IndexType )
+    KernelRegistry::set<UtilKernelTrait::setVal<IndexType> >( setVal, Host, flag );
+    KernelRegistry::set<UtilKernelTrait::setOrder<IndexType> >( setOrder, Host, flag );
+    KernelRegistry::set<UtilKernelTrait::getValue<IndexType> >( getValue, Host, flag );
 
-#define LAMA_UTILS2_REGISTER(z, J, TYPE )                                             \
-    LAMA_INTERFACE_REGISTER_TT( Utils, setScale, TYPE, ARITHMETIC_HOST_TYPE_##J )     \
-    LAMA_INTERFACE_REGISTER_TT( Utils, setGather, TYPE, ARITHMETIC_HOST_TYPE_##J )    \
-    LAMA_INTERFACE_REGISTER_TT( Utils, setScatter, TYPE, ARITHMETIC_HOST_TYPE_##J )   \
-    LAMA_INTERFACE_REGISTER_TT( Utils, set, TYPE, ARITHMETIC_HOST_TYPE_##J )          \
+    KernelRegistry::set<UtilKernelTrait::maxval<IndexType> >( maxval, Host, flag );
+    KernelRegistry::set<UtilKernelTrait::isSorted<IndexType> >( isSorted, Host, flag );
 
-#define LAMA_UTILS_REGISTER(z, I, _)                                                       \
-    LAMA_INTERFACE_REGISTER_T( Utils, scale, ARITHMETIC_HOST_TYPE_##I )                    \
-    LAMA_INTERFACE_REGISTER_T( Utils, sum, ARITHMETIC_HOST_TYPE_##I )                      \
-    LAMA_INTERFACE_REGISTER_T( Utils, setVal, ARITHMETIC_HOST_TYPE_##I )                   \
-    LAMA_INTERFACE_REGISTER_T( Utils, getValue, ARITHMETIC_HOST_TYPE_##I )                 \
-    LAMA_INTERFACE_REGISTER_T( Utils, maxval, ARITHMETIC_HOST_TYPE_##I )                   \
-    LAMA_INTERFACE_REGISTER_T( Utils, absMaxVal, ARITHMETIC_HOST_TYPE_##I )                \
-    LAMA_INTERFACE_REGISTER_T( Utils, absMaxDiffVal, ARITHMETIC_HOST_TYPE_##I )            \
-    LAMA_INTERFACE_REGISTER_T( Utils, isSorted, ARITHMETIC_HOST_TYPE_##I )                 \
-    LAMA_INTERFACE_REGISTER_T( Utils, invert, ARITHMETIC_HOST_TYPE_##I )                   \
-    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT,                                             \
-                     LAMA_UTILS2_REGISTER,                                                 \
+    KernelRegistry::set<UtilKernelTrait::setScatter<IndexType, IndexType> >( setScatter, Host, flag );
+    KernelRegistry::set<UtilKernelTrait::setGather<IndexType, IndexType> >( setGather, Host, flag );
+    KernelRegistry::set<UtilKernelTrait::set<IndexType, IndexType> >( set, Host, flag );
+
+#define LAMA_UTILS2_REGISTER(z, J, TYPE )                                                                        \
+    KernelRegistry::set<UtilKernelTrait::setScale<TYPE, ARITHMETIC_HOST_TYPE_##J> >( setScale, Host, flag );     \
+    KernelRegistry::set<UtilKernelTrait::setGather<TYPE, ARITHMETIC_HOST_TYPE_##J> >( setGather, Host, flag );   \
+    KernelRegistry::set<UtilKernelTrait::setScatter<TYPE, ARITHMETIC_HOST_TYPE_##J> >( setScatter, Host, flag ); \
+    KernelRegistry::set<UtilKernelTrait::set<TYPE, ARITHMETIC_HOST_TYPE_##J> >( set, Host, flag );               \
+
+#define LAMA_UTILS_REGISTER(z, I, _)                                                                             \
+    KernelRegistry::set<UtilKernelTrait::scale<ARITHMETIC_HOST_TYPE_##I> >( scale, Host, flag );                 \
+    KernelRegistry::set<UtilKernelTrait::sum<ARITHMETIC_HOST_TYPE_##I> >( sum, Host, flag );                     \
+    KernelRegistry::set<UtilKernelTrait::setVal<ARITHMETIC_HOST_TYPE_##I> >( setVal, Host, flag );               \
+    KernelRegistry::set<UtilKernelTrait::setOrder<ARITHMETIC_HOST_TYPE_##I> >( setOrder, Host, flag );           \
+    KernelRegistry::set<UtilKernelTrait::getValue<ARITHMETIC_HOST_TYPE_##I> >( getValue, Host, flag );           \
+    KernelRegistry::set<UtilKernelTrait::maxval<ARITHMETIC_HOST_TYPE_##I> >( maxval, Host, flag );               \
+    KernelRegistry::set<UtilKernelTrait::absMaxVal<ARITHMETIC_HOST_TYPE_##I> >( absMaxVal, Host, flag );         \
+    KernelRegistry::set<UtilKernelTrait::absMaxDiffVal<ARITHMETIC_HOST_TYPE_##I> >( absMaxDiffVal, Host, flag ); \
+    KernelRegistry::set<UtilKernelTrait::isSorted<ARITHMETIC_HOST_TYPE_##I> >( isSorted, Host, flag );           \
+    KernelRegistry::set<UtilKernelTrait::invert<ARITHMETIC_HOST_TYPE_##I> >( invert, Host, flag );               \
+    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT,                                                                   \
+                     LAMA_UTILS2_REGISTER,                                                                       \
                      ARITHMETIC_HOST_TYPE_##I )
 
     BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_UTILS_REGISTER, _ )
@@ -511,21 +525,26 @@ void OpenMPUtils::setInterface( UtilsInterface& Utils )
 }
 
 /* --------------------------------------------------------------------------- */
-/*    Static registration of the Utils routines                                */
+/*    Constructor/Desctructor with registration                                */
 /* --------------------------------------------------------------------------- */
 
-bool OpenMPUtils::registerInterface()
+OpenMPUtils::OpenMPUtils()
 {
-    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( hmemo::context::Host );
-    setInterface( interface.Utils );
-    return true;
+    bool deleteFlag = false;  
+    registerKernels( deleteFlag );
+}
+
+OpenMPUtils::~OpenMPUtils()
+{
+    bool deleteFlag = true;
+    registerKernels( deleteFlag );
 }
 
 /* --------------------------------------------------------------------------- */
-/*    Static initialiazion at program start                                    */
+/*    Static variable to force registration during static initialization      */
 /* --------------------------------------------------------------------------- */
 
-bool OpenMPUtils::initialized = registerInterface();
+OpenMPUtils OpenMPUtils::guard;   
 
 } /* end namespace lama */
 

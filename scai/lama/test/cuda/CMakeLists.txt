@@ -43,7 +43,7 @@ scai_project (
 #       CUDA_HostContextTest
         CUDA_MatrixStorageTest
 #       CUDA_VectorTest
-#       CUDA_InterfaceRegistryTest
+        CUDA_KernelRegistryTest
 
 )
 

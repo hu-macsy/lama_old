@@ -48,7 +48,7 @@
 #include <scai/common/shared_ptr.hpp>
 
 //boost
-#include <boost/lexical_cast.hpp>
+//#include <boost/lexical_cast.hpp>
 
 namespace scai
 {
@@ -282,7 +282,7 @@ public:
     virtual void setDenseData(
         DistributionPtr rowDistribution,
         DistributionPtr colDistribution,
-        const ContextArray& values,
+        const hmemo::ContextArray& values,
         const Scalar eps );
 
     /** Implementation for pure method Matrix::setCSRData. */
@@ -291,29 +291,29 @@ public:
         DistributionPtr rowDist,
         DistributionPtr colDist,
         const IndexType numValues,
-        const LAMAArray<IndexType>& ia,
-        const LAMAArray<IndexType>& ja,
-        const ContextArray& values );
+        const hmemo::LAMAArray<IndexType>& ia,
+        const hmemo::LAMAArray<IndexType>& ja,
+        const hmemo::ContextArray& values );
 
     /** Implementation of pure method for the dense storage format. */
 
-    virtual void buildCSRData( LAMAArray<IndexType>& rowIA, LAMAArray<IndexType>& rowJA, ContextArray& rowValues ) const;
+    virtual void buildCSRData( hmemo::LAMAArray<IndexType>& rowIA, hmemo::LAMAArray<IndexType>& rowJA, hmemo::ContextArray& rowValues ) const;
 
     /** Implementation of pure method. */
 
     virtual void setCSRData(
-        const LAMAArray<IndexType>& rowIA,
-        const LAMAArray<IndexType>& rowJA,
-        const ContextArray& rowValues,
+        const hmemo::LAMAArray<IndexType>& rowIA,
+        const hmemo::LAMAArray<IndexType>& rowJA,
+        const hmemo::ContextArray& rowValues,
         DistributionPtr rowDistribution,
         DistributionPtr colDistribution );
 
     /** Local version of setCSRData . */
 
     void setCSRDataLocal(
-        const LAMAArray<IndexType>& rowIA,
-        const LAMAArray<IndexType>& rowJA,
-        const ContextArray& rowValues ) const;
+        const hmemo::LAMAArray<IndexType>& rowIA,
+        const hmemo::LAMAArray<IndexType>& rowJA,
+        const hmemo::ContextArray& rowValues ) const;
 
     /* Implementation of pure method of class Matrix. */
 
@@ -333,7 +333,9 @@ public:
 
     /* Implementation of pure method of class Matrix. */
 
-    virtual void assignTranspose( const Matrix& other );
+    virtual void assignTranspose( const Matrix& other );  
+
+    void assignTransposeImpl( const DenseMatrix<ValueType>& Mat );
 
     /** @brief Swap will swap all member variables of the two dense matrices.
      *
@@ -660,8 +662,8 @@ private:
 
     void getRow( DenseVector<ValueType>& row, const IndexType i ) const;
 
-    mutable LAMAArray<ValueType> mSendValues;
-    mutable LAMAArray<ValueType> mReceiveValues;
+    mutable hmemo::LAMAArray<ValueType> mSendValues;
+    mutable hmemo::LAMAArray<ValueType> mReceiveValues;
 
     //TODO: no implementation: implement or delete
     //void initChunks();  // common initialization for constructors
@@ -670,7 +672,7 @@ private:
 
     void    computeOwners();
 
-    /** @brief Predicate to check if SCALapack is supported via LAMAInterface. */
+    /** @brief Predicate to check if SCALapack::inverse routine has been registered in kernel registry. */
 
     bool hasScalaPack();
 
@@ -688,7 +690,7 @@ public:
 
     // key for factory 
 
-    static std::pair<MatrixStorageFormat, common::scalar::ScalarType> createValue();
+    static MatrixCreateKeyType createValue();
 };
 
 /*  template methods implementations */

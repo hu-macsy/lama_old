@@ -40,7 +40,7 @@
 #include <scai/logging.hpp>
 
 #include <scai/common/SCAITypes.hpp>
-#include <scai/common/Assert.hpp>
+#include <scai/common/macros/assert.hpp>
 
 namespace scai
 {
@@ -54,12 +54,12 @@ class COMMON_DLL_IMPORTEXPORT OpenMPUtils
 {
 public:
 
-    /** OpenMP implementation for UtilsInterface::Transform::scale */
+    /** OpenMP implementation for UtilKernelTrait::Transform::scale */
 
     template<typename ValueType>
     static void scale( ValueType mValues[], const ValueType value, const IndexType n );
 
-    /** OpenMP implementation for UtilsInterface::Copy::setScale */
+    /** OpenMP implementation for UtilKernelTrait::Copy::setScale */
 
     template<typename ValueType,typename OtherValueType>
     static void setScale(
@@ -68,21 +68,21 @@ public:
         const OtherValueType inValues[],
         const IndexType n );
 
-    /*  This method is an implementation of UtilsInterface::validIndexes */
+    /*  This method is an implementation of UtilKernelTrait::validIndexes */
 
     static bool validIndexes( const IndexType array[], const IndexType n, const IndexType size );
 
-    /** OpenMP implementation for UtilsInterface::Reductions::sum */
+    /** OpenMP implementation for UtilKernelTrait::Reductions::sum */
 
     template<typename ValueType>
     static ValueType sum( const ValueType array[], const IndexType n );
 
-    /** OpenMP implementation for UtilsInterface::Setter::setVal */
+    /** OpenMP implementation for UtilKernelTrait::Setter::setVal */
 
     template<typename ValueType>
     static void setVal( ValueType array[], const IndexType n, const ValueType val );
 
-    /** OpenMP implementation for UtilsInterface::Setter::setOrder */
+    /** OpenMP implementation for UtilKernelTrait::Setter::setOrder */
 
     template<typename ValueType>
     static void setOrder( ValueType array[], const IndexType n );
@@ -93,17 +93,17 @@ public:
     template<typename ValueType>
     static ValueType maxval( const ValueType array[], const IndexType n );
 
-    /** OpenMP implementation for UtilsInterface::Reductions::absMaxVal */
+    /** OpenMP implementation for UtilKernelTrait::Reductions::absMaxVal */
 
     template<typename ValueType>
     static ValueType absMaxVal( const ValueType array[], const IndexType n );
 
-    /** OpenMP implementation for UtilsInterface::Reductions::absMaxDiffVal */
+    /** OpenMP implementation for UtilKernelTrait::Reductions::absMaxDiffVal */
 
     template<typename ValueType>
     static ValueType absMaxDiffVal( const ValueType array1[], const ValueType array2[], const IndexType n );
 
-    /** OpenMP implementation for UtilsInterface::Reductions::isSorted */
+    /** OpenMP implementation for UtilKernelTrait::Reductions::isSorted */
 
     template<typename ValueType>
     static bool isSorted( const ValueType array[], const IndexType n, bool acending );
@@ -121,23 +121,28 @@ public:
     template<typename ValueType1,typename ValueType2>
     static void setScatter( ValueType1 out[], const IndexType indexes[], const ValueType2 in[], const IndexType n );
 
-    /** OpenMP implementation for UtilsInterface::Math::invert */
+    /** OpenMP implementation for UtilKernelTrait::Math::invert */
 
     template<typename ValueType>
     static void invert( ValueType array[], const IndexType n );
 
 private:
 
-    /** Routine that registers all routines of this class at the LAMA interface.
-     *
-     *  param[inout] UtilsInterface struct to register all routines implemented in OpenMP
-     */
+    /** Routine that registers all methods at the kernel registry. */
 
-    static void setInterface( struct UtilsInterface& Utils );
+    static void registerKernels( bool deleteFlag );
 
-    static bool initialized;
+    /** Constructor for registration. */
 
-    static bool registerInterface();
+    OpenMPUtils();
+
+    /** Destructor for unregistration. */
+
+    ~OpenMPUtils();
+
+    /** Static variable for registration at static initialization. */
+
+    static OpenMPUtils guard;
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 };

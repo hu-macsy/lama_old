@@ -44,11 +44,6 @@
 namespace scai
 {
 
-namespace tasking
-{
-    class SyncToken;
-}
-
 namespace lama
 {
 
@@ -60,7 +55,7 @@ class COMMON_DLL_IMPORTEXPORT CUDACOOUtils
 {
 public:
 
-    /** Implementation for COOUtilsInterface::Counting::offsets2ia with CUDA on GPUs */
+    /** Implementation for COOKernelTrait::offsets2ia with CUDA on GPUs */
 
     static void offsets2ia(
         IndexType cooIA[],
@@ -69,7 +64,7 @@ public:
         const IndexType numRows,
         const IndexType numDiagonals );
 
-    /** Implementation for COOUtilsInterface::Conversions::setCSRData with CUDA on GPUs */
+    /** Implementation for COOKernelTrait::setCSRData with CUDA on GPUs */
 
     template<typename COOValueType,typename CSRValueType>
     static void setCSRData(
@@ -80,7 +75,7 @@ public:
         const IndexType numRows,
         const IndexType numDiagonals );
 
-    /** Implementation for COOUtilsInterface::Counting::ia2offsets with CUDA on GPUs */
+    /** Implementation for COOKernelTrait::ia2offsets with CUDA on GPUs */
 
     static void ia2offsets(
         IndexType csrIA[],
@@ -89,8 +84,7 @@ public:
         const IndexType cooIA[],
         const IndexType numValues );
 
-    /** Implementation for COOUtilsInterface::Conversions::setCSRData with CUDA on GPUs */
-    /** Implementation for COOUtilsInterface::Mult:normalGEMV with CUDA on GPUs */
+    /** Implementation for COOKernelTrait::normalGEMV with CUDA on GPUs */
 
     template<typename ValueType>
     static void normalGEMV(
@@ -103,10 +97,9 @@ public:
         const IndexType numValues,
         const IndexType cooIA[],
         const IndexType cooJA[],
-        const ValueType cooValues[],
-        tasking::SyncToken* syncToken );
+        const ValueType cooValues[] );
 
-    /** Implementation for COOUtilsInterface::Mult:normalGEMV with CUDA on GPUs */
+    /** Implementation for COOKernelTrait::normalGEVM with CUDA on GPUs */
 
     template<typename ValueType>
     static void normalGEVM(
@@ -119,20 +112,27 @@ public:
         const IndexType numValues,
         const IndexType cooIA[],
         const IndexType cooJA[],
-        const ValueType cooValues[],
-        tasking::SyncToken* syncToken );
-
-    /** Routine that registers all routines of this class at the LAMA interface. */
-
-    static void setInterface( struct COOUtilsInterface& COOUtils );
+        const ValueType cooValues[] );
 
 private:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
-    static    bool initialized; //!< static initialization used for registration
+    /** Routine that registers all methods at the kernel registry. */
 
-    static bool registerInterface();//!< registration of methods at interface
+    static void registerKernels( bool deleteFlag );
+
+    /** Constructor for registration. */
+
+    CUDACOOUtils();
+
+    /** Destructor for unregistration. */
+
+    ~CUDACOOUtils();
+
+    /** Static variable for registration at static initialization. */
+
+    static CUDACOOUtils guard;
 };
 
 /* --------------------------------------------------------------------------- */

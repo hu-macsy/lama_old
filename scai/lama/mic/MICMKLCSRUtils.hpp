@@ -44,11 +44,6 @@
 namespace scai
 {
 
-namespace tasking
-{
-    class SyncToken;
-}
-
 namespace lama
 {
 
@@ -59,7 +54,7 @@ class COMMON_DLL_IMPORTEXPORT MICMKLCSRUtils
 {
 public:
 
-    /** Implementation for CSRUtilsInterface::Mult::normalGEMV  */
+    /** Implementation for CSRKernelTrait::normalGEMV  */
 
     template<typename ValueType>
     static void normalGEMV(
@@ -73,23 +68,28 @@ public:
         const IndexType nnz,
         const IndexType csrIA[],
         const IndexType csrJA[],
-        const ValueType csrValues[],
-        tasking::SyncToken* syncToken );
-
-    /** Routine that registers all routines of this class at the LAMA interface. */
-
-    static void setInterface( struct CSRUtilsInterface& CSRUtils );
+        const ValueType csrValues[] );
 
 protected:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
-private    :
+private:
 
-    static bool initialized;
+    /** Routine that registers all methods at the kernel registry. */
 
-    static bool registerInterface();
+    static void registerKernels( bool deleteFlag );
 
+    /** Helper class for (un) registration of kernel routines at static initialization. */
+
+    class RegisterGuard
+    {
+    public:
+        RegisterGuard();
+        ~RegisterGuard();
+    };
+
+    static RegisterGuard guard;  // registration of kernels @ static initialization
 };
 
 } /* end namespace lama */

@@ -35,12 +35,12 @@
 #   - include_directories are taken over from project
 #
 
-foreach ( executable CUSparseExample MemBandwidth )
+foreach ( executable CUSparseExample MemBandwidth Prefetch )
     add_executable( ${executable} ${executable}.cpp )
     target_link_libraries( ${executable} scai_hmemo )
 endforeach ( executable )
 
-foreach ( executable Example1 Example2 Devices CUDABenchContext )
+foreach ( executable Example1 Example2 Devices CUDABenchContext AliasProblem )
     cuda_add_executable( ${executable} ${executable}.cu )
     target_link_libraries( ${executable} scai_hmemo )
 endforeach ( executable )

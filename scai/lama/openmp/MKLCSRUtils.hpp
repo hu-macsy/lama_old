@@ -37,10 +37,8 @@
 #include <scai/common/config.hpp>
 
 // internal scai libraries
-#include <scai/tasking/SyncToken.hpp>
 
 #include <scai/logging.hpp>
-
 #include <scai/common/SCAITypes.hpp>
 
 namespace scai
@@ -56,7 +54,7 @@ class COMMON_DLL_IMPORTEXPORT MKLCSRUtils
 {
 public:
 
-    /** Implementation for CSRUtilsInterface::Transpose::convertCSR2CSC using MKL */
+    /** Implementation for CSRKernelTrait::Transpose::convertCSR2CSC using MKL */
 
     template<typename ValueType>
     static void convertCSR2CSC(
@@ -70,7 +68,7 @@ public:
         IndexType numColumns,
         IndexType numValues );
 
-    /** Implementation for CSRUtilsInterface::Mult::normalGEMV  */
+    /** Implementation for CSRKernelTrait::Mult::normalGEMV  */
 
     template<typename ValueType>
     static void normalGEMV(
@@ -84,23 +82,29 @@ public:
         const IndexType nnz,
         const IndexType csrIA[],
         const IndexType csrJA[],
-        const ValueType csrValues[],
-        tasking::SyncToken* syncToken );
-
-    /** Routine that registers all routines of this class at the LAMA interface. */
-
-    static void setInterface( struct CSRUtilsInterface& CSRUtils );
+        const ValueType csrValues[] );
 
 protected:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
-private    :
+private:
 
-    static bool initialized;
+    /** Routine that registers all methods at the kernel registry. */
 
-    static bool registerInterface();
+    static void registerKernels( bool deleteFlag );
 
+    /** Constructor for registration. */
+
+    MKLCSRUtils();
+
+    /** Destructor for unregistration. */
+
+    ~MKLCSRUtils();
+
+    /** Static variable for registration at static initialization. */
+
+    static MKLCSRUtils guard;
 };
 
 } /* end namespace lama */

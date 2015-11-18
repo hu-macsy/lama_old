@@ -35,7 +35,11 @@
 #include <scai/lama/storage/JDSStorage.hpp>
 
 // local library
-#include <scai/lama/LAMAInterface.hpp>
+#include <scai/lama/UtilKernelTrait.hpp>
+#include <scai/lama/JDSKernelTrait.hpp>
+#include <scai/lama/CSRKernelTrait.hpp>
+#include <scai/blaskernel/BLASKernelTrait.hpp>
+#include <scai/lama/LAMAKernel.hpp>
 
 #include <scai/lama/LAMAArrayUtils.hpp>
 
@@ -73,26 +77,29 @@ SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, JDSStorage<ValueType
 template<typename ValueType>
 JDSStorage<ValueType>::JDSStorage( const IndexType numRows, const IndexType numColumns )
 
-    : CRTPMatrixStorage<JDSStorage<ValueType>,ValueType>( numRows, numColumns ), mNumDiagonals( 0 ), mNumValues(
-          0 )
+    : CRTPMatrixStorage<JDSStorage<ValueType>, ValueType>( numRows, numColumns ), 
+      mNumDiagonals( 0 ), 
+      mNumValues( 0 )
 {
     SCAI_LOG_DEBUG( logger, "JDSStorage for matrix " << mNumRows << " x " << mNumColumns << ", no non-zero elements" )
 
-    ContextPtr loc = getContextPtr();
-
-    LAMA_INTERFACE_FN_T( setVal, loc, Utils, Setter, IndexType )
-    LAMA_INTERFACE_FN_T( setOrder, loc, Utils, Setter, IndexType )
-
-    if( numRows <= 0 )
+    if ( numRows <= 0 )
     {
         return;
     }
 
+    static LAMAKernel<UtilKernelTrait::setVal<IndexType> > setVal;
+    static LAMAKernel<UtilKernelTrait::setOrder<IndexType> > setOrder;
+
+    // make sure that for both context functions implementations are available at the chosen context
+
+    ContextPtr loc = setVal.getValidContext( setOrder, this->getContextPtr() );
+
     WriteOnlyAccess<IndexType> ilg( mIlg, loc, mNumRows );
     WriteOnlyAccess<IndexType> perm( mPerm, loc, mNumRows );
 
-    setVal( ilg.get(), mNumRows, 0 );
-    setOrder( perm.get(), mNumRows );
+    setVal[loc]( ilg.get(), mNumRows, 0 );
+    setOrder[loc]( perm.get(), mNumRows );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -277,15 +284,15 @@ IndexType JDSStorage<ValueType>::getNumDiagonals() const
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
-void JDSStorage<ValueType>::setDiagonalImpl( const Scalar scalar )
+void JDSStorage<ValueType>::setDiagonalImpl( const ValueType value )
 {
     // diagonal property has already been checked
 
-    SCAI_LOG_INFO( logger, "setDiagonalImpl with scalar = " << scalar )
+    SCAI_LOG_INFO( logger, "setDiagonalImpl with value = " << value )
 
-    ContextPtr loc = getContextPtr();
+    static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
 
-    LAMA_INTERFACE_FN_T( setVal, loc, Utils, Setter, ValueType )
+    ContextPtr loc = setVal.getValidContext( this->getContextPtr() );
 
     IndexType numDiagonalValues = std::min( mNumColumns, mNumRows );
 
@@ -296,7 +303,7 @@ void JDSStorage<ValueType>::setDiagonalImpl( const Scalar scalar )
 
     SCAI_CONTEXT_ACCESS( loc )
 
-    setVal( wValues.get(), numDiagonalValues, scalar.getValue<ValueType>() );
+    setVal[loc]( wValues.get(), numDiagonalValues, value );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -309,21 +316,22 @@ void JDSStorage<ValueType>::setDiagonalImpl( const LAMAArray<OtherValueType>& di
 
     SCAI_LOG_INFO( logger, "setDiagonalImpl" )
 
-    ContextPtr loc = getContextPtr();
+    static LAMAKernel<UtilKernelTrait::setGather<ValueType, OtherValueType> > setGather;
 
-    LAMA_INTERFACE_FN_TT( setGather, loc, Utils, Copy, ValueType, OtherValueType )
+    ContextPtr loc = setGather.getValidContext( this->getContextPtr() );
 
     IndexType numDiagonal = std::min( mNumColumns, mNumRows );
+
+    SCAI_CONTEXT_ACCESS( loc )
 
     ReadAccess<OtherValueType> rDiagonal( diagonal, loc );
     ReadAccess<IndexType> rJa( mJa, loc );
     WriteOnlyAccess<ValueType> wValues( mValues, loc, numDiagonal );
 
-    SCAI_CONTEXT_ACCESS( loc )
-
     // diagonal is first column in JDS data
     // values[i] = diagonal[ ja[ i ] ]
-    setGather( wValues.get(), rDiagonal.get(), rJa.get(), numDiagonal );
+
+    setGather[loc]( wValues.get(), rDiagonal.get(), rJa.get(), numDiagonal );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -334,11 +342,11 @@ void JDSStorage<ValueType>::getRowImpl( LAMAArray<OtherValueType>& row, const In
 {
     SCAI_LOG_INFO( logger, "getRowImpl with i = " << i )
 
-    ContextPtr loc = getContextPtr();
-
     SCAI_ASSERT_DEBUG( i >= 0 && i < mNumRows, "row index " << i << " out of range" )
 
-    LAMA_INTERFACE_FN_TT( getRow, loc, JDSUtils, Getter, ValueType, OtherValueType )
+    static LAMAKernel<JDSKernelTrait::getRow<ValueType, OtherValueType> > getRow;
+
+    ContextPtr loc = getRow.getValidContext( this->getContextPtr() );
 
     ReadAccess<IndexType> dlg( mDlg, loc );
     ReadAccess<IndexType> ilg( mIlg, loc );
@@ -349,7 +357,7 @@ void JDSStorage<ValueType>::getRowImpl( LAMAArray<OtherValueType>& row, const In
 
     SCAI_CONTEXT_ACCESS( loc )
 
-    getRow( wRow.get(), i, mNumColumns, mNumRows, perm.get(), ilg.get(), dlg.get(), ja.get(), values.get() );
+    getRow[loc]( wRow.get(), i, mNumColumns, mNumRows, perm.get(), ilg.get(), dlg.get(), ja.get(), values.get() );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -359,12 +367,16 @@ template<typename OtherValueType>
 void JDSStorage<ValueType>::getDiagonalImpl( LAMAArray<OtherValueType>& diagonal ) const
 {
     SCAI_LOG_INFO( logger, "getDiagonalImpl" )
-    //TODO: check diagonal property?
-    ContextPtr loc = getContextPtr();
 
-    LAMA_INTERFACE_FN_TT( setScatter, loc, Utils, Copy, OtherValueType, ValueType )
+    //TODO: check diagonal property?
+
+    static LAMAKernel<UtilKernelTrait::setScatter<OtherValueType, ValueType> > setScatter;
+
+    ContextPtr loc = setScatter.getValidContext( this->getContextPtr() );
 
     IndexType numDiagonal = std::min( mNumColumns, mNumRows );
+
+    SCAI_CONTEXT_ACCESS( loc )
 
     WriteOnlyAccess<OtherValueType> wDiagonal( diagonal, loc, numDiagonal );
     ReadAccess<IndexType> rPerm( mPerm, loc );
@@ -373,32 +385,29 @@ void JDSStorage<ValueType>::getDiagonalImpl( LAMAArray<OtherValueType>& diagonal
     // diagonal is first column in JDS data
     // wDiagonal[ rJa[ i ] ] = rValues[ i ];
 
-    SCAI_CONTEXT_ACCESS( loc )
-
-    setScatter( wDiagonal.get(), rPerm.get(), rValues.get(), numDiagonal );
+    setScatter[loc]( wDiagonal.get(), rPerm.get(), rValues.get(), numDiagonal );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
-void JDSStorage<ValueType>::scaleImpl( const Scalar scalar )
+void JDSStorage<ValueType>::scaleImpl( const ValueType value )
 {
-    SCAI_LOG_INFO( logger, "scaleImpl with scalar = " << scalar )
+    SCAI_LOG_INFO( logger, "scaleImpl with value = " << value )
 
-    ContextPtr loc = getContextPtr();
+    static LAMAKernel<UtilKernelTrait::scale<ValueType> > scale;
 
-    LAMA_INTERFACE_FN_T( scale, loc, Utils, Transform, ValueType )
+    ContextPtr loc = scale.getValidContext( this->getContextPtr() );
 
     IndexType size = mValues.size();
 
     SCAI_ASSERT_EQUAL_DEBUG( size, mNumValues )
 
     WriteAccess<ValueType> wValues( mValues, loc );
-    ValueType value = scalar.getValue<ValueType>();
 
     SCAI_CONTEXT_ACCESS( loc )
 
-    scale( wValues.get(), value, size );
+    scale[loc]( wValues.get(), value, size );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -409,9 +418,9 @@ void JDSStorage<ValueType>::scaleImpl( const LAMAArray<OtherValueType>& diagonal
 {
     SCAI_LOG_INFO( logger, "scaleImpl" )
 
-    ContextPtr loc = getContextPtr();
+    static LAMAKernel<JDSKernelTrait::scaleValue<ValueType, OtherValueType> > scaleValue;
 
-    LAMA_INTERFACE_FN_TT( scaleValue, loc, JDSUtils, Scale, ValueType, OtherValueType )
+    ContextPtr loc = scaleValue.getValidContext( this->getContextPtr() );
 
     ReadAccess<OtherValueType> rDiagonal( diagonal, loc );
     ReadAccess<IndexType> rPerm( mPerm, loc );
@@ -421,7 +430,7 @@ void JDSStorage<ValueType>::scaleImpl( const LAMAArray<OtherValueType>& diagonal
 
     SCAI_CONTEXT_ACCESS( loc )
 
-    scaleValue( mNumRows, rPerm.get(), rIlg.get(), rDlg.get(), wValues.get(), rDiagonal.get() );
+    scaleValue[loc]( mNumRows, rPerm.get(), rIlg.get(), rDlg.get(), wValues.get(), rDiagonal.get() );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -447,9 +456,9 @@ bool JDSStorage<ValueType>::checkDiagonalProperty() const
     }
     else
     {
-        ContextPtr loc = getContextPtr();
+        static LAMAKernel<JDSKernelTrait::checkDiagonalProperty> checkDiagonalProperty;
 
-        LAMA_INTERFACE_FN( checkDiagonalProperty, loc, JDSUtils, Helper )
+        ContextPtr loc = checkDiagonalProperty.getValidContext( this->getContextPtr() );
 
         ReadAccess<IndexType> rPerm( mPerm, loc );
         ReadAccess<IndexType> rJa( mJa, loc );
@@ -457,8 +466,8 @@ bool JDSStorage<ValueType>::checkDiagonalProperty() const
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        diagonalProperty = checkDiagonalProperty( mNumDiagonals, mNumRows, mNumColumns, rPerm.get(), rJa.get(),
-                           rDlg.get() );
+        diagonalProperty = checkDiagonalProperty[loc]( mNumDiagonals, mNumRows, mNumColumns, rPerm.get(), rJa.get(),
+                                                       rDlg.get() );
     }
 
     return diagonalProperty;
@@ -480,15 +489,15 @@ void JDSStorage<ValueType>::check( const char* msg ) const
     // check column indexes in JA
 
     {
-        ContextPtr loc = getContextPtr();
+        static LAMAKernel<UtilKernelTrait::validIndexes> validIndexes;
 
-        LAMA_INTERFACE_FN_DEFAULT( validIndexes, loc, Utils, Indexes )
+        ContextPtr loc = validIndexes.getValidContext( this->getContextPtr() );
 
         ReadAccess<IndexType> rJA( mJa, loc );
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        SCAI_ASSERT_ERROR( validIndexes( rJA.get(), mNumValues, mNumColumns ),
+        SCAI_ASSERT_ERROR( validIndexes[ loc ]( rJA.get(), mNumValues, mNumColumns ),
                            *this << " @ " << msg << ": illegel indexes in JA" )
     }
 
@@ -497,9 +506,9 @@ void JDSStorage<ValueType>::check( const char* msg ) const
     // check descending values in ILG, DLG
 
     {
-        ContextPtr loc = getContextPtr();
+        static LAMAKernel<UtilKernelTrait::isSorted<IndexType> > isSorted;
 
-        LAMA_INTERFACE_FN_DEFAULT_T( isSorted, loc, Utils, Reductions, IndexType )
+        ContextPtr loc = isSorted.getValidContext( this->getContextPtr() );
 
         ReadAccess<IndexType> rIlg( mIlg, loc );
         ReadAccess<IndexType> rDlg( mDlg, loc );
@@ -508,42 +517,43 @@ void JDSStorage<ValueType>::check( const char* msg ) const
 
         bool ascending = false; // check for descending
 
-        SCAI_ASSERT_ERROR( isSorted( rIlg.get(), mNumRows, ascending ),
+        SCAI_ASSERT_ERROR( isSorted[ loc ]( rIlg.get(), mNumRows, ascending ),
                            *this << " @ " << msg << ": not descending values in ILG" )
 
-        SCAI_ASSERT_ERROR( isSorted( rDlg.get(), mNumDiagonals, ascending ),
+        SCAI_ASSERT_ERROR( isSorted[ loc ]( rDlg.get(), mNumDiagonals, ascending ),
                            *this << " @ " << msg << ": not descending values in DLG" )
     }
 
     // both, ILG and DLG, must sum up to mNumValues
 
     {
-        ContextPtr loc = getContextPtr();
+        static LAMAKernel<UtilKernelTrait::sum<IndexType> > sum;
 
-        LAMA_INTERFACE_FN_DEFAULT_T( sum, loc, Utils, Reductions, IndexType )
+        ContextPtr loc = sum.getValidContext( this->getContextPtr() );
 
         ReadAccess<IndexType> rIlg( mIlg, loc );
         ReadAccess<IndexType> rDlg( mDlg, loc );
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        SCAI_ASSERT_EQUAL_ERROR( sum( rIlg.get(), mNumRows ), mNumValues )
-        SCAI_ASSERT_EQUAL_ERROR( sum( rDlg.get(), mNumDiagonals ), mNumValues )
+        SCAI_ASSERT_EQUAL_ERROR( sum[loc]( rIlg.get(), mNumRows ), mNumValues )
+        SCAI_ASSERT_EQUAL_ERROR( sum[loc]( rDlg.get(), mNumDiagonals ), mNumValues )
     }
 
     // check index values in Perm for out of range
 
     if( mNumRows > 0 )
     {
-        ContextPtr loc = getContextPtr();
+        static LAMAKernel<UtilKernelTrait::validIndexes> validIndexes;
 
-        LAMA_INTERFACE_FN_DEFAULT( validIndexes, loc, Utils, Indexes )
+        ContextPtr loc = validIndexes.getValidContext( this->getContextPtr() );
 
+        ReadAccess<IndexType> rJA( mJa, loc );
         ReadAccess<IndexType> rPerm( mPerm, loc );
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        SCAI_ASSERT_ERROR( validIndexes( rPerm.get(), mNumRows, mNumRows ),
+        SCAI_ASSERT_ERROR( validIndexes[loc]( rPerm.get(), mNumRows, mNumRows ),
                            *this << " @ " << msg << ": illegel indexes in Perm" )
     }
 
@@ -557,10 +567,8 @@ void JDSStorage<ValueType>::check( const char* msg ) const
 
         LAMAArray<IndexType> invPermArray( mNumRows, mNumRows );
 
-        LAMA_INTERFACE_FN_DEFAULT( setInversePerm, loc, JDSUtils, Sort )
-
-        LAMA_INTERFACE_FN( validIndexes, loc, Utils, Indexes )
-        LAMA_INTERFACE_FN_T( maxval, loc, Utils, Reductions, IndexType )
+        static LAMAKernel<JDSKernelTrait::setInversePerm> setInversePerm;
+        static LAMAKernel<UtilKernelTrait::maxval<IndexType> > maxval;
 
         ReadAccess<IndexType> rPerm( mPerm, loc );
         WriteAccess<IndexType> wInversePerm( invPermArray, loc );
@@ -569,9 +577,9 @@ void JDSStorage<ValueType>::check( const char* msg ) const
 
         // set inverse permutation, should overwrite all values 'mNumRows'
 
-        setInversePerm( wInversePerm.get(), rPerm.get(), mNumRows );
+        setInversePerm[loc]( wInversePerm.get(), rPerm.get(), mNumRows );
 
-        IndexType maxIndex = maxval( wInversePerm.get(), mNumRows );
+        IndexType maxIndex = maxval[loc]( wInversePerm.get(), mNumRows );
 
         SCAI_ASSERT_ERROR( maxIndex < mNumRows, "Perm array does not cover all row indexes, #rows = " << mNumRows );
     }
@@ -586,33 +594,42 @@ void JDSStorage<ValueType>::setIdentity( const IndexType size )
 {
     SCAI_LOG_INFO( logger, "set identity values with size = " << size )
 
-    ContextPtr loc = getContextPtr();
-
     mNumRows = size;
     mNumColumns = size;
     mNumDiagonals = 1; // identity has exactly one diagonal
     mNumValues = mNumRows;
 
+    {
+        static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
+
+        ContextPtr loc = setVal.getValidContext( this->getContextPtr() );
+
+        SCAI_CONTEXT_ACCESS( loc )
+
+        WriteOnlyAccess<ValueType> wValues( mValues, loc, mNumValues );
+
+        setVal[loc]( wValues.get(), mNumRows, static_cast<ValueType>(1.0) );
+
+    }
+
+    static LAMAKernel<UtilKernelTrait::setVal<IndexType> > setVal;
+    static LAMAKernel<UtilKernelTrait::setOrder<IndexType> > setOrder;
+
+    // get context where all implementations are available, if not on own context
+
+    ContextPtr loc = setOrder.getValidContext( setVal, this->getContextPtr() );
+
     WriteOnlyAccess<IndexType> wDlg( mDlg, loc, mNumDiagonals );
     WriteOnlyAccess<IndexType> wIlg( mIlg, loc, mNumRows );
     WriteOnlyAccess<IndexType> wPerm( mPerm, loc, mNumRows );
     WriteOnlyAccess<IndexType> wJa( mJa, loc, mNumValues );
-    WriteOnlyAccess<ValueType> wValues( mValues, loc, mNumValues );
 
     SCAI_CONTEXT_ACCESS( loc )
 
-    {
-        LAMA_INTERFACE_FN_T( setVal, loc, Utils, Setter, ValueType )
-        setVal( wValues.get(), mNumRows, static_cast<ValueType>(1.0) );
-    }
-
-    LAMA_INTERFACE_FN_T( setVal, loc, Utils, Setter, IndexType )
-    LAMA_INTERFACE_FN_T( setOrder, loc, Utils, Setter, IndexType )
-
-    setVal( wDlg.get(), 1, mNumRows );
-    setVal( wIlg.get(), mNumRows, 1 );
-    setOrder( wPerm.get(), mNumRows );
-    setOrder( wJa.get(), mNumRows );
+    setVal[ loc ]( wDlg.get(), 1, mNumRows );
+    setVal[ loc ]( wIlg.get(), mNumRows, 1 );
+    setOrder[ loc ]( wPerm.get(), mNumRows );
+    setOrder[ loc ]( wJa.get(), mNumRows );
 
     mDiagonalProperty = true;
 }
@@ -620,14 +637,16 @@ void JDSStorage<ValueType>::setIdentity( const IndexType size )
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
-void JDSStorage<ValueType>::setupData( ContextPtr loc )
+void JDSStorage<ValueType>::setupData( ContextPtr context )
 {
     SCAI_LOG_INFO( logger, "setupData" )
 
     SCAI_ASSERT_EQUAL_ERROR( mIlg.size(), mNumRows )
 
-    LAMA_INTERFACE_FN_T( getValue, loc, Utils, Getter, IndexType )
-    LAMA_INTERFACE_FN( ilg2dlg, loc, JDSUtils, Sort )
+    static LAMAKernel<UtilKernelTrait::getValue<IndexType> > getValue;
+    static LAMAKernel<JDSKernelTrait::ilg2dlg> ilg2dlg;
+
+    ContextPtr loc = getValue.getValidContext( ilg2dlg, context );
 
     ReadAccess<IndexType> ilg( mIlg, loc );
     WriteOnlyAccess<IndexType> dlg( mDlg, loc, mNumDiagonals );
@@ -637,23 +656,25 @@ void JDSStorage<ValueType>::setupData( ContextPtr loc )
 
     SCAI_CONTEXT_ACCESS( loc )
 
-    if( mNumRows )
+    if ( mNumRows )
     {
-        mNumDiagonals = getValue( ilg.get(), 0 );
+        mNumDiagonals = getValue[loc]( ilg.get(), 0 );
     }
 
-    mNumValues = ilg2dlg( dlg.get(), mNumDiagonals, ilg.get(), mNumRows );
+    mNumValues = ilg2dlg[loc]( dlg.get(), mNumDiagonals, ilg.get(), mNumRows );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
-void JDSStorage<ValueType>::sortRows( ContextPtr loc )
+void JDSStorage<ValueType>::sortRows( ContextPtr context )
 {
     SCAI_LOG_INFO( logger, *this << "sortRows, number of jagged diagonals = " << mNumDiagonals )
 
-    LAMA_INTERFACE_FN_T( maxval, loc, Utils, Reductions, IndexType )
-    LAMA_INTERFACE_FN( sortRows, loc, JDSUtils, Sort )
+    static LAMAKernel<UtilKernelTrait::maxval<IndexType> > maxval;
+    static LAMAKernel<JDSKernelTrait::sortRows> sortRows;
+
+    ContextPtr loc = maxval.getValidContext( sortRows, context );
 
     // sort the rows according to the array ilg, take sorting over in perm
     WriteAccess<IndexType> ilg( mIlg, loc );
@@ -661,9 +682,9 @@ void JDSStorage<ValueType>::sortRows( ContextPtr loc )
 
     SCAI_CONTEXT_ACCESS( loc )
 
-    mNumDiagonals = maxval( ilg.get(), mNumRows );
+    mNumDiagonals = maxval[loc]( ilg.get(), mNumRows );
 
-    sortRows( ilg.get(), perm.get(), mNumRows );
+    sortRows[loc]( ilg.get(), perm.get(), mNumRows );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -674,17 +695,26 @@ void JDSStorage<ValueType>::buildCSR(
     LAMAArray<IndexType>& ia,
     LAMAArray<IndexType>* ja,
     LAMAArray<OtherValueType>* values,
-    const ContextPtr loc ) const
+    const ContextPtr context ) const
 {
     SCAI_REGION( "Storage.JDS->CSR" )
 
     SCAI_LOG_INFO( logger,
-                   "buildCSR<" << common::getScalarType<OtherValueType>() << ">" << " from JDS<" << common::getScalarType<ValueType>() << ">" << " on " << *loc )
+                   "buildCSR<" << common::getScalarType<OtherValueType>() << ">" 
+                    << " from JDS<" << common::getScalarType<ValueType>() << ">" << " on " << *context )
 
-    LAMA_INTERFACE_FN_TT( setScatter, loc, Utils, Copy, IndexType, IndexType )
-    LAMA_INTERFACE_FN_TT( getCSRValues, loc, JDSUtils, Conversions, ValueType, OtherValueType )
-    LAMA_INTERFACE_FN( sizes2offsets, loc, CSRUtils, Offsets )
-    LAMA_INTERFACE_FN( setInversePerm, loc, JDSUtils, Sort )
+    static LAMAKernel<UtilKernelTrait::setScatter<IndexType, IndexType> > setScatter;
+    static LAMAKernel<JDSKernelTrait::getCSRValues<ValueType, OtherValueType> > getCSRValues;
+    static LAMAKernel<CSRKernelTrait::sizes2offsets> sizes2offsets;
+    static LAMAKernel<JDSKernelTrait::setInversePerm> setInversePerm;
+
+    ContextPtr loc = setScatter.getValidContext( context );
+
+    loc = getCSRValues.getValidContext( loc );
+    loc = sizes2offsets.getValidContext( loc );
+    loc = setInversePerm.getValidContext( loc );
+
+    // now we are sure to have a loc where all kernel routines have been implemented
 
     ReadAccess<IndexType> rJdsPerm( mPerm, loc );
     ReadAccess<IndexType> rJdsILG( mIlg, loc );
@@ -693,7 +723,7 @@ void JDSStorage<ValueType>::buildCSR(
     SCAI_CONTEXT_ACCESS( loc )
 
     // rowValues[ perm[i] ] = ilg[i]
-    setScatter( wCsrIA.get(), rJdsPerm.get(), rJdsILG.get(), mNumRows );
+    setScatter[loc]( wCsrIA.get(), rJdsPerm.get(), rJdsILG.get(), mNumRows );
 
     if( ja == NULL || values == NULL )
     {
@@ -701,7 +731,7 @@ void JDSStorage<ValueType>::buildCSR(
         return;
     }
 
-    IndexType numValues = sizes2offsets( wCsrIA.get(), mNumRows );
+    IndexType numValues = sizes2offsets[loc]( wCsrIA.get(), mNumRows );
 
     SCAI_ASSERT_EQUAL_DEBUG( numValues, mNumValues )
 
@@ -711,7 +741,7 @@ void JDSStorage<ValueType>::buildCSR(
     WriteOnlyAccess<IndexType> wJdsInversePerm( invPermArray, loc, mNumRows );
 
     // compute the inverse permutation so that we find original row in JDS data
-    setInversePerm( wJdsInversePerm.get(), rJdsPerm.get(), mNumRows );
+    setInversePerm[loc]( wJdsInversePerm.get(), rJdsPerm.get(), mNumRows );
 
     WriteOnlyAccess<IndexType> wCsrJA( *ja, loc, mNumValues );
     WriteOnlyAccess<OtherValueType> wCsrValues( *values, loc, mNumValues );
@@ -721,8 +751,8 @@ void JDSStorage<ValueType>::buildCSR(
     ReadAccess<ValueType> rJdsValues( mValues, loc );
 
     // now we can convert JDS to CSR via interface
-    getCSRValues( wCsrJA.get(), wCsrValues.get(), wCsrIA.get(), mNumRows, wJdsInversePerm.get(), rJdsILG.get(),
-                  rJdsDLG.get(), rJdsJA.get(), rJdsValues.get() );
+    getCSRValues[loc]( wCsrJA.get(), wCsrValues.get(), wCsrIA.get(), mNumRows, wJdsInversePerm.get(), rJdsILG.get(),
+                       rJdsDLG.get(), rJdsJA.get(), rJdsValues.get() );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -743,11 +773,11 @@ void JDSStorage<ValueType>::setCSRDataImpl(
     SCAI_LOG_INFO( logger,
                    "setCSRDataImpl<" << common::getScalarType<ValueType>() << "," << common::getScalarType<OtherValueType>() << ">" << ", shape is " << numRows << " x " << numColumns << ", #values for CSR = " << numValues )
 
-    ContextPtr loc = getContextPtr();
+    static LAMAKernel<CSRKernelTrait::offsets2sizes> offsets2sizes;
+    static LAMAKernel<UtilKernelTrait::setOrder<IndexType> > setOrder;
+    static LAMAKernel<JDSKernelTrait::setCSRValues<ValueType, OtherValueType> > setCSRValues;
 
-    LAMA_INTERFACE_FN( offsets2sizes, loc, CSRUtils, Offsets )
-    LAMA_INTERFACE_FN_T( setOrder, loc, Utils, Setter, IndexType )
-    LAMA_INTERFACE_FN_TT( setCSRValues, loc, JDSUtils, Conversions, ValueType, OtherValueType )
+    ContextPtr loc = offsets2sizes.getValidContext( setCSRValues, this->getContextPtr() );
 
     ReadAccess<IndexType> rCsrIA( ia, loc );
     ReadAccess<IndexType> rCsrJA( ja, loc );
@@ -768,10 +798,10 @@ void JDSStorage<ValueType>::setCSRDataImpl(
         SCAI_CONTEXT_ACCESS( loc )
 
         // ilg willl contain the sizes of each row
-        offsets2sizes( wIlg.get(), rCsrIA.get(), mNumRows );
+        offsets2sizes[loc]( wIlg.get(), rCsrIA.get(), mNumRows );
 
         // set perm to identity permutation
-        setOrder( wPerm.get(), mNumRows );
+        setOrder[loc]( wPerm.get(), mNumRows );
     }
 
     sortRows( loc ); // sorts ilg and builds perm
@@ -789,7 +819,7 @@ void JDSStorage<ValueType>::setCSRDataImpl(
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        setCSRValues( wJa.get(), wValues.get(), numRows, rPerm.get(), rIlg.get(), numDiagonals, rDlg.get(),
+        setCSRValues[loc]( wJa.get(), wValues.get(), numRows, rPerm.get(), rIlg.get(), numDiagonals, rDlg.get(),
                       rCsrIA.get(), rCsrJA.get(), rCsrValues.get() );
     }
 
@@ -839,23 +869,23 @@ void JDSStorage<ValueType>::allocate( IndexType numRows, IndexType numColumns )
     {
         // the arrays mIlg and mPerm need initialization
 
-        ContextPtr loc = getContextPtr();
+        static LAMAKernel<UtilKernelTrait::setVal<IndexType> > setVal;
+        static LAMAKernel<UtilKernelTrait::setOrder<IndexType> > setOrder;
 
-        LAMA_INTERFACE_FN_T( setVal, loc, Utils, Setter, IndexType )
-        LAMA_INTERFACE_FN_T( setOrder, loc, Utils, Setter, IndexType )
+        ContextPtr loc = setOrder.getValidContext( setVal, this->getContextPtr() );
 
         mNumRows = numRows;
         mNumColumns = numColumns;
 
         // we allocate at least ilg and perm with the correct value for a zero matrix
 
+        SCAI_CONTEXT_ACCESS( loc )
+
         WriteOnlyAccess<IndexType> ilg( mIlg, loc, mNumRows );
         WriteOnlyAccess<IndexType> perm( mPerm, loc, mNumRows );
 
-        SCAI_CONTEXT_ACCESS( loc )
-
-        setVal( ilg.get(), mNumRows, 0 );
-        setOrder( perm.get(), mNumRows );
+        setVal[loc]( ilg.get(), mNumRows, 0 );
+        setOrder[loc]( perm.get(), mNumRows );
     }
 
     mDiagonalProperty = checkDiagonalProperty();
@@ -878,7 +908,11 @@ ValueType JDSStorage<ValueType>::getValue( const IndexType i, const IndexType j 
 {
     SCAI_LOG_TRACE( logger, "get value (" << i << ", " << j << ") from " << *this )
 
-    ContextPtr loc = getContextPtr();
+    static LAMAKernel<JDSKernelTrait::getValue<ValueType> > getValue;
+
+    ContextPtr loc = getValue.getValidContext( this->getContextPtr() );
+
+    SCAI_CONTEXT_ACCESS( loc )
 
     ReadAccess<IndexType> dlg( mDlg, loc );
     ReadAccess<IndexType> ilg( mIlg, loc );
@@ -886,11 +920,7 @@ ValueType JDSStorage<ValueType>::getValue( const IndexType i, const IndexType j 
     ReadAccess<IndexType> ja( mJa, loc );
     ReadAccess<ValueType> values( mValues, loc );
 
-    LAMA_INTERFACE_FN_TT( getValue, loc, JDSUtils, Getter, ValueType, ValueType )
-
-    SCAI_CONTEXT_ACCESS( loc )
-
-    return getValue( i, j, mNumRows, dlg.get(), ilg.get(), perm.get(), ja.get(), values.get() );
+    return getValue[loc]( i, j, mNumRows, dlg.get(), ilg.get(), perm.get(), ja.get(), values.get() );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -911,11 +941,11 @@ void JDSStorage<ValueType>::matrixTimesVector(
     SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumColumns )
     SCAI_ASSERT_EQUAL_ERROR( y.size(), mNumRows )
 
-    ContextPtr loc = getContextPtr();
+    static LAMAKernel<JDSKernelTrait::normalGEMV<ValueType> > normalGEMV;
+
+    ContextPtr loc = normalGEMV.getValidContext( this->getContextPtr() );
 
     SCAI_LOG_INFO( logger, *this << ": matrixTimesVector on " << *loc )
-
-    LAMA_INTERFACE_FN_T( normalGEMV, loc, JDSUtils, Mult, ValueType )
 
     ReadAccess<IndexType> jdsPerm( mPerm, loc );
     ReadAccess<IndexType> jdsDLG( mDlg, loc );
@@ -937,8 +967,8 @@ void JDSStorage<ValueType>::matrixTimesVector(
 
         // this call will finish the computation, syncToken == NULL
 
-        normalGEMV( wResult.get(), alpha, rX.get(), beta, wResult.get(), mNumRows, jdsPerm.get(), jdsILG.get(),
-                    mNumDiagonals, jdsDLG.get(), jdsJA.get(), jdsValues.get(), NULL );
+        normalGEMV[loc]( wResult.get(), alpha, rX.get(), beta, wResult.get(), mNumRows, jdsPerm.get(), jdsILG.get(),
+                         mNumDiagonals, jdsDLG.get(), jdsJA.get(), jdsValues.get() );
     }
     else
     {
@@ -949,8 +979,8 @@ void JDSStorage<ValueType>::matrixTimesVector(
 
         // this call will finish the computation, syncToken == NULL
 
-        normalGEMV( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumRows, jdsPerm.get(), jdsILG.get(),
-                    mNumDiagonals, jdsDLG.get(), jdsJA.get(), jdsValues.get(), NULL );
+        normalGEMV[loc]( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumRows, jdsPerm.get(), jdsILG.get(),
+                         mNumDiagonals, jdsDLG.get(), jdsJA.get(), jdsValues.get() );
     }
 }
 
@@ -972,11 +1002,11 @@ void JDSStorage<ValueType>::vectorTimesMatrix(
     SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumRows )
     SCAI_ASSERT_EQUAL_ERROR( y.size(), mNumColumns )
 
-    ContextPtr loc = getContextPtr();
+    static LAMAKernel<JDSKernelTrait::normalGEVM<ValueType> > normalGEVM;
+
+    ContextPtr loc = normalGEVM.getValidContext( this->getContextPtr() );
 
     SCAI_LOG_INFO( logger, *this << ": vectorTimesMatrix on " << *loc )
-
-    LAMA_INTERFACE_FN_T( normalGEVM, loc, JDSUtils, Mult, ValueType )
 
     ReadAccess<IndexType> jdsPerm( mPerm, loc );
     ReadAccess<IndexType> jdsDLG( mDlg, loc );
@@ -998,8 +1028,8 @@ void JDSStorage<ValueType>::vectorTimesMatrix(
 
         // this call will finish the computation, syncToken == NULL
 
-        normalGEVM( wResult.get(), alpha, rX.get(), beta, wResult.get(), mNumColumns, jdsPerm.get(), jdsILG.get(),
-                    mNumDiagonals, jdsDLG.get(), jdsJA.get(), jdsValues.get(), NULL );
+        normalGEVM[loc]( wResult.get(), alpha, rX.get(), beta, wResult.get(), mNumColumns, jdsPerm.get(), jdsILG.get(),
+                         mNumDiagonals, jdsDLG.get(), jdsJA.get(), jdsValues.get() );
     }
     else
     {
@@ -1010,8 +1040,8 @@ void JDSStorage<ValueType>::vectorTimesMatrix(
 
         // this call will finish the computation, syncToken == NULL
 
-        normalGEVM( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumColumns, jdsPerm.get(), jdsILG.get(),
-                    mNumDiagonals, jdsDLG.get(), jdsJA.get(), jdsValues.get(), NULL );
+        normalGEVM[loc]( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumColumns, jdsPerm.get(), jdsILG.get(),
+                         mNumDiagonals, jdsDLG.get(), jdsJA.get(), jdsValues.get() );
     }
 }
 
@@ -1027,7 +1057,7 @@ tasking::SyncToken* JDSStorage<ValueType>::matrixTimesVectorAsync(
 {
     ContextPtr loc = getContextPtr();
 
-    if ( loc->getType() == context::Host )
+    if ( loc->getType() == common::context::MaxContext )
     {
         // workaround as common::bind has limited number of arguments and cannot be
         // used later in OpenMP to generate a TaskSyncToken
@@ -1060,28 +1090,30 @@ tasking::SyncToken* JDSStorage<ValueType>::matrixTimesVectorAsync(
 
     SCAI_LOG_INFO( logger, *this << ": matrixTimesVector on " << *loc )
 
-    LAMA_INTERFACE_FN_T( normalGEMV, loc, JDSUtils, Mult, ValueType )
+    static LAMAKernel<JDSKernelTrait::normalGEMV<ValueType> > normalGEMV;
+
+    loc = normalGEMV.getValidContext( loc );
 
     common::unique_ptr<tasking::SyncToken> syncToken( loc->getSyncToken() );
+
+    syncToken->setCurrent();
 
     // all accesses will be pushed to the sync token as LAMA arrays have to be protected up
     // to the end of the computations.
 
-    shared_ptr<ReadAccess<IndexType> > jdsPerm( new ReadAccess<IndexType>( mPerm, loc ) );
-    shared_ptr<ReadAccess<IndexType> > jdsDLG( new ReadAccess<IndexType>( mDlg, loc ) );
-    shared_ptr<ReadAccess<IndexType> > jdsILG( new ReadAccess<IndexType>( mIlg, loc ) );
-    shared_ptr<ReadAccess<IndexType> > jdsJA( new ReadAccess<IndexType>( mJa, loc ) );
-    shared_ptr<ReadAccess<ValueType> > jdsValues( new ReadAccess<ValueType>( mValues, loc ) );
+    ReadAccess<IndexType> jdsPerm( mPerm, loc );
+    ReadAccess<IndexType> jdsDLG( mDlg, loc );
+    ReadAccess<IndexType> jdsILG( mIlg, loc );
+    ReadAccess<IndexType> jdsJA( mJa, loc );
+    ReadAccess<ValueType> jdsValues( mValues, loc );
 
-    shared_ptr<ReadAccess<ValueType> > rX( new ReadAccess<ValueType>( x, loc ) );
+    ReadAccess<ValueType> rX( x, loc );
 
     // Possible alias of result and y must be handled by coressponding accesses
 
     if ( &result == &y )
     {
-        shared_ptr<WriteAccess<ValueType> > wResult( new WriteAccess<ValueType>( result, loc ) );
-
-        syncToken->pushToken( wResult );
+        WriteAccess<ValueType> wResult( result, loc );
 
         // we assume that normalGEMV can deal with the alias of result, y
 
@@ -1089,31 +1121,35 @@ tasking::SyncToken* JDSStorage<ValueType>::matrixTimesVectorAsync(
 
         // this call will only start the computation
 
-        normalGEMV( wResult->get(), alpha, rX->get(), beta, wResult->get(), mNumRows, jdsPerm->get(), jdsILG->get(),
-                    mNumDiagonals, jdsDLG->get(), jdsJA->get(), jdsValues->get(), syncToken.get() );
+        normalGEMV[loc]( wResult.get(), alpha, rX.get(), beta, wResult.get(), mNumRows, jdsPerm.get(), jdsILG.get(),
+                         mNumDiagonals, jdsDLG.get(), jdsJA.get(), jdsValues.get() );
+
+        syncToken->pushRoutine( wResult.releaseDelayed() );
     }
     else
     {
-        shared_ptr<WriteOnlyAccess<ValueType> > wResult( new WriteOnlyAccess<ValueType>( result, loc, mNumRows ) );
-        shared_ptr<ReadAccess<ValueType> > rY( new ReadAccess<ValueType>( y, loc ) );
-
-        syncToken->pushToken( wResult );
-        syncToken->pushToken( rY );
+        WriteOnlyAccess<ValueType> wResult( result, loc, mNumRows );
+        ReadAccess<ValueType> rY( y, loc );
 
         SCAI_CONTEXT_ACCESS( loc )
 
         // this call will only start the computation
 
-        normalGEMV( wResult->get(), alpha, rX->get(), beta, rY->get(), mNumRows, jdsPerm->get(), jdsILG->get(),
-                    mNumDiagonals, jdsDLG->get(), jdsJA->get(), jdsValues->get(), syncToken.get() );
+        normalGEMV[loc]( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumRows, jdsPerm.get(), jdsILG.get(),
+                         mNumDiagonals, jdsDLG.get(), jdsJA.get(), jdsValues.get() );
+
+        syncToken->pushRoutine( wResult.releaseDelayed() );
+        syncToken->pushRoutine( rY.releaseDelayed() );
     }
 
-    syncToken->pushToken( jdsPerm );
-    syncToken->pushToken( jdsDLG );
-    syncToken->pushToken( jdsILG );
-    syncToken->pushToken( jdsJA );
-    syncToken->pushToken( jdsValues );
-    syncToken->pushToken( rX );
+    syncToken->pushRoutine( jdsPerm.releaseDelayed() );
+    syncToken->pushRoutine( jdsDLG.releaseDelayed() );
+    syncToken->pushRoutine( jdsILG.releaseDelayed() );
+    syncToken->pushRoutine( jdsJA.releaseDelayed() );
+    syncToken->pushRoutine( jdsValues.releaseDelayed() );
+    syncToken->pushRoutine( rX.releaseDelayed() );
+
+    syncToken->unsetCurrent();
 
     return syncToken.release();
 }
@@ -1128,9 +1164,11 @@ tasking::SyncToken* JDSStorage<ValueType>::vectorTimesMatrixAsync(
     const ValueType beta,
     const LAMAArray<ValueType>& y ) const
 {
-    ContextPtr loc = getContextPtr();
+    static LAMAKernel<JDSKernelTrait::normalGEVM<ValueType> > normalGEVM;
 
-    if ( loc->getType() == context::Host )
+    ContextPtr loc = normalGEVM.getValidContext( this->getContextPtr() );
+
+    if ( loc->getType() == common::context::Host )
     {
         // workaround as common::bind has limited number of arguments and cannot be
         // used later in OpenMP to generate a TaskSyncToken
@@ -1163,60 +1201,62 @@ tasking::SyncToken* JDSStorage<ValueType>::vectorTimesMatrixAsync(
 
     SCAI_LOG_INFO( logger, *this << ": matrixTimesVector on " << *loc )
 
-    LAMA_INTERFACE_FN_T( normalGEVM, loc, JDSUtils, Mult, ValueType )
-
     common::unique_ptr<tasking::SyncToken> syncToken( loc->getSyncToken() );
+
+    syncToken->setCurrent();
 
     // all accesses will be pushed to the sync token as LAMA arrays have to be protected up
     // to the end of the computations.
 
-    shared_ptr<ReadAccess<IndexType> > jdsPerm( new ReadAccess<IndexType>( mPerm, loc ) );
-    shared_ptr<ReadAccess<IndexType> > jdsDLG( new ReadAccess<IndexType>( mDlg, loc ) );
-    shared_ptr<ReadAccess<IndexType> > jdsILG( new ReadAccess<IndexType>( mIlg, loc ) );
-    shared_ptr<ReadAccess<IndexType> > jdsJA( new ReadAccess<IndexType>( mJa, loc ) );
-    shared_ptr<ReadAccess<ValueType> > jdsValues( new ReadAccess<ValueType>( mValues, loc ) );
+    ReadAccess<IndexType> jdsPerm( mPerm, loc );
+    ReadAccess<IndexType> jdsDLG( mDlg, loc );
+    ReadAccess<IndexType> jdsILG( mIlg, loc );
+    ReadAccess<IndexType> jdsJA( mJa, loc );
+    ReadAccess<ValueType> jdsValues( mValues, loc );
 
-    shared_ptr<ReadAccess<ValueType> > rX( new ReadAccess<ValueType>( x, loc ) );
+    ReadAccess<ValueType> rX( x, loc );
 
     // Possible alias of result and y must be handled by coressponding accesses
 
     if ( &result == &y )
     {
-        shared_ptr<WriteAccess<ValueType> > wResult( new WriteAccess<ValueType>( result, loc ) );
+        WriteAccess<ValueType> wResult( result, loc );
 
-        syncToken->pushToken( wResult );
-
-        // we assume that normalGEMV can deal with the alias of result, y
+        // we assume that normalGEVM can deal with the alias of result, y
 
         SCAI_CONTEXT_ACCESS( loc )
 
         // this call will only start the computation
 
-        normalGEVM( wResult->get(), alpha, rX->get(), beta, wResult->get(), mNumColumns, jdsPerm->get(), jdsILG->get(),
-                    mNumDiagonals, jdsDLG->get(), jdsJA->get(), jdsValues->get(), syncToken.get() );
+        normalGEVM[loc]( wResult.get(), alpha, rX.get(), beta, wResult.get(), mNumColumns, jdsPerm.get(), jdsILG.get(),
+                         mNumDiagonals, jdsDLG.get(), jdsJA.get(), jdsValues.get() );
+
+        syncToken->pushRoutine( wResult.releaseDelayed() );
     }
     else
     {
-        shared_ptr<WriteOnlyAccess<ValueType> > wResult( new WriteOnlyAccess<ValueType>( result, loc, mNumColumns ) );
-        shared_ptr<ReadAccess<ValueType> > rY( new ReadAccess<ValueType>( y, loc ) );
-
-        syncToken->pushToken( wResult );
-        syncToken->pushToken( rY );
+        WriteOnlyAccess<ValueType> wResult( result, loc, mNumColumns );
+        ReadAccess<ValueType> rY( y, loc );
 
         SCAI_CONTEXT_ACCESS( loc )
 
         // this call will only start the computation
 
-        normalGEVM( wResult->get(), alpha, rX->get(), beta, rY->get(), mNumColumns, jdsPerm->get(), jdsILG->get(),
-                    mNumDiagonals, jdsDLG->get(), jdsJA->get(), jdsValues->get(), syncToken.get() );
+        normalGEVM[loc]( wResult.get(), alpha, rX.get(), beta, rY.get(), mNumColumns, jdsPerm.get(), jdsILG.get(),
+                         mNumDiagonals, jdsDLG.get(), jdsJA.get(), jdsValues.get() );
+
+        syncToken->pushRoutine( wResult.releaseDelayed() );
+        syncToken->pushRoutine( rY.releaseDelayed() );
     }
 
-    syncToken->pushToken( jdsPerm );
-    syncToken->pushToken( jdsDLG );
-    syncToken->pushToken( jdsILG );
-    syncToken->pushToken( jdsJA );
-    syncToken->pushToken( jdsValues );
-    syncToken->pushToken( rX );
+    syncToken->pushRoutine( jdsPerm.releaseDelayed() );
+    syncToken->pushRoutine( jdsDLG.releaseDelayed() );
+    syncToken->pushRoutine( jdsILG.releaseDelayed() );
+    syncToken->pushRoutine( jdsJA.releaseDelayed() );
+    syncToken->pushRoutine( jdsValues.releaseDelayed() );
+    syncToken->pushRoutine( rX.releaseDelayed() );
+
+    syncToken->unsetCurrent();
 
     return syncToken.release();
 }
@@ -1234,9 +1274,9 @@ void JDSStorage<ValueType>::jacobiIterate(
 
     SCAI_LOG_INFO( logger, *this << ": Jacobi iteration for local matrix data." )
 
-    ContextPtr loc = getContextPtr();
+    static LAMAKernel<JDSKernelTrait::jacobi<ValueType> > jacobi;
 
-    LAMA_INTERFACE_FN_T( jacobi, loc, JDSUtils, Solver, ValueType )
+    ContextPtr loc = jacobi.getValidContext( this->getContextPtr() );
 
     SCAI_ASSERT_ERROR( mDiagonalProperty, *this << ": jacobiIterate requires diagonal property" )
 
@@ -1251,7 +1291,6 @@ void JDSStorage<ValueType>::jacobiIterate(
     // matrix must be square
 
     {
-
         WriteAccess<ValueType> wSolution( solution, loc );
         ReadAccess<IndexType> jdsDlg( mDlg, loc );
         ReadAccess<IndexType> jdsIlg( mIlg, loc );
@@ -1263,10 +1302,9 @@ void JDSStorage<ValueType>::jacobiIterate(
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        jacobi( wSolution.get(), mNumRows, jdsPerm.get(), jdsIlg.get(), mNumDiagonals, jdsDlg.get(), jdsJA.get(),
-                jdsValues.get(), rOldSolution.get(), rRhs.get(), omega, NULL );
+        jacobi[loc]( wSolution.get(), mNumRows, jdsPerm.get(), jdsIlg.get(), mNumDiagonals, jdsDlg.get(), jdsJA.get(),
+                     jdsValues.get(), rOldSolution.get(), rRhs.get(), omega );
     }
-
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -1280,9 +1318,11 @@ tasking::SyncToken* JDSStorage<ValueType>::jacobiIterateAsync(
 {
     SCAI_REGION( "Storage.JDS.jacobiIterateAsync" )
 
-    ContextPtr loc = getContextPtr();
+    static LAMAKernel<JDSKernelTrait::jacobi<ValueType> > jacobi;
 
-    if( loc->getType() == context::Host )
+    ContextPtr loc = jacobi.getValidContext( this->getContextPtr() );
+
+    if ( loc->getType() == common::context::Host )
     {
         // On host we start directly a new task, avoids pushing accesses
 
@@ -1305,8 +1345,6 @@ tasking::SyncToken* JDSStorage<ValueType>::jacobiIterateAsync(
 
     SCAI_LOG_INFO( logger, *this << ": Jacobi iteration for local matrix data." )
 
-    LAMA_INTERFACE_FN_T( jacobi, loc, JDSUtils, Solver, ValueType )
-
     SCAI_ASSERT_ERROR( mDiagonalProperty, *this << ": jacobiIterate requires diagonal property" )
 
     if ( &solution == &oldSolution )
@@ -1315,33 +1353,38 @@ tasking::SyncToken* JDSStorage<ValueType>::jacobiIterateAsync(
     }
 
     SCAI_ASSERT_EQUAL_DEBUG( mNumRows, oldSolution.size() )
-    SCAI_ASSERT_EQUAL_DEBUG( mNumRows, solution.size() )
     SCAI_ASSERT_EQUAL_DEBUG( mNumRows, mNumColumns )
+
     // matrix must be square
 
     common::unique_ptr<tasking::SyncToken> syncToken( loc->getSyncToken() );
 
-    shared_ptr<WriteAccess<ValueType> > wSolution( new WriteAccess<ValueType>( solution, loc ) );
-    syncToken->pushToken( wSolution );
-    shared_ptr<ReadAccess<IndexType> > jdsDLG( new ReadAccess<IndexType>( mDlg, loc ) );
-    syncToken->pushToken( jdsDLG );
-    shared_ptr<ReadAccess<IndexType> > jdsILG( new ReadAccess<IndexType>( mIlg, loc ) );
-    syncToken->pushToken( jdsILG );
-    shared_ptr<ReadAccess<IndexType> > jdsPerm( new ReadAccess<IndexType>( mPerm, loc ) );
-    syncToken->pushToken( jdsPerm );
-    shared_ptr<ReadAccess<IndexType> > jdsJA( new ReadAccess<IndexType>( mJa, loc ) );
-    syncToken->pushToken( jdsJA );
-    shared_ptr<ReadAccess<ValueType> > jdsValues( new ReadAccess<ValueType>( mValues, loc ) );
-    syncToken->pushToken( jdsValues );
-    shared_ptr<ReadAccess<ValueType> > rOldSolution( new ReadAccess<ValueType>( oldSolution, loc ) );
-    syncToken->pushToken( rOldSolution );
-    shared_ptr<ReadAccess<ValueType> > rRhs( new ReadAccess<ValueType>( rhs, loc ) );
-    syncToken->pushToken( rRhs );
+    syncToken->setCurrent();
+
+    WriteOnlyAccess<ValueType> wSolution( solution, loc, mNumRows );
+    ReadAccess<IndexType> jdsDLG( mDlg, loc );
+    ReadAccess<IndexType> jdsILG( mIlg, loc );
+    ReadAccess<IndexType> jdsPerm( mPerm, loc );
+    ReadAccess<IndexType> jdsJA( mJa, loc );
+    ReadAccess<ValueType> jdsValues( mValues, loc );
+    ReadAccess<ValueType> rOldSolution( oldSolution, loc );
+    ReadAccess<ValueType> rRhs( rhs, loc );
 
     SCAI_CONTEXT_ACCESS( loc )
 
-    jacobi( wSolution->get(), mNumRows, jdsPerm->get(), jdsILG->get(), mNumDiagonals, jdsDLG->get(), jdsJA->get(),
-            jdsValues->get(), rOldSolution->get(), rRhs->get(), omega, syncToken.get() );
+    jacobi[loc]( wSolution.get(), mNumRows, jdsPerm.get(), jdsILG.get(), mNumDiagonals, jdsDLG.get(), jdsJA.get(),
+                 jdsValues.get(), rOldSolution.get(), rRhs.get(), omega );
+
+    syncToken->pushRoutine( wSolution.releaseDelayed() );
+    syncToken->pushRoutine( jdsDLG.releaseDelayed() );
+    syncToken->pushRoutine( jdsILG.releaseDelayed() );
+    syncToken->pushRoutine( jdsPerm.releaseDelayed() );
+    syncToken->pushRoutine( jdsJA.releaseDelayed() );
+    syncToken->pushRoutine( jdsValues.releaseDelayed() );
+    syncToken->pushRoutine( rOldSolution.releaseDelayed() );
+    syncToken->pushRoutine( rRhs.releaseDelayed() );
+
+    syncToken->unsetCurrent();
 
     return syncToken.release();
 }
@@ -1387,10 +1430,9 @@ void JDSStorage<ValueType>::jacobiIterateHalo(
 
     SCAI_REGION( "Storage.JDS.jacobiIterateHalo" )
 
-    ContextPtr loc = getContextPtr();
+    static LAMAKernel<JDSKernelTrait::jacobiHalo<ValueType> > jacobiHalo;
 
-    LAMA_INTERFACE_FN_T( jacobiHalo, loc, JDSUtils, Solver, ValueType )
-    LAMA_INTERFACE_FN_T( invert, loc, Utils, Math, ValueType )
+    ContextPtr loc = jacobiHalo.getValidContext( this->getContextPtr());
 
     SCAI_ASSERT_EQUAL_DEBUG( mNumRows, localSolution.size() )
     SCAI_ASSERT_EQUAL_DEBUG( mNumColumns, oldHaloSolution.size() )
@@ -1406,8 +1448,8 @@ void JDSStorage<ValueType>::jacobiIterateHalo(
 
     SCAI_CONTEXT_ACCESS( loc )
 
-    jacobiHalo( wSolution.get(), mNumRows, diagonal.get(), mNumDiagonals, jdsHaloPerm.get(), jdsHaloIlg.get(),
-                jdsHaloDlg.get(), jdsHaloJA.get(), jdsHaloValues.get(), rOldHaloSolution.get(), omega, NULL );
+    jacobiHalo[loc]( wSolution.get(), mNumRows, diagonal.get(), mNumDiagonals, jdsHaloPerm.get(), jdsHaloIlg.get(),
+                     jdsHaloDlg.get(), jdsHaloJA.get(), jdsHaloValues.get(), rOldHaloSolution.get(), omega );
 
 }
 
@@ -1425,15 +1467,15 @@ ValueType JDSStorage<ValueType>::l1Norm() const
         return static_cast<ValueType>(0.0);
     }
 
-	ContextPtr loc = getContextPtr();
+    static LAMAKernel<blaskernel::BLASKernelTrait::asum<ValueType> > asum;
 
-    LAMA_INTERFACE_FN_T( asum, loc, BLAS, BLAS1, ValueType )
+    ContextPtr loc = asum.getValidContext( this->getContextPtr() );
 
 	ReadAccess<ValueType> data( mValues, loc );
 
 	SCAI_CONTEXT_ACCESS( loc )
 
-	return asum( n, data.get(), 1, NULL );
+	return asum[loc]( n, data.get(), 1 );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1450,15 +1492,15 @@ ValueType JDSStorage<ValueType>::l2Norm() const
         return static_cast<ValueType>(0.0);
     }
 
-	ContextPtr loc = getContextPtr();
+    static LAMAKernel<blaskernel::BLASKernelTrait::dot<ValueType> > dot;
 
-    LAMA_INTERFACE_FN_T( dot, loc, BLAS, BLAS1, ValueType )
+    ContextPtr loc = dot.getValidContext( this->getContextPtr() );
 
 	ReadAccess<ValueType> data( mValues, loc );
 
 	SCAI_CONTEXT_ACCESS( loc )
 
-	return ::sqrt(dot( n, data.get(), 1, data.get(), 1, NULL ));
+	return ::sqrt(dot[loc]( n, data.get(), 1, data.get(), 1 ));
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -1475,15 +1517,15 @@ ValueType JDSStorage<ValueType>::maxNorm() const
         return static_cast<ValueType>(0.0);
     }
 
-    ContextPtr loc = getContextPtr();
+    static LAMAKernel<UtilKernelTrait::absMaxVal<ValueType> > absMaxVal;
 
-    LAMA_INTERFACE_FN_DEFAULT_T( absMaxVal, loc, Utils, Reductions, ValueType )
+    ContextPtr loc = absMaxVal.getValidContext( this->getContextPtr() );
 
     ReadAccess<ValueType> jdsValues( mValues, loc );
 
     SCAI_CONTEXT_ACCESS( loc )
 
-    ValueType maxval = absMaxVal( jdsValues.get(), n );
+    ValueType maxval = absMaxVal[loc]( jdsValues.get(), n );
 
     return maxval;
 }
@@ -1535,13 +1577,13 @@ void JDSStorage<ValueType>::print() const
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
-void JDSStorage<ValueType>::prefetch( const ContextPtr location ) const
+void JDSStorage<ValueType>::prefetch( const ContextPtr context ) const
 {
-    mDlg.prefetch( location );
-    mIlg.prefetch( location );
-    mPerm.prefetch( location );
-    mJa.prefetch( location );
-    mValues.prefetch( location );
+    mDlg.prefetch( context );
+    mIlg.prefetch( context );
+    mPerm.prefetch( context );
+    mJa.prefetch( context );
+    mValues.prefetch( context );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

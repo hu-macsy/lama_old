@@ -96,7 +96,7 @@ void setCSRData( StorageType& storage )
     myIa.release();
     myJa.release();
     myData.release();
-    ContextPtr host = Context::getContextPtr( context::Host );
+    ContextPtr host = Context::getHostPtr();
     ContextPtr cuda = scai::lama_test::CUDATestContext::getContext();
     storage.setContextPtr( host );
     storage.setCSRData( numRows, numColumns, numValues, csrIas, csrJas, csrValues );

@@ -34,7 +34,7 @@
 
 #include <scai/hmemo.hpp>
 
-#include <scai/common/exception/Exception.hpp>
+#include <scai/common/macros/throw.hpp>
 
 #include <scai/logging.hpp>
 
@@ -68,13 +68,24 @@ void sub( ContextPtr cudaContext )
 
 int main()
 {
+    if ( Context::canCreate( common::context::CUDA ) )
+    {
+        cout << "Factory can create CUDA context, registered" << endl;
+    }
+    else 
+    {
+        cout << "Factory cannot create CUDA context, not registed" << endl;
+
+        exit( -1 );  // continuation makes no sense
+    }
+
     for ( int deviceNr = 0; deviceNr < 8; ++ deviceNr )
     {
-        cout << "try to get " << context::CUDA << " context from factory" << endl;
+        cout << "try to get " << common::context::CUDA << " context from factory" << endl;
 
         try 
         {
-            ContextPtr cudaContext = Context::create( context::CUDA, deviceNr );
+            ContextPtr cudaContext = Context::create( common::context::CUDA, deviceNr );
             cout << "cudaContext for device " << deviceNr << " = " << *cudaContext << endl;
             sub( cudaContext );
         }

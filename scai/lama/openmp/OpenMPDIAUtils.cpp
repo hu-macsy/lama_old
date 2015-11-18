@@ -35,16 +35,18 @@
 #include <scai/lama/openmp/OpenMPUtils.hpp>
 
 // local library
+#include <scai/lama/DIAKernelTrait.hpp>
 #include <scai/lama/openmp/OpenMPDIAUtils.hpp>
 
-#include <scai/lama/LAMAInterface.hpp>
-#include <scai/lama/LAMAInterfaceRegistry.hpp>
-
 // internal scai libraries
+#include <scai/kregistry/KernelRegistry.hpp>
 #include <scai/tracing.hpp>
+#include <scai/tasking/TaskSyncToken.hpp>
 
 #include <scai/common/OpenMP.hpp>
-#include <scai/common/Assert.hpp>
+#include <scai/common/macros/assert.hpp>
+#include <scai/common/ScalarType.hpp>
+#include <scai/common/bind.hpp>
 
 // boost
 #include <boost/preprocessor.hpp>
@@ -60,7 +62,7 @@ namespace lama
 
 using std::abs;
 using common::getScalarType;
-using tasking::SyncToken;
+using tasking::TaskSyncToken;
 
 SCAI_LOG_DEF_LOGGER( OpenMPDIAUtils::logger, "OpenMP.DIAUtils" )
 
@@ -304,6 +306,23 @@ void OpenMPDIAUtils::getCSRSizes(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void OpenMPDIAUtils::normalGEMV_a(
+    ValueType result[],
+    const std::pair<ValueType, const ValueType*> ax,
+    const std::pair<ValueType, const ValueType*> by,
+    const IndexType numRows,
+    const IndexType numColumns,
+    const IndexType numDiagonals,
+    const IndexType diaOffsets[],
+    const ValueType diaValues[] )
+{
+    normalGEMV( result, ax.first, ax.second, by.first, by.second,
+                numRows, numColumns, numDiagonals, diaOffsets, diaValues );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void OpenMPDIAUtils::normalGEMV(
     ValueType result[],
     const ValueType alpha,
@@ -316,11 +335,28 @@ void OpenMPDIAUtils::normalGEMV(
     const IndexType diaOffsets[],
     const ValueType diaValues[] )
 {
-    SCAI_LOG_INFO( logger,
-                   "normalGEMV<" << getScalarType<ValueType>() << ", #threads = " << omp_get_max_threads() << ">, result[" << numRows << "] = " << alpha << " * A( dia, #diags = " << numDiagonals << " ) * x + " << beta << " * y " )
+    // Note: launching thread gets token here, asynchronous thread will get NULL
+
+    TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
+
+    if ( syncToken )
+    {
+        // bind has limited number of arguments, so take help routine for call
+
+        SCAI_LOG_INFO( logger, 
+                       "normalGEMV<" << getScalarType<ValueType>() << "> launch it asynchronously" )
+
+        syncToken->run( common::bind( normalGEMV_a<ValueType>,
+                                      result,
+                                      std::pair<ValueType, const ValueType*>( alpha, x ),
+                                      std::pair<ValueType, const ValueType*>( beta, y ),
+                                      numRows, numColumns, numDiagonals, diaOffsets, diaValues ) );
+        return;
+    }
 
     SCAI_LOG_INFO( logger,
-                   "normalGEMV<" << getScalarType<ValueType>() << ">, n = " << numRows << ", d = " << numDiagonals )
+                   "normalGEMV<" << getScalarType<ValueType>() << ", #threads = " << omp_get_max_threads() 
+                    << ">, result[" << numRows << "] = " << alpha << " * A( dia, #diags = " << numDiagonals << " ) * x + " << beta << " * y " )
 
     // result := alpha * A * x + beta * y -> result:= beta * y; result += alpha * A
 
@@ -371,34 +407,6 @@ void OpenMPDIAUtils::normalGEMV(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void OpenMPDIAUtils::normalGEMV(
-    ValueType result[],
-    const ValueType alpha,
-    const ValueType x[],
-    const ValueType beta,
-    const ValueType y[],
-    const IndexType numRows,
-    const IndexType numColumns,
-    const IndexType numDiagonals,
-    const IndexType diaOffsets[],
-    const ValueType diaValues[],
-    SyncToken* syncToken )
-{
-    if( !syncToken )
-    {
-        normalGEMV( result, alpha, x, beta, y, numRows, numColumns, numDiagonals, diaOffsets, diaValues );
-    }
-    else
-    {
-        COMMON_THROWEXCEPTION( "no asynchronous support due to boost problem" )
-
-        // asynchronous execution is done by calling an own thread at higher level
-    }
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
 void OpenMPDIAUtils::normalGEVM(
     ValueType result[],
     const ValueType alpha,
@@ -409,8 +417,7 @@ void OpenMPDIAUtils::normalGEVM(
     const IndexType numColumns,
     const IndexType numDiagonals,
     const IndexType diaOffsets[],
-    const ValueType diaValues[],
-    SyncToken* syncToken )
+    const ValueType diaValues[] )
 {
     SCAI_LOG_INFO( logger,
                    "normalGEVM<" << getScalarType<ValueType>() << ", #threads = " << omp_get_max_threads() << ">, result[" << numRows << "] = " << alpha << " * A( dia, #diags = " << numDiagonals << " ) * x + " << beta << " * y " )
@@ -418,7 +425,9 @@ void OpenMPDIAUtils::normalGEVM(
     SCAI_LOG_INFO( logger,
                    "normalGEVM<" << getScalarType<ValueType>() << ">, n = " << numRows << ", d = " << numDiagonals )
 
-    if( syncToken )
+    TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
+
+    if ( syncToken )
     {
         COMMON_THROWEXCEPTION( "asynchronous execution should be done by LAMATask before" )
     }
@@ -486,14 +495,15 @@ void OpenMPDIAUtils::jacobi(
     const ValueType oldSolution[],
     const ValueType rhs[],
     const ValueType omega,
-    const IndexType numRows,
-    class SyncToken* syncToken )
+    const IndexType numRows )
 {
     SCAI_LOG_INFO( logger,
                    "jacobi<" << getScalarType<ValueType>() << ">" << ", #rows = " << numRows << ", #cols = " << numColumns << ", #diagonals = " << numDiagonals << ", omega = " << omega )
 
     SCAI_ASSERT_EQUAL_DEBUG( 0, diaOffset[0] )
     // main diagonal must be first
+
+    TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
     if( syncToken != NULL )
     {
@@ -533,24 +543,33 @@ void OpenMPDIAUtils::jacobi(
 
 /* --------------------------------------------------------------------------- */
 
-void OpenMPDIAUtils::setInterface( DIAUtilsInterface& DIAUtils )
+void OpenMPDIAUtils::registerKernels( bool deleteFlag )
 {
+    using kregistry::KernelRegistry;
+    using common::context::Host;       // context for registration
 
-// use of nested BOOST_PP_REPEAT to get all conversions
+    KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // lower priority
 
-#define LAMA_DIA_UTILS2_REGISTER(z, J, TYPE )                                                  \
-    LAMA_INTERFACE_REGISTER_TT( DIAUtils, getCSRValues, TYPE, ARITHMETIC_HOST_TYPE_##J )       \
+    if ( deleteFlag )
+    {
+        flag = KernelRegistry::KERNEL_ERASE;
+    }
 
+    // use of BOOST_PP_REPEAT to register for all value types
+    // use of nested BOOST_PP_REPEAT to get all pairs of value types for conversions
 
-#define LAMA_DIA_UTILS_REGISTER(z, I, _)                                                       \
-    LAMA_INTERFACE_REGISTER_T( DIAUtils, getCSRSizes, ARITHMETIC_HOST_TYPE_##I )               \
-    LAMA_INTERFACE_REGISTER_T( DIAUtils, absMaxVal, ARITHMETIC_HOST_TYPE_##I )                 \
-    LAMA_INTERFACE_REGISTER_T( DIAUtils, normalGEMV, ARITHMETIC_HOST_TYPE_##I )                \
-    LAMA_INTERFACE_REGISTER_T( DIAUtils, normalGEVM, ARITHMETIC_HOST_TYPE_##I )                \
-    LAMA_INTERFACE_REGISTER_T( DIAUtils, jacobi, ARITHMETIC_HOST_TYPE_##I )                    \
-                                                                                               \
-    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT,                                                 \
-                     LAMA_DIA_UTILS2_REGISTER,                                                 \
+#define LAMA_DIA_UTILS2_REGISTER(z, J, TYPE )                                                                        \
+    KernelRegistry::set<DIAKernelTrait::getCSRValues<TYPE, ARITHMETIC_HOST_TYPE_##J> >( getCSRValues, Host, flag );  \
+
+#define LAMA_DIA_UTILS_REGISTER(z, I, _)                                                                     \
+    KernelRegistry::set<DIAKernelTrait::getCSRSizes<ARITHMETIC_HOST_TYPE_##I> >( getCSRSizes, Host, flag );  \
+    KernelRegistry::set<DIAKernelTrait::absMaxVal<ARITHMETIC_HOST_TYPE_##I> >( absMaxVal, Host, flag );      \
+    KernelRegistry::set<DIAKernelTrait::normalGEMV<ARITHMETIC_HOST_TYPE_##I> >( normalGEMV, Host, flag );    \
+    KernelRegistry::set<DIAKernelTrait::normalGEVM<ARITHMETIC_HOST_TYPE_##I> >( normalGEVM, Host, flag );    \
+    KernelRegistry::set<DIAKernelTrait::jacobi<ARITHMETIC_HOST_TYPE_##I> >( jacobi, Host, flag );            \
+                                                                                                             \
+    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT,                                                               \
+                     LAMA_DIA_UTILS2_REGISTER,                                                               \
                      ARITHMETIC_HOST_TYPE_##I )
 
     BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_DIA_UTILS_REGISTER, _ )
@@ -561,21 +580,26 @@ void OpenMPDIAUtils::setInterface( DIAUtilsInterface& DIAUtils )
 }
 
 /* --------------------------------------------------------------------------- */
-/*    Static registration of the DIAUtils routines                             */
+/*    Constructor/Desctructor with registration                                */
 /* --------------------------------------------------------------------------- */
 
-bool OpenMPDIAUtils::registerInterface()
+OpenMPDIAUtils::OpenMPDIAUtils()
 {
-    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( hmemo::context::Host );
-    setInterface( interface.DIAUtils );
-    return true;
+    bool deleteFlag = false;
+    registerKernels( deleteFlag );
+}
+
+OpenMPDIAUtils::~OpenMPDIAUtils()
+{
+    bool deleteFlag = true;
+    registerKernels( deleteFlag );
 }
 
 /* --------------------------------------------------------------------------- */
-/*    Static initialiazion at program start                                    */
+/*    Static variable to force registration during static initialization      */
 /* --------------------------------------------------------------------------- */
 
-bool OpenMPDIAUtils::initialized = registerInterface();
+OpenMPDIAUtils OpenMPDIAUtils::guard;
 
 } /* end namespace lama */
 

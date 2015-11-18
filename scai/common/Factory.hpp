@@ -37,13 +37,14 @@
 #include <scai/common/config.hpp>
 #include <scai/common/unique_ptr.hpp>
 
-#include <scai/common/exception/Exception.hpp>
+#include <scai/common/macros/throw.hpp>
 
 // std
 #include <typeinfo>
 #include <memory>
 #include <map>
 #include <vector>
+#include <iostream>
 
 namespace scai
 {
@@ -86,13 +87,19 @@ public:
 
         Register();
 
-        /** Method that does the registration. */
+        /** Guard class that registers/unregisters the creator.   */
 
-        inline static bool init();
+        class RegisterGuard
+        {
+        public:
+            RegisterGuard();
+            ~RegisterGuard();
+            bool initialized;
+        };
 
-        /** Boolean variable whose initialization does the registration. */
+        /** Static guard variable takes care of registration */
 
-        static bool initialized;
+        static RegisterGuard registerGuard;
     };
 
     /** @brief check if create is supported for a given input value */
@@ -117,6 +124,8 @@ protected:
 
     static void addCreator( const InputType type, CreateFn create );
 
+    static void removeCreator( const InputType type );
+
 private:
 
     typedef std::map<InputType, CreateFn> CreatorMap;
@@ -134,26 +143,40 @@ template<typename InputType, typename OutputType>
 template<class Derived>
 Factory<InputType, OutputType>::Register<Derived>::Register()
 {
-    // Use of initialized forces its initialization and therefore registration
+    // just some trick stuff to cheat most compilers so they instantiate the static variable
 
-    if ( !initialized )
+    if ( !registerGuard.initialized )
     {
-        init();
+        COMMON_THROWEXCEPTION( "Register without Guard" )
     }
 }
 
+/* -----------------------------------------------------------------------------*/
+/*  Constructor/Destructor  RegisterGuard                                       */
+/* -----------------------------------------------------------------------------*/
+
 template<typename InputType, typename OutputType> 
 template<class Derived>
-inline bool Factory<InputType, OutputType>::Register<Derived>::init()
+Factory<InputType, OutputType>::Register<Derived>::RegisterGuard::RegisterGuard()
 {
-   Derived::addCreator( Derived::createValue(), Derived::create );
-   return true;
+    Derived::addCreator( Derived::createValue(), Derived::create );
+    initialized = true;
 }
 
 template<typename InputType, typename OutputType> 
 template<class Derived>
-bool Factory<InputType, OutputType>::Register<Derived>::initialized = 
-    Factory<InputType, OutputType>::Register<Derived>::init();
+Factory<InputType, OutputType>::Register<Derived>::RegisterGuard::~RegisterGuard()
+{
+    Derived::removeCreator( Derived::createValue() );
+}
+
+// ATTENTION: this instantiation is not sufficient for some compilers, 
+//            so it must be done explicitly later for some compilers
+
+template<typename InputType, typename OutputType> 
+template<class Derived>
+typename Factory<InputType, OutputType>::template Register<Derived>::RegisterGuard
+Factory<InputType, OutputType>::Register<Derived>::registerGuard;
 
 /* -----------------------------------------------------------------------------*/
 /*  Implementation of methods for template class                                */
@@ -176,7 +199,7 @@ OutputType Factory<InputType, OutputType>::create( const InputType type )
     {
         // Be careful: operator<< for InputType must be available
 
-        COMMON_THROWEXCEPTION( "Factory: no creator for " << typeid(type).name() << " available" )
+        COMMON_THROWEXCEPTION( "Factory: no creator for " << type << " available" )
     }
 
     return value;
@@ -203,6 +226,16 @@ void Factory<InputType, OutputType>::addCreator( const InputType type, CreateFn 
     // checks for multiple entries is not really necessary here, so just add entry in map container.
 
     factory.insert( std::pair<InputType, CreateFn>( type, create ) );
+}
+
+template<typename InputType, typename OutputType>
+void Factory<InputType, OutputType>::removeCreator( const InputType type )
+{
+    CreatorMap& factory = getFactory();
+
+    // checks for multiple entries is not really necessary here, so just add entry in map container.
+
+    factory.erase( type );
 }
 
 template<typename InputType, typename OutputType>

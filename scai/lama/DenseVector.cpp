@@ -36,7 +36,9 @@
 
 // local library
 #include <scai/lama/LAMAArrayUtils.hpp>
-#include <scai/lama/LAMAInterface.hpp>
+#include <scai/lama/UtilKernelTrait.hpp>
+#include <scai/blaskernel/BLASKernelTrait.hpp>
+#include <scai/lama/LAMAKernel.hpp>
 
 #include <scai/lama/distribution/NoDistribution.hpp>
 #include <scai/lama/distribution/CyclicDistribution.hpp>
@@ -65,13 +67,15 @@
 // std
 #include <ostream>
 
-using namespace scai::common;
-using namespace scai::hmemo;
-
 namespace scai
 {
 
 using common::Complex;
+using common::scoped_array;
+
+namespace context = scai::common::context;
+
+using namespace hmemo;
 
 namespace lama
 {
@@ -516,13 +520,13 @@ Scalar DenseVector<ValueType>::max() const
 
     SCAI_ASSERT_GT( nnu, 0, "no local values for max" )
 
-    ContextPtr loc = mLocalValues.getValidContext();
+    static LAMAKernel<UtilKernelTrait::maxval<ValueType> > maxval;
 
-    LAMA_INTERFACE_FN_DEFAULT_T( maxval, loc, Utils, Reductions, ValueType )
+    ContextPtr loc = maxval.getValidContext( mLocalValues.getValidContext() );
 
     ReadAccess<ValueType> localValues( mLocalValues, loc );
 
-    ValueType localMax = maxval( localValues.get(), localValues.size() );
+    ValueType localMax = maxval[loc]( localValues.get(), localValues.size() );
 
     return getDistribution().getCommunicator().max( localMax );
 }
@@ -534,23 +538,23 @@ Scalar DenseVector<ValueType>::l1Norm() const
 {
     IndexType nnu = mLocalValues.size();
 
-    ValueType localL1Norm = static_cast<ValueType>(0.0);
+    ValueType localL1Norm = 0;
 
-    if( nnu > 0 )
+    if ( nnu > 0 )
     {
-        //choose preferred context
+        // get available kernel routines for "BLAS1.asum" 
 
-        ContextPtr loc = mContext;
+        static LAMAKernel<blaskernel::BLASKernelTrait::asum<ValueType> > asum;
 
-        // get function pointer BLAS::BLAS1<ValueType>::asum in appropriate context
+        // find valid context, preferred is mContext
 
-        LAMA_INTERFACE_FN_DEFAULT_T( asum, loc, BLAS, BLAS1, ValueType )
+        ContextPtr loc = asum.getValidContext( mContext );
 
         ReadAccess<ValueType> read( mLocalValues, loc );
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        localL1Norm = asum( nnu, read.get(), 1, NULL );
+        localL1Norm = asum[loc]( nnu, read.get(), 1 );
     }
 
     return getDistribution().getCommunicator().sum( localL1Norm );
@@ -563,23 +567,23 @@ Scalar DenseVector<ValueType>::l2Norm() const
 {
     IndexType nnu = mLocalValues.size();
 
-    ValueType localDotProduct = static_cast<ValueType>(0.0);
+    ValueType localDotProduct = 0;
 
     if( nnu > 0 )
     {
-        // choose preferred context as context of vector, might be changed by availability
+        // get available kernel routines for "BLAS1.dot" 
 
-        ContextPtr loc = mContext;
+        static LAMAKernel<blaskernel::BLASKernelTrait::dot<ValueType> > dot;
 
-        // get function pointer BLAS::BLAS1<ValueType>::dot in appropriate context
+        // find valid context, preferred is mContext
 
-        LAMA_INTERFACE_FN_DEFAULT_T( dot, loc, BLAS, BLAS1, ValueType )
+        ContextPtr loc = dot.getValidContext( mContext );
 
         ReadAccess<ValueType> read( mLocalValues, loc );
 
-        SCAI_CONTEXT_ACCESS( mContext )
+        SCAI_CONTEXT_ACCESS( loc )
 
-        localDotProduct = dot( nnu, read.get(), 1, read.get(), 1, NULL );
+        localDotProduct = dot[loc]( nnu, read.get(), 1, read.get(), 1 );
     }
 
     ValueType globalDotProduct = getDistribution().getCommunicator().sum( localDotProduct );
@@ -596,17 +600,17 @@ Scalar DenseVector<ValueType>::maxNorm() const
 
     ValueType localMaxNorm = static_cast<ValueType>(0.0);
 
-    if( nnu > 0 )
+    if ( nnu > 0 )
     {
-        ContextPtr loc = mContext; // loc might be set to Host
+        static LAMAKernel<UtilKernelTrait::absMaxVal<ValueType> > absMaxVal;
 
-        LAMA_INTERFACE_FN_DEFAULT_T( absMaxVal, loc, Utils, Reductions, ValueType )
+        ContextPtr loc = absMaxVal.getValidContext( mContext );  
 
         ReadAccess<ValueType> read( mLocalValues, loc );
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        localMaxNorm = absMaxVal( read.get(), nnu );
+        localMaxNorm = absMaxVal[loc]( read.get(), nnu );
     }
 
     const Communicator& comm = getDistribution().getCommunicator();
@@ -647,7 +651,7 @@ void DenseVector<ValueType>::writeAt( std::ostream& stream ) const
 
 template<typename ValueType>
 void DenseVector<ValueType>::vectorPlusVector(
-    ContextPtr context,
+    ContextPtr prefContext,
     LAMAArray<ValueType>& result,
     const ValueType alpha,
     const LAMAArray<ValueType>& x,
@@ -659,10 +663,11 @@ void DenseVector<ValueType>::vectorPlusVector(
 
     // get function pointers, do not use fallbacks here
 
-    LAMA_INTERFACE_FN_T( scale, context, Utils, Transform, ValueType )
+    static LAMAKernel<UtilKernelTrait::scale<ValueType> > scale;
+    static LAMAKernel<blaskernel::BLASKernelTrait::axpy<ValueType> > axpy;
+    static LAMAKernel<blaskernel::BLASKernelTrait::sum<ValueType> > sum;
 
-    LAMA_INTERFACE_FN_T( axpy, context, BLAS, BLAS1, ValueType )
-    LAMA_INTERFACE_FN_T( sum, context, BLAS, BLAS1, ValueType )
+    ContextPtr context = sum.getValidContext( scale, axpy, prefContext );
 
     const IndexType nnu = result.size();
 
@@ -680,7 +685,7 @@ void DenseVector<ValueType>::vectorPlusVector(
         WriteAccess<ValueType> resultAccess( result, context, true );
 
         SCAI_CONTEXT_ACCESS( context )
-        scale( resultAccess.get(), alpha + beta, nnu );
+        scale[context]( resultAccess.get(), alpha + beta, nnu );
     }
     else if( &result == &x ) //result = alpha * result + beta * y
     {
@@ -694,7 +699,7 @@ void DenseVector<ValueType>::vectorPlusVector(
             if( alpha != scai::common::constants::ONE ) // result *= alpha
             {
                 SCAI_CONTEXT_ACCESS( context )
-                scale( resultAccess.get(), alpha, nnu );
+                scale[context]( resultAccess.get(), alpha, nnu );
             }
             else
             {
@@ -709,12 +714,12 @@ void DenseVector<ValueType>::vectorPlusVector(
             {
                 // result *= alpha
                 SCAI_CONTEXT_ACCESS( context )
-                scale( resultAccess.get(), alpha, nnu );
+                scale[context]( resultAccess.get(), alpha, nnu );
             }
 
             // result += y
             SCAI_CONTEXT_ACCESS( context )
-            axpy( nnu, static_cast<ValueType>(1.0)/*alpha*/, yAccess.get(), 1, resultAccess.get(), 1, NULL );
+            axpy[context]( nnu, static_cast<ValueType>(1.0)/*alpha*/, yAccess.get(), 1, resultAccess.get(), 1 );
         }
         else // beta != 1.0 && beta != 0.0 --> result = alpha * result + beta * y
         {
@@ -724,11 +729,11 @@ void DenseVector<ValueType>::vectorPlusVector(
             if( alpha != scai::common::constants::ONE )
             {
                 SCAI_CONTEXT_ACCESS( context )
-                scale( resultAccess.get(), alpha, nnu );
+                scale[context]( resultAccess.get(), alpha, nnu );
             }
 
             SCAI_CONTEXT_ACCESS( context )
-            axpy( nnu, beta, yAccess.get(), 1, resultAccess.get(), 1, NULL );
+            axpy[context]( nnu, beta, yAccess.get(), 1, resultAccess.get(), 1 );
         }
     }
     else if( &result == &y ) // result = alpha * x + beta * result
@@ -745,14 +750,14 @@ void DenseVector<ValueType>::vectorPlusVector(
         {
             // result *= beta
             SCAI_CONTEXT_ACCESS( context )
-            scale( resultAccess.get(), beta, nnu );
+            scale[context]( resultAccess.get(), beta, nnu );
         }
 
         if( alpha != scai::common::constants::ZERO )
         {
             // result = alpha * x + result
             SCAI_CONTEXT_ACCESS( context )
-            axpy( nnu, alpha, xAccess.get(), 1, resultAccess.get(), 1, NULL );
+            axpy[context]( nnu, alpha, xAccess.get(), 1, resultAccess.get(), 1 );
         }
     }
     else // result = alpha * x + beta * y
@@ -766,7 +771,7 @@ void DenseVector<ValueType>::vectorPlusVector(
         WriteAccess<ValueType> resultAccess( result, context, false );
 
         SCAI_CONTEXT_ACCESS( context )
-        sum( nnu, alpha, xAccess.get(), beta, yAccess.get(), resultAccess.get(), NULL );
+        sum[context]( nnu, alpha, xAccess.get(), beta, yAccess.get(), resultAccess.get() );
     }
 
     SCAI_LOG_INFO( logger, "vectorPlusVector done" )
@@ -795,7 +800,7 @@ void DenseVector<ValueType>::assign( const Expression_SV_SV& expression )
     const ValueType beta = exp2.getArg1().getValue<ValueType>();
     const Vector& y = exp2.getArg2();
 
-    SCAI_LOG_INFO( logger, *this << ": assign" << alpha << " * x:" << x << " + " << beta << " * y:" << y )
+    SCAI_LOG_INFO( logger, "z = " << alpha << " * x + " << beta << " * y, with  x = " << x << ", y = " << y << ", z = " << *this )
 
     SCAI_LOG_DEBUG( logger, "dist of x = " << x.getDistribution() )
     SCAI_LOG_DEBUG( logger, "dist of y = " << y.getDistribution() )
@@ -818,22 +823,25 @@ void DenseVector<ValueType>::assign( const Expression_SV_SV& expression )
 
         if( mLocalValues.size() != denseX.mLocalValues.size() )
         {
+            SCAI_LOG_DEBUG( logger, "resize local values of z = this" )
             mLocalValues.clear();
             WriteAccess<ValueType> localAccess( mLocalValues, mContext );
             localAccess.resize( denseX.mLocalValues.size() );
         }
 
-#ifdef SCAI_LOG_DEBUG_ENABLED
+#ifdef NOT_SWITCHED_ON
         {
-            // useful output to identify aliases between arguments
+            // useful output to identify aliases between arguments, write should be the last one
 
-            WriteAccess<ValueType> rZ( mLocalValues, mContext );
             ReadAccess<ValueType> rX( denseX.mLocalValues, mContext );
             ReadAccess<ValueType> rY( denseY.mLocalValues, mContext );
+            WriteAccess<ValueType> rZ( mLocalValues, mContext );
 
             SCAI_LOG_DEBUG( logger, " z = " << rZ.get() << ", x = " << rX.get() << ", y = " << rY.get() )
         }
 #endif
+
+        SCAI_LOG_DEBUG( logger, "call vectorPlusVector" )
 
         vectorPlusVector( mContext, mLocalValues, alpha, denseX.mLocalValues, beta, denseY.mLocalValues );
     }
@@ -866,9 +874,13 @@ SCAI_REGION( "Vector.Dense.dotP" )
 
         SCAI_LOG_DEBUG( logger, "Calculating local dot product at " << *mContext )
 
-        ContextPtr loc = mContext; // prefered location is context of this vector
+        // get available kernel routines for "BLAS1.dot" 
 
-        LAMA_INTERFACE_FN_DEFAULT_T( dot, loc, BLAS, BLAS1, ValueType );
+        static LAMAKernel<blaskernel::BLASKernelTrait::dot<ValueType> > dot;
+
+        // find valid context, preferred is mContext
+
+        ContextPtr loc = dot.getValidContext( mContext );
 
         // Now do the dot production at location loc ( might have been changed to other location  )
 
@@ -881,7 +893,7 @@ SCAI_REGION( "Vector.Dense.dotP" )
 
         SCAI_ASSERT_EQUAL_DEBUG( localSize, getDistribution().getLocalSize() )
 
-        const ValueType localDotProduct = dot( localSize, localRead.get(), 1, otherRead.get(), 1, NULL );
+        const ValueType localDotProduct = dot[loc]( localSize, localRead.get(), 1, otherRead.get(), 1 );
 
         SCAI_LOG_DEBUG( logger, "Calculating global dot product form local dot product = " << localDotProduct )
 
@@ -961,15 +973,15 @@ void DenseVector<ValueType>::invert()
 {
     const IndexType size = mLocalValues.size();
 
-    const ContextPtr loc = getContextPtr();
+    static LAMAKernel<UtilKernelTrait::invert<ValueType> > invert;
 
-    LAMA_INTERFACE_FN_T( invert, loc, Utils, Math, ValueType )
-
-    WriteAccess<ValueType> wValues( mLocalValues, loc );
+    const ContextPtr loc = invert.getValidContext( this->getContextPtr() );
 
     SCAI_CONTEXT_ACCESS( loc );
 
-    invert( wValues.get(), size );
+    WriteAccess<ValueType> wValues( mLocalValues, loc );
+
+    invert[loc]( wValues.get(), size );
 }
 
 template<typename ValueType>

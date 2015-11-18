@@ -40,6 +40,7 @@
 
 // internal scai libraries
 #include <scai/hmemo.hpp>
+#include <scai/common/macros/print_string.hpp>
 
 // boost
 #include <boost/preprocessor.hpp>
@@ -803,25 +804,21 @@ void SparseAssemblyStorage<ValueType>::getRowImpl( LAMAArray<OtherType>& row, co
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void SparseAssemblyStorage<ValueType>::setDiagonalImpl( const Scalar value )
+void SparseAssemblyStorage<ValueType>::setDiagonalImpl( const ValueType value )
 {
     const IndexType numDiagonalElements = std::min( mNumColumns, mNumRows );
 
-    ValueType val = value.getValue<ValueType>();
-
     for( IndexType i = 0; i < numDiagonalElements; ++i )
     {
-        set( i, i, val );
+        set( i, i, value );
     }
 }
 
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void SparseAssemblyStorage<ValueType>::scaleImpl( const Scalar scalar )
+void SparseAssemblyStorage<ValueType>::scaleImpl( const ValueType value )
 {
-    ValueType value = scalar.getValue<ValueType>();
-
     for( IndexType i = 0; i < mNumRows; ++i )
     {
         mRows[i].scale( value );
@@ -854,23 +851,17 @@ void SparseAssemblyStorage<ValueType>::writeAt( std::ostream& stream ) const
            << ", #values = " << mNumValues << ", diag = " << mDiagonalProperty << " )";
 }
 
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
-const char* SparseAssemblyStorage<ValueType>::typeName()
-{
-    std::ostringstream name;
-
-    name << "SparseAssemblyStorage<" << common::getScalarType<ValueType>() << ">";
-
-    return name.str().c_str();
-}
-
 /* ========================================================================= */
 /*       Template specializattions and instantiations                        */
 /* ========================================================================= */
 
+
 #define LAMA_ASSEMBLY_STORAGE_INSTANTIATE(z, I, _)                                           \
+    template<>                                                                               \
+    const char* SparseAssemblyStorage<ARITHMETIC_HOST_TYPE_##I>::typeName()                  \
+    {                                                                                        \
+        return "SparseAssemblyStorage<" PRINT_STRING(ARITHMETIC_HOST_TYPE_##I) ">";          \
+    }                                                                                        \
                                                                                              \
     template class COMMON_DLL_IMPORTEXPORT SparseAssemblyStorage<ARITHMETIC_HOST_TYPE_##I> ;
 

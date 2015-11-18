@@ -35,7 +35,8 @@
 #include <boost/test/unit_test.hpp>
 
 // others
-#include <scai/lama/LAMAInterface.hpp>
+#include <scai/lama/ELLKernelTrait.hpp>
+#include <scai/lama/LAMAKernel.hpp>
 #include <scai/hmemo.hpp>
 
 #include <scai/common/test/TestMacros.hpp>
@@ -64,7 +65,8 @@ namespace ELLUtilsTest
 template<typename NoType>
 void countNonEmptyRowsBySizesTest( ContextPtr loc )
 {
-    LAMA_INTERFACE_FN( countNonEmptyRowsBySizes, loc, ELLUtils, Operations )
+    LAMAKernel<ELLKernelTrait::countNonEmptyRowsBySizes> countNonEmptyRowsBySizes;
+
     // count valid array
     {
         const IndexType values[] = { 3, 0, 1, 0, 0, 1, 0, 4 };
@@ -72,7 +74,7 @@ void countNonEmptyRowsBySizesTest( ContextPtr loc )
         LAMAArray<IndexType> sizes( n, values );
         ReadAccess<IndexType> rSizes( sizes, loc );
         SCAI_CONTEXT_ACCESS( loc );
-        IndexType count = countNonEmptyRowsBySizes( rSizes.get(), n );
+        IndexType count = countNonEmptyRowsBySizes[loc]( rSizes.get(), n );
         BOOST_CHECK_EQUAL( 4, count );
     }
     // count empty array
@@ -80,7 +82,7 @@ void countNonEmptyRowsBySizesTest( ContextPtr loc )
         LAMAArray<IndexType> sizes;
         ReadAccess<IndexType> rSizes( sizes, loc );
         SCAI_CONTEXT_ACCESS( loc );
-        IndexType count = countNonEmptyRowsBySizes( rSizes.get(), sizes.size() );
+        IndexType count = countNonEmptyRowsBySizes[loc]( rSizes.get(), sizes.size() );
         BOOST_CHECK_EQUAL( 0, count );
     }
 }
@@ -90,7 +92,8 @@ void countNonEmptyRowsBySizesTest( ContextPtr loc )
 template<typename NoType>
 void setNonEmptyRowsBySizesTest( ContextPtr loc )
 {
-    LAMA_INTERFACE_FN( setNonEmptyRowsBySizes, loc, ELLUtils, Operations )
+    LAMAKernel<ELLKernelTrait::setNonEmptyRowsBySizes> setNonEmptyRowsBySizes;
+
     const IndexType values[] = { 3, 0, 1, 0, 0, 1, 0, 4, 3, 0 };
     const IndexType valuesResult[] = { 0, 2, 5, 7, 8 };
     const IndexType n = 10;
@@ -101,7 +104,7 @@ void setNonEmptyRowsBySizesTest( ContextPtr loc )
         ReadAccess<IndexType> rSizes( sizes, loc );
         WriteAccess<IndexType> wRowIndexes( rowIndexes, loc );
         SCAI_CONTEXT_ACCESS( loc );
-        setNonEmptyRowsBySizes( wRowIndexes.get(), numNonEmptyRows, rSizes.get(), n );
+        setNonEmptyRowsBySizes[loc]( wRowIndexes.get(), numNonEmptyRows, rSizes.get(), n );
     }
     {
         ReadAccess<IndexType> rRowIndexes( rowIndexes );
@@ -118,7 +121,8 @@ void setNonEmptyRowsBySizesTest( ContextPtr loc )
 template<typename NoType>
 void hasDiagonalPropertyTest( ContextPtr loc )
 {
-    LAMA_INTERFACE_FN( hasDiagonalProperty, loc, ELLUtils, Operations )
+    LAMAKernel<ELLKernelTrait::hasDiagonalProperty> hasDiagonalProperty;
+
     // positive test
     {
         const IndexType ellJaValues[] = { 0, 1, 2, 3, 4, 5, 6, 7, 5, 3, 9, 10, 7, 8, 9, 10 };
@@ -127,7 +131,7 @@ void hasDiagonalPropertyTest( ContextPtr loc )
         LAMAArray<IndexType> ellJa( n, ellJaValues );
         ReadAccess<IndexType> rEllJa( ellJa, loc );
         SCAI_CONTEXT_ACCESS( loc );
-        bool diagonalProperty = hasDiagonalProperty( numDiagonals, rEllJa.get() );
+        bool diagonalProperty = hasDiagonalProperty[loc]( numDiagonals, rEllJa.get() );
         BOOST_CHECK_EQUAL( true, diagonalProperty );
     }
     // negative test
@@ -138,7 +142,7 @@ void hasDiagonalPropertyTest( ContextPtr loc )
         LAMAArray<IndexType> ellJa( n, ellJaValues );
         ReadAccess<IndexType> rEllJa( ellJa, loc );
         SCAI_CONTEXT_ACCESS( loc );
-        bool diagonalProperty = hasDiagonalProperty( numDiagonals, rEllJa.get() );
+        bool diagonalProperty = hasDiagonalProperty[loc]( numDiagonals, rEllJa.get() );
         BOOST_CHECK_EQUAL( false, diagonalProperty );
     }
     // test empty array
@@ -147,7 +151,7 @@ void hasDiagonalPropertyTest( ContextPtr loc )
         LAMAArray<IndexType> ellJa;
         ReadAccess<IndexType> rEllJa( ellJa, loc );
         SCAI_CONTEXT_ACCESS( loc );
-        bool diagonalProperty = hasDiagonalProperty( numDiagonals, rEllJa.get() );
+        bool diagonalProperty = hasDiagonalProperty[loc]( numDiagonals, rEllJa.get() );
         BOOST_CHECK_EQUAL( false, diagonalProperty );
     }
 }
@@ -157,7 +161,7 @@ void hasDiagonalPropertyTest( ContextPtr loc )
 template<typename NoType>
 void checkTest( ContextPtr loc )
 {
-    LAMA_INTERFACE_FN( check, loc, ELLUtils, Operations )
+    LAMAKernel<ELLKernelTrait::check> check;
     // check with correct values
     {
         const IndexType valuesIa[] = { 4, 3, 5, 2 };
@@ -172,7 +176,7 @@ void checkTest( ContextPtr loc )
         ReadAccess<IndexType> rIa( ia, loc );
         ReadAccess<IndexType> rJa( ja, loc );
         SCAI_CONTEXT_ACCESS( loc );
-        BOOST_CHECK_NO_THROW( check( numRows, numValuesPerRow, numColumns, rIa.get(), rJa.get(), "checkTest" ) );
+        BOOST_CHECK_NO_THROW( check[loc]( numRows, numValuesPerRow, numColumns, rIa.get(), rJa.get(), "checkTest" ) );
     }
     // check with invalid ia
     {
@@ -188,7 +192,7 @@ void checkTest( ContextPtr loc )
         ReadAccess<IndexType> rIa( ia, loc );
         ReadAccess<IndexType> rJa( ja, loc );
         SCAI_CONTEXT_ACCESS( loc );
-        BOOST_CHECK_THROW( check( numRows, numValuesPerRow, numColumns, rIa.get(), rJa.get(), "checkTest" ),
+        BOOST_CHECK_THROW( check[loc]( numRows, numValuesPerRow, numColumns, rIa.get(), rJa.get(), "checkTest" ),
                            Exception );
     }
     // check with invalid ja
@@ -205,7 +209,7 @@ void checkTest( ContextPtr loc )
         ReadAccess<IndexType> rIa( ia, loc );
         ReadAccess<IndexType> rJa( ja, loc );
         SCAI_CONTEXT_ACCESS( loc );
-        BOOST_CHECK_THROW( check( numRows, numValuesPerRow, numColumns, rIa.get(), rJa.get(), "checkTest" ),
+        BOOST_CHECK_THROW( check[loc]( numRows, numValuesPerRow, numColumns, rIa.get(), rJa.get(), "checkTest" ),
                            Exception );
     }
     // check with valid empty values
@@ -218,7 +222,7 @@ void checkTest( ContextPtr loc )
         ReadAccess<IndexType> rIa( ia, loc );
         ReadAccess<IndexType> rJa( ja, loc );
         SCAI_CONTEXT_ACCESS( loc );
-        BOOST_CHECK_NO_THROW( check( numRows, numValuesPerRow, numColumns, rIa.get(), rJa.get(), "checkTest" ) );
+        BOOST_CHECK_NO_THROW( check[loc]( numRows, numValuesPerRow, numColumns, rIa.get(), rJa.get(), "checkTest" ) );
     }
     // check with invalid empty values
     {
@@ -230,7 +234,7 @@ void checkTest( ContextPtr loc )
         ReadAccess<IndexType> rIa( ia, loc );
         ReadAccess<IndexType> rJa( ja, loc );
         SCAI_CONTEXT_ACCESS( loc );
-        BOOST_CHECK_THROW( check( numRows, numValuesPerRow, numColumns, rIa.get(), rJa.get(), "checkTest" ),
+        BOOST_CHECK_THROW( check[loc]( numRows, numValuesPerRow, numColumns, rIa.get(), rJa.get(), "checkTest" ),
                            Exception );
     }
 }
@@ -240,7 +244,8 @@ void checkTest( ContextPtr loc )
 template<typename ValueType, typename OtherValueType>
 void getRowTest( ContextPtr loc )
 {
-    LAMA_INTERFACE_FN_TT( getRow, loc, ELLUtils, Getter, ValueType, OtherValueType );
+    LAMAKernel<ELLKernelTrait::getRow<ValueType, OtherValueType> > getRow;
+
     // check with valid dense values
     {
         ValueType valuesValues[] = { 0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4 };
@@ -264,7 +269,7 @@ void getRowTest( ContextPtr loc )
             ReadAccess<IndexType> rJa( ja, loc );
             WriteOnlyAccess<OtherValueType> wRow( row, loc, numColumns );
             SCAI_CONTEXT_ACCESS( loc );
-            getRow( wRow.get(), i, numRows, numColumns, numValuesPerRow, rIa.get(), rJa.get(), rValues.get() );
+            getRow[loc]( wRow.get(), i, numRows, numColumns, numValuesPerRow, rIa.get(), rJa.get(), rValues.get() );
         }
         ReadAccess<OtherValueType> rRow( row );
 
@@ -298,7 +303,7 @@ void getRowTest( ContextPtr loc )
             ReadAccess<IndexType> rJa( ja, loc );
             WriteOnlyAccess<OtherValueType> wRow( row, loc, numColumns );
             SCAI_CONTEXT_ACCESS( loc );
-            getRow( wRow.get(), i, numRows, numColumns, numValuesPerRow, rIa.get(), rJa.get(), rValues.get() );
+            getRow[loc]( wRow.get(), i, numRows, numColumns, numValuesPerRow, rIa.get(), rJa.get(), rValues.get() );
         }
         ReadAccess<OtherValueType> rRow( row );
 
@@ -311,10 +316,11 @@ void getRowTest( ContextPtr loc )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-template<typename ValueType, typename OtherValueType>
+template<typename ValueType>
 void getValueTest( ContextPtr loc )
 {
-    LAMA_INTERFACE_FN_TT( getValue, loc, ELLUtils, Getter, ValueType, OtherValueType );
+    LAMAKernel<ELLKernelTrait::getValue<ValueType> > getValue;
+
     ValueType valuesValues[] =
     { 0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4 };
     const IndexType nValues = sizeof( valuesValues ) / sizeof( ValueType );
@@ -324,7 +330,7 @@ void getValueTest( ContextPtr loc )
     IndexType valuesJa[] =
     { 0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4 };
     const IndexType nJa = sizeof( valuesJa ) / sizeof( IndexType );
-    OtherValueType expectedValues[] =
+    ValueType expectedValues[] =
     { 0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4 };
     const IndexType numRows = nIa;
     const IndexType numValuesPerRow = nValues / numRows;
@@ -341,7 +347,7 @@ void getValueTest( ContextPtr loc )
     {
         for ( IndexType j = 0; j < valuesIa[i]; j++ )
         {
-            OtherValueType result = getValue( i, j, numRows, numValuesPerRow, rIa.get(), rJa.get(), rValues.get() );
+            ValueType result = getValue[loc]( i, j, numRows, numValuesPerRow, rIa.get(), rJa.get(), rValues.get() );
             BOOST_CHECK_EQUAL( expectedValues[j * numRows + i], result );
         }
     }
@@ -352,7 +358,8 @@ void getValueTest( ContextPtr loc )
 template<typename ValueType, typename OtherValueType>
 void scaleValueTest( ContextPtr loc )
 {
-    LAMA_INTERFACE_FN_TT( scaleValue, loc, ELLUtils, Scale, ValueType, OtherValueType );
+    LAMAKernel<ELLKernelTrait::scaleValue<ValueType, OtherValueType> > scaleValue;
+
     ValueType mValues[] =
     { 1, 2, 3, 4, 5, 2, 2, 2, 2, 2, 4, 2, 0, 1, 3, 0, 0, 0, 0, 3 };
     const IndexType nValues = sizeof( mValues ) / sizeof( ValueType );
@@ -373,7 +380,7 @@ void scaleValueTest( ContextPtr loc )
         WriteAccess<ValueType> wEllValues( ellValues, loc );
         ReadAccess<OtherValueType> rScaleValues( scaleValues, loc );
         SCAI_CONTEXT_ACCESS( loc );
-        scaleValue( numRows, numValuesPerRow, rEllIa.get(), wEllValues.get(), rScaleValues.get() );
+        scaleValue[loc]( numRows, numValuesPerRow, rEllIa.get(), wEllValues.get(), rScaleValues.get() );
     }
     ReadAccess<ValueType> rEllValues( ellValues );
 
@@ -388,7 +395,8 @@ void scaleValueTest( ContextPtr loc )
 template<typename ValueType, typename OtherValueType>
 void getCSRValuesTest( ContextPtr loc )
 {
-    LAMA_INTERFACE_FN_TT( getCSRValues, loc, ELLUtils, Conversions, ValueType, OtherValueType );
+    LAMAKernel<ELLKernelTrait::getCSRValues<ValueType, OtherValueType> > getCSRValues;
+
     ValueType valuesELLValues[] =
     { 0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4 };
     const IndexType nELLValues = sizeof( valuesELLValues ) / sizeof( ValueType );
@@ -424,8 +432,8 @@ void getCSRValuesTest( ContextPtr loc )
         WriteOnlyAccess<OtherValueType> wCSRValues( csrValues, loc, nCSRValues );
         WriteOnlyAccess<IndexType> wCSRJa( csrJa, loc, nCSRValues );
         SCAI_CONTEXT_ACCESS( loc );
-        getCSRValues( wCSRJa.get(), wCSRValues.get(), rCSRIa.get(), numRows, numValuesPerRow, rELLIa.get(),
-                      rELLJa.get(), rELLValues.get() );
+        getCSRValues[loc] ( wCSRJa.get(), wCSRValues.get(), rCSRIa.get(), numRows, numValuesPerRow, rELLIa.get(),
+                            rELLJa.get(), rELLValues.get() );
     }
     ReadAccess<IndexType> rCSRJa( csrJa );
     ReadAccess<OtherValueType> rCSRValues( csrValues );
@@ -442,8 +450,8 @@ void getCSRValuesTest( ContextPtr loc )
 template<typename ValueType, typename OtherValueType>
 void setCSRValuesTest( ContextPtr loc )
 {
-    // TODO: Change to use both types
-    LAMA_INTERFACE_FN_TT( setCSRValues, loc, ELLUtils, Conversions, OtherValueType, ValueType );
+    LAMAKernel<ELLKernelTrait::setCSRValues<OtherValueType, ValueType> > setCSRValues;
+
     ValueType valuesCSRValues[] =
     { 0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4 };
     const IndexType nCSRValues = sizeof( valuesCSRValues ) / sizeof( ValueType );
@@ -478,8 +486,8 @@ void setCSRValuesTest( ContextPtr loc )
         WriteOnlyAccess<OtherValueType> wELLValues( ellValues, loc, nELLValues );
         WriteOnlyAccess<IndexType> wELLJa( ellJa, loc, nELLValues );
         SCAI_CONTEXT_ACCESS( loc );
-        setCSRValues( wELLJa.get(), wELLValues.get(), rELLIa.get(), numRows, numValuesPerRow, rCSRIa.get(),
-                      rCSRJa.get(), rCSRValues.get() );
+        setCSRValues[loc]( wELLJa.get(), wELLValues.get(), rELLIa.get(), numRows, numValuesPerRow, rCSRIa.get(),
+                           rCSRJa.get(), rCSRValues.get() );
     }
     ReadAccess<IndexType> rELLJa( ellJa );
     ReadAccess<OtherValueType> rELLValues( ellValues );
@@ -496,7 +504,8 @@ void setCSRValuesTest( ContextPtr loc )
 template<typename ValueType>
 void compressIATest( ContextPtr loc )
 {
-    LAMA_INTERFACE_FN_T( compressIA, loc, ELLUtils, Helper, ValueType )
+    LAMAKernel<ELLKernelTrait::compressIA<ValueType> > compressIA;
+
     // Check without epsilon
     {
         ValueType valuesELLValues[] =
@@ -518,12 +527,13 @@ void compressIATest( ContextPtr loc )
         LAMAArray<IndexType> ellJa( nELLJa, valuesELLJa );
         LAMAArray<IndexType> newEllIa( nELLIa, 0.0 );
         {
+            SCAI_CONTEXT_ACCESS( loc );
+
             ReadAccess<ValueType> rELLValues( ellValues, loc );
             ReadAccess<IndexType> rELLIa( ellIa, loc );
             ReadAccess<IndexType> rELLJa( ellJa, loc );
             WriteOnlyAccess<IndexType> wNewELLIa( newEllIa, loc, nELLIa );
-            SCAI_CONTEXT_ACCESS( loc );
-            compressIA( rELLIa.get(), rELLJa.get(), rELLValues.get(), numRows, numValuesPerRow, eps, wNewELLIa.get() );
+            compressIA[loc]( rELLIa.get(), rELLJa.get(), rELLValues.get(), numRows, numValuesPerRow, eps, wNewELLIa.get() );
         }
         ReadAccess<IndexType> rNewELLIa( newEllIa );
 
@@ -558,7 +568,7 @@ void compressIATest( ContextPtr loc )
             ReadAccess<IndexType> rELLJa( ellJa, loc );
             WriteOnlyAccess<IndexType> wNewELLIa( newEllIa, loc, nELLIa );
             SCAI_CONTEXT_ACCESS( loc );
-            compressIA( rELLIa.get(), rELLJa.get(), rELLValues.get(), numRows, numValuesPerRow, eps, wNewELLIa.get() );
+            compressIA[loc]( rELLIa.get(), rELLJa.get(), rELLValues.get(), numRows, numValuesPerRow, eps, wNewELLIa.get() );
         }
         ReadAccess<IndexType> rNewELLIa( newEllIa );
 
@@ -593,7 +603,7 @@ void compressIATest( ContextPtr loc )
             ReadAccess<IndexType> rELLJa( ellJa, loc );
             WriteOnlyAccess<IndexType> wNewELLIa( newEllIa, loc, nELLIa );
             SCAI_CONTEXT_ACCESS( loc );
-            compressIA( rELLIa.get(), rELLJa.get(), rELLValues.get(), numRows, numValuesPerRow, eps, wNewELLIa.get() );
+            compressIA[loc]( rELLIa.get(), rELLJa.get(), rELLValues.get(), numRows, numValuesPerRow, eps, wNewELLIa.get() );
         }
         ReadAccess<IndexType> rNewELLIa( newEllIa );
 
@@ -609,7 +619,8 @@ void compressIATest( ContextPtr loc )
 template<typename ValueType>
 void compressValuesTest( ContextPtr loc )
 {
-    LAMA_INTERFACE_FN_T( compressValues, loc, ELLUtils, Helper, ValueType )
+    LAMAKernel<ELLKernelTrait::compressValues<ValueType> > compressValues;
+
     // Check without epsilon
     {
         ValueType valuesELLValues[] =
@@ -642,8 +653,8 @@ void compressValuesTest( ContextPtr loc )
             WriteOnlyAccess<ValueType> wNewELLValues( newEllValues, loc, numValues );
             WriteOnlyAccess<IndexType> wNewELLJa( newEllJa, loc, numValues );
             SCAI_CONTEXT_ACCESS( loc );
-            compressValues( rELLIa.get(), rELLJa.get(), rELLValues.get(), numRows, numValuesPerRow, eps,
-                            newNumValuesPerRow, wNewELLJa.get(), wNewELLValues.get() );
+            compressValues[loc]( rELLIa.get(), rELLJa.get(), rELLValues.get(), numRows, numValuesPerRow, eps,
+                                 newNumValuesPerRow, wNewELLJa.get(), wNewELLValues.get() );
         }
         ReadAccess<ValueType> rNewELLValues( newEllValues );
         ReadAccess<IndexType> rNewELLJa( newEllJa );
@@ -686,8 +697,8 @@ void compressValuesTest( ContextPtr loc )
             WriteOnlyAccess<ValueType> wNewELLValues( newEllValues, loc, numValues );
             WriteOnlyAccess<IndexType> wNewELLJa( newEllJa, loc, numValues );
             SCAI_CONTEXT_ACCESS( loc );
-            compressValues( rELLIa.get(), rELLJa.get(), rELLValues.get(), numRows, numValuesPerRow, eps,
-                            newNumValuesPerRow, wNewELLJa.get(), wNewELLValues.get() );
+            compressValues[loc]( rELLIa.get(), rELLJa.get(), rELLValues.get(), numRows, numValuesPerRow, eps,
+                                 newNumValuesPerRow, wNewELLJa.get(), wNewELLValues.get() );
         }
         ReadAccess<ValueType> rNewELLValues( newEllValues );
         ReadAccess<IndexType> rNewELLJa( newEllJa );
@@ -730,8 +741,8 @@ void compressValuesTest( ContextPtr loc )
             WriteOnlyAccess<ValueType> wNewELLValues( newEllValues, loc, numValues );
             WriteOnlyAccess<IndexType> wNewELLJa( newEllJa, loc, numValues );
             SCAI_CONTEXT_ACCESS( loc );
-            compressValues( rELLIa.get(), rELLJa.get(), rELLValues.get(), numRows, numValuesPerRow, eps,
-                            newNumValuesPerRow, wNewELLJa.get(), wNewELLValues.get() );
+            compressValues[loc]( rELLIa.get(), rELLJa.get(), rELLValues.get(), numRows, numValuesPerRow, eps,
+                                 newNumValuesPerRow, wNewELLJa.get(), wNewELLValues.get() );
         }
         ReadAccess<ValueType> rNewELLValues( newEllValues );
         ReadAccess<IndexType> rNewELLJa( newEllJa );
@@ -747,7 +758,8 @@ void compressValuesTest( ContextPtr loc )
 template<typename NoType>
 void matrixMultiplySizesTest( ContextPtr loc )
 {
-    LAMA_INTERFACE_FN( matrixMultiplySizes, loc, ELLUtils, MatrixExpBuild )
+    LAMAKernel<ELLKernelTrait::matrixMultiplySizes> matrixMultiplySizes;
+
     // Check with symmetric matrix
     {
         IndexType valuesAIa[] =
@@ -779,8 +791,8 @@ void matrixMultiplySizesTest( ContextPtr loc )
             ReadAccess<IndexType> rBJa( BJa, loc );
             WriteOnlyAccess<IndexType> wCIa( CIa, loc, numValues );
             SCAI_CONTEXT_ACCESS( loc );
-            matrixMultiplySizes( wCIa.get(), numValues, numValues, numValues, false, rAIa.get(), rAJa.get(),
-                                 aNumValuesPerRow, rBIa.get(), rBJa.get(), bNumValuesPerRow );
+            matrixMultiplySizes[loc]( wCIa.get(), numValues, numValues, numValues, false, rAIa.get(), rAJa.get(),
+                                      aNumValuesPerRow, rBIa.get(), rBJa.get(), bNumValuesPerRow );
         }
         ReadAccess<IndexType> rCIa( CIa );
 
@@ -827,8 +839,8 @@ void matrixMultiplySizesTest( ContextPtr loc )
             WriteOnlyAccess<IndexType> wCIa( CIa, loc, cNumRows );
             SCAI_CONTEXT_ACCESS( loc );
             IndexType numColumns = 5; // does not really matter
-            matrixMultiplySizes( wCIa.get(), aNumRows, numColumns, bNumRows, false, rAIa.get(), rAJa.get(),
-                                 aNumValuesPerRow, rBIa.get(), rBJa.get(), bNumValuesPerRow );
+            matrixMultiplySizes[loc]( wCIa.get(), aNumRows, numColumns, bNumRows, false, rAIa.get(), rAJa.get(),
+                                      aNumValuesPerRow, rBIa.get(), rBJa.get(), bNumValuesPerRow );
         }
         ReadAccess<IndexType> rCIa( CIa );
 
@@ -842,7 +854,8 @@ void matrixMultiplySizesTest( ContextPtr loc )
 template<typename ValueType>
 void matrixMultiplyTest( ContextPtr loc )
 {
-    LAMA_INTERFACE_FN_T( matrixMultiply, loc, ELLUtils, MatrixExp, ValueType )
+    LAMAKernel<ELLKernelTrait::matrixMultiply<ValueType> > matrixMultiply;
+
     // Check with symmetric matrix
     {
         ValueType valuesAValues[] =
@@ -897,9 +910,9 @@ void matrixMultiplyTest( ContextPtr loc )
             SCAI_CONTEXT_ACCESS( loc );
             IndexType numColumns = 5; // not really needed here but internally used
             bool diagonalProperty = false; // do not care about it here
-            matrixMultiply( wCJa.get(), wCValues.get(), rCIa.get(), cNumValuesPerRow, aNumRows, numColumns, bNumRows,
-                            diagonalProperty, alpha, rAIa.get(), rAJa.get(), rAValues.get(), aNumValuesPerRow,
-                            rBIa.get(), rBJa.get(), rBValues.get(), bNumValuesPerRow );
+            matrixMultiply[loc]( wCJa.get(), wCValues.get(), rCIa.get(), cNumValuesPerRow, aNumRows, numColumns, bNumRows,
+                                 diagonalProperty, alpha, rAIa.get(), rAJa.get(), rAValues.get(), aNumValuesPerRow,
+                                 rBIa.get(), rBJa.get(), rBValues.get(), bNumValuesPerRow );
         }
         ReadAccess<ValueType> rCValues( CValues );
         ReadAccess<IndexType> rCJa( CJa );
@@ -964,9 +977,9 @@ void matrixMultiplyTest( ContextPtr loc )
             SCAI_CONTEXT_ACCESS( loc );
             bool diagonalProperty = false; // do not care about it
             IndexType numColumns = 15; // does not matter here but internally used for optimizations
-            matrixMultiply( wCJa.get(), wCValues.get(), rCIa.get(), cNumValuesPerRow, aNumRows, numColumns, bNumRows,
-                            diagonalProperty, alpha, rAIa.get(), rAJa.get(), rAValues.get(), aNumValuesPerRow,
-                            rBIa.get(), rBJa.get(), rBValues.get(), bNumValuesPerRow );
+            matrixMultiply[loc]( wCJa.get(), wCValues.get(), rCIa.get(), cNumValuesPerRow, aNumRows, numColumns, bNumRows,
+                                 diagonalProperty, alpha, rAIa.get(), rAJa.get(), rAValues.get(), aNumValuesPerRow,
+                                 rBIa.get(), rBJa.get(), rBValues.get(), bNumValuesPerRow );
         }
         ReadAccess<ValueType> rCValues( CValues );
         ReadAccess<IndexType> rCJa( CJa );
@@ -1033,9 +1046,9 @@ void matrixMultiplyTest( ContextPtr loc )
             SCAI_CONTEXT_ACCESS( loc );
             bool diagonalProperty = false; // do not care about it
             IndexType numColumns = 15; // does not matter here but internally used for optimizations
-            matrixMultiply( wCJa.get(), wCValues.get(), rCIa.get(), cNumValuesPerRow, aNumRows, numColumns, bNumRows,
-                            diagonalProperty, alpha, rAIa.get(), rAJa.get(), rAValues.get(), aNumValuesPerRow,
-                            rBIa.get(), rBJa.get(), rBValues.get(), bNumValuesPerRow );
+            matrixMultiply[loc]( wCJa.get(), wCValues.get(), rCIa.get(), cNumValuesPerRow, aNumRows, numColumns, bNumRows,
+                                 diagonalProperty, alpha, rAIa.get(), rAJa.get(), rAValues.get(), aNumValuesPerRow,
+                                 rBIa.get(), rBJa.get(), rBValues.get(), bNumValuesPerRow );
         }
         ReadAccess<ValueType> rCValues( CValues );
         ReadAccess<IndexType> rCJa( CJa );
@@ -1051,7 +1064,8 @@ void matrixMultiplyTest( ContextPtr loc )
 template<typename NoType>
 void matrixAddSizesTest( ContextPtr loc )
 {
-    LAMA_INTERFACE_FN( matrixAddSizes, loc, ELLUtils, MatrixExpBuild )
+    LAMAKernel<ELLKernelTrait::matrixAddSizes > matrixAddSizes;
+
     IndexType valuesAIa[] =
     { 2, 3, 2, 3, 4 };
     const IndexType aNumRows = sizeof( valuesAIa ) / sizeof( IndexType );
@@ -1090,8 +1104,8 @@ void matrixAddSizesTest( ContextPtr loc )
         SCAI_CONTEXT_ACCESS( loc );
         bool diagonalProperty = false;
         IndexType numColumns = aNumRows; // square matrices here
-        matrixAddSizes( wCIa.get(), aNumRows, numColumns, diagonalProperty, rAIa.get(), rAJa.get(), aNumValuesPerRow,
-                        rBIa.get(), rBJa.get(), bNumValuesPerRow );
+        matrixAddSizes[loc]( wCIa.get(), aNumRows, numColumns, diagonalProperty, rAIa.get(), rAJa.get(), aNumValuesPerRow,
+                             rBIa.get(), rBJa.get(), bNumValuesPerRow );
     }
     ReadAccess<IndexType> rCIa( CIa );
 
@@ -1104,7 +1118,7 @@ void matrixAddSizesTest( ContextPtr loc )
 template<typename ValueType>
 void matrixAddTest( ContextPtr loc )
 {
-    LAMA_INTERFACE_FN_T( matrixAdd, loc, ELLUtils, MatrixExp, ValueType )
+    LAMAKernel<ELLKernelTrait::matrixAdd<ValueType> > matrixAdd;
     // Check with neutral beta
     {
         ValueType valuesAValues[] =
@@ -1160,9 +1174,9 @@ void matrixAddTest( ContextPtr loc )
             WriteOnlyAccess<IndexType> wCJa( CJa, loc, cNumValues );
             SCAI_CONTEXT_ACCESS( loc );
             bool diagonalProperty = false; // does not matter here
-            matrixAdd( wCJa.get(), wCValues.get(), rCIa.get(), cNumValuesPerRow, aNumRows, numColumns, diagonalProperty,
-                       alpha, rAIa.get(), rAJa.get(), rAValues.get(), aNumValuesPerRow, beta, rBIa.get(), rBJa.get(),
-                       rBValues.get(), bNumValuesPerRow );
+            matrixAdd[loc]( wCJa.get(), wCValues.get(), rCIa.get(), cNumValuesPerRow, aNumRows, numColumns, diagonalProperty,
+                            alpha, rAIa.get(), rAJa.get(), rAValues.get(), aNumValuesPerRow, beta, rBIa.get(), rBJa.get(),
+                            rBValues.get(), bNumValuesPerRow );
         }
         ReadAccess<ValueType> rCValues( CValues );
         ReadAccess<IndexType> rCJa( CJa );
@@ -1231,9 +1245,9 @@ void matrixAddTest( ContextPtr loc )
             WriteOnlyAccess<IndexType> wCJa( CJa, loc, cNumValues );
             SCAI_CONTEXT_ACCESS( loc );
             bool diagonalProperty = false; // does not matter here
-            matrixAdd( wCJa.get(), wCValues.get(), rCIa.get(), cNumValuesPerRow, aNumRows, numColumns, diagonalProperty,
-                       alpha, rAIa.get(), rAJa.get(), rAValues.get(), aNumValuesPerRow, beta, rBIa.get(), rBJa.get(),
-                       rBValues.get(), bNumValuesPerRow );
+            matrixAdd[loc]( wCJa.get(), wCValues.get(), rCIa.get(), cNumValuesPerRow, aNumRows, numColumns, diagonalProperty,
+                            alpha, rAIa.get(), rAJa.get(), rAValues.get(), aNumValuesPerRow, beta, rBIa.get(), rBJa.get(),
+                            rBValues.get(), bNumValuesPerRow );
         }
         ReadAccess<ValueType> rCValues( CValues );
         ReadAccess<IndexType> rCJa( CJa );
@@ -1272,12 +1286,10 @@ LAMA_AUTO_TEST_CASE_CT( compressIATest, ELLUtilsTest, scai::lama )
 LAMA_AUTO_TEST_CASE_CT( compressValuesTest, ELLUtilsTest, scai::lama )
 
 LAMA_AUTO_TEST_CASE_CT( matrixMultiplyTest, ELLUtilsTest, scai::lama )
-
-// ToDo: does not work
+LAMA_AUTO_TEST_CASE_CT( getValueTest, ELLUtilsTest, scai ::lama )
 LAMA_AUTO_TEST_CASE_CT( matrixAddTest, ELLUtilsTest, scai::lama )
 
 LAMA_AUTO_TEST_CASE_CTT( getRowTest, ELLUtilsTest )
-LAMA_AUTO_TEST_CASE_CTT( getValueTest, ELLUtilsTest )
 LAMA_AUTO_TEST_CASE_CTT( scaleValueTest, ELLUtilsTest )
 LAMA_AUTO_TEST_CASE_CTT( getCSRValuesTest, ELLUtilsTest )
 LAMA_AUTO_TEST_CASE_CTT( setCSRValuesTest, ELLUtilsTest )

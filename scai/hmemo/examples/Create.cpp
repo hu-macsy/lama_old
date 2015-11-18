@@ -36,7 +36,7 @@
 
 #include <scai/logging.hpp>
 
-#include <scai/common/exception/Exception.hpp>
+#include <scai/common/macros/throw.hpp>
 
 #include <scai/common/shared_ptr.hpp>
 
@@ -56,7 +56,7 @@ int main()
 {
     SCAI_LOG_THREAD( "Main" )
 
-    ContextPtr contextPtr = Context::getContextPtr( context::Host );
+    ContextPtr contextPtr = Context::getHostPtr();
 
     static IndexType N =  100;
 
@@ -78,8 +78,6 @@ int main()
     }
   
     std::cout << "Create finished" << std::endl;
-
-    std::cout << "LAMAArray<float>::initialized = " << LAMAArray<float>::initialized << std::endl;
 
     shared_ptr<ContextArray> lamaArray2( ContextArray::create( scalar::FLOAT ) );
 

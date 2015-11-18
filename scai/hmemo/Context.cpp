@@ -37,13 +37,15 @@
 #include <scai/hmemo/Memory.hpp>
 
 // internal scai libraries
-#include <scai/common/exception/Exception.hpp>
+#include <scai/common/macros/throw.hpp>
 
 // std
 #include <map>
 
 namespace scai
 {
+
+using common::context::ContextType;
 
 namespace hmemo
 {
@@ -52,7 +54,7 @@ namespace hmemo
 
 SCAI_LOG_DEF_LOGGER( Context::logger, "Context" )
 
-Context::Context( context::ContextType type )
+Context::Context( ContextType type )
                 : mContextType( type ), mEnabled( false ), mFile( NULL ), mLine( 0 )
 {
     SCAI_LOG_DEBUG( logger, "Context( type = " << mContextType << " )" )
@@ -110,77 +112,16 @@ MemoryPtr Context::getHostMemoryPtr() const
 {
     // take the host memory of the memory factory
 
-    ContextPtr hostContextPtr = Context::getContextPtr( context::Host );
+    ContextPtr hostContextPtr = Context::getContextPtr( common::context::Host );
     return hostContextPtr->getMemoryPtr();
 }
 
 /* ---------------------------------------------------------------------------------*/
 
-ContextPtr Context::getContextPtr( context::ContextType type, int deviceNr )
+ContextPtr Context::getContextPtr( ContextType type, int deviceNr )
 {
     return create( type, deviceNr );
 }
-
-namespace context
-{
-
-std::ostream& operator<<( std::ostream& stream, const ContextType& type )
-{
-    using namespace scai::hmemo;
-
-    switch ( type )
-    {
-        case Host :
-            stream << "Host";
-            break;
-
-        case CUDA :
-            stream << "CUDA";
-            break;
-
-        case MIC :
-            stream << "MIC";
-            break;
-
-        case OpenCL :
-            stream << "OpenCL";
-            break;
-
-        case UserContext :
-            stream << "UserContext";
-            break;
-
-        default:
-            stream << "ContextType_" << (int) type;
-    }
-
-    return stream;
-}
-
-/* -----------------------------------------------------------------------------*/
-
-std::ostream& operator<<( std::ostream& stream, const AccessKind& kind )
-{
-    using namespace scai::hmemo;
-
-    switch ( kind )
-    {
-        case Write :
-            stream << "Write";
-            break;
-
-        case Read :
-            stream << "Read";
-            break;
-
-        default:
-            stream << "AccessKind_" << (int) kind;
-    }
-
-    return stream;
-}
-
-} /* end namespace context */
 
 } /* end namespace hmemo */
 

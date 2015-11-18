@@ -36,12 +36,11 @@
 // for dll_import
 #include <scai/common/config.hpp>
 
-// internal scai libraries
-#include <scai/tasking/SyncToken.hpp>
-
 #include <scai/logging.hpp>
 
 #include <scai/common/SCAITypes.hpp>
+
+#include <utility>
 
 namespace scai
 {
@@ -56,13 +55,6 @@ namespace lama
 
 class COMMON_DLL_IMPORTEXPORT OpenMPELLUtils
 {
-
-public:
-
-    /** Routine that registers all routines of this class at the LAMA interface. */
-
-    static void setInterface( struct ELLUtilsInterface& ELLUtils );
-
 private:
 
     /** This method computes the total number of non-zero rows by the size array  */
@@ -121,8 +113,8 @@ private:
 
     /** Returns one value of the matrix */
 
-    template<typename ValueType,typename OtherValueType>
-    static OtherValueType getValue(
+    template<typename ValueType>
+    static ValueType getValue(
         const IndexType i,
         const IndexType j,
         const IndexType numRows,
@@ -143,7 +135,7 @@ private:
         ValueType ellValues[],
         const OtherValueType values[] );
 
-    /** Implementation for ELLUtilsInterface::Conversions::compressIA */
+    /** Implementation for ELLKernelTrait::compressIA */
 
     template<typename ValueType>
     static void compressIA(
@@ -155,7 +147,7 @@ private:
         const ValueType eps,
         IndexType newIA[] );
 
-    /** Implementation for ELLUtilsInterface::Conversions::compressValues */
+    /** Implementation for ELLKernelTrait::compressValues */
 
     template<typename ValueType>
     static void compressValues(
@@ -169,7 +161,7 @@ private:
         IndexType newJA[],
         ValueType newValues[] );
 
-    /** Implementation for ELLUtilsInterface::Conversions::getCSRValues */
+    /** Implementation for ELLKernelTrait::getCSRValues */
 
     template<typename ELLValueType,typename CSRValueType>
     static void getCSRValues(
@@ -190,7 +182,7 @@ private:
         const IndexType numRows,
         const IndexType numValuesPerRow );
 
-    /** Implementation for ELLUtilsInterface::Conversions::setCSRValues */
+    /** Implementation for ELLKernelTrait::setCSRValues */
 
     template<typename ELLValueType,typename CSRValueType>
     static void setCSRValues(
@@ -203,7 +195,7 @@ private:
         const IndexType csrJA[],
         const CSRValueType csrValues[] );
 
-    /** Implementation for ELLUtilsInterface::MatrixExpBuild::matrixMultiplySizes */
+    /** Implementation for ELLKernelTrait::matrixMultiplySizes */
 
     static void matrixMultiplySizes(
         IndexType cSizes[],
@@ -218,7 +210,7 @@ private:
         const IndexType bJA[],
         const IndexType bNumValuesPerRow );
 
-    /** Implementation for ELLUtilsInterface::MatrixExp::matrixMultiply */
+    /** Implementation for ELLKernelTrait::matrixMultiply */
 
     template<typename ValueType>
     static void matrixMultiply(
@@ -240,7 +232,7 @@ private:
         const ValueType bValues[],
         const IndexType bNumValuesPerRow );
 
-    /** Implementation for ELLUtilsInterface::MatrixExpBuild::matrixAddSizes */
+    /** Implementation for ELLKernelTrait::matrixAddSizes */
 
     static void matrixAddSizes(
         IndexType csizes[],
@@ -254,7 +246,7 @@ private:
         const IndexType bJA[],
         const IndexType bNumValuesPerRow );
 
-    /** Implementation for ELLUtilsInterface::MatrixExp::matrixAdd */
+    /** Implementation for ELLKernelTrait::matrixAdd */
 
     template<typename ValueType>
     static void matrixAdd(
@@ -276,7 +268,7 @@ private:
         const ValueType bValues[],
         const IndexType bNumValuesPerRow );
 
-    /** Implementation for ELLUtilsInterface::Solver::jacobi */
+    /** Implementation for ELLKernelTrait::jacobi */
 
     template<typename ValueType>
     static void jacobi(
@@ -288,10 +280,9 @@ private:
         const ValueType ellValues[],
         const ValueType oldSolution[],
         const ValueType rhs[],
-        const ValueType omega,
-        tasking::SyncToken* syncToken );
+        const ValueType omega );
 
-    /** Implementation for ELLUtilsInterface::Solver::jacobiHalo */
+    /** Implementation for ELLKernelTrait::jacobiHalo */
 
     template<typename ValueType>
     static void jacobiHalo(
@@ -305,10 +296,9 @@ private:
         const IndexType rowIndexes[],
         const IndexType numNonEmptyRows,
         const ValueType oldSolution[],
-        const ValueType omega,
-        tasking::SyncToken* syncToken );
+        const ValueType omega );
 
-    /** Implementation for ELLUtilsInterface::Mult::normalGEMV  */
+    /** Implementation for ELLKernelTrait::normalGEMV  */
 
     template<typename ValueType>
     static void normalGEMV(
@@ -321,10 +311,9 @@ private:
         const IndexType numNonZerosPerRow,
         const IndexType csrIA[],
         const IndexType csrJA[],
-        const ValueType csrValues[],
-        tasking::SyncToken* syncToken );
+        const ValueType csrValues[] );
 
-    /** Implementation for ELLUtilsInterface::Mult::sparseGEMV  */
+    /** Implementation for ELLKernelTrait::sparseGEMV  */
 
     template<typename ValueType>
     static void sparseGEMV(
@@ -337,10 +326,9 @@ private:
         const IndexType rowIndexes[],
         const IndexType csrIA[],
         const IndexType csrJA[],
-        const ValueType csrValues[],
-        tasking::SyncToken* syncToken );
+        const ValueType csrValues[] );
 
-    /** Implementation for CSRUtilsInterface::Mult:normalGEVM */
+    /** Implementation for CSRKernelTrait::normalGEVM */
 
     template<typename ValueType>
     static void normalGEVM(
@@ -354,10 +342,9 @@ private:
         const IndexType numValuesPerRow,
         const IndexType ellSizes[],
         const IndexType ellJA[],
-        const ValueType ellValues[],
-        tasking::SyncToken* syncToken );
+        const ValueType ellValues[] );
 
-    /** Implementation for CSRUtilsInterface::Mult::sparseGEVM  */
+    /** Implementation for CSRKernelTrait::sparseGEVM  */
 
     template<typename ValueType>
     static void sparseGEVM(
@@ -371,14 +358,51 @@ private:
         const IndexType rowIndexes[],
         const IndexType ellSizes[],
         const IndexType ellJA[],
-        const ValueType ellValues[],
-        tasking::SyncToken* syncToken );
+        const ValueType ellValues[] );
+
+private:
+
+    /** Help routine with combined arguments for asynchronous execution. */
+
+    template<typename ValueType>
+    static void normalGEMV_a(
+        ValueType result[],
+        const std::pair<ValueType, const ValueType*> ax,
+        const std::pair<ValueType, const ValueType*> by,
+        const IndexType numRows,
+        const IndexType numValuesPerRow,
+        const IndexType ellSizes[],
+        const IndexType ellJA[],
+        const ValueType ellValues[] );
+
+    template<typename ValueType>
+    static void sparseGEMV_a(
+        ValueType result[],
+        const std::pair<ValueType, const ValueType*> ax,
+        const IndexType numRows,
+        const IndexType numValuesPerRow,
+        const std::pair<IndexType, const IndexType*> rows,
+        const IndexType ellSizes[],
+        const IndexType ellJA[],
+        const ValueType ellValues[] );
+
+    /** Routine that registers all methods at the kernel registry. */
+
+    static void registerKernels( bool deleteFlag );
+
+    /** Constructor for registration. */
+
+    OpenMPELLUtils();
+
+    /** Destructor for unregistration. */
+
+    ~OpenMPELLUtils();
+
+    /** Static variable for registration at static initialization. */
+
+    static OpenMPELLUtils guard;
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
-
-    static    bool initialized;
-
-    static bool registerInterface();
 };
 
 /* --------------------------------------------------------------------------- */

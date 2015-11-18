@@ -36,7 +36,8 @@
 // internal scai libraries
 #include <scai/tracing.hpp>
 
-#include <scai/common/Assert.hpp>
+#include <scai/common/macros/throw.hpp>
+#include <scai/common/macros/assert.hpp>
 #include <scai/common/OpenMP.hpp>
 
 namespace scai
@@ -82,23 +83,20 @@ shared_ptr<ThreadTask> ThreadTask::create(
 
 /* ------------------------------------------------------------------------- */
 
-static void* threadRoutine( void* p )
+static void threadRoutine( ThreadPool::ThreadData& args )
 {
-    ThreadPool::ThreadData* args = ( ThreadPool::ThreadData* ) p;
+    SCAI_LOG_THREAD( "ThreadPoolWorker_" << args.i )
 
-    SCAI_LOG_THREAD( "ThreadPoolWorker_" << args->i )
-
-    args->pool->worker( args->i );
-
-    return NULL;
+    args.pool->worker( args.i );
 }
 
 ThreadPool::ThreadPool( int size )
 {
     SCAI_LOG_INFO( logger, "Construct thread pool with " << size << " threads" )
     mMaxSize = size;
-    mThreads.reserve( mMaxSize );
-    mThreadArgs.reserve( mMaxSize );
+
+    mThreads.reset( new common::Thread[ mMaxSize ] );
+    mThreadArgs.reset( new ThreadData[ mMaxSize ] );
 
     mTaskId = 0; // Initialize counter for task ids
 
@@ -106,16 +104,10 @@ ThreadPool::ThreadPool( int size )
 
     for ( int i = 0; i < mMaxSize; i++ )
     {
-        pthread_t id;
-
         mThreadArgs[i].pool = this;
         mThreadArgs[i].i    = i;
 
-        int rc = pthread_create( &id, NULL, &threadRoutine, &mThreadArgs[i] );
-
-        SCAI_ASSERT( rc == 0, "pthread_create failed, rc = " << rc )
-
-        mThreads.push_back( id );
+        mThreads[i].run( &threadRoutine, mThreadArgs[i] );
     }
 }
 
@@ -126,11 +118,10 @@ shared_ptr<ThreadTask> ThreadPool::schedule( function<void()> work, int numOmpTh
     SCAI_REGION( "ThreadPool::schedule" )
     Thread::Id thisThread = Thread::getSelf();
     bool isRecursiveTask = false;
-    std::vector<Thread::Id>::const_iterator end = mThreads.end();
 
-    for ( std::vector<pthread_t>::const_iterator it = mThreads.begin(); it != end; ++it )
+    for ( int i = 0; i < mMaxSize; ++i )
     {
-        if ( *it == thisThread )
+        if ( mThreads[i].getId() == thisThread )
         {
             isRecursiveTask = true;
             break;
@@ -288,7 +279,7 @@ void ThreadPool::worker( int id )
 
 void ThreadPool::shutdown()
 {
-    SCAI_LOG_INFO( logger, "shut down " << mThreads.size() << " threads, "
+    SCAI_LOG_INFO( logger, "shut down " << mMaxSize << " threads, "
                    << mTaskQueue.size() << " tasks in queue" )
 
     shared_ptr<ThreadTask> shutdownTask; // NULL pointer
@@ -298,7 +289,7 @@ void ThreadPool::shutdown()
 
         Thread::ScopedLock lock( mTaskQueueMutex );
 
-        for ( size_t i = 0; i < mThreads.size(); i++ )
+        for ( int i = 0; i < mMaxSize; i++ )
         {
             mTaskQueue.push( shutdownTask );
         }
@@ -308,14 +299,14 @@ void ThreadPool::shutdown()
         mNotifyTask.notifyAll();
     }
 
-    SCAI_LOG_DEBUG( logger, "added " << mThreads.size() << " shutdown tasks" )
+    SCAI_LOG_DEBUG( logger, "added " << mMaxSize << " shutdown tasks" )
 
     // and now wait for completion of all worker threads and delete them
 
-    for ( size_t i = 0; i < mThreads.size(); ++i )
+    for ( int i = 0; i < mMaxSize; ++i )
     {
         SCAI_LOG_DEBUG( logger, "wait for worker thread " << i )
-        pthread_join( mThreads[i], NULL );
+        mThreads[i].join();
         SCAI_LOG_DEBUG( logger, "worker thread " << i << " terminated (joined)" )
     }
 }

@@ -37,7 +37,7 @@
 // internal scai libraries
 #include <scai/tracing.hpp>
 
-#include <scai/common/Assert.hpp>
+#include <scai/common/macros/assert.hpp>
 
 using namespace scai::hmemo;
 
@@ -96,7 +96,7 @@ void HaloBuilder::build( const Distribution& distribution, const std::vector<Ind
         counts[requiredPlan[p].partitionId] = requiredPlan[p].offset;
     }
 
-    ContextPtr contextPtr = Context::getContextPtr( context::Host );
+    ContextPtr contextPtr = Context::getHostPtr();
 
     // allocate array for the required indexes sorted by owner
 

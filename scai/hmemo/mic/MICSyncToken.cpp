@@ -35,7 +35,7 @@
 #include <scai/hmemo/mic/MICSyncToken.hpp>
 
 // internal scai libraries
-#include <scai/common/Assert.hpp>
+#include <scai/common/macros/assert.hpp>
 
 namespace scai
 {
@@ -97,6 +97,31 @@ bool MICSyncToken::probe() const
     }
 
     return false;
+}
+
+MICSyncToken* MICSyncToken::getCurrentSyncToken()
+{
+    SyncToken* syncToken = SyncToken::getCurrentSyncToken();
+
+    if ( syncToken == NULL )
+    {
+        return NULL;
+    }
+
+    // make a dynamic CAST
+
+    MICSyncToken* micSyncToken = dynamic_cast<MICSyncToken*>( syncToken );
+
+    // If the current sync token is not a CUDA stream token it is very likely an error
+
+    if ( micSyncToken == NULL )
+    {
+        SCAI_LOG_ERROR( logger, "Current sync token = " << *syncToken << " not MICSyncToken as expected" )
+    }
+
+    // But might not be too serious so return NULL that forces synchronous execution
+
+    return micSyncToken;
 }
 
 } /* end namespace tasking */

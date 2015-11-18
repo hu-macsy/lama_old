@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief General conversion routines for CSR sparse matrices.
+ * @brief General conversion routines for CSR sparse matrices implemented in CUDA.
  * @author Thomas Brandes
  * @date 03.07.2012
  * @since 1.0.0
@@ -36,12 +36,9 @@
 // for dll_import
 #include <scai/common/config.hpp>
 
-// internal scai library
-#include <scai/tasking/SyncToken.hpp>
-
 #include <scai/logging.hpp>
 
-#include <scai/common/Assert.hpp>
+#include <scai/common/macros/assert.hpp>
 #include <scai/common/SCAITypes.hpp>
 
 namespace scai
@@ -50,6 +47,10 @@ namespace scai
 namespace lama
 {
 
+/** Static class that provides CUDA implementaions for the routines
+ *  needed for operations on CSR storage as specified in CSRKernelTrait.
+ *  Routines will be registered at KernelRegistry during the static initialization.
+ */
 class COMMON_DLL_IMPORTEXPORT CUDACSRUtils
 {
 public:
@@ -75,7 +76,7 @@ public:
         int numColumns,
         int numValues );
 
-    /** Implementation for CSRUtilsInterface::Mult::scaleRows  */
+    /** Implementation for CSRKernelTrait::Mult::scaleRows  */
 
     template<typename ValueType1,typename ValueType2>
     static void scaleRows(
@@ -84,7 +85,7 @@ public:
         const IndexType numRows,
         const ValueType2 values[] );
 
-    /** Implementation for CSRUtilsInterface::Mult::normalGEMV  */
+    /** Implementation for CSRKernelTrait::Mult::normalGEMV  */
 
     template<typename ValueType>
     static void normalGEMV(
@@ -98,10 +99,9 @@ public:
         const IndexType nnz,
         const IndexType csrIA[],
         const IndexType csrJA[],
-        const ValueType csrValues[],
-        tasking::SyncToken* syncToken );
+        const ValueType csrValues[] );
 
-    /** Implementation for CSRUtilsInterface::Mult::normalGEVM  */
+    /** Implementation for CSRKernelTrait::Mult::normalGEVM  */
 
     template<typename ValueType>
     static void normalGEVM(
@@ -114,10 +114,9 @@ public:
         const IndexType numColumns,
         const IndexType csrIA[],
         const IndexType csrJA[],
-        const ValueType csrValues[],
-        tasking::SyncToken* syncToken );
+        const ValueType csrValues[] );
 
-    /** Implementation for CSRUtilsInterface::Mult::sparseGEMV  */
+    /** Implementation for CSRKernelTrait::Mult::sparseGEMV  */
 
     template<typename ValueType>
     static void sparseGEMV(
@@ -128,10 +127,9 @@ public:
         const IndexType rowIndexes[],
         const IndexType csrIA[],
         const IndexType csrJA[],
-        const ValueType csrValues[],
-        tasking::SyncToken* syncToken );
+        const ValueType csrValues[] );
 
-    /** Implementation for CSRUtilsInterface::Mult::sparseGEVM  */
+    /** Implementation for CSRKernelTrait::Mult::sparseGEVM  */
 
     template<typename ValueType>
     static void sparseGEVM(
@@ -143,10 +141,9 @@ public:
         const IndexType rowIndexes[],
         const IndexType csrIA[],
         const IndexType csrJA[],
-        const ValueType csrValues[],
-        tasking::SyncToken* syncToken );
+        const ValueType csrValues[] );
 
-    /** Implementation for CSRUtilsInterface::Solver::jacobi  */
+    /** Implementation for CSRKernelTrait::Solver::jacobi  */
 
     template<typename ValueType>
     static void jacobi(
@@ -157,10 +154,9 @@ public:
         const ValueType rhs[],
         const ValueType oldSolution[],
         const ValueType omega,
-        const IndexType numRows,
-        tasking::SyncToken* syncToken );
+        const IndexType numRows );
 
-    /** Implementation for CSRUtilsInterface::Solver::jacobiHalo  */
+    /** Implementation for CSRKernelTrait::Solver::jacobiHalo  */
 
     template<typename ValueType>
     static void jacobiHalo(
@@ -175,7 +171,7 @@ public:
         const ValueType omega,
         const IndexType numNonEmptyRows );
 
-    /** Implementation for CSRUtilsInterface::Solver::jacobiHaloWithDiag
+    /** Implementation for CSRKernelTrait::Solver::jacobiHaloWithDiag
      *  @since 1.1.0
      */
 
@@ -191,7 +187,7 @@ public:
         const ValueType omega,
         const IndexType numNonEmptyRows );
 
-    /** Implementation for CSRUtilsInterface::Offsets::matrixAddSizes  */
+    /** Implementation for CSRKernelTrait::Offsets::matrixAddSizes  */
 
     static IndexType matrixAddSizes(
         IndexType cSizes[],
@@ -203,7 +199,7 @@ public:
         const IndexType bIA[],
         const IndexType bJA[] );
 
-    /** Implementation for CSRUtilsInterface::Offsets::matrixMultiplySizes  */
+    /** Implementation for CSRKernelTrait::Offsets::matrixMultiplySizes  */
 
     static IndexType matrixMultiplySizes(
         IndexType cSizes[],
@@ -216,7 +212,7 @@ public:
         const IndexType bIA[],
         const IndexType bJA[] );
 
-    /** Implementation for CSRUtilsInterface::Mult::matrixAdd */
+    /** Implementation for CSRKernelTrait::Mult::matrixAdd */
 
     template<typename ValueType>
     static void matrixAdd(
@@ -235,7 +231,7 @@ public:
         const IndexType bJA[],
         const ValueType bValues[] );
 
-    /** Implementation for CSRUtilsInterface::Mult::matrixMultiply */
+    /** Implementation for CSRKernelTrait::Mult::matrixMultiply */
 
     template<typename ValueType>
     static void matrixMultiply(
@@ -254,19 +250,27 @@ public:
         const IndexType bJA[],
         const ValueType bValues[] );
 
-    /** Routine that registers all routines of this class at the LAMA interface. */
-
-    static void setInterface( struct CSRUtilsInterface& CSRUtils );
-
 private:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
-    static bool initialized; //!< static initialization used for registration
-
     static unsigned int lastHashTableSize;// local variable to handhover hash table size for multiply
 
-    static bool registerInterface();//!< registration
+    /** Routine that registers all methods at the kernel registry. */
+
+    static void registerKernels( bool deleteFlag );
+
+    /** Constructor for registration. */
+
+    CUDACSRUtils();
+
+    /** Destructor for unregistration. */
+
+    ~CUDACSRUtils();
+
+    /** Static variable for registration at static initialization. */
+
+    static CUDACSRUtils guard;
 };
 
 /* --------------------------------------------------------------------------- */

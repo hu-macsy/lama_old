@@ -40,7 +40,9 @@
 #include <scai/logging.hpp>
 
 #include <scai/common/config.hpp>
-#include <scai/common/Assert.hpp>
+#include <scai/common/macros/assert.hpp>
+#include <scai/common/function.hpp>
+#include <scai/common/bind.hpp>
 
 namespace scai
 {
@@ -115,6 +117,15 @@ public:
      */
     virtual void release();
 
+    /**
+     *  @brief Delay the release of the access in an own function
+     *
+     *  The access can no more be used afterwards but there is no
+     *  release done with the destructor.
+     */
+
+    common::function<void()> releaseDelayed();
+
     /** 
      * @brief Output of this object in a stream. 
      */
@@ -154,7 +165,7 @@ ReadAccess<ValueType>::ReadAccess( const LAMAArray<ValueType>& array, ContextPtr
 template<typename ValueType>
 ReadAccess<ValueType>::ReadAccess( const LAMAArray<ValueType>& array ) : mArray( &array )
 {
-    ContextPtr contextPtr = Context::getContextPtr( context::Host );
+    ContextPtr contextPtr = Context::getContextPtr( common::context::Host );
 
     SCAI_LOG_DEBUG( logger, "ReadAccess<" << common::getScalarType<ValueType>()
                     << "> : create for " << array << " @ " << *contextPtr )
@@ -185,6 +196,24 @@ void ReadAccess<ValueType>::release()
     }
 
     mArray = NULL;
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+template<typename ValueType>
+common::function<void()> ReadAccess<ValueType>::releaseDelayed()
+{
+    SCAI_ASSERT( mArray, "releaseDelay not possible on released access" )
+
+    void ( ContextArray::*releaseAccess ) ( ContextDataIndex ) const = &ContextArray::releaseReadAccess;
+
+    const ContextArray* ctxArray = mArray;
+
+    // This access itself is treated as released
+
+    mArray = NULL;
+
+    return common::bind( releaseAccess, ctxArray, mContextDataIndex );
 }
 
 /* ---------------------------------------------------------------------------------*/

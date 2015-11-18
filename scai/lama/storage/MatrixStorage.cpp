@@ -43,7 +43,8 @@
 #include <scai/lama/distribution/Redistributor.hpp>
 #include <scai/lama/distribution/Halo.hpp>
 
-#include <scai/lama/LAMAInterface.hpp>
+#include <scai/lama/UtilKernelTrait.hpp>
+#include <scai/lama/CSRKernelTrait.hpp>
 #include <scai/lama/StorageIO.hpp>
 
 #include <scai/lama/openmp/OpenMPUtils.hpp>
@@ -56,6 +57,7 @@
 
 #include <scai/common/bind.hpp>
 #include <scai/common/SCAITypes.hpp>
+#include <scai/common/exception/UnsupportedException.hpp>
 
 // boost
 #include <boost/preprocessor.hpp>
@@ -78,7 +80,7 @@ SCAI_LOG_DEF_LOGGER( _MatrixStorage::logger, "MatrixStorage" )
 _MatrixStorage::_MatrixStorage()
 
     : mNumRows( 0 ), mNumColumns( 0 ), mRowIndexes(), mCompressThreshold( 0.0f ), mDiagonalProperty(
-        false ), mContext( Context::getContextPtr( context::Host ) )
+        false ), mContext( Context::getHostPtr() )
 {
     SCAI_LOG_DEBUG( logger, "constructed MatrixStorage()" )
 }
@@ -198,11 +200,15 @@ void _MatrixStorage::localize( const _MatrixStorage& global, const Distribution&
 
 IndexType _MatrixStorage::getNumValues() const
 {
-    // Default implementation builds sum of row sizes
+    // Default implementation builds sum of row sizes, derived classes have more efficient routines
+
     LAMAArray<IndexType> sizes;
     buildCSRSizes( sizes );
-    ReadAccess<IndexType> csrSizes( sizes );
-    IndexType numValues = OpenMPUtils::sum( csrSizes.get(), mNumRows );
+
+    static LAMAKernel<UtilKernelTrait::sum<IndexType> > sum;
+    ContextPtr loc = sum.getValidContext( sizes.getValidContext() );
+    ReadAccess<IndexType> csrSizes( sizes, loc );
+    IndexType numValues = sum[ loc ]( csrSizes.get(), mNumRows );
     return numValues;
 }
 
@@ -353,13 +359,15 @@ void MatrixStorage<ValueType>::convertCSR2CSC(
     const LAMAArray<IndexType>& rowIA,
     const LAMAArray<IndexType>& rowJA,
     const LAMAArray<ValueType>& rowValues,
-    const ContextPtr loc )
+    const ContextPtr preferredLoc )
 {
     // ContextPtr loc = Context::getContextPtr( context::Host );
     const IndexType numRows = rowIA.size() - 1;
     const IndexType numValues = rowJA.size();
     SCAI_ASSERT_EQUAL_DEBUG( rowJA.size(), rowValues.size() )
-    LAMA_INTERFACE_FN_T( convertCSR2CSC, loc, CSRUtils, Transpose, ValueType )
+
+    static LAMAKernel<CSRKernelTrait::convertCSR2CSC<ValueType> > convertCSR2CSC;
+    ContextPtr loc = convertCSR2CSC.getValidContext( preferredLoc );
     SCAI_LOG_INFO( logger,
                    "MatrixStorage::CSR2CSC of matrix " << numRows << " x " << numColumns << ", #nnz = " << numValues << " on " << *loc )
     SCAI_REGION( "Storage.CSR2CSC" )
@@ -370,8 +378,8 @@ void MatrixStorage<ValueType>::convertCSR2CSC(
     ReadAccess<IndexType> rJA( rowJA, loc );
     ReadAccess<ValueType> rValues( rowValues, loc );
     SCAI_CONTEXT_ACCESS( loc )
-    convertCSR2CSC( cIA.get(), cJA.get(), cValues.get(), rIA.get(), rJA.get(), rValues.get(), numRows, numColumns,
-                    numValues );
+    convertCSR2CSC[loc]( cIA.get(), cJA.get(), cValues.get(),  // output args
+                         rIA.get(), rJA.get(), rValues.get(), numRows, numColumns, numValues );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -386,7 +394,7 @@ void MatrixStorage<ValueType>::buildCSCData(
     LAMAArray<IndexType> rowJA;
     LAMAArray<ValueType> rowValues;
     buildCSRData( rowIA, rowJA, rowValues );
-    ContextPtr loc = Context::getContextPtr( context::Host );
+    ContextPtr loc = Context::getHostPtr();
     convertCSR2CSC( colIA, colJA, colValues, mNumColumns, rowIA, rowJA, rowValues, loc );
 }
 
@@ -784,7 +792,7 @@ void MatrixStorage<ValueType>::buildHalo( Halo& halo, const Distribution& colDis
 
 /* --------------------------------------------------------------------------- */
 
-void _MatrixStorage::scale( const ContextArray& )
+void _MatrixStorage::scaleRows( const ContextArray& )
 {
     COMMON_THROWEXCEPTION( "scale of rows not supported yet, matrix = " << *this )
 }

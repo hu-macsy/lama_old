@@ -37,6 +37,7 @@
 // local library
 #include <scai/lama/LAMAArrayUtils.hpp>
 
+#include <scai/lama/LAMAKernel.hpp>
 #include <scai/lama/matrix/DenseMatrix.hpp>
 
 #include <scai/lama/storage/MatrixStorage.hpp>
@@ -46,7 +47,8 @@
 #include <scai/lama/distribution/CyclicDistribution.hpp>
 #include <scai/lama/distribution/Redistributor.hpp>
 
-#include <scai/lama/LAMAInterface.hpp>
+#include <scai/lama/UtilKernelTrait.hpp>
+#include <scai/lama/CSRKernelTrait.hpp>
 #include <scai/lama/openmp/OpenMPCSRUtils.hpp>
 
 // internal libraries
@@ -56,7 +58,8 @@
 #include <scai/tracing.hpp>
 
 #include <scai/common/bind.hpp>
-#include <scai/common/exception/Exception.hpp>
+#include <scai/common/macros/throw.hpp>
+#include <scai/common/exception/UnsupportedException.hpp>
 #include <scai/common/macros/print_string.hpp>
 #include <scai/common/Constants.hpp>
 
@@ -475,7 +478,7 @@ void SparseMatrix<ValueType>::assignTransposeImpl( const SparseMatrix<ValueType>
 
         comm.exchangeByPlan( recvSizes, recvSizesPlan, sendSizes, sendSizesPlan );
 
-        ContextPtr contextPtr = Context::getContextPtr( context::Host );
+        ContextPtr contextPtr = Context::getHostPtr();
 
         // Now we know the sizes, we can pack the data
 
@@ -924,7 +927,7 @@ void SparseMatrix<ValueType>::getRow( Vector& row, const IndexType globalRowInde
     SCAI_ASSERT_ERROR( owner >= 0, "Could not find owner of row " << globalRowIndex )
 
     {
-        ContextPtr contextPtr = Context::getContextPtr( context::Host );
+        ContextPtr contextPtr = Context::getHostPtr();
 
         WriteAccess<ValueType> rowAccess( typedRow->getLocalValues(), contextPtr );
         comm.bcast( rowAccess.get(), getNumColumns(), owner ); // bcast the row
@@ -983,7 +986,7 @@ void SparseMatrix<ValueType>::setDiagonal( Scalar value )
         COMMON_THROWEXCEPTION( "Diagonal calculation only for equal distributions." )
     }
 
-    mLocalData->setDiagonal( value );
+    mLocalData->setDiagonal( value.getValue<ValueType>() );
 }
 
 /* -------------------------------------------------------------------------- */
@@ -1001,13 +1004,13 @@ void SparseMatrix<ValueType>::scale( const Vector& scaling )
 
     scaling.buildValues( localValues );
 
-    mLocalData->scale( localValues );
+    mLocalData->scaleRows( localValues );
 
     // scale Halo storage only if it is used; otherwise there might be a size mismatch
 
     if( mHaloData->getNumRows() )
     {
-        mHaloData->scale( localValues );
+        mHaloData->scaleRows( localValues );
     }
 }
 
@@ -1016,18 +1019,13 @@ void SparseMatrix<ValueType>::scale( const Vector& scaling )
 template<typename ValueType>
 void SparseMatrix<ValueType>::scale( Scalar scaling )
 {
-    /* removed: not required
-     if ( getDistribution() != getColDistribution() )
-     {
-     COMMON_THROWEXCEPTION( "Scale only for equal distributions." )
-     }
-     */
+    ValueType value = scaling.getValue<ValueType>();
 
-    mLocalData->scale( scaling );
+    mLocalData->scale( value );
 
-    if( mHaloData->getNumRows() )
+    if ( mHaloData->getNumRows() )
     {
-        mHaloData->scale( scaling );
+        mHaloData->scale( value );
     }
 }
 
@@ -1246,7 +1244,7 @@ void SparseMatrix<ValueType>::haloOperationSync(
             SCAI_REGION( "Mat.Sp.syncGatherHalo" )
 
             SCAI_LOG_INFO( logger,
-                           comm << ": gather " << mHalo.getProvidesIndexes().size() << " values of X to provide on " << *localX.getValidContext( context::Host ) );
+                           comm << ": gather " << mHalo.getProvidesIndexes().size() << " values of X to provide on " << *localX.getValidContext() );
 
             LAMAArrayUtils::gather( mTempSendValues, localX, mHalo.getProvidesIndexes() );
 
@@ -1328,7 +1326,7 @@ void SparseMatrix<ValueType>::vectorHaloOperationSync(
     IndexType numParts = comm.getSize();
     IndexType myPart = comm.getRank();
 
-    ContextPtr hostContext = Context::getContextPtr( context::Host );
+    ContextPtr hostContext = Context::getHostPtr();
     ContextPtr localContext = mLocalData->getContextPtr();
     ContextPtr haloContext = mLocalData->getContextPtr();
 
@@ -1342,14 +1340,16 @@ void SparseMatrix<ValueType>::vectorHaloOperationSync(
     SCAI_ASSERT( ySize == colDist->getLocalSize(),
                  "size mismatch of localY and columnDistribution" << ySize << " != " << colDist->getLocalSize() )
 
-    LAMA_INTERFACE_FN( sizes2offsets, hostContext, CSRUtils, Offsets );
+    static LAMAKernel<CSRKernelTrait::sizes2offsets> sizes2offsets;
+
+    // will be done on the host
 
     std::vector<IndexType> sizes( numParts );
     std::vector<IndexType> offsets;
     comm.allgather( &sizes[0], 1, &xSize );
     offsets = sizes;
     offsets.resize( numParts + 1 );
-    sizes2offsets( &offsets[0], numParts );
+    sizes2offsets[ hostContext ]( &offsets[0], numParts );
 
     LAMAArray<ValueType> haloResult( mHalo.getHaloSize() );
     LAMAArray<ValueType> toOthersResult( xSize * numParts );
@@ -1421,7 +1421,7 @@ void SparseMatrix<ValueType>::vectorHaloOperationSync(
 
         if( numParts != 1 )
         {
-            ContextPtr contextPtr = Context::getContextPtr( context::Host );
+            ContextPtr contextPtr = Context::getHostPtr();
 
             WriteAccess<ValueType> localData( localResult, contextPtr );
             ReadAccess<ValueType> otherData( fromOthersResult, contextPtr );
@@ -1476,7 +1476,7 @@ void SparseMatrix<ValueType>::haloOperationAsync(
         // Note: gather will be done where denseX is available
 
         SCAI_LOG_INFO( logger,
-                       comm << ": gather " << mHalo.getProvidesIndexes().size() << " values of X to provide on " << *localX.getValidContext( context::Host ) );
+                       comm << ": gather " << mHalo.getProvidesIndexes().size() << " values of X to provide on " << *localX.getValidContext() );
 
         LAMAArrayUtils::gather( mTempSendValues, localX, mHalo.getProvidesIndexes() );
 
@@ -1572,7 +1572,7 @@ void SparseMatrix<ValueType>::vectorHaloOperationAsync(
     IndexType numParts = comm.getSize();
     IndexType myPart = comm.getRank();
 
-    ContextPtr hostContext = Context::getContextPtr( context::Host );
+    ContextPtr hostContext = Context::getHostPtr();
     ContextPtr localContext = mLocalData->getContextPtr();
     ContextPtr haloContext = mLocalData->getContextPtr();
 
@@ -1586,14 +1586,14 @@ void SparseMatrix<ValueType>::vectorHaloOperationAsync(
     SCAI_ASSERT( ySize == colDist->getLocalSize(),
                  "size mismatch of localY and columnDistribution" << ySize << " != " << colDist->getLocalSize() )
 
-    LAMA_INTERFACE_FN( sizes2offsets, hostContext, CSRUtils, Offsets );
+    static LAMAKernel<CSRKernelTrait::sizes2offsets> sizes2offsets;
 
     std::vector<IndexType> sizes( numParts );
     std::vector<IndexType> offsets;
     comm.allgather( &sizes[0], 1, &xSize );
     offsets = sizes;
     offsets.resize( numParts + 1 );
-    sizes2offsets( &offsets[0], numParts );
+    sizes2offsets[ hostContext ]( &offsets[0], numParts );
 
     LAMAArray<ValueType> haloResult( mHalo.getHaloSize() );
     LAMAArray<ValueType> toOthersResult( xSize * numParts );
@@ -1643,7 +1643,7 @@ void SparseMatrix<ValueType>::vectorHaloOperationAsync(
         localComputation.reset( calcF( mLocalData.get(), localResult, localX ) );
     }
 
-    ContextPtr contextPtr = Context::getContextPtr( context::Host );
+    ContextPtr contextPtr = Context::getHostPtr();
 
     if( numParts != 1 )
     {
@@ -1827,7 +1827,7 @@ void SparseMatrix<ValueType>::vectorTimesMatrixImpl(
 
     // after gather of vector values x^ is on the host
     // todo: think about this if its useful to upload the vector (again)
-    ContextPtr hostContext = Context::getContextPtr( context::Host );
+    ContextPtr hostContext = Context::getHostPtr();
 
     using namespace scai::common;
 

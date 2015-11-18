@@ -41,7 +41,7 @@
 // local library
 #include <scai/common/SCAITypes.hpp>
 
-#include <scai/common/exception/Exception.hpp>
+#include <scai/common/macros/throw.hpp>
 
 // std
 #include <iostream>
@@ -91,6 +91,10 @@ namespace scalar
     COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const ScalarType& object );
 
 } /* end namespace scalar */
+
+// make ScalarType visible, but not the enum values
+
+using scalar::ScalarType;
 
 /**
  * @brief Conversion of a C type into value of enum ScalarType.

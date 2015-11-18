@@ -41,7 +41,7 @@
 // internal scai libraries
 #include <scai/tasking/NoSyncToken.hpp>
 
-#include <scai/common/Assert.hpp>
+#include <scai/common/macros/assert.hpp>
 
 // external
 #include <omp.h>
@@ -68,7 +68,7 @@ int MICContext::numUsedDevices = 0;
 
 
 MICContext::MICContext( int deviceNr )
-    : Context( context::MIC ), mDeviceNr( deviceNr )
+    : Context( common::context::MIC ), mDeviceNr( deviceNr )
 {
     SCAI_LOG_INFO( logger, "construct MICContext, device nr = = " << deviceNr )
 

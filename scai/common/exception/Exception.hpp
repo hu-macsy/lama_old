@@ -102,19 +102,3 @@ protected:
 
 }  /* end namespace scai */
 
-/**
- * @brief The macro COMMON_THROWEXCEPTION throws an exception that contains
- *        source code file and line as well as call stack in its message.
- *
- * @param[in] msg   message to indicate reason for the exception
- * @throws    common::Exception (derived from std::exception)
- */
-
-#define COMMON_THROWEXCEPTION( msg )                                           \
-{                                                                              \
-    std::ostringstream errorStr;                                               \
-    errorStr<<"Exception in line "<<__LINE__<<" of file "<<__FILE__<<"\n";     \
-    errorStr<<"    Message: "<<msg<<"\n";                                      \
-    scai::common::Exception::addCallStack( errorStr );                         \
-    throw scai::common::Exception( errorStr.str() );                           \
-}

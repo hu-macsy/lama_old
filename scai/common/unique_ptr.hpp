@@ -32,7 +32,7 @@
 
 #pragma once
 
-#if __cplusplus > 199711L
+#if __cplusplus > 199711L or defined(__GXX_EXPERIMENTAL_CXX0X__)
     #include <memory>
 #else
  
@@ -50,7 +50,7 @@ namespace scai
 
 namespace common
 {
-#if __cplusplus > 199711L
+#if __cplusplus > 199711L or defined(__GXX_EXPERIMENTAL_CXX0X__)
 
     using std::unique_ptr;
 

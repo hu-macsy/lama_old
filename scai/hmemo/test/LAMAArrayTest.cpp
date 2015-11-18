@@ -37,6 +37,7 @@
 #include <scai/hmemo/LAMAArray.hpp>
 #include <scai/hmemo/LAMAArrayRef.hpp>
 #include <scai/hmemo/WriteAccess.hpp>
+#include <scai/hmemo/WriteOnlyAccess.hpp>
 #include <scai/hmemo/ReadAccess.hpp>
 
 using namespace boost;
@@ -67,7 +68,7 @@ void readTest( const ValueType values[], const IndexType N, const ValueType sum 
 
 BOOST_AUTO_TEST_CASE( ConstructorTest )
 {
-    ContextPtr host = Context::getContextPtr( context::Host );
+    ContextPtr host = Context::getHostPtr();
 
     const IndexType N = 100;
 
@@ -98,7 +99,7 @@ BOOST_AUTO_TEST_CASE( ConstructorTest )
 
 BOOST_AUTO_TEST_CASE( releaseTest )
 {
-    ContextPtr hostContext = Context::getContextPtr( context::Host );
+    ContextPtr hostContext = Context::getHostPtr();
 
     LAMAArray<IndexType> lamaArray; // default, not allocated at all
     ReadAccess<IndexType> readTestAccess( lamaArray, hostContext );
@@ -121,7 +122,7 @@ BOOST_AUTO_TEST_CASE( releaseTest )
 
     for ( IndexType i = 0; i < 5; i++ )
     {
-        BOOST_CHECK_EQUAL( 3, readData[i] );
+        BOOST_CHECK_EQUAL( static_cast<IndexType>( 3 ), readData[i] );
     }
 
     readAccess.release();
@@ -131,7 +132,7 @@ BOOST_AUTO_TEST_CASE( releaseTest )
 
 BOOST_AUTO_TEST_CASE( resizeTest )
 {
-    ContextPtr contextPtr = Context::getContextPtr( context::Host );
+    ContextPtr contextPtr = Context::getHostPtr();
 
     LAMAArray<IndexType> lamaArray; // default, not allocated at all
     {
@@ -168,7 +169,7 @@ BOOST_AUTO_TEST_CASE( swapTest )
     BOOST_CHECK_EQUAL( arr2.size(), n1 );
     BOOST_CHECK_EQUAL( arr1.size(), n2 );
 
-    ContextPtr contextPtr = Context::getContextPtr( context::Host );
+    ContextPtr contextPtr = Context::getHostPtr();
 
     {
         ReadAccess<double> read( arr1, contextPtr );
@@ -195,7 +196,7 @@ BOOST_AUTO_TEST_CASE( accessTest )
     const double value = 1.0;
     const double value2 = 2.0;
 
-    ContextPtr contextPtr = Context::getContextPtr( context::Host );
+    ContextPtr contextPtr = Context::getHostPtr();
 
     LAMAArray<double> lamaArray( n, value );
     {
@@ -216,9 +217,10 @@ BOOST_AUTO_TEST_CASE( accessTest )
             lamaArrayWAccess.get()[i] = value2;
         }
 
+        lamaArrayWAccess.release();
+
         ReadAccess<double> tmpReadAccess( lamaArray, contextPtr );
 
-        lamaArrayWAccess.release();
         ReadAccess<double> lamaArrayRAccess( lamaArray, contextPtr );
 
         for ( IndexType i = 0; i < n; ++i )
@@ -236,7 +238,7 @@ BOOST_AUTO_TEST_CASE( aliasTest )
     const double value = 1.0;
     LAMAArray<double> lamaArray( N, value );
 
-    ContextPtr contextPtr = Context::getContextPtr( context::Host );
+    ContextPtr contextPtr = Context::getHostPtr();
 
     {
         // read and write access at same time by same thread
@@ -262,10 +264,21 @@ BOOST_AUTO_TEST_CASE( aliasTest )
         write.resize( 2 * N );
     }
     {
+        // read and write access at same time by same thread
+
+        WriteOnlyAccess<double> write( lamaArray, contextPtr, 2 * N );
+        BOOST_CHECK_THROW(
+        { 
+           // read access no more possible as write only did not take care about valid data
+
+           ReadAccess<double> read( lamaArray, contextPtr );
+        }, Exception );
+    }
+    {
         // with read and write at the same time resize throws Exception
 
-        WriteAccess<double> write( lamaArray, contextPtr );
         ReadAccess<double> read( lamaArray, contextPtr );
+        WriteAccess<double> write( lamaArray, contextPtr );
         BOOST_CHECK_THROW(
         { 
             write.resize( 3 * N );
@@ -274,8 +287,8 @@ BOOST_AUTO_TEST_CASE( aliasTest )
     {
         // read and write access at same time by same thread
 
-        WriteAccess<double> write( lamaArray, contextPtr );
         ReadAccess<double> read( lamaArray, contextPtr );
+        WriteAccess<double> write( lamaArray, contextPtr );
 
         // a clear is not possible as it affects the other access
         // Note: clear is the same as resize( 0 )
@@ -332,7 +345,7 @@ BOOST_AUTO_TEST_CASE( validTest )
 {
     LAMAArray<float> A( 10 );
 
-    ContextPtr hostContext = Context::getContextPtr( context::Host );
+    ContextPtr hostContext = Context::getHostPtr();
 
     // Array not allocated at all, should also give some default for validContext
 

@@ -39,7 +39,6 @@
 
 #include <scai/lama/matrix/DenseMatrix.hpp>
 
-#include <scai/lama/LAMAInterface.hpp>
 #include <scai/lama/expression/MatrixVectorExpressions.hpp>
 
 // internal scai libraries
@@ -133,7 +132,7 @@ void InverseSolver::solveImpl()
 
 /* --------------------------------------------------------------------------- */
 
-void InverseSolver::setContextPtr( ContextPtr context )
+void InverseSolver::setContextPtr( hmemo::ContextPtr context )
 {
     Solver::setContextPtr( context );
 

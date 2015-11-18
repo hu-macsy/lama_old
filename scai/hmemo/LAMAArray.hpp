@@ -260,7 +260,7 @@ template<typename OtherValueType>
 LAMAArray<ValueType>::LAMAArray( const IndexType n, const OtherValueType* const values )
                 : ContextArray( n, sizeof( ValueType ) )
 {
-    ContextPtr hostContextPtr = Context::getContextPtr( context::Host );
+    ContextPtr hostContextPtr = Context::getHostPtr();
 
     ContextData& host = mContextDataManager[ hostContextPtr ];
 
@@ -278,7 +278,7 @@ LAMAArray<ValueType>::LAMAArray( const IndexType n, const OtherValueType* const 
 
 #pragma omp parallel for
 
-    for( int i = 0; i < mSize; ++i )
+    for( IndexType i = 0; i < mSize; ++i )
     {
         hostData[i] = static_cast<ValueType>( values[i] );
     }
@@ -343,7 +343,7 @@ LAMAArray<ValueType>::LAMAArray( const IndexType n ) :
 {
     // reserves already memory on the host, but this data is not valid
 
-    ContextPtr hostPtr = Context::getContextPtr( context::Host );
+    ContextPtr hostPtr = Context::getHostPtr();
     mContextDataManager.reserve( hostPtr, n * mValueSize, 0 );
 
     SCAI_LOG_DEBUG( logger, "created new LAMA array: " << *this )
@@ -357,13 +357,13 @@ LAMAArray<ValueType>::LAMAArray( const IndexType n, const ValueType& value ) : C
 {
     // In constructor of the LAMA array lock of accesses is not required 
 
-    ContextPtr host = Context::getContextPtr( context::Host );
+    ContextPtr host = Context::getHostPtr();
 
     size_t validSize = 0;   // no valid data availalbe, so even don't search for it
 
     // Use of acquireAccess guarantees allocation of data
 
-    ContextDataIndex index = mContextDataManager.acquireAccess( host, context::Write, mSize * mValueSize, validSize );
+    ContextDataIndex index = mContextDataManager.acquireAccess( host, common::context::Write, mSize * mValueSize, validSize );
 
     ContextData& data = mContextDataManager[index];
 
@@ -373,7 +373,7 @@ LAMAArray<ValueType>::LAMAArray( const IndexType n, const ValueType& value ) : C
 
 #pragma omp parallel for 
 
-        for ( int i = 0; i < mSize; ++i )
+        for ( IndexType i = 0; i < mSize; ++i )
         {
             hostData[i] = value;
         }
@@ -458,7 +458,7 @@ LAMAArray<ValueType>& LAMAArray<ValueType>::operator=( const LAMAArray<ValueType
 
     // ToDo: we might add an exception on same thread: only valid write location is copied
 
-    SCAI_ASSERT( !other.mContextDataManager.locked( context::Write ), "assign of a write locked array" )
+    SCAI_ASSERT( !other.mContextDataManager.locked( common::context::Write ), "assign of a write locked array" )
 
     mContextDataManager.invalidateAll();
 
@@ -489,7 +489,7 @@ void LAMAArray<ValueType>::assign( const LAMAArray<ValueType>& other, ContextPtr
 
     // ToDo: we might add an exception on same thread: only valid write location is copied
 
-    SCAI_ASSERT( !other.mContextDataManager.locked( context::Write ), "assign of a write locked array" )
+    SCAI_ASSERT( !other.mContextDataManager.locked( common::context::Write ), "assign of a write locked array" )
 
     mContextDataManager.invalidateAll();
 
@@ -564,8 +564,8 @@ void LAMAArray<ValueType>::clear( const ContextDataIndex index )
 
     ContextData& data = mContextDataManager[index];
 
-    SCAI_ASSERT_EQUAL( 1, mContextDataManager.locked( context::Write ), "multiple write access for clear" << data )
-    SCAI_ASSERT_EQUAL( 0, mContextDataManager.locked( context::Read ), "further read access, cannot clear " << data )
+    SCAI_ASSERT_EQUAL( 1, mContextDataManager.locked( common::context::Write ), "multiple write access for clear" << data )
+    SCAI_ASSERT_EQUAL( 0, mContextDataManager.locked( common::context::Read ), "further read access, cannot clear " << data )
 
     mSize = 0;
 }
@@ -575,14 +575,11 @@ void LAMAArray<ValueType>::clear( const ContextDataIndex index )
 template<typename ValueType>
 void LAMAArray<ValueType>::resize( ContextDataIndex index, const IndexType size )
 {
-    ContextData& data = mContextDataManager[index];
-
-    SCAI_ASSERT_EQUAL( 1, mContextDataManager.locked( context::Write ), "multiple write access for resize" << data )
-    SCAI_ASSERT_EQUAL( 0, mContextDataManager.locked( context::Read ), "further read access, cannot resize" << data )
-
     ContextData& entry = mContextDataManager[index];
 
-    // SCAI_ASSERT( entry.locked( context::Write ), "resize illegal here " << entry )
+    bool inUse =  mContextDataManager.locked() > 1;   // further accesses on this array
+
+    // SCAI_ASSERT( entry.locked( common::context::Write ), "resize illegal here " << entry )
 
     size_t allocSize = size * mValueSize;
 
@@ -596,7 +593,7 @@ void LAMAArray<ValueType>::resize( ContextDataIndex index, const IndexType size 
     SCAI_LOG_INFO( logger, *this << ": resize, needed = " << allocSize << " bytes, used = " 
                          << validSize << " bytes, capacity = " << entry.capacity() << " bytes" )
 
-    entry.reserve( allocSize, validSize );
+    entry.reserve( allocSize, validSize, inUse );
 
     // capacity is now sufficient for size elements
 
@@ -613,12 +610,16 @@ void LAMAArray<ValueType>::reserve( ContextDataIndex index, const IndexType size
         return;   // nothing to do
     }
 
+    bool inUse =  mContextDataManager.locked() > 1;   // further accesses on this array
+
     ContextData& entry = mContextDataManager[index];
    
     size_t allocSize = size * mValueSize;
     size_t validSize = mSize * mValueSize;
 
-    entry.reserve( allocSize, validSize );
+    entry.reserve( allocSize, validSize, inUse );
+
+    // Note: mSize does not change by the reserve
 }
 
 /* ---------------------------------------------------------------------------------*/

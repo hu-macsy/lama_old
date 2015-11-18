@@ -32,6 +32,7 @@
 
 // hpp
 #include <scai/hmemo/HostMemory.hpp>
+#include <scai/hmemo/exception/MemoryException.hpp>
 
 // local library
 #include <scai/hmemo/HostContext.hpp>
@@ -40,7 +41,7 @@
 // internal scai libraries
 #include <scai/tasking/TaskSyncToken.hpp>
 
-#include <scai/common/Assert.hpp>
+#include <scai/common/macros/assert.hpp>
 #include <scai/common/OpenMP.hpp>
 #include <scai/common/bind.hpp>
 
@@ -98,7 +99,7 @@ void* HostMemory::allocate( const size_t size ) const
 
     if( pointer == NULL )
     {
-        COMMON_THROWEXCEPTION( "malloc failed for size = " << size )
+        SCAI_THROWEXCEPTION( MemoryException, "malloc failed for size = " << size )
     }
 
     // allocate must be thread-safe in case where multiple threads use LAMA arrays
@@ -152,7 +153,7 @@ MemoryPtr HostMemory::getIt()
     {
         SCAI_LOG_DEBUG( logger, "Create instance for HostMemory" ) 
 
-        ContextPtr contextPtr = Context::getContextPtr( context::Host );
+        ContextPtr contextPtr = Context::getContextPtr( common::context::Host );
         common::shared_ptr<const HostContext> hostContextPtr = common::dynamic_pointer_cast<const HostContext>( contextPtr );
         SCAI_ASSERT( hostContextPtr.get(), "Serious: dynamic cast failed" )
         instancePtr.reset( new HostMemory( hostContextPtr ) );

@@ -1,5 +1,5 @@
 /**
- * @file scai/common/TestMacros.hpp
+ * @file scai/common/test/TestMacros.hpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -42,6 +42,7 @@
 // TODO: no dependencies to project ahead
 #include <scai/hmemo/Context.hpp>
 #include <scai/lama/Scalar.hpp>
+#include <scai/kregistry/exception/KernelRegistryException.hpp>
 
 // boost
 #include <boost/assign/list_of.hpp>
@@ -174,15 +175,17 @@ inline std::string getEnvContext()
  * @return the current context as a ContextType from a std::string
  */
 
-inline scai::hmemo::context::ContextType mapEnvContexttoContextType( std::string contextname )
+inline scai::common::context::ContextType mapEnvContexttoContextType( std::string contextname )
 {
-	scai::hmemo::context::ContextType myContext;
-    std::map<std::string, scai::hmemo::context::ContextType> contextmap =
-        boost::assign::map_list_of ( "Host", scai::hmemo::context::Host )
-        ( "CUDA", scai::hmemo::context::CUDA )
-        ( "OPENCL", scai::hmemo::context::OpenCL )
-        ( "MIC", scai::hmemo::context::MIC )
-        ( "MaxContext", scai::hmemo::context::MaxContext );
+    using namespace scai::common::context;
+
+           ContextType myContext;
+    std::map<std::string, ContextType> contextmap =
+        boost::assign::map_list_of ( "Host", Host )
+        ( "CUDA", CUDA )
+        ( "OPENCL", OpenCL )
+        ( "MIC", MIC )
+        ( "MaxContext", MaxContext );
     myContext = contextmap[contextname];
     return myContext;
 }
@@ -286,22 +289,23 @@ inline scai::hmemo::context::ContextType mapEnvContexttoContextType( std::string
  */
 
 #define CONTEXTLOOP()                                                                                                  \
-    std::list<context::ContextType> listofcontexts;                                                                             \
-    std::list<context::ContextType>::iterator Iter;                                                                             \
+    std::list<scai::common::context::ContextType> listofcontexts;                                                      \
+    std::list<scai::common::context::ContextType>::iterator Iter;                                                      \
     std::string contexttype;                                                                                           \
     contexttype = getEnvContext();                                                                                     \
     if ( contexttype == "*" )                                                                                          \
     {                                                                                                                  \
         SCAI_LOG_INFO( logger, "LAMA_TEST_CONTEXT is not set or has value '*', so all available contexts will be used." );  \
-        for ( context::ContextType i = context::Host; i < context::MaxContext; i = static_cast<context::ContextType>( i + 1 ) )          \
+        for ( int i = 0; i < scai::common::context::MaxContext; ++i )                                                  \
         {                                                                                                              \
-            if ( Context::hasContext( i ) )                                                                            \
+            scai::common::context::ContextType ctx = static_cast<scai::common::context::ContextType>( i + 1 );         \
+            if ( Context::hasContext( ctx ) )                                                                          \
             {                                                                                                          \
-                listofcontexts.push_back( i );                                                                         \
-                SCAI_LOG_DEBUG( logger, "Context " << i << " is available");                                           \
+                listofcontexts.push_back( ctx );                                                                       \
+                SCAI_LOG_DEBUG( logger, "Context " << ctx << " is available");                                           \
             }                                                                                                          \
             else                                                                                                       \
-                SCAI_LOG_INFO( logger, "The following context will be skipped, because it is not available: " << i );  \
+                SCAI_LOG_INFO( logger, "The following context will be skipped, because it is not available: " << ctx );\
         }                                                                                                              \
     } else {                                                                                                           \
         listofcontexts.push_back( mapEnvContexttoContextType( contexttype ) );                                         \
@@ -384,29 +388,34 @@ inline scai::hmemo::context::ContextType mapEnvContexttoContextType( std::string
 #define STR1( x ) #x
 #define STR( x ) STR1( x )
 
-#define LAMA_RUN_TEST(z, I, method )                                                                 			\
-    try                                                                                              			\
-    {                 																				 			\
-    	if( context->getType() == scai::hmemo::context::CUDA ) 										 			\
-		{ 																							 			\
-    		switch( scai::common::getScalarType<ARITHMETIC_HOST_TYPE_##I>() ) 									\
-			{ 																						 			\
-    			case scai::common::scalar::LONG_DOUBLE: 														\
-    			case scai::common::scalar::LONG_DOUBLE_COMPLEX: 												\
-					continue; 																					\
-    			default: 																						\
-					;																							\
-			} 																									\
-		} 																										\
-        method<ARITHMETIC_HOST_TYPE_##I>( context );                                                        	\
-    }                                                                                                			\
-    catch ( scai::common::Exception& )                                                               			\
-    {                                                                                                			\
-        SCAI_LOG_WARN( logger, #method << "<" << STR( ARITHMETIC_HOST_TYPE_##I ) << "> cannot run on "      	\
-                       << context->getType() << ", corresponding function not implemented yet." );   			\
-        return;                                                                                      			\
-    }                                                                                                			\
+/** This macro runs method<ValueType>( context ) where ValueType is given by the I-th arithmetic Host Type 
+ *  (skips the run for long double types on CUDA as not supported there).
+ *
+ *  KernelRegistryException is caught with a correpsonding warn message on logger
+ */
 
+#define LAMA_RUN_TEST(z, I, method )                                                                            \
+    try                                                                                                         \
+    {                                                                                                           \
+        if ( context->getType() == scai::common::context::CUDA )                                                \
+        {                                                                                                       \
+            switch( scai::common::getScalarType<ARITHMETIC_HOST_TYPE_##I>() )                                   \
+            {                                                                                                   \
+                case scai::common::scalar::LONG_DOUBLE:                                                         \
+                case scai::common::scalar::LONG_DOUBLE_COMPLEX:                                                 \
+                    continue;                                                                                   \
+                default:                                                                                        \
+                     ;                                                                                          \
+             }                                                                                                  \
+        }                                                                                                       \
+        method<ARITHMETIC_HOST_TYPE_##I>( context );                                                            \
+    }                                                                                                           \
+    catch ( scai::kregistry::KernelRegistryException& )                                                         \
+    {                                                                                                           \
+        SCAI_LOG_WARN( logger, #method << "<" << STR( ARITHMETIC_HOST_TYPE_##I ) << "> cannot run on "          \
+                       << context->getType() << ", corresponding function not implemented yet."        )        \
+        return;                                                                                                 \
+    }                                                                                                           \
 
 /*
  * @brief HelperMacro LAMA_AUTO_TEST_CASE_CT( name, classname )
@@ -434,17 +443,17 @@ inline scai::hmemo::context::ContextType mapEnvContexttoContextType( std::string
         }                                                                                            \
     }
 
-#define LAMA_RUN_TESTL(z, I, method )                                                                \
-    try                                                                                              \
-    {                                                                                                \
-        method<ARITHMETIC_HOST_TYPE_##I>( context, logger );                                               \
-    }                                                                                                \
-    catch ( scai::common::Exception& )                                                               \
-    {                                                                                                \
-        SCAI_LOG_WARN( logger, #method << "<" << STR( ARITHMETIC_HOST_TYPE_##I ) << "> cannot run on "     \
-                       << context->getType() << ", corresponding function not implemented yet." );   \
-        return;                                                                                      \
-    }                                                                                                \
+#define LAMA_RUN_TESTL(z, I, method )                                                                  \
+    try                                                                                                \
+    {                                                                                                  \
+        method<ARITHMETIC_HOST_TYPE_##I>( context, logger );                                           \
+    }                                                                                                  \
+    catch ( scai::kregistry::KernelRegistryException& )                                                \
+    {                                                                                                  \
+        SCAI_LOG_WARN( logger, #method << "<" << STR( ARITHMETIC_HOST_TYPE_##I ) << "> cannot run on " \
+                       << context->getType() << ", corresponding function not implemented yet." );     \
+        return;                                                                                        \
+    }                                                                                                  \
 
     /*
      * @brief HelperMacro LAMA_AUTO_TEST_CASE_CTL( name, classname )
@@ -465,7 +474,7 @@ inline scai::hmemo::context::ContextType mapEnvContexttoContextType( std::string
             {                                                                                                          \
                 SCAI_LOG_INFO( logger, "    Entering context: " << context->getType() );                               \
             }                                                                                                          \
-            BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE__CNT, LAMA_RUN_TESTL, scai::lama::classname::name )      				   \
+            BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE__CNT, LAMA_RUN_TESTL, scai::lama::classname::name )                 \
         }                                                                                                              \
     }
 
@@ -495,9 +504,9 @@ inline scai::hmemo::context::ContextType mapEnvContexttoContextType( std::string
             const std::string lama_classname = #classname;                                                             \
             try                                                                                                        \
             {                                                                                                          \
-            	scai::lama::classname::name<float, float>( context );                                                  \
+                       scai::lama::classname::name<float, float>( context );                                           \
             }                                                                                                          \
-            catch ( scai::common::Exception& )                                                                               \
+            catch ( scai::kregistry::KernelRegistryException& )                                                        \
             {                                                                                                          \
                 SCAI_LOG_WARN( logger, lama_classname << "::" << lama_name << "<float, float> cannot run on  "         \
                                << context->getType() << ", corresponding function not implemented yet." );             \
@@ -505,9 +514,9 @@ inline scai::hmemo::context::ContextType mapEnvContexttoContextType( std::string
             }                                                                                                          \
             try                                                                                                        \
             {                                                                                                          \
-            	scai::lama::classname::name<double, double>( context );                                                \
+                       scai::lama::classname::name<double, double>( context );                                         \
             }                                                                                                          \
-            catch ( scai::common::Exception& )                                                                               \
+            catch ( scai::kregistry::KernelRegistryException& )                                                        \
             {                                                                                                          \
                 SCAI_LOG_WARN( logger, lama_classname << "::" << lama_name << "<double, double> cannot run on  "       \
                                << context->getType() << ", corresponding function not implemented yet." );             \
@@ -515,9 +524,9 @@ inline scai::hmemo::context::ContextType mapEnvContexttoContextType( std::string
             }                                                                                                          \
             try                                                                                                        \
             {                                                                                                          \
-            	scai::lama::classname::name<float, double>( context );                                                 \
+                       scai::lama::classname::name<float, double>( context );                                          \
             }                                                                                                          \
-            catch ( scai::common::Exception& )                                                                               \
+            catch ( scai::kregistry::KernelRegistryException& )                                                        \
             {                                                                                                          \
                 SCAI_LOG_WARN( logger, lama_classname << "::" << lama_name << "<float, double> cannot run on  "        \
                                << context->getType() << ", corresponding function not implemented yet." );             \
@@ -525,9 +534,9 @@ inline scai::hmemo::context::ContextType mapEnvContexttoContextType( std::string
             }                                                                                                          \
             try                                                                                                        \
             {                                                                                                          \
-            	scai::lama::classname::name<double, float>( context );                                                 \
+                       scai::lama::classname::name<double, float>( context );                                          \
             }                                                                                                          \
-            catch ( scai::common::Exception& )                                                                               \
+            catch ( scai::kregistry::KernelRegistryException& )                                                        \
             {                                                                                                          \
                 SCAI_LOG_WARN( logger, lama_classname << "::" << lama_name << "<double, float> cannot run on  "        \
                                << context->getType() << ", corresponding function not implemented yet." );             \
@@ -561,9 +570,9 @@ inline scai::hmemo::context::ContextType mapEnvContexttoContextType( std::string
             const std::string lama_classname = #classname;                                                             \
             try                                                                                                        \
             {                                                                                                          \
-            	scai::lama::classname::name<name>( context );                                                          \
+                       scai::lama::classname::name<name>( context );                                                   \
             }                                                                                                          \
-            catch ( scai::common::Exception& )                                                                               \
+            catch ( scai::kregistry::KernelRegistryException& )                                                        \
             {                                                                                                          \
                 SCAI_LOG_WARN( logger, lama_classname << "::" << lama_name << " cannot run on  "                       \
                                << context->getType() << ", corresponding function not implemented yet." );             \
@@ -586,9 +595,9 @@ inline scai::hmemo::context::ContextType mapEnvContexttoContextType( std::string
             const std::string lama_classname = #classname;                                                             \
             try                                                                                                        \
             {                                                                                                          \
-            	scai::lama::classname::name( context );                                                                \
+                scai::lama::classname::name( context );                                                                \
             }                                                                                                          \
-            catch ( scai::common::Exception& )                                                                               \
+            catch ( scai::kregistry::KernelRegistryException& )                                                        \
             {                                                                                                          \
                 SCAI_LOG_WARN( logger, lama_classname << "::" << lama_name << " cannot run on  "                       \
                                << context->getType() << ", corresponding function not implemented yet." );             \

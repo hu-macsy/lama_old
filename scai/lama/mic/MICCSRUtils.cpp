@@ -35,15 +35,15 @@
 #include <scai/lama/mic/MICCSRUtils.hpp>
 
 // local libray
-#include <scai/lama/LAMAInterface.hpp>
-#include <scai/lama/LAMAInterfaceRegistry.hpp>
+#include <scai/lama/CSRKernelTrait.hpp>
 
 // internal scai libraries
 #include <scai/hmemo/mic/MICSyncToken.hpp>
+#include <scai/kregistry/KernelRegistry.hpp>
 
 #include <scai/tracing.hpp>
 
-#include <scai/common/Assert.hpp>
+#include <scai/common/macros/assert.hpp>
 #include <scai/common/bind.hpp>
 #include <scai/common/Constants.hpp>
 
@@ -571,17 +571,18 @@ void MICCSRUtils::normalGEMV(
     const IndexType /* nnz */,
     const IndexType csrIA[],
     const IndexType csrJA[],
-    const ValueType csrValues[],
-    SyncToken* syncToken )
+    const ValueType csrValues[] )
 {
+    SCAI_REGION( "MIC.CSRUtils.normalGEMV" )
+
     SCAI_LOG_INFO( logger,
                    "normalGEMV<" << common::getScalarType<ValueType>() << ">, result[" << numRows << "] = " << alpha << " * A * x + " << beta << " * y " )
 
-    if( syncToken )
+    MICSyncToken* syncToken = MICSyncToken::getCurrentSyncToken();
+
+    if ( syncToken )
     {
-        MICSyncToken* micSyncToken = dynamic_cast<MICSyncToken*>( syncToken );
-        SCAI_ASSERT_ERROR( micSyncToken, "no MIC sync token provided" )
-        // not yet implemented: run the offload computation asynchronously
+        SCAI_LOG_INFO( logger, "asynchronous execution for for MIC not supported yet" )
     }
 
     // SCAI_REGION( "MIC.CSR.normalGEMV" )
@@ -619,7 +620,7 @@ void MICCSRUtils::normalGEMV(
                     temp += csrValues[jj] * x[j];
                 }
 
-                if( beta == scai::common::constants::ZERO )
+                if( beta == static_cast<ValueType>( 0.0 ) )
                 {
                     result[i] = alpha * temp;
                 }
@@ -643,14 +644,13 @@ void MICCSRUtils::sparseGEMV(
     const IndexType rowIndexes[],
     const IndexType csrIA[],
     const IndexType csrJA[],
-    const ValueType csrValues[],
-    SyncToken* syncToken )
+    const ValueType csrValues[] )
 {
-    if( syncToken )
+    MICSyncToken* syncToken = MICSyncToken::getCurrentSyncToken();
+
+    if ( syncToken )
     {
-        MICSyncToken* micSyncToken = dynamic_cast<MICSyncToken*>( syncToken );
-        SCAI_ASSERT_ERROR( micSyncToken, "no MIC sync token provided" )
-        // not yet implemented: run the offload computation asynchronously
+        SCAI_LOG_INFO( logger, "asynchronous execution for for MIC not supported yet" )
     }
 
     // SCAI_REGION( "MIC.CSR.sparseGEMV" )
@@ -712,17 +712,16 @@ void MICCSRUtils::gemm(
     const IndexType p,
     const IndexType csrIA[],
     const IndexType csrJA[],
-    const ValueType csrValues[],
-    SyncToken* syncToken )
+    const ValueType csrValues[] )
 {
     SCAI_LOG_INFO( logger,
                    "gemm<" << common::getScalarType<ValueType>() << ">, " << " result " << m << " x " << n << " CSR " << m << " x " << p )
 
-    if( syncToken )
+    MICSyncToken* syncToken = MICSyncToken::getCurrentSyncToken();
+
+    if ( syncToken )
     {
-        MICSyncToken* micSyncToken = dynamic_cast<MICSyncToken*>( syncToken );
-        SCAI_ASSERT_ERROR( micSyncToken, "no MIC sync token provided" )
-        // not yet implemented: run the offload computation asynchronously
+        SCAI_LOG_INFO( logger, "asynchronous execution for for MIC not supported yet" )
     }
 
     void* resultPtr = result;
@@ -785,17 +784,16 @@ void MICCSRUtils::jacobi(
     const ValueType oldSolution[],
     const ValueType rhs[],
     const ValueType omega,
-    const IndexType numRows,
-    class SyncToken* syncToken )
+    const IndexType numRows )
 {
     SCAI_LOG_INFO( logger,
                    "jacobi<" << common::getScalarType<ValueType>() << ">" << ", #rows = " << numRows << ", omega = " << omega )
 
-    if( syncToken )
+    MICSyncToken* syncToken = MICSyncToken::getCurrentSyncToken();
+
+    if ( syncToken )
     {
-        MICSyncToken* micSyncToken = dynamic_cast<MICSyncToken*>( syncToken );
-        SCAI_ASSERT_ERROR( micSyncToken, "no MIC sync token provided" )
-        // not yet implemented: run the offload computation asynchronously
+        SCAI_LOG_INFO( logger, "asynchronous execution for for MIC not supported yet" )
     }
 
     // SCAI_REGION( "MIC.CSR.jacobi" )
@@ -836,7 +834,7 @@ void MICCSRUtils::jacobi(
 
                 // here we take advantange of a good branch precondiction
 
-                if( omega == scai::common::constants::ONE )
+                if( omega == static_cast<ValueType>( 1.0 ) )
                 {
                     solution[i] = temp / diag;
                 }
@@ -917,7 +915,7 @@ void MICCSRUtils::jacobiHalo(
                 temp += haloValues[j] * oldSolution[haloJA[j]];
             }
 
-            if( omega == scai::common::constants::ONE )
+            if( omega == static_cast<ValueType>( 1.0 ) )
             {
                 solution[i] -= temp / diag;
             }
@@ -994,7 +992,7 @@ void MICCSRUtils::jacobiHaloWithDiag(
                     temp += haloValues[j] * oldSolution[haloJA[j]];
                 }
 
-                if( omega == scai::common::constants::ONE )
+                if( omega == static_cast<ValueType>( 1.0 ) )
                 {
                     solution[i] -= temp / diag;
                 }
@@ -1835,9 +1833,11 @@ ValueType MICCSRUtils::absMaxDiffVal(
     const void* csrJA2Ptr = csrJA2;
     const void* csrValues2Ptr = csrValues2;
 
-#pragma offload target( mic ), in( csrIA1Ptr, csrJA1Ptr, csrValues1Ptr,  \
-                                       csrIA2Ptr, csrJA2Ptr, csrValues2Ptr,  \
-                                       numRows, sortedRows ), out ( val )
+    int device = MICContext::getCurrentDevice();
+
+#pragma offload target( mic : device ), in( csrIA1Ptr, csrJA1Ptr, csrValues1Ptr,  \
+                                            csrIA2Ptr, csrJA2Ptr, csrValues2Ptr,  \
+                                            numRows, sortedRows ), out ( val )
     {
         const IndexType* csrIA1 = static_cast<const IndexType*>( csrIA1Ptr );
         const IndexType* csrJA1 = static_cast<const IndexType*>( csrJA1Ptr );
@@ -1907,78 +1907,88 @@ ValueType MICCSRUtils::absMaxDiffVal(
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void MICCSRUtils::setInterface( CSRUtilsInterface& CSRUtils )
+void MICCSRUtils::registerKernels( bool deleteFlag )
 {
-    SCAI_LOG_INFO( logger, "set CSR routines for MIC in Interface" )
+    SCAI_LOG_INFO( logger, "register CSR kernels for MIC in Kernel Registry" )
 
-    LAMA_INTERFACE_REGISTER( CSRUtils, sizes2offsets )
+    using kregistry::KernelRegistry;
+    using common::context::MIC;
 
-    LAMA_INTERFACE_REGISTER( CSRUtils, validOffsets )
+    KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // add it or delete it
 
-    LAMA_INTERFACE_REGISTER( CSRUtils, offsets2sizes )
-    LAMA_INTERFACE_REGISTER( CSRUtils, hasDiagonalProperty )
+    if ( deleteFlag )
+    {
+        flag = KernelRegistry::KERNEL_ERASE;
+    }
 
-    LAMA_INTERFACE_REGISTER( CSRUtils, matrixAddSizes )
+    // Instantations for IndexType, not done by ARITHMETIC_TYPE macrods
 
-    LAMA_INTERFACE_REGISTER( CSRUtils, matrixMultiplySizes )
+    KernelRegistry::set<CSRKernelTrait::sizes2offsets>( sizes2offsets, MIC, flag );
+    KernelRegistry::set<CSRKernelTrait::validOffsets>( validOffsets, MIC, flag );
+
+    KernelRegistry::set<CSRKernelTrait::offsets2sizes>( offsets2sizes, MIC, flag );
+    KernelRegistry::set<CSRKernelTrait::hasDiagonalProperty>( hasDiagonalProperty, MIC, flag );
+    KernelRegistry::set<CSRKernelTrait::matrixAddSizes>( matrixAddSizes, MIC, flag );
+    KernelRegistry::set<CSRKernelTrait::matrixMultiplySizes>( matrixMultiplySizes, MIC, flag );
 
     /*
-     LAMA_INTERFACE_REGISTER_T( CSRUtils, convertCSR2CSC, float )
-     LAMA_INTERFACE_REGISTER_T( CSRUtils, convertCSR2CSC, double )
+      KernelRegistry::set<CSRKernelTrait::convertCSR2CSC<float> >( convertCSR2CSC, MIC, flag );
+      KernelRegistry::set<CSRKernelTrait::convertCSR2CSC<double> >( convertCSR2CSC, MIC, flag );
 
-     LAMA_INTERFACE_REGISTER_T( CSRUtils, sortRowElements, float )
-     LAMA_INTERFACE_REGISTER_T( CSRUtils, sortRowElements, double )
+      KernelRegistry::set<CSRKernelTrait::sortRowElements<float> >( sortRowElements, MIC, flag );
+      KernelRegistry::set<CSRKernelTrait::sortRowElements<double> >( sortRowElements, MIC, flag );
      */
 
-    LAMA_INTERFACE_REGISTER_TT( CSRUtils, scaleRows, float, float )
-    LAMA_INTERFACE_REGISTER_TT( CSRUtils, scaleRows, float, double )
-    LAMA_INTERFACE_REGISTER_TT( CSRUtils, scaleRows, double, float )
-    LAMA_INTERFACE_REGISTER_TT( CSRUtils, scaleRows, double, double )
+    KernelRegistry::set<CSRKernelTrait::scaleRows<float, float> >( scaleRows, MIC, flag );
+    KernelRegistry::set<CSRKernelTrait::scaleRows<float, double> >( scaleRows, MIC, flag );
+    KernelRegistry::set<CSRKernelTrait::scaleRows<double, float> >( scaleRows, MIC, flag );
+    KernelRegistry::set<CSRKernelTrait::scaleRows<double, double> >( scaleRows, MIC, flag );
 
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, normalGEMV, float )
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, normalGEMV, double )
+    KernelRegistry::set<CSRKernelTrait::normalGEMV<float> >( normalGEMV, MIC, flag );
+    KernelRegistry::set<CSRKernelTrait::normalGEMV<double> >( normalGEMV, MIC, flag );
 
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, sparseGEMV, float )
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, sparseGEMV, double )
+    KernelRegistry::set<CSRKernelTrait::sparseGEMV<float> >( sparseGEMV, MIC, flag );
+    KernelRegistry::set<CSRKernelTrait::sparseGEMV<double> >( sparseGEMV, MIC, flag );
 
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, gemm, float )
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, gemm, double )
+    KernelRegistry::set<CSRKernelTrait::gemm<float> >( gemm, MIC, flag );
+    KernelRegistry::set<CSRKernelTrait::gemm<double> >( gemm, MIC, flag );
 
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, matrixAdd, float )
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, matrixAdd, double )
+    KernelRegistry::set<CSRKernelTrait::matrixAdd<float> >( matrixAdd, MIC, flag );
+    KernelRegistry::set<CSRKernelTrait::matrixAdd<double> >( matrixAdd, MIC, flag );
 
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, matrixMultiply, float )
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, matrixMultiply, double )
+    KernelRegistry::set<CSRKernelTrait::matrixMultiply<float> >( matrixMultiply, MIC, flag );
+    KernelRegistry::set<CSRKernelTrait::matrixMultiply<double> >( matrixMultiply, MIC, flag );
 
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, jacobi, float )
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, jacobi, double )
+    KernelRegistry::set<CSRKernelTrait::jacobi<float> >( jacobi, MIC, flag );
+    KernelRegistry::set<CSRKernelTrait::jacobi<double> >( jacobi, MIC, flag );
 
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, jacobiHalo, float )
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, jacobiHalo, double )
+    KernelRegistry::set<CSRKernelTrait::jacobiHalo<float> >( jacobiHalo, MIC, flag );
+    KernelRegistry::set<CSRKernelTrait::jacobiHalo<double> >( jacobiHalo, MIC, flag );
 
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, jacobiHaloWithDiag, float )
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, jacobiHaloWithDiag, double )
+    KernelRegistry::set<CSRKernelTrait::jacobiHaloWithDiag<float> >( jacobiHaloWithDiag, MIC, flag );
+    KernelRegistry::set<CSRKernelTrait::jacobiHaloWithDiag<double> >( jacobiHaloWithDiag, MIC, flag );
 
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, absMaxDiffVal, float )
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, absMaxDiffVal, double )
+    KernelRegistry::set<CSRKernelTrait::absMaxDiffVal<float> >( absMaxDiffVal, MIC, flag );
+    KernelRegistry::set<CSRKernelTrait::absMaxDiffVal<double> >( absMaxDiffVal, MIC, flag );
 }
 
 /* --------------------------------------------------------------------------- */
-/*    Static registration of the Utils routines                                */
+/*    Static initialization with registration                                  */
 /* --------------------------------------------------------------------------- */
 
-bool MICCSRUtils::registerInterface()
+MICCSRUtils::RegisterGuard::RegisterGuard()
 {
-    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( hmemo::context::MIC );
-    setInterface( interface.CSRUtils );
-    return true;
+    bool deleteFlag = false;
+    registerKernels( deleteFlag );
 }
 
-/* --------------------------------------------------------------------------- */
-/*    Static initialiazion at program start                                    */
-/* --------------------------------------------------------------------------- */
+MICCSRUtils::RegisterGuard::~RegisterGuard()
+{
+    bool deleteFlag = true;
+    registerKernels( deleteFlag );
+}
 
-bool MICCSRUtils::initialized = registerInterface();
+MICCSRUtils::RegisterGuard MICCSRUtils::guard;    // guard variable for registration
 
 } /* end namespace lama */
 

@@ -42,9 +42,8 @@
 
 // internal scai libraries
 #include <scai/tracing.hpp>
+#include <scai/common/Walltime.hpp>
 
-// external
-#include <omp.h>
 
 namespace scai
 {
@@ -108,7 +107,7 @@ void CG::initialize( const Matrix& coefficients )
 
 void CG::iterate()
 {
-    double iterationStartTime = omp_get_wtime();
+    double iterationStartTime = common::Walltime::get();
     SCAI_REGION( "Solver.CG.iterate" )
     CGRuntime& runtime = getRuntime();
     Scalar lastPScalar( runtime.mPScalar );
@@ -139,9 +138,9 @@ void CG::iterate()
     {
         SCAI_REGION( "Solver.CG.solvePreconditioner" )
         z = 0.0;
-        double preconditionerStartTime = omp_get_wtime();
+        double preconditionerStartTime = common::Walltime::get();
         mPreconditioner->solve( z, residual );
-        totalPreconditionerTime += omp_get_wtime() - preconditionerStartTime;
+        totalPreconditionerTime += common::Walltime::get() - preconditionerStartTime;
     }
 
     SCAI_LOG_INFO( logger, "Calculating pScalar." )
@@ -206,7 +205,7 @@ void CG::iterate()
     }
     //CG implementation end
     mCGRuntime.mSolution.setDirty( false );
-    totalIterationTime += omp_get_wtime() - iterationStartTime;
+    totalIterationTime += common::Walltime::get() - iterationStartTime;
 }
 
 double CG::getAverageIterationTime() const

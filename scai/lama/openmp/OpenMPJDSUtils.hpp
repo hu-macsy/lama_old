@@ -40,11 +40,13 @@
 #include <scai/lama/Scalar.hpp>
 
 // internal scai libraries
-#include <scai/tasking/SyncToken.hpp>
+#include <scai/kregistry/KernelRegistry.hpp>
 
 #include <scai/logging.hpp>
 
 #include <scai/common/SCAITypes.hpp>
+
+#include <utility>
 
 namespace scai
 {
@@ -52,7 +54,7 @@ namespace scai
 namespace lama
 {
 
-/** This class provides OpenMP implementations as needed for JDSUtilsInterface.  */
+/** This class provides OpenMP implementations as needed for JDSUtilKernelTrait.  */
 
 class COMMON_DLL_IMPORTEXPORT OpenMPJDSUtils
 {
@@ -83,7 +85,7 @@ public:
         const IndexType ja[],
         const ValueType values[] );
 
-    template<typename ValueType,typename NoType>
+    template<typename ValueType>
     static ValueType getValue(
         const IndexType i,
         const IndexType j,
@@ -108,11 +110,11 @@ public:
 
     static void sortRows( IndexType array[], IndexType perm[], const IndexType n );
 
-    /** Compute the inverse permutation as specified in JDSUtilsInterface::Sort::setInversePerm */
+    /** Compute the inverse permutation as specified in JDSUtilKernelTrait::Sort::setInversePerm */
 
     static void setInversePerm( IndexType inversePerm[], const IndexType perm[], const IndexType n );
 
-    /** Compute dlg array from ilg array as specified in JDSUtilsInterface::Conversions::ilg2dlg */
+    /** Compute dlg array from ilg array as specified in JDSUtilKernelTrait::Conversions::ilg2dlg */
 
     static IndexType ilg2dlg(
         IndexType dlg[],
@@ -120,7 +122,7 @@ public:
         const IndexType ilg[],
         const IndexType numRows );
 
-    /** Conversion of JDS to CSR as specified in JDSUtilsInterface::Conversions::getCSRValues  */
+    /** Conversion of JDS to CSR as specified in JDSUtilKernelTrait::Conversions::getCSRValues  */
 
     template<typename JDSValueType,typename CSRValueType>
     static void getCSRValues(
@@ -134,7 +136,7 @@ public:
         const IndexType jdsJA[],
         const JDSValueType jdsValues[] );
 
-    /** Conversion of CSR to JDS as specified in JDSUtilsInterface::Conversions::setCSRValues. */
+    /** Conversion of CSR to JDS as specified in JDSUtilKernelTrait::Conversions::setCSRValues. */
 
     template<typename JDSValueType,typename CSRValueType>
     static void setCSRValues(
@@ -149,7 +151,7 @@ public:
         const IndexType csrJA[],
         const CSRValueType csrValues[] );
 
-    /** Implementation for JDSUtilsInterface::Mult:normalGEMV with OpenMP on Host */
+    /** Implementation for JDSUtilKernelTrait::Mult:normalGEMV with OpenMP on Host */
 
     template<typename ValueType>
     static void normalGEMV(
@@ -164,10 +166,9 @@ public:
         const IndexType ndlg,
         const IndexType jdsDLG[],
         const IndexType jdsJA[],
-        const ValueType jdsValues[],
-        tasking::SyncToken* syncToken );
+        const ValueType jdsValues[] );
 
-    /** Implementation for JDSUtilsInterface::Mult:normalGEVM with OpenMP on Host */
+    /** Implementation for JDSUtilKernelTrait::Mult:normalGEVM with OpenMP on Host */
 
     template<typename ValueType>
     static void normalGEVM(
@@ -182,8 +183,7 @@ public:
         const IndexType ndlg,
         const IndexType jdsDLG[],
         const IndexType jdsJA[],
-        const ValueType jdsValues[],
-        tasking::SyncToken* syncToken );
+        const ValueType jdsValues[] );
 
     template<typename ValueType>
     static void jacobi(
@@ -197,8 +197,7 @@ public:
         const ValueType jdsValues[],
         const ValueType oldSolution[],
         const ValueType rhs[],
-        const ValueType omega,
-        tasking::SyncToken* syncToken );
+        const ValueType omega );
 
     template<typename ValueType>
     static void jacobiHalo(
@@ -212,20 +211,40 @@ public:
         const IndexType jdsHaloJA[],
         const ValueType jdsHaloValues[],
         const ValueType oldSolution[],
-        const ValueType omega,
-        tasking::SyncToken* syncToken );
-
-    /** Method for registration of module routines at the interface. */
-
-    static void setInterface( struct JDSUtilsInterface& JDSUtils );
+        const ValueType omega );
 
 private:
 
+    // We need for asynchronous execution versions with max 9 args 
+
+    template<typename ValueType>
+    static void normalGEMV_a( 
+        ValueType result[],
+        const std::pair<ValueType, const ValueType*> ax,     // alpha, x
+        const std::pair<ValueType, const ValueType*> by,     // beta, y
+        const std::pair<IndexType, const IndexType*> rows,   // nrows, jdsILG,
+        const IndexType perm[],
+        const std::pair<IndexType, const IndexType*> dlg,    // ndlg, jdsDLG
+        const IndexType jdsJA[],
+        const ValueType jdsValues[] );
+
+    /** Routine that registers all methods at the kernel registry. */
+
+    static void registerKernels( bool deleteFlag );
+
+    /** Constructor for registration. */
+
+    OpenMPJDSUtils();
+
+    /** Destructor for unregistration. */
+
+    ~OpenMPJDSUtils();
+
+    /** Static variable for registration at static initialization. */
+
+    static OpenMPJDSUtils guard;
+
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
-
-    static    bool initialized;
-
-    static bool registerInterface();
 };
 
 /* --------------------------------------------------------------------------- */

@@ -43,9 +43,16 @@ set ( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${SCAI_LANG_FLAGS}" )
 if    ( OPENMP_FOUND AND USE_OPENMP )
 	set ( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}" )
 endif ( OPENMP_FOUND AND USE_OPENMP )
+ 
+# example of a library module ( will be used by executable UseModule )
+add_library( module SHARED Module.cpp )
+target_link_libraries( module scai_common )
 
+# example of a library module ( no use of other LAMA stuff )
+add_library( dummy_module SHARED DummyModule.cpp )
 
-foreach ( executable ExceptionDemo CriticalRegion Barrier DemoFactory DemoFactory1 DemoPointer )
+foreach ( executable ExceptionDemo CriticalRegion Barrier DemoFactory DemoFactory1 DemoPointer UseModule )
     add_executable ( ${executable} ${executable}.cpp )
     target_link_libraries ( ${executable} scai_common )
 endforeach ( executable )
+

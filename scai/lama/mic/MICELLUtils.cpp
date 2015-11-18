@@ -35,18 +35,18 @@
 #include <scai/lama/mic/MICELLUtils.hpp>
 
 // local project
-#include <scai/lama/LAMAInterface.hpp>
-#include <scai/lama/LAMAInterfaceRegistry.hpp>
+#include <scai/lama/ELLKernelTrait.hpp>
 
 // internal scai projects
 #include <scai/hmemo/mic/MICSyncToken.hpp>
 #include <scai/hmemo/mic/MICContext.hpp>
 #include <scai/tasking/NoSyncToken.hpp>
+#include <scai/kregistry/KernelRegistry.hpp>
 
 #include <scai/tracing.hpp>
 
 #include <scai/common/bind.hpp>
-#include <scai/common/Assert.hpp>
+#include <scai/common/macros/assert.hpp>
 #include <scai/common/macros/unused.hpp>
 #include <scai/common/Constants.hpp>
 
@@ -61,6 +61,7 @@ namespace scai
 {
 
 using tasking::SyncToken;
+using tasking::MICSyncToken;
 
 using namespace hmemo;
 
@@ -379,8 +380,8 @@ void MICELLUtils::getRow(
     }
 }
 
-template<typename ValueType,typename OtherValueType>
-OtherValueType MICELLUtils::getValue(
+template<typename ValueType>
+ValueType MICELLUtils::getValue(
     const IndexType i,
     const IndexType j,
     const IndexType numRows,
@@ -391,7 +392,7 @@ OtherValueType MICELLUtils::getValue(
 {
     SCAI_LOG_TRACE( logger, "get value i = " << i << ", j = " << j )
 
-    OtherValueType value = static_cast<OtherValueType>(0.0);
+    ValueType value = 0;  // not really needed, just for safety
 
     const void* ellSizesPtr = ellSizes;
     const void* ellJAPtr = ellJA;
@@ -406,7 +407,7 @@ OtherValueType MICELLUtils::getValue(
         const IndexType* ellJA = static_cast<const IndexType*>( ellJAPtr );
         const ValueType* ellValues = static_cast<const ValueType*>( ellValuesPtr );
 
-        value = static_cast<OtherValueType>(0.0); // new intialiation, has not been copied in
+        value = 0;  // new initialiation, has not been copied in
 
         for( IndexType jj = 0; jj < ellSizes[i]; ++jj )
         {
@@ -414,7 +415,7 @@ OtherValueType MICELLUtils::getValue(
 
             if( ellJA[pos] == j )
             {
-                value = static_cast<OtherValueType>( ellValues[pos] );
+                value = ellValues[pos];
             }
         }
     }
@@ -903,19 +904,18 @@ void MICELLUtils::jacobi(
     const ValueType ellValues[],
     const ValueType oldSolution[],
     const ValueType rhs[],
-    const ValueType omega,
-    class SyncToken* syncToken )
+    const ValueType omega )
 {
     // SCAI_REGION( "MIC.ELL.jacobi" )
 
     SCAI_LOG_INFO( logger,
                    "jacobi<" << common::getScalarType<ValueType>() << ">" << ", #rows = " << numRows << ", omega = " << omega )
 
-    if( syncToken )
+    MICSyncToken* syncToken = MICSyncToken::getCurrentSyncToken();
+
+    if ( syncToken )
     {
-        MICSyncToken* micSyncToken = dynamic_cast<MICSyncToken*>( syncToken );
-        SCAI_ASSERT_ERROR( micSyncToken, "no MIC sync token provided" )
-        SCAI_LOG_WARN( logger, "asynchronous execution on MIC not supported yet" )
+        SCAI_LOG_INFO( logger, "asynchronous execution for for MIC not supported yet" )
     }
 
     void* solutionPtr = solution;
@@ -952,7 +952,7 @@ void MICELLUtils::jacobi(
                 temp -= ellValues[pos] * oldSolution[ellJA[pos]];
             }
 
-            if( omega == scai::common::constants::ONE )
+            if( omega == static_cast<ValueType>( 1.0 ) )
             {
                 solution[i] = temp / diag;
             }
@@ -982,14 +982,13 @@ void MICELLUtils::jacobiHalo(
     const IndexType rowIndexes[],
     const IndexType numNonEmptyRows,
     const ValueType oldSolution[],
-    const ValueType omega,
-    class SyncToken* syncToken )
+    const ValueType omega )
 {
-    if( syncToken )
+    MICSyncToken* syncToken = MICSyncToken::getCurrentSyncToken();
+
+    if ( syncToken )
     {
-        MICSyncToken* micSyncToken = dynamic_cast<MICSyncToken*>( syncToken );
-        SCAI_ASSERT_ERROR( micSyncToken, "no MIC sync token provided" )
-        // not yet implemented: run the offload computation asynchronously
+        SCAI_LOG_INFO( logger, "asynchronous execution for for MIC not supported yet" )
     }
 
     // SCAI_REGION( "MIC.ELL.jacobiHalo" )
@@ -1057,8 +1056,7 @@ void MICELLUtils::normalGEMV(
     const IndexType numNonZerosPerRow,
     const IndexType ellSizes[],
     const IndexType ellJA[],
-    const ValueType ellValues[],
-    SyncToken* syncToken )
+    const ValueType ellValues[] )
 {
     SCAI_LOG_INFO( logger,
                    "normalGEMV<" << common::getScalarType<ValueType>() << ">, result[" << numRows << "] = " << alpha << " * A( ell, #maxNZ/row = " << numNonZerosPerRow << " ) * x + " << beta << " * y " )
@@ -1070,11 +1068,11 @@ void MICELLUtils::normalGEMV(
         // only compute: result = beta * y
     }
 
-    if( syncToken )
+    MICSyncToken* syncToken = MICSyncToken::getCurrentSyncToken();
+
+    if ( syncToken )
     {
-        MICSyncToken* micSyncToken = dynamic_cast<MICSyncToken*>( syncToken );
-        SCAI_ASSERT_ERROR( micSyncToken, "no MIC sync token provided" )
-        // not yet implemented: run the offload computation asynchronously
+        SCAI_LOG_INFO( logger, "asynchronous execution of JDS jacobi iteration for MIC not supported yet" )
     }
 
     // SCAI_REGION( "MIC.ELL.normalGEMV" )
@@ -1118,7 +1116,7 @@ void MICELLUtils::normalGEMV(
 
                 result[i] = alpha * temp;
             }
-            else if( alpha == scai::common::constants::ONE )
+            else if( alpha == static_cast<ValueType>( 1.0 ) )
             {
                 result[i] = temp + beta * y[i];
             }
@@ -1143,14 +1141,13 @@ void MICELLUtils::sparseGEMV(
     const IndexType rowIndexes[],
     const IndexType ellSizes[],
     const IndexType ellJA[],
-    const ValueType ellValues[],
-    SyncToken* syncToken )
+    const ValueType ellValues[] )
 {
-    if( syncToken )
+    MICSyncToken* syncToken = MICSyncToken::getCurrentSyncToken();
+
+    if ( syncToken )
     {
-        MICSyncToken* micSyncToken = dynamic_cast<MICSyncToken*>( syncToken );
-        SCAI_ASSERT_ERROR( micSyncToken, "no MIC sync token provided" )
-        // not yet implemented: run the offload computation asynchronously
+        SCAI_LOG_INFO( logger, "asynchronous execution of JDS jacobi iteration for MIC not supported yet" )
     }
 
     // SCAI_REGION( "MIC.ELL.sparseGEMV" )
@@ -1199,7 +1196,7 @@ void MICELLUtils::sparseGEMV(
                     temp += ellValues[pos] * x[j];
                 }
 
-                if( alpha == scai::common::constants::ONE )
+                if( alpha == static_cast<ValueType>( 1.0 ) )
                 {
                     result[i] += temp;
                 }
@@ -1214,40 +1211,49 @@ void MICELLUtils::sparseGEMV(
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-void MICELLUtils::setInterface( ELLUtilsInterface& ELLUtils )
+void MICELLUtils::registerKernels( bool deleteFlag )
 {
     SCAI_LOG_INFO( logger, "set ELL routines for MIC in Interface" )
 
-    LAMA_INTERFACE_REGISTER( ELLUtils, countNonEmptyRowsBySizes )
-    LAMA_INTERFACE_REGISTER( ELLUtils, setNonEmptyRowsBySizes )
+    SCAI_LOG_INFO( logger, "register Utils kernels for MIC in Kernel Registry" )
 
-    LAMA_INTERFACE_REGISTER( ELLUtils, hasDiagonalProperty )
-    LAMA_INTERFACE_REGISTER( ELLUtils, check )
+    using kregistry::KernelRegistry;
+    using common::context::MIC;
 
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getRow, float, float )
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getRow, float, double )
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getRow, double, float )
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getRow, double, double )
+    KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // add it or delete it
 
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getValue, float, float )
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getValue, float, double )
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getValue, double, float )
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getValue, double, double )
+    if ( deleteFlag )
+    {
+        flag = KernelRegistry::KERNEL_ERASE;
+    }
 
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, scaleValue, float, float )
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, scaleValue, double, float )
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, scaleValue, float, double )
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, scaleValue, double, double )
+    KernelRegistry::set<ELLKernelTrait::countNonEmptyRowsBySizes>( countNonEmptyRowsBySizes, MIC, flag );
+    KernelRegistry::set<ELLKernelTrait::setNonEmptyRowsBySizes>( setNonEmptyRowsBySizes, MIC, flag );
+    KernelRegistry::set<ELLKernelTrait::hasDiagonalProperty>( hasDiagonalProperty, MIC, flag );
+    KernelRegistry::set<ELLKernelTrait::check>( check, MIC, flag );
 
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, setCSRValues, float, float )
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, setCSRValues, float, double )
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, setCSRValues, double, float )
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, setCSRValues, double, double )
+    KernelRegistry::set<ELLKernelTrait::getRow<float, float> >( getRow, MIC, flag );
+    KernelRegistry::set<ELLKernelTrait::getRow<float, double> >( getRow, MIC, flag );
+    KernelRegistry::set<ELLKernelTrait::getRow<double, float> >( getRow, MIC, flag );
+    KernelRegistry::set<ELLKernelTrait::getRow<double, double> >( getRow, MIC, flag );
 
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getCSRValues, float, float )
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getCSRValues, float, double )
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getCSRValues, double, float )
-    LAMA_INTERFACE_REGISTER_TT( ELLUtils, getCSRValues, double, double )
+    KernelRegistry::set<ELLKernelTrait::getValue<float> >( getValue, MIC, flag );
+    KernelRegistry::set<ELLKernelTrait::getValue<double> >( getValue, MIC, flag );
+
+    KernelRegistry::set<ELLKernelTrait::scaleValue<float, float> >( scaleValue, MIC, flag );
+    KernelRegistry::set<ELLKernelTrait::scaleValue<float, double> >( scaleValue, MIC, flag );
+    KernelRegistry::set<ELLKernelTrait::scaleValue<double, float> >( scaleValue, MIC, flag );
+    KernelRegistry::set<ELLKernelTrait::scaleValue<double, double> >( scaleValue, MIC, flag );
+
+    KernelRegistry::set<ELLKernelTrait::setCSRValues<float, float> >( setCSRValues, MIC, flag );
+    KernelRegistry::set<ELLKernelTrait::setCSRValues<float, double> >( setCSRValues, MIC, flag );
+    KernelRegistry::set<ELLKernelTrait::setCSRValues<double, float> >( setCSRValues, MIC, flag );
+    KernelRegistry::set<ELLKernelTrait::setCSRValues<double, double> >( setCSRValues, MIC, flag );
+
+    KernelRegistry::set<ELLKernelTrait::getCSRValues<float, float> >( getCSRValues, MIC, flag );
+    KernelRegistry::set<ELLKernelTrait::getCSRValues<float, double> >( getCSRValues, MIC, flag );
+    KernelRegistry::set<ELLKernelTrait::getCSRValues<double, float> >( getCSRValues, MIC, flag );
+    KernelRegistry::set<ELLKernelTrait::getCSRValues<double, double> >( getCSRValues, MIC, flag );
 
     /*
      LAMA_INTERFACE_REGISTER_T( ELLUtils, absMaxVal, float )
@@ -1269,17 +1275,17 @@ void MICELLUtils::setInterface( ELLUtilsInterface& ELLUtils )
      LAMA_INTERFACE_REGISTER_T( ELLUtils, addComputeValues, double )
      */
 
-    LAMA_INTERFACE_REGISTER_T( ELLUtils, normalGEMV, float )
-    LAMA_INTERFACE_REGISTER_T( ELLUtils, normalGEMV, double )
+    KernelRegistry::set<ELLKernelTrait::normalGEMV<float> >( normalGEMV, MIC, flag );
+    KernelRegistry::set<ELLKernelTrait::normalGEMV<double> >( normalGEMV, MIC, flag );
 
-    LAMA_INTERFACE_REGISTER_T( ELLUtils, sparseGEMV, float )
-    LAMA_INTERFACE_REGISTER_T( ELLUtils, sparseGEMV, double )
+    KernelRegistry::set<ELLKernelTrait::sparseGEMV<float> >( sparseGEMV, MIC, flag );
+    KernelRegistry::set<ELLKernelTrait::sparseGEMV<double> >( sparseGEMV, MIC, flag );
 
-    LAMA_INTERFACE_REGISTER_T( ELLUtils, jacobi, float )
-    LAMA_INTERFACE_REGISTER_T( ELLUtils, jacobi, double )
+    KernelRegistry::set<ELLKernelTrait::jacobi<float> >( jacobi, MIC, flag );
+    KernelRegistry::set<ELLKernelTrait::jacobi<double> >( jacobi, MIC, flag );
 
-    LAMA_INTERFACE_REGISTER_T( ELLUtils, jacobiHalo, float )
-    LAMA_INTERFACE_REGISTER_T( ELLUtils, jacobiHalo, double )
+    KernelRegistry::set<ELLKernelTrait::jacobiHalo<float> >( jacobiHalo, MIC, flag );
+    KernelRegistry::set<ELLKernelTrait::jacobiHalo<double> >( jacobiHalo, MIC, flag );
 
     /*
      LAMA_INTERFACE_REGISTER_T( ELLUtils, fillELLValues, float )
@@ -1288,21 +1294,22 @@ void MICELLUtils::setInterface( ELLUtilsInterface& ELLUtils )
 }
 
 /* --------------------------------------------------------------------------- */
-/*    Static registration of the ELLUtils routines                             */
+/*    Static initialization with registration                                  */
 /* --------------------------------------------------------------------------- */
 
-bool MICELLUtils::registerInterface()
+MICELLUtils::RegisterGuard::RegisterGuard()
 {
-    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( context::MIC );
-    setInterface( interface.ELLUtils );
-    return true;
+    bool deleteFlag = false;
+    registerKernels( deleteFlag );
 }
 
-/* --------------------------------------------------------------------------- */
-/*    Static initialiazion at program start                                    */
-/* --------------------------------------------------------------------------- */
+MICELLUtils::RegisterGuard::~RegisterGuard()
+{
+    bool deleteFlag = true;
+    registerKernels( deleteFlag );
+}
 
-bool MICELLUtils::initialized = registerInterface();
+MICELLUtils::RegisterGuard MICELLUtils::guard;    // guard variable for registration
 
 } /* end namespace lama */
 

@@ -49,7 +49,7 @@
 
 // internal scai libraries
 #include <scai/common/ScalarType.hpp>
-#include <scai/common/Assert.hpp>
+#include <scai/common/macros/assert.hpp>
 
 // std
 #include <vector>
@@ -139,15 +139,15 @@ public:
      * 
      * Note: NULL pointer is returned if no valid data is available
      */
-    ContextPtr getValidContext( const context::ContextType preferredType = context::Host ) const;
+    ContextPtr getValidContext( const common::context::ContextType preferredType = common::context::Host ) const;
 
     /**
-     * @brief Prefetches the contents of the container to the passed context.
+     * @brief Prefetches the content of the container to a certain location.
      *
-     * @param[in] context  the context to prefetch to
+     * @param[in] context  the location to prefetch to
      *
-     * This method prefetches the contents of the container to the context.
-     * If this valid at location nothing happens,if not a transfer from a valid location
+     * This method prefetches the content of the container to context.
+     * If it is already valid at location nothing happens, otherwise a transfer from a valid location
      * to the passed location is started. Because the transfer is handled by LAMAArray and to
      * maintain the consistency of the container only one running transfer can exist at any
      * point in time. There for if two prefetches to two different invalid locations are
@@ -203,6 +203,10 @@ protected:
         constFlag( false )
     {
     }
+
+    // The following routines are used by read/write accesses
+
+public:
 
     /** Complete handling to get read access for a certain context.
      *
@@ -307,7 +311,7 @@ inline IndexType ContextArray::capacity( ContextDataIndex index ) const
 
 /* ---------------------------------------------------------------------------------*/
 
-inline ContextPtr ContextArray::getValidContext( const context::ContextType preferredType ) const
+inline ContextPtr ContextArray::getValidContext( const common::context::ContextType preferredType ) const
 {
     return mContextDataManager.getValidContext( preferredType );
 }
@@ -319,14 +323,14 @@ inline ContextDataIndex ContextArray::acquireReadAccess( ContextPtr context ) co
     size_t allocSize = mSize * mValueSize;
     size_t validSize = allocSize;                   // read access needs valid data in any case
 
-    return mContextDataManager.acquireAccess( context, context::Read, allocSize, validSize );
+    return mContextDataManager.acquireAccess( context, common::context::Read, allocSize, validSize );
 }
 
 /* ---------------------------------------------------------------------------------*/
 
 inline void ContextArray::releaseReadAccess( ContextDataIndex index ) const
 {
-    mContextDataManager.releaseAccess( index, context::Read );
+    mContextDataManager.releaseAccess( index, common::context::Read );
 }
 
 /* ---------------------------------------------------------------------------------*/
@@ -336,14 +340,14 @@ inline ContextDataIndex ContextArray::acquireWriteAccess( ContextPtr context, bo
     size_t allocSize = mSize * mValueSize;
     size_t validSize = keepFlag ? allocSize : 0 ;    // valid data only if keepFlag is set
 
-    return mContextDataManager.acquireAccess( context, context::Write, allocSize, validSize );
+    return mContextDataManager.acquireAccess( context, common::context::Write, allocSize, validSize );
 }
 
 /* ---------------------------------------------------------------------------------*/
 
 inline void ContextArray::releaseWriteAccess( ContextDataIndex index )
 {
-    mContextDataManager.releaseAccess( index, context::Write );
+    mContextDataManager.releaseAccess( index, common::context::Write );
 }
 
 } /* end namespace hmemo */

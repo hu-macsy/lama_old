@@ -35,18 +35,22 @@
 #include <scai/lama/openmp/OpenMPCSRUtils.hpp>
 
 // local library
-#include <scai/lama/LAMAInterface.hpp>
-#include <scai/lama/LAMAInterfaceRegistry.hpp>
+#include <scai/lama/CSRKernelTrait.hpp>
 
 // internal scai libraries
+
 #include <scai/tracing.hpp>
 
-#include <scai/common/Assert.hpp>
+#include <scai/common/macros/assert.hpp>
 #include <scai/common/OpenMP.hpp>
 #include <scai/common/bind.hpp>
+#include <scai/common/function.hpp>
 #include <scai/common/unique_ptr.hpp>
 #include <scai/common/macros/unused.hpp>
 #include <scai/common/Constants.hpp>
+
+#include <scai/kregistry/KernelRegistry.hpp>
+#include <scai/tasking/TaskSyncToken.hpp>
 
 // boost
 #include <boost/preprocessor.hpp>
@@ -59,6 +63,8 @@ namespace scai
 
 using common::scoped_array;
 using common::getScalarType;
+
+using tasking::TaskSyncToken;
 
 namespace lama
 {
@@ -209,11 +215,25 @@ IndexType OpenMPCSRUtils::sizes2offsets( IndexType array[], const IndexType numV
 
 void OpenMPCSRUtils::offsets2sizes( IndexType sizes[], const IndexType offsets[], const IndexType numRows )
 {
-    #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
-
-    for( IndexType i = 0; i < numRows; i++ )
+    if ( sizes == offsets )
     {
-        sizes[i] = offsets[i + 1] - offsets[i];
+        // when using the same array we do it sequential
+
+        for ( IndexType i = 0; i < numRows; i++ )
+        {
+            sizes[i] = sizes[i + 1] - sizes[i];
+        }
+    }
+
+    else
+  
+    {
+        #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
+
+        for ( IndexType i = 0; i < numRows; i++ )
+        {
+            sizes[i] = offsets[i + 1] - offsets[i];
+        }
     }
 }
 
@@ -496,29 +516,23 @@ void OpenMPCSRUtils::convertCSR2CSC(
 
 /* --------------------------------------------------------------------------- */
 
+// Alternative routine is needed as bind can only deal with up to 9 arguments
+
 template<typename ValueType>
-void OpenMPCSRUtils::normalGEMV(
+void OpenMPCSRUtils::normalGEMV_s(
     ValueType result[],
     const ValueType alpha,
     const ValueType x[],
     const ValueType beta,
     const ValueType y[],
     const IndexType numRows,
-    const IndexType UNUSED( numColumns ),
-    const IndexType UNUSED( nnz ),
     const IndexType csrIA[],
     const IndexType csrJA[],
-    const ValueType csrValues[],
-    tasking::SyncToken* syncToken )
+    const ValueType csrValues[] )
 {
     SCAI_LOG_INFO( logger,
                    "normalGEMV<" << getScalarType<ValueType>() << ", #threads = " << omp_get_max_threads() 
                     << ">, result[" << numRows << "] = " << alpha << " * A * x + " << beta << " * y " )
-
-    if( syncToken )
-    {
-        COMMON_THROWEXCEPTION( "asynchronous execution should be done by LAMATask before" )
-    }
 
     // ToDo: for efficiency the following cases should be considered
     // result = y, beta = 1.0 : result += alpha * A * x
@@ -569,7 +583,61 @@ void OpenMPCSRUtils::normalGEMV(
     }
 }
 
+template<typename ValueType>
+void OpenMPCSRUtils::normalGEMV(
+    ValueType result[],
+    const ValueType alpha,
+    const ValueType x[],
+    const ValueType beta,
+    const ValueType y[],
+    const IndexType numRows,
+    const IndexType UNUSED( numColumns ),
+    const IndexType UNUSED( nnz ),
+    const IndexType csrIA[],
+    const IndexType csrJA[],
+    const ValueType csrValues[] )
+{
+    TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
+
+    if ( syncToken )
+    {
+        syncToken->run( common::bind( normalGEMV_s<ValueType>, result, alpha, x, beta, y, 
+                                      numRows, csrIA, csrJA, csrValues ) );
+    }
+    else
+    {
+        normalGEMV_s( result, alpha, x, beta, y, numRows, csrIA, csrJA, csrValues );
+    }
+}
+
 /* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+struct VectorData
+{
+    ValueType scalar;
+    const ValueType* vector;
+
+    VectorData( ValueType scalar, const ValueType* vector )
+    {
+        this->scalar = scalar;
+        this->vector = vector;
+    }
+};
+
+template<typename ValueType>
+static void normalGEVM_s(
+    ValueType result[],
+    VectorData<ValueType> ax, 
+    VectorData<ValueType> by, 
+    const IndexType numRows,
+    const IndexType numColumns,
+    const IndexType csrIA[],
+    const IndexType csrJA[],
+    const ValueType csrValues[] )
+{
+    OpenMPCSRUtils::normalGEVM( result, ax.scalar, ax.vector, by.scalar, by.vector, numRows, numColumns, csrIA, csrJA, csrValues );
+}
 
 template<typename ValueType>
 void OpenMPCSRUtils::normalGEVM(
@@ -582,16 +650,23 @@ void OpenMPCSRUtils::normalGEVM(
     const IndexType numColumns,
     const IndexType csrIA[],
     const IndexType csrJA[],
-    const ValueType csrValues[],
-    tasking::SyncToken* syncToken )
+    const ValueType csrValues[] )
 {
-    SCAI_LOG_INFO( logger,
-                   "normalGEVM<" << getScalarType<ValueType>() << ", #threads = " << omp_get_max_threads() << ">, result[" << numColumns << "] = " << alpha << " * x * A + " << beta << " * y " )
+    TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
-    if( syncToken )
+    if ( syncToken )
     {
-        COMMON_THROWEXCEPTION( "asynchronous execution should be done by LAMATask before" )
+        // bind takes maximal 9 arguments, so we put (alpha, x) and (beta, y) in a struct
+
+        syncToken->run( common::bind( normalGEVM_s<ValueType>, result, 
+                                      VectorData<ValueType>( alpha, x ), 
+                                      VectorData<ValueType>( beta, y ), 
+                                      numRows, numColumns, csrIA, csrJA, csrValues ) );
     }
+
+    SCAI_LOG_INFO( logger,
+                   "normalGEVM<" << getScalarType<ValueType>() << ", #threads = " << omp_get_max_threads() << ">, result[" << numColumns << "] = " 
+                    << alpha << " * x * A + " << beta << " * y " )
 
     // ToDo: for efficiency the cases of alpha and beta = 1.0 / 0.0 should be considered
 
@@ -665,12 +740,14 @@ void OpenMPCSRUtils::sparseGEMV(
     const IndexType rowIndexes[],
     const IndexType csrIA[],
     const IndexType csrJA[],
-    const ValueType csrValues[],
-    tasking::SyncToken* syncToken )
+    const ValueType csrValues[] )
 {
-    if( syncToken )
+    TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
+
+    if ( syncToken )
     {
-        COMMON_THROWEXCEPTION( "asynchronous execution should be done by LAMATask before" )
+        syncToken->run( common::bind( sparseGEMV<ValueType>, result, alpha,
+                                      x, numNonZeroRows, rowIndexes, csrIA, csrJA, csrValues ) );
     }
 
     #pragma omp parallel
@@ -722,12 +799,13 @@ void OpenMPCSRUtils::sparseGEVM(
     const IndexType rowIndexes[],
     const IndexType csrIA[],
     const IndexType csrJA[],
-    const ValueType csrValues[],
-    tasking::SyncToken* syncToken )
+    const ValueType csrValues[] )
 {
-    if( syncToken )
+    TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
+
+    if ( syncToken )
     {
-        COMMON_THROWEXCEPTION( "asynchronous execution should be done by LAMATask before" )
+        SCAI_LOG_ERROR( logger, "asynchronous execution not supported here" )
     }
 
     #pragma omp parallel
@@ -787,15 +865,16 @@ void OpenMPCSRUtils::gemm(
     const IndexType p,
     const IndexType csrIA[],
     const IndexType csrJA[],
-    const ValueType csrValues[],
-    tasking::SyncToken* syncToken )
+    const ValueType csrValues[] )
 {
     SCAI_LOG_INFO( logger,
                    "gemm<" << getScalarType<ValueType>() << ">, " << " result " << m << " x " << n << " CSR " << m << " x " << p )
 
-    if( syncToken )
+    TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
+
+    if ( syncToken )
     {
-        COMMON_THROWEXCEPTION( "asynchronous execution should be done by LAMATask before" )
+        SCAI_LOG_ERROR( logger, "asynchronous execution not supported here" )
     }
 
     #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
@@ -834,15 +913,16 @@ void OpenMPCSRUtils::jacobi(
     const ValueType oldSolution[],
     const ValueType rhs[],
     const ValueType omega,
-    const IndexType numRows,
-    tasking::SyncToken* syncToken )
+    const IndexType numRows )
 {
     SCAI_LOG_INFO( logger,
                    "jacobi<" << getScalarType<ValueType>() << ">" << ", #rows = " << numRows << ", omega = " << omega )
 
-    if( syncToken )
+    TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
+
+    if ( syncToken )
     {
-        COMMON_THROWEXCEPTION( "asynchronous execution should be done by LAMATask before" )
+        syncToken->run( common::bind( jacobi<ValueType>, solution, csrIA, csrJA, csrValues, oldSolution, rhs, omega, numRows ) );
     }
 
     #pragma omp parallel
@@ -1941,38 +2021,50 @@ ValueType OpenMPCSRUtils::absMaxDiffVal(
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void OpenMPCSRUtils::setInterface( CSRUtilsInterface& CSRUtils )
+void OpenMPCSRUtils::registerKernels( bool deleteFlag )
 {
-    LAMA_INTERFACE_REGISTER( CSRUtils, sizes2offsets )
-    LAMA_INTERFACE_REGISTER( CSRUtils, offsets2sizes )
-    LAMA_INTERFACE_REGISTER( CSRUtils, validOffsets )
-    LAMA_INTERFACE_REGISTER( CSRUtils, hasDiagonalProperty )
+    using kregistry::KernelRegistry;
+    using common::context::Host;       // context for registration
 
-    LAMA_INTERFACE_REGISTER( CSRUtils, matrixAddSizes )
-    LAMA_INTERFACE_REGISTER( CSRUtils, matrixMultiplySizes )
-    LAMA_INTERFACE_REGISTER( CSRUtils, matrixMultiplyJA )
+    KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // lower priority
 
-#define LAMA_CSR_UTILS2_REGISTER(z, J, TYPE )                                              \
-    LAMA_INTERFACE_REGISTER_TT( CSRUtils, scaleRows, TYPE, ARITHMETIC_HOST_TYPE_##J )      \
+    if ( deleteFlag )
+    {
+        flag = KernelRegistry::KERNEL_ERASE; 
+    }
+
+    // Instantations for IndexType, not done by ARITHMETIC_TYPE macros
+
+    KernelRegistry::set<CSRKernelTrait::sizes2offsets>( sizes2offsets, Host, flag );
+    KernelRegistry::set<CSRKernelTrait::offsets2sizes>( offsets2sizes, Host, flag );
+    KernelRegistry::set<CSRKernelTrait::validOffsets>( validOffsets, Host, flag );
+    KernelRegistry::set<CSRKernelTrait::hasDiagonalProperty>( hasDiagonalProperty, Host, flag );
+
+    KernelRegistry::set<CSRKernelTrait::matrixAddSizes>( matrixAddSizes, Host, flag );
+    KernelRegistry::set<CSRKernelTrait::matrixMultiplySizes>( matrixMultiplySizes, Host, flag );
+    KernelRegistry::set<CSRKernelTrait::matrixMultiplyJA>( matrixMultiplyJA, Host, flag );
+
+#define LAMA_CSR_UTILS2_REGISTER(z, J, TYPE )                                                                             \
+    KernelRegistry::set<CSRKernelTrait::scaleRows<TYPE, ARITHMETIC_HOST_TYPE_##J> >( scaleRows, Host, flag );             \
 
 #define LAMA_CSR_UTILS_REGISTER(z, I, _)                                                   \
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, convertCSR2CSC, ARITHMETIC_HOST_TYPE_##I )        \
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, sortRowElements, ARITHMETIC_HOST_TYPE_##I )       \
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, normalGEMV, ARITHMETIC_HOST_TYPE_##I )            \
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, sparseGEMV, ARITHMETIC_HOST_TYPE_##I )            \
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, normalGEVM, ARITHMETIC_HOST_TYPE_##I )            \
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, sparseGEVM, ARITHMETIC_HOST_TYPE_##I )            \
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, gemm, ARITHMETIC_HOST_TYPE_##I )                  \
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, matrixAdd, ARITHMETIC_HOST_TYPE_##I )             \
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, matrixMultiply, ARITHMETIC_HOST_TYPE_##I )        \
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, jacobi, ARITHMETIC_HOST_TYPE_##I )                \
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, jacobiHalo, ARITHMETIC_HOST_TYPE_##I )            \
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, jacobiHaloWithDiag, ARITHMETIC_HOST_TYPE_##I )    \
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, absMaxDiffVal, ARITHMETIC_HOST_TYPE_##I )         \
-                                                                                           \
-    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT,                                             \
-                     LAMA_CSR_UTILS2_REGISTER,                                             \
-                     ARITHMETIC_HOST_TYPE_##I )                                            \
+    KernelRegistry::set<CSRKernelTrait::convertCSR2CSC<ARITHMETIC_HOST_TYPE_##I> >( convertCSR2CSC, Host, flag );         \
+    KernelRegistry::set<CSRKernelTrait::sortRowElements<ARITHMETIC_HOST_TYPE_##I> >( sortRowElements, Host, flag );       \
+    KernelRegistry::set<CSRKernelTrait::normalGEMV<ARITHMETIC_HOST_TYPE_##I> >( normalGEMV, Host, flag );                 \
+    KernelRegistry::set<CSRKernelTrait::sparseGEMV<ARITHMETIC_HOST_TYPE_##I> >( sparseGEMV, Host, flag );                 \
+    KernelRegistry::set<CSRKernelTrait::normalGEVM<ARITHMETIC_HOST_TYPE_##I> >( normalGEVM, Host, flag );                 \
+    KernelRegistry::set<CSRKernelTrait::sparseGEVM<ARITHMETIC_HOST_TYPE_##I> >( sparseGEVM, Host, flag );                 \
+    KernelRegistry::set<CSRKernelTrait::gemm<ARITHMETIC_HOST_TYPE_##I> >( gemm, Host, flag );                             \
+    KernelRegistry::set<CSRKernelTrait::matrixAdd<ARITHMETIC_HOST_TYPE_##I> >( matrixAdd, Host, flag );                   \
+    KernelRegistry::set<CSRKernelTrait::matrixMultiply<ARITHMETIC_HOST_TYPE_##I> >( matrixMultiply, Host, flag );         \
+    KernelRegistry::set<CSRKernelTrait::jacobi<ARITHMETIC_HOST_TYPE_##I> >( jacobi, Host, flag );                         \
+    KernelRegistry::set<CSRKernelTrait::jacobiHalo<ARITHMETIC_HOST_TYPE_##I> >( jacobiHalo, Host, flag );                 \
+    KernelRegistry::set<CSRKernelTrait::jacobiHaloWithDiag<ARITHMETIC_HOST_TYPE_##I> >( jacobiHaloWithDiag, Host, flag ); \
+    KernelRegistry::set<CSRKernelTrait::absMaxDiffVal<ARITHMETIC_HOST_TYPE_##I> >( absMaxDiffVal, Host, flag );           \
+                                                                                                                          \
+    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT,                                                                            \
+                     LAMA_CSR_UTILS2_REGISTER,                                                                            \
+                     ARITHMETIC_HOST_TYPE_##I )                                                                           \
 
     BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_CSR_UTILS_REGISTER, _ )
 
@@ -1982,21 +2074,26 @@ void OpenMPCSRUtils::setInterface( CSRUtilsInterface& CSRUtils )
 }
 
 /* --------------------------------------------------------------------------- */
-/*    Static registration of the Utils routines                                */
+/*    Constructor/Desctructor with registration                                */
 /* --------------------------------------------------------------------------- */
 
-bool OpenMPCSRUtils::registerInterface()
+OpenMPCSRUtils::OpenMPCSRUtils()
 {
-    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( hmemo::context::Host );
-    setInterface( interface.CSRUtils );
-    return true;
+    bool deleteFlag = false;
+    registerKernels( deleteFlag );
+}
+
+OpenMPCSRUtils::~OpenMPCSRUtils()
+{
+    bool deleteFlag = true;
+    registerKernels( deleteFlag );
 }
 
 /* --------------------------------------------------------------------------- */
-/*    Static initialiazion at program start                                    */
+/*    Static variable to force registration during static initialization      */
 /* --------------------------------------------------------------------------- */
 
-bool OpenMPCSRUtils::initialized = registerInterface();
+OpenMPCSRUtils OpenMPCSRUtils::guard;
 
 } /* end namespace lama */
 

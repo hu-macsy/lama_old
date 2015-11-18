@@ -33,6 +33,7 @@
 
 // hpp
 #include <scai/hmemo/ContextData.hpp>
+#include <scai/hmemo/exception/MemoryException.hpp>
 
 // local library
 #include <scai/hmemo/Context.hpp>
@@ -40,7 +41,7 @@
 // internal scai libraries
 #include <scai/logging.hpp>
 
-#include <scai/common/Assert.hpp>
+#include <scai/common/macros/assert.hpp>
 
 namespace scai
 {
@@ -95,7 +96,8 @@ void ContextData::allocate( const size_t size )
 
     if ( !pointer )
     {
-        COMMON_THROWEXCEPTION( "Could not allocate ContextData of size = " << size << " on " << *mMemory )
+        SCAI_THROWEXCEPTION( MemoryException,
+                             "Could not allocate ContextData of size = " << size << " on " << *mMemory )
     }
 
     this->size = size;
@@ -177,7 +179,7 @@ void ContextData::realloc( const size_t newSize, const size_t validSize )
     }
 }
 
-void ContextData::reserve( const size_t newSize, const size_t validSize )
+void ContextData::reserve( const size_t newSize, const size_t validSize, bool inUse )
 {
     if ( newSize <= size )
     {
@@ -186,6 +188,8 @@ void ContextData::reserve( const size_t newSize, const size_t validSize )
         // current capacity is sufficient
         return;
     }
+
+    SCAI_ASSERT( !inUse, "reserve/reallocate required on array that is already in use" )
 
     if ( size == 0 )
     {

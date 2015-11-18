@@ -220,7 +220,7 @@ public:
 
     /** Initiate an asynchronous data transfer to a specified location. */
 
-    virtual void prefetch( const ContextPtr location ) const;
+    virtual void prefetch( const hmemo::ContextPtr location ) const;
 
     /** Will wait for all outstanding asynchronous data transfers. */
 
@@ -247,7 +247,7 @@ public:
      * @param[in] ja    the column vector of row i.
      * @param[in] a     the values of row i.
      */
-    void setRow( const IndexType i, const LAMAArray<IndexType>& ja, const LAMAArray<ValueType>& a );
+    void setRow( const IndexType i, const hmemo::LAMAArray<IndexType>& ja, const hmemo::LAMAArray<ValueType>& a );
 
     /**
      * @brief fixDiagonalProperty fixes the diagonal property of row.
@@ -272,25 +272,25 @@ public:
     /** Template method for getting row. */
 
     template<typename OtherType>
-    void getRowImpl( LAMAArray<OtherType>& row, const IndexType i ) const;
+    void getRowImpl( hmemo::LAMAArray<OtherType>& row, const IndexType i ) const;
 
     /** Typed version of getDiagonal
      *
      * @param[out] diagonal is the typed LAMA array for output
      */
     template<typename OtherValueType>
-    void getDiagonalImpl( LAMAArray<OtherValueType>& diagonal ) const;
+    void getDiagonalImpl( hmemo::LAMAArray<OtherValueType>& diagonal ) const;
 
     /** Typed version of setDiagonal
      *
      * @param[in] diagonal is the typed LAMA array for input
      */
     template<typename OtherValueType>
-    void setDiagonalImpl( const LAMAArray<OtherValueType>& diagonal );
+    void setDiagonalImpl( const hmemo::LAMAArray<OtherValueType>& diagonal );
 
     /** Implementation of pure method. */
 
-    void setDiagonalImpl( const Scalar scalar );
+    void setDiagonalImpl( const ValueType value );
 
     /******************************************************************
      *  Scaling of elements in a matrix                                *
@@ -299,11 +299,11 @@ public:
     /** Template version used for virtual routine scale with known value type. */
 
     template<typename OtherType>
-    void scaleImpl( const LAMAArray<OtherType>& values );
+    void scaleImpl( const hmemo::LAMAArray<OtherType>& values );
 
     /** Implementation of pure method.  */
 
-    void scaleImpl( const Scalar value );
+    void scaleImpl( const ValueType value );
 
     /** General routine to build any kind of CSR storage.
      *
@@ -315,10 +315,10 @@ public:
 
     template<typename OtherValueType>
     void buildCSR(
-        LAMAArray<IndexType>& ia,
-        LAMAArray<IndexType>* ja,
-        LAMAArray<OtherValueType>* values,
-        const ContextPtr loc ) const;
+        hmemo::LAMAArray<IndexType>& ia,
+        hmemo::LAMAArray<IndexType>* ja,
+        hmemo::LAMAArray<OtherValueType>* values,
+        const hmemo::ContextPtr loc ) const;
 
     /**
      * @brief fills Assembly sparse matrix by csr sparse data.
@@ -336,10 +336,10 @@ public:
         const IndexType numRows,
         const IndexType numColumns,
         const IndexType numValues,
-        const LAMAArray<IndexType>& ia,
-        const LAMAArray<IndexType>& ja,
-        const LAMAArray<OtherValueType>& values,
-        const ContextPtr loc );
+        const hmemo::LAMAArray<IndexType>& ia,
+        const hmemo::LAMAArray<IndexType>& ja,
+        const hmemo::LAMAArray<OtherValueType>& values,
+        const hmemo::ContextPtr loc );
 
     /** Test the storage data for inconsistencies.
      *

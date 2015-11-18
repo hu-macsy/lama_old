@@ -207,7 +207,7 @@ public:
      *
      * @param[in] context   the context where this solver should be executed.
      */
-    virtual void setContextPtr( ContextPtr context );
+    virtual void setContextPtr( hmemo::ContextPtr context );
 
     /**
      * @brief Copies the status independent solver informations to create a new instance of the same
@@ -285,7 +285,7 @@ protected:
      *
      * If the context for a solver is set, the context of the input matrix will be ignored
      */
-    ContextPtr mContext;
+    hmemo::ContextPtr mContext;
 
     virtual void writeAt( std::ostream& stream ) const;
 

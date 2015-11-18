@@ -39,6 +39,7 @@
 #include <iostream> 
 
 using namespace std;
+using namespace scai;
 using namespace scai::hmemo;
 
 SCAI_LOG_DEF_LOGGER( logger, "MemoryTest" )
@@ -48,7 +49,7 @@ void sumArray( const LAMAArray<T>& array )
 {
     SCAI_LOG_INFO( logger, "read access on " << array );
 
-    ContextPtr contextPtr = Context::getContextPtr( context::Host );
+    ContextPtr contextPtr = Context::getHostPtr();
 
     ReadAccess<T> readAccess( array, contextPtr );
    
@@ -56,7 +57,7 @@ void sumArray( const LAMAArray<T>& array )
  
     T sum = 0;
 
-    for ( int i = 0; i < array.size(); ++i )
+    for ( IndexType i = 0; i < array.size(); ++i )
     {
         sum += data[i];
     }
@@ -69,7 +70,7 @@ void writeArray( LAMAArray<T>& array )
 {
     SCAI_LOG_INFO( logger, "make write test access on empty array\n" );
 
-    ContextPtr contextPtr = Context::getContextPtr( context::Host );
+    ContextPtr contextPtr = Context::getHostPtr();
 
     WriteAccess<T> writeAccess( array, contextPtr );
 

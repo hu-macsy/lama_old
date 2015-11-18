@@ -35,7 +35,8 @@
 #include <scai/lama/LAMAArrayUtils.hpp>
 
 // local library
-#include <scai/lama/LAMAInterface.hpp>
+#include <scai/lama/UtilKernelTrait.hpp>
+#include <scai/lama/LAMAKernel.hpp>
 
 // internal scai libraries
 #include <scai/hmemo.hpp>
@@ -65,7 +66,7 @@ template<typename ValueType1,typename ValueType2>
 void LAMAArrayUtils::assignImpl(
     LAMAArray<ValueType1>& target,
     const LAMAArray<ValueType2>& source,
-    const ContextPtr loc )
+    const ContextPtr prefContext )
 {
     // verify that dynamic cast operations went okay before
 
@@ -74,16 +75,20 @@ void LAMAArrayUtils::assignImpl(
 
     // set should be available on interface for each loc
 
-    LAMA_INTERFACE_FN_TT( set, loc, Utils, Copy, ValueType1, ValueType2 )
+    static LAMAKernel<UtilKernelTrait::set<ValueType1, ValueType2> > set;
+
+    ContextPtr loc = set.getValidContext( prefContext );
 
     const IndexType n = source.size();
+
+    SCAI_CONTEXT_ACCESS( loc )
 
     WriteOnlyAccess<ValueType1> targetVals( target, loc, n );
     ReadAccess<ValueType2> sourceVals( source, loc );
 
-    SCAI_CONTEXT_ACCESS( loc )
+    // Implemenation of set @ loc is available
 
-    set( targetVals.get(), sourceVals.get(), n );
+    set[loc]( targetVals.get(), sourceVals.get(), n );
 }
 
 template<typename ValueType>
@@ -166,35 +171,36 @@ void LAMAArrayUtils::gather(
 {
     SCAI_REGION( "LAMAArray.gather" )
 
-// choose location for the operation where source array is currently valid
+    // choose location for the operation where source array is currently valid
 
-    ContextPtr context = source.getValidContext( context::Host );
+    static LAMAKernel<UtilKernelTrait::setGather<ValueType1, ValueType2> > setGather;
 
-    LAMA_INTERFACE_FN_TT( setGather, context, Utils, Copy, ValueType1, ValueType2 )
+    ContextPtr context = setGather.getValidContext( source.getValidContext() );
 
     const IndexType n = indexes.size();
 
     WriteOnlyAccess<ValueType1> wTarget( target, context, n );
 
+    SCAI_CONTEXT_ACCESS( context )
+
     ReadAccess<ValueType2> rSource( source, context );
     ReadAccess<IndexType> rIndexes( indexes, context );
 
-    SCAI_CONTEXT_ACCESS( context )
+    //  target[i] = source[ indexes[i] ]
 
-// target[i] = source[ indexes[i] ]
-    setGather( wTarget.get(), rSource.get(), rIndexes.get(), n );
+    setGather[context] ( wTarget.get(), rSource.get(), rIndexes.get(), n );
 }
 
 template<typename ValueType>
-void LAMAArrayUtils::assignScalar( LAMAArray<ValueType>& target, const Scalar& value, ContextPtr context )
+void LAMAArrayUtils::assignScalar( LAMAArray<ValueType>& target, const Scalar& value, ContextPtr prefContext )
 {
-    SCAI_ASSERT( context.get(), "No context specified" )
+    static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
+
+    ContextPtr context = setVal.getValidContext( prefContext );
 
     SCAI_LOG_INFO( logger, target << " = " << value << ", to do at " << *context )
 
-// assignment takes place at the given context
-
-    LAMA_INTERFACE_FN_T( setVal, context, Utils, Setter, ValueType )
+    // assignment takes place at the specified context, no check here
 
     const IndexType n = target.size();
 
@@ -204,7 +210,7 @@ void LAMAArrayUtils::assignScalar( LAMAArray<ValueType>& target, const Scalar& v
 
     SCAI_CONTEXT_ACCESS( context )
 
-    setVal( values.get(), n, val );
+    setVal[context]( values.get(), n, val );
 }
 
 void LAMAArrayUtils::assignScalar( hmemo::ContextArray& target, const Scalar& value, hmemo::ContextPtr context )
@@ -247,15 +253,17 @@ void LAMAArrayUtils::setVal( LAMAArray<ValueType>& target, const IndexType index
 {
     SCAI_ASSERT_DEBUG( index < target.size(), "index = " << index << " out of range for target = " << target );
 
-    ContextPtr loc = target.getValidContext(); // best position where to fill
+    ContextPtr loc = target.getValidContext();   // preferred location where to fill
 
-    LAMA_INTERFACE_FN_DEFAULT_T( setVal, loc, Utils, Setter, ValueType );
+    static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
+
+    loc = setVal.getValidContext( loc );
 
     WriteAccess<ValueType> wTarget( target, loc );
 
     SCAI_CONTEXT_ACCESS( loc )
 
-    setVal( wTarget.get() + index, 1, val );
+    setVal[loc]( wTarget.get() + index, 1, val );
 }
 
 template<typename ValueType>
@@ -263,26 +271,28 @@ void LAMAArrayUtils::assignScaled(
     LAMAArray<ValueType>& result,
     const ValueType beta,
     const LAMAArray<ValueType>& y,
-    ContextPtr loc )
+    ContextPtr prefLoc )
 {
     const IndexType n = result.size();
 
     SCAI_ASSERT_EQUAL_ERROR( n, y.size() );
 
-// beta = 0    : saves the need of a read access for y
-// result == y : only one write access needed ( write + read not possible)
+    // beta = 0    : saves the need of a read access for y
+    // result == y : only one write access needed ( write + read not possible)
 
     if( beta == scai::common::constants::ZERO )
     {
-// result := 0
+        // result := 0
 
-        LAMA_INTERFACE_FN_T( setVal, loc, Utils, Setter, ValueType )
+        static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
+
+        ContextPtr loc = setVal.getValidContext( prefLoc );
 
         WriteAccess<ValueType> wResult( result, loc );
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        setVal( wResult.get(), n, static_cast<ValueType>(0.0) );
+        setVal[loc]( wResult.get(), n, static_cast<ValueType>(0.0) );
     }
     else if( &result == &y )
     {
@@ -291,31 +301,35 @@ void LAMAArrayUtils::assignScaled(
             return;
         }
 
-// result := beta * result, is result *= beta
+        // result := beta * result, is result *= beta
 
-        LAMA_INTERFACE_FN_T( scale, loc, Utils, Transform, ValueType )
+        static LAMAKernel<UtilKernelTrait::scale<ValueType> > scale;
+
+        ContextPtr loc = scale.getValidContext( prefLoc );
 
         WriteAccess<ValueType> wResult( result, loc );
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        scale( wResult.get(), beta, n );
+        scale[loc]( wResult.get(), beta, n );
     }
     else
     {
-// result := beta * y
+        // result := beta * y
+        
+        // Note: we do not use BLAS1:axpy here to guarantee same LAMA OpenMP schedule
+        //       and to support type conversions in place for multiprecision support
+        
+        static LAMAKernel<UtilKernelTrait::setScale<ValueType, ValueType> > setScale;
 
-// Note: we do not use BLAS1:axpy here to guarantee same LAMA OpenMP schedule
-//       and to support type conversions in place for multiprecision support
+        ContextPtr loc = setScale.getValidContext( prefLoc );
 
-        LAMA_INTERFACE_FN_TT( setScale, loc, Utils, Copy, ValueType, ValueType )
+        SCAI_CONTEXT_ACCESS( loc )
 
         WriteAccess<ValueType> wResult( result, loc );
         ReadAccess<ValueType> rY( y, loc );
 
-        SCAI_CONTEXT_ACCESS( loc )
-
-        setScale( wResult.get(), beta, rY.get(), n );
+        setScale[loc]( wResult.get(), beta, rY.get(), n );
     }
 }
 

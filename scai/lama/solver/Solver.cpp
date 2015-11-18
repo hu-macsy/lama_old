@@ -214,7 +214,7 @@ void Solver::setLogLevel( LogLevel::LogLevel level )
     mLogger->setLogLevel( level );
 }
 
-void Solver::setContextPtr( ContextPtr context )
+void Solver::setContextPtr( hmemo::ContextPtr context )
 {
     SCAI_LOG_DEBUG( logger, "Set context to " << *context )
     mContext = context;

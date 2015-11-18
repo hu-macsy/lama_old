@@ -1,5 +1,5 @@
 /**
- * @file LAMAInterface.hpp
+ * @file UnsupportedException.hpp
  *
  * @license
  * Copyright (c) 2009-2015

@@ -31,7 +31,8 @@
  * @date 19.06.2015
  */
 
-#include <scai/common/Assert.hpp>
+#include <scai/common/macros/throw.hpp>
+#include <scai/common/macros/assert.hpp>
 
 #include <iostream>
 

@@ -42,7 +42,7 @@
 #include <scai/logging.hpp>
 
 #include <scai/common/config.hpp>
-#include <scai/common/exception/Exception.hpp>
+#include <scai/common/macros/throw.hpp>
 
 namespace scai
 {
@@ -135,7 +135,13 @@ public:
      */
     void realloc( const size_t newSize, const size_t saveSize );
 
-    void reserve( const size_t newSize, const size_t validSize );
+    /** Make reservation of enough memory.
+     *
+     *  @param newSize    number of entries for new allocated memory
+     *  @param validSize  number of values that must be copied
+     *  @param inUse      throw exception if reallocate is required
+     */
+    void reserve( const size_t newSize, const size_t validSize, bool inUse );
 
     /** free allocated data at the corresponding context */
 

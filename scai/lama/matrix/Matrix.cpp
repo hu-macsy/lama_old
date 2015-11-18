@@ -39,7 +39,7 @@
 #include <scai/lama/distribution/NoDistribution.hpp>
 
 // internal scai libraries
-#include <scai/common/Assert.hpp>
+#include <scai/common/macros/assert.hpp>
 #include <scai/common/Constants.hpp>
 
 using namespace scai::common;
@@ -213,11 +213,11 @@ void Matrix::setReplicatedMatrix( const IndexType numRows, const IndexType numCo
 
 /* ---------------------------------------------------------------------------------*/
 
-ContextArray* Matrix::createArray() const
+hmemo::ContextArray* Matrix::createArray() const
 {
-    // Static method of ContextArray provides exactly the needed functionality.
+    // ContextArray is also a factory so we can use it
 
-    return ContextArray::create( getValueType() );
+    return hmemo::ContextArray::create( getValueType() );
 }
 
 /* ---------------------------------------------------------------------------------*/

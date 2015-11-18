@@ -42,7 +42,7 @@
 #include <scai/tasking/TaskSyncToken.hpp>
 
 #include <scai/common/cuda/CUDAError.hpp>
-#include <scai/common/Assert.hpp>
+#include <scai/common/macros/assert.hpp>
 
 // CUDA
 #include <cublas_v2.h>
@@ -78,7 +78,7 @@ int CUDAContext::numUsedDevices = 0;
 
 CUDAContext::CUDAContext( int deviceNr ) : 
 
-    Context( context::CUDA ), 
+    Context( common::context::CUDA ), 
     mDeviceNr( deviceNr )
 
 {

@@ -81,8 +81,11 @@ include ( ConcludeFlags )
 add_definitions( ${ADDITIONAL_WARNING_FLAGS} )
 
 add_definitions ( -D${SCAI_LOGGING_FLAG} )
-add_definitions ( -D${SCAI_OMP_SCHEDULE_FLAG} )
 add_definitions ( -D${SCAI_TRACING_FLAG} )
+
+if ( SCAI_OMP_SCHEDULE_FLAG )
+    add_definitions ( -D${SCAI_OMP_SCHEDULE_FLAG} )
+endif ( SCAI_OMP_SCHEDULE_FLAG )
 
 add_definitions ( -DSCAI_ASSERT_LEVEL_${SCAI_ASSERT_LEVEL} )
 
@@ -139,8 +142,11 @@ if    ( USE_MIC )
 endif ( USE_MIC )
 
 ## add subdirectories
+add_subdirectory ( exception )
 add_subdirectory ( examples )
-add_subdirectory ( test )
+if    ( FOUND_BOOST_TEST AND BUILD_TEST )
+    add_subdirectory ( test )
+endif ( FOUND_BOOST_TEST AND BUILD_TEST )
 
 ## add library
 add_library ( scai_hmemo ${SCAI_LIBRARY_TYPE} ${CXX_SOURCES} )

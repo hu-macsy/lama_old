@@ -103,13 +103,15 @@ scai_project (
 
         Printable
         ScalarType
+        SCAITypes
+        ContextType
         Settings
         Thread
         Walltime
+        LibModule
 
     HEADERS
 
-        Assert
         bind     
         Complex
         config
@@ -119,9 +121,7 @@ scai_project (
         function
         OpenMP
         NonCopyable
-        SCAITypes
         shared_ptr
-        TypeTraits
         unique_ptr
         weak_ptr
 )
@@ -148,6 +148,11 @@ foreach    ( module ${SCAI_COMMON_EXTERNAL_DEPS} )
 	string ( TOUPPER ${module} upper_module )
     target_link_libraries ( scai_common ${SCAI_${upper_module}_LIBRARIES} )
 endforeach ( module ${SCAI_COMMON_EXTERNAL_DEPS} )
+
+## add DL library (ToDo: add it to SCAI_COMMON_EXTERNAL_DEPS)
+
+find_library( SCAI_DL_LIBRARIES dl )
+target_link_libraries( scai_common ${SCAI_DL_LIBRARIES} )
 
 ### install ###
 install ( TARGETS scai_common DESTINATION lib )

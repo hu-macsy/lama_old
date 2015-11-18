@@ -43,11 +43,6 @@
 namespace scai
 {
 
-namespace tasking
-{
-    class SyncToken;
-}
-
 namespace lama
 {
 
@@ -59,7 +54,7 @@ class COMMON_DLL_IMPORTEXPORT CUDADIAUtils
 {
 public:
 
-    /** Implementation for DIAUtilsInterface::Mult:normalGEMV with CUDA on GPUs */
+    /** Implementation for DIAKernelTrait::normalGEMV with CUDA on GPUs */
 
     template<typename ValueType>
     static void normalGEMV(
@@ -72,10 +67,9 @@ public:
         const IndexType numColumns,
         const IndexType numDiagonals,
         const IndexType diaOffsets[],
-        const ValueType diaValues[],
-        tasking::SyncToken* syncToken );
+        const ValueType diaValues[] );
 
-    /** Implementation for DIAUtilsInterface::Mult:normalGEVM with CUDA on GPUs */
+    /** Implementation for DIAKernelTrait::normalGEVM with CUDA on GPUs */
 
     template<typename ValueType>
     static void normalGEVM(
@@ -88,20 +82,27 @@ public:
         const IndexType numColumns,
         const IndexType numDiagonals,
         const IndexType diaOffsets[],
-        const ValueType diaValues[],
-        tasking::SyncToken* syncToken );
-
-    /** Routine that registers all routines of this class at the LAMA interface. */
-
-    static void setInterface( struct DIAUtilsInterface& DIAUtils );
+        const ValueType diaValues[] );
 
 private:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
-    static    bool initialized; //!< static initialization used for registration
+    /** Routine that registers all methods at the kernel registry. */
 
-    static bool registerInterface();//!< registration
+    static void registerKernels( bool deleteFlag );
+
+    /** Constructor for registration. */
+
+    CUDADIAUtils();
+
+    /** Destructor for unregistration. */
+
+    ~CUDADIAUtils();
+
+    /** Static variable for registration at static initialization. */
+
+    static CUDADIAUtils guard;
 };
 
 /* --------------------------------------------------------------------------- */

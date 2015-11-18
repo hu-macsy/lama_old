@@ -35,9 +35,9 @@
 #include <scai/lama/openmp/OpenMPDenseUtils.hpp>
 
 // local library
-#include <scai/lama/LAMAInterface.hpp>
-#include <scai/lama/LAMAInterfaceRegistry.hpp>
+#include <scai/lama/DenseKernelTrait.hpp>
 
+#include <scai/kregistry/KernelRegistry.hpp>
 #include <scai/common/Constants.hpp>
 #include <scai/common/OpenMP.hpp>
 
@@ -60,6 +60,31 @@ SCAI_LOG_DEF_LOGGER( OpenMPDenseUtils::logger, "OpenMP.DenseUtils" )
 /* --------------------------------------------------------------------------- */
 /*     Template implementations                                                */
 /* --------------------------------------------------------------------------- */
+
+template<typename DenseValueType>
+IndexType OpenMPDenseUtils::nonZeroValues(
+    const DenseValueType denseValues[],
+    const IndexType numRows,
+    const IndexType numColumns,
+    const DenseValueType eps )
+{
+    IndexType count = 0;
+
+    #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE ) reduction( + : count )
+
+    for ( IndexType i = 0; i < numRows; ++i )
+    {
+        for ( IndexType j = 0; j < numColumns; ++j )
+        {
+            if ( abs( denseValues[denseindex( i, j, numRows, numColumns )] ) > eps )
+            {
+                count++;
+            }
+        }
+    }
+ 
+    return count;
+}
 
 template<typename DenseValueType>
 void OpenMPDenseUtils::getCSRSizes(
@@ -228,6 +253,26 @@ void OpenMPDenseUtils::copyDenseValues(
 
 /* --------------------------------------------------------------------------- */
 
+template<typename RowValueType, typename DenseValueType>
+void OpenMPDenseUtils::getRow(
+    RowValueType rowValues[],
+    const DenseValueType denseValues[],
+    const IndexType irow,
+    const IndexType numRows,
+    const IndexType numColumns )
+{
+    SCAI_ASSERT_LT( irow, numRows, "illegal row index" )
+
+    #pragma omp parallel for schedule (SCAI_OMP_SCHEDULE)
+
+    for ( IndexType j = 0; j < numColumns; ++j )
+    {
+        rowValues[j] = static_cast<RowValueType>( denseValues[irow * numColumns + j] );
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
 template<typename DiagonalValueType,typename DenseValueType>
 void OpenMPDenseUtils::getDiagonal(
     DiagonalValueType diagonalValues[],
@@ -287,25 +332,39 @@ void OpenMPDenseUtils::setDiagonalValue(
 /* --------------------------------------------------------------------------- */
 
 template<typename DenseValueType>
+void OpenMPDenseUtils::setValue(
+    DenseValueType denseValues[],
+    const IndexType numRows,
+    const IndexType numColumns,
+    const DenseValueType val )
+{
+    // Parallel initialization very important for efficient  allocation
+
+    #pragma omp parallel for schedule ( SCAI_OMP_SCHEDULE )
+
+    for ( IndexType i = 0; i < numRows; ++i )
+    {
+        for ( IndexType j = 0; j < numColumns; ++j )
+        {
+            denseValues[denseindex( i, j, numRows, numColumns )] = val;
+        }
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename DenseValueType>
 void OpenMPDenseUtils::scaleValue(
     DenseValueType denseValues[],
     const IndexType numRows,
     const IndexType numColumns,
     const DenseValueType val )
 {
-    if( val == scai::common::constants::ZERO )
+    if ( val == scai::common::constants::ZERO )
     {
-        // this solution can also deal with undefined data
+        // use setValue, as scaleValue might not work correctly on uninitialized data
 
-        #pragma omp parallel for schedule (SCAI_OMP_SCHEDULE)
-        for( IndexType i = 0; i < numRows; ++i )
-        {
-            for( IndexType j = 0; j < numColumns; ++j )
-            {
-                DenseValueType& elem = denseValues[denseindex( i, j, numRows, numColumns )];
-                elem = static_cast<DenseValueType>(0.0);
-            }
-        }
+        setValue( denseValues, numRows, numColumns, val );
     }
     else
     {
@@ -323,54 +382,90 @@ void OpenMPDenseUtils::scaleValue(
 }
 
 /* --------------------------------------------------------------------------- */
+
+template<typename DenseValueType, typename OtherValueType>
+void OpenMPDenseUtils::scaleRows(
+    DenseValueType denseValues[],
+    const IndexType numRows,
+    const IndexType numColumns,
+    const OtherValueType rowValues[] )
+{
+    #pragma omp parallel for schedule ( SCAI_OMP_SCHEDULE )
+
+    for ( IndexType i = 0; i < numRows; ++i )
+    {
+        const OtherValueType scaleValue = static_cast<OtherValueType>( rowValues[i] );
+
+        // scale the whole row with this value
+
+        for ( IndexType j = 0; j < numColumns; ++j )
+        {
+            denseValues[denseindex( i, j, numRows, numColumns )] = scaleValue;
+        }
+    }
+}
+
+/* --------------------------------------------------------------------------- */
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void OpenMPDenseUtils::setInterface( DenseUtilsInterface& DenseUtils )
+void OpenMPDenseUtils::registerKernels( bool deleteFlag )
 {
+    using kregistry::KernelRegistry;
+    using common::context::Host;
 
-#define LAMA_DENSE2_REGISTER(z, J, TYPE )                                                       \
-    /* Conversions  */                                                                          \
-    LAMA_INTERFACE_REGISTER_TT( DenseUtils, setCSRValues, TYPE, ARITHMETIC_HOST_TYPE_##J )      \
-    LAMA_INTERFACE_REGISTER_TT( DenseUtils, getCSRValues, TYPE, ARITHMETIC_HOST_TYPE_##J )      \
-    /* Copy  */                                                                                 \
-    LAMA_INTERFACE_REGISTER_TT( DenseUtils, copyDenseValues, TYPE, ARITHMETIC_HOST_TYPE_##J )   \
-    LAMA_INTERFACE_REGISTER_TT( DenseUtils, getDiagonal, TYPE, ARITHMETIC_HOST_TYPE_##J )       \
-    LAMA_INTERFACE_REGISTER_TT( DenseUtils, setDiagonal, TYPE, ARITHMETIC_HOST_TYPE_##J )       \
+    KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // lower priority
 
+    if ( deleteFlag )
+    {
+        flag = KernelRegistry::KERNEL_ERASE;
+    }
 
-#define LAMA_DENSE_REGISTER(z, I, _)                                                            \
-    /* Counting  */                                                                             \
-    LAMA_INTERFACE_REGISTER_T( DenseUtils, getCSRSizes, ARITHMETIC_HOST_TYPE_##I )              \
-    /* Modify  */                                                                               \
-    LAMA_INTERFACE_REGISTER_T( DenseUtils, setDiagonalValue, ARITHMETIC_HOST_TYPE_##I )         \
-    LAMA_INTERFACE_REGISTER_T( DenseUtils, scaleValue, ARITHMETIC_HOST_TYPE_##I )               \
-    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_DENSE2_REGISTER, ARITHMETIC_HOST_TYPE_##I ) \
+#define KREGISTRY_DENSE2_REGISTER(z, J, TYPE )                                                                              \
+    KernelRegistry::set<DenseKernelTrait::setCSRValues<TYPE, ARITHMETIC_HOST_TYPE_##J> >( setCSRValues, Host, flag );       \
+    KernelRegistry::set<DenseKernelTrait::getCSRValues<TYPE, ARITHMETIC_HOST_TYPE_##J> >( getCSRValues, Host, flag );       \
+    KernelRegistry::set<DenseKernelTrait::copyDenseValues<TYPE, ARITHMETIC_HOST_TYPE_##J> >( copyDenseValues, Host, flag ); \
+    KernelRegistry::set<DenseKernelTrait::getDiagonal<TYPE, ARITHMETIC_HOST_TYPE_##J> >( getDiagonal, Host, flag );         \
+    KernelRegistry::set<DenseKernelTrait::setDiagonal<TYPE, ARITHMETIC_HOST_TYPE_##J> >( setDiagonal, Host, flag );         \
+    KernelRegistry::set<DenseKernelTrait::getRow<TYPE, ARITHMETIC_HOST_TYPE_##J> >( getRow, Host, flag );                   \
+    KernelRegistry::set<DenseKernelTrait::scaleRows<TYPE, ARITHMETIC_HOST_TYPE_##J> >( scaleRows, Host, flag );             \
 
+#define KREGISTRY_DENSE_REGISTER(z, I, _)                                                                                   \
+    KernelRegistry::set<DenseKernelTrait::nonZeroValues<ARITHMETIC_HOST_TYPE_##I> >( nonZeroValues, Host, flag );           \
+    KernelRegistry::set<DenseKernelTrait::getCSRSizes<ARITHMETIC_HOST_TYPE_##I> >( getCSRSizes, Host, flag );               \
+    KernelRegistry::set<DenseKernelTrait::setValue<ARITHMETIC_HOST_TYPE_##I> >( setValue, Host, flag );                     \
+    KernelRegistry::set<DenseKernelTrait::scaleValue<ARITHMETIC_HOST_TYPE_##I> >( scaleValue, Host, flag );                 \
+    KernelRegistry::set<DenseKernelTrait::setDiagonalValue<ARITHMETIC_HOST_TYPE_##I> >( setDiagonalValue, Host, flag );     \
+    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, KREGISTRY_DENSE2_REGISTER, ARITHMETIC_HOST_TYPE_##I )                        \
 
-    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_DENSE_REGISTER, _ )
+    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, KREGISTRY_DENSE_REGISTER, _ )
 
-#undef LAMA_DENSE_REGISTER
-#undef LAMA_DENSE2_REGISTER
+#undef KREGISTRY_DENSE_REGISTER
+#undef KREGISTRY_DENSE2_REGISTER
 
 }
 
 /* --------------------------------------------------------------------------- */
-/*    Static registration of the DenseUtils routines                           */
+/*    Constructor/Desctructor with registration                                */
 /* --------------------------------------------------------------------------- */
 
-bool OpenMPDenseUtils::registerInterface()
+OpenMPDenseUtils::OpenMPDenseUtils()
 {
-    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( hmemo::context::Host );
-    setInterface( interface.DenseUtils );
-    return true;
+    bool deleteFlag = false;
+    registerKernels( deleteFlag );
+}
+
+OpenMPDenseUtils::~OpenMPDenseUtils()
+{
+    bool deleteFlag = true;
+    registerKernels( deleteFlag );
 }
 
 /* --------------------------------------------------------------------------- */
-/*    Static initialiazion at program start                                    */
+/*    Static variable to force registration during static initialization      */
 /* --------------------------------------------------------------------------- */
 
-bool OpenMPDenseUtils::initialized = registerInterface();
+OpenMPDenseUtils OpenMPDenseUtils::guard;
 
 /* --------------------------------------------------------------------------- */
 

@@ -333,7 +333,19 @@ LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, ValueType, buildCSRDataTest )
     BOOST_REQUIRE_EQUAL( numRows + 1, csrIA.size() );
     BOOST_REQUIRE_EQUAL( numValues, csrJA.size() );
     BOOST_REQUIRE_EQUAL( numValues, csrValues.size() );
-// should be the same as before
+
+    // check the IA array ( csrIA are offsets, matrixRowSizes was converted to offsets
+
+    {
+        ReadAccess<IndexType> ia1( matrixRowSizes );
+        ReadAccess<IndexType> ia2( csrIA );
+
+        for ( IndexType i = 0; i <= numRows; ++i )
+        {
+            BOOST_CHECK_EQUAL( ia1[i], ia2[i] );
+        }
+    }
+
     ReadAccess<IndexType> ja1( matrixJA );
     ReadAccess<IndexType> ja2( csrJA );
     ReadAccess<ValueType> values1( matrixValues );
@@ -1059,7 +1071,7 @@ local->getDiagonal( diagonal );
 
 // scale the halo with the diagonal
 
-tmp.scale( diagonal );
+tmp.scaleRows( diagonal );
 
 // solution2 = - omega * tmp * oldSolution + solution2
 

@@ -36,14 +36,18 @@
 
 // local library
 #include <scai/lama/openmp/OpenMPUtils.hpp>
+#include <scai/lama/openmp/OpenMPCSRUtils.hpp>
 
-#include <scai/lama/LAMAInterface.hpp>
-#include <scai/lama/LAMAInterfaceRegistry.hpp>
+#include <scai/lama/COOKernelTrait.hpp>
 
 // internal scai libraries
+#include <scai/kregistry/KernelRegistry.hpp>
 #include <scai/tracing.hpp>
-
+#include <scai/common/ScalarType.hpp>
 #include <scai/common/OpenMP.hpp>
+#include <scai/common/bind.hpp>
+
+#include <scai/tasking/TaskSyncToken.hpp>
 
 // boost
 #include <boost/preprocessor.hpp>
@@ -52,6 +56,7 @@ namespace scai
 {
 
 using common::getScalarType;
+using tasking::TaskSyncToken;
 
 namespace lama
 {
@@ -91,8 +96,40 @@ void OpenMPCOOUtils::getCSRSizes(
 
 /* --------------------------------------------------------------------------- */
 
+bool OpenMPCOOUtils::hasDiagonalProperty(
+    const IndexType cooIA[],
+    const IndexType cooJA[],
+    const IndexType n )
+{
+    bool diagonalProperty = true;
+
+    // The diagonal property is given if the first n entries
+    // are the diagonal elements
+
+    #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
+
+    for ( IndexType i = 0; i < n; ++i )
+    {
+        if ( !diagonalProperty )
+        {
+            continue;
+        }
+
+        if ( cooIA[i] != i || cooJA[i] != i )
+        {
+            diagonalProperty = false;
+        }
+    }
+
+    return diagonalProperty;
+}
+
+/* --------------------------------------------------------------------------- */
+
 template<typename COOValueType,typename CSRValueType>
-void OpenMPCOOUtils::getCSRValues( IndexType csrJA[], CSRValueType csrValues[], IndexType csrIA[], // used as tmp, remains unchanged
+void OpenMPCOOUtils::getCSRValues( IndexType csrJA[], 
+                                   CSRValueType csrValues[], 
+                                   IndexType csrIA[], // used as tmp, remains unchanged
                                    const IndexType numRows,
                                    const IndexType numValues,
                                    const IndexType cooIA[],
@@ -100,28 +137,49 @@ void OpenMPCOOUtils::getCSRValues( IndexType csrJA[], CSRValueType csrValues[], 
                                    const COOValueType cooValues[] )
 {
     SCAI_LOG_INFO( logger,
-                   "get CSRValues<" << getScalarType<COOValueType>() << ", " 
+                   "get CSRValues<" << getScalarType<COOValueType>() << ", "
                     << getScalarType<CSRValueType>() << ">" << ", #rows = " << numRows << ", #values = " << numValues )
 
     // traverse the non-zero values and put data at the right places
+    // each thread reads all COO indexes but takes care for a certain range of CSR rows
 
-    for( IndexType k = 0; k < numValues; k++ )
+    #pragma omp parallel
     {
-        IndexType i = cooIA[k];
+        // get thread rank, size
 
-        IndexType& offset = csrIA[i];
+        PartitionId rank = omp_get_thread_num();
+        PartitionId nthreads = omp_get_num_threads();
 
-        csrJA[offset] = cooJA[k];
-        csrValues[offset] = static_cast<CSRValueType>( cooValues[k] );
+        // compute range for which this thread is responsbile
 
-        SCAI_LOG_DEBUG( logger, "row " << i << ": new offset = " << offset )
+        IndexType blockSize = ( numRows + nthreads - 1 ) / nthreads;
+        IndexType lb = rank * blockSize;
+        IndexType ub = ( rank + 1 ) * blockSize - 1;
+        ub = std::min( ub, numRows - 1 );
 
-        offset++;
+        for ( IndexType k = 0; k < numValues; k++ )
+        {
+            IndexType i = cooIA[k];
+    
+            if ( i < lb || i > ub ) 
+            {
+                continue;
+            }
+
+            IndexType& offset = csrIA[i];
+    
+            csrJA[offset] = cooJA[k];
+            csrValues[offset] = static_cast<CSRValueType>( cooValues[k] );
+    
+            SCAI_LOG_DEBUG( logger, "row " << i << ": new offset = " << offset )
+    
+            offset++;
+        }
     }
 
     // set back the old offsets in csrIA
 
-    for( IndexType i = numRows; i > 0; --i )
+    for ( IndexType i = numRows; i > 0; --i )
     {
         csrIA[i] = csrIA[i - 1];
     }
@@ -217,6 +275,23 @@ void OpenMPCOOUtils::setCSRData(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void OpenMPCOOUtils::normalGEMV_a(
+    ValueType result[],
+    const std::pair<ValueType, const ValueType*> ax,
+    const std::pair<ValueType, const ValueType*> by,
+    const IndexType numRows,
+    const IndexType numValues,
+    const IndexType cooIA[],
+    const IndexType cooJA[],
+    const ValueType cooValues[] )
+{
+    normalGEMV( result, ax.first, ax.second, by.first, by.second,
+                numRows, numValues, cooIA, cooJA, cooValues );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void OpenMPCOOUtils::normalGEMV(
     ValueType result[],
     const ValueType alpha,
@@ -227,16 +302,28 @@ void OpenMPCOOUtils::normalGEMV(
     const IndexType numValues,
     const IndexType cooIA[],
     const IndexType cooJA[],
-    const ValueType cooValues[],
-    tasking::SyncToken* syncToken )
+    const ValueType cooValues[] )
 {
-    SCAI_LOG_INFO( logger,
-                   "normalGEMV<" << getScalarType<ValueType>() << ", #threads = " << omp_get_max_threads() << ">, result[" << numRows << "] = " << alpha << " * A( coo, #vals = " << numValues << " ) * x + " << beta << " * y " )
+    TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
-    if( syncToken )
+    if ( syncToken )
     {
-        COMMON_THROWEXCEPTION( "asynchronous execution not supported here, do it by a task" )
+        // bind has limited number of arguments, so take help routine for call
+
+        SCAI_LOG_INFO( logger,
+                       "normalGEMV<" << getScalarType<ValueType>() << "> launch it asynchronously" )
+
+        syncToken->run( common::bind( normalGEMV_a<ValueType>,
+                                      result,
+                                      std::pair<ValueType, const ValueType*>( alpha, x ),
+                                      std::pair<ValueType, const ValueType*>( beta, y ),
+                                      numRows, numValues, cooIA, cooJA, cooValues ) );
+        return;
     }
+
+    SCAI_LOG_INFO( logger,
+                   "normalGEMV<" << getScalarType<ValueType>() << ", #threads = " << omp_get_max_threads() << ">," 
+                    << " result[" << numRows << "] = " << alpha << " * A( coo, #vals = " << numValues << " ) * x + " << beta << " * y " )
 
     // result := alpha * A * x + beta * y -> result:= beta * y; result += alpha * A
 
@@ -275,11 +362,12 @@ void OpenMPCOOUtils::normalGEVM(
     const IndexType numValues,
     const IndexType cooIA[],
     const IndexType cooJA[],
-    const ValueType cooValues[],
-    tasking::SyncToken* syncToken )
+    const ValueType cooValues[] )
 {
     SCAI_LOG_INFO( logger,
                    "normalGEMV<" << getScalarType<ValueType>() << ", #threads = " << omp_get_max_threads() << ">, result[" << numColumns << "] = " << alpha << " * A( coo, #vals = " << numValues << " ) * x + " << beta << " * y " )
+
+    TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
     if( syncToken )
     {
@@ -324,11 +412,12 @@ void OpenMPCOOUtils::jacobi(
     const ValueType oldSolution[],
     const ValueType rhs[],
     const ValueType omega,
-    const IndexType numRows,
-    tasking::SyncToken* syncToken )
+    const IndexType numRows )
 {
     SCAI_LOG_INFO( logger,
                    "jacobi<" << getScalarType<ValueType>() << ">" << ", #rows = " << numRows << ", omega = " << omega )
+
+    TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
     if( syncToken )
     {
@@ -371,49 +460,64 @@ void OpenMPCOOUtils::jacobi(
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void OpenMPCOOUtils::setInterface( COOUtilsInterface& COOUtils )
+void OpenMPCOOUtils::registerKernels( bool deleteFlag )
 {
-    LAMA_INTERFACE_REGISTER( COOUtils, offsets2ia )
-    LAMA_INTERFACE_REGISTER( COOUtils, getCSRSizes )
+    using namespace scai::kregistry;
+    using common::context::Host;
 
-    LAMA_INTERFACE_REGISTER_TT( COOUtils, setCSRData, IndexType, IndexType )
+    KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // lower priority
 
-#define LAMA_COO_UTILS2_REGISTER(z, J, TYPE )                                             \
-    LAMA_INTERFACE_REGISTER_TT( COOUtils, setCSRData, TYPE, ARITHMETIC_HOST_TYPE_##J )    \
-    LAMA_INTERFACE_REGISTER_TT( COOUtils, getCSRValues, TYPE, ARITHMETIC_HOST_TYPE_##J )  \
+    if ( deleteFlag )
+    {
+        flag = KernelRegistry::KERNEL_ERASE;
+    }
 
-#define LAMA_COO_UTILS_REGISTER(z, I, _)                                                  \
-    LAMA_INTERFACE_REGISTER_T( COOUtils, normalGEMV, ARITHMETIC_HOST_TYPE_##I )           \
-    LAMA_INTERFACE_REGISTER_T( COOUtils, normalGEVM, ARITHMETIC_HOST_TYPE_##I )           \
-    LAMA_INTERFACE_REGISTER_T( COOUtils, jacobi, ARITHMETIC_HOST_TYPE_##I )               \
-                                                                                          \
-    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT,                                            \
-                     LAMA_COO_UTILS2_REGISTER,                                            \
-                     ARITHMETIC_HOST_TYPE_##I )                                           \
+    KernelRegistry::set<COOKernelTrait::hasDiagonalProperty>( hasDiagonalProperty, Host, flag );
+    KernelRegistry::set<COOKernelTrait::offsets2ia>( offsets2ia, Host, flag );
+    KernelRegistry::set<COOKernelTrait::getCSRSizes>( getCSRSizes, Host, flag );
+
+    KernelRegistry::set<COOKernelTrait::setCSRData<IndexType, IndexType> >( setCSRData, Host, flag );
+
+#define LAMA_COO_UTILS2_REGISTER(z, J, TYPE )                                                                       \
+    KernelRegistry::set<COOKernelTrait::setCSRData<TYPE, ARITHMETIC_HOST_TYPE_##J> >( setCSRData, Host, flag );     \
+    KernelRegistry::set<COOKernelTrait::getCSRValues<TYPE, ARITHMETIC_HOST_TYPE_##J> >( getCSRValues, Host, flag ); \
+
+#define LAMA_COO_UTILS_REGISTER(z, I, _)                                                                   \
+    KernelRegistry::set<COOKernelTrait::normalGEMV<ARITHMETIC_HOST_TYPE_##I> >( normalGEMV, Host, flag );  \
+    KernelRegistry::set<COOKernelTrait::normalGEVM<ARITHMETIC_HOST_TYPE_##I> >( normalGEVM, Host, flag );  \
+    KernelRegistry::set<COOKernelTrait::jacobi<ARITHMETIC_HOST_TYPE_##I> >( jacobi, Host, flag );          \
+                                                                                                           \
+    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT,                                                             \
+                     LAMA_COO_UTILS2_REGISTER,                                                             \
+                     ARITHMETIC_HOST_TYPE_##I )                                                            \
 
     BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_COO_UTILS_REGISTER, _ )
 
 #undef LAMA_COO_UTILS_REGISTER
 #undef LAMA_COO_UTILS2_REGISTER
-
 }
 
 /* --------------------------------------------------------------------------- */
-/*    Static registration of the Utils routines                                */
+/*    Constructor/Desctructor with registration                                */
 /* --------------------------------------------------------------------------- */
 
-bool OpenMPCOOUtils::registerInterface()
+OpenMPCOOUtils::OpenMPCOOUtils()
 {
-    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( hmemo::context::Host );
-    setInterface( interface.COOUtils );
-    return true;
+    bool deleteFlag = false;
+    registerKernels( deleteFlag );
+}
+
+OpenMPCOOUtils::~OpenMPCOOUtils()
+{
+    bool deleteFlag = true;
+    registerKernels( deleteFlag );
 }
 
 /* --------------------------------------------------------------------------- */
-/*    Static initialiazion at program start                                    */
+/*    Static variable to force registration during static initialization      */
 /* --------------------------------------------------------------------------- */
 
-bool OpenMPCOOUtils::initialized = registerInterface();
+OpenMPCOOUtils OpenMPCOOUtils::guard;
 
 } /* end namespace lama */
 

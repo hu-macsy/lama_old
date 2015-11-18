@@ -35,8 +35,9 @@
 #include <boost/test/unit_test.hpp>
 
 // others
+#include <scai/blaskernel/BLASKernelTrait.hpp>
 #include <scai/hmemo.hpp>
-#include <scai/lama/LAMAInterface.hpp>
+#include <scai/lama/LAMAKernel.hpp>
 #include <scai/lama/Scalar.hpp>
 
 #include <scai/common/test/TestMacros.hpp>
@@ -54,7 +55,8 @@ namespace BLAS2Test
 template<typename ValueType>
 void gemvTest( ContextPtr loc )
 {
-    LAMA_INTERFACE_FN_T( gemv, loc, BLAS, BLAS2, ValueType );
+    LAMAKernel<blaskernel::BLASKernelTrait::gemv<ValueType> > gemv;
+
     // CblasRowMajor and CblasNoTrans
     {
         ValueType matrix[] =
@@ -80,8 +82,7 @@ void gemvTest( ContextPtr loc )
             ReadAccess<ValueType> rAm( Am, loc );
             ReadAccess<ValueType> rAx( Ax, loc );
             WriteAccess<ValueType> wAy( Ay, loc );
-            gemv( CblasRowMajor, CblasNoTrans, m, n, alpha, rAm.get(), lda, rAx.get(), incX, beta, wAy.get(), incY,
-                  NULL );
+            gemv[loc]( CblasRowMajor, CblasNoTrans, m, n, alpha, rAm.get(), lda, rAx.get(), incX, beta, wAy.get(), incY );
         }
         {
             ReadAccess<ValueType> rAy( Ay );
@@ -114,8 +115,7 @@ void gemvTest( ContextPtr loc )
             ReadAccess<ValueType> rAm( Am, loc );
             ReadAccess<ValueType> rAx( Ax, loc );
             WriteAccess<ValueType> wAy( Ay, loc );
-            gemv( CblasColMajor, CblasNoTrans, m, n, alpha, rAm.get(), lda, rAx.get(), incX, beta, wAy.get(), incY,
-                  NULL );
+            gemv[loc]( CblasColMajor, CblasNoTrans, m, n, alpha, rAm.get(), lda, rAx.get(), incX, beta, wAy.get(), incY );
         }
         {
             ReadAccess<ValueType> rAy( Ay );
@@ -148,8 +148,7 @@ void gemvTest( ContextPtr loc )
             ReadAccess<ValueType> rAm( Am, loc );
             ReadAccess<ValueType> rAx( Ax, loc );
             WriteAccess<ValueType> wAy( Ay, loc );
-            gemv( CblasRowMajor, CblasTrans, m, n, alpha, rAm.get(), lda, rAx.get(), incX, beta, wAy.get(), incY,
-                  NULL );
+            gemv[loc]( CblasRowMajor, CblasTrans, m, n, alpha, rAm.get(), lda, rAx.get(), incX, beta, wAy.get(), incY );
         }
         {
             ReadAccess<ValueType> rAy( Ay );
@@ -183,8 +182,7 @@ void gemvTest( ContextPtr loc )
             ReadAccess<ValueType> rAm( Am, loc );
             ReadAccess<ValueType> rAx( Ax, loc );
             WriteAccess<ValueType> wAy( Ay, loc );
-            gemv( CblasColMajor, CblasTrans, m, n, alpha, rAm.get(), lda, rAx.get(), incX, beta, wAy.get(), incY,
-                  NULL );
+            gemv[loc]( CblasColMajor, CblasTrans, m, n, alpha, rAm.get(), lda, rAx.get(), incX, beta, wAy.get(), incY );
         }
         {
             ReadAccess<ValueType> rAy( Ay );

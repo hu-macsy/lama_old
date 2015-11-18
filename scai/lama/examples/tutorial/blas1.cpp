@@ -138,13 +138,13 @@ int main()
   // Define the vectors to be used on GPU (CUDA context on device 0) and upload them
   //
   hmemo::ContextPtr cudaContext;
-  if ( hmemo::Context::canCreate( hmemo::context::CUDA ) )
+  if ( hmemo::Context::canCreate( common::context::CUDA ) )
   {
-      cudaContext = hmemo::Context::getContextPtr( hmemo::context::CUDA, 0 );
+      cudaContext = hmemo::Context::getContextPtr( common::context::CUDA, 0 );
   }
   else
   {
-      cudaContext = hmemo::Context::getContextPtr( hmemo::context::Host );
+      cudaContext = hmemo::Context::getContextPtr( common::context::Host );
   }
   lama_vec1.setContextPtr( cudaContext );
   lama_vec2.setContextPtr( cudaContext );

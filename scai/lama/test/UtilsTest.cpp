@@ -35,7 +35,8 @@
 #include <boost/test/unit_test.hpp>
 
 // others
-#include <scai/lama/LAMAInterface.hpp>
+#include <scai/lama/LAMAKernel.hpp>
+#include <scai/lama/UtilKernelTrait.hpp>
 #include <scai/hmemo.hpp>
 
 #include <scai/common/test/TestMacros.hpp>
@@ -64,7 +65,8 @@ namespace UtilsTest
 template<typename ValueType>
 void scaleTest( ContextPtr loc )
 {
-    LAMA_INTERFACE_FN_T( scale, loc, Utils, Transform, ValueType );
+    static LAMAKernel<UtilKernelTrait::scale<ValueType> > scale;
+
     ValueType valuesValues[] =
     { 0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4 };
     const IndexType nValues = sizeof( valuesValues ) / sizeof( ValueType );
@@ -75,7 +77,7 @@ void scaleTest( ContextPtr loc )
     {
         WriteAccess<ValueType> wValues( values, loc );
         SCAI_CONTEXT_ACCESS( loc );
-        scale( wValues.get(), mult, nValues );
+        scale[loc]( wValues.get(), mult, nValues );
     }
     ReadAccess<ValueType> rValues( values );
 
@@ -90,7 +92,7 @@ void scaleTest( ContextPtr loc )
 template<typename ValueType>
 void sumTest( ContextPtr loc )
 {
-    LAMA_INTERFACE_FN_T( sum, loc, Utils, Reductions, ValueType );
+    static LAMAKernel<UtilKernelTrait::sum<ValueType> > sum;
     {
         ValueType valuesValues[] =
         { 0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4 };
@@ -99,7 +101,7 @@ void sumTest( ContextPtr loc )
         LAMAArray<ValueType> values( nValues, valuesValues );
         ReadAccess<ValueType> rValues( values, loc );
         SCAI_CONTEXT_ACCESS( loc );
-        const ValueType resultSum = sum( rValues.get(), nValues );
+        const ValueType resultSum = sum[loc]( rValues.get(), nValues );
         BOOST_CHECK_EQUAL( expectedSum, resultSum );
     }
     {
@@ -107,7 +109,7 @@ void sumTest( ContextPtr loc )
         LAMAArray<ValueType> values;
         ReadAccess<ValueType> rValues( values, loc );
         SCAI_CONTEXT_ACCESS( loc );
-        const ValueType resultSum = sum( rValues.get(), values.size() );
+        const ValueType resultSum = sum[loc]( rValues.get(), values.size() );
         BOOST_CHECK_EQUAL( expectedSum, resultSum );
     }
 }
@@ -117,16 +119,16 @@ void sumTest( ContextPtr loc )
 template<typename ValueType>
 void setValTest( ContextPtr loc )
 {
-    LAMA_INTERFACE_FN_T( setVal, loc, Utils, Setter, ValueType );
+    static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
     {
         const IndexType n = 20;
         LAMAArray<ValueType> values;
         {
             WriteOnlyAccess<ValueType> wValues( values, loc, 3 * n );
             SCAI_CONTEXT_ACCESS( loc );
-            setVal( wValues.get(), 3 * n, 0 );
+            setVal[loc]( wValues.get(), 3 * n, 0 );
             // overwrite in the middle to check that there is no out-of-range set
-            setVal( wValues.get() + n, n, 10 );
+            setVal[loc]( wValues.get() + n, n, 10 );
         }
         ReadAccess<ValueType> rValues( values );
 
@@ -143,7 +145,7 @@ void setValTest( ContextPtr loc )
         {
             WriteOnlyAccess<ValueType> wValues( values, loc, n );
             SCAI_CONTEXT_ACCESS( loc );
-            setVal( wValues.get(), n, 7 );
+            setVal[loc]( wValues.get(), n, 7 );
         }
     }
 }
@@ -153,7 +155,7 @@ void setValTest( ContextPtr loc )
 template<typename ValueType>
 void isSortedTest( ContextPtr loc )
 {
-    LAMA_INTERFACE_FN_T( isSorted, loc, Utils, Reductions, ValueType );
+    static LAMAKernel<UtilKernelTrait::isSorted<ValueType> > isSorted;
     {
         ValueType values1[] =
         { 1, 2, 2, 2, 5, 8 };
@@ -172,20 +174,20 @@ void isSortedTest( ContextPtr loc )
         ReadAccess<ValueType> rValues3( valueArray3, loc );
         SCAI_CONTEXT_ACCESS( loc );
         // values1 are sorted, ascending = true
-        BOOST_CHECK( isSorted( rValues1.get(), nValues1, true ) );
-        BOOST_CHECK( ! isSorted( rValues1.get(), nValues1, false ) );
+        BOOST_CHECK( isSorted[loc]( rValues1.get(), nValues1, true ) );
+        BOOST_CHECK( ! isSorted[loc]( rValues1.get(), nValues1, false ) );
         // values2 are sorted, ascending = false
-        BOOST_CHECK( isSorted( rValues2.get(), nValues2, false ) );
-        BOOST_CHECK( ! isSorted( rValues2.get(), nValues2, true ) );
-        BOOST_CHECK( isSorted( rValues2.get(), 0, true ) );
+        BOOST_CHECK( isSorted[loc]( rValues2.get(), nValues2, false ) );
+        BOOST_CHECK( ! isSorted[loc]( rValues2.get(), nValues2, true ) );
+        BOOST_CHECK( isSorted[loc]( rValues2.get(), 0, true ) );
         // only first two values are sorted
-        BOOST_CHECK( isSorted( rValues2.get(), 1, true ) );
+        BOOST_CHECK( isSorted[loc]( rValues2.get(), 1, true ) );
         // only first two values are sorted
-        BOOST_CHECK( isSorted( rValues2.get(), 2, true ) );
+        BOOST_CHECK( isSorted[loc]( rValues2.get(), 2, true ) );
         // only first two values are sorted
         // values3 are not sorted, neither ascending nor descending
-        BOOST_CHECK( ! isSorted( rValues3.get(), nValues3, false ) );
-        BOOST_CHECK( ! isSorted( rValues3.get(), nValues3, true ) );
+        BOOST_CHECK( ! isSorted[loc]( rValues3.get(), nValues3, false ) );
+        BOOST_CHECK( ! isSorted[loc]( rValues3.get(), nValues3, true ) );
     }
 }
 
@@ -194,14 +196,14 @@ void isSortedTest( ContextPtr loc )
 template<typename NoType>
 void setOrderTest( ContextPtr loc )
 {
-    LAMA_INTERFACE_FN_T( setOrder, loc, Utils, Setter, IndexType );
+    static LAMAKernel<UtilKernelTrait::setOrder<IndexType> > setOrder;
     {
         const IndexType n = 20;
         LAMAArray<IndexType> values;
         {
             WriteOnlyAccess<IndexType> wValues( values, loc, n );
             SCAI_CONTEXT_ACCESS( loc );
-            setOrder( wValues.get(), n );
+            setOrder[loc]( wValues.get(), n );
         }
         ReadAccess<IndexType> rValues( values );
 
@@ -216,7 +218,7 @@ void setOrderTest( ContextPtr loc )
         {
             WriteOnlyAccess<IndexType> wValues( values, loc, n );
             SCAI_CONTEXT_ACCESS( loc );
-            setOrder( wValues.get(), n );
+            setOrder[loc]( wValues.get(), n );
         }
     }
 }
@@ -224,7 +226,7 @@ void setOrderTest( ContextPtr loc )
 template<typename ValueType>
 void invertTest( ContextPtr loc )
 {
-    LAMA_INTERFACE_FN_T( invert, loc, Utils, Math, ValueType );
+    static LAMAKernel<UtilKernelTrait::invert<ValueType> > invert;
     {
         // TODO: should it be possible to pass 0 elements? What should be the result?
         ValueType valuesValues[] =
@@ -234,7 +236,7 @@ void invertTest( ContextPtr loc )
         {
             WriteAccess<ValueType> wValues( values, loc );
             SCAI_CONTEXT_ACCESS( loc );
-            invert( wValues.get(), nValues );
+            invert[loc]( wValues.get(), nValues );
         }
         ReadAccess<ValueType> rValues( values );
 
@@ -249,7 +251,7 @@ void invertTest( ContextPtr loc )
         {
             WriteOnlyAccess<ValueType> wValues( values, loc, n );
             SCAI_CONTEXT_ACCESS( loc );
-            invert( wValues.get(), n );
+            invert[loc]( wValues.get(), n );
         }
     }
 }

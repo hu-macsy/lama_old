@@ -137,6 +137,9 @@ private:
     void bcastImpl( ValueType val[], const IndexType n, const PartitionId root ) const;
 
     template<typename ValueType>
+    void all2allvImpl( ValueType* recvBuffer[], IndexType recvCount[], ValueType* sendBuffer[], IndexType sendCount[] ) const;
+
+    template<typename ValueType>
     ValueType sumImpl( ValueType myVal ) const;
 
     template<typename ValueType>

@@ -47,8 +47,6 @@
 #include <scai/lama/expression/MatrixVectorExpressions.hpp>
 #include <scai/lama/expression/MatrixExpressions.hpp>
 
-#include <scai/lama/LAMAInterfaceRegistry.hpp>
-
 #include <scai/lama/test/TestSparseMatrices.hpp>
 #include <scai/common/test/TestMacros.hpp>
 

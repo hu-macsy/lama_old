@@ -39,6 +39,12 @@
 #include <limits>
 #include <stdint.h>
 
+/** Common namespace for all projects of Fraunhofer SCAI. */
+
+namespace scai
+{
+}
+
 /** LAMA uses for all its classes and routines an own namespace.
  *
  *  Applications using LAMA must either put \c scai::lama:: before the used
@@ -81,16 +87,23 @@ typedef scai::common::Complex<long double> ComplexLongDouble;
 
 /** Definition for a constant value that indicates a non-available index.
  */
-static const IndexType nIndex = std::numeric_limits<IndexType>::max();
+
+#ifdef __INTEL_OFFLOAD
+__declspec( target(mic) )
+#endif
+extern const IndexType nIndex;
 
 /** Data type that is used for numbering of partitions.
  *
  */
-typedef int PartitionId;
+typedef IndexType PartitionId;
 
 /** Definition for a constant value that indicates a non-available partition.
  */
-static const PartitionId nPartition = std::numeric_limits<PartitionId>::max();
+#ifdef __INTEL_OFFLOAD
+__declspec( target(mic) )
+#endif
+extern const PartitionId nPartition;
 
 // Number of supported arithmetic types, maximal number is currently 4
 
@@ -100,8 +113,8 @@ static const PartitionId nPartition = std::numeric_limits<PartitionId>::max();
 #define ARITHMETIC_HOST_TYPE_CNT 6
 
 #define ARITHMETIC_HOST_TYPE_0 float
-#define ARITHMETIC_HOST_TYPE_1 ComplexFloat
-#define ARITHMETIC_HOST_TYPE_2 double
+#define ARITHMETIC_HOST_TYPE_1 double
+#define ARITHMETIC_HOST_TYPE_2 ComplexFloat
 #define ARITHMETIC_HOST_TYPE_3 ComplexDouble
 #define ARITHMETIC_HOST_TYPE_4 long double
 #define ARITHMETIC_HOST_TYPE_5 ComplexLongDouble
@@ -109,28 +122,35 @@ static const PartitionId nPartition = std::numeric_limits<PartitionId>::max();
 #define ARITHMETIC_CUDA_TYPE_CNT 4
 
 #define ARITHMETIC_CUDA_TYPE_0 float
-#define ARITHMETIC_CUDA_TYPE_1 ComplexFloat
-#define ARITHMETIC_CUDA_TYPE_2 double
+#define ARITHMETIC_CUDA_TYPE_1 double
+#define ARITHMETIC_CUDA_TYPE_2 ComplexFloat
 #define ARITHMETIC_CUDA_TYPE_3 ComplexDouble
+
+#define ARITHMETIC_MIC_TYPE_CNT 4
+
+#define ARITHMETIC_MIC_TYPE_0 float
+#define ARITHMETIC_MIC_TYPE_1 double
+#define ARITHMETIC_MIC_TYPE_2 ComplexFloat
+#define ARITHMETIC_MIC_TYPE_3 ComplexDouble
 
 // Define for the arithmetic types the counterparts of enum Scalar::Tyep
 // Sorry, we cannot use the routine getType<ARITHMETIC_TYPE##I> in case stmt
 
 #define SCALAR_ARITHMETIC_TYPE0 scai::common::scalar::FLOAT
-#define SCALAR_ARITHMETIC_TYPE1 scai::common::scalar::COMPLEX
-#define SCALAR_ARITHMETIC_TYPE2 scai::common::scalar::DOUBLE
+#define SCALAR_ARITHMETIC_TYPE1 scai::common::scalar::DOUBLE
+#define SCALAR_ARITHMETIC_TYPE2 scai::common::scalar::COMPLEX
 #define SCALAR_ARITHMETIC_TYPE3 scai::common::scalar::DOUBLE_COMPLEX
 #define SCALAR_ARITHMETIC_TYPE4 scai::common::scalar::LONG_DOUBLE
 #define SCALAR_ARITHMETIC_TYPE5 scai::common::scalar::LONG_DOUBLE_COMPLEX
 
-// For convenience we define ARRAY_TYPE
+// For convenience we define ARRAY_TYPE, must be ARITHMETIC_HOST_TYPE_CNT + 1
 
 #define ARRAY_TYPE_CNT 7
 
-#define ARRAY_TYPE0    int
+#define ARRAY_TYPE0    IndexType
 #define ARRAY_TYPE1    float
-#define ARRAY_TYPE2    ComplexFloat
-#define ARRAY_TYPE3    double
+#define ARRAY_TYPE2    double
+#define ARRAY_TYPE3    ComplexFloat
 #define ARRAY_TYPE4    ComplexDouble
 #define ARRAY_TYPE5    long double
 #define ARRAY_TYPE6    ComplexLongDouble

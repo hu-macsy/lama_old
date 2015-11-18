@@ -43,7 +43,7 @@
 // internal scai libraries
 #include <scai/common/cuda/CUDAError.hpp>
 
-#include <scai/common/Assert.hpp>
+#include <scai/common/macros/assert.hpp>
 #include <scai/common/bind.hpp>
 
 // std
@@ -129,7 +129,7 @@ SyncToken* CUDAHostMemory::memcpyAsync( void* dst, const void* src, const size_t
 {
     SCAI_CONTEXT_ACCESS( mCUDAContext )
 
-    std::auto_ptr<CUDAStreamSyncToken> syncToken( mCUDAContext->getTransferSyncToken() );
+    common::unique_ptr<CUDAStreamSyncToken> syncToken( mCUDAContext->getTransferSyncToken() );
 
     SCAI_LOG_INFO( logger, "copy async " << size << " bytes from " << src << " (host) to " << dst << " (host) " )
 
@@ -156,7 +156,7 @@ ContextPtr CUDAHostMemory::getContextPtr() const
     // Possible extension: the corresponding CUDA device can also access the host memory
     //                     with limited PCIe bandwidth (Zero Copy, e.g. on Tegra K1)
 
-    ContextPtr host = Context::getContextPtr( context::Host );
+    ContextPtr host = Context::getContextPtr( common::context::Host );
     return host;
 }
 

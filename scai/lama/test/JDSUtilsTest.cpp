@@ -35,7 +35,8 @@
 #include <boost/test/unit_test.hpp>
 
 // others
-#include <scai/lama/LAMAInterface.hpp>
+#include <scai/lama/JDSKernelTrait.hpp>
+#include <scai/lama/LAMAKernel.hpp>
 #include <scai/hmemo.hpp>
 #include <scai/common/test/TestMacros.hpp>
 
@@ -59,7 +60,8 @@ namespace JDSUtilsTest
 template<typename ValueType, typename OtherValueType>
 void getRowTest( ContextPtr loc )
 {
-    LAMA_INTERFACE_FN_TT( getRow, loc, JDSUtils, Getter, ValueType, OtherValueType )
+    LAMAKernel<JDSKernelTrait::getRow<ValueType, OtherValueType> > getRow;
+
     ValueType valuesValues[] =
     { 1, 7, 12, 2, 8, 13, 3, 9, 14, 4, 10, 15, 5, 11, 6 };
     const IndexType nValues = sizeof( valuesValues ) / sizeof( ValueType );
@@ -94,7 +96,7 @@ void getRowTest( ContextPtr loc )
     {
         WriteOnlyAccess<OtherValueType> wRow( row, loc, numColumns );
         SCAI_CONTEXT_ACCESS( loc );
-        getRow( wRow.get(), i, numColumns, numRows, rPerm.get(), rIlg.get(), rDlg.get(), rJa.get(), rValues.get() );
+        getRow[loc]( wRow.get(), i, numColumns, numRows, rPerm.get(), rIlg.get(), rDlg.get(), rJa.get(), rValues.get() );
     }
     ReadAccess<OtherValueType> rRow( row );
 
@@ -109,7 +111,8 @@ void getRowTest( ContextPtr loc )
 template<typename ValueType, typename OtherValueType>
 void getValueTest( ContextPtr loc )
 {
-    LAMA_INTERFACE_FN_TT( getValue, loc, JDSUtils, Getter, ValueType, OtherValueType );
+    LAMAKernel<JDSKernelTrait::getValue<ValueType> > getValue;
+
     ValueType valuesValues[] =
     { 1, 5, 4, 3, 1, 3, 2, 2, 2, 8, 4, 9, 9, 7, 8, 7, 2 };
     const IndexType nValues = sizeof( valuesValues ) / sizeof( ValueType );
@@ -125,7 +128,7 @@ void getValueTest( ContextPtr loc )
     IndexType valuesPerm[] =
     { 0, 2, 3, 1, 4 };
     const IndexType nPerm = sizeof( valuesPerm ) / sizeof( IndexType );
-    OtherValueType expectedValues[5][10] =
+    ValueType expectedValues[5][10] =
     {
         { 1, 3, 0, 4, 0, 0, 7, 0, 0, 2 },
         { 0, 0, 3, 0, 2, 0, 0, 0, 0, 0 },
@@ -152,7 +155,7 @@ void getValueTest( ContextPtr loc )
         for ( IndexType j = 0; j < numColumns; j++ )
         {
             SCAI_CONTEXT_ACCESS( loc );
-            ValueType value = getValue( i, j, numRows, rDlg.get(), rIlg.get(), rPerm.get(), rJa.get(), rValues.get() );
+            ValueType value = getValue[loc]( i, j, numRows, rDlg.get(), rIlg.get(), rPerm.get(), rJa.get(), rValues.get() );
             BOOST_CHECK_EQUAL( expectedValues[i][j], value );
         }
     }
@@ -163,7 +166,8 @@ void getValueTest( ContextPtr loc )
 template<typename ValueType, typename OtherValueType>
 void scaleValueTest( ContextPtr loc )
 {
-    LAMA_INTERFACE_FN_TT( scaleValue, loc, JDSUtils, Scale, ValueType, OtherValueType )
+    LAMAKernel<JDSKernelTrait::scaleValue<ValueType, OtherValueType> > scaleValue;
+
     ValueType valuesValues[] =
     { 1, 7, 12, 2, 8, 13, 3, 9, 14, 4, 10, 15, 5, 11, 6 };
     const IndexType nValues = sizeof( valuesValues ) / sizeof( ValueType );
@@ -194,7 +198,7 @@ void scaleValueTest( ContextPtr loc )
     {
         WriteAccess<ValueType> wValues( values, loc );
         SCAI_CONTEXT_ACCESS( loc );
-        scaleValue( numRows, rPerm.get(), rIlg.get(), rDlg.get(), wValues.get(), rDiagonal.get() );
+        scaleValue[loc]( numRows, rPerm.get(), rIlg.get(), rDlg.get(), wValues.get(), rDiagonal.get() );
     }
     ReadAccess<ValueType> rValues( values );
 
@@ -209,7 +213,8 @@ void scaleValueTest( ContextPtr loc )
 template<typename NoType>
 void checkDiagonalPropertyTest( ContextPtr loc )
 {
-    LAMA_INTERFACE_FN( checkDiagonalProperty, loc, JDSUtils, Helper )
+    LAMAKernel<JDSKernelTrait::checkDiagonalProperty> checkDiagonalProperty;
+
     // check with matrix without diagonal property
     {
         IndexType valuesJa[] =
@@ -237,8 +242,8 @@ void checkDiagonalPropertyTest( ContextPtr loc )
         ReadAccess<IndexType> rPerm( perm, loc );
         SCAI_CONTEXT_ACCESS( loc );
         bool diagonalProperty;
-        diagonalProperty = checkDiagonalProperty( numDiagonals, numRows, numColumns, rPerm.get(), rJa.get(),
-                           rDlg.get() );
+        diagonalProperty = checkDiagonalProperty[loc]( numDiagonals, numRows, numColumns, 
+                                                       rPerm.get(), rJa.get(), rDlg.get() );
         BOOST_CHECK_EQUAL( false, diagonalProperty );
     }
     // check with matrix with diagonal property
@@ -268,8 +273,8 @@ void checkDiagonalPropertyTest( ContextPtr loc )
         ReadAccess<IndexType> rPerm( perm, loc );
         SCAI_CONTEXT_ACCESS( loc );
         bool diagonalProperty;
-        diagonalProperty = checkDiagonalProperty( numDiagonals, numRows, numColumns, rPerm.get(), rJa.get(),
-                           rDlg.get() );
+        diagonalProperty = checkDiagonalProperty[loc]( numDiagonals, numRows, numColumns, 
+                                                       rPerm.get(), rJa.get(), rDlg.get() );
         BOOST_CHECK_EQUAL( true, diagonalProperty );
     }
     // check with empty matrix
@@ -286,9 +291,8 @@ void checkDiagonalPropertyTest( ContextPtr loc )
         ReadAccess<IndexType> rIlg( ilg, loc );
         ReadAccess<IndexType> rPerm( perm, loc );
         SCAI_CONTEXT_ACCESS( loc );
-        bool diagonalProperty;
-        diagonalProperty = checkDiagonalProperty( numDiagonals, numRows, numColumns, rPerm.get(), rJa.get(),
-                           rDlg.get() );
+        bool diagonalProperty = checkDiagonalProperty[loc]( numDiagonals, numRows, numColumns, 
+                                                            rPerm.get(), rJa.get(), rDlg.get() );
         BOOST_CHECK_EQUAL( false, diagonalProperty );
     }
 }
@@ -298,7 +302,8 @@ void checkDiagonalPropertyTest( ContextPtr loc )
 template<typename NoType>
 void ilg2dlgTest( ContextPtr loc )
 {
-    LAMA_INTERFACE_FN( ilg2dlg, loc, JDSUtils, Sort )
+    LAMAKernel<JDSKernelTrait::ilg2dlg> ilg2dlg;
+
     {
         IndexType valuesIlg[] =
         { 7, 7, 5, 4, 4, 1 };
@@ -313,7 +318,7 @@ void ilg2dlgTest( ContextPtr loc )
             WriteOnlyAccess<IndexType> wDlg( dlg, loc, numDiagonals );
             ReadAccess<IndexType> rIlg( ilg, loc );
             SCAI_CONTEXT_ACCESS( loc );
-            ilg2dlg( wDlg.get(), numDiagonals, rIlg.get(), numRows );
+            ilg2dlg[loc]( wDlg.get(), numDiagonals, rIlg.get(), numRows );
         }
         ReadAccess<IndexType> rDlg( dlg );
 
@@ -329,7 +334,8 @@ void ilg2dlgTest( ContextPtr loc )
 template<typename NoType>
 void sortRowsTest( ContextPtr loc )
 {
-    LAMA_INTERFACE_FN( sortRows, loc, JDSUtils, Sort )
+    LAMAKernel<JDSKernelTrait::sortRows> sortRows;
+
     {
         IndexType valuesIlg[] =
         { 5, 2, 4, 4, 2, 7 };
@@ -348,7 +354,7 @@ void sortRowsTest( ContextPtr loc )
             WriteAccess<IndexType> wPerm( perm, loc );
             WriteAccess<IndexType> wIlg( ilg, loc );
             SCAI_CONTEXT_ACCESS( loc );
-            sortRows( wIlg.get(), wPerm.get(), numRows );
+            sortRows[loc]( wIlg.get(), wPerm.get(), numRows );
         }
         ReadAccess<IndexType> rIlg( ilg );
         ReadAccess<IndexType> rPerm( perm );
@@ -367,7 +373,7 @@ void sortRowsTest( ContextPtr loc )
             WriteOnlyAccess<IndexType> wPerm( perm, loc, numRows );
             WriteOnlyAccess<IndexType> wIlg( ilg, loc, numRows );
             SCAI_CONTEXT_ACCESS( loc );
-            sortRows( wIlg.get(), wPerm.get(), numRows );
+            sortRows[loc]( wIlg.get(), wPerm.get(), numRows );
         }
     }
 }
@@ -377,7 +383,8 @@ void sortRowsTest( ContextPtr loc )
 template<typename NoType>
 void setInversePermTest( ContextPtr loc )
 {
-    LAMA_INTERFACE_FN( setInversePerm, loc, JDSUtils, Sort )
+    LAMAKernel<JDSKernelTrait::setInversePerm> setInversePerm;
+
     {
         IndexType valuesPerm[] =
         { 5, 0, 2, 3, 1, 4 };
@@ -391,7 +398,7 @@ void setInversePermTest( ContextPtr loc )
             ReadAccess<IndexType> rPerm( perm, loc );
             WriteOnlyAccess<IndexType> wInversePerm( inversePerm, loc, numRows );
             SCAI_CONTEXT_ACCESS( loc );
-            setInversePerm( wInversePerm.get(), rPerm.get(), numRows );
+            setInversePerm[loc]( wInversePerm.get(), rPerm.get(), numRows );
         }
         ReadAccess<IndexType> rInversePerm( inversePerm );
 
@@ -408,7 +415,7 @@ void setInversePermTest( ContextPtr loc )
             ReadAccess<IndexType> rPerm( perm, loc );
             WriteOnlyAccess<IndexType> wInversePerm( inversePerm, loc, numRows );
             SCAI_CONTEXT_ACCESS( loc );
-            setInversePerm( wInversePerm.get(), rPerm.get(), numRows );
+            setInversePerm[loc]( wInversePerm.get(), rPerm.get(), numRows );
         }
     }
 }
@@ -418,7 +425,8 @@ void setInversePermTest( ContextPtr loc )
 template<typename ValueType, typename OtherValueType>
 void setCSRValuesTest( ContextPtr loc )
 {
-    LAMA_INTERFACE_FN_TT( setCSRValues, loc, JDSUtils, Conversions, ValueType, OtherValueType )
+    LAMAKernel<JDSKernelTrait::setCSRValues<ValueType, OtherValueType> > setCSRValues;
+
     /*
      * Testmatrix:
      * 0 0 5 3 0 0 4 0
@@ -470,8 +478,8 @@ void setCSRValuesTest( ContextPtr loc )
         ReadAccess<IndexType> rCSRJa( CSRJa, loc );
         ReadAccess<OtherValueType> rCSRValues( CSRValues, loc );
         SCAI_CONTEXT_ACCESS( loc );
-        setCSRValues( wJDSJa.get(), wJDSValues.get(), numRows, rJDSPerm.get(), rJDSIlg.get(), nJDSDlg, rJDSDlg.get(),
-                      rCSRIa.get(), rCSRJa.get(), rCSRValues.get() );
+        setCSRValues[loc]( wJDSJa.get(), wJDSValues.get(), numRows, rJDSPerm.get(), rJDSIlg.get(), nJDSDlg, rJDSDlg.get(),
+                           rCSRIa.get(), rCSRJa.get(), rCSRValues.get() );
     }
     ReadAccess<IndexType> rJDSJa( JDSJa );
     ReadAccess<ValueType> rJDSValues( JDSValues );
@@ -488,7 +496,8 @@ void setCSRValuesTest( ContextPtr loc )
 template<typename ValueType, typename OtherValueType>
 void getCSRValuesTest( ContextPtr loc )
 {
-    LAMA_INTERFACE_FN_TT( getCSRValues, loc, JDSUtils, Conversions, ValueType, OtherValueType )
+    LAMAKernel<JDSKernelTrait::getCSRValues<ValueType, OtherValueType> > getCSRValues;
+
     /*
      * Testmatrix:
      * 0 0 5 3 0 0 4 0
@@ -540,8 +549,8 @@ void getCSRValuesTest( ContextPtr loc )
         WriteOnlyAccess<IndexType> wCSRJa( CSRJa, loc, nJDS );
         WriteOnlyAccess<OtherValueType> wCSRValues( CSRValues, loc, nJDS );
         SCAI_CONTEXT_ACCESS( loc );
-        getCSRValues( wCSRJa.get(), wCSRValues.get(), rCSRIa.get(), numRows, rJDSPerm.get(), rJDSIlg.get(),
-                      rJDSDlg.get(), rJDSJa.get(), rJDSValues.get() );
+        getCSRValues[loc]( wCSRJa.get(), wCSRValues.get(), rCSRIa.get(), numRows, rJDSPerm.get(), rJDSIlg.get(),
+                           rJDSDlg.get(), rJDSJa.get(), rJDSValues.get() );
     }
     ReadAccess<IndexType> rCSRJa( CSRJa );
     ReadAccess<OtherValueType> rCSRValues( CSRValues );

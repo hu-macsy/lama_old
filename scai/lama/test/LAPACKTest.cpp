@@ -36,12 +36,14 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/mpl/list.hpp>
 
-#include <scai/lama/LAMAInterface.hpp>
+#include <scai/lama/LAMAKernel.hpp>
+#include <scai/blaskernel/BLASKernelTrait.hpp>
 
 #include <scai/common/test/TestMacros.hpp>
 
 using namespace scai::lama;
 using namespace scai::hmemo;
+
 
 // extern bool base_test_case;
 // extern std::string testcase;
@@ -66,11 +68,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( inverseTest, ValueType, test_types )
     {   2.0, 1.0, 0.0, -4.0, -2.0, -1.0, 3.0, 2.0, 0.0};
     LAMAArray<ValueType> a( n * n, avalues );
     LAMAArray<IndexType> permutation( n );
-    ContextPtr loc = Context::getContextPtr( context::Host );
+    ContextPtr loc = Context::getHostPtr();
     {
         WriteAccess<ValueType> wA( a, loc );
-        LAMA_INTERFACE_FN_T( getinv, loc, BLAS, LAPACK, ValueType )
-        getinv( n, wA.get(), n );
+        LAMAKernel<scai::blaskernel::BLASKernelTrait::getinv<ValueType> > getinv;
+        getinv[loc]( n, wA.get(), n );
     }
     {
         ReadAccess<ValueType> rA( a );
@@ -86,6 +88,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( inverseTest, ValueType, test_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( getrifTest, ValueType, test_types )
 {
+    static LAMAKernel<scai::blaskernel::BLASKernelTrait::getrf<ValueType> > getrf;
+    static LAMAKernel<scai::blaskernel::BLASKernelTrait::getri<ValueType> > getri;
+
     const IndexType n = 3;
 // set up values for A and B with A * B = identiy
     {
@@ -96,15 +101,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getrifTest, ValueType, test_types )
         {   2.0, 1.0, 0.0, -4.0, -2.0, -1.0, 3.0, 2.0, 0.0};
         LAMAArray<ValueType> a( n * n, avalues );
         LAMAArray<IndexType> permutation( n );
-        ContextPtr loc = Context::getContextPtr( context::Host );
+        ContextPtr loc = Context::getHostPtr();
         {
             WriteAccess<ValueType> wA( a, loc );
             WriteAccess<IndexType> wPermutation( permutation, loc );
-            LAMA_INTERFACE_FN_T( getrf, loc, BLAS, LAPACK, ValueType )
-            int error = getrf( CblasRowMajor, n, n, wA.get(), n, wPermutation.get() );
+            int error = getrf[loc]( CblasRowMajor, n, n, wA.get(), n, wPermutation.get() );
             BOOST_CHECK_EQUAL( 0, error );
-            LAMA_INTERFACE_FN_T( getri, loc, BLAS, LAPACK, ValueType )
-            error = getri( CblasRowMajor, n, wA.get(), n, wPermutation.get() );
+            error = getri[loc]( CblasRowMajor, n, wA.get(), n, wPermutation.get() );
             BOOST_CHECK_EQUAL( 0, error );
         }
         {
@@ -124,15 +127,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getrifTest, ValueType, test_types )
         {   2.0, -4.0, 3.0, 1.0, -2.0, 2.0, 0.0, -1.0, 0.0};
         LAMAArray<ValueType> a( n * n, avalues );
         LAMAArray<IndexType> permutation( n );
-        ContextPtr loc = Context::getContextPtr( context::Host );
+        ContextPtr loc = Context::getHostPtr();
         {
             WriteAccess<ValueType> wA( a, loc );
             WriteAccess<IndexType> wPermutation( permutation, loc );
-            LAMA_INTERFACE_FN_T( getrf, loc, BLAS, LAPACK, ValueType )
-            int error = getrf( CblasRowMajor, n, n, wA.get(), n, wPermutation.get() );
+            int error = getrf[loc]( CblasRowMajor, n, n, wA.get(), n, wPermutation.get() );
             BOOST_CHECK_EQUAL( 0, error );
-            LAMA_INTERFACE_FN_T( getri, loc, BLAS, LAPACK, ValueType )
-            error = getri( CblasRowMajor, n, wA.get(), n, wPermutation.get() );
+            error = getri[loc]( CblasRowMajor, n, wA.get(), n, wPermutation.get() );
             BOOST_CHECK_EQUAL( 0, error );
         }
         {
@@ -150,6 +151,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getrifTest, ValueType, test_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( tptrsTest, ValueType, test_types )
 {
+    static LAMAKernel<scai::blaskernel::BLASKernelTrait::tptrs<ValueType> > tptrs;
+
     {
         const IndexType n = 3;
         const IndexType ntri = n * ( n + 1 ) / 2;
@@ -165,24 +168,23 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( tptrsTest, ValueType, test_types )
         LAMAArray<ValueType> a( ntri, avalues );
         LAMAArray<ValueType> b1( n, bvalues1 );
         LAMAArray<ValueType> b2( n, bvalues2 );
-        ContextPtr loc = Context::getContextPtr( context::Host );
+        ContextPtr loc = Context::getHostPtr();
         {
             ReadAccess<ValueType> rA( a, loc );
             WriteAccess<ValueType> wB1( b1, loc );
             WriteAccess<ValueType> wB2( b2, loc );
-            LAMA_INTERFACE_FN_T( tptrs, loc, BLAS, LAPACK, ValueType )
             //  A            X    B
             //  1  0   0     1    1
             //  1  1   0     1    2
             //  1  1   1     1    3
-            int error = tptrs( CblasColMajor, CblasLower, CblasNoTrans, CblasNonUnit,
+            int error = tptrs[loc]( CblasColMajor, CblasLower, CblasNoTrans, CblasNonUnit,
                                n, 1, rA.get(), wB1.get(), n );
             BOOST_CHECK_EQUAL( 0, error );
             //  A            X    B
             //  1  1   1     1    3
             //  0  1   1     1    2
             //  0  0   1     1    1
-            error = tptrs( CblasColMajor, CblasUpper, CblasNoTrans, CblasNonUnit,
+            error = tptrs[loc]( CblasColMajor, CblasUpper, CblasNoTrans, CblasNonUnit,
                            n, 1, rA.get(), wB2.get(), n );
             BOOST_CHECK_EQUAL( 0, error );
         }
@@ -224,27 +226,26 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( tptrsTest, ValueType, test_types )
         LAMAArray<ValueType> a2( ntri, avalues2 );
         LAMAArray<ValueType> b1( n, bvalues1 );
         LAMAArray<ValueType> b2( n, bvalues2 );
-        ContextPtr loc = Context::getContextPtr( context::Host );
+        ContextPtr loc = Context::getHostPtr();
         {
             ReadAccess<ValueType> rA1( a1, loc );
             WriteAccess<ValueType> wB1( b1, loc );
             ReadAccess<ValueType> rA2( a2, loc );
             WriteAccess<ValueType> wB2( b2, loc );
-            LAMA_INTERFACE_FN_T( tptrs, loc, BLAS, LAPACK, ValueType )
             //  A            X    B
             //  1  0  0  0   1    1
             //  2  3  0  0   3    11
             //  4  5  6  0   5    49
             //  7  8  9  10  7    146
-            int error1 = tptrs( CblasColMajor, CblasLower, CblasNoTrans, CblasNonUnit,
-                                n, 1, rA1.get(), wB1.get(), n );
+            int error1 = tptrs[loc]( CblasColMajor, CblasLower, CblasNoTrans, CblasNonUnit,
+                                     n, 1, rA1.get(), wB1.get(), n );
             //  A            X    B
             //  1  2  3  4   1    50
             //  0  5  6  7   3    94
             //  0  0  8  9   5    103
             //  0  0  0  10  7    70
-            int error2 = tptrs( CblasColMajor, CblasUpper, CblasNoTrans, CblasNonUnit,
-                                n, 1, rA2.get(), wB2.get(), n );
+            int error2 = tptrs[loc]( CblasColMajor, CblasUpper, CblasNoTrans, CblasNonUnit,
+                                     n, 1, rA2.get(), wB2.get(), n );
             BOOST_CHECK_EQUAL( 0, error1 );
             BOOST_CHECK_EQUAL( 0, error2 );
         }
@@ -342,24 +343,23 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( tptrsTest, ValueType, test_types )
         LAMAArray<ValueType> a( ntri, avalues );
         LAMAArray<ValueType> b1( n, bvalues1 );
         LAMAArray<ValueType> b2( n, bvalues2 );
-        ContextPtr loc = Context::getContextPtr( context::Host );
+        ContextPtr loc = Context::getHostPtr();
         {
             ReadAccess<ValueType> rA( a, loc );
             WriteAccess<ValueType> wB1( b1, loc );
             WriteAccess<ValueType> wB2( b2, loc );
-            LAMA_INTERFACE_FN_T( tptrs, loc, BLAS, LAPACK, ValueType )
             //  A                  X    B
             //  1.2  0      0      2    2.4
             //  2.3  4.5    0      3    18.1
             //  6.7  8.11   10.13  5    88.38
-            int error = tptrs( CblasColMajor, CblasLower, CblasNoTrans, CblasNonUnit,
+            int error = tptrs[loc]( CblasColMajor, CblasLower, CblasNoTrans, CblasNonUnit,
                                n, 1, rA.get(), wB1.get(), n );
             BOOST_CHECK_EQUAL( 0, error );
             //  A                  X    B
             //  1.2  2.3   4.5     2    31.8
             //  0    6.7   8.11    3    60.65
             //  0    0     10.13   5    50.65
-            error = tptrs( CblasColMajor, CblasUpper, CblasNoTrans, CblasNonUnit,
+            error = tptrs[loc]( CblasColMajor, CblasUpper, CblasNoTrans, CblasNonUnit,
                            n, 1, rA.get(), wB2.get(), n );
             BOOST_CHECK_EQUAL( 0, error );
         }

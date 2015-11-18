@@ -37,8 +37,7 @@
 // local library
 #include <scai/lama/openmp/OpenMPUtils.hpp>
 
-#include <scai/lama/LAMAInterface.hpp>
-#include <scai/lama/LAMAInterfaceRegistry.hpp>
+#include <scai/lama/JDSKernelTrait.hpp>
 
 // internal scai libraries
 #include <scai/tracing.hpp>
@@ -46,8 +45,11 @@
 #include <scai/common/OpenMP.hpp>
 #include <scai/common/macros/unused.hpp>
 #include <scai/common/unique_ptr.hpp>
-#include <scai/common/Assert.hpp>
+#include <scai/common/macros/assert.hpp>
 #include <scai/common/Constants.hpp>
+#include <scai/common/bind.hpp>
+
+#include <scai/tasking/TaskSyncToken.hpp>
 
 // boost
 #include <boost/preprocessor.hpp>
@@ -55,10 +57,11 @@
 namespace scai
 {
 
+using common::scoped_array;
+using tasking::TaskSyncToken;
+
 namespace lama
 {
-
-using common::scoped_array;
 
 SCAI_LOG_DEF_LOGGER( OpenMPJDSUtils::logger, "OpenMP.JDSUtils" )
 
@@ -111,7 +114,7 @@ void OpenMPJDSUtils::getRow(
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-template<typename ValueType,typename NoType>
+template<typename ValueType>
 ValueType OpenMPJDSUtils::getValue(
     const IndexType i,
     const IndexType j,
@@ -478,6 +481,24 @@ void OpenMPJDSUtils::setCSRValues(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void OpenMPJDSUtils::normalGEMV_a(
+    ValueType result[],
+    const std::pair<ValueType, const ValueType*> ax, 
+    const std::pair<ValueType, const ValueType*> by,
+    const std::pair<IndexType, const IndexType*> rows,
+    const IndexType perm[],
+    const std::pair<IndexType, const IndexType*> dlg,
+    const IndexType jdsJA[],
+    const ValueType jdsValues[] )
+{
+    normalGEMV( result, ax.first, ax.second, by.first, by.second, 
+                rows.first, perm, rows.second, dlg.first, dlg.second,
+                jdsJA, jdsValues );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void OpenMPJDSUtils::normalGEMV(
     ValueType result[],
     const ValueType alpha,
@@ -490,54 +511,28 @@ void OpenMPJDSUtils::normalGEMV(
     const IndexType ndlg,
     const IndexType jdsDLG[],
     const IndexType jdsJA[],
-    const ValueType jdsValues[],
-    tasking::SyncToken* /* syncToken */)
+    const ValueType jdsValues[] )
 {
+    TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
+ 
+    if ( syncToken )
+    {
+        syncToken->run( common::bind( normalGEMV_a<ValueType>, 
+                                      result,
+                                      std::pair<ValueType, const ValueType*>( alpha, x ),
+                                      std::pair<ValueType, const ValueType*>( beta, y ),
+                                      std::pair<IndexType, const IndexType*>( numRows, jdsILG ),
+                                      perm,
+                                      std::pair<IndexType, const IndexType*>( ndlg, jdsDLG ),
+                                      jdsJA, jdsValues ) );
+        return;
+    }
+
     SCAI_LOG_INFO( logger,
-                   "normalGEMV<" << common::getScalarType<ValueType>() << ", #threads = " << omp_get_max_threads() << ">, result[" << numRows << "] = " << alpha << " * A( jds, ndlg = " << ndlg << " ) * x + " << beta << " * y " )
+                   "normalGEMV<" << common::getScalarType<ValueType>() << ", #threads = " << omp_get_max_threads() 
+                    << ">, result[" << numRows << "] = " << alpha << " * A( jds, ndlg = " << ndlg << " ) * x + " << beta << " * y " )
 
-    if( beta == scai::common::constants::ZERO )
-    {
-        SCAI_LOG_DEBUG( logger, "set result = 0.0" )
-
-        #pragma omp parallel for
-
-        for( IndexType i = 0; i < numRows; ++i )
-        {
-            result[i] = static_cast<ValueType>(0.0);
-        }
-    }
-    else if( result == y )
-    {
-        // result = result * beta
-
-        if( beta != scai::common::constants::ONE )
-        {
-            SCAI_LOG_DEBUG( logger, "set result *= beta" )
-
-            #pragma omp parallel for
-
-            for( IndexType i = 0; i < numRows; ++i )
-            {
-                result[i] *= beta;
-            }
-        }
-        else
-        {
-            SCAI_LOG_DEBUG( logger, "result remains unchanged" )
-        }
-    }
-    else
-    {
-        SCAI_LOG_DEBUG( logger, "set result = beta * y" )
-
-        #pragma omp parallel for
-
-        for( IndexType i = 0; i < numRows; ++i )
-        {
-            result[i] = beta * y[i];
-        }
-    }
+    OpenMPUtils::setScale( result, beta, y, numRows );  // z = alpha * JDS * x + beta * y, remains: z += alpha * JDS * x
 
     if( ndlg == 0 )
     {
@@ -592,8 +587,7 @@ void OpenMPJDSUtils::normalGEVM(
     const IndexType ndlg,
     const IndexType jdsDLG[],
     const IndexType jdsJA[],
-    const ValueType jdsValues[],
-    tasking::SyncToken* UNUSED( syncToken ) )
+    const ValueType jdsValues[] )
 {
     SCAI_LOG_INFO( logger,
                    "normalGEVM<" << common::getScalarType<ValueType>() << ", #threads = " << omp_get_max_threads() << ">, result[" << numColumns << "] = " << alpha << " * A( jds, ndlg = " << ndlg << " ) * x + " << beta << " * y " )
@@ -702,11 +696,12 @@ void OpenMPJDSUtils::jacobi(
     const ValueType jdsValues[],
     const ValueType oldSolution[],
     const ValueType rhs[],
-    const ValueType omega,
-    tasking::SyncToken* syncToken )
+    const ValueType omega )
 {
     SCAI_LOG_INFO( logger,
                    "jacobi<" << common::getScalarType<ValueType>() << ">" << ", #rows = " << numRows << ", omega = " << omega )
+
+    TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
     if( syncToken != NULL )
     {
@@ -763,11 +758,12 @@ void OpenMPJDSUtils::jacobiHalo(
     const IndexType jdsHaloJA[],
     const ValueType jdsHaloValues[],
     const ValueType oldSolution[],
-    const ValueType omega,
-    tasking::SyncToken* syncToken )
+    const ValueType omega )
 {
     SCAI_LOG_INFO( logger,
                    "jacobiHalo<" << common::getScalarType<ValueType>() << ">" << ", #rows = " << numRows << ", omega = " << omega )
+
+    TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
     if( syncToken != NULL )
     {
@@ -823,31 +819,43 @@ void OpenMPJDSUtils::jacobiHalo(
 
 /* --------------------------------------------------------------------------- */
 
-void OpenMPJDSUtils::setInterface( JDSUtilsInterface& JDSUtils )
+void OpenMPJDSUtils::registerKernels( bool deleteFlag )
 {
-    // Register all CUDA routines of this class for the LAMA interface
+    using kregistry::KernelRegistry;
+    using common::context::Host;      // context for registration
 
-    LAMA_INTERFACE_REGISTER( JDSUtils, sortRows )
-    LAMA_INTERFACE_REGISTER( JDSUtils, setInversePerm )
-    LAMA_INTERFACE_REGISTER( JDSUtils, ilg2dlg )
-    LAMA_INTERFACE_REGISTER( JDSUtils, checkDiagonalProperty )
+    KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // lower priority
 
-#define LAMA_JDS_UTILS2_REGISTER(z, J, TYPE )                                             \
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getRow, TYPE, ARITHMETIC_HOST_TYPE_##J )        \
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getValue, TYPE, ARITHMETIC_HOST_TYPE_##J )      \
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, scaleValue, TYPE, ARITHMETIC_HOST_TYPE_##J )    \
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, setCSRValues, TYPE, ARITHMETIC_HOST_TYPE_##J )  \
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getCSRValues, TYPE, ARITHMETIC_HOST_TYPE_##J )  \
+    if ( deleteFlag )
+    {
+        flag = KernelRegistry::KERNEL_ERASE;
+    }
 
-#define LAMA_JDS_UTILS_REGISTER(z, I, _)                                                  \
-    LAMA_INTERFACE_REGISTER_T( JDSUtils, normalGEMV, ARITHMETIC_HOST_TYPE_##I )           \
-    LAMA_INTERFACE_REGISTER_T( JDSUtils, normalGEVM, ARITHMETIC_HOST_TYPE_##I )           \
-    LAMA_INTERFACE_REGISTER_T( JDSUtils, jacobi, ARITHMETIC_HOST_TYPE_##I )               \
-    LAMA_INTERFACE_REGISTER_T( JDSUtils, jacobiHalo, ARITHMETIC_HOST_TYPE_##I )           \
-    \
-    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT,                                            \
-                     LAMA_JDS_UTILS2_REGISTER,                                            \
-                     ARITHMETIC_HOST_TYPE_##I )                                           \
+    KernelRegistry::set<JDSKernelTrait::sortRows>( sortRows, Host, flag );
+    KernelRegistry::set<JDSKernelTrait::setInversePerm>( setInversePerm, Host, flag );
+
+    KernelRegistry::set<JDSKernelTrait::ilg2dlg>( ilg2dlg, Host, flag );
+    KernelRegistry::set<JDSKernelTrait::checkDiagonalProperty>( checkDiagonalProperty, Host, flag );
+
+    // register for type pair ARITHMETIC_HOST_TYPE_iii, ARITHMETIC_HOST_TYPE_jjj
+
+#define LAMA_JDS_UTILS2_REGISTER(z, J, TYPE )                                                                        \
+    KernelRegistry::set<JDSKernelTrait::getRow<TYPE, ARITHMETIC_HOST_TYPE_##J> >( getRow, Host, flag );              \
+    KernelRegistry::set<JDSKernelTrait::scaleValue<TYPE, ARITHMETIC_HOST_TYPE_##J> >( scaleValue, Host, flag );      \
+    KernelRegistry::set<JDSKernelTrait::setCSRValues<TYPE, ARITHMETIC_HOST_TYPE_##J> >( setCSRValues, Host, flag );  \
+    KernelRegistry::set<JDSKernelTrait::getCSRValues<TYPE, ARITHMETIC_HOST_TYPE_##J> >( getCSRValues, Host, flag );  \
+
+    // register for one value type ARITHMETIC_HOST_TYPE_iii and loop for second type
+
+#define LAMA_JDS_UTILS_REGISTER(z, I, _)                                                                    \
+    KernelRegistry::set<JDSKernelTrait::getValue<ARITHMETIC_HOST_TYPE_##I> >( getValue, Host, flag );       \
+    KernelRegistry::set<JDSKernelTrait::normalGEMV<ARITHMETIC_HOST_TYPE_##I> >( normalGEMV, Host, flag );   \
+    KernelRegistry::set<JDSKernelTrait::normalGEVM<ARITHMETIC_HOST_TYPE_##I> >( normalGEVM, Host, flag );   \
+    KernelRegistry::set<JDSKernelTrait::jacobi<ARITHMETIC_HOST_TYPE_##I> >( jacobi, Host, flag );           \
+    KernelRegistry::set<JDSKernelTrait::jacobiHalo<ARITHMETIC_HOST_TYPE_##I> >( jacobiHalo, Host, flag );   \
+    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT,                                                              \
+                     LAMA_JDS_UTILS2_REGISTER,                                                              \
+                     ARITHMETIC_HOST_TYPE_##I )                                                             \
 
     BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_JDS_UTILS_REGISTER, _ )
 
@@ -857,21 +865,26 @@ void OpenMPJDSUtils::setInterface( JDSUtilsInterface& JDSUtils )
 }
 
 /* --------------------------------------------------------------------------- */
-/*    Static registration of the JDSUtils routines                             */
+/*    Constructor/Desctructor with registration                                */
 /* --------------------------------------------------------------------------- */
 
-bool OpenMPJDSUtils::registerInterface()
+OpenMPJDSUtils::OpenMPJDSUtils()
 {
-    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( hmemo::context::Host );
-    setInterface( interface.JDSUtils );
-    return true;
+    bool deleteFlag = false;
+    registerKernels( deleteFlag );
+}
+
+OpenMPJDSUtils::~OpenMPJDSUtils()
+{
+    bool deleteFlag = true;
+    registerKernels( deleteFlag );
 }
 
 /* --------------------------------------------------------------------------- */
-/*    Static initialiazion at program start                                    */
+/*    Static variable to force registration during static initialization      */
 /* --------------------------------------------------------------------------- */
 
-bool OpenMPJDSUtils::initialized = registerInterface();
+OpenMPJDSUtils OpenMPJDSUtils::guard;
 
 } /* end namespace lama */
 

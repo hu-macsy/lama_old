@@ -39,8 +39,6 @@
 // internal scai library
 #include <scai/common/SCAITypes.hpp>
 
-#include <scai/tasking/SyncToken.hpp>
-
 #include <scai/logging.hpp>
 
 namespace scai
@@ -104,8 +102,8 @@ public:
 
     /** Returns one value of the matrix */
 
-    template<typename ValueType,typename OtherValueType>
-    static OtherValueType getValue(
+    template<typename ValueType>
+    static ValueType getValue(
         const IndexType i,
         const IndexType j,
         const IndexType numRows,
@@ -124,7 +122,7 @@ public:
         ValueType ellValues[],
         const OtherValueType values[] );
 
-    /** Implementation for ELLUtilsInterface::Conversions::getCSRValues */
+    /** Implementation for ELLKernelTrait::Conversions::getCSRValues */
 
     template<typename ELLValueType,typename CSRValueType>
     static void getCSRValues(
@@ -158,7 +156,7 @@ public:
         const IndexType csrJA[],
         const CSRValueType csrValues[] );
 
-    /** Implementation for ELLUtilsInterface::Mult::normalGEMV  */
+    /** Implementation for ELLKernelTrait::normalGEMV on CUDA devices. */
 
     template<typename ValueType>
     static void normalGEMV(
@@ -171,10 +169,9 @@ public:
         const IndexType numValuesPerRow,
         const IndexType ellIA[],
         const IndexType ellJA[],
-        const ValueType ellValues[],
-        tasking::SyncToken* syncToken );
+        const ValueType ellValues[] );
 
-    /** Implementation for CSRUtilsInterface::Mult::normalGEVM  */
+    /** Implementation for ELLKernelTrait::normalGEVM  */
 
     template<typename ValueType>
     static void normalGEVM(
@@ -188,10 +185,9 @@ public:
         const IndexType numValuesPerRow,
         const IndexType ellSizes[],
         const IndexType ellJA[],
-        const ValueType ellValues[],
-        tasking::SyncToken* syncToken );
+        const ValueType ellValues[] );
 
-    /** Implementation for ELLUtilsInterface::Mult::sparseGEMV  */
+    /** Implementation for ELLKernelTrait::sparseGEMV  */
 
     template<typename ValueType>
     static void sparseGEMV(
@@ -204,10 +200,9 @@ public:
         const IndexType rowIndexes[],
         const IndexType ellSizes[],
         const IndexType ellJA[],
-        const ValueType ellValues[],
-        tasking::SyncToken* syncToken );
+        const ValueType ellValues[] );
 
-    /** Implementation for ELLUtilsInterface::Mult::sparseGEVM  */
+    /** Implementation for ELLKernelTrait::sparseGEVM  */
 
     template<typename ValueType>
     static void sparseGEVM(
@@ -221,10 +216,9 @@ public:
         const IndexType rowIndexes[],
         const IndexType ellIA[],
         const IndexType ellJA[],
-        const ValueType ellValues[],
-        tasking::SyncToken* syncToken );
+        const ValueType ellValues[] );
 
-    /** Implementation for ELLUtilsInterface::Solver::jacobi  */
+    /** Implementation for ELLKernelTrait::jacobi  */
 
     template<typename ValueType>
     static void jacobi(
@@ -236,10 +230,9 @@ public:
         const ValueType ellValues[],
         const ValueType oldSolution[],
         const ValueType rhs[],
-        const ValueType omega,
-        tasking::SyncToken* syncToken );
+        const ValueType omega );
 
-    /** Implementation for ELLUtilsInterface::Solver::jacobiHalo  */
+    /** Implementation for ELLKernelTrait::Solver::jacobiHalo  */
 
     template<typename ValueType>
     static void jacobiHalo(
@@ -253,20 +246,27 @@ public:
         const IndexType rowIndexes[],
         const IndexType numNonEmptyRows,
         const ValueType oldSolution[],
-        const ValueType omega,
-        tasking::SyncToken* syncToken );
-
-    /** Routine that registers all routines of this class at the LAMA interface. */
-
-    static void setInterface( struct ELLUtilsInterface& ELLUtils );
+        const ValueType omega );
 
 private:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
-    static    bool initialized; //!< static initialization used for registration
+    /** Routine that registers all methods at the kernel registry. */
 
-    static bool registerInterface();//!< registration
+    static void registerKernels( bool deleteFlag );
+
+    /** Constructor for registration. */
+
+    CUDAELLUtils();
+
+    /** Destructor for unregistration. */
+
+    ~CUDAELLUtils();
+
+    /** Static variable for registration at static initialization. */
+
+    static CUDAELLUtils guard;
 };
 
 /* --------------------------------------------------------------------------- */

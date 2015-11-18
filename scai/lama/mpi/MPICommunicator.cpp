@@ -42,7 +42,7 @@
 #include <scai/tracing.hpp>
 
 #include <scai/common/Settings.hpp>
-#include <scai/common/Assert.hpp>
+#include <scai/common/macros/assert.hpp>
 #include <scai/common/unique_ptr.hpp>
 #include <scai/common/bind.hpp>
 #include <scai/common/unique_ptr.hpp>
@@ -510,7 +510,7 @@ tasking::SyncToken* MPICommunicator::exchangeByPlanAsyncImpl(
                     << ", send to " << sendPlan.size() << " processors, recv from " << recvPlan.size() )
     int noRequests = sendPlan.size() + recvPlan.size();
 
-    // create MPIToken as auto_ptr, so it will be freed in case of exception
+    // create MPIToken as unique_ptr, so it will be freed in case of exception
 
     scai::common::unique_ptr<MPISyncToken> pSyncToken( new MPISyncToken( noRequests ) );
 
@@ -599,6 +599,31 @@ void MPICommunicator::bcastImpl( ValueType val[], const IndexType n, const Parti
 
     MPI_Datatype commType = getMPIType<ValueType>();
     LAMA_MPICALL( logger, MPI_Bcast( val, n, commType, root, selectMPIComm() ), "MPI_Bcast<ValueType>" )
+}
+
+/* ---------------------------------------------------------------------------------- */
+/*           all2allv                                                                 */
+/* ---------------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void MPICommunicator::all2allvImpl( ValueType* recvBuffer[], IndexType recvCount[], ValueType* sendBuffer[], IndexType sendCount[] ) const
+{
+    SCAI_REGION( "Communicator.MPI.all2allv" )
+        int noReceives = 0;
+        scoped_array<MPI_Request> commRequest( new MPI_Request[mSize] );
+           
+    for(IndexType i=0;i<mSize;++i){
+        commRequest[noReceives] = startrecv(recvBuffer[i],recvCount[i],i);
+        noReceives++;
+           
+    }
+    for(IndexType i=0;i<mSize;++i){
+        send(sendBuffer[i],sendCount[i],i);    
+    }
+    // wait for completion of receives
+    scoped_array<MPI_Status> statuses( new MPI_Status[noReceives] );
+    LAMA_MPICALL( logger, MPI_Waitall( noReceives, commRequest.get(), statuses.get() ), "MPI_Waitall" )
+
 }
 
 /* ---------------------------------------------------------------------------------- */
@@ -952,23 +977,23 @@ hmemo::ContextPtr MPICommunicator::getCommunicationContext( const hmemo::Context
 {
     // get a valid context, i.e. a context that contains valid data
 
-    hmemo::ContextPtr validContext = array.getValidContext( hmemo::context::Host );
+    hmemo::ContextPtr validContext = array.getValidContext();
 
     SCAI_LOG_DEBUG( logger, "CommunicationContext: valid context for " << array << ": " << *validContext )
 
-    if ( validContext->getType() == hmemo::context::Host )
+    if ( validContext->getType() == common::context::Host )
     {
         return validContext;
     }
 
     // This can only be used for CUDAaware MPI
 
-    if( isCUDAAware && ( validContext->getType() == hmemo::context::CUDA ) )
+    if( isCUDAAware && ( validContext->getType() == common::context::CUDA ) )
     {
         return validContext;
     }
 
-    return hmemo::Context::getContextPtr( hmemo::context::Host );
+    return hmemo::Context::getHostPtr();
 }
 
 /* ---------------------------------------------------------------------------------- */

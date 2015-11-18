@@ -37,14 +37,14 @@
 // local project
 #include <scai/lama/mic/MICUtils.hpp>
 
-#include <scai/lama/LAMAInterface.hpp>
-#include <scai/lama/LAMAInterfaceRegistry.hpp>
+#include <scai/lama/JDSKernelTrait.hpp>
 #include <scai/lama/Scalar.hpp>
 
 // other scai libraries
 #include <scai/hmemo/mic/MICContext.hpp>
 #include <scai/hmemo/mic/MICSyncToken.hpp>
-#include <scai/common/Assert.hpp>
+#include <scai/kregistry/KernelRegistry.hpp>
+#include <scai/common/macros/assert.hpp>
 #include <scai/common/Constants.hpp>
 
 #include <scai/tracing.hpp>
@@ -53,6 +53,7 @@ namespace scai
 {
 
 using tasking::SyncToken;
+using tasking::MICSyncToken;
 
 using namespace hmemo;
 
@@ -128,7 +129,7 @@ void MICJDSUtils::getRow(
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-template<typename ValueType,typename NoType>
+template<typename ValueType>
 ValueType MICJDSUtils::getValue(
     const IndexType i,
     const IndexType j,
@@ -147,12 +148,12 @@ ValueType MICJDSUtils::getValue(
     const void* jaPtr = ja;
     const void* valuesPtr = values;
 
-    ValueType val = static_cast<ValueType>(0.0);
+    ValueType val = 0;
 
 #pragma offload target( mic : device ) in( permPtr, ilgPtr, dlgPtr, jaPtr, valuesPtr, \
                                                i, j, numRows ), out( val )
     {
-        val = static_cast<ValueType>(0.0);
+        val = 0;
 
         const IndexType* perm = static_cast<const IndexType*>( permPtr );
         const IndexType* ilg = static_cast<const IndexType*>( ilgPtr );
@@ -656,13 +657,19 @@ void MICJDSUtils::normalGEMV(
     const IndexType ndlg,
     const IndexType jdsDLG[],
     const IndexType jdsJA[],
-    const ValueType jdsValues[],
-    class SyncToken* /* syncToken */)
+    const ValueType jdsValues[] )
 {
     SCAI_LOG_INFO( logger,
                    "normalGEMV<" << common::getScalarType<ValueType>() << ">, result[" << numRows << "] = " << alpha << " * A( jds, ndlg = " << ndlg << " ) * x + " << beta << " * y " )
 
-    if( beta == scai::common::constants::ZERO )
+    MICSyncToken* syncToken = MICSyncToken::getCurrentSyncToken();
+
+    if ( syncToken )
+    {
+        SCAI_LOG_INFO( logger, "asynchronous execution for for MIC not supported yet" )
+    }
+
+    if( beta == static_cast<ValueType>( 0.0 ) )
     {
         MICUtils::setVal( result, numRows, static_cast<ValueType>(0.0) );
     }
@@ -670,7 +677,7 @@ void MICJDSUtils::normalGEMV(
     {
         // result = result * beta
 
-        if( beta != scai::common::constants::ONE )
+        if( beta != static_cast<ValueType>( 1.0 ) )
         {
             MICUtils::scale( result, beta, numRows );
         }
@@ -754,19 +761,18 @@ void MICJDSUtils::jacobi(
     const ValueType jdsValues[],
     const ValueType oldSolution[],
     const ValueType rhs[],
-    const ValueType omega,
-    class SyncToken* syncToken )
+    const ValueType omega )
 {
     // SCAI_REGION( "MIC.JDS.jacobi" )
 
     SCAI_LOG_INFO( logger,
                    "jacobi<" << common::getScalarType<ValueType>() << ">" << ", #rows = " << numRows << ", omega = " << omega )
 
-    if( syncToken )
+    MICSyncToken* syncToken = MICSyncToken::getCurrentSyncToken();
+
+    if ( syncToken )
     {
-        MICSyncToken* micSyncToken = dynamic_cast<MICSyncToken*>( syncToken );
-        SCAI_ASSERT_ERROR( micSyncToken, "no MIC sync token provided" )
-        SCAI_LOG_WARN( logger, "jacobi called asynchronously, not supported yet" )
+        SCAI_LOG_INFO( logger, "asynchronous execution of JDS jacobi iteration for MIC not supported yet" )
     }
 
     void* solutionPtr = solution;
@@ -810,7 +816,7 @@ void MICJDSUtils::jacobi(
                 pos += jdsDLG[j];
             }
 
-            if( omega == scai::common::constants::ONE )
+            if( omega == static_cast<ValueType>( 1.0 ) )
             {
                 solution[i] = temp / diag;
             }
@@ -840,17 +846,18 @@ void MICJDSUtils::jacobiHalo(
     const IndexType jdsHaloJA[],
     const ValueType jdsHaloValues[],
     const ValueType oldSolution[],
-    const ValueType omega,
-    class SyncToken* syncToken )
+    const ValueType omega )
 {
     SCAI_LOG_INFO( logger,
                    "jacobiHalo<" << common::getScalarType<ValueType>() << ">" << ", #rows = " << numRows << ", omega = " << omega )
 
     // SCAI_REGION( "MIC.JDS.jacobiHalo" )
 
-    if( syncToken != NULL )
+    MICSyncToken* syncToken = MICSyncToken::getCurrentSyncToken();
+
+    if ( syncToken )
     {
-        SCAI_LOG_WARN( logger, "jacobi called asynchronously, not supported here" )
+        SCAI_LOG_INFO( logger, "asynchronous execution for for MIC not supported yet" )
     }
 
     if( numRows == 0 )
@@ -917,70 +924,77 @@ void MICJDSUtils::jacobiHalo(
 
 /* --------------------------------------------------------------------------- */
 
-void MICJDSUtils::setInterface( JDSUtilsInterface& JDSUtils )
+void MICJDSUtils::registerKernels( bool deleteFlag )
 {
-    SCAI_LOG_INFO( logger, "set JDS routines for MIC in Interface" )
+    SCAI_LOG_INFO( logger, "register JDS kernels for MIC in Kernel Registry" )
 
-    // Register all MIC routines of this class for the LAMA interface
+    using kregistry::KernelRegistry;
+    using common::context::MIC;        // context for which kernels will be added
 
-    LAMA_INTERFACE_REGISTER( JDSUtils, sortRows )
+    KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // add it or delete it
 
-    LAMA_INTERFACE_REGISTER( JDSUtils, setInversePerm )
-    LAMA_INTERFACE_REGISTER( JDSUtils, ilg2dlg )
+    if ( deleteFlag )
+    {
+        flag = KernelRegistry::KERNEL_ERASE;
+    }
 
-    LAMA_INTERFACE_REGISTER( JDSUtils, checkDiagonalProperty )
+    KernelRegistry::set<JDSKernelTrait::sortRows>( sortRows, MIC, flag );
 
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, scaleValue, float, float )
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, scaleValue, float, double )
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, scaleValue, double, float )
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, scaleValue, double, double )
+    KernelRegistry::set<JDSKernelTrait::setInversePerm>( setInversePerm, MIC, flag );
+    KernelRegistry::set<JDSKernelTrait::ilg2dlg>( ilg2dlg, MIC, flag );
 
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getRow, float, float )
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getRow, float, double )
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getRow, double, float )
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getRow, double, double )
+    KernelRegistry::set<JDSKernelTrait::checkDiagonalProperty>( checkDiagonalProperty, MIC, flag );
 
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getValue, float, float )
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getValue, float, double )
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getValue, double, float )
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getValue, double, double )
+    KernelRegistry::set<JDSKernelTrait::scaleValue<float, float> >( scaleValue, MIC, flag );
+    KernelRegistry::set<JDSKernelTrait::scaleValue<float, double> >( scaleValue, MIC, flag );
+    KernelRegistry::set<JDSKernelTrait::scaleValue<double, float> >( scaleValue, MIC, flag );
+    KernelRegistry::set<JDSKernelTrait::scaleValue<double, double> >( scaleValue, MIC, flag );
 
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, setCSRValues, float, float )
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, setCSRValues, float, double )
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, setCSRValues, double, float )
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, setCSRValues, double, double )
+    KernelRegistry::set<JDSKernelTrait::getRow<float, float> >( getRow, MIC, flag );
+    KernelRegistry::set<JDSKernelTrait::getRow<float, double> >( getRow, MIC, flag );
+    KernelRegistry::set<JDSKernelTrait::getRow<double, float> >( getRow, MIC, flag );
+    KernelRegistry::set<JDSKernelTrait::getRow<double, double> >( getRow, MIC, flag );
 
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getCSRValues, float, float )
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getCSRValues, float, double )
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getCSRValues, double, float )
-    LAMA_INTERFACE_REGISTER_TT( JDSUtils, getCSRValues, double, double )
+    KernelRegistry::set<JDSKernelTrait::getValue<float> >( getValue, MIC, flag );
+    KernelRegistry::set<JDSKernelTrait::getValue<double> >( getValue, MIC, flag );
 
-    LAMA_INTERFACE_REGISTER_T( JDSUtils, normalGEMV, float )
-    LAMA_INTERFACE_REGISTER_T( JDSUtils, normalGEMV, double )
+    KernelRegistry::set<JDSKernelTrait::setCSRValues<float, float> >( setCSRValues, MIC, flag );
+    KernelRegistry::set<JDSKernelTrait::setCSRValues<float, double> >( setCSRValues, MIC, flag );
+    KernelRegistry::set<JDSKernelTrait::setCSRValues<double, float> >( setCSRValues, MIC, flag );
+    KernelRegistry::set<JDSKernelTrait::setCSRValues<double, double> >( setCSRValues, MIC, flag );
 
-    LAMA_INTERFACE_REGISTER_T( JDSUtils, jacobi, float )
-    LAMA_INTERFACE_REGISTER_T( JDSUtils, jacobi, double )
+    KernelRegistry::set<JDSKernelTrait::getCSRValues<float, float> >( getCSRValues, MIC, flag );
+    KernelRegistry::set<JDSKernelTrait::getCSRValues<float, double> >( getCSRValues, MIC, flag );
+    KernelRegistry::set<JDSKernelTrait::getCSRValues<double, float> >( getCSRValues, MIC, flag );
+    KernelRegistry::set<JDSKernelTrait::getCSRValues<double, double> >( getCSRValues, MIC, flag );
 
-    LAMA_INTERFACE_REGISTER_T( JDSUtils, jacobiHalo, float )
-    LAMA_INTERFACE_REGISTER_T( JDSUtils, jacobiHalo, double )
+    KernelRegistry::set<JDSKernelTrait::normalGEMV<float> >( normalGEMV, MIC, flag );
+    KernelRegistry::set<JDSKernelTrait::normalGEMV<double> >( normalGEMV, MIC, flag );
+
+    KernelRegistry::set<JDSKernelTrait::jacobi<float> >( jacobi, MIC, flag );
+    KernelRegistry::set<JDSKernelTrait::jacobi<double> >( jacobi, MIC, flag );
+
+    KernelRegistry::set<JDSKernelTrait::jacobiHalo<float> >( jacobiHalo, MIC, flag );
+    KernelRegistry::set<JDSKernelTrait::jacobiHalo<double> >( jacobiHalo, MIC, flag );
 }
 
 /* --------------------------------------------------------------------------- */
-/*    Static registration of the JDSUtils routines                             */
+/*    Static initialization with registration                                  */
 /* --------------------------------------------------------------------------- */
 
-bool MICJDSUtils::registerInterface()
+MICJDSUtils::RegisterGuard::RegisterGuard()
 {
-    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( context::MIC );
-    setInterface( interface.JDSUtils );
-    return true;
+    bool deleteFlag = false;
+    registerKernels( deleteFlag );
 }
 
-/* --------------------------------------------------------------------------- */
-/*    Static initialiazion at program start                                    */
-/* --------------------------------------------------------------------------- */
+MICJDSUtils::RegisterGuard::~RegisterGuard()
+{
+    bool deleteFlag = true;
+    registerKernels( deleteFlag );
+}
 
-bool MICJDSUtils::initialized = registerInterface();
+MICJDSUtils::RegisterGuard MICJDSUtils::guard;    // guard variable for registration
 
 } /* end namespace lama */
 

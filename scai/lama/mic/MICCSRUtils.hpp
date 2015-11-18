@@ -44,11 +44,6 @@
 namespace scai
 {
 
-namespace tasking
-{
-class SyncToken;
-}
-
 namespace lama
 {
 
@@ -90,11 +85,11 @@ public:
 
     static IndexType scan( IndexType array[], const IndexType numValues );
 
-    /** Implementation for CSRUtilsInterface::Offsets::sizes2offsets */
+    /** Implementation for CSRKernelTrait::sizes2offsets */
 
     static IndexType sizes2offsets( IndexType sizes[], const IndexType numRows );
 
-    /** Implementation for CSRUtilsInterface::Offsets::offsets2sizes */
+    /** Implementation for CSRKernelTrait::offsets2sizes */
 
     static void offsets2sizes( IndexType sizes[], const IndexType offsets[], const IndexType n );
 
@@ -106,7 +101,7 @@ public:
         const IndexType rowIndexes[],
         const IndexType numRows );
 
-    /** Implementation for CSRUtilsInterface::Offsets::validOffsets  */
+    /** Implementation for CSRKernelTrait::Offsets::validOffsets  */
 
     static bool validOffsets( const IndexType array[], const IndexType n, const IndexType total );
 
@@ -133,7 +128,7 @@ public:
         const IndexType numRows,
         const bool diagonalFlag );
 
-    /** Implementation for CSRUtilsInterface::Transpose::convertCSR2CSC  */
+    /** Implementation for CSRKernelTrait::convertCSR2CSC  */
 
     template<typename ValueType>
     static void convertCSR2CSC(
@@ -147,7 +142,7 @@ public:
         IndexType numColumns,
         IndexType numValues );
 
-    /** Implementation for CSRUtilsInterface::Mult::scaleRows  */
+    /** Implementation for CSRKernelTrait::scaleRows  */
 
     template<typename ValueType1,typename ValueType2>
     static void scaleRows(
@@ -156,7 +151,7 @@ public:
         const IndexType numRows,
         const ValueType2 values[] );
 
-    /** Implementation for CSRUtilsInterface::Mult::normalGEMV  */
+    /** Implementation for CSRKernelTrait::normalGEMV  */
 
     template<typename ValueType>
     static void normalGEMV(
@@ -170,10 +165,9 @@ public:
         const IndexType nnz,
         const IndexType csrIA[],
         const IndexType csrJA[],
-        const ValueType csrValues[],
-        tasking::SyncToken* syncToken );
+        const ValueType csrValues[] );
 
-    /** Implementation for CSRUtilsInterface::Mult::sparseGEMV  */
+    /** Implementation for CSRKernelTrait::sparseGEMV  */
 
     template<typename ValueType>
     static void sparseGEMV(
@@ -184,10 +178,9 @@ public:
         const IndexType rowIndexes[],
         const IndexType csrIA[],
         const IndexType csrJA[],
-        const ValueType csrValues[],
-        tasking::SyncToken* syncToken );
+        const ValueType csrValues[] );
 
-    /** Implementation for CSRUtilsInterface::Mult::gemm  */
+    /** Implementation for CSRKernelTrait::gemm  */
 
     template<typename ValueType>
     static void gemm(
@@ -201,10 +194,9 @@ public:
         const IndexType p,
         const IndexType csrIA[],
         const IndexType csrJA[],
-        const ValueType csrValues[],
-        tasking::SyncToken* syncToken );
+        const ValueType csrValues[] );
 
-    /** Implementation for CSRUtilsInterface::Jacobi::jacobi(Async/Halo) */
+    /** Implementation for CSRKernelTrait::jacobi */
 
     template<typename ValueType>
     static void jacobi(
@@ -215,8 +207,9 @@ public:
         const ValueType rhs[],
         const ValueType oldSolution[],
         const ValueType omega,
-        const IndexType numRows,
-        tasking::SyncToken* syncToken );
+        const IndexType numRows );
+
+    /** Implementation for CSRKernelTrait::jacobiHalo on Intel MIC */
 
     template<typename ValueType>
     static void jacobiHalo(
@@ -231,9 +224,7 @@ public:
         const ValueType omega,
         const IndexType numNonEmptyRows );
 
-    /** Implementation for CSRUtilsInterface::Jacobi::jacobiHaloWithDiag
-     *  @since 1.1.0
-     */
+    /** Implementation for CSRKernelTrait::jacobiHaloWithDiag */
 
     template<typename ValueType>
     static void jacobiHaloWithDiag(
@@ -247,7 +238,7 @@ public:
         const ValueType omega,
         const IndexType numNonEmptyRows );
 
-    /** Implementation for CSRUtilsInterface::Offsets::matrixAddSizes  */
+    /** Implementation for CSRKernelTrait::matrixAddSizes  */
 
     static IndexType matrixAddSizes(
         IndexType cSizes[],
@@ -259,7 +250,7 @@ public:
         const IndexType bIA[],
         const IndexType bJA[] );
 
-    /** Implementation for CSRUtilsInterface::Offsets::matrixMultiplySizes  */
+    /** Implementation for CSRKernelTrait::matrixMultiplySizes  */
 
     static IndexType matrixMultiplySizes(
         IndexType cSizes[],
@@ -272,7 +263,7 @@ public:
         const IndexType bIA[],
         const IndexType bJA[] );
 
-    /** Implementation for CSRUtilsInterface::Mult::matrixAdd */
+    /** Implementation for CSRKernelTrait::matrixAdd */
 
     template<typename ValueType>
     static void matrixAdd(
@@ -291,7 +282,7 @@ public:
         const IndexType bJA[],
         const ValueType bValues[] );
 
-    /** Implementation for CSRUtilsInterface::Mult::matrixMultiply */
+    /** Implementation for CSRKernelTrait::matrixMultiply */
 
     template<typename ValueType>
     static void matrixMultiply(
@@ -310,7 +301,7 @@ public:
         const IndexType bJA[],
         const ValueType bValues[] );
 
-    /** Implementation for CSRUtilsInterface::Reductions::absMaxDiffVal */
+    /** Implementation for CSRKernelTrait::absMaxDiffVal */
 
     template<typename ValueType>
     static ValueType absMaxDiffVal(
@@ -323,29 +314,40 @@ public:
         const IndexType csrJA2[],
         const ValueType csrValues2[] );
 
-    /** Routine that registers all routines of this class at the LAMA interface. */
-
-    static void setInterface( struct CSRUtilsInterface& CSRUtils );
-
 protected:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
 private    :
 
-    static bool initialized;
+    /** Routine that registers all methods at the kernel registry. */
 
-    static bool registerInterface();
+    static void registerKernels( bool deleteFlag );
+
+    /** Helper class for (un) registration of kernel routines at static initialization. */
+
+    class RegisterGuard
+    {
+    public:
+        RegisterGuard();
+        ~RegisterGuard();
+    };
+
+    static RegisterGuard guard;  // registration of kernels @ static initialization
 
     static IndexType scanSerial( IndexType array[], const IndexType numValues );
 
     static IndexType scanParallel( PartitionId numThreads, IndexType array[], const IndexType numValues );
+
+    /** Help routine called and executed on MIC device */
 
     template<typename ValueType>
     __attribute__( ( target( mic ) ) )
     static ValueType absMaxDiffRowSorted(
         const IndexType n1, const IndexType csrJA1[], const ValueType csrValues1[],
         const IndexType n2, const IndexType csrJA2[], const ValueType csrValues2[] );
+
+    /** Help routine called and executed on MIC device */
 
     template<typename ValueType>
     __attribute__( ( target( mic ) ) )

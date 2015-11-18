@@ -36,9 +36,6 @@
 // for dll_import
 #include <scai/common/config.hpp>
 
-// internal scai libraries
-#include <scai/tasking/SyncToken.hpp>
-
 #include <scai/logging.hpp>
 
 #include <scai/common/SCAITypes.hpp>
@@ -87,11 +84,11 @@ public:
 
     static IndexType scan( IndexType array[], const IndexType numValues );
 
-    /** Implementation for CSRUtilsInterface::Offsets::sizes2offsets */
+    /** Implementation for CSRKernelTrait::Offsets::sizes2offsets */
 
     static IndexType sizes2offsets( IndexType sizes[], const IndexType numRows );
 
-    /** Implementation for CSRUtilsInterface::Offsets::offsets2sizes */
+    /** Implementation for CSRKernelTrait::Offsets::offsets2sizes */
 
     static void offsets2sizes( IndexType sizes[], const IndexType offsets[], const IndexType n );
 
@@ -103,7 +100,7 @@ public:
         const IndexType rowIndexes[],
         const IndexType numRows );
 
-    /** Implementation for CSRUtilsInterface::Offsets::validOffsets  */
+    /** Implementation for CSRKernelTrait::Offsets::validOffsets  */
 
     static bool validOffsets( const IndexType array[], const IndexType n, const IndexType total );
 
@@ -130,7 +127,7 @@ public:
         const IndexType numRows,
         const bool diagonalFlag );
 
-    /** Implementation for CSRUtilsInterface::Transpose::convertCSR2CSC  */
+    /** Implementation for CSRKernelTrait::Transpose::convertCSR2CSC  */
 
     template<typename ValueType>
     static void convertCSR2CSC(
@@ -144,7 +141,7 @@ public:
         IndexType numColumns,
         IndexType numValues );
 
-    /** Implementation for CSRUtilsInterface::Mult::scaleRows  */
+    /** Implementation for CSRKernelTrait::Mult::scaleRows  */
 
     template<typename ValueType1,typename ValueType2>
     static void scaleRows(
@@ -153,7 +150,7 @@ public:
         const IndexType numRows,
         const ValueType2 values[] );
 
-    /** Implementation for CSRUtilsInterface::Mult::normalGEMV  */
+    /** Implementation for CSRKernelTrait::Mult::normalGEMV  */
 
     template<typename ValueType>
     static void normalGEMV(
@@ -167,10 +164,9 @@ public:
         const IndexType nnz,
         const IndexType csrIA[],
         const IndexType csrJA[],
-        const ValueType csrValues[],
-        tasking::SyncToken* syncToken );
+        const ValueType csrValues[] );
 
-    /** Implementation for CSRUtilsInterface::Mult::sparseGEMV  */
+    /** Implementation for CSRKernelTrait::sparseGEMV  */
 
     template<typename ValueType>
     static void sparseGEMV(
@@ -181,10 +177,9 @@ public:
         const IndexType rowIndexes[],
         const IndexType csrIA[],
         const IndexType csrJA[],
-        const ValueType csrValues[],
-        tasking::SyncToken* syncToken );
+        const ValueType csrValues[] );
 
-    /** Implementation for CSRUtilsInterface::Mult:normalGEVM */
+    /** Implementation for CSRKernelTrait::normalGEVM */
 
     template<typename ValueType>
     static void normalGEVM(
@@ -197,10 +192,9 @@ public:
         const IndexType numColumns,
         const IndexType csrIA[],
         const IndexType csrJA[],
-        const ValueType csrValues[],
-        tasking::SyncToken* syncToken );
+        const ValueType csrValues[] );
 
-    /** Implementation for CSRUtilsInterface::Mult::sparseGEVM  */
+    /** Implementation for CSRKernelTrait::sparseGEVM  */
 
     template<typename ValueType>
     static void sparseGEVM(
@@ -212,10 +206,9 @@ public:
         const IndexType rowIndexes[],
         const IndexType csrIA[],
         const IndexType csrJA[],
-        const ValueType csrValues[],
-        tasking::SyncToken* syncToken );
+        const ValueType csrValues[] );
 
-    /** Implementation for CSRUtilsInterface::Mult::gemm  */
+    /** Implementation for CSRKernelTrait::Mult::gemm  */
 
     template<typename ValueType>
     static void gemm(
@@ -229,10 +222,9 @@ public:
         const IndexType p,
         const IndexType csrIA[],
         const IndexType csrJA[],
-        const ValueType csrValues[],
-        tasking::SyncToken* syncToken );
+        const ValueType csrValues[] );
 
-    /** Implementation for CSRUtilsInterface::Jacobi::jacobi(Async/Halo) */
+    /** Implementation for CSRKernelTrait::Jacobi::jacobi(Async/Halo) */
 
     template<typename ValueType>
     static void jacobi(
@@ -243,8 +235,7 @@ public:
         const ValueType rhs[],
         const ValueType oldSolution[],
         const ValueType omega,
-        const IndexType numRows,
-        tasking::SyncToken* syncToken );
+        const IndexType numRows );
 
     template<typename ValueType>
     static void jacobiHalo(
@@ -259,7 +250,7 @@ public:
         const ValueType omega,
         const IndexType numNonEmptyRows );
 
-    /** Implementation for CSRUtilsInterface::Jacobi::jacobiHaloWithDiag
+    /** Implementation for CSRKernelTrait::Jacobi::jacobiHaloWithDiag
      *  @since 1.1.0
      */
 
@@ -275,7 +266,7 @@ public:
         const ValueType omega,
         const IndexType numNonEmptyRows );
 
-    /** Implementation for CSRUtilsInterface::Offsets::matrixAddSizes  */
+    /** Implementation for CSRKernelTrait::Offsets::matrixAddSizes  */
 
     static IndexType matrixAddSizes(
         IndexType cSizes[],
@@ -287,7 +278,7 @@ public:
         const IndexType bIA[],
         const IndexType bJA[] );
 
-    /** Implementation for CSRUtilsInterface::Offsets::matrixMultiplySizes  */
+    /** Implementation for CSRKernelTrait::Offsets::matrixMultiplySizes  */
 
     static IndexType matrixMultiplySizes(
         IndexType cSizes[],
@@ -300,7 +291,7 @@ public:
         const IndexType bIA[],
         const IndexType bJA[] );
 
-    /** Implementation for CSRUtilsInterface::Offsets::matrixMultiplyJA  */
+    /** Implementation for CSRKernelTrait::Offsets::matrixMultiplyJA  */
 
     static void matrixMultiplyJA(
         IndexType cJA[],
@@ -313,7 +304,7 @@ public:
         const IndexType bIA[],
         const IndexType bJA[] );
 
-    /** Implementation for CSRUtilsInterface::Mult::matrixAdd */
+    /** Implementation for CSRKernelTrait::Mult::matrixAdd */
 
     template<typename ValueType>
     static void matrixAdd(
@@ -332,7 +323,7 @@ public:
         const IndexType bJA[],
         const ValueType bValues[] );
 
-    /** Implementation for CSRUtilsInterface::Mult::matrixMultiply */
+    /** Implementation for CSRKernelTrait::Mult::matrixMultiply */
 
     template<typename ValueType>
     static void matrixMultiply(
@@ -351,7 +342,7 @@ public:
         const IndexType bJA[],
         const ValueType bValues[] );
 
-    /** Implementation for CSRUtilsInterface::Reductions::absMaxDiffVal */
+    /** Implementation for CSRKernelTrait::Reductions::absMaxDiffVal */
 
     template<typename ValueType>
     static ValueType absMaxDiffVal(
@@ -364,44 +355,31 @@ public:
         const IndexType csrJA2[],
         const ValueType csrValues2[] );
 
-    /** Routine that registers all routines of this class at the LAMA interface. */
-
-    static void setInterface( struct CSRUtilsInterface& CSRUtils );
-
 protected:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
-private    :
+private:
 
-    static bool initialized;
+    /** Routine that registers all methods of this class at the Kernel Registry. */
 
-    static bool registerInterface();
+    static void registerKernels( bool deleteFlag );
+
+    /** Constructor for registration. */
+
+    OpenMPCSRUtils();
+
+    /** Destructor for unregistration. */
+
+    ~OpenMPCSRUtils();
+
+    /** Static variable for registration at static initialization. */
+
+    static OpenMPCSRUtils guard;
 
     static IndexType scanSerial( IndexType array[], const IndexType numValues );
 
     static IndexType scanParallel( PartitionId numThreads, IndexType array[], const IndexType numValues );
-
-    template <typename ValueType>
-    static void normalGEMV( ValueType result[],
-                            const ValueType alpha,
-                            const ValueType x[],
-                            const ValueType beta,
-                            const ValueType y[],
-                            const IndexType numRows,
-                            const IndexType csrIA[],
-                            const IndexType csrJA[],
-                            const ValueType csrValues[] );
-
-    template <typename ValueType>
-    static void sparseGEMV( ValueType result[],
-                            const ValueType alpha,
-                            const ValueType x[],
-                            const IndexType numNonZeroRows,
-                            const IndexType rowIndexes[],
-                            const IndexType csrIA[],
-                            const IndexType csrJA[],
-                            const ValueType csrValues[] );
 
     template<typename ValueType>
     static ValueType absMaxDiffRowSorted(
@@ -412,6 +390,20 @@ private    :
     static ValueType absMaxDiffRowUnsorted(
         const IndexType n1, const IndexType csrJA1[], const ValueType csrValues1[],
         const IndexType n2, const IndexType csrJA2[], const ValueType csrValues2[] );
+
+    /** Help routine to use normalGEMV with maximal 9 args. */
+
+    template<typename ValueType>
+    static void normalGEMV_s(
+        ValueType result[],
+        const ValueType alpha,
+        const ValueType x[],
+        const ValueType beta,
+        const ValueType y[],
+        const IndexType numRows,
+        const IndexType csrIA[],
+        const IndexType csrJA[],
+        const ValueType csrValues[] );
 };
 
 } /* end namespace lama */

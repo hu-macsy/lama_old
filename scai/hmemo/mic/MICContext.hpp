@@ -94,9 +94,9 @@ public:
 
     /** This routine is required for Register in Context Factory. */
 
-    static ContextType createValue()
+    static common::context::ContextType createValue()
     {
-        return context::MIC;
+        return common::context::MIC;
     }
 
     /** This routine is required for Register in Context Factory. */

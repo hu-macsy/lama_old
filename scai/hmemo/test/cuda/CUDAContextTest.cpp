@@ -52,6 +52,7 @@ using tasking::SyncToken;
 using tasking::CUDAStreamSyncToken;
 
 using namespace hmemo;
+namespace context = common::context;
 
 typedef boost::mpl::list<double, float> test_types;
 
@@ -108,7 +109,7 @@ BOOST_AUTO_TEST_CASE( allocateTest )
         array.resize( 10 );
         // Destructors will be called for array, ctxArray, cudaContext
     }
-    BOOST_CHECK_EQUAL( 10, ctxArray.size() );
+    BOOST_CHECK_EQUAL( static_cast<IndexType>( 10 ), ctxArray.size() );
     BOOST_CHECK( ctxArray.capacity( cudaContext ) >= 10 );
 }
 
@@ -137,7 +138,7 @@ BOOST_AUTO_TEST_CASE ( releaseTest )
 
     for ( IndexType i = 0; i < 5; i++ )
     {
-        BOOST_CHECK_EQUAL( 3, readAccess.get()[i] );
+        BOOST_CHECK_EQUAL( static_cast<IndexType>( 3 ), readAccess.get()[i] );
     }
 
     readAccess.release();

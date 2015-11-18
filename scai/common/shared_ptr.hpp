@@ -32,7 +32,7 @@
 
 #pragma once
 
-#if __cplusplus > 199711L
+#if __cplusplus > 199711L or defined(__GXX_EXPERIMENTAL_CXX0X__)
 #include <memory>
 #else
 #include <boost/shared_ptr.hpp>
@@ -44,7 +44,7 @@ namespace scai
 
 namespace common
 {
- #if __cplusplus > 199711L
+ #if __cplusplus > 199711L or __GXX_EXPERIMENTAL_CXX0X__
     using std::shared_ptr;
     using std::dynamic_pointer_cast;
     using std::enable_shared_from_this;

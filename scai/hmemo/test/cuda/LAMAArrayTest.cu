@@ -46,6 +46,7 @@ BOOST_AUTO_TEST_SUITE( LAMAArrayTest )
 
 using namespace scai;
 using namespace scai::hmemo;
+using namespace scai::common;
 
 /* --------------------------------------------------------------------- */
 

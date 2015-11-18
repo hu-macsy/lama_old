@@ -48,17 +48,17 @@
 
 #include <scai/tracing.hpp>
 
-#include <scai/common/exception/Exception.hpp>
+#include <scai/common/macros/throw.hpp>
 #include <scai/common/unique_ptr.hpp>
 
 // boost
 #include <boost/preprocessor.hpp>
 
-using namespace scai::hmemo;
 
 namespace scai
 {
 
+using namespace hmemo;
 using common::unique_ptr;
 using common::scoped_array;
 
@@ -96,7 +96,7 @@ void StorageIO<ValueType>::writeCSRToFormattedFile(
 
     std::ofstream amgfile( fileName.c_str(), std::ios::out ); // open .amg
 
-    ContextPtr host = Context::getContextPtr( context::Host );
+    ContextPtr host = Context::getHostPtr();
 
     ReadAccess<IndexType> ia( csrIA, host );
     ReadAccess<IndexType> ja( csrJA, host );
@@ -356,7 +356,7 @@ void StorageIO<ValueType>::writeCSRToXDRFile(
     IndexType numValues = csrJA.size();
     IndexType numRows = csrIA.size() - 1;
 
-    ContextPtr host = Context::getContextPtr( context::Host );
+    ContextPtr host = Context::getHostPtr();
 
     ReadAccess<IndexType> iaRead( csrIA, host );
     ReadAccess<IndexType> jaRead( csrJA, host );
@@ -372,15 +372,15 @@ void StorageIO<ValueType>::writeCSRToXDRFile(
     outFile.write( &nnu );
     outFile.write( &indexDataTypeSizeIA );
 
-    if( indexDataTypeSizeIA == sizeof(IndexType) )
+    if( indexDataTypeSizeIA == sizeof( IndexType ) )
     {
         writeData<IndexType,IndexType,1>( outFile, iaRead.get(), numRows + 1 );
     }
-    else if( indexDataTypeSizeIA == common::TypeTraits<long>::size )
+    else if( indexDataTypeSizeIA == sizeof( long ) )
     {
         writeData<long,IndexType,1>( outFile, iaRead.get(), numRows + 1 );
     }
-    else if( indexDataTypeSizeIA == common::TypeTraits<int>::size )
+    else if( indexDataTypeSizeIA == sizeof ( int ) )
     {
         writeData<int,IndexType,1>( outFile, iaRead.get(), numRows + 1 );
     }
@@ -397,11 +397,11 @@ void StorageIO<ValueType>::writeCSRToXDRFile(
     {
         writeData<IndexType,IndexType,0>( outFile, jaRead.get(), numValues );
     }
-    else if( indexDataTypeSizeJA == common::TypeTraits<long>::size )
+    else if( indexDataTypeSizeJA == sizeof(long) )
     {
         writeData<long,IndexType,0>( outFile, jaRead.get(), numValues );
     }
-    else if( indexDataTypeSizeJA == common::TypeTraits<int>::size )
+    else if( indexDataTypeSizeJA == sizeof(int) )
     {
         writeData<int,IndexType,0>( outFile, jaRead.get(), numValues );
     }
@@ -416,19 +416,19 @@ void StorageIO<ValueType>::writeCSRToXDRFile(
     {
         writeData<ValueType,ValueType,0>( outFile, dataRead.get(), numValues );
     }
-    else if( dataTypeSize == common::TypeTraits<double>::size )
+    else if( dataTypeSize == sizeof( double ) )
     {
         writeData<double,ValueType,0>( outFile, dataRead.get(), numValues );
     }
-    else if( dataTypeSize == common::TypeTraits<float>::size )
+    else if( dataTypeSize == sizeof( float ) )
     {
         writeData<float,ValueType,0>( outFile, dataRead.get(), numValues );
-    }
-    else if( dataTypeSize == common::TypeTraits<ComplexFloat>::size )
+    } 
+    else if( dataTypeSize == sizeof( ComplexFloat ) )
     {
         writeData<ComplexFloat,ValueType,0>( outFile, dataRead.get(), numValues );
     }
-    else if( dataTypeSize == common::TypeTraits<ComplexDouble>::size )
+    else if( dataTypeSize == sizeof( ComplexDouble ) )
     {
         writeData<ComplexDouble,ValueType,0>( outFile, dataRead.get(), numValues );
     }
@@ -476,11 +476,11 @@ void StorageIO<ValueType>::readCSRFromXDRFile(
     {
         readData<IndexType,IndexType, -1>( xdrFile, m_ia, numRows + 1 );
     }
-    else if( indexDataTypeSizeIA == common::TypeTraits<int>::size )
+    else if( indexDataTypeSizeIA == sizeof( int ) )
     {
         readData<int,IndexType, -1>( xdrFile, m_ia, numRows + 1 );
     }
-    else if( indexDataTypeSizeIA == common::TypeTraits<long>::size )
+    else if( indexDataTypeSizeIA == sizeof( long ) )
     {
         readData<long,IndexType, -1>( xdrFile, m_ia, numRows + 1 );
     }
@@ -515,11 +515,11 @@ void StorageIO<ValueType>::readCSRFromXDRFile(
     {
         readData<IndexType,IndexType,0>( xdrFile, m_ja.get(), numValues );
     }
-    else if( indexDataTypeSizeJA == common::TypeTraits<long>::size )
+    else if( indexDataTypeSizeJA == sizeof( long ) )
     {
         readData<long,IndexType,0>( xdrFile, m_ja.get(), numValues );
     }
-    else if( indexDataTypeSizeJA == common::TypeTraits<int>::size )
+    else if( indexDataTypeSizeJA == sizeof( int ) )
     {
         readData<int,IndexType,0>( xdrFile, m_ja.get(), numValues );
     }
@@ -548,19 +548,19 @@ void StorageIO<ValueType>::readCSRFromXDRFile(
 
     WriteOnlyAccess<ValueType> m_data( csrValues, numValues );
 
-    if( dataTypeSize == common::TypeTraits<double>::size )
+    if( dataTypeSize == sizeof( double ) )
     {
         readData<double,ValueType,0>( xdrFile, m_data.get(), numValues );
     }
-    else if( dataTypeSize == common::TypeTraits<float>::size )
+    else if( dataTypeSize == sizeof( float ) )
     {
         readData<float,ValueType,0>( xdrFile, m_data.get(), numValues );
     }
-    else if( dataTypeSize == common::TypeTraits<ComplexFloat>::size )
+    else if( dataTypeSize == sizeof( ComplexFloat ) )
     {
         readData<ComplexFloat,ValueType,0>( xdrFile, m_data.get(), numValues );
     }
-    else if( dataTypeSize == common::TypeTraits<ComplexDouble>::size )
+    else if( dataTypeSize == sizeof( ComplexDouble ) )
     {
         readData<ComplexDouble,ValueType,0>( xdrFile, m_data.get(), numValues );
     }
@@ -595,7 +595,7 @@ void StorageIO<ValueType>::writeCSRToBinaryFile(
 {
     SCAI_REGION( "StorageIO.writeCSRToBinaryFile " )
 
-    ContextPtr host = Context::getContextPtr( context::Host );
+    ContextPtr host = Context::getHostPtr();
 
     ReadAccess<IndexType> iaRead( csrIA, host );
     ReadAccess<IndexType> jaRead( csrJA, host );
@@ -611,11 +611,11 @@ void StorageIO<ValueType>::writeCSRToBinaryFile(
 
     // write ia, add offset 1
 
-    if( indexDataTypeSizeIA == common::TypeTraits<int>::size || sizeof(long) == common::TypeTraits<int>::size )
+    if( indexDataTypeSizeIA == sizeof( int ) || sizeof(long) == sizeof( int ) )
     {
         writeBinaryData<int,IndexType,1>( outFile, iaRead.get(), numRows + 1 );
     }
-    else if( indexDataTypeSizeIA == common::TypeTraits<long>::size )
+    else if( indexDataTypeSizeIA == sizeof( long ) )
     {
         writeBinaryData<long,IndexType,1>( outFile, iaRead.get(), numRows + 1 );
     }
@@ -626,11 +626,11 @@ void StorageIO<ValueType>::writeCSRToBinaryFile(
 
     // write m_ja
 
-    if( indexDataTypeSizeJA == common::TypeTraits<int>::size || sizeof(long) == common::TypeTraits<int>::size )
+    if( indexDataTypeSizeJA == sizeof( int ) || sizeof(long) == sizeof( int ) )
     {
         writeBinaryData<int,IndexType,1>( outFile, jaRead.get(), numValues );
     }
-    else if( indexDataTypeSizeJA == common::TypeTraits<long>::size )
+    else if( indexDataTypeSizeJA == sizeof( long ) )
     {
         writeBinaryData<long,IndexType,1>( outFile, jaRead.get(), numValues );
     }
@@ -639,19 +639,19 @@ void StorageIO<ValueType>::writeCSRToBinaryFile(
         COMMON_THROWEXCEPTION( "(write unformatted) Unknown index data type size of JA." )
     }
 
-    if( dataTypeSize == common::TypeTraits<double>::size )
+    if( dataTypeSize == sizeof( double ) )
     {
         writeBinaryData<double,ValueType,0>( outFile, dataRead.get(), numValues );
     }
-    else if( dataTypeSize == common::TypeTraits<float>::size )
+    else if( dataTypeSize == sizeof( float ) )
     {
         writeBinaryData<float,ValueType,0>( outFile, dataRead.get(), numValues );
     }
-    else if( dataTypeSize == common::TypeTraits<ComplexFloat>::size )
+    else if( dataTypeSize == sizeof( ComplexFloat ) )
     {
         writeBinaryData<ComplexFloat,ValueType,0>( outFile, dataRead.get(), numValues );
     }
-    else if( dataTypeSize == common::TypeTraits<ComplexDouble>::size )
+    else if( dataTypeSize == sizeof( ComplexDouble ) )
     {
         writeBinaryData<ComplexDouble,ValueType,0>( outFile, dataRead.get(), numValues );
     }
@@ -691,7 +691,7 @@ void StorageIO<ValueType>::writeCSRToMMFile(
 
     // output code runs only for host context
 
-    ContextPtr host = Context::getContextPtr( context::Host );
+    ContextPtr host = Context::getHostPtr();
 
     ReadAccess<IndexType> ia( csrIA, host );
     ReadAccess<IndexType> ja( csrJA, host );
@@ -756,7 +756,7 @@ void StorageIO<ValueType>::readCSRFromMMFile(
         COMMON_THROWEXCEPTION( "Could not reopen file '" << fileName << "'." )
     }
 
-    ContextPtr host = Context::getContextPtr( context::Host );
+    ContextPtr host = Context::getHostPtr();
 
     WriteOnlyAccess<IndexType> ia( csrIA, host, numRows + 1 );
     // initialize ia;

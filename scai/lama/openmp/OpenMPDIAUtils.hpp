@@ -37,7 +37,6 @@
 #include <scai/common/config.hpp>
 
 // internal scai libraries
-#include <scai/tasking/SyncToken.hpp>
 
 #include <scai/common/SCAITypes.hpp>
 
@@ -54,7 +53,7 @@ class COMMON_DLL_IMPORTEXPORT OpenMPDIAUtils
 {
 public:
 
-    /** OpenMP implementation for DIAUtilsInterface::Counting::getCSRSizes */
+    /** OpenMP implementation for DIAKernelTrait::getCSRSizes */
 
     template<typename ValueType>
     static void getCSRSizes(
@@ -67,7 +66,7 @@ public:
         const ValueType diaValues[],
         const ValueType eps );
 
-    /** OpenMP implementation for DIAUtilsInterface::Conversions::getCSRValues.  */
+    /** OpenMP implementation for DIAKernelTrait::getCSRValues.  */
 
     template<typename DIAValueType,typename CSRValueType>
     static void getCSRValues(
@@ -82,7 +81,7 @@ public:
         const DIAValueType diaValues[],
         const DIAValueType eps );
 
-    /** Implementation for DIAUtilsInterface::Mult::normalGEMV  */
+    /** Implementation for DIAKernelTrait::normalGEMV  */
 
     template<typename ValueType>
     static void normalGEMV(
@@ -95,10 +94,9 @@ public:
         const IndexType numColumns,
         const IndexType numDiagonals,
         const IndexType diaOffsets[],
-        const ValueType diaValues[],
-        tasking::SyncToken* syncToken );
+        const ValueType diaValues[] );
 
-    /** Implementation for DIAUtilsInterface::Mult::normalGEVM  */
+    /** Implementation for DIAKernelTrait::normalGEVM  */
 
     template<typename ValueType>
     static void normalGEVM(
@@ -111,10 +109,9 @@ public:
         const IndexType numColumns,
         const IndexType numDiagonals,
         const IndexType diaOffsets[],
-        const ValueType diaValues[],
-        tasking::SyncToken* syncToken );
+        const ValueType diaValues[] );
 
-    /** Implementation for DIAUtilsInterface::Solver::jacobi  */
+    /** Implementation for DIAKernelTrait::jacobi  */
 
     template<typename ValueType>
     static void jacobi(
@@ -126,10 +123,9 @@ public:
         const ValueType oldSolution[],
         const ValueType rhs[],
         const ValueType omega,
-        const IndexType numRows,
-        tasking::SyncToken* syncToken );
+        const IndexType numRows );
 
-    /** Implemenatation for DIAUtilsInterface::Reductions::absMaxVal */
+    /** Implemenatation for DIAKernelTrait::Reductions::absMaxVal */
 
     template<typename ValueType>
     static ValueType absMaxVal(
@@ -139,28 +135,36 @@ public:
         const IndexType diaOffsets[],
         const ValueType diaValues[] );
 
-    /** Routine that registers all routines of this class at the LAMA interface. */
-
-    static void setInterface( struct DIAUtilsInterface& DIAUtils );
-
 private:
 
+    /** Help routine with max 9 arguments required */
+
     template<typename ValueType>
-    static void normalGEMV(
+    static void normalGEMV_a(
         ValueType result[],
-        const ValueType alpha,
-        const ValueType x[],
-        const ValueType beta,
-        const ValueType y[],
+        const std::pair<ValueType, const ValueType*> ax,  // alpha, x
+        const std::pair<ValueType, const ValueType*> by,  // beta, y
         const IndexType numRows,
         const IndexType numColumns,
         const IndexType numDiagonals,
         const IndexType diaOffsets[],
         const ValueType diaValues[] );
 
-    static bool initialized;
+    /** Routine that registers all methods at the kernel registry. */
 
-    static bool registerInterface();
+    static void registerKernels( bool deleteFlag );
+
+    /** Constructor for registration. */
+
+    OpenMPDIAUtils();
+
+    /** Destructor for unregistration. */
+
+    ~OpenMPDIAUtils();
+
+    /** Static variable for registration at static initialization. */
+
+    static OpenMPDIAUtils guard;
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 };

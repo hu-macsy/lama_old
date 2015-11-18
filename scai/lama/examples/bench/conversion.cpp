@@ -47,12 +47,13 @@ using namespace scai::lama;
 using namespace scai::hmemo;
 using namespace std;
 using scai::common::Walltime;
+namespace context = scai::common::context;
 
 static bool verboseFlag = false;
 
 static void bench( Matrix& b, Matrix& a )
 {
-    ContextPtr host = Context::getContextPtr( context::Host );
+    ContextPtr host = Context::getHostPtr();
 
     a.setContextPtr( host );
     b.setContextPtr( host );

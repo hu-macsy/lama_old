@@ -38,9 +38,11 @@
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 
 #include <scai/lama/DenseVector.hpp>
-#include <scai/lama/LAMAInterface.hpp>
+#include <scai/lama/LAMAKernel.hpp>
+#include <scai/blaskernel/BLASKernelTrait.hpp>
 
 #include <scai/lama/distribution/NoDistribution.hpp>
+#include <scai/lama/distribution/BlockDistribution.hpp>
 #include <scai/lama/distribution/CyclicDistribution.hpp>
 #include <scai/lama/distribution/Redistributor.hpp>
 
@@ -53,6 +55,7 @@
 #include <scai/common/ScalarType.hpp>
 #include <scai/common/Constants.hpp>
 #include <scai/common/macros/print_string.hpp>
+#include <scai/common/exception/UnsupportedException.hpp>
 
 // boost
 #include <boost/preprocessor.hpp>
@@ -99,7 +102,8 @@ void DenseMatrix<ValueType>::computeOwners()
 
             for ( unsigned int i = 0; i < requiredIndexes.size(); ++i )
             {
-                s += " " + boost::lexical_cast<std::string>( requiredIndexes[i] );
+//                s += " " + boost::lexical_cast<std::string>( requiredIndexes[i] );
+                  s += " " + requiredIndexes[i];
             }
 
             s += " }";
@@ -115,7 +119,8 @@ void DenseMatrix<ValueType>::computeOwners()
 
         for ( std::vector<PartitionId>::size_type i = 0; i < mOwners.size(); ++i )
         {
-            s += " " + boost::lexical_cast<std::string>( mOwners[i] );
+//            s += " " + boost::lexical_cast<std::string>( mOwners[i] );
+            s += " " + mOwners[i];
         }
 
         s += " }";
@@ -589,13 +594,19 @@ void DenseMatrix<ValueType>::invert( const Matrix& other )
 template<typename ValueType>
 bool DenseMatrix<ValueType>::hasScalaPack()
 {
-    // check the LAMAInterface if ScalaPack is available ( at least on Host )
+    return false;
+
+    /* Original code:
+
+    // check the Kernel registry if ScalaPack is available ( at least on Host )
+
+    typename blaskernel::BLASKernelTrait::SCALAPACK<ValueType>::inverse inverse = loc->getInterface().BLAS.inverse<ValueType>();
 
     ContextPtr loc = Context::getContextPtr( context::Host );
 
-    typename BLASInterface::SCALAPACK<ValueType>::inverse inverse = loc->getInterface().BLAS.inverse<ValueType>();
-
     return inverse != NULL;
+
+    */
 }
 
 /* ------------------------------------------------------------------ */
@@ -625,47 +636,50 @@ void DenseMatrix<ValueType>::invertReplicated()
 template<typename ValueType>
 void DenseMatrix<ValueType>::invertCyclic()
 {
-    SCAI_REGION( "Mat.Dense.invertCyclic" )
+	// ToDO: invertCyclic uses function invert from Scalapack, interface should not know Communicator
 
-    const Communicator& comm = getDistribution().getCommunicator();
-
-    const Distribution& rowDist = getDistribution();
-
-    const CyclicDistribution* cyclicDist = dynamic_cast<const CyclicDistribution*>( &rowDist );
-
-    SCAI_ASSERT_ERROR( cyclicDist, "no cyclic distribution: " << rowDist )
-
-    const int nb = cyclicDist->chunkSize(); // blocking factor
-
-    ContextPtr loc = getContextPtr(); // location where inverse computation will be done
-
-    LAMA_INTERFACE_FN_DEFAULT_T( inverse, loc, BLAS, SCALAPACK, ValueType );
-
-    // be careful: loc might have changed to location where 'inverse' is available
-
-    const int n = getNumRows();
-
-    // assert square matrix
-
-    SCAI_ASSERT_EQUAL_ERROR( getNumColumns(), n )
-
-    DenseStorage<ValueType>& denseStorage = getLocalStorage();
-
-    const IndexType localSize = denseStorage.getData().size();
-
-    SCAI_ASSERT_EQUAL_ERROR( localSize, denseStorage.getNumRows() * n )
-
-    SCAI_LOG_INFO( logger, "local dense data = " << denseStorage << ", localSize = " << localSize )
-
-    WriteAccess<ValueType> localValues( denseStorage.getData(), loc );
-
-    ValueType* data = localValues.get();
-
-    SCAI_LOG_INFO( logger, "now call inverse" )
-
-    SCAI_CONTEXT_ACCESS( loc )
-
-    inverse( n, nb, data, comm );
+//    SCAI_REGION( "Mat.Dense.invertCyclic" )
+//
+//    const Communicator& comm = getDistribution().getCommunicator();
+//
+//    const Distribution& rowDist = getDistribution();
+//
+//    const CyclicDistribution* cyclicDist = dynamic_cast<const CyclicDistribution*>( &rowDist );
+//
+//    SCAI_ASSERT_ERROR( cyclicDist, "no cyclic distribution: " << rowDist )
+//
+//    const int nb = cyclicDist->chunkSize(); // blocking factor
+//
+//    static LAMAKernel<blaskernel::BLASKernelTrait::inverse<ValueType> > inverse;
+//
+//    // location where inverse computation will be done
+//    ContextPtr loc = inverse.getValidContext( this->getContextPtr() );
+//
+//    // be careful: loc might have changed to location where 'inverse' is available
+//
+//    const int n = getNumRows();
+//
+//    // assert square matrix
+//
+//    SCAI_ASSERT_EQUAL_ERROR( getNumColumns(), n )
+//
+//    DenseStorage<ValueType>& denseStorage = getLocalStorage();
+//
+//    const IndexType localSize = denseStorage.getData().size();
+//
+//    SCAI_ASSERT_EQUAL_ERROR( localSize, denseStorage.getNumRows() * n )
+//
+//    SCAI_LOG_INFO( logger, "local dense data = " << denseStorage << ", localSize = " << localSize )
+//
+//    WriteAccess<ValueType> localValues( denseStorage.getData(), loc );
+//
+//    ValueType* data = localValues.get();
+//
+//    SCAI_LOG_INFO( logger, "now call inverse" )
+//
+//    SCAI_CONTEXT_ACCESS( loc )
+//
+//    inverse[loc]( n, nb, data, comm );
 }
 
 /* ------------------------------------------------------------------ */
@@ -782,9 +796,89 @@ void DenseMatrix<ValueType>::swap( DenseMatrix<ValueType>& other )
 }
 
 template<typename ValueType>
-void DenseMatrix<ValueType>::assignTranspose( const Matrix& /* other */ )
+void DenseMatrix<ValueType>::assignTranspose( const Matrix& other  )
 {
-    COMMON_THROWEXCEPTION( "assignTranspose for dense matrices not supported yet" )
+    SCAI_LOG_INFO( logger, "assign transposed " << other << " to " << *this )
+
+        const DenseMatrix<ValueType>* denseMatrix = dynamic_cast<const DenseMatrix<ValueType>*>( &other );
+
+        if( denseMatrix )
+        {
+                assignTransposeImpl( *denseMatrix);
+
+        }
+        else
+        {
+        COMMON_THROWEXCEPTION( "DenseMatrix::assign currently only implemented for dense matrices of same type" )
+        }
+
+}
+
+template<typename ValueType>
+void DenseMatrix<ValueType>::assignTransposeImpl( const DenseMatrix<ValueType>& Mat)
+{
+    const Communicator& comm = Mat.getDistribution().getCommunicator();
+    IndexType size = comm.getSize();
+    //get Distribution
+    CommunicatorPtr commu = Communicator::get( "MPI" );
+    common::shared_ptr<Distribution> distRow( new BlockDistribution( Mat.getNumRows(), commu ) );
+    common::shared_ptr<Distribution> distCol( new BlockDistribution( Mat.getNumColumns(), commu));
+
+    if(size == 1){          // localTranspose == globalTranpose, if processor nr == 1
+        if(this != &Mat)
+            assign(Mat); 
+        mData[0]->transposeImpl();
+        redistribute(distCol,distRow);
+    }
+    else{
+        //new storage, distribution already changed
+        DenseMatrix<ValueType> targetMat(distCol,distRow);
+        
+        //local transpose of Mat
+        for(IndexType i=0; i<size;++i)
+            Mat.mData[i]->transposeImpl();    
+ 
+        //preparation for mpi all2allv
+        IndexType* receiveSizes = new IndexType[size];  
+        ValueType **recvBuffer = new ValueType*[size];
+    
+        for(IndexType i=0;i<size;++i){
+            IndexType localSize = targetMat.mData[i]->getData().size();
+            recvBuffer[i] = new ValueType[localSize];
+            WriteAccess<ValueType> wData(targetMat.mData[i]->getData() );  
+            //local data
+            recvBuffer[i] = wData.get();
+            //local data sizes
+            receiveSizes[i] = localSize;
+        }
+
+        IndexType* sendSizes = new IndexType[size];
+        ValueType** sendBuffer = new ValueType*[size];
+
+        for(IndexType i=0;i<size;++i){
+            IndexType localSize =  Mat.mData[i]->getData().size();
+            sendBuffer[i] = new ValueType[ localSize];    
+            WriteAccess<ValueType> wDatas( Mat.mData[i]->getData() );
+            //local datal
+            sendBuffer[i] = wDatas.get();
+            //local data sizes
+            sendSizes[i] = localSize;
+        }
+        //MPI call
+        comm.all2allv(recvBuffer,receiveSizes,sendBuffer,sendSizes);
+
+        //transpose back of Mat (A^t)^t = A 
+        if(this != &Mat){ // no need if we override Mat anyways
+            for(IndexType i=0; i<size;++i)
+                Mat.mData[i]->transposeImpl();    
+        }
+
+        *this = targetMat;
+
+        delete [] sendSizes;
+        delete [] receiveSizes;
+
+    }
 }
 
 template<typename ValueType>
@@ -1020,7 +1114,7 @@ void DenseMatrix<ValueType>::joinColumnData(
 
     std::vector<ReadAccessPtr> chunkRead( numColPartitions );
 
-    ContextPtr hostContext = Context::getContextPtr( context::Host );
+    ContextPtr hostContext = Context::getHostPtr();
 
     // Get read access to all chunks, make some assertions for each chunk
 
@@ -1140,7 +1234,7 @@ void DenseMatrix<ValueType>::splitColumnData(
 
     // Get write access to all chunks, make some assertions for each chunk
 
-    ContextPtr contextPtr = Context::getContextPtr( context :: Host );
+    ContextPtr contextPtr = Context::getHostPtr();
 
     for ( PartitionId p = 0; p < numChunks; ++p )
     {
@@ -1244,7 +1338,7 @@ void DenseMatrix<ValueType>::localize(
 
     local.allocate( numLocalRows, numColumns );
 
-    ContextPtr contextPtr = Context::getContextPtr( context :: Host );
+    ContextPtr contextPtr = Context::getHostPtr();
 
     ReadAccess<ValueType> repData( global.getData(), contextPtr );
     WriteAccess<ValueType> distData( local.getData(), contextPtr );
@@ -1276,7 +1370,7 @@ static void replicate(
     SCAI_ASSERT_EQUAL_DEBUG( replicatedData.getNumRows(), distribution.getGlobalSize() )
     SCAI_ASSERT_EQUAL_DEBUG( distributedData.getNumRows(), distribution.getLocalSize() )
 
-    ContextPtr contextPtr = Context::getContextPtr( context :: Host );
+    ContextPtr contextPtr = Context::getHostPtr();
 
     WriteAccess<ValueType> globalVals( replicatedData.getData(), contextPtr );
     ReadAccess<ValueType> localVals( distributedData.getData(), contextPtr );
@@ -1516,7 +1610,7 @@ void DenseMatrix<ValueType>::setDiagonal( const Scalar diagonalValue )
         COMMON_THROWEXCEPTION( "Diagonal calculation only for equal distributions." )
     }
 
-    getLocalStorage().setDiagonal( diagonalValue );
+    getLocalStorage().setDiagonal( diagonalValue.getValue<ValueType>() );
 }
 
 template<typename ValueType>
@@ -1527,7 +1621,7 @@ void DenseMatrix<ValueType>::scale( const Vector& vector )
         COMMON_THROWEXCEPTION( "Diagonal calculation only for equal distributions." )
     }
 
-    getLocalStorage().scale( vector.getLocalValues() );
+    getLocalStorage().scaleRows( vector.getLocalValues() );
 }
 
 template<typename ValueType>
@@ -1538,7 +1632,7 @@ void DenseMatrix<ValueType>::scale( const Scalar scaleValue )
 //        COMMON_THROWEXCEPTION( "Diagonal calculation only for equal distributions." )
 //    }
 
-    getLocalStorage().scale( scaleValue );
+    getLocalStorage().scale( scaleValue.getValue<ValueType>() );
 }
 
 template<typename ValueType>
@@ -1677,7 +1771,7 @@ void DenseMatrix<ValueType>::matrixTimesVectorImpl(
     mSendValues.clear();
     mReceiveValues.clear();
 
-    ContextPtr contextPtr = Context::getContextPtr( context :: Host );
+    ContextPtr contextPtr = Context::getHostPtr();
 
     LAMAArray<ValueType>* sendValues = &mSendValues;
     LAMAArray<ValueType>* recvValues = &mReceiveValues;
@@ -1750,16 +1844,16 @@ void DenseMatrix<ValueType>::matrixTimesVectorImpl(
 
             LAMAArray<ValueType> x( mData[actualPartition]->getNumColumns() );
             {
-                ContextPtr loc = getContextPtr();
+                static LAMAKernel<blaskernel::BLASKernelTrait::copy<ValueType> > copy;
 
-                LAMA_INTERFACE_FN_DEFAULT_T( copy, loc, BLAS, BLAS1, ValueType );
+                ContextPtr loc = copy.getValidContext( this->getContextPtr() );
 
                 SCAI_CONTEXT_ACCESS( loc )
 
                 ReadAccess<ValueType> readSend( *sendValues, loc );
                 WriteAccess<ValueType> writeX( x, loc );
 
-                copy( mData[actualPartition]->getNumColumns(), readSend.get(), 1, writeX.get(), 1, NULL );
+                copy[loc]( mData[actualPartition]->getNumColumns(), readSend.get(), 1, writeX.get(), 1 );
             }
 
             mData[actualPartition]->matrixTimesVector( localResult, alphaValue, x, static_cast<ValueType>(1.0), localResult );
@@ -2260,10 +2354,10 @@ Matrix* DenseMatrix<ValueType>::create()
 }
 
 template<typename ValueType>
-std::pair<MatrixStorageFormat, common::scalar::ScalarType> DenseMatrix<ValueType>::createValue()
+MatrixCreateKeyType DenseMatrix<ValueType>::createValue()
 {
     common::scalar::ScalarType skind = common::getScalarType<ValueType>();
-    return std::pair<MatrixStorageFormat, common::scalar::ScalarType> ( Format::DENSE, skind );
+    return MatrixCreateKeyType ( Format::DENSE, skind );
 }
 
 /* ========================================================================= */

@@ -33,30 +33,33 @@
 #include <scai/hmemo/Context.hpp>
 #include <scai/hmemo/ReadAccess.hpp>
 #include <scai/hmemo/WriteOnlyAccess.hpp>
-#include <scai/common/Assert.hpp>
+#include <scai/common/macros/assert.hpp>
 
 using namespace scai::hmemo;
 
 /* --------------------------------------------------------------------- */
 
-SCAI_LOG_DEF_LOGGER( logger, "ContextTest" )
+SCAI_LOG_DEF_LOGGER( logger, "AliasTest" )
 
-using namespace scai::hmemo;
+using namespace scai;
 
-typedef LAMAArray<double> Array;
+typedef hmemo::LAMAArray<double> Array;
 
 void add ( Array& res, const Array& a, const Array& b )
 {
-    SCAI_ASSERT_LE( res.size(), a.size(), "size mismatch" )
-    SCAI_ASSERT_LE( res.size(), b.size(), "size mismatch" )
+    SCAI_ASSERT_LE( a.size(), b.size(), "size mismatch" )
 
-    IndexType n = res.size();
+    IndexType n = a.size();
 
-    ContextPtr host = Context::getContextPtr( context::Host );
+    ContextPtr hostCtx = hmemo::Context::getHostPtr();
 
-    WriteOnlyAccess<double> write( res, host );
-    ReadAccess<double>read1( a, host );
-    ReadAccess<double>read2( b, host );
+    SCAI_LOG_INFO( logger, "res = a + b, n = " << n << ", on " << *hostCtx )
+
+    // Be careful: read accesses should appear before write only access
+
+    hmemo::WriteOnlyAccess<double> write( res, hostCtx, n );
+    hmemo::ReadAccess<double>read1( a, hostCtx );
+    hmemo::ReadAccess<double>read2( b, hostCtx );
  
     double* resPtr = write.get();
     const double* aPtr = read1.get();
@@ -68,13 +71,60 @@ void add ( Array& res, const Array& a, const Array& b )
     }
 }
 
+void add1 ( Array& a )
+{
+    ContextPtr gpuCtx = hmemo::Context::getContextPtr( common::context::Host );
+
+    IndexType n = a.size();
+
+    SCAI_LOG_INFO( logger, "a = a + 1, n = " << n << ", on " << *gpuCtx )
+
+    hmemo::WriteAccess<double> write( a, gpuCtx );
+
+    double* aPtr = write.get();
+
+    for ( IndexType i = 0; i < n; ++i )
+    {
+        aPtr[i] += 1;
+    }
+}
+
+void printIt( const Array& a )
+{
+    using namespace std;
+
+    ContextPtr hostCtx = hmemo::Context::getHostPtr();
+
+    IndexType n = a.size();
+
+    hmemo::ReadAccess<double>read( a, hostCtx );
+
+    const double* aPtr = read.get();
+
+    cout << "Array a =";
+
+    for ( IndexType i = 0; i < n; ++i )
+    {
+        cout << " " << aPtr[i];
+    }
+    cout << endl;
+}
+
 int main()
 {
-    Array a( 10 );
+    Array a;
     Array b( 10 , 1.0 );
-    Array c( 10 , 1.0 );
+    Array c( 10 , 2.0 );
 
     add( a, b, c ); // this is okay
     add( a, a, b ); // this crashed in earlier versions
+    
+    // now make sure that we have only a valid copy on GPU
+
+    add1( a );
+
+    add( a, a, c );  // might use the old Host values
+
+    printIt( a );  // should be 1 + 2 + 1 + 1 + 2 = 7
 }
 

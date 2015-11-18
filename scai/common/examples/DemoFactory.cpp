@@ -129,6 +129,11 @@ private:
     }
 };
 
+// Explicit instantiation of static CRTP variabled required for some compilers
+// Does not work on all compilers: template class Base::Register<Derived2>;
+
+template Base::Register<Derived2>::RegisterGuard Base::Register<Derived2>::registerGuard;
+
 /** @brief Derived template class of Base that uses Register class of Factory.
  */
 template<typename T>
@@ -160,10 +165,10 @@ private:
     }
 };
 
-// Instantiation of template class, does also the registration
+// Register guard instantiation, does also template instantiation
 
-template class Derived<int>;
-template class Derived<float>;
+template Base::Register<Derived<int> >::RegisterGuard Base::Register<Derived<int> >::registerGuard;
+template Base::Register<Derived<float> >::RegisterGuard Base::Register<Derived<float> >::registerGuard;
 
 using namespace std;
 

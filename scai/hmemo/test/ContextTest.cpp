@@ -7,6 +7,8 @@
 
 #include "MockContext.hpp"
 
+using namespace scai::common::context;
+
 BOOST_AUTO_TEST_CASE( ContextTest )
 {
     SCAI_LOG_DEF_LOGGER( logger, "Test" )
@@ -15,9 +17,9 @@ BOOST_AUTO_TEST_CASE( ContextTest )
 
     using namespace scai::hmemo;
 
-    ContextPtr userContext  = Context::getContextPtr( context::UserContext, 1 );
-    ContextPtr userContext2 = Context::getContextPtr( context::UserContext, 2 );
-    ContextPtr hostContext  = Context::getContextPtr( context::Host );
+    ContextPtr userContext  = Context::getContextPtr( UserContext, 1 );
+    ContextPtr userContext2 = Context::getContextPtr( UserContext, 2 );
+    ContextPtr hostContext  = Context::getContextPtr( Host );
 
     SCAI_LOG_INFO( logger, "userContext = " << *userContext );
 

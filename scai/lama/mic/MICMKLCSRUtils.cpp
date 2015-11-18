@@ -28,7 +28,6 @@
  * @brief Implementation of CSR utilities with MICMKL
  * @author Thomas Brandes
  * @date 02.07.2012
- * @since 1.0.0
  */
 
 // hpp
@@ -36,14 +35,14 @@
 
 // local library
 #include <scai/lama/mic/MICUtils.hpp>
-
-#include <scai/lama/LAMAInterface.hpp>
-#include <scai/lama/LAMAInterfaceRegistry.hpp>
+#include <scai/lama/CSRKernelTrait.hpp>
 
 // internal scai libraries
 #include <scai/tracing.hpp>
+#include <scai/kregistry/KernelRegistry.hpp>
+#include <scai/hmemo/mic/MICSyncToken.hpp>
 
-#include <scai/common/Assert.hpp>
+#include <scai/common/macros/assert.hpp>
 #include <scai/common/Settings.hpp>
 #include <scai/common/Constants.hpp>
 
@@ -54,6 +53,7 @@ namespace scai
 {
 
 using namespace hmemo;
+using tasking::MICSyncToken;
 
 namespace lama
 {
@@ -74,17 +74,18 @@ void MICMKLCSRUtils::normalGEMV(
     const IndexType /* nnz */,
     const IndexType csrIA[],
     const IndexType csrJA[],
-    const float csrValues[],
-    SyncToken* syncToken )
+    const float csrValues[] )
 {
     // SCAI_REGION( "MIC.MKLscsrmv" )
 
     SCAI_LOG_INFO( logger,
                    "normalGEMV<float>, result[" << numRows << "] = " << alpha << " * A * x + " << beta << " * y " )
 
-    if( syncToken )
+    MICSyncToken* syncToken = MICSyncToken::getCurrentSyncToken();
+
+    if ( syncToken )
     {
-        COMMON_THROWEXCEPTION( "asynchronous execution should be done by LAMATask before" )
+        SCAI_LOG_INFO( logger, "asynchronous execution for MIC not supported yet" )
     }
 
     if( y != result && beta != 0 )
@@ -127,9 +128,15 @@ void MICMKLCSRUtils::normalGEMV(
     const IndexType /* nnz */,
     const IndexType csrIA[],
     const IndexType csrJA[],
-    const double csrValues[],
-    SyncToken* syncToken )
+    const double csrValues[] )
 {
+    MICSyncToken* syncToken = MICSyncToken::getCurrentSyncToken();
+
+    if ( syncToken )
+    {
+        SCAI_LOG_INFO( logger, "asynchronous execution for MIC not supported yet" )
+    }
+
     // SCAI_REGION( "MIC.MKLdcsrmv" )
 
     SCAI_LOG_INFO( logger,
@@ -180,7 +187,7 @@ void MICMKLCSRUtils::normalGEMV(
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
-void MICMKLCSRUtils::setInterface( CSRUtilsInterface& CSRUtils )
+void MICMKLCSRUtils::registerKernels( bool deleteFlag )
 {
     bool useMKL = true;
 
@@ -197,25 +204,43 @@ void MICMKLCSRUtils::setInterface( CSRUtilsInterface& CSRUtils )
 
     // LAMA_INTERFACE_REGISTER_T( CSRUtils, normalGEMV, float )
 
-    LAMA_INTERFACE_REGISTER_T( CSRUtils, normalGEMV, double )
+    SCAI_LOG_INFO( logger, "register some CSR kernels implemented by MKL for MIC in Kernel Registry" )
+
+    using kregistry::KernelRegistry;
+    using common::context::MIC;
+
+    KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // add it or delete it
+
+    if ( deleteFlag )
+    {
+        flag = KernelRegistry::KERNEL_ERASE;
+    }
+
+    // ToDo : routine causes problems
+
+    // KernelRegistry::set<CSRKernelTrait::normalGEMV<float> >( normalGEMV, MIC, flag );
+    // KernelRegistry::set<CSRKernelTrait::normalGEMV<double> >( normalGEMV, MIC, flag );
 }
 
 /* --------------------------------------------------------------------------- */
-/*    Static registration of the Utils routines                                */
+/*    Static initialization with registration                                  */
 /* --------------------------------------------------------------------------- */
 
-bool MICMKLCSRUtils::registerInterface()
+MICMKLCSRUtils::RegisterGuard::RegisterGuard()
 {
-    LAMAInterface& interface = LAMAInterfaceRegistry::getRegistry().modifyInterface( context::MIC );
-    setInterface( interface.CSRUtils );
-    return true;
+    bool deleteFlag = false;
+    registerKernels( deleteFlag );
 }
 
-/* --------------------------------------------------------------------------- */
-/*    Static initialiazion at program start                                    */
-/* --------------------------------------------------------------------------- */
+MICMKLCSRUtils::RegisterGuard::~RegisterGuard()
+{
+    bool deleteFlag = true;
+    registerKernels( deleteFlag );
+}
 
-bool MICMKLCSRUtils::initialized = registerInterface();
+MICMKLCSRUtils::RegisterGuard MICMKLCSRUtils::guard;    // guard variable for registration
+
+
 
 } /* end namespace lama */
 

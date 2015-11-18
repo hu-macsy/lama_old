@@ -38,6 +38,7 @@
 
 using namespace scai;
 
+using namespace common;
 using namespace hmemo;
 
 typedef boost::mpl::list<double, float> test_types;

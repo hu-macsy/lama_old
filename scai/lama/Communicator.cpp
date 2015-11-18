@@ -413,30 +413,30 @@ SyncToken* Communicator::shiftAsync(
 {
     SCAI_ASSERT_ERROR( &recvArray != &sendArray, "send and receive array are same, not allowed for shift" )
 
-    ContextPtr contextPtr = Context::getContextPtr( context::Host );
+    ContextPtr contextPtr = Context::getContextPtr( common::context::Host );
 
     recvArray.clear(); // do not keep any old data, keep capacities
 
-    common::shared_ptr<WriteAccess<ValueType> > recvData( new WriteAccess<ValueType>( recvArray, contextPtr ) );
-    common::shared_ptr<ReadAccess<ValueType> > sendData( new ReadAccess<ValueType>( sendArray, contextPtr ) );
+    WriteAccess<ValueType> recvData( recvArray, contextPtr );
+    ReadAccess<ValueType> sendData( sendArray, contextPtr );
 
-    IndexType numElems = sendData->size();
+    IndexType numElems = sendData.size();
 
-    recvData->resize( numElems ); // size should fit at least to keep own data
+    recvData.resize( numElems ); // size should fit at least to keep own data
 
     // For shifting of data we use the pure virtual methods implemened by each communicator
     // Note: get is the method of the accesses and not of the auto_ptr
 
-    SyncToken* syncToken = shiftDataAsync( recvData->get(), sendData->get(), numElems, direction );
+    common::unique_ptr<SyncToken> syncToken( shiftDataAsync( recvData.get(), sendData.get(), numElems, direction ) );
 
-    SCAI_ASSERT_DEBUG( syncToken, "NULL pointer for sync token" )
+    SCAI_ASSERT_DEBUG( syncToken.get(), "NULL pointer for sync token" )
 
-    // accesses are pushed in the sync token so they are freed after synchronization
+    // release of accesses are delayed, add routines  in the sync token so they are called at synchonization
 
-    syncToken->pushToken( sendData );
-    syncToken->pushToken( recvData );
+    syncToken->pushRoutine( sendData.releaseDelayed() );
+    syncToken->pushRoutine( recvData.releaseDelayed() );
 
-    return syncToken;
+    return syncToken.release();
 }
 
 /* -------------------------------------------------------------------------- */
@@ -478,6 +478,13 @@ void Communicator::updateHalo(
 
 /* -------------------------------------------------------------------------- */
 
+static void releaseArray( common::shared_ptr<ContextArray> array )
+{
+    array->clear();
+}
+
+/* -------------------------------------------------------------------------- */
+
 template<typename ValueType>
 SyncToken* Communicator::updateHaloAsync(
     LAMAArray<ValueType>& haloValues,
@@ -511,7 +518,7 @@ SyncToken* Communicator::updateHaloAsync(
     // put together the (send) values to provide for other partitions
 
     {
-        ContextPtr contextPtr = Context::getContextPtr( context::Host );
+        ContextPtr contextPtr = Context::getContextPtr( common::context::Host );
 
         WriteAccess<ValueType> sendData( *sendValues, contextPtr );
         ReadAccess<ValueType> localData( localValues, contextPtr );
@@ -531,7 +538,7 @@ SyncToken* Communicator::updateHaloAsync(
 
     // Note: it is guaranteed that access to sendValues is freed before sendValues
 
-    token->pushToken( sendValues );
+    token->pushRoutine( common::bind( releaseArray, sendValues ) );
 
     return token;
 }
@@ -556,7 +563,7 @@ void Communicator::computeOwners(
         COMMON_THROWEXCEPTION( "The distribution has a different Communicator." )
     }
 
-    int nonLocal = 0;
+    IndexType nonLocal = 0;
 
     // Check for own ownership. Mark needed Owners. Only exchange requests for unknown indexes.
     for ( IndexType i = 0; i < nIndexes; ++i )
@@ -568,7 +575,7 @@ void Communicator::computeOwners(
         else
         {
             nonLocal++;
-            owners[i] = -1;
+            owners[i] = nIndex;
         }
     }
 
@@ -583,7 +590,7 @@ void Communicator::computeOwners(
     LAMAArray<IndexType> ownersSendArray( receiveSize );
     LAMAArray<IndexType> ownersReceiveArray( receiveSize );
 
-    ContextPtr contextPtr = Context::getContextPtr( context::Host );
+    ContextPtr contextPtr = Context::getContextPtr( common::context::Host );
 
     {
         WriteAccess<IndexType> indexesSend( indexesSendArray, contextPtr );
@@ -593,7 +600,7 @@ void Communicator::computeOwners(
 
         for ( IndexType i = 0; i < static_cast<IndexType>( nIndexes ); ++i )
         {
-            if ( owners[i] == -1 )
+            if ( owners[i] == nPartition )
             {
                 indexesSend[nonLocal++] = requiredIndexes[i];
             }
@@ -603,12 +610,12 @@ void Communicator::computeOwners(
 
         for ( IndexType i = 0; i < receiveSize; ++i )
         {
-            ownersSend[i] = -1;
+            ownersSend[i] = nIndex;
         }
     }
 
-    int ownersSize = -1;
-    int currentSize = nonLocal;
+    IndexType ownersSize = nIndex;
+    IndexType currentSize = nonLocal;
 
     const int direction = 1; // send to right, recv from left
 
@@ -625,20 +632,20 @@ void Communicator::computeOwners(
 
         currentSize = shiftData( indexesReceive.get(), receiveSize, indexesSend.get(), currentSize, direction );
 
-        SCAI_ASSERT_ERROR( ownersSize == -1 || currentSize == ownersSize, "Communication corrupted." )
+        SCAI_ASSERT_ERROR( ownersSize == nIndex || currentSize == ownersSize, "Communication corrupted." )
 
         SCAI_LOG_DEBUG( logger, "owners size = " << ownersSize << ", current size = " << currentSize )
         IndexType* indexes = indexesReceive.get();
-        int* currentOwners = ownersSend.get();
+        IndexType* currentOwners = ownersSend.get();
         SCAI_LOG_DEBUG( logger, "check buffer with " << currentSize << " global indexes whether I am owner" )
 
-        for ( int i = 0; i < currentSize; ++i )
+        for ( IndexType i = 0; i < currentSize; ++i )
         {
             //TODO there should be a blockwise implementation of isLocal
             SCAI_LOG_TRACE( logger,
                             "check global index " << indexes[i] << " with current owner " << currentOwners[i] << ", is local = " << distribution.isLocal( indexes[i] ) )
 
-            if ( currentOwners[i] == -1 && distribution.isLocal( indexes[i] ) )
+            if ( currentOwners[i] == nIndex && distribution.isLocal( indexes[i] ) )
             {
                 SCAI_LOG_TRACE( logger, *this << ": me is owner of global index " << indexes[i] )
                 currentOwners[i] = rank;
@@ -652,7 +659,7 @@ void Communicator::computeOwners(
 
         SCAI_LOG_DEBUG( logger, *this << ": send array with " << currentSize << " owners to right" )
 
-        for ( int i = 0; i < currentSize; i++ )
+        for ( IndexType i = 0; i < currentSize; i++ )
         {
             SCAI_LOG_TRACE( logger, *this << " send currentOwner[" << i << "] = " << ownersSend[i] )
         }
@@ -662,7 +669,7 @@ void Communicator::computeOwners(
 
         SCAI_LOG_DEBUG( logger, *this << ": recvd array with " << ownersSize << " owners from left" )
 
-        for ( int i = 0; i < ownersSize; i++ )
+        for ( IndexType i = 0; i < ownersSize; i++ )
         {
             SCAI_LOG_TRACE( logger, *this << ": recv currentOwner[" << i << "] = " << ownersReceive[i] )
         }
@@ -687,7 +694,7 @@ void Communicator::computeOwners(
 
     for ( IndexType i = 0; i < nIndexes; ++i )
     {
-        if ( owners[i] == -1 )
+        if ( owners[i] == nIndex )
         {
             owners[i] = ownersSend[nn++];
 
@@ -704,14 +711,14 @@ void Communicator::computeOwners(
 
 bool Communicator::all( const bool flag ) const
 {
-    int val = 0; // flag is true
+    IndexType val = 0; // flag is true
 
     if ( !flag )
     {
         val = 1;
     }
 
-    int allval = sum( val ); // count flags == false
+    IndexType allval = sum( val ); // count flags == false
 
     SCAI_LOG_DEBUG( logger, "sum( " << val << " ) = " << allval )
 
@@ -722,9 +729,9 @@ bool Communicator::all( const bool flag ) const
 
 bool Communicator::any( const bool flag ) const
 {
-    int val = flag ? 1 : 0; //  1 if flag is true
+    IndexType val = flag ? 1 : 0; //  1 if flag is true
 
-    int allval = sum( val ); // count flags == false
+    IndexType allval = sum( val ); // count flags == false
 
     SCAI_LOG_DEBUG( logger, "sum( " << val << " ) = " << allval )
 
@@ -739,7 +746,7 @@ void Communicator::bcast( std::string& val, const PartitionId root ) const
 
     bool isRoot = getRank() == root;
 
-    int len = 0;
+    IndexType len = 0;    // IndexType is supported by bcast
 
     if ( isRoot )
     {

@@ -11,6 +11,8 @@ BOOST_AUTO_TEST_CASE( host_context )
 
     using namespace scai::hmemo;
 
+    namespace context = scai::common::context;
+
     BOOST_CHECK( Context::canCreate( context::Host ) );
 
     ContextPtr host = Context::create( context::Host, -1 );

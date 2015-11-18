@@ -45,7 +45,9 @@
 // internal scai libraries
 #include <scai/logging.hpp>
 
-#include <scai/common/exception/Exception.hpp>
+#include <scai/common/macros/throw.hpp>
+#include <scai/common/function.hpp>
+#include <scai/common/bind.hpp>
 
 namespace scai
 {
@@ -162,6 +164,15 @@ public:
     virtual void release();
 
     /**
+     * @brief Return function that does the release later.
+     *
+     * This method can be used for asynchronous operations so the array is kept 
+     * locked even if the ~WriteAccess has been called.
+     */
+
+    common::function<void()> releaseDelayed();
+
+    /**
      * @brief Override method of base class Printable
      */
     virtual void writeAt( std::ostream& stream ) const;
@@ -203,7 +214,7 @@ WriteAccess<ValueType>::WriteAccess( LAMAArray<ValueType>& array, const bool kee
 {
     SCAI_ASSERT( !array.constFlag, "WriteAccess on const array not allowed: " << array )
 
-    ContextPtr contextPtr = Context::getContextPtr( context::Host );
+    ContextPtr contextPtr = Context::getContextPtr( common::context::Host );
 
     SCAI_LOG_DEBUG( logger, "acquire write access for " << *mArray << " at " << *contextPtr << ", keep = " << keep )
     mContextDataIndex = mArray->acquireWriteAccess( contextPtr, keep );
@@ -314,6 +325,25 @@ void WriteAccess<ValueType>::release()
 
     mArray = 0;
     mData = 0;
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+common::function<void()> WriteAccess<ValueType>::releaseDelayed()
+{
+    SCAI_ASSERT( mArray, "releaseDelay not possible on released access" )
+
+    void ( ContextArray::*releaseAccess ) ( ContextDataIndex ) = &ContextArray::releaseWriteAccess;
+
+    ContextArray* ctxArray = mArray; 
+
+    // This access itself is treated as released
+
+    mArray = 0;
+    mData  = 0;
+
+    return common::bind( releaseAccess, ctxArray, mContextDataIndex ); 
 }
 
 /* --------------------------------------------------------------------------- */

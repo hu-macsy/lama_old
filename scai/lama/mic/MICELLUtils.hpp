@@ -45,11 +45,6 @@
 namespace scai
 {
 
-namespace tasking
-{
-    class SyncToken;   // forward declaration
-}
-
 namespace lama
 {
 
@@ -62,12 +57,6 @@ class COMMON_DLL_IMPORTEXPORT MICELLUtils
 {
 
 public:
-
-    /** Routine that registers all routines of this class at the LAMA interface. */
-
-    static void setInterface( struct ELLUtilsInterface& ELLUtils );
-
-private:
 
     /** This method computes the total number of non-zero rows by the size array  */
 
@@ -126,8 +115,8 @@ private:
 
     /** Returns one value of the matrix */
 
-    template<typename ValueType,typename OtherValueType>
-    static OtherValueType getValue(
+    template<typename ValueType>
+    static ValueType getValue(
         const IndexType i,
         const IndexType j,
         const IndexType numRows,
@@ -140,7 +129,7 @@ private:
 
     static bool hasDiagonalProperty( const IndexType numDiagonals, const IndexType csrJA[] );
 
-    /** Implementation for ELLUtilsInterface::Scale::scaleValue */
+    /** Implementation for ELLKernelTrait::scaleValue */
 
     template<typename ValueType,typename OtherValueType>
     static void scaleValue(
@@ -150,7 +139,7 @@ private:
         ValueType ellValues[],
         const OtherValueType values[] );
 
-    /** Implementation for ELLUtilsInterface::Conversions::compressIA */
+    /** Implementation for ELLKernelTrait::compressIA */
 
     template<typename ValueType>
     static void compressIA(
@@ -161,7 +150,7 @@ private:
         const ValueType eps,
         IndexType newIA[] );
 
-    /** Implementation for ELLUtilsInterface::Conversions::compressValues */
+    /** Implementation for ELLKernelTrait::compressValues */
 
     template<typename ValueType>
     static void compressValues(
@@ -173,7 +162,7 @@ private:
         IndexType newJA[],
         ValueType newValues[] );
 
-    /** Implementation for ELLUtilsInterface::Conversions::getCSRValues */
+    /** Implementation for ELLKernelTrait::getCSRValues */
 
     template<typename ELLValueType,typename CSRValueType>
     static void getCSRValues(
@@ -194,7 +183,7 @@ private:
         const IndexType numRows,
         const IndexType numValuesPerRow );
 
-    /** Implementation for ELLUtilsInterface::Conversions::setCSRValues */
+    /** Implementation for ELLKernelTrait::setCSRValues */
 
     template<typename ELLValueType,typename CSRValueType>
     static void setCSRValues(
@@ -207,7 +196,7 @@ private:
         const IndexType csrJA[],
         const CSRValueType csrValues[] );
 
-    /** Implementation for ELLUtilsInterface::MatrixTimesMatrix::computeIA */
+    /** Implementation for ELLKernelTrait::computeIA */
 
     template<typename ValueType>
     static void computeIA(
@@ -219,7 +208,7 @@ private:
         const IndexType bNumRows,
         IndexType cIA[] );
 
-    /** Implementation for ELLUtilsInterface::MatrixTimesMatrix::computeValues */
+    /** Implementation for ELLKernelTrait::computeValues */
 
     template<typename ValueType>
     static void computeValues(
@@ -236,7 +225,7 @@ private:
         IndexType cJA[],
         ValueType cValues[] );
 
-    /** Implementation for ELLUtilsInterface::MatrixTimesMatrix::addComputeIA */
+    /** Implementation for ELLKernelTrait::addComputeIA */
 
     template<typename ValueType>
     static void addComputeIA(
@@ -248,7 +237,7 @@ private:
         const IndexType bNumRows,
         IndexType cIA[] );
 
-    /** Implementation for ELLUtilsInterface::MatrixTimesMatrix::addComputeValues */
+    /** Implementation for ELLKernelTrait::addComputeValues */
 
     template<typename ValueType>
     static void addComputeValues(
@@ -265,7 +254,7 @@ private:
         IndexType cJA[],
         ValueType cValues[] );
 
-    /** Implementation for ELLUtilsInterface::Solver::jacobi */
+    /** Implementation for ELLKernelTrait::jacobi */
 
     template<typename ValueType>
     static void jacobi(
@@ -277,10 +266,9 @@ private:
         const ValueType ellValues[],
         const ValueType oldSolution[],
         const ValueType rhs[],
-        const ValueType omega,
-        tasking::SyncToken* syncToken );
+        const ValueType omega );
 
-    /** Implementation for ELLUtilsInterface::Solver::jacobiHalo */
+    /** Implementation for ELLKernelTrait::jacobiHalo */
 
     template<typename ValueType>
     static void jacobiHalo(
@@ -294,10 +282,9 @@ private:
         const IndexType rowIndexes[],
         const IndexType numNonEmptyRows,
         const ValueType oldSolution[],
-        const ValueType omega,
-        tasking::SyncToken* syncToken );
+        const ValueType omega );
 
-    /** Implementation for ELLUtilsInterface::Mult::normalGEMV  */
+    /** Implementation for ELLKernelTrait::normalGEMV  */
 
     template<typename ValueType>
     static void normalGEMV(
@@ -310,10 +297,9 @@ private:
         const IndexType numNonZerosPerRow,
         const IndexType csrIA[],
         const IndexType csrJA[],
-        const ValueType csrValues[],
-        tasking::SyncToken* syncToken );
+        const ValueType csrValues[] );
 
-    /** Implementation for ELLUtilsInterface::Mult::sparseGEMV  */
+    /** Implementation for ELLKernelTrait::sparseGEMV  */
 
     template<typename ValueType>
     static void sparseGEMV(
@@ -326,38 +312,28 @@ private:
         const IndexType rowIndexes[],
         const IndexType csrIA[],
         const IndexType csrJA[],
-        const ValueType csrValues[],
-        tasking::SyncToken* syncToken );
-
-    template<typename ValueType>
-    static void normalGEMV(
-        ValueType result[],
-        const ValueType alpha,
-        const ValueType x[],
-        const ValueType beta,
-        const ValueType y[],
-        const IndexType numRows,
-        const IndexType csrIA[],
-        const IndexType csrJA[],
         const ValueType csrValues[] );
 
-    template<typename ValueType>
-    static void sparseGEMV(
-        ValueType result[],
-        const IndexType numRows,
-        const ValueType alpha,
-        const ValueType x[],
-        const IndexType numNonZeroRows,
-        const IndexType rowIndexes[],
-        const IndexType csrIA[],
-        const IndexType csrJA[],
-        const ValueType csrValues[] );
+protected:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
-    static    bool initialized;
+private:
 
-    static bool registerInterface();
+    /** Routine that registers all methods at the kernel registry. */
+
+    static void registerKernels( bool deleteFlag );
+
+    /** Helper class for (un) registration of kernel routines at static initialization. */
+
+    class RegisterGuard
+    {
+    public:
+        RegisterGuard();
+        ~RegisterGuard();
+    };
+
+    static RegisterGuard guard;  // registration of kernels @ static initialization
 };
 
 /* --------------------------------------------------------------------------- */
