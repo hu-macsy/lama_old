@@ -33,6 +33,8 @@
 
 #pragma once
 
+#include <scai/blaskernel/MKLUtils.hpp>
+
 #include <scai/common/exception/NotSupportedValueTypeException.hpp>
 
 #include <scai/common/macros/unused.hpp>
@@ -75,19 +77,6 @@ public:
 			ValueType* UNUSED(B), const LAPACKIndexType UNUSED(ldb)) {
 		SCAI_THROWEXCEPTION(common::NotSupportedValueTypeException, "tptrs");
 	}
-
-private:
-
-	template<typename ValueType, typename MKLType>
-	static inline MKLType* mklCast(ValueType* x) {
-		return reinterpret_cast<MKLType*>(x);
-	}
-
-	template<typename ValueType, typename MKLType>
-	static inline const MKLType* mklCast(const ValueType* x) {
-		return reinterpret_cast<const MKLType*>(x);
-	}
-
 };
 
 template<>
@@ -112,7 +101,7 @@ LAPACKeWrapper::LAPACKIndexType LAPACKeWrapper::getrf<ComplexFloat>(
 		const LAPACKIndexType n, ComplexFloat* const a,
 		const LAPACKIndexType lda, LAPACKIndexType* const ipiv) {
 	return LAPACKE_cgetrf(matrix_order, m, n,
-			mklCast<ComplexFloat, MKL_Complex8>(a), lda, ipiv);
+			MKLUtils::cast(a), lda, ipiv);
 }
 
 template<>
@@ -121,7 +110,7 @@ LAPACKeWrapper::LAPACKIndexType LAPACKeWrapper::getrf<ComplexDouble>(
 		const LAPACKIndexType n, ComplexDouble* const a,
 		const LAPACKIndexType lda, LAPACKIndexType* const ipiv) {
 	return LAPACKE_zgetrf(matrix_order, m, n,
-			mklCast<ComplexDouble, MKL_Complex16>(a), lda, ipiv);
+			MKLUtils::cast(a), lda, ipiv);
 }
 
 template<>
@@ -145,7 +134,7 @@ LAPACKeWrapper::LAPACKIndexType LAPACKeWrapper::getri<ComplexFloat>(
 		ComplexFloat* const A, const LAPACKIndexType lda,
 		LAPACKIndexType* const ipiv) {
 	return LAPACKE_cgetri(matrix_order, n,
-			mklCast<ComplexFloat, MKL_Complex8>(A), lda, ipiv);
+			MKLUtils::cast(A), lda, ipiv);
 }
 
 template<>
@@ -154,7 +143,7 @@ LAPACKeWrapper::LAPACKIndexType LAPACKeWrapper::getri<ComplexDouble>(
 		ComplexDouble* const A, const LAPACKIndexType lda,
 		LAPACKIndexType* const ipiv) {
 	return LAPACKE_zgetri(matrix_order, n,
-			mklCast<ComplexDouble, MKL_Complex16>(A), lda, ipiv);
+			MKLUtils::cast(A), lda, ipiv);
 }
 
 template<>
@@ -182,8 +171,8 @@ LAPACKeWrapper::LAPACKIndexType LAPACKeWrapper::tptrs<ComplexFloat>(
 		const LAPACKIndexType nrhs, const ComplexFloat* AP, ComplexFloat* B,
 		const LAPACKIndexType ldb) {
 	return LAPACKE_ctptrs(matrix_order, uplo, trans, diag, n, nrhs,
-			mklCast<ComplexFloat, MKL_Complex8>(AP),
-			mklCast<ComplexFloat, MKL_Complex8>(B), ldb);
+			MKLUtils::cast(AP),
+			MKLUtils::cast(B), ldb);
 }
 
 template<>
@@ -193,8 +182,8 @@ LAPACKeWrapper::LAPACKIndexType LAPACKeWrapper::tptrs<ComplexDouble>(
 		const LAPACKIndexType nrhs, const ComplexDouble* AP, ComplexDouble* B,
 		const LAPACKIndexType ldb) {
 	return LAPACKE_ztptrs(matrix_order, uplo, trans, diag, n, nrhs,
-			mklCast<ComplexDouble, MKL_Complex16>(AP),
-			mklCast<ComplexDouble, MKL_Complex16>(B), ldb);
+			MKLUtils::cast(AP),
+			MKLUtils::cast(B), ldb);
 }
 
 } /* end namespace blaskernel */
