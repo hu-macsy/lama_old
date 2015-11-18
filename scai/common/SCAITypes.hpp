@@ -88,7 +88,7 @@ typedef scai::common::Complex<long double> ComplexLongDouble;
 /** Definition for a constant value that indicates a non-available index.
  */
 
-#ifdef __INTEL_OFFLAD
+#ifdef __INTEL_OFFLOAD
 __declspec( target(mic) )
 #endif
 extern const IndexType nIndex;
@@ -100,7 +100,7 @@ typedef IndexType PartitionId;
 
 /** Definition for a constant value that indicates a non-available partition.
  */
-#ifdef __INTEL_OFFLAD
+#ifdef __INTEL_OFFLOAD
 __declspec( target(mic) )
 #endif
 extern const PartitionId nPartition;
