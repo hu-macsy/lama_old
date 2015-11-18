@@ -613,31 +613,20 @@ void OpenMPCSRUtils::normalGEMV(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-struct VectorData
-{
-    ValueType scalar;
-    const ValueType* vector;
-
-    VectorData( ValueType scalar, const ValueType* vector )
-    {
-        this->scalar = scalar;
-        this->vector = vector;
-    }
-};
-
-template<typename ValueType>
-static void normalGEVM_s(
+void OpenMPCSRUtils::normalGEVM_s(
     ValueType result[],
-    VectorData<ValueType> ax, 
-    VectorData<ValueType> by, 
+    std::pair<ValueType, const ValueType*> ax, 
+    std::pair<ValueType, const ValueType*> by, 
     const IndexType numRows,
     const IndexType numColumns,
     const IndexType csrIA[],
     const IndexType csrJA[],
     const ValueType csrValues[] )
 {
-    OpenMPCSRUtils::normalGEVM( result, ax.scalar, ax.vector, by.scalar, by.vector, numRows, numColumns, csrIA, csrJA, csrValues );
+    normalGEVM( result, ax.first, ax.second, by.first, by.second, numRows, numColumns, csrIA, csrJA, csrValues );
 }
+
+/* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
 void OpenMPCSRUtils::normalGEVM(
@@ -658,10 +647,14 @@ void OpenMPCSRUtils::normalGEVM(
     {
         // bind takes maximal 9 arguments, so we put (alpha, x) and (beta, y) in a struct
 
+        SCAI_LOG_INFO( logger, "normalGEVM<" << getScalarType<ValueType>() << ", launch it as an asynchronous task" )
+
         syncToken->run( common::bind( normalGEVM_s<ValueType>, result, 
-                                      VectorData<ValueType>( alpha, x ), 
-                                      VectorData<ValueType>( beta, y ), 
+                                      std::pair<ValueType, const ValueType*>( alpha, x ), 
+                                      std::pair<ValueType, const ValueType*>( beta, y ), 
                                       numRows, numColumns, csrIA, csrJA, csrValues ) );
+
+        return;
     }
 
     SCAI_LOG_INFO( logger,
@@ -748,6 +741,8 @@ void OpenMPCSRUtils::sparseGEMV(
     {
         syncToken->run( common::bind( sparseGEMV<ValueType>, result, alpha,
                                       x, numNonZeroRows, rowIndexes, csrIA, csrJA, csrValues ) );
+
+        return;
     }
 
     #pragma omp parallel
@@ -923,6 +918,8 @@ void OpenMPCSRUtils::jacobi(
     if ( syncToken )
     {
         syncToken->run( common::bind( jacobi<ValueType>, solution, csrIA, csrJA, csrValues, oldSolution, rhs, omega, numRows ) );
+
+        return;
     }
 
     #pragma omp parallel

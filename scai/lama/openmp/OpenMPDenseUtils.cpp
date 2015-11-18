@@ -394,13 +394,13 @@ void OpenMPDenseUtils::scaleRows(
 
     for ( IndexType i = 0; i < numRows; ++i )
     {
-        const OtherValueType scaleValue = static_cast<OtherValueType>( rowValues[i] );
+        const DenseValueType scaleValue = static_cast<DenseValueType>( rowValues[i] );
 
         // scale the whole row with this value
 
         for ( IndexType j = 0; j < numColumns; ++j )
         {
-            denseValues[denseindex( i, j, numRows, numColumns )] = scaleValue;
+            denseValues[denseindex( i, j, numRows, numColumns )] *= scaleValue;
         }
     }
 }
