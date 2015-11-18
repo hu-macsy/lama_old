@@ -560,52 +560,20 @@ void MICBLAS1::registerKernels( bool deleteFlag )
         flag = KernelRegistry::KERNEL_ERASE;
     }
 
-/*    KernelRegistry::set<BLASKernelTrait::scal<float> >( scal, MIC, flag );
-    KernelRegistry::set<BLASKernelTrait::scal<double> >( scal, MIC, flag );
-
-    KernelRegistry::set<BLASKernelTrait::scal<ComplexFloat> >( scal, MIC, flag );
-    KernelRegistry::set<BLASKernelTrait::scal<ComplexDouble> >( scal, MIC, flag );
-
-    KernelRegistry::set<BLASKernelTrait::nrm2<float> >( nrm2, MIC, flag );
-    KernelRegistry::set<BLASKernelTrait::nrm2<double> >( nrm2, MIC, flag );
-
-    KernelRegistry::set<BLASKernelTrait::asum<float> >( asum, MIC, flag );
-    KernelRegistry::set<BLASKernelTrait::asum<double> >( asum, MIC, flag );
-
-    KernelRegistry::set<BLASKernelTrait::iamax<float> >( iamax, MIC, flag );
-    KernelRegistry::set<BLASKernelTrait::iamax<double> >( iamax, MIC, flag );
-
-    KernelRegistry::set<BLASKernelTrait::swap<float> >( swap, MIC, flag );
-    KernelRegistry::set<BLASKernelTrait::swap<double> >( swap, MIC, flag );
-
-    KernelRegistry::set<BLASKernelTrait::copy<float> >( copy, MIC, flag );
-    KernelRegistry::set<BLASKernelTrait::copy<double> >( copy, MIC, flag );
-
-    KernelRegistry::set<BLASKernelTrait::axpy<float> >( axpy, MIC, flag );
-    KernelRegistry::set<BLASKernelTrait::axpy<double> >( axpy, MIC, flag );
-
-    KernelRegistry::set<BLASKernelTrait::dot<float> >( dot, MIC, flag );
-    KernelRegistry::set<BLASKernelTrait::dot<double> >( dot, MIC, flag );
-
-    KernelRegistry::set<BLASKernelTrait::sum<float> >( sum, MIC, flag );
-    KernelRegistry::set<BLASKernelTrait::sum<double> >( sum, MIC, flag );
-*/
-    
 #define LAMA_BLAS1_REGISTER(z, I, _)                                                             \
-        KernelRegistry::set<BLASKernelTrait::scal<ARITHMETIC_HOST_TYPE_##I> >( scal, MIC, flag );    \
-        KernelRegistry::set<BLASKernelTrait::nrm2<ARITHMETIC_HOST_TYPE_##I> >( nrm2, MIC, flag );    \
-        KernelRegistry::set<BLASKernelTrait::asum<ARITHMETIC_HOST_TYPE_##I> >( asum, MIC, flag );    \
-        KernelRegistry::set<BLASKernelTrait::iamax<ARITHMETIC_HOST_TYPE_##I> >( iamax, MIC, flag );  \
-        KernelRegistry::set<BLASKernelTrait::swap<ARITHMETIC_HOST_TYPE_##I> >( swap, MIC, flag );    \
-        KernelRegistry::set<BLASKernelTrait::copy<ARITHMETIC_HOST_TYPE_##I> >( copy, MIC, flag );    \
-        KernelRegistry::set<BLASKernelTrait::axpy<ARITHMETIC_HOST_TYPE_##I> >( axpy, MIC, flag );    \
-        KernelRegistry::set<BLASKernelTrait::dot<ARITHMETIC_HOST_TYPE_##I> >( dot, MIC, flag );      \
-    	KernelRegistry::set<BLASKernelTrait::sum<ARITHMETIC_HOST_TYPE_##I> >( sum, MIC, flag );
+        KernelRegistry::set<BLASKernelTrait::scal<ARITHMETIC_MIC_TYPE_##I> >( scal, MIC, flag );    \
+        KernelRegistry::set<BLASKernelTrait::nrm2<ARITHMETIC_MIC_TYPE_##I> >( nrm2, MIC, flag );    \
+        KernelRegistry::set<BLASKernelTrait::asum<ARITHMETIC_MIC_TYPE_##I> >( asum, MIC, flag );    \
+        KernelRegistry::set<BLASKernelTrait::iamax<ARITHMETIC_MIC_TYPE_##I> >( iamax, MIC, flag );  \
+        KernelRegistry::set<BLASKernelTrait::swap<ARITHMETIC_MIC_TYPE_##I> >( swap, MIC, flag );    \
+        KernelRegistry::set<BLASKernelTrait::copy<ARITHMETIC_MIC_TYPE_##I> >( copy, MIC, flag );    \
+        KernelRegistry::set<BLASKernelTrait::axpy<ARITHMETIC_MIC_TYPE_##I> >( axpy, MIC, flag );    \
+        KernelRegistry::set<BLASKernelTrait::dot<ARITHMETIC_MIC_TYPE_##I> >( dot, MIC, flag );      \
+    	KernelRegistry::set<BLASKernelTrait::sum<ARITHMETIC_MIC_TYPE_##I> >( sum, MIC, flag );
 
-        BOOST_PP_REPEAT( ARITHMETIC_HOST_EXT_TYPE_CNT, LAMA_BLAS1_REGISTER, _ )
+        BOOST_PP_REPEAT( ARITHMETIC_MIC_TYPE_CNT, LAMA_BLAS1_REGISTER, _ )
 
 #undef LAMA_BLAS1_REGISTER
-
 }
 
 /* --------------------------------------------------------------------------- */

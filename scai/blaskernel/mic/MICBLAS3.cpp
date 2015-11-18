@@ -36,6 +36,7 @@
 
 // local library
 #include <scai/blaskernel/BLASKernelTrait.hpp>
+#include <scai/blaskernel/mic/MICBLASWrapper.hpp>
 
 // internal scai libraries
 #include <scai/hmemo/mic/MICSyncToken.hpp>
@@ -77,7 +78,7 @@ inline static char trans2C( CBLAS_TRANSPOSE trans )
     }
 }
 
-template<>
+template<typename ValueType>
 void MICBLAS3::gemm(
     const CBLAS_ORDER order,
     const CBLAS_TRANSPOSE transA,
@@ -85,13 +86,13 @@ void MICBLAS3::gemm(
     const IndexType m,
     const IndexType n,
     const IndexType k,
-    const float alpha,
-    const float* a,
+    const ValueType alpha,
+    const ValueType* a,
     const IndexType lda,
-    const float* b,
+    const ValueType* b,
     const IndexType ldb,
-    const float beta,
-    float* c,
+    const ValueType beta,
+    ValueType* c,
     const IndexType ldc )
 {
     MICSyncToken* syncToken = MICSyncToken::getCurrentSyncToken();
@@ -128,74 +129,16 @@ void MICBLAS3::gemm(
 
     int device = MICContext::getCurrentDevice();
 
-#pragma offload target( mic : device ), in( ta, tb, m, n, k, alpha, aPtr, lda, bPtr, ldb, beta, cPtr, ldc )
+    const ValueType* alphaPtr = &alpha;
+    const ValueType* betaPtr = &beta;
+
+#pragma offload target( mic : device ), in( ta, tb, m, n, k, alphaPtr[0:1], aPtr, lda, bPtr, ldb, betaPtr[0:1], cPtr, ldc )
     {
-        const float* a = static_cast<const float*>( aPtr );
-        const float* b = static_cast<const float*>( bPtr );
-        float* c = static_cast<float*>( cPtr );
+        const ValueType* a = static_cast<const ValueType*>( aPtr );
+        const ValueType* b = static_cast<const ValueType*>( bPtr );
+        ValueType* c = static_cast<ValueType*>( cPtr );
 
-        sgemm( &ta, &tb, &m, &n, &k, &alpha, a, &lda, b, &ldb, &beta, c, &ldc );
-    }
-}
-
-template<>
-void MICBLAS3::gemm(
-    const CBLAS_ORDER order,
-    const CBLAS_TRANSPOSE transA,
-    const CBLAS_TRANSPOSE transB,
-    const IndexType m,
-    const IndexType n,
-    const IndexType k,
-    const double alpha,
-    const double* a,
-    const IndexType lda,
-    const double* b,
-    const IndexType ldb,
-    const double beta,
-    double* c,
-    const IndexType ldc )
-{
-    MICSyncToken* syncToken = MICSyncToken::getCurrentSyncToken();
-
-    if ( syncToken )
-    {
-        SCAI_LOG_INFO( logger, "asynchronous execution for for MIC not supported yet" )
-    }
-
-    char ta = trans2C( transA );
-    char tb = trans2C( transB );
-
-    const void* aPtr = a;
-    const void* bPtr = b;
-    void* cPtr = c;
-
-    switch( order )
-    {
-        case CblasColMajor:
-            break;
-
-        case CblasRowMajor:
-            std::swap( ta, tb );
-            std::swap( aPtr, bPtr );
-            std::swap( lda, ldb );
-            std::swap( m, n );
-            break;
-
-        default:
-            COMMON_THROWEXCEPTION( "Illegal order setting " << order )
-    }
-
-    SCAI_LOG_INFO( logger, "gemm, ta = " << ta << ", tb = " << tb << ", a has shape " << m << " x " << n )
-
-    int device = MICContext::getCurrentDevice();
-
-#pragma offload target( mic : device ), in( ta, tb, m, n, k, alpha, aPtr, lda, bPtr, ldb, beta, cPtr, ldc )
-    {
-        const double* a = static_cast<const double*>( aPtr );
-        const double* b = static_cast<const double*>( bPtr );
-        double* c = static_cast<double*>( cPtr );
-
-        dgemm( &ta, &tb, &m, &n, &k, &alpha, a, &lda, b, &ldb, &beta, c, &ldc );
+	MICBLASWrapper::gemm( ta, tb, m, n, k, *alphaPtr, a, lda, b, ldb, *betaPtr, c, ldc );
     }
 }
 
@@ -216,9 +159,12 @@ void MICBLAS3::registerKernels( bool deleteFlag )
     {
         flag = KernelRegistry::KERNEL_ERASE;
     }
+#define LAMA_BLAS3_REGISTER(z, I, _)                                                           \
+    KernelRegistry::set<BLASKernelTrait::gemm<ARITHMETIC_MIC_TYPE_##I> >( gemm, MIC, flag );  \
 
-    KernelRegistry::set<BLASKernelTrait::gemm<float> >( gemm, MIC, flag );
-    KernelRegistry::set<BLASKernelTrait::gemm<double> >( gemm, MIC, flag );
+    BOOST_PP_REPEAT( ARITHMETIC_MIC_TYPE_CNT, LAMA_BLAS3_REGISTER, _ )
+
+#undef LAMA_BLAS3_REGISTER
 }
 
 /* --------------------------------------------------------------------------- */

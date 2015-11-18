@@ -35,6 +35,7 @@
 #include <scai/blaskernel/mic/MICBLAS2.hpp>
 
 // local library
+#include <scai/blaskernel/mic/MICBLASWrapper.hpp>
 #include <scai/blaskernel/BLASKernelTrait.hpp>
 
 // scai library
@@ -98,19 +99,19 @@ inline static char trans2CT( CBLAS_TRANSPOSE trans )
 
 /** gemv */
 
-template<>
+template<typename ValueType>
 void MICBLAS2::gemv(
     const CBLAS_ORDER order,
     const CBLAS_TRANSPOSE transA,
     const IndexType m,
     const IndexType n,
-    const float alpha,
-    const float* a,
+    const ValueType alpha,
+    const ValueType* a,
     const IndexType lda,
-    const float* x,
+    const ValueType* x,
     const IndexType incX,
-    const float beta,
-    float* y,
+    const ValueType beta,
+    ValueType* y,
     const IndexType incY )
 {
     SCAI_LOG_INFO( logger,
@@ -151,80 +152,19 @@ void MICBLAS2::gemv(
     const void* xPtr = x;
     const void* aPtr = a;
 
-    int device = MICContext::getCurrentDevice();
-
-#pragma offload target( mic : device ), in( ta, m, n, alpha, aPtr, lda, xPtr, incX, beta, yPtr, incY )
-    {
-        const float* x = static_cast<const float*>( xPtr );
-        const float* a = static_cast<const float*>( aPtr );
-        float* y = static_cast<float*>( yPtr );
-
-        sgemv( &ta, &m, &n, &alpha, a, &lda, x, &incX, &beta, y, &incY );
-    }
-}
-
-template<>
-void MICBLAS2::gemv(
-    const CBLAS_ORDER order,
-    const CBLAS_TRANSPOSE transA,
-    const IndexType m,
-    const IndexType n,
-    const double alpha,
-    const double* a,
-    const IndexType lda,
-    const double* x,
-    const IndexType incX,
-    const double beta,
-    double* y,
-    const IndexType incY )
-{
-    SCAI_LOG_INFO( logger,
-                   "gemv<double>: m = " << m << ", n = " << n << ", lda = " << lda << ", incX = " << incX << ", incY = " << incY << ", alpha = " << alpha << ", beta = " << beta )
-
-    if( m == 0 )
-    {
-        return; // empty X, Y, A
-    }
-
-    // n == 0: empty A, but deal with X, Y, we can handle this here
-
-    MICSyncToken* syncToken = MICSyncToken::getCurrentSyncToken();
-
-    if ( syncToken )
-    {
-        SCAI_LOG_INFO( logger, "asynchronous execution for MIC not supported yet." )
-    }
-
-    char ta = ' ';
-
-    switch( order )
-    {
-        case CblasColMajor:
-            ta = trans2C( transA );
-            break;
-
-        case CblasRowMajor:
-            ta = trans2CT( transA );
-            std::swap( m, n );
-            break;
-
-        default:
-            COMMON_THROWEXCEPTION( "Illegal order setting " << order )
-    }
-
-    void* yPtr = y;
-    const void* xPtr = x;
-    const void* aPtr = a;
+    const ValueType* alphaPtr = &alpha;
+    const ValueType* betaPtr = &beta;
 
     int device = MICContext::getCurrentDevice();
 
-#pragma offload target( mic : device ), in( ta, m, n, alpha, aPtr, lda, xPtr, incX, beta, yPtr, incY )
+#pragma offload target( mic : device ), in( ta, m, n, alphaPtr[0:1], aPtr, lda, xPtr, incX, betaPtr[0:1], yPtr, incY )
     {
-        const double* x = static_cast<const double*>( xPtr );
-        const double* a = static_cast<const double*>( aPtr );
-        double* y = static_cast<double*>( yPtr );
+        const ValueType* x = static_cast<const ValueType*>( xPtr );
+        const ValueType* a = static_cast<const ValueType*>( aPtr );
+        ValueType* y = static_cast<ValueType*>( yPtr );
 
-        dgemv( &ta, &m, &n, &alpha, a, &lda, x, &incX, &beta, y, &incY );
+//        sgemv( &ta, &m, &n, &alpha, a, &lda, x, &incX, &beta, y, &incY );
+        MICBLASWrapper::gemv( ta, m, n, *alphaPtr, a, lda, x, incX, *betaPtr, y, incY );
     }
 }
 
@@ -246,9 +186,12 @@ void MICBLAS2::registerKernels( bool deleteFlag )
         flag = KernelRegistry::KERNEL_ERASE;
     }
 
-    KernelRegistry::set<BLASKernelTrait::gemv<float> >( gemv, MIC, flag );
-    KernelRegistry::set<BLASKernelTrait::gemv<double> >( gemv, MIC, flag );
+#define LAMA_BLAS2_REGISTER(z, I, _)                                                        \
+    KernelRegistry::set<BLASKernelTrait::gemv<ARITHMETIC_MIC_TYPE_##I> >( gemv, MIC, flag ); \
 
+    BOOST_PP_REPEAT( ARITHMETIC_MIC_TYPE_CNT, LAMA_BLAS2_REGISTER, _ )
+
+#undef LAMA_BLAS2_REGISTER
     // all other routines are not used in LAMA yet
 }
 

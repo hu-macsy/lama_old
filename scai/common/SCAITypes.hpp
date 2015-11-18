@@ -126,6 +126,13 @@ extern const PartitionId nPartition;
 #define ARITHMETIC_CUDA_TYPE_2 ComplexFloat
 #define ARITHMETIC_CUDA_TYPE_3 ComplexDouble
 
+#define ARITHMETIC_MIC_TYPE_CNT 4
+
+#define ARITHMETIC_MIC_TYPE_0 float
+#define ARITHMETIC_MIC_TYPE_1 double
+#define ARITHMETIC_MIC_TYPE_2 ComplexFloat
+#define ARITHMETIC_MIC_TYPE_3 ComplexDouble
+
 // Define for the arithmetic types the counterparts of enum Scalar::Tyep
 // Sorry, we cannot use the routine getType<ARITHMETIC_TYPE##I> in case stmt
 
