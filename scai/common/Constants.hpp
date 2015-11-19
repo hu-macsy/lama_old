@@ -34,6 +34,7 @@
 #pragma once
 
 #include <scai/common/ScalarType.hpp>
+#include <scai/common/TypeTraits.hpp>
 
 #include <cmath>
 #include <limits>
@@ -55,57 +56,9 @@ enum ConstantType
 };
 
 template<typename ValueType>
-inline ValueType getEps()
-{
-	return std::numeric_limits<ValueType>::epsilon();
-}
-
-template<>
-inline ComplexFloat getEps()
-{
-	return std::numeric_limits<float>::epsilon();
-}
-
-template<>
-inline ComplexDouble getEps()
-{
-	return std::numeric_limits<double>::epsilon();
-}
-
-template<>
-inline ComplexLongDouble getEps()
-{
-	return std::numeric_limits<long double>::epsilon();
-}
-
-template<typename ValueType>
-inline ValueType getMax()
-{
-	return std::numeric_limits<ValueType>::max();
-}
-
-template<>
-inline ComplexFloat getMax()
-{
-	return std::numeric_limits<float>::max();
-}
-
-template<>
-inline ComplexDouble getMax()
-{
-	return std::numeric_limits<double>::max();
-}
-
-template<>
-inline ComplexLongDouble getMax()
-{
-	return std::numeric_limits<long double>::max();
-}
-
-template<typename ValueType>
 inline ValueType getConstant( const enum ConstantType& c )
 {
-    ValueType val = getMax<ValueType>();
+    ValueType val = TypeTraits<ValueType>::getMax();
     switch( c )
     {
         case ONE:
@@ -115,7 +68,7 @@ inline ValueType getConstant( const enum ConstantType& c )
             val = ValueType( 0.0 );
             break;
         case EPS:
-        	val = getEps<ValueType>();
+        	val = TypeTraits<ValueType>::getEps();
             break;
     }
     return val;
@@ -124,15 +77,13 @@ inline ValueType getConstant( const enum ConstantType& c )
 template<typename ValueType>
 bool operator==( const ValueType& x, const enum ConstantType& c )
 {
-    using std::fabs;
-    return fabs( x - getConstant<ValueType>( c ) ) < getConstant<ValueType>( EPS );
+    return TypeTraits<ValueType>::abs( x - getConstant<ValueType>( c ) ) < getConstant<ValueType>( EPS );
 }
 
 template<typename ValueType>
 bool operator!=( const ValueType& x, const enum ConstantType& c )
 {
-    using std::fabs;
-    return !(fabs( x - getConstant<ValueType>( c ) ) < getConstant<ValueType>( EPS ));
+    return !(TypeTraits<ValueType>::abs( x - getConstant<ValueType>( c ) ) < getConstant<ValueType>( EPS ));
 }
 
 } /* end namespace constants */

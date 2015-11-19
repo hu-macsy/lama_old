@@ -40,6 +40,7 @@
 
 // logging
 #include <scai/logging.hpp>
+#include <scai/common/TypeTraits.hpp>
 
 namespace scai
 {
@@ -70,7 +71,7 @@ public:
     WriteOnlyAccess( LAMAArray<ValueType>& array, ContextPtr context )
         : WriteAccess<ValueType>( array, context, false )
     {
-        SCAI_LOG_DEBUG( logger, "WriteOnlyAccess<" << common::getScalarType<ValueType>() << ">" )
+        SCAI_LOG_DEBUG( logger, "WriteOnlyAccess<" << common::TypeTraits<ValueType>::id() << ">" )
     }
 
     /** Create a write access with keep flag = false for the host context
@@ -81,7 +82,7 @@ public:
     WriteOnlyAccess( LAMAArray<ValueType>& array )
         : WriteAccess<ValueType>( array, false )
     {
-        SCAI_LOG_DEBUG( logger, "WriteOnlyAccess<" << common::getScalarType<ValueType>() << ">" )
+        SCAI_LOG_DEBUG( logger, "WriteOnlyAccess<" << common::TypeTraits<ValueType>::id() << ">" )
     }
 
     /**
@@ -99,7 +100,7 @@ public:
         this->resize( 0 );      // invalidates all data before resize
         this->resize( size );   // now resize
 
-        SCAI_LOG_DEBUG( logger, "WriteOnlyAccess<" << common::getScalarType<ValueType>() << ">: " << *mArray )
+        SCAI_LOG_DEBUG( logger, "WriteOnlyAccess<" << common::TypeTraits<ValueType>::id() << ">: " << *mArray )
     }
 
     WriteOnlyAccess( LAMAArray<ValueType>& array, const IndexType size )
@@ -108,12 +109,12 @@ public:
         this->resize( 0 );      // invalidates all data before resize
         this->resize( size );   // now resize
 
-        SCAI_LOG_DEBUG( logger, "WriteOnlyAccess<" << common::getScalarType<ValueType>() << ">: " << *mArray )
+        SCAI_LOG_DEBUG( logger, "WriteOnlyAccess<" << common::TypeTraits<ValueType>::id() << ">: " << *mArray )
     }
 
     ~WriteOnlyAccess()
     {
-        SCAI_LOG_DEBUG( WriteAccess<ValueType>::logger, "~WriteOnlyAccess<" << common::getScalarType<ValueType>() << ">" )
+        SCAI_LOG_DEBUG( WriteAccess<ValueType>::logger, "~WriteOnlyAccess<" << common::TypeTraits<ValueType>::id() << ">" )
     }
 
 protected:

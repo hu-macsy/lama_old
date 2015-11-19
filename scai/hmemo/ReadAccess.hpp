@@ -40,6 +40,7 @@
 #include <scai/logging.hpp>
 
 #include <scai/common/config.hpp>
+#include <scai/common/TypeTraits.hpp>
 #include <scai/common/macros/assert.hpp>
 #include <scai/common/function.hpp>
 #include <scai/common/bind.hpp>
@@ -154,7 +155,7 @@ ReadAccess<ValueType>::ReadAccess( const LAMAArray<ValueType>& array, ContextPtr
 {
     SCAI_ASSERT( contextPtr.get(), "NULL context for read access not allowed" )
 
-    SCAI_LOG_DEBUG( logger, "ReadAccess<" << common::getScalarType<ValueType>()
+    SCAI_LOG_DEBUG( logger, "ReadAccess<" << common::TypeTraits<ValueType>::id()
                     << "> : create for " << array << " @ " << *contextPtr )
 
     mContextDataIndex = mArray->acquireReadAccess( contextPtr );
@@ -167,7 +168,7 @@ ReadAccess<ValueType>::ReadAccess( const LAMAArray<ValueType>& array ) : mArray(
 {
     ContextPtr contextPtr = Context::getContextPtr( common::context::Host );
 
-    SCAI_LOG_DEBUG( logger, "ReadAccess<" << common::getScalarType<ValueType>()
+    SCAI_LOG_DEBUG( logger, "ReadAccess<" << common::TypeTraits<ValueType>::id()
                     << "> : create for " << array << " @ " << *contextPtr )
 
     mContextDataIndex = mArray->acquireReadAccess( contextPtr );
@@ -180,7 +181,7 @@ ReadAccess<ValueType>::ReadAccess( const LAMAArray<ValueType>& array ) : mArray(
 template<typename ValueType>
 ReadAccess<ValueType>::~ReadAccess()
 {
-    SCAI_LOG_DEBUG( logger, "~ReadAccess<" << common::getScalarType<ValueType>() << ">" )
+    SCAI_LOG_DEBUG( logger, "~ReadAccess<" << common::TypeTraits<ValueType>::id() << ">" )
     release();
 }
 
@@ -191,7 +192,7 @@ void ReadAccess<ValueType>::release()
 {
     if ( mArray )
     {
-        SCAI_LOG_DEBUG( logger, "ReadAccess<" << common::getScalarType<ValueType>() << ">: realase for " << *mArray )
+        SCAI_LOG_DEBUG( logger, "ReadAccess<" << common::TypeTraits<ValueType>::id() << ">: realase for " << *mArray )
         mArray->releaseReadAccess( mContextDataIndex );
     }
 
@@ -221,7 +222,7 @@ common::function<void()> ReadAccess<ValueType>::releaseDelayed()
 template<typename ValueType>
 void ReadAccess<ValueType>::writeAt( std::ostream& stream ) const
 {
-    stream << "ReadAccess<" << common::getScalarType<ValueType>() << "> ";
+    stream << "ReadAccess<" << common::TypeTraits<ValueType>::id() << "> ";
 
     if ( mArray )
     {

@@ -61,6 +61,7 @@
 #include <scai/common/macros/print_string.hpp>
 #include <scai/common/exception/UnsupportedException.hpp>
 #include <scai/tasking/NoSyncToken.hpp>
+#include <scai/common/TypeTraits.hpp>
 
 // boost
 #include <boost/preprocessor.hpp>
@@ -2303,7 +2304,7 @@ ValueType CSRStorage<ValueType>::l2Norm() const
 
     SCAI_CONTEXT_ACCESS( loc );
 
-    return ::sqrt(dot[loc]( mNumValues, data.get(), 1, data.get(), 1 ));
+    return common::TypeTraits<ValueType>::sqrt(dot[loc]( mNumValues, data.get(), 1, data.get(), 1 ));
 }
 
 /* --------------------------------------------------------------------------- */

@@ -38,6 +38,9 @@
 // base classes
 #include <scai/hmemo/ContextArray.hpp>
 
+// common library
+#include <scai/common/TypeTraits.hpp>
+
 namespace scai
 {
 
@@ -226,7 +229,7 @@ public:
 
     static common::scalar::ScalarType createValue()
     {
-        return common::getScalarType<ValueType>();
+        return common::TypeTraits<ValueType>::getScalarType();
     }
 
     using ContextArray::resize;
@@ -436,7 +439,7 @@ common::scalar::ScalarType LAMAArray<ValueType>::getValueType() const
 {
     // Note: this is implementation of the pure method of base class ContextArray.
 
-    return common::getScalarType<ValueType>();
+    return common::TypeTraits<ValueType>::getScalarType();
 }
 
 /* ---------------------------------------------------------------------------------*/
@@ -637,7 +640,7 @@ template<typename ValueType>
 void LAMAArray<ValueType>::writeAt( std::ostream& stream ) const
 {
     stream << "LAMAArray<";
-    stream << common::getScalarType<ValueType>();
+    stream << common::TypeTraits<ValueType>::id();
     stream << ">(" << mSize; stream << ") ";
     stream << mContextDataManager;
 }

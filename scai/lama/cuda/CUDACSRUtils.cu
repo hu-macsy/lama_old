@@ -968,8 +968,8 @@ void CUDACSRUtils::scaleRows(
 {
     SCAI_REGION( "CUDA.CSRUtils.scaleRows" )
 
-    SCAI_LOG_INFO( logger, "scaleRows<" << getScalarType<ValueType1>() << ","
-                   << getScalarType<ValueType2>() << ">"
+    SCAI_LOG_INFO( logger, "scaleRows<" << TypeTraits<ValueType1>::getScalarType() << ","
+                   << TypeTraits<ValueType2>::getScalarType() << ">"
                    << ", numrows= " << numRows )
 
     SCAI_CHECK_CUDA_ACCESS
@@ -1001,7 +1001,7 @@ void CUDACSRUtils::normalGEMV(
 {
     SCAI_REGION( "CUDA.CSRUtils.normalGEMV" )
 
-    SCAI_LOG_INFO( logger, "normalGEMV<" << getScalarType<ValueType>() << ">" <<
+    SCAI_LOG_INFO( logger, "normalGEMV<" << TypeTraits<ValueType>::getScalarType() << ">" <<
                    " result[ " << numRows << "] = " << alpha << " * A(csr) * x + " << beta << " * y " )
 
     SCAI_LOG_DEBUG( logger, "x = " << x << ", y = " << y << ", result = " << result )
@@ -1027,7 +1027,7 @@ void CUDACSRUtils::normalGEMV(
         stream = syncToken->getCUDAStream();
     }
 
-    SCAI_LOG_INFO( logger, "Start normal_gemv_kernel<" << getScalarType<ValueType>()
+    SCAI_LOG_INFO( logger, "Start normal_gemv_kernel<" << TypeTraits<ValueType>::getScalarType()
                    << ", useTexture = " << useTexture << ">" );
 
     if ( useTexture )
@@ -1188,7 +1188,7 @@ void CUDACSRUtils::normalGEMV(
     if ( !syncToken )
     {
         SCAI_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "normalGEMV, stream = " << stream )
-        SCAI_LOG_DEBUG( logger, "normalGEMV<" << getScalarType<ValueType>() << "> synchronized" )
+        SCAI_LOG_DEBUG( logger, "normalGEMV<" << TypeTraits<ValueType>::getScalarType() << "> synchronized" )
     }
 
     if ( useTexture )
@@ -1223,7 +1223,7 @@ void CUDACSRUtils::normalGEVM(
     const IndexType csrJA[],
     const ValueType csrValues[] )
 {
-    SCAI_LOG_INFO( logger, "normalGEVM<" << getScalarType<ValueType>() << ">" <<
+    SCAI_LOG_INFO( logger, "normalGEVM<" << TypeTraits<ValueType>::getScalarType() << ">" <<
                    " result[ " << numColumns << "] = " << alpha << " * A(csr) * x + " << beta << " * y " )
 
     SCAI_LOG_DEBUG( logger, "x = " << x << ", y = " << y << ", result = " << result )
@@ -1247,7 +1247,7 @@ void CUDACSRUtils::normalGEVM(
         stream = syncToken->getCUDAStream();
     }
 
-    SCAI_LOG_INFO( logger, "Start normal_gevm_kernel<" << getScalarType<ValueType>()
+    SCAI_LOG_INFO( logger, "Start normal_gevm_kernel<" << TypeTraits<ValueType>::getScalarType()
                    << ", useTexture = " << useTexture << ">" );
 
     if ( useTexture )
@@ -1408,7 +1408,7 @@ void CUDACSRUtils::normalGEVM(
     if ( !syncToken )
     {
         SCAI_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "normalGEVM, stream = " << stream )
-        SCAI_LOG_DEBUG( logger, "normalGEVM<" << getScalarType<ValueType>() << "> synchronized" )
+        SCAI_LOG_DEBUG( logger, "normalGEVM<" << TypeTraits<ValueType>::getScalarType() << "> synchronized" )
     }
 
     if ( useTexture )
@@ -1444,7 +1444,7 @@ void CUDACSRUtils::sparseGEMV(
     SCAI_REGION( "CUDA.CSRUtils.sparseGEMV" )
 
     SCAI_LOG_INFO( logger,
-                   "sparseGEMV<" << getScalarType<ValueType>() << ">" << ", #non-zero rows = " << numNonZeroRows )
+                   "sparseGEMV<" << TypeTraits<ValueType>::getScalarType() << ">" << ", #non-zero rows = " << numNonZeroRows )
 
     SCAI_CHECK_CUDA_ACCESS
 
@@ -1497,7 +1497,7 @@ void CUDACSRUtils::sparseGEMV(
     if ( !syncToken )
     {
         SCAI_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "sparseGEMV, stream = " << stream )
-        SCAI_LOG_INFO( logger, "sparseGEMV<" << getScalarType<ValueType>() << "> synchronized" )
+        SCAI_LOG_INFO( logger, "sparseGEMV<" << TypeTraits<ValueType>::getScalarType() << "> synchronized" )
     }
 
     if ( useTexture )
@@ -1532,7 +1532,7 @@ void CUDACSRUtils::sparseGEVM(
     const ValueType csrValues[] )
 {
     SCAI_LOG_INFO( logger,
-                   "sparseGEVM<" << getScalarType<ValueType>() << ">" << ", #non-zero rows = " << numNonZeroRows )
+                   "sparseGEVM<" << TypeTraits<ValueType>::getScalarType() << ">" << ", #non-zero rows = " << numNonZeroRows )
 
     SCAI_CHECK_CUDA_ACCESS
 
@@ -1587,7 +1587,7 @@ void CUDACSRUtils::sparseGEVM(
     if ( !syncToken )
     {
         SCAI_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "sparseGEVM, stream = " << stream )
-        SCAI_LOG_INFO( logger, "sparseGEVM<" << getScalarType<ValueType>() << "> synchronized" )
+        SCAI_LOG_INFO( logger, "sparseGEVM<" << TypeTraits<ValueType>::getScalarType() << "> synchronized" )
     }
 
     if ( useTexture )
@@ -1786,7 +1786,7 @@ void CUDACSRUtils::jacobi(
 
     dim3 dimGrid = makeGrid( numRows, dimBlock.x );
 
-    SCAI_LOG_INFO( logger, "Start csr_jacobi_kernel<" << getScalarType<ValueType>()
+    SCAI_LOG_INFO( logger, "Start csr_jacobi_kernel<" << TypeTraits<ValueType>::getScalarType()
                    << ", useTexture = " << useTexture << ">" );
 
     if ( useTexture )

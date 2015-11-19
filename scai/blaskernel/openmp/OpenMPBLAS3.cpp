@@ -40,7 +40,7 @@
 #include <scai/tasking/TaskSyncToken.hpp>
 #include <scai/kregistry/KernelRegistry.hpp>
 #include <scai/common/macros/unused.hpp>
-#include <scai/common/ScalarType.hpp>
+#include <scai/common/TypeTraits.hpp>
 
 // boost
 #include <boost/preprocessor.hpp>
@@ -49,6 +49,7 @@ namespace scai
 {
 
 using tasking::TaskSyncToken;
+using common::TypeTraits;
 
 namespace blaskernel
 {
@@ -80,7 +81,7 @@ void OpenMPBLAS3::gemm(
     }
 
     SCAI_LOG_INFO( logger,
-                   "gemm<" << common::getScalarType<ValueType>() << ">: " << "m = " << m << ", n = " << n 
+                   "gemm<" << TypeTraits<ValueType>::id() << ">: " << "m = " << m << ", n = " << n 
                      << ", k = " << k << ", lda = " << lda << ", ldb = " << ldb << ", ldc = " << ldc 
                      << ", alpha = " << alpha << ", beta = " << beta )
 

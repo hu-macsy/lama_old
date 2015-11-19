@@ -44,7 +44,7 @@
 
 #include <scai/common/unique_ptr.hpp>
 #include <scai/common/macros/unused.hpp>
-#include <scai/common/ScalarType.hpp>
+#include <scai/common/TypeTraits.hpp>
 
 // boost
 #include <boost/preprocessor.hpp>
@@ -59,10 +59,7 @@ namespace scai
 namespace blaskernel
 {
 
-using std::abs;
-// used for float, double
-
-using common::getScalarType;
+using common::TypeTraits;
 
 /* ------------------------------------------------------------------------- */
 
@@ -83,7 +80,7 @@ IndexType OpenMPLAPACK::getrf(
 {
     SCAI_REGION( "OpenMP.LAPACK.getrf<ValueType>" )
 
-    SCAI_LOG_INFO( logger, "getrf<" << getScalarType<ValueType>()<< "> for A of size " << m << " x " << n )
+    SCAI_LOG_INFO( logger, "getrf<" << TypeTraits<ValueType>::id()<< "> for A of size " << m << " x " << n )
 
     int info = 0;
     int index = 0;
@@ -107,7 +104,7 @@ IndexType OpenMPLAPACK::getrf(
 
             for( int j = i; j < lda; j++ )
             {
-                if( abs( a[lda * ipiv[i] + j] ) > abs( a[lda * ipiv[i] + index] ) )
+                if( TypeTraits<ValueType>::abs( a[lda * ipiv[i] + j] ) > TypeTraits<ValueType>::abs( a[lda * ipiv[i] + index] ) )
                 {
                     index = j;
                 }
@@ -143,7 +140,7 @@ IndexType OpenMPLAPACK::getrf(
 
             for( int j = i; j < lda; j++ )
             {
-                if( abs( a[lda * ipiv[j] + i] ) > abs( a[lda * ipiv[index] + i] ) )
+                if( TypeTraits<ValueType>::abs( a[lda * ipiv[j] + i] ) > TypeTraits<ValueType>::abs( a[lda * ipiv[index] + i] ) )
                 {
                     index = j;
                 }
@@ -183,7 +180,7 @@ void OpenMPLAPACK::getinv( const IndexType n, ValueType* a, const IndexType lda 
     SCAI_REGION( "OpenMP.LAPACK.getinv<ValueType>" )
 
     SCAI_LOG_INFO( logger,
-                   "getinv<" << getScalarType<ValueType>()<< "> for " << n << " x " << n << " matrix, uses openmp" )
+                   "getinv<" << TypeTraits<ValueType>::id()<< "> for " << n << " x " << n << " matrix, uses openmp" )
 
     // temporary array for pivot indexes needed, deleted by destructor
 
@@ -202,7 +199,7 @@ int OpenMPLAPACK::getri( const CBLAS_ORDER order, const int n, ValueType* const 
 {
     SCAI_REGION( "OpenMP.LAPACK.getri<ValueType>" )
 
-    SCAI_LOG_INFO( logger, "getri<" << getScalarType<ValueType>()<< "> for A of size " << n << " x " << n )
+    SCAI_LOG_INFO( logger, "getri<" << TypeTraits<ValueType>::id()<< "> for A of size " << n << " x " << n )
     int info = 0;
     ValueType* A_inv = new ValueType[n * n];
 

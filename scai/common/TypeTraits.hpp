@@ -49,27 +49,52 @@ namespace common
  *
  * @tparam T The type of any arithmetic value type used
  */
-template<typename T>
+template<typename ValueType>
 class TypeTraits
 {
 public:
 
-    static inline T sqrt( T val );
-    static inline T abs( T val );
+    /** Square root function for ValueType
+     *
+     *  In contrary to the routine of cmath it will be possible to
+     *  use always the same name for the routine. 
+     */
+    static inline ValueType sqrt( ValueType val );
 
-    static inline T getEps()
+    /** Absolute value function for ValueType
+     *
+     *  In contrary to the routine of cmath it will be possible to
+     *  use always the same name for the routine. 
+     */
+    static inline ValueType abs( ValueType val );
+
+    /** Get value-specific epsilon for comparison. */
+
+    static inline ValueType getEps()
     {
-        return std::numeric_limits<T>::epsilon();
+        return std::numeric_limits<ValueType>::epsilon();
     }
 
-    static inline scalar::ScalarType getValueType()
+    /** Get maximal value of a ValueType, used for min, max reductions on arrays. */
+
+    static inline ValueType getMax()
+    {
+        return std::numeric_limits<ValueType>::max();
+    }
+
+    /**
+     * @brief Conversion of the value type into value of enum ScalarType.
+    *
+    * @return value of enum type ScalarType that represents the corresponding type.
+    */
+    static inline scalar::ScalarType getScalarType()
     {
         return scalar::UNKNOWN;
     }
 
     static inline const char* id()
     {
-        return "UNKNOWN";
+        return scalar2str( scalar::UNKNOWN );
     }
 };
 
@@ -82,19 +107,25 @@ public:
     {
         return ::abs( x );
     }
+
     static inline IndexType getEps()
     {
         return 0;
     }
 
-    static inline scalar::ScalarType getValueType()
+    static inline IndexType getMax()
+    {
+        return std::numeric_limits<IndexType>::max();
+    }
+
+    static inline scalar::ScalarType getScalarType()
     {
         return scalar::INDEX_TYPE;
     }
 
     static inline const char* id()
     {
-        return "IndexType";
+        return scalar2str( scalar::INDEX_TYPE );
     }
 };
 
@@ -111,18 +142,25 @@ public:
     {
         return ::fabsl( x );
     }
+
     static inline long double getEps()
     {
         return std::numeric_limits<long double>::epsilon();
     }
-    static inline scalar::ScalarType getValueType()
+
+    static inline long double getMax()
+    {
+        return std::numeric_limits<long double>::max();
+    }
+
+    static inline scalar::ScalarType getScalarType()
     {
         return scalar::LONG_DOUBLE;
     }
 
     static inline const char* id()
     {
-        return "LongDouble";
+        return scalar2str( scalar::LONG_DOUBLE );
     }
 };
 
@@ -143,13 +181,17 @@ public:
     {
         return std::numeric_limits<double>::epsilon();
     }
-    static inline scalar::ScalarType getValueType()
+    static inline double getMax()
+    {
+        return std::numeric_limits<double>::max();
+    }
+    static inline scalar::ScalarType getScalarType()
     {
         return scalar::DOUBLE;
     }
     static inline const char* id()
     {
-        return "double";
+        return scalar2str( scalar::DOUBLE );
     }
 };
 
@@ -170,13 +212,17 @@ public:
     {
         return std::numeric_limits<float>::epsilon();
     }
-    static inline scalar::ScalarType getValueType()
+    static inline float getMax()
+    {
+        return std::numeric_limits<float>::max();
+    }
+    static inline scalar::ScalarType getScalarType()
     {
         return scalar::FLOAT;
     }
     static inline const char* id()
     {
-        return "float";
+        return scalar2str( scalar::FLOAT );
     }
 };
 
@@ -198,7 +244,11 @@ public:
     {
         return std::numeric_limits<float>::epsilon();
     }
-    static inline scalar::ScalarType getValueType()
+    static inline ComplexFloat getMax()
+    {
+        return std::numeric_limits<float>::max();
+    }
+    static inline scalar::ScalarType getScalarType()
     {
         return scalar::COMPLEX;
     }
@@ -225,13 +275,17 @@ public:
     {
         return std::numeric_limits<double>::epsilon();
     }
-    static inline scalar::ScalarType getValueType()
+    static inline ComplexDouble getMax()
+    {
+        return std::numeric_limits<double>::epsilon();
+    }
+    static inline scalar::ScalarType getScalarType()
     {
         return scalar::DOUBLE_COMPLEX;
     }
     static inline const char* id()
     {
-        return "ComplexDouble";
+        return scalar2str( scalar::DOUBLE_COMPLEX );
     }
 };
 
@@ -252,15 +306,26 @@ public:
     {
         return std::numeric_limits<long double>::epsilon();
     }
-    static inline scalar::ScalarType getValueType()
+    static inline ComplexLongDouble getMax()
+    {
+        return std::numeric_limits<long double>::max();
+    }
+    static inline scalar::ScalarType getScalarType()
     {
         return scalar::LONG_DOUBLE_COMPLEX;
     }
     static inline const char* id()
     {
-        return "ComplexLong";
+        return scalar2str( scalar::LONG_DOUBLE_COMPLEX );
     }
 };
+
+/** For convenience and for compatibility make own routine of getScalarType */
+
+template<typename ValueType> inline scalar::ScalarType getScalarType()
+{
+    return TypeTraits<ValueType>::getScalarType();
+}
 
 }  // namespace common
 

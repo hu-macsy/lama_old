@@ -57,6 +57,7 @@
 
 #include <scai/common/bind.hpp>
 #include <scai/common/Constants.hpp>
+#include <scai/common/TypeTraits.hpp>
 #include <scai/common/macros/print_string.hpp>
 
 // boost
@@ -748,7 +749,7 @@ ValueType COOStorage<ValueType>::l2Norm() const
 
 	SCAI_CONTEXT_ACCESS( loc );
 
-	return ::sqrt(dot[loc]( n, data.get(), 1, data.get(), 1 ));
+	return common::TypeTraits<ValueType>::sqrt(dot[loc]( n, data.get(), 1, data.get(), 1 ));
 }
 
 /* --------------------------------------------------------------------------- */

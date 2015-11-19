@@ -50,6 +50,7 @@
 #include <scai/common/cuda/CUDAError.hpp>
 #include <scai/common/cuda/launchHelper.hpp>
 #include <scai/common/Constants.hpp>
+#include <scai/common/TypeTraits.hpp>
 
 // thrust
 #include <thrust/device_ptr.h>
@@ -64,7 +65,7 @@ using namespace scai::tasking;
 namespace scai
 {
 
-using common::getScalarType;
+using common::TypeTraits;
 
 namespace lama
 {
@@ -488,7 +489,7 @@ void CUDADIAUtils::normalGEMV(
 {
     SCAI_REGION( "CUDA.DIA.normalGEMV" )
 
-    SCAI_LOG_INFO( logger, "normalGEMV<" << getScalarType<ValueType>() << ">"
+    SCAI_LOG_INFO( logger, "normalGEMV<" << TypeTraits<ValueType>::id() << ">"
                    << " result[ " << numRows << "] = " << alpha
                    << " * A( #diags = " << numDiagonals << " ) * x + " << beta << " * y " )
 
@@ -511,7 +512,7 @@ void CUDADIAUtils::normalGEMV(
 
     const bool useTexture = CUDASettings::useTexture();
 
-    SCAI_LOG_INFO( logger, "Start normal_gemv_kernel<" << getScalarType<ValueType>()
+    SCAI_LOG_INFO( logger, "Start normal_gemv_kernel<" << TypeTraits<ValueType>::id()
                    << "> <<< blockSize = " << blockSize << ", stream = " << stream
                    << ", useTexture = " << useTexture << ", useSharedMem = " << useSharedMem << ">>>" );
 
@@ -812,7 +813,7 @@ void CUDADIAUtils::normalGEVM(
 {
     SCAI_REGION( "CUDA.DIA.normalGEVM" )
 
-    SCAI_LOG_INFO( logger, "normalGEVM<" << getScalarType<ValueType>() << ">"
+    SCAI_LOG_INFO( logger, "normalGEVM<" << TypeTraits<ValueType>::id() << ">"
                    << " result[ " << numRows << "] = " << alpha
                    << " * A( #diags = " << numDiagonals << " ) * x + " << beta << " * y " )
 
@@ -835,7 +836,7 @@ void CUDADIAUtils::normalGEVM(
 
     const bool useTexture = CUDASettings::useTexture();
 
-    SCAI_LOG_INFO( logger, "Start normal_gevm_kernel<" << getScalarType<ValueType>()
+    SCAI_LOG_INFO( logger, "Start normal_gevm_kernel<" << TypeTraits<ValueType>::id()
                    << "> <<< blockSize = " << blockSize << ", stream = " << stream
                    << ", useTexture = " << useTexture << ", useSharedMem = " << useSharedMem << ">>>" );
 

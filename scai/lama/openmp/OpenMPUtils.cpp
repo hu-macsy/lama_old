@@ -42,6 +42,7 @@
 #include <scai/tracing.hpp>
 
 #include <scai/common/Constants.hpp>
+#include <scai/common/TypeTraits.hpp>
 #include <scai/common/OpenMP.hpp>
 
 // boost
@@ -52,7 +53,7 @@ using std::abs;
 namespace scai
 {
 
-using common::getScalarType;
+using common::TypeTraits;
 
 namespace lama
 {
@@ -163,7 +164,7 @@ void OpenMPUtils::setVal( ValueType array[], const IndexType n, const ValueType 
 {
     SCAI_REGION( "OpenMP.Utils.setVal" )
 
-    SCAI_LOG_DEBUG( logger, "setVal<" << getScalarType<ValueType>() << ">: " << "array[" << n << "] = " << val )
+    SCAI_LOG_DEBUG( logger, "setVal<" << TypeTraits<ValueType>::id() << ">: " << "array[" << n << "] = " << val )
 
     #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
 
@@ -181,7 +182,7 @@ void OpenMPUtils::setOrder( ValueType array[], const IndexType n )
     SCAI_REGION( "OpenMP.Utils.setOrder" )
 
     SCAI_LOG_DEBUG( logger,
-                    "setOrder<" << getScalarType<ValueType>() << ">: " << "array[" << n << "] = 0, 1, 2, ..., " << ( n - 1 ) )
+                    "setOrder<" << TypeTraits<ValueType>::id() << ">: " << "array[" << n << "] = 0, 1, 2, ..., " << ( n - 1 ) )
 
     #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
 
@@ -196,7 +197,7 @@ void OpenMPUtils::setOrder( ValueType array[], const IndexType n )
 template<typename ValueType>
 ValueType OpenMPUtils::getValue( const ValueType* array, const IndexType i )
 {
-    SCAI_LOG_DEBUG( logger, "getValue<" << getScalarType<ValueType>() << ">: i = " << i )
+    SCAI_LOG_DEBUG( logger, "getValue<" << TypeTraits<ValueType>::id() << ">: i = " << i )
 
     return array[i];
 }
@@ -208,7 +209,7 @@ ValueType OpenMPUtils::maxval( const ValueType array[], const IndexType n )
 {
     SCAI_REGION( "OpenMP.Utils.maxVal" )
 
-    SCAI_LOG_DEBUG( logger, "maxval<" << getScalarType<ValueType>() << ">: " << "array[" << n << "]" )
+    SCAI_LOG_DEBUG( logger, "maxval<" << TypeTraits<ValueType>::id() << ">: " << "array[" << n << "]" )
 
     ValueType val = static_cast<ValueType>(0.0);
 
@@ -247,7 +248,7 @@ ValueType OpenMPUtils::absMaxVal( const ValueType array[], const IndexType n )
 {
     SCAI_REGION( "OpenMP.Utils.absMaxVal" )
 
-    SCAI_LOG_DEBUG( logger, "absMaxVal<" << getScalarType<ValueType>() << ">: " << "array[" << n << "]" )
+    SCAI_LOG_DEBUG( logger, "absMaxVal<" << TypeTraits<ValueType>::id() << ">: " << "array[" << n << "]" )
 
     ValueType val = static_cast<ValueType>(0.0);
 
@@ -288,7 +289,7 @@ ValueType OpenMPUtils::absMaxDiffVal( const ValueType array1[], const ValueType 
 {
     SCAI_REGION( "OpenMP.Utils.absMaxDiffVal" )
 
-    SCAI_LOG_DEBUG( logger, "absMaxDiffVal<" << getScalarType<ValueType>() << ">: " << "array[" << n << "]" )
+    SCAI_LOG_DEBUG( logger, "absMaxDiffVal<" << TypeTraits<ValueType>::id() << ">: " << "array[" << n << "]" )
 
     ValueType val = static_cast<ValueType>(0.0);
 
@@ -330,7 +331,7 @@ bool OpenMPUtils::isSorted( const ValueType array[], const IndexType n, bool asc
     SCAI_REGION( "OpenMP.Utils.isSorted" )
 
     SCAI_LOG_INFO( logger,
-                   "isSorted<" << getScalarType<ValueType>() << ">, n = " << n << ", ascending = " << ascending )
+                   "isSorted<" << TypeTraits<ValueType>::id() << ">, n = " << n << ", ascending = " << ascending )
 
     bool sorted = true; //!< will be set to false at violations
 
@@ -368,7 +369,7 @@ void OpenMPUtils::set( ValueType1 out[], const ValueType2 in[], const IndexType 
     SCAI_REGION( "OpenMP.Utils.set" )
 
     SCAI_LOG_DEBUG( logger,
-                    "set: out<" << getScalarType<ValueType1>() << "[" << n << "]" << " = in<" << getScalarType<ValueType2>() << ">[" << n << "]" )
+                    "set: out<" << TypeTraits<ValueType1>::id() << "[" << n << "]" << " = in<" << TypeTraits<ValueType2>::id() << ">[" << n << "]" )
 
     #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
 
@@ -416,7 +417,8 @@ void OpenMPUtils::setGather( ValueType1 out[], const ValueType2 in[], const Inde
     SCAI_REGION( "OpenMP.Utils.setGather" )
 
     SCAI_LOG_DEBUG( logger,
-                    "setGather: out<" << getScalarType<ValueType1>() << ">[" << n << "]" << " = in<" << getScalarType<ValueType2>() << ">[ indexes[" << n << "] ]" )
+                    "setGather: out<" << TypeTraits<ValueType1>::id() << ">[" << n << "]" 
+                     << " = in<" << TypeTraits<ValueType2>::id() << ">[ indexes[" << n << "] ]" )
 
     #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
 
@@ -434,7 +436,8 @@ void OpenMPUtils::setScatter( ValueType1 out[], const IndexType indexes[], const
     SCAI_REGION( "OpenMP.Utils.setScatter" )
 
     SCAI_LOG_DEBUG( logger,
-                    "setScatter: out<" << getScalarType<ValueType1>() << ">" << "[ indexes[" << n << "] ]" << " = in<" << getScalarType<ValueType2>() << ">[" << n << "]" )
+                    "setScatter: out<" << TypeTraits<ValueType1>::id() << ">" 
+                     << "[ indexes[" << n << "] ]" << " = in<" << TypeTraits<ValueType2>::id() << ">[" << n << "]" )
 
     #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
 

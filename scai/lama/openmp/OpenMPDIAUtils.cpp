@@ -45,7 +45,7 @@
 
 #include <scai/common/OpenMP.hpp>
 #include <scai/common/macros/assert.hpp>
-#include <scai/common/ScalarType.hpp>
+#include <scai/common/TypeTraits.hpp>
 #include <scai/common/bind.hpp>
 
 // boost
@@ -61,7 +61,7 @@ namespace lama
 {
 
 using std::abs;
-using common::getScalarType;
+using common::TypeTraits;
 using tasking::TaskSyncToken;
 
 SCAI_LOG_DEF_LOGGER( OpenMPDIAUtils::logger, "OpenMP.DIAUtils" )
@@ -138,7 +138,7 @@ void OpenMPDIAUtils::getCSRValues(
     const DIAValueType eps )
 {
     SCAI_LOG_INFO( logger,
-                   "get CSRValues<" << getScalarType<DIAValueType>() << ", " << getScalarType<CSRValueType>() 
+                   "get CSRValues<" << TypeTraits<DIAValueType>::id() << ", " << TypeTraits<CSRValueType>::id() 
                     << ">" << ", #rows = " << numRows << ", #diagonals = " << numDiagonals 
                     << ", #non-zero values = " << csrIA[numRows] << ", diagonalFlag = " << diagonalFlag )
 
@@ -256,7 +256,7 @@ void OpenMPDIAUtils::getCSRSizes(
     const DIAValueType eps )
 {
     SCAI_LOG_INFO( logger,
-                   "get CSRSizes<" << getScalarType<DIAValueType>() << "> for DIA matrix " << numRows << " x " << numColumns 
+                   "get CSRSizes<" << TypeTraits<DIAValueType>::id() << "> for DIA matrix " << numRows << " x " << numColumns 
                     << ", #diagonals = " << numDiagonals << ", eps = " << eps << ", diagonalFlag = " << diagonalFlag )
 
     #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
@@ -344,7 +344,7 @@ void OpenMPDIAUtils::normalGEMV(
         // bind has limited number of arguments, so take help routine for call
 
         SCAI_LOG_INFO( logger, 
-                       "normalGEMV<" << getScalarType<ValueType>() << "> launch it asynchronously" )
+                       "normalGEMV<" << TypeTraits<ValueType>::id() << "> launch it asynchronously" )
 
         syncToken->run( common::bind( normalGEMV_a<ValueType>,
                                       result,
@@ -355,7 +355,7 @@ void OpenMPDIAUtils::normalGEMV(
     }
 
     SCAI_LOG_INFO( logger,
-                   "normalGEMV<" << getScalarType<ValueType>() << ", #threads = " << omp_get_max_threads() 
+                   "normalGEMV<" << TypeTraits<ValueType>::id() << ", #threads = " << omp_get_max_threads() 
                     << ">, result[" << numRows << "] = " << alpha << " * A( dia, #diags = " << numDiagonals << " ) * x + " << beta << " * y " )
 
     // result := alpha * A * x + beta * y -> result:= beta * y; result += alpha * A
@@ -420,10 +420,10 @@ void OpenMPDIAUtils::normalGEVM(
     const ValueType diaValues[] )
 {
     SCAI_LOG_INFO( logger,
-                   "normalGEVM<" << getScalarType<ValueType>() << ", #threads = " << omp_get_max_threads() << ">, result[" << numRows << "] = " << alpha << " * A( dia, #diags = " << numDiagonals << " ) * x + " << beta << " * y " )
+                   "normalGEVM<" << TypeTraits<ValueType>::id() << ", #threads = " << omp_get_max_threads() << ">, result[" << numRows << "] = " << alpha << " * A( dia, #diags = " << numDiagonals << " ) * x + " << beta << " * y " )
 
     SCAI_LOG_INFO( logger,
-                   "normalGEVM<" << getScalarType<ValueType>() << ">, n = " << numRows << ", d = " << numDiagonals )
+                   "normalGEVM<" << TypeTraits<ValueType>::id() << ">, n = " << numRows << ", d = " << numDiagonals )
 
     TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
@@ -498,7 +498,7 @@ void OpenMPDIAUtils::jacobi(
     const IndexType numRows )
 {
     SCAI_LOG_INFO( logger,
-                   "jacobi<" << getScalarType<ValueType>() << ">" << ", #rows = " << numRows << ", #cols = " << numColumns << ", #diagonals = " << numDiagonals << ", omega = " << omega )
+                   "jacobi<" << TypeTraits<ValueType>::id() << ">" << ", #rows = " << numRows << ", #cols = " << numColumns << ", #diagonals = " << numDiagonals << ", omega = " << omega )
 
     SCAI_ASSERT_EQUAL_DEBUG( 0, diaOffset[0] )
     // main diagonal must be first

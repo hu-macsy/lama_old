@@ -48,7 +48,7 @@
 
 #include <scai/common/Settings.hpp>
 #include <scai/common/macros/unused.hpp>
-#include <scai/common/ScalarType.hpp>
+#include <scai/common/TypeTraits.hpp>
 #include <scai/common/bind.hpp>
 
 #include <scai/kregistry/KernelRegistry.hpp>
@@ -89,7 +89,7 @@ void BLAS_BLAS1::scal(
     SCAI_REGION( "BLAS.BLAS1.scal" )
 
     SCAI_LOG_DEBUG( logger,
-                    "scal<" << getScalarType<ValueType>() << " n = " << n << ", alpha = " << alpha << ", x = " << x << ", incX = " << incX )
+                    "scal<" << TypeTraits<ValueType>::id() << " n = " << n << ", alpha = " << alpha << ", x = " << x << ", incX = " << incX )
 
     TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
@@ -117,7 +117,7 @@ ValueType BLAS_BLAS1::nrm2( const IndexType n, const ValueType* x, const IndexTy
     SCAI_REGION( "BLAS.BLAS1.nrm2" )
 
     SCAI_LOG_DEBUG( logger,
-                    "nrm2<" << getScalarType<ValueType>() << ">, n = " << n << ", x = " << x << ", incX = " << incX )
+                    "nrm2<" << TypeTraits<ValueType>::id() << ">, n = " << n << ", x = " << x << ", incX = " << incX )
 
     TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
@@ -139,7 +139,7 @@ ValueType BLAS_BLAS1::asum( const IndexType n, const ValueType* x, const IndexTy
     SCAI_REGION( "BLAS.BLAS1.asum" )
 
     SCAI_LOG_DEBUG( logger,
-                    "asum<" << getScalarType<ValueType>() << ">,  n = " << n << ", x = " << x << ", incX = " << incX )
+                    "asum<" << TypeTraits<ValueType>::id() << ">,  n = " << n << ", x = " << x << ", incX = " << incX )
 
     TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
@@ -166,7 +166,7 @@ IndexType BLAS_BLAS1::iamax( const IndexType n, const ValueType* x, const IndexT
     SCAI_REGION( "BLAS.BLAS1.iamax" )
 
     SCAI_LOG_INFO( logger,
-                   "iamax<" << getScalarType<ValueType>() << ">, " << "n = " << n << ", x = " << x << ", incX = " << incX )
+                   "iamax<" << TypeTraits<ValueType>::id() << ">, " << "n = " << n << ", x = " << x << ", incX = " << incX )
 
     TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
@@ -193,7 +193,7 @@ void BLAS_BLAS1::swap(
     SCAI_REGION( "BLAS.BLAS1.swap" )
 
     SCAI_LOG_DEBUG( logger,
-                    "iamax<" << getScalarType<ValueType>() << ">" << ", n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
+                    "iamax<" << TypeTraits<ValueType>::id() << ">" << ", n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
 
     if( ( incX <= 0 ) || ( incY <= 0 ) )
     {
@@ -225,7 +225,7 @@ void BLAS_BLAS1::copy(
     SCAI_REGION( "BLAS.BLAS1.copy" )
 
     SCAI_LOG_DEBUG( logger,
-                    "copy<" << getScalarType<ValueType>() << ">, " << "n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
+                    "copy<" << TypeTraits<ValueType>::id() << ">, " << "n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
 
     if( ( incX <= 0 ) || ( incY <= 0 ) )
     {
@@ -260,7 +260,7 @@ void BLAS_BLAS1::axpy(
     SCAI_REGION( "BLAS.BLAS1.axpy" )
 
     SCAI_LOG_DEBUG( logger,
-                    "axpy<" << getScalarType<ValueType>() << ">, " << "n = " << n << ", alpha = " << alpha << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
+                    "axpy<" << TypeTraits<ValueType>::id() << ">, " << "n = " << n << ", alpha = " << alpha << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
 
     if( ( incX <= 0 ) || ( incY <= 0 ) )
     {
@@ -296,7 +296,7 @@ ValueType BLAS_BLAS1::dot(
     SCAI_REGION( "BLAS.BLAS1.dot" )
 
     SCAI_LOG_DEBUG( logger,
-                    "dot<" << getScalarType<ValueType>() << ">, " << "n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
+                    "dot<" << TypeTraits<ValueType>::id() << ">, " << "n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
 
     if( ( incX <= 0 ) || ( incY <= 0 ) )
     {

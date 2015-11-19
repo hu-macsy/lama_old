@@ -51,6 +51,7 @@
 #include <scai/common/cuda/CUDAError.hpp>
 #include <scai/common/cuda/launchHelper.hpp>
 #include <scai/common/Constants.hpp>
+#include <scai/common/TypeTraits.hpp>
 
 // thrust
 #include <thrust/device_ptr.h>
@@ -75,7 +76,7 @@ using scai::tasking::CUDAStreamSyncToken;
 namespace scai
 {
 
-using common::getScalarType;
+using common::TypeTraits;
 
 namespace lama
 {
@@ -615,8 +616,8 @@ void CUDAJDSUtils::setCSRValues(
     dim3 dimBlock( blockSize, 1, 1 );
     dim3 dimGrid = makeGrid( numRows, dimBlock.x );
 
-    SCAI_LOG_INFO( logger, "Start csr2jds_kernel<" << getScalarType<JDSValueType>()
-                   << ", " << getScalarType<CSRValueType>()
+    SCAI_LOG_INFO( logger, "Start csr2jds_kernel<" << TypeTraits<JDSValueType>::id()
+                   << ", " << TypeTraits<CSRValueType>::id()
                    << ", useSharedMem = " << useSharedMem
                    << "> ( nrows = " << numRows << ", ndiag = " << ndlg << " )" );
 
@@ -643,8 +644,8 @@ void CUDAJDSUtils::setCSRValues(
 
     SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "csr2jdsKernel failed" );
 
-    SCAI_LOG_INFO( logger, "Ready csr2jds_kernel<" << getScalarType<JDSValueType>()
-                   << ", " << getScalarType<CSRValueType>() << " )" )
+    SCAI_LOG_INFO( logger, "Ready csr2jds_kernel<" << TypeTraits<JDSValueType>::id()
+                   << ", " << TypeTraits<CSRValueType>::id() << " )" )
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -723,7 +724,7 @@ void CUDAJDSUtils::getCSRValues(
     SCAI_REGION( "CUDA.JDS->CSR_values" )
 
     SCAI_LOG_INFO( logger,
-                   "get CSRValues<" << getScalarType<JDSValueType>() << ", " << getScalarType<CSRValueType>() << ">" << ", #rows = " << numRows )
+                   "get CSRValues<" << TypeTraits<JDSValueType>::id() << ", " << TypeTraits<CSRValueType>::id() << ">" << ", #rows = " << numRows )
 
     SCAI_CHECK_CUDA_ACCESS
 
@@ -852,7 +853,7 @@ void CUDAJDSUtils::jacobi(
     cudaStream_t stream = 0;
 
     SCAI_LOG_INFO( logger,
-                   "jacobi<" << getScalarType<ValueType>() << ">" << ", #rows = " << numRows << ", omega = " << omega )
+                   "jacobi<" << TypeTraits<ValueType>::id() << ">" << ", #rows = " << numRows << ", omega = " << omega )
 
     SCAI_CHECK_CUDA_ACCESS
 
@@ -908,7 +909,7 @@ void CUDAJDSUtils::jacobi(
         }
     }
 
-    SCAI_LOG_INFO( logger, "Start jds_jacobi_kernel<" << getScalarType<ValueType>()
+    SCAI_LOG_INFO( logger, "Start jds_jacobi_kernel<" << TypeTraits<ValueType>::id()
                    << ", useTexture = " << useTexture << ", useSharedMem = " << useSharedMem << ">" );
 
     if ( useTexture )
@@ -940,7 +941,7 @@ void CUDAJDSUtils::jacobi(
         }
     }
 
-    SCAI_CUDA_RT_CALL( cudaGetLastError(), "jds_jacobi_kernel<" << getScalarType<ValueType>()
+    SCAI_CUDA_RT_CALL( cudaGetLastError(), "jds_jacobi_kernel<" << TypeTraits<ValueType>::id()
                        << ", " << useTexture << ", " << useSharedMem << "> failed" )
 
     if ( !syncToken )
@@ -1046,7 +1047,7 @@ void CUDAJDSUtils::jacobiHalo(
 {
     SCAI_REGION( "CUDA.JDS.jacobiHalo" )
 
-    SCAI_LOG_INFO( logger, "jacobiHalo<" << getScalarType<ValueType>() << ">"
+    SCAI_LOG_INFO( logger, "jacobiHalo<" << TypeTraits<ValueType>::id() << ">"
                    << ", #rows = " << numRows << ", omega = " << omega )
 
     CUDAStreamSyncToken* syncToken = CUDAStreamSyncToken::getCurrentSyncToken();
@@ -1077,7 +1078,7 @@ void CUDAJDSUtils::jacobiHalo(
         }
     }
 
-    SCAI_LOG_INFO( logger, "Start jds_jacobi_halo_kernel<" << getScalarType<ValueType>()
+    SCAI_LOG_INFO( logger, "Start jds_jacobi_halo_kernel<" << TypeTraits<ValueType>::id()
                    << ", useTexture = " << useTexture << ", useSharedMem = " << useSharedMem << ">" );
 
     if ( useTexture )
@@ -1704,7 +1705,7 @@ void CUDAJDSUtils::normalGEMV(
 
     SCAI_REGION( "CUDA.JDS.normalGEMV" )
 
-    SCAI_LOG_INFO( logger, "normalGEMV<" << getScalarType<ValueType>() << ">"
+    SCAI_LOG_INFO( logger, "normalGEMV<" << TypeTraits<ValueType>::id() << ">"
                    << " result[ " << numRows << "] = " << alpha
                    << " * A( #jds_diags = " << ndlg << " ) * x + " << beta << " * y " )
 
@@ -1721,7 +1722,7 @@ void CUDAJDSUtils::normalGEMV(
 
     cudaStream_t stream = 0; // default stream if no SyncToken is available
 
-    SCAI_LOG_INFO( logger, "Start normal_gemv_kernel<" << getScalarType<ValueType>()
+    SCAI_LOG_INFO( logger, "Start normal_gemv_kernel<" << TypeTraits<ValueType>::id()
                    << "> <<< blockSize = " << blockSize << ", stream = " << stream
                    << ", useTexture = " << useTexture << ", useSharedMem = " << useSharedMem << ">>>" );
 
@@ -2399,7 +2400,7 @@ void CUDAJDSUtils::normalGEVM(
 
     SCAI_REGION( "CUDA.JDS.normalGEVM" )
 
-    SCAI_LOG_INFO( logger, "normalGEVM<" << getScalarType<ValueType>() << ">"
+    SCAI_LOG_INFO( logger, "normalGEVM<" << TypeTraits<ValueType>::id() << ">"
                    << " result[ " << numColumns << "] = " << alpha
                    << " * A( #jds_diags = " << ndlg << " ) * x + " << beta << " * y " )
 
@@ -2416,7 +2417,7 @@ void CUDAJDSUtils::normalGEVM(
 
     cudaStream_t stream = 0; // default stream if no SyncToken is available
 
-    SCAI_LOG_INFO( logger, "Start normal_gevm_kernel<" << getScalarType<ValueType>()
+    SCAI_LOG_INFO( logger, "Start normal_gevm_kernel<" << TypeTraits<ValueType>::id()
                    << "> <<< blockSize = " << blockSize << ", stream = " << stream
                    << ", useTexture = " << useTexture << ", useSharedMem = " << useSharedMem << ">>>" );
 
@@ -2668,7 +2669,7 @@ void CUDAJDSUtils::sparseGEMV(
 {
     SCAI_REGION( "CUDA.JDS.sparseGEMV" )
 
-    SCAI_LOG_INFO( logger, "sparseGEMV<" << getScalarType<ValueType>() << ">"
+    SCAI_LOG_INFO( logger, "sparseGEMV<" << TypeTraits<ValueType>::id() << ">"
                    << ", #rows = " << numRows << ", #diags = " << ndlg )
 
     if ( ndlg == 0 )
@@ -2699,7 +2700,7 @@ void CUDAJDSUtils::sparseGEMV(
         stream = syncToken->getCUDAStream();
     }
 
-    SCAI_LOG_INFO( logger, "Start jdsgemvSparseKernel<" << getScalarType<ValueType>()
+    SCAI_LOG_INFO( logger, "Start jdsgemvSparseKernel<" << TypeTraits<ValueType>::id()
                    << "> <<< blockSize = " << blockSize << ", stream = " << stream
                    << ", useTexture = " << useTexture << ", useSharedMem = " << useSharedMem << ">>>" );
 
@@ -2795,7 +2796,7 @@ void CUDAJDSUtils::sparseGEVM(
 {
     SCAI_REGION( "CUDA.JDS.sparseGEVM" )
 
-    SCAI_LOG_INFO( logger, "sparseGEVM<" << getScalarType<ValueType>() << ">"
+    SCAI_LOG_INFO( logger, "sparseGEVM<" << TypeTraits<ValueType>::id() << ">"
                    << ", #rows = " << numRows << ", #diags = " << ndlg )
 
     if ( ndlg == 0 )
@@ -2826,7 +2827,7 @@ void CUDAJDSUtils::sparseGEVM(
         stream = syncToken->getCUDAStream();
     }
 
-    SCAI_LOG_INFO( logger, "Start jdsgevMSparseKernel<" << getScalarType<ValueType>()
+    SCAI_LOG_INFO( logger, "Start jdsgevMSparseKernel<" << TypeTraits<ValueType>::id()
                    << "> <<< blockSize = " << blockSize << ", stream = " << stream
                    << ", useTexture = " << useTexture << ", useSharedMem = " << useSharedMem << ">>>" );
 

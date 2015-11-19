@@ -51,6 +51,7 @@
 #include <scai/common/cuda/CUDAError.hpp>
 #include <scai/common/cuda/launchHelper.hpp>
 #include <scai/common/Constants.hpp>
+#include <scai/common/TypeTraits.hpp>
 
 // thrust
 #include <thrust/device_ptr.h>
@@ -64,7 +65,7 @@ using namespace scai::tasking;
 namespace scai
 {
 
-using common::getScalarType;
+using common::TypeTraits;
 
 namespace lama
 {
@@ -266,7 +267,7 @@ void CUDACOOUtils::normalGEMV(
 {
     SCAI_REGION( "CUDA.COO.normalGEMV" )
 
-    SCAI_LOG_INFO( logger, "normalGEMV<" << getScalarType<ValueType>() << ">, "
+    SCAI_LOG_INFO( logger, "normalGEMV<" << TypeTraits<ValueType>::id() << ">, "
                    << "result[ " << numRows << "] = " << alpha
                    << " COO( #vals = " << numValues << " ) * x + " << beta << " * y" )
 
@@ -312,7 +313,7 @@ void CUDACOOUtils::normalGEMV(
     dimBlock = dim3( blockSize, 1, 1 );
     dimGrid = makeGrid( numValues, dimBlock.x );
 
-    SCAI_LOG_INFO( logger, "Start cooGemvKernel<" << getScalarType<ValueType>()
+    SCAI_LOG_INFO( logger, "Start cooGemvKernel<" << TypeTraits<ValueType>::id()
                    << "> <<< blockSize = " << blockSize << ", stream = " << stream
                    << ", alpha = " << alpha
                    << ", useTexture = " << useTexture << ">>>" )
@@ -430,7 +431,7 @@ void CUDACOOUtils::normalGEVM(
     dimBlock = dim3( blockSize, 1, 1 );
     dimGrid = makeGrid( numValues, dimBlock.x );
 
-    SCAI_LOG_INFO( logger, "Start cooGevmKernel<" << getScalarType<ValueType>()
+    SCAI_LOG_INFO( logger, "Start cooGevmKernel<" << TypeTraits<ValueType>::id()
                    << "> <<< blockSize = " << blockSize << ", stream = " << stream
                    << ", useTexture = " << useTexture << ">>>" )
 

@@ -39,6 +39,7 @@
 
 #include <scai/kregistry/KernelRegistry.hpp>
 #include <scai/common/Constants.hpp>
+#include <scai/common/TypeTraits.hpp>
 #include <scai/common/OpenMP.hpp>
 
 // boost
@@ -53,7 +54,7 @@ namespace lama
 using std::abs;
 // so we can use abs for float and double and abs for Complex<ValueType>
 
-using common::getScalarType;
+using common::TypeTraits;
 
 SCAI_LOG_DEF_LOGGER( OpenMPDenseUtils::logger, "OpenMP.DenseUtils" )
 
@@ -143,7 +144,7 @@ void OpenMPDenseUtils::getCSRValues(
     const DenseValueType eps )
 {
     SCAI_LOG_INFO( logger,
-                   "get CSRValues<" << getScalarType<DenseValueType>() << ", " << getScalarType<CSRValueType>() << ">" << ", size is " << numRows << " x " << numColumns )
+                   "get CSRValues<" << TypeTraits<DenseValueType>::id() << ", " << TypeTraits<CSRValueType>::id() << ">" << ", size is " << numRows << " x " << numColumns )
 
     #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
 
@@ -198,7 +199,7 @@ void OpenMPDenseUtils::setCSRValues(
     const CSRValueType csrValues[] )
 {
     SCAI_LOG_INFO( logger,
-                   "set CSRValues<" << getScalarType<DenseValueType>() << ", " << getScalarType<CSRValueType>() << ">" << ", size is " << numRows << " x " << numColumns )
+                   "set CSRValues<" << TypeTraits<DenseValueType>::id() << ", " << TypeTraits<CSRValueType>::id() << ">" << ", size is " << numRows << " x " << numColumns )
 
     // parallelization possible as offset array csrIA is available
 

@@ -41,6 +41,7 @@
 // internal scai libraries
 #include <scai/hmemo.hpp>
 #include <scai/common/macros/print_string.hpp>
+#include <scai/common/TypeTraits.hpp>
 
 // boost
 #include <boost/preprocessor.hpp>
@@ -277,7 +278,7 @@ ValueType SparseAssemblyStorage<ValueType>::l2Norm() const
         }
     }
 
-    return ::sqrt(val);
+    return common::TypeTraits<ValueType>::sqrt(val);
 }
 
 

@@ -47,6 +47,7 @@
 #include <scai/common/unique_ptr.hpp>
 #include <scai/common/macros/assert.hpp>
 #include <scai/common/Constants.hpp>
+#include <scai/common/TypeTraits.hpp>
 #include <scai/common/bind.hpp>
 
 #include <scai/tasking/TaskSyncToken.hpp>
@@ -58,6 +59,7 @@ namespace scai
 {
 
 using common::scoped_array;
+using common::TypeTraits;
 using tasking::TaskSyncToken;
 
 namespace lama
@@ -410,7 +412,7 @@ void OpenMPJDSUtils::getCSRValues(
     const JDSValueType jdsValues[] )
 {
     SCAI_LOG_INFO( logger,
-                   "get CSRValues<" << common::getScalarType<JDSValueType>() << ", " << common::getScalarType<CSRValueType>() << ">" << ", #rows = " << numRows << ", #values = " << csrIA[numRows] )
+                   "get CSRValues<" << TypeTraits<JDSValueType>::id() << ", " << TypeTraits<CSRValueType>::id() << ">" << ", #rows = " << numRows << ", #values = " << csrIA[numRows] )
 
     #pragma omp parallel
     {
@@ -453,7 +455,7 @@ void OpenMPJDSUtils::setCSRValues(
     const CSRValueType csrValues[] )
 {
     SCAI_LOG_INFO( logger,
-                   "set CSRValues<" << common::getScalarType<JDSValueType>() << ", " << common::getScalarType<CSRValueType>() << ">" << ", #rows = " << numRows << ", #values = " << csrIA[numRows] )
+                   "set CSRValues<" << TypeTraits<JDSValueType>::id() << ", " << TypeTraits<CSRValueType>::id() << ">" << ", #rows = " << numRows << ", #values = " << csrIA[numRows] )
 
     // parallelization possible as offset array csrIA is available
 
@@ -529,7 +531,7 @@ void OpenMPJDSUtils::normalGEMV(
     }
 
     SCAI_LOG_INFO( logger,
-                   "normalGEMV<" << common::getScalarType<ValueType>() << ", #threads = " << omp_get_max_threads() 
+                   "normalGEMV<" << TypeTraits<ValueType>::id() << ", #threads = " << omp_get_max_threads() 
                     << ">, result[" << numRows << "] = " << alpha << " * A( jds, ndlg = " << ndlg << " ) * x + " << beta << " * y " )
 
     OpenMPUtils::setScale( result, beta, y, numRows );  // z = alpha * JDS * x + beta * y, remains: z += alpha * JDS * x
@@ -590,7 +592,7 @@ void OpenMPJDSUtils::normalGEVM(
     const ValueType jdsValues[] )
 {
     SCAI_LOG_INFO( logger,
-                   "normalGEVM<" << common::getScalarType<ValueType>() << ", #threads = " << omp_get_max_threads() << ">, result[" << numColumns << "] = " << alpha << " * A( jds, ndlg = " << ndlg << " ) * x + " << beta << " * y " )
+                   "normalGEVM<" << TypeTraits<ValueType>::id() << ", #threads = " << omp_get_max_threads() << ">, result[" << numColumns << "] = " << alpha << " * A( jds, ndlg = " << ndlg << " ) * x + " << beta << " * y " )
 
     if( beta == scai::common::constants::ZERO )
     {
@@ -699,7 +701,7 @@ void OpenMPJDSUtils::jacobi(
     const ValueType omega )
 {
     SCAI_LOG_INFO( logger,
-                   "jacobi<" << common::getScalarType<ValueType>() << ">" << ", #rows = " << numRows << ", omega = " << omega )
+                   "jacobi<" << TypeTraits<ValueType>::id() << ">" << ", #rows = " << numRows << ", omega = " << omega )
 
     TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
@@ -761,7 +763,7 @@ void OpenMPJDSUtils::jacobiHalo(
     const ValueType omega )
 {
     SCAI_LOG_INFO( logger,
-                   "jacobiHalo<" << common::getScalarType<ValueType>() << ">" << ", #rows = " << numRows << ", omega = " << omega )
+                   "jacobiHalo<" << TypeTraits<ValueType>::id() << ">" << ", #rows = " << numRows << ", omega = " << omega )
 
     TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 

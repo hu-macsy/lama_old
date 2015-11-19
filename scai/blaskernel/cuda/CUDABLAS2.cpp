@@ -44,7 +44,7 @@
 #include <scai/hmemo/cuda/CUDAStreamSyncToken.hpp>
 #include <scai/kregistry/KernelRegistry.hpp>
 
-#include <scai/common/ScalarType.hpp>
+#include <scai/common/TypeTraits.hpp>
 #include <scai/common/macros/unused.hpp>
 #include <scai/common/cuda/CUDAError.hpp>
 
@@ -57,7 +57,7 @@ using namespace scai::hmemo;
 namespace scai
 {
 
-using common::getScalarType;
+using common::TypeTraits;
 
 extern cublasHandle_t CUDAContext_cublasHandle;
 
@@ -138,7 +138,7 @@ void CUDABLAS2::gemv(
                       "CUDABLAS2::gemv set cublas kernel stream = " << stream );
 
     SCAI_LOG_INFO( logger,
-                   "gemv<" << getScalarType<ValueType>() << "> with cuBLAS: m = " << order_m << " x " << order_n )
+                   "gemv<" << TypeTraits<ValueType>::id() << "> with cuBLAS: m = " << order_m << " x " << order_n )
 
     CUBLASWrapper::gemv( trans_char,  order_m ,  order_n , alpha, A,  static_cast<CUBLASWrapper::BLASIndexType>(lda ), x,  static_cast<CUBLASWrapper::BLASIndexType>(incx) , beta, y,  static_cast<CUBLASWrapper::BLASIndexType>(incy) );
 

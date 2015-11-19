@@ -26,7 +26,7 @@
  * @endlicense
  *
  * @brief Definition of enum type for scalar value types typically used in numerical applications.
- * @author Jiri Kraus
+ * @author Thomas Brandes
  * @date 22.02.2011
  */
 
@@ -34,9 +34,6 @@
 
 // for dll_import
 #include <scai/common/config.hpp>
-
-// base classes
-#include <scai/common/Printable.hpp>
 
 // local library
 #include <scai/common/SCAITypes.hpp>
@@ -97,57 +94,11 @@ namespace scalar
 using scalar::ScalarType;
 
 /**
- * @brief Conversion of a C type into value of enum ScalarType.
+ * @brief Conversion of a ScalarType to string
  *
- * @tparam ValueType    C++ type that should be converted
- * @return      value of enum type ScalarType that represents the C++ type.
  */
-template<typename ValueType> inline scalar::ScalarType getScalarType()
-{
-    return scalar::UNKNOWN;
-}
-    
-template<>
-inline scalar::ScalarType getScalarType<IndexType>()
-{
-    return scalar::INDEX_TYPE;
-}
 
-template<>
-inline scalar::ScalarType getScalarType<float>()
-{
-    return scalar::FLOAT;
-}
-
-template<>
-inline scalar::ScalarType getScalarType<double>()
-{
-    return scalar::DOUBLE;
-}
-
-template<>
-inline scalar::ScalarType getScalarType<LongDouble>()
-{
-    return scalar::LONG_DOUBLE;
-}
-
-template<>
-inline scalar::ScalarType getScalarType<ComplexFloat>()
-{
-    return scalar::COMPLEX;
-}
-
-template<>
-inline scalar::ScalarType getScalarType<ComplexDouble>()
-{
-    return scalar::DOUBLE_COMPLEX;
-}
-
-template<>
-inline scalar::ScalarType getScalarType<ComplexLongDouble>()
-{
-    return scalar::LONG_DOUBLE_COMPLEX;
-}
+const char* scalar2str( const scalar::ScalarType stype );
 
 } /* end namespace common */
 

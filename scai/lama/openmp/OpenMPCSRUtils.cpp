@@ -48,6 +48,7 @@
 #include <scai/common/unique_ptr.hpp>
 #include <scai/common/macros/unused.hpp>
 #include <scai/common/Constants.hpp>
+#include <scai/common/TypeTraits.hpp>
 
 #include <scai/kregistry/KernelRegistry.hpp>
 #include <scai/tasking/TaskSyncToken.hpp>
@@ -62,7 +63,7 @@ namespace scai
 {
 
 using common::scoped_array;
-using common::getScalarType;
+using common::TypeTraits;
 
 using tasking::TaskSyncToken;
 
@@ -531,7 +532,7 @@ void OpenMPCSRUtils::normalGEMV_s(
     const ValueType csrValues[] )
 {
     SCAI_LOG_INFO( logger,
-                   "normalGEMV<" << getScalarType<ValueType>() << ", #threads = " << omp_get_max_threads() 
+                   "normalGEMV<" << TypeTraits<ValueType>::id() << ", #threads = " << omp_get_max_threads() 
                     << ">, result[" << numRows << "] = " << alpha << " * A * x + " << beta << " * y " )
 
     // ToDo: for efficiency the following cases should be considered
@@ -647,7 +648,7 @@ void OpenMPCSRUtils::normalGEVM(
     {
         // bind takes maximal 9 arguments, so we put (alpha, x) and (beta, y) in a struct
 
-        SCAI_LOG_INFO( logger, "normalGEVM<" << getScalarType<ValueType>() << ", launch it as an asynchronous task" )
+        SCAI_LOG_INFO( logger, "normalGEVM<" << TypeTraits<ValueType>::id() << ", launch it as an asynchronous task" )
 
         syncToken->run( common::bind( normalGEVM_s<ValueType>, result, 
                                       std::pair<ValueType, const ValueType*>( alpha, x ), 
@@ -658,7 +659,7 @@ void OpenMPCSRUtils::normalGEVM(
     }
 
     SCAI_LOG_INFO( logger,
-                   "normalGEVM<" << getScalarType<ValueType>() << ", #threads = " << omp_get_max_threads() << ">, result[" << numColumns << "] = " 
+                   "normalGEVM<" << TypeTraits<ValueType>::id() << ", #threads = " << omp_get_max_threads() << ">, result[" << numColumns << "] = " 
                     << alpha << " * x * A + " << beta << " * y " )
 
     // ToDo: for efficiency the cases of alpha and beta = 1.0 / 0.0 should be considered
@@ -863,7 +864,7 @@ void OpenMPCSRUtils::gemm(
     const ValueType csrValues[] )
 {
     SCAI_LOG_INFO( logger,
-                   "gemm<" << getScalarType<ValueType>() << ">, " << " result " << m << " x " << n << " CSR " << m << " x " << p )
+                   "gemm<" << TypeTraits<ValueType>::id() << ">, " << " result " << m << " x " << n << " CSR " << m << " x " << p )
 
     TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
@@ -911,7 +912,7 @@ void OpenMPCSRUtils::jacobi(
     const IndexType numRows )
 {
     SCAI_LOG_INFO( logger,
-                   "jacobi<" << getScalarType<ValueType>() << ">" << ", #rows = " << numRows << ", omega = " << omega )
+                   "jacobi<" << TypeTraits<ValueType>::id() << ">" << ", #rows = " << numRows << ", omega = " << omega )
 
     TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
@@ -972,7 +973,7 @@ void OpenMPCSRUtils::jacobiHalo(
     const IndexType numNonEmptyRows )
 {
     SCAI_LOG_INFO( logger,
-                   "jacobiHalo<" << getScalarType<ValueType>() << ">" << ", #rows (not empty) = " << numNonEmptyRows << ", omega = " << omega );
+                   "jacobiHalo<" << TypeTraits<ValueType>::id() << ">" << ", #rows (not empty) = " << numNonEmptyRows << ", omega = " << omega );
 
     #pragma omp parallel
     {
@@ -1025,7 +1026,7 @@ void OpenMPCSRUtils::jacobiHaloWithDiag(
     const IndexType numNonEmptyRows )
 {
     SCAI_LOG_INFO( logger,
-                   "jacobiHaloWithDiag<" << getScalarType<ValueType>() << ">" << ", #rows (not empty) = " << numNonEmptyRows << ", omega = " << omega );
+                   "jacobiHaloWithDiag<" << TypeTraits<ValueType>::id() << ">" << ", #rows (not empty) = " << numNonEmptyRows << ", omega = " << omega );
 
     #pragma omp parallel
     {
@@ -1956,7 +1957,7 @@ ValueType OpenMPCSRUtils::absMaxDiffVal(
     const ValueType csrValues2[] )
 {
     SCAI_LOG_INFO( logger,
-                   "absMaxDiffVal<" << getScalarType<ValueType>() << ">: " << "csr[" << numRows << "], sorted = " << sortedRows )
+                   "absMaxDiffVal<" << TypeTraits<ValueType>::id() << ">: " << "csr[" << numRows << "], sorted = " << sortedRows )
 
     ValueType (*absMaxDiffRow)(
         const IndexType,
