@@ -36,7 +36,6 @@
 #include <scai/common/ScalarType.hpp>
 
 #include <cmath>
-#include <Complex.hpp>
 
 namespace scai
 {
