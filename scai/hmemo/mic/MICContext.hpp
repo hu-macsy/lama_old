@@ -108,9 +108,9 @@ public:
      */
 
     /**
-     *  @brief Implementation of Context::getMemory for this class.
+     *  @brief Implementation of Context::getLocalMemoryPtr for this class.
      */
-    virtual MemoryPtr getMemoryPtr() const;
+    virtual MemoryPtr getLocalMemoryPtr() const;
 
     /** 
      *  @brief Implementation of Context::canUseMemory for this class. 

@@ -65,8 +65,8 @@ int main( int argc, char** )
     using namespace std;
 
     double dummy = 1.0;          // for workload
-    int    NWORK = 256;
-    int    N     = 1 * 1024 * 1024;  // array size
+    int    NWORK = 1024;
+    int    N     = 4 * 1024 * 1024;  // array size
 
     // use pinned Host memory in case of at least one argument
 
@@ -76,6 +76,10 @@ int main( int argc, char** )
     ContextPtr hostContext = Context::getContextPtr( common::context::Host );
 
     ContextPtr homeContext = isPinned ? cudaContext : hostContext;
+
+    cudaContext->enableZeroCopy( true );
+
+    // LAMAArray<double> A( homeContext );  // uses pinned Host memory if first touch is on CUDA
 
     LAMAArray<double> A( homeContext );  // uses pinned Host memory if first touch is on CUDA
 
