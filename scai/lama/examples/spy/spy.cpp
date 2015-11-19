@@ -75,9 +75,9 @@ int main( int argc, char** argv )
 
     matrix.readFromFile( filename );
 
-    const LAMAArray<IndexType>& ia = matrix.getIA();
-    const LAMAArray<IndexType>& ja = matrix.getJA();
-    const LAMAArray<double>& values = matrix.getValues();
+    const HArray<IndexType>& ia = matrix.getIA();
+    const HArray<IndexType>& ja = matrix.getJA();
+    const HArray<double>& values = matrix.getValues();
 
     ReadAccess<IndexType> csrIA( ia );
     ReadAccess<IndexType> csrJA( ja );

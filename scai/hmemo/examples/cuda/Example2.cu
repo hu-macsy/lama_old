@@ -75,7 +75,7 @@ int main()
 
     const IndexType N = 100;
 
-    LAMAArray<double> data;
+    HArray<double> data;
     
     std::cout << "data = " << data << std::endl;
 

@@ -67,7 +67,7 @@ void asumTest( ContextPtr loc )
         const IndexType incX2 = 2;
         const ValueType result1 = 21.0;
         const ValueType result2 = 9.0;
-        LAMAArray<ValueType> AValues( nValues, values );
+        HArray<ValueType> AValues( nValues, values );
         {
             SCAI_CONTEXT_ACCESS( loc );
             ReadAccess<ValueType> rAValues( AValues, loc );
@@ -101,8 +101,8 @@ void axpyTest( ContextPtr loc )
         { 1.0, 2.0, -3.0, 4.0, 5.0, -6.0, 7.0, 8.0, -9.0 };
         const IndexType incX = 2;
         const IndexType incY = 3;
-        LAMAArray<ValueType> Ax( 6, x );
-        LAMAArray<ValueType> Ay( 9, y );
+        HArray<ValueType> Ax( 6, x );
+        HArray<ValueType> Ay( 9, y );
         {
             SCAI_CONTEXT_ACCESS( loc );
             ReadAccess<ValueType> wAx( Ax, loc );
@@ -124,8 +124,8 @@ void axpyTest( ContextPtr loc )
         { 1.0, 2.0, -3.0, 4.0, 5.0, -6.0 };
         ValueType y[] =
         { 1.0, 2.0, -3.0, 4.0, 5.0, -6.0, 7.0, 8.0, -9.0 };
-        LAMAArray<ValueType> Ax( 6, x );
-        LAMAArray<ValueType> Ay( 9, y );
+        HArray<ValueType> Ax( 6, x );
+        HArray<ValueType> Ay( 9, y );
         {
             SCAI_CONTEXT_ACCESS( loc );
             ReadAccess<ValueType> wAx( Ax, loc );
@@ -151,8 +151,8 @@ void axpyTest( ContextPtr loc )
         { 6.0, 2.0, -3.0, -11.0, 5.0, -6.0, 32.0, 8.0, -9.0 };
         const IndexType incX = 2;
         const IndexType incY = 3;
-        LAMAArray<ValueType> Ax( 6, x );
-        LAMAArray<ValueType> Ay( 9, y );
+        HArray<ValueType> Ax( 6, x );
+        HArray<ValueType> Ay( 9, y );
         {
             SCAI_CONTEXT_ACCESS( loc );
             ReadAccess<ValueType> wAx( Ax, loc );
@@ -185,8 +185,8 @@ void copyTest( ContextPtr loc )
         { -9.0, 8.0, -7.0, 6.0, 5.0, -4.0, 3.0, 2.0, -1.0 };
         const IndexType incX = 2;
         const IndexType incY = 3;
-        LAMAArray<ValueType> Ax( 6, x );
-        LAMAArray<ValueType> Ay( 9, y );
+        HArray<ValueType> Ax( 6, x );
+        HArray<ValueType> Ay( 9, y );
         {
             SCAI_CONTEXT_ACCESS( loc );
             ReadAccess<ValueType> wAx( Ax, loc );
@@ -210,8 +210,8 @@ void copyTest( ContextPtr loc )
         { -9.0, 8.0, -7.0, 6.0, 5.0, -4.0, 3.0, 2.0, -1.0 };
         const IndexType incX = 2;
         const IndexType incY = 3;
-        LAMAArray<ValueType> Ax( 6, x );
-        LAMAArray<ValueType> Ay( 9, y );
+        HArray<ValueType> Ax( 6, x );
+        HArray<ValueType> Ay( 9, y );
         {
             SCAI_CONTEXT_ACCESS( loc );
             ReadAccess<ValueType> wAx( Ax, loc );
@@ -237,8 +237,8 @@ void copyTest( ContextPtr loc )
         { 1.0, 8.0, -7.0, -3.0, 5.0, -4.0, 5.0, 2.0, -1.0 };
         const IndexType incX = 2;
         const IndexType incY = 3;
-        LAMAArray<ValueType> Ax( 6, x );
-        LAMAArray<ValueType> Ay( 9, y );
+        HArray<ValueType> Ax( 6, x );
+        HArray<ValueType> Ay( 9, y );
         {
             SCAI_CONTEXT_ACCESS( loc );
             ReadAccess<ValueType> wAx( Ax, loc );
@@ -268,8 +268,8 @@ void dotTest( ContextPtr loc )
         { 1.0, 2.0, -3.0, 4.0, 5.0, -6.0, 7.0, 8.0, -9.0 };
         const IndexType incX = 2;
         const IndexType incY = 3;
-        LAMAArray<ValueType> Ax( 6, x );
-        LAMAArray<ValueType> Ay( 9, y );
+        HArray<ValueType> Ax( 6, x );
+        HArray<ValueType> Ay( 9, y );
         {
             SCAI_CONTEXT_ACCESS( loc );
             ReadAccess<ValueType> wAx( Ax, loc );
@@ -302,7 +302,7 @@ void iamaxTest( ContextPtr loc )
         const IndexType incX2 = 2; // { 1, 3, 5}
         const IndexType result1 = 3;
         const IndexType result2 = 2;
-        LAMAArray<ValueType> AValues( nValues, values );
+        HArray<ValueType> AValues( nValues, values );
         {
             SCAI_CONTEXT_ACCESS( loc );
             ReadAccess<ValueType> rAValues( AValues, loc );
@@ -336,7 +336,7 @@ void nrm2Test( ContextPtr loc )
         const IndexType incX2 = 2;
         const ValueType result1 = 91.0;
         const ValueType result2 = 35.0;
-        LAMAArray<ValueType> AValues( nValues, values );
+        HArray<ValueType> AValues( nValues, values );
         {
             SCAI_CONTEXT_ACCESS( loc );
             ReadAccess<ValueType> rAValues( AValues, loc );
@@ -366,7 +366,7 @@ void scalTest( ContextPtr loc )
     {
         ValueType values[] =
         { 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0 };
-        LAMAArray<ValueType> AValues( 8, values );
+        HArray<ValueType> AValues( 8, values );
         {
             SCAI_CONTEXT_ACCESS( loc );
             WriteAccess<ValueType> rAValues( AValues, loc );
@@ -385,7 +385,7 @@ void scalTest( ContextPtr loc )
     {
         ValueType values[] =
         { 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0 };
-        LAMAArray<ValueType> AValues( 8, values );
+        HArray<ValueType> AValues( 8, values );
         {
             SCAI_CONTEXT_ACCESS( loc );
             WriteAccess<ValueType> rAValues( AValues, loc );
@@ -405,7 +405,7 @@ void scalTest( ContextPtr loc )
         ValueType values[] =
         { 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0 };
         const IndexType incX = 3;
-        LAMAArray<ValueType> AValues( 8, values );
+        HArray<ValueType> AValues( 8, values );
         {
             SCAI_CONTEXT_ACCESS( loc );
             WriteAccess<ValueType> rAValues( AValues, loc );
@@ -435,9 +435,9 @@ void sumTest( ContextPtr loc )
         { 7.0, 6.0, 5.0, 4.0, 3.0 };
         ValueType z[] =
         { 4.0, 3.0, -2.0, 0.0, -17.0 };
-        LAMAArray<ValueType> Ax( 5, x );
-        LAMAArray<ValueType> Ay( 5, y );
-        LAMAArray<ValueType> Az( 5, z );
+        HArray<ValueType> Ax( 5, x );
+        HArray<ValueType> Ay( 5, y );
+        HArray<ValueType> Az( 5, z );
         {
             SCAI_CONTEXT_ACCESS( loc );
             ReadAccess<ValueType> rAx( Ax, loc );
@@ -460,9 +460,9 @@ void sumTest( ContextPtr loc )
         { 1.0, 2.0, 3.0, 4.0, 5.0 };
         ValueType y[] =
         { 7.0, 6.0, 5.0, 4.0, 3.0 };
-        LAMAArray<ValueType> Ax( 5, x );
-        LAMAArray<ValueType> Ay( 5, y );
-        LAMAArray<ValueType> Az( 5 );
+        HArray<ValueType> Ax( 5, x );
+        HArray<ValueType> Ay( 5, y );
+        HArray<ValueType> Az( 5 );
         {
             SCAI_CONTEXT_ACCESS( loc );
             ReadAccess<ValueType> rAx( Ax, loc );
@@ -496,8 +496,8 @@ void swapTest( ContextPtr loc )
         {   7.0, 6.0, 5.0, 4.0, 3.0, 2.0, 1.0};
         const IndexType incX = 2;
         const IndexType incY = 3;
-        LAMAArray<ValueType> Ax( 5, x );
-        LAMAArray<ValueType> Ay( 7, y );
+        HArray<ValueType> Ax( 5, x );
+        HArray<ValueType> Ay( 7, y );
         {
             SCAI_CONTEXT_ACCESS( loc );
             WriteAccess<ValueType> wAValues1( Ax, loc );
@@ -522,8 +522,8 @@ void swapTest( ContextPtr loc )
         ValueType y[] =
         {   7.0, 6.0, 5.0, 4.0, 3.0, 2.0, 1.0};
         const IndexType nValues = 3;
-        LAMAArray<ValueType> Ax( 5, x );
-        LAMAArray<ValueType> Ay( 7, y );
+        HArray<ValueType> Ax( 5, x );
+        HArray<ValueType> Ay( 7, y );
         {
             SCAI_CONTEXT_ACCESS( loc );
             WriteAccess<ValueType> wAx( Ax, loc );
@@ -550,8 +550,8 @@ void swapTest( ContextPtr loc )
         const IndexType nValues = 3;
         const IndexType incX = 2;
         const IndexType incY = 3;
-        LAMAArray<ValueType> AValues1( 5, values1 );
-        LAMAArray<ValueType> AValues2( 7, values2 );
+        HArray<ValueType> AValues1( 5, values1 );
+        HArray<ValueType> AValues2( 7, values2 );
         {
             SCAI_CONTEXT_ACCESS( loc );
             WriteAccess<ValueType> wAValues1( AValues1, loc );

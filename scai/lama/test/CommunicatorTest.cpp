@@ -307,7 +307,7 @@ void CommunicatorTest::updateHaloTest()
     Halo halo;
     HaloBuilder::build( distribution, requiredIndexes, halo );
     SCAI_LOG_INFO( logger, "halo is now available: " << halo );
-    LAMAArray<ValueType> localData;
+    HArray<ValueType> localData;
     {
         WriteOnlyAccess<ValueType> localDataAccess( localData, distribution.getLocalSize() );
 
@@ -317,7 +317,7 @@ void CommunicatorTest::updateHaloTest()
         }
     }
     SCAI_LOG_INFO( logger, "update halo data by communicator" );
-    LAMAArray<ValueType> haloData;
+    HArray<ValueType> haloData;
     comm->updateHalo( haloData, localData, halo );
     BOOST_CHECK_EQUAL( static_cast<IndexType>( requiredIndexes.size() ), haloData.size() );
     {
@@ -367,8 +367,8 @@ void CommunicatorTest::shiftTest()
     if ( size > 1 )
     {
         const IndexType vectorSize = size;
-        LAMAArray<ValueType> sendBuffer( vectorSize, static_cast<ValueType>( rank ) );
-        LAMAArray<ValueType> recvBuffer;
+        HArray<ValueType> sendBuffer( vectorSize, static_cast<ValueType>( rank ) );
+        HArray<ValueType> recvBuffer;
 
         for ( PartitionId rounds = 0; rounds < size; ++rounds )
         {
@@ -396,8 +396,8 @@ void CommunicatorTest::shiftTest()
 
 LAMA_COMMON_TEST_CASE_TM( CommunicatorTest, ValueType, shiftASyncTest )
 {
-    LAMAArray<ValueType> sendBuffer( 2, static_cast<ValueType>( rank ) );
-    LAMAArray<ValueType> recvBuffer;
+    HArray<ValueType> sendBuffer( 2, static_cast<ValueType>( rank ) );
+    HArray<ValueType> recvBuffer;
     {
         WriteAccess<ValueType> sbuffer( sendBuffer );
         sbuffer[ 0 ] = static_cast<ValueType>( rank );
@@ -438,7 +438,7 @@ LAMA_COMMON_TEST_CASE_TM( CommunicatorTest, ValueType, shiftASyncTest )
     }
     SCAI_LOG_INFO( logger, *token << ": test for correct locks" );
 
-    // Note: multiple accesses on LAMAArray are possible, the following exceptions  are no more thrown
+    // Note: multiple accesses on HArray are possible, the following exceptions  are no more thrown
 
     if ( !token->isSynchronized() )
     {

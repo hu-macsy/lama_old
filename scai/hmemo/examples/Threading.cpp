@@ -47,7 +47,7 @@ SCAI_LOG_DEF_LOGGER( logger, "Threading" )
 
 using namespace scai::hmemo;
 
-void readJob( LAMAArray<double>& X )
+void readJob( HArray<double>& X )
 {
     ContextPtr contextPtr = Context::getHostPtr();
 
@@ -76,7 +76,7 @@ void readJob( LAMAArray<double>& X )
     }
 }
 
-void writeJob( LAMAArray<double>& X )
+void writeJob( HArray<double>& X )
 {
     // Note: different thread on same context will wait until other access is released
 
@@ -94,7 +94,7 @@ void writeJob( LAMAArray<double>& X )
     }
 }
 
-void job( LAMAArray<double>* X )
+void job( HArray<double>* X )
 {
     int r = rand();
     int kind = r % 5;
@@ -123,7 +123,7 @@ using namespace scai::tasking;
 int main()
 {
     SCAI_LOG_THREAD( "main" )
-    LAMAArray<double> X( 100000, 10 );
+    HArray<double> X( 100000, 10 );
     SCAI_LOG_INFO( logger, "X = " << X << " at " << ( &X ) )
     scai::tasking::ThreadPool pool( 10 );
 

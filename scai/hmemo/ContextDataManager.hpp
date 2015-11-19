@@ -165,6 +165,8 @@ public:
 
     ContextPtr getValidContext( const common::context::ContextType preferredType );
 
+    ContextPtr getFirstTouchContextPtr();
+
     void reserve( ContextPtr context, const size_t size, const size_t validSize );
 
     void resize( const size_t size, const size_t validSize );

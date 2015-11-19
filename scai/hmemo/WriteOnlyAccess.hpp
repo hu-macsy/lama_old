@@ -68,7 +68,7 @@ public:
      *  Attention: this kind of write access assumes that the array is completely new written.
      */
 
-    WriteOnlyAccess( LAMAArray<ValueType>& array, ContextPtr context )
+    WriteOnlyAccess( HArray<ValueType>& array, ContextPtr context )
         : WriteAccess<ValueType>( array, context, false )
     {
         SCAI_LOG_DEBUG( logger, "WriteOnlyAccess<" << common::TypeTraits<ValueType>::id() << ">" )
@@ -79,7 +79,7 @@ public:
      *  Attention: this kind of write access assumes that the array is completely new written.
      */
 
-    WriteOnlyAccess( LAMAArray<ValueType>& array )
+    WriteOnlyAccess( HArray<ValueType>& array )
         : WriteAccess<ValueType>( array, false )
     {
         SCAI_LOG_DEBUG( logger, "WriteOnlyAccess<" << common::TypeTraits<ValueType>::id() << ">" )
@@ -88,13 +88,13 @@ public:
     /**
      *  @brief Acquire a write only access with a resize.
      *
-     * @param[in] array     the LAMAArray for which access is required
+     * @param[in] array     the HArray for which access is required
      * @param[in] context   the context where data will be written later
      * @param[in] size      the new size of the LAMA array.
      *
      * Attention: this kind of write access assumes that the array is completely new written.
      */
-    WriteOnlyAccess( LAMAArray<ValueType>& array, ContextPtr context, const IndexType size )
+    WriteOnlyAccess( HArray<ValueType>& array, ContextPtr context, const IndexType size )
         : WriteAccess<ValueType>( array, context, false )
     {
         this->resize( 0 );      // invalidates all data before resize
@@ -103,7 +103,7 @@ public:
         SCAI_LOG_DEBUG( logger, "WriteOnlyAccess<" << common::TypeTraits<ValueType>::id() << ">: " << *mArray )
     }
 
-    WriteOnlyAccess( LAMAArray<ValueType>& array, const IndexType size )
+    WriteOnlyAccess( HArray<ValueType>& array, const IndexType size )
         : WriteAccess<ValueType>( array, false )
     {
         this->resize( 0 );      // invalidates all data before resize

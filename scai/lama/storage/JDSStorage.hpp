@@ -40,7 +40,7 @@
 #include <scai/lama/storage/CRTPMatrixStorage.hpp>
 
 // local scai libraries
-#include <scai/hmemo/LAMAArray.hpp>
+#include <scai/hmemo/HArray.hpp>
 
 namespace scai
 {
@@ -88,11 +88,11 @@ public:
         const IndexType numColumns,
         const IndexType numValues,
         const IndexType numDiagonals,
-        const hmemo::LAMAArray<IndexType>& dlg,
-        const hmemo::LAMAArray<IndexType>& ilg,
-        const hmemo::LAMAArray<IndexType>& perm,
-        const hmemo::LAMAArray<IndexType>& ja,
-        const hmemo::LAMAArray<ValueType>& values );
+        const hmemo::HArray<IndexType>& dlg,
+        const hmemo::HArray<IndexType>& ilg,
+        const hmemo::HArray<IndexType>& perm,
+        const hmemo::HArray<IndexType>& ja,
+        const hmemo::HArray<ValueType>& values );
 
     /** Default constructor, same as JDSStorage(0, 0). */
 
@@ -170,9 +170,9 @@ public:
 
     template<typename OtherValueType>
     void buildCSR(
-        hmemo::LAMAArray<IndexType>& ia,
-        hmemo::LAMAArray<IndexType>* ja,
-        hmemo::LAMAArray<OtherValueType>* values,
+        hmemo::HArray<IndexType>& ia,
+        hmemo::HArray<IndexType>* ja,
+        hmemo::HArray<OtherValueType>* values,
         const hmemo::ContextPtr context ) const;
 
     /**
@@ -183,9 +183,9 @@ public:
         const IndexType numRows,
         const IndexType numColumns,
         const IndexType numValues,
-        const hmemo::LAMAArray<IndexType>& ia,
-        const hmemo::LAMAArray<IndexType>& ja,
-        const hmemo::LAMAArray<OtherValueType>& values,
+        const hmemo::HArray<IndexType>& ia,
+        const hmemo::HArray<IndexType>& ja,
+        const hmemo::HArray<OtherValueType>& values,
         const hmemo::ContextPtr context );
 
      /**
@@ -196,72 +196,72 @@ public:
         const IndexType numColumns,
         const IndexType numValues,
         const IndexType numDiagonals,
-        const hmemo::LAMAArray<IndexType>& dlg,
-        const hmemo::LAMAArray<IndexType>& ilg,
-        const hmemo::LAMAArray<IndexType>& perm,
-        const hmemo::LAMAArray<IndexType>& ja,
+        const hmemo::HArray<IndexType>& dlg,
+        const hmemo::HArray<IndexType>& ilg,
+        const hmemo::HArray<IndexType>& perm,
+        const hmemo::HArray<IndexType>& ja,
         const hmemo::ContextArray& values );
 
     /** Implementation of MatrixStorage::matrixTimesVector for JDS */
 
     virtual void matrixTimesVector(
-        hmemo::LAMAArray<ValueType>& result,
+        hmemo::HArray<ValueType>& result,
         const ValueType alpha,
-        const hmemo::LAMAArray<ValueType>& x,
+        const hmemo::HArray<ValueType>& x,
         const ValueType beta,
-        const hmemo::LAMAArray<ValueType>& y ) const;
+        const hmemo::HArray<ValueType>& y ) const;
 
     /** Implementation of MatrixStorage::vectorTimesMatrix for JDS */
     /** since 1.0.1 */
 
     virtual void vectorTimesMatrix(
-        hmemo::LAMAArray<ValueType>& result,
+        hmemo::HArray<ValueType>& result,
         const ValueType alpha,
-        const hmemo::LAMAArray<ValueType>& x,
+        const hmemo::HArray<ValueType>& x,
         const ValueType beta,
-        const hmemo::LAMAArray<ValueType>& y ) const;
+        const hmemo::HArray<ValueType>& y ) const;
 
     /** Implementation of MatrixStorage::matrixTimesVectorAsync for JDS */
 
     virtual tasking::SyncToken* matrixTimesVectorAsync(
-        hmemo::LAMAArray<ValueType>& result,
+        hmemo::HArray<ValueType>& result,
         const ValueType alpha,
-        const hmemo::LAMAArray<ValueType>& x,
+        const hmemo::HArray<ValueType>& x,
         const ValueType beta,
-        const hmemo::LAMAArray<ValueType>& y ) const;
+        const hmemo::HArray<ValueType>& y ) const;
 
     /** Implementation of MatrixStorage::vectorTimesMatrixAsync for JDS */
     /** since 1.0.1 */
 
     virtual tasking::SyncToken* vectorTimesMatrixAsync(
-        hmemo::LAMAArray<ValueType>& result,
+        hmemo::HArray<ValueType>& result,
         const ValueType alpha,
-        const hmemo::LAMAArray<ValueType>& x,
+        const hmemo::HArray<ValueType>& x,
         const ValueType beta,
-        const hmemo::LAMAArray<ValueType>& y ) const;
+        const hmemo::HArray<ValueType>& y ) const;
 
     /** Implementation of MatrixStorage::jacobiIterate for JDS */
 
     virtual void jacobiIterate(
-        hmemo::LAMAArray<ValueType>& solution,
-        const hmemo::LAMAArray<ValueType>& oldSolution,
-        const hmemo::LAMAArray<ValueType>& rhs,
+        hmemo::HArray<ValueType>& solution,
+        const hmemo::HArray<ValueType>& oldSolution,
+        const hmemo::HArray<ValueType>& rhs,
         const ValueType omega ) const;
 
     /** Implementation of MatrixStorage::jacobiIterateAsync for JDS */
 
     virtual tasking::SyncToken* jacobiIterateAsync(
-        hmemo::LAMAArray<ValueType>& solution,
-        const hmemo::LAMAArray<ValueType>& oldSolution,
-        const hmemo::LAMAArray<ValueType>& rhs,
+        hmemo::HArray<ValueType>& solution,
+        const hmemo::HArray<ValueType>& oldSolution,
+        const hmemo::HArray<ValueType>& rhs,
         const ValueType omega ) const;
 
     /** Implementation of MatrixStorage::jacobiIterateHalo for JDS */
 
     virtual void jacobiIterateHalo(
-        hmemo::LAMAArray<ValueType>& localSolution,
+        hmemo::HArray<ValueType>& localSolution,
         const MatrixStorage<ValueType>& localStorage,
-        const hmemo::LAMAArray<ValueType>& haloOldSolution,
+        const hmemo::HArray<ValueType>& haloOldSolution,
         const ValueType omega ) const;
 
     /** Implementation of MatrixStorage::jacobiIterateHalo for JDS
@@ -269,24 +269,24 @@ public:
      */
 
     virtual void jacobiIterateHalo(
-        hmemo::LAMAArray<ValueType>& localSolution,
-        const hmemo::LAMAArray<ValueType>& localDiagonal,
-        const hmemo::LAMAArray<ValueType>& haloOldSolution,
+        hmemo::HArray<ValueType>& localSolution,
+        const hmemo::HArray<ValueType>& localDiagonal,
+        const hmemo::HArray<ValueType>& haloOldSolution,
         const ValueType omega ) const;
 
     /* Print relevant information about matrix storage format. */
 
     virtual void writeAt( std::ostream& stream ) const;
 
-    const hmemo::LAMAArray<IndexType>& getJA() const;
+    const hmemo::HArray<IndexType>& getJA() const;
 
-    const hmemo::LAMAArray<IndexType>& getPerm() const;
+    const hmemo::HArray<IndexType>& getPerm() const;
 
-    const hmemo::LAMAArray<IndexType>& getDlg() const;
+    const hmemo::HArray<IndexType>& getDlg() const;
 
-    const hmemo::LAMAArray<IndexType>& getIlg() const;
+    const hmemo::HArray<IndexType>& getIlg() const;
 
-    const hmemo::LAMAArray<ValueType>& getValues() const;
+    const hmemo::HArray<ValueType>& getValues() const;
 
     IndexType getNumDiagonals() const;
 
@@ -297,7 +297,7 @@ public:
     /** Template method for getting row. */
 
     template<typename OtherType>
-    void getRowImpl( hmemo::LAMAArray<OtherType>& row, const IndexType i ) const __attribute( ( noinline ) );
+    void getRowImpl( hmemo::HArray<OtherType>& row, const IndexType i ) const __attribute( ( noinline ) );
 
     /** This method returns the diagonal
      *
@@ -306,7 +306,7 @@ public:
      * Calculations are dependent to the diagonal property
      */
     template<typename OtherType>
-    void getDiagonalImpl( hmemo::LAMAArray<OtherType>& diagonal ) const __attribute( ( noinline ) );
+    void getDiagonalImpl( hmemo::HArray<OtherType>& diagonal ) const __attribute( ( noinline ) );
 
     /** This method replaces the diagonal
      *
@@ -315,7 +315,7 @@ public:
      * Calculations are dependent to the diagonal property
      */
     template<typename OtherType>
-    void setDiagonalImpl( const hmemo::LAMAArray<OtherType>& diagonal ) __attribute( ( noinline ) );
+    void setDiagonalImpl( const hmemo::HArray<OtherType>& diagonal ) __attribute( ( noinline ) );
 
     void setDiagonalImpl( const ValueType value );
 
@@ -326,7 +326,7 @@ public:
     /** Template version used for virtual routine scale with known value type. */
 
     template<typename OtherType>
-    void scaleImpl( const hmemo::LAMAArray<OtherType>& values ) __attribute( ( noinline ) );
+    void scaleImpl( const hmemo::HArray<OtherType>& values ) __attribute( ( noinline ) );
 
     /** Implementation of pure method.  */
 
@@ -385,11 +385,11 @@ protected:
     IndexType mNumDiagonals; //!< number of jagged diagonals (equals length of the longest row)
     IndexType mNumValues; //!< number of non-zero values (+ optionally zeros in diagonal)
 
-    hmemo::LAMAArray<IndexType> mDlg; //!< number of values in each column, size is mNumDiagonals
-    hmemo::LAMAArray<IndexType> mIlg; //!< number of values in each row, size is mNumRows
-    hmemo::LAMAArray<IndexType> mPerm; //!< position of each row in original matrix, size is mNumRows
-    hmemo::LAMAArray<IndexType> mJa; //!< column indices, size is mNumValues
-    hmemo::LAMAArray<ValueType> mValues; //!< non-zero values (+ optionally zeros in diagonal), size is mNumValues
+    hmemo::HArray<IndexType> mDlg; //!< number of values in each column, size is mNumDiagonals
+    hmemo::HArray<IndexType> mIlg; //!< number of values in each row, size is mNumRows
+    hmemo::HArray<IndexType> mPerm; //!< position of each row in original matrix, size is mNumRows
+    hmemo::HArray<IndexType> mJa; //!< column indices, size is mNumValues
+    hmemo::HArray<ValueType> mValues; //!< non-zero values (+ optionally zeros in diagonal), size is mNumValues
 
 private:
 

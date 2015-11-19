@@ -35,7 +35,7 @@
 #include <boost/mpl/list.hpp>
 
 #include <scai/lama/storage/JDSStorage.hpp>
-#include <scai/lama/LAMAArrayUtils.hpp>
+#include <scai/lama/HArrayUtils.hpp>
 
 #include <scai/lama/test/MatrixStorageTest.hpp>
 #include <scai/common/test/TestMacros.hpp>
@@ -79,11 +79,11 @@ void checkTest( ContextPtr context )
         const IndexType numValues = nJa;
         const IndexType numColumns = 10;
         const IndexType numDiagonals = nDlg;
-        LAMAArrayRef<IndexType> jdsJA( nJa, valuesJa );
-        LAMAArray<ValueType> jdsValues( nJa, 1.0 ); // only need to build JDS storage
-        LAMAArrayRef<IndexType> jdsDLG( nDlg, valuesDlg );
-        LAMAArrayRef<IndexType> jdsILG( nIlg, valuesIlg );
-        LAMAArrayRef<IndexType> jdsPerm( nPerm, valuesPerm );
+        HArrayRef<IndexType> jdsJA( nJa, valuesJa );
+        HArray<ValueType> jdsValues( nJa, 1.0 ); // only need to build JDS storage
+        HArrayRef<IndexType> jdsDLG( nDlg, valuesDlg );
+        HArrayRef<IndexType> jdsILG( nIlg, valuesIlg );
+        HArrayRef<IndexType> jdsPerm( nPerm, valuesPerm );
         JDSStorage<ValueType> jdsStorage;
         jdsStorage.setContextPtr( context );
         // setJDSData will copy/convert values up to the needed context
@@ -97,36 +97,36 @@ void checkTest( ContextPtr context )
         else if ( icase == 1 )
         {
             //  -> invalid ja     { 0, 1, 2, 3, 15, 5, 6, 7, 8 }
-            LAMAArray<IndexType>& jdsJA = const_cast<LAMAArray<IndexType>&>( jdsStorage.getJA() );
-            LAMAArrayUtils::setVal( jdsJA, 5, 15 );
+            HArray<IndexType>& jdsJA = const_cast<HArray<IndexType>&>( jdsStorage.getJA() );
+            HArrayUtils::setVal( jdsJA, 5, 15 );
             BOOST_CHECK_THROW( { jdsStorage.check( "Expect illegal index in JA" ); }, Exception );
         }
         else if ( icase == 2 )
         {
             //  -> invalid ilg    { 3, 3, 4 }
-            LAMAArray<IndexType>& jdsILG = const_cast<LAMAArray<IndexType>&>( jdsStorage.getIlg() );
-            LAMAArrayUtils::setVal( jdsILG, 2, 4 );
+            HArray<IndexType>& jdsILG = const_cast<HArray<IndexType>&>( jdsStorage.getIlg() );
+            HArrayUtils::setVal( jdsILG, 2, 4 );
             BOOST_CHECK_THROW( { jdsStorage.check( "Expect illegal ilg" ); }, Exception );
         }
         else if ( icase == 3 )
         {
             //  -> invalid dlg    { 3, 3, 4 }
-            LAMAArray<IndexType>& jdsDLG = const_cast<LAMAArray<IndexType>&>( jdsStorage.getDlg() );
-            LAMAArrayUtils::setVal( jdsDLG, 2, 4 );
+            HArray<IndexType>& jdsDLG = const_cast<HArray<IndexType>&>( jdsStorage.getDlg() );
+            HArrayUtils::setVal( jdsDLG, 2, 4 );
             BOOST_CHECK_THROW( { jdsStorage.check( "Expect illegal dlg" ); }, Exception );
         }
         else if ( icase == 4 )
         {
             //  -> invalid perm   { 5, 0, 2 }
-            LAMAArray<IndexType>& jdsPerm = const_cast<LAMAArray<IndexType>&>( jdsStorage.getPerm() );
-            LAMAArrayUtils::setVal( jdsPerm, 0, 5 );
+            HArray<IndexType>& jdsPerm = const_cast<HArray<IndexType>&>( jdsStorage.getPerm() );
+            HArrayUtils::setVal( jdsPerm, 0, 5 );
             BOOST_CHECK_THROW( { jdsStorage.check( "Expect illegal perm" ); }, Exception );
         }
         else if ( icase == 5 )
         {
             //  -> invalid perm   { 0, 0, 2 }
-            LAMAArray<IndexType>& jdsPerm = const_cast<LAMAArray<IndexType>&>( jdsStorage.getPerm() );
-            LAMAArrayUtils::setVal( jdsPerm, 0, 0 );
+            HArray<IndexType>& jdsPerm = const_cast<HArray<IndexType>&>( jdsStorage.getPerm() );
+            HArrayUtils::setVal( jdsPerm, 0, 0 );
             BOOST_CHECK_THROW( { jdsStorage.check( "Expect illegal perm" ); }, Exception );
         }
     } // CASE_LOOP
@@ -199,11 +199,11 @@ void constructorTest1(  ContextPtr context )
     BOOST_CHECK_EQUAL( numValues, sizeValues );
     BOOST_CHECK_EQUAL( numRows, sizePerm );
     BOOST_CHECK_EQUAL( numRows, sizeILG );
-    LAMAArray<IndexType> jdsILG( numRows, ilg );
-    LAMAArray<IndexType> jdsDLG( numDiagonals, dlg );
-    LAMAArray<IndexType> jdsPerm( numRows, perm );
-    LAMAArray<IndexType> jdsJA( numValues, ja );
-    LAMAArray<ValueType> jdsValues( numValues, values );
+    HArray<IndexType> jdsILG( numRows, ilg );
+    HArray<IndexType> jdsDLG( numDiagonals, dlg );
+    HArray<IndexType> jdsPerm( numRows, perm );
+    HArray<IndexType> jdsJA( numValues, ja );
+    HArray<ValueType> jdsValues( numValues, values );
     // Call the specific constructor for JDS storage
     JDSStorage<ValueType> jdsStorage( numRows, numColumns, numValues, numDiagonals,
                                       jdsDLG, jdsILG, jdsPerm, jdsJA, jdsValues );

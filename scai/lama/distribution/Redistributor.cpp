@@ -253,8 +253,8 @@ void Redistributor::buildVPlans( const IndexType haloSourceSizes[], const IndexT
 /* -------------------------------------------------------------------------- */
 
 void Redistributor::buildRowPlans(
-    const LAMAArray<IndexType>& targetSizes,
-    const LAMAArray<IndexType>& sourceSizes ) const
+    const HArray<IndexType>& targetSizes,
+    const HArray<IndexType>& sourceSizes ) const
 {
     const IndexType numProvides = mHalo.getProvidesPlan().totalQuantity();
     const IndexType numRequired = mHalo.getRequiredPlan().totalQuantity();
@@ -305,13 +305,13 @@ void Redistributor::buildRowPlans(
 
 /*
  template COMMON_DLL_IMPORTEXPORT
- void Redistributor::redistributeN ( LAMAArray<float>& targetArray,
- const LAMAArray<float>& sourceArray,
+ void Redistributor::redistributeN ( HArray<float>& targetArray,
+ const HArray<float>& sourceArray,
  IndexType n ) const;
 
  template COMMON_DLL_IMPORTEXPORT
- void Redistributor::redistributeN ( LAMAArray<double>& targetArray,
- const LAMAArray<double>& sourceArray,
+ void Redistributor::redistributeN ( HArray<double>& targetArray,
+ const HArray<double>& sourceArray,
  IndexType n ) const;
  */
 

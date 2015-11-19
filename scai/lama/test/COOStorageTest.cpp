@@ -38,7 +38,7 @@
 
 #include <scai/lama/test/MatrixStorageTest.hpp>
 #include <scai/common/test/TestMacros.hpp>
-#include <scai/lama/LAMAArrayUtils.hpp>
+#include <scai/lama/HArrayUtils.hpp>
 
 using namespace scai::lama;
 using namespace scai::hmemo;
@@ -107,9 +107,9 @@ void constructorTest1( ContextPtr loc )
     const ValueType values[] =
     {   0.5f, 0.5f, 0.3f, 0.2f};
     const IndexType numValues = sizeof( values ) / sizeof( ValueType );
-    LAMAArray<IndexType> cooIA( numValues, ia );
-    LAMAArray<IndexType> cooJA( numValues, ja );
-    LAMAArray<ValueType> cooValues( numValues, values );
+    HArray<IndexType> cooIA( numValues, ia );
+    HArray<IndexType> cooJA( numValues, ja );
+    HArray<ValueType> cooValues( numValues, values );
     COOStorage<ValueType> cooStorage( numRows, numColumns, cooIA, cooJA, cooValues );
     BOOST_REQUIRE_EQUAL( numRows, cooStorage.getNumRows() );
     BOOST_REQUIRE_EQUAL( numColumns, cooStorage.getNumColumns() );
@@ -166,9 +166,9 @@ void checkTest( ContextPtr loc )
         // just make sure that ia and ja have correct sizes
         BOOST_REQUIRE_EQUAL( numValues, static_cast<IndexType>( sizeof( ia ) / sizeof( IndexType ) ) );
         BOOST_REQUIRE_EQUAL( numValues, static_cast<IndexType>( sizeof( ja ) / sizeof( IndexType ) ) );
-        LAMAArrayRef<IndexType> cooIA( numValues, ia );
-        LAMAArrayRef<IndexType> cooJA( numValues, ja );
-        LAMAArray<ValueType> cooValues( numValues, 1.0 ); // values needed, but do not matter here
+        HArrayRef<IndexType> cooIA( numValues, ia );
+        HArrayRef<IndexType> cooJA( numValues, ja );
+        HArray<ValueType> cooValues( numValues, 1.0 ); // values needed, but do not matter here
         COOStorage<ValueType> cooStorage;
         cooStorage.setContextPtr( loc );
         cooStorage.setCOOData( numRows, numColumns, numValues, cooIA, cooJA, cooValues );
@@ -180,15 +180,15 @@ void checkTest( ContextPtr loc )
         else if ( icase == 1 )
         {
             //  -> invalid ia     { 4, 1, 1, 2, 2, 3 }
-            LAMAArray<IndexType>& cooIA = const_cast<LAMAArray<IndexType>&>( cooStorage.getIA() );
-            LAMAArrayUtils::setVal( cooIA, 0, numRows );
+            HArray<IndexType>& cooIA = const_cast<HArray<IndexType>&>( cooStorage.getIA() );
+            HArrayUtils::setVal( cooIA, 0, numRows );
             BOOST_CHECK_THROW( { cooStorage.check( "Expect illegal index in IA" ); }, Exception );
         }
         else if ( icase == 2 )
         {
             //  -> invalid ja     { 0, 0, 1, 1, 4, 3 }
-            LAMAArray<IndexType>& cooJA = const_cast<LAMAArray<IndexType>&>( cooStorage.getJA() );
-            LAMAArrayUtils::setVal( cooJA, 4, numColumns );
+            HArray<IndexType>& cooJA = const_cast<HArray<IndexType>&>( cooStorage.getJA() );
+            HArrayUtils::setVal( cooJA, 4, numColumns );
             BOOST_CHECK_THROW( { cooStorage.check( "Expect illegal index in JA" ); }, Exception );
         }
     }

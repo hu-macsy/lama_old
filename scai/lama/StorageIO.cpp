@@ -79,9 +79,9 @@ const int _StorageIO::mIversion = 4;
 
 template<typename ValueType>
 void StorageIO<ValueType>::writeCSRToFormattedFile(
-    const LAMAArray<IndexType>& csrIA,
-    const LAMAArray<IndexType>& csrJA,
-    const LAMAArray<ValueType>& csrValues,
+    const HArray<IndexType>& csrIA,
+    const HArray<IndexType>& csrJA,
+    const HArray<ValueType>& csrValues,
     const std::string& fileName )
 {
     SCAI_REGION( "StorageIO.writeCSRToFormattedFile" )
@@ -126,9 +126,9 @@ void StorageIO<ValueType>::writeCSRToFormattedFile(
 
 template<typename ValueType>
 void StorageIO<ValueType>::readCSRFromFormattedFile(
-    LAMAArray<IndexType>& csrIA,
-    LAMAArray<IndexType>& csrJA,
-    LAMAArray<ValueType>& csrValues,
+    HArray<IndexType>& csrIA,
+    HArray<IndexType>& csrJA,
+    HArray<ValueType>& csrValues,
     const std::string& fileName,
     const IndexType numRows )
 {
@@ -221,9 +221,9 @@ static FileIO::file_size_t expectedCSRFileSize( const IndexType numRows, const I
 
 template<typename ValueType>
 void StorageIO<ValueType>::readCSRFromBinaryFile(
-    LAMAArray<IndexType>& csrIA,
-    LAMAArray<IndexType>& csrJA,
-    LAMAArray<ValueType>& csrValues,
+    HArray<IndexType>& csrIA,
+    HArray<IndexType>& csrJA,
+    HArray<ValueType>& csrValues,
     const std::string& fileName,
     const IndexType numRows )
 {
@@ -343,9 +343,9 @@ static void readData( XDRFileStream& inFile, DataType data[], const IndexType n 
 
 template<typename ValueType>
 void StorageIO<ValueType>::writeCSRToXDRFile(
-    const LAMAArray<IndexType>& csrIA,
-    const LAMAArray<IndexType>& csrJA,
-    const LAMAArray<ValueType>& csrValues,
+    const HArray<IndexType>& csrIA,
+    const HArray<IndexType>& csrJA,
+    const HArray<ValueType>& csrValues,
     const std::string& fileName,
     const long indexDataTypeSizeIA,
     const long indexDataTypeSizeJA,
@@ -442,9 +442,9 @@ void StorageIO<ValueType>::writeCSRToXDRFile(
 
 template<typename ValueType>
 void StorageIO<ValueType>::readCSRFromXDRFile(
-    LAMAArray<IndexType>& csrIA,
-    LAMAArray<IndexType>& csrJA,
-    LAMAArray<ValueType>& csrValues,
+    HArray<IndexType>& csrIA,
+    HArray<IndexType>& csrJA,
+    HArray<ValueType>& csrValues,
     const std::string& fileName,
     const IndexType numRows )
 {
@@ -585,9 +585,9 @@ void StorageIO<ValueType>::readCSRFromXDRFile(
 
 template<typename ValueType>
 void StorageIO<ValueType>::writeCSRToBinaryFile(
-    const LAMAArray<IndexType>& csrIA,
-    const LAMAArray<IndexType>& csrJA,
-    const LAMAArray<ValueType>& csrValues,
+    const HArray<IndexType>& csrIA,
+    const HArray<IndexType>& csrJA,
+    const HArray<ValueType>& csrValues,
     const std::string& amgFileName,
     const long indexDataTypeSizeIA,
     const long indexDataTypeSizeJA,
@@ -667,10 +667,10 @@ void StorageIO<ValueType>::writeCSRToBinaryFile(
 
 template<typename ValueType>
 void StorageIO<ValueType>::writeCSRToMMFile(
-    const LAMAArray<IndexType>& csrIA,
+    const HArray<IndexType>& csrIA,
     const IndexType numColumns,
-    const LAMAArray<IndexType>& csrJA,
-    const LAMAArray<ValueType>& csrValues,
+    const HArray<IndexType>& csrJA,
+    const HArray<ValueType>& csrValues,
     const std::string& fileName,
     const File::DataType& dataType )
 {
@@ -736,10 +736,10 @@ struct MatrixValue
 
 template<typename ValueType>
 void StorageIO<ValueType>::readCSRFromMMFile(
-    LAMAArray<IndexType>& csrIA,
+    HArray<IndexType>& csrIA,
     IndexType& numColumns,
-    LAMAArray<IndexType>& csrJA,
-    LAMAArray<ValueType>& csrValues,
+    HArray<IndexType>& csrJA,
+    HArray<ValueType>& csrValues,
     const std::string& fileName )
 {
     bool isSymmetric, isPattern;
@@ -1258,10 +1258,10 @@ template<typename ValueType>
 void StorageIO<ValueType>::writeCSRToFile(
     const PartitionId size,
     const PartitionId rank,
-    const LAMAArray<IndexType>& csrIA,
+    const HArray<IndexType>& csrIA,
     const IndexType numColumns,
-    const LAMAArray<IndexType>& csrJA,
-    const LAMAArray<ValueType>& csrValues,
+    const HArray<IndexType>& csrJA,
+    const HArray<ValueType>& csrValues,
     const std::string& fileName,
     const File::FileType& fileType,
     const File::DataType& dataType,
@@ -1349,10 +1349,10 @@ void StorageIO<ValueType>::writeCSRToFile(
 
 template<typename ValueType>
 void StorageIO<ValueType>::readCSRFromFile(
-    LAMAArray<IndexType>& csrIA,
+    HArray<IndexType>& csrIA,
     IndexType& numColumns,
-    LAMAArray<IndexType>& csrJA,
-    LAMAArray<ValueType>& csrValues,
+    HArray<IndexType>& csrJA,
+    HArray<ValueType>& csrValues,
     const std::string& fileName )
 {
     SCAI_LOG_INFO( logger, "read CSR matrix data from file: '" << fileName << "'." )

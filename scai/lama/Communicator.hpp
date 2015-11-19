@@ -66,7 +66,7 @@ namespace scai
 
 namespace hmemo
 {
-	template<typename ValueType> class LAMAArray;
+	template<typename ValueType> class HArray;
 }
 
 namespace lama
@@ -629,26 +629,26 @@ public:
 
     /**************************************************************************************
      *                                                                                    *
-     *  Communication routines for LAMAArrays for convenience                             *
+     *  Communication routines for HArrays for convenience                             *
      *                                                                                    *
      *************************************************************************************/
 
-    /** exchangeByPlan for LAMAArrays instead of usual array */
+    /** exchangeByPlan for HArrays instead of usual array */
 
     template<typename ValueType>
     void exchangeByPlan(
-        hmemo::LAMAArray<ValueType>& recvArray,
+        hmemo::HArray<ValueType>& recvArray,
         const CommunicationPlan& recvPlan,
-        const hmemo::LAMAArray<ValueType>& sendArray,
+        const hmemo::HArray<ValueType>& sendArray,
         const CommunicationPlan& sendPlan ) const;
 
-    /** Asynchronous exchange of LAMAArrays. */
+    /** Asynchronous exchange of HArrays. */
 
     template<typename ValueType>
     tasking::SyncToken* exchangeByPlanAsync(
-        hmemo::LAMAArray<ValueType>& recvArray,
+        hmemo::HArray<ValueType>& recvArray,
         const CommunicationPlan& recvPlan,
-        const hmemo::LAMAArray<ValueType>& sendArray,
+        const hmemo::HArray<ValueType>& sendArray,
         const CommunicationPlan& sendPlan ) const;
 
     /** @brief Update of halo array via Halo object.
@@ -662,16 +662,16 @@ public:
      */
     template<typename ValueType>
     void updateHalo(
-        hmemo::LAMAArray<ValueType>& haloValues,
-        const hmemo::LAMAArray<ValueType>& localValues,
+        hmemo::HArray<ValueType>& haloValues,
+        const hmemo::HArray<ValueType>& localValues,
         const Halo& halo ) const;
 
     /** @brief Asynchronous update of halo array via Halo object. */
 
     template<typename ValueType>
     tasking::SyncToken* updateHaloAsync(
-        hmemo::LAMAArray<ValueType>& haloValues,
-        const hmemo::LAMAArray<ValueType>& localValues,
+        hmemo::HArray<ValueType>& haloValues,
+        const hmemo::HArray<ValueType>& localValues,
         const Halo& halo ) const;
 
     /** @brief Shift on LAMA arrays.
@@ -685,7 +685,7 @@ public:
      *        receive all the data.
      */
     template<typename ValueType>
-    void shiftArray( hmemo::LAMAArray<ValueType>& recv, const hmemo::LAMAArray<ValueType>& send, const int direction ) const;
+    void shiftArray( hmemo::HArray<ValueType>& recv, const hmemo::HArray<ValueType>& send, const int direction ) const;
 
     /** @brief Asychronous shift on LAMA arrays.
      *
@@ -698,8 +698,8 @@ public:
      */
     template<typename ValueType>
     tasking::SyncToken* shiftAsync(
-        hmemo::LAMAArray<ValueType>& recvArray,
-        const hmemo::LAMAArray<ValueType>& sendArray,
+        hmemo::HArray<ValueType>& recvArray,
+        const hmemo::HArray<ValueType>& sendArray,
         const int direction ) const;
 
     /** Override routine of base class Printable. */
@@ -770,9 +770,9 @@ PartitionId Communicator::getNeighbor( int pos ) const
 
 template<typename ValueType>
 void Communicator::exchangeByPlan(
-    hmemo::LAMAArray<ValueType>& recvArray,
+    hmemo::HArray<ValueType>& recvArray,
     const CommunicationPlan& recvPlan,
-    const hmemo::LAMAArray<ValueType>& sendArray,
+    const hmemo::HArray<ValueType>& sendArray,
     const CommunicationPlan& sendPlan ) const
 {
     SCAI_ASSERT_EQUAL_ERROR( sendArray.size(), sendPlan.totalQuantity() )
@@ -800,9 +800,9 @@ void Communicator::exchangeByPlan(
 
 template<typename ValueType>
 tasking::SyncToken* Communicator::exchangeByPlanAsync(
-    hmemo::LAMAArray<ValueType>& recvArray,
+    hmemo::HArray<ValueType>& recvArray,
     const CommunicationPlan& recvPlan,
-    const hmemo::LAMAArray<ValueType>& sendArray,
+    const hmemo::HArray<ValueType>& sendArray,
     const CommunicationPlan& sendPlan ) const
 {
     SCAI_ASSERT_EQUAL_ERROR( sendArray.size(), sendPlan.totalQuantity() )

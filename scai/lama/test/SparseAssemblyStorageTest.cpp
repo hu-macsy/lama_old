@@ -113,8 +113,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SetRowTest, T, ValueTypes )
     for ( IndexType i = 0; i < n; ++i )
     {
         // Note: this test verifies also thread-safe use of LAMA arrays
-        LAMAArray<IndexType> ja;
-        LAMAArray<T> values;
+        HArray<IndexType> ja;
+        HArray<T> values;
         {
             WriteOnlyAccess<IndexType> wJa( ja, 1 );
             WriteOnlyAccess<T> wValues( values, 1 );

@@ -1,7 +1,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include <scai/hmemo/Context.hpp>
-#include <scai/hmemo/LAMAArray.hpp>
+#include <scai/hmemo/HArray.hpp>
 #include <scai/hmemo/ReadAccess.hpp>
 #include <scai/hmemo/WriteAccess.hpp>
 
@@ -23,7 +23,7 @@ BOOST_AUTO_TEST_CASE( ContextTest )
 
     SCAI_LOG_INFO( logger, "userContext = " << *userContext );
 
-    LAMAArray<double> X( 10, 5.0 );
+    HArray<double> X( 10, 5.0 );
 
     {
         WriteAccess<double> write( X, userContext );  
@@ -51,7 +51,7 @@ BOOST_AUTO_TEST_CASE( ContextTest )
     std::cout << "X @ " << *hostContext << ", valid = " << X.isValid( hostContext )
               << ", capacity = " << X.capacity( hostContext ) << std::endl;
 
-    LAMAArray<double> Y( X );
+    HArray<double> Y( X );
 
     // valid should be the same for Y, capacity should be 0 if not valid
 
@@ -96,7 +96,7 @@ BOOST_AUTO_TEST_CASE( ContextTest )
 
     int values[] = { 1, 2, 3, 4 };
 
-    LAMAArray<float> v ( 4, values );   // implicit type conversion allowed
+    HArray<float> v ( 4, values );   // implicit type conversion allowed
 
     {
         ReadAccess<float> read( v, userContext );

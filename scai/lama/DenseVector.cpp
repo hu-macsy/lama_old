@@ -35,7 +35,7 @@
 #include <scai/lama/DenseVector.hpp>
 
 // local library
-#include <scai/lama/LAMAArrayUtils.hpp>
+#include <scai/lama/HArrayUtils.hpp>
 #include <scai/lama/UtilKernelTrait.hpp>
 #include <scai/blaskernel/BLASKernelTrait.hpp>
 #include <scai/lama/LAMAKernel.hpp>
@@ -240,7 +240,7 @@ DenseVector<ValueType>::DenseVector( const ContextArray& localValues, Distributi
 {
     SCAI_ASSERT_EQUAL_ERROR( localValues.size(), distribution->getLocalSize() )
 
-    LAMAArrayUtils::assign( mLocalValues, localValues ); // can deal with type conversions
+    HArrayUtils::assign( mLocalValues, localValues ); // can deal with type conversions
 }
 
 /* ------------------------------------------------------------------------- */
@@ -382,7 +382,7 @@ void DenseVector<ValueType>::buildValues( ContextArray& values ) const
 {
     // size of values will be local size of vecotr
 
-    LAMAArrayUtils::assign( values, mLocalValues );
+    HArrayUtils::assign( values, mLocalValues );
 }
 
 template<typename ValueType>
@@ -392,7 +392,7 @@ void DenseVector<ValueType>::setValues( const ContextArray& values )
                     values.size() == mLocalValues.size(),
                     "Size of values = " << values.size() << ", does not match local size of vector = " << mLocalValues.size() );
 
-    LAMAArrayUtils::assign( mLocalValues, values );
+    HArrayUtils::assign( mLocalValues, values );
 }
 
 template<typename ValueType>
@@ -652,11 +652,11 @@ void DenseVector<ValueType>::writeAt( std::ostream& stream ) const
 template<typename ValueType>
 void DenseVector<ValueType>::vectorPlusVector(
     ContextPtr prefContext,
-    LAMAArray<ValueType>& result,
+    HArray<ValueType>& result,
     const ValueType alpha,
-    const LAMAArray<ValueType>& x,
+    const HArray<ValueType>& x,
     const ValueType beta,
-    const LAMAArray<ValueType>& y )
+    const HArray<ValueType>& y )
 {
     SCAI_LOG_DEBUG( logger,
                     "vectorPlusVector: result:" << result << " = " << alpha << " * x:" << x << " + " << beta << " * y:" << y )
@@ -780,11 +780,11 @@ void DenseVector<ValueType>::vectorPlusVector(
 template<typename ValueType>
 tasking::SyncToken* DenseVector<ValueType>::vectorPlusVectorAsync(
     ContextPtr /*context*/,
-    LAMAArray<ValueType>& /*result*/,
+    HArray<ValueType>& /*result*/,
     const ValueType /*alpha*/,
-    const LAMAArray<ValueType>& /*x*/,
+    const HArray<ValueType>& /*x*/,
     const ValueType /*beta*/,
-    const LAMAArray<ValueType>& /*y*/)
+    const HArray<ValueType>& /*y*/)
 {
     COMMON_THROWEXCEPTION( "vectorPlusVectorAsync not implemented yet" )
 }
@@ -936,7 +936,7 @@ void DenseVector<ValueType>::assign( const Scalar value )
     SCAI_LOG_DEBUG( logger, *this << ": assign " << value )
 
     ContextPtr ctx = mLocalValues.getValidContext( mContext->getType() );
-    LAMAArrayUtils::assignScalar( mLocalValues, value, ctx );
+    HArrayUtils::assignScalar( mLocalValues, value, ctx );
 }
 
 template<typename ValueType>
@@ -947,13 +947,13 @@ void DenseVector<ValueType>::assign( const ContextArray& localValues, Distributi
     SCAI_ASSERT_EQUAL_ERROR( localValues.size(), dist->getLocalSize() )
 
     setDistributionPtr( dist );
-    LAMAArrayUtils::assign( mLocalValues, localValues );
+    HArrayUtils::assign( mLocalValues, localValues );
 }
 
 template<typename ValueType>
 void DenseVector<ValueType>::buildLocalValues( ContextArray& localValues ) const
 {
-    LAMAArrayUtils::assign( localValues, mLocalValues );
+    HArrayUtils::assign( localValues, mLocalValues );
 }
 
 template<typename ValueType>
@@ -1014,7 +1014,7 @@ void DenseVector<ValueType>::redistribute( DistributionPtr distribution )
     {
         SCAI_LOG_INFO( logger, *this << ": replicated vector" << " will be localized to " << *distribution )
 
-        LAMAArray<ValueType> newLocalValues;
+        HArray<ValueType> newLocalValues;
 
         ContextPtr hostContext = Context::getContextPtr( context::Host );
 
@@ -1047,7 +1047,7 @@ void DenseVector<ValueType>::redistribute( DistributionPtr distribution )
 
         // replicate a distributed vector
 
-        LAMAArray<ValueType> globalValues;
+        HArray<ValueType> globalValues;
 
         ContextPtr hostContext = Context::getContextPtr( context::Host );
 
@@ -1066,7 +1066,7 @@ void DenseVector<ValueType>::redistribute( DistributionPtr distribution )
 
         // so we have now really a redistibution, build a Redistributor
 
-        LAMAArray<ValueType> newLocalValues( distribution->getLocalSize() );
+        HArray<ValueType> newLocalValues( distribution->getLocalSize() );
 
         Redistributor redistributor( distribution, getDistributionPtr() ); // target, source distributions
 

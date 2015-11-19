@@ -106,6 +106,10 @@ void KernelRegistry::registerContextFunction( const KernelRegistryKey& key, Cont
 
 void KernelRegistry::unregisterContextFunction( const KernelRegistryKey& key, ContextType ctx, VoidFunction fn )
 {
+    // can cause serious segmentation violoation in case of unregister after destructo of KernelMap
+
+    return;
+
     SCAI_LOG_INFO( logger, "unregister ctx = " << ctx << " with " << key )
 
 	KernelRegistry& kreg = getInstance();

@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Definition of common base class for accesses to a LAMAArray to enforce consistency.
+ * @brief Definition of common base class for accesses to a HArray to enforce consistency.
  * @author Jiri Kraus
  * @date 20.05.2011
  */

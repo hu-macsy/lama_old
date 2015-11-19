@@ -66,8 +66,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( inverseTest, ValueType, test_types )
     {   2.0, 0.0, -1.0, -3.0, 0.0, 2.0, -2.0, -1.0, 0.0};
     static ValueType bvalues[] =
     {   2.0, 1.0, 0.0, -4.0, -2.0, -1.0, 3.0, 2.0, 0.0};
-    LAMAArray<ValueType> a( n * n, avalues );
-    LAMAArray<IndexType> permutation( n );
+    HArray<ValueType> a( n * n, avalues );
+    HArray<IndexType> permutation( n );
     ContextPtr loc = Context::getHostPtr();
     {
         WriteAccess<ValueType> wA( a, loc );
@@ -99,8 +99,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getrifTest, ValueType, test_types )
         {   2.0, 0.0, -1.0, -3.0, 0.0, 2.0, -2.0, -1.0, 0.0};
         static ValueType bvalues[] =
         {   2.0, 1.0, 0.0, -4.0, -2.0, -1.0, 3.0, 2.0, 0.0};
-        LAMAArray<ValueType> a( n * n, avalues );
-        LAMAArray<IndexType> permutation( n );
+        HArray<ValueType> a( n * n, avalues );
+        HArray<IndexType> permutation( n );
         ContextPtr loc = Context::getHostPtr();
         {
             WriteAccess<ValueType> wA( a, loc );
@@ -125,8 +125,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getrifTest, ValueType, test_types )
         {   2.0, -3.0, -2.0, 0.0, 0.0, -1.0, -1.0, 2.0, 0.0};
         static ValueType bvalues[] =
         {   2.0, -4.0, 3.0, 1.0, -2.0, 2.0, 0.0, -1.0, 0.0};
-        LAMAArray<ValueType> a( n * n, avalues );
-        LAMAArray<IndexType> permutation( n );
+        HArray<ValueType> a( n * n, avalues );
+        HArray<IndexType> permutation( n );
         ContextPtr loc = Context::getHostPtr();
         {
             WriteAccess<ValueType> wA( a, loc );
@@ -165,9 +165,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( tptrsTest, ValueType, test_types )
         {   3.0, 2.0, 1.0};
         static ValueType xvalues[] =
         {   1.0, 1.0, 1.0};
-        LAMAArray<ValueType> a( ntri, avalues );
-        LAMAArray<ValueType> b1( n, bvalues1 );
-        LAMAArray<ValueType> b2( n, bvalues2 );
+        HArray<ValueType> a( ntri, avalues );
+        HArray<ValueType> b1( n, bvalues1 );
+        HArray<ValueType> b2( n, bvalues2 );
         ContextPtr loc = Context::getHostPtr();
         {
             ReadAccess<ValueType> rA( a, loc );
@@ -222,10 +222,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( tptrsTest, ValueType, test_types )
         //Vector X -- for all the same
         static ValueType xvalues[] =
         {   1.0, 3.0, 5.0, 7.0};
-        LAMAArray<ValueType> a1( ntri, avalues1 );
-        LAMAArray<ValueType> a2( ntri, avalues2 );
-        LAMAArray<ValueType> b1( n, bvalues1 );
-        LAMAArray<ValueType> b2( n, bvalues2 );
+        HArray<ValueType> a1( ntri, avalues1 );
+        HArray<ValueType> a2( ntri, avalues2 );
+        HArray<ValueType> b1( n, bvalues1 );
+        HArray<ValueType> b2( n, bvalues2 );
         ContextPtr loc = Context::getHostPtr();
         {
             ReadAccess<ValueType> rA1( a1, loc );
@@ -280,9 +280,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( tptrsTest, ValueType, test_types )
         static ValueType xvalues[] =
         {   1.0, 3.0, 5.0, 7.0};
         printf("######Test1\n");
-        LAMAArray<ValueType> a3( ntri, avalues3 );
-        LAMAArray<ValueType> b3( n, bvalues3 );
-        LAMAArray<ValueType> b4( n, bvalues4 );
+        HArray<ValueType> a3( ntri, avalues3 );
+        HArray<ValueType> b3( n, bvalues3 );
+        HArray<ValueType> b4( n, bvalues4 );
 
         ContextPtr loc = Context::getContextPtr( context::Host );
 
@@ -340,9 +340,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( tptrsTest, ValueType, test_types )
         {   31.8, 60.65, 50.65};
         static ValueType xvalues[] =
         {   2.0, 3.0, 5.0};
-        LAMAArray<ValueType> a( ntri, avalues );
-        LAMAArray<ValueType> b1( n, bvalues1 );
-        LAMAArray<ValueType> b2( n, bvalues2 );
+        HArray<ValueType> a( ntri, avalues );
+        HArray<ValueType> b1( n, bvalues1 );
+        HArray<ValueType> b2( n, bvalues2 );
         ContextPtr loc = Context::getHostPtr();
         {
             ReadAccess<ValueType> rA( a, loc );

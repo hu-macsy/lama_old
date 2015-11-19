@@ -65,7 +65,7 @@ void routineLAMA( double& res, IndexType n )
 
     ContextPtr contextPtr = Context::getHostPtr();
 
-    LAMAArray<double> X( contextPtr );
+    HArray<double> X( contextPtr );
 
     {
         WriteOnlyAccess<double> write( X, contextPtr, n );
@@ -79,7 +79,7 @@ void routineLAMA( double& res, IndexType n )
 
 void routineSCAI_1( double& res )
 {
-    LAMAArray<double> X;
+    HArray<double> X;
     res = 0.0;
 }
 
@@ -87,7 +87,7 @@ void routineSCAI_2( double& res, IndexType n )
 {
     ContextPtr contextPtr = Context::getHostPtr();
 
-    LAMAArray<double> X;
+    HArray<double> X;
 
     {
         WriteOnlyAccess<double> write( X, contextPtr, n );
@@ -99,7 +99,7 @@ void routineSCAI_3( double& res, IndexType n )
 {
     ContextPtr contextPtr = Context::getHostPtr();
 
-    LAMAArray<double> X;
+    HArray<double> X;
 
     {
         WriteOnlyAccess<double> write( X, contextPtr, n );

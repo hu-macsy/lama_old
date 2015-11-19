@@ -20,14 +20,14 @@ using namespace scai::common;
 
 void doit( int NITER, IndexType NSIZE, ContextPtr context )
 {
-    std::vector<shared_ptr<LAMAArray<double> > > stack;
+    std::vector<shared_ptr<HArray<double> > > stack;
 
     ContextPtr host = Context::getHostPtr();
 
     for ( int iter = 0; iter < NITER; ++iter )
     {
-        shared_ptr<LAMAArray<double> > X;
-        X.reset( new LAMAArray<double>( context ) );
+        shared_ptr<HArray<double> > X;
+        X.reset( new HArray<double>( context ) );
 
         // first touch on context, but allocate it on host
 

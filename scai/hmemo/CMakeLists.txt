@@ -112,8 +112,8 @@ scai_project (
     HEADERS                  # .hpp only
 
          ContextArray
-         LAMAArray
-         LAMAArrayRef
+         HArray
+         HArrayRef
          ReadAccess
          WriteAccess
          WriteOnlyAccess

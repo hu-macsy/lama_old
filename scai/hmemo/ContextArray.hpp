@@ -75,7 +75,7 @@ class ReadAccess;
 template<typename ValueType>
 class WriteAccess;
 
-/** Common base class for typed LAMAArray. 
+/** Common base class for typed HArray. 
  * 
  *  Base class provides also a factory for creating arrays.
  */
@@ -130,16 +130,26 @@ public:
     inline IndexType size() const;
 
     /**
-     * @brief Gets the first context where the data of this LAMAArray is available.
+     * @brief Gets the first context where the data of this HArray is available.
      *
      * If possible a context of the passed preferred type is returned.
      *
      * @param[in] preferredType the preferred type for the valid context.
-     * @return                  a context there the data of this LAMAArray is available.
+     * @return                  a context there the data of this HArray is available.
      * 
      * Note: NULL pointer is returned if no valid data is available
      */
     ContextPtr getValidContext( const common::context::ContextType preferredType = common::context::Host ) const;
+
+    /**
+     * @brief Get the context where the array has been touched the first time.
+     *
+     * Returns the context of the memory where the array has been used the first time.
+     * For new arrays without entry, the Host context will be returned.
+     *
+     * This method can be used for Write only accesses where valid data is not required.
+     */
+    ContextPtr getFirstTouchContextPtr() const;
 
     /**
      * @brief Prefetches the content of the container to a certain location.
@@ -148,7 +158,7 @@ public:
      *
      * This method prefetches the content of the container to context.
      * If it is already valid at location nothing happens, otherwise a transfer from a valid location
-     * to the passed location is started. Because the transfer is handled by LAMAArray and to
+     * to the passed location is started. Because the transfer is handled by HArray and to
      * maintain the consistency of the container only one running transfer can exist at any
      * point in time. There for if two prefetches to two different invalid locations are
      * started one after the other the second transfer does not start before the first one is finished.
@@ -248,7 +258,7 @@ public:
 
 /* ---------------------------------------------------------------------------------*/
 
-typedef ContextArray _LAMAArray;
+typedef ContextArray _HArray;
 
 /* ---------------------------------------------------------------------------------*/
 
@@ -286,7 +296,7 @@ inline void ContextArray::resize( IndexType size )
 
 inline void ContextArray::clear()
 {
-    SCAI_ASSERT( !mContextDataManager.locked(), "Tried to clear a locked LAMAArray " << *this )
+    SCAI_ASSERT( !mContextDataManager.locked(), "Tried to clear a locked HArray " << *this )
 
     mSize = 0;
 }
@@ -314,6 +324,13 @@ inline IndexType ContextArray::capacity( ContextDataIndex index ) const
 inline ContextPtr ContextArray::getValidContext( const common::context::ContextType preferredType ) const
 {
     return mContextDataManager.getValidContext( preferredType );
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+inline ContextPtr ContextArray::getFirstTouchContextPtr() const
+{
+    return mContextDataManager.getFirstTouchContextPtr();
 }
 
 /* ---------------------------------------------------------------------------------*/

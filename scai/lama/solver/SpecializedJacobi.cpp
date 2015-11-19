@@ -35,7 +35,7 @@
 #include <scai/lama/solver/SpecializedJacobi.hpp>
 
 // local library
-#include <scai/lama/LAMAArrayUtils.hpp>
+#include <scai/lama/HArrayUtils.hpp>
 
 // internal scai libraries
 #include <scai/tasking/NoSyncToken.hpp>
@@ -242,7 +242,7 @@ void SpecializedJacobi::iterate()
 template<typename ValueType>
 void SpecializedJacobi::iterateTyped( const SparseMatrix<ValueType>& coefficients )
 {
-    using hmemo::LAMAArray;
+    using hmemo::HArray;
 
     SCAI_REGION( "Solver.SpJacobi.iterateTyped" )
 
@@ -289,19 +289,19 @@ void SpecializedJacobi::iterateTyped( const SparseMatrix<ValueType>& coefficient
 
         // from rhs and solution we need only the local parts as LAMA arrays
 
-        const LAMAArray<ValueType>& localRhs = denseRhs.getLocalValues();
-        LAMAArray<ValueType>& localSolution = denseSolution.getLocalValues();
-        const LAMAArray<ValueType>& localOldSolution = denseOldSolution.getLocalValues();
-        LAMAArray<ValueType>& haloOldSolution = denseOldSolution.getHaloValues();
+        const HArray<ValueType>& localRhs = denseRhs.getLocalValues();
+        HArray<ValueType>& localSolution = denseSolution.getLocalValues();
+        const HArray<ValueType>& localOldSolution = denseOldSolution.getLocalValues();
+        HArray<ValueType>& haloOldSolution = denseOldSolution.getHaloValues();
 
-        const LAMAArray<ValueType>* diagonal = dynamic_cast<const LAMAArray<ValueType>*>( getRuntime().mDiagonal.get() );
+        const HArray<ValueType>* diagonal = dynamic_cast<const HArray<ValueType>*>( getRuntime().mDiagonal.get() );
 
         using namespace scai::common;  // placeholders are also needed
 
         void (scai::lama::MatrixStorage<ValueType>::*jacobiIterateHalo)(
-            LAMAArray<ValueType>& localSolution,
-            const LAMAArray<ValueType>& localDiagonal,
-            const LAMAArray<ValueType>& oldHaloSolution,
+            HArray<ValueType>& localSolution,
+            const HArray<ValueType>& localDiagonal,
+            const HArray<ValueType>& oldHaloSolution,
             const ValueType omega ) const = &MatrixStorage<ValueType>::jacobiIterateHalo;
 
         // will call jacobiIterateHalo( haloMatrix, localSolution, diagonal, haloOldSolution, omega )
@@ -309,8 +309,8 @@ void SpecializedJacobi::iterateTyped( const SparseMatrix<ValueType>& coefficient
         function<
         void(
             const MatrixStorage<ValueType>* haloMatrix,
-            LAMAArray<ValueType>& localResult,
-            const LAMAArray<ValueType>& haloX )> haloF =
+            HArray<ValueType>& localResult,
+            const HArray<ValueType>& haloX )> haloF =
 
                 bind( jacobiIterateHalo, _1, _2, cref( *diagonal ), _3, omega );
 
@@ -319,9 +319,9 @@ void SpecializedJacobi::iterateTyped( const SparseMatrix<ValueType>& coefficient
             // For the local operation a jacobi step is done
 
             void (scai::lama::MatrixStorage<ValueType>::*jacobiIterate)(
-                LAMAArray<ValueType>& solution,
-                const LAMAArray<ValueType>& oldSolution,
-                const LAMAArray<ValueType>& rhs,
+                HArray<ValueType>& solution,
+                const HArray<ValueType>& oldSolution,
+                const HArray<ValueType>& rhs,
                 const ValueType omega ) const = &MatrixStorage<ValueType>::jacobiIterate;
 
             // Bind the additional arguments like localRhs and omega
@@ -329,8 +329,8 @@ void SpecializedJacobi::iterateTyped( const SparseMatrix<ValueType>& coefficient
             function<
             void(
                 const MatrixStorage<ValueType>* haloMatrix,
-                LAMAArray<ValueType>& localResult,
-                const LAMAArray<ValueType>& localX )> localF =
+                HArray<ValueType>& localResult,
+                const HArray<ValueType>& localX )> localF =
 
                     bind( jacobiIterate, _1, _2, _3, cref( localRhs ), omega );
 
@@ -339,16 +339,16 @@ void SpecializedJacobi::iterateTyped( const SparseMatrix<ValueType>& coefficient
         else
         {
             SyncToken* (scai::lama::MatrixStorage<ValueType>::*jacobiIterateAsync)(
-                LAMAArray<ValueType>& solution,
-                const LAMAArray<ValueType>& oldSolution,
-                const LAMAArray<ValueType>& rhs,
+                HArray<ValueType>& solution,
+                const HArray<ValueType>& oldSolution,
+                const HArray<ValueType>& rhs,
                 const ValueType omega ) const = &MatrixStorage<ValueType>::jacobiIterateAsync;
 
             function<
             SyncToken*(
                 const MatrixStorage<ValueType>* haloMatrix,
-                LAMAArray<ValueType>& localResult,
-                const LAMAArray<ValueType>& localX )> localAsyncF =
+                HArray<ValueType>& localResult,
+                const HArray<ValueType>& localX )> localAsyncF =
 
                     bind( jacobiIterateAsync, _1, _2, _3, cref( localRhs ), omega );
 

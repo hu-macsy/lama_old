@@ -485,8 +485,8 @@ void DenseMatrix<ValueType>::setCSRData(
     DistributionPtr rowDist,
     DistributionPtr colDist,
     const IndexType numValues,
-    const LAMAArray<IndexType>& ia,
-    const LAMAArray<IndexType>& ja,
+    const HArray<IndexType>& ia,
+    const HArray<IndexType>& ja,
     const ContextArray& values )
 {
     DistributionPtr tmpReplicatedColDistribution = colDist;
@@ -686,8 +686,8 @@ void DenseMatrix<ValueType>::invertCyclic()
 
 template<typename ValueType>
 void DenseMatrix<ValueType>::buildCSRData(
-    LAMAArray<IndexType>& rowIA,
-    LAMAArray<IndexType>& rowJA,
+    HArray<IndexType>& rowIA,
+    HArray<IndexType>& rowJA,
     ContextArray& rowValues ) const
 {
     if ( getValueType() != rowValues.getValueType() )
@@ -702,8 +702,8 @@ void DenseMatrix<ValueType>::buildCSRData(
 
 template<typename ValueType>
 void DenseMatrix<ValueType>::setCSRData(
-    const LAMAArray<IndexType>& rowIA,
-    const LAMAArray<IndexType>& rowJA,
+    const HArray<IndexType>& rowIA,
+    const HArray<IndexType>& rowJA,
     const ContextArray& rowValues,
     DistributionPtr,
     DistributionPtr )
@@ -715,8 +715,8 @@ void DenseMatrix<ValueType>::setCSRData(
 
 template<typename ValueType>
 void DenseMatrix<ValueType>::setCSRDataLocal(
-    const LAMAArray<IndexType>& rowIA,
-    const LAMAArray<IndexType>& rowJA,
+    const HArray<IndexType>& rowIA,
+    const HArray<IndexType>& rowJA,
     const ContextArray& rowValues ) const
 {
     // build DenseStorage from the CSR data
@@ -993,9 +993,9 @@ void DenseMatrix<ValueType>::assignSparse( const CRTPMatrix<SparseMatrix<ValueTy
 template<typename ValueType>
 void DenseMatrix<ValueType>::assignLocal( const _MatrixStorage& other )
 {
-    LAMAArray<IndexType> ia;
-    LAMAArray<IndexType> ja;
-    LAMAArray<ValueType> values; // get values of same type this matrix needs
+    HArray<IndexType> ia;
+    HArray<IndexType> ja;
+    HArray<ValueType> values; // get values of same type this matrix needs
 
     other.buildCSRData( ia, ja, values );
 
@@ -1545,7 +1545,7 @@ void DenseMatrix<ValueType>::getDiagonalImpl( DenseVector<OtherValueType>& diago
 
 // const cast for local storage here is safe, otherwise we have to swap
 
-    LAMAArray<OtherValueType>& localValues = diagonal.getLocalValues();
+    HArray<OtherValueType>& localValues = diagonal.getLocalValues();
 
     getLocalStorage().getDiagonal( localValues );
 }
@@ -1581,7 +1581,7 @@ void DenseMatrix<ValueType>::getDiagonal( Vector& diagonal ) const
 
 // Fallback solution with temporary arrays
 
-    LAMAArray<ValueType> localDiagonal;
+    HArray<ValueType> localDiagonal;
     getLocalStorage().getDiagonal( localDiagonal );
     diagonal.assign( localDiagonal, getDistributionPtr() );
 }
@@ -1725,9 +1725,9 @@ void DenseMatrix<ValueType>::matrixTimesVectorImpl(
 {
     SCAI_REGION( "Mat.Dense.timesVector" )
 
-    const LAMAArray<ValueType>& localY = denseY.getLocalValues();
+    const HArray<ValueType>& localY = denseY.getLocalValues();
 
-    LAMAArray<ValueType>& localResult = denseResult.getLocalValues();
+    HArray<ValueType>& localResult = denseResult.getLocalValues();
 
     ContextPtr localContext = mData[0]->getContextPtr();
     const Distribution& colDist = getColDistribution();
@@ -1745,7 +1745,7 @@ void DenseMatrix<ValueType>::matrixTimesVectorImpl(
         denseY.prefetch( localContext );
     }
 
-    const LAMAArray<ValueType>& localX = denseX.getLocalValues();
+    const HArray<ValueType>& localX = denseX.getLocalValues();
 
     SCAI_LOG_INFO( logger,
                    comm << ": matrixTimesVector" << ", alpha = " << alphaValue << ", localX = " << localX << ", beta = " << betaValue << ", localY = " << localY )
@@ -1773,8 +1773,8 @@ void DenseMatrix<ValueType>::matrixTimesVectorImpl(
 
     ContextPtr contextPtr = Context::getHostPtr();
 
-    LAMAArray<ValueType>* sendValues = &mSendValues;
-    LAMAArray<ValueType>* recvValues = &mReceiveValues;
+    HArray<ValueType>* sendValues = &mSendValues;
+    HArray<ValueType>* recvValues = &mReceiveValues;
 
     {
 // resize the receive buffer to be big enough for largest part of X
@@ -1842,7 +1842,7 @@ void DenseMatrix<ValueType>::matrixTimesVectorImpl(
 
             // adapt the size of recvValues, that is now sendValues after swap
 
-            LAMAArray<ValueType> x( mData[actualPartition]->getNumColumns() );
+            HArray<ValueType> x( mData[actualPartition]->getNumColumns() );
             {
                 static LAMAKernel<blaskernel::BLASKernelTrait::copy<ValueType> > copy;
 
@@ -1913,9 +1913,9 @@ void DenseMatrix<ValueType>::vectorTimesMatrixImpl(
 {
     SCAI_REGION( "Mat.Dense.vectorTimesMatrix" )
 
-    const LAMAArray<ValueType>& localY = denseY.getLocalValues();
+    const HArray<ValueType>& localY = denseY.getLocalValues();
 
-    LAMAArray<ValueType>& localResult = denseResult.getLocalValues();
+    HArray<ValueType>& localResult = denseResult.getLocalValues();
 
     ContextPtr localContext = mData[0]->getContextPtr();
     const Distribution& colDist = getColDistribution();
@@ -1931,7 +1931,7 @@ void DenseMatrix<ValueType>::vectorTimesMatrixImpl(
         denseY.prefetch( localContext );
     }
 
-    const LAMAArray<ValueType>& localX = denseX.getLocalValues();
+    const HArray<ValueType>& localX = denseX.getLocalValues();
 
     SCAI_LOG_INFO( logger,
                    comm << ": vectorTimesMatrix" << ", alpha = " << alphaValue << ", localX = " << localX << ", beta = " << betaValue << ", localY = " << localY )

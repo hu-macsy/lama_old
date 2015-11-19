@@ -74,9 +74,9 @@ void gemvTest( ContextPtr loc )
         const IndexType incY = 2;
         const ValueType result[] =
         { -74.0, 33.0 };
-        LAMAArray<ValueType> Am( 6, matrix );
-        LAMAArray<ValueType> Ax( 3, x );
-        LAMAArray<ValueType> Ay( 3, y );
+        HArray<ValueType> Am( 6, matrix );
+        HArray<ValueType> Ax( 3, x );
+        HArray<ValueType> Ay( 3, y );
         {
             SCAI_CONTEXT_ACCESS( loc );
             ReadAccess<ValueType> rAm( Am, loc );
@@ -107,9 +107,9 @@ void gemvTest( ContextPtr loc )
         const IndexType incY = 2;
         const ValueType result[] =
         { -74.0, 33.0 };
-        LAMAArray<ValueType> Am( 6, matrix );
-        LAMAArray<ValueType> Ax( 3, x );
-        LAMAArray<ValueType> Ay( 3, y );
+        HArray<ValueType> Am( 6, matrix );
+        HArray<ValueType> Ax( 3, x );
+        HArray<ValueType> Ay( 3, y );
         {
             SCAI_CONTEXT_ACCESS( loc );
             ReadAccess<ValueType> rAm( Am, loc );
@@ -140,9 +140,9 @@ void gemvTest( ContextPtr loc )
         const IndexType incY = 1;
         const ValueType result[] =
         { 436.0, 148.0, -120.0 };
-        LAMAArray<ValueType> Am( 6, matrix );
-        LAMAArray<ValueType> Ax( 3, x );
-        LAMAArray<ValueType> Ay( 3, y );
+        HArray<ValueType> Am( 6, matrix );
+        HArray<ValueType> Ax( 3, x );
+        HArray<ValueType> Ay( 3, y );
         {
             SCAI_CONTEXT_ACCESS( loc );
             ReadAccess<ValueType> rAm( Am, loc );
@@ -174,9 +174,9 @@ void gemvTest( ContextPtr loc )
         const IndexType incY = 1;
         const ValueType result[] =
         { 436.0, 148.0, -120.0 };
-        LAMAArray<ValueType> Am( 6, matrix );
-        LAMAArray<ValueType> Ax( 3, x );
-        LAMAArray<ValueType> Ay( 3, y );
+        HArray<ValueType> Am( 6, matrix );
+        HArray<ValueType> Ax( 3, x );
+        HArray<ValueType> Ay( 3, y );
         {
             SCAI_CONTEXT_ACCESS( loc );
             ReadAccess<ValueType> rAm( Am, loc );

@@ -41,10 +41,10 @@ void workload( double& A, int NITER )
 }
 
 /*---------------------------------------------------------------------------*
- * setval: Initialize LAMAArray on Host with a given value                   *
+ * setval: Initialize HArray on Host with a given value                   *
  *---------------------------------------------------------------------------*/
 
-void setval( LAMAArray<double>& array, double val, IndexType N )
+void setval( HArray<double>& array, double val, IndexType N )
 {
     ContextPtr hostContext = Context::getContextPtr( common::context::Host );
 
@@ -79,9 +79,9 @@ int main( int argc, char** )
 
     cudaContext->enableZeroCopy( true );
 
-    // LAMAArray<double> A( homeContext );  // uses pinned Host memory if first touch is on CUDA
+    // HArray<double> A( homeContext );  // uses pinned Host memory if first touch is on CUDA
 
-    LAMAArray<double> A( homeContext );  // uses pinned Host memory if first touch is on CUDA
+    HArray<double> A( homeContext );  // uses pinned Host memory if first touch is on CUDA
 
     // A little bit warm up to initialize every thing
 

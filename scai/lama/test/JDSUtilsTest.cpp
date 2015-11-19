@@ -82,12 +82,12 @@ void getRowTest( ContextPtr loc )
     const IndexType i = 2;
     const IndexType numColumns = 16;
     const IndexType numRows = 3;
-    LAMAArray<ValueType> values( nValues, valuesValues );
-    LAMAArray<IndexType> ja( nJa, valuesJa );
-    LAMAArray<IndexType> dlg( nDlg, valuesDlg );
-    LAMAArray<IndexType> ilg( nIlg, valuesIlg );
-    LAMAArray<IndexType> perm( nPerm, valuesPerm );
-    LAMAArray<OtherValueType> row( numColumns, 0 );
+    HArray<ValueType> values( nValues, valuesValues );
+    HArray<IndexType> ja( nJa, valuesJa );
+    HArray<IndexType> dlg( nDlg, valuesDlg );
+    HArray<IndexType> ilg( nIlg, valuesIlg );
+    HArray<IndexType> perm( nPerm, valuesPerm );
+    HArray<OtherValueType> row( numColumns, 0 );
     ReadAccess<ValueType> rValues( values, loc );
     ReadAccess<IndexType> rJa( ja, loc );
     ReadAccess<IndexType> rDlg( dlg, loc );
@@ -138,12 +138,12 @@ void getValueTest( ContextPtr loc )
     };
     const IndexType numColumns = 10;
     const IndexType numRows = 5;
-    LAMAArray<ValueType> values( nValues, valuesValues );
-    LAMAArray<IndexType> ja( nJa, valuesJa );
-    LAMAArray<IndexType> dlg( nDlg, valuesDlg );
-    LAMAArray<IndexType> ilg( nIlg, valuesIlg );
-    LAMAArray<IndexType> perm( nPerm, valuesPerm );
-    LAMAArray<OtherValueType> row( numColumns, 0 );
+    HArray<ValueType> values( nValues, valuesValues );
+    HArray<IndexType> ja( nJa, valuesJa );
+    HArray<IndexType> dlg( nDlg, valuesDlg );
+    HArray<IndexType> ilg( nIlg, valuesIlg );
+    HArray<IndexType> perm( nPerm, valuesPerm );
+    HArray<OtherValueType> row( numColumns, 0 );
     ReadAccess<ValueType> rValues( values, loc );
     ReadAccess<IndexType> rJa( ja, loc );
     ReadAccess<IndexType> rDlg( dlg, loc );
@@ -186,11 +186,11 @@ void scaleValueTest( ContextPtr loc )
     ValueType expectedValues[] =
     { 1, 14, 36, 2, 16, 39, 3, 18, 42, 4, 20, 45, 5, 22, 6 };
     const IndexType numRows = 3;
-    LAMAArray<ValueType> values( nValues, valuesValues );
-    LAMAArray<IndexType> dlg( nDlg, valuesDlg );
-    LAMAArray<IndexType> ilg( nIlg, valuesIlg );
-    LAMAArray<IndexType> perm( nPerm, valuesPerm );
-    LAMAArray<OtherValueType> diagonal( nDiagonal, valuesDiagonal );
+    HArray<ValueType> values( nValues, valuesValues );
+    HArray<IndexType> dlg( nDlg, valuesDlg );
+    HArray<IndexType> ilg( nIlg, valuesIlg );
+    HArray<IndexType> perm( nPerm, valuesPerm );
+    HArray<OtherValueType> diagonal( nDiagonal, valuesDiagonal );
     ReadAccess<IndexType> rDlg( dlg, loc );
     ReadAccess<IndexType> rIlg( ilg, loc );
     ReadAccess<IndexType> rPerm( perm, loc );
@@ -232,10 +232,10 @@ void checkDiagonalPropertyTest( ContextPtr loc )
         const IndexType numRows = 3;
         const IndexType numColumns = 16;
         const IndexType numDiagonals = 3;
-        LAMAArray<IndexType> ja( nJa, valuesJa );
-        LAMAArray<IndexType> dlg( nDlg, valuesDlg );
-        LAMAArray<IndexType> ilg( nIlg, valuesIlg );
-        LAMAArray<IndexType> perm( nPerm, valuesPerm );
+        HArray<IndexType> ja( nJa, valuesJa );
+        HArray<IndexType> dlg( nDlg, valuesDlg );
+        HArray<IndexType> ilg( nIlg, valuesIlg );
+        HArray<IndexType> perm( nPerm, valuesPerm );
         ReadAccess<IndexType> rJa( ja, loc );
         ReadAccess<IndexType> rDlg( dlg, loc );
         ReadAccess<IndexType> rIlg( ilg, loc );
@@ -263,10 +263,10 @@ void checkDiagonalPropertyTest( ContextPtr loc )
         const IndexType numRows = 3;
         const IndexType numColumns = 3;
         const IndexType numDiagonals = 3;
-        LAMAArray<IndexType> ja( nJa, valuesJa );
-        LAMAArray<IndexType> dlg( nDlg, valuesDlg );
-        LAMAArray<IndexType> ilg( nIlg, valuesIlg );
-        LAMAArray<IndexType> perm( nPerm, valuesPerm );
+        HArray<IndexType> ja( nJa, valuesJa );
+        HArray<IndexType> dlg( nDlg, valuesDlg );
+        HArray<IndexType> ilg( nIlg, valuesIlg );
+        HArray<IndexType> perm( nPerm, valuesPerm );
         ReadAccess<IndexType> rJa( ja, loc );
         ReadAccess<IndexType> rDlg( dlg, loc );
         ReadAccess<IndexType> rIlg( ilg, loc );
@@ -282,10 +282,10 @@ void checkDiagonalPropertyTest( ContextPtr loc )
         const IndexType numRows = 0;
         const IndexType numColumns = 0;
         const IndexType numDiagonals = 0;
-        LAMAArray<IndexType> ja;
-        LAMAArray<IndexType> dlg;
-        LAMAArray<IndexType> ilg;
-        LAMAArray<IndexType> perm;
+        HArray<IndexType> ja;
+        HArray<IndexType> dlg;
+        HArray<IndexType> ilg;
+        HArray<IndexType> perm;
         ReadAccess<IndexType> rJa( ja, loc );
         ReadAccess<IndexType> rDlg( dlg, loc );
         ReadAccess<IndexType> rIlg( ilg, loc );
@@ -312,8 +312,8 @@ void ilg2dlgTest( ContextPtr loc )
         { 6, 5, 5, 5, 3, 2, 2 };
         const IndexType numRows = 6;
         const IndexType numDiagonals = 7;
-        LAMAArray<IndexType> dlg( numDiagonals );
-        LAMAArray<IndexType> ilg( nIlg, valuesIlg );
+        HArray<IndexType> dlg( numDiagonals );
+        HArray<IndexType> ilg( nIlg, valuesIlg );
         {
             WriteOnlyAccess<IndexType> wDlg( dlg, loc, numDiagonals );
             ReadAccess<IndexType> rIlg( ilg, loc );
@@ -348,8 +348,8 @@ void sortRowsTest( ContextPtr loc )
         IndexType expectedPerm[] =
         { 5, 0, 2, 3, 1, 4 };
         const IndexType numRows = 6;
-        LAMAArray<IndexType> perm( nPerm, valuesPerm );
-        LAMAArray<IndexType> ilg( nIlg, valuesIlg );
+        HArray<IndexType> perm( nPerm, valuesPerm );
+        HArray<IndexType> ilg( nIlg, valuesIlg );
         {
             WriteAccess<IndexType> wPerm( perm, loc );
             WriteAccess<IndexType> wIlg( ilg, loc );
@@ -367,8 +367,8 @@ void sortRowsTest( ContextPtr loc )
     }
     {
         const IndexType numRows = 0;
-        LAMAArray<IndexType> perm( numRows );
-        LAMAArray<IndexType> ilg( numRows );
+        HArray<IndexType> perm( numRows );
+        HArray<IndexType> ilg( numRows );
         {
             WriteOnlyAccess<IndexType> wPerm( perm, loc, numRows );
             WriteOnlyAccess<IndexType> wIlg( ilg, loc, numRows );
@@ -392,8 +392,8 @@ void setInversePermTest( ContextPtr loc )
         IndexType expectedPerm[] =
         { 1, 4, 2, 3, 5, 0 };
         const IndexType numRows = 6;
-        LAMAArray<IndexType> perm( nPerm, valuesPerm );
-        LAMAArray<IndexType> inversePerm( nPerm );
+        HArray<IndexType> perm( nPerm, valuesPerm );
+        HArray<IndexType> inversePerm( nPerm );
         {
             ReadAccess<IndexType> rPerm( perm, loc );
             WriteOnlyAccess<IndexType> wInversePerm( inversePerm, loc, numRows );
@@ -409,8 +409,8 @@ void setInversePermTest( ContextPtr loc )
     }
     {
         const IndexType numRows = 0;
-        LAMAArray<IndexType> perm( numRows );
-        LAMAArray<IndexType> inversePerm( numRows );
+        HArray<IndexType> perm( numRows );
+        HArray<IndexType> inversePerm( numRows );
         {
             ReadAccess<IndexType> rPerm( perm, loc );
             WriteOnlyAccess<IndexType> wInversePerm( inversePerm, loc, numRows );
@@ -459,15 +459,15 @@ void setCSRValuesTest( ContextPtr loc )
     { 2, 3, 5, 5, 2, 8, 4, 3, 7, 3, 7, 3, 4, 9, 9, 5, 5 };
     const IndexType numRows = 5;
     const IndexType nJDS = nCSRValues;
-    LAMAArray<IndexType> JDSJa( nJDS );
-    LAMAArray<ValueType> JDSValues( nJDS );
-    LAMAArray<IndexType> JDSDlg( nJDSDlg, valuesJDSDlg );
-    LAMAArray<IndexType> JDSIlg( nJDSIlg, valuesJDSIlg );
-    LAMAArray<IndexType> JDSPerm( nJDSPerm, valuesJDSPerm );
+    HArray<IndexType> JDSJa( nJDS );
+    HArray<ValueType> JDSValues( nJDS );
+    HArray<IndexType> JDSDlg( nJDSDlg, valuesJDSDlg );
+    HArray<IndexType> JDSIlg( nJDSIlg, valuesJDSIlg );
+    HArray<IndexType> JDSPerm( nJDSPerm, valuesJDSPerm );
     ;
-    LAMAArray<IndexType> CSRIa( nCSRIa, valuesCSRIa );
-    LAMAArray<IndexType> CSRJa( nCSRJa, valuesCSRJa );
-    LAMAArray<OtherValueType> CSRValues( nCSRValues, valuesCSRValues );
+    HArray<IndexType> CSRIa( nCSRIa, valuesCSRIa );
+    HArray<IndexType> CSRJa( nCSRJa, valuesCSRJa );
+    HArray<OtherValueType> CSRValues( nCSRValues, valuesCSRValues );
     {
         WriteOnlyAccess<IndexType> wJDSJa( JDSJa, loc, nJDS );
         WriteOnlyAccess<ValueType> wJDSValues( JDSValues, loc, nJDS );
@@ -530,15 +530,15 @@ void getCSRValuesTest( ContextPtr loc )
     { 5, 3, 4, 3, 4, 3, 5, 2, 8, 7, 9, 5, 2, 3, 5, 7, 9 };
     const IndexType numRows = 5;
     const IndexType nJDS = nJDSValues;
-    LAMAArray<IndexType> JDSJa( nJDSJa, valuesJDSJa );
-    LAMAArray<ValueType> JDSValues( nJDSValues, valuesJDSValues );
-    LAMAArray<IndexType> JDSDlg( nJDSDlg, valuesJDSDlg );
-    LAMAArray<IndexType> JDSIlg( nJDSIlg, valuesJDSIlg );
-    LAMAArray<IndexType> JDSPerm( nJDSPerm, valuesJDSPerm );
+    HArray<IndexType> JDSJa( nJDSJa, valuesJDSJa );
+    HArray<ValueType> JDSValues( nJDSValues, valuesJDSValues );
+    HArray<IndexType> JDSDlg( nJDSDlg, valuesJDSDlg );
+    HArray<IndexType> JDSIlg( nJDSIlg, valuesJDSIlg );
+    HArray<IndexType> JDSPerm( nJDSPerm, valuesJDSPerm );
     ;
-    LAMAArray<IndexType> CSRIa( nCSRIa, valuesCSRIa );
-    LAMAArray<IndexType> CSRJa( nJDS );
-    LAMAArray<OtherValueType> CSRValues( nJDS );
+    HArray<IndexType> CSRIa( nCSRIa, valuesCSRIa );
+    HArray<IndexType> CSRJa( nJDS );
+    HArray<OtherValueType> CSRValues( nJDS );
     {
         ReadAccess<IndexType> rJDSJa( JDSJa, loc );
         ReadAccess<ValueType> rJDSValues( JDSValues, loc );

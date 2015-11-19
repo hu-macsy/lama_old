@@ -77,7 +77,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( redistributeTest, ValueType, test_types )
     shared_ptr<Distribution> distCyclic( new CyclicDistribution( size, chunkSize, comm ) );
     IndexType blockLocalSize = distBlock->getLocalSize();
     IndexType cyclicLocalSize = distCyclic->getLocalSize();
-    LAMAArray<ValueType> myData1( blockLocalSize );
+    HArray<ValueType> myData1( blockLocalSize );
     {
         WriteAccess<ValueType> data ( myData1 );
 
@@ -86,7 +86,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( redistributeTest, ValueType, test_types )
             data[i] = static_cast<ValueType>( 100 * comm->getRank() + i );
         }
     }
-    LAMAArray<ValueType> myData2( cyclicLocalSize );
+    HArray<ValueType> myData2( cyclicLocalSize );
     Redistributor r1( distCyclic, distBlock );
     Redistributor r2( distBlock, distCyclic );
     SCAI_LOG_DEBUG( logger, "redistribute 1" );

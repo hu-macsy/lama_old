@@ -100,8 +100,8 @@ DIAStorage<ValueType>::DIAStorage(
     const IndexType numRows,
     const IndexType numColumns,
     const IndexType numDiagonals,
-    const LAMAArray<IndexType>& offsets,
-    const LAMAArray<ValueType>& values )
+    const HArray<IndexType>& offsets,
+    const HArray<ValueType>& values )
 
     : CRTPMatrixStorage<DIAStorage<ValueType>,ValueType>( numRows, numColumns ), mNumDiagonals(
           numDiagonals ), mOffset( offsets ), mValues( values )
@@ -224,7 +224,7 @@ void DIAStorage<ValueType>::setDiagonalImpl( const ValueType value )
 
 template<typename ValueType>
 template<typename OtherType>
-void DIAStorage<ValueType>::getRowImpl( LAMAArray<OtherType>& row, const IndexType i ) const
+void DIAStorage<ValueType>::getRowImpl( HArray<OtherType>& row, const IndexType i ) const
 {
     SCAI_ASSERT_DEBUG( i >= 0 && i < mNumRows, "row index " << i << " out of range" )
 
@@ -255,7 +255,7 @@ void DIAStorage<ValueType>::getRowImpl( LAMAArray<OtherType>& row, const IndexTy
 
 template<typename ValueType>
 template<typename OtherType>
-void DIAStorage<ValueType>::getDiagonalImpl( LAMAArray<OtherType>& diagonal ) const
+void DIAStorage<ValueType>::getDiagonalImpl( HArray<OtherType>& diagonal ) const
 {
     static LAMAKernel<UtilKernelTrait::set<OtherType, ValueType> > set;
 
@@ -277,7 +277,7 @@ void DIAStorage<ValueType>::getDiagonalImpl( LAMAArray<OtherType>& diagonal ) co
 
 template<typename ValueType>
 template<typename OtherType>
-void DIAStorage<ValueType>::setDiagonalImpl( const LAMAArray<OtherType>& diagonal )
+void DIAStorage<ValueType>::setDiagonalImpl( const HArray<OtherType>& diagonal )
 {
     IndexType numDiagonalElements = std::min( mNumColumns, mNumRows );
 
@@ -312,7 +312,7 @@ void DIAStorage<ValueType>::scaleImpl( const ValueType value )
 
 template<typename ValueType>
 template<typename OtherType>
-void DIAStorage<ValueType>::scaleImpl( const LAMAArray<OtherType>& diagonal )
+void DIAStorage<ValueType>::scaleImpl( const HArray<OtherType>& diagonal )
 {
     {
         ReadAccess<OtherType> rDiagonal( diagonal );
@@ -471,9 +471,9 @@ void DIAStorage<ValueType>::setUsedDiagonal(
 template<typename ValueType>
 template<typename CSRValueType>
 void DIAStorage<ValueType>::buildCSR(
-    LAMAArray<IndexType>& ia,
-    LAMAArray<IndexType>* ja,
-    LAMAArray<CSRValueType>* values,
+    HArray<IndexType>& ia,
+    HArray<IndexType>* ja,
+    HArray<CSRValueType>* values,
     const ContextPtr prefLoc ) const
 {
     SCAI_REGION( "Storage.DIA->CSR" )
@@ -527,9 +527,9 @@ void DIAStorage<ValueType>::setCSRDataImpl(
     const IndexType numRows,
     const IndexType numColumns,
     const IndexType UNUSED( numValues ),
-    const LAMAArray<IndexType>& ia,
-    const LAMAArray<IndexType>& ja,
-    const LAMAArray<OtherValueType>& values,
+    const HArray<IndexType>& ia,
+    const HArray<IndexType>& ja,
+    const HArray<OtherValueType>& values,
     ContextPtr UNUSED( prefLoc ) )
 {
     SCAI_REGION( "Storage.DIA<-CSR" )
@@ -842,7 +842,7 @@ IndexType DIAStorage<ValueType>::getNumDiagonals() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-const LAMAArray<IndexType>& DIAStorage<ValueType>::getOffsets() const
+const HArray<IndexType>& DIAStorage<ValueType>::getOffsets() const
 {
     return mOffset;
 }
@@ -850,7 +850,7 @@ const LAMAArray<IndexType>& DIAStorage<ValueType>::getOffsets() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-const LAMAArray<ValueType>& DIAStorage<ValueType>::getValues() const
+const HArray<ValueType>& DIAStorage<ValueType>::getValues() const
 {
     return mValues;
 }
@@ -892,11 +892,11 @@ size_t DIAStorage<ValueType>::getMemoryUsageImpl() const
 
 template<typename ValueType>
 void DIAStorage<ValueType>::matrixTimesVector(
-    LAMAArray<ValueType>& result,
+    HArray<ValueType>& result,
     const ValueType alpha,
-    const LAMAArray<ValueType>& x,
+    const HArray<ValueType>& x,
     const ValueType beta,
-    const LAMAArray<ValueType>& y ) const
+    const HArray<ValueType>& y ) const
 {
     SCAI_REGION( "Storage.DIA.timesVector" )
 
@@ -929,11 +929,11 @@ void DIAStorage<ValueType>::matrixTimesVector(
 
 template<typename ValueType>
 void DIAStorage<ValueType>::vectorTimesMatrix(
-    LAMAArray<ValueType>& result,
+    HArray<ValueType>& result,
     const ValueType alpha,
-    const LAMAArray<ValueType>& x,
+    const HArray<ValueType>& x,
     const ValueType beta,
-    const LAMAArray<ValueType>& y ) const
+    const HArray<ValueType>& y ) const
 {
     SCAI_LOG_INFO( logger,
                    *this << ": vectorTimesMatrix, result = " << result << ", alpha = " << alpha << ", x = " << x << ", beta = " << beta << ", y = " << y )
@@ -990,11 +990,11 @@ void DIAStorage<ValueType>::vectorTimesMatrix(
 
 template<typename ValueType>
 SyncToken* DIAStorage<ValueType>::matrixTimesVectorAsync(
-    LAMAArray<ValueType>& result,
+    HArray<ValueType>& result,
     const ValueType alpha,
-    const LAMAArray<ValueType>& x,
+    const HArray<ValueType>& x,
     const ValueType beta,
-    const LAMAArray<ValueType>& y ) const
+    const HArray<ValueType>& y ) const
 {
     SCAI_REGION( "Storage.DIA.timesVectorAsync" )
 
@@ -1043,11 +1043,11 @@ SyncToken* DIAStorage<ValueType>::matrixTimesVectorAsync(
 
 template<typename ValueType>
 SyncToken* DIAStorage<ValueType>::vectorTimesMatrixAsync(
-    LAMAArray<ValueType>& result,
+    HArray<ValueType>& result,
     const ValueType alpha,
-    const LAMAArray<ValueType>& x,
+    const HArray<ValueType>& x,
     const ValueType beta,
-    const LAMAArray<ValueType>& y ) const
+    const HArray<ValueType>& y ) const
 {
     SCAI_LOG_INFO( logger,
                    *this << ": vectorTimesMatrixAsync, result = " << result << ", alpha = " << alpha << ", x = " << x << ", beta = " << beta << ", y = " << y )
@@ -1068,11 +1068,11 @@ SyncToken* DIAStorage<ValueType>::vectorTimesMatrixAsync(
         // execution as separate thread
 
         void (DIAStorage::*pf)(
-            LAMAArray<ValueType>&,
+            HArray<ValueType>&,
             const ValueType,
-            const LAMAArray<ValueType>&,
+            const HArray<ValueType>&,
             const ValueType,
-            const LAMAArray<ValueType>& ) const
+            const HArray<ValueType>& ) const
 
             = &DIAStorage<ValueType>::vectorTimesMatrix;
 
@@ -1149,9 +1149,9 @@ SyncToken* DIAStorage<ValueType>::vectorTimesMatrixAsync(
 
 template<typename ValueType>
 void DIAStorage<ValueType>::jacobiIterate(
-    LAMAArray<ValueType>& solution,
-    const LAMAArray<ValueType>& oldSolution,
-    const LAMAArray<ValueType>& rhs,
+    HArray<ValueType>& solution,
+    const HArray<ValueType>& oldSolution,
+    const HArray<ValueType>& rhs,
     const ValueType omega ) const
 {
     SCAI_LOG_INFO( logger, *this << ": Jacobi iteration for local matrix data." )

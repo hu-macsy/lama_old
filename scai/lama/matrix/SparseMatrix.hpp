@@ -194,8 +194,8 @@ public:
         DistributionPtr rowDist,
         DistributionPtr colDist,
         const IndexType numValues,
-        const hmemo::LAMAArray<IndexType>& ia,
-        const hmemo::LAMAArray<IndexType>& ja,
+        const hmemo::HArray<IndexType>& ia,
+        const hmemo::HArray<IndexType>& ja,
         const hmemo::ContextArray& values );
 
     /* Implementation of pure method of class Matrix. */
@@ -367,19 +367,19 @@ public:
      *  - localX is usually the local part of a distributed vector.
      */
     void haloOperationSync(
-        hmemo::LAMAArray<ValueType>& localResult,
-        const hmemo::LAMAArray<ValueType>& localX,
-        hmemo::LAMAArray<ValueType>& haloX,
+        hmemo::HArray<ValueType>& localResult,
+        const hmemo::HArray<ValueType>& localX,
+        hmemo::HArray<ValueType>& haloX,
         common::function<
         void(
             const MatrixStorage<ValueType>* localMatrix,
-            hmemo::LAMAArray<ValueType>& localResult,
-            const hmemo::LAMAArray<ValueType>& localX )> localF,
+            hmemo::HArray<ValueType>& localResult,
+            const hmemo::HArray<ValueType>& localX )> localF,
         common::function<
         void(
             const MatrixStorage<ValueType>* haloMatrix,
-            hmemo::LAMAArray<ValueType>& localResult,
-            const hmemo::LAMAArray<ValueType>& haloX )> haloF ) const;
+            hmemo::HArray<ValueType>& localResult,
+            const hmemo::HArray<ValueType>& haloX )> haloF ) const;
 
     /**
      * @brief Operation on distributed matrix with halo exchange, async version
@@ -388,49 +388,49 @@ public:
      * can overlap with the halo exchange.
      */
     void haloOperationAsync(
-        hmemo::LAMAArray<ValueType>& localResult,
-        const hmemo::LAMAArray<ValueType>& localX,
-        hmemo::LAMAArray<ValueType>& haloX,
+        hmemo::HArray<ValueType>& localResult,
+        const hmemo::HArray<ValueType>& localX,
+        hmemo::HArray<ValueType>& haloX,
         common::function<
         SyncToken*(
             const MatrixStorage<ValueType>* localMatrix,
-            hmemo::LAMAArray<ValueType>& localResult,
-            const hmemo::LAMAArray<ValueType>& localX )> localAsyncF,
+            hmemo::HArray<ValueType>& localResult,
+            const hmemo::HArray<ValueType>& localX )> localAsyncF,
         common::function<
         void(
             const MatrixStorage<ValueType>* haloMatrix,
-            hmemo::LAMAArray<ValueType>& localResult,
-            const hmemo::LAMAArray<ValueType>& haloX )> haloF ) const;
+            hmemo::HArray<ValueType>& localResult,
+            const hmemo::HArray<ValueType>& haloX )> haloF ) const;
 
     void vectorHaloOperationSync(
-        hmemo::LAMAArray<ValueType>& localResult,
-        const hmemo::LAMAArray<ValueType>& localX,
-        const hmemo::LAMAArray<ValueType>& localY,
+        hmemo::HArray<ValueType>& localResult,
+        const hmemo::HArray<ValueType>& localX,
+        const hmemo::HArray<ValueType>& localY,
         common::function<
         void(
             const MatrixStorage<ValueType>* localMatrix,
-            hmemo::LAMAArray<ValueType>& localResult,
-            const hmemo::LAMAArray<ValueType>& localX )> calcF,
+            hmemo::HArray<ValueType>& localResult,
+            const hmemo::HArray<ValueType>& localX )> calcF,
         common::function<
         void(
-            hmemo::LAMAArray<ValueType>& localResult,
-            const hmemo::LAMAArray<ValueType>& localX,
-            const hmemo::LAMAArray<ValueType>& localY )> addF ) const;
+            hmemo::HArray<ValueType>& localResult,
+            const hmemo::HArray<ValueType>& localX,
+            const hmemo::HArray<ValueType>& localY )> addF ) const;
 
     void vectorHaloOperationAsync(
-        hmemo::LAMAArray<ValueType>& localResult,
-        const hmemo::LAMAArray<ValueType>& localX,
-        const hmemo::LAMAArray<ValueType>& localY,
+        hmemo::HArray<ValueType>& localResult,
+        const hmemo::HArray<ValueType>& localX,
+        const hmemo::HArray<ValueType>& localY,
         common::function<
         SyncToken*(
             const MatrixStorage<ValueType>* localMatrix,
-            hmemo::LAMAArray<ValueType>& localResult,
-            const hmemo::LAMAArray<ValueType>& localX )> calcF,
+            hmemo::HArray<ValueType>& localResult,
+            const hmemo::HArray<ValueType>& localX )> calcF,
         common::function<
         /*SyncToken**/void(
-            hmemo::LAMAArray<ValueType>& localResult,
-            const hmemo::LAMAArray<ValueType>& localX,
-            const hmemo::LAMAArray<ValueType>& localY )> addF ) const;
+            hmemo::HArray<ValueType>& localResult,
+            const hmemo::HArray<ValueType>& localX,
+            const hmemo::HArray<ValueType>& localY )> addF ) const;
 
     /* Implemenation of pure method of class Matrix */
 
@@ -668,7 +668,7 @@ private:
 
     void getLocalRow( DenseVector<ValueType>& row, const IndexType iLocal ) const;
 
-    mutable hmemo::LAMAArray<ValueType> mTempSendValues; //!< temporary vector for halo communications
+    mutable hmemo::HArray<ValueType> mTempSendValues; //!< temporary vector for halo communications
 };
 
 } /* end namespace lama */

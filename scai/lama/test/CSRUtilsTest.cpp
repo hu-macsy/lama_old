@@ -84,12 +84,12 @@ void absMaxDiffValTest( ContextPtr loc )
     // const IndexType numColumns = 5;
     const IndexType numValues1 = sizeof( ja1 ) / sizeof( IndexType );
     const IndexType numValues2 = sizeof( ja2 ) / sizeof( IndexType );
-    LAMAArray<IndexType> csrIA1( numRows + 1, ia1 );
-    LAMAArray<IndexType> csrJA1( numValues1, ja1 );
-    LAMAArray<ValueType> csrValues1( numValues1, values1 );
-    LAMAArray<IndexType> csrIA2( numRows + 1, ia2 );
-    LAMAArray<IndexType> csrJA2( numValues2, ja2 );
-    LAMAArray<ValueType> csrValues2( numValues2, values2 );
+    HArray<IndexType> csrIA1( numRows + 1, ia1 );
+    HArray<IndexType> csrJA1( numValues1, ja1 );
+    HArray<ValueType> csrValues1( numValues1, values1 );
+    HArray<IndexType> csrIA2( numRows + 1, ia2 );
+    HArray<IndexType> csrJA2( numValues2, ja2 );
+    HArray<ValueType> csrValues2( numValues2, values2 );
     ReadAccess<IndexType> rCSRIA1( csrIA1, loc );
     ReadAccess<IndexType> rCSRJA1( csrJA1, loc );
     ReadAccess<ValueType> rCSRValues1( csrValues1, loc );
@@ -130,12 +130,12 @@ void transposeTestSquare( ContextPtr loc )
     const IndexType numRows = 3;
     const IndexType numColumns = 3;
     const IndexType numValues = 5;
-    LAMAArray<IndexType> csrIA( numRows + 1, ia1 );
-    LAMAArray<IndexType> csrJA( numValues, ja1 );
-    LAMAArray<ValueType> csrValues( numValues, values1 );
-    LAMAArray<IndexType> cscIA;
-    LAMAArray<IndexType> cscJA;
-    LAMAArray<ValueType> cscValues;
+    HArray<IndexType> csrIA( numRows + 1, ia1 );
+    HArray<IndexType> csrJA( numValues, ja1 );
+    HArray<ValueType> csrValues( numValues, values1 );
+    HArray<IndexType> cscIA;
+    HArray<IndexType> cscJA;
+    HArray<ValueType> cscValues;
   
     {
         ReadAccess<IndexType> rCSRIA( csrIA, loc );
@@ -198,12 +198,12 @@ void transposeTestNonSquare( ContextPtr loc )
     const IndexType numRows = 4;
     const IndexType numColumns = 3;
     const IndexType numValues = 7;
-    LAMAArray<IndexType> csrIA( numRows + 1, ia1 );
-    LAMAArray<IndexType> csrJA( numValues, ja1 );
-    LAMAArray<ValueType> csrValues( numValues, values1 );
-    LAMAArray<IndexType> cscIA;
-    LAMAArray<IndexType> cscJA;
-    LAMAArray<ValueType> cscValues;
+    HArray<IndexType> csrIA( numRows + 1, ia1 );
+    HArray<IndexType> csrJA( numValues, ja1 );
+    HArray<ValueType> csrValues( numValues, values1 );
+    HArray<IndexType> cscIA;
+    HArray<IndexType> cscJA;
+    HArray<ValueType> cscValues;
 
     // CSC <- transpose CSR
 

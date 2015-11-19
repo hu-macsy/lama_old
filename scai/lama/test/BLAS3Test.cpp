@@ -81,9 +81,9 @@ void gemmTest( ContextPtr loc )
         const IndexType lda = 3;
         const IndexType ldb = 2;
         const IndexType ldc = 2;
-        LAMAArray<ValueType> AmA( 6, matrixA );
-        LAMAArray<ValueType> AmB( 6, matrixB );
-        LAMAArray<ValueType> AmC( 4, matrixC );
+        HArray<ValueType> AmA( 6, matrixA );
+        HArray<ValueType> AmB( 6, matrixB );
+        HArray<ValueType> AmC( 4, matrixC );
         {
             SCAI_CONTEXT_ACCESS( loc );
             ReadAccess<ValueType> rAmA( AmA, loc );
@@ -112,9 +112,9 @@ void gemmTest( ContextPtr loc )
         const IndexType lda = 2;
         const IndexType ldb = 3;
         const IndexType ldc = 2;
-        LAMAArray<ValueType> AmA( 6, matrixA );
-        LAMAArray<ValueType> AmB( 6, matrixB );
-        LAMAArray<ValueType> AmC( 4, matrixC );
+        HArray<ValueType> AmA( 6, matrixA );
+        HArray<ValueType> AmB( 6, matrixB );
+        HArray<ValueType> AmC( 4, matrixC );
         {
             SCAI_CONTEXT_ACCESS( loc );
             ReadAccess<ValueType> rAmA( AmA, loc );
@@ -143,9 +143,9 @@ void gemmTest( ContextPtr loc )
         const IndexType lda = 3;
         const IndexType ldb = 3;
         const IndexType ldc = 2;
-        LAMAArray<ValueType> AmA( 6, matrixA );
-        LAMAArray<ValueType> AmB( 6, matrixB );
-        LAMAArray<ValueType> AmC( 4, matrixC );
+        HArray<ValueType> AmA( 6, matrixA );
+        HArray<ValueType> AmB( 6, matrixB );
+        HArray<ValueType> AmC( 4, matrixC );
         {
             SCAI_CONTEXT_ACCESS( loc );
             ReadAccess<ValueType> rAmA( AmA, loc );
@@ -174,9 +174,9 @@ void gemmTest( ContextPtr loc )
         const IndexType lda = 2;
         const IndexType ldb = 2;
         const IndexType ldc = 2;
-        LAMAArray<ValueType> AmA( 6, matrixA );
-        LAMAArray<ValueType> AmB( 6, matrixB );
-        LAMAArray<ValueType> AmC( 4, matrixC );
+        HArray<ValueType> AmA( 6, matrixA );
+        HArray<ValueType> AmB( 6, matrixB );
+        HArray<ValueType> AmC( 4, matrixC );
         {
             SCAI_CONTEXT_ACCESS( loc );
             ReadAccess<ValueType> rAmA( AmA, loc );
@@ -205,9 +205,9 @@ void gemmTest( ContextPtr loc )
         const IndexType lda = 2;
         const IndexType ldb = 2;
         const IndexType ldc = 2;
-        LAMAArray<ValueType> AmA( 6, matrixA );
-        LAMAArray<ValueType> AmB( 6, matrixB );
-        LAMAArray<ValueType> AmC( 4, matrixC );
+        HArray<ValueType> AmA( 6, matrixA );
+        HArray<ValueType> AmB( 6, matrixB );
+        HArray<ValueType> AmC( 4, matrixC );
         {
             SCAI_CONTEXT_ACCESS( loc );
             ReadAccess<ValueType> rAmA( AmA, loc );
@@ -236,9 +236,9 @@ void gemmTest( ContextPtr loc )
         const IndexType lda = 3;
         const IndexType ldb = 3;
         const IndexType ldc = 2;
-        LAMAArray<ValueType> AmA( 6, matrixA );
-        LAMAArray<ValueType> AmB( 6, matrixB );
-        LAMAArray<ValueType> AmC( 4, matrixC );
+        HArray<ValueType> AmA( 6, matrixA );
+        HArray<ValueType> AmB( 6, matrixB );
+        HArray<ValueType> AmC( 4, matrixC );
         {
             SCAI_CONTEXT_ACCESS( loc );
             ReadAccess<ValueType> rAmA( AmA, loc );
@@ -267,9 +267,9 @@ void gemmTest( ContextPtr loc )
         const IndexType lda = 2;
         const IndexType ldb = 3;
         const IndexType ldc = 2;
-        LAMAArray<ValueType> AmA( 6, matrixA );
-        LAMAArray<ValueType> AmB( 6, matrixB );
-        LAMAArray<ValueType> AmC( 4, matrixC );
+        HArray<ValueType> AmA( 6, matrixA );
+        HArray<ValueType> AmB( 6, matrixB );
+        HArray<ValueType> AmC( 4, matrixC );
         {
             SCAI_CONTEXT_ACCESS( loc );
             ReadAccess<ValueType> rAmA( AmA, loc );
@@ -298,9 +298,9 @@ void gemmTest( ContextPtr loc )
         const IndexType lda = 3;
         const IndexType ldb = 2;
         const IndexType ldc = 2;
-        LAMAArray<ValueType> AmA( 6, matrixA );
-        LAMAArray<ValueType> AmB( 6, matrixB );
-        LAMAArray<ValueType> AmC( 4, matrixC );
+        HArray<ValueType> AmA( 6, matrixA );
+        HArray<ValueType> AmB( 6, matrixB );
+        HArray<ValueType> AmC( 4, matrixC );
         {
             SCAI_CONTEXT_ACCESS( loc );
             ReadAccess<ValueType> rAmA( AmA, loc );

@@ -500,7 +500,7 @@ ContextPtr ContextDataManager::getValidContext( const ContextType preferredType 
     {
         // might happen for uninitialized arrays
 
-        SCAI_LOG_INFO( logger, "no valid context found for LAMAArray" )
+        SCAI_LOG_INFO( logger, "no valid context found for HArray" )
 
         if ( Context::hasContext( preferredType ) )
         {
@@ -513,6 +513,22 @@ ContextPtr ContextDataManager::getValidContext( const ContextType preferredType 
     }
 
     return result;  // must not be NULL
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+ContextPtr ContextDataManager::getFirstTouchContextPtr()
+{
+    ContextPtr result;
+
+    if ( mContextData.size() == 0 )
+    {
+        return Context::getHostPtr();
+    }
+
+    const ContextData& entry = mContextData[0];
+
+    return entry.getMemory().getContextPtr();
 }
 
 /* ---------------------------------------------------------------------------------*/

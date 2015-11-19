@@ -25,12 +25,12 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Demo program for the Factory of LAMAArray.
+ * @brief Demo program for the Factory of HArray.
  * @author: Thomas Brandes, Lauretta Schubert
  * @date 18.04.2012
  **/
 
-#include <scai/hmemo/LAMAArray.hpp>
+#include <scai/hmemo/HArray.hpp>
 #include <scai/hmemo/WriteAccess.hpp>
 #include <scai/hmemo/ReadAccess.hpp>
 
@@ -50,7 +50,7 @@ SCAI_LOG_DEF_LOGGER( logger, "CreateTest" )
 
 // Template instantiation of LAMArray
 
-template class LAMAArray<double>;
+template class HArray<double>;
 
 int main()
 {
@@ -60,9 +60,9 @@ int main()
 
     static IndexType N =  100;
 
-    LAMAArray<float> lamaArray ( N, 1.0 );
+    HArray<float> lamaArray ( N, 1.0 );
 
-    shared_ptr<LAMAArray<float> > lamaArray1( lamaArray.clone() );
+    shared_ptr<HArray<float> > lamaArray1( lamaArray.clone() );
 
     *lamaArray1 = lamaArray;
 

@@ -15,7 +15,7 @@ BOOST_AUTO_TEST_CASE( ReleaseTest )
     ContextPtr userContext  = Context::getContextPtr( UserContext, 1 );
     ContextPtr hostContext  = Context::getContextPtr( Host );
 
-    LAMAArray<double> X( 10, 5.0 );
+    HArray<double> X( 10, 5.0 );
 
     // write access on UserContext
     {

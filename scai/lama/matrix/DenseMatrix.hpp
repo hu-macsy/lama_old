@@ -291,19 +291,19 @@ public:
         DistributionPtr rowDist,
         DistributionPtr colDist,
         const IndexType numValues,
-        const hmemo::LAMAArray<IndexType>& ia,
-        const hmemo::LAMAArray<IndexType>& ja,
+        const hmemo::HArray<IndexType>& ia,
+        const hmemo::HArray<IndexType>& ja,
         const hmemo::ContextArray& values );
 
     /** Implementation of pure method for the dense storage format. */
 
-    virtual void buildCSRData( hmemo::LAMAArray<IndexType>& rowIA, hmemo::LAMAArray<IndexType>& rowJA, hmemo::ContextArray& rowValues ) const;
+    virtual void buildCSRData( hmemo::HArray<IndexType>& rowIA, hmemo::HArray<IndexType>& rowJA, hmemo::ContextArray& rowValues ) const;
 
     /** Implementation of pure method. */
 
     virtual void setCSRData(
-        const hmemo::LAMAArray<IndexType>& rowIA,
-        const hmemo::LAMAArray<IndexType>& rowJA,
+        const hmemo::HArray<IndexType>& rowIA,
+        const hmemo::HArray<IndexType>& rowJA,
         const hmemo::ContextArray& rowValues,
         DistributionPtr rowDistribution,
         DistributionPtr colDistribution );
@@ -311,8 +311,8 @@ public:
     /** Local version of setCSRData . */
 
     void setCSRDataLocal(
-        const hmemo::LAMAArray<IndexType>& rowIA,
-        const hmemo::LAMAArray<IndexType>& rowJA,
+        const hmemo::HArray<IndexType>& rowIA,
+        const hmemo::HArray<IndexType>& rowJA,
         const hmemo::ContextArray& rowValues ) const;
 
     /* Implementation of pure method of class Matrix. */
@@ -662,8 +662,8 @@ private:
 
     void getRow( DenseVector<ValueType>& row, const IndexType i ) const;
 
-    mutable hmemo::LAMAArray<ValueType> mSendValues;
-    mutable hmemo::LAMAArray<ValueType> mReceiveValues;
+    mutable hmemo::HArray<ValueType> mSendValues;
+    mutable hmemo::HArray<ValueType> mReceiveValues;
 
     //TODO: no implementation: implement or delete
     //void initChunks();  // common initialization for constructors

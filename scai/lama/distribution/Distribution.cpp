@@ -182,10 +182,10 @@ void Distribution::replicate( T1* allValues, const T2* localValues ) const
 
     // Only allocate the needed size of the Arrays
 
-    LAMAArray<T1> valuesSend;
-    LAMAArray<T1> valuesReceive;
-    LAMAArray<IndexType> indexesSend;
-    LAMAArray<IndexType> indexesReceive;
+    HArray<T1> valuesSend;
+    HArray<T1> valuesReceive;
+    HArray<IndexType> indexesSend;
+    HArray<IndexType> indexesReceive;
 
     IndexType countValues = 0; // count values set in the global vector
 
@@ -289,10 +289,10 @@ void Distribution::replicateN( T1* allValues, const T2* localValues, const Index
 
     // Only allocate the needed size of the Arrays
 
-    LAMAArray<T1> valuesSend;
-    LAMAArray<T1> valuesReceive;
-    LAMAArray<IndexType> indexesSend;
-    LAMAArray<IndexType> indexesReceive;
+    HArray<T1> valuesSend;
+    HArray<T1> valuesReceive;
+    HArray<IndexType> indexesSend;
+    HArray<IndexType> indexesReceive;
 
     // set my owned indexes and my values
 
@@ -433,8 +433,8 @@ void Distribution::replicateRagged(
     // we need the offsets for allValues to store directly the values
     IndexType maxLocalSize = comm.max( currentElemSize );
 
-    LAMAArray<IndexType> indexesSend;
-    LAMAArray<IndexType> indexesReceive;
+    HArray<IndexType> indexesSend;
+    HArray<IndexType> indexesReceive;
 
     ContextPtr commContext = comm.getCommunicationContext( indexesSend );
 
@@ -471,8 +471,8 @@ void Distribution::replicateRagged(
     SCAI_LOG_INFO( logger,
                    comm << ": replicateRagged<" << common::getScalarType<ValueType>() << ">, localValues[ " << currentDataSize << ", max = " << maxLocalDataSize << " ] " << " to allValues [ allOffsets[ " << getGlobalSize() << " ] ]" )
 
-    LAMAArray<ValueType> valuesSend;
-    LAMAArray<ValueType> valuesReceive;
+    HArray<ValueType> valuesSend;
+    HArray<ValueType> valuesReceive;
 
     valuesSend.reserve( commContext, maxLocalDataSize );
     valuesReceive.reserve( commContext, maxLocalDataSize );

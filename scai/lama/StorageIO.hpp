@@ -36,7 +36,7 @@
 #include <scai/common/config.hpp>
 
 // internal scai libraries
-#include <scai/hmemo/LAMAArray.hpp>
+#include <scai/hmemo/HArray.hpp>
 
 #include <scai/lama/io/FileType.hpp>
 
@@ -162,10 +162,10 @@ public:
     static void writeCSRToFile(
         const PartitionId size,
         const PartitionId rank,
-        const hmemo::LAMAArray<IndexType>& csrIA,
+        const hmemo::HArray<IndexType>& csrIA,
         const IndexType numColumns,
-        const hmemo::LAMAArray<IndexType>& csrJA,
-        const hmemo::LAMAArray<ValueType>& csrValues,
+        const hmemo::HArray<IndexType>& csrJA,
+        const hmemo::HArray<ValueType>& csrValues,
         const std::string& fileName,
         const File::FileType& fileType,
         const File::DataType& dataType,
@@ -181,9 +181,9 @@ public:
      *  @param[in] fileName         name of output file
      */
     static void writeCSRToFormattedFile(
-        const hmemo::LAMAArray<IndexType>& csrIA,
-        const hmemo::LAMAArray<IndexType>& csrJA,
-        const hmemo::LAMAArray<ValueType>& csrValues,
+        const hmemo::HArray<IndexType>& csrIA,
+        const hmemo::HArray<IndexType>& csrJA,
+        const hmemo::HArray<ValueType>& csrValues,
         const std::string& fileName );
 
     /** @brief Writing CSR storage to a binary file.
@@ -197,9 +197,9 @@ public:
      *  @param[in] dataTypeSize         TODO[doxy] Complete Description.
      */
     static void writeCSRToBinaryFile(
-        const hmemo::LAMAArray<IndexType>& csrIA,
-        const hmemo::LAMAArray<IndexType>& csrJA,
-        const hmemo::LAMAArray<ValueType>& csrValues,
+        const hmemo::HArray<IndexType>& csrIA,
+        const hmemo::HArray<IndexType>& csrJA,
+        const hmemo::HArray<ValueType>& csrValues,
         const std::string& fileName,
         const long indexDataTypeSizeIA,
         const long indexDataTypeSizeJA,
@@ -216,9 +216,9 @@ public:
      *  @param[in] dataTypeSize         TODO[doxy] Complete Description.
      */
     static void writeCSRToXDRFile(
-        const hmemo::LAMAArray<IndexType>& csrIA,
-        const hmemo::LAMAArray<IndexType>& csrJA,
-        const hmemo::LAMAArray<ValueType>& csrValues,
+        const hmemo::HArray<IndexType>& csrIA,
+        const hmemo::HArray<IndexType>& csrJA,
+        const hmemo::HArray<ValueType>& csrValues,
         const std::string& fileName,
         const long indexDataTypeSizeIA,
         const long indexDataTypeSizeJA,
@@ -234,10 +234,10 @@ public:
      *  @param[in] dataType         specifies precision of real values
      */
     static void writeCSRToMMFile(
-        const hmemo::LAMAArray<IndexType>& csrIA,
+        const hmemo::HArray<IndexType>& csrIA,
         const IndexType numColumns,
-        const hmemo::LAMAArray<IndexType>& csrJA,
-        const hmemo::LAMAArray<ValueType>& csrValues,
+        const hmemo::HArray<IndexType>& csrJA,
+        const hmemo::HArray<ValueType>& csrValues,
         const std::string& fileName,
         const File::DataType& dataType );
 
@@ -250,10 +250,10 @@ public:
      *  @param[in]  fileName        name of input file
      */
     static void readCSRFromFile(
-        hmemo::LAMAArray<IndexType>& csrIA,
+        hmemo::HArray<IndexType>& csrIA,
         IndexType& numColumns,
-        hmemo::LAMAArray<IndexType>& csrJA,
-        hmemo::LAMAArray<ValueType>& csrValues,
+        hmemo::HArray<IndexType>& csrJA,
+        hmemo::HArray<ValueType>& csrValues,
         const std::string& fileName );
 
     /** @brief Reading a CSR storage from a formatted file.
@@ -265,9 +265,9 @@ public:
      *  @param[in]  numRows         number of rows
      */
     static void readCSRFromFormattedFile(
-        hmemo::LAMAArray<IndexType>& csrIA,
-        hmemo::LAMAArray<IndexType>& csrJA,
-        hmemo::LAMAArray<ValueType>& csrValues,
+        hmemo::HArray<IndexType>& csrIA,
+        hmemo::HArray<IndexType>& csrJA,
+        hmemo::HArray<ValueType>& csrValues,
         const std::string& fileName,
         const IndexType numRows );
 
@@ -283,9 +283,9 @@ public:
      *  the binary file must contain data of exact the same type as needed.
      */
     static void readCSRFromBinaryFile(
-        hmemo::LAMAArray<IndexType>& csrIA,
-        hmemo::LAMAArray<IndexType>& csrJA,
-        hmemo::LAMAArray<ValueType>& csrValues,
+        hmemo::HArray<IndexType>& csrIA,
+        hmemo::HArray<IndexType>& csrJA,
+        hmemo::HArray<ValueType>& csrValues,
         const std::string& fileName,
         const IndexType numRows );
 
@@ -298,9 +298,9 @@ public:
      *  @param[in]  numRows         number of rows
      */
     static void readCSRFromXDRFile(
-        hmemo::LAMAArray<IndexType>& csrIA,
-        hmemo::LAMAArray<IndexType>& csrJA,
-        hmemo::LAMAArray<ValueType>& csrValues,
+        hmemo::HArray<IndexType>& csrIA,
+        hmemo::HArray<IndexType>& csrJA,
+        hmemo::HArray<ValueType>& csrValues,
         const std::string& fileName,
         const IndexType numRows );
 
@@ -313,10 +313,10 @@ public:
      *  @param[in]  fileName        name of input file
      */
     static void readCSRFromMMFile(
-        hmemo::LAMAArray<IndexType>& csrIA,
+        hmemo::HArray<IndexType>& csrIA,
         IndexType& numColumns,
-        hmemo::LAMAArray<IndexType>& csrJA,
-        hmemo::LAMAArray<ValueType>& csrValues,
+        hmemo::HArray<IndexType>& csrJA,
+        hmemo::HArray<ValueType>& csrValues,
         const std::string& fileName );
 };
 

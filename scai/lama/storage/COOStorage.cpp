@@ -39,7 +39,7 @@
 #include <scai/lama/COOKernelTrait.hpp>
 #include <scai/lama/CSRKernelTrait.hpp>
 
-#include <scai/lama/LAMAArrayUtils.hpp>
+#include <scai/lama/HArrayUtils.hpp>
 #include <scai/lama/LAMAKernel.hpp>
 
 #include <scai/lama/openmp/OpenMPUtils.hpp>
@@ -100,9 +100,9 @@ template<typename ValueType>
 COOStorage<ValueType>::COOStorage(
     const IndexType numRows,
     const IndexType numColumns,
-    const LAMAArray<IndexType>& ia,
-    const LAMAArray<IndexType>& ja,
-    const LAMAArray<ValueType>& values )
+    const HArray<IndexType>& ia,
+    const HArray<IndexType>& ja,
+    const HArray<ValueType>& values )
 
     : CRTPMatrixStorage<COOStorage<ValueType>,ValueType>()
 {
@@ -262,9 +262,9 @@ void COOStorage<ValueType>::setIdentity( const IndexType size )
 template<typename ValueType>
 template<typename OtherValueType>
 void COOStorage<ValueType>::buildCSR(
-    LAMAArray<IndexType>& ia,
-    LAMAArray<IndexType>* ja,
-    LAMAArray<OtherValueType>* values,
+    HArray<IndexType>& ia,
+    HArray<IndexType>* ja,
+    HArray<OtherValueType>* values,
     const ContextPtr preferredLoc ) const
 {
     // multiple kernel routines needed
@@ -311,8 +311,8 @@ void COOStorage<ValueType>::setCOOData(
     const IndexType numRows,
     const IndexType numColumns,
     const IndexType numValues,
-    const LAMAArray<IndexType>& ia,
-    const LAMAArray<IndexType>& ja,
+    const HArray<IndexType>& ia,
+    const HArray<IndexType>& ja,
     const ContextArray& values )
 {
     // check the sizes of the arrays
@@ -327,10 +327,10 @@ void COOStorage<ValueType>::setCOOData(
 
     ContextPtr loc = getContextPtr();
 
-    LAMAArrayUtils::assignImpl( mIA, ia, loc );
-    LAMAArrayUtils::assignImpl( mJA, ja, loc );
+    HArrayUtils::assignImpl( mIA, ia, loc );
+    HArrayUtils::assignImpl( mJA, ja, loc );
 
-    LAMAArrayUtils::assign( mValues, values, loc ); // supports type conversion
+    HArrayUtils::assign( mValues, values, loc ); // supports type conversion
 
     // check is expensive, so do it only if ASSERT_LEVEL is on DEBUG mode
 
@@ -353,9 +353,9 @@ void COOStorage<ValueType>::setCSRDataImpl(
     const IndexType numRows,
     const IndexType numColumns,
     const IndexType numValues,
-    const LAMAArray<IndexType>& ia,
-    const LAMAArray<IndexType>& ja,
-    const LAMAArray<OtherValueType>& values,
+    const HArray<IndexType>& ia,
+    const HArray<IndexType>& ja,
+    const HArray<OtherValueType>& values,
     const ContextPtr )
 {
     SCAI_LOG_DEBUG( logger, "set CSR data " << numRows << " x " << numColumns << ", nnz = " << numValues )
@@ -526,7 +526,7 @@ void COOStorage<ValueType>::prefetch( const ContextPtr location ) const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-const LAMAArray<IndexType>& COOStorage<ValueType>::getIA() const
+const HArray<IndexType>& COOStorage<ValueType>::getIA() const
 {
     return mIA;
 }
@@ -534,7 +534,7 @@ const LAMAArray<IndexType>& COOStorage<ValueType>::getIA() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-const LAMAArray<IndexType>& COOStorage<ValueType>::getJA() const
+const HArray<IndexType>& COOStorage<ValueType>::getJA() const
 {
     return mJA;
 }
@@ -542,7 +542,7 @@ const LAMAArray<IndexType>& COOStorage<ValueType>::getJA() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-const LAMAArray<ValueType>& COOStorage<ValueType>::getValues() const
+const HArray<ValueType>& COOStorage<ValueType>::getValues() const
 {
     return mValues;
 }
@@ -591,7 +591,7 @@ void COOStorage<ValueType>::scaleImpl( const ValueType value )
 
 template<typename ValueType>
 template<typename OtherType>
-void COOStorage<ValueType>::scaleImpl( const LAMAArray<OtherType>& values )
+void COOStorage<ValueType>::scaleImpl( const HArray<OtherType>& values )
 {
     ContextPtr loc = Context::getHostPtr();
 
@@ -634,7 +634,7 @@ void COOStorage<ValueType>::swap( COOStorage<ValueType>& other )
 
 template<typename ValueType>
 template<typename OtherType>
-void COOStorage<ValueType>::getRowImpl( LAMAArray<OtherType>& row, const IndexType i ) const
+void COOStorage<ValueType>::getRowImpl( HArray<OtherType>& row, const IndexType i ) const
 {
     SCAI_ASSERT_DEBUG( i >= 0 && i < mNumRows, "row index " << i << " out of range" )
 
@@ -670,7 +670,7 @@ void COOStorage<ValueType>::getRowImpl( LAMAArray<OtherType>& row, const IndexTy
 //       done implicitly by getDiagonal method of CRTPMatrixStorage
 template<typename ValueType>
 template<typename OtherType>
-void COOStorage<ValueType>::getDiagonalImpl( LAMAArray<OtherType>& diagonal ) const
+void COOStorage<ValueType>::getDiagonalImpl( HArray<OtherType>& diagonal ) const
 {
     const IndexType numDiagonalElements = std::min( mNumColumns, mNumRows );
 
@@ -694,7 +694,7 @@ void COOStorage<ValueType>::getDiagonalImpl( LAMAArray<OtherType>& diagonal ) co
 //       done implicitly by setDiagonal method of CRTPMatrixStorage
 template<typename ValueType>
 template<typename OtherType>
-void COOStorage<ValueType>::setDiagonalImpl( const LAMAArray<OtherType>& diagonal )
+void COOStorage<ValueType>::setDiagonalImpl( const HArray<OtherType>& diagonal )
 {
     const IndexType numDiagonalElements = std::min( mNumColumns, mNumRows );
 
@@ -797,11 +797,11 @@ size_t COOStorage<ValueType>::getMemoryUsageImpl() const
 template<typename ValueType>
 void COOStorage<ValueType>::matrixTimesVector(
 
-    LAMAArray<ValueType>& result,
+    HArray<ValueType>& result,
     const ValueType alpha,
-    const LAMAArray<ValueType>& x,
+    const HArray<ValueType>& x,
     const ValueType beta,
-    const LAMAArray<ValueType>& y ) const
+    const HArray<ValueType>& y ) const
 
 {
     SCAI_REGION( "Storage.COO.timesVector" )
@@ -856,11 +856,11 @@ void COOStorage<ValueType>::matrixTimesVector(
 
 template<typename ValueType>
 void COOStorage<ValueType>::vectorTimesMatrix(
-    LAMAArray<ValueType>& result,
+    HArray<ValueType>& result,
     const ValueType alpha,
-    const LAMAArray<ValueType>& x,
+    const HArray<ValueType>& x,
     const ValueType beta,
-    const LAMAArray<ValueType>& y ) const
+    const HArray<ValueType>& y ) const
 {
     SCAI_LOG_INFO( logger,
                    *this << ": vectorTimesMatrix, result = " << result << ", alpha = " << alpha << ", x = " << x << ", beta = " << beta << ", y = " << y )
@@ -918,11 +918,11 @@ void COOStorage<ValueType>::vectorTimesMatrix(
 
 template<typename ValueType>
 SyncToken* COOStorage<ValueType>::matrixTimesVectorAsync(
-    LAMAArray<ValueType>& result,
+    HArray<ValueType>& result,
     const ValueType alpha,
-    const LAMAArray<ValueType>& x,
+    const HArray<ValueType>& x,
     const ValueType beta,
-    const LAMAArray<ValueType>& y ) const
+    const HArray<ValueType>& y ) const
 {
     SCAI_LOG_DEBUG( logger,
                     "Computing z = alpha * A * x + beta * y, with A = " << *this << ", x = " << x << ", y = " << y << ", z = " << result )
@@ -975,11 +975,11 @@ SyncToken* COOStorage<ValueType>::matrixTimesVectorAsync(
 
 template<typename ValueType>
 SyncToken* COOStorage<ValueType>::vectorTimesMatrixAsync(
-    LAMAArray<ValueType>& result,
+    HArray<ValueType>& result,
     const ValueType alpha,
-    const LAMAArray<ValueType>& x,
+    const HArray<ValueType>& x,
     const ValueType beta,
-    const LAMAArray<ValueType>& y ) const
+    const HArray<ValueType>& y ) const
 {
     SCAI_LOG_INFO( logger,
                    *this << ": vectorTimesMatrixAsync, result = " << result << ", alpha = " << alpha << ", x = " << x << ", beta = " << beta << ", y = " << y )
@@ -995,11 +995,11 @@ SyncToken* COOStorage<ValueType>::vectorTimesMatrixAsync(
         // execution as separate thread
 
         void (COOStorage::*pf)(
-            LAMAArray<ValueType>&,
+            HArray<ValueType>&,
             const ValueType,
-            const LAMAArray<ValueType>&,
+            const HArray<ValueType>&,
             const ValueType,
-            const LAMAArray<ValueType>& ) const
+            const HArray<ValueType>& ) const
 
             = &COOStorage<ValueType>::vectorTimesMatrix;
 
@@ -1081,9 +1081,9 @@ SyncToken* COOStorage<ValueType>::vectorTimesMatrixAsync(
 
 template<typename ValueType>
 void COOStorage<ValueType>::jacobiIterate(
-    LAMAArray<ValueType>& solution,
-    const LAMAArray<ValueType>& oldSolution,
-    const LAMAArray<ValueType>& rhs,
+    HArray<ValueType>& solution,
+    const HArray<ValueType>& oldSolution,
+    const HArray<ValueType>& rhs,
     const ValueType omega ) const
 {
     SCAI_REGION( "Storage.COO.jacobiIterate" )

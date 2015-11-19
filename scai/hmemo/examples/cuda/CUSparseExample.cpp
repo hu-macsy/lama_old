@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Using of CUSparseLibray with LAMAArray and CUDAContext
+ * @brief Using of CUSparseLibray with HArray and CUDAContext
  * @author Thomas Brandes
  * @date 16.07.2015
  */
@@ -50,7 +50,7 @@ using namespace scai;
 using namespace hmemo;
 
 template<typename ValueType>
-void outArray( const LAMAArray<ValueType>& array, const char* name )
+void outArray( const HArray<ValueType>& array, const char* name )
 {
     std::cout << name << "[ " << array.size() << " ] = {";
 
@@ -80,11 +80,11 @@ int main()
     int ja[] = { 0, 1, 0, 1, 2, 2, 3, 1, 3 };
     float values[] = { 1.0, 2.0, 5.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0 };
 
-    // by using LAMAArrayRef copy of elements on Host is not required
+    // by using HArrayRef copy of elements on Host is not required
 
-    LAMAArrayRef<int> cooIA( numValues, ia );
-    LAMAArrayRef<int> csrJA( numValues, ja );
-    LAMAArrayRef<float> csrValues( numValues, values );
+    HArrayRef<int> cooIA( numValues, ia );
+    HArrayRef<int> csrJA( numValues, ja );
+    HArrayRef<float> csrValues( numValues, values );
 
     outArray( cooIA, "cooIA" );
     outArray( csrJA, "cooJA" );
@@ -94,7 +94,7 @@ int main()
      *  Conversion COO -> CSR                                              *
      **********************************************************************/
 
-    LAMAArray<int> csrIA;
+    HArray<int> csrIA;
 
     {
         ReadAccess<int> readcooIA( cooIA, cuda );
@@ -117,9 +117,9 @@ int main()
      *  Conversion CSR -> CSC                                              *
      **********************************************************************/
 
-    LAMAArray<int> cscIA;
-    LAMAArray<int> cscJA;
-    LAMAArray<float> cscValues;
+    HArray<int> cscIA;
+    HArray<int> cscJA;
+    HArray<float> cscValues;
 
     {
         ReadAccess<int> readcsrIA( csrIA, cuda );

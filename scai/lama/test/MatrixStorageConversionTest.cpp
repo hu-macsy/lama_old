@@ -57,9 +57,9 @@ void setCSRStorage( _MatrixStorage& storage )
     { 0, 3, 0, 2, 3, 0, 1, 3, 0, 3, 1, 3 };
     IndexType ia[] =
     { 0, 2, 3, 5, 8, 10, 10, 12 };
-    LAMAArrayRef<IndexType> csrIA( numRows + 1, ia );
-    LAMAArrayRef<IndexType> csrJA( numValues, ja );
-    LAMAArrayRef<ValueType> csrValues( numValues, values );
+    HArrayRef<IndexType> csrIA( numRows + 1, ia );
+    HArrayRef<IndexType> csrJA( numValues, ja );
+    HArrayRef<ValueType> csrValues( numValues, values );
     storage.setCSRData( numRows, numColumns, numValues, csrIA, csrJA, csrValues );
 }
 

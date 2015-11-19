@@ -100,7 +100,7 @@ public:
 
     /** @brief  Predicate to check in a context whether a certain memory class can be used.
      *
-     *  If an incarnation of a LAMAArray has a valid copy that can be used, no additional memory
+     *  If an incarnation of a HArray has a valid copy that can be used, no additional memory
      *  or memcopy is required. But be careful: it might be faster to use other memory at this
      *  context.
      *
