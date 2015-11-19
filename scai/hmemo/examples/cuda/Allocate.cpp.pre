@@ -1,0 +1,75 @@
+/**
+ * @file Allocate.cpp
+ *
+ * @brief Benchmark allocate on Host vs CUDAHost memory
+ * @author Thomas Brandes
+ * @date 16.07.2015
+ */
+
+#include <scai/hmemo.hpp>
+
+#include <scai/common/cuda/CUDAError.hpp>
+#include <scai/common/Walltime.hpp>
+#include <scai/common/shared_ptr.hpp>
+
+#include <iostream>
+
+using namespace scai;
+using namespace scai::hmemo;
+using namespace scai::common;
+
+void doit( int NITER, IndexType NSIZE, ContextPtr context )
+{
+    std::vector<shared_ptr<LAMAArray<double> > > stack;
+
+    ContextPtr host = Context::getHostPtr();
+
+    for ( int iter = 0; iter < NITER; ++iter )
+    {
+        shared_ptr<LAMAArray<double> > X;
+        X.reset( new LAMAArray<double>( context ) );
+
+        // first touch on context, but allocate it on host
+
+        WriteOnlyAccess<double> wX( *X, host, NSIZE );
+        stack.push_back( X );
+    }
+}
+
+/*---------------------------------------------------------------------------*
+ * Main program                                                              *
+ *---------------------------------------------------------------------------*/
+
+int main( int, char** )
+{
+    using namespace std;
+
+    ContextPtr cudaContext = Context::getContextPtr( common::context::CUDA );
+    ContextPtr hostContext = Context::getContextPtr( common::context::Host );
+
+    static int ITER_VEC[] = { 1000, 1000, 1000, 300, 100, 50, 20 };
+    static int N_VEC[]    = { 1, 10, 100, 1000, 10000, 100000, 1000000 };
+
+    int NCASES = sizeof( ITER_VEC ) / sizeof( int );
+
+    for ( int k = 0; k < NCASES; ++k )
+    {
+        int ITER = ITER_VEC[k];
+        int N    = N_VEC[k];
+
+    double t = common::Walltime::get();
+
+    doit( 1000, 100, hostContext );
+
+    double hostTime = common::Walltime::get() - t;
+
+    t = common::Walltime::get();
+
+    doit( 1000, 100, cudaContext );
+
+    double cudaTime = common::Walltime::get() - t;
+
+    cout << "Time for HostMemory: " << hostTime << endl;
+    cout << "Time for CUDAHostMemory: " << cudaTime << endl;
+    }
+}

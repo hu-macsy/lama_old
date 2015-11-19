@@ -88,7 +88,33 @@ void writeArray( LAMAArray<T>& array )
 
 struct SSS {
 int X; double Y;
+
+SSS( int val )
+{
+    X = val;
+    Y = 0;
+}
+
+SSS( int valX, double valY )
+{
+    X = valX;
+    Y = valY;
+}
+
+SSS& operator +=( const SSS& other )
+{
+    X += other.X;
+    Y += other.Y;
+    return *this;
+}
+
 };
+
+std::ostream& operator<<( std::ostream& stream, const SSS& object )
+{
+   stream << "( " << object.X << ", " << object.Y << " )";
+   return stream;
+}
 
 int main()
 {
@@ -100,5 +126,10 @@ int main()
     writeArray( lamaArray );
     sumArray( lamaArray );
 
-    LAMAArray<SSS> sssArray( 10 );
+    SSS val( 1, 0.5 );
+    val.X = 1;
+    val.Y = 0.5;
+
+    LAMAArray<SSS> sssArray( 10, val );
+    sumArray( sssArray );
 }
