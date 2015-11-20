@@ -243,8 +243,9 @@ void DenseStorageView<ValueType>::transposeImpl(){
     // Compute transpostion A^t of A via A^t = A^t * I, where * is implemented by LAPACK
     ContextPtr context = Context::getContextPtr( context::Host );
     WriteAccess<ValueType> wData( mData, context );
-    // transpose quadratic matrix
 
+    // transpose quadratic matrix
+    // quadratic implementation is a special case of the rectangular one but this specific one might be faster
     if(mNumColumns == mNumRows)
     {
         for(IndexType i=0;i<mNumColumns;++i)
