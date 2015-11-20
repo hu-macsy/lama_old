@@ -36,6 +36,7 @@
 
 // others
 #include <scai/lama/LAMAKernel.hpp>
+#include <scai/lama/LAMAArray.hpp>
 #include <scai/lama/UtilKernelTrait.hpp>
 #include <scai/hmemo.hpp>
 
@@ -73,7 +74,7 @@ void scaleTest( ContextPtr loc )
     ValueType expectedValues[] =
     { 0, 2, 4, 6, 8, 0, 2, 4, 6, 8, 0, 2, 4, 6, 8 };
     const ValueType mult = 2.0;
-    HArray<ValueType> values( nValues, valuesValues );
+    LAMAArray<ValueType> values( nValues, valuesValues );
     {
         WriteAccess<ValueType> wValues( values, loc );
         SCAI_CONTEXT_ACCESS( loc );
@@ -98,7 +99,7 @@ void sumTest( ContextPtr loc )
         { 0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4 };
         const IndexType nValues = sizeof( valuesValues ) / sizeof( ValueType );
         const ValueType expectedSum = 30;
-        HArray<ValueType> values( nValues, valuesValues );
+        LAMAArray<ValueType> values( nValues, valuesValues );
         ReadAccess<ValueType> rValues( values, loc );
         SCAI_CONTEXT_ACCESS( loc );
         const ValueType resultSum = sum[loc]( rValues.get(), nValues );
@@ -106,7 +107,7 @@ void sumTest( ContextPtr loc )
     }
     {
         const ValueType expectedSum = 0;
-        HArray<ValueType> values;
+        LAMAArray<ValueType> values;
         ReadAccess<ValueType> rValues( values, loc );
         SCAI_CONTEXT_ACCESS( loc );
         const ValueType resultSum = sum[loc]( rValues.get(), values.size() );
@@ -122,7 +123,7 @@ void setValTest( ContextPtr loc )
     static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
     {
         const IndexType n = 20;
-        HArray<ValueType> values;
+        LAMAArray<ValueType> values;
         {
             WriteOnlyAccess<ValueType> wValues( values, loc, 3 * n );
             SCAI_CONTEXT_ACCESS( loc );
@@ -141,7 +142,7 @@ void setValTest( ContextPtr loc )
     }
     {
         const IndexType n = 0;
-        HArray<ValueType> values;
+        LAMAArray<ValueType> values;
         {
             WriteOnlyAccess<ValueType> wValues( values, loc, n );
             SCAI_CONTEXT_ACCESS( loc );
@@ -166,9 +167,9 @@ void isSortedTest( ContextPtr loc )
         const IndexType nValues1 = sizeof( values1 ) / sizeof( ValueType );
         const IndexType nValues2 = sizeof( values2 ) / sizeof( ValueType );
         const IndexType nValues3 = sizeof( values3 ) / sizeof( ValueType );
-        HArray<ValueType> valueArray1( nValues1, values1 );
-        HArray<ValueType> valueArray2( nValues2, values2 );
-        HArray<ValueType> valueArray3( nValues3, values3 );
+        LAMAArray<ValueType> valueArray1( nValues1, values1 );
+        LAMAArray<ValueType> valueArray2( nValues2, values2 );
+        LAMAArray<ValueType> valueArray3( nValues3, values3 );
         ReadAccess<ValueType> rValues1( valueArray1, loc );
         ReadAccess<ValueType> rValues2( valueArray2, loc );
         ReadAccess<ValueType> rValues3( valueArray3, loc );
@@ -199,7 +200,7 @@ void setOrderTest( ContextPtr loc )
     static LAMAKernel<UtilKernelTrait::setOrder<IndexType> > setOrder;
     {
         const IndexType n = 20;
-        HArray<IndexType> values;
+        LAMAArray<IndexType> values;
         {
             WriteOnlyAccess<IndexType> wValues( values, loc, n );
             SCAI_CONTEXT_ACCESS( loc );
@@ -214,7 +215,7 @@ void setOrderTest( ContextPtr loc )
     }
     {
         const IndexType n = 0;
-        HArray<IndexType> values;
+        LAMAArray<IndexType> values;
         {
             WriteOnlyAccess<IndexType> wValues( values, loc, n );
             SCAI_CONTEXT_ACCESS( loc );
@@ -232,7 +233,7 @@ void invertTest( ContextPtr loc )
         ValueType valuesValues[] =
         { 1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4 };
         const IndexType nValues = sizeof( valuesValues ) / sizeof( ValueType );
-        HArray<ValueType> values( nValues, valuesValues );
+        LAMAArray<ValueType> values( nValues, valuesValues );
         {
             WriteAccess<ValueType> wValues( values, loc );
             SCAI_CONTEXT_ACCESS( loc );
@@ -247,7 +248,7 @@ void invertTest( ContextPtr loc )
     }
     {
         const IndexType n = 0;
-        HArray<ValueType> values;
+        LAMAArray<ValueType> values;
         {
             WriteOnlyAccess<ValueType> wValues( values, loc, n );
             SCAI_CONTEXT_ACCESS( loc );

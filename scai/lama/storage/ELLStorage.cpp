@@ -748,7 +748,7 @@ void ELLStorage<ValueType>::scaleImpl( const HArray<OtherValueType>& values )
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-const HArray<IndexType>& ELLStorage<ValueType>::getIA() const
+const LAMAArray<IndexType>& ELLStorage<ValueType>::getIA() const
 {
     return mIA;
 }
@@ -756,7 +756,7 @@ const HArray<IndexType>& ELLStorage<ValueType>::getIA() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-const HArray<IndexType>& ELLStorage<ValueType>::getJA() const
+const LAMAArray<IndexType>& ELLStorage<ValueType>::getJA() const
 {
     return mJA;
 }
@@ -764,7 +764,7 @@ const HArray<IndexType>& ELLStorage<ValueType>::getJA() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-const HArray<ValueType>& ELLStorage<ValueType>::getValues() const
+const LAMAArray<ValueType>& ELLStorage<ValueType>::getValues() const
 {
     return mValues;
 }
@@ -955,7 +955,7 @@ void ELLStorage<ValueType>::compress( const ValueType eps /* = 0.0 */)
     ReadAccess<ValueType> values( mValues, loc );
 
     // 1. Step: Check for 0 elements and write new IA array
-    HArray<IndexType> newIAArray;
+    LAMAArray<IndexType> newIAArray;
     WriteOnlyAccess<IndexType> newIA( newIAArray, loc, mNumRows );
 
     compressIA[loc]( IA.get(), JA.get(), values.get(), mNumRows, mNumValuesPerRow, eps, newIA.get() );
@@ -967,8 +967,8 @@ void ELLStorage<ValueType>::compress( const ValueType eps /* = 0.0 */)
     if( newNumValuesPerRow < mNumValuesPerRow )
     {
         // 3. Step: Allocate new JA and Values array
-        HArray<ValueType> newValuesArray;
-        HArray<IndexType> newJAArray;
+        LAMAArray<ValueType> newValuesArray;
+        LAMAArray<IndexType> newJAArray;
         WriteOnlyAccess<ValueType> newValues( newValuesArray, loc, mNumRows * newNumValuesPerRow );
         WriteOnlyAccess<IndexType> newJA( newJAArray, loc, mNumRows * newNumValuesPerRow );
 

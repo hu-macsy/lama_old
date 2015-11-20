@@ -106,7 +106,7 @@ DenseVector<ValueType>::DenseVector( DistributionPtr distribution )
 
 template<typename ValueType>
 DenseVector<ValueType>::DenseVector( const IndexType size, const ValueType value, ContextPtr context )
-                : Vector( size, context ), mLocalValues( size, value )
+                : Vector( size, context ), mLocalValues( size, value, context )
 {
     SCAI_LOG_INFO( logger, "Construct dense vector, size = " << size << ", init =" << value )
 }

@@ -39,7 +39,7 @@
 #include <scai/lama/Vector.hpp>
 
 // local library
-#include <scai/lama/HArrayUtils.hpp>
+#include <scai/lama/LAMAArray.hpp>
 #include <scai/lama/distribution/Distribution.hpp>
 #include <scai/lama/distribution/Halo.hpp>
 
@@ -302,7 +302,7 @@ public:
      * @return  a non constant reference to the local values of this.
      */
 
-    hmemo::HArray<ValueType>& getLocalValues()
+    LAMAArray<ValueType>& getLocalValues()
     {
         return mLocalValues;
     }
@@ -312,7 +312,7 @@ public:
      *
      * @return  a constant reference to the local values of this.
      */
-    const hmemo::HArray<ValueType>& getLocalValues() const
+    const LAMAArray<ValueType>& getLocalValues() const
     {
         return mLocalValues;
     }
@@ -324,7 +324,7 @@ public:
      *
      * Note: halo of a vector can also be used for writes in case of const vectors.
      */
-    hmemo::HArray<ValueType>& getHaloValues() const
+    LAMAArray<ValueType>& getHaloValues() const
     {
         return mHaloValues;
     }
@@ -460,9 +460,9 @@ private    :
                     std::fstream &inFile,
                     const File::DataType dataType );
 
-    hmemo::HArray<ValueType> mLocalValues; //!< my local values of vector
+    LAMAArray<ValueType> mLocalValues; //!< my local values of vector
 
-    mutable hmemo::HArray<ValueType> mHaloValues;//!< my halo values of vector
+    mutable LAMAArray<ValueType> mHaloValues;//!< my halo values of vector
 
 public:
 

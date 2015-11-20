@@ -38,6 +38,7 @@
 #include <scai/hmemo.hpp>
 #include <scai/lama/COOKernelTrait.hpp>
 #include <scai/lama/LAMAKernel.hpp>
+#include <scai/lama/LAMAArray.hpp>
 
 #include <scai/common/test/TestMacros.hpp>
 
@@ -76,8 +77,8 @@ void offsets2iaTest( ContextPtr loc )
         const IndexType numValues = sizeof( ia_values ) / sizeof( IndexType );
         // verify that offsets and ia fit
         BOOST_REQUIRE_EQUAL( numValues, offsets_values[numRows] );
-        HArray<IndexType> offsets( numOffsets, offsets_values );
-        HArray<IndexType> ia;
+        LAMAArray<IndexType> offsets( numOffsets, offsets_values );
+        LAMAArray<IndexType> ia;
         ReadAccess<IndexType> rOffsets( offsets, loc );
         const IndexType numDiagonals = 0;
         {
@@ -105,8 +106,8 @@ void offsets2iaTest( ContextPtr loc )
         const IndexType numValues = sizeof( ia_values ) / sizeof( IndexType );
         // verify that offsets and ia fit
         BOOST_REQUIRE_EQUAL( numValues, offsets_values[numRows] );
-        HArray<IndexType> offsets( numOffsets, offsets_values );
-        HArray<IndexType> ia;
+        LAMAArray<IndexType> offsets( numOffsets, offsets_values );
+        LAMAArray<IndexType> ia;
         ReadAccess<IndexType> rOffsets( offsets, loc );
         const IndexType numDiagonals = 3;
         {
@@ -146,9 +147,9 @@ void setCSRDataTest( ContextPtr loc )
         // verify that offsets and ia fit
         BOOST_REQUIRE_EQUAL( numValues, offsets_values[numRows] );
         BOOST_REQUIRE( numDiagonals <= numRows );
-        HArray<IndexType> offsets( numOffsets, offsets_values );
-        HArray<IndexType> csrJA( numValues, csrja_values );
-        HArray<IndexType> cooJA;
+        LAMAArray<IndexType> offsets( numOffsets, offsets_values );
+        LAMAArray<IndexType> csrJA( numValues, csrja_values );
+        LAMAArray<IndexType> cooJA;
         ReadAccess<IndexType> rOffsets( offsets, loc );
         ReadAccess<IndexType> rCSRJA( csrJA, loc );
         {

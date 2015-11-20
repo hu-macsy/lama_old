@@ -840,7 +840,7 @@ void CSRStorage<ValueType>::prefetch( const ContextPtr location ) const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-HArray<IndexType>& CSRStorage<ValueType>::getIA()
+LAMAArray<IndexType>& CSRStorage<ValueType>::getIA()
 {
     return mIa;
 }
@@ -848,7 +848,7 @@ HArray<IndexType>& CSRStorage<ValueType>::getIA()
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-HArray<IndexType>& CSRStorage<ValueType>::getJA()
+LAMAArray<IndexType>& CSRStorage<ValueType>::getJA()
 {
     return mJa;
 }
@@ -856,7 +856,7 @@ HArray<IndexType>& CSRStorage<ValueType>::getJA()
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-HArray<ValueType>& CSRStorage<ValueType>::getValues()
+LAMAArray<ValueType>& CSRStorage<ValueType>::getValues()
 {
     return mValues;
 }
@@ -864,7 +864,7 @@ HArray<ValueType>& CSRStorage<ValueType>::getValues()
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-const HArray<IndexType>& CSRStorage<ValueType>::getIA() const
+const LAMAArray<IndexType>& CSRStorage<ValueType>::getIA() const
 {
     return mIa;
 }
@@ -872,7 +872,7 @@ const HArray<IndexType>& CSRStorage<ValueType>::getIA() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-const HArray<IndexType>& CSRStorage<ValueType>::getJA() const
+const LAMAArray<IndexType>& CSRStorage<ValueType>::getJA() const
 {
     return mJa;
 }
@@ -880,7 +880,7 @@ const HArray<IndexType>& CSRStorage<ValueType>::getJA() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-const HArray<ValueType>& CSRStorage<ValueType>::getValues() const
+const LAMAArray<ValueType>& CSRStorage<ValueType>::getValues() const
 {
     return mValues;
 }
@@ -914,18 +914,27 @@ void CSRStorage<ValueType>::setDiagonalImpl( const HArray<OtherValueType>& diago
 {
     IndexType numDiagonalElements = diagonal.size();
 
+    if ( numDiagonalElements > mNumRows )
     {
-        ReadAccess<OtherValueType> rDiagonal( diagonal );
-        ReadAccess<IndexType> csrIA( mIa );
+        numDiagonalElements = mNumRows; 
+    }
 
-        WriteAccess<ValueType> wValues( mValues ); // partial setting
+    {
+        static LAMAKernel<UtilKernelTrait::setScatter<ValueType, OtherValueType> > setScatter;
+
+        ContextPtr loc = setScatter.getValidContext( this->getContextPtr() );
+        
+        ReadAccess<OtherValueType> rDiagonal( diagonal, loc );
+        ReadAccess<IndexType> csrIA( mIa, loc );
+
+        WriteAccess<ValueType> wValues( mValues, loc );     // partial setting
 
         //  wValues[ wIa[ i ] ] = rDiagonal[ i ];
 
-        OpenMPUtils::setScatter( wValues.get(), csrIA.get(), rDiagonal.get(), numDiagonalElements );
+        setScatter[loc]( wValues.get(), csrIA.get(), rDiagonal.get(), numDiagonalElements );
     }
 
-    if( SCAI_LOG_TRACE_ON( logger ) )
+    if ( SCAI_LOG_TRACE_ON( logger ) )
     {
         SCAI_LOG_TRACE( logger, "CSR after setDiagonal" )
         print();

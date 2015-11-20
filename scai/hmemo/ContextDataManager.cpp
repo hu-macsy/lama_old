@@ -519,8 +519,6 @@ ContextPtr ContextDataManager::getValidContext( const ContextType preferredType 
 
 ContextPtr ContextDataManager::getFirstTouchContextPtr()
 {
-    ContextPtr result;
-
     if ( mContextData.size() == 0 )
     {
         return Context::getHostPtr();
