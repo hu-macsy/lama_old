@@ -167,8 +167,7 @@ void BiCGstab::iterate(){
 
     rhoNew = res0.dotProduct(res);
 
-    if(resNorm<eps) // residual is small
-        beta=0.0;
+    if(resNorm<eps) beta=0.0; // residual is small
     else beta = rhoNew/rhoOld*(alpha/omega);
     
     vecP = vecP-omega*vecV;
@@ -176,16 +175,14 @@ void BiCGstab::iterate(){
     vecV=A*vecP;
 
     Scalar innerProd = res0.dotProduct(vecV);
-    if(resNorm<eps)    // residual is small
-        alpha= 0.0;
+    if(resNorm<eps) alpha= 0.0;  // residual is small
     else alpha=rhoNew/innerProd;
     
     vecS=res-alpha*vecV;
     vecT=A*vecS;
 
     innerProd = vecT.dotProduct(vecT);
-    if(resNorm<eps) //residual is small
-        omega=0.0;
+    if(resNorm<eps) omega=0.0; //residual is small 
     else omega=vecT.dotProduct(vecS)/innerProd;
   
     solution= solution+alpha*vecP;

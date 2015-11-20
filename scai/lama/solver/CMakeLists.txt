@@ -51,7 +51,7 @@ set ( CLASSES
         BiCGstab
         CG
     	CGS
-    #   CGNE
+        CGNE
         CGNR
         DefaultJacobi
         GMRES

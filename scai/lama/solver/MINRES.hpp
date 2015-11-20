@@ -49,7 +49,7 @@ namespace scai
 namespace lama
 {
 /**
- * @brief The class MINRES represents a IterativeSolver which uses the krylov subspace Minimum Residual (MINRES)
+ * @brief The class MINRES represents an IterativeSolver which uses the krylov subspace Minimum Residual (MINRES)
  * method to solve a system of linear equations iteratively.
  */
 class COMMON_DLL_IMPORTEXPORT MINRES:

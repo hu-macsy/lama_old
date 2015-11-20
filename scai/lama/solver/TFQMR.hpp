@@ -49,15 +49,12 @@ namespace scai
 namespace lama
 {
 /**
- * @brief The class TFQMR represents a IterativeSolver which uses the krylov subspace Transpose Free 
+ * @brief The class TFQMR represents an IterativeSolver which uses the krylov subspace Transpose Free 
  *        Quasi Minimal Residual (TFQMR) method to solve a system of linear equations iteratively.
  *
  * Remarks: 
  * 1. The scalars in the algorithm are set to zero if they are smaller then machine
- * precision (3*eps) to avoid devision by zero. In this case the solution doesn't change anymore.
- * 2. In this case it makes less sense to take the residual regarding to some norm itself since 
- * it has to be additionally computed in each iterate() (contrary to e.g. BiCGstab solver;
- * no higher costs). 
+ * precision (3*eps) to avoid devision by zero. In this case the solution doesn't change anymore. 
  */
 class COMMON_DLL_IMPORTEXPORT TFQMR:
 		public IterativeSolver,

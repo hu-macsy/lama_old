@@ -61,8 +61,9 @@ scai_project (
         BLAS3Test
         CGTest
        # not yet: CGNETest
-        CGNRTest
-       # CGSTest: This test fails: testSolve, result not < 1E-4
+       # CGNRTest: Test solves the "wrong problem", confer CGNR.hpp documentation 
+       # CGSTest: This test fails: testSolve, result not < 1E-4 S
+       # Convergence test is superfluous since this algorithm is numerically unstable
         CommonLoggerTest
         CommunicatorTest
         COOSparseMatrixTest

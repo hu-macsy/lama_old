@@ -50,14 +50,12 @@ namespace lama
 {
 
 /**
- * @brief The class BiCGstab represents a IterativeSolver which uses the krylov subspace stabilized BiCG method
+ * @brief The class BiCGstab represents an IterativeSolver which uses the krylov subspace stabilized BiCG method
  *        to solve a system of linear equations iteratively.
  *
- * Remarks: 
- * 1. The scalars in the algorithm are set to zero if the norm of the residual is smaller than 
+ * Remark: 
+ * The scalars in the algorithm are set to zero if the norm of the residual is smaller than 
  * machine precision (3*eps) to avoid devision by zero. In this case the solution doesn't change anymore.
- * 2. In this case it makes sense to take the residual since we have to update the residual in each
- * iterate() anyways (contrary to e.g. TFQMR solver).
  */
 class COMMON_DLL_IMPORTEXPORT BiCGstab:
 		public IterativeSolver,

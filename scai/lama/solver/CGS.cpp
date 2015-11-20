@@ -168,8 +168,7 @@ void CGS::iterate(){
 
     vecT= A *vecP;         
 
-    if(normRes< eps)    //residual is small
-        alpha=0.0;
+    if(normRes< eps) alpha=0.0;   //residual is small
     else alpha= innerProdRes/vecT.dotProduct(res0);
 
     vecQ= vecU - alpha*vecT;
@@ -184,8 +183,7 @@ void CGS::iterate(){
 
     normRes = norm.apply(res);
 
-    if(normRes < eps)               // residual is small
-        beta=0.0;
+    if(normRes < eps) beta=0.0;              // residual is small
     else beta = innerProdRes/ innerProdResOld ;
 
     vecU = res + beta*vecQ;

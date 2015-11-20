@@ -38,13 +38,10 @@
 #include <scai/lama/expression/VectorExpressions.hpp>
 #include <scai/lama/expression/MatrixExpressions.hpp>
 #include <scai/lama/expression/MatrixVectorExpressions.hpp>
-
-#include <scai/lama/norm/L2Norm.hpp>
-
+#include <scai/common/Constants.hpp>
 #include <scai/lama/DenseVector.hpp>
 
-// std
-#include <limits>
+
 
 namespace scai
 {
@@ -78,22 +75,21 @@ void CGNR::initialize( const Matrix& coefficients ){
     SCAI_LOG_DEBUG(logger, "Initialization started for coefficients = "<< coefficients)
 
     Solver::initialize(coefficients);
- 	CGNRRuntime& runtime = getRuntime();
+    CGNRRuntime& runtime = getRuntime();
 
     common::scalar::ScalarType type = coefficients.getValueType();
-    runtime.mEps = std::numeric_limits<double>::epsilon()*3;   //CAREFUL: No abstract type 
+    runtime.mEps = std::numeric_limits<double>::epsilon()*3;                  //CAREFUL: No abstract type
 
     runtime.mTransposedMat.reset( coefficients.clone() );
-    runtime.mVecD.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
-    runtime.mVecW.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
-    runtime.mVecZ.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
-
     runtime.mTransposedMat->assignTranspose( coefficients );
+    runtime.mVecD.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
+    runtime.mVecZ.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
+    runtime.mVecW.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
+
 
     runtime.mVecD->setContextPtr( coefficients.getContextPtr() );
-    runtime.mVecW->setContextPtr( coefficients.getContextPtr() );
     runtime.mVecZ->setContextPtr( coefficients.getContextPtr() );
-    
+    runtime.mVecW->setContextPtr( coefficients.getContextPtr() );  
 
 }
 
@@ -137,8 +133,7 @@ void CGNR::solveInit( Vector& solution, const Vector& rhs ){
     Vector* vecD = (*runtime.mVecZ).copy();
     runtime.mVecD.reset(vecD);
   
-    L2Norm norm;
-    runtime.mNormVecZ = norm.apply(vecZ);
+    runtime.mScalarProductZ = vecZ.dotProduct(vecZ);
     runtime.mSolveInit = true;
 }
 
@@ -147,38 +142,35 @@ void CGNR::iterate(){
    
     const Matrix& A = *runtime.mCoefficients;
     const Matrix& transposedA = *runtime.mTransposedMat;
-    Vector& vecW = *runtime.mVecW;
+
     Vector& vecD = *runtime.mVecD;
     Vector& vecZ = *runtime.mVecZ;
+    Vector& vecW = *runtime.mVecW; //no need to safe it for the following iterate()
     Vector& residual = *runtime.mResidual;
-	Vector& solution = *runtime.mSolution;
-    Scalar& normVecZ = runtime.mNormVecZ;
+    Vector& solution = *runtime.mSolution;
+    Scalar& scalarProductZ = runtime.mScalarProductZ;
+    Scalar& eps = runtime.mEps;
     Scalar alpha;
     Scalar beta;
 
-    L2Norm norm;
-    const Scalar& eps = runtime.mEps;    
-
     vecW= A*vecD;
-    Scalar normVecW = norm.apply(vecW);
+    Scalar scalarProductW = vecW.dotProduct(vecW);
 
-    if(normVecW< eps)               //norm is small 
-        alpha=0.0;
-    else alpha = (normVecZ*normVecZ)/(normVecW*normVecW);
+    if(scalarProductW < eps)    alpha=0.0;  //norm is small 
+    else    alpha = scalarProductZ/scalarProductW;
     
     solution= solution + alpha*vecD;
     residual = residual - alpha*vecW;
     vecZ = transposedA*residual;
     
-    Scalar normVecZNew=norm.apply(vecZ);
+    Scalar scalarProductZNew=vecZ.dotProduct(vecZ);
 
 
-    if(normVecZNew < eps)           //norm is small
-        beta=0.0;
-    else beta = (normVecZNew*normVecZNew)/(normVecZ*normVecZ);
+    if(scalarProductZNew < eps) beta=0.0;   //norm is small
+    else beta = scalarProductZNew/scalarProductZ;
 
     vecD = vecZ + beta*vecD;
-    normVecZ = normVecZNew;
+    scalarProductZ = scalarProductZNew;
     //CGNR Implementation End
     mCGNRRuntime.mSolution.setDirty(false);
 }
@@ -197,12 +189,12 @@ const CGNR::CGNRRuntime& CGNR::getConstRuntime() const{
 
 std::string CGNR::createValue()
 {
-	return "CGNR";
+    return "CGNR";
 }
 
 Solver* CGNR::create( const std::string name )
 {
-	return new CGNR( name );
+    return new CGNR( name );
 }
 
 } /* end namespace lama */

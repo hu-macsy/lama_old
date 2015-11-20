@@ -170,8 +170,7 @@ void TFQMR::iterationEven(){
 	const Scalar dotProduct	= vecZ.dotProduct( initialR );
 	Scalar& alpha = runtime.mAlpha;	
 
-    if(abs(dotProduct)< eps)  // scalar is small
-        alpha = 0.0;
+    if(abs(dotProduct)< eps) alpha = 0.0; // scalar is small
 	else alpha = rho / dotProduct;
 
 	vecVOdd  = vecVEven - alpha*vecZ;
@@ -193,8 +192,7 @@ void TFQMR::iterationOdd(){
 
 	rhoNew 	= vecW.dotProduct(initialR);
 
-    if(abs(rhoOld)<eps)                 // scalar is small
-        beta=0.0;
+    if(abs(rhoOld)<eps)  beta=0.0;  // scalar is small  
     else beta = rhoNew / rhoOld;
 
 	vecVEven = vecW + beta* vecVOdd;
@@ -233,14 +231,12 @@ void TFQMR::iterate(){
     vecW = vecW - alpha * A * vecV;
 
     Scalar tempScal;
-    if(abs(alpha)<eps || abs(theta)< eps || abs(eta)<eps)   // scalar is small 
-        tempScal=0.0;
+    if(abs(alpha)<eps || abs(theta)< eps || abs(eta)<eps) tempScal=0.0;  // scalar is small 
     else tempScal = theta*theta*eta/alpha;
 
     vecD = vecV + tempScal * vecD;
 
-    if(abs(tau)<eps)        // scalar is small
-        theta = 0.0;			
+    if(abs(tau)<eps)  theta = 0.0;      // scalar is small
     else theta = norm.apply(vecW)/tau;
     
     c = 1.0 / sqrt( 1.0 + theta*theta);
