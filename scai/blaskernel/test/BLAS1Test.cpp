@@ -40,17 +40,16 @@
 // others
 #include <scai/blaskernel/BLASKernelTrait.hpp>
 #include <scai/hmemo.hpp>
-#include <scai/lama/LAMAKernel.hpp>
-#include <scai/lama/Scalar.hpp>
 
-#include <scai/common/test/TestMacros.hpp>
+#include <scai/kregistry/KernelContextFunction.hpp>
 
-using namespace scai::lama;
+#include <scai/blaskernel/test/TestMacros.hpp>
+
 using namespace scai::hmemo;
 
 namespace scai
 {
-namespace lama
+namespace blaskernel
 {
 namespace BLAS1Test
 {
@@ -58,7 +57,7 @@ namespace BLAS1Test
 template<typename ValueType>
 void asumTest( ContextPtr loc )
 {
-    LAMAKernel<blaskernel::BLASKernelTrait::asum<ValueType> > asum;
+    scai::kregistry::KernelTraitContextFunction<blaskernel::BLASKernelTrait::asum<ValueType> > asum;
     {
         ValueType values[] =
         { 1.0, 2.0, -3.0, 4.0, 5.0, -6.0 };
@@ -72,16 +71,16 @@ void asumTest( ContextPtr loc )
             SCAI_CONTEXT_ACCESS( loc );
             ReadAccess<ValueType> rAValues( AValues, loc );
             // n <= 0
-            ValueType sum = asum[loc]( -1, rAValues.get(), incX1 );
+            ValueType sum = asum[loc->getType()]( -1, rAValues.get(), incX1 );
             BOOST_CHECK_EQUAL( sum, 0.0 );
             // incX <= 0
-            sum = asum[loc]( 3, rAValues.get(), -incX2 );
+            sum = asum[loc->getType()]( 3, rAValues.get(), -incX2 );
             BOOST_CHECK_EQUAL( sum, 0.0 );
             // std::cout << "test 1 (incX = 1)" << std::endl;
-            sum = asum[loc]( 6, rAValues.get(), incX1 );
+            sum = asum[loc->getType()]( 6, rAValues.get(), incX1 );
             BOOST_CHECK_EQUAL( sum, result1 );
             // std::cout << "test 2 (incX = 2)" << std::endl;
-            sum = asum[loc]( 3, rAValues.get(), incX2 );
+            sum = asum[loc->getType()]( 3, rAValues.get(), incX2 );
             BOOST_CHECK_EQUAL( sum, result2 );
         }
     }
@@ -92,7 +91,7 @@ void asumTest( ContextPtr loc )
 template<typename ValueType>
 void axpyTest( ContextPtr loc )
 {
-    LAMAKernel<blaskernel::BLASKernelTrait::axpy<ValueType> > axpy;
+    scai::kregistry::KernelTraitContextFunction<blaskernel::BLASKernelTrait::axpy<ValueType> > axpy;
     // check with n <= 0
     {
         ValueType x[] =
@@ -107,7 +106,7 @@ void axpyTest( ContextPtr loc )
             SCAI_CONTEXT_ACCESS( loc );
             ReadAccess<ValueType> wAx( Ax, loc );
             WriteAccess<ValueType> wAy( Ay, loc );
-            axpy[loc]( -2, 5.0, wAx.get(), incX, wAy.get(), incY );
+            axpy[loc->getType()]( -2, 5.0, wAx.get(), incX, wAy.get(), incY );
         }
         {
             ReadAccess<ValueType> rAy( Ay );
@@ -130,7 +129,7 @@ void axpyTest( ContextPtr loc )
             SCAI_CONTEXT_ACCESS( loc );
             ReadAccess<ValueType> wAx( Ax, loc );
             WriteAccess<ValueType> wAy( Ay, loc );
-            axpy[loc]( 3, 5.0, wAx.get(), 0, wAy.get(), 0 );
+            axpy[loc->getType()]( 3, 5.0, wAx.get(), 0, wAy.get(), 0 );
         }
         {
             ReadAccess<ValueType> rAy( Ay );
@@ -157,7 +156,7 @@ void axpyTest( ContextPtr loc )
             SCAI_CONTEXT_ACCESS( loc );
             ReadAccess<ValueType> wAx( Ax, loc );
             WriteAccess<ValueType> wAy( Ay, loc );
-            axpy[loc]( 3, 5.0, wAx.get(), incX, wAy.get(), incY );
+            axpy[loc->getType()]( 3, 5.0, wAx.get(), incX, wAy.get(), incY );
         }
         {
             ReadAccess<ValueType> rAy( Ay );
@@ -175,7 +174,7 @@ void axpyTest( ContextPtr loc )
 template<typename ValueType>
 void copyTest( ContextPtr loc )
 {
-    LAMAKernel<blaskernel::BLASKernelTrait::copy<ValueType> > copy;
+    scai::kregistry::KernelTraitContextFunction<blaskernel::BLASKernelTrait::copy<ValueType> > copy;
 
     // check with n <= 0
     {
@@ -191,7 +190,7 @@ void copyTest( ContextPtr loc )
             SCAI_CONTEXT_ACCESS( loc );
             ReadAccess<ValueType> wAx( Ax, loc );
             WriteAccess<ValueType> wAy( Ay, loc );
-            copy[loc]( 0, wAx.get(), incX, wAy.get(), incY );
+            copy[loc->getType()]( 0, wAx.get(), incX, wAy.get(), incY );
         }
         {
             ReadAccess<ValueType> rAy( Ay );
@@ -216,7 +215,7 @@ void copyTest( ContextPtr loc )
             SCAI_CONTEXT_ACCESS( loc );
             ReadAccess<ValueType> wAx( Ax, loc );
             WriteAccess<ValueType> wAy( Ay, loc );
-            copy[loc]( 3, wAx.get(), -incX, wAy.get(), -incY );
+            copy[loc->getType()]( 3, wAx.get(), -incX, wAy.get(), -incY );
         }
         {
             ReadAccess<ValueType> rAy( Ay );
@@ -243,7 +242,7 @@ void copyTest( ContextPtr loc )
             SCAI_CONTEXT_ACCESS( loc );
             ReadAccess<ValueType> wAx( Ax, loc );
             WriteAccess<ValueType> wAy( Ay, loc );
-            copy[loc]( 3, wAx.get(), incX, wAy.get(), incY );
+            copy[loc->getType()]( 3, wAx.get(), incX, wAy.get(), incY );
         }
         {
             ReadAccess<ValueType> rAy( Ay );
@@ -260,7 +259,7 @@ void copyTest( ContextPtr loc )
 template<typename ValueType>
 void dotTest( ContextPtr loc )
 {
-    LAMAKernel<blaskernel::BLASKernelTrait::dot<ValueType> > dot;
+    scai::kregistry::KernelTraitContextFunction<blaskernel::BLASKernelTrait::dot<ValueType> > dot;
     {
         ValueType x[] =
         { 1.0, 2.0, -3.0, 4.0, 5.0, -6.0 };
@@ -275,13 +274,13 @@ void dotTest( ContextPtr loc )
             ReadAccess<ValueType> wAx( Ax, loc );
             WriteAccess<ValueType> wAy( Ay, loc );
             // n <= 0
-            ValueType result = dot[loc]( 0, wAx.get(), incX, wAy.get(), incY );
+            ValueType result = dot[loc->getType()]( 0, wAx.get(), incX, wAy.get(), incY );
             BOOST_CHECK_EQUAL( result, 0.0 );
             // incX <= 0 and incY <= 0
-            result = dot[loc]( 3, wAx.get(), 0, wAy.get(), 0 );
+            result = dot[loc->getType()]( 3, wAx.get(), 0, wAy.get(), 0 );
             BOOST_CHECK_EQUAL( result, 0.0 );
             // n > 0 and incX > 0 and incY > 0
-            result = dot[loc]( 3, wAx.get(), incX, wAy.get(), incY );
+            result = dot[loc->getType()]( 3, wAx.get(), incX, wAy.get(), incY );
             BOOST_CHECK_EQUAL( result, 24.0 );
         }
     }
@@ -292,7 +291,7 @@ void dotTest( ContextPtr loc )
 template<typename ValueType>
 void iamaxTest( ContextPtr loc )
 {
-    LAMAKernel<blaskernel::BLASKernelTrait::iamax<ValueType> > iamax;
+    scai::kregistry::KernelTraitContextFunction<blaskernel::BLASKernelTrait::iamax<ValueType> > iamax;
 
     {
         ValueType values[] =
@@ -307,15 +306,15 @@ void iamaxTest( ContextPtr loc )
             SCAI_CONTEXT_ACCESS( loc );
             ReadAccess<ValueType> rAValues( AValues, loc );
             // n <= 0
-            IndexType smallestIndexOfMax = iamax[loc]( 0, rAValues.get(), incX1 );
+            IndexType smallestIndexOfMax = iamax[loc->getType()]( 0, rAValues.get(), incX1 );
             BOOST_CHECK_EQUAL( smallestIndexOfMax, 0 );
             // incX <= 0
-            smallestIndexOfMax = iamax[loc]( nValues / incX1, rAValues.get(), -incX2 );
+            smallestIndexOfMax = iamax[loc->getType()]( nValues / incX1, rAValues.get(), -incX2 );
             BOOST_CHECK_EQUAL( smallestIndexOfMax, 0 );
             // n > 0 and incX > 0
-            smallestIndexOfMax = iamax[loc]( nValues / incX1, rAValues.get(), incX1 );
+            smallestIndexOfMax = iamax[loc->getType()]( nValues / incX1, rAValues.get(), incX1 );
             BOOST_CHECK_EQUAL( smallestIndexOfMax, result1 );
-            smallestIndexOfMax = iamax[loc]( nValues / incX2, rAValues.get(), incX2 );
+            smallestIndexOfMax = iamax[loc->getType()]( nValues / incX2, rAValues.get(), incX2 );
             BOOST_CHECK_EQUAL( smallestIndexOfMax, result2 );
         }
     }
@@ -326,7 +325,7 @@ void iamaxTest( ContextPtr loc )
 template<typename ValueType>
 void nrm2Test( ContextPtr loc )
 {
-    LAMAKernel<blaskernel::BLASKernelTrait::nrm2<ValueType> > nrm2;
+    scai::kregistry::KernelTraitContextFunction<blaskernel::BLASKernelTrait::nrm2<ValueType> > nrm2;
 
     {
         ValueType values[] =
@@ -341,15 +340,15 @@ void nrm2Test( ContextPtr loc )
             SCAI_CONTEXT_ACCESS( loc );
             ReadAccess<ValueType> rAValues( AValues, loc );
             // n <= 0
-            ValueType euclideanNorm = nrm2[loc]( 0, rAValues.get(), incX1 );
+            ValueType euclideanNorm = nrm2[loc->getType()]( 0, rAValues.get(), incX1 );
             BOOST_CHECK_EQUAL( euclideanNorm, 0.0 );
             // incX <= 0
-            euclideanNorm = nrm2[loc]( -1, rAValues.get(), 0 );
+            euclideanNorm = nrm2[loc->getType()]( -1, rAValues.get(), 0 );
             BOOST_CHECK_EQUAL( euclideanNorm, 0.0 );
             // n > 0 and incX > 0
-            euclideanNorm = nrm2[loc]( nValues / incX1, rAValues.get(), incX1 );
+            euclideanNorm = nrm2[loc->getType()]( nValues / incX1, rAValues.get(), incX1 );
             SCAI_CHECK_CLOSE( euclideanNorm, ::sqrt( result1 ), 1e-4 );
-            euclideanNorm = nrm2[loc]( nValues / incX2, rAValues.get(), incX2 );
+            euclideanNorm = nrm2[loc->getType()]( nValues / incX2, rAValues.get(), incX2 );
             SCAI_CHECK_CLOSE( euclideanNorm, ::sqrt( result2 ), 1e-4 );
         }
     }
@@ -360,7 +359,7 @@ void nrm2Test( ContextPtr loc )
 template<typename ValueType>
 void scalTest( ContextPtr loc )
 {
-    LAMAKernel<blaskernel::BLASKernelTrait::scal<ValueType> > scal;
+    scai::kregistry::KernelTraitContextFunction<blaskernel::BLASKernelTrait::scal<ValueType> > scal;
 
     // check with n <= 0
     {
@@ -370,7 +369,7 @@ void scalTest( ContextPtr loc )
         {
             SCAI_CONTEXT_ACCESS( loc );
             WriteAccess<ValueType> rAValues( AValues, loc );
-            scal[loc]( 0, 2.0, rAValues.get(), 2 );
+            scal[loc->getType()]( 0, 2.0, rAValues.get(), 2 );
         }
         {
             ReadAccess<ValueType> rAValues( AValues );
@@ -389,7 +388,7 @@ void scalTest( ContextPtr loc )
         {
             SCAI_CONTEXT_ACCESS( loc );
             WriteAccess<ValueType> rAValues( AValues, loc );
-            scal[loc]( 3, 2.0, rAValues.get(), 0 );
+            scal[loc->getType()]( 3, 2.0, rAValues.get(), 0 );
         }
         {
             ReadAccess<ValueType> rAValues( AValues );
@@ -409,7 +408,7 @@ void scalTest( ContextPtr loc )
         {
             SCAI_CONTEXT_ACCESS( loc );
             WriteAccess<ValueType> rAValues( AValues, loc );
-            scal[loc]( 3, 2.4, rAValues.get(), incX );
+            scal[loc->getType()]( 3, 2.4, rAValues.get(), incX );
         }
         {
             ReadAccess<ValueType> rAValues( AValues );
@@ -425,7 +424,7 @@ void scalTest( ContextPtr loc )
 template<typename ValueType>
 void sumTest( ContextPtr loc )
 {
-    LAMAKernel<blaskernel::BLASKernelTrait::sum<ValueType> > sum;
+    scai::kregistry::KernelTraitContextFunction<blaskernel::BLASKernelTrait::sum<ValueType> > sum;
 
     // check with n <= 0
     {
@@ -443,7 +442,7 @@ void sumTest( ContextPtr loc )
             ReadAccess<ValueType> rAx( Ax, loc );
             ReadAccess<ValueType> rAy( Ay, loc );
             WriteAccess<ValueType> wAz( Az, loc );
-            sum[loc]( -1, 3.0, rAx.get(), 4.0, rAy.get(), wAz.get() );
+            sum[loc->getType()]( -1, 3.0, rAx.get(), 4.0, rAy.get(), wAz.get() );
         }
         {
             ReadAccess<ValueType> rAz( Az );
@@ -468,7 +467,7 @@ void sumTest( ContextPtr loc )
             ReadAccess<ValueType> rAx( Ax, loc );
             ReadAccess<ValueType> rAy( Ay, loc );
             WriteAccess<ValueType> wAz( Az, loc );
-            sum[loc]( 5, 3.0, rAx.get(), 4.0, rAy.get(), wAz.get() );
+            sum[loc->getType()]( 5, 3.0, rAx.get(), 4.0, rAy.get(), wAz.get() );
         }
         {
             ReadAccess<ValueType> rAz( Az );
@@ -486,7 +485,7 @@ void sumTest( ContextPtr loc )
 template<typename ValueType>
 void swapTest( ContextPtr loc )
 {
-    LAMAKernel<blaskernel::BLASKernelTrait::swap<ValueType> > swap;
+    scai::kregistry::KernelTraitContextFunction<blaskernel::BLASKernelTrait::swap<ValueType> > swap;
 
     // check with n <= 0
     {
@@ -502,7 +501,7 @@ void swapTest( ContextPtr loc )
             SCAI_CONTEXT_ACCESS( loc );
             WriteAccess<ValueType> wAValues1( Ax, loc );
             WriteAccess<ValueType> wAValues2( Ay, loc );
-            swap[loc]( 0, wAValues1.get(), incX, wAValues2.get(), incY );
+            swap[loc->getType()]( 0, wAValues1.get(), incX, wAValues2.get(), incY );
         }
         {
             ReadAccess<ValueType> rAx( Ax );
@@ -528,7 +527,7 @@ void swapTest( ContextPtr loc )
             SCAI_CONTEXT_ACCESS( loc );
             WriteAccess<ValueType> wAx( Ax, loc );
             WriteAccess<ValueType> wAy( Ay, loc );
-            swap[loc]( nValues, wAx.get(), 0, wAy.get(), -1 );
+            swap[loc->getType()]( nValues, wAx.get(), 0, wAy.get(), -1 );
         }
         {
             ReadAccess<ValueType> rAx( Ax );
@@ -556,7 +555,7 @@ void swapTest( ContextPtr loc )
             SCAI_CONTEXT_ACCESS( loc );
             WriteAccess<ValueType> wAValues1( AValues1, loc );
             WriteAccess<ValueType> wAValues2( AValues2, loc );
-            swap[loc]( nValues, wAValues1.get(), incX, wAValues2.get(), incY );
+            swap[loc->getType()]( nValues, wAValues1.get(), incX, wAValues2.get(), incY );
         }
         {
             ReadAccess<ValueType> rAValues1( AValues1 );
@@ -573,7 +572,7 @@ void swapTest( ContextPtr loc )
 
 } // namespace BLAS1Test
 
-} /* end namespace lama */
+} /* end namespace blaskernel */
 
 } /* end namespace scai */
 
@@ -583,15 +582,15 @@ BOOST_AUTO_TEST_SUITE( BLAS1Test )
 
 SCAI_LOG_DEF_LOGGER( logger, "Test.BLAS1Test" )
 
-LAMA_AUTO_TEST_CASE_CT( asumTest, BLAS1Test, scai::lama )
-LAMA_AUTO_TEST_CASE_CT( axpyTest, BLAS1Test, scai::lama )
-LAMA_AUTO_TEST_CASE_CT( copyTest, BLAS1Test, scai::lama )
-LAMA_AUTO_TEST_CASE_CT( dotTest, BLAS1Test, scai::lama )
-LAMA_AUTO_TEST_CASE_CT( iamaxTest, BLAS1Test, scai::lama )
-LAMA_AUTO_TEST_CASE_CT( nrm2Test, BLAS1Test, scai::lama )
-LAMA_AUTO_TEST_CASE_CT( scalTest, BLAS1Test, scai::lama )
-LAMA_AUTO_TEST_CASE_CT( sumTest, BLAS1Test, scai::lama )
-LAMA_AUTO_TEST_CASE_CT( swapTest, BLAS1Test, scai::lama )
+LAMA_AUTO_TEST_CASE_CT( asumTest, BLAS1Test, scai::blaskernel )
+LAMA_AUTO_TEST_CASE_CT( axpyTest, BLAS1Test, scai::blaskernel )
+LAMA_AUTO_TEST_CASE_CT( copyTest, BLAS1Test, scai::blaskernel )
+LAMA_AUTO_TEST_CASE_CT( dotTest, BLAS1Test, scai::blaskernel )
+LAMA_AUTO_TEST_CASE_CT( iamaxTest, BLAS1Test, scai::blaskernel )
+LAMA_AUTO_TEST_CASE_CT( nrm2Test, BLAS1Test, scai::blaskernel )
+LAMA_AUTO_TEST_CASE_CT( scalTest, BLAS1Test, scai::blaskernel )
+LAMA_AUTO_TEST_CASE_CT( sumTest, BLAS1Test, scai::blaskernel )
+LAMA_AUTO_TEST_CASE_CT( swapTest, BLAS1Test, scai::blaskernel )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 

@@ -37,17 +37,15 @@
 // others
 #include <scai/blaskernel/BLASKernelTrait.hpp>
 #include <scai/hmemo.hpp>
-#include <scai/lama/LAMAKernel.hpp>
-#include <scai/lama/Scalar.hpp>
+#include <scai/kregistry/KernelContextFunction.hpp>
 
-#include <scai/common/test/TestMacros.hpp>
+#include <scai/blaskernel/test/TestMacros.hpp>
 
-using namespace scai::lama;
 using namespace scai::hmemo;
 
 namespace scai
 {
-namespace lama
+namespace blaskernel
 {
 namespace BLAS2Test
 {
@@ -55,7 +53,7 @@ namespace BLAS2Test
 template<typename ValueType>
 void gemvTest( ContextPtr loc )
 {
-    LAMAKernel<blaskernel::BLASKernelTrait::gemv<ValueType> > gemv;
+    scai::kregistry::KernelTraitContextFunction<blaskernel::BLASKernelTrait::gemv<ValueType> > gemv;
 
     // CblasRowMajor and CblasNoTrans
     {
@@ -82,7 +80,7 @@ void gemvTest( ContextPtr loc )
             ReadAccess<ValueType> rAm( Am, loc );
             ReadAccess<ValueType> rAx( Ax, loc );
             WriteAccess<ValueType> wAy( Ay, loc );
-            gemv[loc]( CblasRowMajor, CblasNoTrans, m, n, alpha, rAm.get(), lda, rAx.get(), incX, beta, wAy.get(), incY );
+            gemv[loc->getType()]( CblasRowMajor, CblasNoTrans, m, n, alpha, rAm.get(), lda, rAx.get(), incX, beta, wAy.get(), incY );
         }
         {
             ReadAccess<ValueType> rAy( Ay );
@@ -115,7 +113,7 @@ void gemvTest( ContextPtr loc )
             ReadAccess<ValueType> rAm( Am, loc );
             ReadAccess<ValueType> rAx( Ax, loc );
             WriteAccess<ValueType> wAy( Ay, loc );
-            gemv[loc]( CblasColMajor, CblasNoTrans, m, n, alpha, rAm.get(), lda, rAx.get(), incX, beta, wAy.get(), incY );
+            gemv[loc->getType()]( CblasColMajor, CblasNoTrans, m, n, alpha, rAm.get(), lda, rAx.get(), incX, beta, wAy.get(), incY );
         }
         {
             ReadAccess<ValueType> rAy( Ay );
@@ -148,7 +146,7 @@ void gemvTest( ContextPtr loc )
             ReadAccess<ValueType> rAm( Am, loc );
             ReadAccess<ValueType> rAx( Ax, loc );
             WriteAccess<ValueType> wAy( Ay, loc );
-            gemv[loc]( CblasRowMajor, CblasTrans, m, n, alpha, rAm.get(), lda, rAx.get(), incX, beta, wAy.get(), incY );
+            gemv[loc->getType()]( CblasRowMajor, CblasTrans, m, n, alpha, rAm.get(), lda, rAx.get(), incX, beta, wAy.get(), incY );
         }
         {
             ReadAccess<ValueType> rAy( Ay );
@@ -182,7 +180,7 @@ void gemvTest( ContextPtr loc )
             ReadAccess<ValueType> rAm( Am, loc );
             ReadAccess<ValueType> rAx( Ax, loc );
             WriteAccess<ValueType> wAy( Ay, loc );
-            gemv[loc]( CblasColMajor, CblasTrans, m, n, alpha, rAm.get(), lda, rAx.get(), incX, beta, wAy.get(), incY );
+            gemv[loc->getType()]( CblasColMajor, CblasTrans, m, n, alpha, rAm.get(), lda, rAx.get(), incX, beta, wAy.get(), incY );
         }
         {
             ReadAccess<ValueType> rAy( Ay );
@@ -193,8 +191,9 @@ void gemvTest( ContextPtr loc )
     }
 } // gemvTest
 
-} // namespace BLAS2Test
-} /* end namespace lama */
+} /* end namespace BLAS2Test */
+
+} /* end namespace blaskernel */
 
 } /* end namespace scai */
 
@@ -204,7 +203,7 @@ BOOST_AUTO_TEST_SUITE( BLAS2Test )
 
 SCAI_LOG_DEF_LOGGER( logger, "Test.BLAS2Test" )
 
-LAMA_AUTO_TEST_CASE_CT( gemvTest, BLAS2Test, scai::lama )
+LAMA_AUTO_TEST_CASE_CT( gemvTest, BLAS2Test, scai::blaskernel )
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 BOOST_AUTO_TEST_SUITE_END()

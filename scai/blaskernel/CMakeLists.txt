@@ -131,7 +131,9 @@ endif ( USE_MIC )
 
 ## add subdirectories
 #add_subdirectory ( examples )
-#add_subdirectory ( test )
+if    ( FOUND_BOOST_TEST AND BUILD_TEST )
+    add_subdirectory ( test )
+endif ( FOUND_BOOST_TEST AND BUILD_TEST )
 
 ## add library
 if    ( CUDA_FOUND AND USE_CUDA AND CUDA_HAVE_GPU )
