@@ -47,7 +47,7 @@ namespace scai
 namespace blaskernel
 {
 
-/** Implementations of methods for scai::lama::BLASKernelTrait with OpenMP.
+/** Implementations of methods for BLASKernelTrait with OpenMP.
  *
  *  @todo Add information here about use of native BLAS1 libraries
  */
@@ -57,7 +57,7 @@ class COMMON_DLL_IMPORTEXPORT BLAS_BLAS1
 public:
 
     /**
-     * This function is the Host implementation of scai::lama::BLASKernelTrait::scal using BLAS
+     * This function is the Host implementation of BLASKernelTrait::scal using BLAS
      */
     template<typename ValueType>
     static void scal(
@@ -67,25 +67,25 @@ public:
         const IndexType incX );
 
     /**
-     * This function is the Host implementation of scai::lama::BLASKernelTrait::nrm2 using BLAS
+     * This function is the Host implementation of BLASKernelTrait::nrm2 using BLAS
      */
     template<typename ValueType>
     static ValueType nrm2( const IndexType n, const ValueType* x, const IndexType incX );
 
     /**
-     * This function is the Host implementation of scai::lama::BLASKernelTrait::asum
+     * This function is the Host implementation of BLASKernelTrait::asum
      */
     template<typename ValueType>
     static ValueType asum( const IndexType n, const ValueType* x, const IndexType incX );
 
     /**
-     * This function is the Host implementation of scai::lama::BLASKernelTrait::iamax
+     * This function is the Host implementation of BLASKernelTrait::iamax
      */
     template<typename ValueType>
     static IndexType iamax( const IndexType n, const ValueType* x, const IndexType incX );
 
     /**
-     * This function is the Host implementation of scai::lama::BLASKernelTrait::swap
+     * This function is the Host implementation of BLASKernelTrait::swap
      */
     template<typename ValueType>
     static void swap(
@@ -96,7 +96,7 @@ public:
         const IndexType incX );
 
     /**
-     * This function is the Host implementation of scai::lama::BLASKernelTrait::copy
+     * This function is the Host implementation of BLASKernelTrait::copy
      */
     template<typename ValueType>
     static void copy(
@@ -107,7 +107,7 @@ public:
         const IndexType incY );
 
     /**
-     * This function is the Host implementation of scai::lama::BLASKernelTrait::axpy
+     * This function is the Host implementation of BLASKernelTrait::axpy
      */
     template<typename ValueType>
     static void axpy(
@@ -119,7 +119,7 @@ public:
         const IndexType incY );
 
     /**
-     * This function is the Host implementation of scai::lama::BLASKernelTrait::dot
+     * This function is the Host implementation of BLASKernelTrait::dot
      */
     template<typename ValueType>
     static ValueType dot(

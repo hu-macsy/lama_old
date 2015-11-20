@@ -49,11 +49,7 @@ namespace scai
 namespace blaskernel
 {
 
-/** Implementations of methods for scai::lama::BLAS3Interface with OpenMP.
- *
- *  @todo Move all method documentations to LAMAInterface and make references here
- *  @todo Add information here about use of native BLAS1 libraries
- */
+/** Implementations of blas3 methods for BLASKernelTrait by using BLAS library. */
 
 class COMMON_DLL_IMPORTEXPORT BLAS_BLAS3
 {

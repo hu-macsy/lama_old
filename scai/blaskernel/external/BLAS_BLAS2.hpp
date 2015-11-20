@@ -50,18 +50,14 @@ namespace scai
 namespace blaskernel
 {
 
-/** Implementations of methods for scai::lama::BLAS2Interface with OpenMP.
- *
- *  @todo Move all method documentations to LAMAInterface and make references here
- *  @todo Add information here about use of native BLAS2 libraries
- */
+/** Implementations of blas2 methods of BLASKernelTrait with OpenMP.  */
 
 class COMMON_DLL_IMPORTEXPORT BLAS_BLAS2
 {
 public:
 
     /**
-     * This function is the OpenMP implementation of lama::BLASKernelTrait::gemv
+     * This function is the OpenMP implementation of BLASKernelTrait::gemv
      */
     template<typename ValueType>
     static void gemv(
