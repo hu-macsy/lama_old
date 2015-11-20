@@ -102,10 +102,10 @@ public:
 /** Call implementation routine with the type of the values array */
 
 #define LAMA_SET_CSR_CALL( z, I, _ )                                                      \
-case SCALAR_ARITHMETIC_TYPE##I:                                                           \
+case common::TypeTraits<ARITHMETIC_HOST_TYPE_##I>::stype :                                         \
 {                                                                                         \
-    const hmemo::HArray<ARITHMETIC_HOST_TYPE_##I>& typedValues =                              \
-            dynamic_cast<const hmemo::HArray<ARITHMETIC_HOST_TYPE_##I>&>( values );           \
+    const hmemo::HArray<ARITHMETIC_HOST_TYPE_##I>& typedValues =                          \
+            dynamic_cast<const hmemo::HArray<ARITHMETIC_HOST_TYPE_##I>&>( values );       \
     static_cast<Derived*>( this )->setCSRDataImpl(                                        \
             numRows, numColumns, numValues, ia, ja, typedValues, this->getContextPtr() ); \
     break;                                                                                \
@@ -141,7 +141,7 @@ case SCALAR_ARITHMETIC_TYPE##I:                                                 
         switch ( arrayType )
         {
 #define LAMA_BUILD_CSR_CALL( z, I, _ )                                        \
-case SCALAR_ARITHMETIC_TYPE##I:                                               \
+case common::TypeTraits<ARITHMETIC_HOST_TYPE_##I>::stype :                                \
 {                                                                             \
     hmemo::HArray<ARITHMETIC_HOST_TYPE_##I>& typedValues =                        \
             dynamic_cast<hmemo::HArray<ARITHMETIC_HOST_TYPE_##I>&>( csrValues );  \
@@ -172,7 +172,7 @@ case SCALAR_ARITHMETIC_TYPE##I:                                               \
         switch ( arrayType )
         {
 #define LAMA_GET_ROW_CALL( z, I, _ )                                    \
-case SCALAR_ARITHMETIC_TYPE##I:                                         \
+case common::TypeTraits<ARITHMETIC_HOST_TYPE_##I>::stype :                           \
 {                                                                       \
     hmemo::HArray<ARITHMETIC_HOST_TYPE_##I>& typedRow =                     \
             dynamic_cast<hmemo::HArray<ARITHMETIC_HOST_TYPE_##I>&>( row );  \
@@ -204,7 +204,7 @@ case SCALAR_ARITHMETIC_TYPE##I:                                         \
         switch ( arrayType )
         {
 #define LAMA_GET_DIAGONAL_CALL( z, I, _ )                                   \
-case SCALAR_ARITHMETIC_TYPE##I:                                             \
+case common::TypeTraits<ARITHMETIC_HOST_TYPE_##I>::stype :                           \
 {                                                                           \
     hmemo::HArray<ARITHMETIC_HOST_TYPE_##I>& typedDiagonal =                    \
             dynamic_cast<hmemo::HArray<ARITHMETIC_HOST_TYPE_##I>&>( diagonal ); \
@@ -251,7 +251,7 @@ case SCALAR_ARITHMETIC_TYPE##I:                                             \
         switch ( arrayType )
         {
 #define LAMA_SET_DIAGONAL_CALL( z, I, _ )                                         \
-case SCALAR_ARITHMETIC_TYPE##I:                                                   \
+case common::TypeTraits<ARITHMETIC_HOST_TYPE_##I>::stype :                           \
 {                                                                                 \
     const hmemo::HArray<ARITHMETIC_HOST_TYPE_##I>& typedDiagonal =                    \
             dynamic_cast<const hmemo::HArray<ARITHMETIC_HOST_TYPE_##I>&>( diagonal ); \
@@ -284,7 +284,7 @@ case SCALAR_ARITHMETIC_TYPE##I:                                                 
         switch ( arrayType )
         {
 #define LAMA_SCALE_CALL( z, I, _ )                                                \
-case SCALAR_ARITHMETIC_TYPE##I:                                                   \
+case common::TypeTraits<ARITHMETIC_HOST_TYPE_##I>::stype :                           \
 {                                                                                 \
     const hmemo::HArray<ARITHMETIC_HOST_TYPE_##I>& typedDiagonal =                    \
             dynamic_cast<const hmemo::HArray<ARITHMETIC_HOST_TYPE_##I>&>( diagonal ); \

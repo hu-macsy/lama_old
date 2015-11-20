@@ -257,7 +257,7 @@ public:
      */
     void readFromFile( const std::string& filename );
 
-    virtual common::ScalarType getValueType() const;
+    virtual common::scalar::ScalarType getValueType() const;
 
     /**
      * Implementation of pure method.
@@ -472,7 +472,7 @@ public:
 
     // key for factory 
 
-    static std::pair<VectorKind, common::ScalarType> createValue();
+    static std::pair<VectorKind, common::scalar::ScalarType> createValue();
 };
 
 /* ------------------------------------------------------------------------- */

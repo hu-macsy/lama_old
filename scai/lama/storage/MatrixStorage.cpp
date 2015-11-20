@@ -1219,10 +1219,10 @@ void MatrixStorage<ValueType>::setDenseData(
     {
 
 #define LAMA_DENSE_ASSIGN( z, I, _ )                                                                   \
-case SCALAR_ARITHMETIC_TYPE##I :                                                                       \
+case common::TypeTraits<ARITHMETIC_HOST_TYPE_##I>::stype :                                             \
 {                                                                                                      \
-    HArray<ARITHMETIC_HOST_TYPE_##I>& typedValues =                                                 \
-            dynamic_cast<HArray<ARITHMETIC_HOST_TYPE_##I>&>( mValues );                             \
+    HArray<ARITHMETIC_HOST_TYPE_##I>& typedValues =                                                    \
+            dynamic_cast<HArray<ARITHMETIC_HOST_TYPE_##I>&>( mValues );                                \
     const DenseStorageView<ARITHMETIC_HOST_TYPE_##I> denseStorage( typedValues, numRows, numColumns ); \
     ARITHMETIC_HOST_TYPE_##I tmpEpsilon = static_cast<ARITHMETIC_HOST_TYPE_##I>( epsilon );            \
     denseStorage.swapEpsilon( tmpEpsilon );                                                            \

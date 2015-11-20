@@ -66,6 +66,7 @@ namespace scai
 {
 
 using common::unique_ptr;
+using common::TypeTraits;
 using common::scoped_array;
 
 namespace lama
@@ -905,7 +906,7 @@ void DenseMatrix<ValueType>::assign( const Matrix& other )
         {
 
 #define LAMA_COPY_DENSE_CALL( z, I, _ )                                                        \
-case SCALAR_ARITHMETIC_TYPE##I:                                                                \
+case TypeTraits<ARITHMETIC_HOST_TYPE_##I>::stype :                                              \
     copyDenseMatrix( dynamic_cast<const DenseMatrix<ARITHMETIC_HOST_TYPE_##I>&>( other ) );    \
     break;                                                                                     \
      
@@ -927,10 +928,11 @@ case SCALAR_ARITHMETIC_TYPE##I:                                                 
 		{
 
 #define LAMA_COPY_SPARSE_CALL( z, I, _ )                                                       \
-		case SCALAR_ARITHMETIC_TYPE##I:                                                        \
+        case TypeTraits<ARITHMETIC_HOST_TYPE_##I>::stype :                                     \
 		{                                                                                      \
-			SCAI_LOG_TRACE( logger, "convert from SparseMatrix<" << SCALAR_ARITHMETIC_TYPE##I  \
-		            << "> to DenseMatrix<" << common::getScalarType<ValueType>() << ">" )      \
+			SCAI_LOG_TRACE( logger, "convert from SparseMatrix<"                               \
+                    << TypeTraits<ARITHMETIC_HOST_TYPE_##I>::id()                              \
+		            << "> to DenseMatrix<" << TypeTraits<ValueType>::id() << ">" )             \
 			const SparseMatrix<ARITHMETIC_HOST_TYPE_##I>* sparseMatrix =                       \
 		        reinterpret_cast< const SparseMatrix<ARITHMETIC_HOST_TYPE_##I>* >( &other );   \
 			const CSRSparseMatrix<ValueType> tmp = *sparseMatrix;                              \
@@ -1565,7 +1567,7 @@ void DenseMatrix<ValueType>::getDiagonal( Vector& diagonal ) const
 // Dense vector with this row distribution, so we do not need a temporary array
 
 #define LAMA_GET_DIAGONAL_CALL( z, I, _ )                                            \
-    if ( diagonal.getValueType() == SCALAR_ARITHMETIC_TYPE##I )                      \
+    if ( diagonal.getValueType() == TypeTraits<ARITHMETIC_HOST_TYPE_##I>::stype )    \
     {                                                                                \
         DenseVector<ARITHMETIC_HOST_TYPE_##I>& denseDiagonal =                       \
                 dynamic_cast<DenseVector<ARITHMETIC_HOST_TYPE_##I>&>( diagonal );    \

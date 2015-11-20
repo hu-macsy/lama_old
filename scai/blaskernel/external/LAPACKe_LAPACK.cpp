@@ -111,7 +111,7 @@ IndexType LAPACKe_LAPACK::getrf(
 {
     SCAI_LOG_INFO( logger, "getrf<float> for A of size " << m << " x " << n )
 
-	if ( TypeTraits<IndexType>::getScalarType() != TypeTraits<LAPACKeWrapper::LAPACKIndexType>::getScalarType() )
+	if ( TypeTraits<IndexType>::stype != TypeTraits<LAPACKeWrapper::LAPACKIndexType>::stype )
 	{
 		// ToDo: convert ipiv array
 		COMMON_THROWEXCEPTION( "indextype mismatch" );
@@ -172,7 +172,7 @@ int LAPACKe_LAPACK::getri( const CBLAS_ORDER order, const IndexType n, ValueType
 {
     SCAI_LOG_INFO( logger, "getri<float> for A of size " << n << " x " << n )
 
-	if ( TypeTraits<IndexType>::getScalarType() != TypeTraits<LAPACKeWrapper::LAPACKIndexType>::getScalarType() )
+	if ( TypeTraits<IndexType>::stype != TypeTraits<LAPACKeWrapper::LAPACKIndexType>::stype )
 	{
 		// ToDo: convert ipiv array
 		COMMON_THROWEXCEPTION( "indextype mismatch" );
@@ -216,7 +216,7 @@ int LAPACKe_LAPACK::tptrs(
 
     LAPACKeWrapper::LAPACKOrder matrix_order = lapack_order( order );
 
-	if ( TypeTraits<IndexType>::getScalarType() != TypeTraits<LAPACKeWrapper::LAPACKIndexType>::getScalarType() )
+	if ( TypeTraits<IndexType>::stype != TypeTraits<LAPACKeWrapper::LAPACKIndexType>::stype )
 	{
 		// ToDo: convert ipiv array
 		COMMON_THROWEXCEPTION( "indextype mismatch" );

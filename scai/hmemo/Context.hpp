@@ -57,7 +57,7 @@ namespace tasking
     class SyncToken;    // forward declaration
 }
 
-/** Namespace for all data structures of the context memory management. */
+/** Namespace for all data structures of the the heterogeneous memory management. */
 
 namespace hmemo
 {

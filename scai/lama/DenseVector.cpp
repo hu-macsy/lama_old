@@ -72,6 +72,7 @@ namespace scai
 
 using common::Complex;
 using common::scoped_array;
+using common::TypeTraits;
 
 namespace context = scai::common::context;
 
@@ -374,7 +375,7 @@ DenseVector<ValueType>& DenseVector<ValueType>::operator=( const Scalar value )
 template<typename ValueType>
 common::scalar::ScalarType DenseVector<ValueType>::getValueType() const
 {
-    return common::getScalarType<ValueType>();
+    return TypeTraits<ValueType>::stype;
 }
 
 template<typename ValueType>
@@ -1672,7 +1673,7 @@ void DenseVector<ValueType>::readVectorDataFromBinaryFile( std::fstream &inFile,
     IndexType n = size();
 
     SCAI_LOG_INFO( logger,
-                   "read DenseVector<" << common::getScalarType<ValueType>() << "> from binary file, size = " << n << ", dataType = " << ( ( common::scalar::ScalarType ) type ) )
+                   "read DenseVector<" << TypeTraits<ValueType>::id() << "> from binary file, size = " << n << ", dataType = " << ( ( common::scalar::ScalarType ) type ) )
 
     WriteOnlyAccess<ValueType> writeData( mLocalValues, n );
 

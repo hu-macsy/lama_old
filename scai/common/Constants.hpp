@@ -45,15 +45,21 @@ namespace scai
 namespace common
 {
 
+/** Own namespace for the enum type ConstantType and its values. */
+
 namespace constants
 {
 
+/** Enumeration type for constants for which type-specific values are provided */
+
 enum ConstantType
 {
-    ONE,
-    ZERO,
-    EPS
+    ONE,   //!< stands for value 1
+    ZERO,  //!< stands for value 0
+    EPS    //!< stands for eps
 };
+
+/** This method returns the type specific value for each constant */
 
 template<typename ValueType>
 inline ValueType getConstant( const enum ConstantType& c )
@@ -62,10 +68,10 @@ inline ValueType getConstant( const enum ConstantType& c )
     switch( c )
     {
         case ONE:
-            val = ValueType( 1.0 );
+            val = ValueType( 1 );
             break;
         case ZERO:
-            val = ValueType( 0.0 );
+            val = ValueType( 0 );
             break;
         case EPS:
         	val = TypeTraits<ValueType>::getEps();
@@ -74,16 +80,20 @@ inline ValueType getConstant( const enum ConstantType& c )
     return val;
 }
 
+/** Comparison against constant ZERO or ONE uses machine-specific EPS */
+
 template<typename ValueType>
 bool operator==( const ValueType& x, const enum ConstantType& c )
 {
     return TypeTraits<ValueType>::abs( x - getConstant<ValueType>( c ) ) < getConstant<ValueType>( EPS );
 }
 
+/** Operator not equal also provided for convenience */
+
 template<typename ValueType>
 bool operator!=( const ValueType& x, const enum ConstantType& c )
 {
-    return !(TypeTraits<ValueType>::abs( x - getConstant<ValueType>( c ) ) < getConstant<ValueType>( EPS ));
+    return ! ( x == c );
 }
 
 } /* end namespace constants */

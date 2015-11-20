@@ -348,7 +348,7 @@ void isSortedKernel( bool* result, const IndexType numValues, const ValueType* v
 template<typename ValueType>
 bool CUDAUtils::isSorted( const ValueType array[], const IndexType n, bool ascending )
 {
-    SCAI_LOG_INFO( logger, "isSorted<" << TypeTraits<ValueType>::getScalarType()
+    SCAI_LOG_INFO( logger, "isSorted<" << TypeTraits<ValueType>::id()
                    << ">, n = " << n << ", ascending = " << ascending )
 
     SCAI_CHECK_CUDA_ACCESS
@@ -404,7 +404,7 @@ template<typename ValueType1, typename ValueType2>
 void CUDAUtils::setGather( ValueType1 out[], const ValueType2 in[], const IndexType indexes[], const IndexType n )
 {
     SCAI_LOG_INFO( logger,
-                   "setGather<" << TypeTraits<ValueType1>::getScalarType() << "," << TypeTraits<ValueType2>::getScalarType() << ">( ..., n = " << n << ")" )
+                   "setGather<" << TypeTraits<ValueType1>::id() << "," << TypeTraits<ValueType2>::id() << ">( ..., n = " << n << ")" )
 
     SCAI_CHECK_CUDA_ACCESS
 
@@ -435,7 +435,7 @@ template<typename ValueType1, typename ValueType2>
 void CUDAUtils::setScatter( ValueType1 out[], const IndexType indexes[], const ValueType2 in[], const IndexType n )
 {
     SCAI_LOG_INFO( logger,
-                   "setScatter<" << TypeTraits<ValueType1>::getScalarType() << "," << TypeTraits<ValueType2>::getScalarType() << ">( ..., n = " << n << ")" )
+                   "setScatter<" << TypeTraits<ValueType1>::id() << "," << TypeTraits<ValueType2>::id() << ">( ..., n = " << n << ")" )
 
     SCAI_CHECK_CUDA_ACCESS
 
@@ -466,7 +466,7 @@ template<typename ValueType1, typename ValueType2>
 void CUDAUtils::set( ValueType1 out[], const ValueType2 in[], const IndexType n )
 {
     SCAI_LOG_INFO( logger,
-                   "set<" << TypeTraits<ValueType1>::getScalarType() << "," << TypeTraits<ValueType2>::getScalarType() << ">( ..., n = " << n << ")" )
+                   "set<" << TypeTraits<ValueType1>::id() << "," << TypeTraits<ValueType2>::id() << ">( ..., n = " << n << ")" )
 
     SCAI_LOG_DEBUG( logger, "out = " << out << ", in = " << in )
 
@@ -494,7 +494,7 @@ void CUDAUtils::setScale( ValueType1 out[],
                           const ValueType2 in[], const IndexType n )
 {
     SCAI_LOG_INFO( logger,
-                   "set<" << TypeTraits<ValueType1>::getScalarType() << "," << TypeTraits<ValueType2>::getScalarType() << ">( ..., n = " << n << ")" )
+                   "set<" << TypeTraits<ValueType1>::id() << "," << TypeTraits<ValueType2>::id() << ">( ..., n = " << n << ")" )
 
     SCAI_LOG_DEBUG( logger, "out = " << out << ", in = " << in )
 
@@ -544,7 +544,7 @@ template<typename ValueType>
 void CUDAUtils::invert( ValueType array[], const IndexType n )
 {
     SCAI_LOG_INFO( logger,
-                   "invert Vector components for vector of type " << TypeTraits<ValueType>::getScalarType() << " and size n = " << n << "." )
+                   "invert Vector components for vector of type " << TypeTraits<ValueType>::id() << " and size n = " << n << "." )
 
     if ( n <= 0 )
     {

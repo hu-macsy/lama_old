@@ -49,7 +49,7 @@ namespace scai
 namespace common
 {
 
-/** Namespace for enumeration type. */
+/** Own namespace for the enumeration type ScalarType and its values. */
 
 namespace scalar
 {
@@ -88,10 +88,6 @@ namespace scalar
     COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const ScalarType& object );
 
 } /* end namespace scalar */
-
-// make ScalarType visible, but not the enum values
-
-using scalar::ScalarType;
 
 /**
  * @brief Conversion of a ScalarType to string

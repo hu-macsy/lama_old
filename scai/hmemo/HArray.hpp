@@ -229,7 +229,7 @@ public:
 
     static common::scalar::ScalarType createValue()
     {
-        return common::TypeTraits<ValueType>::getScalarType();
+        return common::TypeTraits<ValueType>::stype;
     }
 
     using ContextArray::resize;
@@ -439,7 +439,7 @@ common::scalar::ScalarType HArray<ValueType>::getValueType() const
 {
     // Note: this is implementation of the pure method of base class ContextArray.
 
-    return common::TypeTraits<ValueType>::getScalarType();
+    return common::TypeTraits<ValueType>::stype;
 }
 
 /* ---------------------------------------------------------------------------------*/

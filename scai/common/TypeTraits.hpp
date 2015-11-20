@@ -82,20 +82,22 @@ public:
     }
 
     /**
-     * @brief Conversion of the value type into value of enum ScalarType.
-    *
-    * @return value of enum type ScalarType that represents the corresponding type.
+     * @brief Corresponding type value of enum ScalarType.
     */
-    static inline scalar::ScalarType getScalarType()
-    {
-        return scalar::UNKNOWN;
-    }
+    static const scalar::ScalarType stype = scalar::UNKNOWN;
 
+    /**
+     * @brief Return name of the type for identification.
+     *
+     * Note: this routine returns more meaningful names than typeinfo( T ).name()
+     */
     static inline const char* id()
     {
         return scalar2str( scalar::UNKNOWN );
     }
 };
+
+/** Type specific traits for IndexType */
 
 template<>
 class TypeTraits<IndexType>
@@ -117,16 +119,15 @@ public:
         return std::numeric_limits<IndexType>::max();
     }
 
-    static inline scalar::ScalarType getScalarType()
-    {
-        return scalar::INDEX_TYPE;
-    }
+    static const scalar::ScalarType stype = scalar::INDEX_TYPE;
 
     static inline const char* id()
     {
         return scalar2str( scalar::INDEX_TYPE );
     }
 };
+
+/** Type specific traits for long double */
 
 template<>
 class TypeTraits<long double>
@@ -152,16 +153,15 @@ public:
         return std::numeric_limits<long double>::max();
     }
 
-    static inline scalar::ScalarType getScalarType()
-    {
-        return scalar::LONG_DOUBLE;
-    }
+    static const scalar::ScalarType stype = scalar::LONG_DOUBLE;
 
     static inline const char* id()
     {
         return scalar2str( scalar::LONG_DOUBLE );
     }
 };
+
+/** Type specific traits for double */
 
 template<>
 class TypeTraits<double>
@@ -184,15 +184,16 @@ public:
     {
         return std::numeric_limits<double>::max();
     }
-    static inline scalar::ScalarType getScalarType()
-    {
-        return scalar::DOUBLE;
-    }
+
+    static const scalar::ScalarType stype = scalar::DOUBLE;
+
     static inline const char* id()
     {
         return scalar2str( scalar::DOUBLE );
     }
 };
+
+/** Type specific traits for float */
 
 template<>
 class TypeTraits<float>
@@ -215,15 +216,16 @@ public:
     {
         return std::numeric_limits<float>::max();
     }
-    static inline scalar::ScalarType getScalarType()
-    {
-        return scalar::FLOAT;
-    }
+
+    static const scalar::ScalarType stype = scalar::FLOAT;
+
     static inline const char* id()
     {
-        return scalar2str( scalar::FLOAT );
+        return scalar2str( stype );
     }
 };
+
+/** Type specific traits for complex(float) */
 
 template<>
 class TypeTraits<ComplexFloat>
@@ -247,15 +249,16 @@ public:
     {
         return std::numeric_limits<float>::max();
     }
-    static inline scalar::ScalarType getScalarType()
-    {
-        return scalar::COMPLEX;
-    }
+
+    static const scalar::ScalarType stype = scalar::COMPLEX;
+
     static inline const char* id()
     {
         return "ComplexFloat";
     }
 };
+
+/** Type specific traits for complex(double) */
 
 template<>
 class TypeTraits<ComplexDouble>
@@ -278,15 +281,16 @@ public:
     {
         return std::numeric_limits<double>::epsilon();
     }
-    static inline scalar::ScalarType getScalarType()
-    {
-        return scalar::DOUBLE_COMPLEX;
-    }
+
+    static const scalar::ScalarType stype = scalar::DOUBLE_COMPLEX;
+
     static inline const char* id()
     {
         return scalar2str( scalar::DOUBLE_COMPLEX );
     }
 };
+
+/** Type specific traits for complex(long double) */
 
 template<>
 class TypeTraits<ComplexLongDouble>
@@ -297,25 +301,27 @@ public:
     {
         return scai::common::sqrt( x );
     }
+
     static inline ComplexLongDouble abs( ComplexLongDouble x )
     {
         return scai::common::abs( x );
     }
+
     static inline ComplexLongDouble getEps()
     {
         return std::numeric_limits<long double>::epsilon();
     }
+
     static inline ComplexLongDouble getMax()
     {
         return std::numeric_limits<long double>::max();
     }
-    static inline scalar::ScalarType getScalarType()
-    {
-        return scalar::LONG_DOUBLE_COMPLEX;
-    }
+
+    static const scalar::ScalarType stype = scalar::LONG_DOUBLE_COMPLEX;
+
     static inline const char* id()
     {
-        return scalar2str( scalar::LONG_DOUBLE_COMPLEX );
+        return scalar2str( stype );
     }
 };
 
@@ -323,7 +329,7 @@ public:
 
 template<typename ValueType> inline scalar::ScalarType getScalarType()
 {
-    return TypeTraits<ValueType>::getScalarType();
+    return TypeTraits<ValueType>::stype;
 }
 
 }  // namespace common

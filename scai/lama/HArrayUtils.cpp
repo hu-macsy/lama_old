@@ -111,17 +111,19 @@ void HArrayUtils::assignImpl1( HArray<ValueType>& target, const ContextArray& so
 
     // Different types -> select for corresponding template routine
 
-    switch( sourceType )
+    switch ( sourceType )
     {
-
         case common::scalar::INDEX_TYPE:
             assignImpl( target, dynamic_cast<const HArray<IndexType>&>( source ), loc );
             break;
 
-#define LAMA_ARRAY_ASSIGN( z, I, _ )                                                                \
-case SCALAR_ARITHMETIC_TYPE##I:                                                                     \
-    assignImpl( target, dynamic_cast<const HArray<ARITHMETIC_HOST_TYPE_##I>& >( source ), loc ); \
-    break;                                                                                          \
+        // for all the other arithmetic types we use BOOST_PP_REPEAT to loop over supported types
+
+#define LAMA_ARRAY_ASSIGN( z, I, _ )                                                                     \
+                                                                                                         \
+        case common::TypeTraits<ARITHMETIC_HOST_TYPE_##I>::stype :                                       \
+            assignImpl( target, dynamic_cast<const HArray<ARITHMETIC_HOST_TYPE_##I>& >( source ), loc ); \
+            break;                                                                                       \
 
         BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_ARRAY_ASSIGN, _ )
 
@@ -149,10 +151,12 @@ void HArrayUtils::assign( ContextArray& target, const ContextArray& source, cons
             assignImpl1( dynamic_cast<HArray<IndexType>&>( target ), source, validLoc );
             break;
 
-#define LAMA_ARRAY_ASSIGN1( z, I, _ )                                                                \
-case SCALAR_ARITHMETIC_TYPE##I:                                                                      \
-    assignImpl1( dynamic_cast<HArray< ARITHMETIC_HOST_TYPE_##I>& >( target ), source, validLoc ); \
-    break;
+        // for all the other arithmetic types we use BOOST_PP_REPEAT to loop over supported types
+
+#define LAMA_ARRAY_ASSIGN1( z, I, _ )                                                                     \
+        case common::TypeTraits<ARITHMETIC_HOST_TYPE_##I>::stype :                                        \
+            assignImpl1( dynamic_cast<HArray< ARITHMETIC_HOST_TYPE_##I>& >( target ), source, validLoc ); \
+            break;
 
         BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_ARRAY_ASSIGN1, _ )
 
@@ -227,7 +231,7 @@ void HArrayUtils::assignScalar( hmemo::ContextArray& target, const Scalar& value
             // for all supported arithmetic types generate it
 
 #define LAMA_ARRAY_ASSIGN_SCALAR( z, I, _ )                                   \
-case SCALAR_ARITHMETIC_TYPE##I:                                               \
+case common::TypeTraits<ARITHMETIC_HOST_TYPE_##I>::stype :                               \
 {                                                                             \
     HArray<ARITHMETIC_HOST_TYPE_##I>& typedTarget =                        \
             dynamic_cast<HArray<ARITHMETIC_HOST_TYPE_##I>&>( target );     \

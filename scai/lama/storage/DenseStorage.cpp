@@ -57,6 +57,7 @@ namespace scai
 {
 
 using common::shared_ptr;
+using common::TypeTraits;
 
 namespace lama
 {
@@ -1024,7 +1025,7 @@ ValueType DenseStorageView<ValueType>::l2Norm() const
 
     SCAI_CONTEXT_ACCESS( loc );
 
-    return common::TypeTraits<ValueType>::sqrt( dot[loc]( n, data.get(), 1, data.get(), 1 ) );
+    return TypeTraits<ValueType>::sqrt( dot[loc]( n, data.get(), 1, data.get(), 1 ) );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1158,7 +1159,7 @@ void DenseStorageView<ValueType>::assign( const _MatrixStorage& other )
         {
 
 #define LAMA_ASSIGN_DENSE_CALL( z, I, _ )                                                \
-case SCALAR_ARITHMETIC_TYPE##I:                                                          \
+case TypeTraits<ARITHMETIC_HOST_TYPE_##I>::stype :                                       \
 {                                                                                        \
     const DenseStorageView<ARITHMETIC_HOST_TYPE_##I>* otherTyped =                       \
             dynamic_cast<const DenseStorageView<ARITHMETIC_HOST_TYPE_##I>*>( &other );   \
