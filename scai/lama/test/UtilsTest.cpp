@@ -39,7 +39,7 @@
 #include <scai/lama/UtilKernelTrait.hpp>
 #include <scai/hmemo.hpp>
 
-#include <scai/common/test/TestMacros.hpp>
+#include <scai/lama/test/TestMacros.hpp>
 
 using namespace scai::lama;
 using namespace scai::hmemo;

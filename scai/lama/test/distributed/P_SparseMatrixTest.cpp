@@ -54,7 +54,7 @@
 
 #include <scai/lama/matutils/MatrixCreator.hpp>
 
-#include <scai/common/test/TestMacros.hpp>
+#include <scai/lama/test/TestMacros.hpp>
 
 using namespace scai::lama;
 using namespace scai::hmemo;

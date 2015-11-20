@@ -38,7 +38,7 @@
 #include <scai/common/Complex.hpp>
 #include <scai/common/TypeTraits.hpp>
 
-#include <scai/common/test/TestMacros.hpp>
+#include <scai/lama/test/TestMacros.hpp>
 
 //#include <complex>
 

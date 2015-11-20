@@ -56,7 +56,7 @@
 #include <scai/lama/test/EquationHelper.hpp>
 
 #include <scai/common/SCAITypes.hpp>
-#include <scai/common/test/TestMacros.hpp>
+#include <scai/lama/test/TestMacros.hpp>
 
 #include <scai/hmemo.hpp>
 
@@ -110,20 +110,22 @@ void verifySameVector( Vector& v1, Vector& v2 )
     for ( IndexType i = 0; i < n; ++i )
     {
         // BOOST_CHECK_CLOSE: cannot be used for Complex<ValueType>
-        SCAI_CHECK_CLOSE( v1.getValue( i ), v2.getValue( i ), 1 );
+        SCAI_CHECK_CLOSE( v1.getValue( i ).getValue<ValueType>(), v2.getValue( i ).getValue<ValueType>(), 1 );
     }
 }
 
 /* --------------------------------------------------------------------- */
 
 template<typename ValueType>
-void verifyVectorWithScalar( Vector& v, Scalar s )
+void verifyVectorWithScalar( Vector& v, Scalar _s )
 {
     IndexType n = v.size();
 
+    ValueType s = _s.getValue<ValueType>();
+
     for ( IndexType i = 0; i < n; ++i )
     {
-        SCAI_CHECK_CLOSE( v.getValue( i ), s, 1 );
+        SCAI_CHECK_CLOSE( v.getValue( i ).getValue<ValueType>(), s, 1 );
     }
 }
 

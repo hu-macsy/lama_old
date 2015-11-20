@@ -33,7 +33,7 @@
 
 #include <scai/lama/test/distributed/CommunicatorTest.hpp>
 
-#include <scai/common/test/TestMacros.hpp>
+#include <scai/lama/test/TestMacros.hpp>
 
 #include <scai/lama/Communicator.hpp>
 

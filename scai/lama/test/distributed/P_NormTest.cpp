@@ -38,7 +38,7 @@
 #include <scai/lama/distribution/BlockDistribution.hpp>
 
 #include <scai/lama/test/EquationHelper.hpp>
-#include <scai/common/test/TestMacros.hpp>
+#include <scai/lama/test/TestMacros.hpp>
 
 using namespace scai::lama;
 using namespace scai::hmemo;

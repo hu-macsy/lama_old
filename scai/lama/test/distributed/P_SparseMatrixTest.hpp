@@ -33,7 +33,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include <scai/lama/matrix/Matrix.hpp>
-#include <scai/common/test/TestMacros.hpp>
+#include <scai/lama/test/TestMacros.hpp>
 
 static std::string psparseMatrixtestclasses[] =
 {

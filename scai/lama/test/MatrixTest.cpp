@@ -47,7 +47,7 @@
 
 #include <scai/lama/matutils/MatrixCreator.hpp>
 
-#include <scai/common/test/TestMacros.hpp>
+#include <scai/lama/test/TestMacros.hpp>
 #include <scai/lama/test/SparseMatrixHelper.hpp>
 #include <scai/lama/test/Configuration.hpp>
 #include <scai/lama/test/SameMatrixHelper.hpp>

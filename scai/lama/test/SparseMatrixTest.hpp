@@ -35,7 +35,7 @@
 #include <scai/lama/matrix/Matrix.hpp>
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 
-#include <scai/common/test/TestMacros.hpp>
+#include <scai/lama/test/TestMacros.hpp>
 
 static std::string sparsematrixtestclasses[] =
 {

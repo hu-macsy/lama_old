@@ -38,7 +38,7 @@
 #include <scai/lama/HArrayUtils.hpp>
 
 #include <scai/lama/test/MatrixStorageTest.hpp>
-#include <scai/common/test/TestMacros.hpp>
+#include <scai/lama/test/TestMacros.hpp>
 
 using namespace scai::lama;
 using namespace scai::hmemo;
