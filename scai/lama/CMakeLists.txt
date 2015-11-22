@@ -135,6 +135,7 @@ scai_project(
 
         LAMAKernel
         LAMAArray
+        LAMAArrayRef
 
         CRTPCommunicator
     )

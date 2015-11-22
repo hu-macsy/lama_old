@@ -579,12 +579,15 @@ void COOStorage<ValueType>::setDiagonalImpl( const ValueType value )
 template<typename ValueType>
 void COOStorage<ValueType>::scaleImpl( const ValueType value )
 {
-    WriteAccess<ValueType> wValues( mValues );
+    static LAMAKernel<UtilKernelTrait::scale<ValueType> > scale;
 
-    for( IndexType i = 0; i < mNumValues; ++i )
-    {
-        wValues[i] *= value;
-    }
+    ContextPtr loc = scale.getValidContext( this->getContextPtr() );
+
+    SCAI_CONTEXT_ACCESS( loc )
+
+    WriteAccess<ValueType> wValues( mValues, loc );
+
+    scale[loc]( wValues.get(), value, mNumValues );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -593,18 +596,17 @@ template<typename ValueType>
 template<typename OtherType>
 void COOStorage<ValueType>::scaleImpl( const HArray<OtherType>& values )
 {
-    ContextPtr loc = Context::getHostPtr();
+    static LAMAKernel<COOKernelTrait::scaleRows<ValueType, OtherType> > scaleRows;
+
+    ContextPtr loc = scaleRows.getValidContext( this->getContextPtr() );
+
+    SCAI_CONTEXT_ACCESS( loc )
 
     ReadAccess<OtherType> rValues( values, loc );
     WriteAccess<ValueType> wValues( mValues, loc );  // update
     ReadAccess<IndexType> rIa( mIA, loc );
 
-    // Only host implementation available
-
-    for( IndexType i = 0; i < mNumValues; ++i )
-    {
-        wValues[i] *= static_cast<ValueType>( rValues[rIa[i]] );
-    }
+    scaleRows[loc]( wValues.get(), rValues.get(), rIa.get(), mNumValues );
 }
 
 /* --------------------------------------------------------------------------- */
