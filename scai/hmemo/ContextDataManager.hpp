@@ -163,9 +163,9 @@ public:
 
     /** This routine tries to find a context where valid data is available */
 
-    ContextPtr getValidContext( const common::context::ContextType preferredType );
+    ContextPtr getValidContext( const ContextPtr prefContext ) const;
 
-    ContextPtr getFirstTouchContextPtr();
+    ContextPtr getFirstTouchContextPtr() const;
 
     void reserve( ContextPtr context, const size_t size, const size_t validSize );
 

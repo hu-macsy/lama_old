@@ -75,6 +75,8 @@ class COMMON_DLL_IMPORTEXPORT HArray:
 {
 public:
 
+    typedef ValueType type;
+
     // WriteAccess and ReadAccess should be allowed to call some methods that
     // use ContextDataIndex for more efficient usage
 
@@ -111,7 +113,7 @@ public:
     explicit HArray( const IndexType n );
 
     /**
-     * @brief Creates a HArray of size n.
+     * @brief Create a HArray of size n and initialize it with one value.
      *
      * @param[in] n     the size of the HArray to create
      * @param[in] value the value to initialize the container contens with
@@ -122,19 +124,7 @@ public:
     HArray( const IndexType n, const ValueType& value );
 
     /**
-     * @brief Creates a HArray of size n.
-     *
-     * @param[in] n         the size of the HArray to create
-     * @param[in] values    the values to initialize the container contens with
-     *
-     * HArray( const IndexType n ) creates a HArray of size n, allocates Host memory and fills the Host memory with
-     * the passed values.
-     */
-    template<typename OtherValueType>
-    HArray( const IndexType n, const OtherValueType* const values );
-
-    /**
-     * @brief Creates a copy of the passed HArray.
+     * @brief Override the default copy constructor with appropriate version.
      *
      * @param[in] other the HArray to copy
      *
@@ -252,48 +242,7 @@ protected:
 
     IndexType capacity( ContextDataIndex index ) const;
 
-    SCAI_LOG_DECL_STATIC_LOGGER( logger )
-
 };
-
-/* ---------------------------------------------------------------------------------*/
-
-template<typename ValueType>
-template<typename OtherValueType>
-HArray<ValueType>::HArray( const IndexType n, const OtherValueType* const values )
-                : ContextArray( n, sizeof( ValueType ) )
-{
-    ContextPtr hostContextPtr = Context::getHostPtr();
-
-    ContextData& host = mContextDataManager[ hostContextPtr ];
-
-    if ( n <= 0 )
-    {
-        SCAI_LOG_DEBUG( logger, "Zero-sized array with value constructed: " << *this )
-        return;
-    }
-
-    host.allocate( mSize * sizeof(ValueType) );
-
-    SCAI_LOG_DEBUG( logger, "constructed: " << *this )
-
-    ValueType* hostData = static_cast<ValueType*>( host.get() );
-
-#pragma omp parallel for
-
-    for( IndexType i = 0; i < mSize; ++i )
-    {
-        hostData[i] = static_cast<ValueType>( values[i] );
-    }
-
-    host.setValid( true );
-
-    SCAI_LOG_DEBUG( logger, "constructed: " << *this )
-}
-
-/* ---------------------------------------------------------------------------------*/
-
-SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, HArray<ValueType>::logger, "HArray" )
 
 /* ---------------------------------------------------------------------------------*/
 
@@ -390,7 +339,7 @@ HArray<ValueType>::HArray( const IndexType n, const ValueType& value ) : Context
 /* ---------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-HArray<ValueType>::HArray( const HArray<ValueType>& other ): 
+HArray<ValueType>::HArray( const HArray<ValueType>& other ):  
 
     ContextArray( other.mSize, sizeof( ValueType ) )
 

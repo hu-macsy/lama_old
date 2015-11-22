@@ -132,14 +132,16 @@ public:
     /**
      * @brief Gets the first context where the data of this HArray is available.
      *
-     * If possible a context of the passed preferred type is returned.
+     * An argument can be passed to give a preferred context if the data is available 
+     * at multiple locations.
      *
-     * @param[in] preferredType the preferred type for the valid context.
-     * @return                  a context there the data of this HArray is available.
+     * @param[in] prefContext the preferred context to look for valid data
+     * @return                a context there the data of this HArray is valid.
      * 
-     * Note: NULL pointer is returned if no valid data is available
+     * Note: if the array has never been written to, no valid context is available.
+     *       In this case this method returns getFirstTouchContextPtr()
      */
-    ContextPtr getValidContext( const common::context::ContextType preferredType = common::context::Host ) const;
+    ContextPtr getValidContext( const ContextPtr prefContext = ContextPtr() ) const;
 
     /**
      * @brief Get the context where the array has been touched the first time.
@@ -214,7 +216,7 @@ protected:
     {
     }
 
-    // The following routines are used by read/write accesses
+    SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
 public:
 
@@ -321,9 +323,9 @@ inline IndexType ContextArray::capacity( ContextDataIndex index ) const
 
 /* ---------------------------------------------------------------------------------*/
 
-inline ContextPtr ContextArray::getValidContext( const common::context::ContextType preferredType ) const
+inline ContextPtr ContextArray::getValidContext( const ContextPtr prefContext ) const
 {
-    return mContextDataManager.getValidContext( preferredType );
+    return mContextDataManager.getValidContext( prefContext );
 }
 
 /* ---------------------------------------------------------------------------------*/

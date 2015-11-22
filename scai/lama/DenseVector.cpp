@@ -936,8 +936,9 @@ void DenseVector<ValueType>::assign( const Scalar value )
 {
     SCAI_LOG_DEBUG( logger, *this << ": assign " << value )
 
-    ContextPtr ctx = mLocalValues.getValidContext( mContext->getType() );
-    HArrayUtils::assignScalar( mLocalValues, value, ctx );
+    // assign the scalar value on the home of this dense vector.
+
+    HArrayUtils::assignScalar( mLocalValues, value, mContext );
 }
 
 template<typename ValueType>

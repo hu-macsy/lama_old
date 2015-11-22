@@ -105,13 +105,13 @@ scai_project (
          Context
          ContextData
          ContextDataManager
+         ContextArray
          HostContext
          HostMemory
          Memory
 
     HEADERS                  # .hpp only
 
-         ContextArray
          HArray
          HArrayRef
          ReadAccess

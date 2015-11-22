@@ -566,15 +566,16 @@ void OpenMPBLAS1::registerKernels( bool deleteFlag )
 
     SCAI_LOG_INFO( logger, "set BLAS1 routines for OpenMP in Interface" )
 
-    KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // lower priority
+    // KERNEL_ADD: these entries do not replace and can be replaced by other ones
+
+    KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;  
 
     if ( deleteFlag )
     {
         flag = KernelRegistry::KERNEL_ERASE;
     }
 
-// Note: macro takes advantage of same name for routines and type definitions
-//       ( e.g. routine CUDABLAS1::sum<ValueType> is set for BLAS::BLAS1::sum variable
+    // Loop over all support arithmetic types for CUDA
 
 #define LAMA_BLAS1_REGISTER(z, I, _)                                                             \
     KernelRegistry::set<BLASKernelTrait::scal<ARITHMETIC_HOST_TYPE_##I> >( scal, Host, flag );    \

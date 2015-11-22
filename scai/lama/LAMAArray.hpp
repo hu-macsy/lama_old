@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Definition of LAMAArray as HArray with more functionality
+ * @brief Definition of LAMAArray as HArray with additional kernel functionality.
  * @author Thomas Brandes
  * @date 18.11.2015
  */
@@ -49,6 +49,7 @@ namespace lama
 
 /** The LAMAArray is derived form HArray but offers some more functionality. 
  *
+ *  - constructor with array of values
  *  - copy operator with arbitrary array (implicit conversions)
  *  - assignment operator with scalar (initialization on any device)
  *  - assignment operator with arbitrary array (implicit conversions)
@@ -63,9 +64,60 @@ class LAMAArray : public hmemo::HArray<ValueType>
 {
 public:
 
+    /** Help class to observe the further use of operator[] in LAMAArray */
+    class IndexProxy
+    {
+    public:
+
+        /** Proxy constructed by ref to the array and the index value. */
+
+        IndexProxy( LAMAArray<ValueType>& array, const IndexType i ) :
+    
+            mArray( array ),
+            mIndex( i )
+        {
+        }
+    
+        /** indexed value proxy can be used to get its value */
+
+        operator ValueType() const
+        {
+             return HArrayUtils::getVal( mArray, mIndex );
+        }
+    
+        /** indexed value proxy can be assigned a value */
+
+        IndexProxy& operator= ( ValueType val )
+        {
+            HArrayUtils::setVal( mArray, mIndex, val );    
+        }
+
+        /** Override the default assignment operator to avoid ambiguous interpretation of a[i] = b[i] */
+ 
+        IndexProxy& operator= ( const IndexProxy& other )
+        {
+            ValueType tmp = HArrayUtils::getVal( mArray, mIndex );
+            HArrayUtils::setVal( mArray, mIndex, tmp );    
+        }
+
+    private:
+
+        LAMAArray<ValueType>& mArray;
+        IndexType mIndex;
+    
+    };
+
+    /* -------------------------------------------------------------------------------------- */
+    /* -   Constructors                                                                       */
+    /* -------------------------------------------------------------------------------------- */
+
+    /** Default constructor with no arguments. */
+
     LAMAArray()
     {
     }
+
+    /** Construct an array and give it a first touch */
 
     explicit LAMAArray( hmemo::ContextPtr context ) :
 
@@ -76,12 +128,12 @@ public:
 
     /** @brief Construcor with context and size.
      *
-     *  This constructor only allocates memory on the given device.
+     *  This constructor also allocates memory on the specified context.
      */
     explicit LAMAArray( const IndexType n,
                         hmemo::ContextPtr context = hmemo::ContextPtr() )
     {
-        this->resize( n );            // reserve does not include the resize.
+        this->resize( n );    // only sets the size, no allocate
 
         if ( context.get() != NULL )
         {
@@ -98,7 +150,7 @@ public:
 
     explicit LAMAArray( const IndexType n, 
                         const ValueType value, 
-                        hmemo::ContextPtr context = hmemo::Context::getHostPtr() ) 
+                        hmemo::ContextPtr context = hmemo::ContextPtr() ) 
     {
         // SCAI_ASSERT( context.get(), "NULL context" )
 
@@ -155,6 +207,13 @@ public:
         return *this;
     }
 
+    /** Assignment operator to initialize an array with a certain value.
+     *
+     *  @brief val is value to be assigned.
+     *
+     *  The size of the array remains unchanged and should have been set before.
+     *  Initialization is done on the first context of the array.
+     */
     LAMAArray& operator= ( const ValueType val )
     {
         //  assignment is done on the first touch memory/context
@@ -164,6 +223,17 @@ public:
         HArrayUtils::assignScalar( *this, val, this->getFirstTouchContextPtr() );
         return *this;
     }
+
+    IndexProxy operator[] ( const IndexType i )
+    {
+        return IndexProxy( *this, i );
+    }
+
+    ValueType operator[] ( const IndexType i ) const
+    {
+        return HArrayUtils::getVal( *this, i );
+    }
+
 };
 
 } /* end namespace lama */

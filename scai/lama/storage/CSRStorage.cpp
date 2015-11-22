@@ -322,7 +322,7 @@ void CSRStorage<ValueType>::setCSRDataImpl(
 
         // checking is done where ia is already valid, preferred is loc
 
-        ContextPtr loc1 = sum.getValidContext( ia.getValidContext( loc->getType() ) );
+        ContextPtr loc1 = sum.getValidContext( ia.getValidContext( loc ) );
 
         ReadAccess<IndexType> csrIA( ia, loc1 );
 
@@ -341,7 +341,7 @@ void CSRStorage<ValueType>::setCSRDataImpl(
 
         // checking is done where ia is already valid
 
-        ContextPtr loc1 = validOffsets.getValidContext( ia.getValidContext( loc->getType() ) );
+        ContextPtr loc1 = validOffsets.getValidContext( ia.getValidContext( loc ) );
 
         ReadAccess<IndexType> csrIA( ia, loc1 );
 
