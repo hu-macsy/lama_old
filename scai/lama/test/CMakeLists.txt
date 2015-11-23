@@ -91,7 +91,7 @@ scai_project (
         JDSUtilsTest
         L1NormTest
         L2NormTest
-        LAPACKTest
+#        LAPACKTest
         MatrixNormTest
         MatrixStorageConversionTest
         MatrixTest

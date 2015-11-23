@@ -31,10 +31,11 @@
 ###
 
 set ( CXX_SOURCES
-      BLASKernelTest.cpp
-      BLAS1Test.cpp
-      BLAS2Test.cpp
-      BLAS3Test.cpp
+      BLASKernelTest
+      BLAS1Test
+      BLAS2Test
+      BLAS3Test
+      LAPACKTest
 ) 
 
 include_directories ( ${Boost_INCLUDE_DIR} )
