@@ -66,18 +66,13 @@
 // boost
 #include <boost/preprocessor.hpp>
 
-// std
-#include <cmath>
-
-using std::abs;
-
-
 namespace scai
 {
 
 using namespace hmemo;
 using common::unique_ptr;
 using common::shared_ptr;
+using common::TypeTraits;
 
 using tasking::SyncToken;
 
@@ -674,7 +669,7 @@ void CSRStorage<ValueType>::compress( const ValueType eps /* = 0.0 */)
                 continue;
             }
 
-            if( abs( values[jj] ) <= eps )
+            if ( TypeTraits<ValueType>::abs( values[jj] ) <= eps )
             {
                 ++nonDiagZeros;
             }
@@ -702,7 +697,7 @@ void CSRStorage<ValueType>::compress( const ValueType eps /* = 0.0 */)
     {
         for( IndexType jj = ia[i] + gap; jj < ia[i + 1]; ++jj )
         {
-            if( abs( values[jj] ) <= eps && ja[jj] != i )
+            if( TypeTraits<ValueType>::abs( values[jj] ) <= eps && ja[jj] != i )
             {
                 ++gap;
                 continue;
@@ -923,7 +918,12 @@ void CSRStorage<ValueType>::setDiagonalImpl( const HArray<OtherValueType>& diago
         static LAMAKernel<UtilKernelTrait::setScatter<ValueType, OtherValueType> > setScatter;
 
         ContextPtr loc = setScatter.getValidContext( this->getContextPtr() );
+
+        SCAI_LOG_INFO( logger, "set diagonal<" << TypeTraits<ValueType>::id() << ", " 
+                        << TypeTraits<OtherValueType>::id() << "> ( " << numDiagonalElements << " ) @ " << *loc )
         
+        SCAI_CONTEXT_ACCESS( loc )
+
         ReadAccess<OtherValueType> rDiagonal( diagonal, loc );
         ReadAccess<IndexType> csrIA( mIa, loc );
 
@@ -2313,7 +2313,7 @@ ValueType CSRStorage<ValueType>::l2Norm() const
 
     SCAI_CONTEXT_ACCESS( loc );
 
-    return common::TypeTraits<ValueType>::sqrt(dot[loc]( mNumValues, data.get(), 1, data.get(), 1 ));
+    return TypeTraits<ValueType>::sqrt(dot[loc]( mNumValues, data.get(), 1, data.get(), 1 ));
 }
 
 /* --------------------------------------------------------------------------- */

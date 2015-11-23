@@ -25,11 +25,11 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Common base class for dynamic array classes where the array data can be
+ * @brief Common base class for the heterogeneous array where the data can be
  *        used in different contexts and where the data is moved implicitly
  *        when corresponding read/write accesses are required.
  *
- * @author Thomas Brandes, Jiri Krause
+ * @author Thomas Brandes
  * @date 03.07.2015
  */
 
@@ -99,6 +99,8 @@ protected:
 
 public:
 
+    /** Virtual destructor required. */
+
     virtual ~ContextArray()
     {
     }
@@ -115,7 +117,7 @@ public:
      *  allow writing general routines that require temporary data.
      *
      *  Note: derived class might implement this routine by using covariant return types.
-     *  Note: usually same as ContextArray::create( this->getValueType() )
+     *  Note: will be the same as ContextArray::create( this->getValueType() )
      */
 
     virtual ContextArray* clone() = 0;
@@ -141,7 +143,7 @@ public:
      * Note: if the array has never been written to, no valid context is available.
      *       In this case this method returns getFirstTouchContextPtr()
      */
-    ContextPtr getValidContext( const ContextPtr prefContext = ContextPtr() ) const;
+    inline ContextPtr getValidContext( const ContextPtr prefContext = ContextPtr() ) const;
 
     /**
      * @brief Get the context where the array has been touched the first time.
@@ -151,7 +153,7 @@ public:
      *
      * This method can be used for Write only accesses where valid data is not required.
      */
-    ContextPtr getFirstTouchContextPtr() const;
+    inline ContextPtr getFirstTouchContextPtr() const;
 
     /**
      * @brief Prefetches the content of the container to a certain location.

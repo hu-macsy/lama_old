@@ -25,11 +25,9 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Common base class for dynamic array classes where the array data can be
- *        used in different contexts and where the data is moved implicitly
- *        when corresponding read/write accesses are required.
+ * @brief Implementations of class ContextArray.
  *
- * @author Thomas Brandes, Jiri Krause
+ * @author Thomas Brandes
  * @date 03.07.2015
  */
 
