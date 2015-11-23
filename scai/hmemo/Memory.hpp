@@ -95,8 +95,8 @@ COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const Me
  */
 class COMMON_DLL_IMPORTEXPORT Memory: 
   
-    public  scai::common::Printable,
-    private scai::common::NonCopyable
+    public  common::Printable,
+    private common::NonCopyable
 {
 public:
 
