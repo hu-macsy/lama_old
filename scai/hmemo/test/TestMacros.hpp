@@ -1,5 +1,5 @@
 /**
- * @file scai/hmemo/test/HMEMOTestMacros.hpp
+ * @file scai/hmemo/test/TestMacros.hpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -115,29 +115,29 @@ inline scai::common::context::ContextType mapEnvContexttoContextType( std::strin
  * is set to a specific context, just this context will be used.
  */
 
-#define CONTEXTLOOP()                                                                                                  \
-    std::list<scai::common::context::ContextType> listofcontexts;                                                      \
-    std::list<scai::common::context::ContextType>::iterator Iter;                                                      \
-    std::string contexttype;                                                                                           \
-    contexttype = getEnvContext();                                                                                     \
-    if ( contexttype == "*" )                                                                                          \
-    {                                                                                                                  \
+#define CONTEXTLOOP()                                                                                                       \
+    std::list<scai::common::context::ContextType> listofcontexts;                                                           \
+    std::list<scai::common::context::ContextType>::iterator Iter;                                                           \
+    std::string contexttype;                                                                                                \
+    contexttype = getEnvContext();                                                                                          \
+    if ( contexttype == "*" )                                                                                               \
+    {                                                                                                                       \
         SCAI_LOG_INFO( logger, "LAMA_TEST_CONTEXT is not set or has value '*', so all available contexts will be used." );  \
-        for ( int i = 0; i < scai::common::context::MaxContext; ++i )                                                  \
-        {                                                                                                              \
-            scai::common::context::ContextType ctx = static_cast<scai::common::context::ContextType>( i + 1 );         \
-            if ( Context::hasContext( ctx ) )                                                                          \
-            {                                                                                                          \
-                listofcontexts.push_back( ctx );                                                                       \
-                SCAI_LOG_DEBUG( logger, "Context " << ctx << " is available");                                           \
-            }                                                                                                          \
-            else                                                                                                       \
-                SCAI_LOG_INFO( logger, "The following context will be skipped, because it is not available: " << ctx );\
-        }                                                                                                              \
-    } else {                                                                                                           \
-        listofcontexts.push_back( mapEnvContexttoContextType( contexttype ) );                                         \
-        SCAI_LOG_INFO( logger, "Environment variable LAMA_TEST_CONTEXT contains context = " << getEnvContext() );      \
-    }                                                                                                                  \
+        for ( int i = 0; i < scai::common::context::MaxContext; ++i )                                                       \
+        {                                                                                                                   \
+            scai::common::context::ContextType ctx = static_cast<scai::common::context::ContextType>( i + 1 );              \
+            if ( Context::hasContext( ctx ) )                                                                               \
+            {                                                                                                               \
+                listofcontexts.push_back( ctx );                                                                            \
+                SCAI_LOG_DEBUG( logger, "Context " << ctx << " is available");                                              \
+            }                                                                                                               \
+            else                                                                                                            \
+                SCAI_LOG_INFO( logger, "The following context will be skipped, because it is not available: " << ctx );     \
+        }                                                                                                                   \
+    } else {                                                                                                                \
+        listofcontexts.push_back( mapEnvContexttoContextType( contexttype ) );                                              \
+        SCAI_LOG_INFO( logger, "Environment variable LAMA_TEST_CONTEXT contains context = " << getEnvContext() );           \
+    }                                                                                                                       \
     for ( Iter = listofcontexts.begin(); Iter != listofcontexts.end(); Iter++ )
 
 /*
@@ -162,7 +162,8 @@ inline scai::common::context::ContextType mapEnvContexttoContextType( std::strin
 #define LAMA_RUN_TEST(z, I, method )                                                                            \
     try                                                                                                         \
     {                                                                                                           \
-        if ( context->getType() == scai::common::context::CUDA )                                                \
+        if ( context->getType() == scai::common::context::CUDA                                                  \
+				|| context->getType() == scai::common::context::MIC )                                           \
         {                                                                                                       \
             switch( scai::common::getScalarType<ARITHMETIC_HOST_TYPE_##I>() )                                   \
             {                                                                                                   \
@@ -177,7 +178,7 @@ inline scai::common::context::ContextType mapEnvContexttoContextType( std::strin
     }                                                                                                           \
     catch ( scai::kregistry::KernelRegistryException& )                                                         \
     {                                                                                                           \
-        SCAI_LOG_WARN( logger, #method << "<" << PRINT_STRING( ARITHMETIC_HOST_TYPE_##I ) << "> cannot run on "          \
+        SCAI_LOG_WARN( logger, #method << "<" << PRINT_STRING( ARITHMETIC_HOST_TYPE_##I ) << "> cannot run on " \
                        << context->getType() << ", corresponding function not implemented yet."        )        \
         return;                                                                                                 \
     }
@@ -191,28 +192,15 @@ inline scai::common::context::ContextType mapEnvContexttoContextType( std::strin
  * @param name          name of test method, which will invoke.
  * @param classname     name of the given test class.
  */
-/*
 #define LAMA_AUTO_TEST_CASE( name, classname )                                                                         \
     BOOST_AUTO_TEST_CASE( name )                                                                                       \
     {                                                                                                                  \
         CONTEXTLOOP()                                                                                                  \
         {                                                                                                              \
             GETCONTEXT( context );                                                                                     \
-            if ( loglevel_argument == "test_suite" )                                                                   \
+            IF_LOG_LEVEL_IS_TEST_SUITE                                                                                 \
                 SCAI_LOG_INFO( logger, "    Entering context: " << context->getType() );                               \
-                scai::lama::classname::name( context );                                                                \
-        }                                                                                                              \
-    }
-*/
-#define LAMA_AUTO_TEST_CASE( name, classname )                                                                         \
-    BOOST_AUTO_TEST_CASE( name )                                                                                       \
-    {                                                                                                                  \
-        CONTEXTLOOP()                                                                                                  \
-        {                                                                                                              \
-            GETCONTEXT( context );                                                                                     \
-            IF_LOG_LEVEL_IS_TEST_SUITE                  \
-                SCAI_LOG_INFO( logger, "    Entering context: " << context->getType() );                               \
-			scai::lama::classname::name( context );                                                                \
+			scai::lama::classname::name( context );                                                                    \
         }                                                                                                              \
     }
 
@@ -225,39 +213,21 @@ inline scai::common::context::ContextType mapEnvContexttoContextType( std::strin
  * @param name          name of test method, which will invoke.
  * @param classname     name of the given test class.
 */
-/*
-#define LAMA_AUTO_TEST_CASE_CT( name, classname, namespacename )                                     \
-                                                                                                     \
-    BOOST_AUTO_TEST_CASE( name )                                                                     \
-    {                                                                                                \
-        CONTEXTLOOP()                                                                                \
-        {                                                                                            \
-            GETCONTEXT( context )                                                                    \
-            if ( loglevel_argument == "test_suite" )                                                 \
-            {                                                                                        \
-                SCAI_LOG_INFO( logger, "    Entering context: " << context->getType() );             \
-            }                                                                                        \
-            const std::string lama_name = #name;                                                     \
-            const std::string lama_classname = #classname;                                           \
-            BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_RUN_TEST, namespacename::classname::name )    \
-        }                                                                                            \
-    }
-    */
-#define LAMA_AUTO_TEST_CASE_CT( name, classname, namespacename )                                     \
-                                                                                                     \
-    BOOST_AUTO_TEST_CASE( name )                                                                     \
-    {                                                                                                \
-        CONTEXTLOOP()                                                                                \
-        {                                                                                            \
-            GETCONTEXT( context )                                                                    \
-			IF_LOG_LEVEL_IS_TEST_SUITE\
-            {                                                                                        \
-                SCAI_LOG_INFO( logger, "    Entering context: " << context->getType() );             \
-            }                                                                                        \
-            const std::string lama_name = #name;                                                     \
-            const std::string lama_classname = #classname;                                           \
-            BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_RUN_TEST, namespacename::classname::name )    \
-        }                                                                                            \
+#define LAMA_AUTO_TEST_CASE_CT( name, classname, namespacename )                                        \
+                                                                                                        \
+    BOOST_AUTO_TEST_CASE( name )                                                                        \
+    {                                                                                                   \
+        CONTEXTLOOP()                                                                                   \
+        {                                                                                               \
+            GETCONTEXT( context )                                                                       \
+			IF_LOG_LEVEL_IS_TEST_SUITE                                                                  \
+            {                                                                                           \
+                SCAI_LOG_INFO( logger, "    Entering context: " << context->getType() );                \
+            }                                                                                           \
+            const std::string lama_name = #name;                                                        \
+            const std::string lama_classname = #classname;                                              \
+            BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_RUN_TEST, namespacename::classname::name )  \
+        }                                                                                               \
     }
 
     /*
@@ -269,29 +239,13 @@ inline scai::common::context::ContextType mapEnvContexttoContextType( std::strin
      * @param name          name of test method, which will invoke.
      * @param classname     name of the given test class.
      */
-/*
 #define LAMA_AUTO_TEST_CASE_CTL( name, classname )                                                                     \
     BOOST_AUTO_TEST_CASE( name )                                                                                       \
     {                                                                                                                  \
         CONTEXTLOOP()                                                                                                  \
         {                                                                                                              \
             GETCONTEXT( context )                                                                                      \
-            if ( loglevel_argument == "test_suite" )                                                                   \
-            {                                                                                                          \
-                SCAI_LOG_INFO( logger, "    Entering context: " << context->getType() );                               \
-            }                                                                                                          \
-            BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE__CNT, LAMA_RUN_TESTL, scai::lama::classname::name )                 \
-        }                                                                                                              \
-    }
-*/
-
-#define LAMA_AUTO_TEST_CASE_CTL( name, classname )                                                                     \
-    BOOST_AUTO_TEST_CASE( name )                                                                                       \
-    {                                                                                                                  \
-        CONTEXTLOOP()                                                                                                  \
-        {                                                                                                              \
-            GETCONTEXT( context )                                                                                      \
-			IF_LOG_LEVEL_IS_TEST_SUITE                  \
+			IF_LOG_LEVEL_IS_TEST_SUITE                                                                                 \
             {                                                                                                          \
                 SCAI_LOG_INFO( logger, "    Entering context: " << context->getType() );                               \
             }                                                                                                          \
@@ -317,7 +271,7 @@ inline scai::common::context::ContextType mapEnvContexttoContextType( std::strin
         CONTEXTLOOP()                                                                                                  \
         {                                                                                                              \
             GETCONTEXT( context );                                                                                     \
-            IF_LOG_LEVEL_IS_TEST_SUITE                                                                   \
+            IF_LOG_LEVEL_IS_TEST_SUITE                                                                                 \
             {                                                                                                          \
                 SCAI_LOG_INFO( logger, "    Entering context: " << context->getType() );                               \
             }                                                                                                          \
@@ -376,14 +330,13 @@ inline scai::common::context::ContextType mapEnvContexttoContextType( std::strin
      * @param name          name of test method, which will invoke.
      * @param classname     name of the given test class.
      */
-/*
 #define LAMA_AUTO_TEST_CASE_CTDUMMY( name, classname )                                                                 \
     BOOST_AUTO_TEST_CASE( name )                                                                                       \
     {                                                                                                                  \
         CONTEXTLOOP()                                                                                                  \
         {                                                                                                              \
             GETCONTEXT( context );                                                                                     \
-            if ( loglevel_argument == "test_suite" )                                                                   \
+            IF_LOG_LEVEL_IS_TEST_SUITE                                                                                 \
             {                                                                                                          \
                 SCAI_LOG_INFO( logger, "    Entering context: " << context->getType() );                               \
             }                                                                                                          \
@@ -401,64 +354,14 @@ inline scai::common::context::ContextType mapEnvContexttoContextType( std::strin
             }                                                                                                          \
         }                                                                                                              \
     }
-*/
-#define LAMA_AUTO_TEST_CASE_CTDUMMY( name, classname )                                                                 \
+
+#define LAMA_AUTO_TEST_CASE_CDUMMY( name, classname )                                                                  \
     BOOST_AUTO_TEST_CASE( name )                                                                                       \
     {                                                                                                                  \
         CONTEXTLOOP()                                                                                                  \
         {                                                                                                              \
             GETCONTEXT( context );                                                                                     \
-            IF_LOG_LEVEL_IS_TEST_SUITE                  \
-            {                                                                                                          \
-                SCAI_LOG_INFO( logger, "    Entering context: " << context->getType() );                               \
-            }                                                                                                          \
-            const std::string lama_name = #name;                                                                       \
-            const std::string lama_classname = #classname;                                                             \
-            try                                                                                                        \
-            {                                                                                                          \
-                       scai::lama::classname::name<name>( context );                                                   \
-            }                                                                                                          \
-            catch ( scai::kregistry::KernelRegistryException& )                                                        \
-            {                                                                                                          \
-                SCAI_LOG_WARN( logger, lama_classname << "::" << lama_name << " cannot run on  "                       \
-                               << context->getType() << ", corresponding function not implemented yet." );             \
-                return;                                                                                                \
-            }                                                                                                          \
-        }                                                                                                              \
-    }
-/*
-#define LAMA_AUTO_TEST_CASE_CDUMMY( name, classname )                                                                 \
-    BOOST_AUTO_TEST_CASE( name )                                                                                       \
-    {                                                                                                                  \
-        CONTEXTLOOP()                                                                                                  \
-        {                                                                                                              \
-            GETCONTEXT( context );                                                                                     \
-            if ( loglevel_argument == "test_suite" )                                                                   \
-            {                                                                                                          \
-                SCAI_LOG_INFO( logger, "    Entering context: " << context->getType() );                               \
-            }                                                                                                          \
-            const std::string lama_name = #name;                                                                       \
-            const std::string lama_classname = #classname;                                                             \
-            try                                                                                                        \
-            {                                                                                                          \
-                scai::lama::classname::name( context );                                                                \
-            }                                                                                                          \
-            catch ( scai::kregistry::KernelRegistryException& )                                                        \
-            {                                                                                                          \
-                SCAI_LOG_WARN( logger, lama_classname << "::" << lama_name << " cannot run on  "                       \
-                               << context->getType() << ", corresponding function not implemented yet." );             \
-                return;                                                                                                \
-            }                                                                                                          \
-        }                                                                                                              \
-    }
-*/
-#define LAMA_AUTO_TEST_CASE_CDUMMY( name, classname )                                                                 \
-    BOOST_AUTO_TEST_CASE( name )                                                                                       \
-    {                                                                                                                  \
-        CONTEXTLOOP()                                                                                                  \
-        {                                                                                                              \
-            GETCONTEXT( context );                                                                                     \
-            IF_LOG_LEVEL_IS_TEST_SUITE                  \
+            IF_LOG_LEVEL_IS_TEST_SUITE                                                                                 \
             {                                                                                                          \
                 SCAI_LOG_INFO( logger, "    Entering context: " << context->getType() );                               \
             }                                                                                                          \

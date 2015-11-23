@@ -40,11 +40,6 @@
 #include <scai/common/ScalarType.hpp>
 #include <scai/common/TypeTraits.hpp>
 
-// TODO: no dependencies to project ahead
-#include <scai/hmemo/Context.hpp>
-#include <scai/lama/Scalar.hpp>
-#include <scai/kregistry/exception/KernelRegistryException.hpp>
-
 // boost
 #include <boost/assign/list_of.hpp>
 #include <boost/preprocessor.hpp>
@@ -118,22 +113,6 @@ inline ComplexLongDouble eps<ComplexLongDouble>()
     return ComplexLongDouble(1E-8L);
 }
 
-
-//template<typename ValueType>
-//inline scai::lama::Scalar scalarEps();
-//
-//template<>
-//inline scai::lama::Scalar scalarEps<float>()
-//{
-//    return scai::lama::Scalar( 1E-8f );
-//}
-//
-//template<>
-//inline scai::lama::Scalar scalarEps<double>()
-//{
-//    return scai::lama::Scalar( 1E-16 );
-//}
-
 /*
  * @brief HelperMacro SCAI_CHECK_SCALAR_CLOSE( x, y, type, percent_eps )
  *
@@ -148,9 +127,9 @@ inline ComplexLongDouble eps<ComplexLongDouble>()
  *
  */
 
-#define SCAI_CHECK_CLOSE( x, y, tolerance ) 																	\
-	{																											\
-		ValueType diff = (x) - (y);																				\
+#define SCAI_CHECK_CLOSE( x, y, tolerance ) 																	    \
+	{																											    \
+		ValueType diff = (x) - (y);																				    \
 		BOOST_CHECK( scai::common::TypeTraits<ValueType>::abs( diff ) < static_cast<ValueType>( tolerance ) ) ;		\
 	}
 
@@ -183,7 +162,7 @@ inline ComplexLongDouble eps<ComplexLongDouble>()
  * @param ValueType     type of Scalar to be used for test
  */
 
-#define SCAI_CHECK_SCALAR_SMALL_EPS( x, ValueType )                                                                    \
+#define SCAI_CHECK_SCALAR_SMALL_EPS( x, ValueType )                  \
     SCAI_CHECK_SCALAR_SMALL( x, ValueType, eps<ValueType> () )
 
 /*
@@ -197,11 +176,13 @@ inline ComplexLongDouble eps<ComplexLongDouble>()
  */
 
 #define LAMA_WRITEAT_TEST( printable )                                                                                 \
-    { scai::common::Printable* p = dynamic_cast<scai::common::Printable*>( &printable );                                                           \
+    {                                                                                                                  \
+        scai::common::Printable* p = dynamic_cast<scai::common::Printable*>( &printable );                             \
         std::stringstream mStream;                                                                                     \
         p->writeAt( mStream );                                                                                         \
         std::string mString = mStream.str();                                                                           \
-        BOOST_CHECK( mString.length() > 0 ); }
+        BOOST_CHECK( mString.length() > 0 );                                                                           \
+    }
 
 /*
  * @brief HelperMacro LAMA_WRITEAT_PTR_TEST( printable )
@@ -214,11 +195,13 @@ inline ComplexLongDouble eps<ComplexLongDouble>()
  * @param printable     pointer to an object of type printable
  */
 
-#define LAMA_WRITEAT_PTR_TEST( printable )                                                                             \
-    { std::stringstream mStream;                                                                                       \
-        printable->writeAt( mStream );                                                                                 \
-        std::string mString = mStream.str();                                                                           \
-        BOOST_CHECK( mString.length() > 0 ); }
+#define LAMA_WRITEAT_PTR_TEST( printable )         \
+    {                                              \
+        std::stringstream mStream;                 \
+        printable->writeAt( mStream );             \
+        std::string mString = mStream.str();       \
+        BOOST_CHECK( mString.length() > 0 );       \
+    }
 
 /*
  * @brief HelperMacro LAMA_AUTO_TEST_CASE_T( name, classname )
@@ -256,20 +239,6 @@ inline ComplexLongDouble eps<ComplexLongDouble>()
         scai::lama::classname::name<double>( logger );                                                                 \
     }
 
-// we need the double trick, otherwise we just see ARITHMETIC_HOST_TYPE_##I in output
-
-#define LAMA_RUN_TESTL(z, I, method )                                                                  			\
-    try                                                                                                			\
-    {                                                                                                  			\
-        method<ARITHMETIC_HOST_TYPE_##I>( context, logger );                                           			\
-    }                                                                                                  			\
-    catch ( scai::kregistry::KernelRegistryException& )                                                			\
-    {                                                                                                  			\
-        SCAI_LOG_WARN( logger, #method << "<" << PRINT_STRING( ARITHMETIC_HOST_TYPE_##I ) << "> cannot run on " \
-                       << context->getType() << ", corresponding function not implemented yet." );     			\
-        return;                                                                                        			\
-    }                                                                                                  			\
-
     /*
      * @brief HelperMacro COMMONTESTCASEINVOKER( object_name, method_name )
      *
@@ -279,8 +248,20 @@ inline ComplexLongDouble eps<ComplexLongDouble>()
      * @param method_name     name of method that will be called.
      */
 
-#define COMMONTESTCASEINVOKER( object_name, method_name )                                                              \
-    { if ( testcase == #method_name ) try {object_name.method_name();} catch(scai::common::UnsupportedException const& ex) { std::cout << "failed on " #method_name << std::endl; } }
+#define COMMONTESTCASEINVOKER( object_name, method_name )            \
+    {                                                                \
+        if ( testcase == #method_name )                              \
+        {                                                            \
+        	try                                                      \
+            {                                                        \
+        		object_name.method_name();                           \
+            }                                                        \
+            catch(scai::common::UnsupportedException const& ex)      \
+            {                                                        \
+            	std::cout << "failed on " #method_name << std::endl; \
+            }                                                        \
+        }                                                            \
+	}
 
     /*
      * @brief HelperMacro COMMONTESTCASEINVOKER_TEMPLATE( object_name, method_name, ValueType )
@@ -291,8 +272,11 @@ inline ComplexLongDouble eps<ComplexLongDouble>()
      * @param method_name     name of method that will be called.
      */
 
-#define COMMONTESTCASEINVOKER_TEMPLATE( object_name, method_name, ValueType )                                          \
-    { if ( testcase == #method_name ) object_name.method_name<ValueType>(); }
+#define COMMONTESTCASEINVOKER_TEMPLATE( object_name, method_name, ValueType )   \
+    {                                                                           \
+		if ( testcase == #method_name )                                         \
+			object_name.method_name<ValueType>();                               \
+	}
 
     /*
      * @brief HelperMacro LAMA_COMMON_TEST_CASE_TM( classname, templatename, methodname )
@@ -308,7 +292,7 @@ inline ComplexLongDouble eps<ComplexLongDouble>()
     void classname::methodname()                                                                                       \
     {                                                                                                                  \
         const std::string lama_common_testcase_method = #methodname;                                                   \
-        IF_LOG_LEVEL_IS_TEST_SUITE                      \
+        IF_LOG_LEVEL_IS_TEST_SUITE                                                                                     \
             BOOST_TEST_MESSAGE( "    Entering common test case \"" + lama_common_testcase_method + "\" " );            \
         /*
          * @brief HelperMacro LAMA_COMMON_TEST_CASE_TM_END()
@@ -317,7 +301,7 @@ inline ComplexLongDouble eps<ComplexLongDouble>()
          *
          */
 #define LAMA_COMMON_TEST_CASE_TM_END();                                                                                \
-	IF_LOG_LEVEL_IS_TEST_SUITE                         \
+	IF_LOG_LEVEL_IS_TEST_SUITE                                                                                         \
         BOOST_TEST_MESSAGE( "    Leaving common test case \"" + lama_common_testcase_method + "\" " );                 \
     }
 
@@ -333,7 +317,7 @@ inline ComplexLongDouble eps<ComplexLongDouble>()
     void classname::methodname()                                                                                       \
     {                                                                                                                  \
         const std::string lama_common_testcase_method = #methodname;                                                   \
-        IF_LOG_LEVEL_IS_TEST_SUITE                       \
+        IF_LOG_LEVEL_IS_TEST_SUITE                                                                                     \
             BOOST_TEST_MESSAGE( "    Entering common test case \"" + lama_common_testcase_method + "\" " );            \
 
         /*
@@ -343,7 +327,7 @@ inline ComplexLongDouble eps<ComplexLongDouble>()
          *
          */
 #define LAMA_COMMON_TEST_CASE_END();                                                                                   \
-	IF_LOG_LEVEL_IS_TEST_SUITE                       	   \
+	IF_LOG_LEVEL_IS_TEST_SUITE                                                                                   	   \
         BOOST_TEST_MESSAGE( "    Leaving common test case \"" + lama_common_testcase_method + "\" " );                 \
     }
 
@@ -374,7 +358,7 @@ inline ComplexLongDouble eps<ComplexLongDouble>()
         std::ostringstream omsg;                                                                                       \
         omsg << scai::common::getScalarType<templatename>();                                                           \
         std::string lama_common_testcase_template = omsg.str();                                                        \
-        IF_LOG_LEVEL_IS_TEST_SUITE                       \
+        IF_LOG_LEVEL_IS_TEST_SUITE                                                                                     \
         {                                                                                                              \
             SCAI_LOG_INFO( logger, "    Entering common test case \"" + lama_common_testcase_method + "<" +            \
                            lama_common_testcase_template + ">\" " );                                                   \
@@ -388,9 +372,9 @@ inline ComplexLongDouble eps<ComplexLongDouble>()
          * This macro closes this test method.
          *
          */
-#define LAMA_COMMON_TEST_CASE_TEMPLATE_END();                                                                            \
-		IF_LOG_LEVEL_IS_TEST_SUITE                             \
-        	SCAI_LOG_INFO( logger, "    Leaving common test case \"" + lama_common_testcase_method + "\" " );                \
+#define LAMA_COMMON_TEST_CASE_TEMPLATE_END();                                                                    \
+		IF_LOG_LEVEL_IS_TEST_SUITE                                                                               \
+        	SCAI_LOG_INFO( logger, "    Leaving common test case \"" + lama_common_testcase_method + "\" " );    \
     }
 
         /*

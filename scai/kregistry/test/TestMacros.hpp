@@ -35,27 +35,23 @@
 
 #include <scai/common/test/TestMacros.hpp>
 #include <scai/hmemo/test/TestMacros.hpp>
-#include <scai/kregistry/test/TestMacros.hpp>
 
-#include <scai/lama/Scalar.hpp>
+#include <scai/kregistry/exception/KernelRegistryException.hpp>
 
 /*
  * Redefinition of SCAI_CHECK_CLOSE
  * works even if ValueType is unknown
  */
 
-#ifdef SCAI_CHECK_CLOSE
-
-#undef 	SCAI_CHECK_CLOSE
-
-#define SCAI_CHECK_CLOSE( x, y, tolerance )                         \
-    {                                                               \
-        Scalar xScalar = Scalar( x );                               \
-        Scalar yScalar = Scalar( y );                               \
-        ComplexDouble xVal = xScalar.getValue<ComplexDouble>();     \
-        ComplexDouble yVal = yScalar.getValue<ComplexDouble>();     \
-        BOOST_CHECK_CLOSE( xVal.real(), yVal.real(), tolerance );   \
-        BOOST_CHECK_CLOSE( xVal.imag(), yVal.imag(), tolerance );   \
+#define LAMA_RUN_TESTL(z, I, method )                                                                  			\
+    try                                                                                                			\
+    {                                                                                                  			\
+        method<ARITHMETIC_HOST_TYPE_##I>( context, logger );                                           			\
+    }                                                                                                  			\
+    catch ( scai::kregistry::KernelRegistryException& )                                                			\
+    {                                                                                                  			\
+        SCAI_LOG_WARN( logger, #method << "<" << PRINT_STRING( ARITHMETIC_HOST_TYPE_##I ) << "> cannot run on " \
+                       << context->getType() << ", corresponding function not implemented yet." );     			\
+        return;                                                                                        			\
     }
 
-#endif
