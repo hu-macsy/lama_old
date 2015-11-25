@@ -63,4 +63,4 @@ endif ( OPENMP_FOUND )
 ## install examples
 configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/make.inc.in" "${CMAKE_CURRENT_BINARY_DIR}/make.inc" )
 install ( DIRECTORY ./ DESTINATION share/examples/scai-logging-${SCAI_LOGGING_VERSION} FILES_MATCHING PATTERN "*.cpp" )
-install ( FILES Makefile ${CMAKE_CURRENT_BINARY_DIR}/make.inc DESTINATION share/examples/scai-logging-${SCAI_LOGGING_VERSION} )
+install ( FILES config Makefile ${CMAKE_CURRENT_BINARY_DIR}/make.inc DESTINATION share/examples/scai-logging-${SCAI_LOGGING_VERSION} )
