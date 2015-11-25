@@ -43,7 +43,8 @@ SCAI_LOG_DEF_LOGGER( logger, "CudaExample" )
 
 namespace scai
 {
-	extern cusparseHandle_t CUDAContext_cusparseHandle;
+	extern cublasHandle_t CUDAContext_cublasHandle;
+
 } /* end namespace scai */
 
 using namespace scai;
@@ -70,81 +71,42 @@ int main()
     ContextPtr cuda = Context::getContextPtr( common::context::CUDA );
 
     /***********************************************************************
-     *  Definition of input data via LAMA arrays                           *
+     *  Definition of input data via heterogeneous arrays                  *
      **********************************************************************/
 
-    int numRows = 4;
-    int numColumns = 4;
-    int numValues  = 9;
-    int ia[] = { 0, 0, 1, 1, 1, 2, 2, 3, 3 };
-    int ja[] = { 0, 1, 0, 1, 2, 2, 3, 1, 3 };
-    float values[] = { 1.0, 2.0, 5.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0 };
+    float a[] = { 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0 };
+    float b[] = { 10.0, 9.0, 8.0, 7.0, 6.0, 5.0, 4.0, 3.0, 2.0, 1.0 };
+
+    int n  = sizeof( a ) / sizeof( float );
+    int n1 = sizeof( b ) / sizeof( float );
+
+    SCAI_ASSERT_EQUAL( n, n1, "mismatch of arrays for dot product" )
 
     // by using HArrayRef copy of elements on Host is not required
 
-    HArrayRef<int> cooIA( numValues, ia );
-    HArrayRef<int> csrJA( numValues, ja );
-    HArrayRef<float> csrValues( numValues, values );
+    HArrayRef<float> hA( n, a );
+    HArrayRef<float> hB( n, b );
 
-    outArray( cooIA, "cooIA" );
-    outArray( csrJA, "cooJA" );
-    outArray( csrValues, "csrValues" );
+    outArray( hA, "hA" );
+    outArray( hB, "hB" );
 
     /***********************************************************************
-     *  Conversion COO -> CSR                                              *
+     *  Dotproduct                                                         *
      **********************************************************************/
 
-    HArray<int> csrIA;
+    float dot;
 
     {
-        ReadAccess<int> readcooIA( cooIA, cuda );
-        WriteOnlyAccess<int> writecsrIA( csrIA, cuda, numRows + 1 );
+        ReadAccess<float> rA( hA, cuda );
+        ReadAccess<float> rB( hB, cuda );
 
-        SCAI_CUSPARSE_CALL(
-            cusparseXcoo2csr( CUDAContext_cusparseHandle,
-                              readcooIA.get(), numValues, numRows, 
-                              writecsrIA.get(), 
-                              CUSPARSE_INDEX_BASE_ZERO ),
-            "coo2csr" )
-  
-    }
-
-    std::cout << "Conversion COO2CSR done." << std::endl;
-
-    outArray( csrIA, "csrIA" );
-
-    /***********************************************************************
-     *  Conversion CSR -> CSC                                              *
-     **********************************************************************/
-
-    HArray<int> cscIA;
-    HArray<int> cscJA;
-    HArray<float> cscValues;
-
-    {
         SCAI_CONTEXT_ACCESS( cuda )
 
-        ReadAccess<int> readcsrIA( csrIA, cuda );
-        ReadAccess<int> readcsrJA( csrJA, cuda );
-        ReadAccess<float> readcsrValues( csrValues, cuda );
-  
-        WriteOnlyAccess<int> writecscJA( cscJA, cuda, numColumns + 1 );
-        WriteOnlyAccess<int> writecscIA( cscIA, cuda, numValues );
-        WriteOnlyAccess<float> writecscValues( cscValues, cuda, numValues );
-     
-        SCAI_CUSPARSE_CALL(
-            cusparseScsr2csc( CUDAContext_cusparseHandle,
-                              numRows, numColumns, numValues,
-                              readcsrValues.get(), readcsrIA.get(), readcsrJA.get(),
-                              writecscValues.get(), writecscIA.get(), writecscJA.get(),
-                              CUSPARSE_ACTION_NUMERIC, CUSPARSE_INDEX_BASE_ZERO ),
-            "convertCSR2SCC<float>" )
+        SCAI_CUBLAS_CALL( cublasSdot( CUDAContext_cublasHandle, n,
+                                      rA.get(), 1, rB.get(), 1, &dot),
+                                      "cublasSDot<float>" );
   
     }
 
-    std::cout << "Conversion CSR2CSC done." << std::endl;
-
-    outArray( cscIA, "cscIA" );
-    outArray( cscJA, "cscJA" );
-    outArray( cscValues, "cscValues" );
+    std::cout << "dot result: " << dot << std::endl;
 }
