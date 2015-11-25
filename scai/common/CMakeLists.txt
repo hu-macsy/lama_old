@@ -156,11 +156,6 @@ relative_install ( FILES ${CXX_HEADERS} DESTINATION include/scai/common )
 ## install library.hpp
 install ( FILES ../common.hpp DESTINATION include/scai )
 
-## install examples
-configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/examples/make.inc.in" "${CMAKE_CURRENT_BINARY_DIR}/examples/make.inc" )
-install ( DIRECTORY examples/ DESTINATION share/examples/scaicommon-${SCAI_COMMON_VERSION} FILES_MATCHING REGEX "^.*.(c|h)pp$" )
-install ( FILES examples/Makefile ${CMAKE_CURRENT_BINARY_DIR}/examples/make.inc DESTINATION share/examples/scaicommon-${SCAI_COMMON_VERSION} )
-
 ## add custum target distClean
 include ( DistClean )
 
