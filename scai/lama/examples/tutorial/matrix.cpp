@@ -84,11 +84,11 @@ int main()
     // Vector values for our multiplication.
     ValueType vectorValues[] = {   6.0f, 4.0f, 7.0f, -9.3f };
 
-    // All data has to be stored in HArrays.
-    const HArray<IndexType> matrixIA = HArray<IndexType>( numRows + 1, ia );
-    const HArray<IndexType> matrixJA = HArray<IndexType>( numValues, ja );
-    const HArray<ValueType> mValues  = HArray<ValueType>( numValues, matrixValues );
-    const HArray<ValueType> vValues  = HArray<ValueType>( numColumns, vectorValues );
+    // All data has to be stored in LAMA Arrays.
+    const LAMAArray<IndexType> matrixIA = LAMAArray<IndexType>( numRows + 1, ia );
+    const LAMAArray<IndexType> matrixJA = LAMAArray<IndexType>( numValues, ja );
+    const LAMAArray<ValueType> mValues  = LAMAArray<ValueType>( numValues, matrixValues );
+    const LAMAArray<ValueType> vValues  = LAMAArray<ValueType>( numColumns, vectorValues );
 
     // Create a CSRStorage.
     CSRStorage<ValueType>* csrStorage = new CSRStorage<ValueType>( numRows, numColumns, numValues,
