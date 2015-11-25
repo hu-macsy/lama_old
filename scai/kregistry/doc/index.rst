@@ -1,6 +1,6 @@
 .. _main-page:
 
-SCAI Tasking
+SCAI Kregistry
 ===========
 
 work in progress
