@@ -1264,7 +1264,7 @@ void DenseVector<ValueType>::writeVectorToMMFile( const std::string& filename, c
             ofile << " " << dataRead[ii];
         }
 
-        ofile << std::endl;
+        ofile << "\n"; //std::endl;
     }
 
     ofile.close();
