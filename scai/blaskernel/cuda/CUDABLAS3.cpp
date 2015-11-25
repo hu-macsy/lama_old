@@ -46,7 +46,7 @@
 
 #include <scai/common/cuda/CUDAError.hpp>
 #include <scai/common/macros/unused.hpp>
-#include <scai/common/ScalarType.hpp>
+#include <scai/common/TypeTraits.hpp>
 
 // boost
 #include <boost/preprocessor.hpp>
@@ -57,7 +57,7 @@ using namespace scai::hmemo;
 namespace scai
 {
 
-using common::getScalarType;
+using common::TypeTraits;
 
 extern cublasHandle_t CUDAContext_cublasHandle;
 
@@ -99,7 +99,7 @@ void CUDABLAS3::gemm(
     const ValueType* const A_call = ( order == CblasRowMajor ) ? B : A;
     const ValueType* const B_call = ( order == CblasRowMajor ) ? A : B;
 
-    SCAI_LOG_INFO( logger, "gemm<" << getScalarType<ValueType>() << ">( m = " << m << ", n = " << n << ", k = " << k )
+    SCAI_LOG_INFO( logger, "gemm<" << TypeTraits<ValueType>::id() << ">( m = " << m << ", n = " << n << ", k = " << k )
 
     if( transa == CblasTrans )
     {

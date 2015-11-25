@@ -35,7 +35,7 @@
 #include <scai/lama/matrix/SparseMatrix.hpp>
 
 // local library
-#include <scai/lama/LAMAArrayUtils.hpp>
+#include <scai/lama/HArrayUtils.hpp>
 
 #include <scai/lama/LAMAKernel.hpp>
 #include <scai/lama/matrix/DenseMatrix.hpp>
@@ -62,6 +62,7 @@
 #include <scai/common/exception/UnsupportedException.hpp>
 #include <scai/common/macros/print_string.hpp>
 #include <scai/common/Constants.hpp>
+#include <scai/common/TypeTraits.hpp>
 
 // boost
 #include <boost/preprocessor.hpp>
@@ -445,10 +446,10 @@ void SparseMatrix<ValueType>::assignTransposeImpl( const SparseMatrix<ValueType>
 
         SCAI_LOG_INFO( logger, "halo transpose of " << matrix.getHaloStorage() )
 
-        LAMAArray<IndexType> sendIA;
-        LAMAArray<IndexType> sendSizes;
-        LAMAArray<IndexType> sendJA;
-        LAMAArray<ValueType> sendValues;
+        HArray<IndexType> sendIA;
+        HArray<IndexType> sendSizes;
+        HArray<IndexType> sendJA;
+        HArray<ValueType> sendValues;
 
         matrix.getHaloStorage().buildCSCData( sendIA, sendJA, sendValues );
 
@@ -461,7 +462,7 @@ void SparseMatrix<ValueType>::assignTransposeImpl( const SparseMatrix<ValueType>
 
         SCAI_LOG_DEBUG( logger, "sendSizes with " << sendSizes.size() << " entries" )
 
-        LAMAArray<IndexType> recvSizes;
+        HArray<IndexType> recvSizes;
 
         const Halo& matrixHalo = matrix.getHalo();
 
@@ -482,8 +483,8 @@ void SparseMatrix<ValueType>::assignTransposeImpl( const SparseMatrix<ValueType>
 
         // Now we know the sizes, we can pack the data
 
-        LAMAArray<IndexType> recvJA;
-        LAMAArray<ValueType> recvValues;
+        HArray<IndexType> recvJA;
+        HArray<ValueType> recvValues;
 
         // Before send of JA: translate back the local (row) indexes to global indexes
 
@@ -514,11 +515,11 @@ void SparseMatrix<ValueType>::assignTransposeImpl( const SparseMatrix<ValueType>
 
         // Now we have to build the halo by merging the rows of all received data
 
-        LAMAArray<IndexType> haloRowSizes;
-        LAMAArray<IndexType> haloJA;
-        LAMAArray<ValueType> haloValues;
+        HArray<IndexType> haloRowSizes;
+        HArray<IndexType> haloJA;
+        HArray<ValueType> haloValues;
 
-        const LAMAArray<IndexType>& rowIndexes = matrixHalo.getProvidesIndexes();
+        const HArray<IndexType>& rowIndexes = matrixHalo.getProvidesIndexes();
 
         const IndexType mNumLocalRows = getDistribution().getLocalSize();
 
@@ -944,7 +945,7 @@ void SparseMatrix<ValueType>::getDiagonal( Vector& diagonal ) const
         COMMON_THROWEXCEPTION( *this << ": set diagonal only supported for row = col distribution." )
     }
 
-    LAMAArray<ValueType> localDiagonal;
+    HArray<ValueType> localDiagonal;
 
     mLocalData->getDiagonal( localDiagonal );
 
@@ -967,7 +968,7 @@ void SparseMatrix<ValueType>::setDiagonal( const Vector& diagonal )
         COMMON_THROWEXCEPTION( diagonal << ": distribution does not fit row distribution of matrix" )
     }
 
-    LAMAArray<ValueType> localDiagonal;
+    HArray<ValueType> localDiagonal;
 
     diagonal.buildValues( localDiagonal );
 
@@ -1000,7 +1001,7 @@ void SparseMatrix<ValueType>::scale( const Vector& scaling )
             scaling << ": scale vector distribution does not fit matrix row distribution " << getDistribution() );
     }
 
-    LAMAArray<ValueType> localValues;
+    HArray<ValueType> localValues;
 
     scaling.buildValues( localValues );
 
@@ -1217,19 +1218,19 @@ void SparseMatrix<ValueType>::matrixTimesMatrixImpl(
 
 template<typename ValueType>
 void SparseMatrix<ValueType>::haloOperationSync(
-    LAMAArray<ValueType>& localResult,
-    const LAMAArray<ValueType>& localX,
-    LAMAArray<ValueType>& haloX,
+    HArray<ValueType>& localResult,
+    const HArray<ValueType>& localX,
+    HArray<ValueType>& haloX,
     common::function<
     void(
         const MatrixStorage<ValueType>* localMatrix,
-        LAMAArray<ValueType>& localResult,
-        const LAMAArray<ValueType>& localX )> localF,
+        HArray<ValueType>& localResult,
+        const HArray<ValueType>& localX )> localF,
     common::function<
     void(
         const MatrixStorage<ValueType>* haloMatrix,
-        LAMAArray<ValueType>& localResult,
-        const LAMAArray<ValueType>& haloX )> haloF ) const
+        HArray<ValueType>& localResult,
+        const HArray<ValueType>& haloX )> haloF ) const
 {
     const Communicator& comm = getColDistribution().getCommunicator();
 
@@ -1246,7 +1247,7 @@ void SparseMatrix<ValueType>::haloOperationSync(
             SCAI_LOG_INFO( logger,
                            comm << ": gather " << mHalo.getProvidesIndexes().size() << " values of X to provide on " << *localX.getValidContext() );
 
-            LAMAArrayUtils::gather( mTempSendValues, localX, mHalo.getProvidesIndexes() );
+            HArrayUtils::gather( mTempSendValues, localX, mHalo.getProvidesIndexes() );
 
             // Note: send values might be fetched to the host by halo exchange
         }
@@ -1306,19 +1307,19 @@ void SparseMatrix<ValueType>::haloOperationSync(
 
 template<typename ValueType>
 void SparseMatrix<ValueType>::vectorHaloOperationSync(
-    LAMAArray<ValueType>& localResult,
-    const LAMAArray<ValueType>& localX,
-    const LAMAArray<ValueType>& localY,
+    HArray<ValueType>& localResult,
+    const HArray<ValueType>& localX,
+    const HArray<ValueType>& localY,
     common::function<
     void(
         const MatrixStorage<ValueType>* localMatrix,
-        LAMAArray<ValueType>& localResult,
-        const LAMAArray<ValueType>& localX )> calcF,
+        HArray<ValueType>& localResult,
+        const HArray<ValueType>& localX )> calcF,
     common::function<
     void(
-        LAMAArray<ValueType>& localResult,
-        const LAMAArray<ValueType>& localX,
-        const LAMAArray<ValueType>& localY )> addF ) const
+        HArray<ValueType>& localResult,
+        const HArray<ValueType>& localX,
+        const HArray<ValueType>& localY )> addF ) const
 {
     DistributionPtr rowDist = getDistributionPtr();
     DistributionPtr colDist = getColDistributionPtr();
@@ -1351,9 +1352,9 @@ void SparseMatrix<ValueType>::vectorHaloOperationSync(
     offsets.resize( numParts + 1 );
     sizes2offsets[ hostContext ]( &offsets[0], numParts );
 
-    LAMAArray<ValueType> haloResult( mHalo.getHaloSize() );
-    LAMAArray<ValueType> toOthersResult( xSize * numParts );
-    LAMAArray<ValueType> fromOthersResult( xSize * numParts );
+    HArray<ValueType> haloResult( mHalo.getHaloSize() );
+    HArray<ValueType> toOthersResult( xSize * numParts );
+    HArray<ValueType> fromOthersResult( xSize * numParts );
 
     if( numParts != 1 )
     {
@@ -1450,19 +1451,19 @@ void SparseMatrix<ValueType>::vectorHaloOperationSync(
 
 template<typename ValueType>
 void SparseMatrix<ValueType>::haloOperationAsync(
-    LAMAArray<ValueType>& localResult,
-    const LAMAArray<ValueType>& localX,
-    LAMAArray<ValueType>& haloX,
+    HArray<ValueType>& localResult,
+    const HArray<ValueType>& localX,
+    HArray<ValueType>& haloX,
     common::function<
     SyncToken*(
         const MatrixStorage<ValueType>* localMatrix,
-        LAMAArray<ValueType>& localResult,
-        const LAMAArray<ValueType>& localX )> localAsyncF,
+        HArray<ValueType>& localResult,
+        const HArray<ValueType>& localX )> localAsyncF,
     common::function<
     void(
         const MatrixStorage<ValueType>* haloMatrix,
-        LAMAArray<ValueType>& localResult,
-        const LAMAArray<ValueType>& haloX )> haloF ) const
+        HArray<ValueType>& localResult,
+        const HArray<ValueType>& haloX )> haloF ) const
 {
     const Communicator& comm = getColDistribution().getCommunicator();
 
@@ -1478,7 +1479,7 @@ void SparseMatrix<ValueType>::haloOperationAsync(
         SCAI_LOG_INFO( logger,
                        comm << ": gather " << mHalo.getProvidesIndexes().size() << " values of X to provide on " << *localX.getValidContext() );
 
-        LAMAArrayUtils::gather( mTempSendValues, localX, mHalo.getProvidesIndexes() );
+        HArrayUtils::gather( mTempSendValues, localX, mHalo.getProvidesIndexes() );
 
         // prefetch needed otherwise sending will block until local computation has finished
 
@@ -1552,19 +1553,19 @@ void SparseMatrix<ValueType>::haloOperationAsync(
 
 template<typename ValueType>
 void SparseMatrix<ValueType>::vectorHaloOperationAsync(
-    LAMAArray<ValueType>& localResult,
-    const LAMAArray<ValueType>& localX,
-    const LAMAArray<ValueType>& localY,
+    HArray<ValueType>& localResult,
+    const HArray<ValueType>& localX,
+    const HArray<ValueType>& localY,
     common::function<
     SyncToken*(
         const MatrixStorage<ValueType>* localMatrix,
-        LAMAArray<ValueType>& localResult,
-        const LAMAArray<ValueType>& localX )> calcF,
+        HArray<ValueType>& localResult,
+        const HArray<ValueType>& localX )> calcF,
     common::function<
     /*SyncToken**/void(
-        LAMAArray<ValueType>& localResult,
-        const LAMAArray<ValueType>& localX,
-        const LAMAArray<ValueType>& localY )> addF ) const
+        HArray<ValueType>& localResult,
+        const HArray<ValueType>& localX,
+        const HArray<ValueType>& localY )> addF ) const
 {
     DistributionPtr rowDist = getDistributionPtr();
     DistributionPtr colDist = getColDistributionPtr();
@@ -1595,9 +1596,9 @@ void SparseMatrix<ValueType>::vectorHaloOperationAsync(
     offsets.resize( numParts + 1 );
     sizes2offsets[ hostContext ]( &offsets[0], numParts );
 
-    LAMAArray<ValueType> haloResult( mHalo.getHaloSize() );
-    LAMAArray<ValueType> toOthersResult( xSize * numParts );
-    LAMAArray<ValueType> fromOthersResult( xSize * numParts );
+    HArray<ValueType> haloResult( mHalo.getHaloSize() );
+    HArray<ValueType> toOthersResult( xSize * numParts );
+    HArray<ValueType> fromOthersResult( xSize * numParts );
 
     if( numParts != 1 )
     {
@@ -1712,27 +1713,27 @@ void SparseMatrix<ValueType>::matrixTimesVectorImpl(
 {
     SCAI_REGION( "Mat.Sp.timesVector" )
 
-    LAMAArray<ValueType>& localResult = denseResult.getLocalValues();
-    const LAMAArray<ValueType>& localY = denseY.getLocalValues();
+    HArray<ValueType>& localResult = denseResult.getLocalValues();
+    const HArray<ValueType>& localY = denseY.getLocalValues();
 
-    const LAMAArray<ValueType>& localX = denseX.getLocalValues();
-    LAMAArray<ValueType>& haloX = denseX.getHaloValues();
+    const HArray<ValueType>& localX = denseX.getLocalValues();
+    HArray<ValueType>& haloX = denseX.getHaloValues();
 
     // if halo is empty, asynchronous execution is not helpful
 
     void (scai::lama::MatrixStorage<ValueType>::*matrixTimesVector)(
-        LAMAArray<ValueType>& result,
+        HArray<ValueType>& result,
         const ValueType alpha,
-        const LAMAArray<ValueType>& x,
+        const HArray<ValueType>& x,
         const ValueType beta,
-        const LAMAArray<ValueType>& y ) const = &MatrixStorage<ValueType>::matrixTimesVector;
+        const HArray<ValueType>& y ) const = &MatrixStorage<ValueType>::matrixTimesVector;
 
     SyncToken* (scai::lama::MatrixStorage<ValueType>::*matrixTimesVectorAsync)(
-        LAMAArray<ValueType>& result,
+        HArray<ValueType>& result,
         const ValueType alpha,
-        const LAMAArray<ValueType>& x,
+        const HArray<ValueType>& x,
         const ValueType beta,
-        const LAMAArray<ValueType>& y ) const = &MatrixStorage<ValueType>::matrixTimesVectorAsync;
+        const HArray<ValueType>& y ) const = &MatrixStorage<ValueType>::matrixTimesVectorAsync;
 
     // routine for halo matrix is same for sync and async version
     using namespace scai::common;
@@ -1740,8 +1741,8 @@ void SparseMatrix<ValueType>::matrixTimesVectorImpl(
     function<
     void(
         const MatrixStorage<ValueType>* haloMatrix,
-        LAMAArray<ValueType>& localResult,
-        const LAMAArray<ValueType>& haloX )> haloF =
+        HArray<ValueType>& localResult,
+        const HArray<ValueType>& haloX )> haloF =
 
             // bind( matrixTimesVector, _1, _2, alphaValue, _3, one, cref( localResult ) );
 
@@ -1752,8 +1753,8 @@ void SparseMatrix<ValueType>::matrixTimesVectorImpl(
         function<
         void(
             const MatrixStorage<ValueType>* localMatrix,
-            LAMAArray<ValueType>& localResult,
-            const LAMAArray<ValueType>& localX )> localF =
+            HArray<ValueType>& localResult,
+            const HArray<ValueType>& localX )> localF =
 
                 bind( matrixTimesVector, _1, _2, alphaValue, _3, betaValue, cref( localY ) );
 
@@ -1764,8 +1765,8 @@ void SparseMatrix<ValueType>::matrixTimesVectorImpl(
         function<
         SyncToken*(
             const MatrixStorage<ValueType>* localMatrix,
-            LAMAArray<ValueType>& localResult,
-            const LAMAArray<ValueType>& localX )> localAsyncF =
+            HArray<ValueType>& localResult,
+            const HArray<ValueType>& localX )> localAsyncF =
 
                 bind( matrixTimesVectorAsync, _1, _2, alphaValue, _3, betaValue, cref( localY ) );
 
@@ -1785,45 +1786,45 @@ void SparseMatrix<ValueType>::vectorTimesMatrixImpl(
 {
     SCAI_REGION( "Vec.timesMat.Sp" )
 
-    LAMAArray<ValueType>& localResult = denseResult.getLocalValues();
-    const LAMAArray<ValueType>& localX = denseX.getLocalValues();
-    const LAMAArray<ValueType>& localY = denseY.getLocalValues();
+    HArray<ValueType>& localResult = denseResult.getLocalValues();
+    const HArray<ValueType>& localX = denseX.getLocalValues();
+    const HArray<ValueType>& localY = denseY.getLocalValues();
 
     // if halo is empty, asynchronous execution is not helpful
 
     // vectorTimesMatrix: x^ = x * A
 
     void (MatrixStorage<ValueType>::*vectorTimesMatrix)(
-        LAMAArray<ValueType>& result,
+        HArray<ValueType>& result,
         const ValueType alpha,
-        const LAMAArray<ValueType>& x,
+        const HArray<ValueType>& x,
         const ValueType beta,
-        const LAMAArray<ValueType>& y ) const = &MatrixStorage<ValueType>::vectorTimesMatrix;
+        const HArray<ValueType>& y ) const = &MatrixStorage<ValueType>::vectorTimesMatrix;
 
     SyncToken* (MatrixStorage<ValueType>::*vectorTimesMatrixAsync)(
-        LAMAArray<ValueType>& result,
+        HArray<ValueType>& result,
         const ValueType alpha,
-        const LAMAArray<ValueType>& x,
+        const HArray<ValueType>& x,
         const ValueType beta,
-        const LAMAArray<ValueType>& y ) const = &MatrixStorage<ValueType>::vectorTimesMatrixAsync;
+        const HArray<ValueType>& y ) const = &MatrixStorage<ValueType>::vectorTimesMatrixAsync;
 
     // vectorPlusVector: result = alpha * x^ + beta * y
 
     void (*vPlusV)(
         ContextPtr context,
-        LAMAArray<ValueType>& result,
+        HArray<ValueType>& result,
         const ValueType alpha,
-        const LAMAArray<ValueType>& x,
+        const HArray<ValueType>& x,
         const ValueType beta,
-        const LAMAArray<ValueType>& y ) = &DenseVector<ValueType>::vectorPlusVector;
+        const HArray<ValueType>& y ) = &DenseVector<ValueType>::vectorPlusVector;
 
     /*SyncToken**/void (*vPlusVAsync)(
         ContextPtr context,
-        LAMAArray<ValueType>& result,
+        HArray<ValueType>& result,
         const ValueType alpha,
-        const LAMAArray<ValueType>& x,
+        const HArray<ValueType>& x,
         const ValueType beta,
-        const LAMAArray<ValueType>& y ) = &DenseVector<ValueType>::vectorPlusVector; //TODO use async: Exception not yet implemented
+        const HArray<ValueType>& y ) = &DenseVector<ValueType>::vectorPlusVector; //TODO use async: Exception not yet implemented
 
     // after gather of vector values x^ is on the host
     // todo: think about this if its useful to upload the vector (again)
@@ -1836,15 +1837,15 @@ void SparseMatrix<ValueType>::vectorTimesMatrixImpl(
         function<
         void(
             const MatrixStorage<ValueType>* localMatrix,
-            LAMAArray<ValueType>& localResult,
-            const LAMAArray<ValueType>& localX )> calcF = bind( vectorTimesMatrix, _1, _2, static_cast<ValueType>(1.0),
+            HArray<ValueType>& localResult,
+            const HArray<ValueType>& localX )> calcF = bind( vectorTimesMatrix, _1, _2, static_cast<ValueType>(1.0),
                     _3, static_cast<ValueType>(0.0), _2 );
 
         function<
         void(
-            LAMAArray<ValueType>& localResult,
-            const LAMAArray<ValueType>& localX,
-            const LAMAArray<ValueType>& localY )> addF = bind( vPlusV, hostContext, _1,
+            HArray<ValueType>& localResult,
+            const HArray<ValueType>& localX,
+            const HArray<ValueType>& localY )> addF = bind( vPlusV, hostContext, _1,
                     alphaValue, _2, betaValue, _3 );
 
         vectorHaloOperationSync( localResult, localX, localY, calcF, addF );
@@ -1854,15 +1855,15 @@ void SparseMatrix<ValueType>::vectorTimesMatrixImpl(
         function<
         SyncToken*(
             const MatrixStorage<ValueType>* localMatrix,
-            LAMAArray<ValueType>& localResult,
-            const LAMAArray<ValueType>& localX )> calcAsyncF = bind( vectorTimesMatrixAsync, _1,
+            HArray<ValueType>& localResult,
+            const HArray<ValueType>& localX )> calcAsyncF = bind( vectorTimesMatrixAsync, _1,
                     _2, static_cast<ValueType>(1.0), _3, static_cast<ValueType>(0.0), _2 );
 
         function<
         /*SyncToken**/void(
-            LAMAArray<ValueType>& localResult,
-            const LAMAArray<ValueType>& localX,
-            const LAMAArray<ValueType>& localY )> addAsyncF = bind( vPlusVAsync, hostContext, _1,
+            HArray<ValueType>& localResult,
+            const HArray<ValueType>& localX,
+            const HArray<ValueType>& localY )> addAsyncF = bind( vPlusVAsync, hostContext, _1,
                     alphaValue, _2, betaValue,
                     _3 );
 
@@ -1900,9 +1901,9 @@ void SparseMatrix<ValueType>::matrixTimesVectorNImpl(
 
     SCAI_LOG_INFO( logger, "result (allocated) : " << result )
 
-    LAMAArray<ValueType>& resultData = result.getLocalStorage().getData();
-    const LAMAArray<ValueType>& xData = x.getLocalStorage().getData();
-    const LAMAArray<ValueType>& yData = y.getLocalStorage().getData();
+    HArray<ValueType>& resultData = result.getLocalStorage().getData();
+    const HArray<ValueType>& xData = x.getLocalStorage().getData();
+    const HArray<ValueType>& yData = y.getLocalStorage().getData();
 
     const IndexType n = result.getLocalStorage().getNumColumns();
 
@@ -2057,7 +2058,9 @@ Scalar SparseMatrix<ValueType>::l2Norm() const
 
     ValueType allValue = comm.sum( myValue );
 
-	allValue = ::sqrt( allValue );
+	// allValue = ::sqrt( allValue );
+
+	allValue = common::TypeTraits<ValueType>::sqrt( allValue );
 
     SCAI_LOG_INFO( logger, "max norm: local value = " << myValue << ", global value = " << allValue )
 
@@ -2398,8 +2401,8 @@ void SparseMatrix<ValueType>::setCSRData(
     DistributionPtr rowDist,
     DistributionPtr colDist,
     const IndexType numValues,
-    const LAMAArray<IndexType>& ia,
-    const LAMAArray<IndexType>& ja,
+    const HArray<IndexType>& ia,
+    const HArray<IndexType>& ja,
     const ContextArray& values )
 {
     Matrix::setDistributedMatrix( rowDist, colDist );

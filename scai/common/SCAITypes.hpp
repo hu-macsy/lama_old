@@ -105,12 +105,7 @@ __declspec( target(mic) )
 #endif
 extern const PartitionId nPartition;
 
-// Number of supported arithmetic types, maximal number is currently 4
-
 // List here all arithmetic types for which matrices, storages might be created
-
-#define ARITHMETIC_HOST_EXT_TYPE_CNT 4
-#define ARITHMETIC_HOST_TYPE_CNT 6
 
 #define ARITHMETIC_HOST_TYPE_0 float
 #define ARITHMETIC_HOST_TYPE_1 double
@@ -119,29 +114,35 @@ extern const PartitionId nPartition;
 #define ARITHMETIC_HOST_TYPE_4 long double
 #define ARITHMETIC_HOST_TYPE_5 ComplexLongDouble
 
+/** Number of supported types used in REPEAT macros */
+
+#define ARITHMETIC_HOST_TYPE_CNT 6
+
+/** Number of supported types in external libraries liek BLAS, LAPACK */
+
+#define ARITHMETIC_HOST_EXT_TYPE_CNT 4
+
+/** Number of suported types by CUDA devices */
+
 #define ARITHMETIC_CUDA_TYPE_CNT 4
+
+// List CUDA values on its own 
 
 #define ARITHMETIC_CUDA_TYPE_0 float
 #define ARITHMETIC_CUDA_TYPE_1 double
 #define ARITHMETIC_CUDA_TYPE_2 ComplexFloat
 #define ARITHMETIC_CUDA_TYPE_3 ComplexDouble
 
+/** Number of supported types by MIC devices */
+
 #define ARITHMETIC_MIC_TYPE_CNT 4
+
+// List MIC value types on its own 
 
 #define ARITHMETIC_MIC_TYPE_0 float
 #define ARITHMETIC_MIC_TYPE_1 double
 #define ARITHMETIC_MIC_TYPE_2 ComplexFloat
 #define ARITHMETIC_MIC_TYPE_3 ComplexDouble
-
-// Define for the arithmetic types the counterparts of enum Scalar::Tyep
-// Sorry, we cannot use the routine getType<ARITHMETIC_TYPE##I> in case stmt
-
-#define SCALAR_ARITHMETIC_TYPE0 scai::common::scalar::FLOAT
-#define SCALAR_ARITHMETIC_TYPE1 scai::common::scalar::DOUBLE
-#define SCALAR_ARITHMETIC_TYPE2 scai::common::scalar::COMPLEX
-#define SCALAR_ARITHMETIC_TYPE3 scai::common::scalar::DOUBLE_COMPLEX
-#define SCALAR_ARITHMETIC_TYPE4 scai::common::scalar::LONG_DOUBLE
-#define SCALAR_ARITHMETIC_TYPE5 scai::common::scalar::LONG_DOUBLE_COMPLEX
 
 // For convenience we define ARRAY_TYPE, must be ARITHMETIC_HOST_TYPE_CNT + 1
 

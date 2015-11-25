@@ -41,7 +41,7 @@
 #include <scai/kregistry/KernelRegistry.hpp>
 #include <scai/common/macros/unused.hpp>
 #include <scai/common/bind.hpp>
-#include <scai/common/ScalarType.hpp>
+#include <scai/common/TypeTraits.hpp>
 
 // boost
 #include <boost/preprocessor.hpp>
@@ -50,6 +50,7 @@ namespace scai
 {
 
 using tasking::TaskSyncToken;
+using common::TypeTraits;
 
 namespace blaskernel
 {
@@ -74,7 +75,7 @@ void OpenMPBLAS2::gemv(
     const IndexType incY )
 {
     SCAI_LOG_INFO( logger,
-                   "gemv<" << common::getScalarType<ValueType>()<< ">: M = " << M << ", N = " << N 
+                   "gemv<" << common::TypeTraits<ValueType>::id()<< ">: M = " << M << ", N = " << N 
                       << ", LDA = " << lda << ", incX = " << incX << ", incY = " << incY 
                       << ", alpha = " << alpha << ", beta = " << beta )
 
@@ -263,7 +264,7 @@ void OpenMPBLAS2::gemv(
                 }
             }
         }
-        else if( TransA == CblasConjTrans )
+        if( TransA == CblasConjTrans )
         {
             //TA = 'N'
         }

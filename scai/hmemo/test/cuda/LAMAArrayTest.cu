@@ -1,5 +1,5 @@
 /**
- * @file cudamem/test/LAMAArrayTest.cpp
+ * @file cudamem/test/HArrayTest.cpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -42,7 +42,7 @@
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_SUITE( LAMAArrayTest )
+BOOST_AUTO_TEST_SUITE( HArrayTest )
 
 using namespace scai;
 using namespace scai::hmemo;
@@ -51,7 +51,7 @@ using namespace scai::common;
 /* --------------------------------------------------------------------- */
 
 template <typename T>
-void initArray( LAMAArray<T>& array, int N, T val )
+void initArray( HArray<T>& array, int N, T val )
 {
     WriteOnlyAccess<T> write( array, N );
     T* data = write.get();
@@ -79,7 +79,7 @@ ValueType sum( const ValueType array[], const IndexType n )
 }
 
 template <typename ValueType>
-ValueType cudaSum( LAMAArray<ValueType>& array, ContextPtr cuda )
+ValueType cudaSum( HArray<ValueType>& array, ContextPtr cuda )
 {
     IndexType n = array.size();
     WriteAccess<ValueType> write( array, cuda );
@@ -93,7 +93,7 @@ BOOST_AUTO_TEST_CASE( ConstructorTest )
     ContextPtr host = Context::getContextPtr( context::Host );
     ContextPtr cuda = Context::getContextPtr( context::CUDA );
 
-    LAMAArray<float> array( cuda );
+    HArray<float> array( cuda );
 
     initArray<float>( array, 128, 1.0 );
 
@@ -111,7 +111,7 @@ BOOST_AUTO_TEST_CASE( PrefetchTest )
 
     IndexType N = 128;
 
-    LAMAArray<float> array( cuda );
+    HArray<float> array( cuda );
 
     initArray<float>( array, N, 1.0 );
 
@@ -146,7 +146,7 @@ BOOST_AUTO_TEST_CASE( CopyTest )
 
     IndexType N = 128;
 
-    LAMAArray<float> array( cuda );
+    HArray<float> array( cuda );
 
     initArray<float>( array, N, 1.0 );
     // array is valid @ host
@@ -154,7 +154,7 @@ BOOST_AUTO_TEST_CASE( CopyTest )
     // now array is valid @ host, cuda
 
     // Copy contructor, copies all valid data at their locations
-    LAMAArray<float> array1( array );
+    HArray<float> array1( array );
 
     BOOST_ASSERT( array1.isValid( host ) );
     BOOST_ASSERT( array1.isValid( cuda ) );
@@ -162,7 +162,7 @@ BOOST_AUTO_TEST_CASE( CopyTest )
     float expected = cudaSum( array, cuda );
     float result = cudaSum( array1, cuda );
 
-    std::cout << "LAMAArray, copy: sum (on CUDA device) is " << result 
+    std::cout << "HArray, copy: sum (on CUDA device) is " << result 
               << ", expected = " << expected << std::endl;
 
     BOOST_CHECK_EQUAL( result, expected );

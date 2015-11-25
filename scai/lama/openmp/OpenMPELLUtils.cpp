@@ -47,6 +47,7 @@
 #include <scai/common/OpenMP.hpp>
 #include <scai/common/macros/unused.hpp>
 #include <scai/common/Constants.hpp>
+#include <scai/common/TypeTraits.hpp>
 
 #include <scai/tasking/TaskSyncToken.hpp>
 
@@ -61,7 +62,7 @@
 namespace scai
 {
 
-using common::getScalarType;
+using common::TypeTraits;
 using tasking::TaskSyncToken;
 
 namespace lama
@@ -162,7 +163,7 @@ void OpenMPELLUtils::scaleValue(
     const OtherValueType values[] )
 {
     SCAI_LOG_INFO( logger,
-                   "scaleValue<" << getScalarType<ValueType>() << ", " << getScalarType<OtherValueType>() << ">" << ", #numRows = " << numRows )
+                   "scaleValue<" << TypeTraits<ValueType>::id() << ", " << TypeTraits<OtherValueType>::id() << ">" << ", #numRows = " << numRows )
 
     #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
 
@@ -344,7 +345,7 @@ void OpenMPELLUtils::getCSRValues(
     const ELLValueType ellValues[] )
 {
     SCAI_LOG_INFO( logger,
-                   "get CSRValues<" << getScalarType<ELLValueType>() << ", " << getScalarType<CSRValueType>() << ">" << ", #rows = " << numRows )
+                   "get CSRValues<" << TypeTraits<ELLValueType>::id() << ", " << TypeTraits<CSRValueType>::id() << ">" << ", #rows = " << numRows )
 
     // parallelization possible as offset array csrIA is available
 
@@ -387,7 +388,7 @@ void OpenMPELLUtils::setCSRValues(
     const CSRValueType csrValues[] )
 {
     SCAI_LOG_INFO( logger,
-                   "set CSRValues<" << getScalarType<ELLValueType>() << ", " << getScalarType<CSRValueType>() << ">" << ", #rows = " << numRows << ", #values/row = " << numValuesPerRow )
+                   "set CSRValues<" << TypeTraits<ELLValueType>::id() << ", " << TypeTraits<CSRValueType>::id() << ">" << ", #rows = " << numRows << ", #values/row = " << numValuesPerRow )
 
     // parallelization possible as offset array csrIA is available
 
@@ -433,7 +434,7 @@ void OpenMPELLUtils::fillELLValues(
     const IndexType numRows,
     const IndexType numValuesPerRow )
 {
-    SCAI_LOG_INFO( logger, "fill ELLValues<" << getScalarType<ValueType>() )
+    SCAI_LOG_INFO( logger, "fill ELLValues<" << TypeTraits<ValueType>::id() )
 
     #pragma omp parallel
     {
@@ -812,7 +813,7 @@ void OpenMPELLUtils::jacobi(
     const ValueType omega )
 {
     SCAI_LOG_INFO( logger,
-                   "jacobi<" << getScalarType<ValueType>() << ">" << ", #rows = " << numRows << ", omega = " << omega )
+                   "jacobi<" << TypeTraits<ValueType>::id() << ">" << ", #rows = " << numRows << ", omega = " << omega )
 
     TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
@@ -960,7 +961,7 @@ void OpenMPELLUtils::normalGEMV(
     }
 
     SCAI_LOG_INFO( logger,
-                   "normalGEMV<" << getScalarType<ValueType>() << ", #threads = " << omp_get_max_threads() 
+                   "normalGEMV<" << TypeTraits<ValueType>::id() << ", #threads = " << omp_get_max_threads() 
                    << ">, result[" << numRows << "] = " << alpha << " * A( ell, #maxNZ/row = " << numValuesPerRow << " ) * x + " << beta << " * y " )
 
     #pragma omp parallel
@@ -1047,7 +1048,7 @@ void OpenMPELLUtils::sparseGEMV(
     }
 
     SCAI_LOG_INFO( logger,
-                   "sparseGEMV<" << getScalarType<ValueType>() << ">, n = " << numRows 
+                   "sparseGEMV<" << TypeTraits<ValueType>::id() << ">, n = " << numRows 
                     << ", nonZeroRows = " << numNonZeroRows << ", alpha = " << alpha )
 
     #pragma omp parallel
@@ -1099,7 +1100,7 @@ void OpenMPELLUtils::normalGEVM(
     const ValueType ellValues[] )
 {
     SCAI_LOG_INFO( logger,
-                   "normalGEVM<" << getScalarType<ValueType>() << ", #threads = " << omp_get_max_threads() << ">, result[" << numColumns << "] = " << alpha << " * x * A + " << beta << " * y " )
+                   "normalGEVM<" << TypeTraits<ValueType>::id() << ", #threads = " << omp_get_max_threads() << ">, result[" << numColumns << "] = " << alpha << " * x * A + " << beta << " * y " )
 
     TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
@@ -1181,7 +1182,7 @@ void OpenMPELLUtils::sparseGEVM(
     const ValueType ellValues[] )
 {
     SCAI_LOG_INFO( logger,
-                   "sparseGEVM<" << getScalarType<ValueType>() << ", #threads = " << omp_get_max_threads() << ">, result[" << numColumns << "] = " << alpha << " * x * A " )
+                   "sparseGEVM<" << TypeTraits<ValueType>::id() << ", #threads = " << omp_get_max_threads() << ">, result[" << numColumns << "] = " << alpha << " * x * A " )
 
     TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 

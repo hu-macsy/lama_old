@@ -37,6 +37,7 @@
 #include <boost/mpl/list.hpp>
 
 #include <scai/lama/LAMAKernel.hpp>
+#include <scai/lama/LAMAArray.hpp>
 #include <scai/blaskernel/BLASKernelTrait.hpp>
 
 #include <scai/common/test/TestMacros.hpp>

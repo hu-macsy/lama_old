@@ -70,7 +70,7 @@ void addHost( ValueType array[], const IndexType n )
 }
 
 template<typename ValueType>
-void doBench( LAMAArray<ValueType>& array, const IndexType N )
+void doBench( HArray<ValueType>& array, const IndexType N )
 {
     ContextPtr hostContext = Context::getContextPtr( common::context::Host );
     ContextPtr cudaContext = Context::getContextPtr( common::context::CUDA );
@@ -144,17 +144,17 @@ int main()
 
     std::cout << "Benchmark for array, first touch on host memory" << std::endl;
 
-    LAMAArray<double> data1( hostContextPtr->getMemoryPtr() );
+    HArray<double> data1( hostContextPtr->getMemoryPtr() );
     doBench( data1, N );
 
     std::cout << "Benchmark for array, first touch on cuda memory" << std::endl;
  
-    LAMAArray<double> data2( cudaContextPtr->getMemoryPtr() );
+    HArray<double> data2( cudaContextPtr->getMemoryPtr() );
     doBench( data2, N );
 
     std::cout << "Benchmark for array, first touch on cuda host memory" << std::endl;
  
-    LAMAArray<double> data3( cudaContextPtr->getHostMemoryPtr() );
+    HArray<double> data3( cudaContextPtr->getHostMemoryPtr() );
     doBench( data3, N );
 }
 

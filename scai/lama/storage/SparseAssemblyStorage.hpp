@@ -247,7 +247,7 @@ public:
      * @param[in] ja    the column vector of row i.
      * @param[in] a     the values of row i.
      */
-    void setRow( const IndexType i, const hmemo::LAMAArray<IndexType>& ja, const hmemo::LAMAArray<ValueType>& a );
+    void setRow( const IndexType i, const hmemo::HArray<IndexType>& ja, const hmemo::HArray<ValueType>& a );
 
     /**
      * @brief fixDiagonalProperty fixes the diagonal property of row.
@@ -272,21 +272,21 @@ public:
     /** Template method for getting row. */
 
     template<typename OtherType>
-    void getRowImpl( hmemo::LAMAArray<OtherType>& row, const IndexType i ) const;
+    void getRowImpl( hmemo::HArray<OtherType>& row, const IndexType i ) const;
 
     /** Typed version of getDiagonal
      *
      * @param[out] diagonal is the typed LAMA array for output
      */
     template<typename OtherValueType>
-    void getDiagonalImpl( hmemo::LAMAArray<OtherValueType>& diagonal ) const;
+    void getDiagonalImpl( hmemo::HArray<OtherValueType>& diagonal ) const;
 
     /** Typed version of setDiagonal
      *
      * @param[in] diagonal is the typed LAMA array for input
      */
     template<typename OtherValueType>
-    void setDiagonalImpl( const hmemo::LAMAArray<OtherValueType>& diagonal );
+    void setDiagonalImpl( const hmemo::HArray<OtherValueType>& diagonal );
 
     /** Implementation of pure method. */
 
@@ -299,7 +299,7 @@ public:
     /** Template version used for virtual routine scale with known value type. */
 
     template<typename OtherType>
-    void scaleImpl( const hmemo::LAMAArray<OtherType>& values );
+    void scaleImpl( const hmemo::HArray<OtherType>& values );
 
     /** Implementation of pure method.  */
 
@@ -315,9 +315,9 @@ public:
 
     template<typename OtherValueType>
     void buildCSR(
-        hmemo::LAMAArray<IndexType>& ia,
-        hmemo::LAMAArray<IndexType>* ja,
-        hmemo::LAMAArray<OtherValueType>* values,
+        hmemo::HArray<IndexType>& ia,
+        hmemo::HArray<IndexType>* ja,
+        hmemo::HArray<OtherValueType>* values,
         const hmemo::ContextPtr loc ) const;
 
     /**
@@ -336,9 +336,9 @@ public:
         const IndexType numRows,
         const IndexType numColumns,
         const IndexType numValues,
-        const hmemo::LAMAArray<IndexType>& ia,
-        const hmemo::LAMAArray<IndexType>& ja,
-        const hmemo::LAMAArray<OtherValueType>& values,
+        const hmemo::HArray<IndexType>& ia,
+        const hmemo::HArray<IndexType>& ja,
+        const hmemo::HArray<OtherValueType>& values,
         const hmemo::ContextPtr loc );
 
     /** Test the storage data for inconsistencies.

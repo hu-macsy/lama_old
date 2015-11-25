@@ -37,7 +37,7 @@
 
 #include <scai/lama/ContextFactory.hpp>
 #include <scai/lama/WriteAccess.hpp>
-#include <scai/lama/LAMAArray.hpp>
+#include <scai/lama/HArray.hpp>
 #include <scai/lama/HostReadAccess.hpp>
 #include <scai/lama/HostWriteAccess.hpp>
 #include <scai/lama/ContextAccess.hpp>
@@ -86,7 +86,7 @@ BOOST_AUTO_TEST_CASE( getContextTest )
 
 BOOST_AUTO_TEST_CASE( allocateTest )
 {
-    LAMAArray<int> ctxArray; // default, not allocated at all
+    HArray<int> ctxArray; // default, not allocated at all
     ContextPtr cudaContext = lama_test::CUDAContext::getContext();
     WriteAccess<int> array( ctxArray, cudaContext );
     array.resize( 10 );
@@ -97,7 +97,7 @@ BOOST_AUTO_TEST_CASE( allocateTest )
 
 BOOST_AUTO_TEST_CASE ( releaseTest )
 {
-    LAMAArray<IndexType> ctxArray; // default, not allocated at all
+    HArray<IndexType> ctxArray; // default, not allocated at all
     HostReadAccess<IndexType> readTestAccess( ctxArray );
     readTestAccess.release();
     HostWriteAccess<IndexType> writeAccess( ctxArray );
@@ -126,7 +126,7 @@ BOOST_AUTO_TEST_CASE ( releaseTest )
 
 BOOST_AUTO_TEST_CASE( resizeTest )
 {
-    LAMAArray<IndexType> ctxArray; // default, not allocated at all
+    HArray<IndexType> ctxArray; // default, not allocated at all
     {
         HostWriteAccess<IndexType> writeAccess( ctxArray );
         // Possible problem: fetch from any location not possible
@@ -155,8 +155,8 @@ BOOST_AUTO_TEST_CASE( prefetchTest )
     ContextPtr hostContext = ContextFactory::getContext( Context::Host );
     const IndexType n = 100;
     const ValueType value1 = 1.4;
-    LAMAArray<ValueType> vector1( n );
-    LAMAArray<ValueType> vector2( n );
+    HArray<ValueType> vector1( n );
+    HArray<ValueType> vector2( n );
     {
         HostWriteAccess<ValueType> v1( vector1 );
 
@@ -206,7 +206,7 @@ BOOST_AUTO_TEST_CASE( asyncTest )
     const IndexType n = 100;
     const float value = 1.4;
     const float alpha = 0.5;
-    LAMAArray<float> vector( n, value );
+    HArray<float> vector( n, value );
     common::shared_ptr<WriteAccess<float> > cudaV( new WriteAccess<float>( vector, cudaContext ) );
     //CUDAContext* cuda = dynamic_cast<const CUDAContext*>( cudaContext.get() );
     const CUDAContext* cuda = ( CUDAContext* ) cudaContext.get();
@@ -240,7 +240,7 @@ BOOST_AUTO_TEST_CASE( syncTest )
     const IndexType n = 100;
     const float value = 1.4;
     const float alpha = 0.5;
-    LAMAArray<float> vector( n, value );
+    HArray<float> vector( n, value );
     {
         LAMA_INTERFACE_FN_t( scal, cudaContext, BLAS, BLAS1, float );
         WriteAccess<float> cudaV( vector, cudaContext );
@@ -262,7 +262,7 @@ BOOST_AUTO_TEST_CASE( syncTest )
 namespace
 {
 
-static void callSSCAL( LAMAArray<float>& vector, const float alpha, ContextPtr context )
+static void callSSCAL( HArray<float>& vector, const float alpha, ContextPtr context )
 {
     // get routine for context, must be available, otherwise Exception
     LAMA_INTERFACE_FN_t( scal, context, BLAS, BLAS1, float );
@@ -282,9 +282,9 @@ BOOST_AUTO_TEST_CASE( threadTest )
     const IndexType n = 100;
     const float value = 1.4;
     const float alpha = 0.5;
-    const LAMAArray<float> vectorOrig( n, value );
-    LAMAArray<float> vector( n, value );
-    LAMAArray<float> vector2( n, value );
+    const HArray<float> vectorOrig( n, value );
+    HArray<float> vector( n, value );
+    HArray<float> vector2( n, value );
     //CUDA Synchronous
     {
         callSSCAL( vector, alpha, cudaContext );

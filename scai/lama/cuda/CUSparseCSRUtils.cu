@@ -46,6 +46,7 @@
 
 #include <scai/common/cuda/CUDAError.hpp>
 #include <scai/common/Settings.hpp>
+#include <scai/common/Constants.hpp>
 
 // CUDA
 #include <cuda.h>
@@ -533,7 +534,10 @@ void CUSparseCSRUtils::matrixMultiply(
     cudaMemcpy( &nnzA, &aIA[m], sizeof( IndexType ), cudaMemcpyDeviceToHost );
     cudaMemcpy( &nnzB, &bIA[k], sizeof( IndexType ), cudaMemcpyDeviceToHost );
 
-    SCAI_ASSERT_EQUAL_ERROR( 0.0f, alpha );
+    if ( alpha != common::constants::ONE )
+    {
+        COMMON_THROWEXCEPTION( "cusparseMatrixMultiply only supports alpha = 1, but alpha = " << alpha )
+    }
 
     SCAI_CUSPARSE_CALL(
         cusparseScsrgemm( CUDAContext_cusparseHandle,
@@ -587,7 +591,10 @@ void CUSparseCSRUtils::matrixMultiply(
     cudaMemcpy( &nnzA, &aIA[m], sizeof( IndexType ), cudaMemcpyDeviceToHost );
     cudaMemcpy( &nnzB, &bIA[k], sizeof( IndexType ), cudaMemcpyDeviceToHost );
 
-    SCAI_ASSERT_EQUAL_ERROR( 0.0, alpha );
+    if ( alpha != common::constants::ONE )
+    {
+        COMMON_THROWEXCEPTION( "cusparseMatrixMultiply only supports alpha = 1, but alpha = " << alpha )
+    }
 
     SCAI_CUSPARSE_CALL(
         cusparseDcsrgemm( CUDAContext_cusparseHandle,

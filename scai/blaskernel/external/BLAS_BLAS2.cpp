@@ -48,7 +48,7 @@
 
 #include <scai/common/Settings.hpp>
 #include <scai/common/macros/unused.hpp>
-#include <scai/common/ScalarType.hpp>
+#include <scai/common/TypeTraits.hpp>
 
 // boost
 #include <boost/preprocessor.hpp>
@@ -61,7 +61,7 @@ using namespace tasking;    // for running kernels asynchronously
 namespace blaskernel
 {
 
-using common::getScalarType;
+using common::TypeTraits;
 
 SCAI_LOG_DEF_LOGGER( BLAS_BLAS2::logger, "BLAS.BLAS2" )
 
@@ -87,7 +87,7 @@ void BLAS_BLAS2::gemv(
     SCAI_REGION( "BLAS.BLAS2.gemv" )
 
     SCAI_LOG_INFO( logger,
-                   "gemv<" << getScalarType<ValueType>() << ">: " << "m = " << m << ", n = " << n << ", LDA = " << lda << ", incX = " << incX << ", incY = " << incY << ", alpha = " << alpha << ", beta = " << beta )
+                   "gemv<" << TypeTraits<ValueType>::id() << ">: " << "m = " << m << ", n = " << n << ", LDA = " << lda << ", incX = " << incX << ", incY = " << incY << ", alpha = " << alpha << ", beta = " << beta )
 
     if( m == 0 )
     {

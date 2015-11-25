@@ -122,6 +122,7 @@ scai_project (
         OpenMP
         NonCopyable
         shared_ptr
+        TypeTraits
         unique_ptr
         weak_ptr
 )

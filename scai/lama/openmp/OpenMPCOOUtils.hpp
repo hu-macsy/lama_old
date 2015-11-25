@@ -75,6 +75,14 @@ public:
         const IndexType numRows,
         const IndexType numDiagonals );
 
+
+    template<typename COOValueType,typename OtherValueType>
+    static void scaleRows(
+        COOValueType cooValues[],
+        const OtherValueType rowValues[],
+        const IndexType cooIA[],
+        const IndexType numValues );
+    
     /** OpenMP implementation for COOKernelTrait::getCSRSizes */
 
     static void getCSRSizes(

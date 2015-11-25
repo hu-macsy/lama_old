@@ -39,7 +39,7 @@
 // internal scai libraries
 #include <scai/tasking/TaskSyncToken.hpp>
 #include <scai/common/macros/unused.hpp>
-#include <scai/common/ScalarType.hpp>
+#include <scai/common/TypeTraits.hpp>
 #include <scai/kregistry/KernelRegistry.hpp>
 #include <scai/common/bind.hpp>
 #include <scai/common/OpenMP.hpp>
@@ -56,20 +56,10 @@ namespace scai
 {
 
 using tasking::TaskSyncToken;
-using common::getScalarType;
+using common::TypeTraits;
 
 namespace blaskernel
 {
-
-/** Template routines use abs and sqrt, once from cmath and also as routines
- *  for complex numbers. To make this possible, all routines should be in
- *  this namespace made availale.
- */
-
-using std::abs;
-// used for float, double
-using std::sqrt;
-// used for float, double
 
 SCAI_LOG_DEF_LOGGER( OpenMPBLAS1::logger, "OpenMP.BLAS1" )
 
@@ -100,7 +90,7 @@ void OpenMPBLAS1::scal(
     }
 
     SCAI_LOG_DEBUG( logger,
-                    "scal<" << getScalarType<ValueType>()<< ">, n = " << n << ", alpha = " << alpha << ", x = " << x << ", incX = " << incX )
+                    "scal<" << TypeTraits<ValueType>::id()<< ">, n = " << n << ", alpha = " << alpha << ", x = " << x << ", incX = " << incX )
 
     if( incX == 1 )
     {
@@ -130,7 +120,7 @@ ValueType OpenMPBLAS1::nrm2( const IndexType n, const ValueType* x, const IndexT
     SCAI_REGION( "OpenMP.BLAS1.nrm2" )
 
     SCAI_LOG_DEBUG( logger,
-                    "nrm2<" << getScalarType<ValueType>()<< ">, n = " << n << ", x = " << x << ", incX = " << incX )
+                    "nrm2<" << TypeTraits<ValueType>::id()<< ">, n = " << n << ", x = " << x << ", incX = " << incX )
 
     if ( incX <= 0 )
     {
@@ -173,7 +163,7 @@ ValueType OpenMPBLAS1::nrm2( const IndexType n, const ValueType* x, const IndexT
 
         atomicAdd( sumOfSquares, tSumOfSquares );
     }
-    return sqrt( sumOfSquares );
+    return TypeTraits<ValueType>::sqrt( sumOfSquares );
 }
 
 /** asum (l1 norm) */
@@ -184,7 +174,7 @@ ValueType OpenMPBLAS1::asum( const IndexType n, const ValueType* x, const IndexT
     SCAI_REGION( "OpenMP.BLAS1.asum" )
 
     SCAI_LOG_DEBUG( logger,
-                    "asum<" << getScalarType<ValueType>()<< ">, n = " << n << ", x = " << x << ", incX = " << incX )
+                    "asum<" << TypeTraits<ValueType>::id()<< ">, n = " << n << ", x = " << x << ", incX = " << incX )
 
     TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
@@ -212,7 +202,7 @@ ValueType OpenMPBLAS1::asum( const IndexType n, const ValueType* x, const IndexT
 
             for( int i = 0; i < n; i++ )
             {
-                tResult += abs( x[i] );
+                tResult += TypeTraits<ValueType>::abs( x[i] );
             }
         }
         else
@@ -221,7 +211,7 @@ ValueType OpenMPBLAS1::asum( const IndexType n, const ValueType* x, const IndexT
 
             for( int i = 0; i < n; i++ )
             {
-                tResult += abs( x[i * incX] );
+                tResult += TypeTraits<ValueType>::abs( x[i * incX] );
             }
         }
 
@@ -239,7 +229,7 @@ IndexType OpenMPBLAS1::iamax( const IndexType n, const ValueType* x, const Index
     SCAI_REGION( "OpenMP.BLAS1.iamax" )
 
     SCAI_LOG_INFO( logger,
-                   "iamax<" << getScalarType<ValueType>()<< ">, n = " << n << ", x = " << x << ", incX = " << incX )
+                   "iamax<" << TypeTraits<ValueType>::id()<< ">, n = " << n << ", x = " << x << ", incX = " << incX )
 
     TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
@@ -265,7 +255,7 @@ IndexType OpenMPBLAS1::iamax( const IndexType n, const ValueType* x, const Index
 
             for( int i = 0; i < n; i++ )
             {
-                if( abs( x[i] ) > abs( x[tMaxPos] ) )
+                if( TypeTraits<ValueType>::abs( x[i] ) > TypeTraits<ValueType>::abs( x[tMaxPos] ) )
                 {
                     tMaxPos = i;
                 }
@@ -277,7 +267,7 @@ IndexType OpenMPBLAS1::iamax( const IndexType n, const ValueType* x, const Index
 
             for( int i = 0; i < n; i++ )
             {
-                if( abs( x[i * incX] ) > abs( x[tMaxPos * incX] ) )
+                if( TypeTraits<ValueType>::abs( x[i * incX] ) > TypeTraits<ValueType>::abs( x[tMaxPos * incX] ) )
                 {
                     tMaxPos = i;
                 }
@@ -286,8 +276,8 @@ IndexType OpenMPBLAS1::iamax( const IndexType n, const ValueType* x, const Index
 
         #pragma omp critical
         {
-            if( ( abs( x[tMaxPos] ) > abs( x[maxPos] ) )
-                    || ( ( abs( x[tMaxPos] ) == abs( x[maxPos] ) ) && tMaxPos < maxPos ) )
+            if( ( TypeTraits<ValueType>::abs( x[tMaxPos] ) > TypeTraits<ValueType>::abs( x[maxPos] ) )
+                    || ( ( TypeTraits<ValueType>::abs( x[tMaxPos] ) == TypeTraits<ValueType>::abs( x[maxPos] ) ) && tMaxPos < maxPos ) )
             {
                 maxPos = tMaxPos;
             }
@@ -310,7 +300,7 @@ void OpenMPBLAS1::swap(
     SCAI_REGION( "OpenMP.BLAS1.swap" )
 
     SCAI_LOG_DEBUG( logger,
-                    "iamax<" << getScalarType<ValueType>()<< ">, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
+                    "iamax<" << TypeTraits<ValueType>::id()<< ">, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
 
     if( ( incX <= 0 ) || ( incY <= 0 ) )
     {
@@ -397,7 +387,7 @@ void OpenMPBLAS1::copy(
     SCAI_REGION( "OpenMP.BLAS1.copy" )
 
     SCAI_LOG_DEBUG( logger,
-                    "copy<" << getScalarType<ValueType>() << ">, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
+                    "copy<" << TypeTraits<ValueType>::id() << ">, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
 
     if( ( incX <= 0 ) || ( incY <= 0 ) )
     {
@@ -447,7 +437,7 @@ void OpenMPBLAS1::axpy(
     SCAI_REGION( "OpenMP.BLAS1.axpy" )
 
     SCAI_LOG_DEBUG( logger,
-                    "axpy<" << getScalarType<ValueType>() << ">, n = " << n << ", alpha = " << alpha 
+                    "axpy<" << TypeTraits<ValueType>::id() << ">, n = " << n << ", alpha = " << alpha 
                      << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
 
     if ( ( incX <= 0 ) || ( incY <= 0 ) )
@@ -488,7 +478,7 @@ ValueType OpenMPBLAS1::dot(
     SCAI_REGION( "OpenMP.BLAS1.sdot" )
 
     SCAI_LOG_DEBUG( logger,
-                    "dot<" << getScalarType<ValueType>() << ">, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
+                    "dot<" << TypeTraits<ValueType>::id() << ">, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
 
     if( ( incX <= 0 ) || ( incY <= 0 ) )
     {
@@ -546,7 +536,7 @@ void OpenMPBLAS1::sum(
     SCAI_REGION( "OpenMP.BLAS1.dot" )
 
     SCAI_LOG_DEBUG( logger,
-                    "sum<" << getScalarType<ValueType>() << ">, n = " << n << ", alpha = " << alpha << ", x = " << x << ", beta = " << beta << ", y = " << y << ", z = " << z )
+                    "sum<" << TypeTraits<ValueType>::id() << ">, n = " << n << ", alpha = " << alpha << ", x = " << x << ", beta = " << beta << ", y = " << y << ", z = " << z )
 
     TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
@@ -576,15 +566,16 @@ void OpenMPBLAS1::registerKernels( bool deleteFlag )
 
     SCAI_LOG_INFO( logger, "set BLAS1 routines for OpenMP in Interface" )
 
-    KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;   // lower priority
+    // KERNEL_ADD: these entries do not replace and can be replaced by other ones
+
+    KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD ;  
 
     if ( deleteFlag )
     {
         flag = KernelRegistry::KERNEL_ERASE;
     }
 
-// Note: macro takes advantage of same name for routines and type definitions
-//       ( e.g. routine CUDABLAS1::sum<ValueType> is set for BLAS::BLAS1::sum variable
+    // Loop over all support arithmetic types for CUDA
 
 #define LAMA_BLAS1_REGISTER(z, I, _)                                                             \
     KernelRegistry::set<BLASKernelTrait::scal<ARITHMETIC_HOST_TYPE_##I> >( scal, Host, flag );    \

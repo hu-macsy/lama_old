@@ -48,18 +48,17 @@
 #include <scai/common/cuda/CUDAError.hpp>
 #include <scai/common/cuda/launchHelper.hpp>
 #include <scai/common/macros/unused.hpp>
-#include <scai/common/ScalarType.hpp>
+#include <scai/common/TypeTraits.hpp>
 
 // boost
 #include <boost/preprocessor.hpp>
 
 using namespace scai::tasking;
 using namespace scai::hmemo;
+using scai::common::TypeTraits;
 
 namespace scai
 {
-
-using common::getScalarType;
 
 extern cublasHandle_t CUDAContext_cublasHandle;
 
@@ -105,7 +104,7 @@ void CUDABLAS1::sum(
     }
 
     SCAI_LOG_DEBUG( logger,
-                    "sum<" << getScalarType<ValueType>() << ">, n = " << n << ", " << alpha << " * x + " << beta << " * y " )
+                    "sum<" << TypeTraits<ValueType>::id() << ">, n = " << n << ", " << alpha << " * x + " << beta << " * y " )
 
     SCAI_CHECK_CUDA_ACCESS
 
@@ -148,7 +147,7 @@ void CUDABLAS1::scal( IndexType n, const ValueType alpha, ValueType* x_d, const 
         return;
     }
 
-    SCAI_LOG_DEBUG( logger, "scal<" << getScalarType<ValueType>() << "> of x[" << n << "], alpha = " << alpha )
+    SCAI_LOG_DEBUG( logger, "scal<" << TypeTraits<ValueType>::id() << "> of x[" << n << "], alpha = " << alpha )
 
     SCAI_CHECK_CUDA_ACCESS
 
@@ -192,7 +191,7 @@ ValueType CUDABLAS1::nrm2( IndexType n, const ValueType* x_d, IndexType incX )
         return static_cast<ValueType>(0.0);
     }
 
-    SCAI_LOG_DEBUG( logger, "nrm2<" << getScalarType<ValueType>() << "> of x[" << n << "]" )
+    SCAI_LOG_DEBUG( logger, "nrm2<" << TypeTraits<ValueType>::id() << "> of x[" << n << "]" )
 
     SCAI_CHECK_CUDA_ACCESS
 
@@ -238,7 +237,7 @@ ValueType CUDABLAS1::asum( const IndexType n, const ValueType* x_d, const IndexT
         return static_cast<ValueType>(0.0);
     }
 
-    SCAI_LOG_DEBUG( logger, "asum<" << getScalarType<ValueType>() << "> of x[" << n << "]" )
+    SCAI_LOG_DEBUG( logger, "asum<" << TypeTraits<ValueType>::id() << "> of x[" << n << "]" )
 
     SCAI_CHECK_CUDA_ACCESS
 
@@ -276,7 +275,7 @@ IndexType CUDABLAS1::iamax( const IndexType n, const ValueType* x_d, const Index
 {
     SCAI_REGION( "CUDA.BLAS1.iamax" )
 
-    SCAI_LOG_DEBUG( logger, "iamax<" << getScalarType<ValueType>() << "> of x[" << n << "]" )
+    SCAI_LOG_DEBUG( logger, "iamax<" << TypeTraits<ValueType>::id() << "> of x[" << n << "]" )
 
     SCAI_CHECK_CUDA_ACCESS
 
@@ -324,7 +323,7 @@ void CUDABLAS1::swap(
         return;
     }
 
-    SCAI_LOG_DEBUG( logger, "swap<" << getScalarType<ValueType>() << "> of x, y with size " << n )
+    SCAI_LOG_DEBUG( logger, "swap<" << TypeTraits<ValueType>::id() << "> of x, y with size " << n )
 
     SCAI_CHECK_CUDA_ACCESS
 
@@ -371,7 +370,7 @@ void CUDABLAS1::copy(
         return;
     }
 
-    SCAI_LOG_DEBUG( logger, "copy<" << getScalarType<ValueType>() << "> of x, y, n = " << n )
+    SCAI_LOG_DEBUG( logger, "copy<" << TypeTraits<ValueType>::id() << "> of x, y, n = " << n )
 
     SCAI_CHECK_CUDA_ACCESS
 
@@ -419,7 +418,7 @@ void CUDABLAS1::axpy(
         return;
     }
 
-    SCAI_LOG_DEBUG( logger, "axpy<" << getScalarType<ValueType>() << "> of x, y, n = " << n << ", alpha = " << alpha )
+    SCAI_LOG_DEBUG( logger, "axpy<" << TypeTraits<ValueType>::id() << "> of x, y, n = " << n << ", alpha = " << alpha )
 
     SCAI_CHECK_CUDA_ACCESS
 
@@ -462,7 +461,7 @@ ValueType CUDABLAS1::dot(
     SCAI_REGION( "CUDA.BLAS1.dot" )
 
     SCAI_LOG_DEBUG( logger,
-                    "dot<" << getScalarType<ValueType>() << ">, n = " << n << ", incX = " << incX << ", incY = " << incY << ", x_d = " << x_d << ", y_d = " << y_d )
+                    "dot<" << TypeTraits<ValueType>::id() << ">, n = " << n << ", incX = " << incX << ", incY = " << incY << ", x_d = " << x_d << ", y_d = " << y_d )
 
     if( ( incX <= 0 ) || ( incY <= 0 ) )
     {

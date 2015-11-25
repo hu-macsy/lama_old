@@ -41,6 +41,7 @@
 // internal scai libraries
 #include <scai/hmemo.hpp>
 #include <scai/common/macros/print_string.hpp>
+#include <scai/common/TypeTraits.hpp>
 
 // boost
 #include <boost/preprocessor.hpp>
@@ -277,7 +278,7 @@ ValueType SparseAssemblyStorage<ValueType>::l2Norm() const
         }
     }
 
-    return ::sqrt(val);
+    return common::TypeTraits<ValueType>::sqrt(val);
 }
 
 
@@ -525,8 +526,8 @@ IndexType SparseAssemblyStorage<ValueType>::getNumValues() const
 template<typename ValueType>
 void SparseAssemblyStorage<ValueType>::setRow(
     const IndexType i,
-    const LAMAArray<IndexType>& ja,
-    const LAMAArray<ValueType>& values )
+    const HArray<IndexType>& ja,
+    const HArray<ValueType>& values )
 {
     //SCAI_ASSERT_EQUAL_ERROR( ja.size(), values.size() )
 
@@ -632,9 +633,9 @@ void SparseAssemblyStorage<ValueType>::setCSRDataImpl(
     const IndexType numRows,
     const IndexType numColumns,
     const IndexType numValues,
-    const LAMAArray<IndexType>& ia,
-    const LAMAArray<IndexType>& ja,
-    const LAMAArray<OtherValueType>& values,
+    const HArray<IndexType>& ia,
+    const HArray<IndexType>& ja,
+    const HArray<OtherValueType>& values,
     const ContextPtr /* loc */)
 {
     // no more error checks here on the sizes, but on the content
@@ -690,9 +691,9 @@ void SparseAssemblyStorage<ValueType>::setCSRDataImpl(
 template<typename ValueType>
 template<typename OtherValueType>
 void SparseAssemblyStorage<ValueType>::buildCSR(
-    LAMAArray<IndexType>& ia,
-    LAMAArray<IndexType>* ja,
-    LAMAArray<OtherValueType>* values,
+    HArray<IndexType>& ia,
+    HArray<IndexType>* ja,
+    HArray<OtherValueType>* values,
     const ContextPtr /* loc */) const
 {
     // TODO all done on host, so loc is unused
@@ -743,7 +744,7 @@ void SparseAssemblyStorage<ValueType>::buildCSR(
 
 template<typename ValueType>
 template<typename OtherValueType>
-void SparseAssemblyStorage<ValueType>::setDiagonalImpl( const LAMAArray<OtherValueType>& diagonal )
+void SparseAssemblyStorage<ValueType>::setDiagonalImpl( const HArray<OtherValueType>& diagonal )
 {
     IndexType numDiagonalElements = diagonal.size();
 
@@ -759,7 +760,7 @@ void SparseAssemblyStorage<ValueType>::setDiagonalImpl( const LAMAArray<OtherVal
 
 template<typename ValueType>
 template<typename OtherValueType>
-void SparseAssemblyStorage<ValueType>::getDiagonalImpl( LAMAArray<OtherValueType>& diagonal ) const
+void SparseAssemblyStorage<ValueType>::getDiagonalImpl( HArray<OtherValueType>& diagonal ) const
 {
     const IndexType numDiagonalElements = std::min( mNumColumns, mNumRows );
 
@@ -775,7 +776,7 @@ void SparseAssemblyStorage<ValueType>::getDiagonalImpl( LAMAArray<OtherValueType
 
 template<typename ValueType>
 template<typename OtherType>
-void SparseAssemblyStorage<ValueType>::getRowImpl( LAMAArray<OtherType>& row, const IndexType i ) const
+void SparseAssemblyStorage<ValueType>::getRowImpl( HArray<OtherType>& row, const IndexType i ) const
 {
     SCAI_ASSERT_DEBUG( i >= 0 && i < mNumRows, "row index " << i << " out of range" )
 
@@ -829,7 +830,7 @@ void SparseAssemblyStorage<ValueType>::scaleImpl( const ValueType value )
 
 template<typename ValueType>
 template<typename OtherValueType>
-void SparseAssemblyStorage<ValueType>::scaleImpl( const LAMAArray<OtherValueType>& diagonal )
+void SparseAssemblyStorage<ValueType>::scaleImpl( const HArray<OtherValueType>& diagonal )
 {
     IndexType n = std::min( mNumRows, diagonal.size() );
 

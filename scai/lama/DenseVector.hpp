@@ -39,7 +39,7 @@
 #include <scai/lama/Vector.hpp>
 
 // local library
-#include <scai/lama/LAMAArrayUtils.hpp>
+#include <scai/lama/LAMAArray.hpp>
 #include <scai/lama/distribution/Distribution.hpp>
 #include <scai/lama/distribution/Halo.hpp>
 
@@ -257,7 +257,7 @@ public:
      */
     void readFromFile( const std::string& filename );
 
-    virtual common::ScalarType getValueType() const;
+    virtual common::scalar::ScalarType getValueType() const;
 
     /**
      * Implementation of pure method.
@@ -294,7 +294,7 @@ public:
     // getLocalValues and getHaloValues is more explicite and there for
     // better understandable and less errorprone.
     // Maybe an access proxy would be a nice solution, because with a proxy we
-    // can avoid to change the size and other attributes of the LAMAArray
+    // can avoid to change the size and other attributes of the HArray
     // mLocalValues.
     /**
      * @brief get a non constant reference to local values of this Dense Vector.
@@ -302,7 +302,7 @@ public:
      * @return  a non constant reference to the local values of this.
      */
 
-    hmemo::LAMAArray<ValueType>& getLocalValues()
+    LAMAArray<ValueType>& getLocalValues()
     {
         return mLocalValues;
     }
@@ -312,7 +312,7 @@ public:
      *
      * @return  a constant reference to the local values of this.
      */
-    const hmemo::LAMAArray<ValueType>& getLocalValues() const
+    const LAMAArray<ValueType>& getLocalValues() const
     {
         return mLocalValues;
     }
@@ -324,7 +324,7 @@ public:
      *
      * Note: halo of a vector can also be used for writes in case of const vectors.
      */
-    hmemo::LAMAArray<ValueType>& getHaloValues() const
+    LAMAArray<ValueType>& getHaloValues() const
     {
         return mHaloValues;
     }
@@ -358,19 +358,19 @@ public:
 
     static void vectorPlusVector(
         scai::hmemo::ContextPtr prefContext,
-        scai::hmemo::LAMAArray<ValueType>& result,
+        scai::hmemo::HArray<ValueType>& result,
         const ValueType alpha,
-        const scai::hmemo::LAMAArray<ValueType>& x,
+        const scai::hmemo::HArray<ValueType>& x,
         const ValueType beta,
-        const scai::hmemo::LAMAArray<ValueType>& y );
+        const scai::hmemo::HArray<ValueType>& y );
 
     static SyncToken* vectorPlusVectorAsync(
         hmemo::ContextPtr prefContext,
-        hmemo::LAMAArray<ValueType>& result,
+        hmemo::HArray<ValueType>& result,
         const ValueType alpha,
-        const hmemo::LAMAArray<ValueType>& x,
+        const hmemo::HArray<ValueType>& x,
         const ValueType beta,
-        const hmemo::LAMAArray<ValueType>& y );
+        const hmemo::HArray<ValueType>& y );
 
     virtual void swap( Vector& other );
 
@@ -460,9 +460,9 @@ private    :
                     std::fstream &inFile,
                     const File::DataType dataType );
 
-    hmemo::LAMAArray<ValueType> mLocalValues; //!< my local values of vector
+    LAMAArray<ValueType> mLocalValues; //!< my local values of vector
 
-    mutable hmemo::LAMAArray<ValueType> mHaloValues;//!< my halo values of vector
+    mutable LAMAArray<ValueType> mHaloValues;//!< my halo values of vector
 
 public:
 
@@ -472,7 +472,7 @@ public:
 
     // key for factory 
 
-    static std::pair<VectorKind, common::ScalarType> createValue();
+    static std::pair<VectorKind, common::scalar::ScalarType> createValue();
 };
 
 /* ------------------------------------------------------------------------- */
@@ -484,11 +484,11 @@ DenseVector<ValueType>::DenseVector( const IndexType size, const OtherValueType*
 {
     // use LAMA array reference to avoid copy of the raw data
 
-    hmemo::LAMAArrayRef<OtherValueType> valuesArrayRef( size, values );
+    hmemo::HArrayRef<OtherValueType> valuesArrayRef( size, values );
 
     // use mContext instead of context to avoid NULL pointer
 
-    LAMAArrayUtils::assign( mLocalValues, valuesArrayRef, mContext );
+    HArrayUtils::assign( mLocalValues, valuesArrayRef, mContext );
 
     // Halo is not used yet
 

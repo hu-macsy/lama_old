@@ -77,7 +77,7 @@ public:
         SpecializedJacobiRuntime();
         virtual ~SpecializedJacobiRuntime();
 
-        //TODO: LAMAArray?
+        //TODO: HArray?
         common::shared_ptr<Vector> mOldSolution;
         SolutionProxy mProxyOldSolution;
         common::shared_ptr<hmemo::ContextArray> mDiagonal;
@@ -112,20 +112,20 @@ private:
 
     template<typename ValueType>
     void iterateSync(
-        hmemo::LAMAArray<ValueType>& solution,
+        hmemo::HArray<ValueType>& solution,
         const SparseMatrix<ValueType>& coefficients,
-        const hmemo::LAMAArray<ValueType>& localOldSolution,
-        hmemo::LAMAArray<ValueType>& haloOldSolution,
-        const hmemo::LAMAArray<ValueType>& rhs,
+        const hmemo::HArray<ValueType>& localOldSolution,
+        hmemo::HArray<ValueType>& haloOldSolution,
+        const hmemo::HArray<ValueType>& rhs,
         const ValueType omega );
 
     template<typename ValueType>
     void iterateAsync(
-        hmemo::LAMAArray<ValueType>& solution,
+        hmemo::HArray<ValueType>& solution,
         const SparseMatrix<ValueType>& coefficients,
-        const hmemo::LAMAArray<ValueType>& localOldSolution,
-        hmemo::LAMAArray<ValueType>& haloOldSolution,
-        const hmemo::LAMAArray<ValueType>& rhs,
+        const hmemo::HArray<ValueType>& localOldSolution,
+        hmemo::HArray<ValueType>& haloOldSolution,
+        const hmemo::HArray<ValueType>& rhs,
         const ValueType omega );
 };
 

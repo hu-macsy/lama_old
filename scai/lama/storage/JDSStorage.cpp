@@ -41,7 +41,7 @@
 #include <scai/blaskernel/BLASKernelTrait.hpp>
 #include <scai/lama/LAMAKernel.hpp>
 
-#include <scai/lama/LAMAArrayUtils.hpp>
+#include <scai/lama/HArrayUtils.hpp>
 
 // local scai libraries
 #include <scai/tasking/TaskSyncToken.hpp>
@@ -51,6 +51,7 @@
 #include <scai/common/bind.hpp>
 #include <scai/common/unique_ptr.hpp>
 #include <scai/common/Constants.hpp>
+#include <scai/common/TypeTraits.hpp>
 #include <scai/common/macros/print_string.hpp>
 
 // boost
@@ -110,11 +111,11 @@ JDSStorage<ValueType>::JDSStorage(
     const IndexType numColumns,
     const IndexType numValues,
     const IndexType numDiagonals,
-    const LAMAArray<IndexType>& dlg,
-    const LAMAArray<IndexType>& ilg,
-    const LAMAArray<IndexType>& perm,
-    const LAMAArray<IndexType>& ja,
-    const LAMAArray<ValueType>& values )
+    const HArray<IndexType>& dlg,
+    const HArray<IndexType>& ilg,
+    const HArray<IndexType>& perm,
+    const HArray<IndexType>& ja,
+    const HArray<ValueType>& values )
 
     : CRTPMatrixStorage<JDSStorage<ValueType>,ValueType>( numRows, numColumns ), mNumDiagonals(
           numDiagonals ), mNumValues( numValues ), mDlg( dlg ), mIlg( ilg ), mPerm( perm ), mJa(
@@ -133,10 +134,10 @@ void JDSStorage<ValueType>::setJDSData(
     const IndexType numColumns,
     const IndexType numValues,
     const IndexType numDiagonals,
-    const LAMAArray<IndexType>& dlg,
-    const LAMAArray<IndexType>& ilg,
-    const LAMAArray<IndexType>& perm,
-    const LAMAArray<IndexType>& ja,
+    const HArray<IndexType>& dlg,
+    const HArray<IndexType>& ilg,
+    const HArray<IndexType>& perm,
+    const HArray<IndexType>& ja,
     const ContextArray& values )
 {
     SCAI_ASSERT_EQUAL_ERROR( numRows, ilg.size() )
@@ -152,12 +153,12 @@ void JDSStorage<ValueType>::setJDSData(
 
     ContextPtr loc = getContextPtr();
 
-    LAMAArrayUtils::assignImpl( mDlg, dlg, loc );
-    LAMAArrayUtils::assignImpl( mIlg, ilg, loc );
-    LAMAArrayUtils::assignImpl( mPerm, perm, loc );
-    LAMAArrayUtils::assignImpl( mJa, ja, loc );
+    HArrayUtils::assignImpl( mDlg, dlg, loc );
+    HArrayUtils::assignImpl( mIlg, ilg, loc );
+    HArrayUtils::assignImpl( mPerm, perm, loc );
+    HArrayUtils::assignImpl( mJa, ja, loc );
 
-    LAMAArrayUtils::assign( mValues, values, loc ); // supports type conversion
+    HArrayUtils::assign( mValues, values, loc ); // supports type conversion
 
     // check is expensive, so do it only if ASSERT_LEVEL is on DEBUG mode
 
@@ -310,7 +311,7 @@ void JDSStorage<ValueType>::setDiagonalImpl( const ValueType value )
 
 template<typename ValueType>
 template<typename OtherValueType>
-void JDSStorage<ValueType>::setDiagonalImpl( const LAMAArray<OtherValueType>& diagonal )
+void JDSStorage<ValueType>::setDiagonalImpl( const HArray<OtherValueType>& diagonal )
 {
     // diagonal property has already been checked
 
@@ -338,7 +339,7 @@ void JDSStorage<ValueType>::setDiagonalImpl( const LAMAArray<OtherValueType>& di
 
 template<typename ValueType>
 template<typename OtherValueType>
-void JDSStorage<ValueType>::getRowImpl( LAMAArray<OtherValueType>& row, const IndexType i ) const
+void JDSStorage<ValueType>::getRowImpl( HArray<OtherValueType>& row, const IndexType i ) const
 {
     SCAI_LOG_INFO( logger, "getRowImpl with i = " << i )
 
@@ -364,7 +365,7 @@ void JDSStorage<ValueType>::getRowImpl( LAMAArray<OtherValueType>& row, const In
 
 template<typename ValueType>
 template<typename OtherValueType>
-void JDSStorage<ValueType>::getDiagonalImpl( LAMAArray<OtherValueType>& diagonal ) const
+void JDSStorage<ValueType>::getDiagonalImpl( HArray<OtherValueType>& diagonal ) const
 {
     SCAI_LOG_INFO( logger, "getDiagonalImpl" )
 
@@ -414,7 +415,7 @@ void JDSStorage<ValueType>::scaleImpl( const ValueType value )
 
 template<typename ValueType>
 template<typename OtherValueType>
-void JDSStorage<ValueType>::scaleImpl( const LAMAArray<OtherValueType>& diagonal )
+void JDSStorage<ValueType>::scaleImpl( const HArray<OtherValueType>& diagonal )
 {
     SCAI_LOG_INFO( logger, "scaleImpl" )
 
@@ -565,7 +566,7 @@ void JDSStorage<ValueType>::check( const char* msg ) const
 
         // temporary array for inverse permutation, initialize with mNumRows
 
-        LAMAArray<IndexType> invPermArray( mNumRows, mNumRows );
+        HArray<IndexType> invPermArray( mNumRows, mNumRows );
 
         static LAMAKernel<JDSKernelTrait::setInversePerm> setInversePerm;
         static LAMAKernel<UtilKernelTrait::maxval<IndexType> > maxval;
@@ -692,9 +693,9 @@ void JDSStorage<ValueType>::sortRows( ContextPtr context )
 template<typename ValueType>
 template<typename OtherValueType>
 void JDSStorage<ValueType>::buildCSR(
-    LAMAArray<IndexType>& ia,
-    LAMAArray<IndexType>* ja,
-    LAMAArray<OtherValueType>* values,
+    HArray<IndexType>& ia,
+    HArray<IndexType>* ja,
+    HArray<OtherValueType>* values,
     const ContextPtr context ) const
 {
     SCAI_REGION( "Storage.JDS->CSR" )
@@ -736,7 +737,7 @@ void JDSStorage<ValueType>::buildCSR(
     SCAI_ASSERT_EQUAL_DEBUG( numValues, mNumValues )
 
     // temporary array for inverse permutation
-    LAMAArray<IndexType> invPermArray; // allows to find a CSR row in JDS rows
+    HArray<IndexType> invPermArray; // allows to find a CSR row in JDS rows
 
     WriteOnlyAccess<IndexType> wJdsInversePerm( invPermArray, loc, mNumRows );
 
@@ -763,9 +764,9 @@ void JDSStorage<ValueType>::setCSRDataImpl(
     const IndexType numRows,
     const IndexType numColumns,
     const IndexType numValues,
-    const LAMAArray<IndexType>& ia,
-    const LAMAArray<IndexType>& ja,
-    const LAMAArray<OtherValueType>& values,
+    const HArray<IndexType>& ia,
+    const HArray<IndexType>& ja,
+    const HArray<OtherValueType>& values,
     const ContextPtr )
 {
     SCAI_REGION( "Storage.JDS<-CSR" )
@@ -927,11 +928,11 @@ ValueType JDSStorage<ValueType>::getValue( const IndexType i, const IndexType j 
 
 template<typename ValueType>
 void JDSStorage<ValueType>::matrixTimesVector(
-    LAMAArray<ValueType>& result,
+    HArray<ValueType>& result,
     const ValueType alpha,
-    const LAMAArray<ValueType>& x,
+    const HArray<ValueType>& x,
     const ValueType beta,
-    const LAMAArray<ValueType>& y ) const
+    const HArray<ValueType>& y ) const
 {
     SCAI_REGION( "Storage.JDS.timesVector" )
 
@@ -988,11 +989,11 @@ void JDSStorage<ValueType>::matrixTimesVector(
 
 template<typename ValueType>
 void JDSStorage<ValueType>::vectorTimesMatrix(
-    LAMAArray<ValueType>& result,
+    HArray<ValueType>& result,
     const ValueType alpha,
-    const LAMAArray<ValueType>& x,
+    const HArray<ValueType>& x,
     const ValueType beta,
-    const LAMAArray<ValueType>& y ) const
+    const HArray<ValueType>& y ) const
 {
     SCAI_REGION( "Storage.JDS.vectorTimesMatrix" )
 
@@ -1049,11 +1050,11 @@ void JDSStorage<ValueType>::vectorTimesMatrix(
 
 template<typename ValueType>
 tasking::SyncToken* JDSStorage<ValueType>::matrixTimesVectorAsync(
-    LAMAArray<ValueType>& result,
+    HArray<ValueType>& result,
     const ValueType alpha,
-    const LAMAArray<ValueType>& x,
+    const HArray<ValueType>& x,
     const ValueType beta,
-    const LAMAArray<ValueType>& y ) const
+    const HArray<ValueType>& y ) const
 {
     ContextPtr loc = getContextPtr();
 
@@ -1063,11 +1064,11 @@ tasking::SyncToken* JDSStorage<ValueType>::matrixTimesVectorAsync(
         // used later in OpenMP to generate a TaskSyncToken
 
         void (JDSStorage::*mv)(
-            LAMAArray<ValueType>&,
+            HArray<ValueType>&,
             const ValueType,
-            const LAMAArray<ValueType>&,
+            const HArray<ValueType>&,
             const ValueType,
-            const LAMAArray<ValueType>& ) const
+            const HArray<ValueType>& ) const
 
             = &JDSStorage<ValueType>::matrixTimesVector;
 
@@ -1158,11 +1159,11 @@ tasking::SyncToken* JDSStorage<ValueType>::matrixTimesVectorAsync(
 
 template<typename ValueType>
 tasking::SyncToken* JDSStorage<ValueType>::vectorTimesMatrixAsync(
-    LAMAArray<ValueType>& result,
+    HArray<ValueType>& result,
     const ValueType alpha,
-    const LAMAArray<ValueType>& x,
+    const HArray<ValueType>& x,
     const ValueType beta,
-    const LAMAArray<ValueType>& y ) const
+    const HArray<ValueType>& y ) const
 {
     static LAMAKernel<JDSKernelTrait::normalGEVM<ValueType> > normalGEVM;
 
@@ -1174,11 +1175,11 @@ tasking::SyncToken* JDSStorage<ValueType>::vectorTimesMatrixAsync(
         // used later in OpenMP to generate a TaskSyncToken
 
         void (JDSStorage::*vm)(
-            LAMAArray<ValueType>& result,
+            HArray<ValueType>& result,
             const ValueType alpha,
-            const LAMAArray<ValueType>& x,
+            const HArray<ValueType>& x,
             const ValueType beta,
-            const LAMAArray<ValueType>& y ) const
+            const HArray<ValueType>& y ) const
 
             = &JDSStorage<ValueType>::vectorTimesMatrix;
 
@@ -1265,9 +1266,9 @@ tasking::SyncToken* JDSStorage<ValueType>::vectorTimesMatrixAsync(
 
 template<typename ValueType>
 void JDSStorage<ValueType>::jacobiIterate(
-    LAMAArray<ValueType>& solution,
-    const LAMAArray<ValueType>& oldSolution,
-    const LAMAArray<ValueType>& rhs,
+    HArray<ValueType>& solution,
+    const HArray<ValueType>& oldSolution,
+    const HArray<ValueType>& rhs,
     const ValueType omega ) const
 {
     SCAI_REGION( "Storage.JDS.jacobiIterate" )
@@ -1311,9 +1312,9 @@ void JDSStorage<ValueType>::jacobiIterate(
 
 template<typename ValueType>
 tasking::SyncToken* JDSStorage<ValueType>::jacobiIterateAsync(
-    LAMAArray<ValueType>& solution,
-    const LAMAArray<ValueType>& oldSolution,
-    const LAMAArray<ValueType>& rhs,
+    HArray<ValueType>& solution,
+    const HArray<ValueType>& oldSolution,
+    const HArray<ValueType>& rhs,
     const ValueType omega ) const
 {
     SCAI_REGION( "Storage.JDS.jacobiIterateAsync" )
@@ -1327,9 +1328,9 @@ tasking::SyncToken* JDSStorage<ValueType>::jacobiIterateAsync(
         // On host we start directly a new task, avoids pushing accesses
 
         void (JDSStorage::*jb)(
-            LAMAArray<ValueType>&,
-            const LAMAArray<ValueType>&,
-            const LAMAArray<ValueType>&,
+            HArray<ValueType>&,
+            const HArray<ValueType>&,
+            const HArray<ValueType>&,
             const ValueType omega ) const
 
             = &JDSStorage<ValueType>::jacobiIterate;
@@ -1393,9 +1394,9 @@ tasking::SyncToken* JDSStorage<ValueType>::jacobiIterateAsync(
 
 template<typename ValueType>
 void JDSStorage<ValueType>::jacobiIterateHalo(
-    LAMAArray<ValueType>& localSolution,
+    HArray<ValueType>& localSolution,
     const MatrixStorage<ValueType>& localStorage,
-    const LAMAArray<ValueType>& oldHaloSolution,
+    const HArray<ValueType>& oldHaloSolution,
     const ValueType omega ) const
 {
     SCAI_LOG_INFO( logger, *this << ": Jacobi iteration for halo matrix data." )
@@ -1409,9 +1410,9 @@ void JDSStorage<ValueType>::jacobiIterateHalo(
     SCAI_ASSERT_EQUAL_DEBUG( mNumColumns, oldHaloSolution.size() )
 
     // need diagonal of local storage in *natural* order
-    const LAMAArray<ValueType>* localDiagonal;
-    shared_ptr<LAMAArray<ValueType> > tmpLocalDiagonal;
-    tmpLocalDiagonal = shared_ptr<LAMAArray<ValueType> >( new LAMAArray<ValueType>() );
+    const HArray<ValueType>* localDiagonal;
+    shared_ptr<HArray<ValueType> > tmpLocalDiagonal;
+    tmpLocalDiagonal = shared_ptr<HArray<ValueType> >( new HArray<ValueType>() );
     localStorage.getDiagonal( *tmpLocalDiagonal );
     localDiagonal = tmpLocalDiagonal.get();
 
@@ -1421,9 +1422,9 @@ void JDSStorage<ValueType>::jacobiIterateHalo(
 /* ------------------------------------------------------------------------------------------------------------------ */
 template<typename ValueType>
 void JDSStorage<ValueType>::jacobiIterateHalo(
-    LAMAArray<ValueType>& localSolution,
-    const LAMAArray<ValueType>& localDiagonal,
-    const LAMAArray<ValueType>& oldHaloSolution,
+    HArray<ValueType>& localSolution,
+    const HArray<ValueType>& localDiagonal,
+    const HArray<ValueType>& oldHaloSolution,
     const ValueType omega ) const
 {
     SCAI_LOG_INFO( logger, *this << ": Jacobi iteration for halo matrix data." )
@@ -1500,7 +1501,7 @@ ValueType JDSStorage<ValueType>::l2Norm() const
 
 	SCAI_CONTEXT_ACCESS( loc )
 
-	return ::sqrt(dot[loc]( n, data.get(), 1, data.get(), 1 ));
+	return common::TypeTraits<ValueType>::sqrt(dot[loc]( n, data.get(), 1, data.get(), 1 ));
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -1589,7 +1590,7 @@ void JDSStorage<ValueType>::prefetch( const ContextPtr context ) const
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
-const LAMAArray<IndexType>& JDSStorage<ValueType>::getJA() const
+const HArray<IndexType>& JDSStorage<ValueType>::getJA() const
 {
     return mJa;
 }
@@ -1597,7 +1598,7 @@ const LAMAArray<IndexType>& JDSStorage<ValueType>::getJA() const
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
-const LAMAArray<IndexType>& JDSStorage<ValueType>::getPerm() const
+const HArray<IndexType>& JDSStorage<ValueType>::getPerm() const
 {
     return mPerm;
 }
@@ -1605,7 +1606,7 @@ const LAMAArray<IndexType>& JDSStorage<ValueType>::getPerm() const
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
-const LAMAArray<IndexType>& JDSStorage<ValueType>::getDlg() const
+const HArray<IndexType>& JDSStorage<ValueType>::getDlg() const
 {
     return mDlg;
 }
@@ -1613,7 +1614,7 @@ const LAMAArray<IndexType>& JDSStorage<ValueType>::getDlg() const
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
-const LAMAArray<IndexType>& JDSStorage<ValueType>::getIlg() const
+const HArray<IndexType>& JDSStorage<ValueType>::getIlg() const
 {
     return mIlg;
 }
@@ -1621,7 +1622,7 @@ const LAMAArray<IndexType>& JDSStorage<ValueType>::getIlg() const
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
-const LAMAArray<ValueType>& JDSStorage<ValueType>::getValues() const
+const HArray<ValueType>& JDSStorage<ValueType>::getValues() const
 {
     return mValues;
 }

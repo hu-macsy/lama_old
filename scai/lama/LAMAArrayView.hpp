@@ -1,5 +1,5 @@
 /**
- * @file LAMAArrayView.hpp
+ * @file HArrayView.hpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief LAMAArrayView.hpp
+ * @brief HArrayView.hpp
  * @author Jiri Kraus
  * @date 05.08.2011
  * @since 1.0.0
@@ -40,7 +40,7 @@
 #include <scai/common/Printable.hpp>
 
 // local library
-#include <scai/lama/LAMAArray.hpp>
+#include <scai/lama/HArray.hpp>
 
 namespace scai
 {
@@ -55,104 +55,104 @@ template<typename ValueType>
 class WriteAccess;
 
 template<typename ValueType>
-class LAMAArrayConstView;
+class HArrayConstView;
 
 /**
- * @brief LAMAArrayView is a proxy which gives a view to a sub range of a LAMAArray.
+ * @brief HArrayView is a proxy which gives a view to a sub range of a HArray.
  *
  * @tparam ValueType is the type stored in this container.
  */
 template<typename ValueType>
-class COMMON_DLL_IMPORTEXPORT LAMAArrayView: public scai::common::Printable
+class COMMON_DLL_IMPORTEXPORT HArrayView: public scai::common::Printable
 {
     friend class ReadAccess<ValueType> ;
     friend class WriteAccess<ValueType> ;
-    friend class LAMAArrayConstView<ValueType> ;
+    friend class HArrayConstView<ValueType> ;
 
 public:
 
     /**
-     * @brief Constructs a view into the whole passed LAMAArray.
+     * @brief Constructs a view into the whole passed HArray.
      *
      * @param[in,out] array the array to get a view into.
      */
-    LAMAArrayView( LAMAArray<ValueType>& array );
+    HArrayView( HArray<ValueType>& array );
 
     /**
-     * @brief Constructs a view of the passed size into the passed LAMAArray starting at the passed offset.
+     * @brief Constructs a view of the passed size into the passed HArray starting at the passed offset.
      *
      * @param[in,out]   array   the array to get a view into.
      * @param[in]       offset  the index where the view into array should start.
      * @param[in]       size    the lenght of the subrange of array.
      */
-    LAMAArrayView( LAMAArray<ValueType>& array, const IndexType offset, const IndexType size );
+    HArrayView( HArray<ValueType>& array, const IndexType offset, const IndexType size );
 
     /**
-     * @brief Takes a copy of the passed LAMAArrayView.
+     * @brief Takes a copy of the passed HArrayView.
      *
-     * @param[in]   other   the LAMAArrayView to take a copy from.
+     * @param[in]   other   the HArrayView to take a copy from.
      */
-    LAMAArrayView( const LAMAArrayView<ValueType>& other );
+    HArrayView( const HArrayView<ValueType>& other );
 
     /**
-     * @brief destroys this LAMAArrayView, the referenced LAMAArray is not touched.
+     * @brief destroys this HArrayView, the referenced HArray is not touched.
      */
-    virtual ~LAMAArrayView();
+    virtual ~HArrayView();
 
     /**
-     * @brief Returns the size of this LAMAArrayView.
+     * @brief Returns the size of this HArrayView.
      */
     inline IndexType size() const;
 
     virtual void writeAt( std::ostream& stream ) const;
 
     /**
-     * @brief Checks if the LAMAArray referenced by other is the same than the LAMAArray reference by this.
+     * @brief Checks if the HArray referenced by other is the same than the HArray reference by this.
      *
-     * Checks if the the LAMAArray referenced by other is the same than the LAMAArray reference by this.
-     * CAVEAT: It is only checked if the LAMAArrays are the same. Size and offset of the views are not checked for equality.
+     * Checks if the the HArray referenced by other is the same than the HArray reference by this.
+     * CAVEAT: It is only checked if the HArrays are the same. Size and offset of the views are not checked for equality.
      *
-     * @param[in]   other   the LAMAArrayConstView to compare this with.
-     * @return              if this and other are referencing the same LAMAArray.
+     * @param[in]   other   the HArrayConstView to compare this with.
+     * @return              if this and other are referencing the same HArray.
      */
-    bool operator==( const LAMAArrayConstView<ValueType>& other ) const;
+    bool operator==( const HArrayConstView<ValueType>& other ) const;
 
     /**
-     * @brief Checks if the LAMAArray referenced by other is not the same than the LAMAArray reference by this.
+     * @brief Checks if the HArray referenced by other is not the same than the HArray reference by this.
      *
-     * Checks if the LAMAArray referenced by other is not the same than the LAMAArray reference by this.
-     * CAVEAT: It is only checked if the LAMAArrays are not the same. Size and offset of the views are not checked for inequality.
+     * Checks if the HArray referenced by other is not the same than the HArray reference by this.
+     * CAVEAT: It is only checked if the HArrays are not the same. Size and offset of the views are not checked for inequality.
      *
-     * @param[in]   other   the LAMAArrayConstView to compare this with.
-     * @return              if this and other are referencing different LAMAArrays.
+     * @param[in]   other   the HArrayConstView to compare this with.
+     * @return              if this and other are referencing different HArrays.
      */
-    bool operator!=( const LAMAArrayConstView<ValueType>& other ) const;
+    bool operator!=( const HArrayConstView<ValueType>& other ) const;
 
     /**
-     * @brief Checks if the LAMAArray referenced by other is the same than the LAMAArray reference by this.
+     * @brief Checks if the HArray referenced by other is the same than the HArray reference by this.
      *
-     * Checks if the LAMAArray referenced by other is the same than the LAMAArray reference by this.
-     * CAVEAT: It is only checked if the LAMAArrays are the same. Size and offset of the views are not checked for equality.
+     * Checks if the HArray referenced by other is the same than the HArray reference by this.
+     * CAVEAT: It is only checked if the HArrays are the same. Size and offset of the views are not checked for equality.
      *
-     * @param[in]   other   the LAMAArrayView to compare this with.
-     * @return              if this and other are referencing the same LAMAArray.
+     * @param[in]   other   the HArrayView to compare this with.
+     * @return              if this and other are referencing the same HArray.
      */
-    bool operator==( const LAMAArrayView<ValueType>& other ) const;
+    bool operator==( const HArrayView<ValueType>& other ) const;
 
     /**
-     * @brief Checks if the LAMAArray referenced by other is not the same than the LAMAArray reference by this.
+     * @brief Checks if the HArray referenced by other is not the same than the HArray reference by this.
      *
-     * Checks if the LAMAArray referenced by other is not the same than the LAMAArray reference by this.
-     * CAVEAT: It is only checked if the LAMAArrays are not the same. Size and offset of the views are not checked for inequality.
+     * Checks if the HArray referenced by other is not the same than the HArray reference by this.
+     * CAVEAT: It is only checked if the HArrays are not the same. Size and offset of the views are not checked for inequality.
      *
-     * @param[in]   other   the LAMAArrayView to compare this with.
-     * @return              if this and other are referencing different LAMAArrays.
+     * @param[in]   other   the HArrayView to compare this with.
+     * @return              if this and other are referencing different HArrays.
      */
-    bool operator!=( const LAMAArrayView<ValueType>& other ) const;
+    bool operator!=( const HArrayView<ValueType>& other ) const;
 
 private:
-    LAMAArrayView();
-    LAMAArrayView& operator=( const LAMAArrayView<ValueType>& other );
+    HArrayView();
+    HArrayView& operator=( const HArrayView<ValueType>& other );
 
     const ValueType* get( const size_t index ) const;
 
@@ -176,112 +176,112 @@ private:
 
     IndexType capacity( const size_t index ) const;
 
-    LAMAArray<ValueType>& mArray;
+    HArray<ValueType>& mArray;
     const IndexType mOffset;
     IndexType mSize;
 };
 
 /**
- * @brief LAMAArrayConstView is a proxy which gives a constant view to a sub range of a LAMAArray.
+ * @brief HArrayConstView is a proxy which gives a constant view to a sub range of a HArray.
  *
  * @tparam ValueType the value type for the elements of this.
  */
 template<typename ValueType>
-class LAMAArrayConstView: public scai::common::Printable
+class HArrayConstView: public scai::common::Printable
 {
     friend class ReadAccess<ValueType> ;
 
 public:
 
     /**
-     * @brief Takes a copy of the passed LAMAArrayConstView.
+     * @brief Takes a copy of the passed HArrayConstView.
      *
-     * @param[in]   other   the LAMAArrayConstView to take a copy from.
+     * @param[in]   other   the HArrayConstView to take a copy from.
      */
-    LAMAArrayConstView( const LAMAArrayConstView<ValueType>& other );
+    HArrayConstView( const HArrayConstView<ValueType>& other );
 
     /**
-     * @brief Takes a copy of the passed LAMAArrayView.
+     * @brief Takes a copy of the passed HArrayView.
      *
-     * @param[in]   view   the LAMAArrayView to take a copy from.
+     * @param[in]   view   the HArrayView to take a copy from.
      */
-    LAMAArrayConstView( const LAMAArrayView<ValueType>& view );
+    HArrayConstView( const HArrayView<ValueType>& view );
 
     /**
-     * @brief Constructs a view into the whole passed LAMAArray.
+     * @brief Constructs a view into the whole passed HArray.
      *
      * @param[in,out] array the array to get a view into.
      */
-    LAMAArrayConstView( const LAMAArray<ValueType>& array );
+    HArrayConstView( const HArray<ValueType>& array );
 
     /**
-     * @brief Constructs a view of the passed size into the passed LAMAArray starting at the passed offset.
+     * @brief Constructs a view of the passed size into the passed HArray starting at the passed offset.
      *
      * @param[in,out]   array   the array to get a view into.
      * @param[in]       offset  the index where the view into array should start.
      * @param[in]       size    the lenght of the subrange of array.
      */
-    LAMAArrayConstView( const LAMAArray<ValueType>& array, const IndexType offset, const IndexType size );
+    HArrayConstView( const HArray<ValueType>& array, const IndexType offset, const IndexType size );
 
     /**
-     * @brief destroys this LAMAArrayView, the referenced LAMAArray is not touched.
+     * @brief destroys this HArrayView, the referenced HArray is not touched.
      */
-    virtual ~LAMAArrayConstView();
+    virtual ~HArrayConstView();
 
     /**
-     * @brief Returns the size of this LAMAArrayView.
+     * @brief Returns the size of this HArrayView.
      */
     inline IndexType size() const;
 
     virtual void writeAt( std::ostream& stream ) const;
 
     /**
-     * @brief Checks if the LAMAArray referenced by other is the same than the LAMAArray reference by this.
+     * @brief Checks if the HArray referenced by other is the same than the HArray reference by this.
      *
-     * Checks if the the LAMAArray referenced by other is the same than the LAMAArray reference by this.
-     * CAVEAT: It is only checked if the LAMAArrays are the same. Size and offset of the views are not checked for equality.
+     * Checks if the the HArray referenced by other is the same than the HArray reference by this.
+     * CAVEAT: It is only checked if the HArrays are the same. Size and offset of the views are not checked for equality.
      *
-     * @param[in]   other   the LAMAArrayConstView to compare this with.
-     * @return              if this and other are referencing the same LAMAArray.
+     * @param[in]   other   the HArrayConstView to compare this with.
+     * @return              if this and other are referencing the same HArray.
      */
-    bool operator==( const LAMAArrayConstView<ValueType>& other ) const;
+    bool operator==( const HArrayConstView<ValueType>& other ) const;
 
     /**
-     * @brief Checks if the LAMAArray referenced by other is not the same than the LAMAArray reference by this.
+     * @brief Checks if the HArray referenced by other is not the same than the HArray reference by this.
      *
-     * Checks if the LAMAArray referenced by other is not the same than the LAMAArray reference by this.
-     * CAVEAT: It is only checked if the LAMAArrays are not the same. Size and offset of the views are not checked for inequality.
+     * Checks if the HArray referenced by other is not the same than the HArray reference by this.
+     * CAVEAT: It is only checked if the HArrays are not the same. Size and offset of the views are not checked for inequality.
      *
-     * @param[in]   other   the LAMAArrayConstView to compare this with.
-     * @return              if this and other are referencing different LAMAArrays.
+     * @param[in]   other   the HArrayConstView to compare this with.
+     * @return              if this and other are referencing different HArrays.
      */
-    bool operator!=( const LAMAArrayConstView<ValueType>& other ) const;
+    bool operator!=( const HArrayConstView<ValueType>& other ) const;
 
     /**
-     * @brief Checks if the LAMAArray referenced by other is the same than the LAMAArray reference by this.
+     * @brief Checks if the HArray referenced by other is the same than the HArray reference by this.
      *
-     * Checks if the LAMAArray referenced by other is the same than the LAMAArray reference by this.
-     * CAVEAT: It is only checked if the LAMAArrays are the same. Size and offset of the views are not checked for equality.
+     * Checks if the HArray referenced by other is the same than the HArray reference by this.
+     * CAVEAT: It is only checked if the HArrays are the same. Size and offset of the views are not checked for equality.
      *
-     * @param[in]   other   the LAMAArrayView to compare this with.
-     * @return              if this and other are referencing the same LAMAArray.
+     * @param[in]   other   the HArrayView to compare this with.
+     * @return              if this and other are referencing the same HArray.
      */
-    bool operator==( const LAMAArrayView<ValueType>& other ) const;
+    bool operator==( const HArrayView<ValueType>& other ) const;
 
     /**
-     * @brief Checks if the LAMAArray referenced by other is not the same than the LAMAArray reference by this.
+     * @brief Checks if the HArray referenced by other is not the same than the HArray reference by this.
      *
-     * Checks if the LAMAArray referenced by other is not the same than the LAMAArray reference by this.
-     * CAVEAT: It is only checked if the LAMAArrays are not the same. Size and offset of the views are not checked for inequality.
+     * Checks if the HArray referenced by other is not the same than the HArray reference by this.
+     * CAVEAT: It is only checked if the HArrays are not the same. Size and offset of the views are not checked for inequality.
      *
-     * @param[in]   other   the LAMAArrayView to compare this with.
-     * @return              if this and other are referencing different LAMAArrays.
+     * @param[in]   other   the HArrayView to compare this with.
+     * @return              if this and other are referencing different HArrays.
      */
-    bool operator!=( const LAMAArrayView<ValueType>& other ) const;
+    bool operator!=( const HArrayView<ValueType>& other ) const;
 
 private:
-    LAMAArrayConstView();
-    LAMAArrayConstView& operator=( const LAMAArrayConstView<ValueType>& other );
+    HArrayConstView();
+    HArrayConstView& operator=( const HArrayConstView<ValueType>& other );
 
     const ValueType* get( const size_t index ) const;
 
@@ -289,19 +289,19 @@ private:
 
     void releaseReadAccess( const size_t index ) const;
 
-    const LAMAArray<ValueType>& mArray;
+    const HArray<ValueType>& mArray;
     const IndexType mOffset;
     const IndexType mSize;
 };
 
 template<typename ValueType>
-inline IndexType LAMAArrayView<ValueType>::size() const
+inline IndexType HArrayView<ValueType>::size() const
 {
     return mSize;
 }
 
 template<typename ValueType>
-inline IndexType LAMAArrayConstView<ValueType>::size() const
+inline IndexType HArrayConstView<ValueType>::size() const
 {
     return mSize;
 }

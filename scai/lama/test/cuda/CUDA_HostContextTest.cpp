@@ -40,7 +40,7 @@
 
 #include <scai/lama/HostReadAccess.hpp>
 #include <scai/lama/HostWriteAccess.hpp>
-#include <scai/lama/LAMAArray.hpp>
+#include <scai/lama/HArray.hpp>
 
 #include <scai/lama/ContextAccess.hpp>
 
@@ -84,7 +84,7 @@ BOOST_AUTO_TEST_CASE( allocateTest )
     // Problem: CUDA must be initialized before we can allocate memory via CUDAHostContext
     ContextPtr cudaContext = lama_test::CUDAContext::getContext();
     CUDAHostContextManager::setAsCurrent( cudaContext );
-    LAMAArray<IndexType> arrContext;
+    HArray<IndexType> arrContext;
     {
         HostWriteAccess<IndexType> arr( arrContext );
         arr.resize( 5 );
@@ -143,8 +143,8 @@ BOOST_AUTO_TEST_CASE( allocateTest )
 //
 //    const ValueType value1 = 1.0;
 //
-//    LAMAArray<ValueType> vector1( n );
-//    LAMAArray<ValueType> vector2( n );
+//    HArray<ValueType> vector1( n );
+//    HArray<ValueType> vector2( n );
 //
 //    {
 //        HostWriteAccess<ValueType> v1(vector1);
@@ -197,8 +197,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( multiPrefetchTest, ValueType, test_types )
     ContextPtr hostContext = ContextFactory::getContext( Context::Host );
     const IndexType n = 128 * 1024;
     const ValueType value1 = 1.0;
-    LAMAArray<ValueType> vector1( n, value1 );
-    LAMAArray<ValueType> vector2( n, value1 );
+    HArray<ValueType> vector1( n, value1 );
+    HArray<ValueType> vector2( n, value1 );
     // Run two transfers Host -> CUDA in parallel
     vector1.prefetch( cudaContext );
     vector2.prefetch( cudaContext );

@@ -250,7 +250,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( vectorTimesMatrixTest, ValueType, test_types )
     int numRows = 4 * size;
     int numCols = 4 * size;
     DenseVector<ValueType> denseCorrectResult2( dist, 0.0 );
-    LAMAArray<ValueType>& localDenseCorrectResult2 =
+    HArray<ValueType>& localDenseCorrectResult2 =
         denseCorrectResult2.getLocalValues();
     scoped_array<ValueType> values( new ValueType[ numRows * numCols ] );
     {
@@ -338,7 +338,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matrixTimesVectorTest, ValueType, test_types )
     int numRows = 4 * size;
     int numCols = 4 * size;
     DenseVector<ValueType> denseCorrectResult2( dist, 0.0 );
-    LAMAArray<ValueType>& localDenseCorrectResult2 =
+    HArray<ValueType>& localDenseCorrectResult2 =
         denseCorrectResult2.getLocalValues();
     scoped_array<ValueType> values( new ValueType[ numRows * numCols ] );
     {
@@ -402,7 +402,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( assignLocalTest, ValueType, test_types )
     const IndexType vectorSize = 25;
     shared_ptr<Distribution> dist( new CyclicDistribution( vectorSize, 2, comm ) );
     const IndexType localSize = dist->getLocalSize();
-    LAMAArray<float> localData;
+    HArray<float> localData;
 // Be careful: for more than 13 processors some of them do not throw exception
     SCAI_CHECK_THROW(
     {   DenseVector<ValueType> denseVector( localData, dist );}, Exception );
@@ -481,7 +481,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( redistributeTest, ValueType, test_types )
 // constructor with redistribute that is here a localization
     DenseVector<ValueType> dist1Vector( replicatedVector, dist1 );
     {
-        const LAMAArray<ValueType>& localValues = dist1Vector.getLocalValues();
+        const HArray<ValueType>& localValues = dist1Vector.getLocalValues();
         const IndexType localSize = localValues.size();
         BOOST_REQUIRE_EQUAL( localSize, dist1->getLocalSize() );
         ReadAccess<ValueType> rLocalValues( localValues );
@@ -499,7 +499,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( redistributeTest, ValueType, test_types )
     DenseVector<double> dist2Vector( dist1Vector );
     dist2Vector.redistribute( dist2 );
     {
-        const LAMAArray<double>& localValues = dist2Vector.getLocalValues();
+        const HArray<double>& localValues = dist2Vector.getLocalValues();
         const IndexType localSize = localValues.size();
         BOOST_REQUIRE_EQUAL( localSize, dist2->getLocalSize() );
         ReadAccess<double> rLocalValues( localValues );
@@ -514,8 +514,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( redistributeTest, ValueType, test_types )
     DenseVector<ValueType> dist3Vector( dist2Vector, dist3 );
     dist2Vector.redistribute( dist3 );
     {
-        const LAMAArray<double>& localValues2 = dist2Vector.getLocalValues();
-        const LAMAArray<ValueType>& localValues3 = dist3Vector.getLocalValues();
+        const HArray<double>& localValues2 = dist2Vector.getLocalValues();
+        const HArray<ValueType>& localValues3 = dist3Vector.getLocalValues();
         const IndexType localSize = localValues2.size();
         BOOST_REQUIRE_EQUAL( localSize, vectorSize );
         BOOST_REQUIRE_EQUAL( localSize, localValues3.size() );

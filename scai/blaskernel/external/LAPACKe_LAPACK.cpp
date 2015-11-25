@@ -44,7 +44,7 @@
 #include <scai/kregistry/KernelRegistry.hpp>
 #include <scai/common/unique_ptr.hpp>
 #include <scai/common/macros/assert.hpp>
-#include <scai/common/ScalarType.hpp>
+#include <scai/common/TypeTraits.hpp>
 
 // external
 #include <mkl_lapacke.h>
@@ -56,6 +56,7 @@ namespace scai
 {
 
 using common::scoped_array;
+using common::TypeTraits;
 
 namespace blaskernel
 {
@@ -110,7 +111,7 @@ IndexType LAPACKe_LAPACK::getrf(
 {
     SCAI_LOG_INFO( logger, "getrf<float> for A of size " << m << " x " << n )
 
-	if( common::getScalarType<IndexType>() != common::getScalarType<LAPACKeWrapper::LAPACKIndexType>() )
+	if ( TypeTraits<IndexType>::stype != TypeTraits<LAPACKeWrapper::LAPACKIndexType>::stype )
 	{
 		// ToDo: convert ipiv array
 		COMMON_THROWEXCEPTION( "indextype mismatch" );
@@ -171,7 +172,7 @@ int LAPACKe_LAPACK::getri( const CBLAS_ORDER order, const IndexType n, ValueType
 {
     SCAI_LOG_INFO( logger, "getri<float> for A of size " << n << " x " << n )
 
-	if( common::getScalarType<IndexType>() != common::getScalarType<LAPACKeWrapper::LAPACKIndexType >() )
+	if ( TypeTraits<IndexType>::stype != TypeTraits<LAPACKeWrapper::LAPACKIndexType>::stype )
 	{
 		// ToDo: convert ipiv array
 		COMMON_THROWEXCEPTION( "indextype mismatch" );
@@ -215,7 +216,7 @@ int LAPACKe_LAPACK::tptrs(
 
     LAPACKeWrapper::LAPACKOrder matrix_order = lapack_order( order );
 
-	if( common::getScalarType<IndexType>() != common::getScalarType<LAPACKeWrapper::LAPACKIndexType>() )
+	if ( TypeTraits<IndexType>::stype != TypeTraits<LAPACKeWrapper::LAPACKIndexType>::stype )
 	{
 		// ToDo: convert ipiv array
 		COMMON_THROWEXCEPTION( "indextype mismatch" );

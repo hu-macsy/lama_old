@@ -1,5 +1,5 @@
 /**
- * @file LAMAArrayUtils.cpp
+ * @file HArrayUtils.cpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -32,7 +32,7 @@
  */
 
 // hpp
-#include <scai/lama/LAMAArrayUtils.hpp>
+#include <scai/lama/HArrayUtils.hpp>
 
 // local library
 #include <scai/lama/UtilKernelTrait.hpp>
@@ -60,12 +60,12 @@ namespace scai
 namespace lama
 {
 
-SCAI_LOG_DEF_LOGGER( LAMAArrayUtils::logger, "LAMAArrayUtils" )
+SCAI_LOG_DEF_LOGGER( HArrayUtils::logger, "HArrayUtils" )
 
 template<typename ValueType1,typename ValueType2>
-void LAMAArrayUtils::assignImpl(
-    LAMAArray<ValueType1>& target,
-    const LAMAArray<ValueType2>& source,
+void HArrayUtils::assignImpl(
+    HArray<ValueType1>& target,
+    const HArray<ValueType2>& source,
     const ContextPtr prefContext )
 {
     // verify that dynamic cast operations went okay before
@@ -92,7 +92,7 @@ void LAMAArrayUtils::assignImpl(
 }
 
 template<typename ValueType>
-void LAMAArrayUtils::assignImpl1( LAMAArray<ValueType>& target, const ContextArray& source, const ContextPtr loc )
+void HArrayUtils::assignImpl1( HArray<ValueType>& target, const ContextArray& source, const ContextPtr loc )
 {
     common::scalar::ScalarType sourceType = source.getValueType();
 
@@ -100,7 +100,7 @@ void LAMAArrayUtils::assignImpl1( LAMAArray<ValueType>& target, const ContextArr
     {
         // dynamic cast is absolutely safe
 
-        const LAMAArray<ValueType>& typedSource = dynamic_cast<const LAMAArray<ValueType>&>( source );
+        const HArray<ValueType>& typedSource = dynamic_cast<const HArray<ValueType>&>( source );
 
         // use assign method of LAMA array, more efficient
 
@@ -111,17 +111,19 @@ void LAMAArrayUtils::assignImpl1( LAMAArray<ValueType>& target, const ContextArr
 
     // Different types -> select for corresponding template routine
 
-    switch( sourceType )
+    switch ( sourceType )
     {
-
         case common::scalar::INDEX_TYPE:
-            assignImpl( target, dynamic_cast<const LAMAArray<IndexType>&>( source ), loc );
+            assignImpl( target, dynamic_cast<const HArray<IndexType>&>( source ), loc );
             break;
 
-#define LAMA_ARRAY_ASSIGN( z, I, _ )                                                                \
-case SCALAR_ARITHMETIC_TYPE##I:                                                                     \
-    assignImpl( target, dynamic_cast<const LAMAArray<ARITHMETIC_HOST_TYPE_##I>& >( source ), loc ); \
-    break;                                                                                          \
+        // for all the other arithmetic types we use BOOST_PP_REPEAT to loop over supported types
+
+#define LAMA_ARRAY_ASSIGN( z, I, _ )                                                                     \
+                                                                                                         \
+        case common::TypeTraits<ARITHMETIC_HOST_TYPE_##I>::stype :                                       \
+            assignImpl( target, dynamic_cast<const HArray<ARITHMETIC_HOST_TYPE_##I>& >( source ), loc ); \
+            break;                                                                                       \
 
         BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_ARRAY_ASSIGN, _ )
 
@@ -132,7 +134,7 @@ default        :
     }
 }
 
-void LAMAArrayUtils::assign( ContextArray& target, const ContextArray& source, const ContextPtr loc /* = ContextPtr() */)
+void HArrayUtils::assign( ContextArray& target, const ContextArray& source, const ContextPtr loc /* = ContextPtr() */)
 {
     ContextPtr validLoc = loc;
 
@@ -146,13 +148,15 @@ void LAMAArrayUtils::assign( ContextArray& target, const ContextArray& source, c
     switch ( target.getValueType() )
     {
         case common::scalar::INDEX_TYPE:
-            assignImpl1( dynamic_cast<LAMAArray<IndexType>&>( target ), source, validLoc );
+            assignImpl1( dynamic_cast<HArray<IndexType>&>( target ), source, validLoc );
             break;
 
-#define LAMA_ARRAY_ASSIGN1( z, I, _ )                                                                \
-case SCALAR_ARITHMETIC_TYPE##I:                                                                      \
-    assignImpl1( dynamic_cast<LAMAArray< ARITHMETIC_HOST_TYPE_##I>& >( target ), source, validLoc ); \
-    break;
+        // for all the other arithmetic types we use BOOST_PP_REPEAT to loop over supported types
+
+#define LAMA_ARRAY_ASSIGN1( z, I, _ )                                                                     \
+        case common::TypeTraits<ARITHMETIC_HOST_TYPE_##I>::stype :                                        \
+            assignImpl1( dynamic_cast<HArray< ARITHMETIC_HOST_TYPE_##I>& >( target ), source, validLoc ); \
+            break;
 
         BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_ARRAY_ASSIGN1, _ )
 
@@ -164,12 +168,12 @@ default        :
 }
 
 template<typename ValueType1,typename ValueType2>
-void LAMAArrayUtils::gather(
-    LAMAArray<ValueType1>& target,
-    const LAMAArray<ValueType2>& source,
-    const LAMAArray<IndexType>& indexes )
+void HArrayUtils::gather(
+    HArray<ValueType1>& target,
+    const HArray<ValueType2>& source,
+    const HArray<IndexType>& indexes )
 {
-    SCAI_REGION( "LAMAArray.gather" )
+    SCAI_REGION( "HArray.gather" )
 
     // choose location for the operation where source array is currently valid
 
@@ -192,28 +196,26 @@ void LAMAArrayUtils::gather(
 }
 
 template<typename ValueType>
-void LAMAArrayUtils::assignScalar( LAMAArray<ValueType>& target, const Scalar& value, ContextPtr prefContext )
+void HArrayUtils::assignScalar( HArray<ValueType>& target, const ValueType value, ContextPtr prefContext )
 {
     static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
 
     ContextPtr context = setVal.getValidContext( prefContext );
 
-    SCAI_LOG_INFO( logger, target << " = " << value << ", to do at " << *context )
-
-    // assignment takes place at the specified context, no check here
-
     const IndexType n = target.size();
 
-    const ValueType val = value.getValue<ValueType>();
+    SCAI_LOG_INFO( logger, target << " = " << value << ", to do at " << *context << ", n = " << n )
 
-    WriteOnlyAccess<ValueType> values( target, context );
+    // Note: very important is to specify the size n here as it might not have been allocated
+
+    WriteOnlyAccess<ValueType> wTarget( target, context, n );
 
     SCAI_CONTEXT_ACCESS( context )
 
-    setVal[context]( values.get(), n, val );
+    setVal[context]( wTarget.get(), n, value );
 }
 
-void LAMAArrayUtils::assignScalar( hmemo::ContextArray& target, const Scalar& value, hmemo::ContextPtr context )
+void HArrayUtils::assignScalar( hmemo::ContextArray& target, const Scalar& value, hmemo::ContextPtr context )
 {
     common::scalar::ScalarType arrayType = target.getValueType();
 
@@ -221,19 +223,19 @@ void LAMAArrayUtils::assignScalar( hmemo::ContextArray& target, const Scalar& va
     {
         case common::scalar::INDEX_TYPE:
         {
-            LAMAArray<IndexType>& typedTarget = dynamic_cast<LAMAArray<IndexType>&>( target );
-            assignScalar( typedTarget, value, context );
+            HArray<IndexType>& typedTarget = dynamic_cast<HArray<IndexType>&>( target );
+            assignScalar( typedTarget, value.getValue<IndexType>(), context );
             break;
         }
 
             // for all supported arithmetic types generate it
 
 #define LAMA_ARRAY_ASSIGN_SCALAR( z, I, _ )                                   \
-case SCALAR_ARITHMETIC_TYPE##I:                                               \
+case common::TypeTraits<ARITHMETIC_HOST_TYPE_##I>::stype :                               \
 {                                                                             \
-    LAMAArray<ARITHMETIC_HOST_TYPE_##I>& typedTarget =                        \
-            dynamic_cast<LAMAArray<ARITHMETIC_HOST_TYPE_##I>&>( target );     \
-    assignScalar( typedTarget, value, context );                              \
+    HArray<ARITHMETIC_HOST_TYPE_##I>& typedTarget =                        \
+            dynamic_cast<HArray<ARITHMETIC_HOST_TYPE_##I>&>( target );     \
+    assignScalar( typedTarget, value.getValue<ARITHMETIC_HOST_TYPE_##I>(), context );                              \
     break;                                                                    \
 }
 
@@ -249,7 +251,7 @@ default        :
 }
 
 template<typename ValueType>
-void LAMAArrayUtils::setVal( LAMAArray<ValueType>& target, const IndexType index, ValueType val )
+void HArrayUtils::setVal( HArray<ValueType>& target, const IndexType index, ValueType val )
 {
     SCAI_ASSERT_DEBUG( index < target.size(), "index = " << index << " out of range for target = " << target );
 
@@ -267,10 +269,30 @@ void LAMAArrayUtils::setVal( LAMAArray<ValueType>& target, const IndexType index
 }
 
 template<typename ValueType>
-void LAMAArrayUtils::assignScaled(
-    LAMAArray<ValueType>& result,
+ValueType HArrayUtils::getVal( const HArray<ValueType>& array, const IndexType index )
+{
+    SCAI_ASSERT_DEBUG( index < array.size(), "index = " << index << " out of range for array = " << array );
+
+    // get the data from a valid context, avoids any memory copy.
+
+    ContextPtr loc = array.getValidContext();
+
+    static LAMAKernel<UtilKernelTrait::getValue<ValueType> > getValue;
+
+    loc = getValue.getValidContext( loc );
+
+    SCAI_CONTEXT_ACCESS( loc )
+
+    ReadAccess<ValueType> rArray( array, loc );
+
+    return getValue[loc]( rArray.get(), index );
+}
+
+template<typename ValueType>
+void HArrayUtils::assignScaled(
+    HArray<ValueType>& result,
     const ValueType beta,
-    const LAMAArray<ValueType>& y,
+    const HArray<ValueType>& y,
     ContextPtr prefLoc )
 {
     const IndexType n = result.size();
@@ -335,42 +357,48 @@ void LAMAArrayUtils::assignScaled(
 
 // template instantiation for the supported data types
 
-template void LAMAArrayUtils::setVal( hmemo::LAMAArray<IndexType>& , const IndexType , IndexType );
+template void HArrayUtils::setVal( hmemo::HArray<IndexType>& , const IndexType , IndexType );
+template IndexType HArrayUtils::getVal( const hmemo::HArray<IndexType>& , const IndexType );
 
-template void LAMAArrayUtils::assignScaled(
-    hmemo::LAMAArray<IndexType>& ,
+template void HArrayUtils::assignScaled(
+    hmemo::HArray<IndexType>& ,
     const IndexType ,
-    const LAMAArray<IndexType>& ,
+    const HArray<IndexType>& ,
     hmemo::ContextPtr  );
 
-template void LAMAArrayUtils::gather(
-    hmemo::LAMAArray<IndexType>& ,
-    const hmemo::LAMAArray<IndexType>& ,
-    const hmemo::LAMAArray<IndexType>& );
+template void HArrayUtils::gather(
+    hmemo::HArray<IndexType>& ,
+    const hmemo::HArray<IndexType>& ,
+    const hmemo::HArray<IndexType>& );
 
 /** Macro instantiates operations that have also type conversion */
 
 #define LAMA_ARRAY_UTILS2_INSTANTIATE(z, J, TYPE)                                   \
     template                                                                        \
-    void LAMAArrayUtils::gather(                                                    \
-            LAMAArray<TYPE>& target,                                                \
-            const LAMAArray<ARITHMETIC_HOST_TYPE_##J>& source,                      \
-            const LAMAArray<IndexType>& indexes );                                  \
+    void HArrayUtils::gather(                                                    \
+            HArray<TYPE>& target,                                                \
+            const HArray<ARITHMETIC_HOST_TYPE_##J>& source,                      \
+            const HArray<IndexType>& indexes );                                  \
 
 /** Macro instantiates operations for supported arithmetic types */
 
 #define LAMA_ARRAY_UTILS_INSTANTIATE(z, I, _)                                       \
     template                                                                        \
-    void LAMAArrayUtils::setVal(                                                    \
-            LAMAArray<ARITHMETIC_HOST_TYPE_##I>& target,                            \
+    void HArrayUtils::setVal(                                                    \
+            HArray<ARITHMETIC_HOST_TYPE_##I>& target,                            \
             const IndexType index,                                                  \
             ARITHMETIC_HOST_TYPE_##I val );                                         \
                                                                                     \
     template                                                                        \
-    void LAMAArrayUtils::assignScaled(                                              \
-            LAMAArray<ARITHMETIC_HOST_TYPE_##I>& result,                            \
+    ARITHMETIC_HOST_TYPE_##I HArrayUtils::getVal(                                   \
+            const HArray<ARITHMETIC_HOST_TYPE_##I>&,                               \
+            const IndexType );                                                      \
+                                                                                    \
+    template                                                                        \
+    void HArrayUtils::assignScaled(                                              \
+            HArray<ARITHMETIC_HOST_TYPE_##I>& result,                            \
             const ARITHMETIC_HOST_TYPE_##I beta,                                    \
-            const LAMAArray<ARITHMETIC_HOST_TYPE_##I>& y,                           \
+            const HArray<ARITHMETIC_HOST_TYPE_##I>& y,                           \
             ContextPtr loc );                                                       \
                                                                                     \
     BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT,                                      \

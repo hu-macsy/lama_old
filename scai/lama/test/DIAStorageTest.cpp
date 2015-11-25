@@ -35,6 +35,7 @@
 #include <boost/mpl/list.hpp>
 
 #include <scai/lama/storage/DIAStorage.hpp>
+#include <scai/lama/LAMAArray.hpp>
 
 #include <scai/lama/test/MatrixStorageTest.hpp>
 #include <scai/common/test/TestMacros.hpp>

@@ -25,12 +25,12 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Contains the implementation of the class LAMAArrayTest.
+ * @brief Contains the implementation of the class HArrayTest.
  * @author: Thomas Brandes, Lauretta Schubert
  * @date 18.04.2012
  **/
 
-#include <scai/hmemo/LAMAArray.hpp>
+#include <scai/hmemo/HArray.hpp>
 #include <scai/hmemo/WriteAccess.hpp>
 #include <scai/hmemo/ReadAccess.hpp>
 
@@ -45,7 +45,7 @@ using namespace scai::hmemo;
 SCAI_LOG_DEF_LOGGER( logger, "MemoryTest" )
 
 template<typename T>
-void sumArray( const LAMAArray<T>& array )
+void sumArray( const HArray<T>& array )
 {
     SCAI_LOG_INFO( logger, "read access on " << array );
 
@@ -66,7 +66,7 @@ void sumArray( const LAMAArray<T>& array )
 }
 
 template<typename T>
-void writeArray( LAMAArray<T>& array )
+void writeArray( HArray<T>& array )
 {
     SCAI_LOG_INFO( logger, "make write test access on empty array\n" );
 
@@ -88,17 +88,48 @@ void writeArray( LAMAArray<T>& array )
 
 struct SSS {
 int X; double Y;
+
+SSS( int val )
+{
+    X = val;
+    Y = 0;
+}
+
+SSS( int valX, double valY )
+{
+    X = valX;
+    Y = valY;
+}
+
+SSS& operator +=( const SSS& other )
+{
+    X += other.X;
+    Y += other.Y;
+    return *this;
+}
+
 };
+
+std::ostream& operator<<( std::ostream& stream, const SSS& object )
+{
+   stream << "( " << object.X << ", " << object.Y << " )";
+   return stream;
+}
 
 int main()
 {
     SCAI_LOG_THREAD( "Main" )
 
-    LAMAArray<IndexType> lamaArray; // default, not allocated at all
+    HArray<IndexType> lamaArray; // default, not allocated at all
 
     sumArray( lamaArray );
     writeArray( lamaArray );
     sumArray( lamaArray );
 
-    LAMAArray<SSS> sssArray( 10 );
+    SSS val( 1, 0.5 );
+    val.X = 1;
+    val.Y = 0.5;
+
+    HArray<SSS> sssArray( 10, val );
+    sumArray( sssArray );
 }

@@ -46,7 +46,7 @@
 #include <scai/lama/UtilKernelTrait.hpp>
 
 // internal scai libraries
-#include <scai/hmemo/LAMAArray.hpp>
+#include <scai/hmemo/HArray.hpp>
 
 #include <scai/tasking/SyncToken.hpp>
 
@@ -62,7 +62,7 @@ using namespace scai::tasking;
 namespace lama
 {
 
-using hmemo::LAMAArray;
+using hmemo::HArray;
 
 /** This class allows to create objects that handle redistributions of vector and
  *  matrices from one distribution into another distribution.
@@ -101,7 +101,7 @@ public:
         return mTargetSize;
     }
 
-    /** Redistribution of a distributed vector as LAMAArrays.
+    /** Redistribution of a distributed vector as HArrays.
      *
      *  @param[out] targetArray  vector in target distribution
      *  @param[in]  sourceArray  vector in source distribution
@@ -114,9 +114,9 @@ public:
      *  communication.
      */
     template<typename ValueType>
-    void redistribute( LAMAArray<ValueType>& targetArray, const LAMAArray<ValueType>& sourceArray ) const;
+    void redistribute( HArray<ValueType>& targetArray, const HArray<ValueType>& sourceArray ) const;
 
-    /** Redistribution of a distributed vector as LAMAArrays.
+    /** Redistribution of a distributed vector as HArrays.
      *
      *  @param[out] targetArray  vector in target distribution
      *  @param[in]  sourceArray  vector in source distribution
@@ -130,22 +130,22 @@ public:
      *  communication.
      */
     template<typename ValueType>
-    void redistributeN( LAMAArray<ValueType>& targetArray, const LAMAArray<ValueType>& sourceArray, IndexType n ) const;
+    void redistributeN( HArray<ValueType>& targetArray, const HArray<ValueType>& sourceArray, IndexType n ) const;
 
     /** Redistribution of ragged arrays. */
 
     template<typename ValueType>
     void redistributeV(
-        LAMAArray<ValueType>& targetArray,
-        const LAMAArray<IndexType>& targetOffsets,
-        const LAMAArray<ValueType>& sourceArray,
-        const LAMAArray<IndexType>& sourceOffsets ) const;
+        HArray<ValueType>& targetArray,
+        const HArray<IndexType>& targetOffsets,
+        const HArray<ValueType>& sourceArray,
+        const HArray<IndexType>& sourceOffsets ) const;
 
     template<typename ValueType>
     static void gather(
-        LAMAArray<ValueType>& targetArray,
-        const LAMAArray<ValueType>& sourceArray,
-        const LAMAArray<IndexType>& sourceIndexes )
+        HArray<ValueType>& targetArray,
+        const HArray<ValueType>& sourceArray,
+        const HArray<IndexType>& sourceIndexes )
     {
         using namespace scai::hmemo;
 
@@ -164,9 +164,9 @@ public:
 
     template<typename ValueType>
     static void gatherN(
-        LAMAArray<ValueType>& targetArray,
-        const LAMAArray<ValueType>& sourceArray,
-        const LAMAArray<IndexType>& sourceIndexes,
+        HArray<ValueType>& targetArray,
+        const HArray<ValueType>& sourceArray,
+        const HArray<IndexType>& sourceIndexes,
         const IndexType n )
     {
         using namespace scai::hmemo;
@@ -193,16 +193,16 @@ public:
 
     template<typename ValueType>
     static void gatherV(
-        LAMAArray<ValueType>& targetArray,
-        const LAMAArray<ValueType>& sourceArray,
-        const LAMAArray<IndexType>& sourceOffsets,
-        const LAMAArray<IndexType>& sourceIndexes );
+        HArray<ValueType>& targetArray,
+        const HArray<ValueType>& sourceArray,
+        const HArray<IndexType>& sourceOffsets,
+        const HArray<IndexType>& sourceIndexes );
 
     template<typename ValueType>
     static void scatter(
-        LAMAArray<ValueType>& targetArray,
-        const LAMAArray<IndexType>& targetIndexes,
-        const LAMAArray<ValueType>& sourceArray )
+        HArray<ValueType>& targetArray,
+        const HArray<IndexType>& targetIndexes,
+        const HArray<ValueType>& sourceArray )
     {
         using namespace scai::hmemo;
 
@@ -222,9 +222,9 @@ public:
 
     template<typename ValueType>
     static void scatterN(
-        LAMAArray<ValueType>& targetArray,
-        const LAMAArray<IndexType>& targetIndexes,
-        const LAMAArray<ValueType>& sourceArray,
+        HArray<ValueType>& targetArray,
+        const HArray<IndexType>& targetIndexes,
+        const HArray<ValueType>& sourceArray,
         const IndexType n )
     {
         using namespace scai::hmemo;
@@ -251,17 +251,17 @@ public:
 
     template<typename ValueType>
     static void scatterV(
-        LAMAArray<ValueType>& targetArray,
-        const LAMAArray<IndexType>& targetOffsets,
-        const LAMAArray<IndexType>& targetIndexes,
-        const LAMAArray<ValueType>& sourceArray );
+        HArray<ValueType>& targetArray,
+        const HArray<IndexType>& targetOffsets,
+        const HArray<IndexType>& targetIndexes,
+        const HArray<ValueType>& sourceArray );
 
     template<typename ValueType>
     static void copy(
-        LAMAArray<ValueType>& targetArray,
-        const LAMAArray<IndexType>& targetIndexes,
-        const LAMAArray<ValueType>& sourceArray,
-        const LAMAArray<IndexType>& sourceIndexes )
+        HArray<ValueType>& targetArray,
+        const HArray<IndexType>& targetIndexes,
+        const HArray<ValueType>& sourceArray,
+        const HArray<IndexType>& sourceIndexes )
     {
         using namespace scai::hmemo;
 
@@ -285,10 +285,10 @@ public:
 
     template<typename ValueType>
     static void copyN(
-        LAMAArray<ValueType>& targetArray,
-        const LAMAArray<IndexType>& targetIndexes,
-        const LAMAArray<ValueType>& sourceArray,
-        const LAMAArray<IndexType>& sourceIndexes,
+        HArray<ValueType>& targetArray,
+        const HArray<IndexType>& targetIndexes,
+        const HArray<ValueType>& sourceArray,
+        const HArray<IndexType>& sourceIndexes,
         IndexType n )
     {
         using namespace scai::hmemo;
@@ -318,12 +318,12 @@ public:
 
     template<typename ValueType>
     static void copyV(
-        LAMAArray<ValueType>& targetArray,
-        const LAMAArray<IndexType>& targetOffsets,
-        const LAMAArray<IndexType>& targetIndexes,
-        const LAMAArray<ValueType>& sourceArray,
-        const LAMAArray<IndexType>& sourceOffsets,
-        const LAMAArray<IndexType>& sourceIndexes );
+        HArray<ValueType>& targetArray,
+        const HArray<IndexType>& targetOffsets,
+        const HArray<IndexType>& targetIndexes,
+        const HArray<ValueType>& sourceArray,
+        const HArray<IndexType>& sourceOffsets,
+        const HArray<IndexType>& sourceIndexes );
 
     IndexType getHaloSourceSize() const
     {
@@ -335,12 +335,12 @@ public:
     }
 
     template<typename ValueType>
-    void exchangeHalo( LAMAArray<ValueType>& targetHalo, const LAMAArray<ValueType>& sourceHalo ) const;
+    void exchangeHalo( HArray<ValueType>& targetHalo, const HArray<ValueType>& sourceHalo ) const;
 
     template<typename ValueType>
     void exchangeHaloN(
-        LAMAArray<ValueType>& targetHalo,
-        const LAMAArray<ValueType>& sourceHalo,
+        HArray<ValueType>& targetHalo,
+        const HArray<ValueType>& sourceHalo,
         const IndexType n ) const;
 
     void buildVPlans( const IndexType haloSourceSizes[], const IndexType haloTargetSizes[] ) const;
@@ -349,7 +349,7 @@ public:
      *  of distributed vector elements. This method will build the corresponding exchange schedule.
      */
 
-    void buildRowPlans( const LAMAArray<IndexType>& targetSizes, const LAMAArray<IndexType>& sourceSizes ) const;
+    void buildRowPlans( const HArray<IndexType>& targetSizes, const HArray<IndexType>& sourceSizes ) const;
 
     IndexType getVHaloSourceSize() const
     {
@@ -361,24 +361,24 @@ public:
     }
 
     template<typename ValueType>
-    void exchangeVHalo( LAMAArray<ValueType>& targetHalo, const LAMAArray<ValueType>& sourceHalo ) const;
+    void exchangeVHalo( HArray<ValueType>& targetHalo, const HArray<ValueType>& sourceHalo ) const;
 
-    const LAMAArray<IndexType>& getLocalSourceIndexes() const
+    const HArray<IndexType>& getLocalSourceIndexes() const
     {
         return mLocalSourceIndexes;
     }
     ;
-    const LAMAArray<IndexType>& getLocalTargetIndexes() const
+    const HArray<IndexType>& getLocalTargetIndexes() const
     {
         return mLocalTargetIndexes;
     }
     ;
-    const LAMAArray<IndexType>& getHaloSourceIndexes() const
+    const HArray<IndexType>& getHaloSourceIndexes() const
     {
         return mHaloSourceIndexes;
     }
     ;
-    const LAMAArray<IndexType>& getHaloTargetIndexes() const
+    const HArray<IndexType>& getHaloTargetIndexes() const
     {
         return mHaloTargetIndexes;
     }
@@ -394,11 +394,11 @@ private:
     IndexType mSourceSize; // = mSourceDistribution->getLocalSize()
     IndexType mTargetSize; // = mTargetDistribution->getLocalSize()
 
-    LAMAArray<IndexType> mLocalSourceIndexes;
-    LAMAArray<IndexType> mLocalTargetIndexes;
+    HArray<IndexType> mLocalSourceIndexes;
+    HArray<IndexType> mLocalTargetIndexes;
 
-    LAMAArray<IndexType> mHaloSourceIndexes;
-    LAMAArray<IndexType> mHaloTargetIndexes;
+    HArray<IndexType> mHaloSourceIndexes;
+    HArray<IndexType> mHaloTargetIndexes;
 
     IndexType mNumLocalValues; // common number of local values
 
@@ -413,7 +413,7 @@ private:
 /* ------------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void Redistributor::redistribute( LAMAArray<ValueType>& targetArray, const LAMAArray<ValueType>& sourceArray ) const
+void Redistributor::redistribute( HArray<ValueType>& targetArray, const HArray<ValueType>& sourceArray ) const
 {
     using namespace scai::hmemo;
 
@@ -427,8 +427,8 @@ void Redistributor::redistribute( LAMAArray<ValueType>& targetArray, const LAMAA
 
     // allocate memory for source (provides) and target (required) halo
 
-    LAMAArray<ValueType> sourceHalo( getHaloSourceSize() );
-    LAMAArray<ValueType> targetHalo( getHaloTargetSize() );
+    HArray<ValueType> sourceHalo( getHaloSourceSize() );
+    HArray<ValueType> targetHalo( getHaloTargetSize() );
 
     SCAI_LOG_DEBUG( logger, "gather: sourceHalo " << mHaloSourceIndexes.size() << " values" )
 
@@ -449,8 +449,8 @@ void Redistributor::redistribute( LAMAArray<ValueType>& targetArray, const LAMAA
 
 template<typename ValueType>
 void Redistributor::redistributeN(
-    LAMAArray<ValueType>& targetArray,
-    const LAMAArray<ValueType>& sourceArray,
+    HArray<ValueType>& targetArray,
+    const HArray<ValueType>& sourceArray,
     IndexType n ) const
 {
     using namespace scai::hmemo;
@@ -467,8 +467,8 @@ void Redistributor::redistributeN(
 
     // allocate memory for source (provides) and target (required) halo
 
-    LAMAArray<ValueType> sourceHalo( n * getHaloSourceSize() );
-    LAMAArray<ValueType> targetHalo( n * getHaloTargetSize() );
+    HArray<ValueType> sourceHalo( n * getHaloSourceSize() );
+    HArray<ValueType> targetHalo( n * getHaloTargetSize() );
 
     SCAI_LOG_DEBUG( logger, "gather: sourceHalo " << mHaloSourceIndexes.size() << " * " << n << " values" )
 
@@ -489,17 +489,17 @@ void Redistributor::redistributeN(
 
 template<typename ValueType>
 void Redistributor::redistributeV(
-    LAMAArray<ValueType>& targetArray,
-    const LAMAArray<IndexType>& targetOffsets,
-    const LAMAArray<ValueType>& sourceArray,
-    const LAMAArray<IndexType>& sourceOffsets ) const
+    HArray<ValueType>& targetArray,
+    const HArray<IndexType>& targetOffsets,
+    const HArray<ValueType>& sourceArray,
+    const HArray<IndexType>& sourceOffsets ) const
 {
     SCAI_REGION( "Redistributor.redistributeV" )
 
     // allocate memory for source (provides) and target (required) halo
 
-    LAMAArray<ValueType> sourceHalo( getVHaloSourceSize() );
-    LAMAArray<ValueType> targetHalo( getVHaloTargetSize() );
+    HArray<ValueType> sourceHalo( getVHaloSourceSize() );
+    HArray<ValueType> targetHalo( getVHaloTargetSize() );
 
     gatherV( sourceHalo, sourceArray, sourceOffsets, getHaloSourceIndexes() );
 
@@ -514,10 +514,10 @@ void Redistributor::redistributeV(
 
 template<typename ValueType>
 void Redistributor::gatherV(
-    LAMAArray<ValueType>& targetArray,
-    const LAMAArray<ValueType>& sourceArray,
-    const LAMAArray<IndexType>& sourceOffsets,
-    const LAMAArray<IndexType>& sourceIndexes )
+    HArray<ValueType>& targetArray,
+    const HArray<ValueType>& sourceArray,
+    const HArray<IndexType>& sourceOffsets,
+    const HArray<IndexType>& sourceIndexes )
 {
     using namespace scai::hmemo;
 
@@ -549,10 +549,10 @@ void Redistributor::gatherV(
 
 template<typename ValueType>
 void Redistributor::scatterV(
-    LAMAArray<ValueType>& targetArray,
-    const LAMAArray<IndexType>& targetOffsets,
-    const LAMAArray<IndexType>& targetIndexes,
-    const LAMAArray<ValueType>& sourceArray )
+    HArray<ValueType>& targetArray,
+    const HArray<IndexType>& targetOffsets,
+    const HArray<IndexType>& targetIndexes,
+    const HArray<ValueType>& sourceArray )
 {
     using namespace scai::hmemo;
 
@@ -584,12 +584,12 @@ void Redistributor::scatterV(
 
 template<typename ValueType>
 void Redistributor::copyV(
-    LAMAArray<ValueType>& targetArray,
-    const LAMAArray<IndexType>& targetOffsets,
-    const LAMAArray<IndexType>& targetIndexes,
-    const LAMAArray<ValueType>& sourceArray,
-    const LAMAArray<IndexType>& sourceOffsets,
-    const LAMAArray<IndexType>& sourceIndexes )
+    HArray<ValueType>& targetArray,
+    const HArray<IndexType>& targetOffsets,
+    const HArray<IndexType>& targetIndexes,
+    const HArray<ValueType>& sourceArray,
+    const HArray<IndexType>& sourceOffsets,
+    const HArray<IndexType>& sourceIndexes )
 {
     using namespace scai::hmemo;
 
@@ -626,7 +626,7 @@ void Redistributor::copyV(
 /* ------------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void Redistributor::exchangeHalo( LAMAArray<ValueType>& targetHalo, const LAMAArray<ValueType>& sourceHalo ) const
+void Redistributor::exchangeHalo( HArray<ValueType>& targetHalo, const HArray<ValueType>& sourceHalo ) const
 {
     SCAI_REGION( "Redistributor.exchangeHalo" )
 
@@ -648,8 +648,8 @@ void Redistributor::exchangeHalo( LAMAArray<ValueType>& targetHalo, const LAMAAr
 
 template<typename ValueType>
 void Redistributor::exchangeHaloN(
-    LAMAArray<ValueType>& targetHalo,
-    const LAMAArray<ValueType>& sourceHalo,
+    HArray<ValueType>& targetHalo,
+    const HArray<ValueType>& sourceHalo,
     const IndexType n ) const
 {
     SCAI_REGION( "Redistributor.exchangeHaloN" )
@@ -674,7 +674,7 @@ void Redistributor::exchangeHaloN(
 /* ------------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void Redistributor::exchangeVHalo( LAMAArray<ValueType>& targetHalo, const LAMAArray<ValueType>& sourceHalo ) const
+void Redistributor::exchangeVHalo( HArray<ValueType>& targetHalo, const HArray<ValueType>& sourceHalo ) const
 {
     SCAI_REGION( "Redistributor.exchangeVHalo" )
 

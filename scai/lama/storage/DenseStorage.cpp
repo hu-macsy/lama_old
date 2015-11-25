@@ -44,6 +44,7 @@
 #include <scai/blaskernel/BLASKernelTrait.hpp>
 #include <scai/hmemo/ContextAccess.hpp>
 #include <scai/common/Constants.hpp>
+#include <scai/common/TypeTraits.hpp>
 #include <scai/common/macros/print_string.hpp>
 #include <scai/common/exception/UnsupportedException.hpp>
 
@@ -56,6 +57,7 @@ namespace scai
 {
 
 using common::shared_ptr;
+using common::TypeTraits;
 
 namespace lama
 {
@@ -69,7 +71,7 @@ SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, DenseStorageView<Val
 
 template<typename ValueType>
 DenseStorageView<ValueType>::DenseStorageView(
-    LAMAArray<ValueType>& data,
+    HArray<ValueType>& data,
     const IndexType numRows,
     const IndexType numColumns,
     bool initializedData )
@@ -91,7 +93,7 @@ DenseStorageView<ValueType>::DenseStorageView(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-LAMAArray<ValueType>& DenseStorageView<ValueType>::getData()
+HArray<ValueType>& DenseStorageView<ValueType>::getData()
 {
     return mData;
 }
@@ -99,7 +101,7 @@ LAMAArray<ValueType>& DenseStorageView<ValueType>::getData()
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-const LAMAArray<ValueType>& DenseStorageView<ValueType>::getData() const
+const HArray<ValueType>& DenseStorageView<ValueType>::getData() const
 {
     return mData;
 }
@@ -158,7 +160,7 @@ void DenseStorageView<ValueType>::setDiagonalImpl( const ValueType value )
 
 template<typename ValueType>
 template<typename OtherType>
-void DenseStorageView<ValueType>::getRowImpl( LAMAArray<OtherType>& row, const IndexType i ) const
+void DenseStorageView<ValueType>::getRowImpl( HArray<OtherType>& row, const IndexType i ) const
 {
     SCAI_ASSERT_DEBUG( i >= 0 && i < mNumRows, "row index " << i << " out of range" )
 
@@ -178,7 +180,7 @@ void DenseStorageView<ValueType>::getRowImpl( LAMAArray<OtherType>& row, const I
 
 template<typename ValueType>
 template<typename OtherType>
-void DenseStorageView<ValueType>::getDiagonalImpl( LAMAArray<OtherType>& diagonal ) const
+void DenseStorageView<ValueType>::getDiagonalImpl( HArray<OtherType>& diagonal ) const
 {
     IndexType numDiagonalValues = std::min( mNumColumns, mNumRows );
 
@@ -198,7 +200,7 @@ void DenseStorageView<ValueType>::getDiagonalImpl( LAMAArray<OtherType>& diagona
 
 template<typename ValueType>
 template<typename OtherType>
-void DenseStorageView<ValueType>::setDiagonalImpl( const LAMAArray<OtherType>& diagonal )
+void DenseStorageView<ValueType>::setDiagonalImpl( const HArray<OtherType>& diagonal )
 {
     IndexType numDiagonalValues = std::min( mNumColumns, mNumRows );
 
@@ -234,7 +236,7 @@ void DenseStorageView<ValueType>::scaleImpl( const ValueType value )
 
 template<typename ValueType>
 template<typename OtherType>
-void DenseStorageView<ValueType>::scaleImpl( const LAMAArray<OtherType>& values )
+void DenseStorageView<ValueType>::scaleImpl( const HArray<OtherType>& values )
 {
     static LAMAKernel<DenseKernelTrait::scaleRows<ValueType, OtherType> > scaleRows;
 
@@ -382,9 +384,9 @@ void DenseStorageView<ValueType>::setZero()
 template<typename ValueType>
 template<typename OtherValueType>
 void DenseStorageView<ValueType>::buildCSR(
-    LAMAArray<IndexType>& csrIA,
-    LAMAArray<IndexType>* csrJA,
-    LAMAArray<OtherValueType>* csrValues,
+    HArray<IndexType>& csrIA,
+    HArray<IndexType>* csrJA,
+    HArray<OtherValueType>* csrValues,
     const ContextPtr context ) const
 {
     static LAMAKernel<DenseKernelTrait::getCSRSizes<ValueType> > getCSRSizes;
@@ -432,9 +434,9 @@ void DenseStorageView<ValueType>::setCSRDataImpl(
     const IndexType numRows,
     const IndexType numColumns,
     const IndexType numValues,
-    const LAMAArray<IndexType>& ia,
-    const LAMAArray<IndexType>& ja,
-    const LAMAArray<OtherValueType>& values,
+    const HArray<IndexType>& ia,
+    const HArray<IndexType>& ja,
+    const HArray<OtherValueType>& values,
     const ContextPtr context )
 {
     static LAMAKernel<DenseKernelTrait::setCSRValues<ValueType, OtherValueType> > setCSRValues;
@@ -538,11 +540,11 @@ void DenseStorageView<ValueType>::invertDense( const DenseStorageView<ValueType>
 
 template<typename ValueType>
 void DenseStorageView<ValueType>::matrixTimesVector(
-    LAMAArray<ValueType>& result,
+    HArray<ValueType>& result,
     const ValueType alpha,
-    const LAMAArray<ValueType>& x,
+    const HArray<ValueType>& x,
     const ValueType beta,
-    const LAMAArray<ValueType>& y ) const
+    const HArray<ValueType>& y ) const
 {
     SCAI_LOG_INFO( logger,
                    "Computing z = " << alpha << " * A * x + " << beta << " * y" << ", with A = " << *this << ", x = " << x << ", y = " << y << ", z = " << result )
@@ -651,11 +653,11 @@ void DenseStorageView<ValueType>::matrixTimesVector(
 
 template<typename ValueType>
 void DenseStorageView<ValueType>::vectorTimesMatrix(
-    LAMAArray<ValueType>& result,
+    HArray<ValueType>& result,
     const ValueType alpha,
-    const LAMAArray<ValueType>& x,
+    const HArray<ValueType>& x,
     const ValueType beta,
-    const LAMAArray<ValueType>& y ) const
+    const HArray<ValueType>& y ) const
 {
     SCAI_LOG_INFO( logger,
                    "Computing z = " << alpha << " * A * x + " << beta << " * y" << ", with A = " << *this << ", x = " << x << ", y = " << y << ", z = " << result )
@@ -1023,7 +1025,7 @@ ValueType DenseStorageView<ValueType>::l2Norm() const
 
     SCAI_CONTEXT_ACCESS( loc );
 
-    return ::sqrt( dot[loc]( n, data.get(), 1, data.get(), 1 ) );
+    return TypeTraits<ValueType>::sqrt( dot[loc]( n, data.get(), 1, data.get(), 1 ) );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1157,7 +1159,7 @@ void DenseStorageView<ValueType>::assign( const _MatrixStorage& other )
         {
 
 #define LAMA_ASSIGN_DENSE_CALL( z, I, _ )                                                \
-case SCALAR_ARITHMETIC_TYPE##I:                                                          \
+case TypeTraits<ARITHMETIC_HOST_TYPE_##I>::stype :                                       \
 {                                                                                        \
     const DenseStorageView<ARITHMETIC_HOST_TYPE_##I>* otherTyped =                       \
             dynamic_cast<const DenseStorageView<ARITHMETIC_HOST_TYPE_##I>*>( &other );   \
@@ -1268,7 +1270,7 @@ DenseStorage<ValueType>::DenseStorage( const IndexType numRows, const IndexType 
 
 template<typename ValueType>
 DenseStorage<ValueType>::DenseStorage(
-    const LAMAArray<ValueType>& data,
+    const HArray<ValueType>& data,
     const IndexType numRows,
     const IndexType numColumns )
 

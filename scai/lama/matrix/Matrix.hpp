@@ -268,8 +268,8 @@ public:
         DistributionPtr rowDist,
         DistributionPtr colDist,
         const IndexType numValues,
-        const hmemo::LAMAArray<IndexType>& ia,
-        const hmemo::LAMAArray<IndexType>& ja,
+        const hmemo::HArray<IndexType>& ia,
+        const hmemo::HArray<IndexType>& ja,
         const hmemo::ContextArray& values ) = 0;
 
     /** This method sets raw dense data in the same way as setDenseData but with raw value array */
@@ -284,9 +284,9 @@ public:
         const IndexType n = rowDist->getLocalSize();
         const IndexType m = colDist->getGlobalSize();
 
-        // use of LAMAArrayRef instead of LAMAArray avoids additional copying of values
+        // use of HArrayRef instead of HArray avoids additional copying of values
 
-        const hmemo::LAMAArrayRef<ValueType> valueArray( n * m, values );
+        const hmemo::HArrayRef<ValueType> valueArray( n * m, values );
 
         setDenseData( rowDist, colDist, valueArray, Scalar( eps ) );
     }
@@ -304,11 +304,11 @@ public:
     {
         const IndexType n = rowDist->getLocalSize();
 
-        // use of LAMAArrayRef instead of LAMAArray avoids additional copying of values
+        // use of HArrayRef instead of HArray avoids additional copying of values
 
-        const hmemo::LAMAArrayRef<IndexType> iaArray( n + 1, ia );
-        const hmemo::LAMAArrayRef<IndexType> jaArray( numValues, ja );
-        const hmemo::LAMAArrayRef<ValueType> valueArray( numValues, values );
+        const hmemo::HArrayRef<IndexType> iaArray( n + 1, ia );
+        const hmemo::HArrayRef<IndexType> jaArray( numValues, ja );
+        const hmemo::HArrayRef<ValueType> valueArray( numValues, values );
 
         setCSRData( rowDist, colDist, numValues, iaArray, jaArray, valueArray );
     }

@@ -39,8 +39,8 @@
 #include <scai/hmemo/Context.hpp>
 #include <scai/hmemo/HostContext.hpp>
 #include <scai/hmemo/HostMemory.hpp>
-#include <scai/hmemo/LAMAArray.hpp>
-#include <scai/hmemo/LAMAArrayRef.hpp>
+#include <scai/hmemo/HArray.hpp>
+#include <scai/hmemo/HArrayRef.hpp>
 #include <scai/hmemo/Memory.hpp> 
 #include <scai/hmemo/ReadAccess.hpp>
 #include <scai/hmemo/WriteAccess.hpp>

@@ -42,7 +42,7 @@
 namespace scai
 {
 
-using hmemo::LAMAArray;
+using hmemo::HArray;
 
 namespace lama
 {
@@ -53,7 +53,7 @@ public:
 
     static void buildHalo(
         class Halo& halo,
-        LAMAArray<IndexType>& haloJA,
+        HArray<IndexType>& haloJA,
         IndexType& haloSize,
         const class Distribution& colDist );
 
@@ -87,12 +87,12 @@ public:
      */
 
     static void localizeCSR(
-        LAMAArray<IndexType>& localIA,
-        LAMAArray<IndexType>& localJA,
-        LAMAArray<ValueType>& localValues,
-        const LAMAArray<IndexType>& globalIA,
-        const LAMAArray<IndexType>& globalJA,
-        const LAMAArray<ValueType>& globalValues,
+        HArray<IndexType>& localIA,
+        HArray<IndexType>& localJA,
+        HArray<ValueType>& localValues,
+        const HArray<IndexType>& globalIA,
+        const HArray<IndexType>& globalJA,
+        const HArray<ValueType>& globalValues,
         const class Distribution& rowDist );
 
     /** Build global CSR storage for row distributed CSR storages.
@@ -104,12 +104,12 @@ public:
      */
 
     static void replicateCSR(
-        LAMAArray<IndexType>& globalIA,
-        LAMAArray<IndexType>& globalJA,
-        LAMAArray<ValueType>& globalValues,
-        const LAMAArray<IndexType>& localIA,
-        const LAMAArray<IndexType>& localJA,
-        const LAMAArray<ValueType>& localValues,
+        HArray<IndexType>& globalIA,
+        HArray<IndexType>& globalJA,
+        HArray<ValueType>& globalValues,
+        const HArray<IndexType>& localIA,
+        const HArray<IndexType>& localJA,
+        const HArray<ValueType>& localValues,
         const class Distribution& rowDist );
 
     /** Redistribute CSR storages.
@@ -120,12 +120,12 @@ public:
      */
 
     static void redistributeCSR(
-        LAMAArray<IndexType>& targetIA,
-        LAMAArray<IndexType>& targetJA,
-        LAMAArray<ValueType>& targetValues,
-        const LAMAArray<IndexType>& sourceIA,
-        const LAMAArray<IndexType>& sourceJA,
-        const LAMAArray<ValueType>& sourceValues,
+        HArray<IndexType>& targetIA,
+        HArray<IndexType>& targetJA,
+        HArray<ValueType>& targetValues,
+        const HArray<IndexType>& sourceIA,
+        const HArray<IndexType>& sourceJA,
+        const HArray<ValueType>& sourceValues,
         const class Redistributor& redistributor );
 
     /** Exchange rows by halo.
@@ -139,12 +139,12 @@ public:
      */
 
     static void exchangeHaloCSR(
-        LAMAArray<IndexType>& targetIA,
-        LAMAArray<IndexType>& targetJA,
-        LAMAArray<ValueType>& targetValues,
-        const LAMAArray<IndexType>& sourceIA,
-        const LAMAArray<IndexType>& sourceJA,
-        const LAMAArray<ValueType>& sourceValues,
+        HArray<IndexType>& targetIA,
+        HArray<IndexType>& targetJA,
+        HArray<ValueType>& targetValues,
+        const HArray<IndexType>& sourceIA,
+        const HArray<IndexType>& sourceJA,
+        const HArray<ValueType>& sourceValues,
         const class Halo& halo,
         const class Communicator& comm );
 
@@ -160,15 +160,15 @@ public:
      */
 
     static void splitCSR(
-        LAMAArray<IndexType>& localIA,
-        LAMAArray<IndexType>& localJA,
-        LAMAArray<ValueType>& localValues,
-        LAMAArray<IndexType>& haloIA,
-        LAMAArray<IndexType>& haloJA,
-        LAMAArray<ValueType>& haloValues,
-        const LAMAArray<IndexType>& csrIA,
-        const LAMAArray<IndexType>& csrJA,
-        const LAMAArray<ValueType>& csrValues,
+        HArray<IndexType>& localIA,
+        HArray<IndexType>& localJA,
+        HArray<ValueType>& localValues,
+        HArray<IndexType>& haloIA,
+        HArray<IndexType>& haloJA,
+        HArray<ValueType>& haloValues,
+        const HArray<IndexType>& csrIA,
+        const HArray<IndexType>& csrJA,
+        const HArray<ValueType>& csrValues,
         const class Distribution& colDist,
         const class Distribution* rowDist );
 
@@ -185,15 +185,15 @@ public:
      */
 
     static void joinCSR(
-        LAMAArray<IndexType>& csrIA,
-        LAMAArray<IndexType>& csrJA,
-        LAMAArray<ValueType>& csrValues,
-        const LAMAArray<IndexType>& localIA,
-        const LAMAArray<IndexType>& localJA,
-        const LAMAArray<ValueType>& localValues,
-        const LAMAArray<IndexType>& haloIA,
-        const LAMAArray<IndexType>& haloJA,
-        const LAMAArray<ValueType>& haloValues,
+        HArray<IndexType>& csrIA,
+        HArray<IndexType>& csrJA,
+        HArray<ValueType>& csrValues,
+        const HArray<IndexType>& localIA,
+        const HArray<IndexType>& localJA,
+        const HArray<ValueType>& localValues,
+        const HArray<IndexType>& haloIA,
+        const HArray<IndexType>& haloJA,
+        const HArray<ValueType>& haloValues,
         const IndexType numKeepDiagonals );
 };
 

@@ -59,7 +59,7 @@ SCAI_LOG_DEF_LOGGER( logger, "AliasTest" )
 
 using namespace scai;
 
-typedef hmemo::LAMAArray<double> Array;
+typedef hmemo::HArray<double> Array;
 
 void add ( Array& res, const Array& a, const Array& b )
 {

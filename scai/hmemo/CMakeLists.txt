@@ -116,15 +116,15 @@ scai_project (
          Context
          ContextData
          ContextDataManager
+         ContextArray
          HostContext
          HostMemory
          Memory
 
     HEADERS                  # .hpp only
 
-         ContextArray
-         LAMAArray
-         LAMAArrayRef
+         HArray
+         HArrayRef
          ReadAccess
          WriteAccess
          WriteOnlyAccess

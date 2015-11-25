@@ -1,5 +1,5 @@
 /**
- * @file LAMAArrayTest.cpp
+ * @file HArrayTest.cpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -34,8 +34,8 @@
 #include <boost/mpl/list.hpp>
 #include <boost/assert.hpp>
 
-#include <scai/hmemo/LAMAArray.hpp>
-#include <scai/hmemo/LAMAArrayRef.hpp>
+#include <scai/hmemo/HArray.hpp>
+#include <scai/hmemo/HArrayRef.hpp>
 #include <scai/hmemo/WriteAccess.hpp>
 #include <scai/hmemo/WriteOnlyAccess.hpp>
 #include <scai/hmemo/ReadAccess.hpp>
@@ -46,7 +46,7 @@ using namespace scai::hmemo;
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_SUITE( LAMAArrayTest )
+BOOST_AUTO_TEST_SUITE( HArrayTest )
 
 /* --------------------------------------------------------------------- */
 
@@ -72,8 +72,8 @@ BOOST_AUTO_TEST_CASE( ConstructorTest )
 
     const IndexType N = 100;
 
-    LAMAArray<float> array1( N );
-    LAMAArray<float> array2( N, 5.0f );
+    HArray<float> array1( N );
+    HArray<float> array2( N, 5.0f );
    
     BOOST_CHECK_EQUAL( array1.size(), N );
     BOOST_CHECK_EQUAL( array2.size(), N );
@@ -101,7 +101,7 @@ BOOST_AUTO_TEST_CASE( releaseTest )
 {
     ContextPtr hostContext = Context::getHostPtr();
 
-    LAMAArray<IndexType> lamaArray; // default, not allocated at all
+    HArray<IndexType> lamaArray; // default, not allocated at all
     ReadAccess<IndexType> readTestAccess( lamaArray, hostContext );
     readTestAccess.release();
     WriteAccess<IndexType> writeAccess( lamaArray, hostContext );
@@ -134,7 +134,7 @@ BOOST_AUTO_TEST_CASE( resizeTest )
 {
     ContextPtr contextPtr = Context::getHostPtr();
 
-    LAMAArray<IndexType> lamaArray; // default, not allocated at all
+    HArray<IndexType> lamaArray; // default, not allocated at all
     {
         WriteAccess<IndexType> writeAccess( lamaArray, contextPtr );
         // Possible problem: fetch from any location not possible
@@ -161,8 +161,8 @@ BOOST_AUTO_TEST_CASE( swapTest )
     const IndexType n1 = 10;
     const IndexType n2 = 5;
 
-    LAMAArray<double> arr1( n1, 1 ); 
-    LAMAArray<double> arr2( n2, 2 ); 
+    HArray<double> arr1( n1, 1 ); 
+    HArray<double> arr2( n2, 2 ); 
 
     arr1.swap( arr2 );
 
@@ -198,7 +198,7 @@ BOOST_AUTO_TEST_CASE( accessTest )
 
     ContextPtr contextPtr = Context::getHostPtr();
 
-    LAMAArray<double> lamaArray( n, value );
+    HArray<double> lamaArray( n, value );
     {
         ReadAccess<double> lamaArrayRAccess( lamaArray, contextPtr );
 
@@ -236,7 +236,7 @@ BOOST_AUTO_TEST_CASE( aliasTest )
 {
     const IndexType N = 10;
     const double value = 1.0;
-    LAMAArray<double> lamaArray( N, value );
+    HArray<double> lamaArray( N, value );
 
     ContextPtr contextPtr = Context::getHostPtr();
 
@@ -304,9 +304,9 @@ BOOST_AUTO_TEST_CASE( aliasTest )
 
 BOOST_AUTO_TEST_CASE( createTest )
 {
-    LAMAArray<float> A( 10, 1.0f );
-    LAMAArray<double> B( 10, 3.1415 );
-    LAMAArray<IndexType> C( 10, 5 );
+    HArray<float> A( 10, 1.0f );
+    HArray<double> B( 10, 3.1415 );
+    HArray<IndexType> C( 10, 5 );
 
     std::vector<scai::common::scalar::ScalarType> values;
 
@@ -326,8 +326,8 @@ BOOST_AUTO_TEST_CASE( createTest )
 
     BOOST_REQUIRE( ca1 );
 
-    LAMAArray<double>* da1 = dynamic_cast<LAMAArray<double>*>( ca1 );
-    LAMAArray<float>* fa1 = dynamic_cast<LAMAArray<float>*>( ca1 );
+    HArray<double>* da1 = dynamic_cast<HArray<double>*>( ca1 );
+    HArray<float>* fa1 = dynamic_cast<HArray<float>*>( ca1 );
 
     BOOST_CHECK( da1 == NULL );
     BOOST_CHECK( fa1 != NULL );
@@ -343,7 +343,7 @@ BOOST_AUTO_TEST_CASE( createTest )
 
 BOOST_AUTO_TEST_CASE( validTest )
 {
-    LAMAArray<float> A( 10 );
+    HArray<float> A( 10 );
 
     ContextPtr hostContext = Context::getHostPtr();
 
@@ -353,12 +353,12 @@ BOOST_AUTO_TEST_CASE( validTest )
 
     BOOST_CHECK( validContext.get() );
 
-    LAMAArray<float> B;
+    HArray<float> B;
     {
         // read access on zero sized array, should be okay
         ReadAccess<float> read( B, hostContext );
     }
-    LAMAArray<float> C( 10 );
+    HArray<float> C( 10 );
     {
         // read access on undefined array, might give warning
         ReadAccess<float> read( C, hostContext );

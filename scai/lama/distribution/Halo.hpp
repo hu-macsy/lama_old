@@ -94,9 +94,9 @@ public:
 
     inline IndexType global2halo( const IndexType globalIndex ) const;
 
-    inline const hmemo::LAMAArray<IndexType>& getProvidesIndexes() const;
+    inline const hmemo::HArray<IndexType>& getProvidesIndexes() const;
 
-    inline const hmemo::LAMAArray<IndexType>& getRequiredIndexes() const;
+    inline const hmemo::HArray<IndexType>& getRequiredIndexes() const;
 
     /** Query the size for a halo to be allocated */
 
@@ -125,11 +125,11 @@ private:
     CommunicationPlan mRequiredPlan;
     CommunicationPlan mProvidesPlan;
 
-    // Indexes for required values and values to provide are stored in LAMAArrays
+    // Indexes for required values and values to provide are stored in HArrays
     // so they might be used in different contexts, especially also on GPU
 
-    hmemo::LAMAArray<IndexType> mRequiredIndexes;
-    hmemo::LAMAArray<IndexType> mProvidesIndexes;
+    hmemo::HArray<IndexType> mRequiredIndexes;
+    hmemo::HArray<IndexType> mProvidesIndexes;
 
     std::map<IndexType,IndexType> mGlobal2Halo;
 
@@ -146,12 +146,12 @@ const CommunicationPlan& Halo::getProvidesPlan() const
     return mProvidesPlan;
 }
 
-const hmemo::LAMAArray<IndexType>& Halo::getProvidesIndexes() const
+const hmemo::HArray<IndexType>& Halo::getProvidesIndexes() const
 {
     return mProvidesIndexes;
 }
 
-const hmemo::LAMAArray<IndexType>& Halo::getRequiredIndexes() const
+const hmemo::HArray<IndexType>& Halo::getRequiredIndexes() const
 {
     return mRequiredIndexes;
 }

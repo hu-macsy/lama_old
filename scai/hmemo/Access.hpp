@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Definition of common base class for accesses to a LAMAArray to enforce consistency.
+ * @brief Definition of common base class for accesses to a HArray to enforce consistency.
  * @author Jiri Kraus
  * @date 20.05.2011
  */
@@ -53,9 +53,9 @@ namespace hmemo
 
 class COMMON_DLL_IMPORTEXPORT Access: 
 
-    public  scai::common::Printable,
-    private scai::common::NonCopyable,
-    public  scai::tasking::SyncTokenMember
+    public  common::Printable,
+    private common::NonCopyable,
+    public  tasking::SyncTokenMember
 {
 public:
 

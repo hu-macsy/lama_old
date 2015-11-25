@@ -1,5 +1,5 @@
 /**
- * @file LAMAArray.hpp
+ * @file HArray.hpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -38,6 +38,9 @@
 // base classes
 #include <scai/hmemo/ContextArray.hpp>
 
+// common library
+#include <scai/common/TypeTraits.hpp>
+
 namespace scai
 {
 
@@ -45,12 +48,12 @@ namespace hmemo
 {
 
 /**
- * @brief LAMAArray is the base array container for all compute relevant data within LAMA.
+ * @brief HArray is the typed version of ContextArray.
  *
  * @tparam ValueType is the type stored in this container.
  *
- * LAMAArray its contents on all supported locations, e.g. Host, CUDA and OpenCL. It transparently handles
- * synchronization between the locations. To enforce the consistency of the data a LAMAArray can be only
+ * HArray its contents on all supported locations, e.g. Host, CUDA and OpenCL. It transparently handles
+ * synchronization between the locations. To enforce the consistency of the data a HArray can be only
  * indirectly accessed via a ReadAccess or a WriteAccess.
  *
  * Compared to a C++ container like std::vector some differences must be taken into account:
@@ -64,13 +67,15 @@ namespace hmemo
  *  or references; these might be invalid when data is moved to another context.
  */
 template<typename ValueType>
-class COMMON_DLL_IMPORTEXPORT LAMAArray: 
+class COMMON_DLL_IMPORTEXPORT HArray: 
 
     public ContextArray,
-    public ContextArray::Register<LAMAArray<ValueType> >
+    public ContextArray::Register<HArray<ValueType> >
 
 {
 public:
+
+    typedef ValueType type;
 
     // WriteAccess and ReadAccess should be allowed to call some methods that
     // use ContextDataIndex for more efficient usage
@@ -79,71 +84,59 @@ public:
     friend class WriteAccess<ValueType> ;
 
     /**
-     * @brief LAMAArray() creates an empty LAMAArray with size 0
+     * @brief HArray() creates an empty HArray with size 0
      */
-    LAMAArray();
+    HArray();
 
     /**
-     * @brief Create a LAMA array and give it a first touch on a context
+     * @brief Create a Heterogeneous array and give it a first touch on a context
      *
      * The first context decides about the default context and the default memory          
      * used for the array. This is only a performance issue in some situations.
      */
-    explicit LAMAArray( ContextPtr context );
+    explicit HArray( ContextPtr context );
 
     /**
-     * @brief Create a LAMA array and give it a first touch on a memory.
+     * @brief Create a Heterogeneous array and give it a first touch on a memory.
      *
      * The first memory decides which data should be used whenever possible.
      */
-    explicit LAMAArray( MemoryPtr context );
+    explicit HArray( MemoryPtr context );
 
     /**
-     * @brief LAMAArray( const IndexType n ) creates a LAMAArray of size n
+     * @brief HArray( const IndexType n ) creates a HArray of size n
      *
-     * @param[in] n the size of the LAMAArray to create
+     * @param[in] n the size of the HArray to create
      *
-     * LAMAArray( const IndexType n ) creates a LAMAArray of size n and allocates uninitialized Host memory.
+     * HArray( const IndexType n ) creates a HArray of size n and allocates uninitialized Host memory.
      */
-    explicit LAMAArray( const IndexType n );
+    explicit HArray( const IndexType n );
 
     /**
-     * @brief Creates a LAMAArray of size n.
+     * @brief Create a HArray of size n and initialize it with one value.
      *
-     * @param[in] n     the size of the LAMAArray to create
+     * @param[in] n     the size of the HArray to create
      * @param[in] value the value to initialize the container contens with
      *
-     * LAMAArray( const IndexType n ) creates a LAMAArray of size n, allocates Host memory and fills the Host memory with
+     * HArray( const IndexType n ) creates a HArray of size n, allocates Host memory and fills the Host memory with
      * the passed value.
      */
-    LAMAArray( const IndexType n, const ValueType& value );
+    HArray( const IndexType n, const ValueType& value );
 
     /**
-     * @brief Creates a LAMAArray of size n.
+     * @brief Override the default copy constructor with appropriate version.
      *
-     * @param[in] n         the size of the LAMAArray to create
-     * @param[in] values    the values to initialize the container contens with
+     * @param[in] other the HArray to copy
      *
-     * LAMAArray( const IndexType n ) creates a LAMAArray of size n, allocates Host memory and fills the Host memory with
-     * the passed values.
-     */
-    template<typename OtherValueType>
-    LAMAArray( const IndexType n, const OtherValueType* const values );
-
-    /**
-     * @brief Creates a copy of the passed LAMAArray.
-     *
-     * @param[in] other the LAMAArray to copy
-     *
-     * LAMAArray(const LAMAArray<ValueType>& other) copies the passed LAMAArray. The container contens is copied for all currently valid
+     * HArray(const HArray<ValueType>& other) copies the passed HArray. The container contens is copied for all currently valid
      * Locations.
      */
-    LAMAArray( const LAMAArray<ValueType>& other );
+    HArray( const HArray<ValueType>& other );
 
     /**
      * @brief Destructor, releases all used resources.
      */
-    virtual ~LAMAArray();
+    virtual ~HArray();
 
     /**
      *  The method clone is a function that returns a new object of the
@@ -151,13 +144,13 @@ public:
      *  constructor is always called.
      */
 
-    LAMAArray<ValueType>* clone();
+    HArray<ValueType>* clone();
 
     /**
      *  Similiar to clone but here the copy constructor is called.
      */
 
-    LAMAArray<ValueType>* copy();
+    HArray<ValueType>* copy();
 
     /** 
      *  Static create routine that is used for the ContextArray factory.
@@ -166,35 +159,35 @@ public:
     static ContextArray* create();
 
     /**
-     * @brief Assignment operator for LAMA arrays.  
+     * @brief Assignment operator for Heterogeneous arrays.  
      *
-     * @param[in] other the LAMAArray to assign
+     * @param[in] other the HArray to assign
      * @return this array as a copy of the other array
      *
-     * The assignment operator copies the passed LAMAArray.
+     * The assignment operator copies the passed HArray.
      * The container content is copied for all contexts where a
      * valid copy is available (at least one).
      */
-    LAMAArray<ValueType>& operator=( const LAMAArray<ValueType>& other );
+    HArray<ValueType>& operator=( const HArray<ValueType>& other );
 
     /**
      * @brief Assignment of array values with valid values at a given other.
      *
-     * @param[in] other     the LAMAArray whose values are copied
+     * @param[in] other     the HArray whose values are copied
      * @param[in] context   the context where the assignment should be carried out
      *
-     * The assign method copies the passed LAMAArray.
+     * The assign method copies the passed HArray.
      * The container content is copied for the passed contexts. If necessary other is
      * copied to context to carry this out.
      */
-    void assign( const LAMAArray<ValueType>& other, ContextPtr context );
+    void assign( const HArray<ValueType>& other, ContextPtr context );
 
     /**
      * @brief Swaps the contens of this with other.
      *
-     * @param[in] other the LAMAArray to swap the contens with.
+     * @param[in] other the HArray to swap the contens with.
      */
-    void swap( LAMAArray<ValueType>& other );
+    void swap( HArray<ValueType>& other );
 
     /**
      * @brief sets the size of this to 0 an frees all memory
@@ -226,7 +219,7 @@ public:
 
     static common::scalar::ScalarType createValue()
     {
-        return common::getScalarType<ValueType>();
+        return common::TypeTraits<ValueType>::stype;
     }
 
     using ContextArray::resize;
@@ -249,64 +242,23 @@ protected:
 
     IndexType capacity( ContextDataIndex index ) const;
 
-    SCAI_LOG_DECL_STATIC_LOGGER( logger )
-
 };
 
 /* ---------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-template<typename OtherValueType>
-LAMAArray<ValueType>::LAMAArray( const IndexType n, const OtherValueType* const values )
-                : ContextArray( n, sizeof( ValueType ) )
-{
-    ContextPtr hostContextPtr = Context::getHostPtr();
-
-    ContextData& host = mContextDataManager[ hostContextPtr ];
-
-    if ( n <= 0 )
-    {
-        SCAI_LOG_DEBUG( logger, "Zero-sized array with value constructed: " << *this )
-        return;
-    }
-
-    host.allocate( mSize * sizeof(ValueType) );
-
-    SCAI_LOG_DEBUG( logger, "constructed: " << *this )
-
-    ValueType* hostData = static_cast<ValueType*>( host.get() );
-
-#pragma omp parallel for
-
-    for( IndexType i = 0; i < mSize; ++i )
-    {
-        hostData[i] = static_cast<ValueType>( values[i] );
-    }
-
-    host.setValid( true );
-
-    SCAI_LOG_DEBUG( logger, "constructed: " << *this )
-}
-
-/* ---------------------------------------------------------------------------------*/
-
-SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, LAMAArray<ValueType>::logger, "LAMAArray" )
-
-/* ---------------------------------------------------------------------------------*/
-
-template<typename ValueType>
-LAMAArray<ValueType>::LAMAArray() : 
+HArray<ValueType>::HArray() : 
 
     ContextArray( 0, sizeof( ValueType ) )
 
 {
-    SCAI_LOG_DEBUG( logger, "created new LAMA array: " << *this )
+    SCAI_LOG_DEBUG( logger, "created new HArray: " << *this )
 }
 
 /* ---------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-LAMAArray<ValueType>::LAMAArray( ContextPtr context ) :
+HArray<ValueType>::HArray( ContextPtr context ) :
 
     ContextArray( 0, sizeof( ValueType ) )
 
@@ -315,13 +267,13 @@ LAMAArray<ValueType>::LAMAArray( ContextPtr context ) :
 
     /* ContextDataIndex data = */  mContextDataManager.getContextData( context );
 
-    SCAI_LOG_DEBUG( logger, "created new LAMA array: " << *this )
+    SCAI_LOG_DEBUG( logger, "created new HArray: " << *this )
 }
 
 /* ---------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-LAMAArray<ValueType>::LAMAArray( MemoryPtr memory ) :
+HArray<ValueType>::HArray( MemoryPtr memory ) :
 
     ContextArray( 0, sizeof( ValueType ) )
 
@@ -330,13 +282,13 @@ LAMAArray<ValueType>::LAMAArray( MemoryPtr memory ) :
 
     /* ContextDataIndex data = */  mContextDataManager.getMemoryData( memory );
 
-    SCAI_LOG_DEBUG( logger, "created new LAMA array: " << *this )
+    SCAI_LOG_DEBUG( logger, "created new HArray: " << *this )
 }
 
 /* ---------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-LAMAArray<ValueType>::LAMAArray( const IndexType n ) :
+HArray<ValueType>::HArray( const IndexType n ) :
 
     ContextArray( n, sizeof( ValueType) )
 
@@ -346,16 +298,16 @@ LAMAArray<ValueType>::LAMAArray( const IndexType n ) :
     ContextPtr hostPtr = Context::getHostPtr();
     mContextDataManager.reserve( hostPtr, n * mValueSize, 0 );
 
-    SCAI_LOG_DEBUG( logger, "created new LAMA array: " << *this )
+    SCAI_LOG_DEBUG( logger, "created new HArray: " << *this )
 }
 
 /* ---------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-LAMAArray<ValueType>::LAMAArray( const IndexType n, const ValueType& value ) : ContextArray( n, sizeof( ValueType ) )
+HArray<ValueType>::HArray( const IndexType n, const ValueType& value ) : ContextArray( n, sizeof( ValueType ) )
 
 {
-    // In constructor of the LAMA array lock of accesses is not required 
+    // In constructor of the HArray lock of accesses is not required 
 
     ContextPtr host = Context::getHostPtr();
 
@@ -387,7 +339,7 @@ LAMAArray<ValueType>::LAMAArray( const IndexType n, const ValueType& value ) : C
 /* ---------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-LAMAArray<ValueType>::LAMAArray( const LAMAArray<ValueType>& other ): 
+HArray<ValueType>::HArray( const HArray<ValueType>& other ):  
 
     ContextArray( other.mSize, sizeof( ValueType ) )
 
@@ -398,51 +350,51 @@ LAMAArray<ValueType>::LAMAArray( const LAMAArray<ValueType>& other ):
 /* ---------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-LAMAArray<ValueType>::~LAMAArray()
+HArray<ValueType>::~HArray()
 {
     // destructor of ContextDataManager does all the release/check stuff
 
-    SCAI_LOG_DEBUG( logger, "~LAMAArray = " << *this )
+    SCAI_LOG_DEBUG( logger, "~HArray = " << *this )
 }
 
 /* ---------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-ContextArray* LAMAArray<ValueType>::create()
+ContextArray* HArray<ValueType>::create()
 {
-    return new LAMAArray<ValueType>();
+    return new HArray<ValueType>();
 }
 
 /* ---------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-LAMAArray<ValueType>* LAMAArray<ValueType>::clone()
+HArray<ValueType>* HArray<ValueType>::clone()
 {
-    return new LAMAArray<ValueType>();
+    return new HArray<ValueType>();
 }
 
 /* ---------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-LAMAArray<ValueType>* LAMAArray<ValueType>::copy()
+HArray<ValueType>* HArray<ValueType>::copy()
 {
-    return new LAMAArray<ValueType>( *this );
+    return new HArray<ValueType>( *this );
 }
 
 /* ---------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-common::scalar::ScalarType LAMAArray<ValueType>::getValueType() const
+common::scalar::ScalarType HArray<ValueType>::getValueType() const
 {
     // Note: this is implementation of the pure method of base class ContextArray.
 
-    return common::getScalarType<ValueType>();
+    return common::TypeTraits<ValueType>::stype;
 }
 
 /* ---------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-LAMAArray<ValueType>& LAMAArray<ValueType>::operator=( const LAMAArray<ValueType>& other )
+HArray<ValueType>& HArray<ValueType>::operator=( const HArray<ValueType>& other )
 {
     SCAI_LOG_DEBUG( logger, other << " will be assigned to " << *this )
 
@@ -472,7 +424,7 @@ LAMAArray<ValueType>& LAMAArray<ValueType>::operator=( const LAMAArray<ValueType
 /* ---------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-void LAMAArray<ValueType>::assign( const LAMAArray<ValueType>& other, ContextPtr context )
+void HArray<ValueType>::assign( const HArray<ValueType>& other, ContextPtr context )
 {
     SCAI_LOG_DEBUG( logger, other << " will be assigned to " << *this )
 
@@ -501,7 +453,7 @@ void LAMAArray<ValueType>::assign( const LAMAArray<ValueType>& other, ContextPtr
 /* ---------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-void LAMAArray<ValueType>::swap( LAMAArray<ValueType>& other )
+void HArray<ValueType>::swap( HArray<ValueType>& other )
 {
     SCAI_LOG_DEBUG( logger, *this << ": swap with other = " << other )
 
@@ -522,7 +474,7 @@ void LAMAArray<ValueType>::swap( LAMAArray<ValueType>& other )
 /* ---------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-void LAMAArray<ValueType>::reserve( ContextPtr context, const IndexType capacity )
+void HArray<ValueType>::reserve( ContextPtr context, const IndexType capacity )
 {
     mContextDataManager.reserve( context, capacity * mValueSize, mSize * mValueSize );
 }
@@ -530,7 +482,7 @@ void LAMAArray<ValueType>::reserve( ContextPtr context, const IndexType capacity
 /* ---------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-void LAMAArray<ValueType>::purge()
+void HArray<ValueType>::purge()
 {
     mContextDataManager.purge();
 
@@ -542,7 +494,7 @@ void LAMAArray<ValueType>::purge()
 /* ---------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-ValueType* LAMAArray<ValueType>::get( ContextDataIndex index )
+ValueType* HArray<ValueType>::get( ContextDataIndex index )
 {
     return static_cast<ValueType*>( mContextDataManager[index].get() );
 }
@@ -550,7 +502,7 @@ ValueType* LAMAArray<ValueType>::get( ContextDataIndex index )
 /* ---------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-const ValueType* LAMAArray<ValueType>::get( ContextDataIndex index ) const
+const ValueType* HArray<ValueType>::get( ContextDataIndex index ) const
 {
     return static_cast<const ValueType*>( mContextDataManager[index].get() );
 }
@@ -558,7 +510,7 @@ const ValueType* LAMAArray<ValueType>::get( ContextDataIndex index ) const
 /* ---------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-void LAMAArray<ValueType>::clear( const ContextDataIndex index )
+void HArray<ValueType>::clear( const ContextDataIndex index )
 {
     // make sure that we have exactly one write access at this context
 
@@ -573,7 +525,7 @@ void LAMAArray<ValueType>::clear( const ContextDataIndex index )
 /* ---------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-void LAMAArray<ValueType>::resize( ContextDataIndex index, const IndexType size )
+void HArray<ValueType>::resize( ContextDataIndex index, const IndexType size )
 {
     ContextData& entry = mContextDataManager[index];
 
@@ -603,7 +555,7 @@ void LAMAArray<ValueType>::resize( ContextDataIndex index, const IndexType size 
 /* ---------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-void LAMAArray<ValueType>::reserve( ContextDataIndex index, const IndexType size ) const
+void HArray<ValueType>::reserve( ContextDataIndex index, const IndexType size ) const
 {
     if ( size <= mSize )
     {
@@ -625,7 +577,7 @@ void LAMAArray<ValueType>::reserve( ContextDataIndex index, const IndexType size
 /* ---------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-IndexType LAMAArray<ValueType>::capacity( ContextDataIndex index ) const
+IndexType HArray<ValueType>::capacity( ContextDataIndex index ) const
 {
     const ContextData& entry = mContextDataManager[index];
     return entry.capacity();
@@ -634,10 +586,10 @@ IndexType LAMAArray<ValueType>::capacity( ContextDataIndex index ) const
 /* ---------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-void LAMAArray<ValueType>::writeAt( std::ostream& stream ) const
+void HArray<ValueType>::writeAt( std::ostream& stream ) const
 {
-    stream << "LAMAArray<";
-    stream << common::getScalarType<ValueType>();
+    stream << "HArray<";
+    stream << common::TypeTraits<ValueType>::id();
     stream << ">(" << mSize; stream << ") ";
     stream << mContextDataManager;
 }

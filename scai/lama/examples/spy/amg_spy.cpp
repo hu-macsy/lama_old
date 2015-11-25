@@ -101,9 +101,9 @@ int main( int argc, char** argv )
         const Matrix& mat = amgSolver->getGalerkin( level );
         std::cout << "Galerkin matrix on level " << level << ": " << mat << std::endl;
 
-        LAMAArray<IndexType> ia;
-        LAMAArray<IndexType> ja;
-        LAMAArray<double> values;
+        HArray<IndexType> ia;
+        HArray<IndexType> ja;
+        HArray<double> values;
 
         const _MatrixStorage& local = mat.getLocalStorage();
 
@@ -161,9 +161,9 @@ int main( int argc, char** argv )
         const Matrix& mat = amgSolver->getInterpolation( level );
         std::cout << "Interpolation matrix on level " << level << ": " << mat << std::endl;
 
-        LAMAArray<IndexType> ia;
-        LAMAArray<IndexType> ja;
-        LAMAArray<double> values;
+        HArray<IndexType> ia;
+        HArray<IndexType> ja;
+        HArray<double> values;
 
         const _MatrixStorage& local = mat.getLocalStorage();
 

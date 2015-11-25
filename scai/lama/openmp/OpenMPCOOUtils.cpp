@@ -43,7 +43,7 @@
 // internal scai libraries
 #include <scai/kregistry/KernelRegistry.hpp>
 #include <scai/tracing.hpp>
-#include <scai/common/ScalarType.hpp>
+#include <scai/common/TypeTraits.hpp>
 #include <scai/common/OpenMP.hpp>
 #include <scai/common/bind.hpp>
 
@@ -55,7 +55,7 @@
 namespace scai
 {
 
-using common::getScalarType;
+using common::TypeTraits;
 using tasking::TaskSyncToken;
 
 namespace lama
@@ -137,8 +137,8 @@ void OpenMPCOOUtils::getCSRValues( IndexType csrJA[],
                                    const COOValueType cooValues[] )
 {
     SCAI_LOG_INFO( logger,
-                   "get CSRValues<" << getScalarType<COOValueType>() << ", "
-                    << getScalarType<CSRValueType>() << ">" << ", #rows = " << numRows << ", #values = " << numValues )
+                   "get CSRValues<" << TypeTraits<COOValueType>::id() << ", "
+                    << TypeTraits<CSRValueType>::id() << ">" << ", #rows = " << numRows << ", #values = " << numValues )
 
     // traverse the non-zero values and put data at the right places
     // each thread reads all COO indexes but takes care for a certain range of CSR rows
@@ -234,6 +234,26 @@ void OpenMPCOOUtils::offsets2ia(
 
 /* --------------------------------------------------------------------------- */
 
+template<typename COOValueType,typename OtherValueType>
+void OpenMPCOOUtils::scaleRows( 
+    COOValueType cooValues[],
+    const OtherValueType rowValues[],
+    const IndexType cooIA[],
+    const IndexType numValues )
+{
+    SCAI_LOG_INFO( logger, "scaleRows in COO format" )
+
+    #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
+
+    for ( IndexType i = 0; i < numValues; ++i )
+    {
+        cooValues[i] *= static_cast<COOValueType>( rowValues[cooIA[i]] );
+    }
+}
+
+
+/* --------------------------------------------------------------------------- */
+
 template<typename COOValueType,typename CSRValueType>
 void OpenMPCOOUtils::setCSRData(
     COOValueType cooValues[],
@@ -311,7 +331,7 @@ void OpenMPCOOUtils::normalGEMV(
         // bind has limited number of arguments, so take help routine for call
 
         SCAI_LOG_INFO( logger,
-                       "normalGEMV<" << getScalarType<ValueType>() << "> launch it asynchronously" )
+                       "normalGEMV<" << TypeTraits<ValueType>::id() << "> launch it asynchronously" )
 
         syncToken->run( common::bind( normalGEMV_a<ValueType>,
                                       result,
@@ -322,7 +342,7 @@ void OpenMPCOOUtils::normalGEMV(
     }
 
     SCAI_LOG_INFO( logger,
-                   "normalGEMV<" << getScalarType<ValueType>() << ", #threads = " << omp_get_max_threads() << ">," 
+                   "normalGEMV<" << TypeTraits<ValueType>::id() << ", #threads = " << omp_get_max_threads() << ">," 
                     << " result[" << numRows << "] = " << alpha << " * A( coo, #vals = " << numValues << " ) * x + " << beta << " * y " )
 
     // result := alpha * A * x + beta * y -> result:= beta * y; result += alpha * A
@@ -365,7 +385,7 @@ void OpenMPCOOUtils::normalGEVM(
     const ValueType cooValues[] )
 {
     SCAI_LOG_INFO( logger,
-                   "normalGEMV<" << getScalarType<ValueType>() << ", #threads = " << omp_get_max_threads() << ">, result[" << numColumns << "] = " << alpha << " * A( coo, #vals = " << numValues << " ) * x + " << beta << " * y " )
+                   "normalGEMV<" << TypeTraits<ValueType>::id() << ", #threads = " << omp_get_max_threads() << ">, result[" << numColumns << "] = " << alpha << " * A( coo, #vals = " << numValues << " ) * x + " << beta << " * y " )
 
     TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
@@ -415,7 +435,7 @@ void OpenMPCOOUtils::jacobi(
     const IndexType numRows )
 {
     SCAI_LOG_INFO( logger,
-                   "jacobi<" << getScalarType<ValueType>() << ">" << ", #rows = " << numRows << ", omega = " << omega )
+                   "jacobi<" << TypeTraits<ValueType>::id() << ">" << ", #rows = " << numRows << ", omega = " << omega )
 
     TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
@@ -481,6 +501,7 @@ void OpenMPCOOUtils::registerKernels( bool deleteFlag )
 #define LAMA_COO_UTILS2_REGISTER(z, J, TYPE )                                                                       \
     KernelRegistry::set<COOKernelTrait::setCSRData<TYPE, ARITHMETIC_HOST_TYPE_##J> >( setCSRData, Host, flag );     \
     KernelRegistry::set<COOKernelTrait::getCSRValues<TYPE, ARITHMETIC_HOST_TYPE_##J> >( getCSRValues, Host, flag ); \
+    KernelRegistry::set<COOKernelTrait::scaleRows<TYPE, ARITHMETIC_HOST_TYPE_##J> >( scaleRows, Host, flag );       \
 
 #define LAMA_COO_UTILS_REGISTER(z, I, _)                                                                   \
     KernelRegistry::set<COOKernelTrait::normalGEMV<ARITHMETIC_HOST_TYPE_##I> >( normalGEMV, Host, flag );  \

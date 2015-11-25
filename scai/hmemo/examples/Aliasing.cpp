@@ -43,7 +43,7 @@ SCAI_LOG_DEF_LOGGER( logger, "AliasTest" )
 
 using namespace scai;
 
-typedef hmemo::LAMAArray<double> Array;
+typedef hmemo::HArray<double> Array;
 
 void add ( Array& res, const Array& a, const Array& b )
 {
@@ -57,9 +57,9 @@ void add ( Array& res, const Array& a, const Array& b )
 
     // Be careful: read accesses should appear before write only access
 
-    hmemo::WriteOnlyAccess<double> write( res, hostCtx, n );
     hmemo::ReadAccess<double>read1( a, hostCtx );
     hmemo::ReadAccess<double>read2( b, hostCtx );
+    hmemo::WriteOnlyAccess<double> write( res, hostCtx, n );
  
     double* resPtr = write.get();
     const double* aPtr = read1.get();
@@ -112,9 +112,24 @@ void printIt( const Array& a )
 
 int main()
 {
-    Array a;
-    Array b( 10 , 1.0 );
-    Array c( 10 , 2.0 );
+    static int N = 10;
+
+    Array a, b, c;
+
+    // initialize b and c 
+
+    ContextPtr host = Context::getHostPtr();
+
+    {
+        WriteOnlyAccess<double> wB( b, host, N );
+        WriteOnlyAccess<double> wC( c, host, N );
+
+        for ( IndexType i = 0; i < N; ++i )
+        {
+            wB[i] = 1.0;
+            wC[i] = 2.0;
+        }
+    }
 
     add( a, b, c ); // this is okay
     add( a, a, b ); // this crashed in earlier versions

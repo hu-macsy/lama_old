@@ -167,7 +167,7 @@ bool MICContext::canUseMemory( const Memory& other ) const
 
 /* ----------------------------------------------------------------------------- */
 
-MemoryPtr MICContext::getMemoryPtr() const
+MemoryPtr MICContext::getLocalMemoryPtr() const
 {
     MemoryPtr memory;
 

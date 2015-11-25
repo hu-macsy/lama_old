@@ -84,7 +84,7 @@ int main()
     // Vector values for our multiplication.
     ValueType vectorValues[] = {   6.0f, 4.0f, 7.0f, -9.3f };
 
-    // All data has to be stored in LAMAArrays.
+    // All data has to be stored in LAMA Arrays.
     const LAMAArray<IndexType> matrixIA = LAMAArray<IndexType>( numRows + 1, ia );
     const LAMAArray<IndexType> matrixJA = LAMAArray<IndexType>( numValues, ja );
     const LAMAArray<ValueType> mValues  = LAMAArray<ValueType>( numValues, matrixValues );

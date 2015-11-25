@@ -43,11 +43,11 @@
 #include <scai/common/OpenMP.hpp>
 #include <scai/common/weak_ptr.hpp>
 
-using  scai::common::shared_ptr;
-using  scai::common::weak_ptr;
-
 namespace scai
 {
+
+using  common::shared_ptr;
+using  common::weak_ptr;
 
 namespace hmemo
 {
@@ -134,7 +134,7 @@ bool HostContext::canUseMemory( const Memory& other ) const
 
 /* ------------------------------------------------------------------------- */
 
-MemoryPtr HostContext::getMemoryPtr() const
+MemoryPtr HostContext::getLocalMemoryPtr() const
 {
     return HostMemory::getIt();
 }

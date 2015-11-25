@@ -43,6 +43,8 @@
 namespace scai
 {
 
+/** Namespace for all kernel implementations of BLAS routines. */
+ 
 namespace blaskernel
 {
 

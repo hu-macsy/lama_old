@@ -34,7 +34,7 @@
 #include <scai/lama/Communicator.hpp>
 
 // local library
-#include <scai/lama/LAMAArrayUtils.hpp>
+#include <scai/lama/HArrayUtils.hpp>
 
 #include <scai/lama/distribution/Distribution.hpp>
 #include <scai/lama/distribution/Halo.hpp>
@@ -362,8 +362,8 @@ IndexType Communicator::shift0(
 
 template<typename ValueType>
 void Communicator::shiftArray(
-    LAMAArray<ValueType>& recvArray,
-    const LAMAArray<ValueType>& sendArray,
+    HArray<ValueType>& recvArray,
+    const HArray<ValueType>& sendArray,
     const int direction ) const
 {
     SCAI_ASSERT_ERROR( &recvArray != &sendArray, "send and receive array are same, not allowed for shift" )
@@ -407,8 +407,8 @@ void Communicator::shiftArray(
 
 template<typename ValueType>
 SyncToken* Communicator::shiftAsync(
-    LAMAArray<ValueType>& recvArray,
-    const LAMAArray<ValueType>& sendArray,
+    HArray<ValueType>& recvArray,
+    const HArray<ValueType>& sendArray,
     const int direction ) const
 {
     SCAI_ASSERT_ERROR( &recvArray != &sendArray, "send and receive array are same, not allowed for shift" )
@@ -443,8 +443,8 @@ SyncToken* Communicator::shiftAsync(
 
 template<typename ValueType>
 void Communicator::updateHalo(
-    LAMAArray<ValueType> &haloValues,
-    const LAMAArray<ValueType>& localValues,
+    HArray<ValueType> &haloValues,
+    const HArray<ValueType>& localValues,
     const Halo& halo ) const
 {
     SCAI_REGION( "Communicator.updateHalo" )
@@ -469,9 +469,9 @@ void Communicator::updateHalo(
 
     IndexType numSendValues = providesPlan.totalQuantity();
 
-    LAMAArray<ValueType> sendValues( numSendValues ); //!< temporary array for send communication
+    HArray<ValueType> sendValues( numSendValues ); //!< temporary array for send communication
 
-    LAMAArrayUtils::gather( sendValues, localValues, halo.getProvidesIndexes() );
+    HArrayUtils::gather( sendValues, localValues, halo.getProvidesIndexes() );
 
     exchangeByPlan( haloValues, requiredPlan, sendValues, providesPlan );
 }
@@ -487,8 +487,8 @@ static void releaseArray( common::shared_ptr<ContextArray> array )
 
 template<typename ValueType>
 SyncToken* Communicator::updateHaloAsync(
-    LAMAArray<ValueType>& haloValues,
-    const LAMAArray<ValueType>& localValues,
+    HArray<ValueType>& haloValues,
+    const HArray<ValueType>& localValues,
     const Halo& halo ) const
 {
     SCAI_REGION( "Communicator.updateHaloAsync" )
@@ -513,7 +513,7 @@ SyncToken* Communicator::updateHaloAsync(
 
     IndexType numSendValues = providesPlan.totalQuantity();
 
-    common::shared_ptr<LAMAArray<ValueType> > sendValues( new LAMAArray<ValueType>( numSendValues ) );
+    common::shared_ptr<HArray<ValueType> > sendValues( new HArray<ValueType>( numSendValues ) );
 
     // put together the (send) values to provide for other partitions
 
@@ -585,10 +585,10 @@ void Communicator::computeOwners(
 
     // Allocate the maximal needed size for the communication buffers
 
-    LAMAArray<IndexType> indexesSendArray( receiveSize );
-    LAMAArray<IndexType> indexesReceiveArray( receiveSize );
-    LAMAArray<IndexType> ownersSendArray( receiveSize );
-    LAMAArray<IndexType> ownersReceiveArray( receiveSize );
+    HArray<IndexType> indexesSendArray( receiveSize );
+    HArray<IndexType> indexesReceiveArray( receiveSize );
+    HArray<IndexType> ownersSendArray( receiveSize );
+    HArray<IndexType> ownersReceiveArray( receiveSize );
 
     ContextPtr contextPtr = Context::getContextPtr( common::context::Host );
 
@@ -787,26 +787,26 @@ void Communicator::bcast( std::string& val, const PartitionId root ) const
     \
     template COMMON_DLL_IMPORTEXPORT                                \
     void Communicator::shiftArray(                                  \
-            LAMAArray<ARRAY_TYPE##I>& recvArray,                    \
-            const LAMAArray<ARRAY_TYPE##I>& sendArray,              \
+            HArray<ARRAY_TYPE##I>& recvArray,                    \
+            const HArray<ARRAY_TYPE##I>& sendArray,              \
             const int direction ) const;                            \
     \
     template COMMON_DLL_IMPORTEXPORT                                \
     SyncToken* Communicator::shiftAsync(                            \
-            LAMAArray<ARRAY_TYPE##I>& recvArray,                    \
-            const LAMAArray<ARRAY_TYPE##I>& sendArray,              \
+            HArray<ARRAY_TYPE##I>& recvArray,                    \
+            const HArray<ARRAY_TYPE##I>& sendArray,              \
             const int direction ) const;                            \
     \
     template COMMON_DLL_IMPORTEXPORT                                \
     void Communicator::updateHalo(                                  \
-            LAMAArray<ARRAY_TYPE##I>& haloValues,                   \
-            const LAMAArray<ARRAY_TYPE##I>& localValues,            \
+            HArray<ARRAY_TYPE##I>& haloValues,                   \
+            const HArray<ARRAY_TYPE##I>& localValues,            \
             const Halo& halo ) const;                               \
     \
     template COMMON_DLL_IMPORTEXPORT                                \
     SyncToken* Communicator::updateHaloAsync(                       \
-            LAMAArray<ARRAY_TYPE##I>& haloValues,                   \
-            const LAMAArray<ARRAY_TYPE##I>& localValues,            \
+            HArray<ARRAY_TYPE##I>& haloValues,                   \
+            const HArray<ARRAY_TYPE##I>& localValues,            \
             const Halo& halo ) const;                               \
      
 

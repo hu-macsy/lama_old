@@ -38,6 +38,7 @@
 #include <scai/hmemo.hpp>
 #include <scai/lama/COOKernelTrait.hpp>
 #include <scai/lama/LAMAKernel.hpp>
+#include <scai/lama/LAMAArray.hpp>
 
 #include <scai/common/test/TestMacros.hpp>
 

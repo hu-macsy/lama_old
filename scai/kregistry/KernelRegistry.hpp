@@ -267,7 +267,7 @@ private:
     		{
     			SCAI_LOG_INFO( KernelRegistry::logger, "Guardian --> delete Instance")
 
-				printAll();
+		//	printAll();
 
     			delete KernelRegistry::mInstance;
     		}

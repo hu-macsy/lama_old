@@ -7,7 +7,7 @@
  **/
 
 #include <scai/hmemo/Context.hpp>
-#include <scai/hmemo/LAMAArray.hpp>
+#include <scai/hmemo/HArray.hpp>
 #include <scai/hmemo/ReadAccess.hpp>
 #include <scai/hmemo/WriteOnlyAccess.hpp>
 #include <scai/common/Walltime.hpp>
@@ -38,7 +38,7 @@ void bench( ContextPtr host, ContextPtr device )
 
         for ( int i = 0; i < ITER; ++i )
         {
-            LAMAArray<double> array;
+            HArray<double> array;
 
             // write access always allocates the data on device
 
@@ -51,7 +51,7 @@ void bench( ContextPtr host, ContextPtr device )
 
         time = scai::common::Walltime::get();
 
-        LAMAArray<double> array;
+        HArray<double> array;
 
         for ( int i = 0; i < ITER; ++i )
         {

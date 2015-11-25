@@ -104,6 +104,29 @@ struct COOKernelTrait
         static const char* getId() { return "COO.offsets2ia"; }
     };
 
+    template<typename COOValueType, typename OtherValueType>
+    struct scaleRows
+    {
+
+        /** This operation multiplies each row with an own value.
+         *
+         *  @param[in,out] cooValues matrix data that is scaled
+         *  @param[in]     cooIA are the row indexes
+         *  @param[in]     rowValues array with scale factor for each row
+         *  @param[in]     numValues number of entries in cooValues and cooIA
+         *
+         *  This routine supports different precision for matrix values and scale values.
+         */
+
+        typedef void ( *FuncType ) ( 
+            COOValueType cooValues[],
+            const OtherValueType rowValues[],
+            const IndexType cooIA[],
+            const IndexType numValues );
+
+        static const char* getId() { return "COO.scaleRows"; }
+    };
+
     template<typename COOValueType, typename CSRValueType>
     struct getCSRValues
     {

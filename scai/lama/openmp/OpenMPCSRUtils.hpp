@@ -404,6 +404,17 @@ private:
         const IndexType csrIA[],
         const IndexType csrJA[],
         const ValueType csrValues[] );
+
+    template<typename ValueType>
+    static void normalGEVM_s(
+        ValueType result[],
+        std::pair<ValueType, const ValueType*> ax,
+        std::pair<ValueType, const ValueType*> by,
+        const IndexType numRows,
+        const IndexType numColumns,
+        const IndexType csrIA[],
+        const IndexType csrJA[],
+        const ValueType csrValues[] );
 };
 
 } /* end namespace lama */

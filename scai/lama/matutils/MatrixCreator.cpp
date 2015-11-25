@@ -405,9 +405,9 @@ void MatrixCreator<ValueType>::buildPoisson(
     // Allocate local matrix with correct sizes and correct first touch in case of OpenMP
     // ToDo: localMatrix( localSize, numColumns, numNonZeros, &myIA[0] );
 
-    hmemo::LAMAArray<IndexType> csrIA;
-    hmemo::LAMAArray<IndexType> csrJA;
-    hmemo::LAMAArray<ValueType> csrValues;
+    hmemo::HArray<IndexType> csrIA;
+    hmemo::HArray<IndexType> csrJA;
+    hmemo::HArray<ValueType> csrValues;
 
     {
         hmemo::WriteOnlyAccess<IndexType> ia( csrIA, localSize + 1 );

@@ -92,7 +92,7 @@ BOOST_AUTO_TEST_CASE( getMemoryTest )
 
 BOOST_AUTO_TEST_CASE( allocateTest )
 {
-    LAMAArray<int> ctxArray; // default, not allocated at all
+    HArray<int> ctxArray; // default, not allocated at all
     ContextPtr micContext = Context::getContextPtr( context::MIC );
     {
         WriteAccess<int> array( ctxArray, micContext );
@@ -112,7 +112,7 @@ BOOST_AUTO_TEST_CASE( useTest )
     const IndexType n = 100;
     const float value = 1.4;
     const float alpha = 0.5;
-    LAMAArray<float> vector( n, value );
+    HArray<float> vector( n, value );
     {
         WriteAccess<float> micV( vector, micContext );
         SCAI_CONTEXT_ACCESS( micContext );

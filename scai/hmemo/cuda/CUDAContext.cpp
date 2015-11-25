@@ -199,7 +199,7 @@ CUDAContext::~CUDAContext()
 
 /* ----------------------------------------------------------------------------- */
 
-MemoryPtr CUDAContext::getMemoryPtr() const
+MemoryPtr CUDAContext::getLocalMemoryPtr() const
 {
     MemoryPtr memory;
 

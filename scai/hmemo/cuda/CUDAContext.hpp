@@ -99,9 +99,9 @@ public:
     virtual MemoryPtr getHostMemoryPtr() const;
 
     /**
-     *  @brief Implementation of Context::getMemory for this class.
+     *  @brief Implementation of Context::getLocalMemory for this class.
      */
-    virtual MemoryPtr getMemoryPtr() const;
+    virtual MemoryPtr getLocalMemoryPtr() const;
 
     int getDeviceNr() const
     {

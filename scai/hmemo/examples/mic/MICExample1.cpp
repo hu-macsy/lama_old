@@ -105,7 +105,7 @@ int main()
 
     const IndexType N = 5;
 
-    LAMAArray<double> data( micContext );
+    HArray<double> data( micContext );
     
     std::cout << "data = " << data << std::endl;
 

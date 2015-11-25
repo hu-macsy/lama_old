@@ -41,7 +41,7 @@
 #include <scai/lama/ELLKernelTrait.hpp>
 #include <scai/lama/CSRKernelTrait.hpp>
 
-#include <scai/lama/LAMAArrayUtils.hpp>
+#include <scai/lama/HArrayUtils.hpp>
 
 // internal scai libraries
 #include <scai/blaskernel/BLASKernelTrait.hpp>
@@ -56,6 +56,7 @@
 #include <scai/common/bind.hpp>
 #include <scai/common/unique_ptr.hpp>
 #include <scai/common/Constants.hpp>
+#include <scai/common/TypeTraits.hpp>
 #include <scai/common/macros/print_string.hpp>
 #include <scai/common/exception/UnsupportedException.hpp>
 
@@ -125,9 +126,9 @@ ELLStorage<ValueType>::ELLStorage(
     const IndexType numRows,
     const IndexType numColumns,
     const IndexType numValuesPerRows,
-    const LAMAArray<IndexType>& ia,
-    const LAMAArray<IndexType>& ja,
-    const LAMAArray<ValueType>& values )
+    const HArray<IndexType>& ia,
+    const HArray<IndexType>& ja,
+    const HArray<ValueType>& values )
 
     : CRTPMatrixStorage<ELLStorage<ValueType>,ValueType>()
 {
@@ -376,9 +377,9 @@ void ELLStorage<ValueType>::clear()
 template<typename ValueType>
 template<typename OtherValueType>
 void ELLStorage<ValueType>::buildCSR(
-    LAMAArray<IndexType>& ia,
-    LAMAArray<IndexType>* ja,
-    LAMAArray<OtherValueType>* values,
+    HArray<IndexType>& ia,
+    HArray<IndexType>* ja,
+    HArray<OtherValueType>* values,
     const ContextPtr context ) const
 {
     SCAI_REGION( "Storage.ELL->CSR" )
@@ -431,9 +432,9 @@ void ELLStorage<ValueType>::setCSRDataImpl(
     const IndexType numRows,
     const IndexType numColumns,
     const IndexType numValues,
-    const LAMAArray<IndexType>& ia,
-    const LAMAArray<IndexType>& ja,
-    const LAMAArray<OtherValueType>& values,
+    const HArray<IndexType>& ia,
+    const HArray<IndexType>& ja,
+    const HArray<OtherValueType>& values,
     const ContextPtr context )
 {
     SCAI_REGION( "Storage.ELL<-CSR" )
@@ -555,8 +556,8 @@ void ELLStorage<ValueType>::setELLData(
     const IndexType numRows,
     const IndexType numColumns,
     const IndexType numValuesPerRow,
-    const LAMAArray<IndexType>& ia,
-    const LAMAArray<IndexType>& ja,
+    const HArray<IndexType>& ia,
+    const HArray<IndexType>& ja,
     const ContextArray& values )
 {
     SCAI_ASSERT_EQUAL_ERROR( numRows, ia.size() )
@@ -569,10 +570,10 @@ void ELLStorage<ValueType>::setELLData(
 
     ContextPtr loc = getContextPtr();
 
-    LAMAArrayUtils::assignImpl( mIA, ia, loc );
-    LAMAArrayUtils::assignImpl( mJA, ja, loc );
+    HArrayUtils::assignImpl( mIA, ia, loc );
+    HArrayUtils::assignImpl( mJA, ja, loc );
 
-    LAMAArrayUtils::assign( mValues, values, loc ); // supports type conversion
+    HArrayUtils::assign( mValues, values, loc ); // supports type conversion
 
     // fill up my arrays ja and values to make matrix-multiplication fast
 
@@ -634,7 +635,7 @@ void ELLStorage<ValueType>::setDiagonalImpl( const ValueType value )
 
 template<typename ValueType>
 template<typename OtherType>
-void ELLStorage<ValueType>::setDiagonalImpl( const LAMAArray<OtherType>& diagonal )
+void ELLStorage<ValueType>::setDiagonalImpl( const HArray<OtherType>& diagonal )
 {
     SCAI_LOG_INFO( logger, "setDiagonalImpl # diagonal = " << diagonal )
 
@@ -658,7 +659,7 @@ void ELLStorage<ValueType>::setDiagonalImpl( const LAMAArray<OtherType>& diagona
 
 template<typename ValueType>
 template<typename OtherType>
-void ELLStorage<ValueType>::getRowImpl( LAMAArray<OtherType>& row, const IndexType i ) const
+void ELLStorage<ValueType>::getRowImpl( HArray<OtherType>& row, const IndexType i ) const
 {
     SCAI_LOG_TRACE( logger, "getRowImpl # row = " << row << ", i = " << i )
 
@@ -683,7 +684,7 @@ void ELLStorage<ValueType>::getRowImpl( LAMAArray<OtherType>& row, const IndexTy
 
 template<typename ValueType>
 template<typename OtherType>
-void ELLStorage<ValueType>::getDiagonalImpl( LAMAArray<OtherType>& diagonal ) const
+void ELLStorage<ValueType>::getDiagonalImpl( HArray<OtherType>& diagonal ) const
 {
     SCAI_LOG_INFO( logger, "getDiagonalImpl # diagonal = " << diagonal )
 
@@ -727,7 +728,7 @@ void ELLStorage<ValueType>::scaleImpl( const ValueType value )
 
 template<typename ValueType>
 template<typename OtherValueType>
-void ELLStorage<ValueType>::scaleImpl( const LAMAArray<OtherValueType>& values )
+void ELLStorage<ValueType>::scaleImpl( const HArray<OtherValueType>& values )
 {
     SCAI_LOG_INFO( logger, "scaleImpl # values = " << values )
 
@@ -1014,11 +1015,11 @@ size_t ELLStorage<ValueType>::getMemoryUsageImpl() const
 
 template<typename ValueType>
 void ELLStorage<ValueType>::matrixTimesVector(
-    LAMAArray<ValueType>& result,
+    HArray<ValueType>& result,
     const ValueType alpha,
-    const LAMAArray<ValueType>& x,
+    const HArray<ValueType>& x,
     const ValueType beta,
-    const LAMAArray<ValueType>& y ) const
+    const HArray<ValueType>& y ) const
 {
     bool async = false; // synchronously execution, no SyncToken required
 
@@ -1031,11 +1032,11 @@ void ELLStorage<ValueType>::matrixTimesVector(
 
 template<typename ValueType>
 void ELLStorage<ValueType>::vectorTimesMatrix(
-    LAMAArray<ValueType>& result,
+    HArray<ValueType>& result,
     const ValueType alpha,
-    const LAMAArray<ValueType>& x,
+    const HArray<ValueType>& x,
     const ValueType beta,
-    const LAMAArray<ValueType>& y ) const
+    const HArray<ValueType>& y ) const
 {
     SCAI_LOG_INFO( logger,
                    *this << ": vectorTimesMatrix, result = " << result << ", alpha = " << alpha << ", x = " << x << ", beta = " << beta << ", y = " << y )
@@ -1106,11 +1107,11 @@ void ELLStorage<ValueType>::vectorTimesMatrix(
 
 template<typename ValueType>
 SyncToken* ELLStorage<ValueType>::matrixTimesVectorAsync(
-    LAMAArray<ValueType>& result,
+    HArray<ValueType>& result,
     const ValueType alpha,
-    const LAMAArray<ValueType>& x,
+    const HArray<ValueType>& x,
     const ValueType beta,
-    const LAMAArray<ValueType>& y ) const
+    const HArray<ValueType>& y ) const
 {
     bool async = true;
 
@@ -1125,11 +1126,11 @@ SyncToken* ELLStorage<ValueType>::matrixTimesVectorAsync(
 
 template<typename ValueType>
 SyncToken* ELLStorage<ValueType>::gemv(
-    LAMAArray<ValueType>& result,
+    HArray<ValueType>& result,
     const ValueType alpha,
-    const LAMAArray<ValueType>& x,
+    const HArray<ValueType>& x,
     const ValueType beta,
-    const LAMAArray<ValueType>& y,
+    const HArray<ValueType>& y,
     bool  async ) const
 {
     SCAI_REGION( "Storage.ELL.gemv" )
@@ -1143,7 +1144,7 @@ SyncToken* ELLStorage<ValueType>::gemv(
     {
         // so we just have result = beta * y, will be done synchronously
 
-        LAMAArrayUtils::assignScaled( result, beta, y, this->getContextPtr() );
+        HArrayUtils::assignScaled( result, beta, y, this->getContextPtr() );
 
         if ( async )
         {
@@ -1186,11 +1187,11 @@ SyncToken* ELLStorage<ValueType>::gemv(
 
 template<typename ValueType>
 SyncToken* ELLStorage<ValueType>::normalGEMV(
-    LAMAArray<ValueType>& result,
+    HArray<ValueType>& result,
     const ValueType alpha,
-    const LAMAArray<ValueType>& x,
+    const HArray<ValueType>& x,
     const ValueType beta,
-    const LAMAArray<ValueType>& y,
+    const HArray<ValueType>& y,
     bool async ) const
 {
     static LAMAKernel<ELLKernelTrait::normalGEMV<ValueType> > normalGEMV;
@@ -1239,9 +1240,9 @@ SyncToken* ELLStorage<ValueType>::normalGEMV(
 
 template<typename ValueType>
 SyncToken* ELLStorage<ValueType>::normalGEMV(
-    LAMAArray<ValueType>& result,
+    HArray<ValueType>& result,
     const ValueType alpha,
-    const LAMAArray<ValueType>& x,
+    const HArray<ValueType>& x,
     bool async ) const
 {
     static LAMAKernel<ELLKernelTrait::normalGEMV<ValueType> > normalGEMV;
@@ -1285,9 +1286,9 @@ SyncToken* ELLStorage<ValueType>::normalGEMV(
 
 template<typename ValueType>
 SyncToken* ELLStorage<ValueType>::sparseGEMV(
-    LAMAArray<ValueType>& result,
+    HArray<ValueType>& result,
     const ValueType alpha,
-    const LAMAArray<ValueType>& x,
+    const HArray<ValueType>& x,
     bool async ) const
 {
     static LAMAKernel<ELLKernelTrait::sparseGEMV<ValueType> > sparseGEMV;
@@ -1338,11 +1339,11 @@ SyncToken* ELLStorage<ValueType>::sparseGEMV(
 
 template<typename ValueType>
 SyncToken* ELLStorage<ValueType>::vectorTimesMatrixAsync(
-    LAMAArray<ValueType>& result,
+    HArray<ValueType>& result,
     const ValueType alpha,
-    const LAMAArray<ValueType>& x,
+    const HArray<ValueType>& x,
     const ValueType beta,
-    const LAMAArray<ValueType>& y ) const
+    const HArray<ValueType>& y ) const
 {
     SCAI_LOG_INFO( logger,
                    *this << ": vectorTimesMatrixAsync, result = " << result << ", alpha = " << alpha << ", x = " << x << ", beta = " << beta << ", y = " << y )
@@ -1366,11 +1367,11 @@ SyncToken* ELLStorage<ValueType>::vectorTimesMatrixAsync(
         // execution as separate thread
 
         void (ELLStorage::*pf)(
-            LAMAArray<ValueType>&,
+            HArray<ValueType>&,
             const ValueType,
-            const LAMAArray<ValueType>&,
+            const HArray<ValueType>&,
             const ValueType,
-            const LAMAArray<ValueType>& ) const
+            const HArray<ValueType>& ) const
 
             = &ELLStorage<ValueType>::vectorTimesMatrix;
 
@@ -1464,9 +1465,9 @@ SyncToken* ELLStorage<ValueType>::vectorTimesMatrixAsync(
 
 template<typename ValueType>
 void ELLStorage<ValueType>::jacobiIterate(
-    LAMAArray<ValueType>& solution,
-    const LAMAArray<ValueType>& oldSolution,
-    const LAMAArray<ValueType>& rhs,
+    HArray<ValueType>& solution,
+    const HArray<ValueType>& oldSolution,
+    const HArray<ValueType>& rhs,
     const ValueType omega ) const
 {
     SCAI_REGION( "Storage.ELL.jacobiIterate" )
@@ -1509,9 +1510,9 @@ void ELLStorage<ValueType>::jacobiIterate(
 
 template<typename ValueType>
 SyncToken* ELLStorage<ValueType>::jacobiIterateAsync(
-    LAMAArray<ValueType>& solution,
-    const LAMAArray<ValueType>& oldSolution,
-    const LAMAArray<ValueType>& rhs,
+    HArray<ValueType>& solution,
+    const HArray<ValueType>& oldSolution,
+    const HArray<ValueType>& rhs,
     const ValueType omega ) const
 {
     SCAI_REGION( "Storage.ELL.jacobiIterateAsync" )
@@ -1525,9 +1526,9 @@ SyncToken* ELLStorage<ValueType>::jacobiIterateAsync(
         // used later in OpenMP to generate a TaskSyncToken
 
         void (ELLStorage::*jb)(
-            LAMAArray<ValueType>&,
-            const LAMAArray<ValueType>&,
-            const LAMAArray<ValueType>&,
+            HArray<ValueType>&,
+            const HArray<ValueType>&,
+            const HArray<ValueType>&,
             const ValueType omega ) const
 
             = &ELLStorage<ValueType>::jacobiIterate;
@@ -1589,9 +1590,9 @@ SyncToken* ELLStorage<ValueType>::jacobiIterateAsync(
 
 template<typename ValueType>
 void ELLStorage<ValueType>::jacobiIterateHalo(
-    LAMAArray<ValueType>& localSolution,
+    HArray<ValueType>& localSolution,
     const MatrixStorage<ValueType>& localStorage,
-    const LAMAArray<ValueType>& haloOldSolution,
+    const HArray<ValueType>& haloOldSolution,
     const ValueType omega ) const
 {
     SCAI_REGION( "Storage.ELL.jacobiIterateHalo" )
@@ -1604,11 +1605,11 @@ void ELLStorage<ValueType>::jacobiIterateHalo(
     SCAI_ASSERT_DEBUG( localStorage.hasDiagonalProperty(), localStorage << ": has not diagonal property" )
     SCAI_ASSERT_EQUAL_DEBUG( mNumColumns, haloOldSolution.size() )
 
-    const LAMAArray<ValueType>* localDiagonal;
+    const HArray<ValueType>* localDiagonal;
 
     // might be we need a temporary LAMA array for the local diagonal
 
-    common::shared_ptr<LAMAArray<ValueType> > tmpLocalDiagonal;
+    common::shared_ptr<HArray<ValueType> > tmpLocalDiagonal;
 
     if( localStorage.getFormat() == Format::ELL )
     {
@@ -1624,7 +1625,7 @@ void ELLStorage<ValueType>::jacobiIterateHalo(
 
         SCAI_LOG_WARN( logger, "local stroage is not ELL, temorary needed for diagonal" )
 
-        tmpLocalDiagonal = common::shared_ptr<LAMAArray<ValueType> >( new LAMAArray<ValueType>() );
+        tmpLocalDiagonal = common::shared_ptr<HArray<ValueType> >( new HArray<ValueType>() );
         localStorage.getDiagonal( *tmpLocalDiagonal );
         localDiagonal = tmpLocalDiagonal.get();
 
@@ -1639,9 +1640,9 @@ void ELLStorage<ValueType>::jacobiIterateHalo(
 
 template<typename ValueType>
 void ELLStorage<ValueType>::jacobiIterateHalo(
-    LAMAArray<ValueType>& localSolution,
-    const LAMAArray<ValueType>& localDiagonal,
-    const LAMAArray<ValueType>& haloOldSolution,
+    HArray<ValueType>& localSolution,
+    const HArray<ValueType>& localDiagonal,
+    const HArray<ValueType>& haloOldSolution,
     const ValueType omega ) const
 {
     SCAI_REGION( "Storage.ELL.jacobiIterateHalo" )
@@ -1729,7 +1730,7 @@ ValueType ELLStorage<ValueType>::l2Norm() const
 
 	SCAI_CONTEXT_ACCESS( loc );
 
-	return ::sqrt(dot[loc]( mValues.size(), data.get(), 1, data.get(), 1 ));
+	return common::TypeTraits<ValueType>::sqrt(dot[loc]( mValues.size(), data.get(), 1, data.get(), 1 ));
 }
 
 /* --------------------------------------------------------------------------- */

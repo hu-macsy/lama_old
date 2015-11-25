@@ -75,9 +75,9 @@ void setCSRData( StorageType& storage )
     BOOST_CHECK_EQUAL( int( sizeof( values ) / sizeof( double ) ), numValues );
     BOOST_CHECK_EQUAL( sizeof( values ) / sizeof( double ), sizeof( ja ) / sizeof( IndexType ) );
     BOOST_CHECK_EQUAL( int( sizeof( ia ) / sizeof( IndexType ) ), numRows + 1 );
-    LAMAArray<IndexType> csrIas;
-    LAMAArray<IndexType> csrJas;
-    LAMAArray<ValueType> csrValues;
+    HArray<IndexType> csrIas;
+    HArray<IndexType> csrJas;
+    HArray<ValueType> csrValues;
     WriteOnlyAccess<IndexType> myIa( csrIas, numRows + 1 );
     WriteOnlyAccess<IndexType> myJa( csrJas, numValues );
     WriteOnlyAccess<ValueType> myData( csrValues, numValues );

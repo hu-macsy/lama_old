@@ -1,5 +1,5 @@
 /**
- * @file VectorData.hpp
+ * @file ContextArray.cpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,25 +25,25 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Records to combine arguments
+ * @brief Implementations of class ContextArray.
+ *
  * @author Thomas Brandes
- * @date 02.11.2015
+ * @date 03.07.2015
  */
 
-#pragma once
+#include <scai/hmemo/ContextArray.hpp>
 
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
-struct VectorData
+namespace scai
 {
-    ValueType scalar;
-    const ValueType* vector;
+namespace hmemo
+{
 
-    VectorData( ValueType scalar, const ValueType* vector )
-    {
-        this->scalar = scalar;
-        this->vector = vector;
-    }
-};
+/* ---------------------------------------------------------------------------------*/
 
+SCAI_LOG_DEF_LOGGER( ContextArray::logger, "HArray" )
+
+/* ---------------------------------------------------------------------------------*/
+
+} /* end namespace hmemo */
+
+} /* end namespace scai */

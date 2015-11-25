@@ -36,6 +36,7 @@
 
 // others
 #include <scai/lama/LAMAKernel.hpp>
+#include <scai/lama/LAMAArray.hpp>
 #include <scai/lama/UtilKernelTrait.hpp>
 #include <scai/hmemo.hpp>
 

@@ -1,5 +1,5 @@
 /**
- * @file LAMAArrayUtils.hpp
+ * @file HArrayUtils.hpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -32,11 +32,10 @@
  */
 #pragma once
 
+#include <scai/lama/Scalar.hpp>
+
 // for dll_import
 #include <scai/common/config.hpp>
-
-// local library
-#include <scai/lama/Scalar.hpp>
 
 // internal scai libraries
 #include <scai/hmemo.hpp>
@@ -51,20 +50,20 @@ namespace lama
 
 /** Class that contains some utility routines used at several places. */
 
-class COMMON_DLL_IMPORTEXPORT LAMAArrayUtils
+class COMMON_DLL_IMPORTEXPORT HArrayUtils
 {
 
 public:
 
-    /** Static method for LAMAArray assignment with type conversions.
+    /** Static method for HArray assignment with type conversions.
      *
      *  @param[out] target   contains copy of source values
      *  @param[in]  source   array with source values
      *  @param[in]  context  specifies optionally at which context target will have valid values
      *
      *  \code
-     *  LAMAArray<float> fvalues;
-     *  LAMAArray<double> dvalues;
+     *  HArray<float> fvalues;
+     *  HArray<double> dvalues;
      *  ...
      *  dvalues = fvalues;   // not supported
      *  assign( dvalues, fvalues );  // supported
@@ -74,31 +73,36 @@ public:
     static void assign( hmemo::ContextArray& target, const hmemo::ContextArray& source, hmemo::ContextPtr context = hmemo::ContextPtr() );
 
     template<typename ValueType1,typename ValueType2>
-    static void assignImpl( hmemo::LAMAArray<ValueType1>& target, const hmemo::LAMAArray<ValueType2>& source, hmemo::ContextPtr context );
+    static void assignImpl( hmemo::HArray<ValueType1>& target, const hmemo::HArray<ValueType2>& source, hmemo::ContextPtr context );
 
     template<typename ValueType1,typename ValueType2>
     static void gather(
-        hmemo::LAMAArray<ValueType1>& target,
-        const hmemo::LAMAArray<ValueType2>& source,
-        const hmemo::LAMAArray<IndexType>& index );
+        hmemo::HArray<ValueType1>& target,
+        const hmemo::HArray<ValueType2>& source,
+        const hmemo::HArray<IndexType>& index );
 
     template<typename ValueType1>
-    static void assignScalar( hmemo::LAMAArray<ValueType1>& target, const Scalar& value, hmemo::ContextPtr context )
+    static void assignScalar( hmemo::HArray<ValueType1>& target, const ValueType1 value, hmemo::ContextPtr context )
                     __attribute__( ( noinline ) );
 
     static void assignScalar( hmemo::ContextArray& target, const Scalar& value, hmemo::ContextPtr context );
 
-    /** This method sets a single value in a LAMA array.
+    /** This method sets a single value in a heterogeneous array.
      *
-     *  @param[in,out] target LAMA array where a value to set
+     *  @param[in,out] array  Harray where a value to set
      *  @param[in]     index  position to set ( 0 <= index < target.size() )
      *  @param[in]     val    value to set
+     *
+     *  The value will be set at a valid context.
      */
 
     template<typename ValueType>
-    static void setVal( hmemo::LAMAArray<ValueType>& target, const IndexType index, ValueType val );
+    static void setVal( hmemo::HArray<ValueType>& target, const IndexType index, ValueType val );
 
-    /** Scaled assignment on LAMAArray.
+    template<typename ValueType>
+    static ValueType getVal( const hmemo::HArray<ValueType>& array, const IndexType index );
+
+    /** Scaled assignment on HArray.
      *
      *  @param[out] result  output array
      *  @param[in]  beta    scaling factor
@@ -108,17 +112,18 @@ public:
 
     template<typename ValueType>
     static void assignScaled(
-        hmemo::LAMAArray<ValueType>& result,
+        hmemo::HArray<ValueType>& result,
         const ValueType beta,
-        const hmemo::LAMAArray<ValueType>& y,
+        const hmemo::HArray<ValueType>& y,
         hmemo::ContextPtr context );
 
 private:
 
     template<typename ValueType>
-    static void assignImpl1( hmemo::LAMAArray<ValueType>& target, const hmemo::ContextArray& source, hmemo::ContextPtr context );
+    static void assignImpl1( hmemo::HArray<ValueType>& target, const hmemo::ContextArray& source, hmemo::ContextPtr context );
 
-    SCAI_LOG_DECL_STATIC_LOGGER( logger )};
+    SCAI_LOG_DECL_STATIC_LOGGER( logger )
+};
 
 } /* end namespace lama */
 

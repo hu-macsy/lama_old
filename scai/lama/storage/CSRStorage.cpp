@@ -38,7 +38,7 @@
 #include <scai/lama/UtilKernelTrait.hpp>
 #include <scai/lama/CSRKernelTrait.hpp>
 
-#include <scai/lama/LAMAArrayUtils.hpp>
+#include <scai/lama/HArrayUtils.hpp>
 #include <scai/lama/LAMAKernel.hpp>
 
 #include <scai/lama/storage/StorageMethods.hpp>
@@ -61,15 +61,10 @@
 #include <scai/common/macros/print_string.hpp>
 #include <scai/common/exception/UnsupportedException.hpp>
 #include <scai/tasking/NoSyncToken.hpp>
+#include <scai/common/TypeTraits.hpp>
 
 // boost
 #include <boost/preprocessor.hpp>
-
-// std
-#include <cmath>
-
-using std::abs;
-
 
 namespace scai
 {
@@ -77,6 +72,7 @@ namespace scai
 using namespace hmemo;
 using common::unique_ptr;
 using common::shared_ptr;
+using common::TypeTraits;
 
 using tasking::SyncToken;
 
@@ -103,8 +99,8 @@ CSRStorage<ValueType>::CSRStorage(
     const IndexType numRows,
     const IndexType numColumns,
     const IndexType numValues,
-    const LAMAArray<IndexType>& ia,
-    const LAMAArray<IndexType>& ja,
+    const HArray<IndexType>& ia,
+    const HArray<IndexType>& ja,
     const ContextArray& values )
 
     : CRTPMatrixStorage<CSRStorage<ValueType>,ValueType>()
@@ -308,9 +304,9 @@ void CSRStorage<ValueType>::setCSRDataImpl(
     const IndexType numRows,
     const IndexType numColumns,
     const IndexType numValues,
-    const LAMAArray<IndexType>& ia,
-    const LAMAArray<IndexType>& ja,
-    const LAMAArray<OtherValueType>& values,
+    const HArray<IndexType>& ia,
+    const HArray<IndexType>& ja,
+    const HArray<OtherValueType>& values,
     const ContextPtr /* loc */)
 {
     ContextPtr loc = this->getContextPtr();
@@ -321,7 +317,7 @@ void CSRStorage<ValueType>::setCSRDataImpl(
 
         // checking is done where ia is already valid, preferred is loc
 
-        ContextPtr loc1 = sum.getValidContext( ia.getValidContext( loc->getType() ) );
+        ContextPtr loc1 = sum.getValidContext( ia.getValidContext( loc ) );
 
         ReadAccess<IndexType> csrIA( ia, loc1 );
 
@@ -340,7 +336,7 @@ void CSRStorage<ValueType>::setCSRDataImpl(
 
         // checking is done where ia is already valid
 
-        ContextPtr loc1 = validOffsets.getValidContext( ia.getValidContext( loc->getType() ) );
+        ContextPtr loc1 = validOffsets.getValidContext( ia.getValidContext( loc ) );
 
         ReadAccess<IndexType> csrIA( ia, loc1 );
 
@@ -394,7 +390,7 @@ void CSRStorage<ValueType>::setCSRDataImpl(
             WriteOnlyAccess<IndexType> myIA( mIa, loc, mNumRows + 1 );
         }
 
-        LAMAArrayUtils::assign( mIa, ia, loc );
+        HArrayUtils::assign( mIa, ia, loc );
 
         {
             static LAMAKernel<CSRKernelTrait::sizes2offsets> sizes2offsets;
@@ -412,11 +408,11 @@ void CSRStorage<ValueType>::setCSRDataImpl(
     }
     else
     {
-        LAMAArrayUtils::assign( mIa, ia, loc );
+        HArrayUtils::assign( mIa, ia, loc );
     }
 
-    LAMAArrayUtils::assign( mValues, values, loc );
-    LAMAArrayUtils::assign( mJa, ja, loc );
+    HArrayUtils::assign( mValues, values, loc );
+    HArrayUtils::assign( mJa, ja, loc );
 
     /* do not sort rows, destroys diagonal property during redistribute
 
@@ -455,9 +451,9 @@ void CSRStorage<ValueType>::setCSRDataSwap(
     const IndexType numRows,
     const IndexType numColumns,
     const IndexType numValues,
-    LAMAArray<IndexType>& ia,
-    LAMAArray<IndexType>& ja,
-    LAMAArray<OtherValueType>& values,
+    HArray<IndexType>& ia,
+    HArray<IndexType>& ja,
+    HArray<OtherValueType>& values,
     const ContextPtr /* loc */)
 {
     //set necessary information
@@ -566,9 +562,9 @@ void CSRStorage<ValueType>::redistributeCSR( const CSRStorage<ValueType>& other,
     {
         // due to alias we need temporary array
 
-        LAMAArray<IndexType> targetIA;
-        LAMAArray<IndexType> targetJA;
-        LAMAArray<ValueType> targetValues;
+        HArray<IndexType> targetIA;
+        HArray<IndexType> targetJA;
+        HArray<ValueType> targetValues;
 
         StorageMethods<ValueType>::redistributeCSR( targetIA, targetJA, targetValues, other.getIA(), other.getJA(),
                 other.getValues(), redistributor );
@@ -673,7 +669,7 @@ void CSRStorage<ValueType>::compress( const ValueType eps /* = 0.0 */)
                 continue;
             }
 
-            if( abs( values[jj] ) <= eps )
+            if ( TypeTraits<ValueType>::abs( values[jj] ) <= eps )
             {
                 ++nonDiagZeros;
             }
@@ -689,8 +685,8 @@ void CSRStorage<ValueType>::compress( const ValueType eps /* = 0.0 */)
 
     const IndexType newNumValues = mJa.size() - nonDiagZeros;
 
-    LAMAArray<ValueType> newValuesArray;
-    LAMAArray<IndexType> newJaArray;
+    HArray<ValueType> newValuesArray;
+    HArray<IndexType> newJaArray;
 
     WriteOnlyAccess<ValueType> newValues( newValuesArray, newNumValues );
     WriteOnlyAccess<IndexType> newJa( newJaArray, newNumValues );
@@ -701,7 +697,7 @@ void CSRStorage<ValueType>::compress( const ValueType eps /* = 0.0 */)
     {
         for( IndexType jj = ia[i] + gap; jj < ia[i + 1]; ++jj )
         {
-            if( abs( values[jj] ) <= eps && ja[jj] != i )
+            if( TypeTraits<ValueType>::abs( values[jj] ) <= eps && ja[jj] != i )
             {
                 ++gap;
                 continue;
@@ -745,7 +741,7 @@ void CSRStorage<ValueType>::swap( CSRStorage<ValueType>& other )
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void CSRStorage<ValueType>::swap( LAMAArray<IndexType>& ia, LAMAArray<IndexType>& ja, LAMAArray<ValueType>& values )
+void CSRStorage<ValueType>::swap( HArray<IndexType>& ia, HArray<IndexType>& ja, HArray<ValueType>& values )
 {
     SCAI_ASSERT_EQUAL_ERROR( ia.size(), mNumRows + 1 )
 
@@ -909,22 +905,36 @@ void CSRStorage<ValueType>::setDiagonalImpl( const ValueType value )
 
 template<typename ValueType>
 template<typename OtherValueType>
-void CSRStorage<ValueType>::setDiagonalImpl( const LAMAArray<OtherValueType>& diagonal )
+void CSRStorage<ValueType>::setDiagonalImpl( const HArray<OtherValueType>& diagonal )
 {
     IndexType numDiagonalElements = diagonal.size();
 
+    if ( numDiagonalElements > mNumRows )
     {
-        ReadAccess<OtherValueType> rDiagonal( diagonal );
-        ReadAccess<IndexType> csrIA( mIa );
+        numDiagonalElements = mNumRows; 
+    }
 
-        WriteAccess<ValueType> wValues( mValues ); // partial setting
+    {
+        static LAMAKernel<UtilKernelTrait::setScatter<ValueType, OtherValueType> > setScatter;
+
+        ContextPtr loc = setScatter.getValidContext( this->getContextPtr() );
+
+        SCAI_LOG_INFO( logger, "set diagonal<" << TypeTraits<ValueType>::id() << ", " 
+                        << TypeTraits<OtherValueType>::id() << "> ( " << numDiagonalElements << " ) @ " << *loc )
+        
+        SCAI_CONTEXT_ACCESS( loc )
+
+        ReadAccess<OtherValueType> rDiagonal( diagonal, loc );
+        ReadAccess<IndexType> csrIA( mIa, loc );
+
+        WriteAccess<ValueType> wValues( mValues, loc );     // partial setting
 
         //  wValues[ wIa[ i ] ] = rDiagonal[ i ];
 
-        OpenMPUtils::setScatter( wValues.get(), csrIA.get(), rDiagonal.get(), numDiagonalElements );
+        setScatter[loc]( wValues.get(), csrIA.get(), rDiagonal.get(), numDiagonalElements );
     }
 
-    if( SCAI_LOG_TRACE_ON( logger ) )
+    if ( SCAI_LOG_TRACE_ON( logger ) )
     {
         SCAI_LOG_TRACE( logger, "CSR after setDiagonal" )
         print();
@@ -935,7 +945,7 @@ void CSRStorage<ValueType>::setDiagonalImpl( const LAMAArray<OtherValueType>& di
 
 template<typename ValueType>
 template<typename OtherType>
-void CSRStorage<ValueType>::getRowImpl( LAMAArray<OtherType>& row, const IndexType i ) const
+void CSRStorage<ValueType>::getRowImpl( HArray<OtherType>& row, const IndexType i ) const
 {
     SCAI_ASSERT_DEBUG( i >= 0 && i < mNumRows, "row index " << i << " out of range" )
 
@@ -976,7 +986,7 @@ void CSRStorage<ValueType>::getRowImpl( LAMAArray<OtherType>& row, const IndexTy
 
 template<typename ValueType>
 template<typename OtherValueType>
-void CSRStorage<ValueType>::getDiagonalImpl( LAMAArray<OtherValueType>& diagonal ) const
+void CSRStorage<ValueType>::getDiagonalImpl( HArray<OtherValueType>& diagonal ) const
 {
     const IndexType numDiagonalElements = std::min( mNumColumns, mNumRows );
 
@@ -1013,7 +1023,7 @@ void CSRStorage<ValueType>::scaleImpl( const ValueType value )
 
 template<typename ValueType>
 template<typename OtherValueType>
-void CSRStorage<ValueType>::scaleImpl( const LAMAArray<OtherValueType>& diagonal )
+void CSRStorage<ValueType>::scaleImpl( const HArray<OtherValueType>& diagonal )
 {
     IndexType n = std::min( mNumRows, diagonal.size() );
 
@@ -1092,13 +1102,13 @@ void CSRStorage<ValueType>::assignTranspose( const MatrixStorage<ValueType>& oth
 
     _MatrixStorage::_assignTranspose( other );
 
-    // pass LAMAArrays of this storage to build the values in it
+    // pass HArrays of this storage to build the values in it
 
     if( &other == this )
     {
-        LAMAArray<IndexType> tmpIA;
-        LAMAArray<IndexType> tmpJA;
-        LAMAArray<ValueType> tmpValues;
+        HArray<IndexType> tmpIA;
+        HArray<IndexType> tmpJA;
+        HArray<ValueType> tmpValues;
 
         other.buildCSCData( tmpIA, tmpJA, tmpValues );
         swap( tmpIA, tmpJA, tmpValues );
@@ -1132,9 +1142,9 @@ void CSRStorage<ValueType>::copyTo( _MatrixStorage& other ) const
 template<typename ValueType>
 template<typename OtherValueType>
 void CSRStorage<ValueType>::buildCSR(
-    LAMAArray<IndexType>& ia,
-    LAMAArray<IndexType>* ja,
-    LAMAArray<OtherValueType>* values,
+    HArray<IndexType>& ia,
+    HArray<IndexType>* ja,
+    HArray<OtherValueType>* values,
     const ContextPtr prefLoc ) const
 {
     static LAMAKernel<CSRKernelTrait::offsets2sizes> offsets2sizes;
@@ -1189,9 +1199,9 @@ void CSRStorage<ValueType>::buildCSR(
 
 template<typename ValueType>
 void CSRStorage<ValueType>::buildCSCData(
-    LAMAArray<IndexType>& colIA,
-    LAMAArray<IndexType>& colJA,
-    LAMAArray<ValueType>& colValues ) const
+    HArray<IndexType>& colIA,
+    HArray<IndexType>& colJA,
+    HArray<ValueType>& colValues ) const
 {
     SCAI_LOG_INFO( logger, *this << ": buildCSCData by call of CSR2CSC" )
 
@@ -1247,13 +1257,13 @@ void CSRStorage<ValueType>::splitHalo(
         numRows = rowDist->getLocalSize();
     }
 
-    LAMAArray<IndexType> localIA;
-    LAMAArray<IndexType> localJA;
-    LAMAArray<ValueType> localValues;
+    HArray<IndexType> localIA;
+    HArray<IndexType> localJA;
+    HArray<ValueType> localValues;
 
-    LAMAArray<IndexType> haloIA;
-    LAMAArray<IndexType> haloJA;
-    LAMAArray<ValueType> haloValues;
+    HArray<IndexType> haloIA;
+    HArray<IndexType> haloJA;
+    HArray<ValueType> haloValues;
 
     StorageMethods<ValueType>::splitCSR( localIA, localJA, localValues, haloIA, haloJA, haloValues, mIa, mJa, mValues,
                                          colDist, rowDist );
@@ -1297,11 +1307,11 @@ void CSRStorage<ValueType>::splitHalo(
 
 template<typename ValueType>
 void CSRStorage<ValueType>::matrixTimesVector(
-    LAMAArray<ValueType>& result,
+    HArray<ValueType>& result,
     const ValueType alpha,
-    const LAMAArray<ValueType>& x,
+    const HArray<ValueType>& x,
     const ValueType beta,
-    const LAMAArray<ValueType>& y ) const
+    const HArray<ValueType>& y ) const
 {
     bool async = false; // synchronously execution, no SyncToken required
 
@@ -1314,11 +1324,11 @@ void CSRStorage<ValueType>::matrixTimesVector(
 
 template<typename ValueType>
 void CSRStorage<ValueType>::vectorTimesMatrix(
-    LAMAArray<ValueType>& result,
+    HArray<ValueType>& result,
     const ValueType alpha,
-    const LAMAArray<ValueType>& x,
+    const HArray<ValueType>& x,
     const ValueType beta,
-    const LAMAArray<ValueType>& y ) const
+    const HArray<ValueType>& y ) const
 {
     SCAI_LOG_INFO( logger,
                    *this << ": vectorTimesMatrix, result = " << result << ", alpha = " << alpha << ", x = " << x << ", beta = " << beta << ", y = " << y )
@@ -1390,12 +1400,12 @@ void CSRStorage<ValueType>::vectorTimesMatrix(
 
 template<typename ValueType>
 void CSRStorage<ValueType>::matrixTimesVectorN(
-    LAMAArray<ValueType>& result,
+    HArray<ValueType>& result,
     const IndexType n,
     const ValueType alpha,
-    const LAMAArray<ValueType>& x,
+    const HArray<ValueType>& x,
     const ValueType beta,
-    const LAMAArray<ValueType>& y ) const
+    const HArray<ValueType>& y ) const
 {
     SCAI_LOG_INFO( logger,
                    *this << ": matrixTimesVector, result = " << result << ", alpha = " << alpha << ", x = " << x << ", beta = " << beta << ", y = " << y )
@@ -1437,9 +1447,9 @@ void CSRStorage<ValueType>::matrixTimesVectorN(
 
 template<typename ValueType>
 SyncToken* CSRStorage<ValueType>::sparseGEMV(
-    LAMAArray<ValueType>& result,
+    HArray<ValueType>& result,
     const ValueType alpha,
-    const LAMAArray<ValueType>& x,
+    const HArray<ValueType>& x,
     bool async ) const
 {
     static LAMAKernel<CSRKernelTrait::sparseGEMV<ValueType> > sparseGEMV;
@@ -1490,11 +1500,11 @@ SyncToken* CSRStorage<ValueType>::sparseGEMV(
 
 template<typename ValueType>
 SyncToken* CSRStorage<ValueType>::normalGEMV(
-    LAMAArray<ValueType>& result,
+    HArray<ValueType>& result,
     const ValueType alpha,
-    const LAMAArray<ValueType>& x,
+    const HArray<ValueType>& x,
     const ValueType beta,
-    const LAMAArray<ValueType>& y,
+    const HArray<ValueType>& y,
     bool async ) const
 {
     static LAMAKernel<CSRKernelTrait::normalGEMV<ValueType> > normalGEMV;
@@ -1543,9 +1553,9 @@ SyncToken* CSRStorage<ValueType>::normalGEMV(
 
 template<typename ValueType>
 SyncToken* CSRStorage<ValueType>::normalGEMV(
-    LAMAArray<ValueType>& result,
+    HArray<ValueType>& result,
     const ValueType alpha,
-    const LAMAArray<ValueType>& x,
+    const HArray<ValueType>& x,
     bool async ) const
 {
     static LAMAKernel<CSRKernelTrait::normalGEMV<ValueType> > normalGEMV;
@@ -1591,11 +1601,11 @@ SyncToken* CSRStorage<ValueType>::normalGEMV(
 
 template<typename ValueType>
 SyncToken* CSRStorage<ValueType>::gemv(
-    LAMAArray<ValueType>& result,
+    HArray<ValueType>& result,
     const ValueType alpha,
-    const LAMAArray<ValueType>& x,
+    const HArray<ValueType>& x,
     const ValueType beta,
-    const LAMAArray<ValueType>& y,
+    const HArray<ValueType>& y,
     bool  async ) const
 {
     SCAI_REGION( "Storage.CSR.gemv" )
@@ -1609,7 +1619,7 @@ SyncToken* CSRStorage<ValueType>::gemv(
     {
         // so we just have result = beta * y, will be done synchronously
 
-        LAMAArrayUtils::assignScaled( result, beta, y, this->getContextPtr() );
+        HArrayUtils::assignScaled( result, beta, y, this->getContextPtr() );
 
         if ( async )
         {
@@ -1652,11 +1662,11 @@ SyncToken* CSRStorage<ValueType>::gemv(
 
 template<typename ValueType>
 SyncToken* CSRStorage<ValueType>::matrixTimesVectorAsync(
-    LAMAArray<ValueType>& result,
+    HArray<ValueType>& result,
     const ValueType alpha,
-    const LAMAArray<ValueType>& x,
+    const HArray<ValueType>& x,
     const ValueType beta,
-    const LAMAArray<ValueType>& y ) const
+    const HArray<ValueType>& y ) const
 {
     bool async = true;
 
@@ -1671,11 +1681,11 @@ SyncToken* CSRStorage<ValueType>::matrixTimesVectorAsync(
 
 template<typename ValueType>
 SyncToken* CSRStorage<ValueType>::vectorTimesMatrixAsync(
-    LAMAArray<ValueType>& result,
+    HArray<ValueType>& result,
     const ValueType alpha,
-    const LAMAArray<ValueType>& x,
+    const HArray<ValueType>& x,
     const ValueType beta,
-    const LAMAArray<ValueType>& y ) const
+    const HArray<ValueType>& y ) const
 {
     SCAI_LOG_INFO( logger,
                    *this << ": vectorTimesMatrixAsync, result = " << result << ", alpha = " << alpha << ", x = " << x << ", beta = " << beta << ", y = " << y )
@@ -1692,11 +1702,11 @@ SyncToken* CSRStorage<ValueType>::vectorTimesMatrixAsync(
         // execution as separate thread
 
         void ( CSRStorage::*pf )(
-            LAMAArray<ValueType>&,
+            HArray<ValueType>&,
             const ValueType,
-            const LAMAArray<ValueType>&,
+            const HArray<ValueType>&,
             const ValueType,
-            const LAMAArray<ValueType>& ) const
+            const HArray<ValueType>& ) const
 
             = &CSRStorage<ValueType>::vectorTimesMatrix;
 
@@ -1795,9 +1805,9 @@ SyncToken* CSRStorage<ValueType>::vectorTimesMatrixAsync(
 
 template<typename ValueType>
 void CSRStorage<ValueType>::jacobiIterate(
-    LAMAArray<ValueType>& solution,
-    const LAMAArray<ValueType>& oldSolution,
-    const LAMAArray<ValueType>& rhs,
+    HArray<ValueType>& solution,
+    const HArray<ValueType>& oldSolution,
+    const HArray<ValueType>& rhs,
     const ValueType omega ) const
 {
     SCAI_REGION( "Storage.CSR.jacobiIterate" )
@@ -1839,9 +1849,9 @@ void CSRStorage<ValueType>::jacobiIterate(
 
 template<typename ValueType>
 void CSRStorage<ValueType>::jacobiIterateHalo(
-    LAMAArray<ValueType>& localSolution,
+    HArray<ValueType>& localSolution,
     const MatrixStorage<ValueType>& localStorage,
-    const LAMAArray<ValueType>& oldHaloSolution,
+    const HArray<ValueType>& oldHaloSolution,
     const ValueType omega ) const
 {
     SCAI_REGION( "Storage.CSR.jacobiIterateHalo" )
@@ -1908,9 +1918,9 @@ void CSRStorage<ValueType>::jacobiIterateHalo(
 
 template<typename ValueType>
 void CSRStorage<ValueType>::jacobiIterateHalo(
-    LAMAArray<ValueType>& localSolution,
-    const LAMAArray<ValueType>& localDiagonal,
-    const LAMAArray<ValueType>& oldHaloSolution,
+    HArray<ValueType>& localSolution,
+    const HArray<ValueType>& localDiagonal,
+    const HArray<ValueType>& oldHaloSolution,
     const ValueType omega ) const
 {
     SCAI_REGION( "Storage.CSR.jacobiIterateHalo" )
@@ -2303,7 +2313,7 @@ ValueType CSRStorage<ValueType>::l2Norm() const
 
     SCAI_CONTEXT_ACCESS( loc );
 
-    return ::sqrt(dot[loc]( mNumValues, data.get(), 1, data.get(), 1 ));
+    return TypeTraits<ValueType>::sqrt(dot[loc]( mNumValues, data.get(), 1, data.get(), 1 ));
 }
 
 /* --------------------------------------------------------------------------- */
@@ -2417,9 +2427,9 @@ CSRStorage<ValueType>* CSRStorage<ValueType>::copy() const
 }
 
 template<typename ValueType>
-void CSRStorage<ValueType>::buildSparseRowSizes( LAMAArray<IndexType>& rowSizes ) const
+void CSRStorage<ValueType>::buildSparseRowSizes( HArray<IndexType>& rowSizes ) const
 {
-    SCAI_LOG_DEBUG( logger, "copy nnz for each row in LAMAArray" );
+    SCAI_LOG_DEBUG( logger, "copy nnz for each row in HArray" );
 
     WriteOnlyAccess<IndexType> writeRowSizes( rowSizes, mNumRows );
     ReadAccess<IndexType> csrIA( mIa );
@@ -2431,8 +2441,8 @@ void CSRStorage<ValueType>::buildSparseRowSizes( LAMAArray<IndexType>& rowSizes 
 
 template<typename ValueType>
 void CSRStorage<ValueType>::buildSparseRowData(
-    LAMAArray<IndexType>& sparseJA,
-    LAMAArray<ValueType>& sparseValues ) const
+    HArray<IndexType>& sparseJA,
+    HArray<ValueType>& sparseValues ) const
 {
     SCAI_LOG_INFO( logger, *this << ": build sparse row data" );
 
@@ -2459,9 +2469,9 @@ void CSRStorage<ValueType>::buildSparseRowData(
             const IndexType numRows,                                               \
             const IndexType numColumns,                                            \
             const IndexType numValues,                                             \
-            LAMAArray<IndexType>& ia,                                              \
-            LAMAArray<IndexType>& ja,                                              \
-            LAMAArray<ARITHMETIC_HOST_TYPE_##I>& values,                           \
+            HArray<IndexType>& ia,                                              \
+            HArray<IndexType>& ja,                                              \
+            HArray<ARITHMETIC_HOST_TYPE_##I>& values,                           \
             const ContextPtr loc );                                                \
 
     BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_CSR_STORAGE_INSTANTIATE, _ )

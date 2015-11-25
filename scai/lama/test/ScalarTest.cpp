@@ -36,7 +36,7 @@
 
 #include <scai/lama/Scalar.hpp>
 #include <scai/common/Complex.hpp>
-#include <scai/common/ScalarType.hpp>
+#include <scai/common/TypeTraits.hpp>
 
 #include <scai/common/test/TestMacros.hpp>
 

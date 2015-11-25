@@ -1,5 +1,5 @@
 /**
- * @file LAMAArrayRef.hpp
+ * @file HArrayRef.hpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -36,7 +36,7 @@
 #pragma once
 
 // base classes
-#include <scai/hmemo/LAMAArray.hpp>
+#include <scai/hmemo/HArray.hpp>
 
 // local library
 #include <scai/hmemo/HostMemory.hpp>
@@ -48,7 +48,7 @@ namespace hmemo
 {
 
 /**
- * @brief LAMAArrayRef is a container that uses already allocated Host memory
+ * @brief HArrayRef is a container that uses already allocated Host memory
  *
  * @tparam ValueType is the type stored in this container.
  *
@@ -60,34 +60,34 @@ namespace hmemo
  * would cause reallocation of data at the host throws an exception.
  */
 template<typename ValueType>
-class COMMON_DLL_IMPORTEXPORT LAMAArrayRef: public LAMAArray<ValueType>
+class COMMON_DLL_IMPORTEXPORT HArrayRef: public HArray<ValueType>
 {
 public:
 
     /** Contruct a container for a host array. */
 
-    LAMAArrayRef( IndexType size, ValueType* pointer );
+    HArrayRef( IndexType size, ValueType* pointer );
 
     /** Contruct a container for a const host array.
      *  Due to the const pointer it is guaranteed that the array cannot be modified
      */
 
-    LAMAArrayRef( IndexType size, const ValueType* pointer );
+    HArrayRef( IndexType size, const ValueType* pointer );
 
 protected:
 
-    using LAMAArray<ValueType>::mSize;
-    using LAMAArray<ValueType>::mValueSize;
+    using HArray<ValueType>::mSize;
+    using HArray<ValueType>::mValueSize;
 
-    using LAMAArray<ValueType>::mContextDataManager;
-    using LAMAArray<ValueType>::constFlag;
+    using HArray<ValueType>::mContextDataManager;
+    using HArray<ValueType>::constFlag;
 };
 
 /* ---------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-LAMAArrayRef<ValueType>::LAMAArrayRef( IndexType size, ValueType* pointer )
-                : LAMAArray<ValueType>()
+HArrayRef<ValueType>::HArrayRef( IndexType size, ValueType* pointer )
+                : HArray<ValueType>()
 {
     // Important: context must be set to the DefaultHostContext
 
@@ -105,8 +105,8 @@ LAMAArrayRef<ValueType>::LAMAArrayRef( IndexType size, ValueType* pointer )
 /* ---------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-LAMAArrayRef<ValueType>::LAMAArrayRef( IndexType size, const ValueType* pointer )
-                : LAMAArray<ValueType>()
+HArrayRef<ValueType>::HArrayRef( IndexType size, const ValueType* pointer )
+                : HArray<ValueType>()
 {
     // Important: context must be set to the DefaultHostContext
 
