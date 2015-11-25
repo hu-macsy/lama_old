@@ -39,6 +39,9 @@ project ( scai_common CXX )
 ### Set Module Path
 set ( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../CMake/Modules" )
 
+# TODO: Placeholder
+set ( SCAI_COMMON_VERSION 1.0.1 )
+
 ### Include Compiler Flags
 if    ( NOT SCAI_COMPLETE_BUILD )
 	include ( SetBuildFlags )
@@ -152,6 +155,11 @@ relative_install ( FILES ${CXX_HEADERS} DESTINATION include/scai/common )
 
 ## install library.hpp
 install ( FILES ../common.hpp DESTINATION include/scai )
+
+## install examples
+configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/examples/make.inc.in" "${CMAKE_CURRENT_BINARY_DIR}/examples/make.inc" )
+install ( DIRECTORY examples/ DESTINATION share/examples/scaicommon-${SCAI_COMMON_VERSION} FILES_MATCHING REGEX "^.*.(c|h)pp$" )
+install ( FILES examples/Makefile ${CMAKE_CURRENT_BINARY_DIR}/examples/make.inc DESTINATION share/examples/scaicommon-${SCAI_COMMON_VERSION} )
 
 ## add custum target distClean
 include ( DistClean )
