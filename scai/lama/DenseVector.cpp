@@ -1254,9 +1254,12 @@ void DenseVector<ValueType>::writeVectorToMMFile( const std::string& filename, c
 
     for( IndexType ii = 0; ii < numRows; ++ii )
     {
-        ofile << ii + 1;
 
-        if( dataType != File::PATTERN )
+        if( dataType == File::PATTERN )
+        {
+            ofile << ii + 1;
+        }
+        else
         {
             ofile << " " << dataRead[ii];
         }
@@ -1549,18 +1552,17 @@ void DenseVector<ValueType>::readVectorFromMMFile( const std::string& fileName )
         std::getline( ifile, line );
         std::istringstream reader( line );
 
-        reader >> i;
-
-	if( isPattern )
+        if( isPattern )
         {
+            reader >> i;
             val = 1.0;
+            i--;
         }
         else
-	{
+        {
             reader >> val;
-	}
-
-        i--;
+            i = l;
+        }
 
         vPtr[i] = val;
 
