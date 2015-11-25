@@ -47,18 +47,6 @@ set ( Boost_DETAILED_FAILURE_MSG TRUE )
 
 find_package ( Boost ${SCAI_FIND_PACKAGE_FLAGS} COMPONENTS thread system )
 
-if    ( Boost_THREAD_FOUND )
-    if    ( Boost_SYSTEM_FOUND )
-        include_directories ( ${Boost_INCLUDE_DIR} )
-        add_executable ( LogThreads LogThreads.cpp )
-        target_link_libraries ( LogThreads scai_logging ${Boost_THREAD_LIBRARY} ${Boost_SYSTEM_LIBRARY} )
-    else  ( Boost_SYSTEM_FOUND )
-        message ( STATUS "Boost system library not found" )
-    endif ( Boost_SYSTEM_FOUND )
-else  ( Boost_THREAD_FOUND )
-    message ( STATUS "Boost thread library not found" )
-endif ( Boost_THREAD_FOUND )
-
 # OpenMPTest example
 
 include ( Package/OpenMP )
@@ -71,3 +59,8 @@ if    ( OPENMP_FOUND )
 else  ( OPENMP_FOUND )
     message ( STATUS "LogOpenMP example not built, no compiler option found" )
 endif ( OPENMP_FOUND )
+
+## install examples
+configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/make.inc.in" "${CMAKE_CURRENT_BINARY_DIR}/make.inc" )
+install ( DIRECTORY ./ DESTINATION share/examples/scai-logging-${SCAI_LOGGING_VERSION} FILES_MATCHING PATTERN "*.cpp" )
+install ( FILES Makefile ${CMAKE_CURRENT_BINARY_DIR}/make.inc DESTINATION share/examples/scai-logging-${SCAI_LOGGING_VERSION} )
