@@ -37,6 +37,16 @@ cmake_minimum_required ( VERSION 2.8 )
 ### Set PROJECT NAME / supported LANGUAGES
 project ( LAMA CXX )
 
+### Set version of LAMA
+# TOOD: where is the best place to define this?
+set ( SCAI_LAMA_VERSION_NAME "Alpamayo" )
+set ( SCAI_LAMA_COPYRIGHT_YEAR 2015 )
+set ( SCAI_LAMA_VERSION_MAJOR 1 )
+set ( SCAI_LAMA_VERSION_MINOR 0 )
+set ( SCAI_LAMA_VERSION_PATCH 1 )
+set ( SCAI_LAMA_VERSION_COUNT 3 )
+set ( SCAI_LAMA_VERSION ${SCAI_LAMA_VERSION_MAJOR}.${SCAI_LAMA_VERSION_MINOR}.${SCAI_LAMA_VERSION_PATCH} )
+
 ### Set Module Path
 set ( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../CMake/Modules" )
 

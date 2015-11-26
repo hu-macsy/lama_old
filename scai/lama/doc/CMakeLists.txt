@@ -46,6 +46,7 @@ if ( BUILD_DOC )
     set ( SCAI_TASKING_DOC_DIR ${CMAKE_INSTALL_PREFIX}/share/doc/scai-tasking-${LAMA_VERSION}/ )
     set ( SCAI_HMEMO_DOC_DIR ${CMAKE_INSTALL_PREFIX}/share/doc/scai-hmemo-${LAMA_VERSION}/ )
     set ( SCAI_KREGISTRY_DOC_DIR ${CMAKE_INSTALL_PREFIX}/share/doc/scai-kregistry-${LAMA_VERSION}/ )
+    set ( SCAI_BLASKERNEL_DOC_DIR ${CMAKE_INSTALL_PREFIX}/share/doc/scai-blaskernel-${LAMA_VERSION}/ )
     
     # Sphinx configuration file conf.py will be generated with correct LAMA version, copyright, etc.
     # must be in same directory as Sphinx source files
