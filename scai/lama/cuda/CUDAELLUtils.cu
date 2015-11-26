@@ -516,6 +516,11 @@ void CUDAELLUtils::getCSRValues(
     SCAI_LOG_INFO( logger,
                    "get CSRValues<" << TypeTraits<ELLValueType>::id() << ", " << TypeTraits<CSRValueType>::id() << ">" << ", #rows = " << numRows )
 
+    if ( numRows == 0 )
+    {
+        return;   // do not call the kernel as launch configuration params will be invalid
+    }
+
     SCAI_CHECK_CUDA_ACCESS
 
     const int blockSize = CUDASettings::getBlockSize();
@@ -591,6 +596,11 @@ void CUDAELLUtils::setCSRValues(
     SCAI_LOG_DEBUG( logger,
                     "ellJA = " << ellJA << ", ellValues = " << ellValues << ", ellSizes = " << ellSizes << ", csrIA = " << csrIA << ", csrJA = " << csrJA << ", csrValues = " << csrValues )
 
+    if ( numRows == 0 )
+    {
+        return;   // do not call the kernel as launch configuration params will be invalid
+    }
+
     SCAI_CHECK_CUDA_ACCESS
 
     const int blockSize = CUDASettings::getBlockSize();
@@ -649,6 +659,11 @@ void CUDAELLUtils::fillELLValues(
     const IndexType numValuesPerRow )
 {
     SCAI_LOG_INFO( logger, "fill ELLValues<" << TypeTraits<ValueType>::id() )
+
+    if ( numRows == 0 )
+    {
+        return;   // do not call the kernel as launch configuration params will be invalid
+    }
 
     SCAI_CHECK_CUDA_ACCESS
 

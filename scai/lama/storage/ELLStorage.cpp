@@ -384,41 +384,52 @@ void ELLStorage<ValueType>::buildCSR(
 {
     SCAI_REGION( "Storage.ELL->CSR" )
 
-    static LAMAKernel<UtilKernelTrait::set<IndexType, IndexType> > set;
-    static LAMAKernel<ELLKernelTrait::getCSRValues<ValueType, OtherValueType> > getCSRValues;
-    static LAMAKernel<CSRKernelTrait::sizes2offsets> sizes2offsets;
-
-    const ContextPtr loc = getCSRValues.getValidContext( sizes2offsets, set, context );
-
     SCAI_LOG_INFO( logger,
                    "buildCSR<" << common::getScalarType<OtherValueType>() << ">" 
                     << " from ELL<" << common::getScalarType<ValueType>() << ">" 
-                    << " on " << *loc << " ( preferred on " << *context << " )" )
+                    << " on " << *context << " ( preferred )" )
 
-    ReadAccess<IndexType> ellSizes( mIA, loc );
-    WriteAccess<IndexType> csrIA( ia, loc );
+    // step 1 : compute IA offsets
 
-    csrIA.resize( mNumRows + 1 );
+    IndexType numValues = 0;
 
-    SCAI_CONTEXT_ACCESS( loc )
-
-    // just copy the size array mIA
-
-    set[loc]( csrIA.get(), ellSizes.get(), mNumRows );
-
-    if( ja == NULL || values == NULL )
     {
-        csrIA.resize( mNumRows );
-        return;
+        static LAMAKernel<UtilKernelTrait::set<IndexType, IndexType> > set;
+        static LAMAKernel<CSRKernelTrait::sizes2offsets> sizes2offsets;
+
+        const ContextPtr loc = set.getValidContext( sizes2offsets, set, context );
+  
+        ReadAccess<IndexType> ellSizes( mIA, loc );
+        WriteOnlyAccess<IndexType> csrIA( ia, loc, mNumRows + 1 );
+
+        SCAI_CONTEXT_ACCESS( loc )
+
+        // just copy the size array mIA
+
+        set[loc]( csrIA.get(), ellSizes.get(), mNumRows );
+
+        if( ja == NULL || values == NULL )
+        {
+            csrIA.resize( mNumRows );
+            return;
+        }
+
+        numValues = sizes2offsets[loc]( csrIA.get(), mNumRows );
     }
 
-    IndexType numValues = sizes2offsets[loc]( csrIA.get(), mNumRows );
+    static LAMAKernel<ELLKernelTrait::getCSRValues<ValueType, OtherValueType> > getCSRValues;
+
+    const ContextPtr loc = getCSRValues.getValidContext( context );
 
     ReadAccess<IndexType> ellJA( mJA, loc );
     ReadAccess<ValueType> ellValues( mValues, loc );
+    ReadAccess<IndexType> csrIA( ia, loc );
+    ReadAccess<IndexType> ellSizes( mIA, loc );
 
     WriteOnlyAccess<IndexType> csrJA( *ja, loc, numValues );
     WriteOnlyAccess<OtherValueType> csrValues( *values, loc, numValues );
+
+    SCAI_CONTEXT_ACCESS( loc )
 
     getCSRValues[loc]( csrJA.get(), csrValues.get(), csrIA.get(), mNumRows, mNumValuesPerRow, 
                        ellSizes.get(), ellJA.get(), ellValues.get() );
