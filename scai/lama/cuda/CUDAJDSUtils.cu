@@ -513,16 +513,20 @@ void CUDAJDSUtils::sortRows( IndexType array[], IndexType perm[], const IndexTyp
 
     SCAI_LOG_INFO( logger, "sort " << n << " rows by sizes" )
 
-    SCAI_CHECK_CUDA_ACCESS
+    if ( n > 1 )
+    {
 
-    thrust::device_ptr<IndexType> array_d( array );
-    thrust::device_ptr<IndexType> perm_d( perm );
+        SCAI_CHECK_CUDA_ACCESS
 
-    // stable sort, descending order, so override default comparison
+        thrust::device_ptr<IndexType> array_d( array );
+        thrust::device_ptr<IndexType> perm_d( perm );
+    
+        // stable sort, descending order, so override default comparison
 
-    thrust::stable_sort_by_key( array_d, array_d + n, perm_d, thrust::greater<IndexType>() );
+        thrust::stable_sort_by_key( array_d, array_d + n, perm_d, thrust::greater<IndexType>() );
 
-    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "JDS: synchronize for sortRows FAILED" )
+        SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "JDS: synchronize for sortRows FAILED" )
+    }
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -725,6 +729,11 @@ void CUDAJDSUtils::getCSRValues(
 
     SCAI_LOG_INFO( logger,
                    "get CSRValues<" << TypeTraits<JDSValueType>::id() << ", " << TypeTraits<CSRValueType>::id() << ">" << ", #rows = " << numRows )
+
+    if ( numRows < 1 )
+    {
+        return;  // do not launch kernel, invalid configuration
+    }
 
     SCAI_CHECK_CUDA_ACCESS
 
@@ -2910,7 +2919,7 @@ void CUDAJDSUtils::sparseGEVM(
 
 void CUDAJDSUtils::registerKernels( bool deleteFlag )
 {
-    SCAI_LOG_INFO( logger, "set JDS routines for CUDA in Interface" )
+    SCAI_LOG_INFO( logger, "set JDS routines for CUDA in Interface, delete = " << deleteFlag )
 
     using kregistry::KernelRegistry;
     using common::context::CUDA;

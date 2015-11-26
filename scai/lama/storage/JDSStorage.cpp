@@ -670,7 +670,7 @@ void JDSStorage<ValueType>::setupData( ContextPtr context )
 template<typename ValueType>
 void JDSStorage<ValueType>::sortRows( ContextPtr context )
 {
-    SCAI_LOG_INFO( logger, *this << "sortRows, number of jagged diagonals = " << mNumDiagonals )
+    SCAI_LOG_INFO( logger, *this << "sortRows, #rows = " << mNumRows )
 
     static LAMAKernel<UtilKernelTrait::maxval<IndexType> > maxval;
     static LAMAKernel<JDSKernelTrait::sortRows> sortRows;
@@ -684,6 +684,8 @@ void JDSStorage<ValueType>::sortRows( ContextPtr context )
     SCAI_CONTEXT_ACCESS( loc )
 
     mNumDiagonals = maxval[loc]( ilg.get(), mNumRows );
+
+    SCAI_LOG_INFO( logger, *this << "sortRows on " << *loc << ", #jagged diagonals = " << mNumDiagonals )
 
     sortRows[loc]( ilg.get(), perm.get(), mNumRows );
 }
@@ -735,6 +737,8 @@ void JDSStorage<ValueType>::buildCSR(
     IndexType numValues = sizes2offsets[loc]( wCsrIA.get(), mNumRows );
 
     SCAI_ASSERT_EQUAL_DEBUG( numValues, mNumValues )
+
+    SCAI_LOG_DEBUG( logger, "buildCSR from JDS with " << mNumValues << " values" )
 
     // temporary array for inverse permutation
     HArray<IndexType> invPermArray; // allows to find a CSR row in JDS rows
