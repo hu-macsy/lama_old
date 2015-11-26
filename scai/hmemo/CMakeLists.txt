@@ -37,7 +37,7 @@ cmake_minimum_required ( VERSION 2.8 )
 ### Set PROJECT NAME / supported LANGUAGES
 project( scai_hmemo CXX )
 
-### Set version of Common
+### Set version of hmemo 
 # TOOD: where is the best place to define this?
 set ( SCAI_HMEMO_VERSION_NAME "Alpamayo" )
 set ( SCAI_HMEMO_COPYRIGHT_YEAR 2015 )
