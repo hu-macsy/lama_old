@@ -52,12 +52,7 @@ dim3 blockDim;
 dim3 threadIdx;
 dim3 gridDim;
 int warpSize;
-#define min(a,b) a
-#define max(a,b) a
 #endif
-
-#define MIN(a,b) ((a>b)?b:a)
-#define MAX(a,b) ((a<b)?b:a)
 
 /**
  * @brief the maximum grid size in one dimension.
@@ -75,7 +70,11 @@ const unsigned int lama_maxGridSize_cuda = 65535;
  */
 inline dim3 makeGrid( const unsigned int numThreads, const unsigned int blockSize )
 {
-    const unsigned int numBlocks = ( numThreads + blockSize - 1 ) / blockSize;
+    // launch a kernel with numBlocks == 0 results in runtime error
+
+    const unsigned int numBlocks = numThreads > 0 ? ( numThreads + blockSize - 1 ) / blockSize : 1;
+
+    // will be safe as there is always check for legal value 0 <= ithread < numThreads
 
     if( numBlocks <= lama_maxGridSize_cuda )
     {
