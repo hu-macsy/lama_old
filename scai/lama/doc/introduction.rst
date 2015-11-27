@@ -67,6 +67,8 @@ The supported features of the actual release are listed below:
     - GPU
 
       - CUDA
+      
+    - MIC (OpenMP optimized)
 
  - distributions
  
@@ -80,21 +82,49 @@ The supported features of the actual release are listed below:
    
  - solvers
  
-   - direct solvers
+   - direct solver
+
+     - InverseSolver
+
+   - iterative solver
+
+     - splitting methods
+  
+       - Jacobi 
+ 
+         - DefaultJacobi
    
-     - inverse solver
+         - SpecializedJacobi
+      
+       - Richardson
+    
+       - SOR
+    
+     - krylov subspace methods
+    
+       - BiCG
      
-   - iterative solvers
+       - BiCGstab
    
-     - jacobi method
-     
-     - conjugated gradiant (CG) method
-     
-     - successive over-relaxation (SOR) method
-     
-     - generalized minimal residual (GMRES) method
-     
-     - simple algebraic multigrid (SAMG) method
+       - CG
+    
+       - CGNR
+    
+       - CGS
+ 
+       - GMRES
+    
+       - MINRES
+    
+       - TFQMR
+    
+     - multigrid methods
+ 
+       - SimpleAMG
+
+   - generative solver
+
+     - :doc:`MetaSolver <solver/metasolver>`
     
 Work in progress that you can find in our feature branches and that will come with next releases are:
  
