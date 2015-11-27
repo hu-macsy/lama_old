@@ -34,20 +34,28 @@
 ### Set required CMake version
 cmake_minimum_required ( VERSION 2.8 )
 
+### Set version of Logging
+# TOOD: where is the best place to define this?
+set ( SCAI_LOGGING_VERSION_NAME "Alpamayo" )
+set ( SCAI_LOGGING_COPYRIGHT_YEAR 2015 )
+set ( SCAI_LOGGING_VERSION_MAJOR 1 )
+set ( SCAI_LOGGING_VERSION_MINOR 0 )
+set ( SCAI_LOGGING_VERSION_PATCH 1 )
+set ( SCAI_LOGGING_VERSION_COUNT 3 )
+set ( SCAI_LOGGING_VERSION ${SCAI_LOGGING_VERSION_MAJOR}.${SCAI_LOGGING_VERSION_MINOR}.${SCAI_LOGGING_VERSION_PATCH} )
+
 ### Set PROJECT NAME / supported LANGUAGES
 project( scai_logging CXX )
 
 ### Set Module Path
 set ( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../CMake/Modules" )
 
-# TODO: Placeholder
-set ( SCAI_LOGGING_VERSION 1.0.1 )
-
 ### Include Compiler Flags
 if    ( NOT SCAI_COMPLETE_BUILD )
 	include ( SetBuildFlags )
 	include ( SCAIAssert )
 	include ( SetCPPFlags )
+	include ( Package/Sphinx )
 else  ( NOT SCAI_COMPLETE_BUILD )
 	include ( Functions/CheckValueAtCompleteBuild )
 	CheckValueAtCompleteBuild ( logging )
@@ -55,7 +63,7 @@ endif ( NOT SCAI_COMPLETE_BUILD )
 
 ### include all search packages
 include ( InternalDependencies )
-#no external dependencies
+# no external dependencies
 
 foreach    ( PACKAGE_TO_FIND ${SCAI_LOGGING_INTERNAL_DEPS} )
     find_package ( ${PACKAGE_TO_FIND} ${SCAI_FIND_PACKAGE_FLAGS} REQUIRED )
@@ -139,8 +147,8 @@ install ( FILES ../logging.hpp DESTINATION include/scai )
 enable_testing()
 add_test ( logging_test test/test.sh )
 
-### add userdoc
-include ( Package/Sphinx )
+### add documentation
+add_subdirectory( doc )
 
 ## add custom target docclean
 include ( DocClean )

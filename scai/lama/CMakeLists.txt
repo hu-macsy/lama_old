@@ -37,6 +37,16 @@ cmake_minimum_required ( VERSION 2.8 )
 ### Set PROJECT NAME / supported LANGUAGES
 project ( LAMA CXX )
 
+### Set version of LAMA
+# TOOD: where is the best place to define this?
+set ( SCAI_LAMA_VERSION_NAME "Alpamayo" )
+set ( SCAI_LAMA_COPYRIGHT_YEAR 2015 )
+set ( SCAI_LAMA_VERSION_MAJOR 1 )
+set ( SCAI_LAMA_VERSION_MINOR 0 )
+set ( SCAI_LAMA_VERSION_PATCH 1 )
+set ( SCAI_LAMA_VERSION_COUNT 3 )
+set ( SCAI_LAMA_VERSION ${SCAI_LAMA_VERSION_MAJOR}.${SCAI_LAMA_VERSION_MINOR}.${SCAI_LAMA_VERSION_PATCH} )
+
 ### Set Module Path
 set ( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../CMake/Modules" )
 
@@ -47,6 +57,7 @@ if    ( NOT SCAI_COMPLETE_BUILD )
 	include ( SetBuildFlags )
 	include ( SCAIAssert )
 	include ( SetCPPFlags )
+	include ( Package/Sphinx )
 else  ( NOT SCAI_COMPLETE_BUILD )
 	include ( Functions/CheckValueAtCompleteBuild )
 	CheckValueAtCompleteBuild ( lama )
@@ -141,6 +152,7 @@ scai_project(
     )
 
 ### add subdirectories ###
+add_subdirectory( doc )
 
 ## CUDA
 if ( CUDA_FOUND AND USE_CUDA AND CUDA_HAVE_GPU )
@@ -176,6 +188,7 @@ add_subdirectory ( storage )
 if ( FOUND_BOOST_TEST AND BUILD_TEST )
     add_subdirectory ( test )
 endif ( FOUND_BOOST_TEST AND BUILD_TEST )
+
 
 ### set link directories ###
 if ( WIN32 )

@@ -36,17 +36,25 @@ cmake_minimum_required ( VERSION 2.8 )
 ### Set PROJECT NAME / supported LANGUAGES
 project ( scai_common CXX )
 
+### Set version of Common
+# TOOD: where is the best place to define this?
+set ( SCAI_COMMON_VERSION_NAME "Alpamayo" )
+set ( SCAI_COMMON_COPYRIGHT_YEAR 2015 )
+set ( SCAI_COMMON_VERSION_MAJOR 1 )
+set ( SCAI_COMMON_VERSION_MINOR 0 )
+set ( SCAI_COMMON_VERSION_PATCH 1 )
+set ( SCAI_COMMON_VERSION_COUNT 3 )
+set ( SCAI_COMMON_VERSION ${SCAI_COMMON_VERSION_MAJOR}.${SCAI_COMMON_VERSION_MINOR}.${SCAI_COMMON_VERSION_PATCH} )
+
 ### Set Module Path
 set ( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../CMake/Modules" )
-
-# TODO: Placeholder
-set ( SCAI_COMMON_VERSION 1.0.1 )
 
 ### Include Compiler Flags
 if    ( NOT SCAI_COMPLETE_BUILD )
 	include ( SetBuildFlags )
 	include ( SCAIAssert )
 	include ( SetCPPFlags )
+	include ( Package/Sphinx )
 else  ( NOT SCAI_COMPLETE_BUILD )
 	include ( Functions/CheckValueAtCompleteBuild )
 	CheckValueAtCompleteBuild ( common )
@@ -155,6 +163,9 @@ relative_install ( FILES ${CXX_HEADERS} DESTINATION include/scai/common )
 
 ## install library.hpp
 install ( FILES ../common.hpp DESTINATION include/scai )
+
+### add documentation
+add_subdirectory( doc )
 
 ## add custum target distClean
 include ( DistClean )

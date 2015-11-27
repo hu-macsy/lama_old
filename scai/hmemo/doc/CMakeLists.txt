@@ -1,5 +1,5 @@
 ###
- # @file PackageDoxygen.cmake
+ # @file CMakeLists.cmake
  #
  # @license
  # Copyright (c) 2009-2013
@@ -25,45 +25,43 @@
  # SOFTWARE.
  # @endlicense
  #
- # @brief findPackage and configuration of doxygen
+ # @brief configuration of sphinx
  # @author Jan Ecker
- # @date 25.04.2013
- # @since 1.0.0
+ # @date 03.11.2015
+ # @since 1.0.1
 ###
 
-find_package ( Doxygen ${SCAI_FIND_PACKAGE_FLAGS} )
+#find_package ( Sphinx ${SCAI_FIND_PACKAGE_FLAGS} )
 
-### DOXYGEN DOCUMENTATION ###
+### SPHINX DOCUMENTATION ###
 
-if    ( DOXYGEN_FOUND )
+if ( BUILD_DOC )
     ### install ###
     set ( LAMA_DOC_DIR "${CMAKE_SOURCE_DIR}/doc" )
-    set ( DOXYGEN_BUILD_ROOT "${CMAKE_CURRENT_BINARY_DIR}/doc" )
-    set ( DOXYGEN_INSTALL_ROOT ${CMAKE_INSTALL_PREFIX})
-    file ( MAKE_DIRECTORY ${DOXYGEN_BUILD_ROOT} )
+    set ( SPHINX_BUILD_ROOT "${CMAKE_CURRENT_BINARY_DIR}" )
+    set ( SPHINX_INSTALL_ROOT ${CMAKE_INSTALL_PREFIX}/share/doc/scai-hmemo-${SCAI_HMEMO_VERSION} )
     
-    configure_file ( "${LAMA_DOC_DIR}/LAMA.Doxyfile.in" "${CMAKE_CURRENT_BINARY_DIR}/doc/LAMA.Doxyfile" )
-
-   # The initial rm command gets rid of everything previously built by this
-   # custom command.
-
+    # Sphinx configuration file conf.py will be generated with correct LAMA version, copyright, etc.
+    # must be in same directory as Sphinx source files
+    configure_file ( "${CMAKE_SOURCE_DIR}/doc/conf.py.in" "${SPHINX_BUILD_ROOT}/conf.py" )
+    
+    # Add custom command for building the userdoc
     add_custom_command (
-        OUTPUT ${DOXYGEN_BUILD_ROOT}/html/index.html
-        #COMMAND rm -rf ${DOXYGEN_BUILD_ROOT}
-        #COMMAND mkdir ${DOXYGEN_BUILD_ROOT}
-        COMMAND ${DOXYGEN_EXECUTABLE} LAMA.Doxyfile
-        DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/doc/LAMA.Doxyfile
-        WORKING_DIRECTORY ${DOXYGEN_BUILD_ROOT}
+        OUTPUT ${SPHINX_BUILD_ROOT}/index.html
+        COMMAND ${Sphinx-build_EXECUTABLE} -b ${SCAI_DOC_TYPE} -c ${SPHINX_BUILD_ROOT} ${LAMA_DOC_DIR} ${SPHINX_BUILD_ROOT}
+        DEPENDS ${SPHINX_BUILD_ROOT}/conf.py
+        WORKING_DIRECTORY ${LAMA_DOC_DIR}
     )
-
+    
+    # Add a custom target which executes the custom command (using ALL flag to add it to the default target as well!)
     add_custom_target (
-        doxygendoc
-        DEPENDS
-        ${DOXYGEN_BUILD_ROOT}/html/index.html
+        doc ALL
+        DEPENDS ${SPHINX_BUILD_ROOT}/index.html
     )
-
-else  ( DOXYGEN_FOUND )
-    if    ( SCAI_CMAKE_VERBOSE )
-        message ( STATUS "Not building system documentation because Doxygen not found." )
-    endif ( SCAI_CMAKE_VERBOSE )
-endif ( DOXYGEN_FOUND )
+    
+    # Add documentation to the install target
+    install(
+        DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/
+        DESTINATION ${SPHINX_INSTALL_ROOT}
+    )
+endif ( BUILD_DOC )

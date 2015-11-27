@@ -1,5 +1,5 @@
 ###
- # @file PackageSphinx.cmake
+ # @file Sphinx.cmake
  #
  # @license
  # Copyright (c) 2009-2013
@@ -25,79 +25,33 @@
  # SOFTWARE.
  # @endlicense
  #
- # @brief configuration of sphinx
+ # @brief find package Sphinx and set BUILD_DOC flag
  # @author Jan Ecker
- # @date 15.05.2013
- # @since 1.0.0
+ # @date 11.11.2015
+ # @since 1.0.1
 ###
 
 find_package ( Sphinx ${SCAI_FIND_PACKAGE_FLAGS} )
 
-### SPHINX DOCUMENTATION ###
-
-if     ( SPHINX_FOUND )
-    ### install ###
-    set ( LAMA_DOC_DIR "${CMAKE_SOURCE_DIR}/doc" )
-    set ( SPHINX_BUILD_ROOT "${CMAKE_CURRENT_BINARY_DIR}/doc/user" )
-    set ( SPHINX_INSTALL_ROOT ${CMAKE_INSTALL_PREFIX})
-    # file ( MAKE_DIRECTORY ${DOXYGEN_BUILD_ROOT} )
+# Check if cache variable is already set
+if ( DEFINED BUILD_DOC )
+    # if use of package is enabled
+    if ( ${BUILD_DOC} )
+        if ( ${SPHINX_FOUND} )
+        else ( ${SPHINX_FOUND} )
+            # if package is enabled, but not found: ERROR!
+            message ( STATUS "Sphinx missing, but build of doc is enabled!" )
+        endif ( ${SPHINX_FOUND} )
+    endif ( ${BUILD_DOC} )
+# if cache variable is NOT set
+else ( DEFINED BUILD_DOC )
+    # Check if package was found
+    if ( ${SPHINX_FOUND} )
+        set ( USE_PACKAGE TRUE )
+    else ( ${SPHINX_FOUND} )
+        set ( USE_PACKAGE FALSE )
+    endif ( ${SPHINX_FOUND} )
     
-    # Sphinx configuration file conf.py will be generated with correct LAMA version, copyright, etc.
-    # must be in same directory as Sphinx source files
-
-    configure_file ( "${CMAKE_SOURCE_DIR}/doc/user/conf.py.in" "${CMAKE_SOURCE_DIR}/doc/user/conf.py" )
-    configure_file ( "${CMAKE_SOURCE_DIR}/doc/user/convert_json.sh.in" "${CMAKE_CURRENT_BINARY_DIR}/doc/user/convert_json.sh" )
-
-    # The initial rm command gets rid of everything previously built by this
-    # custom command.
-    
-    # userdoc
-    add_custom_command (
-        OUTPUT ${SPHINX_BUILD_ROOT}/html/index.html
-        COMMAND ${Sphinx-build_EXECUTABLE} -b html -d ${SPHINX_BUILD_ROOT}/doctrees user ${SPHINX_BUILD_ROOT}/html
-        DEPENDS ${CMAKE_SOURCE_DIR}/doc/user/conf.py
-        WORKING_DIRECTORY ${LAMA_DOC_DIR}
-    )
-    
-    # userdoc_json
-    add_custom_command (
-        OUTPUT ${SPHINX_BUILD_ROOT}/json/index.html
-        COMMAND ${Sphinx-build_EXECUTABLE} -b json -d ${SPHINX_BUILD_ROOT}/doctrees user ${SPHINX_BUILD_ROOT}/json
-        COMMAND chmod +x ${SPHINX_BUILD_ROOT}/convert_json.sh
-        COMMAND ${SPHINX_BUILD_ROOT}/convert_json.sh
-        DEPENDS ${CMAKE_SOURCE_DIR}/doc/user/conf.py
-        DEPENDS ${SPHINX_BUILD_ROOT}/convert_json.sh
-        WORKING_DIRECTORY ${LAMA_DOC_DIR}
-    )
-   
-    if ( TARGET userdoc )
-
-       # Target already available, do no create it then anymore
-
-    else ( TARGET userdoc )
-
-        add_custom_target (
-            userdoc
-            DEPENDS ${SPHINX_BUILD_ROOT}/html/index.html
-        )
-
-        add_custom_target (
-            userdoc_json
-            DEPENDS ${SPHINX_BUILD_ROOT}/json/index.html
-        )
-
-        add_custom_target (
-            install_userdoc
-            COMMAND mkdir -p ${SPHINX_INSTALL_ROOT}/share/doc/lama-${LAMA_VERSION}/user
-            COMMAND cp -r ${SPHINX_BUILD_ROOT}/html/* ${SPHINX_INSTALL_ROOT}/share/doc/lama-${LAMA_VERSION}/user
-            DEPENDS ${SPHINX_BUILD_ROOT}/html/index.html
-            WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-        )
-
-    endif ( TARGET userdoc )
-
-else  ( SPHINX_FOUND )
-    if    ( SCAI_CMAKE_VERBOSE )
-        message ( STATUS "Not building user documentation because Sphinx not found." )
-    endif ( SCAI_CMAKE_VERBOSE )
-endif ( SPHINX_FOUND )
+    # Set cache variable
+    set ( BUILD_DOC ${USE_PACKAGE} CACHE BOOL "Enable / Disable building of doc" )
+endif ( DEFINED BUILD_DOC )

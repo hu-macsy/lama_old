@@ -36,7 +36,7 @@ cmake_minimum_required ( VERSION 2.8 )
 project ( LAMA_ALL CXX )
 set ( CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/../CMake/Modules" )
 
-include ( VersionDefinition )
+#include ( VersionDefinition )
 
 ## general Settings for all projects
 include ( SetBuildFlags ) # VERBOSE, RPATH, LIB64
@@ -66,11 +66,9 @@ include ( ConcludeFlags )
 
 ## documentation
 
-# user docu --> make userdoc, make userdoc_json, make install_userdoc
-include ( Package/Sphinx )
-
 #system docu --> make doc
 include ( Package/Doxygen )
+include ( Package/Sphinx )
 
 ## summary of what is found
 include ( Summaries/scai )

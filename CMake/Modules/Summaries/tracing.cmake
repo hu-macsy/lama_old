@@ -91,11 +91,25 @@ scai_summary_message ( "FOUND"
                        "SCAI logging"
                        "" )
                        
-scai_status_message ( HEADLINE "Tool:" )
-
-if    ( NOT CMAKE_VERSION VERSION_GREATER 2.8.7 )
-	message( STATUS "GUI will not be build, CMake Version too old (${CMAKE_VERSION} < 2.8.7)" )
-endif ( NOT CMAKE_VERSION VERSION_GREATER 2.8.7 )
+message ( STATUS "" )
+scai_status_message ( HEADLINE "DOCUMENTATION:" )
+# DOC
+scai_summary_message ( "USE"
+                       "BUILD_DOC"
+                       "DOC"
+                       "" )
+                                     
+scai_summary_message ( "FOUND"
+                       "SPHINX_FOUND"
+                       "Sphinx"
+                       "Version ${Sphinx_VERSION_STRING} at ${Sphinx-build_EXECUTABLE}: 'make doc' to build user documentation" )
+                       
+message ( STATUS "" )
+scai_status_message ( HEADLINE "GUI:" )
+scai_summary_message ( "FOUND"
+                       "Java_FOUND"
+                       "Java"
+                       "" )
 
 message ( STATUS "" )
 
