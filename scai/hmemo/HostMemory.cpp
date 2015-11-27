@@ -39,7 +39,10 @@
 #include <scai/hmemo/Context.hpp>
 
 // internal scai libraries
+
 #include <scai/tasking/TaskSyncToken.hpp>
+
+#include <scai/tracing.hpp>
 
 #include <scai/common/macros/assert.hpp>
 #include <scai/common/OpenMP.hpp>

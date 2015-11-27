@@ -970,15 +970,19 @@ void CSRStorage<ValueType>::getRowImpl( HArray<OtherType>& row, const IndexType 
     static LAMAKernel<UtilKernelTrait::setVal<OtherType> > setVal;
     static LAMAKernel<UtilKernelTrait::setScatter<OtherType, ValueType> > setScatter;
 
+    /// ContextPtr loc = Context::getHostPtr();
+
     ContextPtr loc = setVal.getValidContext( setScatter, this->getContextPtr() );
 
     SCAI_CONTEXT_ACCESS( loc )
 
     WriteOnlyAccess<OtherType> wRow( row, loc, mNumColumns );
-    ReadAccess<IndexType> ja( mJa, loc );
-    ReadAccess<ValueType> values( mValues, loc );
 
     setVal[loc]    ( wRow.get(), mNumColumns, static_cast<OtherType>( 0 ) );
+
+    const ReadAccess<IndexType> ja( mJa, loc );
+    const ReadAccess<ValueType> values( mValues, loc );
+
     setScatter[loc]( wRow.get(), ja.get() + n1, values.get() + n1, nrow );
 }
 

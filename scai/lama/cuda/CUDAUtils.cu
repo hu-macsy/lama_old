@@ -437,7 +437,7 @@ void CUDAUtils::setScatter( ValueType1 out[], const IndexType indexes[], const V
     SCAI_LOG_INFO( logger,
                    "setScatter<" << TypeTraits<ValueType1>::id() << "," << TypeTraits<ValueType2>::id() << ">( ..., n = " << n << ")" )
 
-    if ( n > 1 )
+    if ( n > 0 )
     {
         SCAI_CHECK_CUDA_ACCESS
 
