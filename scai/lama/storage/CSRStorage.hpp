@@ -38,6 +38,8 @@
 // base classes
 #include <scai/lama/storage/CRTPMatrixStorage.hpp>
 
+#include <scai/lama/LAMAArray.hpp>
+
 namespace scai
 {
 
@@ -212,27 +214,27 @@ public:
 
     /** Getter routine for member variable IA. */
 
-    hmemo::HArray<IndexType>& getIA();
+    LAMAArray<IndexType>& getIA();
 
     /** Getter routine for member variable JA. */
 
-    hmemo::HArray<IndexType>& getJA();
+    LAMAArray<IndexType>& getJA();
 
     /** Getter routine for member variable values. */
 
-    hmemo::HArray<ValueType>& getValues();
+    LAMAArray<ValueType>& getValues();
 
     /** Getter routine for member variable IA (read-only). */
 
-    const hmemo::HArray<IndexType>& getIA() const;
+    const LAMAArray<IndexType>& getIA() const;
 
     /** Getter routine for member variable JA (read-only). */
 
-    const hmemo::HArray<IndexType>& getJA() const;
+    const LAMAArray<IndexType>& getJA() const;
 
     /** Getter routine for member variable values (read-only). */
 
-    const hmemo::HArray<ValueType>& getValues() const;
+    const LAMAArray<ValueType>& getValues() const;
 
     /** Getter routine for the number of stored values. */
 
@@ -539,9 +541,9 @@ protected:
 
     IndexType mNumValues; //!< number of stored elements
 
-    hmemo::HArray<IndexType> mIa; //!< offsets for ja and data, size is numRows+1
-    hmemo::HArray<IndexType> mJa; //!< column indexes, size is mIa[ numRows ]
-    hmemo::HArray<ValueType> mValues; //!< non-zero values, size is equal to mJa
+    LAMAArray<IndexType> mIa; //!< offsets for ja and data, size is numRows+1
+    LAMAArray<IndexType> mJa; //!< column indexes, size is mIa[ numRows ]
+    LAMAArray<ValueType> mValues; //!< non-zero values, size is equal to mJa
 
 private:
 

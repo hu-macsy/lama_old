@@ -469,7 +469,7 @@ ContextDataIndex ContextDataManager::findValidData() const
 
 /* ---------------------------------------------------------------------------------*/
 
-ContextPtr ContextDataManager::getValidContext( const ContextType preferredType )
+ContextPtr ContextDataManager::getValidContext( const ContextPtr prefContext ) const
 {
     ContextPtr result;
 
@@ -481,9 +481,9 @@ ContextPtr ContextDataManager::getValidContext( const ContextType preferredType 
         {
             ContextPtr context = entry.getMemory().getContextPtr();
 
-            if ( context->getType() == preferredType )
+            if ( context.get() == prefContext.get() )
             {
-                return context;
+                return prefContext;
             }
             else if ( result )
             {
@@ -500,16 +500,9 @@ ContextPtr ContextDataManager::getValidContext( const ContextType preferredType 
     {
         // might happen for uninitialized arrays
 
-        SCAI_LOG_INFO( logger, "no valid context found for HArray" )
+        SCAI_LOG_INFO( logger, "no valid context found for HArray, take first touch context" )
 
-        if ( Context::hasContext( preferredType ) )
-        {
-            result = Context::getContextPtr( preferredType );
-        }
-        else
-        {
-            result = Context::getContextPtr( Host );
-        }
+        return getFirstTouchContextPtr();
     }
 
     return result;  // must not be NULL
@@ -517,10 +510,8 @@ ContextPtr ContextDataManager::getValidContext( const ContextType preferredType 
 
 /* ---------------------------------------------------------------------------------*/
 
-ContextPtr ContextDataManager::getFirstTouchContextPtr()
+ContextPtr ContextDataManager::getFirstTouchContextPtr() const
 {
-    ContextPtr result;
-
     if ( mContextData.size() == 0 )
     {
         return Context::getHostPtr();

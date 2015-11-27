@@ -66,18 +66,13 @@
 // boost
 #include <boost/preprocessor.hpp>
 
-// std
-#include <cmath>
-
-using std::abs;
-
-
 namespace scai
 {
 
 using namespace hmemo;
 using common::unique_ptr;
 using common::shared_ptr;
+using common::TypeTraits;
 
 using tasking::SyncToken;
 
@@ -322,7 +317,7 @@ void CSRStorage<ValueType>::setCSRDataImpl(
 
         // checking is done where ia is already valid, preferred is loc
 
-        ContextPtr loc1 = sum.getValidContext( ia.getValidContext( loc->getType() ) );
+        ContextPtr loc1 = sum.getValidContext( ia.getValidContext( loc ) );
 
         ReadAccess<IndexType> csrIA( ia, loc1 );
 
@@ -341,7 +336,7 @@ void CSRStorage<ValueType>::setCSRDataImpl(
 
         // checking is done where ia is already valid
 
-        ContextPtr loc1 = validOffsets.getValidContext( ia.getValidContext( loc->getType() ) );
+        ContextPtr loc1 = validOffsets.getValidContext( ia.getValidContext( loc ) );
 
         ReadAccess<IndexType> csrIA( ia, loc1 );
 
@@ -674,7 +669,7 @@ void CSRStorage<ValueType>::compress( const ValueType eps /* = 0.0 */)
                 continue;
             }
 
-            if( abs( values[jj] ) <= eps )
+            if ( TypeTraits<ValueType>::abs( values[jj] ) <= eps )
             {
                 ++nonDiagZeros;
             }
@@ -702,7 +697,7 @@ void CSRStorage<ValueType>::compress( const ValueType eps /* = 0.0 */)
     {
         for( IndexType jj = ia[i] + gap; jj < ia[i + 1]; ++jj )
         {
-            if( abs( values[jj] ) <= eps && ja[jj] != i )
+            if( TypeTraits<ValueType>::abs( values[jj] ) <= eps && ja[jj] != i )
             {
                 ++gap;
                 continue;
@@ -840,7 +835,7 @@ void CSRStorage<ValueType>::prefetch( const ContextPtr location ) const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-HArray<IndexType>& CSRStorage<ValueType>::getIA()
+LAMAArray<IndexType>& CSRStorage<ValueType>::getIA()
 {
     return mIa;
 }
@@ -848,7 +843,7 @@ HArray<IndexType>& CSRStorage<ValueType>::getIA()
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-HArray<IndexType>& CSRStorage<ValueType>::getJA()
+LAMAArray<IndexType>& CSRStorage<ValueType>::getJA()
 {
     return mJa;
 }
@@ -856,7 +851,7 @@ HArray<IndexType>& CSRStorage<ValueType>::getJA()
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-HArray<ValueType>& CSRStorage<ValueType>::getValues()
+LAMAArray<ValueType>& CSRStorage<ValueType>::getValues()
 {
     return mValues;
 }
@@ -864,7 +859,7 @@ HArray<ValueType>& CSRStorage<ValueType>::getValues()
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-const HArray<IndexType>& CSRStorage<ValueType>::getIA() const
+const LAMAArray<IndexType>& CSRStorage<ValueType>::getIA() const
 {
     return mIa;
 }
@@ -872,7 +867,7 @@ const HArray<IndexType>& CSRStorage<ValueType>::getIA() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-const HArray<IndexType>& CSRStorage<ValueType>::getJA() const
+const LAMAArray<IndexType>& CSRStorage<ValueType>::getJA() const
 {
     return mJa;
 }
@@ -880,7 +875,7 @@ const HArray<IndexType>& CSRStorage<ValueType>::getJA() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-const HArray<ValueType>& CSRStorage<ValueType>::getValues() const
+const LAMAArray<ValueType>& CSRStorage<ValueType>::getValues() const
 {
     return mValues;
 }
@@ -914,18 +909,32 @@ void CSRStorage<ValueType>::setDiagonalImpl( const HArray<OtherValueType>& diago
 {
     IndexType numDiagonalElements = diagonal.size();
 
+    if ( numDiagonalElements > mNumRows )
     {
-        ReadAccess<OtherValueType> rDiagonal( diagonal );
-        ReadAccess<IndexType> csrIA( mIa );
+        numDiagonalElements = mNumRows; 
+    }
 
-        WriteAccess<ValueType> wValues( mValues ); // partial setting
+    {
+        static LAMAKernel<UtilKernelTrait::setScatter<ValueType, OtherValueType> > setScatter;
+
+        ContextPtr loc = setScatter.getValidContext( this->getContextPtr() );
+
+        SCAI_LOG_INFO( logger, "set diagonal<" << TypeTraits<ValueType>::id() << ", " 
+                        << TypeTraits<OtherValueType>::id() << "> ( " << numDiagonalElements << " ) @ " << *loc )
+        
+        SCAI_CONTEXT_ACCESS( loc )
+
+        ReadAccess<OtherValueType> rDiagonal( diagonal, loc );
+        ReadAccess<IndexType> csrIA( mIa, loc );
+
+        WriteAccess<ValueType> wValues( mValues, loc );     // partial setting
 
         //  wValues[ wIa[ i ] ] = rDiagonal[ i ];
 
-        OpenMPUtils::setScatter( wValues.get(), csrIA.get(), rDiagonal.get(), numDiagonalElements );
+        setScatter[loc]( wValues.get(), csrIA.get(), rDiagonal.get(), numDiagonalElements );
     }
 
-    if( SCAI_LOG_TRACE_ON( logger ) )
+    if ( SCAI_LOG_TRACE_ON( logger ) )
     {
         SCAI_LOG_TRACE( logger, "CSR after setDiagonal" )
         print();
@@ -961,15 +970,19 @@ void CSRStorage<ValueType>::getRowImpl( HArray<OtherType>& row, const IndexType 
     static LAMAKernel<UtilKernelTrait::setVal<OtherType> > setVal;
     static LAMAKernel<UtilKernelTrait::setScatter<OtherType, ValueType> > setScatter;
 
+    /// ContextPtr loc = Context::getHostPtr();
+
     ContextPtr loc = setVal.getValidContext( setScatter, this->getContextPtr() );
 
     SCAI_CONTEXT_ACCESS( loc )
 
     WriteOnlyAccess<OtherType> wRow( row, loc, mNumColumns );
-    ReadAccess<IndexType> ja( mJa, loc );
-    ReadAccess<ValueType> values( mValues, loc );
 
     setVal[loc]    ( wRow.get(), mNumColumns, static_cast<OtherType>( 0 ) );
+
+    const ReadAccess<IndexType> ja( mJa, loc );
+    const ReadAccess<ValueType> values( mValues, loc );
+
     setScatter[loc]( wRow.get(), ja.get() + n1, values.get() + n1, nrow );
 }
 
@@ -2304,7 +2317,7 @@ ValueType CSRStorage<ValueType>::l2Norm() const
 
     SCAI_CONTEXT_ACCESS( loc );
 
-    return common::TypeTraits<ValueType>::sqrt(dot[loc]( mNumValues, data.get(), 1, data.get(), 1 ));
+    return TypeTraits<ValueType>::sqrt(dot[loc]( mNumValues, data.get(), 1, data.get(), 1 ));
 }
 
 /* --------------------------------------------------------------------------- */

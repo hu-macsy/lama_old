@@ -67,6 +67,15 @@ if ( NOT CMAKE_BUILD_TYPE )
     message ( STATUS "Build type is set to " ${CMAKE_BUILD_TYPE} )
 endif ( NOT CMAKE_BUILD_TYPE )
 
+# Choose Doc type
+if ( NOT SCAI_DOC_TYPE )
+    set ( SCAI_DOC_TYPE_OPTIONS html json ) 
+    set ( SCAI_DOC_TYPE html CACHE STRING 
+        "Choose the type of documentation, options are: ${SCAI_DOC_TYPE_OPTIONS}." FORCE )
+    checkValue ( ${SCAI_DOC_TYPE} "${SCAI_DOC_TYPE_OPTIONS}" )
+    message ( STATUS "Doc type is set to " ${CMAKE_BUILD_TYPE} )
+endif ( NOT SCAI_DOC_TYPE )
+
 ## Check if lama should be build static or shared
 
 # default: build shared library

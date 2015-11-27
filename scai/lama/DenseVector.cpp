@@ -106,7 +106,7 @@ DenseVector<ValueType>::DenseVector( DistributionPtr distribution )
 
 template<typename ValueType>
 DenseVector<ValueType>::DenseVector( const IndexType size, const ValueType value, ContextPtr context )
-                : Vector( size, context ), mLocalValues( size, value )
+                : Vector( size, context ), mLocalValues( size, value, context )
 {
     SCAI_LOG_INFO( logger, "Construct dense vector, size = " << size << ", init =" << value )
 }
@@ -936,8 +936,9 @@ void DenseVector<ValueType>::assign( const Scalar value )
 {
     SCAI_LOG_DEBUG( logger, *this << ": assign " << value )
 
-    ContextPtr ctx = mLocalValues.getValidContext( mContext->getType() );
-    HArrayUtils::assignScalar( mLocalValues, value, ctx );
+    // assign the scalar value on the home of this dense vector.
+
+    HArrayUtils::assignScalar( mLocalValues, value, mContext );
 }
 
 template<typename ValueType>
@@ -1253,14 +1254,17 @@ void DenseVector<ValueType>::writeVectorToMMFile( const std::string& filename, c
 
     for( IndexType ii = 0; ii < numRows; ++ii )
     {
-        ofile << ii + 1;
 
-        if( dataType != File::PATTERN )
+        if( dataType == File::PATTERN )
+        {
+            ofile << ii + 1;
+        }
+        else
         {
             ofile << " " << dataRead[ii];
         }
 
-        ofile << std::endl;
+        ofile << "\n"; //std::endl;
     }
 
     ofile.close();
@@ -1548,18 +1552,17 @@ void DenseVector<ValueType>::readVectorFromMMFile( const std::string& fileName )
         std::getline( ifile, line );
         std::istringstream reader( line );
 
-        reader >> i;
-
-	if( isPattern )
+        if( isPattern )
         {
+            reader >> i;
             val = 1.0;
+            i--;
         }
         else
-	{
+        {
             reader >> val;
-	}
-
-        i--;
+            i = l;
+        }
 
         vPtr[i] = val;
 

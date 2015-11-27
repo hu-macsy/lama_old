@@ -234,6 +234,26 @@ void OpenMPCOOUtils::offsets2ia(
 
 /* --------------------------------------------------------------------------- */
 
+template<typename COOValueType,typename OtherValueType>
+void OpenMPCOOUtils::scaleRows( 
+    COOValueType cooValues[],
+    const OtherValueType rowValues[],
+    const IndexType cooIA[],
+    const IndexType numValues )
+{
+    SCAI_LOG_INFO( logger, "scaleRows in COO format" )
+
+    #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
+
+    for ( IndexType i = 0; i < numValues; ++i )
+    {
+        cooValues[i] *= static_cast<COOValueType>( rowValues[cooIA[i]] );
+    }
+}
+
+
+/* --------------------------------------------------------------------------- */
+
 template<typename COOValueType,typename CSRValueType>
 void OpenMPCOOUtils::setCSRData(
     COOValueType cooValues[],
@@ -481,6 +501,7 @@ void OpenMPCOOUtils::registerKernels( bool deleteFlag )
 #define LAMA_COO_UTILS2_REGISTER(z, J, TYPE )                                                                       \
     KernelRegistry::set<COOKernelTrait::setCSRData<TYPE, ARITHMETIC_HOST_TYPE_##J> >( setCSRData, Host, flag );     \
     KernelRegistry::set<COOKernelTrait::getCSRValues<TYPE, ARITHMETIC_HOST_TYPE_##J> >( getCSRValues, Host, flag ); \
+    KernelRegistry::set<COOKernelTrait::scaleRows<TYPE, ARITHMETIC_HOST_TYPE_##J> >( scaleRows, Host, flag );       \
 
 #define LAMA_COO_UTILS_REGISTER(z, I, _)                                                                   \
     KernelRegistry::set<COOKernelTrait::normalGEMV<ARITHMETIC_HOST_TYPE_##I> >( normalGEMV, Host, flag );  \

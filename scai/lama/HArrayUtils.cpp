@@ -269,6 +269,26 @@ void HArrayUtils::setVal( HArray<ValueType>& target, const IndexType index, Valu
 }
 
 template<typename ValueType>
+ValueType HArrayUtils::getVal( const HArray<ValueType>& array, const IndexType index )
+{
+    SCAI_ASSERT_DEBUG( index < array.size(), "index = " << index << " out of range for array = " << array );
+
+    // get the data from a valid context, avoids any memory copy.
+
+    ContextPtr loc = array.getValidContext();
+
+    static LAMAKernel<UtilKernelTrait::getValue<ValueType> > getValue;
+
+    loc = getValue.getValidContext( loc );
+
+    SCAI_CONTEXT_ACCESS( loc )
+
+    ReadAccess<ValueType> rArray( array, loc );
+
+    return getValue[loc]( rArray.get(), index );
+}
+
+template<typename ValueType>
 void HArrayUtils::assignScaled(
     HArray<ValueType>& result,
     const ValueType beta,
@@ -338,6 +358,7 @@ void HArrayUtils::assignScaled(
 // template instantiation for the supported data types
 
 template void HArrayUtils::setVal( hmemo::HArray<IndexType>& , const IndexType , IndexType );
+template IndexType HArrayUtils::getVal( const hmemo::HArray<IndexType>& , const IndexType );
 
 template void HArrayUtils::assignScaled(
     hmemo::HArray<IndexType>& ,
@@ -367,6 +388,11 @@ template void HArrayUtils::gather(
             HArray<ARITHMETIC_HOST_TYPE_##I>& target,                            \
             const IndexType index,                                                  \
             ARITHMETIC_HOST_TYPE_##I val );                                         \
+                                                                                    \
+    template                                                                        \
+    ARITHMETIC_HOST_TYPE_##I HArrayUtils::getVal(                                   \
+            const HArray<ARITHMETIC_HOST_TYPE_##I>&,                               \
+            const IndexType );                                                      \
                                                                                     \
     template                                                                        \
     void HArrayUtils::assignScaled(                                              \

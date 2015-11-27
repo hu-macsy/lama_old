@@ -122,6 +122,8 @@ int main()
     HArray<float> cscValues;
 
     {
+        SCAI_CONTEXT_ACCESS( cuda )
+
         ReadAccess<int> readcsrIA( csrIA, cuda );
         ReadAccess<int> readcsrJA( csrJA, cuda );
         ReadAccess<float> readcsrValues( csrValues, cuda );

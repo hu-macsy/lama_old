@@ -175,7 +175,7 @@ void MPICommunicator::initialize( int& argc, char** & argv )
 
         isCUDAAware = false;
 
-        bool setCUDA = common::Settings::getEnvironment( isCUDAAware, "LAMA_MPI_CUDA" );
+        bool setCUDA = common::Settings::getEnvironment( isCUDAAware, "SCAI_MPI_CUDA" );
 
         if( setCUDA )
         {

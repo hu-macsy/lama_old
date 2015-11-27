@@ -87,15 +87,20 @@ public:
 
     static void assignScalar( hmemo::ContextArray& target, const Scalar& value, hmemo::ContextPtr context );
 
-    /** This method sets a single value in a LAMA array.
+    /** This method sets a single value in a heterogeneous array.
      *
-     *  @param[in,out] target LAMA array where a value to set
+     *  @param[in,out] array  Harray where a value to set
      *  @param[in]     index  position to set ( 0 <= index < target.size() )
      *  @param[in]     val    value to set
+     *
+     *  The value will be set at a valid context.
      */
 
     template<typename ValueType>
     static void setVal( hmemo::HArray<ValueType>& target, const IndexType index, ValueType val );
+
+    template<typename ValueType>
+    static ValueType getVal( const hmemo::HArray<ValueType>& array, const IndexType index );
 
     /** Scaled assignment on HArray.
      *

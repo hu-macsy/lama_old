@@ -94,9 +94,7 @@ BOOST_AUTO_TEST_CASE( ContextTest )
     std::cout << "Y @ " << *hostContext << ", valid = " << Y.isValid( hostContext )
               << ", capacity = " << Y.capacity( hostContext ) << std::endl;
 
-    int values[] = { 1, 2, 3, 4 };
-
-    HArray<float> v ( 4, values );   // implicit type conversion allowed
+    HArray<float> v ( 4, 1.0f );  
 
     {
         ReadAccess<float> read( v, userContext );

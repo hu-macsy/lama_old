@@ -36,6 +36,7 @@
 
 #include <scai/lama/storage/JDSStorage.hpp>
 #include <scai/lama/HArrayUtils.hpp>
+#include <scai/lama/LAMAArray.hpp>
 
 #include <scai/lama/test/MatrixStorageTest.hpp>
 #include <scai/lama/test/TestMacros.hpp>
@@ -199,11 +200,11 @@ void constructorTest1(  ContextPtr context )
     BOOST_CHECK_EQUAL( numValues, sizeValues );
     BOOST_CHECK_EQUAL( numRows, sizePerm );
     BOOST_CHECK_EQUAL( numRows, sizeILG );
-    HArray<IndexType> jdsILG( numRows, ilg );
-    HArray<IndexType> jdsDLG( numDiagonals, dlg );
-    HArray<IndexType> jdsPerm( numRows, perm );
-    HArray<IndexType> jdsJA( numValues, ja );
-    HArray<ValueType> jdsValues( numValues, values );
+    LAMAArray<IndexType> jdsILG( numRows, ilg );
+    LAMAArray<IndexType> jdsDLG( numDiagonals, dlg );
+    LAMAArray<IndexType> jdsPerm( numRows, perm );
+    LAMAArray<IndexType> jdsJA( numValues, ja );
+    LAMAArray<ValueType> jdsValues( numValues, values );
     // Call the specific constructor for JDS storage
     JDSStorage<ValueType> jdsStorage( numRows, numColumns, numValues, numDiagonals,
                                       jdsDLG, jdsILG, jdsPerm, jdsJA, jdsValues );

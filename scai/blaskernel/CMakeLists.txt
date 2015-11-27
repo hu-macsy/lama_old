@@ -37,6 +37,16 @@ cmake_minimum_required ( VERSION 2.8 )
 ### Set PROJECT NAME / supported LANGUAGES
 project( scai_blaskernel CXX )
 
+### Set version of Blaskernel
+# TOOD: where is the best place to define this?
+set ( SCAI_BLASKERNEL_VERSION_NAME "Alpamayo" )
+set ( SCAI_BLASKERNEL_COPYRIGHT_YEAR 2015 )
+set ( SCAI_BLASKERNEL_VERSION_MAJOR 1 )
+set ( SCAI_BLASKERNEL_VERSION_MINOR 0 )
+set ( SCAI_BLASKERNEL_VERSION_PATCH 1 )
+set ( SCAI_BLASKERNEL_VERSION_COUNT 3 )
+set ( SCAI_BLASKERNEL_VERSION ${SCAI_BLASKERNEL_VERSION_MAJOR}.${SCAI_BLASKERNEL_VERSION_MINOR}.${SCAI_BLASKERNEL_VERSION_PATCH} )
+
 ### Set Module Path
 set ( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../CMake/Modules" )
 
@@ -171,6 +181,9 @@ relative_install( FILES ${CXX_HEADERS} DESTINATION include/scai/blaskernel )
 
 ## install library.hpp
 install ( FILES ../blaskernel.hpp DESTINATION include/scai )
+
+###  add documentation
+add_subdirectory( doc )
 
 ## add custum target distClean
 include ( DistClean )

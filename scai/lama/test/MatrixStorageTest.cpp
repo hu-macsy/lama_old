@@ -63,10 +63,10 @@ SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, MatrixStorageTest<Va
 template<typename ValueType>
 void getMatrix_7_4 ( IndexType& numRows,
                      IndexType& numColumns,
-                     HArray<IndexType>& matrixRowSizes,
-                     HArray<IndexType>& matrixJA,
-                     HArray<ValueType>& matrixValues,
-                     HArray<ValueType>& denseValues )
+                     LAMAArray<IndexType>& matrixRowSizes,
+                     LAMAArray<IndexType>& matrixJA,
+                     LAMAArray<ValueType>& matrixValues,
+                     LAMAArray<ValueType>& denseValues )
 {
     numRows = 7;
     numColumns = 4;
@@ -85,10 +85,10 @@ void getMatrix_7_4 ( IndexType& numRows,
         0, 0, 0, 0,
         0, 1, 0, 2
     };
-    matrixRowSizes = HArray<IndexType>( numRows, ia );
-    matrixJA = HArray<IndexType>( numValues, ja );
-    matrixValues = HArray<ValueType>( numValues, values );
-    denseValues = HArray<ValueType>( numRows * numColumns, Resultmatrix );
+    matrixRowSizes = LAMAArray<IndexType>( numRows, ia );
+    matrixJA = LAMAArray<IndexType>( numValues, ja );
+    matrixValues = LAMAArray<ValueType>( numValues, values );
+    denseValues = LAMAArray<ValueType>( numRows * numColumns, Resultmatrix );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -247,7 +247,7 @@ BOOST_REQUIRE_EQUAL( n, mMatrixStorage.getNumRows() );
 BOOST_REQUIRE_EQUAL( n, mMatrixStorage.getNumColumns() );
 BOOST_REQUIRE_EQUAL( n, mMatrixStorage.getNumValues() );
 
-HArray<double> row;
+LAMAArray<double> row;
 
 for ( IndexType i = 0; i < n; ++i )
 {
@@ -277,10 +277,10 @@ LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, ValueType, setCSRDataTest )
     mMatrixStorage.clear();
     IndexType numRows;
     IndexType numColumns;
-    HArray<IndexType> matrixRowSizes;
-    HArray<IndexType> matrixJA;
-    HArray<ValueType> matrixValues;
-    HArray<ValueType> matrixDense;
+    LAMAArray<IndexType> matrixRowSizes;
+    LAMAArray<IndexType> matrixJA;
+    LAMAArray<ValueType> matrixValues;
+    LAMAArray<ValueType> matrixDense;
     getMatrix_7_4 ( numRows, numColumns, matrixRowSizes, matrixJA, matrixValues, matrixDense );
     IndexType numValues = matrixJA.size();
     _MatrixStorage::sizes2offsets( matrixRowSizes );
@@ -310,10 +310,10 @@ LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, ValueType, buildCSRDataTest )
     mMatrixStorage.clear();
     IndexType numRows;
     IndexType numColumns;
-    HArray<IndexType> matrixRowSizes;
-    HArray<IndexType> matrixJA;
-    HArray<ValueType> matrixValues;
-    HArray<ValueType> matrixDense;
+    LAMAArray<IndexType> matrixRowSizes;
+    LAMAArray<IndexType> matrixJA;
+    LAMAArray<ValueType> matrixValues;
+    LAMAArray<ValueType> matrixDense;
     getMatrix_7_4 ( numRows, numColumns, matrixRowSizes, matrixJA, matrixValues, matrixDense );
     IndexType numValues = matrixJA.size();
 // IA array not available yet, we have only sizes
@@ -326,9 +326,9 @@ LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, ValueType, buildCSRDataTest )
     BOOST_CHECK_EQUAL( numValues, mMatrixStorage.getNumValues() );
     SCAI_LOG_INFO( logger, "set CSR data (" << numRows << " x " << numColumns
                    << ", nnz = " << numValues << ") : matrix = " << mMatrixStorage )
-    HArray<IndexType> csrIA;
-    HArray<IndexType> csrJA;
-    HArray<ValueType> csrValues;
+    LAMAArray<IndexType> csrIA;
+    LAMAArray<IndexType> csrJA;
+    LAMAArray<ValueType> csrValues;
     mMatrixStorage.buildCSRData( csrIA, csrJA, csrValues );
     BOOST_REQUIRE_EQUAL( numRows + 1, csrIA.size() );
     BOOST_REQUIRE_EQUAL( numValues, csrJA.size() );
@@ -389,7 +389,7 @@ setDenseData( mMatrixStorage );
 
 SCAI_LOG_INFO( logger, "diagonalTest: matrix = " << mMatrixStorage )
 
-HArray<ValueType> diag;
+LAMAArray<ValueType> diag;
 mMatrixStorage.getDiagonal( diag );
 
 BOOST_CHECK_EQUAL( diag.size(), mMatrixStorage.getNumRows() ); // square matrix
@@ -481,10 +481,10 @@ SCAI_LOG_INFO( logger, "Test matrixTimesVector" )
     const ValueType yVal = 1.0;
     const ValueType alpha = 1.0;
     const ValueType beta = 2.0;
-    HArray<ValueType> x( mMatrixStorage.getNumColumns(), xVal );
-    HArray<ValueType> y( mMatrixStorage.getNumRows(), yVal );
-    // due to use of HArrayView we have to give result the correct size
-    HArray<ValueType> result ( mMatrixStorage.getNumRows() );
+    LAMAArray<ValueType> x( mMatrixStorage.getNumColumns(), xVal );
+    LAMAArray<ValueType> y( mMatrixStorage.getNumRows(), yVal );
+    // due to use of LAMAArrayView we have to give result the correct size
+    LAMAArray<ValueType> result ( mMatrixStorage.getNumRows() );
     mMatrixStorage.matrixTimesVector( result, alpha, x, beta, y );
     BOOST_CHECK_EQUAL( result.size(), mMatrixStorage.getNumRows() );
     ReadAccess<ValueType> values( orig.getData() );
@@ -512,9 +512,9 @@ SCAI_LOG_INFO( logger, "Test " << mMatrixStorage.getTypeName() << "::matrixTimes
     const ValueType yVal = static_cast<ValueType>( 2.0 );
     const ValueType alpha = static_cast<ValueType>( 0.5f );
     const ValueType beta = static_cast<ValueType>( 1.0f );
-    HArray<ValueType> x( mMatrixStorage.getNumColumns(), xVal );
-    HArray<ValueType> y( mMatrixStorage.getNumRows(), yVal );
-    HArray<ValueType> result( mMatrixStorage.getNumRows() );
+    LAMAArray<ValueType> x( mMatrixStorage.getNumColumns(), xVal );
+    LAMAArray<ValueType> y( mMatrixStorage.getNumRows(), yVal );
+    LAMAArray<ValueType> result( mMatrixStorage.getNumRows() );
     // asynchronous execution, only checks correct calling
     {
         scai::common::unique_ptr<scai::tasking::SyncToken> token ( mMatrixStorage.matrixTimesVectorAsync( result, alpha, x, beta, y ) );
@@ -560,10 +560,10 @@ SCAI_LOG_INFO( logger, "Test vectorTimesMatrix" )
     const ValueType beta = 2.3;
     IndexType m = mMatrixStorage.getNumColumns();
     IndexType n = mMatrixStorage.getNumRows();
-    HArray<ValueType> x( n, xVal );
-    HArray<ValueType> y( m, yVal );
-    // due to use of HArrayView we have to give result the correct size
-    HArray<ValueType> result ( m );
+    LAMAArray<ValueType> x( n, xVal );
+    LAMAArray<ValueType> y( m, yVal );
+    // due to use of LAMAArrayView we have to give result the correct size
+    LAMAArray<ValueType> result ( m );
     mMatrixStorage.vectorTimesMatrix( result, alpha, x, beta, y );
     BOOST_CHECK_EQUAL( result.size(), m );
     ReadAccess<ValueType> values( orig.getData() );
@@ -591,10 +591,10 @@ SCAI_LOG_INFO( logger, "Test vectorTimesMatrixAsync" )
     const ValueType beta = 2.0;
     IndexType m = mMatrixStorage.getNumColumns();
     IndexType n = mMatrixStorage.getNumRows();
-    HArray<ValueType> x( n, xVal );
-    HArray<ValueType> y( m, yVal );
-    // due to use of HArrayView we have to give result the correct size
-    HArray<ValueType> result ( m );
+    LAMAArray<ValueType> x( n, xVal );
+    LAMAArray<ValueType> y( m, yVal );
+    // due to use of LAMAArrayView we have to give result the correct size
+    LAMAArray<ValueType> result ( m );
     // asynchronous execution, only checks correct calling
     {
         scai::common::unique_ptr<scai::tasking::SyncToken> token ( mMatrixStorage.vectorTimesMatrixAsync( result, alpha, x, beta, y ) );
@@ -639,10 +639,10 @@ SCAI_LOG_INFO( logger, "Test vectorTimesMatrixAsync 2" )
 
     const ValueType alpha = 1.0;
     const ValueType beta = 2.0;
-    HArray<ValueType> x( n, xValues );
-    HArray<ValueType> y( m, yValues );
-    // due to use of HArrayView we have to give result the correct size
-    HArray<ValueType> result ( m );
+    LAMAArray<ValueType> x( n, xValues );
+    LAMAArray<ValueType> y( m, yValues );
+    // due to use of LAMAArrayView we have to give result the correct size
+    LAMAArray<ValueType> result ( m );
     // asynchronous execution, only checks correct calling
     {
         scai::common::unique_ptr<scai::tasking::SyncToken> token ( mMatrixStorage.vectorTimesMatrixAsync( result, alpha, x, beta, y ) );
@@ -690,10 +690,10 @@ SCAI_LOG_INFO( logger, "Test vectorTimesMatrixAsync 3" )
 
     const ValueType alpha = 1.0;
     const ValueType beta = 2.0;
-    HArray<ValueType> x( n, xValues );
-    HArray<ValueType> y( m, yValues );
-    // due to use of HArrayView we have to give result the correct size
-    HArray<ValueType> result ( m );
+    LAMAArray<ValueType> x( n, xValues );
+    LAMAArray<ValueType> y( m, yValues );
+    // due to use of LAMAArrayView we have to give result the correct size
+    LAMAArray<ValueType> result ( m );
     // asynchronous execution, only checks correct calling
     {
         scai::common::unique_ptr<scai::tasking::SyncToken> token ( mMatrixStorage.vectorTimesMatrixAsync( result, alpha, x, beta, y ) );
@@ -739,15 +739,15 @@ IndexType m = mMatrixStorage.getNumColumns();
 const ValueType alpha = 1.0;
 const ValueType beta = 0.0;
 
-HArray<ValueType> x( vec.getLocalValues() );
-HArray<ValueType> y( m, 0.0 );
-// due to use of HArrayView we have to give result the correct size
-HArray<ValueType> result ( m );
-HArray<ValueType> result2 ( m );
+LAMAArray<ValueType> x( vec.getLocalValues() );
+LAMAArray<ValueType> y( m, 0.0 );
+// due to use of LAMAArrayView we have to give result the correct size
+LAMAArray<ValueType> result ( m );
+LAMAArray<ValueType> result2 ( m );
 
 DenseStorage<ValueType> denseStorage ( symA.getLocalStorage() ); //mMatrixStorage );
-HArray<ValueType> denseResult ( m );
-HArray<ValueType> denseResult2 ( m );
+LAMAArray<ValueType> denseResult ( m );
+LAMAArray<ValueType> denseResult2 ( m );
 
 // asynchronous execution, only checks correct calling
 
@@ -817,8 +817,8 @@ const IndexType n = 3;
 const ValueType aValue = 2.0;
 const ValueType bValue = 3.0;
 
-HArray<ValueType> aDiagonal( n, aValue );
-HArray<ValueType> bDiagonal( n, bValue );
+LAMAArray<ValueType> aDiagonal( n, aValue );
+LAMAArray<ValueType> bDiagonal( n, bValue );
 
 //TODO: USE TEMPLATED STORAGE!!!!!!
 ELLStorage<ValueType> a;
@@ -861,9 +861,9 @@ const ValueType aValue = 2.0;
 const ValueType bValue = 3.0;
 const ValueType cValue = -3.0;
 
-HArray<ValueType> aDiagonal( n, aValue );
-HArray<ValueType> bDiagonal( n, bValue );
-HArray<ValueType> cDiagonal( n, cValue );
+LAMAArray<ValueType> aDiagonal( n, aValue );
+LAMAArray<ValueType> bDiagonal( n, bValue );
+LAMAArray<ValueType> cDiagonal( n, cValue );
 
 //TODO: USE TEMPLATED STORAGE!!!!!!
 ELLStorage<ValueType> a;
@@ -938,11 +938,11 @@ const IndexType n = b.getNumColumns();
 
 mMatrixStorage.matrixTimesMatrix( 1.0, a, b, 0.0, mMatrixStorage );
 
-HArray<ValueType> x( n, 1.0 );
-HArray<ValueType> dummy( n, 0.0 );
-HArray<ValueType> y1( n );
-HArray<ValueType> y2( n );
-HArray<ValueType> tmp( n );
+LAMAArray<ValueType> x( n, 1.0 );
+LAMAArray<ValueType> dummy( n, 0.0 );
+LAMAArray<ValueType> y1( n );
+LAMAArray<ValueType> y2( n );
+LAMAArray<ValueType> tmp( n );
 
 // check: storage * x == a * b * x
 
@@ -972,14 +972,14 @@ void MatrixStorageTest<ValueType>::jacobiTest( const ValueType omega )
     CSRStorage<ValueType> tmp;
     setDenseLocal( tmp );
     const IndexType n = mMatrixStorage.getNumRows();
-    HArray<ValueType> oldSolution( n, 1.0 );
-    HArray<ValueType> rhs( n, 2.0 );
-    HArray<ValueType> solution1( n );
-    HArray<ValueType> solution2( n );
+    LAMAArray<ValueType> oldSolution( n, 1.0 );
+    LAMAArray<ValueType> rhs( n, 2.0 );
+    LAMAArray<ValueType> solution1( n );
+    LAMAArray<ValueType> solution2( n );
     SCAI_LOG_INFO( logger, "initialized: solution1 = " << solution1 )
     // jacobi:  solution1 = omega * ( rhs - B * oldSolution) * dinv  + ( 1 - omega ) * oldSolution
     mMatrixStorage.jacobiIterate( solution1, oldSolution, rhs, omega );
-    HArray<ValueType> diagonal;
+    LAMAArray<ValueType> diagonal;
     tmp.getDiagonal( diagonal );
     {
         // invert the diagonal
@@ -1044,10 +1044,10 @@ setDenseHalo( tmp );
 const IndexType numRows = mMatrixStorage.getNumRows();
 const IndexType numCols = mMatrixStorage.getNumColumns();
 
-HArray<ValueType> oldSolution ( numCols, 1.0 );
+LAMAArray<ValueType> oldSolution ( numCols, 1.0 );
 
-HArray<ValueType> solution1( numRows, 2.0 );
-HArray<ValueType> solution2( numRows, 2.0 );
+LAMAArray<ValueType> solution1( numRows, 2.0 );
+LAMAArray<ValueType> solution2( numRows, 2.0 );
 
 SCAI_LOG_INFO( logger, "initialized: solution1 = " << solution1 )
 
@@ -1055,7 +1055,7 @@ SCAI_LOG_INFO( logger, "initialized: solution1 = " << solution1 )
 
 mMatrixStorage.jacobiIterateHalo( solution1, *local, oldSolution, omega );
 
-HArray<ValueType> diagonal;
+LAMAArray<ValueType> diagonal;
 
 local->getDiagonal( diagonal );
 

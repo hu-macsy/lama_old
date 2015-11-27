@@ -437,15 +437,18 @@ void CUDAUtils::setScatter( ValueType1 out[], const IndexType indexes[], const V
     SCAI_LOG_INFO( logger,
                    "setScatter<" << TypeTraits<ValueType1>::id() << "," << TypeTraits<ValueType2>::id() << ">( ..., n = " << n << ")" )
 
-    SCAI_CHECK_CUDA_ACCESS
+    if ( n > 0 )
+    {
+        SCAI_CHECK_CUDA_ACCESS
 
-    const int blockSize = 256;
-    dim3 dimBlock( blockSize, 1, 1 );
-    dim3 dimGrid = makeGrid( n, dimBlock.x );
-
-    scatter_kernel <<< dimGrid, dimBlock>>>( out, indexes, in, n );
-
-    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
+        const int blockSize = 256;
+        dim3 dimBlock( blockSize, 1, 1 );
+        dim3 dimGrid = makeGrid( n, dimBlock.x );
+    
+        scatter_kernel <<< dimGrid, dimBlock>>>( out, indexes, in, n );
+    
+        SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
+    }
 }
 
 /* --------------------------------------------------------------------------- */

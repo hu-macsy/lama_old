@@ -39,7 +39,10 @@
 #include <scai/hmemo/Context.hpp>
 
 // internal scai libraries
+
 #include <scai/tasking/TaskSyncToken.hpp>
+
+#include <scai/tracing.hpp>
 
 #include <scai/common/macros/assert.hpp>
 #include <scai/common/OpenMP.hpp>
@@ -130,6 +133,8 @@ void HostMemory::free( void* pointer, const size_t size ) const
 
 void HostMemory::memcpy( void* dst, const void* src, const size_t size ) const
 {
+    SCAI_REGION( "Memory.Host_memcpy" )
+
     SCAI_LOG_DEBUG( logger, "memcpy: " << dst << " <- " << src << ", size = " << size )
 
     ::memcpy( dst, src, size );

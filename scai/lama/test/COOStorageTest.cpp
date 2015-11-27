@@ -39,6 +39,7 @@
 #include <scai/lama/test/MatrixStorageTest.hpp>
 #include <scai/lama/test/TestMacros.hpp>
 #include <scai/lama/HArrayUtils.hpp>
+#include <scai/lama/LAMAArray.hpp>
 
 using namespace scai::lama;
 using namespace scai::hmemo;
@@ -107,9 +108,9 @@ void constructorTest1( ContextPtr loc )
     const ValueType values[] =
     {   0.5f, 0.5f, 0.3f, 0.2f};
     const IndexType numValues = sizeof( values ) / sizeof( ValueType );
-    HArray<IndexType> cooIA( numValues, ia );
-    HArray<IndexType> cooJA( numValues, ja );
-    HArray<ValueType> cooValues( numValues, values );
+    LAMAArray<IndexType> cooIA( numValues, ia );
+    LAMAArray<IndexType> cooJA( numValues, ja );
+    LAMAArray<ValueType> cooValues( numValues, values );
     COOStorage<ValueType> cooStorage( numRows, numColumns, cooIA, cooJA, cooValues );
     BOOST_REQUIRE_EQUAL( numRows, cooStorage.getNumRows() );
     BOOST_REQUIRE_EQUAL( numColumns, cooStorage.getNumColumns() );

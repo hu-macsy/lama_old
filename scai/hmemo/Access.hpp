@@ -53,9 +53,9 @@ namespace hmemo
 
 class COMMON_DLL_IMPORTEXPORT Access: 
 
-    public  scai::common::Printable,
-    private scai::common::NonCopyable,
-    public  scai::tasking::SyncTokenMember
+    public  common::Printable,
+    private common::NonCopyable,
+    public  tasking::SyncTokenMember
 {
 public:
 

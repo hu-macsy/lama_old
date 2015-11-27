@@ -57,17 +57,9 @@ if    ( DOXYGEN_FOUND )
     )
 
     add_custom_target (
-        doc
+        doxygendoc
         DEPENDS
         ${DOXYGEN_BUILD_ROOT}/html/index.html
-    )
-    
-    add_custom_target (
-        install_doc
-        COMMAND mkdir -p ${DOXYGEN_INSTALL_ROOT}/share/doc/lama-${LAMA_VERSION}/system
-        COMMAND cp -r ${DOXYGEN_BUILD_ROOT}/system/html/* ${DOXYGEN_INSTALL_ROOT}/share/doc/lama-${LAMA_VERSION}/system
-        DEPENDS ${DOXYGEN_BUILD_ROOT}/system/html/index.html
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
     )
 
 else  ( DOXYGEN_FOUND )

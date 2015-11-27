@@ -71,7 +71,7 @@ typedef size_t ContextDataIndex;
  *  at different contexts.
  */
 
-class ContextDataManager : private scai::common::NonCopyable, public scai::common::Printable
+class ContextDataManager : private common::NonCopyable, public common::Printable
 {
 public:
 
@@ -163,9 +163,9 @@ public:
 
     /** This routine tries to find a context where valid data is available */
 
-    ContextPtr getValidContext( const common::context::ContextType preferredType );
+    ContextPtr getValidContext( const ContextPtr prefContext ) const;
 
-    ContextPtr getFirstTouchContextPtr();
+    ContextPtr getFirstTouchContextPtr() const;
 
     void reserve( ContextPtr context, const size_t size, const size_t validSize );
 
@@ -190,7 +190,7 @@ private:
 
     std::vector<ContextData> mContextData; // Incarnations of the array at different contexts
 
-    scai::common::unique_ptr<tasking::SyncToken> mSyncToken; //!<  outstanding transfers
+    common::unique_ptr<tasking::SyncToken> mSyncToken; //!<  outstanding transfers
 
     ContextDataIndex findContextData( ContextPtr context ) const;
 

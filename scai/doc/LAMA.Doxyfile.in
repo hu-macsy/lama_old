@@ -38,7 +38,7 @@ PROJECT_NUMBER         =
 # If a relative path is entered, it will be relative to the location
 # where doxygen was started. If left blank the current directory will be used.
 
-OUTPUT_DIRECTORY       = system
+OUTPUT_DIRECTORY       =
 
 # If the CREATE_SUBDIRS tag is set to YES, then doxygen will create
 # 4096 sub-directories (in 2 levels) under the output directory of each output
@@ -553,12 +553,12 @@ WARN_LOGFILE           =
 # directories like "/usr/src/myproject". Separate the files or directories
 # with spaces.
 
-INPUT                  = ${CMAKE_SOURCE_DIR}/doc/system \
-                         ${CMAKE_SOURCE_DIR}/common  \
+INPUT                  = ${CMAKE_SOURCE_DIR}/common  \
                          ${CMAKE_SOURCE_DIR}/logging  \
                          ${CMAKE_SOURCE_DIR}/tracing  \
                          ${CMAKE_SOURCE_DIR}/kregistry  \
                          ${CMAKE_SOURCE_DIR}/hmemo  \
+                         ${CMAKE_SOURCE_DIR}/blaskernel  \
                          ${CMAKE_SOURCE_DIR}/tasking  \
                          ${CMAKE_SOURCE_DIR}/lama
 
@@ -600,7 +600,9 @@ EXCLUDE                =  ${CMAKE_SOURCE_DIR}/lama/test \
                           ${CMAKE_SOURCE_DIR}/common/examples \
                           ${CMAKE_SOURCE_DIR}/common/test \
                           ${CMAKE_SOURCE_DIR}/hmemo/examples \
-                          ${CMAKE_SOURCE_DIR}/hmemo/test
+                          ${CMAKE_SOURCE_DIR}/hmemo/test     \
+                          ${CMAKE_SOURCE_DIR}/blaskernel/examples \
+                          ${CMAKE_SOURCE_DIR}/blaskernel/test
 
 # The EXCLUDE_SYMLINKS tag can be used select whether or not files or
 # directories that are symbolic links (a Unix filesystem feature) are excluded

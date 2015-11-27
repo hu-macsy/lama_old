@@ -37,6 +37,16 @@ cmake_minimum_required ( VERSION 2.8 )
 ### Set PROJECT NAME / supported LANGUAGES
 project( scai_tasking CXX )
 
+### Set version of tasking
+# TOOD: where is the best place to define this?
+set ( SCAI_TASKING_VERSION_NAME "Alpamayo" )
+set ( SCAI_TASKING_COPYRIGHT_YEAR 2015 )
+set ( SCAI_TASKING_VERSION_MAJOR 1 )
+set ( SCAI_TASKING_VERSION_MINOR 0 )
+set ( SCAI_TASKING_VERSION_PATCH 1 )
+set ( SCAI_TASKING_VERSION_COUNT 3 )
+set ( SCAI_TASKING_VERSION ${SCAI_TASKING_VERSION_MAJOR}.${SCAI_TASKING_VERSION_MINOR}.${SCAI_TASKING_VERSION_PATCH} )
+
 ### Set Module Path
 set ( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../CMake/Modules" )
 
@@ -45,6 +55,7 @@ if    ( NOT SCAI_COMPLETE_BUILD )
 	include ( SetBuildFlags )
 	include ( SCAIAssert )
 	include ( SetCPPFlags )
+	include ( Package/Sphinx )
 else  ( NOT SCAI_COMPLETE_BUILD )
 	include ( Functions/CheckValueAtCompleteBuild )
 	CheckValueAtCompleteBuild ( tasking )
@@ -124,6 +135,9 @@ relative_install ( FILES ${CXX_HEADERS} DESTINATION include/scai/tasking )
 
 ## install library.hpp
 install ( FILES ../tasking.hpp DESTINATION include/scai )
+
+### add documentation
+add_subdirectory( doc )
 
 ## add custum target distClean
 include ( DistClean )

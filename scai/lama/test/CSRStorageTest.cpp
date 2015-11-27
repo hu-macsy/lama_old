@@ -111,9 +111,9 @@ void constructorTest1( ContextPtr loc )
     const IndexType sizeValues = sizeof( values ) / sizeof( ValueType );
     BOOST_CHECK_EQUAL( numValues, sizeJA );
     BOOST_CHECK_EQUAL( numValues, sizeValues );
-    HArray<IndexType> csrIA( numRows + 1, ia );
-    HArray<IndexType> csrJA( numValues, ja );
-    HArray<ValueType> csrValues( numValues, values );
+    LAMAArray<IndexType> csrIA( numRows + 1, ia );
+    LAMAArray<IndexType> csrJA( numValues, ja );
+    LAMAArray<ValueType> csrValues( numValues, values );
     CSRStorage<ValueType> csrStorage( numRows, numColumns, numValues, csrIA, csrJA, csrValues );
     BOOST_REQUIRE_EQUAL( numRows, csrStorage.getNumRows() );
     BOOST_REQUIRE_EQUAL( numColumns, csrStorage.getNumColumns() );

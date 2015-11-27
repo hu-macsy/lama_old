@@ -192,6 +192,21 @@ scai_summary_message ( "USE"
                            "Boost_REGEX_FOUND"
                            "Boost Regex"
                            "" )
+                           
+message ( STATUS "" )
+scai_status_message ( HEADLINE "DOCUMENTATION:" )
+# DOC
+scai_summary_message ( "USE"
+                       "BUILD_DOC"
+                       "DOC"
+                       "" )
+                                     
+scai_summary_message ( "FOUND"
+                       "SPHINX_FOUND"
+                       "Sphinx"
+                       "Version ${Sphinx_VERSION_STRING} at ${Sphinx-build_EXECUTABLE}: 'make doc' to build user documentation" )
+
+message ( STATUS "" )
 
 message ( STATUS "" )
 
