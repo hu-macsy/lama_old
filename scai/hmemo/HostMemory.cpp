@@ -130,6 +130,8 @@ void HostMemory::free( void* pointer, const size_t size ) const
 
 void HostMemory::memcpy( void* dst, const void* src, const size_t size ) const
 {
+    SCAI_REGION( "Memory.Host_memcpy" )
+
     SCAI_LOG_DEBUG( logger, "memcpy: " << dst << " <- " << src << ", size = " << size )
 
     ::memcpy( dst, src, size );
