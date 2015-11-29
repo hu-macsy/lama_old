@@ -185,12 +185,13 @@ struct UtilKernelTrait
          *  @param[in,out]  inValues   is the array with entries to scale
          *  @param[in]      n          is the number of entries
          */
-        typedef void ( *FuncType ) ( ValueType1 outValues[],
-                        const ValueType1 scaleValue,
-                        const ValueType2 inValues[],
-                        const IndexType n );
+        typedef void ( *FuncType ) ( 
+            ValueType1 outValues[],
+            const ValueType1 scaleValue,
+            const ValueType2 inValues[],
+            const IndexType n );
  
-         static const char* getId() { return "Util.setScale"; } 
+        static const char* getId() { return "Util.setScale"; } 
     };
 
     template<typename ValueType1, typename ValueType2>
@@ -198,23 +199,61 @@ struct UtilKernelTrait
     {
         /** Set out[i] = in[ indexes[i] ],  \f$0 \le i < n\f$ */
 
-        typedef void ( *FuncType ) ( ValueType1 out[],
-                        const ValueType2 in[],
-                        const IndexType indexes[],
-                        const IndexType n );
+        typedef void ( *FuncType ) ( 
+            ValueType1 out[],
+            const ValueType2 in[],
+            const IndexType indexes[],
+            const IndexType n );
 
         static const char* getId() { return "Util.setGather"; } 
+    };
+
+    template<typename ValueType>
+    struct scatterVal
+    {
+        /** @brief Setting one value at multiple positions in an array.
+         *
+         *  @param[in,out] out is the array in which values will be written
+         *  @param[in]     indexes are the positions the value is written
+         *  @param[in]     value is the value written in the out array
+         *  @param[in]     n is the number of values 
+         *
+         *  Note: Not all values might be set in 'out'. 
+         *
+         *  out[ indexes[i] ] = value, i = 0, ..., n-1
+         */
+
+        typedef void ( *FuncType ) ( 
+            ValueType out[],
+            const IndexType indexes[],
+            const ValueType value,
+            const IndexType n );
+
+        static const char* getId() { return "Util.scatterVal"; }
     };
 
     template<typename ValueType1, typename ValueType2>
     struct setScatter
     {
-        /** Set out[ indexes[i] ] = in [i] */
+        /** @brief Indirect set of arrays also known as scatter.
+         *
+         *  @param[in,out] out is the array in which values will be inserted
+         *  @param[in]     indexes are the positions where values are written
+         *  @param[in]     in is the array with the output values.
+         *  @param[in]     n is the number of values 
+         *
+         *  Note: Not all values might be set in 'out'. There should be no double
+         *        values in indexes as this might result in non-ambiguous results
+         *        by a parallel execution.
+         *
+         *  out[ indexes[i] ] = in [i] , i = 0, ..., n-1
+         */
 
-        typedef void ( *FuncType ) ( ValueType1 out[],
-                        const IndexType indexes[],
-                        const ValueType2 in[],
-                        const IndexType n );
+        typedef void ( *FuncType ) ( 
+            ValueType1 out[],
+            const IndexType indexes[],
+            const ValueType2 in[],
+            const IndexType n );
 
         static const char* getId() { return "Util.setScatter"; }
     };

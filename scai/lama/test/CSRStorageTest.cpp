@@ -166,6 +166,40 @@ void constructorTest1( ContextPtr loc )
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
+void compressTest( ContextPtr loc )
+{
+    const IndexType numRows = 3;
+    const IndexType numColumns = 3;
+    const IndexType ia[] = { 0, 1, 2, 4 };
+    const IndexType ja[] = { 0, 1, 1, 2 };
+    const ValueType values[] = { 1, 1, 0, 1 };
+    const IndexType numValues = ia[numRows];
+    const IndexType sizeJA     = sizeof( ja ) / sizeof( IndexType );
+    const IndexType sizeValues = sizeof( values ) / sizeof( ValueType );
+
+    BOOST_CHECK_EQUAL( numValues, sizeJA );
+    BOOST_CHECK_EQUAL( numValues, sizeValues );
+
+    LAMAArray<IndexType> csrIA( numRows + 1, ia );
+    LAMAArray<IndexType> csrJA( numValues, ja );
+    LAMAArray<ValueType> csrValues( numValues, values );
+
+    CSRStorage<ValueType> csr( numRows, numColumns, numValues, csrIA, csrJA, csrValues );
+
+    csr.setContextPtr( loc );
+
+    BOOST_CHECK_EQUAL( numValues, csr.getNumValues() );
+
+    csr.compress();
+
+    // one zero element (not diagonal) is removed by compress
+
+    BOOST_CHECK_EQUAL( numValues - 1, csr.getNumValues() );
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+template<typename ValueType>
 void typeNameTest()
 {
     CSRStorage<ValueType> csrStorage;
@@ -184,10 +218,13 @@ void typeNameTest()
 BOOST_AUTO_TEST_SUITE( CSRStorageTest )
 
 SCAI_LOG_DEF_LOGGER( logger, "Test.CSRStorageTest" );
+
 LAMA_AUTO_TEST_CASE_CT( commonTestCases, CSRStorageTest, scai::lama )
 LAMA_AUTO_TEST_CASE_T( constructorTest, CSRStorageTest )
 LAMA_AUTO_TEST_CASE_CT( constructorTest1, CSRStorageTest, scai::lama )
+LAMA_AUTO_TEST_CASE_CT( compressTest, CSRStorageTest, scai::lama )
 LAMA_AUTO_TEST_CASE_T( typeNameTest, CSRStorageTest )
+
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 BOOST_AUTO_TEST_SUITE_END();

@@ -103,25 +103,32 @@ public:
     template<typename ValueType>
     static ValueType absMaxDiffVal( const ValueType array1[], const ValueType array2[], const IndexType n );
 
-    /** OpenMP implementation for UtilKernelTrait::Reductions::isSorted */
+    /** OpenMP implementation for UtilKernelTrait::isSorted */
 
     template<typename ValueType>
     static bool isSorted( const ValueType array[], const IndexType n, bool acending );
 
+    /** OpenMP implementation for UtilKernelTrait::set */
+
     template<typename ValueType1,typename ValueType2>
     static void set( ValueType1 out[], const ValueType2 in[], const IndexType n );
 
-    /** Set out[i] = in[ indexes[i] ],  0 <= i < n */
+    /** OpenMP implementation for UtilKernelTrait::setGather */
 
     template<typename ValueType1,typename ValueType2>
     static void setGather( ValueType1 out[], const ValueType2 in[], const IndexType indexes[], const IndexType n );
 
-    /** Set out[ indexes[i] ] = in [i] */
+    /** OpenMP implementation for UtilKernelTrait::scatterVal */
+
+    template<typename ValueType>
+    static void scatterVal( ValueType out[], const IndexType indexes[], const ValueType value, const IndexType n );
+
+    /** OpenMP implementation for UtilKernelTrait::setScatter */
 
     template<typename ValueType1,typename ValueType2>
     static void setScatter( ValueType1 out[], const IndexType indexes[], const ValueType2 in[], const IndexType n );
 
-    /** OpenMP implementation for UtilKernelTrait::Math::invert */
+    /** OpenMP implementation for UtilKernelTrait::invert */
 
     template<typename ValueType>
     static void invert( ValueType array[], const IndexType n );

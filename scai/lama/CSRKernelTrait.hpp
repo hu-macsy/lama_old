@@ -82,14 +82,15 @@ struct CSRKernelTrait
          *  solution = omega * ( rhs + B * oldSolution) * dinv  + ( 1 - omega ) * oldSolution
          *
          */
-        typedef void ( *FuncType ) ( ValueType solution[],
-                        const IndexType csrIA[],
-                        const IndexType csrJA[],
-                        const ValueType csrValues[],
-                        const ValueType oldSolution[],
-                        const ValueType rhs[],
-                        const ValueType omega,
-                        const IndexType numRows );
+        typedef void ( *FuncType ) ( 
+            ValueType solution[],
+            const IndexType csrIA[],
+            const IndexType csrJA[],
+            const ValueType csrValues[],
+            const ValueType oldSolution[],
+            const ValueType rhs[],
+            const ValueType omega,
+            const IndexType numRows );
 
         static const char* getId() { return "CSR.jacobi"; }
     };
@@ -102,16 +103,17 @@ struct CSRKernelTrait
          *  solution -= omega * ( B(halo) * oldSolution) * dinv
          *
          */
-        typedef void ( *FuncType ) ( ValueType solution[],
-                        const IndexType localIA[],
-                        const ValueType localValues[],
-                        const IndexType haloIA[],
-                        const IndexType haloJA[],
-                        const ValueType haloValues[],
-                        const IndexType haloRowIndexes[],
-                        const ValueType oldSolution[],
-                        const ValueType omega,
-                        const IndexType numNonEmptyRows );
+        typedef void ( *FuncType ) ( 
+            ValueType solution[],
+            const IndexType localIA[],
+            const ValueType localValues[],
+            const IndexType haloIA[],
+            const IndexType haloJA[],
+            const ValueType haloValues[],
+            const IndexType haloRowIndexes[],
+            const ValueType oldSolution[],
+            const ValueType omega,
+            const IndexType numNonEmptyRows );
 
         static const char* getId() { return "CSR.jacobiHalo"; }
     };
@@ -125,15 +127,16 @@ struct CSRKernelTrait
          *
          *  @since 1.1.0
          */
-        typedef void ( *FuncType ) ( ValueType solution[],
-                        const ValueType localDiagValues[],
-                        const IndexType haloIA[],
-                        const IndexType haloJA[],
-                        const ValueType haloValues[],
-                        const IndexType haloRowIndexes[],
-                        const ValueType oldSolution[],
-                        const ValueType omega,
-                        const IndexType numNonEmptyRows );
+        typedef void ( *FuncType ) ( 
+            ValueType solution[],
+            const ValueType localDiagValues[],
+            const IndexType haloIA[],
+            const IndexType haloJA[],
+            const ValueType haloValues[],
+            const IndexType haloRowIndexes[],
+            const ValueType oldSolution[],
+            const ValueType omega,
+            const IndexType numNonEmptyRows );
 
         static const char* getId() { return "CSR.jacobiHaloWithDiag"; }
     };
@@ -239,13 +242,16 @@ struct CSRKernelTrait
          *  @param[in]  bIA, bJA are the index arrays of matrix B
          */
 
-        typedef IndexType ( *FuncType ) ( IndexType cSizes[],
-                        const IndexType m,
-                        const IndexType n,
-                        const IndexType k,
-                        bool diagonalProperty,
-                        const IndexType aIA[], const IndexType aJA[],
-                        const IndexType bIA[], const IndexType bJA[] );
+        typedef IndexType ( *FuncType ) ( 
+            IndexType cSizes[],
+            const IndexType m,
+            const IndexType n,
+            const IndexType k,
+            bool diagonalProperty,
+            const IndexType aIA[], 
+            const IndexType aJA[],
+            const IndexType bIA[], 
+            const IndexType bJA[] );
 
         static const char* getId() { return "CSR.matrixMultiplySizes"; }
     };
@@ -263,11 +269,16 @@ struct CSRKernelTrait
          *  @param[in]  bIA, bJA are the index arrays of matrix B
          */
 
-        typedef void ( *FuncType ) ( IndexType cJA[], const IndexType cIA[],
-                        const IndexType numRows, const IndexType numColumns,
-                        bool diagonalProperty,
-                        const IndexType aIA[], const IndexType aJA[],
-                        const IndexType bIA[], const IndexType bJA[] );
+        typedef void ( *FuncType ) ( 
+            IndexType cJA[], 
+            const IndexType cIA[],
+            const IndexType numRows, 
+            const IndexType numColumns,
+            bool diagonalProperty,
+            const IndexType aIA[], 
+            const IndexType aJA[],
+            const IndexType bIA[], 
+            const IndexType bJA[] );
 
         static const char* getId() { return "CSR.matrixMultiplyJA"; }
     };
@@ -283,9 +294,10 @@ struct CSRKernelTrait
          *
          *  The diagonal property is given if the first column index in the row is same as the row index.
          */
-        typedef bool ( *FuncType ) ( const IndexType numDiagonals,
-                        const IndexType csrIA[],
-                        const IndexType csrJA[] );
+        typedef bool ( *FuncType ) ( 
+            const IndexType numDiagonals,
+            const IndexType csrIA[],
+            const IndexType csrJA[] );
 
         static const char* getId() { return "CSR.hasDiagonalProperty"; }
     };
@@ -339,10 +351,11 @@ struct CSRKernelTrait
          *  This routine supports different precision for matrix values and scale values.
          */
 
-        typedef void ( *FuncType ) ( ValueType1 csrValues[],
-                        const IndexType csrIA[],
-                        const IndexType numRows,
-                        const ValueType2 values[] );
+        typedef void ( *FuncType ) ( 
+            ValueType1 csrValues[],
+            const IndexType csrIA[],
+            const IndexType numRows,
+            const ValueType2 values[] );
 
         static const char* getId() { return "CSR.scaleRows"; }
     };
@@ -361,9 +374,15 @@ struct CSRKernelTrait
          *  @returns maximal value of absolute difference between two matrix elements
          */
 
-        typedef ValueType ( *FuncType ) ( IndexType numRows, bool sortedRows,
-                        const IndexType csrIA1[], const IndexType csrJA1[], const ValueType csrValues1[],
-                        const IndexType csrIA2[], const IndexType csrJA2[], const ValueType csrValues2[] );
+        typedef ValueType ( *FuncType ) ( 
+            IndexType numRows, 
+            bool sortedRows,
+            const IndexType csrIA1[], 
+            const IndexType csrJA1[], 
+            const ValueType csrValues1[],
+            const IndexType csrIA2[], 
+            const IndexType csrJA2[], 
+            const ValueType csrValues2[] );
 
         static const char* getId() { return "CSR.absMaxDiffVal"; }
     };
@@ -410,16 +429,17 @@ struct CSRKernelTrait
     template<typename ValueType>
     struct normalGEVM
     {
-        typedef void ( *FuncType ) ( ValueType result[],
-                        const ValueType alpha,
-                        const ValueType x[],
-                        const ValueType beta,
-                        const ValueType y[],
-                        const IndexType numRows,
-                        const IndexType numColumns,
-                        const IndexType csrIA[],
-                        const IndexType csrJA[],
-                        const ValueType csrValues[] );
+        typedef void ( *FuncType ) ( 
+            ValueType result[],
+            const ValueType alpha,
+            const ValueType x[],
+            const ValueType beta,
+            const ValueType y[],
+            const IndexType numRows,
+            const IndexType numColumns,
+            const IndexType csrIA[],
+            const IndexType csrJA[],
+            const ValueType csrValues[] );
 
         static const char* getId() { return "CSR.normalGEVM"; }
     };
@@ -440,14 +460,15 @@ struct CSRKernelTrait
          *        to run over the full result vector
          */
 
-        typedef void ( *FuncType ) ( ValueType result[],
-                        const ValueType alpha,
-                        const ValueType x[],
-                        const IndexType numNonZeroRows,
-                        const IndexType rowIndexes[],
-                        const IndexType csrIA[],
-                        const IndexType csrJA[],
-                        const ValueType csrValues[] );
+        typedef void ( *FuncType ) ( 
+            ValueType result[],
+            const ValueType alpha,
+            const ValueType x[],
+            const IndexType numNonZeroRows,
+            const IndexType rowIndexes[],
+            const IndexType csrIA[],
+            const IndexType csrJA[],
+            const ValueType csrValues[] );
 
         static const char* getId() { return "CSR.sparseGEMV"; }
     };
@@ -455,15 +476,16 @@ struct CSRKernelTrait
     template<typename ValueType>
     struct sparseGEVM
     {
-        typedef void ( *FuncType ) ( ValueType result[],
-                        const ValueType alpha,
-                        const ValueType x[],
-                        const IndexType numColumns,
-                        const IndexType numNonZeroRows,
-                        const IndexType rowIndexes[],
-                        const IndexType csrIA[],
-                        const IndexType csrJA[],
-                        const ValueType csrValues[] );
+        typedef void ( *FuncType ) ( 
+            ValueType result[],
+            const ValueType alpha,
+            const ValueType x[],
+            const IndexType numColumns,
+            const IndexType numNonZeroRows,
+            const IndexType rowIndexes[],
+            const IndexType csrIA[],
+            const IndexType csrJA[],
+            const ValueType csrValues[] );
 
         static const char* getId() { return "CSR.sparseGEMV"; }
     };
@@ -483,17 +505,18 @@ struct CSRKernelTrait
          *   @param[in]  csrVaues is value array of CSR matrix
          */
 
-        typedef void ( *FuncType ) ( ValueType result[],
-                        const ValueType alpha,
-                        const ValueType x[],
-                        const ValueType beta,
-                        const ValueType y[],
-                        const IndexType m,
-                        const IndexType n,
-                        const IndexType p,
-                        const IndexType csrIA[],
-                        const IndexType csrJA[],
-                        const ValueType csrValues[] );
+        typedef void ( *FuncType ) ( 
+            ValueType result[],
+            const ValueType alpha,
+            const ValueType x[],
+            const ValueType beta,
+            const ValueType y[],
+            const IndexType m,
+            const IndexType n,
+            const IndexType p,
+            const IndexType csrIA[],
+            const IndexType csrJA[],
+            const ValueType csrValues[] );
 
         static const char* getId() { return "CSR.gemm"; }
     };
@@ -517,20 +540,21 @@ struct CSRKernelTrait
          *  before.
          */
 
-        typedef void ( *FuncType ) ( IndexType cJA[],
-                        ValueType cValues[],
-                        const IndexType cIA[],
-                        const IndexType numRows,
-                        const IndexType numColumns,
-                        const bool diagonalProperty,
-                        const ValueType alpha,
-                        const IndexType aIA[],
-                        const IndexType aJA[],
-                        const ValueType aValues[],
-                        const ValueType beta,
-                        const IndexType bIA[],
-                        const IndexType bJA[],
-                        const ValueType bValues[] );
+        typedef void ( *FuncType ) ( 
+            IndexType cJA[],
+            ValueType cValues[],
+            const IndexType cIA[],
+            const IndexType numRows,
+            const IndexType numColumns,
+            const bool diagonalProperty,
+            const ValueType alpha,
+            const IndexType aIA[],
+            const IndexType aJA[],
+            const ValueType aValues[],
+            const ValueType beta,
+            const IndexType bIA[],
+            const IndexType bJA[],
+            const ValueType bValues[] );
 
         static const char* getId() { return "CSR.matrixAdd"; }
     };
@@ -554,40 +578,72 @@ struct CSRKernelTrait
          *  an available entry.
          */
 
-        typedef void ( *FuncType ) ( const IndexType cIa[],
-                        IndexType cJA[],
-                        ValueType cValues[],
-                        const IndexType m,
-                        const IndexType n,
-                        const IndexType k,
-                        const ValueType alpha,
-                        bool diagonalProperty,
-                        const IndexType aIA[],
-                        const IndexType aJA[],
-                        const ValueType aValues[],
-                        const IndexType bIA[],
-                        const IndexType bJA[],
-                        const ValueType bValues[] );
+        typedef void ( *FuncType ) ( 
+            const IndexType cIa[],
+            IndexType cJA[],
+            ValueType cValues[],
+            const IndexType m,
+            const IndexType n,
+            const IndexType k,
+            const ValueType alpha,
+            bool diagonalProperty,
+            const IndexType aIA[],
+            const IndexType aJA[],
+            const ValueType aValues[],
+            const IndexType bIA[],
+            const IndexType bJA[],
+            const ValueType bValues[] );
 
         static const char* getId() { return "CSR.matrixMultiply"; }
     };
-};
 
     template<typename ValueType>
-    struct scale
+    struct countNonZeros
     {
-        /** @brief scale array of values with a value in place
+        /** Count non zero entries in CSR storage after matrix operation like add, mult 
          *
-         *  @param[in,out]  values is the array with entries to scale
-         *  @param[in]      value  is the scaling factor
-         *  @param[in]      n      is the number of entries in values
+         * @param[out] sizes are the row sizes for the compressed data
+         * @param[in] ia, ja, values, numRows are the data of the current CSR storage
+         * @param[in] eps     threshold value for which an element is considered to be zero
+         * @param[in] diagonalFlag if true diagonal elements are counted in any case
          */
-        typedef void ( *FuncType ) ( ValueType values[],
-                        const ValueType value,
-                        const IndexType n );
+        typedef void ( *FuncType )(
+            IndexType sizes[],
+            const IndexType ia[],
+            const IndexType ja[],
+            const ValueType values[],
+            const IndexType numRows,
+            const ValueType eps,
+            const bool diagonalFlag );
 
-        static const char* getId() { return "scale"; }
+        static const char* getId() { return "CSR.countNonZeros"; }
     };
+
+    template<typename ValueType>
+    struct compress
+    {
+        /** Fill compressed CSR data in new data structures
+         *
+         * @param[out] newJA, newValues column indexes and data of the new CSR data
+         * @param[in] newIA   new offsets, computed by countNonZeros + sizes2offsets
+         * @param[in] ia, ja, values, numRows are the data of the current CSR storage
+         * @param[in] eps     threshold value for which an element is considered to be zero
+         * @param[in] diagonalFlag if true diagonal elements are counted in any case
+         */
+        typedef void ( *FuncType )(
+            IndexType newJA[],
+            ValueType newValues[],
+            const IndexType newIA[],
+            const IndexType ia[],
+            const IndexType ja[],
+            const ValueType values[],
+            const IndexType numRows,
+            const ValueType eps,
+            const bool diagonalFlag );
+
+        static const char* getId() { return "CSR.compress"; }
+    };
+};
 
 } /* end namespace lama */
 

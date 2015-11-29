@@ -430,6 +430,25 @@ void OpenMPUtils::setGather( ValueType1 out[], const ValueType2 in[], const Inde
 
 /* --------------------------------------------------------------------------- */
 
+template<typename ValueType>
+void OpenMPUtils::scatterVal( ValueType out[], const IndexType indexes[], const ValueType value, const IndexType n )
+{
+    SCAI_REGION( "OpenMP.Utils.scatterVal" )
+
+    SCAI_LOG_DEBUG( logger,
+                    "scatterVal: out<" << TypeTraits<ValueType>::id() << ">" 
+                     << "[ indexes[" << n << "] ]" << " = " << value )
+
+    #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
+
+    for ( IndexType i = 0; i < n; i++ )
+    {
+        out[indexes[i]] = value;
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
 template<typename ValueType1,typename ValueType2>
 void OpenMPUtils::setScatter( ValueType1 out[], const IndexType indexes[], const ValueType2 in[], const IndexType n )
 {

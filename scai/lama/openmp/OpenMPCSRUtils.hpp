@@ -342,7 +342,7 @@ public:
         const IndexType bJA[],
         const ValueType bValues[] );
 
-    /** Implementation for CSRKernelTrait::Reductions::absMaxDiffVal */
+    /** Implementation for CSRKernelTrait::absMaxDiffVal */
 
     template<typename ValueType>
     static ValueType absMaxDiffVal(
@@ -354,6 +354,32 @@ public:
         const IndexType csrIA2[],
         const IndexType csrJA2[],
         const ValueType csrValues2[] );
+
+    /** Implementation for CSRKernelTrait::countNonZeros */
+
+    template<typename ValueType>
+    static void countNonZeros(
+        IndexType sizes[],
+        const IndexType ia[],
+        const IndexType ja[],
+        const ValueType values[],
+        const IndexType numRows,
+        const ValueType eps,
+        const bool diagonalFlag );
+
+    /** Implementation for CSRKernelTrait::compress */
+
+    template<typename ValueType>
+    static void compress(
+        IndexType newJA[],
+        ValueType newValues[],
+        const IndexType newIA[],
+        const IndexType ia[],
+        const IndexType ja[],
+        const ValueType values[],
+        const IndexType numRows,
+        const ValueType eps,
+        const bool diagonalFlag );
 
 protected:
 
