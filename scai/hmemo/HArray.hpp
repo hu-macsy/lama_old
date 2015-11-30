@@ -533,9 +533,11 @@ void HArray<ValueType>::resize( ContextDataIndex index, const IndexType size )
 
     // SCAI_ASSERT( entry.locked( common::context::Write ), "resize illegal here " << entry )
 
-    size_t allocSize = size * mValueSize;
+    // static cast to have multiplication with 64 bit values
 
-    size_t validSize = mSize * mValueSize;
+    size_t allocSize = static_cast<size_t>( size ) * mValueSize;
+
+    size_t validSize = static_cast<size_t>( mSize ) * mValueSize;
 
     if ( validSize > allocSize )
     {
