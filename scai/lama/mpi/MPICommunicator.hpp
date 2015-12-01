@@ -303,6 +303,12 @@ inline MPI_Datatype MPICommunicator::getMPIType<int>()
 }
 
 template<>
+inline MPI_Datatype MPICommunicator::getMPIType<unsigned int>()
+{
+    return MPI_UNSIGNED;
+}
+
+template<>
 inline MPI_Datatype MPICommunicator::getMPIType<long double>()
 {
     return MPI_LONG_DOUBLE;
