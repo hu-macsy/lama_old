@@ -30,8 +30,6 @@
  # @date 02.12.2015
 ###
 
-include_directories( "${CMAKE_BINARY_DIR}/include" )
-
 foreach ( executable task0 task1a task1b task2 task2a task3 task4 task5 )
     add_executable( ${executable} ${executable}.cpp )
     target_link_libraries( ${executable} ama )

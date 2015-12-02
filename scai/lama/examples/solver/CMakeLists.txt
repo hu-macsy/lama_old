@@ -30,8 +30,6 @@
  # @date 02.12.2015
 ###
 
-include_directories( "${CMAKE_BINARY_DIR}/include" )
-
 foreach ( executable amg_solver cg_solver gmres_solver jacobi_solver lama_info matrix_generator )
     add_executable( ${executable} ${executable}.cpp )
     target_link_libraries( ${executable} ama )

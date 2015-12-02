@@ -30,12 +30,24 @@
  # @date 02.12.2015
 ###
 
-include_directories( "${CMAKE_BINARY_DIR}/include" )
+## Example needs the PNG library
 
-foreach ( executable amg_spy spy )
-    add_executable( ${executable} ${executable}.cpp )
-    target_link_libraries( ${executable} ama png )
-    set ( EXAMPLE_EXECUTABLES_SPY "${EXAMPLE_EXECUTABLES_SPY} ${executable}.exe" )
-endforeach ( executable )
+find_path( PNG_INCLUDE_DIR png.h
+           /opt/local/include
+           /usr/local/include
+           /usr/include )
 
+find_library( PNG_LIBRARY 
+              NAMES png
+)
+
+if ( PGN_LIBRARY AND PGN_INCLUDE_DIR )
+    add_include_directories( ${PNG_INCLUDE_DIR} )
+    foreach ( executable amg_spy spy )
+        add_executable( ${executable} ${executable}.cpp )
+        target_link_libraries( ${executable} ama $PNG_LIBRARY )
+        set ( EXAMPLE_EXECUTABLES_SPY "${EXAMPLE_EXECUTABLES_SPY} ${executable}.exe" )
+    endforeach ( executable )
+endif ()
+    
 set ( EXAMPLE_EXECUTABLES_SPY "${EXAMPLE_EXECUTABLES_SPY}" PARENT_SCOPE )
