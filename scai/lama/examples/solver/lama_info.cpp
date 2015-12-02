@@ -32,7 +32,7 @@
 
 // Define levels for assertion, logging and tracing
 
-#include "lama.hpp"
+#include "scai/lama.hpp"
 
 #include <scai/lama/DenseVector.hpp>
 #include <scai/lama/Scalar.hpp>
@@ -41,11 +41,15 @@
 #include <scai/lama/matutils/MatrixCreator.hpp>
 #include <scai/lama/NoCommunicator.hpp>
 
+#include <scai/common/ContextType.hpp>
 #include <scai/common/shared_ptr.hpp>
 
 #include <iostream>
 
 using namespace std;
+
+using scai::common::context::ContextType;
+using scai::common::shared_ptr;
 
 void contextInfo()
 {
@@ -108,7 +112,7 @@ void matrixInfo()
     {
         cout << "   Registered values[" << i << "] = " << keys[i].first << ", " << keys[i].second << endl;
 
-        common::shared_ptr<Matrix> matrix ( Matrix::create( keys[i] ) );
+        shared_ptr<Matrix> matrix ( Matrix::create( keys[i] ) );
 
         cout << "Matrix : " << *matrix << endl;
     }
@@ -128,13 +132,13 @@ void vectorInfo()
     {
         cout << "   Registered values[" << i << "] = " << keys[i].first << ", " << keys[i].second << endl;
 
-        common::shared_ptr<Vector> vector ( Vector::create( keys[i] ) );
+        shared_ptr<Vector> vector ( Vector::create( keys[i] ) );
 
         cout << "Vector : " << *vector << endl;
     }
 }
 
-int main( int argc, char* argv[] )
+int main( int /*argc */, char** /*argv*/ )
 {
     communicatorInfo();
     contextInfo();

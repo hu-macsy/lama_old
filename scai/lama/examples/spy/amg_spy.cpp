@@ -96,7 +96,7 @@ int main( int argc, char** argv )
 
     std::cout << "amgSolver has " << amgSolver->getNumLevels() << " levels" << std::endl;
 
-    for ( int level = 0; level < amgSolver->getNumLevels(); ++level )
+    for ( int level = 0; level < (int)amgSolver->getNumLevels(); ++level )
     {
         const Matrix& mat = amgSolver->getGalerkin( level );
         std::cout << "Galerkin matrix on level " << level << ": " << mat << std::endl;
@@ -156,7 +156,7 @@ int main( int argc, char** argv )
         std::cout << "png files has been written as " << out_filename.str() << std::endl;
     }
  
-    for ( int level = 0; level < amgSolver->getNumLevels() - 1; ++level )
+    for ( int level = 0; level < (int)amgSolver->getNumLevels() - 1; ++level )
     {
         const Matrix& mat = amgSolver->getInterpolation( level );
         std::cout << "Interpolation matrix on level " << level << ": " << mat << std::endl;

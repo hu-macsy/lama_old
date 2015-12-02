@@ -293,7 +293,7 @@ void LamaConfig::setArg( const char* arg )
 
         tokenize( singleVals, val, "," );
 
-        if ( singleVals.size() == mComm->getNodeSize() )
+        if ( (int)singleVals.size() == mComm->getNodeSize() )
         {
             const std::string myVal = singleVals[ mComm->getNodeRank() ];
 
