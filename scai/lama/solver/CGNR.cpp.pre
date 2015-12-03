@@ -55,34 +55,33 @@ namespace lama
 SCAI_LOG_DEF_LOGGER( CGNR::logger, "Solver.CGNR" )
 
 CGNR::CGNR( const std::string& id )
-    : IterativeSolver( id ) {}
+    : IterativeSolver(id){}
 
 
 CGNR::CGNR( const std::string& id, LoggerPtr logger )
-    : IterativeSolver( id , logger ) {}
+    : IterativeSolver(id ,logger){}
 
 CGNR::CGNR( const CGNR& other )
-    : IterativeSolver( other ) {}
+    : IterativeSolver( other ){}
 
 
 
 CGNR::CGNRRuntime::CGNRRuntime()
-    : IterativeSolverRuntime() {}
+    : IterativeSolverRuntime(){}
 
-CGNR::~CGNR() {}
+CGNR::~CGNR(){}
 
-CGNR::CGNRRuntime::~CGNRRuntime() {}
+CGNR::CGNRRuntime::~CGNRRuntime(){}
 
 
-void CGNR::initialize( const Matrix& coefficients )
-{
-    SCAI_LOG_DEBUG( logger, "Initialization started for coefficients = " << coefficients )
+void CGNR::initialize( const Matrix& coefficients ){
+    SCAI_LOG_DEBUG(logger, "Initialization started for coefficients = "<< coefficients)
 
-    Solver::initialize( coefficients );
-    CGNRRuntime& runtime = getRuntime();
+    Solver::initialize(coefficients);
+ 	CGNRRuntime& runtime = getRuntime();
 
     common::scalar::ScalarType type = coefficients.getValueType();
-    runtime.mEps = std::numeric_limits<double>::epsilon() * 3; //CAREFUL: No abstract type
+    runtime.mEps = std::numeric_limits<double>::epsilon()*3;   //CAREFUL: No abstract type 
 
     runtime.mTransposedMat.reset( coefficients.clone() );
     runtime.mVecD.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
@@ -94,135 +93,116 @@ void CGNR::initialize( const Matrix& coefficients )
     runtime.mVecD->setContextPtr( coefficients.getContextPtr() );
     runtime.mVecW->setContextPtr( coefficients.getContextPtr() );
     runtime.mVecZ->setContextPtr( coefficients.getContextPtr() );
-
+    
 
 }
 
 
-void CGNR::solveInit( Vector& solution, const Vector& rhs )
-{
+void CGNR::solveInit( Vector& solution, const Vector& rhs ){
     CGNRRuntime& runtime = getRuntime();
 
     runtime.mRhs = &rhs;
     runtime.mSolution = &solution;
 
 
-    if ( runtime.mCoefficients->getNumRows() != runtime.mRhs->size() )
-    {
+    if ( runtime.mCoefficients->getNumRows() != runtime.mRhs->size() ){
         COMMON_THROWEXCEPTION(
             "Size of rhs vector " << *runtime.mRhs << " does not match column size of matrix " << *runtime.mCoefficients );
     }
 
-    if ( runtime.mCoefficients->getNumColumns() != solution.size() )
-    {
+    if ( runtime.mCoefficients->getNumColumns() != solution.size() ){
         COMMON_THROWEXCEPTION(
             "Size of solution vector " << solution << " does not match row size of matrix " << *runtime.mCoefficients );
     }
 
-    if ( runtime.mCoefficients->getColDistribution() != solution.getDistribution() )
-    {
+    if ( runtime.mCoefficients->getColDistribution() != solution.getDistribution() ){
         COMMON_THROWEXCEPTION(
             "Distribution of lhs " << solution << " = " << solution.getDistribution() << " does not match (row) distribution of " << *runtime.mCoefficients << " = " << runtime.mCoefficients->getColDistribution() );
     }
 
-    if ( runtime.mCoefficients->getDistribution() != runtime.mRhs->getDistribution() )
-    {
+    if ( runtime.mCoefficients->getDistribution() != runtime.mRhs->getDistribution() ){
         COMMON_THROWEXCEPTION(
             "Distribution of old Solution " << *runtime.mRhs << " = " << runtime.mRhs->getDistribution() << " does not match (row) distribution of " << *runtime.mCoefficients << " = " << runtime.mCoefficients->getDistribution() );
     }
 
 
     // Initialize
-    this->getResidual();
-
+    this->getResidual();   
+   
     const Matrix& transposedA = *runtime.mTransposedMat;
     const Vector& residual = *runtime.mResidual;
     Vector& vecZ = *runtime.mVecZ;
-    vecZ = transposedA * residual;
+    vecZ = transposedA*residual;
 
-    Vector* vecD = ( *runtime.mVecZ ).copy();
-    runtime.mVecD.reset( vecD );
-
+    Vector* vecD = (*runtime.mVecZ).copy();
+    runtime.mVecD.reset(vecD);
+  
     L2Norm norm;
-    runtime.mNormVecZ = norm.apply( vecZ );
+    runtime.mNormVecZ = norm.apply(vecZ);
     runtime.mSolveInit = true;
 }
 
-void CGNR::iterate()
-{
+void CGNR::iterate(){
     CGNRRuntime& runtime = getRuntime();
-
+   
     const Matrix& A = *runtime.mCoefficients;
     const Matrix& transposedA = *runtime.mTransposedMat;
     Vector& vecW = *runtime.mVecW;
     Vector& vecD = *runtime.mVecD;
     Vector& vecZ = *runtime.mVecZ;
     Vector& residual = *runtime.mResidual;
-    Vector& solution = *runtime.mSolution;
+	Vector& solution = *runtime.mSolution;
     Scalar& normVecZ = runtime.mNormVecZ;
     Scalar alpha;
     Scalar beta;
 
     L2Norm norm;
-    const Scalar& eps = runtime.mEps;
+    const Scalar& eps = runtime.mEps;    
 
-    vecW = A * vecD;
-    Scalar normVecW = norm.apply( vecW );
+    vecW= A*vecD;
+    Scalar normVecW = norm.apply(vecW);
 
-    if ( normVecW < eps )           //norm is small
-    {
-        alpha = 0.0;
-    }
-    else
-    {
-        alpha = ( normVecZ * normVecZ ) / ( normVecW * normVecW );
-    }
-
-    solution = solution + alpha * vecD;
-    residual = residual - alpha * vecW;
-    vecZ = transposedA * residual;
-
-    Scalar normVecZNew = norm.apply( vecZ );
+    if(normVecW< eps)               //norm is small 
+        alpha=0.0;
+    else alpha = (normVecZ*normVecZ)/(normVecW*normVecW);
+    
+    solution= solution + alpha*vecD;
+    residual = residual - alpha*vecW;
+    vecZ = transposedA*residual;
+    
+    Scalar normVecZNew=norm.apply(vecZ);
 
 
-    if ( normVecZNew < eps )        //norm is small
-    {
-        beta = 0.0;
-    }
-    else
-    {
-        beta = ( normVecZNew * normVecZNew ) / ( normVecZ * normVecZ );
-    }
+    if(normVecZNew < eps)           //norm is small
+        beta=0.0;
+    else beta = (normVecZNew*normVecZNew)/(normVecZ*normVecZ);
 
-    vecD = vecZ + beta * vecD;
+    vecD = vecZ + beta*vecD;
     normVecZ = normVecZNew;
     //CGNR Implementation End
-    mCGNRRuntime.mSolution.setDirty( false );
+    mCGNRRuntime.mSolution.setDirty(false);
 }
 
-SolverPtr CGNR::copy()
-{
+SolverPtr CGNR::copy(){
     return SolverPtr( new CGNR( *this ) );
 }
 
-CGNR::CGNRRuntime& CGNR::getRuntime()
-{
+CGNR::CGNRRuntime& CGNR::getRuntime(){
     return mCGNRRuntime;
 }
 
-const CGNR::CGNRRuntime& CGNR::getConstRuntime() const
-{
+const CGNR::CGNRRuntime& CGNR::getConstRuntime() const{
     return mCGNRRuntime;
 }
 
 std::string CGNR::createValue()
 {
-    return "CGNR";
+	return "CGNR";
 }
 
 Solver* CGNR::create( const std::string name )
 {
-    return new CGNR( name );
+	return new CGNR( name );
 }
 
 } /* end namespace lama */
