@@ -25,18 +25,31 @@
  # SOFTWARE.
  # @endlicense
  #
- # @brief CMake configuration file for scai_kregistry examples
- # @author Thomas Brandes
- # @date 16.06.2015
+ # @brief CMake configuration file for scai_lama examples
+ # @author Jan Ecker
+ # @date 02.12.2015
 ###
 
-foreach ( executable DemoKernelInterface BenchInterface )
-    add_executable( ${executable} ${executable}.cpp )
-    target_link_libraries( ${executable} scai_kregistry )
-    set ( EXAMPLE_EXECUTABLES "${EXAMPLE_EXECUTABLES} ${executable}.exe" )
-endforeach ( executable )
+## Example needs the PNG library
 
-## install examples
-configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/make.inc.in" "${CMAKE_CURRENT_BINARY_DIR}/make.inc" )
-install ( DIRECTORY ./ DESTINATION share/examples/scai-kregistry-${SCAI_KREGISTRY_VERSION} FILES_MATCHING REGEX "^.*.(c|h)pp$" )
-install ( FILES Makefile ${CMAKE_CURRENT_BINARY_DIR}/make.inc DESTINATION share/examples/scai-kregistry-${SCAI_KREGISTRY_VERSION} )
+find_path( PNG_INCLUDE_DIR png.h
+           /opt/local/include
+           /usr/local/include
+           /usr/include )
+
+find_library( PNG_LIBRARY 
+              NAMES png
+)
+
+if ( PNG_LIBRARY AND PNG_INCLUDE_DIR )
+    include_directories( ${PNG_INCLUDE_DIR} )
+    foreach ( executable amg_spy spy )
+        add_executable( ${executable} ${executable}.cpp )
+        target_link_libraries( ${executable} ama ${PNG_LIBRARY} )
+        set ( EXAMPLE_EXECUTABLES_SPY "${EXAMPLE_EXECUTABLES_SPY} ${executable}.exe" )
+    endforeach ( executable )
+endif ()
+
+mark_as_advanced( PNG_LIBRARY PNG_INCLUDE_DIR )
+    
+set ( EXAMPLE_EXECUTABLES_SPY "${EXAMPLE_EXECUTABLES_SPY}" PARENT_SCOPE )

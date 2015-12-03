@@ -26,13 +26,13 @@
 # @endlicense
 #
 # @brief Definition of variables that will be include in each Makefile of examples
-# @author Thomas Brandes
-# @date 15.05.2013
+# @author Jan Ecker
+# @date 02.12.2015
 ##
 
 SCAI_ROOT=${CMAKE_INSTALL_PREFIX}
 BOOST_INCLUDE_DIR=${BOOST_INCLUDE_DIR}
 CXX=${CMAKE_CXX_COMPILER}
 CXX_FLAGS=${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_RELEASE} -DSCAI_TRACE_OFF -DSCAI_LOG_LEVEL_DEBUG -DSCAI_ASSERT_LEVEL_${SCAI_ASSERT_LEVEL}
-SCAI_LD_FLAGS=${CMAKE_CXX_FLAGS} ${LAMA_USER_LINK_FLAGS} -L${CMAKE_INSTALL_PREFIX}/lib -lscai_tasking -lscai_tracing -lscai_logging -lscai_common
+SCAI_LD_FLAGS=${CMAKE_CXX_FLAGS} ${LAMA_USER_LINK_FLAGS} -L${CMAKE_INSTALL_PREFIX}/lib -lscai_kregistry -lscai_hmemo -lscai_tasking -lscai_tracing -lscai_logging -lscai_common
 EXECUTABLES=${EXAMPLE_EXECUTABLES}

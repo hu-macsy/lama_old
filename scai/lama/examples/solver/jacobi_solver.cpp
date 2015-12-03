@@ -67,7 +67,7 @@ int main( int argc, char* argv[] )
     const Communicator& comm = lamaconf.getCommunicator();
 
     int myRank   = comm.getRank();
-    int numProcs = comm.getSize();
+    //int numProcs = comm.getSize();
 
     const char* filename;
 

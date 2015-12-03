@@ -25,18 +25,15 @@
  # SOFTWARE.
  # @endlicense
  #
- # @brief CMake configuration file for scai_kregistry examples
- # @author Thomas Brandes
- # @date 16.06.2015
+ # @brief CMake configuration file for scai_lama examples
+ # @author Jan Ecker
+ # @date 02.12.2015
 ###
 
-foreach ( executable DemoKernelInterface BenchInterface )
+foreach ( executable labelrank )
     add_executable( ${executable} ${executable}.cpp )
-    target_link_libraries( ${executable} scai_kregistry )
-    set ( EXAMPLE_EXECUTABLES "${EXAMPLE_EXECUTABLES} ${executable}.exe" )
+    target_link_libraries( ${executable} ama )
+    set ( EXAMPLE_EXECUTABLES_LABELRANK "${EXAMPLE_EXECUTABLES_LABELRANK} ${executable}.exe" )
 endforeach ( executable )
 
-## install examples
-configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/make.inc.in" "${CMAKE_CURRENT_BINARY_DIR}/make.inc" )
-install ( DIRECTORY ./ DESTINATION share/examples/scai-kregistry-${SCAI_KREGISTRY_VERSION} FILES_MATCHING REGEX "^.*.(c|h)pp$" )
-install ( FILES Makefile ${CMAKE_CURRENT_BINARY_DIR}/make.inc DESTINATION share/examples/scai-kregistry-${SCAI_KREGISTRY_VERSION} )
+set ( EXAMPLE_EXECUTABLES_LABELRANK "${EXAMPLE_EXECUTABLES_LABELRANK}" PARENT_SCOPE )

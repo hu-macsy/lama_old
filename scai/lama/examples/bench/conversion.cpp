@@ -49,7 +49,7 @@ using namespace std;
 using scai::common::Walltime;
 namespace context = scai::common::context;
 
-static bool verboseFlag = false;
+//static bool verboseFlag = false;
 
 static void bench( Matrix& b, Matrix& a )
 {

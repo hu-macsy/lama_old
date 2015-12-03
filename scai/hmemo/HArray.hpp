@@ -325,7 +325,7 @@ HArray<ValueType>::HArray( const IndexType n, const ValueType& value ) : Context
 
 #pragma omp parallel for 
 
-        for ( IndexType i = 0; i < mSize; ++i )
+        for ( size_t i = 0; i < mSize; ++i )
         {
             hostData[i] = value;
         }
@@ -559,7 +559,7 @@ void HArray<ValueType>::resize( ContextDataIndex index, const IndexType size )
 template<typename ValueType>
 void HArray<ValueType>::reserve( ContextDataIndex index, const IndexType size ) const
 {
-    if ( size <= mSize )
+    if ( static_cast<size_t>( size ) <= mSize )
     {
         return;   // nothing to do
     }

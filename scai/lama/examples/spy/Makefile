@@ -4,7 +4,7 @@ INCLUDE_FLAGS = -I${BOOST_INCLUDE_DIR} -I${SCAI_ROOT}/include
 
 LD_FLAGS = ${SCAI_LD_FLAGS} -Wl,-rpath=${SCAI_ROOT}/lib -lpng
 
-EXECUTABLE: spy.exe amg_spy.exe
+EXECUTABLE: ${EXECUTABLES_SPY}
 
 spy.exe: Bitmap.hpp
 amg_spy.exe: Bitmap.hpp

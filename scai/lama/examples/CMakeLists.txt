@@ -25,18 +25,23 @@
  # SOFTWARE.
  # @endlicense
  #
- # @brief CMake configuration file for scai_kregistry examples
- # @author Thomas Brandes
- # @date 16.06.2015
+ # @brief CMake configuration file for scai_lama examples
+ # @author Jan Ecker
+ # @date 02.12.2015
 ###
 
-foreach ( executable DemoKernelInterface BenchInterface )
-    add_executable( ${executable} ${executable}.cpp )
-    target_link_libraries( ${executable} scai_kregistry )
-    set ( EXAMPLE_EXECUTABLES "${EXAMPLE_EXECUTABLES} ${executable}.exe" )
-endforeach ( executable )
+## Add lama include directory for all examples 
+
+include_directories( "${CMAKE_CURRENT_BINARY_DIR}/../include" )
+
+add_subdirectory ( bench )
+add_subdirectory ( labelrank )
+add_subdirectory ( lecture )
+add_subdirectory ( solver )
+add_subdirectory ( spy )
+add_subdirectory ( tutorial )
 
 ## install examples
 configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/make.inc.in" "${CMAKE_CURRENT_BINARY_DIR}/make.inc" )
-install ( DIRECTORY ./ DESTINATION share/examples/scai-kregistry-${SCAI_KREGISTRY_VERSION} FILES_MATCHING REGEX "^.*.(c|h)pp$" )
-install ( FILES Makefile ${CMAKE_CURRENT_BINARY_DIR}/make.inc DESTINATION share/examples/scai-kregistry-${SCAI_KREGISTRY_VERSION} )
+install ( DIRECTORY ./ DESTINATION share/examples/scai-lama-${SCAI_LAMA_VERSION} FILES_MATCHING REGEX "^(.*.(c|h)pp)|(Makefile)$" )
+install ( FILES Makefile ${CMAKE_CURRENT_BINARY_DIR}/make.inc DESTINATION share/examples/scai-lama-${SCAI_LAMA_VERSION} )

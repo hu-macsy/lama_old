@@ -4,7 +4,7 @@ INCLUDE_FLAGS = -I${BOOST_INCLUDE_DIR} -I${SCAI_ROOT}/include
 
 LD_FLAGS = ${SCAI_LD_FLAGS} -Wl,-rpath=${SCAI_ROOT}/lib 
 
-EXECUTABLE: Barrier.exe CriticalRegion.exe DemoFactory.exe DemoFactory1.exe DemoPointer.exe ExceptionDemo.exe UseModule.exe Module.so DummyModule.so
+EXECUTABLE: ${EXECUTABLES} Module.so DummyModule.so
 
 .SUFFIXES:
 

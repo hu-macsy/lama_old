@@ -90,8 +90,9 @@ class COMMON_DLL_IMPORTEXPORT ContextArray:
 
 protected:
 
-    IndexType mSize;        //!< number of entries for the context array, common for all contexts
-    IndexType mValueSize;   //!< number of bytes needed for one data element
+	// use of 64bit unsigned datatype instead of IndexType (32bit signed)
+    size_t mSize;        //!< number of entries for the context array, common for all contexts
+    size_t mValueSize;   //!< number of bytes needed for one data element
 
     bool constFlag;         //!< if true the array cannot be written
 

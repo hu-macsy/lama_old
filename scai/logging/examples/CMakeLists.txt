@@ -60,6 +60,8 @@ else  ( OPENMP_FOUND )
     message ( STATUS "LogOpenMP example not built, no compiler option found" )
 endif ( OPENMP_FOUND )
 
+set ( EXAMPLE_EXECUTABLES "LogLevels.exe LogOpenMP.exe" )
+
 ## install examples
 configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/make.inc.in" "${CMAKE_CURRENT_BINARY_DIR}/make.inc" )
 install ( DIRECTORY ./ DESTINATION share/examples/scai-logging-${SCAI_LOGGING_VERSION} FILES_MATCHING PATTERN "*.cpp" )
