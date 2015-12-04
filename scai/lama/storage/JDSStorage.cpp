@@ -396,19 +396,16 @@ void JDSStorage<ValueType>::scaleImpl( const ValueType value )
 {
     SCAI_LOG_INFO( logger, "scaleImpl with value = " << value )
 
-    static LAMAKernel<UtilKernelTrait::scale<ValueType> > scale;
+    HArrayUtils::scale( mValues, value, this->getContextPtr() );
+}
 
-    ContextPtr loc = scale.getValidContext( this->getContextPtr() );
+/* ------------------------------------------------------------------------------------------------------------------ */
 
-    IndexType size = mValues.size();
 
-    SCAI_ASSERT_EQUAL_DEBUG( size, mNumValues )
-
-    WriteAccess<ValueType> wValues( mValues, loc );
-
-    SCAI_CONTEXT_ACCESS( loc )
-
-    scale[loc]( wValues.get(), value, size );
+template<typename ValueType>
+void JDSStorage<ValueType>::conj()
+{
+    HArrayUtils::conj( mValues, this->getContextPtr() );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

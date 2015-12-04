@@ -1022,15 +1022,17 @@ void CSRStorage<ValueType>::getDiagonalImpl( HArray<OtherValueType>& diagonal ) 
 template<typename ValueType>
 void CSRStorage<ValueType>::scaleImpl( const ValueType value )
 {
-    static LAMAKernel<UtilKernelTrait::scale<ValueType> > scale;
+    SCAI_ASSERT_EQUAL( mValues.size(), mNumValues, "size mismatch" )
 
-    ContextPtr loc = scale.getValidContext( this->getContextPtr() );
+    HArrayUtils::scale( mValues, value, this->getContextPtr() );
+}
 
-    SCAI_CONTEXT_ACCESS( loc )
+/* --------------------------------------------------------------------------- */
 
-    WriteAccess<ValueType> csrValues( mValues, loc );
-
-    scale[loc]( csrValues.get(), value, mNumValues );
+template<typename ValueType>
+void CSRStorage<ValueType>::conj()
+{
+    HArrayUtils::conj( mValues, this->getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */

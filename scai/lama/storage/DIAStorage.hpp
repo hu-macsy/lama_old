@@ -302,6 +302,10 @@ public:
 
     virtual void scaleImpl( const ValueType value );
 
+    /** Implementation of pure method.  */
+
+    virtual void conj();
+
     /** Implementation for MatrixStorage::l1Norm */
 
     virtual ValueType l1Norm() const;

@@ -287,6 +287,10 @@ public:
 
     void scaleImpl( const ValueType value );
 
+    /** Implementation of pure method.  */
+
+    void conj();
+
     /** Get a value of the matrix.
      *
      * @param[in] i is the row index, 0 <= i < mNumRows

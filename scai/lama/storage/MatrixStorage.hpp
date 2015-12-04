@@ -568,6 +568,7 @@ public:
      * @param[in] value is the source value
      */
     virtual void scale( const ValueType value ) = 0;
+    virtual void conj() = 0;
     virtual void setDiagonal( const ValueType value ) = 0;
 
     /**

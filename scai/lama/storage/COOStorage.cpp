@@ -593,6 +593,14 @@ void COOStorage<ValueType>::scaleImpl( const ValueType value )
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void COOStorage<ValueType>::conj()
+{
+    HArrayUtils::conj( mValues, this->getContextPtr() ); 
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
 template<typename OtherType>
 void COOStorage<ValueType>::scaleImpl( const HArray<OtherType>& values )
 {

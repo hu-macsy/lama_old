@@ -39,6 +39,7 @@
 #include <scai/lama/DenseKernelTrait.hpp>
 #include <scai/lama/CSRKernelTrait.hpp>
 #include <scai/lama/LAMAKernel.hpp>
+#include <scai/lama/HArrayUtils.hpp>
 
 // internal scai libraries
 #include <scai/blaskernel/BLASKernelTrait.hpp>
@@ -221,6 +222,10 @@ void DenseStorageView<ValueType>::setDiagonalImpl( const HArray<OtherType>& diag
 template<typename ValueType>
 void DenseStorageView<ValueType>::scaleImpl( const ValueType value )
 {
+   
+    // not used here: HArrayUtils::scale( mData, value, this->getContextPtr() )
+    // reasoning:     workload distribution would not fit to distribution of rows
+
     static LAMAKernel<DenseKernelTrait::scaleValue<ValueType> > scaleValue;
 
     ContextPtr loc = scaleValue.getValidContext( this->getContextPtr() );
@@ -230,6 +235,14 @@ void DenseStorageView<ValueType>::scaleImpl( const ValueType value )
     WriteAccess<ValueType> wData( mData, loc );
 
     scaleValue[loc]( wData.get(), mNumRows, mNumColumns, value );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void DenseStorageView<ValueType>::conj()
+{
+    HArrayUtils::conj( mData, this->getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -291,12 +304,10 @@ void DenseStorageView<ValueType>::transposeImpl(){
         }
     }
 
-    //swap dimensions of transposed matrix
-    IndexType rows = mNumRows;
-    mNumRows = mNumColumns;
-    mNumColumns = rows;
-};
+    // swap dimensions of transposed matrix
 
+    std::swap( mNumRows, mNumColumns );
+};
 
 /* --------------------------------------------------------------------------- */
 
