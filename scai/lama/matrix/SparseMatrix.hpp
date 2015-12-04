@@ -296,6 +296,10 @@ public:
 
     virtual void scale( const Scalar scaling );
 
+    /* Implementation of pure method of class Matrix. */
+
+    virtual void conj();
+
     /*
      *  Set local data of the matrix.
      *  The local part of the distributed matrix will be splitted into local / halo part.

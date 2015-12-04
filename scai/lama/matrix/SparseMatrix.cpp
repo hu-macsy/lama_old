@@ -1033,6 +1033,19 @@ void SparseMatrix<ValueType>::scale( Scalar scaling )
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void SparseMatrix<ValueType>::conj()
+{
+    mLocalData->conj();
+
+    if ( mHaloData->getNumRows() )
+    {
+        mHaloData->conj();
+    }
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void SparseMatrix<ValueType>::matrixTimesMatrix(
     Matrix& result,
     const Scalar alpha,

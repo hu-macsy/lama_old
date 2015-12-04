@@ -116,7 +116,26 @@ int main( int argc, char* argv[] )
         // read matrix + rhs from disk
 
         inMatrix.readFromFile( filename );
-        rhs.readFromFile( filename );
+ 
+        std::cout << "Matrix from file " << filename << " : " << inMatrix << std::endl;
+
+        try
+        {
+            rhs.readFromFile( filename );
+        }
+        catch ( const std::exception& )
+        {
+            std::cout << "reading vector from file " << filename << " failed, take sum( Matrix, 2 ) " << std::endl;
+
+            {
+                scai::common::unique_ptr<Vector> xPtr( rhs.clone() );
+                Vector& x = *xPtr;
+                x.resize( inMatrix.getColDistributionPtr() );
+                x = Scalar( 1 );
+                rhs.resize( inMatrix.getDistributionPtr() );
+                rhs = inMatrix * x;
+            }
+        }
 
         // only square matrices are accetpted
 

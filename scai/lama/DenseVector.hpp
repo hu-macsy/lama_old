@@ -356,6 +356,8 @@ public:
 
     virtual Scalar maxNorm() const;
 
+    virtual void conj();
+
     static void vectorPlusVector(
         scai::hmemo::ContextPtr prefContext,
         scai::hmemo::HArray<ValueType>& result,

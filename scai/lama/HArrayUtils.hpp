@@ -117,6 +117,20 @@ public:
         const hmemo::HArray<ValueType>& y,
         hmemo::ContextPtr context );
 
+    /** scale array in place 
+     *
+     *  Note: scale will be done where array has currently valid values. The preferred
+     *        location is not taken if the array is not valid there.
+     */
+
+    template<typename ValueType>
+    static void scale( hmemo::HArray<ValueType>& array, const ValueType beta, hmemo::ContextPtr prefLoc );
+
+    /** Replace in a complex array its values with the conjugate values */
+
+    template<typename ValueType>
+    static void conj( hmemo::HArray<ValueType>& array, hmemo::ContextPtr prefLoc );
+
 private:
 
     template<typename ValueType>

@@ -1629,12 +1629,13 @@ void DenseMatrix<ValueType>::scale( const Vector& vector )
 template<typename ValueType>
 void DenseMatrix<ValueType>::scale( const Scalar scaleValue )
 {
-//    if ( getDistribution() != getColDistribution() )
-//    {
-//        COMMON_THROWEXCEPTION( "Diagonal calculation only for equal distributions." )
-//    }
-
     getLocalStorage().scale( scaleValue.getValue<ValueType>() );
+}
+
+template<typename ValueType>
+void DenseMatrix<ValueType>::conj()
+{
+    getLocalStorage().conj();
 }
 
 template<typename ValueType>
