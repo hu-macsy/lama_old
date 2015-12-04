@@ -54,10 +54,15 @@ class COMMON_DLL_IMPORTEXPORT OpenMPUtils
 {
 public:
 
-    /** OpenMP implementation for UtilKernelTrait::Transform::scale */
+    /** OpenMP implementation for UtilKernelTrait::scale */
 
     template<typename ValueType>
     static void scale( ValueType mValues[], const ValueType value, const IndexType n );
+
+    /** OpenMP implementation for UtilKernelTrait::conj */
+
+    template<typename ValueType>
+    static void conj( ValueType mValues[], const IndexType n );
 
     /** OpenMP implementation for UtilKernelTrait::Copy::setScale */
 
