@@ -288,6 +288,8 @@ struct BLASKernelTrait
          *
          *            dot = sum_{i = 0}^{n-1}( x_i * y_i )
          *
+         * If ValueType is complex, the conj( x_i ) is taken
+         *
          * @param[in] n      number of considered elements in input vectors.
          * @param[in] x      vector with minimum (n - 1) * incX + 1 elements.
          * @param[in] incX   storage spacing between elements of x.

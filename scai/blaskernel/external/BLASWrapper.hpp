@@ -387,7 +387,7 @@ inline ComplexFloat BLASWrapper::dot<ComplexFloat>(const BLASIndexType n,
 		const ComplexFloat *x, const BLASIndexType incX, const ComplexFloat *y,
 		const BLASIndexType incY) {
 	ComplexFloat dotu;
-	cblas_cdotu_sub(n, x,
+	cblas_cdotc_sub(n, x,
 			incX, y,
 			incY, &dotu);
 	return dotu;
@@ -398,7 +398,7 @@ inline ComplexDouble BLASWrapper::dot<ComplexDouble>(const BLASIndexType n,
 		const ComplexDouble *x, const BLASIndexType incX, const ComplexDouble *y,
 		const BLASIndexType incY) {
 	ComplexDouble dotu;
-	cblas_zdotu_sub(n, x,
+	cblas_zdotc_sub(n, x,
 			incX, y,
 			incY, &dotu);
 	return dotu;
