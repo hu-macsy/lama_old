@@ -67,6 +67,8 @@ public:
      */
     static inline ValueType abs( ValueType val );
 
+    static inline ValueType conj( ValueType val );
+
     /** Get value-specific epsilon for comparison. */
 
     static inline ValueType getEps()
@@ -109,6 +111,11 @@ public:
         return ::abs( x );
     }
 
+    static inline IndexType conj( IndexType x )
+    {
+        return x;
+    }
+
     static inline IndexType getEps()
     {
         return 0;
@@ -141,6 +148,11 @@ public:
     static inline long double abs( long double x )
     {
         return ::fabsl( x );
+    }
+
+    static inline long double conj( long double x )
+    {
+        return x;
     }
 
     static inline long double getEps()
@@ -176,6 +188,10 @@ public:
     {
         return ::fabs( x );
     }
+    static inline double conj( double x )
+    {
+        return x;
+    }
     static inline double getEps()
     {
         return std::numeric_limits<double>::epsilon();
@@ -207,6 +223,10 @@ public:
     static inline float abs( float x )
     {
         return ::fabsf( x );
+    }
+    static inline float conj( float x )
+    {
+        return x;
     }
     static inline float getEps()
     {
@@ -241,6 +261,10 @@ public:
         return scai::common::abs( x );
     }
 
+    static inline ComplexFloat conj( ComplexFloat x )
+    {
+        return ComplexFloat( x.real(), -x.imag() );
+    }
     static inline ComplexFloat getEps()
     {
         return std::numeric_limits<float>::epsilon();
@@ -268,6 +292,10 @@ public:
     static inline ComplexDouble sqrt( ComplexDouble x )
     {
         return scai::common::sqrt( x );
+    }
+    static inline ComplexDouble conj( ComplexDouble x )
+    {
+        return ComplexDouble( x.real(), -x.imag() );
     }
     static inline ComplexDouble abs( ComplexDouble x )
     {
@@ -305,6 +333,11 @@ public:
     static inline ComplexLongDouble abs( ComplexLongDouble x )
     {
         return scai::common::abs( x );
+    }
+
+    static inline ComplexLongDouble conj( ComplexLongDouble x )
+    {
+        return ComplexLongDouble( x.real(), -x.imag() );
     }
 
     static inline ComplexLongDouble getEps()
