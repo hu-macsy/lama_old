@@ -39,6 +39,7 @@
 #include <scai/hmemo/Context.hpp>
 #include <scai/common/Printable.hpp>
 #include <scai/lama/matrix/all.hpp>
+#include <scai/lama/solver/Solver.hpp>
 #include <scai/lama/solver/logger/LogLevel.hpp>
 #include <scai/common/OpenMP.hpp>
 #include <scai/common/Settings.hpp>
@@ -89,6 +90,10 @@ public:
     /** Getter for the specified matrix format, might default */
 
     const char* getFormat( ) const;
+
+    /** Getter for the solver id */
+
+    const char* getSolverName( ) const;
 
     /** Create a new sparse matrix of the desired matrix type. */
 
@@ -176,6 +181,8 @@ public:
     }
 
 private:
+
+    std::string              mSolverName;
 
     std::string              mMatrixFormat;
 
@@ -482,6 +489,12 @@ void LamaConfig::setArg( const char* arg )
     {
         sscanf( val.c_str(), "%d", &mMaxIter );
     }
+    else if ( scai::lama::Solver::canCreate( arg ) )
+    {
+        // Note: for solver the names are case sensitive
+
+        mSolverName = arg;
+    }
     else
     {
         std::cout << "Illegal argument: " << arg << std::endl;
@@ -494,6 +507,7 @@ void LamaConfig::writeAt( std::ostream& stream ) const
 
     stream << "LAMA configuration" << std::endl;
     stream << "==================" << std::endl;
+    stream << "Solver            = " << getSolverName() << std::endl;
     stream << "Context           = " << getContext() << std::endl;
     stream << "Communicator      = " << *mComm << std::endl;
     stream << "Matrix format     = " << getFormat() << std::endl;
@@ -548,6 +562,18 @@ const char* LamaConfig::getFormat( ) const
     else
     {
         return mMatrixFormat.c_str();
+    }
+}
+
+const char* LamaConfig::getSolverName( ) const
+{
+    if ( mSolverName == "" )
+    {
+        return "CG";   // take this as default
+    }
+    else
+    {
+        return mSolverName.c_str();
     }
 }
 
