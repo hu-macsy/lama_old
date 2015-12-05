@@ -282,6 +282,11 @@ Solver* BiCG::create( const std::string name )
 	return new BiCG( name );
 }
 
+void BiCG::writeAt( std::ostream& stream ) const
+{
+    stream << "BiCG ( id = " << mId << ", #iter = " << getConstRuntime().mIterations << " )";
+}
+
 } /* end namespace lama */
 
 } /* end namespace scai */

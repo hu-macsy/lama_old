@@ -288,6 +288,11 @@ SolverPtr SOR::copy()
     return SolverPtr( new SOR( *this ) );
 }
 
+void SOR::writeAt( std::ostream& stream ) const
+{
+    stream << "SOR ( id = " << mId << ", #iter = " << getConstRuntime().mIterations << " )";
+}
+
 std::string SOR::createValue()
 {
 	return "SOR";

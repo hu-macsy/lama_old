@@ -688,6 +688,11 @@ SolverPtr SimpleAMG::copy()
     return SolverPtr( new SimpleAMG( *this ) );
 }
 
+void SimpleAMG::writeAt( std::ostream& stream ) const
+{
+    stream << "SimpleAMG ( id = " << mId << ", #iter = " << getConstRuntime().mIterations << " )";
+}
+
 std::string SimpleAMG::createValue()
 {
 	return "SimpleAMG";

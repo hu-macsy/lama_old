@@ -249,6 +249,11 @@ const MINRES::MINRESRuntime& MINRES::getConstRuntime() const{
     return mMINRESRuntime;
 }
 
+void MINRES::writeAt( std::ostream& stream ) const
+{
+    stream << "MINRES ( id = " << mId << ", #iter = " << getConstRuntime().mIterations << " )";
+}
+
 std::string MINRES::createValue()
 {
 	return "MINRES";

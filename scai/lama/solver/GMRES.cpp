@@ -478,6 +478,12 @@ SolverPtr GMRES::copy()
     return SolverPtr( new GMRES( *this ) );
 }
 
+void GMRES::writeAt( std::ostream& stream ) const
+{ 
+    stream << "GMRES ( id = " << mId << ", krylov dim = " << mKrylovDim 
+                       << ", #iter = " << getConstRuntime().mIterations << " )";
+}
+
 std::string GMRES::createValue()
 {
 	return "GMRES";

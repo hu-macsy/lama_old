@@ -193,6 +193,11 @@ SolverPtr Richardson::copy()
     return SolverPtr( new Richardson( *this ) );
 }
 
+void Richardson::writeAt( std::ostream& stream ) const
+{
+    stream << "Richardson ( id = " << mId << ", #iter = " << getConstRuntime().mIterations << " )";
+}
+
 std::string Richardson::createValue()
 {
 	return "Richardson";

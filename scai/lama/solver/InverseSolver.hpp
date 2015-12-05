@@ -132,7 +132,13 @@ public:
     static Solver* create( const std::string name );
 
 protected:
+
     InverseSolverRuntime mInverseSolverRuntime;
+
+    /**
+     *  @brief own implementation of Printable::writeAt
+     */
+    virtual void writeAt( std::ostream& stream ) const;
 
 private:
 

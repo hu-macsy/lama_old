@@ -251,6 +251,11 @@ Solver* BiCGstab::create( const std::string name )
     return new BiCGstab( name );
 }
 
+void BiCGstab::writeAt( std::ostream& stream ) const
+{
+    stream << "BiCGstab ( id = " << mId << ", #iter = " << getConstRuntime().mIterations << " )";
+}
+
 } /* end namespace lama */
 
 } /* end namespace scai */

@@ -243,6 +243,11 @@ Solver* CG::create( const std::string name )
 	return new CG( name );
 }
 
+void CG::writeAt( std::ostream& stream ) const
+{
+    stream << "CG ( id = " << mId << ", #iter = " << getConstRuntime().mIterations << " )";
+}
+
 } /* end namespace lama */
 
 } /* end namespace scai */

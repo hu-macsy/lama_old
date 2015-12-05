@@ -127,6 +127,11 @@ public:
 
 protected:
 
+    /**
+     *  @brief own implementation of Printable::writeAt
+     */
+    virtual void writeAt( std::ostream& stream ) const;
+
     CGNRRuntime mCGNRRuntime;
     /**
      * @brief Performs one CGNR iteration based on Matrix/Vector operations.

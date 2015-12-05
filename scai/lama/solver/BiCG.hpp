@@ -51,9 +51,10 @@ namespace lama
  *        to solve a system of linear equations iteratively.
  */
 class COMMON_DLL_IMPORTEXPORT BiCG:
-		public CG,
-		public Solver::Register<BiCG>
-		//public IterativeSolver::Register<BiCG>
+
+    public CG,
+    public Solver::Register<BiCG>
+
 {
 public:
 
@@ -114,12 +115,26 @@ public:
      */
     virtual const BiCGRuntime& getConstRuntime() const;
 
+    /**
+     * @brief returns value used for registration of this solver
+     */
     static std::string createValue();
+
+    /**
+     * @brief create a new BiCG solver with the corresponding name
+     *
+     * This method is used as create routine in the Solver factory.
+     */
     static Solver* create( const std::string name );
 
 protected:
 
     virtual void iterate();
+
+    /**
+     *  @brief own implementation of Printable::writeAt
+     */
+    virtual void writeAt( std::ostream& stream ) const;
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 

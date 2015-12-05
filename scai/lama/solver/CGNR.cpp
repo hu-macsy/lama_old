@@ -225,6 +225,11 @@ Solver* CGNR::create( const std::string name )
     return new CGNR( name );
 }
 
+void CGNR::writeAt( std::ostream& stream ) const
+{
+    stream << "CGNR ( id = " << mId << ", #iter = " << getConstRuntime().mIterations << " )";
+}
+
 } /* end namespace lama */
 
 } /* end namespace scai */

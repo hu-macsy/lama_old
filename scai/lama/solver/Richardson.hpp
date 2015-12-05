@@ -131,6 +131,11 @@ protected:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
+    /**
+     *  @brief own implementation of Printable::writeAt
+     */
+    virtual void writeAt( std::ostream& stream ) const;
+
 private:
 
     template<typename T>

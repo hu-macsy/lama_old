@@ -149,7 +149,12 @@ protected:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
-private    :
+private:
+
+    /**
+     *  @brief own implementation of Printable::writeAt
+     */
+    virtual void writeAt( std::ostream& stream ) const;
 
     void updateX( unsigned int i );
 
