@@ -58,7 +58,11 @@ namespace lama
  *  done on all partitions. But a replicated object can also be used
  *  like a private incarnation on each processor.
  */
-class COMMON_DLL_IMPORTEXPORT NoDistribution: public Distribution
+class COMMON_DLL_IMPORTEXPORT NoDistribution: 
+
+    public Distribution,
+    private Distribution::Register<NoDistribution>
+
 {
 public:
 
@@ -80,22 +84,19 @@ public:
 
     void printDistributionVector( std::string name ) const;
 
-    /** Static methods to create a NoDistribution. */
+    /** Static method required for create to use in Distribution::Register */
 
-    static NoDistribution* create(
-        const CommunicatorPtr commPtr,
-        const IndexType globalSize,
-        const float weight = 1.0 );
+    static Distribution* create( const DistributionArguments args );
 
-    static NoDistribution* create( const CommunicatorPtr commPtr, const Matrix& matrix, const float weight = 1.0 );
+    /** Static method required for Distribution::Register */
+
+    static std::string createValue();
 
 private:
 
     NoDistribution(); // no default constructor as global size is not available
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
-
-    static    bool initialized; //!< used for static registration
 };
 
 } /* end namespace lama */

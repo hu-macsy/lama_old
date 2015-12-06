@@ -239,7 +239,7 @@ int main( int argc, char* argv[] )
     Scalar eps = 0.001;
     NormPtr norm = NormPtr( new L2Norm() );
 
-    CriterionPtr rt( new ResidualThreshold( norm, eps, ResidualThreshold::Relative ) );
+    CriterionPtr rt( new ResidualThreshold( norm, eps, ResidualThreshold::Absolute ) );
 
     if ( lamaconf.hasMaxIter() )
     {

@@ -285,6 +285,25 @@ void CyclicDistribution::printDistributionVector( std::string name ) const
     }
 }
 
+/* ---------------------------------------------------------------------------------*
+ *   static create methods ( required for registration in distribution factory )    *
+ * ---------------------------------------------------------------------------------*/
+
+std::string CyclicDistribution::createValue()
+{
+    return "CYCLIC";
+}
+
+Distribution* CyclicDistribution::create( const DistributionArguments arg )
+{
+    if ( arg.matrix != NULL )
+    {
+        SCAI_LOG_WARN( logger, "matrix argument ignored to create CYCLIC distribution" )
+    }
+
+    return new CyclicDistribution( arg.globalSize, 1, arg.communicator );
+}
+
 } /* end namespace lama */
 
 } /* end namespace scai */

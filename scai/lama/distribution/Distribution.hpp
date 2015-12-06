@@ -39,6 +39,7 @@
 // base classes
 #include <scai/common/NonCopyable.hpp>
 #include <scai/common/Printable.hpp>
+#include <scai/common/Factory1.hpp>
 
 // local library
 #include <scai/lama/Communicator.hpp>
@@ -63,7 +64,24 @@ namespace lama
 typedef common::shared_ptr<const class Distribution> DistributionPtr;
 
 class Matrix;
-// Forward declaration
+
+/** Structure that keeps all kind of arguments used to create a distribution. */
+
+struct DistributionArguments
+{
+    DistributionArguments( CommunicatorPtr comm, IndexType size, const Matrix* m, float w )
+    {
+        communicator = comm;
+        globalSize   = size;
+        matrix       = m;
+        weight       = w;
+    }
+
+    CommunicatorPtr communicator;
+    IndexType globalSize;
+    const Matrix* matrix;
+    float weight;
+};
 
 /** Abstract base class for a one-dimensional distribution.
  *
@@ -72,7 +90,11 @@ class Matrix;
  *
  * Default and copy constructor are not available for this class (noncopyable).
  */
-class COMMON_DLL_IMPORTEXPORT Distribution: public common::Printable, private common::NonCopyable
+class COMMON_DLL_IMPORTEXPORT Distribution: 
+
+    public common::Factory1<std::string, DistributionArguments, Distribution*>,
+    public common::Printable, 
+    private common::NonCopyable
 {
 
 public:
@@ -310,11 +332,12 @@ protected:
 
     /** This method should be called by distribution classes to register their create operation. */
 
-    static void addCreator( const std::string& kind, CreateFn1 create1, CreateFn2 create2 );
+    // static void addCreator( const std::string& kind, CreateFn1 create1, CreateFn2 create2 );
 
     /** Common helper function for derived classes to register their static create methods
      *
      */
+    /*
     template<typename Derived>
     static bool registerCreator( const std::string& kind )
     {
@@ -339,6 +362,7 @@ protected:
 
         return true;
     }
+     */
 
 private:
 

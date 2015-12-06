@@ -50,7 +50,11 @@ namespace lama
  *  BlockDistribution is noncopyable as Distribution is noncopyable
  *
  */
-class COMMON_DLL_IMPORTEXPORT BlockDistribution: public Distribution
+class COMMON_DLL_IMPORTEXPORT BlockDistribution: 
+
+    public Distribution,
+    private Distribution::Register<BlockDistribution>
+
 {
 public:
 
@@ -101,27 +105,25 @@ public:
 
     void printDistributionVector( std::string problem ) const;
 
-    /** Static methods to create a block distribution. */
+    /** Static method required for create to use in Distribution::Register */
 
-    static BlockDistribution* create( const CommunicatorPtr commPtr, const IndexType globalSize, const float weight =
-                                          1.0 );
+    static Distribution* create( const DistributionArguments args );
 
-    static BlockDistribution* create( const CommunicatorPtr commPtr, const Matrix& matrix, const float weight = 1.0 );
+    /** Static method required for Distribution::Register */
+
+    static std::string createValue();
 
 protected:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
-private    :
+private:
 
     BlockDistribution(); // disable default constructor as it has no size
 
     IndexType mBlockSize;//!< block size of each partition
     IndexType mLB;//!< lower bound value of local range
     IndexType mUB;//!< upper bound value of local range
-
-    static bool initialized;//!< static initialization used for registration of create in Distribution factory
-
 };
 
 } /* end namespace lama */
