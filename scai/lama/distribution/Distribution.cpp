@@ -34,7 +34,7 @@
 #include <scai/lama/distribution/Distribution.hpp>
 
 // local library
-#include <scai/lama/Scalar.hpp>
+#include <scai/lama/matrix/Matrix.hpp>
 
 // internal scai libraries
 #include <scai/hmemo.hpp>
@@ -43,14 +43,17 @@
 
 #include <scai/common/macros/assert.hpp>
 #include <scai/common/unique_ptr.hpp>
+#include <scai/common/TypeTraits.hpp>
 
 // boost
 #include <boost/preprocessor.hpp>
 
-using namespace scai::hmemo;
 
 namespace scai
 {
+
+using namespace hmemo;
+using common::TypeTraits;
 
 namespace lama
 {
@@ -178,7 +181,8 @@ void Distribution::replicate( T1* allValues, const T2* localValues ) const
     IndexType maxLocalSize = comm.max( currentSize );
 
     SCAI_LOG_INFO( logger,
-                   comm << ": replicate localValues<" << common::getScalarType<T2>() << ">[ " << currentSize << ", max = " << maxLocalSize << " ] " << " to allValues<" << common::getScalarType<T1>() << ">[ " << getGlobalSize() << " ]" )
+                   comm << ": replicate localValues<" << TypeTraits<T2>::id() << ">[ " << currentSize 
+                   << ", max = " << maxLocalSize << " ] " << " to allValues<" << TypeTraits<T1>::id() << ">[ " << getGlobalSize() << " ]" )
 
     // Only allocate the needed size of the Arrays
 
@@ -533,57 +537,13 @@ void Distribution::replicateRagged(
 
 /* ---------------------------------------------------------------------- */
 
-/**
- *  Getter method for the singleton map/factory.
- *
- *  Getter method instead of a variable guarantees that order of
- *  static intialization does not matter.
- */
-Distribution::CreatorMap& Distribution::getFactory()
-{
-    static common::unique_ptr<CreatorMap> factory;
-
-    if( !factory.get() )
-    {
-        factory.reset( new CreatorMap() );
-    }
-
-    return *factory;
-}
-
-void Distribution::addCreator( const std::string& kind, CreateFn1 create1, CreateFn2 create2 )
-{
-    CreatorMap& factory = getFactory();
-
-    // checks for multiple entries is not really necessary here, so just add entry in map container.
-
-    factory[kind] = std::pair<CreateFn1,CreateFn2>( create1, create2 );
-}
-
 Distribution* Distribution::getDistribution(
     const std::string& kind,
     CommunicatorPtr comm,
     const IndexType globalSize,
     const float weight )
 {
-    Distribution* newDistribution = NULL;
-
-    CreatorMap& factory = getFactory();
-
-    CreatorMap::const_iterator fn = factory.find( kind );
-
-    if( fn != factory.end() )
-    {
-        // use createFN1
-        newDistribution = fn->second.first( comm, globalSize, weight );
-    }
-    else
-    {
-        SCAI_LOG_WARN( logger, "getDistribution: distribution " << kind << " not available" )
-        return NULL;
-    }
-
-    return newDistribution;
+    return Distribution::create( kind, DistributionArguments( comm, globalSize, NULL, weight ) );
 }
 
 Distribution* Distribution::getDistribution(
@@ -592,24 +552,7 @@ Distribution* Distribution::getDistribution(
     const Matrix& matrix,
     const float weight )
 {
-    Distribution* newDistribution = NULL;
-
-    CreatorMap& factory = getFactory();
-
-    CreatorMap::const_iterator fn = factory.find( kind );
-
-    if( fn != factory.end() )
-    {
-        // use createFn2
-        newDistribution = fn->second.second( comm, matrix, weight );
-    }
-    else
-    {
-        SCAI_LOG_WARN( logger, "getDistribution: distribution " << kind << " not available" )
-        return NULL;
-    }
-
-    return newDistribution;
+    return Distribution::create( kind, DistributionArguments( comm, matrix.getNumRows(), &matrix, weight ) );
 }
 
 /* ---------------------------------------------------------------------- */

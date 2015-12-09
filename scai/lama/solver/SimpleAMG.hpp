@@ -151,6 +151,11 @@ protected:
     SolverPtr mSmoother;
     hmemo::ContextPtr mSmootherContext;
 
+    /**
+     *  @brief own implementation of Printable::writeAt
+     */
+    virtual void writeAt( std::ostream& stream ) const;
+
 private:
 
     void logSetupSettings();

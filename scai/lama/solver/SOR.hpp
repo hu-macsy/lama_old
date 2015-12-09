@@ -101,6 +101,11 @@ protected:
 
     SORRuntime mSORRuntime;
 
+    /**
+     *  @brief own implementation of Printable::writeAt
+     */
+    virtual void writeAt( std::ostream& stream ) const;
+
 private:
     template<typename ValueType>
     void iterateImpl();

@@ -399,6 +399,10 @@ public:
 
     /* Implementation of pure method of class Matrix. */
 
+    virtual void conj();
+
+    /* Implementation of pure method of class Matrix. */
+
     virtual Scalar getValue( IndexType i, IndexType j ) const;
 
     /* Implemenation of pure method of class Matrix */

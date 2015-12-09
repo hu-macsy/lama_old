@@ -78,6 +78,25 @@ const char* scalar2str( const scalar::ScalarType stype )
 namespace scalar
 {
 
+bool isComplex( const ScalarType t )
+{
+    bool is = false;
+
+    switch ( t )
+    {
+        case DOUBLE_COMPLEX:
+        case COMPLEX:
+        case LONG_DOUBLE_COMPLEX :
+            is = true;
+            break;
+
+        default:
+            is = false;
+    }
+
+    return is;
+}
+
 std::ostream& operator<<( std::ostream& stream, const ScalarType& object )
 {
     stream << scalar2str( object );

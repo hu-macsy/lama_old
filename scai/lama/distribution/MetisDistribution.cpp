@@ -302,26 +302,28 @@ void MetisDistribution::checkAndMapWeights(
  *   static create methods ( required for registration in distribution factory )    *
  * ---------------------------------------------------------------------------------*/
 
-MetisDistribution* MetisDistribution::create(
-    const CommunicatorPtr commPtr,
-    const IndexType globalSize,
-    const float weight )
+std::string MetisDistribution::createValue()
 {
-    // create an empty CSR sparse matrix
-    CSRSparseMatrix<float> matrix;
-    DistributionPtr dist( new NoDistribution( globalSize ) );
-    matrix.setIdentity( dist );
-    return new MetisDistribution( commPtr, matrix, weight );
+    return "METIS";
 }
 
-MetisDistribution* MetisDistribution::create( const CommunicatorPtr commPtr, const Matrix& matrix, const float weight )
+Distribution* MetisDistribution::create( const DistributionArguments arg )
 {
-    return new MetisDistribution( commPtr, matrix, weight );
+    if ( arg.matrix != NULL )
+    {
+        return new MetisDistribution( arg.communicator, *arg.matrix, arg.weight );
+    }
+    else
+    {
+        // create identity matrix, replicated on all nodes
+
+        CSRSparseMatrix<float> matrix;
+        DistributionPtr dist( new NoDistribution( arg.globalSize ) );
+        matrix.setIdentity( dist );
+
+        return new MetisDistribution( arg.communicator, matrix, arg.weight );
+    }
 }
-
-/* ---------------------------------------------------------------------------------*/
-
-bool MetisDistribution::initialized = Distribution::registerCreator<MetisDistribution>( "METIS" );
 
 } /* end namespace lama */
 

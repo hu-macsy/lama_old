@@ -186,6 +186,15 @@ SolverPtr InverseSolver::copy()
     return SolverPtr( new InverseSolver( *this ) );
 }
 
+/* --------------------------------------------------------------------------- */
+
+void InverseSolver::writeAt( std::ostream& stream ) const
+{
+    stream << "InverseSolver ( id = " << mId << " )";
+}
+
+/* --------------------------------------------------------------------------- */
+
 std::string InverseSolver::createValue()
 {
 	return "InverseSolver";

@@ -229,6 +229,11 @@ IterativeSolver* IterativeSolver::create( const std::string type, const std::str
 	return sov;
 }
 
+void IterativeSolver::writeAt( std::ostream& stream ) const
+{
+    stream << "IterativeSolver ( id = " << mId << ", #iter = " << getConstRuntime().mIterations << " )";
+}
+
 } /* end namespace lama */
 
 } /* end namespace scai */

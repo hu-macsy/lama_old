@@ -433,6 +433,10 @@ public:
      */
     virtual void scale( const Scalar scaling ) = 0;
 
+    /** @brief This method replaces all elements with its conjugate value. */
+
+    virtual void conj() = 0;
+
     /**
      * @brief Returns a copy of the value at the passed global indexes.
      *

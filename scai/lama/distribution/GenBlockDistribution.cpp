@@ -358,27 +358,21 @@ void GenBlockDistribution::printDistributionVector( std::string name ) const
  *   static create methods ( required for registration in distribution factory )    *
  * ---------------------------------------------------------------------------------*/
 
-GenBlockDistribution* GenBlockDistribution::create(
-    const CommunicatorPtr communicator,
-    const IndexType globalSize,
-    const float weight )
+std::string GenBlockDistribution::createValue()
 {
-    return new GenBlockDistribution( globalSize, weight, communicator );
+    return "GEN_BLOCK";
 }
 
-GenBlockDistribution* GenBlockDistribution::create(
-    const CommunicatorPtr communicator,
-    const Matrix& matrix,
-    const float weight )
+Distribution* GenBlockDistribution::create( const DistributionArguments arg )
 {
-    // we only take the size of the matrix
+    if ( arg.matrix != NULL )
+    {
+        SCAI_LOG_WARN( logger, "matrix argument ignored to create GEN_BLOCK distribution" )
+    }
 
-    return new GenBlockDistribution( matrix.getNumRows(), weight, communicator );
+    return new GenBlockDistribution( arg.globalSize, arg.weight, arg.communicator );
 }
 
-/* ---------------------------------------------------------------------------------*/
-
-bool GenBlockDistribution::initialized = Distribution::registerCreator<GenBlockDistribution>( "GEN_BLOCK" );
 
 } /* end namespace lama */
 

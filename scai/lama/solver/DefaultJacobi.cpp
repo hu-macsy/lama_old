@@ -269,6 +269,11 @@ SolverPtr DefaultJacobi::copy()
     return SolverPtr( new DefaultJacobi( *this ) );
 }
 
+void DefaultJacobi::writeAt( std::ostream& stream ) const
+{
+    stream << "DefaultJacobi ( id = " << mId << ", #iter = " << getConstRuntime().mIterations << " )";
+}
+
 std::string DefaultJacobi::createValue()
 {
 	return "DefaultJacobi";

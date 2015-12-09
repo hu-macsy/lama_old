@@ -96,6 +96,26 @@ void OpenMPUtils::scale( ValueType mValues[], const ValueType value, const Index
 
 /* --------------------------------------------------------------------------- */
 
+template<typename ValueType>
+void OpenMPUtils::conj( ValueType mValues[], const IndexType n )
+{
+    SCAI_REGION( "OpenMP.Utils.conj" )
+
+    if ( n > 0 && common::scalar::isComplex( common::TypeTraits<ValueType>::stype ) )
+    {
+        SCAI_LOG_INFO( logger, "conj, #n = " << n )
+
+        #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
+
+        for( IndexType i = 0; i < n; i++ )
+        {
+            mValues[i] = common::TypeTraits<ValueType>::conj( mValues[i] );
+        }
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
 template<typename ValueType,typename OtherValueType>
 void OpenMPUtils::setScale(
     ValueType outValues[],
@@ -526,6 +546,7 @@ void OpenMPUtils::registerKernels( bool deleteFlag )
 
 #define LAMA_UTILS_REGISTER(z, I, _)                                                                             \
     KernelRegistry::set<UtilKernelTrait::scale<ARITHMETIC_HOST_TYPE_##I> >( scale, Host, flag );                 \
+    KernelRegistry::set<UtilKernelTrait::conj<ARITHMETIC_HOST_TYPE_##I> >( conj, Host, flag );                   \
     KernelRegistry::set<UtilKernelTrait::sum<ARITHMETIC_HOST_TYPE_##I> >( sum, Host, flag );                     \
     KernelRegistry::set<UtilKernelTrait::setVal<ARITHMETIC_HOST_TYPE_##I> >( setVal, Host, flag );               \
     KernelRegistry::set<UtilKernelTrait::setOrder<ARITHMETIC_HOST_TYPE_##I> >( setOrder, Host, flag );           \

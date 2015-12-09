@@ -30,8 +30,6 @@
  # @date 02.12.2015
 ###
 
-include_directories( "${CMAKE_BINARY_DIR}/include" )
-
 foreach ( executable blas1 matrix scalar simple solver vector )
     add_executable( ${executable} ${executable}.cpp )
     target_link_libraries( ${executable} ama )

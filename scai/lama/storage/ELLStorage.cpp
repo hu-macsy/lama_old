@@ -724,15 +724,15 @@ void ELLStorage<ValueType>::scaleImpl( const ValueType value )
 {
     SCAI_LOG_INFO( logger, "scaleImpl # value = " << value )
 
-    static LAMAKernel<UtilKernelTrait::scale<ValueType> > scale;
+    HArrayUtils::scale( mValues, value, this->getContextPtr() );
+}
 
-    ContextPtr loc = scale.getValidContext( this->getContextPtr() );
+/* --------------------------------------------------------------------------- */
 
-    WriteAccess<ValueType> wValues( mValues, loc );
-
-    SCAI_CONTEXT_ACCESS( loc )
-
-    scale[ loc ]( wValues.get(), value, mValues.size() );
+template<typename ValueType>
+void ELLStorage<ValueType>::conj()
+{
+    HArrayUtils::conj( mValues, this->getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */

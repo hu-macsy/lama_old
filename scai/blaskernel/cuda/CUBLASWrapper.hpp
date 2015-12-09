@@ -502,7 +502,7 @@ inline ComplexFloat CUBLASWrapper::dot<ComplexFloat>(const BLASIndexType n,
 		const BLASIndexType incY) {
 	ComplexFloat dot;
 	SCAI_CUBLAS_CALL(
-			cublasCdotu(CUDAContext_cublasHandle, n,
+			cublasCdotc(CUDAContext_cublasHandle, n,
 					cublasCast(x_d), incX,
 					cublasCast(y_d), incY,
 					cublasCast(&dot)), "cublasWrapperDot<ComplexFloat>");
@@ -515,7 +515,7 @@ inline ComplexDouble CUBLASWrapper::dot<ComplexDouble>(const BLASIndexType n,
 		const ComplexDouble *y_d, const BLASIndexType incY) {
 	ComplexDouble dot;
 	SCAI_CUBLAS_CALL(
-			cublasZdotu(CUDAContext_cublasHandle, n,
+			cublasZdotc(CUDAContext_cublasHandle, n,
 					cublasCast(x_d), incX,
 					cublasCast(y_d), incY,
 					cublasCast(&dot)), "cublasWrapperDot<ComplexDouble>");

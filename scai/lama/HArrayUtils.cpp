@@ -44,6 +44,7 @@
 #include <scai/tracing.hpp>
 
 #include <scai/common/SCAITypes.hpp>
+#include <scai/common/TypeTraits.hpp>
 #include <scai/common/Constants.hpp>
 
 // boost
@@ -314,7 +315,7 @@ void HArrayUtils::assignScaled(
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        setVal[loc]( wResult.get(), n, static_cast<ValueType>(0.0) );
+        setVal[loc]( wResult.get(), n, ValueType( 0 ) );
     }
     else if( &result == &y )
     {
@@ -355,6 +356,46 @@ void HArrayUtils::assignScaled(
     }
 }
 
+template<typename ValueType>
+void HArrayUtils::scale( hmemo::HArray<ValueType>& array, const ValueType beta, hmemo::ContextPtr prefLoc )
+{
+    IndexType n = array.size();
+
+    if ( n >  0 )
+    {
+        static LAMAKernel<UtilKernelTrait::scale<ValueType> > scale;
+
+        // best choice: context where array is valid 
+
+        ContextPtr loc = scale.getValidContext( array.getValidContext( prefLoc ) );
+
+        WriteAccess<ValueType> wResult( array, loc );
+
+        SCAI_CONTEXT_ACCESS( loc )
+
+        scale[loc]( wResult.get(), beta, n );
+    }
+}
+
+template<typename ValueType>
+void HArrayUtils::conj( hmemo::HArray<ValueType>& array, hmemo::ContextPtr prefLoc )
+{
+    IndexType n = array.size();
+
+    if ( ( n > 0 ) && common::scalar::isComplex( common::TypeTraits<ValueType>::stype ) )
+    {
+        static LAMAKernel<UtilKernelTrait::conj<ValueType> > conj;
+
+        ContextPtr loc = conj.getValidContext( prefLoc );
+
+        SCAI_CONTEXT_ACCESS( loc )
+
+        WriteAccess<ValueType> values( array, loc );
+
+        conj[loc]( values.get(), n );
+    }
+}
+
 // template instantiation for the supported data types
 
 template void HArrayUtils::setVal( hmemo::HArray<IndexType>& , const IndexType , IndexType );
@@ -388,6 +429,17 @@ template void HArrayUtils::gather(
             HArray<ARITHMETIC_HOST_TYPE_##I>& target,                            \
             const IndexType index,                                                  \
             ARITHMETIC_HOST_TYPE_##I val );                                         \
+                                                                                    \
+    template                                                                        \
+    void HArrayUtils::scale(                                                         \
+            HArray<ARITHMETIC_HOST_TYPE_##I>& array,                                 \
+            const ARITHMETIC_HOST_TYPE_##I beta,                                     \
+            ContextPtr prefLoc );                                                   \
+                                                                                    \
+    template                                                                        \
+    void HArrayUtils::conj(                                                         \
+            HArray<ARITHMETIC_HOST_TYPE_##I>& target,                            \
+            ContextPtr loc );                                                       \
                                                                                     \
     template                                                                        \
     ARITHMETIC_HOST_TYPE_##I HArrayUtils::getVal(                                   \

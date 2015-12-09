@@ -448,6 +448,13 @@ inline Scalar abs( const Scalar scalar )
     return Scalar( abs( scalar.getValue<ComplexLongDouble>() ) );
 }
 
+inline Scalar conj( const Scalar scalar )
+{
+    ComplexLongDouble val = scalar.getValue<ComplexLongDouble>();
+    ComplexLongDouble valc ( val.real(), val.imag() );
+    return Scalar( valc );
+}
+
 inline Scalar max( const Scalar a, const Scalar b )
 {
     // note: must use std::max, otherwise infinite recursion

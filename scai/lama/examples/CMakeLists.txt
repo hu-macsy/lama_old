@@ -30,6 +30,10 @@
  # @date 02.12.2015
 ###
 
+## Add lama include directory for all examples 
+
+include_directories( "${CMAKE_CURRENT_BINARY_DIR}/../include" )
+
 add_subdirectory ( bench )
 add_subdirectory ( labelrank )
 add_subdirectory ( lecture )

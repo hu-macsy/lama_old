@@ -281,11 +281,27 @@ struct UtilKernelTrait
          *  @param[in]      value  is the scaling factor
          *  @param[in]      n      is the number of entries in values
          */
-        typedef void ( *FuncType ) ( ValueType values[],
-                        const ValueType value,
-                        const IndexType n );
+        typedef void ( *FuncType ) ( 
+            ValueType values[],
+            const ValueType value,
+            const IndexType n );
 
         static const char* getId() { return "Util.scale"; }
+    };
+
+    template<typename ValueType>
+    struct conj
+    {
+        /** @brief replace complex values with their conjugate value
+         *
+         *  @param[in,out]  values is the array with entries to conj 
+         *  @param[in]      n      is the number of entries in values
+         */
+        typedef void ( *FuncType ) ( 
+            ValueType values[],
+            const IndexType n );
+
+        static const char* getId() { return "Util.conj"; }
     };
 };
 

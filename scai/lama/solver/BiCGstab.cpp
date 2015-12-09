@@ -40,6 +40,7 @@
 #include <scai/lama/expression/MatrixVectorExpressions.hpp>
 
 #include <scai/lama/norm/MaxNorm.hpp>
+#include <scai/lama/norm/L2Norm.hpp>
 
 #include <scai/lama/DenseVector.hpp>
 
@@ -55,35 +56,36 @@ namespace lama
 SCAI_LOG_DEF_LOGGER( BiCGstab::logger, "Solver.BiCGstab" )
 
 BiCGstab::BiCGstab( const std::string& id )
-    : IterativeSolver(id){}
+    : IterativeSolver( id ) {}
 
 
 BiCGstab::BiCGstab( const std::string& id, LoggerPtr logger )
-    : IterativeSolver(id ,logger){}
+    : IterativeSolver( id , logger ) {}
 
 BiCGstab::BiCGstab( const BiCGstab& other )
-    : IterativeSolver( other ){}
+    : IterativeSolver( other ) {}
 
 
 
 BiCGstab::BiCGstabRuntime::BiCGstabRuntime()
-    : IterativeSolverRuntime(){}
+    : IterativeSolverRuntime() {}
 
-BiCGstab::~BiCGstab(){}
+BiCGstab::~BiCGstab() {}
 
-BiCGstab::BiCGstabRuntime::~BiCGstabRuntime(){}
+BiCGstab::BiCGstabRuntime::~BiCGstabRuntime() {}
 
-void BiCGstab::initialize( const Matrix& coefficients ){
-    SCAI_LOG_DEBUG(logger, "Initialization started for coefficients = "<< coefficients)
+void BiCGstab::initialize( const Matrix& coefficients )
+{
+    SCAI_LOG_DEBUG( logger, "Initialization started for coefficients = " << coefficients )
 
     Solver::initialize( coefficients );
- 	BiCGstabRuntime& runtime = getRuntime();
+    BiCGstabRuntime& runtime = getRuntime();
 
     runtime.mAlpha  = 1.0;
     runtime.mOmega = 1.0;
     runtime.mRhoOld = 1.0;
     runtime.mResNorm = 1.0;
-    runtime.mEps = std::numeric_limits<double>::epsilon()*3;                    //CAREFUL: No abstract type
+    runtime.mEps = std::numeric_limits<double>::epsilon() * 3;                  //CAREFUL: No abstract type
 
     common::scalar::ScalarType type = coefficients.getValueType();
 
@@ -102,50 +104,56 @@ void BiCGstab::initialize( const Matrix& coefficients ){
 }
 
 
-void BiCGstab::solveInit( Vector& solution, const Vector& rhs ){
+void BiCGstab::solveInit( Vector& solution, const Vector& rhs )
+{
     BiCGstabRuntime& runtime = getRuntime();
 
     runtime.mRhs = &rhs;
     runtime.mSolution = &solution;
 
-    if ( runtime.mCoefficients->getNumRows() != runtime.mRhs->size() ){
+    if ( runtime.mCoefficients->getNumRows() != runtime.mRhs->size() )
+    {
         COMMON_THROWEXCEPTION(
             "Size of rhs vector " << *runtime.mRhs << " does not match column size of matrix " << *runtime.mCoefficients );
     }
 
-    if ( runtime.mCoefficients->getNumColumns() != solution.size() ){
+    if ( runtime.mCoefficients->getNumColumns() != solution.size() )
+    {
         COMMON_THROWEXCEPTION(
             "Size of solution vector " << solution << " does not match row size of matrix " << *runtime.mCoefficients );
     }
 
-    if ( runtime.mCoefficients->getColDistribution() != solution.getDistribution() ){
+    if ( runtime.mCoefficients->getColDistribution() != solution.getDistribution() )
+    {
         COMMON_THROWEXCEPTION(
             "Distribution of lhs " << solution << " = " << solution.getDistribution() << " does not match (row) distribution of " << *runtime.mCoefficients << " = " << runtime.mCoefficients->getColDistribution() );
     }
 
-    if ( runtime.mCoefficients->getDistribution() != runtime.mRhs->getDistribution() ){
+    if ( runtime.mCoefficients->getDistribution() != runtime.mRhs->getDistribution() )
+    {
         COMMON_THROWEXCEPTION(
             "Distribution of old Solution " << *runtime.mRhs << " = " << runtime.mRhs->getDistribution() << " does not match (row) distribution of " << *runtime.mCoefficients << " = " << runtime.mCoefficients->getDistribution() );
     }
 
 
     // Initialize
-    this->getResidual();   
+    this->getResidual();
 
-    Vector* initialR = (*runtime.mResidual).copy();
+    Vector* initialR = ( *runtime.mResidual ).copy();
     runtime.mRes0.reset( initialR );
 
-    *runtime.mVecV *= (0.0);
-    *runtime.mVecP *= (0.0);                   
-  
+    *runtime.mVecV = Scalar( 0 );
+    *runtime.mVecP = Scalar( 0 );
+
     runtime.mSolveInit = true;
 }
 
-void BiCGstab::iterate(){
-    BiCGstabRuntime& runtime	= getRuntime();
-    
+void BiCGstab::iterate()
+{
+    BiCGstabRuntime& runtime    = getRuntime();
+
     const Matrix& A = *runtime.mCoefficients;
-    
+
     const Vector& res0 = *runtime.mRes0;
     Vector& res = *runtime.mResidual;
     Vector& vecV = *runtime.mVecV;
@@ -155,70 +163,97 @@ void BiCGstab::iterate(){
     Vector& solution = *runtime.mSolution;
 
     Scalar& alpha = runtime.mAlpha;
-    Scalar& beta =runtime.mBeta;
+    Scalar& beta = runtime.mBeta;
     Scalar& omega = runtime.mOmega;
     Scalar& rhoOld = runtime.mRhoOld;
     Scalar& rhoNew = runtime.mRhoNew;
-  
+
     const Scalar& eps = runtime.mEps;
     Scalar& resNorm = runtime.mResNorm;
-    MaxNorm norm;
+    L2Norm norm;
 
 
-    rhoNew = res0.dotProduct(res);
+    rhoNew = res0.dotProduct( res );
 
-    if(resNorm<eps) // residual is small
-        beta=0.0;
-    else beta = rhoNew/rhoOld*(alpha/omega);
-    
-    vecP = vecP-omega*vecV;
-    vecP = res+beta*vecP;
-    vecV=A*vecP;
+    if ( resNorm < eps ) // residual is small
+    {
+        beta = 0.0;
+    }
+    else
+    {
+        beta = rhoNew / rhoOld * ( alpha / omega );
+    }
 
-    Scalar innerProd = res0.dotProduct(vecV);
-    if(resNorm<eps)    // residual is small
-        alpha= 0.0;
-    else alpha=rhoNew/innerProd;
-    
-    vecS=res-alpha*vecV;
-    vecT=A*vecS;
+    SCAI_LOG_INFO( logger, "resNorm = " << resNorm << ", eps = " << eps << ", beta = " << beta )
 
-    innerProd = vecT.dotProduct(vecT);
-    if(resNorm<eps) //residual is small
-        omega=0.0;
-    else omega=vecT.dotProduct(vecS)/innerProd;
-  
-    solution= solution+alpha*vecP;
-    solution = solution + omega*vecS;
-       res = vecS - omega*vecT;
-    rhoOld=rhoNew;
+    vecP = vecP - omega * vecV;
+    vecP = res + beta * vecP;
+    vecV = A * vecP;
 
-    resNorm = norm.apply(res); 
+    Scalar innerProd = res0.dotProduct( vecV );
+
+    if ( resNorm < eps ) // residual is small
+    {
+        alpha = 0.0;
+    }
+    else
+    {
+        alpha = rhoNew / innerProd;
+    }
+
+    vecS = res - alpha * vecV;
+    vecT = A * vecS;
+
+    innerProd = vecT.dotProduct( vecT );
+
+    if ( resNorm < eps ) //residual is small
+    {
+        omega = 0.0;
+    }
+    else
+    {
+        omega = vecT.dotProduct( vecS ) / innerProd;
+    }
+
+    solution = solution + alpha * vecP;
+    solution = solution + omega * vecS;
+    res = vecS - omega * vecT;
+    rhoOld = rhoNew;
+
+    resNorm = norm.apply( res );
 
     //BiCGStab implementation end
     mBiCGstabRuntime.mSolution.setDirty( false );
 }
 
-SolverPtr BiCGstab::copy(){
+SolverPtr BiCGstab::copy()
+{
     return SolverPtr( new BiCGstab( *this ) );
 }
 
-BiCGstab::BiCGstabRuntime& BiCGstab::getRuntime(){
+BiCGstab::BiCGstabRuntime& BiCGstab::getRuntime()
+{
     return mBiCGstabRuntime;
 }
 
-const BiCGstab::BiCGstabRuntime& BiCGstab::getConstRuntime() const{
+const BiCGstab::BiCGstabRuntime& BiCGstab::getConstRuntime() const
+{
     return mBiCGstabRuntime;
 }
 
 std::string BiCGstab::createValue()
 {
-	return "BiCGstab";
+    return "BiCGstab";
 }
 
 Solver* BiCGstab::create( const std::string name )
 {
-	return new BiCGstab( name );
+    return new BiCGstab( name );
+}
+
+void BiCGstab::writeAt( std::ostream& stream ) const
+{
+    stream << "BiCGstab ( id = " << mId << ", #iter = " << getConstRuntime().mIterations << " )";
 }
 
 } /* end namespace lama */

@@ -485,6 +485,11 @@ public:
      */
     virtual void redistribute( DistributionPtr distribution ) = 0;
 
+    /** 
+     *  Build the conjugate vector in place. 
+     */
+    virtual void conj() = 0;
+
 protected:
 
     /**

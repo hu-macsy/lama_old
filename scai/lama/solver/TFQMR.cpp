@@ -264,6 +264,11 @@ const TFQMR::TFQMRRuntime& TFQMR::getConstRuntime() const{
     return mTFQMRRuntime;
 }
 
+void TFQMR::writeAt( std::ostream& stream ) const
+{
+    stream << "TFQMR ( id = " << mId << ", #iter = " << getConstRuntime().mIterations << " )";
+}
+
 std::string TFQMR::createValue()
 {
 	return "TFQMR";

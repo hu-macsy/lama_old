@@ -219,6 +219,11 @@ Solver* CGS::create( const std::string name )
 	return new CGS( name );
 }
 
+void CGS::writeAt( std::ostream& stream ) const
+{
+    stream << "CGS ( id = " << mId << ", #iter = " << getConstRuntime().mIterations << " )";
+}
+
 } /* end namespace lama */
 
 } /* end namespace scai */

@@ -48,6 +48,7 @@
 #include <scai/lama/norm/L2Norm.hpp>
 
 #include <scai/common/unique_ptr.hpp>
+#include <scai/common/exception/Exception.hpp>
 #include <scai/tracing.hpp>
 
 using namespace std;
@@ -116,7 +117,23 @@ int main( int argc, char* argv[] )
         // read matrix + rhs from disk
 
         matrix.readFromFile( filename );
-        rhs.readFromFile( filename );
+
+        try
+        {
+            rhs.readFromFile( filename );
+        }
+        catch ( const std::exception& )
+        {
+            std::cout << "reading vector from file " << filename << " failed, take sum( Matrix, 2 ) " << std::endl;
+
+            {
+                scai::common::unique_ptr<Vector> xPtr( rhs.clone() );
+                Vector& x = *xPtr;
+                x.resize( matrix.getColDistributionPtr() );
+                x = Scalar( 1 );
+                rhs = matrix * x;
+            }
+        }
 
         // only square matrices are accetpted
 

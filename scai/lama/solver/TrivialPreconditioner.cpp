@@ -103,6 +103,11 @@ Solver* TrivialPreconditioner::create( const std::string name )
 	return new TrivialPreconditioner( name );
 }
 
+void TrivialPreconditioner::writeAt( std::ostream& stream ) const
+{
+    stream << "TrivialPreconditioner ( id = " << mId << " )";
+}
+
 } /* end namespace lama */
 
 } /* end namespace scai */

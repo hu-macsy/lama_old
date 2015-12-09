@@ -310,7 +310,10 @@ ValueType BLAS_BLAS1::dot(
         SCAI_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
 
-    return BLASWrapper::dot( static_cast<BLASWrapper::BLASIndexType>( n ), x, static_cast<BLASWrapper::BLASIndexType>( incX ), y, static_cast<BLASWrapper::BLASIndexType>( incY ));
+    ValueType res = BLASWrapper::dot( static_cast<BLASWrapper::BLASIndexType>( n ), x, 
+                                      static_cast<BLASWrapper::BLASIndexType>( incX ), y, 
+                                      static_cast<BLASWrapper::BLASIndexType>( incY ));
+    return res;
 }
 
 /* --------------------------------------------------------------------------- */

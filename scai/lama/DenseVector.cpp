@@ -535,6 +535,14 @@ Scalar DenseVector<ValueType>::max() const
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void DenseVector<ValueType>::conj() 
+{
+    HArrayUtils::conj( mLocalValues, mContext );
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
 Scalar DenseVector<ValueType>::l1Norm() const
 {
     IndexType nnu = mLocalValues.size();

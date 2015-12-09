@@ -398,6 +398,15 @@ void SparseAssemblyStorage<ValueType>::Row::scale( const ValueType val )
 }
 
 template<typename ValueType>
+void SparseAssemblyStorage<ValueType>::Row::conj()
+{
+    for( size_t i = 0; i < values.size(); i++ )
+    {
+        values[i] = common::TypeTraits<ValueType>::conj( values[i] );
+    }
+}
+
+template<typename ValueType>
 ValueType SparseAssemblyStorage<ValueType>::operator()( const IndexType i, const IndexType j ) const
 {
     if( j >= mNumColumns )
@@ -823,6 +832,17 @@ void SparseAssemblyStorage<ValueType>::scaleImpl( const ValueType value )
     for( IndexType i = 0; i < mNumRows; ++i )
     {
         mRows[i].scale( value );
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void SparseAssemblyStorage<ValueType>::conj()
+{
+    for( IndexType i = 0; i < mNumRows; ++i )
+    {
+        mRows[i].conj();
     }
 }
 

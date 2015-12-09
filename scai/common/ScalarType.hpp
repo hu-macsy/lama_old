@@ -81,6 +81,10 @@ namespace scalar
         UNKNOWN
     } ScalarType;
 
+    /** Query an enum value whether it is complex or not. */
+
+    bool isComplex( const ScalarType t );
+
     /*
      * Output of ScalarType in stream by writing strings instead of numbers
      */

@@ -30,12 +30,12 @@
  # @date 02.12.2015
 ###
 
-include_directories( "${CMAKE_BINARY_DIR}/include" )
-
-foreach ( executable amg_solver cg_solver gmres_solver jacobi_solver lama_info matrix_generator )
-    add_executable( ${executable} ${executable}.cpp )
-    target_link_libraries( ${executable} ama )
+foreach ( executable amg_solver cg_solver gmres_solver solver lama_info matrix_generator )
+    add_executable( ${executable}.exe ${executable}.cpp )
+    target_link_libraries( ${executable}.exe ama )
     set ( EXAMPLE_EXECUTABLES_SOLVER "${EXAMPLE_EXECUTABLES_SOLVER} ${executable}.exe" )
 endforeach ( executable )
+
+configure_file( GenMatrices.py GenMatrices.py COPYONLY )
 
 set ( EXAMPLE_EXECUTABLES_SOLVER "${EXAMPLE_EXECUTABLES_SOLVER}" PARENT_SCOPE )

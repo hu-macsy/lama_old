@@ -40,6 +40,7 @@
 #include <scai/lama/UtilKernelTrait.hpp>
 #include <scai/lama/DIAKernelTrait.hpp>
 #include <scai/lama/CSRKernelTrait.hpp>
+#include <scai/lama/HArrayUtils.hpp>
 
 // internal scai libraries
 #include <scai/blaskernel/BLASKernelTrait.hpp>
@@ -300,12 +301,15 @@ void DIAStorage<ValueType>::setDiagonalImpl( const HArray<OtherType>& diagonal )
 template<typename ValueType>
 void DIAStorage<ValueType>::scaleImpl( const ValueType value )
 {
-    WriteAccess<ValueType> wValues( mValues );
+    HArrayUtils::scale( mValues, value, this->getContextPtr() );
+}
 
-    for( IndexType i = 0; i < mValues.size(); i++ )
-    {
-        wValues[i] *= value;
-    }
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void DIAStorage<ValueType>::conj()
+{
+    HArrayUtils::conj( mValues, this->getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */

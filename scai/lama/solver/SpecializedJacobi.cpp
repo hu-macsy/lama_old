@@ -376,6 +376,11 @@ SolverPtr SpecializedJacobi::copy()
     return SolverPtr( new SpecializedJacobi( *this ) );
 }
 
+void SpecializedJacobi::writeAt( std::ostream& stream ) const
+{
+    stream << "SpecializedJacobi ( id = " << mId << ", #iter = " << getConstRuntime().mIterations << " )";
+}
+
 std::string SpecializedJacobi::createValue()
 {
 	return "SpecializedJacobi";

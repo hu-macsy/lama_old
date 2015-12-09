@@ -51,6 +51,7 @@
 
 // std
 #include <cmath>
+#include <complex>
 
 namespace scai
 {
@@ -122,9 +123,13 @@ ValueType OpenMPBLAS1::nrm2( const IndexType n, const ValueType* x, const IndexT
     SCAI_LOG_DEBUG( logger,
                     "nrm2<" << TypeTraits<ValueType>::id()<< ">, n = " << n << ", x = " << x << ", incX = " << incX )
 
+    ValueType sumOfSquares = 0;  // same as ... = ValueType( 0 )
+
     if ( incX <= 0 )
     {
-        return static_cast<ValueType>( 0 );
+        // considered as vector x is empty
+
+        return sumOfSquares;
     }
 
     TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
@@ -133,8 +138,6 @@ ValueType OpenMPBLAS1::nrm2( const IndexType n, const ValueType* x, const IndexT
     {
         SCAI_LOG_WARN( logger, "asynchronous execution not supported yet." )
     }
-
-    ValueType sumOfSquares = static_cast<ValueType>( 0 );
 
     // OpenMP reduction clause cannot be used as it doesn't support complex numbers
 
@@ -475,19 +478,20 @@ ValueType OpenMPBLAS1::dot(
     const ValueType* y,
     const IndexType incY )
 {
-    SCAI_REGION( "OpenMP.BLAS1.sdot" )
+    SCAI_REGION( "OpenMP.BLAS1.dot" )
 
     SCAI_LOG_DEBUG( logger,
-                    "dot<" << TypeTraits<ValueType>::id() << ">, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
+                    "dot<" << TypeTraits<ValueType>::id() << ">, n = " << n 
+                     << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
 
-    if( ( incX <= 0 ) || ( incY <= 0 ) )
+    if ( ( incX <= 0 ) || ( incY <= 0 ) )
     {
-        return static_cast<ValueType>(0.0);
+        return ValueType( 0 );
     }
 
     TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
-    if( syncToken )
+    if ( syncToken )
     {
         SCAI_LOG_WARN( logger, "asynchronous execution not supported here" )
     }
@@ -498,13 +502,13 @@ ValueType OpenMPBLAS1::dot(
     {
         ValueType tResult = 0;
 
-        if( incX == 1 && incY == 1 )
+        if ( incX == 1 && incY == 1 )
         {
             #pragma omp for schedule( SCAI_OMP_SCHEDULE )
 
             for( int i = 0; i < n; i++ )
             {
-                tResult += x[i] * y[i];
+                tResult += TypeTraits<ValueType>::conj( x[i] ) * y[i] ; 
             }
         }
         else
@@ -513,12 +517,13 @@ ValueType OpenMPBLAS1::dot(
             #pragma omp for schedule( SCAI_OMP_SCHEDULE )
             for( int i = 0; i < n; i++ )
             {
-                tResult += x[i * incX] * y[i * incY];
+                tResult += TypeTraits<ValueType>::conj( x[i * incX] ) * y[i * incY] ; 
             }
         }
 
         atomicAdd( result, tResult );
     }
+
     return result;
 }
 
