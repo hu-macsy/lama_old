@@ -108,6 +108,9 @@ public:
 	}
 
 private:
+
+#ifdef SCAI_COMPLEX_SUPPORTED
+
 	/**
 	 * @brief convert pointer to ComplexFloat to pointer cuComplex
 	 */
@@ -150,6 +153,8 @@ private:
 		return *cublasCast(&x);
 	}
 
+#endif 
+
 };
 
 // -------------- scal --------------
@@ -171,6 +176,8 @@ inline void CUBLASWrapper::scal<double>(const BLASIndexType n, const double alph
 			"cublasWrapperScale<double>");
 }
 
+#ifdef SCAI_COMPLEX_SUPPORTED
+
 template<>
 inline void CUBLASWrapper::scal<ComplexFloat>(const BLASIndexType n,
 		const ComplexFloat alpha, ComplexFloat *x_d, const BLASIndexType incX) {
@@ -190,6 +197,8 @@ inline void CUBLASWrapper::scal<ComplexDouble>(const BLASIndexType n,
 					incX),
 			"cublasWrapperScale<ComplexDouble>");
 }
+
+#endif
 
 // -------------- nrm2 --------------
 template<>
@@ -213,6 +222,8 @@ inline double CUBLASWrapper::nrm2<double>(const BLASIndexType n, const double *x
 			"cublasWrapperNrm2<double>");
 	return nrm2;
 }
+
+#ifdef SCAI_COMPLEX_SUPPORTED
 
 template<>
 inline ComplexFloat CUBLASWrapper::nrm2<ComplexFloat>(const BLASIndexType n,
@@ -240,6 +251,8 @@ inline ComplexDouble CUBLASWrapper::nrm2<ComplexDouble>(const BLASIndexType n,
 	return ComplexDouble(nrm2, 0.0);
 }
 
+#endif
+
 // -------------- asum --------------
 template<>
 inline float CUBLASWrapper::asum<float>(const BLASIndexType n, const float *x_d,
@@ -262,6 +275,8 @@ inline double CUBLASWrapper::asum<double>(const BLASIndexType n, const double *x
 			"cublasWrapperAsum<double>");
 	return asum;
 }
+
+#ifdef SCAI_COMPLEX_SUPPORTED
 
 template<>
 inline ComplexFloat CUBLASWrapper::asum<ComplexFloat>(const BLASIndexType n,
@@ -289,6 +304,8 @@ inline ComplexDouble CUBLASWrapper::asum<ComplexDouble>(const BLASIndexType n,
 	return ComplexDouble(asum, 0.0);
 }
 
+#endif 
+
 // -------------- iamax --------------
 template<>
 inline CUBLASWrapper::BLASIndexType CUBLASWrapper::iamax<float>(const BLASIndexType n,
@@ -314,6 +331,8 @@ inline CUBLASWrapper::BLASIndexType CUBLASWrapper::iamax<double>(const BLASIndex
 	return iamax;
 }
 
+#ifdef SCAI_COMPLEX_SUPPORTED
+
 template<>
 inline CUBLASWrapper::BLASIndexType CUBLASWrapper::iamax<ComplexFloat>(const BLASIndexType n,
 		const ComplexFloat *x_d, const BLASIndexType incX) {
@@ -338,6 +357,8 @@ inline CUBLASWrapper::BLASIndexType CUBLASWrapper::iamax<ComplexDouble>(const BL
 	return iamax;
 }
 
+#endif
+
 // -------------- swap --------------
 template<>
 inline void CUBLASWrapper::swap<float>(const BLASIndexType n, float *x_d,
@@ -358,6 +379,8 @@ inline void CUBLASWrapper::swap<double>(const BLASIndexType n, double *x_d,
 					incY),
 			"cublasWrapperSwap<double>");
 }
+
+#ifdef SCAI_COMPLEX_SUPPORTED
 
 template<>
 inline void CUBLASWrapper::swap<ComplexFloat>(const BLASIndexType n,
@@ -381,6 +404,8 @@ inline void CUBLASWrapper::swap<ComplexDouble>(const BLASIndexType n,
 			"cublasWrapperSwap<ComplexDouble>");
 }
 
+#endif
+
 // -------------- copy --------------
 template<>
 inline void CUBLASWrapper::copy<float>(const BLASIndexType n, const float *x_d,
@@ -401,6 +426,8 @@ inline void CUBLASWrapper::copy<double>(const BLASIndexType n, const double *x_d
 					incY),
 			"cublasWrapperCopy<double>");
 }
+
+#ifdef SCAI_COMPLEX_SUPPORTED
 
 template<>
 inline void CUBLASWrapper::copy<ComplexFloat>(const BLASIndexType n,
@@ -423,6 +450,8 @@ inline void CUBLASWrapper::copy<ComplexDouble>(const BLASIndexType n,
 					cublasCast(y_d), incY),
 			"cublasWrapperCopy<ComplexDouble>");
 }
+
+#endif
 
 // -------------- axpy --------------
 template<>
@@ -447,6 +476,8 @@ inline void CUBLASWrapper::axpy<double>(const BLASIndexType n, const double alph
 			"cublasWrapperAxpy<double>");
 }
 
+#ifdef SCAI_COMPLEX_SUPPORTED
+
 template<>
 inline void CUBLASWrapper::axpy<ComplexFloat>(const BLASIndexType n,
 		const ComplexFloat alpha, const ComplexFloat *x_d, const BLASIndexType incX,
@@ -470,6 +501,8 @@ inline void CUBLASWrapper::axpy<ComplexDouble>(const BLASIndexType n,
 					incY),
 			"cublasWrapperAxpy<ComplexDouble>");
 }
+
+#endif
 
 // -------------- dot --------------
 template<>
@@ -496,6 +529,8 @@ inline double CUBLASWrapper::dot<double>(const BLASIndexType n, const double *x_
 	return dot;
 }
 
+#ifdef SCAI_COMPLEX_SUPPORTED
+
 template<>
 inline ComplexFloat CUBLASWrapper::dot<ComplexFloat>(const BLASIndexType n,
 		const ComplexFloat *x_d, const BLASIndexType incX, const ComplexFloat *y_d,
@@ -521,6 +556,8 @@ inline ComplexDouble CUBLASWrapper::dot<ComplexDouble>(const BLASIndexType n,
 					cublasCast(&dot)), "cublasWrapperDot<ComplexDouble>");
 	return dot;
 }
+
+#endif
 
 // -------------- gemv --------------
 template<>
@@ -553,6 +590,8 @@ inline void CUBLASWrapper::gemv<double>(const cublasOperation_t trans,
 					incY),
 			"cublasWrapperGemv<double>");
 }
+
+#ifdef SCAI_COMPLEX_SUPPORTED
 
 template<>
 inline void CUBLASWrapper::gemv<ComplexFloat>(const cublasOperation_t trans,
@@ -587,6 +626,8 @@ inline void CUBLASWrapper::gemv<ComplexDouble>(const cublasOperation_t trans,
 					incY),
 			"cublasWrapperGemv<ComplexDouble>");
 }
+
+#endif
 
 // -------------- gemm --------------
 template<>
@@ -623,6 +664,8 @@ inline void CUBLASWrapper::gemm<double>(const cublasOperation_t transA_char,
 					ldc),
 			"cublasWrapperGemm<dobule>");
 }
+
+#ifdef SCAI_COMPLEX_SUPPORTED
 
 template<>
 inline void CUBLASWrapper::gemm<ComplexFloat>(
@@ -663,6 +706,8 @@ inline void CUBLASWrapper::gemm<ComplexDouble>(
 					ldc),
 			"cublasWrapperGemm<double>");
 }
+
+#endif
 
 } /* end namespace blaskernel */
 

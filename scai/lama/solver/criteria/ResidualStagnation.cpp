@@ -77,7 +77,7 @@ Criterion* ResidualStagnation::copy() const
 
 bool ResidualStagnation::isSatisfied( const IterativeSolver& solver )
 {
-    mLastResidualNorms[mNextEntry] = ( *mNorm )( solver.getResidual() ).getValue<long double>();
+    mLastResidualNorms[mNextEntry] = ( *mNorm )( solver.getResidual() );
 
     mNextEntry = ( mNextEntry + 1 ) % mLookback;
 

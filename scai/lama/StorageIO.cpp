@@ -270,6 +270,9 @@ void StorageIO<ValueType>::readCSRFromBinaryFile(
         SCAI_LOG_WARN( logger, "read binary data of type double, conversion to " << csrValues.getValueType() )
         FileIO::readBinaryData<double,ValueType,0>( inFile, values.get(), numValues );
     }
+
+#ifdef SCAI_COMPLEX_SUPPORTED 
+
     else if( actualSize == expectedCSRFileSize<ComplexFloat>( numRows, numValues ) )
     {
         SCAI_LOG_WARN( logger, "read binary data of type double, conversion to " << csrValues.getValueType() )
@@ -280,6 +283,9 @@ void StorageIO<ValueType>::readCSRFromBinaryFile(
         SCAI_LOG_WARN( logger, "read binary data of type double, conversion to " << csrValues.getValueType() )
         FileIO::readBinaryData<ComplexDouble,ValueType,0>( inFile, values.get(), numValues );
     }
+
+#endif
+
     else
     {
         COMMON_THROWEXCEPTION(
@@ -424,6 +430,9 @@ void StorageIO<ValueType>::writeCSRToXDRFile(
     {
         writeData<float,ValueType,0>( outFile, dataRead.get(), numValues );
     } 
+
+#ifdef SCAI_COMPLEX_SUPPORTED
+
     else if( dataTypeSize == sizeof( ComplexFloat ) )
     {
         writeData<ComplexFloat,ValueType,0>( outFile, dataRead.get(), numValues );
@@ -432,6 +441,8 @@ void StorageIO<ValueType>::writeCSRToXDRFile(
     {
         writeData<ComplexDouble,ValueType,0>( outFile, dataRead.get(), numValues );
     }
+
+#endif
 
     outFile.write( &dataTypeSize );
     outFile.write( &numValues );
@@ -556,6 +567,9 @@ void StorageIO<ValueType>::readCSRFromXDRFile(
     {
         readData<float,ValueType,0>( xdrFile, m_data.get(), numValues );
     }
+
+#ifdef SCAI_COMPLEX_SUPPORTED 
+
     else if( dataTypeSize == sizeof( ComplexFloat ) )
     {
         readData<ComplexFloat,ValueType,0>( xdrFile, m_data.get(), numValues );
@@ -564,6 +578,9 @@ void StorageIO<ValueType>::readCSRFromXDRFile(
     {
         readData<ComplexDouble,ValueType,0>( xdrFile, m_data.get(), numValues );
     }
+
+#endif
+
     else
     {
         COMMON_THROWEXCEPTION( "Invalid data type size in file " + fileName )
@@ -647,6 +664,9 @@ void StorageIO<ValueType>::writeCSRToBinaryFile(
     {
         writeBinaryData<float,ValueType,0>( outFile, dataRead.get(), numValues );
     }
+
+#ifdef SCAI_COMPLEX_SUPPORTED
+
     else if( dataTypeSize == sizeof( ComplexFloat ) )
     {
         writeBinaryData<ComplexFloat,ValueType,0>( outFile, dataRead.get(), numValues );
@@ -655,6 +675,9 @@ void StorageIO<ValueType>::writeCSRToBinaryFile(
     {
         writeBinaryData<ComplexDouble,ValueType,0>( outFile, dataRead.get(), numValues );
     }
+
+#endif
+
     else
     {
         COMMON_THROWEXCEPTION( "Unknown data type size." )

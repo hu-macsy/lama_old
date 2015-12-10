@@ -63,6 +63,8 @@ __inline__ static void vectorBindTexture( const double* vector )
     SCAI_CUDA_RT_CALL( cudaBindTexture( NULL, texVectorDXref, vector ), "bind double vector x to texture" )
 }
 
+#ifdef SCAI_COMPLEX_SUPPORTED
+
 __inline__ static void vectorBindTexture( const ComplexFloat* vector )
 {
     SCAI_CUDA_RT_CALL( cudaBindTexture( NULL, texVectorCXref, vector ), "bind ComplexFloat vector x to texture" )
@@ -72,6 +74,8 @@ __inline__ static void vectorBindTexture( const ComplexDouble* vector )
 {
     SCAI_CUDA_RT_CALL( cudaBindTexture( NULL, texVectorZXref, vector ), "bind ComplexDouble vector x to texture" )
 }
+
+#endif 
 
 __inline__ static void vectorBindTexture( const int* vector )
 {
@@ -88,6 +92,8 @@ __inline__ static void vectorUnbindTexture( const double* )
     SCAI_CUDA_RT_CALL( cudaUnbindTexture( texVectorDXref ), "unbind double vector x from texture" )
 }
 
+#ifdef SCAI_COMPLEX_SUPPORTED
+
 __inline__ static void vectorUnbindTexture( const ComplexFloat* )
 {
     SCAI_CUDA_RT_CALL( cudaUnbindTexture( texVectorCXref ), "unbind ComplexFloat vector x from texture" )
@@ -97,6 +103,8 @@ __inline__ static void vectorUnbindTexture( const ComplexDouble* )
 {
     SCAI_CUDA_RT_CALL( cudaUnbindTexture( texVectorZXref ), "unbind ComplexDouble vector x from texture" )
 }
+
+#endif
 
 __inline__ static void vectorUnbindTexture( const int* )
 {
@@ -132,6 +140,8 @@ int fetchVectorX<int, true>( const int* const, const int i )
     return tex1Dfetch( texVectorIref, i );
 }
 
+#ifdef SCAI_COMPLEX_SUPPORTED
+
 template<>
 __inline__ __device__
 ComplexFloat fetchVectorX<ComplexFloat, true>( const ComplexFloat* const, const int i )
@@ -147,3 +157,5 @@ ComplexDouble fetchVectorX<ComplexDouble, true>( const ComplexDouble* const, con
     int4 u = tex1Dfetch( texVectorZXref, i );
     return ComplexDouble( __hiloint2double( u.y, u.x ), __hiloint2double( u.w, u.z));
 }
+
+#endif

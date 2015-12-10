@@ -119,11 +119,14 @@ long getDataTypeSize( const File::DataType dataType )
         case File::FLOAT:
             return sizeof( float );
 
+#ifdef SCAI_COMPLEX_SUPPORTED
+
         case File::COMPLEX:
             return sizeof( ComplexFloat );
 
         case File::DOUBLE_COMPLEX:
             return sizeof( ComplexDouble );
+#endif
 
         case File::INTERNAL:
             return sizeof( ValueType );
@@ -161,6 +164,9 @@ File::DataType getDataType( const long dataTypeSize )
     {
         return File::DOUBLE;
     }
+
+#ifdef SCAI_COMPLEX_SUPPORTED
+
     else if( dataTypeSize == sizeof( ComplexFloat ) )
     {
         // never be here as: size( double ) == size( ComplexFloat )
@@ -171,12 +177,16 @@ File::DataType getDataType( const long dataTypeSize )
     {
         return File::DOUBLE_COMPLEX;
     }
+
+#endif
+
     else if( dataTypeSize == sizeof( LongDouble ) )
     {
         // never be here as: size( ComplexDouble ) == size( LongDouble )
         // LongDouble files are only used by INTERNAL
         return File::LONG_DOUBLE;
     }
+
     else
     {
         return File::UNKNOWN;

@@ -183,11 +183,15 @@ void MPICommunicator::initialize( int& argc, char** & argv )
         }
     }
 
+#ifdef SCAI_COMPLEX_SUPPORTED
+
 	if( mSumComplexLongDouble == 0)
 	{
 		MPI_Op_create( &sum_complex_long_double, true, &mSumComplexLongDouble );
 		SCAI_LOG_DEBUG( logger, "MPI_Op_create for sum complex long double")
 	}
+
+#endif
 
     mCommWorld = MPI_COMM_WORLD;
     MPI_Comm_dup( mCommWorld, &mComm );
@@ -209,6 +213,8 @@ void MPICommunicator::initialize( int& argc, char** & argv )
     common::Settings::putEnvironment( "SCAI_RANK", mRank );
 }
 
+#ifdef SCAI_COMPLEX_SUPPORTED
+
 void MPICommunicator::sum_complex_long_double(void *in, void *out, int *count,
                                  MPI_Datatype * UNUSED(dtype) )
 {
@@ -219,6 +225,7 @@ void MPICommunicator::sum_complex_long_double(void *in, void *out, int *count,
   }
 }
 
+#endif
 
 /* ---------------------------------------------------------------------------------- */
 

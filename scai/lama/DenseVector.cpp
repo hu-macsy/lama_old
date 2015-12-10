@@ -70,7 +70,6 @@
 namespace scai
 {
 
-using common::Complex;
 using common::scoped_array;
 using common::TypeTraits;
 
@@ -1341,6 +1340,8 @@ void DenseVector<ValueType>::writeVectorToXDRFile( const std::string& file, cons
             writeDataToXDRFile<LongDouble,ValueType>( outFile, dataRead.get(), numRows );
             break;
 
+#ifdef SCAI_COMPLEX_SUPPORT
+
         case File::COMPLEX:
             writeDataToXDRFile<ComplexFloat,ValueType>( outFile, dataRead.get(), numRows );
             break;
@@ -1348,6 +1349,8 @@ void DenseVector<ValueType>::writeVectorToXDRFile( const std::string& file, cons
         case File::DOUBLE_COMPLEX:
             writeDataToXDRFile<ComplexDouble,ValueType>( outFile, dataRead.get(), numRows );
             break;
+
+#endif
 
         case File::INTERNAL:
             writeDataToXDRFile<ValueType,ValueType>( outFile, dataRead.get(), numRows );
@@ -1414,6 +1417,8 @@ void DenseVector<ValueType>::writeVectorDataToBinaryFile( std::fstream& outFile,
             writeBinaryData<LongDouble,ValueType>( outFile, dataRead.get(), numRows );
             break;
 
+#ifdef SCAI_COMPLEX_SUPPORTED
+
         case File::COMPLEX:
             writeBinaryData<ComplexFloat,ValueType>( outFile, dataRead.get(), numRows );
             break;
@@ -1421,6 +1426,8 @@ void DenseVector<ValueType>::writeVectorDataToBinaryFile( std::fstream& outFile,
         case File::DOUBLE_COMPLEX:
             writeBinaryData<ComplexDouble,ValueType>( outFile, dataRead.get(), numRows );
             break;
+
+#endif
 
         case File::INTERNAL:
             writeBinaryData<ValueType,ValueType>( outFile, dataRead.get(), numRows );
@@ -1637,6 +1644,8 @@ void DenseVector<ValueType>::readVectorFromXDRFile( const std::string& fileName,
             readXDRData<double,ValueType>( inFile, writeData.get(), nnu );
             break;
 
+#ifdef SCAI_COMPLEX_SUPPORTED
+
         case File::COMPLEX:
             readXDRData<ComplexFloat,ValueType>( inFile, writeData.get(), nnu );
             break;
@@ -1648,6 +1657,8 @@ void DenseVector<ValueType>::readVectorFromXDRFile( const std::string& fileName,
         case File::LONG_DOUBLE:
             readXDRData<ComplexDouble,ValueType>( inFile, writeData.get(), nnu );
             break;
+
+#endif
 
         case File::PATTERN:
             // that might be okay
@@ -1702,6 +1713,8 @@ void DenseVector<ValueType>::readVectorDataFromBinaryFile( std::fstream &inFile,
             FileIO::readBinaryData<LongDouble,ValueType>( inFile, writeData.get(), n );
             break;
 
+#ifdef SCAI_COMPLEX_SUPPORTED
+
         case File::COMPLEX:
             FileIO::readBinaryData<ComplexFloat,ValueType>( inFile, writeData.get(), n );
             break;
@@ -1709,6 +1722,8 @@ void DenseVector<ValueType>::readVectorDataFromBinaryFile( std::fstream &inFile,
         case File::DOUBLE_COMPLEX:
             FileIO::readBinaryData<ComplexDouble,ValueType>( inFile, writeData.get(), n );
             break;
+
+#endif
 
         case File::INTERNAL:
             FileIO::readBinaryData<ValueType,ValueType>( inFile, writeData.get(), n );

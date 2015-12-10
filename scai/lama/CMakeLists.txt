@@ -130,7 +130,6 @@ scai_project(
         HArrayUtils
 #        LAMAArrayView
         NoCommunicator
-        Scalar
         StorageIO
         Vector
 
@@ -147,6 +146,8 @@ scai_project(
         LAMAKernel
         LAMAArray
         LAMAArrayRef
+
+        Scalar
 
         CRTPCommunicator
     )

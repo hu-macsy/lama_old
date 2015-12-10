@@ -95,6 +95,8 @@ LAPACKeWrapper::LAPACKIndexType LAPACKeWrapper::getrf<double>(
 	return LAPACKE_dgetrf(matrix_order, m, n, a, lda, ipiv);
 }
 
+#ifdef SCAI_COMPLEX_SUPPORTED
+
 template<>
 LAPACKeWrapper::LAPACKIndexType LAPACKeWrapper::getrf<ComplexFloat>(
 		const LAPACKOrder matrix_order, const LAPACKIndexType m,
@@ -113,6 +115,8 @@ LAPACKeWrapper::LAPACKIndexType LAPACKeWrapper::getrf<ComplexDouble>(
 			MKLUtils::cast(a), lda, ipiv);
 }
 
+#endif
+
 template<>
 LAPACKeWrapper::LAPACKIndexType LAPACKeWrapper::getri<float>(
 		const LAPACKOrder matrix_order, const LAPACKIndexType n, float* const A,
@@ -127,6 +131,8 @@ LAPACKeWrapper::LAPACKIndexType LAPACKeWrapper::getri<double>(
 		LAPACKIndexType* const ipiv) {
 	return LAPACKE_dgetri(matrix_order, n, A, lda, ipiv);
 }
+
+#ifdef SCAI_COMPLEX_SUPPORTED
 
 template<>
 LAPACKeWrapper::LAPACKIndexType LAPACKeWrapper::getri<ComplexFloat>(
@@ -146,6 +152,8 @@ LAPACKeWrapper::LAPACKIndexType LAPACKeWrapper::getri<ComplexDouble>(
 			MKLUtils::cast(A), lda, ipiv);
 }
 
+#endif
+
 template<>
 LAPACKeWrapper::LAPACKIndexType LAPACKeWrapper::tptrs<float>(
 		const LAPACKOrder matrix_order, const LAPACKFlag uplo,
@@ -163,6 +171,8 @@ LAPACKeWrapper::LAPACKIndexType LAPACKeWrapper::tptrs<double>(
 		const LAPACKIndexType ldb) {
 	return LAPACKE_dtptrs(matrix_order, uplo, trans, diag, n, nrhs, AP, B, ldb);
 }
+
+#ifdef SCAI_COMPLEX_SUPPORTED
 
 template<>
 LAPACKeWrapper::LAPACKIndexType LAPACKeWrapper::tptrs<ComplexFloat>(
@@ -185,6 +195,8 @@ LAPACKeWrapper::LAPACKIndexType LAPACKeWrapper::tptrs<ComplexDouble>(
 			MKLUtils::cast(AP),
 			MKLUtils::cast(B), ldb);
 }
+
+#endif
 
 } /* end namespace blaskernel */
 
