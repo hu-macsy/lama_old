@@ -1743,7 +1743,7 @@ void DenseMatrix<ValueType>::matrixTimesVectorImpl(
     // It makes no sense to prefetch denseX because, if a transfer is started
     // the halo update needs to wait for this transfer to finish
 
-    if ( betaValue != zero )
+    if ( betaValue != common::constants::ZERO )
     {
         denseY.prefetch( localContext );
     }
@@ -1926,10 +1926,10 @@ void DenseMatrix<ValueType>::vectorTimesMatrixImpl(
 
     mData[0]->prefetch();
 
-//It makes no sense to prefetch denseX because, if a transfer is started
-//the halo update needs to wait for this transfer to finish
+    //It makes no sense to prefetch denseX because, if a transfer is started
+    //the halo update needs to wait for this transfer to finish
 
-    if ( betaValue != zero )
+    if ( betaValue != common::constants::ZERO )
     {
         denseY.prefetch( localContext );
     }

@@ -28,7 +28,6 @@
  * @brief Scalar.hpp
  * @author Jiri Kraus
  * @date 22.02.2011
- * @since 1.0.0
  */
 #pragma once
 
@@ -68,6 +67,20 @@ namespace lama
  * For a Scalar the arithmetic operations +, -, *, / etc. are
  * also supported to allow a high flexibility. But for efficiency
  * these operations should be avoided in all critical code parts.
+ *
+ * ScalarRepType is used internally for the representation of
+ * the value. For each supported arithmetic type ARITHMETIC_TYPE the following
+ * conversions must be supported:
+ *
+ *    - ScalarRepType( ARITHMETIC_TYPE v )
+ *    - ARITHMETIC_TYPE( ScalarRepType v )
+ *
+ * Conversion into the representation type and back should be lossless, i. e. the
+ * following relation must / should  hold:
+ *
+ * \code
+ *    ARITHEMTIC_TYPE( ScalarRepType( x ) ) == x  
+ * \endcode
  */
 class COMMON_DLL_IMPORTEXPORT Scalar: public common::Printable
 {
@@ -136,17 +149,44 @@ public:
     inline Scalar operator-() const;
 
     /**
-     * @brief Binary operator
+     * @brief Overload assignment operator +=
      */
-    Scalar& operator+=( Scalar& other );
-    Scalar& operator-=( Scalar& other );
-    Scalar& operator*=( Scalar& other );
-    Scalar& operator/=( Scalar& other );
+    Scalar& operator+=( Scalar& other )
+    {
+        mValue += other.mValue;
+        return *this;
+    }
+
+    /**
+     * @brief Overload assignment operator -=
+     */
+    Scalar& operator-=( Scalar& other )
+    {
+        mValue -= other.mValue;
+        return *this;
+    }
+
+    /**
+     * @brief Overload assignment operator *=
+     */
+    Scalar& operator*=( Scalar& other )
+    {
+        mValue *= other.mValue;
+        return *this;
+    }
+
+    /**
+     * @brief Overload assignment operator /=
+     */
+    Scalar& operator/=( Scalar& other )
+    {
+        mValue /= other.mValue;
+        return *this;
+    }
 
     /**
      *  @brief Query that scalar values has no imaginary part.
      */
-    inline bool isReal() const;
 
     inline virtual void writeAt( std::ostream& stream ) const;
 
@@ -154,18 +194,14 @@ protected:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
-private    :
+private:
 
-    ScalarRepType mValue; //!< use highest precision for presentation
+    ScalarRepType mValue;  //!< use highest precision for representation
 };
 
-template<typename ValueType>
-ValueType cast( const Scalar& scalar )
-{
-    return scalar.getValue<ValueType>();
-}
-
-const Scalar zero;
+/* --------------------------------------------------------------------------- *
+ *  Implementation of methods for Scalar                                       *
+ * --------------------------------------------------------------------------- */
 
 inline Scalar::~Scalar()
 {
@@ -186,6 +222,17 @@ inline void Scalar::writeAt( std::ostream& stream ) const
 {
     stream << "Scalar(" << mValue << ")";
 }
+
+/* --------------------------------------------------------------------------- *
+ *  Binaray operators for Scalar: +, -, +, /                                   *
+ * --------------------------------------------------------------------------- */
+
+/* Instead of definining the binary operators as class methods we use this
+ * global syntax to support also:
+ *
+ *  Scalar a = 1.0;
+ *  Scalar b = 2 * a;   // becomes Scalar( 2) * Scalar( a )
+ */
 
 /**
  * @brief Add Scalar a with Scalar b
@@ -235,6 +282,10 @@ inline Scalar operator/( const Scalar& a, const Scalar& b )
     return Scalar( a.getValue<ScalarRepType>() / b.getValue<ScalarRepType>() );
 }
 
+/* --------------------------------------------------------------------------- *
+ *  Compare operators for Scalar: ==, !=, <, >, <=, >=                         *
+ * --------------------------------------------------------------------------- */
+
 /**
  * @brief Check equality of a and b.
  *
@@ -247,7 +298,7 @@ inline bool operator==( const Scalar& a, const Scalar& b )
 {
     return a.getValue<ScalarRepType>() == b.getValue<ScalarRepType>();
 }
-
+ 
 /**
  * @brief Check inequality of a and b.
  *
@@ -287,6 +338,10 @@ inline Scalar sqrt( const Scalar scalar )
     return Scalar( common::TypeTraits<ScalarRepType>::sqrt( scalar.getValue<ScalarRepType>() ) );
 }
 
+/* --------------------------------------------------------------------------- *
+ *  Unary functions for Scalar: abs, conj                                      *
+ * --------------------------------------------------------------------------- */
+
 inline Scalar abs( const Scalar scalar )
 {
     // call abs for ScalarRepType
@@ -298,6 +353,10 @@ inline Scalar conj( const Scalar scalar )
 {
     return Scalar( common::TypeTraits<ScalarRepType>::conj( scalar.getValue<ScalarRepType>() ) );
 }
+
+/* --------------------------------------------------------------------------- *
+ *  Binary functions for Scalar: min, max                                      *
+ * --------------------------------------------------------------------------- */
 
 inline Scalar max( const Scalar a, const Scalar b )
 {
