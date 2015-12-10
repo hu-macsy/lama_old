@@ -70,21 +70,6 @@ typedef int IndexType;
  */
 typedef long double LongDouble;
 
-/** Data type for complex numbers in single precision.
- *  LAMA uses its own data type instead of std::complex.
- */
-typedef scai::common::Complex<float> ComplexFloat;
-
-/** Data type for complex numbers in double precision.
- *  LAMA uses its own data type instead of std::complex.
- */
-typedef scai::common::Complex<double> ComplexDouble;
-
-/** Data type for complex numbers in long double precision.
- *  LAMA uses its own data type instead of std::complex.
- */
-typedef scai::common::Complex<long double> ComplexLongDouble;
-
 /** Definition for a constant value that indicates a non-available index.
  */
 
@@ -156,3 +141,4 @@ extern const PartitionId nPartition;
 #define ARRAY_TYPE5    long double
 #define ARRAY_TYPE6    ComplexLongDouble
 
+typedef ComplexLongDouble ScalarRepType;

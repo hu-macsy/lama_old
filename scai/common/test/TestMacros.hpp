@@ -92,6 +92,8 @@ inline long double eps<long double>()
     return 1E-8L;
 }
 
+#ifdef SCAI_COMPLEX_SUPPORTED
+
 template<>
 inline ComplexFloat eps<ComplexFloat>()
 {
@@ -110,6 +112,7 @@ inline ComplexLongDouble eps<ComplexLongDouble>()
     return ComplexLongDouble(1E-8L);
 }
 
+#endif
 
 //template<typename ValueType>
 //inline scai::lama::Scalar scalarEps();
@@ -204,6 +207,8 @@ inline scai::common::context::ContextType mapEnvContexttoContextType( std::strin
  *
  */
 
+#ifdef SCAI_COMPLEX_SUPPORTED
+
 #define SCAI_CHECK_CLOSE( x, y, tolerance )                         \
     {                                                               \
         Scalar xScalar = Scalar( x );                               \
@@ -211,8 +216,20 @@ inline scai::common::context::ContextType mapEnvContexttoContextType( std::strin
         ComplexDouble xVal = xScalar.getValue<ComplexDouble>();     \
         ComplexDouble yVal = yScalar.getValue<ComplexDouble>();     \
         BOOST_CHECK_CLOSE( xVal.real(), yVal.real(), tolerance );   \
-        BOOST_CHECK_CLOSE( xVal.imag(), yVal.imag(), tolerance );   \
+        BOOST_CHECK_CLOSE( yVal.imag(), yVal.imag(), tolerance );   \
     }
+
+#else
+
+#define SCAI_CHECK_CLOSE( x, y, tolerance )                         \
+    {                                                               \
+        Scalar xScalar = Scalar( x );                               \
+        Scalar yScalar = Scalar( y );                               \
+        ScalarRepType xVal = xScalar.getValue<ScalarRepType>();     \
+        ScalarRepType yVal = yScalar.getValue<ScalarRepType>();     \
+        BOOST_CHECK_CLOSE( xVal, yVal, tolerance );                 \
+    }
+#endif
 
 /*
  * @brief HelperMacro SCAI_CHECK_SCALAR_SMALL( x, ValueType, eps )

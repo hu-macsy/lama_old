@@ -32,10 +32,10 @@
 
 #pragma once
 
-#include <scai/common/Complex.hpp>
 #include <scai/common/ScalarType.hpp>
 
 #include <cmath>
+#include <cstdlib>
 
 namespace scai
 {
@@ -245,6 +245,8 @@ public:
     }
 };
 
+#ifdef SCAI_COMPLEX_SUPPORTED
+
 /** Type specific traits for complex(float) */
 
 template<>
@@ -357,6 +359,8 @@ public:
         return scalar2str( stype );
     }
 };
+
+#endif
 
 /** For convenience and for compatibility make own routine of getScalarType */
 
