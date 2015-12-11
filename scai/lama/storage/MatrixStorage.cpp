@@ -1247,7 +1247,7 @@ template<typename ValueType>
 void MatrixStorage<ValueType>::writeToFile(
     const std::string& fileName,
     const File::FileType fileType,
-    const File::DataType dataType,
+    const common::scalar::ScalarType dataType,
     const File::IndexDataType indexDataTypeIA,
     const File::IndexDataType indexDataTypeJA ) const
 {
@@ -1260,7 +1260,7 @@ void MatrixStorage<ValueType>::writeToFile(
     const PartitionId rank,
     const std::string& fileName,
     const File::FileType fileType,
-    const File::DataType dataType,
+    const common::scalar::ScalarType dataType,
     const File::IndexDataType indexDataTypeIA,
     const File::IndexDataType indexDataTypeJA ) const
 {

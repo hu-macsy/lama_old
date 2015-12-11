@@ -32,6 +32,9 @@
 #pragma once
 
 // local library
+
+// no support of Complex if this file is not included
+
 #include <scai/common/Complex.hpp>
 
 // std
@@ -92,6 +95,8 @@ extern const PartitionId nPartition;
 
 // List here all arithmetic types for which matrices, storages might be created
 
+#ifdef SCAI_COMPLEX_SUPPORTED
+
 #define ARITHMETIC_HOST_TYPE_0 float
 #define ARITHMETIC_HOST_TYPE_1 double
 #define ARITHMETIC_HOST_TYPE_2 ComplexFloat
@@ -99,13 +104,38 @@ extern const PartitionId nPartition;
 #define ARITHMETIC_HOST_TYPE_4 long double
 #define ARITHMETIC_HOST_TYPE_5 ComplexLongDouble
 
+#else
+
+#define ARITHMETIC_HOST_TYPE_0 float
+#define ARITHMETIC_HOST_TYPE_1 double
+
+#endif
+
 /** Number of supported types used in REPEAT macros */
+
+#ifdef SCAI_COMPLEX_SUPPORTED
 
 #define ARITHMETIC_HOST_TYPE_CNT 6
 
-/** Number of supported types in external libraries liek BLAS, LAPACK */
+#else
+
+#define ARITHMETIC_HOST_TYPE_CNT 2
+
+#endif
+
+/** Number of supported types in external libraries like BLAS, LAPACK */
+
+#ifdef SCAI_COMPLEX_SUPPORTED
 
 #define ARITHMETIC_HOST_EXT_TYPE_CNT 4
+
+#else
+
+#define ARITHMETIC_HOST_EXT_TYPE_CNT 2
+
+#endif
+
+#ifdef SCAI_COMPLEX_SUPPORTED
 
 /** Number of suported types by CUDA devices */
 
@@ -118,6 +148,16 @@ extern const PartitionId nPartition;
 #define ARITHMETIC_CUDA_TYPE_2 ComplexFloat
 #define ARITHMETIC_CUDA_TYPE_3 ComplexDouble
 
+#else
+
+#define ARITHMETIC_CUDA_TYPE_CNT 2
+#define ARITHMETIC_CUDA_TYPE_0 float
+#define ARITHMETIC_CUDA_TYPE_1 double
+
+#endif
+
+#ifdef SCAI_COMPLEX_SUPPORTED
+
 /** Number of supported types by MIC devices */
 
 #define ARITHMETIC_MIC_TYPE_CNT 4
@@ -129,7 +169,17 @@ extern const PartitionId nPartition;
 #define ARITHMETIC_MIC_TYPE_2 ComplexFloat
 #define ARITHMETIC_MIC_TYPE_3 ComplexDouble
 
+#else
+
+#define ARITHMETIC_MIC_TYPE_CNT 4
+#define ARITHMETIC_MIC_TYPE_0 float
+#define ARITHMETIC_MIC_TYPE_1 double
+
+#endif
+
 // For convenience we define ARRAY_TYPE, must be ARITHMETIC_HOST_TYPE_CNT + 1
+
+#ifdef SCAI_COMPLEX_SUPPORTED
 
 #define ARRAY_TYPE_CNT 7
 
@@ -141,4 +191,23 @@ extern const PartitionId nPartition;
 #define ARRAY_TYPE5    long double
 #define ARRAY_TYPE6    ComplexLongDouble
 
+#else
+
+#define ARRAY_TYPE_CNT 3
+
+#define ARRAY_TYPE0    IndexType
+#define ARRAY_TYPE1    float
+#define ARRAY_TYPE2    double
+
+#endif
+
+#ifdef SCAI_COMPLEX_SUPPORTED
+
 typedef ComplexLongDouble ScalarRepType;
+
+#else
+
+typedef double ScalarRepType;
+
+#endif
+

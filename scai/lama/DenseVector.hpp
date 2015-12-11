@@ -409,7 +409,7 @@ public:
     void writeToFile(
         const std::string& fileBaseName,
         const File::FileType fileType = File::BINARY,
-        const File::DataType dataType = File::INTERNAL ) const;
+        const common::scalar::ScalarType dataType = common::scalar::INTERNAL ) const;
 
 protected:
 
@@ -425,15 +425,15 @@ private    :
 
     void writeVectorToBinaryFile(
                     const std::string& fileName,
-                    const File::DataType outputType ) const;
+                    const common::scalar::ScalarType outputType ) const;
 
     void writeVectorToXDRFile(
                     const std::string& fileName,
-                    const File::DataType outputType ) const;
+                    const common::scalar::ScalarType outputType ) const;
 
     void writeVectorDataToBinaryFile(
                     std::fstream& outFile,
-                    const File::DataType outputType ) const;
+                    const common::scalar::ScalarType outputType ) const;
 
     void readVectorHeader( const std::string& filename, File::FileType& fileType, long& dataTypeSize );
 
@@ -444,13 +444,13 @@ private    :
 
     void writeVectorToMMFile(
                     const std::string& filename,
-                    const File::DataType& dataType ) const;
+                    const common::scalar::ScalarType& dataType ) const;
 
     void readVectorFromFormattedFile( const std::string& fileName );
 
     void readVectorFromBinaryFile(
                     const std::string& fileName,
-                    const File::DataType dataType );
+                    const common::scalar::ScalarType dataType );
 
     void readVectorFromXDRFile(
                     const std::string& fileName,
@@ -460,7 +460,7 @@ private    :
 
     void readVectorDataFromBinaryFile(
                     std::fstream &inFile,
-                    const File::DataType dataType );
+                    const common::scalar::ScalarType dataType );
 
     LAMAArray<ValueType> mLocalValues; //!< my local values of vector
 

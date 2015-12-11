@@ -299,7 +299,7 @@ void DenseMatrix<ValueType>::writeToFile(
 
     const std::string& fileName,
     const File::FileType fileType /* = UNFORMATTED */,
-    const File::DataType dataType /* = INTERNAL */,
+    const common::scalar::ScalarType dataType /* = INTERNAL */,
     const File::IndexDataType indexDataTypeIA /* = LONG */,
     const File::IndexDataType indexDataTypeJA /* = LONG */ ) const
 {

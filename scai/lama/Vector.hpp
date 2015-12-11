@@ -283,7 +283,7 @@ public:
     virtual void writeToFile(
         const std::string& fileBaseName,
         const File::FileType fileType = File::XDR,
-        const File::DataType dataType = File::DOUBLE ) const = 0;
+        const common::scalar::ScalarType dataType = common::scalar::DOUBLE ) const = 0;
 
     /**
      * @brief get a vector with all local values
