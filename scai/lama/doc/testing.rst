@@ -11,7 +11,7 @@ Testing
    testing/using
    testing/teststructure
    testing/contexts
-..   testing/assertions
+   testing/assertions
    testing/helpful
    testing/ctest
    testing/ciserver
