@@ -533,7 +533,7 @@ void SparseMatrix<ValueType>::assignTransposeImpl( const SparseMatrix<ValueType>
 
         // Now this partition has all sparse data from other partitions to build my new halo
 
-        mHaloData->setCompressThreshold( static_cast<ValueType>(1.0) ); // halo rows might be compressed
+        mHaloData->setCompressThreshold( 1.0f ); // halo rows might be compressed
 
         _MatrixStorage::sizes2offsets( haloRowSizes );
 
