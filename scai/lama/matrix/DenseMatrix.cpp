@@ -1601,7 +1601,7 @@ void DenseMatrix<ValueType>::setDiagonal( const Vector& diagonal )
         COMMON_THROWEXCEPTION( "Diagonal calculation only for equal distributions." )
     }
 
-    getLocalStorage().setDiagonal( diagonal.getLocalValues() );
+    getLocalStorage().setDiagonalV( diagonal.getLocalValues() );
 }
 
 template<typename ValueType>

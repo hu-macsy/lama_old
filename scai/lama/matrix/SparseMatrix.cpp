@@ -973,7 +973,7 @@ void SparseMatrix<ValueType>::setDiagonal( const Vector& diagonal )
 
     // localDiagonal has the same value type as LocalData, no virtual call needed.
 
-    mLocalData->setDiagonal( localDiagonal );
+    mLocalData->setDiagonalV( localDiagonal );
 }
 
 /* -------------------------------------------------------------------------- */

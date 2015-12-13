@@ -232,7 +232,7 @@ case common::TypeTraits<ARITHMETIC_HOST_TYPE_##I>::stype :                      
         static_cast<Derived*>( this )->setDiagonalImpl( value );
     }
 
-    void setDiagonal( const hmemo::ContextArray& diagonal )
+    void setDiagonalV( const hmemo::ContextArray& diagonal )
     {
         IndexType numDiagonalElements = diagonal.size();
 

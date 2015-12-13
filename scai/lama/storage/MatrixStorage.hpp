@@ -240,7 +240,7 @@ public:
      *
      * Implementation of this routine must be provided by all derived classes.
      */
-    virtual void setDiagonal( const hmemo::ContextArray& diagonal ) = 0;
+    virtual void setDiagonalV( const hmemo::ContextArray& diagonal ) = 0;
 
     /******************************************************************
      *  Scaling of elements in a matrix                                *
@@ -989,7 +989,7 @@ public:
 
     using _MatrixStorage::getContextPtr;
     using _MatrixStorage::scaleRows;
-    using _MatrixStorage::setDiagonal;
+    using _MatrixStorage::setDiagonalV;
 
     // Use this method to change epsiolon temporarily
 

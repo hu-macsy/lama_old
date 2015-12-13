@@ -797,7 +797,7 @@ void _MatrixStorage::scaleRows( const ContextArray& )
     COMMON_THROWEXCEPTION( "scale of rows not supported yet, matrix = " << *this )
 }
 
-void _MatrixStorage::setDiagonal( const ContextArray& )
+void _MatrixStorage::setDiagonalV( const ContextArray& )
 {
     COMMON_THROWEXCEPTION( "set Diagonal not suppported yet, matrix = " << *this )
 }
