@@ -349,9 +349,9 @@ void nrm2Test( ContextPtr loc )
             BOOST_CHECK_EQUAL( euclideanNorm, 0.0 );
             // n > 0 and incX > 0
             euclideanNorm = nrm2[loc]( nValues / incX1, rAValues.get(), incX1 );
-            SCAI_CHECK_CLOSE( euclideanNorm, ::sqrt( result1 ), 1e-4 );
+            SCAI_CHECK_CLOSE( euclideanNorm, common::TypeTraits<ValueType>::sqrt( result1 ), 1e-4 );
             euclideanNorm = nrm2[loc]( nValues / incX2, rAValues.get(), incX2 );
-            SCAI_CHECK_CLOSE( euclideanNorm, ::sqrt( result2 ), 1e-4 );
+            SCAI_CHECK_CLOSE( euclideanNorm, common::TypeTraits<ValueType>::sqrt( result2 ), 1e-4 );
         }
     }
 } // nrm2Test

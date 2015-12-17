@@ -414,7 +414,7 @@ for ( IndexType i = 0; i < diag.size(); ++i )
     BOOST_CHECK_EQUAL( s.getValue<ValueType>(), 0.0 );
 }
 
-mMatrixStorage.setDiagonal( diag );
+mMatrixStorage.setDiagonalV( diag );
 
 {
     ReadAccess<ValueType> rDiag ( diag );

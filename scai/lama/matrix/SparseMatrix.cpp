@@ -533,7 +533,7 @@ void SparseMatrix<ValueType>::assignTransposeImpl( const SparseMatrix<ValueType>
 
         // Now this partition has all sparse data from other partitions to build my new halo
 
-        mHaloData->setCompressThreshold( static_cast<ValueType>(1.0) ); // halo rows might be compressed
+        mHaloData->setCompressThreshold( 1.0f ); // halo rows might be compressed
 
         _MatrixStorage::sizes2offsets( haloRowSizes );
 
@@ -561,15 +561,14 @@ void SparseMatrix<ValueType>::assign( const SparseMatrix<ValueType>& matrix )
 
     Matrix::setDistributedMatrix( matrix.getDistributionPtr(), matrix.getColDistributionPtr() );
 
-    // TODO: allow flexibility regarding the context, e.g. format conversion should be done on GPU
-
     mLocalData->assign( matrix.getLocalStorage() );
+
+    SCAI_LOG_DEBUG( logger, "assigned local storage, my local = " << *mLocalData )
 
     const MatrixStorage<ValueType>&  matrixHaloData = matrix.getHaloStorage();
 
-    SCAI_LOG_INFO( logger, "assign halo storage, only if available, halo = " << matrixHaloData )
-
-    if ( matrixHaloData.getNumRows() * matrixHaloData.getNumColumns()  > 0 )
+    if (     ( matrixHaloData.getNumRows() > 0 )
+          || ( matrixHaloData.getNumColumns()  > 0 ) )
     {
         mHaloData->assign( matrixHaloData );
     }
@@ -974,7 +973,7 @@ void SparseMatrix<ValueType>::setDiagonal( const Vector& diagonal )
 
     // localDiagonal has the same value type as LocalData, no virtual call needed.
 
-    mLocalData->setDiagonal( localDiagonal );
+    mLocalData->setDiagonalV( localDiagonal );
 }
 
 /* -------------------------------------------------------------------------- */
