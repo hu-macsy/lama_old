@@ -208,8 +208,8 @@ void BiCG::iterate()
         SCAI_REGION( "Solver.BiCG.update_res" )
         residual = residual - alpha * q;
         SCAI_LOG_TRACE( logger, "l2Norm( residual ) = " << residual.l2Norm() )
-        // residual2 = residual2 - conj( alpha ) * q2;
-        residual2 = residual2 - alpha * q2;
+         residual2 = residual2 - conj( alpha ) * q2;
+        //residual2 = residual2 - alpha * q2;
         SCAI_LOG_TRACE( logger, "l2Norm( residual2 ) = " << residual.l2Norm() )
     }
     //BiCG implementation end
