@@ -569,7 +569,7 @@ void ELLStorage<ValueType>::setELLData(
     const IndexType numValuesPerRow,
     const HArray<IndexType>& ia,
     const HArray<IndexType>& ja,
-    const ContextArray& values )
+    const _HArray& values )
 {
     SCAI_ASSERT_EQUAL_ERROR( numRows, ia.size() )
     SCAI_ASSERT_EQUAL_ERROR( numRows * numValuesPerRow, ja.size() )
@@ -759,7 +759,7 @@ void ELLStorage<ValueType>::scaleImpl( const HArray<OtherValueType>& values )
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-const LAMAArray<IndexType>& ELLStorage<ValueType>::getIA() const
+const LArray<IndexType>& ELLStorage<ValueType>::getIA() const
 {
     return mIA;
 }
@@ -767,7 +767,7 @@ const LAMAArray<IndexType>& ELLStorage<ValueType>::getIA() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-const LAMAArray<IndexType>& ELLStorage<ValueType>::getJA() const
+const LArray<IndexType>& ELLStorage<ValueType>::getJA() const
 {
     return mJA;
 }
@@ -775,7 +775,7 @@ const LAMAArray<IndexType>& ELLStorage<ValueType>::getJA() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-const LAMAArray<ValueType>& ELLStorage<ValueType>::getValues() const
+const LArray<ValueType>& ELLStorage<ValueType>::getValues() const
 {
     return mValues;
 }
@@ -966,7 +966,7 @@ void ELLStorage<ValueType>::compress( const ValueType eps /* = 0.0 */)
     ReadAccess<ValueType> values( mValues, loc );
 
     // 1. Step: Check for 0 elements and write new IA array
-    LAMAArray<IndexType> newIAArray;
+    LArray<IndexType> newIAArray;
     WriteOnlyAccess<IndexType> newIA( newIAArray, loc, mNumRows );
 
     compressIA[loc]( IA.get(), JA.get(), values.get(), mNumRows, mNumValuesPerRow, eps, newIA.get() );
@@ -978,8 +978,8 @@ void ELLStorage<ValueType>::compress( const ValueType eps /* = 0.0 */)
     if( newNumValuesPerRow < mNumValuesPerRow )
     {
         // 3. Step: Allocate new JA and Values array
-        LAMAArray<ValueType> newValuesArray;
-        LAMAArray<IndexType> newJAArray;
+        LArray<ValueType> newValuesArray;
+        LArray<IndexType> newJAArray;
         WriteOnlyAccess<ValueType> newValues( newValuesArray, loc, mNumRows * newNumValuesPerRow );
         WriteOnlyAccess<IndexType> newJA( newJAArray, loc, mNumRows * newNumValuesPerRow );
 

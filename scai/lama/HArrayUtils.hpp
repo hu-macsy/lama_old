@@ -70,7 +70,7 @@ public:
      *  \endcode
      *  Size of target array will be the same as the source array.
      */
-    static void assign( hmemo::ContextArray& target, const hmemo::ContextArray& source, hmemo::ContextPtr context = hmemo::ContextPtr() );
+    static void assign( hmemo::_HArray& target, const hmemo::_HArray& source, hmemo::ContextPtr context = hmemo::ContextPtr() );
 
     template<typename ValueType1,typename ValueType2>
     static void assignImpl( hmemo::HArray<ValueType1>& target, const hmemo::HArray<ValueType2>& source, hmemo::ContextPtr context );
@@ -85,7 +85,7 @@ public:
     static void assignScalar( hmemo::HArray<ValueType1>& target, const ValueType1 value, hmemo::ContextPtr context )
                     __attribute__( ( noinline ) );
 
-    static void assignScalar( hmemo::ContextArray& target, const Scalar& value, hmemo::ContextPtr context );
+    static void assignScalar( hmemo::_HArray& target, const Scalar& value, hmemo::ContextPtr context );
 
     /** This method sets a single value in a heterogeneous array.
      *
@@ -134,7 +134,7 @@ public:
 private:
 
     template<typename ValueType>
-    static void assignImpl1( hmemo::HArray<ValueType>& target, const hmemo::ContextArray& source, hmemo::ContextPtr context );
+    static void assignImpl1( hmemo::HArray<ValueType>& target, const hmemo::_HArray& source, hmemo::ContextPtr context );
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 };

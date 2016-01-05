@@ -310,19 +310,19 @@ BOOST_AUTO_TEST_CASE( createTest )
 
     std::vector<scai::common::scalar::ScalarType> values;
 
-    ContextArray::getCreateValues( values );
+    _HArray::getCreateValues( values );
 
     for ( size_t i = 0; i < values.size(); ++i )
     {
         std::cout << "Registered values[" << i << "] = " << values[i] << std::endl;
     }
 
-    BOOST_CHECK( ContextArray::canCreate( scalar::FLOAT ) );
-    BOOST_CHECK( ContextArray::canCreate( scalar::DOUBLE ) );
-    BOOST_CHECK( ContextArray::canCreate( scalar::INDEX_TYPE ) );
-    BOOST_CHECK( !ContextArray::canCreate( scalar::INTERNAL ) );
+    BOOST_CHECK( _HArray::canCreate( scalar::FLOAT ) );
+    BOOST_CHECK( _HArray::canCreate( scalar::DOUBLE ) );
+    BOOST_CHECK( _HArray::canCreate( scalar::INDEX_TYPE ) );
+    BOOST_CHECK( !_HArray::canCreate( scalar::INTERNAL ) );
 
-    ContextArray* ca1 = ContextArray::create( scalar::FLOAT );
+    _HArray* ca1 = _HArray::create( scalar::FLOAT );
 
     BOOST_REQUIRE( ca1 );
 
@@ -334,7 +334,7 @@ BOOST_AUTO_TEST_CASE( createTest )
 
     BOOST_CHECK_THROW(
     {
-        ContextArray* ca1 = ContextArray::create( scalar::INTERNAL );
+        _HArray* ca1 = _HArray::create( scalar::INTERNAL );
         ca1->clear();
     }, Exception );
 }

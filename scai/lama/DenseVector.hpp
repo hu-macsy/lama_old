@@ -39,7 +39,7 @@
 #include <scai/lama/Vector.hpp>
 
 // local library
-#include <scai/lama/LAMAArray.hpp>
+#include <scai/lama/LArray.hpp>
 #include <scai/lama/distribution/Distribution.hpp>
 #include <scai/lama/distribution/Halo.hpp>
 
@@ -154,7 +154,7 @@ public:
      * @param[in] localValues   the local values to initialize the new DenseVector with.
      * @param[in] distribution  the distribution the
      */
-    DenseVector( const hmemo::ContextArray& localValues, DistributionPtr distribution );
+    DenseVector( const hmemo::_HArray& localValues, DistributionPtr distribution );
 
     /**
      * @brief This constructor creates a vector with the size and values stored
@@ -262,12 +262,12 @@ public:
     /**
      * Implementation of pure method.
      */
-    virtual void buildValues( hmemo::ContextArray& values ) const;
+    virtual void buildValues( hmemo::_HArray& values ) const;
 
     /**
      * Implementation of pure method.
      */
-    virtual void setValues( const hmemo::ContextArray& values );
+    virtual void setValues( const hmemo::_HArray& values );
 
     /**
      * Implementation of Vector::clone with covariant return type.
@@ -302,7 +302,7 @@ public:
      * @return  a non constant reference to the local values of this.
      */
 
-    LAMAArray<ValueType>& getLocalValues()
+    LArray<ValueType>& getLocalValues()
     {
         return mLocalValues;
     }
@@ -312,7 +312,7 @@ public:
      *
      * @return  a constant reference to the local values of this.
      */
-    const LAMAArray<ValueType>& getLocalValues() const
+    const LArray<ValueType>& getLocalValues() const
     {
         return mLocalValues;
     }
@@ -324,7 +324,7 @@ public:
      *
      * Note: halo of a vector can also be used for writes in case of const vectors.
      */
-    LAMAArray<ValueType>& getHaloValues() const
+    LArray<ValueType>& getHaloValues() const
     {
         return mHaloValues;
     }
@@ -388,9 +388,9 @@ public:
 
     virtual void assign( const Vector& other );
 
-    virtual void assign( const hmemo::ContextArray& localValues, DistributionPtr dist );
+    virtual void assign( const hmemo::_HArray& localValues, DistributionPtr dist );
 
-    virtual void buildLocalValues( hmemo::ContextArray& localValues ) const;
+    virtual void buildLocalValues( hmemo::_HArray& localValues ) const;
 
     virtual Scalar dotProduct( const Vector& other ) const;
 
@@ -462,9 +462,9 @@ private    :
                     std::fstream &inFile,
                     const common::scalar::ScalarType dataType );
 
-    LAMAArray<ValueType> mLocalValues; //!< my local values of vector
+    LArray<ValueType> mLocalValues; //!< my local values of vector
 
-    mutable LAMAArray<ValueType> mHaloValues;//!< my halo values of vector
+    mutable LArray<ValueType> mHaloValues;//!< my halo values of vector
 
 public:
 

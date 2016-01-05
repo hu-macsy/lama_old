@@ -2381,7 +2381,7 @@ template<typename ValueType>
 void SparseMatrix<ValueType>::setDenseData(
     DistributionPtr rowDist,
     DistributionPtr colDist,
-    const ContextArray& values,
+    const _HArray& values,
     const Scalar eps )
 {
     Matrix::setDistributedMatrix( rowDist, colDist );
@@ -2415,7 +2415,7 @@ void SparseMatrix<ValueType>::setCSRData(
     const IndexType numValues,
     const HArray<IndexType>& ia,
     const HArray<IndexType>& ja,
-    const ContextArray& values )
+    const _HArray& values )
 {
     Matrix::setDistributedMatrix( rowDist, colDist );
 

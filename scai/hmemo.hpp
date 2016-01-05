@@ -33,7 +33,7 @@
 
 #include <scai/hmemo/Access.hpp> 
 #include <scai/hmemo/ContextAccess.hpp>
-#include <scai/hmemo/ContextArray.hpp>
+#include <scai/hmemo/_HArray.hpp>
 #include <scai/hmemo/ContextData.hpp>
 #include <scai/hmemo/ContextDataManager.hpp>
 #include <scai/hmemo/Context.hpp>

@@ -1,5 +1,5 @@
 /**
- * @file LAMAArray.hpp
+ * @file LArray.hpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Definition of LAMAArray as HArray with additional kernel functionality.
+ * @brief Definition of LArray as HArray with additional kernel functionality.
  * @author Thomas Brandes
  * @date 18.11.2015
  */
@@ -47,31 +47,31 @@ namespace scai
 namespace lama
 {
 
-/** The LAMAArray is derived form HArray but offers some more functionality. 
+/** The LArray is derived form HArray but offers some more functionality. 
  *
  *  - constructor with array of values
  *  - copy operator with arbitrary array (implicit conversions)
  *  - assignment operator with scalar (initialization on any device)
  *  - assignment operator with arbitrary array (implicit conversions)
  *
- *  In contrary to the HArray the LAMAArray can only be instantiated for
+ *  In contrary to the HArray the LArray can only be instantiated for
  *  arithmetic types and uses already some kernels of the kernel
  *  library (initialization, conversion, scale, ... )
  */
 
 template<typename ValueType> 
-class LAMAArray : public hmemo::HArray<ValueType>
+class LArray : public hmemo::HArray<ValueType>
 {
 public:
 
-    /** Help class to observe the further use of operator[] in LAMAArray */
+    /** Help class to observe the further use of operator[] in LArray */
     class IndexProxy
     {
     public:
 
         /** Proxy constructed by ref to the array and the index value. */
 
-        IndexProxy( LAMAArray<ValueType>& array, const IndexType i ) :
+        IndexProxy( LArray<ValueType>& array, const IndexType i ) :
     
             mArray( array ),
             mIndex( i )
@@ -102,7 +102,7 @@ public:
 
     private:
 
-        LAMAArray<ValueType>& mArray;
+        LArray<ValueType>& mArray;
         IndexType mIndex;
     
     };
@@ -113,13 +113,13 @@ public:
 
     /** Default constructor with no arguments. */
 
-    LAMAArray()
+    LArray()
     {
     }
 
     /** Construct an array and give it a first touch */
 
-    explicit LAMAArray( hmemo::ContextPtr context ) :
+    explicit LArray( hmemo::ContextPtr context ) :
 
         hmemo::HArray<ValueType>( context )
    
@@ -130,7 +130,7 @@ public:
      *
      *  This constructor also allocates memory on the specified context.
      */
-    explicit LAMAArray( const IndexType n,
+    explicit LArray( const IndexType n,
                         hmemo::ContextPtr context = hmemo::ContextPtr() )
     {
         this->resize( n );    // only sets the size, no allocate
@@ -148,7 +148,7 @@ public:
      *  @param context is location where initialization is done, if not specified its the host
      */
 
-    explicit LAMAArray( const IndexType n, 
+    explicit LArray( const IndexType n, 
                         const ValueType value, 
                         hmemo::ContextPtr context = hmemo::ContextPtr() ) 
     {
@@ -176,7 +176,7 @@ public:
      */
 
     template<typename OtherValueType>
-    explicit LAMAArray( const IndexType n, 
+    explicit LArray( const IndexType n, 
                         const OtherValueType* values,
                         hmemo::ContextPtr context = hmemo::Context::getHostPtr() ) 
     {
@@ -185,23 +185,23 @@ public:
         HArrayUtils::assign( *this, tmp );
     }
 
-    LAMAArray( const LAMAArray<ValueType>& other ) : hmemo::HArray<ValueType>()
+    LArray( const LArray<ValueType>& other ) : hmemo::HArray<ValueType>()
     {
         HArrayUtils::assign( *this, other );
     }
 
-    LAMAArray( const hmemo::ContextArray& other ) : hmemo::HArray<ValueType>()
+    LArray( const hmemo::_HArray& other ) : hmemo::HArray<ValueType>()
     {
         HArrayUtils::assign( *this, other );
     }
 
-    LAMAArray& operator= ( const LAMAArray<ValueType>& other )
+    LArray& operator= ( const LArray<ValueType>& other )
     {
         HArrayUtils::assign( *this, other );
         return *this;
     }
 
-    LAMAArray& operator= ( const hmemo::ContextArray& other )
+    LArray& operator= ( const hmemo::_HArray& other )
     {
         HArrayUtils::assign( *this, other );
         return *this;
@@ -214,7 +214,7 @@ public:
      *  The size of the array remains unchanged and should have been set before.
      *  Initialization is done on the first context of the array.
      */
-    LAMAArray& operator= ( const ValueType val )
+    LArray& operator= ( const ValueType val )
     {
         //  assignment is done on the first touch memory/context
 

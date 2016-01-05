@@ -206,9 +206,9 @@ common::function<void()> ReadAccess<ValueType>::releaseDelayed()
 {
     SCAI_ASSERT( mArray, "releaseDelay not possible on released access" )
 
-    void ( ContextArray::*releaseAccess ) ( ContextDataIndex ) const = &ContextArray::releaseReadAccess;
+    void ( _HArray::*releaseAccess ) ( ContextDataIndex ) const = &_HArray::releaseReadAccess;
 
-    const ContextArray* ctxArray = mArray;
+    const _HArray* ctxArray = mArray;
 
     // This access itself is treated as released
 

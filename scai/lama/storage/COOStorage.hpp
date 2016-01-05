@@ -191,7 +191,7 @@ public:
         const IndexType numValues,
         const hmemo::HArray<IndexType>& ia,
         const hmemo::HArray<IndexType>& ja,
-        const hmemo::ContextArray& values );
+        const hmemo::_HArray& values );
 
     /**
      * @brief fills COO sparse matrix by csr sparse data.

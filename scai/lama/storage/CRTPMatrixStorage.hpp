@@ -92,7 +92,7 @@ public:
         const IndexType numValues,
         const hmemo::HArray<IndexType>& ia,
         const hmemo::HArray<IndexType>& ja,
-        const hmemo::ContextArray& values )
+        const hmemo::_HArray& values )
     {
         common::scalar::ScalarType arrayType = values.getValueType();
 
@@ -134,7 +134,7 @@ case common::TypeTraits<ARITHMETIC_HOST_TYPE_##I>::stype :                      
         static_cast<const Derived*>( this )->buildCSR( ia, ja, values, this->getContextPtr() );
     }
 
-    void buildCSRData( hmemo::HArray<IndexType>& csrIA, hmemo::HArray<IndexType>& csrJA, hmemo::ContextArray& csrValues ) const
+    void buildCSRData( hmemo::HArray<IndexType>& csrIA, hmemo::HArray<IndexType>& csrJA, hmemo::_HArray& csrValues ) const
     {
         common::scalar::ScalarType arrayType = csrValues.getValueType();
 
@@ -165,7 +165,7 @@ case common::TypeTraits<ARITHMETIC_HOST_TYPE_##I>::stype :                      
 
     /** Get the i-th row of a storage as LAMA array. */
 
-    void getRow( hmemo::ContextArray& row, const IndexType irow ) const
+    void getRow( hmemo::_HArray& row, const IndexType irow ) const
     {
         common::scalar::ScalarType arrayType = row.getValueType();
 
@@ -192,7 +192,7 @@ case common::TypeTraits<ARITHMETIC_HOST_TYPE_##I>::stype :                      
         }
     }
 
-    void getDiagonal( hmemo::ContextArray& diagonal ) const
+    void getDiagonal( hmemo::_HArray& diagonal ) const
     {
         if ( !this->hasDiagonalProperty() )
         {
@@ -232,7 +232,7 @@ case common::TypeTraits<ARITHMETIC_HOST_TYPE_##I>::stype :                      
         static_cast<Derived*>( this )->setDiagonalImpl( value );
     }
 
-    void setDiagonalV( const hmemo::ContextArray& diagonal )
+    void setDiagonalV( const hmemo::_HArray& diagonal )
     {
         IndexType numDiagonalElements = diagonal.size();
 
@@ -275,7 +275,7 @@ case common::TypeTraits<ARITHMETIC_HOST_TYPE_##I>::stype :                      
 
     /** Polymorph implementation for MatrixStorage<ValueType>::scaleRows */
 
-    void scaleRows( const hmemo::ContextArray& diagonal )
+    void scaleRows( const hmemo::_HArray& diagonal )
     {
         SCAI_ASSERT_EQUAL_ERROR( this->getNumRows(), diagonal.size() )
 

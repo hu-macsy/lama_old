@@ -163,7 +163,7 @@ private    :
                     const T sendData[],
                     const CommunicationPlan& sendPlan ) const;
 
-    virtual hmemo::ContextPtr getCommunicationContext( const hmemo::ContextArray& array ) const;
+    virtual hmemo::ContextPtr getCommunicationContext( const hmemo::_HArray& array ) const;
 
 public:
 

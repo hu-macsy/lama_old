@@ -792,12 +792,12 @@ void MatrixStorage<ValueType>::buildHalo( Halo& halo, const Distribution& colDis
 
 /* --------------------------------------------------------------------------- */
 
-void _MatrixStorage::scaleRows( const ContextArray& )
+void _MatrixStorage::scaleRows( const _HArray& )
 {
     COMMON_THROWEXCEPTION( "scale of rows not supported yet, matrix = " << *this )
 }
 
-void _MatrixStorage::setDiagonalV( const ContextArray& )
+void _MatrixStorage::setDiagonalV( const _HArray& )
 {
     COMMON_THROWEXCEPTION( "set Diagonal not suppported yet, matrix = " << *this )
 }
@@ -1208,12 +1208,12 @@ template<typename ValueType>
 void MatrixStorage<ValueType>::setDenseData(
     const IndexType numRows,
     const IndexType numColumns,
-    const ContextArray& values,
+    const _HArray& values,
     const ValueType epsilon )
 {
     mEpsilon = epsilon;
     // const_cast required, is safe as we will create a const DenseStorageView
-    ContextArray& mValues = const_cast<ContextArray&>( values );
+    _HArray& mValues = const_cast<_HArray&>( values );
 
     switch ( values.getValueType() )
     {

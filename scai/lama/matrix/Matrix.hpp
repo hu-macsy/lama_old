@@ -167,13 +167,13 @@ public:
      *
      *  @return an auto pointer to the LAMA array.
      *
-     *  Same as hmemo::ContextArray::create( this.getValueType() )
+     *  Same as hmemo::_HArray::create( this.getValueType() )
      *
      *  Value type is known only at runtime, so pointer to the base class
      *  is returned. Auto pointer indicates that calling routine takes ownership of
      *  the allocated array.
      */
-    hmemo::ContextArray* createArray() const;
+    hmemo::_HArray* createArray() const;
 
     /**
      * @brief Clears the full matrix, resets global and local sizes to 0.
@@ -246,7 +246,7 @@ public:
      *
      *  The following must be valid: values.size() == rowDist->getLocalSize() * colDist->getGlobalSize()
      */
-    virtual void setDenseData( DistributionPtr rowDist, DistributionPtr colDist, const hmemo::ContextArray& values, Scalar eps =
+    virtual void setDenseData( DistributionPtr rowDist, DistributionPtr colDist, const hmemo::_HArray& values, Scalar eps =
                                    Scalar( 0 ) ) = 0;
 
     /** This method set a matrix with the values owned by this partition in CSR format
@@ -270,7 +270,7 @@ public:
         const IndexType numValues,
         const hmemo::HArray<IndexType>& ia,
         const hmemo::HArray<IndexType>& ja,
-        const hmemo::ContextArray& values ) = 0;
+        const hmemo::_HArray& values ) = 0;
 
     /** This method sets raw dense data in the same way as setDenseData but with raw value array */
 

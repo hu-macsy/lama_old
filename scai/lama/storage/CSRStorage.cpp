@@ -101,7 +101,7 @@ CSRStorage<ValueType>::CSRStorage(
     const IndexType numValues,
     const HArray<IndexType>& ia,
     const HArray<IndexType>& ja,
-    const ContextArray& values )
+    const _HArray& values )
 
     : CRTPMatrixStorage<CSRStorage<ValueType>,ValueType>()
 {
@@ -660,7 +660,7 @@ void CSRStorage<ValueType>::compress( const ValueType eps )
 {
     static LAMAKernel<CSRKernelTrait::countNonZeros<ValueType> > countNonZeros;
 
-    LAMAArray<IndexType> newIa;
+    LArray<IndexType> newIa;
  
     {
         ContextPtr loc = countNonZeros.getValidContext( this->getContextPtr() );
@@ -700,8 +700,8 @@ void CSRStorage<ValueType>::compress( const ValueType eps )
 
     // All information is available how to fill the compressed data 
 
-    LAMAArray<ValueType> newValues;
-    LAMAArray<IndexType> newJa;
+    LArray<ValueType> newValues;
+    LArray<IndexType> newJa;
 
     {
         static LAMAKernel<CSRKernelTrait::compress<ValueType> > compressData;
@@ -845,7 +845,7 @@ void CSRStorage<ValueType>::prefetch( const ContextPtr location ) const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-LAMAArray<IndexType>& CSRStorage<ValueType>::getIA()
+LArray<IndexType>& CSRStorage<ValueType>::getIA()
 {
     return mIa;
 }
@@ -853,7 +853,7 @@ LAMAArray<IndexType>& CSRStorage<ValueType>::getIA()
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-LAMAArray<IndexType>& CSRStorage<ValueType>::getJA()
+LArray<IndexType>& CSRStorage<ValueType>::getJA()
 {
     return mJa;
 }
@@ -861,7 +861,7 @@ LAMAArray<IndexType>& CSRStorage<ValueType>::getJA()
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-LAMAArray<ValueType>& CSRStorage<ValueType>::getValues()
+LArray<ValueType>& CSRStorage<ValueType>::getValues()
 {
     return mValues;
 }
@@ -869,7 +869,7 @@ LAMAArray<ValueType>& CSRStorage<ValueType>::getValues()
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-const LAMAArray<IndexType>& CSRStorage<ValueType>::getIA() const
+const LArray<IndexType>& CSRStorage<ValueType>::getIA() const
 {
     return mIa;
 }
@@ -877,7 +877,7 @@ const LAMAArray<IndexType>& CSRStorage<ValueType>::getIA() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-const LAMAArray<IndexType>& CSRStorage<ValueType>::getJA() const
+const LArray<IndexType>& CSRStorage<ValueType>::getJA() const
 {
     return mJa;
 }
@@ -885,7 +885,7 @@ const LAMAArray<IndexType>& CSRStorage<ValueType>::getJA() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-const LAMAArray<ValueType>& CSRStorage<ValueType>::getValues() const
+const LArray<ValueType>& CSRStorage<ValueType>::getValues() const
 {
     return mValues;
 }

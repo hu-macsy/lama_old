@@ -1,5 +1,5 @@
 /**
- * @file ContextArray.cpp
+ * @file _HArray.cpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,13 +25,13 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Implementations of class ContextArray.
+ * @brief Implementations of class _HArray.
  *
  * @author Thomas Brandes
  * @date 03.07.2015
  */
 
-#include <scai/hmemo/ContextArray.hpp>
+#include <scai/hmemo/_HArray.hpp>
 
 namespace scai
 {
@@ -40,7 +40,7 @@ namespace hmemo
 
 /* ---------------------------------------------------------------------------------*/
 
-SCAI_LOG_DEF_LOGGER( ContextArray::logger, "HArray" )
+SCAI_LOG_DEF_LOGGER( _HArray::logger, "HArray" )
 
 /* ---------------------------------------------------------------------------------*/
 

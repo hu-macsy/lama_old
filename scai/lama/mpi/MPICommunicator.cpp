@@ -980,7 +980,7 @@ void MPICommunicator::swapImpl( ValueType val[], const IndexType n, PartitionId 
     SCAI_ASSERT_ERROR( getCount<ValueType>( mpiStatus ) == n, "size mismatch for swap" )
 }
 
-hmemo::ContextPtr MPICommunicator::getCommunicationContext( const hmemo::ContextArray& array ) const
+hmemo::ContextPtr MPICommunicator::getCommunicationContext( const hmemo::_HArray& array ) const
 {
     // get a valid context, i.e. a context that contains valid data
 

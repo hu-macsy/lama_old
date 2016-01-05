@@ -138,7 +138,7 @@ void JDSStorage<ValueType>::setJDSData(
     const HArray<IndexType>& ilg,
     const HArray<IndexType>& perm,
     const HArray<IndexType>& ja,
-    const ContextArray& values )
+    const _HArray& values )
 {
     SCAI_ASSERT_EQUAL_ERROR( numRows, ilg.size() )
     SCAI_ASSERT_EQUAL_ERROR( numRows, perm.size() )

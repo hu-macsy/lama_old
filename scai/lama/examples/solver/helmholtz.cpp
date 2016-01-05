@@ -130,7 +130,7 @@ bool isComplexType()
  */
 
 template<typename ValueType>
-void readComplexVector( LAMAArray<ValueType>& vec, const IndexType n, const char* fileName )
+void readComplexVector( LArray<ValueType>& vec, const IndexType n, const char* fileName )
 {
     std::ifstream infile( fileName, ios::in );
 
@@ -179,9 +179,9 @@ void readComplexVector( LAMAArray<ValueType>& vec, const IndexType n, const char
  */
 
 template<typename ValueType>
-void readComplexMatrix( LAMAArray<IndexType>& ia,
-                        LAMAArray<IndexType>& ja,
-                        LAMAArray<ValueType>& vals,
+void readComplexMatrix( LArray<IndexType>& ia,
+                        LArray<IndexType>& ja,
+                        LArray<ValueType>& vals,
                         const IndexType n,
                         const IndexType nnz,
                         const char* fileName )
@@ -246,12 +246,12 @@ void readComplexMatrix( LAMAArray<IndexType>& ia,
  */
 
 template<typename ValueType>
-void convertCmplx2Real( LAMAArray<IndexType>& outIA,
-                        LAMAArray<IndexType>& outJA,
-                        LAMAArray<ValueType>& outValues,
-                        const LAMAArray<IndexType>& inIA,
-                        const LAMAArray<IndexType>& inJA,
-                        const LAMAArray<ValueType>& inValues )
+void convertCmplx2Real( LArray<IndexType>& outIA,
+                        LArray<IndexType>& outJA,
+                        LArray<ValueType>& outValues,
+                        const LArray<IndexType>& inIA,
+                        const LArray<IndexType>& inJA,
+                        const LArray<ValueType>& inValues )
 {
     IndexType nnz = inIA.size();
 
@@ -376,17 +376,17 @@ int main( int argc, char* argv[] )
 
     cout << "Read in data, n = " << n << ", nnz = " << nnz << endl;
 
-    LAMAArray<SolverType> rhs;
-    LAMAArray<SolverType> sol;
+    LArray<SolverType> rhs;
+    LArray<SolverType> sol;
 
     readComplexVector( rhs, n, "datRHS.txt" );
     readComplexVector( sol, n, "datSolution.txt" );
 
     int size = rhs.size();   // might be 2 * n for double, float
 
-    LAMAArray<IndexType> ia;
-    LAMAArray<IndexType> ja;
-    LAMAArray<SolverType> mat;
+    LArray<IndexType> ia;
+    LArray<IndexType> ja;
+    LArray<SolverType> mat;
 
     readComplexMatrix( ia, ja, mat, n, nnz, "dataMatrix.txt" );
 
@@ -398,9 +398,9 @@ int main( int argc, char* argv[] )
     {
         // convert it to real matrix
 
-        LAMAArray<IndexType> newIA;
-        LAMAArray<IndexType> newJA;
-        LAMAArray<SolverType> newValues;
+        LArray<IndexType> newIA;
+        LArray<IndexType> newJA;
+        LArray<SolverType> newValues;
 
         convertCmplx2Real( newIA, newJA, newValues, ia, ja, mat );
 
