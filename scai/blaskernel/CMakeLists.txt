@@ -92,7 +92,9 @@ add_definitions ( -D${SCAI_LOGGING_FLAG} )
 
 add_definitions ( -DSCAI_ASSERT_LEVEL_${SCAI_ASSERT_LEVEL} )
 
-add_definitions ( -D${SCAI_OMP_SCHEDULE_FLAG} )
+if ( OPENMP_FOUND AND USE_OPENMP )
+    add_definitions ( -D${SCAI_OMP_SCHEDULE_FLAG} )
+endif ( OPENMP_FOUND AND USE_OPENMP )
 add_definitions ( -D${SCAI_LOGGING_FLAG} )
 add_definitions ( -D${SCAI_TRACING_FLAG} )
 
@@ -126,7 +128,10 @@ scai_project (
 )
 
 ## add subdirectories
-add_subdirectory ( openmp )
+if ( OPENMP_FOUND AND USE_OPENMP )
+    add_subdirectory ( openmp )
+endif ( OPENMP_FOUND AND USE_OPENMP )
+
 add_subdirectory ( external )
 
 ## add CUDA if supported
