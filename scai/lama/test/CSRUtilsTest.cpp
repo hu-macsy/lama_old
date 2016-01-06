@@ -38,7 +38,7 @@
 #include <scai/hmemo.hpp>
 #include <scai/lama/CSRKernelTrait.hpp>
 #include <scai/lama/LAMAKernel.hpp>
-#include <scai/lama/LAMAArray.hpp>
+#include <scai/lama/LArray.hpp>
 
 #include <scai/lama/openmp/OpenMPCSRUtils.hpp>
 
@@ -85,12 +85,12 @@ void absMaxDiffValTest( ContextPtr loc )
     // const IndexType numColumns = 5;
     const IndexType numValues1 = sizeof( ja1 ) / sizeof( IndexType );
     const IndexType numValues2 = sizeof( ja2 ) / sizeof( IndexType );
-    LAMAArray<IndexType> csrIA1( numRows + 1, ia1 );
-    LAMAArray<IndexType> csrJA1( numValues1, ja1 );
-    LAMAArray<ValueType> csrValues1( numValues1, values1 );
-    LAMAArray<IndexType> csrIA2( numRows + 1, ia2 );
-    LAMAArray<IndexType> csrJA2( numValues2, ja2 );
-    LAMAArray<ValueType> csrValues2( numValues2, values2 );
+    LArray<IndexType> csrIA1( numRows + 1, ia1 );
+    LArray<IndexType> csrJA1( numValues1, ja1 );
+    LArray<ValueType> csrValues1( numValues1, values1 );
+    LArray<IndexType> csrIA2( numRows + 1, ia2 );
+    LArray<IndexType> csrJA2( numValues2, ja2 );
+    LArray<ValueType> csrValues2( numValues2, values2 );
     ReadAccess<IndexType> rCSRIA1( csrIA1, loc );
     ReadAccess<IndexType> rCSRJA1( csrJA1, loc );
     ReadAccess<ValueType> rCSRValues1( csrValues1, loc );
@@ -131,12 +131,12 @@ void transposeTestSquare( ContextPtr loc )
     const IndexType numRows = 3;
     const IndexType numColumns = 3;
     const IndexType numValues = 5;
-    LAMAArray<IndexType> csrIA( numRows + 1, ia1 );
-    LAMAArray<IndexType> csrJA( numValues, ja1 );
-    LAMAArray<ValueType> csrValues( numValues, values1 );
-    LAMAArray<IndexType> cscIA;
-    LAMAArray<IndexType> cscJA;
-    LAMAArray<ValueType> cscValues;
+    LArray<IndexType> csrIA( numRows + 1, ia1 );
+    LArray<IndexType> csrJA( numValues, ja1 );
+    LArray<ValueType> csrValues( numValues, values1 );
+    LArray<IndexType> cscIA;
+    LArray<IndexType> cscJA;
+    LArray<ValueType> cscValues;
   
     {
         ReadAccess<IndexType> rCSRIA( csrIA, loc );
@@ -199,12 +199,12 @@ void transposeTestNonSquare( ContextPtr loc )
     const IndexType numRows = 4;
     const IndexType numColumns = 3;
     const IndexType numValues = 7;
-    LAMAArray<IndexType> csrIA( numRows + 1, ia1 );
-    LAMAArray<IndexType> csrJA( numValues, ja1 );
-    LAMAArray<ValueType> csrValues( numValues, values1 );
-    LAMAArray<IndexType> cscIA;
-    LAMAArray<IndexType> cscJA;
-    LAMAArray<ValueType> cscValues;
+    LArray<IndexType> csrIA( numRows + 1, ia1 );
+    LArray<IndexType> csrJA( numValues, ja1 );
+    LArray<ValueType> csrValues( numValues, values1 );
+    LArray<IndexType> cscIA;
+    LArray<IndexType> cscJA;
+    LArray<ValueType> cscValues;
 
     // CSC <- transpose CSR
 

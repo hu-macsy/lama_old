@@ -93,7 +93,7 @@ void HArrayUtils::assignImpl(
 }
 
 template<typename ValueType>
-void HArrayUtils::assignImpl1( HArray<ValueType>& target, const ContextArray& source, const ContextPtr loc )
+void HArrayUtils::assignImpl1( HArray<ValueType>& target, const _HArray& source, const ContextPtr loc )
 {
     common::scalar::ScalarType sourceType = source.getValueType();
 
@@ -135,7 +135,7 @@ default        :
     }
 }
 
-void HArrayUtils::assign( ContextArray& target, const ContextArray& source, const ContextPtr loc /* = ContextPtr() */)
+void HArrayUtils::assign( _HArray& target, const _HArray& source, const ContextPtr loc /* = ContextPtr() */)
 {
     ContextPtr validLoc = loc;
 
@@ -216,7 +216,7 @@ void HArrayUtils::assignScalar( HArray<ValueType>& target, const ValueType value
     setVal[context]( wTarget.get(), n, value );
 }
 
-void HArrayUtils::assignScalar( hmemo::ContextArray& target, const Scalar& value, hmemo::ContextPtr context )
+void HArrayUtils::assignScalar( hmemo::_HArray& target, const Scalar& value, hmemo::ContextPtr context )
 {
     common::scalar::ScalarType arrayType = target.getValueType();
 

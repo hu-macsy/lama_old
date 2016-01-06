@@ -124,6 +124,8 @@ __device__ inline void cooAtomicAdd( float* address, float val )
 #endif
 }
 
+#ifdef SCAI_COMPLEX_SUPPORTED
+
 __device__ inline void cooAtomicAdd( ComplexFloat* address, ComplexFloat val )
 {
     cooAtomicAdd( ( float* )&address[0], val.real() );
@@ -135,6 +137,8 @@ __device__ inline void cooAtomicAdd( ComplexDouble* address, ComplexDouble val )
     cooAtomicAdd( ( double* )&address[0], val.real() );
     cooAtomicAdd( ( double* )&address[1], val.imag() );
 }
+
+#endif
 
 /* --------------------------------------------------------------------------- */
 

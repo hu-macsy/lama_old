@@ -111,9 +111,9 @@ void constructorTest1( ContextPtr loc )
     const IndexType sizeValues = sizeof( values ) / sizeof( ValueType );
     BOOST_CHECK_EQUAL( numValues, sizeJA );
     BOOST_CHECK_EQUAL( numValues, sizeValues );
-    LAMAArray<IndexType> csrIA( numRows + 1, ia );
-    LAMAArray<IndexType> csrJA( numValues, ja );
-    LAMAArray<ValueType> csrValues( numValues, values );
+    LArray<IndexType> csrIA( numRows + 1, ia );
+    LArray<IndexType> csrJA( numValues, ja );
+    LArray<ValueType> csrValues( numValues, values );
     CSRStorage<ValueType> csrStorage( numRows, numColumns, numValues, csrIA, csrJA, csrValues );
     BOOST_REQUIRE_EQUAL( numRows, csrStorage.getNumRows() );
     BOOST_REQUIRE_EQUAL( numColumns, csrStorage.getNumColumns() );
@@ -180,9 +180,9 @@ void compressTest( ContextPtr loc )
     BOOST_CHECK_EQUAL( numValues, sizeJA );
     BOOST_CHECK_EQUAL( numValues, sizeValues );
 
-    LAMAArray<IndexType> csrIA( numRows + 1, ia );
-    LAMAArray<IndexType> csrJA( numValues, ja );
-    LAMAArray<ValueType> csrValues( numValues, values );
+    LArray<IndexType> csrIA( numRows + 1, ia );
+    LArray<IndexType> csrJA( numValues, ja );
+    LArray<ValueType> csrValues( numValues, values );
 
     CSRStorage<ValueType> csr( numRows, numColumns, numValues, csrIA, csrJA, csrValues );
 

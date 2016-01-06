@@ -258,7 +258,7 @@ public:
      *
      * Only the type of the LAMA array is used as input arg to determine the value type.
      */
-    virtual void buildValues( hmemo::ContextArray& values ) const = 0;
+    virtual void buildValues( hmemo::_HArray& values ) const = 0;
 
     /**
      * @brief Sets the local values of a vector by an array.
@@ -268,7 +268,7 @@ public:
      * Note: A conversion operator must be available for values.getValueType() to
      *       the type of this vector.
      */
-    virtual void setValues( const hmemo::ContextArray& values ) = 0;
+    virtual void setValues( const hmemo::_HArray& values ) = 0;
 
     /**
      * @brief Assign this vector with values stored the file with the given filename.
@@ -283,12 +283,12 @@ public:
     virtual void writeToFile(
         const std::string& fileBaseName,
         const File::FileType fileType = File::XDR,
-        const File::DataType dataType = File::DOUBLE ) const = 0;
+        const common::scalar::ScalarType dataType = common::scalar::DOUBLE ) const = 0;
 
     /**
      * @brief get a vector with all local values
      */
-    virtual const hmemo::ContextArray& getLocalValues() const = 0;
+    virtual const hmemo::_HArray& getLocalValues() const = 0;
 
     /**
      * @brief Queries the value type of the vector elements, e.g. DOUBLE or FLOAT.
@@ -393,7 +393,7 @@ public:
     /**
      *  Assignment to vector by local values and distribution.
      */
-    virtual void assign( const hmemo::ContextArray& localValues, DistributionPtr distribution ) = 0;
+    virtual void assign( const hmemo::_HArray& localValues, DistributionPtr distribution ) = 0;
 
     /**
      *  Builds an array with local values of a distributed vector.
@@ -403,7 +403,7 @@ public:
      *  For different value types, implicit format conversion will be done.
      *  A sparse vector should generate an array with all values.
      */
-    virtual void buildLocalValues( hmemo::ContextArray& localValues ) const = 0;
+    virtual void buildLocalValues( hmemo::_HArray& localValues ) const = 0;
 
     /**
      * @brief Assigns the passed value to all elements of this.

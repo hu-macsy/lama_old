@@ -334,9 +334,9 @@ common::function<void()> WriteAccess<ValueType>::releaseDelayed()
 {
     SCAI_ASSERT( mArray, "releaseDelay not possible on released access" )
 
-    void ( ContextArray::*releaseAccess ) ( ContextDataIndex ) = &ContextArray::releaseWriteAccess;
+    void ( _HArray::*releaseAccess ) ( ContextDataIndex ) = &_HArray::releaseWriteAccess;
 
-    ContextArray* ctxArray = mArray; 
+    _HArray* ctxArray = mArray; 
 
     // This access itself is treated as released
 

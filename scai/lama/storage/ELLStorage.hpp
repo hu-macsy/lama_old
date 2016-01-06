@@ -35,7 +35,7 @@
 // for dll_import
 #include <scai/common/config.hpp>
 
-#include <scai/lama/LAMAArray.hpp>
+#include <scai/lama/LArray.hpp>
 
 // base classes
 #include <scai/lama/storage/CRTPMatrixStorage.hpp>
@@ -222,7 +222,7 @@ public:
         const IndexType numValuesPerRow,
         const hmemo::HArray<IndexType>& ia,
         const hmemo::HArray<IndexType>& ja,
-        const hmemo::ContextArray& values );
+        const hmemo::_HArray& values );
 
     /* Print relevant information about matrix storage format. */
 
@@ -230,11 +230,11 @@ public:
 
     /** getter for member variables IA, JA, Data, only const reference */
 
-    const LAMAArray<IndexType>& getIA() const;
+    const LArray<IndexType>& getIA() const;
 
-    const LAMAArray<IndexType>& getJA() const;
+    const LArray<IndexType>& getJA() const;
 
-    const LAMAArray<ValueType>& getValues() const;
+    const LArray<ValueType>& getValues() const;
 
     /** Getter routine for the number of stored values*/
 
@@ -447,9 +447,9 @@ private:
 
     IndexType mNumValuesPerRow; //!< number of values in each row
 
-    LAMAArray<IndexType> mIA; //!< size is numRows
-    LAMAArray<IndexType> mJA; //!< size is numRows x numValuesPerRow
-    LAMAArray<ValueType> mValues; //!< size is numRows x numValuesPerRow
+    LArray<IndexType> mIA; //!< size is numRows
+    LArray<IndexType> mJA; //!< size is numRows x numValuesPerRow
+    LArray<ValueType> mValues; //!< size is numRows x numValuesPerRow
 
     /** Addressing function for the arrays ia and ja: column-wise */
 

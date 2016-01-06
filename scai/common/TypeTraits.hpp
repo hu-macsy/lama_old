@@ -32,10 +32,10 @@
 
 #pragma once
 
-#include <scai/common/Complex.hpp>
 #include <scai/common/ScalarType.hpp>
 
 #include <cmath>
+#include <cstdlib>
 
 namespace scai
 {
@@ -57,17 +57,33 @@ public:
      *
      *  In contrary to the routine of cmath it will be possible to
      *  use always the same name for the routine. 
+     *
+     *  \code
+     *    ValueType x = sqrt ( y );                          // might not work always correctly
+     *    ValueType x = TypeTraits<ValueType>::sqrt ( y );   // this is guaranteed to work
+     *  \endcode
      */
-    static inline ValueType sqrt( ValueType val );
+    static inline ValueType sqrt( ValueType val )
+    {
+        // this is a good default but might be different for some value types
+
+        return sqrt( val );
+    }
 
     /** Absolute value function for ValueType
      *
      *  In contrary to the routine of cmath it will be possible to
      *  use always the same name for the routine. 
      */
-    static inline ValueType abs( ValueType val );
+    static inline ValueType abs( ValueType val )
+    {
+        return abs( val );
+    }
 
-    static inline ValueType conj( ValueType val );
+    static inline ValueType conj( ValueType val )
+    {
+        return val;   
+    }
 
     /** Get value-specific epsilon for comparison. */
 
@@ -245,6 +261,8 @@ public:
     }
 };
 
+#ifdef SCAI_COMPLEX_SUPPORTED
+
 /** Type specific traits for complex(float) */
 
 template<>
@@ -357,6 +375,8 @@ public:
         return scalar2str( stype );
     }
 };
+
+#endif
 
 /** For convenience and for compatibility make own routine of getScalarType */
 

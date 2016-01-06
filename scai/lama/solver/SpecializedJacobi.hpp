@@ -80,7 +80,7 @@ public:
         //TODO: HArray?
         common::shared_ptr<Vector> mOldSolution;
         SolutionProxy mProxyOldSolution;
-        common::shared_ptr<hmemo::ContextArray> mDiagonal;
+        common::shared_ptr<hmemo::_HArray> mDiagonal;
     };
 
     /**

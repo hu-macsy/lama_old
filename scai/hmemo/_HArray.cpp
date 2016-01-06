@@ -1,5 +1,5 @@
 /**
- * @file Scalar.cpp
+ * @file _HArray.cpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,45 +25,25 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Scalar.cpp
- * @author Jiri Kraus
- * @date 07.11.2011
- * @since 1.0.0
+ * @brief Implementations of class _HArray.
+ *
+ * @author Thomas Brandes
+ * @date 03.07.2015
  */
 
-// hpp
-#include <scai/lama/Scalar.hpp>
+#include <scai/hmemo/_HArray.hpp>
 
 namespace scai
 {
-
-namespace lama
+namespace hmemo
 {
 
-Scalar& Scalar::operator+=( Scalar& other )
-{
-    mValue += other.mValue;
-    return *this;
-}
+/* ---------------------------------------------------------------------------------*/
 
-Scalar& Scalar::operator-=( Scalar& other )
-{
-    mValue -= other.mValue;
-    return *this;
-}
+SCAI_LOG_DEF_LOGGER( _HArray::logger, "HArray" )
 
-Scalar& Scalar::operator*=( Scalar& other )
-{
-    mValue *= other.mValue;
-    return *this;
-}
+/* ---------------------------------------------------------------------------------*/
 
-Scalar& Scalar::operator/=( Scalar& other )
-{
-    mValue /= other.mValue;
-    return *this;
-}
-
-} /* end namespace lama */
+} /* end namespace hmemo */
 
 } /* end namespace scai */

@@ -33,6 +33,10 @@
 
 #pragma once
 
+/** Enable preprocessor flag to tell other code that ComplexZZZ is supported */
+
+#define SCAI_COMPLEX_SUPPORTED
+
 // local library
 #include <scai/common/config.hpp>
 
@@ -104,7 +108,7 @@
     return *this;
 
 #define COMPLEX_CAST_REAL(type)                                                                         \
-    return static_cast<type>( metrikCuda() );
+    return static_cast<type>( real() );
 
 #define COMPLEX_CAST_COMPLEX(type)                                                                      \
     return Complex<type>( static_cast<type>( real() ), static_cast<type>( imag() ) );
@@ -924,3 +928,8 @@ std::ostream& operator<<( std::ostream& stream, const Complex<ValueType>& object
 #undef COMPLEX_OPERATOR_NONMEMBER_CUDA
 #undef COMPLEX_OPERATOR_NONMEMBER_NONCUDA
 
+# define more convenient names
+
+typedef scai::common::Complex<float> ComplexFloat;
+typedef scai::common::Complex<double> ComplexDouble;
+typedef scai::common::Complex<long double> ComplexLongDouble;

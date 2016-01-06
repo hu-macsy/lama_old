@@ -1,5 +1,5 @@
 /**
- * @file LAMAArrayRef.hpp
+ * @file LArrayRef.hpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -36,7 +36,7 @@
 #pragma once
 
 // base classes
-#include <scai/lama/LAMAArray.hpp>
+#include <scai/lama/LArray.hpp>
 
 namespace scai
 {
@@ -57,34 +57,34 @@ namespace lama
  * would cause reallocation of data at the host throws an exception.
  */
 template<typename ValueType>
-class COMMON_DLL_IMPORTEXPORT LAMAArrayRef: public LAMAArray<ValueType>
+class COMMON_DLL_IMPORTEXPORT LArrayRef: public LArray<ValueType>
 {
 public:
 
     /** Contruct a container for a host array. */
 
-    LAMAArrayRef( IndexType size, ValueType* pointer );
+    LArrayRef( IndexType size, ValueType* pointer );
 
     /** Contruct a container for a const host array.
      *  Due to the const pointer it is guaranteed that the array cannot be modified
      */
 
-    LAMAArrayRef( IndexType size, const ValueType* pointer );
+    LArrayRef( IndexType size, const ValueType* pointer );
 
 protected:
 
-    using LAMAArray<ValueType>::mSize;
-    using LAMAArray<ValueType>::mValueSize;
+    using LArray<ValueType>::mSize;
+    using LArray<ValueType>::mValueSize;
 
-    using LAMAArray<ValueType>::mContextDataManager;
-    using LAMAArray<ValueType>::constFlag;
+    using LArray<ValueType>::mContextDataManager;
+    using LArray<ValueType>::constFlag;
 };
 
 /* ---------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-LAMAArrayRef<ValueType>::LAMAArrayRef( IndexType size, ValueType* pointer )
-                : LAMAArray<ValueType>()
+LArrayRef<ValueType>::LArrayRef( IndexType size, ValueType* pointer )
+                : LArray<ValueType>()
 {
     // Important: context must be set to the DefaultHostContext
 
@@ -102,8 +102,8 @@ LAMAArrayRef<ValueType>::LAMAArrayRef( IndexType size, ValueType* pointer )
 /* ---------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-LAMAArrayRef<ValueType>::LAMAArrayRef( IndexType size, const ValueType* pointer )
-                : LAMAArray<ValueType>()
+LArrayRef<ValueType>::LArrayRef( IndexType size, const ValueType* pointer )
+                : LArray<ValueType>()
 {
     // Important: context must be set to the DefaultHostContext
 

@@ -144,7 +144,7 @@ void CG::iterate()
     }
 
     SCAI_LOG_INFO( logger, "Calculating pScalar." )
-    pScalar = residual.dotProduct( z );
+    pScalar = z.dotProduct( residual );
     SCAI_LOG_DEBUG( logger, "pScalar = " << pScalar )
     SCAI_LOG_INFO( logger, "Calculating p." )
 
@@ -178,7 +178,7 @@ void CG::iterate()
     }
 
     SCAI_LOG_INFO( logger, "Calculating pqProd." )
-    const Scalar pqProd = p.dotProduct( q );
+    const Scalar pqProd = q.dotProduct( p );
     SCAI_LOG_DEBUG( logger, "pqProd = " << pqProd )
 
     if( pqProd.getValue<double>() == 0.0 )

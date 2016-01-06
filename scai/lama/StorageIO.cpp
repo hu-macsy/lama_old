@@ -54,7 +54,6 @@
 // boost
 #include <boost/preprocessor.hpp>
 
-
 namespace scai
 {
 
@@ -255,35 +254,30 @@ void StorageIO<ValueType>::readCSRFromBinaryFile(
 
     FileIO::file_size_t expectedSize = expectedCSRFileSize<ValueType>( numRows, numValues );
 
-    if( expectedSize == actualSize )
+    if ( expectedSize == actualSize )
     {
         SCAI_LOG_INFO( logger, "read binary data of type " << csrValues.getValueType() << ", no conversion" )
         FileIO::readBinaryData<ValueType,ValueType,0>( inFile, values.get(), numValues );
     }
-    else if( actualSize == expectedCSRFileSize<float>( numRows, numValues ) )
-    {
-        SCAI_LOG_WARN( logger, "read binary data of type float, conversion to " << csrValues.getValueType() )
-        FileIO::readBinaryData<float,ValueType,0>( inFile, values.get(), numValues );
-    }
-    else if( actualSize == expectedCSRFileSize<double>( numRows, numValues ) )
-    {
-        SCAI_LOG_WARN( logger, "read binary data of type double, conversion to " << csrValues.getValueType() )
-        FileIO::readBinaryData<double,ValueType,0>( inFile, values.get(), numValues );
-    }
-    else if( actualSize == expectedCSRFileSize<ComplexFloat>( numRows, numValues ) )
-    {
-        SCAI_LOG_WARN( logger, "read binary data of type double, conversion to " << csrValues.getValueType() )
-        FileIO::readBinaryData<ComplexFloat,ValueType,0>( inFile, values.get(), numValues );
-    }
-    else if( actualSize == expectedCSRFileSize<ComplexDouble>( numRows, numValues ) )
-    {
-        SCAI_LOG_WARN( logger, "read binary data of type double, conversion to " << csrValues.getValueType() )
-        FileIO::readBinaryData<ComplexDouble,ValueType,0>( inFile, values.get(), numValues );
-    }
+
+#define LAMA_BIN_READ(  z, I, _ )                                                                                   \
+    else if ( actualSize == expectedCSRFileSize<ARITHMETIC_HOST_TYPE_##I>( numRows, numValues ) )                   \
+    {                                                                                                               \
+        SCAI_LOG_WARN( logger, "read binary data of type " << common::TypeTraits<ARITHMETIC_HOST_TYPE_##I>::id()    \
+                               << ", conversion to " << csrValues.getValueType() )                                  \
+        FileIO::readBinaryData<ARITHMETIC_HOST_TYPE_##I, ValueType, 0>( inFile, values.get(), numValues );          \
+    }                                                                                                               \
+ 
+    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_BIN_READ, _ )
+
+#undef LAMA_BIN_READ
+
     else
     {
         COMMON_THROWEXCEPTION(
-                        "File " << fileName << " has unexpected file size = " << actualSize << ", #rows = " << numRows << ", #values = " << numValues << ", expected for float = " << expectedCSRFileSize<float>( numRows, numValues ) << ", or expected for double = " << expectedCSRFileSize<double>( numRows, numValues ) )
+                        "File " << fileName << " has unexpected file size = " << actualSize << ", #rows = " << numRows << ", #values = " << numValues 
+                         << ", expected for float = " << expectedCSRFileSize<float>( numRows, numValues ) 
+                         << ", or expected for double = " << expectedCSRFileSize<double>( numRows, numValues ) )
     }
 
     inFile.close();
@@ -319,7 +313,7 @@ static void writeData( XDRFileStream& outFile, const DataType data[], const Inde
 template<typename FileType,typename DataType,int offset>
 static void readData( XDRFileStream& inFile, DataType data[], const IndexType n )
 {
-    if( ( offset == 0 ) && ( typeid(FileType) == typeid(DataType) ) )
+    if( ( offset == 0 ) && ( typeid( FileType ) == typeid( DataType ) ) )
     {
         // no type conversion needed
 
@@ -412,26 +406,20 @@ void StorageIO<ValueType>::writeCSRToXDRFile(
     outFile.write( &nna );
     outFile.write( &dataTypeSize );
 
-    if( dataTypeSize == sizeof(ValueType) )
+    if ( dataTypeSize == sizeof( ValueType ) )
     {
-        writeData<ValueType,ValueType,0>( outFile, dataRead.get(), numValues );
+        writeData<ValueType, ValueType, 0>( outFile, dataRead.get(), numValues );
     }
-    else if( dataTypeSize == sizeof( double ) )
-    {
-        writeData<double,ValueType,0>( outFile, dataRead.get(), numValues );
-    }
-    else if( dataTypeSize == sizeof( float ) )
-    {
-        writeData<float,ValueType,0>( outFile, dataRead.get(), numValues );
-    } 
-    else if( dataTypeSize == sizeof( ComplexFloat ) )
-    {
-        writeData<ComplexFloat,ValueType,0>( outFile, dataRead.get(), numValues );
-    }
-    else if( dataTypeSize == sizeof( ComplexDouble ) )
-    {
-        writeData<ComplexDouble,ValueType,0>( outFile, dataRead.get(), numValues );
-    }
+
+#define LAMA_IO_WRITE( z, I, _ )                                                                    \
+    else if ( dataTypeSize == sizeof( ARITHMETIC_HOST_TYPE_##I ) )                                  \
+    {                                                                                               \
+        writeData<ARITHMETIC_HOST_TYPE_##I, ValueType, 0>( outFile, dataRead.get(), numValues );    \
+    }                                                                                               \
+
+    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_IO_WRITE, _ )
+
+#undef LAMA_IO_WRITE
 
     outFile.write( &dataTypeSize );
     outFile.write( &numValues );
@@ -548,28 +536,23 @@ void StorageIO<ValueType>::readCSRFromXDRFile(
 
     WriteOnlyAccess<ValueType> m_data( csrValues, numValues );
 
-    if( dataTypeSize == sizeof( double ) )
-    {
-        readData<double,ValueType,0>( xdrFile, m_data.get(), numValues );
-    }
-    else if( dataTypeSize == sizeof( float ) )
-    {
-        readData<float,ValueType,0>( xdrFile, m_data.get(), numValues );
-    }
-    else if( dataTypeSize == sizeof( ComplexFloat ) )
-    {
-        readData<ComplexFloat,ValueType,0>( xdrFile, m_data.get(), numValues );
-    }
-    else if( dataTypeSize == sizeof( ComplexDouble ) )
-    {
-        readData<ComplexDouble,ValueType,0>( xdrFile, m_data.get(), numValues );
-    }
-    else
+#define LAMA_IO_READ( z, I, _ )                                                                \
+    if ( dataTypeSize == sizeof( ARITHMETIC_HOST_TYPE_##I ) )                                  \
+    {                                                                                          \
+        readData<ARITHMETIC_HOST_TYPE_##I, ValueType, 0>( xdrFile, m_data.get(), numValues );  \
+    }                                                                                          \
+    else                                                                                       \
+
+    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_IO_READ, _ )
+
+#undef LAMA_IO_READ
+
     {
         COMMON_THROWEXCEPTION( "Invalid data type size in file " + fileName )
     }
 
     int dataTypeSizeCheck;
+
     xdrFile.read( &dataTypeSizeCheck );
 
     SCAI_ASSERT_EQUAL_ERROR( dataTypeSize, dataTypeSizeCheck )
@@ -639,25 +622,19 @@ void StorageIO<ValueType>::writeCSRToBinaryFile(
         COMMON_THROWEXCEPTION( "(write unformatted) Unknown index data type size of JA." )
     }
 
-    if( dataTypeSize == sizeof( double ) )
+#define LAMA_WRITE_BIN( z, I, _ )                                                                       \
+    if ( dataTypeSize == sizeof( ARITHMETIC_HOST_TYPE_##I ) )                                           \
+    {                                                                                                   \
+        writeBinaryData<ARITHMETIC_HOST_TYPE_##I, ValueType, 0>( outFile, dataRead.get(), numValues );  \
+    }                                                                                                   \
+    else                                                                                                \
+
+    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_WRITE_BIN, _ )
+
+#undef LAMA_WRITE_BIN
+
     {
-        writeBinaryData<double,ValueType,0>( outFile, dataRead.get(), numValues );
-    }
-    else if( dataTypeSize == sizeof( float ) )
-    {
-        writeBinaryData<float,ValueType,0>( outFile, dataRead.get(), numValues );
-    }
-    else if( dataTypeSize == sizeof( ComplexFloat ) )
-    {
-        writeBinaryData<ComplexFloat,ValueType,0>( outFile, dataRead.get(), numValues );
-    }
-    else if( dataTypeSize == sizeof( ComplexDouble ) )
-    {
-        writeBinaryData<ComplexDouble,ValueType,0>( outFile, dataRead.get(), numValues );
-    }
-    else
-    {
-        COMMON_THROWEXCEPTION( "Unknown data type size." )
+        COMMON_THROWEXCEPTION( "unknown data type size  = " << dataTypeSize << " for values." )
     }
 
     outFile.close();
@@ -672,7 +649,7 @@ void StorageIO<ValueType>::writeCSRToMMFile(
     const HArray<IndexType>& csrJA,
     const HArray<ValueType>& csrValues,
     const std::string& fileName,
-    const File::DataType& dataType )
+    const common::scalar::ScalarType& dataType )
 {
     SCAI_REGION( "StorageIO.writeCSRToMMFile" )
 
@@ -1110,7 +1087,7 @@ void _StorageIO::writeMMHeader(
 		const IndexType& numColumns,
 		const IndexType& numValues,
 		const std::string& fileName,
-		const File::DataType& dataType )
+		const common::scalar::ScalarType& dataType )
 {
 	MM_typecode matcode;
 	mm_initialize_typecode( &matcode );
@@ -1133,7 +1110,7 @@ void _StorageIO::writeMMHeader(
 	{
 		mm_set_complex( &matcode );
 	}
-	else if( dataType == File::INTEGER )
+	else if( dataType == File::INDEX_TYPE )
 	{
 		mm_set_integer( &matcode );
 	}
@@ -1264,7 +1241,7 @@ void StorageIO<ValueType>::writeCSRToFile(
     const HArray<ValueType>& csrValues,
     const std::string& fileName,
     const File::FileType& fileType,
-    const File::DataType& dataType,
+    const common::scalar::ScalarType& dataType,
     const File::IndexDataType indexDataTypeIA /*=LONG*/,
     const File::IndexDataType indexDataTypeJA /*=LONG*/
     )

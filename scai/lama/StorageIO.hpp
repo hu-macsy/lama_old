@@ -97,7 +97,7 @@ public:
 		const IndexType& numColumns,
 		const IndexType& numValues,
 		const std::string& fileName,
-		const File::DataType& dataType);
+		const common::scalar::ScalarType& dataType);
 
     static void readMMHeader(
 		IndexType& numRows,
@@ -168,7 +168,7 @@ public:
         const hmemo::HArray<ValueType>& csrValues,
         const std::string& fileName,
         const File::FileType& fileType,
-        const File::DataType& dataType,
+        const common::scalar::ScalarType& dataType,
         const File::IndexDataType indexDataTypeIA /*=LONG*/,
         const File::IndexDataType indexDataTypeJA /*=LONG*/
         );
@@ -239,7 +239,7 @@ public:
         const hmemo::HArray<IndexType>& csrJA,
         const hmemo::HArray<ValueType>& csrValues,
         const std::string& fileName,
-        const File::DataType& dataType );
+        const common::scalar::ScalarType& dataType );
 
     /** @brief Reading a CSR storage from a file.
      *

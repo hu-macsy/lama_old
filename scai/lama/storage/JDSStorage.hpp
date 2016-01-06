@@ -200,7 +200,7 @@ public:
         const hmemo::HArray<IndexType>& ilg,
         const hmemo::HArray<IndexType>& perm,
         const hmemo::HArray<IndexType>& ja,
-        const hmemo::ContextArray& values );
+        const hmemo::_HArray& values );
 
     /** Implementation of MatrixStorage::matrixTimesVector for JDS */
 

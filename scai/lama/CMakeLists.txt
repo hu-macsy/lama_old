@@ -128,9 +128,7 @@ scai_project(
         DenseVector
         Distributed
         HArrayUtils
-#        LAMAArrayView
         NoCommunicator
-        Scalar
         StorageIO
         Vector
 
@@ -145,8 +143,10 @@ scai_project(
         JDSKernelTrait
 
         LAMAKernel
-        LAMAArray
+        LArray
         LAMAArrayRef
+
+        Scalar
 
         CRTPCommunicator
     )

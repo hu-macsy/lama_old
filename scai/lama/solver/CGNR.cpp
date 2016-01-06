@@ -90,6 +90,7 @@ void CGNR::initialize( const Matrix& coefficients )
     runtime.mVecZ.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
 
     runtime.mTransposedMat->assignTranspose( coefficients );
+    runtime.mTransposedMat->conj();
 
     runtime.mVecD->setContextPtr( coefficients.getContextPtr() );
     runtime.mVecW->setContextPtr( coefficients.getContextPtr() );

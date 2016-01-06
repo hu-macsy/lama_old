@@ -213,11 +213,11 @@ void Matrix::setReplicatedMatrix( const IndexType numRows, const IndexType numCo
 
 /* ---------------------------------------------------------------------------------*/
 
-hmemo::ContextArray* Matrix::createArray() const
+hmemo::_HArray* Matrix::createArray() const
 {
-    // ContextArray is also a factory so we can use it
+    // _HArray is also a factory so we can use it
 
-    return hmemo::ContextArray::create( getValueType() );
+    return hmemo::_HArray::create( getValueType() );
 }
 
 /* ---------------------------------------------------------------------------------*/
