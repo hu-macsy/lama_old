@@ -129,7 +129,10 @@ scai_project (
 )
 
 ## add subdirectories
-add_subdirectory ( openmp )
+if ( OPENMP_FOUND AND USE_OPENMP )
+    add_subdirectory ( openmp )
+endif ( OPENMP_FOUND AND USE_OPENMP )
+
 add_subdirectory ( external )
 
 ## add CUDA if supported
