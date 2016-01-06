@@ -43,41 +43,49 @@
 
 #include <scai/lama/DenseVector.hpp>
 
+#include <scai/common/test/TestMacros.hpp>
+
 #include <boost/test/unit_test.hpp>
 
 /** This routine is a rather general routine. It compares two arbitrary matrices
  *  (different distributions, different value types) whether the elements are
  *  close enough.
  *
- *  The comparison is done by multiplying each matrix with a unity vector.
+ *  For efficiency on distributed matrices, it will do it row-wise.
  */
+
+using namespace scai::lama;
+using namespace scai::hmemo;
 
 template<typename MatrixType1, typename MatrixType2>
 void testSameMatrix( const MatrixType1& m1, const MatrixType2& m2 )
 {
     typedef typename MatrixType1::MatrixValueType ValueType1;
     typedef typename MatrixType2::MatrixValueType ValueType2;
-    // Both matrices must be matrices of the same size
+
     const IndexType m = m1.getNumRows();
     const IndexType n = m1.getNumColumns();
+    // require for same sizes, otherwise it is illegal to access elements
     BOOST_REQUIRE_EQUAL( m, m2.getNumRows() );
     BOOST_REQUIRE_EQUAL( n, m2.getNumColumns() );
-    scai::lama::DenseVector<ValueType1> x1( m1.getColDistributionPtr(), 1.0 );
-    scai::lama::DenseVector<ValueType2> x2( m2.getColDistributionPtr(), 1.0 );
-    scai::lama::DenseVector<ValueType1> y1( m1.getDistributionPtr(), 0.0 );
-    scai::lama::DenseVector<ValueType2> y2( m2.getDistributionPtr(), 0.0 );
-    y1 = m1 * x1; // YA = mA * XA;
-    y2 = m2 * x2; // YB = mB * XB;
-    // replicate the vectors to avoid communication overhead for single elements
-    scai::lama::DistributionPtr replicated( new scai::lama::NoDistribution( m ) );
-    y1.redistribute( replicated );
-    y2.redistribute( replicated );
 
-    for ( IndexType i = 0; i < m; i++ )
+    // create replicated vectors for the rows with the same value type
+    VectorPtr ptrRow1(DenseVector<ValueType1>::createVector(m1.getValueType(), DistributionPtr( new NoDistribution( m ))));
+    VectorPtr ptrRow2(DenseVector<ValueType2>::createVector(m2.getValueType(), DistributionPtr( new NoDistribution( m ))));
+
+    // now compare all rows
+    for ( IndexType i = 0; i < m; ++i )
     {
-        scai::lama::Scalar s1 = y1.getValue( i );
-        scai::lama::Scalar s2 = y2.getValue( i );
-        BOOST_CHECK_CLOSE( s1.getValue<double>(), s2.getValue<double>(), 0.01 );
+        // Note: rows will be broadcast in case of distributed matrices
+        m1.getRow( *ptrRow1, i );
+        m2.getRow( *ptrRow2, i );
+        // compare the two vectors element-wise
+
+        //#pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
+        for ( IndexType j = 0; j < n; j++ )
+        {
+            SCAI_CHECK_CLOSE( ptrRow1->getValue( j ), ptrRow2->getValue( j ), eps<ValueType1>() )
+        }
     }
 }
 
