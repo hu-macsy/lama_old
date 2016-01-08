@@ -617,18 +617,124 @@ This is fine, resize on res is not needed.
 Prefetch
 --------
 
-ToDo.
+Each HArray has a prefetch method in order to get a valid incarnation of the array
+at a certain context. If a memory transfer is required, this memory transfer is started
+asynchronously. Synchronization is done implicitly with the next access to the array.
+
+.. code-block:: c++
+
+  ContextPtr cudaContext = Context::getContextPtr( common::context::CUDA );
+  ContextPtr hostContext = Context::getContextPtr( common::context::Host );
+  HArray<double> A;
+  ...
+  {
+      WriteAccess<double> wA( A, hostContext );
+      ...
+  } // valid data only on Host
+
+  A.prefetch( cudaContext ); // starts async transfer Host->GPU
+
+  workload( dummy, NWORK );  // overlaps with memory transfer
+
+  {
+      WriteAccess<double> rA( A, cudaContext ); // waits until transfer is complete
+      ...
+  }
+
+An asynchronous memory transfer to a CUDA device is done via a CUDA stream if the 
+incarnation of the array on the Host is in the CUDA Host memory. Otherwise a
+separate thread is started that takes care of the memory transfer.
 
 Using Pinned Memory
 -------------------
 
-ToDo.
+By default, an incarnation of an Harray on the host is allocated in the Host memory.
+
+.. code-block:: c++
+
+  ContextPtr hostContext = Context::getContextPtr( common::context::Host );
+  HArray<double> A;
+  {
+      // will use HostMemory
+      WriteOnlyAccess<double> wA( A, hostContext, N );
+      ...
+  }
+
+If the data is later needed on the GPU, no fast memory transfer is possible as 
+the data is not in the pinned memory. The allocation of host memory in the pinned 
+memory can be forced as follows:
+
+.. code-block:: c++
+
+  ContextPtr hostContext = Context::getContextPtr( common::context::Host );
+  ContextPtr cudaContext = Context::getContextPtr( common::context::CUDA );
+
+  HArray<double> A( cudaContext );
+  {
+      // will use CUDAHostMemory
+      WriteOnlyAccess<double> wA( A, hostContext, N );
+      ...
+  }
+  {
+      ReadAccess<double> ra( A, cudaContext );   // fast memory transfer
+      ...
+  }
+
+The use of a context pointer in the constructor works like a first touch on the 
+corresponding context.
+
+.. code-block:: c++
+
+  HArray<double> A( cudaContext );
+
+  HArray<double> A;
+  {
+      WriteAccess<double> dummyW( A, cudaContext );
+  }
+
+Some other strategies have been dropped for these reasons:
+
+ * Using pinned memory as default memory on the Host is not recommended as 
+   allocation in pinned memory is 10 up to 100 times slower.
+
+ * Pinning already allocated unpinned memory might be possible e.g. when data transfer
+   to the GPU is required. This does not fit well in the design concept that handles
+   the two memory classes separately. Furthermore, using this as a general strategy
+   is not always recommended as the overhead does not pay off with one single transfer.
 
 HArrayRef
 ---------
 
-ToDo.
+Each incarnation of an HArray is allocated in a corresponding memory object where the
+memory management is handled by a corresponding manager.
+Therefore data from any input array must be copied explicitly in the container.
 
+.. code-block:: c++
+
+  double* data = new double[N];
+  read_data( data, N );
+  ...
+  HArray<double> vector;
+  {
+      WriteOnlyAccess<double> write( vector, host, N );
+      for ( IndexType i = 0; i < N; ++i ) write[i] = data[i];
+  }
+
+  ReadAccess<double> write( vector, gpu); // now work on it on GPU
+
+The class HArrayRef is provided to deal with such a situaton.
+
+.. code-block:: c++
+
+  double* data = new double[N];
+  read_data( data, N );
+  HArrayRef<double> vector( data, N )
+  WriteAccess<double> write( vector, gpu); // now work on it on GPU
+
+The memory at the pointer data will be used as incarnation on the Host memory 
+As the data is not copied, it is not possible to resize the HArray ``vector``. 
+The destructor of the array takes care that the specified memory will contain
+a valid copy of the data.
 
 Non-Zero Copy
 -------------
