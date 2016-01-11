@@ -64,7 +64,7 @@ struct P_DenseMatrixTestConfig
 {
     P_DenseMatrixTestConfig()
     {
-        comm = Communicator::get( "MPI" );
+        comm = Communicator::get( scai::lama::communicator::MPI );
     }
 
     ~P_DenseMatrixTestConfig()

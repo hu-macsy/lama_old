@@ -88,7 +88,7 @@ void communicatorInfo()
 {
     using namespace scai::lama;
 
-    vector<string> values;  // string is create type for the factory
+    vector<scai::lama::communicator::CommunicatorKind> values;  // string is create type for the factory
 
     Communicator::getCreateValues( values );
 

@@ -298,7 +298,7 @@ void MatrixCreator<ValueType>::buildPoisson(
 
     // ToDo: take communicator from input set
 
-    scai::lama::CommunicatorPtr comm = scai::lama::Communicator::get( "MPI" );
+    scai::lama::CommunicatorPtr comm = scai::lama::Communicator::get( communicator::MPI );
 
     // get rank of this processor
 
@@ -599,7 +599,7 @@ void MatrixCreator<ValueType>::buildRandom(
     const IndexType size,
     const double density )
 {
-    CommunicatorPtr comm = scai::lama::Communicator::get( "MPI" );
+    CommunicatorPtr comm = scai::lama::Communicator::get( communicator::MPI );
 
     DistributionPtr dist( new BlockDistribution( size, comm ) );
     matrix.allocate( dist, dist );

@@ -68,7 +68,7 @@ struct MetisDistributionTestConfig
 {
     MetisDistributionTestConfig()
     {
-        comm = Communicator::get( "MPI" );
+        comm = Communicator::get( scai::lama::communicator::MPI );
         rank = comm->getRank();
         size = comm->getSize();
         std::string prefix = Configuration::getInstance().getPath();

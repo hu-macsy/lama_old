@@ -32,7 +32,7 @@ int main( int argc, char* argv[] )
     std::cout << "Read matrix m : " << m << std::endl;
     IndexType size = m.getNumRows();
 
-    CommunicatorPtr comm( Communicator::get( "MPI" ) );
+    CommunicatorPtr comm( Communicator::get( scai::lama::communicator::MPI ) );
     DistributionPtr dist( new BlockDistribution( size, comm ) );
     m.redistribute( dist, dist );
 

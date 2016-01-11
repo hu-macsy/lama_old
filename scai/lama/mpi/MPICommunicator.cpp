@@ -71,7 +71,7 @@ MPI_Op MPICommunicator::mSumComplexLongDouble = 0;
 
 SCAI_LOG_DEF_LOGGER( MPICommunicator::logger, "Communicator.MPICommunicator" )
 
-MPICommunicator::MPICommunicator( int& argc, char** & argv, const std::string& type )
+MPICommunicator::MPICommunicator( int& argc, char** & argv, const communicator::CommunicatorKind& type )
     : CRTPCommunicator<MPICommunicator>( type ), 
       mMainThread( common::Thread::getSelf() ),
       mThreadSafetyLevel( Communicator::Funneled )
@@ -81,7 +81,7 @@ MPICommunicator::MPICommunicator( int& argc, char** & argv, const std::string& t
 }
 
 MPICommunicator::MPICommunicator()
-    : CRTPCommunicator<MPICommunicator>( "MPI" ), 
+    : CRTPCommunicator<MPICommunicator>( communicator::MPI ),
       mMainThread( common::Thread::getSelf() ),
       mThreadSafetyLevel( Communicator::Funneled )
 {
@@ -93,7 +93,7 @@ MPICommunicator::MPICommunicator()
 }
 
 MPICommunicator::MPICommunicator( int& argc, char** & argv )
-    : CRTPCommunicator<MPICommunicator>( "MPI" ), 
+    : CRTPCommunicator<MPICommunicator>( communicator::MPI ),
       mMainThread( common::Thread::getSelf() ),
       mThreadSafetyLevel( Communicator::Funneled )
 {
@@ -1061,9 +1061,9 @@ CommunicatorPtr MPICommunicator::create()
 
 /* --------------------------------------------------------------- */
 
-std::string MPICommunicator::createValue()
+communicator::CommunicatorKind MPICommunicator::createValue()
 {
-    return "MPI";
+    return communicator::MPI;
 }
 
 } /* end namespace lama */

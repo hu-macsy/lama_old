@@ -53,7 +53,7 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.P_MPICommunicatorTest" );
 
 BOOST_AUTO_TEST_CASE( commonTestCases )
 {
-    CommunicatorTest communicatorTest( "MPI" );
+    CommunicatorTest communicatorTest( scai::lama::communicator::MPI );
 
     if ( base_test_case )
     {

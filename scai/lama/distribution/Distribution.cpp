@@ -65,7 +65,7 @@ SCAI_LOG_DEF_LOGGER( Distribution::logger, "Distribution" )
 /* ------  Constructor  ------------------------------------------------- */
 
 Distribution::Distribution( const IndexType globalSize )
-    : mGlobalSize( globalSize ), mCommunicator( Communicator::get( "none" ) )
+    : mGlobalSize( globalSize ), mCommunicator( Communicator::get( communicator::NO ) )
 {
     SCAI_LOG_INFO( logger, "Distribution(" << mGlobalSize << ") onto NoCommunicator" )
 }
