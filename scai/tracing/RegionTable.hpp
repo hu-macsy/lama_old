@@ -114,28 +114,20 @@ private:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
-    struct    CmpString
-    {
-        bool operator()( const char* a, const char* b ) const
-        {
-            return std::strcmp( a, b ) < 0;
-        }
-    };
-
     // CallStack callStack;
 
     std::vector<RegionEntry> array; //!<  Entries for all timers
 
+    typedef std::map<std::string, int> MapRegion;
+
     /** Map of region strings to region ids that are the indexes to array.
      *
-     *  Timer strings are given by pointer; pointers will be always valid as string
-     *  remains as member variable in array.
+     *  Timer strings are stored as std::string and not as const char* 
      */
 
-    std::map<const char*, int, CmpString> mapTimer;
+    MapRegion mapTimer;
 
     std::string mThreadName;
-
 };
 
 } /* end namespace tracing */

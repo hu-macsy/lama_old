@@ -87,23 +87,17 @@ protected:
 
 private:
 
-    struct    CmpString
-    {
-        bool operator()( const char* a, const char* b ) const
-        {
-            return std::strcmp( a, b ) < 0;
-        }
-    };
-
     std::vector<std::string> array; //!<  Entries for all filenames
+
+    typedef std::map<const std::string, int> MapFiles;
 
     /** Map of file strings to file ids that are the indexes to array.
      *
-     *  Timer strings are given by pointer; pointers will be always valid as string
-     *  remains as member variable in array.
+     *  std::string should be used as key and not const char* as this
+     *  might cause problems in case of auto strings.
      */
 
-    std::map<const char*, int, CmpString> mapTimer;
+    MapFiles mapTimer;
 };
 
 } /* end namespace tracing */

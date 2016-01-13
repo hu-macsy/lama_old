@@ -30,7 +30,7 @@
  # @date 02.12.2015
 ###
 
-foreach ( executable amg_solver cg_solver gmres_solver solver lama_info matrix_generator )
+foreach ( executable amg_solver cg_solver gmres_solver solver lama_info matrix_generator matrix_convert )
     add_executable( ${executable}.exe ${executable}.cpp )
     target_link_libraries( ${executable}.exe ama )
     set ( EXAMPLE_EXECUTABLES_SOLVER "${EXAMPLE_EXECUTABLES_SOLVER} ${executable}.exe" )

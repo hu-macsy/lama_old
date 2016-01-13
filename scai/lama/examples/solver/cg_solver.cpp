@@ -50,6 +50,7 @@
 #include <scai/common/unique_ptr.hpp>
 #include <scai/common/exception/Exception.hpp>
 #include <scai/tracing.hpp>
+#include <scai/logging.hpp>
 
 using namespace std;
 using namespace scai::lama;
@@ -58,6 +59,8 @@ using scai::common::unique_ptr;
 int main( int argc, char* argv[] )
 {
     SCAI_REGION( "cg_solver" )
+
+    SCAI_LOG_THREAD( "main" )
 
     LamaConfig lamaconf;
 
