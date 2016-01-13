@@ -313,7 +313,7 @@ void COOStorage<ValueType>::setCOOData(
     const IndexType numValues,
     const HArray<IndexType>& ia,
     const HArray<IndexType>& ja,
-    const ContextArray& values )
+    const _HArray& values )
 {
     // check the sizes of the arrays
 

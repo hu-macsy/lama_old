@@ -231,7 +231,7 @@ protected:
 
     void setNodeData();
 
-    virtual hmemo::ContextPtr getCommunicationContext( const hmemo::ContextArray& array ) const;
+    virtual hmemo::ContextPtr getCommunicationContext( const hmemo::_HArray& array ) const;
 
     int mRank; // rank of this processor
     int mSize;// size of communicator

@@ -129,7 +129,10 @@ scai_project (
 )
 
 ## add subdirectories
-add_subdirectory ( openmp )
+if ( OPENMP_FOUND AND USE_OPENMP )
+    add_subdirectory ( openmp )
+endif ( OPENMP_FOUND AND USE_OPENMP )
+
 add_subdirectory ( external )
 
 ## add CUDA if supported
@@ -189,4 +192,8 @@ add_subdirectory( doc )
 
 ## add custum target distClean
 include ( DistClean )
+
+if    ( DEFINED SCAI_CMAKE_VERBOSE OR NOT DEFINED SCAI_COMPLETE_BUILD )
+        include ( Summaries/blaskernel )
+endif ( DEFINED SCAI_CMAKE_VERBOSE OR NOT DEFINED SCAI_COMPLETE_BUILD )
 

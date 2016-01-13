@@ -185,7 +185,7 @@ public:
     virtual void setDenseData(
         DistributionPtr rowDistribution,
         DistributionPtr colDistribution,
-        const hmemo::ContextArray& values,
+        const hmemo::_HArray& values,
         Scalar eps = Scalar( 0 ) );
 
     /** Implementation for pure method Matrix::setCSRData. */
@@ -196,7 +196,7 @@ public:
         const IndexType numValues,
         const hmemo::HArray<IndexType>& ia,
         const hmemo::HArray<IndexType>& ja,
-        const hmemo::ContextArray& values );
+        const hmemo::_HArray& values );
 
     /* Implementation of pure method of class Matrix. */
 

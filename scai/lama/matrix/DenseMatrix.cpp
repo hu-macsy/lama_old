@@ -444,7 +444,7 @@ template<typename ValueType>
 void DenseMatrix<ValueType>::setDenseData(
     DistributionPtr rowDist,
     DistributionPtr colDist,
-    const ContextArray& values,
+    const _HArray& values,
     const Scalar eps )
 {
     DistributionPtr tmpReplicatedColDistribution = colDist;
@@ -488,7 +488,7 @@ void DenseMatrix<ValueType>::setCSRData(
     const IndexType numValues,
     const HArray<IndexType>& ia,
     const HArray<IndexType>& ja,
-    const ContextArray& values )
+    const _HArray& values )
 {
     DistributionPtr tmpReplicatedColDistribution = colDist;
 
@@ -689,7 +689,7 @@ template<typename ValueType>
 void DenseMatrix<ValueType>::buildCSRData(
     HArray<IndexType>& rowIA,
     HArray<IndexType>& rowJA,
-    ContextArray& rowValues ) const
+    _HArray& rowValues ) const
 {
     if ( getValueType() != rowValues.getValueType() )
     {
@@ -705,7 +705,7 @@ template<typename ValueType>
 void DenseMatrix<ValueType>::setCSRData(
     const HArray<IndexType>& rowIA,
     const HArray<IndexType>& rowJA,
-    const ContextArray& rowValues,
+    const _HArray& rowValues,
     DistributionPtr,
     DistributionPtr )
 {
@@ -718,7 +718,7 @@ template<typename ValueType>
 void DenseMatrix<ValueType>::setCSRDataLocal(
     const HArray<IndexType>& rowIA,
     const HArray<IndexType>& rowJA,
-    const ContextArray& rowValues ) const
+    const _HArray& rowValues ) const
 {
     // build DenseStorage from the CSR data
 

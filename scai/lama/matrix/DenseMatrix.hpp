@@ -282,7 +282,7 @@ public:
     virtual void setDenseData(
         DistributionPtr rowDistribution,
         DistributionPtr colDistribution,
-        const hmemo::ContextArray& values,
+        const hmemo::_HArray& values,
         const Scalar eps );
 
     /** Implementation for pure method Matrix::setCSRData. */
@@ -293,18 +293,18 @@ public:
         const IndexType numValues,
         const hmemo::HArray<IndexType>& ia,
         const hmemo::HArray<IndexType>& ja,
-        const hmemo::ContextArray& values );
+        const hmemo::_HArray& values );
 
     /** Implementation of pure method for the dense storage format. */
 
-    virtual void buildCSRData( hmemo::HArray<IndexType>& rowIA, hmemo::HArray<IndexType>& rowJA, hmemo::ContextArray& rowValues ) const;
+    virtual void buildCSRData( hmemo::HArray<IndexType>& rowIA, hmemo::HArray<IndexType>& rowJA, hmemo::_HArray& rowValues ) const;
 
     /** Implementation of pure method. */
 
     virtual void setCSRData(
         const hmemo::HArray<IndexType>& rowIA,
         const hmemo::HArray<IndexType>& rowJA,
-        const hmemo::ContextArray& rowValues,
+        const hmemo::_HArray& rowValues,
         DistributionPtr rowDistribution,
         DistributionPtr colDistribution );
 
@@ -313,7 +313,7 @@ public:
     void setCSRDataLocal(
         const hmemo::HArray<IndexType>& rowIA,
         const hmemo::HArray<IndexType>& rowJA,
-        const hmemo::ContextArray& rowValues ) const;
+        const hmemo::_HArray& rowValues ) const;
 
     /* Implementation of pure method of class Matrix. */
 

@@ -1,5 +1,5 @@
 /**
- * @file ContextArray.hpp
+ * @file _HArray.hpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -80,11 +80,11 @@ class WriteAccess;
  *  Base class provides also a factory for creating arrays.
  */
 
-class COMMON_DLL_IMPORTEXPORT ContextArray: 
+class COMMON_DLL_IMPORTEXPORT _HArray: 
 
     public common::Printable,
     public tasking::SyncTokenMember,
-    public common::Factory<common::scalar::ScalarType, ContextArray*>
+    public common::Factory<common::scalar::ScalarType, _HArray*>
 {
     // Member variables of this class
 
@@ -102,7 +102,7 @@ public:
 
     /** Virtual destructor required. */
 
-    virtual ~ContextArray()
+    virtual ~_HArray()
     {
     }
 
@@ -111,19 +111,19 @@ public:
      */
     virtual common::scalar::ScalarType getValueType() const = 0;
 
-    using common::Factory<common::scalar::ScalarType, ContextArray*>::create;
+    using common::Factory<common::scalar::ScalarType, _HArray*>::create;
 
     /**
      *  Each derived class must provide a clone function. This will
      *  allow writing general routines that require temporary data.
      *
      *  Note: derived class might implement this routine by using covariant return types.
-     *  Note: will be the same as ContextArray::create( this->getValueType() )
+     *  Note: will be the same as _HArray::create( this->getValueType() )
      */
 
-    virtual ContextArray* clone() = 0;
+    virtual _HArray* clone() = 0;
 
-    virtual ContextArray* copy() = 0;
+    virtual _HArray* copy() = 0;
 
     /**
      * @brief Query the current size of the LAMA array, i.e. number of entries.
@@ -199,7 +199,7 @@ public:
      * @brief clear of an array is the same as resize 0 
      *
      * \code
-     *   ContextArray& array = ...
+     *   _HArray& array = ...
      *   // this sequence of statements just invalidates all data
      *   IndexType size = array.size();
      *   array.clear();
@@ -211,7 +211,7 @@ public:
 
 protected:
 
-    explicit ContextArray( const IndexType n, const IndexType size ) :
+    explicit _HArray( const IndexType n, const IndexType size ) :
 
         mSize( n ), 
         mValueSize( size ), 
@@ -263,32 +263,32 @@ public:
 
 /* ---------------------------------------------------------------------------------*/
 
-typedef ContextArray _HArray;
+typedef _HArray _HArray;
 
 /* ---------------------------------------------------------------------------------*/
 
-inline IndexType ContextArray::size() const
+inline IndexType _HArray::size() const
 {
     return mSize;
 }
 
 /* ---------------------------------------------------------------------------------*/
 
-inline void ContextArray::prefetch( ContextPtr context ) const
+inline void _HArray::prefetch( ContextPtr context ) const
 {
     mContextDataManager.prefetch( context, mSize * mValueSize );
 }
 
 /* ---------------------------------------------------------------------------------*/
 
-inline bool ContextArray::isValid( ContextPtr context ) const
+inline bool _HArray::isValid( ContextPtr context ) const
 {
     return mContextDataManager.isValid( context );
 }
 
 /* ---------------------------------------------------------------------------------*/
 
-inline void ContextArray::resize( IndexType size )
+inline void _HArray::resize( IndexType size )
 {
     // resize on all valid locations
 
@@ -299,7 +299,7 @@ inline void ContextArray::resize( IndexType size )
 
 /* ---------------------------------------------------------------------------------*/
 
-inline void ContextArray::clear()
+inline void _HArray::clear()
 {
     SCAI_ASSERT( !mContextDataManager.locked(), "Tried to clear a locked HArray " << *this )
 
@@ -308,7 +308,7 @@ inline void ContextArray::clear()
 
 /* ---------------------------------------------------------------------------------*/
 
-inline IndexType ContextArray::capacity( ContextPtr context ) const
+inline IndexType _HArray::capacity( ContextPtr context ) const
 {
     // will return 0 if no data is available at the specified context
 
@@ -317,7 +317,7 @@ inline IndexType ContextArray::capacity( ContextPtr context ) const
 
 /* ---------------------------------------------------------------------------------*/
 
-inline IndexType ContextArray::capacity( ContextDataIndex index ) const
+inline IndexType _HArray::capacity( ContextDataIndex index ) const
 {
     const ContextData& entry = mContextDataManager[index];
 
@@ -326,21 +326,21 @@ inline IndexType ContextArray::capacity( ContextDataIndex index ) const
 
 /* ---------------------------------------------------------------------------------*/
 
-inline ContextPtr ContextArray::getValidContext( const ContextPtr prefContext ) const
+inline ContextPtr _HArray::getValidContext( const ContextPtr prefContext ) const
 {
     return mContextDataManager.getValidContext( prefContext );
 }
 
 /* ---------------------------------------------------------------------------------*/
 
-inline ContextPtr ContextArray::getFirstTouchContextPtr() const
+inline ContextPtr _HArray::getFirstTouchContextPtr() const
 {
     return mContextDataManager.getFirstTouchContextPtr();
 }
 
 /* ---------------------------------------------------------------------------------*/
 
-inline ContextDataIndex ContextArray::acquireReadAccess( ContextPtr context ) const
+inline ContextDataIndex _HArray::acquireReadAccess( ContextPtr context ) const
 {
     size_t allocSize = mSize * mValueSize;
     size_t validSize = allocSize;                   // read access needs valid data in any case
@@ -350,14 +350,14 @@ inline ContextDataIndex ContextArray::acquireReadAccess( ContextPtr context ) co
 
 /* ---------------------------------------------------------------------------------*/
 
-inline void ContextArray::releaseReadAccess( ContextDataIndex index ) const
+inline void _HArray::releaseReadAccess( ContextDataIndex index ) const
 {
     mContextDataManager.releaseAccess( index, common::context::Read );
 }
 
 /* ---------------------------------------------------------------------------------*/
 
-inline ContextDataIndex ContextArray::acquireWriteAccess( ContextPtr context, bool keepFlag )
+inline ContextDataIndex _HArray::acquireWriteAccess( ContextPtr context, bool keepFlag )
 {
     size_t allocSize = mSize * mValueSize;
     size_t validSize = keepFlag ? allocSize : 0 ;    // valid data only if keepFlag is set
@@ -367,7 +367,7 @@ inline ContextDataIndex ContextArray::acquireWriteAccess( ContextPtr context, bo
 
 /* ---------------------------------------------------------------------------------*/
 
-inline void ContextArray::releaseWriteAccess( ContextDataIndex index )
+inline void _HArray::releaseWriteAccess( ContextDataIndex index )
 {
     mContextDataManager.releaseAccess( index, common::context::Write );
 }

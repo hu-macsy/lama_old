@@ -235,7 +235,7 @@ void DenseVector<ValueType>::readFromFile( const std::string& filename )
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-DenseVector<ValueType>::DenseVector( const ContextArray& localValues, DistributionPtr distribution )
+DenseVector<ValueType>::DenseVector( const _HArray& localValues, DistributionPtr distribution )
                 : Vector( distribution )
 {
     SCAI_ASSERT_EQUAL_ERROR( localValues.size(), distribution->getLocalSize() )
@@ -378,7 +378,7 @@ common::scalar::ScalarType DenseVector<ValueType>::getValueType() const
 }
 
 template<typename ValueType>
-void DenseVector<ValueType>::buildValues( ContextArray& values ) const
+void DenseVector<ValueType>::buildValues( _HArray& values ) const
 {
     // size of values will be local size of vecotr
 
@@ -386,7 +386,7 @@ void DenseVector<ValueType>::buildValues( ContextArray& values ) const
 }
 
 template<typename ValueType>
-void DenseVector<ValueType>::setValues( const ContextArray& values )
+void DenseVector<ValueType>::setValues( const _HArray& values )
 {
     SCAI_ASSERT_ERROR(
                     values.size() == mLocalValues.size(),
@@ -949,7 +949,7 @@ void DenseVector<ValueType>::assign( const Scalar value )
 }
 
 template<typename ValueType>
-void DenseVector<ValueType>::assign( const ContextArray& localValues, DistributionPtr dist )
+void DenseVector<ValueType>::assign( const _HArray& localValues, DistributionPtr dist )
 {
     SCAI_LOG_INFO( logger, "assign vector with localValues = " << localValues << ", dist = " << *dist )
 
@@ -960,7 +960,7 @@ void DenseVector<ValueType>::assign( const ContextArray& localValues, Distributi
 }
 
 template<typename ValueType>
-void DenseVector<ValueType>::buildLocalValues( ContextArray& localValues ) const
+void DenseVector<ValueType>::buildLocalValues( _HArray& localValues ) const
 {
     HArrayUtils::assign( localValues, mLocalValues );
 }

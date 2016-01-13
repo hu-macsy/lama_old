@@ -97,7 +97,7 @@ SpecializedJacobi::SpecializedJacobiRuntime::~SpecializedJacobiRuntime()
 
 void SpecializedJacobi::initialize( const Matrix& coefficients )
 {
-    using hmemo::ContextArray;
+    using hmemo::_HArray;
 
 //    {
 //        const _SparseMatrix* sparseMatrix = dynamic_cast<const _SparseMatrix*>( &coefficients );
@@ -143,7 +143,7 @@ void SpecializedJacobi::initialize( const Matrix& coefficients )
             SCAI_LOG_DEBUG( logger, "Creating " << common::getScalarType<ARITHMETIC_HOST_TYPE_##I>() << " diagonal. " )  \
             if ( !runtime.mDiagonal.get() )                                                                              \
             {                                                                                                            \
-                runtime.mDiagonal.reset( ContextArray::create( common::getScalarType<ARITHMETIC_HOST_TYPE_##I>() ) );    \
+                runtime.mDiagonal.reset( _HArray::create( common::getScalarType<ARITHMETIC_HOST_TYPE_##I>() ) );    \
             }                                                                                                            \
             sparseTypeCoefficients->getLocalStorage().getDiagonal( *runtime.mDiagonal );                                 \
             return;                                                                                                      \

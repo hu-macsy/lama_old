@@ -116,7 +116,7 @@ scai_project (
          Context
          ContextData
          ContextDataManager
-         ContextArray
+         _HArray
          HostContext
          HostMemory
          Memory

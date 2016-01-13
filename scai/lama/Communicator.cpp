@@ -478,7 +478,7 @@ void Communicator::updateHalo(
 
 /* -------------------------------------------------------------------------- */
 
-static void releaseArray( common::shared_ptr<ContextArray> array )
+static void releaseArray( common::shared_ptr<_HArray> array )
 {
     array->clear();
 }

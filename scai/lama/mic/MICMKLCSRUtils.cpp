@@ -193,7 +193,7 @@ void MICMKLCSRUtils::registerKernels( bool deleteFlag )
 
     // using MKL for CSR might be disabled explicitly by environment variable
 
-    common::Settings::getEnvironment( useMKL, "USE_MKL" );
+    common::Settings::getEnvironment( useMKL, "SCAI_USE_MKL" );
 
     if( !useMKL )
     {

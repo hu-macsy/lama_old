@@ -153,3 +153,7 @@ add_subdirectory( doc )
 ## add custum target distClean
 include ( DistClean )
 
+if    ( DEFINED SCAI_CMAKE_VERBOSE OR NOT DEFINED SCAI_COMPLETE_BUILD )
+        include ( Summaries/kregistry )
+endif ( DEFINED SCAI_CMAKE_VERBOSE OR NOT DEFINED SCAI_COMPLETE_BUILD )
+

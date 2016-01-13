@@ -113,9 +113,9 @@ void constructorTest1( ContextPtr loc )
     const IndexType sizeValues = sizeof( values ) / sizeof( ValueType );
     BOOST_CHECK_EQUAL( numValues, sizeJA );
     BOOST_CHECK_EQUAL( numValues, sizeValues );
-    LAMAArray<IndexType> ellIA( numRows, ia );
-    LAMAArray<IndexType> ellJA( numValues, ja );
-    LAMAArray<ValueType> ellValues( numValues, values );
+    LArray<IndexType> ellIA( numRows, ia );
+    LArray<IndexType> ellJA( numValues, ja );
+    LArray<ValueType> ellValues( numValues, values );
     ELLStorage<ValueType> ellStorage( numRows, numColumns, numValuesPerRow, ellIA, ellJA, ellValues );
     BOOST_REQUIRE_EQUAL( numRows, ellStorage.getNumRows() );
     BOOST_REQUIRE_EQUAL( numColumns, ellStorage.getNumColumns() );
