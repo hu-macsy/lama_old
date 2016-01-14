@@ -51,13 +51,10 @@ namespace lama
 /**
  * @brief The class CGNR represents a IterativeSolver which uses the krylov subspace Conjugate
  * Gradients for Normal Residuals (CGNR) method to solve a system of linear equations iteratively.
- * Remarks:
- * 1. assignTranspose is not supported yet for DenseMatrix.
- * 2. The scalars in the algorithm are set to zero if they are smaller then machine
- * precision (3*eps) to avoid division by zero. In this case the solution doesn't change anymore.
- * 3. In this case it makes less sense to take the residual regarding to some norm itself since
- * it has to be additionally computed in each iterate() (contrary to e.g. BiCGstab solver;
- * no higher costs).
+ *
+ * Remark: 
+ * The scalars in the algorithm are set to zero if they are smaller than machine precision
+ * (3*eps) to avoid devision by zero. In this case the solution doesn't change anymore.
  */
 class COMMON_DLL_IMPORTEXPORT CGNR:
     public IterativeSolver,
