@@ -35,12 +35,14 @@
 
 set( CLASSES
         BLASHelper
+#        BLASWrapperNEW
 )
 
 set( HEADERS
         BLASWrapper
         LAPACKWrapper
         LAPACKeWrapper
+        BLASWrapperNEW
 )
 
 if ( SCAI_BLAS_NAME STREQUAL "MKL" )

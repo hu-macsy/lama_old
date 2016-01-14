@@ -118,8 +118,6 @@ public:
 extern "C" {
 #endif /*__cplusplus*/
 
-#if defined( LAMA_FORTRAN_BLAS_STYLE_UNDERSCORE )
-
 #define F77_sgetrf sgetrf_
 #define F77_dgetrf dgetrf_
 #define F77_cgetrf cgetrf_
@@ -140,60 +138,6 @@ extern "C" {
 #define F77_dlaswp dlaswp_
 #define F77_claswp claswp_
 #define F77_zlaswp zlaswp_
-
-#elif defined(LAMA_FORTRAN_BLAS_STYLE_UPCASE)
-
-#define F77_sgetrf SGETRF
-#define F77_dgetrf DGETRF
-#define F77_cgetrf CGETRF
-#define F77_zgetrf ZGETRF
-#define F77_sgetri SGETRI
-#define F77_dgetri DGETRI
-#define F77_cgetri CGETRI
-#define F77_zgetri ZGETRI
-#define F77_strtrs STRTRS
-#define F77_dtrtrs DTRTRS
-#define F77_ctrtrs CTRTRS
-#define F77_ztrtrs ZTRTRS
-#define F77_stptrs STPTRS
-#define F77_dtptrs DTPTRS
-#define F77_ctptrs CTPTRS
-#define F77_ztptrs ZTPTRS
-#define F77_slaswp SLASWP
-#define F77_dlaswp DLASWP
-#define F77_claswp CLASWP
-#define F77_zlaswp ZLASWP
-
-#elif defined(LAMA_FORTRAN_BLAS_STYLE_LOWCASE)
-
-#define F77_sgetri sgetri
-#define F77_dgetri dgetri
-#define F77_cgetri cgetri
-#define F77_zgetri zgetri
-#define F77_sgetrf sgetrf
-#define F77_dgetrf dgetrf
-#define F77_cgetrf cgetrf
-#define F77_zgetrf zgetrf
-#define F77_strtrs strtrs
-#define F77_dtrtrs dtrtrs
-#define F77_ctrtrs ctrtrs
-#define F77_ztrtrs ztrtrs
-#define F77_stptrs stptrs
-#define F77_dtptrs dtptrs
-#define F77_ctptrs ctptrs
-#define F77_ztptrs ztptrs
-#define F77_slaswp slaswp
-#define F77_dlaswp dlaswp
-#define F77_claswp claswp
-#define F77_zlaswp zlaswp
-
-#else
-
-// Nothing defined: should not happen
-
-#error "Must define either LAMA_FOTRAN_BLAS_STYLE_UNDERSCORE, LAMA_FORTRAN_BLAS_STYLE_UPCASE, or LAMA_FORTRAN_BLAS_STYLE_LOWCASE"
-
-#endif /* LAMA_FORTRAN_BLAS_STYLE */
 
 void F77_sgetrf(const scai::blaskernel::LAPACKWrapper::LAPACKIndexType* m,
 		const scai::blaskernel::LAPACKWrapper::LAPACKIndexType* n, float* a,

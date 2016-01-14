@@ -53,6 +53,7 @@ class TypeTraits
 {
 public:
 
+	typedef ValueType PartsType;
     /** Square root function for ValueType
      *
      *  In contrary to the routine of cmath it will be possible to
@@ -113,6 +114,11 @@ public:
     {
         return scalar2str( scalar::UNKNOWN );
     }
+
+    static inline bool isComplex()
+    {
+    	return false;
+    }
 };
 
 /** Type specific traits for IndexType */
@@ -121,6 +127,7 @@ template<>
 class TypeTraits<IndexType>
 {
 public:
+	typedef IndexType PartsType;
 
     static inline IndexType abs( IndexType x )
     {
@@ -148,6 +155,11 @@ public:
     {
         return scalar2str( scalar::INDEX_TYPE );
     }
+
+    static inline bool isComplex()
+	{
+		return false;
+	}
 };
 
 /** Type specific traits for long double */
@@ -156,6 +168,7 @@ template<>
 class TypeTraits<long double>
 {
 public:
+	typedef long double PartsType;
 
     static inline long double sqrt( long double x )
     {
@@ -187,6 +200,11 @@ public:
     {
         return scalar2str( scalar::LONG_DOUBLE );
     }
+
+    static inline bool isComplex()
+	{
+		return false;
+	}
 };
 
 /** Type specific traits for double */
@@ -195,6 +213,7 @@ template<>
 class TypeTraits<double>
 {
 public:
+	typedef double PartsType;
 
     static inline double sqrt( double x )
     {
@@ -223,6 +242,11 @@ public:
     {
         return scalar2str( scalar::DOUBLE );
     }
+
+    static inline bool isComplex()
+	{
+		return false;
+	}
 };
 
 /** Type specific traits for float */
@@ -231,6 +255,7 @@ template<>
 class TypeTraits<float>
 {
 public:
+	typedef float PartsType;
 
     static inline float sqrt( float x )
     {
@@ -259,6 +284,11 @@ public:
     {
         return scalar2str( stype );
     }
+
+    static inline bool isComplex()
+	{
+		return false;
+	}
 };
 
 #ifdef SCAI_COMPLEX_SUPPORTED
@@ -269,6 +299,7 @@ template<>
 class TypeTraits<ComplexFloat>
 {
 public:
+	typedef float PartsType;
 
     static inline ComplexFloat sqrt( ComplexFloat x )
     {
@@ -298,6 +329,11 @@ public:
     {
         return "ComplexFloat";
     }
+
+    static inline bool isComplex()
+	{
+		return true;
+	}
 };
 
 /** Type specific traits for complex(double) */
@@ -306,6 +342,7 @@ template<>
 class TypeTraits<ComplexDouble>
 {
 public:
+	typedef double PartsType;
 
     static inline ComplexDouble sqrt( ComplexDouble x )
     {
@@ -334,6 +371,11 @@ public:
     {
         return scalar2str( scalar::DOUBLE_COMPLEX );
     }
+
+    static inline bool isComplex()
+	{
+		return true;
+	}
 };
 
 /** Type specific traits for complex(long double) */
@@ -342,6 +384,7 @@ template<>
 class TypeTraits<ComplexLongDouble>
 {
 public:
+	typedef long double PartsType;
 
     static inline ComplexLongDouble sqrt( ComplexLongDouble x )
     {
@@ -374,6 +417,11 @@ public:
     {
         return scalar2str( stype );
     }
+
+    static inline bool isComplex()
+	{
+		return true;
+	}
 };
 
 #endif

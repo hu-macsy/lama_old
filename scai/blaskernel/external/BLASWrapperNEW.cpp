@@ -5,7 +5,7 @@ typedef scai::blaskernel::_BLASWrapper::BLASTrans BLASTrans;
 
 extern "C" {
 
-#define FORTRAN_BLAS_NAME(prefix, name ) prefix##name##_
+
 #define FORTRAN_BLAS_DEF( name, prefix, definition ) 			\
         void FORTRAN_BLAS_NAME( prefix, name )( definition );
 

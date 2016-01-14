@@ -49,7 +49,7 @@ namespace scai {
 
 namespace blaskernel {
 
-class COMMON_DLL_IMPORTEXPORT BLASWrapper {
+class COMMON_DLL_IMPORTEXPORT BLASWrapperOLD {
 public:
 	typedef int BLASIndexType;
 
@@ -135,407 +135,407 @@ public:
 private:
 
 };
-
-// -------------- scal --------------
-template<>
-inline void BLASWrapper::scal<float>(const BLASIndexType n, const float alpha,
-		float *x, const BLASIndexType incX) {
-	cblas_sscal(n, alpha, x,
-			incX);
-}
-
-template<>
-inline void BLASWrapper::scal<double>(const BLASIndexType n, const double alpha,
-		double *x, const BLASIndexType incX) {
-	cblas_dscal(n, alpha, x,
-			incX);
-}
-
-#ifdef SCAI_COMPLEX_SUPPORTED
-
-template<>
-inline void BLASWrapper::scal<ComplexFloat>(const BLASIndexType n,
-		const ComplexFloat alpha, ComplexFloat *x, const BLASIndexType incX) {
-	// Attention: alpha is here passed by a pointer
-	cblas_cscal(n, &alpha, x,
-			incX);
-}
-
-template<>
-inline void BLASWrapper::scal<ComplexDouble>(const BLASIndexType n,
-		const ComplexDouble alpha, ComplexDouble *x, const BLASIndexType incX) {
-	// Attention: alpha is here passed by a pointer
-	cblas_zscal(n, &alpha, x,
-			incX);
-}
-
-#endif
-
-// -------------- nrm2 --------------
-template<>
-inline float BLASWrapper::nrm2<float>(const BLASIndexType n, const float *x,
-		const BLASIndexType incX) {
-	return cblas_snrm2(n, x,
-			incX);
-}
-
-template<>
-inline double BLASWrapper::nrm2<double>(const BLASIndexType n, const double *x,
-		const BLASIndexType incX) {
-	return cblas_dnrm2(n, x,
-			incX);
-}
-
-#ifdef SCAI_COMPLEX_SUPPORTED
-
-template<>
-inline ComplexFloat BLASWrapper::nrm2<ComplexFloat>(const BLASIndexType n,
-		const ComplexFloat *x, const BLASIndexType incX) {
-	float res = cblas_scnrm2(n, x,
-			incX);
-	return ComplexFloat(res);
-}
-
-template<>
-inline ComplexDouble BLASWrapper::nrm2<ComplexDouble>(const BLASIndexType n,
-		const ComplexDouble *x, const BLASIndexType incX) {
-	double res = cblas_dznrm2(n, x,
-			incX);
-	return ComplexDouble(res);
-}
-
-#endif
-
-// -------------- asum --------------
-template<>
-inline float BLASWrapper::asum<float>(const BLASIndexType n, const float *x,
-		BLASIndexType incX) {
-	return cblas_sasum(n, x,
-			incX);
-}
-
-template<>
-inline double BLASWrapper::asum<double>(const BLASIndexType n, const double *x,
-		BLASIndexType incX) {
-	return cblas_dasum(n, x,
-			incX);
-}
-
-#ifdef SCAI_COMPLEX_SUPPORTED
-
-template<>
-inline ComplexFloat BLASWrapper::asum<ComplexFloat>(const BLASIndexType n,
-		const ComplexFloat *x, BLASIndexType incX) {
-	float res = cblas_scasum(n, x,
-			incX);
-	return ComplexFloat(res);
-}
-
-template<>
-inline ComplexDouble BLASWrapper::asum<ComplexDouble>(const BLASIndexType n,
-		const ComplexDouble *x, BLASIndexType incX) {
-	double res = cblas_dzasum(n, x,
-			incX);
-	return ComplexDouble(res);
-}
-
-#endif
-
-// -------------- iamax --------------
-template<>
-inline BLASWrapper::BLASIndexType BLASWrapper::iamax<float>(const BLASIndexType n, const float *x,
-		const BLASIndexType incX) {
-	return cblas_isamax(n, x,
-			incX);
-}
-
-template<>
-inline BLASWrapper::BLASIndexType BLASWrapper::iamax<double>(const BLASIndexType n, const double *x,
-		const BLASIndexType incX) {
-	return cblas_idamax(n, x,
-			incX);
-}
-
-#ifdef SCAI_COMPLEX_SUPPORTED
-
-template<>
-inline BLASWrapper::BLASIndexType BLASWrapper::iamax<ComplexFloat>(const BLASIndexType n,
-		const ComplexFloat *x, const BLASIndexType incX) {
-	return cblas_icamax(n, x,
-			incX);
-}
-
-template<>
-inline BLASWrapper::BLASIndexType BLASWrapper::iamax<ComplexDouble>(const BLASIndexType n,
-		const ComplexDouble *x, const BLASIndexType incX) {
-	return cblas_izamax(n, x,
-			incX);
-}
-
-#endif
-
-// -------------- swap --------------
-template<>
-inline void BLASWrapper::swap<float>(const BLASIndexType n, float *x,
-		const BLASIndexType incX, float *y, const BLASIndexType incY) {
-	cblas_sswap(n, x,
-			incX, y,
-			incY);
-}
-
-template<>
-inline void BLASWrapper::swap<double>(const BLASIndexType n, double *x,
-		const BLASIndexType incX, double *y, const BLASIndexType incY) {
-	cblas_dswap(n, x,
-			incX, y,
-			incY);
-}
-
-#ifdef SCAI_COMPLEX_SUPPORTED
-
-template<>
-inline void BLASWrapper::swap<ComplexFloat>(const BLASIndexType n, ComplexFloat *x,
-		const BLASIndexType incX, ComplexFloat *y, const BLASIndexType incY) {
-	cblas_cswap(n, x,
-			incX, y,
-			incY);
-}
-
-template<>
-inline void BLASWrapper::swap<ComplexDouble>(const BLASIndexType n,
-		ComplexDouble *x, const BLASIndexType incX, ComplexDouble *y,
-		const BLASIndexType incY) {
-	cblas_zswap(n, x,
-			incX, y,
-			incY);
-}
-
-#endif
-
-// -------------- copy --------------
-template<>
-inline void BLASWrapper::copy<float>(const BLASIndexType n, const float *x,
-		const BLASIndexType incX, float *y, const BLASIndexType incY) {
-	cblas_scopy(n, x,
-			incX, y,
-			incY);
-}
-
-template<>
-inline void BLASWrapper::copy<double>(const BLASIndexType n, const double *x,
-		const BLASIndexType incX, double *y, const BLASIndexType incY) {
-	cblas_dcopy(n, x,
-			incX, y,
-			incY);
-}
-
-#ifdef SCAI_COMPLEX_SUPPORTED
-
-template<>
-inline void BLASWrapper::copy<ComplexFloat>(const BLASIndexType n,
-		const ComplexFloat *x, const BLASIndexType incX, ComplexFloat *y,
-		const BLASIndexType incY) {
-	cblas_ccopy(n, x,
-			incX, y,
-			incY);
-}
-
-template<>
-inline void BLASWrapper::copy<ComplexDouble>(const BLASIndexType n,
-		const ComplexDouble *x, const BLASIndexType incX, ComplexDouble *y,
-		const BLASIndexType incY) {
-	cblas_zcopy(n, x,
-			incX, y,
-			incY);
-}
-
-#endif
-
-// -------------- axpy --------------
-template<>
-inline void BLASWrapper::axpy<float>(const BLASIndexType n, const float alpha,
-		const float *x, const BLASIndexType incX, float *y, const BLASIndexType incY) {
-	cblas_saxpy(n, alpha, x,
-			incX, y,
-			incY);
-}
-
-template<>
-inline void BLASWrapper::axpy<double>(const BLASIndexType n, const double alpha,
-		const double *x, const BLASIndexType incX, double *y,
-		const BLASIndexType incY) {
-	cblas_daxpy(n, alpha, x,
-			incX, y,
-			incY);
-}
-
-#ifdef SCAI_COMPLEX_SUPPORTED
-
-template<>
-inline void BLASWrapper::axpy<ComplexFloat>(const BLASIndexType n,
-		const ComplexFloat alpha, const ComplexFloat *x, const BLASIndexType incX,
-		ComplexFloat *y, const BLASIndexType incY) {
-	// Attention: alpha is here passed by a pointer
-	cblas_caxpy(n, &alpha, x,
-			incX, y,
-			incY);
-}
-
-template<>
-inline void BLASWrapper::axpy<ComplexDouble>(const BLASIndexType n,
-		const ComplexDouble alpha, const ComplexDouble *x, const BLASIndexType incX,
-		ComplexDouble *y, const BLASIndexType incY) {
-	// Attention: alpha is here passed by a pointer
-	cblas_zaxpy(n, &alpha, x,
-			incX, y,
-			incY);
-}
-
-#endif 
-
-// -------------- dot --------------
-template<>
-inline float BLASWrapper::dot<float>(const BLASIndexType n, const float *x,
-		const BLASIndexType incX, const float *y, const BLASIndexType incY) {
-	return cblas_sdot(n, x,
-			incX, y,
-			incY);
-}
-
-template<>
-inline double BLASWrapper::dot<double>(const BLASIndexType n, const double *x,
-		const BLASIndexType incX, const double *y, const BLASIndexType incY) {
-	return cblas_ddot(n, x,
-			incX, y,
-			incY);
-}
-
-#ifdef SCAI_COMPLEX_SUPPORTED
-
-template<>
-inline ComplexFloat BLASWrapper::dot<ComplexFloat>(const BLASIndexType n,
-		const ComplexFloat *x, const BLASIndexType incX, const ComplexFloat *y,
-		const BLASIndexType incY) {
-	ComplexFloat dotu;
-	cblas_cdotc_sub(n, x,
-			incX, y,
-			incY, &dotu);
-	return dotu;
-}
-
-template<>
-inline ComplexDouble BLASWrapper::dot<ComplexDouble>(const BLASIndexType n,
-		const ComplexDouble *x, const BLASIndexType incX, const ComplexDouble *y,
-		const BLASIndexType incY) {
-	ComplexDouble dotu;
-	cblas_zdotc_sub(n, x,
-			incX, y,
-			incY, &dotu);
-	return dotu;
-}
-
-#endif
-
-// -------------- gemv --------------
-template<>
-inline void BLASWrapper::gemv<float>(const CBLAS_ORDER order,
-		const CBLAS_TRANSPOSE transA, const BLASIndexType m, const BLASIndexType n,
-		const float alpha, const float* A, const BLASIndexType lda, const float* x,
-		const BLASIndexType incX, const float beta, float* y,
-		const BLASIndexType incY) {
-	cblas_sgemv(order, transA, m, n, alpha, A, lda,
-			x, incX, beta, y,
-			incY);
-}
-
-template<>
-inline void BLASWrapper::gemv<double>(const CBLAS_ORDER order,
-		const CBLAS_TRANSPOSE transA, const BLASIndexType m, const BLASIndexType n,
-		const double alpha, const double* A, const BLASIndexType lda,
-		const double* x, const BLASIndexType incX, const double beta, double* y,
-		const BLASIndexType incY) {
-	cblas_dgemv(order, transA, m, n, alpha, A, lda,
-			x, incX, beta, y,
-			incY);
-}
-
-#ifdef SCAI_COMPLEX_SUPPORTED
-
-template<>
-inline void BLASWrapper::gemv<ComplexFloat>(const CBLAS_ORDER order,
-		const CBLAS_TRANSPOSE transA, const BLASIndexType m, const BLASIndexType n,
-		const ComplexFloat alpha, const ComplexFloat* A, const BLASIndexType lda,
-		const ComplexFloat* x, const BLASIndexType incX, const ComplexFloat beta,
-		ComplexFloat* y, const BLASIndexType incY) {
-	// Attention: alpha, beta must be passed here as a pointer
-	cblas_cgemv(order, transA, m, n, &alpha, A, lda,
-			x, incX, &beta, y,
-			incY);
-}
-
-template<>
-inline void BLASWrapper::gemv<ComplexDouble>(const CBLAS_ORDER order,
-		const CBLAS_TRANSPOSE transA, const BLASIndexType m, const BLASIndexType n,
-		const ComplexDouble alpha, const ComplexDouble* A, const BLASIndexType lda,
-		const ComplexDouble* x, const BLASIndexType incX, const ComplexDouble beta,
-		ComplexDouble* y, const BLASIndexType incY) {
-	// Attention: alpha, beta must be passed here as a pointer
-	cblas_zgemv(order, transA, m, n, &alpha, A, lda,
-			x, incX, &beta, y,
-			incY);
-}
-
-#endif
-
-// -------------- gemm --------------
-template<>
-inline void BLASWrapper::gemm<float>(const CBLAS_ORDER order,
-		const CBLAS_TRANSPOSE transA, const CBLAS_TRANSPOSE transB,
-		const BLASIndexType m, const BLASIndexType n, const BLASIndexType k,
-		const float alpha, const float* A, const BLASIndexType lda, const float* B,
-		const BLASIndexType ldb, const float beta, float* C, const BLASIndexType ldc) {
-	cblas_sgemm(order, transA, transB, m, n, k,
-			alpha, A, lda, B, ldb, beta, C, ldc);
-}
-
-template<>
-inline void BLASWrapper::gemm<double>(const CBLAS_ORDER order,
-		const CBLAS_TRANSPOSE transA, const CBLAS_TRANSPOSE transB,
-		const BLASIndexType m, const BLASIndexType n, const BLASIndexType k,
-		const double alpha, const double* A, const BLASIndexType lda,
-		const double* B, const BLASIndexType ldb, const double beta, double* C,
-		const BLASIndexType ldc) {
-	cblas_dgemm(order, transA, transB, m, n, k,
-			alpha, A, lda, B, ldb, beta, C, ldc);
-}
-
-#ifdef SCAI_COMPLEX_SUPPORTED
-
-template<>
-inline void BLASWrapper::gemm<ComplexFloat>(const CBLAS_ORDER order,
-		const CBLAS_TRANSPOSE transA, const CBLAS_TRANSPOSE transB,
-		const BLASIndexType m, const BLASIndexType n, const BLASIndexType k,
-		const ComplexFloat alpha, const ComplexFloat* A, const BLASIndexType lda,
-		const ComplexFloat* B, const BLASIndexType ldb, const ComplexFloat beta,
-		ComplexFloat* C, const BLASIndexType ldc) {
-	// Attention: alpha and beta are passed by a pointer
-	cblas_cgemm(order, transA, transB, m, n, k,
-			&alpha, A, lda, B, ldb, &beta, C, ldc);
-}
-
-template<>
-inline void BLASWrapper::gemm<ComplexDouble>(const CBLAS_ORDER order,
-		const CBLAS_TRANSPOSE transA, const CBLAS_TRANSPOSE transB,
-		const BLASIndexType m, const BLASIndexType n, const BLASIndexType k,
-		const ComplexDouble alpha, const ComplexDouble* A, const BLASIndexType lda,
-		const ComplexDouble* B, const BLASIndexType ldb, const ComplexDouble beta,
-		ComplexDouble* C, const BLASIndexType ldc) {
-	// Attention: alpha and beta are passed by a pointer
-	cblas_zgemm(order, transA, transB, m, n, k,
-			&alpha, A, lda, B, ldb, &beta, C, ldc);
-}
-
-#endif
+//
+//// -------------- scal --------------
+//template<>
+//inline void BLASWrapper::scal<float>(const BLASIndexType n, const float alpha,
+//		float *x, const BLASIndexType incX) {
+//	cblas_sscal(n, alpha, x,
+//			incX);
+//}
+//
+//template<>
+//inline void BLASWrapper::scal<double>(const BLASIndexType n, const double alpha,
+//		double *x, const BLASIndexType incX) {
+//	cblas_dscal(n, alpha, x,
+//			incX);
+//}
+//
+//#ifdef SCAI_COMPLEX_SUPPORTED
+//
+//template<>
+//inline void BLASWrapper::scal<ComplexFloat>(const BLASIndexType n,
+//		const ComplexFloat alpha, ComplexFloat *x, const BLASIndexType incX) {
+//	// Attention: alpha is here passed by a pointer
+//	cblas_cscal(n, &alpha, x,
+//			incX);
+//}
+//
+//template<>
+//inline void BLASWrapper::scal<ComplexDouble>(const BLASIndexType n,
+//		const ComplexDouble alpha, ComplexDouble *x, const BLASIndexType incX) {
+//	// Attention: alpha is here passed by a pointer
+//	cblas_zscal(n, &alpha, x,
+//			incX);
+//}
+//
+//#endif
+//
+//// -------------- nrm2 --------------
+//template<>
+//inline float BLASWrapper::nrm2<float>(const BLASIndexType n, const float *x,
+//		const BLASIndexType incX) {
+//	return cblas_snrm2(n, x,
+//			incX);
+//}
+//
+//template<>
+//inline double BLASWrapper::nrm2<double>(const BLASIndexType n, const double *x,
+//		const BLASIndexType incX) {
+//	return cblas_dnrm2(n, x,
+//			incX);
+//}
+//
+//#ifdef SCAI_COMPLEX_SUPPORTED
+//
+//template<>
+//inline ComplexFloat BLASWrapper::nrm2<ComplexFloat>(const BLASIndexType n,
+//		const ComplexFloat *x, const BLASIndexType incX) {
+//	float res = cblas_scnrm2(n, x,
+//			incX);
+//	return ComplexFloat(res);
+//}
+//
+//template<>
+//inline ComplexDouble BLASWrapper::nrm2<ComplexDouble>(const BLASIndexType n,
+//		const ComplexDouble *x, const BLASIndexType incX) {
+//	double res = cblas_dznrm2(n, x,
+//			incX);
+//	return ComplexDouble(res);
+//}
+//
+//#endif
+//
+//// -------------- asum --------------
+//template<>
+//inline float BLASWrapper::asum<float>(const BLASIndexType n, const float *x,
+//		BLASIndexType incX) {
+//	return cblas_sasum(n, x,
+//			incX);
+//}
+//
+//template<>
+//inline double BLASWrapper::asum<double>(const BLASIndexType n, const double *x,
+//		BLASIndexType incX) {
+//	return cblas_dasum(n, x,
+//			incX);
+//}
+//
+//#ifdef SCAI_COMPLEX_SUPPORTED
+//
+//template<>
+//inline ComplexFloat BLASWrapper::asum<ComplexFloat>(const BLASIndexType n,
+//		const ComplexFloat *x, BLASIndexType incX) {
+//	float res = cblas_scasum(n, x,
+//			incX);
+//	return ComplexFloat(res);
+//}
+//
+//template<>
+//inline ComplexDouble BLASWrapper::asum<ComplexDouble>(const BLASIndexType n,
+//		const ComplexDouble *x, BLASIndexType incX) {
+//	double res = cblas_dzasum(n, x,
+//			incX);
+//	return ComplexDouble(res);
+//}
+//
+//#endif
+//
+//// -------------- iamax --------------
+//template<>
+//inline BLASWrapper::BLASIndexType BLASWrapper::iamax<float>(const BLASIndexType n, const float *x,
+//		const BLASIndexType incX) {
+//	return cblas_isamax(n, x,
+//			incX);
+//}
+//
+//template<>
+//inline BLASWrapper::BLASIndexType BLASWrapper::iamax<double>(const BLASIndexType n, const double *x,
+//		const BLASIndexType incX) {
+//	return cblas_idamax(n, x,
+//			incX);
+//}
+//
+//#ifdef SCAI_COMPLEX_SUPPORTED
+//
+//template<>
+//inline BLASWrapper::BLASIndexType BLASWrapper::iamax<ComplexFloat>(const BLASIndexType n,
+//		const ComplexFloat *x, const BLASIndexType incX) {
+//	return cblas_icamax(n, x,
+//			incX);
+//}
+//
+//template<>
+//inline BLASWrapper::BLASIndexType BLASWrapper::iamax<ComplexDouble>(const BLASIndexType n,
+//		const ComplexDouble *x, const BLASIndexType incX) {
+//	return cblas_izamax(n, x,
+//			incX);
+//}
+//
+//#endif
+//
+//// -------------- swap --------------
+//template<>
+//inline void BLASWrapper::swap<float>(const BLASIndexType n, float *x,
+//		const BLASIndexType incX, float *y, const BLASIndexType incY) {
+//	cblas_sswap(n, x,
+//			incX, y,
+//			incY);
+//}
+//
+//template<>
+//inline void BLASWrapper::swap<double>(const BLASIndexType n, double *x,
+//		const BLASIndexType incX, double *y, const BLASIndexType incY) {
+//	cblas_dswap(n, x,
+//			incX, y,
+//			incY);
+//}
+//
+//#ifdef SCAI_COMPLEX_SUPPORTED
+//
+//template<>
+//inline void BLASWrapper::swap<ComplexFloat>(const BLASIndexType n, ComplexFloat *x,
+//		const BLASIndexType incX, ComplexFloat *y, const BLASIndexType incY) {
+//	cblas_cswap(n, x,
+//			incX, y,
+//			incY);
+//}
+//
+//template<>
+//inline void BLASWrapper::swap<ComplexDouble>(const BLASIndexType n,
+//		ComplexDouble *x, const BLASIndexType incX, ComplexDouble *y,
+//		const BLASIndexType incY) {
+//	cblas_zswap(n, x,
+//			incX, y,
+//			incY);
+//}
+//
+//#endif
+//
+//// -------------- copy --------------
+//template<>
+//inline void BLASWrapper::copy<float>(const BLASIndexType n, const float *x,
+//		const BLASIndexType incX, float *y, const BLASIndexType incY) {
+//	cblas_scopy(n, x,
+//			incX, y,
+//			incY);
+//}
+//
+//template<>
+//inline void BLASWrapper::copy<double>(const BLASIndexType n, const double *x,
+//		const BLASIndexType incX, double *y, const BLASIndexType incY) {
+//	cblas_dcopy(n, x,
+//			incX, y,
+//			incY);
+//}
+//
+//#ifdef SCAI_COMPLEX_SUPPORTED
+//
+//template<>
+//inline void BLASWrapper::copy<ComplexFloat>(const BLASIndexType n,
+//		const ComplexFloat *x, const BLASIndexType incX, ComplexFloat *y,
+//		const BLASIndexType incY) {
+//	cblas_ccopy(n, x,
+//			incX, y,
+//			incY);
+//}
+//
+//template<>
+//inline void BLASWrapper::copy<ComplexDouble>(const BLASIndexType n,
+//		const ComplexDouble *x, const BLASIndexType incX, ComplexDouble *y,
+//		const BLASIndexType incY) {
+//	cblas_zcopy(n, x,
+//			incX, y,
+//			incY);
+//}
+//
+//#endif
+//
+//// -------------- axpy --------------
+//template<>
+//inline void BLASWrapper::axpy<float>(const BLASIndexType n, const float alpha,
+//		const float *x, const BLASIndexType incX, float *y, const BLASIndexType incY) {
+//	cblas_saxpy(n, alpha, x,
+//			incX, y,
+//			incY);
+//}
+//
+//template<>
+//inline void BLASWrapper::axpy<double>(const BLASIndexType n, const double alpha,
+//		const double *x, const BLASIndexType incX, double *y,
+//		const BLASIndexType incY) {
+//	cblas_daxpy(n, alpha, x,
+//			incX, y,
+//			incY);
+//}
+//
+//#ifdef SCAI_COMPLEX_SUPPORTED
+//
+//template<>
+//inline void BLASWrapper::axpy<ComplexFloat>(const BLASIndexType n,
+//		const ComplexFloat alpha, const ComplexFloat *x, const BLASIndexType incX,
+//		ComplexFloat *y, const BLASIndexType incY) {
+//	// Attention: alpha is here passed by a pointer
+//	cblas_caxpy(n, &alpha, x,
+//			incX, y,
+//			incY);
+//}
+//
+//template<>
+//inline void BLASWrapper::axpy<ComplexDouble>(const BLASIndexType n,
+//		const ComplexDouble alpha, const ComplexDouble *x, const BLASIndexType incX,
+//		ComplexDouble *y, const BLASIndexType incY) {
+//	// Attention: alpha is here passed by a pointer
+//	cblas_zaxpy(n, &alpha, x,
+//			incX, y,
+//			incY);
+//}
+//
+//#endif
+//
+//// -------------- dot --------------
+//template<>
+//inline float BLASWrapper::dot<float>(const BLASIndexType n, const float *x,
+//		const BLASIndexType incX, const float *y, const BLASIndexType incY) {
+//	return cblas_sdot(n, x,
+//			incX, y,
+//			incY);
+//}
+//
+//template<>
+//inline double BLASWrapper::dot<double>(const BLASIndexType n, const double *x,
+//		const BLASIndexType incX, const double *y, const BLASIndexType incY) {
+//	return cblas_ddot(n, x,
+//			incX, y,
+//			incY);
+//}
+//
+//#ifdef SCAI_COMPLEX_SUPPORTED
+//
+//template<>
+//inline ComplexFloat BLASWrapper::dot<ComplexFloat>(const BLASIndexType n,
+//		const ComplexFloat *x, const BLASIndexType incX, const ComplexFloat *y,
+//		const BLASIndexType incY) {
+//	ComplexFloat dotu;
+//	cblas_cdotc_sub(n, x,
+//			incX, y,
+//			incY, &dotu);
+//	return dotu;
+//}
+//
+//template<>
+//inline ComplexDouble BLASWrapper::dot<ComplexDouble>(const BLASIndexType n,
+//		const ComplexDouble *x, const BLASIndexType incX, const ComplexDouble *y,
+//		const BLASIndexType incY) {
+//	ComplexDouble dotu;
+//	cblas_zdotc_sub(n, x,
+//			incX, y,
+//			incY, &dotu);
+//	return dotu;
+//}
+//
+//#endif
+//
+//// -------------- gemv --------------
+//template<>
+//inline void BLASWrapper::gemv<float>(const CBLAS_ORDER order,
+//		const CBLAS_TRANSPOSE transA, const BLASIndexType m, const BLASIndexType n,
+//		const float alpha, const float* A, const BLASIndexType lda, const float* x,
+//		const BLASIndexType incX, const float beta, float* y,
+//		const BLASIndexType incY) {
+//	cblas_sgemv(order, transA, m, n, alpha, A, lda,
+//			x, incX, beta, y,
+//			incY);
+//}
+//
+//template<>
+//inline void BLASWrapper::gemv<double>(const CBLAS_ORDER order,
+//		const CBLAS_TRANSPOSE transA, const BLASIndexType m, const BLASIndexType n,
+//		const double alpha, const double* A, const BLASIndexType lda,
+//		const double* x, const BLASIndexType incX, const double beta, double* y,
+//		const BLASIndexType incY) {
+//	cblas_dgemv(order, transA, m, n, alpha, A, lda,
+//			x, incX, beta, y,
+//			incY);
+//}
+//
+//#ifdef SCAI_COMPLEX_SUPPORTED
+//
+//template<>
+//inline void BLASWrapper::gemv<ComplexFloat>(const CBLAS_ORDER order,
+//		const CBLAS_TRANSPOSE transA, const BLASIndexType m, const BLASIndexType n,
+//		const ComplexFloat alpha, const ComplexFloat* A, const BLASIndexType lda,
+//		const ComplexFloat* x, const BLASIndexType incX, const ComplexFloat beta,
+//		ComplexFloat* y, const BLASIndexType incY) {
+//	// Attention: alpha, beta must be passed here as a pointer
+//	cblas_cgemv(order, transA, m, n, &alpha, A, lda,
+//			x, incX, &beta, y,
+//			incY);
+//}
+//
+//template<>
+//inline void BLASWrapper::gemv<ComplexDouble>(const CBLAS_ORDER order,
+//		const CBLAS_TRANSPOSE transA, const BLASIndexType m, const BLASIndexType n,
+//		const ComplexDouble alpha, const ComplexDouble* A, const BLASIndexType lda,
+//		const ComplexDouble* x, const BLASIndexType incX, const ComplexDouble beta,
+//		ComplexDouble* y, const BLASIndexType incY) {
+//	// Attention: alpha, beta must be passed here as a pointer
+//	cblas_zgemv(order, transA, m, n, &alpha, A, lda,
+//			x, incX, &beta, y,
+//			incY);
+//}
+//
+//#endif
+//
+//// -------------- gemm --------------
+//template<>
+//inline void BLASWrapper::gemm<float>(const CBLAS_ORDER order,
+//		const CBLAS_TRANSPOSE transA, const CBLAS_TRANSPOSE transB,
+//		const BLASIndexType m, const BLASIndexType n, const BLASIndexType k,
+//		const float alpha, const float* A, const BLASIndexType lda, const float* B,
+//		const BLASIndexType ldb, const float beta, float* C, const BLASIndexType ldc) {
+//	cblas_sgemm(order, transA, transB, m, n, k,
+//			alpha, A, lda, B, ldb, beta, C, ldc);
+//}
+//
+//template<>
+//inline void BLASWrapper::gemm<double>(const CBLAS_ORDER order,
+//		const CBLAS_TRANSPOSE transA, const CBLAS_TRANSPOSE transB,
+//		const BLASIndexType m, const BLASIndexType n, const BLASIndexType k,
+//		const double alpha, const double* A, const BLASIndexType lda,
+//		const double* B, const BLASIndexType ldb, const double beta, double* C,
+//		const BLASIndexType ldc) {
+//	cblas_dgemm(order, transA, transB, m, n, k,
+//			alpha, A, lda, B, ldb, beta, C, ldc);
+//}
+//
+//#ifdef SCAI_COMPLEX_SUPPORTED
+//
+//template<>
+//inline void BLASWrapper::gemm<ComplexFloat>(const CBLAS_ORDER order,
+//		const CBLAS_TRANSPOSE transA, const CBLAS_TRANSPOSE transB,
+//		const BLASIndexType m, const BLASIndexType n, const BLASIndexType k,
+//		const ComplexFloat alpha, const ComplexFloat* A, const BLASIndexType lda,
+//		const ComplexFloat* B, const BLASIndexType ldb, const ComplexFloat beta,
+//		ComplexFloat* C, const BLASIndexType ldc) {
+//	// Attention: alpha and beta are passed by a pointer
+//	cblas_cgemm(order, transA, transB, m, n, k,
+//			&alpha, A, lda, B, ldb, &beta, C, ldc);
+//}
+//
+//template<>
+//inline void BLASWrapper::gemm<ComplexDouble>(const CBLAS_ORDER order,
+//		const CBLAS_TRANSPOSE transA, const CBLAS_TRANSPOSE transB,
+//		const BLASIndexType m, const BLASIndexType n, const BLASIndexType k,
+//		const ComplexDouble alpha, const ComplexDouble* A, const BLASIndexType lda,
+//		const ComplexDouble* B, const BLASIndexType ldb, const ComplexDouble beta,
+//		ComplexDouble* C, const BLASIndexType ldc) {
+//	// Attention: alpha and beta are passed by a pointer
+//	cblas_zgemm(order, transA, transB, m, n, k,
+//			&alpha, A, lda, B, ldb, &beta, C, ldc);
+//}
+//
+//#endif
 
 } /* end namespace blaskernel */
 

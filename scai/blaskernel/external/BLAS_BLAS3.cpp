@@ -36,7 +36,8 @@
 
 // others
 #include <scai/blaskernel/BLASKernelTrait.hpp>
-#include <scai/blaskernel/external/BLASWrapper.hpp>
+//#include <scai/blaskernel/external/BLASWrapper.hpp>
+#include <scai/blaskernel/external/BLASWrapperNEW.hpp>
 #include <scai/blaskernel/cblas.hpp>
 
 // internal scai libraries
@@ -95,7 +96,42 @@ void BLAS_BLAS3::gemm(
         SCAI_LOG_WARN( logger, "asynchronous execution not supported yet" )
     }
 
-    BLASWrapper::gemm( order, transA, transB, static_cast<BLASWrapper::BLASIndexType>( m ), static_cast<BLASWrapper::BLASIndexType>( n ), static_cast<BLASWrapper::BLASIndexType>( k ), alpha, A, static_cast<BLASWrapper::BLASIndexType>( lda ), B, static_cast<BLASWrapper::BLASIndexType>( ldb ), beta, C, static_cast<BLASWrapper::BLASIndexType>( ldc ));
+	_BLASWrapper::BLASTrans ta, tb;
+
+	switch( transA )
+	{
+		case CblasNoTrans:
+			ta = 'N';
+			break;
+		case CblasTrans:
+			ta = 'T';
+			break;
+		case CblasConjTrans:
+			ta = 'C';
+			break;
+	}
+
+	switch( transB )
+	{
+		case CblasNoTrans:
+			tb = 'N';
+			break;
+		case CblasTrans:
+			tb = 'T';
+			break;
+		case CblasConjTrans:
+			tb = 'C';
+			break;
+	}
+
+    if( order == CblasColMajor )
+    {
+    	BLASWrapper<ValueType>::gemm( ta, tb, static_cast<_BLASWrapper::BLASIndexType>( m ), static_cast<_BLASWrapper::BLASIndexType>( n ), static_cast<_BLASWrapper::BLASIndexType>( k ), alpha, A, static_cast<_BLASWrapper::BLASIndexType>( lda ), B, static_cast<_BLASWrapper::BLASIndexType>( ldb ), beta, C, static_cast<_BLASWrapper::BLASIndexType>( ldc ));
+    }
+    else if( order == CblasRowMajor )
+    {
+    	BLASWrapper<ValueType>::gemm( ta, tb, static_cast<_BLASWrapper::BLASIndexType>( n ), static_cast<_BLASWrapper::BLASIndexType>( m ), static_cast<_BLASWrapper::BLASIndexType>( k ), alpha, B, static_cast<_BLASWrapper::BLASIndexType>( ldb ), A, static_cast<_BLASWrapper::BLASIndexType>( lda ), beta, C, static_cast<_BLASWrapper::BLASIndexType>( ldc ));
+    }
 }
 
 /* --------------------------------------------------------------------------- */
