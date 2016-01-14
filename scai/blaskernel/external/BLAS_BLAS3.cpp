@@ -96,7 +96,7 @@ void BLAS_BLAS3::gemm(
         SCAI_LOG_WARN( logger, "asynchronous execution not supported yet" )
     }
 
-	_BLASWrapper::BLASTrans ta, tb;
+    BLASDefinitions::BLASTrans ta, tb;
 
 	switch( transA )
 	{
@@ -126,11 +126,11 @@ void BLAS_BLAS3::gemm(
 
     if( order == CblasColMajor )
     {
-    	BLASWrapper<ValueType>::gemm( ta, tb, static_cast<_BLASWrapper::BLASIndexType>( m ), static_cast<_BLASWrapper::BLASIndexType>( n ), static_cast<_BLASWrapper::BLASIndexType>( k ), alpha, A, static_cast<_BLASWrapper::BLASIndexType>( lda ), B, static_cast<_BLASWrapper::BLASIndexType>( ldb ), beta, C, static_cast<_BLASWrapper::BLASIndexType>( ldc ));
+    	BLASWrapper<ValueType>::gemm( ta, tb, static_cast<BLASDefinitions::BLASIndexType>( m ), static_cast<BLASDefinitions::BLASIndexType>( n ), static_cast<BLASDefinitions::BLASIndexType>( k ), alpha, A, static_cast<BLASDefinitions::BLASIndexType>( lda ), B, static_cast<BLASDefinitions::BLASIndexType>( ldb ), beta, C, static_cast<BLASDefinitions::BLASIndexType>( ldc ));
     }
     else if( order == CblasRowMajor )
     {
-    	BLASWrapper<ValueType>::gemm( ta, tb, static_cast<_BLASWrapper::BLASIndexType>( n ), static_cast<_BLASWrapper::BLASIndexType>( m ), static_cast<_BLASWrapper::BLASIndexType>( k ), alpha, B, static_cast<_BLASWrapper::BLASIndexType>( ldb ), A, static_cast<_BLASWrapper::BLASIndexType>( lda ), beta, C, static_cast<_BLASWrapper::BLASIndexType>( ldc ));
+    	BLASWrapper<ValueType>::gemm( ta, tb, static_cast<BLASDefinitions::BLASIndexType>( n ), static_cast<BLASDefinitions::BLASIndexType>( m ), static_cast<BLASDefinitions::BLASIndexType>( k ), alpha, B, static_cast<BLASDefinitions::BLASIndexType>( ldb ), A, static_cast<BLASDefinitions::BLASIndexType>( lda ), beta, C, static_cast<BLASDefinitions::BLASIndexType>( ldc ));
     }
 }
 

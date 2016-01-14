@@ -39,7 +39,6 @@ set( CLASSES
 )
 
 set( HEADERS
-        BLASWrapper
         LAPACKWrapper
         LAPACKeWrapper
         BLASWrapperNEW
