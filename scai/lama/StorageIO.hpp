@@ -125,6 +125,8 @@ public:
 
     static bool fileExists( const std::string& fileName );
 
+    static bool hasSuffix( const std::string& fileName, const std::string& suffix );
+   
 protected:
 
     /** Logger for this class */

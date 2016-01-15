@@ -876,6 +876,14 @@ bool _StorageIO::fileExists( const std::string& fileName )
 
 /* -------------------------------------------------------------------------- */
 
+bool _StorageIO::hasSuffix( const std::string& fileName, const std::string& suffix)
+{
+    return fileName.size() >= suffix.size() &&
+           fileName.compare(fileName.size() - suffix.size(), suffix.size(), suffix) == 0;
+}
+
+/* -------------------------------------------------------------------------- */
+
 #define AMG_FILE_MATRIX_HEADER_SUFFIX "frm"
 #define MATRIX_MARKET_FILE_SUFFIX     "mtx"
 
@@ -1219,18 +1227,6 @@ void _StorageIO::readMMHeader(
 
 /* -------------------------------------------------------------------------- */
 
-static bool hasSuffix( const std::string& name, const char* suffix )
-{
-    size_t lenSuffix = strlen( suffix );
-
-    if( name.size() >= lenSuffix )
-    {
-        return name.substr( name.size() - lenSuffix, lenSuffix ) == suffix;
-    }
-
-    return false;
-}
-
 template<typename ValueType>
 void StorageIO<ValueType>::writeCSRToFile(
     const PartitionId size,
@@ -1303,7 +1299,7 @@ void StorageIO<ValueType>::writeCSRToFile(
         {
             std::string name = fileName;
 
-            if( fileName.substr( fileName.size() - 4, 4 ) != ".mtx" )
+            if ( !hasSuffix( name, ".mtx" ) )
             {
                 name += ".mtx";
             }
