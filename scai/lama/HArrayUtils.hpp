@@ -41,6 +41,7 @@
 #include <scai/hmemo.hpp>
 
 #include <scai/logging.hpp>
+#include <scai/common/ReductionOp.hpp>
 
 namespace scai
 {
@@ -72,8 +73,18 @@ public:
      */
     static void assign( hmemo::_HArray& target, const hmemo::_HArray& source, hmemo::ContextPtr context = hmemo::ContextPtr() );
 
+    static void set( 
+        hmemo::_HArray& target, 
+        const hmemo::_HArray& source, 
+        const common::reduction::ReductionOp op,
+        hmemo::ContextPtr context = hmemo::ContextPtr() );
+
     template<typename ValueType1,typename ValueType2>
-    static void assignImpl( hmemo::HArray<ValueType1>& target, const hmemo::HArray<ValueType2>& source, hmemo::ContextPtr context );
+    static void setImpl( 
+        hmemo::HArray<ValueType1>& target, 
+        const hmemo::HArray<ValueType2>& source, 
+        const common::reduction::ReductionOp op, 
+        hmemo::ContextPtr context );
 
     template<typename ValueType1,typename ValueType2>
     static void gather(
@@ -82,10 +93,17 @@ public:
         const hmemo::HArray<IndexType>& index );
 
     template<typename ValueType1>
-    static void assignScalar( hmemo::HArray<ValueType1>& target, const ValueType1 value, hmemo::ContextPtr context )
-                    __attribute__( ( noinline ) );
+    static void setScalar( 
+        hmemo::HArray<ValueType1>& target,
+        const ValueType1 value, 
+        const common::reduction::ReductionOp op, hmemo::ContextPtr context )
+        __attribute__( ( noinline ) );
 
-    static void assignScalar( hmemo::_HArray& target, const Scalar& value, hmemo::ContextPtr context );
+    static void setScalar( 
+        hmemo::_HArray& target, 
+        const Scalar& value, 
+        const common::reduction::ReductionOp op, 
+        hmemo::ContextPtr context );
 
     /** This method sets a single value in a heterogeneous array.
      *
@@ -134,7 +152,7 @@ public:
 private:
 
     template<typename ValueType>
-    static void assignImpl1( hmemo::HArray<ValueType>& target, const hmemo::_HArray& source, hmemo::ContextPtr context );
+    static void setImpl1( hmemo::HArray<ValueType>& target, const hmemo::_HArray& source, const common::reduction::ReductionOp op, hmemo::ContextPtr context );
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 };

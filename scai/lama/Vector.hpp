@@ -280,10 +280,17 @@ public:
      */
     virtual void readFromFile( const std::string& filename ) = 0;
 
+    /**
+     * @brief write the vector to an output file
+     *
+     * @param[in] fileName is the name of the output file (suffix might be added according to the file type)
+     * @param[in] fileType format of the output file, default is binary
+     * @param[in] dataType representation type for output values, default is same type as vector
+     */
     virtual void writeToFile(
-        const std::string& fileBaseName,
-        const File::FileType fileType = File::XDR,
-        const common::scalar::ScalarType dataType = common::scalar::DOUBLE ) const = 0;
+        const std::string& fileName,
+        const File::FileType fileType = File::BINARY,
+        const common::scalar::ScalarType dataType = common::scalar::INTERNAL ) const = 0;
 
     /**
      * @brief get a vector with all local values

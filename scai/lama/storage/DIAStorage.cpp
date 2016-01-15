@@ -217,7 +217,7 @@ void DIAStorage<ValueType>::setDiagonalImpl( const ValueType value )
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        setVal[loc]( wValues.get(), numDiagonalElements, value );
+        setVal[loc]( wValues.get(), numDiagonalElements, value, common::reduction::COPY );
     }
 }
 
@@ -271,7 +271,7 @@ void DIAStorage<ValueType>::getDiagonalImpl( HArray<OtherType>& diagonal ) const
 
     // Diagonal is first column
 
-    set[ loc ]( wDiagonal.get(), rValues.get(), numDiagonalElements );
+    set[ loc ]( wDiagonal.get(), rValues.get(), numDiagonalElements, common::reduction::COPY );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -293,7 +293,7 @@ void DIAStorage<ValueType>::setDiagonalImpl( const HArray<OtherType>& diagonal )
     ReadAccess<OtherType> rDiagonal( diagonal, loc );
     WriteAccess<ValueType> wValues( mValues, loc );
 
-    set[loc]( wValues.get(), rDiagonal.get(), numDiagonalElements );
+    set[loc]( wValues.get(), rDiagonal.get(), numDiagonalElements, common::reduction::COPY );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -421,7 +421,7 @@ void DIAStorage<ValueType>::setIdentity( const IndexType size )
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        setVal[ loc ]( wOffset.get(), 1, 0 );
+        setVal[ loc ]( wOffset.get(), 1, 0, common::reduction::COPY );
     }
 
     {
@@ -433,7 +433,7 @@ void DIAStorage<ValueType>::setIdentity( const IndexType size )
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        setVal[ loc ]( values.get(), mNumRows, static_cast<ValueType>(1.0) );
+        setVal[ loc ]( values.get(), mNumRows, ValueType( 1 ), common::reduction::COPY );
     }
 
     mDiagonalProperty = true;

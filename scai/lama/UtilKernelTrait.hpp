@@ -35,13 +35,13 @@
 // for dll_import
 #include <scai/common/config.hpp>
 #include <scai/common/SCAITypes.hpp>
+#include <scai/common/ReductionOp.hpp>
 
 namespace scai
 {
 
 namespace lama
 {
-
 
 /** Structure with traits for all Utils kernels. */
 
@@ -142,9 +142,11 @@ struct UtilKernelTrait
     template<typename ValueType>
     struct setVal
     {
-        /** Set all elements of a contiguous array with a value. */
+        /** Set all elements of a contiguous array with a value. 
+         *  A reduction operator like ADD, MULT can be used to combine the new value with the old value.
+         */
 
-        typedef void ( *FuncType ) ( ValueType array[], const IndexType n, const ValueType val );
+        typedef void ( *FuncType ) ( ValueType array[], const IndexType n, const ValueType val, const common::reduction::ReductionOp op );
         static const char* getId() { return "Util.setVal"; }
     };
 
@@ -167,9 +169,9 @@ struct UtilKernelTrait
     template<typename ValueType1, typename ValueType2>
     struct set
     {
-        /** Set out[i] = in[i],  0 <= i < n */
+        /** Set out[i] <op>= in[i],  0 <= i < n , op = +, -, *, /, min, max, ... */
 
-        typedef void ( *FuncType ) ( ValueType1 out[], const ValueType2 in[], const IndexType n );
+        typedef void ( *FuncType ) ( ValueType1 out[], const ValueType2 in[], const IndexType n, const common::reduction::ReductionOp op );
         static const char* getId() { return "Util.set"; }
     };
 
@@ -270,23 +272,6 @@ struct UtilKernelTrait
         typedef void ( *FuncType ) ( ValueType array[], const IndexType n );
 
         static const char* getId() { return "Util.invert"; }
-    };
-
-    template<typename ValueType>
-    struct scale
-    {
-        /** @brief scale array of values with a value in place
-         *
-         *  @param[in,out]  values is the array with entries to scale
-         *  @param[in]      value  is the scaling factor
-         *  @param[in]      n      is the number of entries in values
-         */
-        typedef void ( *FuncType ) ( 
-            ValueType values[],
-            const ValueType value,
-            const IndexType n );
-
-        static const char* getId() { return "Util.scale"; }
     };
 
     template<typename ValueType>

@@ -284,7 +284,7 @@ void CSRStorage<ValueType>::setIdentity( const IndexType size )
         SCAI_CONTEXT_ACCESS( loc )
 
         WriteOnlyAccess<ValueType> values( mValues, loc, mNumValues );
-        setVal[loc]( values.get(), mNumRows, static_cast<ValueType>(1.0) );
+        setVal[loc]( values.get(), mNumRows, ValueType( 1 ), common::reduction::COPY );
     }
 
 
@@ -648,7 +648,7 @@ void CSRStorage<ValueType>::allocate( IndexType numRows, IndexType numColumns )
 
     // make a correct initialization for the offset array
 
-    OpenMPUtils::setVal( ia.get(), mNumRows + 1, 0 );
+    OpenMPUtils::setVal( ia.get(), mNumRows + 1, IndexType( 0 ), common::reduction::COPY  );
 
     mDiagonalProperty = false;
 }
@@ -988,7 +988,7 @@ void CSRStorage<ValueType>::getRowImpl( HArray<OtherType>& row, const IndexType 
 
     WriteOnlyAccess<OtherType> wRow( row, loc, mNumColumns );
 
-    setVal[loc]    ( wRow.get(), mNumColumns, static_cast<OtherType>( 0 ) );
+    setVal[loc]    ( wRow.get(), mNumColumns, OtherType( 0 ), common::reduction::COPY );
 
     const ReadAccess<IndexType> ja( mJa, loc );
     const ReadAccess<ValueType> values( mValues, loc );
@@ -1195,8 +1195,8 @@ void CSRStorage<ValueType>::buildCSR(
         WriteOnlyAccess<IndexType> csrIA( ia, loc, mNumRows + 1 );
         WriteOnlyAccess<IndexType> csrJA( *ja, loc, mNumValues );
 
-        setIndexes[ loc ]( csrIA.get(), inIA.get(), mNumRows + 1 );
-        setIndexes[ loc ]( csrJA.get(), inJA.get(), mNumValues );
+        setIndexes[ loc ]( csrIA.get(), inIA.get(), mNumRows + 1, common::reduction::COPY );
+        setIndexes[ loc ]( csrJA.get(), inJA.get(), mNumValues, common::reduction::COPY );
     }
 
     // copy values
@@ -1210,7 +1210,7 @@ void CSRStorage<ValueType>::buildCSR(
         ReadAccess<ValueType> inValues( mValues, loc );
         WriteOnlyAccess<OtherValueType> csrValues( *values, loc, mNumValues );
 
-        setValues[ loc ]( csrValues.get(), inValues.get(), mNumValues );
+        setValues[ loc ]( csrValues.get(), inValues.get(), mNumValues, common::reduction::COPY );
     }
 }
 

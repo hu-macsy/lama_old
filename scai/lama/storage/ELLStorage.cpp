@@ -104,7 +104,7 @@ ELLStorage<ValueType>::ELLStorage(
 
     SCAI_CONTEXT_ACCESS( loc )
 
-    setVal[loc]( ellSizes.get(), mNumRows, 0 );
+    setVal[loc]( ellSizes.get(), mNumRows, 0, common::reduction::COPY );
 
     SCAI_LOG_DEBUG( logger, "ELLStorage for matrix " << mNumRows << " x " << mNumColumns << ", no elements" )
 }
@@ -277,7 +277,7 @@ void ELLStorage<ValueType>::setIdentity( const IndexType size )
 
         WriteOnlyAccess<IndexType> ia( mIA, loc, mNumRows );
 
-        setVal[loc]( ia.get(), mNumRows, 1 );
+        setVal[loc]( ia.get(), mNumRows, 1, common::reduction::COPY );
     }
 
     {
@@ -302,7 +302,7 @@ void ELLStorage<ValueType>::setIdentity( const IndexType size )
 
         WriteOnlyAccess<ValueType> data( mValues, loc, mNumRows );
 
-        setVal[loc]( data.get(), mNumRows, static_cast<ValueType>( 1.0 ) );
+        setVal[loc]( data.get(), mNumRows, ValueType( 1 ), common::reduction::COPY );
     }
 
     mDiagonalProperty = true;
@@ -406,7 +406,7 @@ void ELLStorage<ValueType>::buildCSR(
 
         // just copy the size array mIA
 
-        set[loc]( csrIA.get(), ellSizes.get(), mNumRows );
+        set[loc]( csrIA.get(), ellSizes.get(), mNumRows, common::reduction::COPY );
 
         if( ja == NULL || values == NULL )
         {
@@ -581,10 +581,10 @@ void ELLStorage<ValueType>::setELLData(
 
     ContextPtr loc = getContextPtr();
 
-    HArrayUtils::assignImpl( mIA, ia, loc );
-    HArrayUtils::assignImpl( mJA, ja, loc );
+    HArrayUtils::setImpl( mIA, ia, common::reduction::COPY, loc );
+    HArrayUtils::setImpl( mJA, ja, common::reduction::COPY, loc );
 
-    HArrayUtils::assign( mValues, values, loc ); // supports type conversion
+    HArrayUtils::set( mValues, values, common::reduction::COPY, loc );  // also type conversion
 
     // fill up my arrays ja and values to make matrix-multiplication fast
 
@@ -639,7 +639,7 @@ void ELLStorage<ValueType>::setDiagonalImpl( const ValueType value )
 
     WriteAccess<ValueType> wValues( mValues, loc );
 
-    setVal[ loc ]( wValues.get(), numDiagonalElements, value );
+    setVal[ loc ]( wValues.get(), numDiagonalElements, value, common::reduction::COPY );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -663,7 +663,7 @@ void ELLStorage<ValueType>::setDiagonalImpl( const HArray<OtherType>& diagonal )
 
     // ELL format with diagonal property: diagonal is just the first column in mValues
 
-    set[ loc ]( wValues.get(), rDiagonal.get(), numDiagonalElements );
+    set[ loc ]( wValues.get(), rDiagonal.get(), numDiagonalElements, common::reduction::COPY );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -714,7 +714,7 @@ void ELLStorage<ValueType>::getDiagonalImpl( HArray<OtherType>& diagonal ) const
 
     SCAI_CONTEXT_ACCESS( loc )
 
-    set[loc]( wDiagonal.get(), rValues.get(), numDiagonalElements );
+    set[loc]( wDiagonal.get(), rValues.get(), numDiagonalElements, common::reduction::COPY );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -837,7 +837,7 @@ void ELLStorage<ValueType>::allocate( IndexType numRows, IndexType numColumns )
 
         WriteOnlyAccess<IndexType> ia( mIA, loc, mNumRows );
 
-        setVal[ loc ]( ia.get(), mNumRows, 0 );
+        setVal[ loc ]( ia.get(), mNumRows, 0, common::reduction::COPY );
     }
 
     mDiagonalProperty = checkDiagonalProperty();

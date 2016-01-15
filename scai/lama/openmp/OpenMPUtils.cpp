@@ -63,40 +63,6 @@ SCAI_LOG_DEF_LOGGER( OpenMPUtils::logger, "OpenMP.Utils" )
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void OpenMPUtils::scale( ValueType mValues[], const ValueType value, const IndexType n )
-{
-    SCAI_REGION( "OpenMP.Utils.scale" )
-
-    SCAI_LOG_INFO( logger, "scale, #n = " << n << ", value = " << value )
-
-    if( value == scai::common::constants::ONE )
-    {
-        return;
-    }
-
-    if( value == scai::common::constants::ZERO )
-    {
-        #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
-
-        for( IndexType i = 0; i < n; i++ )
-        {
-            mValues[i] = static_cast<ValueType>(0.0);
-        }
-    }
-    else
-    {
-        #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
-
-        for( IndexType i = 0; i < n; i++ )
-        {
-            mValues[i] *= value;
-        }
-    }
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
 void OpenMPUtils::conj( ValueType mValues[], const IndexType n )
 {
     SCAI_REGION( "OpenMP.Utils.conj" )
@@ -129,16 +95,16 @@ void OpenMPUtils::setScale(
 
     // alias of outValues == inValues is no problem
 
-    if ( value == scai::common::constants::ZERO )
+    if ( value == common::constants::ZERO )
     {
         // Important : inValues might be undefined
-        setVal( outValues, n, value );
+        setVal( outValues, n, value, common::reduction:: COPY );
         return;
     }
 
-    if ( value == scai::common::constants::ONE )
+    if ( value == common::constants::ONE )
     {
-        set( outValues, inValues, n );
+        set( outValues, inValues, n, common::reduction:: COPY );
         return;
     }
 
@@ -180,17 +146,64 @@ ValueType OpenMPUtils::sum( const ValueType array[], const IndexType n )
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void OpenMPUtils::setVal( ValueType array[], const IndexType n, const ValueType val )
+void OpenMPUtils::setVal( ValueType array[], const IndexType n, const ValueType val, const common::reduction::ReductionOp op )
 {
     SCAI_REGION( "OpenMP.Utils.setVal" )
 
     SCAI_LOG_DEBUG( logger, "setVal<" << TypeTraits<ValueType>::id() << ">: " << "array[" << n << "] = " << val )
 
-    #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
-
-    for( IndexType i = 0; i < n; ++i )
+    switch ( op )
     {
-        array[i] = val;
+        case common::reduction::COPY :
+        {
+            #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
+
+            for ( IndexType i = 0; i < n; i++ )
+            {
+                array[i] = val;
+            }
+            break;
+        }
+        case common::reduction::ADD :
+        {
+            if ( val == common::constants::ZERO ) 
+            {
+                return;
+            }
+
+            #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
+
+            for ( IndexType i = 0; i < n; i++ )
+            {
+                array[i] += val;
+            }
+            break;
+        }
+        case common::reduction::MULT :
+        {
+            // scale all values of the array 
+
+            if ( val == common::constants::ONE ) 
+            {
+                // skip it
+            }
+            else if ( val == common::constants::ZERO )
+            {
+                setVal( array, n, ValueType( 0 ), common::reduction::COPY );
+            }
+            else
+            {
+                #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
+    
+                for ( IndexType i = 0; i < n; i++ )
+                {
+                    array[i] *= val;
+                }
+            }
+            break;
+        }
+        default:
+            COMMON_THROWEXCEPTION( "Unsupported reduction op : " << op )
     }
 }
 
@@ -206,7 +219,7 @@ void OpenMPUtils::setOrder( ValueType array[], const IndexType n )
 
     #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
 
-    for( IndexType i = 0; i < n; ++i )
+    for ( IndexType i = 0; i < n; ++i )
     {
         array[i] = static_cast<ValueType>( i );
     }
@@ -239,7 +252,7 @@ ValueType OpenMPUtils::maxval( const ValueType array[], const IndexType n )
 
         #pragma omp for schedule( SCAI_OMP_SCHEDULE )
 
-        for( IndexType i = 0; i < n; ++i )
+        for ( IndexType i = 0; i < n; ++i )
         {
             if( array[i] > threadVal )
             {
@@ -278,7 +291,7 @@ ValueType OpenMPUtils::absMaxVal( const ValueType array[], const IndexType n )
 
         #pragma omp for schedule( SCAI_OMP_SCHEDULE )
 
-        for( IndexType i = 0; i < n; ++i )
+        for ( IndexType i = 0; i < n; ++i )
         {
             ValueType elem = abs( array[i] );
 
@@ -319,7 +332,7 @@ ValueType OpenMPUtils::absMaxDiffVal( const ValueType array1[], const ValueType 
 
         #pragma omp for schedule( SCAI_OMP_SCHEDULE )
 
-        for( IndexType i = 0; i < n; ++i )
+        for ( IndexType i = 0; i < n; ++i )
         {
             ValueType elem = abs( array1[i] - array2[i] );
 
@@ -357,7 +370,7 @@ bool OpenMPUtils::isSorted( const ValueType array[], const IndexType n, bool asc
 
     if( ascending )
     {
-        for( IndexType i = 1; i < n; i++ )
+        for ( IndexType i = 1; i < n; i++ )
         {
             if( array[i - 1] > array[i] )
             {
@@ -368,7 +381,7 @@ bool OpenMPUtils::isSorted( const ValueType array[], const IndexType n, bool asc
     }
     else
     {
-        for( IndexType i = 1; i < n; i++ )
+        for ( IndexType i = 1; i < n; i++ )
         {
             if( array[i - 1] < array[i] )
             {
@@ -384,18 +397,50 @@ bool OpenMPUtils::isSorted( const ValueType array[], const IndexType n, bool asc
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType1,typename ValueType2>
-void OpenMPUtils::set( ValueType1 out[], const ValueType2 in[], const IndexType n )
+void OpenMPUtils::set( ValueType1 out[], const ValueType2 in[], const IndexType n, const common::reduction::ReductionOp op )
 {
     SCAI_REGION( "OpenMP.Utils.set" )
 
     SCAI_LOG_DEBUG( logger,
-                    "set: out<" << TypeTraits<ValueType1>::id() << "[" << n << "]" << " = in<" << TypeTraits<ValueType2>::id() << ">[" << n << "]" )
+                    "set: out<" << TypeTraits<ValueType1>::id() << "[" << n << "]" 
+                    << ", op = " << op << "  in<" << TypeTraits<ValueType2>::id() << ">[" << n << "]" )
 
-    #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
-
-    for( IndexType i = 0; i < n; i++ )
+    switch ( op ) 
     {
-        out[i] = static_cast<ValueType1>( in[i] );
+        case common::reduction::COPY :
+        {
+            #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
+
+            for ( IndexType i = 0; i < n; i++ )
+            {
+                out[i] = static_cast<ValueType1>( in[i] );
+            }
+            break;
+        }
+        case common::reduction::ADD :
+        {
+            #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
+
+            for ( IndexType i = 0; i < n; i++ )
+            {
+                out[i] += static_cast<ValueType1>( in[i] );
+            }
+            break;
+        }
+        case common::reduction::MULT :
+        {
+            #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
+
+            for ( IndexType i = 0; i < n; i++ )
+            {
+                out[i] *= static_cast<ValueType1>( in[i] );
+            }
+            break;
+        }
+        default:
+        {
+            COMMON_THROWEXCEPTION( "unsupported reduction op in set: " << op )
+        }
     }
 }
 
@@ -411,7 +456,7 @@ bool OpenMPUtils::validIndexes( const IndexType array[], const IndexType n, cons
 
     #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE) reduction( & : validFlag )
 
-    for( IndexType i = 0; i < n; i++ )
+    for ( IndexType i = 0; i < n; i++ )
     {
         if( size <= array[i] || 0 > array[i] )
         {
@@ -545,7 +590,6 @@ void OpenMPUtils::registerKernels( bool deleteFlag )
     KernelRegistry::set<UtilKernelTrait::set<TYPE, ARITHMETIC_HOST_TYPE_##J> >( set, Host, flag );               \
 
 #define LAMA_UTILS_REGISTER(z, I, _)                                                                             \
-    KernelRegistry::set<UtilKernelTrait::scale<ARITHMETIC_HOST_TYPE_##I> >( scale, Host, flag );                 \
     KernelRegistry::set<UtilKernelTrait::conj<ARITHMETIC_HOST_TYPE_##I> >( conj, Host, flag );                   \
     KernelRegistry::set<UtilKernelTrait::sum<ARITHMETIC_HOST_TYPE_##I> >( sum, Host, flag );                     \
     KernelRegistry::set<UtilKernelTrait::setVal<ARITHMETIC_HOST_TYPE_##I> >( setVal, Host, flag );               \

@@ -191,16 +191,41 @@ ValueType CUDAUtils::sum( const ValueType array[], const IndexType n )
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void CUDAUtils::setVal( ValueType array[], const IndexType n, const ValueType val )
+void CUDAUtils::setVal( ValueType array[], const IndexType n, const ValueType val, const common::reduction::ReductionOp op )
 {
-    SCAI_LOG_INFO( logger, "setVal # array = " << array << ", n = " << n << ", val = " << val )
+    using namespace thrust::placeholders;
+
+    SCAI_LOG_INFO( logger, "setVal # array = " << array << ", n = " << n << ", val = " << val << ", op = " << op )
 
     SCAI_CHECK_CUDA_ACCESS
 
     if ( n > 0 )
     {
         thrust::device_ptr<ValueType> data( const_cast<ValueType*>( array ) );
-        thrust::fill( data, data + n, val );
+
+        switch ( op ) 
+        {
+            case common::reduction::COPY:
+                thrust::fill( data, data + n, val );
+                break;
+            case common::reduction::ADD:
+                thrust::for_each( data, data + n,  _1 += val);
+                break;
+            case common::reduction::MULT:
+                {
+                    if ( val == scai::common::constants::ZERO )
+                    {
+                        thrust::fill( data, data + n, ValueType( 0 ) );
+                    }
+                    else
+                    {
+                        thrust::for_each( data, data + n,  _1 *= val);
+                    }
+                }
+                break;
+            default:
+                COMMON_THROWEXCEPTION( "unsupported reduction op: " << op )
+        }
 
         SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
     }
@@ -455,7 +480,7 @@ void CUDAUtils::setScatter( ValueType1 out[], const IndexType indexes[], const V
 
 template<typename T1, typename T2>
 __global__
-void setKernel( T1* out, const T2* in, IndexType n )
+void setKernelCopy( T1* out, const T2* in, IndexType n )
 {
     const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
@@ -465,8 +490,32 @@ void setKernel( T1* out, const T2* in, IndexType n )
     }
 }
 
+template<typename T1, typename T2>
+__global__
+void setKernelAdd( T1* out, const T2* in, IndexType n )
+{
+    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( i < n )
+    {
+        out[i] += static_cast<T1>( in[i] );
+    }
+}
+
+template<typename T1, typename T2>
+__global__
+void setKernelMult( T1* out, const T2* in, IndexType n )
+{
+    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( i < n )
+    {
+        out[i] *= static_cast<T1>( in[i] );
+    }
+}
+
 template<typename ValueType1, typename ValueType2>
-void CUDAUtils::set( ValueType1 out[], const ValueType2 in[], const IndexType n )
+void CUDAUtils::set( ValueType1 out[], const ValueType2 in[], const IndexType n, const common::reduction::ReductionOp op )
 {
     SCAI_LOG_INFO( logger,
                    "set<" << TypeTraits<ValueType1>::id() << "," << TypeTraits<ValueType2>::id() << ">( ..., n = " << n << ")" )
@@ -484,7 +533,20 @@ void CUDAUtils::set( ValueType1 out[], const ValueType2 in[], const IndexType n 
     dim3 dimBlock( blockSize, 1, 1 );
     dim3 dimGrid = makeGrid( n, dimBlock.x );
 
-    setKernel <<< dimGrid, dimBlock>>>( out, in, n );
+    switch ( op )
+    {
+        case common::reduction::COPY :
+            setKernelCopy <<< dimGrid, dimBlock>>>( out, in, n );
+            break;
+        case common::reduction::ADD :
+            setKernelAdd <<< dimGrid, dimBlock>>>( out, in, n );
+            break;
+        case common::reduction::MULT :
+            setKernelMult <<< dimGrid, dimBlock>>>( out, in, n );
+            break;
+         default:
+            COMMON_THROWEXCEPTION( "Unsupported reduction op " << op )
+    }
 
     SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
 }
@@ -510,7 +572,7 @@ void CUDAUtils::setScale( ValueType1 out[],
     {
         // in array might be undefined
 
-        setVal( out, n, beta );
+        setVal( out, n, beta, common::reduction::COPY );
         return;
     }
 
@@ -606,7 +668,6 @@ void CUDAUtils::registerKernels( bool deleteFlag )
     KernelRegistry::set<UtilKernelTrait::set<TYPE, ARITHMETIC_CUDA_TYPE_##J> >( set, CUDA, flag );               \
      
 #define LAMA_UTILS_REGISTER(z, I, _)                                                                             \
-    KernelRegistry::set<UtilKernelTrait::scale<ARITHMETIC_CUDA_TYPE_##I> >( scale, CUDA, flag );                 \
     KernelRegistry::set<UtilKernelTrait::sum<ARITHMETIC_CUDA_TYPE_##I> >( sum, CUDA, flag );                     \
     KernelRegistry::set<UtilKernelTrait::setVal<ARITHMETIC_CUDA_TYPE_##I> >( setVal, CUDA, flag );               \
     KernelRegistry::set<UtilKernelTrait::setOrder<ARITHMETIC_CUDA_TYPE_##I> >( setOrder, CUDA, flag );           \
