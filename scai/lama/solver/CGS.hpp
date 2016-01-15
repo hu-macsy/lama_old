@@ -54,11 +54,8 @@ namespace lama
  *
  * Remarks:
  * 1. This method is not numerically stable. This effect gets a bit annulled by 2.
- * 2. The scalars in the algorithm are set to zero if the norm of the residual is smaller than 
- * machine precision (3*eps) to avoid devision by zero. In this case the solution doesn't
- * change anymore.
- * 3. In this case it makes sense to take the residual since we have to update the residual in each
- * iterate() anyways (contrary to e.g. TFQMR solver).
+ * 2. The scalars in the algorithm are set to zero if they are smaller than machine precision
+ * (3*eps) to avoid devision by zero. In this case the solution doesn't change anymore.
  */
 class COMMON_DLL_IMPORTEXPORT CGS:
 		public IterativeSolver,

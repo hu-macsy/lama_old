@@ -68,7 +68,8 @@ public:
     enum ResidualThresholdCheckMode
     {
         Absolute, //!< stands for an absolute residue reduction
-        Relative //!< stands for an relative residue reduction
+        Relative, //!< stands for an relative residue reduction
+        Divergence //!< stands for an relative residue increase
     };
 
     /*
