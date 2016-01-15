@@ -38,6 +38,7 @@
 #include <scai/lama/DenseVector.hpp>
 #include <scai/lama/Scalar.hpp>
 #include <scai/lama/expression/all.hpp>
+#include <scai/lama/StorageIO.hpp>
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 #include <scai/lama/matutils/MatrixCreator.hpp>
 
@@ -46,13 +47,36 @@
 using namespace scai::lama;
 using namespace std;
 
+void replaceStencil( std::string& str, const std::string& stencil )
+{
+    size_t i = str.find( "%s" );
+
+    if ( i != string::npos )
+    {
+        str.replace( i, 2, stencil );
+    }
+}
+
+void printUsage( const char* prog_name )
+{
+    cout << "Usage: " << prog_name << " <filename> <dim> <stencilType> <dimX> [ <dimY> [ <dimZ> ] ]" << endl;
+    cout << "         filename : name of the output file for matrix, vector" << endl;
+    cout << "           filename = <id>.mtx -> generates matrix market format, <id>_v.mtx for vector" << endl;
+    cout << "           filename = <id>     -> generates binary format, <id>.frm for matrix, <id>.frv for vector" << endl;
+    cout << "           %s in filename is replaced with stencil values, e.g. 2D5P_100_100" << endl;
+    cout << "         dim = 1, 2, 3  is dimension of stencil" << endl;
+    cout << "         stencilType = 3 (for dim = 1) " << endl;
+    cout << "         stencilType = 5, 9 (for dim = 2) " << endl;
+    cout << "         stencilType = 7, 19, 27 (for dim = 3) " << endl;
+}
+
 int main( int argc, char* argv[] )
 {
     CommunicatorPtr comm = Communicator::get();
 
     int myRank = comm->getRank();
 
-    const char* filename;
+    std::string filename;
     
     IndexType dimension = 1;
     IndexType stencilType = 3;
@@ -73,7 +97,7 @@ int main( int argc, char* argv[] )
     {
         if ( myRank == 0 )
         {
-            cout << "Usage: " << argv[0] << " <filename> <dim> <stencilType> <dimX> [ <dimY> [ <dimZ> ] ]" << endl;
+            printUsage( argv[0] );
         }
         return -1;
     }
@@ -100,10 +124,25 @@ int main( int argc, char* argv[] )
         return -1;
     }
 
-    cout << "Dimensions: " << dimX;
-    if ( dimension > 1 ) cout << " x " << dimY;
-    if ( dimension > 2 ) cout << " x " << dimZ;
-    cout << endl << endl;
+    // Generate name for the stencil 
+
+    ostringstream stencilName;
+
+    stencilName << dimension << "D" << stencilType << "P_" << dimX;
+    if ( dimension > 1 ) 
+    {
+        stencilName << "_" << dimY;
+    }
+    if ( dimension > 2 ) 
+    {
+        stencilName << "_" << dimZ;
+    }
+
+    cout << "Stencil is : " << stencilName.str() << endl;
+
+    // replace %s in filename with stencil description
+
+    replaceStencil( filename, stencilName.str() );
 
     CSRSparseMatrix<double> m;
 
@@ -117,7 +156,31 @@ int main( int argc, char* argv[] )
     cout << "lhs = " << lhs << endl;
     cout << "rhs = " << rhs << endl;
 
-    m.writeToFile( filename, File::BINARY );
-    rhs.writeToFile( filename, File::BINARY );
+    cout << endl;
+    cout << "Solution vector x = ( 1.0, ..., 1.0 ) assumed" << endl;
+    cout << "Write matrix and rhs vector to file" << endl;
+
+    if ( _StorageIO::hasSuffix( filename, ".mtx" ) )
+    {
+        std::string vectorFilename = filename;
+
+        // replace . with _v. 
+
+        vectorFilename.replace( vectorFilename.length() - 4, 1, "_v." );
+
+        m.writeToFile( filename, File::MATRIX_MARKET );
+        rhs.writeToFile( vectorFilename, File::MATRIX_MARKET );
+
+        cout << "Written matrix to matrix market file " << filename  << endl;
+        cout << "Written rhs vector to matrix market file " << vectorFilename << endl;
+    }
+    else
+    {
+        m.writeToFile( filename, File::BINARY );
+        rhs.writeToFile( filename, File::BINARY );
+
+        cout << "Written matrix to header file " << filename << ".frm and binary file " << filename << ".amg" << endl;
+        cout << "Written rhs vector to header file " << filename << ".frv and binary file " << filename << ".vec" << endl;
+    }
 }
 
