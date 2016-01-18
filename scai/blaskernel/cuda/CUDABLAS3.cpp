@@ -36,7 +36,6 @@
 
 // local library
 #include <scai/blaskernel/BLASKernelTrait.hpp>
-#include <scai/blaskernel/external/BLASHelper.hpp>
 #include <scai/blaskernel/cuda/CUBLASWrapper.hpp>
 #include <scai/blaskernel/cuda/cublas_cast.hpp>
 

@@ -25,8 +25,8 @@ public:
 	typedef int BLASIndexType;
 #endif
 
-#ifdef  F77_CHAR
-    typedef F77_CHAR BLASTrans
+#ifdef F77_CHAR
+    typedef F77_CHAR BLASTrans;
 #else
 	typedef char BLASTrans;
 #endif

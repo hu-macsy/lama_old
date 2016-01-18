@@ -34,7 +34,6 @@
 ### Add classes and header files ###
 
 set( CLASSES
-        BLASHelper
 #        BLASWrapperNEW
 )
 

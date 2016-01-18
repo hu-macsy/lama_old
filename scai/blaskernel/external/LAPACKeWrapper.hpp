@@ -53,6 +53,47 @@ public:
 	typedef char LAPACKFlag;
 	typedef int LAPACKOrder;
 
+	static inline LAPACKFlag enum2char( const CBLAS_UPLO uplo )
+	{
+		switch( uplo )
+		{
+			case CblasUpper:
+				return 'U';
+			case CblasLower:
+				return 'L';
+			default:
+				COMMON_THROWEXCEPTION( "Illegal uplo: " << uplo );
+		}
+	}
+
+	static inline LAPACKFlag enum2char( const CBLAS_TRANSPOSE trans )
+	{
+		switch( trans )
+		{
+			case CblasNoTrans:
+				return 'N';
+			case CblasTrans:
+				return 'T';
+			case CblasConjTrans:
+				return 'C';
+			default:
+				COMMON_THROWEXCEPTION( "Illegal trans: " << trans );
+		}
+	}
+
+	static inline LAPACKFlag enum2char( const CBLAS_DIAG diag )
+	{
+		switch( diag )
+		{
+			case CblasNonUnit:
+				return 'N';
+			case CblasUnit:
+				return 'U';
+			default:
+				COMMON_THROWEXCEPTION( "Illegal diag: " << diag );
+		}
+	}
+
 	template<typename ValueType>
 	static LAPACKIndexType getrf(const LAPACKOrder UNUSED(matrix_order),
 			const LAPACKIndexType UNUSED(m), const LAPACKIndexType UNUSED(n),

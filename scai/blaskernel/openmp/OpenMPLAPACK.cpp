@@ -36,6 +36,7 @@
 
 // local library
 #include <scai/blaskernel/BLASKernelTrait.hpp>
+#include <scai/blaskernel/openmp/OpenMPBLAS1.hpp>
 
 // internal scai libraries
 #include <scai/kregistry/KernelRegistry.hpp>
@@ -51,7 +52,6 @@
 
 // std
 #include <cmath>
-#include "../../blaskernel/openmp/OpenMPBLAS1.hpp"
 
 namespace scai
 {
@@ -528,7 +528,7 @@ void OpenMPLAPACK::laswp(
     }
     else
     {
-        BLASHelper::XERBLA_cpu( 0, 1, "cblas_slaswp", "Illegal order setting, %d\n", order );
+    	COMMON_THROWEXCEPTION( "illegal order setting " << order )
     }
 }
 

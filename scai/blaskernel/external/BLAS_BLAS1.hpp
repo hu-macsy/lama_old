@@ -36,6 +36,9 @@
 // for dll_import
 #include <scai/common/config.hpp>
 
+// local library
+#include <scai/blaskernel/cblas.hpp>
+
 // internal scai libraries
 #include <scai/common/SCAITypes.hpp>
 

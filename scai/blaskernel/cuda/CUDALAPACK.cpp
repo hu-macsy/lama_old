@@ -87,7 +87,7 @@ void CUDALAPACK::laswp(
     else
     {
         info = 1;
-        BLASHelper::XERBLA_cpu( 0, info, "slaswp", "Illegal order setting." );
+        COMMON_THROWEXCEPTION( "illegal order setting " << order )
     }
 
     if( info < 0 )
@@ -136,7 +136,7 @@ void CUDALAPACK::laswp(
     else
     {
         info = 1;
-        BLASHelper::XERBLA_cpu( 0, info, "dlaswp", "Illegal order setting." );
+        COMMON_THROWEXCEPTION( "illegal order setting " << order)
     }
 
     if( info < 0 )

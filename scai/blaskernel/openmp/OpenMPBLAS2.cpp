@@ -181,7 +181,7 @@ void OpenMPBLAS2::gemv(
         }
         else
         {
-            BLASHelper::XERBLA_cpu( 0, 2, "cblas_sgemv", "Illegal TransA setting, %d\n", TransA );
+        	COMMON_THROWEXCEPTION( "Illegal TransA setting " << TransA )
         }
 
     }
@@ -270,14 +270,13 @@ void OpenMPBLAS2::gemv(
         }
         else
         {
-            BLASHelper::XERBLA_cpu( 1, 2, "cblas_sgemv", "Illegal TransA setting, %d\n", TransA );
-            return;
+        	COMMON_THROWEXCEPTION( "illegal transA setting " << TransA )
         }
 
     }
     else
     {
-        BLASHelper::XERBLA_cpu( 0, 1, "cblas_sgemv", "Illegal order setting, %d\n", order );
+    	COMMON_THROWEXCEPTION( "illegal order setting " << order )
     }
 
     return;

@@ -35,7 +35,6 @@
 #include <scai/blaskernel/external/BLAS_BLAS1.hpp>
 
 // local library
-#include <scai/blaskernel/external/BLASHelper.hpp>
 #include <scai/blaskernel/external/BLASWrapperNEW.hpp>
 #include <scai/blaskernel/BLASKernelTrait.hpp>
 #include <scai/blaskernel/cblas.hpp>
