@@ -42,7 +42,7 @@ namespace scai {
 
 namespace blaskernel {
 
-class COMMON_DLL_IMPORTEXPORT LAPACKWrapper {
+class COMMON_DLL_IMPORTEXPORT LAPACKWrapperOLD {
 public:
 #ifdef F77_INT
 	typedef F77_INT LAPACKIndexType;
