@@ -72,12 +72,19 @@ SCAI_LOG_DEF_LOGGER(LAPACK_LAPACK::logger, "LAPACK.LAPACK")
 template<typename ValueType>
 IndexType LAPACK_LAPACK::getrf(const CBLAS_ORDER order, const IndexType m,
 		const IndexType n, ValueType* const A, const IndexType lda,
-		IndexType* const ipiv) {
-SCAI_REGION( "LAPACK.LAPACK.getrf<float>" )
+		IndexType* const ipiv)
+{
+	SCAI_REGION( "LAPACK.LAPACK.getrf<float>" )
 
-    	SCAI_LOG_INFO(logger, "getrf<float> for A of size " << m << " x " << n)
+	SCAI_LOG_INFO(logger, "getrf<float> for A of size " << m << " x " << n)
 
 	typedef LAPACKDefinitions::LAPACKIndexType LAPACKIndexType;
+
+	if (common::TypeTraits<IndexType>::stype
+			!= common::TypeTraits<LAPACKIndexType>::stype) {
+		// ToDo: convert ipiv array
+		COMMON_THROWEXCEPTION("indextype mismatch");
+	}
 
 	LAPACKIndexType info = 0;
 
@@ -125,7 +132,8 @@ SCAI_REGION( "LAPACK.LAPACK.getrf<float>" )
 
 template<typename ValueType>
 void LAPACK_LAPACK::getinv(const IndexType n, ValueType* a,
-		const IndexType lda) {
+		const IndexType lda)
+{
 	SCAI_REGION( "LAPACK.LAPACK.getinv<float>" )
 
 	typedef LAPACKDefinitions::LAPACKIndexType LAPACKIndexType;
@@ -163,13 +171,20 @@ void LAPACK_LAPACK::getinv(const IndexType n, ValueType* a,
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-int LAPACK_LAPACK::getri(const CBLAS_ORDER order, const int n,
-		ValueType* const a, const int lda, int* const ipiv) {
-SCAI_REGION( "LAPACK.LAPACK.getri<float>" )
+int LAPACK_LAPACK::getri(const CBLAS_ORDER order, const IndexType n,
+		ValueType* const a, const IndexType lda, IndexType* const ipiv)
+{
+	SCAI_REGION( "LAPACK.LAPACK.getri<float>" )
 
-    	SCAI_LOG_INFO(logger, "getri<float> for A of size " << n << " x " << n)
+	SCAI_LOG_INFO(logger, "getri<float> for A of size " << n << " x " << n)
 
 	typedef LAPACKDefinitions::LAPACKIndexType LAPACKIndexType;
+
+	if (common::TypeTraits<IndexType>::stype
+			!= common::TypeTraits<LAPACKIndexType>::stype) {
+		// ToDo: convert ipiv array
+		COMMON_THROWEXCEPTION("indextype mismatch");
+	}
 
 	LAPACKIndexType info = 0;
 
@@ -223,7 +238,8 @@ template<typename ValueType>
 int LAPACK_LAPACK::tptrs(const CBLAS_ORDER order, const CBLAS_UPLO uplo,
 		const CBLAS_TRANSPOSE trans, const CBLAS_DIAG diag, const IndexType n,
 		const IndexType nrhs, const ValueType* AP, ValueType* B,
-		const IndexType ldb) {
+		const IndexType ldb)
+{
 	SCAI_REGION( "LAPACK.LAPACK.tptrs<float>" )
 
 	typedef LAPACKDefinitions::LAPACKIndexType LAPACKIndexType;
@@ -256,8 +272,17 @@ int LAPACK_LAPACK::tptrs(const CBLAS_ORDER order, const CBLAS_UPLO uplo,
 template<typename ValueType>
 void LAPACK_LAPACK::laswp(const CBLAS_ORDER order, const IndexType N,
 		ValueType* A, const IndexType LDA, const IndexType K1,
-		const IndexType K2, const IndexType* ipiv, const IndexType INCX) {
+		const IndexType K2, const IndexType* ipiv, const IndexType INCX)
+{
 	SCAI_REGION( "LAPACK.LAPACK.laswp<float>" )
+
+	typedef LAPACKDefinitions::LAPACKIndexType LAPACKIndexType;
+
+	if (common::TypeTraits<IndexType>::stype
+			!= common::TypeTraits<LAPACKIndexType>::stype) {
+		// ToDo: convert ipiv array
+		COMMON_THROWEXCEPTION("indextype mismatch");
+	}
 
 	if (order == CblasRowMajor) {
 		for (IndexType i = K1; i < K2; ++i) {
@@ -286,7 +311,8 @@ void LAPACK_LAPACK::laswp(const CBLAS_ORDER order, const IndexType N,
 /*    Static registration of the LAPACK routines                               */
 /* --------------------------------------------------------------------------- */
 
-void LAPACK_LAPACK::registerKernels(bool deleteFlag) {
+void LAPACK_LAPACK::registerKernels(bool deleteFlag)
+{
 	using kregistry::KernelRegistry;
 	using common::context::Host;
 
@@ -311,12 +337,14 @@ void LAPACK_LAPACK::registerKernels(bool deleteFlag) {
 	/*    Static initialiazion at program start                                    */
 	/* --------------------------------------------------------------------------- */
 
-LAPACK_LAPACK::LAPACK_LAPACK() {
+LAPACK_LAPACK::LAPACK_LAPACK()
+{
 	bool deleteFlag = false;
 	registerKernels(deleteFlag);
 }
 
-LAPACK_LAPACK::~LAPACK_LAPACK() {
+LAPACK_LAPACK::~LAPACK_LAPACK()
+{
 	bool deleteFlag = true;
 	registerKernels(deleteFlag);
 }
