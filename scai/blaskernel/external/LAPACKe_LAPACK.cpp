@@ -38,6 +38,7 @@
 #include <scai/blaskernel/BLASKernelTrait.hpp>
 #include <scai/blaskernel/cblas.hpp>
 #include <scai/blaskernel/external/LAPACKeWrapper.hpp>
+#include <scai/blaskernel/external/LAPACKeDefinitions.hpp>
 #include <scai/blaskernel/openmp/OpenMPBLAS1.hpp>
 
 // internal scai libraries
@@ -59,53 +60,33 @@ using common::TypeTraits;
 
 namespace blaskernel {
 
-/* ---------------------------------------------------------------------------------------*/
-
-/** mklCast converts pointers to LAMA complex numbers to
- *  ML pointers for complex numbers. This is safe as both
- *  are internally represented in the same way.
- */
-
-/* ------------------------------------------------------------------------- */
-
-static int lapack_order(const CBLAS_ORDER order) {
-	int matrix_order = LAPACK_COL_MAJOR;
-
-	if (order == CblasColMajor) {
-		matrix_order = LAPACK_COL_MAJOR;
-	} else if (order == CblasRowMajor) {
-		matrix_order = LAPACK_ROW_MAJOR;
-	} else {
-		COMMON_THROWEXCEPTION("Illegal matrix order: " << order);
-	}
-
-	return matrix_order;
-}
-
 /* ------------------------------------------------------------------------- */
 
 SCAI_LOG_DEF_LOGGER(LAPACKe_LAPACK::logger, "LAPACKe.LAPACK")
 
 /* ------------------------------------------------------------------------- */
-/*      getrf<float>                                                         */
+/*      getrf                                                                */
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
 IndexType LAPACKe_LAPACK::getrf(const CBLAS_ORDER order, const IndexType m,
 		const IndexType n, ValueType* const A, const IndexType lda,
-		IndexType* const ipiv) {
+		IndexType* const ipiv)
+{
 	SCAI_LOG_INFO(logger, "getrf<float> for A of size " << m << " x " << n)
 
+	typedef LAPACKeDefinitions::LAPACKIndexType LAPACKIndexType;
+
 	if (TypeTraits<IndexType>::stype
-			!= TypeTraits<LAPACKeWrapper::LAPACKIndexType>::stype) {
+			!= TypeTraits<LAPACKIndexType>::stype) {
 		// ToDo: convert ipiv array
 		COMMON_THROWEXCEPTION("indextype mismatch");
 	}
 
-	int info = LAPACKeWrapper::getrf<ValueType>(lapack_order(order),
-			static_cast<LAPACKeWrapper::LAPACKIndexType>(m),
-			static_cast<LAPACKeWrapper::LAPACKIndexType>(n), A,
-			static_cast<LAPACKeWrapper::LAPACKIndexType>(lda), ipiv);
+	int info = LAPACKeWrapper<ValueType>::getrf(LAPACKeDefinitions::enum2order(order),
+			static_cast<LAPACKIndexType>(m),
+			static_cast<LAPACKIndexType>(n), A,
+			static_cast<LAPACKIndexType>(lda), ipiv);
 
 	if (info < 0) {
 		COMMON_THROWEXCEPTION("illegal argument " << ( -info ))
@@ -118,26 +99,29 @@ IndexType LAPACKe_LAPACK::getrf(const CBLAS_ORDER order, const IndexType m,
 }
 
 /* ------------------------------------------------------------------------- */
-/*      getinv<float>                                                        */
+/*      getinv                                                               */
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
 void LAPACKe_LAPACK::getinv(const IndexType n, ValueType* a,
-		const IndexType lda) {
-	int info = 0;
+		const IndexType lda)
+{
+	typedef LAPACKeDefinitions::LAPACKIndexType LAPACKIndexType;
+
+	LAPACKIndexType info = 0;
 
 	// scoped_array, will also be freed in case of exception
 
-	scoped_array<LAPACKeWrapper::LAPACKIndexType> ipiv(
-			new LAPACKeWrapper::LAPACKIndexType[n]);
+	scoped_array<LAPACKIndexType> ipiv(
+			new LAPACKIndexType[n]);
 
 	SCAI_LOG_INFO(logger,
 			"getinv<float> for " << n << " x " << n << " matrix, uses MKL")
 
-	info = LAPACKeWrapper::getrf(LAPACK_COL_MAJOR,
-			static_cast<LAPACKeWrapper::LAPACKIndexType>(n),
-			static_cast<LAPACKeWrapper::LAPACKIndexType>(n), a,
-			static_cast<LAPACKeWrapper::LAPACKIndexType>(lda), ipiv.get());
+	info = LAPACKeWrapper<ValueType>::getrf(LAPACK_COL_MAJOR,
+			static_cast<LAPACKIndexType>(n),
+			static_cast<LAPACKIndexType>(n), a,
+			static_cast<LAPACKIndexType>(lda), ipiv.get());
 
 	// return error if factorization did not work
 
@@ -145,9 +129,9 @@ void LAPACKe_LAPACK::getinv(const IndexType n, ValueType* a,
 		COMMON_THROWEXCEPTION("MKL sgetrf failed, info = " << info)
 	}
 
-	info = LAPACKeWrapper::getri(LAPACK_COL_MAJOR,
-			static_cast<LAPACKeWrapper::LAPACKIndexType>(n), a,
-			static_cast<LAPACKeWrapper::LAPACKIndexType>(lda), ipiv.get());
+	info = LAPACKeWrapper<ValueType>::getri(LAPACK_COL_MAJOR,
+			static_cast<LAPACKIndexType>(n), a,
+			static_cast<LAPACKIndexType>(lda), ipiv.get());
 
 	if (info) {
 		COMMON_THROWEXCEPTION("MKL sgetri failed, info = " << info)
@@ -155,25 +139,28 @@ void LAPACKe_LAPACK::getinv(const IndexType n, ValueType* a,
 }
 
 /* ------------------------------------------------------------------------- */
-/*      getri<float>                                                         */
+/*      getri                                                                */
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
 int LAPACKe_LAPACK::getri(const CBLAS_ORDER order, const IndexType n,
-		ValueType* const a, const IndexType lda, IndexType* const ipiv) {
+		ValueType* const a, const IndexType lda, IndexType* const ipiv)
+{
+	typedef LAPACKeDefinitions::LAPACKIndexType LAPACKIndexType;
+
 	SCAI_LOG_INFO(logger, "getri<float> for A of size " << n << " x " << n)
 
 	if (TypeTraits<IndexType>::stype
-			!= TypeTraits<LAPACKeWrapper::LAPACKIndexType>::stype) {
+			!= TypeTraits<LAPACKIndexType>::stype) {
 		// ToDo: convert ipiv array
 		COMMON_THROWEXCEPTION("indextype mismatch");
 	}
 
-	LAPACKeWrapper::LAPACKOrder matrix_order = lapack_order(order);
+	LAPACKeDefinitions::LAPACKOrder matrix_order = LAPACKeDefinitions::enum2order(order);
 
-	int info = LAPACKeWrapper::getri(matrix_order,
-			static_cast<LAPACKeWrapper::LAPACKIndexType>(n), a,
-			static_cast<LAPACKeWrapper::LAPACKIndexType>(lda), ipiv);
+	LAPACKIndexType info = LAPACKeWrapper<ValueType>::getri(matrix_order,
+			static_cast<LAPACKIndexType>(n), a,
+			static_cast<LAPACKIndexType>(lda), ipiv);
 
 	if (info < 0) {
 		COMMON_THROWEXCEPTION("illegal argument " << ( -info ))
@@ -186,22 +173,25 @@ int LAPACKe_LAPACK::getri(const CBLAS_ORDER order, const IndexType n,
 }
 
 /* ------------------------------------------------------------------------- */
-/*      tptrs<float>                                                         */
+/*      tptrs                                                                */
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
 int LAPACKe_LAPACK::tptrs(const CBLAS_ORDER order, const CBLAS_UPLO uplo,
 		const CBLAS_TRANSPOSE trans, const CBLAS_DIAG diag, const IndexType n,
 		const IndexType nrhs, const ValueType* AP, ValueType* B,
-		const IndexType ldb) {
-	LAPACKeWrapper::LAPACKFlag UL = LAPACKeWrapper::enum2char(uplo);
-	LAPACKeWrapper::LAPACKFlag TA = LAPACKeWrapper::enum2char(trans);
-	LAPACKeWrapper::LAPACKFlag DI = LAPACKeWrapper::enum2char(diag);
+		const IndexType ldb)
+{
+	typedef LAPACKeDefinitions::LAPACKIndexType LAPACKIndexType;
 
-	LAPACKeWrapper::LAPACKOrder matrix_order = lapack_order(order);
+	LAPACKeDefinitions::LAPACKFlag UL = LAPACKeDefinitions::enum2char(uplo);
+	LAPACKeDefinitions::LAPACKFlag TA = LAPACKeDefinitions::enum2char(trans);
+	LAPACKeDefinitions::LAPACKFlag DI = LAPACKeDefinitions::enum2char(diag);
+
+	LAPACKeDefinitions::LAPACKOrder matrix_order = LAPACKeDefinitions::enum2order(order);
 
 	if (TypeTraits<IndexType>::stype
-			!= TypeTraits<LAPACKeWrapper::LAPACKIndexType>::stype) {
+			!= TypeTraits<LAPACKIndexType>::stype) {
 		// ToDo: convert ipiv array
 		COMMON_THROWEXCEPTION("indextype mismatch");
 	}
@@ -211,10 +201,10 @@ int LAPACKe_LAPACK::tptrs(const CBLAS_ORDER order, const CBLAS_UPLO uplo,
 
 	SCAI_ASSERT_ERROR(ldb >= std::max(1, n), "ldb = " << ldb << " out of range");
 
-	int info = LAPACKeWrapper::tptrs(matrix_order, UL, TA, DI,
-			static_cast<LAPACKeWrapper::LAPACKIndexType>(n),
-			static_cast<LAPACKeWrapper::LAPACKIndexType>(nrhs), AP, B,
-			static_cast<LAPACKeWrapper::LAPACKIndexType>(ldb));
+	int info = LAPACKeWrapper<ValueType>::tptrs(matrix_order, UL, TA, DI,
+			static_cast<LAPACKIndexType>(n),
+			static_cast<LAPACKIndexType>(nrhs), AP, B,
+			static_cast<LAPACKIndexType>(ldb));
 
 	return info;
 }
