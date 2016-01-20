@@ -180,8 +180,7 @@ void BiCGstab::iterate()
     }
     else
     {
-        std::cout << "rhoNew = " << rhoNew << ", rhoOld = " << rhoOld << ", alpha = " << alpha << ", omega = " << omega << std::endl;
-
+        //std::cout << "rhoNew = " << rhoNew << ", rhoOld = " << rhoOld << ", alpha = " << alpha << ", omega = " << omega << std::endl;
         beta = rhoNew / rhoOld * ( alpha / omega );
     }
 

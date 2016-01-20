@@ -84,7 +84,14 @@ void testSameMatrix( const MatrixType1& m1, const MatrixType2& m2 )
         //#pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
         for ( IndexType j = 0; j < n; j++ )
         {
-            SCAI_CHECK_CLOSE( ptrRow1->getValue( j ), ptrRow2->getValue( j ), eps<ValueType1>() )
+            if ( abs( ptrRow1->getValue( j ) ) < small<ValueType1>() )
+            {
+                SCAI_CHECK_SCALAR_SMALL( ptrRow2->getValue( j ), ValueType2, small<ValueType2>() )
+            }
+            else
+            {
+                SCAI_CHECK_CLOSE( ptrRow1->getValue( j ), ptrRow2->getValue( j ), eps<ValueType1>() )
+            }
         }
     }
 }
