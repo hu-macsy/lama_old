@@ -31,6 +31,7 @@
  */
 
 #include <scai/lama/test/MatrixStorageTest.hpp>
+#include <scai/lama/test/SameMatrixHelper.hpp>
 
 #include <scai/lama/storage/DenseStorage.hpp>
 #include <scai/lama/storage/CSRStorage.hpp>
@@ -1098,33 +1099,36 @@ LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, ValueType, inverseTest )
 SCAI_LOG_INFO( logger, "inverseTest for " << mMatrixStorage.getTypeName() )
 
 setDenseRandom( mMatrixStorage );
+scai::common::shared_ptr<MatrixStorage<ValueType> > identity( mMatrixStorage.clone() );
+identity->setIdentity( mMatrixStorage.getNumRows() );
 
-// create storage of same type for the inverse
-scai::common::shared_ptr<MatrixStorage<ValueType> > inverse( mMatrixStorage.clone() );
+// 1. check: use the inverse of the identity, which is expected to be the identity again
+{
+    scai::common::shared_ptr<MatrixStorage<ValueType> > identity2( mMatrixStorage.clone() );
+    identity2->setIdentity( mMatrixStorage.getNumRows() );
+    identity2->invert( mMatrixStorage );
+    //testSameMatrixStorage( *identity, *identity2);
+}
 
-// create storage of same type for compare matrix
-scai::common::shared_ptr<MatrixStorage<ValueType> > compare( mMatrixStorage.clone() );
+// 2. check: check invert on matrix ( multiply inverted matrix with original matrix and check whether the result is the
+// identity
+{
+    scai::common::shared_ptr<MatrixStorage<ValueType> > inverse( mMatrixStorage.clone() );
+    scai::common::shared_ptr<MatrixStorage<ValueType> > result( mMatrixStorage.clone() );
+    inverse->invert( mMatrixStorage );
+    result->matrixTimesMatrix( static_cast<ValueType>(1.0), mMatrixStorage, *inverse, static_cast<ValueType>(0.0), *inverse );
+    testSameMatrixStorageClose( *identity, *result );
+}
 
-inverse->invert( mMatrixStorage );
-setDenseRandomInverse( *compare );
-
-ValueType diff = compare->maxDiffNorm( *inverse );
-
-SCAI_LOG_INFO( logger, "max diff " << diff )
-
-ValueType eps = static_cast<ValueType> ( 0.005 );
-
-BOOST_CHECK_SMALL( diff, eps );
-
-// check in place
-
-mMatrixStorage.invert( mMatrixStorage );
-
-diff = compare->maxDiffNorm( *inverse );
-
-SCAI_LOG_INFO( logger, "max diff " << diff )
-
-BOOST_CHECK_SMALL( diff, eps );
+// 3. check: check invert on matrix - in-place ( multiply inverted matrix with original matrix and check whether the
+// result is the identity
+{
+    scai::common::shared_ptr<MatrixStorage<ValueType> > inverse( mMatrixStorage.copy() );
+    scai::common::shared_ptr<MatrixStorage<ValueType> > result( mMatrixStorage.clone() );
+    inverse->invert( mMatrixStorage );
+    result->matrixTimesMatrix(static_cast<ValueType>(1.0), mMatrixStorage, *inverse, static_cast<ValueType>(0.0), *inverse);
+    testSameMatrixStorageClose( *identity, *result );
+}
 
 LAMA_COMMON_TEST_CASE_TEMPLATE_END()
 
