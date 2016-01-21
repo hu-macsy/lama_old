@@ -33,18 +33,16 @@
 
 #pragma once
 
-
+// local library
 #include <scai/blaskernel/external/LAPACKeDefinitions.hpp>
 
+// internal scai libraries
 #include <scai/common/exception/NotSupportedValueTypeException.hpp>
-
 #include <scai/common/macros/unused.hpp>
 #include <scai/common/SCAITypes.hpp>
 
-#include <mkl_lapack.h>
+// external
 #include <mkl_lapacke.h>
-
-#define FORTRAN_LAPACKE_NAME( name, prefix ) LAPACKE_##prefix##name
 
 namespace scai {
 
@@ -94,9 +92,11 @@ public:																					\
 
 LAPACKEWRAPPER_DEF( float, s, float );
 LAPACKEWRAPPER_DEF( double, d, double );
+
+#ifdef SCAI_COMPLEX_SUPPORTED
 LAPACKEWRAPPER_DEF( ComplexFloat, c, lapack_complex_float );
 LAPACKEWRAPPER_DEF( ComplexDouble, z, lapack_complex_double );
-
+#endif
 
 } /* end namespace blaskernel */
 
