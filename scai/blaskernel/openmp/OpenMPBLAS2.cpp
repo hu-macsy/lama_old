@@ -264,7 +264,7 @@ void OpenMPBLAS2::gemv(
                 }
             }
         }
-        if( TransA == CblasConjTrans )
+        else if( TransA == CblasConjTrans )
         {
             //TA = 'N'
         }
