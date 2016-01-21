@@ -98,6 +98,8 @@ LAPACKEWRAPPER_DEF( ComplexFloat, c, lapack_complex_float );
 LAPACKEWRAPPER_DEF( ComplexDouble, z, lapack_complex_double );
 #endif
 
+#undef LAPACKEWRAPPER_DEF
+
 } /* end namespace blaskernel */
 
 } /* end namespace scai */

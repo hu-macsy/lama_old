@@ -1,10 +1,3 @@
-/*
- * BLASWrapper.hpp
- *
- *  Created on: 24.08.2015
- *      Author: eschricker
- */
-
 /**
  * @file BLASWrapper.hpp
  *
@@ -34,33 +27,28 @@
  *
  * @brief Wrapper for BLAS functions
  * @author Eric Schricker
- * @date 24.08.2015
+ * @date 10.01.2016
  * @since 2.0.0
  */
 
 #pragma once
 
-#include <scai/common/exception/NotSupportedValueTypeException.hpp>
+// local library
+#include <scai/blaskernel/external/BLASDefinitions.hpp>
+#include <scai/blaskernel/cblas.hpp>
 
+// internal scai libraries
 #include <scai/common/macros/unused.hpp>
 #include <scai/common/macros/assert.hpp>
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/TypeTraits.hpp>
-
-#include <scai/blaskernel/external/BLASDefinitions.hpp>
-#include <scai/blaskernel/cblas.hpp>
 
 namespace scai {
 
 namespace blaskernel {
 
 template<typename ValueType>
-class COMMON_DLL_IMPORTEXPORT BLASWrapper
-{
-public:
-	typedef BLASDefinitions::BLASIndexType BLASIndexType;
-	typedef BLASDefinitions::BLASTrans BLASTrans;
-};
+class COMMON_DLL_IMPORTEXPORT BLASWrapper;
 
 #define BLASWRAPPER_DEF( ValueType, prefix1, prefix2, prefix3, DOT ) 													\
 template<>																												\
@@ -132,8 +120,13 @@ public:																													\
 
 BLASWRAPPER_DEF( float, s, s, is, dot );
 BLASWRAPPER_DEF( double, d, d, id, dot );
+
+#ifdef SCAI_COMPLEX_SUPPORTED
 BLASWRAPPER_DEF( ComplexFloat, c, sc, ic, dotu );
 BLASWRAPPER_DEF( ComplexDouble, z, dz, iz, dotu );
+#endif
+
+#undef BLASWRAPPER_DEF
 
 } /* end namespace blaskernel */
 

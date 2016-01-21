@@ -34,14 +34,12 @@
 // hpp
 #include <scai/blaskernel/external/BLAS_BLAS3.hpp>
 
-// others
+// local library
 #include <scai/blaskernel/BLASKernelTrait.hpp>
-//#include <scai/blaskernel/external/BLASWrapper.hpp>
-#include <scai/blaskernel/external/BLASWrapperNEW.hpp>
+#include <scai/blaskernel/external/BLASWrapper.hpp>
 #include <scai/blaskernel/cblas.hpp>
 
 // internal scai libraries
-
 #include <scai/kregistry/KernelRegistry.hpp>
 
 #include <scai/tracing.hpp>

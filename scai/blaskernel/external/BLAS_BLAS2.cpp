@@ -36,12 +36,10 @@
 
 // local library
 #include <scai/blaskernel/BLASKernelTrait.hpp>
-//#include <scai/blaskernel/external/BLASWrapper.hpp>
-#include <scai/blaskernel/external/BLASWrapperNEW.hpp>
+#include <scai/blaskernel/external/BLASWrapper.hpp>
 #include <scai/blaskernel/cblas.hpp>
 
 // internal scai libraries
-
 #include <scai/tasking/TaskSyncToken.hpp>
 #include <scai/kregistry/KernelRegistry.hpp>
 

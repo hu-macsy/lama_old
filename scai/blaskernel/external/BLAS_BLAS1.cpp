@@ -35,12 +35,11 @@
 #include <scai/blaskernel/external/BLAS_BLAS1.hpp>
 
 // local library
-#include <scai/blaskernel/external/BLASWrapperNEW.hpp>
+#include <scai/blaskernel/external/BLASWrapper.hpp>
 #include <scai/blaskernel/BLASKernelTrait.hpp>
 #include <scai/blaskernel/cblas.hpp>
 
-//Intel MPI need mpi.h to be included before stdio.h so this header comes first
-
+// internal scai libraries
 #include <scai/tasking/TaskSyncToken.hpp>
 
 #include <scai/tracing.hpp>
@@ -54,9 +53,6 @@
 
 // boost
 #include <boost/preprocessor.hpp>
-
-// std
-#include <cmath>
 
 namespace scai
 {
@@ -124,8 +120,6 @@ ValueType BLAS_BLAS1::nrm2( const IndexType n, const ValueType* x, const IndexTy
     {
         SCAI_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
-
-    std::cout << "BLAS_BLAS1::nrm2" << std::endl;
 
     return BLASWrapper<ValueType>::nrm2( static_cast<BLASDefinitions::BLASIndexType>( n ), x, static_cast<BLASDefinitions::BLASIndexType>( incX ));
 }
