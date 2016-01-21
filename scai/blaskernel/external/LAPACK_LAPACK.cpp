@@ -38,7 +38,7 @@
 #include <scai/blaskernel/external/BLAS_BLAS1.hpp>
 #include <scai/blaskernel/BLASKernelTrait.hpp>
 #include <scai/blaskernel/external/LAPACKDefinitions.hpp>
-#include <scai/blaskernel/external/LAPACKWrapperNEW.hpp>
+#include <scai/blaskernel/external/LAPACKWrapper.hpp>
 #include <scai/blaskernel/cblas.hpp>
 
 // scai libraries
