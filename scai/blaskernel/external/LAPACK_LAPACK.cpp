@@ -93,8 +93,8 @@ IndexType LAPACK_LAPACK::getrf(const CBLAS_ORDER order, const IndexType m,
 				static_cast<LAPACKIndexType>(n), A,
 				static_cast<LAPACKIndexType>(lda), ipiv);
 	} else if (m == n && n == lda) {
-		for (int i = 0; i < m; ++i) {
-			for (int j = i + 1; j < n; ++j) {
+		for (IndexType i = 0; i < m; ++i) {
+			for (IndexType j = i + 1; j < n; ++j) {
 				std::swap(A[i * n + j], A[j * m + i]);
 			}
 		}
@@ -103,8 +103,8 @@ IndexType LAPACK_LAPACK::getrf(const CBLAS_ORDER order, const IndexType m,
 				static_cast<LAPACKIndexType>(n), A,
 				static_cast<LAPACKIndexType>(lda), ipiv);
 
-		for (int i = 0; i < m; ++i) {
-			for (int j = i + 1; j < n; ++j) {
+		for (IndexType i = 0; i < m; ++i) {
+			for (IndexType j = i + 1; j < n; ++j) {
 				std::swap(A[i * n + j], A[j * m + i]);
 			}
 		}
@@ -112,7 +112,7 @@ IndexType LAPACK_LAPACK::getrf(const CBLAS_ORDER order, const IndexType m,
 		COMMON_THROWEXCEPTION("row major only supported for square matrices");
 	}
 
-	for (int i = 0; i < m; ++i) {
+	for (IndexType i = 0; i < m; ++i) {
 		--ipiv[i]; // Fortran numbering from 1 to n ->  0 to n-1
 	}
 
@@ -171,7 +171,7 @@ void LAPACK_LAPACK::getinv(const IndexType n, ValueType* a,
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-int LAPACK_LAPACK::getri(const CBLAS_ORDER order, const IndexType n,
+IndexType LAPACK_LAPACK::getri(const CBLAS_ORDER order, const IndexType n,
 		ValueType* const a, const IndexType lda, IndexType* const ipiv)
 {
 	SCAI_REGION( "LAPACK.LAPACK.getri<float>" )
@@ -190,7 +190,7 @@ int LAPACK_LAPACK::getri(const CBLAS_ORDER order, const IndexType n,
 
 	// translate C indexes into  Fortran Indexes for ipiv
 
-	for (int i = 0; i < n; ++i) {
+	for (IndexType i = 0; i < n; ++i) {
 		++ipiv[i];
 	}
 
@@ -199,10 +199,10 @@ int LAPACK_LAPACK::getri(const CBLAS_ORDER order, const IndexType n,
 	if (order != CblasColMajor) {
 		SCAI_ASSERT_EQUAL_ERROR(lda, n)
 
-		for (int i = 0; i < n; ++i) {
+		for (IndexType i = 0; i < n; ++i) {
 			// swap row and column
 
-			for (int j = i + 1; j < n; ++j) {
+			for (IndexType j = i + 1; j < n; ++j) {
 				std::swap(a[i * n + j], a[j * n + i]);
 			}
 		}
@@ -217,8 +217,8 @@ int LAPACK_LAPACK::getri(const CBLAS_ORDER order, const IndexType n,
 	if (order != CblasColMajor) {
 		// transpose back
 
-		for (int i = 0; i < n; ++i) {
-			for (int j = i + 1; j < n; ++j) {
+		for (IndexType i = 0; i < n; ++i) {
+			for (IndexType j = i + 1; j < n; ++j) {
 				std::swap(a[i * n + j], a[j * n + i]);
 			}
 		}
@@ -235,7 +235,7 @@ int LAPACK_LAPACK::getri(const CBLAS_ORDER order, const IndexType n,
 }
 
 template<typename ValueType>
-int LAPACK_LAPACK::tptrs(const CBLAS_ORDER order, const CBLAS_UPLO uplo,
+IndexType LAPACK_LAPACK::tptrs(const CBLAS_ORDER order, const CBLAS_UPLO uplo,
 		const CBLAS_TRANSPOSE trans, const CBLAS_DIAG diag, const IndexType n,
 		const IndexType nrhs, const ValueType* AP, ValueType* B,
 		const IndexType ldb)
