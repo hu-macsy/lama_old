@@ -73,10 +73,10 @@ public:
 
     static bool validIndexes( const IndexType array[], const IndexType n, const IndexType size );
 
-    /** OpenMP implementation for UtilKernelTrait::sum */
+    /** OpenMP implementation for UtilKernelTrait::reduce */
 
     template<typename ValueType>
-    static ValueType sum( const ValueType array[], const IndexType n );
+    static ValueType reduce( const ValueType array[], const IndexType n, const common::reduction::ReductionOp op );
 
     /** OpenMP implementation for UtilKernelTrait::Setter::setVal */
 
@@ -90,14 +90,6 @@ public:
 
     template<typename ValueType>
     static ValueType getValue( const ValueType* array, const IndexType i );
-
-    template<typename ValueType>
-    static ValueType maxval( const ValueType array[], const IndexType n );
-
-    /** OpenMP implementation for UtilKernelTrait::absMaxVal */
-
-    template<typename ValueType>
-    static ValueType absMaxVal( const ValueType array[], const IndexType n );
 
     /** OpenMP implementation for UtilKernelTrait::absMaxDiffVal */
 
@@ -135,6 +127,18 @@ public:
     static void invert( ValueType array[], const IndexType n );
 
 private:
+
+    template<typename ValueType>
+    static ValueType reduceSum( const ValueType array[], const IndexType n );
+
+    template<typename ValueType>
+    static ValueType reduceMaxVal( const ValueType array[], const IndexType n );
+
+    template<typename ValueType>
+    static ValueType reduceMinVal( const ValueType array[], const IndexType n );
+
+    template<typename ValueType>
+    static ValueType reduceAbsMaxVal( const ValueType array[], const IndexType n );
 
     /** Routine that registers all methods at the kernel registry. */
 

@@ -63,44 +63,23 @@ struct UtilKernelTrait
         static const char* getId() { return "Util.validIndexes"; }
     };
 
-    /** @brief Trait for register kernel function sum that sums elements of an array
+    /** @brief Trait for register kernel function reduce that reduces elements of an array
      *
-     *  @tparam ValueType specifies the value type used in the sum reduction.
+     *  @tparam ValueType specifies the value type used in the reduction.
      */
     template <typename ValueType>
-    struct sum
+    struct reduce
     {
-        /** @brief Sum n contiguously stored values.
+        /** @brief reduce op for n contiguously stored valuels
          *
          *  @param[in] array is an array of values
          *  @param[in] n is the size of array
-         *  @return sum of all values in array
-         */
-        typedef ValueType ( *FuncType ) ( const ValueType array[], const IndexType n );
-        static const char* getId () { return "Util.sum"; }
-    };
-
-    template <typename ValueType>
-    struct maxval
-    {
-        /** @brief Find maximal value of n contiguously stored values.
-         *
-         *  @param[in] array is an array of values
-         *  @param[in] n is the size of array
-         *  @return maximum of all values in array
+         *  @param[in] op is the reduction operator ( ADD for sum, MIN for minval, MAX for maxval, ...)
+         *  @return reduced value corresponding to the reduction operator
          */
 
-        typedef ValueType ( *FuncType ) ( const ValueType array[], const IndexType n );
-        static const char* getId() { return "Util.maxval"; }
-    };
-
-    template <typename ValueType>
-    struct absMaxVal
-    {
-        /** @brief Find absolute maximal value of n contiguously stored values. */
-
-        typedef ValueType ( *FuncType ) ( const ValueType array[], const IndexType n );
-        static const char* getId() { return "Util.absMaxVal"; }
+        typedef ValueType ( *FuncType ) ( const ValueType array[], const IndexType n, const common::reduction::ReductionOp op );
+        static const char* getId() { return "Util.reduce"; }
     };
 
     template <typename ValueType>
@@ -134,7 +113,7 @@ struct UtilKernelTrait
         static const char* getId() { return "Util.isSorted"; }
     };
 
-    /** @brief Structure with functiooń pointer type defintions for setter methods.
+    /** @brief Structure with function pointer type defintions for setter methods.
      *
      *  @tparam ValueType specifies the value type used in the set operations.
      */

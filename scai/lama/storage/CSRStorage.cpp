@@ -313,17 +313,17 @@ void CSRStorage<ValueType>::setCSRDataImpl(
 
     if( ia.size() == numRows )
     {
-        static LAMAKernel<UtilKernelTrait::sum<IndexType> > sum;
+        static LAMAKernel<UtilKernelTrait::reduce<IndexType> > reduce;
 
         // checking is done where ia is already valid, preferred is loc
 
-        ContextPtr loc1 = sum.getValidContext( ia.getValidContext( loc ) );
+        ContextPtr loc1 = reduce.getValidContext( ia.getValidContext( loc ) );
 
         ReadAccess<IndexType> csrIA( ia, loc1 );
 
         SCAI_CONTEXT_ACCESS( loc1 )
 
-        IndexType n = sum[loc1]( csrIA.get(), numRows );
+        IndexType n = reduce[loc1]( csrIA.get(), numRows, common::reduction::ADD );
 
         if( n != numValues )
         {
@@ -2349,15 +2349,15 @@ ValueType CSRStorage<ValueType>::maxNorm() const
         return static_cast<ValueType>(0.0);
     }
 
-    static LAMAKernel<UtilKernelTrait::absMaxVal<ValueType> > absMaxVal;
+    static LAMAKernel<UtilKernelTrait::reduce<ValueType> > reduce;
 
-    ContextPtr loc = absMaxVal.getValidContext( this->getContextPtr() );
+    ContextPtr loc = reduce.getValidContext( this->getContextPtr() );
 
     ReadAccess<ValueType> csrValues( mValues, loc );
 
     SCAI_CONTEXT_ACCESS( loc )
 
-    ValueType maxval = absMaxVal[loc]( csrValues.get(), mNumValues );
+    ValueType maxval = reduce[loc]( csrValues.get(), mNumValues, common::reduction::ABS_MAX );
 
     return maxval;
 }

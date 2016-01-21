@@ -93,7 +93,7 @@ void scaleTest( ContextPtr loc )
 template<typename ValueType>
 void sumTest( ContextPtr loc )
 {
-    static LAMAKernel<UtilKernelTrait::sum<ValueType> > sum;
+    static LAMAKernel<UtilKernelTrait::reduce<ValueType> > reduce;
     {
         ValueType valuesValues[] =
         { 0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4 };
@@ -102,7 +102,7 @@ void sumTest( ContextPtr loc )
         LArray<ValueType> values( nValues, valuesValues );
         ReadAccess<ValueType> rValues( values, loc );
         SCAI_CONTEXT_ACCESS( loc );
-        const ValueType resultSum = sum[loc]( rValues.get(), nValues );
+        const ValueType resultSum = reduce[loc]( rValues.get(), nValues, common::reduction::ADD );
         BOOST_CHECK_EQUAL( expectedSum, resultSum );
     }
     {
@@ -110,7 +110,7 @@ void sumTest( ContextPtr loc )
         LArray<ValueType> values;
         ReadAccess<ValueType> rValues( values, loc );
         SCAI_CONTEXT_ACCESS( loc );
-        const ValueType resultSum = sum[loc]( rValues.get(), values.size() );
+        const ValueType resultSum = reduce[loc]( rValues.get(), values.size(), common::reduction::ADD );
         BOOST_CHECK_EQUAL( expectedSum, resultSum );
     }
 }

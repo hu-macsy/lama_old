@@ -205,10 +205,10 @@ IndexType _MatrixStorage::getNumValues() const
     HArray<IndexType> sizes;
     buildCSRSizes( sizes );
 
-    static LAMAKernel<UtilKernelTrait::sum<IndexType> > sum;
-    ContextPtr loc = sum.getValidContext( sizes.getValidContext() );
+    static LAMAKernel<UtilKernelTrait::reduce<IndexType> > reduce;
+    ContextPtr loc = reduce.getValidContext( sizes.getValidContext() );
     ReadAccess<IndexType> csrSizes( sizes, loc );
-    IndexType numValues = sum[ loc ]( csrSizes.get(), mNumRows );
+    IndexType numValues = reduce[ loc ]( csrSizes.get(), mNumRows, common::reduction::ADD );
     return numValues;
 }
 

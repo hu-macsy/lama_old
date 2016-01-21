@@ -48,8 +48,6 @@
 // boost
 #include <boost/preprocessor.hpp>
 
-using std::abs;
-
 namespace scai
 {
 
@@ -67,7 +65,7 @@ void OpenMPUtils::conj( ValueType mValues[], const IndexType n )
 {
     SCAI_REGION( "OpenMP.Utils.conj" )
 
-    if ( n > 0 && common::scalar::isComplex( common::TypeTraits<ValueType>::stype ) )
+    if ( n > 0 && common::scalar::isComplex( TypeTraits<ValueType>::stype ) )
     {
         SCAI_LOG_INFO( logger, "conj, #n = " << n )
 
@@ -75,7 +73,7 @@ void OpenMPUtils::conj( ValueType mValues[], const IndexType n )
 
         for( IndexType i = 0; i < n; i++ )
         {
-            mValues[i] = common::TypeTraits<ValueType>::conj( mValues[i] );
+            mValues[i] = TypeTraits<ValueType>::conj( mValues[i] );
         }
     }
 }
@@ -119,28 +117,155 @@ void OpenMPUtils::setScale(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ValueType OpenMPUtils::sum( const ValueType array[], const IndexType n )
+ValueType OpenMPUtils::reduceSum( const ValueType array[], const IndexType n )
 {
-    SCAI_REGION( "OpenMP.Utils.sum" )
+    SCAI_REGION( "OpenMP.Utils.reduceSum" )
 
-    SCAI_LOG_INFO( logger, "sum # array = " << array << ", n = " << n )
-    ValueType val = static_cast<ValueType>(0.0);
+    ValueType val( 0 );
 
     #pragma omp parallel shared( val )
     {
-        ValueType tVal = static_cast<ValueType>(0.0);
+        ValueType threadVal( 0 );
 
         #pragma omp for schedule( SCAI_OMP_SCHEDULE )
 
         for( IndexType i = 0; i < n; ++i )
         {
-            tVal += array[i];
+            threadVal += array[i];
         }
 
-        atomicAdd( val, tVal );
+        atomicAdd( val, threadVal );
     }
 
     return val;
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+ValueType OpenMPUtils::reduceMaxVal( const ValueType array[], const IndexType n )
+{
+    SCAI_REGION( "OpenMP.Utils.reduceMaxVal" )
+
+    ValueType val( - TypeTraits<ValueType>::getMax() );
+
+    #pragma omp parallel
+    {
+        ValueType threadVal( - TypeTraits<ValueType>::getMax() );
+
+        #pragma omp for schedule( SCAI_OMP_SCHEDULE )
+
+        for ( IndexType i = 0; i < n; ++i )
+        {
+            if( array[i] > threadVal )
+            {
+                threadVal = array[i];
+            }
+        }
+
+        #pragma omp critical
+        {
+            if( threadVal > val )
+            {
+                val = threadVal;
+            }
+        }
+    }
+    return val;
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+ValueType OpenMPUtils::reduceMinVal( const ValueType array[], const IndexType n )
+{
+    SCAI_REGION( "OpenMP.Utils.reduceMinVal" )
+
+    ValueType val( TypeTraits<ValueType>::getMax() );
+
+    #pragma omp parallel
+    {
+        ValueType threadVal( TypeTraits<ValueType>::getMax() );
+
+        #pragma omp for schedule( SCAI_OMP_SCHEDULE )
+
+        for ( IndexType i = 0; i < n; ++i )
+        {
+            if ( array[i] < threadVal )
+            {
+                threadVal = array[i];
+            }
+        }
+
+        #pragma omp critical
+        {
+            if( threadVal < val )
+            {
+                val = threadVal;
+            }
+        }
+    }
+    return val;
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+ValueType OpenMPUtils::reduceAbsMaxVal( const ValueType array[], const IndexType n )
+{
+    SCAI_REGION( "OpenMP.Utils.reduceAbsMaxVal" )
+
+    ValueType val( 0 );
+
+    #pragma omp parallel
+    {
+        ValueType threadVal( 0 );
+
+        #pragma omp for schedule( SCAI_OMP_SCHEDULE )
+
+        for ( IndexType i = 0; i < n; ++i )
+        {
+            ValueType elem = TypeTraits<ValueType>::abs( array[i] );
+
+            if ( elem > threadVal )
+            {
+                threadVal = elem;
+            }
+        }
+
+        #pragma omp critical
+        {
+            if( threadVal > val )
+            {
+                val = threadVal;
+            }
+        }
+    }
+    return val;
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+ValueType OpenMPUtils::reduce( const ValueType array[], const IndexType n, const common::reduction::ReductionOp op )
+{
+    SCAI_LOG_INFO ( logger, "reduce # array = " << array << ", n = " << n << ", op = " << op )
+
+    switch ( op )
+    {
+        case common::reduction::ADD :
+            return reduceSum( array, n );
+        case common::reduction::MAX :
+            return reduceMaxVal( array, n );
+        case common::reduction::MIN :
+            return reduceMinVal( array, n );
+        case common::reduction::ABS_MAX :
+            return reduceAbsMaxVal( array, n );
+        default:
+            COMMON_THROWEXCEPTION( "Unsupported reduce op " << op )
+    }
+
+    return ValueType( 0 );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -238,86 +363,6 @@ ValueType OpenMPUtils::getValue( const ValueType* array, const IndexType i )
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ValueType OpenMPUtils::maxval( const ValueType array[], const IndexType n )
-{
-    SCAI_REGION( "OpenMP.Utils.maxVal" )
-
-    SCAI_LOG_DEBUG( logger, "maxval<" << TypeTraits<ValueType>::id() << ">: " << "array[" << n << "]" )
-
-    ValueType val = static_cast<ValueType>(0.0);
-
-    #pragma omp parallel
-    {
-        ValueType threadVal = static_cast<ValueType>(0.0);
-
-        #pragma omp for schedule( SCAI_OMP_SCHEDULE )
-
-        for ( IndexType i = 0; i < n; ++i )
-        {
-            if( array[i] > threadVal )
-            {
-                threadVal = array[i];
-            }
-        }
-
-        #pragma omp critical
-        {
-            SCAI_LOG_TRACE( logger, "max val of thread = " << threadVal << ", global was " << val )
-
-            if( threadVal > val )
-            {
-                val = threadVal;
-            }
-        }
-    }
-
-    return val;
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
-ValueType OpenMPUtils::absMaxVal( const ValueType array[], const IndexType n )
-{
-    SCAI_REGION( "OpenMP.Utils.absMaxVal" )
-
-    SCAI_LOG_DEBUG( logger, "absMaxVal<" << TypeTraits<ValueType>::id() << ">: " << "array[" << n << "]" )
-
-    ValueType val = static_cast<ValueType>(0.0);
-
-    #pragma omp parallel
-    {
-        ValueType threadVal = static_cast<ValueType>(0.0);
-
-        #pragma omp for schedule( SCAI_OMP_SCHEDULE )
-
-        for ( IndexType i = 0; i < n; ++i )
-        {
-            ValueType elem = abs( array[i] );
-
-            if( elem > threadVal )
-            {
-                threadVal = elem;
-            }
-        }
-
-        #pragma omp critical
-        {
-            SCAI_LOG_TRACE( logger, "max val of thread  = " << threadVal << ", global was " << val )
-
-            if( threadVal > val )
-            {
-                val = threadVal;
-            }
-        }
-    }
-
-    return val;
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
 ValueType OpenMPUtils::absMaxDiffVal( const ValueType array1[], const ValueType array2[], const IndexType n )
 {
     SCAI_REGION( "OpenMP.Utils.absMaxDiffVal" )
@@ -334,7 +379,7 @@ ValueType OpenMPUtils::absMaxDiffVal( const ValueType array1[], const ValueType 
 
         for ( IndexType i = 0; i < n; ++i )
         {
-            ValueType elem = abs( array1[i] - array2[i] );
+            ValueType elem = TypeTraits<ValueType>::abs( array1[i] - array2[i] );
 
             if( elem > threadVal )
             {
@@ -570,13 +615,12 @@ void OpenMPUtils::registerKernels( bool deleteFlag )
 
     // we keep the registrations for IndexType as we do not need conversions
 
-    KernelRegistry::set<UtilKernelTrait::sum<IndexType> >( sum, Host, flag );
+    KernelRegistry::set<UtilKernelTrait::reduce<IndexType> >( reduce, Host, flag );
 
     KernelRegistry::set<UtilKernelTrait::setVal<IndexType> >( setVal, Host, flag );
     KernelRegistry::set<UtilKernelTrait::setOrder<IndexType> >( setOrder, Host, flag );
     KernelRegistry::set<UtilKernelTrait::getValue<IndexType> >( getValue, Host, flag );
 
-    KernelRegistry::set<UtilKernelTrait::maxval<IndexType> >( maxval, Host, flag );
     KernelRegistry::set<UtilKernelTrait::isSorted<IndexType> >( isSorted, Host, flag );
 
     KernelRegistry::set<UtilKernelTrait::setScatter<IndexType, IndexType> >( setScatter, Host, flag );
@@ -591,12 +635,10 @@ void OpenMPUtils::registerKernels( bool deleteFlag )
 
 #define LAMA_UTILS_REGISTER(z, I, _)                                                                             \
     KernelRegistry::set<UtilKernelTrait::conj<ARITHMETIC_HOST_TYPE_##I> >( conj, Host, flag );                   \
-    KernelRegistry::set<UtilKernelTrait::sum<ARITHMETIC_HOST_TYPE_##I> >( sum, Host, flag );                     \
+    KernelRegistry::set<UtilKernelTrait::reduce<ARITHMETIC_HOST_TYPE_##I> >( reduce, Host, flag );               \
     KernelRegistry::set<UtilKernelTrait::setVal<ARITHMETIC_HOST_TYPE_##I> >( setVal, Host, flag );               \
     KernelRegistry::set<UtilKernelTrait::setOrder<ARITHMETIC_HOST_TYPE_##I> >( setOrder, Host, flag );           \
     KernelRegistry::set<UtilKernelTrait::getValue<ARITHMETIC_HOST_TYPE_##I> >( getValue, Host, flag );           \
-    KernelRegistry::set<UtilKernelTrait::maxval<ARITHMETIC_HOST_TYPE_##I> >( maxval, Host, flag );               \
-    KernelRegistry::set<UtilKernelTrait::absMaxVal<ARITHMETIC_HOST_TYPE_##I> >( absMaxVal, Host, flag );         \
     KernelRegistry::set<UtilKernelTrait::absMaxDiffVal<ARITHMETIC_HOST_TYPE_##I> >( absMaxDiffVal, Host, flag ); \
     KernelRegistry::set<UtilKernelTrait::isSorted<ARITHMETIC_HOST_TYPE_##I> >( isSorted, Host, flag );           \
     KernelRegistry::set<UtilKernelTrait::invert<ARITHMETIC_HOST_TYPE_##I> >( invert, Host, flag );               \

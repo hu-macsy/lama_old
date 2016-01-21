@@ -276,7 +276,7 @@ void OpenMPJDSUtils::sortRows( IndexType ilg[], IndexType perm[], const IndexTyp
 
     // The number of buckets is determined by the max value of ilg
 
-    const IndexType maxBucket = OpenMPUtils::maxval( ilg, n );
+    const IndexType maxBucket = OpenMPUtils::reduce( ilg, n, common::reduction::MAX );
 
     SCAI_LOG_INFO( logger, "sort " << n << " values, number of buckets = " << maxBucket )
 

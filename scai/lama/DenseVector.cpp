@@ -520,13 +520,13 @@ Scalar DenseVector<ValueType>::max() const
 
     SCAI_ASSERT_GT( nnu, 0, "no local values for max" )
 
-    static LAMAKernel<UtilKernelTrait::maxval<ValueType> > maxval;
+    static LAMAKernel<UtilKernelTrait::reduce<ValueType> > reduce;
 
-    ContextPtr loc = maxval.getValidContext( mLocalValues.getValidContext() );
+    ContextPtr loc = reduce.getValidContext( mLocalValues.getValidContext() );
 
     ReadAccess<ValueType> localValues( mLocalValues, loc );
 
-    ValueType localMax = maxval[loc]( localValues.get(), localValues.size() );
+    ValueType localMax = reduce[loc]( localValues.get(), localValues.size(), common::reduction::MAX );
 
     return getDistribution().getCommunicator().max( localMax );
 }
@@ -610,15 +610,15 @@ Scalar DenseVector<ValueType>::maxNorm() const
 
     if ( nnu > 0 )
     {
-        static LAMAKernel<UtilKernelTrait::absMaxVal<ValueType> > absMaxVal;
+        static LAMAKernel<UtilKernelTrait::reduce<ValueType> > reduce;
 
-        ContextPtr loc = absMaxVal.getValidContext( mContext );  
+        ContextPtr loc = reduce.getValidContext( mContext );  
 
         ReadAccess<ValueType> read( mLocalValues, loc );
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        localMaxNorm = absMaxVal[loc]( read.get(), nnu );
+        localMaxNorm = reduce[loc]( read.get(), nnu, common::reduction::ABS_MAX );
     }
 
     const Communicator& comm = getDistribution().getCommunicator();
@@ -626,7 +626,8 @@ Scalar DenseVector<ValueType>::maxNorm() const
     ValueType globalMaxNorm = comm.max( localMaxNorm );
 
     SCAI_LOG_INFO( logger,
-                   comm << ": max norm " << *this << ", local max norm of " << nnu << " elements: " << localMaxNorm << ", max norm global = " << globalMaxNorm )
+                   comm << ": max norm " << *this << ", local max norm of " << nnu << " elements: " << localMaxNorm 
+                   << ", max norm global = " << globalMaxNorm )
 
     return globalMaxNorm;
 }

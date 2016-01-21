@@ -776,15 +776,15 @@ ValueType COOStorage<ValueType>::maxNorm() const
         return static_cast<ValueType>(0.0);
     }
 
-    static LAMAKernel<UtilKernelTrait::absMaxVal<ValueType> > absMaxVal;
+    static LAMAKernel<UtilKernelTrait::reduce<ValueType> > reduce;
 
-    ContextPtr loc = absMaxVal.getValidContext( this->getContextPtr() );
+    ContextPtr loc = reduce.getValidContext( this->getContextPtr() );
 
     ReadAccess<ValueType> cooValues( mValues, loc );
 
     SCAI_CONTEXT_ACCESS( loc )
 
-    ValueType maxval = absMaxVal[loc]( cooValues.get(), n );
+    ValueType maxval = reduce[loc]( cooValues.get(), n, common::reduction::MAX );
 
     return maxval;
 }

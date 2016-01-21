@@ -59,10 +59,10 @@ public:
 
     static bool validIndexes( const IndexType array[], const IndexType n, const IndexType size );
 
-    /*  CUDA implementation of UtilKernelTrait::sum  */
+    /*  CUDA implementation of UtilKernelTrait::reduce  */
 
     template<typename ValueType>
-    static ValueType sum( const ValueType array[], const IndexType n );
+    static ValueType reduce( const ValueType array[], const IndexType n, const common::reduction::ReductionOp op );
 
     /*  CUDA implementation of UtilKernelTrait::setVal  */
 
@@ -92,11 +92,6 @@ public:
         const ValueType value,
         const otherValueType inValues[],
         const IndexType n );
-
-    /** CUDA function implements UtilKernelTrait::maxval */
-
-    template<typename ValueType>
-    static ValueType maxval( const ValueType array[], const IndexType n );
 
     /** CUDA function implements UtilKernelTrait::absMaxVal */
 
@@ -136,6 +131,18 @@ public:
 private:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
+
+    template<typename ValueType>
+    static ValueType reduceSum( const ValueType array[], const IndexType n );
+
+    template<typename ValueType>
+    static ValueType reduceMaxVal( const ValueType array[], const IndexType n );
+
+    template<typename ValueType>
+    static ValueType reduceMinVal( const ValueType array[], const IndexType n );
+
+    template<typename ValueType>
+    static ValueType reduceAbsMaxVal( const ValueType array[], const IndexType n );
 
     /** Routine that registers all methods at the kernel registry. */
 
