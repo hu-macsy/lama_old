@@ -27,29 +27,25 @@
  *
  * @brief Wrapper for LAPACK functions
  * @author Eric Schricker
- * @date 12.11.2015
+ * @date 14.01.2016
  * @since 2.0.0
  */
 
 #pragma once
 
-#include <scai/common/exception/NotSupportedValueTypeException.hpp>
+// local library
+#include <scai/blaskernel/external/LAPACKDefinitions.hpp>
 
+// internal scai libraries
 #include <scai/common/macros/unused.hpp>
 #include <scai/common/SCAITypes.hpp>
-
-#include <scai/blaskernel/external/LAPACKDefinitions.hpp>
 
 namespace scai {
 
 namespace blaskernel {
 
 template<typename ValueType>
-class COMMON_DLL_IMPORTEXPORT LAPACKWrapper {
-public:
-	typedef LAPACKDefinitions::LAPACKIndexType LAPACKIndexType;
-	typedef LAPACKDefinitions::LAPACKFlag LAPACKFlag;
-};
+class COMMON_DLL_IMPORTEXPORT LAPACKWrapper;
 
 #define LAPACKWRAPPER_DEF( ValueType, prefix ) 															\
 template<>																								\
@@ -105,10 +101,16 @@ public:																									\
 	}																									\
 };
 
+
 LAPACKWRAPPER_DEF( float, s )
 LAPACKWRAPPER_DEF( double, d )
+
+#ifdef SCAI_COMPLEX_SUPPORTED
 LAPACKWRAPPER_DEF( ComplexFloat, c )
 LAPACKWRAPPER_DEF( ComplexDouble, z )
+#endif
+
+#undef LAPACKWRAPPER_DEF
 
 } /* end namespace blaskernel */
 
