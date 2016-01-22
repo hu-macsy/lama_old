@@ -104,7 +104,7 @@ FORTRAN_BLAS_DEF( gemv, d, void, CALL_DEF_GEMV( double ) );
 FORTRAN_BLAS_DEF( swap, c, void, CALL_DEF_SWAP( ComplexFloat ) )
 FORTRAN_BLAS_DEF( copy, c, void, CALL_DEF_COPY( ComplexFloat ) );
 FORTRAN_BLAS_DEF( axpy, c, void, CALL_DEF_AXPY( ComplexFloat ) );
-FORTRAN_BLAS_DEF( dotu, c, ComplexFloat, CALL_DEF_DOT( ComplexFloat ) );
+FORTRAN_BLAS_DEF( dotc, c, ComplexFloat, CALL_DEF_DOT( ComplexFloat ) );
 FORTRAN_BLAS_DEF( scal, c, void, CALL_DEF_SCAL( ComplexFloat ) );
 FORTRAN_BLAS_DEF( nrm2, sc, float, CALL_DEF_NRM2( ComplexFloat ) );
 FORTRAN_BLAS_DEF( asum, sc, float, CALL_DEF_ASUM( ComplexFloat ) );
@@ -115,7 +115,7 @@ FORTRAN_BLAS_DEF( gemm, c, void, CALL_DEF_GEMM( ComplexFloat ) );
 FORTRAN_BLAS_DEF( swap, z, void, CALL_DEF_SWAP( ComplexDouble ) )
 FORTRAN_BLAS_DEF( copy, z, void, CALL_DEF_COPY( ComplexDouble ) );
 FORTRAN_BLAS_DEF( axpy, z, void, CALL_DEF_AXPY( ComplexDouble ) );
-FORTRAN_BLAS_DEF( dotu, z, ComplexDouble, CALL_DEF_DOT( ComplexDouble ) );
+FORTRAN_BLAS_DEF( dotc, z, ComplexDouble, CALL_DEF_DOT( ComplexDouble ) );
 FORTRAN_BLAS_DEF( scal, z, void, CALL_DEF_SCAL( ComplexDouble ) );
 FORTRAN_BLAS_DEF( nrm2, dz, double, CALL_DEF_NRM2( ComplexDouble ) );
 FORTRAN_BLAS_DEF( asum, dz, double, CALL_DEF_ASUM( ComplexDouble ) );

@@ -122,8 +122,8 @@ BLASWRAPPER_DEF( float, s, s, is, dot );
 BLASWRAPPER_DEF( double, d, d, id, dot );
 
 #ifdef SCAI_COMPLEX_SUPPORTED
-BLASWRAPPER_DEF( ComplexFloat, c, sc, ic, dotu );
-BLASWRAPPER_DEF( ComplexDouble, z, dz, iz, dotu );
+BLASWRAPPER_DEF( ComplexFloat, c, sc, ic, dotc );
+BLASWRAPPER_DEF( ComplexDouble, z, dz, iz, dotc );
 #endif
 
 #undef BLASWRAPPER_DEF

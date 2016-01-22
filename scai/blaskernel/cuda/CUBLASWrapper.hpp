@@ -132,8 +132,8 @@ CUBLASWRAPPER_DEF( float, float, float, S, S, Is, dot )
 CUBLASWRAPPER_DEF( double, double, double, D, D, Id, dot )
 
 #ifdef SCAI_COMPLEX_SUPPORTED
-CUBLASWRAPPER_DEF( ComplexFloat, cuFloatComplex, float, C, Sc, Ic, dotu )
-CUBLASWRAPPER_DEF( ComplexDouble, cuDoubleComplex, double, Z, Dz, Iz, dotu )
+CUBLASWRAPPER_DEF( ComplexFloat, cuFloatComplex, float, C, Sc, Ic, dotc )
+CUBLASWRAPPER_DEF( ComplexDouble, cuDoubleComplex, double, Z, Dz, Iz, dotc )
 #endif
 
 #undef CUBLASWRAPPER_DEF
