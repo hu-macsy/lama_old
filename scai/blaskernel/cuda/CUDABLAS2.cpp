@@ -37,7 +37,7 @@
 // local library
 #include <scai/blaskernel/cuda/cublas_cast.hpp>
 #include <scai/blaskernel/cuda/CUBLASWrapper.hpp>
-#include <scai/blaskernel/cuda/CUBLASDefinitions.hpp>
+#include <scai/blaskernel/cuda/CUBLASTrait.hpp>
 #include <scai/blaskernel/BLASKernelTrait.hpp>
 
 // internal scai libraries
@@ -87,8 +87,8 @@ void CUDABLAS2::gemv(
     ValueType* const y,
     const IndexType incy )
 {
-	typedef CUBLASDefinitions::BLASIndexType BLASIndexType;
-	typedef CUBLASDefinitions::BLASTrans BLASTrans;
+	typedef CUBLASTrait::BLASIndexType BLASIndexType;
+	typedef CUBLASTrait::BLASTrans BLASTrans;
 
 	BLASIndexType order_m = m;
 	BLASIndexType order_n = n;

@@ -8,7 +8,7 @@
 #pragma once
 
 // internal scai libraries
-#include <scai/blaskernel/cuda/CUBLASDefinitions.hpp>
+#include <scai/blaskernel/cuda/CUBLASTrait.hpp>
 
 #include <scai/common/cuda/CUDAError.hpp>
 
@@ -30,8 +30,8 @@ template<>																												\
 class COMMON_DLL_IMPORTEXPORT CUBLASWrapper<ValueType>																	\
 {																														\
 public:																													\
-	typedef CUBLASDefinitions::BLASIndexType BLASIndexType;																\
-	typedef CUBLASDefinitions::BLASTrans BLASTrans;																		\
+	typedef CUBLASTrait::BLASIndexType BLASIndexType;																\
+	typedef CUBLASTrait::BLASTrans BLASTrans;																		\
 																														\
 	static void scal( const BLASIndexType n, const ValueType alpha, ValueType* x, const BLASIndexType incX )			\
 	{																													\

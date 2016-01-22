@@ -51,6 +51,7 @@ scai_project(
     HEADERS        # .hpp
 
         CUBLASWrapper
+	CUBLASTrait
         cublas_cast
 
     ADD_PARENT_SCOPE

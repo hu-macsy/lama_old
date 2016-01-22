@@ -93,8 +93,8 @@ void BLAS_BLAS1::scal(
         SCAI_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
 
-	BLASWrapper<ValueType>::scal( static_cast<BLASDefinitions::BLASIndexType>( n ), alpha, x,
-			static_cast<BLASDefinitions::BLASIndexType>( incX ));
+	BLASWrapper<ValueType>::scal( static_cast<BLASTrait::BLASIndexType>( n ), alpha, x,
+			static_cast<BLASTrait::BLASIndexType>( incX ));
 }
 
 /* ---------------------------------------------------------------------------------------*/
@@ -121,7 +121,7 @@ ValueType BLAS_BLAS1::nrm2( const IndexType n, const ValueType* x, const IndexTy
         SCAI_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
 
-    return BLASWrapper<ValueType>::nrm2( static_cast<BLASDefinitions::BLASIndexType>( n ), x, static_cast<BLASDefinitions::BLASIndexType>( incX ));
+    return BLASWrapper<ValueType>::nrm2( static_cast<BLASTrait::BLASIndexType>( n ), x, static_cast<BLASTrait::BLASIndexType>( incX ));
 }
 
 /* ---------------------------------------------------------------------------------------*/
@@ -148,7 +148,7 @@ ValueType BLAS_BLAS1::asum( const IndexType n, const ValueType* x, const IndexTy
         return static_cast<ValueType>(0.0);
     }
 
-    return BLASWrapper<ValueType>::asum( static_cast<BLASDefinitions::BLASIndexType>( n ), x, static_cast<BLASDefinitions::BLASIndexType>( incX ));
+    return BLASWrapper<ValueType>::asum( static_cast<BLASTrait::BLASIndexType>( n ), x, static_cast<BLASTrait::BLASIndexType>( incX ));
 }
 
 /* ---------------------------------------------------------------------------------------*/
@@ -170,7 +170,7 @@ IndexType BLAS_BLAS1::iamax( const IndexType n, const ValueType* x, const IndexT
         SCAI_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
 
-    return BLASWrapper<ValueType>::iamax( static_cast<BLASDefinitions::BLASIndexType>( n ), x, static_cast<BLASDefinitions::BLASIndexType>( incX ));
+    return BLASWrapper<ValueType>::iamax( static_cast<BLASTrait::BLASIndexType>( n ), x, static_cast<BLASTrait::BLASIndexType>( incX ));
 }
 
 /* ---------------------------------------------------------------------------------------*/
@@ -202,7 +202,7 @@ void BLAS_BLAS1::swap(
         SCAI_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
 
-    BLASWrapper<ValueType>::swap( static_cast<BLASDefinitions::BLASIndexType>( n ), x, static_cast<BLASDefinitions::BLASIndexType>( incX ), y, static_cast<BLASDefinitions::BLASIndexType>( incY ));
+    BLASWrapper<ValueType>::swap( static_cast<BLASTrait::BLASIndexType>( n ), x, static_cast<BLASTrait::BLASIndexType>( incX ), y, static_cast<BLASTrait::BLASIndexType>( incY ));
 }
 
 /* ---------------------------------------------------------------------------------------*/
@@ -236,7 +236,7 @@ void BLAS_BLAS1::copy(
 
     // wrapper: uses overloading and converts arguments if required
 
-    BLASWrapper<ValueType>::copy( static_cast<BLASDefinitions::BLASIndexType>( n ), x, static_cast<BLASDefinitions::BLASIndexType>( incX ), y, static_cast<BLASDefinitions::BLASIndexType>( incY ));
+    BLASWrapper<ValueType>::copy( static_cast<BLASTrait::BLASIndexType>( n ), x, static_cast<BLASTrait::BLASIndexType>( incX ), y, static_cast<BLASTrait::BLASIndexType>( incY ));
 }
 
 /* ---------------------------------------------------------------------------------------*/
@@ -272,7 +272,7 @@ void BLAS_BLAS1::axpy(
     }
     else
     {
-        BLASWrapper<ValueType>::axpy( static_cast<BLASDefinitions::BLASIndexType>( n ), alpha, x, static_cast<BLASDefinitions::BLASIndexType>( incX ), y, static_cast<BLASDefinitions::BLASIndexType>( incY ));
+        BLASWrapper<ValueType>::axpy( static_cast<BLASTrait::BLASIndexType>( n ), alpha, x, static_cast<BLASTrait::BLASIndexType>( incX ), y, static_cast<BLASTrait::BLASIndexType>( incY ));
     }
 }
 
@@ -305,9 +305,9 @@ ValueType BLAS_BLAS1::dot(
         SCAI_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
 
-    ValueType res = BLASWrapper<ValueType>::dot( static_cast<BLASDefinitions::BLASIndexType>( n ), x,
-                                      static_cast<BLASDefinitions::BLASIndexType>( incX ), y,
-                                      static_cast<BLASDefinitions::BLASIndexType>( incY ));
+    ValueType res = BLASWrapper<ValueType>::dot( static_cast<BLASTrait::BLASIndexType>( n ), x,
+                                      static_cast<BLASTrait::BLASIndexType>( incX ), y,
+                                      static_cast<BLASTrait::BLASIndexType>( incY ));
     return res;
 }
 

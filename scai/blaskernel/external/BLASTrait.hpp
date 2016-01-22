@@ -1,5 +1,5 @@
 /**
- * @file BLASDefinitions.cpp
+ * @file BLASTrait.cpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Definitions for BLAS interface
+ * @brief Trait for BLAS interface
  * @author Eric Schricker
  * @date 10.01.2016
  * @since 2.0.0
@@ -43,7 +43,7 @@ namespace scai {
 
 namespace blaskernel {
 
-class COMMON_DLL_IMPORTEXPORT BLASDefinitions
+class COMMON_DLL_IMPORTEXPORT BLASTrait
 {
 public:
 #ifdef F77_INT
@@ -65,16 +65,16 @@ public:
 
 extern "C"
 {
-#define CALL_DEF_SWAP( type ) const scai::blaskernel::BLASDefinitions::BLASIndexType *, type*, const scai::blaskernel::BLASDefinitions::BLASIndexType *, type*, const scai::blaskernel::BLASDefinitions::BLASIndexType *
-#define CALL_DEF_COPY( type ) const scai::blaskernel::BLASDefinitions::BLASIndexType *, const type*, const scai::blaskernel::BLASDefinitions::BLASIndexType *, type*, const scai::blaskernel::BLASDefinitions::BLASIndexType *
-#define CALL_DEF_AXPY( type ) const scai::blaskernel::BLASDefinitions::BLASIndexType *, const type*, const type*, const scai::blaskernel::BLASDefinitions::BLASIndexType *, type*, const scai::blaskernel::BLASDefinitions::BLASIndexType *
-#define CALL_DEF_DOT( type ) const scai::blaskernel::BLASDefinitions::BLASIndexType *, const type*, const scai::blaskernel::BLASDefinitions::BLASIndexType *, const type*, const scai::blaskernel::BLASDefinitions::BLASIndexType *
-#define CALL_DEF_SCAL( type ) const scai::blaskernel::BLASDefinitions::BLASIndexType *, const type*, type*, const scai::blaskernel::BLASDefinitions::BLASIndexType *
-#define CALL_DEF_NRM2( type ) const scai::blaskernel::BLASDefinitions::BLASIndexType *, const type*, const scai::blaskernel::BLASDefinitions::BLASIndexType *
-#define CALL_DEF_ASUM( type ) const scai::blaskernel::BLASDefinitions::BLASIndexType *, const type*, const scai::blaskernel::BLASDefinitions::BLASIndexType *
-#define CALL_DEF_AMAX( type ) const scai::blaskernel::BLASDefinitions::BLASIndexType *, const type*, const scai::blaskernel::BLASDefinitions::BLASIndexType *
-#define CALL_DEF_GEMV( type ) const scai::blaskernel::BLASDefinitions::BLASTrans*, const scai::blaskernel::BLASDefinitions::BLASIndexType *, const scai::blaskernel::BLASDefinitions::BLASIndexType *, const type*, const type*, const scai::blaskernel::BLASDefinitions::BLASIndexType *, const type*, const scai::blaskernel::BLASDefinitions::BLASIndexType *, const type*, type*, const scai::blaskernel::BLASDefinitions::BLASIndexType *
-#define CALL_DEF_GEMM( type ) const scai::blaskernel::BLASDefinitions::BLASTrans*, const scai::blaskernel::BLASDefinitions::BLASTrans*, const scai::blaskernel::BLASDefinitions::BLASIndexType *, const scai::blaskernel::BLASDefinitions::BLASIndexType *, const scai::blaskernel::BLASDefinitions::BLASIndexType *, const type*, const type*, const scai::blaskernel::BLASDefinitions::BLASIndexType *, const type*, const scai::blaskernel::BLASDefinitions::BLASIndexType *, const type*, type*, const scai::blaskernel::BLASDefinitions::BLASIndexType *
+#define CALL_DEF_SWAP( type ) const scai::blaskernel::BLASTrait::BLASIndexType *, type*, const scai::blaskernel::BLASTrait::BLASIndexType *, type*, const scai::blaskernel::BLASTrait::BLASIndexType *
+#define CALL_DEF_COPY( type ) const scai::blaskernel::BLASTrait::BLASIndexType *, const type*, const scai::blaskernel::BLASTrait::BLASIndexType *, type*, const scai::blaskernel::BLASTrait::BLASIndexType *
+#define CALL_DEF_AXPY( type ) const scai::blaskernel::BLASTrait::BLASIndexType *, const type*, const type*, const scai::blaskernel::BLASTrait::BLASIndexType *, type*, const scai::blaskernel::BLASTrait::BLASIndexType *
+#define CALL_DEF_DOT( type ) const scai::blaskernel::BLASTrait::BLASIndexType *, const type*, const scai::blaskernel::BLASTrait::BLASIndexType *, const type*, const scai::blaskernel::BLASTrait::BLASIndexType *
+#define CALL_DEF_SCAL( type ) const scai::blaskernel::BLASTrait::BLASIndexType *, const type*, type*, const scai::blaskernel::BLASTrait::BLASIndexType *
+#define CALL_DEF_NRM2( type ) const scai::blaskernel::BLASTrait::BLASIndexType *, const type*, const scai::blaskernel::BLASTrait::BLASIndexType *
+#define CALL_DEF_ASUM( type ) const scai::blaskernel::BLASTrait::BLASIndexType *, const type*, const scai::blaskernel::BLASTrait::BLASIndexType *
+#define CALL_DEF_AMAX( type ) const scai::blaskernel::BLASTrait::BLASIndexType *, const type*, const scai::blaskernel::BLASTrait::BLASIndexType *
+#define CALL_DEF_GEMV( type ) const scai::blaskernel::BLASTrait::BLASTrans*, const scai::blaskernel::BLASTrait::BLASIndexType *, const scai::blaskernel::BLASTrait::BLASIndexType *, const type*, const type*, const scai::blaskernel::BLASTrait::BLASIndexType *, const type*, const scai::blaskernel::BLASTrait::BLASIndexType *, const type*, type*, const scai::blaskernel::BLASTrait::BLASIndexType *
+#define CALL_DEF_GEMM( type ) const scai::blaskernel::BLASTrait::BLASTrans*, const scai::blaskernel::BLASTrait::BLASTrans*, const scai::blaskernel::BLASTrait::BLASIndexType *, const scai::blaskernel::BLASTrait::BLASIndexType *, const scai::blaskernel::BLASTrait::BLASIndexType *, const type*, const type*, const scai::blaskernel::BLASTrait::BLASIndexType *, const type*, const scai::blaskernel::BLASTrait::BLASIndexType *, const type*, type*, const scai::blaskernel::BLASTrait::BLASIndexType *
 
 //float
 FORTRAN_BLAS_DEF( swap, s, void, CALL_DEF_SWAP( float ) )
@@ -84,7 +84,7 @@ FORTRAN_BLAS_DEF( dot, s, float, CALL_DEF_DOT( float ) );
 FORTRAN_BLAS_DEF( scal, s, void, CALL_DEF_SCAL( float ) );
 FORTRAN_BLAS_DEF( nrm2, s, float, CALL_DEF_NRM2( float ) );
 FORTRAN_BLAS_DEF( asum, s, float, CALL_DEF_ASUM( float ) );
-FORTRAN_BLAS_DEF( amax, is, scai::blaskernel::BLASDefinitions::BLASIndexType, CALL_DEF_AMAX( float ) );
+FORTRAN_BLAS_DEF( amax, is, scai::blaskernel::BLASTrait::BLASIndexType, CALL_DEF_AMAX( float ) );
 FORTRAN_BLAS_DEF( gemv, s, void, CALL_DEF_GEMV( float ) );
 FORTRAN_BLAS_DEF( gemm, s, void, CALL_DEF_GEMM( float ) );
 // double
@@ -95,7 +95,7 @@ FORTRAN_BLAS_DEF( dot, d, double, CALL_DEF_DOT( double ) );
 FORTRAN_BLAS_DEF( scal, d, void, CALL_DEF_SCAL( double ) );
 FORTRAN_BLAS_DEF( nrm2, d, double, CALL_DEF_NRM2( double ) );
 FORTRAN_BLAS_DEF( asum, d, double, CALL_DEF_ASUM( double ) );
-FORTRAN_BLAS_DEF( amax, id, scai::blaskernel::BLASDefinitions::BLASIndexType, CALL_DEF_AMAX( double ) );
+FORTRAN_BLAS_DEF( amax, id, scai::blaskernel::BLASTrait::BLASIndexType, CALL_DEF_AMAX( double ) );
 FORTRAN_BLAS_DEF( gemm, d, void, CALL_DEF_GEMM( double ) );
 FORTRAN_BLAS_DEF( gemv, d, void, CALL_DEF_GEMV( double ) );
 
@@ -108,7 +108,7 @@ FORTRAN_BLAS_DEF( dotu, c, ComplexFloat, CALL_DEF_DOT( ComplexFloat ) );
 FORTRAN_BLAS_DEF( scal, c, void, CALL_DEF_SCAL( ComplexFloat ) );
 FORTRAN_BLAS_DEF( nrm2, sc, float, CALL_DEF_NRM2( ComplexFloat ) );
 FORTRAN_BLAS_DEF( asum, sc, float, CALL_DEF_ASUM( ComplexFloat ) );
-FORTRAN_BLAS_DEF( amax, ic, scai::blaskernel::BLASDefinitions::BLASIndexType, CALL_DEF_AMAX( ComplexFloat ) );
+FORTRAN_BLAS_DEF( amax, ic, scai::blaskernel::BLASTrait::BLASIndexType, CALL_DEF_AMAX( ComplexFloat ) );
 FORTRAN_BLAS_DEF( gemv, c, void, CALL_DEF_GEMV( ComplexFloat ) );
 FORTRAN_BLAS_DEF( gemm, c, void, CALL_DEF_GEMM( ComplexFloat ) );
 // ComplexDouble
@@ -119,7 +119,7 @@ FORTRAN_BLAS_DEF( dotu, z, ComplexDouble, CALL_DEF_DOT( ComplexDouble ) );
 FORTRAN_BLAS_DEF( scal, z, void, CALL_DEF_SCAL( ComplexDouble ) );
 FORTRAN_BLAS_DEF( nrm2, dz, double, CALL_DEF_NRM2( ComplexDouble ) );
 FORTRAN_BLAS_DEF( asum, dz, double, CALL_DEF_ASUM( ComplexDouble ) );
-FORTRAN_BLAS_DEF( amax, iz, scai::blaskernel::BLASDefinitions::BLASIndexType, CALL_DEF_AMAX( ComplexDouble ) );
+FORTRAN_BLAS_DEF( amax, iz, scai::blaskernel::BLASTrait::BLASIndexType, CALL_DEF_AMAX( ComplexDouble ) );
 FORTRAN_BLAS_DEF( gemv, z, void, CALL_DEF_GEMV( ComplexDouble ) );
 FORTRAN_BLAS_DEF( gemm, z, void, CALL_DEF_GEMM( ComplexDouble ) );
 #endif

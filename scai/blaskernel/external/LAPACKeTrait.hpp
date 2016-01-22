@@ -1,5 +1,5 @@
 /**
- * @file LAPACKeDefinitions.hpp
+ * @file LAPACKeTrait.hpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -46,7 +46,7 @@ namespace scai {
 
 namespace blaskernel {
 
-class COMMON_DLL_IMPORTEXPORT LAPACKeDefinitions
+class COMMON_DLL_IMPORTEXPORT LAPACKeTrait
 {
 public:
 	typedef lapack_int LAPACKIndexType;

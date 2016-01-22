@@ -34,7 +34,7 @@
 #pragma once
 
 // local library
-#include <scai/blaskernel/external/LAPACKeDefinitions.hpp>
+#include <scai/blaskernel/external/LAPACKeTrait.hpp>
 
 // internal scai libraries
 #include <scai/common/exception/NotSupportedValueTypeException.hpp>
@@ -56,9 +56,9 @@ template<>																				\
 class COMMON_DLL_IMPORTEXPORT LAPACKeWrapper<ValueType>									\
 {																						\
 public:																					\
-	typedef LAPACKeDefinitions::LAPACKIndexType LAPACKIndexType;						\
-	typedef LAPACKeDefinitions::LAPACKFlag LAPACKFlag;									\
-	typedef LAPACKeDefinitions::LAPACKOrder LAPACKOrder;								\
+	typedef LAPACKeTrait::LAPACKIndexType LAPACKIndexType;						\
+	typedef LAPACKeTrait::LAPACKFlag LAPACKFlag;									\
+	typedef LAPACKeTrait::LAPACKOrder LAPACKOrder;								\
 																						\
 	static LAPACKIndexType getrf(const LAPACKOrder matrix_order,						\
 			const LAPACKIndexType m, const LAPACKIndexType n,							\

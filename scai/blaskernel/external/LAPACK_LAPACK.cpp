@@ -37,7 +37,7 @@
 // local library
 #include <scai/blaskernel/external/BLAS_BLAS1.hpp>
 #include <scai/blaskernel/BLASKernelTrait.hpp>
-#include <scai/blaskernel/external/LAPACKDefinitions.hpp>
+#include <scai/blaskernel/external/LAPACKTrait.hpp>
 #include <scai/blaskernel/external/LAPACKWrapper.hpp>
 #include <scai/blaskernel/cblas.hpp>
 
@@ -78,7 +78,7 @@ IndexType LAPACK_LAPACK::getrf(const CBLAS_ORDER order, const IndexType m,
 
 	SCAI_LOG_INFO(logger, "getrf<float> for A of size " << m << " x " << n)
 
-	typedef LAPACKDefinitions::LAPACKIndexType LAPACKIndexType;
+	typedef LAPACKTrait::LAPACKIndexType LAPACKIndexType;
 
 	if (common::TypeTraits<IndexType>::stype
 			!= common::TypeTraits<LAPACKIndexType>::stype) {
@@ -136,7 +136,7 @@ void LAPACK_LAPACK::getinv(const IndexType n, ValueType* a,
 {
 	SCAI_REGION( "LAPACK.LAPACK.getinv<float>" )
 
-	typedef LAPACKDefinitions::LAPACKIndexType LAPACKIndexType;
+	typedef LAPACKTrait::LAPACKIndexType LAPACKIndexType;
 
 	LAPACKIndexType info = 0;
 
@@ -178,7 +178,7 @@ IndexType LAPACK_LAPACK::getri(const CBLAS_ORDER order, const IndexType n,
 
 	SCAI_LOG_INFO(logger, "getri<float> for A of size " << n << " x " << n)
 
-	typedef LAPACKDefinitions::LAPACKIndexType LAPACKIndexType;
+	typedef LAPACKTrait::LAPACKIndexType LAPACKIndexType;
 
 	if (common::TypeTraits<IndexType>::stype
 			!= common::TypeTraits<LAPACKIndexType>::stype) {
@@ -242,14 +242,14 @@ IndexType LAPACK_LAPACK::tptrs(const CBLAS_ORDER order, const CBLAS_UPLO uplo,
 {
 	SCAI_REGION( "LAPACK.LAPACK.tptrs<float>" )
 
-	typedef LAPACKDefinitions::LAPACKIndexType LAPACKIndexType;
-	typedef LAPACKDefinitions::LAPACKFlag LAPACKFlag;
+	typedef LAPACKTrait::LAPACKIndexType LAPACKIndexType;
+	typedef LAPACKTrait::LAPACKFlag LAPACKFlag;
 
 	LAPACKIndexType info = 0;
 
-	LAPACKFlag UL = LAPACKDefinitions::enum2char(uplo);
-	LAPACKFlag TA = LAPACKDefinitions::enum2char(trans);
-	LAPACKFlag DI = LAPACKDefinitions::enum2char(diag);
+	LAPACKFlag UL = LAPACKTrait::enum2char(uplo);
+	LAPACKFlag TA = LAPACKTrait::enum2char(trans);
+	LAPACKFlag DI = LAPACKTrait::enum2char(diag);
 
 	SCAI_LOG_INFO(logger,
 			"tptrs<float>, n = " << n << ", nrhs = " << nrhs << ", order = " << order << ", UL = " << UL << ", TA = " << TA << ", DI = " << DI);
@@ -276,7 +276,7 @@ void LAPACK_LAPACK::laswp(const CBLAS_ORDER order, const IndexType N,
 {
 	SCAI_REGION( "LAPACK.LAPACK.laswp<float>" )
 
-	typedef LAPACKDefinitions::LAPACKIndexType LAPACKIndexType;
+	typedef LAPACKTrait::LAPACKIndexType LAPACKIndexType;
 
 	if (common::TypeTraits<IndexType>::stype
 			!= common::TypeTraits<LAPACKIndexType>::stype) {
@@ -294,7 +294,7 @@ void LAPACK_LAPACK::laswp(const CBLAS_ORDER order, const IndexType N,
 					&A[i * LDA], INCX);
 		}
 	} else if (order == CblasColMajor) {
-		typedef LAPACKDefinitions::LAPACKIndexType LAPACKIndexType;
+		typedef LAPACKTrait::LAPACKIndexType LAPACKIndexType;
 
 		LAPACKWrapper<ValueType>::laswp(static_cast<LAPACKIndexType>(N), A,
 				static_cast<LAPACKIndexType>(LDA),

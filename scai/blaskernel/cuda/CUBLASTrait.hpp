@@ -1,5 +1,5 @@
 /**
- * @file CUBLASDefinitions.hpp
+ * @file CUBLASTrait.hpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -49,7 +49,7 @@ namespace scai {
 
 namespace blaskernel {
 
-class COMMON_DLL_IMPORTEXPORT CUBLASDefinitions
+class COMMON_DLL_IMPORTEXPORT CUBLASTrait
 {
 public:
 	typedef int BLASIndexType;

@@ -38,7 +38,7 @@
 #include <scai/blaskernel/BLASKernelTrait.hpp>
 #include <scai/blaskernel/cblas.hpp>
 #include <scai/blaskernel/external/LAPACKeWrapper.hpp>
-#include <scai/blaskernel/external/LAPACKeDefinitions.hpp>
+#include <scai/blaskernel/external/LAPACKeTrait.hpp>
 #include <scai/blaskernel/openmp/OpenMPBLAS1.hpp>
 
 // internal scai libraries
@@ -75,7 +75,7 @@ IndexType LAPACKe_LAPACK::getrf(const CBLAS_ORDER order, const IndexType m,
 {
 	SCAI_LOG_INFO(logger, "getrf<float> for A of size " << m << " x " << n)
 
-	typedef LAPACKeDefinitions::LAPACKIndexType LAPACKIndexType;
+	typedef LAPACKeTrait::LAPACKIndexType LAPACKIndexType;
 
 	if (TypeTraits<IndexType>::stype
 			!= TypeTraits<LAPACKIndexType>::stype) {
@@ -83,7 +83,7 @@ IndexType LAPACKe_LAPACK::getrf(const CBLAS_ORDER order, const IndexType m,
 		COMMON_THROWEXCEPTION("indextype mismatch");
 	}
 
-	int info = LAPACKeWrapper<ValueType>::getrf(LAPACKeDefinitions::enum2order(order),
+	int info = LAPACKeWrapper<ValueType>::getrf(LAPACKeTrait::enum2order(order),
 			static_cast<LAPACKIndexType>(m),
 			static_cast<LAPACKIndexType>(n), A,
 			static_cast<LAPACKIndexType>(lda), ipiv);
@@ -106,7 +106,7 @@ template<typename ValueType>
 void LAPACKe_LAPACK::getinv(const IndexType n, ValueType* a,
 		const IndexType lda)
 {
-	typedef LAPACKeDefinitions::LAPACKIndexType LAPACKIndexType;
+	typedef LAPACKeTrait::LAPACKIndexType LAPACKIndexType;
 
 	LAPACKIndexType info = 0;
 
@@ -146,7 +146,7 @@ template<typename ValueType>
 int LAPACKe_LAPACK::getri(const CBLAS_ORDER order, const IndexType n,
 		ValueType* const a, const IndexType lda, IndexType* const ipiv)
 {
-	typedef LAPACKeDefinitions::LAPACKIndexType LAPACKIndexType;
+	typedef LAPACKeTrait::LAPACKIndexType LAPACKIndexType;
 
 	SCAI_LOG_INFO(logger, "getri<float> for A of size " << n << " x " << n)
 
@@ -156,7 +156,7 @@ int LAPACKe_LAPACK::getri(const CBLAS_ORDER order, const IndexType n,
 		COMMON_THROWEXCEPTION("indextype mismatch");
 	}
 
-	LAPACKeDefinitions::LAPACKOrder matrix_order = LAPACKeDefinitions::enum2order(order);
+	LAPACKeTrait::LAPACKOrder matrix_order = LAPACKeTrait::enum2order(order);
 
 	LAPACKIndexType info = LAPACKeWrapper<ValueType>::getri(matrix_order,
 			static_cast<LAPACKIndexType>(n), a,
@@ -182,13 +182,13 @@ int LAPACKe_LAPACK::tptrs(const CBLAS_ORDER order, const CBLAS_UPLO uplo,
 		const IndexType nrhs, const ValueType* AP, ValueType* B,
 		const IndexType ldb)
 {
-	typedef LAPACKeDefinitions::LAPACKIndexType LAPACKIndexType;
+	typedef LAPACKeTrait::LAPACKIndexType LAPACKIndexType;
 
-	LAPACKeDefinitions::LAPACKFlag UL = LAPACKeDefinitions::enum2char(uplo);
-	LAPACKeDefinitions::LAPACKFlag TA = LAPACKeDefinitions::enum2char(trans);
-	LAPACKeDefinitions::LAPACKFlag DI = LAPACKeDefinitions::enum2char(diag);
+	LAPACKeTrait::LAPACKFlag UL = LAPACKeTrait::enum2char(uplo);
+	LAPACKeTrait::LAPACKFlag TA = LAPACKeTrait::enum2char(trans);
+	LAPACKeTrait::LAPACKFlag DI = LAPACKeTrait::enum2char(diag);
 
-	LAPACKeDefinitions::LAPACKOrder matrix_order = LAPACKeDefinitions::enum2order(order);
+	LAPACKeTrait::LAPACKOrder matrix_order = LAPACKeTrait::enum2order(order);
 
 	if (TypeTraits<IndexType>::stype
 			!= TypeTraits<LAPACKIndexType>::stype) {

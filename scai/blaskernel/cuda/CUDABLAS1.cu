@@ -36,7 +36,7 @@
 
 // local library
 #include <scai/blaskernel/cuda/cublas_cast.hpp>
-#include <scai/blaskernel/cuda/CUBLASDefinitions.hpp>
+#include <scai/blaskernel/cuda/CUBLASTrait.hpp>
 #include <scai/blaskernel/cuda/CUBLASWrapper.hpp>
 #include <scai/blaskernel/BLASKernelTrait.hpp>
 
@@ -143,7 +143,7 @@ void CUDABLAS1::scal( IndexType n, const ValueType alpha, ValueType* x_d, const 
 {
     SCAI_REGION( "CUDA.BLAS1.scal" )
 
-	typedef CUBLASDefinitions::BLASIndexType BLASIndexType;
+	typedef CUBLASTrait::BLASIndexType BLASIndexType;
 
     if( incX == 0 )
     {
@@ -189,7 +189,7 @@ ValueType CUDABLAS1::nrm2( IndexType n, const ValueType* x_d, IndexType incX )
 {
     SCAI_REGION( "CUDA.BLAS1.nrm2" )
 
-	typedef CUBLASDefinitions::BLASIndexType BLASIndexType;
+	typedef CUBLASTrait::BLASIndexType BLASIndexType;
 
     if( incX <= 0 )
     {
@@ -237,7 +237,7 @@ ValueType CUDABLAS1::asum( const IndexType n, const ValueType* x_d, const IndexT
 {
     SCAI_REGION( "CUDA.BLAS1.asum" )
 
-	typedef CUBLASDefinitions::BLASIndexType BLASIndexType;
+	typedef CUBLASTrait::BLASIndexType BLASIndexType;
 
     if( incX <= 0 )
     {
@@ -282,7 +282,7 @@ IndexType CUDABLAS1::iamax( const IndexType n, const ValueType* x_d, const Index
 {
     SCAI_REGION( "CUDA.BLAS1.iamax" )
 
-	typedef CUBLASDefinitions::BLASIndexType BLASIndexType;
+	typedef CUBLASTrait::BLASIndexType BLASIndexType;
 
     SCAI_LOG_DEBUG( logger, "iamax<" << TypeTraits<ValueType>::id() << "> of x[" << n << "]" )
 
@@ -327,7 +327,7 @@ void CUDABLAS1::swap(
 {
     SCAI_REGION( "CUDA.BLAS1.swap" )
 
-	typedef CUBLASDefinitions::BLASIndexType BLASIndexType;
+	typedef CUBLASTrait::BLASIndexType BLASIndexType;
 
     if( ( incX <= 0 ) || ( incY <= 0 ) )
     {
@@ -376,7 +376,7 @@ void CUDABLAS1::copy(
 {
     SCAI_REGION( "CUDA.BLAS1.copy" )
 
-	typedef CUBLASDefinitions::BLASIndexType BLASIndexType;
+	typedef CUBLASTrait::BLASIndexType BLASIndexType;
 
     if( ( incX <= 0 ) || ( incY <= 0 ) )
     {
@@ -426,7 +426,7 @@ void CUDABLAS1::axpy(
 {
     SCAI_REGION( "CUDA.BLAS1.axpy" )
 
-	typedef CUBLASDefinitions::BLASIndexType BLASIndexType;
+	typedef CUBLASTrait::BLASIndexType BLASIndexType;
 
     if( ( incX <= 0 ) || ( incY <= 0 ) )
     {
@@ -475,7 +475,7 @@ ValueType CUDABLAS1::dot(
 {
     SCAI_REGION( "CUDA.BLAS1.dot" )
 
-	typedef CUBLASDefinitions::BLASIndexType BLASIndexType;
+	typedef CUBLASTrait::BLASIndexType BLASIndexType;
 
     SCAI_LOG_DEBUG( logger,
                     "dot<" << TypeTraits<ValueType>::id() << ">, n = " << n << ", incX = " << incX << ", incY = " << incY << ", x_d = " << x_d << ", y_d = " << y_d )

@@ -34,7 +34,7 @@
 #pragma once
 
 // local library
-#include <scai/blaskernel/external/LAPACKDefinitions.hpp>
+#include <scai/blaskernel/external/LAPACKTrait.hpp>
 
 // internal scai libraries
 #include <scai/common/macros/unused.hpp>
@@ -52,8 +52,8 @@ template<>																								\
 class COMMON_DLL_IMPORTEXPORT LAPACKWrapper<ValueType>													\
 {																										\
 public:																									\
-	typedef LAPACKDefinitions::LAPACKIndexType LAPACKIndexType;											\
-	typedef LAPACKDefinitions::LAPACKFlag LAPACKFlag;													\
+	typedef LAPACKTrait::LAPACKIndexType LAPACKIndexType;											\
+	typedef LAPACKTrait::LAPACKFlag LAPACKFlag;													\
 																										\
 	static LAPACKIndexType getrf(																		\
 			const LAPACKIndexType m,																	\

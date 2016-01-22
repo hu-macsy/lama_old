@@ -34,7 +34,7 @@
 #pragma once
 
 // local library
-#include <scai/blaskernel/external/BLASDefinitions.hpp>
+#include <scai/blaskernel/external/BLASTrait.hpp>
 #include <scai/blaskernel/cblas.hpp>
 
 // internal scai libraries
@@ -55,8 +55,8 @@ template<>																												\
 class COMMON_DLL_IMPORTEXPORT BLASWrapper<ValueType>																	\
 {																														\
 public:																													\
-	typedef BLASDefinitions::BLASIndexType BLASIndexType;																\
-	typedef BLASDefinitions::BLASTrans BLASTrans;																		\
+	typedef BLASTrait::BLASIndexType BLASIndexType;																\
+	typedef BLASTrait::BLASTrans BLASTrans;																		\
 																														\
 	static void scal( const BLASIndexType n, const ValueType alpha, ValueType* x, const BLASIndexType incX )			\
 	{																													\

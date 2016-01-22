@@ -104,11 +104,11 @@ void BLAS_BLAS2::gemv(
 
     // ToDo: error handling
 
-//    BLASWrapper<ValueType>::gemv( order, transA, static_cast<BLASDefinitions::BLASIndexType>( m ), static_cast<BLASDefinitions::BLASIndexType>( n ), alpha, a, static_cast<BLASDefinitions::BLASIndexType>( lda ), x, static_cast<BLASDefinitions::BLASIndexType>( incX ), beta, y, static_cast<BLASDefinitions::BLASIndexType>( incY ));
+//    BLASWrapper<ValueType>::gemv( order, transA, static_cast<BLASTrait::BLASIndexType>( m ), static_cast<BLASTrait::BLASIndexType>( n ), alpha, a, static_cast<BLASTrait::BLASIndexType>( lda ), x, static_cast<BLASTrait::BLASIndexType>( incX ), beta, y, static_cast<BLASTrait::BLASIndexType>( incY ));
 
     if( order == CblasColMajor )
     {
-    	BLASDefinitions::BLASTrans ta;
+    	BLASTrait::BLASTrans ta;
 
     	switch( transA )
     	{
@@ -123,11 +123,11 @@ void BLAS_BLAS2::gemv(
 				break;
     	}
 
-    	BLASWrapper<ValueType>::gemv( ta, static_cast<BLASDefinitions::BLASIndexType>( m ), static_cast<BLASDefinitions::BLASIndexType>( n ), alpha, a, static_cast<BLASDefinitions::BLASIndexType>( lda ), x, static_cast<BLASDefinitions::BLASIndexType>( incX ), beta, y, static_cast<BLASDefinitions::BLASIndexType>( incY ));
+    	BLASWrapper<ValueType>::gemv( ta, static_cast<BLASTrait::BLASIndexType>( m ), static_cast<BLASTrait::BLASIndexType>( n ), alpha, a, static_cast<BLASTrait::BLASIndexType>( lda ), x, static_cast<BLASTrait::BLASIndexType>( incX ), beta, y, static_cast<BLASTrait::BLASIndexType>( incY ));
     }
     else if( order == CblasRowMajor )
     {
-    	BLASDefinitions::BLASTrans ta;
+    	BLASTrait::BLASTrans ta;
 
 		switch( transA )
 		{
@@ -147,7 +147,7 @@ void BLAS_BLAS2::gemv(
 			COMMON_THROWEXCEPTION( "conj matrix vector multiply on complex numbers currently not supported" )
 		}
 
-		BLASWrapper<ValueType>::gemv( ta, static_cast<BLASDefinitions::BLASIndexType>( n ), static_cast<BLASDefinitions::BLASIndexType>( m ), alpha, a, static_cast<BLASDefinitions::BLASIndexType>( lda ), x, static_cast<BLASDefinitions::BLASIndexType>( incX ), beta, y, static_cast<BLASDefinitions::BLASIndexType>( incY ));
+		BLASWrapper<ValueType>::gemv( ta, static_cast<BLASTrait::BLASIndexType>( n ), static_cast<BLASTrait::BLASIndexType>( m ), alpha, a, static_cast<BLASTrait::BLASIndexType>( lda ), x, static_cast<BLASTrait::BLASIndexType>( incX ), beta, y, static_cast<BLASTrait::BLASIndexType>( incY ));
     }
 
     return;

@@ -87,8 +87,8 @@ void CUDABLAS3::gemm(
     ValueType* const C,
     const IndexType ldc )
 {
-	typedef CUBLASDefinitions::BLASIndexType BLASIndexType;
-	typedef CUBLASDefinitions::BLASTrans BLASTrans;
+	typedef CUBLASTrait::BLASIndexType BLASIndexType;
+	typedef CUBLASTrait::BLASTrans BLASTrans;
 
 	BLASTrans transA_char = CUBLAS_OP_N;
 	BLASTrans transB_char = CUBLAS_OP_N;
