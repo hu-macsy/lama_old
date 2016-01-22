@@ -219,11 +219,15 @@ void COOStorage<ValueType>::check( const char* msg ) const
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        SCAI_ASSERT_ERROR( validIndexes[ loc ]( rIA.get(), mNumValues, mNumRows ),
-                           *this << " @ " << msg << ": illegel indexes in IA" )
+        bool okayIA = validIndexes[ loc ]( rIA.get(), mNumValues, mNumRows );
 
-        SCAI_ASSERT_ERROR( validIndexes[ loc ]( rJA.get(), mNumValues, mNumColumns ),
-                           *this << " @ " << msg << ": illegel indexes in JA" )
+        SCAI_ASSERT_ERROR( okayIA,  *this << " @ " << msg << ": illegel indexes in IA" )
+
+        bool okayJA = validIndexes[ loc ]( rJA.get(), mNumValues, mNumColumns );
+
+        SCAI_ASSERT_ERROR( okayJA, *this << " @ " << msg << ": illegel indexes in JA" )
+
+        SCAI_LOG_INFO( logger, "check, msg = " << msg << ", okayIA = " << okayIA << ", okayJA = " << okayJA )
     }
 }
 
@@ -784,7 +788,7 @@ ValueType COOStorage<ValueType>::maxNorm() const
 
     SCAI_CONTEXT_ACCESS( loc )
 
-    ValueType maxval = reduce[loc]( cooValues.get(), n, common::reduction::MAX );
+    ValueType maxval = reduce[loc]( cooValues.get(), n, common::reduction::ABS_MAX );
 
     return maxval;
 }
