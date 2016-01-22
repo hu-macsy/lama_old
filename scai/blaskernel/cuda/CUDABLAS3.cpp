@@ -41,6 +41,7 @@
 
 // internal scai library
 #include <scai/hmemo/cuda/CUDAStreamSyncToken.hpp>
+
 #include <scai/kregistry/KernelRegistry.hpp>
 
 #include <scai/common/cuda/CUDAError.hpp>
@@ -86,15 +87,18 @@ void CUDABLAS3::gemm(
     ValueType* const C,
     const IndexType ldc )
 {
-    cublasOperation_t transA_char = CUBLAS_OP_N;
-    cublasOperation_t transB_char = CUBLAS_OP_N;
+	typedef CUBLASDefinitions::BLASIndexType BLASIndexType;
+	typedef CUBLASDefinitions::BLASTrans BLASTrans;
+
+	BLASTrans transA_char = CUBLAS_OP_N;
+	BLASTrans transB_char = CUBLAS_OP_N;
 
     //Swap matrix if RowMajor Order
 
-    const int lda_call = ( order == CblasRowMajor ) ? ldb : lda;
-    const int ldb_call = ( order == CblasRowMajor ) ? lda : ldb;
-    const int m_call = ( order == CblasRowMajor ) ? n : m;
-    const int n_call = ( order == CblasRowMajor ) ? m : n;
+    const BLASIndexType lda_call = ( order == CblasRowMajor ) ? ldb : lda;
+    const BLASIndexType ldb_call = ( order == CblasRowMajor ) ? lda : ldb;
+    const BLASIndexType m_call = ( order == CblasRowMajor ) ? n : m;
+    const BLASIndexType n_call = ( order == CblasRowMajor ) ? m : n;
     const ValueType* const A_call = ( order == CblasRowMajor ) ? B : A;
     const ValueType* const B_call = ( order == CblasRowMajor ) ? A : B;
 
@@ -144,8 +148,8 @@ void CUDABLAS3::gemm(
 
     SCAI_LOG_INFO( logger, "cublasSgemm: m = " << m_call << " x " << n_call )
 
-    CUBLASWrapper::gemm( transA_char, transB_char,  static_cast<CUBLASWrapper::BLASIndexType>(m_call) ,  static_cast<CUBLASWrapper::BLASIndexType>(n_call) ,  static_cast<CUBLASWrapper::BLASIndexType>(k) , alpha, A_call,  static_cast<CUBLASWrapper::BLASIndexType>(lda_call) , B_call,  static_cast<CUBLASWrapper::BLASIndexType>(ldb_call) , beta, C,
-    		static_cast<CUBLASWrapper::BLASIndexType>(ldc) );
+    CUBLASWrapper<ValueType>::gemm( transA_char, transB_char,  m_call ,  n_call ,  k , alpha, A_call,  lda_call , B_call,  ldb_call , beta, C,
+    		ldc );
 
     // No error check here possible as kernel is started asynchronously in any case
 

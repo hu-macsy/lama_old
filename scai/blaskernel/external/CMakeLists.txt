@@ -40,7 +40,7 @@ set( CLASSES
 set( HEADERS
         LAPACKWrapper
         LAPACKeWrapper
-        BLASWrapperNEW
+        BLASWrapper
 )
 
 if ( SCAI_BLAS_NAME STREQUAL "MKL" )

@@ -37,7 +37,7 @@
 // local library
 #include <scai/blaskernel/cuda/cublas_cast.hpp>
 #include <scai/blaskernel/cuda/CUBLASWrapper.hpp>
-
+#include <scai/blaskernel/cuda/CUBLASDefinitions.hpp>
 #include <scai/blaskernel/BLASKernelTrait.hpp>
 
 // internal scai libraries
@@ -87,22 +87,23 @@ void CUDABLAS2::gemv(
     ValueType* const y,
     const IndexType incy )
 {
-    IndexType order_m = m;
-    IndexType order_n = n;
+	typedef CUBLASDefinitions::BLASIndexType BLASIndexType;
+	typedef CUBLASDefinitions::BLASTrans BLASTrans;
+
+	BLASIndexType order_m = m;
+	BLASIndexType order_n = n;
 //    char trans_char = ' ';
-    cublasOperation_t trans_char;
+	BLASTrans trans_char;
 
     //switch stuff because columnmajor to rowmajor
     if( order == CblasRowMajor )
     {
         if( trans == CblasNoTrans )
         {
-//            trans_char = 'T';
             trans_char = CUBLAS_OP_T;
         }
         else
         {
-//            trans_char = 'N';
             trans_char = CUBLAS_OP_N;
         }
 
@@ -113,12 +114,10 @@ void CUDABLAS2::gemv(
     {
         if( trans == CblasNoTrans )
         {
-//            trans_char = 'N';
             trans_char = CUBLAS_OP_N;
         }
         else
         {
-//            trans_char = 'T';
             trans_char = CUBLAS_OP_T;
         }
     }
@@ -140,7 +139,7 @@ void CUDABLAS2::gemv(
     SCAI_LOG_INFO( logger,
                    "gemv<" << TypeTraits<ValueType>::id() << "> with cuBLAS: m = " << order_m << " x " << order_n )
 
-    CUBLASWrapper::gemv( trans_char,  order_m ,  order_n , alpha, A,  static_cast<CUBLASWrapper::BLASIndexType>(lda ), x,  static_cast<CUBLASWrapper::BLASIndexType>(incx) , beta, y,  static_cast<CUBLASWrapper::BLASIndexType>(incy) );
+    CUBLASWrapper<ValueType>::gemv( trans_char,  order_m ,  order_n , alpha, A,  static_cast<BLASIndexType>(lda), x,  static_cast<BLASIndexType>(incx) , beta, y,  static_cast<BLASIndexType>(incy) );
 
     // No error check here possible as kernel is started asynchronously
 
