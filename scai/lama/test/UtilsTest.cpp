@@ -66,19 +66,19 @@ namespace UtilsTest
 template<typename ValueType>
 void scaleTest( ContextPtr loc )
 {
-    static LAMAKernel<UtilKernelTrait::scale<ValueType> > scale;
+    static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
 
     ValueType valuesValues[] =
     { 0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4 };
     const IndexType nValues = sizeof( valuesValues ) / sizeof( ValueType );
     ValueType expectedValues[] =
     { 0, 2, 4, 6, 8, 0, 2, 4, 6, 8, 0, 2, 4, 6, 8 };
-    const ValueType mult = 2.0;
+    const ValueType mult = 2;
     LArray<ValueType> values( nValues, valuesValues );
     {
         WriteAccess<ValueType> wValues( values, loc );
         SCAI_CONTEXT_ACCESS( loc );
-        scale[loc]( wValues.get(), mult, nValues );
+        setVal[loc]( wValues.get(), nValues, mult, common::reduction::MULT );
     }
     ReadAccess<ValueType> rValues( values );
 
@@ -127,9 +127,9 @@ void setValTest( ContextPtr loc )
         {
             WriteOnlyAccess<ValueType> wValues( values, loc, 3 * n );
             SCAI_CONTEXT_ACCESS( loc );
-            setVal[loc]( wValues.get(), 3 * n, 0 );
+            setVal[loc]( wValues.get(), 3 * n, 0, common::reduction::COPY );
             // overwrite in the middle to check that there is no out-of-range set
-            setVal[loc]( wValues.get() + n, n, 10 );
+            setVal[loc]( wValues.get() + n, n, 10, common::reduction::COPY );
         }
         ReadAccess<ValueType> rValues( values );
 
@@ -146,7 +146,7 @@ void setValTest( ContextPtr loc )
         {
             WriteOnlyAccess<ValueType> wValues( values, loc, n );
             SCAI_CONTEXT_ACCESS( loc );
-            setVal[loc]( wValues.get(), n, 7 );
+            setVal[loc]( wValues.get(), n, 7, common::reduction::COPY );
         }
     }
 }

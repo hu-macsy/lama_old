@@ -406,8 +406,12 @@ public:
 
     virtual void redistribute( DistributionPtr distribution );
 
-    void writeToFile(
-        const std::string& fileBaseName,
+    /**
+     * @brief Implementatio of pure method, see Vector::writeToFile 
+     *
+     */
+    virtual void writeToFile(
+        const std::string& fileName,
         const File::FileType fileType = File::BINARY,
         const common::scalar::ScalarType dataType = common::scalar::INTERNAL ) const;
 

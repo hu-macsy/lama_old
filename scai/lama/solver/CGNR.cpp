@@ -186,7 +186,7 @@ void CGNR::iterate()
     Scalar normVecZNew = norm.apply( vecZ );
 
 
-    if ( normVecZNew < eps )        //norm is small
+    if ( normVecZ < eps )        //norm is small
     {
         beta = 0.0;
     }

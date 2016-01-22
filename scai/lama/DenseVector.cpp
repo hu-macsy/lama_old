@@ -671,11 +671,11 @@ void DenseVector<ValueType>::vectorPlusVector(
 
     // get function pointers, do not use fallbacks here
 
-    static LAMAKernel<UtilKernelTrait::scale<ValueType> > scale;
+    static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
     static LAMAKernel<blaskernel::BLASKernelTrait::axpy<ValueType> > axpy;
     static LAMAKernel<blaskernel::BLASKernelTrait::sum<ValueType> > sum;
 
-    ContextPtr context = sum.getValidContext( scale, axpy, prefContext );
+    ContextPtr context = sum.getValidContext( setVal, axpy, prefContext );
 
     const IndexType nnu = result.size();
 
@@ -693,7 +693,7 @@ void DenseVector<ValueType>::vectorPlusVector(
         WriteAccess<ValueType> resultAccess( result, context, true );
 
         SCAI_CONTEXT_ACCESS( context )
-        scale[context]( resultAccess.get(), alpha + beta, nnu );
+        setVal[context]( resultAccess.get(), nnu, alpha + beta, common::reduction::MULT );
     }
     else if( &result == &x ) //result = alpha * result + beta * y
     {
@@ -707,7 +707,7 @@ void DenseVector<ValueType>::vectorPlusVector(
             if( alpha != scai::common::constants::ONE ) // result *= alpha
             {
                 SCAI_CONTEXT_ACCESS( context )
-                scale[context]( resultAccess.get(), alpha, nnu );
+                setVal[context]( resultAccess.get(), nnu, alpha, common::reduction::MULT );
             }
             else
             {
@@ -722,7 +722,7 @@ void DenseVector<ValueType>::vectorPlusVector(
             {
                 // result *= alpha
                 SCAI_CONTEXT_ACCESS( context )
-                scale[context]( resultAccess.get(), alpha, nnu );
+                setVal[context]( resultAccess.get(), nnu, alpha, common::reduction::MULT );
             }
 
             // result += y
@@ -737,7 +737,7 @@ void DenseVector<ValueType>::vectorPlusVector(
             if( alpha != scai::common::constants::ONE )
             {
                 SCAI_CONTEXT_ACCESS( context )
-                scale[context]( resultAccess.get(), alpha, nnu );
+                setVal[context]( resultAccess.get(), nnu, alpha, common::reduction::MULT );
             }
 
             SCAI_CONTEXT_ACCESS( context )
@@ -758,7 +758,7 @@ void DenseVector<ValueType>::vectorPlusVector(
         {
             // result *= beta
             SCAI_CONTEXT_ACCESS( context )
-            scale[context]( resultAccess.get(), beta, nnu );
+            setVal[context]( resultAccess.get(), nnu, beta, common::reduction::MULT );
         }
 
         if( alpha != scai::common::constants::ZERO )
@@ -945,7 +945,7 @@ void DenseVector<ValueType>::assign( const Scalar value )
 
     // assign the scalar value on the home of this dense vector.
 
-    HArrayUtils::assignScalar( mLocalValues, value, mContext );
+    HArrayUtils::setScalar( mLocalValues, value, common::reduction::COPY, mContext );
 }
 
 template<typename ValueType>
@@ -1243,7 +1243,12 @@ void DenseVector<ValueType>::writeVectorToMMFile( const std::string& filename, c
 {
 	IndexType numRows = size();
 
-	std::string fullFilename = filename + ".mtx";
+	std::string fullFilename = filename;
+ 
+    if ( !_StorageIO::hasSuffix( filename, ".mtx" ) )
+    {
+        fullFilename += ".mtx";
+    }
 
 	_StorageIO::writeMMHeader( true, numRows, 1, numRows, fullFilename, dataType );
 

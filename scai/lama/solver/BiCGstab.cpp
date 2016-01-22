@@ -172,15 +172,15 @@ void BiCGstab::iterate()
     Scalar& resNorm = runtime.mResNorm;
     L2Norm norm;
 
-
     rhoNew = res0.dotProduct( res );
 
-    if ( resNorm < eps ) // residual is small
+    if ( resNorm < eps || rhoOld < eps || omega < eps) // scalars are small
     {
         beta = 0.0;
     }
     else
     {
+        //std::cout << "rhoNew = " << rhoNew << ", rhoOld = " << rhoOld << ", alpha = " << alpha << ", omega = " << omega << std::endl;
         beta = rhoNew / rhoOld * ( alpha / omega );
     }
 
@@ -192,7 +192,7 @@ void BiCGstab::iterate()
 
     Scalar innerProd = res0.dotProduct( vecV );
 
-    if ( resNorm < eps ) // residual is small
+    if ( resNorm < eps || innerProd < eps ) // scalar is small
     {
         alpha = 0.0;
     }
@@ -206,7 +206,7 @@ void BiCGstab::iterate()
 
     innerProd = vecT.dotProduct( vecT );
 
-    if ( resNorm < eps ) //residual is small
+    if ( resNorm < eps || innerProd < eps ) //scalar is small
     {
         omega = 0.0;
     }

@@ -44,7 +44,6 @@ scai_project (
     HEADERS
 
         FileType
-        LAMAFile
 
     ADD_PARENT_SCOPE
 )

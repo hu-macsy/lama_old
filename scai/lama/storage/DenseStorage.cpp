@@ -366,8 +366,8 @@ void DenseStorageView<ValueType>::setIdentity()
 
     SCAI_CONTEXT_ACCESS( loc )
 
-    setValue[loc]( data.get(), mNumRows, mNumColumns, static_cast<ValueType>( 0 ) );
-    setDiagonalValue[loc]( data.get(), mNumRows, mNumColumns, static_cast<ValueType>( 1 ) );
+    setValue[loc]( data.get(), mNumRows, mNumColumns, ValueType( 0 ) );
+    setDiagonalValue[loc]( data.get(), mNumRows, mNumColumns, ValueType( 1 ) );
 
     SCAI_LOG_INFO( logger, *this << " has been set to identity" )
 }
@@ -584,7 +584,7 @@ void DenseStorageView<ValueType>::matrixTimesVector(
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        setVal[loc]( wResult.get(), mNumRows, static_cast<ValueType>( 0 ) );
+        setVal[loc]( wResult.get(), mNumRows, ValueType( 0 ), common::reduction::COPY );
     }
     else if ( &result != &y )
     {
@@ -699,7 +699,7 @@ void DenseStorageView<ValueType>::vectorTimesMatrix(
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        setVal[loc]( wResult.get(), mNumColumns, static_cast<ValueType>( 0 ) );
+        setVal[loc]( wResult.get(), mNumColumns, ValueType( 0 ), common::reduction::COPY );
     }
     else if ( &result != &y )
     {
@@ -932,7 +932,7 @@ void DenseStorageView<ValueType>::matrixTimesMatrixDense(
         SCAI_LOG_INFO( logger, "init this result with 0, size = " << m * n )
         WriteOnlyAccess<ValueType> resAccess( getData(), context, m * n );
         SCAI_CONTEXT_ACCESS( context )
-        setVal[context]( resAccess.get(), m * n, static_cast<ValueType>( 0 ) );
+        setVal[context]( resAccess.get(), m * n, ValueType( 0 ), common::reduction::COPY );
     }
     else if ( this != &c )
     {

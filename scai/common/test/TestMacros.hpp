@@ -114,6 +114,86 @@ inline ComplexLongDouble eps<ComplexLongDouble>()
 
 #endif
 
+
+/**
+ * @brief small() returns the desired value below which values should be seen as "small" (close to zero)
+ *
+ * @return the "small" values threshold
+ */
+template<typename ValueType>
+inline ValueType small();
+
+/**
+ * @brief small<float>() returns value below which values should be seen as "small" in single precision.
+ *
+ * @return the "small" values threshold
+ */
+template<>
+inline float small<float>()
+{
+    return 1E-3f;
+}
+template<typename ValueType>
+inline ValueType small();
+
+/**
+ * @brief small<double>() returns value below which values should be seen as "small" in double precision.
+ *
+ * @return the "small" values threshold
+ */
+template<>
+inline double small<double>()
+{
+    return 1E-3;
+}
+
+/**
+ * @brief small<long double>() returns value below which values should be seen as "small" in long double precision.
+ *
+ * @return the "small" values threshold
+ */
+template<>
+inline long double small<long double>()
+{
+    return 1E-8L;
+}
+
+#ifdef SCAI_COMPLEX_SUPPORTED
+/**
+ * @brief small<ComplexFloat>() returns value below which values should be seen as "small" for ComplexFloat.
+ *
+ * @return the "small" values threshold
+ */
+template<>
+inline ComplexFloat small<ComplexFloat>()
+{
+    return ComplexFloat(1E-3f);
+}
+
+/**
+ * @brief small<ComplexDouble>() returns value below which values should be seen as "small" for ComplexDouble.
+ *
+ * @return the "small" values threshold
+ */
+template<>
+inline ComplexDouble small<ComplexDouble>()
+{
+    return ComplexDouble(1E-5);
+}
+
+/**
+ * @brief small<ComplexLongDouble>() returns value below which values should be seen as "small" for ComplexLongDouble.
+ *
+ * @return the "small" values threshold
+ */
+template<>
+inline ComplexLongDouble small<ComplexLongDouble>()
+{
+    return ComplexLongDouble(1E-8L);
+}
+
+#endif
+
 //template<typename ValueType>
 //inline scai::lama::Scalar scalarEps();
 //

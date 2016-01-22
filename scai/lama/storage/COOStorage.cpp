@@ -252,7 +252,7 @@ void COOStorage<ValueType>::setIdentity( const IndexType size )
     setOrder[loc]( ia.get(), mNumValues );
     setOrder[loc]( ja.get(), mNumValues );
 
-    setVal[loc]( values.get(), mNumValues, static_cast<ValueType>(1.0) );
+    setVal[loc]( values.get(), mNumValues, ValueType( 1 ), common::reduction::COPY );
 
     mDiagonalProperty = true;
 }
@@ -327,8 +327,8 @@ void COOStorage<ValueType>::setCOOData(
 
     ContextPtr loc = getContextPtr();
 
-    HArrayUtils::assignImpl( mIA, ia, loc );
-    HArrayUtils::assignImpl( mJA, ja, loc );
+    HArrayUtils::assign( mIA, ia, loc );
+    HArrayUtils::assign( mJA, ja, loc );
 
     HArrayUtils::assign( mValues, values, loc ); // supports type conversion
 
@@ -579,15 +579,15 @@ void COOStorage<ValueType>::setDiagonalImpl( const ValueType value )
 template<typename ValueType>
 void COOStorage<ValueType>::scaleImpl( const ValueType value )
 {
-    static LAMAKernel<UtilKernelTrait::scale<ValueType> > scale;
+    static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
 
-    ContextPtr loc = scale.getValidContext( this->getContextPtr() );
+    ContextPtr loc = setVal.getValidContext( this->getContextPtr() );
 
     SCAI_CONTEXT_ACCESS( loc )
 
     WriteAccess<ValueType> wValues( mValues, loc );
 
-    scale[loc]( wValues.get(), value, mNumValues );
+    setVal[loc]( wValues.get(), mNumValues, value, common::reduction::MULT );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -695,7 +695,7 @@ void COOStorage<ValueType>::getDiagonalImpl( HArray<OtherType>& diagonal ) const
 
     // diagonal elements are the first entries of mValues
 
-    set[loc]( wDiagonal.get(), rValues.get(), numDiagonalElements );
+    set[loc]( wDiagonal.get(), rValues.get(), numDiagonalElements, common::reduction::COPY );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -719,7 +719,7 @@ void COOStorage<ValueType>::setDiagonalImpl( const HArray<OtherType>& diagonal )
 
     // diagonal elements are the first entries of mValues
 
-    set[loc]( wValues.get(), rDiagonal.get(), numDiagonalElements );
+    set[loc]( wValues.get(), rDiagonal.get(), numDiagonalElements, common::reduction::COPY );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

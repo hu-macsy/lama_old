@@ -140,6 +140,13 @@ public:
      */
     static Matrix* getMatrix( const Format::MatrixStorageFormat format, const common::scalar::ScalarType type );
 
+    virtual void writeToFile(
+        const std::string& fileName,
+        const File::FileType fileType = File::BINARY,
+        const common::scalar::ScalarType dataType = File::INTERNAL,
+        const File::IndexDataType indexDataTypeIA = File::INT,
+        const File::IndexDataType indexDataTypeJA = File::INT ) const = 0;
+
     /**
      * @brief Checks for a given matrix whether the content of its data is sound.
      *

@@ -160,11 +160,11 @@ public:
 
         if ( context.get() )
         {
-            HArrayUtils::assignScalar( *this, value, context );
+            HArrayUtils::setScalar( *this, value, common::reduction::COPY, context );
         }
         else
         {
-            HArrayUtils::assignScalar( *this, value, hmemo::Context::getHostPtr() );
+            HArrayUtils::setScalar( *this, value, common::reduction::COPY, hmemo::Context::getHostPtr() );
         }
     }
 
@@ -220,7 +220,7 @@ public:
 
         hmemo::ContextPtr context = this->getFirstTouchContextPtr();
         SCAI_ASSERT( context.get(), "No first touch context" )
-        HArrayUtils::assignScalar( *this, val, this->getFirstTouchContextPtr() );
+        HArrayUtils::setScalar( *this, val, common::reduction::COPY, this->getFirstTouchContextPtr() );
         return *this;
     }
 

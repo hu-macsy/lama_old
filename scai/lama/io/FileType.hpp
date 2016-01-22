@@ -72,8 +72,38 @@ enum FileType
      * @brief the Matrix Market Format
      *        (see http://math.nist.gov/matrixMarket for details).
      */
-    MATRIX_MARKET
+    MATRIX_MARKET, 
+    /**
+     * @brief unspecified, used internally 
+     */
+    DEFAULT
 };
+
+/*
+ * Output of ScalarType in stream by writing strings instead of numbers
+ */
+
+static inline std::ostream& operator<<( std::ostream& stream, const FileType& object )
+{
+    switch ( object ) 
+    {
+        case BINARY:
+            stream << "BINARY";
+            break;
+        case FORMATTED:
+            stream << "FORMATTED";
+            break;
+        case XDR:
+            stream << "XDR";
+            break;
+        case MATRIX_MARKET:
+            stream << "MATRIX_MARKET";
+            break;
+        default:
+            stream << "<unknown_file_type>";
+     }
+     return stream;
+}
 
 using namespace common::scalar;
 
@@ -87,9 +117,7 @@ enum IndexDataType
     LONG, INT
 };
 
-}
-;
-// namespace File
+}  // namespace File
 
 /** @brief Help routine to determine the size (in bytes) for the values in a file.
  *

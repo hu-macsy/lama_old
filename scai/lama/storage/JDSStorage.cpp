@@ -99,7 +99,7 @@ JDSStorage<ValueType>::JDSStorage( const IndexType numRows, const IndexType numC
     WriteOnlyAccess<IndexType> ilg( mIlg, loc, mNumRows );
     WriteOnlyAccess<IndexType> perm( mPerm, loc, mNumRows );
 
-    setVal[loc]( ilg.get(), mNumRows, 0 );
+    setVal[loc]( ilg.get(), mNumRows, 0, common::reduction::COPY );
     setOrder[loc]( perm.get(), mNumRows );
 }
 
@@ -153,10 +153,10 @@ void JDSStorage<ValueType>::setJDSData(
 
     ContextPtr loc = getContextPtr();
 
-    HArrayUtils::assignImpl( mDlg, dlg, loc );
-    HArrayUtils::assignImpl( mIlg, ilg, loc );
-    HArrayUtils::assignImpl( mPerm, perm, loc );
-    HArrayUtils::assignImpl( mJa, ja, loc );
+    HArrayUtils::setImpl( mDlg, dlg, common::reduction::COPY, loc );
+    HArrayUtils::setImpl( mIlg, ilg, common::reduction::COPY, loc );
+    HArrayUtils::setImpl( mPerm, perm, common::reduction::COPY, loc );
+    HArrayUtils::setImpl( mJa, ja, common::reduction::COPY, loc );
 
     HArrayUtils::assign( mValues, values, loc ); // supports type conversion
 
@@ -304,7 +304,7 @@ void JDSStorage<ValueType>::setDiagonalImpl( const ValueType value )
 
     SCAI_CONTEXT_ACCESS( loc )
 
-    setVal[loc]( wValues.get(), numDiagonalValues, value );
+    setVal[loc]( wValues.get(), numDiagonalValues, value, common::reduction::COPY );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -606,7 +606,7 @@ void JDSStorage<ValueType>::setIdentity( const IndexType size )
 
         WriteOnlyAccess<ValueType> wValues( mValues, loc, mNumValues );
 
-        setVal[loc]( wValues.get(), mNumRows, static_cast<ValueType>(1.0) );
+        setVal[loc]( wValues.get(), mNumRows, ValueType ( 1 ), common::reduction::COPY );
 
     }
 
@@ -624,8 +624,8 @@ void JDSStorage<ValueType>::setIdentity( const IndexType size )
 
     SCAI_CONTEXT_ACCESS( loc )
 
-    setVal[ loc ]( wDlg.get(), 1, mNumRows );
-    setVal[ loc ]( wIlg.get(), mNumRows, 1 );
+    setVal[ loc ]( wDlg.get(), 1, mNumRows, common::reduction::COPY );
+    setVal[ loc ]( wIlg.get(), mNumRows, 1, common::reduction::COPY );
     setOrder[ loc ]( wPerm.get(), mNumRows );
     setOrder[ loc ]( wJa.get(), mNumRows );
 
@@ -886,7 +886,7 @@ void JDSStorage<ValueType>::allocate( IndexType numRows, IndexType numColumns )
         WriteOnlyAccess<IndexType> ilg( mIlg, loc, mNumRows );
         WriteOnlyAccess<IndexType> perm( mPerm, loc, mNumRows );
 
-        setVal[loc]( ilg.get(), mNumRows, 0 );
+        setVal[loc]( ilg.get(), mNumRows, 0, common::reduction::COPY );
         setOrder[loc]( perm.get(), mNumRows );
     }
 

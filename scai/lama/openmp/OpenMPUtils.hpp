@@ -41,6 +41,7 @@
 
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/macros/assert.hpp>
+#include <scai/common/ReductionOp.hpp>
 
 namespace scai
 {
@@ -54,17 +55,12 @@ class COMMON_DLL_IMPORTEXPORT OpenMPUtils
 {
 public:
 
-    /** OpenMP implementation for UtilKernelTrait::scale */
-
-    template<typename ValueType>
-    static void scale( ValueType mValues[], const ValueType value, const IndexType n );
-
     /** OpenMP implementation for UtilKernelTrait::conj */
 
     template<typename ValueType>
     static void conj( ValueType mValues[], const IndexType n );
 
-    /** OpenMP implementation for UtilKernelTrait::Copy::setScale */
+    /** OpenMP implementation for UtilKernelTrait::setScale */
 
     template<typename ValueType,typename OtherValueType>
     static void setScale(
@@ -77,7 +73,7 @@ public:
 
     static bool validIndexes( const IndexType array[], const IndexType n, const IndexType size );
 
-    /** OpenMP implementation for UtilKernelTrait::Reductions::sum */
+    /** OpenMP implementation for UtilKernelTrait::sum */
 
     template<typename ValueType>
     static ValueType sum( const ValueType array[], const IndexType n );
@@ -85,7 +81,7 @@ public:
     /** OpenMP implementation for UtilKernelTrait::Setter::setVal */
 
     template<typename ValueType>
-    static void setVal( ValueType array[], const IndexType n, const ValueType val );
+    static void setVal( ValueType array[], const IndexType n, const ValueType val, const common::reduction::ReductionOp op );
 
     /** OpenMP implementation for UtilKernelTrait::Setter::setOrder */
 
@@ -98,12 +94,12 @@ public:
     template<typename ValueType>
     static ValueType maxval( const ValueType array[], const IndexType n );
 
-    /** OpenMP implementation for UtilKernelTrait::Reductions::absMaxVal */
+    /** OpenMP implementation for UtilKernelTrait::absMaxVal */
 
     template<typename ValueType>
     static ValueType absMaxVal( const ValueType array[], const IndexType n );
 
-    /** OpenMP implementation for UtilKernelTrait::Reductions::absMaxDiffVal */
+    /** OpenMP implementation for UtilKernelTrait::absMaxDiffVal */
 
     template<typename ValueType>
     static ValueType absMaxDiffVal( const ValueType array1[], const ValueType array2[], const IndexType n );
@@ -116,7 +112,7 @@ public:
     /** OpenMP implementation for UtilKernelTrait::set */
 
     template<typename ValueType1,typename ValueType2>
-    static void set( ValueType1 out[], const ValueType2 in[], const IndexType n );
+    static void set( ValueType1 out[], const ValueType2 in[], const IndexType n, const common::reduction::ReductionOp op );
 
     /** OpenMP implementation for UtilKernelTrait::setGather */
 

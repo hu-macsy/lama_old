@@ -40,6 +40,7 @@
 #include <scai/logging.hpp>
 
 #include <scai/common/SCAITypes.hpp>
+#include <scai/common/ReductionOp.hpp>
 #include <scai/common/macros/assert.hpp>
 
 namespace scai
@@ -66,7 +67,7 @@ public:
     /*  CUDA implementation of UtilKernelTrait::setVal  */
 
     template<typename ValueType>
-    static void setVal( ValueType array[], const IndexType n, const ValueType val );
+    static void setVal( ValueType array[], const IndexType n, const ValueType val, const common::reduction::ReductionOp op );
 
     /*  CUDA implementation of UtilKernelTrait::setOrder  */
 
@@ -115,7 +116,7 @@ public:
     /** CUDA implementation for UtilKernelTrait::set */
 
     template<typename ValueType,typename otherValueType>
-    static void set( ValueType out[], const otherValueType in[], const IndexType n );
+    static void set( ValueType out[], const otherValueType in[], const IndexType n, const common::reduction::ReductionOp op );
 
     /** CUDA implementation for UtilKernelTrait::setGather, out[i]] = in[ indexes[i] ] */
 
