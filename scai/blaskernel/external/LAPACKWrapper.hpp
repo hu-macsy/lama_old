@@ -52,8 +52,8 @@ template<>																								\
 class COMMON_DLL_IMPORTEXPORT LAPACKWrapper<ValueType>													\
 {																										\
 public:																									\
-	typedef LAPACKTrait::LAPACKIndexType LAPACKIndexType;											\
-	typedef LAPACKTrait::LAPACKFlag LAPACKFlag;													\
+	typedef LAPACKTrait::LAPACKIndexType LAPACKIndexType;												\
+	typedef LAPACKTrait::LAPACKFlag LAPACKFlag;															\
 																										\
 	static LAPACKIndexType getrf(																		\
 			const LAPACKIndexType m,																	\

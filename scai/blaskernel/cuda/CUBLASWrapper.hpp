@@ -11,6 +11,7 @@
 #include <scai/blaskernel/cuda/CUBLASTrait.hpp>
 
 #include <scai/common/cuda/CUDAError.hpp>
+#include <scai/common/TypeTraits.hpp>
 
 // CUDA
 #include <cuComplex.h>
@@ -25,13 +26,13 @@ namespace blaskernel {
 template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT CUBLASWrapper;
 
-#define CUBLASWRAPPER_DEF( ValueType, CUBLASValueType, CUBLASAbsValueType, prefix1, prefix2, prefix3, DOT ) 													\
+#define CUBLASWRAPPER_DEF( ValueType, CUBLASValueType, prefix1, prefix2, prefix3, DOT ) 													\
 template<>																												\
 class COMMON_DLL_IMPORTEXPORT CUBLASWrapper<ValueType>																	\
 {																														\
 public:																													\
-	typedef CUBLASTrait::BLASIndexType BLASIndexType;																\
-	typedef CUBLASTrait::BLASTrans BLASTrans;																		\
+	typedef CUBLASTrait::BLASIndexType BLASIndexType;																	\
+	typedef CUBLASTrait::BLASTrans BLASTrans;																			\
 																														\
 	static void scal( const BLASIndexType n, const ValueType alpha, ValueType* x, const BLASIndexType incX )			\
 	{																													\
@@ -42,18 +43,18 @@ public:																													\
 																														\
 	static ValueType nrm2(const BLASIndexType n, const ValueType *x, const BLASIndexType incX) 							\
 	{																													\
-		ValueType nrm2 = 0;																								\
+		common::TypeTraits<ValueType>::PartsType nrm2 = 0;																								\
 		SCAI_CUBLAS_CALL( CUBLAS_BLAS_NAME( nrm2, prefix2 )(CUDAContext_cublasHandle,									\
-				n, reinterpret_cast<const CUBLASValueType*>(x),	incX, reinterpret_cast<CUBLASAbsValueType*>(&nrm2)),	\
+				n, reinterpret_cast<const CUBLASValueType*>(x),	incX, reinterpret_cast<common::TypeTraits<ValueType>::PartsType*>(&nrm2)),	\
 				"CUBLASWrapper::nrm2<" #ValueType ">");																	\
 		return nrm2;																									\
 	}																													\
 																														\
 	static ValueType asum(const BLASIndexType n, const ValueType *x,BLASIndexType incX)									\
 	{																													\
-		ValueType asum = 0;																								\
+		common::TypeTraits<ValueType>::PartsType asum = 0;																								\
 		SCAI_CUBLAS_CALL( CUBLAS_BLAS_NAME( asum, prefix2 )(CUDAContext_cublasHandle, n, 								\
-				reinterpret_cast<const CUBLASValueType*>(x), incX, reinterpret_cast<CUBLASAbsValueType*>( &asum )),		\
+				reinterpret_cast<const CUBLASValueType*>(x), incX, reinterpret_cast<common::TypeTraits<ValueType>::PartsType*>( &asum )),		\
 				"CUBLASWrapper::asum<" #ValueType ">");																	\
 		return asum;																									\
 	}																													\
@@ -128,12 +129,12 @@ public:																													\
 	}																													\
 };
 
-CUBLASWRAPPER_DEF( float, float, float, S, S, Is, dot )
-CUBLASWRAPPER_DEF( double, double, double, D, D, Id, dot )
+CUBLASWRAPPER_DEF( float, float, S, S, Is, dot )
+CUBLASWRAPPER_DEF( double, double, D, D, Id, dot )
 
 #ifdef SCAI_COMPLEX_SUPPORTED
-CUBLASWRAPPER_DEF( ComplexFloat, cuFloatComplex, float, C, Sc, Ic, dotc )
-CUBLASWRAPPER_DEF( ComplexDouble, cuDoubleComplex, double, Z, Dz, Iz, dotc )
+CUBLASWRAPPER_DEF( ComplexFloat, cuFloatComplex, C, Sc, Ic, dotc )
+CUBLASWRAPPER_DEF( ComplexDouble, cuDoubleComplex, Z, Dz, Iz, dotc )
 #endif
 
 #undef CUBLASWRAPPER_DEF

@@ -51,14 +51,14 @@ namespace blaskernel {
 template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT LAPACKeWrapper;
 
-#define LAPACKEWRAPPER_DEF( ValueType, prefix, MKLValueType )							\
+#define LAPACKEWRAPPER_DEF( ValueType, MKLValueType, prefix )							\
 template<>																				\
 class COMMON_DLL_IMPORTEXPORT LAPACKeWrapper<ValueType>									\
 {																						\
 public:																					\
-	typedef LAPACKeTrait::LAPACKIndexType LAPACKIndexType;						\
-	typedef LAPACKeTrait::LAPACKFlag LAPACKFlag;									\
-	typedef LAPACKeTrait::LAPACKOrder LAPACKOrder;								\
+	typedef LAPACKeTrait::LAPACKIndexType LAPACKIndexType;								\
+	typedef LAPACKeTrait::LAPACKFlag LAPACKFlag;										\
+	typedef LAPACKeTrait::LAPACKOrder LAPACKOrder;										\
 																						\
 	static LAPACKIndexType getrf(const LAPACKOrder matrix_order,						\
 			const LAPACKIndexType m, const LAPACKIndexType n,							\
@@ -90,12 +90,12 @@ public:																					\
 	}																					\
 };
 
-LAPACKEWRAPPER_DEF( float, s, float );
-LAPACKEWRAPPER_DEF( double, d, double );
+LAPACKEWRAPPER_DEF( float, float, s );
+LAPACKEWRAPPER_DEF( double, double, d );
 
 #ifdef SCAI_COMPLEX_SUPPORTED
-LAPACKEWRAPPER_DEF( ComplexFloat, c, lapack_complex_float );
-LAPACKEWRAPPER_DEF( ComplexDouble, z, lapack_complex_double );
+LAPACKEWRAPPER_DEF( ComplexFloat, lapack_complex_float, c );
+LAPACKEWRAPPER_DEF( ComplexDouble, lapack_complex_double, z );
 #endif
 
 #undef LAPACKEWRAPPER_DEF
