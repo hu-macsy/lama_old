@@ -261,6 +261,12 @@ void OpenMPJDSUtils::setInversePerm( IndexType inversePerm[], const IndexType pe
 
 void OpenMPJDSUtils::sortRows( IndexType ilg[], IndexType perm[], const IndexType n )
 {
+    if ( n <= 0 )
+    {
+        // just stop here, max reduction delivers illegal value
+        return;
+    }
+
     // Help array needed, because bucket sort cannot be done in-place
 
     scoped_array<IndexType> input( new IndexType[n] );

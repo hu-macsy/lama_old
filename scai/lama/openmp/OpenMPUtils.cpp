@@ -147,17 +147,17 @@ ValueType OpenMPUtils::reduceMaxVal( const ValueType array[], const IndexType n 
 {
     SCAI_REGION( "OpenMP.Utils.reduceMaxVal" )
 
-    ValueType val( - TypeTraits<ValueType>::getMax() );
+    ValueType val( TypeTraits<ValueType>::getMin() );
 
     #pragma omp parallel
     {
-        ValueType threadVal( - TypeTraits<ValueType>::getMax() );
+        ValueType threadVal( TypeTraits<ValueType>::getMin() );
 
         #pragma omp for schedule( SCAI_OMP_SCHEDULE )
 
         for ( IndexType i = 0; i < n; ++i )
         {
-            if( array[i] > threadVal )
+            if ( array[i] > threadVal )
             {
                 threadVal = array[i];
             }
@@ -165,7 +165,7 @@ ValueType OpenMPUtils::reduceMaxVal( const ValueType array[], const IndexType n 
 
         #pragma omp critical
         {
-            if( threadVal > val )
+            if ( threadVal > val )
             {
                 val = threadVal;
             }
@@ -249,7 +249,7 @@ ValueType OpenMPUtils::reduceAbsMaxVal( const ValueType array[], const IndexType
 template<typename ValueType>
 ValueType OpenMPUtils::reduce( const ValueType array[], const IndexType n, const common::reduction::ReductionOp op )
 {
-    SCAI_LOG_INFO ( logger, "reduce # array = " << array << ", n = " << n << ", op = " << op )
+    SCAI_LOG_INFO ( logger, "reduce # array<" << TypeTraits<ValueType>::id() << ">[" << n << "], op = " << op )
 
     switch ( op )
     {
@@ -275,7 +275,8 @@ void OpenMPUtils::setVal( ValueType array[], const IndexType n, const ValueType 
 {
     SCAI_REGION( "OpenMP.Utils.setVal" )
 
-    SCAI_LOG_DEBUG( logger, "setVal<" << TypeTraits<ValueType>::id() << ">: " << "array[" << n << "] = " << val )
+    SCAI_LOG_DEBUG( logger, "setVal<" << TypeTraits<ValueType>::id() << ">: " << "array[" << n << "] = "  
+                            << val << ", op = " << op )
 
     switch ( op )
     {
@@ -499,10 +500,12 @@ bool OpenMPUtils::validIndexes( const IndexType array[], const IndexType n, cons
 
     bool validFlag = true;
 
-    #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE) reduction( & : validFlag )
+    // #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE) reduction( & : validFlag )
 
     for ( IndexType i = 0; i < n; i++ )
     {
+        SCAI_LOG_INFO( logger, "validIndexes, array[ " << i << " ] = " << array[i] )
+
         if( size <= array[i] || 0 > array[i] )
         {
             // exception only in debug mode
@@ -515,6 +518,8 @@ bool OpenMPUtils::validIndexes( const IndexType array[], const IndexType n, cons
             validFlag = false;
         }
     }
+
+    SCAI_LOG_INFO( logger, "validFlag = " << validFlag )
 
     return validFlag;
 }

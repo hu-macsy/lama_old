@@ -201,7 +201,7 @@ ValueType CUDAUtils::reduceMaxVal( const ValueType array[], const IndexType n )
 
     thrust::device_ptr<ValueType> data( const_cast<ValueType*>( array ) );
 
-    ValueType zero( - TypeTraits<ValueType>::getMax() );
+    ValueType zero( TypeTraits<ValueType>::getMin() );
 
     ValueType result = thrust::reduce( data, data + n, zero, thrust::maximum<ValueType>() );
 
@@ -242,8 +242,8 @@ struct absolute_value: public thrust::unary_function<ValueType, ValueType>
     __host__ __device__
     ValueType operator()( const ValueType& x ) const
     {
-        return x < ValueType( 0 ) ? -x : x;
-        // return abs( x );
+        // return x < ValueType( 0 ) ? -x : x;
+        return abs( x );
     }
 };
 
