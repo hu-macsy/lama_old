@@ -296,6 +296,9 @@ void HArrayUtils::setVal( HArray<ValueType>& target, const IndexType index, Valu
 
     loc = setVal.getValidContext( loc );
 
+    SCAI_LOG_INFO( logger, "setVal<" << common::TypeTraits<ValueType>::id() << ">[" << index 
+                           << "] = " << val << " @ " << *loc )
+
     WriteAccess<ValueType> wTarget( target, loc );
 
     SCAI_CONTEXT_ACCESS( loc )

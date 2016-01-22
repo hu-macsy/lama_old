@@ -83,6 +83,7 @@ scai_project (
         ELLUtilsTest
         FileLoggerTest
         GMRESTest
+        HArrayUtilsTest
         InverseSolverTest
         IterationCountTest
         JacobiTest
@@ -155,7 +156,7 @@ add_executable ( lama_test lama_test.cpp ${CXX_SOURCES} )
 if ( WIN32 )
     target_link_libraries ( lama_test ama )
 else ( WIN32 )
-    target_link_libraries ( lama_test ama ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} ${Boost_REGEX_LIBRARY} )
+    target_link_libraries ( lama_test ama scai_hmemo ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} ${Boost_REGEX_LIBRARY} )
 endif ( WIN32 )
 
 ### Copy the README and xmltest.sh file in build directory ### 
