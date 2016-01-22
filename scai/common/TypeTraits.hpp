@@ -99,6 +99,13 @@ public:
         return std::numeric_limits<ValueType>::max();
     }
 
+    /** Get maximal value of a ValueType, used for min, max reductions on arrays. */
+
+    static inline ValueType getMin()
+    {
+        return - std::numeric_limits<ValueType>::max();
+    }
+
     /**
      * @brief Corresponding type value of enum ScalarType.
     */
@@ -142,6 +149,11 @@ public:
         return std::numeric_limits<IndexType>::max();
     }
 
+    static inline IndexType getMin()
+    {
+        return - std::numeric_limits<IndexType>::max();
+    }
+
     static const scalar::ScalarType stype = scalar::INDEX_TYPE;
 
     static inline const char* id()
@@ -181,6 +193,11 @@ public:
         return std::numeric_limits<long double>::max();
     }
 
+    static inline long double getMin()
+    {
+        return - std::numeric_limits<long double>::max();
+    }
+
     static const scalar::ScalarType stype = scalar::LONG_DOUBLE;
 
     static inline const char* id()
@@ -215,6 +232,10 @@ public:
     static inline double getMax()
     {
         return std::numeric_limits<double>::max();
+    }
+    static inline double getMin()
+    {
+        return - std::numeric_limits<double>::max();
     }
 
     static const scalar::ScalarType stype = scalar::DOUBLE;
@@ -251,6 +272,10 @@ public:
     static inline float getMax()
     {
         return std::numeric_limits<float>::max();
+    }
+    static inline float getMin()
+    {
+        return - std::numeric_limits<float>::max();
     }
 
     static const scalar::ScalarType stype = scalar::FLOAT;
@@ -291,6 +316,10 @@ public:
     {
         return std::numeric_limits<float>::max();
     }
+    static inline ComplexFloat getMin()
+    {
+        return 0;
+    }
 
     static const scalar::ScalarType stype = scalar::COMPLEX;
 
@@ -326,6 +355,10 @@ public:
     static inline ComplexDouble getMax()
     {
         return std::numeric_limits<double>::epsilon();
+    }
+    static inline ComplexDouble getMin()
+    {
+        return 0;
     }
 
     static const scalar::ScalarType stype = scalar::DOUBLE_COMPLEX;
@@ -368,6 +401,11 @@ public:
         return std::numeric_limits<long double>::max();
     }
 
+    static inline ComplexLongDouble getMin()
+    {
+        return 0;
+    }
+
     static const scalar::ScalarType stype = scalar::LONG_DOUBLE_COMPLEX;
 
     static inline const char* id()
@@ -388,3 +426,4 @@ template<typename ValueType> inline scalar::ScalarType getScalarType()
 }  // namespace common
 
 }  // namespace scai
+
