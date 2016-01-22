@@ -42,6 +42,7 @@
 #include <scai/tasking/NoSyncToken.hpp>
 
 #include <scai/common/macros/assert.hpp>
+#include <scai/common/Settings.hpp>
 
 // external
 #include <omp.h>
@@ -124,7 +125,7 @@ MICContext::~MICContext()
 
 void MICContext::writeAt( std::ostream& stream ) const
 {
-    stream << "MICContext(" << mDeviceNr << ": " << mNumThreads << " Threads)";
+    stream << "MICContext( device = " << mDeviceNr << ", " << mNumThreads << " Threads )";
 }
 
 /* ----------------------------------------------------------------------------- */
@@ -207,7 +208,11 @@ int MICContext::getCurrentDevice()
 
 static int getDefaultDeviceNr()
 {
-    return 0;
+    int device = 0;
+
+    common::Settings::getEnvironment( device, "SCAI_DEVICE" );
+
+    return device;
 }
 
 /* ----------------------------------------------------------------------------- */
