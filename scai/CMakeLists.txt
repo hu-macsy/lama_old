@@ -224,6 +224,18 @@ ExternalProject_Add ( scai_lama
 	    	BINARY_DIR lama
             )
 
+concatCacheArguments ( scai_lamasolver "CACHE_ARGS" )
+#message ( STATUS "lamasolver CACHE_ARGS ${CACHE_ARGS}" )
+
+ExternalProject_Add ( scai_lamasolver
+            DEPENDS ${SCAI_LAMASOLVER_INTERNAL_DEPS}
+            PREFIX lamasolver
+            SOURCE_DIR ${CMAKE_SOURCE_DIR}/lamasolver
+            CMAKE_ARGS "-DSCAI_COMPLETE_BUILD=1"
+            CMAKE_CACHE_ARGS "${CMAKE_ARGS};${CACHE_ARGS}"
+            BINARY_DIR lama
+            )
+
 ## add custom target docclean
 include ( DocClean )
 

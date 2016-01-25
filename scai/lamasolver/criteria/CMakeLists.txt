@@ -1,5 +1,5 @@
 ###
- # @file CMakeLists.txt
+ # @file scai/lamasolver/criteria/CMakeLists.txt
  #
  # @license
  # Copyright (c) 2009-2015
@@ -25,15 +25,19 @@
  # SOFTWARE.
  # @endlicense
  #
- # @brief CMake configuration file for scai_lama examples
+ # @brief scai/lamasolver/criteria/CMakeLists.txt
  # @author Jan Ecker
- # @date 02.12.2015
+ # @date 02.04.2013
+ # @since 1.0.0
 ###
 
-foreach ( executable blas1 matrix scalar simple vector )
-    add_executable( ${executable} ${executable}.cpp )
-    target_link_libraries( ${executable} ama )
-    set ( EXAMPLE_EXECUTABLES_TUTORIAL "${EXAMPLE_EXECUTABLES_TUTORIAL} ${executable}.exe" )
-endforeach ( executable )
+### Add classes and header files ###
 
-set ( EXAMPLE_EXECUTABLES_TUTORIAL "${EXAMPLE_EXECUTABLES_TUTORIAL}" PARENT_SCOPE )
+set ( CLASSES
+        Criterion
+        IterationCount
+        ResidualStagnation
+        ResidualThreshold
+    )
+    
+scai_project ( CLASSES ${CLASSES} ADD_PARENT_SCOPE )

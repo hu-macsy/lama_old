@@ -1,5 +1,5 @@
 ###
- # @file CMakeLists.txt
+ # @file scai/lamasolver/logger/CMakeLists.txt
  #
  # @license
  # Copyright (c) 2009-2015
@@ -25,15 +25,24 @@
  # SOFTWARE.
  # @endlicense
  #
- # @brief CMake configuration file for scai_lama examples
+ # @brief scai/lamasolver/logger/CMakeLists.txt
  # @author Jan Ecker
- # @date 02.12.2015
+ # @date 02.04.2013
+ # @since 1.0.0
 ###
 
-foreach ( executable blas1 matrix scalar simple vector )
-    add_executable( ${executable} ${executable}.cpp )
-    target_link_libraries( ${executable} ama )
-    set ( EXAMPLE_EXECUTABLES_TUTORIAL "${EXAMPLE_EXECUTABLES_TUTORIAL} ${executable}.exe" )
-endforeach ( executable )
+### Add classes (.cpp + .hpp) and header (only .hpp) files ###
 
-set ( EXAMPLE_EXECUTABLES_TUTORIAL "${EXAMPLE_EXECUTABLES_TUTORIAL}" PARENT_SCOPE )
+set ( CLASSES
+        CommonLogger
+        FileLogger
+        SolverLogger
+        Timer
+    )
+
+set ( HEADERS
+        LoggerWriteBehaviour
+        LogLevel
+    )
+    
+scai_project ( CLASSES ${CLASSES} HEADERS ${HEADERS} ADD_PARENT_SCOPE )

@@ -1,5 +1,5 @@
 ###
- # @file scai/lama/CMakeLists.txt
+ # @file scai/lamasolver/CMakeLists.txt
  #
  # @license
  # Copyright (c) 2009-2015
@@ -26,26 +26,26 @@
  # @endlicense
  #
  # @brief Main specification file for CMake
- # @author Thomas Brandes, Jiri Kraus
- # @date 29.03.2012
- # @since 1.0.0
+ # @author Lauretta Schubert
+ # @date 25.01.2016
+ # @since 2.0.0
 ###
 
 ### Set required CMake version
 cmake_minimum_required ( VERSION 2.8 )
 
 ### Set PROJECT NAME / supported LANGUAGES
-project ( LAMA CXX )
+project ( LAMASOLVER CXX )
 
 ### Set version of LAMA
 # TOOD: where is the best place to define this?
-set ( SCAI_LAMA_VERSION_NAME "Alpamayo" )
-set ( SCAI_LAMA_COPYRIGHT_YEAR 2015 )
-set ( SCAI_LAMA_VERSION_MAJOR 1 )
-set ( SCAI_LAMA_VERSION_MINOR 0 )
-set ( SCAI_LAMA_VERSION_PATCH 1 )
-set ( SCAI_LAMA_VERSION_COUNT 3 )
-set ( SCAI_LAMA_VERSION ${SCAI_LAMA_VERSION_MAJOR}.${SCAI_LAMA_VERSION_MINOR}.${SCAI_LAMA_VERSION_PATCH} )
+set ( SCAI_LAMASOLVER_VERSION_NAME "Alpamayo" )
+set ( SCAI_LAMASOLVER_COPYRIGHT_YEAR 2015 )
+set ( SCAI_LAMASOLVER_VERSION_MAJOR 1 )
+set ( SCAI_LAMASOLVER_VERSION_MINOR 0 )
+set ( SCAI_LAMASOLVER_VERSION_PATCH 1 )
+set ( SCAI_LAMASOLVER_VERSION_COUNT 3 )
+set ( SCAI_LAMASOLVER_VERSION ${SCAI_LAMASOLVER_VERSION_MAJOR}.${SCAI_LAMASOLVER_VERSION_MINOR}.${SCAI_LAMASOLVER_VERSION_PATCH} )
 
 ### Set Module Path
 set ( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../CMake/Modules" )
@@ -67,13 +67,13 @@ endif ( NOT SCAI_COMPLETE_BUILD )
 include ( InternalDependencies )
 include ( ExternalDependencies )
 
-foreach    ( module ${SCAI_LAMA_EXTERNAL_DEPS} )
+foreach    ( module ${SCAI_LAMASOLVER_EXTERNAL_DEPS} )
     include( Package/${module} )
-endforeach ( module ${SCAI_LAMA_EXTERNAL_DEPS} )
+endforeach ( module ${SCAI_LAMASOLVER_EXTERNAL_DEPS} )
 
-foreach    ( PACKAGE_TO_FIND ${SCAI_LAMA_INTERNAL_DEPS} )
+foreach    ( PACKAGE_TO_FIND ${SCAI_LAMASOLVER_INTERNAL_DEPS} )
     find_package ( ${PACKAGE_TO_FIND} ${SCAI_FIND_PACKAGE_FLAGS} REQUIRED )
-endforeach ( PACKAGE_TO_FIND $${SCAI_LAMA_INTERNAL_DEPS} )
+endforeach ( PACKAGE_TO_FIND $${SCAI_LAMASOLVER_INTERNAL_DEPS} )
 
 ## finalize build flags
 include ( ConcludeFlags )
@@ -106,14 +106,14 @@ endif ( WIN32 )
 ### Project System-Include
 include_directories ( ../.. )
 
-foreach    ( module ${SCAI_LAMA_INTERNAL_DEPS} ${SCAI_LAMA_EXTERNAL_DEPS} )
+foreach    ( module ${SCAI_LAMASOLVER_INTERNAL_DEPS} ${SCAI_LAMASOLVER_EXTERNAL_DEPS} )
 	string ( TOUPPER ${module} upper_module )
     include_directories( ${${upper_module}_INCLUDE_DIR} )
-endforeach ( module ${SCAI_LAMA_INTERNAL_DEPS} ${SCAI_LAMA_EXTERNAL_DEPS} )
+endforeach ( module ${SCAI_LAMASOLVER_INTERNAL_DEPS} ${SCAI_LAMASOLVER_EXTERNAL_DEPS} )
 
 include ( SCAIAssert )
 
-### build lama library
+### build lamasolver library
 
 include ( Functions/scaiProject )
 
@@ -123,66 +123,48 @@ scai_project(
 
     CLASSES
 
-        CommunicationPlan
-        Communicator
-        DenseVector
-        Distributed
-        HArrayUtils
-        NoCommunicator
-        StorageIO
-        Vector
+        AMGSetup
+        BiCG
+        BiCGstab
+        CG
+    #   CGNE
+        CGNR
+        CGS
+        DefaultJacobi
+        GMRES
+        InverseSolver
+        IterativeSolver
+        MINRES
+        OmegaSolver
+        Richardson
+        SOR
+        SimpleAMG
+        SingleGridSetup
+        SolutionProxy
+        Solver
+        SpecializedJacobi
+        TFQMR
+        TrivialPreconditioner
 
     HEADERS
 
-        UtilKernelTrait
-        CSRKernelTrait
-        DenseKernelTrait
-        DIAKernelTrait
-        ELLKernelTrait
-        COOKernelTrait
-        JDSKernelTrait
-
-        LAMAKernel
-        LArray
-        LAMAArrayRef
-
-        Scalar
-
-        CRTPCommunicator
+        shared_lib
     )
 
 ### add subdirectories ###
+add_subdirectory ( criteria )
+add_subdirectory ( logger )
+
+### for external amg ###
+file ( GLOB AMG_SUBDIRPRESENT "amg" )
+
+if ( AMG_SUBDIRPRESENT )
+    add_subdirectory ( ${AMG_SUBDIRPRESENT} )
+    message ( STATUS "amg subdir provides following solver libraries: ${LAMASOLVER_SOLVER_LIBRARIES}" )
+    #set ( LAMASOLVER_SOLVER_LIBRARIES ${LAMASOLVER_SOLVER_LIBRARIES} PARENT_SCOPE )
+endif ( AMG_SUBDIRPRESENT )
+
 add_subdirectory( doc )
-
-## CUDA
-if ( CUDA_FOUND AND USE_CUDA AND CUDA_HAVE_GPU )
-    add_subdirectory ( cuda )
-endif ( CUDA_FOUND AND USE_CUDA AND CUDA_HAVE_GPU )
-
-## MIC
-if ( USE_MIC )
-    add_subdirectory ( mic )
-endif ( USE_MIC )
-
-add_subdirectory ( distribution )
-add_subdirectory ( expression )
-add_subdirectory ( io )
-add_subdirectory ( matrix )
-add_subdirectory ( matutils )
-
-## MPI
-if ( MPI_FOUND AND USE_MPI )
-    add_subdirectory ( mpi )
-endif ( MPI_FOUND AND USE_MPI )
-
-## GPI
-if ( GPI2_FOUND AND IBVERBS_FOUND AND USE_GPI2 )
-    add_subdirectory( gpi )
-endif ( GPI2_FOUND AND IBVERBS_FOUND AND USE_GPI2 )
-
-add_subdirectory ( norm )
-add_subdirectory ( openmp )
-add_subdirectory ( storage )
 
 if ( FOUND_BOOST_TEST AND BUILD_TEST )
     add_subdirectory ( test )
@@ -197,12 +179,15 @@ endif ( WIN32 )
 
 ### add library ###
 
-if    ( CUDA_FOUND AND USE_CUDA AND CUDA_HAVE_GPU )
-	cuda_compile ( CUDA_FILES ${CUDA_SOURCES} )
-	set ( CXX_SOURCES ${CXX_SOURCES} ${CUDA_FILES} )
-endif ( CUDA_FOUND AND USE_CUDA AND CUDA_HAVE_GPU )
+add_library ( amasolver ${SCAI_LIBRARY_TYPE} ${CXX_SOURCES} )
 
-add_library ( ama ${SCAI_LIBRARY_TYPE} ${CXX_SOURCES} )
+# Might be some additional solver libraries have been defined
+
+message ( STATUS "LAMASOLVER uses following solver libraries: ${LAMASOLVER_SOLVER_LIBRARIES}" )
+if    ( LAMASOLVER_SOLVER_LIBRARIES )
+    message ( STATUS "linked to lamasolver: ${LAMASOLVER_SOLVER_LIBRARIES}" )
+    target_link_libraries( amasolver ${LAMASOLVER_SOLVER_LIBRARIES} )
+endif ( LAMASOLVER_SOLVER_LIBRARIES )
 
 ## add link libraries
 list ( REVERSE SCAI_LAMA_INTERNAL_DEPS )
@@ -210,27 +195,27 @@ foreach    ( module ${SCAI_LAMA_INTERNAL_DEPS} )
 	string ( TOUPPER ${module} upper_module )
 	set ( LAMA_LINK_LIBRARIES ${LAMA_LINK_LIBRARIES} ${${upper_module}_LIBRARY} )
 endforeach ( module ${SCAI_LAMA_INTERNAL_DEPS} )
-target_link_libraries ( ama ${SCAI_START_LINK_LIBRARIES} ${LAMA_LINK_LIBRARIES} ${SCAI_END_LINK_LIBRARIES} )
+target_link_libraries ( amasolver ${SCAI_START_LINK_LIBRARIES} ${LAMA_LINK_LIBRARIES} ${SCAI_END_LINK_LIBRARIES} )
 
 foreach    ( module ${SCAI_LAMA_EXTERNAL_DEPS} )
 	string ( TOUPPER ${module} upper_module )
-    target_link_libraries ( ama ${SCAI_${upper_module}_LIBRARIES} )
+    target_link_libraries ( amasolver ${SCAI_${upper_module}_LIBRARIES} )
 endforeach ( module ${SCAI_LAMA_EXTERNAL_DEPS} )
 
 # external libraries
 
 if    ( GPI2_FOUND AND IBVERBS_FOUND AND USE_GPI2 )
-    target_link_libraries ( ama ${GPI2_LIBRARIES} ${IBVERBS_LIBRARIES} )
+    target_link_libraries ( amasolver ${GPI2_LIBRARIES} ${IBVERBS_LIBRARIES} )
 endif ( GPI2_FOUND AND IBVERBS_FOUND AND USE_GPI2 )
 
 if ( SCALAPACK_FOUND AND MPI_FOUND AND USE_MPI )
-    target_link_libraries ( ama ${SCAI_PBLAS_LIBRARIES} )
+    target_link_libraries ( amasolver ${SCAI_PBLAS_LIBRARIES} )
     add_definitions( -DSCAI_MKL_SCALAPACK ) ## TODO: where used?!
 endif ( SCALAPACK_FOUND AND MPI_FOUND AND USE_MPI )
 
 if ( USE_MIC )
     set ( MKLROOT $ENV{MKLROOT} )
-    set_target_properties( ama PROPERTIES LINK_FLAGS
+    set_target_properties( amasolver PROPERTIES LINK_FLAGS
         "-offload-option,mic,compiler,\"-L${MKLROOT}/lib/mic -Wl,--start-group -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_core -Wl,--end-group\"" )
 endif ( USE_MIC )
 
@@ -238,11 +223,10 @@ endif ( USE_MIC )
 ## install( FILES ${CXX_HEADERS} DESTINATION include/scai/lama ) does not work
 
 include( Functions/relativeInstall )
-relative_install( FILES ${CXX_HEADERS} DESTINATION include/scai/lama )
+relative_install( FILES ${CXX_HEADERS} DESTINATION include/scai/lamasolver )
 
 ## install library.hpp
-configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/lama.hpp.in" "${CMAKE_CURRENT_BINARY_DIR}/include/scai/lama.hpp" )
-install ( FILES "${CMAKE_CURRENT_BINARY_DIR}/include/scai/lama.hpp" DESTINATION include/scai )
+install ( FILES "${CMAKE_CURRENT_BINARY_DIR}/include/scai/lamasolver.hpp" DESTINATION include/scai )
 
 ## build examples
 add_subdirectory( examples )

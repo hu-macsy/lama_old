@@ -53,22 +53,14 @@ scai_project (
 
     SOURCES
 
-        BiCGstabTest
-       # BiCGTest  : disabled as long as MatrixTranspose for DenseMatrix is
-       # not supported
+
        # BLAS1Test
        # BLAS2Test
        # BLAS3Test
-        CGTest
-       # not yet: CGNETest
-        CGNRTest
-       # CGSTest: This test fails: testSolve, result not < 1E-4
-        CommonLoggerTest
         CommunicatorTest
         COOSparseMatrixTest
         COOStorageTest
         COOUtilsTest
-        CriterionTest
         CSRSparseMatrixTest
         CSRStorageTest
         CSRUtilsTest
@@ -81,12 +73,7 @@ scai_project (
         ELLSparseMatrixTest
         ELLStorageTest
         ELLUtilsTest
-        FileLoggerTest
-        GMRESTest
         HArrayUtilsTest
-        InverseSolverTest
-        IterationCountTest
-        JacobiTest
         JDSSparseMatrixTest
         JDSStorageTest
         JDSUtilsTest
@@ -97,21 +84,11 @@ scai_project (
         MatrixStorageConversionTest
         MatrixTest
         MaxNormTest
-        MINRESTest
         NoCommunicatorTest
-        ResidualStagnationTest
-        ResidualThresholdTest
-        RichardsonTest
         ScalarTest
-        SimpleAMGTest
-        SolutionProxyTest
-        SORTest
         SparseAssemblyStorageTest
-        SpecializedJacobiTest
         StorageIOTest
         TaskSyncTokenTest
-        TFQMRTest
-        TimerTest
         UtilsTest
         VectorTest
     )

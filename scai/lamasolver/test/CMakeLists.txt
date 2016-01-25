@@ -1,5 +1,5 @@
 ###
- # @file CMakeLists.txt
+ # @file scai/lamasolver/CMakeLists.txt
  #
  # @license
  # Copyright (c) 2009-2015
@@ -25,15 +25,43 @@
  # SOFTWARE.
  # @endlicense
  #
- # @brief CMake configuration file for scai_lama examples
- # @author Jan Ecker
- # @date 02.12.2015
+ # @brief Main specification file for CMake
+ # @author Lauretta Schubert
+ # @date 25.01.2016
+ # @since 2.0.0
 ###
 
-foreach ( executable blas1 matrix scalar simple vector )
-    add_executable( ${executable} ${executable}.cpp )
-    target_link_libraries( ${executable} ama )
-    set ( EXAMPLE_EXECUTABLES_TUTORIAL "${EXAMPLE_EXECUTABLES_TUTORIAL} ${executable}.exe" )
-endforeach ( executable )
+add_subdirectory( distributed )
 
-set ( EXAMPLE_EXECUTABLES_TUTORIAL "${EXAMPLE_EXECUTABLES_TUTORIAL}" PARENT_SCOPE )
+scai_project ( 
+
+	CLASSES
+
+	HEADERS
+
+	SOURCES
+
+    	BiCGstabTest
+        # BiCGTest  : disabled as long as MatrixTranspose for DenseMatrix is not supported
+        CGTest
+        # not yet: CGNETest
+        CGNRTest
+        # CGSTest: This test fails: testSolve, result not < 1E-4
+        CommonLoggerTest
+        CriterionTest
+        FileLoggerTest
+        GMRESTest
+        InverseSolverTest
+        IterationCountTest
+        JacobiTest
+        MINRESTest
+        ResidualStagnationTest
+        ResidualThresholdTest
+        RichardsonTest
+        SimpleAMGTest
+        SolutionProxyTest
+        SORTest
+	    SpecializedJacobiTest
+        TFQMRTest
+        TimerTest
+   )

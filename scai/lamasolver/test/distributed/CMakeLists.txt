@@ -1,5 +1,5 @@
 ###
- # @file CMakeLists.txt
+ # @file scai/lamasolver/CMakeLists.txt
  #
  # @license
  # Copyright (c) 2009-2015
@@ -25,15 +25,23 @@
  # SOFTWARE.
  # @endlicense
  #
- # @brief CMake configuration file for scai_lama examples
- # @author Jan Ecker
- # @date 02.12.2015
+ # @brief Main specification file for CMake
+ # @author Lauretta Schubert
+ # @date 25.01.2016
+ # @since 2.0.0
 ###
 
-foreach ( executable blas1 matrix scalar simple vector )
-    add_executable( ${executable} ${executable}.cpp )
-    target_link_libraries( ${executable} ama )
-    set ( EXAMPLE_EXECUTABLES_TUTORIAL "${EXAMPLE_EXECUTABLES_TUTORIAL} ${executable}.exe" )
-endforeach ( executable )
+scai_project ( 
 
-set ( EXAMPLE_EXECUTABLES_TUTORIAL "${EXAMPLE_EXECUTABLES_TUTORIAL}" PARENT_SCOPE )
+	CLASSES
+
+	HEADERS
+
+	SOURCES
+        P_CGTest
+        P_InverseSolverTest
+        P_JacobiTest
+        P_SORTest
+        P_SpecializedJacobiTest
+
+   )

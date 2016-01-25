@@ -56,22 +56,17 @@ scai_project (
         GenBlockDistributionTest
         GeneralDistributionTest
         NoDistributionTest
-        P_CGTest
         P_COOSparseMatrixTest
         P_CSRSparseMatrixTest
         P_DenseMatrixTest
         P_DIASparseMatrixTest
         P_ELLSparseMatrixTest
-        P_InverseSolverTest
-        P_JacobiTest  
         P_JDSSparseMatrixTest
         P_MatrixCreatorTest
         P_MatrixStorageTest
         P_MatrixTest
         P_MPICommunicatorTest
         P_RedistributorTest
-        P_SORTest
-        P_SpecializedJacobiTest
         P_VectorTest
         P_NormTest
 
