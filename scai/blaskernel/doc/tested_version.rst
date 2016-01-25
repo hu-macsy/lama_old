@@ -32,7 +32,3 @@ Fortran-LAPACK      Host               float, double, ComplexFloat, ComplexDoubl
 MKL                 Host               float, double, ComplexFloat, ComplexDouble                                    successfully tested
 OpenMP-LAPACK       Host               float, double, long double, ComplexFloat, ComplexDouble, ComplexLongDouble    successfully tested
 ===============    ================   ===========================================================================   ======================================
-
-
-Library blaskernel
-------------------

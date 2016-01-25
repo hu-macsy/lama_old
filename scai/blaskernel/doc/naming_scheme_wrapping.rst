@@ -1,4 +1,4 @@
-.. _blaskernel-naming-scheme-wrapping
+.. _blaskernel-namingscheme-wrapping:
 
 ========
 Wrapping
