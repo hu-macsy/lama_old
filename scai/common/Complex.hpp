@@ -400,6 +400,7 @@ namespace common
 
 using std::sqrt;
 using std::abs;
+using std::fabs;
 
 /**
  * @brief The class Complex represents complex numbers.
@@ -895,15 +896,15 @@ inline Complex<ValueType> sqrt( const Complex<ValueType>& a )
 
     if( x == ValueType() )
     {
-        ValueType t = sqrt( abs( y ) / 2 );
+        ValueType t = sqrt( fabs( y ) / 2 );
         return Complex<ValueType>( t, y < ValueType() ? -t : t );
     }
     else
     {
-        ValueType t = sqrt( 2 * ( abs( a ) + abs( x ) ) );
+        ValueType t = sqrt( 2 * ( fabs( a ) + fabs( x ) ) );
         ValueType u = t / 2;
         return x > ValueType() ? Complex<ValueType>( u, y / t ) :
-                        Complex<ValueType>( abs( y ) / t, y < ValueType() ? -u : u );
+                        Complex<ValueType>( fabs( y ) / t, y < ValueType() ? -u : u );
     }
 }
 
@@ -917,14 +918,14 @@ inline Complex<long double> sqrt( const Complex<long double>& a )
 
     if( x == 0.0 )
     {
-        long double t = sqrt( abs( y ) / 2 );
+        long double t = ::sqrtl( ::fabsl( y ) / 2 );
         return Complex<long double>( t, y < 0.0 ? -t : t );
     }
     else
     {
-        long double t = sqrt( 2 * ( abs( a ) + abs( x ) ) );
+        long double t = ::sqrtl( 2 * ( ::fabsl( a ) + ::fabsl( x ) ) );
         long double u = t / 2;
-        return x > 0.0 ? Complex<long double>( u, y / t ) : Complex<long double>( abs( y ) / t, y < 0.0 ? -u : u );
+        return x > 0.0 ? Complex<long double>( u, y / t ) : Complex<long double>( fabsl( y ) / t, y < 0.0 ? -u : u );
     }
 }
 
