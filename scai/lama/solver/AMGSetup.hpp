@@ -60,7 +60,8 @@ typedef common::shared_ptr<class AMGSetup> AMGSetupPtr;
  */
 class COMMON_DLL_IMPORTEXPORT AMGSetup : 
 
-    public scai::common::Factory<std::string, AMGSetup*>
+    public common::Factory<std::string, AMGSetup*>,
+    public common::Printable
 
 {
 public:
@@ -123,6 +124,11 @@ protected:
     IndexType mHostOnlyVars;
 
     IndexType mReplicatedLevel;
+
+    /**
+     *  @brief own implementation of Printable::writeAt
+     */
+    virtual void writeAt( std::ostream& stream ) const;
 };
 
 } /* end namespace lama */

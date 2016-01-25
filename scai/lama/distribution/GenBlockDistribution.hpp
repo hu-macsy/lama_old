@@ -58,9 +58,14 @@ namespace lama
  *  objects.
  */
 
-class COMMON_DLL_IMPORTEXPORT GenBlockDistribution: public scai::lama::Distribution
+class COMMON_DLL_IMPORTEXPORT GenBlockDistribution: 
+
+    public Distribution,
+    private Distribution::Register<GenBlockDistribution>
+
 {
 public:
+
 
     /** Construct a general block distribution by a vector of localSizes.
      *
@@ -151,19 +156,19 @@ public:
 
     void printDistributionVector( std::string name ) const;
 
-    static GenBlockDistribution* create(
-        const CommunicatorPtr communicator,
-        const IndexType globalSize,
-        const float weight = 1.0 );
+    /** Static method required for create to use in Distribution::Register */
 
-    static GenBlockDistribution* create( const CommunicatorPtr communicator, const Matrix& matrix, const float weight =
-            1.0 );
+    static Distribution* create( const DistributionArguments args );
+
+    /** Static method required for Distribution::Register */
+
+    static std::string createValue();
 
 protected:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
-private    :
+private:
 
     void setOffsets( const IndexType rank, const IndexType numPartitions, const IndexType localSizes[] );
 
@@ -174,8 +179,6 @@ private    :
     common::scoped_array<IndexType> mOffsets;//!< offset for each partition
 
     IndexType mLB, mUB;//!< local range of full size in global values
-
-    static bool initialized;//!< static initialization used for registration of create in Distribution factory
 };
 
 } /* end namespace lama */

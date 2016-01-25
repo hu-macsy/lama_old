@@ -191,7 +191,7 @@ public:
         const IndexType numValues,
         const hmemo::HArray<IndexType>& ia,
         const hmemo::HArray<IndexType>& ja,
-        const hmemo::ContextArray& values );
+        const hmemo::_HArray& values );
 
     /**
      * @brief fills COO sparse matrix by csr sparse data.
@@ -327,6 +327,10 @@ public:
     /** Implementation of pure method.  */
 
     void scaleImpl( const ValueType value );
+
+    /** Implementation of pure method.  */
+
+    void conj();
 
     /** Implementation for MatrixStorage::l1Norm */
 

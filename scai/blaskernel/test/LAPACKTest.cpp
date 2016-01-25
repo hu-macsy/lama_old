@@ -298,9 +298,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( tptrsTest, ValueType, test_types )
         static ValueType xvalues[] =
         {   1.0, 3.0, 5.0, 7.0};
         printf("######Test1\n");
-        LAMAArray<ValueType> a3( ntri, avalues3 );
-        LAMAArray<ValueType> b3( n, bvalues3 );
-        LAMAArray<ValueType> b4( n, bvalues4 );
+        LArray<ValueType> a3( ntri, avalues3 );
+        LArray<ValueType> b3( n, bvalues3 );
+        LArray<ValueType> b4( n, bvalues4 );
 
         ContextPtr loc = Context::getContextPtr( context::Host );
 

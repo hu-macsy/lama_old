@@ -43,48 +43,165 @@
 
 #include <scai/lama/DenseVector.hpp>
 
+#include <scai/lama/test/TestMacros.hpp>
+
+#include <scai/hmemo/HArray.hpp>
+
 #include <boost/test/unit_test.hpp>
 
 /** This routine is a rather general routine. It compares two arbitrary matrices
  *  (different distributions, different value types) whether the elements are
  *  close enough.
  *
- *  The comparison is done by multiplying each matrix with a unity vector.
+ *  For efficiency on distributed matrices, it will do it row-wise.
  */
 
+/**
+ * @brief testSameMatrix() checks whether two matrices have the same dimensions and values. Equality of values is checked
+ * by SCAI_CHECK_CLOSE, zero values have to be zero in both matrices (check testSameMatrixClose as alternative)
+ */
 template<typename MatrixType1, typename MatrixType2>
 void testSameMatrix( const MatrixType1& m1, const MatrixType2& m2 )
 {
     typedef typename MatrixType1::MatrixValueType ValueType1;
     typedef typename MatrixType2::MatrixValueType ValueType2;
-    // Both matrices must be matrices of the same size
+
     const IndexType m = m1.getNumRows();
     const IndexType n = m1.getNumColumns();
+    // require for same sizes, otherwise it is illegal to access elements
     BOOST_REQUIRE_EQUAL( m, m2.getNumRows() );
     BOOST_REQUIRE_EQUAL( n, m2.getNumColumns() );
-    scai::lama::DenseVector<ValueType1> x1( m1.getColDistributionPtr(), 1.0 );
-    scai::lama::DenseVector<ValueType2> x2( m2.getColDistributionPtr(), 1.0 );
-    scai::lama::DenseVector<ValueType1> y1( m1.getDistributionPtr(), 0.0 );
-    scai::lama::DenseVector<ValueType2> y2( m2.getDistributionPtr(), 0.0 );
-    y1 = m1 * x1; // YA = mA * XA;
-    y2 = m2 * x2; // YB = mB * XB;
-    // replicate the vectors to avoid communication overhead for single elements
-    scai::lama::DistributionPtr replicated( new scai::lama::NoDistribution( m ) );
-    y1.redistribute( replicated );
-    y2.redistribute( replicated );
 
-    for ( IndexType i = 0; i < m; i++ )
+    // create replicated vectors for the rows with the same value type
+    scai::lama::VectorPtr ptrRow1(scai::lama::DenseVector<ValueType1>::createVector(m1.getValueType(), scai::lama::DistributionPtr( new scai::lama::NoDistribution( m ))));
+    scai::lama::VectorPtr ptrRow2(scai::lama::DenseVector<ValueType2>::createVector(m2.getValueType(), scai::lama::DistributionPtr( new scai::lama::NoDistribution( m ))));
+
+    // now compare all rows
+    for ( IndexType i = 0; i < m; ++i )
     {
-        scai::lama::Scalar s1 = y1.getValue( i );
-        scai::lama::Scalar s2 = y2.getValue( i );
-        BOOST_CHECK_CLOSE( s1.getValue<double>(), s2.getValue<double>(), 0.01 );
+        // Note: rows will be broadcast in case of distributed matrices
+        m1.getRow( *ptrRow1, i );
+        m2.getRow( *ptrRow2, i );
+        // compare the two vectors element-wise
+
+        //#pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
+        for ( IndexType j = 0; j < n; j++ )
+        {
+            SCAI_CHECK_CLOSE( ptrRow1->getValue( j ), ptrRow2->getValue( j ), eps<ValueType1>() )
+        }
     }
 }
 
-/** This test compares two general matrices by comparing all matrix elements.
- *
- *  For efficiency on distributed matrices, it will do it row-wise.
+/**
+ * @brief testSameMatrixClose() checks whether two matrices have the same dimensions and values. Equality of values is
+ * checked by SCAI_CHECK_CLOSE, if a value in the expected matrix is small (or zero) SCAI_CHECK_SMALL is used instead
  */
+template<typename MatrixType1, typename MatrixType2>
+void testSameMatrixClose( const MatrixType1& m1, const MatrixType2& m2 )
+{
+    typedef typename MatrixType1::MatrixValueType ValueType1;
+    typedef typename MatrixType2::MatrixValueType ValueType2;
 
-void assertSameMatrix( const scai::lama::Matrix& m1, const scai::lama::Matrix& m2 );
+    const IndexType m = m1.getNumRows();
+    const IndexType n = m1.getNumColumns();
+    // require for same sizes, otherwise it is illegal to access elements
+    BOOST_REQUIRE_EQUAL( m, m2.getNumRows() );
+    BOOST_REQUIRE_EQUAL( n, m2.getNumColumns() );
 
+    // create replicated vectors for the rows with the same value type
+    scai::lama::VectorPtr ptrRow1(scai::lama::DenseVector<ValueType1>::createVector(m1.getValueType(), scai::lama::DistributionPtr( new scai::lama::NoDistribution( m ))));
+    scai::lama::VectorPtr ptrRow2(scai::lama::DenseVector<ValueType2>::createVector(m2.getValueType(), scai::lama::DistributionPtr( new scai::lama::NoDistribution( m ))));
+
+    // now compare all rows
+    for ( IndexType i = 0; i < m; ++i )
+    {
+        // Note: rows will be broadcast in case of distributed matrices
+        m1.getRow( *ptrRow1, i );
+        m2.getRow( *ptrRow2, i );
+        // compare the two vectors element-wise
+
+        //#pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
+        for ( IndexType j = 0; j < n; j++ )
+        {
+            if ( abs( ptrRow1->getValue( j ) ) < small<ValueType1>() )
+            {
+                SCAI_CHECK_SCALAR_SMALL( ptrRow2->getValue( j ), ValueType2, small<ValueType2>() )
+            }
+            else
+            {
+                SCAI_CHECK_CLOSE( ptrRow1->getValue( j ), ptrRow2->getValue( j ), eps<ValueType1>() )
+            }
+        }
+    }
+}
+
+/**
+ * @brief testSameMatrixStorage() checks whether two matrices have the same dimensions and values. Equality of values is
+ * checked by SCAI_CHECK_CLOSE, zero values have to be zero in both matrices (check testSameMatrixStorageClose as
+ * alternative)
+ */
+template<typename ValueType1, typename ValueType2>
+void testSameMatrixStorage( const scai::lama::MatrixStorage<ValueType1>& m1, const scai::lama::MatrixStorage<ValueType2>& m2 )
+{
+    const IndexType m = m1.getNumRows();
+    const IndexType n = m1.getNumColumns();
+
+    BOOST_REQUIRE_EQUAL( m, m2.getNumRows() );
+    BOOST_REQUIRE_EQUAL( n, m2.getNumColumns() );
+
+    scai::hmemo::HArray<ValueType1> row1(n);
+    scai::hmemo::HArray<ValueType2> row2(n);
+
+    for ( IndexType i = 0; i < m; ++i )
+    {
+        m1.getRow( row1, i );
+        m2.getRow( row2, i );
+        // compare the two vectors element-wise
+
+        scai::hmemo::ReadAccess<ValueType1> readRow1(row1);
+        scai::hmemo::ReadAccess<ValueType2> readRow2(row2);
+        for ( IndexType j = 0; j < n; j++ )
+        {
+            SCAI_CHECK_CLOSE( (readRow1.get())[j], (readRow2.get())[j], eps<ValueType1>() )
+        }
+    }
+}
+
+/**
+ * @brief testSameMatrixStorageClose() checks whether two matrices have the same dimensions and values. Equality of
+ * values is checked by SCAI_CHECK_CLOSE, if a value in the expected matrix is small (or zero) SCAI_CHECK_SMALL is used
+ * instead.
+ */
+template<typename ValueType1, typename ValueType2>
+void testSameMatrixStorageClose( const scai::lama::MatrixStorage<ValueType1>& m1, const scai::lama::MatrixStorage<ValueType2>& m2 )
+{
+    const IndexType m = m1.getNumRows();
+    const IndexType n = m1.getNumColumns();
+
+    BOOST_REQUIRE_EQUAL( m, m2.getNumRows() );
+    BOOST_REQUIRE_EQUAL( n, m2.getNumColumns() );
+
+    scai::hmemo::HArray<ValueType1> row1(n);
+    scai::hmemo::HArray<ValueType2> row2(n);
+
+    for ( IndexType i = 0; i < m; ++i )
+    {
+        m1.getRow( row1, i );
+        m2.getRow( row2, i );
+        // compare the two vectors element-wise
+
+        scai::hmemo::ReadAccess<ValueType1> readRow1(row1);
+        scai::hmemo::ReadAccess<ValueType2> readRow2(row2);
+        for ( IndexType j = 0; j < n; j++ )
+        {
+            if ( abs( (readRow1.get())[j] ) < small<ValueType1>() )
+            {
+                SCAI_CHECK_SMALL( (readRow2.get())[j], ValueType2, small<ValueType2>() )
+            }
+            else
+            {
+                SCAI_CHECK_CLOSE( (readRow1.get())[j], (readRow2.get())[j], eps<ValueType1>() )
+            }
+        }
+    }
+}

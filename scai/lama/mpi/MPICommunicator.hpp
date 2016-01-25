@@ -231,7 +231,7 @@ protected:
 
     void setNodeData();
 
-    virtual hmemo::ContextPtr getCommunicationContext( const hmemo::ContextArray& array ) const;
+    virtual hmemo::ContextPtr getCommunicationContext( const hmemo::_HArray& array ) const;
 
     int mRank; // rank of this processor
     int mSize;// size of communicator
@@ -303,10 +303,18 @@ inline MPI_Datatype MPICommunicator::getMPIType<int>()
 }
 
 template<>
+inline MPI_Datatype MPICommunicator::getMPIType<unsigned int>()
+{
+    return MPI_UNSIGNED;
+}
+
+template<>
 inline MPI_Datatype MPICommunicator::getMPIType<long double>()
 {
     return MPI_LONG_DOUBLE;
 }
+
+#ifdef SCAI_COMPLEX_SUPPORTED
 
 template<>
 inline MPI_Datatype MPICommunicator::getMPIType<ComplexFloat>()
@@ -329,6 +337,8 @@ inline MPI_Datatype MPICommunicator::getMPIType<ComplexLongDouble>()
     // May be helpful: MPI::DOUBLE_COMPLEX
     return MPI::LONG_DOUBLE_COMPLEX;
 }
+
+#endif
 
 template<>
 inline MPI_Datatype MPICommunicator::getMPIType<unsigned long>()
@@ -376,11 +386,15 @@ inline MPI_Op MPICommunicator::getMPISum()
     return MPI_SUM;
 }
 
+#ifdef SCAI_COMPLEX_SUPPORTED
+
 template<>
 inline MPI_Op MPICommunicator::getMPISum<ComplexLongDouble>()
 {
     return mSumComplexLongDouble;
 }
+
+#endif
 
 } /* end namespace lama */
 

@@ -125,7 +125,7 @@ int main()
 
   lama::DenseVector<ScalarType> lama_vec1( 10, plain_vec );
 
-  lama::LAMAArray<ScalarType> lama_array1 ( 10, plain_vec );
+  lama::LArray<ScalarType> lama_array1 ( 10, plain_vec );
   lama::DenseVector<ScalarType> lama_vec2( 10, 0.0 );
   lama_vec2.setValues( lama_array1 );
 

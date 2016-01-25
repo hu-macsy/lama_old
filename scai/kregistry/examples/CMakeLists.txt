@@ -30,9 +30,13 @@
  # @date 16.06.2015
 ###
 
-add_executable( DemoKernelInterface DemoKernelInterface.cpp )
-target_link_libraries( DemoKernelInterface scai_kregistry )
+foreach ( executable DemoKernelInterface BenchInterface )
+    add_executable( ${executable} ${executable}.cpp )
+    target_link_libraries( ${executable} scai_kregistry )
+    set ( EXAMPLE_EXECUTABLES "${EXAMPLE_EXECUTABLES} ${executable}.exe" )
+endforeach ( executable )
 
-add_executable( BenchInterface BenchInterface.cpp )
-target_link_libraries( BenchInterface scai_kregistry )
-
+## install examples
+configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/make.inc.in" "${CMAKE_CURRENT_BINARY_DIR}/make.inc" )
+install ( DIRECTORY ./ DESTINATION share/examples/scai-kregistry-${SCAI_KREGISTRY_VERSION} FILES_MATCHING REGEX "^.*.(c|h)pp$" )
+install ( FILES Makefile ${CMAKE_CURRENT_BINARY_DIR}/make.inc DESTINATION share/examples/scai-kregistry-${SCAI_KREGISTRY_VERSION} )

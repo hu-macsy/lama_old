@@ -65,6 +65,11 @@ void AMGSetup::setReplicatedLevel( IndexType replicatedLevel )
     mReplicatedLevel = replicatedLevel;
 }
 
+void AMGSetup::writeAt( std::ostream& stream ) const
+{
+    stream << "AMGSetup( ... )";
+}
+
 } /* end namespace lama */
 
 } /* end namespace scai */

@@ -316,6 +316,10 @@ public:
 
     virtual void scaleImpl( const ValueType value );
 
+    /** Implementation of pure method.  */
+
+    virtual void conj();
+
     virtual size_t getMemoryUsageImpl() const;
 
     void swap( DenseStorageView<ValueType>& other );

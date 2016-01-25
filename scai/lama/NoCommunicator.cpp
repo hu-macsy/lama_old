@@ -64,7 +64,7 @@ NoCommunicator::~NoCommunicator()
     SCAI_LOG_DEBUG( logger, "~NoCommunicator()" )
 }
 
-hmemo::ContextPtr NoCommunicator::getCommunicationContext( const hmemo::ContextArray& ) const
+hmemo::ContextPtr NoCommunicator::getCommunicationContext( const hmemo::_HArray& ) const
 {
     return hmemo::Context::getHostPtr();
 }

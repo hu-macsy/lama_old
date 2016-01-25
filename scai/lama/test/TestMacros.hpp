@@ -48,14 +48,72 @@
 
 #undef 	SCAI_CHECK_CLOSE
 
+#endif
+
+#ifdef SCAI_COMPLEX_SUPPORTED
+
+#define SCAI_CHECK_CLOSE( x, y, tolerance )                                  \
+    {                                                                        \
+        scai::lama::Scalar xScalar = scai::lama::Scalar( x );                \
+        scai::lama::Scalar yScalar = scai::lama::Scalar( y );                \
+        ComplexDouble xVal = xScalar.getValue<ComplexDouble>();              \
+        ComplexDouble yVal = yScalar.getValue<ComplexDouble>();              \
+        BOOST_CHECK_CLOSE( xVal.real(), yVal.real(), tolerance );            \
+        BOOST_CHECK_CLOSE( xVal.imag(), yVal.imag(), tolerance );            \
+    }
+
+#else
+
 #define SCAI_CHECK_CLOSE( x, y, tolerance )                         \
     {                                                               \
-        Scalar xScalar = Scalar( x );                               \
-        Scalar yScalar = Scalar( y );                               \
-        ComplexDouble xVal = xScalar.getValue<ComplexDouble>();     \
-        ComplexDouble yVal = yScalar.getValue<ComplexDouble>();     \
+        scai::lama::Scalar xScalar = scai::lama::Scalar( x );       \
+        scai::lama::Scalar yScalar = scai::lama::Scalar( y );       \
+        double xVal = xScalar.getValue<double>();                   \
+        double yVal = yScalar.getValue<double>();                   \
         BOOST_CHECK_CLOSE( xVal.real(), yVal.real(), tolerance );   \
         BOOST_CHECK_CLOSE( xVal.imag(), yVal.imag(), tolerance );   \
     }
 
 #endif
+
+#define SCAI_CHECK_SMALL( x, ValueType, eps )                   \
+        BOOST_CHECK_SMALL( x, static_cast<ValueType>(eps) );    \
+
+#define SCAI_CHECK_SMALL_EPS( x, ValueType )                  \
+    SCAI_CHECK_SMALL( x, ValueType, eps<ValueType> () )
+
+/*
+ * @brief HelperMacro SCAI_CHECK_SCALAR_SMALL( x, ValueType, eps )
+ *
+ * Extended Macro BOOST_CHECK_SMALL( x, eps ) from Boost.Test for
+ * Scalar class of LAMA. Transforms Scalar x into ValueType,
+ * and calls BOOST_CHECK_SMALL with arguments of type ValueType.
+ *
+ * @param x             Scalar
+ * @param ValueType     type of Scalar x used for test
+ * @param eps           Epsilon
+ *
+ * Static cast is used to convert eps to the right ValueType.
+ */
+
+/*#define SCAI_CHECK_SCALAR_SMALL( x, ValueType, eps )                     \
+    {                                                                    \
+        ValueType xHelper = (x).getValue<ValueType >();                  \
+        BOOST_CHECK_SMALL( xHelper, static_cast<ValueType >( eps ) );    \
+    }*/
+
+#define SCAI_CHECK_SCALAR_SMALL( x, ValueType, eps )                     \
+        SCAI_CHECK_SMALL( (x).getValue<ValueType>(), ValueType, eps )    \
+
+/*
+ * @brief HelperMacro SCAI_CHECK_SCALAR_SMALL_EPS( x, ValueType )
+ *
+ * Same as SCAI_CHECK_SCALAR_SMALL but with default eps value.
+ *
+ * @param x             Scalar
+ * @param ValueType     type of Scalar to be used for test
+ */
+
+#define SCAI_CHECK_SCALAR_SMALL_EPS( x, ValueType )                  \
+    SCAI_CHECK_SCALAR_SMALL( x, ValueType, eps<ValueType> () )
+

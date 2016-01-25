@@ -95,6 +95,8 @@ inline long double eps<long double>()
     return 1E-8L;
 }
 
+#ifdef SCAI_COMPLEX_SUPPORTED
+
 template<>
 inline ComplexFloat eps<ComplexFloat>()
 {
@@ -112,6 +114,103 @@ inline ComplexLongDouble eps<ComplexLongDouble>()
 {
     return ComplexLongDouble(1E-8L);
 }
+
+#endif
+
+
+/**
+ * @brief small() returns the desired value below which values should be seen as "small" (close to zero)
+ *
+ * @return the "small" values threshold
+ */
+template<typename ValueType>
+inline ValueType small();
+
+/**
+ * @brief small<float>() returns value below which values should be seen as "small" in single precision.
+ *
+ * @return the "small" values threshold
+ */
+template<>
+inline float small<float>()
+{
+    return 1E-3f;
+}
+template<typename ValueType>
+inline ValueType small();
+
+/**
+ * @brief small<double>() returns value below which values should be seen as "small" in double precision.
+ *
+ * @return the "small" values threshold
+ */
+template<>
+inline double small<double>()
+{
+    return 1E-3;
+}
+
+/**
+ * @brief small<long double>() returns value below which values should be seen as "small" in long double precision.
+ *
+ * @return the "small" values threshold
+ */
+template<>
+inline long double small<long double>()
+{
+    return 1E-8L;
+}
+
+#ifdef SCAI_COMPLEX_SUPPORTED
+/**
+ * @brief small<ComplexFloat>() returns value below which values should be seen as "small" for ComplexFloat.
+ *
+ * @return the "small" values threshold
+ */
+template<>
+inline ComplexFloat small<ComplexFloat>()
+{
+    return ComplexFloat(1E-3f);
+}
+
+/**
+ * @brief small<ComplexDouble>() returns value below which values should be seen as "small" for ComplexDouble.
+ *
+ * @return the "small" values threshold
+ */
+template<>
+inline ComplexDouble small<ComplexDouble>()
+{
+    return ComplexDouble(1E-5);
+}
+
+/**
+ * @brief small<ComplexLongDouble>() returns value below which values should be seen as "small" for ComplexLongDouble.
+ *
+ * @return the "small" values threshold
+ */
+template<>
+inline ComplexLongDouble small<ComplexLongDouble>()
+{
+    return ComplexLongDouble(1E-8L);
+}
+
+#endif
+
+//template<typename ValueType>
+//inline scai::lama::Scalar scalarEps();
+//
+//template<>
+//inline scai::lama::Scalar scalarEps<float>()
+//{
+//    return scai::lama::Scalar( 1E-8f );
+//}
+//
+//template<>
+//inline scai::lama::Scalar scalarEps<double>()
+//{
+//    return scai::lama::Scalar( 1E-16 );
+//}
 
 /*
  * @brief HelperMacro SCAI_CHECK_SCALAR_CLOSE( x, y, type, percent_eps )
@@ -132,38 +231,6 @@ inline ComplexLongDouble eps<ComplexLongDouble>()
 		ValueType diff = (x) - (y);																				    \
 		BOOST_CHECK( scai::common::TypeTraits<ValueType>::abs( diff ) < static_cast<ValueType>( tolerance ) ) ;		\
 	}
-
-/*
- * @brief HelperMacro SCAI_CHECK_SCALAR_SMALL( x, ValueType, eps )
- *
- * Extended Macro BOOST_CHECK_SMALL( x, eps ) from Boost.Test for
- * Scalar class of LAMA. Transforms Scalar x into ValueType,
- * and calls BOOST_CHECK_SMALL with arguments of type ValueType.
- *
- * @param x             Scalar
- * @param ValueType     type of Scalar x used for test
- * @param eps           Epsilon
- *
- * Static cast is used to convert eps to the right ValueType.
- */
-
-#define SCAI_CHECK_SCALAR_SMALL( x, ValueType, eps )                    \
-	{																	\
-		ValueType xHelper = (x).getValue<ValueType>();                  \
-		BOOST_CHECK_SMALL( xHelper, static_cast<ValueType>( eps ) );	\
-	}
-
-/*
- * @brief HelperMacro SCAI_CHECK_SCALAR_SMALL_EPS( x, ValueType )
- *
- * Same as SCAI_CHECK_SCALAR_SMALL but with default eps value.
- *
- * @param x             Scalar
- * @param ValueType     type of Scalar to be used for test
- */
-
-#define SCAI_CHECK_SCALAR_SMALL_EPS( x, ValueType )                  \
-    SCAI_CHECK_SCALAR_SMALL( x, ValueType, eps<ValueType> () )
 
 /*
  * @brief HelperMacro LAMA_WRITEAT_TEST( printable )
@@ -350,6 +417,7 @@ inline ComplexLongDouble eps<ComplexLongDouble>()
          * @param templatename    name of the template.
          * @param methodname      name of the test method, that will be created.
          */
+
 #define LAMA_COMMON_TEST_CASE_TEMPLATE( classname, templatename, methodname )                                          \
     template<typename templatename>                                                                                    \
     void classname<templatename>::methodname()                                                                         \
@@ -402,4 +470,3 @@ inline ComplexLongDouble eps<ComplexLongDouble>()
     BOOST_CHECK_THROW( stmt, exception )
 
 #endif
-

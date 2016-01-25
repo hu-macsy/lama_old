@@ -43,6 +43,7 @@
 #include <scai/hmemo/mic/MICSyncToken.hpp>
 #include <scai/kregistry/KernelRegistry.hpp>
 #include <scai/common/ScalarType.hpp>
+#include <scai/common/TypeTraits.hpp>
 
 #include <scai/tracing.hpp>
 
@@ -56,6 +57,7 @@ namespace scai
 
 using namespace hmemo;
 using tasking::MICSyncToken;
+using common::TypeTraits;
 
 namespace lama
 {
@@ -134,7 +136,9 @@ void MICDIAUtils::getCSRValues(
     const DIAValueType eps )
 {
     SCAI_LOG_INFO( logger,
-                   "get CSRValues<" << common::getScalarType<DIAValueType>() << ", " << common::getScalarType<CSRValueType>() << ">" << ", #rows = " << numRows << ", #diagonals = " << numDiagonals << ", #non-zero values = " << csrIA[numRows] << ", diagonalFlag = " << diagonalFlag )
+                   "get CSRValues<" << TypeTraits<DIAValueType>::id() << ", " << TypeTraits<CSRValueType>::id() 
+                    << ">" << ", #rows = " << numRows << ", #diagonals = " << numDiagonals 
+                    << ", #non-zero values = " << csrIA[numRows] << ", diagonalFlag = " << diagonalFlag )
 
     // we cannot check for correct sizes, but at least for valid pointers
 
@@ -250,7 +254,9 @@ void MICDIAUtils::getCSRSizes(
     const DIAValueType eps )
 {
     SCAI_LOG_INFO( logger,
-                   "get CSRSizes<" << common::getScalarType<DIAValueType>() << "> for DIA matrix " << numRows << " x " << numColumns << ", #diagonals = " << numDiagonals << ", eps = " << eps << ", diagonalFlag = " << diagonalFlag )
+                   "get CSRSizes<" << TypeTraits<DIAValueType>::id() << "> for DIA matrix " 
+                    << numRows << " x " << numColumns << ", #diagonals = " << numDiagonals 
+                    << ", eps = " << eps << ", diagonalFlag = " << diagonalFlag )
 
     #pragma omp parallel for
 
@@ -312,7 +318,7 @@ void MICDIAUtils::normalGEMV(
     const ValueType diaValues[] )
 {
     SCAI_LOG_INFO( logger,
-                   "normalGEMV<" << common::getScalarType<ValueType>() << ">, result[" << numRows << "] = " << alpha << " * A( dia, #diags = " << numDiagonals << " ) * x + " << beta << " * y " )
+                   "normalGEMV<" << TypeTraits<ValueType>::id() << ">, result[" << numRows << "] = " << alpha << " * A( dia, #diags = " << numDiagonals << " ) * x + " << beta << " * y " )
 
     MICSyncToken* syncToken = MICSyncToken::getCurrentSyncToken();
 
@@ -388,7 +394,7 @@ void MICDIAUtils::jacobi(
     // SCAI_REGION( "MIC.DIA.Jacobi" )
 
     SCAI_LOG_INFO( logger,
-                   "jacobi<" << common::getScalarType<ValueType>() << ">" << ", #rows = " << numRows << ", #cols = " << numColumns << ", #diagonals = " << numDiagonals << ", omega = " << omega )
+                   "jacobi<" << TypeTraits<ValueType>::id() << ">" << ", #rows = " << numRows << ", #cols = " << numColumns << ", #diagonals = " << numDiagonals << ", omega = " << omega )
 
     // main diagonal must be first
 

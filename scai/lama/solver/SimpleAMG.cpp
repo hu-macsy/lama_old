@@ -42,6 +42,7 @@
 
 // internal scai libraries
 #include <scai/common/Settings.hpp>
+#include <scai/common/LibModule.hpp>
 #include <scai/common/Walltime.hpp>
 
 #include <scai/tracing.hpp>
@@ -98,30 +99,18 @@ SimpleAMG::SimpleAMGRuntime::~SimpleAMGRuntime()
 
 void SimpleAMG::loadSetupLibs()
 {
-    // todo: need general concept for dynamical loading of libraries
-    /*std::string amgSetupLibrary;
+    std::string amgSetupLibrary;
 
-    bool isSet = common::Settings::getEnvironment( amgSetupLibrary, "LAMA_AMG_SETUP_LIBRARY" );
-
-    if ( isSet )
+    if ( common::Settings::getEnvironment( amgSetupLibrary, "SCAI_AMG_SETUP_LIBRARY" ) )
     {
-        LAMA_LIB_HANDLE_TYPE handle;
+        SCAI_LOG_INFO( logger, "Load all module libraries in " << amgSetupLibrary  )
 
-        int error = loadLib( handle, amgSetupLibrary.c_str() );
-
-        if ( error != 0 )
-        {
-            SCAI_LOG_WARN( logger,
-                           "Failed to load lib " << amgSetupLibrary 
-                           << ": error = " << error << ", lib handle = " << handle )
-        }
-
-        SCAI_LOG_INFO( logger, amgSetupLibrary << " loaded successfully." )
+        scai::common::LibModule::loadLibsByPath( amgSetupLibrary.c_str() );
     }
     else
     {
-        SCAI_LOG_WARN( logger, "LAMA_AMG_SETUP_LIBRARY not set, take SingleGridSetup" )
-    }*/
+        SCAI_LOG_WARN( logger, "SCAI_AMG_SETUP_LIBRARY not set, take SingleGridSetup" )
+    }
 }
 
 void SimpleAMG::initialize( const Matrix& coefficients )
@@ -686,6 +675,11 @@ const SimpleAMG::SimpleAMGRuntime& SimpleAMG::getConstRuntime() const
 SolverPtr SimpleAMG::copy()
 {
     return SolverPtr( new SimpleAMG( *this ) );
+}
+
+void SimpleAMG::writeAt( std::ostream& stream ) const
+{
+    stream << "SimpleAMG ( id = " << mId << ", #iter = " << getConstRuntime().mIterations << " )";
 }
 
 std::string SimpleAMG::createValue()

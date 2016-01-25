@@ -185,7 +185,7 @@ public:
     virtual void setDenseData(
         DistributionPtr rowDistribution,
         DistributionPtr colDistribution,
-        const hmemo::ContextArray& values,
+        const hmemo::_HArray& values,
         Scalar eps = Scalar( 0 ) );
 
     /** Implementation for pure method Matrix::setCSRData. */
@@ -196,7 +196,7 @@ public:
         const IndexType numValues,
         const hmemo::HArray<IndexType>& ia,
         const hmemo::HArray<IndexType>& ja,
-        const hmemo::ContextArray& values );
+        const hmemo::_HArray& values );
 
     /* Implementation of pure method of class Matrix. */
 
@@ -295,6 +295,10 @@ public:
     /* Implementation of pure method of class Matrix. */
 
     virtual void scale( const Scalar scaling );
+
+    /* Implementation of pure method of class Matrix. */
+
+    virtual void conj();
 
     /*
      *  Set local data of the matrix.
@@ -550,7 +554,7 @@ public:
     void writeToFile(
         const std::string& fileName,
         const File::FileType fileType = File::BINARY,
-        const File::DataType dataType = File::INTERNAL,
+        const common::scalar::ScalarType dataType = common::scalar::INTERNAL,
         const File::IndexDataType indexDataTypeIA = File::INT,
         const File::IndexDataType indexDataTypeJA = File::INT ) const;
 

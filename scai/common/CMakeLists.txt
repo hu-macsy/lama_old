@@ -120,6 +120,7 @@ scai_project (
         Factory1
         function
         OpenMP
+        ReductionOp
         NonCopyable
         shared_ptr
         TypeTraits

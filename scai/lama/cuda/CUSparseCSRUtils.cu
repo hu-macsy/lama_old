@@ -624,7 +624,7 @@ void CUSparseCSRUtils::registerKernels( bool deleteFlag )
 
     // using CUSparse for CSR might be disabled explicitly by environment variable
 
-    common::Settings::getEnvironment( useCUSparse, "USE_CUSPARSE" );
+    common::Settings::getEnvironment( useCUSparse, "SCAI_CUDA_USE_CUSPARSE" );
 
     if ( !useCUSparse )
     {

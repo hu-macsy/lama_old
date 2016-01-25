@@ -44,11 +44,15 @@
 #include <scai/kregistry/KernelRegistry.hpp>
 
 #include <scai/common/Constants.hpp>
+#include <scai/common/TypeTraits.hpp>
+#include <scai/common/OpenMP.hpp>
 
 namespace scai
 {
 
 using namespace hmemo;
+
+using  common::TypeTraits;
 
 namespace lama
 {
@@ -57,43 +61,7 @@ SCAI_LOG_DEF_LOGGER( MICUtils::logger, "MIC.Utils" )
 
 /* --------------------------------------------------------------------------- */
 
-template<typename ValueType>
-void MICUtils::scale( ValueType array[], const ValueType value, const IndexType n )
-{
-    SCAI_LOG_INFO( logger, "scale, #n = " << n << ", value = " << value )
-
-    if( value == scai::common::constants::ONE )
-    {
-        return;
-    }
-
-    if( value == scai::common::constants::ZERO )
-    {
-        setVal( array, n, static_cast<ValueType>(0.0) );
-    }
-    else
-    {
-        void* arrayPtr = array;
-
-        int device = MICContext::getCurrentDevice();
-
-#pragma offload target( mic : device ) in( arrayPtr, value, n )
-        {
-            ValueType* array = static_cast<ValueType*>( arrayPtr );
-
-            #pragma omp parallel for
-
-            for( IndexType i = 0; i < n; i++ )
-            {
-                array[i] *= value;
-            }
-        }
-    }
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType,typename OtherValueType>
+template<typename ValueType, typename OtherValueType>
 void MICUtils::setScale(
     ValueType outValues[],
     const ValueType value,
@@ -104,16 +72,16 @@ void MICUtils::setScale(
 
     // alias of outValues == inValues is no problem
 
-    if( value == scai::common::constants::ZERO )
+    if ( value == scai::common::constants::ZERO )
     {
         // Important : inValues might be undefined
-        setVal( outValues, n, value );
+        setVal( outValues, n, value, common::reduction::COPY );
         return;
     }
 
-    if( value == scai::common::constants::ONE )
+    if ( value == scai::common::constants::ONE )
     {
-        set( outValues, inValues, n );
+        set( outValues, inValues, n, common::reduction::COPY );
         return;
     }
 
@@ -122,14 +90,14 @@ void MICUtils::setScale(
 
     int device = MICContext::getCurrentDevice();
 
-#pragma offload target( mic : device ) in( outPtr, inPtr, value, n )
+    #pragma offload target( mic : device ) in( outPtr, inPtr, value, n )
     {
         ValueType* outValues = static_cast<ValueType*>( outPtr );
         const OtherValueType* inValues = static_cast<const OtherValueType*>( inPtr );
 
         #pragma omp parallel for
 
-        for( IndexType i = 0; i < n; i++ )
+        for ( IndexType i = 0; i < n; i++ )
         {
             outValues[i] = static_cast<ValueType>( inValues[i] ) * value;
         }
@@ -139,25 +107,25 @@ void MICUtils::setScale(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ValueType MICUtils::sum( const ValueType array[], const IndexType n )
+ValueType MICUtils::reduceSum( const ValueType array[], const IndexType n )
 {
     SCAI_LOG_INFO( logger, "sum # array = " << array << ", n = " << n )
 
-    ValueType val = static_cast<ValueType>(0.0);
+    ValueType val( 0 );
 
     const void* arrayPtr = array;
 
     int device = MICContext::getCurrentDevice();
 
-#pragma offload target( mic : device ) in( arrayPtr, n ), out( val )
+    #pragma offload target( mic : device ) in( arrayPtr, n ), out( val )
     {
-        val = static_cast<ValueType>(0.0);
+        val = ValueType( 0 );
 
-        const ValueType* array = static_cast<const ValueType*>( arrayPtr );
+        const ValueType* array = reinterpret_cast<const ValueType*>( arrayPtr );
 
         #pragma omp parallel for reduction( +:val )
 
-        for( IndexType i = 0; i < n; ++i )
+        for ( IndexType i = 0; i < n; ++i )
         {
             val += array[i];
         }
@@ -169,7 +137,31 @@ ValueType MICUtils::sum( const ValueType array[], const IndexType n )
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void MICUtils::setVal( ValueType array[], const IndexType n, const ValueType val )
+ValueType MICUtils::reduce( const ValueType array[], const IndexType n, const common::reduction::ReductionOp op )
+{
+    SCAI_LOG_INFO( logger, "reduce # array = " << array << ", n = " << n << ", op = " << op )
+
+    switch ( op )
+    {
+        case common::reduction::ADD :
+            return reduceSum( array, n );
+        case common::reduction::MAX :
+            return reduceMaxVal( array, n );
+        case common::reduction::MIN :
+            return reduceMinVal( array, n );
+        case common::reduction::ABS_MAX :
+            return reduceAbsMaxVal( array, n );
+        default:
+            COMMON_THROWEXCEPTION( "Unsupported reduce op " << op )
+    }
+
+    return ValueType( 0 );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void MICUtils::setVal( ValueType array[], const IndexType n, const ValueType val, const common::reduction::ReductionOp op )
 {
     SCAI_LOG_DEBUG( logger, "setVal<" << common::getScalarType<ValueType>() << ">: " << "array[" << n << "] = " << val )
 
@@ -177,16 +169,78 @@ void MICUtils::setVal( ValueType array[], const IndexType n, const ValueType val
 
     void* arrayPtr = array;
 
-#pragma offload target( mic : device ), in( arrayPtr, n, val )
+    switch ( op )
     {
-        ValueType* array = static_cast<ValueType*>( arrayPtr );
+        case common::reduction::COPY :
 
-        #pragma omp parallel for
+            #pragma offload target( mic : device ), in( arrayPtr, n, val )
+            {
+                ValueType* array = static_cast<ValueType*>( arrayPtr );
 
-        for( IndexType i = 0; i < n; ++i )
+                #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
+
+                for ( IndexType i = 0; i < n; i++ )
+                {
+                    array[i] = val;
+                }
+            }
+
+            break;
+
+        case common::reduction::ADD :
         {
-            array[i] = val;
+            if ( val == common::constants::ZERO )
+            {
+                // skip it
+            }
+            else
+            {
+                #pragma offload target( mic : device ), in( arrayPtr, n, val )
+                {
+                    ValueType* array = static_cast<ValueType*>( arrayPtr );
+
+                    #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
+
+                    for ( IndexType i = 0; i < n; i++ )
+                    {
+                        array[i] += val;
+                    }
+                }
+            }
+
+            break;
         }
+        case common::reduction::MULT :
+        {
+            // scale all values of the array
+
+            if ( val == common::constants::ONE )
+            {
+                // skip it
+            }
+            else if ( val == common::constants::ZERO )
+            {
+                setVal( array, n, ValueType( 0 ), common::reduction::COPY );
+            }
+            else
+            {
+                #pragma offload target( mic : device ), in( arrayPtr, n, val, op )
+                {
+                    ValueType* array = static_cast<ValueType*>( arrayPtr );
+
+                    #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
+
+                    for ( IndexType i = 0; i < n; i++ )
+                    {
+                        array[i] *= val;
+                    }
+                }
+            }
+
+            break;
+        }
+        default:
+            COMMON_THROWEXCEPTION( "Unsupported reduction op : " << op )
     }
 
     SCAI_LOG_DEBUG( logger, "Ready:: setVal<" << common::getScalarType<ValueType>() << ">: " << "array[" << n << "] = " << val )
@@ -204,13 +258,13 @@ void MICUtils::setOrder( ValueType array[], const IndexType n )
 
     int device = MICContext::getCurrentDevice();
 
-#pragma offload target( mic : device), in ( arrayPtr, n )
+    #pragma offload target( mic : device), in ( arrayPtr, n )
     {
         ValueType* array = static_cast<ValueType*>( arrayPtr );
 
         #pragma omp parallel for
 
-        for( IndexType i = 0; i < n; ++i )
+        for ( IndexType i = 0; i < n; ++i )
         {
             array[i] = static_cast<ValueType>( i );
         }
@@ -224,7 +278,7 @@ ValueType MICUtils::getValue( const ValueType* array, const IndexType i )
 {
     SCAI_LOG_DEBUG( logger, "getValue<" << common::getScalarType<ValueType>() << ">: i = " << i )
 
-    ValueType val = static_cast<ValueType>(0.0);
+    ValueType val = static_cast<ValueType>( 0.0 );
 
     const void* arrayPtr = array;
 
@@ -241,13 +295,15 @@ ValueType MICUtils::getValue( const ValueType* array, const IndexType i )
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ValueType MICUtils::maxval( const ValueType array[], const IndexType n )
+ValueType MICUtils::reduceMaxVal( const ValueType array[], const IndexType n )
 {
     SCAI_LOG_INFO( logger, "maxval<" << common::getScalarType<ValueType>() << ">: " << "array[" << n << "]" )
 
-    ValueType val = static_cast<ValueType>(0.0);
+    ValueType zero( - common::TypeTraits<ValueType>::getMax() );
 
-    if( n < 1 )
+    ValueType val = zero;
+
+    if ( n < 1 )
     {
         return val;
     }
@@ -256,21 +312,21 @@ ValueType MICUtils::maxval( const ValueType array[], const IndexType n )
 
     int device = MICContext::getCurrentDevice();
 
-#pragma offload target( mic : device ) in( arrayPtr, n ), out( val )
+#pragma offload target( mic : device ) in( arrayPtr, n, zero ), out( val )
     {
-        val = static_cast<ValueType>(0.0);
+        val = zero;
 
         const ValueType* array = static_cast<const ValueType*>( arrayPtr );
 
         #pragma omp parallel
         {
-            ValueType threadVal = static_cast<ValueType>(0.0);
+            ValueType threadVal( zero );
 
             #pragma omp for
 
-            for( IndexType i = 0; i < n; ++i )
+            for ( IndexType i = 0; i < n; ++i )
             {
-                if( array[i] > threadVal )
+                if ( array[i] > threadVal )
                 {
                     threadVal = array[i];
                 }
@@ -278,7 +334,7 @@ ValueType MICUtils::maxval( const ValueType array[], const IndexType n )
 
             #pragma omp critical
             {
-                if( threadVal > val )
+                if ( threadVal > val )
                 {
                     val = threadVal;
                 }
@@ -292,12 +348,65 @@ ValueType MICUtils::maxval( const ValueType array[], const IndexType n )
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ValueType MICUtils::absMaxVal( const ValueType array[], const IndexType n )
+ValueType MICUtils::reduceMinVal( const ValueType array[], const IndexType n )
+{
+    SCAI_LOG_INFO( logger, "maxval<" << common::getScalarType<ValueType>() << ">: " << "array[" << n << "]" )
+
+    ValueType zero( common::TypeTraits<ValueType>::getMax() );
+
+    ValueType val = zero;
+
+    if ( n < 1 )
+    {
+        return val;
+    }
+
+    const void* arrayPtr = array;
+
+    int device = MICContext::getCurrentDevice();
+
+#pragma offload target( mic : device ) in( arrayPtr, n, zero ), out( val )
+    {
+        val = zero;
+
+        const ValueType* array = static_cast<const ValueType*>( arrayPtr );
+
+        #pragma omp parallel
+        {
+            ValueType threadVal( zero );
+
+            #pragma omp for
+
+            for ( IndexType i = 0; i < n; ++i )
+            {
+                if ( array[i] < threadVal )
+                {
+                    threadVal = array[i];
+                }
+            }
+
+            #pragma omp critical
+            {
+                if ( threadVal < val )
+                {
+                    val = threadVal;
+                }
+            }
+        }
+    }
+
+    return val;
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+ValueType MICUtils::reduceAbsMaxVal( const ValueType array[], const IndexType n )
 {
     SCAI_LOG_INFO( logger, "absMaxVal<" << common::getScalarType<ValueType>() << ">: " << "array[" << n << "]" )
     SCAI_LOG_INFO( logger, "array = " << array )
 
-    ValueType val = static_cast<ValueType>(0.0);
+    ValueType val( 0 );
 
     // array is already on MIC device
 
@@ -305,21 +414,21 @@ ValueType MICUtils::absMaxVal( const ValueType array[], const IndexType n )
 
     int device = MICContext::getCurrentDevice();
 
-#pragma offload target( mic : device ) in( n, ptr ), inout( val )
+    #pragma offload target( mic : device ) in( n, ptr ), inout( val )
     {
-        const ValueType* array = static_cast<const ValueType*>( ptr );
+        const ValueType* array = reinterpret_cast<const ValueType*>( ptr );
 
         #pragma omp parallel
         {
-            ValueType threadVal = static_cast<ValueType>(0.0);
+            ValueType threadVal( 0 );
 
             #pragma omp for
 
-            for( IndexType i = 0; i < n; ++i )
+            for ( IndexType i = 0; i < n; ++i )
             {
                 ValueType elem = std::abs( array[i] );
 
-                if( elem > threadVal )
+                if ( elem > threadVal )
                 {
                     threadVal = elem;
                 }
@@ -327,7 +436,7 @@ ValueType MICUtils::absMaxVal( const ValueType array[], const IndexType n )
 
             #pragma omp critical
             {
-                if( threadVal > val )
+                if ( threadVal > val )
                 {
                     val = threadVal;
                 }
@@ -345,19 +454,19 @@ ValueType MICUtils::absMaxDiffVal( const ValueType array1[], const ValueType arr
 {
     SCAI_LOG_DEBUG( logger, "absMaxDiffVal<" << common::getScalarType<ValueType>() << ">: " << "array[" << n << "]" )
 
-    ValueType val = static_cast<ValueType>(0.0);
+    ValueType val( 0 );
 
     #pragma omp parallel
     {
-        ValueType threadVal = static_cast<ValueType>(0.0);
+        ValueType threadVal( 0 );
 
         #pragma omp for
 
-        for( IndexType i = 0; i < n; ++i )
+        for ( IndexType i = 0; i < n; ++i )
         {
             ValueType elem = std::abs( array1[i] - array2[i] );
 
-            if( elem > threadVal )
+            if ( elem > threadVal )
             {
                 threadVal = elem;
             }
@@ -367,7 +476,7 @@ ValueType MICUtils::absMaxDiffVal( const ValueType array1[], const ValueType arr
         {
             SCAI_LOG_TRACE( logger, "max val of thread  = " << threadVal << ", global was " << val )
 
-            if( threadVal > val )
+            if ( threadVal > val )
             {
                 val = threadVal;
             }
@@ -391,19 +500,19 @@ bool MICUtils::isSorted( const ValueType array[], const IndexType n, bool ascend
 
     int device = MICContext::getCurrentDevice();
 
-#pragma offload target( mic : device ) in( arrayPtr, n, ascending ), out( sorted )
+    #pragma offload target( mic : device ) in( arrayPtr, n, ascending ), out( sorted )
     {
         const ValueType* array = static_cast<const ValueType*>( arrayPtr );
 
         sorted = true;
 
-        if( ascending )
+        if ( ascending )
         {
             #pragma omp parallel for
 
-            for( IndexType i = 1; i < n; i++ )
+            for ( IndexType i = 1; i < n; i++ )
             {
-                if( sorted && ( array[i - 1] > array[i] ) )
+                if ( sorted && ( array[i - 1] > array[i] ) )
                 {
                     sorted = false;
                 }
@@ -413,9 +522,9 @@ bool MICUtils::isSorted( const ValueType array[], const IndexType n, bool ascend
         {
             #pragma omp parallel for
 
-            for( IndexType i = 1; i < n; i++ )
+            for ( IndexType i = 1; i < n; i++ )
             {
-                if( sorted && ( array[i - 1] < array[i] ) )
+                if ( sorted && ( array[i - 1] < array[i] ) )
                 {
                     sorted = false;
                 }
@@ -428,27 +537,58 @@ bool MICUtils::isSorted( const ValueType array[], const IndexType n, bool ascend
 
 /* --------------------------------------------------------------------------- */
 
-template<typename ValueType1,typename ValueType2>
-void MICUtils::set( ValueType1 out[], const ValueType2 in[], const IndexType n )
+template<typename ValueType1, typename ValueType2>
+void MICUtils::set( ValueType1 out[], const ValueType2 in[], const IndexType n, const common::reduction::ReductionOp op )
 {
-    SCAI_LOG_INFO( logger,
-                   "set: out<" << common::getScalarType<ValueType1>() << "[" << n << "]" << " = in<" << common::getScalarType<ValueType2>() << ">[" << n << "]" )
+    SCAI_LOG_DEBUG( logger,
+                    "set: out<" << TypeTraits<ValueType1>::id() << "[" << n << "]"
+                    << ", op = " << op << "  in<" << TypeTraits<ValueType2>::id() << ">[" << n << "]" )
 
     void* outPtr = out;
     const void* inPtr = in;
 
     int device = MICContext::getCurrentDevice();
 
-#pragma offload target( mic : device ), in( outPtr, inPtr, n )
+#pragma offload target( mic : device ), in( outPtr, inPtr, n, op )
     {
         ValueType1* out = static_cast<ValueType1*>( outPtr );
         const ValueType2* in = static_cast<const ValueType2*>( inPtr );
 
-        #pragma omp parallel for
-
-        for( IndexType i = 0; i < n; i++ )
+        switch ( op )
         {
-            out[i] = static_cast<ValueType1>( in[i] );
+            case common::reduction::COPY :
+            {
+                #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
+
+                for ( IndexType i = 0; i < n; i++ )
+                {
+                    out[i] = static_cast<ValueType1>( in[i] );
+                }
+
+                break;
+            }
+            case common::reduction::ADD :
+            {
+                #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
+
+                for ( IndexType i = 0; i < n; i++ )
+                {
+                    out[i] += static_cast<ValueType1>( in[i] );
+                }
+
+                break;
+            }
+            case common::reduction::MULT :
+            {
+                #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
+
+                for ( IndexType i = 0; i < n; i++ )
+                {
+                    out[i] *= static_cast<ValueType1>( in[i] );
+                }
+
+                break;
+            }
         }
     }
 }
@@ -471,9 +611,9 @@ bool MICUtils::validIndexes( const IndexType array[], const IndexType n, const I
 
         #pragma omp parallel for reduction( & : validFlag )
 
-        for( IndexType i = 0; i < n; i++ )
+        for ( IndexType i = 0; i < n; i++ )
         {
-            if( size <= array[i] || 0 > array[i] )
+            if ( size <= array[i] || 0 > array[i] )
             {
                 validFlag = false;
             }
@@ -485,7 +625,7 @@ bool MICUtils::validIndexes( const IndexType array[], const IndexType n, const I
 
 /* --------------------------------------------------------------------------- */
 
-template<typename ValueType1,typename ValueType2>
+template<typename ValueType1, typename ValueType2>
 void MICUtils::setGather( ValueType1 out[], const ValueType2 in[], const IndexType indexes[], const IndexType n )
 {
     SCAI_LOG_DEBUG( logger,
@@ -506,7 +646,7 @@ void MICUtils::setGather( ValueType1 out[], const ValueType2 in[], const IndexTy
 
         #pragma omp parallel for
 
-        for( IndexType i = 0; i < n; i++ )
+        for ( IndexType i = 0; i < n; i++ )
         {
             out[i] = static_cast<ValueType1>( in[indexes[i]] );
         }
@@ -515,7 +655,7 @@ void MICUtils::setGather( ValueType1 out[], const ValueType2 in[], const IndexTy
 
 /* --------------------------------------------------------------------------- */
 
-template<typename ValueType1,typename ValueType2>
+template<typename ValueType1, typename ValueType2>
 void MICUtils::setScatter( ValueType1 out[], const IndexType indexes[], const ValueType2 in[], const IndexType n )
 {
     SCAI_LOG_DEBUG( logger,
@@ -535,7 +675,7 @@ void MICUtils::setScatter( ValueType1 out[], const IndexType indexes[], const Va
 
         #pragma omp parallel for
 
-        for( IndexType i = 0; i < n; i++ )
+        for ( IndexType i = 0; i < n; i++ )
         {
             out[indexes[i]] = static_cast<ValueType1>( in[i] );
         }
@@ -561,9 +701,9 @@ void MICUtils::invert( ValueType array[], const IndexType n )
 
         #pragma omp parallel for
 
-        for( IndexType i = 0; i < n; ++i )
+        for ( IndexType i = 0; i < n; ++i )
         {
-            array[i] = static_cast<ValueType>(1.0) / array[i];
+            array[i] = static_cast<ValueType>( 1.0 ) / array[i];
         }
     }
 }
@@ -590,17 +730,14 @@ void MICUtils::registerKernels( bool deleteFlag )
 
     KernelRegistry::set<UtilKernelTrait::validIndexes>( validIndexes, MIC, flag );
 
-    KernelRegistry::set<UtilKernelTrait::scale<float> >( scale, MIC, flag );
-    KernelRegistry::set<UtilKernelTrait::scale<double> >( scale, MIC, flag );
-
     KernelRegistry::set<UtilKernelTrait::setScale<float, float> >( setScale, MIC, flag );
     KernelRegistry::set<UtilKernelTrait::setScale<double, float> >( setScale, MIC, flag );
     KernelRegistry::set<UtilKernelTrait::setScale<float, double> >( setScale, MIC, flag );
     KernelRegistry::set<UtilKernelTrait::setScale<double, double> >( setScale, MIC, flag );
 
-    KernelRegistry::set<UtilKernelTrait::sum<IndexType> >( sum, MIC, flag );
-    KernelRegistry::set<UtilKernelTrait::sum<float> >( sum, MIC, flag );
-    KernelRegistry::set<UtilKernelTrait::sum<double> >( sum, MIC, flag );
+    KernelRegistry::set<UtilKernelTrait::reduce<IndexType> >( reduce, MIC, flag );
+    KernelRegistry::set<UtilKernelTrait::reduce<float> >( reduce, MIC, flag );
+    KernelRegistry::set<UtilKernelTrait::reduce<double> >( reduce, MIC, flag );
 
     KernelRegistry::set<UtilKernelTrait::setVal<IndexType> >( setVal, MIC, flag );
     KernelRegistry::set<UtilKernelTrait::setVal<float> >( setVal, MIC, flag );
@@ -611,13 +748,6 @@ void MICUtils::registerKernels( bool deleteFlag )
     KernelRegistry::set<UtilKernelTrait::getValue<IndexType> >( getValue, MIC, flag );
     KernelRegistry::set<UtilKernelTrait::getValue<float> >( getValue, MIC, flag );
     KernelRegistry::set<UtilKernelTrait::getValue<double> >( getValue, MIC, flag );
-
-    KernelRegistry::set<UtilKernelTrait::maxval<IndexType> >( maxval, MIC, flag );
-    KernelRegistry::set<UtilKernelTrait::maxval<float> >( maxval, MIC, flag );
-    KernelRegistry::set<UtilKernelTrait::maxval<double> >( maxval, MIC, flag );
-
-    KernelRegistry::set<UtilKernelTrait::absMaxVal<float> >( absMaxVal, MIC, flag );
-    KernelRegistry::set<UtilKernelTrait::absMaxVal<double> >( absMaxVal, MIC, flag );
 
     KernelRegistry::set<UtilKernelTrait::absMaxDiffVal<float> >( absMaxDiffVal, MIC, flag );
     KernelRegistry::set<UtilKernelTrait::absMaxDiffVal<double> >( absMaxDiffVal, MIC, flag );

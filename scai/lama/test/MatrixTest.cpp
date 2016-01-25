@@ -126,6 +126,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ReadWriteTest, MatrixType, MatrixTypes )
     MatrixType formattedMatrix( formattedInputFile );
     SCAI_LOG_INFO( logger, "formatted input matrix = " << formattedMatrix );
 
+    /*
+     * Its not sure why we need to test with these big matrices here
     if ( formattedMatrix.getMatrixKind() == Matrix::SPARSE )
     {
         // just some additional test, be careful, is too large for dense matrices
@@ -135,6 +137,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ReadWriteTest, MatrixType, MatrixTypes )
         MatrixType xdrPoisson( formattedInputFile );
         testSameMatrix( formattedPoisson, xdrPoisson );
     }
+    */
 
     SCAI_LOG_INFO( logger, "readWriteTest: check writing and loading formatted matrix" );
     std::string formattedFileName = prefix + "/test_matrix_formatted.tmp.frm";

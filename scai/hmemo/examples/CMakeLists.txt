@@ -33,6 +33,7 @@
 foreach ( executable Array BenchArray BenchContext Aliasing Threading Create )
     add_executable( ${executable} ${executable}.cpp )
     target_link_libraries( ${executable} scai_hmemo )
+    set ( EXAMPLE_EXECUTABLES "${EXAMPLE_EXECUTABLES} ${executable}.exe" )
 endforeach ( executable )
 
 if    ( CUDA_FOUND AND USE_CUDA )
@@ -42,3 +43,12 @@ endif ( CUDA_FOUND AND USE_CUDA )
 if ( USE_MIC )
     add_subdirectory ( mic )
 endif ( USE_MIC )
+
+string (REPLACE ";" " " CUDA_NVCC_FLAGS_CLEAN "${CUDA_NVCC_FLAGS}")
+
+## install examples
+configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/make.inc.in" "${CMAKE_CURRENT_BINARY_DIR}/make.inc" )
+install ( DIRECTORY ./ DESTINATION share/examples/scai-hmemo-${SCAI_HMEMO_VERSION} FILES_MATCHING REGEX "^.*.(cpp|cu)$" )
+install ( FILES Makefile README ${CMAKE_CURRENT_BINARY_DIR}/make.inc DESTINATION share/examples/scai-hmemo-${SCAI_HMEMO_VERSION} )
+install ( FILES cuda/Makefile DESTINATION share/examples/scai-hmemo-${SCAI_HMEMO_VERSION}/cuda )
+install ( FILES mic/Makefile DESTINATION share/examples/scai-hmemo-${SCAI_HMEMO_VERSION}/mic )

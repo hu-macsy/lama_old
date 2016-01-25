@@ -116,7 +116,7 @@ scai_project (
          Context
          ContextData
          ContextDataManager
-         ContextArray
+         _HArray
          HostContext
          HostMemory
          Memory
@@ -144,6 +144,7 @@ endif ( USE_MIC )
 ## add subdirectories
 add_subdirectory ( exception )
 add_subdirectory ( examples )
+
 if    ( FOUND_BOOST_TEST AND BUILD_TEST )
     add_subdirectory ( test )
 endif ( FOUND_BOOST_TEST AND BUILD_TEST )

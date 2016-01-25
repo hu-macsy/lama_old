@@ -305,6 +305,10 @@ public:
 
     void scaleImpl( const ValueType value );
 
+    /** Implementation of pure method.  */
+
+    void conj();
+
     /** General routine to build any kind of CSR storage.
      *
      *  @param[out] ia is the CSR offset array
@@ -380,6 +384,7 @@ private:
         Row& operator=( const Row& other );
         void reserve( const IndexType numValuesPerRow );
         void scale( const ValueType val );
+        void conj();
     };
 
     std::vector<Row> mRows;

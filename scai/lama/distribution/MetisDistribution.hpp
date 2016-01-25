@@ -58,7 +58,11 @@ namespace lama
  *
  */
 
-class COMMON_DLL_IMPORTEXPORT MetisDistribution: public GeneralDistribution
+class COMMON_DLL_IMPORTEXPORT MetisDistribution: 
+
+    public GeneralDistribution,
+    private Distribution::Register<MetisDistribution>
+
 {
 public:
 
@@ -78,15 +82,13 @@ public:
 
     virtual void writeAt( std::ostream& stream ) const;
 
-    static MetisDistribution* create(
-        const CommunicatorPtr communicator,
-        const IndexType globalSize,
-        const float weight = 1.0 );
+    /** Static method required for create to use in Distribution::Register */
 
-    static MetisDistribution* create(
-        const CommunicatorPtr communicator,
-        const Matrix& matrix,
-        const float weight = 1.0 );
+    static Distribution* create( const DistributionArguments args );
+
+    /** Static method required for Distribution::Register */
+
+    static std::string createValue();
 
 private:
 
@@ -116,10 +118,6 @@ private:
     std    ::vector<float> mWeights;
 
     void normWeights( std::vector<float>& weights );
-
-    static bool registerCreator(); //!< used in static initialization for registration
-
-    static bool initialized;//!< static initialization used for registration of create in Distribution factory
 };
 
 } /* end namespace lama */

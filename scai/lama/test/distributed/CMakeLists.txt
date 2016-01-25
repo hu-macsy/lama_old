@@ -79,7 +79,6 @@ scai_project (
 
         #TODO: REMOVE!
         ../Configuration
-        ../SameMatrixHelper
         ../SparseMatrixHelper
         ../CommunicatorTest
 )

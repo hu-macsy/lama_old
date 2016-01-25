@@ -214,6 +214,11 @@ protected:
     CriterionPtr mCriterionRootComponent;
 
     /**
+     *  @brief own implementation of Printable::writeAt
+     */
+    virtual void writeAt( std::ostream& stream ) const;
+
+    /**
      * Logging methods to maintain code-readability
      */
     void logStartSolve();

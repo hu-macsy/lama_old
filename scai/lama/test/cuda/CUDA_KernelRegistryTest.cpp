@@ -63,9 +63,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getKernelTest, ValueType, test_types )
     ContextPtr context = Context::getContextPtr( scai::common::context::CUDA );
 
     {
-        LAMAKernel<UtilKernelTrait::scale<ValueType> > scale;
-        SCAI_LOG_INFO( logger, "scale = " << scale.printIt() )
-        BOOST_CHECK( scale[context] != NULL );
+        LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
+        SCAI_LOG_INFO( logger, "setVal = " << setVal.printIt() )
+        BOOST_CHECK( setVal[context] != NULL );
     }
  
     {

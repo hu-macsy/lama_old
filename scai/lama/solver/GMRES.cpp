@@ -383,7 +383,8 @@ void GMRES::iterate()
         SCAI_REGION( "Solver.GMRES.applyRotations" )
         double tmp1 = runtime.mH[hIdxStart + k];
         double tmp2 = runtime.mH[hIdxStart + k + 1];
-        runtime.mH[hIdxStart + k] = runtime.mCC[k] * tmp1 + runtime.mSS[k] * tmp2;
+        //for complex valuetype:
+        runtime.mH[hIdxStart + k] = conj(runtime.mCC[k]).getValue<ScalarRepType>() * tmp1 + conj(runtime.mSS[k]).getValue<ScalarRepType>() * tmp2;
         runtime.mH[hIdxStart + k + 1] = runtime.mCC[k] * tmp2 - runtime.mSS[k] * tmp1;
     }
 
@@ -476,6 +477,12 @@ const GMRES::GMRESRuntime& GMRES::getConstRuntime() const
 SolverPtr GMRES::copy()
 {
     return SolverPtr( new GMRES( *this ) );
+}
+
+void GMRES::writeAt( std::ostream& stream ) const
+{ 
+    stream << "GMRES ( id = " << mId << ", krylov dim = " << mKrylovDim 
+                       << ", #iter = " << getConstRuntime().mIterations << " )";
 }
 
 std::string GMRES::createValue()

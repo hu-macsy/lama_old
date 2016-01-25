@@ -53,15 +53,13 @@ namespace lama
  * @brief The class BiCGstab represents a IterativeSolver which uses the krylov subspace stabilized BiCG method
  *        to solve a system of linear equations iteratively.
  *
- * Remarks: 
- * 1. The scalars in the algorithm are set to zero if the norm of the residual is smaller than 
- * machine precision (3*eps) to avoid devision by zero. In this case the solution doesn't change anymore.
- * 2. In this case it makes sense to take the residual since we have to update the residual in each
- * iterate() anyways (contrary to e.g. TFQMR solver).
+ * Remark: 
+ * The scalars in the algorithm are set to zero if they are smaller than machine precision
+ * (3*eps) to avoid devision by zero. In this case the solution doesn't change anymore.
  */
 class COMMON_DLL_IMPORTEXPORT BiCGstab:
-		public IterativeSolver,
-		public Solver::Register<BiCGstab>
+        public IterativeSolver,
+        public Solver::Register<BiCGstab>
 {
 public:
     /**
@@ -136,6 +134,11 @@ public:
 protected:
 
     virtual void iterate();
+
+    /**
+     *  @brief own implementation of Printable::writeAt
+     */
+    virtual void writeAt( std::ostream& stream ) const;
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 

@@ -722,7 +722,7 @@ public:
      * Note: this routine is mainly used for sending of values; in case of CUDA aware
      *       communication it might return a CUDA context if the array has valid data there.
      */
-    virtual hmemo::ContextPtr getCommunicationContext( const hmemo::ContextArray& array ) const = 0;
+    virtual hmemo::ContextPtr getCommunicationContext( const hmemo::_HArray& array ) const = 0;
 
 protected:
 

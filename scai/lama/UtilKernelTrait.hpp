@@ -35,13 +35,13 @@
 // for dll_import
 #include <scai/common/config.hpp>
 #include <scai/common/SCAITypes.hpp>
+#include <scai/common/ReductionOp.hpp>
 
 namespace scai
 {
 
 namespace lama
 {
-
 
 /** Structure with traits for all Utils kernels. */
 
@@ -63,44 +63,23 @@ struct UtilKernelTrait
         static const char* getId() { return "Util.validIndexes"; }
     };
 
-    /** @brief Trait for register kernel function sum that sums elements of an array
+    /** @brief Trait for register kernel function reduce that reduces elements of an array
      *
-     *  @tparam ValueType specifies the value type used in the sum reduction.
+     *  @tparam ValueType specifies the value type used in the reduction.
      */
     template <typename ValueType>
-    struct sum
+    struct reduce
     {
-        /** @brief Sum n contiguously stored values.
+        /** @brief reduce op for n contiguously stored valuels
          *
          *  @param[in] array is an array of values
          *  @param[in] n is the size of array
-         *  @return sum of all values in array
-         */
-        typedef ValueType ( *FuncType ) ( const ValueType array[], const IndexType n );
-        static const char* getId () { return "Util.sum"; }
-    };
-
-    template <typename ValueType>
-    struct maxval
-    {
-        /** @brief Find maximal value of n contiguously stored values.
-         *
-         *  @param[in] array is an array of values
-         *  @param[in] n is the size of array
-         *  @return maximum of all values in array
+         *  @param[in] op is the reduction operator ( ADD for sum, MIN for minval, MAX for maxval, ...)
+         *  @return reduced value corresponding to the reduction operator
          */
 
-        typedef ValueType ( *FuncType ) ( const ValueType array[], const IndexType n );
-        static const char* getId() { return "Util.maxval"; }
-    };
-
-    template <typename ValueType>
-    struct absMaxVal
-    {
-        /** @brief Find absolute maximal value of n contiguously stored values. */
-
-        typedef ValueType ( *FuncType ) ( const ValueType array[], const IndexType n );
-        static const char* getId() { return "Util.absMaxVal"; }
+        typedef ValueType ( *FuncType ) ( const ValueType array[], const IndexType n, const common::reduction::ReductionOp op );
+        static const char* getId() { return "Util.reduce"; }
     };
 
     template <typename ValueType>
@@ -134,7 +113,7 @@ struct UtilKernelTrait
         static const char* getId() { return "Util.isSorted"; }
     };
 
-    /** @brief Structure with functiooń pointer type defintions for setter methods.
+    /** @brief Structure with function pointer type defintions for setter methods.
      *
      *  @tparam ValueType specifies the value type used in the set operations.
      */
@@ -142,9 +121,11 @@ struct UtilKernelTrait
     template<typename ValueType>
     struct setVal
     {
-        /** Set all elements of a contiguous array with a value. */
+        /** Set all elements of a contiguous array with a value. 
+         *  A reduction operator like ADD, MULT can be used to combine the new value with the old value.
+         */
 
-        typedef void ( *FuncType ) ( ValueType array[], const IndexType n, const ValueType val );
+        typedef void ( *FuncType ) ( ValueType array[], const IndexType n, const ValueType val, const common::reduction::ReductionOp op );
         static const char* getId() { return "Util.setVal"; }
     };
 
@@ -167,9 +148,9 @@ struct UtilKernelTrait
     template<typename ValueType1, typename ValueType2>
     struct set
     {
-        /** Set out[i] = in[i],  0 <= i < n */
+        /** Set out[i] <op>= in[i],  0 <= i < n , op = +, -, *, /, min, max, ... */
 
-        typedef void ( *FuncType ) ( ValueType1 out[], const ValueType2 in[], const IndexType n );
+        typedef void ( *FuncType ) ( ValueType1 out[], const ValueType2 in[], const IndexType n, const common::reduction::ReductionOp op );
         static const char* getId() { return "Util.set"; }
     };
 
@@ -185,12 +166,13 @@ struct UtilKernelTrait
          *  @param[in,out]  inValues   is the array with entries to scale
          *  @param[in]      n          is the number of entries
          */
-        typedef void ( *FuncType ) ( ValueType1 outValues[],
-                        const ValueType1 scaleValue,
-                        const ValueType2 inValues[],
-                        const IndexType n );
+        typedef void ( *FuncType ) ( 
+            ValueType1 outValues[],
+            const ValueType1 scaleValue,
+            const ValueType2 inValues[],
+            const IndexType n );
  
-         static const char* getId() { return "Util.setScale"; } 
+        static const char* getId() { return "Util.setScale"; } 
     };
 
     template<typename ValueType1, typename ValueType2>
@@ -198,23 +180,61 @@ struct UtilKernelTrait
     {
         /** Set out[i] = in[ indexes[i] ],  \f$0 \le i < n\f$ */
 
-        typedef void ( *FuncType ) ( ValueType1 out[],
-                        const ValueType2 in[],
-                        const IndexType indexes[],
-                        const IndexType n );
+        typedef void ( *FuncType ) ( 
+            ValueType1 out[],
+            const ValueType2 in[],
+            const IndexType indexes[],
+            const IndexType n );
 
         static const char* getId() { return "Util.setGather"; } 
+    };
+
+    template<typename ValueType>
+    struct scatterVal
+    {
+        /** @brief Setting one value at multiple positions in an array.
+         *
+         *  @param[in,out] out is the array in which values will be written
+         *  @param[in]     indexes are the positions the value is written
+         *  @param[in]     value is the value written in the out array
+         *  @param[in]     n is the number of values 
+         *
+         *  Note: Not all values might be set in 'out'. 
+         *
+         *  out[ indexes[i] ] = value, i = 0, ..., n-1
+         */
+
+        typedef void ( *FuncType ) ( 
+            ValueType out[],
+            const IndexType indexes[],
+            const ValueType value,
+            const IndexType n );
+
+        static const char* getId() { return "Util.scatterVal"; }
     };
 
     template<typename ValueType1, typename ValueType2>
     struct setScatter
     {
-        /** Set out[ indexes[i] ] = in [i] */
+        /** @brief Indirect set of arrays also known as scatter.
+         *
+         *  @param[in,out] out is the array in which values will be inserted
+         *  @param[in]     indexes are the positions where values are written
+         *  @param[in]     in is the array with the output values.
+         *  @param[in]     n is the number of values 
+         *
+         *  Note: Not all values might be set in 'out'. There should be no double
+         *        values in indexes as this might result in non-ambiguous results
+         *        by a parallel execution.
+         *
+         *  out[ indexes[i] ] = in [i] , i = 0, ..., n-1
+         */
 
-        typedef void ( *FuncType ) ( ValueType1 out[],
-                        const IndexType indexes[],
-                        const ValueType2 in[],
-                        const IndexType n );
+        typedef void ( *FuncType ) ( 
+            ValueType1 out[],
+            const IndexType indexes[],
+            const ValueType2 in[],
+            const IndexType n );
 
         static const char* getId() { return "Util.setScatter"; }
     };
@@ -234,19 +254,18 @@ struct UtilKernelTrait
     };
 
     template<typename ValueType>
-    struct scale
+    struct conj
     {
-        /** @brief scale array of values with a value in place
+        /** @brief replace complex values with their conjugate value
          *
-         *  @param[in,out]  values is the array with entries to scale
-         *  @param[in]      value  is the scaling factor
+         *  @param[in,out]  values is the array with entries to conj 
          *  @param[in]      n      is the number of entries in values
          */
-        typedef void ( *FuncType ) ( ValueType values[],
-                        const ValueType value,
-                        const IndexType n );
+        typedef void ( *FuncType ) ( 
+            ValueType values[],
+            const IndexType n );
 
-        static const char* getId() { return "Util.scale"; }
+        static const char* getId() { return "Util.conj"; }
     };
 };
 

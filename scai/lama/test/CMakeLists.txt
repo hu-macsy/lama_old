@@ -40,13 +40,13 @@ scai_project (
         Configuration
         MatrixStorageTest
         NormTest
-        SameMatrixHelper
         SparseMatrixHelper
         SparseMatrixTest
         TestContext
     
     HEADERS
-
+        
+        SameMatrixHelper
         EquationHelper
 #        TestMacros : in common
         TestSparseMatrices
@@ -83,6 +83,7 @@ scai_project (
         ELLUtilsTest
         FileLoggerTest
         GMRESTest
+        HArrayUtilsTest
         InverseSolverTest
         IterationCountTest
         JacobiTest

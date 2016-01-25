@@ -85,10 +85,10 @@ int main()
     ValueType vectorValues[] = {   6.0f, 4.0f, 7.0f, -9.3f };
 
     // All data has to be stored in LAMA Arrays.
-    const LAMAArray<IndexType> matrixIA = LAMAArray<IndexType>( numRows + 1, ia );
-    const LAMAArray<IndexType> matrixJA = LAMAArray<IndexType>( numValues, ja );
-    const LAMAArray<ValueType> mValues  = LAMAArray<ValueType>( numValues, matrixValues );
-    const LAMAArray<ValueType> vValues  = LAMAArray<ValueType>( numColumns, vectorValues );
+    const LArray<IndexType> matrixIA = LArray<IndexType>( numRows + 1, ia );
+    const LArray<IndexType> matrixJA = LArray<IndexType>( numValues, ja );
+    const LArray<ValueType> mValues  = LArray<ValueType>( numValues, matrixValues );
+    const LArray<ValueType> vValues  = LArray<ValueType>( numColumns, vectorValues );
 
     // Create a CSRStorage.
     CSRStorage<ValueType>* csrStorage = new CSRStorage<ValueType>( numRows, numColumns, numValues,

@@ -36,7 +36,7 @@
 #pragma once
 
 // base classes
-#include <scai/hmemo/ContextArray.hpp>
+#include <scai/hmemo/_HArray.hpp>
 
 // common library
 #include <scai/common/TypeTraits.hpp>
@@ -48,7 +48,7 @@ namespace hmemo
 {
 
 /**
- * @brief HArray is the typed version of ContextArray.
+ * @brief HArray is the typed version of _HArray.
  *
  * @tparam ValueType is the type stored in this container.
  *
@@ -69,8 +69,8 @@ namespace hmemo
 template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT HArray: 
 
-    public ContextArray,
-    public ContextArray::Register<HArray<ValueType> >
+    public _HArray,
+    public _HArray::Register<HArray<ValueType> >
 
 {
 public:
@@ -153,10 +153,10 @@ public:
     HArray<ValueType>* copy();
 
     /** 
-     *  Static create routine that is used for the ContextArray factory.
+     *  Static create routine that is used for the _HArray factory.
      */
 
-    static ContextArray* create();
+    static _HArray* create();
 
     /**
      * @brief Assignment operator for Heterogeneous arrays.  
@@ -210,11 +210,11 @@ public:
      */
     void reserve( ContextPtr context, const IndexType capacity );
 
-    using ContextArray::capacity;
-    using ContextArray::clear;
+    using _HArray::capacity;
+    using _HArray::clear;
 
     /** Method that must be provided to guarantee a correct registration in
-     *  the ContextArray factory. 
+     *  the _HArray factory. 
      */
 
     static common::scalar::ScalarType createValue()
@@ -222,13 +222,13 @@ public:
         return common::TypeTraits<ValueType>::stype;
     }
 
-    using ContextArray::resize;
+    using _HArray::resize;
 
 protected:
 
-    using ContextArray::mSize;
-    using ContextArray::mValueSize;
-    using ContextArray::constFlag;
+    using _HArray::mSize;
+    using _HArray::mValueSize;
+    using _HArray::constFlag;
 
     ValueType* get( ContextDataIndex index );
 
@@ -249,7 +249,7 @@ protected:
 template<typename ValueType>
 HArray<ValueType>::HArray() : 
 
-    ContextArray( 0, sizeof( ValueType ) )
+    _HArray( 0, sizeof( ValueType ) )
 
 {
     SCAI_LOG_DEBUG( logger, "created new HArray: " << *this )
@@ -260,7 +260,7 @@ HArray<ValueType>::HArray() :
 template<typename ValueType>
 HArray<ValueType>::HArray( ContextPtr context ) :
 
-    ContextArray( 0, sizeof( ValueType ) )
+    _HArray( 0, sizeof( ValueType ) )
 
 {
     // just make the first entry for the context
@@ -275,7 +275,7 @@ HArray<ValueType>::HArray( ContextPtr context ) :
 template<typename ValueType>
 HArray<ValueType>::HArray( MemoryPtr memory ) :
 
-    ContextArray( 0, sizeof( ValueType ) )
+    _HArray( 0, sizeof( ValueType ) )
 
 {
     // just make the first entry for the memory
@@ -290,7 +290,7 @@ HArray<ValueType>::HArray( MemoryPtr memory ) :
 template<typename ValueType>
 HArray<ValueType>::HArray( const IndexType n ) :
 
-    ContextArray( n, sizeof( ValueType) )
+    _HArray( n, sizeof( ValueType) )
 
 {
     // reserves already memory on the host, but this data is not valid
@@ -304,7 +304,7 @@ HArray<ValueType>::HArray( const IndexType n ) :
 /* ---------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-HArray<ValueType>::HArray( const IndexType n, const ValueType& value ) : ContextArray( n, sizeof( ValueType ) )
+HArray<ValueType>::HArray( const IndexType n, const ValueType& value ) : _HArray( n, sizeof( ValueType ) )
 
 {
     // In constructor of the HArray lock of accesses is not required 
@@ -325,7 +325,7 @@ HArray<ValueType>::HArray( const IndexType n, const ValueType& value ) : Context
 
 #pragma omp parallel for 
 
-        for ( IndexType i = 0; i < mSize; ++i )
+        for ( size_t i = 0; i < mSize; ++i )
         {
             hostData[i] = value;
         }
@@ -341,7 +341,7 @@ HArray<ValueType>::HArray( const IndexType n, const ValueType& value ) : Context
 template<typename ValueType>
 HArray<ValueType>::HArray( const HArray<ValueType>& other ):  
 
-    ContextArray( other.mSize, sizeof( ValueType ) )
+    _HArray( other.mSize, sizeof( ValueType ) )
 
 {
     mContextDataManager.copyAllValidEntries( other.mContextDataManager, mSize * mValueSize );
@@ -360,7 +360,7 @@ HArray<ValueType>::~HArray()
 /* ---------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-ContextArray* HArray<ValueType>::create()
+_HArray* HArray<ValueType>::create()
 {
     return new HArray<ValueType>();
 }
@@ -386,7 +386,7 @@ HArray<ValueType>* HArray<ValueType>::copy()
 template<typename ValueType>
 common::scalar::ScalarType HArray<ValueType>::getValueType() const
 {
-    // Note: this is implementation of the pure method of base class ContextArray.
+    // Note: this is implementation of the pure method of base class _HArray.
 
     return common::TypeTraits<ValueType>::stype;
 }
@@ -533,9 +533,11 @@ void HArray<ValueType>::resize( ContextDataIndex index, const IndexType size )
 
     // SCAI_ASSERT( entry.locked( common::context::Write ), "resize illegal here " << entry )
 
-    size_t allocSize = size * mValueSize;
+    // static cast to have multiplication with 64 bit values
 
-    size_t validSize = mSize * mValueSize;
+    size_t allocSize = static_cast<size_t>( size ) * mValueSize;
+
+    size_t validSize = static_cast<size_t>( mSize ) * mValueSize;
 
     if ( validSize > allocSize )
     {
@@ -557,7 +559,7 @@ void HArray<ValueType>::resize( ContextDataIndex index, const IndexType size )
 template<typename ValueType>
 void HArray<ValueType>::reserve( ContextDataIndex index, const IndexType size ) const
 {
-    if ( size <= mSize )
+    if ( static_cast<size_t>( size ) <= mSize )
     {
         return;   // nothing to do
     }

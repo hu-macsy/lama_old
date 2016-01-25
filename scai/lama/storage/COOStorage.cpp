@@ -219,11 +219,15 @@ void COOStorage<ValueType>::check( const char* msg ) const
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        SCAI_ASSERT_ERROR( validIndexes[ loc ]( rIA.get(), mNumValues, mNumRows ),
-                           *this << " @ " << msg << ": illegel indexes in IA" )
+        bool okayIA = validIndexes[ loc ]( rIA.get(), mNumValues, mNumRows );
 
-        SCAI_ASSERT_ERROR( validIndexes[ loc ]( rJA.get(), mNumValues, mNumColumns ),
-                           *this << " @ " << msg << ": illegel indexes in JA" )
+        SCAI_ASSERT_ERROR( okayIA,  *this << " @ " << msg << ": illegel indexes in IA" )
+
+        bool okayJA = validIndexes[ loc ]( rJA.get(), mNumValues, mNumColumns );
+
+        SCAI_ASSERT_ERROR( okayJA, *this << " @ " << msg << ": illegel indexes in JA" )
+
+        SCAI_LOG_INFO( logger, "check, msg = " << msg << ", okayIA = " << okayIA << ", okayJA = " << okayJA )
     }
 }
 
@@ -252,7 +256,7 @@ void COOStorage<ValueType>::setIdentity( const IndexType size )
     setOrder[loc]( ia.get(), mNumValues );
     setOrder[loc]( ja.get(), mNumValues );
 
-    setVal[loc]( values.get(), mNumValues, static_cast<ValueType>(1.0) );
+    setVal[loc]( values.get(), mNumValues, ValueType( 1 ), common::reduction::COPY );
 
     mDiagonalProperty = true;
 }
@@ -313,7 +317,7 @@ void COOStorage<ValueType>::setCOOData(
     const IndexType numValues,
     const HArray<IndexType>& ia,
     const HArray<IndexType>& ja,
-    const ContextArray& values )
+    const _HArray& values )
 {
     // check the sizes of the arrays
 
@@ -327,8 +331,8 @@ void COOStorage<ValueType>::setCOOData(
 
     ContextPtr loc = getContextPtr();
 
-    HArrayUtils::assignImpl( mIA, ia, loc );
-    HArrayUtils::assignImpl( mJA, ja, loc );
+    HArrayUtils::assign( mIA, ia, loc );
+    HArrayUtils::assign( mJA, ja, loc );
 
     HArrayUtils::assign( mValues, values, loc ); // supports type conversion
 
@@ -579,15 +583,23 @@ void COOStorage<ValueType>::setDiagonalImpl( const ValueType value )
 template<typename ValueType>
 void COOStorage<ValueType>::scaleImpl( const ValueType value )
 {
-    static LAMAKernel<UtilKernelTrait::scale<ValueType> > scale;
+    static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
 
-    ContextPtr loc = scale.getValidContext( this->getContextPtr() );
+    ContextPtr loc = setVal.getValidContext( this->getContextPtr() );
 
     SCAI_CONTEXT_ACCESS( loc )
 
     WriteAccess<ValueType> wValues( mValues, loc );
 
-    scale[loc]( wValues.get(), value, mNumValues );
+    setVal[loc]( wValues.get(), mNumValues, value, common::reduction::MULT );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void COOStorage<ValueType>::conj()
+{
+    HArrayUtils::conj( mValues, this->getContextPtr() ); 
 }
 
 /* --------------------------------------------------------------------------- */
@@ -687,7 +699,7 @@ void COOStorage<ValueType>::getDiagonalImpl( HArray<OtherType>& diagonal ) const
 
     // diagonal elements are the first entries of mValues
 
-    set[loc]( wDiagonal.get(), rValues.get(), numDiagonalElements );
+    set[loc]( wDiagonal.get(), rValues.get(), numDiagonalElements, common::reduction::COPY );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -711,7 +723,7 @@ void COOStorage<ValueType>::setDiagonalImpl( const HArray<OtherType>& diagonal )
 
     // diagonal elements are the first entries of mValues
 
-    set[loc]( wValues.get(), rDiagonal.get(), numDiagonalElements );
+    set[loc]( wValues.get(), rDiagonal.get(), numDiagonalElements, common::reduction::COPY );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -768,15 +780,15 @@ ValueType COOStorage<ValueType>::maxNorm() const
         return static_cast<ValueType>(0.0);
     }
 
-    static LAMAKernel<UtilKernelTrait::absMaxVal<ValueType> > absMaxVal;
+    static LAMAKernel<UtilKernelTrait::reduce<ValueType> > reduce;
 
-    ContextPtr loc = absMaxVal.getValidContext( this->getContextPtr() );
+    ContextPtr loc = reduce.getValidContext( this->getContextPtr() );
 
     ReadAccess<ValueType> cooValues( mValues, loc );
 
     SCAI_CONTEXT_ACCESS( loc )
 
-    ValueType maxval = absMaxVal[loc]( cooValues.get(), n );
+    ValueType maxval = reduce[loc]( cooValues.get(), n, common::reduction::ABS_MAX );
 
     return maxval;
 }

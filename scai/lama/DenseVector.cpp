@@ -70,7 +70,6 @@
 namespace scai
 {
 
-using common::Complex;
 using common::scoped_array;
 using common::TypeTraits;
 
@@ -236,7 +235,7 @@ void DenseVector<ValueType>::readFromFile( const std::string& filename )
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-DenseVector<ValueType>::DenseVector( const ContextArray& localValues, DistributionPtr distribution )
+DenseVector<ValueType>::DenseVector( const _HArray& localValues, DistributionPtr distribution )
                 : Vector( distribution )
 {
     SCAI_ASSERT_EQUAL_ERROR( localValues.size(), distribution->getLocalSize() )
@@ -379,7 +378,7 @@ common::scalar::ScalarType DenseVector<ValueType>::getValueType() const
 }
 
 template<typename ValueType>
-void DenseVector<ValueType>::buildValues( ContextArray& values ) const
+void DenseVector<ValueType>::buildValues( _HArray& values ) const
 {
     // size of values will be local size of vecotr
 
@@ -387,7 +386,7 @@ void DenseVector<ValueType>::buildValues( ContextArray& values ) const
 }
 
 template<typename ValueType>
-void DenseVector<ValueType>::setValues( const ContextArray& values )
+void DenseVector<ValueType>::setValues( const _HArray& values )
 {
     SCAI_ASSERT_ERROR(
                     values.size() == mLocalValues.size(),
@@ -521,15 +520,23 @@ Scalar DenseVector<ValueType>::max() const
 
     SCAI_ASSERT_GT( nnu, 0, "no local values for max" )
 
-    static LAMAKernel<UtilKernelTrait::maxval<ValueType> > maxval;
+    static LAMAKernel<UtilKernelTrait::reduce<ValueType> > reduce;
 
-    ContextPtr loc = maxval.getValidContext( mLocalValues.getValidContext() );
+    ContextPtr loc = reduce.getValidContext( mLocalValues.getValidContext() );
 
     ReadAccess<ValueType> localValues( mLocalValues, loc );
 
-    ValueType localMax = maxval[loc]( localValues.get(), localValues.size() );
+    ValueType localMax = reduce[loc]( localValues.get(), localValues.size(), common::reduction::MAX );
 
     return getDistribution().getCommunicator().max( localMax );
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void DenseVector<ValueType>::conj() 
+{
+    HArrayUtils::conj( mLocalValues, mContext );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -603,15 +610,15 @@ Scalar DenseVector<ValueType>::maxNorm() const
 
     if ( nnu > 0 )
     {
-        static LAMAKernel<UtilKernelTrait::absMaxVal<ValueType> > absMaxVal;
+        static LAMAKernel<UtilKernelTrait::reduce<ValueType> > reduce;
 
-        ContextPtr loc = absMaxVal.getValidContext( mContext );  
+        ContextPtr loc = reduce.getValidContext( mContext );  
 
         ReadAccess<ValueType> read( mLocalValues, loc );
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        localMaxNorm = absMaxVal[loc]( read.get(), nnu );
+        localMaxNorm = reduce[loc]( read.get(), nnu, common::reduction::ABS_MAX );
     }
 
     const Communicator& comm = getDistribution().getCommunicator();
@@ -619,7 +626,8 @@ Scalar DenseVector<ValueType>::maxNorm() const
     ValueType globalMaxNorm = comm.max( localMaxNorm );
 
     SCAI_LOG_INFO( logger,
-                   comm << ": max norm " << *this << ", local max norm of " << nnu << " elements: " << localMaxNorm << ", max norm global = " << globalMaxNorm )
+                   comm << ": max norm " << *this << ", local max norm of " << nnu << " elements: " << localMaxNorm 
+                   << ", max norm global = " << globalMaxNorm )
 
     return globalMaxNorm;
 }
@@ -664,11 +672,11 @@ void DenseVector<ValueType>::vectorPlusVector(
 
     // get function pointers, do not use fallbacks here
 
-    static LAMAKernel<UtilKernelTrait::scale<ValueType> > scale;
+    static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
     static LAMAKernel<blaskernel::BLASKernelTrait::axpy<ValueType> > axpy;
     static LAMAKernel<blaskernel::BLASKernelTrait::sum<ValueType> > sum;
 
-    ContextPtr context = sum.getValidContext( scale, axpy, prefContext );
+    ContextPtr context = sum.getValidContext( setVal, axpy, prefContext );
 
     const IndexType nnu = result.size();
 
@@ -686,7 +694,7 @@ void DenseVector<ValueType>::vectorPlusVector(
         WriteAccess<ValueType> resultAccess( result, context, true );
 
         SCAI_CONTEXT_ACCESS( context )
-        scale[context]( resultAccess.get(), alpha + beta, nnu );
+        setVal[context]( resultAccess.get(), nnu, alpha + beta, common::reduction::MULT );
     }
     else if( &result == &x ) //result = alpha * result + beta * y
     {
@@ -700,7 +708,7 @@ void DenseVector<ValueType>::vectorPlusVector(
             if( alpha != scai::common::constants::ONE ) // result *= alpha
             {
                 SCAI_CONTEXT_ACCESS( context )
-                scale[context]( resultAccess.get(), alpha, nnu );
+                setVal[context]( resultAccess.get(), nnu, alpha, common::reduction::MULT );
             }
             else
             {
@@ -715,7 +723,7 @@ void DenseVector<ValueType>::vectorPlusVector(
             {
                 // result *= alpha
                 SCAI_CONTEXT_ACCESS( context )
-                scale[context]( resultAccess.get(), alpha, nnu );
+                setVal[context]( resultAccess.get(), nnu, alpha, common::reduction::MULT );
             }
 
             // result += y
@@ -730,7 +738,7 @@ void DenseVector<ValueType>::vectorPlusVector(
             if( alpha != scai::common::constants::ONE )
             {
                 SCAI_CONTEXT_ACCESS( context )
-                scale[context]( resultAccess.get(), alpha, nnu );
+                setVal[context]( resultAccess.get(), nnu, alpha, common::reduction::MULT );
             }
 
             SCAI_CONTEXT_ACCESS( context )
@@ -751,7 +759,7 @@ void DenseVector<ValueType>::vectorPlusVector(
         {
             // result *= beta
             SCAI_CONTEXT_ACCESS( context )
-            scale[context]( resultAccess.get(), beta, nnu );
+            setVal[context]( resultAccess.get(), nnu, beta, common::reduction::MULT );
         }
 
         if( alpha != scai::common::constants::ZERO )
@@ -938,11 +946,11 @@ void DenseVector<ValueType>::assign( const Scalar value )
 
     // assign the scalar value on the home of this dense vector.
 
-    HArrayUtils::assignScalar( mLocalValues, value, mContext );
+    HArrayUtils::setScalar( mLocalValues, value, common::reduction::COPY, mContext );
 }
 
 template<typename ValueType>
-void DenseVector<ValueType>::assign( const ContextArray& localValues, DistributionPtr dist )
+void DenseVector<ValueType>::assign( const _HArray& localValues, DistributionPtr dist )
 {
     SCAI_LOG_INFO( logger, "assign vector with localValues = " << localValues << ", dist = " << *dist )
 
@@ -953,7 +961,7 @@ void DenseVector<ValueType>::assign( const ContextArray& localValues, Distributi
 }
 
 template<typename ValueType>
-void DenseVector<ValueType>::buildLocalValues( ContextArray& localValues ) const
+void DenseVector<ValueType>::buildLocalValues( _HArray& localValues ) const
 {
     HArrayUtils::assign( localValues, mLocalValues );
 }
@@ -1145,7 +1153,7 @@ template<typename ValueType>
 void DenseVector<ValueType>::writeToFile(
     const std::string& fileBaseName,
     const File::FileType fileType/*=XDR*/,
-    const File::DataType dataType/*=DOUBLE*/) const
+    const common::scalar::ScalarType dataType/*=DOUBLE*/) const
 {
     std::string file = fileBaseName.c_str();
     file += ".vec";
@@ -1232,11 +1240,16 @@ void DenseVector<ValueType>::writeVectorHeader(
 }
 
 template<typename ValueType>
-void DenseVector<ValueType>::writeVectorToMMFile( const std::string& filename, const File::DataType& dataType ) const
+void DenseVector<ValueType>::writeVectorToMMFile( const std::string& filename, const common::scalar::ScalarType& dataType ) const
 {
 	IndexType numRows = size();
 
-	std::string fullFilename = filename + ".mtx";
+	std::string fullFilename = filename;
+ 
+    if ( !_StorageIO::hasSuffix( filename, ".mtx" ) )
+    {
+        fullFilename += ".mtx";
+    }
 
 	_StorageIO::writeMMHeader( true, numRows, 1, numRows, fullFilename, dataType );
 
@@ -1271,7 +1284,7 @@ void DenseVector<ValueType>::writeVectorToMMFile( const std::string& filename, c
 }
 
 template<typename ValueType>
-void DenseVector<ValueType>::writeVectorToBinaryFile( const std::string& file, const File::DataType type ) const
+void DenseVector<ValueType>::writeVectorToBinaryFile( const std::string& file, const common::scalar::ScalarType type ) const
 {
     std::fstream outFile( file.c_str(), std::ios::out | std::ios::binary );
 
@@ -1302,7 +1315,7 @@ static void writeDataToXDRFile( XDRFileStream& outFile, const DataType* data, co
 }
 
 template<typename ValueType>
-void DenseVector<ValueType>::writeVectorToXDRFile( const std::string& file, const File::DataType dataType ) const
+void DenseVector<ValueType>::writeVectorToXDRFile( const std::string& file, const common::scalar::ScalarType dataType ) const
 {
     XDRFileStream outFile( file.c_str(), std::ios::out );
 
@@ -1319,30 +1332,20 @@ void DenseVector<ValueType>::writeVectorToXDRFile( const std::string& file, cons
 
     ReadAccess<ValueType> dataRead( mLocalValues, hostContext );
 
-    switch( dataType )
+    switch ( dataType )
     {
-        case File::DOUBLE:
-            writeDataToXDRFile<double,ValueType>( outFile, dataRead.get(), numRows );
-            break;
 
-        case File::FLOAT:
-            writeDataToXDRFile<float,ValueType>( outFile, dataRead.get(), numRows );
-            break;
+#define LAMA_WRITE_XDR_CASE( z, I, _ )                                                                     \
+        case common::TypeTraits<ARITHMETIC_HOST_TYPE_##I>::stype :                                         \
+            writeDataToXDRFile<ARITHMETIC_HOST_TYPE_##I, ValueType>( outFile, dataRead.get(), numRows );   \
+            break;                                                                                         \
 
-        case File::LONG_DOUBLE:
-            writeDataToXDRFile<LongDouble,ValueType>( outFile, dataRead.get(), numRows );
-            break;
+        BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_WRITE_XDR_CASE, _ )
 
-        case File::COMPLEX:
-            writeDataToXDRFile<ComplexFloat,ValueType>( outFile, dataRead.get(), numRows );
-            break;
-
-        case File::DOUBLE_COMPLEX:
-            writeDataToXDRFile<ComplexDouble,ValueType>( outFile, dataRead.get(), numRows );
-            break;
+#undef LAMA_WRITE_XDR_CASE
 
         case File::INTERNAL:
-            writeDataToXDRFile<ValueType,ValueType>( outFile, dataRead.get(), numRows );
+            writeDataToXDRFile<ValueType, ValueType>( outFile, dataRead.get(), numRows );
             break;
 
         case File::PATTERN:
@@ -1384,7 +1387,7 @@ static void writeBinaryData( std::fstream& outFile, const DataType data[], const
 }
 
 template<typename ValueType>
-void DenseVector<ValueType>::writeVectorDataToBinaryFile( std::fstream& outFile, const File::DataType type ) const
+void DenseVector<ValueType>::writeVectorDataToBinaryFile( std::fstream& outFile, const common::scalar::ScalarType type ) const
 {
     IndexType numRows = size();
 
@@ -1394,25 +1397,15 @@ void DenseVector<ValueType>::writeVectorDataToBinaryFile( std::fstream& outFile,
 
     switch( type )
     {
-        case File::DOUBLE:
-            writeBinaryData<double,ValueType>( outFile, dataRead.get(), numRows );
-            break;
 
-        case File::FLOAT:
-            writeBinaryData<float,ValueType>( outFile, dataRead.get(), numRows );
-            break;
+#define LAMA_WRITE_CASE( z, I, _ )                                                                      \
+        case common::TypeTraits<ARITHMETIC_HOST_TYPE_##I>::stype :                                      \
+            writeBinaryData<ARITHMETIC_HOST_TYPE_##I, ValueType>( outFile, dataRead.get(), numRows );   \
+            break;                                                                                      \
 
-        case File::LONG_DOUBLE:
-            writeBinaryData<LongDouble,ValueType>( outFile, dataRead.get(), numRows );
-            break;
+        BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_WRITE_CASE, _ )
 
-        case File::COMPLEX:
-            writeBinaryData<ComplexFloat,ValueType>( outFile, dataRead.get(), numRows );
-            break;
-
-        case File::DOUBLE_COMPLEX:
-            writeBinaryData<ComplexDouble,ValueType>( outFile, dataRead.get(), numRows );
-            break;
+#undef LAMA_WRITE_CASE
 
         case File::INTERNAL:
             writeBinaryData<ValueType,ValueType>( outFile, dataRead.get(), numRows );
@@ -1466,7 +1459,7 @@ void DenseVector<ValueType>::readVectorFromFormattedFile( const std::string& fil
 }
 
 template<typename ValueType>
-void DenseVector<ValueType>::readVectorFromBinaryFile( const std::string& fileName, const File::DataType type )
+void DenseVector<ValueType>::readVectorFromBinaryFile( const std::string& fileName, const common::scalar::ScalarType type )
 {
     std::fstream inFile( fileName.c_str(), std::ios::in | std::ios::binary );
 
@@ -1480,7 +1473,7 @@ void DenseVector<ValueType>::readVectorFromBinaryFile( const std::string& fileNa
     inFile.close();
 }
 
-template<typename FileDataType,typename UserDataType>
+template<typename FileDataType, typename UserDataType>
 static void readXDRData( XDRFileStream& inFile, UserDataType data[], const IndexType n )
 {
     if( typeid(FileDataType) == typeid(UserDataType) )
@@ -1611,7 +1604,7 @@ void DenseVector<ValueType>::readVectorFromXDRFile( const std::string& fileName,
     // Attention: determination of file type by size is ambiguous, e.g. Complex and Double
     //            have same size. If ambiguous, own ValueType is the preferred one
 
-    File::DataType fileType = getDataType<ValueType>( dataTypeSize );
+    common::scalar::ScalarType fileType = getDataType<ValueType>( dataTypeSize );
 
     WriteOnlyAccess<ValueType> writeData( mLocalValues, nnu );
 
@@ -1621,25 +1614,14 @@ void DenseVector<ValueType>::readVectorFromXDRFile( const std::string& fileName,
             readXDRData<ValueType,ValueType>( inFile, writeData.get(), nnu );
             break;
 
-        case File::FLOAT:
-            readXDRData<float,ValueType>( inFile, writeData.get(), nnu );
-            break;
+#define LAMA_READ_XDR_CASE( z, I, _ )                                                          \
+        case common::TypeTraits<ARITHMETIC_HOST_TYPE_##I>::stype:                              \
+            readXDRData<ARITHMETIC_HOST_TYPE_##I, ValueType>( inFile, writeData.get(), nnu );  \
+            break;                                                                             \
 
-        case File::DOUBLE:
-            readXDRData<double,ValueType>( inFile, writeData.get(), nnu );
-            break;
+        BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_READ_XDR_CASE, _ )
 
-        case File::COMPLEX:
-            readXDRData<ComplexFloat,ValueType>( inFile, writeData.get(), nnu );
-            break;
-
-        case File::DOUBLE_COMPLEX:
-            readXDRData<ComplexDouble,ValueType>( inFile, writeData.get(), nnu );
-            break;
-
-        case File::LONG_DOUBLE:
-            readXDRData<ComplexDouble,ValueType>( inFile, writeData.get(), nnu );
-            break;
+#undef LAMA_READ_XDR_CASE
 
         case File::PATTERN:
             // that might be okay
@@ -1671,7 +1653,7 @@ void DenseVector<ValueType>::readVectorFromXDRFile( const std::string& fileName,
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DenseVector<ValueType>::readVectorDataFromBinaryFile( std::fstream &inFile, const File::DataType type )
+void DenseVector<ValueType>::readVectorDataFromBinaryFile( std::fstream &inFile, const common::scalar::ScalarType type )
 {
     IndexType n = size();
 
@@ -1682,25 +1664,15 @@ void DenseVector<ValueType>::readVectorDataFromBinaryFile( std::fstream &inFile,
 
     switch( type )
     {
-        case File::DOUBLE:
-            FileIO::readBinaryData<double,ValueType>( inFile, writeData.get(), n );
-            break;
 
-        case File::FLOAT:
-            FileIO::readBinaryData<float,ValueType>( inFile, writeData.get(), n );
-            break;
+#define LAMA_READ_BIN_CASE( z, I, _ )                                                                   \
+        case common::TypeTraits<ARITHMETIC_HOST_TYPE_##I>::stype :                                      \
+            FileIO::readBinaryData<ARITHMETIC_HOST_TYPE_##I, ValueType>( inFile, writeData.get(), n );  \
+            break;                                                                                      \
 
-        case File::LONG_DOUBLE:
-            FileIO::readBinaryData<LongDouble,ValueType>( inFile, writeData.get(), n );
-            break;
+        BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_READ_BIN_CASE, _ )
 
-        case File::COMPLEX:
-            FileIO::readBinaryData<ComplexFloat,ValueType>( inFile, writeData.get(), n );
-            break;
-
-        case File::DOUBLE_COMPLEX:
-            FileIO::readBinaryData<ComplexDouble,ValueType>( inFile, writeData.get(), n );
-            break;
+#undef LAMA_READ_BIN_CASE
 
         case File::INTERNAL:
             FileIO::readBinaryData<ValueType,ValueType>( inFile, writeData.get(), n );

@@ -162,9 +162,11 @@ const std::string& Solver::getId() const
 
 const Vector& Solver::getResidual() const
 {
-    SCAI_LOG_DEBUG( logger, "getResidual of solver " << mId )
-
     const SolverRuntime& runtime = getConstRuntime();
+
+    SCAI_LOG_DEBUG( logger, "getResidual of solver " << mId << ", is dirty = " << runtime.mSolution.isDirty() 
+                            << ", runtime.mResidual.get() = " << runtime.mResidual.get() )
+
     SCAI_ASSERT_DEBUG( runtime.mCoefficients, "mCoefficients == NULL" )
     SCAI_ASSERT_DEBUG( runtime.mRhs, "mRhs == NULL" )
 
@@ -174,7 +176,7 @@ const Vector& Solver::getResidual() const
     {
         SCAI_REGION( "Solver.computeResidual" )
 
-        SCAI_LOG_DEBUG( logger, "calculating residual of = " << &(runtime.mSolution.getConstReference()) )
+        SCAI_LOG_DEBUG( logger, "calculating residual of = " << runtime.mSolution.getConstReference() )
 
         if( !runtime.mResidual.get() )
         {

@@ -97,6 +97,7 @@ void BiCG::initialize( const Matrix& coefficients )
     runtime.mZ2.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
 
     runtime.mTransposeA->assignTranspose( coefficients );
+    runtime.mTransposeA->conj();
 
     // 'force' vector operations to be computed at the same location where coefficients reside
     runtime.mTransposeA->setContextPtr( coefficients.getContextPtr() );
@@ -113,8 +114,6 @@ void BiCG::iterate()
     Scalar lastPScalar( runtime.mPScalar );
     Scalar& pScalar = runtime.mPScalar;
     Scalar alpha;
-    Scalar beta;
-
     if( this->getIterationCount() == 0 )
     {
         this->getResidual();
@@ -154,26 +153,24 @@ void BiCG::iterate()
     SCAI_LOG_DEBUG( logger, "pScalar = " << pScalar )
     SCAI_LOG_INFO( logger, "Calculating p." )
 
-    if( this->getIterationCount() == 0 )
+    if ( this->getIterationCount() == 0 )
     {
         p = z;
         p2 = z2;
     }
     else
     {
-        if( lastPScalar.getValue<double>() == 0.0 )
-        {
-            beta = 0.0;
-        }
-        else
+        Scalar beta = Scalar( 0 );
+
+        if ( lastPScalar != Scalar( 0 ) )
         {
             beta = pScalar / lastPScalar;
         }
 
-        SCAI_LOG_DEBUG( logger, "beta = " << beta )
+        SCAI_LOG_DEBUG( logger, "beta = " << beta << ", conj( beta ) = " << conj( beta ) )
         p = z + beta * p;
         SCAI_LOG_TRACE( logger, "l2Norm( p ) = " << p.l2Norm() )
-        p2 = z2 + beta * p2;
+        p2 = z2 + conj( beta ) * p2;
         SCAI_LOG_TRACE( logger, "l2Norm( p2 ) = " << p2.l2Norm() )
     }
 
@@ -190,9 +187,9 @@ void BiCG::iterate()
     const Scalar pqProd = p2.dotProduct( q );
     SCAI_LOG_DEBUG( logger, "pqProd = " << pqProd )
 
-    if( pqProd.getValue<double>() == 0.0 )
+    if ( pqProd == Scalar( 0 ) )
     {
-        alpha = 0.0;
+         alpha = Scalar( 0 );
     }
     else
     {
@@ -211,7 +208,8 @@ void BiCG::iterate()
         SCAI_REGION( "Solver.BiCG.update_res" )
         residual = residual - alpha * q;
         SCAI_LOG_TRACE( logger, "l2Norm( residual ) = " << residual.l2Norm() )
-        residual2 = residual2 - alpha * q2;
+         residual2 = residual2 - conj( alpha ) * q2;
+        //residual2 = residual2 - alpha * q2;
         SCAI_LOG_TRACE( logger, "l2Norm( residual2 ) = " << residual.l2Norm() )
     }
     //BiCG implementation end
@@ -224,6 +222,7 @@ const Vector& BiCG::getResidual2() const
     SCAI_LOG_DEBUG( logger, "getResidual2 of solver " << mId )
 
     const BiCGRuntime& runtime = getConstRuntime();
+
     SCAI_ASSERT_DEBUG( runtime.mCoefficients, "mCoefficients == NULL" )
     SCAI_ASSERT_DEBUG( runtime.mRhs, "mRhs == NULL" )
 
@@ -231,7 +230,7 @@ const Vector& BiCG::getResidual2() const
 
     if( runtime.mSolution.isDirty() || !runtime.mResidual2.get() )
     {
-        SCAI_LOG_DEBUG( logger, "calculating residual of = " << &(runtime.mSolution.getConstReference()) )
+        SCAI_LOG_DEBUG( logger, "calculating residual of = " << runtime.mSolution.getConstReference() )
 
         if( !runtime.mResidual2.get() )
         {
@@ -243,7 +242,10 @@ const Vector& BiCG::getResidual2() const
         mLogger->startTimer( "ResidualTimer" );
 
         //*runtime.mResidual2 = ( *runtime.mRhs ) - ( runtime.mSolution.getConstReference() * ( *runtime.mCoefficients ) ) ;
-        *runtime.mResidual2 = ( *runtime.mRhs ) - ( ( *runtime.mTransposeA ) * runtime.mSolution.getConstReference() );
+
+        *runtime.mResidual2 = *runtime.mRhs,
+        runtime.mResidual2->conj();
+        *runtime.mResidual2 -= ( *runtime.mTransposeA ) * runtime.mSolution.getConstReference() ;
 
         mLogger->stopTimer( "ResidualTimer" );
         mLogger->logTime( "ResidualTimer", LogLevel::completeInformation, "Revaluation of residual took [s]: " );
@@ -278,6 +280,11 @@ std::string BiCG::createValue()
 Solver* BiCG::create( const std::string name )
 {
 	return new BiCG( name );
+}
+
+void BiCG::writeAt( std::ostream& stream ) const
+{
+    stream << "BiCG ( id = " << mId << ", #iter = " << getConstRuntime().mIterations << " )";
 }
 
 } /* end namespace lama */

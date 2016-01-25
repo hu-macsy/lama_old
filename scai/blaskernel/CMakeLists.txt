@@ -55,6 +55,7 @@ if    ( NOT SCAI_COMPLETE_BUILD )
 	include ( SetBuildFlags )
 	include ( SCAIAssert )
 	include ( SetCPPFlags )
+	include ( Package/Sphinx )
 else  ( NOT SCAI_COMPLETE_BUILD )	
 	include ( Functions/CheckValueAtCompleteBuild )
 	CheckValueAtCompleteBuild ( blaskernel )
@@ -91,7 +92,10 @@ add_definitions ( -D${SCAI_LOGGING_FLAG} )
 
 add_definitions ( -DSCAI_ASSERT_LEVEL_${SCAI_ASSERT_LEVEL} )
 
-add_definitions ( -D${SCAI_OMP_SCHEDULE_FLAG} )
+if ( SCAI_OMP_SCHEDULE_FLAG )
+    add_definitions ( -D${SCAI_OMP_SCHEDULE_FLAG} )
+endif ( SCAI_OMP_SCHEDULE_FLAG )
+
 add_definitions ( -D${SCAI_LOGGING_FLAG} )
 add_definitions ( -D${SCAI_TRACING_FLAG} )
 
@@ -125,7 +129,10 @@ scai_project (
 )
 
 ## add subdirectories
-add_subdirectory ( openmp )
+if ( OPENMP_FOUND AND USE_OPENMP )
+    add_subdirectory ( openmp )
+endif ( OPENMP_FOUND AND USE_OPENMP )
+
 add_subdirectory ( external )
 
 ## add CUDA if supported
@@ -187,4 +194,8 @@ add_subdirectory( doc )
 
 ## add custum target distClean
 include ( DistClean )
+
+if    ( DEFINED SCAI_CMAKE_VERBOSE OR NOT DEFINED SCAI_COMPLETE_BUILD )
+        include ( Summaries/blaskernel )
+endif ( DEFINED SCAI_CMAKE_VERBOSE OR NOT DEFINED SCAI_COMPLETE_BUILD )
 

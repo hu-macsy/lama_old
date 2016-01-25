@@ -102,7 +102,7 @@ BOOST_AUTO_TEST_CASE( commonTestCases )
 
 BOOST_AUTO_TEST_CASE( CreateTest )
 {
-    DistributionPtr bdist ( BlockDistribution::create( comm, 1 ) );
+    DistributionPtr bdist ( BlockDistribution::create( DistributionArguments( comm, 1, NULL, 1.0 ) ) );
     BOOST_CHECK_EQUAL( bdist->getGlobalSize(), 1 );
     bdist.reset( Distribution::getDistribution( "BLOCK", comm, 1 ) );
     BOOST_CHECK_EQUAL( bdist->getGlobalSize(), 1 );

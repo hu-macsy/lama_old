@@ -101,7 +101,7 @@ CSRStorage<ValueType>::CSRStorage(
     const IndexType numValues,
     const HArray<IndexType>& ia,
     const HArray<IndexType>& ja,
-    const ContextArray& values )
+    const _HArray& values )
 
     : CRTPMatrixStorage<CSRStorage<ValueType>,ValueType>()
 {
@@ -284,7 +284,7 @@ void CSRStorage<ValueType>::setIdentity( const IndexType size )
         SCAI_CONTEXT_ACCESS( loc )
 
         WriteOnlyAccess<ValueType> values( mValues, loc, mNumValues );
-        setVal[loc]( values.get(), mNumRows, static_cast<ValueType>(1.0) );
+        setVal[loc]( values.get(), mNumRows, ValueType( 1 ), common::reduction::COPY );
     }
 
 
@@ -313,17 +313,17 @@ void CSRStorage<ValueType>::setCSRDataImpl(
 
     if( ia.size() == numRows )
     {
-        static LAMAKernel<UtilKernelTrait::sum<IndexType> > sum;
+        static LAMAKernel<UtilKernelTrait::reduce<IndexType> > reduce;
 
         // checking is done where ia is already valid, preferred is loc
 
-        ContextPtr loc1 = sum.getValidContext( ia.getValidContext( loc ) );
+        ContextPtr loc1 = reduce.getValidContext( ia.getValidContext( loc ) );
 
         ReadAccess<IndexType> csrIA( ia, loc1 );
 
         SCAI_CONTEXT_ACCESS( loc1 )
 
-        IndexType n = sum[loc1]( csrIA.get(), numRows );
+        IndexType n = reduce[loc1]( csrIA.get(), numRows, common::reduction::ADD );
 
         if( n != numValues )
         {
@@ -481,10 +481,13 @@ void CSRStorage<ValueType>::setCSRDataSwap(
 template<typename ValueType>
 void CSRStorage<ValueType>::buildRowIndexes()
 {
-    SCAI_LOG_INFO( logger, "buildRowIndexes is temporarily disabled." );
-    return;
-
     mRowIndexes.clear();
+
+    if ( mDiagonalProperty )
+    {
+        SCAI_LOG_INFO( logger, "buildRowIndexes not done as diagonal property implies at least one entry per row" );
+        return;
+    }
 
     if( mNumRows == 0 )
     {
@@ -508,7 +511,8 @@ void CSRStorage<ValueType>::buildRowIndexes()
 
     if( usage >= mCompressThreshold )
     {
-        SCAI_LOG_INFO( logger, "CSRStorage: do not build row indexes, usage = " << usage )
+        SCAI_LOG_INFO( logger, "CSRStorage: do not build row indexes, usage = " << usage 
+                                << ", threshold = " << mCompressThreshold )
         return;
     }
 
@@ -644,7 +648,7 @@ void CSRStorage<ValueType>::allocate( IndexType numRows, IndexType numColumns )
 
     // make a correct initialization for the offset array
 
-    OpenMPUtils::setVal( ia.get(), mNumRows + 1, 0 );
+    OpenMPUtils::setVal( ia.get(), mNumRows + 1, IndexType( 0 ), common::reduction::COPY  );
 
     mDiagonalProperty = false;
 }
@@ -652,75 +656,81 @@ void CSRStorage<ValueType>::allocate( IndexType numRows, IndexType numColumns )
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void CSRStorage<ValueType>::compress( const ValueType eps /* = 0.0 */)
+void CSRStorage<ValueType>::compress( const ValueType eps )
 {
-    WriteAccess<IndexType> ia( mIa );
-    ReadAccess<IndexType> ja( mJa );
-    ReadAccess<ValueType> values( mValues );
+    static LAMAKernel<CSRKernelTrait::countNonZeros<ValueType> > countNonZeros;
 
-    IndexType nonDiagZeros = 0;
-
-    for( IndexType i = 0; i < mNumRows; ++i )
+    LArray<IndexType> newIa;
+ 
     {
-        for( IndexType jj = ia[i]; jj < ia[i + 1]; ++jj )
-        {
-            if( ja[jj] == i )
-            {
-                continue;
-            }
+        ContextPtr loc = countNonZeros.getValidContext( this->getContextPtr() );
 
-            if ( TypeTraits<ValueType>::abs( values[jj] ) <= eps )
-            {
-                ++nonDiagZeros;
-            }
-        }
+        SCAI_CONTEXT_ACCESS( loc )
+ 
+        ReadAccess<IndexType> ia( mIa, loc );
+        ReadAccess<IndexType> ja( mJa, loc );
+        ReadAccess<ValueType> values( mValues, loc );
+        WriteOnlyAccess<IndexType> new_ia( newIa, loc, mNumRows + 1 );
+    
+        countNonZeros[loc]( new_ia.get(), ia.get(), ja.get(), values.get(), mNumRows, eps, mDiagonalProperty );
     }
 
-    SCAI_LOG_INFO( logger, "compress: " << nonDiagZeros << " non-diagonal zero elements" )
+    // now compute the new offsets from the sizes, gives also new numValues
 
-    if( nonDiagZeros == 0 )
+    IndexType newNumValues = 0;
+  
+    {
+        static LAMAKernel<CSRKernelTrait::sizes2offsets> sizes2offsets;
+        ContextPtr loc = countNonZeros.getValidContext( this->getContextPtr() );
+
+        SCAI_CONTEXT_ACCESS( loc )
+
+        WriteAccess<IndexType> new_ia( newIa, loc );
+        newNumValues = sizes2offsets[loc]( new_ia.get(), mNumRows );
+    }
+
+    SCAI_LOG_INFO( logger, "compress: " << newNumValues << " non-diagonal zero elements" )
+
+    // ready if there are no new non-zero values
+
+    if ( newNumValues == mNumValues )
     {
         return;
     }
 
-    const IndexType newNumValues = mJa.size() - nonDiagZeros;
+    // All information is available how to fill the compressed data 
 
-    HArray<ValueType> newValuesArray;
-    HArray<IndexType> newJaArray;
+    LArray<ValueType> newValues;
+    LArray<IndexType> newJa;
 
-    WriteOnlyAccess<ValueType> newValues( newValuesArray, newNumValues );
-    WriteOnlyAccess<IndexType> newJa( newJaArray, newNumValues );
-
-    IndexType gap = 0;
-
-    for( IndexType i = 0; i < mNumRows; ++i )
     {
-        for( IndexType jj = ia[i] + gap; jj < ia[i + 1]; ++jj )
-        {
-            if( TypeTraits<ValueType>::abs( values[jj] ) <= eps && ja[jj] != i )
-            {
-                ++gap;
-                continue;
-            }
+        static LAMAKernel<CSRKernelTrait::compress<ValueType> > compressData;
+        ContextPtr loc = countNonZeros.getValidContext( this->getContextPtr() );
 
-            newValues[jj - gap] = values[jj];
-            newJa[jj - gap] = ja[jj];
-        }
+        SCAI_CONTEXT_ACCESS( loc )
 
-        ia[i + 1] -= gap;
+        ReadAccess<IndexType> new_ia( newIa, loc );
+
+        ReadAccess<IndexType> ia( mIa, loc );
+        ReadAccess<IndexType> ja( mJa, loc );
+        ReadAccess<ValueType> values( mValues, loc );
+
+        WriteOnlyAccess<IndexType> new_ja( newJa, newNumValues );
+        WriteOnlyAccess<ValueType> new_values( newValues, newNumValues );
+
+        compressData[loc]( new_ja.get(), new_values.get(), new_ia.get(),
+                           ia.get(), ja.get(), values.get(), mNumRows,
+                           eps, mDiagonalProperty );
     }
 
-    SCAI_ASSERT_EQUAL_DEBUG( gap, nonDiagZeros )
+    // now switch in place to the new data
 
-    ia.release();
-    ja.release();
-    values.release();
-    newJa.release();
-    newValues.release();
-
-    mJa.swap( newJaArray );
-    mValues.swap( newValuesArray );
+    mIa.swap( newIa );
+    mJa.swap( newJa );
+    mValues.swap( newValues );
     mNumValues = newNumValues;
+
+    // Note: temporary data is freed implicitly
 }
 
 /* --------------------------------------------------------------------------- */
@@ -835,7 +845,7 @@ void CSRStorage<ValueType>::prefetch( const ContextPtr location ) const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-LAMAArray<IndexType>& CSRStorage<ValueType>::getIA()
+LArray<IndexType>& CSRStorage<ValueType>::getIA()
 {
     return mIa;
 }
@@ -843,7 +853,7 @@ LAMAArray<IndexType>& CSRStorage<ValueType>::getIA()
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-LAMAArray<IndexType>& CSRStorage<ValueType>::getJA()
+LArray<IndexType>& CSRStorage<ValueType>::getJA()
 {
     return mJa;
 }
@@ -851,7 +861,7 @@ LAMAArray<IndexType>& CSRStorage<ValueType>::getJA()
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-LAMAArray<ValueType>& CSRStorage<ValueType>::getValues()
+LArray<ValueType>& CSRStorage<ValueType>::getValues()
 {
     return mValues;
 }
@@ -859,7 +869,7 @@ LAMAArray<ValueType>& CSRStorage<ValueType>::getValues()
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-const LAMAArray<IndexType>& CSRStorage<ValueType>::getIA() const
+const LArray<IndexType>& CSRStorage<ValueType>::getIA() const
 {
     return mIa;
 }
@@ -867,7 +877,7 @@ const LAMAArray<IndexType>& CSRStorage<ValueType>::getIA() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-const LAMAArray<IndexType>& CSRStorage<ValueType>::getJA() const
+const LArray<IndexType>& CSRStorage<ValueType>::getJA() const
 {
     return mJa;
 }
@@ -875,7 +885,7 @@ const LAMAArray<IndexType>& CSRStorage<ValueType>::getJA() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-const LAMAArray<ValueType>& CSRStorage<ValueType>::getValues() const
+const LArray<ValueType>& CSRStorage<ValueType>::getValues() const
 {
     return mValues;
 }
@@ -978,7 +988,7 @@ void CSRStorage<ValueType>::getRowImpl( HArray<OtherType>& row, const IndexType 
 
     WriteOnlyAccess<OtherType> wRow( row, loc, mNumColumns );
 
-    setVal[loc]    ( wRow.get(), mNumColumns, static_cast<OtherType>( 0 ) );
+    setVal[loc]    ( wRow.get(), mNumColumns, OtherType( 0 ), common::reduction::COPY );
 
     const ReadAccess<IndexType> ja( mJa, loc );
     const ReadAccess<ValueType> values( mValues, loc );
@@ -1012,15 +1022,17 @@ void CSRStorage<ValueType>::getDiagonalImpl( HArray<OtherValueType>& diagonal ) 
 template<typename ValueType>
 void CSRStorage<ValueType>::scaleImpl( const ValueType value )
 {
-    static LAMAKernel<UtilKernelTrait::scale<ValueType> > scale;
+    SCAI_ASSERT_EQUAL( mValues.size(), mNumValues, "size mismatch" )
 
-    ContextPtr loc = scale.getValidContext( this->getContextPtr() );
+    HArrayUtils::scale( mValues, value, this->getContextPtr() );
+}
 
-    SCAI_CONTEXT_ACCESS( loc )
+/* --------------------------------------------------------------------------- */
 
-    WriteAccess<ValueType> csrValues( mValues, loc );
-
-    scale[loc]( csrValues.get(), value, mNumValues );
+template<typename ValueType>
+void CSRStorage<ValueType>::conj()
+{
+    HArrayUtils::conj( mValues, this->getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1151,18 +1163,15 @@ void CSRStorage<ValueType>::buildCSR(
     HArray<OtherValueType>* values,
     const ContextPtr prefLoc ) const
 {
-    static LAMAKernel<CSRKernelTrait::offsets2sizes> offsets2sizes;
-    static LAMAKernel<UtilKernelTrait::set<IndexType, IndexType> > setIndexes;
-    static LAMAKernel<UtilKernelTrait::set<OtherValueType, ValueType> > setValues;
+    // in case of ja == NULL we need only the size array, build it from offsets
 
-    ContextPtr loc = offsets2sizes.getValidContext( setIndexes, setValues, prefLoc );
-
-    ReadAccess<IndexType> inIA( mIa, loc );
-
-    // build number of values per row into ia
-
-    if( ja == NULL || values == NULL )
+    if ( ja == NULL || values == NULL )
     {
+        static LAMAKernel<CSRKernelTrait::offsets2sizes> offsets2sizes;
+
+        ContextPtr loc = offsets2sizes.getValidContext( prefLoc );
+
+        ReadAccess<IndexType> inIA( mIa, loc );
         WriteOnlyAccess<IndexType> csrIA( ia, loc, mNumRows );
 
         SCAI_CONTEXT_ACCESS( loc )
@@ -1173,29 +1182,35 @@ void CSRStorage<ValueType>::buildCSR(
     }
 
     // copy the offset array ia and ja
+
     {
+        static LAMAKernel<UtilKernelTrait::set<IndexType, IndexType> > setIndexes;
+
+        ContextPtr loc = setIndexes.getValidContext( prefLoc );
 
         SCAI_CONTEXT_ACCESS( loc )
 
+        ReadAccess<IndexType> inIA( mIa, loc );
         ReadAccess<IndexType> inJA( mJa, loc );
         WriteOnlyAccess<IndexType> csrIA( ia, loc, mNumRows + 1 );
         WriteOnlyAccess<IndexType> csrJA( *ja, loc, mNumValues );
 
-        setIndexes[ loc ]( csrIA.get(), inIA.get(), mNumRows + 1 );
-        setIndexes[ loc ]( csrJA.get(), inJA.get(), mNumValues );
+        setIndexes[ loc ]( csrIA.get(), inIA.get(), mNumRows + 1, common::reduction::COPY );
+        setIndexes[ loc ]( csrJA.get(), inJA.get(), mNumValues, common::reduction::COPY );
     }
 
     // copy values
     {
+        static LAMAKernel<UtilKernelTrait::set<OtherValueType, ValueType> > setValues;
 
-        // Attention: no fallback here for other context
+        ContextPtr loc = setValues.getValidContext( prefLoc );
 
         SCAI_CONTEXT_ACCESS( loc )
 
         ReadAccess<ValueType> inValues( mValues, loc );
         WriteOnlyAccess<OtherValueType> csrValues( *values, loc, mNumValues );
 
-        setValues[ loc ]( csrValues.get(), inValues.get(), mNumValues );
+        setValues[ loc ]( csrValues.get(), inValues.get(), mNumValues, common::reduction::COPY );
     }
 }
 
@@ -2334,15 +2349,15 @@ ValueType CSRStorage<ValueType>::maxNorm() const
         return static_cast<ValueType>(0.0);
     }
 
-    static LAMAKernel<UtilKernelTrait::absMaxVal<ValueType> > absMaxVal;
+    static LAMAKernel<UtilKernelTrait::reduce<ValueType> > reduce;
 
-    ContextPtr loc = absMaxVal.getValidContext( this->getContextPtr() );
+    ContextPtr loc = reduce.getValidContext( this->getContextPtr() );
 
     ReadAccess<ValueType> csrValues( mValues, loc );
 
     SCAI_CONTEXT_ACCESS( loc )
 
-    ValueType maxval = absMaxVal[loc]( csrValues.get(), mNumValues );
+    ValueType maxval = reduce[loc]( csrValues.get(), mNumValues, common::reduction::ABS_MAX );
 
     return maxval;
 }

@@ -88,6 +88,7 @@ void CG::initialize( const Matrix& coefficients )
     CGRuntime& runtime = getRuntime();
 
     runtime.mPScalar = 0.0;
+    runtime.mEps = std::numeric_limits<double>::epsilon() * 3;                  //CAREFUL: No abstract type
 
     common::scalar::ScalarType type = coefficients.getValueType();
 
@@ -112,8 +113,10 @@ void CG::iterate()
     CGRuntime& runtime = getRuntime();
     Scalar lastPScalar( runtime.mPScalar );
     Scalar& pScalar = runtime.mPScalar;
+    const Scalar& eps = runtime.mEps;
     Scalar alpha;
     Scalar beta;
+
 
     if( this->getIterationCount() == 0 )
     {
@@ -144,7 +147,7 @@ void CG::iterate()
     }
 
     SCAI_LOG_INFO( logger, "Calculating pScalar." )
-    pScalar = residual.dotProduct( z );
+    pScalar = z.dotProduct( residual );
     SCAI_LOG_DEBUG( logger, "pScalar = " << pScalar )
     SCAI_LOG_INFO( logger, "Calculating p." )
 
@@ -156,7 +159,7 @@ void CG::iterate()
     {
         SCAI_REGION( "Solver.CG.setP" )
 
-        if( lastPScalar.getValue<double>() == 0.0 )
+        if( lastPScalar.getValue<double>() < eps )  //scalar is small
         {
             beta = 0.0;
         }
@@ -178,10 +181,10 @@ void CG::iterate()
     }
 
     SCAI_LOG_INFO( logger, "Calculating pqProd." )
-    const Scalar pqProd = p.dotProduct( q );
+    const Scalar pqProd = q.dotProduct( p );
     SCAI_LOG_DEBUG( logger, "pqProd = " << pqProd )
 
-    if( pqProd.getValue<double>() == 0.0 )
+    if( pqProd.getValue<double>() < eps )   //scalar is small
     {
         alpha = 0.0;
     }
@@ -241,6 +244,11 @@ std::string CG::createValue()
 Solver* CG::create( const std::string name )
 {
 	return new CG( name );
+}
+
+void CG::writeAt( std::ostream& stream ) const
+{
+    stream << "CG ( id = " << mId << ", #iter = " << getConstRuntime().mIterations << " )";
 }
 
 } /* end namespace lama */

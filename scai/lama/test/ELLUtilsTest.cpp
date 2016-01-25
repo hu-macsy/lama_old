@@ -37,7 +37,7 @@
 // others
 #include <scai/lama/ELLKernelTrait.hpp>
 #include <scai/lama/LAMAKernel.hpp>
-#include <scai/lama/LAMAArray.hpp>
+#include <scai/lama/LArray.hpp>
 #include <scai/hmemo.hpp>
 
 #include <scai/lama/test/TestMacros.hpp>
@@ -72,7 +72,7 @@ void countNonEmptyRowsBySizesTest( ContextPtr loc )
     {
         const IndexType values[] = { 3, 0, 1, 0, 0, 1, 0, 4 };
         const IndexType n = sizeof( values ) / sizeof( IndexType );
-        LAMAArray<IndexType> sizes( n, values );
+        LArray<IndexType> sizes( n, values );
         ReadAccess<IndexType> rSizes( sizes, loc );
         SCAI_CONTEXT_ACCESS( loc );
         IndexType count = countNonEmptyRowsBySizes[loc]( rSizes.get(), n );
@@ -80,7 +80,7 @@ void countNonEmptyRowsBySizesTest( ContextPtr loc )
     }
     // count empty array
     {
-        LAMAArray<IndexType> sizes;
+        LArray<IndexType> sizes;
         ReadAccess<IndexType> rSizes( sizes, loc );
         SCAI_CONTEXT_ACCESS( loc );
         IndexType count = countNonEmptyRowsBySizes[loc]( rSizes.get(), sizes.size() );
@@ -99,8 +99,8 @@ void setNonEmptyRowsBySizesTest( ContextPtr loc )
     const IndexType valuesResult[] = { 0, 2, 5, 7, 8 };
     const IndexType n = 10;
     const IndexType numNonEmptyRows = 5;
-    LAMAArray<IndexType> sizes( n, values );
-    LAMAArray<IndexType> rowIndexes( numNonEmptyRows, 0 );
+    LArray<IndexType> sizes( n, values );
+    LArray<IndexType> rowIndexes( numNonEmptyRows, 0 );
     {
         ReadAccess<IndexType> rSizes( sizes, loc );
         WriteAccess<IndexType> wRowIndexes( rowIndexes, loc );
@@ -129,7 +129,7 @@ void hasDiagonalPropertyTest( ContextPtr loc )
         const IndexType ellJaValues[] = { 0, 1, 2, 3, 4, 5, 6, 7, 5, 3, 9, 10, 7, 8, 9, 10 };
         const IndexType n = sizeof( ellJaValues ) / sizeof( IndexType );
         const IndexType numDiagonals = 8;
-        LAMAArray<IndexType> ellJa( n, ellJaValues );
+        LArray<IndexType> ellJa( n, ellJaValues );
         ReadAccess<IndexType> rEllJa( ellJa, loc );
         SCAI_CONTEXT_ACCESS( loc );
         bool diagonalProperty = hasDiagonalProperty[loc]( numDiagonals, rEllJa.get() );
@@ -140,7 +140,7 @@ void hasDiagonalPropertyTest( ContextPtr loc )
         const IndexType ellJaValues[] = { 0, 1, 2, 3, 7, 5, 6, 7, 5, 3, 9, 10, 7, 8, 9, 10 };
         const IndexType n = sizeof( ellJaValues ) / sizeof( IndexType );
         const IndexType numDiagonals = 8;
-        LAMAArray<IndexType> ellJa( n, ellJaValues );
+        LArray<IndexType> ellJa( n, ellJaValues );
         ReadAccess<IndexType> rEllJa( ellJa, loc );
         SCAI_CONTEXT_ACCESS( loc );
         bool diagonalProperty = hasDiagonalProperty[loc]( numDiagonals, rEllJa.get() );
@@ -149,7 +149,7 @@ void hasDiagonalPropertyTest( ContextPtr loc )
     // test empty array
     {
         const IndexType numDiagonals = 0;
-        LAMAArray<IndexType> ellJa;
+        LArray<IndexType> ellJa;
         ReadAccess<IndexType> rEllJa( ellJa, loc );
         SCAI_CONTEXT_ACCESS( loc );
         bool diagonalProperty = hasDiagonalProperty[loc]( numDiagonals, rEllJa.get() );
@@ -172,8 +172,8 @@ void checkTest( ContextPtr loc )
         const IndexType numRows = nIa;
         const IndexType numValuesPerRow = 5;
         const IndexType numColumns = 6;
-        LAMAArray<IndexType> ia( nIa, valuesIa );
-        LAMAArray<IndexType> ja( nJa, valuesJa );
+        LArray<IndexType> ia( nIa, valuesIa );
+        LArray<IndexType> ja( nJa, valuesJa );
         ReadAccess<IndexType> rIa( ia, loc );
         ReadAccess<IndexType> rJa( ja, loc );
         SCAI_CONTEXT_ACCESS( loc );
@@ -188,8 +188,8 @@ void checkTest( ContextPtr loc )
         const IndexType numRows = nIa;
         const IndexType numValuesPerRow = 5;
         const IndexType numColumns = 5;
-        LAMAArray<IndexType> ia( nIa, valuesIa );
-        LAMAArray<IndexType> ja( nJa, valuesJa );
+        LArray<IndexType> ia( nIa, valuesIa );
+        LArray<IndexType> ja( nJa, valuesJa );
         ReadAccess<IndexType> rIa( ia, loc );
         ReadAccess<IndexType> rJa( ja, loc );
         SCAI_CONTEXT_ACCESS( loc );
@@ -205,8 +205,8 @@ void checkTest( ContextPtr loc )
         const IndexType numRows = nIa;
         const IndexType numValuesPerRow = 5;
         const IndexType numColumns = 5;
-        LAMAArray<IndexType> ia( nIa, valuesIa );
-        LAMAArray<IndexType> ja( nJa, valuesJa );
+        LArray<IndexType> ia( nIa, valuesIa );
+        LArray<IndexType> ja( nJa, valuesJa );
         ReadAccess<IndexType> rIa( ia, loc );
         ReadAccess<IndexType> rJa( ja, loc );
         SCAI_CONTEXT_ACCESS( loc );
@@ -218,8 +218,8 @@ void checkTest( ContextPtr loc )
         const IndexType numRows = 0;
         const IndexType numValuesPerRow = 0;
         const IndexType numColumns = 0;
-        LAMAArray<IndexType> ia;
-        LAMAArray<IndexType> ja;
+        LArray<IndexType> ia;
+        LArray<IndexType> ja;
         ReadAccess<IndexType> rIa( ia, loc );
         ReadAccess<IndexType> rJa( ja, loc );
         SCAI_CONTEXT_ACCESS( loc );
@@ -230,8 +230,8 @@ void checkTest( ContextPtr loc )
         const IndexType numRows = 0;
         const IndexType numValuesPerRow = 1;
         const IndexType numColumns = 1;
-        LAMAArray<IndexType> ia;
-        LAMAArray<IndexType> ja;
+        LArray<IndexType> ia;
+        LArray<IndexType> ja;
         ReadAccess<IndexType> rIa( ia, loc );
         ReadAccess<IndexType> rJa( ja, loc );
         SCAI_CONTEXT_ACCESS( loc );
@@ -260,10 +260,10 @@ void getRowTest( ContextPtr loc )
         const IndexType numRows = nIa;
         const IndexType numValuesPerRow = nJa / nIa;
         const IndexType numColumns = 5;
-        LAMAArray<ValueType> values( nValues, valuesValues );
-        LAMAArray<IndexType> ia( nIa, valuesIa );
-        LAMAArray<IndexType> ja( nJa, valuesJa );
-        LAMAArray<OtherValueType> row( numColumns, 0.0 );
+        LArray<ValueType> values( nValues, valuesValues );
+        LArray<IndexType> ia( nIa, valuesIa );
+        LArray<IndexType> ja( nJa, valuesJa );
+        LArray<OtherValueType> row( numColumns, 0.0 );
         {
             ReadAccess<ValueType> rValues( values, loc );
             ReadAccess<IndexType> rIa( ia, loc );
@@ -294,10 +294,10 @@ void getRowTest( ContextPtr loc )
         const IndexType numRows = nIa;
         const IndexType numColumns = 11;
         const IndexType numValuesPerRow = nJa / nIa;
-        LAMAArray<ValueType> values( nValues, valuesValues );
-        LAMAArray<IndexType> ia( nIa, valuesIa );
-        LAMAArray<IndexType> ja( nJa, valuesJa );
-        LAMAArray<OtherValueType> row( numColumns, 0.0 );
+        LArray<ValueType> values( nValues, valuesValues );
+        LArray<IndexType> ia( nIa, valuesIa );
+        LArray<IndexType> ja( nJa, valuesJa );
+        LArray<OtherValueType> row( numColumns, 0.0 );
         {
             ReadAccess<ValueType> rValues( values, loc );
             ReadAccess<IndexType> rIa( ia, loc );
@@ -336,9 +336,9 @@ void getValueTest( ContextPtr loc )
     const IndexType numRows = nIa;
     const IndexType numValuesPerRow = nValues / numRows;
     BOOST_REQUIRE_EQUAL( numRows * numValuesPerRow, nValues );
-    LAMAArray<ValueType> values( nValues, valuesValues );
-    LAMAArray<IndexType> ia( nIa, valuesIa );
-    LAMAArray<IndexType> ja( nJa, valuesJa );
+    LArray<ValueType> values( nValues, valuesValues );
+    LArray<IndexType> ia( nIa, valuesIa );
+    LArray<IndexType> ja( nJa, valuesJa );
     ReadAccess<ValueType> rValues( values, loc );
     ReadAccess<IndexType> rIa( ia, loc );
     ReadAccess<IndexType> rJa( ja, loc );
@@ -366,7 +366,7 @@ void scaleValueTest( ContextPtr loc )
     const IndexType nValues = sizeof( mValues ) / sizeof( ValueType );
     const ValueType expectedValues[] =
     { 2, 4, 15, 8, 10, 4, 4, 10, 4, 4, 8, 4, 0, 2, 6, 0, 0, 0, 0, 6 };
-    LAMAArray<ValueType> ellValues( nValues, mValues );
+    LArray<ValueType> ellValues( nValues, mValues );
     {
         const IndexType numRows = 5;
         const IndexType numValuesPerRow = nValues / numRows;
@@ -375,8 +375,8 @@ void scaleValueTest( ContextPtr loc )
         const IndexType n = sizeof( ellIaValues ) / sizeof( IndexType );
         const OtherValueType values[] =
         { 2, 2, 5, 2, 2 };
-        LAMAArray<IndexType> ellIa( n, ellIaValues );
-        LAMAArray<OtherValueType> scaleValues( n, values );
+        LArray<IndexType> ellIa( n, ellIaValues );
+        LArray<OtherValueType> scaleValues( n, values );
         ReadAccess<IndexType> rEllIa( ellIa, loc );
         WriteAccess<ValueType> wEllValues( ellValues, loc );
         ReadAccess<OtherValueType> rScaleValues( scaleValues, loc );
@@ -419,12 +419,12 @@ void getCSRValuesTest( ContextPtr loc )
     // make sure that division did fit
     BOOST_REQUIRE_EQUAL( numValuesPerRow * numRows, nELLValues );
     const IndexType nCSRValues = 15;
-    LAMAArray<ValueType> ellValues( nELLValues, valuesELLValues );
-    LAMAArray<IndexType> ellIa( nELLIa, valuesELLIa );
-    LAMAArray<IndexType> ellJa( nELLJa, valuesELLJa );
-    LAMAArray<IndexType> csrIa( nCSRIa, valuesCSRIa );
-    LAMAArray<OtherValueType> csrValues( nCSRValues, 0.0f );
-    LAMAArray<IndexType> csrJa( nCSRValues, 0 );
+    LArray<ValueType> ellValues( nELLValues, valuesELLValues );
+    LArray<IndexType> ellIa( nELLIa, valuesELLIa );
+    LArray<IndexType> ellJa( nELLJa, valuesELLJa );
+    LArray<IndexType> csrIa( nCSRIa, valuesCSRIa );
+    LArray<OtherValueType> csrValues( nCSRValues, 0.0f );
+    LArray<IndexType> csrJa( nCSRValues, 0 );
     {
         ReadAccess<ValueType> rELLValues( ellValues, loc );
         ReadAccess<IndexType> rELLIa( ellIa, loc );
@@ -472,13 +472,13 @@ void setCSRValuesTest( ContextPtr loc )
     const IndexType numRows = nELLIa;
     const IndexType nELLValues = 15;
     const IndexType numValuesPerRow = 5;
-    LAMAArray<ValueType> csrValues( nCSRValues, valuesCSRValues );
-    LAMAArray<IndexType> csrIa( nCSRIa, valuesCSRIa );
-    LAMAArray<IndexType> csrJa( nCSRJa, valuesCSRJa );
-    LAMAArray<IndexType> ellIa( nELLIa, valuesELLIa );
+    LArray<ValueType> csrValues( nCSRValues, valuesCSRValues );
+    LArray<IndexType> csrIa( nCSRIa, valuesCSRIa );
+    LArray<IndexType> csrJa( nCSRJa, valuesCSRJa );
+    LArray<IndexType> ellIa( nELLIa, valuesELLIa );
     // initialization of ellValues and ellJA, even if not mandatory
-    LAMAArray<OtherValueType> ellValues( nELLValues, static_cast<OtherValueType>( 0 ) );
-    LAMAArray<IndexType> ellJa( nELLValues, 0 );
+    LArray<OtherValueType> ellValues( nELLValues, static_cast<OtherValueType>( 0 ) );
+    LArray<IndexType> ellJa( nELLValues, 0 );
     {
         ReadAccess<ValueType> rCSRValues( csrValues, loc );
         ReadAccess<IndexType> rCSRIa( csrIa, loc );
@@ -523,10 +523,10 @@ void compressIATest( ContextPtr loc )
         const IndexType numRows = nELLIa;
         const IndexType numValuesPerRow = nELLJa / nELLIa;
         const ValueType eps = 0.0;
-        LAMAArray<ValueType> ellValues( nELLValues, valuesELLValues );
-        LAMAArray<IndexType> ellIa( nELLIa, valuesELLIa );
-        LAMAArray<IndexType> ellJa( nELLJa, valuesELLJa );
-        LAMAArray<IndexType> newEllIa( nELLIa, 0.0 );
+        LArray<ValueType> ellValues( nELLValues, valuesELLValues );
+        LArray<IndexType> ellIa( nELLIa, valuesELLIa );
+        LArray<IndexType> ellJa( nELLJa, valuesELLJa );
+        LArray<IndexType> newEllIa( nELLIa, 0.0 );
         {
             SCAI_CONTEXT_ACCESS( loc );
 
@@ -559,10 +559,10 @@ void compressIATest( ContextPtr loc )
         const IndexType numRows = nELLIa;
         const IndexType numValuesPerRow = nELLJa / nELLIa;
         const ValueType eps = 0.01;
-        LAMAArray<ValueType> ellValues( nELLValues, valuesELLValues );
-        LAMAArray<IndexType> ellIa( nELLIa, valuesELLIa );
-        LAMAArray<IndexType> ellJa( nELLJa, valuesELLJa );
-        LAMAArray<IndexType> newEllIa( nELLIa, 0.0 );
+        LArray<ValueType> ellValues( nELLValues, valuesELLValues );
+        LArray<IndexType> ellIa( nELLIa, valuesELLIa );
+        LArray<IndexType> ellJa( nELLJa, valuesELLJa );
+        LArray<IndexType> newEllIa( nELLIa, 0.0 );
         {
             ReadAccess<ValueType> rELLValues( ellValues, loc );
             ReadAccess<IndexType> rELLIa( ellIa, loc );
@@ -594,10 +594,10 @@ void compressIATest( ContextPtr loc )
         const IndexType numRows = nELLIa;
         const IndexType numValuesPerRow = nELLJa / nELLIa;
         const ValueType eps = 0.0;
-        LAMAArray<ValueType> ellValues( nELLValues, valuesELLValues );
-        LAMAArray<IndexType> ellIa( nELLIa, valuesELLIa );
-        LAMAArray<IndexType> ellJa( nELLJa, valuesELLJa );
-        LAMAArray<IndexType> newEllIa( nELLIa, 0.0 );
+        LArray<ValueType> ellValues( nELLValues, valuesELLValues );
+        LArray<IndexType> ellIa( nELLIa, valuesELLIa );
+        LArray<IndexType> ellJa( nELLJa, valuesELLJa );
+        LArray<IndexType> newEllIa( nELLIa, 0.0 );
         {
             ReadAccess<ValueType> rELLValues( ellValues, loc );
             ReadAccess<IndexType> rELLIa( ellIa, loc );
@@ -642,11 +642,11 @@ void compressValuesTest( ContextPtr loc )
         const ValueType eps = 0.0;
         const IndexType numValues = 12;
         const IndexType newNumValuesPerRow = numValues / nELLIa;
-        LAMAArray<ValueType> ellValues( nELLValues, valuesELLValues );
-        LAMAArray<IndexType> ellIa( nELLIa, valuesELLIa );
-        LAMAArray<IndexType> ellJa( nELLJa, valuesELLJa );
-        LAMAArray<ValueType> newEllValues( numValues, 0.0 );
-        LAMAArray<IndexType> newEllJa( numValues, 0.0 );
+        LArray<ValueType> ellValues( nELLValues, valuesELLValues );
+        LArray<IndexType> ellIa( nELLIa, valuesELLIa );
+        LArray<IndexType> ellJa( nELLJa, valuesELLJa );
+        LArray<ValueType> newEllValues( numValues, 0.0 );
+        LArray<IndexType> newEllJa( numValues, 0.0 );
         {
             ReadAccess<ValueType> rELLValues( ellValues, loc );
             ReadAccess<IndexType> rELLIa( ellIa, loc );
@@ -686,11 +686,11 @@ void compressValuesTest( ContextPtr loc )
         const ValueType eps = 0.01;
         const IndexType numValues = 12;
         const IndexType newNumValuesPerRow = numValues / nELLIa;
-        LAMAArray<ValueType> ellValues( nELLValues, valuesELLValues );
-        LAMAArray<IndexType> ellIa( nELLIa, valuesELLIa );
-        LAMAArray<IndexType> ellJa( nELLJa, valuesELLJa );
-        LAMAArray<ValueType> newEllValues( numValues, 0.0 );
-        LAMAArray<IndexType> newEllJa( numValues, 0.0 );
+        LArray<ValueType> ellValues( nELLValues, valuesELLValues );
+        LArray<IndexType> ellIa( nELLIa, valuesELLIa );
+        LArray<IndexType> ellJa( nELLJa, valuesELLJa );
+        LArray<ValueType> newEllValues( numValues, 0.0 );
+        LArray<IndexType> newEllJa( numValues, 0.0 );
         {
             ReadAccess<ValueType> rELLValues( ellValues, loc );
             ReadAccess<IndexType> rELLIa( ellIa, loc );
@@ -730,11 +730,11 @@ void compressValuesTest( ContextPtr loc )
         const IndexType numValues = 12;
         const IndexType numValuesPerRow = nELLJa / nELLIa;
         const IndexType newNumValuesPerRow = numValues / nELLIa;
-        LAMAArray<ValueType> ellValues( nELLValues, valuesELLValues );
-        LAMAArray<IndexType> ellIa( nELLIa, valuesELLIa );
-        LAMAArray<IndexType> ellJa( nELLJa, valuesELLJa );
-        LAMAArray<ValueType> newEllValues( numValues, 0.0 );
-        LAMAArray<IndexType> newEllJa( numValues, 0.0 );
+        LArray<ValueType> ellValues( nELLValues, valuesELLValues );
+        LArray<IndexType> ellIa( nELLIa, valuesELLIa );
+        LArray<IndexType> ellJa( nELLJa, valuesELLJa );
+        LArray<ValueType> newEllValues( numValues, 0.0 );
+        LArray<IndexType> newEllJa( numValues, 0.0 );
         {
             ReadAccess<ValueType> rELLValues( ellValues, loc );
             ReadAccess<IndexType> rELLIa( ellIa, loc );
@@ -780,11 +780,11 @@ void matrixMultiplySizesTest( ContextPtr loc )
         IndexType numValues = 5; // all matrices have shape 5 x 5
         IndexType aNumValuesPerRow = aNumValues / numValues;
         IndexType bNumValuesPerRow = bNumValues / numValues;
-        LAMAArray<IndexType> AIa( aNumRows, valuesAIa );
-        LAMAArray<IndexType> AJa( aNumValues, valuesAJa );
-        LAMAArray<IndexType> BIa( bNumRows, valuesBIa );
-        LAMAArray<IndexType> BJa( bNumValues, valuesBJa );
-        LAMAArray<IndexType> CIa( numValues, 0 );
+        LArray<IndexType> AIa( aNumRows, valuesAIa );
+        LArray<IndexType> AJa( aNumValues, valuesAJa );
+        LArray<IndexType> BIa( bNumRows, valuesBIa );
+        LArray<IndexType> BJa( bNumValues, valuesBJa );
+        LArray<IndexType> CIa( numValues, 0 );
         {
             ReadAccess<IndexType> rAIa( AIa, loc );
             ReadAccess<IndexType> rAJa( AJa, loc );
@@ -827,11 +827,11 @@ void matrixMultiplySizesTest( ContextPtr loc )
         // a and a * b have same number rows
         IndexType aNumValuesPerRow = aNumValues / aNumRows;
         IndexType bNumValuesPerRow = bNumValues / bNumRows;
-        LAMAArray<IndexType> AIa( aNumRows, valuesAIa );
-        LAMAArray<IndexType> AJa( aNumValues, valuesAJa );
-        LAMAArray<IndexType> BIa( bNumRows, valuesBIa );
-        LAMAArray<IndexType> BJa( bNumValues, valuesBJa );
-        LAMAArray<IndexType> CIa( cNumRows, 0 );
+        LArray<IndexType> AIa( aNumRows, valuesAIa );
+        LArray<IndexType> AJa( aNumValues, valuesAJa );
+        LArray<IndexType> BIa( bNumRows, valuesBIa );
+        LArray<IndexType> BJa( bNumValues, valuesBJa );
+        LArray<IndexType> CIa( cNumRows, 0 );
         {
             ReadAccess<IndexType> rAIa( AIa, loc );
             ReadAccess<IndexType> rAJa( AJa, loc );
@@ -886,15 +886,15 @@ void matrixMultiplyTest( ContextPtr loc )
         { 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 3, 2, 2, 3, 3, 0, 3, 3 };
         IndexType numValues = 20;
         ValueType alpha = 1;
-        LAMAArray<ValueType> AValues( nAValues, valuesAValues );
-        LAMAArray<IndexType> AIa( aNumRows, valuesAIa );
-        LAMAArray<IndexType> AJa( aNumValues, valuesAJa );
-        LAMAArray<ValueType> BValues( nBValues, valuesBValues );
-        LAMAArray<IndexType> BIa( bNumRows, valuesBIa );
-        LAMAArray<IndexType> BJa( bNumValues, valuesBJa );
-        LAMAArray<IndexType> CIa( cNumRows, valuesCIa );
-        LAMAArray<ValueType> CValues( numValues, 0.0 );
-        LAMAArray<IndexType> CJa( numValues, 0.0 );
+        LArray<ValueType> AValues( nAValues, valuesAValues );
+        LArray<IndexType> AIa( aNumRows, valuesAIa );
+        LArray<IndexType> AJa( aNumValues, valuesAJa );
+        LArray<ValueType> BValues( nBValues, valuesBValues );
+        LArray<IndexType> BIa( bNumRows, valuesBIa );
+        LArray<IndexType> BJa( bNumValues, valuesBJa );
+        LArray<IndexType> CIa( cNumRows, valuesCIa );
+        LArray<ValueType> CValues( numValues, 0.0 );
+        LArray<IndexType> CJa( numValues, 0.0 );
         IndexType aNumValuesPerRow = aNumValues / aNumRows;
         IndexType bNumValuesPerRow = bNumValues / bNumRows;
         IndexType cNumValuesPerRow = numValues / cNumRows;
@@ -953,15 +953,15 @@ void matrixMultiplyTest( ContextPtr loc )
         { 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 3, 2, 2, 3, 3, 0, 3, 3 };
         IndexType numValues = 20;
         ValueType alpha = 2.5;
-        LAMAArray<ValueType> AValues( nAValues, valuesAValues );
-        LAMAArray<IndexType> AIa( aNumRows, valuesAIa );
-        LAMAArray<IndexType> AJa( aNumValues, valuesAJa );
-        LAMAArray<ValueType> BValues( nBValues, valuesBValues );
-        LAMAArray<IndexType> BIa( bNumRows, valuesBIa );
-        LAMAArray<IndexType> BJa( bNumValues, valuesBJa );
-        LAMAArray<IndexType> CIa( cNumRows, valuesCIa );
-        LAMAArray<ValueType> CValues( numValues, 0.0 );
-        LAMAArray<IndexType> CJa( numValues, 0.0 );
+        LArray<ValueType> AValues( nAValues, valuesAValues );
+        LArray<IndexType> AIa( aNumRows, valuesAIa );
+        LArray<IndexType> AJa( aNumValues, valuesAJa );
+        LArray<ValueType> BValues( nBValues, valuesBValues );
+        LArray<IndexType> BIa( bNumRows, valuesBIa );
+        LArray<IndexType> BJa( bNumValues, valuesBJa );
+        LArray<IndexType> CIa( cNumRows, valuesCIa );
+        LArray<ValueType> CValues( numValues, 0.0 );
+        LArray<IndexType> CJa( numValues, 0.0 );
         IndexType aNumValuesPerRow = aNumValues / aNumRows;
         IndexType bNumValuesPerRow = bNumValues / bNumRows;
         IndexType cNumValuesPerRow = numValues / cNumRows;
@@ -1022,15 +1022,15 @@ void matrixMultiplyTest( ContextPtr loc )
         { 0, 0, 0, 1, 1, 1, 2, 2, 2 };
         IndexType cNumValues = 9;
         ValueType alpha = 1;
-        LAMAArray<ValueType> AValues( nAValues, valuesAValues );
-        LAMAArray<IndexType> AIa( aNumRows, valuesAIa );
-        LAMAArray<IndexType> AJa( aNumValues, valuesAJa );
-        LAMAArray<ValueType> BValues( nBValues, valuesBValues );
-        LAMAArray<IndexType> BIa( bNumRows, valuesBIa );
-        LAMAArray<IndexType> BJa( bNumValues, valuesBJa );
-        LAMAArray<IndexType> CIa( cNumRows, valuesCIa );
-        LAMAArray<ValueType> CValues( cNumValues );
-        LAMAArray<IndexType> CJa( cNumValues );
+        LArray<ValueType> AValues( nAValues, valuesAValues );
+        LArray<IndexType> AIa( aNumRows, valuesAIa );
+        LArray<IndexType> AJa( aNumValues, valuesAJa );
+        LArray<ValueType> BValues( nBValues, valuesBValues );
+        LArray<IndexType> BIa( bNumRows, valuesBIa );
+        LArray<IndexType> BJa( bNumValues, valuesBJa );
+        LArray<IndexType> CIa( cNumRows, valuesCIa );
+        LArray<ValueType> CValues( cNumValues );
+        LArray<IndexType> CJa( cNumValues );
         IndexType aNumValuesPerRow = aNumValues / aNumRows;
         IndexType bNumValuesPerRow = bNumValues / bNumRows;
         IndexType cNumValuesPerRow = cNumValues / cNumRows;
@@ -1091,11 +1091,11 @@ void matrixAddSizesTest( ContextPtr loc )
     BOOST_REQUIRE_EQUAL( aNumRows * aNumValuesPerRow, aNumValues );
     IndexType bNumValuesPerRow = bNumValues / bNumRows;
     BOOST_REQUIRE_EQUAL( bNumRows * bNumValuesPerRow, bNumValues );
-    LAMAArray<IndexType> AIa( aNumRows, valuesAIa );
-    LAMAArray<IndexType> AJa( aNumValues, valuesAJa );
-    LAMAArray<IndexType> BIa( bNumRows, valuesBIa );
-    LAMAArray<IndexType> BJa( bNumValues, valuesBJa );
-    LAMAArray<IndexType> CIa( cNumRows, 0 );
+    LArray<IndexType> AIa( aNumRows, valuesAIa );
+    LArray<IndexType> AJa( aNumValues, valuesAJa );
+    LArray<IndexType> BIa( bNumRows, valuesBIa );
+    LArray<IndexType> BJa( bNumValues, valuesBJa );
+    LArray<IndexType> CIa( cNumRows, 0 );
     {
         ReadAccess<IndexType> rAIa( AIa, loc );
         ReadAccess<IndexType> rAJa( AJa, loc );
@@ -1151,18 +1151,18 @@ void matrixAddTest( ContextPtr loc )
         IndexType numColumns = 5; // for convenience
         ValueType alpha = 1;
         ValueType beta = 1;
-        LAMAArray<ValueType> AValues( nAValues, valuesAValues );
-        LAMAArray<IndexType> AIa( aNumRows, valuesAIa );
-        LAMAArray<IndexType> AJa( aNumValues, valuesAJa );
-        LAMAArray<ValueType> BValues( nBValues, valuesBValues );
-        LAMAArray<IndexType> BIa( bNumRows, valuesBIa );
-        LAMAArray<IndexType> BJa( bNumValues, valuesBJa );
-        LAMAArray<IndexType> CIa( cNumRows, valuesCIa );
+        LArray<ValueType> AValues( nAValues, valuesAValues );
+        LArray<IndexType> AIa( aNumRows, valuesAIa );
+        LArray<IndexType> AJa( aNumValues, valuesAJa );
+        LArray<ValueType> BValues( nBValues, valuesBValues );
+        LArray<IndexType> BIa( bNumRows, valuesBIa );
+        LArray<IndexType> BJa( bNumValues, valuesBJa );
+        LArray<IndexType> CIa( cNumRows, valuesCIa );
         IndexType aNumValuesPerRow = aNumValues / aNumRows;
         IndexType bNumValuesPerRow = bNumValues / bNumRows;
         IndexType cNumValuesPerRow = cNumValues / cNumRows;
-        LAMAArray<ValueType> CValues( cNumValues, 0.0 );
-        LAMAArray<IndexType> CJa( cNumValues, 0.0 );
+        LArray<ValueType> CValues( cNumValues, 0.0 );
+        LArray<IndexType> CJa( cNumValues, 0.0 );
         {
             ReadAccess<IndexType> rAIa( AIa, loc );
             ReadAccess<IndexType> rAJa( AJa, loc );
@@ -1219,21 +1219,21 @@ void matrixAddTest( ContextPtr loc )
         IndexType numColumns = 5; // for convenience
         ValueType alpha = 1;
         ValueType beta = 2;
-        LAMAArray<ValueType> AValues( nAValues, valuesAValues );
-        LAMAArray<IndexType> AIa( aNumRows, valuesAIa );
-        LAMAArray<IndexType> AJa( aNumValues, valuesAJa );
-        LAMAArray<ValueType> BValues( nBValues, valuesBValues );
-        LAMAArray<IndexType> BIa( bNumRows, valuesBIa );
-        LAMAArray<IndexType> BJa( bNumValues, valuesBJa );
-        LAMAArray<IndexType> CIa( cNumRows, valuesCIa );
+        LArray<ValueType> AValues( nAValues, valuesAValues );
+        LArray<IndexType> AIa( aNumRows, valuesAIa );
+        LArray<IndexType> AJa( aNumValues, valuesAJa );
+        LArray<ValueType> BValues( nBValues, valuesBValues );
+        LArray<IndexType> BIa( bNumRows, valuesBIa );
+        LArray<IndexType> BJa( bNumValues, valuesBJa );
+        LArray<IndexType> CIa( cNumRows, valuesCIa );
         IndexType aNumValuesPerRow = aNumValues / aNumRows;
         IndexType bNumValuesPerRow = bNumValues / bNumRows;
         IndexType cNumValuesPerRow = cNumValues / cNumRows;
         // This did no work but should
-        // LAMAArray<ValueType> CValues;
-        // LAMAArray<IndexType> CJa;
-        LAMAArray<ValueType> CValues( cNumValues, 0.0 );
-        LAMAArray<IndexType> CJa( cNumValues, 0.0 );
+        // LArray<ValueType> CValues;
+        // LArray<IndexType> CJa;
+        LArray<ValueType> CValues( cNumValues, 0.0 );
+        LArray<IndexType> CJa( cNumValues, 0.0 );
         {
             ReadAccess<IndexType> rAIa( AIa, loc );
             ReadAccess<IndexType> rAJa( AJa, loc );

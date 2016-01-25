@@ -47,6 +47,7 @@
 
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/ScalarType.hpp>
+#include <scai/common/TypeTraits.hpp>
 
 // external
 #include <omp.h>
@@ -85,7 +86,7 @@ void MICBLAS1::scal(
     }
 
     SCAI_LOG_DEBUG( logger,
-                    "scal<" << common::TypeTraits<ValueType>::getScalarType() << ">, n = " << n << ", alpha = " << alpha << ", x = " << x << ", incX = " << incX )
+                    "scal<" << common::TypeTraits<ValueType>::id() << ">, n = " << n << ", alpha = " << alpha << ", x = " << x << ", incX = " << incX )
 
     if( n < 1 || incX < 1 )
     {
@@ -124,7 +125,7 @@ ValueType MICBLAS1::asum( const IndexType n, const ValueType* x, const IndexType
     }
 
     SCAI_LOG_DEBUG( logger,
-                    "asum<" << common::TypeTraits<ValueType>::getScalarType() << ">, n = " << n << ", x = " << x << ", incX = " << incX )
+                    "asum<" << common::TypeTraits<ValueType>::id() << ">, n = " << n << ", x = " << x << ", incX = " << incX )
 
     ValueType asum = static_cast<ValueType>(0.0);
 
@@ -176,7 +177,7 @@ IndexType MICBLAS1::iamax( const IndexType n, const ValueType* x, const IndexTyp
     }
 
     SCAI_LOG_INFO( logger,
-                   "iamax<" << common::TypeTraits<ValueType>::getScalarType() << " >, n = " << n << ", x = " << x << ", incX = " << incX )
+                   "iamax<" << common::TypeTraits<ValueType>::id() << " >, n = " << n << ", x = " << x << ", incX = " << incX )
 
     IndexType maxIndex = 0;
 
@@ -285,7 +286,7 @@ void MICBLAS1::swap(
 template<typename ValueType>
 ValueType MICBLAS1::nrm2( const IndexType n, const ValueType* x, const IndexType incX )
 {
-    SCAI_LOG_INFO( logger, "nrm2<" << common::TypeTraits<ValueType>::getScalarType() << ">( n = " << n << " )" )
+    SCAI_LOG_INFO( logger, "nrm2<" << common::TypeTraits<ValueType>::id() << ">( n = " << n << " )" )
 
     MICSyncToken* syncToken = MICSyncToken::getCurrentSyncToken();
 
@@ -342,7 +343,7 @@ void MICBLAS1::copy(
     const IndexType incY )
 {
     SCAI_LOG_DEBUG( logger,
-                    "copy<" << common::TypeTraits<ValueType>::getScalarType() << ">, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
+                    "copy<" << common::TypeTraits<ValueType>::id() << ">, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
 
     MICSyncToken* syncToken = MICSyncToken::getCurrentSyncToken();
 
@@ -393,7 +394,7 @@ void MICBLAS1::axpy(
     // SCAI_REGION( "MIC.BLAS1.axpy" )
 
     SCAI_LOG_INFO( logger,
-                   "axpy<" << common::TypeTraits<ValueType>::getScalarType() << ",  n = " << n << ", alpha = " << alpha << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
+                   "axpy<" << common::TypeTraits<ValueType>::id() << ",  n = " << n << ", alpha = " << alpha << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
 
     MICSyncToken* syncToken = MICSyncToken::getCurrentSyncToken();
 
@@ -442,7 +443,7 @@ ValueType MICBLAS1::dot(
 {
     // SCAI_REGION( "MIC.BLAS1.dot" )
 
-    SCAI_LOG_INFO( logger, "dot<" << common::TypeTraits<ValueType>::getScalarType() << ">" 
+    SCAI_LOG_INFO( logger, "dot<" << common::TypeTraits<ValueType>::id() << ">" 
                            << ", n = " << n << ", incX = " << incX << ", incY = " << incY );
 
     MICSyncToken* syncToken = MICSyncToken::getCurrentSyncToken();
@@ -506,7 +507,7 @@ void MICBLAS1::sum(
     ValueType* z )
 {
     SCAI_LOG_DEBUG( logger,
-                    "sum<" << common::TypeTraits<ValueType>::getScalarType() << ">, n = " << n << ", alpha = " << alpha << ", x = " << x << ", beta = " << beta << ", y = " << y << ", z = " << z )
+                    "sum<" << common::TypeTraits<ValueType>::id() << ">, n = " << n << ", alpha = " << alpha << ", x = " << x << ", beta = " << beta << ", y = " << y << ", z = " << z )
 
     MICSyncToken* syncToken = MICSyncToken::getCurrentSyncToken();
 

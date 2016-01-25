@@ -36,7 +36,7 @@
 
 // others
 #include <scai/lama/LAMAKernel.hpp>
-#include <scai/lama/LAMAArray.hpp>
+#include <scai/lama/LArray.hpp>
 #include <scai/lama/UtilKernelTrait.hpp>
 #include <scai/hmemo.hpp>
 
@@ -66,19 +66,19 @@ namespace UtilsTest
 template<typename ValueType>
 void scaleTest( ContextPtr loc )
 {
-    static LAMAKernel<UtilKernelTrait::scale<ValueType> > scale;
+    static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
 
     ValueType valuesValues[] =
     { 0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4 };
     const IndexType nValues = sizeof( valuesValues ) / sizeof( ValueType );
     ValueType expectedValues[] =
     { 0, 2, 4, 6, 8, 0, 2, 4, 6, 8, 0, 2, 4, 6, 8 };
-    const ValueType mult = 2.0;
-    LAMAArray<ValueType> values( nValues, valuesValues );
+    const ValueType mult = 2;
+    LArray<ValueType> values( nValues, valuesValues );
     {
         WriteAccess<ValueType> wValues( values, loc );
         SCAI_CONTEXT_ACCESS( loc );
-        scale[loc]( wValues.get(), mult, nValues );
+        setVal[loc]( wValues.get(), nValues, mult, common::reduction::MULT );
     }
     ReadAccess<ValueType> rValues( values );
 
@@ -93,24 +93,24 @@ void scaleTest( ContextPtr loc )
 template<typename ValueType>
 void sumTest( ContextPtr loc )
 {
-    static LAMAKernel<UtilKernelTrait::sum<ValueType> > sum;
+    static LAMAKernel<UtilKernelTrait::reduce<ValueType> > reduce;
     {
         ValueType valuesValues[] =
         { 0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4 };
         const IndexType nValues = sizeof( valuesValues ) / sizeof( ValueType );
         const ValueType expectedSum = 30;
-        LAMAArray<ValueType> values( nValues, valuesValues );
+        LArray<ValueType> values( nValues, valuesValues );
         ReadAccess<ValueType> rValues( values, loc );
         SCAI_CONTEXT_ACCESS( loc );
-        const ValueType resultSum = sum[loc]( rValues.get(), nValues );
+        const ValueType resultSum = reduce[loc]( rValues.get(), nValues, common::reduction::ADD );
         BOOST_CHECK_EQUAL( expectedSum, resultSum );
     }
     {
         const ValueType expectedSum = 0;
-        LAMAArray<ValueType> values;
+        LArray<ValueType> values;
         ReadAccess<ValueType> rValues( values, loc );
         SCAI_CONTEXT_ACCESS( loc );
-        const ValueType resultSum = sum[loc]( rValues.get(), values.size() );
+        const ValueType resultSum = reduce[loc]( rValues.get(), values.size(), common::reduction::ADD );
         BOOST_CHECK_EQUAL( expectedSum, resultSum );
     }
 }
@@ -123,13 +123,13 @@ void setValTest( ContextPtr loc )
     static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
     {
         const IndexType n = 20;
-        LAMAArray<ValueType> values;
+        LArray<ValueType> values;
         {
             WriteOnlyAccess<ValueType> wValues( values, loc, 3 * n );
             SCAI_CONTEXT_ACCESS( loc );
-            setVal[loc]( wValues.get(), 3 * n, 0 );
+            setVal[loc]( wValues.get(), 3 * n, 0, common::reduction::COPY );
             // overwrite in the middle to check that there is no out-of-range set
-            setVal[loc]( wValues.get() + n, n, 10 );
+            setVal[loc]( wValues.get() + n, n, 10, common::reduction::COPY );
         }
         ReadAccess<ValueType> rValues( values );
 
@@ -142,11 +142,11 @@ void setValTest( ContextPtr loc )
     }
     {
         const IndexType n = 0;
-        LAMAArray<ValueType> values;
+        LArray<ValueType> values;
         {
             WriteOnlyAccess<ValueType> wValues( values, loc, n );
             SCAI_CONTEXT_ACCESS( loc );
-            setVal[loc]( wValues.get(), n, 7 );
+            setVal[loc]( wValues.get(), n, 7, common::reduction::COPY );
         }
     }
 }
@@ -167,9 +167,9 @@ void isSortedTest( ContextPtr loc )
         const IndexType nValues1 = sizeof( values1 ) / sizeof( ValueType );
         const IndexType nValues2 = sizeof( values2 ) / sizeof( ValueType );
         const IndexType nValues3 = sizeof( values3 ) / sizeof( ValueType );
-        LAMAArray<ValueType> valueArray1( nValues1, values1 );
-        LAMAArray<ValueType> valueArray2( nValues2, values2 );
-        LAMAArray<ValueType> valueArray3( nValues3, values3 );
+        LArray<ValueType> valueArray1( nValues1, values1 );
+        LArray<ValueType> valueArray2( nValues2, values2 );
+        LArray<ValueType> valueArray3( nValues3, values3 );
         ReadAccess<ValueType> rValues1( valueArray1, loc );
         ReadAccess<ValueType> rValues2( valueArray2, loc );
         ReadAccess<ValueType> rValues3( valueArray3, loc );
@@ -200,7 +200,7 @@ void setOrderTest( ContextPtr loc )
     static LAMAKernel<UtilKernelTrait::setOrder<IndexType> > setOrder;
     {
         const IndexType n = 20;
-        LAMAArray<IndexType> values;
+        LArray<IndexType> values;
         {
             WriteOnlyAccess<IndexType> wValues( values, loc, n );
             SCAI_CONTEXT_ACCESS( loc );
@@ -215,7 +215,7 @@ void setOrderTest( ContextPtr loc )
     }
     {
         const IndexType n = 0;
-        LAMAArray<IndexType> values;
+        LArray<IndexType> values;
         {
             WriteOnlyAccess<IndexType> wValues( values, loc, n );
             SCAI_CONTEXT_ACCESS( loc );
@@ -233,7 +233,7 @@ void invertTest( ContextPtr loc )
         ValueType valuesValues[] =
         { 1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4 };
         const IndexType nValues = sizeof( valuesValues ) / sizeof( ValueType );
-        LAMAArray<ValueType> values( nValues, valuesValues );
+        LArray<ValueType> values( nValues, valuesValues );
         {
             WriteAccess<ValueType> wValues( values, loc );
             SCAI_CONTEXT_ACCESS( loc );
@@ -248,7 +248,7 @@ void invertTest( ContextPtr loc )
     }
     {
         const IndexType n = 0;
-        LAMAArray<ValueType> values;
+        LArray<ValueType> values;
         {
             WriteOnlyAccess<ValueType> wValues( values, loc, n );
             SCAI_CONTEXT_ACCESS( loc );

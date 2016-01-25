@@ -154,7 +154,8 @@ bool BlockDistribution::isEqual( const Distribution& other ) const
 void BlockDistribution::writeAt( std::ostream& stream ) const
 {
     // write identification of this object
-    stream << "BlockDistribution(gsize=" << mGlobalSize << ",bsize=" << mBlockSize << ")";
+    stream << "BlockDistribution( comm = " << *mCommunicator << ", block = " << mBlockSize 
+           << ", size = " << mLB << ":" << mUB << " of " << mGlobalSize <<  " )";
 }
 
 void BlockDistribution::printDistributionVector( std::string name ) const
@@ -187,25 +188,19 @@ void BlockDistribution::printDistributionVector( std::string name ) const
  *   static create methods ( required for registration in distribution factory )    *
  * ---------------------------------------------------------------------------------*/
 
-BlockDistribution* BlockDistribution::create(
-    const CommunicatorPtr communicator,
-    const IndexType globalSize,
-    const float )
+std::string BlockDistribution::createValue()
 {
-    // weight remains unused
-    return new BlockDistribution( globalSize, communicator );
+    return "BLOCK";
 }
 
-BlockDistribution* BlockDistribution::create( const CommunicatorPtr communicator, const Matrix& matrix, const float )
+Distribution* BlockDistribution::create( const DistributionArguments arg )
 {
-    // we only take the size of the matrix
+    SCAI_LOG_INFO( logger, "create" )
 
-    return new BlockDistribution( matrix.getNumRows(), communicator );
+    // Note: weight argument is not used here
+
+    return new BlockDistribution( arg.globalSize, arg.communicator );
 }
-
-/* ---------------------------------------------------------------------------------*/
-
-bool BlockDistribution::initialized = Distribution::registerCreator<BlockDistribution>( "BLOCK" );
 
 } /* end namespace lama */
 

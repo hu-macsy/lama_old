@@ -39,7 +39,7 @@
 // others
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/macros/assert.hpp>
-#include <scai/hmemo/mic/MICContext.hpp>
+#include <scai/common/ReductionOp.hpp>
 
 // logging
 #include <scai/logging.hpp>
@@ -56,14 +56,9 @@ class COMMON_DLL_IMPORTEXPORT MICUtils
 {
 public:
 
-    /** MIC implementation for UtilKernelTrait::Transform::scale */
-
-    template<typename ValueType>
-    static void scale( ValueType mValues[], const ValueType value, const IndexType n );
-
     /** MIC implementation for UtilKernelTrait::Copy::setScale */
 
-    template<typename ValueType,typename OtherValueType>
+    template<typename ValueType, typename OtherValueType>
     static void setScale(
         ValueType outValues[],
         const ValueType value,
@@ -74,56 +69,50 @@ public:
 
     static bool validIndexes( const IndexType array[], const IndexType n, const IndexType size );
 
-    /** MIC implementation for UtilKernelTrait::Reductions::sum */
+    /** MIC implementation for UtilKernelTrait::Reductions::reduce */
 
     template<typename ValueType>
-    static ValueType sum( const ValueType array[], const IndexType n );
+    static ValueType reduce( const ValueType array[], const IndexType n, const common::reduction::ReductionOp op );
 
     /** MIC implementation for UtilKernelTrait::Setter::setVal */
 
     template<typename ValueType>
-    static void setVal( ValueType array[], const IndexType n, const ValueType val );
+    static void setVal( ValueType array[], const IndexType n, const ValueType val, const common::reduction::ReductionOp op );
 
     /** MIC implementation for UtilKernelTrait::Setter::setOrder */
 
     template<typename ValueType>
     static void setOrder( ValueType array[], const IndexType n );
 
+    /** MIC implementation for UtilKernelTrait::getValue */
+
     template<typename ValueType>
     static ValueType getValue( const ValueType* array, const IndexType i );
 
-    template<typename ValueType>
-    static ValueType maxval( const ValueType array[], const IndexType n );
-
-    /** MIC implementation for UtilKernelTrait::Reductions::absMaxVal */
-
-    template<typename ValueType>
-    static ValueType absMaxVal( const ValueType array[], const IndexType n );
-
-    /** MIC implementation for UtilKernelTrait::Reductions::absMaxDiffVal */
+    /** MIC implementation for UtilKernelTrait::absMaxDiffVal */
 
     template<typename ValueType>
     static ValueType absMaxDiffVal( const ValueType array1[], const ValueType array2[], const IndexType n );
 
-    /** MIC implementation for UtilKernelTrait::Reductions::isSorted */
+    /** MIC implementation for UtilKernelTrait::isSorted */
 
     template<typename ValueType>
     static bool isSorted( const ValueType array[], const IndexType n, bool acending );
 
-    template<typename ValueType1,typename ValueType2>
-    static void set( ValueType1 out[], const ValueType2 in[], const IndexType n );
+    template<typename ValueType1, typename ValueType2>
+    static void set( ValueType1 out[], const ValueType2 in[], const IndexType n, const common::reduction::ReductionOp op );
 
     /** Set out[i] = in[ indexes[i] ],  0 <= i < n */
 
-    template<typename ValueType1,typename ValueType2>
+    template<typename ValueType1, typename ValueType2>
     static void setGather( ValueType1 out[], const ValueType2 in[], const IndexType indexes[], const IndexType n );
 
     /** Set out[ indexes[i] ] = in [i] */
 
-    template<typename ValueType1,typename ValueType2>
+    template<typename ValueType1, typename ValueType2>
     static void setScatter( ValueType1 out[], const IndexType indexes[], const ValueType2 in[], const IndexType n );
 
-    /** MIC implementation for UtilKernelTrait::Math::invert */
+    /** MIC implementation for UtilKernelTrait::invert */
 
     template<typename ValueType>
     static void invert( ValueType array[], const IndexType n );
@@ -133,6 +122,18 @@ protected:
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
 private:
+
+    template<typename ValueType>
+    static ValueType reduceSum( const ValueType array[], const IndexType n );
+
+    template<typename ValueType>
+    static ValueType reduceMinVal( const ValueType array[], const IndexType n );
+
+    template<typename ValueType>
+    static ValueType reduceMaxVal( const ValueType array[], const IndexType n );
+
+    template<typename ValueType>
+    static ValueType reduceAbsMaxVal( const ValueType array[], const IndexType n );
 
     /** Routine that registers all methods at the kernel registry. */
 

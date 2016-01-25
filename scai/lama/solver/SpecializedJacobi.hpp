@@ -80,7 +80,7 @@ public:
         //TODO: HArray?
         common::shared_ptr<Vector> mOldSolution;
         SolutionProxy mProxyOldSolution;
-        common::shared_ptr<hmemo::ContextArray> mDiagonal;
+        common::shared_ptr<hmemo::_HArray> mDiagonal;
     };
 
     /**
@@ -105,7 +105,14 @@ public:
     static Solver* create( const std::string name );
 
 protected:
+
     SpecializedJacobiRuntime mSpecializedJacobiRuntime;
+
+    /**
+     *  @brief own implementation of Printable::writeAt
+     */
+    virtual void writeAt( std::ostream& stream ) const;
+
 private:
     template<typename ValueType>
     void iterateTyped( const SparseMatrix<ValueType>& );

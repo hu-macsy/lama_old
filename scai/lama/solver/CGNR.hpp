@@ -28,7 +28,7 @@
  * @brief CGNR.hpp
  * @author David Schissler
  * @date 27.05.2015
- * @since 
+ * @since
  */
 
 #pragma once
@@ -51,17 +51,14 @@ namespace lama
 /**
  * @brief The class CGNR represents a IterativeSolver which uses the krylov subspace Conjugate
  * Gradients for Normal Residuals (CGNR) method to solve a system of linear equations iteratively.
- * Remarks:
- * 1. assignTranspose is not supported yet for DenseMatrix.
- * 2. The scalars in the algorithm are set to zero if they are smaller then machine
- * precision (3*eps) to avoid devision by zero. In this case the solution doesn't change anymore.
- * 3. In this case it makes less sense to take the residual regarding to some norm itself since 
- * it has to be additionally computed in each iterate() (contrary to e.g. BiCGstab solver;
- * no higher costs). 
+ *
+ * Remark: 
+ * The scalars in the algorithm are set to zero if they are smaller than machine precision
+ * (3*eps) to avoid devision by zero. In this case the solution doesn't change anymore.
  */
 class COMMON_DLL_IMPORTEXPORT CGNR:
-		public IterativeSolver,
-		public Solver::Register<CGNR>
+    public IterativeSolver,
+    public Solver::Register<CGNR>
 {
 public:
     /**
@@ -100,19 +97,19 @@ public:
         CGNRRuntime();
         virtual ~CGNRRuntime();
 
-    common::shared_ptr<Matrix> mTransposedMat;
-	common::shared_ptr<Vector> mVecD;
-    common::shared_ptr<Vector> mVecW;
-    common::shared_ptr<Vector> mVecZ;
+        common::shared_ptr<Matrix> mTransposedMat;
+        common::shared_ptr<Vector> mVecD;
+        common::shared_ptr<Vector> mVecW;
+        common::shared_ptr<Vector> mVecZ;
 
-    Scalar mEps;
-    Scalar mNormVecZ;
+        Scalar mEps;
+        Scalar mNormVecZ;
     };
     /**
     * @brief Returns the complete configuration of the derived class
     */
     virtual CGNRRuntime& getRuntime();
-    /** 
+    /**
     * @brief Initializes vectors and values of the runtime
     */
     virtual void solveInit( Vector& solution, const Vector& rhs );
@@ -121,15 +118,20 @@ public:
     * @brief Returns the complete const configuration of the derived class
     */
     virtual const CGNRRuntime& getConstRuntime() const;
-    
+
     static std::string createValue();
     static Solver* create( const std::string name );
 
 protected:
 
+    /**
+     *  @brief own implementation of Printable::writeAt
+     */
+    virtual void writeAt( std::ostream& stream ) const;
+
     CGNRRuntime mCGNRRuntime;
     /**
-     * @brief Performs one CGNR iteration based on Matrix/Vector operations. 
+     * @brief Performs one CGNR iteration based on Matrix/Vector operations.
      */
     virtual void iterate();
 

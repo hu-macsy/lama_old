@@ -200,7 +200,7 @@ public:
         const hmemo::HArray<IndexType>& ilg,
         const hmemo::HArray<IndexType>& perm,
         const hmemo::HArray<IndexType>& ja,
-        const hmemo::ContextArray& values );
+        const hmemo::_HArray& values );
 
     /** Implementation of MatrixStorage::matrixTimesVector for JDS */
 
@@ -331,6 +331,10 @@ public:
     /** Implementation of pure method.  */
 
     void scaleImpl( const ValueType value );
+
+    /** Implementation of pure method.  */
+
+    void conj();
 
     /** Implementation for MatrixStorage::l1Norm */
 

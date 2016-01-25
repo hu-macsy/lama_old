@@ -299,7 +299,7 @@ void DenseMatrix<ValueType>::writeToFile(
 
     const std::string& fileName,
     const File::FileType fileType /* = UNFORMATTED */,
-    const File::DataType dataType /* = INTERNAL */,
+    const common::scalar::ScalarType dataType /* = INTERNAL */,
     const File::IndexDataType indexDataTypeIA /* = LONG */,
     const File::IndexDataType indexDataTypeJA /* = LONG */ ) const
 {
@@ -444,7 +444,7 @@ template<typename ValueType>
 void DenseMatrix<ValueType>::setDenseData(
     DistributionPtr rowDist,
     DistributionPtr colDist,
-    const ContextArray& values,
+    const _HArray& values,
     const Scalar eps )
 {
     DistributionPtr tmpReplicatedColDistribution = colDist;
@@ -488,7 +488,7 @@ void DenseMatrix<ValueType>::setCSRData(
     const IndexType numValues,
     const HArray<IndexType>& ia,
     const HArray<IndexType>& ja,
-    const ContextArray& values )
+    const _HArray& values )
 {
     DistributionPtr tmpReplicatedColDistribution = colDist;
 
@@ -689,7 +689,7 @@ template<typename ValueType>
 void DenseMatrix<ValueType>::buildCSRData(
     HArray<IndexType>& rowIA,
     HArray<IndexType>& rowJA,
-    ContextArray& rowValues ) const
+    _HArray& rowValues ) const
 {
     if ( getValueType() != rowValues.getValueType() )
     {
@@ -705,7 +705,7 @@ template<typename ValueType>
 void DenseMatrix<ValueType>::setCSRData(
     const HArray<IndexType>& rowIA,
     const HArray<IndexType>& rowJA,
-    const ContextArray& rowValues,
+    const _HArray& rowValues,
     DistributionPtr,
     DistributionPtr )
 {
@@ -718,7 +718,7 @@ template<typename ValueType>
 void DenseMatrix<ValueType>::setCSRDataLocal(
     const HArray<IndexType>& rowIA,
     const HArray<IndexType>& rowJA,
-    const ContextArray& rowValues ) const
+    const _HArray& rowValues ) const
 {
     // build DenseStorage from the CSR data
 
@@ -1601,7 +1601,7 @@ void DenseMatrix<ValueType>::setDiagonal( const Vector& diagonal )
         COMMON_THROWEXCEPTION( "Diagonal calculation only for equal distributions." )
     }
 
-    getLocalStorage().setDiagonal( diagonal.getLocalValues() );
+    getLocalStorage().setDiagonalV( diagonal.getLocalValues() );
 }
 
 template<typename ValueType>
@@ -1629,12 +1629,13 @@ void DenseMatrix<ValueType>::scale( const Vector& vector )
 template<typename ValueType>
 void DenseMatrix<ValueType>::scale( const Scalar scaleValue )
 {
-//    if ( getDistribution() != getColDistribution() )
-//    {
-//        COMMON_THROWEXCEPTION( "Diagonal calculation only for equal distributions." )
-//    }
-
     getLocalStorage().scale( scaleValue.getValue<ValueType>() );
+}
+
+template<typename ValueType>
+void DenseMatrix<ValueType>::conj()
+{
+    getLocalStorage().conj();
 }
 
 template<typename ValueType>
@@ -1742,7 +1743,7 @@ void DenseMatrix<ValueType>::matrixTimesVectorImpl(
     // It makes no sense to prefetch denseX because, if a transfer is started
     // the halo update needs to wait for this transfer to finish
 
-    if ( betaValue != zero )
+    if ( betaValue != common::constants::ZERO )
     {
         denseY.prefetch( localContext );
     }
@@ -1925,10 +1926,10 @@ void DenseMatrix<ValueType>::vectorTimesMatrixImpl(
 
     mData[0]->prefetch();
 
-//It makes no sense to prefetch denseX because, if a transfer is started
-//the halo update needs to wait for this transfer to finish
+    //It makes no sense to prefetch denseX because, if a transfer is started
+    //the halo update needs to wait for this transfer to finish
 
-    if ( betaValue != zero )
+    if ( betaValue != common::constants::ZERO )
     {
         denseY.prefetch( localContext );
     }

@@ -224,7 +224,7 @@ public:
      *
      */
 
-    virtual void getRow( hmemo::ContextArray& row, const IndexType i ) const = 0;
+    virtual void getRow( hmemo::_HArray& row, const IndexType i ) const = 0;
 
     /** This method returns the diagonal of the matrix.
      *
@@ -234,13 +234,13 @@ public:
      * for which implicit conversion is available.
      */
 
-    virtual void getDiagonal( hmemo::ContextArray& diagonal ) const = 0;
+    virtual void getDiagonal( hmemo::_HArray& diagonal ) const = 0;
 
     /** This method sets the diagonal of a matrix storage.
      *
      * Implementation of this routine must be provided by all derived classes.
      */
-    virtual void setDiagonal( const hmemo::ContextArray& diagonal ) = 0;
+    virtual void setDiagonalV( const hmemo::_HArray& diagonal ) = 0;
 
     /******************************************************************
      *  Scaling of elements in a matrix                                *
@@ -252,7 +252,7 @@ public:
      *
      * Each row of the matrix is scaled with the corresponding value.
      */
-    virtual void scaleRows( const hmemo::ContextArray& values ) = 0;
+    virtual void scaleRows( const hmemo::_HArray& values ) = 0;
 
     /******************************************************************
      *  General operations on a matrix                                 *
@@ -335,7 +335,7 @@ public:
     virtual void buildCSRData(
         hmemo::HArray<IndexType>& csrIA,
         hmemo::HArray<IndexType>& csrJA,
-        hmemo::ContextArray& csrValues ) const = 0;
+        hmemo::_HArray& csrValues ) const = 0;
 
     /** Each storage class must provide a routine to set CSR storage data.
      *
@@ -353,7 +353,7 @@ public:
         const IndexType numValues,
         const hmemo::HArray<IndexType>& csrIA,
         const hmemo::HArray<IndexType>& csrJA,
-        const hmemo::ContextArray& csrValues ) = 0;
+        const hmemo::_HArray& csrValues ) = 0;
 
     /** Assign of matrix storage with any format or value type.
      *
@@ -560,7 +560,7 @@ public:
     void setDenseData(
         const IndexType numRows,
         const IndexType numColumns,
-        const hmemo::ContextArray& values,
+        const hmemo::_HArray& values,
         const ValueType eps = 0.0 );
 
     /** This method scales all matrix values with a scalar
@@ -568,6 +568,7 @@ public:
      * @param[in] value is the source value
      */
     virtual void scale( const ValueType value ) = 0;
+    virtual void conj() = 0;
     virtual void setDiagonal( const ValueType value ) = 0;
 
     /**
@@ -756,7 +757,7 @@ public:
     virtual void writeToFile(
         const std::string& fileName,
         const File::FileType fileType = File::BINARY,
-        const File::DataType dataType = File::INTERNAL,
+        const common::scalar::ScalarType dataType = common::scalar::INTERNAL,
         const File::IndexDataType indexDataTypeIA = File::INT,
         const File::IndexDataType indexDataTypeJA = File::INT ) const;
 
@@ -765,7 +766,7 @@ public:
         const PartitionId rank,
         const std::string& fileName,
         const File::FileType fileType = File::BINARY,
-        const File::DataType dataType = File::INTERNAL,
+        const common::scalar::ScalarType dataType = common::scalar::INTERNAL,
         const File::IndexDataType indexDataTypeIA = File::INT,
         const File::IndexDataType indexDataTypeJA = File::INT ) const;
 
@@ -988,7 +989,7 @@ public:
 
     using _MatrixStorage::getContextPtr;
     using _MatrixStorage::scaleRows;
-    using _MatrixStorage::setDiagonal;
+    using _MatrixStorage::setDiagonalV;
 
     // Use this method to change epsiolon temporarily
 

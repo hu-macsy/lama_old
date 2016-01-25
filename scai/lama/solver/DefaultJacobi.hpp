@@ -130,6 +130,11 @@ protected:
      */
     virtual void iterate();
 
+    /**
+     *  @brief own implementation of Printable::writeAt
+     */
+    virtual void writeAt( std::ostream& stream ) const;
+
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
 private    :

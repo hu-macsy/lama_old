@@ -43,6 +43,8 @@ namespace scai
 namespace blaskernel
 {
 
+#ifdef SCAI_COMPLEX_SUPPORTED
+
 /* ---------------------------------------------------------------------------------------*/
 /*    cublasCast                                                                          */
 /* ---------------------------------------------------------------------------------------*/
@@ -101,6 +103,8 @@ static inline cuDoubleComplex cublasCast( ComplexDouble x )
 {
     return *cublasCast( &x );
 }
+
+#endif
 
 } /* end namespace blaskernel */
 

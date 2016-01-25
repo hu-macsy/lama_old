@@ -144,7 +144,7 @@ void TFQMR::solveInit( Vector& solution, const Vector& rhs ){
     runtime.mVecW.reset( mVecW );
 
     *runtime.mVecZ = A * (*runtime.mResidual);
-    *runtime.mVecD *= (0.0);                   
+    *runtime.mVecD = Scalar(0.0);                   
 
     L2Norm norm;
     runtime.mTau = norm.apply(*runtime.mInitialR);
@@ -167,7 +167,7 @@ void TFQMR::iterationEven(){
     const Scalar& eps = runtime.mEps;
 
 
-	const Scalar dotProduct	= vecZ.dotProduct( initialR );
+	const Scalar dotProduct	= initialR.dotProduct(vecZ);
 	Scalar& alpha = runtime.mAlpha;	
 
     if(abs(dotProduct)< eps)  // scalar is small
@@ -191,7 +191,7 @@ void TFQMR::iterationOdd(){
 	Vector& vecZ = *runtime.mVecZ;
     const Scalar& eps = runtime.mEps;
 
-	rhoNew 	= vecW.dotProduct(initialR);
+	rhoNew 	= initialR.dotProduct(vecW);
 
     if(abs(rhoOld)<eps)                 // scalar is small
         beta=0.0;
@@ -262,6 +262,10 @@ TFQMR::TFQMRRuntime& TFQMR::getRuntime(){
 
 const TFQMR::TFQMRRuntime& TFQMR::getConstRuntime() const{
     return mTFQMRRuntime;
+}
+void TFQMR::writeAt( std::ostream& stream ) const
+{
+    stream << "TFQMR ( id = " << mId << ", #iter = " << getConstRuntime().mIterations << " )";
 }
 
 std::string TFQMR::createValue()

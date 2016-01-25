@@ -49,7 +49,11 @@ namespace lama
  * a certain block size and these chunks are assigned in a round-robin manner
  * to the available partitions.
  */
-class COMMON_DLL_IMPORTEXPORT CyclicDistribution: public Distribution
+class COMMON_DLL_IMPORTEXPORT CyclicDistribution: 
+
+    public Distribution,
+    private Distribution::Register<CyclicDistribution>
+
 {
 public:
 
@@ -136,6 +140,14 @@ public:
      * @param[in] problem TODO[doxy] Complete Description.
      */
     void printDistributionVector( std::string problem ) const;
+
+    /** Static method required for create to use in Distribution::Register */
+
+    static Distribution* create( const DistributionArguments args );
+
+    /** Static method required for Distribution::Register */
+
+    static std::string createValue();
 
 private:
 

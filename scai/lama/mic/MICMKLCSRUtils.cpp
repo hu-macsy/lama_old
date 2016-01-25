@@ -90,7 +90,7 @@ void MICMKLCSRUtils::normalGEMV(
 
     if( y != result && beta != 0 )
     {
-        MICUtils::set( result, y, numRows );
+        MICUtils::set( result, y, numRows, common::reduction::COPY );
     }
 
     // performs y = alpha * A * x + beta * y
@@ -142,9 +142,9 @@ void MICMKLCSRUtils::normalGEMV(
     SCAI_LOG_INFO( logger,
                    "normalGEMV<double>, result[" << numRows << "] = " << alpha << " * A * x + " << beta << " * y " )
 
-    if( y != result && beta != scai::common::constants::ZERO )
+    if( y != result && beta != common::constants::ZERO )
     {
-        MICUtils::set( result, y, numRows );
+        MICUtils::set( result, y, numRows, common::reduction::COPY );
     }
 
     // performs y = alpha * A * x + beta * y
@@ -193,7 +193,7 @@ void MICMKLCSRUtils::registerKernels( bool deleteFlag )
 
     // using MKL for CSR might be disabled explicitly by environment variable
 
-    common::Settings::getEnvironment( useMKL, "USE_MKL" );
+    common::Settings::getEnvironment( useMKL, "SCAI_USE_MKL" );
 
     if( !useMKL )
     {
@@ -239,8 +239,6 @@ MICMKLCSRUtils::RegisterGuard::~RegisterGuard()
 }
 
 MICMKLCSRUtils::RegisterGuard MICMKLCSRUtils::guard;    // guard variable for registration
-
-
 
 } /* end namespace lama */
 

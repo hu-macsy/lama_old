@@ -119,7 +119,9 @@ public:
 
 protected:
 
+#ifndef SCAI_LOG_LEVEL_OFF
     using WriteAccess<ValueType>::logger;   // no additinal logger for this derived class
+#endif
 
 private:
 

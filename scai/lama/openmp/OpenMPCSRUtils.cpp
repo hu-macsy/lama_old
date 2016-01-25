@@ -412,6 +412,96 @@ void OpenMPCSRUtils::setNonEmptyRowsByOffsets(
 
 /* --------------------------------------------------------------------------- */
 
+template<typename ValueType>
+void OpenMPCSRUtils::countNonZeros(
+    IndexType sizes[],
+    const IndexType ia[],
+    const IndexType ja[],
+    const ValueType values[],
+    const IndexType numRows,
+    const ValueType eps, 
+    const bool diagonalFlag )
+{
+    SCAI_REGION( "OpenMP.CSRUtils.countNonZeros" )
+
+    SCAI_LOG_INFO( logger, "countNonZeros of CSR<" << TypeTraits<ValueType>::id() << ">( " << numRows
+                           << "), eps = " << eps << ", diagonal = " << diagonalFlag )
+
+    #pragma omp parallel for
+
+    for ( IndexType i = 0; i < numRows; ++i )
+    {
+        IndexType cnt = 0;
+
+        for ( IndexType jj = ia[i]; jj < ia[i + 1]; ++jj )
+        {
+            bool isDiagonal = diagonalFlag && ( ja[jj] == i );
+            bool nonZero    = TypeTraits<ValueType>::abs( values[jj] ) > eps;
+
+            SCAI_LOG_TRACE( logger, "i = " << i << ", j = " << ja[jj] << ", val = " << values[jj] 
+                                    << ", isDiagonal = " << isDiagonal << ", nonZero = " << nonZero )
+                    
+            if ( nonZero || isDiagonal )
+            {
+                ++cnt;
+            }
+        }
+
+        SCAI_LOG_TRACE( logger, "sizes[" << i << "] = " << cnt )
+
+        sizes[i] = cnt;
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void OpenMPCSRUtils::compress(
+    IndexType newJA[],
+    ValueType newValues[],
+    const IndexType newIA[],
+    const IndexType ia[],
+    const IndexType ja[],
+    const ValueType values[],
+    const IndexType numRows,
+    const ValueType eps,
+    const bool diagonalFlag )
+{
+    SCAI_REGION( "OpenMP.CSRUtils.compress" )
+
+    SCAI_LOG_INFO( logger, "compress of CSR<" << TypeTraits<ValueType>::id() << ">( " << numRows
+                            << "), eps = " << eps << ", diagonal = " << diagonalFlag )
+
+    #pragma omp parallel for
+
+    for ( IndexType i = 0; i < numRows; ++i )
+    {
+        IndexType offs = newIA[i];
+
+        SCAI_LOG_TRACE( logger, "row i: " << ia[i] << ":" << ia[i+1] << " -> " << newIA[i] << ":" << newIA[i+1] )
+
+        for ( IndexType jj = ia[i]; jj < ia[i + 1]; ++jj )
+        {
+            bool isDiagonal = diagonalFlag && ( ja[jj] == i );
+            bool nonZero    = TypeTraits<ValueType>::abs( values[jj] ) > eps;
+
+            if ( nonZero || isDiagonal )
+            {
+                newJA[ offs ]     = ja[jj];
+                newValues[ offs ] = values[jj];
+
+                ++offs;
+            }
+        }
+
+        // make sure that filling the compressed data fits to the computed offsets
+
+        SCAI_ASSERT_EQUAL_DEBUG( offs, newIA[i+1] )
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
 template<typename ValueType1,typename ValueType2>
 void OpenMPCSRUtils::scaleRows(
     ValueType1 csrValues[],
@@ -2045,7 +2135,7 @@ void OpenMPCSRUtils::registerKernels( bool deleteFlag )
 #define LAMA_CSR_UTILS2_REGISTER(z, J, TYPE )                                                                             \
     KernelRegistry::set<CSRKernelTrait::scaleRows<TYPE, ARITHMETIC_HOST_TYPE_##J> >( scaleRows, Host, flag );             \
 
-#define LAMA_CSR_UTILS_REGISTER(z, I, _)                                                   \
+#define LAMA_CSR_UTILS_REGISTER(z, I, _)                                                                                  \
     KernelRegistry::set<CSRKernelTrait::convertCSR2CSC<ARITHMETIC_HOST_TYPE_##I> >( convertCSR2CSC, Host, flag );         \
     KernelRegistry::set<CSRKernelTrait::sortRowElements<ARITHMETIC_HOST_TYPE_##I> >( sortRowElements, Host, flag );       \
     KernelRegistry::set<CSRKernelTrait::normalGEMV<ARITHMETIC_HOST_TYPE_##I> >( normalGEMV, Host, flag );                 \
@@ -2059,6 +2149,8 @@ void OpenMPCSRUtils::registerKernels( bool deleteFlag )
     KernelRegistry::set<CSRKernelTrait::jacobiHalo<ARITHMETIC_HOST_TYPE_##I> >( jacobiHalo, Host, flag );                 \
     KernelRegistry::set<CSRKernelTrait::jacobiHaloWithDiag<ARITHMETIC_HOST_TYPE_##I> >( jacobiHaloWithDiag, Host, flag ); \
     KernelRegistry::set<CSRKernelTrait::absMaxDiffVal<ARITHMETIC_HOST_TYPE_##I> >( absMaxDiffVal, Host, flag );           \
+    KernelRegistry::set<CSRKernelTrait::countNonZeros<ARITHMETIC_HOST_TYPE_##I> >( countNonZeros, Host, flag );           \
+    KernelRegistry::set<CSRKernelTrait::compress<ARITHMETIC_HOST_TYPE_##I> >( compress, Host, flag );                     \
                                                                                                                           \
     BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT,                                                                            \
                      LAMA_CSR_UTILS2_REGISTER,                                                                            \

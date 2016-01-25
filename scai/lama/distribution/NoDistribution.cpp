@@ -107,22 +107,18 @@ void NoDistribution::printDistributionVector( std::string name ) const
  *   static create methods ( required for registration in distribution factory )    *
  * ---------------------------------------------------------------------------------*/
 
-NoDistribution* NoDistribution::create( const CommunicatorPtr, const IndexType globalSize, const float )
+std::string NoDistribution::createValue()
 {
-    // weight remains unused
-    return new NoDistribution( globalSize );
+    return "NO";
 }
 
-NoDistribution* NoDistribution::create( const CommunicatorPtr, const Matrix& matrix, const float )
+Distribution* NoDistribution::create( const DistributionArguments arg )
 {
-    // we only take the size of the matrix
+    // Note: weight argument is not used here
+    //       same is true for matrix, commonunicationPtr
 
-    return new NoDistribution( matrix.getNumRows() );
+    return new NoDistribution( arg.globalSize );
 }
-
-/* ---------------------------------------------------------------------------------*/
-
-bool NoDistribution::initialized = Distribution::registerCreator<NoDistribution>( "NO" );
 
 } /* end namespace lama */
 

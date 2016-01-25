@@ -110,7 +110,7 @@ static void bench( IndexType size, double fillRate )
         cout << "c = " << c << endl;
 
         cout << "time <" << scai::common::getScalarType<ValueType>() << "> on " << *gpu
-                 << ", size = " << size << ", rate = " << fillRate << " = " << time << endl;
+                 << ", size = " << size << ", rate = " << fillRate << endl;
     }
 
     const int precision = 1;

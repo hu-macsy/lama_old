@@ -40,6 +40,7 @@
 #include <scai/logging.hpp>
 
 #include <scai/common/SCAITypes.hpp>
+#include <scai/common/ReductionOp.hpp>
 #include <scai/common/macros/assert.hpp>
 
 namespace scai
@@ -58,15 +59,15 @@ public:
 
     static bool validIndexes( const IndexType array[], const IndexType n, const IndexType size );
 
-    /*  CUDA implementation of UtilKernelTrait::sum  */
+    /*  CUDA implementation of UtilKernelTrait::reduce  */
 
     template<typename ValueType>
-    static ValueType sum( const ValueType array[], const IndexType n );
+    static ValueType reduce( const ValueType array[], const IndexType n, const common::reduction::ReductionOp op );
 
     /*  CUDA implementation of UtilKernelTrait::setVal  */
 
     template<typename ValueType>
-    static void setVal( ValueType array[], const IndexType n, const ValueType val );
+    static void setVal( ValueType array[], const IndexType n, const ValueType val, const common::reduction::ReductionOp op );
 
     /*  CUDA implementation of UtilKernelTrait::setOrder  */
 
@@ -92,11 +93,6 @@ public:
         const otherValueType inValues[],
         const IndexType n );
 
-    /** CUDA function implements UtilKernelTrait::maxval */
-
-    template<typename ValueType>
-    static ValueType maxval( const ValueType array[], const IndexType n );
-
     /** CUDA function implements UtilKernelTrait::absMaxVal */
 
     template<typename ValueType>
@@ -115,7 +111,7 @@ public:
     /** CUDA implementation for UtilKernelTrait::set */
 
     template<typename ValueType,typename otherValueType>
-    static void set( ValueType out[], const otherValueType in[], const IndexType n );
+    static void set( ValueType out[], const otherValueType in[], const IndexType n, const common::reduction::ReductionOp op );
 
     /** CUDA implementation for UtilKernelTrait::setGather, out[i]] = in[ indexes[i] ] */
 
@@ -135,6 +131,18 @@ public:
 private:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
+
+    template<typename ValueType>
+    static ValueType reduceSum( const ValueType array[], const IndexType n );
+
+    template<typename ValueType>
+    static ValueType reduceMaxVal( const ValueType array[], const IndexType n );
+
+    template<typename ValueType>
+    static ValueType reduceMinVal( const ValueType array[], const IndexType n );
+
+    template<typename ValueType>
+    static ValueType reduceAbsMaxVal( const ValueType array[], const IndexType n );
 
     /** Routine that registers all methods at the kernel registry. */
 

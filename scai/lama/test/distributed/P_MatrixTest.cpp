@@ -434,7 +434,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( InvertTest, MatrixType, SparseMatrixTypes )
     MatrixType unity;
     unity.setIdentity( bdist );
     SCAI_LOG_INFO( logger, "Distributed identity matrix: " << mm );
-    testSameMatrix( unity, mm );
+    testSameMatrixClose( unity, mm );
 }
 
 /* --------------------------------------------------------------------- */

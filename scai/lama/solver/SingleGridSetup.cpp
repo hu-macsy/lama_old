@@ -184,6 +184,11 @@ void SingleGridSetup::setSmoother( SolverPtr solver )
     mSolver = solver;
 }
 
+void SingleGridSetup::writeAt( std::ostream& stream ) const
+{
+    stream << "SingleGridSetup";
+}
+
 } /* end namespace lama */
 
 } /* end namespace scai */

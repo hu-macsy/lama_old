@@ -205,10 +205,10 @@ IndexType _MatrixStorage::getNumValues() const
     HArray<IndexType> sizes;
     buildCSRSizes( sizes );
 
-    static LAMAKernel<UtilKernelTrait::sum<IndexType> > sum;
-    ContextPtr loc = sum.getValidContext( sizes.getValidContext() );
+    static LAMAKernel<UtilKernelTrait::reduce<IndexType> > reduce;
+    ContextPtr loc = reduce.getValidContext( sizes.getValidContext() );
     ReadAccess<IndexType> csrSizes( sizes, loc );
-    IndexType numValues = sum[ loc ]( csrSizes.get(), mNumRows );
+    IndexType numValues = reduce[ loc ]( csrSizes.get(), mNumRows, common::reduction::ADD );
     return numValues;
 }
 
@@ -520,7 +520,7 @@ void MatrixStorage<ValueType>::joinRows(
     {
         WriteOnlyAccess<IndexType> offsets( IA, numLocalRows + 1 );
         ReadAccess<IndexType> sizes( outSizes );
-        OpenMPUtils::set( offsets.get(), sizes.get(), numLocalRows );
+        OpenMPUtils::set( offsets.get(), sizes.get(), numLocalRows, common::reduction::COPY );
         OpenMPCSRUtils::sizes2offsets( offsets.get(), numLocalRows );
     }
     WriteAccess<IndexType> tmpIA( IA );
@@ -792,12 +792,12 @@ void MatrixStorage<ValueType>::buildHalo( Halo& halo, const Distribution& colDis
 
 /* --------------------------------------------------------------------------- */
 
-void _MatrixStorage::scaleRows( const ContextArray& )
+void _MatrixStorage::scaleRows( const _HArray& )
 {
     COMMON_THROWEXCEPTION( "scale of rows not supported yet, matrix = " << *this )
 }
 
-void _MatrixStorage::setDiagonal( const ContextArray& )
+void _MatrixStorage::setDiagonalV( const _HArray& )
 {
     COMMON_THROWEXCEPTION( "set Diagonal not suppported yet, matrix = " << *this )
 }
@@ -1208,12 +1208,12 @@ template<typename ValueType>
 void MatrixStorage<ValueType>::setDenseData(
     const IndexType numRows,
     const IndexType numColumns,
-    const ContextArray& values,
+    const _HArray& values,
     const ValueType epsilon )
 {
     mEpsilon = epsilon;
     // const_cast required, is safe as we will create a const DenseStorageView
-    ContextArray& mValues = const_cast<ContextArray&>( values );
+    _HArray& mValues = const_cast<_HArray&>( values );
 
     switch ( values.getValueType() )
     {
@@ -1247,7 +1247,7 @@ template<typename ValueType>
 void MatrixStorage<ValueType>::writeToFile(
     const std::string& fileName,
     const File::FileType fileType,
-    const File::DataType dataType,
+    const common::scalar::ScalarType dataType,
     const File::IndexDataType indexDataTypeIA,
     const File::IndexDataType indexDataTypeJA ) const
 {
@@ -1260,7 +1260,7 @@ void MatrixStorage<ValueType>::writeToFile(
     const PartitionId rank,
     const std::string& fileName,
     const File::FileType fileType,
-    const File::DataType dataType,
+    const common::scalar::ScalarType dataType,
     const File::IndexDataType indexDataTypeIA,
     const File::IndexDataType indexDataTypeJA ) const
 {

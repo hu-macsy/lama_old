@@ -77,6 +77,11 @@ public:
 
 protected:
     TrivialPreconditionerRuntime mTrivialPreconditionerRuntime;
+
+    /**
+     *  @brief own implementation of Printable::writeAt
+     */
+    virtual void writeAt( std::ostream& stream ) const;
 };
 
 } /* end namespace lama */

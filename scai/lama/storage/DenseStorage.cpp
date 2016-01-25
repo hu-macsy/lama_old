@@ -39,6 +39,7 @@
 #include <scai/lama/DenseKernelTrait.hpp>
 #include <scai/lama/CSRKernelTrait.hpp>
 #include <scai/lama/LAMAKernel.hpp>
+#include <scai/lama/HArrayUtils.hpp>
 
 // internal scai libraries
 #include <scai/blaskernel/BLASKernelTrait.hpp>
@@ -221,6 +222,10 @@ void DenseStorageView<ValueType>::setDiagonalImpl( const HArray<OtherType>& diag
 template<typename ValueType>
 void DenseStorageView<ValueType>::scaleImpl( const ValueType value )
 {
+   
+    // not used here: HArrayUtils::scale( mData, value, this->getContextPtr() )
+    // reasoning:     workload distribution would not fit to distribution of rows
+
     static LAMAKernel<DenseKernelTrait::scaleValue<ValueType> > scaleValue;
 
     ContextPtr loc = scaleValue.getValidContext( this->getContextPtr() );
@@ -230,6 +235,14 @@ void DenseStorageView<ValueType>::scaleImpl( const ValueType value )
     WriteAccess<ValueType> wData( mData, loc );
 
     scaleValue[loc]( wData.get(), mNumRows, mNumColumns, value );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void DenseStorageView<ValueType>::conj()
+{
+    HArrayUtils::conj( mData, this->getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -291,12 +304,10 @@ void DenseStorageView<ValueType>::transposeImpl(){
         }
     }
 
-    //swap dimensions of transposed matrix
-    IndexType rows = mNumRows;
-    mNumRows = mNumColumns;
-    mNumColumns = rows;
-};
+    // swap dimensions of transposed matrix
 
+    std::swap( mNumRows, mNumColumns );
+};
 
 /* --------------------------------------------------------------------------- */
 
@@ -355,8 +366,8 @@ void DenseStorageView<ValueType>::setIdentity()
 
     SCAI_CONTEXT_ACCESS( loc )
 
-    setValue[loc]( data.get(), mNumRows, mNumColumns, static_cast<ValueType>( 0 ) );
-    setDiagonalValue[loc]( data.get(), mNumRows, mNumColumns, static_cast<ValueType>( 1 ) );
+    setValue[loc]( data.get(), mNumRows, mNumColumns, ValueType( 0 ) );
+    setDiagonalValue[loc]( data.get(), mNumRows, mNumColumns, ValueType( 1 ) );
 
     SCAI_LOG_INFO( logger, *this << " has been set to identity" )
 }
@@ -573,7 +584,7 @@ void DenseStorageView<ValueType>::matrixTimesVector(
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        setVal[loc]( wResult.get(), mNumRows, static_cast<ValueType>( 0 ) );
+        setVal[loc]( wResult.get(), mNumRows, ValueType( 0 ), common::reduction::COPY );
     }
     else if ( &result != &y )
     {
@@ -688,7 +699,7 @@ void DenseStorageView<ValueType>::vectorTimesMatrix(
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        setVal[loc]( wResult.get(), mNumColumns, static_cast<ValueType>( 0 ) );
+        setVal[loc]( wResult.get(), mNumColumns, ValueType( 0 ), common::reduction::COPY );
     }
     else if ( &result != &y )
     {
@@ -921,7 +932,7 @@ void DenseStorageView<ValueType>::matrixTimesMatrixDense(
         SCAI_LOG_INFO( logger, "init this result with 0, size = " << m * n )
         WriteOnlyAccess<ValueType> resAccess( getData(), context, m * n );
         SCAI_CONTEXT_ACCESS( context )
-        setVal[context]( resAccess.get(), m * n, static_cast<ValueType>( 0 ) );
+        setVal[context]( resAccess.get(), m * n, ValueType( 0 ), common::reduction::COPY );
     }
     else if ( this != &c )
     {
@@ -1037,18 +1048,18 @@ ValueType DenseStorageView<ValueType>::maxNorm() const
 
     if ( n == 0 )
     {
-        return static_cast<ValueType>( 0 );
+        return ValueType( 0 );
     }
 
-    static LAMAKernel<UtilKernelTrait::absMaxVal<ValueType> > absMaxVal;
+    static LAMAKernel<UtilKernelTrait::reduce<ValueType> > reduce;
 
-    ContextPtr loc = absMaxVal.getValidContext( this->getContextPtr() );
+    ContextPtr loc = reduce.getValidContext( this->getContextPtr() );
 
     ReadAccess<ValueType> read1( mData, loc );
 
     SCAI_CONTEXT_ACCESS( loc )
 
-    ValueType maxval = absMaxVal[loc]( read1.get(), n );
+    ValueType maxval = reduce[loc]( read1.get(), n, common::reduction::ABS_MAX );
 
     return maxval;
 }

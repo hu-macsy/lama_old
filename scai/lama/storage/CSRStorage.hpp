@@ -38,7 +38,7 @@
 // base classes
 #include <scai/lama/storage/CRTPMatrixStorage.hpp>
 
-#include <scai/lama/LAMAArray.hpp>
+#include <scai/lama/LArray.hpp>
 
 namespace scai
 {
@@ -102,7 +102,7 @@ public:
         const IndexType numValues,
         const hmemo::HArray<IndexType>& ia,
         const hmemo::HArray<IndexType>& ja,
-        const hmemo::ContextArray& values );
+        const hmemo::_HArray& values );
 
     /** Copy constructor can take any matrix storage. */
 
@@ -214,27 +214,27 @@ public:
 
     /** Getter routine for member variable IA. */
 
-    LAMAArray<IndexType>& getIA();
+    LArray<IndexType>& getIA();
 
     /** Getter routine for member variable JA. */
 
-    LAMAArray<IndexType>& getJA();
+    LArray<IndexType>& getJA();
 
     /** Getter routine for member variable values. */
 
-    LAMAArray<ValueType>& getValues();
+    LArray<ValueType>& getValues();
 
     /** Getter routine for member variable IA (read-only). */
 
-    const LAMAArray<IndexType>& getIA() const;
+    const LArray<IndexType>& getIA() const;
 
     /** Getter routine for member variable JA (read-only). */
 
-    const LAMAArray<IndexType>& getJA() const;
+    const LArray<IndexType>& getJA() const;
 
     /** Getter routine for member variable values (read-only). */
 
-    const LAMAArray<ValueType>& getValues() const;
+    const LArray<ValueType>& getValues() const;
 
     /** Getter routine for the number of stored values. */
 
@@ -286,6 +286,10 @@ public:
     /** Implementation of pure method.  */
 
     void scaleImpl( const ValueType value );
+
+    /** Implementation of pure method.  */
+
+    void conj();
 
     /** Get a value of the matrix.
      *
@@ -541,9 +545,9 @@ protected:
 
     IndexType mNumValues; //!< number of stored elements
 
-    LAMAArray<IndexType> mIa; //!< offsets for ja and data, size is numRows+1
-    LAMAArray<IndexType> mJa; //!< column indexes, size is mIa[ numRows ]
-    LAMAArray<ValueType> mValues; //!< non-zero values, size is equal to mJa
+    LArray<IndexType> mIa; //!< offsets for ja and data, size is numRows+1
+    LArray<IndexType> mJa; //!< column indexes, size is mIa[ numRows ]
+    LArray<ValueType> mValues; //!< non-zero values, size is equal to mJa
 
 private:
 

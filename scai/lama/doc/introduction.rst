@@ -124,7 +124,7 @@ The supported features of the actual release are listed below:
 
    - generative solver
 
-     - :doc:`MetaSolver <solver/metasolver>`
+     - MetaSolver
     
 Work in progress that you can find in our feature branches and that will come with next releases are:
  

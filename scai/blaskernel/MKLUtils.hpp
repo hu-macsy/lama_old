@@ -4,6 +4,9 @@
 
 class MKLUtils
 {
+
+#ifdef SCAI_COMPLEX_SUPPORTED
+
 public:
 #ifdef __INTEL_OFFLOAD
 	__declspec( target(mic) )
@@ -36,4 +39,7 @@ public:
 	{
 		return reinterpret_cast<const MKL_Complex16*>( in );
 	}
+
+#endif
+
 };
