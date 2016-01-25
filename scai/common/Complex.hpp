@@ -886,6 +886,19 @@ COMPLEX_OPERATOR_NONMEMBER_CUDA( operator/, /=, float )
 COMPLEX_OPERATOR_NONMEMBER_CUDA( operator/, /=, double )
 COMPLEX_OPERATOR_NONMEMBER_NONCUDA( operator/, /=, long double )
 
+/*
+ * ToDo: use TypeTraits
+ */
+float my_sqrt( const float & x );
+double my_sqrt( const double & x );
+Complex<float> my_sqrt( const Complex<float> & x );
+Complex<double> my_sqrt( const Complex<double> & x );
+
+float my_fabs( const float & x );
+double my_fabs( const double & x );
+Complex<float> my_fabs( const Complex<float> & x );
+Complex<double> my_fabs( const Complex<double> & x );
+
 template<typename ValueType>
 MIC_CALLABLE_MEMBER
 CUDA_CALLABLE_MEMBER
@@ -894,17 +907,17 @@ inline Complex<ValueType> sqrt( const Complex<ValueType>& a )
     ValueType x = a.real();
     ValueType y = a.imag();
 
-    if( x == ValueType() )
+    if( x == 0 )
     {
-        ValueType t = sqrt( fabs( y ) / 2 );
+        ValueType t = my_sqrt( my_fabs( y ) / 2 );
         return Complex<ValueType>( t, y < ValueType() ? -t : t );
     }
     else
     {
-        ValueType t = sqrt( 2 * ( fabs( a ) + fabs( x ) ) );
+        ValueType t = my_sqrt( 2 * ( my_fabs( a ) + my_fabs( x ) ) );
         ValueType u = t / 2;
         return x > ValueType() ? Complex<ValueType>( u, y / t ) :
-                        Complex<ValueType>( fabs( y ) / t, y < ValueType() ? -u : u );
+                        Complex<ValueType>( my_fabs( y ) / t, y < ValueType() ? -u : u );
     }
 }
 

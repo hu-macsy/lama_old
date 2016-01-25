@@ -104,6 +104,7 @@ scai_project (
         Printable
         ScalarType
         SCAITypes
+	Complex
         ContextType
         Settings
         Thread
@@ -113,7 +114,7 @@ scai_project (
     HEADERS
 
         bind     
-        Complex
+#        Complex
         config
         Constants
         Factory
