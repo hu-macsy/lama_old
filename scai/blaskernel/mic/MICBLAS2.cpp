@@ -46,6 +46,9 @@
 // external
 #include <mkl.h>
 
+// booost
+#include <boost/preprocessor.hpp>
+
 namespace scai
 {
 

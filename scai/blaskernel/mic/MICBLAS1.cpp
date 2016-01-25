@@ -51,6 +51,9 @@
 // external
 #include <omp.h>
 
+// boost
+#include <boost/preprocessor.hpp>
+
 // std
 #include <cmath>
 #include <cstdlib>
