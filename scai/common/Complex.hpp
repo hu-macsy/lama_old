@@ -136,12 +136,14 @@
 
 #define COMPLEX_CONSTRUCTOR_CUDA( type, method )                                                        \
     CUDA_CALLABLE_MEMBER                                                                                \
+    __declspec( target(mic) )                                                                           \
     inline Complex( type value )                                                                        \
     {                                                                                                   \
         method                                                                                          \
     }
 
 #define COMPLEX_CONSTRUCTOR_NONCUDA( type, method )                                                     \
+    __declspec( target(mic) )                                                                           \
     inline Complex( type value )                                                                        \
     {                                                                                                   \
         method                                                                                          \
@@ -149,12 +151,14 @@
 
 #define COMPLEX_CONSTRUCTOR_2_CUDA( type1, type2, method )                                              \
     CUDA_CALLABLE_MEMBER                                                                                \
+    __declspec( target(mic) )                                                                           \
     inline Complex( type1 value1, type2 value2 )                                                        \
     {                                                                                                   \
         method                                                                                          \
     }
 
 #define COMPLEX_CONSTRUCTOR_2_NONCUDA( type1, type2, method )                                           \
+    __declspec( target(mic) )                                                                           \
     inline Complex( type1 value1, type2 value2 )                                                        \
     {                                                                                                   \
         method                                                                                          \
@@ -165,20 +169,24 @@
  */
 
 #define COMPLEX_OPERATOR_CUDA( op, type, method )                                                       \
+    __declspec( target(mic) )                                                                           \
     CUDA_CALLABLE_MEMBER inline Complex<ValueType>& op( const type t )                                  \
     {                                                                                                   \
         method                                                                                          \
     }                                                                                                   \
+    __declspec( target(mic) )                                                                           \
     CUDA_CALLABLE_MEMBER inline volatile Complex<ValueType>& op( const type t ) volatile                \
     {                                                                                                   \
         method                                                                                          \
     }
 
 #define COMPLEX_OPERATOR_NONCUDA( op, type, method )                                                    \
+    __declspec( target(mic) )                                                                           \
     inline Complex<ValueType>& op( const type t )                                                       \
     {                                                                                                   \
         method                                                                                          \
     }                                                                                                   \
+    __declspec( target(mic) )                                                                           \
     inline volatile Complex<ValueType>& op( const type t ) volatile                                     \
     {                                                                                                   \
         method                                                                                          \
@@ -189,12 +197,14 @@
  */
 
 #define COMPLEX_OPERATOR_CAST_CUDA( type, method )                                                      \
+    __declspec( target(mic) )                                                                           \
     CUDA_CALLABLE_MEMBER operator type() const                                                          \
     {                                                                                                   \
         method                                                                                          \
     }
 
 #define COMPLEX_OPERATOR_CAST_NONCUDA( type, method )                                                   \
+    __declspec( target(mic) )                                                                           \
     operator type() const                                                                               \
     {                                                                                                   \
         method                                                                                          \
@@ -207,16 +217,19 @@
 
 #define COMPLEX_OPERATOR_COMPARISON_CUDA(op, sign, type)                                                \
     template<typename ValueType>                                                                        \
+    __declspec( target(mic) )                                                                           \
     CUDA_CALLABLE_MEMBER inline bool op( const Complex<ValueType>& a, const Complex<type>& b )          \
     {                                                                                                   \
         return a.metrikCuda() sign static_cast<ValueType>(b.metrikCuda());                              \
     }                                                                                                   \
     template<typename ValueType>                                                                        \
+    __declspec( target(mic) )                                                                           \
     CUDA_CALLABLE_MEMBER inline bool op( const Complex<ValueType>& a, const type& b )                   \
     {                                                                                                   \
         return a.metrikCuda() sign static_cast<ValueType>(b);                                           \
     }                                                                                                   \
     template<typename ValueType>                                                                        \
+    __declspec( target(mic) )                                                                           \
     CUDA_CALLABLE_MEMBER inline bool op( const type& a, const Complex<ValueType>& b )                   \
     {                                                                                                   \
         return a sign static_cast<type>(b.metrikCuda());                                                \
@@ -224,16 +237,19 @@
 
 #define COMPLEX_OPERATOR_COMPARISON_NONCUDA(op, sign, type)                                             \
     template<typename ValueType>                                                                        \
+    __declspec( target(mic) )                                                                           \
     inline bool op( const Complex<ValueType>& a, const Complex<type>& b )                               \
     {                                                                                                   \
         return a.metrikHost() sign static_cast<ValueType>(b.metrikHost());                              \
     }                                                                                                   \
     template<typename ValueType>                                                                        \
+    __declspec( target(mic) )                                                                           \
     inline bool op( const Complex<ValueType>& a, const type& b )                                        \
     {                                                                                                   \
         return a.metrikHost() sign static_cast<ValueType>(b);                                           \
     }                                                                                                   \
     template<typename ValueType>                                                                        \
+    __declspec( target(mic) )                                                                           \
     inline bool op( const type& a, const Complex<ValueType>& b )                                        \
     {                                                                                                   \
         return a sign static_cast<type>(b.metrikHost());                                                \
@@ -245,16 +261,19 @@
 
 #define COMPLEX_OPERATOR_EQUALITY_CUDA(op, sign, connection, type)                                      \
     template<typename ValueType>                                                                        \
+    __declspec( target(mic) )                                                                           \
     CUDA_CALLABLE_MEMBER inline bool op( const Complex<ValueType>& a, const Complex<type>& b )          \
     {                                                                                                   \
         return a.real() sign b.real() connection a.imag() sign b.imag();                                \
     }                                                                                                   \
     template<typename ValueType>                                                                        \
+    __declspec( target(mic) )                                                                           \
     CUDA_CALLABLE_MEMBER inline bool op( const Complex<ValueType>& a, const type& b )                   \
     {                                                                                                   \
         return a.real() sign b connection a.imag() sign 0;                                              \
     }                                                                                                   \
     template<typename ValueType>                                                                        \
+    __declspec( target(mic) )                                                                           \
     CUDA_CALLABLE_MEMBER inline bool op( const type& a, const Complex<ValueType>& b )                   \
     {                                                                                                   \
         return a sign b.real() connection 0 sign b.imag();                                              \
@@ -262,16 +281,19 @@
 
 #define COMPLEX_OPERATOR_EQUALITY_NONCUDA(op, sign, connection, type)                                   \
     template<typename ValueType>                                                                        \
+    __declspec( target(mic) )                                                                           \
     CUDA_CALLABLE_MEMBER inline bool op( const Complex<ValueType>& a, const Complex<type>& b )          \
     {                                                                                                   \
         return a.real() sign b.real() connection a.imag() sign b.imag();                                \
     }                                                                                                   \
     template<typename ValueType>                                                                        \
+    __declspec( target(mic) )                                                                           \
     CUDA_CALLABLE_MEMBER inline bool op( const Complex<ValueType>& a, const type& b )                   \
     {                                                                                                   \
         return a.real() sign b connection a.imag() sign 0;                                              \
     }                                                                                                   \
     template<typename ValueType>                                                                        \
+    __declspec( target(mic) )                                                                           \
     CUDA_CALLABLE_MEMBER inline bool op( const type& a, const Complex<ValueType>& b )                   \
     {                                                                                                   \
         return a sign b.real() connection 0 sign b.imag();                                              \
@@ -283,6 +305,7 @@
 
 #define COMPLEX_OPERATOR_NONMEMBER_CUDA(op, sign, type)                                                         \
     template<typename ValueType>                                                                                \
+    __declspec( target(mic) )                                                                           \
     CUDA_CALLABLE_MEMBER inline Complex<ValueType> op( const Complex<ValueType>& a, const Complex<type>& b )    \
     {                                                                                                           \
         Complex<ValueType> x = a;                                                                               \
@@ -290,12 +313,14 @@
         return x;                                                                                               \
     }                                                                                                           \
     template<typename ValueType>                                                                                \
+    __declspec( target(mic) )                                                                           \
     CUDA_CALLABLE_MEMBER inline Complex<ValueType> op( volatile Complex<ValueType>& a, const Complex<type>& b ) \
     {                                                                                                           \
         Complex<ValueType> x = a;                                                                               \
         x sign b;                                                                                               \
         return x;                                                                                               \
     }                                                                                                           \
+    __declspec( target(mic) )                                                                           \
     CUDA_CALLABLE_MEMBER inline Complex<type> op( volatile Complex<type>& a, const Complex<type>& b )           \
     {                                                                                                           \
         Complex<type> x = a;                                                                                    \
@@ -303,6 +328,7 @@
         return x;                                                                                               \
     }                                                                                                           \
     template<typename ValueType>                                                                                \
+    __declspec( target(mic) )                                                                           \
     CUDA_CALLABLE_MEMBER inline Complex<ValueType> op( const Complex<ValueType>& a, const type& b )             \
     {                                                                                                           \
         Complex<ValueType> x = a;                                                                               \
@@ -310,6 +336,7 @@
         return x;                                                                                               \
     }                                                                                                           \
     template<typename ValueType>                                                                                \
+    __declspec( target(mic) )                                                                           \
     CUDA_CALLABLE_MEMBER inline Complex<ValueType> op( const type& a, const Complex<ValueType>& b )             \
     {                                                                                                           \
         Complex<ValueType> x = a;                                                                               \
@@ -317,6 +344,7 @@
         return x;                                                                                               \
     }                                                                                                           \
     template<typename ValueType>                                                                                \
+    __declspec( target(mic) )                                                                           \
     CUDA_CALLABLE_MEMBER inline Complex<ValueType> op( Complex<ValueType>& a, Complex<type>& b )                \
     {                                                                                                           \
         Complex<ValueType> x = a;                                                                               \
@@ -326,6 +354,7 @@
 
 #define COMPLEX_OPERATOR_NONMEMBER_NONCUDA(op, sign, type)                                              \
     template<typename ValueType>                                                                        \
+    __declspec( target(mic) )                                                                           \
     inline Complex<ValueType> op( const Complex<ValueType>& a, const Complex<type>& b )                 \
     {                                                                                                   \
         Complex<ValueType> x = a;                                                                       \
@@ -333,12 +362,14 @@
         return x;                                                                                       \
     }                                                                                                   \
     template<typename ValueType>                                                                        \
+    __declspec( target(mic) )                                                                           \
     inline Complex<ValueType> op( volatile Complex<ValueType>& a, const Complex<type>& b )              \
     {                                                                                                   \
         Complex<ValueType> x = a;                                                                       \
         x sign b;                                                                                       \
         return x;                                                                                       \
     }                                                                                                   \
+    __declspec( target(mic) )                                                                           \
     inline Complex<type> op( volatile Complex<type>& a, const Complex<type>& b )                        \
     {                                                                                                   \
         Complex<type> x = a;                                                                            \
@@ -346,6 +377,7 @@
         return x;                                                                                       \
     }                                                                                                   \
     template<typename ValueType>                                                                        \
+    __declspec( target(mic) )                                                                           \
     inline Complex<ValueType> op( const Complex<ValueType>& a, const type& b )                          \
     {                                                                                                   \
         Complex<ValueType> x = a;                                                                       \
@@ -353,6 +385,7 @@
         return x;                                                                                       \
     }                                                                                                   \
     template<typename ValueType>                                                                        \
+    __declspec( target(mic) )                                                                           \
     inline Complex<ValueType> op( const type& a, const Complex<ValueType>& b )                          \
     {                                                                                                   \
         Complex<ValueType> x = a;                                                                       \
@@ -381,6 +414,7 @@ public:
     explicit Complex();
 
     template<typename OtherValueType>
+    __declspec( target(mic) )                                                                           \
     CUDA_CALLABLE_MEMBER explicit inline Complex( const OtherValueType value );
 
     /*
@@ -400,9 +434,9 @@ public:
      * @param[in] real the real part this complex should represent
      * @param[in] imag the imaginary part this complex should represent
      */
-	COMPLEX_CONSTRUCTOR_2_CUDA( const int, const int, COMPLEX_CONSTRUCTOR_REAL2 )
-	COMPLEX_CONSTRUCTOR_2_CUDA( const int, const long, COMPLEX_CONSTRUCTOR_REAL2 )
-	COMPLEX_CONSTRUCTOR_2_CUDA( const int, const float, COMPLEX_CONSTRUCTOR_REAL2 )
+    COMPLEX_CONSTRUCTOR_2_CUDA( const int, const int, COMPLEX_CONSTRUCTOR_REAL2 )
+    COMPLEX_CONSTRUCTOR_2_CUDA( const int, const long, COMPLEX_CONSTRUCTOR_REAL2 )
+    COMPLEX_CONSTRUCTOR_2_CUDA( const int, const float, COMPLEX_CONSTRUCTOR_REAL2 )
 	COMPLEX_CONSTRUCTOR_2_CUDA( const int, const double, COMPLEX_CONSTRUCTOR_REAL2 )
 	COMPLEX_CONSTRUCTOR_2_NONCUDA( const int, const long double, COMPLEX_CONSTRUCTOR_REAL2 )
 
@@ -464,7 +498,7 @@ public:
      * @brief Binary operator
      */
     COMPLEX_OPERATOR_CUDA(operator=, int, COMPLEX_SET_REAL)
-	COMPLEX_OPERATOR_CUDA(operator=, long, COMPLEX_SET_REAL)
+    COMPLEX_OPERATOR_CUDA(operator=, long, COMPLEX_SET_REAL)
     COMPLEX_OPERATOR_CUDA(operator=, float, COMPLEX_SET_REAL)
     COMPLEX_OPERATOR_CUDA(operator=, double, COMPLEX_SET_REAL)
     COMPLEX_OPERATOR_NONCUDA(operator=, long double, COMPLEX_SET_REAL)
@@ -532,6 +566,9 @@ public:
      *
      * @return      the metric of a complex number
      */
+    #ifdef __INTEL_OFFLOAD
+        __declspec( target(mic) )
+    #endif
     CUDA_CALLABLE_MEMBER ValueType metrikCuda( void ) const;
 
     /*
@@ -539,6 +576,9 @@ public:
      *
      * @return      the metric of a complex number
      */
+    #ifdef __INTEL_OFFLOAD
+        __declspec( target(mic) )
+    #endif
     ValueType metrikHost( void ) const;
 
     /*
@@ -546,24 +586,36 @@ public:
      *
      * @return     the imaginary part of a complex number
      */
+    #ifdef __INTEL_OFFLOAD
+        __declspec( target(mic) )
+    #endif
     CUDA_CALLABLE_MEMBER
     inline ValueType imag( void )
     {
         return mParts[1];
     }
 
+    #ifdef __INTEL_OFFLOAD
+        __declspec( target(mic) )
+    #endif
     CUDA_CALLABLE_MEMBER
     inline ValueType imag( void ) const
     {
         return mParts[1];
     }
 
+    #ifdef __INTEL_OFFLOAD
+        __declspec( target(mic) )
+    #endif
     CUDA_CALLABLE_MEMBER
     inline ValueType imag( void ) volatile
     {
         return mParts[1];
     }
 
+    #ifdef __INTEL_OFFLOAD
+        __declspec( target(mic) )
+    #endif
     CUDA_CALLABLE_MEMBER
     inline ValueType imag( void ) const volatile
     {
@@ -575,12 +627,18 @@ public:
      *
      * @param[in] a    the new imaginary part of the complex number
      */
+    #ifdef __INTEL_OFFLOAD
+        __declspec( target(mic) )
+    #endif
     CUDA_CALLABLE_MEMBER
     inline void imag( const ValueType a )
     {
         mParts[1] = a;
     }
 
+    #ifdef __INTEL_OFFLOAD
+        __declspec( target(mic) )
+    #endif
     CUDA_CALLABLE_MEMBER
     inline void imag( const ValueType a ) volatile
     {
@@ -592,24 +650,36 @@ public:
      *
      * @return     the real part of a complex number
      */
+    #ifdef __INTEL_OFFLOAD
+        __declspec( target(mic) )
+    #endif
     CUDA_CALLABLE_MEMBER
     inline ValueType real( void )
     {
         return mParts[0];
     }
 
+    #ifdef __INTEL_OFFLOAD
+        __declspec( target(mic) )
+    #endif
     CUDA_CALLABLE_MEMBER
     inline ValueType real( void ) const
     {
         return mParts[0];
     }
 
+    #ifdef __INTEL_OFFLOAD
+        __declspec( target(mic) )
+    #endif
     CUDA_CALLABLE_MEMBER
     inline ValueType real( void ) volatile
     {
         return mParts[0];
     }
 
+    #ifdef __INTEL_OFFLOAD
+        __declspec( target(mic) )
+    #endif
     CUDA_CALLABLE_MEMBER
     inline ValueType real( void ) const volatile
     {
@@ -621,12 +691,18 @@ public:
      *
      * @param[in] a    the new real part of the complex number
      */
+    #ifdef __INTEL_OFFLOAD
+        __declspec( target(mic) )
+    #endif
     CUDA_CALLABLE_MEMBER
     inline void real( const ValueType a )
     {
         mParts[0] = a;
     }
 
+    #ifdef __INTEL_OFFLOAD
+        __declspec( target(mic) )
+    #endif
     CUDA_CALLABLE_MEMBER
     inline void real( const ValueType a ) volatile
     {
@@ -638,24 +714,36 @@ private:
 };
 
 template<typename ValueType>
+#ifdef __INTEL_OFFLOAD
+    __declspec( target(mic) )
+#endif
 CUDA_CALLABLE_MEMBER Complex<ValueType>::Complex()
 {
     //Constructor have to be empty. Otherwise cuda will output a lot of warnings
 }
 
 template<typename ValueType>
+#ifdef __INTEL_OFFLOAD
+    __declspec( target(mic) )
+#endif
 CUDA_CALLABLE_MEMBER ValueType Complex<ValueType>::metrikCuda( void ) const
 {
     return sqrt( real() * real() + imag() * imag() );
 }
 
 template<typename ValueType>
+#ifdef __INTEL_OFFLOAD
+    __declspec( target(mic) )
+#endif
 ValueType Complex<ValueType>::metrikHost( void ) const
 {
     return sqrt( real() * real() + imag() * imag() );
 }
 
 template<typename ValueType>
+#ifdef __INTEL_OFFLOAD
+    __declspec( target(mic) )
+#endif
 CUDA_CALLABLE_MEMBER inline ValueType abs( const Complex<ValueType>& a )
 {
     return ( sqrt( a.real() * a.real() + a.imag() * a.imag() ) );
@@ -664,12 +752,18 @@ CUDA_CALLABLE_MEMBER inline ValueType abs( const Complex<ValueType>& a )
 /*
  * long double version must not be CUDA_CALLABLE_MEMBER
  */
+#ifdef __INTEL_OFFLOAD
+    __declspec( target(mic) )
+#endif
 inline long double abs( const Complex<long double>& a )
 {
     return ( sqrt( a.real() * a.real() + a.imag() * a.imag() ) );
 }
 
 template<typename ValueType>
+#ifdef __INTEL_OFFLOAD
+    __declspec( target(mic) )
+#endif
 CUDA_CALLABLE_MEMBER inline Complex<ValueType> fabs( const Complex<ValueType>& a )
 {
     Complex<ValueType> x = a;
@@ -766,6 +860,9 @@ COMPLEX_OPERATOR_EQUALITY_CUDA( operator!=, !=, ||, double )
 COMPLEX_OPERATOR_EQUALITY_NONCUDA( operator!=, !=, ||, long double )
 
 template<typename ValueType>
+#ifdef __INTEL_OFFLOAD
+    __declspec( target(mic) )
+#endif
 CUDA_CALLABLE_MEMBER inline Complex<ValueType> operator-( const Complex<ValueType>& a )
 {
     Complex<ValueType> x;
@@ -827,7 +924,11 @@ COMPLEX_OPERATOR_NONMEMBER_CUDA( operator/, /=, double )
 COMPLEX_OPERATOR_NONMEMBER_NONCUDA( operator/, /=, long double )
 
 template<typename ValueType>
-CUDA_CALLABLE_MEMBER inline Complex<ValueType> sqrt( const Complex<ValueType>& a )
+#ifdef __INTEL_OFFLOAD
+__declspec( target(mic) )
+#endif
+CUDA_CALLABLE_MEMBER 
+inline Complex<ValueType> sqrt( const Complex<ValueType>& a )
 {
     ValueType x = a.real();
     ValueType y = a.imag();
@@ -849,6 +950,9 @@ CUDA_CALLABLE_MEMBER inline Complex<ValueType> sqrt( const Complex<ValueType>& a
 /*
  * long double version must not be CUDA_CALLABLE_MEMBER
  */
+#ifdef __INTEL_OFFLOAD
+    __declspec( target(mic) )
+#endif
 inline Complex<long double> sqrt( const Complex<long double>& a )
 {
     long double x = a.real();
@@ -868,6 +972,9 @@ inline Complex<long double> sqrt( const Complex<long double>& a )
 }
 
 template<typename ValueType,typename InputType1,typename InputType2>
+#ifdef __INTEL_OFFLOAD
+    __declspec( target(mic) )
+#endif
 std::basic_istream<InputType1,InputType2>&
 operator>>( std::basic_istream<InputType1,InputType2>& input, Complex<ValueType>& x )
 {
@@ -881,6 +988,9 @@ operator>>( std::basic_istream<InputType1,InputType2>& input, Complex<ValueType>
 }
 
 template<typename ValueType>
+#ifdef __INTEL_OFFLOAD
+    __declspec( target(mic) )
+#endif
 std::ostream& operator<<( std::ostream& stream, const Complex<ValueType>& object )
 {
     if( object.imag() == 0 )
