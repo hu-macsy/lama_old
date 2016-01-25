@@ -55,8 +55,7 @@ namespace constants
 enum ConstantType
 {
     ONE,   //!< stands for value 1
-    ZERO,  //!< stands for value 0
-    EPS    //!< stands for eps
+    ZERO   //!< stands for value 0
 };
 
 /** This method returns the type specific value for each constant */
@@ -64,7 +63,8 @@ enum ConstantType
 template<typename ValueType>
 inline ValueType getConstant( const enum ConstantType& c )
 {
-    ValueType val = TypeTraits<ValueType>::getMax();
+    ValueType val( 0 );
+
     switch( c )
     {
         case ONE:
@@ -72,9 +72,6 @@ inline ValueType getConstant( const enum ConstantType& c )
             break;
         case ZERO:
             val = ValueType( 0 );
-            break;
-        case EPS:
-        	val = TypeTraits<ValueType>::getEps();
             break;
     }
     return val;
@@ -85,7 +82,7 @@ inline ValueType getConstant( const enum ConstantType& c )
 template<typename ValueType>
 bool operator==( const ValueType& x, const enum ConstantType& c )
 {
-    return TypeTraits<ValueType>::abs( x - getConstant<ValueType>( c ) ) < getConstant<ValueType>( EPS );
+    return TypeTraits<ValueType>::abs( x - getConstant<ValueType>( c ) ) < TypeTraits<ValueType>::getEps();
 }
 
 /** Operator not equal also provided for convenience */
