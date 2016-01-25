@@ -92,15 +92,13 @@ inline std::string getEnvContext()
 
 inline scai::common::context::ContextType mapEnvContexttoContextType( std::string contextname )
 {
-    using namespace scai::common::context;
-
-           ContextType myContext;
-    std::map<std::string, ContextType> contextmap =
-        boost::assign::map_list_of ( "Host", Host )
-        ( "CUDA", CUDA )
-        ( "OPENCL", OpenCL )
-        ( "MIC", MIC )
-        ( "MaxContext", MaxContext );
+    scai::common::context::ContextType myContext;
+    std::map<std::string, scai::common::context::ContextType> contextmap =
+        boost::assign::map_list_of ( "Host", scai::common::context::Host )
+        ( "CUDA", scai::common::context::CUDA )
+        ( "OPENCL", scai::common::context::OpenCL )
+        ( "MIC", scai::common::context::MIC )
+        ( "MaxContext", scai::common::context::MaxContext );
     myContext = contextmap[contextname];
     return myContext;
 }
