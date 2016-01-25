@@ -130,7 +130,7 @@ void MICBLAS3::gemm(
             COMMON_THROWEXCEPTION( "Illegal order setting " << order )
     }
 
-    SCAI_LOG_INFO( logger, "gemm, ta = " << ta << ", tb = " << tb << ", a has shape " << m << " x " << n )
+    SCAI_LOG_INFO( logger, "gemm<" << common::TypeTraits<ValueType>::id() << ">, ta = " << ta << ", tb = " << tb << ", a has shape " << m << " x " << n )
 
     int device = MICContext::getCurrentDevice();
 

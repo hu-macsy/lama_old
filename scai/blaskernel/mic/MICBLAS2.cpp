@@ -121,7 +121,7 @@ void MICBLAS2::gemv(
     const IndexType incY )
 {
     SCAI_LOG_INFO( logger,
-                   "gemv<float>: m = " << m << ", n = " << n << ", lda = " << lda << ", incX = " << incX << ", incY = " << incY << ", alpha = " << alpha << ", beta = " << beta )
+                   "gemv<" << common::TypeTraits<ValueType>::id() << ">: m = " << m << ", n = " << n << ", lda = " << lda << ", incX = " << incX << ", incY = " << incY << ", alpha = " << alpha << ", beta = " << beta )
 
     if( m == 0 )
     {
