@@ -44,6 +44,8 @@
 
 #include <scai/kregistry/KernelRegistry.hpp>
 
+#include <scai/common/TypeTraits.hpp>
+
 // external
 #include <mkl.h>
 

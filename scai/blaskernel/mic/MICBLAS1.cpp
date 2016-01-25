@@ -47,6 +47,7 @@
 
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/ScalarType.hpp>
+#include <scai/common/TypeTraits.hpp>
 
 // external
 #include <omp.h>
