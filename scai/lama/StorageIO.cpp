@@ -680,7 +680,7 @@ void StorageIO<ValueType>::writeCSRToMMFile(
         {
             ofile << ii + 1 << " " << ja[jj] + 1;
 
-            if( dataType != File::PATTERN )
+            if( dataType != common::scalar::PATTERN )
             {
                 ofile << " " << data[jj];
             }
@@ -1110,19 +1110,19 @@ void _StorageIO::writeMMHeader(
 		mm_set_sparse( &matcode );
 	}
 
-	if( dataType == File::DOUBLE || dataType == File::FLOAT || dataType == File::INTERNAL )
+	if( dataType == common::scalar::DOUBLE || dataType == common::scalar::FLOAT || dataType == common::scalar::INTERNAL )
 	{
 		mm_set_real( &matcode );
 	}
-	else if( dataType == File::COMPLEX || dataType == File::DOUBLE_COMPLEX || dataType == File::LONG_DOUBLE_COMPLEX)
+	else if( dataType == common::scalar::COMPLEX || dataType == common::scalar::DOUBLE_COMPLEX || dataType == common::scalar::LONG_DOUBLE_COMPLEX)
 	{
 		mm_set_complex( &matcode );
 	}
-	else if( dataType == File::INDEX_TYPE )
+	else if( dataType == common::scalar::INDEX_TYPE )
 	{
 		mm_set_integer( &matcode );
 	}
-	else if( dataType == File::PATTERN )
+	else if( dataType == common::scalar::PATTERN )
 	{
 		mm_set_pattern( &matcode );
 	}

@@ -172,25 +172,25 @@ BOOST_AUTO_TEST_CASE( ReadAndWriteVectorTest )
     std::string prefix = Configuration::getInstance().getPath();
     std::string testfilename = "ReadAndWriteVectorTestFile";
     //Write and read FORMATTED
-    vector.writeToFile( prefix + "/" + testfilename, File::FORMATTED, File::DOUBLE );
+    vector.writeToFile( prefix + "/" + testfilename, File::FORMATTED, scai::common::scalar::DOUBLE );
     DenseVector<double> vector2( prefix + "/" + testfilename );
     verifySameVector<double>( vector2, result );
     cleanupfiles( testfilename );
     // write and read BINARY
     std::string fileName = prefix + "/" + testfilename;
     SCAI_LOG_INFO( logger, "write " << vector << " to binary file " << fileName );
-    vector.writeToFile( fileName, File::BINARY, File::FLOAT );
+    vector.writeToFile( fileName, File::BINARY, scai::common::scalar::FLOAT );
     SCAI_LOG_INFO( logger, "Read constructur from binary file " << fileName );
     DenseVector<double> vector3( prefix + "/" + testfilename );
     verifySameVector<double>( vector3, result );
     cleanupfiles( testfilename );
     // write and read XDR
-    vector.writeToFile( prefix + "/" + testfilename, File::XDR, File::DOUBLE );
+    vector.writeToFile( prefix + "/" + testfilename, File::XDR, scai::common::scalar::DOUBLE );
     DenseVector<double> vector5( prefix + "/" + testfilename );
     verifySameVector<double>( vector5, result );
     cleanupfiles( testfilename );
 	// write and read mtx
-    vector.writeToFile( prefix + "/" + testfilename, File::MATRIX_MARKET, File::DOUBLE );
+    vector.writeToFile( prefix + "/" + testfilename, File::MATRIX_MARKET, scai::common::scalar::DOUBLE );
     DenseVector<double> vector6( prefix + "/" + testfilename + ".mtx" );
     verifySameVector<double>( vector6, result );
     //cleanupfiles( testfilename + ".mtx" );

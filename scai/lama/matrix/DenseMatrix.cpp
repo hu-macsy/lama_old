@@ -1810,7 +1810,7 @@ void DenseMatrix<ValueType>::matrixTimesVectorImpl(
 
 // asynchronous communication always requires same sizes of arrays, might shift some more data
 
-        common::unique_ptr<SyncToken> st( comm.shiftAsync( *recvValues, *sendValues, COMM_DIRECTION ) );
+        common::unique_ptr<tasking::SyncToken> st( comm.shiftAsync( *recvValues, *sendValues, COMM_DIRECTION ) );
 
         SCAI_LOG_INFO( logger,
                        comm << ": matrixTimesVector, my dense block = " << *mData[rank] << ", localX = " << localX << ", localY = " << localY << ", localResult = " << localResult )

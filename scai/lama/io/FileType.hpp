@@ -105,8 +105,6 @@ static inline std::ostream& operator<<( std::ostream& stream, const FileType& ob
      return stream;
 }
 
-using namespace common::scalar;
-
 // typedef ScalarType DataType;
 
 /**
