@@ -48,7 +48,7 @@
 #include <scai/tracing.hpp>
 
 #include <scai/common/macros/assert.hpp>
-#include <scai/common/ScalarType.hpp>
+#include <scai/common/TypeTraits.hpp>
 
 // std
 #include <cmath>

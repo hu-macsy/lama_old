@@ -44,6 +44,7 @@
 #include <scai/kregistry/KernelRegistry.hpp>
 
 #include <scai/common/Constants.hpp>
+#include <scai/common/TypeTraits.hpp>
 
 namespace scai
 {
