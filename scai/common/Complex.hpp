@@ -41,16 +41,17 @@
 #include <scai/common/config.hpp>
 #include <scai/common/cuda/CUDACallable.hpp>
 #include <scai/common/mic/MICCallable.hpp>
+#include <scai/common/Math.hpp>
 
 // std
 #include <sstream>
 
 #ifdef __CUDACC__
 #include <cuComplex.h>
-#include <math.h>
+//#include <math.h>
 #include <thrust/device_reference.h>
 #else
-#include <cmath>
+//#include <cmath>
 #endif
 
 /*
@@ -398,9 +399,6 @@ namespace scai
 namespace common
 {
 
-using std::sqrt;
-using std::abs;
-using std::fabs;
 
 /**
  * @brief The class Complex represents complex numbers.
@@ -700,13 +698,13 @@ MIC_CALLABLE_MEMBER
 CUDA_CALLABLE_MEMBER
 ValueType Complex<ValueType>::metrikCuda( void ) const
 {
-    return sqrt( real() * real() + imag() * imag() );
+    return Math::sqrt( real() * real() + imag() * imag() );
 }
 
 template<typename ValueType>
 ValueType Complex<ValueType>::metrikHost( void ) const
 {
-    return sqrt( real() * real() + imag() * imag() );
+    return Math::sqrt( real() * real() + imag() * imag() );
 }
 
 template<typename ValueType>
@@ -714,7 +712,7 @@ MIC_CALLABLE_MEMBER
 CUDA_CALLABLE_MEMBER
 inline ValueType abs( const Complex<ValueType>& a )
 {
-    return ( sqrt( a.real() * a.real() + a.imag() * a.imag() ) );
+    return ( Math::sqrt( a.real() * a.real() + a.imag() * a.imag() ) );
 }
 
 /*
@@ -722,7 +720,7 @@ inline ValueType abs( const Complex<ValueType>& a )
  */
 inline long double abs( const Complex<long double>& a )
 {
-    return ( sqrt( a.real() * a.real() + a.imag() * a.imag() ) );
+    return ( Math::sqrt( a.real() * a.real() + a.imag() * a.imag() ) );
 }
 
 template<typename ValueType>
@@ -886,19 +884,6 @@ COMPLEX_OPERATOR_NONMEMBER_CUDA( operator/, /=, float )
 COMPLEX_OPERATOR_NONMEMBER_CUDA( operator/, /=, double )
 COMPLEX_OPERATOR_NONMEMBER_NONCUDA( operator/, /=, long double )
 
-/*
- * ToDo: use TypeTraits
- */
-float my_sqrt( const float & x );
-double my_sqrt( const double & x );
-Complex<float> my_sqrt( const Complex<float> & x );
-Complex<double> my_sqrt( const Complex<double> & x );
-
-float my_fabs( const float & x );
-double my_fabs( const double & x );
-Complex<float> my_fabs( const Complex<float> & x );
-Complex<double> my_fabs( const Complex<double> & x );
-
 template<typename ValueType>
 MIC_CALLABLE_MEMBER
 CUDA_CALLABLE_MEMBER
@@ -909,15 +894,15 @@ inline Complex<ValueType> sqrt( const Complex<ValueType>& a )
 
     if( x == 0 )
     {
-        ValueType t = my_sqrt( my_fabs( y ) / 2 );
+        ValueType t = Math::sqrt( Math::fabs( y ) / 2 );
         return Complex<ValueType>( t, y < ValueType() ? -t : t );
     }
     else
     {
-        ValueType t = my_sqrt( 2 * ( my_fabs( a ) + my_fabs( x ) ) );
+        ValueType t = Math::sqrt( 2 * ( abs( a ) + Math::fabs( x ) ) );
         ValueType u = t / 2;
         return x > ValueType() ? Complex<ValueType>( u, y / t ) :
-                        Complex<ValueType>( my_fabs( y ) / t, y < ValueType() ? -u : u );
+                        Complex<ValueType>( Math::fabs( y ) / t, y < ValueType() ? -u : u );
     }
 }
 
@@ -931,14 +916,14 @@ inline Complex<long double> sqrt( const Complex<long double>& a )
 
     if( x == 0.0 )
     {
-        long double t = ::sqrtl( ::fabsl( y ) / 2 );
+        long double t = Math::sqrt( Math::fabs( y ) / 2 );
         return Complex<long double>( t, y < 0.0 ? -t : t );
     }
     else
     {
-        long double t = ::sqrtl( 2 * ( ::fabsl( a ) + ::fabsl( x ) ) );
+        long double t = Math::sqrt( 2 * ( abs( a ) + Math::fabs( x ) ) );
         long double u = t / 2;
-        return x > 0.0 ? Complex<long double>( u, y / t ) : Complex<long double>( fabsl( y ) / t, y < 0.0 ? -u : u );
+        return x > 0.0 ? Complex<long double>( u, y / t ) : Complex<long double>( Math::fabs( y ) / t, y < 0.0 ? -u : u );
     }
 }
 
