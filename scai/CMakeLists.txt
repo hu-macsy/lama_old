@@ -215,25 +215,27 @@ ExternalProject_Add ( scai_blaskernel
 concatCacheArguments ( scai_lama "CACHE_ARGS" )
 #message ( STATUS "lama CACHE_ARGS ${CACHE_ARGS}" )
 
+configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/lama.hpp.in" "${CMAKE_CURRENT_SOURCE_DIR}/lama.hpp" )
+
 ExternalProject_Add ( scai_lama
             DEPENDS ${SCAI_LAMA_INTERNAL_DEPS}
             PREFIX lama
             SOURCE_DIR ${CMAKE_SOURCE_DIR}/lama
             CMAKE_ARGS "-DSCAI_COMPLETE_BUILD=1"
             CMAKE_CACHE_ARGS "${CMAKE_ARGS};${CACHE_ARGS}"
-	    	BINARY_DIR lama
+            BINARY_DIR lama
             )
 
-concatCacheArguments ( scai_lamasolver "CACHE_ARGS" )
-#message ( STATUS "lamasolver CACHE_ARGS ${CACHE_ARGS}" )
+concatCacheArguments ( scai_solver "CACHE_ARGS" )
+#message ( STATUS "solver CACHE_ARGS ${CACHE_ARGS}" )
 
-ExternalProject_Add ( scai_lamasolver
-            DEPENDS ${SCAI_LAMASOLVER_INTERNAL_DEPS}
-            PREFIX lamasolver
-            SOURCE_DIR ${CMAKE_SOURCE_DIR}/lamasolver
+ExternalProject_Add ( scai_solver
+            DEPENDS ${SCAI_SOLVER_INTERNAL_DEPS}
+            PREFIX solver
+            SOURCE_DIR ${CMAKE_SOURCE_DIR}/solver
             CMAKE_ARGS "-DSCAI_COMPLETE_BUILD=1"
             CMAKE_CACHE_ARGS "${CMAKE_ARGS};${CACHE_ARGS}"
-            BINARY_DIR lama
+            BINARY_DIR solver
             )
 
 ## add custom target docclean

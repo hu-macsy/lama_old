@@ -121,7 +121,7 @@ set ( SCAI_BLASKERNEL_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/blaskernel
 
 add_subdirectory( lama )
 
-add_subdirectory( lamasolver )
+add_subdirectory( solver )
 
 # Documentation
 

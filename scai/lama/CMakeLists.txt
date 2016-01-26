@@ -202,7 +202,7 @@ if    ( CUDA_FOUND AND USE_CUDA AND CUDA_HAVE_GPU )
 	set ( CXX_SOURCES ${CXX_SOURCES} ${CUDA_FILES} )
 endif ( CUDA_FOUND AND USE_CUDA AND CUDA_HAVE_GPU )
 
-add_library ( ama ${SCAI_LIBRARY_TYPE} ${CXX_SOURCES} )
+add_library ( scai_lama ${SCAI_LIBRARY_TYPE} ${CXX_SOURCES} )
 
 ## add link libraries
 list ( REVERSE SCAI_LAMA_INTERNAL_DEPS )
@@ -210,27 +210,27 @@ foreach    ( module ${SCAI_LAMA_INTERNAL_DEPS} )
 	string ( TOUPPER ${module} upper_module )
 	set ( LAMA_LINK_LIBRARIES ${LAMA_LINK_LIBRARIES} ${${upper_module}_LIBRARY} )
 endforeach ( module ${SCAI_LAMA_INTERNAL_DEPS} )
-target_link_libraries ( ama ${SCAI_START_LINK_LIBRARIES} ${LAMA_LINK_LIBRARIES} ${SCAI_END_LINK_LIBRARIES} )
+target_link_libraries ( scai_lama ${SCAI_START_LINK_LIBRARIES} ${LAMA_LINK_LIBRARIES} ${SCAI_END_LINK_LIBRARIES} )
 
 foreach    ( module ${SCAI_LAMA_EXTERNAL_DEPS} )
 	string ( TOUPPER ${module} upper_module )
-    target_link_libraries ( ama ${SCAI_${upper_module}_LIBRARIES} )
+    target_link_libraries ( scai_lama ${SCAI_${upper_module}_LIBRARIES} )
 endforeach ( module ${SCAI_LAMA_EXTERNAL_DEPS} )
 
 # external libraries
 
 if    ( GPI2_FOUND AND IBVERBS_FOUND AND USE_GPI2 )
-    target_link_libraries ( ama ${GPI2_LIBRARIES} ${IBVERBS_LIBRARIES} )
+    target_link_libraries ( scai_lama ${GPI2_LIBRARIES} ${IBVERBS_LIBRARIES} )
 endif ( GPI2_FOUND AND IBVERBS_FOUND AND USE_GPI2 )
 
 if ( SCALAPACK_FOUND AND MPI_FOUND AND USE_MPI )
-    target_link_libraries ( ama ${SCAI_PBLAS_LIBRARIES} )
+    target_link_libraries ( scai_lama ${SCAI_PBLAS_LIBRARIES} )
     add_definitions( -DSCAI_MKL_SCALAPACK ) ## TODO: where used?!
 endif ( SCALAPACK_FOUND AND MPI_FOUND AND USE_MPI )
 
 if ( USE_MIC )
     set ( MKLROOT $ENV{MKLROOT} )
-    set_target_properties( ama PROPERTIES LINK_FLAGS
+    set_target_properties( scai_lama PROPERTIES LINK_FLAGS
         "-offload-option,mic,compiler,\"-L${MKLROOT}/lib/mic -Wl,--start-group -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_core -Wl,--end-group\"" )
 endif ( USE_MIC )
 
@@ -241,8 +241,7 @@ include( Functions/relativeInstall )
 relative_install( FILES ${CXX_HEADERS} DESTINATION include/scai/lama )
 
 ## install library.hpp
-configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/lama.hpp.in" "${CMAKE_CURRENT_BINARY_DIR}/include/scai/lama.hpp" )
-install ( FILES "${CMAKE_CURRENT_BINARY_DIR}/include/scai/lama.hpp" DESTINATION include/scai )
+install ( FILES "${CMAKE_CURRENT_SOURCE_DIR}/../lama.hpp" DESTINATION include/scai )
 
 ## build examples
 add_subdirectory( examples )
@@ -259,7 +258,7 @@ add_subdirectory( examples )
 include ( DistClean )
 
 ### install
-install ( TARGETS ama DESTINATION lib )
+install ( TARGETS scai_lama DESTINATION lib )
 
 if    ( DEFINED SCAI_CMAKE_VERBOSE OR NOT DEFINED SCAI_COMPLETE_BUILD )
 	include ( Summaries/lama )

@@ -32,7 +32,7 @@
 
 foreach ( executable conversion matadd matmul )
     add_executable( ${executable} ${executable}.cpp )
-    target_link_libraries( ${executable} ama )
+    target_link_libraries( ${executable} scai_lama )
     set ( EXAMPLE_EXECUTABLES_BENCH "${EXAMPLE_EXECUTABLES_BENCH} ${executable}.exe" )
 endforeach ( executable )
 

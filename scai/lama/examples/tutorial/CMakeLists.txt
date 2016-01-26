@@ -32,7 +32,7 @@
 
 foreach ( executable blas1 matrix scalar simple vector )
     add_executable( ${executable} ${executable}.cpp )
-    target_link_libraries( ${executable} ama )
+    target_link_libraries( ${executable} scai_lama )
     set ( EXAMPLE_EXECUTABLES_TUTORIAL "${EXAMPLE_EXECUTABLES_TUTORIAL} ${executable}.exe" )
 endforeach ( executable )
 

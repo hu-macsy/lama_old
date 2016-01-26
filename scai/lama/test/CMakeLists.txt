@@ -131,9 +131,9 @@ add_executable ( lama_test lama_test.cpp ${CXX_SOURCES} )
 
 ### target link libraries ###
 if ( WIN32 )
-    target_link_libraries ( lama_test ama )
+    target_link_libraries ( lama_test scai_lama )
 else ( WIN32 )
-    target_link_libraries ( lama_test ama ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} ${Boost_REGEX_LIBRARY} )
+    target_link_libraries ( lama_test scai_lama ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} ${Boost_REGEX_LIBRARY} )
 endif ( WIN32 )
 
 ### Copy the README and xmltest.sh file in build directory ### 
