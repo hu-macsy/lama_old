@@ -38,6 +38,7 @@
 
 // others
 #include <scai/common/SCAITypes.hpp>
+#include <scai/common/ReductionOp.hpp>
 #include <scai/common/macros/assert.hpp>
 #include <scai/hmemo/mic/MICContext.hpp>
 
@@ -82,7 +83,7 @@ public:
     /** MIC implementation for UtilKernelTrait::Setter::setVal */
 
     template<typename ValueType>
-    static void setVal( ValueType array[], const IndexType n, const ValueType val );
+    static void setVal( ValueType array[], const IndexType n, const ValueType val, const common::reduction::ReductionOp op );
 
     /** MIC implementation for UtilKernelTrait::Setter::setOrder */
 

@@ -169,7 +169,7 @@ ValueType MICUtils::sum( const ValueType array[], const IndexType n )
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void MICUtils::setVal( ValueType array[], const IndexType n, const ValueType val )
+void MICUtils::setVal( ValueType array[], const IndexType n, const ValueType val, const common::reduction::ReductionOp op )
 {
     SCAI_LOG_DEBUG( logger, "setVal<" << common::getScalarType<ValueType>() << ">: " << "array[" << n << "] = " << val )
 
@@ -177,16 +177,73 @@ void MICUtils::setVal( ValueType array[], const IndexType n, const ValueType val
 
     void* arrayPtr = array;
 
-#pragma offload target( mic : device ), in( arrayPtr, n, val )
+    switch ( op )
     {
-        ValueType* array = static_cast<ValueType*>( arrayPtr );
-
-        #pragma omp parallel for
-
-        for( IndexType i = 0; i < n; ++i )
+        case common::reduction::COPY :
         {
-            array[i] = val;
+			#pragma offload target( mic : device ), in( arrayPtr, n, val )
+			{
+				ValueType* array = static_cast<ValueType*>( arrayPtr );
+
+				#pragma omp parallel for
+
+				for( IndexType i = 0; i < n; ++i )
+				{
+					array[i] = val;
+				}
+			}
+			break;
         }
+        case common::reduction::ADD :
+        {
+            if ( val == common::constants::ZERO )
+            {
+                return;
+            }
+
+			#pragma offload target( mic : device ), in( arrayPtr, n, val )
+			{
+				ValueType* array = static_cast<ValueType*>( arrayPtr );
+
+				#pragma omp parallel for
+
+				for( IndexType i = 0; i < n; ++i )
+				{
+					array[i] += val;
+				}
+			}
+            break;
+        }
+        case common::reduction::MULT :
+        {
+            // scale all values of the array
+
+            if ( val == common::constants::ONE )
+            {
+                // skip it
+            }
+            else if ( val == common::constants::ZERO )
+            {
+                setVal( array, n, ValueType( 0 ), common::reduction::COPY );
+            }
+            else
+            {
+				#pragma offload target( mic : device ), in( arrayPtr, n, val )
+				{
+					ValueType* array = static_cast<ValueType*>( arrayPtr );
+
+					#pragma omp parallel for
+
+					for( IndexType i = 0; i < n; ++i )
+					{
+						array[i] *= val;
+					}
+				}
+            }
+            break;
+        }
+        default:
+            COMMON_THROWEXCEPTION( "Unsupported reduction op : " << op )
     }
 
     SCAI_LOG_DEBUG( logger, "Ready:: setVal<" << common::getScalarType<ValueType>() << ">: " << "array[" << n << "] = " << val )
@@ -590,8 +647,6 @@ void MICUtils::registerKernels( bool deleteFlag )
 
     KernelRegistry::set<UtilKernelTrait::validIndexes>( validIndexes, MIC, flag );
 
-    KernelRegistry::set<UtilKernelTrait::scale<float> >( scale, MIC, flag );
-    KernelRegistry::set<UtilKernelTrait::scale<double> >( scale, MIC, flag );
 
     KernelRegistry::set<UtilKernelTrait::setScale<float, float> >( setScale, MIC, flag );
     KernelRegistry::set<UtilKernelTrait::setScale<double, float> >( setScale, MIC, flag );
