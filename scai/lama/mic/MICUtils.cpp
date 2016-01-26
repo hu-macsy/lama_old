@@ -486,7 +486,7 @@ bool MICUtils::isSorted( const ValueType array[], const IndexType n, bool ascend
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType1,typename ValueType2>
-void MICUtils::set( ValueType1 out[], const ValueType2 in[], const IndexType n )
+void MICUtils::set( ValueType1 out[], const ValueType2 in[], const IndexType n, const common::reduction::ReductionOp op )
 {
     SCAI_LOG_INFO( logger,
                    "set: out<" << common::getScalarType<ValueType1>() << "[" << n << "]" << " = in<" << common::getScalarType<ValueType2>() << ">[" << n << "]" )
@@ -496,16 +496,59 @@ void MICUtils::set( ValueType1 out[], const ValueType2 in[], const IndexType n )
 
     int device = MICContext::getCurrentDevice();
 
-#pragma offload target( mic : device ), in( outPtr, inPtr, n )
+    switch ( op )
     {
-        ValueType1* out = static_cast<ValueType1*>( outPtr );
-        const ValueType2* in = static_cast<const ValueType2*>( inPtr );
-
-        #pragma omp parallel for
-
-        for( IndexType i = 0; i < n; i++ )
+        case common::reduction::COPY :
         {
-            out[i] = static_cast<ValueType1>( in[i] );
+			#pragma offload target( mic : device ), in( outPtr, inPtr, n )
+			{
+				ValueType1* out = static_cast<ValueType1*>( outPtr );
+				const ValueType2* in = static_cast<const ValueType2*>( inPtr );
+
+				#pragma omp parallel for
+
+				for( IndexType i = 0; i < n; i++ )
+				{
+					out[i] = static_cast<ValueType1>( in[i] );
+				}
+			}
+            break;
+        }
+        case common::reduction::ADD :
+        {
+			#pragma offload target( mic : device ), in( outPtr, inPtr, n )
+			{
+				ValueType1* out = static_cast<ValueType1*>( outPtr );
+				const ValueType2* in = static_cast<const ValueType2*>( inPtr );
+
+				#pragma omp parallel for
+
+				for( IndexType i = 0; i < n; i++ )
+				{
+					out[i] += static_cast<ValueType1>( in[i] );
+				}
+			}
+            break;
+        }
+        case common::reduction::MULT :
+        {
+			#pragma offload target( mic : device ), in( outPtr, inPtr, n )
+			{
+				ValueType1* out = static_cast<ValueType1*>( outPtr );
+				const ValueType2* in = static_cast<const ValueType2*>( inPtr );
+
+				#pragma omp parallel for
+
+				for( IndexType i = 0; i < n; i++ )
+				{
+					out[i] *= static_cast<ValueType1>( in[i] );
+				}
+			}
+            break;
+        }
+        default:
+        {
+            COMMON_THROWEXCEPTION( "unsupported reduction op in set: " << op )
         }
     }
 }

@@ -112,7 +112,7 @@ public:
     static bool isSorted( const ValueType array[], const IndexType n, bool acending );
 
     template<typename ValueType1,typename ValueType2>
-    static void set( ValueType1 out[], const ValueType2 in[], const IndexType n );
+    static void set( ValueType1 out[], const ValueType2 in[], const IndexType n, const common::reduction::ReductionOp op );
 
     /** Set out[i] = in[ indexes[i] ],  0 <= i < n */
 
