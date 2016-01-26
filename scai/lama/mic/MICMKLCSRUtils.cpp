@@ -90,7 +90,7 @@ void MICMKLCSRUtils::normalGEMV(
 
     if( y != result && beta != 0 )
     {
-        MICUtils::set( result, y, numRows );
+        MICUtils::set( result, y, numRows, common::reduction::COPY );
     }
 
     // performs y = alpha * A * x + beta * y
@@ -144,7 +144,7 @@ void MICMKLCSRUtils::normalGEMV(
 
     if( y != result && beta != scai::common::constants::ZERO )
     {
-        MICUtils::set( result, y, numRows );
+        MICUtils::set( result, y, numRows, common::reduction::COPY );
     }
 
     // performs y = alpha * A * x + beta * y
