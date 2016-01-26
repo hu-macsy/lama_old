@@ -680,7 +680,7 @@ void MICJDSUtils::normalGEMV(
 
         if( beta != static_cast<ValueType>( 1.0 ) )
         {
-            MICUtils::scale( result, beta, numRows );
+            MICUtils::setVal( result, beta, numRows, common::reduction::MULT );
         }
         else
         {

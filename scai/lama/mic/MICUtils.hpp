@@ -57,11 +57,6 @@ class COMMON_DLL_IMPORTEXPORT MICUtils
 {
 public:
 
-    /** MIC implementation for UtilKernelTrait::Transform::scale */
-
-    template<typename ValueType>
-    static void scale( ValueType mValues[], const ValueType value, const IndexType n );
-
     /** MIC implementation for UtilKernelTrait::Copy::setScale */
 
     template<typename ValueType,typename OtherValueType>

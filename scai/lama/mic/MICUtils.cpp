@@ -58,42 +58,6 @@ SCAI_LOG_DEF_LOGGER( MICUtils::logger, "MIC.Utils" )
 
 /* --------------------------------------------------------------------------- */
 
-template<typename ValueType>
-void MICUtils::scale( ValueType array[], const ValueType value, const IndexType n )
-{
-    SCAI_LOG_INFO( logger, "scale, #n = " << n << ", value = " << value )
-
-    if( value == scai::common::constants::ONE )
-    {
-        return;
-    }
-
-    if( value == scai::common::constants::ZERO )
-    {
-        setVal( array, n, static_cast<ValueType>(0.0), common::reduction::COPY );
-    }
-    else
-    {
-        void* arrayPtr = array;
-
-        int device = MICContext::getCurrentDevice();
-
-#pragma offload target( mic : device ) in( arrayPtr, value, n )
-        {
-            ValueType* array = static_cast<ValueType*>( arrayPtr );
-
-            #pragma omp parallel for
-
-            for( IndexType i = 0; i < n; i++ )
-            {
-                array[i] *= value;
-            }
-        }
-    }
-}
-
-/* --------------------------------------------------------------------------- */
-
 template<typename ValueType,typename OtherValueType>
 void MICUtils::setScale(
     ValueType outValues[],
