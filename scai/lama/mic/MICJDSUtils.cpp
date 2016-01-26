@@ -671,7 +671,7 @@ void MICJDSUtils::normalGEMV(
 
     if( beta == static_cast<ValueType>( 0.0 ) )
     {
-        MICUtils::setVal( result, numRows, static_cast<ValueType>(0.0) );
+        MICUtils::setVal( result, numRows, static_cast<ValueType>(0.0), common::reduction::COPY );
     }
     else if( result == y )
     {

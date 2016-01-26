@@ -69,7 +69,7 @@ void MICUtils::scale( ValueType array[], const ValueType value, const IndexType 
 
     if( value == scai::common::constants::ZERO )
     {
-        setVal( array, n, static_cast<ValueType>(0.0) );
+        setVal( array, n, static_cast<ValueType>(0.0), common::reduction::COPY );
     }
     else
     {
