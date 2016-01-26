@@ -107,13 +107,13 @@ void MICUtils::setScale(
     if( value == scai::common::constants::ZERO )
     {
         // Important : inValues might be undefined
-        setVal( outValues, n, value );
+        setVal( outValues, n, value, common::reduction:: COPY );
         return;
     }
 
     if( value == scai::common::constants::ONE )
     {
-        set( outValues, inValues, n );
+        set( outValues, inValues, n, common::reduction:: COPY );
         return;
     }
 
