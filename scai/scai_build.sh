@@ -21,7 +21,7 @@ if [ "$#" -ne 1 ]; then
    exit 1
 fi
 
-PROJECTS="common logging tracing tasking kregistry blaskernel hmemo lama"
+PROJECTS="common logging tracing tasking kregistry hmemo blaskernel lama lamasolver"
 
 if [ "$1" == "clean" ]; then
     for project in $PROJECTS
