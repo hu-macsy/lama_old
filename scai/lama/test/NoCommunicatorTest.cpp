@@ -53,7 +53,7 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.NoCommunicatorTest" )
 
 BOOST_AUTO_TEST_CASE( commonTestCases )
 {
-    CommunicatorTest communicatorTest( "none" );
+    CommunicatorTest communicatorTest( scai::lama::communicator::NO );
 
     if ( base_test_case )
     {

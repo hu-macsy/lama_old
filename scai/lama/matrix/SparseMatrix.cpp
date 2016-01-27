@@ -2518,7 +2518,7 @@ void SparseMatrix<ValueType>::readFromFile( const std::string& fileName )
     SCAI_REGION( "Mat.Sp.readFromFile" )
 
     // Take the current default communicator
-    CommunicatorPtr comm = Communicator::get();
+    CommunicatorPtr comm = Communicator::getCommunicator();
 
     IndexType myRank = comm->getRank();
     IndexType host = 0; // reading processor

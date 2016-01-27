@@ -53,7 +53,7 @@ struct P_RedistributorTestConfig
 {
     P_RedistributorTestConfig()
     {
-        comm = Communicator::get();
+        comm = Communicator::getCommunicator();
     }
 
     ~P_RedistributorTestConfig()
