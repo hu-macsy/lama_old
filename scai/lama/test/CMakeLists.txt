@@ -48,15 +48,11 @@ scai_project (
         
         SameMatrixHelper
         EquationHelper
-#        TestMacros : in common
+        TestMacros
         TestSparseMatrices
 
     SOURCES
 
-
-       # BLAS1Test
-       # BLAS2Test
-       # BLAS3Test
         CommunicatorTest
         COOSparseMatrixTest
         COOStorageTest
@@ -79,7 +75,6 @@ scai_project (
         JDSUtilsTest
         L1NormTest
         L2NormTest
-#        LAPACKTest
         MatrixNormTest
         MatrixStorageConversionTest
         MatrixTest
@@ -97,10 +92,6 @@ scai_project (
 if ( ${SCAI_ASSERT_LEVEL} STREQUAL "OFF" )
    message ( STATUS "WARNING: tests will not check for exceptions (assertions are switched off)" )
 endif ( ${SCAI_ASSERT_LEVEL} STREQUAL "OFF" )
-
-if ( NOT ( Boost_UNIT_TEST_FRAMEWORK_LIBRARY OR Boost_REGEX ) )
-    message ( FATAL_ERROR "No Boost unit test available." )
-endif ( NOT ( Boost_UNIT_TEST_FRAMEWORK_LIBRARY OR Boost_REGEX ) )
 
 ### set include directories ###
 include_directories ( .. ../lama ${Boost_INCLUDE_DIRS} )
@@ -141,7 +132,5 @@ file ( COPY README DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
 file ( COPY xmltest.sh DESTINATION ${CMAKE_CURRENT_BINARY_DIR} ) 
 
 if ( USE_CODE_COVERAGE )
-    ### Copy the cca.sh and ccajen.sh file in build directory ###
-    configure_file( "${CMAKE_CURRENT_SOURCE_DIR}/cca.sh.in" "${CMAKE_CURRENT_BINARY_DIR}/cca.sh" @ONLY)
-    configure_file( "${CMAKE_CURRENT_SOURCE_DIR}/ccajen.sh.in" "${CMAKE_CURRENT_BINARY_DIR}/ccajen.sh" @ONLY)
+    configure_file( "${CMAKE_CURRENT_SOURCE_DIR}/code_coverage.sh.in" "${CMAKE_CURRENT_BINARY_DIR}/code_coverage.sh" @ONLY)
 endif ( USE_CODE_COVERAGE )

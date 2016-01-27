@@ -52,7 +52,7 @@ struct BlockDistributionTestConfig
 {
     BlockDistributionTestConfig()
     {
-        comm = Communicator::get( "MPI" );
+        comm = Communicator::getCommunicator( scai::lama::communicator::MPI );
         rank = comm->getRank();
         size = comm->getSize();
         blockSize = 17;

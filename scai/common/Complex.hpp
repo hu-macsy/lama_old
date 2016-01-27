@@ -661,6 +661,12 @@ CUDA_CALLABLE_MEMBER inline ValueType abs( const Complex<ValueType>& a )
     return ( sqrt( a.real() * a.real() + a.imag() * a.imag() ) );
 }
 
+template<typename ValueType>
+CUDA_CALLABLE_MEMBER inline Complex<ValueType> conj( const Complex<ValueType>& a )
+{
+    return Complex<ValueType>( a.real(), - a.imag() );
+}
+
 /*
  * long double version must not be CUDA_CALLABLE_MEMBER
  */
@@ -832,17 +838,17 @@ CUDA_CALLABLE_MEMBER inline Complex<ValueType> sqrt( const Complex<ValueType>& a
     ValueType x = a.real();
     ValueType y = a.imag();
 
-    if( x == ValueType() )
+    if( x == ValueType( 0 ) )
     {
         ValueType t = sqrt( abs( y ) / 2 );
-        return Complex<ValueType>( t, y < ValueType() ? -t : t );
+        return Complex<ValueType>( t, y < ValueType( 0 ) ? -t : t );
     }
     else
     {
         ValueType t = sqrt( 2 * ( abs( a ) + abs( x ) ) );
         ValueType u = t / 2;
         return x > ValueType() ? Complex<ValueType>( u, y / t ) :
-                        Complex<ValueType>( abs( y ) / t, y < ValueType() ? -u : u );
+                        Complex<ValueType>( abs( y ) / t, y < ValueType( 0 ) ? -u : u );
     }
 }
 

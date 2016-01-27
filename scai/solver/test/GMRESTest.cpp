@@ -105,7 +105,7 @@ void testSolveWithPreconditionmethod()
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( testSolveWithPrecondition, ValueType, test_types )
 {
-    CommunicatorPtr comm = Communicator::get(); // default communicator
+    CommunicatorPtr comm = Communicator::getCommunicator(); // default communicator
     testSolveWithPreconditionmethod< CSRSparseMatrix<ValueType> >();
     testSolveWithPreconditionmethod< ELLSparseMatrix<ValueType> >();
     testSolveWithPreconditionmethod< COOSparseMatrix<ValueType> >();
@@ -154,7 +154,7 @@ void testSolveWithoutPreconditionmethod()
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( testSolveWithoutPreconditioning, ValueType, test_types )
 {
-    CommunicatorPtr comm = Communicator::get(); // default one
+    CommunicatorPtr comm = Communicator::getCommunicator(); // default one
     testSolveWithoutPreconditionmethod< CSRSparseMatrix<ValueType> >();
     testSolveWithoutPreconditionmethod< ELLSparseMatrix<ValueType> >();
     testSolveWithoutPreconditionmethod< JDSSparseMatrix<ValueType> >();

@@ -75,7 +75,7 @@ struct P_SORTestConfig
 {
     P_SORTestConfig()
     {
-        comm = Communicator::get();
+        comm = Communicator::getCommunicator();
     }
 
     ~P_SORTestConfig()

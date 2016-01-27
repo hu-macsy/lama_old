@@ -218,7 +218,7 @@ private:
 LamaConfig::LamaConfig()
 {
     mCommunicationKind = scai::lama::Matrix::SYNCHRONOUS;
-    mComm              = scai::lama::Communicator::get();
+    mComm              = scai::lama::Communicator::getCommunicator();
     mContextType       = scai::common::context::Host;
     mMaxIter           = nIndex;
     mValueType         = scai::common::scalar::DOUBLE;

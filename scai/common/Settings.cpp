@@ -27,8 +27,7 @@
  *
  * @brief Managing some settings for CUDA specified by environment variables
  * @author Thomas Brandes
- * @date 04.05.2013
- * @since 1.0.0
+ * @date 16.01.2016
  */
 
 // hpp
@@ -39,6 +38,7 @@
 #include <cstring>
 #include <cstdlib>
 #include <sstream>
+#include <iostream>
 
 extern char **environ;
 
@@ -47,6 +47,41 @@ namespace scai
 
 namespace common
 {
+
+/* ----------------------------------------------------------------------------- */
+
+void Settings::parseArgs( int& argc, const char* argv[] )
+{
+    const bool replace = true;   // command line args overwrite environment settings
+
+    int unused_args = 0;
+
+    for ( int i = 0; i < argc; ++i )
+    {
+        if ( strncmp( argv[i], "--SCAI_", 7 ) == 0 )
+        {
+            std::string arg = argv[i] + 2;
+
+            std::string::size_type equalPos = arg.find_first_of( "=", 0 );
+
+            if ( std::string::npos != equalPos )
+            {
+                // tokenize it  name = val
+
+                std::string name = arg.substr( 0, equalPos );
+                std::string val  = arg.substr( equalPos + 1 );
+
+                putEnvironment( name.c_str(), val.c_str(), replace );
+            }
+        }
+        else
+        {
+            argv[unused_args++] = argv[i];
+        }
+    }
+
+    argc = unused_args;
+}
 
 /* ----------------------------------------------------------------------------- */
 
@@ -111,69 +146,74 @@ bool Settings::convertYesNoString( bool& flag, const char* stringVal )
 
 bool Settings::getEnvironment( bool& flag, const char* envVarName )
 {
-    const char* env = getenv( envVarName );
+    std::string val;
 
-    if( !env )
+    if ( !getEnvironment( val, envVarName ) )
     {
-        //SCAI_LOG_INFO( logger, envVarName << " not set, will use other default" )
-
-        return false; // no initialization by environment
+        return false;  // environment variable not set
     }
 
-    bool done = convertYesNoString( flag, env );
+    bool done = convertYesNoString( flag, val.c_str() );
 
-    if( !done )
+    if ( !done )
     {
-        //SCAI_LOG_ERROR( logger,
-        //                "Environment variable " << envVarName << "=" << env << ", is illegal setting, assume FALSE" )
-
-        flag = false;
+        return false;  //  no boolean value
     }
 
     return true; // environment variable was available
 }
 
+/* ----------------------------------------------------------------------------- */
+
 bool Settings::getEnvironment( int& val, const char* envVarName )
 {
-    const char* env = getenv( envVarName );
+    std::string envVal;
 
-    if( !env )
+    if ( !getEnvironment( envVal, envVarName ) )
     {
-        //SCAI_LOG_INFO( logger, envVarName << " not set, will select by compute capability" )
-
         return false; // no initialization by environment
     }
 
-    bool done = convertValue( val, env );
+    bool done = convertValue( val, envVal.c_str() );
 
-    if( !done )
+    if ( !done )
     {
-        //SCAI_LOG_ERROR( logger,
-        //                "Environment variable " << envVarName << "=" << env << ", is illegal setting, assume FALSE" )
-
         return false;
     }
 
     return true; // environment variable was available
 }
 
+/* ----------------------------------------------------------------------------- */
+
 bool Settings::getEnvironment( std::string& val, const char* envVarName )
 {
-    const char *env = getenv( envVarName );
+    const char* env = getenv( envVarName );
 
-    if( env )
+    if ( !env )
     {
-        val = env;
-
-        //SCAI_LOG_INFO( logger, envVarName << " = " << val );
-
-        return true;
+        return false;
     }
 
-    //SCAI_LOG_INFO( logger, envVarName << " not set" );
+    val = env;
 
-    return false;
+    if ( std::string::npos != val.find_first_of( RANK_SEPARATOR_CHAR, 0 ) )
+    {
+        // val = val_1,val_2,val_3
+
+        std::vector<std::string> values;
+
+        tokenize( values, env, RANK_SEPARATOR_CHAR );
+
+        int pos = sRank % static_cast<int>( values.size() );
+
+        val = values[pos];
+    } 
+
+    return true;
 }
+
+/* ----------------------------------------------------------------------------- */
 
 void Settings::tokenize( std::vector<std::string>& values, const std::string& input, const char seperator )
 {
@@ -204,23 +244,25 @@ bool Settings::getEnvironment( std::vector<std::string>& vals, const char* envVa
     return found;
 }
 
-bool Settings::init()
+/* ----------------------------------------------------------------------------- */
+
+void Settings::printEnvironment()
 {
     int i = 0;
     char *s = *environ;
 
-    for( ; s; i++ )
+    for ( ; s; i++ )
     {
-        if( strncmp( s, "SCAI_", 5 ) == 0 )
+        if ( strncmp( s, "SCAI_", 5 ) == 0 )
         {
-            printf( "%s\n", s );
+            std::cout << s << std::endl;
         }
 
         s = *( environ + i );
     }
-
-    return true;
 }
+
+/* ----------------------------------------------------------------------------- */
 
 void Settings::putEnvironment( const char* envVarName, const char* val, bool replace )
 {
@@ -243,6 +285,8 @@ void Settings::putEnvironment( const char* envVarName, const char* val, bool rep
 #endif
 }
 
+/* ----------------------------------------------------------------------------- */
+
 void Settings::putEnvironment( const char* envVarName, int val, bool replace )
 {
     std::ostringstream str_val;
@@ -250,6 +294,15 @@ void Settings::putEnvironment( const char* envVarName, int val, bool replace )
     str_val << val;
 
     putEnvironment( envVarName, str_val.str().c_str(), replace );
+}
+
+/* ----------------------------------------------------------------------------- */
+
+int Settings::sRank = 0;    // default value
+
+void Settings::setRank( int rank ) 
+{
+    sRank = rank;
 }
 
 } /* end namespace common */

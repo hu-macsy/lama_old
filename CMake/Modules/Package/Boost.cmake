@@ -45,7 +45,7 @@
 # set ( Boost_USE_STATIC_LIBS OFF )
 # set ( Boost_USE_MULTITHREADED OFF )
 
-if ( NOT DEFINED BOOST_INCLUDE_DIR )
+if ( NOT DEFINED Boost_INCLUDE_DIR )
 
 if    ( WIN32 )
     message ( STATUS "Setting special Boost options on Windows" )
@@ -73,20 +73,14 @@ if    ( Boost_INCLUDE_DIR )
 	set ( BOOST_INCLUDE_DIR "${Boost_INCLUDE_DIR}" ) # for getting the module names straight
 endif ( Boost_INCLUDE_DIR )
 
-message ( STATUS "Boost_INCLUDE_DIR ${Boost_INCLUDE_DIR} BOOST_INCLUDE_DIR ${BOOST_INCLUDE_DIR}" )
-
 # Note: we use BOOST_INCLUDE_DIR, Boost_<lib>_FOUND, Boost_<lib>_LIBRARY, but
 #       not Boost_FOUND, as it is false if some optional libraries are missing
 
 # Boost: include directory is mandatory ( LAMA uses shared pointer, function )
 
 if    ( BOOST_INCLUDE_DIR )
-	# TODO: SUMMARY
-    #message ( STATUS "BOOST_INCLUDE_DIR = ${BOOST_INCLUDE_DIR}" )
-    get_filename_component ( Boost_PATH "${BOOST_INCLUDE_DIR}" PATH )
-	# TODO: SUMMARY
-    #message ( STATUS "Boost_PATH = ${Boost_PATH}" )
     # Boost_PATH should be same as BOOST_ROOT
+    get_filename_component ( Boost_PATH "${BOOST_INCLUDE_DIR}" PATH )
 else  ( BOOST_INCLUDE_DIR )
     message ( STATUS "Boost (include directory) not found: give hint by environment variable BOOST_ROOT" ) 
 endif ( BOOST_INCLUDE_DIR )
@@ -130,27 +124,10 @@ else  ( ${Boost_VERSION} GREATER "104099" AND Boost_UNIT_TEST_FRAMEWORK_FOUND AN
 endif ( ${Boost_VERSION} GREATER "104099" AND Boost_UNIT_TEST_FRAMEWORK_FOUND AND Boost_REGEX_FOUND )
 
 
-# Check if cache variable is already set
-if    ( DEFINED BUILD_TEST )
-    # if use of package is enabled
-    if    ( ${BUILD_TEST} )
-        if    ( NOT ${FOUND_BOOST_TEST} )
-            # if package is enabled, but not found: ERROR!
-            message ( STATUS "Boost Test Framework or Bost Regex missing, but tests are enabled!" )
-        endif ( NOT ${FOUND_BOOST_TEST} )
-    endif ( ${BUILD_TEST} )
+# if use of package is enabled
+if    ( ${BUILD_TEST} AND NOT ${FOUND_BOOST_TEST} )
+    # if package is enabled, but not found: ERROR!
+    message ( STATUS "Boost Test Framework or Bost Regex missing, but tests are enabled!" )
+endif ( ${BUILD_TEST} AND NOT ${FOUND_BOOST_TEST} )
 
-# if cache variable is NOT set
-else  ( DEFINED BUILD_TEST )
-    # Check if package was found
-    if    ( ${FOUND_BOOST_TEST} )
-        set ( USE_PACKAGE TRUE )
-    else  ( ${FOUND_BOOST_TEST} )
-        set ( USE_PACKAGE FALSE )
-    endif ( ${FOUND_BOOST_TEST} )
-    
-    # Set cache variable
-    set ( BUILD_TEST ${USE_PACKAGE} CACHE BOOL "Enable / Disable building of tests" )
-endif ( DEFINED BUILD_TEST )
-
-endif ( NOT DEFINED BOOST_INCLUDE_DIR )
+endif ( NOT DEFINED Boost_INCLUDE_DIR )

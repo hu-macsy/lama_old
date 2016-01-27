@@ -97,7 +97,7 @@ BOOST_AUTO_TEST_CASE( ConstructorTest )
 
     initArray<float>( array, 128, 1.0 );
 
-    std::cout << "array : " << array << std::endl;
+    //std::cout << "array : " << array << std::endl;
 
     BOOST_ASSERT( array.isValid( host ) );
 }
@@ -115,7 +115,7 @@ BOOST_AUTO_TEST_CASE( PrefetchTest )
 
     initArray<float>( array, N, 1.0 );
 
-    std::cout << "array : " << array << std::endl;
+    //std::cout << "array : " << array << std::endl;
 
     BOOST_ASSERT( array.isValid( host ) );
     BOOST_ASSERT( !array.isValid( cuda ) );
@@ -124,7 +124,7 @@ BOOST_AUTO_TEST_CASE( PrefetchTest )
 
     // Note: array is already valid at cuda context even if not finished
 
-    std::cout << "array : " << array << std::endl;
+    //std::cout << "array : " << array << std::endl;
 
     BOOST_ASSERT( array.isValid( cuda ) );
 
@@ -133,7 +133,7 @@ BOOST_AUTO_TEST_CASE( PrefetchTest )
     float expected = N * ( N - 1 ) / 2 + N;
     float result = cudaSum( array, cuda );
 
-    std::cout << "sum (on CUDA device) is " << result << ", expected = " << expected << std::endl;
+    //std::cout << "sum (on CUDA device) is " << result << ", expected = " << expected << std::endl;
     BOOST_CHECK_EQUAL( result, expected );
 }
 
@@ -162,8 +162,7 @@ BOOST_AUTO_TEST_CASE( CopyTest )
     float expected = cudaSum( array, cuda );
     float result = cudaSum( array1, cuda );
 
-    std::cout << "HArray, copy: sum (on CUDA device) is " << result 
-              << ", expected = " << expected << std::endl;
+    //std::cout << "HArray, copy: sum (on CUDA device) is " << result << ", expected = " << expected << std::endl;
 
     BOOST_CHECK_EQUAL( result, expected );
 }

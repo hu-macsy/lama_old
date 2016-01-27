@@ -35,7 +35,7 @@
 #!/bin/bash
 
 # Creating dir named by YEAR_MONTH_DAY-HOURMINUTE
-dirname=xmlresult$(date +%y_%m_%d-%H%M)
+dirname=xmlresult_$(date +%s)
 echo "Create result directory: ${dirname}"
 mkdir ${dirname}
 

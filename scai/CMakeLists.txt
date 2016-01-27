@@ -44,9 +44,9 @@ include ( SCAIAssert )
 include ( SetCPPFlags )
 
 include ( CheckC++11 )
-if    ( NOT CXX_SUPPORTS_C11 )
+if    ( NOT CXX_SUPPORTS_C11 OR BUILD_TEST )
     include( Package/Boost )
-endif ( NOT CXX_SUPPORTS_C11 )
+endif ( NOT CXX_SUPPORTS_C11 OR BUILD_TEST )
 
 include ( Functions/checkValue )
 include ( Functions/setAndCheckCache )
@@ -132,7 +132,7 @@ concatCacheArguments ( scai_common "CACHE_ARGS" )
 #message ( STATUS "common CACHE_ARGS ${CACHE_ARGS}" )
 
 ExternalProject_Add ( scai_common 
-			DEPENDS ${SCAI_COMMON_INTERNAL_DEPS}
+		DEPENDS ${SCAI_COMMON_INTERNAL_DEPS}
             PREFIX common
             SOURCE_DIR ${CMAKE_SOURCE_DIR}/common
             CMAKE_ARGS "-DSCAI_COMPLETE_BUILD=1"
@@ -214,8 +214,6 @@ ExternalProject_Add ( scai_blaskernel
 
 concatCacheArguments ( scai_lama "CACHE_ARGS" )
 #message ( STATUS "lama CACHE_ARGS ${CACHE_ARGS}" )
-
-configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/lama.hpp.in" "${CMAKE_CURRENT_SOURCE_DIR}/lama.hpp" )
 
 ExternalProject_Add ( scai_lama
             DEPENDS ${SCAI_LAMA_INTERNAL_DEPS}

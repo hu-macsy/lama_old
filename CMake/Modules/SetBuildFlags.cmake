@@ -87,6 +87,13 @@ else  ( NOT SCAI_LIBRARY_TYPE )
 endif ( NOT SCAI_LIBRARY_TYPE )
 checkValue ( ${SCAI_LIBRARY_TYPE} "${SCAI_LIBRARY_TYPE_OPTIONS}" )
 
+
 set ( TRUE_FALSE_CHOICE TRUE FALSE )
+
+# Set cache variable
+set ( BUILD_TEST TRUE CACHE BOOL "Enable / Disable building of tests" )
+checkValue ( ${BUILD_TEST} "${TRUE_FALSE_CHOICE}" )
+
+## Check if lama should be build for code coverage
 set ( USE_CODE_COVERAGE FALSE CACHE BOOL "Enable / Disable use of Code Coverage" )
 checkValue ( ${USE_CODE_COVERAGE} "${TRUE_FALSE_CHOICE}" )

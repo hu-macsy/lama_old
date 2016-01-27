@@ -53,7 +53,7 @@ struct P_MatrixCreatorTestConfig
 {
     P_MatrixCreatorTestConfig()
     {
-        comm = Communicator::get();
+        comm = Communicator::getCommunicator();
     }
 
     ~P_MatrixCreatorTestConfig()

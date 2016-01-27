@@ -61,6 +61,20 @@ else  ( NOT SCAI_COMPLETE_BUILD )
 	CheckValueAtCompleteBuild ( logging )
 endif ( NOT SCAI_COMPLETE_BUILD )
 
+include ( CheckC++11 )
+if    ( NOT CXX_SUPPORTS_C11 OR BUILD_TEST )
+    include( Package/Boost )
+endif ( NOT CXX_SUPPORTS_C11 OR BUILD_TEST )
+
+if    ( NOT CXX_SUPPORTS_C11 )
+    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../boost_check.hpp.in"
+                     "${CMAKE_CURRENT_BINARY_DIR}/boost_check.hpp" )
+else  ( NOT CXX_SUPPORTS_C11 )
+    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../boost_check.hpp.in_empty"
+                     "${CMAKE_CURRENT_BINARY_DIR}/boost_check.hpp" )
+endif ( NOT CXX_SUPPORTS_C11 )
+install ( FILES ${CMAKE_CURRENT_BINARY_DIR}/boost_check.hpp DESTINATION include/scai )
+
 ### include all search packages
 include ( InternalDependencies )
 # no external dependencies
@@ -91,6 +105,7 @@ include_directories ( ../.. )
 foreach    ( module ${SCAI_LOGGING_INTERNAL_DEPS} )
 	string ( TOUPPER ${module} upper_module )
     include_directories( ${${upper_module}_INCLUDE_DIR} )
+    message ( STATUS "inc dir: ${${upper_module}_INCLUDE_DIR}")
 endforeach ( module ${SCAI_LOGGING_INTERNAL_DEPS} )
 
 ### build library

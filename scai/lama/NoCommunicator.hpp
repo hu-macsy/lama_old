@@ -173,7 +173,7 @@ public:
 
     // key for factory 
 
-    static std::string createValue();
+    static communicator::CommunicatorKind createValue();
 };
 
 } /* end namespace lama */
