@@ -934,8 +934,12 @@ std::ostream& operator<<( std::ostream& stream, const Complex<ValueType>& object
 #undef COMPLEX_OPERATOR_NONMEMBER_CUDA
 #undef COMPLEX_OPERATOR_NONMEMBER_NONCUDA
 
-# define more convenient names
+// define more convenient names
+
+#ifdef SCAI_COMPLEX_SUPPORTED
 
 typedef scai::common::Complex<float> ComplexFloat;
 typedef scai::common::Complex<double> ComplexDouble;
 typedef scai::common::Complex<long double> ComplexLongDouble;
+
+#endif

@@ -1075,13 +1075,11 @@ void MatrixStorage<ValueType>::setRawCSRData(
     const IndexType* const ja,
     const OtherValueType* const values )
 {
-    using hmemo::HArrayRef;
-
     // wrap the pointer data into LAMA arrays ( without copies )
 
-    HArrayRef<IndexType> csrIA( numRows + 1, ia );
-    HArrayRef<IndexType> csrJA( numValues, ja );
-    HArrayRef<OtherValueType> csrValues( numValues, values );
+    hmemo::HArrayRef<IndexType> csrIA( numRows + 1, ia );
+    hmemo::HArrayRef<IndexType> csrJA( numValues, ja );
+    hmemo::HArrayRef<OtherValueType> csrValues( numValues, values );
 
     // now set the data on the context of this storage via virtual method
 

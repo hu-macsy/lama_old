@@ -37,7 +37,7 @@
 #include <scai/lama/distribution/BlockDistribution.hpp>
 
 #include <scai/lama/test/distributed/DistributionTest.hpp>
-#include <scai/common/test/TestMacros.hpp>
+#include <scai/lama/test/TestMacros.hpp>
 
 using namespace scai::lama;
 
@@ -52,7 +52,7 @@ struct BlockDistributionTestConfig
 {
     BlockDistributionTestConfig()
     {
-        comm = Communicator::get( "MPI" );
+        comm = Communicator::getCommunicator( scai::lama::communicator::MPI );
         rank = comm->getRank();
         size = comm->getSize();
         blockSize = 17;

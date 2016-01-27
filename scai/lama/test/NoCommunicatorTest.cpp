@@ -35,7 +35,7 @@
 #include <boost/mpl/list.hpp>
 
 #include <scai/lama/test/distributed/CommunicatorTest.hpp>
-#include <scai/common/test/TestMacros.hpp>
+#include <scai/lama/test/TestMacros.hpp>
 
 using namespace scai::lama;
 using namespace scai::hmemo;
@@ -53,7 +53,7 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.NoCommunicatorTest" )
 
 BOOST_AUTO_TEST_CASE( commonTestCases )
 {
-    CommunicatorTest communicatorTest( "none" );
+    CommunicatorTest communicatorTest( scai::lama::communicator::NO );
 
     if ( base_test_case )
     {

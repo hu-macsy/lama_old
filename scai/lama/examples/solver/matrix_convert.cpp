@@ -53,16 +53,16 @@ struct CommandLineOptions
     string outFileName;
 
     File::FileType outFileType;
-    File::ScalarType inDataType;
-    File::ScalarType outDataType;
+    common::scalar::ScalarType inDataType;
+    common::scalar::ScalarType outDataType;
 
     CommandLineOptions()
     {
         inFileName = "";
         outFileName = "";
         outFileType = File::DEFAULT;
-        inDataType  = File::UNKNOWN;        // needs to be determined
-        outDataType = File::INTERNAL;       // same as input data type
+        inDataType  = common::scalar::UNKNOWN;        // needs to be determined
+        outDataType = common::scalar::INTERNAL;       // same as input data type
     }
 
     bool parseOption( const std::string& option )
@@ -81,35 +81,35 @@ struct CommandLineOptions
         } 
         else if ( option == "-S" )
         {
-            inDataType = File::FLOAT;
+            inDataType = common::scalar::FLOAT;
         } 
         else if ( option == "-C" )
         {
-            inDataType = File::COMPLEX;
+            inDataType = common::scalar::COMPLEX;
         } 
         else if ( option == "-D" )
         {
-            inDataType = File::DOUBLE;
+            inDataType = common::scalar::DOUBLE;
         } 
         else if ( option == "-Z" )
         {
-            inDataType = File::DOUBLE_COMPLEX;
+            inDataType = common::scalar::DOUBLE_COMPLEX;
         } 
         else if ( option == "-s" )
         {
-            outDataType = File::FLOAT;
+            outDataType = common::scalar::FLOAT;
         } 
         else if ( option == "-c" )
         {
-            outDataType = File::COMPLEX;
+            outDataType = common::scalar::COMPLEX;
         } 
         else if ( option == "-d" )
         {
-            outDataType = File::DOUBLE;
+            outDataType = common::scalar::DOUBLE;
         } 
         else if ( option == "-z" )
         {
-            outDataType = File::DOUBLE_COMPLEX;
+            outDataType = common::scalar::DOUBLE_COMPLEX;
         } 
         else if ( inFileName == "" )
         {
@@ -171,10 +171,10 @@ struct CommandLineOptions
 
 void convertMatrix( 
     const std::string& inFileName, 
-    const File::ScalarType inDataType,
+    const common::scalar::ScalarType inDataType,
     const std::string& outFileName, 
     const File::FileType outFileType, 
-    const File::ScalarType outDataType )
+    const common::scalar::ScalarType outDataType )
 {
     common::shared_ptr<Matrix> m ( Matrix::getMatrix( Format::CSR, inDataType ) );
 
@@ -188,10 +188,10 @@ void convertMatrix(
 
 void convertVector( 
     const std::string& inFileName, 
-    const File::ScalarType inDataType,
+    const common::scalar::ScalarType inDataType,
     const std::string& outFileName, 
     const File::FileType outFileType, 
-    const File::ScalarType outDataType )
+    const common::scalar::ScalarType outDataType )
 {
     // Note: inFileType is given implicitly by the input file
     // use vector of inDataType so no information is lost
@@ -268,10 +268,10 @@ int main( int argc, char* argv[] )
     cout << ", inDataType = " << options.inDataType;
     cout << ", outDataType = " << options.outDataType << endl;
 
-    if ( options.inDataType == File::UNKNOWN )
+    if ( options.inDataType == common::scalar::UNKNOWN )
     {
         cout << "No input data type specified, take Double as default" << endl;
-        options.inDataType = File::DOUBLE;
+        options.inDataType = common::scalar::DOUBLE;
     }
 
     if ( isVector )

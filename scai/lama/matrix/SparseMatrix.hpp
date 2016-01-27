@@ -51,8 +51,6 @@
 namespace scai
 {
 
-using tasking::SyncToken;
-
 namespace lama
 {
 
@@ -396,7 +394,7 @@ public:
         const hmemo::HArray<ValueType>& localX,
         hmemo::HArray<ValueType>& haloX,
         common::function<
-        SyncToken*(
+        tasking::SyncToken*(
             const MatrixStorage<ValueType>* localMatrix,
             hmemo::HArray<ValueType>& localResult,
             const hmemo::HArray<ValueType>& localX )> localAsyncF,
@@ -426,12 +424,12 @@ public:
         const hmemo::HArray<ValueType>& localX,
         const hmemo::HArray<ValueType>& localY,
         common::function<
-        SyncToken*(
+        tasking::SyncToken*(
             const MatrixStorage<ValueType>* localMatrix,
             hmemo::HArray<ValueType>& localResult,
             const hmemo::HArray<ValueType>& localX )> calcF,
         common::function<
-        /*SyncToken**/void(
+        /*tasking::SyncToken**/void(
             hmemo::HArray<ValueType>& localResult,
             const hmemo::HArray<ValueType>& localX,
             const hmemo::HArray<ValueType>& localY )> addF ) const;

@@ -54,7 +54,7 @@
 #include <scai/lama/expression/MatrixVectorExpressions.hpp>
 #include <scai/lama/expression/MatrixExpressions.hpp>
 
-#include <scai/common/test/TestMacros.hpp>
+#include <scai/lama/test/TestMacros.hpp>
 #include <scai/lama/test/SparseMatrixHelper.hpp>
 #include <scai/lama/test/SameMatrixHelper.hpp>
 
@@ -115,7 +115,7 @@ SCAI_LOG_INFO( logger, "cTorTest" );
 //TODO: to P_ test?
 const IndexType n = 4;
 
-CommunicatorPtr comm = Communicator::get( "MPI" );
+CommunicatorPtr comm = Communicator::getCommunicator( scai::lama::communicator::MPI );
 
 DistributionPtr bdist( new BlockDistribution( n, comm ) );
 DistributionPtr cdist( new CyclicDistribution( n, 1, comm ) );

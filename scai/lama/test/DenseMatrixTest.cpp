@@ -35,7 +35,7 @@
 #include <boost/mpl/list.hpp>
 
 #include <scai/lama/test/TestSparseMatrices.hpp>
-#include <scai/common/test/TestMacros.hpp>
+#include <scai/lama/test/TestMacros.hpp>
 #include <scai/lama/test/SameMatrixHelper.hpp>
 
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>

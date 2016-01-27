@@ -82,6 +82,18 @@ class Communicator;
 
 typedef common::shared_ptr<const Communicator> CommunicatorPtr;
 
+namespace communicator
+{
+
+typedef enum
+{
+    NO,
+    MPI,
+	GPI,
+	MAX_COMMUNICATOR
+} CommunicatorKind;
+
+}
 /**
  * @brief Base and interface class for communicators used in LAMA
  *
@@ -103,7 +115,7 @@ typedef common::shared_ptr<const Communicator> CommunicatorPtr;
 class COMMON_DLL_IMPORTEXPORT Communicator: 
 
     public  scai::common::Printable,
-    public  scai::common::Factory<std::string, CommunicatorPtr>,
+    public  scai::common::Factory<communicator::CommunicatorKind, CommunicatorPtr>,
     private scai::common::NonCopyable
 {
 
@@ -117,14 +129,14 @@ public:
      *  More convenient than Factory::create that throws Exception
      */
 
-    static CommunicatorPtr get( const std::string& type );
+    static CommunicatorPtr getCommunicator( const communicator::CommunicatorKind& type );
 
     /** Get a default communicator from the factory.
      *
      *  @returns pointer to the default communicator.
      */
 
-    static CommunicatorPtr get();
+    static CommunicatorPtr getCommunicator();
 
     /** Enumeration type for supported thread safety levels. */
 
@@ -708,7 +720,7 @@ public:
 
     /** @brief Getter for the type of a communicator. */
 
-    const std::string& getType() const
+    const communicator::CommunicatorKind& getType() const
     {
         return mCommunicatorType;
     }
@@ -728,9 +740,9 @@ protected:
 
     // Default constructor can only be called by base classes.
 
-    Communicator( const std::string& type );
+    Communicator( const communicator::CommunicatorKind& type );
 
-    std::string mCommunicatorType;
+    communicator::CommunicatorKind mCommunicatorType;
 
     int mNodeRank; // rank of this processor on its node
     int mNodeSize; // number of processors on same node

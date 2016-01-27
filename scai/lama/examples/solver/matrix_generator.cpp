@@ -72,7 +72,7 @@ void printUsage( const char* prog_name )
 
 int main( int argc, char* argv[] )
 {
-    CommunicatorPtr comm = Communicator::get();
+    CommunicatorPtr comm = Communicator::getCommunicator();
 
     int myRank = comm->getRank();
 

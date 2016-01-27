@@ -36,7 +36,7 @@
 
 #include <scai/lama/distribution/MetisDistribution.hpp>
 
-#include <scai/common/test/TestMacros.hpp>
+#include <scai/lama/test/TestMacros.hpp>
 #include <scai/lama/test/Configuration.hpp>
 #include <scai/lama/test/distributed/DistributionTest.hpp>
 
@@ -68,7 +68,7 @@ struct MetisDistributionTestConfig
 {
     MetisDistributionTestConfig()
     {
-        comm = Communicator::get( "MPI" );
+        comm = Communicator::getCommunicator( scai::lama::communicator::MPI );
         rank = comm->getRank();
         size = comm->getSize();
         std::string prefix = Configuration::getInstance().getPath();

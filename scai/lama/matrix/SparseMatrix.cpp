@@ -1467,7 +1467,7 @@ void SparseMatrix<ValueType>::haloOperationAsync(
     const HArray<ValueType>& localX,
     HArray<ValueType>& haloX,
     common::function<
-    SyncToken*(
+    tasking::SyncToken*(
         const MatrixStorage<ValueType>* localMatrix,
         HArray<ValueType>& localResult,
         const HArray<ValueType>& localX )> localAsyncF,
@@ -1498,7 +1498,7 @@ void SparseMatrix<ValueType>::haloOperationAsync(
         mTempSendValues.prefetch( comm.getCommunicationContext( mTempSendValues ) );
     }
 
-    common::unique_ptr<SyncToken> localComputation;
+    common::unique_ptr<tasking::SyncToken> localComputation;
 
     {
         SCAI_REGION( "Mat.Sp.asyncLocal" )
@@ -1569,12 +1569,12 @@ void SparseMatrix<ValueType>::vectorHaloOperationAsync(
     const HArray<ValueType>& localX,
     const HArray<ValueType>& localY,
     common::function<
-    SyncToken*(
+    tasking::SyncToken*(
         const MatrixStorage<ValueType>* localMatrix,
         HArray<ValueType>& localResult,
         const HArray<ValueType>& localX )> calcF,
     common::function<
-    /*SyncToken**/void(
+    /*tasking::SyncToken**/void(
         HArray<ValueType>& localResult,
         const HArray<ValueType>& localX,
         const HArray<ValueType>& localY )> addF ) const
@@ -1644,7 +1644,7 @@ void SparseMatrix<ValueType>::vectorHaloOperationAsync(
         }
     }
 
-    common::unique_ptr<SyncToken> localComputation;
+    common::unique_ptr<tasking::SyncToken> localComputation;
 
     // calc local vector parts
     {
@@ -1740,7 +1740,7 @@ void SparseMatrix<ValueType>::matrixTimesVectorImpl(
         const ValueType beta,
         const HArray<ValueType>& y ) const = &MatrixStorage<ValueType>::matrixTimesVector;
 
-    SyncToken* (scai::lama::MatrixStorage<ValueType>::*matrixTimesVectorAsync)(
+    tasking::SyncToken* (scai::lama::MatrixStorage<ValueType>::*matrixTimesVectorAsync)(
         HArray<ValueType>& result,
         const ValueType alpha,
         const HArray<ValueType>& x,
@@ -1775,7 +1775,7 @@ void SparseMatrix<ValueType>::matrixTimesVectorImpl(
     else
     {
         function<
-        SyncToken*(
+        tasking::SyncToken*(
             const MatrixStorage<ValueType>* localMatrix,
             HArray<ValueType>& localResult,
             const HArray<ValueType>& localX )> localAsyncF =
@@ -1813,7 +1813,7 @@ void SparseMatrix<ValueType>::vectorTimesMatrixImpl(
         const ValueType beta,
         const HArray<ValueType>& y ) const = &MatrixStorage<ValueType>::vectorTimesMatrix;
 
-    SyncToken* (MatrixStorage<ValueType>::*vectorTimesMatrixAsync)(
+    tasking::SyncToken* (MatrixStorage<ValueType>::*vectorTimesMatrixAsync)(
         HArray<ValueType>& result,
         const ValueType alpha,
         const HArray<ValueType>& x,
@@ -1830,7 +1830,7 @@ void SparseMatrix<ValueType>::vectorTimesMatrixImpl(
         const ValueType beta,
         const HArray<ValueType>& y ) = &DenseVector<ValueType>::vectorPlusVector;
 
-    /*SyncToken**/void (*vPlusVAsync)(
+    /*tasking::SyncToken**/void (*vPlusVAsync)(
         ContextPtr context,
         HArray<ValueType>& result,
         const ValueType alpha,
@@ -1865,14 +1865,14 @@ void SparseMatrix<ValueType>::vectorTimesMatrixImpl(
     else
     {
         function<
-        SyncToken*(
+        tasking::SyncToken*(
             const MatrixStorage<ValueType>* localMatrix,
             HArray<ValueType>& localResult,
             const HArray<ValueType>& localX )> calcAsyncF = bind( vectorTimesMatrixAsync, _1,
                     _2, static_cast<ValueType>(1.0), _3, static_cast<ValueType>(0.0), _2 );
 
         function<
-        /*SyncToken**/void(
+        /*tasking::SyncToken**/void(
             HArray<ValueType>& localResult,
             const HArray<ValueType>& localX,
             const HArray<ValueType>& localY )> addAsyncF = bind( vPlusVAsync, hostContext, _1,
@@ -2518,7 +2518,7 @@ void SparseMatrix<ValueType>::readFromFile( const std::string& fileName )
     SCAI_REGION( "Mat.Sp.readFromFile" )
 
     // Take the current default communicator
-    CommunicatorPtr comm = Communicator::get();
+    CommunicatorPtr comm = Communicator::getCommunicator();
 
     IndexType myRank = comm->getRank();
     IndexType host = 0; // reading processor

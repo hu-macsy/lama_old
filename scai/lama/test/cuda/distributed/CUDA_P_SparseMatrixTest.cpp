@@ -50,7 +50,7 @@
 
 #include <scai/lama/test/cuda/CUDAContext.hpp>
 
-#include <scai/common/test/TestMacros.hpp>
+#include <scai/lama/test/TestMacros.hpp>
 
 using namespace scai::lama;
 

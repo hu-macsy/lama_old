@@ -55,3 +55,9 @@ endif ( CUDA_FOUND AND USE_CUDA )
 if    ( USE_MIC )
     add_subdirectory ( mic )
 endif ( USE_MIC )
+
+if ( USE_CODE_COVERAGE )
+    ### Copy the cca.sh and ccajen.sh file in build directory ###
+    #configure_file( "${CMAKE_CURRENT_SOURCE_DIR}/cca.sh.in" "${CMAKE_CURRENT_BINARY_DIR}/cca.sh" @ONLY)
+    configure_file( "${CMAKE_CURRENT_SOURCE_DIR}/ccajen.sh.in" "${CMAKE_CURRENT_BINARY_DIR}/ccajen.sh" @ONLY)
+endif ( USE_CODE_COVERAGE )

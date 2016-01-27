@@ -31,11 +31,11 @@
 ###
 
 set ( CXX_SOURCES
+      ContextTest.cpp  
       KernelInterfaceTest.cpp
+      ReplaceTest.cpp  
       SimpleTest.cpp  
       TraitTest.cpp  
-      ReplaceTest.cpp  
-      ContextTest.cpp  
 ) 
 
 # Boost is not required, but if not available tests are not built
