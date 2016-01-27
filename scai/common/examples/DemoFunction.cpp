@@ -10,6 +10,8 @@
 #include <scai/common/function.hpp>
 #include <scai/common/bind.hpp>
 
+#include <iostream>
+
 int f ( double x, int p )
 {
    double f = 1.0;
