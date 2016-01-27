@@ -35,7 +35,7 @@
 
 ## Boost is added where we have tests, need a fix for this
 
-set ( SCAI_COMMON_EXTERNAL_DEPS     OpenMP CUDA Thread )
+set ( SCAI_COMMON_EXTERNAL_DEPS     OpenMP CUDA Thread Boost )
 set ( SCAI_LOGGING_EXTERNAL_DEPS )
 set ( SCAI_TRACING_EXTERNAL_DEPS )
 set ( SCAI_TASKING_EXTERNAL_DEPS                Thread )
