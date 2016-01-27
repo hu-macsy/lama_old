@@ -709,13 +709,13 @@ ValueType Complex<ValueType>::metrikHost( void ) const
     return Math::sqrt( real() * real() + imag() * imag() );
 }
 
-template<typename ValueType>
-MIC_CALLABLE_MEMBER
-CUDA_CALLABLE_MEMBER
-inline ValueType abs( const Complex<ValueType>& a )
-{
-    return ( Math::sqrt( a.real() * a.real() + a.imag() * a.imag() ) );
-}
+//template<typename ValueType>
+//MIC_CALLABLE_MEMBER
+//CUDA_CALLABLE_MEMBER
+//inline ValueType abs( const Complex<ValueType>& a )
+//{
+//    return ( Math::sqrt( a.real() * a.real() + a.imag() * a.imag() ) );
+//}
 
 template<typename ValueType>
 CUDA_CALLABLE_MEMBER inline Complex<ValueType> conj( const Complex<ValueType>& a )
@@ -726,30 +726,30 @@ CUDA_CALLABLE_MEMBER inline Complex<ValueType> conj( const Complex<ValueType>& a
 /*
  * long double version must not be CUDA_CALLABLE_MEMBER
  */
-inline long double abs( const Complex<long double>& a )
-{
-    return ( Math::sqrt( a.real() * a.real() + a.imag() * a.imag() ) );
-}
-
-template<typename ValueType>
-MIC_CALLABLE_MEMBER
-CUDA_CALLABLE_MEMBER
-inline Complex<ValueType> fabs( const Complex<ValueType>& a )
-{
-    Complex<ValueType> x = a;
-
-    if( x.real() < 0 )
-    {
-        x.real( x.real() * -1 );
-    }
-
-    if( x.imag() < 0 )
-    {
-        x.imag( x.imag() * -1 );
-    }
-
-    return x;
-}
+//inline long double abs( const Complex<long double>& a )
+//{
+//    return ( Math::sqrt( a.real() * a.real() + a.imag() * a.imag() ) );
+//}
+//
+//template<typename ValueType>
+//MIC_CALLABLE_MEMBER
+//CUDA_CALLABLE_MEMBER
+//inline Complex<ValueType> fabs( const Complex<ValueType>& a )
+//{
+//    Complex<ValueType> x = a;
+//
+//    if( x.real() < 0 )
+//    {
+//        x.real( x.real() * -1 );
+//    }
+//
+//    if( x.imag() < 0 )
+//    {
+//        x.imag( x.imag() * -1 );
+//    }
+//
+//    return x;
+//}
 
 /*
  * @brief Check if a is lower than b.
@@ -902,7 +902,7 @@ inline Complex<ValueType> sqrt( const Complex<ValueType>& a )
 
     if( x == ValueType( 0 ) )
     {
-        ValueType t = sqrt( Math::abs( y ) / 2 );
+        ValueType t = Math::sqrt( Math::abs( y ) / 2 );
         return Complex<ValueType>( t, y < ValueType( 0 ) ? -t : t );
     }
     else

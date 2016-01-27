@@ -33,6 +33,7 @@
 #pragma once
 
 #include <scai/common/ScalarType.hpp>
+#include <scai/common/Math.hpp>
 
 #include <cmath>
 #include <cstdlib>
@@ -68,7 +69,7 @@ public:
     {
         // this is a good default but might be different for some value types
 
-        return sqrt( val );
+        return common::Math::sqrt( val );
     }
 
     /** Absolute value function for ValueType
@@ -78,7 +79,7 @@ public:
      */
     static inline ValueType abs( ValueType val )
     {
-        return abs( val );
+        return common::Math::abs( val );
     }
 
     static inline ValueType conj( ValueType val )
@@ -184,11 +185,11 @@ public:
 
     static inline long double sqrt( long double x )
     {
-        return ::sqrtl( x );
+        return common::Math::sqrt( x );
     }
     static inline long double abs( long double x )
     {
-        return ::fabsl( x );
+        return common::Math::abs( x );
     }
 
     static inline long double conj( long double x )
@@ -234,11 +235,11 @@ public:
 
     static inline double sqrt( double x )
     {
-        return ::sqrt( x );
+        return common::Math::sqrt( x );
     }
     static inline double abs( double x )
     {
-        return ::fabs( x );
+        return common::Math::abs( x );
     }
     static inline double conj( double x )
     {
@@ -280,11 +281,11 @@ public:
 
     static inline float sqrt( float x )
     {
-        return ::sqrtf( x );
+        return common::Math::sqrt( x );
     }
     static inline float abs( float x )
     {
-        return ::fabsf( x );
+        return common::Math::abs( x );
     }
     static inline float conj( float x )
     {
@@ -328,11 +329,11 @@ public:
 
     static inline ComplexFloat sqrt( ComplexFloat x )
     {
-        return scai::common::sqrt( x );
+    	return common::Math::sqrt( x );
     }
     static inline ComplexFloat abs( ComplexFloat x )
     {
-        return scai::common::abs( x );
+        return common::Math::abs( x );
     }
 
     static inline ComplexFloat conj( ComplexFloat x )
@@ -375,7 +376,7 @@ public:
 
     static inline ComplexDouble sqrt( ComplexDouble x )
     {
-        return scai::common::sqrt( x );
+        return common::Math::sqrt( x );
     }
     static inline ComplexDouble conj( ComplexDouble x )
     {
@@ -383,7 +384,7 @@ public:
     }
     static inline ComplexDouble abs( ComplexDouble x )
     {
-        return scai::common::abs( x );
+        return common::Math::abs( x );
     }
     static inline ComplexDouble getEps()
     {
@@ -421,12 +422,12 @@ public:
 
     static inline ComplexLongDouble sqrt( ComplexLongDouble x )
     {
-        return scai::common::sqrt( x );
+        return common::Math::sqrt( x );
     }
 
     static inline ComplexLongDouble abs( ComplexLongDouble x )
     {
-        return scai::common::abs( x );
+        return common::Math::abs( x );
     }
 
     static inline ComplexLongDouble conj( ComplexLongDouble x )
