@@ -265,10 +265,6 @@ private:
     	{
     		if( KernelRegistry::mInstance )
     		{
-    			SCAI_LOG_INFO( KernelRegistry::logger, "Guardian --> delete Instance")
-
-		//	printAll();
-
     			delete KernelRegistry::mInstance;
     		}
     	}

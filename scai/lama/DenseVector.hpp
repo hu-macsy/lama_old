@@ -57,8 +57,6 @@
 // std
 #include <fstream>
 
-using namespace scai::tasking;
-
 namespace scai
 {
 
@@ -342,7 +340,7 @@ public:
      * @param[in] halo  the halo which describes which remote values should be put into the halo cache.
      * @return          a SyncToken which can be used to synchronize to the asynchronous update.
      */
-    SyncToken* updateHaloAsync( const Halo& halo ) const;
+    tasking::SyncToken* updateHaloAsync( const Halo& halo ) const;
 
     virtual Scalar getValue( IndexType globalIndex ) const;
 
@@ -366,7 +364,7 @@ public:
         const ValueType beta,
         const scai::hmemo::HArray<ValueType>& y );
 
-    static SyncToken* vectorPlusVectorAsync(
+    static tasking::SyncToken* vectorPlusVectorAsync(
         hmemo::ContextPtr prefContext,
         hmemo::HArray<ValueType>& result,
         const ValueType alpha,

@@ -680,7 +680,9 @@ void JDSStorage<ValueType>::sortRows( ContextPtr context )
 
     SCAI_CONTEXT_ACCESS( loc )
 
-    mNumDiagonals = reduce[loc]( ilg.get(), mNumRows, common::reduction::MAX );
+    // reduce with ABS_MAX returns 0 ( instead of -max ) for mNumRows == 0 
+
+    mNumDiagonals = reduce[loc]( ilg.get(), mNumRows, common::reduction::ABS_MAX );
 
     SCAI_LOG_INFO( logger, *this << "sortRows on " << *loc << ", #jagged diagonals = " << mNumDiagonals )
 

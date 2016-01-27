@@ -2,21 +2,22 @@ Complex
 -------
 
 The common library provides an own implementation for complex numbers instead
-of using the std::complex type.
+of using the std::complex type. The template class Complex can be instantiated
+for the types float, double or long. Here is a short example:
 
 .. code-block:: c++
 
-    namespace scai
-    {
-        namespace common
-        {
-            template<typename ValueType>
-            class Complex
-            {
-                ...
-            }
-        }
-    }
+  #include <scai/common/Complex.hpp>
+
+  using scai::common::Complex;
+ 
+  Complex<float> a( 1.0f, 1.0f );
+  Complex<double> b( 2.0, -1.0 );
+  std::cout << "a = " << a << ", b = " << b << std::endl;
+
+Advantages:
+
+ * output operator just prints the two values re and im
 
 Advantages:
 

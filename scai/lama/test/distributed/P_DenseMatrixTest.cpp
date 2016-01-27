@@ -48,7 +48,7 @@
 #include <scai/lama/expression/MatrixExpressions.hpp>
 
 #include <scai/lama/test/TestSparseMatrices.hpp>
-#include <scai/common/test/TestMacros.hpp>
+#include <scai/lama/test/TestMacros.hpp>
 
 using namespace scai::common;
 using namespace scai::lama;
@@ -64,7 +64,7 @@ struct P_DenseMatrixTestConfig
 {
     P_DenseMatrixTestConfig()
     {
-        comm = Communicator::get( "MPI" );
+        comm = Communicator::getCommunicator( scai::lama::communicator::MPI );
     }
 
     ~P_DenseMatrixTestConfig()

@@ -54,7 +54,7 @@ namespace lama
 SCAI_LOG_DEF_LOGGER( NoCommunicator::logger, "Communicator.NoCommunicator" )
 
 NoCommunicator::NoCommunicator()
-                : CRTPCommunicator<NoCommunicator>( "none" )
+                : CRTPCommunicator<NoCommunicator>( communicator::NO )
 {
     SCAI_LOG_DEBUG( logger, "NoCommunicator()" )
 }
@@ -326,9 +326,9 @@ CommunicatorPtr NoCommunicator::create()
 
 /* --------------------------------------------------------------- */
 
-std::string NoCommunicator::createValue()
+communicator::CommunicatorKind NoCommunicator::createValue()
 {
-    return "none";
+    return communicator::NO;
 }
 
 } /* end namespace lama */

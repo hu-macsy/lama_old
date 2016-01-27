@@ -43,7 +43,7 @@
 
 #include <scai/lama/DenseVector.hpp>
 
-#include <scai/common/test/TestMacros.hpp>
+#include <scai/lama/test/TestMacros.hpp>
 
 #include <scai/hmemo/HArray.hpp>
 
@@ -55,10 +55,6 @@
  *
  *  For efficiency on distributed matrices, it will do it row-wise.
  */
-
-using namespace scai::lama;
-using namespace scai::hmemo;
-
 
 /**
  * @brief testSameMatrix() checks whether two matrices have the same dimensions and values. Equality of values is checked
@@ -77,8 +73,8 @@ void testSameMatrix( const MatrixType1& m1, const MatrixType2& m2 )
     BOOST_REQUIRE_EQUAL( n, m2.getNumColumns() );
 
     // create replicated vectors for the rows with the same value type
-    VectorPtr ptrRow1(DenseVector<ValueType1>::createVector(m1.getValueType(), DistributionPtr( new NoDistribution( m ))));
-    VectorPtr ptrRow2(DenseVector<ValueType2>::createVector(m2.getValueType(), DistributionPtr( new NoDistribution( m ))));
+    scai::lama::VectorPtr ptrRow1(scai::lama::DenseVector<ValueType1>::createVector(m1.getValueType(), scai::lama::DistributionPtr( new scai::lama::NoDistribution( m ))));
+    scai::lama::VectorPtr ptrRow2(scai::lama::DenseVector<ValueType2>::createVector(m2.getValueType(), scai::lama::DistributionPtr( new scai::lama::NoDistribution( m ))));
 
     // now compare all rows
     for ( IndexType i = 0; i < m; ++i )
@@ -113,8 +109,8 @@ void testSameMatrixClose( const MatrixType1& m1, const MatrixType2& m2 )
     BOOST_REQUIRE_EQUAL( n, m2.getNumColumns() );
 
     // create replicated vectors for the rows with the same value type
-    VectorPtr ptrRow1(DenseVector<ValueType1>::createVector(m1.getValueType(), DistributionPtr( new NoDistribution( m ))));
-    VectorPtr ptrRow2(DenseVector<ValueType2>::createVector(m2.getValueType(), DistributionPtr( new NoDistribution( m ))));
+    scai::lama::VectorPtr ptrRow1(scai::lama::DenseVector<ValueType1>::createVector(m1.getValueType(), scai::lama::DistributionPtr( new scai::lama::NoDistribution( m ))));
+    scai::lama::VectorPtr ptrRow2(scai::lama::DenseVector<ValueType2>::createVector(m2.getValueType(), scai::lama::DistributionPtr( new scai::lama::NoDistribution( m ))));
 
     // now compare all rows
     for ( IndexType i = 0; i < m; ++i )
@@ -145,7 +141,7 @@ void testSameMatrixClose( const MatrixType1& m1, const MatrixType2& m2 )
  * alternative)
  */
 template<typename ValueType1, typename ValueType2>
-void testSameMatrixStorage( const MatrixStorage<ValueType1>& m1, const MatrixStorage<ValueType2>& m2 )
+void testSameMatrixStorage( const scai::lama::MatrixStorage<ValueType1>& m1, const scai::lama::MatrixStorage<ValueType2>& m2 )
 {
     const IndexType m = m1.getNumRows();
     const IndexType n = m1.getNumColumns();
@@ -153,8 +149,8 @@ void testSameMatrixStorage( const MatrixStorage<ValueType1>& m1, const MatrixSto
     BOOST_REQUIRE_EQUAL( m, m2.getNumRows() );
     BOOST_REQUIRE_EQUAL( n, m2.getNumColumns() );
 
-    HArray<ValueType1> row1(n);
-    HArray<ValueType2> row2(n);
+    scai::hmemo::HArray<ValueType1> row1(n);
+    scai::hmemo::HArray<ValueType2> row2(n);
 
     for ( IndexType i = 0; i < m; ++i )
     {
@@ -162,8 +158,8 @@ void testSameMatrixStorage( const MatrixStorage<ValueType1>& m1, const MatrixSto
         m2.getRow( row2, i );
         // compare the two vectors element-wise
 
-        ReadAccess<ValueType1> readRow1(row1);
-        ReadAccess<ValueType2> readRow2(row2);
+        scai::hmemo::ReadAccess<ValueType1> readRow1(row1);
+        scai::hmemo::ReadAccess<ValueType2> readRow2(row2);
         for ( IndexType j = 0; j < n; j++ )
         {
             SCAI_CHECK_CLOSE( (readRow1.get())[j], (readRow2.get())[j], eps<ValueType1>() )
@@ -177,7 +173,7 @@ void testSameMatrixStorage( const MatrixStorage<ValueType1>& m1, const MatrixSto
  * instead.
  */
 template<typename ValueType1, typename ValueType2>
-void testSameMatrixStorageClose( const MatrixStorage<ValueType1>& m1, const MatrixStorage<ValueType2>& m2 )
+void testSameMatrixStorageClose( const scai::lama::MatrixStorage<ValueType1>& m1, const scai::lama::MatrixStorage<ValueType2>& m2 )
 {
     const IndexType m = m1.getNumRows();
     const IndexType n = m1.getNumColumns();
@@ -185,8 +181,8 @@ void testSameMatrixStorageClose( const MatrixStorage<ValueType1>& m1, const Matr
     BOOST_REQUIRE_EQUAL( m, m2.getNumRows() );
     BOOST_REQUIRE_EQUAL( n, m2.getNumColumns() );
 
-    HArray<ValueType1> row1(n);
-    HArray<ValueType2> row2(n);
+    scai::hmemo::HArray<ValueType1> row1(n);
+    scai::hmemo::HArray<ValueType2> row2(n);
 
     for ( IndexType i = 0; i < m; ++i )
     {
@@ -194,13 +190,13 @@ void testSameMatrixStorageClose( const MatrixStorage<ValueType1>& m1, const Matr
         m2.getRow( row2, i );
         // compare the two vectors element-wise
 
-        ReadAccess<ValueType1> readRow1(row1);
-        ReadAccess<ValueType2> readRow2(row2);
+        scai::hmemo::ReadAccess<ValueType1> readRow1(row1);
+        scai::hmemo::ReadAccess<ValueType2> readRow2(row2);
         for ( IndexType j = 0; j < n; j++ )
         {
             if ( abs( (readRow1.get())[j] ) < small<ValueType1>() )
             {
-                SCAI_CHECK_SCALAR_SMALL( Scalar((readRow2.get())[j]), ValueType2, small<ValueType2>() )
+                SCAI_CHECK_SMALL( (readRow2.get())[j], ValueType2, small<ValueType2>() )
             }
             else
             {
@@ -209,4 +205,3 @@ void testSameMatrixStorageClose( const MatrixStorage<ValueType1>& m1, const Matr
         }
     }
 }
-

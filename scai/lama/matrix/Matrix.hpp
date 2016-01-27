@@ -143,7 +143,7 @@ public:
     virtual void writeToFile(
         const std::string& fileName,
         const File::FileType fileType = File::BINARY,
-        const common::scalar::ScalarType dataType = File::INTERNAL,
+        const common::scalar::ScalarType dataType = common::scalar::INTERNAL,
         const File::IndexDataType indexDataTypeIA = File::INT,
         const File::IndexDataType indexDataTypeJA = File::INT ) const = 0;
 

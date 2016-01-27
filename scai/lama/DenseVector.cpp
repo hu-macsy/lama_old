@@ -153,7 +153,7 @@ void DenseVector<ValueType>::readFromFile( const std::string& filename )
     SCAI_LOG_INFO( logger, "read dense vector from file " << filename )
 
     // Take the current default communicator
-    CommunicatorPtr comm = Communicator::get();
+    CommunicatorPtr comm = Communicator::getCommunicator();
 
     IndexType myRank = comm->getRank();
     IndexType host = 0; // reading processor
@@ -1268,7 +1268,7 @@ void DenseVector<ValueType>::writeVectorToMMFile( const std::string& filename, c
     for( IndexType ii = 0; ii < numRows; ++ii )
     {
 
-        if( dataType == File::PATTERN )
+        if( dataType == common::scalar::PATTERN )
         {
             ofile << ii + 1;
         }
@@ -1344,11 +1344,11 @@ void DenseVector<ValueType>::writeVectorToXDRFile( const std::string& file, cons
 
 #undef LAMA_WRITE_XDR_CASE
 
-        case File::INTERNAL:
+        case common::scalar::INTERNAL:
             writeDataToXDRFile<ValueType, ValueType>( outFile, dataRead.get(), numRows );
             break;
 
-        case File::PATTERN:
+        case common::scalar::PATTERN:
             break;
 
         default:
@@ -1407,7 +1407,7 @@ void DenseVector<ValueType>::writeVectorDataToBinaryFile( std::fstream& outFile,
 
 #undef LAMA_WRITE_CASE
 
-        case File::INTERNAL:
+        case common::scalar::INTERNAL:
             writeBinaryData<ValueType,ValueType>( outFile, dataRead.get(), numRows );
             break;
 
@@ -1514,7 +1514,7 @@ void DenseVector<ValueType>::readVectorFromMMFile( const std::string& fileName )
         COMMON_THROWEXCEPTION( "Could not reopen file '" << fileName << "'." )
     }
 
-    CommunicatorPtr comm = Communicator::get();
+    CommunicatorPtr comm = Communicator::getCommunicator();
     DistributionPtr dist( new CyclicDistribution( numRows, numRows, comm ) );
 
     allocate( dist );
@@ -1610,7 +1610,7 @@ void DenseVector<ValueType>::readVectorFromXDRFile( const std::string& fileName,
 
     switch( fileType )
     {
-        case File::INTERNAL:
+        case common::scalar::INTERNAL:
             readXDRData<ValueType,ValueType>( inFile, writeData.get(), nnu );
             break;
 
@@ -1623,7 +1623,7 @@ void DenseVector<ValueType>::readVectorFromXDRFile( const std::string& fileName,
 
 #undef LAMA_READ_XDR_CASE
 
-        case File::PATTERN:
+        case common::scalar::PATTERN:
             // that might be okay
             break;
 
@@ -1674,7 +1674,7 @@ void DenseVector<ValueType>::readVectorDataFromBinaryFile( std::fstream &inFile,
 
 #undef LAMA_READ_BIN_CASE
 
-        case File::INTERNAL:
+        case common::scalar::INTERNAL:
             FileIO::readBinaryData<ValueType,ValueType>( inFile, writeData.get(), n );
             break;
 

@@ -57,7 +57,7 @@
 #include <scai/lama/expression/VectorExpressions.hpp>
 #include <scai/lama/expression/MatrixVectorExpressions.hpp>
 
-#include <scai/common/test/TestMacros.hpp>
+#include <scai/lama/test/TestMacros.hpp>
 
 using namespace scai::lama;
 using namespace scai::hmemo;
@@ -72,7 +72,7 @@ struct P_CGTestConfig
 {
     P_CGTestConfig()
     {
-        comm = Communicator::get( "MPI" );
+        comm = Communicator::getCommunicator( scai::lama::communicator::MPI );
     }
 
     ~P_CGTestConfig()

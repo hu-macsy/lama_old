@@ -60,7 +60,7 @@ namespace context
      *  the same data. Two CUDA contexts might allocate their own data where data
      *  must be transfered explicitly.
      */
-    enum ContextType
+    typedef enum 
     {
         Host,          //!< context for cpu + main memory
         CUDA,          //!< CUDA GPU device
@@ -68,16 +68,16 @@ namespace context
         MIC,           //!< Intel MIC
         UserContext,   //!< can be used for a new derived Context class
         MaxContext     //!< used for dimension of ContextType arrays
-    };
+    } ContextType;
 
     /** Enumeration type for access kind, may be read or write */
 
-    enum AccessKind
+    typedef enum
     {
         Read, //!<  read access to the array, can be multiple
         Write, //!<  write access to the array, only one at a time
         MaxAccessKind //!<  internal use for dimension of arrays
-    };
+    } AccessKind;
 
     COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const ContextType& type );
 

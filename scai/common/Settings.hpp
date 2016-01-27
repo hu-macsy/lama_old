@@ -27,8 +27,7 @@
  *
  * @brief Utilities for LAMA settings
  * @author Thomas Brandes
- * @date 19.06.2013
- * @since 1.0.1
+ * @date 19.01.2016
  */
 #pragma once
 
@@ -42,18 +41,26 @@ namespace scai
 namespace common
 {
 
-//class Communicator;
-
 /**
- *  This singleton class provides methods to query environment variables.
+ *  This singleton class provides methods to query settings of environment variables and 
+ *  command line arguments.
  *
- *  Note: This should be the only module to access environment variables
- *        directly.
+ *  Note: This should be the only module to access environment variables directly
+ *        as this operation is OS specific.
  */
 
 class Settings
 {
 public:
+
+    /** Parse the command line arguments. 
+     *
+     *  @param[in,out] argc number of command line arguments
+     *  @param[in,out] argv arguments
+     *
+     *  The number of arguments and the arguments are reduced by those starting with --SCAI_...
+     */
+    static void parseArgs( int& argc, const char* argv[] );
 
     /** Set a flag by value of its environment variable
      *
@@ -79,6 +86,14 @@ public:
      */
     static bool getEnvironment( std::string& val, const char* envVarName );
 
+    /** Define an environment variable */
+
+    static void putEnvironment( const char* envVarName, const char* val, bool replace = true );
+
+    /** Define an environment variable */
+
+    static void putEnvironment( const char* envVarName, const int val, bool replace = true );
+
     /** Get tokenized string from an environment variable 
      *
      *  @param[out] vals is a vector of separated strings from the environment varialbe
@@ -88,14 +103,6 @@ public:
      */
     static bool getEnvironment( std::vector<std::string>& vals, const char* envVarName, const char separator );
 
-    /** Define an environment variable */
-
-    static void putEnvironment( const char* envVarName, const char* val, bool replace = true );
-
-    /** Define an environment variable */
-
-    static void putEnvironment( const char* envVarName, const int val, bool replace = true );
-
     /** Help routine to tokenize a string by a given separator
      *
      *  @param[out] values is a vector of separated strings from the input string
@@ -104,6 +111,14 @@ public:
      *
      */
     static void tokenize( std::vector<std::string>& values, const std::string& input, const char seperator );
+
+    /** This method sets globally the number of argument that is taken by a comma separated value list. */
+
+    static void setRank( int rank );
+
+    /** Print all environment variables starting with SCAI_ (only for debug, demo purpose) */
+
+    static void printEnvironment();
 
 private:
 
@@ -127,7 +142,9 @@ private:
 
     static bool convertValue( int& number, const char* value );
 
-    static bool init();
+    static int sRank;  //<!  specifies pos to take from comma separated values
+
+    static const char RANK_SEPARATOR_CHAR = ',';
 };
 
 } /* end namespace common */

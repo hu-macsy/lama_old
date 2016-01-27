@@ -33,7 +33,7 @@
 
 #include <scai/lama/test/distributed/DistributionTest.hpp>
 
-#include <scai/common/test/TestMacros.hpp>
+#include <scai/lama/test/TestMacros.hpp>
 
 LAMA_COMMON_TEST_CASE( DistributionTest, localSizeTest )
 {

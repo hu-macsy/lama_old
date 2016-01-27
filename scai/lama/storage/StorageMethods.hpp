@@ -42,8 +42,6 @@
 namespace scai
 {
 
-using hmemo::HArray;
-
 namespace lama
 {
 
@@ -53,7 +51,7 @@ public:
 
     static void buildHalo(
         class Halo& halo,
-        HArray<IndexType>& haloJA,
+        hmemo::HArray<IndexType>& haloJA,
         IndexType& haloSize,
         const class Distribution& colDist );
 
@@ -87,12 +85,12 @@ public:
      */
 
     static void localizeCSR(
-        HArray<IndexType>& localIA,
-        HArray<IndexType>& localJA,
-        HArray<ValueType>& localValues,
-        const HArray<IndexType>& globalIA,
-        const HArray<IndexType>& globalJA,
-        const HArray<ValueType>& globalValues,
+        hmemo::HArray<IndexType>& localIA,
+        hmemo::HArray<IndexType>& localJA,
+        hmemo::HArray<ValueType>& localValues,
+        const hmemo::HArray<IndexType>& globalIA,
+        const hmemo::HArray<IndexType>& globalJA,
+        const hmemo::HArray<ValueType>& globalValues,
         const class Distribution& rowDist );
 
     /** Build global CSR storage for row distributed CSR storages.
@@ -104,12 +102,12 @@ public:
      */
 
     static void replicateCSR(
-        HArray<IndexType>& globalIA,
-        HArray<IndexType>& globalJA,
-        HArray<ValueType>& globalValues,
-        const HArray<IndexType>& localIA,
-        const HArray<IndexType>& localJA,
-        const HArray<ValueType>& localValues,
+        hmemo::HArray<IndexType>& globalIA,
+        hmemo::HArray<IndexType>& globalJA,
+        hmemo::HArray<ValueType>& globalValues,
+        const hmemo::HArray<IndexType>& localIA,
+        const hmemo::HArray<IndexType>& localJA,
+        const hmemo::HArray<ValueType>& localValues,
         const class Distribution& rowDist );
 
     /** Redistribute CSR storages.
@@ -120,12 +118,12 @@ public:
      */
 
     static void redistributeCSR(
-        HArray<IndexType>& targetIA,
-        HArray<IndexType>& targetJA,
-        HArray<ValueType>& targetValues,
-        const HArray<IndexType>& sourceIA,
-        const HArray<IndexType>& sourceJA,
-        const HArray<ValueType>& sourceValues,
+        hmemo::HArray<IndexType>& targetIA,
+        hmemo::HArray<IndexType>& targetJA,
+        hmemo::HArray<ValueType>& targetValues,
+        const hmemo::HArray<IndexType>& sourceIA,
+        const hmemo::HArray<IndexType>& sourceJA,
+        const hmemo::HArray<ValueType>& sourceValues,
         const class Redistributor& redistributor );
 
     /** Exchange rows by halo.
@@ -139,12 +137,12 @@ public:
      */
 
     static void exchangeHaloCSR(
-        HArray<IndexType>& targetIA,
-        HArray<IndexType>& targetJA,
-        HArray<ValueType>& targetValues,
-        const HArray<IndexType>& sourceIA,
-        const HArray<IndexType>& sourceJA,
-        const HArray<ValueType>& sourceValues,
+        hmemo::HArray<IndexType>& targetIA,
+        hmemo::HArray<IndexType>& targetJA,
+        hmemo::HArray<ValueType>& targetValues,
+        const hmemo::HArray<IndexType>& sourceIA,
+        const hmemo::HArray<IndexType>& sourceJA,
+        const hmemo::HArray<ValueType>& sourceValues,
         const class Halo& halo,
         const class Communicator& comm );
 
@@ -160,15 +158,15 @@ public:
      */
 
     static void splitCSR(
-        HArray<IndexType>& localIA,
-        HArray<IndexType>& localJA,
-        HArray<ValueType>& localValues,
-        HArray<IndexType>& haloIA,
-        HArray<IndexType>& haloJA,
-        HArray<ValueType>& haloValues,
-        const HArray<IndexType>& csrIA,
-        const HArray<IndexType>& csrJA,
-        const HArray<ValueType>& csrValues,
+        hmemo::HArray<IndexType>& localIA,
+        hmemo::HArray<IndexType>& localJA,
+        hmemo::HArray<ValueType>& localValues,
+        hmemo::HArray<IndexType>& haloIA,
+        hmemo::HArray<IndexType>& haloJA,
+        hmemo::HArray<ValueType>& haloValues,
+        const hmemo::HArray<IndexType>& csrIA,
+        const hmemo::HArray<IndexType>& csrJA,
+        const hmemo::HArray<ValueType>& csrValues,
         const class Distribution& colDist,
         const class Distribution* rowDist );
 
@@ -185,15 +183,15 @@ public:
      */
 
     static void joinCSR(
-        HArray<IndexType>& csrIA,
-        HArray<IndexType>& csrJA,
-        HArray<ValueType>& csrValues,
-        const HArray<IndexType>& localIA,
-        const HArray<IndexType>& localJA,
-        const HArray<ValueType>& localValues,
-        const HArray<IndexType>& haloIA,
-        const HArray<IndexType>& haloJA,
-        const HArray<ValueType>& haloValues,
+        hmemo::HArray<IndexType>& csrIA,
+        hmemo::HArray<IndexType>& csrJA,
+        hmemo::HArray<ValueType>& csrValues,
+        const hmemo::HArray<IndexType>& localIA,
+        const hmemo::HArray<IndexType>& localJA,
+        const hmemo::HArray<ValueType>& localValues,
+        const hmemo::HArray<IndexType>& haloIA,
+        const hmemo::HArray<IndexType>& haloJA,
+        const hmemo::HArray<ValueType>& haloValues,
         const IndexType numKeepDiagonals );
 };
 

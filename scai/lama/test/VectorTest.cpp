@@ -56,7 +56,7 @@
 #include <scai/lama/test/EquationHelper.hpp>
 
 #include <scai/common/SCAITypes.hpp>
-#include <scai/common/test/TestMacros.hpp>
+#include <scai/lama/test/TestMacros.hpp>
 
 #include <scai/hmemo.hpp>
 
@@ -110,20 +110,22 @@ void verifySameVector( Vector& v1, Vector& v2 )
     for ( IndexType i = 0; i < n; ++i )
     {
         // BOOST_CHECK_CLOSE: cannot be used for Complex<ValueType>
-        SCAI_CHECK_CLOSE( v1.getValue( i ), v2.getValue( i ), 1 );
+        SCAI_CHECK_CLOSE( v1.getValue( i ).getValue<ValueType>(), v2.getValue( i ).getValue<ValueType>(), 1 );
     }
 }
 
 /* --------------------------------------------------------------------- */
 
 template<typename ValueType>
-void verifyVectorWithScalar( Vector& v, Scalar s )
+void verifyVectorWithScalar( Vector& v, Scalar _s )
 {
     IndexType n = v.size();
 
+    ValueType s = _s.getValue<ValueType>();
+
     for ( IndexType i = 0; i < n; ++i )
     {
-        SCAI_CHECK_CLOSE( v.getValue( i ), s, 1 );
+        SCAI_CHECK_CLOSE( v.getValue( i ).getValue<ValueType>(), s, 1 );
     }
 }
 
@@ -170,25 +172,25 @@ BOOST_AUTO_TEST_CASE( ReadAndWriteVectorTest )
     std::string prefix = Configuration::getInstance().getPath();
     std::string testfilename = "ReadAndWriteVectorTestFile";
     //Write and read FORMATTED
-    vector.writeToFile( prefix + "/" + testfilename, File::FORMATTED, File::DOUBLE );
+    vector.writeToFile( prefix + "/" + testfilename, File::FORMATTED, scai::common::scalar::DOUBLE );
     DenseVector<double> vector2( prefix + "/" + testfilename );
     verifySameVector<double>( vector2, result );
     cleanupfiles( testfilename );
     // write and read BINARY
     std::string fileName = prefix + "/" + testfilename;
     SCAI_LOG_INFO( logger, "write " << vector << " to binary file " << fileName );
-    vector.writeToFile( fileName, File::BINARY, File::FLOAT );
+    vector.writeToFile( fileName, File::BINARY, scai::common::scalar::FLOAT );
     SCAI_LOG_INFO( logger, "Read constructur from binary file " << fileName );
     DenseVector<double> vector3( prefix + "/" + testfilename );
     verifySameVector<double>( vector3, result );
     cleanupfiles( testfilename );
     // write and read XDR
-    vector.writeToFile( prefix + "/" + testfilename, File::XDR, File::DOUBLE );
+    vector.writeToFile( prefix + "/" + testfilename, File::XDR, scai::common::scalar::DOUBLE );
     DenseVector<double> vector5( prefix + "/" + testfilename );
     verifySameVector<double>( vector5, result );
     cleanupfiles( testfilename );
 	// write and read mtx
-    vector.writeToFile( prefix + "/" + testfilename, File::MATRIX_MARKET, File::DOUBLE );
+    vector.writeToFile( prefix + "/" + testfilename, File::MATRIX_MARKET, scai::common::scalar::DOUBLE );
     DenseVector<double> vector6( prefix + "/" + testfilename + ".mtx" );
     verifySameVector<double>( vector6, result );
     //cleanupfiles( testfilename + ".mtx" );

@@ -34,7 +34,7 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/mpl/list.hpp>
 
-#include <scai/common/test/TestMacros.hpp>
+#include <scai/lama/test/TestMacros.hpp>
 
 #include <scai/lama/distribution/BlockDistribution.hpp>
 #include <scai/lama/matutils/MatrixCreator.hpp>
@@ -53,7 +53,7 @@ struct P_MatrixCreatorTestConfig
 {
     P_MatrixCreatorTestConfig()
     {
-        comm = Communicator::get();
+        comm = Communicator::getCommunicator();
     }
 
     ~P_MatrixCreatorTestConfig()

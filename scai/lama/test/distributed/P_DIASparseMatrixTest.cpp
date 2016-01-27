@@ -37,7 +37,7 @@
 #include <boost/mpl/list.hpp>
 
 #include <scai/lama/matrix/DIASparseMatrix.hpp>
-#include <scai/common/test/TestMacros.hpp>
+#include <scai/lama/test/TestMacros.hpp>
 
 using namespace scai::lama;
 using namespace scai::hmemo;

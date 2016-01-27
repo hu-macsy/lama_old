@@ -86,7 +86,7 @@ struct CommandLineOptions
     string matFileName;
 
     File::FileType outFileType;
-    File::ScalarType outDataType;
+    common::scalar::ScalarType outDataType;
 
     Scalar value;   // value for the vector
 
@@ -99,7 +99,7 @@ struct CommandLineOptions
         outFileName = "";
         matFileName = "";
         outFileType = File::DEFAULT;
-        outDataType = File::INTERNAL;       // same as input data type
+        outDataType = common::scalar::INTERNAL;       // same as input data type
         value       = Scalar( 1 );
         size        = 0;
         random      = false;
@@ -121,19 +121,19 @@ struct CommandLineOptions
         } 
         else if ( option == "-s" )
         {
-            outDataType = File::FLOAT;
+            outDataType = common::scalar::FLOAT;
         } 
         else if ( option == "-c" )
         {
-            outDataType = File::COMPLEX;
+            outDataType = common::scalar::COMPLEX;
         } 
         else if ( option == "-d" )
         {
-            outDataType = File::DOUBLE;
+            outDataType = common::scalar::DOUBLE;
         } 
         else if ( option == "-z" )
         {
-            outDataType = File::DOUBLE_COMPLEX;
+            outDataType = common::scalar::DOUBLE_COMPLEX;
         } 
         else if ( option == "-random" )
         {
@@ -196,17 +196,17 @@ struct CommandLineOptions
 
     void checkOutDataType()
     {
-        if ( outDataType != File::INTERNAL ) return;
+        if ( outDataType != common::scalar::INTERNAL ) return;
 
         // take double or complex double
 
         if ( conj( value ) == value )
         {
-            outDataType = File::DOUBLE;
+            outDataType = common::scalar::DOUBLE;
         }
         else
         {
-            outDataType = File::DOUBLE_COMPLEX;
+            outDataType = common::scalar::DOUBLE_COMPLEX;
         }
        
         cout << "No output data type specified, take " << outDataType << " due to value = " << value << endl;
@@ -331,7 +331,7 @@ int main( int argc, char* argv[] )
     cout << ", data type = " << options.outDataType;
     cout << endl;
 
-    v->writeToFile( options.outFileName, options.outFileType, File::INTERNAL );
+    v->writeToFile( options.outFileName, options.outFileType, common::scalar::INTERNAL );
 
     cout << "Done." << endl;
 }
