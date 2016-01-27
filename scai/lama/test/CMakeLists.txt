@@ -164,7 +164,5 @@ file ( COPY README DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
 file ( COPY xmltest.sh DESTINATION ${CMAKE_CURRENT_BINARY_DIR} ) 
 
 if ( USE_CODE_COVERAGE )
-    ### Copy the cca.sh and ccajen.sh file in build directory ###
-    configure_file( "${CMAKE_CURRENT_SOURCE_DIR}/cca.sh.in" "${CMAKE_CURRENT_BINARY_DIR}/cca.sh" @ONLY)
-    configure_file( "${CMAKE_CURRENT_SOURCE_DIR}/ccajen.sh.in" "${CMAKE_CURRENT_BINARY_DIR}/ccajen.sh" @ONLY)
+    configure_file( "${CMAKE_CURRENT_SOURCE_DIR}/code_coverage.sh.in" "${CMAKE_CURRENT_BINARY_DIR}/code_coverage.sh" @ONLY)
 endif ( USE_CODE_COVERAGE )
