@@ -76,7 +76,9 @@ typedef long double LongDouble;
 /** Definition for a constant value that indicates a non-available index.
  */
 
-MIC_CALLABLE_MEMBER
+#ifdef __INTEL_OFFLOAD
+__declspec( target(mic) )
+#endif
 extern const IndexType nIndex;
 
 /** Data type that is used for numbering of partitions.
@@ -86,7 +88,9 @@ typedef IndexType PartitionId;
 
 /** Definition for a constant value that indicates a non-available partition.
  */
-MIC_CALLABLE_MEMBER
+#ifdef __INTEL_OFFLOAD
+__declspec( target(mic) )
+#endif
 extern const PartitionId nPartition;
 
 // List here all arithmetic types for which matrices, storages might be created
@@ -97,7 +101,6 @@ extern const PartitionId nPartition;
 #define ARITHMETIC_HOST_TYPE_3 ComplexDouble
 #define ARITHMETIC_HOST_TYPE_4 long double
 #define ARITHMETIC_HOST_TYPE_5 ComplexLongDouble
-
 
 /** Number of supported types used in REPEAT macros */
 #ifdef SCAI_COMPLEX_SUPPORTED
@@ -121,6 +124,13 @@ extern const PartitionId nPartition;
 
 #endif
 
+// List CUDA values on its own
+
+#define ARITHMETIC_CUDA_TYPE_0 float
+#define ARITHMETIC_CUDA_TYPE_1 double
+#define ARITHMETIC_CUDA_TYPE_2 ComplexFloat
+#define ARITHMETIC_CUDA_TYPE_3 ComplexDouble
+
 /** Number of suported types by CUDA devices */
 #ifdef SCAI_COMPLEX_SUPPORTED
 
@@ -132,15 +142,15 @@ extern const PartitionId nPartition;
 
 #endif
 
-// List CUDA values on its own 
 
-#define ARITHMETIC_CUDA_TYPE_0 float
-#define ARITHMETIC_CUDA_TYPE_1 double
-#define ARITHMETIC_CUDA_TYPE_2 ComplexFloat
-#define ARITHMETIC_CUDA_TYPE_3 ComplexDouble
+// List MIC value types on its own
+
+#define ARITHMETIC_MIC_TYPE_0 float
+#define ARITHMETIC_MIC_TYPE_1 double
+#define ARITHMETIC_MIC_TYPE_2 ComplexFloat
+#define ARITHMETIC_MIC_TYPE_3 ComplexDouble
 
 /** Number of supported types by MIC devices */
-
 #ifdef SCAI_COMPLEX_SUPPORTED
 
 #define ARITHMETIC_MIC_TYPE_CNT 4
@@ -162,7 +172,6 @@ extern const PartitionId nPartition;
 #define ARRAY_TYPE5    long double
 #define ARRAY_TYPE6    ComplexLongDouble
 
-
 #ifdef SCAI_COMPLEX_SUPPORTED
 
 #define ARRAY_TYPE_CNT 7
@@ -173,7 +182,6 @@ extern const PartitionId nPartition;
 
 #endif
 
-
 #ifdef SCAI_COMPLEX_SUPPORTED
 
 typedef ComplexLongDouble ScalarRepType;
@@ -183,4 +191,3 @@ typedef ComplexLongDouble ScalarRepType;
 typedef double ScalarRepType;
 
 #endif
-
