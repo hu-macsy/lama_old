@@ -38,12 +38,14 @@
 #include <scai/common/Settings.hpp>
 
 // std
+#pragma offload_attribute (push, target(mic))
 #include <iostream>
 #include <sstream>
 
 #include <cstdio>          // FILE
 #include <stdexcept>       // runtime_error
 #include <cstring>
+#pragma offload_attribute (pop)
 
 #undef DEBUGGING
 

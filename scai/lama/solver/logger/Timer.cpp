@@ -39,9 +39,11 @@
 #include <scai/common/Walltime.hpp>
 
 // std
+#pragma offload_attribute (push, target(mic))
 #include <iostream>
 #include <cstdio>
 #include <sstream>
+#pragma offload_attribute (pop)
 
 namespace scai
 {

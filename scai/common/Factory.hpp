@@ -40,11 +40,13 @@
 #include <scai/common/macros/throw.hpp>
 
 // std
+#pragma offload_attribute (push, target(mic))
 #include <typeinfo>
 #include <memory>
 #include <map>
 #include <vector>
 #include <iostream>
+#pragma offload_attribute (pop)
 
 namespace scai
 {
