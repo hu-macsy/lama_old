@@ -1,5 +1,5 @@
 #
-#  @file xmltest.sh
+#  @file code_coverage.sh
 # 
 #  @license
 #  Copyright (c) 2009-2013
@@ -25,41 +25,71 @@
 #  SOFTWARE.
 #  @endlicense
 # 
-#  @brief This file is a shellscript, which executes all lama tests and creates
-#         xml result files for further usage
-#  @author: Jan Ecker
-#  @date 08.05.2013
+#  @brief This file is a shellscript, which contains all necessary steps to 
+#         measure code coverage of LAMA.
+#  @author: Alexander Büchel, Lauretta Schubert
+#  @date 15.08.2012
 #  @since 1.0.0
 #
 
 #!/bin/bash
 
-# Creating dir named by YEAR_MONTH_DAY-HOURMINUTE
-dirname=xmlresult_$(date +%s)
-echo "Create result directory: ${dirname}"
+error_count=0
+
+# Creating dir using current unix timestamp
+dirname=coverage_$(date +%s)
+echo "Create coverage directory: ${dirname}"
 mkdir ${dirname}
 
-ERROR_LEVEL=test_suite
 
+# Clearing up environment
+cd ${dirname}
+lcov --base-directory ../.. --directory ../.. --zerocounters
+cd ..
+
+
+
+export SCAI_LOG=TRACE
+export SCAI_TRACE=time
+	
 # Running tests serial
 echo "Running serial tests"
-./lama_test --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/serial_tests.xml
-if [ -d distributed ];
+./KernelInterfaceTest >/dev/null
+if [ $? -ne 0 ]
 then
-    # Running parallel tests serial and with two processes
-    echo "Running distributed tests serial"
-    distributed/lama_dist_test --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/dist_tests.xml
-
-	#for i in 2 3 4;
-	#do
-    #	echo "Running distributed tests with $i processes"
-    #	mpirun -np $i --output-filename ${dirname}/dist_tests_mpi.xml distributed/lama_dist_test --output_format=XML --log_level=all --report_level=no
-    #done
+	echo "ERROR in KernelInterfaceTest"
+	error_count=$(($error_count + $?))
 fi
 
-if [ -d cuda ];
+cd ${dirname}
+
+#Running lcov and creating data
+lcov --base-directory ../.. --directory ../.. --capture --output-file=data.info
+if [ $? -ne 0 ]
 then
-    #Running CUDA tests
-    echo "Running cuda tests"
-    cuda/lama_cuda_test --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/cuda_tests.xml
+	echo "ERROR in running lcov"
+	error_count=$(($error_count + $?))
 fi
+
+#Extracting just Sourcefiles
+lcov --extract data.info "@CMAKE_SOURCE_DIR@/*" --output-file=data.info
+if [ $? -ne 0 ]
+then
+	echo "ERROR in extracting lcov data"
+	error_count=$(($error_count + $?))
+fi
+
+# Generating html-structure
+genhtml data.info
+if [ $? -ne 0 ]
+then
+	echo "ERROR in generating html-structure"
+	error_count=$(($error_count + $?))
+fi
+
+if [[ $error_count != 0 ]]
+then
+    exit 1
+fi
+
+zip -r ../coverage.zip *

@@ -42,7 +42,7 @@ BOOST_AUTO_TEST_CASE( ReleaseTest )
         }
         catch ( scai::common::Exception& ex )
         {
-            std::cout << "Exception caught: " << ex.what() << std::endl;
+            //std::cout << "Exception caught: " << ex.what() << std::endl;
         }
     }
 
@@ -53,7 +53,7 @@ BOOST_AUTO_TEST_CASE( ReleaseTest )
     }
     catch ( scai::common::Exception& ex )
     {
-        std::cout << "Exception caught: " << ex.what() << std::endl;
+        //std::cout << "Exception caught: " << ex.what() << std::endl;
     }
 
     delay();  // now it is okay
@@ -75,7 +75,7 @@ BOOST_AUTO_TEST_CASE( ReleaseTest )
     }
     catch ( scai::common::Exception& ex )
     {
-        std::cout << "Exception caught: " << ex.what() << std::endl;
+        //std::cout << "Exception caught: " << ex.what() << std::endl;
     }
 
     delay();  // now it is okay

@@ -75,7 +75,7 @@ static void scal( int n, float alpha, float* x_d, int inc_x, SyncToken* syncToke
         stream = cudaStreamSyncToken->getCUDAStream();
     }
 
-    std::cout << "scal( n = " << n << ", alpha = " << alpha << ", x[], inc_x = " << inc_x << std::endl;
+    //std::cout << "scal( n = " << n << ", alpha = " << alpha << ", x[], inc_x = " << inc_x << std::endl;
 
     SCAI_CUBLAS_CALL( cublasSetStream( CUDAContext_cublasHandle, stream ), "scal set stream" );
     SCAI_CUBLAS_CALL( cublasSscal( CUDAContext_cublasHandle, n, &alpha, x_d, inc_x ), "cublasSscal" );
