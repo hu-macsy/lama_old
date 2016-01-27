@@ -40,9 +40,8 @@ BOOST_AUTO_TEST_CASE( ContextTest )
         SCAI_ASSERT_EQUAL( vals[i], 5.0, "check" )
     }
 
-
+    HArray<double> Y( X );
     Y.clear();
-
     Y.purge();
 
     HArray<float> v ( 4, 1.0f );  
