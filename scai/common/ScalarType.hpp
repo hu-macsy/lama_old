@@ -41,7 +41,9 @@
 #include <scai/common/macros/throw.hpp>
 
 // std
+#pragma offload_attribute (push, target(mic))
 #include <iostream>
+#pragma offload_attribute (pop)
 
 namespace scai
 {
@@ -98,6 +100,9 @@ namespace scalar
  *
  */
 
+#ifdef __INTEL_OFFLOAD
+__declspec( target(mic) )
+#endif
 const char* scalar2str( const scalar::ScalarType stype );
 
 } /* end namespace common */
