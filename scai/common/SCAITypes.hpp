@@ -126,7 +126,7 @@ extern const PartitionId nPartition;
 
 #define ARITHMETIC_CUDA_TYPE_CNT 4
 
-else
+#else
 
 #define ARITHMETIC_CUDA_TYPE_CNT 2
 
