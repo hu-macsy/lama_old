@@ -35,19 +35,11 @@
 
 #include <scai/boost_check.hpp>
 
-<<<<<<< HEAD:scai/lama.hpp.in
-/* #define LAMA_REVISION ${LAMA_VERSION_MAJOR}.${LAMA_VERSION_MINOR}
-=======
 /*
 #define LAMA_REVISION ${LAMA_VERSION_MAJOR}.${LAMA_VERSION_MINOR}
->>>>>>> develop:scai/lama/lama.hpp.in
 
 extern "C" inline int lama_getRevision()
 {
     return LAMA_REVISION;
-<<<<<<< HEAD:scai/lama.hpp.in
-} */
-=======
 }
 */
->>>>>>> develop:scai/lama/lama.hpp.in
