@@ -7,6 +7,12 @@ namespace scai {
 
 namespace common {
 
+template<>
+long double Complex<long double>::metrikCuda( void ) const
+{
+	return Math::sqrt( real() * real() + imag() * imag() );
+}
+
 ComplexFloat Math::sqrt( const ComplexFloat& a )
 {
     double x = a.real();

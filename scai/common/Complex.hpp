@@ -701,11 +701,7 @@ ValueType Complex<ValueType>::metrikCuda( void ) const
     return Math::sqrt( real() * real() + imag() * imag() );
 }
 
-template<>
-long double Complex<long double>::metrikCuda( void ) const
-{
-	return Math::sqrt( real() * real() + imag() * imag() );
-}
+
 
 template<typename ValueType>
 ValueType Complex<ValueType>::metrikHost( void ) const
