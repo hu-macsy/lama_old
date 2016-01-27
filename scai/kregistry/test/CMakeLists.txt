@@ -36,22 +36,14 @@ set ( CXX_SOURCES
       ReplaceTest.cpp  
       SimpleTest.cpp  
       TraitTest.cpp  
-) 
+)
 
-# Boost is not required, but if not available tests are not built
+message ( STATUS "boost inc: ${Boost_INCLUDE_DIR}" )
+message ( STATUS "boost lib: ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}" )
+message ( STATUS "boost lib: ${Boost_unit_test_framework_LIBRARY}" )
 
-find_package ( Boost COMPONENTS unit_test_framework )
+include_directories ( ${Boost_INCLUDE_DIR} )
 
-if ( Boost_UNIT_TEST_FRAMEWORK_FOUND )
+add_executable ( KernelInterfaceTest ${CXX_SOURCES} )
 
-    include_directories ( ${Boost_INCLUDE_DIR} )
-
-    add_executable ( KernelInterfaceTest ${CXX_SOURCES} )
-
-    target_link_libraries ( KernelInterfaceTest 
-        ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}
-        scai_kregistry
-        )
-
-endif ( Boost_UNIT_TEST_FRAMEWORK_FOUND )
-
+target_link_libraries ( KernelInterfaceTest ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} scai_kregistry )
