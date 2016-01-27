@@ -123,8 +123,8 @@ MICBLASWRAPPER_DEF( float, float, s, s, is, dot );
 MICBLASWRAPPER_DEF( double, double, d, d, id, dot );
 
 #ifdef SCAI_COMPLEX_SUPPORTED
-MICBLASWRAPPER_DEF( ComplexFloat, MKL_Complex8, c, sc, ic, dotc );
-MICBLASWRAPPER_DEF( ComplexDouble, MKL_Complex16, z, dz, iz, dotc );
+//MICBLASWRAPPER_DEF( ComplexFloat, MKL_Complex8, c, sc, ic, dotc );
+//MICBLASWRAPPER_DEF( ComplexDouble, MKL_Complex16, z, dz, iz, dotc );
 #endif
 
 #undef MICBLASWRAPPER_DEF
