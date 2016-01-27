@@ -36,6 +36,7 @@
 // no support of Complex if this file is not included
 
 #include <scai/common/Complex.hpp>
+#include <scai/common/mic/MICCallable.hpp>
 
 // std
 #include <cstring>
@@ -76,10 +77,7 @@ typedef long double LongDouble;
 /** Definition for a constant value that indicates a non-available index.
  */
 
-#ifdef __INTEL_OFFLOAD
-__declspec( target(mic) )
-#endif
-extern const IndexType nIndex;
+MIC_CALLABLE_MEMBER extern const IndexType nIndex;
 
 /** Data type that is used for numbering of partitions.
  *
@@ -88,10 +86,7 @@ typedef IndexType PartitionId;
 
 /** Definition for a constant value that indicates a non-available partition.
  */
-#ifdef __INTEL_OFFLOAD
-__declspec( target(mic) )
-#endif
-extern const PartitionId nPartition;
+MIC_CALLABLE_MEMBER extern const PartitionId nPartition;
 
 // List here all arithmetic types for which matrices, storages might be created
 

@@ -98,10 +98,7 @@ namespace scalar
  *
  */
 
-#ifdef __INTEL_OFFLOAD
-__declspec( target(mic) )
-#endif
-const char* scalar2str( const scalar::ScalarType stype );
+MIC_CALLABLE_MEMBER const char* scalar2str( const scalar::ScalarType stype );
 
 } /* end namespace common */
 
