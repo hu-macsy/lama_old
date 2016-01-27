@@ -76,7 +76,7 @@ struct P_SpecializedJacobiTestConfig
             new CommonLogger( "<Jacobi>: ", LogLevel::completeInformation, LoggerWriteBehaviour::toConsoleOnly ) );
         mJacobiDouble = new SpecializedJacobi( "SpecializedJacobiTest double solver", loggerD );
         mJacobiFloat = new SpecializedJacobi( "SpecializedJacobiTest float solver", loggerD );
-        comm = Communicator::get( scai::lama::communicator::MPI );
+        comm = Communicator::getCommunicator( scai::lama::communicator::MPI );
     }
 
     ~P_SpecializedJacobiTestConfig()

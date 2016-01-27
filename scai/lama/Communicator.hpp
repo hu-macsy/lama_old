@@ -129,14 +129,14 @@ public:
      *  More convenient than Factory::create that throws Exception
      */
 
-    static CommunicatorPtr get( const communicator::CommunicatorKind& type );
+    static CommunicatorPtr getCommunicator( const communicator::CommunicatorKind& type );
 
     /** Get a default communicator from the factory.
      *
      *  @returns pointer to the default communicator.
      */
 
-    static CommunicatorPtr get();
+    static CommunicatorPtr getCommunicator();
 
     /** Enumeration type for supported thread safety levels. */
 

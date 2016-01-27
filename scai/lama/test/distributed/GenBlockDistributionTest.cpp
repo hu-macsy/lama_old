@@ -52,7 +52,7 @@ struct GenBlockDistributionTestConfig
 {
     GenBlockDistributionTestConfig()
     {
-        comm = Communicator::get( scai::lama::communicator::MPI );
+        comm = Communicator::getCommunicator( scai::lama::communicator::MPI );
         size = comm->getSize();
         rank = comm->getRank();
         globalSize = size * ( size + 1 );

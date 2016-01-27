@@ -221,7 +221,7 @@ void distributionInfo()
     {
         cout << "  Registered values[" << i << "] = " << values[i] << endl;
 
-        CommunicatorPtr comm = Communicator::get();  // get the default one
+        CommunicatorPtr comm = Communicator::getCommunicator();  // get the default one
 
         shared_ptr<Distribution> dist( Distribution::getDistribution( values[i], comm, 10, 1.0 ) );
 

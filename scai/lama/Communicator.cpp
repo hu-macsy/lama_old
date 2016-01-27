@@ -56,7 +56,7 @@ namespace lama
 
 SCAI_LOG_DEF_LOGGER( Communicator::logger, "Communicator" )
 
-CommunicatorPtr Communicator::get( const communicator::CommunicatorKind& type )
+CommunicatorPtr Communicator::getCommunicator( const communicator::CommunicatorKind& type )
 {
     SCAI_LOG_TRACE( logger, "Get communicator of type " << type )
 
@@ -67,11 +67,11 @@ CommunicatorPtr Communicator::get( const communicator::CommunicatorKind& type )
     else
     {
         SCAI_LOG_WARN( logger, "could not get communicator " << type << ", take default one" )
-        return get();
+        return getCommunicator();
     }
 }
 
-CommunicatorPtr Communicator::get()
+CommunicatorPtr Communicator::getCommunicator()
 {
     vector<communicator::CommunicatorKind> values;  // string is create type for the factory
 

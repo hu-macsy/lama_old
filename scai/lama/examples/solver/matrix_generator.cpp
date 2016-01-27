@@ -48,7 +48,7 @@ using namespace std;
 
 int main( int argc, char* argv[] )
 {
-    CommunicatorPtr comm = Communicator::get();
+    CommunicatorPtr comm = Communicator::getCommunicator();
 
     int myRank = comm->getRank();
 

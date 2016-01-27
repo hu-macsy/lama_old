@@ -72,7 +72,7 @@ struct P_CGTestConfig
 {
     P_CGTestConfig()
     {
-        comm = Communicator::get( scai::lama::communicator::MPI );
+        comm = Communicator::getCommunicator( scai::lama::communicator::MPI );
     }
 
     ~P_CGTestConfig()

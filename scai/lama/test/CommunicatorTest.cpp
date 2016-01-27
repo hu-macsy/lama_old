@@ -58,7 +58,7 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.CommunicatorTest" )
 CommunicatorTest::CommunicatorTest( const scai::lama::communicator::CommunicatorKind communicatorType )
     : mCommunicatorType( communicatorType )
 {
-    comm = Communicator::get( mCommunicatorType );
+    comm = Communicator::getCommunicator( mCommunicatorType );
     rank = comm->getRank();
     size = comm->getSize();
 }
@@ -72,10 +72,10 @@ CommunicatorTest::~CommunicatorTest()
 
 LAMA_COMMON_TEST_CASE( CommunicatorTest, CommunicatorCtrTest )
 // get a communicator and give it free (shared pointer)
-comm = Communicator::get( mCommunicatorType );
+comm = Communicator::getCommunicator( mCommunicatorType );
 comm = CommunicatorPtr();
 // get again the MPI communicator (might be 2nd call of MPI_Init)
-comm = Communicator::get( mCommunicatorType );
+comm = Communicator::getCommunicator( mCommunicatorType );
 LAMA_COMMON_TEST_CASE_END()
 
 /* --------------------------------------------------------------------- */

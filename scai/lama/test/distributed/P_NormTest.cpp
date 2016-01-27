@@ -53,7 +53,7 @@ struct P_NormTestConfig
 {
     P_NormTestConfig()
     {
-        comm = Communicator::get();
+        comm = Communicator::getCommunicator();
     }
 
     ~P_NormTestConfig()

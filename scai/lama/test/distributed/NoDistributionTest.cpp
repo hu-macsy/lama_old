@@ -52,7 +52,7 @@ struct NoDistributionTestConfig
 {
     NoDistributionTestConfig()
     {
-        comm = Communicator::get( scai::lama::communicator::MPI );
+        comm = Communicator::getCommunicator( scai::lama::communicator::MPI );
         rank = comm->getRank();
         size = comm->getSize();
         blockSize = 17;
