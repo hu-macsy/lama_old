@@ -894,15 +894,15 @@ inline Complex<ValueType> sqrt( const Complex<ValueType>& a )
 
     if( x == 0 )
     {
-        ValueType t = Math::sqrt( Math::fabs( y ) / 2 );
+        ValueType t = Math::sqrt( Math::abs( y ) / 2 );
         return Complex<ValueType>( t, y < ValueType() ? -t : t );
     }
     else
     {
-        ValueType t = Math::sqrt( 2 * ( abs( a ) + Math::fabs( x ) ) );
+        ValueType t = Math::sqrt( 2 * ( abs( a ) + Math::abs( x ) ) );
         ValueType u = t / 2;
         return x > ValueType() ? Complex<ValueType>( u, y / t ) :
-                        Complex<ValueType>( Math::fabs( y ) / t, y < ValueType() ? -u : u );
+                        Complex<ValueType>( Math::abs( y ) / t, y < ValueType() ? -u : u );
     }
 }
 
@@ -916,14 +916,14 @@ inline Complex<long double> sqrt( const Complex<long double>& a )
 
     if( x == 0.0 )
     {
-        long double t = Math::sqrt( Math::fabs( y ) / 2 );
+        long double t = Math::sqrt( Math::abs( y ) / 2 );
         return Complex<long double>( t, y < 0.0 ? -t : t );
     }
     else
     {
-        long double t = Math::sqrt( 2 * ( abs( a ) + Math::fabs( x ) ) );
+        long double t = Math::sqrt( 2 * ( abs( a ) + Math::abs( x ) ) );
         long double u = t / 2;
-        return x > 0.0 ? Complex<long double>( u, y / t ) : Complex<long double>( Math::fabs( y ) / t, y < 0.0 ? -u : u );
+        return x > 0.0 ? Complex<long double>( u, y / t ) : Complex<long double>( Math::abs( y ) / t, y < 0.0 ? -u : u );
     }
 }
 

@@ -39,6 +39,7 @@
 // internal scai libraries
 #include <scai/tasking/TaskSyncToken.hpp>
 #include <scai/common/macros/unused.hpp>
+#include <scai/common/Math.hpp>
 #include <scai/common/TypeTraits.hpp>
 #include <scai/kregistry/KernelRegistry.hpp>
 #include <scai/common/bind.hpp>
@@ -166,7 +167,7 @@ ValueType OpenMPBLAS1::nrm2( const IndexType n, const ValueType* x, const IndexT
 
         atomicAdd( sumOfSquares, tSumOfSquares );
     }
-    return TypeTraits<ValueType>::sqrt( sumOfSquares );
+    return common::Math::sqrt( sumOfSquares );
 }
 
 /** asum (l1 norm) */
@@ -205,7 +206,7 @@ ValueType OpenMPBLAS1::asum( const IndexType n, const ValueType* x, const IndexT
 
             for( int i = 0; i < n; i++ )
             {
-                tResult += TypeTraits<ValueType>::abs( x[i] );
+                tResult += common::Math::abs( x[i] );
             }
         }
         else
@@ -214,7 +215,7 @@ ValueType OpenMPBLAS1::asum( const IndexType n, const ValueType* x, const IndexT
 
             for( int i = 0; i < n; i++ )
             {
-                tResult += TypeTraits<ValueType>::abs( x[i * incX] );
+                tResult += common::Math::abs( x[i * incX] );
             }
         }
 
@@ -258,7 +259,7 @@ IndexType OpenMPBLAS1::iamax( const IndexType n, const ValueType* x, const Index
 
             for( int i = 0; i < n; i++ )
             {
-                if( TypeTraits<ValueType>::abs( x[i] ) > TypeTraits<ValueType>::abs( x[tMaxPos] ) )
+                if( common::Math::abs( x[i] ) > common::Math::abs( x[tMaxPos] ) )
                 {
                     tMaxPos = i;
                 }
@@ -270,7 +271,7 @@ IndexType OpenMPBLAS1::iamax( const IndexType n, const ValueType* x, const Index
 
             for( int i = 0; i < n; i++ )
             {
-                if( TypeTraits<ValueType>::abs( x[i * incX] ) > TypeTraits<ValueType>::abs( x[tMaxPos * incX] ) )
+                if( common::Math::abs( x[i * incX] ) > common::Math::abs( x[tMaxPos * incX] ) )
                 {
                     tMaxPos = i;
                 }
@@ -279,8 +280,8 @@ IndexType OpenMPBLAS1::iamax( const IndexType n, const ValueType* x, const Index
 
         #pragma omp critical
         {
-            if( ( TypeTraits<ValueType>::abs( x[tMaxPos] ) > TypeTraits<ValueType>::abs( x[maxPos] ) )
-                    || ( ( TypeTraits<ValueType>::abs( x[tMaxPos] ) == TypeTraits<ValueType>::abs( x[maxPos] ) ) && tMaxPos < maxPos ) )
+            if( ( common::Math::abs( x[tMaxPos] ) > common::Math::abs( x[maxPos] ) )
+                    || ( ( common::Math::abs( x[tMaxPos] ) == common::Math::abs( x[maxPos] ) ) && tMaxPos < maxPos ) )
             {
                 maxPos = tMaxPos;
             }

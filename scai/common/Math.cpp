@@ -21,17 +21,17 @@ long double Math::sqrt( const long double& x )
 	return ::sqrtl( x );
 }
 
-float Math::fabs( const float& x )
+float Math::abs( const float& x )
 {
 	return ::fabsf( x );
 }
 
-double Math::fabs( const double& x )
+double Math::abs( const double& x )
 {
 	return ::fabs( x );
 }
 
-long double Math::fabs( const long double& x )
+long double Math::abs( const long double& x )
 {
 	return ::fabsl( x );
 }
