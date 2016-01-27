@@ -118,3 +118,5 @@ if [[ $error_count != 0 ]]
 then
     exit 1
 fi
+
+zip -r ../coverage.zip *
