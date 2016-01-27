@@ -61,6 +61,7 @@ OpenMP                  Dummy routines if OpenMP is disabled
    :maxdepth: 2
    
    Exception
+   Assertion
    Printable
    Factory
    Timing
