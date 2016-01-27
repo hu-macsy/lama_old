@@ -38,10 +38,8 @@
 #include <scai/lama/solver/IterativeSolver.hpp>
 
 // std
-#pragma offload_attribute (push, target(mic))
 #include <iostream>
 #include <algorithm>
-#pragma offload_attribute (pop)
 
 namespace scai
 {

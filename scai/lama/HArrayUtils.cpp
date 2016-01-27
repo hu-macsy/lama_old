@@ -51,9 +51,7 @@
 #include <boost/preprocessor.hpp>
 
 // std
-#pragma offload_attribute (push, target(mic))
 #include <iostream>
-#pragma offload_attribute (pop)
 
 using namespace scai::hmemo;
 

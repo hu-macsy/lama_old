@@ -33,9 +33,7 @@
 
 #pragma once
 
-#pragma offload_attribute (push, target(mic))
 #include <iostream>
-#pragma offload_attribute (pop)
 
 namespace scai
 {

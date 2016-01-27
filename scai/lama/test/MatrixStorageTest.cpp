@@ -47,10 +47,8 @@
 
 #include <scai/common/unique_ptr.hpp>
 
-#pragma offload_attribute (push, target(mic))
 #include <iostream>
 #include <fstream>
-#pragma offload_attribute (pop)
 
 using namespace scai::lama;
 using namespace scai::hmemo;

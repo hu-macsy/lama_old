@@ -38,12 +38,10 @@
 #include <scai/common/macros/throw.hpp>
 
 // std
-#pragma offload_attribute (push, target(mic))
 #include <map>
 #include <string>
 #include <iostream>
 #include <string.h>
-#pragma offload_attribute (pop)
 
 // define LOCAL_DEBUG for debugging this source code
 

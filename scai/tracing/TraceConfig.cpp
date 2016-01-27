@@ -41,10 +41,8 @@
 #include <scai/common/Settings.hpp>
 
 // std
-#pragma offload_attribute (push, target(mic))
 #include <iostream>
 #include <cstdlib>
-#pragma offload_attribute (pop)
 
 namespace scai
 {

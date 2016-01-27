@@ -34,14 +34,12 @@
 #include <scai/common/ContextType.hpp>
 #include <scai/common/SCAITypes.hpp>
 
-#pragma offload_attribute (push, target(mic))
 #include <map>
 #include <string>
 #include <typeinfo>
 #include <cstdlib>
 
 #include <iostream>
-#pragma offload_attribute (pop)
 
 namespace scai
 {

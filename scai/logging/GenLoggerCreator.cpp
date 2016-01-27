@@ -36,12 +36,10 @@
 #include <scai/logging/GenLogger.hpp>
 
 // std
-#pragma offload_attribute (push, target(mic))
 #include <iostream>
 #include <cstdlib>         // import getenv
 #include <cstdio>          // FILE
 #include <stdexcept>       // runtime_error
-#pragma offload_attribute (pop)
 
 #undef DEBUGGING
 

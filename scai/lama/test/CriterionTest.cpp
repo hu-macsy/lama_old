@@ -32,10 +32,7 @@
  */
 
 #include <boost/test/unit_test.hpp>
-
-#pragma offload_attribute (push, target(mic))
 #include <iostream>
-#pragma offload_attribute (pop)
 
 #include <scai/lama/solver/criteria/Criterion.hpp>
 #include <scai/lama/solver/criteria/IterationCount.hpp>

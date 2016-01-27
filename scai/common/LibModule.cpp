@@ -38,11 +38,9 @@
 #include <dlfcn.h>
 #include <dirent.h>
 
-#pragma offload_attribute (push, target(mic))
 #include <iostream>
 #include <vector>
 #include <string>
-#pragma offload_attribute (pop)
 
 #undef DEBUG_HERE
 
