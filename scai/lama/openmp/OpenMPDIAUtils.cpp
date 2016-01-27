@@ -46,6 +46,7 @@
 #include <scai/common/OpenMP.hpp>
 #include <scai/common/macros/assert.hpp>
 #include <scai/common/TypeTraits.hpp>
+#include <scai/common/Math.hpp>
 #include <scai/common/bind.hpp>
 
 // boost
@@ -60,7 +61,6 @@ namespace scai
 namespace lama
 {
 
-using std::abs;
 using common::TypeTraits;
 using tasking::TaskSyncToken;
 
@@ -99,7 +99,7 @@ ValueType OpenMPDIAUtils::absMaxVal(
                     continue;
                 }
 
-                const ValueType val = abs( diaValues[i + d * numRows] );
+                const ValueType val = common::Math::abs( diaValues[i + d * numRows] );
 
                 if( val > threadVal )
                 {
@@ -224,7 +224,7 @@ void OpenMPDIAUtils::getCSRValues(
 
                 const DIAValueType value = diaValues[i + ii * numRows];
 
-                bool nonZero = abs( value ) > eps;
+                bool nonZero = common::Math::abs( value ) > eps;
 
                 if( nonZero )
                 {
@@ -284,7 +284,7 @@ void OpenMPDIAUtils::getCSRSizes(
                 break;
             }
 
-            bool nonZero = abs( diaValues[i + ii * numRows] ) > eps;
+            bool nonZero = common::Math::abs( diaValues[i + ii * numRows] ) > eps;
 
             if( diagonalFlag && ( i == j ) )
             {

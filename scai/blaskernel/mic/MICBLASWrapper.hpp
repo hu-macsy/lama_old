@@ -65,44 +65,6 @@ public:																													\
 	typedef MICBLASTrait::BLASIndexType BLASIndexType;																		\
 	typedef MICBLASTrait::BLASTrans BLASTrans;																				\
 																														\
-	static MIC_CALLABLE_MEMBER void scal( const BLASIndexType n, const ValueType alpha, ValueType* x, const BLASIndexType incX )			\
-	{																													\
-		MIC_BLAS_NAME( scal, prefix1 )( &n, reinterpret_cast<const MICBLASValueType*>( &alpha ), reinterpret_cast<MICBLASValueType*>( x ), &incX );															\
-	}																													\
-																														\
-	static MIC_CALLABLE_MEMBER ValueType nrm2(const BLASIndexType n, const ValueType *x, const BLASIndexType incX) 							\
-	{																													\
-		return MIC_BLAS_NAME( nrm2, prefix2 )( &n, reinterpret_cast<const MICBLASValueType*>( x ), &incX ); 															\
-	}																													\
-																														\
-	static MIC_CALLABLE_MEMBER ValueType asum(const BLASIndexType n, const ValueType *x,BLASIndexType incX)									\
-	{																													\
-		return MIC_BLAS_NAME( asum, prefix2 )( &n, reinterpret_cast<const MICBLASValueType*>( x ), &incX );															\
-	}																													\
-																														\
-	static MIC_CALLABLE_MEMBER BLASIndexType iamax(const BLASIndexType n, const ValueType *x, const BLASIndexType incX) 					\
-	{																													\
-		return MIC_BLAS_NAME( amax, prefix3 )( &n, reinterpret_cast<const MICBLASValueType*>( x ), &incX );															\
-	}																													\
-																														\
-	static MIC_CALLABLE_MEMBER void swap(const BLASIndexType n, ValueType *x, const BLASIndexType incX, ValueType *y, 						\
-			const BLASIndexType incY)																					\
-	{																													\
-		MIC_BLAS_NAME( swap, prefix1 )( &n, reinterpret_cast<MICBLASValueType*>( x ), &incX, reinterpret_cast<MICBLASValueType*>( y ), &incY );															\
-	}																													\
-																														\
-	static MIC_CALLABLE_MEMBER void copy(const BLASIndexType n, const ValueType *x, const BLASIndexType incX, ValueType *y,					\
-			const BLASIndexType incY)																					\
-	{																													\
-		MIC_BLAS_NAME( copy, prefix1 )( &n, reinterpret_cast<const MICBLASValueType*>( x ),	&incX, reinterpret_cast<MICBLASValueType*>( y ), &incY);														\
-	}																													\
-																														\
-	static MIC_CALLABLE_MEMBER void axpy(const BLASIndexType n, const ValueType alpha,														\
-			const ValueType *x, const BLASIndexType incX, ValueType *y, const BLASIndexType incY) 						\
-	{																													\
-		MIC_BLAS_NAME( axpy, prefix1 )( &n, reinterpret_cast<const MICBLASValueType*>( &alpha ), reinterpret_cast<const MICBLASValueType*>( x ), &incX, reinterpret_cast<MICBLASValueType*>( y ), &incY ); 												\
-	}																													\
-																														\
 	static MIC_CALLABLE_MEMBER void gemv( const BLASTrans transA, const BLASIndexType m, const BLASIndexType n,								\
 			const ValueType alpha, const ValueType* A, const BLASIndexType lda, const ValueType* x,						\
 			const BLASIndexType incX, const ValueType beta, ValueType* y, const BLASIndexType incY) 					\
@@ -123,8 +85,8 @@ MICBLASWRAPPER_DEF( float, float, s, s, is, dot );
 MICBLASWRAPPER_DEF( double, double, d, d, id, dot );
 
 #ifdef SCAI_COMPLEX_SUPPORTED
-//MICBLASWRAPPER_DEF( ComplexFloat, MKL_Complex8, c, sc, ic, dotc );
-//MICBLASWRAPPER_DEF( ComplexDouble, MKL_Complex16, z, dz, iz, dotc );
+MICBLASWRAPPER_DEF( ComplexFloat, MKL_Complex8, c, sc, ic, dotc );
+MICBLASWRAPPER_DEF( ComplexDouble, MKL_Complex16, z, dz, iz, dotc );
 #endif
 
 #undef MICBLASWRAPPER_DEF

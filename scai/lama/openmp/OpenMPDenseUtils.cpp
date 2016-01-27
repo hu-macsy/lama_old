@@ -40,6 +40,7 @@
 #include <scai/kregistry/KernelRegistry.hpp>
 #include <scai/common/Constants.hpp>
 #include <scai/common/TypeTraits.hpp>
+#include <scai/common/Math.hpp>
 #include <scai/common/OpenMP.hpp>
 
 // boost
@@ -50,9 +51,6 @@ namespace scai
 
 namespace lama
 {
-
-using std::abs;
-// so we can use abs for float and double and abs for Complex<ValueType>
 
 using common::TypeTraits;
 
@@ -77,7 +75,7 @@ IndexType OpenMPDenseUtils::nonZeroValues(
     {
         for ( IndexType j = 0; j < numColumns; ++j )
         {
-            if ( abs( denseValues[denseindex( i, j, numRows, numColumns )] ) > eps )
+            if ( common::Math::abs( denseValues[denseindex( i, j, numRows, numColumns )] ) > eps )
             {
                 count++;
             }
@@ -116,7 +114,7 @@ void OpenMPDenseUtils::getCSRSizes(
         {
             const DenseValueType& value = denseValues[denseindex( i, j, numRows, numColumns )];
 
-            if( abs( value ) > eps )
+            if( common::Math::abs( value ) > eps )
             {
                 ++nonZeros;
             }
@@ -172,7 +170,7 @@ void OpenMPDenseUtils::getCSRValues(
 
             const DenseValueType& value = denseValues[denseindex( i, j, numRows, numColumns )];
 
-            if( abs( value ) > eps )
+            if( common::Math::abs( value ) > eps )
             {
                 csrValues[offset] = static_cast<CSRValueType>( value );
                 csrJA[offset] = j;

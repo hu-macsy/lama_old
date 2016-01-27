@@ -892,6 +892,7 @@ COMPLEX_OPERATOR_NONMEMBER_CUDA( operator/, /=, float )
 COMPLEX_OPERATOR_NONMEMBER_CUDA( operator/, /=, double )
 COMPLEX_OPERATOR_NONMEMBER_NONCUDA( operator/, /=, long double )
 
+	/*
 template<typename ValueType>
 MIC_CALLABLE_MEMBER
 CUDA_CALLABLE_MEMBER
@@ -912,11 +913,12 @@ inline Complex<ValueType> sqrt( const Complex<ValueType>& a )
         return x > ValueType() ? Complex<ValueType>( u, y / t ) :
                         Complex<ValueType>( Math::abs( y ) / t, y < ValueType( 0 ) ? -u : u );
     }
-}
+}*/
 
 /*
  * long double version must not be CUDA_CALLABLE_MEMBER
  */
+/*
 inline Complex<long double> sqrt( const Complex<long double>& a )
 {
     long double x = a.real();
@@ -929,11 +931,11 @@ inline Complex<long double> sqrt( const Complex<long double>& a )
     }
     else
     {
-        long double t = Math::sqrt( 2 * ( abs( a ) + Math::abs( x ) ) );
+        long double t = Math::sqrt( 2 * ( Math::abs( a ) + Math::abs( x ) ) );
         long double u = t / 2;
         return x > 0.0 ? Complex<long double>( u, y / t ) : Complex<long double>( Math::abs( y ) / t, y < 0.0 ? -u : u );
     }
-}
+}*/
 
 template<typename ValueType,typename InputType1,typename InputType2>
 std::basic_istream<InputType1,InputType2>&
