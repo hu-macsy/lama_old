@@ -140,7 +140,9 @@ add_subdirectory ( macros )
 ## add exception dir
 add_subdirectory ( exception )
 
-add_subdirectory ( test )
+if ( FOUND_BOOST_TEST AND BUILD_TEST )
+    add_subdirectory ( test )
+endif ( FOUND_BOOST_TEST AND BUILD_TEST )
 
 ## add library
 add_library ( scai_common ${SCAI_LIBRARY_TYPE} ${CXX_SOURCES} )
