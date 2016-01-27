@@ -124,27 +124,10 @@ else  ( ${Boost_VERSION} GREATER "104099" AND Boost_UNIT_TEST_FRAMEWORK_FOUND AN
 endif ( ${Boost_VERSION} GREATER "104099" AND Boost_UNIT_TEST_FRAMEWORK_FOUND AND Boost_REGEX_FOUND )
 
 
-# Check if cache variable is already set
-if    ( DEFINED BUILD_TEST )
-    # if use of package is enabled
-    if    ( ${BUILD_TEST} )
-        if    ( NOT ${FOUND_BOOST_TEST} )
-            # if package is enabled, but not found: ERROR!
-            message ( STATUS "Boost Test Framework or Bost Regex missing, but tests are enabled!" )
-        endif ( NOT ${FOUND_BOOST_TEST} )
-    endif ( ${BUILD_TEST} )
-
-# if cache variable is NOT set
-else  ( DEFINED BUILD_TEST )
-    # Check if package was found
-    if    ( ${FOUND_BOOST_TEST} )
-        set ( USE_PACKAGE TRUE )
-    else  ( ${FOUND_BOOST_TEST} )
-        set ( USE_PACKAGE FALSE )
-    endif ( ${FOUND_BOOST_TEST} )
-    
-    # Set cache variable
-    set ( BUILD_TEST ${USE_PACKAGE} CACHE BOOL "Enable / Disable building of tests" )
-endif ( DEFINED BUILD_TEST )
+# if use of package is enabled
+if    ( ${BUILD_TEST} AND NOT ${FOUND_BOOST_TEST} )
+    # if package is enabled, but not found: ERROR!
+    message ( STATUS "Boost Test Framework or Bost Regex missing, but tests are enabled!" )
+endif ( ${BUILD_TEST} AND NOT ${FOUND_BOOST_TEST} )
 
 endif ( NOT DEFINED Boost_INCLUDE_DIR )
