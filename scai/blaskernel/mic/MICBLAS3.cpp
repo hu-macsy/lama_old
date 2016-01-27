@@ -143,7 +143,7 @@ void MICBLAS3::gemm(
         const ValueType* b = static_cast<const ValueType*>( bPtr );
         ValueType* c = static_cast<ValueType*>( cPtr );
 
-	MICBLASWrapper::gemm( ta, tb, m, n, k, *alphaPtr, a, lda, b, ldb, *betaPtr, c, ldc );
+        MICBLASWrapper<ValueType>::gemm( ta, tb, m, n, k, *alphaPtr, a, lda, b, ldb, *betaPtr, c, ldc );
     }
 }
 

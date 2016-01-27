@@ -170,7 +170,7 @@ void MICBLAS2::gemv(
         ValueType* y = static_cast<ValueType*>( yPtr );
 
 //        sgemv( &ta, &m, &n, &alpha, a, &lda, x, &incX, &beta, y, &incY );
-        MICBLASWrapper::gemv( ta, m, n, *alphaPtr, a, lda, x, incX, *betaPtr, y, incY );
+        MICBLASWrapper<ValueType>::gemv( ta, m, n, *alphaPtr, a, lda, x, incX, *betaPtr, y, incY );
     }
 }
 
