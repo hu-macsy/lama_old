@@ -314,7 +314,7 @@ BOOST_AUTO_TEST_CASE( createTest )
 
     for ( size_t i = 0; i < values.size(); ++i )
     {
-        std::cout << "Registered values[" << i << "] = " << values[i] << std::endl;
+        //std::cout << "Registered values[" << i << "] = " << values[i] << std::endl;
     }
 
     BOOST_CHECK( _HArray::canCreate( scalar::FLOAT ) );
