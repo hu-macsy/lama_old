@@ -117,11 +117,25 @@ set ( SCAI_BLASKERNEL_LIBRARY scai_blaskernel
 set ( SCAI_BLASKERNEL_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/blaskernel
       CACHE PATH "blaskernel include directory" )
 
-### Final: lama project
-
 add_subdirectory( lama )
 
+### Set variables for Findscai_lama so further projects can use it 
+
+set ( SCAI_LAMA_LIBRARY scai_lama
+      CACHE FILEPATH  "library for accelerated math applications" )
+
+set ( SCAI_LAMA_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/lama
+      CACHE PATH "lama include directory" )
+
 add_subdirectory( solver )
+
+### Set variables for Findscai_solver so further projects can use it 
+
+set ( SCAI_SOLVER_LIBRARY scai_solver
+      CACHE FILEPATH  "library for solver basing on lama" )
+
+set ( SCAI_SOLVER_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/solver
+      CACHE PATH "solver include directory" )
 
 # Documentation
 
