@@ -80,7 +80,7 @@ struct P_VectorTestConfig
 {
     P_VectorTestConfig()
     {
-        comm = Communicator::get( "MPI" ); // default communicator
+        comm = Communicator::getCommunicator( scai::lama::communicator::MPI ); // default communicator
         m_inputVectorBaseName = Configuration::getInstance().getPath() + "/testVector";
         m_formattedInputVectorBaseName = m_inputVectorBaseName + "Formatted";
         m_xdrDoubleInputVectorBaseName = m_inputVectorBaseName + "XDRDouble";

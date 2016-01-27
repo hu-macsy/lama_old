@@ -116,7 +116,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( RandomTest, MatrixType, MatrixTypes )
 // Test filename constructor and writing to file for each matrx type
 BOOST_AUTO_TEST_CASE_TEMPLATE( ReadWriteTest, MatrixType, MatrixTypes )
 {
-    CommunicatorPtr comm = Communicator::get(); // get default, MPI or serial
+    CommunicatorPtr comm = Communicator::getCommunicator(); // get default, MPI or serial
     SCAI_LOG_INFO( logger, "ReadWriteTest for MatrixType = " << typeid( MatrixType ).name() );
     std::string prefix = Configuration::getInstance().getPath();
     SCAI_LOG_INFO( logger, "prefix = " << prefix );

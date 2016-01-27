@@ -52,7 +52,7 @@ struct NoDistributionTestConfig
 {
     NoDistributionTestConfig()
     {
-        comm = Communicator::get( "MPI" );
+        comm = Communicator::getCommunicator( scai::lama::communicator::MPI );
         rank = comm->getRank();
         size = comm->getSize();
         blockSize = 17;
@@ -83,7 +83,7 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.NoDistributionTest" );
 BOOST_AUTO_TEST_CASE( CtorTest )
 {
     DistributionPtr nodist( new NoDistribution( 20 ) );
-    BOOST_CHECK_EQUAL( nodist->getCommunicatorPtr()->getType(), "none" );
+    BOOST_CHECK_EQUAL( nodist->getCommunicatorPtr()->getType(), scai::lama::communicator::NO );
     BOOST_CHECK_EQUAL( nodist->getGlobalSize(), 20 );
     BOOST_CHECK_EQUAL( nodist->getLocalSize(), 20 );
 }

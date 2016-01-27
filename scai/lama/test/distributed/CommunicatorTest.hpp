@@ -50,7 +50,7 @@ class CommunicatorTest
 {
 public:
 
-    CommunicatorTest( const char* ct );
+    CommunicatorTest( const scai::lama::communicator::CommunicatorKind ct );
     ~CommunicatorTest();
 
     void CommunicatorCtrTest();
@@ -74,7 +74,7 @@ public:
     void runTests();
 
 private:
-    std::string mCommunicatorType;
+    scai::lama::communicator::CommunicatorKind mCommunicatorType;
 
     scai::lama::CommunicatorPtr comm;
     PartitionId rank;

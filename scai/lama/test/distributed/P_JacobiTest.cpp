@@ -70,7 +70,7 @@ struct P_JacobiTestConfig
 {
     P_JacobiTestConfig()
     {
-        mComm = Communicator::get( "MPI" );
+        mComm = Communicator::getCommunicator( scai::lama::communicator::MPI );
     }
 
     ~P_JacobiTestConfig()

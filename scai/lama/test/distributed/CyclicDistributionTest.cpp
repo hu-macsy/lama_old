@@ -52,7 +52,7 @@ struct CyclicDistributionTestConfig
 {
     CyclicDistributionTestConfig()
     {
-        comm = Communicator::get( "MPI" );
+        comm = Communicator::getCommunicator( scai::lama::communicator::MPI );
         size = comm->getSize();
         rank = comm->getRank();
         chunkSize = size;
