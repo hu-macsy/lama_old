@@ -142,7 +142,7 @@ void MICMKLCSRUtils::normalGEMV(
     SCAI_LOG_INFO( logger,
                    "normalGEMV<double>, result[" << numRows << "] = " << alpha << " * A * x + " << beta << " * y " )
 
-    if( y != result && beta != scai::common::constants::ZERO )
+    if( y != result && beta != common::constants::ZERO )
     {
         MICUtils::set( result, y, numRows, common::reduction::COPY );
     }
@@ -239,8 +239,6 @@ MICMKLCSRUtils::RegisterGuard::~RegisterGuard()
 }
 
 MICMKLCSRUtils::RegisterGuard MICMKLCSRUtils::guard;    // guard variable for registration
-
-
 
 } /* end namespace lama */
 

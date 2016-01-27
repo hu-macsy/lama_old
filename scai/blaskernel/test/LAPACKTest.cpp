@@ -36,18 +36,12 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/mpl/list.hpp>
 
-#include <scai/lama/LAMAKernel.hpp>
-#include <scai/lama/LArray.hpp>
+#include <scai/kregistry/KernelContextFunction.hpp>
 #include <scai/blaskernel/BLASKernelTrait.hpp>
 
-#include <scai/common/test/TestMacros.hpp>
+#include <scai/blaskernel/test/TestMacros.hpp>
 
-using namespace scai::lama;
 using namespace scai::hmemo;
-
-
-// extern bool base_test_case;
-// extern std::string testcase;
 
 /* ------------------------------------------------------------------------- */
 
@@ -67,13 +61,16 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( inverseTest, ValueType, test_types )
     {   2.0, 0.0, -1.0, -3.0, 0.0, 2.0, -2.0, -1.0, 0.0};
     static ValueType bvalues[] =
     {   2.0, 1.0, 0.0, -4.0, -2.0, -1.0, 3.0, 2.0, 0.0};
-    LArray<ValueType> a( n * n, avalues );
-    LArray<IndexType> permutation( n );
+//    LAMAArray<ValueType> a( n * n, avalues );
+//    LAMAArray<IndexType> permutation( n );
+    HArray<ValueType> a( n * n );
+    initArray( a, avalues, n * n );
+    HArray<IndexType> permutation( n );
     ContextPtr loc = Context::getHostPtr();
     {
         WriteAccess<ValueType> wA( a, loc );
-        LAMAKernel<scai::blaskernel::BLASKernelTrait::getinv<ValueType> > getinv;
-        getinv[loc]( n, wA.get(), n );
+        scai::kregistry::KernelTraitContextFunction<scai::blaskernel::BLASKernelTrait::getinv<ValueType> > getinv;
+        getinv[loc->getType()]( n, wA.get(), n );
     }
     {
         ReadAccess<ValueType> rA( a );
@@ -89,8 +86,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( inverseTest, ValueType, test_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( getrifTest, ValueType, test_types )
 {
-    static LAMAKernel<scai::blaskernel::BLASKernelTrait::getrf<ValueType> > getrf;
-    static LAMAKernel<scai::blaskernel::BLASKernelTrait::getri<ValueType> > getri;
+    static scai::kregistry::KernelTraitContextFunction<scai::blaskernel::BLASKernelTrait::getrf<ValueType> > getrf;
+    static scai::kregistry::KernelTraitContextFunction<scai::blaskernel::BLASKernelTrait::getri<ValueType> > getri;
 
     const IndexType n = 3;
 // set up values for A and B with A * B = identiy
@@ -100,15 +97,18 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getrifTest, ValueType, test_types )
         {   2.0, 0.0, -1.0, -3.0, 0.0, 2.0, -2.0, -1.0, 0.0};
         static ValueType bvalues[] =
         {   2.0, 1.0, 0.0, -4.0, -2.0, -1.0, 3.0, 2.0, 0.0};
-        LArray<ValueType> a( n * n, avalues );
-        LArray<IndexType> permutation( n );
+//        LAMAArray<ValueType> a( n * n, avalues );
+//        LAMAArray<IndexType> permutation( n );
+        HArray<ValueType> a( n * n );
+        initArray( a, avalues, n * n );
+        HArray<IndexType> permutation( n );
         ContextPtr loc = Context::getHostPtr();
         {
             WriteAccess<ValueType> wA( a, loc );
             WriteAccess<IndexType> wPermutation( permutation, loc );
-            int error = getrf[loc]( CblasRowMajor, n, n, wA.get(), n, wPermutation.get() );
+            int error = getrf[loc->getType()]( CblasRowMajor, n, n, wA.get(), n, wPermutation.get() );
             BOOST_CHECK_EQUAL( 0, error );
-            error = getri[loc]( CblasRowMajor, n, wA.get(), n, wPermutation.get() );
+            error = getri[loc->getType()]( CblasRowMajor, n, wA.get(), n, wPermutation.get() );
             BOOST_CHECK_EQUAL( 0, error );
         }
         {
@@ -126,15 +126,18 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getrifTest, ValueType, test_types )
         {   2.0, -3.0, -2.0, 0.0, 0.0, -1.0, -1.0, 2.0, 0.0};
         static ValueType bvalues[] =
         {   2.0, -4.0, 3.0, 1.0, -2.0, 2.0, 0.0, -1.0, 0.0};
-        LArray<ValueType> a( n * n, avalues );
-        LArray<IndexType> permutation( n );
+//        LAMAArray<ValueType> a( n * n, avalues );
+//        LAMAArray<IndexType> permutation( n );
+        HArray<ValueType> a( n * n );
+        initArray( a, avalues, n * n );
+        HArray<IndexType> permutation( n );
         ContextPtr loc = Context::getHostPtr();
         {
             WriteAccess<ValueType> wA( a, loc );
             WriteAccess<IndexType> wPermutation( permutation, loc );
-            int error = getrf[loc]( CblasRowMajor, n, n, wA.get(), n, wPermutation.get() );
+            int error = getrf[loc->getType()]( CblasRowMajor, n, n, wA.get(), n, wPermutation.get() );
             BOOST_CHECK_EQUAL( 0, error );
-            error = getri[loc]( CblasRowMajor, n, wA.get(), n, wPermutation.get() );
+            error = getri[loc->getType()]( CblasRowMajor, n, wA.get(), n, wPermutation.get() );
             BOOST_CHECK_EQUAL( 0, error );
         }
         {
@@ -152,7 +155,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getrifTest, ValueType, test_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( tptrsTest, ValueType, test_types )
 {
-    static LAMAKernel<scai::blaskernel::BLASKernelTrait::tptrs<ValueType> > tptrs;
+    static scai::kregistry::KernelTraitContextFunction<scai::blaskernel::BLASKernelTrait::tptrs<ValueType> > tptrs;
 
     {
         const IndexType n = 3;
@@ -166,9 +169,15 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( tptrsTest, ValueType, test_types )
         {   3.0, 2.0, 1.0};
         static ValueType xvalues[] =
         {   1.0, 1.0, 1.0};
-        LArray<ValueType> a( ntri, avalues );
-        LArray<ValueType> b1( n, bvalues1 );
-        LArray<ValueType> b2( n, bvalues2 );
+//        LAMAArray<ValueType> a( ntri, avalues );
+//        LAMAArray<ValueType> b1( n, bvalues1 );
+//        LAMAArray<ValueType> b2( n, bvalues2 );
+        HArray<ValueType> a( ntri );
+        initArray( a, avalues, ntri );
+        HArray<ValueType> b1( n );
+        initArray( b1, bvalues1, n );
+        HArray<ValueType> b2( n );
+        initArray( b2, bvalues2, n );
         ContextPtr loc = Context::getHostPtr();
         {
             ReadAccess<ValueType> rA( a, loc );
@@ -178,14 +187,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( tptrsTest, ValueType, test_types )
             //  1  0   0     1    1
             //  1  1   0     1    2
             //  1  1   1     1    3
-            int error = tptrs[loc]( CblasColMajor, CblasLower, CblasNoTrans, CblasNonUnit,
+            int error = tptrs[loc->getType()]( CblasColMajor, CblasLower, CblasNoTrans, CblasNonUnit,
                                n, 1, rA.get(), wB1.get(), n );
             BOOST_CHECK_EQUAL( 0, error );
             //  A            X    B
             //  1  1   1     1    3
             //  0  1   1     1    2
             //  0  0   1     1    1
-            error = tptrs[loc]( CblasColMajor, CblasUpper, CblasNoTrans, CblasNonUnit,
+            error = tptrs[loc->getType()]( CblasColMajor, CblasUpper, CblasNoTrans, CblasNonUnit,
                            n, 1, rA.get(), wB2.get(), n );
             BOOST_CHECK_EQUAL( 0, error );
         }
@@ -223,10 +232,18 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( tptrsTest, ValueType, test_types )
         //Vector X -- for all the same
         static ValueType xvalues[] =
         {   1.0, 3.0, 5.0, 7.0};
-        LArray<ValueType> a1( ntri, avalues1 );
-        LArray<ValueType> a2( ntri, avalues2 );
-        LArray<ValueType> b1( n, bvalues1 );
-        LArray<ValueType> b2( n, bvalues2 );
+//        LAMAArray<ValueType> a1( ntri, avalues1 );
+//        LAMAArray<ValueType> a2( ntri, avalues2 );
+//        LAMAArray<ValueType> b1( n, bvalues1 );
+//        LAMAArray<ValueType> b2( n, bvalues2 );
+        HArray<ValueType> a1( ntri );
+        initArray( a1, avalues1, ntri );
+        HArray<ValueType> a2( ntri );
+        initArray( a2, avalues2, ntri );
+        HArray<ValueType> b1( n );
+        initArray( b1, bvalues1, n );
+        HArray<ValueType> b2( n );
+        initArray( b2, bvalues2, n );
         ContextPtr loc = Context::getHostPtr();
         {
             ReadAccess<ValueType> rA1( a1, loc );
@@ -238,14 +255,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( tptrsTest, ValueType, test_types )
             //  2  3  0  0   3    11
             //  4  5  6  0   5    49
             //  7  8  9  10  7    146
-            int error1 = tptrs[loc]( CblasColMajor, CblasLower, CblasNoTrans, CblasNonUnit,
+            int error1 = tptrs[loc->getType()]( CblasColMajor, CblasLower, CblasNoTrans, CblasNonUnit,
                                      n, 1, rA1.get(), wB1.get(), n );
             //  A            X    B
             //  1  2  3  4   1    50
             //  0  5  6  7   3    94
             //  0  0  8  9   5    103
             //  0  0  0  10  7    70
-            int error2 = tptrs[loc]( CblasColMajor, CblasUpper, CblasNoTrans, CblasNonUnit,
+            int error2 = tptrs[loc->getType()]( CblasColMajor, CblasUpper, CblasNoTrans, CblasNonUnit,
                                      n, 1, rA2.get(), wB2.get(), n );
             BOOST_CHECK_EQUAL( 0, error1 );
             BOOST_CHECK_EQUAL( 0, error2 );
@@ -341,9 +358,15 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( tptrsTest, ValueType, test_types )
         {   31.8, 60.65, 50.65};
         static ValueType xvalues[] =
         {   2.0, 3.0, 5.0};
-        LArray<ValueType> a( ntri, avalues );
-        LArray<ValueType> b1( n, bvalues1 );
-        LArray<ValueType> b2( n, bvalues2 );
+//        LAMAArray<ValueType> a( ntri, avalues );
+//        LAMAArray<ValueType> b1( n, bvalues1 );
+//        LAMAArray<ValueType> b2( n, bvalues2 );
+        HArray<ValueType> a( ntri );
+        initArray( a, avalues, ntri );
+        HArray<ValueType> b1( n );
+        initArray( b1, bvalues1, n );
+        HArray<ValueType> b2( n );
+        initArray( b2, bvalues2, n );
         ContextPtr loc = Context::getHostPtr();
         {
             ReadAccess<ValueType> rA( a, loc );
@@ -353,14 +376,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( tptrsTest, ValueType, test_types )
             //  1.2  0      0      2    2.4
             //  2.3  4.5    0      3    18.1
             //  6.7  8.11   10.13  5    88.38
-            int error = tptrs[loc]( CblasColMajor, CblasLower, CblasNoTrans, CblasNonUnit,
+            int error = tptrs[loc->getType()]( CblasColMajor, CblasLower, CblasNoTrans, CblasNonUnit,
                                n, 1, rA.get(), wB1.get(), n );
             BOOST_CHECK_EQUAL( 0, error );
             //  A                  X    B
             //  1.2  2.3   4.5     2    31.8
             //  0    6.7   8.11    3    60.65
             //  0    0     10.13   5    50.65
-            error = tptrs[loc]( CblasColMajor, CblasUpper, CblasNoTrans, CblasNonUnit,
+            error = tptrs[loc->getType()]( CblasColMajor, CblasUpper, CblasNoTrans, CblasNonUnit,
                            n, 1, rA.get(), wB2.get(), n );
             BOOST_CHECK_EQUAL( 0, error );
         }

@@ -34,7 +34,7 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/mpl/list.hpp>
 
-#include <scai/common/test/TestMacros.hpp>
+#include <scai/lama/test/TestMacros.hpp>
 
 #include <scai/lama/distribution/Distribution.hpp>
 #include <scai/lama/distribution/BlockDistribution.hpp>
@@ -53,7 +53,7 @@ struct P_RedistributorTestConfig
 {
     P_RedistributorTestConfig()
     {
-        comm = Communicator::get();
+        comm = Communicator::getCommunicator();
     }
 
     ~P_RedistributorTestConfig()

@@ -525,17 +525,17 @@ void JDSStorage<ValueType>::check( const char* msg ) const
     // both, ILG and DLG, must sum up to mNumValues
 
     {
-        static LAMAKernel<UtilKernelTrait::sum<IndexType> > sum;
+        static LAMAKernel<UtilKernelTrait::reduce<IndexType> > reduce;
 
-        ContextPtr loc = sum.getValidContext( this->getContextPtr() );
+        ContextPtr loc = reduce.getValidContext( this->getContextPtr() );
 
         ReadAccess<IndexType> rIlg( mIlg, loc );
         ReadAccess<IndexType> rDlg( mDlg, loc );
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        SCAI_ASSERT_EQUAL_ERROR( sum[loc]( rIlg.get(), mNumRows ), mNumValues )
-        SCAI_ASSERT_EQUAL_ERROR( sum[loc]( rDlg.get(), mNumDiagonals ), mNumValues )
+        SCAI_ASSERT_EQUAL_ERROR( reduce[loc]( rIlg.get(), mNumRows, common::reduction::ADD ), mNumValues )
+        SCAI_ASSERT_EQUAL_ERROR( reduce[loc]( rDlg.get(), mNumDiagonals, common::reduction::ADD ), mNumValues )
     }
 
     // check index values in Perm for out of range
@@ -566,7 +566,7 @@ void JDSStorage<ValueType>::check( const char* msg ) const
         HArray<IndexType> invPermArray( mNumRows, mNumRows );
 
         static LAMAKernel<JDSKernelTrait::setInversePerm> setInversePerm;
-        static LAMAKernel<UtilKernelTrait::maxval<IndexType> > maxval;
+        static LAMAKernel<UtilKernelTrait::reduce<IndexType> > reduce;
 
         ReadAccess<IndexType> rPerm( mPerm, loc );
         WriteAccess<IndexType> wInversePerm( invPermArray, loc );
@@ -577,7 +577,7 @@ void JDSStorage<ValueType>::check( const char* msg ) const
 
         setInversePerm[loc]( wInversePerm.get(), rPerm.get(), mNumRows );
 
-        IndexType maxIndex = maxval[loc]( wInversePerm.get(), mNumRows );
+        IndexType maxIndex = reduce[loc]( wInversePerm.get(), mNumRows, common::reduction::MAX );
 
         SCAI_ASSERT_ERROR( maxIndex < mNumRows, "Perm array does not cover all row indexes, #rows = " << mNumRows );
     }
@@ -669,10 +669,10 @@ void JDSStorage<ValueType>::sortRows( ContextPtr context )
 {
     SCAI_LOG_INFO( logger, *this << "sortRows, #rows = " << mNumRows )
 
-    static LAMAKernel<UtilKernelTrait::maxval<IndexType> > maxval;
+    static LAMAKernel<UtilKernelTrait::reduce<IndexType> > reduce;
     static LAMAKernel<JDSKernelTrait::sortRows> sortRows;
 
-    ContextPtr loc = maxval.getValidContext( sortRows, context );
+    ContextPtr loc = reduce.getValidContext( sortRows, context );
 
     // sort the rows according to the array ilg, take sorting over in perm
     WriteAccess<IndexType> ilg( mIlg, loc );
@@ -680,7 +680,9 @@ void JDSStorage<ValueType>::sortRows( ContextPtr context )
 
     SCAI_CONTEXT_ACCESS( loc )
 
-    mNumDiagonals = maxval[loc]( ilg.get(), mNumRows );
+    // reduce with ABS_MAX returns 0 ( instead of -max ) for mNumRows == 0 
+
+    mNumDiagonals = reduce[loc]( ilg.get(), mNumRows, common::reduction::ABS_MAX );
 
     SCAI_LOG_INFO( logger, *this << "sortRows on " << *loc << ", #jagged diagonals = " << mNumDiagonals )
 
@@ -1519,15 +1521,15 @@ ValueType JDSStorage<ValueType>::maxNorm() const
         return static_cast<ValueType>(0.0);
     }
 
-    static LAMAKernel<UtilKernelTrait::absMaxVal<ValueType> > absMaxVal;
+    static LAMAKernel<UtilKernelTrait::reduce<ValueType> > reduce;
 
-    ContextPtr loc = absMaxVal.getValidContext( this->getContextPtr() );
+    ContextPtr loc = reduce.getValidContext( this->getContextPtr() );
 
     ReadAccess<ValueType> jdsValues( mValues, loc );
 
     SCAI_CONTEXT_ACCESS( loc )
 
-    ValueType maxval = absMaxVal[loc]( jdsValues.get(), n );
+    ValueType maxval = reduce[loc]( jdsValues.get(), n, common::reduction::ABS_MAX );
 
     return maxval;
 }

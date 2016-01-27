@@ -37,7 +37,7 @@
 #include <scai/lama/distribution/GenBlockDistribution.hpp>
 
 #include <scai/lama/test/distributed/DistributionTest.hpp>
-#include <scai/common/test/TestMacros.hpp>
+#include <scai/lama/test/TestMacros.hpp>
 
 using namespace scai::lama;
 
@@ -52,7 +52,7 @@ struct GenBlockDistributionTestConfig
 {
     GenBlockDistributionTestConfig()
     {
-        comm = Communicator::get( "MPI" );
+        comm = Communicator::getCommunicator( scai::lama::communicator::MPI );
         size = comm->getSize();
         rank = comm->getRank();
         globalSize = size * ( size + 1 );

@@ -39,7 +39,7 @@
 
 #include <scai/tasking/SyncToken.hpp>
 
-#include <scai/common/test/TestMacros.hpp>
+#include <scai/lama/test/TestMacros.hpp>
 
 #include <scai/lama/test/Configuration.hpp>
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>

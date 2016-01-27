@@ -31,11 +31,11 @@
 ###
 
 set ( CXX_SOURCES
+      ContextTest.cpp  
       KernelInterfaceTest.cpp
+      ReplaceTest.cpp  
       SimpleTest.cpp  
       TraitTest.cpp  
-      ReplaceTest.cpp  
-      ContextTest.cpp  
 ) 
 
 # Boost is not required, but if not available tests are not built
@@ -52,6 +52,10 @@ if ( Boost_UNIT_TEST_FRAMEWORK_FOUND )
         ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}
         scai_kregistry
         )
+        
+    if ( USE_CODE_COVERAGE )
+        configure_file( "${CMAKE_CURRENT_SOURCE_DIR}/code_coverage.sh.in" "${CMAKE_CURRENT_BINARY_DIR}/code_coverage.sh" @ONLY)
+    endif ( USE_CODE_COVERAGE )
 
 endif ( Boost_UNIT_TEST_FRAMEWORK_FOUND )
 

@@ -721,6 +721,12 @@ inline ValueType abs( const Complex<ValueType>& a )
     return ( Math::sqrt( a.real() * a.real() + a.imag() * a.imag() ) );
 }
 
+template<typename ValueType>
+CUDA_CALLABLE_MEMBER inline Complex<ValueType> conj( const Complex<ValueType>& a )
+{
+    return Complex<ValueType>( a.real(), - a.imag() );
+}
+
 /*
  * long double version must not be CUDA_CALLABLE_MEMBER
  */
@@ -898,17 +904,17 @@ inline Complex<ValueType> sqrt( const Complex<ValueType>& a )
     ValueType x = a.real();
     ValueType y = a.imag();
 
-    if( x == 0 )
+    if( x == ValueType( 0 ) )
     {
-        ValueType t = Math::sqrt( Math::abs( y ) / 2 );
-        return Complex<ValueType>( t, y < ValueType() ? -t : t );
+        ValueType t = sqrt( Math::abs( y ) / 2 );
+        return Complex<ValueType>( t, y < ValueType( 0 ) ? -t : t );
     }
     else
     {
         ValueType t = Math::sqrt( 2 * ( abs( a ) + Math::abs( x ) ) );
         ValueType u = t / 2;
         return x > ValueType() ? Complex<ValueType>( u, y / t ) :
-                        Complex<ValueType>( Math::abs( y ) / t, y < ValueType() ? -u : u );
+                        Complex<ValueType>( Math::abs( y ) / t, y < ValueType( 0 ) ? -u : u );
     }
 }
 
@@ -998,3 +1004,4 @@ std::ostream& operator<<( std::ostream& stream, const Complex<ValueType>& object
 typedef scai::common::Complex<float> ComplexFloat;
 typedef scai::common::Complex<double> ComplexDouble;
 typedef scai::common::Complex<long double> ComplexLongDouble;
+

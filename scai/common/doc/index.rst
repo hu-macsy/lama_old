@@ -3,14 +3,15 @@
 SCAI Common
 ===========
 
-* Provides different functionality needed in nearly all SCAI projects
-* Provides coding conventions for using smart pointers
-* Provides coding conventions for exception handling
-* Provides macros for assertions
-* Provides macros to deal with different platforms
-* Own classes for platform-specific stuff (e.g. threads, ... )
+The common library contains different functionality needed in nearly all SCAI projects.
+These are some utitily classes (e.g. for exceptions, factories, timing, ...), some
+classes to abstract from platform-specific features (e.g. threads, loading library modules, ...),
+and some kind of coding conventions (e.g. for using smart pointers, function types, ...).
+Beside these more general concepts that might also be used for other libraries, the common
+library provides some LAMA specific enumeration types (supported value types, different context
+types, ...).
 
-All classes and type defintions are done in the namespace ''scai/common''.
+All classes and type defintions are done in the namespace ``scai/common``.
 
 SCAI Types
 ----------
@@ -20,7 +21,7 @@ Class                   Description
 ====================    ==========================================
 ContextType             Enumeration types ContextType and AccessKind
 ScalarType              Enumeration type for supported value types (allows registration for different types in factories, interfaces, ...)
-TypeTraits              Struct with all specific stuff for any supported arithmetic value type in matrix/vector operations
+TypeTrait               Struct with all specific stuff for any supported arithmetic value type in matrix/vector operations
 SCAIType                Supported arithmetic types for template instantiations
 ====================    ==========================================
 
@@ -29,7 +30,7 @@ SCAIType                Supported arithmetic types for template instantiations
    :maxdepth: 2
    
    Types
-   TypeTraits
+   TypeTrait
    Constants
    SCAITypes
    Complex

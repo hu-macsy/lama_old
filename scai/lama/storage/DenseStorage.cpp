@@ -1048,18 +1048,18 @@ ValueType DenseStorageView<ValueType>::maxNorm() const
 
     if ( n == 0 )
     {
-        return static_cast<ValueType>( 0 );
+        return ValueType( 0 );
     }
 
-    static LAMAKernel<UtilKernelTrait::absMaxVal<ValueType> > absMaxVal;
+    static LAMAKernel<UtilKernelTrait::reduce<ValueType> > reduce;
 
-    ContextPtr loc = absMaxVal.getValidContext( this->getContextPtr() );
+    ContextPtr loc = reduce.getValidContext( this->getContextPtr() );
 
     ReadAccess<ValueType> read1( mData, loc );
 
     SCAI_CONTEXT_ACCESS( loc )
 
-    ValueType maxval = absMaxVal[loc]( read1.get(), n );
+    ValueType maxval = reduce[loc]( read1.get(), n, common::reduction::ABS_MAX );
 
     return maxval;
 }

@@ -55,7 +55,7 @@
 #include <scai/lama/expression/VectorExpressions.hpp>
 #include <scai/lama/expression/MatrixVectorExpressions.hpp>
 
-#include <scai/common/test/TestMacros.hpp>
+#include <scai/lama/test/TestMacros.hpp>
 
 using namespace scai::lama;
 using namespace scai::hmemo;
@@ -86,7 +86,7 @@ void testSolveMethod( ContextPtr loc )
     MatrixCreator<ValueType>::buildPoisson2D( helpcoefficients, 9, N1, N2 );
     SCAI_LOG_DEBUG( logger, "Poisson2D matrix created" << helpcoefficients )
     MatrixType coefficients( helpcoefficients );
-    CommunicatorPtr comm = Communicator::get();
+    CommunicatorPtr comm = Communicator::getCommunicator();
     DistributionPtr dist( new BlockDistribution( coefficients.getNumRows(), comm ) );
     coefficients.redistribute( dist, dist );
     coefficients.setContextPtr( loc );

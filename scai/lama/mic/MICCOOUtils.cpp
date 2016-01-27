@@ -58,6 +58,7 @@ namespace scai
 
 using tasking::MICSyncToken;
 using hmemo::MICContext;
+using common::TypeTraits;
 
 namespace lama
 {
@@ -138,7 +139,8 @@ void MICCOOUtils::getCSRValuesP(
     const COOValueType cooValues[] )
 {
     SCAI_LOG_ERROR( logger,
-                    "get CSRValues<" << common::getScalarType<COOValueType>() << ", " << common::getScalarType<CSRValueType>() << ">" << ", #rows = " << numRows << ", #values = " << numValues )
+                    "get CSRValues<" << TypeTraits<COOValueType>::id() << ", " << TypeTraits<CSRValueType>::id() << ">" 
+                     << ", #rows = " << numRows << ", #values = " << numValues )
 
     void* csrJAPtr = csrJA;
     void* csrValuesPtr = csrValues;
@@ -212,7 +214,8 @@ void MICCOOUtils::getCSRValuesS(
     const COOValueType cooValues[] )
 {
     SCAI_LOG_ERROR( logger,
-                    "get CSRValues<" << common::getScalarType<COOValueType>() << ", " << common::getScalarType<CSRValueType>() << ">" << ", #rows = " << numRows << ", #values = " << numValues )
+                    "get CSRValues<" << TypeTraits<COOValueType>::id() << ", " << TypeTraits<CSRValueType>::id() << ">" 
+                    << ", #rows = " << numRows << ", #values = " << numValues )
 
     void* csrJAPtr = csrJA;
     void* csrValuesPtr = csrValues;
@@ -381,7 +384,7 @@ void MICCOOUtils::normalGEMV(
     // SCAI_REGION( "MIC.COO.normalGEMV" )
 
     SCAI_LOG_INFO( logger,
-                   "normalGEMV<" << common::getScalarType<ValueType>() << ">, result[" << numRows << "] = " 
+                   "normalGEMV<" << TypeTraits<ValueType>::id() << ">, result[" << numRows << "] = " 
                     << alpha << " * A( coo, #vals = " << numValues << " ) * x + " << beta << " * y " )
 
     MICSyncToken* syncToken = MICSyncToken::getCurrentSyncToken();
@@ -449,7 +452,7 @@ void MICCOOUtils::jacobi(
     // SCAI_REGION( "MIC.COO.jacobi" )
 
     SCAI_LOG_INFO( logger,
-                   "jacobi<" << common::getScalarType<ValueType>() << ">" << ", #rows = " << numRows << ", omega = " << omega )
+                   "jacobi<" << TypeTraits<ValueType>::id() << ">" << ", #rows = " << numRows << ", omega = " << omega )
 
     MICSyncToken* syncToken = MICSyncToken::getCurrentSyncToken();
 

@@ -225,15 +225,15 @@ IndexType ELLStorage<ValueType>::getNumValues() const
 {
     SCAI_LOG_INFO( logger, "getNumValues" )
 
-    static LAMAKernel<UtilKernelTrait::sum<IndexType> > sum;
+    static LAMAKernel<UtilKernelTrait::reduce<IndexType> > reduce;
 
-    ContextPtr loc = sum.getValidContext( this->getContextPtr() );
+    ContextPtr loc = reduce.getValidContext( this->getContextPtr() );
 
     ReadAccess<IndexType> ia( mIA, loc );
 
     SCAI_CONTEXT_ACCESS( loc )
 
-    IndexType numValues = sum[ loc ]( ia.get(), mNumRows );
+    IndexType numValues = reduce[ loc ]( ia.get(), mNumRows, common::reduction::ADD );
 
     return numValues;
 }
@@ -469,7 +469,7 @@ void ELLStorage<ValueType>::setCSRDataImpl(
 
     static LAMAKernel<CSRKernelTrait::offsets2sizes > offsets2sizes;
     static LAMAKernel<ELLKernelTrait::hasDiagonalProperty > hasDiagonalProperty;
-    static LAMAKernel<UtilKernelTrait::maxval<IndexType> > maxval;
+    static LAMAKernel<UtilKernelTrait::reduce<IndexType> > reduce;
     static LAMAKernel<ELLKernelTrait::setCSRValues<ValueType, OtherValueType> > setCSRValues;
 
     ContextPtr loc = offsets2sizes.getValidContext( hasDiagonalProperty, setCSRValues, context );
@@ -489,7 +489,7 @@ void ELLStorage<ValueType>::setCSRDataImpl(
     {
         ReadAccess<IndexType> ellSizes( mIA, loc );
         SCAI_CONTEXT_ACCESS( loc )
-        mNumValuesPerRow = maxval[loc]( ellSizes.get(), mNumRows );
+        mNumValuesPerRow = reduce[loc]( ellSizes.get(), mNumRows, common::reduction::MAX );
     }
 
     SCAI_LOG_INFO( logger, "setCSRData, #values/row = " << mNumValuesPerRow )
@@ -957,7 +957,7 @@ void ELLStorage<ValueType>::compress( const ValueType eps /* = 0.0 */)
 
     static LAMAKernel<ELLKernelTrait::compressIA<ValueType> > compressIA;
     static LAMAKernel<ELLKernelTrait::compressValues<ValueType> > compressValues;
-    static LAMAKernel<UtilKernelTrait::maxval<IndexType> > maxval;
+    static LAMAKernel<UtilKernelTrait::reduce<IndexType> > reduce;
 
     ContextPtr loc = compressIA.getValidContext( compressValues, this->getContextPtr() );
 
@@ -972,7 +972,7 @@ void ELLStorage<ValueType>::compress( const ValueType eps /* = 0.0 */)
     compressIA[loc]( IA.get(), JA.get(), values.get(), mNumRows, mNumValuesPerRow, eps, newIA.get() );
 
     // 2. Step: compute length of longest row
-    IndexType newNumValuesPerRow = maxval[ loc ]( IA.get(), mNumRows );
+    IndexType newNumValuesPerRow = reduce[ loc ]( IA.get(), mNumRows, common::reduction::MAX );
 
     // Do further steps, if new array could be smaller
     if( newNumValuesPerRow < mNumValuesPerRow )
@@ -1861,7 +1861,7 @@ void ELLStorage<ValueType>::matrixTimesMatrixELL(
     SCAI_LOG_INFO( logger,
                    *this << ": = " << alpha << " * A * B, with " << "A = " << a << ", B = " << b << ", all are ELL" )
 
-    static LAMAKernel<UtilKernelTrait::maxval<IndexType> > maxval;
+    static LAMAKernel<UtilKernelTrait::reduce<IndexType> > reduce;
     static LAMAKernel<ELLKernelTrait::matrixMultiplySizes> matrixMultiplySizes;
     static LAMAKernel<ELLKernelTrait::matrixMultiply<ValueType> > matrixMultiply;
 
@@ -1896,7 +1896,7 @@ void ELLStorage<ValueType>::matrixTimesMatrixELL(
                                    a.getNumValuesPerRow(), bIA.get(), bJA.get(), b.getNumValuesPerRow() );
 
         // 2. Step: compute length of longest row
-        mNumValuesPerRow = maxval[ loc ]( cIA.get(), mNumRows );
+        mNumValuesPerRow = reduce[ loc ]( cIA.get(), mNumRows, common::reduction::MAX );
 
         // 3. Step: Allocate IA and Values arrays with new size
         WriteOnlyAccess<IndexType> cJA( mJA, loc, mNumValuesPerRow * mNumRows );
@@ -1924,10 +1924,10 @@ void ELLStorage<ValueType>::matrixAddMatrixELL(
                    "this = " << alpha << " * A + " << beta << " * B, with " << "A = " << a << ", B = " << b << ", all are ELL" )
 
     static LAMAKernel<ELLKernelTrait::matrixAddSizes> matrixAddSizes;
-    static LAMAKernel<UtilKernelTrait::maxval<IndexType> > maxval;
+    static LAMAKernel<UtilKernelTrait::reduce<IndexType> > reduce;
     static LAMAKernel<ELLKernelTrait::matrixAdd<ValueType> > matrixAdd;
 
-    ContextPtr loc = matrixAddSizes.getValidContext( maxval, matrixAdd, this->getContextPtr() );
+    ContextPtr loc = matrixAddSizes.getValidContext( reduce, matrixAdd, this->getContextPtr() );
 
     SCAI_ASSERT_ERROR( &a != this, "matrixAddMatrix: alias of a with this result matrix" )
     SCAI_ASSERT_ERROR( &b != this, "matrixAddMatrix: alias of b with this result matrix" )
@@ -1957,7 +1957,7 @@ void ELLStorage<ValueType>::matrixAddMatrixELL(
                              a.getNumValuesPerRow(), bIA.get(), bJA.get(), b.getNumValuesPerRow() );
 
         // 2. Step: compute length of longest row
-        mNumValuesPerRow = maxval[loc]( cIA.get(), mNumRows );
+        mNumValuesPerRow = reduce[loc]( cIA.get(), mNumRows, common::reduction::MAX );
 
         // 3. Step: Allocate IA and Values arrays with new size
         WriteOnlyAccess<IndexType> cJA( mJA, loc, mNumValuesPerRow * mNumRows );

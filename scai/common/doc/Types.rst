@@ -1,14 +1,16 @@
 ContextType
 -----------
 
- * Enumeration for different devices / locations
- * Used as key for ContextFactory to get a certain device
+A context specifies a device like CPU or GPU accelerator where memory can be
+allocated and where operations on it might be executed.
+The enumeration type for context might be used for registration and 
+searching of objects belonging to a certain context.
 
 .. code-block:: c++
 
   namespace context
   {
-      enum ContextType
+      typdef enum 
       {
           Host,          //!< context for cpu + main memory
           CUDA,          //!< CUDA GPU device
@@ -16,7 +18,7 @@ ContextType
           MIC,           //!< Intel MIC
           UserContext,   //!< can be used for a new derived Context class
           MaxContext     //!< used for dimension of ContextType arrays
-      }; 
+      } ContextType; 
   
       std::ostream& operator<<( std::ostream& stream, const ContextType& type );
 
@@ -26,10 +28,9 @@ ContextType
 ScalarType
 ----------
 
- * ScalarType is an enumeration type that has a value at least for each supported arithmetic type
- * Some additional values are used for internal purposes
- * This enum type can be used for operations where type ids itself are not allowed
- * Conversion of type ids to enum values by TypeTraits
+ScalarType is an enumeration type that has a value at least for each supported arithmetic type.
+Some additional values are used for internal purposes. This enum type can be used for operations 
+where type ids itself are not allowed or inefficient.
 
 .. code-block:: c++
 
@@ -52,18 +53,24 @@ ScalarType
       std::ostream& operator<<( std::ostream& stream, const ScalarType& type );
   }
 
-Example of Use:
+The following example shows how this enumeration type is used in LAMA or might
+be used within other applications. Its main purpose is to provide some
+kind of logic to guarantee the safety of the ``static_cast`` operation instead of
+using the expensive ``dynamic_cast``.
+
+The example consists of common abstract base class ``_Data`` and 
+a derived template class ``Data`` that might be instantiated for different arithmetic types.
 
 .. code-block:: c++
 
-  class _HArray
+  class _Data
   {
       ...
       virtual ScalarType getValueType() = 0;
   }
 
   template <typename ValueType>
-  class HArray
+  class Data : public _Data
   {
       ...
       virtual ScalarType getValueType()
@@ -72,15 +79,57 @@ Example of Use:
       }
   }
 
-  void sub( _Harray& array )
+Often, for an arbitrary object of the base class it is important to find
+out from which derived class it is. As the virtual method ``getValueType``
+returns a corresponding enum value, this value identifies exactly to which 
+template class the object belongs.
+
+.. code-block:: c++
+
+  void sub( _Data& array )
   {
       ScalarType type = array.getValueType();
 
       std::cout << "array has type " << type << std::endl;
       switch ( type ) :
           case scalar::FLOAT :
+             Data<float>& f_array = static_cast< Data<float>& >( array );
              ...
           case scalar::DOUBLE ::
+             Data<double>& d_array = static_cast< Data<double>& >( array );
              ...
       ...
   }
+
+The alternative solution is using a ``dynamic_cast`` operator and to check for each derived
+class whether the corresponding cast was successful or not. This is rather expensive and
+using the enumeration type provides the logic to guarantee the safety of the
+static_cast operation.
+
+ReductionOp
+-----------
+
+The following enumeration type specifies the different kind of binary operators
+that can be used in reduction operators.
+
+.. code-block:: c++
+
+  namespace reduction
+  {
+      typedef enum
+      {
+          COPY,     // for assign   x = y
+          ADD,      // for operator x += y
+          MULT,     // for operator x *= y
+          MIN,      // for operator x = min( x, y )
+          MAX,      // for operator x = max( x, y )
+          ABS_MAX   // for operator x = max( x, abs(y) )
+  
+      } ReductionOp;
+
+      std::ostream& operator<<( std::ostream& stream, const ReductionOp& op );
+  }
+
+The enum class is used in ordeer to have one common function with an addtional op argument instead
+of individual functions for each kind of operator.
+

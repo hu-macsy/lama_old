@@ -38,7 +38,7 @@
 #include <scai/lama/distribution/BlockDistribution.hpp>
 
 #include <scai/lama/test/EquationHelper.hpp>
-#include <scai/common/test/TestMacros.hpp>
+#include <scai/lama/test/TestMacros.hpp>
 
 using namespace scai::lama;
 using namespace scai::hmemo;
@@ -53,7 +53,7 @@ struct P_NormTestConfig
 {
     P_NormTestConfig()
     {
-        comm = Communicator::get();
+        comm = Communicator::getCommunicator();
     }
 
     ~P_NormTestConfig()

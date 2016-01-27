@@ -48,7 +48,7 @@
 #include <scai/lama/distribution/BlockDistribution.hpp>
 #include <scai/lama/distribution/CyclicDistribution.hpp>
 
-#include <scai/common/test/TestMacros.hpp>
+#include <scai/lama/test/TestMacros.hpp>
 
 #include <scai/logging.hpp>
 
@@ -100,7 +100,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( buildHaloTest, StorageType, StorageTypes )
 {
     StorageType matrixStorage;
     typedef typename StorageType::StorageValueType ValueType;
-    CommunicatorPtr comm = Communicator::get();
+    CommunicatorPtr comm = Communicator::getCommunicator();
     SCAI_LOG_INFO( logger, *comm << ": buildHaloTest" );
     setDenseData( matrixStorage );
     CSRStorage<ValueType> compare;
@@ -142,7 +142,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( replicateTest, StorageType, StorageTypes )
 {
     typedef typename StorageType::StorageValueType ValueType;
     StorageType matrixStorage;
-    CommunicatorPtr comm = Communicator::get();
+    CommunicatorPtr comm = Communicator::getCommunicator();
     SCAI_LOG_INFO( logger, *comm << ": replicateTest" );
     setDenseData( matrixStorage );
     CSRStorage<ValueType> compare;
@@ -178,7 +178,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( redistributeTest, StorageType, StorageTypes )
 {
     typedef typename StorageType::StorageValueType ValueType;
     StorageType matrixStorage;
-    CommunicatorPtr comm = Communicator::get();
+    CommunicatorPtr comm = Communicator::getCommunicator();
     SCAI_LOG_INFO( logger, *comm << ": redistributeTest" );
     setDenseData( matrixStorage );
     CSRStorage<ValueType> compare;
@@ -219,7 +219,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( exchangeHaloTest, StorageType, StorageTypes )
     // Test for method MatrixStorage::exchangeHalo
     StorageType matrixStorage;
     typedef typename StorageType::StorageValueType ValueType;
-    CommunicatorPtr comm = Communicator::get();
+    CommunicatorPtr comm = Communicator::getCommunicator();
     SCAI_LOG_INFO( logger, *comm << ": buildHaloTest" );
     setDenseData( matrixStorage );
     CSRStorage<ValueType> compare;

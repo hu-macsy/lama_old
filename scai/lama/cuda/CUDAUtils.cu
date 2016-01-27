@@ -171,7 +171,7 @@ bool CUDAUtils::validIndexes( const IndexType array[], const IndexType n, const 
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ValueType CUDAUtils::sum( const ValueType array[], const IndexType n )
+ValueType CUDAUtils::reduceSum( const ValueType array[], const IndexType n )
 {
     SCAI_LOG_INFO( logger, "sum # array = " << array << ", n = " << n )
 
@@ -179,11 +179,121 @@ ValueType CUDAUtils::sum( const ValueType array[], const IndexType n )
 
     thrust::device_ptr<ValueType> data( const_cast<ValueType*>( array ) );
 
-    ValueType result = thrust::reduce( data, data + n, static_cast<ValueType>( 0.0 ), thrust::plus<ValueType>() );
+    ValueType zero = ValueType( 0 );
+
+    ValueType result = thrust::reduce( data, data + n, zero, thrust::plus<ValueType>() );
 
     SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
 
     SCAI_LOG_INFO( logger, "sum of " << n << " values = " << result )
+
+    return result;
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+ValueType CUDAUtils::reduceMaxVal( const ValueType array[], const IndexType n )
+{
+    SCAI_LOG_INFO( logger, "maxval for " << n << " elements " )
+
+    SCAI_CHECK_CUDA_ACCESS
+
+    thrust::device_ptr<ValueType> data( const_cast<ValueType*>( array ) );
+
+    ValueType zero( TypeTraits<ValueType>::getMin() );
+
+    ValueType result = thrust::reduce( data, data + n, zero, thrust::maximum<ValueType>() );
+
+    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
+
+    SCAI_LOG_INFO( logger, "max of " << n << " values = " << result )
+
+    return result;
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+ValueType CUDAUtils::reduceMinVal( const ValueType array[], const IndexType n )
+{
+    SCAI_LOG_INFO( logger, "minval for " << n << " elements " )
+
+    SCAI_CHECK_CUDA_ACCESS
+
+    thrust::device_ptr<ValueType> data( const_cast<ValueType*>( array ) );
+
+    ValueType zero( TypeTraits<ValueType>::getMax() );
+
+    ValueType result = thrust::reduce( data, data + n, zero, thrust::minimum<ValueType>() );
+
+    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
+
+    SCAI_LOG_INFO( logger, "min of " << n << " values = " << result )
+
+    return result;
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+struct absolute_value: public thrust::unary_function<ValueType, ValueType>
+{
+    __host__ __device__
+    ValueType operator()( const ValueType& x ) const
+    {
+        // return x < ValueType( 0 ) ? -x : x;
+        return abs( x );
+    }
+};
+
+template<typename ValueType>
+ValueType CUDAUtils::reduceAbsMaxVal( const ValueType array[], const IndexType n )
+{
+    SCAI_LOG_INFO( logger, "absMaxVal for " << n << " elements " )
+
+    SCAI_CHECK_CUDA_ACCESS
+
+    thrust::device_ptr<ValueType> data( const_cast<ValueType*>( array ) );
+
+    ValueType zero( 0 );
+
+    ValueType result = thrust::transform_reduce( data, data + n, absolute_value<ValueType>(), zero,
+                       thrust::maximum<ValueType>() );
+
+    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
+
+    SCAI_LOG_INFO( logger, "abs max of " << n << " values = " << result )
+
+    return result;
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+ValueType CUDAUtils::reduce( const ValueType array[], const IndexType n, common::reduction::ReductionOp op )
+{
+    SCAI_LOG_INFO ( logger, "reduce # array = " << array << ", n = " << n << ", op = " << op )
+
+    ValueType result;
+
+    switch ( op )
+    {
+        case common::reduction::ADD :
+            result = reduceSum( array, n );
+            break;
+        case common::reduction::MAX :
+            result = reduceMaxVal( array, n );
+            break;
+        case common::reduction::MIN :
+            result = reduceMinVal( array, n );
+            break;
+        case common::reduction::ABS_MAX :
+            result = reduceAbsMaxVal( array, n );
+            break;
+        default:
+            COMMON_THROWEXCEPTION( "Unsupported reduce op " << op )
+    }
 
     return result;
 }
@@ -257,58 +367,6 @@ ValueType CUDAUtils::getValue( const ValueType* array, const IndexType i )
     thrust::host_vector<ValueType> arrayHost( arrayPtr + i, arrayPtr + i + 1 );
 
     return arrayHost[0];
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
-ValueType CUDAUtils::maxval( const ValueType array[], const IndexType n )
-{
-    SCAI_LOG_INFO( logger, "maxval for " << n << " elements " )
-
-    SCAI_CHECK_CUDA_ACCESS
-
-    thrust::device_ptr<ValueType> data( const_cast<ValueType*>( array ) );
-    ValueType zero = static_cast<ValueType>( 0 );
-    ValueType result = thrust::reduce( data, data + n, zero, thrust::maximum<ValueType>() );
-
-    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
-
-    SCAI_LOG_INFO( logger, "max of " << n << " values = " << result )
-
-    return result;
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
-struct absolute_value: public thrust::unary_function<ValueType, ValueType>
-{
-    __host__ __device__
-    ValueType operator()( const ValueType& x ) const
-    {
-        // return x < ValueType( 0 ) ? -x : x;
-        return abs( x );
-    }
-};
-
-template<typename ValueType>
-ValueType CUDAUtils::absMaxVal( const ValueType array[], const IndexType n )
-{
-    SCAI_LOG_INFO( logger, "absMaxVal for " << n << " elements " )
-
-    SCAI_CHECK_CUDA_ACCESS
-
-    thrust::device_ptr<ValueType> data( const_cast<ValueType*>( array ) );
-
-    ValueType result = thrust::transform_reduce( data, data + n, absolute_value<ValueType>(), static_cast<ValueType>( 0.0 ),
-                       thrust::maximum<ValueType>() );
-
-    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
-
-    SCAI_LOG_INFO( logger, "abs max of " << n << " values = " << result )
-
-    return result;
 }
 
 /* --------------------------------------------------------------------------- */
@@ -646,14 +704,12 @@ void CUDAUtils::registerKernels( bool deleteFlag )
     SCAI_LOG_INFO( logger, "set general utilty routines for CUDA in Interface" )
 
     KernelRegistry::set<UtilKernelTrait::validIndexes>( validIndexes, CUDA, flag );
-    KernelRegistry::set<UtilKernelTrait::sum<IndexType> >( sum, CUDA, flag );
+    KernelRegistry::set<UtilKernelTrait::reduce<IndexType> >( reduce, CUDA, flag );
 
     KernelRegistry::set<UtilKernelTrait::setVal<IndexType> >( setVal, CUDA, flag );
     KernelRegistry::set<UtilKernelTrait::setOrder<IndexType> >( setOrder, CUDA, flag );
     KernelRegistry::set<UtilKernelTrait::getValue<IndexType> >( getValue, CUDA, flag );
 
-    KernelRegistry::set<UtilKernelTrait::maxval<IndexType> >( maxval, CUDA, flag );
-    KernelRegistry::set<UtilKernelTrait::absMaxVal<IndexType> >( absMaxVal, CUDA, flag );
     KernelRegistry::set<UtilKernelTrait::absMaxDiffVal<IndexType> >( absMaxDiffVal, CUDA, flag );
     KernelRegistry::set<UtilKernelTrait::isSorted<IndexType> >( isSorted, CUDA, flag );
 
@@ -668,12 +724,10 @@ void CUDAUtils::registerKernels( bool deleteFlag )
     KernelRegistry::set<UtilKernelTrait::set<TYPE, ARITHMETIC_CUDA_TYPE_##J> >( set, CUDA, flag );               \
      
 #define LAMA_UTILS_REGISTER(z, I, _)                                                                             \
-    KernelRegistry::set<UtilKernelTrait::sum<ARITHMETIC_CUDA_TYPE_##I> >( sum, CUDA, flag );                     \
+    KernelRegistry::set<UtilKernelTrait::reduce<ARITHMETIC_CUDA_TYPE_##I> >( reduce, CUDA, flag );               \
     KernelRegistry::set<UtilKernelTrait::setVal<ARITHMETIC_CUDA_TYPE_##I> >( setVal, CUDA, flag );               \
     KernelRegistry::set<UtilKernelTrait::setOrder<ARITHMETIC_CUDA_TYPE_##I> >( setOrder, CUDA, flag );           \
     KernelRegistry::set<UtilKernelTrait::getValue<ARITHMETIC_CUDA_TYPE_##I> >( getValue, CUDA, flag );           \
-    KernelRegistry::set<UtilKernelTrait::maxval<ARITHMETIC_CUDA_TYPE_##I> >( maxval, CUDA, flag );               \
-    KernelRegistry::set<UtilKernelTrait::absMaxVal<ARITHMETIC_CUDA_TYPE_##I> >( absMaxVal, CUDA, flag );         \
     KernelRegistry::set<UtilKernelTrait::absMaxDiffVal<ARITHMETIC_CUDA_TYPE_##I> >( absMaxDiffVal, CUDA, flag ); \
     KernelRegistry::set<UtilKernelTrait::isSorted<ARITHMETIC_CUDA_TYPE_##I> >( isSorted, CUDA, flag );           \
     KernelRegistry::set<UtilKernelTrait::invert<ARITHMETIC_CUDA_TYPE_##I> >( invert, CUDA, flag );               \

@@ -34,7 +34,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include <scai/lama/norm/Norm.hpp>
-#include <scai/common/test/TestMacros.hpp>
+#include <scai/lama/test/TestMacros.hpp>
 
 /** Common test class for all derived classes of class Norm.
  *

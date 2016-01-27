@@ -61,11 +61,12 @@ namespace reduction
 
     typedef enum
     {
-        COPY,     // copy directly
-        ADD,      // for operator +
-        MULT,     // for operator *
-        MIN,      // for operator min
-        MAX       // for operator max
+        COPY,     // for assign   x = y
+        ADD,      // for operator x += y
+        MULT,     // for operator x *= y
+        MIN,      // for operator x = min( x, y )
+        MAX,      // for operator x = max( x, y )
+        ABS_MAX   // for operator x = max( x, abs(y) )
 
     } ReductionOp;
 
@@ -91,6 +92,9 @@ namespace reduction
                 break;
             case MAX:
                 stream << "MAX";
+                break;
+            case ABS_MAX:
+                stream << "ABS_MAX";
                 break;
             default:
                 stream << "<unknown_reduction_op>";

@@ -37,7 +37,7 @@
 #include <scai/lama/storage/COOStorage.hpp>
 
 #include <scai/lama/test/MatrixStorageTest.hpp>
-#include <scai/common/test/TestMacros.hpp>
+#include <scai/lama/test/TestMacros.hpp>
 #include <scai/lama/HArrayUtils.hpp>
 #include <scai/lama/LArray.hpp>
 

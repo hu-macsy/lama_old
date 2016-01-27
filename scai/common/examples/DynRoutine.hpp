@@ -9,8 +9,6 @@
 
 #include <scai/common/Factory.hpp>
 
-using namespace scai::common;
-
 /** Base class that provides by deriving from Factory a factory with a create routine.
  *
  *  The input value for the create routine is a string, the output value a pointer to

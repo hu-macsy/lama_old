@@ -38,7 +38,7 @@
 #include <scai/lama/Communicator.hpp>
 #include <scai/lama/storage/MatrixStorage.hpp>
 
-#include <scai/common/test/TestMacros.hpp>
+#include <scai/lama/test/TestMacros.hpp>
 
 static std::string storagetestclasses[] =
 { "CSRStorageTest", "COOStorageTest", "DIAStorageTest", "ELLStorageTest", "JDSStorageTest", "DenseStorageTest" };

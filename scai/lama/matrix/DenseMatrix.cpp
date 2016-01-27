@@ -821,7 +821,7 @@ void DenseMatrix<ValueType>::assignTransposeImpl( const DenseMatrix<ValueType>& 
     const Communicator& comm = Mat.getDistribution().getCommunicator();
     IndexType size = comm.getSize();
     //get Distribution
-    CommunicatorPtr commu = Communicator::get( "MPI" );
+    CommunicatorPtr commu = Communicator::getCommunicator( communicator::MPI );
     common::shared_ptr<Distribution> distRow( new BlockDistribution( Mat.getNumRows(), commu ) );
     common::shared_ptr<Distribution> distCol( new BlockDistribution( Mat.getNumColumns(), commu));
 
@@ -1810,7 +1810,7 @@ void DenseMatrix<ValueType>::matrixTimesVectorImpl(
 
 // asynchronous communication always requires same sizes of arrays, might shift some more data
 
-        common::unique_ptr<SyncToken> st( comm.shiftAsync( *recvValues, *sendValues, COMM_DIRECTION ) );
+        common::unique_ptr<tasking::SyncToken> st( comm.shiftAsync( *recvValues, *sendValues, COMM_DIRECTION ) );
 
         SCAI_LOG_INFO( logger,
                        comm << ": matrixTimesVector, my dense block = " << *mData[rank] << ", localX = " << localX << ", localY = " << localY << ", localResult = " << localResult )

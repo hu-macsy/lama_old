@@ -446,7 +446,7 @@ ValueType MICBLAS1::dot(
 {
     // SCAI_REGION( "MIC.BLAS1.dot" )
 
-    SCAI_LOG_INFO( logger, "dot<" << common::TypeTraits<ValueType>::id() << ">"
+    SCAI_LOG_INFO( logger, "dot<" << common::TypeTraits<ValueType>::id() << ">" 
                            << ", n = " << n << ", incX = " << incX << ", incY = " << incY );
 
     MICSyncToken* syncToken = MICSyncToken::getCurrentSyncToken();

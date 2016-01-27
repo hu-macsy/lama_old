@@ -56,6 +56,8 @@ namespace scai
 using tasking::SyncToken;
 using tasking::MICSyncToken;
 
+using common::TypeTraits;
+
 using namespace hmemo;
 
 namespace lama
@@ -529,7 +531,8 @@ void MICJDSUtils::getCSRValues(
     const JDSValueType jdsValues[] )
 {
     SCAI_LOG_INFO( logger,
-                   "get CSRValues<" << common::getScalarType<JDSValueType>() << ", " << common::getScalarType<CSRValueType>() << ">" << ", #rows = " << numRows )
+                   "get CSRValues<" << TypeTraits<JDSValueType>::id() << ", " << TypeTraits<CSRValueType>::id() << ">" 
+                    << ", #rows = " << numRows )
 
     // SCAI_REGION( "MIC.JDS->CSR_values" )
 
@@ -596,7 +599,8 @@ void MICJDSUtils::setCSRValues(
     const CSRValueType csrValues[] )
 {
     SCAI_LOG_INFO( logger,
-                   "set CSRValues<" << common::getScalarType<JDSValueType>() << ", " << common::getScalarType<CSRValueType>() << ">" << ", #rows = " << numRows )
+                   "set CSRValues<" << TypeTraits<JDSValueType>::id() << ", " << TypeTraits<CSRValueType>::id() << ">"
+                    << ", #rows = " << numRows )
 
     // SCAI_REGION( "MIC.JDS<-CSR_values" )
 
@@ -661,7 +665,7 @@ void MICJDSUtils::normalGEMV(
     const ValueType jdsValues[] )
 {
     SCAI_LOG_INFO( logger,
-                   "normalGEMV<" << common::getScalarType<ValueType>() << ">, result[" << numRows << "] = " << alpha << " * A( jds, ndlg = " << ndlg << " ) * x + " << beta << " * y " )
+                   "normalGEMV<" << TypeTraits<ValueType>::id() << ">, result[" << numRows << "] = " << alpha << " * A( jds, ndlg = " << ndlg << " ) * x + " << beta << " * y " )
 
     MICSyncToken* syncToken = MICSyncToken::getCurrentSyncToken();
 
@@ -670,21 +674,21 @@ void MICJDSUtils::normalGEMV(
         SCAI_LOG_INFO( logger, "asynchronous execution for for MIC not supported yet" )
     }
 
-    if( beta == static_cast<ValueType>( 0.0 ) )
+    if( beta == common::constants::ZERO )
     {
-        MICUtils::setVal( result, numRows, static_cast<ValueType>(0.0), common::reduction::COPY );
+        MICUtils::setVal( result, numRows, ValueType( 0 ), common::reduction::COPY );
     }
     else if( result == y )
     {
         // result = result * beta
 
-        if( beta != static_cast<ValueType>( 1.0 ) )
+        if ( beta == common::constants::ONE )
         {
-            MICUtils::setVal( result, numRows, beta, common::reduction::MULT );
+            SCAI_LOG_DEBUG( logger, "result remains unchanged" )
         }
         else
         {
-            SCAI_LOG_DEBUG( logger, "result remains unchanged" )
+            MICUtils::setVal( result, numRows, beta, common::reduction::MULT );
         }
     }
     else
@@ -767,7 +771,7 @@ void MICJDSUtils::jacobi(
     // SCAI_REGION( "MIC.JDS.jacobi" )
 
     SCAI_LOG_INFO( logger,
-                   "jacobi<" << common::getScalarType<ValueType>() << ">" << ", #rows = " << numRows << ", omega = " << omega )
+                   "jacobi<" << TypeTraits<ValueType>::id() << ">" << ", #rows = " << numRows << ", omega = " << omega )
 
     MICSyncToken* syncToken = MICSyncToken::getCurrentSyncToken();
 
@@ -850,7 +854,7 @@ void MICJDSUtils::jacobiHalo(
     const ValueType omega )
 {
     SCAI_LOG_INFO( logger,
-                   "jacobiHalo<" << common::getScalarType<ValueType>() << ">" << ", #rows = " << numRows << ", omega = " << omega )
+                   "jacobiHalo<" << TypeTraits<ValueType>::id() << ">" << ", #rows = " << numRows << ", omega = " << omega )
 
     // SCAI_REGION( "MIC.JDS.jacobiHalo" )
 
