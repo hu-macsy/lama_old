@@ -105,6 +105,7 @@ void cg(const IndexType m, const IndexType n, const IndexType lda,
 
 		rOld = rNew;
 
+		// norm = ||r||2
 		norm = nrm2[loc](m, r_.get(), 1);
 
 		if (k >= 10) {
