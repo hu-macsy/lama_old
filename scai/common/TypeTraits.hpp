@@ -55,37 +55,6 @@ class TypeTraits
 public:
 
 	typedef ValueType PartsType;
-    /** Square root function for ValueType
-     *
-     *  In contrary to the routine of cmath it will be possible to
-     *  use always the same name for the routine. 
-     *
-     *  \code
-     *    ValueType x = sqrt ( y );                          // might not work always correctly
-     *    ValueType x = TypeTraits<ValueType>::sqrt ( y );   // this is guaranteed to work
-     *  \endcode
-     */
-    static inline ValueType sqrt( ValueType val )
-    {
-        // this is a good default but might be different for some value types
-
-        return common::Math::sqrt( val );
-    }
-
-    /** Absolute value function for ValueType
-     *
-     *  In contrary to the routine of cmath it will be possible to
-     *  use always the same name for the routine. 
-     */
-    static inline ValueType abs( ValueType val )
-    {
-        return common::Math::abs( val );
-    }
-
-    static inline ValueType conj( ValueType val )
-    {
-        return val;   
-    }
 
     /** Get value-specific epsilon for comparison. */
 
@@ -137,16 +106,6 @@ class TypeTraits<IndexType>
 public:
 	typedef IndexType PartsType;
 
-    static inline IndexType abs( IndexType x )
-    {
-        return ::abs( x );
-    }
-
-    static inline IndexType conj( IndexType x )
-    {
-        return x;
-    }
-
     static inline IndexType getEps()
     {
         return 0;
@@ -182,20 +141,6 @@ class TypeTraits<long double>
 {
 public:
 	typedef long double PartsType;
-
-    static inline long double sqrt( long double x )
-    {
-        return common::Math::sqrt( x );
-    }
-    static inline long double abs( long double x )
-    {
-        return common::Math::abs( x );
-    }
-
-    static inline long double conj( long double x )
-    {
-        return x;
-    }
 
     static inline long double getEps()
     {
@@ -233,18 +178,6 @@ class TypeTraits<double>
 public:
 	typedef double PartsType;
 
-    static inline double sqrt( double x )
-    {
-        return common::Math::sqrt( x );
-    }
-    static inline double abs( double x )
-    {
-        return common::Math::abs( x );
-    }
-    static inline double conj( double x )
-    {
-        return x;
-    }
     static inline double getEps()
     {
         return std::numeric_limits<double>::epsilon();
@@ -279,18 +212,6 @@ class TypeTraits<float>
 public:
 	typedef float PartsType;
 
-    static inline float sqrt( float x )
-    {
-        return common::Math::sqrt( x );
-    }
-    static inline float abs( float x )
-    {
-        return common::Math::abs( x );
-    }
-    static inline float conj( float x )
-    {
-        return x;
-    }
     static inline float getEps()
     {
         return std::numeric_limits<float>::epsilon();
@@ -327,19 +248,6 @@ class TypeTraits<ComplexFloat>
 public:
 	typedef float PartsType;
 
-    static inline ComplexFloat sqrt( ComplexFloat x )
-    {
-    	return common::Math::sqrt( x );
-    }
-    static inline ComplexFloat abs( ComplexFloat x )
-    {
-        return common::Math::abs( x );
-    }
-
-    static inline ComplexFloat conj( ComplexFloat x )
-    {
-        return ComplexFloat( x.real(), -x.imag() );
-    }
     static inline ComplexFloat getEps()
     {
         return std::numeric_limits<float>::epsilon();
@@ -374,18 +282,6 @@ class TypeTraits<ComplexDouble>
 public:
 	typedef double PartsType;
 
-    static inline ComplexDouble sqrt( ComplexDouble x )
-    {
-        return common::Math::sqrt( x );
-    }
-    static inline ComplexDouble conj( ComplexDouble x )
-    {
-        return ComplexDouble( x.real(), -x.imag() );
-    }
-    static inline ComplexDouble abs( ComplexDouble x )
-    {
-        return common::Math::abs( x );
-    }
     static inline ComplexDouble getEps()
     {
         return std::numeric_limits<double>::epsilon();
@@ -419,21 +315,6 @@ class TypeTraits<ComplexLongDouble>
 {
 public:
 	typedef long double PartsType;
-
-    static inline ComplexLongDouble sqrt( ComplexLongDouble x )
-    {
-        return common::Math::sqrt( x );
-    }
-
-    static inline ComplexLongDouble abs( ComplexLongDouble x )
-    {
-        return common::Math::abs( x );
-    }
-
-    static inline ComplexLongDouble conj( ComplexLongDouble x )
-    {
-        return ComplexLongDouble( x.real(), -x.imag() );
-    }
 
     static inline ComplexLongDouble getEps()
     {

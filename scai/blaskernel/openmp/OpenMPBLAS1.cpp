@@ -509,7 +509,7 @@ ValueType OpenMPBLAS1::dot(
 
             for( int i = 0; i < n; i++ )
             {
-                tResult += TypeTraits<ValueType>::conj( x[i] ) * y[i] ; 
+                tResult += common::Math::conj( x[i] ) * y[i] ;
             }
         }
         else
@@ -518,7 +518,7 @@ ValueType OpenMPBLAS1::dot(
             #pragma omp for schedule( SCAI_OMP_SCHEDULE )
             for( int i = 0; i < n; i++ )
             {
-                tResult += TypeTraits<ValueType>::conj( x[i * incX] ) * y[i * incY] ; 
+                tResult += common::Math::conj( x[i * incX] ) * y[i * incY] ;
             }
         }
 

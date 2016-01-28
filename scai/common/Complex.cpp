@@ -13,6 +13,7 @@ long double Complex<long double>::metrikCuda( void ) const
 	return Math::sqrt( real() * real() + imag() * imag() );
 }
 
+// ------------------ Math::sqrt --------------------------------
 ComplexFloat Math::sqrt( const ComplexFloat& a )
 {
     double x = a.real();
@@ -70,6 +71,7 @@ ComplexLongDouble Math::sqrt( const ComplexLongDouble& a )
     }
 }
 
+// ------------------ Math::abs --------------------------------
 float Math::abs( const ComplexFloat& a )
 {
 	float x = a.real();
@@ -110,6 +112,20 @@ long double Math::abs( const ComplexLongDouble& a )
 	x /= s;
 	y /= s;
 	return s * Math::sqrt( x * x + y * y);
+}
+
+// ------------------ Math::conj --------------------------------
+ComplexFloat Math::conj( const ComplexFloat& a )
+{
+	return ComplexFloat( a.real(), -a.imag() );
+}
+ComplexDouble Math::conj( const ComplexDouble& a )
+{
+	return ComplexDouble( a.real(), -a.imag() );
+}
+ComplexLongDouble Math::conj( const ComplexLongDouble& a )
+{
+	return ComplexLongDouble( a.real(), -a.imag() );
 }
 
 } /* end namespace common */

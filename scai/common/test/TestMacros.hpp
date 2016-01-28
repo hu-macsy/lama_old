@@ -39,6 +39,7 @@
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/ScalarType.hpp>
 #include <scai/common/TypeTraits.hpp>
+#include <scai/common/Math.hpp>
 
 // boost
 #include <boost/assign/list_of.hpp>
@@ -229,7 +230,7 @@ inline ComplexLongDouble small<ComplexLongDouble>()
 #define SCAI_CHECK_CLOSE( x, y, tolerance ) 																	    \
 	{																											    \
 		ValueType diff = (x) - (y);																				    \
-		BOOST_CHECK( scai::common::TypeTraits<ValueType>::abs( diff ) < static_cast<ValueType>( tolerance ) ) ;		\
+		BOOST_CHECK( scai::common::Math::abs( diff ) < static_cast<ValueType>( tolerance ) ) ;		\
 	}
 
 /*

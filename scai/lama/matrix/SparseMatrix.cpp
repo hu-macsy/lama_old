@@ -63,6 +63,7 @@
 #include <scai/common/macros/print_string.hpp>
 #include <scai/common/Constants.hpp>
 #include <scai/common/TypeTraits.hpp>
+#include <scai/common/Math.hpp>
 
 // boost
 #include <boost/preprocessor.hpp>
@@ -2072,7 +2073,7 @@ Scalar SparseMatrix<ValueType>::l2Norm() const
 
 	// allValue = ::sqrt( allValue );
 
-	allValue = common::TypeTraits<ValueType>::sqrt( allValue );
+	allValue = common::Math::sqrt( allValue );
 
     SCAI_LOG_INFO( logger, "max norm: local value = " << myValue << ", global value = " << allValue )
 

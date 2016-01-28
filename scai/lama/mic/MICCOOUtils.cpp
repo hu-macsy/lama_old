@@ -532,11 +532,6 @@ void MICCOOUtils::registerKernels( bool deleteFlag )
 
     KernelRegistry::set<COOKernelTrait::setCSRData<IndexType, IndexType> >( setCSRData, MIC, flag );
 
-    KernelRegistry::set<COOKernelTrait::setCSRData<float, float> >( setCSRData, MIC, flag );
-    KernelRegistry::set<COOKernelTrait::setCSRData<float, double> >( setCSRData, MIC, flag );
-    KernelRegistry::set<COOKernelTrait::setCSRData<double, float> >( setCSRData, MIC, flag );
-    KernelRegistry::set<COOKernelTrait::setCSRData<double, double> >( setCSRData, MIC, flag );
-
     KernelRegistry::set<COOKernelTrait::getCSRSizes>( getCSRSizes, MIC, flag );
 
     // ToDo: routine does not work yet
@@ -546,13 +541,25 @@ void MICCOOUtils::registerKernels( bool deleteFlag )
     // KernelRegistry::set<COOKernelTrait::getCSRValues<double, float> >( getCSRValuesS, MIC, flag );
     // KernelRegistry::set<COOKernelTrait::getCSRValues<double, double> >( getCSRValuesS, MIC, flag );
 
-    KernelRegistry::set<COOKernelTrait::normalGEMV<float> >( normalGEMV, MIC, flag );
-    KernelRegistry::set<COOKernelTrait::normalGEMV<double> >( normalGEMV, MIC, flag );
-
     // ToDo: jacobi does not work yet
 
     // KernelRegistry::set<COOKernelTrait::jacobi<float> >( jacobi, MIC, flag );
     // KernelRegistry::set<COOKernelTrait::jacobi<double> >( jacobi, MIC, flag );
+
+#define LAMA_COO_UTILS2_REGISTER(z, J, TYPE )                                                                       \
+    KernelRegistry::set<COOKernelTrait::setCSRData<TYPE, ARITHMETIC_HOST_TYPE_##J> >( setCSRData, MIC, flag );     \
+
+#define LAMA_COO_UTILS_REGISTER(z, I, _)                                                                   \
+    KernelRegistry::set<COOKernelTrait::normalGEMV<ARITHMETIC_HOST_TYPE_##I> >( normalGEMV, MIC, flag );  \
+                                                                                                           \
+    BOOST_PP_REPEAT( ARITHMETIC_MIC_TYPE_CNT,                                                             \
+                     LAMA_COO_UTILS2_REGISTER,                                                             \
+                     ARITHMETIC_MIC_TYPE_##I )                                                            \
+
+    BOOST_PP_REPEAT( ARITHMETIC_MIC_TYPE_CNT, LAMA_COO_UTILS_REGISTER, _ )
+
+#undef LAMA_COO_UTILS_REGISTER
+#undef LAMA_COO_UTILS2_REGISTER
 }
 
 /* --------------------------------------------------------------------------- */

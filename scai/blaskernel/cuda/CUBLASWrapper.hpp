@@ -26,7 +26,7 @@ namespace blaskernel {
 template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT CUBLASWrapper;
 
-#define CUBLASWRAPPER_DEF( ValueType, CUBLASValueType, prefix1, prefix2, prefix3, DOT ) 													\
+#define CUBLASWRAPPER_DEF( ValueType, CUBLASValueType, prefix1, prefix2, prefix3, DOT ) 								\
 template<>																												\
 class COMMON_DLL_IMPORTEXPORT CUBLASWrapper<ValueType>																	\
 {																														\
@@ -43,18 +43,20 @@ public:																													\
 																														\
 	static ValueType nrm2(const BLASIndexType n, const ValueType *x, const BLASIndexType incX) 							\
 	{																													\
-		common::TypeTraits<ValueType>::PartsType nrm2 = 0;																								\
+		common::TypeTraits<ValueType>::PartsType nrm2 = 0;																\
 		SCAI_CUBLAS_CALL( CUBLAS_BLAS_NAME( nrm2, prefix2 )(CUDAContext_cublasHandle,									\
-				n, reinterpret_cast<const CUBLASValueType*>(x),	incX, reinterpret_cast<common::TypeTraits<ValueType>::PartsType*>(&nrm2)),	\
+				n, reinterpret_cast<const CUBLASValueType*>(x),	incX, 													\
+				reinterpret_cast<common::TypeTraits<ValueType>::PartsType*>(&nrm2)),									\
 				"CUBLASWrapper::nrm2<" #ValueType ">");																	\
 		return nrm2;																									\
 	}																													\
 																														\
 	static ValueType asum(const BLASIndexType n, const ValueType *x,BLASIndexType incX)									\
 	{																													\
-		common::TypeTraits<ValueType>::PartsType asum = 0;																								\
+		common::TypeTraits<ValueType>::PartsType asum = 0;																\
 		SCAI_CUBLAS_CALL( CUBLAS_BLAS_NAME( asum, prefix2 )(CUDAContext_cublasHandle, n, 								\
-				reinterpret_cast<const CUBLASValueType*>(x), incX, reinterpret_cast<common::TypeTraits<ValueType>::PartsType*>( &asum )),		\
+				reinterpret_cast<const CUBLASValueType*>(x), incX, 														\
+				reinterpret_cast<common::TypeTraits<ValueType>::PartsType*>( &asum )),									\
 				"CUBLASWrapper::asum<" #ValueType ">");																	\
 		return asum;																									\
 	}																													\

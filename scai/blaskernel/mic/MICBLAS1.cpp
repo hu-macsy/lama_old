@@ -485,7 +485,7 @@ ValueType MICBLAS1::dot(
 		#pragma omp for
         	for( IndexType i = 0; i < n; ++i )
         	{
-	            local_val += x[i * incX] * y[i * incY];
+	            local_val += common::Math::conj( x[i * incX] ) * y[i * incY];
 	        }
 
 		#pragma omp critical

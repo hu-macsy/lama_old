@@ -52,6 +52,7 @@
 #include <scai/common/unique_ptr.hpp>
 #include <scai/common/Constants.hpp>
 #include <scai/common/TypeTraits.hpp>
+#include <scai/common/Math.hpp>
 #include <scai/common/macros/print_string.hpp>
 
 // boost
@@ -1504,7 +1505,7 @@ ValueType JDSStorage<ValueType>::l2Norm() const
 
 	SCAI_CONTEXT_ACCESS( loc )
 
-	return common::TypeTraits<ValueType>::sqrt(dot[loc]( n, data.get(), 1, data.get(), 1 ));
+	return common::Math::sqrt(dot[loc]( n, data.get(), 1, data.get(), 1 ));
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

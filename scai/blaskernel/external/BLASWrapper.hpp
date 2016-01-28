@@ -55,8 +55,8 @@ template<>																												\
 class COMMON_DLL_IMPORTEXPORT BLASWrapper<ValueType>																	\
 {																														\
 public:																													\
-	typedef BLASTrait::BLASIndexType BLASIndexType;																\
-	typedef BLASTrait::BLASTrans BLASTrans;																		\
+	typedef BLASTrait::BLASIndexType BLASIndexType;																		\
+	typedef BLASTrait::BLASTrans BLASTrans;																				\
 																														\
 	static void scal( const BLASIndexType n, const ValueType alpha, ValueType* x, const BLASIndexType incX )			\
 	{																													\

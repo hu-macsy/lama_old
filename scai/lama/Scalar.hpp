@@ -36,11 +36,12 @@
 
 // base classes
 #include <scai/common/Printable.hpp>
-#include <scai/common/TypeTraits.hpp>
 
 // internal scai libraries
 #include <scai/logging.hpp>
 
+#include <scai/common/TypeTraits.hpp>
+#include <scai/common/Math.hpp>
 #include <scai/common/macros/assert.hpp>
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/ScalarType.hpp>
@@ -335,7 +336,7 @@ inline Scalar sqrt( const Scalar scalar )
 {
     // call sqrt for ScalarRepType
 
-    return Scalar( common::TypeTraits<ScalarRepType>::sqrt( scalar.getValue<ScalarRepType>() ) );
+    return Scalar( common::Math::sqrt( scalar.getValue<ScalarRepType>() ) );
 }
 
 /* --------------------------------------------------------------------------- *
@@ -346,12 +347,12 @@ inline Scalar abs( const Scalar scalar )
 {
     // call abs for ScalarRepType
 
-    return Scalar( common::TypeTraits<ScalarRepType>::abs( scalar.getValue<ScalarRepType>() ) );
+    return Scalar( common::Math::abs( scalar.getValue<ScalarRepType>() ) );
 }
 
 inline Scalar conj( const Scalar scalar )
 {
-    return Scalar( common::TypeTraits<ScalarRepType>::conj( scalar.getValue<ScalarRepType>() ) );
+    return Scalar( common::Math::conj( scalar.getValue<ScalarRepType>() ) );
 }
 
 /* --------------------------------------------------------------------------- *

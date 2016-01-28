@@ -43,6 +43,7 @@
 
 #include <scai/common/Constants.hpp>
 #include <scai/common/TypeTraits.hpp>
+#include <scai/common/Math.hpp>
 #include <scai/common/OpenMP.hpp>
 
 // boost
@@ -73,7 +74,7 @@ void OpenMPUtils::conj( ValueType mValues[], const IndexType n )
 
         for( IndexType i = 0; i < n; i++ )
         {
-            mValues[i] = TypeTraits<ValueType>::conj( mValues[i] );
+            mValues[i] = common::Math::conj( mValues[i] );
         }
     }
 }
@@ -225,7 +226,7 @@ ValueType OpenMPUtils::reduceAbsMaxVal( const ValueType array[], const IndexType
 
         for ( IndexType i = 0; i < n; ++i )
         {
-            ValueType elem = TypeTraits<ValueType>::abs( array[i] );
+            ValueType elem = common::Math::abs( array[i] );
 
             if ( elem > threadVal )
             {
@@ -380,7 +381,7 @@ ValueType OpenMPUtils::absMaxDiffVal( const ValueType array1[], const ValueType 
 
         for ( IndexType i = 0; i < n; ++i )
         {
-            ValueType elem = TypeTraits<ValueType>::abs( array1[i] - array2[i] );
+            ValueType elem = common::Math::abs( array1[i] - array2[i] );
 
             if( elem > threadVal )
             {

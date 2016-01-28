@@ -70,13 +70,13 @@
     imag( static_cast<ValueType>( t.imag() ) );                                                         \
     return *this;
 
-#define COMPLEX_OP_REAL( op )                                                                            \
-    real( real() op static_cast<ValueType>( t ) );                                                       \
+#define COMPLEX_OP_REAL( op )                                                                           \
+    real( real() op static_cast<ValueType>( t ) );                                                      \
     return *this;
 
-#define COMPLEX_OP_COMPLEX( op )                                                                         \
-    real( real() op static_cast<ValueType>( t.real() ) );                                                \
-    imag( imag() op static_cast<ValueType>( t.imag() ) );                                                \
+#define COMPLEX_OP_COMPLEX( op )                                                                        \
+    real( real() op static_cast<ValueType>( t.real() ) );                                               \
+    imag( imag() op static_cast<ValueType>( t.imag() ) );                                               \
     return *this;
 
 #define COMPLEX_MULTIPLY_REAL                                                                           \
@@ -469,8 +469,6 @@ public:
     CUDA_CALLABLE_MEMBER inline Complex( const thrust::device_reference<Complex<OtherValueType> >& value )
     {
         *this = static_cast<Complex<ValueType> >(value);
-        //this->real( static_cast<ValueType>( (value()).real() ) );
-        //this->imag( static_cast<ValueType>( (value()).imag() ) );
     }
 #endif
 
@@ -701,55 +699,17 @@ ValueType Complex<ValueType>::metrikCuda( void ) const
     return Math::sqrt( real() * real() + imag() * imag() );
 }
 
-
-
 template<typename ValueType>
 ValueType Complex<ValueType>::metrikHost( void ) const
 {
     return Math::sqrt( real() * real() + imag() * imag() );
 }
 
-//template<typename ValueType>
-//MIC_CALLABLE_MEMBER
-//CUDA_CALLABLE_MEMBER
-//inline ValueType abs( const Complex<ValueType>& a )
-//{
-//    return ( Math::sqrt( a.real() * a.real() + a.imag() * a.imag() ) );
-//}
-
 template<typename ValueType>
 CUDA_CALLABLE_MEMBER inline Complex<ValueType> conj( const Complex<ValueType>& a )
 {
     return Complex<ValueType>( a.real(), - a.imag() );
 }
-
-/*
- * long double version must not be CUDA_CALLABLE_MEMBER
- */
-//inline long double abs( const Complex<long double>& a )
-//{
-//    return ( Math::sqrt( a.real() * a.real() + a.imag() * a.imag() ) );
-//}
-//
-//template<typename ValueType>
-//MIC_CALLABLE_MEMBER
-//CUDA_CALLABLE_MEMBER
-//inline Complex<ValueType> fabs( const Complex<ValueType>& a )
-//{
-//    Complex<ValueType> x = a;
-//
-//    if( x.real() < 0 )
-//    {
-//        x.real( x.real() * -1 );
-//    }
-//
-//    if( x.imag() < 0 )
-//    {
-//        x.imag( x.imag() * -1 );
-//    }
-//
-//    return x;
-//}
 
 /*
  * @brief Check if a is lower than b.
@@ -891,51 +851,6 @@ COMPLEX_OPERATOR_NONMEMBER_CUDA( operator/, /=, long )
 COMPLEX_OPERATOR_NONMEMBER_CUDA( operator/, /=, float )
 COMPLEX_OPERATOR_NONMEMBER_CUDA( operator/, /=, double )
 COMPLEX_OPERATOR_NONMEMBER_NONCUDA( operator/, /=, long double )
-
-	/*
-template<typename ValueType>
-MIC_CALLABLE_MEMBER
-CUDA_CALLABLE_MEMBER
-inline Complex<ValueType> sqrt( const Complex<ValueType>& a )
-{
-    ValueType x = a.real();
-    ValueType y = a.imag();
-
-    if( x == ValueType( 0 ) )
-    {
-        ValueType t = Math::sqrt( Math::abs( y ) / 2 );
-        return Complex<ValueType>( t, y < ValueType( 0 ) ? -t : t );
-    }
-    else
-    {
-        ValueType t = Math::sqrt( 2 * ( abs( a ) + Math::abs( x ) ) );
-        ValueType u = t / 2;
-        return x > ValueType() ? Complex<ValueType>( u, y / t ) :
-                        Complex<ValueType>( Math::abs( y ) / t, y < ValueType( 0 ) ? -u : u );
-    }
-}*/
-
-/*
- * long double version must not be CUDA_CALLABLE_MEMBER
- */
-/*
-inline Complex<long double> sqrt( const Complex<long double>& a )
-{
-    long double x = a.real();
-    long double y = a.imag();
-
-    if( x == 0.0 )
-    {
-        long double t = Math::sqrt( Math::abs( y ) / 2 );
-        return Complex<long double>( t, y < 0.0 ? -t : t );
-    }
-    else
-    {
-        long double t = Math::sqrt( 2 * ( Math::abs( a ) + Math::abs( x ) ) );
-        long double u = t / 2;
-        return x > 0.0 ? Complex<long double>( u, y / t ) : Complex<long double>( Math::abs( y ) / t, y < 0.0 ? -u : u );
-    }
-}*/
 
 template<typename ValueType,typename InputType1,typename InputType2>
 std::basic_istream<InputType1,InputType2>&

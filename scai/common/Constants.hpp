@@ -35,6 +35,7 @@
 
 #include <scai/common/ScalarType.hpp>
 #include <scai/common/TypeTraits.hpp>
+#include <scai/common/Math.hpp>
 
 #include <cmath>
 #include <limits>
@@ -82,7 +83,7 @@ inline ValueType getConstant( const enum ConstantType& c )
 template<typename ValueType>
 bool operator==( const ValueType& x, const enum ConstantType& c )
 {
-    return TypeTraits<ValueType>::abs( x - getConstant<ValueType>( c ) ) < TypeTraits<ValueType>::getEps();
+    return Math::abs( x - getConstant<ValueType>( c ) ) < TypeTraits<ValueType>::getEps();
 }
 
 /** Operator not equal also provided for convenience */

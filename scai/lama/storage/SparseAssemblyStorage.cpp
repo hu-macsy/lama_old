@@ -274,7 +274,7 @@ ValueType SparseAssemblyStorage<ValueType>::l2Norm() const
         }
     }
 
-    return common::TypeTraits<ValueType>::sqrt(val);
+    return common::Math::sqrt(val);
 }
 
 
@@ -398,7 +398,7 @@ void SparseAssemblyStorage<ValueType>::Row::conj()
 {
     for( size_t i = 0; i < values.size(); i++ )
     {
-        values[i] = common::TypeTraits<ValueType>::conj( values[i] );
+        values[i] = common::Math::conj( values[i] );
     }
 }
 
