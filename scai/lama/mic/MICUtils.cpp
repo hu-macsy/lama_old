@@ -730,55 +730,41 @@ void MICUtils::registerKernels( bool deleteFlag )
 
     KernelRegistry::set<UtilKernelTrait::validIndexes>( validIndexes, MIC, flag );
 
-    KernelRegistry::set<UtilKernelTrait::setScale<float, float> >( setScale, MIC, flag );
-    KernelRegistry::set<UtilKernelTrait::setScale<double, float> >( setScale, MIC, flag );
-    KernelRegistry::set<UtilKernelTrait::setScale<float, double> >( setScale, MIC, flag );
-    KernelRegistry::set<UtilKernelTrait::setScale<double, double> >( setScale, MIC, flag );
-
     KernelRegistry::set<UtilKernelTrait::reduce<IndexType> >( reduce, MIC, flag );
-    KernelRegistry::set<UtilKernelTrait::reduce<float> >( reduce, MIC, flag );
-    KernelRegistry::set<UtilKernelTrait::reduce<double> >( reduce, MIC, flag );
 
     KernelRegistry::set<UtilKernelTrait::setVal<IndexType> >( setVal, MIC, flag );
-    KernelRegistry::set<UtilKernelTrait::setVal<float> >( setVal, MIC, flag );
-    KernelRegistry::set<UtilKernelTrait::setVal<double> >( setVal, MIC, flag );
-
     KernelRegistry::set<UtilKernelTrait::setOrder<IndexType> >( setOrder, MIC, flag );
-
     KernelRegistry::set<UtilKernelTrait::getValue<IndexType> >( getValue, MIC, flag );
-    KernelRegistry::set<UtilKernelTrait::getValue<float> >( getValue, MIC, flag );
-    KernelRegistry::set<UtilKernelTrait::getValue<double> >( getValue, MIC, flag );
-
-    KernelRegistry::set<UtilKernelTrait::absMaxDiffVal<float> >( absMaxDiffVal, MIC, flag );
-    KernelRegistry::set<UtilKernelTrait::absMaxDiffVal<double> >( absMaxDiffVal, MIC, flag );
 
     KernelRegistry::set<UtilKernelTrait::isSorted<IndexType> >( isSorted, MIC, flag );
-    KernelRegistry::set<UtilKernelTrait::isSorted<float> >( isSorted, MIC, flag );
-    KernelRegistry::set<UtilKernelTrait::isSorted<double> >( isSorted, MIC, flag );
 
     KernelRegistry::set<UtilKernelTrait::setScatter<int, int> >( setScatter, MIC, flag );
-
-    KernelRegistry::set<UtilKernelTrait::setScatter<float, float> >( setScatter, MIC, flag );
-    KernelRegistry::set<UtilKernelTrait::setScatter<double, float> >( setScatter, MIC, flag );
-    KernelRegistry::set<UtilKernelTrait::setScatter<float, double> >( setScatter, MIC, flag );
-    KernelRegistry::set<UtilKernelTrait::setScatter<double, double> >( setScatter, MIC, flag );
-
     KernelRegistry::set<UtilKernelTrait::setGather<int, int> >( setGather, MIC, flag );
-
-    KernelRegistry::set<UtilKernelTrait::setGather<float, float> >( setGather, MIC, flag );
-    KernelRegistry::set<UtilKernelTrait::setGather<double, float> >( setGather, MIC, flag );
-    KernelRegistry::set<UtilKernelTrait::setGather<float, double> >( setGather, MIC, flag );
-    KernelRegistry::set<UtilKernelTrait::setGather<double, double> >( setGather, MIC, flag );
-
     KernelRegistry::set<UtilKernelTrait::set<int, int> >( set, MIC, flag );
 
-    KernelRegistry::set<UtilKernelTrait::set<float, float> >( set, MIC, flag );
-    KernelRegistry::set<UtilKernelTrait::set<double, float> >( set, MIC, flag );
-    KernelRegistry::set<UtilKernelTrait::set<float, double> >( set, MIC, flag );
-    KernelRegistry::set<UtilKernelTrait::set<double, double> >( set, MIC, flag );
 
-    KernelRegistry::set<UtilKernelTrait::invert<float> >( invert, MIC, flag );
-    KernelRegistry::set<UtilKernelTrait::invert<double> >( invert, MIC, flag );
+#define LAMA_UTILS2_REGISTER(z, J, TYPE )                                                                        \
+    KernelRegistry::set<UtilKernelTrait::setScale<TYPE, ARITHMETIC_MIC_TYPE_##J> >( setScale, MIC, flag );     \
+    KernelRegistry::set<UtilKernelTrait::setGather<TYPE, ARITHMETIC_MIC_TYPE_##J> >( setGather, MIC, flag );   \
+    KernelRegistry::set<UtilKernelTrait::setScatter<TYPE, ARITHMETIC_MIC_TYPE_##J> >( setScatter, MIC, flag ); \
+    KernelRegistry::set<UtilKernelTrait::set<TYPE, ARITHMETIC_MIC_TYPE_##J> >( set, MIC, flag );               \
+
+#define LAMA_UTILS_REGISTER(z, I, _)                                                                             \
+    KernelRegistry::set<UtilKernelTrait::reduce<ARITHMETIC_MIC_TYPE_##I> >( reduce, MIC, flag );               \
+    KernelRegistry::set<UtilKernelTrait::setVal<ARITHMETIC_MIC_TYPE_##I> >( setVal, MIC, flag );               \
+    KernelRegistry::set<UtilKernelTrait::setOrder<ARITHMETIC_MIC_TYPE_##I> >( setOrder, MIC, flag );           \
+    KernelRegistry::set<UtilKernelTrait::getValue<ARITHMETIC_MIC_TYPE_##I> >( getValue, MIC, flag );           \
+    KernelRegistry::set<UtilKernelTrait::absMaxDiffVal<ARITHMETIC_MIC_TYPE_##I> >( absMaxDiffVal, MIC, flag ); \
+    KernelRegistry::set<UtilKernelTrait::isSorted<ARITHMETIC_MIC_TYPE_##I> >( isSorted, MIC, flag );           \
+    KernelRegistry::set<UtilKernelTrait::invert<ARITHMETIC_MIC_TYPE_##I> >( invert, MIC, flag );               \
+    BOOST_PP_REPEAT( ARITHMETIC_MIC_TYPE_CNT,                                                                   \
+                     LAMA_UTILS2_REGISTER,                                                                       \
+                     ARITHMETIC_MIC_TYPE_##I )
+
+    BOOST_PP_REPEAT( ARITHMETIC_MIC_TYPE_CNT, LAMA_UTILS_REGISTER, _ )
+
+#undef LAMA_UTILS_REGISTER
+#undef LAMA_UTILS2_REGISTER
 }
 
 /* --------------------------------------------------------------------------- */
