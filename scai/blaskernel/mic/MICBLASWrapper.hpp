@@ -1,10 +1,3 @@
-/*
- * BLASWrapper.hpp
- *
- *  Created on: 24.08.2015
- *      Author: eschricker
- */
-
 /**
  * @file MICBLASWrapper.hpp
  *
@@ -65,17 +58,17 @@ public:																													\
 	typedef MICBLASTrait::BLASIndexType BLASIndexType;																	\
 	typedef MICBLASTrait::BLASTrans BLASTrans;																			\
 																														\
-	static MIC_CALLABLE_MEMBER void gemv( const BLASTrans transA, const BLASIndexType m, const BLASIndexType n,								\
+	static MIC_CALLABLE_MEMBER void gemv( const BLASTrans transA, const BLASIndexType m, const BLASIndexType n,			\
 			const ValueType alpha, const ValueType* A, const BLASIndexType lda, const ValueType* x,						\
 			const BLASIndexType incX, const ValueType beta, ValueType* y, const BLASIndexType incY) 					\
 	{																													\
-		MIC_BLAS_NAME( gemv, prefix1 )( &transA, &m, &n, reinterpret_cast<const MICBLASValueType*>( &alpha ),
+		MIC_BLAS_NAME( gemv, prefix1 )( &transA, &m, &n, reinterpret_cast<const MICBLASValueType*>( &alpha ),			\
 				reinterpret_cast<const MICBLASValueType*>( A ), &lda, reinterpret_cast<const MICBLASValueType*>( x ), 	\
 				&incX, reinterpret_cast<const MICBLASValueType*>( &beta ), reinterpret_cast<MICBLASValueType*>( y ), 	\
 				&incY );																								\
 	}																													\
 																														\
-	static MIC_CALLABLE_MEMBER void gemm( const BLASTrans transA, const BLASTrans transB,													\
+	static MIC_CALLABLE_MEMBER void gemm( const BLASTrans transA, const BLASTrans transB,								\
 			const BLASIndexType m, const BLASIndexType n, const BLASIndexType k,										\
 			const ValueType alpha, const ValueType* A, const BLASIndexType lda, const ValueType* B,						\
 			const BLASIndexType ldb, const ValueType beta, ValueType* C, const BLASIndexType ldc) 						\
