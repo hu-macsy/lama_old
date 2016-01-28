@@ -45,6 +45,7 @@
 
 #include <scai/common/Constants.hpp>
 #include <scai/common/TypeTraits.hpp>
+#include <scai/common/Math.hpp>
 #include <scai/common/OpenMP.hpp>
 
 namespace scai
@@ -114,16 +115,17 @@ ValueType MICUtils::reduceSum( const ValueType array[], const IndexType n )
     ValueType val( 0 );
 
     const void* arrayPtr = array;
+    ValueType* valPtr = &val;
 
     int device = MICContext::getCurrentDevice();
 
-    #pragma offload target( mic : device ) in( arrayPtr, n ), out( val )
+    #pragma offload target( mic : device ) in( arrayPtr, n ), out( valPtr[0:1] )
     {
-        val = ValueType( 0 );
+        *valPtr = ValueType( 0 );
 
         const ValueType* array = reinterpret_cast<const ValueType*>( arrayPtr );
 
-        #pragma omp parallel for reduction( +:val )
+        #pragma omp parallel for reduction( +:(*valPtr) )
 
         for ( IndexType i = 0; i < n; ++i )
         {
@@ -309,10 +311,11 @@ ValueType MICUtils::reduceMaxVal( const ValueType array[], const IndexType n )
     }
 
     const void* arrayPtr = array;
+    ValueType* valPtr = &val;
 
     int device = MICContext::getCurrentDevice();
 
-#pragma offload target( mic : device ) in( arrayPtr, n, zero ), out( val )
+#pragma offload target( mic : device ) in( arrayPtr, n, zero ), out( valPtr[0:1] )
     {
         val = zero;
 
@@ -334,9 +337,9 @@ ValueType MICUtils::reduceMaxVal( const ValueType array[], const IndexType n )
 
             #pragma omp critical
             {
-                if ( threadVal > val )
+                if ( threadVal > (*valPtr) )
                 {
-                    val = threadVal;
+                    *valPtr = threadVal;
                 }
             }
         }
@@ -362,18 +365,20 @@ ValueType MICUtils::reduceMinVal( const ValueType array[], const IndexType n )
     }
 
     const void* arrayPtr = array;
+    ValueType* zeroPtr = &zero;
+    ValueType* valPtr = &val;
 
     int device = MICContext::getCurrentDevice();
 
-#pragma offload target( mic : device ) in( arrayPtr, n, zero ), out( val )
+#pragma offload target( mic : device ) in( arrayPtr, n, zeroPtr[0:1] ), out( valPtr[0:1] )
     {
-        val = zero;
+        *valPtr = *zeroPtr;
 
         const ValueType* array = static_cast<const ValueType*>( arrayPtr );
 
         #pragma omp parallel
         {
-            ValueType threadVal( zero );
+            ValueType threadVal( *zeroPtr );
 
             #pragma omp for
 
@@ -387,9 +392,9 @@ ValueType MICUtils::reduceMinVal( const ValueType array[], const IndexType n )
 
             #pragma omp critical
             {
-                if ( threadVal < val )
+                if ( threadVal < *valPtr )
                 {
-                    val = threadVal;
+                    *valPtr = threadVal;
                 }
             }
         }
@@ -411,10 +416,11 @@ ValueType MICUtils::reduceAbsMaxVal( const ValueType array[], const IndexType n 
     // array is already on MIC device
 
     const void* ptr = array;
+    ValueType *valPtr = &val;
 
     int device = MICContext::getCurrentDevice();
 
-    #pragma offload target( mic : device ) in( n, ptr ), inout( val )
+    #pragma offload target( mic : device ) in( n, ptr ), inout( valPtr[0:1] )
     {
         const ValueType* array = reinterpret_cast<const ValueType*>( ptr );
 
@@ -436,9 +442,9 @@ ValueType MICUtils::reduceAbsMaxVal( const ValueType array[], const IndexType n 
 
             #pragma omp critical
             {
-                if ( threadVal > val )
+                if ( threadVal > *valPtr )
                 {
-                    val = threadVal;
+                    *valPtr = threadVal;
                 }
             }
         }
