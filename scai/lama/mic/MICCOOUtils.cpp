@@ -403,10 +403,11 @@ void MICCOOUtils::normalGEMV(
     const void* cooJAPtr = cooJA;
     const void* cooValuesPtr = cooValues;
     const void* xPtr = x;
+    const ValueType* alphaPtr = &alpha;
 
     int device = MICContext::getCurrentDevice();
 
-#pragma offload target( mic : device ), in( numRows, numValues, resultPtr, alpha, cooIAPtr, cooJAPtr, cooValuesPtr, xPtr )
+#pragma offload target( mic : device ), in( numRows, numValues, resultPtr, alphaPtr[0:1], cooIAPtr, cooJAPtr, cooValuesPtr, xPtr )
     {
         ValueType* result = static_cast<ValueType*>( resultPtr );
         const ValueType* x = static_cast<const ValueType*>( xPtr );
@@ -425,9 +426,9 @@ void MICCOOUtils::normalGEMV(
             {
                 IndexType i = cooIA[k];
 
-                const ValueType val = alpha * cooValues[k] * x[cooJA[k]];
+                const ValueType val = *alphaPtr * cooValues[k] * x[cooJA[k]];
 
-                #pragma omp atomic
+                #pragma omp critical 
                 result[i] += val;
 
             }
