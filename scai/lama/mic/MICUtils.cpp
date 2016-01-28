@@ -88,7 +88,7 @@ void MICUtils::setScale(
 
     void* outPtr = outValues;
     const void* inPtr = inValues;
-    ValueType* valPtr = &value;
+    const ValueType* valPtr = &value;
 
     int device = MICContext::getCurrentDevice();
 
@@ -179,7 +179,7 @@ void MICUtils::setVal( ValueType array[], const IndexType n, const ValueType val
     int device = MICContext::getCurrentDevice();
 
     void* arrayPtr = array;
-    ValueType* valPtr = &val;
+    const ValueType* valPtr = &val;
 
     switch ( op )
     {
@@ -329,7 +329,7 @@ ValueType MICUtils::reduceMaxVal( const ValueType array[], const IndexType n )
 
 #pragma offload target( mic : device ) in( arrayPtr, n, zeroPtr[0:1] ), out( valPtr[0:1] )
     {
-        val = *zeroPtr;
+        *valPtr = *zeroPtr;
 
         const ValueType* array = static_cast<const ValueType*>( arrayPtr );
 
@@ -482,7 +482,7 @@ ValueType MICUtils::absMaxDiffVal( const ValueType array1[], const ValueType arr
 
         for ( IndexType i = 0; i < n; ++i )
         {
-            ValueType elem = std::abs( array1[i] - array2[i] );
+            ValueType elem = common::Math::abs( array1[i] - array2[i] );
 
             if ( elem > threadVal )
             {
