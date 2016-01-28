@@ -113,6 +113,9 @@ endforeach ( module ${SCAI_BLASKERNEL_BLASKERNEL_DEPS} ${SCAI_BLASKERNEL_EXTERNA
 
 ### build library
 
+## add subdirectories
+add_subdirectory ( examples )
+
 include ( Functions/scaiProject )
 
 ### Add classes/headers to source files CXX_SOURCES, CXX_HEADERS, ...
