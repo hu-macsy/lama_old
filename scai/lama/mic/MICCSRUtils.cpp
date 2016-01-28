@@ -623,7 +623,7 @@ void MICCSRUtils::normalGEMV(
                     temp += csrValues[jj] * x[j];
                 }
 
-                if( beta == static_cast<ValueType>( 0.0 ) )
+                if( *betaPtr == static_cast<ValueType>( 0.0 ) )
                 {
                     result[i] = (*alphaPtr) * temp;
                 }
@@ -811,9 +811,11 @@ void MICCSRUtils::jacobi(
     const size_t csrJAPtr = (size_t) csrJA;
     const size_t csrValuesPtr = (size_t) csrValues;
 
+    const ValueType* omegaPtr = &omega;
+
     int device = MICContext::getCurrentDevice();
 
-#pragma offload target( mic : device ), in( solutionPtr, oldSolutionPtr, rhsPtr, csrIAPtr, csrJAPtr, csrValuesPtr, omega, numRows )
+#pragma offload target( mic : device ), in( solutionPtr, oldSolutionPtr, rhsPtr, csrIAPtr, csrJAPtr, csrValuesPtr, omegaPtr[0:1], numRows )
     {
         ValueType* solution = (ValueType*) solutionPtr;
         const ValueType* oldSolution = (ValueType*) oldSolutionPtr;
@@ -822,7 +824,7 @@ void MICCSRUtils::jacobi(
         const IndexType* csrJA = (IndexType*) csrJAPtr;
         const ValueType* csrValues = (ValueType*) csrValuesPtr;
 
-        const ValueType oneMinusOmega = static_cast<ValueType>(1.0) - omega;
+        const ValueType oneMinusOmega = static_cast<ValueType>(1.0) - (*omegaPtr);
 
         #pragma omp parallel
         {
@@ -840,17 +842,17 @@ void MICCSRUtils::jacobi(
 
                 // here we take advantange of a good branch precondiction
 
-                if( omega == static_cast<ValueType>( 1.0 ) )
+                if( (*omegaPtr) == static_cast<ValueType>( 1.0 ) )
                 {
                     solution[i] = temp / diag;
                 }
-                else if( omega == 0.5 )
+                else if( (*omegaPtr) == 0.5 )
                 {
-                    solution[i] = omega * ( temp / diag + oldSolution[i] );
+                    solution[i] = (*omegaPtr) * ( temp / diag + oldSolution[i] );
                 }
                 else
                 {
-                    solution[i] = omega * ( temp / diag ) + oneMinusOmega * oldSolution[i];
+                    solution[i] = (*omegaPtr) * ( temp / diag ) + oneMinusOmega * oldSolution[i];
                 }
             }
         }
@@ -886,11 +888,13 @@ void MICCSRUtils::jacobiHalo(
     const size_t haloValuesPtr = (size_t) haloValues;
     const size_t haloRowIndexesPtr = (size_t) haloRowIndexes;
 
+    const ValueType* omegaPtr = &omega;
+
     int device = MICContext::getCurrentDevice();
 
 #pragma offload target( mic : device ), in( solutionPtr, oldSolutionPtr, localValuesPtr, localIAPtr, \
                                             haloIAPtr, haloJAPtr, haloValuesPtr, haloRowIndexesPtr, \
-                                            omega, numNonEmptyRows )
+                                            omegaPtr[0:1], numNonEmptyRows )
     {
         ValueType* solution = (ValueType*) solutionPtr;
         const ValueType* oldSolution = (ValueType*) oldSolutionPtr;
@@ -921,13 +925,13 @@ void MICCSRUtils::jacobiHalo(
                 temp += haloValues[j] * oldSolution[haloJA[j]];
             }
 
-            if( omega == static_cast<ValueType>( 1.0 ) )
+            if( ( *omegaPtr ) == static_cast<ValueType>( 1.0 ) )
             {
                 solution[i] -= temp / diag;
             }
             else
             {
-                solution[i] -= omega * ( temp / diag );
+                solution[i] -= (*omegaPtr) * ( temp / diag );
             }
         }
     }
@@ -960,11 +964,13 @@ void MICCSRUtils::jacobiHaloWithDiag(
     const size_t haloValuesPtr = (size_t) haloValues;
     const size_t haloRowIndexesPtr = (size_t) haloRowIndexes;
 
+    const ValueType* omegaPtr = &omega;
+
     int device = MICContext::getCurrentDevice();
 
 #pragma offload target( mic : device ), in( solutionPtr, oldSolutionPtr, localDiagValuesPtr, \
                                             haloIAPtr, haloJAPtr, haloValuesPtr, haloRowIndexesPtr, \
-                                            omega, numNonEmptyRows )
+                                            omegaPtr[0:1], numNonEmptyRows )
     {
         ValueType* solution = (ValueType*) solutionPtr;
         const ValueType* oldSolution = (ValueType*) oldSolutionPtr;
@@ -974,7 +980,7 @@ void MICCSRUtils::jacobiHaloWithDiag(
         const ValueType* haloValues = (ValueType*) haloValuesPtr;
         const IndexType* haloRowIndexes = (IndexType*) haloRowIndexesPtr;
 
-        const ValueType oneMinusOmega = static_cast<ValueType>(1.0) - omega;
+        const ValueType oneMinusOmega = static_cast<ValueType>(1.0) - (*omegaPtr);
 
         #pragma omp parallel
         {
@@ -998,13 +1004,13 @@ void MICCSRUtils::jacobiHaloWithDiag(
                     temp += haloValues[j] * oldSolution[haloJA[j]];
                 }
 
-                if( omega == static_cast<ValueType>( 1.0 ) )
+                if( (*omegaPtr) == static_cast<ValueType>( 1.0 ) )
                 {
                     solution[i] -= temp / diag;
                 }
                 else
                 {
-                    solution[i] -= omega * ( temp / diag );
+                    solution[i] -= (*omegaPtr) * ( temp / diag );
                 }
             }
         }
@@ -1497,11 +1503,11 @@ void MICCSRUtils::matrixMultiply(
 
     int device = MICContext::getCurrentDevice();
 
-#pragma offload target( mic : device ) in ( m, n, diagonalProperty, alpha, \
+#pragma offload target( mic : device ) in ( m, n, diagonalProperty, \
                                                 cJAPtr, cValuesPtr, cIAPtr, \
                                                 aIAPtr, aJAPtr, aValuesPtr, \
-												bIAPtr, bJAPtr, bValuesPtr, \
-												alphaPtr[0:1] )
+						bIAPtr, bJAPtr, bValuesPtr, \
+						alphaPtr[0:1] )
     {
         ValueType* cValues = static_cast<ValueType*>( cValuesPtr );
         IndexType* cJA = static_cast<IndexType*>( cJAPtr );
@@ -1710,7 +1716,7 @@ ValueType MICCSRUtils::absMaxDiffRowUnsorted(
             diff -= csrValues2[i2];
         }
 
-        diff = std::abs( diff );
+        diff = common::Math::abs( diff );
 
         if( diff > val )
         {
@@ -1732,7 +1738,7 @@ ValueType MICCSRUtils::absMaxDiffRowUnsorted(
             continue; // already compare in first loop
         }
 
-        ValueType diff = std::abs( csrValues2[i2] );
+        ValueType diff = common::Math::abs( csrValues2[i2] );
 
         if( diff > val )
         {
@@ -1810,7 +1816,7 @@ ValueType MICCSRUtils::absMaxDiffRowSorted(
             }
         }
 
-        diff = std::abs( diff );
+        diff = common::Math::abs( diff );
 
         if( diff > val )
         {
@@ -1847,11 +1853,13 @@ ValueType MICCSRUtils::absMaxDiffVal(
     const void* csrJA2Ptr = csrJA2;
     const void* csrValues2Ptr = csrValues2;
 
+    ValueType* valPtr = &val;
+
     int device = MICContext::getCurrentDevice();
 
 #pragma offload target( mic : device ), in( csrIA1Ptr, csrJA1Ptr, csrValues1Ptr,  \
                                             csrIA2Ptr, csrJA2Ptr, csrValues2Ptr,  \
-                                            numRows, sortedRows ), out ( val )
+                                            numRows, sortedRows ), out ( valPtr[0:1] )
     {
         const IndexType* csrIA1 = static_cast<const IndexType*>( csrIA1Ptr );
         const IndexType* csrJA1 = static_cast<const IndexType*>( csrJA1Ptr );
@@ -1878,7 +1886,7 @@ ValueType MICCSRUtils::absMaxDiffVal(
             absMaxDiffRow = MICCSRUtils::absMaxDiffRowUnsorted<ValueType>;
         }
 
-        val = 0;
+        *valPtr = 0;
 
         #pragma omp parallel
         {
@@ -1906,9 +1914,9 @@ ValueType MICCSRUtils::absMaxDiffVal(
 
             #pragma omp critical
             {
-                if( threadVal > val )
+                if( threadVal > *valPtr )
                 {
-                    val = threadVal;
+                    *valPtr = threadVal;
                 }
             }
         }
