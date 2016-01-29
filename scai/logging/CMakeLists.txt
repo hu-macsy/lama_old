@@ -33,6 +33,7 @@
 
 ### Set required CMake version
 cmake_minimum_required ( VERSION 2.8 )
+cmake_policy( SET CMP0054 NEW )
 
 ### Set version of Logging
 # TOOD: where is the best place to define this?
