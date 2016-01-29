@@ -190,13 +190,73 @@ public:
                 beta.getValue<ValueType>(), *denseY );
     }
 
+    void getRow( Vector& row, const IndexType globalRowIndex ) const
+    {
+        using namespace scai::hmemo;
+
+        SCAI_ASSERT_ERROR( row.getDistribution().isReplicated(), "row vector must be replicated" )
+
+        if ( getValueType() != row.getValueType() )
+        {
+            COMMON_THROWEXCEPTION(
+                 "Value type for row = " << row.getValueType () << " invalid" 
+                 << ", must match type of matrix = " << getValueType() )
+        }
+
+        DenseVector<ValueType>* typedRow = dynamic_cast<DenseVector<ValueType>*>( &row );
+
+        // row must be a DenseVector of same type
+
+        SCAI_ASSERT_ERROR( typedRow, "row is not DenseVector<Matrix::ValueType>" )
+
+        // on a replicated matrix each processor can fill the row
+
+        if ( getDistribution().isReplicated() )
+        {
+            SCAI_LOG_INFO( logger, "get local row " << globalRowIndex )
+            static_cast<const Derived*>( this )->getLocalRow( *typedRow, globalRowIndex );
+            return;
+        }
+
+        // on a distributed matrix, owner fills row and broadcasts it
+
+        const Communicator& comm = getDistribution().getCommunicator();
+
+        // owner fills the row
+
+        IndexType localRowIndex = getDistribution().global2local( globalRowIndex );
+
+        IndexType owner = 0;
+
+        if ( localRowIndex != nIndex )
+        {
+            static_cast<const Derived*>( this )->getLocalRow( *typedRow, localRowIndex );
+            owner = comm.getRank() + 1;
+            SCAI_LOG_DEBUG( logger,
+                            "owner of row " << globalRowIndex << " is " << owner << ", local index = " << localRowIndex )
+        }
+
+        owner = comm.sum( owner ) - 1; // get owner via a reduction
+
+        SCAI_ASSERT_ERROR( owner >= 0, "Could not find owner of row " << globalRowIndex )
+
+        {
+            ContextPtr contextPtr = Context::getHostPtr();
+
+            WriteAccess<ValueType> rowAccess( typedRow->getLocalValues(), contextPtr );
+            comm.bcast( rowAccess.get(), getNumColumns(), owner ); // bcast the row
+        }
+    }
+
     using Matrix::setIdentity;
     using Matrix::operator=;
 
 protected:
+
 #ifndef SCAI_LOG_LEVEL_OFF
     using Matrix::logger;
 #endif
+
 };
 
 } /* end namespace lama */

@@ -276,10 +276,6 @@ public:
 
     /* Implementation of pure method of class Matrix. */
 
-    virtual void getRow( Vector& row, const IndexType globalRowIndex ) const;
-
-    /* Implementation of pure method of class Matrix. */
-
     virtual void setDiagonal( const Vector& diagonal );
 
     /* Implementation of pure method of class Matrix. */
@@ -597,6 +593,10 @@ public:
         return Matrix::SPARSE;
     }
 
+    /** Get a complete row of local part only. */
+
+    void getLocalRow( DenseVector<ValueType>& row, const IndexType iLocal ) const;
+
 protected:
 
     /** Test consistency of sparse matrix data, only used if ASSERT_DEBUG is enabled. */
@@ -665,10 +665,6 @@ private:
     /** Implementation of transposed assign for sparse matrix of a known value type. */
 
     void assignTransposeImpl ( const SparseMatrix<ValueType>& matrix );
-
-    /** Get a complete row of local part only. */
-
-    void getLocalRow( DenseVector<ValueType>& row, const IndexType iLocal ) const;
 
     mutable hmemo::HArray<ValueType> mTempSendValues; //!< temporary vector for halo communications
 };

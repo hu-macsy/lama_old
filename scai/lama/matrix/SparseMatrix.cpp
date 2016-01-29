@@ -884,59 +884,6 @@ void SparseMatrix<ValueType>::getLocalRow( DenseVector<ValueType>& row, const In
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void SparseMatrix<ValueType>::getRow( Vector& row, const IndexType globalRowIndex ) const
-{
-    SCAI_ASSERT_ERROR( row.getDistribution().isReplicated(), "row vector must be replicated" )
-
-    DenseVector<ValueType>* typedRow = dynamic_cast<DenseVector<ValueType>*>( &row );
-
-    // row must be a DenseVector of same type
-
-    SCAI_ASSERT_ERROR( typedRow, "row is not DenseVector<Matrix::ValueType>" )
-
-    // on a replicated matrix each processor can fill the row
-
-    if( getDistribution().isReplicated() )
-    {
-        SCAI_LOG_INFO( logger, "get local row " << globalRowIndex )
-
-        getLocalRow( *typedRow, globalRowIndex );
-        return;
-    }
-
-    // on a distributed matrix, owner fills row and broadcasts it
-
-    const Communicator& comm = getDistribution().getCommunicator();
-
-    // owner fills the row
-
-    IndexType localRowIndex = getDistribution().global2local( globalRowIndex );
-
-    IndexType owner = 0;
-
-    if( localRowIndex != nIndex )
-    {
-        getLocalRow( *typedRow, localRowIndex );
-        owner = comm.getRank() + 1;
-        SCAI_LOG_DEBUG( logger,
-                        "owner of row " << globalRowIndex << " is " << owner << ", local index = " << localRowIndex )
-    }
-
-    owner = comm.sum( owner ) - 1; // get owner via a reduction
-
-    SCAI_ASSERT_ERROR( owner >= 0, "Could not find owner of row " << globalRowIndex )
-
-    {
-        ContextPtr contextPtr = Context::getHostPtr();
-
-        WriteAccess<ValueType> rowAccess( typedRow->getLocalValues(), contextPtr );
-        comm.bcast( rowAccess.get(), getNumColumns(), owner ); // bcast the row
-    }
-}
-
-/* -------------------------------------------------------------------------- */
-
-template<typename ValueType>
 void SparseMatrix<ValueType>::getDiagonal( Vector& diagonal ) const
 {
     if( getDistribution() != getColDistribution() )
