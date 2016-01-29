@@ -79,8 +79,8 @@
 #define SCAI_CHECK_SMALL( x, ValueType, eps )                   \
         BOOST_CHECK_SMALL( x, static_cast<ValueType>(eps) );    \
 
-#define SCAI_CHECK_SMALL_EPS( x, ValueType )                  \
-    SCAI_CHECK_SMALL( x, ValueType, eps<ValueType> () )
+#define SCAI_CHECK_SMALL_EPS( x, ValueType )                                        \
+    SCAI_CHECK_SMALL( x, ValueType, scai::common::TypeTraits<ValueType>::small() )
 
 /*
  * @brief HelperMacro SCAI_CHECK_SCALAR_SMALL( x, ValueType, eps )
@@ -115,5 +115,5 @@
  */
 
 #define SCAI_CHECK_SCALAR_SMALL_EPS( x, ValueType )                  \
-    SCAI_CHECK_SCALAR_SMALL( x, ValueType, eps<ValueType> () )
+    SCAI_CHECK_SCALAR_SMALL( x, ValueType, scai::common::TypeTraits<ValueType>::small() )
 

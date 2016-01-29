@@ -92,6 +92,13 @@ public:
         return std::numeric_limits<ValueType>::epsilon();
     }
 
+    /** Get type-specific precision to be used for comparison in matrix-vector operations */
+
+    static inline ValueType small()
+    {
+        return getEps();
+    }
+
     /** Get maximal value of a ValueType, used for min, max reductions on arrays. */
 
     static inline ValueType getMax()
@@ -144,6 +151,11 @@ public:
         return 0;
     }
 
+    static inline IndexType small()
+    {
+        return 0;
+    }
+
     static inline IndexType getMax()
     {
         return std::numeric_limits<IndexType>::max();
@@ -188,6 +200,11 @@ public:
         return std::numeric_limits<long double>::epsilon();
     }
 
+    static inline long double small()
+    {
+        return 1e-8L;
+    }
+
     static inline long double getMax()
     {
         return std::numeric_limits<long double>::max();
@@ -229,6 +246,12 @@ public:
     {
         return std::numeric_limits<double>::epsilon();
     }
+
+    static inline double small()
+    {
+        return 1e-5;
+    }
+
     static inline double getMax()
     {
         return std::numeric_limits<double>::max();
@@ -269,6 +292,12 @@ public:
     {
         return std::numeric_limits<float>::epsilon();
     }
+
+    static inline float small()
+    {
+        return 1e-3f;
+    }
+
     static inline float getMax()
     {
         return std::numeric_limits<float>::max();
@@ -312,6 +341,12 @@ public:
     {
         return std::numeric_limits<float>::epsilon();
     }
+
+    static inline ComplexFloat small()
+    {
+        return ComplexFloat( 1e-3f );
+    }
+
     static inline ComplexFloat getMax()
     {
         return std::numeric_limits<float>::max();
@@ -340,22 +375,32 @@ public:
     {
         return scai::common::sqrt( x );
     }
+
     static inline ComplexDouble conj( ComplexDouble x )
     {
         return ComplexDouble( x.real(), -x.imag() );
     }
+
     static inline ComplexDouble abs( ComplexDouble x )
     {
         return scai::common::abs( x );
     }
+
     static inline ComplexDouble getEps()
     {
         return std::numeric_limits<double>::epsilon();
     }
+
+    static inline ComplexDouble small()
+    {
+        return ComplexDouble( 1e-5 );
+    }
+
     static inline ComplexDouble getMax()
     {
         return std::numeric_limits<double>::epsilon();
     }
+
     static inline ComplexDouble getMin()
     {
         return 0;
@@ -394,6 +439,11 @@ public:
     static inline ComplexLongDouble getEps()
     {
         return std::numeric_limits<long double>::epsilon();
+    }
+
+    static inline ComplexLongDouble small()
+    {
+        return ComplexLongDouble( 1e-8L );
     }
 
     static inline ComplexLongDouble getMax()
