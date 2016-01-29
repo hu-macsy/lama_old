@@ -131,6 +131,8 @@ Environment variables currently used in libraries:
 ========================   ======  ========================================================================
 Name                       Type    Description
 ========================   ======  ========================================================================
+SCAI_LOG                   path    path to configuration file for logging
+SCAI_UNSUPPORTED           string  IGNORE, WARN, or ERROR
 SCAI_DEVICE                int     default device when getting a context
 SCAI_CUDA_USE_CUSPARSE     bool    default true, uses cuSparse library instead of own kernels
 SCAI_CUDA_USE_SHARED_MEM   bool    default true, uses cuSparse library instead of own kernels
