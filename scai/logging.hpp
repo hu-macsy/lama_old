@@ -32,6 +32,8 @@
 
 #pragma once
 
+#include <scai/boost_check.hpp>
+
 /*************************************************************************
  *                                                                       *
  *  Compile time guards for LOGGING                                      *

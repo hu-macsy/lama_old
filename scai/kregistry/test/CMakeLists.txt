@@ -36,29 +36,19 @@ set ( CXX_SOURCES
       ReplaceTest.cpp  
       SimpleTest.cpp  
       TraitTest.cpp  
-) 
+)
 
-# Boost is not required, but if not available tests are not built
+include_directories ( ${Boost_INCLUDE_DIR} )
 
-find_package ( Boost COMPONENTS unit_test_framework )
+add_executable ( KernelInterfaceTest ${CXX_SOURCES} )
 
-if ( Boost_UNIT_TEST_FRAMEWORK_FOUND )
-
-    include_directories ( ${Boost_INCLUDE_DIR} )
-
-    add_executable ( KernelInterfaceTest ${CXX_SOURCES} )
-
-    target_link_libraries ( KernelInterfaceTest 
-        ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}
-        scai_kregistry
-        )
+target_link_libraries ( KernelInterfaceTest ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} scai_kregistry )
         
-    if ( USE_CODE_COVERAGE )
-        configure_file( "${CMAKE_CURRENT_SOURCE_DIR}/code_coverage.sh.in" "${CMAKE_CURRENT_BINARY_DIR}/code_coverage.sh" @ONLY)
-    endif ( USE_CODE_COVERAGE )
+if ( USE_CODE_COVERAGE )
+    configure_file( "${CMAKE_CURRENT_SOURCE_DIR}/code_coverage.sh.in" "${CMAKE_CURRENT_BINARY_DIR}/code_coverage.sh" @ONLY)
+endif ( USE_CODE_COVERAGE )
     
-    ### Copy the xmltest.sh file in build directory ### 
-    file ( COPY xmltest.sh DESTINATION ${CMAKE_CURRENT_BINARY_DIR} ) 
+### Copy the xmltest.sh file in build directory ### 
+file ( COPY xmltest.sh DESTINATION ${CMAKE_CURRENT_BINARY_DIR} ) 
 
-endif ( Boost_UNIT_TEST_FRAMEWORK_FOUND )
-
+target_link_libraries ( KernelInterfaceTest ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} scai_kregistry )

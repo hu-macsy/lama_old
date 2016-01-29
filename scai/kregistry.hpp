@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <scai/boost_check.hpp>
+
 #include <scai/kernel/KernelRegistry.hpp>
 #include <scai/kernel/ContextFunction.hpp>
 #include <scai/kernel/KernelContextFunction.hpp>

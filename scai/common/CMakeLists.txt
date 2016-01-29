@@ -61,9 +61,18 @@ else  ( NOT SCAI_COMPLETE_BUILD )
 endif ( NOT SCAI_COMPLETE_BUILD )
 
 include ( CheckC++11 )
-if    ( NOT CXX_SUPPORTS_C11 )
+if    ( NOT CXX_SUPPORTS_C11 OR BUILD_TEST )
     include( Package/Boost )
+endif ( NOT CXX_SUPPORTS_C11 OR BUILD_TEST )
+
+if    ( NOT CXX_SUPPORTS_C11 )
+    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../boost_check.hpp.in"
+                     "${CMAKE_CURRENT_BINARY_DIR}/boost_check.hpp" )
+else  ( NOT CXX_SUPPORTS_C11 )
+    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../boost_check.hpp.in_empty"
+                     "${CMAKE_CURRENT_BINARY_DIR}/boost_check.hpp" )
 endif ( NOT CXX_SUPPORTS_C11 )
+install ( FILES ${CMAKE_CURRENT_BINARY_DIR}/boost_check.hpp DESTINATION include/scai )
 
 ### include all search packages
 # no internal dependencies

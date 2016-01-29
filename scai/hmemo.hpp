@@ -31,6 +31,8 @@
  * @date 19.07.2015
  */
 
+#include <scai/boost_check.hpp>
+
 #include <scai/hmemo/Access.hpp> 
 #include <scai/hmemo/ContextAccess.hpp>
 #include <scai/hmemo/_HArray.hpp>

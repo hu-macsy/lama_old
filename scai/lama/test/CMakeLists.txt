@@ -48,7 +48,7 @@ scai_project (
         
         SameMatrixHelper
         EquationHelper
-#        TestMacros : in common
+        TestMacros
         TestSparseMatrices
 
     SOURCES
@@ -56,9 +56,6 @@ scai_project (
         BiCGstabTest
        # BiCGTest  : disabled as long as MatrixTranspose for DenseMatrix is
        # not supported
-       # BLAS1Test
-       # BLAS2Test
-       # BLAS3Test
         CGTest
        # not yet: CGNETest
         CGNRTest
@@ -120,10 +117,6 @@ scai_project (
 if ( ${SCAI_ASSERT_LEVEL} STREQUAL "OFF" )
    message ( STATUS "WARNING: tests will not check for exceptions (assertions are switched off)" )
 endif ( ${SCAI_ASSERT_LEVEL} STREQUAL "OFF" )
-
-if ( NOT ( Boost_UNIT_TEST_FRAMEWORK_LIBRARY OR Boost_REGEX ) )
-    message ( FATAL_ERROR "No Boost unit test available." )
-endif ( NOT ( Boost_UNIT_TEST_FRAMEWORK_LIBRARY OR Boost_REGEX ) )
 
 ### set include directories ###
 include_directories ( .. ../lama ${Boost_INCLUDE_DIRS} )
