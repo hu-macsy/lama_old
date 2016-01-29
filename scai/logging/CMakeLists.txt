@@ -105,7 +105,6 @@ include_directories ( ../.. )
 foreach    ( module ${SCAI_LOGGING_INTERNAL_DEPS} )
 	string ( TOUPPER ${module} upper_module )
     include_directories( ${${upper_module}_INCLUDE_DIR} )
-    message ( STATUS "inc dir: ${${upper_module}_INCLUDE_DIR}")
 endforeach ( module ${SCAI_LOGGING_INTERNAL_DEPS} )
 
 ### build library
