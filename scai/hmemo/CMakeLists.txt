@@ -33,6 +33,7 @@
 
 ### Set required CMake version
 cmake_minimum_required ( VERSION 2.8 )
+cmake_policy( SET CMP0054 NEW )
 
 ### Set PROJECT NAME / supported LANGUAGES
 project( scai_hmemo CXX )
@@ -60,6 +61,20 @@ else  ( NOT SCAI_COMPLETE_BUILD )
 	include ( Functions/CheckValueAtCompleteBuild )
 	CheckValueAtCompleteBuild ( hmemo )
 endif ( NOT SCAI_COMPLETE_BUILD )
+
+include ( CheckC++11 )
+if    ( NOT CXX_SUPPORTS_C11 OR BUILD_TEST )
+    include( Package/Boost )
+endif ( NOT CXX_SUPPORTS_C11 OR BUILD_TEST )
+
+if    ( NOT CXX_SUPPORTS_C11 )
+    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../boost_check.hpp.in"
+                     "${CMAKE_CURRENT_BINARY_DIR}/boost_check.hpp" )
+else  ( NOT CXX_SUPPORTS_C11 )
+    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../boost_check.hpp.in_empty"
+                     "${CMAKE_CURRENT_BINARY_DIR}/boost_check.hpp" )
+endif ( NOT CXX_SUPPORTS_C11 )
+install ( FILES ${CMAKE_CURRENT_BINARY_DIR}/boost_check.hpp DESTINATION include/scai )
 
 ### include all search packages
 include ( InternalDependencies )
@@ -93,7 +108,7 @@ if    ( WIN32 )
 	add_definitions ( -DCOMMON_COMPILING_DLL )
 endif ( WIN32 )
 
-## Project System-Include
+### Project System-Include
 include_directories ( ../.. )
 
 foreach    ( module ${SCAI_HMEMO_INTERNAL_DEPS} ${SCAI_HMEMO_EXTERNAL_DEPS} )
@@ -145,7 +160,7 @@ endif ( USE_MIC )
 add_subdirectory ( exception )
 add_subdirectory ( examples )
 
-if    ( FOUND_BOOST_TEST AND BUILD_TEST )
+if ( FOUND_BOOST_TEST AND BUILD_TEST )
     add_subdirectory ( test )
 endif ( FOUND_BOOST_TEST AND BUILD_TEST )
 

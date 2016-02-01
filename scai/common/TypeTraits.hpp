@@ -54,13 +54,20 @@ class TypeTraits
 {
 public:
 
-	typedef ValueType PartsType;
+	typedef ValueType AbsType;
 
     /** Get value-specific epsilon for comparison. */
 
     static inline ValueType getEps()
     {
         return std::numeric_limits<ValueType>::epsilon();
+    }
+
+    /** Get type-specific precision to be used for comparison in matrix-vector operations */
+
+    static inline ValueType small()
+    {
+        return getEps();
     }
 
     /** Get maximal value of a ValueType, used for min, max reductions on arrays. */
@@ -91,11 +98,6 @@ public:
     {
         return scalar2str( scalar::UNKNOWN );
     }
-
-    static inline bool isComplex()
-    {
-    	return false;
-    }
 };
 
 /** Type specific traits for IndexType */
@@ -104,9 +106,14 @@ template<>
 class TypeTraits<IndexType>
 {
 public:
-	typedef IndexType PartsType;
+	typedef IndexType AbsType;
 
     static inline IndexType getEps()
+    {
+        return 0;
+    }
+
+    static inline IndexType small()
     {
         return 0;
     }
@@ -127,11 +134,6 @@ public:
     {
         return scalar2str( scalar::INDEX_TYPE );
     }
-
-    static inline bool isComplex()
-	{
-		return false;
-	}
 };
 
 /** Type specific traits for long double */
@@ -140,11 +142,16 @@ template<>
 class TypeTraits<long double>
 {
 public:
-	typedef long double PartsType;
+	typedef long double AbsType;
 
     static inline long double getEps()
     {
         return std::numeric_limits<long double>::epsilon();
+    }
+
+    static inline long double small()
+    {
+        return 1e-8L;
     }
 
     static inline long double getMax()
@@ -163,11 +170,6 @@ public:
     {
         return scalar2str( scalar::LONG_DOUBLE );
     }
-
-    static inline bool isComplex()
-	{
-		return false;
-	}
 };
 
 /** Type specific traits for double */
@@ -176,12 +178,18 @@ template<>
 class TypeTraits<double>
 {
 public:
-	typedef double PartsType;
+	typedef double AbsType;
 
     static inline double getEps()
     {
         return std::numeric_limits<double>::epsilon();
     }
+
+    static inline double small()
+    {
+        return 1e-5;
+    }
+
     static inline double getMax()
     {
         return std::numeric_limits<double>::max();
@@ -197,11 +205,6 @@ public:
     {
         return scalar2str( scalar::DOUBLE );
     }
-
-    static inline bool isComplex()
-	{
-		return false;
-	}
 };
 
 /** Type specific traits for float */
@@ -210,12 +213,18 @@ template<>
 class TypeTraits<float>
 {
 public:
-	typedef float PartsType;
+	typedef float AbsType;
 
     static inline float getEps()
     {
         return std::numeric_limits<float>::epsilon();
     }
+
+    static inline float small()
+    {
+        return 1e-3f;
+    }
+
     static inline float getMax()
     {
         return std::numeric_limits<float>::max();
@@ -231,11 +240,6 @@ public:
     {
         return scalar2str( stype );
     }
-
-    static inline bool isComplex()
-	{
-		return false;
-	}
 };
 
 #ifdef SCAI_COMPLEX_SUPPORTED
@@ -246,12 +250,18 @@ template<>
 class TypeTraits<ComplexFloat>
 {
 public:
-	typedef float PartsType;
+	typedef float AbsType;
 
     static inline ComplexFloat getEps()
     {
         return std::numeric_limits<float>::epsilon();
     }
+
+    static inline ComplexFloat small()
+    {
+        return ComplexFloat( 1e-3f );
+    }
+
     static inline ComplexFloat getMax()
     {
         return std::numeric_limits<float>::max();
@@ -267,11 +277,6 @@ public:
     {
         return "ComplexFloat";
     }
-
-    static inline bool isComplex()
-	{
-		return true;
-	}
 };
 
 /** Type specific traits for complex(double) */
@@ -280,16 +285,23 @@ template<>
 class TypeTraits<ComplexDouble>
 {
 public:
-	typedef double PartsType;
+	typedef double AbsType;
 
     static inline ComplexDouble getEps()
     {
         return std::numeric_limits<double>::epsilon();
     }
+
+    static inline ComplexDouble small()
+    {
+        return ComplexDouble( 1e-5 );
+    }
+
     static inline ComplexDouble getMax()
     {
         return std::numeric_limits<double>::epsilon();
     }
+
     static inline ComplexDouble getMin()
     {
         return 0;
@@ -301,11 +313,6 @@ public:
     {
         return scalar2str( scalar::DOUBLE_COMPLEX );
     }
-
-    static inline bool isComplex()
-	{
-		return true;
-	}
 };
 
 /** Type specific traits for complex(long double) */
@@ -314,11 +321,16 @@ template<>
 class TypeTraits<ComplexLongDouble>
 {
 public:
-	typedef long double PartsType;
+	typedef long double AbsType;
 
     static inline ComplexLongDouble getEps()
     {
         return std::numeric_limits<long double>::epsilon();
+    }
+
+    static inline ComplexLongDouble small()
+    {
+        return ComplexLongDouble( 1e-8L );
     }
 
     static inline ComplexLongDouble getMax()
@@ -337,11 +349,6 @@ public:
     {
         return scalar2str( stype );
     }
-
-    static inline bool isComplex()
-	{
-		return true;
-	}
 };
 
 #endif

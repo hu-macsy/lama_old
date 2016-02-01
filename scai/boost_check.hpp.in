@@ -1,5 +1,5 @@
 /**
- * @file tasking.hpp
+ * @file boost_check.hpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,16 +25,18 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Include file that includes all other defintion files of this module.
- *
- * @author Thomas Brandes
- * @date 19.07.2015
+ * @brief check whether scai boost library is compatible with link library 
+ * @author Jan Ecker
+ * @date 27.03.2013
+ * @since 1.0.0
  */
 
-#include <scai/boost_check.hpp>
+#pragma once
 
-#include <scai/tasking/NoSyncToken.hpp>
-#include <scai/tasking/SyncToken.hpp>
-#include <scai/tasking/Task.hpp>
-#include <scai/tasking/TaskSyncToken.hpp>
-#include <scai/tasking/TreadPool.hpp>
+#include <boost/version.hpp>
+#define LAMA_LINKED_BOOST_VERSION ${Boost_VERSION}
+
+#if LAMA_LINKED_BOOST_VERSION != BOOST_VERSION
+    #error "Included Boost version does not match linked Boost version ${Boost_VERSION}"
+#endif
+ 

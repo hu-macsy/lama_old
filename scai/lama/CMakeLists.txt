@@ -33,6 +33,7 @@
 
 ### Set required CMake version
 cmake_minimum_required ( VERSION 2.8 )
+cmake_policy( SET CMP0054 NEW )
 
 ### Set PROJECT NAME / supported LANGUAGES
 project ( LAMA CXX )
@@ -62,6 +63,20 @@ else  ( NOT SCAI_COMPLETE_BUILD )
 	include ( Functions/CheckValueAtCompleteBuild )
 	CheckValueAtCompleteBuild ( lama )
 endif ( NOT SCAI_COMPLETE_BUILD )
+
+include ( CheckC++11 )
+if    ( NOT CXX_SUPPORTS_C11 OR BUILD_TEST )
+    include( Package/Boost )
+endif ( NOT CXX_SUPPORTS_C11 OR BUILD_TEST )
+
+if    ( NOT CXX_SUPPORTS_C11 )
+    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../boost_check.hpp.in"
+                     "${CMAKE_CURRENT_BINARY_DIR}/boost_check.hpp" )
+else  ( NOT CXX_SUPPORTS_C11 )
+    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../boost_check.hpp.in_empty"
+                     "${CMAKE_CURRENT_BINARY_DIR}/boost_check.hpp" )
+endif ( NOT CXX_SUPPORTS_C11 )
+install ( FILES ${CMAKE_CURRENT_BINARY_DIR}/boost_check.hpp DESTINATION include/scai )
 
 ### include all search packages
 include ( InternalDependencies )

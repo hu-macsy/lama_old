@@ -379,10 +379,6 @@ public:
 
     /* Implementation of pure method of class Matrix. */
 
-    virtual void getRow( Vector& row, const IndexType globalRowIndex ) const;
-
-    /* Implementation of pure method of class Matrix. */
-
     virtual void setDiagonal( const Vector& diagonal );
 
     /* Implementation of pure method of class Matrix. */
@@ -579,6 +575,10 @@ public:
         return mOwners;
     }
 
+    /** Get a complete row of the local storage, used by getRow in CRTPMatrix */
+
+    void getLocalRow( DenseVector<ValueType>& row, const IndexType iLocal ) const;
+
 protected:
 
     using CRTPMatrix<DenseMatrix<ValueType>,ValueType>::mNumRows;
@@ -663,8 +663,6 @@ private:
     /** Split the replicated columns into chunks according to the column distribution. */
 
     void splitColumns( DistributionPtr colDistribution );
-
-    void getRow( DenseVector<ValueType>& row, const IndexType i ) const;
 
     mutable hmemo::HArray<ValueType> mSendValues;
     mutable hmemo::HArray<ValueType> mReceiveValues;

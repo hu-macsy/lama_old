@@ -46,6 +46,7 @@ typedef boost::mpl::list<float, double> test_types;
 
 using namespace scai::lama;
 using namespace scai::hmemo;
+using scai::common::TypeTraits;
 
 BOOST_AUTO_TEST_SUITE( MatrixNormTest )
 
@@ -69,7 +70,7 @@ void l1NormTestMethod( ContextPtr context )
 
 	Scalar l1Norm = matrix.l1Norm();
 
-	SCAI_CHECK_CLOSE( l1Norm, result, eps<ValueType>() );
+	SCAI_CHECK_CLOSE( l1Norm, result, TypeTraits<ValueType>::small() );
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( l1NormTest, ValueType, test_types )
@@ -105,7 +106,7 @@ void l2NormTestMethod( ContextPtr context )
 
 	Scalar l2Norm = matrix.l2Norm();
 
-	SCAI_CHECK_CLOSE( l2Norm, result, eps<ValueType>() );
+	SCAI_CHECK_CLOSE( l2Norm, result, TypeTraits<ValueType>::small() );
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( l2NormTest, ValueType, test_types )
@@ -141,7 +142,7 @@ void maxNormTestMethod( ContextPtr context )
 
 	Scalar maxNorm = matrix.maxNorm();
 
-	SCAI_CHECK_CLOSE( maxNorm, result, eps<ValueType>() );
+	SCAI_CHECK_CLOSE( maxNorm, result, TypeTraits<ValueType>::small() );
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( maxNormTest, ValueType, test_types )

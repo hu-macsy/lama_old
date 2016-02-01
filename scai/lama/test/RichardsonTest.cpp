@@ -62,6 +62,7 @@
 
 using namespace scai::lama;
 using namespace scai::hmemo;
+using scai::common::TypeTraits;
 
 typedef boost::mpl::list<float> test_types;
 
@@ -156,7 +157,7 @@ void testSolveWithPreconditionmethod( ContextPtr context )
     SCAI_LOG_INFO( logger,
                    "maxNorm of diff = " << diff << " = ( solution - exactSolution ) = " << s.getValue<ValueType>() );
 
-    BOOST_CHECK( s.getValue<ValueType>() < eps<ValueType>() );
+    BOOST_CHECK( s.getValue<ValueType>() < scai::common::TypeTraits<ValueType>::small() );
 
 
 }
@@ -226,7 +227,7 @@ void testSolveWithoutPreconditionmethod( ContextPtr context )
     DenseVector<ValueType> diff( solution - exactSolution );
     Scalar s = maxNorm( diff );
     SCAI_LOG_INFO( logger, "maxNorm of ( solution - exactSolution ) = " << s.getValue<ValueType>() );
-    BOOST_CHECK( s.getValue<ValueType>() < eps<ValueType>() );
+    BOOST_CHECK( s.getValue<ValueType>() < TypeTraits<ValueType>::small() );
 }
 
 /* --------------------------------------------------------------------- */

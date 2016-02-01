@@ -7,4 +7,6 @@
 
 #pragma once
 
+#include <scai/boost_check.hpp>
+
 #include <scai/blaskernel/BLASKernelTrait.hpp>

@@ -33,6 +33,7 @@
 
 ### Set required CMake version
 cmake_minimum_required ( VERSION 2.8 )
+cmake_policy( SET CMP0054 NEW )
 
 ### Set PROJECT NAME / supported LANGUAGES
 project( scai_kregistry CXX )
@@ -61,6 +62,20 @@ else  ( NOT SCAI_COMPLETE_BUILD )
 	CheckValueAtCompleteBuild ( kregistry )
 endif ( NOT SCAI_COMPLETE_BUILD )
 
+include ( CheckC++11 )
+if    ( NOT CXX_SUPPORTS_C11 OR BUILD_TEST )
+    include( Package/Boost )
+endif ( NOT CXX_SUPPORTS_C11 OR BUILD_TEST )
+
+if    ( NOT CXX_SUPPORTS_C11 )
+    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../boost_check.hpp.in"
+                     "${CMAKE_CURRENT_BINARY_DIR}/boost_check.hpp" )
+else  ( NOT CXX_SUPPORTS_C11 )
+    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../boost_check.hpp.in_empty"
+                     "${CMAKE_CURRENT_BINARY_DIR}/boost_check.hpp" )
+endif ( NOT CXX_SUPPORTS_C11 )
+install ( FILES ${CMAKE_CURRENT_BINARY_DIR}/boost_check.hpp DESTINATION include/scai )
+
 ### include all search packages
 include ( InternalDependencies )
 include ( ExternalDependencies )
@@ -88,7 +103,7 @@ if    ( WIN32 )
 	add_definitions ( -DCOMMON_COMPILING_DLL )
 endif ( WIN32 )
 
-## Project System-Include
+### Project System-Include
 include_directories ( ../.. )
 
 foreach    ( module ${SCAI_KREGISTRY_INTERNAL_DEPS} ${SCAI_KREGISTRY_EXTERNAL_DEPS} )
@@ -104,7 +119,7 @@ include ( Functions/scaiProject )
 
 scai_project (
 
-    CLASSES                  # .cpp, .hpp
+    CLASSES
 
         ContextFunction
         KernelRegistry
@@ -119,7 +134,10 @@ add_subdirectory ( exception )
 
 ## add subdirectories
 add_subdirectory ( examples )
-add_subdirectory ( test )
+
+if ( FOUND_BOOST_TEST AND BUILD_TEST )
+    add_subdirectory ( test )
+endif ( FOUND_BOOST_TEST AND BUILD_TEST )
 
 ## add library
 add_library ( scai_kregistry ${SCAI_LIBRARY_TYPE} ${CXX_SOURCES} )

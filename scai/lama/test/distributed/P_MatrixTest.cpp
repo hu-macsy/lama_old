@@ -268,14 +268,18 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( CopyConstructorTest, MatrixType, MatrixTypes )
     MatrixCreator<double>::buildPoisson2D( inputA, 9, N1, N2 );
     CommunicatorPtr comm = Communicator::getCommunicator();
     const IndexType n = inputA.getNumRows();
+    std::cout << "inputA = " << inputA << std::endl;
     DistributionPtr dist( new BlockDistribution( n, comm ) );
     MatrixType m1( inputA );
-    testSameMatrix( inputA, m1 );
+    std::cout << "m1( inputA ) = " << m1 << std::endl;
+    testSameMatrixClose( inputA, m1 );
     MatrixType m2( inputA, dist, dist );
-    testSameMatrix( inputA, m2 );
+    std::cout << "m2( inputA, dist, dist ) = " << m2 << std::endl;
+    testSameMatrixClose( inputA, m2 );
     MatrixType m3;
     m3 = inputA;
-    testSameMatrix( inputA, m3 );
+    std::cout << "m3 ( = inputA ) = " << m3 << std::endl;
+    testSameMatrixClose( inputA, m3 );
 };
 
 /* ------------------------------------------------------------------------- */

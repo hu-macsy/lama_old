@@ -32,6 +32,7 @@
 ###
 
 cmake_minimum_required ( VERSION 2.8 )
+cmake_policy( SET CMP0054 NEW )
 
 project ( LAMA_ALL CXX )
 set ( CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/../CMake/Modules" )
@@ -44,9 +45,9 @@ include ( SCAIAssert )
 include ( SetCPPFlags )
 
 include ( CheckC++11 )
-if    ( NOT CXX_SUPPORTS_C11 )
+if    ( NOT CXX_SUPPORTS_C11 OR BUILD_TEST )
     include( Package/Boost )
-endif ( NOT CXX_SUPPORTS_C11 )
+endif ( NOT CXX_SUPPORTS_C11 OR BUILD_TEST )
 
 include ( Functions/checkValue )
 include ( Functions/setAndCheckCache )
@@ -132,7 +133,7 @@ concatCacheArguments ( scai_common "CACHE_ARGS" )
 #message ( STATUS "common CACHE_ARGS ${CACHE_ARGS}" )
 
 ExternalProject_Add ( scai_common 
-			DEPENDS ${SCAI_COMMON_INTERNAL_DEPS}
+		DEPENDS ${SCAI_COMMON_INTERNAL_DEPS}
             PREFIX common
             SOURCE_DIR ${CMAKE_SOURCE_DIR}/common
             CMAKE_ARGS "-DSCAI_COMPLETE_BUILD=1"
