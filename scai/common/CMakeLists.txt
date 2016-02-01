@@ -32,7 +32,6 @@
 
 ### Set required CMake version
 cmake_minimum_required ( VERSION 2.8 )
-cmake_policy( SET CMP0054 NEW )
 
 ### Set PROJECT NAME / supported LANGUAGES
 project ( scai_common CXX )
