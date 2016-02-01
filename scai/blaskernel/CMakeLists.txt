@@ -61,6 +61,11 @@ else  ( NOT SCAI_COMPLETE_BUILD )
 	CheckValueAtCompleteBuild ( blaskernel )
 endif ( NOT SCAI_COMPLETE_BUILD )
 
+include ( CheckC++11 )
+if    ( NOT CXX_SUPPORTS_C11 OR BUILD_TEST )
+    include( Package/Boost )
+endif ( NOT CXX_SUPPORTS_C11 OR BUILD_TEST )
+
 ### include all search packages
 include ( InternalDependencies )
 include ( ExternalDependencies )
@@ -151,7 +156,8 @@ endif ( USE_MIC )
 
 ## add subdirectories
 #add_subdirectory ( examples )
-if    ( FOUND_BOOST_TEST AND BUILD_TEST )
+message( STATUS "LKASDJLASKJD ${FOUND_BOOST_TEST} asdsa ${BOOST_FOUND}" )
+if ( FOUND_BOOST_TEST AND BUILD_TEST )
     add_subdirectory ( test )
 endif ( FOUND_BOOST_TEST AND BUILD_TEST )
 
