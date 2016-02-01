@@ -59,9 +59,28 @@ scai_project (
         ResidualThresholdTest
         RichardsonTest
         SimpleAMGTest
+        SolverTest
         SolutionProxyTest
         SORTest
 	    SpecializedJacobiTest
         TFQMRTest
         TimerTest
    )
+   
+add_executable ( SolverTest ${CXX_SOURCES} )
+
+target_link_libraries ( SolverTest 
+    ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}
+    scai_solver
+    )
+    
+file ( GLOB LOCAL_HEADERS "*.hpp" )
+
+install ( FILES ${LOCAL_HEADERS} DESTINATION include/scai/solver/test )
+
+### Copy the xmltest.sh file in build directory ### 
+#file ( COPY xmltest.sh DESTINATION ${CMAKE_CURRENT_BINARY_DIR} ) 
+
+if ( USE_CODE_COVERAGE )
+    configure_file( "${CMAKE_CURRENT_SOURCE_DIR}/code_coverage.sh.in" "${CMAKE_CURRENT_BINARY_DIR}/code_coverage.sh" @ONLY)
+endif ( USE_CODE_COVERAGE )    

@@ -59,6 +59,7 @@
 #include <scai/lama/test/EquationHelper.hpp>
 #include <scai/lama/test/TestMacros.hpp>
 
+using namespace scai::solver;
 using namespace scai::lama;
 using namespace scai::hmemo;
 
@@ -71,8 +72,8 @@ struct SpecializedJacobiTestConfig
     SpecializedJacobiTestConfig()
     {
         LoggerPtr loggerD(
-            new CommonLogger( "<Jacobi>: ", scai::lama::LogLevel::completeInformation,
-                              scai::lama::LoggerWriteBehaviour::toConsoleOnly ) );
+            new CommonLogger( "<Jacobi>: ", scai::solver::LogLevel::completeInformation,
+                              scai::solver::LoggerWriteBehaviour::toConsoleOnly ) );
         mJacobiDouble = new SpecializedJacobi( "SpecializedJacobiTest double solver", loggerD );
         mJacobiFloat = new SpecializedJacobi( "SpecializedJacobiTest float solver", loggerD );
     }

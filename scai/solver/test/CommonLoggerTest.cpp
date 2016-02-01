@@ -41,6 +41,7 @@
 
 #include <scai/lama/test/Configuration.hpp>
 
+using namespace scai::solver;
 using namespace scai::lama;
 using namespace scai::hmemo;
 using scai::common::shared_ptr;

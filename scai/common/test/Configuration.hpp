@@ -35,24 +35,30 @@
 
 #include <string>
 
+#ifndef LAMA_TESTFILE_PATH
+#define LAMA_TESTFILE_PATH "res/testfiles"
+#endif
+
+namespace scai {
+
+namespace test {
+
 class Configuration
 {
 
 public:
-    virtual ~Configuration();
-    static Configuration& getInstance();
-    const std::string& getPath() const;
-    const std::string& getCommunicatorType() const;
-    void setCommunicatorType( const std::string& commType );
+    static const std::string& getPath() const
+    {
+    	return LAMA_TESTFILE_PATH;
+    }
 
 private:
-    void setPath( const std::string& path );
+    virtual ~Configuration();
 
-    SCAI_LOG_DECL_STATIC_LOGGER( logger )
-
-    Configuration    ();
+    Configuration();
     Configuration( const Configuration& cc );
-    std::string mPath;
-    std::string mCommType;
-
 };
+
+} /* end namespace test */
+
+} /* end namespace scai */

@@ -59,7 +59,7 @@
 
 #include <scai/lama/test/TestMacros.hpp>
 
-
+using namespace scai::solver;
 using namespace scai::lama;
 using namespace scai::hmemo;
 

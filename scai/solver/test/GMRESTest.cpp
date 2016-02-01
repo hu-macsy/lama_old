@@ -60,6 +60,7 @@
 #include <scai/lama/expression/VectorExpressions.hpp>
 #include <scai/lama/expression/MatrixVectorExpressions.hpp>
 
+using namespace scai::solver;
 using namespace scai::lama;
 using namespace scai::hmemo;
 

@@ -77,7 +77,7 @@ template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT SparseMatrix: public CRTPMatrix<SparseMatrix<ValueType>,ValueType>
 {
 
-    friend class SpecializedJacobi;
+//    friend class SpecializedJacobi;
 
 public:
 

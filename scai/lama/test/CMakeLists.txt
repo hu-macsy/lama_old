@@ -37,7 +37,7 @@ scai_project (
 
     CLASSES
 
-        Configuration
+       # Configuration
         MatrixStorageTest
         NormTest
         SparseMatrixHelper

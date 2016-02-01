@@ -37,6 +37,7 @@
 #include <scai/lama/Scalar.hpp>
 #include <scai/solver/SolutionProxy.hpp>
 
+using namespace scai::solver;
 using namespace scai::lama;
 using namespace scai::hmemo;
 

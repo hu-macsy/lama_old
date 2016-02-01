@@ -42,6 +42,7 @@
 #include <scai/common/unique_ptr.hpp>
 #include <scai/common/SCAITypes.hpp>
 
+using namespace scai::solver;
 using namespace scai::lama;
 using namespace scai::hmemo;
 

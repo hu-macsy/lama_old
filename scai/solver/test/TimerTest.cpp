@@ -50,6 +50,7 @@ inline void usleep( int t )
 #include <unistd.h>
 #endif
 
+using namespace scai::solver;
 using namespace scai::lama;
 using namespace scai::hmemo;
 using scai::common::Exception;

@@ -1,0 +1,7 @@
+
+#define BOOST_TEST_DYN_LINK
+#define BOOST_TEST_MODULE SolverTest
+
+#include <boost/test/unit_test.hpp>
+
+ 
