@@ -1475,68 +1475,56 @@ void DenseMatrix<ValueType>::setContextPtr( const ContextPtr context )
     }
 }
 
+/* -------------------------------------------------------------------------- */
+
 template<typename ValueType>
-void DenseMatrix<ValueType>::getRow( DenseVector<ValueType>& row, const IndexType globalRowIndex ) const
+void DenseMatrix<ValueType>::getLocalRow( DenseVector<ValueType>& row, const IndexType iLocal ) const
 {
-    SCAI_LOG_DEBUG( logger, "get values of dense matrix from row " << globalRowIndex )
+    SCAI_ASSERT_DEBUG( row.getDistribution().isReplicated(), "row vector must be replicated" )
 
-    if ( !row.getDistribution().isReplicated() )
+    // does not work if matrix has column distribution
+
+    const Distribution& distributionCol = getColDistribution();
+
+    if ( distributionCol.isReplicated() )
     {
-        COMMON_THROWEXCEPTION( "vector for row data must be replicated" )
-    }
-
-// on a replicated matrix each processor can fill the row
-
-    if ( getDistribution().isReplicated() )
-    {
-        getLocalStorage().getRow( row.getLocalValues(), globalRowIndex );
+        getLocalStorage().getRow( row.getLocalValues(), iLocal );
         return;
     }
 
-// on a distributed matrix, owner fills row and broadcasts it
+    COMMON_THROWEXCEPTION( "getLocalRow for DenseMatrix with col distribution not supported yet" )
 
-    const Communicator& comm = getDistribution().getCommunicator();
+    WriteOnlyAccess<ValueType> rowAccess( row.getLocalValues(), getNumColumns() );
 
-// owner fills the row
+    IndexType k = 0;
 
-    IndexType localRowIndex = getDistribution().global2local( globalRowIndex );
+    // Step 1: fill the row with the row of each chunk
 
-    IndexType owner = 0;
+    PartitionId nchunks = mData.size();
 
-    if ( localRowIndex != nIndex )
+    for ( PartitionId p = 0; p < nchunks; ++p )
     {
-        getLocalStorage().getRow( row.getLocalValues(), localRowIndex );
-        owner = comm.getRank() + 1;
-        SCAI_LOG_DEBUG( logger,
-                        "owner of row " << globalRowIndex << " is " << owner << ", local index = " << localRowIndex )
+        DenseStorage<ValueType>& chunk = *mData[p];
+
+        scai::hmemo::HArray<ValueType> localRow;
+
+        chunk.getRowImpl( localRow, iLocal );
+ 
+        IndexType size = localRow.size();
+
+        ReadAccess<ValueType> read( localRow );
+
+        for ( IndexType i = 0; i < size; ++i )
+        {
+            rowAccess[k++] = read[i];
+        }
     }
+  
+    SCAI_ASSERT_EQUAL( k, getNumColumns(), "size mismatch" );
 
-    owner = comm.sum( owner ) - 1; // get owner via a reduction
+    // Step 2: sort values back corresponding to the owners
 
-    SCAI_ASSERT_ERROR( owner >= 0, "could not find owner of row " << globalRowIndex )
-
-    {
-        WriteAccess<ValueType> rowAccess( row.getLocalValues() );
-        comm.bcast( rowAccess.get(), getNumColumns(), owner ); // bcast the row
-    }
-}
-
-template<typename ValueType>
-void DenseMatrix<ValueType>::getRow( Vector& row, const IndexType globalRowIndex ) const
-{
-    if ( getValueType() == row.getValueType() )
-    {
-// row must be a DenseVector of same type
-
-        DenseVector<ValueType>* typedRow = dynamic_cast<DenseVector<ValueType>*>( &row );
-        SCAI_ASSERT_DEBUG( typedRow, "row is not DenseVector<Matrix::ValueType>" )
-        getRow( *typedRow, globalRowIndex );
-    }
-    else
-    {
-        COMMON_THROWEXCEPTION(
-            "Value type for row = " << row.getValueType () << " invalid" ", must match type of matrix = " << getValueType() )
-    }
+    COMMON_THROWEXCEPTION( "getLocalRow for DenseMatrix with col distribution not supported yet" )
 }
 
 template<typename ValueType>

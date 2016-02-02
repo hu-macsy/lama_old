@@ -30,6 +30,7 @@
 using namespace scai::solver;
 using namespace scai::lama;
 using namespace scai::hmemo;
+using scai::common::TypeTraits;
 
 typedef boost::mpl::list<float,double> test_types;
 
@@ -140,7 +141,7 @@ void testSolveWithPreconditionmethod( ContextPtr context )
     Scalar s = maxNorm( diff );
     SCAI_LOG_INFO( logger,
                    "maxNorm of diff = " << diff << " = ( solution - exactSolution ) = " << s.getValue<ValueType>() );
-    BOOST_CHECK( s.getValue<ValueType>() < eps<ValueType>() );
+    BOOST_CHECK( s.getValue<ValueType>() < TypeTraits<ValueType>::small() );
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( testSolveWithPrecondition, T, test_types ) {
@@ -207,8 +208,9 @@ void testSolveWithoutPreconditionmethod( ContextPtr context )
 
     DenseVector<ValueType> diff( solution - exactSolution );
     Scalar s = maxNorm( diff );
-    SCAI_LOG_INFO( logger, "maxNorm of ( solution - exactSolution ) = " << s.getValue<ValueType>() );
-    BOOST_CHECK( s.getValue<ValueType>() < eps<ValueType>() );
+    ValueType sv = s.getValue<ValueType>(); 
+    SCAI_LOG_INFO( logger, "maxNorm of ( solution - exactSolution ) = " << sv );
+    BOOST_CHECK( sv < TypeTraits<ValueType>::small() );
 }
 
 /* --------------------------------------------------------------------- */

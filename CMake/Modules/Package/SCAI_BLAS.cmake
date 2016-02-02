@@ -36,7 +36,7 @@
 #   SCAI_BLAS_FOUND          - System has SCAI_BLAS
 #   SCAI_BLAS_NAME           - name of choosen BLAS library
 #   SCAI_BLAS_INCLUDE_DIR    - SCAI_BLAS include directory 
-#   SCAI_SCAI_BLAS_LIBRARIES - The libraries needed to use SCAI_BLAS
+#   SCAI_SCAI_BLAS_LIBRARIES      - The libraries needed to use SCAI_BLAS
 
 include ( Functions/checkValue )
 

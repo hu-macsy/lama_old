@@ -49,6 +49,8 @@
 
 #include <boost/test/unit_test.hpp>
 
+using scai::common::TypeTraits;
+
 /** This routine is a rather general routine. It compares two arbitrary matrices
  *  (different distributions, different value types) whether the elements are
  *  close enough.
@@ -87,7 +89,7 @@ void testSameMatrix( const MatrixType1& m1, const MatrixType2& m2 )
         //#pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
         for ( IndexType j = 0; j < n; j++ )
         {
-            SCAI_CHECK_CLOSE( ptrRow1->getValue( j ), ptrRow2->getValue( j ), eps<ValueType1>() )
+            SCAI_CHECK_CLOSE( ptrRow1->getValue( j ), ptrRow2->getValue( j ), TypeTraits<ValueType1>::small() )
         }
     }
 }
@@ -123,13 +125,13 @@ void testSameMatrixClose( const MatrixType1& m1, const MatrixType2& m2 )
         //#pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
         for ( IndexType j = 0; j < n; j++ )
         {
-            if ( abs( ptrRow1->getValue( j ) ) < small<ValueType1>() )
+            if ( abs( ptrRow1->getValue( j ) ) < TypeTraits<ValueType1>::small() )
             {
-                SCAI_CHECK_SCALAR_SMALL( ptrRow2->getValue( j ), ValueType2, small<ValueType2>() )
+                SCAI_CHECK_SCALAR_SMALL( ptrRow2->getValue( j ), ValueType2, TypeTraits<ValueType2>::small() )
             }
             else
             {
-                SCAI_CHECK_CLOSE( ptrRow1->getValue( j ), ptrRow2->getValue( j ), eps<ValueType1>() )
+                SCAI_CHECK_CLOSE( ptrRow1->getValue( j ), ptrRow2->getValue( j ), TypeTraits<ValueType1>::small() )
             }
         }
     }
@@ -162,7 +164,7 @@ void testSameMatrixStorage( const scai::lama::MatrixStorage<ValueType1>& m1, con
         scai::hmemo::ReadAccess<ValueType2> readRow2(row2);
         for ( IndexType j = 0; j < n; j++ )
         {
-            SCAI_CHECK_CLOSE( (readRow1.get())[j], (readRow2.get())[j], eps<ValueType1>() )
+            SCAI_CHECK_CLOSE( (readRow1.get())[j], (readRow2.get())[j], TypeTraits<ValueType1>::small() )
         }
     }
 }
@@ -194,13 +196,13 @@ void testSameMatrixStorageClose( const scai::lama::MatrixStorage<ValueType1>& m1
         scai::hmemo::ReadAccess<ValueType2> readRow2(row2);
         for ( IndexType j = 0; j < n; j++ )
         {
-            if ( abs( (readRow1.get())[j] ) < small<ValueType1>() )
+            if ( abs( (readRow1.get())[j] ) < TypeTraits<ValueType1>::small() )
             {
-                SCAI_CHECK_SMALL( (readRow2.get())[j], ValueType2, small<ValueType2>() )
+                SCAI_CHECK_SMALL( (readRow2.get())[j], ValueType2, TypeTraits<ValueType2>::small() )
             }
             else
             {
-                SCAI_CHECK_CLOSE( (readRow1.get())[j], (readRow2.get())[j], eps<ValueType1>() )
+                SCAI_CHECK_CLOSE( (readRow1.get())[j], (readRow2.get())[j], TypeTraits<ValueType1>::small() )
             }
         }
     }

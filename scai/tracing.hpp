@@ -32,8 +32,6 @@
 
 #pragma once
 
-#include <scai/boost_check.hpp>
-
 #if defined( SCAI_TRACE_ON )
 
 	#include <scai/tracing/TraceRegionRecord.hpp>

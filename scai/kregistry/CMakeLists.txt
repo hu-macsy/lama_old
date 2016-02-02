@@ -108,7 +108,6 @@ include_directories ( ../.. )
 foreach    ( module ${SCAI_KREGISTRY_INTERNAL_DEPS} ${SCAI_KREGISTRY_EXTERNAL_DEPS} )
 	string ( TOUPPER ${module} upper_module )
     include_directories( ${${upper_module}_INCLUDE_DIR} )
-    message( STATUS "kernel inc for ${module}: ${${upper_module}_INCLUDE_DIR}" )
 endforeach ( module ${SCAI_KREGISTRY_INTERNAL_DEPS} ${SCAI_KREGISTRY_EXTERNAL_DEPS} )
 
 ### build library

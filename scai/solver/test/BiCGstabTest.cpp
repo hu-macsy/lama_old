@@ -60,9 +60,10 @@
 
 #include <scai/lama/test/TestMacros.hpp>
 
-using namespace scai::lama;
-using namespace scai::solver;
-using namespace scai::hmemo;
+using namespace scai;
+using namespace lama;
+using namespace hmemo;
+using namespace solver;
 
 typedef boost::mpl::list<float,double> test_types;
 
@@ -241,8 +242,7 @@ void testSolveWithoutPreconditionmethod( ContextPtr context )
     DenseVector<ValueType> diff( solution - exactSolution );
     Scalar s = maxNorm( diff );
     SCAI_LOG_INFO( logger, "maxNorm of ( solution - exactSolution ) = " << s.getValue<ValueType>() );
-	BOOST_CHECK_SMALL( s.getValue<ValueType>(), eps<ValueType>() );
-//    BOOST_CHECK( s.getValue<ValueType>() < eps<ValueType>() );
+	BOOST_CHECK_SMALL( s.getValue<ValueType>(), common::TypeTraits<ValueType>::small() );
 }
 
 /* --------------------------------------------------------------------- */
