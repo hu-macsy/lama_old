@@ -43,6 +43,7 @@
 #include <scai/tasking/NoSyncToken.hpp>
 
 #include <scai/tracing.hpp>
+#include <scai/common/Settings.hpp>
 
 using namespace std;
 using namespace scai::hmemo;
@@ -73,19 +74,46 @@ CommunicatorPtr Communicator::getCommunicator( const communicator::CommunicatorK
 
 CommunicatorPtr Communicator::getCommunicator()
 {
-    vector<communicator::CommunicatorKind> values;  // string is create type for the factory
+    std::string comm;
 
-    getCreateValues( values );
-
-    for ( size_t i = 0; i < values.size(); ++i )
+    if ( common::Settings::getEnvironment( comm, "SCAI_COMM" ) )
     {
-        if ( values[i] != communicator::MAX_COMMUNICATOR )
+        // comm name not case sensitive, take it upper case
+        for ( std::string::iterator p = comm.begin(); comm.end() != p; ++p )
         {
-            return create( values[i] );
+            *p = toupper( *p );
         }
+        if ( comm == "MPI" ) 
+        {
+            return getCommunicator( communicator::MPI );
+        }
+        if ( comm == "GPI" ) 
+        {
+            return getCommunicator( communicator::GPI );
+        }
+        if ( comm == "NO" ) 
+        {
+            return getCommunicator( communicator::NO );
+        }
+ 
+        COMMON_THROWEXCEPTION( "SCAI_COMM=" << comm << ", unknown communicator type" )
     }
 
-    // if even none is not availabe an exception is thrown
+    // try MPI communicator for default
+
+    if ( canCreate( communicator::MPI ) )
+    {   
+        return create( communicator::MPI );
+    }
+    
+    // no MPI, try GPI communicator for default
+
+    if ( canCreate( communicator::GPI ) )
+    {   
+        return create( communicator::GPI );
+    }
+    
+    // if even NO is not availabe an exception is thrown
 
     return create( communicator::NO );
 }

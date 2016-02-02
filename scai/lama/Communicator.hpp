@@ -133,7 +133,11 @@ public:
 
     /** Get a default communicator from the factory.
      *
-     *  @returns pointer to the default communicator.
+     *  @returns shared pointer to the default communicator.
+     *
+     *  The rules for choosing the default communicator are as follows:
+     *   - take the one specified by environment/argument SCAI_COMM
+     *   - take if available in this order: MPI, GPI, NO
      */
 
     static CommunicatorPtr getCommunicator();
