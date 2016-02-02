@@ -76,7 +76,7 @@ CommunicatorPtr Communicator::getCommunicator()
 {
     std::string comm;
 
-    if ( common::Settings::getEnvironment( comm, "SCAI_COMM" ) )
+    if ( common::Settings::getEnvironment( comm, "SCAI_COMMUNICATOR" ) )
     {
         // comm name not case sensitive, take it upper case
         for ( std::string::iterator p = comm.begin(); comm.end() != p; ++p )
@@ -96,7 +96,7 @@ CommunicatorPtr Communicator::getCommunicator()
             return getCommunicator( communicator::NO );
         }
  
-        COMMON_THROWEXCEPTION( "SCAI_COMM=" << comm << ", unknown communicator type" )
+        COMMON_THROWEXCEPTION( "SCAI_COMMUNICATOR=" << comm << ", unknown communicator type" )
     }
 
     // try MPI communicator for default
