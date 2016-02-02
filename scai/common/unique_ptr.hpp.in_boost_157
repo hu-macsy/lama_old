@@ -1,5 +1,5 @@
 /**
- * @file hmemo.hpp
+ * @file common/unique_ptr.hpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,23 +25,18 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Include file that includes all other defintion files of this module.
- *
+ * @brief Embedding unique_ptr in common namespace.
  * @author Thomas Brandes
- * @date 19.07.2015
+ * @date 15.07.2015
  */
 
-#include <scai/hmemo/Access.hpp> 
-#include <scai/hmemo/ContextAccess.hpp>
-#include <scai/hmemo/_HArray.hpp>
-#include <scai/hmemo/ContextData.hpp>
-#include <scai/hmemo/ContextDataManager.hpp>
-#include <scai/hmemo/Context.hpp>
-#include <scai/hmemo/HostContext.hpp>
-#include <scai/hmemo/HostMemory.hpp>
-#include <scai/hmemo/HArray.hpp>
-#include <scai/hmemo/HArrayRef.hpp>
-#include <scai/hmemo/Memory.hpp> 
-#include <scai/hmemo/ReadAccess.hpp>
-#include <scai/hmemo/WriteAccess.hpp>
-#include <scai/hmemo/WriteOnlyAccess.hpp>
+#pragma once
+
+#include <scai/common/boost_check.hpp>
+
+// Boost 1.57 and higher provides same unique_ptr as C++
+#include <boost/interprocess/smart_ptr/unique_ptr.hpp>
+
+#include <boost/scoped_array.hpp>
+using boost::scoped_array;
+using boost::unique_ptr;

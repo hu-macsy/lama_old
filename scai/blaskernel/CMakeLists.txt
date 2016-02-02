@@ -37,29 +37,27 @@ cmake_minimum_required ( VERSION 2.8 )
 ### Set PROJECT NAME / supported LANGUAGES
 project( scai_blaskernel CXX )
 
-### Set version of Blaskernel
-# TOOD: where is the best place to define this?
-set ( SCAI_BLASKERNEL_VERSION_NAME "Alpamayo" )
-set ( SCAI_BLASKERNEL_COPYRIGHT_YEAR 2015 )
-set ( SCAI_BLASKERNEL_VERSION_MAJOR 1 )
-set ( SCAI_BLASKERNEL_VERSION_MINOR 0 )
-set ( SCAI_BLASKERNEL_VERSION_PATCH 1 )
-set ( SCAI_BLASKERNEL_VERSION_COUNT 3 )
-set ( SCAI_BLASKERNEL_VERSION ${SCAI_BLASKERNEL_VERSION_MAJOR}.${SCAI_BLASKERNEL_VERSION_MINOR}.${SCAI_BLASKERNEL_VERSION_PATCH} )
-
 ### Set Module Path
 set ( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../CMake/Modules" )
 
+include ( VersionDefinition )
+
 ### Include Compiler Flags
 if    ( NOT SCAI_COMPLETE_BUILD )
-	include ( SetBuildFlags )
-	include ( SCAIAssert )
-	include ( SetCPPFlags )
-	include ( Package/Sphinx )
+    include ( SetBuildFlags )
+    include ( CompilerVersion )
+    include ( SCAIAssert )
+    include ( SetCPPFlags )
+    include ( Package/Sphinx )
 else  ( NOT SCAI_COMPLETE_BUILD )	
 	include ( Functions/CheckValueAtCompleteBuild )
 	CheckValueAtCompleteBuild ( blaskernel )
 endif ( NOT SCAI_COMPLETE_BUILD )
+
+include ( CheckC++11 )
+if    ( NOT CXX_SUPPORTS_C11 OR BUILD_TEST )
+    include( Package/Boost )
+endif ( NOT CXX_SUPPORTS_C11 OR BUILD_TEST )
 
 ### include all search packages
 include ( InternalDependencies )
@@ -87,9 +85,7 @@ endif  ( )
 
 ### add definitions
 add_definitions( ${ADDITIONAL_WARNING_FLAGS} )
-
 add_definitions ( -D${SCAI_LOGGING_FLAG} )
-
 add_definitions ( -DSCAI_ASSERT_LEVEL_${SCAI_ASSERT_LEVEL} )
 
 if ( SCAI_OMP_SCHEDULE_FLAG )
@@ -138,7 +134,6 @@ add_subdirectory ( external )
 ## add CUDA if supported
 if    ( CUDA_FOUND AND USE_CUDA )
     add_subdirectory ( cuda )
-    include_directories ( ${CUDA_TOOLKIT_INCLUDE} )
 endif ( CUDA_FOUND AND USE_CUDA )
 
 ## MIC
@@ -196,6 +191,5 @@ add_subdirectory( doc )
 include ( DistClean )
 
 if    ( DEFINED SCAI_CMAKE_VERBOSE OR NOT DEFINED SCAI_COMPLETE_BUILD )
-        include ( Summaries/blaskernel )
+    include ( Summaries/blaskernel )
 endif ( DEFINED SCAI_CMAKE_VERBOSE OR NOT DEFINED SCAI_COMPLETE_BUILD )
-

@@ -30,6 +30,8 @@
  # @date 09.06.2015
 ###
 
+include_directories ( ${CUDA_TOOLKIT_INCLUDE} )
+
 ### add sources and headers to parent scope ###
 
 scai_project( 

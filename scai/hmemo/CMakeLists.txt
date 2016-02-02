@@ -37,25 +37,18 @@ cmake_minimum_required ( VERSION 2.8 )
 ### Set PROJECT NAME / supported LANGUAGES
 project( scai_hmemo CXX )
 
-### Set version of hmemo 
-# TOOD: where is the best place to define this?
-set ( SCAI_HMEMO_VERSION_NAME "Alpamayo" )
-set ( SCAI_HMEMO_COPYRIGHT_YEAR 2015 )
-set ( SCAI_HMEMO_VERSION_MAJOR 1 )
-set ( SCAI_HMEMO_VERSION_MINOR 0 )
-set ( SCAI_HMEMO_VERSION_PATCH 1 )
-set ( SCAI_HMEMO_VERSION_COUNT 3 )
-set ( SCAI_HMEMO_VERSION ${SCAI_HMEMO_VERSION_MAJOR}.${SCAI_HMEMO_VERSION_MINOR}.${SCAI_HMEMO_VERSION_PATCH} )
-
 ### Set Module Path
 set ( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../CMake/Modules" )
 
+include ( VersionDefinition )
+
 ### Include Compiler Flags
 if    ( NOT SCAI_COMPLETE_BUILD )
-	include ( SetBuildFlags )
-	include ( SCAIAssert )
-	include ( SetCPPFlags )
-	include ( Package/Sphinx )
+    include ( SetBuildFlags )
+    include ( CompilerVersion )
+    include ( SCAIAssert )
+    include ( SetCPPFlags )
+    include ( Package/Sphinx )
 else  ( NOT SCAI_COMPLETE_BUILD )	
 	include ( Functions/CheckValueAtCompleteBuild )
 	CheckValueAtCompleteBuild ( hmemo )
@@ -65,15 +58,6 @@ include ( CheckC++11 )
 if    ( NOT CXX_SUPPORTS_C11 OR BUILD_TEST )
     include( Package/Boost )
 endif ( NOT CXX_SUPPORTS_C11 OR BUILD_TEST )
-
-if    ( NOT CXX_SUPPORTS_C11 )
-    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../boost_check.hpp.in"
-                     "${CMAKE_CURRENT_BINARY_DIR}/boost_check.hpp" )
-else  ( NOT CXX_SUPPORTS_C11 )
-    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../boost_check.hpp.in_empty"
-                     "${CMAKE_CURRENT_BINARY_DIR}/boost_check.hpp" )
-endif ( NOT CXX_SUPPORTS_C11 )
-install ( FILES ${CMAKE_CURRENT_BINARY_DIR}/boost_check.hpp DESTINATION include/scai )
 
 ### include all search packages
 include ( InternalDependencies )
@@ -93,7 +77,6 @@ include ( ConcludeFlags )
 ### add definitions
 
 add_definitions( ${ADDITIONAL_WARNING_FLAGS} )
-
 add_definitions ( -D${SCAI_LOGGING_FLAG} )
 add_definitions ( -D${SCAI_TRACING_FLAG} )
 
@@ -147,7 +130,6 @@ scai_project (
 ## add CUDA if supported
 if    ( CUDA_FOUND AND USE_CUDA )
     add_subdirectory ( cuda )
-    include_directories ( ${CUDA_TOOLKIT_INCLUDE} )
 endif ( CUDA_FOUND AND USE_CUDA )
 
 ## add MIC if supported

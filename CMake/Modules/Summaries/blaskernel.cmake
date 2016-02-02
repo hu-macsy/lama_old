@@ -106,7 +106,7 @@ scai_summary_message ( "STATIC"
 message ( STATUS "" )
 scai_summary_message ( "USE"
                        "USE_CUDA"
-                       "LAMA CUDA"
+                       "CUDA"
                        "" )
 
     # CUDA
@@ -125,7 +125,7 @@ scai_summary_message ( "USE"
 message ( STATUS "" )
 scai_summary_message ( "USE"
                        "USE_MIC"
-                       "LAMA MIC"
+                       "MIC"
                        "" )   
 
 message ( STATUS "" )
@@ -175,20 +175,6 @@ scai_summary_message ( "USE"
                            "Boost Regex"
                            "" )  
                        
-# DOC
-message ( STATUS "" )
-scai_status_message ( HEADLINE "DOCUMENTATION:" )
-
-scai_summary_message ( "USE"
-                       "BUILD_DOC"
-                       "DOC"
-                       "" )
-                                     
-scai_summary_message ( "FOUND"
-                       "SPHINX_FOUND"
-                       "Sphinx"
-                       "Version ${Sphinx_VERSION_STRING} at ${Sphinx-build_EXECUTABLE}: 'make doc' to build user documentation" )
-
 message ( STATUS "" )
 
 scai_status_message ( HEADLINE "INFO:" )

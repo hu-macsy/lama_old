@@ -1,5 +1,5 @@
 /**
- * @file common/function.hpp
+ * @file common/unique_ptr.hpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,29 +25,35 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Embedding function, either std::function or boost::function, in common namespace.
+ * @brief Embedding unique_ptr in common namespace.
  * @author Thomas Brandes
  * @date 15.07.2015
  */
 
 #pragma once
 
-#if __cplusplus > 199711L or defined(__GXX_EXPERIMENTAL_CXX0X__)
-#include <functional>
-#else
-#include <boost/function.hpp>
-#endif
+#include <memory>
 
 namespace scai
 {
 
 namespace common
 {
-#if __cplusplus > 199711L or defined(__GXX_EXPERIMENTAL_CXX0X__)
-    using std::function;
-#else
-    using boost::function;
-#endif
+    using std::unique_ptr;
+
+    /** C++11: here we can use unique_ptr for a scoped array */
+
+    template<typename T>
+    class scoped_array : public std::unique_ptr<T[]>
+    {
+    public:
+        scoped_array( T* ptr ) : std::unique_ptr<T[]>( ptr )
+        {
+        }
+        scoped_array() : std::unique_ptr<T[]>()
+        {
+        }
+    };
 } /* end namespace common */
 
 } /* end namespace scai */

@@ -32,8 +32,6 @@
 
 #pragma once
 
-#include <scai/boost_check.hpp>
-
 #include <scai/common/bind.hpp>
 #include <scai/common/config.hpp>
 #include <scai/common/exception/Exception.hpp>
