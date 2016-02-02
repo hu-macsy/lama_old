@@ -34,10 +34,6 @@
 include ( Functions/scaiStatusMessage )
 include ( Functions/scaiSummaryMessage )
 
-include ( VersionDefinition )
-include ( CompilerVersion )
-include ( CheckC++11 )
-
 message ( STATUS "" )
 message ( STATUS "Summary of SCAI hmemo Configuration:" )
 message ( STATUS "=====================================" )
@@ -64,9 +60,9 @@ scai_summary_message ( "STATIC"
                        "Needs compiler supporting C++11 or Boost" )
 
 scai_summary_message ( "FOUND"
-					   "CXX_SUPPORTS_C11"
-					   "C++11 support"
-					   "" )
+					             "CXX_SUPPORTS_C11"
+					             "C++11 support"
+					             "" )
 				
 if    ( NOT CXX_SUPPORTS_C11 )
     scai_summary_message ( "FOUND"
@@ -74,6 +70,19 @@ if    ( NOT CXX_SUPPORTS_C11 )
                            "Boost"
                            "Version ${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}, add include dir ${BOOST_INCLUDE_DIR} to compile your sources" )
 endif ( NOT CXX_SUPPORTS_C11 )
+
+message ( STATUS "" )
+
+if    ( SCAI_COMPLETE_BUILD )
+  set ( OPENMP_INFO_TEXT "OpenMP schedule set to \"${SCAI_OMP_SCHEDULE}\"" )
+else  ( SCAI_COMPLETE_BUILD )
+  set ( OPENMP_INFO_TEXT "compile your sources with -DSCAI_OMP_SCHEDULE=<schedule-type>" )
+endif ( SCAI_COMPLETE_BUILD )
+
+scai_summary_message ( "USE"
+                       "USE_OPENMP"
+                       "  OpenMP usage"
+                       "${OPENMP_INFO_TEXT}"   )
 
 # LAMA (core)
 message ( STATUS "" )
@@ -83,14 +92,14 @@ scai_status_message ( HEADLINE "LIBRARIES:" )
 message ( STATUS "" )
 scai_summary_message ( "USE"
                        "USE_CUDA"
-                       "LAMA CUDA"
+                       "CUDA"
                        "" )
 
     # CUDA
     scai_summary_message ( "FOUND"
                            "CUDA_FOUND"
                            "CUDA"
-                           "${CUDA_VERSION} at ${CUDA_INCLUDE_DIRS}" )
+                           "Version ${CUDA_VERSION} at ${CUDA_INCLUDE_DIRS}" )
                            
     # CUDA Compute Capability
     scai_summary_message ( "FOUND"
@@ -102,25 +111,8 @@ scai_summary_message ( "USE"
 message ( STATUS "" )
 scai_summary_message ( "USE"
                        "USE_MIC"
-                       "LAMA MIC"
+                       "MIC"
                        "" )
-
-# TESTING
-message ( STATUS "" )
-scai_summary_message ( "USE"
-                       "BUILD_TEST"
-                       "LAMA TEST"
-                       "" )
-
-	scai_summary_message ( "FOUND"
-    	                   "Boost_UNIT_TEST_FRAMEWORK_FOUND"
-        	               "Boost Unit Test"
-            	           "" )
-            	           
-    scai_summary_message ( "FOUND"
-                           "Boost_REGEX_FOUND"
-                           "Boost Regex"
-                           "" )
 
 message ( STATUS "" )
 scai_summary_message ( "FOUND"
@@ -142,10 +134,32 @@ scai_summary_message ( "FOUND"
                        "SCAI_TASKING_FOUND"
                        "SCAI Tasking"
                        "" )
-                       
+
+# LAMA TEST
+message ( STATUS "" )
+scai_status_message ( HEADLINE "TESTING:" )
+
+scai_summary_message ( "USE"
+                       "BUILD_TEST"
+                       "TEST"
+                       "" )
+
+    # Boost Test-Framework
+    scai_summary_message ( "FOUND"
+                           "Boost_UNIT_TEST_FRAMEWORK_FOUND"
+                           "Boost Unit Test"
+                           "" )
+                           
+    # Boost Regex
+    scai_summary_message ( "FOUND"
+                           "Boost_REGEX_FOUND"
+                           "Boost Regex"
+                           "" )
+
+# DOC
 message ( STATUS "" )
 scai_status_message ( HEADLINE "DOCUMENTATION:" )
-# DOC
+
 scai_summary_message ( "USE"
                        "BUILD_DOC"
                        "DOC"
@@ -163,7 +177,7 @@ scai_status_message ( HEADLINE "INFO:" )
 message ( STATUS "LAMA Version : ${LAMA_VERSION} ${LAMA_VERSION_NAME}" )
 message ( STATUS "Build Type   : ${CMAKE_BUILD_TYPE}" )
 message ( STATUS "Library Type : ${SCAI_LIBRARY_TYPE}" )
-message ( STATUS "ASSERT Level : ${SCAI_ASSERT_LEVEL}" )
+message ( STATUS "ASSERT Level : ${SCAI_ASSERT_LEVEL} ( -DSCAI_ASSERT_LEVEL_${SCAI_ASSERT_LEVEL} )" )
 message ( STATUS "LOG Level    : ${SCAI_LOGGING_LEVEL} ( -D${SCAI_LOGGING_FLAG} )" )
 message ( STATUS "TRACING      : ${SCAI_TRACING} ( -D${SCAI_TRACING_FLAG} )" )
 if    ( USE_CODE_COVERAGE )
