@@ -34,10 +34,6 @@
 include ( Functions/scaiStatusMessage )
 include ( Functions/scaiSummaryMessage )
 
-include ( VersionDefinition )
-include ( CompilerVersion )
-include ( CheckC++11 )
-
 message ( STATUS "" )
 message ( STATUS "Summary of SCAI common Configuration:" )
 message ( STATUS "=====================================" )
@@ -52,11 +48,11 @@ scai_summary_message ( "FOUND"
 
 message ( STATUS "" )
 
-if    ( ( CXX_SUPPORTS_C11 OR BOOST_INCLUDE_DIR) AND SCAI_THREAD_LIBRARY )
+if    ( ( CXX_SUPPORTS_C11 OR BOOST_INCLUDE_DIR) )
     set( REQUIRED_FOUND TRUE )
-else  ( ( CXX_SUPPORTS_C11 OR BOOST_INCLUDE_DIR) AND SCAI_THREAD_LIBRARY )
+else  ( ( CXX_SUPPORTS_C11 OR BOOST_INCLUDE_DIR) )
 	set( REQUIRED_FOUND FALSE )
-endif ( ( CXX_SUPPORTS_C11 OR BOOST_INCLUDE_DIR) AND SCAI_THREAD_LIBRARY )
+endif ( ( CXX_SUPPORTS_C11 OR BOOST_INCLUDE_DIR) )
 
 scai_summary_message ( "STATIC"
                        "REQUIRED_FOUND"
@@ -64,9 +60,9 @@ scai_summary_message ( "STATIC"
                        "Needs compiler supporting C++11 or Boost and pThreads" )
 
 scai_summary_message ( "FOUND"
-					   "CXX_SUPPORTS_C11"
-					   "C++11 support"
-					   "" )
+					             "CXX_SUPPORTS_C11"
+					             "C++11 support"
+					             "" )
 				
 if    ( NOT CXX_SUPPORTS_C11 )
     scai_summary_message ( "FOUND"
@@ -74,11 +70,6 @@ if    ( NOT CXX_SUPPORTS_C11 )
                            "Boost"
                            "Version ${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}, add include dir ${BOOST_INCLUDE_DIR} to compile your sources" )
 endif ( NOT CXX_SUPPORTS_C11 )
-
-scai_summary_message ( "FOUND"
-					   "SCAI_THREAD_LIBRARY"
-					   "pThreads"
-					   "" )
 
 message ( STATUS "" )
 
@@ -97,11 +88,28 @@ scai_summary_message ( "USE"
 message ( STATUS "" )
 scai_status_message ( HEADLINE "LIBRARIES:" )
 
+if    ( SCAI_THREAD_LIBRARIES )
+    set ( REQUIRED_FOUND TRUE )
+else  ( SCAI_THREAD_LIBRARIES )
+    set ( REQUIRED_FOUND FALSE )
+endif ( SCAI_THREAD_LIBRARIES )
+
+scai_summary_message ( "STATIC"
+                       "REQUIRED_FOUND"
+                       "common (core)"
+                       "" )
+
+    #pthreads
+    scai_summary_message ( "FOUND"
+                           "SCAI_THREAD_LIBRARIES"
+                           "pThreads"
+                           "" )
+    
 # LAMA CUDA
 message ( STATUS "" )
 scai_summary_message ( "USE"
                        "USE_CUDA"
-                       "LAMA CUDA"
+                       "CUDA"
                        "" )
 
     # CUDA
@@ -120,22 +128,30 @@ scai_summary_message ( "USE"
 message ( STATUS "" )
 scai_summary_message ( "USE"
                        "USE_MIC"
-                       "LAMA MIC"
+                       "MIC"
                        "" )
-                       
-message ( STATUS "" )
-scai_status_message ( HEADLINE "DOCUMENTATION:" )
-# DOC
-scai_summary_message ( "USE"
-                       "BUILD_DOC"
-                       "DOC"
-                       "" )
-                                     
-scai_summary_message ( "FOUND"
-                       "SPHINX_FOUND"
-                       "Sphinx"
-                       "Version ${Sphinx_VERSION_STRING} at ${Sphinx-build_EXECUTABLE}: 'make doc' to build user documentation" )
 
+# LAMA TEST
+message ( STATUS "" )
+scai_status_message ( HEADLINE "TESTING:" )
+
+scai_summary_message ( "USE"
+                       "BUILD_TEST"
+                       "TEST"
+                       "" )
+
+    # Boost Test-Framework
+    scai_summary_message ( "FOUND"
+                           "Boost_UNIT_TEST_FRAMEWORK_FOUND"
+                           "Boost Unit Test"
+                           "" )
+                           
+    # Boost Regex
+    scai_summary_message ( "FOUND"
+                           "Boost_REGEX_FOUND"
+                           "Boost Regex"
+                           "" )
+                  
 message ( STATUS "" )
 
 scai_status_message ( HEADLINE "INFO:" )
@@ -143,7 +159,7 @@ scai_status_message ( HEADLINE "INFO:" )
 message ( STATUS "LAMA Version : ${LAMA_VERSION} ${LAMA_VERSION_NAME}" )
 message ( STATUS "Build Type   : ${CMAKE_BUILD_TYPE}" )
 message ( STATUS "Library Type : ${SCAI_LIBRARY_TYPE}" )
-message ( STATUS "ASSERT Level : ${SCAI_ASSERT_LEVEL}" )
+message ( STATUS "ASSERT Level : ${SCAI_ASSERT_LEVEL} ( -DSCAI_ASSERT_LEVEL_${SCAI_ASSERT_LEVEL} )" )
 if    ( USE_CODE_COVERAGE )
 	message ( STATUS "CODE COVERAGE: ${USE_CODE_COVERAGE}" )
 endif ( USE_CODE_COVERAGE )
@@ -153,3 +169,8 @@ message ( STATUS "" )
 if    ( USE_CUDA AND NOT CUDA_FOUND )
     message( FATAL_ERROR "Build of LAMA Cuda enabled, but configuration is incomplete!")
 endif ( USE_CUDA AND NOT CUDA_FOUND )
+
+# LAMA Test
+if    ( BUILD_TEST AND NOT ( Boost_UNIT_TEST_FRAMEWORK_FOUND AND Boost_REGEX_FOUND ) )
+    message( FATAL_ERROR "Build of LAMA Test enabled, but configuration is incomplete!")
+endif ( BUILD_TEST AND NOT ( Boost_UNIT_TEST_FRAMEWORK_FOUND AND Boost_REGEX_FOUND ) )

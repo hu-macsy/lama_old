@@ -1,5 +1,5 @@
 ###
- # @file ExternalDependencies.cmake
+ # @file CMakeLists.txt
  #
  # @license
  # Copyright (c) 2009-2015
@@ -25,28 +25,55 @@
  # SOFTWARE.
  # @endlicense
  #
- # @brief Central defenition of external dependencies between sub projects
- # @author Lauretta Schubert
- # @date 17.08.2015
- # @since 2.0.0
+ # @brief lama/solver/CMakeLists.txt
+ # @author Jan Ecker
+ # @date 02.04.2013
+ # @since 1.0.0
 ###
 
-## attention OpenMP should be before SCAI_BLAS !!!
-## need to get rid of boost for boost_repeat in lama
+### add subdirectories ###
+add_subdirectory ( criteria )
+add_subdirectory ( logger )
 
-set ( SCAI_COMMON_EXTERNAL_DEPS     Thread OpenMP CUDA )
-set ( SCAI_LOGGING_EXTERNAL_DEPS )
-set ( SCAI_TRACING_EXTERNAL_DEPS )
-set ( SCAI_TASKING_EXTERNAL_DEPS )
-set ( SCAI_KREGISTRY_EXTERNAL_DEPS )
-set ( SCAI_BLASKERNEL_EXTERNAL_DEPS        OpenMP CUDA MIC                            SCAI_BLAS )
-set ( SCAI_HMEMO_EXTERNAL_DEPS                    CUDA MIC )
-set ( SCAI_LAMA_EXTERNAL_DEPS              OpenMP CUDA MIC MPI GPI2 GraphPartitioning           Boost )
-set ( SCAI_SOLVER_EXTERNAL_DEPS  )
+### for external amg ###
+file ( GLOB AMG_SUBDIRPRESENT "amg" )
 
-set ( SCAI_EXTERNAL_DEPS ${SCAI_COMMON_EXTERNAL_DEPS} ${SCAI_LOGGING_EXTERNAL_DEPS} ${SCAI_TRACING_EXTERNAL_DEPS}
-						 ${SCAI_TASKING_EXTERNAL_DEPS} ${SCAI_KREGISTRY_EXTERNAL_DEPS} ${SCAI_BLASKERNEL_EXTERNAL_DEPS}
-						 ${SCAI_HMEMO_EXTERNAL_DEPS} ${SCAI_LAMA_EXTERNAL_DEPS} ${SCAI_SOLVER_EXTERNAL_DEPS}
-                         ${SCAI_LAMA_EXTERNAL_DEPS} )
+if ( AMG_SUBDIRPRESENT )
+    add_subdirectory ( ${AMG_SUBDIRPRESENT} )
+    message ( STATUS "amg subdir provides following solver libraries: ${LAMA_SOLVER_LIBRARIES}" )
+    set ( LAMA_SOLVER_LIBRARIES ${LAMA_SOLVER_LIBRARIES} PARENT_SCOPE )
+endif ( AMG_SUBDIRPRESENT )
 
-list ( REMOVE_DUPLICATES SCAI_EXTERNAL_DEPS )
+### Add classes and header files ###
+set ( CLASSES
+        AMGSetup
+        BiCG
+        BiCGstab
+        CG
+    	CGS
+    #   CGNE
+        CGNR
+        DefaultJacobi
+        GMRES
+        InverseSolver
+        IterativeSolver
+        MINRES
+        OmegaSolver
+	QMR
+	Richardson
+        SimpleAMG
+        SingleGridSetup
+        SolutionProxy
+        Solver
+        SOR
+        SpecializedJacobi
+	TFQMR
+        TrivialPreconditioner
+    )
+    
+set ( HEADERS
+        shared_lib
+    )
+    
+scai_project ( CLASSES ${CLASSES} HEADERS ${HEADERS} ADD_PARENT_SCOPE )
+

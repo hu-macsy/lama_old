@@ -37,25 +37,18 @@ cmake_minimum_required ( VERSION 2.8 )
 ### Set PROJECT NAME / supported LANGUAGES
 project( scai_blaskernel CXX )
 
-### Set version of Blaskernel
-# TOOD: where is the best place to define this?
-set ( SCAI_BLASKERNEL_VERSION_NAME "Alpamayo" )
-set ( SCAI_BLASKERNEL_COPYRIGHT_YEAR 2015 )
-set ( SCAI_BLASKERNEL_VERSION_MAJOR 1 )
-set ( SCAI_BLASKERNEL_VERSION_MINOR 0 )
-set ( SCAI_BLASKERNEL_VERSION_PATCH 1 )
-set ( SCAI_BLASKERNEL_VERSION_COUNT 3 )
-set ( SCAI_BLASKERNEL_VERSION ${SCAI_BLASKERNEL_VERSION_MAJOR}.${SCAI_BLASKERNEL_VERSION_MINOR}.${SCAI_BLASKERNEL_VERSION_PATCH} )
-
 ### Set Module Path
 set ( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../CMake/Modules" )
 
+include ( VersionDefinition )
+
 ### Include Compiler Flags
 if    ( NOT SCAI_COMPLETE_BUILD )
-	include ( SetBuildFlags )
-	include ( SCAIAssert )
-	include ( SetCPPFlags )
-	include ( Package/Sphinx )
+    include ( SetBuildFlags )
+    include ( CompilerVersion )
+    include ( SCAIAssert )
+    include ( SetCPPFlags )
+    include ( Package/Sphinx )
 else  ( NOT SCAI_COMPLETE_BUILD )	
 	include ( Functions/CheckValueAtCompleteBuild )
 	CheckValueAtCompleteBuild ( blaskernel )
@@ -92,9 +85,7 @@ endif  ( )
 
 ### add definitions
 add_definitions( ${ADDITIONAL_WARNING_FLAGS} )
-
 add_definitions ( -D${SCAI_LOGGING_FLAG} )
-
 add_definitions ( -DSCAI_ASSERT_LEVEL_${SCAI_ASSERT_LEVEL} )
 
 if ( SCAI_OMP_SCHEDULE_FLAG )
@@ -143,7 +134,6 @@ add_subdirectory ( external )
 ## add CUDA if supported
 if    ( CUDA_FOUND AND USE_CUDA )
     add_subdirectory ( cuda )
-    include_directories ( ${CUDA_TOOLKIT_INCLUDE} )
 endif ( CUDA_FOUND AND USE_CUDA )
 
 ## MIC
@@ -170,14 +160,12 @@ list ( REVERSE SCAI_BLASKERNEL_INTERNAL_DEPS )
 foreach    ( module ${SCAI_BLASKERNEL_INTERNAL_DEPS} )
 	string ( TOUPPER ${module} upper_module )
 	set ( BLASKERNEL_LINK_LIBRARIES ${BLASKERNEL_LINK_LIBRARIES} ${${upper_module}_LIBRARY} )
-    message( STATUS "blaskernel link module ${module} library: ${SCAI_${upper_module}_LIBRARIES}" )
 endforeach ( module ${SCAI_BLASKERNEL_INTERNAL_DEPS} )
 target_link_libraries ( scai_blaskernel ${SCAI_START_LINK_LIBRARIES} ${BLASKERNEL_LINK_LIBRARIES} ${SCAI_END_LINK_LIBRARIES} )
 
 foreach    ( module ${SCAI_BLASKERNEL_EXTERNAL_DEPS} )
 	string ( TOUPPER ${module} upper_module )
     target_link_libraries ( scai_blaskernel ${SCAI_${upper_module}_LIBRARIES} )
-    message( STATUS "blaskernel link module ${module} library: ${SCAI_${upper_module}_LIBRARIES}" )
 endforeach ( module ${SCAI_BLASKERNEL_EXTERNAL_DEPS} )
 
 if ( USE_MIC )
@@ -203,6 +191,5 @@ add_subdirectory( doc )
 include ( DistClean )
 
 if    ( DEFINED SCAI_CMAKE_VERBOSE OR NOT DEFINED SCAI_COMPLETE_BUILD )
-        include ( Summaries/blaskernel )
+    include ( Summaries/blaskernel )
 endif ( DEFINED SCAI_CMAKE_VERBOSE OR NOT DEFINED SCAI_COMPLETE_BUILD )
-

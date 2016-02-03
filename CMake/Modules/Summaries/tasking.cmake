@@ -34,10 +34,6 @@
 include ( Functions/scaiStatusMessage )
 include ( Functions/scaiSummaryMessage )
 
-include ( VersionDefinition )
-include ( CompilerVersion )
-include ( CheckC++11 )
-
 message ( STATUS "" )
 message ( STATUS "Summary of SCAI tasking Configuration:" )
 message ( STATUS "=====================================" )
@@ -64,9 +60,9 @@ scai_summary_message ( "STATIC"
                        "Needs compiler supporting C++11 or Boost" )
 
 scai_summary_message ( "FOUND"
-					   "CXX_SUPPORTS_C11"
-					   "C++11 support"
-					   "" )
+					             "CXX_SUPPORTS_C11"
+					             "C++11 support"
+					             "" )
 				
 if    ( NOT CXX_SUPPORTS_C11 )
     scai_summary_message ( "FOUND"
@@ -96,6 +92,27 @@ scai_summary_message ( "FOUND"
                        "SCAI tracing"
                        "" )
 
+# LAMA TEST
+#message ( STATUS "" )
+#scai_status_message ( HEADLINE "TESTING:" )
+#
+#scai_summary_message ( "USE"
+#                       "BUILD_TEST"
+#                       "TEST"
+#                       "" )
+#
+#    # Boost Test-Framework
+#    scai_summary_message ( "FOUND"
+#                           "Boost_UNIT_TEST_FRAMEWORK_FOUND"
+#                           "Boost Unit Test"
+#                           "" )
+#                           
+#    # Boost Regex
+#    scai_summary_message ( "FOUND"
+#                           "Boost_REGEX_FOUND"
+#                           "Boost Regex"
+#                           "" )
+
 message ( STATUS "" )
 
 scai_status_message ( HEADLINE "INFO:" )
@@ -103,7 +120,7 @@ scai_status_message ( HEADLINE "INFO:" )
 message ( STATUS "LAMA Version : ${LAMA_VERSION} ${LAMA_VERSION_NAME}" )
 message ( STATUS "Build Type   : ${CMAKE_BUILD_TYPE}" )
 message ( STATUS "Library Type : ${SCAI_LIBRARY_TYPE}" )
-message ( STATUS "ASSERT Level : ${SCAI_ASSERT_LEVEL}" )
+message ( STATUS "ASSERT Level : ${SCAI_ASSERT_LEVEL} ( -DSCAI_ASSERT_LEVEL_${SCAI_ASSERT_LEVEL} )" )
 message ( STATUS "LOG Level    : ${SCAI_LOGGING_LEVEL} ( -D${SCAI_LOGGING_FLAG} )" )
 message ( STATUS "TRACING      : ${SCAI_TRACING} ( -D${SCAI_TRACING_FLAG} )" )
 if    ( USE_CODE_COVERAGE )

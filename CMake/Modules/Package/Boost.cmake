@@ -45,7 +45,7 @@
 # set ( Boost_USE_STATIC_LIBS OFF )
 # set ( Boost_USE_MULTITHREADED OFF )
 
-if ( NOT DEFINED Boost_INCLUDE_DIR )
+if ( NOT DEFINED BOOST_INCLUDE_DIR )
 
 if    ( WIN32 )
     message ( STATUS "Setting special Boost options on Windows" )
@@ -130,4 +130,4 @@ if    ( ${BUILD_TEST} AND NOT ${FOUND_BOOST_TEST} )
     message ( STATUS "Boost Test Framework or Bost Regex missing, but tests are enabled!" )
 endif ( ${BUILD_TEST} AND NOT ${FOUND_BOOST_TEST} )
 
-endif ( NOT DEFINED Boost_INCLUDE_DIR )
+endif ( NOT DEFINED BOOST_INCLUDE_DIR )

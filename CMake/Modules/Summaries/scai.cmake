@@ -34,7 +34,6 @@
 include ( Functions/scaiStatusMessage )
 include ( Functions/scaiSummaryMessage )
 
-### Summary ###
 message ( STATUS "" )
 message ( STATUS "Summary of SCAI Configuration:" )
 message ( STATUS "==============================" )
@@ -49,21 +48,21 @@ scai_summary_message ( "FOUND"
 
 message ( STATUS "" )
 
-if    ( CXX_SUPPORTS_C11 OR BOOST_INCLUDE_DIR )
+if    ( ( CXX_SUPPORTS_C11 OR BOOST_INCLUDE_DIR) )
     set( REQUIRED_FOUND TRUE )
-else  ( CXX_SUPPORTS_C11 OR BOOST_INCLUDE_DIR )
-	set( REQUIRED_FOUND FALSE )
-endif ( CXX_SUPPORTS_C11 OR BOOST_INCLUDE_DIR )
+else  ( ( CXX_SUPPORTS_C11 OR BOOST_INCLUDE_DIR) )
+  set( REQUIRED_FOUND FALSE )
+endif ( ( CXX_SUPPORTS_C11 OR BOOST_INCLUDE_DIR) )
 
 scai_summary_message ( "STATIC"
                        "REQUIRED_FOUND"
-                       "Common"
+                       "SCAI"
                        "Needs compiler supporting C++11 or Boost" )
 
 scai_summary_message ( "FOUND"
-					   "CXX_SUPPORTS_C11"
-					   "C++11 support"
-					   "" )
+					             "CXX_SUPPORTS_C11"
+					             "C++11 support"
+					             "" )
 				
 if    ( NOT CXX_SUPPORTS_C11 )
     scai_summary_message ( "FOUND"
@@ -89,45 +88,51 @@ scai_summary_message ( "USE"
 message ( STATUS "" )
 scai_status_message ( HEADLINE "LIBRARIES:" )
 
-if    ( SCAI_BLAS_FOUND AND BOOST_INCLUDE_DIR )
+if    ( SCAI_BLAS_FOUND )
     set( REQUIRED_FOUND TRUE )
     if ( SCAI_BLAS_NAME MATCHES "BLAS" AND NOT LAPACK_FOUND )
         set( REQUIRED_FOUND FALSE )
     endif ( SCAI_BLAS_NAME MATCHES "BLAS" AND NOT LAPACK_FOUND )
-else  ( SCAI_BLAS_FOUND AND BOOST_INCLUDE_DIR )
+else  ( SCAI_BLAS_FOUND )
     set( REQUIRED_FOUND FALSE )
-endif ( SCAI_BLAS_FOUND AND BOOST_INCLUDE_DIR ) 
+endif ( SCAI_BLAS_FOUND )
 
-#scai_summary_message ( "STATIC"
-#                       "REQUIRED_FOUND"
-#                       "LAMA (core)"
-#                       " " )
+if    ( NOT SCAI_THREAD_LIBRARIES )
+    set ( REQUIRED_FOUND FALSE )
+endif ( NOT SCAI_THREAD_LIBRARIES )
 
-   # BLAS
+scai_summary_message ( "STATIC"
+                       "REQUIRED_FOUND"
+                       "SCAI (core)"
+                       "" )
+
+    # pthreads
+    scai_summary_message ( "FOUND"
+                           "SCAI_THREAD_LIBRARIES"
+                           "pThreads"
+                           "" )
+
+message ( STATUS "" )
+
+    # BLAS
     scai_summary_message ( "FOUND"
                            "SCAI_BLAS_FOUND"
                            "BLAS"
-                           "(${SCAI_BLAS_NAME}) with libraries: ${SCAI_BLAS_LIBRARIES}" )
+                           "${SCAI_BLAS_NAME} with: ${SCAI_SCAI_BLAS_LIBRARIES}" )
                            
     if    ( SCAI_BLAS_NAME MATCHES "BLAS" )
-    message ( STATUS "" )
-    scai_summary_message ( "FOUND"
-                           "LAPACK_FOUND"
-                           "LAPACK"
-                           "" )
+        message ( STATUS "" )
+        scai_summary_message ( "FOUND"
+                               "LAPACK_FOUND"
+                               "LAPACK"
+                               "" )
     endif ( SCAI_BLAS_NAME MATCHES "BLAS" )
     
-    # Boost
-    scai_summary_message ( "FOUND"
-                           "BOOST_INCLUDE_DIR"
-                           "Boost"
-                           "Version ${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION} at ${BOOST_INCLUDE_DIR}" )
-
 # LAMA MPI
 message ( STATUS "" )
 scai_summary_message ( "USE"
                        "USE_MPI"
-                       "MPI"
+                       "Distributed"
                        "" )
 
     # MPI
@@ -165,7 +170,7 @@ scai_summary_message ( "USE"
     scai_summary_message ( "FOUND"
                            "CUDA_FOUND"
                            "CUDA"
-                           "${CUDA_VERSION} at ${CUDA_INCLUDE_DIRS}" )
+                           "Version ${CUDA_VERSION} at ${CUDA_INCLUDE_DIRS}" )
                            
     # CUDA Compute Capability
     scai_summary_message ( "FOUND"
@@ -182,6 +187,8 @@ scai_summary_message ( "USE"
 
 # LAMA TEST
 message ( STATUS "" )
+scai_status_message ( HEADLINE "TESTING:" )
+
 scai_summary_message ( "USE"
                        "BUILD_TEST"
                        "TEST"
@@ -201,12 +208,6 @@ scai_summary_message ( "USE"
 
 message ( STATUS "" )
 scai_status_message ( HEADLINE "DOCUMENTATION:" )
-
-# DOXYGEN
-scai_summary_message ( "FOUND"
-                       "DOXYGEN_FOUND"
-                       "DOXYGEN "
-                       "Version ${DOXYGEN_VERSION} at ${DOXYGEN_EXECUTABLE}: 'make doxygendoc' to build system documentation" )
          
 # DOC
 message ( STATUS "" )
@@ -219,6 +220,12 @@ scai_summary_message ( "FOUND"
                        "SPHINX_FOUND"
                        "Sphinx"
                        "Version ${Sphinx_VERSION_STRING} at ${Sphinx-build_EXECUTABLE}: 'make doc' to build user documentation" )
+
+# DOXYGEN
+#scai_summary_message ( "FOUND"
+#                       "DOXYGEN_FOUND"
+#                       "DOXYGEN "
+#                       "Version ${DOXYGEN_VERSION} at ${DOXYGEN_EXECUTABLE}: 'make doxygendoc' to build system documentation" )
 
 message ( STATUS "" )
 
@@ -238,14 +245,9 @@ message ( STATUS "" )
 # Check if all required packages are found
 # LAMA (core)
 
-if    ( NOT SCAI_BLAS_FOUND OR ( (SCAI_BLAS_NAME MATCHES "BLAS") AND NOT LAPACK_FOUND ) OR ( NOT CXX_SUPPORTS_C11 AND NOT BOOST_INCLUDE_DIR ) )
+if    ( NOT SCAI_BLAS_FOUND OR ( (SCAI_BLAS_NAME MATCHES "BLAS") AND NOT LAPACK_FOUND ) OR ( NOT CXX_SUPPORTS_C11 AND NOT BOOST_INCLUDE_DIR ) OR NOT SCAI_THREAD_LIBRARIES )
     message( FATAL_ERROR "Configuration for LAMA (core) incomplete!")
-endif ( NOT SCAI_BLAS_FOUND OR ( (SCAI_BLAS_NAME MATCHES "BLAS") AND NOT LAPACK_FOUND ) OR ( NOT CXX_SUPPORTS_C11 AND NOT BOOST_INCLUDE_DIR ) )
-
-# LAMA MPI
-if    ( USE_MPI AND NOT MPI_FOUND )
-    message( FATAL_ERROR "Configuration for LAMA MPI incomplete!")
-endif ( USE_MPI AND NOT MPI_FOUND )
+endif ( NOT SCAI_BLAS_FOUND OR ( (SCAI_BLAS_NAME MATCHES "BLAS") AND NOT LAPACK_FOUND ) OR ( NOT CXX_SUPPORTS_C11 AND NOT BOOST_INCLUDE_DIR ) OR NOT SCAI_THREAD_LIBRARIES )
 
 # LAMA MPI
 if    ( USE_MPI AND NOT MPI_FOUND )

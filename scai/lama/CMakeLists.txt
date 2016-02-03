@@ -37,16 +37,6 @@ cmake_minimum_required ( VERSION 2.8 )
 ### Set PROJECT NAME / supported LANGUAGES
 project ( LAMA CXX )
 
-### Set version of LAMA
-# TOOD: where is the best place to define this?
-set ( SCAI_LAMA_VERSION_NAME "Alpamayo" )
-set ( SCAI_LAMA_COPYRIGHT_YEAR 2015 )
-set ( SCAI_LAMA_VERSION_MAJOR 1 )
-set ( SCAI_LAMA_VERSION_MINOR 0 )
-set ( SCAI_LAMA_VERSION_PATCH 1 )
-set ( SCAI_LAMA_VERSION_COUNT 3 )
-set ( SCAI_LAMA_VERSION ${SCAI_LAMA_VERSION_MAJOR}.${SCAI_LAMA_VERSION_MINOR}.${SCAI_LAMA_VERSION_PATCH} )
-
 ### Set Module Path
 set ( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../CMake/Modules" )
 
@@ -54,10 +44,11 @@ include ( VersionDefinition )
 
 ### Include Compiler Flags
 if    ( NOT SCAI_COMPLETE_BUILD )
-	include ( SetBuildFlags )
-	include ( SCAIAssert )
-	include ( SetCPPFlags )
-	include ( Package/Sphinx )
+    include ( SetBuildFlags )
+    include ( CompilerVersion )
+    include ( SCAIAssert )
+    include ( SetCPPFlags )
+    include ( Package/Sphinx )
 else  ( NOT SCAI_COMPLETE_BUILD )
 	include ( Functions/CheckValueAtCompleteBuild )
 	CheckValueAtCompleteBuild ( lama )
@@ -67,15 +58,6 @@ include ( CheckC++11 )
 if    ( NOT CXX_SUPPORTS_C11 OR BUILD_TEST )
     include( Package/Boost )
 endif ( NOT CXX_SUPPORTS_C11 OR BUILD_TEST )
-
-if    ( NOT CXX_SUPPORTS_C11 )
-    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../boost_check.hpp.in"
-                     "${CMAKE_CURRENT_BINARY_DIR}/boost_check.hpp" )
-else  ( NOT CXX_SUPPORTS_C11 )
-    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../boost_check.hpp.in_empty"
-                     "${CMAKE_CURRENT_BINARY_DIR}/boost_check.hpp" )
-endif ( NOT CXX_SUPPORTS_C11 )
-install ( FILES ${CMAKE_CURRENT_BINARY_DIR}/boost_check.hpp DESTINATION include/scai )
 
 ### include all search packages
 include ( InternalDependencies )
@@ -125,8 +107,6 @@ foreach    ( module ${SCAI_LAMA_INTERNAL_DEPS} ${SCAI_LAMA_EXTERNAL_DEPS} )
     include_directories( ${${upper_module}_INCLUDE_DIR} )
 endforeach ( module ${SCAI_LAMA_INTERNAL_DEPS} ${SCAI_LAMA_EXTERNAL_DEPS} )
 
-include ( SCAIAssert )
-
 ### build lama library
 
 include ( Functions/scaiProject )
@@ -166,7 +146,6 @@ scai_project(
     )
 
 ### add subdirectories ###
-add_subdirectory( doc )
 
 ## CUDA
 if ( CUDA_FOUND AND USE_CUDA AND CUDA_HAVE_GPU )
@@ -268,6 +247,9 @@ add_subdirectory( examples )
 # copy examples in build directory + install it
 #file ( COPY ${CMAKE_CURRENT_SOURCE_DIR}/examples DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
 #install ( DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/examples DESTINATION share )
+
+### add documentation
+add_subdirectory( doc )
 
 ## add custum target distClean
 include ( DistClean )

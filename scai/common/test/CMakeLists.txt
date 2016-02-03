@@ -39,10 +39,7 @@ include_directories ( ${Boost_INCLUDE_DIR} )
 
 add_executable ( CommonTest ${CXX_SOURCES} )
 
-target_link_libraries ( CommonTest 
-    ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}
-    scai_common
-    )
+target_link_libraries ( CommonTest ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} scai_common )
 
 file ( GLOB LOCAL_HEADERS "*.hpp" )
 
