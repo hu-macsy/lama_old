@@ -110,6 +110,10 @@ public:
     {
     }
 
+    inline Scalar( const Scalar& x ) : mValue( x.mValue )
+    {
+    }
+
     /**
      * @brief Constructor of scalar for each supported arithmetic type.
      */

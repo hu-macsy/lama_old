@@ -69,8 +69,8 @@
  */
 static inline void testSameMatrix( const scai::lama::Matrix& m1, 
                                    const scai::lama::Matrix& m2, 
-                                   scai::lama::Scalar small = 0,
-                                   scai::lama::Scalar tolerance = 0.01 )
+                                   scai::lama::Scalar small = scai::lama::Scalar( 0 ),
+                                   scai::lama::Scalar tolerance = scai::lama::Scalar( 0.01 ) )
 {
     using namespace scai;
     using namespace lama;
