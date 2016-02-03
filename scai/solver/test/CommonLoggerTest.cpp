@@ -39,7 +39,7 @@
 
 #include <scai/solver/logger/LoggerWriteBehaviour.hpp>
 
-#include <scai/lama/test/Configuration.hpp>
+#include <scai/common/test/Configuration.hpp>
 
 using namespace scai::solver;
 using namespace scai::lama;
@@ -88,7 +88,7 @@ void logMessageTest( std::string logFileName, LoggerWriteBehaviour::LoggerWriteB
 BOOST_AUTO_TEST_CASE( ConsoleAndFileLoggingTest )
 {
     std::string testMessage( "ConsoleAndFileLoggerTestMessage\n" );
-    const std::string path = Configuration::getInstance().getPath();
+    const std::string path = scai::test::Configuration::getPath();
     SCAI_LOG_INFO( logger, "Configuration path = " << path );
     std::string logFileName( path + "/" + "LogFileCommonLogger.log" );
     logMessageTest( logFileName, LoggerWriteBehaviour::toFileAndConsole );

@@ -37,7 +37,7 @@
  
 #include <scai/common/macros/throw.hpp>
 
-#include <scai/lama/test/TestMacros.hpp>
+#include <scai/solver/test/TestMacros.hpp>
 
 //Adding support for Timers under Windows
 #ifdef _WIN32

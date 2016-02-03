@@ -41,7 +41,6 @@
 #include <scai/lama/distribution/NoDistribution.hpp>
 #include <scai/lama/expression/MatrixExpressions.hpp>
 
-#include <scai/lama/test/Configuration.hpp>
 #include <scai/lama/test/TestSparseMatrices.hpp>
 
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
@@ -331,7 +330,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SwapTest, MatrixType, SparseMatrixTypes )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( FullConstructorTest, MatrixType, SparseMatrixTypes )
 {
-    std::string prefix = Configuration::getInstance().getPath();
+    std::string prefix = scai::test::Configuration::getPath();
     SCAI_LOG_INFO( logger, "prefix = " << prefix << ", can be changed by LAMA" );
     CSRSparseMatrix<double> tmp( prefix + "/can___24.mtx" );
     SCAI_LOG_INFO( logger, "constructed replicated matrix by file: " << tmp );

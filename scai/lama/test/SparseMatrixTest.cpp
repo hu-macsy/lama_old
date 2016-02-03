@@ -47,7 +47,6 @@
 #include <scai/lama/distribution/CyclicDistribution.hpp>
 
 #include <scai/lama/test/TestSparseMatrices.hpp>
-#include <scai/lama/test/Configuration.hpp>
 
 #include <scai/lama/NoCommunicator.hpp>
 
@@ -69,7 +68,7 @@ SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename MatrixType>, SparseMatrixTest<Ma
 template<typename MatrixType>
 void SparseMatrixTest<MatrixType>::setUp()
 {
-    std::string prefix = Configuration::getInstance().getPath();
+    std::string prefix = scai::test::Configuration::getPath();
     SCAI_LOG_INFO( logger, "prefix = " << prefix );
     m_FormattedInputFile = prefix + "/2D_poisson_256_formatted.frm";
     m_XDRInputFile = prefix + "/2D_poisson_256_xdr.frm";

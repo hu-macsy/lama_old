@@ -34,7 +34,7 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/mpl/list.hpp>
 
-#include <scai/lama/test/TestMacros.hpp>
+#include <scai/solver/test/TestMacros.hpp>
 
 #include <scai/solver/GMRES.hpp>
 #include <scai/solver/TrivialPreconditioner.hpp>

@@ -47,7 +47,7 @@ class Configuration
 {
 
 public:
-    static const std::string& getPath() const
+    static std::string getPath()
     {
     	return LAMA_TESTFILE_PATH;
     }

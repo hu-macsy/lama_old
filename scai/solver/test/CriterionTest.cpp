@@ -37,7 +37,7 @@
 #include <scai/solver/criteria/Criterion.hpp>
 #include <scai/solver/criteria/IterationCount.hpp>
 
-#include <scai/lama/test/TestMacros.hpp>
+#include <scai/solver/test/TestMacros.hpp>
 
 using namespace scai::solver;
 using namespace scai::lama;

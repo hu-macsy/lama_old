@@ -61,6 +61,11 @@ else  ( NOT SCAI_COMPLETE_BUILD )
 	CheckValueAtCompleteBuild ( blaskernel )
 endif ( NOT SCAI_COMPLETE_BUILD )
 
+include ( CheckC++11 )
+if    ( NOT CXX_SUPPORTS_C11 OR BUILD_TEST )
+    include( Package/Boost )
+endif ( NOT CXX_SUPPORTS_C11 OR BUILD_TEST )
+
 ### include all search packages
 include ( InternalDependencies )
 include ( ExternalDependencies )

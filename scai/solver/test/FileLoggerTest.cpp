@@ -37,8 +37,9 @@
 
 #include <fstream>
 
-#include <scai/lama/test/TestMacros.hpp>
-#include <scai/lama/test/Configuration.hpp>
+#include <scai/solver/test/TestMacros.hpp>
+
+#include <scai/common/test/Configuration.hpp>
 #include <scai/common/unique_ptr.hpp>
 #include <scai/common/SCAITypes.hpp>
 
@@ -64,7 +65,7 @@ BOOST_AUTO_TEST_CASE( LoggingTest )
     FileLogger& flogger = FileLogger::getFileLogger();
     // This should throw an exception
     SCAI_CHECK_THROW( flogger.setLogFile( "/15/16/17" ), Exception );
-    const std::string path = Configuration::getInstance().getPath();
+    const std::string path = scai::test::Configuration::getPath();
     SCAI_LOG_INFO( logger, "Configuration path = " << path );
     std::string logFileName( path + "/" + "FileLoggerTestFile.log" );
     SCAI_LOG_INFO( logger, "Log file name = " << logFileName );

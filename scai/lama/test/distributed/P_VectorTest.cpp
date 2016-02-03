@@ -57,7 +57,6 @@
 
 #include <scai/lama/distribution/NoDistribution.hpp>
 
-#include <scai/lama/test/Configuration.hpp>
 #include <scai/lama/test/TestSparseMatrices.hpp>
 #include <scai/lama/test/EquationHelper.hpp>
 
@@ -81,7 +80,7 @@ struct P_VectorTestConfig
     P_VectorTestConfig()
     {
         comm = Communicator::getCommunicator( scai::lama::communicator::MPI ); // default communicator
-        m_inputVectorBaseName = Configuration::getInstance().getPath() + "/testVector";
+        m_inputVectorBaseName = scai::test::Configuration::getPath() + "/testVector";
         m_formattedInputVectorBaseName = m_inputVectorBaseName + "Formatted";
         m_xdrDoubleInputVectorBaseName = m_inputVectorBaseName + "XDRDouble";
     }
