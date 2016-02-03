@@ -41,6 +41,7 @@
 // internal scai libraries
 #include <scai/common/macros/assert.hpp>
 #include <scai/common/Constants.hpp>
+#include <scai/common/unique_ptr.hpp>
 
 using namespace scai::common;
 
@@ -551,6 +552,60 @@ Matrix& Matrix::operator=( const Expression_SM_SM& exp )
     this->matrixPlusMatrix( alpha, A, beta, B );
 
     return *this;
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+void Matrix::writeToFile(
+    const std::string& fileName,
+    const File::FileType fileType /* = UNFORMATTED */,
+    const common::scalar::ScalarType dataType /* = INTERNAL */,
+    const File::IndexDataType indexDataTypeIA /* = LONG */,
+    const File::IndexDataType indexDataTypeJA /* = LONG */ ) const
+{
+    SCAI_LOG_INFO( logger,
+                   *this << ": writeToFile( " << fileName << ", fileType = " << fileType << ", dataType = " << dataType << " )" )
+
+    if ( getDistribution().isReplicated() && getColDistribution().isReplicated() )
+    {
+        // make sure that only one processor writes to file
+
+        const Communicator& comm = getDistribution().getCommunicator();
+
+        if ( comm.getRank() == 0 )
+        {
+            getLocalStorage().writeToFile( fileName, fileType, dataType, indexDataTypeIA, indexDataTypeJA );
+        }
+
+        // synchronization to avoid that other processors start with
+        // something that might depend on the finally written file
+
+        comm.synchronize();
+    }
+    else
+    {
+        DistributionPtr rowDist( new NoDistribution( getNumRows() ));
+        DistributionPtr colDist( new NoDistribution( getNumColumns() ));
+
+        common::unique_ptr<Matrix> repM( copy( rowDist, colDist ) );
+
+        repM->writeToFile( fileName, fileType, dataType, indexDataTypeIA, indexDataTypeJA );
+    }
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+Matrix* Matrix::copy( DistributionPtr rowDistribution, DistributionPtr colDistribution ) const
+{
+    // simple default implementation that works for each matrix
+   
+    common::unique_ptr<Matrix> rep( copy() );  
+
+    // unique_ptr guarantees that data is freed if redistribute fails for any reason
+
+    rep->redistribute( rowDistribution, colDistribution );
+
+    return rep.release();
 }
 
 } /* end namespace lama */

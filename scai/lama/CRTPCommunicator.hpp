@@ -42,8 +42,7 @@
 // internal scai libraris
 #include <scai/tasking/NoSyncToken.hpp>
 
-// boost
-#include <boost/preprocessor.hpp>
+#include <scai/common/preprocessor.hpp>
 
 // std
 #include <vector>

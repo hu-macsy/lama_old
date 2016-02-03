@@ -62,9 +62,7 @@
 #include <scai/common/exception/UnsupportedException.hpp>
 #include <scai/tasking/NoSyncToken.hpp>
 #include <scai/common/TypeTraits.hpp>
-
-// boost
-#include <boost/preprocessor.hpp>
+#include <scai/common/preprocessor.hpp>
 
 namespace scai
 {

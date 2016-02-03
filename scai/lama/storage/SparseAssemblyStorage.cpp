@@ -42,9 +42,7 @@
 #include <scai/hmemo.hpp>
 #include <scai/common/macros/print_string.hpp>
 #include <scai/common/TypeTraits.hpp>
-
-// boost
-#include <boost/preprocessor.hpp>
+#include <scai/common/preprocessor.hpp>
 
 // std
 #include <cmath>

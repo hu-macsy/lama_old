@@ -63,9 +63,7 @@
 #include <scai/common/macros/print_string.hpp>
 #include <scai/common/Constants.hpp>
 #include <scai/common/TypeTraits.hpp>
-
-// boost
-#include <boost/preprocessor.hpp>
+#include <scai/common/preprocessor.hpp>
 
 // std
 #include <cmath>
@@ -2399,7 +2397,7 @@ size_t SparseMatrix<ValueType>::getMemoryUsage() const
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void SparseMatrix<ValueType>::writeToFile(
+void SparseMatrix<ValueType>::writeToFile1(
 
     const std::string& fileName,
     const File::FileType fileType /* = UNFORMATTED */,

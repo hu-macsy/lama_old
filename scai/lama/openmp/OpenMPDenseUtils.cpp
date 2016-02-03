@@ -41,9 +41,7 @@
 #include <scai/common/Constants.hpp>
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/OpenMP.hpp>
-
-// boost
-#include <boost/preprocessor.hpp>
+#include <scai/common/preprocessor.hpp>
 
 namespace scai
 {
