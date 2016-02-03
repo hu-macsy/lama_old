@@ -373,14 +373,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( FullConstructorTest, MatrixType, SparseMatrixType
     for ( IndexType i = 0; i < numLocalRows + 1; ++i )
     {
         iaLocal[i] = iaLocalRead[i];
-        SCAI_LOG_INFO( logger, "local: ia[ " << i << " ] = " << iaLocal[i] )
+        SCAI_LOG_TRACE( logger, "local: ia[ " << i << " ] = " << iaLocal[i] )
     }
 
     // Be careful, halo might be 0 x 0, so we have now iaHalo
 
     if ( haloSt.getNumRows() == 0 )
     {
-        SCAI_LOG_INFO( logger, "local: ia[ 0 .. " << numLocalRows << " + 1 ] = 0 " )
+        SCAI_LOG_TRACE( logger, "local: ia[ 0 .. " << numLocalRows << " + 1 ] = 0 " )
 
         for ( IndexType i = 0; i < numLocalRows + 1; ++i )
         {
@@ -394,7 +394,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( FullConstructorTest, MatrixType, SparseMatrixType
         for ( IndexType i = 0; i < numLocalRows + 1; ++i )
         {
             iaHalo[i] = iaHaloRead[i];
-            SCAI_LOG_INFO( logger, "halo: ia[ " << i << " ] = " << iaHalo[i] )
+            SCAI_LOG_TRACE( logger, "halo: ia[ " << i << " ] = " << iaHalo[i] )
         }
     }
 
@@ -402,8 +402,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( FullConstructorTest, MatrixType, SparseMatrixType
     {
         jaLocal[i] = jaLocalRead[i];   // local indexes remain local
         valuesLocal[i] = valuesLocalRead[i];
-        SCAI_LOG_INFO( logger, "local: ja[ " << i << " ] = " << jaLocal[i] )
-        SCAI_LOG_INFO( logger, "local: values[ " << i << " ] = " << valuesLocal[i] )
+        SCAI_LOG_TRACE( logger, "local: ja[ " << i << " ] = " << jaLocal[i] )
+        SCAI_LOG_TRACE( logger, "local: values[ " << i << " ] = " << valuesLocal[i] )
     }
 
     for ( IndexType i = 0; i < numHaloValues; ++i )
@@ -411,8 +411,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( FullConstructorTest, MatrixType, SparseMatrixType
         jaHalo[i] = jaHaloRead[i];
         jaHalo[i] = halo2global[jaHalo[i]];   // halo indexes must be global
         valuesHalo[i] = valuesHaloRead[i];
-        SCAI_LOG_INFO( logger, "halo: ja[ " << i << " ] = " << jaHalo[i] )
-        SCAI_LOG_INFO( logger, "halo: values[ " << i << " ] = " << valuesHalo[i] )
+        SCAI_LOG_TRACE( logger, "halo: ja[ " << i << " ] = " << jaHalo[i] )
+        SCAI_LOG_TRACE( logger, "halo: values[ " << i << " ] = " << valuesHalo[i] )
     }
 
     std::vector<IndexType> globalIndexes( numLocalRows );
@@ -420,7 +420,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( FullConstructorTest, MatrixType, SparseMatrixType
     for ( IndexType i = 0; i < numLocalRows; ++i )
     {
         globalIndexes[i] = dist->local2global( i );
-        SCAI_LOG_INFO( logger, *comm << ": local row " << i << " is global row " << globalIndexes[i] );
+        SCAI_LOG_TRACE( logger, *comm << ": local row " << i << " is global row " << globalIndexes[i] );
     }
 
     MatrixType distMatrix( numLocalRows, numLocalValues, numHaloValues, 
@@ -441,7 +441,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( InvertTest, MatrixType, SparseMatrixTypes )
     DistributionPtr bdist( new BlockDistribution( n, comm ) );
     DistributionPtr ndist( new NoDistribution( n ) );
     m1.redistribute( bdist, ndist );
-    SCAI_LOG_INFO( logger, "Input random matrix for invert: " << m1 );
+    SCAI_LOG_TRACE( logger, "Input random matrix for invert: " << m1 );
     MatrixType m2;
     m2.invert( m1 );
     SCAI_LOG_INFO( logger, "Inverted matrix: " << m2 );
@@ -454,7 +454,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( InvertTest, MatrixType, SparseMatrixTypes )
     MatrixType unity;
     unity.setIdentity( bdist );
     SCAI_LOG_INFO( logger, "Distributed identity matrix: " << mm );
-    // CLOSE test not sufficient as mm might have inexact ZERO values 
+    // CLOSE test not sufficient as mm might have inexact ZERO values, so use small value
     Scalar small( common::TypeTraits<typename MatrixType::MatrixValueType>::small() );
     testSameMatrix( unity, mm, small );
 }
