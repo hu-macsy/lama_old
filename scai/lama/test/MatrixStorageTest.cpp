@@ -50,8 +50,9 @@
 #include <iostream>
 #include <fstream>
 
-using namespace scai::lama;
-using namespace scai::hmemo;
+using namespace scai;
+using namespace lama;
+using namespace hmemo;
 
 /* ------------------------------------------------------------------------- */
 
@@ -518,7 +519,7 @@ SCAI_LOG_INFO( logger, "Test " << mMatrixStorage.getTypeName() << "::matrixTimes
     LArray<ValueType> result( mMatrixStorage.getNumRows() );
     // asynchronous execution, only checks correct calling
     {
-        scai::common::unique_ptr<scai::tasking::SyncToken> token ( mMatrixStorage.matrixTimesVectorAsync( result, alpha, x, beta, y ) );
+        common::unique_ptr<tasking::SyncToken> token ( mMatrixStorage.matrixTimesVectorAsync( result, alpha, x, beta, y ) );
         // unique pointer implies delete for token so 
         // destructor of the token does the synchronization at the end of this scope
     }
@@ -598,7 +599,7 @@ SCAI_LOG_INFO( logger, "Test vectorTimesMatrixAsync" )
     LArray<ValueType> result ( m );
     // asynchronous execution, only checks correct calling
     {
-        scai::common::unique_ptr<scai::tasking::SyncToken> token ( mMatrixStorage.vectorTimesMatrixAsync( result, alpha, x, beta, y ) );
+        common::unique_ptr<tasking::SyncToken> token ( mMatrixStorage.vectorTimesMatrixAsync( result, alpha, x, beta, y ) );
         // free of token at end of this scope does the synchronization
     }
     SCAI_LOG_TRACE( logger, "vectorTimesMatrixAsync synchronized" )
@@ -646,7 +647,7 @@ SCAI_LOG_INFO( logger, "Test vectorTimesMatrixAsync 2" )
     LArray<ValueType> result ( m );
     // asynchronous execution, only checks correct calling
     {
-        scai::common::unique_ptr<scai::tasking::SyncToken> token ( mMatrixStorage.vectorTimesMatrixAsync( result, alpha, x, beta, y ) );
+        common::unique_ptr<tasking::SyncToken> token ( mMatrixStorage.vectorTimesMatrixAsync( result, alpha, x, beta, y ) );
         // free of token at end of this scope does the synchronization
     }
     SCAI_LOG_TRACE( logger, "vectorTimesMatrixAsync synchronized" )
@@ -697,7 +698,7 @@ SCAI_LOG_INFO( logger, "Test vectorTimesMatrixAsync 3" )
     LArray<ValueType> result ( m );
     // asynchronous execution, only checks correct calling
     {
-        scai::common::unique_ptr<scai::tasking::SyncToken> token ( mMatrixStorage.vectorTimesMatrixAsync( result, alpha, x, beta, y ) );
+        common::unique_ptr<tasking::SyncToken> token ( mMatrixStorage.vectorTimesMatrixAsync( result, alpha, x, beta, y ) );
         // free of token at end of this scope does the synchronization
     }
     SCAI_LOG_TRACE( logger, "vectorTimesMatrixAsync synchronized" )
@@ -753,10 +754,10 @@ LArray<ValueType> denseResult2 ( m );
 // asynchronous execution, only checks correct calling
 
 {
-    scai::common::unique_ptr<scai::tasking::SyncToken> token ( mMatrixStorage.vectorTimesMatrixAsync( result, alpha, x, beta, y ) );
-    scai::common::unique_ptr<scai::tasking::SyncToken> token2 ( mMatrixStorage.matrixTimesVectorAsync( result2, alpha, x, beta, y ) );
-    scai::common::unique_ptr<scai::tasking::SyncToken> token3 ( denseStorage.vectorTimesMatrixAsync( denseResult, alpha, x, beta, y ) );
-    scai::common::unique_ptr<scai::tasking::SyncToken> token4 ( denseStorage.matrixTimesVectorAsync( denseResult2, alpha, x, beta, y ) );
+    common::unique_ptr<tasking::SyncToken> token ( mMatrixStorage.vectorTimesMatrixAsync( result, alpha, x, beta, y ) );
+    common::unique_ptr<tasking::SyncToken> token2 ( mMatrixStorage.matrixTimesVectorAsync( result2, alpha, x, beta, y ) );
+    common::unique_ptr<tasking::SyncToken> token3 ( denseStorage.vectorTimesMatrixAsync( denseResult, alpha, x, beta, y ) );
+    common::unique_ptr<tasking::SyncToken> token4 ( denseStorage.matrixTimesVectorAsync( denseResult2, alpha, x, beta, y ) );
     // free of token at end of this scope does the synchronization
 }
 SCAI_LOG_TRACE( logger, "vectorTimesMatrixAsync and matrixTimesVectorAsync synchronized" )
@@ -1035,7 +1036,7 @@ SCAI_LOG_INFO( logger, "jacobiHaloTest: matrix = " << mMatrixStorage
 
 setDenseHalo( mMatrixStorage );
 
-scai::common::shared_ptr<MatrixStorage<ValueType> > local( mMatrixStorage.clone() );
+common::shared_ptr<MatrixStorage<ValueType> > local( mMatrixStorage.clone() );
 
 setDenseLocal( *local );
 
@@ -1099,35 +1100,35 @@ LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, ValueType, inverseTest )
 SCAI_LOG_INFO( logger, "inverseTest for " << mMatrixStorage.getTypeName() )
 
 setDenseRandom( mMatrixStorage );
-scai::common::shared_ptr<MatrixStorage<ValueType> > identity( mMatrixStorage.clone() );
+common::shared_ptr<MatrixStorage<ValueType> > identity( mMatrixStorage.clone() );
 identity->setIdentity( mMatrixStorage.getNumRows() );
 
 // 1. check: use the inverse of the identity, which is expected to be the identity again
 {
-    scai::common::shared_ptr<MatrixStorage<ValueType> > identity2( mMatrixStorage.clone() );
+    common::shared_ptr<MatrixStorage<ValueType> > identity2( mMatrixStorage.clone() );
     identity2->setIdentity( mMatrixStorage.getNumRows() );
     identity2->invert( mMatrixStorage );
-    //testSameMatrixStorage( *identity, *identity2);
+    // testSameMatrixStorage( *identity, *identity2, Scalar( common::TypeTraits<ValueType>::small() ) );
 }
 
 // 2. check: check invert on matrix ( multiply inverted matrix with original matrix and check whether the result is the
 // identity
 {
-    scai::common::shared_ptr<MatrixStorage<ValueType> > inverse( mMatrixStorage.clone() );
-    scai::common::shared_ptr<MatrixStorage<ValueType> > result( mMatrixStorage.clone() );
+    common::shared_ptr<MatrixStorage<ValueType> > inverse( mMatrixStorage.clone() );
+    common::shared_ptr<MatrixStorage<ValueType> > result( mMatrixStorage.clone() );
     inverse->invert( mMatrixStorage );
     result->matrixTimesMatrix( static_cast<ValueType>(1.0), mMatrixStorage, *inverse, static_cast<ValueType>(0.0), *inverse );
-    testSameMatrixStorageClose( *identity, *result );
+    testSameMatrixStorage( *identity, *result, Scalar( common::TypeTraits<ValueType>::small() ) );
 }
 
 // 3. check: check invert on matrix - in-place ( multiply inverted matrix with original matrix and check whether the
 // result is the identity
 {
-    scai::common::shared_ptr<MatrixStorage<ValueType> > inverse( mMatrixStorage.copy() );
-    scai::common::shared_ptr<MatrixStorage<ValueType> > result( mMatrixStorage.clone() );
+    common::shared_ptr<MatrixStorage<ValueType> > inverse( mMatrixStorage.copy() );
+    common::shared_ptr<MatrixStorage<ValueType> > result( mMatrixStorage.clone() );
     inverse->invert( mMatrixStorage );
-    result->matrixTimesMatrix(static_cast<ValueType>(1.0), mMatrixStorage, *inverse, static_cast<ValueType>(0.0), *inverse);
-    testSameMatrixStorageClose( *identity, *result );
+    result->matrixTimesMatrix( ValueType( 1 ), mMatrixStorage, *inverse, ValueType( 0 ), *inverse);
+    testSameMatrixStorage( *identity, *result, Scalar( common::TypeTraits<ValueType>::small() ) );
 }
 
 LAMA_COMMON_TEST_CASE_TEMPLATE_END()

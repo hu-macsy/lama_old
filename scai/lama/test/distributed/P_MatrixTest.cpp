@@ -56,6 +56,7 @@
 #include <scai/lama/test/SameMatrixHelper.hpp>
 #include <scai/lama/test/TestSparseMatrices.hpp>
 
+using namespace scai;
 using namespace scai::lama;
 using namespace scai::hmemo;
 
@@ -272,14 +273,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( CopyConstructorTest, MatrixType, MatrixTypes )
     DistributionPtr dist( new BlockDistribution( n, comm ) );
     MatrixType m1( inputA );
     std::cout << "m1( inputA ) = " << m1 << std::endl;
-    testSameMatrixClose( inputA, m1 );
+    testSameMatrix( inputA, m1 );
     MatrixType m2( inputA, dist, dist );
     std::cout << "m2( inputA, dist, dist ) = " << m2 << std::endl;
-    testSameMatrixClose( inputA, m2 );
+    testSameMatrix( inputA, m2 );
     MatrixType m3;
     m3 = inputA;
     std::cout << "m3 ( = inputA ) = " << m3 << std::endl;
-    testSameMatrixClose( inputA, m3 );
+    testSameMatrix( inputA, m3 );
 };
 
 /* ------------------------------------------------------------------------- */
@@ -341,18 +342,25 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( FullConstructorTest, MatrixType, SparseMatrixType
     SCAI_LOG_INFO( logger, "new distribution: " << *dist );
     CSRSparseMatrix<double> matrix( tmp, dist, dist );
     IndexType numLocalRows = matrix.getLocalNumRows();
+
     /* get distributed data */
+
     IndexType numLocalValues = matrix.getLocalStorage().getNumValues();
     IndexType numHaloValues = matrix.getHaloStorage().getNumValues();
+
     SCAI_LOG_INFO( logger, *comm << ": local N = " << numLocalRows << ", nnz = "
                    << numLocalValues << " (local) + " << numHaloValues << " (halo)" );
-    IndexType* iaLocal = new IndexType[ numLocalRows + 1 ];
-    IndexType* jaLocal = new IndexType[ numLocalValues ];
-    double* valuesLocal = new double[ numLocalValues ];
-    IndexType* iaHalo = new IndexType[ numLocalRows + 1 ];
-    IndexType* jaHalo = new IndexType[ numHaloValues ];
-    double* valuesHalo = new double[ numHaloValues ];
+
+    common::scoped_array<IndexType> iaLocal( new IndexType[ numLocalRows + 1 ] );
+    common::scoped_array<IndexType> jaLocal( new IndexType[ numLocalValues ] );
+    common::scoped_array<double> valuesLocal( new double[ numLocalValues ] );
+
+    common::scoped_array<IndexType> iaHalo( new IndexType[ numLocalRows + 1 ] );
+    common::scoped_array<IndexType> jaHalo( new IndexType[ numHaloValues ] );
+    common::scoped_array<double> valuesHalo( new double[ numHaloValues ] );
+
     const CSRStorage<double>& localSt = matrix.getLocalStorage();
+
     ReadAccess<IndexType> iaLocalRead( localSt.getIA() );
     ReadAccess<IndexType> jaLocalRead( localSt.getJA() );
     ReadAccess<double> valuesLocalRead( localSt.getValues() );
@@ -360,6 +368,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( FullConstructorTest, MatrixType, SparseMatrixType
     ReadAccess<IndexType> iaHaloRead( haloSt.getIA() );
     ReadAccess<IndexType> jaHaloRead( haloSt.getJA() );
     ReadAccess<double> valuesHaloRead( haloSt.getValues() );
+    ReadAccess<IndexType> halo2global( matrix.getHalo().getRequiredIndexes() );
 
     for ( IndexType i = 0; i < numLocalRows + 1; ++i )
     {
@@ -391,14 +400,19 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( FullConstructorTest, MatrixType, SparseMatrixType
 
     for ( IndexType i = 0; i < numLocalValues; ++i )
     {
-        jaLocal[i] = jaLocalRead[i];
+        jaLocal[i] = jaLocalRead[i];   // local indexes remain local
         valuesLocal[i] = valuesLocalRead[i];
+        SCAI_LOG_INFO( logger, "local: ja[ " << i << " ] = " << jaLocal[i] )
+        SCAI_LOG_INFO( logger, "local: values[ " << i << " ] = " << valuesLocal[i] )
     }
 
     for ( IndexType i = 0; i < numHaloValues; ++i )
     {
         jaHalo[i] = jaHaloRead[i];
+        jaHalo[i] = halo2global[jaHalo[i]];   // halo indexes must be global
         valuesHalo[i] = valuesHaloRead[i];
+        SCAI_LOG_INFO( logger, "halo: ja[ " << i << " ] = " << jaHalo[i] )
+        SCAI_LOG_INFO( logger, "halo: values[ " << i << " ] = " << valuesHalo[i] )
     }
 
     std::vector<IndexType> globalIndexes( numLocalRows );
@@ -406,12 +420,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( FullConstructorTest, MatrixType, SparseMatrixType
     for ( IndexType i = 0; i < numLocalRows; ++i )
     {
         globalIndexes[i] = dist->local2global( i );
-        SCAI_LOG_TRACE( logger, *comm << ": local row " << i << " is global row " << globalIndexes[i] );
+        SCAI_LOG_INFO( logger, *comm << ": local row " << i << " is global row " << globalIndexes[i] );
     }
 
-    MatrixType distMatrix( numLocalRows, numLocalValues, numHaloValues, iaLocal,
-                           jaLocal, valuesLocal, iaHalo, jaHalo,
-                           valuesHalo, globalIndexes, comm );
+    MatrixType distMatrix( numLocalRows, numLocalValues, numHaloValues, 
+                           iaLocal.get(), jaLocal.get(), valuesLocal.get(), 
+                           iaHalo.get(), jaHalo.get(), valuesHalo.get(), 
+                           globalIndexes, comm );
+
     testSameMatrix( matrix, distMatrix );
 }
 
@@ -438,7 +454,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( InvertTest, MatrixType, SparseMatrixTypes )
     MatrixType unity;
     unity.setIdentity( bdist );
     SCAI_LOG_INFO( logger, "Distributed identity matrix: " << mm );
-    testSameMatrixClose( unity, mm );
+    testSameMatrix( unity, mm );
 }
 
 /* --------------------------------------------------------------------- */

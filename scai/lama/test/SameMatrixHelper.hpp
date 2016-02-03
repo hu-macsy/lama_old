@@ -37,9 +37,6 @@
 
 #include <scai/lama/distribution/Distribution.hpp>
 #include <scai/lama/distribution/NoDistribution.hpp>
-#include <scai/lama/expression/MatrixVectorExpressions.hpp>
-
-#include <scai/lama/expression/MatrixVectorExpressions.hpp>
 
 #include <scai/lama/DenseVector.hpp>
 
@@ -49,8 +46,6 @@
 
 #include <boost/test/unit_test.hpp>
 
-using scai::common::TypeTraits;
-
 /** This routine is a rather general routine. It compares two arbitrary matrices
  *  (different distributions, different value types) whether the elements are
  *  close enough.
@@ -59,79 +54,69 @@ using scai::common::TypeTraits;
  */
 
 /**
- * @brief testSameMatrix() checks whether two matrices have the same dimensions and values. Equality of values is checked
- * by SCAI_CHECK_CLOSE, zero values have to be zero in both matrices (check testSameMatrixClose as alternative)
+ * @brief This method compares checks if two matrices have (nearly) the same values.
+ *
+ * @param[in] m1 is the first matrix
+ * @param[in] m2 is the second matrix
+ * @param[in] maximal absolute difference between two values
+ * @param[in] tolerance in percentage that value might differ
+ *
+ * Both matrices must have the same dimensions, but they can have different types (double, float, ... )
+ * or different storage formats ( DENSE, CSR, ELL, ... ) or different distributions.
+ *
+ * If the absolute difference between the values is greater than small than the values
+ * must be in a tolerance that depends on the precision.
  */
-template<typename MatrixType1, typename MatrixType2>
-void testSameMatrix( const MatrixType1& m1, const MatrixType2& m2 )
+static inline void testSameMatrix( const scai::lama::Matrix& m1, 
+                                   const scai::lama::Matrix& m2, 
+                                   scai::lama::Scalar small = 0,
+                                   scai::lama::Scalar tolerance = 0.01 )
 {
-    typedef typename MatrixType1::MatrixValueType ValueType1;
-    typedef typename MatrixType2::MatrixValueType ValueType2;
+    using namespace scai;
+    using namespace lama;
 
-    const IndexType m = m1.getNumRows();
-    const IndexType n = m1.getNumColumns();
+    const IndexType nRows = m1.getNumRows();
+    const IndexType nCols = m1.getNumColumns();
+
     // require for same sizes, otherwise it is illegal to access elements
-    BOOST_REQUIRE_EQUAL( m, m2.getNumRows() );
-    BOOST_REQUIRE_EQUAL( n, m2.getNumColumns() );
 
-    // create replicated vectors for the rows with the same value type
-    scai::lama::VectorPtr ptrRow1(scai::lama::DenseVector<ValueType1>::createVector(m1.getValueType(), scai::lama::DistributionPtr( new scai::lama::NoDistribution( m ))));
-    scai::lama::VectorPtr ptrRow2(scai::lama::DenseVector<ValueType2>::createVector(m2.getValueType(), scai::lama::DistributionPtr( new scai::lama::NoDistribution( m ))));
+    BOOST_REQUIRE_EQUAL( nRows, m2.getNumRows() );
+    BOOST_REQUIRE_EQUAL( nCols, m2.getNumColumns() );
+
+    // create dense vectors for the rows with the same value type
+
+    common::unique_ptr<Vector> ptrRow1( Vector::getVector( DENSE, m1.getValueType() ) );
+    common::unique_ptr<Vector> ptrRow2( Vector::getVector( DENSE, m2.getValueType() ) );
+
+    typedef double CompareType;  // complex type does not work
+
+    CompareType tol = tolerance.getValue<CompareType>();
 
     // now compare all rows
-    for ( IndexType i = 0; i < m; ++i )
+
+    for ( IndexType i = 0; i < nRows; ++i )
     {
         // Note: rows will be broadcast in case of distributed matrices
+
         m1.getRow( *ptrRow1, i );
         m2.getRow( *ptrRow2, i );
+
         // compare the two vectors element-wise
 
-        //#pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
-        for ( IndexType j = 0; j < n; j++ )
+        for ( IndexType j = 0; j < nCols; j++ )
         {
-            SCAI_CHECK_CLOSE( ptrRow1->getValue( j ), ptrRow2->getValue( j ), TypeTraits<ValueType1>::small() )
-        }
-    }
-}
+            // std::cout << i << ", " << j << ": " << ptrRow1->getValue( j ) << ", " << ptrRow2->getValue( j ) << std::endl;
 
-/**
- * @brief testSameMatrixClose() checks whether two matrices have the same dimensions and values. Equality of values is
- * checked by SCAI_CHECK_CLOSE, if a value in the expected matrix is small (or zero) SCAI_CHECK_SMALL is used instead
- */
-template<typename MatrixType1, typename MatrixType2>
-void testSameMatrixClose( const MatrixType1& m1, const MatrixType2& m2 )
-{
-    typedef typename MatrixType1::MatrixValueType ValueType1;
-    typedef typename MatrixType2::MatrixValueType ValueType2;
+            Scalar elem1 = ptrRow1->getValue( j );
+            Scalar elem2 = ptrRow2->getValue( j );
 
-    const IndexType m = m1.getNumRows();
-    const IndexType n = m1.getNumColumns();
-    // require for same sizes, otherwise it is illegal to access elements
-    BOOST_REQUIRE_EQUAL( m, m2.getNumRows() );
-    BOOST_REQUIRE_EQUAL( n, m2.getNumColumns() );
+            Scalar diff  = abs( elem1 - elem2 );
 
-    // create replicated vectors for the rows with the same value type
-    scai::lama::VectorPtr ptrRow1(scai::lama::DenseVector<ValueType1>::createVector(m1.getValueType(), scai::lama::DistributionPtr( new scai::lama::NoDistribution( m ))));
-    scai::lama::VectorPtr ptrRow2(scai::lama::DenseVector<ValueType2>::createVector(m2.getValueType(), scai::lama::DistributionPtr( new scai::lama::NoDistribution( m ))));
-
-    // now compare all rows
-    for ( IndexType i = 0; i < m; ++i )
-    {
-        // Note: rows will be broadcast in case of distributed matrices
-        m1.getRow( *ptrRow1, i );
-        m2.getRow( *ptrRow2, i );
-        // compare the two vectors element-wise
-
-        //#pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
-        for ( IndexType j = 0; j < n; j++ )
-        {
-            if ( abs( ptrRow1->getValue( j ) ) < TypeTraits<ValueType1>::small() )
+            if ( diff > small )
             {
-                SCAI_CHECK_SCALAR_SMALL( ptrRow2->getValue( j ), ValueType2, TypeTraits<ValueType2>::small() )
-            }
-            else
-            {
-                SCAI_CHECK_CLOSE( ptrRow1->getValue( j ), ptrRow2->getValue( j ), TypeTraits<ValueType1>::small() )
+                // for large numbers we just check for a tolerance
+
+                BOOST_CHECK_CLOSE( elem1.getValue<CompareType>(), elem2.getValue<CompareType>(), tol );
             }
         }
     }
@@ -143,7 +128,10 @@ void testSameMatrixClose( const MatrixType1& m1, const MatrixType2& m2 )
  * alternative)
  */
 template<typename ValueType1, typename ValueType2>
-void testSameMatrixStorage( const scai::lama::MatrixStorage<ValueType1>& m1, const scai::lama::MatrixStorage<ValueType2>& m2 )
+void testSameMatrixStorage( const scai::lama::MatrixStorage<ValueType1>& m1, 
+                            const scai::lama::MatrixStorage<ValueType2>& m2,
+                            const scai::lama::Scalar small = 0,
+                            const scai::lama::Scalar tolerance = 0.01 )
 {
     const IndexType m = m1.getNumRows();
     const IndexType n = m1.getNumColumns();
@@ -154,55 +142,33 @@ void testSameMatrixStorage( const scai::lama::MatrixStorage<ValueType1>& m1, con
     scai::hmemo::HArray<ValueType1> row1(n);
     scai::hmemo::HArray<ValueType2> row2(n);
 
-    for ( IndexType i = 0; i < m; ++i )
-    {
-        m1.getRow( row1, i );
-        m2.getRow( row2, i );
-        // compare the two vectors element-wise
+    typedef double CompareType;  // complex type does not work
 
-        scai::hmemo::ReadAccess<ValueType1> readRow1(row1);
-        scai::hmemo::ReadAccess<ValueType2> readRow2(row2);
-        for ( IndexType j = 0; j < n; j++ )
-        {
-            SCAI_CHECK_CLOSE( (readRow1.get())[j], (readRow2.get())[j], TypeTraits<ValueType1>::small() )
-        }
-    }
-}
-
-/**
- * @brief testSameMatrixStorageClose() checks whether two matrices have the same dimensions and values. Equality of
- * values is checked by SCAI_CHECK_CLOSE, if a value in the expected matrix is small (or zero) SCAI_CHECK_SMALL is used
- * instead.
- */
-template<typename ValueType1, typename ValueType2>
-void testSameMatrixStorageClose( const scai::lama::MatrixStorage<ValueType1>& m1, const scai::lama::MatrixStorage<ValueType2>& m2 )
-{
-    const IndexType m = m1.getNumRows();
-    const IndexType n = m1.getNumColumns();
-
-    BOOST_REQUIRE_EQUAL( m, m2.getNumRows() );
-    BOOST_REQUIRE_EQUAL( n, m2.getNumColumns() );
-
-    scai::hmemo::HArray<ValueType1> row1(n);
-    scai::hmemo::HArray<ValueType2> row2(n);
+    CompareType tolV   = tolerance.getValue<CompareType>();
+    CompareType smallV = small.getValue<CompareType>();
 
     for ( IndexType i = 0; i < m; ++i )
     {
         m1.getRow( row1, i );
         m2.getRow( row2, i );
+
         // compare the two vectors element-wise
 
         scai::hmemo::ReadAccess<ValueType1> readRow1(row1);
         scai::hmemo::ReadAccess<ValueType2> readRow2(row2);
+
         for ( IndexType j = 0; j < n; j++ )
         {
-            if ( abs( (readRow1.get())[j] ) < TypeTraits<ValueType1>::small() )
+            CompareType elem1 = static_cast<CompareType>( readRow1[j] );
+            CompareType elem2 = static_cast<CompareType>( readRow2[j] );
+       
+            CompareType diff = scai::common::TypeTraits<CompareType>::abs( elem1 - elem2 );
+
+            if ( diff >= smallV )
             {
-                SCAI_CHECK_SMALL( (readRow2.get())[j], ValueType2, TypeTraits<ValueType2>::small() )
-            }
-            else
-            {
-                SCAI_CHECK_CLOSE( (readRow1.get())[j], (readRow2.get())[j], TypeTraits<ValueType1>::small() )
+                // if absolute difference is too big we check for close
+
+                BOOST_CHECK_CLOSE( elem1, elem2, tolV );
             }
         }
     }
