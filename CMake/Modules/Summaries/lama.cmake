@@ -34,18 +34,13 @@
 include ( Functions/scaiStatusMessage )
 include ( Functions/scaiSummaryMessage )
 
-include ( VersionDefinition )
-include ( CompilerVersion )
-include ( CheckC++11 )
-
 message ( STATUS "" )
 message ( STATUS "Summary of LAMA Configuration:" )
 message ( STATUS "==============================" )
 message ( STATUS "" )
 
-# C++ Compiler
 scai_status_message ( HEADLINE "Compiler:" )
-
+# C++ Compiler
 scai_summary_message ( "FOUND"
                        "CMAKE_CXX_COMPILER"
                        "C++ Compiler"
@@ -65,9 +60,16 @@ scai_summary_message ( "STATIC"
                        "Needs compiler supporting C++11 or Boost and pThreads" )
 
 scai_summary_message ( "FOUND"
-					   "CXX_SUPPORTS_C11"
-					   "C++11 support"
-					   "" )
+					             "CXX_SUPPORTS_C11"
+					             "C++11 support"
+					             "" )
+
+if    ( NOT CXX_SUPPORTS_C11 )
+    scai_summary_message ( "FOUND"
+                           "BOOST_INCLUDE_DIR"
+                           "Boost"
+                           "Version ${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}, add include dir ${BOOST_INCLUDE_DIR} to compile your sources" )
+endif ( NOT CXX_SUPPORTS_C11 )
 
 message ( STATUS "" )
 
@@ -86,14 +88,14 @@ scai_summary_message ( "USE"
 message ( STATUS "" )
 scai_status_message ( HEADLINE "LIBRARIES:" )
 
-if    ( SCAI_BLAS_FOUND AND BOOST_INCLUDE_DIR )
+if    ( SCAI_BLAS_FOUND )
     set( REQUIRED_FOUND TRUE )
     if ( SCAI_BLAS_NAME MATCHES "BLAS" AND NOT LAPACK_FOUND )
         set( REQUIRED_FOUND FALSE )
     endif ( SCAI_BLAS_NAME MATCHES "BLAS" AND NOT LAPACK_FOUND )
-else  ( SCAI_BLAS_FOUND AND BOOST_INCLUDE_DIR )
+else  ( SCAI_BLAS_FOUND )
     set( REQUIRED_FOUND FALSE )
-endif ( SCAI_BLAS_FOUND AND BOOST_INCLUDE_DIR ) 
+endif ( SCAI_BLAS_FOUND ) 
 
 scai_summary_message ( "STATIC"
                        "REQUIRED_FOUND"
@@ -103,25 +105,20 @@ scai_summary_message ( "STATIC"
     scai_summary_message ( "FOUND"
                            "SCAI_BLAS_FOUND"
                            "BLAS"
-                           "(${SCAI_BLAS_NAME}) with libraries: ${SCAI_BLAS_LIBRARIES}" )
+                           "(${SCAI_BLAS_NAME}) with libraries: ${SCAI_SCAI_BLAS_LIBRARIES}" )
     if    ( SCAI_BLAS_NAME MATCHES "BLAS" )
-    	scai_summary_message ( "FOUND"
-                     	       "LAPACK_FOUND"
+        message ( STATUS "" )
+    	  scai_summary_message ( "FOUND"
+                       	       "LAPACK_FOUND"
                       	       "LAPACK"
-                       		   "" )
+                         		   "" )
     endif ( SCAI_BLAS_NAME MATCHES "BLAS" )
     
-    # Boost
-    scai_summary_message ( "FOUND"
-                           "BOOST_INCLUDE_DIR"
-                           "Boost"
-                           "Version ${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION} at ${BOOST_INCLUDE_DIR}" )
-
 # LAMA MPI
 message ( STATUS "" )
 scai_summary_message ( "USE"
                        "USE_MPI"
-                       "LAMA MPI"
+                       "Distributed"
                        "" )
 
     # MPI
@@ -152,7 +149,7 @@ scai_summary_message ( "USE"
 message ( STATUS "" )
 scai_summary_message ( "USE"
                        "USE_CUDA"
-                       "LAMA CUDA"
+                       "CUDA"
                        "" )
 
     # CUDA
@@ -171,14 +168,50 @@ scai_summary_message ( "USE"
 message ( STATUS "" )
 scai_summary_message ( "USE"
                        "USE_MIC"
-                       "LAMA MIC"
+                       "MIC"
+                       "" )
+
+message ( STATUS "" )
+scai_summary_message ( "FOUND"
+                       "SCAI_COMMON_FOUND"
+                       "SCAI Common"
+                       "" )
+                       
+scai_summary_message ( "FOUND"
+                       "SCAI_LOGGING_FOUND"
+                       "SCAI Logging"
+                       "" )
+                       
+scai_summary_message ( "FOUND"
+                       "SCAI_TRACING_FOUND"
+                       "SCAI Tracing"
+                       "" )
+                       
+scai_summary_message ( "FOUND"
+                       "SCAI_TASKING_FOUND"
+                       "SCAI Tasking"
+                       "" )
+
+scai_summary_message ( "FOUND"
+                       "SCAI_HMEMO_FOUND"
+                       "SCAI Hmemo"
+                       "" )
+                       
+scai_summary_message ( "FOUND"
+                       "SCAI_KREGISTRY_FOUND"
+                       "SCAI Kregistry"
+                       "" )
+
+scai_summary_message ( "FOUND"
+                       "SCAI_BLASKERNEL_FOUND"
+                       "SCAI Blaskernel"
                        "" )
 
 # LAMA TEST
 message ( STATUS "" )
 scai_summary_message ( "USE"
                        "BUILD_TEST"
-                       "LAMA TEST"
+                       "TEST"
                        "" )
 
     # Boost Test-Framework
@@ -194,27 +227,12 @@ scai_summary_message ( "USE"
                            "" )
                            
 message ( STATUS "" )
-scai_status_message ( HEADLINE "DOCUMENTATION:" )
-# DOC
-scai_summary_message ( "USE"
-                       "BUILD_DOC"
-                       "DOC"
-                       "" )
-                                     
-scai_summary_message ( "FOUND"
-                       "SPHINX_FOUND"
-                       "Sphinx"
-                       "Version ${Sphinx_VERSION_STRING} at ${Sphinx-build_EXECUTABLE}: 'make doc' to build user documentation" )
-
-message ( STATUS "" )
-
-message ( STATUS "" )
 
 scai_status_message ( HEADLINE "INFO:" )
 message ( STATUS "LAMA Version : ${LAMA_VERSION} ${LAMA_VERSION_NAME}" )
 message ( STATUS "Build Type   : ${CMAKE_BUILD_TYPE}" )
 message ( STATUS "Library Type : ${SCAI_LIBRARY_TYPE}" )
-message ( STATUS "ASSERT Level : ${SCAI_ASSERT_LEVEL}" )
+message ( STATUS "ASSERT Level : ${SCAI_ASSERT_LEVEL} ( -DSCAI_ASSERT_LEVEL_${SCAI_ASSERT_LEVEL} )" )
 message ( STATUS "LOG Level    : ${SCAI_LOGGING_LEVEL} ( -D${SCAI_LOGGING_FLAG} )" )
 message ( STATUS "TRACING      : ${SCAI_TRACING} ( -D${SCAI_TRACING_FLAG} )" )
 if    ( USE_CODE_COVERAGE )
@@ -229,11 +247,6 @@ message ( STATUS "" )
 if    ( NOT SCAI_BLAS_FOUND OR ( (SCAI_BLAS_NAME MATCHES "BLAS") AND NOT LAPACK_FOUND ) OR ( NOT CXX_SUPPORTS_C11 AND NOT BOOST_INCLUDE_DIR ) )
     message( FATAL_ERROR "Configuration for LAMA (core) incomplete!")
 endif ( NOT SCAI_BLAS_FOUND OR ( (SCAI_BLAS_NAME MATCHES "BLAS") AND NOT LAPACK_FOUND ) OR ( NOT CXX_SUPPORTS_C11 AND NOT BOOST_INCLUDE_DIR ) )
-
-# LAMA MPI
-if    ( USE_MPI AND NOT MPI_FOUND )
-    message( FATAL_ERROR "Configuration for LAMA MPI incomplete!")
-endif ( USE_MPI AND NOT MPI_FOUND )
 
 # LAMA MPI
 if    ( USE_MPI AND NOT MPI_FOUND )

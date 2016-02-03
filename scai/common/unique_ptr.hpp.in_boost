@@ -1,5 +1,5 @@
 /**
- * @file common/bind.hpp
+ * @file common/unique_ptr.hpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,36 +25,40 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Embedding bind in common namespace.
+ * @brief Embedding unique_ptr in common namespace.
  * @author Thomas Brandes
  * @date 15.07.2015
  */
 
 #pragma once
 
-// std
-#if __cplusplus > 199711L or defined(__GXX_EXPERIMENTAL_CXX0X__)
-#include <functional>
-#else
-#include <boost/bind.hpp>
-#include <boost/ref.hpp>
-#endif
+#include <scai/common/boost_check.hpp>
+
+// Boost 1.57 and higher provides same unique_ptr as C++
+// but unfortunately not the previous versions
+// #include <boost/interprocess/smart_ptr/unique_ptr.hpp>
+
+#include <boost/scoped_array.hpp>
+#include <memory>
 
 namespace scai
 {
 
 namespace common
 {
-#if __cplusplus > 199711L or defined(__GXX_EXPERIMENTAL_CXX0X__)
-    using std::bind;
-    using std::ref;
-    using std::cref;
-    using namespace std::placeholders;
-#else
-    using boost::bind;
-    using boost::ref;
-    using boost::cref;
-#endif
+    using boost::scoped_array;
+
+    template<typename T>
+    class unique_ptr : public std::auto_ptr<T>
+    {
+    public:
+        unique_ptr( T* ptr ) : std::auto_ptr<T>( ptr ) 
+        {
+        }
+        unique_ptr() : std::auto_ptr<T>() 
+        {
+        }
+    };
 } /* end namespace common */
 
 } /* end namespace scai */

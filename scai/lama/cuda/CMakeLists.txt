@@ -53,7 +53,6 @@ set ( HEADERS        # .hpp
         CUDATexVector
 )
 
-
 if    ( CUSPARSE_V2 )
 	set ( set CLASSES ${CLASSES} CUSparseCSRUtils )
 endif ( CUSPARSE_V2 )
@@ -68,4 +67,3 @@ scai_project(
 
     ADD_PARENT_SCOPE
 )
-

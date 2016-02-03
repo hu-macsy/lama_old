@@ -31,8 +31,6 @@
  * @date 19.07.2015
  */
 
-#include <scai/boost_check.hpp>
-
 #include <scai/tasking/NoSyncToken.hpp>
 #include <scai/tasking/SyncToken.hpp>
 #include <scai/tasking/Task.hpp>
