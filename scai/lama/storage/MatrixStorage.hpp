@@ -450,6 +450,17 @@ public:
         const IndexType* globalRowIndexes = NULL,
         IndexType* vtxdist = NULL ) const;
 
+    /******************************************************************
+     *   File I/O for MatrixStorage                                    *
+     ******************************************************************/
+
+    virtual void writeToFile(
+        const std::string& fileName,
+        const File::FileType fileType = File::BINARY,
+        const common::scalar::ScalarType dataType = common::scalar::INTERNAL,
+        const File::IndexDataType indexDataTypeIA = File::INT,
+        const File::IndexDataType indexDataTypeJA = File::INT ) const = 0;
+
 protected:
 
     /** Swaps this with other.

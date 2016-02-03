@@ -2399,7 +2399,7 @@ size_t SparseMatrix<ValueType>::getMemoryUsage() const
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void SparseMatrix<ValueType>::writeToFile(
+void SparseMatrix<ValueType>::writeToFile1(
 
     const std::string& fileName,
     const File::FileType fileType /* = UNFORMATTED */,

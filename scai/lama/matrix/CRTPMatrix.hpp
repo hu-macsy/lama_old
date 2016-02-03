@@ -190,61 +190,110 @@ public:
                 beta.getValue<ValueType>(), *denseY );
     }
 
+    /** @brief Get the row of a matrix 
+     *
+     *  @param[out] row will contain the values of the queried row of this matrix
+     *  @param[in]  i is the (global) index of the row to access
+     */
+
     void getRow( Vector& row, const IndexType globalRowIndex ) const
     {
         using namespace scai::hmemo;
 
-        SCAI_ASSERT_ERROR( row.getDistribution().isReplicated(), "row vector must be replicated" )
+        SCAI_ASSERT_LT_ERROR( globalRowIndex, getNumRows(), "illegal index" )
 
-        if ( getValueType() != row.getValueType() )
-        {
-            COMMON_THROWEXCEPTION(
-                 "Value type for row = " << row.getValueType () << " invalid" 
-                 << ", must match type of matrix = " << getValueType() )
-        }
+        // row should be a DenseVector of same type, otherwise use a temporary
+
+        common::shared_ptr<DenseVector<ValueType> > tmpVector;  // only allocated if needed
 
         DenseVector<ValueType>* typedRow = dynamic_cast<DenseVector<ValueType>*>( &row );
 
-        // row must be a DenseVector of same type
+        if ( !typedRow )
+        {
+            // so we create a temporaray DenseVector of same type, has already correct size
 
-        SCAI_ASSERT_ERROR( typedRow, "row is not DenseVector<Matrix::ValueType>" )
+            tmpVector.reset( new DenseVector<ValueType>() );
+            typedRow = tmpVector.get();
 
-        // on a replicated matrix each processor can fill the row
+            SCAI_LOG_INFO( logger, "temporary vector: " << *tmpVector << ", for row = " << row )
+        }
+
+        // if row is not same size and replicated, resize / replicate it
+
+        if ( !typedRow->getDistribution().isReplicated() || typedRow->size() != getNumColumns() )
+        {
+            DistributionPtr dist( new NoDistribution( getNumColumns() ) );
+
+            typedRow->resize( dist );
+
+            SCAI_LOG_INFO( logger, "resized vector for row, is now : " << *typedRow )
+        }
+
+        // on a replicated matrix each processor can fill the row by its own
 
         if ( getDistribution().isReplicated() )
         {
             SCAI_LOG_INFO( logger, "get local row " << globalRowIndex )
             static_cast<const Derived*>( this )->getLocalRow( *typedRow, globalRowIndex );
-            return;
         }
-
-        // on a distributed matrix, owner fills row and broadcasts it
-
-        const Communicator& comm = getDistribution().getCommunicator();
-
-        // owner fills the row
-
-        IndexType localRowIndex = getDistribution().global2local( globalRowIndex );
-
-        IndexType owner = 0;
-
-        if ( localRowIndex != nIndex )
+        else
         {
-            static_cast<const Derived*>( this )->getLocalRow( *typedRow, localRowIndex );
-            owner = comm.getRank() + 1;
-            SCAI_LOG_DEBUG( logger,
-                            "owner of row " << globalRowIndex << " is " << owner << ", local index = " << localRowIndex )
-        }
+            // on a distributed matrix, owner fills row and broadcasts it
 
-        owner = comm.sum( owner ) - 1; // get owner via a reduction
+            const Communicator& comm = getDistribution().getCommunicator();
 
-        SCAI_ASSERT_ERROR( owner >= 0, "Could not find owner of row " << globalRowIndex )
+            // owner fills the row
 
-        {
+            IndexType localRowIndex = getDistribution().global2local( globalRowIndex );
+    
+            IndexType owner = 0;
+    
+            // context where the row will have its valid data
+
             ContextPtr contextPtr = Context::getHostPtr();
+    
+            if ( localRowIndex != nIndex )
+            {
+                static_cast<const Derived*>( this )->getLocalRow( *typedRow, localRowIndex );
+                owner = comm.getRank() + 1;
+                SCAI_LOG_INFO( logger,
+                                comm << ": owner of row " << globalRowIndex << ", local index = " << localRowIndex )
+            }
+            else
+            {
+                SCAI_LOG_INFO( logger, comm << ": not owner" )
+            }
 
-            WriteAccess<ValueType> rowAccess( typedRow->getLocalValues(), contextPtr );
-            comm.bcast( rowAccess.get(), getNumColumns(), owner ); // bcast the row
+            owner = comm.sum( owner );
+
+            SCAI_ASSERT_UNEQUAL_ERROR( owner, 0, "Could not find owner of row " << globalRowIndex )
+
+            owner -= 1;  // back to range 0, ..., size-1
+
+            {
+                // only owner has to keep a valid copy, others have write-only
+
+                bool keep = owner == comm.getRank();
+
+                WriteAccess<ValueType> rowAccess( typedRow->getLocalValues(), contextPtr, keep );
+
+                SCAI_ASSERT_EQUAL_DEBUG( rowAccess.size(), getNumColumns() );
+
+                comm.bcast( rowAccess.get(), getNumColumns(), owner ); // bcast the row
+
+                SCAI_LOG_INFO( logger, comm << ": bcast done, owner = " << owner )
+            }
+        }
+
+        if ( tmpVector.get() )
+        {
+            SCAI_LOG_INFO( logger, "copy from tmp vector to result vector" )
+
+            // if we have used a temporary vector, then we copy it back
+
+            row = *tmpVector;   // implicit conversion 
+
+            SCAI_LOG_INFO( logger, "copy from tmp vector to result vector done" )
         }
     }
 
@@ -254,7 +303,11 @@ public:
 protected:
 
 #ifndef SCAI_LOG_LEVEL_OFF
+
+    // here in CRTP we do not use an own logger, just take it from the corresponding matrix class
+
     using Matrix::logger;
+
 #endif
 
 };
