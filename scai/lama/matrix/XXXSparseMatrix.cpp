@@ -34,9 +34,7 @@
 #include <scai/lama/matrix/XXXSparseMatrix.hpp>
 
 #include <scai/common/macros/print_string.hpp>
-
-// boost
-#include <boost/preprocessor.hpp>
+#include <scai/common/preprocessor.hpp>
 
 namespace scai
 {

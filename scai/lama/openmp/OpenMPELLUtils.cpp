@@ -50,9 +50,7 @@
 #include <scai/common/TypeTraits.hpp>
 
 #include <scai/tasking/TaskSyncToken.hpp>
-
-// boost
-#include <boost/preprocessor.hpp>
+#include <scai/common/preprocessor.hpp>
 
 // std
 #include <set>

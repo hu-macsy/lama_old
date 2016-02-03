@@ -51,9 +51,7 @@
 #include <scai/common/bind.hpp>
 
 #include <scai/tasking/TaskSyncToken.hpp>
-
-// boost
-#include <boost/preprocessor.hpp>
+#include <scai/common/preprocessor.hpp>
 
 namespace scai
 {

@@ -56,9 +56,7 @@
 #include <scai/common/Constants.hpp>
 #include <scai/common/macros/print_string.hpp>
 #include <scai/common/exception/UnsupportedException.hpp>
-
-// boost
-#include <boost/preprocessor.hpp>
+#include <scai/common/preprocessor.hpp>
 
 using namespace scai::hmemo;
 
@@ -103,7 +101,6 @@ void DenseMatrix<ValueType>::computeOwners()
 
             for ( unsigned int i = 0; i < requiredIndexes.size(); ++i )
             {
-//                s += " " + boost::lexical_cast<std::string>( requiredIndexes[i] );
                   s += " " + requiredIndexes[i];
             }
 
@@ -120,7 +117,6 @@ void DenseMatrix<ValueType>::computeOwners()
 
         for ( std::vector<PartitionId>::size_type i = 0; i < mOwners.size(); ++i )
         {
-//            s += " " + boost::lexical_cast<std::string>( mOwners[i] );
             s += " " + mOwners[i];
         }
 

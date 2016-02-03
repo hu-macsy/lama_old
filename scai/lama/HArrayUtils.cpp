@@ -46,9 +46,7 @@
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/Constants.hpp>
-
-// boost
-#include <boost/preprocessor.hpp>
+#include <scai/common/preprocessor.hpp>
 
 // std
 #include <iostream>

@@ -40,9 +40,7 @@
 
 // internal scai libraries
 #include <scai/hmemo/WriteAccess.hpp>
-
-// boost
-#include <boost/preprocessor.hpp>
+#include <scai/common/preprocessor.hpp>
 
 // std
 #include <cmath>

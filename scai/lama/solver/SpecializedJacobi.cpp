@@ -43,9 +43,7 @@
 #include <scai/tracing.hpp>
 
 #include <scai/common/bind.hpp>
-
-// boost
-#include <boost/preprocessor.hpp>
+#include <scai/common/preprocessor.hpp>
 
 namespace scai
 {
