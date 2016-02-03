@@ -271,7 +271,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( CopyConstructorTest, MatrixType, MatrixTypes )
     std::cout << "inputA = " << inputA << std::endl;
     DistributionPtr dist( new BlockDistribution( n, comm ) );
     MatrixType m1( inputA );
-    std::cout << "m1( inputA ) = " << m1 << std::endl;
     testSameMatrixClose( inputA, m1 );
     MatrixType m2( inputA, dist, dist );
     std::cout << "m2( inputA, dist, dist ) = " << m2 << std::endl;
