@@ -40,7 +40,6 @@
 #include <scai/solver/test/TestMacros.hpp>
 
 using namespace scai::solver;
-using namespace scai::lama;
 using namespace scai::hmemo;
 
 /* --------------------------------------------------------------------- */

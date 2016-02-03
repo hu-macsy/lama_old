@@ -51,7 +51,6 @@ inline void usleep( int t )
 #endif
 
 using namespace scai::solver;
-using namespace scai::lama;
 using namespace scai::hmemo;
 using scai::common::Exception;
 
