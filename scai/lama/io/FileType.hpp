@@ -38,8 +38,7 @@
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/ScalarType.hpp>
 #include <scai/common/TypeTraits.hpp>
-
-#include <boost/preprocessor.hpp>
+#include <scai/common/preprocessor.hpp>
 
 namespace scai
 {

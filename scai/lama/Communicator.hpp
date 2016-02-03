@@ -51,9 +51,7 @@
 #include <scai/common/macros/assert.hpp>
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/shared_ptr.hpp>
-
-// boost
-#include <boost/preprocessor.hpp>
+#include <scai/common/preprocessor.hpp>
 
 // std
 #include <memory>

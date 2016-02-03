@@ -44,9 +44,7 @@
 #include <scai/common/macros/assert.hpp>
 
 #include <scai/tracing.hpp>
-
-// boost
-#include <boost/preprocessor.hpp>
+#include <scai/common/preprocessor.hpp>
 
 // std
 #include <algorithm>
