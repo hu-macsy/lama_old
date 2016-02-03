@@ -269,17 +269,17 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( CopyConstructorTest, MatrixType, MatrixTypes )
     MatrixCreator<double>::buildPoisson2D( inputA, 9, N1, N2 );
     CommunicatorPtr comm = Communicator::getCommunicator();
     const IndexType n = inputA.getNumRows();
-    std::cout << "inputA = " << inputA << std::endl;
+    SCAI_LOG_DEBUG( logger, "inputA = " << inputA )
     DistributionPtr dist( new BlockDistribution( n, comm ) );
     MatrixType m1( inputA );
-    std::cout << "m1( inputA ) = " << m1 << std::endl;
+    SCAI_LOG_DEBUG( logger, "m1( inputA ) = " << m1 )
     testSameMatrix( inputA, m1 );
     MatrixType m2( inputA, dist, dist );
-    std::cout << "m2( inputA, dist, dist ) = " << m2 << std::endl;
+    SCAI_LOG_DEBUG( logger, "m2( inputA, dist, dist ) = " << m2 )
     testSameMatrix( inputA, m2 );
     MatrixType m3;
     m3 = inputA;
-    std::cout << "m3 ( = inputA ) = " << m3 << std::endl;
+    SCAI_LOG_DEBUG( logger, "m3 ( = inputA ) = " << m3 )
     testSameMatrix( inputA, m3 );
 };
 
@@ -454,7 +454,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( InvertTest, MatrixType, SparseMatrixTypes )
     MatrixType unity;
     unity.setIdentity( bdist );
     SCAI_LOG_INFO( logger, "Distributed identity matrix: " << mm );
-    testSameMatrix( unity, mm );
+    // CLOSE test not sufficient as mm might have inexact ZERO values 
+    Scalar small( common::TypeTraits<typename MatrixType::MatrixValueType>::small() );
+    testSameMatrix( unity, mm, small );
 }
 
 /* --------------------------------------------------------------------- */
