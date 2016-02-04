@@ -169,8 +169,6 @@ endforeach ( module ${${UPPER_PROJECT_NAME}_EXTERNAL_DEPS} )
 install ( TARGETS ${PROJECT_NAME} DESTINATION lib )
 
 ## install all Include files
-## install( FILES ${CXX_HEADERS} DESTINATION include/scai/hmemo ) does not work
-
 include( Functions/relativeInstall )
 relative_install( FILES ${CXX_HEADERS} DESTINATION ${${UPPER_PROJECT_NAME}_INCLUDE_DIR} )
 

@@ -35,7 +35,7 @@
 # LogLevels example, here we compile also LOG_TRACE macros
 
 add_executable( LogLevels LogLevels.cpp )
-target_link_libraries( LogLevels scai_logging )
+target_link_libraries( LogLevels ${PROJECT_NAME} )
 set_target_properties( LogLevels PROPERTIES COMPILE_FLAGS -DSCAI_LOG_LEVEL_TRACE )
 
 # ThreadTest example, here we need the Boost Thread library
@@ -55,7 +55,7 @@ if    ( OPENMP_FOUND )
 	set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
     # Adding this example only possible if OpenMP is available
     add_executable( LogOpenMP LogOpenMP.cpp )
-    target_link_libraries( LogOpenMP scai_logging )
+    target_link_libraries( LogOpenMP ${PROJECT_NAME} )
 else  ( OPENMP_FOUND )
     message ( STATUS "LogOpenMP example not built, no compiler option found" )
 endif ( OPENMP_FOUND )
