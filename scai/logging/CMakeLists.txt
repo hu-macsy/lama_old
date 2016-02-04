@@ -35,10 +35,12 @@
 cmake_minimum_required ( VERSION 2.8 )
 
 ### Set PROJECT NAME / supported LANGUAGES
-project( scai_logging CXX )
+project ( scai_logging CXX )
 
 ### Set Module Path
 set ( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../CMake/Modules" )
+
+include ( SetProjectVariables)
 
 include ( VersionDefinition )
 
@@ -51,7 +53,7 @@ if    ( NOT SCAI_COMPLETE_BUILD )
     include ( Package/Sphinx )
 else  ( NOT SCAI_COMPLETE_BUILD )
 	include ( Functions/CheckValueAtCompleteBuild )
-	CheckValueAtCompleteBuild ( logging )
+	CheckValueAtCompleteBuild ( ${PROJECT_SURNAME} )
 endif ( NOT SCAI_COMPLETE_BUILD )
 
 include ( CheckC++11 )
@@ -118,24 +120,25 @@ scai_project (
 
 ### add library
 
-add_library ( scai_logging ${SCAI_LIBRARY_TYPE} ${CXX_SOURCES} )
+add_library ( ${PROJECT_NAME} ${SCAI_LIBRARY_TYPE} ${CXX_SOURCES} )
 
 ## add link libraries
-list ( REVERSE SCAI_LOGGING_INTERNAL_DEPS )
-foreach    ( module ${SCAI_LOGGING_INTERNAL_DEPS} )
+set ( REVERT_LIST ${${UPPER_PROJECT_NAME}_INTERNAL_DEPS} ) # because list does not accept variable recursion
+list ( REVERSE REVERT_LIST )
+foreach    ( module ${REVERT_LIST} )
 	string ( TOUPPER ${module} upper_module )
-	set ( LOGGING_LINK_LIBRARIES ${LOGGING_LINK_LIBRARIES} ${${upper_module}_LIBRARY} )
-endforeach ( module ${SCAI_LOGGING_INTERNAL_DEPS} )
-target_link_libraries ( scai_logging ${SCAI_START_LINK_LIBRARIES} ${LOGGING_LINK_LIBRARIES} ${SCAI_END_LINK_LIBRARIES} )
+	set ( ${UPPER_PROJECT_NAME}_LINK_LIBRARIES ${${UPPER_PROJECT_NAME}_LINK_LIBRARIES} ${${upper_module}_LIBRARY} )
+endforeach ( module ${REVERT_LIST} )
+target_link_libraries ( ${PROJECT_NAME} ${SCAI_START_LINK_LIBRARIES} ${${UPPER_PROJECT_NAME}_LINK_LIBRARIES} ${SCAI_END_LINK_LIBRARIES} )
 
 ### install ###
-install ( TARGETS scai_logging DESTINATION lib )
+install ( TARGETS ${PROJECT_NAME} DESTINATION lib )
 
 include ( Functions/relativeInstall )
-relative_install ( FILES ${CXX_HEADERS} DESTINATION include/scai/logging )
+relative_install ( FILES ${CXX_HEADERS} DESTINATION ${${UPPER_PROJECT_NAME}_INCLUDE_DIR} )
 
 ## install library.hpp
-install ( FILES ../logging.hpp DESTINATION include/scai )
+install ( FILES ../${PROJECT_SURNAME}.hpp DESTINATION include/scai )
 
 ## prepare test
 configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/test/make.inc.in" "${CMAKE_CURRENT_BINARY_DIR}/test/make.inc" )
@@ -152,5 +155,5 @@ add_subdirectory( doc )
 include ( DistClean )
 
 if    ( DEFINED SCAI_CMAKE_VERBOSE OR NOT DEFINED SCAI_COMPLETE_BUILD )
-	include ( Summaries/logging )
+	include ( Summaries/${PROJECT_SURNAME} )
 endif ( DEFINED SCAI_CMAKE_VERBOSE OR NOT DEFINED SCAI_COMPLETE_BUILD )

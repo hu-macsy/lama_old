@@ -35,10 +35,12 @@
 cmake_minimum_required ( VERSION 2.8 )
 
 ### Set PROJECT NAME / supported LANGUAGES
-project( scai_tasking CXX )
+project ( scai_tasking CXX )
 
 ### Set Module Path
 set ( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../CMake/Modules" )
+
+include ( SetProjectVariables)
 
 include ( VersionDefinition )
 
@@ -51,7 +53,7 @@ if    ( NOT SCAI_COMPLETE_BUILD )
 	include ( Package/Sphinx )
 else  ( NOT SCAI_COMPLETE_BUILD )
 	include ( Functions/CheckValueAtCompleteBuild )
-	CheckValueAtCompleteBuild ( tasking )
+	CheckValueAtCompleteBuild ( ${PROJECT_SURNAME} )
 endif ( NOT SCAI_COMPLETE_BUILD )
 
 include ( CheckC++11 )
@@ -63,9 +65,9 @@ endif ( NOT CXX_SUPPORTS_C11 OR BUILD_TEST )
 include ( InternalDependencies )
 #no external dependencies
 
-foreach    ( PACKAGE_TO_FIND ${SCAI_TASKING_INTERNAL_DEPS} )
+foreach    ( PACKAGE_TO_FIND ${${UPPER_PROJECT_NAME}_INTERNAL_DEPS} )
     find_package ( ${PACKAGE_TO_FIND} ${SCAI_FIND_PACKAGE_FLAGS} REQUIRED )
-endforeach ( PACKAGE_TO_FIND ${REQUIRED_PACKAGES_TO_FIND} )
+endforeach ( PACKAGE_TO_FIND ${${UPPER_PROJECT_NAME}_INTERNAL_DEPS} )
 
 ## finalize build flags
 include ( ConcludeFlags )
@@ -84,10 +86,10 @@ endif ( WIN32 )
 ### Project System-Include
 include_directories ( ../.. )
 
-foreach    ( module ${SCAI_TASKING_INTERNAL_DEPS} )
+foreach    ( module ${${UPPER_PROJECT_NAME}_INTERNAL_DEPS} )
 	string ( TOUPPER ${module} upper_module )
     include_directories( ${${upper_module}_INCLUDE_DIR} )
-endforeach ( module ${SCAI_TASKING_INTERNAL_DEPS} )
+endforeach ( module ${${UPPER_PROJECT_NAME}_INTERNAL_DEPS} )
 
 ### build library
 
@@ -111,25 +113,26 @@ scai_project (
 )
 
 ### add library
-add_library ( scai_tasking ${SCAI_LIBRARY_TYPE} ${CXX_SOURCES} )
+add_library ( ${PROJECT_NAME} ${SCAI_LIBRARY_TYPE} ${CXX_SOURCES} )
 
 ## add link libraries
-list ( REVERSE SCAI_TASKING_INTERNAL_DEPS )
-foreach    ( module ${SCAI_TASKING_INTERNAL_DEPS} )
-	string ( TOUPPER ${module} upper_module )
-	set ( TASKING_LINK_LIBRARIES ${TASKING_LINK_LIBRARIES} ${${upper_module}_LIBRARY} )
-endforeach    ( module ${SCAI_TASKING_INTERNAL_DEPS} )
-target_link_libraries ( scai_tasking ${SCAI_START_LINK_LIBRARIES} ${TASKING_LINK_LIBRARIES} ${SCAI_END_LINK_LIBRARIES} )
+set ( REVERT_LIST ${${UPPER_PROJECT_NAME}_INTERNAL_DEPS} ) # because list does not accept variable recursion
+list ( REVERSE REVERT_LIST )
+foreach    ( module ${REVERT_LIST} )
+    string ( TOUPPER ${module} upper_module )
+    set ( ${UPPER_PROJECT_NAME}_LINK_LIBRARIES ${${UPPER_PROJECT_NAME}_LINK_LIBRARIES} ${${upper_module}_LIBRARY} )
+endforeach ( module ${REVERT_LIST} )
+target_link_libraries ( ${PROJECT_NAME} ${SCAI_START_LINK_LIBRARIES} ${${UPPER_PROJECT_NAME}_LINK_LIBRARIES} ${SCAI_END_LINK_LIBRARIES} )
 
 ### install ###
-install ( TARGETS scai_tasking DESTINATION lib )
+install ( TARGETS ${PROJECT_NAME} DESTINATION lib )
 
 include( Functions/relativeInstall )
 
-relative_install ( FILES ${CXX_HEADERS} DESTINATION include/scai/tasking )
+relative_install ( FILES ${CXX_HEADERS} DESTINATION ${${UPPER_PROJECT_NAME}_INCLUDE_DIR} )
 
 ## install library.hpp
-install ( FILES ../tasking.hpp DESTINATION include/scai )
+install ( FILES ../${PROJECT_SURNAME}.hpp DESTINATION include/scai )
 
 ### add documentation
 add_subdirectory( doc )
@@ -138,5 +141,5 @@ add_subdirectory( doc )
 include ( DistClean )
 
 if    ( DEFINED SCAI_CMAKE_VERBOSE OR NOT DEFINED SCAI_COMPLETE_BUILD )
-	include ( Summaries/tasking )
+	include ( Summaries/${PROJECT_SURNAME} )
 endif ( DEFINED SCAI_CMAKE_VERBOSE OR NOT DEFINED SCAI_COMPLETE_BUILD )

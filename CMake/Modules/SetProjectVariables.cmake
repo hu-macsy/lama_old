@@ -1,8 +1,8 @@
 ###
- # @file CMakeLists.txt
+ # @file Variables.cmake
  #
  # @license
- # Copyright (c) 2009-2015
+ # Copyright (c) 2009-2013
  # Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  # for Fraunhofer-Gesellschaft
  #
@@ -25,28 +25,24 @@
  # SOFTWARE.
  # @endlicense
  #
- # @brief CMake configuration file for common examples
- # @author Thomas Brandes
- # @date 16.06.2015
+ # @brief set project name variable for flexible use in the subprojects
+ # @author Lauretta Schubert
+ # @date 04.02.2016
+ # @since 2.0.0
 ###
 
-# REMARKS
-#
-#   - include_directories are taken over from project
-#
+## upper case project name
+string ( TOUPPER ${PROJECT_NAME} UPPER_PROJECT_NAME )
 
-foreach ( executable CUSparseExample CUBlasExample MemBandwidth Prefetch Allocate )
-    add_executable( ${executable} ${executable}.cpp )
-    target_link_libraries( ${executable} ${PROJECT_NAME} )
-    set ( EXAMPLE_EXECUTABLES_CUDA "${EXAMPLE_EXECUTABLES_CUDA} ${executable}.exe" )
-endforeach ( executable )
+## get project "sur"name (everthing after scai_)
+string ( SUBSTRING ${PROJECT_NAME} 5 -1 PROJECT_SURNAME )
 
-foreach ( executable Example1 Example2 Devices CUDABenchContext AliasProblem )
-    cuda_add_executable( ${executable} ${executable}.cu )
-    target_link_libraries( ${executable} ${PROJECT_NAME} )
-    set ( EXAMPLE_EXECUTABLES_CUDA "${EXAMPLE_EXECUTABLES_CUDA} ${executable}.exe" )
-endforeach ( executable )
+## upper case project name for project dependent variables
+set ( ${UPPER_PROJECT_NAME}_INCLUDE_DIR include/scai/${PROJECT_SURNAME} )
 
+## example dir
+set ( PROJECT_EXAMPLE_DIR share/examples/scai-${SCAI_SURNAME}-${${UPPER_PROJECT_NAME}_VERSION} )
 
-set ( EXAMPLE_EXECUTABLES_CUDA "${EXAMPLE_EXECUTABLES_CUDA}" PARENT_SCOPE )
-
+## doc dir
+set ( DOC_ROOT_DIR share/doc )
+set ( PROJECT_DOC_DIR ${DOC_ROOT_DIR}/scai-${SCAI_SURNAME}-${${UPPER_PROJECT_NAME}_VERSION} )

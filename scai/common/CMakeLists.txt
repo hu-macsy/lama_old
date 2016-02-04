@@ -40,6 +40,8 @@ project ( scai_common CXX )
 ### Set Module Path
 set ( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../CMake/Modules" )
 
+include ( SetProjectVariables)
+
 include ( VersionDefinition )
 
 ### Include Compiler Flags
@@ -51,7 +53,7 @@ if    ( NOT SCAI_COMPLETE_BUILD )
 	include ( Package/Sphinx )
 else  ( NOT SCAI_COMPLETE_BUILD )
 	include ( Functions/CheckValueAtCompleteBuild )
-	CheckValueAtCompleteBuild ( common )
+	CheckValueAtCompleteBuild ( ${PROJECT_SURNAME} )
 endif ( NOT SCAI_COMPLETE_BUILD )
 
 include ( CheckC++11 )
@@ -63,9 +65,9 @@ endif ( NOT CXX_SUPPORTS_C11 OR BUILD_TEST )
 # no internal dependencies
 include ( ExternalDependencies )
 
-foreach    ( module ${SCAI_COMMON_EXTERNAL_DEPS} )
+foreach    ( module ${${UPPER_PROJECT_NAME}_EXTERNAL_DEPS} )
     include( Package/${module} )
-endforeach ( module ${SCAI_COMMON_EXTERNAL_DEPS} )
+endforeach ( module ${${UPPER_PROJECT_NAME}_EXTERNAL_DEPS} )
 
 ### finalize build flags
 include ( ConcludeFlags )
@@ -117,29 +119,31 @@ scai_project (
         TypeTraits
 )
 
-if    ( NOT CXX_SUPPORTS_C11 )
-    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/boost_check.hpp.in" "${CMAKE_CURRENT_BINARY_DIR}/include/scai/common/boost_check.hpp" )
-    install ( FILES ${CMAKE_CURRENT_BINARY_DIR}/include/scai/common/boost_check.hpp DESTINATION include/scai/common )
+set ( CONFIGURE_DIR "${CMAKE_CURRENT_BINARY_DIR}/include/scai/${PROJECT_SURNAME}" )
 
-    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/bind.hpp.in_boost" "${CMAKE_CURRENT_BINARY_DIR}/include/scai/common/bind.hpp" )
-    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/function.hpp.in_boost" "${CMAKE_CURRENT_BINARY_DIR}/include/scai/common/function.hpp" )
-    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/shared_ptr.hpp.in_boost" "${CMAKE_CURRENT_BINARY_DIR}/include/scai/common/shared_ptr.hpp" )
+if    ( NOT CXX_SUPPORTS_C11 )
+    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/boost_check.hpp.in" "${CONFIGURE_DIR}/boost_check.hpp" )
+    install ( FILES ${CONFIGURE_DIR}/boost_check.hpp DESTINATION ${${UPPER_PROJECT_NAME}_INCLUDE_DIR} )
+
+    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/bind.hpp.in_boost" "${CONFIGURE_DIR}/bind.hpp" )
+    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/function.hpp.in_boost" "${CONFIGURE_DIR}/function.hpp" )
+    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/shared_ptr.hpp.in_boost" "${CONFIGURE_DIR}/shared_ptr.hpp" )
     if    ( ${Boost_VERSION} GREATER "105700" )
-        configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/unique_ptr.hpp.in_boost_157" "${CMAKE_CURRENT_BINARY_DIR}/include/scai/common/unique_ptr.hpp" )
+        configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/unique_ptr.hpp.in_boost_157" "${CONFIGURE_DIR}/unique_ptr.hpp" )
     else  ( ${Boost_VERSION} GREATER "105700" )
-        configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/unique_ptr.hpp.in_boost" "${CMAKE_CURRENT_BINARY_DIR}/include/scai/common/unique_ptr.hpp" )
+        configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/unique_ptr.hpp.in_boost" "${CONFIGURE_DIR}/unique_ptr.hpp" )
     endif ( ${Boost_VERSION} GREATER "105700" )
-    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/weak_ptr.hpp.in_boost" "${CMAKE_CURRENT_BINARY_DIR}/include/scai/common/weak_ptr.hpp" )
+    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/weak_ptr.hpp.in_boost" "${CONFIGURE_DIR}/weak_ptr.hpp" )
 else  ( NOT CXX_SUPPORTS_C11 )
-    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/bind.hpp.in" "${CMAKE_CURRENT_BINARY_DIR}/include/scai/common/bind.hpp" )
-    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/function.hpp.in" "${CMAKE_CURRENT_BINARY_DIR}/include/scai/common/function.hpp" )
-    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/shared_ptr.hpp.in" "${CMAKE_CURRENT_BINARY_DIR}/include/scai/common/shared_ptr.hpp" )
-    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/unique_ptr.hpp.in" "${CMAKE_CURRENT_BINARY_DIR}/include/scai/common/unique_ptr.hpp" )
-    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/weak_ptr.hpp.in" "${CMAKE_CURRENT_BINARY_DIR}/include/scai/common/weak_ptr.hpp" )
+    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/bind.hpp.in" "${CONFIGURE_DIR}/bind.hpp" )
+    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/function.hpp.in" "${CONFIGURE_DIR}/function.hpp" )
+    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/shared_ptr.hpp.in" "${CONFIGURE_DIR}/shared_ptr.hpp" )
+    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/unique_ptr.hpp.in" "${CONFIGURE_DIR}/unique_ptr.hpp" )
+    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/weak_ptr.hpp.in" "${CONFIGURE_DIR}/weak_ptr.hpp" )
 endif ( NOT CXX_SUPPORTS_C11 )
-install ( FILES ${CMAKE_CURRENT_BINARY_DIR}/include/scai/common/bind.hpp ${CMAKE_CURRENT_BINARY_DIR}/include/scai/common/function.hpp
-                ${CMAKE_CURRENT_BINARY_DIR}/include/scai/common/shared_ptr.hpp ${CMAKE_CURRENT_BINARY_DIR}/include/scai/common/unique_ptr.hpp
-                ${CMAKE_CURRENT_BINARY_DIR}/include/scai/common/weak_ptr.hpp DESTINATION include/scai/common )
+install ( FILES ${CONFIGURE_DIR}/bind.hpp ${CONFIGURE_DIR}/function.hpp
+                ${CONFIGURE_DIR}/shared_ptr.hpp ${CONFIGURE_DIR}/unique_ptr.hpp
+                ${CONFIGURE_DIR}/weak_ptr.hpp DESTINATION ${${UPPER_PROJECT_NAME}_INCLUDE_DIR} )
 
 ## add CUDA if supported
 if    ( CUDA_FOUND AND USE_CUDA )
@@ -158,27 +162,28 @@ if ( FOUND_BOOST_TEST AND BUILD_TEST )
 endif ( FOUND_BOOST_TEST AND BUILD_TEST )
 
 ## add library
-add_library ( scai_common ${SCAI_LIBRARY_TYPE} ${CXX_SOURCES} )
+add_library ( ${PROJECT_NAME} ${SCAI_LIBRARY_TYPE} ${CXX_SOURCES} )
+set_target_properties ( ${PROJECT_NAME} PROPERTIES VERSION ${${UPPER_PROJECT_NAME}_VERSION} )
 
 ## add link libraries
-foreach    ( module ${SCAI_COMMON_EXTERNAL_DEPS} )
+foreach    ( module ${${UPPER_PROJECT_NAME}_EXTERNAL_DEPS} )
 	string ( TOUPPER ${module} upper_module )
-    target_link_libraries ( scai_common ${SCAI_${upper_module}_LIBRARIES} )
-endforeach ( module ${SCAI_COMMON_EXTERNAL_DEPS} )
+    target_link_libraries ( ${PROJECT_NAME} ${SCAI_${upper_module}_LIBRARIES} )
+endforeach ( module ${${UPPER_PROJECT_NAME}_EXTERNAL_DEPS} )
 
 ## add DL library (ToDo: add it to SCAI_COMMON_EXTERNAL_DEPS)
 
 find_library( SCAI_DL_LIBRARIES dl )
-target_link_libraries( scai_common ${SCAI_DL_LIBRARIES} )
+target_link_libraries( ${PROJECT_NAME} ${SCAI_DL_LIBRARIES} )
 
 ### install ###
-install ( TARGETS scai_common DESTINATION lib )
+install ( TARGETS ${PROJECT_NAME} DESTINATION lib )
 
 include ( Functions/relativeInstall )
-relative_install ( FILES ${CXX_HEADERS} DESTINATION include/scai/common )
+relative_install ( FILES ${CXX_HEADERS} DESTINATION ${${UPPER_PROJECT_NAME}_INCLUDE_DIR} )
 
 ## install library.hpp
-install ( FILES ../common.hpp DESTINATION include/scai )
+install ( FILES ../${PROJECT_SURNAME}.hpp DESTINATION include/scai )
 
 ### add documentation
 add_subdirectory( doc )
@@ -187,5 +192,5 @@ add_subdirectory( doc )
 include ( DistClean )
 
 if    ( DEFINED SCAI_CMAKE_VERBOSE OR NOT DEFINED SCAI_COMPLETE_BUILD )
-	include ( Summaries/common )
+	include ( Summaries/${PROJECT_SURNAME} )
 endif ( DEFINED SCAI_CMAKE_VERBOSE OR NOT DEFINED SCAI_COMPLETE_BUILD )

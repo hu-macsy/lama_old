@@ -43,7 +43,7 @@ include_directories ( ${Boost_INCLUDE_DIR} )
 
 add_executable ( MemoryTest ${CXX_SOURCES} )
 
-target_link_libraries ( MemoryTest ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} scai_hmemo )
+target_link_libraries ( MemoryTest ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} ${PROJECT_NAME} )
 
 if    ( CUDA_FOUND AND USE_CUDA )
     add_subdirectory ( cuda )

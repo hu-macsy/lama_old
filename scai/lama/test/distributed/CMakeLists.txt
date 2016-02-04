@@ -104,7 +104,7 @@ add_executable ( lama_dist_test lama_dist_test.cpp ${CXX_SOURCES} )
 
 ### set target link libraries ###
 if ( WIN32 )
-    target_link_libraries ( lama_dist_test ama )
+    target_link_libraries ( lama_dist_test ${PROJECT_NAME} )
 else ( WIN32 )
-    target_link_libraries ( lama_dist_test ama ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} ${Boost_REGEX_LIBRARY} )
+    target_link_libraries ( lama_dist_test ${PROJECT_NAME} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} ${Boost_REGEX_LIBRARY} )
 endif ( WIN32 )

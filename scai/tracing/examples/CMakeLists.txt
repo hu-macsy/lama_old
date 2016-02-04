@@ -42,5 +42,5 @@ endforeach ( executable )
 
 ## install examples
 configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/make.inc.in" "${CMAKE_CURRENT_BINARY_DIR}/make.inc" )
-install ( DIRECTORY ./ DESTINATION share/examples/scai-tracing-${SCAI_TRACING_VERSION} FILES_MATCHING PATTERN "*.cpp" )
-install ( FILES Makefile ${CMAKE_CURRENT_BINARY_DIR}/make.inc DESTINATION share/examples/scai-tracing-${SCAI_TRACING_VERSION} )
+install ( DIRECTORY ./ DESTINATION ${PROJECT_EXAMPLE_DIR} FILES_MATCHING PATTERN "*.cpp" )
+install ( FILES Makefile ${CMAKE_CURRENT_BINARY_DIR}/make.inc DESTINATION ${PROJECT_EXAMPLE_DIR} )

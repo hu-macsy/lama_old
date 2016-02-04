@@ -35,10 +35,12 @@
 cmake_minimum_required ( VERSION 2.8 )
 
 ### Set PROJECT NAME / supported LANGUAGES
-project( scai_blaskernel CXX )
+project ( scai_blaskernel CXX )
 
 ### Set Module Path
 set ( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../CMake/Modules" )
+
+include ( SetProjectVariables)
 
 include ( VersionDefinition )
 
@@ -51,7 +53,7 @@ if    ( NOT SCAI_COMPLETE_BUILD )
     include ( Package/Sphinx )
 else  ( NOT SCAI_COMPLETE_BUILD )	
 	include ( Functions/CheckValueAtCompleteBuild )
-	CheckValueAtCompleteBuild ( blaskernel )
+	CheckValueAtCompleteBuild ( ${PROJECT_SURNAME} )
 endif ( NOT SCAI_COMPLETE_BUILD )
 
 include ( CheckC++11 )
@@ -63,13 +65,13 @@ endif ( NOT CXX_SUPPORTS_C11 OR BUILD_TEST )
 include ( InternalDependencies )
 include ( ExternalDependencies )
 
-foreach    ( module ${SCAI_BLASKERNEL_EXTERNAL_DEPS} )
+foreach    ( module ${${UPPER_PROJECT_NAME}_EXTERNAL_DEPS} )
     include( Package/${module} )
-endforeach ( module ${SCAI_BLASKERNEL_EXTERNAL_DEPS} )
+endforeach ( module ${${UPPER_PROJECT_NAME}_EXTERNAL_DEPS} )
 
-foreach    ( PACKAGE_TO_FIND ${SCAI_BLASKERNEL_INTERNAL_DEPS} )
+foreach    ( PACKAGE_TO_FIND ${${UPPER_PROJECT_NAME}_INTERNAL_DEPS} )
     find_package ( ${PACKAGE_TO_FIND} ${SCAI_FIND_PACKAGE_FLAGS} REQUIRED )
-endforeach ( PACKAGE_TO_FIND ${REQUIRED_PACKAGES_TO_FIND} )
+endforeach ( PACKAGE_TO_FIND ${${UPPER_PROJECT_NAME}_INTERNAL_DEPS} )
 
 ## finalize build flags
 include ( ConcludeFlags )
@@ -102,10 +104,10 @@ endif ( WIN32 )
 ## Project System-Include
 include_directories ( ../.. )
 
-foreach    ( module ${SCAI_BLASKERNEL_INTERNAL_DEPS} ${SCAI_BLASKERNEL_EXTERNAL_DEPS} )
+foreach    ( module ${${UPPER_PROJECT_NAME}_INTERNAL_DEPS} ${${UPPER_PROJECT_NAME}_EXTERNAL_DEPS} )
 	string ( TOUPPER ${module} upper_module )
     include_directories( ${${upper_module}_INCLUDE_DIR} )
-endforeach ( module ${SCAI_BLASKERNEL_BLASKERNEL_DEPS} ${SCAI_BLASKERNEL_EXTERNAL_DEPS} )
+endforeach ( module ${${UPPER_PROJECT_NAME}_INTERNAL_DEPS} ${${UPPER_PROJECT_NAME}_EXTERNAL_DEPS} )
 
 ### build library
 
@@ -153,20 +155,21 @@ if    ( CUDA_FOUND AND USE_CUDA AND CUDA_HAVE_GPU )
 	set ( CXX_SOURCES ${CXX_SOURCES} ${CUDA_FILES} )
 endif ( CUDA_FOUND AND USE_CUDA AND CUDA_HAVE_GPU )
 
-add_library ( scai_blaskernel ${SCAI_LIBRARY_TYPE} ${CXX_SOURCES} )
+add_library ( ${PROJECT_NAME} ${SCAI_LIBRARY_TYPE} ${CXX_SOURCES} )
 
 ## add link libraries
-list ( REVERSE SCAI_BLASKERNEL_INTERNAL_DEPS )
-foreach    ( module ${SCAI_BLASKERNEL_INTERNAL_DEPS} )
-	string ( TOUPPER ${module} upper_module )
-	set ( BLASKERNEL_LINK_LIBRARIES ${BLASKERNEL_LINK_LIBRARIES} ${${upper_module}_LIBRARY} )
-endforeach ( module ${SCAI_BLASKERNEL_INTERNAL_DEPS} )
-target_link_libraries ( scai_blaskernel ${SCAI_START_LINK_LIBRARIES} ${BLASKERNEL_LINK_LIBRARIES} ${SCAI_END_LINK_LIBRARIES} )
+set ( REVERT_LIST ${${UPPER_PROJECT_NAME}_INTERNAL_DEPS} ) # because list does not accept variable recursion
+list ( REVERSE REVERT_LIST )
+foreach    ( module ${REVERT_LIST} )
+    string ( TOUPPER ${module} upper_module )
+    set ( ${UPPER_PROJECT_NAME}_LINK_LIBRARIES ${${UPPER_PROJECT_NAME}_LINK_LIBRARIES} ${${upper_module}_LIBRARY} )
+endforeach ( module ${REVERT_LIST} )
+target_link_libraries ( ${PROJECT_NAME} ${SCAI_START_LINK_LIBRARIES} ${${UPPER_PROJECT_NAME}_LINK_LIBRARIES} ${SCAI_END_LINK_LIBRARIES} )
 
-foreach    ( module ${SCAI_BLASKERNEL_EXTERNAL_DEPS} )
+foreach    ( module ${${UPPER_PROJECT_NAME}_EXTERNAL_DEPS} )
 	string ( TOUPPER ${module} upper_module )
-    target_link_libraries ( scai_blaskernel ${SCAI_${upper_module}_LIBRARIES} )
-endforeach ( module ${SCAI_BLASKERNEL_EXTERNAL_DEPS} )
+    target_link_libraries ( ${PROJECT_NAME} ${SCAI_${upper_module}_LIBRARIES} )
+endforeach ( module ${${UPPER_PROJECT_NAME}_EXTERNAL_DEPS} )
 
 if ( USE_MIC )
     set ( MKLROOT $ENV{MKLROOT} )
@@ -176,13 +179,13 @@ endif ( USE_MIC )
 
 ### install
 
-install ( TARGETS scai_blaskernel DESTINATION lib )
+install ( TARGETS ${PROJECT_NAME} DESTINATION lib )
 
 include( Functions/relativeInstall )
-relative_install( FILES ${CXX_HEADERS} DESTINATION include/scai/blaskernel )
+relative_install( FILES ${CXX_HEADERS} DESTINATION ${${UPPER_PROJECT_NAME}_INCLUDE_DIR} )
 
 ## install library.hpp
-install ( FILES ../blaskernel.hpp DESTINATION include/scai )
+install ( FILES ../${PROJECT_SURNAME}.hpp DESTINATION include/scai )
 
 ###  add documentation
 add_subdirectory( doc )
@@ -191,5 +194,5 @@ add_subdirectory( doc )
 include ( DistClean )
 
 if    ( DEFINED SCAI_CMAKE_VERBOSE OR NOT DEFINED SCAI_COMPLETE_BUILD )
-    include ( Summaries/blaskernel )
+    include ( Summaries/${PROJECT_SURNAME} )
 endif ( DEFINED SCAI_CMAKE_VERBOSE OR NOT DEFINED SCAI_COMPLETE_BUILD )

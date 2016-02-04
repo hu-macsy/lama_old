@@ -32,7 +32,7 @@
 
 foreach ( executable amg_solver cg_solver gmres_solver solver lama_info matrix_generator matrix_convert vector_generator )
     add_executable( ${executable}.exe ${executable}.cpp )
-    target_link_libraries( ${executable}.exe ama )
+    target_link_libraries( ${executable}.exe ${PROJECT_NAME} )
     set ( EXAMPLE_EXECUTABLES_SOLVER "${EXAMPLE_EXECUTABLES_SOLVER} ${executable}.exe" )
 endforeach ( executable )
 
