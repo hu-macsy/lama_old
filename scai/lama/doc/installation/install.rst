@@ -18,14 +18,12 @@ using the LAMA library.
 
 The directory ``{SCAI_ROOT}/lib`` should contain the following libraries:
 
-- libama.so  
 - libscai_common.so
-- libscai_hmemo.so
 - libscai_logging.so
-- libscai_tasking.so
 - libscai_tracing.so
-
-.. Outdated entries
-.. - liblog4lama.so
-.. - libamacuda.so  (available if CUDA is available)
-.. - libamampi.so   (available if MPI is available)
+- libscai_tasking.so
+- libscai_hmemo.so
+- libscai_kregistry.so
+- libscai_blaskernel.so
+- libscai_lama.so
+- libscai_solver.so

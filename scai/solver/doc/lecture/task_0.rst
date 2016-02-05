@@ -131,9 +131,9 @@ the error.
 Task 0 and an example input matrix can be found in
 **<project-root>/examples/lecture**.
 
-:download:`Download source file Task 0 <../../../lama/examples/lecture/task0.cpp>`
+:download:`Download source file Task 0 <../../../solver/examples/lecture/task0.cpp>`
 
-:download:`Download input matrix <../../../lama/examples/lecture/gr_30_30.mtx>`
+:download:`Download input matrix <../../../solver/examples/lecture/gr_30_30.mtx>`
 
 .. csv-table:: 
    :header: "previous", "Solution", "next"
