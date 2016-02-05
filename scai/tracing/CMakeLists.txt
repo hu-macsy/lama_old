@@ -41,8 +41,9 @@ project ( scai_tracing CXX )
 set ( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../CMake/Modules" )
 
 include ( SetProjectVariables)
-
 include ( VersionDefinition )
+
+include ( Functions/scaiFunctions )
 
 ### Include Compiler Flags
 if    ( NOT SCAI_COMPLETE_BUILD )
@@ -64,10 +65,7 @@ endif ( NOT CXX_SUPPORTS_C11 OR BUILD_TEST )
 ### include all search packages
 include ( InternalDependencies )
 # no external dependencies
-
-foreach    ( PACKAGE_TO_FIND ${SCAI_TRACING_INTERNAL_DEPS} )
-    find_package ( ${PACKAGE_TO_FIND} ${SCAI_FIND_PACKAGE_FLAGS} REQUIRED )
-endforeach ( PACKAGE_TO_FIND ${SCAI_TRACING_INTERNAL_DEPS} )
+addInternalPackages()
 
 ## finalize build flags
 include ( ConcludeFlags )
@@ -84,11 +82,7 @@ endif ( WIN32 )
 
 ### Project System-Include
 include_directories ( ../.. )
-
-foreach    ( module ${SCAI_TRACING_INTERNAL_DEPS} )
-	string ( TOUPPER ${module} upper_module )
-    include_directories( ${${upper_module}_INCLUDE_DIR} )
-endforeach ( module ${SCAI_TRACING_INTERNAL_DEPS} )
+addInternalIncludes()
 
 ### build library
 
@@ -115,15 +109,10 @@ scai_project (
 
 ### add library
 add_library ( ${PROJECT_NAME} ${SCAI_LIBRARY_TYPE} ${CXX_SOURCES} )
+set_target_properties ( ${PROJECT_NAME} PROPERTIES VERSION ${${UPPER_PROJECT_NAME}_VERSION} )
 
 ## add link libraries
-set ( REVERT_LIST ${${UPPER_PROJECT_NAME}_INTERNAL_DEPS} ) # because list does not accept variable recursion
-list ( REVERSE REVERT_LIST )
-foreach    ( module ${REVERT_LIST} )
-    string ( TOUPPER ${module} upper_module )
-    set ( ${UPPER_PROJECT_NAME}_LINK_LIBRARIES ${${UPPER_PROJECT_NAME}_LINK_LIBRARIES} ${${upper_module}_LIBRARY} )
-endforeach ( module ${REVERT_LIST} )
-target_link_libraries ( ${PROJECT_NAME} ${SCAI_START_LINK_LIBRARIES} ${${UPPER_PROJECT_NAME}_LINK_LIBRARIES} ${SCAI_END_LINK_LIBRARIES} )
+addInternalLinkLibraries()
 
 ## add subdirectories
 add_subdirectory ( examples )

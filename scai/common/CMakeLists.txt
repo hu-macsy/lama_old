@@ -41,8 +41,9 @@ project ( scai_common CXX )
 set ( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../CMake/Modules" )
 
 include ( SetProjectVariables)
-
 include ( VersionDefinition )
+
+include ( Functions/scaiFunctions )
 
 ### Include Compiler Flags
 if    ( NOT SCAI_COMPLETE_BUILD )
@@ -64,10 +65,7 @@ endif ( NOT CXX_SUPPORTS_C11 OR BUILD_TEST )
 ### include all search packages
 # no internal dependencies
 include ( ExternalDependencies )
-
-foreach    ( module ${${UPPER_PROJECT_NAME}_EXTERNAL_DEPS} )
-    include( Package/${module} )
-endforeach ( module ${${UPPER_PROJECT_NAME}_EXTERNAL_DEPS} )
+addExternalPackages()
 
 ### finalize build flags
 include ( ConcludeFlags )
@@ -83,6 +81,7 @@ endif ( WIN32 )
 
 ### Project System-Include
 include_directories ( ../.. ${CMAKE_CURRENT_BINARY_DIR}/include )
+addExternalIncludes()
 
 ### build library
 
@@ -166,15 +165,7 @@ add_library ( ${PROJECT_NAME} ${SCAI_LIBRARY_TYPE} ${CXX_SOURCES} )
 set_target_properties ( ${PROJECT_NAME} PROPERTIES VERSION ${${UPPER_PROJECT_NAME}_VERSION} )
 
 ## add link libraries
-foreach    ( module ${${UPPER_PROJECT_NAME}_EXTERNAL_DEPS} )
-	string ( TOUPPER ${module} upper_module )
-    target_link_libraries ( ${PROJECT_NAME} ${SCAI_${upper_module}_LIBRARIES} )
-endforeach ( module ${${UPPER_PROJECT_NAME}_EXTERNAL_DEPS} )
-
-## add DL library (ToDo: add it to SCAI_COMMON_EXTERNAL_DEPS)
-
-find_library( SCAI_DL_LIBRARIES dl )
-target_link_libraries( ${PROJECT_NAME} ${SCAI_DL_LIBRARIES} )
+addExternalLinkLibraries()
 
 ### install ###
 install ( TARGETS ${PROJECT_NAME} DESTINATION lib )

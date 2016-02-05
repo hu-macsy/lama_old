@@ -114,26 +114,36 @@ scai_summary_message ( "USE"
                        "MIC"
                        "" )
 
+set ( REQUIRED_FOUND FALSE )
+if    ( SCAI_COMMON_FOUND AND SCAI_LOGGING_FOUND AND SCAI_TRACING_FOUND AND SCAI_TASKING_FOUND )
+  set ( REQUIRED_FOUND TRUE )
+endif ( SCAI_COMMON_FOUND AND SCAI_LOGGING_FOUND AND SCAI_TRACING_FOUND AND SCAI_TASKING_FOUND )
+
 message ( STATUS "" )
-scai_summary_message ( "FOUND"
-                       "SCAI_COMMON_FOUND"
-                       "SCAI Common"
+scai_summary_message ( "STATIC"
+                       "REQUIRED_FOUND"
+                       "Internal Libraries (core)"
                        "" )
-                       
-scai_summary_message ( "FOUND"
-                       "SCAI_LOGGING_FOUND"
-                       "SCAI Logging"
-                       "" )
-                       
-scai_summary_message ( "FOUND"
-                       "SCAI_TRACING_FOUND"
-                       "SCAI Tracing"
-                       "" )
-                       
-scai_summary_message ( "FOUND"
-                       "SCAI_TASKING_FOUND"
-                       "SCAI Tasking"
-                       "" )
+
+    scai_summary_message ( "FOUND"
+                           "SCAI_COMMON_FOUND"
+                           "SCAI Common"
+                           "" )
+                           
+    scai_summary_message ( "FOUND"
+                           "SCAI_LOGGING_FOUND"
+                           "SCAI Logging"
+                           "" )
+                           
+    scai_summary_message ( "FOUND"
+                           "SCAI_TRACING_FOUND"
+                           "SCAI Tracing"
+                           "" )
+                           
+    scai_summary_message ( "FOUND"
+                           "SCAI_TASKING_FOUND"
+                           "SCAI Tasking"
+                           "" )
 
 # LAMA TEST
 message ( STATUS "" )
