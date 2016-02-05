@@ -42,7 +42,6 @@
 // internal scai libraries
 #include <scai/hmemo/mic/MICSyncToken.hpp>
 #include <scai/kregistry/KernelRegistry.hpp>
-#include <scai/common/ScalarType.hpp>
 #include <scai/common/TypeTraits.hpp>
 
 #include <scai/tracing.hpp>

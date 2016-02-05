@@ -1,12 +1,5 @@
-/*
- * BLASWrapper.hpp
- *
- *  Created on: 24.08.2015
- *      Author: eschricker
- */
-
 /**
- * @file BLASWrapper.hpp
+ * @file MICBLASWrapper.hpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -34,137 +27,68 @@
  *
  * @brief Wrapper for BLAS functions
  * @author Eric Schricker
- * @date 24.08.2015
+ * @date 25.01.2016
  * @since 2.0.0
  */
 
 #pragma once
 
-#include <scai/blaskernel/MKLUtils.hpp>
+// local library
+#include <scai/blaskernel/cblas.hpp>
+#include <scai/blaskernel/mic/MICBLASTrait.hpp>
 
-#include <scai/common/exception/NotSupportedValueTypeException.hpp>
+// scai internal libraries
+#include <scai/common/mic/MICCallable.hpp>
 
-#include <scai/common/macros/unused.hpp>
-#include <scai/common/SCAITypes.hpp>
-
+// external
 #include <mkl.h>
 
 namespace scai {
 
 namespace blaskernel {
 
-class COMMON_DLL_IMPORTEXPORT MICBLASWrapper {
-public:
-	typedef int BLASIndexType;
-	typedef char BLASTranspose;
+template<typename ValueType>
+class COMMON_DLL_IMPORTEXPORT MICBLASWrapper;
 
-	// ------------- BLAS2 -------------
-	template<typename ValueType>
-	__declspec( target(mic) )
-	static void gemv(const BLASTranspose UNUSED(transA_BLASTranspose),
-			const BLASIndexType UNUSED(m), const BLASIndexType UNUSED(n),
-			const ValueType UNUSED(alpha), const ValueType* UNUSED(A),
-			const BLASIndexType UNUSED(lda), const ValueType* UNUSED(x),
-			const BLASIndexType UNUSED(incX), const ValueType UNUSED(beta),
-			ValueType* UNUSED(y), const BLASIndexType UNUSED(incY)) {
-		SCAI_THROWEXCEPTION(common::NotSupportedValueTypeException, "gemv");
-	}
-
-	// ------------- BLAS3 -------------
-	template<typename ValueType>
-	__declspec( target(mic) ) 
-	static void gemm(const BLASTranspose UNUSED(transA_BLASTranspose),
-			const BLASTranspose UNUSED(transB_BLASTranspose),
-			const BLASIndexType UNUSED(m), const BLASIndexType UNUSED(n),
-			const BLASIndexType UNUSED(k), const ValueType UNUSED(alpha),
-			const ValueType* UNUSED(A), const BLASIndexType UNUSED(lda),
-			const ValueType* UNUSED(B), const BLASIndexType UNUSED(ldb),
-			const ValueType UNUSED(beta), ValueType* UNUSED(C),
-			const BLASIndexType UNUSED(ldc)) {
-		SCAI_THROWEXCEPTION(common::NotSupportedValueTypeException, "gemm");
-	}
+#define MICBLASWRAPPER_DEF( ValueType, MICBLASValueType, prefix1, prefix2, prefix3, DOT ) 								\
+template<>																												\
+class COMMON_DLL_IMPORTEXPORT MICBLASWrapper<ValueType>																	\
+{																														\
+public:																													\
+	typedef MICBLASTrait::BLASIndexType BLASIndexType;																	\
+	typedef MICBLASTrait::BLASTrans BLASTrans;																			\
+																														\
+	static MIC_CALLABLE_MEMBER void gemv( const BLASTrans transA, const BLASIndexType m, const BLASIndexType n,			\
+			const ValueType alpha, const ValueType* A, const BLASIndexType lda, const ValueType* x,						\
+			const BLASIndexType incX, const ValueType beta, ValueType* y, const BLASIndexType incY) 					\
+	{																													\
+		MIC_BLAS_NAME( gemv, prefix1 )( &transA, &m, &n, reinterpret_cast<const MICBLASValueType*>( &alpha ),			\
+				reinterpret_cast<const MICBLASValueType*>( A ), &lda, reinterpret_cast<const MICBLASValueType*>( x ), 	\
+				&incX, reinterpret_cast<const MICBLASValueType*>( &beta ), reinterpret_cast<MICBLASValueType*>( y ), 	\
+				&incY );																								\
+	}																													\
+																														\
+	static MIC_CALLABLE_MEMBER void gemm( const BLASTrans transA, const BLASTrans transB,								\
+			const BLASIndexType m, const BLASIndexType n, const BLASIndexType k,										\
+			const ValueType alpha, const ValueType* A, const BLASIndexType lda, const ValueType* B,						\
+			const BLASIndexType ldb, const ValueType beta, ValueType* C, const BLASIndexType ldc) 						\
+	{																													\
+		MIC_BLAS_NAME( gemm, prefix1 )( &transA, &transB, &m, &n, &k, 													\
+				reinterpret_cast<const MICBLASValueType*>( &alpha ), reinterpret_cast<const MICBLASValueType*>( A ), 	\
+				&lda, reinterpret_cast<const MICBLASValueType*>( B ), &ldb, 											\
+				reinterpret_cast<const MICBLASValueType*>( &beta ), reinterpret_cast<MICBLASValueType*>( C ), &ldc );	\
+	}																													\
 };
 
-// -------------- gemv --------------
-template<>
-inline void MICBLASWrapper::gemv<float>(const BLASTranspose transA, const BLASIndexType m, const BLASIndexType n,
-		const float alpha, const float* A, const BLASIndexType lda, const float* x,
-		const BLASIndexType incX, const float beta, float* y,
-		const BLASIndexType incY) {
-	sgemv( &transA, &m, &n, &alpha, A, &lda,
-			x, &incX, &beta, y,
-			&incY);
-}
+MICBLASWRAPPER_DEF( float, float, s, s, is, dot );
+MICBLASWRAPPER_DEF( double, double, d, d, id, dot );
 
-template<>
-inline void MICBLASWrapper::gemv<double>(const BLASTranspose transA, const BLASIndexType m, const BLASIndexType n,
-		const double alpha, const double* A, const BLASIndexType lda,
-		const double* x, const BLASIndexType incX, const double beta, double* y,
-		const BLASIndexType incY) {
-	dgemv( &transA, &m, &n, &alpha, A, &lda,
-			x, &incX, &beta, y,
-			&incY);
-}
+#ifdef SCAI_COMPLEX_SUPPORTED
+MICBLASWRAPPER_DEF( ComplexFloat, MKL_Complex8, c, sc, ic, dotc );
+MICBLASWRAPPER_DEF( ComplexDouble, MKL_Complex16, z, dz, iz, dotc );
+#endif
 
-template<>
-inline void MICBLASWrapper::gemv<ComplexFloat>(const BLASTranspose transA, const BLASIndexType m, const BLASIndexType n,
-		const ComplexFloat alpha, const ComplexFloat* A, const BLASIndexType lda,
-		const ComplexFloat* x, const BLASIndexType incX, const ComplexFloat beta,
-		ComplexFloat* y, const BLASIndexType incY) {
-	cgemv( &transA, &m, &n, MKLUtils::cast(&alpha), MKLUtils::cast(A), &lda,
-			MKLUtils::cast(x), &incX, MKLUtils::cast(&beta), MKLUtils::cast(y),
-			&incY);
-}
-
-template<>
-inline void MICBLASWrapper::gemv<ComplexDouble>(const BLASTranspose transA, const BLASIndexType m, const BLASIndexType n,
-		const ComplexDouble alpha, const ComplexDouble* A, const BLASIndexType lda,
-		const ComplexDouble* x, const BLASIndexType incX, const ComplexDouble beta,
-		ComplexDouble* y, const BLASIndexType incY) {
-	zgemv( &transA, &m, &n, MKLUtils::cast(&alpha), MKLUtils::cast(A), &lda,
-			MKLUtils::cast(x), &incX, MKLUtils::cast(&beta), MKLUtils::cast(y),
-			&incY);
-}
-
-// -------------- gemm --------------
-template<>
-inline void MICBLASWrapper::gemm<float>(const BLASTranspose transA, const BLASTranspose transB,
-		const BLASIndexType m, const BLASIndexType n, const BLASIndexType k,
-		const float alpha, const float* A, const BLASIndexType lda, const float* B,
-		const BLASIndexType ldb, const float beta, float* C, const BLASIndexType ldc) {
-	sgemm(&transA, &transB, &m, &n, &k,
-			&alpha, A, &lda, B, &ldb, &beta, C, &ldc);
-}
-
-template<>
-inline void MICBLASWrapper::gemm<double>(const BLASTranspose transA, const BLASTranspose transB,
-		const BLASIndexType m, const BLASIndexType n, const BLASIndexType k,
-		const double alpha, const double* A, const BLASIndexType lda,
-		const double* B, const BLASIndexType ldb, const double beta, double* C,
-		const BLASIndexType ldc) {
-	dgemm(&transA, &transB, &m, &n, &k,
-			&alpha, A, &lda, B, &ldb, &beta, C, &ldc);
-}
-
-template<>
-inline void MICBLASWrapper::gemm<ComplexFloat>(const BLASTranspose transA, const BLASTranspose transB,
-		const BLASIndexType m, const BLASIndexType n, const BLASIndexType k,
-		const ComplexFloat alpha, const ComplexFloat* A, const BLASIndexType lda,
-		const ComplexFloat* B, const BLASIndexType ldb, const ComplexFloat beta,
-		ComplexFloat* C, const BLASIndexType ldc) {
-	cgemm(&transA, &transB, &m, &n, &k,
-			MKLUtils::cast(&alpha), MKLUtils::cast(A), &lda, MKLUtils::cast(B), &ldb, MKLUtils::cast(&beta), MKLUtils::cast(C), &ldc);
-}
-
-template<>
-inline void MICBLASWrapper::gemm<ComplexDouble>(const BLASTranspose transA, const BLASTranspose transB,
-		const BLASIndexType m, const BLASIndexType n, const BLASIndexType k,
-		const ComplexDouble alpha, const ComplexDouble* A, const BLASIndexType lda,
-		const ComplexDouble* B, const BLASIndexType ldb, const ComplexDouble beta,
-		ComplexDouble* C, const BLASIndexType ldc) {
-	zgemm(&transA, &transB, &m, &n, &k,
-			MKLUtils::cast(&alpha), MKLUtils::cast(A), &lda, MKLUtils::cast(B), &ldb, MKLUtils::cast(&beta), MKLUtils::cast(C), &ldc);
-}
+#undef MICBLASWRAPPER_DEF
 
 } /* end namespace blaskernel */
 

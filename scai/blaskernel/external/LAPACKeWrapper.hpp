@@ -33,170 +33,72 @@
 
 #pragma once
 
-#include <scai/blaskernel/MKLUtils.hpp>
+// local library
+#include <scai/blaskernel/external/LAPACKeTrait.hpp>
 
+// internal scai libraries
 #include <scai/common/exception/NotSupportedValueTypeException.hpp>
-
 #include <scai/common/macros/unused.hpp>
 #include <scai/common/SCAITypes.hpp>
 
-#include <mkl_lapack.h>
+// external
 #include <mkl_lapacke.h>
 
 namespace scai {
 
 namespace blaskernel {
 
-class COMMON_DLL_IMPORTEXPORT LAPACKeWrapper {
-public:
-	typedef lapack_int LAPACKIndexType;
-	typedef char LAPACKFlag;
-	typedef int LAPACKOrder;
+template<typename ValueType>
+class COMMON_DLL_IMPORTEXPORT LAPACKeWrapper;
 
-	template<typename ValueType>
-	static LAPACKIndexType getrf(const LAPACKOrder UNUSED(matrix_order),
-			const LAPACKIndexType UNUSED(m), const LAPACKIndexType UNUSED(n),
-			ValueType* const UNUSED(a), const LAPACKIndexType UNUSED(lda),
-			LAPACKIndexType* const UNUSED(ipiv)) {
-		SCAI_THROWEXCEPTION(common::NotSupportedValueTypeException, "getrf");
-	}
-
-	template<typename ValueType>
-	static LAPACKIndexType getri(const LAPACKOrder UNUSED( matrix_order ),
-			const LAPACKIndexType UNUSED(n), ValueType* const UNUSED(A),
-			const LAPACKIndexType UNUSED(lda),
-			LAPACKIndexType* const UNUSED(ipiv)) {
-		SCAI_THROWEXCEPTION(common::NotSupportedValueTypeException, "getri");
-	}
-
-	template<typename ValueType>
-	static LAPACKIndexType tptrs(const LAPACKOrder UNUSED( matrix_order ),
-			const LAPACKFlag UNUSED(uplo), const LAPACKFlag UNUSED(trans),
-			const LAPACKFlag UNUSED(diag), const LAPACKIndexType UNUSED(n),
-			const LAPACKIndexType UNUSED(nrhs), const ValueType* UNUSED(AP),
-			ValueType* UNUSED(B), const LAPACKIndexType UNUSED(ldb)) {
-		SCAI_THROWEXCEPTION(common::NotSupportedValueTypeException, "tptrs");
-	}
+#define LAPACKEWRAPPER_DEF( ValueType, MKLValueType, prefix )							\
+template<>																				\
+class COMMON_DLL_IMPORTEXPORT LAPACKeWrapper<ValueType>									\
+{																						\
+public:																					\
+	typedef LAPACKeTrait::LAPACKIndexType LAPACKIndexType;								\
+	typedef LAPACKeTrait::LAPACKFlag LAPACKFlag;										\
+	typedef LAPACKeTrait::LAPACKOrder LAPACKOrder;										\
+																						\
+	static LAPACKIndexType getrf(const LAPACKOrder matrix_order,						\
+			const LAPACKIndexType m, const LAPACKIndexType n,							\
+			ValueType* const a, const LAPACKIndexType lda,								\
+			LAPACKIndexType* const ipiv)												\
+	{																					\
+		return FORTRAN_LAPACKE_NAME(getrf, prefix)(matrix_order, m, n, 					\
+				reinterpret_cast<MKLValueType*>( a ), lda, ipiv);						\
+	}																					\
+																						\
+	static LAPACKIndexType getri(const LAPACKOrder matrix_order,						\
+			const LAPACKIndexType n, ValueType* const A,								\
+			const LAPACKIndexType lda,													\
+			LAPACKIndexType* const ipiv)												\
+	{																					\
+		return FORTRAN_LAPACKE_NAME(getri, prefix)(matrix_order, n, 					\
+				reinterpret_cast<MKLValueType*>( A ), lda, ipiv);						\
+	}																					\
+																						\
+	static LAPACKIndexType tptrs(const LAPACKOrder matrix_order,						\
+			const LAPACKFlag uplo, const LAPACKFlag trans,								\
+			const LAPACKFlag diag, const LAPACKIndexType n,								\
+			const LAPACKIndexType nrhs, const ValueType* AP,							\
+			ValueType* B, const LAPACKIndexType ldb) 									\
+	{																					\
+		return FORTRAN_LAPACKE_NAME( tptrs, prefix )(matrix_order, uplo, trans, 		\
+				diag, n, nrhs, reinterpret_cast<const MKLValueType*>( AP ),				\
+				reinterpret_cast<MKLValueType*>( B ), ldb);								\
+	}																					\
 };
 
-template<>
-LAPACKeWrapper::LAPACKIndexType LAPACKeWrapper::getrf<float>(
-		const LAPACKOrder matrix_order, const LAPACKIndexType m,
-		const LAPACKIndexType n, float* const a, const LAPACKIndexType lda,
-		LAPACKIndexType* const ipiv) {
-	return LAPACKE_sgetrf(matrix_order, m, n, a, lda, ipiv);
-}
-
-template<>
-LAPACKeWrapper::LAPACKIndexType LAPACKeWrapper::getrf<double>(
-		const LAPACKOrder matrix_order, const LAPACKIndexType m,
-		const LAPACKIndexType n, double* const a, const LAPACKIndexType lda,
-		LAPACKIndexType* const ipiv) {
-	return LAPACKE_dgetrf(matrix_order, m, n, a, lda, ipiv);
-}
+LAPACKEWRAPPER_DEF( float, float, s );
+LAPACKEWRAPPER_DEF( double, double, d );
 
 #ifdef SCAI_COMPLEX_SUPPORTED
-
-template<>
-LAPACKeWrapper::LAPACKIndexType LAPACKeWrapper::getrf<ComplexFloat>(
-		const LAPACKOrder matrix_order, const LAPACKIndexType m,
-		const LAPACKIndexType n, ComplexFloat* const a,
-		const LAPACKIndexType lda, LAPACKIndexType* const ipiv) {
-	return LAPACKE_cgetrf(matrix_order, m, n,
-			MKLUtils::cast(a), lda, ipiv);
-}
-
-template<>
-LAPACKeWrapper::LAPACKIndexType LAPACKeWrapper::getrf<ComplexDouble>(
-		const LAPACKOrder matrix_order, const LAPACKIndexType m,
-		const LAPACKIndexType n, ComplexDouble* const a,
-		const LAPACKIndexType lda, LAPACKIndexType* const ipiv) {
-	return LAPACKE_zgetrf(matrix_order, m, n,
-			MKLUtils::cast(a), lda, ipiv);
-}
-
+LAPACKEWRAPPER_DEF( ComplexFloat, lapack_complex_float, c );
+LAPACKEWRAPPER_DEF( ComplexDouble, lapack_complex_double, z );
 #endif
 
-template<>
-LAPACKeWrapper::LAPACKIndexType LAPACKeWrapper::getri<float>(
-		const LAPACKOrder matrix_order, const LAPACKIndexType n, float* const A,
-		const LAPACKIndexType lda, LAPACKIndexType* const ipiv) {
-	return LAPACKE_sgetri(matrix_order, n, A, lda, ipiv);
-}
-
-template<>
-LAPACKeWrapper::LAPACKIndexType LAPACKeWrapper::getri<double>(
-		const LAPACKOrder matrix_order, const LAPACKIndexType n,
-		double* const A, const LAPACKIndexType lda,
-		LAPACKIndexType* const ipiv) {
-	return LAPACKE_dgetri(matrix_order, n, A, lda, ipiv);
-}
-
-#ifdef SCAI_COMPLEX_SUPPORTED
-
-template<>
-LAPACKeWrapper::LAPACKIndexType LAPACKeWrapper::getri<ComplexFloat>(
-		const LAPACKOrder matrix_order, const LAPACKIndexType n,
-		ComplexFloat* const A, const LAPACKIndexType lda,
-		LAPACKIndexType* const ipiv) {
-	return LAPACKE_cgetri(matrix_order, n,
-			MKLUtils::cast(A), lda, ipiv);
-}
-
-template<>
-LAPACKeWrapper::LAPACKIndexType LAPACKeWrapper::getri<ComplexDouble>(
-		const LAPACKOrder matrix_order, const LAPACKIndexType n,
-		ComplexDouble* const A, const LAPACKIndexType lda,
-		LAPACKIndexType* const ipiv) {
-	return LAPACKE_zgetri(matrix_order, n,
-			MKLUtils::cast(A), lda, ipiv);
-}
-
-#endif
-
-template<>
-LAPACKeWrapper::LAPACKIndexType LAPACKeWrapper::tptrs<float>(
-		const LAPACKOrder matrix_order, const LAPACKFlag uplo,
-		const LAPACKFlag trans, const LAPACKFlag diag, const LAPACKIndexType n,
-		const LAPACKIndexType nrhs, const float* AP, float* B,
-		const LAPACKIndexType ldb) {
-	return LAPACKE_stptrs(matrix_order, uplo, trans, diag, n, nrhs, AP, B, ldb);
-}
-
-template<>
-LAPACKeWrapper::LAPACKIndexType LAPACKeWrapper::tptrs<double>(
-		const LAPACKOrder matrix_order, const LAPACKFlag uplo,
-		const LAPACKFlag trans, const LAPACKFlag diag, const LAPACKIndexType n,
-		const LAPACKIndexType nrhs, const double* AP, double* B,
-		const LAPACKIndexType ldb) {
-	return LAPACKE_dtptrs(matrix_order, uplo, trans, diag, n, nrhs, AP, B, ldb);
-}
-
-#ifdef SCAI_COMPLEX_SUPPORTED
-
-template<>
-LAPACKeWrapper::LAPACKIndexType LAPACKeWrapper::tptrs<ComplexFloat>(
-		const LAPACKOrder matrix_order, const LAPACKFlag uplo,
-		const LAPACKFlag trans, const LAPACKFlag diag, const LAPACKIndexType n,
-		const LAPACKIndexType nrhs, const ComplexFloat* AP, ComplexFloat* B,
-		const LAPACKIndexType ldb) {
-	return LAPACKE_ctptrs(matrix_order, uplo, trans, diag, n, nrhs,
-			MKLUtils::cast(AP),
-			MKLUtils::cast(B), ldb);
-}
-
-template<>
-LAPACKeWrapper::LAPACKIndexType LAPACKeWrapper::tptrs<ComplexDouble>(
-		const LAPACKOrder matrix_order, const LAPACKFlag uplo,
-		const LAPACKFlag trans, const LAPACKFlag diag, const LAPACKIndexType n,
-		const LAPACKIndexType nrhs, const ComplexDouble* AP, ComplexDouble* B,
-		const LAPACKIndexType ldb) {
-	return LAPACKE_ztptrs(matrix_order, uplo, trans, diag, n, nrhs,
-			MKLUtils::cast(AP),
-			MKLUtils::cast(B), ldb);
-}
-
-#endif
+#undef LAPACKEWRAPPER_DEF
 
 } /* end namespace blaskernel */
 

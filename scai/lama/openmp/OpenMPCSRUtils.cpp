@@ -49,6 +49,7 @@
 #include <scai/common/macros/unused.hpp>
 #include <scai/common/Constants.hpp>
 #include <scai/common/TypeTraits.hpp>
+#include <scai/common/Math.hpp>
 
 #include <scai/kregistry/KernelRegistry.hpp>
 #include <scai/tasking/TaskSyncToken.hpp>
@@ -67,9 +68,6 @@ using tasking::TaskSyncToken;
 
 namespace lama
 {
-
-using std::abs;
-// is used for abs( float ), abs( double )
 
 SCAI_LOG_DEF_LOGGER( OpenMPCSRUtils::logger, "OpenMP.CSRUtils" )
 
@@ -434,7 +432,7 @@ void OpenMPCSRUtils::countNonZeros(
         for ( IndexType jj = ia[i]; jj < ia[i + 1]; ++jj )
         {
             bool isDiagonal = diagonalFlag && ( ja[jj] == i );
-            bool nonZero    = TypeTraits<ValueType>::abs( values[jj] ) > eps;
+            bool nonZero    = common::Math::abs( values[jj] ) > eps;
 
             SCAI_LOG_TRACE( logger, "i = " << i << ", j = " << ja[jj] << ", val = " << values[jj] 
                                     << ", isDiagonal = " << isDiagonal << ", nonZero = " << nonZero )
@@ -481,7 +479,7 @@ void OpenMPCSRUtils::compress(
         for ( IndexType jj = ia[i]; jj < ia[i + 1]; ++jj )
         {
             bool isDiagonal = diagonalFlag && ( ja[jj] == i );
-            bool nonZero    = TypeTraits<ValueType>::abs( values[jj] ) > eps;
+            bool nonZero    = common::Math::abs( values[jj] ) > eps;
 
             if ( nonZero || isDiagonal )
             {
@@ -1920,7 +1918,7 @@ ValueType OpenMPCSRUtils::absMaxDiffRowUnsorted(
             diff -= csrValues2[i2];
         }
 
-        diff = abs( diff );
+        diff = common::Math::abs( diff );
 
         if( diff > val )
         {
@@ -1942,7 +1940,7 @@ ValueType OpenMPCSRUtils::absMaxDiffRowUnsorted(
             continue; // already compare in first loop
         }
 
-        ValueType diff = abs( csrValues2[i2] );
+        ValueType diff = common::Math::abs( csrValues2[i2] );
 
         if( diff > val )
         {
@@ -2020,7 +2018,7 @@ ValueType OpenMPCSRUtils::absMaxDiffRowSorted(
             }
         }
 
-        diff = abs( diff );
+        diff = common::Math::abs( diff );
 
         if( diff > val )
         {

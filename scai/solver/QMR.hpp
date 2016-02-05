@@ -109,10 +109,12 @@ public:
     common::shared_ptr<lama::Vector> mVecV;
     common::shared_ptr<lama::Vector> mVecW;
     common::shared_ptr<lama::Vector> mVecY;      /*preconditioning 1*/
-   
+    common::shared_ptr<lama::Vector> mVecZ;
+
     common::shared_ptr<lama::Vector> mVecWT;
     common::shared_ptr<lama::Vector> mVecVT;
     common::shared_ptr<lama::Vector> mVecYT;
+    common::shared_ptr<lama::Vector> mVecZT;
     common::shared_ptr<lama::Vector> mVecP;
     common::shared_ptr<lama::Vector> mVecQ;
     common::shared_ptr<lama::Vector> mVecPT;
@@ -138,6 +140,7 @@ public:
     */
     virtual void solveInit( lama::Vector& solution, const lama::Vector& rhs );
     
+    void print(lama::Vector& f, size_t i);
     /**
      * @brief Returns the complete configuration of the derived class
      */

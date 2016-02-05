@@ -109,6 +109,9 @@ endforeach ( module ${SCAI_BLASKERNEL_BLASKERNEL_DEPS} ${SCAI_BLASKERNEL_EXTERNA
 
 ### build library
 
+## add subdirectories
+add_subdirectory ( examples )
+
 include ( Functions/scaiProject )
 
 ### Add classes/headers to source files CXX_SOURCES, CXX_HEADERS, ...
@@ -143,7 +146,8 @@ endif ( USE_MIC )
 
 ## add subdirectories
 #add_subdirectory ( examples )
-if    ( FOUND_BOOST_TEST AND BUILD_TEST )
+message( STATUS "LKASDJLASKJD ${FOUND_BOOST_TEST} asdsa ${BOOST_FOUND}" )
+if ( FOUND_BOOST_TEST AND BUILD_TEST )
     add_subdirectory ( test )
 endif ( FOUND_BOOST_TEST AND BUILD_TEST )
 

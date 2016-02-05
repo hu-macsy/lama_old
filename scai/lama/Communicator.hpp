@@ -51,6 +51,7 @@
 #include <scai/common/macros/assert.hpp>
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/shared_ptr.hpp>
+#include <scai/common/Math.hpp>
 #include <scai/common/preprocessor.hpp>
 
 // std
@@ -773,7 +774,7 @@ PartitionId Communicator::getNeighbor( int pos ) const
     PartitionId size = getSize();
     PartitionId rank = getRank();
 
-    PartitionId apos = std::abs( pos );
+    PartitionId apos = common::Math::abs( pos );
 
     SCAI_ASSERT( apos <= size, "neighbor pos " << pos << " out of range (" << size << ")" )
 

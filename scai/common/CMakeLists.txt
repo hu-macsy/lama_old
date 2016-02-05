@@ -44,14 +44,14 @@ include ( VersionDefinition )
 
 ### Include Compiler Flags
 if    ( NOT SCAI_COMPLETE_BUILD )
-	include ( SetBuildFlags )
+    include ( SetBuildFlags )
     include ( CompilerVersion )
-	include ( SCAIAssert )
-	include ( SetCPPFlags )
-	include ( Package/Sphinx )
+    include ( SCAIAssert )
+    include ( SetCPPFlags )
+    include ( Package/Sphinx )
 else  ( NOT SCAI_COMPLETE_BUILD )
-	include ( Functions/CheckValueAtCompleteBuild )
-	CheckValueAtCompleteBuild ( common )
+    include ( Functions/CheckValueAtCompleteBuild )
+    CheckValueAtCompleteBuild ( common )
 endif ( NOT SCAI_COMPLETE_BUILD )
 
 include ( CheckC++11 )
@@ -76,7 +76,7 @@ add_definitions( ${ADDITIONAL_WARNING_FLAGS} )
 add_definitions ( -DSCAI_ASSERT_LEVEL_${SCAI_ASSERT_LEVEL} )
 
 if    ( WIN32 )
-	add_definitions ( -DCOMMON_COMPILING_DLL )
+    add_definitions ( -DCOMMON_COMPILING_DLL )
 endif ( WIN32 )
 
 ### Project System-Include
@@ -111,6 +111,7 @@ scai_project (
         Constants
         Factory
         Factory1
+        Math
         OpenMP
         ReductionOp
         NonCopyable
@@ -162,7 +163,7 @@ add_library ( scai_common ${SCAI_LIBRARY_TYPE} ${CXX_SOURCES} )
 
 ## add link libraries
 foreach    ( module ${SCAI_COMMON_EXTERNAL_DEPS} )
-	string ( TOUPPER ${module} upper_module )
+    string ( TOUPPER ${module} upper_module )
     target_link_libraries ( scai_common ${SCAI_${upper_module}_LIBRARIES} )
 endforeach ( module ${SCAI_COMMON_EXTERNAL_DEPS} )
 
@@ -187,5 +188,5 @@ add_subdirectory( doc )
 include ( DistClean )
 
 if    ( DEFINED SCAI_CMAKE_VERBOSE OR NOT DEFINED SCAI_COMPLETE_BUILD )
-	include ( Summaries/common )
+    include ( Summaries/common )
 endif ( DEFINED SCAI_CMAKE_VERBOSE OR NOT DEFINED SCAI_COMPLETE_BUILD )

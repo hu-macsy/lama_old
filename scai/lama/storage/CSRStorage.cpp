@@ -62,6 +62,7 @@
 #include <scai/common/exception/UnsupportedException.hpp>
 #include <scai/tasking/NoSyncToken.hpp>
 #include <scai/common/TypeTraits.hpp>
+#include <scai/common/Math.hpp>
 #include <scai/common/preprocessor.hpp>
 
 namespace scai
@@ -2330,7 +2331,7 @@ ValueType CSRStorage<ValueType>::l2Norm() const
 
     SCAI_CONTEXT_ACCESS( loc );
 
-    return TypeTraits<ValueType>::sqrt(dot[loc]( mNumValues, data.get(), 1, data.get(), 1 ));
+    return common::Math::sqrt(dot[loc]( mNumValues, data.get(), 1, data.get(), 1 ));
 }
 
 /* --------------------------------------------------------------------------- */

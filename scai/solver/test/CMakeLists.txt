@@ -55,6 +55,7 @@ scai_project (
         IterationCountTest
         JacobiTest
         MINRESTest
+        QMRTest
         ResidualStagnationTest
         ResidualThresholdTest
         RichardsonTest

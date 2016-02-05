@@ -48,7 +48,6 @@
 #include <scai/tracing.hpp>
 
 #include <scai/common/macros/assert.hpp>
-#include <scai/common/ScalarType.hpp>
 #include <scai/common/TypeTraits.hpp>
 
 // std
@@ -404,10 +403,11 @@ void MICCOOUtils::normalGEMV(
     const void* cooJAPtr = cooJA;
     const void* cooValuesPtr = cooValues;
     const void* xPtr = x;
+    const ValueType* alphaPtr = &alpha;
 
     int device = MICContext::getCurrentDevice();
 
-#pragma offload target( mic : device ), in( numRows, numValues, resultPtr, alpha, cooIAPtr, cooJAPtr, cooValuesPtr, xPtr )
+#pragma offload target( mic : device ), in( numRows, numValues, resultPtr, alphaPtr[0:1], cooIAPtr, cooJAPtr, cooValuesPtr, xPtr )
     {
         ValueType* result = static_cast<ValueType*>( resultPtr );
         const ValueType* x = static_cast<const ValueType*>( xPtr );
@@ -426,9 +426,9 @@ void MICCOOUtils::normalGEMV(
             {
                 IndexType i = cooIA[k];
 
-                const ValueType val = alpha * cooValues[k] * x[cooJA[k]];
+                const ValueType val = *alphaPtr * cooValues[k] * x[cooJA[k]];
 
-                #pragma omp atomic
+                #pragma omp critical 
                 result[i] += val;
 
             }
@@ -533,11 +533,6 @@ void MICCOOUtils::registerKernels( bool deleteFlag )
 
     KernelRegistry::set<COOKernelTrait::setCSRData<IndexType, IndexType> >( setCSRData, MIC, flag );
 
-    KernelRegistry::set<COOKernelTrait::setCSRData<float, float> >( setCSRData, MIC, flag );
-    KernelRegistry::set<COOKernelTrait::setCSRData<float, double> >( setCSRData, MIC, flag );
-    KernelRegistry::set<COOKernelTrait::setCSRData<double, float> >( setCSRData, MIC, flag );
-    KernelRegistry::set<COOKernelTrait::setCSRData<double, double> >( setCSRData, MIC, flag );
-
     KernelRegistry::set<COOKernelTrait::getCSRSizes>( getCSRSizes, MIC, flag );
 
     // ToDo: routine does not work yet
@@ -547,13 +542,25 @@ void MICCOOUtils::registerKernels( bool deleteFlag )
     // KernelRegistry::set<COOKernelTrait::getCSRValues<double, float> >( getCSRValuesS, MIC, flag );
     // KernelRegistry::set<COOKernelTrait::getCSRValues<double, double> >( getCSRValuesS, MIC, flag );
 
-    KernelRegistry::set<COOKernelTrait::normalGEMV<float> >( normalGEMV, MIC, flag );
-    KernelRegistry::set<COOKernelTrait::normalGEMV<double> >( normalGEMV, MIC, flag );
-
     // ToDo: jacobi does not work yet
 
     // KernelRegistry::set<COOKernelTrait::jacobi<float> >( jacobi, MIC, flag );
     // KernelRegistry::set<COOKernelTrait::jacobi<double> >( jacobi, MIC, flag );
+
+#define LAMA_COO_UTILS2_REGISTER(z, J, TYPE )                                                                       \
+    KernelRegistry::set<COOKernelTrait::setCSRData<TYPE, ARITHMETIC_HOST_TYPE_##J> >( setCSRData, MIC, flag );     \
+
+#define LAMA_COO_UTILS_REGISTER(z, I, _)                                                                   \
+    KernelRegistry::set<COOKernelTrait::normalGEMV<ARITHMETIC_HOST_TYPE_##I> >( normalGEMV, MIC, flag );  \
+                                                                                                           \
+    BOOST_PP_REPEAT( ARITHMETIC_MIC_TYPE_CNT,                                                             \
+                     LAMA_COO_UTILS2_REGISTER,                                                             \
+                     ARITHMETIC_MIC_TYPE_##I )                                                            \
+
+    BOOST_PP_REPEAT( ARITHMETIC_MIC_TYPE_CNT, LAMA_COO_UTILS_REGISTER, _ )
+
+#undef LAMA_COO_UTILS_REGISTER
+#undef LAMA_COO_UTILS2_REGISTER
 }
 
 /* --------------------------------------------------------------------------- */

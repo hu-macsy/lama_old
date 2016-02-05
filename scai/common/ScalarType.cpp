@@ -39,7 +39,7 @@ namespace scai
 namespace common
 {
 
-const char* scalar2str( const scalar::ScalarType stype )
+MIC_CALLABLE_MEMBER const char* scalar2str( const scalar::ScalarType stype )
 {
     switch ( stype )
     {

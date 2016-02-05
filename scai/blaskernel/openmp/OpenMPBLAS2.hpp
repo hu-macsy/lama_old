@@ -36,11 +36,9 @@
 // for dll_import
 #include <scai/common/config.hpp>
 
-// local library
-#include <scai/blaskernel/external/BLASHelper.hpp>
-
 // internal scai libraries
 #include <scai/logging.hpp>
+#include <scai/blaskernel/cblas.hpp>
 
 #include <scai/common/SCAITypes.hpp>
 

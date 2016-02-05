@@ -36,6 +36,7 @@
 // no support of Complex if this file is not included
 
 #include <scai/common/Complex.hpp>
+#include <scai/common/mic/MICCallable.hpp>
 
 // std
 #include <cstring>
@@ -76,10 +77,7 @@ typedef long double LongDouble;
 /** Definition for a constant value that indicates a non-available index.
  */
 
-#ifdef __INTEL_OFFLOAD
-__declspec( target(mic) )
-#endif
-extern const IndexType nIndex;
+MIC_CALLABLE_MEMBER extern const IndexType nIndex;
 
 /** Data type that is used for numbering of partitions.
  *
@@ -88,14 +86,9 @@ typedef IndexType PartitionId;
 
 /** Definition for a constant value that indicates a non-available partition.
  */
-#ifdef __INTEL_OFFLOAD
-__declspec( target(mic) )
-#endif
-extern const PartitionId nPartition;
+MIC_CALLABLE_MEMBER extern const PartitionId nPartition;
 
 // List here all arithmetic types for which matrices, storages might be created
-
-#ifdef SCAI_COMPLEX_SUPPORTED
 
 #define ARITHMETIC_HOST_TYPE_0 float
 #define ARITHMETIC_HOST_TYPE_1 double
@@ -104,15 +97,7 @@ extern const PartitionId nPartition;
 #define ARITHMETIC_HOST_TYPE_4 long double
 #define ARITHMETIC_HOST_TYPE_5 ComplexLongDouble
 
-#else
-
-#define ARITHMETIC_HOST_TYPE_0 float
-#define ARITHMETIC_HOST_TYPE_1 double
-
-#endif
-
 /** Number of supported types used in REPEAT macros */
-
 #ifdef SCAI_COMPLEX_SUPPORTED
 
 #define ARITHMETIC_HOST_TYPE_CNT 6
@@ -124,7 +109,6 @@ extern const PartitionId nPartition;
 #endif
 
 /** Number of supported types in external libraries like BLAS, LAPACK */
-
 #ifdef SCAI_COMPLEX_SUPPORTED
 
 #define ARITHMETIC_HOST_EXT_TYPE_CNT 4
@@ -135,53 +119,45 @@ extern const PartitionId nPartition;
 
 #endif
 
-#ifdef SCAI_COMPLEX_SUPPORTED
-
-/** Number of suported types by CUDA devices */
-
-#define ARITHMETIC_CUDA_TYPE_CNT 4
-
-// List CUDA values on its own 
+// List CUDA values on its own
 
 #define ARITHMETIC_CUDA_TYPE_0 float
 #define ARITHMETIC_CUDA_TYPE_1 double
 #define ARITHMETIC_CUDA_TYPE_2 ComplexFloat
 #define ARITHMETIC_CUDA_TYPE_3 ComplexDouble
 
+/** Number of suported types by CUDA devices */
+#ifdef SCAI_COMPLEX_SUPPORTED
+
+#define ARITHMETIC_CUDA_TYPE_CNT 4
+
 #else
 
 #define ARITHMETIC_CUDA_TYPE_CNT 2
-#define ARITHMETIC_CUDA_TYPE_0 float
-#define ARITHMETIC_CUDA_TYPE_1 double
 
 #endif
 
-#ifdef SCAI_COMPLEX_SUPPORTED
 
-/** Number of supported types by MIC devices */
-
-#define ARITHMETIC_MIC_TYPE_CNT 4
-
-// List MIC value types on its own 
+// List MIC value types on its own
 
 #define ARITHMETIC_MIC_TYPE_0 float
 #define ARITHMETIC_MIC_TYPE_1 double
 #define ARITHMETIC_MIC_TYPE_2 ComplexFloat
 #define ARITHMETIC_MIC_TYPE_3 ComplexDouble
 
-#else
+/** Number of supported types by MIC devices */
+#ifdef SCAI_COMPLEX_SUPPORTED
 
 #define ARITHMETIC_MIC_TYPE_CNT 4
-#define ARITHMETIC_MIC_TYPE_0 float
-#define ARITHMETIC_MIC_TYPE_1 double
+
+#else
+
+#define ARITHMETIC_MIC_TYPE_CNT 2
 
 #endif
 
 // For convenience we define ARRAY_TYPE, must be ARITHMETIC_HOST_TYPE_CNT + 1
 
-#ifdef SCAI_COMPLEX_SUPPORTED
-
-#define ARRAY_TYPE_CNT 7
 
 #define ARRAY_TYPE0    IndexType
 #define ARRAY_TYPE1    float
@@ -191,13 +167,13 @@ extern const PartitionId nPartition;
 #define ARRAY_TYPE5    long double
 #define ARRAY_TYPE6    ComplexLongDouble
 
+#ifdef SCAI_COMPLEX_SUPPORTED
+
+#define ARRAY_TYPE_CNT 7
+
 #else
 
 #define ARRAY_TYPE_CNT 3
-
-#define ARRAY_TYPE0    IndexType
-#define ARRAY_TYPE1    float
-#define ARRAY_TYPE2    double
 
 #endif
 
@@ -210,4 +186,3 @@ typedef ComplexLongDouble ScalarRepType;
 typedef double ScalarRepType;
 
 #endif
-
