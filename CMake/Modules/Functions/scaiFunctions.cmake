@@ -2,14 +2,12 @@
 
 
 macro    ( addInternalPackages )
-	message ( STATUS "add internal Packages" )
 	foreach    ( PACKAGE_TO_FIND ${${UPPER_PROJECT_NAME}_INTERNAL_DEPS} )
     	find_package ( ${PACKAGE_TO_FIND} ${SCAI_FIND_PACKAGE_FLAGS} REQUIRED )
 	endforeach ( PACKAGE_TO_FIND ${${UPPER_PROJECT_NAME}_INTERNAL_DEPS} )
 endmacro ( addInternalPackages )
 
 macro    ( addExternalPackages )
-	message ( STATUS "add external Packages" )
 	foreach    ( module ${${UPPER_PROJECT_NAME}_EXTERNAL_DEPS} )
     	include( Package/${module} )
 	endforeach ( module ${${UPPER_PROJECT_NAME}_EXTERNAL_DEPS} )
