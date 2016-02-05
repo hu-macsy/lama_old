@@ -53,9 +53,7 @@
 
 #include <scai/kregistry/KernelRegistry.hpp>
 #include <scai/tasking/TaskSyncToken.hpp>
-
-// boost
-#include <boost/preprocessor.hpp>
+#include <scai/common/preprocessor.hpp>
 
 // std
 #include <vector>

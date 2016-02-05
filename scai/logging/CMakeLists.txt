@@ -34,32 +34,30 @@
 ### Set required CMake version
 cmake_minimum_required ( VERSION 2.8 )
 
-### Set version of Logging
-# TOOD: where is the best place to define this?
-set ( SCAI_LOGGING_VERSION_NAME "Alpamayo" )
-set ( SCAI_LOGGING_COPYRIGHT_YEAR 2015 )
-set ( SCAI_LOGGING_VERSION_MAJOR 1 )
-set ( SCAI_LOGGING_VERSION_MINOR 0 )
-set ( SCAI_LOGGING_VERSION_PATCH 1 )
-set ( SCAI_LOGGING_VERSION_COUNT 3 )
-set ( SCAI_LOGGING_VERSION ${SCAI_LOGGING_VERSION_MAJOR}.${SCAI_LOGGING_VERSION_MINOR}.${SCAI_LOGGING_VERSION_PATCH} )
-
 ### Set PROJECT NAME / supported LANGUAGES
 project( scai_logging CXX )
 
 ### Set Module Path
 set ( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../CMake/Modules" )
 
+include ( VersionDefinition )
+
 ### Include Compiler Flags
 if    ( NOT SCAI_COMPLETE_BUILD )
-	include ( SetBuildFlags )
-	include ( SCAIAssert )
-	include ( SetCPPFlags )
-	include ( Package/Sphinx )
+    include ( SetBuildFlags )
+    include ( CompilerVersion )
+    include ( SCAIAssert )
+    include ( SetCPPFlags )
+    include ( Package/Sphinx )
 else  ( NOT SCAI_COMPLETE_BUILD )
 	include ( Functions/CheckValueAtCompleteBuild )
 	CheckValueAtCompleteBuild ( logging )
 endif ( NOT SCAI_COMPLETE_BUILD )
+
+include ( CheckC++11 )
+if    ( NOT CXX_SUPPORTS_C11 OR BUILD_TEST )
+    include( Package/Boost )
+endif ( NOT CXX_SUPPORTS_C11 OR BUILD_TEST )
 
 ### include all search packages
 include ( InternalDependencies )
@@ -97,10 +95,6 @@ endforeach ( module ${SCAI_LOGGING_INTERNAL_DEPS} )
 
 ## add subdirectories
 add_subdirectory ( examples )
-
-## prepare test
-configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/test/make.inc.in" "${CMAKE_CURRENT_BINARY_DIR}/test/make.inc" )
-file ( COPY ${CMAKE_CURRENT_SOURCE_DIR}/test DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
 
 ## set files in variables CXX_SOURCES and CXX_HEADERS
 
@@ -143,15 +137,16 @@ relative_install ( FILES ${CXX_HEADERS} DESTINATION include/scai/logging )
 ## install library.hpp
 install ( FILES ../logging.hpp DESTINATION include/scai )
 
+## prepare test
+configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/test/make.inc.in" "${CMAKE_CURRENT_BINARY_DIR}/test/make.inc" )
+file ( COPY ${CMAKE_CURRENT_SOURCE_DIR}/test DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
+
 ## add test
 enable_testing()
 add_test ( logging_test test/test.sh )
 
 ### add documentation
 add_subdirectory( doc )
-
-## add custom target docclean
-include ( DocClean )
 
 ## add custum target distClean
 include ( DistClean )

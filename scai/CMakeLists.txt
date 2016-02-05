@@ -31,15 +31,20 @@
  # @since 2.0.0
 ###
 
+### Set required CMake version
 cmake_minimum_required ( VERSION 2.8 )
 
+### Set PROJECT NAME / supported LANGUAGES
 project ( LAMA_ALL CXX )
+
+### Set Module Path
 set ( CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/../CMake/Modules" )
 
-#include ( VersionDefinition )
+include ( VersionDefinition )
 
 ## general Settings for all projects
 include ( SetBuildFlags ) # VERBOSE, RPATH, LIB64
+include ( CompilerVersion )
 include ( SCAIAssert )
 include ( SetCPPFlags )
 
@@ -67,8 +72,8 @@ include ( ConcludeFlags )
 ## documentation
 
 #system docu --> make doc
-include ( Package/Doxygen )
 include ( Package/Sphinx )
+include ( Package/Doxygen )
 
 ## summary of what is found
 include ( Summaries/scai )

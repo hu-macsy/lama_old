@@ -34,28 +34,21 @@
 ### Set required CMake version
 cmake_minimum_required ( VERSION 2.8 )
 
-### Set version of Logging
-# TOOD: where is the best place to define this?
-set ( SCAI_TRACING_VERSION_NAME "Alpamayo" )
-set ( SCAI_TRACING_COPYRIGHT_YEAR 2015 )
-set ( SCAI_TRACING_VERSION_MAJOR 1 )
-set ( SCAI_TRACING_VERSION_MINOR 0 )
-set ( SCAI_TRACING_VERSION_PATCH 1 )
-set ( SCAI_TRACING_VERSION_COUNT 3 )
-set ( SCAI_TRACING_VERSION ${SCAI_TRACING_VERSION_MAJOR}.${SCAI_TRACING_VERSION_MINOR}.${SCAI_TRACING_VERSION_PATCH} )
-
 ### Set PROJECT NAME / supported LANGUAGES
 project( scai_tracing CXX )
 
 ### Set Module Path
 set ( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../CMake/Modules" )
 
+include ( VersionDefinition )
+
 ### Include Compiler Flags
 if    ( NOT SCAI_COMPLETE_BUILD )
-	include ( SetBuildFlags )
-	include ( SCAIAssert )
-	include ( SetCPPFlags )
-	include ( Package/Sphinx )
+    include ( SetBuildFlags )
+    include ( CompilerVersion )
+    include ( SCAIAssert )
+    include ( SetCPPFlags )
+    include ( Package/Sphinx )
 else  ( NOT SCAI_COMPLETE_BUILD )	
 	include ( Functions/CheckValueAtCompleteBuild )
 	CheckValueAtCompleteBuild ( tracing )
@@ -65,15 +58,6 @@ include ( CheckC++11 )
 if    ( NOT CXX_SUPPORTS_C11 OR BUILD_TEST )
     include( Package/Boost )
 endif ( NOT CXX_SUPPORTS_C11 OR BUILD_TEST )
-
-if    ( NOT CXX_SUPPORTS_C11 )
-    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../boost_check.hpp.in"
-                     "${CMAKE_CURRENT_BINARY_DIR}/boost_check.hpp" )
-else  ( NOT CXX_SUPPORTS_C11 )
-    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../boost_check.hpp.in_empty"
-                     "${CMAKE_CURRENT_BINARY_DIR}/boost_check.hpp" )
-endif ( NOT CXX_SUPPORTS_C11 )
-install ( FILES ${CMAKE_CURRENT_BINARY_DIR}/boost_check.hpp DESTINATION include/scai )
 
 ### include all search packages
 include ( InternalDependencies )
@@ -89,9 +73,7 @@ include ( ConcludeFlags )
 ### add definitions
 
 add_definitions( ${ADDITIONAL_WARNING_FLAGS} )
-
 add_definitions ( -D${SCAI_LOGGING_FLAG} )
-
 add_definitions ( -DSCAI_ASSERT_LEVEL_${SCAI_ASSERT_LEVEL} )
 
 if    ( WIN32 )
@@ -107,8 +89,6 @@ foreach    ( module ${SCAI_TRACING_INTERNAL_DEPS} )
 endforeach ( module ${SCAI_TRACING_INTERNAL_DEPS} )
 
 ### build library
-
-## set files in variables CXX_SOURCES and CXX_HEADERS
 
 include ( Functions/scaiProject )
 
@@ -146,7 +126,7 @@ target_link_libraries ( scai_tracing ${SCAI_START_LINK_LIBRARIES} ${TRACING_LINK
 add_subdirectory ( examples )
 
 ### install ###
-install ( TARGETS scai_tracing DESTINATION lib/ )
+install ( TARGETS scai_tracing DESTINATION lib )
 
 include ( Functions/relativeInstall )
 relative_install ( FILES ${CXX_HEADERS} DESTINATION include/scai/tracing )

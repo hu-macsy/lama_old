@@ -28,6 +28,7 @@
  # @brief CMake configuration file for common library
  # @author Thomas Brandes
  # @date 09.06.2015
+ # @since 2.0.0
 ###
 
 ### Set required CMake version
@@ -36,43 +37,27 @@ cmake_minimum_required ( VERSION 2.8 )
 ### Set PROJECT NAME / supported LANGUAGES
 project ( scai_common CXX )
 
-### Set version of Common
-# TOOD: where is the best place to define this?
-set ( SCAI_COMMON_VERSION_NAME "Alpamayo" )
-set ( SCAI_COMMON_COPYRIGHT_YEAR 2015 )
-set ( SCAI_COMMON_VERSION_MAJOR 1 )
-set ( SCAI_COMMON_VERSION_MINOR 0 )
-set ( SCAI_COMMON_VERSION_PATCH 1 )
-set ( SCAI_COMMON_VERSION_COUNT 3 )
-set ( SCAI_COMMON_VERSION ${SCAI_COMMON_VERSION_MAJOR}.${SCAI_COMMON_VERSION_MINOR}.${SCAI_COMMON_VERSION_PATCH} )
-
 ### Set Module Path
 set ( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../CMake/Modules" )
 
+include ( VersionDefinition )
+
 ### Include Compiler Flags
 if    ( NOT SCAI_COMPLETE_BUILD )
-	include ( SetBuildFlags )
-	include ( SCAIAssert )
-	include ( SetCPPFlags )
-	include ( Package/Sphinx )
+    include ( SetBuildFlags )
+    include ( CompilerVersion )
+    include ( SCAIAssert )
+    include ( SetCPPFlags )
+    include ( Package/Sphinx )
 else  ( NOT SCAI_COMPLETE_BUILD )
-	include ( Functions/CheckValueAtCompleteBuild )
-	CheckValueAtCompleteBuild ( common )
+    include ( Functions/CheckValueAtCompleteBuild )
+    CheckValueAtCompleteBuild ( common )
 endif ( NOT SCAI_COMPLETE_BUILD )
 
 include ( CheckC++11 )
 if    ( NOT CXX_SUPPORTS_C11 OR BUILD_TEST )
     include( Package/Boost )
 endif ( NOT CXX_SUPPORTS_C11 OR BUILD_TEST )
-
-if    ( NOT CXX_SUPPORTS_C11 )
-    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../boost_check.hpp.in"
-                     "${CMAKE_CURRENT_BINARY_DIR}/boost_check.hpp" )
-else  ( NOT CXX_SUPPORTS_C11 )
-    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../boost_check.hpp.in_empty"
-                     "${CMAKE_CURRENT_BINARY_DIR}/boost_check.hpp" )
-endif ( NOT CXX_SUPPORTS_C11 )
-install ( FILES ${CMAKE_CURRENT_BINARY_DIR}/boost_check.hpp DESTINATION include/scai )
 
 ### include all search packages
 # no internal dependencies
@@ -91,11 +76,11 @@ add_definitions( ${ADDITIONAL_WARNING_FLAGS} )
 add_definitions ( -DSCAI_ASSERT_LEVEL_${SCAI_ASSERT_LEVEL} )
 
 if    ( WIN32 )
-	add_definitions ( -DCOMMON_COMPILING_DLL )
+    add_definitions ( -DCOMMON_COMPILING_DLL )
 endif ( WIN32 )
 
 ### Project System-Include
-include_directories ( ../.. )
+include_directories ( ../.. ${CMAKE_CURRENT_BINARY_DIR}/include )
 
 ### build library
 
@@ -121,22 +106,41 @@ scai_project (
 
     HEADERS
 
-        bind     
         Complex
         config
         Constants
         Factory
         Factory1
-        function
         Math
         OpenMP
         ReductionOp
         NonCopyable
-        shared_ptr
         TypeTraits
-        unique_ptr
-        weak_ptr
 )
+
+if    ( NOT CXX_SUPPORTS_C11 )
+    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/boost_check.hpp.in" "${CMAKE_CURRENT_BINARY_DIR}/include/scai/common/boost_check.hpp" )
+    install ( FILES ${CMAKE_CURRENT_BINARY_DIR}/include/scai/common/boost_check.hpp DESTINATION include/scai/common )
+
+    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/bind.hpp.in_boost" "${CMAKE_CURRENT_BINARY_DIR}/include/scai/common/bind.hpp" )
+    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/function.hpp.in_boost" "${CMAKE_CURRENT_BINARY_DIR}/include/scai/common/function.hpp" )
+    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/shared_ptr.hpp.in_boost" "${CMAKE_CURRENT_BINARY_DIR}/include/scai/common/shared_ptr.hpp" )
+    if    ( ${Boost_VERSION} GREATER "105700" )
+        configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/unique_ptr.hpp.in_boost_157" "${CMAKE_CURRENT_BINARY_DIR}/include/scai/common/unique_ptr.hpp" )
+    else  ( ${Boost_VERSION} GREATER "105700" )
+        configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/unique_ptr.hpp.in_boost" "${CMAKE_CURRENT_BINARY_DIR}/include/scai/common/unique_ptr.hpp" )
+    endif ( ${Boost_VERSION} GREATER "105700" )
+    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/weak_ptr.hpp.in_boost" "${CMAKE_CURRENT_BINARY_DIR}/include/scai/common/weak_ptr.hpp" )
+else  ( NOT CXX_SUPPORTS_C11 )
+    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/bind.hpp.in" "${CMAKE_CURRENT_BINARY_DIR}/include/scai/common/bind.hpp" )
+    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/function.hpp.in" "${CMAKE_CURRENT_BINARY_DIR}/include/scai/common/function.hpp" )
+    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/shared_ptr.hpp.in" "${CMAKE_CURRENT_BINARY_DIR}/include/scai/common/shared_ptr.hpp" )
+    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/unique_ptr.hpp.in" "${CMAKE_CURRENT_BINARY_DIR}/include/scai/common/unique_ptr.hpp" )
+    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/weak_ptr.hpp.in" "${CMAKE_CURRENT_BINARY_DIR}/include/scai/common/weak_ptr.hpp" )
+endif ( NOT CXX_SUPPORTS_C11 )
+install ( FILES ${CMAKE_CURRENT_BINARY_DIR}/include/scai/common/bind.hpp ${CMAKE_CURRENT_BINARY_DIR}/include/scai/common/function.hpp
+                ${CMAKE_CURRENT_BINARY_DIR}/include/scai/common/shared_ptr.hpp ${CMAKE_CURRENT_BINARY_DIR}/include/scai/common/unique_ptr.hpp
+                ${CMAKE_CURRENT_BINARY_DIR}/include/scai/common/weak_ptr.hpp DESTINATION include/scai/common )
 
 ## add CUDA if supported
 if    ( CUDA_FOUND AND USE_CUDA )
@@ -159,7 +163,7 @@ add_library ( scai_common ${SCAI_LIBRARY_TYPE} ${CXX_SOURCES} )
 
 ## add link libraries
 foreach    ( module ${SCAI_COMMON_EXTERNAL_DEPS} )
-	string ( TOUPPER ${module} upper_module )
+    string ( TOUPPER ${module} upper_module )
     target_link_libraries ( scai_common ${SCAI_${upper_module}_LIBRARIES} )
 endforeach ( module ${SCAI_COMMON_EXTERNAL_DEPS} )
 
@@ -184,5 +188,5 @@ add_subdirectory( doc )
 include ( DistClean )
 
 if    ( DEFINED SCAI_CMAKE_VERBOSE OR NOT DEFINED SCAI_COMPLETE_BUILD )
-	include ( Summaries/common )
+    include ( Summaries/common )
 endif ( DEFINED SCAI_CMAKE_VERBOSE OR NOT DEFINED SCAI_COMPLETE_BUILD )

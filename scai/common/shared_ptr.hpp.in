@@ -1,5 +1,5 @@
 /**
- * @file boost_check.hpp
+ * @file common/shared_ptr.hpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,12 +25,24 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief check whether scai boost library is compatible with link library 
- * @author Jan Ecker
- * @date 27.03.2013
- * @since 1.0.0
+ * @brief Embedding shared_ptr in common namespace.
+ * @author Thomas Brandes
+ * @date 15.07.2015
  */
 
 #pragma once
 
-/* nothing to do because build without boost, due to c++ 11 capable compiler */
+#include <memory>
+
+namespace scai
+{
+
+namespace common
+{
+    using std::shared_ptr;
+    using std::dynamic_pointer_cast;
+    using std::enable_shared_from_this;
+
+} /* end namespace common */
+
+} /* end namespace scai */

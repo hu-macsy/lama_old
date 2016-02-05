@@ -32,8 +32,8 @@ struct Math
      *  use always the same name for the routine.
      *
      *  \code
-     *    ValueType x = sqrt ( y );                          // might not work always correctly
-     *    ValueType x = TypeTraits<ValueType>::sqrt ( y );   // this is guaranteed to work
+     *    ValueType x = sqrt ( y );            // might not work always correctly
+     *    ValueType x = Math::sqrt ( y );      // this is guaranteed to work for all arithmetic types
      *  \endcode
      */
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER float sqrt( const float& x );

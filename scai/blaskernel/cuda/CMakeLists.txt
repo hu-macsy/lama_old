@@ -31,6 +31,8 @@
  # @since 2.0.0
 ###
 
+include_directories ( ${CUDA_TOOLKIT_INCLUDE} )
+
 ### Add classes and header files ###
 
 scai_project(

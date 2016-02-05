@@ -54,6 +54,8 @@ class TypeTraits
 {
 public:
 
+    /** Return type of function abs( ValueType ) */
+
 	typedef ValueType AbsType;
 
     /** Get value-specific epsilon for comparison. */

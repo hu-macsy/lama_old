@@ -34,10 +34,6 @@
 include ( Functions/scaiStatusMessage )
 include ( Functions/scaiSummaryMessage )
 
-include ( VersionDefinition )
-include ( CompilerVersion )
-include ( CheckC++11 )
-
 message ( STATUS "" )
 message ( STATUS "Summary of SCAI logging Configuration:" )
 message ( STATUS "=====================================" )
@@ -64,9 +60,9 @@ scai_summary_message ( "STATIC"
                        "Needs compiler supporting C++11 or Boost" )
 
 scai_summary_message ( "FOUND"
-					   "CXX_SUPPORTS_C11"
-					   "C++11 support"
-					   "" )
+					             "CXX_SUPPORTS_C11"
+					             "C++11 support"
+					             "" )
 				
 if    ( NOT CXX_SUPPORTS_C11 )
     scai_summary_message ( "FOUND"
@@ -79,7 +75,7 @@ endif ( NOT CXX_SUPPORTS_C11 )
 message ( STATUS "" )
 scai_status_message ( HEADLINE "LIBRARIES:" )
 
-# LAMA CUDA
+# SCAI common
 message ( STATUS "" )
 scai_summary_message ( "FOUND"
                        "SCAI_COMMON_FOUND"
@@ -87,25 +83,12 @@ scai_summary_message ( "FOUND"
                        "" )
 
 message ( STATUS "" )
-scai_status_message ( HEADLINE "DOCUMENTATION:" )
-# DOC
-scai_summary_message ( "USE"
-                       "BUILD_DOC"
-                       "DOC"
-                       "" )
-                                     
-scai_summary_message ( "FOUND"
-                       "SPHINX_FOUND"
-                       "Sphinx"
-                       "Version ${Sphinx_VERSION_STRING} at ${Sphinx-build_EXECUTABLE}: 'make doc' to build user documentation" )
-
-message ( STATUS "" )
 
 scai_status_message ( HEADLINE "INFO:" )
 message ( STATUS "LAMA Version : ${LAMA_VERSION} ${LAMA_VERSION_NAME}" )
 message ( STATUS "Build Type   : ${CMAKE_BUILD_TYPE}" )
 message ( STATUS "Library Type : ${SCAI_LIBRARY_TYPE}" )
-message ( STATUS "ASSERT Level : ${SCAI_ASSERT_LEVEL}" )
+message ( STATUS "ASSERT Level : ${SCAI_ASSERT_LEVEL} ( -DSCAI_ASSERT_LEVEL_${SCAI_ASSERT_LEVEL} )" )
 if    ( USE_CODE_COVERAGE )
 	message ( STATUS "CODE COVERAGE: ${USE_CODE_COVERAGE}" )
 endif ( USE_CODE_COVERAGE )

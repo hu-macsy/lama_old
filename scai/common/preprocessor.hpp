@@ -1,5 +1,5 @@
 /**
- * @file hmemo.hpp
+ * @file common/preprocessor.hpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,23 +25,11 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Include file that includes all other defintion files of this module.
- *
+ * @brief Provide the BOOST_REPEAT macros
  * @author Thomas Brandes
- * @date 19.07.2015
+ * @date 04.02.2016
  */
 
-#include <scai/hmemo/Access.hpp> 
-#include <scai/hmemo/ContextAccess.hpp>
-#include <scai/hmemo/_HArray.hpp>
-#include <scai/hmemo/ContextData.hpp>
-#include <scai/hmemo/ContextDataManager.hpp>
-#include <scai/hmemo/Context.hpp>
-#include <scai/hmemo/HostContext.hpp>
-#include <scai/hmemo/HostMemory.hpp>
-#include <scai/hmemo/HArray.hpp>
-#include <scai/hmemo/HArrayRef.hpp>
-#include <scai/hmemo/Memory.hpp> 
-#include <scai/hmemo/ReadAccess.hpp>
-#include <scai/hmemo/WriteAccess.hpp>
-#include <scai/hmemo/WriteOnlyAccess.hpp>
+#pragma once
+
+#include <boost/preprocessor.hpp>

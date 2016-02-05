@@ -59,6 +59,7 @@ set ( CLASSES
         IterativeSolver
         MINRES
         OmegaSolver
+	QMR
 	Richardson
         SimpleAMG
         SingleGridSetup

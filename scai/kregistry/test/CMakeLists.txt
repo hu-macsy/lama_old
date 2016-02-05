@@ -50,5 +50,3 @@ endif ( USE_CODE_COVERAGE )
     
 ### Copy the xmltest.sh file in build directory ### 
 file ( COPY xmltest.sh DESTINATION ${CMAKE_CURRENT_BINARY_DIR} ) 
-
-target_link_libraries ( KernelInterfaceTest ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} scai_kregistry )

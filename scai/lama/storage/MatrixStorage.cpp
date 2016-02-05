@@ -58,11 +58,7 @@
 #include <scai/common/bind.hpp>
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/exception/UnsupportedException.hpp>
-
-// boost
-#include <boost/preprocessor.hpp>
-#include <boost/assign/list_of.hpp>
-#include <boost/unordered_map.hpp>
+#include <scai/common/preprocessor.hpp>
 
 using namespace scai::hmemo;
 
@@ -214,21 +210,28 @@ IndexType _MatrixStorage::getNumValues() const
 
 /* ---------------------------------------------------------------------------------- */
 
-static const boost::unordered_map<MatrixStorageFormat, const char*> formatToString = boost::assign::map_list_of(
-            Format::CSR, "CSR" )( Format::ELL, "ELL" )( Format::DIA, "DIA" )( Format::JDS, "JDS" )( Format::COO,
-                    "COO" )(
-            Format::DENSE, "DENSE" )( Format::ASSEMBLY, "ASSEMBLY" )( Format::UNDEFINED, "UNDEFINED" );
-
 const char* format2Str( const MatrixStorageFormat storageFormat )
 {
-    return formatToString.at( storageFormat );
+    switch ( storageFormat )
+    {
+        case Format::CSR: return "CSR"; break;
+        case Format::ELL: return "ELL"; break;
+        case Format::DIA: return "DIA"; break;
+        case Format::JDS: return "JDS"; break;
+        case Format::COO: return "COO"; break;
+        case Format::DENSE: return "DENSE"; break;
+        case Format::ASSEMBLY: return "ASSEMBLY"; break;
+        case Format::UNDEFINED: return "UNDEFINED"; break;
+    }
+
+    return "UNDEFINED";
 }
 
 MatrixStorageFormat str2Format( const char* str )
 {
     for ( int format = Format::CSR; format < Format::UNDEFINED; ++format )
     {
-        if ( strcmp( formatToString.at( MatrixStorageFormat( format ) ), str ) == 0 )
+        if ( strcmp( format2Str( MatrixStorageFormat( format ) ), str ) == 0 )
         {
             return MatrixStorageFormat( format );
         }

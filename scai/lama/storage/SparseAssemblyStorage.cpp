@@ -43,12 +43,7 @@
 #include <scai/common/macros/print_string.hpp>
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/Math.hpp>
-
-// boost
-#include <boost/preprocessor.hpp>
-
-// std
-#include <cmath>
+#include <scai/common/preprocessor.hpp>
 
 namespace scai
 {
