@@ -108,7 +108,7 @@ void BLAS_BLAS2::gemv(
 
     if( order == CblasColMajor )
     {
-    	BLASTrait::BLASTrans ta;
+    	BLASTrait::BLASTrans ta = '';
 
     	switch( transA )
     	{
@@ -127,7 +127,7 @@ void BLAS_BLAS2::gemv(
     }
     else if( order == CblasRowMajor )
     {
-    	BLASTrait::BLASTrans ta;
+        BLASTrait::BLASTrans ta = '';
 
 		switch( transA )
 		{

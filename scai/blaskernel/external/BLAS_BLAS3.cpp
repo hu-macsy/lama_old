@@ -94,7 +94,7 @@ void BLAS_BLAS3::gemm(
         SCAI_LOG_WARN( logger, "asynchronous execution not supported yet" )
     }
 
-    BLASTrait::BLASTrans ta, tb;
+    BLASTrait::BLASTrans ta = '', tb = '';
 
 	switch( transA )
 	{
