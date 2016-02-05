@@ -36,9 +36,6 @@ include_directories( "${CMAKE_CURRENT_BINARY_DIR}/../include" )
 
 add_subdirectory ( bench )
 add_subdirectory ( labelrank )
-add_subdirectory ( lecture )
-add_subdirectory ( solver )
-add_subdirectory ( spy )
 add_subdirectory ( tutorial )
 
 ## install examples

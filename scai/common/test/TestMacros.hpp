@@ -41,6 +41,8 @@
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/Math.hpp>
 
+#include <scai/common/test/Configuration.hpp>
+
 // boost
 #include <boost/assign/list_of.hpp>
 #include <boost/preprocessor.hpp>

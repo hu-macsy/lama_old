@@ -37,7 +37,6 @@
 #include <scai/lama/distribution/MetisDistribution.hpp>
 
 #include <scai/lama/test/TestMacros.hpp>
-#include <scai/lama/test/Configuration.hpp>
 #include <scai/lama/test/distributed/DistributionTest.hpp>
 
 #include <scai/lama/matrix/ELLSparseMatrix.hpp>
@@ -71,7 +70,7 @@ struct MetisDistributionTestConfig
         comm = Communicator::getCommunicator( scai::lama::communicator::MPI );
         rank = comm->getRank();
         size = comm->getSize();
-        std::string prefix = Configuration::getInstance().getPath();
+        std::string prefix = scai::test::Configuration::getPath();
         std::string formattedInputFile = prefix + "/bcspwr01.mtx";
         matrix = CSRSparseMatrix<double>( formattedInputFile );
         globalSize = matrix.getNumRows();

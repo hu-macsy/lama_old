@@ -168,7 +168,6 @@ endif ( MPI_FOUND AND USE_MPI )
 
 add_subdirectory ( norm )
 add_subdirectory ( openmp )
-add_subdirectory ( solver )
 add_subdirectory ( storage )
 
 if ( FOUND_BOOST_TEST AND BUILD_TEST )
@@ -187,12 +186,6 @@ set_target_properties ( ${PROJECT_NAME} PROPERTIES VERSION ${${UPPER_PROJECT_NAM
 
 ## add link libraries
 addInternalAndExternalLinkLibraries()
-
-# Might be some additional solver libraries have been defined
-message ( STATUS "LAMA uses following solver libraries: ${LAMA_SOLVER_LIBRARIES}" )
-if ( LAMA_SOLVER_LIBRARIES )
-    target_link_libraries( ${PROJECT_NAME} ${LAMA_SOLVER_LIBRARIES} )
-endif ()
 
 # external libraries
 if    ( GPI2_FOUND AND IBVERBS_FOUND AND USE_GPI2 )

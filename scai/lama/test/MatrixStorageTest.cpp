@@ -41,7 +41,6 @@
 
 #include <scai/lama/test/TestMacros.hpp>
 
-#include <scai/lama/test/Configuration.hpp>
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 #include <scai/lama/DenseVector.hpp>
 
@@ -724,7 +723,7 @@ LAMA_COMMON_TEST_CASE_TEMPLATE_END()
 
 LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, ValueType, numericalTest )
 
-std::string prefix = Configuration::getInstance().getPath();
+std::string prefix = scai::test::Configuration::getPath();
 CSRSparseMatrix<ValueType> symA( prefix + "/" + "nos6.mtx" );
 mMatrixStorage = symA.getLocalStorage();
 
@@ -1137,7 +1136,7 @@ LAMA_COMMON_TEST_CASE_TEMPLATE_END()
 
 LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, ValueType, symmetryTest )
 
-std::string prefix = Configuration::getInstance().getPath();
+std::string prefix = scai::test::Configuration::getPath();
 CSRSparseMatrix<ValueType> sym( prefix + "/" + "nos6.mtx" );
 mMatrixStorage = sym.getLocalStorage();
 

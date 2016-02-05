@@ -56,38 +56,34 @@ scai_project (
         GenBlockDistributionTest
         GeneralDistributionTest
         NoDistributionTest
-        P_CGTest
         P_COOSparseMatrixTest
         P_CSRSparseMatrixTest
         P_DenseMatrixTest
         P_DIASparseMatrixTest
         P_ELLSparseMatrixTest
-        P_InverseSolverTest
-        P_JacobiTest  
         P_JDSSparseMatrixTest
         P_MatrixCreatorTest
         P_MatrixStorageTest
         P_MatrixTest
         P_MPICommunicatorTest
         P_RedistributorTest
-        P_SORTest
-        P_SpecializedJacobiTest
         P_VectorTest
         P_NormTest
 
         ${MetisDistributionTest}
 
         #TODO: REMOVE!
-        ../Configuration
+   #     ../Configuration
         ../SparseMatrixHelper
         ../CommunicatorTest
 )
     
 # individual preprocessor definition 
 
-set_property( SOURCE ../Configuration.cpp 
-              PROPERTY COMPILE_DEFINITIONS LAMA_TESTFILE_PATH="${CMAKE_CURRENT_SOURCE_DIR}/../../../../res/testfiles" 
-            )
+#set_property( SOURCE ${CXX_SOURCES} 
+#              PROPERTY COMPILE_DEFINITIONS LAMA_TESTFILE_PATH="${CMAKE_CURRENT_SOURCE_DIR}/../../../../res/testfiles" 
+#            )
+add_definitions ( -DLAMA_TESTFILE_PATH="${CMAKE_CURRENT_SOURCE_DIR}/../../../../res/testfiles" )
 
 ### add definitions ###
 if ( WIN32 )

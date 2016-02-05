@@ -59,7 +59,6 @@
 #include <scai/lama/ContextFactory.hpp>
 #include <scai/lama/Context.hpp>
 
-#include <scai/lama/test/Configuration.hpp>
 #include <scai/lama/test/TestSparseMatrices.hpp>
 #include <scai/lama/test/EquationHelper.hpp>
 #include <scai/lama/test/cuda/CUDAContext.hpp>
