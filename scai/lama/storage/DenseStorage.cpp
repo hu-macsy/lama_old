@@ -46,6 +46,7 @@
 #include <scai/hmemo/ContextAccess.hpp>
 #include <scai/common/Constants.hpp>
 #include <scai/common/TypeTraits.hpp>
+#include <scai/common/Math.hpp>
 #include <scai/common/macros/print_string.hpp>
 #include <scai/common/exception/UnsupportedException.hpp>
 
@@ -1036,7 +1037,7 @@ ValueType DenseStorageView<ValueType>::l2Norm() const
 
     SCAI_CONTEXT_ACCESS( loc );
 
-    return TypeTraits<ValueType>::sqrt( dot[loc]( n, data.get(), 1, data.get(), 1 ) );
+    return common::Math::sqrt( dot[loc]( n, data.get(), 1, data.get(), 1 ) );
 }
 
 /* --------------------------------------------------------------------------- */

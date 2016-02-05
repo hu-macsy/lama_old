@@ -49,6 +49,7 @@
 #include <scai/common/macros/assert.hpp>
 #include <scai/common/macros/unused.hpp>
 #include <scai/common/Constants.hpp>
+#include <scai/common/TypeTraits.hpp>
 
 // external
 

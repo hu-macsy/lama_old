@@ -40,11 +40,17 @@
 
 // scai library
 #include <scai/kregistry/KernelRegistry.hpp>
+
 #include <scai/hmemo/mic/MICSyncToken.hpp>
 #include <scai/hmemo/mic/MICContext.hpp>
 
+#include <scai/common/TypeTraits.hpp>
+
 // external
 #include <mkl.h>
+
+// booost
+#include <boost/preprocessor.hpp>
 
 namespace scai
 {
@@ -115,7 +121,7 @@ void MICBLAS2::gemv(
     const IndexType incY )
 {
     SCAI_LOG_INFO( logger,
-                   "gemv<float>: m = " << m << ", n = " << n << ", lda = " << lda << ", incX = " << incX << ", incY = " << incY << ", alpha = " << alpha << ", beta = " << beta )
+                   "gemv<" << common::TypeTraits<ValueType>::id() << ">: m = " << m << ", n = " << n << ", lda = " << lda << ", incX = " << incX << ", incY = " << incY << ", alpha = " << alpha << ", beta = " << beta )
 
     if( m == 0 )
     {
@@ -164,7 +170,7 @@ void MICBLAS2::gemv(
         ValueType* y = static_cast<ValueType*>( yPtr );
 
 //        sgemv( &ta, &m, &n, &alpha, a, &lda, x, &incX, &beta, y, &incY );
-        MICBLASWrapper::gemv( ta, m, n, *alphaPtr, a, lda, x, incX, *betaPtr, y, incY );
+        MICBLASWrapper<ValueType>::gemv( ta, m, n, *alphaPtr, a, lda, x, incX, *betaPtr, y, incY );
     }
 }
 

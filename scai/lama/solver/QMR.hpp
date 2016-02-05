@@ -104,10 +104,12 @@ public:
     common::shared_ptr<Vector> mVecV;
     common::shared_ptr<Vector> mVecW;
     common::shared_ptr<Vector> mVecY;      /*preconditioning 1*/ 
-   
+    common::shared_ptr<Vector> mVecZ;
+
     common::shared_ptr<Vector> mVecWT;    
     common::shared_ptr<Vector> mVecVT;
     common::shared_ptr<Vector> mVecYT;
+    common::shared_ptr<Vector> mVecZT;
     common::shared_ptr<Vector> mVecP;
     common::shared_ptr<Vector> mVecQ;
     common::shared_ptr<Vector> mVecPT;
@@ -133,6 +135,7 @@ public:
     */
     virtual void solveInit( Vector& solution, const Vector& rhs );
     
+    void print(Vector& f, size_t i);
     /**
      * @brief Returns the complete configuration of the derived class
      */

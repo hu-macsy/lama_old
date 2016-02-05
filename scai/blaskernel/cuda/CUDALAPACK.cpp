@@ -43,29 +43,32 @@
 #include <scai/kregistry/KernelRegistry.hpp>
 #include <scai/common/cuda/CUDAError.hpp>
 
+// boost
+#include <boost/preprocessor.hpp>
+
 namespace scai
 {
 
 namespace blaskernel
 {
 
-template<>
+template<typename ValueType>
 void CUDALAPACK::laswp(
     const CBLAS_ORDER order,
     const IndexType n,
-    float* A_d,
+    ValueType* A_d,
     const IndexType lda,
     const IndexType k1,
     const IndexType k2,
     const IndexType* ipiv_h,
     const IndexType incx )
 {
-    int info = 0;
-    int i = k1;
+    IndexType info = 0;
+    IndexType i = k1;
 
     if( order == CblasRowMajor )
     {
-        int feedback = 0;
+    	IndexType feedback = 0;
 
         for( i = k1; i < k2 /*&& feedback == LAMA_STATUS_SUCCESS*/; ++i )
         {
@@ -87,56 +90,7 @@ void CUDALAPACK::laswp(
     else
     {
         info = 1;
-        BLASHelper::XERBLA_cpu( 0, info, "slaswp", "Illegal order setting." );
-    }
-
-    if( info < 0 )
-    {
-        //TODO: throw exception
-    }
-
-//        return info;
-}
-
-template<>
-void CUDALAPACK::laswp(
-    const CBLAS_ORDER order,
-    const IndexType n,
-    double* A_d,
-    const IndexType lda,
-    const IndexType k1,
-    const IndexType k2,
-    const IndexType* ipiv_h,
-    const IndexType incx )
-{
-    int info = 0;
-    int i = k1;
-
-    if( order == CblasRowMajor )
-    {
-        int feedback = 0;
-
-        for( i = k1; i < k2 /*&& feedback == LAMA_STATUS_SUCCESS*/; ++i )
-        {
-            if( ipiv_h[i * incx] == i )
-            {
-                continue;
-            }
-
-            CUDABLAS1::swap( n, &A_d[ipiv_h[i * incx] * lda], incx, &A_d[i * lda], incx );
-            SCAI_CHECK_CUDA_ERROR
-        }
-
-        info = -1 * (IndexType) feedback;
-    }
-    else if( order == CblasColMajor )
-    {
-        info = n + lda;
-    }
-    else
-    {
-        info = 1;
-        BLASHelper::XERBLA_cpu( 0, info, "dlaswp", "Illegal order setting." );
+        COMMON_THROWEXCEPTION( "illegal order setting " << order )
     }
 
     if( info < 0 )
@@ -163,8 +117,12 @@ void CUDALAPACK::registerKernels( bool deleteFlag )
         flag = KernelRegistry::KERNEL_ERASE;
     }
 
-    KernelRegistry::set<BLASKernelTrait::laswp<float> >( laswp, CUDA, flag );
-    KernelRegistry::set<BLASKernelTrait::laswp<double> >( laswp, CUDA, flag ); 
+#define CUDA_LAPACK_REGISTER(z, I, _)                                                             \
+    KernelRegistry::set<BLASKernelTrait::laswp<ARITHMETIC_CUDA_TYPE_##I> >( laswp, CUDA, flag );  \
+
+    BOOST_PP_REPEAT( ARITHMETIC_CUDA_TYPE_CNT, CUDA_LAPACK_REGISTER, _ )
+
+#undef CUDA_LAPACK_REGISTER
 
     // other routines are not used by LAMA yet
 }

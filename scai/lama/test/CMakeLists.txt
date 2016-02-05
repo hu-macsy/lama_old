@@ -96,6 +96,7 @@ scai_project (
         MaxNormTest
         MINRESTest
         NoCommunicatorTest
+        QMRTest
         ResidualStagnationTest
         ResidualThresholdTest
         RichardsonTest

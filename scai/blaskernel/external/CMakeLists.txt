@@ -34,13 +34,13 @@
 ### Add classes and header files ###
 
 set( CLASSES
-        BLASHelper
+#        BLASWrapperNEW
 )
 
 set( HEADERS
-        BLASWrapper
         LAPACKWrapper
         LAPACKeWrapper
+        BLASWrapper
 )
 
 if ( SCAI_BLAS_NAME STREQUAL "MKL" )

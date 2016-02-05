@@ -48,6 +48,7 @@
 #include <scai/common/macros/unused.hpp>
 #include <scai/common/Constants.hpp>
 #include <scai/common/TypeTraits.hpp>
+#include <scai/common/Math.hpp>
 
 #include <scai/tasking/TaskSyncToken.hpp>
 #include <scai/common/preprocessor.hpp>
@@ -65,8 +66,6 @@ using tasking::TaskSyncToken;
 
 namespace lama
 {
-
-using std::abs;
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
@@ -243,7 +242,7 @@ ValueType OpenMPELLUtils::absMaxVal(
             for ( IndexType jj = 0; jj < ellSizes[i]; ++jj )
             {
                 IndexType pos = ellindex( i, jj, numRows, numValuesPerRow );
-                ValueType val = abs( values[pos] );
+                ValueType val = common::Math::abs( values[pos] );
 
                 if ( val > threadVal )
                 {
@@ -493,7 +492,7 @@ void OpenMPELLUtils::compressIA(
                     continue;
                 }
 
-                if ( abs( ellValues[pos] ) <= eps )
+                if ( common::Math::abs( ellValues[pos] ) <= eps )
                 {
                     length--;
                 }
@@ -532,7 +531,7 @@ void OpenMPELLUtils::compressValues(
             {
                 IndexType pos = ellindex( i, j, numRows, numValuesPerRow );
 
-                if ( abs( values[pos] ) <= eps && JA[pos] != i )
+                if ( common::Math::abs( values[pos] ) <= eps && JA[pos] != i )
                 {
                     gap++;
                     continue;

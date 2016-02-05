@@ -55,14 +55,13 @@ include ( Functions/relativeInstall )
 
 ### Include compile dependent things
 if    ( NOT SCAI_COMPLETE_BUILD )
-	include ( SetBuildFlags )
+    include ( SetBuildFlags )
     include ( CompilerVersion )
-	include ( SCAIAssert )
-	include ( SetCPPFlags )
-	include ( Package/Sphinx )
+    include ( SCAIAssert )
+    include ( SetCPPFlags )
+    include ( Package/Sphinx )
 else  ( NOT SCAI_COMPLETE_BUILD )
 	include ( Functions/CheckValueAtCompleteBuild )
-    message ( STATUS "PROJECT_SURNAME ${PROJECT_SURNAME}" )
 	CheckValueAtCompleteBuild ( ${PROJECT_SURNAME} )
 endif ( NOT SCAI_COMPLETE_BUILD )
 
@@ -83,7 +82,7 @@ add_definitions( ${ADDITIONAL_WARNING_FLAGS} )
 add_definitions ( -DSCAI_ASSERT_LEVEL_${SCAI_ASSERT_LEVEL} )
 
 if    ( WIN32 )
-	add_definitions ( -DCOMMON_COMPILING_DLL )
+    add_definitions ( -DCOMMON_COMPILING_DLL )
 endif ( WIN32 )
 
 ### Project System-Include
@@ -111,6 +110,7 @@ scai_project (
         Constants
         Factory
         Factory1
+        Math
         OpenMP
         ReductionOp
         NonCopyable
