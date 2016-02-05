@@ -40,12 +40,20 @@ project ( scai_common CXX )
 ### Set Module Path
 set ( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../CMake/Modules" )
 
+### includes ###
+
+## important Variables for project
 include ( SetProjectVariables)
 include ( VersionDefinition )
+include ( InternalDependencies )
+include ( ExternalDependencies )
 
+## needed functions
 include ( Functions/scaiFunctions )
+include ( Functions/scaiProject )
+include ( Functions/relativeInstall )
 
-### Include Compiler Flags
+### Include compile dependent things
 if    ( NOT SCAI_COMPLETE_BUILD )
 	include ( SetBuildFlags )
     include ( CompilerVersion )
@@ -54,24 +62,23 @@ if    ( NOT SCAI_COMPLETE_BUILD )
 	include ( Package/Sphinx )
 else  ( NOT SCAI_COMPLETE_BUILD )
 	include ( Functions/CheckValueAtCompleteBuild )
+    message ( STATUS "PROJECT_SURNAME ${PROJECT_SURNAME}" )
 	CheckValueAtCompleteBuild ( ${PROJECT_SURNAME} )
 endif ( NOT SCAI_COMPLETE_BUILD )
 
+## C++11 or Boost
 include ( CheckC++11 )
 if    ( NOT CXX_SUPPORTS_C11 OR BUILD_TEST )
     include( Package/Boost )
 endif ( NOT CXX_SUPPORTS_C11 OR BUILD_TEST )
 
 ### include all search packages
-# no internal dependencies
-include ( ExternalDependencies )
-addExternalPackages()
+addInternalAndExternalPackages()
 
 ### finalize build flags
 include ( ConcludeFlags )
 
 ### add definitions
-
 add_definitions( ${ADDITIONAL_WARNING_FLAGS} )
 add_definitions ( -DSCAI_ASSERT_LEVEL_${SCAI_ASSERT_LEVEL} )
 
@@ -81,20 +88,12 @@ endif ( WIN32 )
 
 ### Project System-Include
 include_directories ( ../.. ${CMAKE_CURRENT_BINARY_DIR}/include )
-addExternalIncludes()
+addInternalAndExternalIncludes()
 
-### build library
-
-## add subdirectories
-add_subdirectory ( examples )
-
-## add source files
-
-include ( Functions/scaiProject )
-
+### Add classes/headers to source files CXX_SOURCES, CXX_HEADERS, ...
 scai_project (
 
-    CLASSES
+    CLASSES                  # .cpp, .hpp
 
         Printable
         ScalarType
@@ -105,7 +104,7 @@ scai_project (
         Walltime
         LibModule
 
-    HEADERS
+    HEADERS                  # .hpp only
 
         Complex
         config
@@ -118,6 +117,7 @@ scai_project (
         TypeTraits
 )
 
+## configure c++11/boost dependent sources
 set ( CONFIGURE_DIR "${CMAKE_CURRENT_BINARY_DIR}/include/scai/${PROJECT_SURNAME}" )
 
 if    ( NOT CXX_SUPPORTS_C11 )
@@ -144,23 +144,24 @@ install ( FILES ${CONFIGURE_DIR}/bind.hpp ${CONFIGURE_DIR}/function.hpp
                 ${CONFIGURE_DIR}/shared_ptr.hpp ${CONFIGURE_DIR}/unique_ptr.hpp
                 ${CONFIGURE_DIR}/weak_ptr.hpp DESTINATION ${${UPPER_PROJECT_NAME}_INCLUDE_DIR} )
 
-## add CUDA if supported
+## add subdirectories
+
+add_subdirectory ( doc )
+
 if    ( CUDA_FOUND AND USE_CUDA )
     add_subdirectory ( cuda )
     include_directories ( ${CUDA_TOOLKIT_INCLUDE} )
 endif ( CUDA_FOUND AND USE_CUDA )
 
-# subdirectory macros
+add_subdirectory ( examples )
 add_subdirectory ( macros )
-
-## add exception dir
 add_subdirectory ( exception )
 
 if ( FOUND_BOOST_TEST AND BUILD_TEST )
     add_subdirectory ( test )
 endif ( FOUND_BOOST_TEST AND BUILD_TEST )
 
-## add library
+### add library ###
 add_library ( ${PROJECT_NAME} ${SCAI_LIBRARY_TYPE} ${CXX_SOURCES} )
 set_target_properties ( ${PROJECT_NAME} PROPERTIES VERSION ${${UPPER_PROJECT_NAME}_VERSION} )
 
@@ -168,20 +169,20 @@ set_target_properties ( ${PROJECT_NAME} PROPERTIES VERSION ${${UPPER_PROJECT_NAM
 addExternalLinkLibraries()
 
 ### install ###
+
+## install lib
 install ( TARGETS ${PROJECT_NAME} DESTINATION lib )
 
-include ( Functions/relativeInstall )
+## install headers
 relative_install ( FILES ${CXX_HEADERS} DESTINATION ${${UPPER_PROJECT_NAME}_INCLUDE_DIR} )
 
 ## install library.hpp
 install ( FILES ../${PROJECT_SURNAME}.hpp DESTINATION include/scai )
 
-### add documentation
-add_subdirectory( doc )
-
-## add custum target distClean
+### add custum target distClean
 include ( DistClean )
 
+### summary ###
 if    ( DEFINED SCAI_CMAKE_VERBOSE OR NOT DEFINED SCAI_COMPLETE_BUILD )
 	include ( Summaries/${PROJECT_SURNAME} )
 endif ( DEFINED SCAI_CMAKE_VERBOSE OR NOT DEFINED SCAI_COMPLETE_BUILD )
