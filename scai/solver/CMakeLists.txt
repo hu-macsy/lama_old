@@ -71,6 +71,9 @@ if    ( NOT CXX_SUPPORTS_C11 OR BUILD_TEST )
     include( Package/Boost )
 endif ( NOT CXX_SUPPORTS_C11 OR BUILD_TEST )
 
+### include all search packages
+addInternalAndExternalPackages()
+
 ## finalize build flags
 include ( ConcludeFlags )
 
