@@ -74,7 +74,7 @@ void GenBlockDistribution::setOffsets(
                         "Partition " << p << ": local size =  " << localSizes[p] << ", offset = " << mOffsets[p] )
     }
 
-    SCAI_ASSERT_EQUAL_ERROR( sumSizes, getGlobalSize() )
+    SCAI_ASSERT_EQUAL( sumSizes, getGlobalSize(), "sum over local sizes must be global size" )
 
     mUB = mOffsets[rank] - 1;
     mLB = mOffsets[rank] - localSizes[rank];
@@ -88,7 +88,7 @@ void GenBlockDistribution::setOffsets( const IndexType rank, const IndexType num
     mCommunicator->gather( localSizes.get(), 1, 0, &mySize );
     mCommunicator->bcast( localSizes.get(), numPartitions, 0 );
 
-    SCAI_ASSERT_EQUAL_DEBUG( localSizes[rank], mySize )
+    SCAI_ASSERT_EQ_DEBUG( localSizes[rank], mySize, "wrongly gathered values" )
 
     setOffsets( rank, numPartitions, localSizes.get() );
 }
@@ -105,7 +105,7 @@ GenBlockDistribution::GenBlockDistribution(
 
     SCAI_LOG_INFO( logger, "GenBlockDistribution of " << getGlobalSize() << " elements" )
 
-    SCAI_ASSERT_EQUAL_ERROR( size, static_cast<PartitionId>( localSizes.size() ) )
+    SCAI_ASSERT_EQ_ERROR( size, static_cast<PartitionId>( localSizes.size() ), "size mismatch" )
 
     setOffsets( rank, size, &localSizes[0] );
 
@@ -125,8 +125,8 @@ GenBlockDistribution::GenBlockDistribution(
 
     setOffsets( rank, size, lastGlobalIdx - firstGlobalIdx + 1 );
 
-    SCAI_ASSERT_EQUAL_ERROR( mLB, firstGlobalIdx )
-    SCAI_ASSERT_EQUAL_ERROR( mUB, lastGlobalIdx )
+    SCAI_ASSERT_EQUAL( mLB, firstGlobalIdx, "serious mismatch in index range" )
+    SCAI_ASSERT_EQUAL( mUB, lastGlobalIdx, "serious mismatch in index range" )
 
     SCAI_LOG_INFO( logger, *this << ": constructed by local range " << firstGlobalIdx << ":" << lastGlobalIdx )
 }

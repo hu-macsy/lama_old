@@ -331,9 +331,7 @@ void HArrayUtils::assignScaled(
     const HArray<ValueType>& y,
     ContextPtr prefLoc )
 {
-    const IndexType n = result.size();
-
-    SCAI_ASSERT_EQUAL_ERROR( n, y.size() );
+    const IndexType n = y.size();  // determines size of result
 
     // beta = 0    : saves the need of a read access for y
     // result == y : only one write access needed ( write + read not possible)
@@ -346,7 +344,7 @@ void HArrayUtils::assignScaled(
 
         ContextPtr loc = setVal.getValidContext( prefLoc );
 
-        WriteAccess<ValueType> wResult( result, loc );
+        WriteOnlyAccess<ValueType> wResult( result, loc, n );
 
         SCAI_CONTEXT_ACCESS( loc )
 
@@ -384,8 +382,8 @@ void HArrayUtils::assignScaled(
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        WriteAccess<ValueType> wResult( result, loc );
         ReadAccess<ValueType> rY( y, loc );
+        WriteOnlyAccess<ValueType> wResult( result, loc, n );
 
         setScale[loc]( wResult.get(), beta, rY.get(), n );
     }

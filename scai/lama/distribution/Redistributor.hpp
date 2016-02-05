@@ -567,7 +567,7 @@ void Redistributor::copyV(
     const hmemo::HArray<IndexType>& sourceOffsets,
     const hmemo::HArray<IndexType>& sourceIndexes )
 {
-    SCAI_ASSERT_EQUAL_ERROR( targetIndexes.size(), sourceIndexes.size() )
+    SCAI_ASSERT_EQ_ERROR( targetIndexes.size(), sourceIndexes.size(), "size mismatch" )
 
     hmemo::ContextPtr loc = hmemo::Context::getHostPtr();
 
@@ -593,7 +593,7 @@ void Redistributor::copyV(
             ++k;
         }
 
-        SCAI_ASSERT_EQUAL_DEBUG( k, rTargetOffsets[targetI + 1] )
+        SCAI_ASSERT_EQ_DEBUG( k, rTargetOffsets[targetI + 1], "size mismatch" )
     }
 }
 
@@ -608,12 +608,10 @@ void Redistributor::exchangeHalo( hmemo::HArray<ValueType>& targetHalo, const hm
 
     // use asynchronous communication to avoid deadlocks
 
-    tasking::SyncToken* token = comm.exchangeByPlanAsync( targetHalo, mHalo.getRequiredPlan(), sourceHalo,
-                       mHalo.getProvidesPlan() );
+    common::unique_ptr<tasking::SyncToken> token (
+        comm.exchangeByPlanAsync( targetHalo, mHalo.getRequiredPlan(), sourceHalo, mHalo.getProvidesPlan() ) );
 
     token->wait();
-
-    delete token;
 
     // synchronization is done implicitly
 }

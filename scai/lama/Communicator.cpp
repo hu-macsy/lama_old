@@ -286,7 +286,7 @@ void Communicator::factorize3(
 
 void Communicator::getGrid2Rank( PartitionId pos[2], const PartitionId procgrid[2] ) const
 {
-    SCAI_ASSERT_EQUAL_ERROR( getSize(), procgrid[0] * procgrid[1] )
+    SCAI_ASSERT_EQ_ERROR( getSize(), procgrid[0] * procgrid[1], "size mismatch for 2D grid" )
 
     PartitionId rank = getRank();
     PartitionId size = procgrid[0];
@@ -301,7 +301,7 @@ void Communicator::getGrid2Rank( PartitionId pos[2], const PartitionId procgrid[
 
 void Communicator::getGrid3Rank( PartitionId pos[3], const PartitionId procgrid[3] ) const
 {
-    SCAI_ASSERT_EQUAL_ERROR( getSize(), procgrid[0] * procgrid[1] * procgrid[2] )
+    SCAI_ASSERT_EQ_ERROR( getSize(), procgrid[0] * procgrid[1] * procgrid[2], "size mismatch for 3D grid" )
 
     PartitionId rank = getRank();
 

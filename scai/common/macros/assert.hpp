@@ -166,8 +166,11 @@ if ( false )                                                                \
 	#define SCAI_ASSERT_EQUAL_DEBUG( exp1, exp2 ) unused( exp1, exp2 );
 	#define SCAI_ASSERT_EQUAL_ERROR( exp1, exp2 ) unused( exp1, exp2 );
 
-	#define SCAI_ASSERT_UNEQUAL_DEBUG( exp1, exp2, msg ) unused( exp1, exp2 ); UNUSED_STRING( msg );
-	#define SCAI_ASSERT_UNEQUAL_ERROR( exp1, exp2, msg ) unused( exp1, exp2 ); UNUSED_STRING( msg );
+	#define SCAI_ASSERT_EQ_DEBUG( exp1, exp2, msg ) unused( exp1, exp2 ); UNUSED_STRING( msg );
+	#define SCAI_ASSERT_EQ_ERROR( exp1, exp2, msg ) unused( exp1, exp2 ); UNUSED_STRING( msg );
+
+	#define SCAI_ASSERT_NE_DEBUG( exp1, exp2, msg ) unused( exp1, exp2 ); UNUSED_STRING( msg );
+	#define SCAI_ASSERT_NE_ERROR( exp1, exp2, msg ) unused( exp1, exp2 ); UNUSED_STRING( msg );
 
 	#define SCAI_ASSERT_LT_DEBUG( exp1, exp2, msg ) unused( exp1, exp2 ); UNUSED_STRING( msg );
 	#define SCAI_ASSERT_LT_ERROR( exp1, exp2, msg ) unused( exp1, exp2 ); UNUSED_STRING( msg );
@@ -192,8 +195,11 @@ if ( false )                                                                \
 	#define SCAI_ASSERT_EQUAL_DEBUG( exp1, exp2 ) unused( exp1, exp2 );
 	#define SCAI_ASSERT_EQUAL_ERROR( exp1, exp2 ) SCAI_ASSERT_EQUAL( exp1, exp2, "" );
 
-	#define SCAI_ASSERT_UNEQUAL_DEBUG( exp1, exp2, msg ) unused( exp1, exp2 );
-	#define SCAI_ASSERT_UNEQUAL_ERROR( exp1, exp2, msg ) SCAI_ASSERT_UNEQUAL( exp1, exp2, msg );
+	#define SCAI_ASSERT_EQ_DEBUG( exp1, exp2, msg ) unused( exp1, exp2 );
+	#define SCAI_ASSERT_EQ_ERROR( exp1, exp2, msg ) SCAI_ASSERT_EQUAL( exp1, exp2, msg );
+
+	#define SCAI_ASSERT_NE_DEBUG( exp1, exp2, msg ) unused( exp1, exp2 );
+	#define SCAI_ASSERT_NE_ERROR( exp1, exp2, msg ) SCAI_ASSERT_UNEQUAL( exp1, exp2, msg );
 
 	#define SCAI_ASSERT_LT_DEBUG( exp1, exp2, msg ) unused( exp1, exp2 );
 	#define SCAI_ASSERT_LT_ERROR( exp1, exp2, msg ) SCAI_ASSERT_LT( exp1, exp2, msg );
@@ -218,8 +224,11 @@ if ( false )                                                                \
 	#define SCAI_ASSERT_EQUAL_DEBUG( exp1, exp2 ) SCAI_ASSERT_EQUAL( exp1, exp2, "" );
 	#define SCAI_ASSERT_EQUAL_ERROR( exp1, exp2 ) SCAI_ASSERT_EQUAL( exp1, exp2, "" );
 
-	#define SCAI_ASSERT_UNEQUAL_DEBUG( exp1, exp2, msg ) SCAI_ASSERT_UNEQUAL( exp1, exp2, msg );
-	#define SCAI_ASSERT_UNEQUAL_ERROR( exp1, exp2, msg ) SCAI_ASSERT_UNEQUAL( exp1, exp2, msg );
+	#define SCAI_ASSERT_EQ_DEBUG( exp1, exp2, msg ) SCAI_ASSERT_EQUAL( exp1, exp2, msg );
+	#define SCAI_ASSERT_EQ_ERROR( exp1, exp2, msg ) SCAI_ASSERT_EQUAL( exp1, exp2, msg );
+
+	#define SCAI_ASSERT_NE_DEBUG( exp1, exp2, msg ) SCAI_ASSERT_UNEQUAL( exp1, exp2, msg );
+	#define SCAI_ASSERT_NE_ERROR( exp1, exp2, msg ) SCAI_ASSERT_UNEQUAL( exp1, exp2, msg );
 
 	#define SCAI_ASSERT_LT_DEBUG( exp1, exp2, msg ) SCAI_ASSERT_LT( exp1, exp2, msg );
 	#define SCAI_ASSERT_LT_ERROR( exp1, exp2, msg ) SCAI_ASSERT_LT( exp1, exp2, msg );

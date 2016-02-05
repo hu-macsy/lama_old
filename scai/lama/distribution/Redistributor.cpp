@@ -66,8 +66,8 @@ Redistributor::Redistributor( DistributionPtr targetDistribution, DistributionPt
     const Distribution& sourceDist = *sourceDistribution;
     const Distribution& targetDist = *targetDistribution;
 
-    SCAI_ASSERT_EQUAL_ERROR( sourceDist.getGlobalSize(), targetDist.getGlobalSize() )
-    SCAI_ASSERT_EQUAL_ERROR( sourceDist.getCommunicator(), targetDist.getCommunicator() )
+    SCAI_ASSERT_EQ_ERROR( sourceDist.getGlobalSize(), targetDist.getGlobalSize(), "serious size mismatch" )
+    SCAI_ASSERT_EQ_ERROR( sourceDist.getCommunicator(), targetDist.getCommunicator(), "redistribute only with same communicator" )
 
     mSourceSize = sourceDist.getLocalSize();
     mTargetSize = targetDist.getLocalSize();
@@ -160,8 +160,8 @@ Redistributor::Redistributor( DistributionPtr targetDistribution, DistributionPt
     // In contrary to Halo schedules we have here the situation that each non-local
     // index of source should be required by some other processor.
 
-    SCAI_ASSERT_EQUAL_ERROR( offset, haloSourceIndexes.size() )
-    SCAI_ASSERT_EQUAL_ERROR( mNumLocalValues + offset, mSourceSize )
+    SCAI_ASSERT_EQ_ERROR( offset, haloSourceIndexes.size(), "serious mismatch" )
+    SCAI_ASSERT_EQ_ERROR( mNumLocalValues + offset, mSourceSize, "serious mismatch" )
 
     // Now add the indexes where to scatter the halo into destination
 

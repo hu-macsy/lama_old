@@ -236,7 +236,7 @@ template<typename ValueType>
 DenseVector<ValueType>::DenseVector( const _HArray& localValues, DistributionPtr distribution )
                 : Vector( distribution )
 {
-    SCAI_ASSERT_EQUAL_ERROR( localValues.size(), distribution->getLocalSize() )
+    SCAI_ASSERT_EQ_ERROR( localValues.size(), distribution->getLocalSize(), "size mismatch" )
 
     HArrayUtils::assign( mLocalValues, localValues ); // can deal with type conversions
 }
@@ -898,7 +898,7 @@ SCAI_REGION( "Vector.Dense.dotP" )
 
         const IndexType localSize = mLocalValues.size();
 
-        SCAI_ASSERT_EQUAL_DEBUG( localSize, getDistribution().getLocalSize() )
+        SCAI_ASSERT_EQ_DEBUG( localSize, getDistribution().getLocalSize(), "size mismatch" )
 
         const ValueType localDotProduct = dot[loc]( localSize, localRead.get(), 1, otherRead.get(), 1 );
 
@@ -952,7 +952,7 @@ void DenseVector<ValueType>::assign( const _HArray& localValues, DistributionPtr
 {
     SCAI_LOG_INFO( logger, "assign vector with localValues = " << localValues << ", dist = " << *dist )
 
-    SCAI_ASSERT_EQUAL_ERROR( localValues.size(), dist->getLocalSize() )
+    SCAI_ASSERT_EQ_ERROR( localValues.size(), dist->getLocalSize(), "size mismatch" )
 
     setDistributionPtr( dist );
     HArrayUtils::assign( mLocalValues, localValues );
@@ -1006,7 +1006,7 @@ size_t DenseVector<ValueType>::getMemoryUsage() const
 template<typename ValueType>
 void DenseVector<ValueType>::redistribute( DistributionPtr distribution )
 {
-    SCAI_ASSERT_EQUAL_ERROR( size(), distribution->getGlobalSize() )
+    SCAI_ASSERT_EQ_ERROR( size(), distribution->getGlobalSize(), "global size mismatch between old/new distribution" )
 
     if( getDistribution() == *distribution )
     {
@@ -1502,7 +1502,7 @@ void DenseVector<ValueType>::readVectorFromMMFile( const std::string& fileName )
 
     _StorageIO::readMMHeader( numRows, numColumns, numValues, isPattern, isSymmetric, fileName );
 
-    SCAI_ASSERT_EQUAL_ERROR( numColumns, 1 )
+    SCAI_ASSERT_EQ_ERROR( numColumns, 1, "vector must have exact one column in MatrixMarket file" )
 
     std::ifstream ifile;
     ifile.open( fileName.c_str(), std::ios::in );

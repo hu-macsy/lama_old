@@ -446,13 +446,13 @@ void StorageIO<ValueType>::readCSRFromXDRFile(
         COMMON_THROWEXCEPTION( "Unable to open XDR matrix file." )
     }
 
-    //Read Index Vector m_ia with m_nnu + 1 elements
+    // Read Index Vector m_ia with m_nnu + 1 elements
+
     int nnu; // long nnu;
+
     xdrFile.read( &nnu );
 
-    // check for mismatch in header and XDR matrix file.
-
-    SCAI_ASSERT_EQUAL_ERROR( numRows, (IndexType ) nnu )
+    SCAI_ASSERT_EQ_ERROR( numRows, (IndexType ) nnu, "mismatch header and XDR matrix file" )
 
     xdrFile.read( &indexDataTypeSizeIA );
 
@@ -478,12 +478,12 @@ void StorageIO<ValueType>::readCSRFromXDRFile(
     int indexDataTypeSizeIACheck;
     xdrFile.read( &indexDataTypeSizeIACheck );
 
-    SCAI_ASSERT_EQUAL_ERROR( indexDataTypeSizeIA, indexDataTypeSizeIACheck )
+    SCAI_ASSERT_EQ_ERROR( indexDataTypeSizeIA, indexDataTypeSizeIACheck, "size mismatch" )
 
     int nnuCheck;
     xdrFile.read( &nnuCheck );
 
-    SCAI_ASSERT_EQUAL_ERROR( nnuCheck, numRows )
+    SCAI_ASSERT_EQ_ERROR( nnuCheck, numRows, "")
 
     IndexType numValues = m_ia[numRows];
 
@@ -491,7 +491,7 @@ void StorageIO<ValueType>::readCSRFromXDRFile(
     int nna;
     xdrFile.read( &nna );
 
-    SCAI_ASSERT_EQUAL_ERROR( numValues, (IndexType ) nna );
+    SCAI_ASSERT_EQ_ERROR( numValues, (IndexType ) nna, "size mismatch" );
 
     xdrFile.read( &indexDataTypeSizeJA );
 
@@ -517,18 +517,18 @@ void StorageIO<ValueType>::readCSRFromXDRFile(
     int indexDataTypeSizeJACheck;
     xdrFile.read( &indexDataTypeSizeJACheck );
 
-    SCAI_ASSERT_EQUAL_ERROR( indexDataTypeSizeJA, indexDataTypeSizeJACheck )
+    SCAI_ASSERT_EQ_ERROR( indexDataTypeSizeJA, indexDataTypeSizeJACheck, "size mismatch" )
 
     int nnaCheck;
     xdrFile.read( &nnaCheck );
 
-    SCAI_ASSERT_EQUAL_ERROR( nnaCheck, numValues )
+    SCAI_ASSERT_EQ_ERROR( nnaCheck, numValues, "size mismatch" )
 
     //Read Index Vector m_data with m_nna elements
 
     xdrFile.read( &nnaCheck );
 
-    SCAI_ASSERT_EQUAL_ERROR( nnaCheck, numValues )
+    SCAI_ASSERT_EQ_ERROR( nnaCheck, numValues, "size mismatch" )
 
     xdrFile.read( &dataTypeSize );
 
@@ -553,11 +553,11 @@ void StorageIO<ValueType>::readCSRFromXDRFile(
 
     xdrFile.read( &dataTypeSizeCheck );
 
-    SCAI_ASSERT_EQUAL_ERROR( dataTypeSize, dataTypeSizeCheck )
+    SCAI_ASSERT_EQ_ERROR( dataTypeSize, dataTypeSizeCheck, "size mismatch" )
 
     xdrFile.read( &nnaCheck );
 
-    SCAI_ASSERT_EQUAL_ERROR( nnaCheck, nna )
+    SCAI_ASSERT_EQ_ERROR( nnaCheck, nna, "size mismatch" )
 
     xdrFile.close();
 }
@@ -1079,7 +1079,7 @@ void _StorageIO::readCSRHeader(
 
     frmFile >> id;
 
-    // not really important, may be warning: SCAI_ASSERT_EQUAL_DEBUG( VERSION_ID, id )
+    // not really important, may be warning: SCAI_ASSERT_EQ_DEBUG( VERSION_ID, id, "version mismatch" )
 
     frmFile >> size;
     frmFile >> rank;

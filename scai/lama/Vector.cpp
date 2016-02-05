@@ -177,7 +177,7 @@ Vector& Vector::operator=( const Expression_SV_SV& expression )
     const Vector& x = expression.getArg1().getArg2();
     const Vector& y = expression.getArg2().getArg2();
 
-    SCAI_ASSERT_EQUAL_ERROR( x.size(), y.size() );
+    SCAI_ASSERT_EQ_ERROR( x.size(), y.size(), "size mismatch for the two vectors in a * x + b * y" );
 
     assign( expression );
 

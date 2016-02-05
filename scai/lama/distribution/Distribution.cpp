@@ -237,7 +237,7 @@ void Distribution::replicate( T1* allValues, const T2* localValues ) const
         comm.shiftArray( indexesReceive, indexesSend, 1 );
         comm.shiftArray( valuesReceive, valuesSend, 1 );
 
-        SCAI_ASSERT_EQUAL_DEBUG( valuesReceive.size(), indexesReceive.size() )
+        SCAI_ASSERT_EQ_DEBUG( valuesReceive.size(), indexesReceive.size(), "size mismatch" )
 
         currentSize = valuesReceive.size();
 
@@ -269,7 +269,7 @@ void Distribution::replicate( T1* allValues, const T2* localValues ) const
     SCAI_LOG_INFO( logger, "replicated by " << ( np - 1 ) << " array shifts" )
 
     // # globalSize values must have been counted
-    SCAI_ASSERT_EQUAL_DEBUG( countValues, getGlobalSize() )
+    SCAI_ASSERT_EQ_DEBUG( countValues, getGlobalSize(), "" )
 }
 
 /* ---------------------------------------------------------------------- */
@@ -353,7 +353,7 @@ void Distribution::replicateN( T1* allValues, const T2* localValues, const Index
 
         comm.shiftArray( valuesReceive, valuesSend, 1 );
 
-        SCAI_ASSERT_EQUAL_DEBUG( currentSize * n, valuesReceive.size() )
+        SCAI_ASSERT_EQ_DEBUG( currentSize * n, valuesReceive.size(), "size mismatch for replicate n = " << n )
 
         // sort in the received values
 
@@ -384,8 +384,7 @@ void Distribution::replicateN( T1* allValues, const T2* localValues, const Index
         valuesReceive.swap( valuesSend );
     }
 
-    // # globalSize values must have been counted
-    SCAI_ASSERT_EQUAL_DEBUG( countLines, getGlobalSize() )
+    SCAI_ASSERT_EQ_DEBUG( countLines, getGlobalSize(), "not all lines seen" )
 }
 
 /* ---------------------------------------------------------------------- */
@@ -518,7 +517,7 @@ void Distribution::replicateRagged(
             size = fillGlobal( allValues, allOffsets, rIndexesReceive.get(), newSize1, rValuesReceive.get() );
             SCAI_LOG_DEBUG( logger,
                             comm << ": filled received data: " << newSize1 << " buckets with " << size << " values" )
-            SCAI_ASSERT_EQUAL_DEBUG( size, newSize2 )
+            SCAI_ASSERT_EQ_DEBUG( size, newSize2, "size mismatch" )
         }
 
         currentElemSize = newSize1;
@@ -531,8 +530,9 @@ void Distribution::replicateRagged(
     }
 
     // verify that all values are available
-    SCAI_ASSERT_EQUAL_DEBUG( countElemValues, getGlobalSize() )
-    SCAI_ASSERT_EQUAL_DEBUG( countDataValues, allOffsets[getGlobalSize()] )
+
+    SCAI_ASSERT_EQ_DEBUG( countElemValues, getGlobalSize(), "not all elems seen" )
+    SCAI_ASSERT_EQ_DEBUG( countDataValues, allOffsets[getGlobalSize()], "not all data seen" )
 }
 
 /* ---------------------------------------------------------------------- */
