@@ -1,8 +1,8 @@
 ###
- # @file scai/solver/CMakeLists.txt
+ # @file CMakeLists.cmake
  #
  # @license
- # Copyright (c) 2009-2015
+ # Copyright (c) 2009-2013
  # Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  # for Fraunhofer-Gesellschaft
  #
@@ -25,8 +25,51 @@
  # SOFTWARE.
  # @endlicense
  #
- # @brief Main specification file for CMake
- # @author Lauretta Schubert
- # @date 25.01.2016
- # @since 2.0.0
+ # @brief configuration of sphinx
+ # @author Jan Ecker
+ # @date 03.11.2015
+ # @since 1.0.1
 ###
+
+### SPHINX DOCUMENTATION ###
+
+if ( BUILD_DOC )
+    ### install ###
+    set ( LAMA_DOC_DIR "${CMAKE_SOURCE_DIR}/doc" )
+    set ( SPHINX_BUILD_ROOT "${CMAKE_CURRENT_BINARY_DIR}" )
+    set ( SPHINX_INSTALL_ROOT ${CMAKE_INSTALL_PREFIX}/${PROJECT_DOC_DIR} )
+    
+    # TODO: In future we need to use the proper version number of the specific subproject
+    set ( SCAI_COMMON_DOC_DIR ${CMAKE_INSTALL_PREFIX}/${DOC_ROOT_DIR}/scai-common-${SCAI_COMMON_VERSION}/ )
+    set ( SCAI_LOGGING_DOC_DIR ${CMAKE_INSTALL_PREFIX}/${DOC_ROOT_DIR}/scai-logging-${SCAI_LOGGING_VERSION}/ )
+    set ( SCAI_TRACING_DOC_DIR ${CMAKE_INSTALL_PREFIX}/${DOC_ROOT_DIR}/scai-tracing-${SCAI_TRACING_VERSION}/ )
+    set ( SCAI_TASKING_DOC_DIR ${CMAKE_INSTALL_PREFIX}/${DOC_ROOT_DIR}/scai-tasking-${SCAI_TASKING_VERSION}/ )
+    set ( SCAI_HMEMO_DOC_DIR ${CMAKE_INSTALL_PREFIX}/${DOC_ROOT_DIR}/scai-hmemo-${SCAI_HMEMO_VERSION}/ )
+    set ( SCAI_KREGISTRY_DOC_DIR ${CMAKE_INSTALL_PREFIX}/${DOC_ROOT_DIR}/scai-kregistry-${SCAI_KREGISTRY_VERSION}/ )
+    set ( SCAI_BLASKERNEL_DOC_DIR ${CMAKE_INSTALL_PREFIX}/${DOC_ROOT_DIR}/scai-blaskernel-${SCAI_BLASKERNEL_VERSION}/ )
+    set ( SCAI_LAMA_DOC_DIR ${CMAKE_INSTALL_PREFIX}/${DOC_ROOT_DIR}/scai-lama-${SCAI_LAMA_VERSION}/ )
+    
+    # Sphinx configuration file conf.py will be generated with correct LAMA version, copyright, etc.
+    # must be in same directory as Sphinx source files
+    configure_file ( "${CMAKE_SOURCE_DIR}/doc/conf.py.in" "${SPHINX_BUILD_ROOT}/conf.py" )
+    
+    # Add custom command for building the userdoc
+    add_custom_command (
+        OUTPUT ${SPHINX_BUILD_ROOT}/index.html
+        COMMAND ${Sphinx-build_EXECUTABLE} -b ${SCAI_DOC_TYPE} -c ${SPHINX_BUILD_ROOT} ${LAMA_DOC_DIR} ${SPHINX_BUILD_ROOT}
+        DEPENDS ${SPHINX_BUILD_ROOT}/conf.py
+        WORKING_DIRECTORY ${LAMA_DOC_DIR}
+    )
+    
+    # Add a custom target which executes the custom command (using ALL flag to add it to the default target as well!)
+    add_custom_target (
+        doc ALL
+        DEPENDS ${SPHINX_BUILD_ROOT}/index.html
+    )
+    
+    # Add documentation to the install target
+    install(
+        DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/
+        DESTINATION ${SPHINX_INSTALL_ROOT}
+    )
+endif ( BUILD_DOC )

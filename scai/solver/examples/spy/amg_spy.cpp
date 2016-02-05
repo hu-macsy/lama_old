@@ -35,11 +35,12 @@
 
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 #include <scai/hmemo/ReadAccess.hpp>
-#include <scai/lama/solver/SimpleAMG.hpp>
-#include <scai/lama/solver/logger/CommonLogger.hpp>
+#include <scai/solver/SimpleAMG.hpp>
+#include <scai/solver/logger/CommonLogger.hpp>
 
 using namespace scai::lama;
 using namespace scai::hmemo;
+using namespace scai::solver;
 
 int main( int argc, char** argv )
 {
@@ -81,7 +82,7 @@ int main( int argc, char** argv )
 
     std::string loggerName = "<AMG>";
 
-    LoggerPtr amgLogger( new CommonLogger ( loggerName, scai::lama::LogLevel::completeInformation,
+    LoggerPtr amgLogger( new CommonLogger ( loggerName, LogLevel::completeInformation,
                    LoggerWriteBehaviour::toConsoleOnly,
                    scai::common::shared_ptr<Timer>( new Timer() ) ) );
 
