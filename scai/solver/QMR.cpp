@@ -32,7 +32,7 @@
  */
 
 // hpp
-#include <scai/lama/solver/QMR.hpp>
+#include <scai/solver/QMR.hpp>
 
 // local library
 #include <scai/lama/expression/VectorExpressions.hpp>
@@ -41,7 +41,8 @@
 
 #include <scai/lama/norm/L2Norm.hpp>
 
-#include <scai/lama/DenseVector.hpp>
+#include <scai/lama/matrix/Matrix.hpp>
+#include <scai/lama/Vector.hpp>
 
 // std
 #include <limits>
@@ -49,10 +50,14 @@
 namespace scai
 {
 
-namespace lama
+namespace solver
 {
 
 SCAI_LOG_DEF_LOGGER( QMR::logger, "Solver.QMR" )
+
+using lama::Matrix;
+using lama::Vector;
+using lama::Scalar;
 
 QMR::QMR( const std::string& id )
     : IterativeSolver( id ) {}
@@ -190,7 +195,7 @@ void QMR::iterate(){
     Scalar theta1;
     Scalar rho1;
     const Scalar& eps = runtime.mEps;
-    L2Norm norm;
+    lama::L2Norm norm;
 
 
     if(this->getIterationCount() == 0){
@@ -302,6 +307,6 @@ void QMR::writeAt( std::ostream& stream ) const
     stream << "QMR ( id = " << mId << ", #iter = " << getConstRuntime().mIterations << " )";
 }
 
-} /* end namespace lama */
+} /* end namespace solver */
 
 } /* end namespace scai */

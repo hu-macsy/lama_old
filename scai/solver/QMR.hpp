@@ -37,8 +37,13 @@
 #include <scai/common/config.hpp>
 
 // base classes
-#include <scai/lama/solver/Solver.hpp>
-#include <scai/lama/solver/IterativeSolver.hpp>
+#include <scai/solver/Solver.hpp>
+#include <scai/solver/IterativeSolver.hpp>
+
+// scai internal libraries
+#include <scai/lama/matrix/Matrix.hpp>
+#include <scai/lama/Vector.hpp>
+#include <scai/lama/Scalar.hpp>
 
 // logging
 #include <scai/logging/Logger.hpp>
@@ -46,7 +51,7 @@
 namespace scai
 {
 
-namespace lama
+namespace solver
 {
 
 /**
@@ -84,7 +89,7 @@ public:
 
     virtual ~QMR();
 
-    virtual void initialize( const Matrix& coefficients );
+    virtual void initialize( const lama::Matrix& coefficients );
 
     /**
      * @brief Copies the status independent solver informations to create a new instance of the same
@@ -99,29 +104,29 @@ public:
         QMRRuntime();
         virtual ~QMRRuntime();
 
-    common::shared_ptr<Matrix> mTransposeA;
-    common::shared_ptr<Vector> mInitialRes;
-    common::shared_ptr<Vector> mVecV;
-    common::shared_ptr<Vector> mVecW;
-    common::shared_ptr<Vector> mVecY;      /*preconditioning 1*/ 
+    common::shared_ptr<lama::Matrix> mTransposeA;
+    common::shared_ptr<lama::Vector> mInitialRes;
+    common::shared_ptr<lama::Vector> mVecV;
+    common::shared_ptr<lama::Vector> mVecW;
+    common::shared_ptr<lama::Vector> mVecY;      /*preconditioning 1*/
    
-    common::shared_ptr<Vector> mVecWT;    
-    common::shared_ptr<Vector> mVecVT;
-    common::shared_ptr<Vector> mVecYT;
-    common::shared_ptr<Vector> mVecP;
-    common::shared_ptr<Vector> mVecQ;
-    common::shared_ptr<Vector> mVecPT;
-    common::shared_ptr<Vector> mVecS;
-    common::shared_ptr<Vector> mVecD;
+    common::shared_ptr<lama::Vector> mVecWT;
+    common::shared_ptr<lama::Vector> mVecVT;
+    common::shared_ptr<lama::Vector> mVecYT;
+    common::shared_ptr<lama::Vector> mVecP;
+    common::shared_ptr<lama::Vector> mVecQ;
+    common::shared_ptr<lama::Vector> mVecPT;
+    common::shared_ptr<lama::Vector> mVecS;
+    common::shared_ptr<lama::Vector> mVecD;
 
-    Scalar mGamma;
-    Scalar mTheta;
-    Scalar mPsi;
-    Scalar mRho;
-    Scalar mEpsilon;
-    Scalar mEta;
+    lama::Scalar mGamma;
+    lama::Scalar mTheta;
+    lama::Scalar mPsi;
+    lama::Scalar mRho;
+    lama::Scalar mEpsilon;
+    lama::Scalar mEta;
 
-    Scalar mEps;
+    lama::Scalar mEps;
     };
 
     /**
@@ -131,7 +136,7 @@ public:
     /** 
     * @brief Initializes vectors and values of the runtime
     */
-    virtual void solveInit( Vector& solution, const Vector& rhs );
+    virtual void solveInit( lama::Vector& solution, const lama::Vector& rhs );
     
     /**
      * @brief Returns the complete configuration of the derived class
@@ -155,6 +160,6 @@ protected:
     QMRRuntime    mQMRRuntime;
 };
 
-} /* end namespace lama */
+} /* end namespace solver */
 
 } /* end namespace scai */

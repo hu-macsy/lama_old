@@ -142,6 +142,7 @@ scai_project(
         IterativeSolver
         MINRES
         OmegaSolver
+        QMR
         Richardson
         SOR
         SimpleAMG
