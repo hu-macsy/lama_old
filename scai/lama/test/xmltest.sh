@@ -48,7 +48,7 @@ if [ -d distributed ];
 then
     # Running parallel tests serial and with two processes
     echo "Running distributed tests serial"
-    distributed/lama_dist_test --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/dist_tests.xml
+    mpirun -np 3 --output-filename ${dirname}/dist_tests.xml distributed/lama_dist_test --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no
 
 	#for i in 2 3 4;
 	#do

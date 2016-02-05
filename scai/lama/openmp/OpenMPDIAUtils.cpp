@@ -47,9 +47,7 @@
 #include <scai/common/macros/assert.hpp>
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/bind.hpp>
-
-// boost
-#include <boost/preprocessor.hpp>
+#include <scai/common/preprocessor.hpp>
 
 // std
 #include <cmath>

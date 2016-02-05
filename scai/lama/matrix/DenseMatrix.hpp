@@ -47,9 +47,6 @@
 // internal scai libraries
 #include <scai/common/shared_ptr.hpp>
 
-//boost
-//#include <boost/lexical_cast.hpp>
-
 namespace scai
 {
 
@@ -150,13 +147,13 @@ public:
 
     /** Constructs a dense matrix from another dense matrix with new distributions.
      *
-     *  @param[in] matrix            input matrix.
+     *  @param[in] other             input matrix.
      *  @param[in] rowDistribution   new distribution of rows among processors
      *  @param[in] colDistribution   new distribution of columns for blocking
      *
      */
     DenseMatrix(
-        const DenseMatrix<ValueType>& matrix,
+        const DenseMatrix<ValueType>& other,
         DistributionPtr rowDistribution,
         DistributionPtr colDistribution );
 
@@ -538,7 +535,7 @@ public:
      *  Writing is only supported for a replicated matrix.
      */
 
-    void writeToFile(
+    void writeToFile1(
         const std::string& fileName,
         const File::FileType fileType = File::BINARY,
         const common::scalar::ScalarType dataType = common::scalar::INTERNAL,
@@ -606,22 +603,19 @@ private:
 
     void allocateData();
 
+    /** Join column data of column distributed dense data
+     *
+     *  @param[out]  result     will be the joined data
+     *  @param[in]   firstRow   first local row
+     *  @param[in]   nRows      number of rows to join
+     *
+     *  Note: the column distribution is taken from the values of mOwners
+     */
+    void joinColumnData( scai::hmemo::HArray<ValueType>& result, const IndexType firstRow, const IndexType nRows ) const;
+
     /***************************************************************************
      *  Static Methods for dense storage                                        *
      ***************************************************************************/
-
-    /** Join dense storage of column distributed data
-     *
-     *  @param[out]  result        will be the joined storage
-     *  @param[in]   chunks        is a vector of all chunks, one chunk for each partition
-     *  @param[in]   columnOwners  vector with owner for each column
-     *
-     *  Note: the column distribution itself is given implicitly by the vector of owners
-     */
-    static void joinColumnData(
-        DenseStorage<ValueType>& result,
-        const std::vector<common::shared_ptr<DenseStorage<ValueType> > >& chunks,
-        const std::vector<IndexType>& columnOwners );
 
     /** Split dense storage data according to a distribution into chunks.
      *

@@ -140,12 +140,12 @@ public:
      */
     static Matrix* getMatrix( const Format::MatrixStorageFormat format, const common::scalar::ScalarType type );
 
-    virtual void writeToFile(
+    void writeToFile(
         const std::string& fileName,
         const File::FileType fileType = File::BINARY,
         const common::scalar::ScalarType dataType = common::scalar::INTERNAL,
         const File::IndexDataType indexDataTypeIA = File::INT,
-        const File::IndexDataType indexDataTypeJA = File::INT ) const = 0;
+        const File::IndexDataType indexDataTypeJA = File::INT ) const;
 
     /**
      * @brief Checks for a given matrix whether the content of its data is sound.
@@ -826,26 +826,26 @@ public:
     virtual Matrix* clone() const = 0;
 
     /**
-     * @brief Constructor creates a distributed zero matrix of same type as a given matrix.
-     *
-     * @param[in] rowDistribution   TODO[doxy] Complete Description.
-     * @param[in] colDistribution   TODO[doxy] Complete Description.
-     */
-    Matrix* clone( DistributionPtr rowDistribution, DistributionPtr colDistribution ) const;
-
-    /**
      * @brief Constructor function which creates a copy of this matrix.
      *
      * \code
      * common::unique_ptr<Matrix> newMatrix = matrix.copy();
      * // More convenient to use, but exactly same as follows:
-     * common::unique_ptr<Matrix> newMatrix = matrix.create(); *newMatrix = matrix;
+     * common::unique_ptr<Matrix> newMatrix = matrix.clone(); *newMatrix = matrix;
      * \endcode
      *
      * This method is a workaround to call the copy constructor of a derived matrix class
      * where the derived class is not known at compile time.
      */
     virtual Matrix* copy() const = 0;
+
+    /**
+     * @brief Copy this matrix with a new distribution
+     *
+     * @param[in] rowDistribution   new distribution of the rows
+     * @param[in] colDistribution   new distribution of the columns
+     */
+    virtual Matrix* copy( DistributionPtr rowDistribution, DistributionPtr colDistribution ) const;
 
     /**
      * @brief Queries the value type of the matrix elements, e.g. DOUBLE or FLOAT.
@@ -1102,7 +1102,6 @@ inline std::ostream& operator<<( std::ostream& stream, const Matrix::MatrixKind&
 
     return stream;
 }
-
 
 } /* end namespace lama */
 

@@ -60,9 +60,7 @@
 #include <scai/common/unique_ptr.hpp>
 #include <scai/common/exception/UnsupportedException.hpp>
 #include <scai/common/Constants.hpp>
-
-// boost
-#include <boost/preprocessor.hpp>
+#include <scai/common/preprocessor.hpp>
 
 // std
 #include <ostream>

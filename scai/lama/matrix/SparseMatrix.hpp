@@ -160,6 +160,7 @@ public:
 
     virtual void setContextPtr( const hmemo::ContextPtr context )
     {
+        SCAI_ASSERT_DEBUG( context, "NULL context" )
         setContextPtr( context, context );
     }
 
@@ -545,7 +546,7 @@ public:
 
     /** Writes this sparse matrix to a file in CSR format. */
 
-    void writeToFile(
+    void writeToFile1(
         const std::string& fileName,
         const File::FileType fileType = File::BINARY,
         const common::scalar::ScalarType dataType = common::scalar::INTERNAL,

@@ -50,9 +50,7 @@
 
 #include <scai/common/macros/throw.hpp>
 #include <scai/common/unique_ptr.hpp>
-
-// boost
-#include <boost/preprocessor.hpp>
+#include <scai/common/preprocessor.hpp>
 
 namespace scai
 {
