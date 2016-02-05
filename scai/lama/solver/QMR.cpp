@@ -45,6 +45,7 @@
 
 // std
 #include <limits>
+#include <cstddef>
 
 namespace scai
 {
@@ -94,11 +95,12 @@ void QMR::initialize( const Matrix& coefficients )
     runtime.mVecV.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
     runtime.mVecW.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
     runtime.mVecY.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );    /*preconditioning 1*/ 
-   
+    runtime.mVecZ.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) ); 
     runtime.mVecPT.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
     runtime.mVecVT.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
     runtime.mVecWT.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
     runtime.mVecYT.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
+    runtime.mVecZT.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
    
 
     runtime.mVecD->setContextPtr( coefficients.getContextPtr() );
@@ -108,10 +110,11 @@ void QMR::initialize( const Matrix& coefficients )
     runtime.mVecV->setContextPtr( coefficients.getContextPtr() );
     runtime.mVecW->setContextPtr( coefficients.getContextPtr() );
     runtime.mVecY->setContextPtr( coefficients.getContextPtr() );      /*preconditioning 1*/ 
- 
+    runtime.mVecZ->setContextPtr( coefficients.getContextPtr() ); 
     runtime.mVecVT->setContextPtr( coefficients.getContextPtr() );
     runtime.mVecWT->setContextPtr( coefficients.getContextPtr() );
     runtime.mVecYT->setContextPtr( coefficients.getContextPtr() );
+    runtime.mVecZT->setContextPtr( coefficients.getContextPtr() );
     runtime.mVecPT->setContextPtr( coefficients.getContextPtr() );
 }
 
@@ -150,10 +153,9 @@ void QMR::solveInit( Vector& solution, const Vector& rhs )
 
     // Initialize
     this->getResidual();
-    Vector* vecVT = ( *runtime.mResidual ).copy();
-    Vector* vecWT = ( *runtime.mResidual ).copy();
-    runtime.mVecVT.reset(vecVT);
-    runtime.mVecWT.reset(vecWT);
+
+    *runtime.mVecVT = *runtime.mResidual;
+    *runtime.mVecWT = *runtime.mResidual;
 
     runtime.mSolveInit = true;
 }
@@ -172,10 +174,12 @@ void QMR::iterate(){
     Vector& vecS = *runtime.mVecS;
     Vector& vecD = *runtime.mVecD;
 
-    Vector& vecY = *runtime.mVecY;      /*preconditioning 1*/ 
+    Vector& vecY = *runtime.mVecY;      /*preconditioning*/ 
+    Vector& vecZ = *runtime.mVecZ;
 
     Vector& vecVT = *runtime.mVecVT;
     Vector& vecYT = *runtime.mVecYT;
+    Vector& vecZT = *runtime.mVecZT;
     Vector& vecWT = *runtime.mVecWT;
     Vector& vecPT = *runtime.mVecPT;
 
@@ -192,31 +196,34 @@ void QMR::iterate(){
     const Scalar& eps = runtime.mEps;
     L2Norm norm;
 
-
     if(this->getIterationCount() == 0){
     /*PRECONDITIONING*/
-        vecY = vecVT;
+        if(mPreconditioner != NULL) mPreconditioner->solve( vecY, vecVT );      
+        else    vecY = vecVT;
+        vecZ = vecWT;
         rho = norm(vecY);
-        psi = norm(vecWT);
+        psi = norm(vecZ);
         gamma = 1.0;
         eta = -1.0;
     }
     if( abs(rho) < eps || abs(1.0/rho)<eps || abs(psi) < eps || abs(1.0/psi)<eps)
         return;
-
     vecV = vecVT/rho;
     vecY = vecY/rho;
     vecW = vecWT/psi;
-    Scalar delta = vecW.dotProduct(vecY);
+    vecZ = vecZ/psi;
+    Scalar delta = vecZ.dotProduct(vecY);
 
     if(abs(delta) < eps)
         return;
     /*PRECONDITIONING*/
     vecYT = vecY;
+    if(mPreconditioner != NULL) mPreconditioner->solve( vecZT, vecZ );      
+    else vecZT = vecZ;
 
     if(this->getIterationCount() == 0){
         vecP = vecYT;
-        vecQ = vecW;
+        vecQ = vecZT;
     }
     else{
          Scalar pde = psi*delta/epsilon;
@@ -226,7 +233,7 @@ void QMR::iterate(){
         if(abs(rde) < eps || abs(1.0/rde)<eps)
             return;
         vecP = vecYT - pde*vecP;
-        vecQ = vecW - rde*vecQ;
+        vecQ = vecZT - rde*vecQ;
     }
     vecPT = A*vecP;
     epsilon = vecQ.dotProduct(vecPT);
@@ -238,15 +245,17 @@ void QMR::iterate(){
     vecVT = vecPT - beta *vecV;
 
     /*PRECONDITIONING*/
-    vecY = vecVT;
+    if(mPreconditioner != NULL) mPreconditioner->solve( vecY, vecVT );      
+    else    vecY = vecVT; 
+ 
     rho1= rho;
     rho = norm(vecY);
 
     vecWT = transposedA * vecQ;
     vecWT = vecWT - conj(beta)*vecW;
 
-    /*PRECONDITIONING*/
-    psi = norm(vecWT);
+    vecZ = vecWT;
+    psi = norm(vecZ);
     if(this->getIterationCount() > 0)
         theta1 = theta;
 
@@ -275,6 +284,14 @@ void QMR::iterate(){
 SolverPtr QMR::copy()
 {
     return SolverPtr( new QMR( *this ) );
+}
+
+
+
+void QMR::print(Vector& vec, size_t size){
+    for(size_t i=0;i<size;++i)
+        std::cout<< vec(i)<<" ";
+    std::cout<<std::endl<<std::endl;
 }
 
 QMR::QMRRuntime& QMR::getRuntime()
