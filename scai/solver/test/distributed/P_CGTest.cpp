@@ -59,6 +59,7 @@
 
 #include <scai/solver/test/TestMacros.hpp>
 
+using namespace scai::solver;
 using namespace scai::lama;
 using namespace scai::hmemo;
 
@@ -158,8 +159,8 @@ void testSolveWithPreconditionmethod( ContextPtr loc )
     {
         LoggerPtr slogger( new CommonLogger(
                                "<SOR>: ",
-                               scai::lama::LogLevel::solverInformation,
-                               scai::lama::LoggerWriteBehaviour::toConsoleOnly ) );
+                               scai::solver::LogLevel::solverInformation,
+                               scai::solver::LoggerWriteBehaviour::toConsoleOnly ) );
         cgSolver.setLogger( slogger );
     }
 

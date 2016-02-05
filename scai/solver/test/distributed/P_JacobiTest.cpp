@@ -57,6 +57,7 @@
 
 #include <scai/solver/test/TestMacros.hpp>
 
+using namespace scai::solver;
 using namespace scai::lama;
 using namespace scai::hmemo;
 
@@ -99,8 +100,8 @@ void testSolveWithoutPreconditionMethod( ContextPtr loc )
     {
         LoggerPtr slogger( new CommonLogger(
                                "<Jacobi>: ",
-                               scai::lama::LogLevel::solverInformation,
-                               scai::lama::LoggerWriteBehaviour::toConsoleOnly ) );
+                               scai::solver::LogLevel::solverInformation,
+                               scai::solver::LoggerWriteBehaviour::toConsoleOnly ) );
         jacobiSolver.setLogger( slogger );
     }
 
@@ -161,8 +162,8 @@ void testSolveWithPreconditionMethod( ContextPtr loc )
     {
         LoggerPtr slogger( new CommonLogger(
                                "<Jacobi + Precond>: ",
-                               scai::lama::LogLevel::solverInformation,
-                               scai::lama::LoggerWriteBehaviour::toConsoleOnly ) );
+                               scai::solver::LogLevel::solverInformation,
+                               scai::solver::LoggerWriteBehaviour::toConsoleOnly ) );
         jacobiSolver.setLogger( slogger );
     }
 
