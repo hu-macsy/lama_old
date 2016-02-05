@@ -83,6 +83,15 @@ endforeach ( PACKAGE_TO_FIND $${SCAI_SOLVER_INTERNAL_DEPS} )
 ## finalize build flags
 include ( ConcludeFlags )
 
+## MKL FOUND
+if     ( SCAI_BLAS_NAME STREQUAL "MKL" )
+    add_definitions( -DSCAI_MKL_BLAS )
+elseif ( INTERNALBLAS_FOUND )
+    add_definitions( -DSCAI_INTERNAL_BLAS )
+else   ( )
+    add_definitions( -DADD_ )
+endif  ( )
+
 ### add definitions ###
 
 add_definitions( ${ADDITIONAL_WARNING_FLAGS} )

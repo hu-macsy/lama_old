@@ -67,6 +67,9 @@ scai_project (
         TimerTest
    )
    
+### add definitions ###
+add_definitions ( -DLAMA_TESTFILE_PATH="${CMAKE_CURRENT_SOURCE_DIR}/../../../res/testfiles" )
+   
 add_executable ( SolverTest ${CXX_SOURCES} )
 
 target_link_libraries ( SolverTest 
