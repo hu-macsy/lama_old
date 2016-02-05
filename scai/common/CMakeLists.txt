@@ -113,8 +113,6 @@ scai_project (
         Printable
         ScalarType
         SCAITypes
-        Math
-        Complex
         ContextType
         Settings
         Thread
@@ -124,12 +122,13 @@ scai_project (
     HEADERS
 
         bind     
-        #Complex
+        Complex
         config
         Constants
         Factory
         Factory1
         function
+        Math
         OpenMP
         ReductionOp
         NonCopyable
