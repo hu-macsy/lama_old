@@ -40,8 +40,8 @@
 // local library
 #include <scai/lama/storage/ELLStorage.hpp>
 
-#include <scai/dmemo/distribution/GeneralDistribution.hpp>
-#include <scai/dmemo/distribution/NoDistribution.hpp>
+#include <scai/dmemo/GeneralDistribution.hpp>
+#include <scai/dmemo/NoDistribution.hpp>
 
 namespace scai
 {

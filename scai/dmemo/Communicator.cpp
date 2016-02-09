@@ -33,8 +33,8 @@
 // hpp
 #include <scai/dmemo/Communicator.hpp>
 
-#include <scai/dmemo/distribution/Distribution.hpp>
-#include <scai/dmemo/distribution/Halo.hpp>
+#include <scai/dmemo/Distribution.hpp>
+#include <scai/dmemo/Halo.hpp>
 
 // internal scai libraries
 #include <scai/tasking/NoSyncToken.hpp>

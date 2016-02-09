@@ -32,7 +32,7 @@
  */
 
 // hpp
-#include <scai/dmemo/distribution/HaloBuilder.hpp>
+#include <scai/dmemo/HaloBuilder.hpp>
 
 // internal scai libraries
 #include <scai/tracing.hpp>

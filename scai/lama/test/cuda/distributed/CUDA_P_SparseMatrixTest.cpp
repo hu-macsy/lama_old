@@ -40,9 +40,9 @@
 
 #include <scai/lama/expression/MatrixVectorExpressions.hpp>
 
-#include <scai/dmemo/distribution/BlockDistribution.hpp>
-#include <scai/dmemo/distribution/GenBlockDistribution.hpp>
-#include <scai/dmemo/distribution/NoDistribution.hpp>
+#include <scai/dmemo/BlockDistribution.hpp>
+#include <scai/dmemo/GenBlockDistribution.hpp>
+#include <scai/dmemo/NoDistribution.hpp>
 
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 

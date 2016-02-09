@@ -39,7 +39,7 @@
 #include <scai/common/Printable.hpp>
 
 // local library
-#include <scai/dmemo/distribution/Distribution.hpp>
+#include <scai/dmemo/Distribution.hpp>
 
 namespace scai
 {

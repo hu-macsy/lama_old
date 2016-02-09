@@ -39,9 +39,9 @@
 #include <scai/lama/storage/DenseStorage.hpp>
 #include <scai/lama/storage/StorageMethods.hpp>
 
-#include <scai/dmemo/distribution/Distribution.hpp>
-#include <scai/dmemo/distribution/Redistributor.hpp>
-#include <scai/dmemo/distribution/Halo.hpp>
+#include <scai/dmemo/Distribution.hpp>
+#include <scai/dmemo/Redistributor.hpp>
+#include <scai/dmemo/Halo.hpp>
 
 #include <scai/lama/LAMAKernel.hpp>
 #include <scai/lama/UtilKernelTrait.hpp>

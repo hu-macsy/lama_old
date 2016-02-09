@@ -32,7 +32,7 @@
  */
 
 // hpp
-#include <scai/dmemo/distribution/CyclicDistribution.hpp>
+#include <scai/dmemo/CyclicDistribution.hpp>
 
 // std
 #include <fstream>

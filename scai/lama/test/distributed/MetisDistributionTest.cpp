@@ -34,7 +34,7 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/mpl/list.hpp>
 
-#include <scai/dmemo/distribution/MetisDistribution.hpp>
+#include <scai/dmemo/MetisDistribution.hpp>
 
 #include <scai/lama/test/TestMacros.hpp>
 #include <scai/lama/test/distributed/DistributionTest.hpp>

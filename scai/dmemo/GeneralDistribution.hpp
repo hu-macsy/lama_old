@@ -37,7 +37,7 @@
 #include <scai/common/config.hpp>
 
 // local library
-#include <scai/dmemo/distribution/Distribution.hpp>
+#include <scai/dmemo/Distribution.hpp>
 
 // internal scai libraries
 #include <scai/common/SCAITypes.hpp>

@@ -37,7 +37,7 @@
 #include <scai/common/config.hpp>
 
 // base classes
-#include <scai/dmemo/distribution/GeneralDistribution.hpp>
+#include <scai/dmemo/GeneralDistribution.hpp>
 
 // local library
 #include <scai/lama/matrix/SparseMatrix.hpp>

@@ -32,7 +32,7 @@
  */
 
 // hpp
-#include <scai/dmemo/distribution/GeneralDistribution.hpp>
+#include <scai/dmemo/GeneralDistribution.hpp>
 
 // internal scai libraries
 #include <scai/common/macros/assert.hpp>

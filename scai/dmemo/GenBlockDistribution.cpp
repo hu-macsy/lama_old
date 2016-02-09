@@ -32,7 +32,7 @@
  */
 
 // hpp
-#include <scai/dmemo/distribution/GenBlockDistribution.hpp>
+#include <scai/dmemo/GenBlockDistribution.hpp>
 
 // local library
 #include <scai/dmemo/Distributed.hpp>

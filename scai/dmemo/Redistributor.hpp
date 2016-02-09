@@ -40,8 +40,8 @@
 #include <scai/common/Printable.hpp>
 
 // local library
-#include <scai/dmemo/distribution/Distribution.hpp>
-#include <scai/dmemo/distribution/Halo.hpp>
+#include <scai/dmemo/Distribution.hpp>
+#include <scai/dmemo/Halo.hpp>
 #include <scai/lama/UtilKernelTrait.hpp>
 
 // internal scai libraries

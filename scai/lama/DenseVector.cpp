@@ -40,9 +40,9 @@
 #include <scai/blaskernel/BLASKernelTrait.hpp>
 #include <scai/lama/LAMAKernel.hpp>
 
-#include <scai/dmemo/distribution/NoDistribution.hpp>
-#include <scai/dmemo/distribution/CyclicDistribution.hpp>
-#include <scai/dmemo/distribution/Redistributor.hpp>
+#include <scai/dmemo/NoDistribution.hpp>
+#include <scai/dmemo/CyclicDistribution.hpp>
+#include <scai/dmemo/Redistributor.hpp>
 
 #include <scai/lama/matrix/Matrix.hpp>
 

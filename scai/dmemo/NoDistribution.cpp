@@ -32,7 +32,7 @@
  */
 
 // hpp
-#include <scai/dmemo/distribution/NoDistribution.hpp>
+#include <scai/dmemo/NoDistribution.hpp>
 
 // std
 #include <fstream>

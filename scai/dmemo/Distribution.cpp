@@ -31,7 +31,7 @@
  */
 
 // hpp
-#include <scai/dmemo/distribution/Distribution.hpp>
+#include <scai/dmemo/Distribution.hpp>
 
 // local library
 #include <scai/dmemo/Distributed.hpp>

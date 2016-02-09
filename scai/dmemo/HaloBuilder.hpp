@@ -37,8 +37,8 @@
 #include <scai/common/config.hpp>
 
 // local library
-#include <scai/dmemo/distribution/Halo.hpp>
-#include <scai/dmemo/distribution/Distribution.hpp>
+#include <scai/dmemo/Halo.hpp>
+#include <scai/dmemo/Distribution.hpp>
 
 namespace scai
 {

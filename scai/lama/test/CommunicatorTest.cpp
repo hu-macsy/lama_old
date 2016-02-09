@@ -37,9 +37,9 @@
 
 #include <scai/dmemo/Communicator.hpp>
 
-#include <scai/dmemo/distribution/HaloBuilder.hpp>
-#include <scai/dmemo/distribution/GeneralDistribution.hpp>
-#include <scai/dmemo/distribution/BlockDistribution.hpp>
+#include <scai/dmemo/HaloBuilder.hpp>
+#include <scai/dmemo/GeneralDistribution.hpp>
+#include <scai/dmemo/BlockDistribution.hpp>
 
 #include <scai/common/unique_ptr.hpp>
 #include <scai/common/SCAITypes.hpp>

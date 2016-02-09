@@ -104,6 +104,10 @@ endif ( WIN32 )
 include_directories ( ../.. )
 addInternalAndExternalIncludes()
 
+if ( METIS_FOUND OR PARMETIS_FOUND )
+    set ( MetisDistribution MetisDistribution )
+endif ( METIS_FOUND OR PARMETIS_FOUND )
+
 ### Add classes/headers to source files CXX_SOURCES, CXX_HEADERS, ...
 
 scai_project (
@@ -115,14 +119,24 @@ scai_project (
         Distributed
         CommunicationPlan
 
+        BlockDistribution
+        CyclicDistribution
+        Distribution
+        GenBlockDistribution
+        GeneralDistribution
+        Halo
+        HaloBuilder
+        NoDistribution
+        Redistributor
+
+        ${MetisDistribution}
+
     HEADERS                  # .hpp only
 
         CRTPCommunicator
     )
 
 ### add subdirectories
-
-add_subdirectory ( distribution )
 
 # add_subdirectory ( doc )
 # add_subdirectory( examples )

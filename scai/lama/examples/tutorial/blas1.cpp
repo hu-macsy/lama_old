@@ -51,7 +51,7 @@
 #include <scai/hmemo/Context.hpp>
 
 //include for using the NoDistribution
-#include <scai/dmemo/distribution/NoDistribution.hpp>
+#include <scai/dmemo/NoDistribution.hpp>
 
 //include the generic inner product functions of LAMA
 #include <scai/lama/expression/all.hpp>

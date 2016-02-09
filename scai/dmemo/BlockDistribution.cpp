@@ -32,7 +32,7 @@
  */
 
 // hpp
-#include <scai/dmemo/distribution/BlockDistribution.hpp>
+#include <scai/dmemo/BlockDistribution.hpp>
 
 // std
 #include <fstream>

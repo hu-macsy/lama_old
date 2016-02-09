@@ -32,7 +32,7 @@
  */
 
 // hpp
-#include <scai/dmemo/distribution/Halo.hpp>
+#include <scai/dmemo/Halo.hpp>
 
 namespace scai
 {

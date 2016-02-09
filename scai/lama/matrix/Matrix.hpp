@@ -41,8 +41,8 @@
 #include <scai/lama/Scalar.hpp>
 #include <scai/lama/Vector.hpp>
 
-#include <scai/dmemo/distribution/Distribution.hpp>
-#include <scai/dmemo/distribution/NoDistribution.hpp>
+#include <scai/dmemo/Distribution.hpp>
+#include <scai/dmemo/NoDistribution.hpp>
 #include <scai/lama/expression/Expression.hpp>
 #include <scai/lama/storage/MatrixStorage.hpp>
 

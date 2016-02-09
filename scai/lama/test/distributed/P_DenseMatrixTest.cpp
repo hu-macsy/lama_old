@@ -39,10 +39,10 @@
 
 #include <scai/lama/matrix/DenseMatrix.hpp>
 
-#include <scai/dmemo/distribution/BlockDistribution.hpp>
-#include <scai/dmemo/distribution/GeneralDistribution.hpp>
-#include <scai/dmemo/distribution/CyclicDistribution.hpp>
-#include <scai/dmemo/distribution/NoDistribution.hpp>
+#include <scai/dmemo/BlockDistribution.hpp>
+#include <scai/dmemo/GeneralDistribution.hpp>
+#include <scai/dmemo/CyclicDistribution.hpp>
+#include <scai/dmemo/NoDistribution.hpp>
 
 #include <scai/lama/expression/MatrixVectorExpressions.hpp>
 #include <scai/lama/expression/MatrixExpressions.hpp>

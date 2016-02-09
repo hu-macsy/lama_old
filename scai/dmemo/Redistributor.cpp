@@ -31,10 +31,10 @@
  */
 
 // hpp
-#include <scai/dmemo/distribution/Redistributor.hpp>
+#include <scai/dmemo/Redistributor.hpp>
 
 // local library
-#include <scai/dmemo/distribution/HaloBuilder.hpp>
+#include <scai/dmemo/HaloBuilder.hpp>
 
 // internal scai libraries
 #include <scai/common/macros/assert.hpp>
