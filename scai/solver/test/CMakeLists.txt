@@ -73,10 +73,7 @@ add_definitions ( -DLAMA_TESTFILE_PATH="${CMAKE_CURRENT_SOURCE_DIR}/../../../res
    
 add_executable ( SolverTest ${CXX_SOURCES} )
 
-target_link_libraries ( SolverTest 
-    ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}
-    scai_solver
-    )
+target_link_libraries ( SolverTest ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} scai_solver )
     
 file ( GLOB LOCAL_HEADERS "*.hpp" )
 
