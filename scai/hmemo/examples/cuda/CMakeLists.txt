@@ -37,13 +37,13 @@
 
 foreach ( executable CUSparseExample CUBlasExample MemBandwidth Prefetch Allocate )
     add_executable( ${executable} ${executable}.cpp )
-    target_link_libraries( ${executable} scai_hmemo )
+    target_link_libraries( ${executable} ${PROJECT_NAME} )
     set ( EXAMPLE_EXECUTABLES_CUDA "${EXAMPLE_EXECUTABLES_CUDA} ${executable}.exe" )
 endforeach ( executable )
 
 foreach ( executable Example1 Example2 Devices CUDABenchContext AliasProblem )
     cuda_add_executable( ${executable} ${executable}.cu )
-    target_link_libraries( ${executable} scai_hmemo )
+    target_link_libraries( ${executable} ${PROJECT_NAME} )
     set ( EXAMPLE_EXECUTABLES_CUDA "${EXAMPLE_EXECUTABLES_CUDA} ${executable}.exe" )
 endforeach ( executable )
 

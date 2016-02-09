@@ -45,6 +45,7 @@
 #include <scai/common/cuda/CUDAError.hpp>
 #include <scai/common/cuda/launchHelper.hpp>
 #include <scai/common/Constants.hpp>
+#include <scai/common/Math.hpp>
 
 // thrust
 #include <thrust/device_vector.h>
@@ -243,7 +244,7 @@ struct absolute_value: public thrust::unary_function<ValueType, ValueType>
     ValueType operator()( const ValueType& x ) const
     {
         // return x < ValueType( 0 ) ? -x : x;
-        return abs( x );
+        return Math::abs( x );
     }
 };
 

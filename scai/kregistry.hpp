@@ -7,6 +7,6 @@
 
 #pragma once
 
-#include <scai/kernel/KernelRegistry.hpp>
-#include <scai/kernel/ContextFunction.hpp>
-#include <scai/kernel/KernelContextFunction.hpp>
+#include <scai/kregistry/KernelRegistry.hpp>
+#include <scai/kregistry/ContextFunction.hpp>
+#include <scai/kregistry/KernelContextFunction.hpp>

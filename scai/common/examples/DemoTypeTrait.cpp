@@ -8,6 +8,7 @@
  */
 
 #include <scai/common/TypeTraits.hpp>
+#include <scai/common/ScalarType.hpp>
 
 using scai::common::TypeTraits;
 
@@ -16,20 +17,8 @@ void testRoutine()
 {
     std::cout << "TypeTraits<...>::id() = " << TypeTraits<ValueType>::id() << std::endl;
 
-    //  problem here
-    //  std::cout << "TypeTraits<...>::stype = " << TypeTraits<ValueType>::stype << std::endl;
-
-    std::cout << "TypeTraits<...>::stype = " << scai::common::getScalarType<ValueType>() << std::endl;
-
-    ValueType x( -1 );
-
-    ValueType absX = TypeTraits<ValueType>::abs( x );
-
-    std::cout << "abs ( " << x << " ) = " << absX << std::endl;
-
-    ValueType sqrtX = TypeTraits<ValueType>::sqrt( x );
-
-    std::cout << "sqrt ( " << x << " ) = " << sqrtX << std::endl;
+    scai::common::scalar::ScalarType x = TypeTraits<ValueType>::stype;
+    std::cout << "TypeTraits<...>::stype = " << x << std::endl;
 }
 
 int main()

@@ -556,11 +556,12 @@ WARN_LOGFILE           =
 INPUT                  = ${CMAKE_SOURCE_DIR}/common  \
                          ${CMAKE_SOURCE_DIR}/logging  \
                          ${CMAKE_SOURCE_DIR}/tracing  \
-                         ${CMAKE_SOURCE_DIR}/kregistry  \
-                         ${CMAKE_SOURCE_DIR}/hmemo  \
-                         ${CMAKE_SOURCE_DIR}/blaskernel  \
                          ${CMAKE_SOURCE_DIR}/tasking  \
-                         ${CMAKE_SOURCE_DIR}/lama
+                         ${CMAKE_SOURCE_DIR}/hmemo  \
+                         ${CMAKE_SOURCE_DIR}/kregistry  \
+                         ${CMAKE_SOURCE_DIR}/blaskernel  \
+                         ${CMAKE_SOURCE_DIR}/lama  \
+                         ${CMAKE_SOURCE_DIR}/solver
 
 #                        add additional directories
 #                        ../src/logging \

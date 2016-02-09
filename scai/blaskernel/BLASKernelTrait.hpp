@@ -652,7 +652,7 @@ struct BLASKernelTrait
 
         static const char* getId()
         {
-            return "BLAS3.tptrs";
+            return "LAPACK.tptrs";
         }
     };
 

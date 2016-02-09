@@ -46,6 +46,7 @@
 #include <scai/common/macros/assert.hpp>
 #include <scai/common/bind.hpp>
 #include <scai/common/Constants.hpp>
+#include <scai/common/TypeTraits.hpp>
 
 // extern
 #include <omp.h>
@@ -593,11 +594,13 @@ void MICCSRUtils::normalGEMV(
     const void* csrIAPtr = csrIA;
     const void* csrJAPtr = csrJA;
     const void* csrValuesPtr = csrValues;
+    const ValueType* alphaPtr = &alpha;
+    const ValueType* betaPtr = &beta;
 
     int device = MICContext::getCurrentDevice();
 
 #pragma offload target( mic : device  )in( resultPtr, xPtr, yPtr, \
-                          csrIAPtr, csrJAPtr, csrValuesPtr, alpha, beta, numRows )
+                          csrIAPtr, csrJAPtr, csrValuesPtr, alphaPtr[0:1], betaPtr[0:1], numRows )
     {
         ValueType* result = (ValueType*) resultPtr;
         const ValueType* x = (ValueType*) xPtr;
@@ -620,13 +623,13 @@ void MICCSRUtils::normalGEMV(
                     temp += csrValues[jj] * x[j];
                 }
 
-                if( beta == static_cast<ValueType>( 0.0 ) )
+                if( *betaPtr == static_cast<ValueType>( 0.0 ) )
                 {
-                    result[i] = alpha * temp;
+                    result[i] = (*alphaPtr) * temp;
                 }
                 else
                 {
-                    result[i] = alpha * temp + beta * y[i];
+                    result[i] = (*alphaPtr) * temp + (*betaPtr) * y[i];
                 }
             }
         }
@@ -663,10 +666,11 @@ void MICCSRUtils::sparseGEMV(
     const size_t csrIAPtr = (size_t) csrIA;
     const size_t csrJAPtr = (size_t) csrJA;
     const size_t csrValuesPtr = (size_t) csrValues;
+    const ValueType* alphaPtr = &alpha;
 
     int device = MICContext::getCurrentDevice();
 
-#pragma offload target( mic : device ), in( resultPtr, xPtr, rowIndexesPtr, csrIAPtr, csrJAPtr, csrValuesPtr, alpha, numNonZeroRows )
+#pragma offload target( mic : device ), in( resultPtr, xPtr, rowIndexesPtr, csrIAPtr, csrJAPtr, csrValuesPtr, alphaPtr[0:1], numNonZeroRows )
     {
         ValueType* result = (ValueType*) resultPtr;
         const ValueType* x = (ValueType*) xPtr;
@@ -692,7 +696,7 @@ void MICCSRUtils::sparseGEMV(
                     temp += csrValues[jj] * x[j];
                 }
 
-                result[i] += alpha * temp;
+                result[i] += (*alphaPtr) * temp;
             }
         }
     }
@@ -731,12 +735,14 @@ void MICCSRUtils::gemm(
     const void* csrIAPtr = csrIA;
     const void* csrJAPtr = csrJA;
     const void* csrValuesPtr = csrValues;
+    const ValueType* alphaPtr = &alpha;
+    const ValueType* betaPtr = &beta;
 
     int device = MICContext::getCurrentDevice();
 
     // gemm is  dense = sparse * dense
 
-#pragma offload target( MIC : device ) in( alpha, beta, m, n, p, xPtr, yPtr, \
+#pragma offload target( MIC : device ) in( alphaPtr[0:1], betaPtr[0:1], m, n, p, xPtr, yPtr, \
                                                csrIAPtr, csrJAPtr, csrValuesPtr, resultPtr )
     {
         ValueType* result = static_cast<ValueType*>( resultPtr );
@@ -767,7 +773,7 @@ void MICCSRUtils::gemm(
 
                 }
 
-                result[i * n + k] = alpha * temp + beta * y[i * n + k];
+                result[i * n + k] = (*alphaPtr) * temp + (*betaPtr) * y[i * n + k];
             }
         }
     }
@@ -805,9 +811,11 @@ void MICCSRUtils::jacobi(
     const size_t csrJAPtr = (size_t) csrJA;
     const size_t csrValuesPtr = (size_t) csrValues;
 
+    const ValueType* omegaPtr = &omega;
+
     int device = MICContext::getCurrentDevice();
 
-#pragma offload target( mic : device ), in( solutionPtr, oldSolutionPtr, rhsPtr, csrIAPtr, csrJAPtr, csrValuesPtr, omega, numRows )
+#pragma offload target( mic : device ), in( solutionPtr, oldSolutionPtr, rhsPtr, csrIAPtr, csrJAPtr, csrValuesPtr, omegaPtr[0:1], numRows )
     {
         ValueType* solution = (ValueType*) solutionPtr;
         const ValueType* oldSolution = (ValueType*) oldSolutionPtr;
@@ -816,7 +824,7 @@ void MICCSRUtils::jacobi(
         const IndexType* csrJA = (IndexType*) csrJAPtr;
         const ValueType* csrValues = (ValueType*) csrValuesPtr;
 
-        const ValueType oneMinusOmega = static_cast<ValueType>(1.0) - omega;
+        const ValueType oneMinusOmega = static_cast<ValueType>(1.0) - (*omegaPtr);
 
         #pragma omp parallel
         {
@@ -834,17 +842,17 @@ void MICCSRUtils::jacobi(
 
                 // here we take advantange of a good branch precondiction
 
-                if( omega == static_cast<ValueType>( 1.0 ) )
+                if( (*omegaPtr) == static_cast<ValueType>( 1.0 ) )
                 {
                     solution[i] = temp / diag;
                 }
-                else if( omega == 0.5 )
+                else if( (*omegaPtr) == 0.5 )
                 {
-                    solution[i] = omega * ( temp / diag + oldSolution[i] );
+                    solution[i] = (*omegaPtr) * ( temp / diag + oldSolution[i] );
                 }
                 else
                 {
-                    solution[i] = omega * ( temp / diag ) + oneMinusOmega * oldSolution[i];
+                    solution[i] = (*omegaPtr) * ( temp / diag ) + oneMinusOmega * oldSolution[i];
                 }
             }
         }
@@ -880,11 +888,13 @@ void MICCSRUtils::jacobiHalo(
     const size_t haloValuesPtr = (size_t) haloValues;
     const size_t haloRowIndexesPtr = (size_t) haloRowIndexes;
 
+    const ValueType* omegaPtr = &omega;
+
     int device = MICContext::getCurrentDevice();
 
 #pragma offload target( mic : device ), in( solutionPtr, oldSolutionPtr, localValuesPtr, localIAPtr, \
                                             haloIAPtr, haloJAPtr, haloValuesPtr, haloRowIndexesPtr, \
-                                            omega, numNonEmptyRows )
+                                            omegaPtr[0:1], numNonEmptyRows )
     {
         ValueType* solution = (ValueType*) solutionPtr;
         const ValueType* oldSolution = (ValueType*) oldSolutionPtr;
@@ -915,13 +925,13 @@ void MICCSRUtils::jacobiHalo(
                 temp += haloValues[j] * oldSolution[haloJA[j]];
             }
 
-            if( omega == static_cast<ValueType>( 1.0 ) )
+            if( ( *omegaPtr ) == static_cast<ValueType>( 1.0 ) )
             {
                 solution[i] -= temp / diag;
             }
             else
             {
-                solution[i] -= omega * ( temp / diag );
+                solution[i] -= (*omegaPtr) * ( temp / diag );
             }
         }
     }
@@ -954,11 +964,13 @@ void MICCSRUtils::jacobiHaloWithDiag(
     const size_t haloValuesPtr = (size_t) haloValues;
     const size_t haloRowIndexesPtr = (size_t) haloRowIndexes;
 
+    const ValueType* omegaPtr = &omega;
+
     int device = MICContext::getCurrentDevice();
 
 #pragma offload target( mic : device ), in( solutionPtr, oldSolutionPtr, localDiagValuesPtr, \
                                             haloIAPtr, haloJAPtr, haloValuesPtr, haloRowIndexesPtr, \
-                                            omega, numNonEmptyRows )
+                                            omegaPtr[0:1], numNonEmptyRows )
     {
         ValueType* solution = (ValueType*) solutionPtr;
         const ValueType* oldSolution = (ValueType*) oldSolutionPtr;
@@ -968,7 +980,7 @@ void MICCSRUtils::jacobiHaloWithDiag(
         const ValueType* haloValues = (ValueType*) haloValuesPtr;
         const IndexType* haloRowIndexes = (IndexType*) haloRowIndexesPtr;
 
-        const ValueType oneMinusOmega = static_cast<ValueType>(1.0) - omega;
+        const ValueType oneMinusOmega = static_cast<ValueType>(1.0) - (*omegaPtr);
 
         #pragma omp parallel
         {
@@ -992,13 +1004,13 @@ void MICCSRUtils::jacobiHaloWithDiag(
                     temp += haloValues[j] * oldSolution[haloJA[j]];
                 }
 
-                if( omega == static_cast<ValueType>( 1.0 ) )
+                if( (*omegaPtr) == static_cast<ValueType>( 1.0 ) )
                 {
                     solution[i] -= temp / diag;
                 }
                 else
                 {
-                    solution[i] -= omega * ( temp / diag );
+                    solution[i] -= (*omegaPtr) * ( temp / diag );
                 }
             }
         }
@@ -1327,11 +1339,15 @@ void MICCSRUtils::matrixAdd(
     const void* bJAPtr = bJA;
     const void* bValuesPtr = bValues;
 
+    const ValueType* alphaPtr = &alpha;
+    const ValueType* betaPtr = &beta;
+
     int device = MICContext::getCurrentDevice();
 
 #pragma offload target( mic : device ) in ( numRows, numColumns, diagonalProperty, \
                                                cJAPtr, cValuesPtr, cIAPtr, \
-                                               aIAPtr, aJAPtr, aValuesPtr, bIAPtr, bJAPtr, bValuesPtr )
+                                               aIAPtr, aJAPtr, aValuesPtr, bIAPtr, \
+											   bJAPtr, bValuesPtr, alphaPtr[0:1], betaPtr[0:1] )
     {
         ValueType* cValues = static_cast<ValueType*>( cValuesPtr );
         IndexType* cJA = static_cast<IndexType*>( cJAPtr );
@@ -1369,7 +1385,7 @@ void MICCSRUtils::matrixAdd(
 
                     IndexType j = aJA[jj];
 
-                    valueList[j] += alpha * aValues[jj];
+                    valueList[j] += (*alphaPtr) * aValues[jj];
 
                     // element a(i,j) will generate an output element c(i,j)
 
@@ -1391,7 +1407,7 @@ void MICCSRUtils::matrixAdd(
 
                     IndexType j = bJA[jj];
 
-                    valueList[j] += beta * bValues[jj];
+                    valueList[j] += (*betaPtr) * bValues[jj];
 
                     // element b(i,j) will generate an output element c(i,j)
 
@@ -1483,11 +1499,15 @@ void MICCSRUtils::matrixMultiply(
     const void* bJAPtr = bJA;
     const void* bValuesPtr = bValues;
 
+    const ValueType* alphaPtr = &alpha;
+
     int device = MICContext::getCurrentDevice();
 
-#pragma offload target( mic : device ) in ( m, n, diagonalProperty, alpha, \
+#pragma offload target( mic : device ) in ( m, n, diagonalProperty, \
                                                 cJAPtr, cValuesPtr, cIAPtr, \
-                                                aIAPtr, aJAPtr, aValuesPtr, bIAPtr, bJAPtr, bValuesPtr )
+                                                aIAPtr, aJAPtr, aValuesPtr, \
+						bIAPtr, bJAPtr, bValuesPtr, \
+						alphaPtr[0:1] )
     {
         ValueType* cValues = static_cast<ValueType*>( cValuesPtr );
         IndexType* cJA = static_cast<IndexType*>( cJAPtr );
@@ -1624,7 +1644,7 @@ void MICCSRUtils::matrixMultiply(
                     cValues[jj] += aValues[kk] * b_kj;
                 }
 
-                cValues[jj] *= alpha;
+                cValues[jj] *= (*alphaPtr);
             }
         }
     }
@@ -1696,7 +1716,7 @@ ValueType MICCSRUtils::absMaxDiffRowUnsorted(
             diff -= csrValues2[i2];
         }
 
-        diff = std::abs( diff );
+        diff = common::Math::abs( diff );
 
         if( diff > val )
         {
@@ -1718,7 +1738,7 @@ ValueType MICCSRUtils::absMaxDiffRowUnsorted(
             continue; // already compare in first loop
         }
 
-        ValueType diff = std::abs( csrValues2[i2] );
+        ValueType diff = common::Math::abs( csrValues2[i2] );
 
         if( diff > val )
         {
@@ -1796,7 +1816,7 @@ ValueType MICCSRUtils::absMaxDiffRowSorted(
             }
         }
 
-        diff = std::abs( diff );
+        diff = common::Math::abs( diff );
 
         if( diff > val )
         {
@@ -1833,11 +1853,13 @@ ValueType MICCSRUtils::absMaxDiffVal(
     const void* csrJA2Ptr = csrJA2;
     const void* csrValues2Ptr = csrValues2;
 
+    ValueType* valPtr = &val;
+
     int device = MICContext::getCurrentDevice();
 
 #pragma offload target( mic : device ), in( csrIA1Ptr, csrJA1Ptr, csrValues1Ptr,  \
                                             csrIA2Ptr, csrJA2Ptr, csrValues2Ptr,  \
-                                            numRows, sortedRows ), out ( val )
+                                            numRows, sortedRows ), out ( valPtr[0:1] )
     {
         const IndexType* csrIA1 = static_cast<const IndexType*>( csrIA1Ptr );
         const IndexType* csrJA1 = static_cast<const IndexType*>( csrJA1Ptr );
@@ -1864,7 +1886,7 @@ ValueType MICCSRUtils::absMaxDiffVal(
             absMaxDiffRow = MICCSRUtils::absMaxDiffRowUnsorted<ValueType>;
         }
 
-        val = 0;
+        *valPtr = 0;
 
         #pragma omp parallel
         {
@@ -1892,9 +1914,9 @@ ValueType MICCSRUtils::absMaxDiffVal(
 
             #pragma omp critical
             {
-                if( threadVal > val )
+                if( threadVal > *valPtr )
                 {
-                    val = threadVal;
+                    *valPtr = threadVal;
                 }
             }
         }
@@ -1939,37 +1961,59 @@ void MICCSRUtils::registerKernels( bool deleteFlag )
       KernelRegistry::set<CSRKernelTrait::sortRowElements<double> >( sortRowElements, MIC, flag );
      */
 
-    KernelRegistry::set<CSRKernelTrait::scaleRows<float, float> >( scaleRows, MIC, flag );
-    KernelRegistry::set<CSRKernelTrait::scaleRows<float, double> >( scaleRows, MIC, flag );
-    KernelRegistry::set<CSRKernelTrait::scaleRows<double, float> >( scaleRows, MIC, flag );
-    KernelRegistry::set<CSRKernelTrait::scaleRows<double, double> >( scaleRows, MIC, flag );
+//    KernelRegistry::set<CSRKernelTrait::scaleRows<float, float> >( scaleRows, MIC, flag );
+//    KernelRegistry::set<CSRKernelTrait::scaleRows<float, double> >( scaleRows, MIC, flag );
+//    KernelRegistry::set<CSRKernelTrait::scaleRows<double, float> >( scaleRows, MIC, flag );
+//    KernelRegistry::set<CSRKernelTrait::scaleRows<double, double> >( scaleRows, MIC, flag );
+//
+//    KernelRegistry::set<CSRKernelTrait::normalGEMV<float> >( normalGEMV, MIC, flag );
+//    KernelRegistry::set<CSRKernelTrait::normalGEMV<double> >( normalGEMV, MIC, flag );
+//
+//    KernelRegistry::set<CSRKernelTrait::sparseGEMV<float> >( sparseGEMV, MIC, flag );
+//    KernelRegistry::set<CSRKernelTrait::sparseGEMV<double> >( sparseGEMV, MIC, flag );
+//
+//    KernelRegistry::set<CSRKernelTrait::gemm<float> >( gemm, MIC, flag );
+//    KernelRegistry::set<CSRKernelTrait::gemm<double> >( gemm, MIC, flag );
+//
+//    KernelRegistry::set<CSRKernelTrait::matrixAdd<float> >( matrixAdd, MIC, flag );
+//    KernelRegistry::set<CSRKernelTrait::matrixAdd<double> >( matrixAdd, MIC, flag );
+//
+//    KernelRegistry::set<CSRKernelTrait::matrixMultiply<float> >( matrixMultiply, MIC, flag );
+//    KernelRegistry::set<CSRKernelTrait::matrixMultiply<double> >( matrixMultiply, MIC, flag );
+//
+//    KernelRegistry::set<CSRKernelTrait::jacobi<float> >( jacobi, MIC, flag );
+//    KernelRegistry::set<CSRKernelTrait::jacobi<double> >( jacobi, MIC, flag );
+//
+//    KernelRegistry::set<CSRKernelTrait::jacobiHalo<float> >( jacobiHalo, MIC, flag );
+//    KernelRegistry::set<CSRKernelTrait::jacobiHalo<double> >( jacobiHalo, MIC, flag );
+//
+//    KernelRegistry::set<CSRKernelTrait::jacobiHaloWithDiag<float> >( jacobiHaloWithDiag, MIC, flag );
+//    KernelRegistry::set<CSRKernelTrait::jacobiHaloWithDiag<double> >( jacobiHaloWithDiag, MIC, flag );
+//
+//    KernelRegistry::set<CSRKernelTrait::absMaxDiffVal<float> >( absMaxDiffVal, MIC, flag );
+//    KernelRegistry::set<CSRKernelTrait::absMaxDiffVal<double> >( absMaxDiffVal, MIC, flag );
 
-    KernelRegistry::set<CSRKernelTrait::normalGEMV<float> >( normalGEMV, MIC, flag );
-    KernelRegistry::set<CSRKernelTrait::normalGEMV<double> >( normalGEMV, MIC, flag );
+#define LAMA_CSR_UTILS2_REGISTER(z, J, TYPE )                                                                             \
+    KernelRegistry::set<CSRKernelTrait::scaleRows<TYPE, ARITHMETIC_MIC_TYPE_##J> >( scaleRows, MIC, flag );             \
 
-    KernelRegistry::set<CSRKernelTrait::sparseGEMV<float> >( sparseGEMV, MIC, flag );
-    KernelRegistry::set<CSRKernelTrait::sparseGEMV<double> >( sparseGEMV, MIC, flag );
+#define LAMA_CSR_UTILS_REGISTER(z, I, _)                                                                                  \
+    KernelRegistry::set<CSRKernelTrait::normalGEMV<ARITHMETIC_MIC_TYPE_##I> >( normalGEMV, MIC, flag );                 \
+    KernelRegistry::set<CSRKernelTrait::sparseGEMV<ARITHMETIC_MIC_TYPE_##I> >( sparseGEMV, MIC, flag );                 \
+    KernelRegistry::set<CSRKernelTrait::matrixAdd<ARITHMETIC_MIC_TYPE_##I> >( matrixAdd, MIC, flag );                   \
+    KernelRegistry::set<CSRKernelTrait::matrixMultiply<ARITHMETIC_MIC_TYPE_##I> >( matrixMultiply, MIC, flag );         \
+    KernelRegistry::set<CSRKernelTrait::jacobi<ARITHMETIC_MIC_TYPE_##I> >( jacobi, MIC, flag );                         \
+    KernelRegistry::set<CSRKernelTrait::jacobiHalo<ARITHMETIC_MIC_TYPE_##I> >( jacobiHalo, MIC, flag );                 \
+    KernelRegistry::set<CSRKernelTrait::jacobiHaloWithDiag<ARITHMETIC_MIC_TYPE_##I> >( jacobiHaloWithDiag, MIC, flag ); \
+    KernelRegistry::set<CSRKernelTrait::absMaxDiffVal<ARITHMETIC_MIC_TYPE_##I> >( absMaxDiffVal, MIC, flag );           \
+                                                                                                                          \
+    BOOST_PP_REPEAT( ARITHMETIC_MIC_TYPE_CNT,                                                                            \
+                     LAMA_CSR_UTILS2_REGISTER,                                                                            \
+                     ARITHMETIC_MIC_TYPE_##I )                                                                           \
 
-    KernelRegistry::set<CSRKernelTrait::gemm<float> >( gemm, MIC, flag );
-    KernelRegistry::set<CSRKernelTrait::gemm<double> >( gemm, MIC, flag );
+    BOOST_PP_REPEAT( ARITHMETIC_MIC_TYPE_CNT, LAMA_CSR_UTILS_REGISTER, _ )
 
-    KernelRegistry::set<CSRKernelTrait::matrixAdd<float> >( matrixAdd, MIC, flag );
-    KernelRegistry::set<CSRKernelTrait::matrixAdd<double> >( matrixAdd, MIC, flag );
-
-    KernelRegistry::set<CSRKernelTrait::matrixMultiply<float> >( matrixMultiply, MIC, flag );
-    KernelRegistry::set<CSRKernelTrait::matrixMultiply<double> >( matrixMultiply, MIC, flag );
-
-    KernelRegistry::set<CSRKernelTrait::jacobi<float> >( jacobi, MIC, flag );
-    KernelRegistry::set<CSRKernelTrait::jacobi<double> >( jacobi, MIC, flag );
-
-    KernelRegistry::set<CSRKernelTrait::jacobiHalo<float> >( jacobiHalo, MIC, flag );
-    KernelRegistry::set<CSRKernelTrait::jacobiHalo<double> >( jacobiHalo, MIC, flag );
-
-    KernelRegistry::set<CSRKernelTrait::jacobiHaloWithDiag<float> >( jacobiHaloWithDiag, MIC, flag );
-    KernelRegistry::set<CSRKernelTrait::jacobiHaloWithDiag<double> >( jacobiHaloWithDiag, MIC, flag );
-
-    KernelRegistry::set<CSRKernelTrait::absMaxDiffVal<float> >( absMaxDiffVal, MIC, flag );
-    KernelRegistry::set<CSRKernelTrait::absMaxDiffVal<double> >( absMaxDiffVal, MIC, flag );
+#undef LAMA_CSR_UTILS_REGISTER
+#undef LAMA_CSR_UTILS2_REGISTER
 }
 
 /* --------------------------------------------------------------------------- */

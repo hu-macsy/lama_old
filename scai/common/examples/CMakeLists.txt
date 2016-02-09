@@ -46,21 +46,21 @@ endif ( OPENMP_FOUND AND USE_OPENMP )
  
 # example of a library module ( will be used by executable UseModule )
 add_library( module SHARED Module.cpp )
-target_link_libraries( module scai_common )
+target_link_libraries( module ${PROJECT_NAME} )
 
 # example of a library module ( no use of other LAMA stuff )
 add_library( dummy_module SHARED DummyModule.cpp )
 
 foreach ( executable ExceptionDemo CriticalRegion Barrier 
           DemoFactory DemoFactory1 DemoPointer UseModule TimePrecision 
-          DemoComplex DemoTypeTrait DemoSettings DemoFunction )
+          DemoComplex DemoTypeTrait DemoSettings DemoMath DemoFunction )
     add_executable ( ${executable} ${executable}.cpp )
-    target_link_libraries ( ${executable} scai_common )
+    target_link_libraries ( ${executable} ${PROJECT_NAME} )
     set ( EXAMPLE_EXECUTABLES "${EXAMPLE_EXECUTABLES} ${executable}.exe" )
 endforeach ( executable )
 
 ## install examples
 configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/make.inc.in" "${CMAKE_CURRENT_BINARY_DIR}/make.inc" )
-install ( DIRECTORY ./ DESTINATION share/examples/scai-common-${SCAI_COMMON_VERSION} FILES_MATCHING REGEX "^.*.(c|h)pp$" )
-install ( FILES Makefile ${CMAKE_CURRENT_BINARY_DIR}/make.inc DESTINATION share/examples/scai-common-${SCAI_COMMON_VERSION} )
+install ( DIRECTORY ./ DESTINATION ${PROJECT_EXAMPLE_DIR} FILES_MATCHING REGEX "^.*.(c|h)pp$" )
+install ( FILES Makefile ${CMAKE_CURRENT_BINARY_DIR}/make.inc DESTINATION ${PROJECT_EXAMPLE_DIR} )
 

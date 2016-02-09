@@ -35,37 +35,44 @@
 cmake_minimum_required ( VERSION 2.8 )
 
 ### Set PROJECT NAME / supported LANGUAGES
-project( scai_tasking CXX )
+project ( scai_tasking CXX )
 
 ### Set Module Path
 set ( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../CMake/Modules" )
 
-include ( VersionDefinition )
+### includes ###
 
-### Include Compiler Flags
+## important Variables for project
+include ( VersionDefinition )
+include ( SetProjectVariables)
+include ( InternalDependencies )
+include ( ExternalDependencies )
+
+## needed functions
+include ( Functions/scaiFunctions )
+include ( Functions/scaiProject )
+include ( Functions/relativeInstall )
+
+### Include compile dependent things
 if    ( NOT SCAI_COMPLETE_BUILD )
-	include ( SetBuildFlags )
+    include ( SetBuildFlags )
     include ( CompilerVersion )
-	include ( SCAIAssert )
-	include ( SetCPPFlags )
-	include ( Package/Sphinx )
+    include ( SCAIAssert )
+    include ( SetCPPFlags )
+    include ( Package/Sphinx )
 else  ( NOT SCAI_COMPLETE_BUILD )
-	include ( Functions/CheckValueAtCompleteBuild )
-	CheckValueAtCompleteBuild ( tasking )
+    include ( Functions/CheckValueAtCompleteBuild )
+    CheckValueAtCompleteBuild ( ${PROJECT_SURNAME} )
 endif ( NOT SCAI_COMPLETE_BUILD )
 
+## C++11 or Boost
 include ( CheckC++11 )
 if    ( NOT CXX_SUPPORTS_C11 OR BUILD_TEST )
     include( Package/Boost )
 endif ( NOT CXX_SUPPORTS_C11 OR BUILD_TEST )
 
 ### include all search packages
-include ( InternalDependencies )
-#no external dependencies
-
-foreach    ( PACKAGE_TO_FIND ${SCAI_TASKING_INTERNAL_DEPS} )
-    find_package ( ${PACKAGE_TO_FIND} ${SCAI_FIND_PACKAGE_FLAGS} REQUIRED )
-endforeach ( PACKAGE_TO_FIND ${REQUIRED_PACKAGES_TO_FIND} )
+addInternalAndExternalPackages()
 
 ## finalize build flags
 include ( ConcludeFlags )
@@ -83,26 +90,17 @@ endif ( WIN32 )
 
 ### Project System-Include
 include_directories ( ../.. )
+addInternalAndExternalIncludes()
 
-foreach    ( module ${SCAI_TASKING_INTERNAL_DEPS} )
-	string ( TOUPPER ${module} upper_module )
-    include_directories( ${${upper_module}_INCLUDE_DIR} )
-endforeach ( module ${SCAI_TASKING_INTERNAL_DEPS} )
-
-### build library
-
-## add subdirectories
-add_subdirectory ( examples )
-
-include( Functions/scaiProject )
+### Add classes/headers to source files CXX_SOURCES, CXX_HEADERS, ...
 
 scai_project (
 
-    HEADERS
+    HEADERS                  # .hpp only
 
         NoSyncToken
 
-    CLASSES
+    CLASSES                  # .cpp, .hpp
 
         SyncToken
         TaskSyncToken
@@ -110,33 +108,32 @@ scai_project (
         ThreadPool
 )
 
-### add library
-add_library ( scai_tasking ${SCAI_LIBRARY_TYPE} ${CXX_SOURCES} )
+## add subdirectories
+add_subdirectory ( doc )
+add_subdirectory ( examples )
+
+### add library ###
+add_library ( ${PROJECT_NAME} ${SCAI_LIBRARY_TYPE} ${CXX_SOURCES} )
+set_target_properties ( ${PROJECT_NAME} PROPERTIES VERSION ${${UPPER_PROJECT_NAME}_VERSION} )
 
 ## add link libraries
-list ( REVERSE SCAI_TASKING_INTERNAL_DEPS )
-foreach    ( module ${SCAI_TASKING_INTERNAL_DEPS} )
-	string ( TOUPPER ${module} upper_module )
-	set ( TASKING_LINK_LIBRARIES ${TASKING_LINK_LIBRARIES} ${${upper_module}_LIBRARY} )
-endforeach    ( module ${SCAI_TASKING_INTERNAL_DEPS} )
-target_link_libraries ( scai_tasking ${SCAI_START_LINK_LIBRARIES} ${TASKING_LINK_LIBRARIES} ${SCAI_END_LINK_LIBRARIES} )
+addInternalAndExternalLinkLibraries()
 
 ### install ###
-install ( TARGETS scai_tasking DESTINATION lib )
 
-include( Functions/relativeInstall )
+## install lib
+install ( TARGETS ${PROJECT_NAME} DESTINATION lib )
 
-relative_install ( FILES ${CXX_HEADERS} DESTINATION include/scai/tasking )
+## install headers
+relative_install ( FILES ${CXX_HEADERS} DESTINATION ${${UPPER_PROJECT_NAME}_INCLUDE_DIR} )
 
 ## install library.hpp
-install ( FILES ../tasking.hpp DESTINATION include/scai )
-
-### add documentation
-add_subdirectory( doc )
+install ( FILES ../${PROJECT_SURNAME}.hpp DESTINATION include/scai )
 
 ## add custum target distClean
 include ( DistClean )
 
+### summary ###
 if    ( DEFINED SCAI_CMAKE_VERBOSE OR NOT DEFINED SCAI_COMPLETE_BUILD )
-	include ( Summaries/tasking )
+	include ( Summaries/${PROJECT_SURNAME} )
 endif ( DEFINED SCAI_CMAKE_VERBOSE OR NOT DEFINED SCAI_COMPLETE_BUILD )

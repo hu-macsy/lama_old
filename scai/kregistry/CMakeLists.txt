@@ -35,47 +35,49 @@
 cmake_minimum_required ( VERSION 2.8 )
 
 ### Set PROJECT NAME / supported LANGUAGES
-project( scai_kregistry CXX )
+project ( scai_kregistry CXX )
 
 ### Set Module Path
 set ( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../CMake/Modules" )
 
-include ( VersionDefinition )
+### includes ###
 
-### Include Compiler Flags
+## important Variables for project
+include ( VersionDefinition )
+include ( SetProjectVariables)
+include ( InternalDependencies )
+include ( ExternalDependencies )
+
+## needed functions
+include ( Functions/scaiFunctions )
+include ( Functions/scaiProject )
+include ( Functions/relativeInstall )
+
+### Include compile dependent things
 if    ( NOT SCAI_COMPLETE_BUILD )
     include ( SetBuildFlags )
     include ( CompilerVersion )
     include ( SCAIAssert )
     include ( SetCPPFlags )
     include ( Package/Sphinx )
-else  ( NOT SCAI_COMPLETE_BUILD )	
-	include ( Functions/CheckValueAtCompleteBuild )
-	CheckValueAtCompleteBuild ( kregistry )
+else  ( NOT SCAI_COMPLETE_BUILD )
+    include ( Functions/CheckValueAtCompleteBuild )
+    CheckValueAtCompleteBuild ( ${PROJECT_SURNAME} )
 endif ( NOT SCAI_COMPLETE_BUILD )
 
+## C++11 or Boost
 include ( CheckC++11 )
 if    ( NOT CXX_SUPPORTS_C11 OR BUILD_TEST )
     include( Package/Boost )
 endif ( NOT CXX_SUPPORTS_C11 OR BUILD_TEST )
 
 ### include all search packages
-include ( InternalDependencies )
-include ( ExternalDependencies )
-
-foreach    ( module ${SCAI_KREGISTRY_EXTERNAL_DEPS} )
-    include( Package/${module} )
-endforeach ( module ${SCAI_KREGISTRY_EXTERNAL_DEPS} )
-
-foreach    ( PACKAGE_TO_FIND ${SCAI_KREGISTRY_INTERNAL_DEPS} )
-    find_package ( ${PACKAGE_TO_FIND} ${SCAI_FIND_PACKAGE_FLAGS} REQUIRED )
-endforeach ( PACKAGE_TO_FIND ${REQUIRED_PACKAGES_TO_FIND} )
+addInternalAndExternalPackages()
 
 ## finalize build flags
 include ( ConcludeFlags )
 
 ### add definitions
-
 add_definitions( ${ADDITIONAL_WARNING_FLAGS} )
 add_definitions ( -D${SCAI_LOGGING_FLAG} )
 add_definitions ( -DSCAI_ASSERT_LEVEL_${SCAI_ASSERT_LEVEL} )
@@ -86,72 +88,53 @@ endif ( WIN32 )
 
 ### Project System-Include
 include_directories ( ../.. )
-
-foreach    ( module ${SCAI_KREGISTRY_INTERNAL_DEPS} ${SCAI_KREGISTRY_EXTERNAL_DEPS} )
-	string ( TOUPPER ${module} upper_module )
-    include_directories( ${${upper_module}_INCLUDE_DIR} )
-endforeach ( module ${SCAI_KREGISTRY_INTERNAL_DEPS} ${SCAI_KREGISTRY_EXTERNAL_DEPS} )
-
-### build library
-
-include ( Functions/scaiProject )
+addInternalAndExternalIncludes()
 
 ### Add classes/headers to source files CXX_SOURCES, CXX_HEADERS, ...
 
 scai_project (
 
-    CLASSES
+    CLASSES                  # .cpp, .hpp
 
         ContextFunction
         KernelRegistry
 
-    HEADERS
+    HEADERS                  # .hpp only
 
         KernelContextFunction
 )
 
-## add exception dir
-add_subdirectory ( exception )
-
 ## add subdirectories
+add_subdirectory ( doc )
 add_subdirectory ( examples )
+add_subdirectory ( exception )
 
 if ( FOUND_BOOST_TEST AND BUILD_TEST )
     add_subdirectory ( test )
 endif ( FOUND_BOOST_TEST AND BUILD_TEST )
 
-## add library
-add_library ( scai_kregistry ${SCAI_LIBRARY_TYPE} ${CXX_SOURCES} )
+### add library ###
+add_library ( ${PROJECT_NAME} ${SCAI_LIBRARY_TYPE} ${CXX_SOURCES} )
+set_target_properties ( ${PROJECT_NAME} PROPERTIES VERSION ${${UPPER_PROJECT_NAME}_VERSION} )
 
 ## add link libraries
-list ( REVERSE SCAI_KREGISTRY_INTERNAL_DEPS )
-foreach    ( module ${SCAI_KREGISTRY_INTERNAL_DEPS} )
-	string ( TOUPPER ${module} upper_module )
-	set ( KREGISTRY_LINK_LIBRARIES ${KREGISTRY_LINK_LIBRARIES} ${${upper_module}_LIBRARY} )
-endforeach ( module ${SCAI_KREGISTRY_INTERNAL_DEPS} )
-target_link_libraries ( scai_kregistry ${SCAI_START_LINK_LIBRARIES} ${KREGISTRY_LINK_LIBRARIES} ${SCAI_END_LINK_LIBRARIES} )
+addInternalAndExternalLinkLibraries()
 
-foreach    ( module ${SCAI_KREGISTRY_EXTERNAL_DEPS} )
-	string ( TOUPPER ${module} upper_module )
-    target_link_libraries ( scai_kregistry ${SCAI_${upper_module}_LIBRARIES} )
-endforeach ( module ${SCAI_KREGISTRY_EXTERNAL_DEPS} )
+### install ###
 
-### install
+## install lib
+install ( TARGETS ${PROJECT_NAME} DESTINATION lib )
 
-install ( TARGETS scai_kregistry DESTINATION lib )
-
-include( Functions/relativeInstall )
-relative_install( FILES ${CXX_HEADERS} DESTINATION include/scai/kregistry )
+## install headers
+relative_install( FILES ${CXX_HEADERS} DESTINATION ${${UPPER_PROJECT_NAME}_INCLUDE_DIR} )
 
 ## install library.hpp
-install ( FILES ../kregistry.hpp DESTINATION include/scai )
-
-### add documentation
-add_subdirectory( doc )
+install ( FILES ../${PROJECT_SURNAME}.hpp DESTINATION include/scai )
 
 ## add custum target distClean
 include ( DistClean )
 
+### summary ###
 if    ( DEFINED SCAI_CMAKE_VERBOSE OR NOT DEFINED SCAI_COMPLETE_BUILD )
-        include ( Summaries/kregistry )
+        include ( Summaries/${PROJECT_SURNAME} )
 endif ( DEFINED SCAI_CMAKE_VERBOSE OR NOT DEFINED SCAI_COMPLETE_BUILD )

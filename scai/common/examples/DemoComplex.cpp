@@ -8,7 +8,7 @@
  */
 
 #include <scai/common/Complex.hpp>
-#include <complex>
+#include <scai/common/Math.hpp>
 
 #include <iostream>
 
@@ -28,7 +28,7 @@ int main()
     std::cout << "conj( b ) = " << conj( b ) << std::endl;
     // not allowed for std::complex
     std::cout << "static_cast<double>( b ) = " << static_cast<double>( b ) << std::endl;
-    std::cout << "abs( b ) = " << abs( b ) << std::endl;
+    std::cout << "abs( b ) = " << scai::common::Math::abs( b ) << std::endl;
 
     if ( a < b )
     {

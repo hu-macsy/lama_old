@@ -75,17 +75,26 @@ endif ( NOT CXX_SUPPORTS_C11 )
 message ( STATUS "" )
 scai_status_message ( HEADLINE "LIBRARIES:" )
 
-# LAMA CUDA
+set ( REQUIRED_FOUND FALSE )
+if    ( SCAI_COMMON_FOUND AND SCAI_LOGGING_FOUND )
+  set ( REQUIRED_FOUND TRUE )
+endif ( SCAI_COMMON_FOUND AND SCAI_LOGGING_FOUND )
+
 message ( STATUS "" )
-scai_summary_message ( "FOUND"
-                       "SCAI_COMMON_FOUND"
-                       "SCAI common"
+scai_summary_message ( "STATIC"
+                       "REQUIRED_FOUND"
+                       "Internal Libraries (core)"
                        "" )
-                       
-scai_summary_message ( "FOUND"
-                       "SCAI_LOGGING_FOUND"
-                       "SCAI logging"
-                       "" )
+
+    scai_summary_message ( "FOUND"
+                           "SCAI_COMMON_FOUND"
+                           "SCAI common"
+                           "" )
+                           
+    scai_summary_message ( "FOUND"
+                           "SCAI_LOGGING_FOUND"
+                           "SCAI logging"
+                           "" )
                        
 message ( STATUS "" )
 scai_status_message ( HEADLINE "GUI:" )

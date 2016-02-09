@@ -43,6 +43,7 @@
 #include <scai/lama/test/TestMacros.hpp>
 
 #include <scai/hmemo/HArray.hpp>
+#include <scai/common/Math.hpp>
 
 #include <boost/test/unit_test.hpp>
 
@@ -162,7 +163,7 @@ void testSameMatrixStorage( const scai::lama::MatrixStorage<ValueType1>& m1,
             CompareType elem1 = static_cast<CompareType>( readRow1[j] );
             CompareType elem2 = static_cast<CompareType>( readRow2[j] );
        
-            CompareType diff = scai::common::TypeTraits<CompareType>::abs( elem1 - elem2 );
+            CompareType diff = scai::common::Math::abs( elem1 - elem2 );
 
             if ( diff >= smallV )
             {

@@ -35,7 +35,7 @@
 # LogLevels example, here we compile also LOG_TRACE macros
 
 add_executable( LogLevels LogLevels.cpp )
-target_link_libraries( LogLevels scai_logging )
+target_link_libraries( LogLevels ${PROJECT_NAME} )
 set_target_properties( LogLevels PROPERTIES COMPILE_FLAGS -DSCAI_LOG_LEVEL_TRACE )
 
 # ThreadTest example, here we need the Boost Thread library
@@ -55,7 +55,7 @@ if    ( OPENMP_FOUND )
 	set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
     # Adding this example only possible if OpenMP is available
     add_executable( LogOpenMP LogOpenMP.cpp )
-    target_link_libraries( LogOpenMP scai_logging )
+    target_link_libraries( LogOpenMP ${PROJECT_NAME} )
 else  ( OPENMP_FOUND )
     message ( STATUS "LogOpenMP example not built, no compiler option found" )
 endif ( OPENMP_FOUND )
@@ -64,5 +64,5 @@ set ( EXAMPLE_EXECUTABLES "LogLevels.exe LogOpenMP.exe" )
 
 ## install examples
 configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/make.inc.in" "${CMAKE_CURRENT_BINARY_DIR}/make.inc" )
-install ( DIRECTORY ./ DESTINATION share/examples/scai-logging-${SCAI_LOGGING_VERSION} FILES_MATCHING PATTERN "*.cpp" )
-install ( FILES config Makefile ${CMAKE_CURRENT_BINARY_DIR}/make.inc DESTINATION share/examples/scai-logging-${SCAI_LOGGING_VERSION} )
+install ( DIRECTORY ./ DESTINATION ${PROJECT_EXAMPLE_DIR} FILES_MATCHING PATTERN "*.cpp" )
+install ( FILES config Makefile ${CMAKE_CURRENT_BINARY_DIR}/make.inc DESTINATION ${PROJECT_EXAMPLE_DIR} )

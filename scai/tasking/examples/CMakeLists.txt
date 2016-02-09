@@ -34,11 +34,11 @@
 
 foreach    ( executable ThreadPoolTest BenchTasking Token )
    add_executable( ${executable} ${executable}.cpp )
-   target_link_libraries( ${executable} scai_tasking )
+   target_link_libraries( ${executable} ${PROJECT_NAME} )
    set ( EXAMPLE_EXECUTABLES "${EXAMPLE_EXECUTABLES} ${executable}.exe" )
 endforeach ( executable )
 
 ## install examples
 configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/make.inc.in" "${CMAKE_CURRENT_BINARY_DIR}/make.inc" )
-install ( DIRECTORY ./ DESTINATION share/examples/scai-tasking-${SCAI_TASKING_VERSION} FILES_MATCHING PATTERN "*.cpp" )
-install ( FILES Makefile ${CMAKE_CURRENT_BINARY_DIR}/make.inc DESTINATION share/examples/scai-tasking-${SCAI_TASKING_VERSION} )
+install ( DIRECTORY ./ DESTINATION ${PROJECT_EXAMPLE_DIR} FILES_MATCHING PATTERN "*.cpp" )
+install ( FILES Makefile ${CMAKE_CURRENT_BINARY_DIR}/make.inc DESTINATION ${PROJECT_EXAMPLE_DIR} )

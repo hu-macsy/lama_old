@@ -75,12 +75,22 @@ endif ( NOT CXX_SUPPORTS_C11 )
 message ( STATUS "" )
 scai_status_message ( HEADLINE "LIBRARIES:" )
 
-# SCAI common
+set ( REQUIRED_FOUND FALSE )
+if    ( SCAI_COMMON_FOUND )
+  set ( REQUIRED_FOUND TRUE )
+endif ( SCAI_COMMON_FOUND )
+
 message ( STATUS "" )
-scai_summary_message ( "FOUND"
-                       "SCAI_COMMON_FOUND"
-                       "SCAI common"
+scai_summary_message ( "STATIC"
+                       "REQUIRED_FOUND"
+                       "Internal Libraries (core)"
                        "" )
+
+    # SCAI common
+    scai_summary_message ( "FOUND"
+                           "SCAI_COMMON_FOUND"
+                           "SCAI common"
+                           "" )
 
 message ( STATUS "" )
 

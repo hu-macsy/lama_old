@@ -35,14 +35,25 @@
 cmake_minimum_required ( VERSION 2.8 )
 
 ### Set PROJECT NAME / supported LANGUAGES
-project ( LAMA CXX )
+project ( scai_lama CXX )
 
 ### Set Module Path
 set ( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../CMake/Modules" )
 
-include ( VersionDefinition )
+### includes ###
 
-### Include Compiler Flags
+## important Variables for project
+include ( VersionDefinition )
+include ( SetProjectVariables)
+include ( InternalDependencies )
+include ( ExternalDependencies )
+
+## needed functions
+include ( Functions/scaiFunctions )
+include ( Functions/scaiProject )
+include ( Functions/relativeInstall )
+
+### Include compile dependent things
 if    ( NOT SCAI_COMPLETE_BUILD )
     include ( SetBuildFlags )
     include ( CompilerVersion )
@@ -50,34 +61,27 @@ if    ( NOT SCAI_COMPLETE_BUILD )
     include ( SetCPPFlags )
     include ( Package/Sphinx )
 else  ( NOT SCAI_COMPLETE_BUILD )
-	include ( Functions/CheckValueAtCompleteBuild )
-	CheckValueAtCompleteBuild ( lama )
+    include ( Functions/CheckValueAtCompleteBuild )
+    CheckValueAtCompleteBuild ( ${PROJECT_SURNAME} )
 endif ( NOT SCAI_COMPLETE_BUILD )
 
+## C++11 or Boost
 include ( CheckC++11 )
 if    ( NOT CXX_SUPPORTS_C11 OR BUILD_TEST )
     include( Package/Boost )
 endif ( NOT CXX_SUPPORTS_C11 OR BUILD_TEST )
 
 ### include all search packages
-include ( InternalDependencies )
-include ( ExternalDependencies )
-
-foreach    ( module ${SCAI_LAMA_EXTERNAL_DEPS} )
-    include( Package/${module} )
-endforeach ( module ${SCAI_LAMA_EXTERNAL_DEPS} )
-
-foreach    ( PACKAGE_TO_FIND ${SCAI_LAMA_INTERNAL_DEPS} )
-    find_package ( ${PACKAGE_TO_FIND} ${SCAI_FIND_PACKAGE_FLAGS} REQUIRED )
-endforeach ( PACKAGE_TO_FIND $${SCAI_LAMA_INTERNAL_DEPS} )
+addInternalAndExternalPackages()
 
 ## finalize build flags
 include ( ConcludeFlags )
 
 ### add definitions ###
-
 add_definitions( ${ADDITIONAL_WARNING_FLAGS} )
 add_definitions ( -DSCAI_ASSERT_LEVEL_${SCAI_ASSERT_LEVEL} )
+add_definitions ( -D${SCAI_LOGGING_FLAG} )
+add_definitions ( -D${SCAI_TRACING_FLAG} )
 
 ## MKL FOUND
 if     ( SCAI_BLAS_NAME STREQUAL "MKL" )
@@ -87,9 +91,6 @@ elseif ( INTERNALBLAS_FOUND )
 else   ( )
     add_definitions( -DADD_ )
 endif  ( )
-
-add_definitions ( -D${SCAI_LOGGING_FLAG} )
-add_definitions ( -D${SCAI_TRACING_FLAG} )
 
 if ( SCAI_OMP_SCHEDULE_FLAG )
     add_definitions ( -D${SCAI_OMP_SCHEDULE_FLAG} )
@@ -101,21 +102,13 @@ endif ( WIN32 )
 
 ### Project System-Include
 include_directories ( ../.. )
+addInternalAndExternalIncludes()
 
-foreach    ( module ${SCAI_LAMA_INTERNAL_DEPS} ${SCAI_LAMA_EXTERNAL_DEPS} )
-	string ( TOUPPER ${module} upper_module )
-    include_directories( ${${upper_module}_INCLUDE_DIR} )
-endforeach ( module ${SCAI_LAMA_INTERNAL_DEPS} ${SCAI_LAMA_EXTERNAL_DEPS} )
+### Add classes/headers to source files CXX_SOURCES, CXX_HEADERS, ...
 
-### build lama library
+scai_project (
 
-include ( Functions/scaiProject )
-
-### Add classes and header files
-
-scai_project(
-
-    CLASSES
+    CLASSES                  # .cpp, .hpp
 
         CommunicationPlan
         Communicator
@@ -126,7 +119,7 @@ scai_project(
         StorageIO
         Vector
 
-    HEADERS
+    HEADERS                  # .hpp only
 
         UtilKernelTrait
         CSRKernelTrait
@@ -145,43 +138,41 @@ scai_project(
         CRTPCommunicator
     )
 
-### add subdirectories ###
-
-## CUDA
+### add subdirectories
 if ( CUDA_FOUND AND USE_CUDA AND CUDA_HAVE_GPU )
     add_subdirectory ( cuda )
+    cuda_compile ( CUDA_FILES ${CUDA_SOURCES} )
+    set ( CXX_SOURCES ${CXX_SOURCES} ${CUDA_FILES} )
 endif ( CUDA_FOUND AND USE_CUDA AND CUDA_HAVE_GPU )
 
-## MIC
-if ( USE_MIC )
-    add_subdirectory ( mic )
-endif ( USE_MIC )
-
 add_subdirectory ( distribution )
+add_subdirectory ( doc )
+add_subdirectory( examples )
 add_subdirectory ( expression )
-add_subdirectory ( io )
-add_subdirectory ( matrix )
-add_subdirectory ( matutils )
 
-## MPI
-if ( MPI_FOUND AND USE_MPI )
-    add_subdirectory ( mpi )
-endif ( MPI_FOUND AND USE_MPI )
-
-## GPI
 if ( GPI2_FOUND AND IBVERBS_FOUND AND USE_GPI2 )
     add_subdirectory( gpi )
 endif ( GPI2_FOUND AND IBVERBS_FOUND AND USE_GPI2 )
 
+add_subdirectory ( io )
+add_subdirectory ( matrix )
+add_subdirectory ( matutils )
+
+if ( USE_MIC )
+    add_subdirectory ( mic )
+endif ( USE_MIC )
+
+if ( MPI_FOUND AND USE_MPI )
+    add_subdirectory ( mpi )
+endif ( MPI_FOUND AND USE_MPI )
+
 add_subdirectory ( norm )
 add_subdirectory ( openmp )
-add_subdirectory ( solver )
 add_subdirectory ( storage )
 
 if ( FOUND_BOOST_TEST AND BUILD_TEST )
     add_subdirectory ( test )
 endif ( FOUND_BOOST_TEST AND BUILD_TEST )
-
 
 ### set link directories ###
 if ( WIN32 )
@@ -190,64 +181,39 @@ if ( WIN32 )
 endif ( WIN32 )
 
 ### add library ###
-
-if    ( CUDA_FOUND AND USE_CUDA AND CUDA_HAVE_GPU )
-	cuda_compile ( CUDA_FILES ${CUDA_SOURCES} )
-	set ( CXX_SOURCES ${CXX_SOURCES} ${CUDA_FILES} )
-endif ( CUDA_FOUND AND USE_CUDA AND CUDA_HAVE_GPU )
-
-add_library ( ama ${SCAI_LIBRARY_TYPE} ${CXX_SOURCES} )
-
-# Might be some additional solver libraries have been defined
-
-message ( STATUS "LAMA uses following solver libraries: ${LAMA_SOLVER_LIBRARIES}" )
-if ( LAMA_SOLVER_LIBRARIES )
-    message ( STATUS "linked to lama: ${LAMA_SOLVER_LIBRARIES}" )
-    target_link_libraries( ama ${LAMA_SOLVER_LIBRARIES} )
-endif ()
+add_library ( ${PROJECT_NAME} ${SCAI_LIBRARY_TYPE} ${CXX_SOURCES} )
+set_target_properties ( ${PROJECT_NAME} PROPERTIES VERSION ${${UPPER_PROJECT_NAME}_VERSION} )
 
 ## add link libraries
-list ( REVERSE SCAI_LAMA_INTERNAL_DEPS )
-foreach    ( module ${SCAI_LAMA_INTERNAL_DEPS} )
-	string ( TOUPPER ${module} upper_module )
-	set ( LAMA_LINK_LIBRARIES ${LAMA_LINK_LIBRARIES} ${${upper_module}_LIBRARY} )
-endforeach ( module ${SCAI_LAMA_INTERNAL_DEPS} )
-target_link_libraries ( ama ${SCAI_START_LINK_LIBRARIES} ${LAMA_LINK_LIBRARIES} ${SCAI_END_LINK_LIBRARIES} )
-
-foreach    ( module ${SCAI_LAMA_EXTERNAL_DEPS} )
-	string ( TOUPPER ${module} upper_module )
-    target_link_libraries ( ama ${SCAI_${upper_module}_LIBRARIES} )
-endforeach ( module ${SCAI_LAMA_EXTERNAL_DEPS} )
+addInternalAndExternalLinkLibraries()
 
 # external libraries
-
 if    ( GPI2_FOUND AND IBVERBS_FOUND AND USE_GPI2 )
-    target_link_libraries ( ama ${GPI2_LIBRARIES} ${IBVERBS_LIBRARIES} )
+    target_link_libraries ( ${PROJECT_NAME} ${GPI2_LIBRARIES} ${IBVERBS_LIBRARIES} )
 endif ( GPI2_FOUND AND IBVERBS_FOUND AND USE_GPI2 )
 
 if ( SCALAPACK_FOUND AND MPI_FOUND AND USE_MPI )
-    target_link_libraries ( ama ${SCAI_PBLAS_LIBRARIES} )
+    target_link_libraries ( ${PROJECT_NAME} ${SCAI_PBLAS_LIBRARIES} )
     add_definitions( -DSCAI_MKL_SCALAPACK ) ## TODO: where used?!
 endif ( SCALAPACK_FOUND AND MPI_FOUND AND USE_MPI )
 
 if ( USE_MIC )
     set ( MKLROOT $ENV{MKLROOT} )
-    set_target_properties( ama PROPERTIES LINK_FLAGS
+    set_target_properties( ${PROJECT_NAME} PROPERTIES LINK_FLAGS
         "-offload-option,mic,compiler,\"-L${MKLROOT}/lib/mic -Wl,--start-group -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_core -Wl,--end-group\"" )
 endif ( USE_MIC )
 
-## install all Include files
-## install( FILES ${CXX_HEADERS} DESTINATION include/scai/lama ) does not work
+### install ###
 
-include( Functions/relativeInstall )
-relative_install( FILES ${CXX_HEADERS} DESTINATION include/scai/lama )
+## install lib
+install ( TARGETS ${PROJECT_NAME} DESTINATION lib )
+
+## install headers
+relative_install( FILES ${CXX_HEADERS} DESTINATION ${${UPPER_PROJECT_NAME}_INCLUDE_DIR} )
 
 ## install library.hpp
 configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/lama.hpp.in" "${CMAKE_CURRENT_BINARY_DIR}/include/scai/lama.hpp" )
 install ( FILES "${CMAKE_CURRENT_BINARY_DIR}/include/scai/lama.hpp" DESTINATION include/scai )
-
-## build examples
-add_subdirectory( examples )
 
 # generate file make.inc + install it
 #configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/examples/make.inc.in" "${CMAKE_CURRENT_BINARY_DIR}/examples/make.inc" )
@@ -257,15 +223,10 @@ add_subdirectory( examples )
 #file ( COPY ${CMAKE_CURRENT_SOURCE_DIR}/examples DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
 #install ( DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/examples DESTINATION share )
 
-### add documentation
-add_subdirectory( doc )
-
 ## add custum target distClean
 include ( DistClean )
 
-### install
-install ( TARGETS ama DESTINATION lib )
-
+### summary ###
 if    ( DEFINED SCAI_CMAKE_VERBOSE OR NOT DEFINED SCAI_COMPLETE_BUILD )
-	include ( Summaries/lama )
+	include ( Summaries/${PROJECT_SURNAME} )
 endif ( DEFINED SCAI_CMAKE_VERBOSE OR NOT DEFINED SCAI_COMPLETE_BUILD )
