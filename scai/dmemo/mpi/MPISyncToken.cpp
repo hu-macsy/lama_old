@@ -47,7 +47,7 @@ using namespace scai::tasking;
 namespace scai
 {
 
-namespace lama
+namespace dmemo
 {
 
 MPISyncToken::MPISyncToken( PartitionId nRequests )
@@ -110,6 +110,6 @@ void MPISyncToken::pushRequest( const MPI_Request& request )
     SCAI_LOG_INFO( logger, "# used requests = " << mUsedRequests )
 }
 
-} /* end namespace lama */
+} /* end namespace dmemo */
 
 } /* end namespace scai */

@@ -36,14 +36,15 @@
 #include <scai/lama/Scalar.hpp>
 #include <scai/lama/matrix/Matrix.hpp>
 #include <scai/lama/StorageIO.hpp>
-#include <scai/dmemo/distribution/NoDistribution.hpp>
+#include <scai/dmemo/NoDistribution.hpp>
 #include <scai/lama/expression/all.hpp>
 
 #include <iostream>
 #include <algorithm>
 
 using namespace scai;
-using namespace scai::lama;
+using namespace lama;
+using namespace dmemo;
 using namespace std;
 
 static bool isNumber( const char* arg )

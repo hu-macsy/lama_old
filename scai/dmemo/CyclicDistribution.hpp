@@ -42,7 +42,7 @@
 namespace scai
 {
 
-namespace lama
+namespace dmemo
 {
 
 /** For a block cyclic distribution the range is partitioned into chunks of
@@ -169,6 +169,6 @@ IndexType CyclicDistribution::chunkSize() const
     return mChunkSize;
 }
 
-} /* end namespace lama */
+} /* end namespace dmemo */
 
 } /* end namespace scai */

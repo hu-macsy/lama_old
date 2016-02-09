@@ -74,6 +74,7 @@ using common::TypeTraits;
 namespace context = scai::common::context;
 
 using namespace hmemo;
+using namespace dmemo;
 
 namespace lama
 {
@@ -151,7 +152,7 @@ void DenseVector<ValueType>::readFromFile( const std::string& filename )
     SCAI_LOG_INFO( logger, "read dense vector from file " << filename )
 
     // Take the current default communicator
-    CommunicatorPtr comm = Communicator::getCommunicator();
+    dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicator();
 
     IndexType myRank = comm->getRank();
     IndexType host = 0; // reading processor
@@ -428,7 +429,7 @@ DenseVector<ValueType>* DenseVector<ValueType>::copy() const
 }
 
 template<typename ValueType>
-void DenseVector<ValueType>::updateHalo( const Halo& halo ) const
+void DenseVector<ValueType>::updateHalo( const dmemo::Halo& halo ) const
 {
     const IndexType haloSize = halo.getHaloSize();
 
@@ -444,7 +445,7 @@ void DenseVector<ValueType>::updateHalo( const Halo& halo ) const
 }
 
 template<typename ValueType>
-tasking::SyncToken* DenseVector<ValueType>::updateHaloAsync( const Halo& halo ) const
+tasking::SyncToken* DenseVector<ValueType>::updateHaloAsync( const dmemo::Halo& halo ) const
 {
     const IndexType haloSize = halo.getHaloSize();
 

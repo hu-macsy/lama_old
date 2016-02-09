@@ -192,7 +192,7 @@ void SOR::iterateImpl()
     const CSRStorage<ValueType> & csrA = dynamic_cast<const CSRStorage<ValueType>&>( A.getLocalStorage() );
     SCAI_ASSERT_ERROR( csrA.hasDiagonalProperty(), "csrA = " << csrA << " has not diagonal property" )
     const CSRStorage<ValueType> & csrAHalo = dynamic_cast<const CSRStorage<ValueType>&>( A.getHaloStorage() );
-    const lama::Halo& Ahalo = A.getHalo();
+    const dmemo::Halo& Ahalo = A.getHalo();
 
     if( !Ahalo.isEmpty() )
     {

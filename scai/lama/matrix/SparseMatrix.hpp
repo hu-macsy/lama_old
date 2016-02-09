@@ -123,25 +123,25 @@ public:
      */
     SparseMatrix( common::shared_ptr<MatrixStorage<ValueType> > storage );
 
-    SparseMatrix( common::shared_ptr<MatrixStorage<ValueType> > storage, DistributionPtr rowDist );
+    SparseMatrix( common::shared_ptr<MatrixStorage<ValueType> > storage, dmemo::DistributionPtr rowDist );
 
     SparseMatrix(
         common::shared_ptr<MatrixStorage<ValueType> > storage,
-        DistributionPtr rowDist,
-        DistributionPtr colDist );
+        dmemo::DistributionPtr rowDist,
+        dmemo::DistributionPtr colDist );
 
     /** Constructor of a sparse matrix with local and halo data available. */
 
     SparseMatrix(
         common::shared_ptr<MatrixStorage<ValueType> > localData,
         common::shared_ptr<MatrixStorage<ValueType> > haloData,
-        const Halo& halo,
-        DistributionPtr rowDist,
-        DistributionPtr colDist );
+        const dmemo::Halo& halo,
+        dmemo::DistributionPtr rowDist,
+        dmemo::DistributionPtr colDist );
 
     SparseMatrix( const Matrix& matrix, const bool transposeFlag = false );
 
-    SparseMatrix( const Matrix& other, DistributionPtr rowDist, DistributionPtr colDist );
+    SparseMatrix( const Matrix& other, dmemo::DistributionPtr rowDist, dmemo::DistributionPtr colDist );
 
     /** Override also the default copy constructor that does not make a
      *  deep copy of the input matrix due to the use of shared pointers.
@@ -182,16 +182,16 @@ public:
     /** Implementation for Matrix::setDenseData */
 
     virtual void setDenseData(
-        DistributionPtr rowDistribution,
-        DistributionPtr colDistribution,
+        dmemo::DistributionPtr rowDistribution,
+        dmemo::DistributionPtr colDistribution,
         const hmemo::_HArray& values,
         Scalar eps = Scalar( 0 ) );
 
     /** Implementation for pure method Matrix::setCSRData. */
 
     virtual void setCSRData(
-        DistributionPtr rowDist,
-        DistributionPtr colDist,
+        dmemo::DistributionPtr rowDist,
+        dmemo::DistributionPtr colDist,
         const IndexType numValues,
         const hmemo::HArray<IndexType>& ia,
         const hmemo::HArray<IndexType>& ja,
@@ -211,7 +211,7 @@ public:
 
     /* Implementation of pure method of class Matrix. */
 
-    virtual void allocate( DistributionPtr rowDistribution, DistributionPtr colDistribution );
+    virtual void allocate( dmemo::DistributionPtr rowDistribution, dmemo::DistributionPtr colDistribution );
 
     /* Before overriding the virtual function make the other routine setIdentity( int n ) visible */
 
@@ -219,7 +219,7 @@ public:
 
     /** Set matrix to a identity square matrix with same row and column distribution. */
 
-    virtual void setIdentity( DistributionPtr distribution );
+    virtual void setIdentity( dmemo::DistributionPtr distribution );
 
     /* Implementation of pure method of class Matrix. */
 
@@ -249,7 +249,7 @@ public:
 
     /* Implementation of pure method of class Matrix. */
 
-    virtual void assign( const _MatrixStorage& storage, DistributionPtr rowDist, DistributionPtr colDist );
+    virtual void assign( const _MatrixStorage& storage, dmemo::DistributionPtr rowDist, dmemo::DistributionPtr colDist );
 
     /** Implementation of of pure method of class Matrix. */
 
@@ -492,7 +492,7 @@ public:
      *
      * @return   reference to the halo of the distributed matrix
      */
-    const Halo& getHalo() const;
+    const dmemo::Halo& getHalo() const;
 
     /* Implementation of method writeAt for sparse matrix. */
 
@@ -530,7 +530,7 @@ public:
 
     /* Implementation of pure method of class Matrix. */
 
-    void redistribute( DistributionPtr rowDistribution, DistributionPtr colDistribution );
+    void redistribute( dmemo::DistributionPtr rowDistribution, dmemo::DistributionPtr colDistribution );
 
     /**  */
     /**
@@ -608,7 +608,7 @@ protected:
 
     common::shared_ptr<MatrixStorage<ValueType> > mHaloData; //!< local columns of sparse matrix
 
-    Halo mHalo; //!< Exchange plans for halo part due to column distribution
+    dmemo::Halo mHalo; //!< Exchange plans for halo part due to column distribution
 
     /**
      * @brief Set this matrix = alpha * A + beta * B
@@ -661,7 +661,7 @@ private:
      *  This routine can also handle the case that otherLocalData is a reference to the local
      *  data of this matrix ( helpful to avoid unneccessary copies ).
      */
-    void    set( const MatrixStorage<ValueType>& otherLocalData, DistributionPtr otherDist );
+    void    set( const MatrixStorage<ValueType>& otherLocalData, dmemo::DistributionPtr otherDist );
 
     /** Implementation of transposed assign for sparse matrix of a known value type. */
 

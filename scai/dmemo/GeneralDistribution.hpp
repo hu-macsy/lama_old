@@ -54,7 +54,7 @@
 namespace scai
 {
 
-namespace lama
+namespace dmemo
 {
 
 /** A general distribution allows to map a global range of values
@@ -136,6 +136,6 @@ private:
 
 typedef common::shared_ptr<GeneralDistribution> GeneralDistributionPtr;
 
-} /* end namespace lama */
+} /* end namespace dmemo */
 
 } /* end namespace scai */

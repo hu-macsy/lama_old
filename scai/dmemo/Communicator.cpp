@@ -49,7 +49,7 @@ using namespace scai::tasking;
 namespace scai
 {
 
-namespace lama
+namespace dmemo
 {
 
 SCAI_LOG_DEF_LOGGER( Communicator::logger, "Communicator" )
@@ -855,6 +855,6 @@ BOOST_PP_REPEAT( ARRAY_TYPE_CNT, LAMA_COMMUNICATOR_INSTANTIATIONS, _ )
 
 #undef LAMA_COMMUNICATOR_INSTANTIATIONS
 
-} /* end namespace lama */
+} /* end namespace dmemo */
 
 } /* end namespace scai */

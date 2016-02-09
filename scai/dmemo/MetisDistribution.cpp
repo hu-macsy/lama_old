@@ -32,10 +32,10 @@
  */
 
 // hpp
-#include <scai/lama/distribution/MetisDistribution.hpp>
+#include <scai/dmemo/MetisDistribution.hpp>
 
 // local library
-#include <scai/lama/distribution/NoDistribution.hpp>
+#include <scai/dmemo/NoDistribution.hpp>
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 
 // internal scai libraries
@@ -49,7 +49,7 @@ extern "C"
 namespace scai
 {
 
-namespace lama
+namespace dmemo
 {
 
 SCAI_LOG_DEF_LOGGER( MetisDistribution::logger, "Distribution.MetisDistribution" )
@@ -325,6 +325,6 @@ Distribution* MetisDistribution::create( const DistributionArguments arg )
     }
 }
 
-} /* end namespace lama */
+} /* end namespace dmemo */
 
 } /* end namespace scai */

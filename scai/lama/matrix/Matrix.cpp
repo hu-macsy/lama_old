@@ -43,10 +43,11 @@
 #include <scai/common/Constants.hpp>
 #include <scai/common/unique_ptr.hpp>
 
-using namespace scai::common;
-
 namespace scai
 {
+
+using namespace common;
+using namespace dmemo;
 
 namespace lama
 {

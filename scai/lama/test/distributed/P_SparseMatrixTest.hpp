@@ -64,7 +64,7 @@ public:
     void createPoissonTest();
 
 private:
-    scai::lama::CommunicatorPtr comm;
+    scai::dmemo::CommunicatorPtr comm;
 
 protected:
     SCAI_LOG_DECL_STATIC_LOGGER( logger );

@@ -39,7 +39,7 @@
 #include <scai/lama/test/distributed/DistributionTest.hpp>
 #include <scai/lama/test/TestMacros.hpp>
 
-using namespace scai::lama;
+using namespace scai::dmemo;
 
 extern bool base_test_case;
 extern std::string testcase;
@@ -52,7 +52,7 @@ struct CyclicDistributionTestConfig
 {
     CyclicDistributionTestConfig()
     {
-        comm = Communicator::getCommunicator( scai::lama::communicator::MPI );
+        comm = Communicator::getCommunicator();
         size = comm->getSize();
         rank = comm->getRank();
         chunkSize = size;

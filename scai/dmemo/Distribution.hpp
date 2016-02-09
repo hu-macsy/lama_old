@@ -58,7 +58,7 @@
 namespace scai
 {
 
-namespace lama
+namespace dmemo
 {
 
 typedef common::shared_ptr<const class Distribution> DistributionPtr;
@@ -379,6 +379,6 @@ IndexType Distribution::getGlobalSize() const
     return mGlobalSize;
 }
 
-} /* end namespace lama */
+} /* end namespace dmemo */
 
 } /* end namespace scai */

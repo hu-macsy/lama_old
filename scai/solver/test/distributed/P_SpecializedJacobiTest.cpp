@@ -46,7 +46,7 @@
 #include <scai/lama/matrix/DIASparseMatrix.hpp>
 #include <scai/lama/matrix/COOSparseMatrix.hpp>
 
-#include <scai/dmemo/distribution/BlockDistribution.hpp>
+#include <scai/dmemo/BlockDistribution.hpp>
 #include <scai/dmemo/Communicator.hpp>
 
 #include <scai/lama/norm/L2Norm.hpp>
@@ -62,6 +62,7 @@
 using namespace scai::solver;
 using namespace scai::lama;
 using namespace scai::hmemo;
+using namespace scai::dmemo;
 
 typedef boost::mpl::list<float, double> test_types;
 
@@ -77,7 +78,7 @@ struct P_SpecializedJacobiTestConfig
             new CommonLogger( "<Jacobi>: ", LogLevel::completeInformation, LoggerWriteBehaviour::toConsoleOnly ) );
         mJacobiDouble = new SpecializedJacobi( "SpecializedJacobiTest double solver", loggerD );
         mJacobiFloat = new SpecializedJacobi( "SpecializedJacobiTest float solver", loggerD );
-        comm = Communicator::getCommunicator( scai::lama::communicator::MPI );
+        comm = Communicator::getCommunicator();
     }
 
     ~P_SpecializedJacobiTestConfig()

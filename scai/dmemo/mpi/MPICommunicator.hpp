@@ -56,7 +56,7 @@
 namespace scai
 {
 
-namespace lama
+namespace dmemo
 {
 
 /** Communicator class that implements communication and data exchange via MPI.
@@ -396,6 +396,6 @@ inline MPI_Op MPICommunicator::getMPISum<ComplexLongDouble>()
 
 #endif
 
-} /* end namespace lama */
+} /* end namespace dmemo */
 
 } /* end namespace scai */

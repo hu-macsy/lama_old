@@ -42,7 +42,7 @@
 namespace scai
 {
 
-namespace lama
+namespace dmemo
 {
 
 MPIException::MPIException( const std::string& message, const int mpiStatus )
@@ -60,6 +60,6 @@ MPIException::~MPIException() throw ()
 {
 }
 
-} /* end namespace lama */
+} /* end namespace dmemo */
 
 } /* end namespace scai */

@@ -36,9 +36,9 @@
 #include <scai/lama/matrix/all.hpp>
 
 #include <scai/lama/DenseVector.hpp>
-#include <scai/dmemo/distribution/NoDistribution.hpp>
-#include <scai/dmemo/distribution/GeneralDistribution.hpp>
-#include <scai/dmemo/distribution/GenBlockDistribution.hpp>
+#include <scai/dmemo/NoDistribution.hpp>
+#include <scai/dmemo/GeneralDistribution.hpp>
+#include <scai/dmemo/GenBlockDistribution.hpp>
 #include <scai/lama/expression/all.hpp>
 #include <scai/lama/norm/L2Norm.hpp>
 
@@ -53,6 +53,7 @@
 
 using namespace std;
 using namespace scai;
+using namespace dmemo;
 using namespace lama;
 using namespace solver;
 

@@ -37,7 +37,7 @@
 namespace scai
 {
 
-namespace lama
+namespace dmemo
 {
 
 SCAI_LOG_DEF_LOGGER( Halo::logger, "Halo" )
@@ -107,6 +107,6 @@ void Halo::writeAt( std::ostream& stream ) const
            << mProvidesPlan << ")";
 }
 
-} /* end namespace lama */
+} /* end namespace dmemo */
 
 } /* end namespace scai */

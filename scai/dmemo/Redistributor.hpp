@@ -42,7 +42,6 @@
 // local library
 #include <scai/dmemo/Distribution.hpp>
 #include <scai/dmemo/Halo.hpp>
-#include <scai/lama/UtilKernelTrait.hpp>
 
 // internal scai libraries
 #include <scai/hmemo/HArray.hpp>
@@ -56,7 +55,7 @@
 namespace scai
 {
 
-namespace lama
+namespace dmemo
 {
 
 /** This class allows to create objects that handle redistributions of vector and
@@ -659,6 +658,6 @@ void Redistributor::exchangeVHalo( hmemo::HArray<ValueType>& targetHalo, const h
     delete comm.exchangeByPlanAsync( targetHalo, *mRequiredPlan, sourceHalo, *mProvidesPlan );
 }
 
-} /* end namespace lama */
+} /* end namespace dmemo */
 
 } /* end namespace scai */

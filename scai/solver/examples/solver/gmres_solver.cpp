@@ -37,9 +37,8 @@
 #include <scai/lama/matrix/all.hpp>
 
 #include <scai/lama/DenseVector.hpp>
-#include <scai/dmemo/distribution/GenBlockDistribution.hpp>
+#include <scai/dmemo/GenBlockDistribution.hpp>
 #include <scai/lama/norm/L2Norm.hpp>
-// #include <scai/dmemo/distribution/MetisDistribution.hpp>
 
 #include <scai/solver/GMRES.hpp>
 #include <scai/solver/TrivialPreconditioner.hpp>
@@ -51,6 +50,7 @@
 
 using namespace std;
 using namespace scai;
+using namespace dmemo;
 using namespace lama;
 using namespace solver;
 using common::unique_ptr;

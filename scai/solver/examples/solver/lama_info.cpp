@@ -88,9 +88,9 @@ void contextInfo()
 
 void communicatorInfo()
 {
-    using namespace scai::lama;
+    using namespace scai::dmemo;
 
-    vector<scai::lama::communicator::CommunicatorKind> values;  // string is create type for the factory
+    vector<communicator::CommunicatorKind> values;  // string is create type for the factory
 
     Communicator::getCreateValues( values );
 
@@ -209,7 +209,7 @@ void setupInfo()
 
 void distributionInfo()
 {
-    using namespace scai::lama;
+    using namespace scai::dmemo;
 
     vector<string> values;  // string is create type for the factory
 

@@ -41,6 +41,7 @@
 
 using namespace scai::lama;
 using namespace scai::hmemo;
+using namespace scai::dmemo;
 using scai::common::Exception;
 
 typedef boost::mpl::list<double, float> test_types;

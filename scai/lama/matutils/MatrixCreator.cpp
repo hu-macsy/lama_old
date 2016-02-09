@@ -296,7 +296,7 @@ void MatrixCreator<ValueType>::buildPoisson(
 
     // ToDo: take communicator from input set
 
-    scai::lama::CommunicatorPtr comm = Communicator::getCommunicator( communicator::MPI );
+    dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicator( dmemo::communicator::MPI );
 
     // get rank of this processor
 
@@ -304,22 +304,22 @@ void MatrixCreator<ValueType>::buildPoisson(
     {
         gridSize[0] = comm->getSize();
         gridRank[0] = comm->getRank();
-        BlockDistribution::getRange( dimLB[0], dimUB[0], dimX, gridRank[0], gridSize[0] );
+        dmemo::BlockDistribution::getRange( dimLB[0], dimUB[0], dimX, gridRank[0], gridSize[0] );
     }
     else if( dimension == 2 )
     {
         comm->factorize2( dimX, dimY, gridSize );
         comm->getGrid2Rank( gridRank, gridSize );
-        BlockDistribution::getRange( dimLB[0], dimUB[0], dimX, gridRank[0], gridSize[0] );
-        BlockDistribution::getRange( dimLB[1], dimUB[1], dimY, gridRank[1], gridSize[1] );
+        dmemo::BlockDistribution::getRange( dimLB[0], dimUB[0], dimX, gridRank[0], gridSize[0] );
+        dmemo::BlockDistribution::getRange( dimLB[1], dimUB[1], dimY, gridRank[1], gridSize[1] );
     }
     else if( dimension == 3 )
     {
         comm->factorize3( dimX, dimY, dimZ, gridSize );
         comm->getGrid3Rank( gridRank, gridSize );
-        BlockDistribution::getRange( dimLB[0], dimUB[0], dimX, gridRank[0], gridSize[0] );
-        BlockDistribution::getRange( dimLB[1], dimUB[1], dimY, gridRank[1], gridSize[1] );
-        BlockDistribution::getRange( dimLB[2], dimUB[2], dimZ, gridRank[2], gridSize[2] );
+        dmemo::BlockDistribution::getRange( dimLB[0], dimUB[0], dimX, gridRank[0], gridSize[0] );
+        dmemo::BlockDistribution::getRange( dimLB[1], dimUB[1], dimY, gridRank[1], gridSize[1] );
+        dmemo::BlockDistribution::getRange( dimLB[2], dimUB[2], dimZ, gridRank[2], gridSize[2] );
     }
 
     SCAI_LOG_INFO( logger,
@@ -390,8 +390,7 @@ void MatrixCreator<ValueType>::buildPoisson(
     SCAI_LOG_INFO( logger, *comm << ": has local " << localSize << " rows, nna = " << myNNA )
     // allocate and fill local part of the distributed matrix
 
-    DistributionPtr distribution = DistributionPtr(
-            new GeneralDistribution( globalSize, myGlobalIndexes, comm ) );
+    dmemo::DistributionPtr distribution( new dmemo::GeneralDistribution( globalSize, myGlobalIndexes, comm ) );
 
     SCAI_LOG_INFO( logger, "distribution = " << *distribution )
 
@@ -527,7 +526,7 @@ void MatrixCreator<ValueType>::fillRandom( Matrix& matrix, double density )
 
     // Shape and distribution of matrix is not changed
 
-    const Distribution& dist = matrix.getDistribution();
+    const dmemo::Distribution& dist = matrix.getDistribution();
 
     if( dist.getNumPartitions() == 1 )
     {
@@ -597,9 +596,9 @@ void MatrixCreator<ValueType>::buildRandom(
     const IndexType size,
     const double density )
 {
-    CommunicatorPtr comm = Communicator::getCommunicator( communicator::MPI );
+    dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicator( dmemo::communicator::MPI );
 
-    DistributionPtr dist( new BlockDistribution( size, comm ) );
+    dmemo::DistributionPtr dist( new dmemo::BlockDistribution( size, comm ) );
     matrix.allocate( dist, dist );
     fillRandom( matrix, density );
 }

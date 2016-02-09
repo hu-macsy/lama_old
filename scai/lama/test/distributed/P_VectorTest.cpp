@@ -64,6 +64,7 @@
 
 using namespace scai::lama;
 using namespace scai::hmemo;
+using namespace scai::dmemo;
 using scai::common::unique_ptr;
 using scai::common::scoped_array;
 using scai::common::shared_ptr;
@@ -79,7 +80,7 @@ struct P_VectorTestConfig
 {
     P_VectorTestConfig()
     {
-        comm = Communicator::getCommunicator( scai::lama::communicator::MPI ); // default communicator
+        comm = Communicator::getCommunicator();   // default communicator
         m_inputVectorBaseName = scai::test::Configuration::getPath() + "/testVector";
         m_formattedInputVectorBaseName = m_inputVectorBaseName + "Formatted";
         m_xdrDoubleInputVectorBaseName = m_inputVectorBaseName + "XDRDouble";

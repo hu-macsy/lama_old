@@ -50,7 +50,7 @@
 namespace scai
 {
 
-namespace lama
+namespace dmemo
 {
 
 /** This template class supports static polymorphism to define
@@ -287,6 +287,6 @@ private:
 
 };
 
-} /* end namespace lama */
+} /* end namespace dmemo */
 
 } /* end namespace scai */

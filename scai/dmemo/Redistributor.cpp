@@ -48,7 +48,7 @@ namespace scai
 using common::unique_ptr;
 using common::scoped_array;
 
-namespace lama
+namespace dmemo
 {
 
 SCAI_LOG_DEF_LOGGER( Redistributor::logger, "Redistributor" )
@@ -315,6 +315,6 @@ void Redistributor::buildRowPlans(
  IndexType n ) const;
  */
 
-} /* end namespace lama */
+} /* end namespace dmemo */
 
 } /* end namespace scai */

@@ -37,7 +37,7 @@
 namespace scai
 {
 
-namespace lama
+namespace dmemo
 {
 
 Distributed::Distributed( DistributionPtr distribution )
@@ -71,6 +71,6 @@ void Distributed::setDistributionPtr( DistributionPtr distributionPtr )
     mDistribution = distributionPtr;
 }
 
-} /* end namespace lama */
+} /* end namespace dmemo */
 
 } /* end namespace scai */

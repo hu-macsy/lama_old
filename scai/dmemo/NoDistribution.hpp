@@ -45,7 +45,7 @@
 namespace scai
 {
 
-namespace lama
+namespace dmemo
 {
 
 /** Distribution class that stands for a replicated distribution.
@@ -99,6 +99,6 @@ private:
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 };
 
-} /* end namespace lama */
+} /* end namespace dmemo */
 
 } /* end namespace scai */

@@ -61,7 +61,7 @@ using common::shared_ptr;
 using common::unique_ptr;
 using common::scoped_array;
 
-namespace lama
+namespace dmemo
 {
 
 const int MPICommunicator::defaultTag = 1;
@@ -1064,6 +1064,6 @@ communicator::CommunicatorKind MPICommunicator::createValue()
     return communicator::MPI;
 }
 
-} /* end namespace lama */
+} /* end namespace dmemo */
 
 } /* end namespace scai */

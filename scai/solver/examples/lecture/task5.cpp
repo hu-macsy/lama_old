@@ -10,7 +10,7 @@
 #include <scai/lama/DenseVector.hpp>
 #include <scai/dmemo/Communicator.hpp>
 
-#include <scai/dmemo/distribution/BlockDistribution.hpp>
+#include <scai/dmemo/BlockDistribution.hpp>
 
 #include <scai/solver/CG.hpp>
 #include <scai/solver/criteria/IterationCount.hpp>
@@ -21,6 +21,7 @@ using namespace scai;
 using namespace scai::lama;
 using namespace scai::solver;
 using namespace scai::hmemo;
+using namespace scai::dmemo;
 
 int main( int argc, char* argv[] )
 {

@@ -59,6 +59,7 @@
 #include <scai/common/preprocessor.hpp>
 
 using namespace scai::hmemo;
+using namespace scai::dmemo;
 
 namespace scai
 {

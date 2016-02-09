@@ -42,7 +42,7 @@
 namespace scai
 {
 
-namespace lama
+namespace dmemo
 {
 
 SCAI_LOG_DEF_LOGGER( BlockDistribution::logger, "Distribution.BlockDistribution" )
@@ -199,6 +199,6 @@ Distribution* BlockDistribution::create( const DistributionArguments arg )
     return new BlockDistribution( arg.globalSize, arg.communicator );
 }
 
-} /* end namespace lama */
+} /* end namespace dmemo */
 
 } /* end namespace scai */

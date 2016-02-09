@@ -48,7 +48,7 @@ using namespace std;
 namespace scai
 {
 
-namespace lama
+namespace dmemo
 {
 
 SCAI_LOG_DEF_LOGGER( NoCommunicator::logger, "Communicator.NoCommunicator" )
@@ -330,6 +330,6 @@ communicator::CommunicatorKind NoCommunicator::createValue()
     return communicator::NO;
 }
 
-} /* end namespace lama */
+} /* end namespace dmemo */
 
 } /* end namespace scai */

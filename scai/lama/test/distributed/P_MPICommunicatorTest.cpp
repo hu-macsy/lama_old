@@ -37,7 +37,7 @@
 #include <scai/lama/test/distributed/CommunicatorTest.hpp>
 #include <scai/lama/test/TestMacros.hpp>
 
-using namespace scai::lama;
+using namespace scai::dmemo;
 using namespace scai::hmemo;
 
 extern bool base_test_case;
@@ -53,7 +53,7 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.P_MPICommunicatorTest" );
 
 BOOST_AUTO_TEST_CASE( commonTestCases )
 {
-    CommunicatorTest communicatorTest( scai::lama::communicator::MPI );
+    CommunicatorTest communicatorTest( communicator::MPI );
 
     if ( base_test_case )
     {

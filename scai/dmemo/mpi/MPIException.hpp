@@ -42,7 +42,7 @@
 namespace scai
 {
 
-namespace lama
+namespace dmemo
 {
 
 class COMMON_DLL_IMPORTEXPORT MPIException: public common::Exception
@@ -53,6 +53,6 @@ public:
     virtual ~MPIException() throw ();
 };
 
-} /* end namespace lama */
+} /* end namespace dmemo */
 
 } /* end namespace scai */

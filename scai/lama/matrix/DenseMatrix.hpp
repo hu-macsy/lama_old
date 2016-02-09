@@ -101,14 +101,14 @@ public:
      * @param[in] rowDist   TODO[doxy] Complete Description.
      * @param[in] colDist   TODO[doxy] Complete Description.
      */
-    DenseMatrix( DistributionPtr rowDist, DistributionPtr colDist );
+    DenseMatrix( dmemo::DistributionPtr rowDist, dmemo::DistributionPtr colDist );
 
     /**
      * Constructor of a square unity matrix.
      *
      * @param[in] dist   TODO[doxy] Complete Description.
      */
-    explicit DenseMatrix( DistributionPtr dist );
+    explicit DenseMatrix( dmemo::DistributionPtr dist );
 
     /** Overwrites default copy constructor so it uses other copy constructor.
      *
@@ -143,7 +143,7 @@ public:
      *  The constructor with distributions is more convenient and might be more efficient
      *  due to less memory allocations as less temporary data is needed.
      */
-    DenseMatrix( const Matrix& other, DistributionPtr rowDistribution, DistributionPtr colDistribution );
+    DenseMatrix( const Matrix& other, dmemo::DistributionPtr rowDistribution, dmemo::DistributionPtr colDistribution );
 
     /** Constructs a dense matrix from another dense matrix with new distributions.
      *
@@ -154,8 +154,8 @@ public:
      */
     DenseMatrix(
         const DenseMatrix<ValueType>& other,
-        DistributionPtr rowDistribution,
-        DistributionPtr colDistribution );
+        dmemo::DistributionPtr rowDistribution,
+        dmemo::DistributionPtr colDistribution );
 
     /** Constructor of a dense matrix by local storage.
      *
@@ -166,7 +166,7 @@ public:
      *  This constructor works also fine if localData is the full global matrix;
      *  in this case only local rows will be taken on this processor.
      */
-    DenseMatrix( const _MatrixStorage& localData, DistributionPtr rowDist, DistributionPtr colDist );
+    DenseMatrix( const _MatrixStorage& localData, dmemo::DistributionPtr rowDist, dmemo::DistributionPtr colDist );
 
     /**
      * Constructor of a replicated dense matrix from the passed csr sparse matrix.
@@ -267,7 +267,7 @@ public:
 
     /** Implementation of pure method Matrix::setIdentity. */
 
-    virtual void setIdentity( DistributionPtr distribution );
+    virtual void setIdentity( dmemo::DistributionPtr distribution );
 
     /**
      *  Implementation for Matrix::readFromFile
@@ -277,16 +277,16 @@ public:
     /** Implementation of pure Matrix::setDenseData */
 
     virtual void setDenseData(
-        DistributionPtr rowDistribution,
-        DistributionPtr colDistribution,
+        dmemo::DistributionPtr rowDistribution,
+        dmemo::DistributionPtr colDistribution,
         const hmemo::_HArray& values,
         const Scalar eps );
 
     /** Implementation for pure method Matrix::setCSRData. */
 
     virtual void setCSRData(
-        DistributionPtr rowDist,
-        DistributionPtr colDist,
+        dmemo::DistributionPtr rowDist,
+        dmemo::DistributionPtr colDist,
         const IndexType numValues,
         const hmemo::HArray<IndexType>& ia,
         const hmemo::HArray<IndexType>& ja,
@@ -302,8 +302,8 @@ public:
         const hmemo::HArray<IndexType>& rowIA,
         const hmemo::HArray<IndexType>& rowJA,
         const hmemo::_HArray& rowValues,
-        DistributionPtr rowDistribution,
-        DistributionPtr colDistribution );
+        dmemo::DistributionPtr rowDistribution,
+        dmemo::DistributionPtr colDistribution );
 
     /** Local version of setCSRData . */
 
@@ -322,7 +322,7 @@ public:
 
     /* Implementation of pure method of class Matrix. */
 
-    virtual void allocate( DistributionPtr rowDistribution, DistributionPtr colDistribution );
+    virtual void allocate( dmemo::DistributionPtr rowDistribution, dmemo::DistributionPtr colDistribution );
 
     /* Implementation of pure method of class Matrix. */
 
@@ -354,7 +354,7 @@ public:
 
     /* Implementation of pure method of class Matrix. */
 
-    virtual void assign( const _MatrixStorage& storage, DistributionPtr rowDist, DistributionPtr colDist );
+    virtual void assign( const _MatrixStorage& storage, dmemo::DistributionPtr rowDist, dmemo::DistributionPtr colDist );
 
     /** @brief TODO[doxy] Complete Description.
      *
@@ -368,7 +368,7 @@ public:
 
     /* Implementation of pure method of class Matrix. */
 
-    void redistribute( DistributionPtr rowDistribution, DistributionPtr colDistribution );
+    void redistribute( dmemo::DistributionPtr rowDistribution, dmemo::DistributionPtr colDistribution );
 
     /* Implementation of pure method of class Matrix. */
 
@@ -640,7 +640,7 @@ private:
     static void localize(
         DenseStorage<ValueType>& local,
         const DenseStorage<ValueType>& global,
-        const Distribution& rowDistribution );
+        const dmemo::Distribution& rowDistribution );
 
     /** Copy a dense matrix with different data type; inherits sizes and distributions */
 
@@ -652,11 +652,11 @@ private:
     template<typename OtherT>
     void getDiagonalImpl( DenseVector<OtherT>& diagonal ) const;
 
-    void redistributeRows( DistributionPtr rowDistribution );
+    void redistributeRows( dmemo::DistributionPtr rowDistribution );
 
     /** Split the replicated columns into chunks according to the column distribution. */
 
-    void splitColumns( DistributionPtr colDistribution );
+    void splitColumns( dmemo::DistributionPtr colDistribution );
 
     mutable hmemo::HArray<ValueType> mSendValues;
     mutable hmemo::HArray<ValueType> mReceiveValues;

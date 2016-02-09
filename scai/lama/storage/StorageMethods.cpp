@@ -49,10 +49,11 @@
 // std
 #include <algorithm>
 
-using namespace scai::hmemo;
-
 namespace scai
 {
+
+using namespace hmemo;
+using namespace dmemo;
 
 namespace lama
 {

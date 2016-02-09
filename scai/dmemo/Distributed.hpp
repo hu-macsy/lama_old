@@ -44,7 +44,7 @@
 namespace scai
 {
 
-namespace lama
+namespace dmemo
 {
 
 /** Common base class for all objects that are distributed.
@@ -91,6 +91,6 @@ DistributionPtr Distributed::getDistributionPtr() const
     return mDistribution;
 }
 
-} /* end namespace lama */
+} /* end namespace dmemo */
 
 } /* end namespace scai */

@@ -50,7 +50,7 @@ class CommunicatorTest
 {
 public:
 
-    CommunicatorTest( const scai::lama::communicator::CommunicatorKind ct );
+    CommunicatorTest( const scai::dmemo::communicator::CommunicatorKind ct );
     ~CommunicatorTest();
 
     void CommunicatorCtrTest();
@@ -74,9 +74,9 @@ public:
     void runTests();
 
 private:
-    scai::lama::communicator::CommunicatorKind mCommunicatorType;
+    scai::dmemo::communicator::CommunicatorKind mCommunicatorType;
 
-    scai::lama::CommunicatorPtr comm;
+    scai::dmemo::CommunicatorPtr comm;
     PartitionId rank;
     PartitionId size;
 };

@@ -46,7 +46,7 @@
 namespace scai
 {
 
-namespace lama
+namespace dmemo
 {
 
 SCAI_LOG_DEF_LOGGER( GeneralDistribution::logger, "Distribution.General" )
@@ -315,6 +315,6 @@ void GeneralDistribution::printDistributionVector( std::string /*name*/) const
 //    }
 }
 
-} /* end namespace lama */
+} /* end namespace dmemo */
 
 } /* end namespace scai */

@@ -39,7 +39,7 @@
 #include <scai/lama/test/TestMacros.hpp>
 #include <scai/lama/test/distributed/DistributionTest.hpp>
 
-using namespace scai::lama;
+using namespace scai::dmemo;
 
 extern bool base_test_case;
 extern std::string testcase;
@@ -52,7 +52,7 @@ struct GeneralDistributionTestConfig
 {
     GeneralDistributionTestConfig()
     {
-        comm = Communicator::getCommunicator( scai::lama::communicator::MPI );
+        comm = Communicator::getCommunicator();
         rank = comm->getRank();
         size = comm->getSize();
         elemsPerPartition = 10;

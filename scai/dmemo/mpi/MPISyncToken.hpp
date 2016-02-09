@@ -46,7 +46,7 @@
 namespace scai
 {
 
-namespace lama
+namespace dmemo
 {
 
 /** Class for MPI synchronization that waits on pending messages. */
@@ -91,6 +91,6 @@ private:
     common::scoped_array<MPI_Status> mStatuses;
 };
 
-} /* end namespace lama */
+} /* end namespace dmemo */
 
 } /* end namespace scai */

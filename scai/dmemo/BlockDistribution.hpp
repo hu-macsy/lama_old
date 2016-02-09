@@ -42,7 +42,7 @@
 namespace scai
 {
 
-namespace lama
+namespace dmemo
 {
 
 /** Block distribution in contiguous chunks of same size for each partition.
@@ -126,6 +126,6 @@ private:
     IndexType mUB;//!< upper bound value of local range
 };
 
-} /* end namespace lama */
+} /* end namespace dmemo */
 
 } /* end namespace scai */

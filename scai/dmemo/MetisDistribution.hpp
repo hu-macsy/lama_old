@@ -48,7 +48,7 @@
 namespace scai
 {
 
-namespace lama
+namespace dmemo
 {
 
 /** Metis creates a distribution with load balance in the pieces and less communication volume
@@ -120,6 +120,6 @@ private:
     void normWeights( std::vector<float>& weights );
 };
 
-} /* end namespace lama */
+} /* end namespace dmemo */
 
 } /* end namespace scai */

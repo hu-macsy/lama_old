@@ -50,7 +50,7 @@ class DistributionTest
 {
 public:
 
-    DistributionTest( scai::lama::DistributionPtr& dist )
+    DistributionTest( scai::dmemo::DistributionPtr& dist )
         : mDistributionPtr( dist )
     {
     }
@@ -64,7 +64,7 @@ public:
     void runTests();
 
 private:
-    const scai::lama::DistributionPtr& mDistributionPtr;
+    const scai::dmemo::DistributionPtr& mDistributionPtr;
 };
 
 #define DISTRIBUTION_COMMONTESTCASES( testinstance )                        \

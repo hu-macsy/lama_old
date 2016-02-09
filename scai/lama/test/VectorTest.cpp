@@ -63,6 +63,7 @@
 using namespace scai::common;
 using namespace scai::lama;
 using namespace scai::hmemo;
+using namespace scai::dmemo;
 using scai::common::Exception;
 
 #if ARITHMETIC_HOST_TYPE_CNT == 1

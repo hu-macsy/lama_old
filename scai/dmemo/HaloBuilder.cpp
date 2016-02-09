@@ -44,7 +44,7 @@ using namespace scai::hmemo;
 namespace scai
 {
 
-namespace lama
+namespace dmemo
 {
 
 SCAI_LOG_DEF_LOGGER( HaloBuilder::logger, "Halo.Builder" )
@@ -185,6 +185,6 @@ void HaloBuilder::build( const Distribution& distribution, const std::vector<Ind
     }
 }
 
-} /* end namespace lama */
+} /* end namespace dmemo */
 
 } /* end namespace scai */

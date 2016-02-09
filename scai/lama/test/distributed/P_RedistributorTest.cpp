@@ -43,6 +43,7 @@
 
 using namespace scai::lama;
 using namespace scai::hmemo;
+using namespace scai::dmemo;
 using namespace scai::common;
 
 typedef boost::mpl::list<double, float> test_types;

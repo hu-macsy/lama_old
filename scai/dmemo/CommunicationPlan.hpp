@@ -51,7 +51,7 @@
 namespace scai
 {
 
-namespace lama
+namespace dmemo
 {
 
 class Communicator;
@@ -267,6 +267,6 @@ IndexType CommunicationPlan::totalQuantity() const
     return mQuantity;
 }
 
-} /* end namespace lama */
+} /* end namespace dmemo */
 
 } /* end namespace scai */

@@ -42,7 +42,7 @@
 namespace scai
 {
 
-namespace lama
+namespace dmemo
 {
 
 SCAI_LOG_DEF_LOGGER( CyclicDistribution::logger, "Distribution.CyclicDistribution" )
@@ -304,6 +304,6 @@ Distribution* CyclicDistribution::create( const DistributionArguments arg )
     return new CyclicDistribution( arg.globalSize, 1, arg.communicator );
 }
 
-} /* end namespace lama */
+} /* end namespace dmemo */
 
 } /* end namespace scai */

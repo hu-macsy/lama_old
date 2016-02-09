@@ -61,10 +61,11 @@
 #include <scai/common/exception/UnsupportedException.hpp>
 #include <scai/common/preprocessor.hpp>
 
-using namespace scai::hmemo;
-
 namespace scai
 {
+
+using namespace hmemo;
+using namespace dmemo;
 
 using tasking::SyncToken;
 using tasking::TaskSyncToken;

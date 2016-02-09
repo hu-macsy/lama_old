@@ -42,7 +42,7 @@
 namespace scai
 {
 
-namespace lama
+namespace dmemo
 {
 
 SCAI_LOG_DEF_LOGGER( NoDistribution::logger, "Distribution.NoDistribution" )
@@ -117,6 +117,6 @@ Distribution* NoDistribution::create( const DistributionArguments arg )
     return new NoDistribution( arg.globalSize );
 }
 
-} /* end namespace lama */
+} /* end namespace dmemo */
 
 } /* end namespace scai */

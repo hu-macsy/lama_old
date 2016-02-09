@@ -43,7 +43,7 @@
 namespace scai
 {
 
-namespace lama
+namespace dmemo
 {
 
 /* ------------------------------------------------------------------------- */
@@ -388,6 +388,6 @@ void CommunicationPlan::writeAt( std::ostream& stream ) const
     stream << ")";
 }
 
-} /* end namespace lama */
+} /* end namespace dmemo */
 
 } /* end namespace scai */

@@ -55,7 +55,7 @@ namespace scai
 using namespace hmemo;
 using common::TypeTraits;
 
-namespace lama
+namespace dmemo
 {
 
 /* ------  Static class variables --------------------------------------- */
@@ -591,6 +591,6 @@ BOOST_PP_REPEAT( ARRAY_TYPE_CNT, LAMA_DISTRIBUTE_INSTANTIATE, _ )
 
 /* ---------------------------------------------------------------------- */
 
-} /* end namespace lama */
+} /* end namespace dmemo */
 
 } /* end namespace scai */

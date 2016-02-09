@@ -43,7 +43,7 @@
 namespace scai
 {
 
-namespace lama
+namespace dmemo
 {
 
 class COMMON_DLL_IMPORTEXPORT HaloBuilder
@@ -56,6 +56,6 @@ private:
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 };
 
-} /* end namespace lama */
+} /* end namespace dmemo */
 
 } /* end namespace scai */

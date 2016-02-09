@@ -51,6 +51,7 @@
 
 using namespace scai::common;
 using namespace scai::hmemo;
+using namespace scai::dmemo;
 
 namespace scai
 {

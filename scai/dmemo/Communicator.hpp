@@ -68,7 +68,7 @@ namespace hmemo
 	template<typename ValueType> class HArray;
 }
 
-namespace lama
+namespace dmemo
 {
 
 // Forward declaration of all classes that are used in the interface
@@ -846,6 +846,6 @@ tasking::SyncToken* Communicator::exchangeByPlanAsync(
     return token;
 }
 
-} /* end namespace lama */
+} /* end namespace dmemo */
 
 } /* end namespace scai */

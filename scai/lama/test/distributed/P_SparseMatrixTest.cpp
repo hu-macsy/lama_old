@@ -58,6 +58,7 @@
 
 using namespace scai::lama;
 using namespace scai::hmemo;
+using namespace scai::dmemo;
 
 /* --------------------------------------------------------------------- */
 
@@ -85,7 +86,7 @@ LAMA_COMMON_TEST_CASE_TEMPLATE( P_SparseMatrixTest, MatrixType, cTorTest )
     SCAI_LOG_INFO( logger, "cTorTest" );
     typedef typename MatrixType::MatrixValueType ValueType;
     const IndexType n = 4;
-    CommunicatorPtr comm = Communicator::getCommunicator( scai::lama::communicator::MPI );
+    CommunicatorPtr comm = Communicator::getCommunicator();
     DistributionPtr dist( new BlockDistribution( n, comm ) );
     CSRSparseMatrix<double> matrix( dist, dist );
     BOOST_CHECK_EQUAL( matrix.getNumRows() , n );

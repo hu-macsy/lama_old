@@ -53,7 +53,7 @@
 namespace scai
 {
 
-namespace lama
+namespace dmemo
 {
 
 /** The halo is an internal data structure that describes the
@@ -185,6 +185,6 @@ bool Halo::isEmpty() const
     return ( mRequiredPlan.totalQuantity() == 0 ) && ( mProvidesPlan.totalQuantity() == 0 );
 }
 
-} /* end namespace lama */
+} /* end namespace dmemo */
 
 } /* end namespace scai */

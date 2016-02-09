@@ -39,6 +39,7 @@
 
 using namespace scai::lama;
 using namespace scai::hmemo;
+using namespace scai::dmemo;
 
 extern bool base_test_case;
 extern std::string testcase;
@@ -53,7 +54,7 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.NoCommunicatorTest" )
 
 BOOST_AUTO_TEST_CASE( commonTestCases )
 {
-    CommunicatorTest communicatorTest( scai::lama::communicator::NO );
+    CommunicatorTest communicatorTest( communicator::NO );
 
     if ( base_test_case )
     {

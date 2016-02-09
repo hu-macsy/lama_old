@@ -48,7 +48,7 @@
 #include <scai/lama/matrix/COOSparseMatrix.hpp>
 #include <scai/lama/matrix/DenseMatrix.hpp>
 
-#include <scai/dmemo/distribution/BlockDistribution.hpp>
+#include <scai/dmemo/BlockDistribution.hpp>
 
 #include <scai/lama/norm/MaxNorm.hpp>
 
@@ -62,6 +62,7 @@
 using namespace scai::solver;
 using namespace scai::lama;
 using namespace scai::hmemo;
+using namespace scai::dmemo;
 
 typedef boost::mpl::list<float, double> test_types;
 
@@ -73,7 +74,7 @@ struct P_CGTestConfig
 {
     P_CGTestConfig()
     {
-        comm = Communicator::getCommunicator( scai::lama::communicator::MPI );
+        comm = Communicator::getCommunicator();
     }
 
     ~P_CGTestConfig()

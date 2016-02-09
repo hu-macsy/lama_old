@@ -48,7 +48,7 @@
 namespace scai
 {
 
-namespace lama
+namespace dmemo
 {
 
 SCAI_LOG_DEF_LOGGER( GenBlockDistribution::logger, "Distribution.GenBlockDistribution" )
@@ -374,6 +374,6 @@ Distribution* GenBlockDistribution::create( const DistributionArguments arg )
 }
 
 
-} /* end namespace lama */
+} /* end namespace dmemo */
 
 } /* end namespace scai */

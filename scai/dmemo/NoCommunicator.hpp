@@ -40,7 +40,7 @@
 namespace scai
 {
 
-namespace lama
+namespace dmemo
 {
 
 /** The class NoCommunicator stands for objects that are replicated on each
@@ -176,6 +176,6 @@ public:
     static communicator::CommunicatorKind createValue();
 };
 
-} /* end namespace lama */
+} /* end namespace dmemo */
 
 } /* end namespace scai */

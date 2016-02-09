@@ -45,7 +45,7 @@
 namespace scai
 {
 
-namespace lama
+namespace dmemo
 {
 
 /** Derived distribution class for general block distributions.
@@ -181,6 +181,6 @@ private:
     IndexType mLB, mUB;//!< local range of full size in global values
 };
 
-} /* end namespace lama */
+} /* end namespace dmemo */
 
 } /* end namespace scai */
