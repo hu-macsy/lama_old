@@ -169,8 +169,3 @@ message ( STATUS "" )
 if    ( USE_CUDA AND NOT CUDA_FOUND )
     message( FATAL_ERROR "Build of LAMA Cuda enabled, but configuration is incomplete!")
 endif ( USE_CUDA AND NOT CUDA_FOUND )
-
-# LAMA Test
-if    ( BUILD_TEST AND NOT ( Boost_UNIT_TEST_FRAMEWORK_FOUND AND Boost_REGEX_FOUND ) )
-    message( FATAL_ERROR "Build of LAMA Test enabled, but configuration is incomplete!")
-endif ( BUILD_TEST AND NOT ( Boost_UNIT_TEST_FRAMEWORK_FOUND AND Boost_REGEX_FOUND ) )

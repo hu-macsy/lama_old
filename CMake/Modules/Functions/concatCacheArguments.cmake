@@ -36,9 +36,14 @@ macro    ( concatCacheArguments MODULE CONCATLIST )
 	string ( TOUPPER ${MODULE} upper_module )
 
 	set ( ${CONCATLIST} "" )
-	foreach    ( package ${${upper_module}_EXTERNAL_DEPS} )
+	set ( DEP_LIST ${${upper_module}_EXTERNAL_DEPS} )
+	if     ( NOT CXX_SUPPORTS_C11 OR BUILD_TEST )
+		set ( DEP_LIST ${DEP_LIST} Boost )
+	endif  ( NOT CXX_SUPPORTS_C11 OR BUILD_TEST )
+
+	foreach    ( package ${DEP_LIST} )
 		string ( TOUPPER ${package} upper_package )
 		set ( ${CONCATLIST} ${${CONCATLIST}} ${${upper_package}_ARGS} )
-	endforeach ( package ${${upper_module}_EXTERNAL_DEPS} )
+	endforeach ( package ${DEP_LIST} )
 
 endmacro ( concatCacheArguments )
