@@ -95,7 +95,7 @@ scai_summary_message ( "STATIC"
 message ( STATUS "" )
 
 scai_status_message ( HEADLINE "INFO:" )
-message ( STATUS "LAMA Version : ${LAMA_VERSION} ${LAMA_VERSION_NAME}" )
+message ( STATUS "Logging Version : ${SCAI_LOGGING_VERSION} ${SCAI_VERSION_NAME}" )
 message ( STATUS "Build Type   : ${CMAKE_BUILD_TYPE}" )
 message ( STATUS "Library Type : ${SCAI_LIBRARY_TYPE}" )
 message ( STATUS "ASSERT Level : ${SCAI_ASSERT_LEVEL} ( -DSCAI_ASSERT_LEVEL_${SCAI_ASSERT_LEVEL} )" )

@@ -106,7 +106,7 @@ scai_summary_message ( "FOUND"
 message ( STATUS "" )
 
 scai_status_message ( HEADLINE "INFO:" )
-message ( STATUS "LAMA Version : ${LAMA_VERSION} ${LAMA_VERSION_NAME}" )
+message ( STATUS "Tracing Version : ${SCAI_TRACING_VERSION} ${SCAI_VERSION_NAME}" )
 message ( STATUS "Build Type   : ${CMAKE_BUILD_TYPE}" )
 message ( STATUS "Library Type : ${SCAI_LIBRARY_TYPE}" )
 message ( STATUS "ASSERT Level : ${SCAI_ASSERT_LEVEL} ( -DSCAI_ASSERT_LEVEL_${SCAI_ASSERT_LEVEL} )" )
