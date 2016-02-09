@@ -41,7 +41,7 @@
 #include <scai/lama/storage/JDSStorage.hpp>
 #include <scai/lama/storage/DenseStorage.hpp>
 
-#include <scai/lama/distribution/NoDistribution.hpp>
+#include <scai/dmemo/distribution/NoDistribution.hpp>
 
 #include <scai/lama/test/cuda/CUDATestContext.hpp>
 

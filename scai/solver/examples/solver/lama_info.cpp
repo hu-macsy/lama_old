@@ -39,9 +39,11 @@
 #include <scai/lama/expression/all.hpp>
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 #include <scai/lama/matutils/MatrixCreator.hpp>
-#include <scai/lama/NoCommunicator.hpp>
+
 #include <scai/solver/Solver.hpp>
 #include <scai/solver/AMGSetup.hpp>
+
+#include <scai/dmemo/NoCommunicator.hpp>
 
 #include <scai/common/ContextType.hpp>
 #include <scai/common/shared_ptr.hpp>

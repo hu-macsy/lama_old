@@ -48,8 +48,8 @@
 #include <scai/lama/matrix/COOSparseMatrix.hpp>
 #include <scai/lama/matrix/DenseMatrix.hpp>
 
-#include <scai/lama/distribution/BlockDistribution.hpp>
-#include <scai/lama/Communicator.hpp>
+#include <scai/dmemo/distribution/BlockDistribution.hpp>
+#include <scai/dmemo/Communicator.hpp>
 
 #include <scai/lama/norm/MaxNorm.hpp>
 

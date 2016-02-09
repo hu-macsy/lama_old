@@ -36,7 +36,7 @@
 #include <scai/lama/matrix/all.hpp>
 
 #include <scai/lama/DenseVector.hpp>
-#include <scai/lama/distribution/GenBlockDistribution.hpp>
+#include <scai/dmemo/distribution/GenBlockDistribution.hpp>
 #include <scai/lama/norm/L2Norm.hpp>
 
 #include <scai/solver/GMRES.hpp>

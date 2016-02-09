@@ -40,8 +40,8 @@
 
 // local library
 #include <scai/lama/LArray.hpp>
-#include <scai/lama/distribution/Distribution.hpp>
-#include <scai/lama/distribution/Halo.hpp>
+#include <scai/dmemo/distribution/Distribution.hpp>
+#include <scai/dmemo/distribution/Halo.hpp>
 
 #include <scai/lama/io/mmio.hpp>
 #include <scai/lama/io/FileType.hpp>

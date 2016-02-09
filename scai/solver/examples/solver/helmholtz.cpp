@@ -37,7 +37,7 @@
 
 #include <scai/lama/DenseVector.hpp>
 #include <scai/lama/Communicator.hpp>
-#include <scai/lama/distribution/GenBlockDistribution.hpp>
+#include <scai/dmemo/distribution/GenBlockDistribution.hpp>
 
 #include <scai/lama/solver/CGNR.hpp>
 #include <scai/lama/solver/CG.hpp>

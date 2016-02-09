@@ -33,7 +33,7 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include <scai/lama/Communicator.hpp>
+#include <scai/dmemo/Communicator.hpp>
 
 /* --------------------------------------------------------------------- */
 

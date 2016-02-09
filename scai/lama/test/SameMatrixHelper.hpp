@@ -35,8 +35,8 @@
 
 #include <scai/lama/matrix/Matrix.hpp>
 
-#include <scai/lama/distribution/Distribution.hpp>
-#include <scai/lama/distribution/NoDistribution.hpp>
+#include <scai/dmemo/distribution/Distribution.hpp>
+#include <scai/dmemo/distribution/NoDistribution.hpp>
 
 #include <scai/lama/DenseVector.hpp>
 

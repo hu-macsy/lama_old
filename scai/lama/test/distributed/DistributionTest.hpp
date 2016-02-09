@@ -35,7 +35,7 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include <scai/lama/distribution/Distribution.hpp>
+#include <scai/dmemo/distribution/Distribution.hpp>
 
 static std::string distclasses[] =
 {

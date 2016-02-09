@@ -37,9 +37,9 @@
 #include <scai/lama/matrix/all.hpp>
 
 #include <scai/lama/DenseVector.hpp>
-#include <scai/lama/distribution/GenBlockDistribution.hpp>
+#include <scai/dmemo/distribution/GenBlockDistribution.hpp>
 #include <scai/lama/norm/L2Norm.hpp>
-// #include <scai/lama/distribution/MetisDistribution.hpp>
+// #include <scai/dmemo/distribution/MetisDistribution.hpp>
 
 #include <scai/solver/GMRES.hpp>
 #include <scai/solver/TrivialPreconditioner.hpp>

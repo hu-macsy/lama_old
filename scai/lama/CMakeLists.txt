@@ -110,12 +110,8 @@ scai_project (
 
     CLASSES                  # .cpp, .hpp
 
-        CommunicationPlan
-        Communicator
         DenseVector
-        Distributed
         HArrayUtils
-        NoCommunicator
         StorageIO
         Vector
 
@@ -134,8 +130,6 @@ scai_project (
         LAMAArrayRef
 
         Scalar
-
-        CRTPCommunicator
     )
 
 ### add subdirectories
@@ -145,7 +139,6 @@ if ( CUDA_FOUND AND USE_CUDA AND CUDA_HAVE_GPU )
     set ( CXX_SOURCES ${CXX_SOURCES} ${CUDA_FILES} )
 endif ( CUDA_FOUND AND USE_CUDA AND CUDA_HAVE_GPU )
 
-add_subdirectory ( distribution )
 add_subdirectory ( doc )
 add_subdirectory( examples )
 add_subdirectory ( expression )
@@ -161,10 +154,6 @@ add_subdirectory ( matutils )
 if ( USE_MIC )
     add_subdirectory ( mic )
 endif ( USE_MIC )
-
-if ( MPI_FOUND AND USE_MPI )
-    add_subdirectory ( mpi )
-endif ( MPI_FOUND AND USE_MPI )
 
 add_subdirectory ( norm )
 add_subdirectory ( openmp )
@@ -191,11 +180,6 @@ addInternalAndExternalLinkLibraries()
 if    ( GPI2_FOUND AND IBVERBS_FOUND AND USE_GPI2 )
     target_link_libraries ( ${PROJECT_NAME} ${GPI2_LIBRARIES} ${IBVERBS_LIBRARIES} )
 endif ( GPI2_FOUND AND IBVERBS_FOUND AND USE_GPI2 )
-
-if ( SCALAPACK_FOUND AND MPI_FOUND AND USE_MPI )
-    target_link_libraries ( ${PROJECT_NAME} ${SCAI_PBLAS_LIBRARIES} )
-    add_definitions( -DSCAI_MKL_SCALAPACK ) ## TODO: where used?!
-endif ( SCALAPACK_FOUND AND MPI_FOUND AND USE_MPI )
 
 if ( USE_MIC )
     set ( MKLROOT $ENV{MKLROOT} )

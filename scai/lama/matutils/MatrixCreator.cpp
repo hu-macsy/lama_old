@@ -35,8 +35,8 @@
 #include <scai/lama/matutils/MatrixCreator.hpp>
 
 // local library
-#include <scai/lama/distribution/BlockDistribution.hpp>
-#include <scai/lama/distribution/GeneralDistribution.hpp>
+#include <scai/dmemo/distribution/BlockDistribution.hpp>
+#include <scai/dmemo/distribution/GeneralDistribution.hpp>
 
 // internal scai libraries
 #include <scai/hmemo/WriteAccess.hpp>

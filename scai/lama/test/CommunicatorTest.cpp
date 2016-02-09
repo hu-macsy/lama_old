@@ -35,11 +35,11 @@
 
 #include <scai/lama/test/TestMacros.hpp>
 
-#include <scai/lama/Communicator.hpp>
+#include <scai/dmemo/Communicator.hpp>
 
-#include <scai/lama/distribution/HaloBuilder.hpp>
-#include <scai/lama/distribution/GeneralDistribution.hpp>
-#include <scai/lama/distribution/BlockDistribution.hpp>
+#include <scai/dmemo/distribution/HaloBuilder.hpp>
+#include <scai/dmemo/distribution/GeneralDistribution.hpp>
+#include <scai/dmemo/distribution/BlockDistribution.hpp>
 
 #include <scai/common/unique_ptr.hpp>
 #include <scai/common/SCAITypes.hpp>

@@ -35,7 +35,7 @@
 #include <boost/mpl/list.hpp>
 
 #include <scai/lama/DenseVector.hpp>
-#include <scai/lama/distribution/BlockDistribution.hpp>
+#include <scai/dmemo/distribution/BlockDistribution.hpp>
 
 #include <scai/lama/test/EquationHelper.hpp>
 #include <scai/lama/test/TestMacros.hpp>

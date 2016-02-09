@@ -43,7 +43,7 @@
 
 #include <scai/lama/storage/StorageMethods.hpp>
 
-#include <scai/lama/distribution/Redistributor.hpp>
+#include <scai/dmemo/distribution/Redistributor.hpp>
 
 #include <scai/lama/openmp/OpenMPUtils.hpp>
 #include <scai/lama/openmp/OpenMPCSRUtils.hpp>

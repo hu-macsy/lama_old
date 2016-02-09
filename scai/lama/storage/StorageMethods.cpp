@@ -34,9 +34,9 @@
 #include <scai/lama/storage/StorageMethods.hpp>
 
 // local library
-#include <scai/lama/distribution/Distribution.hpp>
-#include <scai/lama/distribution/HaloBuilder.hpp>
-#include <scai/lama/distribution/Redistributor.hpp>
+#include <scai/dmemo/distribution/Distribution.hpp>
+#include <scai/dmemo/distribution/HaloBuilder.hpp>
+#include <scai/dmemo/distribution/Redistributor.hpp>
 
 #include <scai/lama/openmp/OpenMPCSRUtils.hpp>
 

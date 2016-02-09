@@ -43,9 +43,9 @@
 #include <scai/lama/storage/MatrixStorage.hpp>
 #include <scai/lama/storage/CSRStorage.hpp>
 
-#include <scai/lama/distribution/NoDistribution.hpp>
-#include <scai/lama/distribution/CyclicDistribution.hpp>
-#include <scai/lama/distribution/Redistributor.hpp>
+#include <scai/dmemo/distribution/NoDistribution.hpp>
+#include <scai/dmemo/distribution/CyclicDistribution.hpp>
+#include <scai/dmemo/distribution/Redistributor.hpp>
 
 #include <scai/lama/UtilKernelTrait.hpp>
 #include <scai/lama/CSRKernelTrait.hpp>

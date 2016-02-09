@@ -43,12 +43,10 @@
 #include <scai/lama/DenseVector.hpp>
 #include <scai/lama/Scalar.hpp>
 
-#include <scai/lama/distribution/BlockDistribution.hpp>
-#include <scai/lama/distribution/CyclicDistribution.hpp>
+#include <scai/dmemo/distribution/BlockDistribution.hpp>
+#include <scai/dmemo/distribution/CyclicDistribution.hpp>
 
 #include <scai/lama/test/TestSparseMatrices.hpp>
-
-#include <scai/lama/NoCommunicator.hpp>
 
 #include <scai/lama/expression/MatrixVectorExpressions.hpp>
 #include <scai/lama/expression/MatrixExpressions.hpp>

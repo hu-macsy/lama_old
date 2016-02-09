@@ -34,9 +34,9 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/mpl/list.hpp>
 
-#include <scai/lama/distribution/Halo.hpp>
-#include <scai/lama/distribution/HaloBuilder.hpp>
-#include <scai/lama/distribution/Redistributor.hpp>
+#include <scai/dmemo/distribution/Halo.hpp>
+#include <scai/dmemo/distribution/HaloBuilder.hpp>
+#include <scai/dmemo/distribution/Redistributor.hpp>
 
 #include <scai/lama/storage/DenseStorage.hpp>
 #include <scai/lama/storage/CSRStorage.hpp>
@@ -45,8 +45,8 @@
 #include <scai/lama/storage/DIAStorage.hpp>
 #include <scai/lama/storage/ELLStorage.hpp>
 
-#include <scai/lama/distribution/BlockDistribution.hpp>
-#include <scai/lama/distribution/CyclicDistribution.hpp>
+#include <scai/dmemo/distribution/BlockDistribution.hpp>
+#include <scai/dmemo/distribution/CyclicDistribution.hpp>
 
 #include <scai/lama/test/TestMacros.hpp>
 

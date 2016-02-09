@@ -46,8 +46,8 @@
 #include <scai/lama/matrix/DIASparseMatrix.hpp>
 #include <scai/lama/matrix/COOSparseMatrix.hpp>
 
-#include <scai/lama/distribution/BlockDistribution.hpp>
-#include <scai/lama/Communicator.hpp>
+#include <scai/dmemo/distribution/BlockDistribution.hpp>
+#include <scai/dmemo/Communicator.hpp>
 
 #include <scai/lama/norm/L2Norm.hpp>
 

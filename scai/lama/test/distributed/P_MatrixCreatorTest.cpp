@@ -36,7 +36,7 @@
 
 #include <scai/lama/test/TestMacros.hpp>
 
-#include <scai/lama/distribution/BlockDistribution.hpp>
+#include <scai/dmemo/distribution/BlockDistribution.hpp>
 #include <scai/lama/matutils/MatrixCreator.hpp>
 
 using namespace scai::lama;

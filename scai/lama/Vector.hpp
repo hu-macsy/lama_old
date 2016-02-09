@@ -36,7 +36,7 @@
 #include <scai/common/config.hpp>
 
 // base classes
-#include <scai/lama/Distributed.hpp>
+#include <scai/dmemo/Distributed.hpp>
 
 // local library
 #include <scai/lama/expression/Expression.hpp>

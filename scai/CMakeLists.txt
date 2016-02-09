@@ -217,6 +217,18 @@ ExternalProject_Add ( scai_blaskernel
 	    	BINARY_DIR blaskernel
             )
 
+concatCacheArguments ( scai_dmemo "CACHE_ARGS" )
+#message ( STATUS "lama CACHE_ARGS ${CACHE_ARGS}" )
+
+ExternalProject_Add ( scai_dmemo
+            DEPENDS ${SCAI_DMEMO_INTERNAL_DEPS}
+            PREFIX dmemo
+            SOURCE_DIR ${CMAKE_SOURCE_DIR}/dmemo
+            CMAKE_ARGS "-DSCAI_COMPLETE_BUILD=1"
+            CMAKE_CACHE_ARGS "${CMAKE_ARGS};${CACHE_ARGS}"
+            BINARY_DIR dmemo
+            )
+
 concatCacheArguments ( scai_lama "CACHE_ARGS" )
 #message ( STATUS "lama CACHE_ARGS ${CACHE_ARGS}" )
 

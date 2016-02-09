@@ -35,7 +35,7 @@
 
 // local library
 #include <scai/lama/io/FileType.hpp>
-#include <scai/lama/Communicator.hpp>
+#include <scai/dmemo/Communicator.hpp>
 
 // internal scai libraries
 #include <scai/hmemo.hpp>

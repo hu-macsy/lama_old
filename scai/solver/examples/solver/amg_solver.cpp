@@ -36,9 +36,9 @@
 #include <scai/lama/matrix/all.hpp>
 
 #include <scai/lama/DenseVector.hpp>
-#include <scai/lama/distribution/NoDistribution.hpp>
-#include <scai/lama/distribution/GeneralDistribution.hpp>
-#include <scai/lama/distribution/GenBlockDistribution.hpp>
+#include <scai/dmemo/distribution/NoDistribution.hpp>
+#include <scai/dmemo/distribution/GeneralDistribution.hpp>
+#include <scai/dmemo/distribution/GenBlockDistribution.hpp>
 #include <scai/lama/expression/all.hpp>
 #include <scai/lama/norm/L2Norm.hpp>
 

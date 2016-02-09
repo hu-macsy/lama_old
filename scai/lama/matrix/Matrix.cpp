@@ -36,7 +36,7 @@
 
 // local library
 #include <scai/lama/DenseVector.hpp>
-#include <scai/lama/distribution/NoDistribution.hpp>
+#include <scai/dmemo/distribution/NoDistribution.hpp>
 
 // internal scai libraries
 #include <scai/common/macros/assert.hpp>

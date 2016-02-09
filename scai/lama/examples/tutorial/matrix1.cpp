@@ -35,7 +35,7 @@
 // Matrix & vector related includes
 #include <scai/lama/DenseVector.hpp>
 #include <scai/lama/matrix/all.hpp>
-#include <scai/lama/distribution/BlockDistribution.hpp>
+#include <scai/dmemo/distribution/BlockDistribution.hpp>
 #include <scai/lama/expression/all.hpp>
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 #include <scai/lama/storage/CSRStorage.hpp>

@@ -9,10 +9,11 @@
 
 #include <scai/lama.hpp>
 
-#include <scai/hmemo/Context.hpp>
-#include <scai/common/Printable.hpp>
 #include <scai/lama/matrix/Matrix.hpp>
-#include <scai/lama/Communicator.hpp>
+
+#include <scai/hmemo/Context.hpp>
+#include <scai/dmemo/Communicator.hpp>
+#include <scai/common/Printable.hpp>
 
 #include <cstring>
 

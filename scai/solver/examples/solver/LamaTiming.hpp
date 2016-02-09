@@ -34,7 +34,7 @@
 
 #include <scai/common/Walltime.hpp>
 #include <iostream>
-#include <scai/lama/Communicator.hpp>
+#include <scai/dmemo/Communicator.hpp>
 
 /** Class for Timing.
  *

@@ -36,10 +36,10 @@
 
 #include <scai/lama/test/TestMacros.hpp>
 
-#include <scai/lama/distribution/Distribution.hpp>
-#include <scai/lama/distribution/BlockDistribution.hpp>
-#include <scai/lama/distribution/CyclicDistribution.hpp>
-#include <scai/lama/distribution/Redistributor.hpp>
+#include <scai/dmemo/distribution/Distribution.hpp>
+#include <scai/dmemo/distribution/BlockDistribution.hpp>
+#include <scai/dmemo/distribution/CyclicDistribution.hpp>
+#include <scai/dmemo/distribution/Redistributor.hpp>
 
 using namespace scai::lama;
 using namespace scai::hmemo;

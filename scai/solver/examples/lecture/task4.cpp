@@ -6,7 +6,7 @@
 #include <scai/lama/storage/SparseAssemblyStorage.hpp>
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 #include <scai/lama/DenseVector.hpp>
-#include <scai/lama/distribution/BlockDistribution.hpp>
+#include <scai/dmemo/distribution/BlockDistribution.hpp>
 
 #include <scai/solver/CG.hpp>
 #include <scai/solver/criteria/IterationCount.hpp>
