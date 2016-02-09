@@ -43,16 +43,16 @@ set ( CLASSES
         OpenMPUtils
     )
 
-#if ( SCAI_BLAS_NAME STREQUAL "MKL" )
-#
+if ( SCAI_BLAS_NAME STREQUAL "MKL" )
     # Use MKL sparse blas routines for CSR if available
-#    if ( EXISTS "${MKL_INCLUDE_DIR}/mkl_spblas.h" )
-#        set ( CLASSES ${CLASSES} MKLCSRUtils )
-#        message( STATUS "MKL Sparse BLAS is supported and will be used" ) 
-#    else ( EXISTS "${MKL_INCLUDE_DIR}/mkl_spblas.h" )
-#        message( STATUS "MKL Sparse BLAS is not supported" )
-#    endif ( EXISTS "${MKL_INCLUDE_DIR}/mkl_spblas.h" )
-#endif ( SCAI_BLAS_NAME STREQUAL "MKL" )
+    if ( EXISTS "${MKL_INCLUDE_DIR}/mkl_spblas.h" )
+        set ( CLASSES ${CLASSES} MKLCSRUtils )
+        message( STATUS "MKL Sparse BLAS is supported and will be used" ) 
+    else ( EXISTS "${MKL_INCLUDE_DIR}/mkl_spblas.h" )
+        message( STATUS "MKL Sparse BLAS is not supported" )
+    endif ( EXISTS "${MKL_INCLUDE_DIR}/mkl_spblas.h" )
+endif ( SCAI_BLAS_NAME STREQUAL "MKL" )
+
 #
 # OpenMPLAPACKe requires LAPACKe interface, is in MKL
 #
