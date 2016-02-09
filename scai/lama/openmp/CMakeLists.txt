@@ -42,6 +42,11 @@ set ( CLASSES
         OpenMPJDSUtils
         OpenMPUtils
     )
+    
+set ( HEADERS
+        MKLCSRTrait
+        MKLCSRWrapper
+    )
 
 if ( SCAI_BLAS_NAME STREQUAL "MKL" )
     # Use MKL sparse blas routines for CSR if available
