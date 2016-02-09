@@ -115,7 +115,7 @@ void NoCommunicator::exchangeByPlanImpl(
     const ValueType sendData[],
     const CommunicationPlan& sendPlan ) const
 {
-    SCAI_ASSERT_EQUAL_ERROR( recvPlan.size(), sendPlan.size() )
+    SCAI_ASSERT_EQ_ERROR( recvPlan.size(), sendPlan.size(), "size mismatch" )
 
     if( 0 == recvPlan.size() && 0 == sendPlan.size() )
     {
@@ -124,13 +124,13 @@ void NoCommunicator::exchangeByPlanImpl(
 
     // send / recv plan have maximal one value
 
-    SCAI_ASSERT_EQUAL_ERROR( 1, recvPlan.size() )
+    SCAI_ASSERT_EQ_ERROR( 1, recvPlan.size(), "maximal one value in recvPlan" )
 
     int quantity = recvPlan[0].quantity;
 
     // recv and send plan must have same quantity
 
-    SCAI_ASSERT_EQUAL_ERROR( quantity, sendPlan[0].quantity )
+    SCAI_ASSERT_EQ_ERROR( quantity, sendPlan[0].quantity, "quantity mismatch" )
 
     // self copy of send data to recv data
 
@@ -179,19 +179,18 @@ template<typename ValueType>
 void NoCommunicator::maxlocImpl( ValueType&, IndexType&, const PartitionId root ) const
 {
     // nothing to do
-    SCAI_ASSERT_EQUAL_ERROR( root, 0 )
+    SCAI_ASSERT_EQ_ERROR( root, 0, "" )
 }
 
 template<typename ValueType>
 void NoCommunicator::bcastImpl( ValueType[], const IndexType, const PartitionId root ) const
 {
-    SCAI_ASSERT_EQUAL_ERROR( root, 0 )
+    SCAI_ASSERT_EQ_ERROR( root, 0, "" )
 }
 
 template<typename ValueType>
 void NoCommunicator::all2allvImpl( ValueType**, IndexType[], ValueType**, IndexType[] /*sendCount[]*/ ) const
 {
-   // SCAI_ASSERT_EQUAL_ERROR(sendCount,0)
 }
 
 template<typename ValueType>
@@ -201,7 +200,7 @@ void NoCommunicator::scatterImpl(
     const PartitionId root,
     const ValueType allvals[] ) const
 {
-    SCAI_ASSERT_EQUAL_ERROR( root, 0 )
+    SCAI_ASSERT_EQ_ERROR( root, 0, "" )
 
     for( int i = 0; i < n; i++ )
     {
@@ -217,8 +216,8 @@ void NoCommunicator::scatterVImpl(
     const ValueType allvals[],
     const IndexType sizes[] ) const
 {
-    SCAI_ASSERT_EQUAL_ERROR( root, 0 )
-    SCAI_ASSERT_EQUAL_ERROR( sizes[0], n )
+    SCAI_ASSERT_EQ_ERROR( root, 0, "" )
+    SCAI_ASSERT_EQ_ERROR( sizes[0], n , "size mismatch" )
 
     for( int i = 0; i < n; i++ )
     {
@@ -233,7 +232,7 @@ void NoCommunicator::gatherImpl(
     const PartitionId root,
     const ValueType myvals[] ) const
 {
-    SCAI_ASSERT_EQUAL_ERROR( root, 0 )
+    SCAI_ASSERT_EQ_ERROR( root, 0, "" )
 
     for( int i = 0; i < n; i++ )
     {
@@ -249,8 +248,8 @@ void NoCommunicator::gatherVImpl(
     const ValueType myvals[],
     const IndexType sizes[] ) const
 {
-    SCAI_ASSERT_EQUAL_ERROR( root, 0 )
-    SCAI_ASSERT_EQUAL_ERROR( sizes[0], n )
+    SCAI_ASSERT_EQ_ERROR( root, 0, "" )
+    SCAI_ASSERT_EQ_ERROR( sizes[0], n, "" )
 
     for( int i = 0; i < n; i++ )
     {
@@ -261,7 +260,7 @@ void NoCommunicator::gatherVImpl(
 template<typename ValueType>
 void NoCommunicator::swapImpl( ValueType[], const IndexType, const PartitionId partner ) const
 {
-    SCAI_ASSERT_EQUAL_ERROR( partner, 0 )
+    SCAI_ASSERT_EQ_ERROR( partner, 0, "" )
 }
 
 template<typename ValueType>

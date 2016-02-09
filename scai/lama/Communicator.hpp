@@ -790,7 +790,7 @@ void Communicator::exchangeByPlan(
     const hmemo::HArray<ValueType>& sendArray,
     const CommunicationPlan& sendPlan ) const
 {
-    SCAI_ASSERT_EQUAL_ERROR( sendArray.size(), sendPlan.totalQuantity() )
+    SCAI_ASSERT_EQ_ERROR( sendArray.size(), sendPlan.totalQuantity(), "size mismatch" )
 
     IndexType recvSize = recvPlan.totalQuantity();
 
@@ -820,7 +820,7 @@ tasking::SyncToken* Communicator::exchangeByPlanAsync(
     const hmemo::HArray<ValueType>& sendArray,
     const CommunicationPlan& sendPlan ) const
 {
-    SCAI_ASSERT_EQUAL_ERROR( sendArray.size(), sendPlan.totalQuantity() )
+    SCAI_ASSERT_EQ_ERROR( sendArray.size(), sendPlan.totalQuantity(), "size mismatch" )
 
     IndexType recvSize = recvPlan.totalQuantity();
 

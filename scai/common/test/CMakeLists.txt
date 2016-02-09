@@ -32,6 +32,7 @@
 
 set ( CXX_SOURCES
       CommonTest.cpp
+      FactoryTest.cpp  
       SettingsTest.cpp  
 )
 

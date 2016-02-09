@@ -154,7 +154,7 @@ CommunicationPlan::CommunicationPlan( const CommunicationPlan& other, const Inde
     for( size_t i = 0; i < mEntries.size(); i++ )
     {
         Entry& entry = mEntries[i];
-        SCAI_ASSERT_EQUAL_DEBUG( entry.offset * n, offset )
+        SCAI_ASSERT_EQ_DEBUG( entry.offset * n, offset, "offset mismatch" )
         entry.quantity *= n; // each quantitiy is multiplied by n
         entry.offset *= n; // offsets are also multiplied by n
         offset += entry.quantity;
@@ -266,7 +266,7 @@ void CommunicationPlan::allocate(
 
     // this assertion should be valid by the above algorithm
 
-    SCAI_ASSERT_EQUAL_DEBUG( mQuantity, nOwners )
+    SCAI_ASSERT_EQ_DEBUG( mQuantity, nOwners, "wrong sum up" )
 
     mAllocated = true;
 
