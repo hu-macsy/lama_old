@@ -82,3 +82,8 @@ if    ( NOT Boost_REGEX_FOUND AND ${BUILD_TEST} )
     message ( WARNING "Boost Regex is missing, so BUILD_TEST is disabled!" )
     set ( BUILD_TEST FALSE )
 endif ( NOT Boost_REGEX_FOUND AND ${BUILD_TEST} )
+
+if    ( Boost_UNIT_TEST_FRAMEWORK_FOUND AND Boost_REGEX_FOUND )
+    set ( FOUND_BOOST_TEST TRUE )
+endif ( Boost_UNIT_TEST_FRAMEWORK_FOUND AND Boost_REGEX_FOUND ) 
+ 
