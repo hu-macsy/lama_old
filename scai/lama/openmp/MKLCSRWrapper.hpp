@@ -22,15 +22,15 @@ namespace lama
 template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT MKLCSRWrapper;
 
-#define MKLCSRWRAPPER_DEF( ValueType, MKLCSRValueType, prefix ) 								                                \
-template<>																												        \
-class COMMON_DLL_IMPORTEXPORT MKLCSRWrapper<ValueType>																            \
-{																														        \
-public:																													        \
-	typedef MKLCSRTrait::BLASIndexType BLASIndexType;																	        \
-	typedef MKLCSRTrait::BLASTrans BLASTrans;																	                \
-	typedef MKLCSRTrait::BLASMatrix BLASMatrix;																	                \
-																														        \
+#define MKLCSRWRAPPER_DEF( ValueType, MKLCSRValueType, prefix ) 								                                                \
+template<>																												                                                              \
+class COMMON_DLL_IMPORTEXPORT MKLCSRWrapper<ValueType>								                              								            \
+{																														                                                                    \
+public:																													                                                                \
+	  typedef MKLCSRTrait::BLASIndexType BLASIndexType;																	                                          \
+	  typedef MKLCSRTrait::BLASTrans BLASTrans;																	                                                  \
+	  typedef MKLCSRTrait::BLASMatrix BLASMatrix;																	                                                \
+																														                                                                    \
     static BLASIndexType csr2csc(                                                                                               \
         const BLASIndexType* job,                                                                                               \
         const BLASIndexType n,                                                                                                  \
@@ -41,7 +41,7 @@ public:																													        \
         BLASIndexType *AJ1,                                                                                                     \
         BLASIndexType *AI1 )                                                                                                    \
     {                                                                                                                           \
-	    BLASIndexType info;                                                                                                     \
+	      BLASIndexType info;                                                                                                     \
         MKLCSR_BLAS_NAME( csrcsc, prefix )( const_cast<BLASIndexType*>( job ), const_cast<BLASIndexType*>( &n ),                \
                                             const_cast<MKLCSRValueType*>( reinterpret_cast<const MKLCSRValueType*>( Acsr ) ),   \
                                             const_cast<BLASIndexType*>( AJ0 ), const_cast<BLASIndexType*>( AI0 ),               \
@@ -49,7 +49,7 @@ public:																													        \
                                             const_cast<BLASIndexType*>( AJ1 ), const_cast<BLASIndexType*>( AI1 ), &info );      \
         return info;                                                                                                            \
     }                                                                                                                           \
-																														        \
+																														                                                                    \
     static void csrmv(                                                                                                          \
         const BLASTrans transA,                                                                                                 \
         const BLASIndexType m,                                                                                                  \
@@ -81,13 +81,12 @@ MKLCSRWRAPPER_DEF( float, float, s )
 MKLCSRWRAPPER_DEF( double, double, d )
 
 #ifdef SCAI_COMPLEX_SUPPORTED
-MKLCSRWRAPPER_DEF( ComplexFloat, MKL_Complex8, c )
-MKLCSRWRAPPER_DEF( ComplexDouble, MKL_Complex16, z )
+    MKLCSRWRAPPER_DEF( ComplexFloat,  MKL_Complex8,  c )
+    MKLCSRWRAPPER_DEF( ComplexDouble, MKL_Complex16, z )
 #endif
 
-#undef CUSPARSEWRAPPER_DEF
+#undef MKLCSRWRAPPER_DEF
 
 } /* end namespace lama */
 
 } /* end namespace scai */
-

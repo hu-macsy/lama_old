@@ -45,7 +45,7 @@ namespace lama {
 class COMMON_DLL_IMPORTEXPORT MKLCSRTrait
 {
 public:
-	typedef int BLASIndexType;
+	typedef int  BLASIndexType;
 	typedef char BLASTrans;
 	typedef char BLASMatrix[6];
 };
