@@ -1,5 +1,5 @@
 /**
- * @file cblas.hpp
+ * @file CUBLASTrait.hpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,21 +25,42 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief C Interface to BLAS routines
- * @author Thomas Brandes
- * @date 05.06.2014
- * @since 1.1.0
+ * @brief Definitions for CUBLAS interface
+ * @author  Eric Stricker
+ * @date 21.01.2016
+ * @since 2.0.0
  */
 
 #pragma once
 
-enum CBLAS_ORDER
-{   CblasRowMajor=101, CblasColMajor=102};
-enum CBLAS_TRANSPOSE
-{   CblasNoTrans=111, CblasTrans=112, CblasConjTrans=113};
-enum CBLAS_UPLO
-{   CblasUpper=121, CblasLower=122};
-enum CBLAS_DIAG
-{   CblasNonUnit=131, CblasUnit=132};
-enum CBLAS_SIDE
-{   CblasLeft=141, CblasRight=142};
+// macros
+#define CUSPARSE_BLAS_NAME( name, prefix ) cusparse##prefix##name
+
+#define CUSPARSE_BLAS_DEF( name, prefix, retType, definition ) 			\
+        retType CUSPARSE_BLAS_NAME( name, prefix )( definition );
+
+#define CUSPARSE_BLAS_CALL( name, prefix, ... )	\
+		SCAI_CUSPARSE_CALL( CUBLAS_CUSPARSE_NAME( name, prefix ), __VAR_ARGS__ )
+
+// external
+#include <cusparse_v2.h>
+
+namespace scai {
+
+namespace lama {
+
+class COMMON_DLL_IMPORTEXPORT CUSPARSETrait
+{
+public:
+	typedef int BLASIndexType;
+	typedef cusparseOperation_t BLASTrans;
+	typedef cusparseStatus_t BLASStatus;
+	typedef cusparseHandle_t BLASHandle;
+	typedef cusparseMatDescr_t BLASMatrix;
+	typedef cusparseAction_t BLASOperationType;
+	typedef cusparseIndexBase_t BLASIndexBase;
+};
+
+} /* end namespace lama */
+
+} /* end namespace scai */

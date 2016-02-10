@@ -31,8 +31,6 @@
 ###
 
 if    ( CUDA_FOUND AND USE_CUDA )
-    include_directories ( ${CUDA_TOOLKIT_INCLUDE} )
-
     set ( CUDACLASSES CUDAError )
 endif ( CUDA_FOUND AND USE_CUDA )
 

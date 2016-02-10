@@ -1,5 +1,5 @@
 /**
- * @file cblas.hpp
+ * @file MKLCSRTrait.hpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,21 +25,31 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief C Interface to BLAS routines
- * @author Thomas Brandes
- * @date 05.06.2014
- * @since 1.1.0
+ * @brief Definitions for MKL sparse interface
+ * @author  Eric Stricker
+ * @date 09.02.2016
+ * @since 2.0.0
  */
 
 #pragma once
 
-enum CBLAS_ORDER
-{   CblasRowMajor=101, CblasColMajor=102};
-enum CBLAS_TRANSPOSE
-{   CblasNoTrans=111, CblasTrans=112, CblasConjTrans=113};
-enum CBLAS_UPLO
-{   CblasUpper=121, CblasLower=122};
-enum CBLAS_DIAG
-{   CblasNonUnit=131, CblasUnit=132};
-enum CBLAS_SIDE
-{   CblasLeft=141, CblasRight=142};
+// macros
+#define MKLCSR_BLAS_NAME( name, prefix ) mkl_##prefix##name
+
+// external
+
+namespace scai {
+
+namespace lama {
+
+class COMMON_DLL_IMPORTEXPORT MKLCSRTrait
+{
+public:
+	typedef int  BLASIndexType;
+	typedef char BLASTrans;
+	typedef char BLASMatrix[6];
+};
+
+} /* end namespace lama */
+
+} /* end namespace scai */

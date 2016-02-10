@@ -55,6 +55,7 @@ set ( HEADERS        # .hpp
 
 if    ( CUSPARSE_V2 )
 	set ( set CLASSES ${CLASSES} CUSparseCSRUtils )
+	set ( set HEADERS ${HEADERS} CUSPARSETrait CUSPARSEWrapper )
 endif ( CUSPARSE_V2 )
 
 ### Add classes and header files ###

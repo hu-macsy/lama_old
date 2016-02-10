@@ -69,6 +69,8 @@ endif ( WIN32 AND NOT ( MPI_C_INCLUDE_PATH OR MPI_CXX_INCLUDE_PATH OR MPI_C_LIBR
 
 find_package ( MPI ${SCAI_FIND_PACKAGE_FLAGS} )
 
+mark_as_advanced ( MPI_EXTRA_LIBRARY MPI_LIBRARY )
+
 ### ALLOW to switch off MPI explicitly ###
 include ( Functions/setAndCheckCache )
 setAndCheckCache ( MPI )
