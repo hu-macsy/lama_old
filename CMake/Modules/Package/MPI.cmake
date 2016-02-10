@@ -77,3 +77,7 @@ setAndCheckCache ( MPI )
 
 set ( MPI_INCLUDE_DIR ${MPI_INCLUDE_PATH} )
 set ( SCAI_MPI_LIBRARIES ${MPI_LIBRARIES} )
+
+if    ( USE_MPI AND NOT MPI_FOUND )
+    message( FATAL_ERROR "Build of LAMA MPI enabled, but configuration is incomplete!")
+endif ( USE_MPI AND NOT MPI_FOUND )

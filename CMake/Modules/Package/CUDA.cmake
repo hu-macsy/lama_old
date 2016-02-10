@@ -102,3 +102,7 @@ if ( CUDA_FOUND AND USE_CUDA )
 	set ( SCAI_CUDA_LIBRARIES ${CUDA_CUDA_LIBRARY} ${CUDA_CUDART_LIBRARY} ${CUDA_cublas_LIBRARY} ${CUDA_cusparse_LIBRARY} )
 
 endif ( CUDA_FOUND AND USE_CUDA )
+
+if    ( USE_CUDA AND NOT CUDA_FOUND )
+    message( FATAL_ERROR "Build of LAMA Cuda enabled, but configuration is incomplete!")
+endif ( USE_CUDA AND NOT CUDA_FOUND )
