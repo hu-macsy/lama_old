@@ -104,31 +104,31 @@ public:
         QMRRuntime();
         virtual ~QMRRuntime();
 
-    common::shared_ptr<lama::Matrix> mTransposeA;
-    common::shared_ptr<lama::Vector> mInitialRes;
-    common::shared_ptr<lama::Vector> mVecV;
-    common::shared_ptr<lama::Vector> mVecW;
-    common::shared_ptr<lama::Vector> mVecY;      /*preconditioning 1*/
-    common::shared_ptr<lama::Vector> mVecZ;
+        lama::MatrixPtr mTransposeA;
+        lama::VectorPtr mInitialRes;
+        lama::VectorPtr mVecV;
+        lama::VectorPtr mVecW;
+        lama::VectorPtr mVecY;      /*preconditioning 1*/
+        lama::VectorPtr mVecZ;
 
-    common::shared_ptr<lama::Vector> mVecWT;
-    common::shared_ptr<lama::Vector> mVecVT;
-    common::shared_ptr<lama::Vector> mVecYT;
-    common::shared_ptr<lama::Vector> mVecZT;
-    common::shared_ptr<lama::Vector> mVecP;
-    common::shared_ptr<lama::Vector> mVecQ;
-    common::shared_ptr<lama::Vector> mVecPT;
-    common::shared_ptr<lama::Vector> mVecS;
-    common::shared_ptr<lama::Vector> mVecD;
+        lama::VectorPtr mVecWT;
+        lama::VectorPtr mVecVT;
+        lama::VectorPtr mVecYT;
+        lama::VectorPtr mVecZT;
+        lama::VectorPtr mVecP;
+        lama::VectorPtr mVecQ;
+        lama::VectorPtr mVecPT;
+        lama::VectorPtr mVecS;
+        lama::VectorPtr mVecD;
 
-    lama::Scalar mGamma;
-    lama::Scalar mTheta;
-    lama::Scalar mPsi;
-    lama::Scalar mRho;
-    lama::Scalar mEpsilon;
-    lama::Scalar mEta;
+        lama::Scalar mGamma;
+        lama::Scalar mTheta;
+        lama::Scalar mPsi;
+        lama::Scalar mRho;
+        lama::Scalar mEpsilon;
+        lama::Scalar mEta;
 
-    lama::Scalar mEps;
+        lama::Scalar mEps;
     };
 
     /**
@@ -140,7 +140,6 @@ public:
     */
     virtual void solveInit( lama::Vector& solution, const lama::Vector& rhs );
     
-    void print(lama::Vector& f, size_t i);
     /**
      * @brief Returns the complete configuration of the derived class
      */

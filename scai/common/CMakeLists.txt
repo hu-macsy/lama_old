@@ -112,6 +112,7 @@ scai_project (
         Factory1
         Math
         OpenMP
+        preprocessor
         ReductionOp
         NonCopyable
         TypeTraits
@@ -146,16 +147,12 @@ install ( FILES ${CONFIGURE_DIR}/bind.hpp ${CONFIGURE_DIR}/function.hpp
 
 ## add subdirectories
 
+add_subdirectory ( cuda )
 add_subdirectory ( doc )
-
-if    ( CUDA_FOUND AND USE_CUDA )
-    add_subdirectory ( cuda )
-    include_directories ( ${CUDA_TOOLKIT_INCLUDE} )
-endif ( CUDA_FOUND AND USE_CUDA )
-
 add_subdirectory ( examples )
-add_subdirectory ( macros )
 add_subdirectory ( exception )
+add_subdirectory ( macros )
+add_subdirectory ( mic )
 
 if ( FOUND_BOOST_TEST AND BUILD_TEST )
     add_subdirectory ( test )

@@ -34,7 +34,7 @@
 // hpp
 #include <scai/solver/QMR.hpp>
 
-// local library
+// internal scai libraries
 #include <scai/lama/expression/VectorExpressions.hpp>
 #include <scai/lama/expression/MatrixExpressions.hpp>
 #include <scai/lama/expression/MatrixVectorExpressions.hpp>
@@ -42,6 +42,7 @@
 #include <scai/lama/norm/L2Norm.hpp>
 
 #include <scai/lama/matrix/Matrix.hpp>
+
 #include <scai/lama/Vector.hpp>
 
 // std
@@ -61,29 +62,39 @@ using lama::Vector;
 using lama::Scalar;
 
 QMR::QMR( const std::string& id )
-    : IterativeSolver( id ) {}
+    : IterativeSolver( id )
+{
+}
 
 
 QMR::QMR( const std::string& id, LoggerPtr logger )
-    : IterativeSolver( id , logger ) {}
+    : IterativeSolver( id , logger )
+{
+}
 
 QMR::QMR( const QMR& other )
-    : IterativeSolver( other ) {}
+    : IterativeSolver( other )
+{
+}
 
-
+QMR::~QMR()
+{
+}
 
 QMR::QMRRuntime::QMRRuntime()
-    : IterativeSolverRuntime() {}
+    : IterativeSolverRuntime()
+{
+}
 
-QMR::~QMR() {}
-
-QMR::QMRRuntime::~QMRRuntime() {}
+QMR::QMRRuntime::~QMRRuntime()
+{
+}
 
 void QMR::initialize( const Matrix& coefficients )
 {
     SCAI_LOG_DEBUG( logger, "Initialization started for coefficients = " << coefficients )
 
-    Solver::initialize( coefficients );
+    IterativeSolver::initialize( coefficients );
     QMRRuntime& runtime = getRuntime();
 
     runtime.mEps = std::numeric_limits<double>::epsilon() * 3;                  //CAREFUL: No abstract type
@@ -289,14 +300,6 @@ void QMR::iterate(){
 SolverPtr QMR::copy()
 {
     return SolverPtr( new QMR( *this ) );
-}
-
-
-
-void QMR::print(Vector& vec, size_t size){
-    for(size_t i=0;i<size;++i)
-        std::cout<< vec(i)<<" ";
-    std::cout<<std::endl<<std::endl;
 }
 
 QMR::QMRRuntime& QMR::getRuntime()

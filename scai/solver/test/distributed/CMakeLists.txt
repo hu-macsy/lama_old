@@ -38,29 +38,26 @@ scai_project (
 	HEADERS
 
 	SOURCES
-	    SolverTestDistributed
-        P_CGTest
-        P_InverseSolverTest
-        P_JacobiTest
-        P_SORTest
-        P_SpecializedJacobiTest
+        SolverDistTest
+        
+        #P_CGTest
+        #P_InverseSolverTest
+        #P_JacobiTest
+        #P_SORTest
+        #P_SpecializedJacobiTest
 
    )
    
 ### add definitions ###
 add_definitions ( -DLAMA_TESTFILE_PATH="${CMAKE_CURRENT_SOURCE_DIR}/../../../../res/testfiles" )
 
-add_executable ( SolverTestDistributed ${CXX_SOURCES} )
+add_executable ( SolverDistTest ${CXX_SOURCES} )
 
-target_link_libraries ( SolverTestDistributed ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} scai_solver )
+target_link_libraries ( SolverDistTest ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} ${PROJECT_NAME} )
     
 file ( GLOB LOCAL_HEADERS "*.hpp" )
 
 install ( FILES ${LOCAL_HEADERS} DESTINATION include/scai/solver/test/distributed )    
 
 ### Copy the xmltest.sh file in build directory ### 
-#file ( COPY xmltest.sh DESTINATION ${CMAKE_CURRENT_BINARY_DIR} ) 
-
-if ( USE_CODE_COVERAGE )
-    configure_file( "${CMAKE_CURRENT_SOURCE_DIR}/code_coverage.sh.in" "${CMAKE_CURRENT_BINARY_DIR}/code_coverage.sh" @ONLY)
-endif ( USE_CODE_COVERAGE )    
+#file ( COPY xmltest.sh DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )  

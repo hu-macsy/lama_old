@@ -44,22 +44,15 @@ ERROR_LEVEL=test_suite
 # Running tests serial
 echo "Running serial tests"
 ./SolverTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/serial_tests.xml
-if [ -d distributed ];
-then
+#if [ -d distributed ];
+#then
     # Running parallel tests serial and with two processes
-    echo "Running distributed tests serial"
-    mpirun -np 3 --output-filename ${dirname}/dist_tests.xml distributed/SolverTestDistributed --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no
+    #echo "Running distributed tests serial"
+    #mpirun -np 3 --output-filename ${dirname}/dist_tests.xml distributed/SolverDistTest --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no
 
 	#for i in 2 3 4;
 	#do
     #	echo "Running distributed tests with $i processes"
     #	mpirun -np $i --output-filename ${dirname}/dist_tests_mpi.xml distributed/lama_dist_test --output_format=XML --log_level=all --report_level=no
     #done
-fi
-
-#if [ -d cuda ];
-#then
-#    #Running CUDA tests
-#    echo "Running cuda tests"
-#    cuda/lama_cuda_test --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/cuda_tests.xml
 #fi

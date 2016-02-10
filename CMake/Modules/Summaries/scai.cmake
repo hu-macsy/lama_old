@@ -73,11 +73,7 @@ endif ( NOT CXX_SUPPORTS_C11 )
 
 message ( STATUS "" )
 
-if    ( SCAI_COMPLETE_BUILD )
-	set ( OPENMP_INFO_TEXT "OpenMP schedule set to \"${SCAI_OMP_SCHEDULE}\"" )
-else  ( SCAI_COMPLETE_BUILD )
-	set ( OPENMP_INFO_TEXT "compile your sources with -DSCAI_OMP_SCHEDULE=<schedule-type>" )
-endif ( SCAI_COMPLETE_BUILD )
+set ( OPENMP_INFO_TEXT "OpenMP schedule type is set to \"${SCAI_OMP_SCHEDULE}\"" )
 
 scai_summary_message ( "USE"
                        "USE_OPENMP"
@@ -240,21 +236,3 @@ if    ( USE_CODE_COVERAGE )
 	message ( STATUS "CODE COVERAGE: ${USE_CODE_COVERAGE}" )
 endif ( USE_CODE_COVERAGE )
 message ( STATUS "" )
-
-
-# Check if all required packages are found
-# LAMA (core)
-
-if    ( NOT SCAI_BLAS_FOUND OR ( (SCAI_BLAS_NAME MATCHES "BLAS") AND NOT LAPACK_FOUND ) OR ( NOT CXX_SUPPORTS_C11 AND NOT BOOST_INCLUDE_DIR ) OR NOT SCAI_THREAD_LIBRARIES )
-    message( FATAL_ERROR "Configuration for LAMA (core) incomplete!")
-endif ( NOT SCAI_BLAS_FOUND OR ( (SCAI_BLAS_NAME MATCHES "BLAS") AND NOT LAPACK_FOUND ) OR ( NOT CXX_SUPPORTS_C11 AND NOT BOOST_INCLUDE_DIR ) OR NOT SCAI_THREAD_LIBRARIES )
-
-# LAMA MPI
-if    ( USE_MPI AND NOT MPI_FOUND )
-    message( FATAL_ERROR "Build of LAMA MPI enabled, but configuration is incomplete!")
-endif ( USE_MPI AND NOT MPI_FOUND )
-
-# LAMA Cuda
-if    ( USE_CUDA AND NOT CUDA_FOUND )
-    message( FATAL_ERROR "Build of LAMA Cuda enabled, but configuration is incomplete!")
-endif ( USE_CUDA AND NOT CUDA_FOUND )

@@ -82,7 +82,7 @@ void CGNR::initialize( const Matrix& coefficients )
 {
     SCAI_LOG_DEBUG( logger, "Initialization started for coefficients = " << coefficients )
 
-    Solver::initialize( coefficients );
+    IterativeSolver::initialize( coefficients );
     CGNRRuntime& runtime = getRuntime();
 
     common::scalar::ScalarType type = coefficients.getValueType();

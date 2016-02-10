@@ -37,6 +37,8 @@
 // local library
 #include <scai/lama/openmp/OpenMPUtils.hpp>
 #include <scai/lama/openmp/OpenMPCSRUtils.hpp>
+#include <scai/lama/openmp/MKLCSRTrait.hpp>
+#include <scai/lama/openmp/MKLCSRWrapper.hpp>
 
 #include <scai/lama/CSRKernelTrait.hpp>
 
@@ -49,6 +51,7 @@
 #include <scai/common/Constants.hpp>
 #include <scai/common/exception/UnsupportedException.hpp>
 #include <scai/common/macros/unused.hpp>
+#include <scai/common/preprocessor.hpp>
 
 #include <scai/tasking/TaskSyncToken.hpp>
 
@@ -69,26 +72,36 @@ SCAI_LOG_DEF_LOGGER( MKLCSRUtils::logger, "MKL.CSRUtils" )
 
 /* --------------------------------------------------------------------------- */
 
-template<>
+template<typename ValueType>
 void MKLCSRUtils::normalGEMV(
-    float result[],
-    const float alpha,
-    const float x[],
-    const float beta,
-    const float y[],
+    ValueType result[],
+    const ValueType alpha,
+    const ValueType x[],
+    const ValueType beta,
+    const ValueType y[],
     const IndexType numRows,
     const IndexType numColumns,
     const IndexType /* nnz */,
     const IndexType csrIA[],
     const IndexType csrJA[],
-    const float csrValues[] )
+    const ValueType csrValues[] )
 {
     SCAI_REGION( "MKL.scsrmv" )
 
     SCAI_LOG_INFO( logger,
-                   "normalGEMV<float>, result[" << numRows << "] = " << alpha << " * A * x + " << beta << " * y " )
+                   "normalGEMV<" << common::getScalarType<ValueType>() << ">, result[" << numRows << "] = " << alpha << " * A * x + " << beta << " * y " )
+
+    typedef MKLCSRTrait::BLASIndexType BLASIndexType;
+    typedef MKLCSRTrait::BLASTrans BLASTrans;
+    typedef MKLCSRTrait::BLASMatrix BLASMatrix;
 
     TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
+
+    if (common::TypeTraits<IndexType>::stype
+                    != common::TypeTraits<BLASIndexType>::stype)
+    {
+        COMMON_THROWEXCEPTION("indextype mismatch");
+    }
 
     if ( syncToken )
     {
@@ -103,11 +116,12 @@ void MKLCSRUtils::normalGEMV(
 
     // performs y = alpha * A * x + beta * y
 
-    char transa = 'n';
+
+    BLASTrans transa = 'n';
 
     // General, - triangular, Non-Unit, C for zero-indexing
 
-    char matdescra[6];
+    BLASMatrix matdescra;
 
     matdescra[0] = 'g';
     matdescra[1] = ' ';
@@ -115,77 +129,20 @@ void MKLCSRUtils::normalGEMV(
     matdescra[3] = 'c';
 
     // const_cast needed, MKL interface does not support it
-
-    mkl_scsrmv( &transa, const_cast<IndexType*>( &numRows ), const_cast<IndexType*>( &numColumns ),
-                const_cast<float*>( &alpha ), matdescra, const_cast<float*>( csrValues ),
-                const_cast<IndexType*>( csrJA ), const_cast<IndexType*>( csrIA ), const_cast<IndexType*>( csrIA + 1 ),
-                const_cast<float*>( x ), const_cast<float*>( &beta ), result );
+    MKLCSRWrapper<ValueType>::csrmv( transa, numRows, numColumns, alpha, matdescra, csrValues,
+                csrJA, csrIA, csrIA + 1, x, beta, result );
 }
 
 /* --------------------------------------------------------------------------- */
 
-template<>
-void MKLCSRUtils::normalGEMV(
-    double result[],
-    const double alpha,
-    const double x[],
-    const double beta,
-    const double y[],
-    const IndexType numRows,
-    const IndexType numColumns,
-    const IndexType /* nnz */,
-    const IndexType csrIA[],
-    const IndexType csrJA[],
-    const double csrValues[] )
-{
-    SCAI_REGION( "MKL.dcsrmv" )
-
-    SCAI_LOG_INFO( logger,
-                   "normalGEMV<double>, result[" << numRows << "] = " << alpha << " * A * x + " << beta << " * y " )
-
-    TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
-
-    if ( syncToken )
-    {
-        SCAI_UNSUPPORTED( "asynchronous execution not supported yet" )
-    }
-
-    if( y != result && beta != 0.0 )
-    {
-        OpenMPUtils::set( result, y, numRows, common::reduction::COPY );
-    }
-
-    // performs y = alpha * A * x + beta * y
-
-    char transa = 'n';
-
-    // General, - triangular, Non-Unit, C for zero-indexing
-
-    char matdescra[6];
-
-    matdescra[0] = 'g';
-    matdescra[1] = ' ';
-    matdescra[2] = 'n';
-    matdescra[3] = 'c';
-
-    // const_cast needed, MKL interface does not support it
-
-    mkl_dcsrmv( &transa, const_cast<IndexType*>( &numRows ), const_cast<IndexType*>( &numColumns ),
-                const_cast<double*>( &alpha ), matdescra, const_cast<double*>( csrValues ),
-                const_cast<IndexType*>( csrJA ), const_cast<IndexType*>( csrIA ), const_cast<IndexType*>( csrIA + 1 ),
-                const_cast<double*>( x ), const_cast<double*>( &beta ), result );
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<>
+template<typename ValueType>
 void MKLCSRUtils::convertCSR2CSC(
     IndexType cscIA[],
     IndexType cscJA[],
-    float cscValues[],
+    ValueType cscValues[],
     const IndexType csrIA[],
     const IndexType csrJA[],
-    const float csrValues[],
+    const ValueType csrValues[],
     IndexType numRows,
     IndexType numColumns,
     IndexType numValues )
@@ -198,13 +155,10 @@ void MKLCSRUtils::convertCSR2CSC(
 
         SCAI_LOG_INFO( logger, "convertCSR2CSC of matrix " << numRows << " x " << numColumns )
 
-        int job[] =
+        IndexType job[] =
         { 0, 0, 0, 0, 0, 1 };
 
-        int info = 0; // not used yet
-
-        mkl_scsrcsc( job, &numRows, const_cast<float*>( csrValues ), const_cast<IndexType*>( csrJA ),
-                     const_cast<IndexType*>( csrIA ), cscValues, cscJA, cscIA, &info );
+        MKLCSRWrapper<ValueType>::csr2csc( job, numRows, csrValues, csrJA, csrIA, cscValues, cscJA, cscIA );
     }
     else
     {
@@ -213,42 +167,6 @@ void MKLCSRUtils::convertCSR2CSC(
     }
 }
 
-/* --------------------------------------------------------------------------- */
-
-template<>
-void MKLCSRUtils::convertCSR2CSC(
-    IndexType cscIA[],
-    IndexType cscJA[],
-    double cscValues[],
-    const IndexType csrIA[],
-    const IndexType csrJA[],
-    const double csrValues[],
-    IndexType numRows,
-    IndexType numColumns,
-    IndexType numValues )
-{
-    // Intel MKL supports csr to csc only for square matrices
-
-    if( numRows == numColumns )
-    {
-        SCAI_REGION( "MKL.CSRUtils.convertCSR2CSC" )
-
-        SCAI_LOG_INFO( logger, "convertCSR2CSC of matrix " << numRows << " x " << numColumns )
-
-        int job[] =
-        { 0, 0, 0, 0, 0, 1 };
-
-        int info = 0; // not used yet
-
-        mkl_dcsrcsc( job, &numRows, const_cast<double*>( csrValues ), const_cast<IndexType*>( csrJA ),
-                     const_cast<IndexType*>( csrIA ), cscValues, cscJA, cscIA, &info );
-    }
-    else
-    {
-        OpenMPCSRUtils::convertCSR2CSC( cscIA, cscJA, cscValues, csrIA, csrJA, csrValues, numRows, numColumns,
-                                        numValues );
-    }
-}
 
 /* --------------------------------------------------------------------------- */
 /*     Template instantiations via registration routine                        */
@@ -282,14 +200,16 @@ void MKLCSRUtils::registerKernels( bool deleteFlag )
         flag = KernelRegistry::KERNEL_ERASE;
     }
 
-    KernelRegistry::set<CSRKernelTrait::normalGEMV<float> >( normalGEMV, Host, flag ); 
-    KernelRegistry::set<CSRKernelTrait::normalGEMV<double> >( normalGEMV, Host, flag ); 
+#define LAMA_MKL_CSR_UTILS_REGISTER(z, I, _)                                                                   \
+    KernelRegistry::set<CSRKernelTrait::normalGEMV<ARITHMETIC_HOST_TYPE_##I> >( normalGEMV, Host, flag );
+
+    BOOST_PP_REPEAT( ARITHMETIC_HOST_EXT_TYPE_CNT, LAMA_MKL_CSR_UTILS_REGISTER, _ )
 
     // MKL conversion csr to csc has worse performance than our OpenMP Implementation
     // so we do not use it here.
 
-    // KernelRegistry::set<CSRKernelTrait::convertCSR2CSC<float> >( convertCSR2CSC, Host, flag ); 
-    // KernelRegistry::set<CSRKernelTrait::convertCSR2CSC<double> >( convertCSR2CSC, Host, flag ); 
+//     KernelRegistry::set<CSRKernelTrait::convertCSR2CSC<float> >( convertCSR2CSC, Host, flag );
+//     KernelRegistry::set<CSRKernelTrait::convertCSR2CSC<double> >( convertCSR2CSC, Host, flag );
 }
 
 /* --------------------------------------------------------------------------- */

@@ -30,17 +30,22 @@
  # @date 09.06.2015
 ###
 
+if    ( CUDA_FOUND AND USE_CUDA )
+    set ( CUDACLASSES CUDAError )
+endif ( CUDA_FOUND AND USE_CUDA )
+
 # add source and header files to the current project
 
 scai_project (
 
     CLASSES
 
-        CUDAError
+        ${CUDACLASSES}
 
     HEADERS
 
         launchHelper
+        CUDACallable
 
     ADD_PARENT_SCOPE
 )

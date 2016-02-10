@@ -93,15 +93,6 @@ if    ( WIN32 )
 	add_definitions ( -DCOMMON_COMPILING_DLL )
 endif ( WIN32 )
 
-## MKL FOUND
-if     ( SCAI_BLAS_NAME STREQUAL "MKL" )
-    add_definitions( -DSCAI_MKL_BLAS )
-elseif ( INTERNALBLAS_FOUND )
-    add_definitions( -DSCAI_INTERNAL_BLAS )
-else   ( )
-    add_definitions( -DADD_ )
-endif  ( )
-
 ## Project System-Include
 include_directories ( ../.. )
 addInternalAndExternalIncludes()
@@ -126,6 +117,7 @@ if    ( CUDA_FOUND AND USE_CUDA )
 	set ( CXX_SOURCES ${CXX_SOURCES} ${CUDA_FILES} )
 endif ( CUDA_FOUND AND USE_CUDA )
 
+add_subdirectory ( examples )
 add_subdirectory ( doc )
 add_subdirectory ( external )
 

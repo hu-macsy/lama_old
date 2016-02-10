@@ -73,11 +73,7 @@ endif ( NOT CXX_SUPPORTS_C11 )
 
 message ( STATUS "" )
 
-if    ( SCAI_COMPLETE_BUILD )
-	set ( OPENMP_INFO_TEXT "OpenMP schedule set to \"${SCAI_OMP_SCHEDULE}\"" )
-else  ( SCAI_COMPLETE_BUILD )
-	set ( OPENMP_INFO_TEXT "compile your sources with -DSCAI_OMP_SCHEDULE=<schedule-type>" )
-endif ( SCAI_COMPLETE_BUILD )
+set ( OPENMP_INFO_TEXT "OpenMP schedule type is set to \"${SCAI_OMP_SCHEDULE}\"" )
 
 scai_summary_message ( "USE"
                        "USE_OPENMP"
@@ -164,8 +160,3 @@ if    ( USE_CODE_COVERAGE )
 	message ( STATUS "CODE COVERAGE: ${USE_CODE_COVERAGE}" )
 endif ( USE_CODE_COVERAGE )
 message ( STATUS "" )
-
-# LAMA Cuda
-if    ( USE_CUDA AND NOT CUDA_FOUND )
-    message( FATAL_ERROR "Build of LAMA Cuda enabled, but configuration is incomplete!")
-endif ( USE_CUDA AND NOT CUDA_FOUND )

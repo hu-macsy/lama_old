@@ -32,3 +32,5 @@
 ###
 
 find_library( SCAI_DL_LIBRARIES dl )
+
+mark_as_advanced ( SCAI_DL_LIBRARIES )
