@@ -126,6 +126,7 @@ if    ( CUDA_FOUND AND USE_CUDA )
 	set ( CXX_SOURCES ${CXX_SOURCES} ${CUDA_FILES} )
 endif ( CUDA_FOUND AND USE_CUDA )
 
+add_subdirectory ( examples )
 add_subdirectory ( doc )
 add_subdirectory ( external )
 

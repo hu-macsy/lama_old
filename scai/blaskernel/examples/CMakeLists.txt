@@ -47,7 +47,7 @@ foreach ( executable CG_BLAS )
 endforeach ( executable )
 
 ## install examples
-#configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/make.inc.in" "${CMAKE_CURRENT_BINARY_DIR}/make.inc" )
-#install ( DIRECTORY ./ DESTINATION share/examples/scai-common-${SCAI_COMMON_VERSION} FILES_MATCHING REGEX "^.*.(c|h)pp$" )
-#install ( FILES Makefile ${CMAKE_CURRENT_BINARY_DIR}/make.inc DESTINATION share/examples/scai-common-${SCAI_COMMON_VERSION} )
-
+configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/make.inc.in" "${CMAKE_CURRENT_BINARY_DIR}/make.inc" )
+install ( DIRECTORY ./ DESTINATION ${PROJECT_EXAMPLE_DIR} FILES_MATCHING REGEX "^.*.(c|h)pp$" )
+install ( FILES Makefile ${CMAKE_CURRENT_BINARY_DIR}/make.inc DESTINATION ${PROJECT_EXAMPLE_DIR} )
+install ( PROGRAMS run_all.sh DESTINATION ${PROJECT_EXAMPLE_DIR} )

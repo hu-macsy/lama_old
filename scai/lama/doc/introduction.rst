@@ -7,7 +7,7 @@ This documentation will give an overview of the features of the \Library of \Acc
 
 You will find concise :doc:`installation` instruction, an easy beginners guide with several short descriptions of
 our basic data structures, their behavior as well as simple examples on how to use them (:doc:`tutorial`). An
-advanced :doc:`lecture` of our hands-on session follows before you get the chance to have a look at the
+advanced lecture of our hands-on session follows before you get the chance to have a look at the
 :doc:`reference`. We close with informations about writing own tests (see :doc:`testing`) and 
 :doc:`benchmarks` and on special hints :doc:`developer`. 
 

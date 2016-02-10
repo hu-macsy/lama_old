@@ -8,8 +8,8 @@ make clean
 make
 
 # run examples
-./LogLevels.exe
-./LogOpenMP.exe
+./BenchInterface.exe
+./DemoKernelInterface.exe
 
 # check if there are unkown examples
 count=`ls -l -la *.exe | wc -l`

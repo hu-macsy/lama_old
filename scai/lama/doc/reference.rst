@@ -15,5 +15,4 @@ Contents:
    reference/storage
    reference/context
    reference/distributions
-   reference/solver
    reference/io

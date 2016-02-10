@@ -4,11 +4,11 @@ Solver Example
 The following C++ program shows how to use a linear equation solver like the Conjugate Gradient 
 Method.
 
-.. literalinclude:: ../../../lama/examples/tutorial/solver.cpp 
+.. literalinclude:: ../examples/solver/solver.cpp 
    :language: c++
    :lines: 54-98
 
-:download:`Download source file <../../../lama/examples/tutorial/solver.cpp>`
+:download:`Download source file <../examples/solver/solver.cpp>`
 
 First we need the required vectors and matrices for the linear equation :math:`Ax=b` where A is the 
 matrix, x is the solution vector and b is the right-hand-side (rhs).
