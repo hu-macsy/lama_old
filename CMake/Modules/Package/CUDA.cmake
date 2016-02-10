@@ -40,6 +40,10 @@ set ( CUDA_HOST_COMPILER ${CMAKE_CXX_COMPILER} CACHE FILEPATH "Host side compile
 
 find_package ( CUDA ${SCAI_FIND_PACKAGE_FLAGS} )
 
+# LAMA irrelevant entries will be marked as advanced ( Remove them from default cmake GUI )
+mark_as_advanced ( CUDA_TOOLKIT_ROOT_DIR CUDA_BUILD_CUBIN CUDA_BUILD_EMULATION CUDA_SDK_ROOT_DIR
+				   CUDA_VERBOSE_BUILD CUDA_HOST_COMPILER CUDA_SEPARABLE_COMPILATION )
+
 # ALLOW to switch off CUDA explicitly
 include ( Functions/setAndCheckCache )
 setAndCheckCache ( CUDA )
@@ -58,7 +62,7 @@ if ( CUDA_FOUND AND USE_CUDA )
 	
 	if ( CUDA_VERSION_MAJOR MATCHES "5" )
 	
-	    message( STATUS "Check for cuSPARSE V2 include file in ${CUDA_INCLUDE_DIRS}" )
+	    #message( STATUS "Check for cuSPARSE V2 include file in ${CUDA_INCLUDE_DIRS}" )
 	    
 	    set ( CUSPARSE_V2 false )
 	    
@@ -70,7 +74,6 @@ if ( CUDA_FOUND AND USE_CUDA )
 	    
 	    if ( CUSPARSE_V2 )
 	        message( STATUS "cuSPARSE Version 2 is supported and will be used" )
-	        set ( CUDA_SOURCES ${CUDA_SOURCES} CUSparseCSRUtils.cu )
 	    else( CUSPARSE_V2 )
 	        message( STATUS "cuSPARSE Version 2 not supported" )
 	    endif( CUSPARSE_V2 )
@@ -91,9 +94,6 @@ if ( CUDA_FOUND AND USE_CUDA )
 	    mark_as_advanced( CUDA_cusparse_LIBRARY )
 	
 	endif ( NOT CUDA_cusparse_LIBRARY )
-	
-	# LAMA irrelevant entries will be marked as advanced ( Remove them from default cmake GUI )
-	mark_as_advanced ( CUDA_TOOLKIT_ROOT_DIR CUDA_BUILD_CUBIN CUDA_BUILD_EMULATION CUDA_SDK_ROOT_DIR CUDA_VERBOSE_BUILD )
 	
 	# just for making it the same variable ending for all packages
 	set ( CUDA_INCLUDE_DIR ${CUDA_INCLUDE_DIRS} )
