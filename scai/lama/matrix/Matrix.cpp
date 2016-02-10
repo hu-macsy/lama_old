@@ -187,6 +187,26 @@ void Matrix::setDefaultKind()
 
 /* ---------------------------------------------------------------------------------*/
 
+void Matrix::buildCSRGraph( IndexType ia[], IndexType ja[], IndexType vwgt[], const IndexType* globalIndexes ) const
+{
+    getLocalStorage().buildCSRGraph( ia, ja, vwgt, globalIndexes );
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+IndexType Matrix::getCSRGraphSize() const
+{
+    // Currently only supported if column distribution is replicated
+
+    SCAI_ASSERT_EQ_ERROR( getNumColumns(), getLocalStorage().getNumColumns(), "getCSRGraphSize only for replicated column distribution" )
+
+    // diagonal elements will not be used
+
+    return getLocalNumValues() - getDistribution().getLocalSize();
+}
+
+/* ---------------------------------------------------------------------------------*/
+
 void Matrix::setDistributedMatrix( DistributionPtr rowDistribution, DistributionPtr colDistribution )
 {
     SCAI_ASSERT_ERROR( rowDistribution, "NULL row distribution for matrix not allowed" )

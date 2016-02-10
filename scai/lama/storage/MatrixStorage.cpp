@@ -1306,24 +1306,9 @@ void _MatrixStorage::buildCSRGraph(
     IndexType* adjIA,
     IndexType* adjJA,
     IndexType* vwgt,
-    CommunicatorPtr comm,
-    const IndexType* globalRowIndexes /* = NULL */,
-    IndexType* vtxdist /* = NULL */ ) const
+    const IndexType* globalRowIndexes ) const
 {
     IndexType numLocalRows = mNumRows;
-
-    if ( vtxdist != NULL ) // parallel graph
-    {
-        const PartitionId MASTER = 0;
-        IndexType parts = comm->getSize();
-// Is this valid ?
-// SCAI_ASSERT_ERROR( getDistribution().getNumPartitions() == parts,
-//              "mismatch number of partitions and communicator size" );
-        std::vector<IndexType> localNumRows( parts );
-        comm->gather( vtxdist, 1, MASTER, &numLocalRows );
-        comm->bcast( vtxdist, parts, MASTER );
-        vtxdist[parts] = OpenMPCSRUtils::scan( vtxdist, parts );
-    }
 
     HArray<IndexType> csrIA;
     HArray<IndexType> csrJA;

@@ -71,6 +71,22 @@ void Distributed::setDistributionPtr( DistributionPtr distributionPtr )
     mDistribution = distributionPtr;
 }
 
+void Distributed::buildCSRGraph( IndexType ia[], IndexType[], IndexType vwgt[], const IndexType* ) const
+{
+    IndexType size = mDistribution->getLocalSize();
+
+    for ( IndexType i = 0; i < size; ++i )
+    {
+        ia[i] = 0;
+        vwgt[i] = 0;
+    }
+}
+
+IndexType Distributed::getCSRGraphSize() const
+{
+    return 0;
+}
+
 } /* end namespace dmemo */
 
 } /* end namespace scai */

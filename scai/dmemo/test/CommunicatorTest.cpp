@@ -25,268 +25,313 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Contains the implementation of the class CommunicatorTest
- * @author: Alexander Büchel, Thomas Brandes
+ * @brief Test methods for the communicator
+ * @author: Thomas Brandes
  * @date 09.05.2012
  * @since 1.0.0
  **/
 
-#include <scai/dmemo/test/CommunicatorTest.hpp>
+#include <boost/test/unit_test.hpp>
+#include <boost/mpl/list.hpp>
 
-#include <scai/common/test/TestMacros.hpp>
+#include <scai/logging.hpp>
 
-#include <scai/dmemo/Communicator.hpp>
-
-#include <scai/dmemo/HaloBuilder.hpp>
-#include <scai/dmemo/GeneralDistribution.hpp>
-#include <scai/dmemo/BlockDistribution.hpp>
+#include <scai/tasking.hpp>
+#include <scai/dmemo.hpp>
+#include <scai/hmemo.hpp>
 
 #include <scai/common/unique_ptr.hpp>
-#include <scai/common/SCAITypes.hpp>
+#include <scai/common/exception/Exception.hpp>
 
 using namespace scai;
-
-using namespace dmemo;
 using namespace hmemo;
+using namespace dmemo;
 using namespace tasking;
 
 using common::Exception;
 using common::unique_ptr;
 using common::scoped_array;
 
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_SUITE( CommunicatorTest )
+
+/* --------------------------------------------------------------------- */
+
 SCAI_LOG_DEF_LOGGER( logger, "Test.CommunicatorTest" )
 
 /* --------------------------------------------------------------------- */
 
-CommunicatorTest::CommunicatorTest( const communicator::CommunicatorKind communicatorType )
-    : mCommunicatorType( communicatorType )
-{
-    comm = Communicator::getCommunicator( mCommunicatorType );
-    rank = comm->getRank();
-    size = comm->getSize();
-}
+// ToDo: take ARITHMETIC_HOST_TYPE for the tests
 
-CommunicatorTest::~CommunicatorTest()
+typedef boost::mpl::list<float, double> test_types;
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( basicTest )
 {
-    comm = CommunicatorPtr();
+    CommunicatorPtr comm = Communicator::getCommunicator();
+
+    BOOST_REQUIRE( comm );
+
+    SCAI_LOG_INFO( logger, "basicTest for comm = " << *comm )
+
+    BOOST_CHECK( comm->getRank() >= 0 );
+    BOOST_CHECK( comm->getRank() < comm->getSize() );
+
+    std::stringstream out;
+ 
+    out << *comm;
+
+    BOOST_CHECK( out.str().length() > 0 );
 }
 
 /* --------------------------------------------------------------------- */
 
-LAMA_COMMON_TEST_CASE( CommunicatorTest, CommunicatorCtrTest )
-// get a communicator and give it free (shared pointer)
-comm = Communicator::getCommunicator( mCommunicatorType );
-comm = CommunicatorPtr();
-// get again the MPI communicator (might be 2nd call of MPI_Init)
-comm = Communicator::getCommunicator( mCommunicatorType );
-LAMA_COMMON_TEST_CASE_END()
-
-/* --------------------------------------------------------------------- */
-
-LAMA_COMMON_TEST_CASE( CommunicatorTest, computeOwnersTest )
-IndexType n = 17;
-std::vector<IndexType> localIndexes, nonLocalIndexes;
-
-for ( IndexType i = 0; i < n; ++i )
+BOOST_AUTO_TEST_CASE( computeOwnersTest )
 {
-    localIndexes.push_back( rank * n + i );
-}
+    CommunicatorPtr comm = Communicator::getCommunicator();
 
-GeneralDistribution dist( n* size, localIndexes, comm );
+    BOOST_REQUIRE( comm );
 
-for ( PartitionId p = 0; p < size; ++p )
-{
-    if ( p == rank )
+    IndexType rank = comm->getRank();
+    IndexType size = comm->getSize();
+
+    IndexType n = 17;
+
+    std::vector<IndexType> localIndexes;
+    std::vector<IndexType> nonLocalIndexes;
+
+    for ( IndexType i = 0; i < n; ++i )
     {
-        for ( IndexType i = 0; i < n; ++i )
+        localIndexes.push_back( rank * n + i );
+    }
+
+    GeneralDistribution dist( n * size, localIndexes, comm );
+
+    for ( PartitionId p = 0; p < size; ++p )
+    {
+        if ( p == rank )
         {
-            BOOST_CHECK( dist.isLocal( p * n + i ) );
+            for ( IndexType i = 0; i < n; ++i )
+            {
+                BOOST_CHECK( dist.isLocal( p * n + i ) );
+            }
+        }
+        else
+        {
+            for ( IndexType i = 0; i < n; ++i )
+            {
+                nonLocalIndexes.push_back( p * n + i );
+            }
         }
     }
-    else
+
+    std::vector < PartitionId > owners;
+    comm->computeOwners( nonLocalIndexes, dist, owners );
+    std::vector<PartitionId>::size_type currentIndex = 0;
+
+    for ( PartitionId p = 0; p < size; ++p )
     {
-        for ( IndexType i = 0; i < n; ++i )
+        if ( p != rank )
         {
-            nonLocalIndexes.push_back( p * n + i );
+            for ( IndexType i = 0; i < n; ++i )
+            {
+                BOOST_CHECK_EQUAL( p, owners[currentIndex++] );
+            }
         }
     }
 }
 
-std::vector < PartitionId > owners;
-comm->computeOwners( nonLocalIndexes, dist, owners );
-std::vector<PartitionId>::size_type currentIndex = 0;
+/* --------------------------------------------------------------------- */
 
-for ( PartitionId p = 0; p < size; ++p )
+BOOST_AUTO_TEST_CASE( allocatePlanTest )
 {
-    if ( p != rank )
+    CommunicatorPtr comm = Communicator::getCommunicator();
+
+    BOOST_REQUIRE( comm );
+
+    IndexType rank = comm->getRank();
+    IndexType size = comm->getSize();
+
+    std::vector<IndexType> reqQuantities( size );
+
+    for ( PartitionId p = 0; p < size; ++p )
     {
-        for ( IndexType i = 0; i < n; ++i )
+        if ( p != rank )
         {
-            BOOST_CHECK_EQUAL( p, owners[currentIndex++] );
+            reqQuantities[p] = ( 2 * p + rank ) % 3;
+        }
+        else
+        {
+            reqQuantities[p] = 0;
         }
     }
-}
 
-LAMA_COMMON_TEST_CASE_END()
+    CommunicationPlan requiredPlan( reqQuantities.data(), reqQuantities.size() );
 
-/* --------------------------------------------------------------------- */
+    // verify that requiredPlan is correctly set up
 
-LAMA_COMMON_TEST_CASE( CommunicatorTest, allocatePlanTest )
+    IndexType offsetCheck = 0;
 
-std::vector<IndexType> reqQuantities( size );
-
-for ( PartitionId p = 0; p < size; ++p )
-{
-    if ( p != rank )
+    for ( PartitionId p = 0; p < requiredPlan.size(); ++p )
     {
-        reqQuantities[p] = ( 2 * p + rank ) % 3;
+        IndexType n = requiredPlan[p].quantity;
+        PartitionId partitionId = requiredPlan[p].partitionId;
+        IndexType nExpected = ( 2 * partitionId + rank ) % 3;
+        BOOST_CHECK_EQUAL( n, nExpected );
+        BOOST_CHECK_EQUAL( requiredPlan[p].offset, offsetCheck );
+        offsetCheck += n;
     }
-    else
+
+    BOOST_CHECK_EQUAL( offsetCheck, requiredPlan.totalQuantity() );
+    CommunicationPlan providesPlan;
+    providesPlan.allocateTranspose( requiredPlan, *comm );
+    offsetCheck = 0;
+
+    for ( PartitionId p = 0; p < providesPlan.size(); ++p )
     {
-        reqQuantities[p] = 0;
+        IndexType n = providesPlan[p].quantity;
+        PartitionId partitionId = providesPlan[p].partitionId;
+        IndexType nExpected = ( partitionId + 2 * rank ) % 3;
+        BOOST_CHECK_EQUAL( n, nExpected );
+        BOOST_CHECK_EQUAL( providesPlan[p].offset, offsetCheck );
+        offsetCheck += n;
     }
+
+    BOOST_CHECK_EQUAL( offsetCheck, providesPlan.totalQuantity() );
+
 }
-
-CommunicationPlan requiredPlan( reqQuantities.data(), reqQuantities.size() );
-
-// verify that requiredPlan is correctly set up
-IndexType offsetCheck = 0;
-
-for ( PartitionId p = 0; p < requiredPlan.size(); ++p )
-{
-    IndexType n = requiredPlan[p].quantity;
-    PartitionId partitionId = requiredPlan[p].partitionId;
-    IndexType nExpected = ( 2 * partitionId + rank ) % 3;
-    BOOST_CHECK_EQUAL( n, nExpected );
-    BOOST_CHECK_EQUAL( requiredPlan[p].offset, offsetCheck );
-    offsetCheck += n;
-}
-
-BOOST_CHECK_EQUAL( offsetCheck, requiredPlan.totalQuantity() );
-CommunicationPlan providesPlan;
-providesPlan.allocateTranspose( requiredPlan, *comm );
-offsetCheck = 0;
-
-for ( PartitionId p = 0; p < providesPlan.size(); ++p )
-{
-    IndexType n = providesPlan[p].quantity;
-    PartitionId partitionId = providesPlan[p].partitionId;
-    IndexType nExpected = ( partitionId + 2 * rank ) % 3;
-    BOOST_CHECK_EQUAL( n, nExpected );
-    BOOST_CHECK_EQUAL( providesPlan[p].offset, offsetCheck );
-    offsetCheck += n;
-}
-
-BOOST_CHECK_EQUAL( offsetCheck, providesPlan.totalQuantity() );
-LAMA_COMMON_TEST_CASE_END()
 
 /* --------------------------------------------------------------------- */
 
-LAMA_COMMON_TEST_CASE( CommunicatorTest, bcastStringTest )
-std::string val = "Dummy";
-
-if ( comm->getRank() == 0 )
+BOOST_AUTO_TEST_CASE( bcastStringTest )
 {
-    val = "Hello";
+    CommunicatorPtr comm = Communicator::getCommunicator();
+
+    BOOST_REQUIRE( comm );
+
+    std::string val = "Dummy";
+
+    IndexType root = 0;
+
+    if ( comm->getRank() == root )
+    {
+        val = "Hello";
+    }
+
+    SCAI_LOG_INFO( logger, *comm << ": val = " << val );
+
+    comm->bcast( val, root );
+
+    SCAI_LOG_INFO( logger, *comm << ": val = " << val );
+
+    BOOST_CHECK_EQUAL( "Hello", val );
 }
-
-SCAI_LOG_INFO( logger, *comm << ": val = " << val );
-
-comm->bcast( val, 0 );
-
-SCAI_LOG_INFO( logger, *comm << ": val = " << val );
-
-BOOST_CHECK_EQUAL( "Hello", val );
-LAMA_COMMON_TEST_CASE_END()
 
 /* --------------------------------------------------------------------- */
 
-LAMA_COMMON_TEST_CASE( CommunicatorTest, buildHaloTest )
-IndexType vectorSize = size;
-BlockDistribution distribution( vectorSize, comm );
-std::vector<IndexType> requiredIndexes;
-const PartitionId leftNeighbor = comm->getNeighbor( -1 );
-const PartitionId rightNeighbor = comm->getNeighbor( 1 );
+BOOST_AUTO_TEST_CASE( buildHaloTest )
+{
+    CommunicatorPtr comm = Communicator::getCommunicator();
+
+    BOOST_REQUIRE( comm );
+
+    IndexType rank = comm->getRank();
+    IndexType size = comm->getSize();
+
+    IndexType vectorSize = size;
+    BlockDistribution distribution( vectorSize, comm );
+    std::vector<IndexType> requiredIndexes;
+    const PartitionId leftNeighbor = comm->getNeighbor( -1 );
+    const PartitionId rightNeighbor = comm->getNeighbor( 1 );
 // Each processor requires values from left and right neighbor
 
-if ( !distribution.isLocal( leftNeighbor ) )
-{
-    requiredIndexes.push_back( leftNeighbor );
+    if ( !distribution.isLocal( leftNeighbor ) )
+    {
+        requiredIndexes.push_back( leftNeighbor );
+    }
+
+    if ( rightNeighbor != leftNeighbor && !distribution.isLocal( rightNeighbor ) )
+    {
+        requiredIndexes.push_back( rightNeighbor );
+    }
+
+    const IndexType noReqIndexes = static_cast<IndexType>( requiredIndexes.size() );
+
+    Halo halo;
+
+    HaloBuilder::build( distribution, requiredIndexes, halo );
+
+    const Halo& haloRef = halo;
+
+    const CommunicationPlan& requiredPlan = haloRef.getRequiredPlan();
+
+    const CommunicationPlan& providesPlan = haloRef.getProvidesPlan();
+
+    // check for a correct provide plan
+
+    IndexType offsetCheck = 0;
+
+    for ( PartitionId p = 0; p < requiredPlan.size(); ++p )
+    {
+        IndexType n = requiredPlan[p].quantity;
+        BOOST_CHECK_EQUAL( ( IndexType ) 1, n );
+        PartitionId neighbor = requiredPlan[p].partitionId;
+        BOOST_CHECK( neighbor == leftNeighbor || neighbor == rightNeighbor );
+        BOOST_CHECK_EQUAL( requiredPlan[p].offset, offsetCheck );
+        offsetCheck += n;
+    }
+
+    BOOST_CHECK_EQUAL( noReqIndexes, requiredPlan.totalQuantity() );
+
+    offsetCheck = 0;
+    PartitionId nProvides = providesPlan.size();
+
+    for ( PartitionId p = 0; p < nProvides; ++p )
+    {
+        IndexType n = providesPlan[p].quantity;
+        BOOST_CHECK_EQUAL( n, static_cast<IndexType>( 1 ) );
+        PartitionId neighbor = providesPlan[p].partitionId;
+        BOOST_CHECK( neighbor == leftNeighbor || neighbor == rightNeighbor );
+        BOOST_CHECK_EQUAL( providesPlan[p].offset, offsetCheck );
+        offsetCheck += n;
+    }
+
+    BOOST_CHECK_EQUAL( noReqIndexes, providesPlan.totalQuantity() );
+
+    const ReadAccess<IndexType> providesIndexes( haloRef.getProvidesIndexes() );
+
+    for ( PartitionId p = 0; p < providesPlan.size(); ++p )
+    {
+        const IndexType* indexes = providesIndexes + providesPlan[p].offset;
+        IndexType expectedLocalIndex = rank;
+        BOOST_CHECK_EQUAL( expectedLocalIndex, distribution.local2global( indexes[0] ) );
+    }
+
+    BOOST_CHECK_EQUAL( noReqIndexes, halo.getHaloSize() );
+
+    IndexType nIndexes = static_cast<IndexType>( requiredIndexes.size() );
+
+    for ( IndexType i = 0; i < nIndexes; ++i )
+    {
+        const IndexType haloIndex = halo.global2halo( requiredIndexes[i] );
+        BOOST_CHECK( 0 <= haloIndex && haloIndex < halo.getHaloSize() );
+    }
+
 }
-
-if ( rightNeighbor != leftNeighbor && !distribution.isLocal( rightNeighbor ) )
-{
-    requiredIndexes.push_back( rightNeighbor );
-}
-
-const IndexType noReqIndexes = static_cast<IndexType>( requiredIndexes.size() );
-
-Halo halo;
-
-HaloBuilder::build( distribution, requiredIndexes, halo );
-
-const Halo& haloRef = halo;
-
-const CommunicationPlan& requiredPlan = haloRef.getRequiredPlan();
-
-const CommunicationPlan& providesPlan = haloRef.getProvidesPlan();
-
-// check for a correct provide plan
-IndexType offsetCheck = 0;
-
-for ( PartitionId p = 0; p < requiredPlan.size(); ++p )
-{
-    IndexType n = requiredPlan[p].quantity;
-    BOOST_CHECK_EQUAL( ( IndexType ) 1, n );
-    PartitionId neighbor = requiredPlan[p].partitionId;
-    BOOST_CHECK( neighbor == leftNeighbor || neighbor == rightNeighbor );
-    BOOST_CHECK_EQUAL( requiredPlan[p].offset, offsetCheck );
-    offsetCheck += n;
-}
-
-BOOST_CHECK_EQUAL( noReqIndexes, requiredPlan.totalQuantity() );
-
-offsetCheck = 0;
-PartitionId nProvides = providesPlan.size();
-
-for ( PartitionId p = 0; p < nProvides; ++p )
-{
-    IndexType n = providesPlan[p].quantity;
-    BOOST_CHECK_EQUAL( n, static_cast<IndexType>( 1 ) );
-    PartitionId neighbor = providesPlan[p].partitionId;
-    BOOST_CHECK( neighbor == leftNeighbor || neighbor == rightNeighbor );
-    BOOST_CHECK_EQUAL( providesPlan[p].offset, offsetCheck );
-    offsetCheck += n;
-}
-
-BOOST_CHECK_EQUAL( noReqIndexes, providesPlan.totalQuantity() );
-
-const ReadAccess<IndexType> providesIndexes( haloRef.getProvidesIndexes() );
-
-for ( PartitionId p = 0; p < providesPlan.size(); ++p )
-{
-    const IndexType* indexes = providesIndexes + providesPlan[p].offset;
-    IndexType expectedLocalIndex = rank;
-    BOOST_CHECK_EQUAL( expectedLocalIndex, distribution.local2global( indexes[0] ) );
-}
-
-BOOST_CHECK_EQUAL( noReqIndexes, halo.getHaloSize() );
-
-IndexType nIndexes = static_cast<IndexType>( requiredIndexes.size() );
-
-for ( IndexType i = 0; i < nIndexes; ++i )
-{
-    const IndexType haloIndex = halo.global2halo( requiredIndexes[i] );
-    BOOST_CHECK( 0 <= haloIndex && haloIndex < halo.getHaloSize() );
-}
-
-LAMA_COMMON_TEST_CASE_END()
 
 /* --------------------------------------------------------------------- */
 
-template<typename ValueType>
-void CommunicatorTest::updateHaloTest()
+BOOST_AUTO_TEST_CASE_TEMPLATE( updateHaloTest, ValueType, test_types )
 {
+    CommunicatorPtr comm = Communicator::getCommunicator();
+
+    BOOST_REQUIRE( comm );
+
+    IndexType rank = comm->getRank();
+    IndexType size = comm->getSize();
+
     SCAI_LOG_INFO( logger, "updateHaloTest<" << common::getScalarType<ValueType>() << ">" );
     const IndexType factor = 4;
     const IndexType vectorSize = factor * size;
@@ -359,9 +404,15 @@ void CommunicatorTest::updateHaloTest()
 
 /* --------------------------------------------------------------------- */
 
-template<typename ValueType>
-void CommunicatorTest::shiftTest()
+BOOST_AUTO_TEST_CASE_TEMPLATE( shiftTest, ValueType, test_types )
 {
+    CommunicatorPtr comm = Communicator::getCommunicator();
+
+    BOOST_REQUIRE( comm );
+
+    IndexType rank = comm->getRank();
+    IndexType size = comm->getSize();
+
     // Idea of this shift Test:
     // - allocate on each processor an array with one element for each processor
     // - shift this array around all processors and each processor writes one value at its rank
@@ -396,8 +447,14 @@ void CommunicatorTest::shiftTest()
 
 /* --------------------------------------------------------------------- */
 
-LAMA_COMMON_TEST_CASE_TM( CommunicatorTest, ValueType, shiftASyncTest )
+BOOST_AUTO_TEST_CASE_TEMPLATE( shiftAsyncTest, ValueType, test_types )
 {
+    CommunicatorPtr comm = Communicator::getCommunicator();
+
+    BOOST_REQUIRE( comm );
+
+    IndexType rank = comm->getRank();
+
     HArray<ValueType> sendBuffer( 2, static_cast<ValueType>( rank ) );
     HArray<ValueType> recvBuffer;
     {
@@ -427,7 +484,7 @@ LAMA_COMMON_TEST_CASE_TM( CommunicatorTest, ValueType, shiftASyncTest )
     }
     // Buffers must be different
     SCAI_LOG_INFO( logger, "async shift : using same send and recv buffer should fail" );
-    SCAI_CHECK_THROW( delete comm->shiftAsync( sendBuffer, sendBuffer, 1 ), Exception );
+    BOOST_CHECK_THROW( delete comm->shiftAsync( sendBuffer, sendBuffer, 1 ), Exception );
     // We also verify that the exception is thrown before changing the send Buffer
     BOOST_CHECK_EQUAL( 2, sendBuffer.size() );
     SCAI_LOG_INFO( logger, "async shift : try to access send / receive buffer before synchronization" );
@@ -469,12 +526,18 @@ LAMA_COMMON_TEST_CASE_TM( CommunicatorTest, ValueType, shiftASyncTest )
         BOOST_CHECK_EQUAL( value1, rbuffer[ 1 ] );
     }
 }
-LAMA_COMMON_TEST_CASE_TM_END();
 
 /* --------------------------------------------------------------------- */
 
-LAMA_COMMON_TEST_CASE_TM( CommunicatorTest, ValueType, bcastTest )
+BOOST_AUTO_TEST_CASE_TEMPLATE( bcastTest, ValueType, test_types )
 {
+    CommunicatorPtr comm = Communicator::getCommunicator();
+
+    BOOST_REQUIRE( comm );
+
+    IndexType rank = comm->getRank();
+    IndexType size = comm->getSize();
+
     SCAI_LOG_INFO( logger, "bcastTest<" << common::getScalarType<ValueType>() << ">" )
     IndexType N = 5;
     ValueType dummyVal = 13;
@@ -506,12 +569,18 @@ LAMA_COMMON_TEST_CASE_TM( CommunicatorTest, ValueType, bcastTest )
         BOOST_CHECK_EQUAL( dummyVal, vector[N] );
     }
 }
-LAMA_COMMON_TEST_CASE_TM_END();
 
 /* --------------------------------------------------------------------- */
 
-LAMA_COMMON_TEST_CASE_TM( CommunicatorTest, ValueType, scatterTest )
+BOOST_AUTO_TEST_CASE_TEMPLATE( scatterTest, ValueType, test_types )
 {
+    CommunicatorPtr comm = Communicator::getCommunicator();
+
+    BOOST_REQUIRE( comm );
+
+    IndexType rank = comm->getRank();
+    IndexType size = comm->getSize();
+
     const PartitionId root = 0;
     IndexType n = 2;
     IndexType allN = 0; // only root will have full size
@@ -544,12 +613,18 @@ LAMA_COMMON_TEST_CASE_TM( CommunicatorTest, ValueType, scatterTest )
     BOOST_CHECK_EQUAL( myvals[1], dummyVal + rank );
     BOOST_CHECK_EQUAL( myvals[2], size + dummyVal );
 }
-LAMA_COMMON_TEST_CASE_TM_END();
 
 /* --------------------------------------------------------------------- */
 
-LAMA_COMMON_TEST_CASE_TM( CommunicatorTest, ValueType, scatterVTest )
+BOOST_AUTO_TEST_CASE_TEMPLATE( scatterVTest, ValueType, test_types )
 {
+    CommunicatorPtr comm = Communicator::getCommunicator();
+
+    BOOST_REQUIRE( comm );
+
+    IndexType rank = comm->getRank();
+    IndexType size = comm->getSize();
+
     const PartitionId root = 0;
     IndexType n = rank; // number of elements I receive
     IndexType allN = 0;
@@ -596,12 +671,18 @@ LAMA_COMMON_TEST_CASE_TM( CommunicatorTest, ValueType, scatterVTest )
 
     BOOST_CHECK_EQUAL( myvals[n], dummyVal );
 }
-LAMA_COMMON_TEST_CASE_TM_END();
 
 /* --------------------------------------------------------------------- */
 
-LAMA_COMMON_TEST_CASE_TM( CommunicatorTest, ValueType, gatherTest )
+BOOST_AUTO_TEST_CASE_TEMPLATE( gatherTest, ValueType, test_types )
 {
+    CommunicatorPtr comm = Communicator::getCommunicator();
+
+    BOOST_REQUIRE( comm );
+
+    IndexType rank = comm->getRank();
+    IndexType size = comm->getSize();
+
     const PartitionId root = 0;
     IndexType allN = 0; // only root will have full size
 
@@ -636,12 +717,18 @@ LAMA_COMMON_TEST_CASE_TM( CommunicatorTest, ValueType, gatherTest )
         }
     }
 }
-LAMA_COMMON_TEST_CASE_TM_END();
 
 /* --------------------------------------------------------------------- */
 
-LAMA_COMMON_TEST_CASE_TM( CommunicatorTest, ValueType, gatherVTest )
+BOOST_AUTO_TEST_CASE_TEMPLATE( gatherVTest, ValueType, test_types )
 {
+    CommunicatorPtr comm = Communicator::getCommunicator();
+
+    BOOST_REQUIRE( comm );
+
+    IndexType rank = comm->getRank();
+    IndexType size = comm->getSize();
+
     const PartitionId root = 0;
     IndexType n = rank; // number of elements I send
     IndexType allN = 0;
@@ -696,12 +783,18 @@ LAMA_COMMON_TEST_CASE_TM( CommunicatorTest, ValueType, gatherVTest )
         }
     }
 }
-LAMA_COMMON_TEST_CASE_TM_END();
 
 /* --------------------------------------------------------------------- */
 
-LAMA_COMMON_TEST_CASE_TM( CommunicatorTest, ValueType, swapTest )
+BOOST_AUTO_TEST_CASE_TEMPLATE( swapTest, ValueType, test_types )
 {
+    CommunicatorPtr comm = Communicator::getCommunicator();
+
+    BOOST_REQUIRE( comm );
+
+    IndexType rank = comm->getRank();
+    IndexType size = comm->getSize();
+
     int n = 10;
     scoped_array<ValueType> vector( new ValueType[n] );
 
@@ -721,37 +814,9 @@ LAMA_COMMON_TEST_CASE_TM( CommunicatorTest, ValueType, swapTest )
         BOOST_CHECK_EQUAL( value, vector[i] );
     }
 }
-LAMA_COMMON_TEST_CASE_TM_END()
 
-/* ----------------------------------------------------------------------- */
+/* --------------------------------------------------------------------- */
 
-LAMA_COMMON_TEST_CASE( CommunicatorTest, writeAtTest )
-{
-    LAMA_WRITEAT_PTR_TEST( comm );
-}
-LAMA_COMMON_TEST_CASE_END()
+BOOST_AUTO_TEST_SUITE_END();
 
-/* ----------------------------------------------------------------------- */
-
-LAMA_COMMON_TEST_CASE_RUNNER( CommunicatorTest )
-{
-// disable inlining otherwise derived classes will not find it
-#define LAMA_COMM_TEST( z, I, _ )           \
-    swapTest<ARRAY_TYPE##I>();              \
-    gatherTest<ARRAY_TYPE##I>();            \
-    gatherVTest<ARRAY_TYPE##I>();           \
-    scatterTest<ARRAY_TYPE##I>();           \
-    scatterVTest<ARRAY_TYPE##I>();          \
-    bcastTest<ARRAY_TYPE##I>();             \
-    shiftTest<ARRAY_TYPE##I>();             \
-    shiftASyncTest<ARRAY_TYPE##I>();        \
-    updateHaloTest<ARRAY_TYPE##I>();        \
-    // instantiate methods for all supported data types
-    BOOST_PP_REPEAT( ARRAY_TYPE_CNT, LAMA_COMM_TEST, _ )
-#undef LAMA_COMM_TEST
-    bcastStringTest();
-    buildHaloTest();
-    allocatePlanTest();
-    computeOwnersTest();
-    CommunicatorCtrTest();
-}
+/* --------------------------------------------------------------------- */

@@ -141,6 +141,14 @@ public:
      */
     static Matrix* getMatrix( const Format::MatrixStorageFormat format, const common::scalar::ScalarType type );
 
+    /** Override Distributed::buildCSRGraph */
+
+    virtual void buildCSRGraph( IndexType ia[], IndexType ja[], IndexType vwgt[], const IndexType* globalRowIndexes ) const;
+
+    /** Override Distributed::getCSRGraphSize */
+
+    virtual IndexType getCSRGraphSize() const;
+
     void writeToFile(
         const std::string& fileName,
         const File::FileType fileType = File::BINARY,

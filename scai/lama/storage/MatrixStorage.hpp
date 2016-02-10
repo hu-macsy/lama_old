@@ -442,18 +442,14 @@ public:
      * @param[out]  adjIA   the ia array of the csr graph
      * @param[out]  adjJA   the ja array of the csr graph
      * @param[out]  vwgt    ToDo
-     * @param[in]   comm    Communicator is used to determine number of partitions
-     * @param[in]   globalRowIndexes ToDo
-     * @param[out]  vtxdist ToDo
+     * @param[in]   globalRowIndexes are the global indexes of the local rows ( can be NULL for identity )
      * @since 1.1.0
      */
     virtual void buildCSRGraph(
-        IndexType* adjIA,
-        IndexType* adjJA,
-        IndexType* vwgt,
-        dmemo::CommunicatorPtr comm,
-        const IndexType* globalRowIndexes = NULL,
-        IndexType* vtxdist = NULL ) const;
+        IndexType adjIA[],
+        IndexType adjJA[],
+        IndexType vwgt[],
+        const IndexType* globalRowIndexes ) const;
 
     /******************************************************************
      *   File I/O for MatrixStorage                                    *

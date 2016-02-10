@@ -38,9 +38,7 @@
 
 // base classes
 #include <scai/dmemo/GeneralDistribution.hpp>
-
-// local library
-#include <scai/lama/matrix/SparseMatrix.hpp>
+#include <scai/dmemo/Distributed.hpp>
 
 // std
 #include <vector>
@@ -66,17 +64,17 @@ class COMMON_DLL_IMPORTEXPORT MetisDistribution:
 {
 public:
 
-    /** Construct a block distribution for a number of elements on to the partitions of the passed communicator.
+    /** Construct a new general distribution for a number of elements on to the partitions of the passed communicator.
      *
      *  @param[in] comm  used for the partitions onto which elements are distributed.
-     *  @param[in] matrix  the matrix the distribution is dedicated for
+     *  @param[in] matrix is an object whose size and connectivity is used for the new distribution
      *  @param[in] weights  weights for the computational load to the processors
      */
-    MetisDistribution( const CommunicatorPtr comm, const Matrix& matrix, std::vector<float>& weights );
+    MetisDistribution( const CommunicatorPtr comm, const Distributed& matrix, std::vector<float>& weights );
 
     /** Same as above but with individual weight of each processor. */
 
-    MetisDistribution( const CommunicatorPtr comm, const Matrix& matrix, float weight );
+    MetisDistribution( const CommunicatorPtr comm, const Distributed& matrix, float weight );
 
     virtual ~MetisDistribution();
 
@@ -94,7 +92,7 @@ private:
 
     MetisDistribution();
 
-    void computeIt( const CommunicatorPtr comm, const Matrix& matrix, std::vector<float>& weights );
+    void computeIt( const CommunicatorPtr comm, const Distributed& matrix, std::vector<float>& weights );
 
     template<typename weightType>
     void callPartitioning(
@@ -103,7 +101,7 @@ private:
         IndexType& parts,
         std::vector<weightType>& tpwgts,
         const CommunicatorPtr comm,
-        const Matrix& matrix ) const;
+        const Distributed& matrix ) const;
 
     template<typename weightType>
     void checkAndMapWeights(
@@ -115,9 +113,11 @@ private:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
-    std    ::vector<float> mWeights;
+    std::vector<float> mWeights;  //!< The weights of all partitions, mWeights.size() == mComm.size()
 
-    void normWeights( std::vector<float>& weights );
+    /** Norm the weights that its sum is exactly 1. */
+
+    static void normWeights( std::vector<float>& weights );
 };
 
 } /* end namespace dmemo */

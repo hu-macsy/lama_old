@@ -38,7 +38,6 @@ scai_project (
     SOURCES
 
         CommunicatorTest
-        NoCommunicatorTest
     )
 
 ### checks ####

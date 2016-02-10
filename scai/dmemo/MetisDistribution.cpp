@@ -36,7 +36,6 @@
 
 // local library
 #include <scai/dmemo/NoDistribution.hpp>
-#include <scai/lama/matrix/CSRSparseMatrix.hpp>
 
 // internal scai libraries
 #include <scai/tracing.hpp>
@@ -56,16 +55,16 @@ SCAI_LOG_DEF_LOGGER( MetisDistribution::logger, "Distribution.MetisDistribution"
 
 #define MASTER 0
 
-MetisDistribution::MetisDistribution( const CommunicatorPtr comm, const Matrix& matrix, std::vector<float>& weights )
+MetisDistribution::MetisDistribution( const CommunicatorPtr comm, const Distributed& matrix, std::vector<float>& weights )
 
-    : GeneralDistribution( matrix.getNumRows(), comm )
+    : GeneralDistribution( matrix.getDistribution().getGlobalSize(), comm )
 {
     computeIt( comm, matrix, weights );
 }
 
-MetisDistribution::MetisDistribution( const CommunicatorPtr comm, const Matrix& matrix, float weight )
+MetisDistribution::MetisDistribution( const CommunicatorPtr comm, const Distributed& matrix, float weight )
 
-    : GeneralDistribution( matrix.getNumRows(), comm )
+    : GeneralDistribution( matrix.getDistribution().getGlobalSize(), comm )
 {
     SCAI_LOG_INFO( logger, "construct Metis distribution, weight at " << *comm << ": " << weight )
 
@@ -118,22 +117,19 @@ void MetisDistribution::normWeights( std::vector<float>& weights )
     weights[numPartitions - 1] = 1.0f - sumNorm;
 }
 
-void MetisDistribution::computeIt( const CommunicatorPtr comm, const Matrix& matrix, std::vector<float>& weights )
+void MetisDistribution::computeIt( const CommunicatorPtr comm, const Distributed& matrix, std::vector<float>& weights )
 {
     // TODO check only for replicated matrix
 
-    const _MatrixStorage& localMatrix = matrix.getLocalStorage();
-
     IndexType size = comm->getSize();
     IndexType myRank = comm->getRank();
-    IndexType totalRows = matrix.getNumRows();
+    IndexType totalRows = matrix.getDistribution().getGlobalSize();
 
     if( myRank == MASTER )
     {
         // MASTER must have all values of the matrix to build the graph
 
-        SCAI_ASSERT_EQUAL_ERROR( totalRows, localMatrix.getNumRows() )
-        SCAI_ASSERT_EQUAL_ERROR( matrix.getNumColumns(), localMatrix.getNumColumns() )
+        SCAI_ASSERT_EQUAL_ERROR( totalRows, matrix.getDistribution().getLocalSize() );
     }
 
     std::vector<IndexType> numRowsPerOwner;
@@ -249,18 +245,21 @@ void MetisDistribution::callPartitioning(
     IndexType& minConstraint,
     IndexType& parts,
     std::vector<WeightType>& tpwgts,
-    const CommunicatorPtr comm,
-    const Matrix& matrix ) const
+    const CommunicatorPtr,
+    const Distributed& matrix ) const
 {
     SCAI_REGION( "METIScall" )
 
-    IndexType totalRows = matrix.getNumRows();
+    // Note that here we have: global size == local size of distribution 
+
+    IndexType totalRows = matrix.getDistribution().getGlobalSize();
 
     std::vector<IndexType> csrXadj( totalRows + 1 ); // #rows + 1
-    std::vector<IndexType> csrAdjncy( matrix.getLocalNumValues() - totalRows ); // #values - #diagonalelements(rows)
+    // std::vector<IndexType> csrAdjncy( matrix.getLocalNumValues() - totalRows ); // #values - #diagonalelements(rows)
+    std::vector<IndexType> csrAdjncy( matrix.getCSRGraphSize() );
     std::vector<IndexType> csrVwgt( totalRows );
 
-    matrix.getLocalStorage().buildCSRGraph( &csrXadj[0], &csrAdjncy[0], &csrVwgt[0], comm );
+    matrix.buildCSRGraph( &csrXadj[0], &csrAdjncy[0], &csrVwgt[0], NULL );
 
     IndexType ncon = 1;
     IndexType options[METIS_NOPTIONS];
@@ -278,6 +277,43 @@ void MetisDistribution::callPartitioning(
     // METIS_PartGraphKway( &totalRows, &ncon, &csrXadj[0], &csrAdjncy[0], &csrVwgt[0], NULL,
     // NULL, &parts, &tpwgts[0], NULL, options, &minConstraint, &partition[0] );
 }
+
+/*  Help routine needed for parallel graphs
+
+    void getVTX( IndexType* vtxdist, CommunicatorPtr com, const Distribted& matrix )
+    {
+        if ( vtxdist == NULL ) 
+        {
+            return;
+        }
+
+        const PartitionId MASTER = 0;
+
+        int numLocalRows = matrix->getDistribution().getLocalSize();
+
+        IndexType parts = comm->getSize();
+
+        // Is this valid ?
+        // SCAI_ASSERT_ERROR( getDistribution().getNumPartitions() == parts,
+        //              "mismatch number of partitions and communicator size" );
+
+        comm->gather( vtxdist, 1, MASTER, &numLocalRows );
+        comm->bcast( vtxdist, parts, MASTER );
+
+        // build running sum 
+
+        IndexType runningSum = 0; 
+
+        for ( IndexType i = 0; i < parts; ++i )
+        {
+            IndexType tmp = runningSum;
+            runningSum += vtxdist[i]; 
+            vtxdist[i] = tmp;
+        }
+        vtxdist[parts] = runningSum;
+    }
+
+*/
 
 template<typename WeightType>
 void MetisDistribution::checkAndMapWeights(
@@ -315,13 +351,11 @@ Distribution* MetisDistribution::create( const DistributionArguments arg )
     }
     else
     {
-        // create identity matrix, replicated on all nodes
-
-        CSRSparseMatrix<float> matrix;
         DistributionPtr dist( new NoDistribution( arg.globalSize ) );
-        matrix.setIdentity( dist );
 
-        return new MetisDistribution( arg.communicator, matrix, arg.weight );
+        Distributed dummy( dist );
+
+        return new MetisDistribution( arg.communicator, dummy, arg.weight );
     }
 }
 
