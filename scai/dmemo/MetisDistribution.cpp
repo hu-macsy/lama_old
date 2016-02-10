@@ -338,9 +338,11 @@ void MetisDistribution::checkAndMapWeights(
  *   static create methods ( required for registration in distribution factory )    *
  * ---------------------------------------------------------------------------------*/
 
+const char MetisDistribution::theCreateValue[] = "METIS";
+
 std::string MetisDistribution::createValue()
 {
-    return "METIS";
+    return theCreateValue;
 }
 
 Distribution* MetisDistribution::create( const DistributionArguments arg )

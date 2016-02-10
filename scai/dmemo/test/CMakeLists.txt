@@ -38,6 +38,17 @@ scai_project (
     SOURCES
 
         CommunicatorTest
+
+        DistributionTest
+
+        NoDistributionTest
+        BlockDistributionTest
+        CyclicDistributionTest
+        GenBlockDistributionTest
+        GeneralDistributionTest
+        MetisDistributionTest
+
+        RedistributorTest
     )
 
 ### checks ####

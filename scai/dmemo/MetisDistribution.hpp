@@ -88,6 +88,11 @@ public:
 
     static std::string createValue();
 
+    virtual const char* getKind() const
+    {
+        return theCreateValue;
+    }
+
 private:
 
     MetisDistribution();
@@ -118,6 +123,8 @@ private:
     /** Norm the weights that its sum is exactly 1. */
 
     static void normWeights( std::vector<float>& weights );
+
+    static const char theCreateValue[];
 };
 
 } /* end namespace dmemo */

@@ -51,6 +51,8 @@ namespace dmemo
 
 SCAI_LOG_DEF_LOGGER( GeneralDistribution::logger, "Distribution.General" )
 
+const char GeneralDistribution::theCreateValue[] = "GENERAL";
+
 GeneralDistribution::GeneralDistribution(
     const IndexType globalSize,
     const std::vector<IndexType>& localIndexes,

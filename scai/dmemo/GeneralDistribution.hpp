@@ -112,7 +112,14 @@ public:
 
     void printDistributionVector( std::string name ) const;
 
+    virtual const char* getKind() const
+    {
+        return theCreateValue;
+    }
+
 protected:
+
+    static const char theCreateValue[];
 
     GeneralDistribution( const IndexType globalSize, const CommunicatorPtr communicator );
 

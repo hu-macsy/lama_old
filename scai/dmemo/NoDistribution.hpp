@@ -92,11 +92,18 @@ public:
 
     static std::string createValue();
 
+    virtual const char* getKind() const
+    { 
+        return theCreateValue; 
+    }
+
 private:
 
     NoDistribution(); // no default constructor as global size is not available
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
+
+    static const char theCreateValue[];
 };
 
 } /* end namespace dmemo */

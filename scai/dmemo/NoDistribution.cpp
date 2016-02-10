@@ -104,9 +104,11 @@ void NoDistribution::printDistributionVector( std::string name ) const
  *   static create methods ( required for registration in distribution factory )    *
  * ---------------------------------------------------------------------------------*/
 
+const char NoDistribution::theCreateValue[] = "NO";
+
 std::string NoDistribution::createValue()
 {
-    return "NO";
+    return theCreateValue;
 }
 
 Distribution* NoDistribution::create( const DistributionArguments arg )

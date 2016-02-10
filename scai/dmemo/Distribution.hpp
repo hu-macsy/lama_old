@@ -184,6 +184,8 @@ public:
         return getNumPartitions() == 1;
     }
 
+    virtual const char* getKind() const = 0;
+
     /** Query if the given global index is local for the calling rank
      *                          (e.g. process for an MPI Communicator)
      *

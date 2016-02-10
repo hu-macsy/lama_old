@@ -358,9 +358,11 @@ void GenBlockDistribution::printDistributionVector( std::string name ) const
  *   static create methods ( required for registration in distribution factory )    *
  * ---------------------------------------------------------------------------------*/
 
+const char GenBlockDistribution::theCreateValue[] = "GEN_BLOCK";
+
 std::string GenBlockDistribution::createValue()
 {
-    return "GEN_BLOCK";
+    return theCreateValue;
 }
 
 Distribution* GenBlockDistribution::create( const DistributionArguments arg )

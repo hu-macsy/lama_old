@@ -185,9 +185,11 @@ void BlockDistribution::printDistributionVector( std::string name ) const
  *   static create methods ( required for registration in distribution factory )    *
  * ---------------------------------------------------------------------------------*/
 
+const char BlockDistribution::theCreateValue[] = "BLOCK";
+
 std::string BlockDistribution::createValue()
 {
-    return "BLOCK";
+    return theCreateValue;
 }
 
 Distribution* BlockDistribution::create( const DistributionArguments arg )

@@ -149,6 +149,8 @@ public:
 
     static std::string createValue();
 
+    virtual const char* getKind() const { return createValue().c_str(); }
+
 private:
 
     CyclicDistribution(); // disable default constructor as it has no global size

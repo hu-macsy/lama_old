@@ -1,39 +1,25 @@
 How to run the tests for dmemo (Distributed Memory)
 ===================================================
 
-Case 1: No MPI, no GPI
+NoCommunicator:
+===============
 
-Just run the serial tests
+export SCAI_COMMUNICATOR=no
 
-./dmemoTest
+./dmemoTest --log_level=test_suite
 
-Case 2: MPI, no GPI
+MPI Communicator:
+=================
 
-- Default communicator will be MPI
-- run the tests for different number of processors
+export SCAI_COMMUNICATOR=mpi
 
 mpirun -np 1 ./dmemoTest
 mpirun -np 2 ./dmemoTest
 mpirun -np 4 ./dmemoTest
 
-Case 3: GPI, no MPI
-
-- Default communicator will be GPI
-- run the tests for different number of processors
+GPI Communicator
+================
 
 gaspi_run -np 1 ./dmemoTest
 gaspi_run -np 2 ./dmemoTest
 gaspi_run -np 4 ./dmemoTest
-
-Case 4: MPI + GPI
-
-- Default communicator will be MPI 
-- It is not possible to identify default communicator by mpirun or gaspi_run
-
-export SCAI_COMMUNICATOR=MPI
-
-...  // as case 2 
-
-export SCAI_COMMUNICATOR=GPI
-
-...  // as case 3

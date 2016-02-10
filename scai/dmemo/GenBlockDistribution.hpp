@@ -164,11 +164,18 @@ public:
 
     static std::string createValue();
 
+    virtual const char* getKind() const
+    {
+        return theCreateValue;
+    }
+
 protected:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
 private:
+
+    static const char theCreateValue[];
 
     void setOffsets( const IndexType rank, const IndexType numPartitions, const IndexType localSizes[] );
 
