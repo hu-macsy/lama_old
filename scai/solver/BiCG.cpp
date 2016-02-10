@@ -237,7 +237,7 @@ const Vector& BiCG::getResidual2() const
 
         if( !runtime.mResidual2.get() )
         {
-            runtime.mResidual2.reset( runtime.mRhs->clone() );
+            runtime.mResidual2.reset( Vector::create( runtime.mRhs->getCreateValue() ) );
         }
 
         //mLogger->logMessage(LogLevel::completeInformation,"Residual needs revaluation.\n");

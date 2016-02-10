@@ -92,7 +92,7 @@ Vector& SolutionProxy::getReference()
 
 Vector* SolutionProxy::create()
 {
-    return mSolution->clone();
+    return Vector::create( mSolution->getCreateValue() );
 }
 
 void SolutionProxy::swap( Vector*& other )

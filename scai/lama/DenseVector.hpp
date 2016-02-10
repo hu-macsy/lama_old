@@ -270,12 +270,6 @@ public:
     /**
      * Implementation of Vector::clone with covariant return type.
      */
-
-    virtual DenseVector* clone() const;
-
-    /**
-     * Implementation of Vector::clone with covariant return type.
-     */
     virtual DenseVector* clone( DistributionPtr distribution ) const;
 
     /**
@@ -476,7 +470,9 @@ public:
 
     // key for factory 
 
-    static std::pair<VectorKind, common::scalar::ScalarType> createValue();
+    static VectorCreateKeyType createValue();
+
+    virtual VectorCreateKeyType getCreateValue() const;
 };
 
 /* ------------------------------------------------------------------------- */

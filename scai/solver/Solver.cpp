@@ -184,7 +184,7 @@ const Vector& Solver::getResidual() const
 
         if( !runtime.mResidual.get() )
         {
-            runtime.mResidual.reset( runtime.mRhs->clone() );
+            runtime.mResidual.reset( Vector::create( runtime.mRhs->getCreateValue() ) );
         }
 
         //mLogger->logMessage(LogLevel::completeInformation,"Residual needs revaluation.\n");

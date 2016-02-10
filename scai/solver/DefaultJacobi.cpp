@@ -136,7 +136,7 @@ void DefaultJacobi::initialize( const Matrix& coefficients )
 
     runtime.mDiagonalInverted->setDiagonal( *runtime.mDiagonalTimesRhs );
 
-    runtime.mOldSolution.reset( runtime.mDiagonalTimesRhs->clone() );
+    runtime.mOldSolution.reset( Vector::create( runtime.mDiagonalTimesRhs->getCreateValue() ) );
     runtime.mOldSolution->setContextPtr( runtime.mDiagonalTimesRhs->getContextPtr() );
 
     OmegaSolver::initialize( coefficients );
@@ -163,7 +163,7 @@ void DefaultJacobi::solveInit( Vector& solution, const Vector& rhs )
     //Check if oldSolution already exists, if not create copy of solution
     if( !runtime.mOldSolution.get() )
     {
-        runtime.mOldSolution.reset( solution.clone() );
+        runtime.mOldSolution.reset( Vector::create( solution.getCreateValue() ) );
     }
 
     runtime.mProxyOldSolution = runtime.mOldSolution.get();

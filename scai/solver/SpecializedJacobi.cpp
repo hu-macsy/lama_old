@@ -181,7 +181,7 @@ void SpecializedJacobi::solveInit( Vector& solution, const Vector& rhs )
     //Check if oldSolution already exists, if not create copy of solution
     if( !getConstRuntime().mOldSolution.get() )
     {
-        getRuntime().mOldSolution.reset( solution.clone() );
+        getRuntime().mOldSolution.reset( Vector::create( solution.getCreateValue() ) );
 
         if( getConstRuntime().mCoefficients->getNumColumns() != getConstRuntime().mOldSolution->size() )
         {

@@ -131,7 +131,7 @@ int main( int argc, char* argv[] )
             std::cout << "reading vector from file " << filename << " failed, take sum( Matrix, 2 ) " << std::endl;
 
             {
-                scai::common::unique_ptr<Vector> xPtr( rhs.clone() );
+                scai::common::unique_ptr<Vector> xPtr( Vector::create( rhs.getCreateValue() ) );
                 Vector& x = *xPtr;
                 x.resize( matrix.getColDistributionPtr() );
                 x = Scalar( 1 );
