@@ -31,6 +31,13 @@
  # @since 1.0.0
 ###
 
+
+if ( METIS_FOUND OR PARMETIS_FOUND )
+    set ( MetisDistributionTest MetisDistributionTest )
+else( METIS_FOUND OR PARMETIS_FOUND )
+    set ( MetisDistributionTest )
+endif ( METIS_FOUND OR PARMETIS_FOUND )
+
 ### set this dir as lama source dir ###
 
 scai_project ( 
@@ -46,7 +53,7 @@ scai_project (
         CyclicDistributionTest
         GenBlockDistributionTest
         GeneralDistributionTest
-        MetisDistributionTest
+        ${MetisDistributionTest}
 
         RedistributorTest
     )

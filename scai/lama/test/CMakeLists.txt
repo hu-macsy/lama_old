@@ -53,7 +53,6 @@ scai_project (
 
     SOURCES
 
-        CommunicatorTest
         COOSparseMatrixTest
         COOStorageTest
         COOUtilsTest

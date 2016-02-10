@@ -36,9 +36,6 @@
 
 #include <scai/dmemo/CyclicDistribution.hpp>
 
-#include <scai/lama/test/distributed/DistributionTest.hpp>
-#include <scai/lama/test/TestMacros.hpp>
-
 using namespace scai::dmemo;
 
 /* --------------------------------------------------------------------- */

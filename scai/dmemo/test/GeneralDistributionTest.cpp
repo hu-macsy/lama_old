@@ -36,13 +36,7 @@
 
 #include <scai/dmemo/GeneralDistribution.hpp>
 
-#include <scai/lama/test/TestMacros.hpp>
-#include <scai/lama/test/distributed/DistributionTest.hpp>
-
 using namespace scai::dmemo;
-
-extern bool base_test_case;
-extern std::string testcase;
 
 /* --------------------------------------------------------------------- */
 

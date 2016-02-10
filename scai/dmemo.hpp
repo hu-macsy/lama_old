@@ -25,10 +25,17 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Include file that includes all other defintion files of this module.
+ * @brief Include file that includes main defintion files of this project.
  *
  * @author Thomas Brandes
  * @date 09.02.2016
  */
 
-#include <scai/dmemo/Communicator.hpp> 
+// We include only base classes, not derived Communicator or Distribution classes
+
+#include <scai/dmemo/Communicator.hpp>
+
+#include <scai/dmemo/Halo.hpp>
+#include <scai/dmemo/HaloBuilder.hpp>
+
+#include <scai/dmemo/Distribution.hpp>

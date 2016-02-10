@@ -34,14 +34,11 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/mpl/list.hpp>
 
-#include <scai/lama/test/TestMacros.hpp>
-
 #include <scai/dmemo/Distribution.hpp>
 #include <scai/dmemo/BlockDistribution.hpp>
 #include <scai/dmemo/CyclicDistribution.hpp>
 #include <scai/dmemo/Redistributor.hpp>
 
-using namespace scai::lama;
 using namespace scai::hmemo;
 using namespace scai::dmemo;
 using namespace scai::common;
@@ -114,8 +111,14 @@ BOOST_AUTO_TEST_CASE( writeAtTest )
     shared_ptr<Distribution> distBlock( new BlockDistribution( size, comm ) );
     shared_ptr<Distribution> distCyclic( new CyclicDistribution( size, chunkSize, comm ) );
     Redistributor r( distCyclic, distBlock );
-    LAMA_WRITEAT_TEST( r );
+
+    std::ostringstream out;
+
+    out << r ;
+
+    BOOST_CHECK( out.str().length() >  0 );
 }
+
 /* --------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_SUITE_END();

@@ -106,6 +106,8 @@ addInternalAndExternalIncludes()
 
 if ( METIS_FOUND OR PARMETIS_FOUND )
     set ( MetisDistribution MetisDistribution )
+else ( METIS_FOUND OR PARMETIS_FOUND )
+    set ( MetisDistribution  )
 endif ( METIS_FOUND OR PARMETIS_FOUND )
 
 ### Add classes/headers to source files CXX_SOURCES, CXX_HEADERS, ...

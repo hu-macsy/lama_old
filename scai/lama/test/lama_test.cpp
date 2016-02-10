@@ -41,7 +41,6 @@
 #include <scai/lama/test/NormTest.hpp>
 #include <scai/lama/test/MatrixStorageTest.hpp>
 #include <scai/lama/test/SparseMatrixTest.hpp>
-#include <scai/lama/test/distributed/CommunicatorTest.hpp>
 
 #include <list>
 #include <string>
@@ -92,7 +91,6 @@ int main( int argc, char* argv[] )
         TC_REG( normtestclasses, normtestmethods );
         TC_REG( sparsematrixtestclasses, sparsematrixtestmethods );
         TC_REG( storagetestclasses, storagetestmethods );
-        TC_REG( commtestclasses, commtestmethods );
 
         /* Parse command line arguments */
         for ( int i = 0; i < argc; i++ )
