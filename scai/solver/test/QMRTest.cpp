@@ -153,7 +153,7 @@ void testSolveWithPreconditionmethod( ContextPtr context )
     QMRSolver.setStoppingCriterion( criterion );
  
     SolverPtr preconditioner( new TrivialPreconditioner( "Trivial preconditioner" ) );
-    preconditioner->initialize(coefficients);
+    //preconditioner->initialize(coefficients);
     QMRSolver.setPreconditioner( preconditioner );
     
     QMRSolver.initialize( coefficients );

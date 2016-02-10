@@ -1,8 +1,8 @@
 ###
- # @file Functions/concatCacheArguments.cmake
+ # @file CMakeLists.txt
  #
  # @license
- # Copyright (c) 2009-2013
+ # Copyright (c) 2009-2015
  # Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  # for Fraunhofer-Gesellschaft
  #
@@ -25,25 +25,18 @@
  # SOFTWARE.
  # @endlicense
  #
- # @brief CMake function to concatenate cache argument after whitelisting for external dependencies of module to concatlist
- # @author Lauretta Schubert
- # @date 19.08.2015
- # @since 2.0.0
+ # @brief CMakeLists of common/mic
+ # @author Jan Ecker
+ # @date 10.02.2016
 ###
 
-macro    ( concatCacheArguments MODULE CONCATLIST )
+# add source and header files to the current project
 
-	string ( TOUPPER ${MODULE} upper_module )
+scai_project (
 
-	set ( ${CONCATLIST} "" )
-	set ( DEP_LIST ${${upper_module}_EXTERNAL_DEPS} )
-	if     ( NOT CXX_SUPPORTS_C11 OR BUILD_TEST )
-		set ( DEP_LIST ${DEP_LIST} Boost )
-	endif  ( NOT CXX_SUPPORTS_C11 OR BUILD_TEST )
+    HEADERS
 
-	foreach    ( package ${DEP_LIST} )
-		string ( TOUPPER ${package} upper_package )
-		set ( ${CONCATLIST} ${${CONCATLIST}} ${${upper_package}_ARGS} )
-	endforeach ( package ${DEP_LIST} )
+        MICCallable
 
-endmacro ( concatCacheArguments )
+    ADD_PARENT_SCOPE
+)

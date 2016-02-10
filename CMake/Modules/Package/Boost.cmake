@@ -65,69 +65,25 @@ endif ( SCAI_CMAKE_VERBOSE )
 
 # Find Boost 
 
-#set ( SCAI_CMAKE_VERBOSE QUIET )
-
 find_package ( Boost ${SCAI_FIND_PACKAGE_FLAGS} COMPONENTS ${Boost_COMPONENTS} )
 
 if    ( Boost_INCLUDE_DIR )
 	set ( BOOST_INCLUDE_DIR "${Boost_INCLUDE_DIR}" ) # for getting the module names straight
 endif ( Boost_INCLUDE_DIR )
 
-# Note: we use BOOST_INCLUDE_DIR, Boost_<lib>_FOUND, Boost_<lib>_LIBRARY, but
-#       not Boost_FOUND, as it is false if some optional libraries are missing
-
-# Boost: include directory is mandatory ( LAMA uses shared pointer, function )
-
-if    ( BOOST_INCLUDE_DIR )
-    # Boost_PATH should be same as BOOST_ROOT
-    get_filename_component ( Boost_PATH "${BOOST_INCLUDE_DIR}" PATH )
-else  ( BOOST_INCLUDE_DIR )
-    message ( STATUS "Boost (include directory) not found: give hint by environment variable BOOST_ROOT" ) 
-endif ( BOOST_INCLUDE_DIR )
-
-# check status of each Boost component and conclude all needed Boost libraries
-set ( SCAI_BOOST_LIBRARIES "" )
-
-foreach    ( lib ${Boost_COMPONENTS} )
-    string ( TOUPPER ${lib} libname )
-    set ( libname "Boost_${libname}_LIBRARY" )
-    # libname: variable that contains the library for the boost component
-    # TODO: SUMMARY   
-    #message ( STATUS "${libname} = ${${libname}}" )
-    if    ( ${libname} )
-        # library found, make sure it belongs to same version of Boost
-        if    ( "${${libname}}" MATCHES "${Boost_PATH}*" )
-        	list ( APPEND SCAI_BOOST_LIBRARIES ${${libname}} )
-            # do nothing
-        else  ( "${${libname}}" MATCHES "${Boost_PATH}*" )
-            message ( FATAL_ERROR "${${libname}} illegal, not in ${Boost_PATH}" )
-        endif ( "${${libname}}" MATCHES "${Boost_PATH}*" )
-    endif ( ${libname} )
-endforeach ( lib ${Boost_COMPONENTS} )
-
-# Check boost versions
-# TODO: RECHECK
-if    ( ${Boost_VERSION} GREATER "104099" AND Boost_UNIT_TEST_FRAMEWORK_FOUND AND Boost_REGEX_FOUND )
-    set ( FOUND_BOOST_TEST TRUE )
-else  ( ${Boost_VERSION} GREATER "104099" AND Boost_UNIT_TEST_FRAMEWORK_FOUND AND Boost_REGEX_FOUND )
-    if    ( NOT Boost_UNIT_TEST_FRAMEWORK_FOUND )
-        message ( WARNING "Not building tests because Boost unit test framework is missing." )
-    endif ( NOT Boost_UNIT_TEST_FRAMEWORK_FOUND )
-    
-    if    ( NOT Boost_REGEX_FOUND )
-        message ( WARNING "Not building tests because Boost regex is missing." )
-    endif ( NOT Boost_REGEX_FOUND )
-    
-    if ( ${Boost_VERSION} LESS "104100" )
-        message ( WARNING "Not building tests because Boost is to old: ${Boost_VERSION}." )
-    endif ( ${Boost_VERSION} LESS "104100" )
-endif ( ${Boost_VERSION} GREATER "104099" AND Boost_UNIT_TEST_FRAMEWORK_FOUND AND Boost_REGEX_FOUND )
-
-
-# if use of package is enabled
-if    ( ${BUILD_TEST} AND NOT ${FOUND_BOOST_TEST} )
-    # if package is enabled, but not found: ERROR!
-    message ( STATUS "Boost Test Framework or Bost Regex missing, but tests are enabled!" )
-endif ( ${BUILD_TEST} AND NOT ${FOUND_BOOST_TEST} )
-
 endif ( NOT DEFINED BOOST_INCLUDE_DIR )
+
+if    ( NOT Boost_UNIT_TEST_FRAMEWORK_FOUND AND ${BUILD_TEST} )
+    message ( WARNING "Boost Test Framework is missing, so BUILD_TEST is disabled!" )
+    set ( BUILD_TEST FALSE )
+endif ( NOT Boost_UNIT_TEST_FRAMEWORK_FOUND AND ${BUILD_TEST} )
+
+if    ( NOT Boost_REGEX_FOUND AND ${BUILD_TEST} )
+    message ( WARNING "Boost Regex is missing, so BUILD_TEST is disabled!" )
+    set ( BUILD_TEST FALSE )
+endif ( NOT Boost_REGEX_FOUND AND ${BUILD_TEST} )
+
+if    ( Boost_UNIT_TEST_FRAMEWORK_FOUND AND Boost_REGEX_FOUND )
+    set ( FOUND_BOOST_TEST TRUE )
+endif ( Boost_UNIT_TEST_FRAMEWORK_FOUND AND Boost_REGEX_FOUND ) 
+ 

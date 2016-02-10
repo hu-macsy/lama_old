@@ -82,7 +82,7 @@ MINRES::MINRESRuntime::~MINRESRuntime(){}
 void MINRES::initialize( const Matrix& coefficients ){
     SCAI_LOG_DEBUG(logger, "Initialization started for coefficients = "<< coefficients)
 
-    Solver::initialize( coefficients );
+    IterativeSolver::initialize( coefficients );
  	MINRESRuntime& runtime = getRuntime();
 
     runtime.mBetaNew = 0.0;

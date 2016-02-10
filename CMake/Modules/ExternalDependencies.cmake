@@ -32,7 +32,7 @@
 ###
 
 ## attention OpenMP should be before SCAI_BLAS !!!
-## need to get rid of boost for boost_repeat in lama
+## need to get rid of boost for boost_repeat in common
 
 set ( SCAI_COMMON_EXTERNAL_DEPS dl Thread Boost OpenMP CUDA )
 set ( SCAI_LOGGING_EXTERNAL_DEPS )

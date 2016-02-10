@@ -36,10 +36,33 @@ or::
 
 Via ccmake you can verify that the Boost variables needed for LAMA have correct values::
 
-    BOOST_ROOT                     <path/to/boost/installation>
-    Boost_INCLUDE_DIR              <path/to/boost/installation>/include
-    Boost_LIBRARY_DIRS             <path/to/boost/installation>/lib
-    Boost_PROGRAM_OPTIONS_LIBRARY  <path/to/boost/installation>/lib/libboost_program_options.so
-    Boost_THREAD_LIBRARY           <path/to/boost/installation>/lib/libboost_thread.so
-    Boost_UNIT_TEST_FRAMEWORK_LIBR <path/to/boost/installation>/lib/libboost_unit_test_framework.so
+    BOOST_ROOT                        <path/to/boost/installation>
+    Boost_INCLUDE_DIR                 <path/to/boost/installation>/include
+    Boost_LIBRARY_DIRS                <path/to/boost/installation>/lib
+    Boost_PROGRAM_OPTIONS_LIBRARY     <path/to/boost/installation>/lib/libboost_program_options.so
+    Boost_REGEX_LIBRARY               <path/to/boost/installation>/lib/libboost_regex.so
+    Boost_SYSTEM_LIBRARY              <path/to/boost/installation>/lib/libboost_system.so
+    Boost_THREAD_LIBRARY              <path/to/boost/installation>/lib/libboost_thread.so
+    Boost_UNIT_TEST_FRAMEWORK_LIBRARY <path/to/boost/installation>/lib/libboost_unit_test_framework.so
 
+There are known issues with some older Boost Installations with there own Boost.cmake definition.
+If you have error message looking like::
+
+    CMake Error at /usr/lib64/boost/Boost.cmake:536 (message):
+    The imported target "boost_date_time-static" references the file
+
+      "/usr/lib64/lib64/libboost_date_time.a"
+
+    but this file does not exist.  Possible reasons include:
+
+    * The file was deleted, renamed, or moved to another location.
+
+    * An install or uninstall procedure did not complete successfully.
+
+    * The installation package was faulty and contained
+
+     "/usr/lib64/boost/Boost.cmake"
+
+    but not all the files it references.
+
+try using -DBoost_NO_BOOST_CMAKE=TRUE
