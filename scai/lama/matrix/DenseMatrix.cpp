@@ -2308,12 +2308,6 @@ size_t DenseMatrix<ValueType>::getMemoryUsage() const
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-DenseMatrix<ValueType>* DenseMatrix<ValueType>::clone() const
-{
-    return new DenseMatrix<ValueType>();
-}
-
-template<typename ValueType>
 DenseMatrix<ValueType>* DenseMatrix<ValueType>::copy() const
 {
     return new DenseMatrix<ValueType>( *this );

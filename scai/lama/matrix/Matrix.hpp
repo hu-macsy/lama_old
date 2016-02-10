@@ -768,7 +768,7 @@ public:
      * \code
      * common::unique_ptr<Matrix> newMatrix = matrix.copy();
      * // More convenient to use, but exactly same as follows:
-     * common::unique_ptr<Matrix> newMatrix = matrix.clone(); *newMatrix = matrix;
+     * common::unique_ptr<Matrix> newMatrix = Matrix::create( matrix.getCreateValue() ); *newMatrix = matrix;
      * \endcode
      *
      * This method is a workaround to call the copy constructor of a derived matrix class

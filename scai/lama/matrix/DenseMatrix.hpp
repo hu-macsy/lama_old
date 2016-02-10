@@ -541,10 +541,6 @@ public:
         const common::scalar::ScalarType dataType = common::scalar::INTERNAL,
         const File::IndexDataType indexDataTypeIA = File::INT,
         const File::IndexDataType indexDataTypeJA = File::INT ) const;
-    /**
-     * @brief Implementation of pure function Matrix::clone with covariant return type.
-     */
-    virtual DenseMatrix<ValueType>* clone() const;
 
     /**
      * @brief Implementation of pure function Matrix::copy with covariant return type.
