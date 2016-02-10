@@ -152,6 +152,7 @@ if    ( CUDA_FOUND AND USE_CUDA )
     add_subdirectory ( cuda )
     include_directories ( ${CUDA_TOOLKIT_INCLUDE} )
 endif ( CUDA_FOUND AND USE_CUDA )
+add_subdirectory ( mic )
 
 add_subdirectory ( examples )
 add_subdirectory ( macros )

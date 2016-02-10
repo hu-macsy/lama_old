@@ -25,23 +25,18 @@
  # SOFTWARE.
  # @endlicense
  #
- # @brief CMakeLists of common/cuda
- # @author Thomas Brandes
- # @date 09.06.2015
+ # @brief CMakeLists of common/mic
+ # @author Jan Ecker
+ # @date 10.02.2016
 ###
 
 # add source and header files to the current project
 
 scai_project (
 
-    CLASSES
-
-        CUDAError
-
     HEADERS
 
-        launchHelper
-        CUDACallable
+        MICCallable
 
     ADD_PARENT_SCOPE
 )
