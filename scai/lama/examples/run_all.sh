@@ -17,7 +17,7 @@ bench/matmul.exe
 # check if there are unkown examples
 count=`ls -l -la bench/*.exe | wc -l`
 if [ $count -ne 3 ]; then
-    eecho "There are unknown executables in this directory, please add all examples to the related run_all.sh script!"
+    echo "There are unknown executables in this directory, please add all examples to the related run_all.sh script!"
     exit 1
 fi
 
@@ -36,14 +36,13 @@ tutorial/blas1.exe
 tutorial/matrix.exe
 tutorial/scalar.exe
 tutorial/simple.exe
-tutorial/solver.exe
 tutorial/vector.exe
 # currently disabled!!!!! (change check when enabling again!)
 #tutorial/vector_exp.exe
 
 # check if there are unkown examples
 count=`ls -l -la tutorial/*.exe | wc -l`
-if [ $count -ne 6 ]; then
+if [ $count -ne 5 ]; then
     echo "There are unknown executables in this directory, please add all examples to the related run_all.sh script!"
     exit 1
 fi
