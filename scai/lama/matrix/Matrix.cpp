@@ -608,6 +608,11 @@ Matrix* Matrix::copy( DistributionPtr rowDistribution, DistributionPtr colDistri
     return rep.release();
 }
 
+MatrixCreateKeyType Matrix::getCreateValue() const
+{
+    return MatrixCreateKeyType( Format::UNDEFINED, common::scalar::UNKNOWN );
+}
+
 } /* end namespace lama */
 
 } /* end namespace scai */

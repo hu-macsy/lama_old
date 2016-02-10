@@ -687,6 +687,8 @@ public:
     // key for factory 
 
     static MatrixCreateKeyType createValue();
+
+    MatrixCreateKeyType getCreateValue() const;
 };
 
 /*  template methods implementations */

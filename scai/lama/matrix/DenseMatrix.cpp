@@ -2332,6 +2332,12 @@ MatrixCreateKeyType DenseMatrix<ValueType>::createValue()
     return MatrixCreateKeyType ( Format::DENSE, skind );
 }
 
+template<typename ValueType>
+MatrixCreateKeyType DenseMatrix<ValueType>::getCreateValue() const
+{
+    return createValue();
+}
+
 /* ========================================================================= */
 
 template<typename ValueType>

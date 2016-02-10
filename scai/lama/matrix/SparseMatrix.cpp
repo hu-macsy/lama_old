@@ -2260,31 +2260,6 @@ size_t SparseMatrix<ValueType>::getValueTypeSize() const
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-SparseMatrix<ValueType>* SparseMatrix<ValueType>::clone() const
-{
-    SCAI_LOG_INFO( logger, "SparseMatrix<ValueType>::create" )
-
-    shared_ptr<MatrixStorage<ValueType> > newLocalData( MatrixStorage<ValueType>::create( mLocalData->getCreateValue() ) );
-
-    // use auto pointer for new sparse matrix to get data freed in case of Exception
-
-    common::unique_ptr<SparseMatrix<ValueType> > newSparseMatrix( new SparseMatrix<ValueType>( newLocalData ) );
-
-    // inherit the context for local and halo storage
-
-    newSparseMatrix->setContextPtr( mLocalData->getContextPtr(), mHaloData->getContextPtr() );
-
-    newSparseMatrix->setCommunicationKind( this->getCommunicationKind() );
-
-    SCAI_LOG_INFO( logger,
-                   *this << ": create -> " << *newSparseMatrix << " @ " << *(newSparseMatrix->getContextPtr()) << ", kind = " << newSparseMatrix->getCommunicationKind() );
-
-    return newSparseMatrix.release();
-}
-
-/* ------------------------------------------------------------------------- */
-
-template<typename ValueType>
 SparseMatrix<ValueType>* SparseMatrix<ValueType>::copy() const
 {
     SCAI_LOG_INFO( logger, "copy of " << *this )

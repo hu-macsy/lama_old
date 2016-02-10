@@ -328,23 +328,6 @@ void CSRSparseMatrix<ValueType>::swapLocalStorage( StorageType& localStorage )
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-CSRSparseMatrix<ValueType>* CSRSparseMatrix<ValueType>::clone() const
-{
-    CSRSparseMatrix* newSparseMatrix = new CSRSparseMatrix<ValueType>();
-
-    // inherit the context, communication kind of this matrix for the new matrix
-
-    newSparseMatrix->setContextPtr( this->getContextPtr() );
-    newSparseMatrix->setCommunicationKind( this->getCommunicationKind() );
-
-    SCAI_LOG_INFO( logger, "create is " << *newSparseMatrix )
-
-    return newSparseMatrix;
-}
-
-/* -------------------------------------------------------------------------- */
-
-template<typename ValueType>
 CSRSparseMatrix<ValueType>* CSRSparseMatrix<ValueType>::copy() const
 {
     SCAI_LOG_INFO( logger, "copy of " << *this )
@@ -377,6 +360,12 @@ MatrixCreateKeyType CSRSparseMatrix<ValueType>::createValue()
 {
     common::scalar::ScalarType skind = common::getScalarType<ValueType>();
     return MatrixCreateKeyType( Format::CSR, skind );
+}
+
+template<typename ValueType>
+MatrixCreateKeyType CSRSparseMatrix<ValueType>::getCreateValue() const
+{
+    return createValue();
 }
 
 /* ========================================================================= */

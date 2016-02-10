@@ -763,32 +763,6 @@ public:
     virtual Scalar maxDiffNorm( const Matrix& other ) const = 0;
 
     /**
-     * @brief Constructor function which creates a 'zero' matrix of same type as a given matrix.
-     *
-     * \code
-     * void sub( ..., const Matrix& matrix, ...)
-     * {
-     *     ...
-     *     // Create a copy of the input matrix
-     *
-     *     common::unique_ptr<Matrix> newMatrix ( matrix.clone() );
-     *     *newMatrix = matrix;
-     *
-     *     // Create a unity matrix of same type and same row distribution as matrix
-     *
-     *     common::unique_ptr<Matrix> newMatrix ( matrix.clone() );
-     *     newMatrix->allocate( matrix.getRowDistributionPtr(), matrix.getRowDistributionPtr() );
-     *     newMatrix->setIdentity();
-     *     ...
-     * }
-     * \endcode
-     *
-     * This method is a workaround to call the constructor of a derived matrix class
-     * where the derived class is not known at compile time.
-     */
-    virtual Matrix* clone() const = 0;
-
-    /**
      * @brief Constructor function which creates a copy of this matrix.
      *
      * \code
@@ -809,6 +783,11 @@ public:
      * @param[in] colDistribution   new distribution of the columns
      */
     virtual Matrix* copy( DistributionPtr rowDistribution, DistributionPtr colDistribution ) const;
+
+    /**
+     * @brief Queries the keytype to create matrix from factory with same valuetype and storagetype
+     */
+    virtual MatrixCreateKeyType getCreateValue() const;
 
     /**
      * @brief Queries the value type of the matrix elements, e.g. DOUBLE or FLOAT.

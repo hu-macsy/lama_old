@@ -95,7 +95,7 @@ void SingleGridSetup::initialize( const Matrix& coefficients )
     mSolver->initialize( coefficients );
 
     SCAI_LOG_DEBUG( logger, "mIdentity.reset" )
-    mIdentity.reset( coefficients.clone() );
+    mIdentity.reset( Matrix::create( coefficients.getCreateValue() ) );
 
     SCAI_LOG_DEBUG( logger, "before identity" )
     mIdentity->setIdentity( coefficients.getDistributionPtr() );

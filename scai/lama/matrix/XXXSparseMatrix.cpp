@@ -328,23 +328,6 @@ void XXXSparseMatrix<ValueType>::swapLocalStorage( StorageType& localStorage )
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-XXXSparseMatrix<ValueType>* XXXSparseMatrix<ValueType>::clone() const
-{
-    XXXSparseMatrix* newSparseMatrix = new XXXSparseMatrix<ValueType>();
-
-    // inherit the context, communication kind of this matrix for the new matrix
-
-    newSparseMatrix->setContextPtr( this->getContextPtr() );
-    newSparseMatrix->setCommunicationKind( this->getCommunicationKind() );
-
-    SCAI_LOG_INFO( logger, "create is " << *newSparseMatrix )
-
-    return newSparseMatrix;
-}
-
-/* -------------------------------------------------------------------------- */
-
-template<typename ValueType>
 XXXSparseMatrix<ValueType>* XXXSparseMatrix<ValueType>::copy() const
 {
     SCAI_LOG_INFO( logger, "copy of " << *this )

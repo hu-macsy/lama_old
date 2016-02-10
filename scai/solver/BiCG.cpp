@@ -91,7 +91,7 @@ void BiCG::initialize( const Matrix& coefficients )
     BiCGRuntime& runtime = getRuntime();
 
     runtime.mPScalar2 = 0.0;
-    runtime.mTransposeA.reset( coefficients.clone() );
+    runtime.mTransposeA.reset( Matrix::create( coefficients.getCreateValue() ) );
 
     common::scalar::ScalarType type = coefficients.getValueType();
 

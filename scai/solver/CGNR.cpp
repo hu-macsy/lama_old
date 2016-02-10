@@ -88,7 +88,7 @@ void CGNR::initialize( const Matrix& coefficients )
     common::scalar::ScalarType type = coefficients.getValueType();
     runtime.mEps = std::numeric_limits<double>::epsilon() * 3; //CAREFUL: No abstract type
 
-    runtime.mTransposedMat.reset( coefficients.clone() );
+    runtime.mTransposedMat.reset( Matrix::create( coefficients.getCreateValue() ) );
     runtime.mVecD.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
     runtime.mVecW.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
     runtime.mVecZ.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );

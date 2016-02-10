@@ -328,23 +328,6 @@ void JDSSparseMatrix<ValueType>::swapLocalStorage( StorageType& localStorage )
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-JDSSparseMatrix<ValueType>* JDSSparseMatrix<ValueType>::clone() const
-{
-    JDSSparseMatrix* newSparseMatrix = new JDSSparseMatrix<ValueType>();
-
-    // inherit the context, communication kind of this matrix for the new matrix
-
-    newSparseMatrix->setContextPtr( this->getContextPtr() );
-    newSparseMatrix->setCommunicationKind( this->getCommunicationKind() );
-
-    SCAI_LOG_INFO( logger, "create is " << *newSparseMatrix )
-
-    return newSparseMatrix;
-}
-
-/* -------------------------------------------------------------------------- */
-
-template<typename ValueType>
 JDSSparseMatrix<ValueType>* JDSSparseMatrix<ValueType>::copy() const
 {
     SCAI_LOG_INFO( logger, "copy of " << *this )
@@ -377,6 +360,12 @@ MatrixCreateKeyType JDSSparseMatrix<ValueType>::createValue()
 {
     common::scalar::ScalarType skind = common::getScalarType<ValueType>();
     return MatrixCreateKeyType( Format::JDS, skind );
+}
+
+template<typename ValueType>
+MatrixCreateKeyType JDSSparseMatrix<ValueType>::getCreateValue() const
+{
+    return createValue();
 }
 
 /* ========================================================================= */
