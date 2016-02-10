@@ -17,4 +17,3 @@ Contents:
    tutorial/firstCompile
    tutorial/example_vector
    tutorial/example_matrix
-   tutorial/example_solver

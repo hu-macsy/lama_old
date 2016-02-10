@@ -16,7 +16,6 @@ Contents:
    introduction
    installation
    tutorial
-   lecture
    reference
    testing
    benchmarks
