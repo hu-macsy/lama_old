@@ -1376,18 +1376,43 @@ const char* DenseStorage<ValueType>::getTypeName() const
 
 template<typename ValueType>
 DenseStorageView<ValueType>*
-DenseStorageView<ValueType>::clone() const
+DenseStorageView<ValueType>::copy() const
+{
+    return new DenseStorage<ValueType>( *this );
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+template<typename ValueType>
+_MatrixStorage* DenseStorageView<ValueType>::create()
+{
+    COMMON_THROWEXCEPTION( "creation currently not possible")
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+template<typename ValueType>
+MatrixCreateKeyType DenseStorageView<ValueType>::createValue()
+{
+    common::scalar::ScalarType skind = common::getScalarType<ValueType>();
+    return MatrixCreateKeyType( Format::DENSE, skind );
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+template<typename ValueType>
+_MatrixStorage* DenseStorage<ValueType>::create()
 {
     return new DenseStorage<ValueType>();
 }
 
-/* --------------------------------------------------------------------------- */
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
-DenseStorageView<ValueType>*
-DenseStorageView<ValueType>::copy() const
+MatrixCreateKeyType DenseStorage<ValueType>::createValue()
 {
-    return new DenseStorage<ValueType>( *this );
+    common::scalar::ScalarType skind = common::getScalarType<ValueType>();
+    return MatrixCreateKeyType( Format::DENSE, skind );
 }
 
 /* ========================================================================= */

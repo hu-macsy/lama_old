@@ -66,7 +66,9 @@ namespace lama
  *  @tparam ValueType is the value type of the matrix values.
  */
 template<typename ValueType>
-class COMMON_DLL_IMPORTEXPORT ELLStorage: public CRTPMatrixStorage<ELLStorage<ValueType>,ValueType>
+class COMMON_DLL_IMPORTEXPORT ELLStorage:
+    public CRTPMatrixStorage<ELLStorage<ValueType>,ValueType>,
+    public _MatrixStorage::Register<ELLStorage<ValueType> >    // register at factory
 {
 public:
 
@@ -148,10 +150,6 @@ public:
     /** Implementation of MatrixStorage::copy for derived class. */
 
     virtual ELLStorage* copy() const;
-
-    /** Implementation of MatrixStorage::create for derived class. */
-
-    virtual ELLStorage* clone() const;
 
     /**
      *  Implementation of pure method of _MatrixStorage::clear
@@ -521,6 +519,16 @@ private:
         const ValueType beta,
         const hmemo::HArray<ValueType>& y,
         bool async ) const;
+
+public:
+
+    // static create method that will be used to register at MatrixStorage factory
+
+    static _MatrixStorage* create();
+
+    // key for factory
+
+    static MatrixCreateKeyType createValue();
 };
 
 } /* end namespace lama */

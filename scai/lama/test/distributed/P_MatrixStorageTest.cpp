@@ -109,8 +109,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( buildHaloTest, StorageType, StorageTypes )
     const IndexType numColumns = matrixStorage.getNumColumns();
     DistributionPtr colDist = DistributionPtr( new BlockDistribution( numColumns, comm ) );
     // create matrix storage for local and halo part of same type as matrixStorage
-    shared_ptr<MatrixStorage<ValueType> > localStorage ( matrixStorage.clone() );
-    shared_ptr<MatrixStorage<ValueType> > haloStorage ( matrixStorage.clone() );
+    shared_ptr<MatrixStorage<ValueType> > localStorage ( MatrixStorage<ValueType>::create( matrixStorage.getCreateValue() ) );
+    shared_ptr<MatrixStorage<ValueType> > haloStorage ( MatrixStorage<ValueType>::create( matrixStorage.getCreateValue() ) );
     Halo halo;
     SCAI_LOG_INFO( logger, *comm << ", split halo : " << matrixStorage )
     matrixStorage.splitHalo( *localStorage, *haloStorage, halo, *colDist, NULL );

@@ -91,7 +91,7 @@ SparseMatrix<ValueType>::SparseMatrix( common::shared_ptr<MatrixStorage<ValueTyp
 {
     mLocalData = storage;
     // create empty halo with same storage format
-    mHaloData = shared_ptr<MatrixStorage<ValueType> >( storage->clone() );
+    mHaloData = shared_ptr<MatrixStorage<ValueType> >( MatrixStorage<ValueType>::create( storage->getCreateValue() ) );
 }
 
 /* ---------------------------------------------------------------------------------------*/
@@ -105,7 +105,7 @@ SparseMatrix<ValueType>::SparseMatrix( common::shared_ptr<MatrixStorage<ValueTyp
 {
     mLocalData = storage;
     // create empty halo with same storage format
-    mHaloData = shared_ptr<MatrixStorage<ValueType> >( storage->clone() );
+    mHaloData = shared_ptr<MatrixStorage<ValueType> >( MatrixStorage<ValueType>::create( storage->getCreateValue() ) );
 
     if( storage->getNumRows() == rowDist->getLocalSize() )
     {
@@ -138,7 +138,7 @@ SparseMatrix<ValueType>::SparseMatrix(
 
     mLocalData = localData;
     // create empty halo with same storage format
-    mHaloData = shared_ptr<MatrixStorage<ValueType> >( localData->clone() );
+    mHaloData = shared_ptr<MatrixStorage<ValueType> >( MatrixStorage<ValueType>::create( localData->getCreateValue() ) );
 
     if( localData->getNumRows() == rowDist->getLocalSize() )
     {
@@ -672,7 +672,7 @@ void SparseMatrix<ValueType>::buildLocalStorage( _MatrixStorage& storage ) const
 
         bool keepDiagonalProperty = true;
 
-        common::shared_ptr<MatrixStorage<ValueType> > tmp( mLocalData->clone() );
+        common::shared_ptr<MatrixStorage<ValueType> > tmp( MatrixStorage<ValueType>::create( mLocalData->getCreateValue() ) );
         tmp->joinHalo( *mLocalData, *mHaloData, mHalo, getColDistribution(), keepDiagonalProperty );
         storage = *tmp;
     }
@@ -2264,7 +2264,7 @@ SparseMatrix<ValueType>* SparseMatrix<ValueType>::clone() const
 {
     SCAI_LOG_INFO( logger, "SparseMatrix<ValueType>::create" )
 
-    shared_ptr<MatrixStorage<ValueType> > newLocalData( mLocalData->clone() );
+    shared_ptr<MatrixStorage<ValueType> > newLocalData( MatrixStorage<ValueType>::create( mLocalData->getCreateValue() ) );
 
     // use auto pointer for new sparse matrix to get data freed in case of Exception
 

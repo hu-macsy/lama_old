@@ -1136,17 +1136,26 @@ void COOStorage<ValueType>::jacobiIterate(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-COOStorage<ValueType>* COOStorage<ValueType>::clone() const
+COOStorage<ValueType>* COOStorage<ValueType>::copy() const
+{
+    return new COOStorage<ValueType>( *this );
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+template<typename ValueType>
+_MatrixStorage* COOStorage<ValueType>::create()
 {
     return new COOStorage<ValueType>();
 }
 
-/* --------------------------------------------------------------------------- */
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
-COOStorage<ValueType>* COOStorage<ValueType>::copy() const
+MatrixCreateKeyType COOStorage<ValueType>::createValue()
 {
-    return new COOStorage<ValueType>( *this );
+    common::scalar::ScalarType skind = common::getScalarType<ValueType>();
+    return MatrixCreateKeyType( Format::COO, skind );
 }
 
 /* ========================================================================= */

@@ -40,6 +40,8 @@
 // internal scai libraries
 #include <scai/hmemo.hpp>
 
+#include <scai/common/Factory.hpp>
+
 // std
 #include <ostream>
 
@@ -89,6 +91,43 @@ COMMON_DLL_IMPORTEXPORT const char* format2Str( const MatrixStorageFormat storag
 
 COMMON_DLL_IMPORTEXPORT MatrixStorageFormat str2Format( const char* str );
 
+/** Key type used for the Matrix factory.
+ *
+ *  Note: own struct instead of std::pair to allow definition of operator <<
+ */
+
+struct MatrixCreateKeyType
+{
+    Format::MatrixStorageFormat first;
+    common::scalar::ScalarType second;
+
+    MatrixCreateKeyType( Format::MatrixStorageFormat arg1, common::scalar::ScalarType arg2 )
+    {
+        first = arg1;
+        second = arg2;
+    }
+
+    bool operator< ( const MatrixCreateKeyType& other ) const
+    {
+        if ( first < other.first )
+        {
+            return true;
+        }
+        else if ( first == other.first )
+        {
+            return second < other.second;
+        }
+
+        return false;
+    }
+};
+
+inline std::ostream& operator<<( std::ostream& stream, const MatrixCreateKeyType& object )
+{
+    stream << object.first << object.second;
+    return stream;
+}
+
 /** The class _MatrixStorage is the base class for all matrix storage classes
  supported by LAMA.
 
@@ -105,7 +144,9 @@ COMMON_DLL_IMPORTEXPORT MatrixStorageFormat str2Format( const char* str );
  storage should take place.
  */
 
-class COMMON_DLL_IMPORTEXPORT _MatrixStorage: public common::Printable
+class COMMON_DLL_IMPORTEXPORT _MatrixStorage:
+    public common::Factory<MatrixCreateKeyType, _MatrixStorage*>,
+    public common::Printable
 {
 public:
 
@@ -402,19 +443,6 @@ public:
 
     virtual void check( const char* msg ) const = 0;
 
-    /** Each matrix storage must provide a routine that creates a new object
-     *  of the same matrix type (same format and same value type).
-     *
-     *  The implementations in derived classes should use covariant
-     *  return types to allow polymorphic creation of objects.
-     *
-     *  Note: as shared_ptr cannot be used for for covariant return types
-     *        this routine returns directly a new created object that should
-     *        be wrapped as a shared pointer at calling site.
-     */
-
-    virtual _MatrixStorage* clone() const = 0;
-
     /** Each matrix storage must provide a routine that makes a new copy
      *  of the input matrix (same format and same value type).
      *
@@ -427,6 +455,8 @@ public:
      */
 
     virtual _MatrixStorage* copy() const = 0;
+
+    virtual MatrixCreateKeyType getCreateValue() const = 0;
 
     /**
      * @brief transformation from matrix type to a csr graph
@@ -537,10 +567,6 @@ public:
     /** Destructor. */
 
     virtual ~MatrixStorage();
-
-    /** Override _MatrixStorage::create with routine that uses covariant return type. */
-
-    virtual MatrixStorage* clone() const = 0;
 
     /** Override _MatrixStorage::copy with routine that uses covariant return type. */
 
@@ -1043,6 +1069,9 @@ protected:
      */
 
     void swap( MatrixStorage<ValueType>& other );
+
+public:
+    static MatrixStorage<ValueType>* create( const MatrixCreateKeyType key );
 };
 
 /* ------------------------------------------------------------------------- */
@@ -1095,6 +1124,12 @@ void MatrixStorage<ValueType>::setRawCSRData(
     // now set the data on the context of this storage via virtual method
 
     setCSRData( numRows, numColumns, numValues, csrIA, csrJA, csrValues );
+}
+
+template<typename ValueType>
+MatrixStorage<ValueType>* MatrixStorage<ValueType>::create( const MatrixCreateKeyType key )
+{
+    return reinterpret_cast<MatrixStorage<ValueType>* >( _MatrixStorage::create( key ) );
 }
 
 } /* end namespace lama */

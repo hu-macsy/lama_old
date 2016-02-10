@@ -1676,17 +1676,26 @@ size_t JDSStorage<ValueType>::getMemoryUsageImpl() const
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
-JDSStorage<ValueType>* JDSStorage<ValueType>::clone() const
+JDSStorage<ValueType>* JDSStorage<ValueType>::copy() const
 {
-    return new JDSStorage();
+    return new JDSStorage( *this );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
-JDSStorage<ValueType>* JDSStorage<ValueType>::copy() const
+_MatrixStorage* JDSStorage<ValueType>::create()
 {
-    return new JDSStorage( *this );
+    return new JDSStorage<ValueType>();
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+template<typename ValueType>
+MatrixCreateKeyType JDSStorage<ValueType>::createValue()
+{
+    common::scalar::ScalarType skind = common::getScalarType<ValueType>();
+    return MatrixCreateKeyType( Format::JDS, skind );
 }
 
 /* ========================================================================= */

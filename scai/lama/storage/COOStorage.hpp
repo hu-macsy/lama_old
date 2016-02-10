@@ -67,7 +67,9 @@ namespace lama
  */
 
 template<typename ValueType>
-class COMMON_DLL_IMPORTEXPORT COOStorage: public CRTPMatrixStorage<COOStorage<ValueType>,ValueType>
+class COMMON_DLL_IMPORTEXPORT COOStorage:
+    public CRTPMatrixStorage<COOStorage<ValueType>,ValueType>,
+    public _MatrixStorage::Register<COOStorage<ValueType> >    // register at factory
 {
 public:
 
@@ -261,10 +263,6 @@ public:
 
     virtual COOStorage* copy() const;
 
-    /** Implementation of MatrixStorage::clone for derived class. */
-
-    virtual COOStorage* clone() const;
-
     /******************************************************************
      *  Matrix times Vector                                            *
      ******************************************************************/
@@ -402,6 +400,16 @@ private:
     // inline IndexType index(IndexType irow, IndexType icolumn) const { return icolumn * mNumRows + irow; }
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
+
+public:
+
+    // static create method that will be used to register at MatrixStorage factory
+
+    static _MatrixStorage* create();
+
+    // key for factory
+
+    static MatrixCreateKeyType createValue();
 };
 
 } /* end namespace lama */

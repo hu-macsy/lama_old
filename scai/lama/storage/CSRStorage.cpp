@@ -2431,18 +2431,12 @@ ValueType CSRStorage<ValueType>::maxDiffNormImpl( const CSRStorage<ValueType>& o
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-CSRStorage<ValueType>* CSRStorage<ValueType>::clone() const
-{
-    return new CSRStorage<ValueType>();
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
 CSRStorage<ValueType>* CSRStorage<ValueType>::copy() const
 {
     return new CSRStorage<ValueType>( *this );
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
 void CSRStorage<ValueType>::buildSparseRowSizes( HArray<IndexType>& rowSizes ) const
@@ -2468,6 +2462,23 @@ void CSRStorage<ValueType>::buildSparseRowData(
 
     sparseJA = mJa;
     sparseValues = mValues;
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+template<typename ValueType>
+_MatrixStorage* CSRStorage<ValueType>::create()
+{
+    return new CSRStorage<ValueType>();
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+template<typename ValueType>
+MatrixCreateKeyType CSRStorage<ValueType>::createValue()
+{
+    common::scalar::ScalarType skind = common::getScalarType<ValueType>();
+    return MatrixCreateKeyType( Format::CSR, skind );
 }
 
 /* ========================================================================= */

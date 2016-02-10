@@ -55,7 +55,9 @@ namespace lama
  *  @tparam ValueType is the value type of the matrix values.
  */
 template<typename ValueType>
-class COMMON_DLL_IMPORTEXPORT DIAStorage: public CRTPMatrixStorage<DIAStorage<ValueType>,ValueType>
+class COMMON_DLL_IMPORTEXPORT DIAStorage:
+    public CRTPMatrixStorage<DIAStorage<ValueType>,ValueType>,
+    public _MatrixStorage::Register<DIAStorage<ValueType> >    // register at factory
 {
 public:
 
@@ -122,10 +124,6 @@ public:
     /** Implementation of MatrixStorage::copy for derived class. */
 
     virtual DIAStorage* copy() const;
-
-    /** Implementation of MatrixStorage::create for derived class. */
-
-    virtual DIAStorage* clone() const;
 
     /** Implementation of _MatrixStorage::clear  */
 
@@ -393,6 +391,16 @@ private:
     static void setUsedDiagonal( bool upperDiagonalUsed[], bool lowerDiagonalUsed[], IndexType i, IndexType j );
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger ) //!< logger for this matrix format
+
+public:
+
+    // static create method that will be used to register at MatrixStorage factory
+
+    static _MatrixStorage* create();
+
+    // key for factory
+
+    static MatrixCreateKeyType createValue();
 };
 
 } /* end namespace lama */

@@ -80,6 +80,11 @@ public:
     {
     }
 
+    MatrixCreateKeyType getCreateValue() const
+    {
+        return Derived::createValue();
+    }
+
     /** Implementation of _MatrixStorage::setCSRData for derived class.
      *
      *  This routine requires that the derived class provides a corresponding

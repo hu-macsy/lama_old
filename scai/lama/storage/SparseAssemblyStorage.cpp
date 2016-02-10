@@ -863,6 +863,19 @@ void SparseAssemblyStorage<ValueType>::writeAt( std::ostream& stream ) const
            << ", #values = " << mNumValues << ", diag = " << mDiagonalProperty << " )";
 }
 
+template<typename ValueType>
+_MatrixStorage* SparseAssemblyStorage<ValueType>::create()
+{
+    return new SparseAssemblyStorage<ValueType>();
+}
+
+template<typename ValueType>
+MatrixCreateKeyType SparseAssemblyStorage<ValueType>::createValue()
+{
+    common::scalar::ScalarType skind = common::getScalarType<ValueType>();
+    return MatrixCreateKeyType( Format::ASSEMBLY, skind );
+}
+
 /* ========================================================================= */
 /*       Template specializattions and instantiations                        */
 /* ========================================================================= */
