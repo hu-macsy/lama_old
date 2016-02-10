@@ -110,7 +110,7 @@ void SOR::initialize( const Matrix& coefficients )
 {
     SCAI_REGION( "Solver.SOR.initialize" )
 
-    Solver::initialize( coefficients );
+    IterativeSolver::initialize( coefficients );
 
     // ToDo: handling with other matrix types
 
