@@ -38,21 +38,22 @@ scai_project (
 	HEADERS
 
 	SOURCES
-	    SolverTestDistributed
-        P_CGTest
-        P_InverseSolverTest
-        P_JacobiTest
-        P_SORTest
-        P_SpecializedJacobiTest
+        SolverDistTest
+        
+        #P_CGTest
+        #P_InverseSolverTest
+        #P_JacobiTest
+        #P_SORTest
+        #P_SpecializedJacobiTest
 
    )
    
 ### add definitions ###
 add_definitions ( -DLAMA_TESTFILE_PATH="${CMAKE_CURRENT_SOURCE_DIR}/../../../../res/testfiles" )
 
-add_executable ( SolverTestDistributed ${CXX_SOURCES} )
+add_executable ( SolverDistTest ${CXX_SOURCES} )
 
-target_link_libraries ( SolverTestDistributed ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} scai_solver )
+target_link_libraries ( SolverDistTest ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} ${PROJECT_NAME} )
     
 file ( GLOB LOCAL_HEADERS "*.hpp" )
 
