@@ -82,7 +82,7 @@ void BiCGstab::initialize( const Matrix& coefficients )
 {
     SCAI_LOG_DEBUG( logger, "Initialization started for coefficients = " << coefficients )
 
-    Solver::initialize( coefficients );
+    IterativeSolver::initialize( coefficients );
     BiCGstabRuntime& runtime = getRuntime();
 
     runtime.mAlpha  = 1.0;

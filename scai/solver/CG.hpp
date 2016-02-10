@@ -96,9 +96,9 @@ public:
         CGRuntime();
         virtual ~CGRuntime();
 
-        common::shared_ptr<lama::Vector> mP;
-        common::shared_ptr<lama::Vector> mQ;
-        common::shared_ptr<lama::Vector> mZ;
+        lama::VectorPtr mP;
+        lama::VectorPtr mQ;
+        lama::VectorPtr mZ;
         lama::Scalar mPScalar;
         lama::Scalar mEps;
     };
@@ -121,12 +121,12 @@ public:
 
 protected:
 
+    virtual void iterate();
+
     /**
      *  @brief own implementation of Printable::writeAt
      */
     virtual void writeAt( std::ostream& stream ) const;
-
-    virtual void iterate();
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 

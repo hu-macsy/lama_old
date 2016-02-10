@@ -34,16 +34,15 @@
 // hpp
 #include <scai/solver/CG.hpp>
 
-// local library
+// internal scai libraries
 #include <scai/lama/DenseVector.hpp>
 
 #include <scai/lama/expression/VectorExpressions.hpp>
 #include <scai/lama/expression/MatrixVectorExpressions.hpp>
 
-// internal scai libraries
 #include <scai/tracing.hpp>
-#include <scai/common/Walltime.hpp>
 
+#include <scai/common/Walltime.hpp>
 
 namespace scai
 {
@@ -88,12 +87,13 @@ CG::CGRuntime::~CGRuntime()
 void CG::initialize( const Matrix& coefficients )
 {
     SCAI_REGION( "Solver.CG.initialize" )
+
     IterativeSolver::initialize( coefficients );
     CGRuntime& runtime = getRuntime();
 
     runtime.mPScalar = 0.0;
+    
     runtime.mEps = std::numeric_limits<double>::epsilon() * 3;                  //CAREFUL: No abstract type
-
     common::scalar::ScalarType type = coefficients.getValueType();
 
     runtime.mP.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
