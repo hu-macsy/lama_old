@@ -79,7 +79,6 @@ scai_project (
         MatrixStorageConversionTest
         MatrixTest
         MaxNormTest
-        NoCommunicatorTest
         ScalarTest
         SparseAssemblyStorageTest
         StorageIOTest

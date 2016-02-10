@@ -149,9 +149,9 @@ if ( MPI_FOUND AND USE_MPI )
     add_subdirectory ( mpi )
 endif ( MPI_FOUND AND USE_MPI )
 
-# if ( FOUND_BOOST_TEST AND BUILD_TEST )
-#     add_subdirectory ( test )
-# endif ( FOUND_BOOST_TEST AND BUILD_TEST )
+if ( FOUND_BOOST_TEST AND BUILD_TEST )
+    add_subdirectory ( test )
+endif ( FOUND_BOOST_TEST AND BUILD_TEST )
 
 ### set link directories ###
 if ( WIN32 )

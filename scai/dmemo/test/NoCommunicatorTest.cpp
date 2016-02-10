@@ -26,18 +26,16 @@
  * @endlicense
  *
  * @brief Contains the implementation of the class NoCommunicatorTest
- * @author Alexander Büchel
- * @date 09.05.2012
- * @since 1.0.0
+ * @author Thomas Brandes
+ * @date 09.02.2016
+ * @since 2.0.0
  */
 
 #include <boost/test/unit_test.hpp>
 #include <boost/mpl/list.hpp>
 
-#include <scai/lama/test/distributed/CommunicatorTest.hpp>
-#include <scai/lama/test/TestMacros.hpp>
+#include <scai/dmemo/test/CommunicatorTest.hpp>
 
-using namespace scai::lama;
 using namespace scai::hmemo;
 using namespace scai::dmemo;
 
