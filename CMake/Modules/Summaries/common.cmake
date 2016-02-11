@@ -73,11 +73,7 @@ endif ( NOT CXX_SUPPORTS_C11 )
 
 message ( STATUS "" )
 
-if    ( SCAI_COMPLETE_BUILD )
-	set ( OPENMP_INFO_TEXT "OpenMP schedule set to \"${SCAI_OMP_SCHEDULE}\"" )
-else  ( SCAI_COMPLETE_BUILD )
-	set ( OPENMP_INFO_TEXT "compile your sources with -DSCAI_OMP_SCHEDULE=<schedule-type>" )
-endif ( SCAI_COMPLETE_BUILD )
+set ( OPENMP_INFO_TEXT "OpenMP schedule type is set to \"${SCAI_OMP_SCHEDULE}\"" )
 
 scai_summary_message ( "USE"
                        "USE_OPENMP"
@@ -156,7 +152,7 @@ message ( STATUS "" )
 
 scai_status_message ( HEADLINE "INFO:" )
 
-message ( STATUS "LAMA Version : ${LAMA_VERSION} ${LAMA_VERSION_NAME}" )
+message ( STATUS "Common Version : ${SCAI_COMMON_VERSION} ${SCAI_VERSION_NAME}" )
 message ( STATUS "Build Type   : ${CMAKE_BUILD_TYPE}" )
 message ( STATUS "Library Type : ${SCAI_LIBRARY_TYPE}" )
 message ( STATUS "ASSERT Level : ${SCAI_ASSERT_LEVEL} ( -DSCAI_ASSERT_LEVEL_${SCAI_ASSERT_LEVEL} )" )
@@ -164,13 +160,3 @@ if    ( USE_CODE_COVERAGE )
 	message ( STATUS "CODE COVERAGE: ${USE_CODE_COVERAGE}" )
 endif ( USE_CODE_COVERAGE )
 message ( STATUS "" )
-
-# LAMA Cuda
-if    ( USE_CUDA AND NOT CUDA_FOUND )
-    message( FATAL_ERROR "Build of LAMA Cuda enabled, but configuration is incomplete!")
-endif ( USE_CUDA AND NOT CUDA_FOUND )
-
-# LAMA Test
-if    ( BUILD_TEST AND NOT ( Boost_UNIT_TEST_FRAMEWORK_FOUND AND Boost_REGEX_FOUND ) )
-    message( FATAL_ERROR "Build of LAMA Test enabled, but configuration is incomplete!")
-endif ( BUILD_TEST AND NOT ( Boost_UNIT_TEST_FRAMEWORK_FOUND AND Boost_REGEX_FOUND ) )

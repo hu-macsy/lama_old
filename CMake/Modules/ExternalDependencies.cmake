@@ -32,7 +32,7 @@
 ###
 
 ## attention OpenMP should be before SCAI_BLAS !!!
-## need to get rid of boost for boost_repeat in lama
+## need to get rid of boost for boost_repeat in common
 
 set ( SCAI_COMMON_EXTERNAL_DEPS dl Thread Boost OpenMP CUDA )
 set ( SCAI_LOGGING_EXTERNAL_DEPS )
@@ -43,7 +43,7 @@ set ( SCAI_KREGISTRY_EXTERNAL_DEPS )
 set ( SCAI_BLASKERNEL_EXTERNAL_DEPS             OpenMP CUDA MIC                            SCAI_BLAS )
 set ( SCAI_DMEMO_EXTERNAL_DEPS                  OpenMP MPI GPI2 GraphPartitioning )
 set ( SCAI_LAMA_EXTERNAL_DEPS                   OpenMP CUDA MIC MPI GPI2 GraphPartitioning SCAI_BLAS )
-set ( SCAI_SOLVER_EXTERNAL_DEPS                        CUDA                                SCAI_BLAS )
+set ( SCAI_SOLVER_EXTERNAL_DEPS )
 
 set ( SCAI_EXTERNAL_DEPS ${SCAI_COMMON_EXTERNAL_DEPS} ${SCAI_LOGGING_EXTERNAL_DEPS} ${SCAI_TRACING_EXTERNAL_DEPS}
 						 ${SCAI_TASKING_EXTERNAL_DEPS} ${SCAI_HMEMO_EXTERNAL_DEPS} ${SCAI_KREGISTRY_EXTERNAL_DEPS}

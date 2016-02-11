@@ -41,6 +41,11 @@ if ( BUILD_DOC )
     set ( SPHINX_BUILD_ROOT "${CMAKE_CURRENT_BINARY_DIR}" )
     set ( SPHINX_INSTALL_ROOT ${CMAKE_INSTALL_PREFIX}/${PROJECT_DOC_DIR} )
     
+    set ( SCAI_COMMON_DOC_DIR ${CMAKE_INSTALL_PREFIX}/${DOC_ROOT_DIR}/scai-common-${SCAI_COMMON_VERSION}/ )
+    set ( SCAI_LOGGING_DOC_DIR ${CMAKE_INSTALL_PREFIX}/${DOC_ROOT_DIR}/scai-logging-${SCAI_LOGGING_VERSION}/ )
+    set ( SCAI_TRACING_DOC_DIR ${CMAKE_INSTALL_PREFIX}/${DOC_ROOT_DIR}/scai-tracing-${SCAI_TRACING_VERSION}/ )
+    set ( SCAI_TASKING_DOC_DIR ${CMAKE_INSTALL_PREFIX}/${DOC_ROOT_DIR}/scai-tasking-${SCAI_TASKING_VERSION}/ )
+    
     # Sphinx configuration file conf.py will be generated with correct LAMA version, copyright, etc.
     # must be in same directory as Sphinx source files
     configure_file ( "${CMAKE_SOURCE_DIR}/doc/conf.py.in" "${SPHINX_BUILD_ROOT}/conf.py" )

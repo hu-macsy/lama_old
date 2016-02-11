@@ -80,7 +80,7 @@ CGS::CGSRuntime::~CGSRuntime(){}
 void CGS::initialize( const Matrix& coefficients ){
     SCAI_LOG_DEBUG(logger, "Initialization started for coefficients = "<< coefficients)
 
-    Solver::initialize( coefficients );
+    IterativeSolver::initialize( coefficients );
  	CGSRuntime& runtime = getRuntime();
 
     runtime.mNormRes = 1.0;

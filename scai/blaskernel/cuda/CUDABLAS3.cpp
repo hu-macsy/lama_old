@@ -37,7 +37,6 @@
 // local library
 #include <scai/blaskernel/BLASKernelTrait.hpp>
 #include <scai/blaskernel/cuda/CUBLASWrapper.hpp>
-#include <scai/blaskernel/cuda/cublas_cast.hpp>
 
 // internal scai library
 #include <scai/hmemo/cuda/CUDAStreamSyncToken.hpp>

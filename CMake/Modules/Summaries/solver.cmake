@@ -153,7 +153,7 @@ message ( STATUS "" )
 
 scai_status_message ( HEADLINE "INFO:" )
 
-message ( STATUS "LAMA Version : ${LAMA_VERSION} ${LAMA_VERSION_NAME}" )
+message ( STATUS "Solver Version : ${SCAI_SOLVER_VERSION} ${SCAI_VERSION_NAME}" )
 message ( STATUS "Build Type   : ${CMAKE_BUILD_TYPE}" )
 message ( STATUS "Library Type : ${SCAI_LIBRARY_TYPE}" )
 message ( STATUS "ASSERT Level : ${SCAI_ASSERT_LEVEL} ( -DSCAI_ASSERT_LEVEL_${SCAI_ASSERT_LEVEL} )" )
@@ -163,26 +163,3 @@ if    ( USE_CODE_COVERAGE )
 	message ( STATUS "CODE COVERAGE: ${USE_CODE_COVERAGE}" )
 endif ( USE_CODE_COVERAGE )
 message ( STATUS "" )
-
-
-# Check if all required packages are found
-# LAMA (core)
-
-if    ( NOT ( SCAI_BLAS_FOUND AND BOOST_INCLUDE_DIR  ) OR ( (SCAI_BLAS_NAME MATCHES "BLAS") AND NOT LAPACK_FOUND )  )
-    message( FATAL_ERROR "Configuration for LAMA (core) incomplete!")
-endif ( NOT ( SCAI_BLAS_FOUND AND BOOST_INCLUDE_DIR  ) OR ( (SCAI_BLAS_NAME MATCHES "BLAS") AND NOT LAPACK_FOUND ) )
-
-# MPI
-if    ( USE_MPI AND NOT MPI_FOUND )
-    message( FATAL_ERROR "Build of LAMA MPI enabled, but configuration is incomplete!")
-endif ( USE_MPI AND NOT MPI_FOUND )
-
-# Cuda
-if    ( USE_CUDA AND NOT CUDA_FOUND )
-    message( FATAL_ERROR "Build of LAMA Cuda enabled, but configuration is incomplete!")
-endif ( USE_CUDA AND NOT CUDA_FOUND )
-
-# Test
-if    ( LAMA_BUILD_TEST AND NOT ( Boost_UNIT_TEST_FRAMEWORK_FOUND AND Boost_REGEX_FOUND ) )
-    message( FATAL_ERROR "Build of LAMA Test enabled, but configuration is incomplete!")
-endif ( LAMA_BUILD_TEST AND NOT ( Boost_UNIT_TEST_FRAMEWORK_FOUND AND Boost_REGEX_FOUND ) )

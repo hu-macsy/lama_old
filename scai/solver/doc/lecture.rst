@@ -9,7 +9,7 @@ practical parts of this lecture illustrate step by step how to create an equatio
 system, how to solve it and how to run it on different devices. The concepts of 
 logging and tracing in LAMA are introduced as well.
 
-Before you start, you should follow the :doc:`installation`
+Before you start, you should follow the installation
 to obtain a working LAMA. With task 0 this lecture gives a step by step introduction 
 to the basic usage of LAMA. The following tasks are only giving hints which
 functions and classes you should use to complete them. Please consult the
@@ -55,7 +55,7 @@ into your library path.
 The following example program can be used to verify that compilation, linking
 and running works fine.
 
-:doc:`Solver <../tutorial/example_solver>`
+:doc:`Solver <example_solver>`
 
 An example **Makefile** can be found together with the **simple.cpp** example
 and the solutions for the lecture tasks at **<project-root>/doc/user_guide/cpp_source/tutorial/**.

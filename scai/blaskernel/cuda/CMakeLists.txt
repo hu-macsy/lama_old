@@ -31,8 +31,6 @@
  # @since 2.0.0
 ###
 
-include_directories ( ${CUDA_TOOLKIT_INCLUDE} )
-
 ### Add classes and header files ###
 
 scai_project(
@@ -53,9 +51,7 @@ scai_project(
     HEADERS        # .hpp
 
         CUBLASWrapper
-	CUBLASTrait
-        cublas_cast
+	    CUBLASTrait
 
     ADD_PARENT_SCOPE
 )
-

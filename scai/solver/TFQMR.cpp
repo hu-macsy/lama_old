@@ -80,7 +80,7 @@ TFQMR::TFQMRRuntime::~TFQMRRuntime(){}
 void TFQMR::initialize( const Matrix& coefficients ){
     SCAI_LOG_DEBUG(logger, "Initialization started for coefficients = "<< coefficients)
 
-    Solver::initialize( coefficients );
+    IterativeSolver::initialize( coefficients );
  	TFQMRRuntime& runtime = getRuntime();
 
     runtime.mAlpha = 0.0;

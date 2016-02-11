@@ -14,4 +14,5 @@ Contents:
    :maxdepth: 1
    
    lecture
-   solver  
+   solver
+   example_solver

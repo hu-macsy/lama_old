@@ -83,15 +83,6 @@ add_definitions ( -DSCAI_ASSERT_LEVEL_${SCAI_ASSERT_LEVEL} )
 add_definitions ( -D${SCAI_LOGGING_FLAG} )
 add_definitions ( -D${SCAI_TRACING_FLAG} )
 
-## MKL FOUND
-if     ( SCAI_BLAS_NAME STREQUAL "MKL" )
-    add_definitions( -DSCAI_MKL_BLAS )
-elseif ( INTERNALBLAS_FOUND )
-    add_definitions( -DSCAI_INTERNAL_BLAS )
-else   ( )
-    add_definitions( -DADD_ )
-endif  ( )
-
 if ( SCAI_OMP_SCHEDULE_FLAG )
     add_definitions ( -D${SCAI_OMP_SCHEDULE_FLAG} )
 endif ( SCAI_OMP_SCHEDULE_FLAG )
