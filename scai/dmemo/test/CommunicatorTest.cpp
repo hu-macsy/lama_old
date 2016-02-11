@@ -36,8 +36,11 @@
 
 #include <scai/logging.hpp>
 
-#include <scai/tasking.hpp>
 #include <scai/dmemo.hpp>
+#include <scai/dmemo/BlockDistribution.hpp>
+#include <scai/dmemo/GeneralDistribution.hpp>
+
+#include <scai/tasking.hpp>
 #include <scai/hmemo.hpp>
 
 #include <scai/common/unique_ptr.hpp>

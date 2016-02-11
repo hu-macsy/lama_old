@@ -35,6 +35,7 @@
 #include <boost/mpl/list.hpp>
 
 #include <scai/dmemo.hpp>
+#include <scai/dmemo/GenBlockDistribution.hpp>
 
 using namespace scai::dmemo;
 

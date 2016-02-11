@@ -140,8 +140,8 @@ scai_project (
 
 ### add subdirectories
 
-# add_subdirectory ( doc )
-# add_subdirectory( examples )
+add_subdirectory ( doc )
+add_subdirectory( examples )
 
 # if ( GPI2_FOUND AND IBVERBS_FOUND AND USE_GPI2 )
 #     add_subdirectory( gpi )

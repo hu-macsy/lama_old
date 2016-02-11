@@ -1,5 +1,5 @@
 /**
- * @file dmemo.hpp
+ * @file DemoDistribution.cpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,18 +25,26 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Include file that includes main defintion files of this project.
- *
- * @author Thomas Brandes
- * @date 09.02.2016
- */
+ * @brief Demo program for distribution + communication
+ * @author: Thomas Brandes
+ * @date 10.02.2016
+ **/
 
-// We include only base classes, not derived Communicator or Distribution classes
+#include <scai/dmemo.hpp>
 
-#include <scai/dmemo/Communicator.hpp>
+using namespace scai::dmemo;
 
-#include <scai/dmemo/Halo.hpp>
-#include <scai/dmemo/HaloBuilder.hpp>
+int main()
+{
+    SCAI_LOG_THREAD( "Main" )
 
-#include <scai/dmemo/Distribution.hpp>
-#include <scai/dmemo/NoDistribution.hpp>
+    CommunicatorPtr comm = Communicator::getCommunicator();
+
+    IndexType size = 71;
+
+    float weight = 1.0;
+
+    DistributionPtr dist ( Distribution::getDistribution( "CYCLIC", comm, size, weight ) );
+
+    std::cout << *comm << ", dist = " << *dist << std::endl;
+}

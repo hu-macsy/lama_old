@@ -40,16 +40,9 @@
 #include <scai/lama/Scalar.hpp>
 #include <scai/lama/norm/MaxNorm.hpp>
 
-#include <scai/lama/matrix/CSRSparseMatrix.hpp>
-#include <scai/lama/matrix/ELLSparseMatrix.hpp>
-#include <scai/lama/matrix/DIASparseMatrix.hpp>
-#include <scai/lama/matrix/COOSparseMatrix.hpp>
-#include <scai/lama/matrix/JDSSparseMatrix.hpp>
-#include <scai/lama/matrix/DenseMatrix.hpp>
-
+#include <scai/dmemo.hpp>
 #include <scai/dmemo/BlockDistribution.hpp>
 #include <scai/dmemo/CyclicDistribution.hpp>
-#include <scai/dmemo/Distribution.hpp>
 
 #include <scai/lama/expression/MatrixVectorExpressions.hpp>
 #include <scai/lama/expression/VectorExpressions.hpp>
