@@ -35,7 +35,7 @@
 
 // local library
 #include <scai/common/config.hpp>
-#include <scai/common/unique_ptr.hpp>
+#include <scai/common/shared_ptr.hpp>
 
 #include <scai/common/macros/throw.hpp>
 
@@ -203,11 +203,20 @@ OutputType Factory1<InputType, ValueType, OutputType>::create( const InputType t
 template<typename InputType, typename ValueType, typename OutputType>
 std::map<InputType, OutputType(* )( ValueType ) >& Factory1<InputType, ValueType, OutputType>::getFactory()
 {
-    static scai::common::unique_ptr<CreatorMap> factory;
+    static scai::common::shared_ptr<CreatorMap> factory;
+    static bool initialized;
 
-    if ( !factory.get() )
+    if ( !initialized )
     {
         factory.reset( new CreatorMap() );
+        initialized = true;
+    }
+    else if ( factory.use_count() == 0 )
+    {
+        // destructor on factory has already been called
+        // Note: test factory.get() == NULL does not work with boost::shared_ptr, boost::auto_ptr
+
+        factory.reset( new CreatorMap() );   // make sure that we do not work on invalid references
     }
 
     return *factory;
