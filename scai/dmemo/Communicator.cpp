@@ -52,6 +52,36 @@ namespace scai
 namespace dmemo
 {
 
+namespace communicator
+{
+
+std::ostream& operator<<( std::ostream& stream, const CommunicatorKind& type )
+{   
+    switch ( type )
+    {
+        case NO :
+            stream << "NO";
+            break;
+
+        case MPI :
+            stream << "MPI";
+            break;
+
+        case GPI : 
+            stream << "GPI";
+            break;
+
+        default:
+            stream << "CommunicatorKind_" << (int) type;
+    }
+    
+    return stream;
+}
+
+}
+
+/* -----------------------------------------------------------------------------*/
+
 SCAI_LOG_DEF_LOGGER( Communicator::logger, "Communicator" )
 
 CommunicatorPtr Communicator::getCommunicator( const communicator::CommunicatorKind& type )

@@ -92,7 +92,10 @@ typedef enum
     MAX_COMMUNICATOR
 } CommunicatorKind;
 
+COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const CommunicatorKind& kind );
+
 }
+
 /**
  * @brief Base and interface class for communicators used in LAMA
  *
