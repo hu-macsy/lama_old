@@ -46,16 +46,10 @@ scai_project (
 
    CLASSES
 
-        DistributionTest
         P_SparseMatrixTest
 
    SOURCES
 
-        BlockDistributionTest
-        CyclicDistributionTest
-        GenBlockDistributionTest
-        GeneralDistributionTest
-        NoDistributionTest
         P_COOSparseMatrixTest
         P_CSRSparseMatrixTest
         P_DenseMatrixTest
@@ -65,17 +59,12 @@ scai_project (
         P_MatrixCreatorTest
         P_MatrixStorageTest
         P_MatrixTest
-        P_MPICommunicatorTest
-        P_RedistributorTest
         P_VectorTest
         P_NormTest
 
         ${MetisDistributionTest}
 
-        #TODO: REMOVE!
-   #     ../Configuration
         ../SparseMatrixHelper
-        ../CommunicatorTest
 )
     
 # individual preprocessor definition 

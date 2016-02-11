@@ -37,8 +37,8 @@
 #include <scai/lama/matrix/all.hpp>
 
 #include <scai/lama/DenseVector.hpp>
-#include <scai/lama/Communicator.hpp>
-#include <scai/lama/distribution/GenBlockDistribution.hpp>
+#include <scai/dmemo/Communicator.hpp>
+#include <scai/dmemo/GenBlockDistribution.hpp>
 #include <scai/lama/norm/L2Norm.hpp>
 
 #include <scai/solver/CG.hpp>
@@ -53,6 +53,7 @@
 #include <scai/logging.hpp>
 
 using namespace std;
+using namespace scai::dmemo;
 using namespace scai::lama;
 using namespace scai::solver;
 using scai::common::unique_ptr;

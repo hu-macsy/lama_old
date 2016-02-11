@@ -40,8 +40,8 @@
 // local library
 #include <scai/lama/storage/CSRStorage.hpp>
 
-#include <scai/lama/distribution/GeneralDistribution.hpp>
-#include <scai/lama/distribution/NoDistribution.hpp>
+#include <scai/dmemo/GeneralDistribution.hpp>
+#include <scai/dmemo/NoDistribution.hpp>
 
 namespace scai
 {
@@ -86,7 +86,7 @@ public:
 
     /** Constructor, creates a distributed zero-matrix by given row and column distribution */
 
-    CSRSparseMatrix( DistributionPtr rowDist, DistributionPtr colDist );
+    CSRSparseMatrix( dmemo::DistributionPtr rowDist, dmemo::DistributionPtr colDist );
 
     /** Override default constructor, make sure that deep copies are created. */
 
@@ -102,7 +102,7 @@ public:
      * @param[in] rowDist   row distribution of the new matrix
      * @param[in] colDist   column distribution of the new matrix
      */
-    CSRSparseMatrix( const Matrix& other, DistributionPtr rowDist, DistributionPtr colDist );
+    CSRSparseMatrix( const Matrix& other, dmemo::DistributionPtr rowDist, dmemo::DistributionPtr colDist );
 
     /** Constructor of a (replicated) sparse matrix by global storage.
      *
@@ -119,7 +119,7 @@ public:
      *  This constructor works also fine if localData is the full global matrix;
      *  in this case only local rows will be taken on this processor.
      */
-    CSRSparseMatrix( const _MatrixStorage& localData, DistributionPtr rowDist, DistributionPtr colDist );
+    CSRSparseMatrix( const _MatrixStorage& localData, dmemo::DistributionPtr rowDist, dmemo::DistributionPtr colDist );
 
     /** Constructor of a replicated sparse matrix by reading the matrix
      *  data from a file.
@@ -166,7 +166,7 @@ public:
         const IndexType haloJA[],
         const HaloValueType haloValues[],
         const std::vector<IndexType>& ownedIndexes,
-        const CommunicatorPtr communicator );
+        const dmemo::CommunicatorPtr communicator );
 
     /**
      * @brief Destructor. Releases all allocated resources.
@@ -269,7 +269,7 @@ CSRSparseMatrix<ValueType>::CSRSparseMatrix(
     const IndexType haloJA[],
     const HaloValueType haloValues[],
     const std::vector<IndexType>& ownedIndexes,
-    const CommunicatorPtr communicator )
+    const dmemo::CommunicatorPtr communicator )
 
     : SparseMatrix<ValueType>( createStorage() )
 
@@ -284,7 +284,7 @@ CSRSparseMatrix<ValueType>::CSRSparseMatrix(
     mLocalData->setRawCSRData( numLocalRows, numLocalRows, numLocalNonZeros, localIA, localJA, localValues );
     mHaloData->setRawCSRData( numLocalRows, numGlobalRows, numHaloNonZeros, haloIA, haloJA, haloValues );
 
-    DistributionPtr dist( new GeneralDistribution( numGlobalRows, ownedIndexes, communicator ) );
+    dmemo::DistributionPtr dist( new dmemo::GeneralDistribution( numGlobalRows, ownedIndexes, communicator ) );
 
     // Halo is already splitted, but still contains the global indexes
 

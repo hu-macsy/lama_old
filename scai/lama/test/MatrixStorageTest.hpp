@@ -35,7 +35,7 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include <scai/lama/Communicator.hpp>
+#include <scai/dmemo/Communicator.hpp>
 #include <scai/lama/storage/MatrixStorage.hpp>
 
 #include <scai/lama/test/TestMacros.hpp>

@@ -39,10 +39,11 @@
 #include <scai/lama/storage/DenseStorage.hpp>
 #include <scai/lama/storage/StorageMethods.hpp>
 
-#include <scai/lama/distribution/Distribution.hpp>
-#include <scai/lama/distribution/Redistributor.hpp>
-#include <scai/lama/distribution/Halo.hpp>
+#include <scai/dmemo/Distribution.hpp>
+#include <scai/dmemo/Redistributor.hpp>
+#include <scai/dmemo/Halo.hpp>
 
+#include <scai/lama/LAMAKernel.hpp>
 #include <scai/lama/UtilKernelTrait.hpp>
 #include <scai/lama/CSRKernelTrait.hpp>
 #include <scai/lama/StorageIO.hpp>
@@ -60,10 +61,11 @@
 #include <scai/common/exception/UnsupportedException.hpp>
 #include <scai/common/preprocessor.hpp>
 
-using namespace scai::hmemo;
-
 namespace scai
 {
+
+using namespace hmemo;
+using namespace dmemo;
 
 using tasking::SyncToken;
 using tasking::TaskSyncToken;
@@ -1304,24 +1306,9 @@ void _MatrixStorage::buildCSRGraph(
     IndexType* adjIA,
     IndexType* adjJA,
     IndexType* vwgt,
-    CommunicatorPtr comm,
-    const IndexType* globalRowIndexes /* = NULL */,
-    IndexType* vtxdist /* = NULL */ ) const
+    const IndexType* globalRowIndexes ) const
 {
     IndexType numLocalRows = mNumRows;
-
-    if ( vtxdist != NULL ) // parallel graph
-    {
-        const PartitionId MASTER = 0;
-        IndexType parts = comm->getSize();
-// Is this valid ?
-// SCAI_ASSERT_ERROR( getDistribution().getNumPartitions() == parts,
-//              "mismatch number of partitions and communicator size" );
-        std::vector<IndexType> localNumRows( parts );
-        comm->gather( vtxdist, 1, MASTER, &numLocalRows );
-        comm->bcast( vtxdist, parts, MASTER );
-        vtxdist[parts] = OpenMPCSRUtils::scan( vtxdist, parts );
-    }
 
     HArray<IndexType> csrIA;
     HArray<IndexType> csrJA;

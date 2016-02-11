@@ -54,6 +54,7 @@
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/bind.hpp>
 #include <scai/common/Constants.hpp>
+#include <scai/common/preprocessor.hpp>
 
 #include <scai/common/cuda/CUDAError.hpp>
 #include <scai/common/cuda/launchHelper.hpp>
@@ -79,9 +80,6 @@
 #include <thrust/iterator/reverse_iterator.h>
 #include <thrust/iterator/zip_iterator.h>
 #include <thrust/reduce.h>
-
-// boost
-#include <boost/preprocessor.hpp>
 
 // Parameters for Matrix Multiplication
 #define NUM_HASH_RETRIES 16

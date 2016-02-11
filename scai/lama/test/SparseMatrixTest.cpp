@@ -43,12 +43,10 @@
 #include <scai/lama/DenseVector.hpp>
 #include <scai/lama/Scalar.hpp>
 
-#include <scai/lama/distribution/BlockDistribution.hpp>
-#include <scai/lama/distribution/CyclicDistribution.hpp>
+#include <scai/dmemo/BlockDistribution.hpp>
+#include <scai/dmemo/CyclicDistribution.hpp>
 
 #include <scai/lama/test/TestSparseMatrices.hpp>
-
-#include <scai/lama/NoCommunicator.hpp>
 
 #include <scai/lama/expression/MatrixVectorExpressions.hpp>
 #include <scai/lama/expression/MatrixExpressions.hpp>
@@ -59,6 +57,7 @@
 
 using namespace scai::lama;
 using namespace scai::hmemo;
+using namespace scai::dmemo;
 
 SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename MatrixType>, SparseMatrixTest<MatrixType>::logger,
                               "Test.SparseMatrixTest" )
@@ -114,7 +113,7 @@ SCAI_LOG_INFO( logger, "cTorTest" );
 //TODO: to P_ test?
 const IndexType n = 4;
 
-CommunicatorPtr comm = Communicator::getCommunicator( scai::lama::communicator::MPI );
+CommunicatorPtr comm = Communicator::getCommunicator( communicator::MPI );
 
 DistributionPtr bdist( new BlockDistribution( n, comm ) );
 DistributionPtr cdist( new CyclicDistribution( n, 1, comm ) );

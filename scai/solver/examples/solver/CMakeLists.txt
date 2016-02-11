@@ -36,6 +36,9 @@ foreach ( executable amg_solver cg_solver gmres_solver solver lama_info matrix_g
     set ( EXAMPLE_EXECUTABLES_SOLVER "${EXAMPLE_EXECUTABLES_SOLVER} ${executable}.exe" )
 endforeach ( executable )
 
+# GenMatrices.py: copy only to build and install directory
+
+configure_file( GenMatrices.py GenMatrices.py COPYONLY )
 install( FILES GenMatrices.py DESTINATION ${PROJECT_EXAMPLE_DIR}/solver )
 
 set ( EXAMPLE_EXECUTABLES_SOLVER "${EXAMPLE_EXECUTABLES_SOLVER}" PARENT_SCOPE )

@@ -39,9 +39,11 @@
 #include <scai/lama/expression/all.hpp>
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 #include <scai/lama/matutils/MatrixCreator.hpp>
-#include <scai/lama/NoCommunicator.hpp>
+
 #include <scai/solver/Solver.hpp>
 #include <scai/solver/AMGSetup.hpp>
+
+#include <scai/dmemo/NoCommunicator.hpp>
 
 #include <scai/common/ContextType.hpp>
 #include <scai/common/shared_ptr.hpp>
@@ -86,9 +88,9 @@ void contextInfo()
 
 void communicatorInfo()
 {
-    using namespace scai::lama;
+    using namespace scai::dmemo;
 
-    vector<scai::lama::communicator::CommunicatorKind> values;  // string is create type for the factory
+    vector<communicator::CommunicatorKind> values;  // string is create type for the factory
 
     Communicator::getCreateValues( values );
 
@@ -207,7 +209,7 @@ void setupInfo()
 
 void distributionInfo()
 {
-    using namespace scai::lama;
+    using namespace scai::dmemo;
 
     vector<string> values;  // string is create type for the factory
 

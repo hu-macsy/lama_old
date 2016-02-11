@@ -91,7 +91,7 @@ public:
 
     /** Constructor for a distributed matrix. */
 
-    CRTPMatrix( DistributionPtr rowDistribution, DistributionPtr colDistribution )
+    CRTPMatrix( dmemo::DistributionPtr rowDistribution, dmemo::DistributionPtr colDistribution )
         : Matrix( rowDistribution, colDistribution )
     {
     }
@@ -222,7 +222,7 @@ public:
 
         if ( !typedRow->getDistribution().isReplicated() || typedRow->size() != getNumColumns() )
         {
-            DistributionPtr dist( new NoDistribution( getNumColumns() ) );
+            dmemo::DistributionPtr dist( new dmemo::NoDistribution( getNumColumns() ) );
 
             typedRow->resize( dist );
 
@@ -240,7 +240,7 @@ public:
         {
             // on a distributed matrix, owner fills row and broadcasts it
 
-            const Communicator& comm = getDistribution().getCommunicator();
+            const dmemo::Communicator& comm = getDistribution().getCommunicator();
 
             // owner fills the row
 

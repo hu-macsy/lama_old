@@ -120,12 +120,12 @@ public:
         return *getContextPtr();
     }
 
-    scai::lama::CommunicatorPtr getCommunicatorPtr() const
+    scai::dmemo::CommunicatorPtr getCommunicatorPtr() const
     {
         return mComm;
     }
 
-    const scai::lama::Communicator& getCommunicator() const
+    const scai::dmemo::Communicator& getCommunicator() const
     {
         return *mComm;
     }
@@ -194,7 +194,7 @@ private:
 
     scai::common::scalar::ScalarType   mValueType;          // value type to use
 
-    scai::lama::CommunicatorPtr      mComm;
+    scai::dmemo::CommunicatorPtr      mComm;
 
     IndexType            mMaxIter;
 
@@ -218,7 +218,7 @@ private:
 LamaConfig::LamaConfig()
 {
     mCommunicationKind = scai::lama::Matrix::SYNCHRONOUS;
-    mComm              = scai::lama::Communicator::getCommunicator();
+    mComm              = scai::dmemo::Communicator::getCommunicator();
     mContextType       = scai::common::context::Host;
     mMaxIter           = nIndex;
     mValueType         = scai::common::scalar::DOUBLE;

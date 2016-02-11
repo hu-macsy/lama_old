@@ -51,13 +51,11 @@
 #include <scai/common/cuda/launchHelper.hpp>
 #include <scai/common/Constants.hpp>
 #include <scai/common/TypeTraits.hpp>
+#include <scai/common/preprocessor.hpp>
 
 // thrust
 #include <thrust/device_ptr.h>
 #include <thrust/sort.h>
-
-// boost
-#include <boost/preprocessor.hpp>
 
 using namespace scai::hmemo;
 using namespace scai::tasking;

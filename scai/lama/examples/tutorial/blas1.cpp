@@ -51,7 +51,7 @@
 #include <scai/hmemo/Context.hpp>
 
 //include for using the NoDistribution
-#include <scai/lama/distribution/NoDistribution.hpp>
+#include <scai/dmemo/NoDistribution.hpp>
 
 //include the generic inner product functions of LAMA
 #include <scai/lama/expression/all.hpp>
@@ -129,7 +129,7 @@ int main()
   lama::DenseVector<ScalarType> lama_vec2( 10, 0.0 );
   lama_vec2.setValues( lama_array1 );
 
-  lama::DistributionPtr noDist( new lama::NoDistribution( 10 ) );
+  dmemo::DistributionPtr noDist( new dmemo::NoDistribution( 10 ) );
   lama::DenseVector<ScalarType> lama_vec3( lama_array1, noDist  );
 
   std::cout << "DenseVector with rand values filled" << std::endl;

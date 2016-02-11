@@ -45,6 +45,7 @@
 
 #include <scai/common/macros/assert.hpp>
 #include <scai/common/bind.hpp>
+#include <scai/common/unique_ptr.hpp>
 
 // std
 #include <cstring> // import ::memcpy

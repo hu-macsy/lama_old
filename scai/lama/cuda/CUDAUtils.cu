@@ -46,6 +46,7 @@
 #include <scai/common/cuda/launchHelper.hpp>
 #include <scai/common/Constants.hpp>
 #include <scai/common/Math.hpp>
+#include <scai/common/preprocessor.hpp>
 
 // thrust
 #include <thrust/device_vector.h>
@@ -57,8 +58,6 @@
 #include <thrust/transform.h>
 #include <thrust/transform_reduce.h>
 
-// boost
-#include <boost/preprocessor.hpp>
 
 using namespace scai::common;
 

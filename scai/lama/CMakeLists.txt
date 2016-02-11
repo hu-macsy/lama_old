@@ -101,12 +101,8 @@ scai_project (
 
     CLASSES                  # .cpp, .hpp
 
-        CommunicationPlan
-        Communicator
         DenseVector
-        Distributed
         HArrayUtils
-        NoCommunicator
         StorageIO
         Vector
 
@@ -125,8 +121,6 @@ scai_project (
         LAMAArrayRef
 
         Scalar
-
-        CRTPCommunicator
     )
 
 ### add subdirectories
@@ -136,7 +130,6 @@ if ( CUDA_FOUND AND USE_CUDA AND CUDA_HAVE_GPU )
     set ( CXX_SOURCES ${CXX_SOURCES} ${CUDA_FILES} )
 endif ( CUDA_FOUND AND USE_CUDA AND CUDA_HAVE_GPU )
 
-add_subdirectory ( distribution )
 add_subdirectory ( doc )
 add_subdirectory( examples )
 add_subdirectory ( expression )
@@ -152,10 +145,6 @@ add_subdirectory ( matutils )
 if ( USE_MIC )
     add_subdirectory ( mic )
 endif ( USE_MIC )
-
-if ( MPI_FOUND AND USE_MPI )
-    add_subdirectory ( mpi )
-endif ( MPI_FOUND AND USE_MPI )
 
 add_subdirectory ( norm )
 add_subdirectory ( openmp )

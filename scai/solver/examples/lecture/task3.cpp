@@ -17,6 +17,7 @@
 #include <iostream>
 
 using namespace scai;
+using namespace dmemo;
 using namespace lama;
 using namespace solver;
 

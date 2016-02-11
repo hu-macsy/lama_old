@@ -43,9 +43,9 @@
 #include <scai/lama/storage/MatrixStorage.hpp>
 #include <scai/lama/storage/CSRStorage.hpp>
 
-#include <scai/lama/distribution/NoDistribution.hpp>
-#include <scai/lama/distribution/CyclicDistribution.hpp>
-#include <scai/lama/distribution/Redistributor.hpp>
+#include <scai/dmemo/NoDistribution.hpp>
+#include <scai/dmemo/CyclicDistribution.hpp>
+#include <scai/dmemo/Redistributor.hpp>
 
 #include <scai/lama/UtilKernelTrait.hpp>
 #include <scai/lama/CSRKernelTrait.hpp>
@@ -70,6 +70,7 @@
 #include <cmath>
 
 using namespace scai::hmemo;
+using namespace scai::dmemo;
 
 namespace scai
 {

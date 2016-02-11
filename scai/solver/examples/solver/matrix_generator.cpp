@@ -45,6 +45,7 @@
 #include <iostream>
 
 using namespace scai::lama;
+using namespace scai::dmemo;
 using namespace std;
 
 void replaceStencil( std::string& str, const std::string& stencil )

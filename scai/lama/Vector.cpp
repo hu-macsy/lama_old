@@ -37,7 +37,7 @@
 // local library
 #include <scai/lama/DenseVector.hpp>
 
-#include <scai/lama/distribution/NoDistribution.hpp>
+#include <scai/dmemo/NoDistribution.hpp>
 
 #include <scai/lama/matrix/Matrix.hpp>
 
@@ -51,6 +51,7 @@
 
 using namespace scai::common;
 using namespace scai::hmemo;
+using namespace scai::dmemo;
 
 namespace scai
 {

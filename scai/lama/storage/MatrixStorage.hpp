@@ -35,7 +35,7 @@
 
 // local library
 #include <scai/lama/io/FileType.hpp>
-#include <scai/lama/Communicator.hpp>
+#include <scai/dmemo/Communicator.hpp>
 
 // internal scai libraries
 #include <scai/hmemo.hpp>
@@ -48,17 +48,22 @@
 namespace scai
 {
 
+// Forward declarations
+
 namespace tasking
 {
 	class SyncToken;
 }
 
+namespace dmemo
+{
+    class Distribution;
+    class Halo;
+    class Redistributor;
+}
+
 namespace lama
 {
-
-// Forward declaration
-
-class Distribution;
 
 template<typename ValueType> class CSRStorage;
 
@@ -309,7 +314,7 @@ public:
      *    * this routine is the same as an assign in case of a replicated distribution
      */
 
-    virtual void localize( const _MatrixStorage& global, const Distribution& rowDist );
+    virtual void localize( const _MatrixStorage& global, const dmemo::Distribution& rowDist );
 
     /** Get the total number of non-zero values in the matrix.
      *
@@ -477,18 +482,14 @@ public:
      * @param[out]  adjIA   the ia array of the csr graph
      * @param[out]  adjJA   the ja array of the csr graph
      * @param[out]  vwgt    ToDo
-     * @param[in]   comm    Communicator is used to determine number of partitions
-     * @param[in]   globalRowIndexes ToDo
-     * @param[out]  vtxdist ToDo
+     * @param[in]   globalRowIndexes are the global indexes of the local rows ( can be NULL for identity )
      * @since 1.1.0
      */
     virtual void buildCSRGraph(
-        IndexType* adjIA,
-        IndexType* adjJA,
-        IndexType* vwgt,
-        CommunicatorPtr comm,
-        const IndexType* globalRowIndexes = NULL,
-        IndexType* vtxdist = NULL ) const;
+        IndexType adjIA[],
+        IndexType adjJA[],
+        IndexType vwgt[],
+        const IndexType* globalRowIndexes ) const;
 
     /******************************************************************
      *   File I/O for MatrixStorage                                    *
@@ -551,8 +552,6 @@ protected:
 
     virtual bool checkDiagonalProperty() const = 0;
 };
-
-class Distribution;
 
 /** The template class MatrixStorage<ValueType> is the base
  *  class for all matrix storage classes of a given ValueType.
@@ -662,8 +661,8 @@ public:
     virtual void joinHalo(
         const _MatrixStorage& localData,
         const _MatrixStorage& haloData,
-        const class Halo& halo,
-        const class Distribution& colDist,
+        const dmemo:: Halo& halo,
+        const dmemo::Distribution& colDist,
         const bool keepDiagonalProperty );
 
     /** Splitting of matrix storage for halo
@@ -678,9 +677,9 @@ public:
     virtual void splitHalo(
         MatrixStorage<ValueType>& localData,
         MatrixStorage<ValueType>& haloData,
-        class Halo& halo,
-        const class Distribution& colDist,
-        const class Distribution* rowDist ) const;
+        dmemo::Halo& halo,
+        const dmemo::Distribution& colDist,
+        const dmemo::Distribution* rowDist ) const;
 
     /** Special version of splitHalo where this matrix contains no local
      *  data and where haloData is aliased to this matrix.
@@ -690,7 +689,7 @@ public:
      *  exchange schedule.
      */
 
-    virtual void buildHalo( class Halo& halo, const class Distribution& colDist );
+    virtual void buildHalo( dmemo::Halo& halo, const dmemo::Distribution& colDist );
 
     /** This method build for this matrix the local part of a global matrix.
      *
@@ -700,7 +699,7 @@ public:
      *  Attention: globalMatrix might be aliased to this storage.
      */
 
-    virtual void localize( const _MatrixStorage& globalData, const class Distribution& rowDist );
+    virtual void localize( const _MatrixStorage& globalData, const dmemo::Distribution& rowDist );
 
     /** This routine builds the full matrix storage for a distributed matrix.
      *
@@ -709,7 +708,7 @@ public:
      *  the global matrix data.
      */
 
-    virtual void replicate( const _MatrixStorage& localData, const class Distribution& rowDist );
+    virtual void replicate( const _MatrixStorage& localData, const dmemo::Distribution& rowDist );
 
     /** Get a value of the matrix.
      *
@@ -754,18 +753,18 @@ public:
      *
      */
 
-    virtual void redistribute( const _MatrixStorage& other, const class Redistributor& redistributor );
+    virtual void redistribute( const _MatrixStorage& other, const dmemo::Redistributor& redistributor );
 
     /** Special case where other storage is CSR of same type avoids temporary CSR conversion. */
 
-    virtual void redistributeCSR( const CSRStorage<ValueType>& other, const class Redistributor& redistributor );
+    virtual void redistributeCSR( const CSRStorage<ValueType>& other, const dmemo::Redistributor& redistributor );
 
     /** Build a halo matrix with all rows of required indexes */
 
     virtual void exchangeHalo(
-        const class Halo& halo,
+        const dmemo::Halo& halo,
         const MatrixStorage<ValueType>& matrix,
-        const class Communicator& comm );
+        const dmemo::Communicator& comm );
 
     /** Conversion routine of Compressed Sparse Row data to Compressed Sparse Column.  */
 

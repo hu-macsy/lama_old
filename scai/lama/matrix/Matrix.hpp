@@ -35,14 +35,15 @@
 #include <scai/common/config.hpp>
 
 // base classes
-#include <scai/lama/Distributed.hpp>
+#include <scai/dmemo/Distributed.hpp>
 
 // local library
 #include <scai/lama/Scalar.hpp>
 #include <scai/lama/Vector.hpp>
 
-#include <scai/lama/distribution/Distribution.hpp>
-#include <scai/lama/distribution/NoDistribution.hpp>
+#include <scai/dmemo/Distribution.hpp>
+#include <scai/dmemo/NoDistribution.hpp>
+
 #include <scai/lama/expression/Expression.hpp>
 #include <scai/lama/storage/MatrixStorage.hpp>
 
@@ -112,7 +113,7 @@ inline std::ostream& operator<<( std::ostream& stream, const MatrixCreateKeyType
 class COMMON_DLL_IMPORTEXPORT Matrix: 
 
     public common::Factory<MatrixCreateKeyType, Matrix*>,
-    public Distributed
+    public dmemo::Distributed
 
 {
 
@@ -140,6 +141,14 @@ public:
      * Note: the format of the matrix decides whether the matrix will be DENSE or SPARSE.
      */
     static Matrix* getMatrix( const Format::MatrixStorageFormat format, const common::scalar::ScalarType type );
+
+    /** Override Distributed::buildCSRGraph */
+
+    virtual void buildCSRGraph( IndexType ia[], IndexType ja[], IndexType vwgt[], const IndexType* globalRowIndexes ) const;
+
+    /** Override Distributed::getCSRGraphSize */
+
+    virtual IndexType getCSRGraphSize() const;
 
     void writeToFile(
         const std::string& fileName,
@@ -212,7 +221,7 @@ public:
      *
      *  The distributions specify the new global and the new local sizes for a distributed matrix.
      */
-    virtual void allocate( DistributionPtr rowDistribution, DistributionPtr colDistribution ) = 0;
+    virtual void allocate( dmemo::DistributionPtr rowDistribution, dmemo::DistributionPtr colDistribution ) = 0;
 
     /**
      * @brief Operator that sets the matrix to the identity matrix.
@@ -227,7 +236,7 @@ public:
 
     /** Set matrix to a identity square matrix with same row and column distribution. */
 
-    virtual void setIdentity( DistributionPtr distribution ) = 0;
+    virtual void setIdentity( dmemo::DistributionPtr distribution ) = 0;
 
     /** Set matrix to a (replicated) identity matrix with same row and column distribution. */
 
@@ -254,7 +263,7 @@ public:
      *
      *  The following must be valid: values.size() == rowDist->getLocalSize() * colDist->getGlobalSize()
      */
-    virtual void setDenseData( DistributionPtr rowDist, DistributionPtr colDist, const hmemo::_HArray& values, Scalar eps =
+    virtual void setDenseData( dmemo::DistributionPtr rowDist, dmemo::DistributionPtr colDist, const hmemo::_HArray& values, Scalar eps =
                                    Scalar( 0 ) ) = 0;
 
     /** This method set a matrix with the values owned by this partition in CSR format
@@ -273,8 +282,8 @@ public:
      */
 
     virtual void setCSRData(
-        DistributionPtr rowDist,
-        DistributionPtr colDist,
+        dmemo::DistributionPtr rowDist,
+        dmemo::DistributionPtr colDist,
         const IndexType numValues,
         const hmemo::HArray<IndexType>& ia,
         const hmemo::HArray<IndexType>& ja,
@@ -284,8 +293,8 @@ public:
 
     template<typename ValueType>
     void setRawDenseData(
-        DistributionPtr rowDist,
-        DistributionPtr colDist,
+        dmemo::DistributionPtr rowDist,
+        dmemo::DistributionPtr colDist,
         const ValueType* values,
         const ValueType eps = 0 )
     {
@@ -303,8 +312,8 @@ public:
 
     template<typename ValueType>
     void setRawCSRData(
-        DistributionPtr rowDist,
-        DistributionPtr colDist,
+        dmemo::DistributionPtr rowDist,
+        dmemo::DistributionPtr colDist,
         const IndexType numValues,
         const IndexType* ia,
         const IndexType* ja,
@@ -326,7 +335,9 @@ public:
     template<typename ValueType>
     void setRawDenseData( const IndexType n, const IndexType m, const ValueType* values, const ValueType eps = 0 )
     {
-        setRawDenseData( DistributionPtr( new NoDistribution( n ) ), DistributionPtr( new NoDistribution( m ) ), values,
+        setRawDenseData( dmemo::DistributionPtr( new dmemo::NoDistribution( n ) ), 
+                         dmemo::DistributionPtr( new dmemo::NoDistribution( m ) ), 
+                         values,
                          eps );
     }
 
@@ -366,7 +377,7 @@ public:
      *  @param[in] rowDist   the given row distribution.
      *  @param[in] colDist   storage will be splitted according to the column distribution.
      */
-    virtual void assign( const _MatrixStorage& storage, DistributionPtr rowDist, DistributionPtr colDist ) = 0;
+    virtual void assign( const _MatrixStorage& storage, dmemo::DistributionPtr rowDist, dmemo::DistributionPtr colDist ) = 0;
 
     /** @brief Gets the local part (no splitted columns) of a matrix as if the distribution of columns is replicated.
      *
@@ -390,7 +401,7 @@ public:
      *  @param[in] rowDistribution is new distribution of rows, global size must be mNumRows
      *  @param[in] colDistribution is new distribution of columns, global size must be mNumColumns
      */
-    virtual void redistribute( DistributionPtr rowDistribution, DistributionPtr colDistribution ) = 0;
+    virtual void redistribute( dmemo::DistributionPtr rowDistribution, dmemo::DistributionPtr colDistribution ) = 0;
 
     /** @brief This method returns one row of the matrix.
      *
@@ -587,14 +598,14 @@ public:
      *
      * @return a constant reference to the column distribution.
      */
-    inline const Distribution& getColDistribution() const;
+    inline const dmemo::Distribution& getColDistribution() const;
 
     /**
      * @brief Gets a pointer to the column distribution.
      *
      * @return a pointer to the column distribution.
      */
-    inline DistributionPtr getColDistributionPtr() const;
+    inline dmemo::DistributionPtr getColDistributionPtr() const;
 
     /**
      * @brief Specifies on which compute back end the matrix operations should take place.
@@ -846,7 +857,7 @@ public:
      * @param[in] rowDistribution   new distribution of the rows
      * @param[in] colDistribution   new distribution of the columns
      */
-    virtual Matrix* copy( DistributionPtr rowDistribution, DistributionPtr colDistribution ) const;
+    virtual Matrix* copy( dmemo::DistributionPtr rowDistribution, dmemo::DistributionPtr colDistribution ) const;
 
     /**
      * @brief Queries the keytype to create matrix from factory with same valuetype and storagetype
@@ -909,7 +920,7 @@ protected:
      *
      *  The number of rows and columns is given implicitly by the global sizes of the distributions.
      */
-    Matrix( DistributionPtr rowDistribution, DistributionPtr colDistribution );
+    Matrix( dmemo::DistributionPtr rowDistribution, dmemo::DistributionPtr colDistribution );
 
     /**
      * @brief Constructs a matrix of a given size replicated on each partition.
@@ -929,7 +940,7 @@ protected:
      *
      * Same as Matrix( distribution, distribution ); column distribution will be same as that of rows.
      */
-    Matrix( DistributionPtr distribution );
+    Matrix( dmemo::DistributionPtr distribution );
 
     /**
      * @brief Constructs a square matrix with a replicated distribution.
@@ -959,7 +970,7 @@ protected:
      *   - other.getNumRows() == distribution->getGlobalSize()
      *   - other.getNumColumns() == colDistribution->getGlobalSize()
      */
-    Matrix( const Matrix& other, DistributionPtr rowDistribution, DistributionPtr colDistribution );
+    Matrix( const Matrix& other, dmemo::DistributionPtr rowDistribution, dmemo::DistributionPtr colDistribution );
 
     /**
      * @brief Copies a matrix to a new matrix with the same distribution.
@@ -985,9 +996,9 @@ protected:
      *
      * Global and local size is given implicitly by the distributions itself.
      */
-    void setDistributedMatrix( DistributionPtr distribution, DistributionPtr colDistribution );
+    void setDistributedMatrix( dmemo::DistributionPtr distribution, dmemo::DistributionPtr colDistribution );
 
-    DistributionPtr mColDistribution;
+    dmemo::DistributionPtr mColDistribution;
 
     // TODO remove mNumRows and mNumColumns, this value is stored in the distribution
     IndexType mNumRows;
@@ -1035,13 +1046,13 @@ inline Matrix::SyncKind Matrix::getCommunicationKind() const
     return mCommunicationKind;
 }
 
-inline const Distribution& Matrix::getColDistribution() const
+inline const dmemo::Distribution& Matrix::getColDistribution() const
 {
     SCAI_ASSERT_ERROR( mColDistribution, "NULL column distribution for Matrix" )
     return *mColDistribution;
 }
 
-inline DistributionPtr Matrix::getColDistributionPtr() const
+inline dmemo::DistributionPtr Matrix::getColDistributionPtr() const
 {
     SCAI_ASSERT_ERROR( mColDistribution, "NULL column distribution for Matrix" )
     return mColDistribution;

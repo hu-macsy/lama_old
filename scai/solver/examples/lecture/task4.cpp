@@ -6,7 +6,7 @@
 #include <scai/lama/storage/SparseAssemblyStorage.hpp>
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 #include <scai/lama/DenseVector.hpp>
-#include <scai/lama/distribution/BlockDistribution.hpp>
+#include <scai/dmemo/BlockDistribution.hpp>
 
 #include <scai/solver/CG.hpp>
 #include <scai/solver/criteria/IterationCount.hpp>
@@ -16,9 +16,10 @@
 #include <iostream>
 
 using namespace scai;
-using namespace lama;
+using namespace dmemo;
 using namespace solver;
 using namespace hmemo;
+using namespace lama;
 
 int main( int argc, char* argv[] )
 {
@@ -32,7 +33,7 @@ int main( int argc, char* argv[] )
     std::cout << "Read matrix m : " << m << std::endl;
     IndexType size = m.getNumRows();
 
-    CommunicatorPtr comm( Communicator::getCommunicator( scai::lama::communicator::MPI ) );
+    CommunicatorPtr comm( Communicator::getCommunicator() );
     DistributionPtr dist( new BlockDistribution( size, comm ) );
     m.redistribute( dist, dist );
 

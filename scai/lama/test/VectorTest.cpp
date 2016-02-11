@@ -49,7 +49,7 @@
 #include <scai/lama/expression/VectorExpressions.hpp>
 #include <scai/lama/expression/MatrixExpressions.hpp>
 
-#include <scai/lama/distribution/NoDistribution.hpp>
+#include <scai/dmemo/NoDistribution.hpp>
 
 #include <scai/lama/test/TestSparseMatrices.hpp>
 #include <scai/lama/test/EquationHelper.hpp>
@@ -63,6 +63,7 @@
 using namespace scai::common;
 using namespace scai::lama;
 using namespace scai::hmemo;
+using namespace scai::dmemo;
 using scai::common::Exception;
 
 #if ARITHMETIC_HOST_TYPE_CNT == 1

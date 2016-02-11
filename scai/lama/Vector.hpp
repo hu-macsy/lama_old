@@ -36,7 +36,7 @@
 #include <scai/common/config.hpp>
 
 // base classes
-#include <scai/lama/Distributed.hpp>
+#include <scai/dmemo/Distributed.hpp>
 
 // local library
 #include <scai/lama/expression/Expression.hpp>
@@ -100,7 +100,7 @@ typedef std::pair<VectorKind, common::scalar::ScalarType> VectorCreateKeyType;
 class COMMON_DLL_IMPORTEXPORT Vector: 
 
      public common::Factory<VectorCreateKeyType, Vector*>,
-     public Distributed
+     public dmemo::Distributed
 
 {
 public:
@@ -120,7 +120,7 @@ public:
      *
      *  This method keeps compatibility with an older method that did know which vectors were supported.
      */
-    static Vector* createVector( const common::scalar::ScalarType valueType, DistributionPtr distribution );
+    static Vector* createVector( const common::scalar::ScalarType valueType, dmemo::DistributionPtr distribution );
 
     /**
      * @brief ExpressionMemberType is the type that is used the template Expression to store a Vector.
@@ -392,7 +392,7 @@ public:
     /**
      *  Assignment to vector by local values and distribution.
      */
-    virtual void assign( const hmemo::_HArray& localValues, DistributionPtr distribution ) = 0;
+    virtual void assign( const hmemo::_HArray& localValues, dmemo::DistributionPtr distribution ) = 0;
 
     /**
      *  Builds an array with local values of a distributed vector.
@@ -472,7 +472,7 @@ public:
      *  All elements of the vector are undefined after this operation.
      *  Elements can be set e.g. with
      */
-    void resize( DistributionPtr distributionPtr );
+    void resize( dmemo::DistributionPtr distributionPtr );
 
     /**
      * @brief Redistributes this vector to the new passed distribution.
@@ -482,7 +482,7 @@ public:
      * The global vector itself remains unchanged; only local parts
      * can be different now.
      */
-    virtual void redistribute( DistributionPtr distribution ) = 0;
+    virtual void redistribute( dmemo::DistributionPtr distribution ) = 0;
 
     /** 
      *  Build the conjugate vector in place. 
@@ -502,7 +502,7 @@ protected:
      * @param[in] distribution  the distribution to use for the new Vector.
      * @param[in] context       is optional, will be Host context.
      */
-    explicit Vector( DistributionPtr distribution, hmemo::ContextPtr context = hmemo::ContextPtr() );
+    explicit Vector( dmemo::DistributionPtr distribution, hmemo::ContextPtr context = hmemo::ContextPtr() );
 
     /**
      * @brief Creates a copy of the passed Vector.

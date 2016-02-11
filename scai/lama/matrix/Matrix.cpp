@@ -36,17 +36,18 @@
 
 // local library
 #include <scai/lama/DenseVector.hpp>
-#include <scai/lama/distribution/NoDistribution.hpp>
+#include <scai/dmemo/NoDistribution.hpp>
 
 // internal scai libraries
 #include <scai/common/macros/assert.hpp>
 #include <scai/common/Constants.hpp>
 #include <scai/common/unique_ptr.hpp>
 
-using namespace scai::common;
-
 namespace scai
 {
+
+using namespace common;
+using namespace dmemo;
 
 namespace lama
 {
@@ -182,6 +183,26 @@ Matrix::~Matrix()
 void Matrix::setDefaultKind()
 {
     mCommunicationKind = ASYNCHRONOUS;
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+void Matrix::buildCSRGraph( IndexType ia[], IndexType ja[], IndexType vwgt[], const IndexType* globalIndexes ) const
+{
+    getLocalStorage().buildCSRGraph( ia, ja, vwgt, globalIndexes );
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+IndexType Matrix::getCSRGraphSize() const
+{
+    // Currently only supported if column distribution is replicated
+
+    SCAI_ASSERT_EQ_ERROR( getNumColumns(), getLocalStorage().getNumColumns(), "getCSRGraphSize only for replicated column distribution" )
+
+    // diagonal elements will not be used
+
+    return getLocalNumValues() - getDistribution().getLocalSize();
 }
 
 /* ---------------------------------------------------------------------------------*/

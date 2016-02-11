@@ -41,10 +41,10 @@
 #include <scai/lama/LAMAKernel.hpp>
 #include <scai/blaskernel/BLASKernelTrait.hpp>
 
-#include <scai/lama/distribution/NoDistribution.hpp>
-#include <scai/lama/distribution/BlockDistribution.hpp>
-#include <scai/lama/distribution/CyclicDistribution.hpp>
-#include <scai/lama/distribution/Redistributor.hpp>
+#include <scai/dmemo/NoDistribution.hpp>
+#include <scai/dmemo/BlockDistribution.hpp>
+#include <scai/dmemo/CyclicDistribution.hpp>
+#include <scai/dmemo/Redistributor.hpp>
 
 // internal scai libraries
 #include <scai/tasking/NoSyncToken.hpp>
@@ -59,6 +59,7 @@
 #include <scai/common/preprocessor.hpp>
 
 using namespace scai::hmemo;
+using namespace scai::dmemo;
 
 namespace scai
 {

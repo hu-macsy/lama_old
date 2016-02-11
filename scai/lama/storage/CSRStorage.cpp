@@ -43,7 +43,7 @@
 
 #include <scai/lama/storage/StorageMethods.hpp>
 
-#include <scai/lama/distribution/Redistributor.hpp>
+#include <scai/dmemo/Redistributor.hpp>
 
 #include <scai/lama/openmp/OpenMPUtils.hpp>
 #include <scai/lama/openmp/OpenMPCSRUtils.hpp>
@@ -69,6 +69,7 @@ namespace scai
 {
 
 using namespace hmemo;
+using namespace dmemo;
 using common::unique_ptr;
 using common::shared_ptr;
 using common::TypeTraits;
@@ -525,12 +526,12 @@ void CSRStorage<ValueType>::buildRowIndexes()
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void CSRStorage<ValueType>::redistributeCSR( const CSRStorage<ValueType>& other, const Redistributor& redistributor )
+void CSRStorage<ValueType>::redistributeCSR( const CSRStorage<ValueType>& other, const dmemo::Redistributor& redistributor )
 {
     SCAI_REGION( "Storage.redistributeCSR" )
 
-    const Distribution& sourceDistribution = *redistributor.getSourceDistributionPtr();
-    const Distribution& targetDistribution = *redistributor.getTargetDistributionPtr();
+    const dmemo::Distribution& sourceDistribution = *redistributor.getSourceDistributionPtr();
+    const dmemo::Distribution& targetDistribution = *redistributor.getTargetDistributionPtr();
 
     SCAI_LOG_INFO( logger,
                    other << ": redistribute of CSR<" << other.getValueType() << "> to CSR<" << this->getValueType() << " via " << redistributor )
@@ -1244,9 +1245,9 @@ template<typename ValueType>
 void CSRStorage<ValueType>::splitHalo(
     MatrixStorage<ValueType>& localData,
     MatrixStorage<ValueType>& haloData,
-    Halo& halo,
-    const Distribution& colDist,
-    const Distribution* rowDist ) const
+    dmemo::Halo& halo,
+    const dmemo::Distribution& colDist,
+    const dmemo::Distribution* rowDist ) const
 {
     SCAI_REGION( "Storage.splitHalo" )
 

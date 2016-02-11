@@ -38,9 +38,7 @@
 #include <boost/test/included/unit_test.hpp>
 #include <boost/regex.hpp>
 
-#include <scai/lama/test/distributed/CommunicatorTest.hpp>
 #include <scai/lama/test/distributed/P_SparseMatrixTest.hpp>
-#include <scai/lama/test/distributed/DistributionTest.hpp>
 
 #include <list>
 #include <string>
@@ -87,8 +85,6 @@ int main( int argc, char* argv[] )
         std::map<std::string, std::string> runtime_arguments;
         /* Registration of common Testclasses and their testmethods */
         TC_REG( psparseMatrixtestclasses, psparseMatrixtestmethods );
-        TC_REG( distclasses, distmethods );
-        TC_REG( pcommtestclasses, commtestmethods );
 
         /* Parse command line arguments */
         for ( int i = 0; i < argc; i++ )

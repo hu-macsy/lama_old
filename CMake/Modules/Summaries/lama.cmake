@@ -110,37 +110,6 @@ scai_summary_message ( "STATIC"
                          		   "" )
     endif ( SCAI_BLAS_NAME MATCHES "BLAS" )
     
-# LAMA MPI
-message ( STATUS "" )
-scai_summary_message ( "USE"
-                       "USE_MPI"
-                       "Distributed"
-                       "" )
-
-    # MPI
-    scai_summary_message ( "FOUND"
-                           "MPI_FOUND"
-                           "MPI"
-                           "at ${MPI_INCLUDE_PATH}" )
-
-# Graph Partitioning
-message ( STATUS "" )
-scai_summary_message ( "USE"
-                       "USE_GRAPHPARTITIONING"
-                       "Graph Partitioning"
-                       "" )                   
-	# Metis
-    scai_summary_message ( "FOUND"
-                           "METIS_FOUND"
-                           "Metis"
-                           "at ${METIS_INCLUDE_DIR}" )
-
-	# ParMetis
-    scai_summary_message ( "FOUND"
-                           "PARMETIS_FOUND"
-                           "ParMetis"
-                           "at ${PARMETIS_INCLUDE_DIR}" )
-
 # LAMA CUDA
 message ( STATUS "" )
 scai_summary_message ( "USE"
@@ -169,10 +138,10 @@ scai_summary_message ( "USE"
 
 set ( REQUIRED_FOUND FALSE )
 if    ( SCAI_COMMON_FOUND AND SCAI_LOGGING_FOUND AND SCAI_TRACING_FOUND AND SCAI_TASKING_FOUND AND SCAI_HMEMO_FOUND
-            AND SCAI_KREGISTRY_FOUND AND SCAI_BLASKERNEL_FOUND )
+            AND SCAI_KREGISTRY_FOUND AND SCAI_BLASKERNEL_FOUND AND SCAI_DMEMO_FOUND )
   set ( REQUIRED_FOUND TRUE )
 endif ( SCAI_COMMON_FOUND AND SCAI_LOGGING_FOUND AND SCAI_TRACING_FOUND AND SCAI_TASKING_FOUND AND SCAI_HMEMO_FOUND
-            AND SCAI_KREGISTRY_FOUND AND SCAI_BLASKERNEL_FOUND )
+            AND SCAI_KREGISTRY_FOUND AND SCAI_BLASKERNEL_FOUND AND SCAI_DMEMO_FOUND )
 
 message ( STATUS "" )
 scai_summary_message ( "STATIC"
@@ -213,6 +182,11 @@ scai_summary_message ( "STATIC"
     scai_summary_message ( "FOUND"
                            "SCAI_BLASKERNEL_FOUND"
                            "SCAI Blaskernel"
+                           "" )
+
+    scai_summary_message ( "FOUND"
+                           "SCAI_DMEMO_FOUND"
+                           "SCAI Dmemo"
                            "" )
 
 # LAMA TEST

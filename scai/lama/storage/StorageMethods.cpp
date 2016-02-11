@@ -34,9 +34,9 @@
 #include <scai/lama/storage/StorageMethods.hpp>
 
 // local library
-#include <scai/lama/distribution/Distribution.hpp>
-#include <scai/lama/distribution/HaloBuilder.hpp>
-#include <scai/lama/distribution/Redistributor.hpp>
+#include <scai/dmemo/Distribution.hpp>
+#include <scai/dmemo/HaloBuilder.hpp>
+#include <scai/dmemo/Redistributor.hpp>
 
 #include <scai/lama/openmp/OpenMPCSRUtils.hpp>
 
@@ -49,10 +49,11 @@
 // std
 #include <algorithm>
 
-using namespace scai::hmemo;
-
 namespace scai
 {
+
+using namespace hmemo;
+using namespace dmemo;
 
 namespace lama
 {

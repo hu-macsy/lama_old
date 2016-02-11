@@ -277,7 +277,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE ( simpleTest, ValueType, test_types )
     const LArray<IndexType> matrixJA( numValues, ja );
     const LArray<ValueType> mValues( numValues, matrixValues );
     CSRStorage<ValueType>* csrStorage = new CSRStorage<ValueType>( n, n, numValues, matrixIA, matrixJA, mValues );
-    scai::lama::DistributionPtr dist( new scai::lama::NoDistribution( n ) );
+    dmemo::DistributionPtr dist( new dmemo::NoDistribution( n ) );
     CSRSparseMatrix<ValueType> matrix( *csrStorage, dist, dist );
     ValueType vectorValues[] = { 0.3f, 0.7f, 3.1416f };
     const LArray<ValueType> vValues ( n, vectorValues );

@@ -40,8 +40,8 @@
 
 // local library
 #include <scai/lama/LArray.hpp>
-#include <scai/lama/distribution/Distribution.hpp>
-#include <scai/lama/distribution/Halo.hpp>
+#include <scai/dmemo/Distribution.hpp>
+#include <scai/dmemo/Halo.hpp>
 
 #include <scai/lama/io/mmio.hpp>
 #include <scai/lama/io/FileType.hpp>
@@ -89,7 +89,7 @@ public:
      *
      * @param[in] distribution  the distribution to use for the new vector.
      */
-    explicit DenseVector( DistributionPtr distribution );
+    explicit DenseVector( dmemo::DistributionPtr distribution );
 
     /**
      * @brief creates a replicated DenseVector of the passed size initialized to the passed value.
@@ -107,7 +107,7 @@ public:
      * @param[in] value         the value to assign to all elements of the new DenseVector.
      * @param[in] context   specifies optionally the context where dense vector should reside
      */
-    DenseVector( DistributionPtr distribution, const ValueType value, hmemo::ContextPtr context = hmemo::ContextPtr() );
+    DenseVector( dmemo::DistributionPtr distribution, const ValueType value, hmemo::ContextPtr context = hmemo::ContextPtr() );
 
     /** Constructor of a replicated vector by replicated C++ array. */
 
@@ -144,7 +144,7 @@ public:
      *
      * Must be valid: other.size() == distribution.getGlobalSize()
      */
-    DenseVector( const Vector& other, DistributionPtr distribution );
+    DenseVector( const Vector& other, dmemo::DistributionPtr distribution );
 
     /**
      * @brief creates a distributed DenseVector with given local values.
@@ -152,7 +152,7 @@ public:
      * @param[in] localValues   the local values to initialize the new DenseVector with.
      * @param[in] distribution  the distribution the
      */
-    DenseVector( const hmemo::_HArray& localValues, DistributionPtr distribution );
+    DenseVector( const hmemo::_HArray& localValues, dmemo::DistributionPtr distribution );
 
     /**
      * @brief This constructor creates a vector with the size and values stored
@@ -232,7 +232,7 @@ public:
 
     /** Allocate a dense vector with a certain distribution, values are undefined. */
 
-    void allocate( DistributionPtr distribution );
+    void allocate( dmemo::DistributionPtr distribution );
 
     /** Override the default assignment operator.
      *
@@ -325,7 +325,7 @@ public:
      *
      * @param[in] halo  the halo which describes which remote values should be put into the halo cache.
      */
-    void updateHalo( const Halo& halo ) const;
+    void updateHalo( const dmemo::Halo& halo ) const;
 
     /**
      * @brief update the halo values according to the passed Halo asynchronously.
@@ -333,7 +333,7 @@ public:
      * @param[in] halo  the halo which describes which remote values should be put into the halo cache.
      * @return          a SyncToken which can be used to synchronize to the asynchronous update.
      */
-    tasking::SyncToken* updateHaloAsync( const Halo& halo ) const;
+    tasking::SyncToken* updateHaloAsync( const dmemo::Halo& halo ) const;
 
     virtual Scalar getValue( IndexType globalIndex ) const;
 
@@ -379,7 +379,7 @@ public:
 
     virtual void assign( const Vector& other );
 
-    virtual void assign( const hmemo::_HArray& localValues, DistributionPtr dist );
+    virtual void assign( const hmemo::_HArray& localValues, dmemo::DistributionPtr dist );
 
     virtual void buildLocalValues( hmemo::_HArray& localValues ) const;
 
@@ -395,7 +395,7 @@ public:
 
     virtual size_t getMemoryUsage() const;
 
-    virtual void redistribute( DistributionPtr distribution );
+    virtual void redistribute( dmemo::DistributionPtr distribution );
 
     /**
      * @brief Implementatio of pure method, see Vector::writeToFile 

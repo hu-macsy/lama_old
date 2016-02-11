@@ -39,6 +39,7 @@
 #include <scai/lama/storage/CRTPMatrixStorage.hpp>
 
 #include <scai/lama/LArray.hpp>
+#include <scai/dmemo/Redistributor.hpp>
 
 namespace scai
 {
@@ -371,16 +372,16 @@ public:
 
     /** Redistribution of CSR avoids unnecessary conversions. */
 
-    virtual void redistributeCSR( const CSRStorage<ValueType>& other, const class Redistributor& redistributor );
+    virtual void redistributeCSR( const CSRStorage<ValueType>& other, const dmemo::Redistributor& redistributor );
 
     /** Override splitHalo with version that avoids unnecessary conversions. */
 
     virtual void splitHalo(
         MatrixStorage<ValueType>& localData,
         MatrixStorage<ValueType>& haloData,
-        Halo& halo,
-        const Distribution& colDist,
-        const Distribution* rowDist ) const;
+        dmemo::Halo& halo,
+        const dmemo::Distribution& colDist,
+        const dmemo::Distribution* rowDist ) const;
 
     /** General routine to build any kind of CSR storage.
      *

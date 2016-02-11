@@ -105,8 +105,8 @@ int main()
     DenseVector<ValueType> result( numRows, 0.0 );
 
     // Distribution pointer are needed to construct a CSRSparseMatrix.
-    scai::lama::DistributionPtr rowDist( new scai::lama::NoDistribution( numRows ) );
-    scai::lama::DistributionPtr colDist( new scai::lama::NoDistribution( numColumns ) );
+    scai::dmemo::DistributionPtr rowDist( new scai::dmemo::NoDistribution( numRows ) );
+    scai::dmemo::DistributionPtr colDist( new scai::dmemo::NoDistribution( numColumns ) );
 
     // Allocation of the CSRSparseMatrix.
     CSRSparseMatrix<ValueType> csrMatrix( *csrStorage, rowDist, colDist );

@@ -53,7 +53,6 @@ scai_project (
 
     SOURCES
 
-        CommunicatorTest
         COOSparseMatrixTest
         COOStorageTest
         COOUtilsTest
@@ -79,7 +78,6 @@ scai_project (
         MatrixStorageConversionTest
         MatrixTest
         MaxNormTest
-        NoCommunicatorTest
         ScalarTest
         SparseAssemblyStorageTest
         StorageIOTest
