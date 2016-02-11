@@ -37,7 +37,7 @@ else ( TARGET distclean )
     add_custom_command (
         TARGET distclean
         DEPENDS clean
-        COMMAND sh ${CMAKE_MODULE_PATH}/docclean.sh ${CMAKE_CURRENT_BINARY_DIR}/doc
+        COMMAND sh ${CMAKE_MODULE_PATH}/docclean.sh ${CMAKE_CURRENT_BINARY_DIR}/doc/doxygen
         COMMAND cd ${CMAKE_CURRENT_BINARY_DIR}
         COMMAND sh ${CMAKE_MODULE_PATH}/distclean.sh
     )

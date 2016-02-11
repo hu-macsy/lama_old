@@ -13,12 +13,11 @@ Contents:
    :titlesonly:
    :maxdepth: 1
    
-   scalar
-   vector
-   storage
-   matrix
-   expressions
-   io
-
- .. context
-    distributions
+   introduction
+   installation
+   projects
+   testing
+   tutorial
+   benchmarks
+   developer
+   relatedWork

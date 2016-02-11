@@ -37,12 +37,12 @@ find_package ( Doxygen ${SCAI_FIND_PACKAGE_FLAGS} )
 
 if    ( DOXYGEN_FOUND )
     ### install ###
-    set ( LAMA_DOC_DIR "${CMAKE_SOURCE_DIR}/doc" )
-    set ( DOXYGEN_BUILD_ROOT "${CMAKE_CURRENT_BINARY_DIR}/doc" )
+    set ( LAMA_DOC_DIR "${CMAKE_SOURCE_DIR}/doc/doxygen" )
+    set ( DOXYGEN_BUILD_ROOT "${CMAKE_CURRENT_BINARY_DIR}/doc/system" )
     set ( DOXYGEN_INSTALL_ROOT ${CMAKE_INSTALL_PREFIX})
     file ( MAKE_DIRECTORY ${DOXYGEN_BUILD_ROOT} )
     
-    configure_file ( "${LAMA_DOC_DIR}/LAMA.Doxyfile.in" "${CMAKE_CURRENT_BINARY_DIR}/doc/LAMA.Doxyfile" )
+    configure_file ( "${LAMA_DOC_DIR}/LAMA.Doxyfile.in" "${CMAKE_CURRENT_BINARY_DIR}/doc/doxygen/LAMA.Doxyfile" )
 
    # The initial rm command gets rid of everything previously built by this
    # custom command.
@@ -52,7 +52,7 @@ if    ( DOXYGEN_FOUND )
         #COMMAND rm -rf ${DOXYGEN_BUILD_ROOT}
         #COMMAND mkdir ${DOXYGEN_BUILD_ROOT}
         COMMAND ${DOXYGEN_EXECUTABLE} LAMA.Doxyfile
-        DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/doc/LAMA.Doxyfile
+        DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/doc/doxygen/LAMA.Doxyfile
         WORKING_DIRECTORY ${DOXYGEN_BUILD_ROOT}
     )
 

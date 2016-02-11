@@ -253,6 +253,19 @@ ExternalProject_Add ( scai_solver
             BINARY_DIR solver
             )
 
+if    ( BUILD_DOC )
+      # sphinx_doc does not need concatCacheArguments
+
+      ExternalProject_Add ( sphinx_doc 
+                  DEPENDS ${SCAI_PROJECTS}
+                  PREFIX sphinx_doc
+                  SOURCE_DIR ${CMAKE_SOURCE_DIR}/doc/sphinx
+                  CMAKE_ARGS "-DSCAI_COMPLETE_BUILD=1"
+                  BINARY_DIR sphinx_doc
+                  )
+endif ( BUILD_DOC )
+
+
 ## add custom target docclean
 include ( DocClean )
 

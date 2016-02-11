@@ -44,3 +44,6 @@ set ( SCAI_BLASKERNEL_INTERNAL_DEPS scai_common scai_logging scai_tracing scai_t
 set ( SCAI_DMEMO_INTERNAL_DEPS      scai_common scai_logging scai_tracing scai_tasking scai_hmemo ) # 8
 set ( SCAI_LAMA_INTERNAL_DEPS       scai_common scai_logging scai_tracing scai_tasking scai_hmemo scai_kregistry scai_dmemo scai_blaskernel ) # 9
 set ( SCAI_SOLVER_INTERNAL_DEPS     scai_common scai_logging scai_tracing scai_tasking scai_hmemo scai_kregistry scai_dmemo scai_blaskernel scai_lama ) #10
+
+## all SCAI projects
+set ( SCAI_PROJECTS scai_common scai_logging scai_tracing scai_tasking scai_hmemo scai_kregistry scai_dmemo scai_blaskernel scai_lama scai_solver )
