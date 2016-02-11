@@ -176,7 +176,8 @@ void convertMatrix(
     const File::FileType outFileType, 
     const common::scalar::ScalarType outDataType )
 {
-    common::shared_ptr<Matrix> m ( Matrix::getMatrix( Format::CSR, inDataType ) );
+    MatrixCreateKeyType matrixType( Format::CSR, inDataType );
+    common::shared_ptr<Matrix> m ( Matrix::create( matrixType ) );
 
     m->readFromFile( inFileName );
 
@@ -196,7 +197,8 @@ void convertVector(
     // Note: inFileType is given implicitly by the input file
     // use vector of inDataType so no information is lost
 
-    common::shared_ptr<Vector> v ( Vector::getVector( DENSE, inDataType ) );
+    VectorCreateKeyType vectorType( DENSE, inDataType );
+    common::shared_ptr<Vector> v ( Vector::create( vectorType ) );
 
     v->readFromFile( inFileName );
 

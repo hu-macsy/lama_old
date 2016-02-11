@@ -53,6 +53,8 @@
 #include <scai/common/ScalarType.hpp>
 #include <scai/common/SCAITypes.hpp>
 
+#include <utility>
+
 namespace scai
 {
 
@@ -104,17 +106,6 @@ class COMMON_DLL_IMPORTEXPORT Vector:
 
 {
 public:
-
-    /**
-     * @brief Vector factory to get a vector of a certain kind and a certain type
-     *
-     * @param[in] kind is either DENSE or SPARSE
-     * @param[in] valueType specifies the value type as the elements, e.g. FLOAT, DOUBLE
-     *
-     * This factory operation allows to create a vector at runtime of any format or any type.
-     * Internally, all vector classes must register their create operation.
-     */
-    static Vector* getVector( const VectorKind kind, const common::scalar::ScalarType valueType );
 
     /** @brief Create a dense vector of a certain value type and a given distribution.
      *

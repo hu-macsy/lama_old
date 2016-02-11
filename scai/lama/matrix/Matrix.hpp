@@ -129,19 +129,6 @@ public:
      */
     virtual ~Matrix();
 
-    /**
-     * @brief Matrix factory to get a matrix of a certain format and a certain type
-     *
-     * @param[in] format is the storage format, e.g. DENSE, CSR, etc
-     * @param[in] type specifies the value type as the elements, e.g. FLOAT, DOUBLE
-     *
-     * This factory operation allows to create a matrix at runtime of any format or any type.
-     * Internally, all matrix classes must register their create operation.
-     *
-     * Note: the format of the matrix decides whether the matrix will be DENSE or SPARSE.
-     */
-    static Matrix* getMatrix( const Format::MatrixStorageFormat format, const common::scalar::ScalarType type );
-
     /** Override Distributed::buildCSRGraph */
 
     virtual void buildCSRGraph( IndexType ia[], IndexType ja[], IndexType vwgt[], const IndexType* globalRowIndexes ) const;
