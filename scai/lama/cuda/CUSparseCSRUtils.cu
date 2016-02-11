@@ -48,6 +48,7 @@
 #include <scai/common/cuda/CUDAError.hpp>
 #include <scai/common/Settings.hpp>
 #include <scai/common/Constants.hpp>
+#include <scai/common/preprocessor.hpp>
 
 // CUDA
 #include <cuda.h>

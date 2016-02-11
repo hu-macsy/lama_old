@@ -51,6 +51,7 @@
 #include <scai/common/cuda/launchHelper.hpp>
 #include <scai/common/Constants.hpp>
 #include <scai/common/TypeTraits.hpp>
+#include <scai/common/preprocessor.hpp>
 
 // CUDA
 #include <cuda.h>
@@ -72,7 +73,6 @@
 #include <thrust/transform_reduce.h>
 
 // boost
-#include <boost/preprocessor.hpp>
 
 using namespace scai::hmemo;
 
