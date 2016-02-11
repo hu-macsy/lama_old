@@ -40,11 +40,11 @@ scai_project (
 	SOURCES
         SolverDistTest
         
-        #P_CGTest
-        #P_InverseSolverTest
-        #P_JacobiTest
-        #P_SORTest
-        #P_SpecializedJacobiTest
+        P_CGTest
+        P_InverseSolverTest
+        P_JacobiTest
+        P_SORTest
+        P_SpecializedJacobiTest
 
    )
    
