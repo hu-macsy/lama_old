@@ -65,6 +65,44 @@ namespace lama
 
 typedef common::shared_ptr<class Matrix> MatrixPtr;
 
+
+/** Key type used for the Matrix factory.
+ *
+ *  Note: own struct instead of std::pair to allow definition of operator << 
+ */
+
+struct MatrixCreateKeyType
+{
+    Format::MatrixStorageFormat first;
+    common::scalar::ScalarType second;
+
+    MatrixCreateKeyType( Format::MatrixStorageFormat arg1, common::scalar::ScalarType arg2 )
+    {
+        first = arg1;
+        second = arg2;
+    }
+
+    bool operator< ( const MatrixCreateKeyType& other ) const
+    {
+        if ( first < other.first )
+        {
+            return true;
+        }
+        else if ( first == other.first )
+        {
+            return second < other.second;
+        }
+    
+        return false;
+    }
+};
+
+inline std::ostream& operator<<( std::ostream& stream, const MatrixCreateKeyType& object )
+{
+    stream << object.first << object.second;
+    return stream;
+}
+
 /**
  * @brief The class Matrix is a abstract type that represents a distributed 2D real or complex matrix.
  *
@@ -762,13 +800,39 @@ public:
      */
     virtual Scalar maxDiffNorm( const Matrix& other ) const = 0;
 
+     /**
+      * @brief Constructor function which creates a 'zero' matrix of same type as a given matrix.
+      *
+      * \code
+      * void sub( ..., const Matrix& matrix, ...)
+      * {
+      *     ...
+      *     // Create a copy of the input matrix
+      *
+      *     common::unique_ptr<Matrix> newmatrix ( matrix.newMatrix() );
+      *     *newmatrix = matrix;
+      *
+      *     // Create a unity matrix of same type and same row distribution as matrix
+      *
+      *     common::unique_ptr<Matrix> newmatrix ( matrix.newMatrix() );
+      *     newmatrix->allocate( matrix.getRowDistributionPtr(), matrix.getRowDistributionPtr() );
+      *     newmatrix->setIdentity();
+      *     ...
+      * }
+      * \endcode
+      *
+      * This method is a workaround to call the constructor of a derived matrix class
+      * where the derived class is not known at compile time.
+      */
+    virtual Matrix* newMatrix() const = 0;
+
     /**
      * @brief Constructor function which creates a copy of this matrix.
      *
      * \code
-     * common::unique_ptr<Matrix> newMatrix = matrix.copy();
+     * common::unique_ptr<Matrix> newmatrix = matrix.copy();
      * // More convenient to use, but exactly same as follows:
-     * common::unique_ptr<Matrix> newMatrix = Matrix::create( matrix.getCreateValue() ); *newMatrix = matrix;
+     * common::unique_ptr<Matrix> newmatrix = Matrix::create( matrix.getCreateValue() ); *newmatrix = matrix;
      * \endcode
      *
      * This method is a workaround to call the copy constructor of a derived matrix class

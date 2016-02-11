@@ -1681,6 +1681,16 @@ JDSStorage<ValueType>* JDSStorage<ValueType>::copy() const
     return new JDSStorage( *this );
 }
 
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+JDSStorage<ValueType>* JDSStorage<ValueType>::newMatrixStorage() const
+{
+   common::unique_ptr<JDSStorage<ValueType> > storage( new JDSStorage<ValueType>() ); 
+   storage->setContextPtr( this->getContextPtr() );
+   return storage.release();
+}
+
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
@@ -1692,10 +1702,10 @@ _MatrixStorage* JDSStorage<ValueType>::create()
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
-MatrixCreateKeyType JDSStorage<ValueType>::createValue()
+MatrixStorageCreateKeyType JDSStorage<ValueType>::createValue()
 {
     common::scalar::ScalarType skind = common::getScalarType<ValueType>();
-    return MatrixCreateKeyType( Format::JDS, skind );
+    return MatrixStorageCreateKeyType( Format::JDS, skind );
 }
 
 /* ========================================================================= */

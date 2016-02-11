@@ -139,7 +139,7 @@ public:
     virtual ~HArray();
 
     /**
-     *  The method clone is a function that returns a new object of the
+     *  The method copy is a function that returns a new object of the
      *  same class as the object for which it is called. The copy
      *  constructor is called.
      */

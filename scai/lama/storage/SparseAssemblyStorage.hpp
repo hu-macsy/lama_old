@@ -353,6 +353,10 @@ public:
      */
     void check( const char* msg ) const;
 
+    /** Implementation of MatrixStorage::newMatrixStorage for derived class. */
+    virtual SparseAssemblyStorage* newMatrixStorage() const;
+
+    /** Implementation of MatrixStorage::copy for derived class. */
     virtual SparseAssemblyStorage* copy() const
     {
         return new SparseAssemblyStorage( *this );
@@ -403,7 +407,7 @@ public:
 
     // key for factory
 
-    static MatrixCreateKeyType createValue();
+    static MatrixStorageCreateKeyType createValue();
 };
 
 } /* end namespace lama */

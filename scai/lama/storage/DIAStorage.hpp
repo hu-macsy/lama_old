@@ -125,6 +125,10 @@ public:
 
     virtual DIAStorage* copy() const;
 
+    /** Implementation of MatrixStorage::newMatrixStorage for derived class. */
+
+    virtual DIAStorage* newMatrixStorage() const;
+
     /** Implementation of _MatrixStorage::clear  */
 
     virtual void clear();
@@ -400,7 +404,7 @@ public:
 
     // key for factory
 
-    static MatrixCreateKeyType createValue();
+    static MatrixStorageCreateKeyType createValue();
 };
 
 } /* end namespace lama */

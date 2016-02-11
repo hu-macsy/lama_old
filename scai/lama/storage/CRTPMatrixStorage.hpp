@@ -80,7 +80,7 @@ public:
     {
     }
 
-    MatrixCreateKeyType getCreateValue() const
+    MatrixStorageCreateKeyType getCreateValue() const
     {
         return Derived::createValue();
     }

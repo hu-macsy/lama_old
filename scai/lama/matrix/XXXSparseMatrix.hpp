@@ -215,6 +215,10 @@ public:
 
     virtual void swapLocalStorage( StorageType& localStorage );
 
+    /* Implementation of pure method Matrix::newMatrix with covariant return type */
+
+    virtual XXXSparseMatrix<ValueType>* newMatrix() const;
+
     /* Implementation of pure method Matrix::copy with covariant return type */
 
     virtual XXXSparseMatrix<ValueType>* copy() const;

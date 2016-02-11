@@ -328,6 +328,23 @@ void DIASparseMatrix<ValueType>::swapLocalStorage( StorageType& localStorage )
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
+DIASparseMatrix<ValueType>* DIASparseMatrix<ValueType>::newMatrix() const
+{
+    DIASparseMatrix* newSparseMatrix = new DIASparseMatrix();
+
+    // inherit the context, communication kind of this matrix for the new matrix
+
+    newSparseMatrix->setContextPtr( this->getContextPtr() );
+    newSparseMatrix->setCommunicationKind( this->getCommunicationKind() );
+
+    SCAI_LOG_INFO( logger, "create is " << *newSparseMatrix )
+
+    return newSparseMatrix;
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
 DIASparseMatrix<ValueType>* DIASparseMatrix<ValueType>::copy() const
 {
     SCAI_LOG_INFO( logger, "copy of " << *this )
@@ -360,12 +377,6 @@ MatrixCreateKeyType DIASparseMatrix<ValueType>::createValue()
 {
     common::scalar::ScalarType skind = common::getScalarType<ValueType>();
     return MatrixCreateKeyType( Format::DIA, skind );
-}
-
-template<typename ValueType>
-MatrixCreateKeyType DIASparseMatrix<ValueType>::getCreateValue() const
-{
-    return createValue();
 }
 
 /* ========================================================================= */

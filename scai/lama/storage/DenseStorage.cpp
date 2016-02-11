@@ -1392,10 +1392,18 @@ _MatrixStorage* DenseStorageView<ValueType>::create()
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
-MatrixCreateKeyType DenseStorageView<ValueType>::createValue()
+MatrixStorageCreateKeyType DenseStorageView<ValueType>::createValue()
 {
     common::scalar::ScalarType skind = common::getScalarType<ValueType>();
-    return MatrixCreateKeyType( Format::DENSE, skind );
+    return MatrixStorageCreateKeyType( Format::DENSE, skind );
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+template<typename ValueType>
+DenseStorageView<ValueType>* DenseStorageView<ValueType>::newMatrixStorage() const
+{
+    COMMON_THROWEXCEPTION( "DenseStorageView<ValueType>::newMatrixStorage() not implemented yet" )
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -1409,10 +1417,20 @@ _MatrixStorage* DenseStorage<ValueType>::create()
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
-MatrixCreateKeyType DenseStorage<ValueType>::createValue()
+MatrixStorageCreateKeyType DenseStorage<ValueType>::createValue()
 {
     common::scalar::ScalarType skind = common::getScalarType<ValueType>();
-    return MatrixCreateKeyType( Format::DENSE, skind );
+    return MatrixStorageCreateKeyType( Format::DENSE, skind );
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+template<typename ValueType>
+DenseStorage<ValueType>* DenseStorage<ValueType>::newMatrixStorage() const
+{
+   common::unique_ptr<DenseStorage<ValueType> > storage( new DenseStorage<ValueType>() ); 
+   storage->setContextPtr( this->getContextPtr() );
+   return storage.release();
 }
 
 /* ========================================================================= */

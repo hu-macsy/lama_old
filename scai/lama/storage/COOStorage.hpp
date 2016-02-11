@@ -263,6 +263,10 @@ public:
 
     virtual COOStorage* copy() const;
 
+    /** Implementation of MatrixStorage::newMatrixStorage for derived class. */
+
+    virtual COOStorage* newMatrixStorage() const;
+
     /******************************************************************
      *  Matrix times Vector                                            *
      ******************************************************************/
@@ -409,7 +413,7 @@ public:
 
     // key for factory
 
-    static MatrixCreateKeyType createValue();
+    static MatrixStorageCreateKeyType createValue();
 };
 
 } /* end namespace lama */

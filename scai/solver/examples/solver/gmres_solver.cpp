@@ -129,7 +129,7 @@ int main( int argc, char* argv[] )
             std::cout << "reading vector from file " << filename << " failed, take sum( Matrix, 2 ) " << std::endl;
 
             {
-                scai::common::unique_ptr<Vector> xPtr( Vector::create( rhs.getCreateValue() ) );
+                scai::common::unique_ptr<Vector> xPtr( rhs.newVector() );
                 Vector& x = *xPtr;
                 x.resize( inMatrix.getColDistributionPtr() );
                 x = Scalar( 1 );
@@ -146,7 +146,7 @@ int main( int argc, char* argv[] )
 
     // for solutin create vector with same format/type as rhs, size = numRows, init = 0.0
 
-    unique_ptr<Vector> solutionPtr( rhs.clone( rhs.getDistributionPtr() ) );
+    unique_ptr<Vector> solutionPtr( Vector::create( rhs.getCreateValue() ) );
     Vector& solution = *solutionPtr;
 
     int numRows = inMatrix.getNumRows();

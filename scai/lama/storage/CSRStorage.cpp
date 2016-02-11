@@ -1155,6 +1155,16 @@ void CSRStorage<ValueType>::copyTo( _MatrixStorage& other ) const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
+CSRStorage<ValueType>* CSRStorage<ValueType>::newMatrixStorage() const
+{
+   common::unique_ptr<CSRStorage<ValueType> > storage( new CSRStorage<ValueType>() ); 
+   storage->setContextPtr( this->getContextPtr() );
+   return storage.release();
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
 template<typename OtherValueType>
 void CSRStorage<ValueType>::buildCSR(
     HArray<IndexType>& ia,
@@ -2475,10 +2485,10 @@ _MatrixStorage* CSRStorage<ValueType>::create()
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
-MatrixCreateKeyType CSRStorage<ValueType>::createValue()
+MatrixStorageCreateKeyType CSRStorage<ValueType>::createValue()
 {
     common::scalar::ScalarType skind = common::getScalarType<ValueType>();
-    return MatrixCreateKeyType( Format::CSR, skind );
+    return MatrixStorageCreateKeyType( Format::CSR, skind );
 }
 
 /* ========================================================================= */

@@ -96,18 +96,18 @@ COMMON_DLL_IMPORTEXPORT MatrixStorageFormat str2Format( const char* str );
  *  Note: own struct instead of std::pair to allow definition of operator <<
  */
 
-struct MatrixCreateKeyType
+struct MatrixStorageCreateKeyType
 {
     Format::MatrixStorageFormat first;
     common::scalar::ScalarType second;
 
-    MatrixCreateKeyType( Format::MatrixStorageFormat arg1, common::scalar::ScalarType arg2 )
+    MatrixStorageCreateKeyType( Format::MatrixStorageFormat arg1, common::scalar::ScalarType arg2 )
     {
         first = arg1;
         second = arg2;
     }
 
-    bool operator< ( const MatrixCreateKeyType& other ) const
+    bool operator< ( const MatrixStorageCreateKeyType& other ) const
     {
         if ( first < other.first )
         {
@@ -122,7 +122,7 @@ struct MatrixCreateKeyType
     }
 };
 
-inline std::ostream& operator<<( std::ostream& stream, const MatrixCreateKeyType& object )
+inline std::ostream& operator<<( std::ostream& stream, const MatrixStorageCreateKeyType& object )
 {
     stream << object.first << object.second;
     return stream;
@@ -145,7 +145,7 @@ inline std::ostream& operator<<( std::ostream& stream, const MatrixCreateKeyType
  */
 
 class COMMON_DLL_IMPORTEXPORT _MatrixStorage:
-    public common::Factory<MatrixCreateKeyType, _MatrixStorage*>,
+    public common::Factory<MatrixStorageCreateKeyType, _MatrixStorage*>,
     public common::Printable
 {
 public:
@@ -456,7 +456,17 @@ public:
 
     virtual _MatrixStorage* copy() const = 0;
 
-    virtual MatrixCreateKeyType getCreateValue() const = 0;
+    /**  Each matrix storage must provide a routine that creates a new matrix storage
+      *  of the same type (same format, same value type, same context)
+      */
+
+    virtual _MatrixStorage* newMatrixStorage() const = 0;
+
+    /**  Returning a pair of storage format and value type for using with
+      *  the factory
+      */
+
+    virtual MatrixStorageCreateKeyType getCreateValue() const = 0;
 
     /**
      * @brief transformation from matrix type to a csr graph
@@ -571,6 +581,10 @@ public:
     /** Override _MatrixStorage::copy with routine that uses covariant return type. */
 
     virtual MatrixStorage* copy() const = 0;
+
+    /** Override _MatrixStorage::newMatrixStorage with routine that uses covariant return type. */
+
+    virtual MatrixStorage* newMatrixStorage() const = 0;
 
     /** Implementation of pure method. */
 
@@ -1071,7 +1085,7 @@ protected:
     void swap( MatrixStorage<ValueType>& other );
 
 public:
-    static MatrixStorage<ValueType>* create( const MatrixCreateKeyType key );
+    static MatrixStorage<ValueType>* create( const MatrixStorageCreateKeyType key );
 };
 
 /* ------------------------------------------------------------------------- */
@@ -1127,7 +1141,7 @@ void MatrixStorage<ValueType>::setRawCSRData(
 }
 
 template<typename ValueType>
-MatrixStorage<ValueType>* MatrixStorage<ValueType>::create( const MatrixCreateKeyType key )
+MatrixStorage<ValueType>* MatrixStorage<ValueType>::create( const MatrixStorageCreateKeyType key )
 {
     return reinterpret_cast<MatrixStorage<ValueType>* >( _MatrixStorage::create( key ) );
 }

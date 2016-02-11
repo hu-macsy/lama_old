@@ -91,7 +91,7 @@ SparseMatrix<ValueType>::SparseMatrix( common::shared_ptr<MatrixStorage<ValueTyp
 {
     mLocalData = storage;
     // create empty halo with same storage format
-    mHaloData = shared_ptr<MatrixStorage<ValueType> >( MatrixStorage<ValueType>::create( storage->getCreateValue() ) );
+    mHaloData = shared_ptr<MatrixStorage<ValueType> >( storage->newMatrixStorage() );
 }
 
 /* ---------------------------------------------------------------------------------------*/
@@ -105,7 +105,7 @@ SparseMatrix<ValueType>::SparseMatrix( common::shared_ptr<MatrixStorage<ValueTyp
 {
     mLocalData = storage;
     // create empty halo with same storage format
-    mHaloData = shared_ptr<MatrixStorage<ValueType> >( MatrixStorage<ValueType>::create( storage->getCreateValue() ) );
+    mHaloData = shared_ptr<MatrixStorage<ValueType> >( storage->newMatrixStorage() );
 
     if( storage->getNumRows() == rowDist->getLocalSize() )
     {
@@ -138,7 +138,7 @@ SparseMatrix<ValueType>::SparseMatrix(
 
     mLocalData = localData;
     // create empty halo with same storage format
-    mHaloData = shared_ptr<MatrixStorage<ValueType> >( MatrixStorage<ValueType>::create( localData->getCreateValue() ) );
+    mHaloData = shared_ptr<MatrixStorage<ValueType> >( localData->newMatrixStorage() );
 
     if( localData->getNumRows() == rowDist->getLocalSize() )
     {
@@ -672,7 +672,7 @@ void SparseMatrix<ValueType>::buildLocalStorage( _MatrixStorage& storage ) const
 
         bool keepDiagonalProperty = true;
 
-        common::shared_ptr<MatrixStorage<ValueType> > tmp( MatrixStorage<ValueType>::create( mLocalData->getCreateValue() ) );
+        common::shared_ptr<MatrixStorage<ValueType> > tmp( mLocalData->newMatrixStorage() );
         tmp->joinHalo( *mLocalData, *mHaloData, mHalo, getColDistribution(), keepDiagonalProperty );
         storage = *tmp;
     }
@@ -2255,6 +2255,14 @@ template<typename ValueType>
 size_t SparseMatrix<ValueType>::getValueTypeSize() const
 {
     return sizeof( ValueType );
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+SparseMatrix<ValueType>* SparseMatrix<ValueType>::newMatrix() const
+{
+    COMMON_THROWEXCEPTION( "Can not create a new SparseMatrix with no SparseMatrix format" )
 }
 
 /* ------------------------------------------------------------------------- */

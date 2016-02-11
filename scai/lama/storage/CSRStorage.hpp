@@ -141,6 +141,10 @@ public:
 
     virtual CSRStorage* copy() const;
 
+    /** Implementation of MatrixStorage::newMatrixStorage for derived class. */
+
+    virtual CSRStorage* newMatrixStorage() const;
+
     /** Destructor of CSR sparse storage. */
 
     virtual ~CSRStorage();
@@ -623,7 +627,7 @@ public:
 
     // key for factory
 
-    static MatrixCreateKeyType createValue();
+    static MatrixStorageCreateKeyType createValue();
 };
 
 /* --------------------------------------------------------------------------- */

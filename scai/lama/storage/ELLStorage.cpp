@@ -1985,6 +1985,16 @@ ELLStorage<ValueType>* ELLStorage<ValueType>::copy() const
     return new ELLStorage<ValueType>( *this );
 }
 
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+ELLStorage<ValueType>* ELLStorage<ValueType>::newMatrixStorage() const
+{
+   common::unique_ptr<ELLStorage<ValueType> > storage( new ELLStorage<ValueType>() ); 
+   storage->setContextPtr( this->getContextPtr() );
+   return storage.release();
+}
+
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
@@ -1996,10 +2006,10 @@ _MatrixStorage* ELLStorage<ValueType>::create()
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
-MatrixCreateKeyType ELLStorage<ValueType>::createValue()
+MatrixStorageCreateKeyType ELLStorage<ValueType>::createValue()
 {
     common::scalar::ScalarType skind = common::getScalarType<ValueType>();
-    return MatrixCreateKeyType( Format::ELL, skind );
+    return MatrixStorageCreateKeyType( Format::ELL, skind );
 }
 
 /* ========================================================================= */

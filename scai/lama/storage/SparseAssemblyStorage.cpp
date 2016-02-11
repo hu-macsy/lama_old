@@ -238,6 +238,16 @@ void SparseAssemblyStorage<ValueType>::check( const char* msg ) const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
+SparseAssemblyStorage<ValueType>* SparseAssemblyStorage<ValueType>::newMatrixStorage() const
+{
+   common::unique_ptr<SparseAssemblyStorage<ValueType> > storage( new SparseAssemblyStorage<ValueType>() ); 
+   storage->setContextPtr( this->getContextPtr() );
+   return storage.release();
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
 ValueType SparseAssemblyStorage<ValueType>::l1Norm() const
 {
     ValueType val = static_cast<ValueType>(0.0);
@@ -870,10 +880,10 @@ _MatrixStorage* SparseAssemblyStorage<ValueType>::create()
 }
 
 template<typename ValueType>
-MatrixCreateKeyType SparseAssemblyStorage<ValueType>::createValue()
+MatrixStorageCreateKeyType SparseAssemblyStorage<ValueType>::createValue()
 {
     common::scalar::ScalarType skind = common::getScalarType<ValueType>();
-    return MatrixCreateKeyType( Format::ASSEMBLY, skind );
+    return MatrixStorageCreateKeyType( Format::ASSEMBLY, skind );
 }
 
 /* ========================================================================= */

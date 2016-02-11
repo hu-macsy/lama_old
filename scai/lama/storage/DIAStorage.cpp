@@ -1197,6 +1197,16 @@ DIAStorage<ValueType>* DIAStorage<ValueType>::copy() const
     return new DIAStorage<ValueType>( *this );
 }
 
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+DIAStorage<ValueType>* DIAStorage<ValueType>::newMatrixStorage() const
+{
+   common::unique_ptr<DIAStorage<ValueType> > storage( new DIAStorage<ValueType>() ); 
+   storage->setContextPtr( this->getContextPtr() );
+   return storage.release();
+}
+
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
@@ -1208,10 +1218,10 @@ _MatrixStorage* DIAStorage<ValueType>::create()
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
-MatrixCreateKeyType DIAStorage<ValueType>::createValue()
+MatrixStorageCreateKeyType DIAStorage<ValueType>::createValue()
 {
     common::scalar::ScalarType skind = common::getScalarType<ValueType>();
-    return MatrixCreateKeyType( Format::DIA, skind );
+    return MatrixStorageCreateKeyType( Format::DIA, skind );
 }
 
 /* ========================================================================= */

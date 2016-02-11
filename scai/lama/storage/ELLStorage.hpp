@@ -147,6 +147,10 @@ public:
 
     ELLStorage<ValueType>& operator=( const _MatrixStorage& other );
 
+    /** Implementation of MatrixStorage::newMatrixStorage for derived class. */
+
+    virtual ELLStorage* newMatrixStorage() const;
+
     /** Implementation of MatrixStorage::copy for derived class. */
 
     virtual ELLStorage* copy() const;
@@ -528,7 +532,7 @@ public:
 
     // key for factory
 
-    static MatrixCreateKeyType createValue();
+    static MatrixStorageCreateKeyType createValue();
 };
 
 } /* end namespace lama */

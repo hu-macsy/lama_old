@@ -545,6 +545,11 @@ public:
     /**
      * @brief Implementation of pure function Matrix::copy with covariant return type.
      */
+    virtual DenseMatrix<ValueType>* newMatrix() const;
+
+    /**
+     * @brief Implementation of pure function Matrix::copy with covariant return type.
+     */
     virtual DenseMatrix<ValueType>* copy() const;
 
     /* Implementation of pure method of class Matrix. */

@@ -215,6 +215,10 @@ public:
 
     virtual void swapLocalStorage( StorageType& localStorage );
 
+    /* Implementation of pure method Matrix::newMatrix with covariant return type */
+
+    virtual CSRSparseMatrix<ValueType>* newMatrix() const;
+
     /* Implementation of pure method Matrix::copy with covariant return type */
 
     virtual CSRSparseMatrix<ValueType>* copy() const;
@@ -250,8 +254,6 @@ public:
     // key for factory 
 
     static MatrixCreateKeyType createValue();
-
-    MatrixCreateKeyType getCreateValue() const;
 };
 
 template<typename ValueType>

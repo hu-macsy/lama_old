@@ -85,6 +85,10 @@ public:
 
     virtual ~DenseStorageView();
 
+    /** Implementation of MatrixStorage::newMatrixStorage for derived class. */
+
+    virtual DenseStorageView<ValueType>* newMatrixStorage() const;
+
     /** Implementation of MatrixStorage::copy for derived class. */
 
     virtual DenseStorageView<ValueType>* copy() const;
@@ -377,7 +381,7 @@ public:
 
     // key for factory
 
-    static MatrixCreateKeyType createValue();
+    static MatrixStorageCreateKeyType createValue();
 };
 
 /* --------------------------------------------------------------------------- */
@@ -442,6 +446,10 @@ public:
 
     virtual ~DenseStorage();
 
+    /** Implementation of MatrixStorage::newMatrixStorage for derived class. */
+
+    virtual DenseStorage<ValueType>* newMatrixStorage() const;
+
     using MatrixStorage<ValueType>::mNumRows;
     using MatrixStorage<ValueType>::mNumColumns;
     using MatrixStorage<ValueType>::assign;
@@ -460,7 +468,7 @@ public:
 
     // key for factory
 
-    static MatrixCreateKeyType createValue();
+    static MatrixStorageCreateKeyType createValue();
 
 };
 

@@ -1141,6 +1141,16 @@ COOStorage<ValueType>* COOStorage<ValueType>::copy() const
     return new COOStorage<ValueType>( *this );
 }
 
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+COOStorage<ValueType>* COOStorage<ValueType>::newMatrixStorage() const
+{
+   common::unique_ptr<COOStorage<ValueType> > storage( new COOStorage<ValueType>() ); 
+   storage->setContextPtr( this->getContextPtr() );
+   return storage.release();
+}
+
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
@@ -1152,10 +1162,10 @@ _MatrixStorage* COOStorage<ValueType>::create()
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
-MatrixCreateKeyType COOStorage<ValueType>::createValue()
+MatrixStorageCreateKeyType COOStorage<ValueType>::createValue()
 {
     common::scalar::ScalarType skind = common::getScalarType<ValueType>();
-    return MatrixCreateKeyType( Format::COO, skind );
+    return MatrixStorageCreateKeyType( Format::COO, skind );
 }
 
 /* ========================================================================= */

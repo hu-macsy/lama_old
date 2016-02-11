@@ -267,7 +267,7 @@ Vector& Vector::operator=( const Expression_SMV_SV& expression )
     if( &vectorX == this )
     {
         SCAI_LOG_DEBUG( logger, "Temporary for X required" )
-        tmpResult = common::shared_ptr<Vector>( this->clone( getDistributionPtr() ) );
+        tmpResult = common::shared_ptr<Vector>( Vector::create( this->getCreateValue() ) );
         resultPtr = tmpResult.get();
     }
 
@@ -304,7 +304,7 @@ Vector& Vector::operator=( const Expression_SVM_SV& expression )
     if( &vectorX == this )
     {
         SCAI_LOG_DEBUG( logger, "Temporary for X required" )
-        tmpResult = common::shared_ptr<Vector>( this->clone( getDistributionPtr() ) );
+        tmpResult = common::shared_ptr<Vector>( Vector::create( this->getCreateValue() ) );
         resultPtr = tmpResult.get();
     }
 

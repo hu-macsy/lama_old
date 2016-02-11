@@ -394,25 +394,19 @@ void DenseVector<ValueType>::setValues( const _HArray& values )
 }
 
 template<typename ValueType>
-DenseVector<ValueType>* DenseVector<ValueType>::clone( DistributionPtr distribution ) const
-{
-    SCAI_LOG_INFO( logger, "DenseVector<ValueType>::create" )
-
-    DenseVector<ValueType>* newDenseVector = new DenseVector<ValueType>( distribution );
-
-    newDenseVector->setContextPtr( mContext );
-
-    // give back the new vector and its ownership
-
-    return newDenseVector;
-}
-
-template<typename ValueType>
 DenseVector<ValueType>* DenseVector<ValueType>::copy() const
 {
     // create a new dense vector with the copy constructor
 
     return new DenseVector<ValueType>( *this );
+}
+
+template<typename ValueType>
+DenseVector<ValueType>* DenseVector<ValueType>::newVector() const
+{
+   common::unique_ptr<DenseVector<ValueType> > vector( new DenseVector<ValueType>() ); 
+   vector->setContextPtr( this->getContextPtr() );
+   return vector.release();
 }
 
 template<typename ValueType>

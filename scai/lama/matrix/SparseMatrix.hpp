@@ -520,6 +520,8 @@ public:
 
     virtual size_t getValueTypeSize() const;
 
+    SparseMatrix<ValueType>* newMatrix() const;
+
     /* Implementation of pure method Matrix::copy with covariant return type */
 
     virtual SparseMatrix<ValueType>* copy() const;

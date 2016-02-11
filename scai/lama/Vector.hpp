@@ -354,17 +354,14 @@ public:
     virtual Scalar maxNorm() const = 0;
 
     /**
-     * @brief Create is a virtual constructor, which clones a new Vector with the same concrete class as this.
-     *
-     * @param[in] distribution  the distribution to use for the new Vector.
-     * @return                  a pointer to the new Vector, caller has the owner ship.
-     */
-    virtual Vector* clone( DistributionPtr distribution ) const = 0;
-
-    /**
      *  @brief copy is a virtual call of the copy constructor of the derived classes
      */
     virtual Vector* copy() const = 0;
+
+    /**
+     *  @brief Creates a new Vector of the same type and value type
+     */
+    virtual Vector* newVector() const = 0;
 
     virtual VectorCreateKeyType getCreateValue() const = 0;
 
