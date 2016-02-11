@@ -85,7 +85,7 @@ MetisDistribution::MetisDistribution( const CommunicatorPtr comm, const Distribu
 
     SCAI_LOG_INFO( logger, "#weights = " << weights.size() )
 
-    for( size_t i = 0; i < weights.size(); ++i )
+    for ( size_t i = 0; i < weights.size(); ++i )
     {
         SCAI_LOG_INFO( logger, "weight[" << i << "] = " << weights[i] )
     }
@@ -101,14 +101,14 @@ void MetisDistribution::normWeights( std::vector<float>& weights )
 
     float sum = 0;
 
-    for( size_t i = 0; i < numPartitions; ++i )
+    for ( size_t i = 0; i < numPartitions; ++i )
     {
         sum += weights[i];
     }
 
     float sumNorm = 0.0f;
 
-    for( size_t i = 0; i < numPartitions - 1; ++i )
+    for ( size_t i = 0; i < numPartitions - 1; ++i )
     {
         weights[i] /= sum;
         sumNorm += weights[i];
@@ -125,7 +125,7 @@ void MetisDistribution::computeIt( const CommunicatorPtr comm, const Distributed
     IndexType myRank = comm->getRank();
     IndexType totalRows = matrix.getDistribution().getGlobalSize();
 
-    if( myRank == MASTER )
+    if ( myRank == MASTER )
     {
         // MASTER must have all values of the matrix to build the graph
 
@@ -136,7 +136,7 @@ void MetisDistribution::computeIt( const CommunicatorPtr comm, const Distributed
     std::vector<IndexType> distIA;
     std::vector<IndexType> rows;
 
-    if( myRank == MASTER )
+    if ( myRank == MASTER )
     {
         // test weights (tpwgts)
         // note: no weight can be zero for metis call
@@ -152,7 +152,7 @@ void MetisDistribution::computeIt( const CommunicatorPtr comm, const Distributed
         distIA.resize( size + 1 );
         rows.resize( totalRows );
 
-        if( count > 1 )
+        if ( count > 1 )
         {
             IndexType minConstraint = 0;
             std::vector<IndexType> partition( totalRows );
@@ -161,14 +161,14 @@ void MetisDistribution::computeIt( const CommunicatorPtr comm, const Distributed
             IndexType offsetCounter[size];
 
             // init
-            for( IndexType i = 0; i < size; i++ )
+            for ( IndexType i = 0; i < size; i++ )
             {
                 numRowsPerOwner[i] = 0;
                 offsetCounter[i] = 0;
             }
 
             //count rows per owner
-            for( IndexType i = 0; i < totalRows; i++ )
+            for ( IndexType i = 0; i < totalRows; i++ )
             {
                 ++numRowsPerOwner[mapping[partition[i]]];
             }
@@ -176,13 +176,13 @@ void MetisDistribution::computeIt( const CommunicatorPtr comm, const Distributed
             // build "ia" array (running sums) for rows per owner
             distIA[0] = 0;
 
-            for( IndexType i = 1; i < size + 1; i++ )
+            for ( IndexType i = 1; i < size + 1; i++ )
             {
                 distIA[i] = distIA[i - 1] + numRowsPerOwner[i - 1];
             }
 
             // sort rows after owner
-            for( IndexType i = 0; i < totalRows; i++ )
+            for ( IndexType i = 0; i < totalRows; i++ )
             {
                 IndexType index = mapping[partition[i]];
                 rows[distIA[index] + offsetCounter[index]] = i;
@@ -194,14 +194,14 @@ void MetisDistribution::computeIt( const CommunicatorPtr comm, const Distributed
             SCAI_LOG_WARN( logger,
                            "MetisDistribution called with 1 processor/1 weight, which is the same as NoDistribution." )
 
-            for( IndexType i = 0; i < size; i++ )
+            for ( IndexType i = 0; i < size; i++ )
             {
                 numRowsPerOwner[i] = 0;
             }
 
             numRowsPerOwner[mapping[0]] = totalRows;
 
-            for( IndexType i = 0; i < totalRows; i++ )
+            for ( IndexType i = 0; i < totalRows; i++ )
             {
                 rows[i] = i;
             }
@@ -217,7 +217,7 @@ void MetisDistribution::computeIt( const CommunicatorPtr comm, const Distributed
     std::vector<IndexType>::const_iterator end = mLocal2Global.end();
     std::vector<IndexType>::const_iterator begin = mLocal2Global.begin();
 
-    for( std::vector<IndexType>::const_iterator it = begin; it != end; ++it )
+    for ( std::vector<IndexType>::const_iterator it = begin; it != end; ++it )
     {
         IndexType i = static_cast<IndexType>( std::distance( begin, it ) );
         SCAI_ASSERT( 0 <= *it && *it < mGlobalSize,
@@ -250,7 +250,7 @@ void MetisDistribution::callPartitioning(
 {
     SCAI_REGION( "METIScall" )
 
-    // Note that here we have: global size == local size of distribution 
+    // Note that here we have: global size == local size of distribution
 
     IndexType totalRows = matrix.getDistribution().getGlobalSize();
 
@@ -282,7 +282,7 @@ void MetisDistribution::callPartitioning(
 
     void getVTX( IndexType* vtxdist, CommunicatorPtr com, const Distribted& matrix )
     {
-        if ( vtxdist == NULL ) 
+        if ( vtxdist == NULL )
         {
             return;
         }
@@ -300,14 +300,14 @@ void MetisDistribution::callPartitioning(
         comm->gather( vtxdist, 1, MASTER, &numLocalRows );
         comm->bcast( vtxdist, parts, MASTER );
 
-        // build running sum 
+        // build running sum
 
-        IndexType runningSum = 0; 
+        IndexType runningSum = 0;
 
         for ( IndexType i = 0; i < parts; ++i )
         {
             IndexType tmp = runningSum;
-            runningSum += vtxdist[i]; 
+            runningSum += vtxdist[i];
             vtxdist[i] = tmp;
         }
         vtxdist[parts] = runningSum;
@@ -323,9 +323,9 @@ void MetisDistribution::checkAndMapWeights(
     std::vector<float>& weights,
     IndexType size ) const
 {
-    for( IndexType i = 0; i < size; ++i )
+    for ( IndexType i = 0; i < size; ++i )
     {
-        if( weights[i] != 0 )
+        if ( weights[i] != 0 )
         {
             mapping[count] = i;
             tpwgts[count] = weights[i];

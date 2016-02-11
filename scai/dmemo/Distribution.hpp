@@ -90,10 +90,10 @@ struct DistributionArguments
  *
  * Default and copy constructor are not available for this class (noncopyable).
  */
-class COMMON_DLL_IMPORTEXPORT Distribution: 
+class COMMON_DLL_IMPORTEXPORT Distribution:
 
     public common::Factory1<std::string, DistributionArguments, Distribution*>,
-    public common::Printable, 
+    public common::Printable,
     private common::NonCopyable
 {
 
@@ -267,7 +267,7 @@ public:
      * @param[out] allValues    array over the global range will contain all values
      * @param[in]  localValues  array over the local range has only values for each partition
      */
-    template<typename T1,typename T2>
+    template<typename T1, typename T2>
     void replicate( T1* allValues, const T2* localValues ) const;
 
     /** Replication of distributed data, one line of n entries for each element of the global range
@@ -278,7 +278,7 @@ public:
      * @param[in]  localValues  array over the local range has only values for each partition
      * @param[in]  n            is number of entries in each line of data
      */
-    template<typename T1,typename T2>
+    template<typename T1, typename T2>
     void replicateN( T1* allValues, const T2* localValues, const IndexType n ) const;
 
     /** Replication of distributed data, several entries for each element of the global range
@@ -318,7 +318,7 @@ protected:
      *  their compute power. E.g. a partition with weight = 4 will get two times the load
      *  of a partition with weight = 2 and four times the load of a partition with weigth = 1.
      */
-    typedef Distribution* (*CreateFn1)( CommunicatorPtr commPtr, IndexType globalSize, float weight );
+    typedef Distribution* ( *CreateFn1 )( CommunicatorPtr commPtr, IndexType globalSize, float weight );
 
     /** Type definition of a function to create a distribution with a connectivity matrix.
      *
@@ -330,7 +330,7 @@ protected:
      *  their compute power. E.g. a partition with weight = 4 will get two times the load
      *  of a partition with weight = 2 and four times the load of a partition with weigth = 1.
      */
-    typedef Distribution* (*CreateFn2)( CommunicatorPtr commPtr, const Distributed& matrix, float weight );
+    typedef Distribution* ( *CreateFn2 )( CommunicatorPtr commPtr, const Distributed& matrix, float weight );
 
     /** This method should be called by distribution classes to register their create operation. */
 
@@ -368,13 +368,14 @@ protected:
 
 private:
 
-    typedef std::map<std::string,std::pair<CreateFn1,CreateFn2> > CreatorMap;
+    typedef std::map<std::string, std::pair<CreateFn1, CreateFn2> > CreatorMap;
 
     static CreatorMap& getFactory();
 
     Distribution(); // disable default constructor
 
-    SCAI_LOG_DECL_STATIC_LOGGER( logger )};
+    SCAI_LOG_DECL_STATIC_LOGGER( logger )
+};
 
 IndexType Distribution::getGlobalSize() const
 {

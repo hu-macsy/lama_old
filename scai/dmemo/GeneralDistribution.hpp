@@ -125,9 +125,9 @@ protected:
 
     //TODO: Evaluate which one is faster
 #if (BOOST_VERSION < 103600)
-    typedef std::map<IndexType,IndexType> Global2LocalMapType;
+    typedef std::map<IndexType, IndexType> Global2LocalMapType;
 #else //(BOOST_VERSION >= 103600)
-    typedef boost::unordered_map<IndexType,IndexType> Global2LocalMapType;
+    typedef boost::unordered_map<IndexType, IndexType> Global2LocalMapType;
 #endif //(BOOST_VERSION < 103600)
     Global2LocalMapType mGlobal2Local;
     std::vector<IndexType> mLocal2Global;

@@ -182,7 +182,7 @@ public:
      *  \endcode
      */
     void allocate( const PartitionId noPartitions, const PartitionId owners[], IndexType nOwners, bool compressFlag =
-                    true );
+                       true );
 
     /** Allocate a communication plan as the transposed plan of another communication plan.
      *
@@ -248,9 +248,10 @@ private:
 
     IndexType mQuantity; //!< sum of quantities for all entries
 
-    SCAI_LOG_DECL_STATIC_LOGGER( logger )};
+    SCAI_LOG_DECL_STATIC_LOGGER( logger )
+};
 
-    /* ----------------------------------------------------------------------*/
+/* ----------------------------------------------------------------------*/
 
 PartitionId CommunicationPlan::size() const
 {

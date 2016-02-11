@@ -52,14 +52,14 @@ namespace dmemo
 
 MPISyncToken::MPISyncToken( PartitionId nRequests )
     : mNRequests( nRequests ), mUsedRequests( 0 ), mRequests( new MPI_Request[mNRequests] ), mStatuses(
-          new MPI_Status[mNRequests] )
+        new MPI_Status[mNRequests] )
 {
     SCAI_LOG_INFO( logger, "MPISyncToken for " << mNRequests << " requests constructed" )
 }
 
 MPISyncToken::~MPISyncToken()
 {
-    if( !isSynchronized() )
+    if ( !isSynchronized() )
     {
         SCAI_LOG_DEBUG( logger, *this << ": synchnronized at destructor" )
         wait();
@@ -75,7 +75,7 @@ void MPISyncToken::wait()
 {
     SCAI_REGION( "SyncToken.MPI.wait" )
 
-    if( isSynchronized() )
+    if ( isSynchronized() )
     {
         SCAI_LOG_WARN( logger, *this << ": waiting twice" )
 

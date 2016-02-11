@@ -49,7 +49,7 @@ namespace dmemo
  * a certain block size and these chunks are assigned in a round-robin manner
  * to the available partitions.
  */
-class COMMON_DLL_IMPORTEXPORT CyclicDistribution: 
+class COMMON_DLL_IMPORTEXPORT CyclicDistribution:
 
     public Distribution,
     private Distribution::Register<CyclicDistribution>
@@ -149,7 +149,10 @@ public:
 
     static std::string createValue();
 
-    virtual const char* getKind() const { return createValue().c_str(); }
+    virtual const char* getKind() const
+    {
+        return createValue().c_str();
+    }
 
 private:
 

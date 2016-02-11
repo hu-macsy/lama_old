@@ -64,7 +64,7 @@ namespace dmemo
  *  MPI_Init is called in the constructor, MPI_Finalize is called in the destructor.
  */
 
-class COMMON_DLL_IMPORTEXPORT MPICommunicator: 
+class COMMON_DLL_IMPORTEXPORT MPICommunicator:
 
     public CRTPCommunicator<MPICommunicator>,
     public Communicator::Register<MPICommunicator>           // register at factory
@@ -127,11 +127,11 @@ private:
     template<typename ValueType>
     inline static MPI_Datatype getMPIType();
 
-    template<typename T1,typename T2>
+    template<typename T1, typename T2>
     inline static MPI_Datatype getMPI2Type();
 
     template<typename ValueType>
-	inline static MPI_Op getMPISum();
+    inline static MPI_Op getMPISum();
 
     template<typename ValueType>
     void bcastImpl( ValueType val[], const IndexType n, const PartitionId root ) const;
@@ -244,8 +244,8 @@ protected:
 
     static MPI_Op mSumComplexLongDouble;
 
-    static void sum_complex_long_double(void *in, void *out, int *count,
-                                     MPI_Datatype *dtype);
+    static void sum_complex_long_double( void* in, void* out, int* count,
+                                         MPI_Datatype* dtype );
 
     Communicator::ThreadSafetyLevel mThreadSafetyLevel;
 
@@ -257,7 +257,7 @@ public:
 
     static CommunicatorPtr create();
 
-    // key for factory 
+    // key for factory
 
     static communicator::CommunicatorKind createValue();
 
@@ -350,7 +350,7 @@ inline MPI_Datatype MPICommunicator::getMPIType<unsigned long>()
 /*              getMPI2Type                                                           */
 /* ---------------------------------------------------------------------------------- */
 
-template<typename T1,typename T2>
+template<typename T1, typename T2>
 inline MPI_Datatype MPICommunicator::getMPI2Type()
 {
     COMMON_THROWEXCEPTION( "unsupported type for MPI communication" )
@@ -358,19 +358,19 @@ inline MPI_Datatype MPICommunicator::getMPI2Type()
 }
 
 template<>
-inline MPI_Datatype MPICommunicator::getMPI2Type<float,int>()
+inline MPI_Datatype MPICommunicator::getMPI2Type<float, int>()
 {
     return MPI_FLOAT_INT;
 }
 
 template<>
-inline MPI_Datatype MPICommunicator::getMPI2Type<double,int>()
+inline MPI_Datatype MPICommunicator::getMPI2Type<double, int>()
 {
     return MPI_DOUBLE_INT;
 }
 
 template<>
-inline MPI_Datatype MPICommunicator::getMPI2Type<int,int>()
+inline MPI_Datatype MPICommunicator::getMPI2Type<int, int>()
 {
     return MPI_2INT;
 }

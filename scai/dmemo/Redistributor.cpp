@@ -85,11 +85,11 @@ Redistributor::Redistributor( DistributionPtr targetDistribution, DistributionPt
 
     mNumLocalValues = 0; // count number of local copies from source to target
 
-    for( IndexType i = 0; i < mTargetSize; i++ )
+    for ( IndexType i = 0; i < mTargetSize; i++ )
     {
         IndexType globalIndex = targetDist.local2global( i );
 
-        if( sourceDist.isLocal( globalIndex ) )
+        if ( sourceDist.isLocal( globalIndex ) )
         {
             IndexType sourceLocalIndex = sourceDist.global2local( globalIndex );
 
@@ -141,13 +141,13 @@ Redistributor::Redistributor( DistributionPtr targetDistribution, DistributionPt
 
     IndexType offset = 0; // runs through halo source indexes
 
-    for( IndexType i = 0; i < providesPlan.size(); i++ )
+    for ( IndexType i = 0; i < providesPlan.size(); i++ )
     {
         IndexType n = providesPlan[i].quantity;
 
         const IndexType* pindexes = haloProvidesIndexes.get() + providesPlan[i].offset;
 
-        for( IndexType j = 0; j < n; j++ )
+        for ( IndexType j = 0; j < n; j++ )
         {
             SCAI_LOG_TRACE( logger, "halo source index[" << offset << "] = " << pindexes[j] )
 
@@ -171,7 +171,7 @@ Redistributor::Redistributor( DistributionPtr targetDistribution, DistributionPt
 
     haloTargetIndexes.resize( haloSize );
 
-    for( IndexType i = 0; i < haloSize; i++ )
+    for ( IndexType i = 0; i < haloSize; i++ )
     {
         IndexType globalIndex = requiredIndexes[i];
         IndexType localIndex = targetDist.global2local( globalIndex );
@@ -229,14 +229,14 @@ void Redistributor::buildVPlans( const IndexType haloSourceSizes[], const IndexT
 
     // For building the new schedule we need the sizes, can be calculated by the offsets
 
-    for( IndexType i = 0; i < numProvides; i++ )
+    for ( IndexType i = 0; i < numProvides; i++ )
     {
         IndexType size = haloSourceSizes[i];
         provideQuantities[i] = size;
         SCAI_LOG_DEBUG( logger, "provides[" << i << "] = " << size )
     }
 
-    for( IndexType i = 0; i < numRequired; i++ )
+    for ( IndexType i = 0; i < numRequired; i++ )
     {
         IndexType size = haloTargetSizes[i];
         requiredQuantities[i] = size;
@@ -272,7 +272,7 @@ void Redistributor::buildRowPlans(
         ReadAccess<IndexType> indexes( mHaloSourceIndexes, contextPtr );
         ReadAccess<IndexType> sizes( sourceSizes, contextPtr );
 
-        for( IndexType i = 0; i < numProvides; i++ )
+        for ( IndexType i = 0; i < numProvides; i++ )
         {
             IndexType size = sizes[indexes[i]];
             provideQuantities[i] = size;
@@ -284,7 +284,7 @@ void Redistributor::buildRowPlans(
         ReadAccess<IndexType> indexes( mHaloTargetIndexes, contextPtr );
         ReadAccess<IndexType> sizes( targetSizes, contextPtr );
 
-        for( IndexType i = 0; i < numRequired; i++ )
+        for ( IndexType i = 0; i < numRequired; i++ )
         {
             IndexType size = sizes[indexes[i]];
             requiredQuantities[i] = size;

@@ -56,7 +56,7 @@ namespace dmemo
  *
  */
 
-class COMMON_DLL_IMPORTEXPORT MetisDistribution: 
+class COMMON_DLL_IMPORTEXPORT MetisDistribution:
 
     public GeneralDistribution,
     private Distribution::Register<MetisDistribution>

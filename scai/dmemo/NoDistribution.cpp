@@ -56,7 +56,7 @@ NoDistribution::~NoDistribution()
 {
 }
 
-bool NoDistribution::isLocal( const IndexType /* index */) const
+bool NoDistribution::isLocal( const IndexType /* index */ ) const
 {
     return true;
 }
@@ -90,7 +90,7 @@ void NoDistribution::writeAt( std::ostream& stream ) const
 
 void NoDistribution::printDistributionVector( std::string name ) const
 {
-    if( mCommunicator->getRank() == MASTER ) // process 0 ist MASTER process
+    if ( mCommunicator->getRank() == MASTER ) // process 0 ist MASTER process
     {
         std::ofstream file;
         file.open( ( name + ".part" ).c_str() );

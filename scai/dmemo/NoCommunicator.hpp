@@ -47,7 +47,7 @@ namespace dmemo
  *  partition or processor.
  */
 
-class COMMON_DLL_IMPORTEXPORT NoCommunicator: 
+class COMMON_DLL_IMPORTEXPORT NoCommunicator:
 
     public CRTPCommunicator<NoCommunicator>,
     public Communicator::Register<NoCommunicator>           // register at factory
@@ -89,20 +89,20 @@ private    :
 
     template<typename T>
     IndexType shiftImpl(
-                    T newvals[],
-                    const IndexType newSize,
-                    const PartitionId source,
-                    const T oldVals[],
-                    const IndexType oldSize,
-                    const PartitionId dest ) const;
+        T newvals[],
+        const IndexType newSize,
+        const PartitionId source,
+        const T oldVals[],
+        const IndexType oldSize,
+        const PartitionId dest ) const;
 
     template<typename T>
     tasking::SyncToken* shiftAsyncImpl(
-                    T newvals[],
-                    const PartitionId source,
-                    const T oldVals[],
-                    const PartitionId dest,
-                    const IndexType size ) const;
+        T newvals[],
+        const PartitionId source,
+        const T oldVals[],
+        const PartitionId dest,
+        const IndexType size ) const;
 
     template<typename T>
     void bcastImpl( T val[], const IndexType n, const PartitionId root ) const;
@@ -115,22 +115,22 @@ private    :
 
     template<typename T>
     void scatterVImpl(
-                    T myvals[],
-                    const IndexType n,
-                    const PartitionId root,
-                    const T allvals[],
-                    const IndexType sizes[] ) const;
+        T myvals[],
+        const IndexType n,
+        const PartitionId root,
+        const T allvals[],
+        const IndexType sizes[] ) const;
 
     template<typename T>
     void gatherImpl( T allvals[], const IndexType n, const PartitionId root, const T myvals[] ) const;
 
     template<typename T>
     void gatherVImpl(
-                    T allvals[],
-                    const IndexType n,
-                    const PartitionId root,
-                    const T myvals[],
-                    const IndexType sizes[] ) const;
+        T allvals[],
+        const IndexType n,
+        const PartitionId root,
+        const T myvals[],
+        const IndexType sizes[] ) const;
 
     template<typename T>
     T sumImpl( const T value ) const;
@@ -151,17 +151,17 @@ private    :
 
     template<typename T>
     void exchangeByPlanImpl(
-                    T recvData[],
-                    const CommunicationPlan& recvPlan,
-                    const T sendData[],
-                    const CommunicationPlan& sendPlan ) const;
+        T recvData[],
+        const CommunicationPlan& recvPlan,
+        const T sendData[],
+        const CommunicationPlan& sendPlan ) const;
 
     template<typename T>
     tasking::SyncToken* exchangeByPlanAsyncImpl(
-                    T recvData[],
-                    const CommunicationPlan& recvPlan,
-                    const T sendData[],
-                    const CommunicationPlan& sendPlan ) const;
+        T recvData[],
+        const CommunicationPlan& recvPlan,
+        const T sendData[],
+        const CommunicationPlan& sendPlan ) const;
 
     virtual hmemo::ContextPtr getCommunicationContext( const hmemo::_HArray& array ) const;
 
@@ -171,7 +171,7 @@ public:
 
     static CommunicatorPtr create();
 
-    // key for factory 
+    // key for factory
 
     static communicator::CommunicatorKind createValue();
 };

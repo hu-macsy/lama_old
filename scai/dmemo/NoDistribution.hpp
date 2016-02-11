@@ -58,7 +58,7 @@ namespace dmemo
  *  done on all partitions. But a replicated object can also be used
  *  like a private incarnation on each processor.
  */
-class COMMON_DLL_IMPORTEXPORT NoDistribution: 
+class COMMON_DLL_IMPORTEXPORT NoDistribution:
 
     public Distribution,
     private Distribution::Register<NoDistribution>
@@ -93,8 +93,8 @@ public:
     static std::string createValue();
 
     virtual const char* getKind() const
-    { 
-        return theCreateValue; 
+    {
+        return theCreateValue;
     }
 
 private:

@@ -127,11 +127,11 @@ public:
     }                                                                                   \
     \
     virtual void all2allv(ARRAY_TYPE##I* recvVal[],IndexType recvCount[],               \
-                        ARRAY_TYPE##I* sendVal[],                                       \
-                            IndexType sendCount[]) const                                \
+                          ARRAY_TYPE##I* sendVal[],                                       \
+                          IndexType sendCount[]) const                                \
     {                                                                                   \
         return static_cast<const Derived*>( this )->all2allvImpl(recvVal,recvCount,     \
-                                                  sendVal,sendCount);                   \
+                sendVal,sendCount);                   \
     }                                                                                   \
     \
     virtual void maxloc( ARRAY_TYPE##I& val, IndexType& location, PartitionId root ) const     \
@@ -140,8 +140,8 @@ public:
     }                                                                                   \
     \
     /***************************************************************                    \
-     *  gather                                                     *                    \
-     **************************************************************/                    \
+         *  gather                                                     *                    \
+         **************************************************************/                    \
     \
     virtual void gather( ARRAY_TYPE##I allvals[], const IndexType n,                    \
                          const PartitionId root, const ARRAY_TYPE##I myvals[] ) const   \
@@ -204,8 +204,8 @@ public:
     }                                                                                   \
     \
     /***************************************************************                    \
-     *  exchangeByPlanAsync                                        *                    \
-     **************************************************************/                    \
+         *  exchangeByPlanAsync                                        *                    \
+         **************************************************************/                    \
     \
     virtual tasking::SyncToken* exchangeByPlanAsync(                                             \
             ARRAY_TYPE##I recvVals[],                                                       \
@@ -240,7 +240,7 @@ protected:
     // Default constructor can only be called by derived classes.
 
     CRTPCommunicator<Derived>( const communicator::CommunicatorKind& type )
-                    : Communicator( type )
+        : Communicator( type )
     {
     }
 
@@ -257,7 +257,7 @@ private:
         SCAI_LOG_DEBUG( Derived::logger,
                         *this << ": shift, direction = " << direction << ", sendsize = " << sendSize << ", recvsize = " << recvSize )
 
-        if( direction % getSize() == 0 )
+        if ( direction % getSize() == 0 )
         {
             return shift0( recvVals, recvSize, sendVals, sendSize );
         }
@@ -270,7 +270,7 @@ private:
     template<typename T>
     tasking::SyncToken* shiftDataAsyncT( T recvVals[], const T sendVals[], const IndexType size, const int direction ) const
     {
-        if( direction % getSize() == 0 )
+        if ( direction % getSize() == 0 )
         {
             shift0( recvVals, size, sendVals, size );
             return new tasking::NoSyncToken();
@@ -280,7 +280,7 @@ private:
         PartitionId source = getNeighbor( -direction );
 
         SCAI_LOG_DEBUG( Derived::logger,
-                        "shiftDataAsync<" << typeid(T).name() << ">, dest = " << dest << ", source = " << source << ", size = " << size )
+                        "shiftDataAsync<" << typeid( T ).name() << ">, dest = " << dest << ", source = " << source << ", size = " << size )
 
         return static_cast<const Derived*>( this )->shiftAsyncImpl( recvVals, source, sendVals, dest, size );
     }

@@ -58,7 +58,7 @@ namespace dmemo
  *  objects.
  */
 
-class COMMON_DLL_IMPORTEXPORT GenBlockDistribution: 
+class COMMON_DLL_IMPORTEXPORT GenBlockDistribution:
 
     public Distribution,
     private Distribution::Register<GenBlockDistribution>

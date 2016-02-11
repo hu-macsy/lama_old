@@ -74,7 +74,7 @@ bool CyclicDistribution::isLocal( const IndexType globalIndex ) const
 {
     IndexType rank = mCommunicator->getRank();
 
-    if( getOwner( globalIndex ) == rank )
+    if ( getOwner( globalIndex ) == rank )
     {
         SCAI_LOG_TRACE( logger, "global index " << globalIndex << " is local on partition " << rank )
         return true;
@@ -110,11 +110,11 @@ void CyclicDistribution::getChunkInfo( IndexType& localChunks, IndexType& extra,
     IndexType remainChunks = chunks % size;
     extra = 0;
 
-    if( rank < remainChunks )
+    if ( rank < remainChunks )
     {
         localChunks++;
     }
-    else if( rank == remainChunks )
+    else if ( rank == remainChunks )
     {
         extra = mGlobalSize % mChunkSize;
     }
@@ -130,7 +130,7 @@ IndexType CyclicDistribution::getNumChunks( const PartitionId rank ) const
 
     getChunkInfo( localChunks, extra, rank );
 
-    if( extra )
+    if ( extra )
     {
         ++localChunks; // count also the non-full chunk
     }
@@ -147,7 +147,7 @@ IndexType CyclicDistribution::getNumTotalChunks() const
 {
     IndexType numChunks = mGlobalSize / mChunkSize;
 
-    if( mGlobalSize % mChunkSize != 0 )
+    if ( mGlobalSize % mChunkSize != 0 )
     {
         ++numChunks; // count also the non-full chunk
     }
@@ -195,7 +195,7 @@ IndexType CyclicDistribution::allGlobal2local( const IndexType globalIndex ) con
 
 IndexType CyclicDistribution::global2local( const IndexType globalIndex ) const
 {
-    if( isLocal( globalIndex ) )
+    if ( isLocal( globalIndex ) )
     {
         return allGlobal2local( globalIndex );
     }
@@ -215,7 +215,7 @@ void CyclicDistribution::computeOwners(
 
     SCAI_LOG_INFO( logger, "compute " << requiredIndexes.size() << " owners for " << *this )
 
-    for( size_t i = 0; i < requiredIndexes.size(); i++ )
+    for ( size_t i = 0; i < requiredIndexes.size(); i++ )
     {
         IndexType globalChunkIndex = requiredIndexes[i] / mChunkSize;
         IndexType owner = globalChunkIndex % size;
@@ -234,14 +234,14 @@ bool checkChunkSize( const CyclicDistribution& d, IndexType chunkSize )
 
 bool CyclicDistribution::isEqual( const Distribution& other ) const
 {
-    if( this == &other )
+    if ( this == &other )
     {
         return true;
     }
 
     const CyclicDistribution* cycOther = dynamic_cast<const CyclicDistribution*>( &other );
 
-    if( cycOther )
+    if ( cycOther )
     {
         return ( mGlobalSize == other.getGlobalSize() && checkChunkSize( *cycOther, mChunkSize ) );
     }
@@ -264,16 +264,16 @@ void CyclicDistribution::printDistributionVector( std::string name ) const
 
     IndexType totalNumChunks = getNumTotalChunks();
 
-    if( myRank == MASTER ) // process 0 is MASTER process
+    if ( myRank == MASTER ) // process 0 is MASTER process
     {
         std::ofstream file;
         file.open( ( name + ".part" ).c_str() );
         // print row - partition mapping
         IndexType actualProcess = 0;
 
-        for( IndexType i = 0; i < totalNumChunks; ++i )
+        for ( IndexType i = 0; i < totalNumChunks; ++i )
         {
-            for( IndexType j = 0; j < mChunkSize; j++ )
+            for ( IndexType j = 0; j < mChunkSize; j++ )
             {
                 file << actualProcess << std::endl;
             }

@@ -54,7 +54,7 @@ namespace dmemo
 SCAI_LOG_DEF_LOGGER( NoCommunicator::logger, "Communicator.NoCommunicator" )
 
 NoCommunicator::NoCommunicator()
-                : CRTPCommunicator<NoCommunicator>( communicator::NO )
+    : CRTPCommunicator<NoCommunicator>( communicator::NO )
 {
     SCAI_LOG_DEBUG( logger, "NoCommunicator()" )
 }
@@ -117,7 +117,7 @@ void NoCommunicator::exchangeByPlanImpl(
 {
     SCAI_ASSERT_EQ_ERROR( recvPlan.size(), sendPlan.size(), "size mismatch" )
 
-    if( 0 == recvPlan.size() && 0 == sendPlan.size() )
+    if ( 0 == recvPlan.size() && 0 == sendPlan.size() )
     {
         return;
     }
@@ -134,7 +134,7 @@ void NoCommunicator::exchangeByPlanImpl(
 
     // self copy of send data to recv data
 
-    memcpy( recvData, sendData, quantity * sizeof(ValueType) );
+    memcpy( recvData, sendData, quantity * sizeof( ValueType ) );
 }
 
 template<typename ValueType>
@@ -202,7 +202,7 @@ void NoCommunicator::scatterImpl(
 {
     SCAI_ASSERT_EQ_ERROR( root, 0, "" )
 
-    for( int i = 0; i < n; i++ )
+    for ( int i = 0; i < n; i++ )
     {
         myvals[i] = allvals[i];
     }
@@ -219,7 +219,7 @@ void NoCommunicator::scatterVImpl(
     SCAI_ASSERT_EQ_ERROR( root, 0, "" )
     SCAI_ASSERT_EQ_ERROR( sizes[0], n , "size mismatch" )
 
-    for( int i = 0; i < n; i++ )
+    for ( int i = 0; i < n; i++ )
     {
         myvals[i] = allvals[i];
     }
@@ -234,7 +234,7 @@ void NoCommunicator::gatherImpl(
 {
     SCAI_ASSERT_EQ_ERROR( root, 0, "" )
 
-    for( int i = 0; i < n; i++ )
+    for ( int i = 0; i < n; i++ )
     {
         allvals[i] = myvals[i];
     }
@@ -251,7 +251,7 @@ void NoCommunicator::gatherVImpl(
     SCAI_ASSERT_EQ_ERROR( root, 0, "" )
     SCAI_ASSERT_EQ_ERROR( sizes[0], n, "" )
 
-    for( int i = 0; i < n; i++ )
+    for ( int i = 0; i < n; i++ )
     {
         allvals[i] = myvals[i];
     }
@@ -305,7 +305,7 @@ CommunicatorPtr NoCommunicator::create()
 
     // use the last communicatorInstance if it is still valid
 
-    if( theNoCommunicatorInstance.expired() )
+    if ( theNoCommunicatorInstance.expired() )
     {
         // create a new instance of NoCommunicator and keep it for further uses
 

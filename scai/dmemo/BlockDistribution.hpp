@@ -50,7 +50,7 @@ namespace dmemo
  *  BlockDistribution is noncopyable as Distribution is noncopyable
  *
  */
-class COMMON_DLL_IMPORTEXPORT BlockDistribution: 
+class COMMON_DLL_IMPORTEXPORT BlockDistribution:
 
     public Distribution,
     private Distribution::Register<BlockDistribution>
@@ -114,8 +114,8 @@ public:
     static std::string createValue();
 
     virtual const char* getKind() const
-    { 
-        return theCreateValue; 
+    {
+        return theCreateValue;
     }
 
 protected:

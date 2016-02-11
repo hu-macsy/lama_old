@@ -42,9 +42,9 @@ namespace dmemo
 
 Distributed::Distributed( DistributionPtr distribution )
 
-                : mDistribution( distribution )
+    : mDistribution( distribution )
 {
-    if( !distribution )
+    if ( !distribution )
     {
         COMMON_THROWEXCEPTION( "Distributed object must not have NULL distribution" )
     }
@@ -52,7 +52,7 @@ Distributed::Distributed( DistributionPtr distribution )
 
 Distributed::Distributed( const Distributed& other )
 
-                : mDistribution( other.mDistribution )
+    : mDistribution( other.mDistribution )
 {
     // copy shared pointer is okay, mDistribution can never be NULL
 }

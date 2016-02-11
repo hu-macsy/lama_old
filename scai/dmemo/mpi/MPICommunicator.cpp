@@ -70,7 +70,7 @@ MPI_Op MPICommunicator::mSumComplexLongDouble = 0;
 SCAI_LOG_DEF_LOGGER( MPICommunicator::logger, "Communicator.MPICommunicator" )
 
 MPICommunicator::MPICommunicator( int& argc, char** & argv, const communicator::CommunicatorKind& type )
-    : CRTPCommunicator<MPICommunicator>( type ), 
+    : CRTPCommunicator<MPICommunicator>( type ),
       mMainThread( common::Thread::getSelf() ),
       mThreadSafetyLevel( Communicator::Funneled )
 {
@@ -106,7 +106,7 @@ void MPICommunicator::initialize( int& argc, char** & argv )
 
     LAMA_MPICALL( logger, MPI_Initialized( &initialized ), "MPI_Initialized" )
 
-    if( initialized )
+    if ( initialized )
     {
         mExternInitialization = true;
         SCAI_LOG_WARN( logger, "MPI_Init: MPI has already been initialized." )
@@ -119,22 +119,22 @@ void MPICommunicator::initialize( int& argc, char** & argv )
 
         const char* envConfig = getenv( "LAMA_MPICOMM_THREAD_SAFETY" );
 
-        if( envConfig != NULL )
+        if ( envConfig != NULL )
         {
             threadSafetyEnvironment = envConfig;
         }
 
         int requiredThreadSafety = MPI_THREAD_FUNNELED;
 
-        if( threadSafetyEnvironment == "Multiple" )
+        if ( threadSafetyEnvironment == "Multiple" )
         {
             requiredThreadSafety = MPI_THREAD_MULTIPLE;
         }
-        else if( threadSafetyEnvironment == "Serialized" )
+        else if ( threadSafetyEnvironment == "Serialized" )
         {
             requiredThreadSafety = MPI_THREAD_SERIALIZED;
         }
-        else if( threadSafetyEnvironment != "" )
+        else if ( threadSafetyEnvironment != "" )
         {
             SCAI_LOG_ERROR( logger,
                             "LAMA_MPICOMM_THREAD_SAFETY = " << threadSafetyEnvironment << ", unknown value (try Multiple or Serialized)" )
@@ -144,7 +144,7 @@ void MPICommunicator::initialize( int& argc, char** & argv )
 
         LAMA_MPICALL( logger, MPI_Init_thread( &argc, &argv, requiredThreadSafety, &providedThreadSafety ), "MPI_Init" );
 
-        switch( providedThreadSafety )
+        switch ( providedThreadSafety )
         {
             case MPI_THREAD_MULTIPLE:
                 mThreadSafetyLevel = Communicator::Multiple;
@@ -175,7 +175,7 @@ void MPICommunicator::initialize( int& argc, char** & argv )
 
         bool setCUDA = common::Settings::getEnvironment( isCUDAAware, "SCAI_MPI_CUDA" );
 
-        if( setCUDA )
+        if ( setCUDA )
         {
             SCAI_LOG_ERROR( logger, "MPI isCUDAAware = " << isCUDAAware )
         }
@@ -183,11 +183,11 @@ void MPICommunicator::initialize( int& argc, char** & argv )
 
 #ifdef SCAI_COMPLEX_SUPPORTED
 
-	if( mSumComplexLongDouble == 0)
-	{
-		MPI_Op_create( &sum_complex_long_double, true, &mSumComplexLongDouble );
-		SCAI_LOG_DEBUG( logger, "MPI_Op_create for sum complex long double")
-	}
+    if ( mSumComplexLongDouble == 0 )
+    {
+        MPI_Op_create( &sum_complex_long_double, true, &mSumComplexLongDouble );
+        SCAI_LOG_DEBUG( logger, "MPI_Op_create for sum complex long double" )
+    }
 
 #endif
 
@@ -200,7 +200,7 @@ void MPICommunicator::initialize( int& argc, char** & argv )
 
     setNodeData(); // determine mNodeRank, mNodeSize
 
-    // set rank, output string in an environment variable 
+    // set rank, output string in an environment variable
     // so it might be used by logging, tracing, etc.
 
     std::ostringstream commVal;
@@ -213,14 +213,16 @@ void MPICommunicator::initialize( int& argc, char** & argv )
 
 #ifdef SCAI_COMPLEX_SUPPORTED
 
-void MPICommunicator::sum_complex_long_double(void *in, void *out, int *count,
-                                 MPI_Datatype * UNUSED(dtype) )
+void MPICommunicator::sum_complex_long_double( void* in, void* out, int* count,
+        MPI_Datatype* UNUSED( dtype ) )
 {
-  ComplexLongDouble *a = reinterpret_cast<ComplexLongDouble*>( in );
-  ComplexLongDouble *b = reinterpret_cast<ComplexLongDouble*>( out );
-  for(int i = 0; i < *count; ++i) {
-      b[i] += a[i];
-  }
+    ComplexLongDouble* a = reinterpret_cast<ComplexLongDouble*>( in );
+    ComplexLongDouble* b = reinterpret_cast<ComplexLongDouble*>( out );
+
+    for ( int i = 0; i < *count; ++i )
+    {
+        b[i] += a[i];
+    }
 }
 
 #endif
@@ -242,9 +244,9 @@ void MPICommunicator::setNodeData()
 
     SCAI_LOG_INFO( logger, "Processor " << mRank << " runs on node " << nodeName )
 
-    char* allNodeNames = (char*) malloc( MPI_MAX_PROCESSOR_NAME * mSize * sizeof(char) );
+    char* allNodeNames = ( char* ) malloc( MPI_MAX_PROCESSOR_NAME * mSize * sizeof( char ) );
 
-    if( allNodeNames == NULL )
+    if ( allNodeNames == NULL )
     {
         COMMON_THROWEXCEPTION( "Can't alloc enough memory for all node names." )
     }
@@ -259,16 +261,16 @@ void MPICommunicator::setNodeData()
     mNodeSize = 0;
     mNodeRank = mSize; // illegal value to verify that it will be set
 
-    for( int i = 0; i < mSize; ++i )
+    for ( int i = 0; i < mSize; ++i )
     {
-        if( strcmp( &allNodeNames[i * MPI_MAX_PROCESSOR_NAME], nodeName ) )
+        if ( strcmp( &allNodeNames[i * MPI_MAX_PROCESSOR_NAME], nodeName ) )
         {
             continue; // processor i is not on same node
         }
 
         // Processor i is on same node as this processor
 
-        if( i == mRank )
+        if ( i == mRank )
         {
             mNodeRank = mNodeSize;
         }
@@ -293,9 +295,9 @@ MPICommunicator::~MPICommunicator()
     int finalized = 0;
     LAMA_MPICALL( logger, MPI_Finalized( &finalized ), "MPI_Finalized" )
 
-    if( !finalized )
+    if ( !finalized )
     {
-        if( !mExternInitialization )
+        if ( !mExternInitialization )
         {
             SCAI_LOG_INFO( logger, "call MPI_Finalize" )
             LAMA_MPICALL( logger, MPI_Finalize(), "MPI_Finalize" )
@@ -318,7 +320,7 @@ bool MPICommunicator::isEqual( const Communicator& other ) const
     bool equal = false;
     const MPICommunicator* otherMPI = dynamic_cast<const MPICommunicator*>( &other );
 
-    if( otherMPI )
+    if ( otherMPI )
     {
         equal = mComm == otherMPI->mComm;
     }
@@ -432,7 +434,7 @@ void MPICommunicator::exchangeByPlanImpl(
     SCAI_ASSERT_ERROR( recvPlan.allocated(), "recvPlan not allocated" )
 
     SCAI_LOG_INFO( logger,
-                   *this << ": exchange for values of type " << common::getScalarType<ValueType>() 
+                   *this << ": exchange for values of type " << common::getScalarType<ValueType>()
                    << ", send to " << sendPlan.size() << " processors, recv from " << recvPlan.size() )
 
     int maxReceives = recvPlan.size();
@@ -443,7 +445,7 @@ void MPICommunicator::exchangeByPlanImpl(
 
     // setup receives for each entry in receive plan
 
-    for( PartitionId i = 0; i < maxReceives; ++i )
+    for ( PartitionId i = 0; i < maxReceives; ++i )
     {
         IndexType quantity = recvPlan[i].quantity;
         IndexType offset = recvPlan[i].offset;
@@ -452,7 +454,7 @@ void MPICommunicator::exchangeByPlanImpl(
         SCAI_LOG_DEBUG( logger,
                         *this << ": receive " << quantity << " elements" << " from processor " << p << " at offset " << offset )
 
-        if( p != mRank )
+        if ( p != mRank )
         {
             commRequest[noReceives] = startrecv( recvDataForI, quantity, p );
             noReceives++;
@@ -466,7 +468,7 @@ void MPICommunicator::exchangeByPlanImpl(
 
     // send the data via sendPlan
 
-    for( PartitionId i = 0; i < sendPlan.size(); ++i )
+    for ( PartitionId i = 0; i < sendPlan.size(); ++i )
     {
         IndexType quantity = sendPlan[i].quantity;
         IndexType offset = sendPlan[i].offset;
@@ -475,7 +477,7 @@ void MPICommunicator::exchangeByPlanImpl(
         SCAI_LOG_DEBUG( logger,
                         *this << ": send " << quantity << " elements" << " to processor " << p << " at offset " << offset )
 
-        if( p != mRank )
+        if ( p != mRank )
         {
             send( sendDataForI, quantity, p );
         }
@@ -484,7 +486,7 @@ void MPICommunicator::exchangeByPlanImpl(
             SCAI_LOG_DEBUG( logger, "self-exchange of " << quantity << " elements" )
             SCAI_ASSERT_DEBUG( quantity == recvDataForMeSize, "size mismatch for self exchange" )
 
-            for( IndexType k = 0; k < recvDataForMeSize; k++ )
+            for ( IndexType k = 0; k < recvDataForMeSize; k++ )
             {
                 recvDataForMe[k] = sendDataForI[k];
             }
@@ -511,8 +513,8 @@ tasking::SyncToken* MPICommunicator::exchangeByPlanAsyncImpl(
     SCAI_ASSERT_ERROR( sendPlan.allocated(), "sendPlan not allocated" )
     SCAI_ASSERT_ERROR( recvPlan.allocated(), "recvPlan not allocated" )
     SCAI_LOG_INFO( logger,
-                   *this << ": exchange for values of type " << common::getScalarType<ValueType>() 
-                    << ", send to " << sendPlan.size() << " processors, recv from " << recvPlan.size() )
+                   *this << ": exchange for values of type " << common::getScalarType<ValueType>()
+                   << ", send to " << sendPlan.size() << " processors, recv from " << recvPlan.size() )
     int noRequests = sendPlan.size() + recvPlan.size();
 
     // create MPIToken as unique_ptr, so it will be freed in case of exception
@@ -526,14 +528,14 @@ tasking::SyncToken* MPICommunicator::exchangeByPlanAsyncImpl(
 
     // setup receives for each entry in receive plan
 
-    for( PartitionId i = 0; i < recvPlan.size(); ++i )
+    for ( PartitionId i = 0; i < recvPlan.size(); ++i )
     {
         IndexType quantity = recvPlan[i].quantity;
         ValueType* recvDataForI = recvData + recvPlan[i].offset;
         PartitionId p = recvPlan[i].partitionId;
         SCAI_LOG_DEBUG( logger, *this << ": receive " << quantity << " elements" << " from processor " << p )
 
-        if( p != mRank )
+        if ( p != mRank )
         {
             syncToken.pushRequest( startrecv( recvDataForI, quantity, p ) );
         }
@@ -546,14 +548,14 @@ tasking::SyncToken* MPICommunicator::exchangeByPlanAsyncImpl(
 
     // send the data via sendPlan
 
-    for( PartitionId i = 0; i < sendPlan.size(); ++i )
+    for ( PartitionId i = 0; i < sendPlan.size(); ++i )
     {
         IndexType quantity = sendPlan[i].quantity;
         const ValueType* sendDataForI = sendData + sendPlan[i].offset;
         PartitionId p = sendPlan[i].partitionId;
         SCAI_LOG_DEBUG( logger, *this << ": send " << quantity << " elements" << " to processor " << p )
 
-        if( p != mRank )
+        if ( p != mRank )
         {
             syncToken.pushRequest( startsend( sendDataForI, quantity, p ) );
         }
@@ -562,7 +564,7 @@ tasking::SyncToken* MPICommunicator::exchangeByPlanAsyncImpl(
             SCAI_LOG_DEBUG( logger, "self-exchange of " << quantity << " elements" )
             SCAI_ASSERT_DEBUG( quantity == recvDataForMeSize, "size mismatch for self exchange" )
 
-            for( IndexType k = 0; k < recvDataForMeSize; k++ )
+            for ( IndexType k = 0; k < recvDataForMeSize; k++ )
             {
                 recvDataForMe[k] = sendDataForI[k];
             }
@@ -576,14 +578,14 @@ tasking::SyncToken* MPICommunicator::exchangeByPlanAsyncImpl(
 
 inline MPI_Comm MPICommunicator::selectMPIComm() const
 {
-    if( mThreadSafetyLevel != Multiple )
+    if ( mThreadSafetyLevel != Multiple )
     {
         return mComm;
     }
 
     const common::Thread::Id thisThread = common::Thread::getSelf();
 
-    if( thisThread == mMainThread )
+    if ( thisThread == mMainThread )
     {
         return mComm;
     }
@@ -614,17 +616,21 @@ template<typename ValueType>
 void MPICommunicator::all2allvImpl( ValueType* recvBuffer[], IndexType recvCount[], ValueType* sendBuffer[], IndexType sendCount[] ) const
 {
     SCAI_REGION( "Communicator.MPI.all2allv" )
-        int noReceives = 0;
-        scoped_array<MPI_Request> commRequest( new MPI_Request[mSize] );
-           
-    for(IndexType i=0;i<mSize;++i){
-        commRequest[noReceives] = startrecv(recvBuffer[i],recvCount[i],i);
+    int noReceives = 0;
+    scoped_array<MPI_Request> commRequest( new MPI_Request[mSize] );
+
+    for ( IndexType i = 0; i < mSize; ++i )
+    {
+        commRequest[noReceives] = startrecv( recvBuffer[i], recvCount[i], i );
         noReceives++;
-           
+
     }
-    for(IndexType i=0;i<mSize;++i){
-        send(sendBuffer[i],sendCount[i],i);    
+
+    for ( IndexType i = 0; i < mSize; ++i )
+    {
+        send( sendBuffer[i], sendCount[i], i );
     }
+
     // wait for completion of receives
     scoped_array<MPI_Status> statuses( new MPI_Status[noReceives] );
     LAMA_MPICALL( logger, MPI_Waitall( noReceives, commRequest.get(), statuses.get() ), "MPI_Waitall" )
@@ -711,8 +717,8 @@ ValueType MPICommunicator::sumImpl( const ValueType value ) const
     ValueType sum;
     MPI_Datatype commType = getMPIType<ValueType>();
     MPI_Op opType = getMPISum<ValueType>();
-    LAMA_MPICALL( logger, MPI_Allreduce( (void* ) &value, (void* ) &sum, 1, commType, opType,
-                  selectMPIComm() ), "MPI_Allreduce(MPI_SUM)" )
+    LAMA_MPICALL( logger, MPI_Allreduce( ( void* ) &value, ( void* ) &sum, 1, commType, opType,
+                                         selectMPIComm() ), "MPI_Allreduce(MPI_SUM)" )
     SCAI_LOG_DEBUG( logger, "sum: my value = " << value << ", sum = " << sum )
     return sum;
 }
@@ -730,7 +736,7 @@ ValueType MPICommunicator::minImpl( const ValueType value ) const
 
     ValueType globalMin; // no initialization needed, done in MPI call
 
-    LAMA_MPICALL( logger, MPI_Allreduce( (void* ) &value, (void* ) &globalMin, 1, commType,
+    LAMA_MPICALL( logger, MPI_Allreduce( ( void* ) &value, ( void* ) &globalMin, 1, commType,
                                          MPI_MIN, selectMPIComm() ), "MPI_Allreduce( MPI_MIN )" )
     return globalMin;
 }
@@ -746,7 +752,7 @@ ValueType MPICommunicator::maxImpl( const ValueType value ) const
 
     SCAI_LOG_DEBUG( logger, "maxImpl: local value = " << value )
 
-    LAMA_MPICALL( logger, MPI_Allreduce( (void* ) &value, (void* ) &globalMax, 1, commType, MPI_MAX,
+    LAMA_MPICALL( logger, MPI_Allreduce( ( void* ) &value, ( void* ) &globalMax, 1, commType, MPI_MAX,
                                          selectMPIComm() ), "MPI_Allreduce( MPI_MAX )" )
 
     SCAI_LOG_DEBUG( logger, "maxImpl: global value = " << globalMax )
@@ -799,7 +805,7 @@ void MPICommunicator::scatterVImpl(
     SCAI_ASSERT_ERROR( root < getSize(), "illegal root, root = " << root )
     MPI_Datatype commType = getMPIType<ValueType>();
 
-    if( root == getRank() )
+    if ( root == getRank() )
     {
         void* sendbuf = const_cast<ValueType*>( allvals );
         PartitionId np = getSize();
@@ -807,7 +813,7 @@ void MPICommunicator::scatterVImpl(
         scoped_array<int> displs( new int[np] );
         int displacement = 0;
 
-        for( PartitionId i = 0; i < np; i++ )
+        for ( PartitionId i = 0; i < np; i++ )
         {
             counts[i] = static_cast<int>( sizes[i] );
             displs[i] = displacement;
@@ -828,7 +834,7 @@ void MPICommunicator::scatterVImpl(
         PartitionId np = getSize();
         scoped_array<int> counts( new int[np] );
 
-        for( PartitionId i = 0; i < np; i++ )
+        for ( PartitionId i = 0; i < np; i++ )
         {
             counts[i] = 0;
         }
@@ -880,14 +886,14 @@ void MPICommunicator::gatherVImpl(
     void* sendbuf = const_cast<ValueType*>( myvals );
     MPI_Datatype commType = getMPIType<ValueType>();
 
-    if( root == getRank() )
+    if ( root == getRank() )
     {
         PartitionId np = getSize();
         scoped_array<int> counts( new int[np] );
         scoped_array<int> displs( new int[np] );
         int displacement = 0;
 
-        for( PartitionId i = 0; i < np; i++ )
+        for ( PartitionId i = 0; i < np; i++ )
         {
             counts[i] = static_cast<int>( sizes[i] );
             displs[i] = displacement;
@@ -908,7 +914,7 @@ void MPICommunicator::gatherVImpl(
         PartitionId np = getSize();
         scoped_array<int> counts( new int[np] );
 
-        for( PartitionId i = 0; i < np; i++ )
+        for ( PartitionId i = 0; i < np; i++ )
         {
             counts[i] = 0;
         }
@@ -938,10 +944,10 @@ void MPICommunicator::maxlocImpl( ValueType& val, IndexType& location, Partition
     in.val = val;
     in.location = location;
     ValAndLoc out;
-    MPI_Datatype commType = getMPI2Type<ValueType,int>();
+    MPI_Datatype commType = getMPI2Type<ValueType, int>();
     MPI_Reduce( &in, &out, 1, commType, MPI_MAXLOC, root, selectMPIComm() );
 
-    if( mRank == root )
+    if ( mRank == root )
     {
         val = out.val;
         location = out.location;
@@ -957,14 +963,14 @@ void MPICommunicator::swapImpl( ValueType val[], const IndexType n, PartitionId 
 {
     SCAI_REGION( "Communicator.MPI.swap" )
 
-    if( partner == mRank )
+    if ( partner == mRank )
     {
         return;
     }
 
     scoped_array<ValueType> tmp( new ValueType[n] );
 
-    for( IndexType i = 0; i < n; i++ )
+    for ( IndexType i = 0; i < n; i++ )
     {
         tmp[i] = val[i];
     }
@@ -993,7 +999,7 @@ hmemo::ContextPtr MPICommunicator::getCommunicationContext( const hmemo::_HArray
 
     // This can only be used for CUDAaware MPI
 
-    if( isCUDAAware && ( validContext->getType() == common::context::CUDA ) )
+    if ( isCUDAAware && ( validContext->getType() == common::context::CUDA ) )
     {
         return validContext;
     }
@@ -1035,17 +1041,17 @@ MPICommunicator::MPIGuard::~MPIGuard()
     if ( theMPICommunicator.use_count() > 1 )
     {
         SCAI_LOG_WARN( logger,
-                   "MPICommunicator has " << theMPICommunicator.use_count() - 1 << " remaining references, seems that not all LAMA data structures have been freed" )
+                       "MPICommunicator has " << theMPICommunicator.use_count() - 1 << " remaining references, seems that not all LAMA data structures have been freed" )
     }
 }
 
 // create a guard whose destructor at program exit takes care of MPI exit call
 
-// MPICommunicator::MPIGuard MPICommunicator::guard = 
+// MPICommunicator::MPIGuard MPICommunicator::guard =
 
 CommunicatorPtr MPICommunicator::create()
 {
-    if( !theMPICommunicator )
+    if ( !theMPICommunicator )
     {
         SCAI_LOG_INFO( logger, "create new MPICommunicator" )
 

@@ -80,36 +80,39 @@ CommunicatorPtr Communicator::getCommunicator()
         {
             *p = toupper( *p );
         }
-        if ( comm == "MPI" ) 
+
+        if ( comm == "MPI" )
         {
             return getCommunicator( communicator::MPI );
         }
-        if ( comm == "GPI" ) 
+
+        if ( comm == "GPI" )
         {
             return getCommunicator( communicator::GPI );
         }
-        if ( comm == "NO" ) 
+
+        if ( comm == "NO" )
         {
             return getCommunicator( communicator::NO );
         }
- 
+
         COMMON_THROWEXCEPTION( "SCAI_COMMUNICATOR=" << comm << ", unknown communicator type" )
     }
 
     // try MPI communicator for default
 
     if ( canCreate( communicator::MPI ) )
-    {   
+    {
         return create( communicator::MPI );
     }
-    
+
     // no MPI, try GPI communicator for default
 
     if ( canCreate( communicator::GPI ) )
-    {   
+    {
         return create( communicator::GPI );
     }
-    
+
     // if even NO is not availabe an exception is thrown
 
     return create( communicator::NO );

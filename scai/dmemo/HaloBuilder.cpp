@@ -70,7 +70,7 @@ void HaloBuilder::build( const Distribution& distribution, const std::vector<Ind
     }
 #ifdef SCAI_LOG_TRACE
 
-    for( unsigned int i = 0; i < requiredIndexes.size(); ++i )
+    for ( unsigned int i = 0; i < requiredIndexes.size(); ++i )
     {
         SCAI_LOG_TRACE( logger, "Index " << requiredIndexes[i] << " belongs to " << owners[i] )
     }
@@ -89,7 +89,7 @@ void HaloBuilder::build( const Distribution& distribution, const std::vector<Ind
 
     std::vector<IndexType> counts( noPartitions, -1 );
 
-    for( IndexType p = 0; p < requiredPlan.size(); ++p )
+    for ( IndexType p = 0; p < requiredPlan.size(); ++p )
     {
         SCAI_LOG_TRACE( logger,
                         "requiredPlan[ " << p << "]: offset = " << requiredPlan[p].offset << ", pid = " << requiredPlan[p].partitionId << ", quantity = " << requiredPlan[p].quantity )
@@ -106,7 +106,7 @@ void HaloBuilder::build( const Distribution& distribution, const std::vector<Ind
 
     // Note: size of requiredIndexesByOwner == requiredPlan.totalQuanitity()
 
-    for( IndexType jj = 0; jj < requiredPlan.totalQuantity(); ++jj )
+    for ( IndexType jj = 0; jj < requiredPlan.totalQuantity(); ++jj )
     {
         PartitionId owner = owners[jj];
 
@@ -115,7 +115,7 @@ void HaloBuilder::build( const Distribution& distribution, const std::vector<Ind
         //The offset for the owner
         IndexType haloIndex = counts[owner];
 
-        SCAI_ASSERT( haloIndex >= 0, "No offset for owner "<<owner<< " of required Index "<<requiredIndexes[jj] )
+        SCAI_ASSERT( haloIndex >= 0, "No offset for owner " << owner << " of required Index " << requiredIndexes[jj] )
 
         requiredIndexesByOwner[haloIndex] = requiredIndexes[jj];
 
@@ -150,12 +150,12 @@ void HaloBuilder::build( const Distribution& distribution, const std::vector<Ind
         ReadAccess<IndexType> provide( halo.mProvidesIndexes, contextPtr );
         ReadAccess<IndexType> required( halo.mRequiredIndexes, contextPtr );
 
-        for( int i = 0; i < provide.size(); ++i )
+        for ( int i = 0; i < provide.size(); ++i )
         {
             SCAI_LOG_TRACE( logger, "halo.mProvidesIndexes[" << i << "] " << provide[i] )
         }
 
-        for( int i = 0; i < required.size(); ++i )
+        for ( int i = 0; i < required.size(); ++i )
         {
             SCAI_LOG_TRACE( logger, "halo.mRequiredIndexes[" << i << "] " << required[i] )
         }
@@ -166,7 +166,7 @@ void HaloBuilder::build( const Distribution& distribution, const std::vector<Ind
 
     WriteAccess<IndexType> providesIndexes( halo.mProvidesIndexes, contextPtr );
 
-    for( PartitionId p = 0; p < providesPlan.size(); ++p )
+    for ( PartitionId p = 0; p < providesPlan.size(); ++p )
     {
         IndexType n = providesPlan[p].quantity;
 
@@ -175,11 +175,11 @@ void HaloBuilder::build( const Distribution& distribution, const std::vector<Ind
 
         IndexType* partitionIndexes = providesIndexes.get() + providesPlan[p].offset;
 
-        for( IndexType i = 0; i < n; i++ )
+        for ( IndexType i = 0; i < n; i++ )
         {
             IndexType localIndex = distribution.global2local( partitionIndexes[i] );
             SCAI_ASSERT( localIndex != nIndex,
-                         "global index "<<partitionIndexes[i]<<" is not local on Rank " << communicator.getRank() )
+                         "global index " << partitionIndexes[i] << " is not local on Rank " << communicator.getRank() )
             partitionIndexes[i] = localIndex;
         }
     }

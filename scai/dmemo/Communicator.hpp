@@ -65,7 +65,7 @@ namespace scai
 
 namespace hmemo
 {
-	template<typename ValueType> class HArray;
+template<typename ValueType> class HArray;
 }
 
 namespace dmemo
@@ -88,8 +88,8 @@ typedef enum
 {
     NO,
     MPI,
-	GPI,
-	MAX_COMMUNICATOR
+    GPI,
+    MAX_COMMUNICATOR
 } CommunicatorKind;
 
 }
@@ -111,7 +111,7 @@ typedef enum
  * Default copy constructor and assignment operator are disabled.
  *
  */
-class COMMON_DLL_IMPORTEXPORT Communicator: 
+class COMMON_DLL_IMPORTEXPORT Communicator:
 
     public  scai::common::Printable,
     public  scai::common::Factory<communicator::CommunicatorKind, CommunicatorPtr>,
@@ -494,13 +494,13 @@ public:
             const IndexType n,                                                \
             const PartitionId root ) const = 0;                               \
     \
-        virtual void all2allv(                                                \
+    virtual void all2allv(                                                \
             ARRAY_TYPE##I* recvVal[],                                         \
             IndexType recvCount[],                                            \
-             ARRAY_TYPE##I* sendVal[],                                        \
+            ARRAY_TYPE##I* sendVal[],                                        \
             IndexType sendCount[] ) const = 0;                                \
     \
-        virtual void scatter(                                                 \
+    virtual void scatter(                                                 \
             ARRAY_TYPE##I myvals[],                                           \
             const IndexType n,                                                \
             const PartitionId root,                                           \
@@ -557,7 +557,7 @@ public:
             const ARRAY_TYPE##I oldVals[],                                    \
             const IndexType size,                                             \
             const int direction ) const = 0;                                  \
-
+     
 
     // define communicator methods for all supported data types
 
@@ -600,7 +600,7 @@ public:
 
 
     template<typename ValueType>
-    void all2allv( ValueType* recvBuffer[], IndexType recvCount[],  ValueType* sendBuffer[], IndexType sendCount[] ) const;   
+    void all2allv( ValueType* recvBuffer[], IndexType recvCount[],  ValueType* sendBuffer[], IndexType sendCount[] ) const;
 
     /** @brief allgather is combination of gather and broadcast
      *
@@ -757,13 +757,13 @@ protected:
      * @param[out] userProcArray specifies the user processor array.
      *
      */
-static    void getUserProcArray( PartitionId userProcArray[3] );
+    static    void getUserProcArray( PartitionId userProcArray[3] );
 
     /** Shift implementation for direction == 0, just copies values. */
 
     template<typename ValueType>
     IndexType shift0( ValueType newVals[], const IndexType newSize,
-                    const ValueType oldVals[], const IndexType oldSize ) const;
+                      const ValueType oldVals[], const IndexType oldSize ) const;
 
 };
 

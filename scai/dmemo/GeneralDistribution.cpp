@@ -62,7 +62,7 @@ GeneralDistribution::GeneralDistribution(
     std::vector<IndexType>::const_iterator end = mLocal2Global.end();
     std::vector<IndexType>::const_iterator begin = mLocal2Global.begin();
 
-    for( std::vector<IndexType>::const_iterator it = begin; it != end; ++it )
+    for ( std::vector<IndexType>::const_iterator it = begin; it != end; ++it )
     {
         IndexType i = static_cast<IndexType>( std::distance( begin, it ) );
         SCAI_ASSERT( 0 <= *it && *it < mGlobalSize,
@@ -90,13 +90,13 @@ GeneralDistribution::GeneralDistribution(
     std::vector<IndexType> curpos;
     std::vector<IndexType> rows;
 
-    if( myRank == MASTER )
+    if ( myRank == MASTER )
     {
         SCAI_ASSERT( mGlobalSize == partSize,
                      "partition size " << partSize << " is not equal to global size " << mGlobalSize )
         displ.resize( parts + 1 );
 
-        for( IndexType i = 0; i < mGlobalSize; ++i )
+        for ( IndexType i = 0; i < mGlobalSize; ++i )
         {
             SCAI_ASSERT( row2Partition[i] < parts, "invalid partition id at position" << i )
             displ[row2Partition[i] + 1]++;
@@ -110,12 +110,12 @@ GeneralDistribution::GeneralDistribution(
     // scatter partition sizes
     mCommunicator->scatter( &numMyRows, 1, MASTER, &displ[1] );
 
-    if( myRank == MASTER )
+    if ( myRank == MASTER )
     {
         rows.resize( mGlobalSize );
         curpos.resize( parts );
 
-        for( IndexType i = 1; i < parts; i++ )
+        for ( IndexType i = 1; i < parts; i++ )
         {
             displ[i + 1] += displ[i];
             curpos[i] = 0;
@@ -123,17 +123,17 @@ GeneralDistribution::GeneralDistribution(
 
         SCAI_ASSERT( displ[parts] == mGlobalSize, "sum of local rows is not global size" )
 
-        for( IndexType i = 0; i < mGlobalSize; ++i )
+        for ( IndexType i = 0; i < mGlobalSize; ++i )
         {
             IndexType partition = row2Partition[i];
             IndexType position = displ[partition] + curpos[partition]++;
             rows[position] = i;
         }
 
-        for( IndexType i = 0; i < parts; ++i )
+        for ( IndexType i = 0; i < parts; ++i )
         {
             SCAI_ASSERT( displ[i] + curpos[i] == displ[i + 1],
-                         "partition "<< i <<"  size mismatch, expected " << displ[i+1] - displ[i] << " actual " << curpos[i] )
+                         "partition " << i << "  size mismatch, expected " << displ[i + 1] - displ[i] << " actual " << curpos[i] )
         }
     }
     else
@@ -150,7 +150,7 @@ GeneralDistribution::GeneralDistribution(
     std::vector<IndexType>::const_iterator end = mLocal2Global.end();
     std::vector<IndexType>::const_iterator begin = mLocal2Global.begin();
 
-    for( std::vector<IndexType>::const_iterator it = begin; it != end; ++it )
+    for ( std::vector<IndexType>::const_iterator it = begin; it != end; ++it )
     {
         IndexType i = static_cast<IndexType>( std::distance( begin, it ) );
         SCAI_ASSERT( 0 <= *it && *it < mGlobalSize,
@@ -161,11 +161,11 @@ GeneralDistribution::GeneralDistribution(
 
 GeneralDistribution::GeneralDistribution( const Distribution& other )
     : Distribution( other.getGlobalSize(), other.getCommunicatorPtr() ), mLocal2Global(
-          other.getLocalSize() )
+        other.getLocalSize() )
 {
-    for( IndexType i = 0; i < getGlobalSize(); ++i )
+    for ( IndexType i = 0; i < getGlobalSize(); ++i )
     {
-        if( other.isLocal( i ) )
+        if ( other.isLocal( i ) )
         {
             IndexType localIndex = other.global2local( i );
             mGlobal2Local[i] = localIndex;
@@ -208,7 +208,7 @@ IndexType GeneralDistribution::global2local( const IndexType globalIndex ) const
 {
     const Global2LocalMapType::const_iterator elem = mGlobal2Local.find( globalIndex );
 
-    if( elem == mGlobal2Local.end() )
+    if ( elem == mGlobal2Local.end() )
     {
         return nIndex;
     }
@@ -241,13 +241,13 @@ void GeneralDistribution::getDistributionVector( std::vector<IndexType>& row2Par
 
     std::vector<IndexType> displ;
 
-    if( myRank == MASTER )
+    if ( myRank == MASTER )
     {
         displ.reserve( parts + 1 );
 
         IndexType displacement = 0;
 
-        for( IndexType i = 0; i < parts; i++ )
+        for ( IndexType i = 0; i < parts; i++ )
         {
             displ[i] = displacement;
             displacement += numRows[i];
@@ -263,18 +263,18 @@ void GeneralDistribution::getDistributionVector( std::vector<IndexType>& row2Par
     mCommunicator->gatherV( &rows[0], numMyRows, MASTER, &mLocal2Global[0], &numRows[0] );
 
     // build mapping row 2 partition
-    if( myRank == MASTER )
+    if ( myRank == MASTER )
     {
 
         // for testing: init
-        for( IndexType i = 0; i < mGlobalSize; ++i )
+        for ( IndexType i = 0; i < mGlobalSize; ++i )
         {
             row2Partition[i] = -1;
         }
 
-        for( IndexType i = 0; i < parts; ++i )
+        for ( IndexType i = 0; i < parts; ++i )
         {
-            for( IndexType j = displ[i]; j < displ[i + 1]; ++j )
+            for ( IndexType j = displ[i]; j < displ[i + 1]; ++j )
             {
                 row2Partition[rows[j]] = i;
             }
@@ -282,7 +282,7 @@ void GeneralDistribution::getDistributionVector( std::vector<IndexType>& row2Par
     }
 }
 
-void GeneralDistribution::printDistributionVector( std::string /*name*/) const
+void GeneralDistribution::printDistributionVector( std::string /*name*/ ) const
 {
 //    IndexType myRank = mCommunicator->getRank();
     IndexType parts = mCommunicator->getSize();
