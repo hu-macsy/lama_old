@@ -44,5 +44,5 @@ set ( ${UPPER_PROJECT_NAME}_INCLUDE_DIR include/scai/${PROJECT_SURNAME} )
 set ( PROJECT_EXAMPLE_DIR "share/examples/scai-${PROJECT_SURNAME}-${${UPPER_PROJECT_NAME}_VERSION}" )
 
 ## doc dir
-set ( DOC_ROOT_DIR share/doc/lama-${SCAI_LAMA_ALL_VERSION} )
+set ( DOC_ROOT_DIR share/doc/scai-${SCAI_LAMA_ALL_VERSION} )
 set ( PROJECT_DOC_DIR "${DOC_ROOT_DIR}/scai-${PROJECT_SURNAME}-${${UPPER_PROJECT_NAME}_VERSION}" )
