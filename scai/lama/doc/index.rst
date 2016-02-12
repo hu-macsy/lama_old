@@ -1,7 +1,4 @@
-.. LAMA documentation master file, created by
-   sphinx-quickstart on Wed Aug 22 10:27:01 2012.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+.. _main-page:
 
 *****************
 LAMA User's Guide
@@ -20,5 +17,5 @@ Contents:
    expressions
    io
 
- .. context
-    distributions
+.. context
+   distributions

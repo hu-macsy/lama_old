@@ -31,27 +31,10 @@
  # @since 1.0.1
 ###
 
+# included with Package/doc and for every project with external packages in scaiFunctions
+
 find_package ( Sphinx ${SCAI_FIND_PACKAGE_FLAGS} )
 
-# Check if cache variable is already set
-if ( DEFINED BUILD_DOC )
-    # if use of package is enabled
-    if ( ${BUILD_DOC} )
-        if ( ${SPHINX_FOUND} )
-        else ( ${SPHINX_FOUND} )
-            # if package is enabled, but not found: ERROR!
-            message ( STATUS "Sphinx missing, but build of doc is enabled!" )
-        endif ( ${SPHINX_FOUND} )
-    endif ( ${BUILD_DOC} )
-# if cache variable is NOT set
-else ( DEFINED BUILD_DOC )
-    # Check if package was found
-    if ( ${SPHINX_FOUND} )
-        set ( USE_PACKAGE TRUE )
-    else ( ${SPHINX_FOUND} )
-        set ( USE_PACKAGE FALSE )
-    endif ( ${SPHINX_FOUND} )
-    
-    # Set cache variable
-    set ( BUILD_DOC ${USE_PACKAGE} CACHE BOOL "Enable / Disable building of doc" )
-endif ( DEFINED BUILD_DOC )
+if    ( BUILD_DOC AND NOT SPHINX_FOUND )
+    message( WARNING "Build of documentation enabled, but sphinx is not found!")
+endif ( BUILD_DOC AND NOT SPHINX_FOUND )

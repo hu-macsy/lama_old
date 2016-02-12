@@ -31,9 +31,7 @@
  # @since 1.0.1
 ###
 
-### SPHINX DOCUMENTATION ###
-
-if ( BUILD_DOC )
+if ( SPHINX_FOUND AND BUILD_DOC )
     ### install ###
     set ( LAMA_DOC_DIR "${CMAKE_SOURCE_DIR}/doc" )
     set ( SPHINX_BUILD_ROOT "${CMAKE_CURRENT_BINARY_DIR}" )
@@ -71,4 +69,4 @@ if ( BUILD_DOC )
         DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/
         DESTINATION ${SPHINX_INSTALL_ROOT}
     )
-endif ( BUILD_DOC )
+endif ( SPHINX_FOUND AND BUILD_DOC )

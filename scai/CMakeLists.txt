@@ -70,10 +70,7 @@ include ( TracingSettings )
 include ( ConcludeFlags )
 
 ## documentation
-
-#system docu --> make doc
-include ( Package/Sphinx )
-include ( Package/Doxygen )
+include( Package/doc )
 
 ## summary of what is found
 include ( Summaries/scai )
@@ -254,15 +251,23 @@ ExternalProject_Add ( scai_solver
             )
 
 if    ( BUILD_DOC )
-      # sphinx_doc does not need concatCacheArguments
 
       ExternalProject_Add ( sphinx_doc 
                   DEPENDS ${SCAI_PROJECTS}
                   PREFIX sphinx_doc
                   SOURCE_DIR ${CMAKE_SOURCE_DIR}/doc/sphinx
-                  CMAKE_ARGS "-DSCAI_COMPLETE_BUILD=1"
+                  CMAKE_CACHE_ARGS "${CMAKE_ARGS}"
                   BINARY_DIR sphinx_doc
                   )
+
+      ExternalProject_Add ( doxygen_doc 
+                  DEPENDS ${SCAI_PROJECTS}
+                  PREFIX doxygen_doc
+                  SOURCE_DIR ${CMAKE_SOURCE_DIR}/doc/doxygen
+                  CMAKE_CACHE_ARGS "${CMAKE_ARGS}"
+                  BINARY_DIR doxygen_doc
+                  )
+
 endif ( BUILD_DOC )
 
 

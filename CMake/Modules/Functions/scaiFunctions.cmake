@@ -8,9 +8,9 @@ macro    ( addInternalPackages )
 endmacro ( addInternalPackages )
 
 macro    ( addExternalPackages )
-	foreach    ( module ${${UPPER_PROJECT_NAME}_EXTERNAL_DEPS} )
+	foreach    ( module ${${UPPER_PROJECT_NAME}_EXTERNAL_DEPS} Sphinx )
     	include( Package/${module} )
-	endforeach ( module ${${UPPER_PROJECT_NAME}_EXTERNAL_DEPS} )
+	endforeach ( module ${${UPPER_PROJECT_NAME}_EXTERNAL_DEPS} Sphinx )
 endmacro ( addExternalPackages )
 
 macro    ( addInternalAndExternalPackages )
