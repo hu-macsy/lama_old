@@ -126,7 +126,7 @@ void DefaultJacobi::initialize( const Matrix& coefficients )
     runtime.mDiagonalTimesLU->scale( *runtime.mDiagonalTimesRhs );
 
     SCAI_LOG_DEBUG( logger, "Create diagonal matrix" )
-    runtime.mDiagonalInverted.reset( Matrix::create( coefficients.getCreateValue() ) ); // zero matrix with same storage type
+    runtime.mDiagonalInverted.reset( coefficients.newMatrix() ); // zero matrix with same storage type
     runtime.mDiagonalInverted->setIdentity( coefficients.getDistributionPtr() );
     SCAI_LOG_DEBUG( logger, "identity diagonal matrix = " << *runtime.mDiagonalInverted )
     runtime.mDiagonalInverted->inheritAttributes( coefficients );

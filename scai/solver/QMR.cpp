@@ -100,7 +100,7 @@ void QMR::initialize( const Matrix& coefficients )
     runtime.mEps = std::numeric_limits<double>::epsilon() * 3;                  //CAREFUL: No abstract type
     common::scalar::ScalarType type = coefficients.getValueType();
 
-    runtime.mTransposeA.reset( Matrix::create( coefficients.getCreateValue() ) );
+    runtime.mTransposeA.reset( coefficients.newMatrix() );
     runtime.mTransposeA->assignTranspose( coefficients );
     runtime.mTransposeA->conj();
 
