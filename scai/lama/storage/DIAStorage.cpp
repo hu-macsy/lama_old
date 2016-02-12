@@ -1220,8 +1220,7 @@ _MatrixStorage* DIAStorage<ValueType>::create()
 template<typename ValueType>
 MatrixStorageCreateKeyType DIAStorage<ValueType>::createValue()
 {
-    common::scalar::ScalarType skind = common::getScalarType<ValueType>();
-    return MatrixStorageCreateKeyType( Format::DIA, skind );
+    return MatrixStorageCreateKeyType( Format::DIA, common::getScalarType<ValueType>() );
 }
 
 /* ========================================================================= */

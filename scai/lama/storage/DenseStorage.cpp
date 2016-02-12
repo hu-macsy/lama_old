@@ -1394,8 +1394,7 @@ _MatrixStorage* DenseStorageView<ValueType>::create()
 template<typename ValueType>
 MatrixStorageCreateKeyType DenseStorageView<ValueType>::createValue()
 {
-    common::scalar::ScalarType skind = common::getScalarType<ValueType>();
-    return MatrixStorageCreateKeyType( Format::DENSE, skind );
+    return MatrixStorageCreateKeyType( Format::DENSE, common::getScalarType<ValueType>() );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -1419,8 +1418,7 @@ _MatrixStorage* DenseStorage<ValueType>::create()
 template<typename ValueType>
 MatrixStorageCreateKeyType DenseStorage<ValueType>::createValue()
 {
-    common::scalar::ScalarType skind = common::getScalarType<ValueType>();
-    return MatrixStorageCreateKeyType( Format::DENSE, skind );
+    return MatrixStorageCreateKeyType( Format::DENSE, common::getScalarType<ValueType>() );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

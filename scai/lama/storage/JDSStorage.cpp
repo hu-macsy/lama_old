@@ -1704,8 +1704,7 @@ _MatrixStorage* JDSStorage<ValueType>::create()
 template<typename ValueType>
 MatrixStorageCreateKeyType JDSStorage<ValueType>::createValue()
 {
-    common::scalar::ScalarType skind = common::getScalarType<ValueType>();
-    return MatrixStorageCreateKeyType( Format::JDS, skind );
+    return MatrixStorageCreateKeyType( Format::JDS, common::getScalarType<ValueType>() );
 }
 
 /* ========================================================================= */

@@ -2488,8 +2488,7 @@ _MatrixStorage* CSRStorage<ValueType>::create()
 template<typename ValueType>
 MatrixStorageCreateKeyType CSRStorage<ValueType>::createValue()
 {
-    common::scalar::ScalarType skind = common::getScalarType<ValueType>();
-    return MatrixStorageCreateKeyType( Format::CSR, skind );
+    return MatrixStorageCreateKeyType( Format::CSR, common::getScalarType<ValueType>() );
 }
 
 /* ========================================================================= */

@@ -882,8 +882,7 @@ _MatrixStorage* SparseAssemblyStorage<ValueType>::create()
 template<typename ValueType>
 MatrixStorageCreateKeyType SparseAssemblyStorage<ValueType>::createValue()
 {
-    common::scalar::ScalarType skind = common::getScalarType<ValueType>();
-    return MatrixStorageCreateKeyType( Format::ASSEMBLY, skind );
+    return MatrixStorageCreateKeyType( Format::ASSEMBLY, common::getScalarType<ValueType>() );
 }
 
 /* ========================================================================= */

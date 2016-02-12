@@ -2008,8 +2008,7 @@ _MatrixStorage* ELLStorage<ValueType>::create()
 template<typename ValueType>
 MatrixStorageCreateKeyType ELLStorage<ValueType>::createValue()
 {
-    common::scalar::ScalarType skind = common::getScalarType<ValueType>();
-    return MatrixStorageCreateKeyType( Format::ELL, skind );
+    return MatrixStorageCreateKeyType( Format::ELL, common::getScalarType<ValueType>() );
 }
 
 /* ========================================================================= */

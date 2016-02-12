@@ -1164,8 +1164,7 @@ _MatrixStorage* COOStorage<ValueType>::create()
 template<typename ValueType>
 MatrixStorageCreateKeyType COOStorage<ValueType>::createValue()
 {
-    common::scalar::ScalarType skind = common::getScalarType<ValueType>();
-    return MatrixStorageCreateKeyType( Format::COO, skind );
+    return MatrixStorageCreateKeyType( Format::COO, common::getScalarType<ValueType>() );
 }
 
 /* ========================================================================= */
