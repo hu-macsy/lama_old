@@ -43,32 +43,29 @@ include ( Package/Doxygen )
 include ( VersionDefinition )
 include ( SetProjectVariables )
 
-if    ( DOXYGEN_FOUND AND BUILD_DOC )
-    
-    configure_file ( "${CMAKE_SOURCE_DIR}/LAMA.Doxyfile.in" "${CMAKE_CURRENT_BINARY_DIR}/LAMA.Doxyfile" )
+configure_file ( "${CMAKE_SOURCE_DIR}/LAMA.Doxyfile.in" "${CMAKE_CURRENT_BINARY_DIR}/LAMA.Doxyfile" )
 
-    file ( MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html )
+file ( MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html )
 
-    # The initial rm command gets rid of everything previously built by this
-    # custom command.
+# The initial rm command gets rid of everything previously built by this
+# custom command.
 
-    add_custom_command (
-        OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/html/index.html
-        #COMMAND rm -rf ${CMAKE_CURRENT_BINARY_DIR}
-        #COMMAND mkdir ${CMAKE_CURRENT_BINARY_DIR}
-        COMMAND ${DOXYGEN_EXECUTABLE} LAMA.Doxyfile
-        DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/LAMA.Doxyfile
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-    )
+add_custom_command (
+    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/html/index.html
+    #COMMAND rm -rf ${CMAKE_CURRENT_BINARY_DIR}
+    #COMMAND mkdir ${CMAKE_CURRENT_BINARY_DIR}
+    COMMAND ${DOXYGEN_EXECUTABLE} LAMA.Doxyfile
+    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/LAMA.Doxyfile
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+)
 
-    add_custom_target (
-        doxygendoc
-        DEPENDS
-        ${CMAKE_CURRENT_BINARY_DIR}/html/index.html
-    )
+add_custom_target (
+    doxygendoc
+    DEPENDS
+    ${CMAKE_CURRENT_BINARY_DIR}/html/index.html
+)
 
-    install(
-        DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html
-        DESTINATION ${DOC_ROOT_DIR}/system
-    )
-endif ( DOXYGEN_FOUND AND BUILD_DOC )
+install(
+    DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html
+    DESTINATION ${DOC_ROOT_DIR}/system
+)

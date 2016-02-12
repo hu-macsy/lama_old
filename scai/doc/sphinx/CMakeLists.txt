@@ -44,41 +44,39 @@ include ( Package/Sphinx )
 include ( VersionDefinition )
 include ( SetProjectVariables )
 
-if    ( SPHINX_FOUND AND BUILD_DOC )
+set ( SCAI_COMMON_DOC_DIR ${CMAKE_INSTALL_PREFIX}/${DOC_ROOT_DIR}/scai-common-${SCAI_COMMON_VERSION}/ ) # 1
+set ( SCAI_LOGGING_DOC_DIR ${CMAKE_INSTALL_PREFIX}/${DOC_ROOT_DIR}/scai-logging-${SCAI_LOGGING_VERSION}/ ) # 2
+set ( SCAI_TRACING_DOC_DIR ${CMAKE_INSTALL_PREFIX}/${DOC_ROOT_DIR}/scai-tracing-${SCAI_TRACING_VERSION}/ ) # 3
+set ( SCAI_TASKING_DOC_DIR ${CMAKE_INSTALL_PREFIX}/${DOC_ROOT_DIR}/scai-tasking-${SCAI_TASKING_VERSION}/ )# 4
+set ( SCAI_HMEMO_DOC_DIR ${CMAKE_INSTALL_PREFIX}/${DOC_ROOT_DIR}/scai-hmemo-${SCAI_HMEMO_VERSION}/ ) # 5
+set ( SCAI_KREGISTRY_DOC_DIR ${CMAKE_INSTALL_PREFIX}/${DOC_ROOT_DIR}/scai-kregistry-${SCAI_KREGISTRY_VERSION}/ ) # 6
+set ( SCAI_BLASKERNEL_DOC_DIR ${CMAKE_INSTALL_PREFIX}/${DOC_ROOT_DIR}/scai-blaskernel-${SCAI_BLASKERNEL_VERSION}/ ) # 7
+set ( SCAI_DMEMO_DOC_DIR ${CMAKE_INSTALL_PREFIX}/${DOC_ROOT_DIR}/scai-dmemo-${SCAI_DMEMO_VERSION}/ ) # 8
+set ( SCAI_LAMA_DOC_DIR ${CMAKE_INSTALL_PREFIX}/${DOC_ROOT_DIR}/scai-lama-${SCAI_LAMA_VERSION}/ ) # 9
+set ( SCAI_SOLVER_DOC_DIR ${CMAKE_INSTALL_PREFIX}/${DOC_ROOT_DIR}/scai-solver-${SCAI_SOLVER_VERSION}/ ) # 10
+	    
+# Sphinx configuration file conf.py will be generated with correct LAMA version, copyright, etc.
+# must be in same directory as Sphinx source files
+configure_file ( "${CMAKE_SOURCE_DIR}/conf.py.in" "${CMAKE_CURRENT_BINARY_DIR}/conf.py" )
 
-	set ( SCAI_COMMON_DOC_DIR ${CMAKE_INSTALL_PREFIX}/${DOC_ROOT_DIR}/scai-common-${SCAI_COMMON_VERSION}/ ) # 1
-	set ( SCAI_LOGGING_DOC_DIR ${CMAKE_INSTALL_PREFIX}/${DOC_ROOT_DIR}/scai-logging-${SCAI_LOGGING_VERSION}/ ) # 2
-	set ( SCAI_TRACING_DOC_DIR ${CMAKE_INSTALL_PREFIX}/${DOC_ROOT_DIR}/scai-tracing-${SCAI_TRACING_VERSION}/ ) # 3
-	set ( SCAI_TASKING_DOC_DIR ${CMAKE_INSTALL_PREFIX}/${DOC_ROOT_DIR}/scai-tasking-${SCAI_TASKING_VERSION}/ )# 4
-	set ( SCAI_HMEMO_DOC_DIR ${CMAKE_INSTALL_PREFIX}/${DOC_ROOT_DIR}/scai-hmemo-${SCAI_HMEMO_VERSION}/ ) # 5
-	set ( SCAI_KREGISTRY_DOC_DIR ${CMAKE_INSTALL_PREFIX}/${DOC_ROOT_DIR}/scai-kregistry-${SCAI_KREGISTRY_VERSION}/ ) # 6
-	set ( SCAI_BLASKERNEL_DOC_DIR ${CMAKE_INSTALL_PREFIX}/${DOC_ROOT_DIR}/scai-blaskernel-${SCAI_BLASKERNEL_VERSION}/ ) # 7
-	set ( SCAI_DMEMO_DOC_DIR ${CMAKE_INSTALL_PREFIX}/${DOC_ROOT_DIR}/scai-dmemo-${SCAI_DMEMO_VERSION}/ ) # 8
-	set ( SCAI_LAMA_DOC_DIR ${CMAKE_INSTALL_PREFIX}/${DOC_ROOT_DIR}/scai-lama-${SCAI_LAMA_VERSION}/ ) # 9
-	set ( SCAI_SOLVER_DOC_DIR ${CMAKE_INSTALL_PREFIX}/${DOC_ROOT_DIR}/scai-solver-${SCAI_SOLVER_VERSION}/ ) # 10
-	    
-	# Sphinx configuration file conf.py will be generated with correct LAMA version, copyright, etc.
-	# must be in same directory as Sphinx source files
-	configure_file ( "${CMAKE_SOURCE_DIR}/conf.py.in" "${CMAKE_CURRENT_BINARY_DIR}/conf.py" )
-	    
-	# Add custom command for building the userdoc
-	add_custom_command (
-	    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/index.html
-	    COMMAND ${Sphinx-build_EXECUTABLE} -b ${SCAI_DOC_TYPE} -c ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR}
-	    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/conf.py
-	    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-	)
-	    
-	# Add a custom target which executes the custom command (using ALL flag to add it to the default target as well!)
-	add_custom_target (
-	    doc ALL
-	    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/index.html
-	)
-	    
-	# Add documentation to the install target
-	install(
-	    DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/
-	    DESTINATION ${DOC_ROOT_DIR}
-	)
+file ( MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html )
 
-endif ( SPHINX_FOUND AND BUILD_DOC )
+# Add custom command for building the userdoc
+add_custom_command (
+    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/html/index.html
+    COMMAND ${Sphinx-build_EXECUTABLE} -b ${SCAI_DOC_TYPE} -c ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR}
+    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/conf.py
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+)
+	    
+# Add a custom target which executes the custom command (using ALL flag to add it to the default target as well!)
+add_custom_target (
+    doc ALL
+    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/html/index.html
+)
+	    
+# Add documentation to the install target
+install(
+    DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html
+    DESTINATION ${DOC_ROOT_DIR}
+)

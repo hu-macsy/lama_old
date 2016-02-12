@@ -103,6 +103,7 @@ foreach    ( CACHE_VAR ${CACHE_VARS} )
 	check_whitelist ( CACHE_VAR "${MPI_WHITELIST}" "MPI_ARGS" )
 	check_whitelist ( CACHE_VAR "${OPENMP_WHITELIST}" "OPENMP_ARGS" )
 	check_whitelist ( CACHE_VAR "${SCAI_BLAS_WHITELIST}" "SCAI_BLAS_ARGS" )
+      check_whitelist ( CACHE_VAR "${DOXYGEN_WHITELIST}" "DOXYGEN_ARGS" )
     
 endforeach ( CACHE_VAR ${CACHE_VARS} )
 
@@ -116,6 +117,7 @@ endforeach ( CACHE_VAR ${CACHE_VARS} )
 #message ( STATUS "Passed MPI_ARGS ${MPI_ARGS}" )
 #message ( STATUS "Passed OPENMP_ARGS ${OPENMP_ARGS}" )
 #message ( STATUS "Passed SCAI_BLAS_ARGS ${SCAI_BLAS_ARGS}" )
+#message ( STATUS "Passed DOXYGEN_ARGS ${DOXYGEN_ARGS}" )
 
 ## define external projects
 
@@ -251,7 +253,9 @@ ExternalProject_Add ( scai_solver
             )
 
 if    ( BUILD_DOC )
+      #only need the standart CMAKE_ARGS for the INSTALL_PREFIX
 
+      if    ( SPHINX_FOUND )
       ExternalProject_Add ( sphinx_doc 
                   DEPENDS ${SCAI_PROJECTS}
                   PREFIX sphinx_doc
@@ -259,20 +263,22 @@ if    ( BUILD_DOC )
                   CMAKE_CACHE_ARGS "${CMAKE_ARGS}"
                   BINARY_DIR sphinx_doc
                   )
+      endif ( SPHINX_FOUND )
 
+      if    ( DOXYGEN_FOUND )
       ExternalProject_Add ( doxygen_doc 
                   DEPENDS ${SCAI_PROJECTS}
                   PREFIX doxygen_doc
                   SOURCE_DIR ${CMAKE_SOURCE_DIR}/doc/doxygen
-                  CMAKE_CACHE_ARGS "${CMAKE_ARGS}"
+                  CMAKE_CACHE_ARGS "${CMAKE_ARGS};${DOXYGEN_ARGS}"
                   BINARY_DIR doxygen_doc
                   )
+      endif ( DOXYGEN_FOUND )
+
+      ## add custom target docclean
+      include ( DocClean )
 
 endif ( BUILD_DOC )
-
-
-## add custom target docclean
-include ( DocClean )
 
 ## add custom target distclean
 include ( DistClean )

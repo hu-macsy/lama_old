@@ -34,7 +34,3 @@
 # included with Package/doc and for every project with external packages in scaiFunctions
 
 find_package ( Sphinx ${SCAI_FIND_PACKAGE_FLAGS} )
-
-if    ( BUILD_DOC AND NOT SPHINX_FOUND )
-    message( WARNING "Build of documentation enabled, but sphinx is not found!")
-endif ( BUILD_DOC AND NOT SPHINX_FOUND )

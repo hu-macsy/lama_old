@@ -31,16 +31,11 @@
  # @since 1.0.1
 ###
 
-#find_package ( Sphinx ${SCAI_FIND_PACKAGE_FLAGS} )
-
-### SPHINX DOCUMENTATION ###
-
-if ( BUILD_DOC )
-    ### install ###
+if ( SPHINX_FOUND AND BUILD_DOC )
     set ( LAMA_DOC_DIR "${CMAKE_SOURCE_DIR}/doc" )
-    set ( SPHINX_BUILD_ROOT "${CMAKE_CURRENT_BINARY_DIR}" )
-    set ( SPHINX_INSTALL_ROOT ${CMAKE_INSTALL_PREFIX}/${PROJECT_DOC_DIR} )
     
+    # Sphinx configuration file conf.py will be generated with correct LAMA version, copyright, etc.
+    # must be in same directory as Sphinx source files
     set ( SCAI_COMMON_DOC_DIR ${CMAKE_INSTALL_PREFIX}/${DOC_ROOT_DIR}/scai-common-${SCAI_COMMON_VERSION}/ )
     set ( SCAI_LOGGING_DOC_DIR ${CMAKE_INSTALL_PREFIX}/${DOC_ROOT_DIR}/scai-logging-${SCAI_LOGGING_VERSION}/ )
     set ( SCAI_TRACING_DOC_DIR ${CMAKE_INSTALL_PREFIX}/${DOC_ROOT_DIR}/scai-tracing-${SCAI_TRACING_VERSION}/ )
@@ -48,27 +43,25 @@ if ( BUILD_DOC )
     set ( SCAI_HMEMO_DOC_DIR ${CMAKE_INSTALL_PREFIX}/${DOC_ROOT_DIR}/scai-hmemo-${SCAI_HMEMO_VERSION}/ )
     set ( SCAI_KREGISTRY_DOC_DIR ${CMAKE_INSTALL_PREFIX}/${DOC_ROOT_DIR}/scai-kregistry-${SCAI_KREGISTRY_VERSION}/ )
     
-    # Sphinx configuration file conf.py will be generated with correct LAMA version, copyright, etc.
-    # must be in same directory as Sphinx source files
-    configure_file ( "${CMAKE_SOURCE_DIR}/doc/conf.py.in" "${SPHINX_BUILD_ROOT}/conf.py" )
+    configure_file ( "${CMAKE_SOURCE_DIR}/doc/conf.py.in" "${CMAKE_CURRENT_BINARY_DIR}/conf.py" )
     
     # Add custom command for building the userdoc
     add_custom_command (
-        OUTPUT ${SPHINX_BUILD_ROOT}/index.html
-        COMMAND ${Sphinx-build_EXECUTABLE} -b ${SCAI_DOC_TYPE} -c ${SPHINX_BUILD_ROOT} ${LAMA_DOC_DIR} ${SPHINX_BUILD_ROOT}
-        DEPENDS ${SPHINX_BUILD_ROOT}/conf.py
+        OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/index.html
+        COMMAND ${Sphinx-build_EXECUTABLE} -b ${SCAI_DOC_TYPE} -c ${CMAKE_CURRENT_BINARY_DIR} ${LAMA_DOC_DIR} ${CMAKE_CURRENT_BINARY_DIR}
+        DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/conf.py
         WORKING_DIRECTORY ${LAMA_DOC_DIR}
     )
     
     # Add a custom target which executes the custom command (using ALL flag to add it to the default target as well!)
     add_custom_target (
         doc ALL
-        DEPENDS ${SPHINX_BUILD_ROOT}/index.html
+        DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/index.html
     )
     
     # Add documentation to the install target
     install(
         DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/
-        DESTINATION ${SPHINX_INSTALL_ROOT}
+        DESTINATION ${CMAKE_INSTALL_PREFIX}/${PROJECT_DOC_DIR}
     )
-endif ( BUILD_DOC )
+endif ( SPHINX_FOUND AND BUILD_DOC )

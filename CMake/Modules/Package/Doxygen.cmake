@@ -32,7 +32,3 @@
 ###
 
 find_package ( Doxygen ${SCAI_FIND_PACKAGE_FLAGS} )
-
-if    ( BUILD_DOC AND NOT DOXYGEN_FOUND )
-    message( WARNING "Build of documentation enabled, but doxygen is not found!")
-endif ( BUILD_DOC AND NOT DOXYGEN_FOUND )
