@@ -2263,7 +2263,7 @@ size_t SparseMatrix<ValueType>::getValueTypeSize() const
 template<typename ValueType>
 SparseMatrix<ValueType>* SparseMatrix<ValueType>::newMatrix() const
 {
-    COMMON_THROWEXCEPTION( "Can not create a new SparseMatrix with no SparseMatrix format" )
+    COMMON_THROWEXCEPTION( "Can not create a new SparseMatrix with no SparseMatrix format specified" )
 }
 
 /* ------------------------------------------------------------------------- */

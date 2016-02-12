@@ -331,16 +331,19 @@ void COOSparseMatrix<ValueType>::swapLocalStorage( StorageType& localStorage )
 template<typename ValueType>
 COOSparseMatrix<ValueType>* COOSparseMatrix<ValueType>::newMatrix() const
 {
-    COOSparseMatrix* newSparseMatrix = new COOSparseMatrix();
+    common::unique_ptr<COOSparseMatrix<ValueType> > newSparseMatrix( new COOSparseMatrix<ValueType>() );
 
     // inherit the context, communication kind of this matrix for the new matrix
 
     newSparseMatrix->setContextPtr( this->getContextPtr() );
+
     newSparseMatrix->setCommunicationKind( this->getCommunicationKind() );
 
-    SCAI_LOG_INFO( logger, "create is " << *newSparseMatrix )
+    SCAI_LOG_INFO( logger,
+                   *this << ": create -> " << *newSparseMatrix << " @ " << *(newSparseMatrix->getContextPtr())
+                   << ", kind = " << newSparseMatrix->getCommunicationKind() );
 
-    return newSparseMatrix;
+    return newSparseMatrix.release();
 }
 
 /* -------------------------------------------------------------------------- */
@@ -376,8 +379,7 @@ Matrix* COOSparseMatrix<ValueType>::create()
 template<typename ValueType>
 MatrixCreateKeyType COOSparseMatrix<ValueType>::createValue()
 {
-    common::scalar::ScalarType skind = common::getScalarType<ValueType>();
-    return MatrixCreateKeyType( Format::COO, skind );
+    return MatrixCreateKeyType( Format::COO, common::getScalarType<ValueType>() );
 }
 
 /* ========================================================================= */

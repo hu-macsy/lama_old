@@ -331,16 +331,19 @@ void ELLSparseMatrix<ValueType>::swapLocalStorage( StorageType& localStorage )
 template<typename ValueType>
 ELLSparseMatrix<ValueType>* ELLSparseMatrix<ValueType>::newMatrix() const
 {
-    ELLSparseMatrix* newSparseMatrix = new ELLSparseMatrix();
+    common::unique_ptr<ELLSparseMatrix<ValueType> > newSparseMatrix( new ELLSparseMatrix<ValueType>() );
 
     // inherit the context, communication kind of this matrix for the new matrix
 
     newSparseMatrix->setContextPtr( this->getContextPtr() );
+
     newSparseMatrix->setCommunicationKind( this->getCommunicationKind() );
 
-    SCAI_LOG_INFO( logger, "create is " << *newSparseMatrix )
+    SCAI_LOG_INFO( logger,
+                   *this << ": create -> " << *newSparseMatrix << " @ " << *(newSparseMatrix->getContextPtr())
+                   << ", kind = " << newSparseMatrix->getCommunicationKind() );
 
-    return newSparseMatrix;
+    return newSparseMatrix.release();
 }
 
 /* -------------------------------------------------------------------------- */
@@ -376,8 +379,7 @@ Matrix* ELLSparseMatrix<ValueType>::create()
 template<typename ValueType>
 MatrixCreateKeyType ELLSparseMatrix<ValueType>::createValue()
 {
-    common::scalar::ScalarType skind = common::getScalarType<ValueType>();
-    return MatrixCreateKeyType( Format::ELL, skind );
+    return MatrixCreateKeyType( Format::ELL, common::getScalarType<ValueType>() );
 }
 
 /* ========================================================================= */

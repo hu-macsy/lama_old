@@ -72,37 +72,7 @@ typedef common::shared_ptr<class Matrix> MatrixPtr;
  *  Note: own struct instead of std::pair to allow definition of operator << 
  */
 
-struct MatrixCreateKeyType
-{
-    Format::MatrixStorageFormat first;
-    common::scalar::ScalarType second;
-
-    MatrixCreateKeyType( Format::MatrixStorageFormat arg1, common::scalar::ScalarType arg2 )
-    {
-        first = arg1;
-        second = arg2;
-    }
-
-    bool operator< ( const MatrixCreateKeyType& other ) const
-    {
-        if ( first < other.first )
-        {
-            return true;
-        }
-        else if ( first == other.first )
-        {
-            return second < other.second;
-        }
-    
-        return false;
-    }
-};
-
-inline std::ostream& operator<<( std::ostream& stream, const MatrixCreateKeyType& object )
-{
-    stream << object.first << object.second;
-    return stream;
-}
+typedef MatrixStorageCreateKeyType MatrixCreateKeyType;
 
 /**
  * @brief The class Matrix is a abstract type that represents a distributed 2D real or complex matrix.

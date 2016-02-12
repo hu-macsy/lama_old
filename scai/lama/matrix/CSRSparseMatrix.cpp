@@ -331,16 +331,19 @@ void CSRSparseMatrix<ValueType>::swapLocalStorage( StorageType& localStorage )
 template<typename ValueType>
 CSRSparseMatrix<ValueType>* CSRSparseMatrix<ValueType>::newMatrix() const
 {
-    CSRSparseMatrix* newSparseMatrix = new CSRSparseMatrix();
+    common::unique_ptr<CSRSparseMatrix<ValueType> > newSparseMatrix( new CSRSparseMatrix<ValueType>() );
 
     // inherit the context, communication kind of this matrix for the new matrix
 
     newSparseMatrix->setContextPtr( this->getContextPtr() );
+
     newSparseMatrix->setCommunicationKind( this->getCommunicationKind() );
 
-    SCAI_LOG_INFO( logger, "create is " << *newSparseMatrix )
+    SCAI_LOG_INFO( logger,
+                   *this << ": create -> " << *newSparseMatrix << " @ " << *(newSparseMatrix->getContextPtr())
+                   << ", kind = " << newSparseMatrix->getCommunicationKind() );
 
-    return newSparseMatrix;
+    return newSparseMatrix.release();
 }
 
 /* -------------------------------------------------------------------------- */
@@ -376,8 +379,7 @@ Matrix* CSRSparseMatrix<ValueType>::create()
 template<typename ValueType>
 MatrixCreateKeyType CSRSparseMatrix<ValueType>::createValue()
 {
-    common::scalar::ScalarType skind = common::getScalarType<ValueType>();
-    return MatrixCreateKeyType( Format::CSR, skind );
+    return MatrixCreateKeyType( Format::CSR, common::getScalarType<ValueType>() );
 }
 
 /* ========================================================================= */
