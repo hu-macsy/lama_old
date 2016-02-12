@@ -223,6 +223,13 @@ public:
 
     virtual COOSparseMatrix<ValueType>* copy() const;
 
+    /* Implementation of pure method Matrix::getFormatType with covariant return type */
+
+    virtual Format::MatrixStorageFormat getFormatType() const
+    {
+        return Format::COO;
+    }
+
     /* Implementation of pure method of class Matrix. */
 
     virtual const char* getTypeName() const;

@@ -849,12 +849,20 @@ public:
     /**
      * @brief Queries the keytype to create matrix from factory with same valuetype and storagetype
      */
-    virtual MatrixCreateKeyType getCreateValue() const;
+    MatrixCreateKeyType getCreateValue() const;
 
     /**
      * @brief Queries the value type of the matrix elements, e.g. DOUBLE or FLOAT.
      */
     virtual common::scalar::ScalarType getValueType() const = 0;
+
+    /**
+     * @brief Queries the value type of the matrix elements, e.g. CSR or ELL.
+     */
+    virtual Format::MatrixStorageFormat getFormatType() const
+    {
+        return Format::UNDEFINED;
+    }
 
     /**
      * @brief Query the size of one matrix element

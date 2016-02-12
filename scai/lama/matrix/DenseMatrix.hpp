@@ -552,6 +552,13 @@ public:
      */
     virtual DenseMatrix<ValueType>* copy() const;
 
+    /* Implementation of pure method Matrix::getFormatType with covariant return type */
+
+    virtual Format::MatrixStorageFormat getFormatType() const
+    {
+        return Format::DENSE;
+    }
+
     /* Implementation of pure method of class Matrix. */
 
     virtual size_t getMemoryUsage() const;
