@@ -102,15 +102,6 @@ void SpecializedJacobi::initialize( const Matrix& coefficients )
 {
     using hmemo::_HArray;
 
-//    {
-//        const _SparseMatrix* sparseMatrix = dynamic_cast<const _SparseMatrix*>( &coefficients );
-//
-//        if ( !sparseMatrix )
-//        {
-//            COMMON_THROWEXCEPTION(
-//                "Coefficients matrix " << typeid(coefficients).name() << "(" << coefficients << ") is of unsupported type for SpecializedJacobi specialization (must be SparseMatrix)." );
-//        }
-//    }
     if( coefficients.getMatrixKind() == Matrix::DENSE )
     {
         COMMON_THROWEXCEPTION(
@@ -135,33 +126,20 @@ void SpecializedJacobi::initialize( const Matrix& coefficients )
                                   runtime.mCoefficients->getDistributionPtr() ) );
     }
 
-    // try dynamic cast for all supported arithmetic types
+    if( runtime.mCoefficients->getMatrixKind() == Matrix::SPARSE )
+    {
+        if( !runtime.mDiagonal.get() )
+        {
+            runtime.mDiagonal.reset( _HArray::create( runtime.mCoefficients->getValueType()));
+        }
 
-#define LAMA_CONVERSION(z, I, _)                                                                                         \
-    {                                                                                                                    \
-        const lama::SparseMatrix<ARITHMETIC_HOST_TYPE_##I>* sparseTypeCoefficients =                                     \
-                dynamic_cast<const lama::SparseMatrix<ARITHMETIC_HOST_TYPE_##I>*>( runtime.mCoefficients );              \
-        if ( sparseTypeCoefficients )                                                                                    \
-        {                                                                                                                \
-            SCAI_LOG_DEBUG( logger, "Creating " << common::getScalarType<ARITHMETIC_HOST_TYPE_##I>() << " diagonal. " )  \
-            if ( !runtime.mDiagonal.get() )                                                                              \
-            {                                                                                                            \
-                runtime.mDiagonal.reset( _HArray::create( common::getScalarType<ARITHMETIC_HOST_TYPE_##I>() ) );    \
-            }                                                                                                            \
-            sparseTypeCoefficients->getLocalStorage().getDiagonal( *runtime.mDiagonal );                                 \
-            return;                                                                                                      \
-        }                                                                                                                \
-    }                                                                                                                    \
-
-    BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_CONVERSION, _ )
-
-#undef LAMA_CONVERSION
-
-    // has already been check in initialize, but in any case
-
-    COMMON_THROWEXCEPTION    (
-        getConstRuntime().mCoefficients << ": unsupported matrix type (only SparseMatrix<ValueType> supported)." )
-
+        runtime.mCoefficients->getLocalStorage().getDiagonal( *runtime.mDiagonal );
+    }
+    else
+    {
+        COMMON_THROWEXCEPTION    (
+            getConstRuntime().mCoefficients << ": unsupported matrix type (only SparseMatrix<ValueType> supported)." )
+    }
 //    mPointerOldSolution = &mOldSolution; --> in every solve-call
 }
 void SpecializedJacobi::solve( Vector& solution, const Vector& rhs )
