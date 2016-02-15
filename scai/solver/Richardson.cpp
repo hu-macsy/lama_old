@@ -101,7 +101,7 @@ void Richardson::solveInit( Vector& solution, const Vector& rhs )
     //Check if oldSolution already exists, if not create copy of solution
     if ( !runtime.mOldSolution.get() )
     {
-        runtime.mOldSolution.reset( solution.clone() );
+        runtime.mOldSolution.reset( Vector::create( solution.getCreateValue() ) );
     }
 
     runtime.mProxyOldSolution = runtime.mOldSolution.get();

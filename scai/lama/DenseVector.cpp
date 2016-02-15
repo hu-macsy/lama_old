@@ -395,37 +395,19 @@ void DenseVector<ValueType>::setValues( const _HArray& values )
 }
 
 template<typename ValueType>
-DenseVector<ValueType>* DenseVector<ValueType>::clone() const
-{
-    SCAI_LOG_INFO( logger, "DenseVector<ValueType>::clone" )
-
-    DenseVector<ValueType>* newDenseVector = new DenseVector<ValueType>();
-
-    newDenseVector->setContextPtr( mContext );
-
-    return newDenseVector;
-}
-
-template<typename ValueType>
-DenseVector<ValueType>* DenseVector<ValueType>::clone( DistributionPtr distribution ) const
-{
-    SCAI_LOG_INFO( logger, "DenseVector<ValueType>::create" )
-
-    DenseVector<ValueType>* newDenseVector = new DenseVector<ValueType>( distribution );
-
-    newDenseVector->setContextPtr( mContext );
-
-    // give back the new vector and its ownership
-
-    return newDenseVector;
-}
-
-template<typename ValueType>
 DenseVector<ValueType>* DenseVector<ValueType>::copy() const
 {
     // create a new dense vector with the copy constructor
 
     return new DenseVector<ValueType>( *this );
+}
+
+template<typename ValueType>
+DenseVector<ValueType>* DenseVector<ValueType>::newVector() const
+{
+   common::unique_ptr<DenseVector<ValueType> > vector( new DenseVector<ValueType>() ); 
+   vector->setContextPtr( this->getContextPtr() );
+   return vector.release();
 }
 
 template<typename ValueType>
@@ -1691,10 +1673,15 @@ Vector* DenseVector<ValueType>::create()
 }
 
 template<typename ValueType>
-std::pair<VectorKind, common::scalar::ScalarType> DenseVector<ValueType>::createValue()
+VectorCreateKeyType DenseVector<ValueType>::createValue()
 {
-    common::scalar::ScalarType skind = common::getScalarType<ValueType>();
-    return std::pair<VectorKind, common::scalar::ScalarType> ( DENSE, skind );
+    return VectorCreateKeyType( DENSE, common::getScalarType<ValueType>() );
+}
+
+template<typename ValueType>
+VectorCreateKeyType DenseVector<ValueType>::getCreateValue() const
+{
+    return createValue();
 }
 
 /* ---------------------------------------------------------------------------------*/

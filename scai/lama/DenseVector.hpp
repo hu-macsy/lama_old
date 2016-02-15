@@ -268,21 +268,14 @@ public:
     virtual void setValues( const hmemo::_HArray& values );
 
     /**
-     * Implementation of Vector::clone with covariant return type.
-     */
-
-    virtual DenseVector* clone() const;
-
-    /**
-     * Implementation of Vector::clone with covariant return type.
-     */
-    virtual DenseVector* clone( dmemo::DistributionPtr distribution ) const;
-
-    /**
      * Implementation of Vector::copy with covariant return type.
      */
-
     virtual DenseVector* copy() const;
+
+    /**
+     * Implementation of Vector::newVector with covariant return type.
+     */
+    virtual DenseVector* newVector() const;
 
     //TODO: We either need a none const getLocalValues()
     // or an operator[] with local sematics or both
@@ -476,7 +469,9 @@ public:
 
     // key for factory 
 
-    static std::pair<VectorKind, common::scalar::ScalarType> createValue();
+    static VectorCreateKeyType createValue();
+
+    virtual VectorCreateKeyType getCreateValue() const;
 };
 
 /* ------------------------------------------------------------------------- */

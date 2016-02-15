@@ -56,7 +56,8 @@ template<typename ValueType> class DenseStorage;
  *  @tparam ValueType is the value type of the matrix values.
  */
 template<typename ValueType>
-class COMMON_DLL_IMPORTEXPORT DenseStorageView: public CRTPMatrixStorage<DenseStorageView<ValueType>,ValueType>
+class COMMON_DLL_IMPORTEXPORT DenseStorageView:
+    public CRTPMatrixStorage<DenseStorageView<ValueType>,ValueType>
 {
 public:
 
@@ -84,13 +85,13 @@ public:
 
     virtual ~DenseStorageView();
 
+    /** Implementation of MatrixStorage::newMatrixStorage for derived class. */
+
+    virtual DenseStorageView<ValueType>* newMatrixStorage() const;
+
     /** Implementation of MatrixStorage::copy for derived class. */
 
     virtual DenseStorageView<ValueType>* copy() const;
-
-    /** Implementation of MatrixStorage::create for derived class. */
-
-    virtual DenseStorageView<ValueType>* clone() const;
 
     /** Test the storage data for inconsistencies.
      *
@@ -371,6 +372,16 @@ private:
     /** @brief invert only for DenseStorage. */
 
     void invertDense( const DenseStorageView<ValueType>& other );
+
+public:
+
+    // static create method that will be used to register at MatrixStorage factory
+
+    static _MatrixStorage* create();
+
+    // key for factory
+
+    static MatrixStorageCreateKeyType createValue();
 };
 
 /* --------------------------------------------------------------------------- */
@@ -380,7 +391,9 @@ private:
  *  @tparam ValueType is the value type of the matrix values.
  */
 template<typename ValueType>
-class COMMON_DLL_IMPORTEXPORT DenseStorage: public DenseStorageView<ValueType>
+class COMMON_DLL_IMPORTEXPORT DenseStorage:
+        public DenseStorageView<ValueType>,
+        public _MatrixStorage::Register<DenseStorage<ValueType> >    // register at factory
 {
 public:
 
@@ -433,6 +446,10 @@ public:
 
     virtual ~DenseStorage();
 
+    /** Implementation of MatrixStorage::newMatrixStorage for derived class. */
+
+    virtual DenseStorage<ValueType>* newMatrixStorage() const;
+
     using MatrixStorage<ValueType>::mNumRows;
     using MatrixStorage<ValueType>::mNumColumns;
     using MatrixStorage<ValueType>::assign;
@@ -442,6 +459,16 @@ public:
 private:
 
     hmemo::HArray<ValueType> mDataArray; //!<  matrix values, size is mNumRows x mNumColumns
+
+public:
+
+    // static create method that will be used to register at MatrixStorage factory
+
+    static _MatrixStorage* create();
+
+    // key for factory
+
+    static MatrixStorageCreateKeyType createValue();
 
 };
 

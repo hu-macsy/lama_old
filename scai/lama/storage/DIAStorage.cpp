@@ -1192,17 +1192,35 @@ void DIAStorage<ValueType>::jacobiIterate(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-DIAStorage<ValueType>* DIAStorage<ValueType>::clone() const
+DIAStorage<ValueType>* DIAStorage<ValueType>::copy() const
 {
-    return new DIAStorage<ValueType>();
+    return new DIAStorage<ValueType>( *this );
 }
 
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-DIAStorage<ValueType>* DIAStorage<ValueType>::copy() const
+DIAStorage<ValueType>* DIAStorage<ValueType>::newMatrixStorage() const
 {
-    return new DIAStorage<ValueType>( *this );
+   common::unique_ptr<DIAStorage<ValueType> > storage( new DIAStorage<ValueType>() ); 
+   storage->setContextPtr( this->getContextPtr() );
+   return storage.release();
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+template<typename ValueType>
+_MatrixStorage* DIAStorage<ValueType>::create()
+{
+    return new DIAStorage<ValueType>();
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+template<typename ValueType>
+MatrixStorageCreateKeyType DIAStorage<ValueType>::createValue()
+{
+    return MatrixStorageCreateKeyType( Format::DIA, common::getScalarType<ValueType>() );
 }
 
 /* ========================================================================= */

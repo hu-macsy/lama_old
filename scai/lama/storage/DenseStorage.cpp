@@ -1376,18 +1376,59 @@ const char* DenseStorage<ValueType>::getTypeName() const
 
 template<typename ValueType>
 DenseStorageView<ValueType>*
-DenseStorageView<ValueType>::clone() const
+DenseStorageView<ValueType>::copy() const
+{
+    return new DenseStorage<ValueType>( *this );
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+template<typename ValueType>
+_MatrixStorage* DenseStorageView<ValueType>::create()
+{
+    COMMON_THROWEXCEPTION( "creation currently not possible")
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+template<typename ValueType>
+MatrixStorageCreateKeyType DenseStorageView<ValueType>::createValue()
+{
+    return MatrixStorageCreateKeyType( Format::DENSE, common::getScalarType<ValueType>() );
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+template<typename ValueType>
+DenseStorageView<ValueType>* DenseStorageView<ValueType>::newMatrixStorage() const
+{
+    COMMON_THROWEXCEPTION( "DenseStorageView<ValueType>::newMatrixStorage() not implemented yet" )
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+template<typename ValueType>
+_MatrixStorage* DenseStorage<ValueType>::create()
 {
     return new DenseStorage<ValueType>();
 }
 
-/* --------------------------------------------------------------------------- */
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
-DenseStorageView<ValueType>*
-DenseStorageView<ValueType>::copy() const
+MatrixStorageCreateKeyType DenseStorage<ValueType>::createValue()
 {
-    return new DenseStorage<ValueType>( *this );
+    return MatrixStorageCreateKeyType( Format::DENSE, common::getScalarType<ValueType>() );
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+template<typename ValueType>
+DenseStorage<ValueType>* DenseStorage<ValueType>::newMatrixStorage() const
+{
+   common::unique_ptr<DenseStorage<ValueType> > storage( new DenseStorage<ValueType>() ); 
+   storage->setContextPtr( this->getContextPtr() );
+   return storage.release();
 }
 
 /* ========================================================================= */

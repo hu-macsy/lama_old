@@ -63,7 +63,9 @@ namespace lama
  *  Note: default copy constructor and assignment operator can be used.
  */
 template<typename ValueType>
-class COMMON_DLL_IMPORTEXPORT JDSStorage: public CRTPMatrixStorage<JDSStorage<ValueType>,ValueType>
+class COMMON_DLL_IMPORTEXPORT JDSStorage:
+    public CRTPMatrixStorage<JDSStorage<ValueType>,ValueType>,
+    public _MatrixStorage::Register<JDSStorage<ValueType> >    // register at factory
 {
 public:
 
@@ -122,13 +124,13 @@ public:
 
     JDSStorage<ValueType>& operator=( const _MatrixStorage& other );
 
+    /** Implementation of MatrixStorage::newMatrixStorage for derived class. */
+
+    virtual JDSStorage* newMatrixStorage() const;
+
     /** Implementation of MatrixStorage::copy for derived class. */
 
     virtual JDSStorage* copy() const;
-
-    /** Implementation of MatrixStorage::create for derived class. */
-
-    virtual JDSStorage* clone() const;
 
     /** Implementation of pure method for _MatrixStorage. */
 
@@ -420,6 +422,16 @@ private:
     void print() const;
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger ) //!< logger for this matrix format
+
+public:
+
+    // static create method that will be used to register at MatrixStorage factory
+
+    static _MatrixStorage* create();
+
+    // key for factory
+
+    static MatrixStorageCreateKeyType createValue();
 };
 
 } /* end namespace lama */

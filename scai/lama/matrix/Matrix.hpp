@@ -66,42 +66,13 @@ namespace lama
 
 typedef common::shared_ptr<class Matrix> MatrixPtr;
 
+
 /** Key type used for the Matrix factory.
  *
  *  Note: own struct instead of std::pair to allow definition of operator << 
  */
 
-struct MatrixCreateKeyType
-{
-    Format::MatrixStorageFormat first;
-    common::scalar::ScalarType second;
-
-    MatrixCreateKeyType( Format::MatrixStorageFormat arg1, common::scalar::ScalarType arg2 )
-    {
-        first = arg1;
-        second = arg2;
-    }
-
-    bool operator< ( const MatrixCreateKeyType& other ) const
-    {
-        if ( first < other.first )
-        {
-            return true;
-        }
-        else if ( first == other.first )
-        {
-            return second < other.second;
-        }
-    
-        return false;
-    }
-};
-
-inline std::ostream& operator<<( std::ostream& stream, const MatrixCreateKeyType& object )
-{
-    stream << object.first << object.second;
-    return stream;
-}
+typedef MatrixStorageCreateKeyType MatrixCreateKeyType;
 
 /**
  * @brief The class Matrix is a abstract type that represents a distributed 2D real or complex matrix.
@@ -127,19 +98,6 @@ public:
      * @brief Destructor, releases all allocated resources.
      */
     virtual ~Matrix();
-
-    /**
-     * @brief Matrix factory to get a matrix of a certain format and a certain type
-     *
-     * @param[in] format is the storage format, e.g. DENSE, CSR, etc
-     * @param[in] type specifies the value type as the elements, e.g. FLOAT, DOUBLE
-     *
-     * This factory operation allows to create a matrix at runtime of any format or any type.
-     * Internally, all matrix classes must register their create operation.
-     *
-     * Note: the format of the matrix decides whether the matrix will be DENSE or SPARSE.
-     */
-    static Matrix* getMatrix( const Format::MatrixStorageFormat format, const common::scalar::ScalarType type );
 
     /** Override Distributed::buildCSRGraph */
 
@@ -810,39 +768,39 @@ public:
      */
     virtual Scalar maxDiffNorm( const Matrix& other ) const = 0;
 
-    /**
-     * @brief Constructor function which creates a 'zero' matrix of same type as a given matrix.
-     *
-     * \code
-     * void sub( ..., const Matrix& matrix, ...)
-     * {
-     *     ...
-     *     // Create a copy of the input matrix
-     *
-     *     common::unique_ptr<Matrix> newMatrix ( matrix.clone() );
-     *     *newMatrix = matrix;
-     *
-     *     // Create a unity matrix of same type and same row distribution as matrix
-     *
-     *     common::unique_ptr<Matrix> newMatrix ( matrix.clone() );
-     *     newMatrix->allocate( matrix.getRowDistributionPtr(), matrix.getRowDistributionPtr() );
-     *     newMatrix->setIdentity();
-     *     ...
-     * }
-     * \endcode
-     *
-     * This method is a workaround to call the constructor of a derived matrix class
-     * where the derived class is not known at compile time.
-     */
-    virtual Matrix* clone() const = 0;
+     /**
+      * @brief Constructor function which creates a 'zero' matrix of same type as a given matrix.
+      *
+      * \code
+      * void sub( ..., const Matrix& matrix, ...)
+      * {
+      *     ...
+      *     // Create a copy of the input matrix
+      *
+      *     common::unique_ptr<Matrix> newmatrix ( matrix.newMatrix() );
+      *     *newmatrix = matrix;
+      *
+      *     // Create a unity matrix of same type and same row distribution as matrix
+      *
+      *     common::unique_ptr<Matrix> newmatrix ( matrix.newMatrix() );
+      *     newmatrix->allocate( matrix.getRowDistributionPtr(), matrix.getRowDistributionPtr() );
+      *     newmatrix->setIdentity();
+      *     ...
+      * }
+      * \endcode
+      *
+      * This method is a workaround to call the constructor of a derived matrix class
+      * where the derived class is not known at compile time.
+      */
+    virtual Matrix* newMatrix() const = 0;
 
     /**
      * @brief Constructor function which creates a copy of this matrix.
      *
      * \code
-     * common::unique_ptr<Matrix> newMatrix = matrix.copy();
+     * common::unique_ptr<Matrix> newmatrix = matrix.copy();
      * // More convenient to use, but exactly same as follows:
-     * common::unique_ptr<Matrix> newMatrix = matrix.clone(); *newMatrix = matrix;
+     * common::unique_ptr<Matrix> newmatrix = Matrix::create( matrix.getCreateValue() ); *newmatrix = matrix;
      * \endcode
      *
      * This method is a workaround to call the copy constructor of a derived matrix class
@@ -859,9 +817,22 @@ public:
     virtual Matrix* copy( dmemo::DistributionPtr rowDistribution, dmemo::DistributionPtr colDistribution ) const;
 
     /**
+     * @brief Queries the keytype to create matrix from factory with same valuetype and storagetype
+     */
+    MatrixCreateKeyType getCreateValue() const;
+
+    /**
      * @brief Queries the value type of the matrix elements, e.g. DOUBLE or FLOAT.
      */
     virtual common::scalar::ScalarType getValueType() const = 0;
+
+    /**
+     * @brief Queries the value type of the matrix elements, e.g. CSR or ELL.
+     */
+    virtual Format::MatrixStorageFormat getFormatType() const
+    {
+        return Format::UNDEFINED;
+    }
 
     /**
      * @brief Query the size of one matrix element

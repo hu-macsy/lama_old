@@ -126,9 +126,6 @@ scai_project (
         TFQMR
         TrivialPreconditioner
 
-    HEADERS                  # .hpp only
-
-        shared_lib
     )
 
 ## add subdirectories

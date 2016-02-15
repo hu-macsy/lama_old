@@ -65,22 +65,10 @@ SCAI_LOG_DEF_LOGGER( Vector::logger, "Vector" )
 /*    Factory to create a vector                                                          */
 /* ---------------------------------------------------------------------------------------*/
 
-Vector* Vector::getVector( const VectorKind kind, common::scalar::ScalarType type )
-{
-	using ::operator<<;
-
-    VectorCreateKeyType key( kind, type );
-
-    SCAI_LOG_INFO( logger, "getVector uses Factory::create " << key )
-
-    // get it from the factory by building a pair as key the creator fn
-
-    return create( key );
-}
-
 Vector* Vector::createVector( const common::scalar::ScalarType valueType, DistributionPtr distribution )
 {
-    Vector* v = getVector( DENSE, valueType );
+    VectorCreateKeyType vectype( DENSE, valueType );
+    Vector* v = Vector::create( vectype );
 
     v->resize( distribution );
     return v;
@@ -268,7 +256,7 @@ Vector& Vector::operator=( const Expression_SMV_SV& expression )
     if( &vectorX == this )
     {
         SCAI_LOG_DEBUG( logger, "Temporary for X required" )
-        tmpResult = common::shared_ptr<Vector>( this->clone( getDistributionPtr() ) );
+        tmpResult = common::shared_ptr<Vector>( Vector::create( this->getCreateValue() ) );
         resultPtr = tmpResult.get();
     }
 
@@ -305,7 +293,7 @@ Vector& Vector::operator=( const Expression_SVM_SV& expression )
     if( &vectorX == this )
     {
         SCAI_LOG_DEBUG( logger, "Temporary for X required" )
-        tmpResult = common::shared_ptr<Vector>( this->clone( getDistributionPtr() ) );
+        tmpResult = common::shared_ptr<Vector>( Vector::create( this->getCreateValue() ) );
         resultPtr = tmpResult.get();
     }
 

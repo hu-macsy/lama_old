@@ -91,7 +91,7 @@ void BiCG::initialize( const Matrix& coefficients )
     BiCGRuntime& runtime = getRuntime();
 
     runtime.mPScalar2 = 0.0;
-    runtime.mTransposeA.reset( coefficients.clone() );
+    runtime.mTransposeA.reset( coefficients.newMatrix() );
 
     common::scalar::ScalarType type = coefficients.getValueType();
 
@@ -103,7 +103,6 @@ void BiCG::initialize( const Matrix& coefficients )
     runtime.mTransposeA->conj();
 
     // 'force' vector operations to be computed at the same location where coefficients reside
-    runtime.mTransposeA->setContextPtr( coefficients.getContextPtr() );
     runtime.mP2->setContextPtr( coefficients.getContextPtr() );
     runtime.mQ2->setContextPtr( coefficients.getContextPtr() );
     runtime.mZ2->setContextPtr( coefficients.getContextPtr() );
@@ -237,7 +236,7 @@ const Vector& BiCG::getResidual2() const
 
         if( !runtime.mResidual2.get() )
         {
-            runtime.mResidual2.reset( runtime.mRhs->clone() );
+            runtime.mResidual2.reset( Vector::create( runtime.mRhs->getCreateValue() ) );
         }
 
         //mLogger->logMessage(LogLevel::completeInformation,"Residual needs revaluation.\n");

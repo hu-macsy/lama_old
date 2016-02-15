@@ -1156,6 +1156,16 @@ void CSRStorage<ValueType>::copyTo( _MatrixStorage& other ) const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
+CSRStorage<ValueType>* CSRStorage<ValueType>::newMatrixStorage() const
+{
+   common::unique_ptr<CSRStorage<ValueType> > storage( new CSRStorage<ValueType>() ); 
+   storage->setContextPtr( this->getContextPtr() );
+   return storage.release();
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
 template<typename OtherValueType>
 void CSRStorage<ValueType>::buildCSR(
     HArray<IndexType>& ia,
@@ -2432,18 +2442,12 @@ ValueType CSRStorage<ValueType>::maxDiffNormImpl( const CSRStorage<ValueType>& o
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-CSRStorage<ValueType>* CSRStorage<ValueType>::clone() const
-{
-    return new CSRStorage<ValueType>();
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
 CSRStorage<ValueType>* CSRStorage<ValueType>::copy() const
 {
     return new CSRStorage<ValueType>( *this );
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
 void CSRStorage<ValueType>::buildSparseRowSizes( HArray<IndexType>& rowSizes ) const
@@ -2469,6 +2473,22 @@ void CSRStorage<ValueType>::buildSparseRowData(
 
     sparseJA = mJa;
     sparseValues = mValues;
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+template<typename ValueType>
+_MatrixStorage* CSRStorage<ValueType>::create()
+{
+    return new CSRStorage<ValueType>();
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+template<typename ValueType>
+MatrixStorageCreateKeyType CSRStorage<ValueType>::createValue()
+{
+    return MatrixStorageCreateKeyType( Format::CSR, common::getScalarType<ValueType>() );
 }
 
 /* ========================================================================= */

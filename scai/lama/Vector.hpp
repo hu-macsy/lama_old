@@ -53,6 +53,8 @@
 #include <scai/common/ScalarType.hpp>
 #include <scai/common/SCAITypes.hpp>
 
+#include <utility>
+
 namespace scai
 {
 
@@ -104,17 +106,6 @@ class COMMON_DLL_IMPORTEXPORT Vector:
 
 {
 public:
-
-    /**
-     * @brief Vector factory to get a vector of a certain kind and a certain type
-     *
-     * @param[in] kind is either DENSE or SPARSE
-     * @param[in] valueType specifies the value type as the elements, e.g. FLOAT, DOUBLE
-     *
-     * This factory operation allows to create a vector at runtime of any format or any type.
-     * Internally, all vector classes must register their create operation.
-     */
-    static Vector* getVector( const VectorKind kind, const common::scalar::ScalarType valueType );
 
     /** @brief Create a dense vector of a certain value type and a given distribution.
      *
@@ -354,24 +345,16 @@ public:
     virtual Scalar maxNorm() const = 0;
 
     /**
-     * @brief clone is a virtual call of the default constructor of the derived classes
-     *
-     * @return a pointer to the new Vector, caller takes the ownership.
-     */
-    virtual Vector* clone() const = 0;
-
-    /**
-     * @brief Create is a virtual constructor, which clones a new Vector with the same concrete class as this.
-     *
-     * @param[in] distribution  the distribution to use for the new Vector.
-     * @return                  a pointer to the new Vector, caller has the owner ship.
-     */
-    virtual Vector* clone( dmemo::DistributionPtr distribution ) const = 0;
-
-    /**
      *  @brief copy is a virtual call of the copy constructor of the derived classes
      */
     virtual Vector* copy() const = 0;
+
+    /**
+     *  @brief Creates a new Vector of the same type and value type
+     */
+    virtual Vector* newVector() const = 0;
+
+    virtual VectorCreateKeyType getCreateValue() const = 0;
 
     /**
      * @brief Returns the size of the vector.

@@ -63,7 +63,8 @@ public:
      */
     static void freeLib( LibHandle handle );
 
-    /** This routine reads a directory and tries to load all library modules in it that match the pattern. 
+    /** This routine reads a directory and tries to load all library modules in it that match
+     *  the pattern.
      *
      *  throws an exception if directory does not exist or is not readable
      *
