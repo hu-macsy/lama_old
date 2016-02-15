@@ -1,5 +1,5 @@
 ###
- # @file Summaries/lama.cmake
+ # @file Summaries/dmemo.cmake
  #
  # @license
  # Copyright (c) 2009-2013
@@ -25,7 +25,7 @@
  # SOFTWARE.
  # @endlicense
  #
- # @brief LAMA Summary for build configuration
+ # @brief dmemo Summary for build configuration
  # @author Jan Ecker
  # @date 25.04.2013
  # @since 1.0.0
@@ -35,7 +35,7 @@ include ( Functions/scaiStatusMessage )
 include ( Functions/scaiSummaryMessage )
 
 message ( STATUS "" )
-message ( STATUS "Summary of LAMA Configuration:" )
+message ( STATUS "Summary of dmemo Configuration:" )
 message ( STATUS "==============================" )
 message ( STATUS "" )
 
@@ -51,18 +51,18 @@ message ( STATUS "" )
 if    ( CXX_SUPPORTS_C11 OR BOOST_INCLUDE_DIR )
     set( REQUIRED_FOUND TRUE )
 else  ( CXX_SUPPORTS_C11 OR BOOST_INCLUDE_DIR )
-	set( REQUIRED_FOUND FALSE )
+  set( REQUIRED_FOUND FALSE )
 endif ( CXX_SUPPORTS_C11 OR BOOST_INCLUDE_DIR )
 
 scai_summary_message ( "STATIC"
                        "REQUIRED_FOUND"
-                       "LAMA"
+                       "dmemo"
                        "Needs compiler supporting C++11 or Boost and pThreads" )
 
 scai_summary_message ( "FOUND"
-					             "CXX_SUPPORTS_C11"
-					             "C++11 support"
-					             "" )
+                       "CXX_SUPPORTS_C11"
+                       "C++11 support"
+                       "" )
 
 if    ( NOT CXX_SUPPORTS_C11 )
     scai_summary_message ( "FOUND"
@@ -83,65 +83,44 @@ scai_summary_message ( "USE"
 # LAMA (core)
 message ( STATUS "" )
 scai_status_message ( HEADLINE "LIBRARIES:" )
-
-if    ( SCAI_BLAS_FOUND )
-    set( REQUIRED_FOUND TRUE )
-    if ( SCAI_BLAS_NAME MATCHES "BLAS" AND NOT LAPACK_FOUND )
-        set( REQUIRED_FOUND FALSE )
-    endif ( SCAI_BLAS_NAME MATCHES "BLAS" AND NOT LAPACK_FOUND )
-else  ( SCAI_BLAS_FOUND )
-    set( REQUIRED_FOUND FALSE )
-endif ( SCAI_BLAS_FOUND ) 
-
-scai_summary_message ( "STATIC"
-                       "REQUIRED_FOUND"
-                       "LAMA (core)"
-                       "" )
-   # BLAS
-    scai_summary_message ( "FOUND"
-                           "SCAI_BLAS_FOUND"
-                           "BLAS"
-                           "(${SCAI_BLAS_NAME}) with libraries: ${SCAI_SCAI_BLAS_LIBRARIES}" )
-    if    ( SCAI_BLAS_NAME MATCHES "BLAS" )
-        message ( STATUS "" )
-    	  scai_summary_message ( "FOUND"
-                       	       "LAPACK_FOUND"
-                      	       "LAPACK"
-                         		   "" )
-    endif ( SCAI_BLAS_NAME MATCHES "BLAS" )
-    
-# LAMA CUDA
+  
+# LAMA MPI
 message ( STATUS "" )
 scai_summary_message ( "USE"
-                       "USE_CUDA"
-                       "CUDA"
+                       "USE_MPI"
+                       "Distributed"
                        "" )
 
-    # CUDA
+    # MPI
     scai_summary_message ( "FOUND"
-                           "CUDA_FOUND"
-                           "CUDA"
-                           "${CUDA_VERSION} at ${CUDA_INCLUDE_DIRS}" )
-                           
-    # CUDA Compute Capability
-    scai_summary_message ( "FOUND"
-                           "CUDA_HAVE_GPU"
-                           "Compute Capability"
-                           "${CUDA_COMPUTE_CAPABILITY}" )
-                           
-# LAMA MIC
+                           "MPI_FOUND"
+                           "MPI"
+                           "at ${MPI_INCLUDE_PATH}" )
+
+# Graph Partitioning
 message ( STATUS "" )
 scai_summary_message ( "USE"
-                       "USE_MIC"
-                       "MIC"
-                       "" )
+                       "USE_GRAPHPARTITIONING"
+                       "Graph Partitioning"
+                       "" )                   
+  # Metis
+    scai_summary_message ( "FOUND"
+                           "METIS_FOUND"
+                           "Metis"
+                           "at ${METIS_INCLUDE_DIR}" )
+
+  # ParMetis
+    scai_summary_message ( "FOUND"
+                           "PARMETIS_FOUND"
+                           "ParMetis"
+                           "at ${PARMETIS_INCLUDE_DIR}" )
 
 set ( REQUIRED_FOUND FALSE )
 if    ( SCAI_COMMON_FOUND AND SCAI_LOGGING_FOUND AND SCAI_TRACING_FOUND AND SCAI_TASKING_FOUND AND SCAI_HMEMO_FOUND
-            AND SCAI_KREGISTRY_FOUND AND SCAI_BLASKERNEL_FOUND AND SCAI_DMEMO_FOUND )
+            AND SCAI_KREGISTRY_FOUND )
   set ( REQUIRED_FOUND TRUE )
 endif ( SCAI_COMMON_FOUND AND SCAI_LOGGING_FOUND AND SCAI_TRACING_FOUND AND SCAI_TASKING_FOUND AND SCAI_HMEMO_FOUND
-            AND SCAI_KREGISTRY_FOUND AND SCAI_BLASKERNEL_FOUND AND SCAI_DMEMO_FOUND )
+            AND SCAI_KREGISTRY_FOUND )
 
 message ( STATUS "" )
 scai_summary_message ( "STATIC"
@@ -179,16 +158,6 @@ scai_summary_message ( "STATIC"
                            "SCAI Kregistry"
                            "" )
 
-    scai_summary_message ( "FOUND"
-                           "SCAI_BLASKERNEL_FOUND"
-                           "SCAI Blaskernel"
-                           "" )
-
-    scai_summary_message ( "FOUND"
-                           "SCAI_DMEMO_FOUND"
-                           "SCAI Dmemo"
-                           "" )
-
 # LAMA TEST
 message ( STATUS "" )
 scai_summary_message ( "USE"
@@ -218,6 +187,6 @@ message ( STATUS "ASSERT Level : ${SCAI_ASSERT_LEVEL} ( -DSCAI_ASSERT_LEVEL_${SC
 message ( STATUS "LOG Level    : ${SCAI_LOGGING_LEVEL} ( -D${SCAI_LOGGING_FLAG} )" )
 message ( STATUS "TRACING      : ${SCAI_TRACING} ( -D${SCAI_TRACING_FLAG} )" )
 if    ( USE_CODE_COVERAGE )
-	message ( STATUS "CODE COVERAGE: ${USE_CODE_COVERAGE}" )
+  message ( STATUS "CODE COVERAGE: ${USE_CODE_COVERAGE}" )
 endif ( USE_CODE_COVERAGE )
 message ( STATUS "" )

@@ -84,3 +84,8 @@ endif ( WIN32 )
 ### Copy the README and xmltest.sh file in build directory ### 
 
 file ( COPY README DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
+file ( COPY xmltest.sh DESTINATION ${CMAKE_CURRENT_BINARY_DIR} ) 
+
+if ( USE_CODE_COVERAGE )
+    configure_file( "${CMAKE_CURRENT_SOURCE_DIR}/code_coverage.sh.in" "${CMAKE_CURRENT_BINARY_DIR}/code_coverage.sh" @ONLY)
+endif ( USE_CODE_COVERAGE )
