@@ -19,6 +19,7 @@ make
 ./DemoSettings.exe
 ./DemoTypeTrait.exe
 ./ExceptionDemo.exe
+./BenchPointers.exe
 ./TimePrecision.exe
 ./UseModule.exe ./DummyModule.so
 ./UseModule.exe ./Module.so
