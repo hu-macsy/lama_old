@@ -16,8 +16,8 @@ Contents:
    introduction
    installation
    projects
-   testing
    tutorial
+   testing
    benchmarks
    developer
    relatedWork

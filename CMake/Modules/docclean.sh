@@ -5,16 +5,16 @@
 
 recursive_remove()
 {
-	# user docu
-	if [ -e user ]
+	# sphinx docu
+	if [ -e scai-* ]
 	then
-		cd user
+		cd scai-*
 		#pwd
 		rm -rf doctrees html json
 		cd ..
 	fi
 	
-	# system docu
+	# doxygen docu
 	if [ -e system ]
 	then
 		cd system

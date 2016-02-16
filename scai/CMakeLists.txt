@@ -41,6 +41,7 @@ project ( LAMA_ALL CXX )
 set ( CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/../CMake/Modules" )
 
 include ( VersionDefinition )
+include ( SetProjectVariables )
 
 ## general Settings for all projects
 include ( SetBuildFlags ) # VERBOSE, RPATH, LIB64
@@ -256,23 +257,11 @@ if    ( BUILD_DOC )
       #only need the standart CMAKE_ARGS for the INSTALL_PREFIX
 
       if    ( SPHINX_FOUND )
-      ExternalProject_Add ( sphinx_doc 
-                  DEPENDS ${SCAI_PROJECTS}
-                  PREFIX sphinx_doc
-                  SOURCE_DIR ${CMAKE_SOURCE_DIR}/doc/sphinx
-                  CMAKE_CACHE_ARGS "${CMAKE_ARGS}"
-                  BINARY_DIR sphinx_doc
-                  )
+      add_subdirectory ( doc/sphinx )
       endif ( SPHINX_FOUND )
 
       if    ( DOXYGEN_FOUND )
-      ExternalProject_Add ( doxygen_doc 
-                  DEPENDS ${SCAI_PROJECTS}
-                  PREFIX doxygen_doc
-                  SOURCE_DIR ${CMAKE_SOURCE_DIR}/doc/doxygen
-                  CMAKE_CACHE_ARGS "${CMAKE_ARGS};${DOXYGEN_ARGS}"
-                  BINARY_DIR doxygen_doc
-                  )
+      add_subdirectory ( doc/doxygen )
       endif ( DOXYGEN_FOUND )
 
       ## add custom target docclean

@@ -1,4 +1,4 @@
-.. _main-page:
+.. _main-page_common:
 
 SCAI Common
 ===========

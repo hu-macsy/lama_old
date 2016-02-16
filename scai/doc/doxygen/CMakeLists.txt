@@ -25,47 +25,34 @@
  # SOFTWARE.
  # @endlicense
  #
- # @brief findPackage and configuration of doxygen
+ # @brief configuration of doxygen
  # @author Jan Ecker
  # @date 25.04.2013
  # @since 1.0.0
 ###
-### Set required CMake version
-cmake_minimum_required ( VERSION 2.8 )
 
-### Set PROJECT NAME / supported LANGUAGES
-project ( sphinx_dox )
-
-### Set Module Path
-set ( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../../CMake/Modules" )
-
-include ( Package/Doxygen )
-include ( VersionDefinition )
-include ( SetProjectVariables )
-
-configure_file ( "${CMAKE_SOURCE_DIR}/LAMA.Doxyfile.in" "${CMAKE_CURRENT_BINARY_DIR}/LAMA.Doxyfile" )
+configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/LAMA.Doxyfile.in" "${CMAKE_CURRENT_BINARY_DIR}/LAMA.Doxyfile" )
 
 file ( MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html )
 
 # The initial rm command gets rid of everything previously built by this
 # custom command.
 
+message ( STATUS "doxy command: ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/LAMA.Doxyfile" )
+
 add_custom_command (
     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/html/index.html
     #COMMAND rm -rf ${CMAKE_CURRENT_BINARY_DIR}
     #COMMAND mkdir ${CMAKE_CURRENT_BINARY_DIR}
-    COMMAND ${DOXYGEN_EXECUTABLE} LAMA.Doxyfile
+    COMMAND ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/LAMA.Doxyfile
     DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/LAMA.Doxyfile
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
 )
 
 add_custom_target (
     doxygendoc
-    DEPENDS
-    ${CMAKE_CURRENT_BINARY_DIR}/html/index.html
-)
-
-install(
-    DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html
-    DESTINATION ${DOC_ROOT_DIR}/system
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_INSTALL_PREFIX}/${DOC_ROOT_DIR}/system
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_BINARY_DIR}/html/ ${CMAKE_INSTALL_PREFIX}/${DOC_ROOT_DIR}/system
+    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/html/index.html
+    COMMENT "Creating doxygen doc."
 )
