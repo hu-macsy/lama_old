@@ -25,37 +25,19 @@
  # SOFTWARE.
  # @endlicense
  #
- # @brief Main specification file for sphinx doc
+ # @brief Main specification file for CMake
  # @author Lauretta Schubert
  # @date 11.02.2016
  # @since 2.0.0
 ###
-        
-# Sphinx configuration file conf.py will be generated with correct LAMA version, copyright, etc.
-# must be in same directory as Sphinx source files
-setIntersphinxInternalVariables()
-configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/conf.py.in" "${CMAKE_CURRENT_BINARY_DIR}/conf.py" )
 
-set ( SPHINX_BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}/${SCAI_DOC_TYPE}" )
-set ( SPHINX_DOC_THREE_DIR "${SPHINX_BINARY_DIR}/doctree" )
+if    ( SPHINX_FOUND )
+    add_subdirectory ( sphinx )
+endif ( SPHINX_FOUND )
 
-# Add custom command for building the userdoc
-add_custom_command (
-    OUTPUT ${SPHINX_BINARY_DIR}/index.${DOC_EXTENTSION}
-    COMMAND ${Sphinx-build_EXECUTABLE} 
-                -b ${SCAI_DOC_TYPE}
-                -c ${CMAKE_CURRENT_BINARY_DIR}
-                -d ${SPHINX_DOC_THREE_DIR}
-                ${CMAKE_CURRENT_SOURCE_DIR}
-                ${SPHINX_BINARY_DIR}
-    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/conf.py
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-)
-	    
-# Add a custom target which executes the custom command (using ALL flag to add it to the default target as well!)
-add_custom_target (
-    doc ALL
-    COMMAND ${CMAKE_COMMAND} -E copy_directory ${SPHINX_BINARY_DIR} ${CMAKE_INSTALL_PREFIX}/${SPHINX_ROOT_DIR}
-    DEPENDS ${SPHINX_BINARY_DIR}/index.${DOC_EXTENTSION}
-    COMMENT "Creating sphinx doc."
-)
+if    ( DOXYGEN_FOUND )
+    add_subdirectory ( doxygen )
+endif ( DOXYGEN_FOUND )
+
+## add custom target docclean
+include ( DocClean )

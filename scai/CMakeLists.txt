@@ -40,9 +40,6 @@ project ( LAMA_ALL CXX )
 ### Set Module Path
 set ( CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/../CMake/Modules" )
 
-include ( VersionDefinition )
-include ( SetProjectVariables )
-
 ## general Settings for all projects
 include ( SetBuildFlags ) # VERBOSE, RPATH, LIB64
 include ( CompilerVersion )
@@ -58,6 +55,10 @@ include ( Functions/checkValue )
 include ( Functions/setAndCheckCache )
 include ( Functions/checkWhiteList )
 include ( Functions/concatCacheArguments )
+
+include ( VersionDefinition )
+include ( SetProjectVariables )
+include ( Functions/scaiFunctions )
 
 include ( ExternalDependencies )
 

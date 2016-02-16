@@ -33,23 +33,22 @@
 
 if ( SPHINX_FOUND AND BUILD_DOC )
     set ( LAMA_DOC_DIR "${CMAKE_SOURCE_DIR}/doc" )
-    
+    set ( SPHINX_BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}/${SCAI_DOC_TYPE}" )
+
     # Sphinx configuration file conf.py will be generated with correct LAMA version, copyright, etc.
     # must be in same directory as Sphinx source files
-    foreach    ( module ${${UPPER_PROJECT_NAME}_INTERNAL_DEPS} )
-        string ( TOUPPER ${module} upper_module )
-        string ( SUBSTRING ${module} 5 -1 MODULE_SURNAME )
-        set ( ${upper_module}_DOC_DIR ${CMAKE_INSTALL_PREFIX}/${SPHINX_ROOT_DIR}/scai-${MODULE_SURNAME}-${${upper_module}_VERSION}/ )
-    endforeach ( module ${${UPPER_PROJECT_NAME}_INTERNAL_DEPS} )
-    
-    set ( SCAI_COMMON_DOC_DIR ${CMAKE_INSTALL_PREFIX}/${SPHINX_ROOT_DIR}/scai-common-${SCAI_COMMON_VERSION}/ )
-    
+    setIntersphinxInternalVariables()    
     configure_file ( "${CMAKE_SOURCE_DIR}/doc/conf.py.in" "${CMAKE_CURRENT_BINARY_DIR}/conf.py" )
     
     # Add custom command for building the userdoc
     add_custom_command (
-        OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/index.html
-        COMMAND ${Sphinx-build_EXECUTABLE} -b ${SCAI_DOC_TYPE} -c ${CMAKE_CURRENT_BINARY_DIR} ${LAMA_DOC_DIR} ${CMAKE_CURRENT_BINARY_DIR}
+        OUTPUT ${SPHINX_BINARY_DIR}/index.${DOC_EXTENTSION}
+        COMMAND ${Sphinx-build_EXECUTABLE}
+                    -b ${SCAI_DOC_TYPE}
+                    -c ${CMAKE_CURRENT_BINARY_DIR}
+                    -d ${SPHINX_BINARY_DIR}/_doctree
+                    ${LAMA_DOC_DIR}
+                    ${SPHINX_BINARY_DIR}
         DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/conf.py
         WORKING_DIRECTORY ${LAMA_DOC_DIR}
     )
@@ -57,12 +56,12 @@ if ( SPHINX_FOUND AND BUILD_DOC )
     # Add a custom target which executes the custom command (using ALL flag to add it to the default target as well!)
     add_custom_target (
         doc ALL
-        DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/index.html
+        DEPENDS ${SPHINX_BINARY_DIR}/index.${DOC_EXTENTSION}
     )
     
     # Add documentation to the install target
     install(
-        DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/
+        DIRECTORY ${SPHINX_BINARY_DIR}
         DESTINATION ${CMAKE_INSTALL_PREFIX}/${PROJECT_DOC_DIR}
     )
 endif ( SPHINX_FOUND AND BUILD_DOC )
