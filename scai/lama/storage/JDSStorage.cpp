@@ -1676,17 +1676,35 @@ size_t JDSStorage<ValueType>::getMemoryUsageImpl() const
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
-JDSStorage<ValueType>* JDSStorage<ValueType>::clone() const
+JDSStorage<ValueType>* JDSStorage<ValueType>::copy() const
 {
-    return new JDSStorage();
+    return new JDSStorage( *this );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+JDSStorage<ValueType>* JDSStorage<ValueType>::newMatrixStorage() const
+{
+   common::unique_ptr<JDSStorage<ValueType> > storage( new JDSStorage<ValueType>() ); 
+   storage->setContextPtr( this->getContextPtr() );
+   return storage.release();
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
-JDSStorage<ValueType>* JDSStorage<ValueType>::copy() const
+_MatrixStorage* JDSStorage<ValueType>::create()
 {
-    return new JDSStorage( *this );
+    return new JDSStorage<ValueType>();
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+template<typename ValueType>
+MatrixStorageCreateKeyType JDSStorage<ValueType>::createValue()
+{
+    return MatrixStorageCreateKeyType( Format::JDS, common::getScalarType<ValueType>() );
 }
 
 /* ========================================================================= */

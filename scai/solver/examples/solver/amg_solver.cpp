@@ -181,7 +181,7 @@ int main( int argc, char* argv[] )
 
     // for solutin create vector with same format/type as rhs, size = numRows, init = 0.0
 
-    unique_ptr<Vector> solutionPtr( rhs.clone( rhs.getDistributionPtr() ) );
+    unique_ptr<Vector> solutionPtr( rhs.newVector() );
     Vector& solution = *solutionPtr;
 
     solution = 0.0;   // intialize of a vector

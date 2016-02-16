@@ -264,11 +264,13 @@ int main( int argc, char* argv[] )
 
     common::shared_ptr<Matrix> matrix;
 
-    common::shared_ptr<Vector> v ( Vector::getVector( DENSE, options.outDataType ) );
+    VectorCreateKeyType vectorType( DENSE, options.outDataType );
+    common::shared_ptr<Vector> v ( Vector::create( vectorType ) );
 
     if ( options.matFileName != "" )
     { 
-        matrix.reset( Matrix::getMatrix( Format::CSR, options.outDataType ) );
+        MatrixCreateKeyType matrixType( Format::CSR, options.outDataType );
+        matrix.reset( Matrix::create( MatrixCreateKeyType ( matrixType ) ) );
         matrix->readFromFile( options.matFileName );
         cout << "Read in matrix from file " << options.matFileName << ": " << *matrix << endl;
     }
@@ -321,7 +323,8 @@ int main( int argc, char* argv[] )
 
     if ( matrix.get() )
     { 
-        common::shared_ptr<Vector> rhs ( Vector::getVector( DENSE, options.outDataType ) );
+        VectorCreateKeyType vectorType( DENSE, options.outDataType );
+        common::shared_ptr<Vector> rhs ( Vector::create( vectorType ) );
         *rhs = *matrix * *v;
         v = rhs;
         cout << "Vector now rhs of multiplication with matrix: " << *v << endl;

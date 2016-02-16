@@ -62,7 +62,7 @@ int main()
 
     HArray<float> lamaArray ( N, 1.0 );
 
-    shared_ptr<HArray<float> > lamaArray1( lamaArray.clone() );
+    shared_ptr<HArray<float> > lamaArray1( HArray<float>::create( lamaArray.getValueType() ) );
 
     *lamaArray1 = lamaArray;
 

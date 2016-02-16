@@ -114,14 +114,12 @@ public:
     using common::Factory<common::scalar::ScalarType, _HArray*>::create;
 
     /**
-     *  Each derived class must provide a clone function. This will
+     *  Each derived class must provide a copy function. This will
      *  allow writing general routines that require temporary data.
      *
      *  Note: derived class might implement this routine by using covariant return types.
      *  Note: will be the same as _HArray::create( this->getValueType() )
      */
-
-    virtual _HArray* clone() = 0;
 
     virtual _HArray* copy() = 0;
 

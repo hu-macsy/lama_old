@@ -2306,13 +2306,30 @@ size_t DenseMatrix<ValueType>::getMemoryUsage() const
     return getDistribution().getCommunicator().sum( memoryUsage );
 }
 
-/* -------------------------------------------------------------------------- */
+/* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-DenseMatrix<ValueType>* DenseMatrix<ValueType>::clone() const
+DenseMatrix<ValueType>* DenseMatrix<ValueType>::newMatrix() const
 {
-    return new DenseMatrix<ValueType>();
+    SCAI_LOG_INFO( logger, "SparseMatrix<ValueType>::newMatrix" )
+
+    // use auto pointer for new sparse matrix to get data freed in case of Exception
+
+    common::unique_ptr<DenseMatrix<ValueType> > newDenseMatrix( new DenseMatrix<ValueType>() );
+
+    // inherit the context for local and halo storage
+
+    newDenseMatrix->setContextPtr( this->getContextPtr() );
+
+    newDenseMatrix->setCommunicationKind( this->getCommunicationKind() );
+
+    SCAI_LOG_INFO( logger,
+                   *this << ": create -> " << *newDenseMatrix << " @ " << *(newDenseMatrix->getContextPtr()) << ", kind = " << newDenseMatrix->getCommunicationKind() );
+
+    return newDenseMatrix.release();
 }
+
+/* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
 DenseMatrix<ValueType>* DenseMatrix<ValueType>::copy() const
@@ -2331,6 +2348,12 @@ MatrixCreateKeyType DenseMatrix<ValueType>::createValue()
 {
     common::scalar::ScalarType skind = common::getScalarType<ValueType>();
     return MatrixCreateKeyType ( Format::DENSE, skind );
+}
+
+template<typename ValueType>
+MatrixCreateKeyType DenseMatrix<ValueType>::getCreateValue() const
+{
+    return createValue();
 }
 
 /* ========================================================================= */
