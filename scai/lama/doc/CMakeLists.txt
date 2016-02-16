@@ -36,14 +36,11 @@ if ( SPHINX_FOUND AND BUILD_DOC )
     
     # Sphinx configuration file conf.py will be generated with correct LAMA version, copyright, etc.
     # must be in same directory as Sphinx source files
-    set ( SCAI_COMMON_DOC_DIR ${CMAKE_INSTALL_PREFIX}/${SPHINX_ROOT_DIR}/scai-common-${SCAI_COMMON_VERSION}/ ) # 1
-    set ( SCAI_LOGGING_DOC_DIR ${CMAKE_INSTALL_PREFIX}/${SPHINX_ROOT_DIR}/scai-logging-${SCAI_LOGGING_VERSION}/ ) # 2
-    set ( SCAI_TRACING_DOC_DIR ${CMAKE_INSTALL_PREFIX}/${SPHINX_ROOT_DIR}/scai-tracing-${SCAI_TRACING_VERSION}/ ) # 3
-    set ( SCAI_TASKING_DOC_DIR ${CMAKE_INSTALL_PREFIX}/${SPHINX_ROOT_DIR}/scai-tasking-${SCAI_TASKING_VERSION}/ )# 4
-    set ( SCAI_HMEMO_DOC_DIR ${CMAKE_INSTALL_PREFIX}/${SPHINX_ROOT_DIR}/scai-hmemo-${SCAI_HMEMO_VERSION}/ ) # 5
-    set ( SCAI_KREGISTRY_DOC_DIR ${CMAKE_INSTALL_PREFIX}/${SPHINX_ROOT_DIR}/scai-kregistry-${SCAI_KREGISTRY_VERSION}/ ) # 6
-    set ( SCAI_BLASKERNEL_DOC_DIR ${CMAKE_INSTALL_PREFIX}/${SPHINX_ROOT_DIR}/scai-blaskernel-${SCAI_BLASKERNEL_VERSION}/ ) # 7
-    set ( SCAI_DMEMO_DOC_DIR ${CMAKE_INSTALL_PREFIX}/${SPHINX_ROOT_DIR}/scai-dmemo-${SCAI_DMEMO_VERSION}/ ) # 8
+    foreach    ( module ${${UPPER_PROJECT_NAME}_INTERNAL_DEPS} )
+        string ( TOUPPER ${module} upper_module )
+        string ( SUBSTRING ${module} 5 -1 MODULE_SURNAME )
+        set ( ${upper_module}_DOC_DIR ${CMAKE_INSTALL_PREFIX}/${SPHINX_ROOT_DIR}/scai-${MODULE_SURNAME}-${${upper_module}_VERSION}/ )
+    endforeach ( module ${${UPPER_PROJECT_NAME}_INTERNAL_DEPS} )
     
     configure_file ( "${CMAKE_SOURCE_DIR}/doc/conf.py.in" "${CMAKE_CURRENT_BINARY_DIR}/conf.py" )
     

@@ -254,19 +254,7 @@ ExternalProject_Add ( scai_solver
             )
 
 if    ( BUILD_DOC )
-      #only need the standart CMAKE_ARGS for the INSTALL_PREFIX
-
-      if    ( SPHINX_FOUND )
-      add_subdirectory ( doc/sphinx )
-      endif ( SPHINX_FOUND )
-
-      if    ( DOXYGEN_FOUND )
-      add_subdirectory ( doc/doxygen )
-      endif ( DOXYGEN_FOUND )
-
-      ## add custom target docclean
-      include ( DocClean )
-
+      add_subdirectory ( doc )
 endif ( BUILD_DOC )
 
 ## add custom target distclean

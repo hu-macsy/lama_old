@@ -38,8 +38,6 @@ file ( MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html )
 # The initial rm command gets rid of everything previously built by this
 # custom command.
 
-message ( STATUS "doxy command: ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/LAMA.Doxyfile" )
-
 add_custom_command (
     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/html/index.html
     #COMMAND rm -rf ${CMAKE_CURRENT_BINARY_DIR}

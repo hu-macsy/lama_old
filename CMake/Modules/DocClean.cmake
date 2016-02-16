@@ -30,8 +30,20 @@
  # @date 09.06.2015
 ###
 
-add_custom_target ( docclean COMMENT "Cleaning doc dir: ${CMAKE_CURRENT_BINARY_DIR}/doc." )
+add_custom_target ( docclean )
 add_custom_command (
 	TARGET docclean
-	COMMAND sh ${CMAKE_MODULE_PATH}/docclean.sh ${CMAKE_CURRENT_BINARY_DIR}/doc
+    DEPENDS clean
+	COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_CURRENT_BINARY_DIR}/sphinx/
+	COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/sphinx/
+	COMMENT "Cleaning sphinx doc build dir: ${CMAKE_CURRENT_BINARY_DIR}/sphinx."
+)
+
+add_custom_target ( doxygendocclean )
+add_custom_command (
+	TARGET doxygendocclean
+    DEPENDS clean
+	COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_CURRENT_BINARY_DIR}/doxygen/
+	COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/doxygen/
+	COMMENT "Cleaning doxygen doc build dir: ${CMAKE_CURRENT_BINARY_DIR}/doxygen."
 )

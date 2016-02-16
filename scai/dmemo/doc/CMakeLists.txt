@@ -36,6 +36,12 @@ if ( SPHINX_FOUND AND BUILD_DOC )
     
     # Sphinx configuration file conf.py will be generated with correct LAMA version, copyright, etc.
     # must be in same directory as Sphinx source files
+    foreach    ( module ${${UPPER_PROJECT_NAME}_INTERNAL_DEPS} )
+        string ( TOUPPER ${module} upper_module )
+        string ( SUBSTRING ${module} 5 -1 MODULE_SURNAME )
+        set ( ${upper_module}_DOC_DIR ${CMAKE_INSTALL_PREFIX}/${SPHINX_ROOT_DIR}/scai-${MODULE_SURNAME}-${${upper_module}_VERSION}/ )
+    endforeach ( module ${${UPPER_PROJECT_NAME}_INTERNAL_DEPS} )
+    
     configure_file ( "${CMAKE_SOURCE_DIR}/doc/conf.py.in" "${CMAKE_CURRENT_BINARY_DIR}/conf.py" )
     
     # Add custom command for building the userdoc
