@@ -39,9 +39,9 @@ if ( SPHINX_FOUND AND BUILD_DOC )
     # must be in same directory as Sphinx source files
     setIntersphinxInternalVariables()
     # set additional links to none dependent libs
-    set ( SCAI_TRACING_DOC_DIR ${CMAKE_INSTALL_PREFIX}/${SPHINX_ROOT_DIR}/scai-tracing-${SCAI_TRACING_VERSION}/${SCAI_DOC_TYPE} )
-    set ( SCAI_TASKING_DOC_DIR ${CMAKE_INSTALL_PREFIX}/${SPHINX_ROOT_DIR}/scai-tasking-${SCAI_TASKING_VERSION}/${SCAI_DOC_TYPE} )
-    set ( SCAI_HMEMO_DOC_DIR ${CMAKE_INSTALL_PREFIX}/${SPHINX_ROOT_DIR}/scai-hmemo-${SCAI_HMEMO_VERSION}/${SCAI_DOC_TYPE} )
+    set ( SCAI_TRACING_DOC_DIR ${CMAKE_INSTALL_PREFIX}/${SPHINX_ROOT_DIR}/scai-tracing-${SCAI_TRACING_VERSION}/ )
+    set ( SCAI_TASKING_DOC_DIR ${CMAKE_INSTALL_PREFIX}/${SPHINX_ROOT_DIR}/scai-tasking-${SCAI_TASKING_VERSION}/ )
+    set ( SCAI_HMEMO_DOC_DIR ${CMAKE_INSTALL_PREFIX}/${SPHINX_ROOT_DIR}/scai-hmemo-${SCAI_HMEMO_VERSION}/ )
     configure_file ( "${CMAKE_SOURCE_DIR}/doc/conf.py.in" "${CMAKE_CURRENT_BINARY_DIR}/conf.py" )
     
     # Add custom command for building the userdoc
@@ -65,7 +65,7 @@ if ( SPHINX_FOUND AND BUILD_DOC )
     
     # Add documentation to the install target
     install(
-        DIRECTORY ${SPHINX_BINARY_DIR}
+        DIRECTORY ${SPHINX_BINARY_DIR}/
         DESTINATION ${CMAKE_INSTALL_PREFIX}/${PROJECT_DOC_DIR}
     )
 endif ( SPHINX_FOUND AND BUILD_DOC )

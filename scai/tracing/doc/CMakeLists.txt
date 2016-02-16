@@ -61,7 +61,7 @@ if ( SPHINX_FOUND AND BUILD_DOC )
     
     # Add documentation to the install target
     install(
-        DIRECTORY ${SPHINX_BINARY_DIR}
+        DIRECTORY ${SPHINX_BINARY_DIR}/
         DESTINATION ${CMAKE_INSTALL_PREFIX}/${PROJECT_DOC_DIR}
     )
 endif ( SPHINX_FOUND AND BUILD_DOC )
