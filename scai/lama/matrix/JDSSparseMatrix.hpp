@@ -215,13 +215,20 @@ public:
 
     virtual void swapLocalStorage( StorageType& localStorage );
 
-    /* Implementation of pure method Matrix::clone with covariant return type */
+    /* Implementation of pure method Matrix::newMatrix with covariant return type */
 
-    virtual JDSSparseMatrix<ValueType>* clone() const;
+    virtual JDSSparseMatrix<ValueType>* newMatrix() const;
 
     /* Implementation of pure method Matrix::copy with covariant return type */
 
     virtual JDSSparseMatrix<ValueType>* copy() const;
+
+    /* Implementation of pure method Matrix::getFormatType with covariant return type */
+
+    virtual Format::MatrixStorageFormat getFormatType() const
+    {
+        return Format::JDS;
+    }
 
     /* Implementation of pure method of class Matrix. */
 

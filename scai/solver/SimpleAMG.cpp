@@ -35,7 +35,6 @@
 #include <scai/solver/SimpleAMG.hpp>
 
 // local library
-#include <scai/solver/shared_lib.hpp>
 #include <scai/solver/SingleGridSetup.hpp>
 
 #include <scai/lama/expression/MatrixVectorExpressions.hpp>

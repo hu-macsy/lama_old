@@ -54,17 +54,6 @@ namespace lama
 
 SCAI_LOG_DEF_LOGGER( Matrix::logger, "Matrix" )
 
-/* ---------------------------------------------------------------------------------------*/
-/*    Factory to create a matrix                                                          */
-/* ---------------------------------------------------------------------------------------*/
-
-Matrix* Matrix::getMatrix( const MatrixStorageFormat format, common::scalar::ScalarType type )
-{
-    MatrixCreateKeyType val( format, type );
-    SCAI_LOG_INFO( logger, "getMatrix uses Factory::create " << val )
-    return create( val );
-}
-
 /* ----------------------------------------------------------------------- */
 
 Matrix::Matrix( const Matrix& other ) : 
@@ -627,6 +616,11 @@ Matrix* Matrix::copy( DistributionPtr rowDistribution, DistributionPtr colDistri
     rep->redistribute( rowDistribution, colDistribution );
 
     return rep.release();
+}
+
+MatrixCreateKeyType Matrix::getCreateValue() const
+{
+    return MatrixCreateKeyType( getFormatType(), getValueType() );
 }
 
 } /* end namespace lama */

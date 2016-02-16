@@ -7,25 +7,30 @@ make clean
 # build examples
 make
 
-# run examples
-./Barrier.exe
-./CriticalRegion.exe
-./DemoComplex.exe
-./DemoFactory.exe
-./DemoFactory1.exe
-./DemoFunction.exe
-./DemoMath.exe
-./DemoPointer.exe
-./DemoSettings.exe
-./DemoTypeTrait.exe
-./ExceptionDemo.exe
-./TimePrecision.exe
-./UseModule.exe ./DummyModule.so
-./UseModule.exe ./Module.so
+function checkErrorValue( ) {
+    $*
+    if [ "$?" -ne 0 ];
+    then
+        echo "Example: $cmd Failed. Aborting..."
+        exit 1
+    fi
+}
 
-# check if there are unkown examples
-count=`ls -l -la *.exe | wc -l`
-if [ $count -ne 13 ]; then
-    echo "There are unknown executables in this directory, please add all examples to the related run_all.sh script!"
-    exit 1
-fi
+# run examples
+
+checkErrorValue ./Barrier.exe
+checkErrorValue ./CriticalRegion.exe
+checkErrorValue ./DemoComplex.exe
+checkErrorValue ./DemoFactory.exe
+checkErrorValue ./DemoFactory1.exe
+checkErrorValue ./DemoFunction.exe
+checkErrorValue ./DemoMath.exe
+checkErrorValue ./DemoPointer.exe
+checkErrorValue ./DemoSettings.exe
+checkErrorValue ./DemoTypeTrait.exe
+checkErrorValue ./ExceptionDemo.exe
+checkErrorValue ./BenchPointers.exe 
+checkErrorValue ./TimePrecision.exe 
+checkErrorValue ./UseModule.exe ./DummyModule.so 
+checkErrorValue ./UseModule.exe ./Module.so 
+

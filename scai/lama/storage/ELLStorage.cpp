@@ -1978,21 +1978,37 @@ void ELLStorage<ValueType>::matrixAddMatrixELL(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ELLStorage<ValueType>* ELLStorage<ValueType>::clone() const
-{
-    SCAI_LOG_INFO( logger, "create" )
-
-    return new ELLStorage<ValueType>();
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
 ELLStorage<ValueType>* ELLStorage<ValueType>::copy() const
 {
     SCAI_LOG_INFO( logger, "copy" )
 
     return new ELLStorage<ValueType>( *this );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+ELLStorage<ValueType>* ELLStorage<ValueType>::newMatrixStorage() const
+{
+   common::unique_ptr<ELLStorage<ValueType> > storage( new ELLStorage<ValueType>() ); 
+   storage->setContextPtr( this->getContextPtr() );
+   return storage.release();
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+template<typename ValueType>
+_MatrixStorage* ELLStorage<ValueType>::create()
+{
+    return new ELLStorage<ValueType>();
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+template<typename ValueType>
+MatrixStorageCreateKeyType ELLStorage<ValueType>::createValue()
+{
+    return MatrixStorageCreateKeyType( Format::ELL, common::getScalarType<ValueType>() );
 }
 
 /* ========================================================================= */

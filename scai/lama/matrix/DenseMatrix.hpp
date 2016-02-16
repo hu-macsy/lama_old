@@ -541,15 +541,23 @@ public:
         const common::scalar::ScalarType dataType = common::scalar::INTERNAL,
         const File::IndexDataType indexDataTypeIA = File::INT,
         const File::IndexDataType indexDataTypeJA = File::INT ) const;
+
     /**
-     * @brief Implementation of pure function Matrix::clone with covariant return type.
+     * @brief Implementation of pure function Matrix::copy with covariant return type.
      */
-    virtual DenseMatrix<ValueType>* clone() const;
+    virtual DenseMatrix<ValueType>* newMatrix() const;
 
     /**
      * @brief Implementation of pure function Matrix::copy with covariant return type.
      */
     virtual DenseMatrix<ValueType>* copy() const;
+
+    /* Implementation of pure method Matrix::getFormatType with covariant return type */
+
+    virtual Format::MatrixStorageFormat getFormatType() const
+    {
+        return Format::DENSE;
+    }
 
     /* Implementation of pure method of class Matrix. */
 
@@ -687,6 +695,8 @@ public:
     // key for factory 
 
     static MatrixCreateKeyType createValue();
+
+    MatrixCreateKeyType getCreateValue() const;
 };
 
 /*  template methods implementations */

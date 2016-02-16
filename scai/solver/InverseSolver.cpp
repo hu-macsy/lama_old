@@ -99,7 +99,7 @@ void InverseSolver::initialize( const Matrix& coefficients )
 
     SCAI_LOG_INFO( logger, "Initializing with " << coefficients )
 
-    getRuntime().mInverse = lama::MatrixPtr( coefficients.clone() );
+    getRuntime().mInverse = lama::MatrixPtr( coefficients.newMatrix() );
 
     getRuntime().mInverse->invert( coefficients );
 

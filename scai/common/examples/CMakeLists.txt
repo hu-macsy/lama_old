@@ -53,7 +53,7 @@ add_library( dummy_module SHARED DummyModule.cpp )
 
 foreach ( executable ExceptionDemo CriticalRegion Barrier 
           DemoFactory DemoFactory1 DemoPointer UseModule TimePrecision 
-          DemoComplex DemoTypeTrait DemoSettings DemoMath DemoFunction )
+          DemoComplex DemoTypeTrait DemoSettings DemoMath DemoFunction BenchPointers )
     add_executable ( ${executable} ${executable}.cpp )
     target_link_libraries ( ${executable} ${PROJECT_NAME} )
     set ( EXAMPLE_EXECUTABLES "${EXAMPLE_EXECUTABLES} ${executable}.exe" )

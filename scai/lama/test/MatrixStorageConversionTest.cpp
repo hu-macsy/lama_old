@@ -165,7 +165,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( CreateTest, StorageType, StorageTypes )
     typedef typename StorageType::StorageValueType ValueType;
     StorageType storage;
     setCSRStorage<ValueType>( storage );
-    scai::common::shared_ptr<_MatrixStorage> storage1( storage.clone() );
+    scai::common::shared_ptr<_MatrixStorage> storage1( MatrixStorage<ValueType>::create( storage.getCreateValue() ) );
 // check for same format and value type
     BOOST_CHECK_EQUAL( storage1->getFormat(), storage.getFormat() );
     BOOST_CHECK_EQUAL( storage1->getValueType(), storage.getValueType() );
