@@ -108,6 +108,13 @@ scai_summary_message ( "STATIC"
                            "pThreads"
                            "" )
 
+# boost
+message ( STATUS "" )
+scai_summary_message ( "FOUND"
+                       "BOOST_INCLUDE_DIR"
+                       "Boost"
+                       "Version ${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}, add include dir ${BOOST_INCLUDE_DIR} to compile your sources" )
+
 message ( STATUS "" )
 
     # BLAS
