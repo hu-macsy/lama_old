@@ -30,6 +30,7 @@
  # @date 03.11.2015
  # @since 1.0.1
 ###
+
 if ( SPHINX_FOUND AND BUILD_DOC )
     set ( LAMA_DOC_DIR "${CMAKE_SOURCE_DIR}/doc" )
     set ( SPHINX_BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}/${SCAI_DOC_TYPE}" )
@@ -41,7 +42,7 @@ if ( SPHINX_FOUND AND BUILD_DOC )
     
     # Add custom command for building the userdoc
     add_custom_command (
-        OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/index.${DOC_EXTENTSION}
+        OUTPUT ${SPHINX_BINARY_DIR}/index.${DOC_EXTENTSION}
         COMMAND ${Sphinx-build_EXECUTABLE}
                     -b ${SCAI_DOC_TYPE}
                     -c ${CMAKE_CURRENT_BINARY_DIR}
@@ -55,12 +56,12 @@ if ( SPHINX_FOUND AND BUILD_DOC )
     # Add a custom target which executes the custom command (using ALL flag to add it to the default target as well!)
     add_custom_target (
         doc ALL
-        DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/index.${DOC_EXTENTSION}
+        DEPENDS ${SPHINX_BINARY_DIR}/index.${DOC_EXTENTSION}
     )
     
     # Add documentation to the install target
     install(
-        DIRECTORY ${SPHINX_BINARY_DIR}
+        DIRECTORY ${SPHINX_BINARY_DIR}/
         DESTINATION ${CMAKE_INSTALL_PREFIX}/${PROJECT_DOC_DIR}
     )
 endif ( SPHINX_FOUND AND BUILD_DOC )
