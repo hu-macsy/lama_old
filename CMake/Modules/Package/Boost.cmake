@@ -55,7 +55,7 @@ endif ( WIN32 )
 
 # Finds packages with custom search options 
 
-set ( Boost_COMPONENTS unit_test_framework regex thread system )
+set ( Boost_COMPONENTS unit_test_framework regex )
 
 # FindBoost Debug options comment
 if    ( SCAI_CMAKE_VERBOSE )
@@ -86,4 +86,3 @@ endif ( NOT Boost_REGEX_FOUND AND ${BUILD_TEST} )
 if    ( Boost_UNIT_TEST_FRAMEWORK_FOUND AND Boost_REGEX_FOUND )
     set ( FOUND_BOOST_TEST TRUE )
 endif ( Boost_UNIT_TEST_FRAMEWORK_FOUND AND Boost_REGEX_FOUND ) 
- 

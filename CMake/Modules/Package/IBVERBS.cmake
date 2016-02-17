@@ -1,5 +1,5 @@
 ###
- # @file package/GPI2.cmake
+ # @file package/IBVERBS.cmake
  #
  # @license
  # Copyright (c) 2009-2013
@@ -25,48 +25,39 @@
  # SOFTWARE.
  # @endlicense
  #
- # @brief findPackage and configuration of GPI2
+ # @brief findPackage and configuration of IBVERBS
  # @author Thomas Brandes
  # @date 15.02.2016
  # @since 2.0.0
 ###
 
- # - Find GPI2
+ # - Find ibverbs
  #
- # This module looks for GPI2 support and defines the following values
- #  GPI2_FOUND                   TRUE if GPI2 has been found
- #  GPI2_INCLUDE_DIR             the include path for GPI2
- #  GPI2_LIBRARIES               the library to link against
+ # This module looks for ibverbs support and defines the following values
+ #  IBVERBS_FOUND                   TRUE if IBVERBS has been found
+ #  IBVERBS_INCLUDE_DIR             the include path for IBVERBS
+ #  IBVERBS_LIBRARIES               the library to link against
 
-find_path( GPI2_INCLUDE_DIR GASPI.h
+find_path( IBVERBS_INCLUDE_DIR infiniband/verbs.h
     /usr/local/include
     /usr/include
-    $ENV{GPI2_INCLUDE_PATH}
+    $ENV{IBVERBS_INCLUDE_PATH}
 )
 
-# message( STATUS "GPI2_INCLUDE_DIR: ${GPI2_INCLUDE_DIR}" )
+message( STATUS "IBVERBS_INCLUDE_DIR: ${IBVERBS_INCLUDE_DIR}" )
 
-FIND_LIBRARY( GPI2_LIBRARIES GPI2 
+FIND_LIBRARY( IBVERBS_LIBRARIES ibverbs 
     /usr/local/lib
     /usr/lib
-    $ENV{GPI2_LIBRARY_PATH}
+    $ENV{IBVERBS_LIBRARY_PATH}
 )
 
-# message( STATUS "GPI2_LIBRARIES: ${GPI2_LIBRARIES}" )
+message( STATUS "IBVERBS_LIBRARIES: ${IBVERBS_LIBRARIES}" )
 
 include( FindPackageHandleStandardArgs )
 
-find_package_handle_standard_args( GPI2
+find_package_handle_standard_args( IBVERBS
     DEFAULT_MSG
-    GPI2_INCLUDE_DIR
-    GPI2_LIBRARIES
+    IBVERBS_INCLUDE_DIR
+    IBVERBS_LIBRARIES
 )
-
-mark_as_advanced( GPI2_INCLUDE_DIR GPI2_LIBRARIES )
-
-### ALLOW to switch off GPI2 explicitly ###
-
-include ( Functions/setAndCheckCache )
-
-setAndCheckCache ( GPI2 )
-
