@@ -41,7 +41,7 @@ set ( SCAI_TASKING_EXTERNAL_DEPS ) # 4
 set ( SCAI_HMEMO_EXTERNAL_DEPS                         CUDA MIC ) # 5
 set ( SCAI_KREGISTRY_EXTERNAL_DEPS ) # 6
 set ( SCAI_BLASKERNEL_EXTERNAL_DEPS             OpenMP CUDA MIC SCAI_BLAS ) # 7
-set ( SCAI_DMEMO_EXTERNAL_DEPS                  OpenMP                    MPI GPI2 IBVERBS GraphPartitioning ) # 8
+set ( SCAI_DMEMO_EXTERNAL_DEPS                  OpenMP                    MPI GPI GraphPartitioning ) # 8
 set ( SCAI_LAMA_EXTERNAL_DEPS                   OpenMP CUDA MIC SCAI_BLAS ) # 9
 set ( SCAI_SOLVER_EXTERNAL_DEPS ) # 10
 

@@ -1,5 +1,5 @@
 ###
- # @file package/IBVERBS.cmake
+ # @file package/GPI2.cmake
  #
  # @license
  # Copyright (c) 2009-2013
@@ -25,39 +25,37 @@
  # SOFTWARE.
  # @endlicense
  #
- # @brief findPackage and configuration of IBVERBS
+ # @brief findPackage and configuration of GPI
  # @author Thomas Brandes
  # @date 15.02.2016
  # @since 2.0.0
 ###
 
- # - Find ibverbs
- #
- # This module looks for ibverbs support and defines the following values
- #  IBVERBS_FOUND                   TRUE if IBVERBS has been found
- #  IBVERBS_INCLUDE_DIR             the include path for IBVERBS
- #  IBVERBS_LIBRARIES               the library to link against
+find_package ( GPI2 ${SCAI_FIND_PACKAGE_FLAGS} )
+find_package ( Ibverbs ${SCAI_FIND_PACKAGE_FLAGS} )
 
-find_path( IBVERBS_INCLUDE_DIR infiniband/verbs.h
-    /usr/local/include
-    /usr/include
-    $ENV{IBVERBS_INCLUDE_PATH}
-)
+### ALLOW to switch off GPI2 explicitly ###
+# do what setAndCheckCache does but with 2 packages
+# Check if cache variable is already set
+if    ( DEFINED USE_GPI )
+    # do nothing
+# if cache variable is NOT set
+else ( DEFINED USE_GPI )
+    # Check if package was found
+    if    ( GPI2_FOUND AND IBVERBS_FOUND )
+        set ( USE_PACKAGE TRUE )
+    else  ( GPI2_FOUND AND IBVERBS_FOUND )
+        set ( USE_PACKAGE FALSE )
+    endif ( GPI2_FOUND AND IBVERBS_FOUND )
+        
+    # Set cache variable
+    set ( USE_GPI ${USE_PACKAGE} CACHE BOOL "Enable / Disable use of GPI" )
+endif ( DEFINED USE_GPI )
 
-message( STATUS "IBVERBS_INCLUDE_DIR: ${IBVERBS_INCLUDE_DIR}" )
-
-FIND_LIBRARY( IBVERBS_LIBRARIES ibverbs 
-    /usr/local/lib
-    /usr/lib
-    $ENV{IBVERBS_LIBRARY_PATH}
-)
-
-message( STATUS "IBVERBS_LIBRARIES: ${IBVERBS_LIBRARIES}" )
-
-include( FindPackageHandleStandardArgs )
-
-find_package_handle_standard_args( IBVERBS
-    DEFAULT_MSG
-    IBVERBS_INCLUDE_DIR
-    IBVERBS_LIBRARIES
-)
+if    ( USE_GPI2 AND GPI2_FOUND AND IBVERBS_FOUND )
+	# just for making it the same variable ending for all packages
+	set ( GPI_INCLUDE_DIR ${GPI2_INCLUDE_DIR} ${IBVERBS_INCLUDE_DIR} )
+	
+	# conclude all needed CUDA libraries
+	set ( SCAI_GPI_LIBRARIES ${GPI2_LIBRARIES} ${IBVERBS_LIBRARIES} )
+endif ( USE_GPI2 AND GPI2_FOUND AND IBVERBS_FOUND )
