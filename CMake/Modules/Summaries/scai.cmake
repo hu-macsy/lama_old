@@ -130,11 +130,16 @@ message ( STATUS "" )
                                "LAPACK"
                                "" )
     endif ( SCAI_BLAS_NAME MATCHES "BLAS" )
-    
+
+set ( REQUIRED_FOUND FALSE )
+if    ( MPI_FOUND OR GPI_FOUND )
+  set ( REQUIRED_FOUND TRUE )
+endif ( MPI_FOUND OR GPI_FOUND )
+
 # LAMA MPI
 message ( STATUS "" )
 scai_summary_message ( "USE"
-                       "USE_MPI"
+                       "REQUIRED_FOUND"
                        "Distributed"
                        "" )
 

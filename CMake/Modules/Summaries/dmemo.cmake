@@ -84,10 +84,15 @@ scai_summary_message ( "USE"
 message ( STATUS "" )
 scai_status_message ( HEADLINE "LIBRARIES:" )
   
+set ( REQUIRED_FOUND FALSE )
+if    ( MPI_FOUND OR GPI_FOUND )
+  set ( REQUIRED_FOUND TRUE )
+endif ( MPI_FOUND OR GPI_FOUND )
+
 # LAMA MPI
 message ( STATUS "" )
 scai_summary_message ( "USE"
-                       "USE_MPI"
+                       "REQUIRED_FOUND"
                        "Distributed"
                        "" )
 
@@ -122,11 +127,9 @@ scai_summary_message ( "USE"
                            "at ${PARMETIS_INCLUDE_DIR}" )
 
 set ( REQUIRED_FOUND FALSE )
-if    ( SCAI_COMMON_FOUND AND SCAI_LOGGING_FOUND AND SCAI_TRACING_FOUND AND SCAI_TASKING_FOUND AND SCAI_HMEMO_FOUND
-            AND SCAI_KREGISTRY_FOUND )
+if    ( SCAI_COMMON_FOUND AND SCAI_LOGGING_FOUND AND SCAI_TRACING_FOUND AND SCAI_TASKING_FOUND AND SCAI_HMEMO_FOUND )
   set ( REQUIRED_FOUND TRUE )
-endif ( SCAI_COMMON_FOUND AND SCAI_LOGGING_FOUND AND SCAI_TRACING_FOUND AND SCAI_TASKING_FOUND AND SCAI_HMEMO_FOUND
-            AND SCAI_KREGISTRY_FOUND )
+endif ( SCAI_COMMON_FOUND AND SCAI_LOGGING_FOUND AND SCAI_TRACING_FOUND AND SCAI_TASKING_FOUND AND SCAI_HMEMO_FOUND )
 
 message ( STATUS "" )
 scai_summary_message ( "STATIC"
@@ -159,11 +162,6 @@ scai_summary_message ( "STATIC"
                            "SCAI Hmemo"
                            "" )
                            
-    scai_summary_message ( "FOUND"
-                           "SCAI_KREGISTRY_FOUND"
-                           "SCAI Kregistry"
-                           "" )
-
 # LAMA TEST
 message ( STATUS "" )
 scai_summary_message ( "USE"
