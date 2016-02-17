@@ -164,6 +164,10 @@ std::ostream& operator<<( std::ostream& stream, const MemoryType& type )
             stream << "CUDAHostMemory";
             break;
 
+        case GPIMemory :
+            stream << "GPIMemory";
+            break;
+
         case UserMemory :
             stream << "UserMemory";
             break;
