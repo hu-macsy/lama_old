@@ -33,10 +33,10 @@
 
 # - Try to find SCAI_BLAS
 #   Once done this will define
-#   SCAI_BLAS_FOUND          - System has SCAI_BLAS
-#   SCAI_BLAS_NAME           - name of choosen BLAS library
-#   SCAI_BLAS_INCLUDE_DIR    - SCAI_BLAS include directory 
-#   SCAI_SCAI_BLAS_LIBRARIES - The libraries needed to use SCAI_BLAS
+#   SCAI_BLAS_FOUND            - System has SCAI_BLAS
+#   SCAI_BLAS_NAME             - name of choosen BLAS library
+#   SCAI_SCAI_BLAS_INCLUDE_DIR - SCAI_BLAS include directory 
+#   SCAI_SCAI_BLAS_LIBRARIES   - The libraries needed to use SCAI_BLAS
 
 include ( Functions/checkValue )
 
@@ -104,7 +104,7 @@ if ( NOT INTERNALBLAS_FOUND )
     if ( MKL_FOUND )
         set ( SCAI_BLAS_FOUND TRUE )
         set ( SCAI_BLAS_NAME "MKL" )
-        set ( SCAI_BLAS_INCLUDE_DIR ${MKL_INCLUDE_DIRS} )
+        set ( SCAI_SCAI_BLAS_INCLUDE_DIR ${MKL_INCLUDE_DIRS} )
      	set ( SCAI_SCAI_BLAS_LIBRARIES ${MKL_LIBRARIES} )
     endif ( MKL_FOUND )
     
@@ -127,7 +127,7 @@ else ( NOT INTERNALBLAS_FOUND )
 endif ( NOT INTERNALBLAS_FOUND )
 
 #message ( STATUS "SCAI_BLAS_FOUND ${SCAI_BLAS_FOUND} SCAI_BLAS_NAME ${SCAI_BLAS_NAME}" )
-#message ( STATUS "SCAI_BLAS_INCLUDE_DIR ${SCAI_BLAS_INCLUDE_DIR} SCAI_SCAI_BLAS_LIBRARIES ${SCAI_SCAI_BLAS_LIBRARIES}" )
+#message ( STATUS "SCAI_SCAI_BLAS_INCLUDE_DIR ${SCAI_SCAI_BLAS_INCLUDE_DIR} SCAI_SCAI_BLAS_LIBRARIES ${SCAI_SCAI_BLAS_LIBRARIES}" )
 
 include ( FindPackageHandleStandardArgs )
 # handle the QUIETLY and REQUIRED arguments and set SCAI_BLAS_FOUND to TRUE if all listed variables are TRUE

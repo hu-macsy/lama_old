@@ -31,6 +31,10 @@
  # @since 2.0.0
 ###
 
+### USE_GPI              - if GPI is enabled
+### SCAI_GPI_INCLUDE_DIR - GPI include directory
+### SCAI_GPI_LIBRARIES   - all needed GPI libraries (GPI2 and ibverbs)
+
 find_package ( GPI2 ${SCAI_FIND_PACKAGE_FLAGS} )
 find_package ( Ibverbs ${SCAI_FIND_PACKAGE_FLAGS} )
 
@@ -54,7 +58,7 @@ endif ( DEFINED USE_GPI )
 
 if    ( USE_GPI2 AND GPI2_FOUND AND IBVERBS_FOUND )
 	# just for making it the same variable ending for all packages
-	set ( GPI_INCLUDE_DIR ${GPI2_INCLUDE_DIR} ${IBVERBS_INCLUDE_DIR} )
+	set ( SCAI_GPI_INCLUDE_DIR ${GPI2_INCLUDE_DIR} ${IBVERBS_INCLUDE_DIR} )
 	
 	# conclude all needed CUDA libraries
 	set ( SCAI_GPI_LIBRARIES ${GPI2_LIBRARIES} ${IBVERBS_LIBRARIES} )
