@@ -5,7 +5,7 @@ Introduction
 This documentation will give an overview of the features of the \Library of \Accelerated \Math \Applications
 (\L\A\M\A) and will describe the general usage of these features.
 
-You will find concise :doc:`installation` instruction and an overview of our subproject, followed by simple examples on how to use LAMA (:doc:`tutorial`). We close with informations about writing own tests (see :doc:`testing`), :doc:`benchmarks` and on special hints :doc:`developer`. At the end we reference :doc:`related work`.
+You will find concise :doc:`installation` instruction and an overview of our subproject, followed by simple examples on how to use LAMA (:doc:`tutorial`). We close with informations about writing own tests (see :doc:`testing`), :doc:`benchmarks` and on special hints :doc:`developer`. At the end we reference :doc:`relatedWork`.
 
 About LAMA
 ==========
