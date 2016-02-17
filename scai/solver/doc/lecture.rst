@@ -86,4 +86,3 @@ and the solutions for the lecture tasks at **<project-root>/doc/user_guide/cpp_s
    ":doc:`Task 4 <lecture/task_4>`", ":doc:`Solution 4 <lecture/solution_task_4>`"
    ":doc:`Task 5 <lecture/task_5>`", ":doc:`Solution 5 <lecture/solution_task_5>`"
    ":doc:`Task 6 <lecture/task_6>`", ":doc:`Solution 6 <lecture/solution_task_6>`"
-   ":doc:`Task 7 <lecture/task_7>`", ":doc:`Solution 7 <lecture/solution_task_7>`"
