@@ -16,6 +16,3 @@ Contents:
    matrix
    expressions
    io
-
-.. context
-   distributions

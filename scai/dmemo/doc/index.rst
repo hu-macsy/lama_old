@@ -3,6 +3,12 @@
 SCAI DMemo
 ===========
 
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+   
+   distributions
+
 Motivation
 ----------
 

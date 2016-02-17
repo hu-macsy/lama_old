@@ -24,7 +24,7 @@ Block Distribution
 The *BlockDistribution* creates continuous blocks of the same size (except from the last block), which are successivly
 assigned to the processes.
 
-.. figure:: _images/blockweise.png
+.. figure:: _images/blockwise.png
     :width: 500px
     :align: center
     :alt: blockDistribution
