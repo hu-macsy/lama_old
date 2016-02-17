@@ -111,9 +111,9 @@ scai_summary_message ( "STATIC"
 # boost
 message ( STATUS "" )
 scai_summary_message ( "FOUND"
-                       "BOOST_INCLUDE_DIR"
+                       "SCAI_BOOST_INCLUDE_DIR"
                        "Boost"
-                       "Version ${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}, add include dir ${BOOST_INCLUDE_DIR} to compile your sources" )
+                       "Version ${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}, add include dir ${SCAI_BOOST_INCLUDE_DIR} to compile your sources" )
 
 message ( STATUS "" )
 
@@ -184,7 +184,7 @@ scai_summary_message ( "USE"
     scai_summary_message ( "FOUND"
                            "CUDA_FOUND"
                            "CUDA"
-                           "Version ${CUDA_VERSION} at ${CUDA_INCLUDE_DIRS}" )
+                           "Version ${CUDA_VERSION} at ${SCAI_CUDA_INCLUDE_DIRS}" )
                            
     # CUDA Compute Capability
     scai_summary_message ( "FOUND"
