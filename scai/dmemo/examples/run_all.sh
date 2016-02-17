@@ -19,9 +19,9 @@ function RUN ( ) {
 }
 
 echo ""
-echo "========================================================"
-echo "==  Building and executing all scai logging examples  =="
-echo "========================================================"
+echo "======================================================"
+echo "==  Building and executing all scai dmemo examples  =="
+echo "======================================================"
 echo ""
 
 # build examples
@@ -31,8 +31,8 @@ make
 i=0
 
 # run examples
-RUN 1 LogLevels.exe
-RUN 1 LogOpenMP.exe
+RUN 1 DemoDistribution.exe
+
 
 # check if there are unkown examples
 count=`ls -l -la $MYDIR/*.exe | wc -l`

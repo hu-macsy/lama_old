@@ -31,8 +31,8 @@
 ###
 
 foreach ( executable blas1 matrix scalar simple vector )
-    add_executable( ${executable} ${executable}.cpp )
-    target_link_libraries( ${executable} ${PROJECT_NAME} )
+    add_executable( ${executable}.exe ${executable}.cpp )
+    target_link_libraries( ${executable}.exe ${PROJECT_NAME} )
     set ( EXAMPLE_EXECUTABLES_TUTORIAL "${EXAMPLE_EXECUTABLES_TUTORIAL} ${executable}.exe" )
 endforeach ( executable )
 
