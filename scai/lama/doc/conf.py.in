@@ -13,8 +13,8 @@ intersphinx_mapping = {
     'scaitasking': ('${SCAI_TASKING_DOC_DIR}', None),
     'scaihmemo': ('${SCAI_HMEMO_DOC_DIR}', None),
     'scaikregistry': ('${SCAI_KREGISTRY_DOC_DIR}', None),
-    'scaiblaskernel': ('${SCAI_BLASKERNEL_DOC_DIR}', None)
-    'scaidmemo': ('${SCAI_DMEMO_DOC_DIR}', None),
+    'scaiblaskernel': ('${SCAI_BLASKERNEL_DOC_DIR}', None),
+    'scaidmemo': ('${SCAI_DMEMO_DOC_DIR}', None)
 }
 
 # The suffix of source filenames.
