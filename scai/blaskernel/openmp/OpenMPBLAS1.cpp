@@ -37,18 +37,19 @@
 #include <scai/blaskernel/BLASKernelTrait.hpp>
 
 // internal scai libraries
+
 #include <scai/tasking/TaskSyncToken.hpp>
+
+#include <scai/kregistry/KernelRegistry.hpp>
+
 #include <scai/common/macros/unused.hpp>
 #include <scai/common/Math.hpp>
 #include <scai/common/TypeTraits.hpp>
-#include <scai/kregistry/KernelRegistry.hpp>
 #include <scai/common/bind.hpp>
 #include <scai/common/OpenMP.hpp>
+#include <scai/common/preprocessor.hpp>
 
 #include <scai/tracing.hpp>
-
-// boost
-#include <boost/preprocessor.hpp>
 
 // std
 #include <cmath>

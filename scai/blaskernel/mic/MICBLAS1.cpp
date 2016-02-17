@@ -49,12 +49,8 @@
 #include <scai/common/ScalarType.hpp>
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/Math.hpp>
-
-// external
-#include <omp.h>
-
-// boost
-#include <boost/preprocessor.hpp>
+#include <scai/common/preprocessor.hpp>
+#include <scai/common/OpenMP.hpp>
 
 // std
 #include <cstdlib>
