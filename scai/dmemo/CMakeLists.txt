@@ -65,11 +65,10 @@ else  ( NOT SCAI_COMPLETE_BUILD )
     CheckValueAtCompleteBuild ( ${PROJECT_SURNAME} )
 endif ( NOT SCAI_COMPLETE_BUILD )
 
-## C++11 or Boost
-include ( CheckC++11 )
-if    ( NOT CXX_SUPPORTS_C11 OR BUILD_TEST )
+## Use Boost if BUILD_TEST is enabled
+if ( BUILD_TEST )
     include( Package/Boost )
-endif ( NOT CXX_SUPPORTS_C11 OR BUILD_TEST )
+endif ( BUILD_TEST )
 
 ### include all search packages
 addInternalAndExternalPackages()
@@ -82,15 +81,6 @@ add_definitions( ${ADDITIONAL_WARNING_FLAGS} )
 add_definitions ( -DSCAI_ASSERT_LEVEL_${SCAI_ASSERT_LEVEL} )
 add_definitions ( -D${SCAI_LOGGING_FLAG} )
 add_definitions ( -D${SCAI_TRACING_FLAG} )
-
-## MKL FOUND
-if     ( SCAI_BLAS_NAME STREQUAL "MKL" )
-    add_definitions( -DSCAI_MKL_BLAS )
-elseif ( INTERNALBLAS_FOUND )
-    add_definitions( -DSCAI_INTERNAL_BLAS )
-else   ( )
-    add_definitions( -DADD_ )
-endif  ( )
 
 if ( SCAI_OMP_SCHEDULE_FLAG )
     add_definitions ( -D${SCAI_OMP_SCHEDULE_FLAG} )
@@ -143,9 +133,13 @@ scai_project (
 add_subdirectory ( doc )
 add_subdirectory( examples )
 
+# message ( STATUS "GPI2_FOUND=${GPI2_FOUND} IBVERBS_FOUND=${IBVERBS_FOUND} USE_GPI2=${USE_GPI2}" )
+
 # if ( GPI2_FOUND AND IBVERBS_FOUND AND USE_GPI2 )
 #     add_subdirectory( gpi )
 # endif ( GPI2_FOUND AND IBVERBS_FOUND AND USE_GPI2 )
+
+message ( STATUS "MPI_FOUND=${MPI_FOUND} USE_MPI=${USE_MPI}" )
 
 if ( MPI_FOUND AND USE_MPI )
     add_subdirectory ( mpi )
@@ -170,14 +164,10 @@ set_target_properties ( ${PROJECT_NAME} PROPERTIES VERSION ${${UPPER_PROJECT_NAM
 addInternalAndExternalLinkLibraries()
 
 # external libraries
-if    ( GPI2_FOUND AND IBVERBS_FOUND AND USE_GPI2 )
-    target_link_libraries ( ${PROJECT_NAME} ${GPI2_LIBRARIES} ${IBVERBS_LIBRARIES} )
-endif ( GPI2_FOUND AND IBVERBS_FOUND AND USE_GPI2 )
 
-if ( SCALAPACK_FOUND AND MPI_FOUND AND USE_MPI )
-    target_link_libraries ( ${PROJECT_NAME} ${SCAI_PBLAS_LIBRARIES} )
-    add_definitions( -DSCAI_MKL_SCALAPACK ) ## TODO: where used?!
-endif ( SCALAPACK_FOUND AND MPI_FOUND AND USE_MPI )
+# if ( GPI2_FOUND AND IBVERBS_FOUND AND USE_GPI2 )
+#     target_link_libraries ( ${PROJECT_NAME} ${GPI2_LIBRARIES} ${IBVERBS_LIBRARIES} )
+# endif ( GPI2_FOUND AND IBVERBS_FOUND AND USE_GPI2 )
 
 ### install ###
 
