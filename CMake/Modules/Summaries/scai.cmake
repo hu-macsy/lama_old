@@ -147,13 +147,13 @@ scai_summary_message ( "USE"
     scai_summary_message ( "FOUND"
                            "MPI_FOUND"
                            "MPI"
-                           "at ${MPI_INCLUDE_PATH}" )
+                           "at ${SCAI_MPI_INCLUDE_DIR}" )
 
     # GPI
     scai_summary_message ( "FOUND"
                            "GPI_FOUND"
                            "GPI"
-                           "at ${GPI_INCLUDE_PATH}" )
+                           "at ${SCAI_GPI_INCLUDE_DIR}" )
 
 # Graph Partitioning
 message ( STATUS "" )

@@ -16,7 +16,7 @@ EXECUTABLE: ${EXECUTABLES} Module.so DummyModule.so
 	${CXX} -o $*.exe $*.o ${LD_FLAGS}
 
 .o.so:
-	${CXX} -o $*.so $*.o ${LD_FLAGS} -shared
+	${CXX} -o lib$*.so $*.o ${LD_FLAGS} -shared
 	
 .cpp.o:
 	${CXX} -fPIC ${CXX_FLAGS} ${INCLUDE_FLAGS} -c $*.cpp

@@ -31,8 +31,8 @@
 ###
 
 foreach ( executable task0 task1a task1b task2 task2a task3 task4 task5 )
-    add_executable( ${executable} ${executable}.cpp )
-    target_link_libraries( ${executable} ${PROJECT_NAME} )
+    add_executable( ${executable}.exe ${executable}.cpp )
+    target_link_libraries( ${executable}.exe ${PROJECT_NAME} )
     set ( EXAMPLE_EXECUTABLES_LECTURE "${EXAMPLE_EXECUTABLES_LECTURE} ${executable}.exe" )
 endforeach ( executable )
 
