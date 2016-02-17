@@ -44,15 +44,13 @@
 
 #include <scai/tracing.hpp>
 
+#include <scai/kregistry/KernelRegistry.hpp>
+
 #include <scai/common/Settings.hpp>
 #include <scai/common/macros/unused.hpp>
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/bind.hpp>
-
-#include <scai/kregistry/KernelRegistry.hpp>
-
-// boost
-#include <boost/preprocessor.hpp>
+#include <scai/common/preprocessor.hpp>
 
 namespace scai
 {

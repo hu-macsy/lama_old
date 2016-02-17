@@ -1,5 +1,5 @@
 ###
- # @file package/GPI2.cmake
+ # @file CMakeLists.txt
  #
  # @license
  # Copyright (c) 2009-2013
@@ -25,48 +25,26 @@
  # SOFTWARE.
  # @endlicense
  #
- # @brief findPackage and configuration of GPI2
+ # @brief dmemo/gpi/CMakeLists.txt
  # @author Thomas Brandes
- # @date 15.02.2016
+ # @date 16.02.2016
  # @since 2.0.0
 ###
 
- # - Find GPI2
- #
- # This module looks for GPI2 support and defines the following values
- #  GPI2_FOUND                   TRUE if GPI2 has been found
- #  GPI2_INCLUDE_DIR             the include path for GPI2
- #  GPI2_LIBRARIES               the library to link against
+### Add classes and header files ###
 
-find_path( GPI2_INCLUDE_DIR GASPI.h
-    /usr/local/include
-    /usr/include
-    $ENV{GPI2_INCLUDE_PATH}
-)
+set ( CLASSES
+        GPIMemManager
+        GPIMemory
+        GPIException
+        GPISyncToken
+        SegmentData
+        GPICommunicator
+    )
 
-# message( STATUS "GPI2_INCLUDE_DIR: ${GPI2_INCLUDE_DIR}" )
+set ( HEADERS
+        GPIUtils
+    )
 
-FIND_LIBRARY( GPI2_LIBRARIES GPI2 
-    /usr/local/lib
-    /usr/lib
-    $ENV{GPI2_LIBRARY_PATH}
-)
-
-# message( STATUS "GPI2_LIBRARIES: ${GPI2_LIBRARIES}" )
-
-include( FindPackageHandleStandardArgs )
-
-find_package_handle_standard_args( GPI2
-    DEFAULT_MSG
-    GPI2_INCLUDE_DIR
-    GPI2_LIBRARIES
-)
-
-mark_as_advanced( GPI2_INCLUDE_DIR GPI2_LIBRARIES )
-
-### ALLOW to switch off GPI2 explicitly ###
-
-include ( Functions/setAndCheckCache )
-
-setAndCheckCache ( GPI2 )
+scai_project ( CLASSES ${CLASSES} HEADERS ${HEADERS} ADD_PARENT_SCOPE )
 

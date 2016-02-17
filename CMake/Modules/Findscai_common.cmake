@@ -31,10 +31,8 @@ include ( Package/OpenMP )
 
 if ( SCAI_COMMON_INCLUDE_DIR )
 
-	if    ( NOT CXX_SUPPORTS_C11 )
-	    include ( Package/Boost )
-		list ( APPEND SCAI_COMMON_INCLUDE_DIR ${BOOST_INCLUDE_DIR} )
-	endif ( NOT CXX_SUPPORTS_C11 )
+	include ( Package/Boost )
+	list ( APPEND SCAI_COMMON_INCLUDE_DIR ${BOOST_INCLUDE_DIR} )
 	
 	if    ( OPENMP_FOUND AND USE_OPENMP )
 		set ( SCAI_COMMON_FLAGS "${SCAI_COMMON_FLAGS} ${OpenMP_CXX_FLAGS}" )

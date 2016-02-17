@@ -45,12 +45,10 @@
 #include <scai/kregistry/KernelRegistry.hpp>
 
 #include <scai/common/TypeTraits.hpp>
+#include <scai/common/preprocessor.hpp>
 
 // external
 #include <mkl.h>
-
-// boost
-#include <boost/preprocessor.hpp>
 
 namespace scai
 {

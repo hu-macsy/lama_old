@@ -46,9 +46,7 @@
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/macros/unused.hpp>
 #include <scai/common/cuda/CUDAError.hpp>
-
-// boost
-#include <boost/preprocessor.hpp>
+#include <scai/common/preprocessor.hpp>
 
 using namespace scai::tasking;
 using namespace scai::hmemo;
