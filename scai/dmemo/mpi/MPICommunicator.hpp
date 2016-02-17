@@ -267,7 +267,10 @@ private:
 
     class MPIGuard
     {
+    public:
+
         MPIGuard();
+
         ~MPIGuard();
     };
 
