@@ -27,5 +27,5 @@ Possible configuration in this configuration file:
    :header: "back to this Task", "Index", "next Task"
    :widths: 330, 340, 330
 
-   ":doc:`task_6`", ":doc:`../lecture`", ":doc:`task_7`"
+   ":doc:`task_6`", ":doc:`../lecture`", "-"
    

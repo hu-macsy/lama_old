@@ -9,9 +9,6 @@ extensions = ['sphinx.ext.mathjax', 'sphinx.ext.intersphinx']
 intersphinx_mapping = {
     'scaicommon': ('${SCAI_COMMON_DOC_DIR}', None),
     'scailogging': ('${SCAI_LOGGING_DOC_DIR}', None),
-    'scaitracing': ('${SCAI_TRACING_DOC_DIR}', None),
-    'scaitasking': ('${SCAI_TASKING_DOC_DIR}', None),
-    'scaihmemo': ('${SCAI_HMEMO_DOC_DIR}', None)
 }
 
 

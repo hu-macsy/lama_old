@@ -1,5 +1,5 @@
 ###
- # @file ExternalDependencies.cmake
+ # @file CMakeLists.txt
  #
  # @license
  # Copyright (c) 2009-2015
@@ -25,29 +25,19 @@
  # SOFTWARE.
  # @endlicense
  #
- # @brief Central defenition of external dependencies between sub projects
+ # @brief Main specification file for CMake
  # @author Lauretta Schubert
- # @date 17.08.2015
+ # @date 11.02.2016
  # @since 2.0.0
 ###
 
-## attention OpenMP should be before SCAI_BLAS !!!
-## need to get rid of boost for boost_repeat in common
+if    ( SPHINX_FOUND )
+    add_subdirectory ( sphinx )
+endif ( SPHINX_FOUND )
 
-set ( SCAI_COMMON_EXTERNAL_DEPS dl Thread Boost OpenMP CUDA ) # 1
-set ( SCAI_LOGGING_EXTERNAL_DEPS ) # 2
-set ( SCAI_TRACING_EXTERNAL_DEPS ) # 3
-set ( SCAI_TASKING_EXTERNAL_DEPS ) # 4
-set ( SCAI_HMEMO_EXTERNAL_DEPS                         CUDA MIC ) # 5
-set ( SCAI_KREGISTRY_EXTERNAL_DEPS ) # 6
-set ( SCAI_BLASKERNEL_EXTERNAL_DEPS             OpenMP CUDA MIC SCAI_BLAS ) # 7
-set ( SCAI_DMEMO_EXTERNAL_DEPS                  OpenMP                    MPI GPI GraphPartitioning ) # 8
-set ( SCAI_LAMA_EXTERNAL_DEPS                   OpenMP CUDA MIC SCAI_BLAS ) # 9
-set ( SCAI_SOLVER_EXTERNAL_DEPS                                 SCAI_BLAS ) # 10
+if    ( DOXYGEN_FOUND )
+    add_subdirectory ( doxygen )
+endif ( DOXYGEN_FOUND )
 
-set ( SCAI_EXTERNAL_DEPS ${SCAI_COMMON_EXTERNAL_DEPS} ${SCAI_LOGGING_EXTERNAL_DEPS} ${SCAI_TRACING_EXTERNAL_DEPS}
-						 ${SCAI_TASKING_EXTERNAL_DEPS} ${SCAI_HMEMO_EXTERNAL_DEPS} ${SCAI_KREGISTRY_EXTERNAL_DEPS}
-						 ${SCAI_DMEMO_EXTERNAL_DEPS} ${SCAI_BLASKERNEL_EXTERNAL_DEPS} ${SCAI_LAMA_EXTERNAL_DEPS}
-						 ${SCAI_SOLVER_EXTERNAL_DEPS} )
-
-list ( REMOVE_DUPLICATES SCAI_EXTERNAL_DEPS )
+## add custom target docclean
+include ( DocClean )

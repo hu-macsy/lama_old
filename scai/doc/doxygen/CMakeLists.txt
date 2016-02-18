@@ -1,8 +1,8 @@
 ###
- # @file Distclean.cmake
+ # @file PackageDoxygen.cmake
  #
  # @license
- # Copyright (c) 2009-2015
+ # Copyright (c) 2009-2013
  # Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  # for Fraunhofer-Gesellschaft
  #
@@ -25,25 +25,32 @@
  # SOFTWARE.
  # @endlicense
  #
- # @brief Add custom target distclean
- # @author Fraunhofer SCAI
- # @date 09.06.2015
+ # @brief configuration of doxygen
+ # @author Jan Ecker
+ # @date 25.04.2013
+ # @since 1.0.0
 ###
 
-if ( TARGET distclean )
-    # Target already available, do no create it then anymore
-else ( TARGET distclean )
-    add_custom_target ( distclean )
-    add_custom_command (
-        TARGET distclean
-        DEPENDS clean
-        # make docclean (not command itself becaue it depends on clean --> doubled cmake call)
-		COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_CURRENT_BINARY_DIR}/sphinx/
-		COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/sphinx/
-		# make doxygendocclean
-		COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_CURRENT_BINARY_DIR}/doxygen/
-		COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/doxygen/
-        COMMAND cd ${CMAKE_CURRENT_BINARY_DIR}
-        COMMAND sh ${CMAKE_MODULE_PATH}/distclean.sh
-    )
-endif ( TARGET distclean )
+configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/LAMA.Doxyfile.in" "${CMAKE_CURRENT_BINARY_DIR}/LAMA.Doxyfile" )
+
+file ( MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html )
+
+# The initial rm command gets rid of everything previously built by this
+# custom command.
+
+add_custom_command (
+    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/html/index.html
+    #COMMAND rm -rf ${CMAKE_CURRENT_BINARY_DIR}
+    #COMMAND mkdir ${CMAKE_CURRENT_BINARY_DIR}
+    COMMAND ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/LAMA.Doxyfile
+    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/LAMA.Doxyfile
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+)
+
+add_custom_target (
+    doxygendoc
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_INSTALL_PREFIX}/${DOC_ROOT_DIR}/system
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_BINARY_DIR}/html/ ${CMAKE_INSTALL_PREFIX}/${DOC_ROOT_DIR}/system
+    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/html/index.html
+    COMMENT "Creating doxygen doc."
+)

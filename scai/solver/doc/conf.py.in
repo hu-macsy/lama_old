@@ -14,6 +14,7 @@ intersphinx_mapping = {
     'scaihmemo': ('${SCAI_HMEMO_DOC_DIR}', None),
     'scaikregistry': ('${SCAI_KREGISTRY_DOC_DIR}', None),
     'scaiblaskernel': ('${SCAI_BLASKERNEL_DOC_DIR}', None),
+    'scaidmemo': ('${SCAI_DMEMO_DOC_DIR}', None),
     'scailama': ('${SCAI_LAMA_DOC_DIR}', None)
 }
 
