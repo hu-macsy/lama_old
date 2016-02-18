@@ -40,7 +40,7 @@ if    ( METIS_FOUND )
 	find_package ( ParMetis ${SCAI_FIND_PACKAGE_FLAGS} )
 endif ( METIS_FOUND )
 
-## ALLOW to switch off GRAPH_PART explicitly ( doing something linke setAndCheckCache )
+## ALLOW to switch off GRAPHPARTITIONING explicitly ( doing something linke setAndCheckCache )
 include ( Functions/setAndCheckCache )
 setAndCheckCache ( METIS GRAPHPARTITIONING )
 
