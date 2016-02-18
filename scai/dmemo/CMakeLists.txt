@@ -25,10 +25,9 @@
  # SOFTWARE.
  # @endlicense
  #
- # @brief Main specification file for CMake
- # @author Thomas Brandes, Jiri Kraus
- # @date 29.03.2012
- # @since 1.0.0
+ # @brief CMake specification file for project dmemo (distributed memory)
+ # @author Thomas Brandes
+ # @date 16.02.2016
 ###
 
 ### Set required CMake version
@@ -91,7 +90,7 @@ if ( WIN32 )
 endif ( WIN32 )
 
 ### Project System-Include
-include_directories ( ../.. )
+include_directories ( ../.. ${CMAKE_BINARY_DIR}/include )
 addInternalAndExternalIncludes()
 
 if    ( ( METIS_FOUND OR PARMETIS_FOUND ) AND USE_GRAPHPARTITIONING )
@@ -131,13 +130,9 @@ scai_project (
 add_subdirectory ( doc )
 add_subdirectory ( examples )
 
-# message ( STATUS "GPI2_FOUND=${GPI2_FOUND} IBVERBS_FOUND=${IBVERBS_FOUND} USE_GPI2=${USE_GPI2}" )
-
-# if ( GPI2_FOUND AND IBVERBS_FOUND AND USE_GPI2 )
-#     add_subdirectory( gpi )
-# endif ( GPI2_FOUND AND IBVERBS_FOUND AND USE_GPI2 )
-
-message ( STATUS "MPI_FOUND=${MPI_FOUND} USE_MPI=${USE_MPI}" )
+if ( GPI_FOUND AND USE_GPI )
+    add_subdirectory( gpi )
+endif ( GPI_FOUND AND USE_GPI )
 
 if ( MPI_FOUND AND USE_MPI )
     add_subdirectory ( mpi )
@@ -160,12 +155,6 @@ set_target_properties ( ${PROJECT_NAME} PROPERTIES VERSION ${${UPPER_PROJECT_NAM
 ## add link libraries
 
 addInternalAndExternalLinkLibraries()
-
-# external libraries
-
-# if ( GPI2_FOUND AND IBVERBS_FOUND AND USE_GPI2 )
-#     target_link_libraries ( ${PROJECT_NAME} ${GPI2_LIBRARIES} ${IBVERBS_LIBRARIES} )
-# endif ( GPI2_FOUND AND IBVERBS_FOUND AND USE_GPI2 )
 
 ### install ###
 

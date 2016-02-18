@@ -87,8 +87,8 @@ if    ( WIN32 )
 	add_definitions ( -DCOMMON_COMPILING_DLL )
 endif ( WIN32 )
 
-### Project System-Include
-include_directories ( ../.. )
+### Project System-Include ( also configured files )
+include_directories ( ../.. ${CMAKE_BINARY_DIR}/include )
 addInternalAndExternalIncludes()
 
 ### Add classes/headers to source files CXX_SOURCES, CXX_HEADERS, ...
