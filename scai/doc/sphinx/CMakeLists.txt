@@ -48,7 +48,7 @@ add_custom_command (
                 -d ${SPHINX_DOC_THREE_DIR}
                 ${CMAKE_CURRENT_SOURCE_DIR}
                 ${SPHINX_BINARY_DIR}
-    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/conf.py
+    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/conf.py scai_solver
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 )
 	    
