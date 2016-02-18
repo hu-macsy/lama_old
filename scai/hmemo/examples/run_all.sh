@@ -53,7 +53,9 @@ i=0
 #RUN 1 cuda/AliasProblem.exe
 i=$((i+1))
 
-RUN 1 cuda/Allocate.exe
+#RUN 1 cuda/Allocate.exe
+i=$((i+1))
+
 RUN 1 cuda/CUBlasExample.exe
 RUN 1 cuda/CUDABenchContext.exe
 RUN 1 cuda/CUSparseExample.exe
