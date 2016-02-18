@@ -36,8 +36,8 @@
 #
 
 foreach ( executable MICExample1 )
-    add_executable( ${executable} ${executable}.cpp )
-    target_link_libraries( ${executable} ${PROJECT_NAME} )
+    add_executable( ${executable}.exe ${executable}.cpp )
+    target_link_libraries( ${executable}.exe ${PROJECT_NAME} )
     set ( EXAMPLE_EXECUTABLES_MIC "${EXAMPLE_EXECUTABLES_MIC} ${executable}.exe" )
 endforeach ( executable )
 

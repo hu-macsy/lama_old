@@ -45,22 +45,23 @@ if    ( OPENMP_FOUND AND USE_OPENMP )
 endif ( OPENMP_FOUND AND USE_OPENMP )
  
 # example of a library module ( will be used by executable UseModule )
-add_library( module SHARED Module.cpp )
-target_link_libraries( module ${PROJECT_NAME} )
+add_library( Module SHARED Module.cpp )
+target_link_libraries( Module ${PROJECT_NAME} )
 
 # example of a library module ( no use of other LAMA stuff )
-add_library( dummy_module SHARED DummyModule.cpp )
+add_library( DummyModule SHARED DummyModule.cpp )
 
 foreach ( executable ExceptionDemo CriticalRegion Barrier 
           DemoFactory DemoFactory1 DemoPointer UseModule TimePrecision 
           DemoComplex DemoTypeTrait DemoSettings DemoMath DemoFunction BenchPointers )
-    add_executable ( ${executable} ${executable}.cpp )
-    target_link_libraries ( ${executable} ${PROJECT_NAME} )
+    add_executable ( ${executable}.exe ${executable}.cpp )
+    target_link_libraries ( ${executable}.exe ${PROJECT_NAME} )
     set ( EXAMPLE_EXECUTABLES "${EXAMPLE_EXECUTABLES} ${executable}.exe" )
 endforeach ( executable )
 
 ## install examples
 configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/make.inc.in" "${CMAKE_CURRENT_BINARY_DIR}/make.inc" )
+file( COPY run_all.sh DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
 install ( DIRECTORY ./ DESTINATION ${PROJECT_EXAMPLE_DIR} FILES_MATCHING REGEX "^.*.(c|h)pp$" )
 install ( FILES Makefile ${CMAKE_CURRENT_BINARY_DIR}/make.inc DESTINATION ${PROJECT_EXAMPLE_DIR} )
 install ( PROGRAMS run_all.sh DESTINATION ${PROJECT_EXAMPLE_DIR} )
