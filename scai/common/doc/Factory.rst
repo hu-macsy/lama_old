@@ -19,60 +19,19 @@ knowing at compile time which derived classes might be available.
    class Base : public Factory<InputType, OutputType>
 
 
-.. code-block:: c++
+.. literalinclude:: ../examples/DemoFactory.cpp
+   :language: c++
+   :lines: 52-53,62
 
-   class Base : public Factory<std::string, Base*>, public Printable
-   {
-      public:
-      ...
-   };
-
-
-.. code-block:: c++
-
-  vector<string> values;  // string is create type for the factory
-
-  Base::getCreateValues( values );
-
-  cout << "Factory of Base: " << endl;
-
-  for ( size_t i = 0; i < values.size(); ++i )
-  {
-      cout << "   Registered values[" << i << "] = " << values[i] << endl;
-  }
-
-  Base* obj1 = Base::create( "D1" );
-  Base* obj2 = Base::create( "D2" );
-
-  if ( Base::canCreate( "D3" ) )
-  {
-      ...
-  }
+.. literalinclude:: ../examples/DemoFactory.cpp
+   :language: c++
+   :lines: 181-209
 
 This is the ways to defined derived classes that register in the factory for the base class.
 
-.. code-block:: c++
-
-    class Derived1 : public Base, Base::Register<Derived1>
-    {
-    public:
-
-        /** This static functions provides the value for which this class registers in the factory. */
-
-        static inline std::string createValue()
-        {
-            return "D1";
-        }
-
-        /** Method that creates objects of type Derived2 that will be used for registration. */
-    
-        static inline Base* create()
-        {
-            return new Derived1();
-        }
-    
-        ...
-    };
+.. literalinclude:: ../examples/DemoFactory.cpp
+   :language: c++
+   :lines: 106-122,130
 
 A guard for the registration should be instantiated explicitly in the code.
 
@@ -82,35 +41,15 @@ A guard for the registration should be instantiated explicitly in the code.
 
 For template classes this mechanism is as follows:
 
-.. code-block:: c++
-
-   template<typename T>
-   class Derived : public Base, Base::Register<Derived<T> >
-   {
-   public:
-
-       /** Provide the value for which this class registers in the factory. */
-
-       static inline std::string createValue()
-       {
-           return typeid( T ).name();
-       }
-
-       /** Method that creates objects, will be used for registration. */
-
-       static Base* create()
-       {
-           return new Derived<T>();
-       }
-       ...
-   };
+.. literalinclude:: ../examples/DemoFactory.cpp
+   :language: c++
+   :lines: 139-156,166
 
 Guard for registration should be initiated explicitly.
 
-.. code-block:: c++
-
-   Base::Register<Derived<float> >::RegisterGuard Base::Register<Derived<float> >::register;
-   Base::Register<Derived<double> >::RegisterGuard Base::Register<Derived<double> >::register;
+.. literalinclude:: ../examples/DemoFactory.cpp
+   :language: c++
+   :lines: 170-173
 
 Factory1 is similiar to Factory but allows one additional argument for the creation of objects.
 
