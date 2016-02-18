@@ -127,29 +127,10 @@ void Solver::solveInit( Vector& solution, const Vector& rhs )
     runtime.mRhs = &rhs;
     runtime.mSolution = &solution;
 
-    if( runtime.mCoefficients->getNumRows() != runtime.mRhs->size() )
-    {
-        COMMON_THROWEXCEPTION(
-            "Size of rhs vector " << *runtime.mRhs << " does not match column size of matrix " << *runtime.mCoefficients );
-    }
-
-    if( runtime.mCoefficients->getNumColumns() != solution.size() )
-    {
-        COMMON_THROWEXCEPTION(
-            "Size of solution vector " << solution << " does not match row size of matrix " << *runtime.mCoefficients );
-    }
-
-    if( runtime.mCoefficients->getColDistribution() != solution.getDistribution() )
-    {
-        COMMON_THROWEXCEPTION(
-            "Distribution of lhs " << solution << " = " << solution.getDistribution() << " does not match (row) distribution of " << *runtime.mCoefficients << " = " << runtime.mCoefficients->getColDistribution() );
-    }
-
-    if( runtime.mCoefficients->getDistribution() != runtime.mRhs->getDistribution() )
-    {
-        COMMON_THROWEXCEPTION(
-            "Distribution of old Solution " << *runtime.mRhs << " = " << runtime.mRhs->getDistribution() << " does not match (row) distribution of " << *runtime.mCoefficients << " = " << runtime.mCoefficients->getDistribution() );
-    }
+    SCAI_ASSERT_EQUAL( runtime.mCoefficients->getNumRows(), runtime.mRhs->size(), "mismatch: #rows of matrix, rhs" )
+    SCAI_ASSERT_EQUAL( runtime.mCoefficients->getNumColumns(), solution.size(), "mismatch: #cols of matrix, solution" )
+    SCAI_ASSERT_EQUAL( runtime.mCoefficients->getColDistribution(), solution.getDistribution(), "mismatch: matrix col dist, solution" )
+    SCAI_ASSERT_EQUAL( runtime.mCoefficients->getDistribution(), runtime.mRhs->getDistribution(), "mismatch: matrix row dist, rhs dist" )
 
     runtime.mSolveInit = true;
 }
