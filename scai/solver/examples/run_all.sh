@@ -67,9 +67,9 @@ RUN 1 solver/vector_generator.exe example2.mtx 1000 1
 RUN 1 solver/cg_solver.exe example
 RUN 1 solver/gmres_solver.exe example
 RUN 1 solver/amg_solver.exe example 3
-RUN 1 solver/solver.exe 
-RUN 0 solver/solver.exe SpecializedJacobi 10
-RUN 0 solver/solver.exe GMRES 3
+RUN 1 solver/solver.exe example
+RUN 0 solver/solver.exe example SpecializedJacobi 10
+RUN 0 solver/solver.exe example GMRES 3
 RUN 1 solver/lama_info.exe 
 
 # check if there are unkown examples
