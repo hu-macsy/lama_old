@@ -126,20 +126,21 @@ else ( NOT EXISTS ${MKL_INCLUDE_DIR} )
     ### Search for libraries mkl_gnu_thread, mkl_intel_thread and mkl_core
     
     if ( EXISTS ${MKL_LIBRARY_PATH} )
+
         # search for mkl_intel_lp64 lib 
+
         find_library ( MKL_LIBRARY_LP64 mkl_intel_lp64 PATHS ${MKL_LIBRARY_PATH} PATH_SUFFIXES ${MKL_LIBRARY_PATH_SUFFIXES} )
 
         if ( NOT EXISTS ${MKL_LIBRARY_LP64} )
             message ( STATUS "WARNING MKL library mkl_intel_lp64 not found with MKL_LIBRARY_PATH=${MKL_LIBRARY_PATH}." )
         endif( NOT EXISTS ${MKL_LIBRARY_LP64} )
-        set(MKL_LIBRARIES  ${MKL_LIBRARY_LP64} )
-        
-        if ( NOT EXISTS ${MKL_LIBRARY_BLACS} )
-            message ( STATUS "WARNING MKL library mkl_blacs not found with MKL_LIBRARY_PATH=${MKL_LIBRARY_PATH}." )
-        endif( NOT EXISTS ${MKL_LIBRARY_BLACS} )
+
+        set ( MKL_LIBRARIES  ${MKL_LIBRARY_LP64} )
         
         # search for mkl_core lib 
+
         find_library ( MKL_LIBRARY_CORE mkl_core PATHS ${MKL_LIBRARY_PATH} PATH_SUFFIXES ${MKL_LIBRARY_PATH_SUFFIXES} )
+
         if ( NOT EXISTS ${MKL_LIBRARY_CORE} )
             message ( STATUS "WARNING MKL library mkl_core not found with MKL_LIBRARY_PATH=${MKL_LIBRARY_PATH}." )
         endif ( NOT EXISTS ${MKL_LIBRARY_CORE} )
@@ -180,18 +181,6 @@ else ( NOT EXISTS ${MKL_INCLUDE_DIR} )
             list ( APPEND MKL_LIBRARIES ${MKL_LIBRARY_INTEL} )
          endif( ${CMAKE_GENERATOR} MATCHES "Visual Studio" )
 
-        # search for gfortran. Required by older MKL versions
-        if ( NOT WIN32 )
-            find_library ( GFORTRAN_LIBRARY gfortran HINTS ${GFORTRAN_LIBRARY_PATH} )
-            mark_as_advanced( FORCE GFORTRAN_LIBRARY )
-        
-            if ( EXISTS ${GFORTRAN_LIBRARY} )
-                list ( APPEND MKL_LIBRARIES ${GFORTRAN_LIBRARY} )
-            else ( EXISTS ${GFORTRAN_LIBRARY} )
-                message ( STATUS "WARNING Library gfortran not found. Required by some older MKL libraries. Please define GFORTRAN_LIBRARY_PATH." )
-            endif ( EXISTS ${GFORTRAN_LIBRARY} )
-        endif ( NOT WIN32 )
-        
         # conclude libs
         list ( APPEND MKL_LIBRARIES ${MKL_LIBRARY_CORE} )
         

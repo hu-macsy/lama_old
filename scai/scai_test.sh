@@ -13,9 +13,6 @@ function checkErrorValue( ) {
 	fi
 }
 
-PROJECTS=( "common" "logging" "hmemo" )
-EXECUTABLES=( "CommonTest" "test.sh" "MemoryTest" )
-
 # Set some envirionment variables to disable warning/error message
 
 export SCAI_LOG=ERROR

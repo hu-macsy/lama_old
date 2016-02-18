@@ -45,12 +45,10 @@
 #include <scai/hmemo/mic/MICContext.hpp>
 
 #include <scai/common/TypeTraits.hpp>
+#include <scai/common/preprocessor.hpp>
 
 // external
 #include <mkl.h>
-
-// booost
-#include <boost/preprocessor.hpp>
 
 namespace scai
 {

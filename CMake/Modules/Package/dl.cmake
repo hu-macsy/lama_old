@@ -31,6 +31,8 @@
  # @since 2.0.0
 ###
 
+### SCAI_DL_LIBRARIES   - needed dl libraries
+
 find_library( SCAI_DL_LIBRARIES dl )
 
 mark_as_advanced ( SCAI_DL_LIBRARIES )

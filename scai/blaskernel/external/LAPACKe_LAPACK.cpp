@@ -46,19 +46,19 @@
 #include <scai/common/unique_ptr.hpp>
 #include <scai/common/macros/assert.hpp>
 #include <scai/common/TypeTraits.hpp>
+#include <scai/common/preprocessor.hpp>
 
 // external
 #include <mkl_lapacke.h>
 
-// boost
-#include <boost/preprocessor.hpp>
-
-namespace scai {
+namespace scai 
+{
 
 using common::scoped_array;
 using common::TypeTraits;
 
-namespace blaskernel {
+namespace blaskernel 
+{
 
 /* ------------------------------------------------------------------------- */
 
