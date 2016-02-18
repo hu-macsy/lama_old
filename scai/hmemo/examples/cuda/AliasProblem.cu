@@ -73,9 +73,9 @@ void add ( Array& res, const Array& a, const Array& b )
 
     // Be careful: read accesses should appear before write only access
 
-    hmemo::WriteOnlyAccess<double> write( res, hostCtx, n );
     hmemo::ReadAccess<double>read1( a, hostCtx );
     hmemo::ReadAccess<double>read2( b, hostCtx );
+    hmemo::WriteOnlyAccess<double> write( res, hostCtx, n );
  
     double* resPtr = write.get();
     const double* aPtr = read1.get();

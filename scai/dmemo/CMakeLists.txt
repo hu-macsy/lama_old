@@ -90,7 +90,7 @@ if ( WIN32 )
 endif ( WIN32 )
 
 ### Project System-Include
-include_directories ( ../.. )
+include_directories ( ../.. ${CMAKE_BINARY_DIR}/include )
 addInternalAndExternalIncludes()
 
 if ( METIS_FOUND OR PARMETIS_FOUND )

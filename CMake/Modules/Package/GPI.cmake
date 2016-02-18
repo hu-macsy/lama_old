@@ -37,15 +37,19 @@
 
 find_package ( GPI2 ${SCAI_FIND_PACKAGE_FLAGS} )
 
-message ( STATUS "GPI2_FOUND=${GPI2_FOUND}" )
-message ( STATUS "GPI2_INCLUDE_DIR=${GPI2_INCLUDE_DIR}" )
-message ( STATUS "GPI2_LIBRARIES=${GPI2_LIBRARIES}" )
+if ( DEFINED SCAI_CMAKE_VERBOSE AND SCAI_CMAKE_VERBOSE )
+    message ( STATUS "GPI2_FOUND=${GPI2_FOUND}" )
+    message ( STATUS "GPI2_INCLUDE_DIR=${GPI2_INCLUDE_DIR}" )
+    message ( STATUS "GPI2_LIBRARIES=${GPI2_LIBRARIES}" )
+endif ( DEFINED SCAI_CMAKE_VERBOSE AND SCAI_CMAKE_VERBOSE )
 
 find_package ( Ibverbs ${SCAI_FIND_PACKAGE_FLAGS} )
 
-message ( STATUS "IBVERBS_FOUND=${IBVERBS_FOUND}" )
-message ( STATUS "IBVERBS_INCLUDE_DIR=${IBVERBS_INCLUDE_DIR}" )
-message ( STATUS "IBVERBS_LIBRARIES=${IBVERBS_LIBRARIES}" )
+if ( DEFINED SCAI_CMAKE_VERBOSE AND SCAI_CMAKE_VERBOSE )
+    message ( STATUS "IBVERBS_FOUND=${IBVERBS_FOUND}" )
+    message ( STATUS "IBVERBS_INCLUDE_DIR=${IBVERBS_INCLUDE_DIR}" )
+    message ( STATUS "IBVERBS_LIBRARIES=${IBVERBS_LIBRARIES}" )
+endif ( DEFINED SCAI_CMAKE_VERBOSE AND SCAI_CMAKE_VERBOSE )
 
 ### ALLOW to switch off GPI2 explicitly ###
 # do what setAndCheckCache does but with 2 packages
@@ -53,7 +57,6 @@ message ( STATUS "IBVERBS_LIBRARIES=${IBVERBS_LIBRARIES}" )
 if    ( DEFINED USE_GPI )
     # do nothing
     # if cache variable is NOT set
-    message ( STATUS "defined: USE_GPI=${USE_GPI}" )
 else ( DEFINED USE_GPI )
     # Check if package was found
     if    ( GPI2_FOUND AND IBVERBS_FOUND )
@@ -65,15 +68,13 @@ else ( DEFINED USE_GPI )
     # Set cache variable
     set ( USE_GPI ${USE_PACKAGE} CACHE BOOL "Enable / Disable use of GPI" )
 
-    message ( STATUS "set: USE_GPI=${USE_GPI}" )
-
 endif ( DEFINED USE_GPI )
 
 set ( GPI_FOUND False )
 
 if    ( USE_GPI AND GPI2_FOUND AND IBVERBS_FOUND )
 
-    message ( STATUS "set SCAI_GPI_INCLUDE_DIR + SCAI_GPI_LIBRARIES" )
+    # message ( STATUS "set SCAI_GPI_INCLUDE_DIR + SCAI_GPI_LIBRARIES" )
 
 	# just for making it the same variable ending for all packages
 	set ( SCAI_GPI_INCLUDE_DIR ${GPI2_INCLUDE_DIR} ${IBVERBS_INCLUDE_DIR} )
