@@ -35,23 +35,24 @@
 #include <scai/lama/matrix/SparseMatrix.hpp>
 
 // local library
-#include <scai/lama/HArrayUtils.hpp>
 
-#include <scai/lama/LAMAKernel.hpp>
 #include <scai/lama/matrix/DenseMatrix.hpp>
 
 #include <scai/lama/storage/MatrixStorage.hpp>
 #include <scai/lama/storage/CSRStorage.hpp>
 
+
+// scai internal libraries
 #include <scai/dmemo/NoDistribution.hpp>
 #include <scai/dmemo/CyclicDistribution.hpp>
 #include <scai/dmemo/Redistributor.hpp>
 
-#include <scai/lama/UtilKernelTrait.hpp>
-#include <scai/lama/CSRKernelTrait.hpp>
-#include <scai/lama/openmp/OpenMPCSRUtils.hpp>
+#include <scai/sparsekernel/CSRKernelTrait.hpp>
+#include <scai/sparsekernel/openmp/OpenMPCSRUtils.hpp>
 
-// internal libraries
+#include <scai/utilskernel/UtilKernelTrait.hpp>
+#include <scai/utilskernel/LAMAKernel.hpp>
+#include <scai/utilskernel/HArrayUtils.hpp>
  
 #include <scai/tasking/NoSyncToken.hpp>
 
@@ -79,6 +80,9 @@ namespace lama
 {
 
 using common::shared_ptr;
+using utilskernel::LAMAKernel;
+using utilskernel::HArrayUtils;
+using sparsekernel::CSRKernelTrait;
 
 SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, SparseMatrix<ValueType>::logger, "Matrix.SparseMatrix" )
 

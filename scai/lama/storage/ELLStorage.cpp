@@ -33,18 +33,14 @@
 // hpp
 #include <scai/lama/storage/ELLStorage.hpp>
 
-// local library
-
-#include <scai/lama/LAMAKernel.hpp>
-
-#include <scai/lama/UtilKernelTrait.hpp>
-#include <scai/lama/ELLKernelTrait.hpp>
-#include <scai/lama/CSRKernelTrait.hpp>
-
-#include <scai/lama/HArrayUtils.hpp>
-
 // internal scai libraries
+#include <scai/sparsekernel/CSRKernelTrait.hpp>
+#include <scai/sparsekernel/ELLKernelTrait.hpp>
 #include <scai/blaskernel/BLASKernelTrait.hpp>
+
+#include <scai/utilskernel/LAMAKernel.hpp>
+#include <scai/utilskernel/UtilKernelTrait.hpp>
+#include <scai/utilskernel/HArrayUtils.hpp>
 
 #include <scai/hmemo.hpp>
 
@@ -68,6 +64,14 @@ namespace scai
 using common::shared_ptr;
 using common::unique_ptr;
 using tasking::SyncToken;
+
+using utilskernel::LAMAKernel;
+using utilskernel::UtilKernelTrait;
+using utilskernel::HArrayUtils;
+using utilskernel::LArray;
+
+using sparsekernel::ELLKernelTrait;
+using sparsekernel::CSRKernelTrait;
 
 using namespace tasking;
 using namespace hmemo;

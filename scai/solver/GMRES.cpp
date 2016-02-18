@@ -39,7 +39,7 @@
 #include <scai/lama/expression/MatrixVectorExpressions.hpp>
 
 #include <scai/lama/DenseVector.hpp>
-#include <scai/lama/LAMAKernel.hpp>
+#include <scai/utilskernel/LAMAKernel.hpp>
  
 #include <scai/blaskernel/BLASKernelTrait.hpp>
 
@@ -54,6 +54,8 @@ namespace scai
 
 namespace solver
 {
+
+using utilskernel::LAMAKernel;
 
 using lama::Matrix;
 using lama::Vector;
@@ -445,7 +447,7 @@ void GMRES::updateX( unsigned int i )
 
     hmemo::ContextPtr context = hmemo::Context::getHostPtr();
 
-    static lama::LAMAKernel<blaskernel::BLASKernelTrait::tptrs<double> > tptrs;
+    static LAMAKernel<blaskernel::BLASKernelTrait::tptrs<double> > tptrs;
 
     int info = tptrs[context]( CblasColMajor, CblasUpper, CblasNoTrans, CblasNonUnit, i + 1, 1, runtime.mH.get(),
                                runtime.mY.get(), i + 1 );

@@ -38,7 +38,7 @@
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 
 #include <scai/lama/DenseVector.hpp>
-#include <scai/lama/LAMAKernel.hpp>
+#include <scai/utilskernel/LAMAKernel.hpp>
 #include <scai/blaskernel/BLASKernelTrait.hpp>
 
 #include <scai/dmemo/NoDistribution.hpp>
@@ -67,6 +67,7 @@ namespace scai
 using common::unique_ptr;
 using common::TypeTraits;
 using common::scoped_array;
+using utilskernel::LAMAKernel;
 
 namespace lama
 {

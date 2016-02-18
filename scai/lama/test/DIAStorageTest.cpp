@@ -35,12 +35,13 @@
 #include <boost/mpl/list.hpp>
 
 #include <scai/lama/storage/DIAStorage.hpp>
-#include <scai/lama/LArray.hpp>
+#include <scai/utilskernel/LArray.hpp>
 
 #include <scai/lama/test/MatrixStorageTest.hpp>
 #include <scai/lama/test/TestMacros.hpp>
 
 using namespace scai::lama;
+using namespace scai::utilskernel;
 using namespace scai::hmemo;
 
 extern bool base_test_case;

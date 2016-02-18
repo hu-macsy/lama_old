@@ -41,9 +41,10 @@
 #include <scai/lama/io/XDRFileStream.hpp>
 #include <scai/lama/io/mmio.hpp>
 
-#include <scai/lama/openmp/OpenMPCSRUtils.hpp>
 
 // internal scai libraries
+#include <scai/sparsekernel/openmp/OpenMPCSRUtils.hpp>
+
 #include <scai/hmemo.hpp>
 
 #include <scai/tracing.hpp>
@@ -58,6 +59,7 @@ namespace scai
 using namespace hmemo;
 using common::unique_ptr;
 using common::scoped_array;
+using sparsekernel::OpenMPCSRUtils;
 
 namespace lama
 {

@@ -216,6 +216,30 @@ ExternalProject_Add ( scai_blaskernel
             CMAKE_CACHE_ARGS "${CMAKE_ARGS};${CACHE_ARGS}"
 	    	BINARY_DIR blaskernel
             )
+            
+concatCacheArguments ( scai_utilskernel "CACHE_ARGS" )
+#message ( STATUS "blaskernel CACHE_ARGS ${CACHE_ARGS}" )
+
+ExternalProject_Add ( scai_utilskernel
+            DEPENDS ${SCAI_UTILSKERNEL_INTERNAL_DEPS}
+            PREFIX utilskernel
+            SOURCE_DIR ${CMAKE_SOURCE_DIR}/utilskernel
+            CMAKE_ARGS "-DSCAI_COMPLETE_BUILD=1"
+            CMAKE_CACHE_ARGS "${CMAKE_ARGS};${CACHE_ARGS}"
+	    	BINARY_DIR utilskernel
+            )
+            
+concatCacheArguments ( scai_sparsekernel "CACHE_ARGS" )
+#message ( STATUS "blaskernel CACHE_ARGS ${CACHE_ARGS}" )
+
+ExternalProject_Add ( scai_sparsekernel
+            DEPENDS ${SCAI_SPARSEKERNEL_INTERNAL_DEPS}
+            PREFIX sparsekernel
+            SOURCE_DIR ${CMAKE_SOURCE_DIR}/sparsekernel
+            CMAKE_ARGS "-DSCAI_COMPLETE_BUILD=1"
+            CMAKE_CACHE_ARGS "${CMAKE_ARGS};${CACHE_ARGS}"
+	    	BINARY_DIR sparsekernel
+            )
 
 concatCacheArguments ( scai_dmemo "CACHE_ARGS" )
 #message ( STATUS "lama CACHE_ARGS ${CACHE_ARGS}" )

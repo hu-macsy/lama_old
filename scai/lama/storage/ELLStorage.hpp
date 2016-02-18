@@ -35,7 +35,7 @@
 // for dll_import
 #include <scai/common/config.hpp>
 
-#include <scai/lama/LArray.hpp>
+#include <scai/utilskernel/LArray.hpp>
 
 // base classes
 #include <scai/lama/storage/CRTPMatrixStorage.hpp>
@@ -232,11 +232,11 @@ public:
 
     /** getter for member variables IA, JA, Data, only const reference */
 
-    const LArray<IndexType>& getIA() const;
+    const utilskernel::LArray<IndexType>& getIA() const;
 
-    const LArray<IndexType>& getJA() const;
+    const utilskernel::LArray<IndexType>& getJA() const;
 
-    const LArray<ValueType>& getValues() const;
+    const utilskernel::LArray<ValueType>& getValues() const;
 
     /** Getter routine for the number of stored values*/
 
@@ -449,9 +449,9 @@ private:
 
     IndexType mNumValuesPerRow; //!< number of values in each row
 
-    LArray<IndexType> mIA; //!< size is numRows
-    LArray<IndexType> mJA; //!< size is numRows x numValuesPerRow
-    LArray<ValueType> mValues; //!< size is numRows x numValuesPerRow
+    utilskernel::LArray<IndexType> mIA; //!< size is numRows
+    utilskernel::LArray<IndexType> mJA; //!< size is numRows x numValuesPerRow
+    utilskernel::LArray<ValueType> mValues; //!< size is numRows x numValuesPerRow
 
     /** Addressing function for the arrays ia and ja: column-wise */
 

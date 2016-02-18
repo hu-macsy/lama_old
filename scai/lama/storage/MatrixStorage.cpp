@@ -43,15 +43,17 @@
 #include <scai/dmemo/Redistributor.hpp>
 #include <scai/dmemo/Halo.hpp>
 
-#include <scai/lama/LAMAKernel.hpp>
-#include <scai/lama/UtilKernelTrait.hpp>
-#include <scai/lama/CSRKernelTrait.hpp>
 #include <scai/lama/StorageIO.hpp>
 
-#include <scai/lama/openmp/OpenMPUtils.hpp>
-#include <scai/lama/openmp/OpenMPCSRUtils.hpp>
 
 // internal scai libraries
+#include <scai/sparsekernel/CSRKernelTrait.hpp>
+#include <scai/sparsekernel/openmp/OpenMPCSRUtils.hpp>
+
+#include <scai/utilskernel/LAMAKernel.hpp>
+#include <scai/utilskernel/UtilKernelTrait.hpp>
+#include <scai/utilskernel/openmp/OpenMPUtils.hpp>
+
 #include <scai/tasking/TaskSyncToken.hpp>
 
 #include <scai/tracing.hpp>
@@ -69,6 +71,13 @@ using namespace dmemo;
 
 using tasking::SyncToken;
 using tasking::TaskSyncToken;
+
+using utilskernel::LAMAKernel;
+using utilskernel::UtilKernelTrait;
+using utilskernel::OpenMPUtils;
+
+using sparsekernel::CSRKernelTrait;
+using sparsekernel::OpenMPCSRUtils;
 
 namespace lama
 {

@@ -34,15 +34,14 @@
 // hpp
 #include <scai/lama/storage/DIAStorage.hpp>
 
-// local library
-
-#include <scai/lama/LAMAKernel.hpp>
-#include <scai/lama/UtilKernelTrait.hpp>
-#include <scai/lama/DIAKernelTrait.hpp>
-#include <scai/lama/CSRKernelTrait.hpp>
-#include <scai/lama/HArrayUtils.hpp>
-
 // internal scai libraries
+#include <scai/sparsekernel/DIAKernelTrait.hpp>
+#include <scai/sparsekernel/CSRKernelTrait.hpp>
+
+#include <scai/utilskernel/LAMAKernel.hpp>
+#include <scai/utilskernel/HArrayUtils.hpp>
+#include <scai/utilskernel/UtilKernelTrait.hpp>
+
 #include <scai/blaskernel/BLASKernelTrait.hpp>
 
 #include <scai/hmemo/ContextAccess.hpp>
@@ -68,6 +67,13 @@ using common::scoped_array;
 using common::shared_ptr;
 
 using tasking::SyncToken;
+
+using utilskernel::LAMAKernel;
+using utilskernel::UtilKernelTrait;
+using utilskernel::HArrayUtils;
+
+using sparsekernel::CSRKernelTrait;
+using sparsekernel::DIAKernelTrait;
 
 namespace lama
 {

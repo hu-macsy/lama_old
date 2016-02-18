@@ -35,20 +35,20 @@
 #include <scai/lama/storage/CSRStorage.hpp>
 
 // local library
-#include <scai/lama/UtilKernelTrait.hpp>
-#include <scai/lama/CSRKernelTrait.hpp>
+#include <scai/utilskernel/UtilKernelTrait.hpp>
+#include <scai/sparsekernel/CSRKernelTrait.hpp>
 
-#include <scai/lama/HArrayUtils.hpp>
-#include <scai/lama/LAMAKernel.hpp>
 
 #include <scai/lama/storage/StorageMethods.hpp>
 
 #include <scai/dmemo/Redistributor.hpp>
 
-#include <scai/lama/openmp/OpenMPUtils.hpp>
-#include <scai/lama/openmp/OpenMPCSRUtils.hpp>
 
 // internal scai libraries
+#include <scai/sparsekernel/openmp/OpenMPCSRUtils.hpp>
+#include <scai/utilskernel/openmp/OpenMPUtils.hpp>
+#include <scai/utilskernel/HArrayUtils.hpp>
+#include <scai/utilskernel/LAMAKernel.hpp>
 #include <scai/blaskernel/BLASKernelTrait.hpp>
 
 #include <scai/hmemo.hpp>
@@ -73,6 +73,14 @@ using namespace dmemo;
 using common::unique_ptr;
 using common::shared_ptr;
 using common::TypeTraits;
+using utilskernel::OpenMPUtils;
+using utilskernel::UtilKernelTrait;
+using utilskernel::HArrayUtils;
+using utilskernel::LAMAKernel;
+using utilskernel::LArray;
+using sparsekernel::CSRKernelTrait;
+using sparsekernel::OpenMPCSRUtils;
+
 
 using tasking::SyncToken;
 

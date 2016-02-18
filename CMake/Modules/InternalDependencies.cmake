@@ -35,12 +35,14 @@
 ## use reverse linking order (for static linking)
 
 set ( SCAI_COMMON_INTERNAL_DEPS ) # 1
-set ( SCAI_LOGGING_INTERNAL_DEPS    scai_common ) # 2
-set ( SCAI_TRACING_INTERNAL_DEPS    scai_common scai_logging ) # 3
-set ( SCAI_TASKING_INTERNAL_DEPS    scai_common scai_logging scai_tracing ) # 4
-set ( SCAI_HMEMO_INTERNAL_DEPS      scai_common scai_logging scai_tracing scai_tasking ) # 5
-set ( SCAI_KREGISTRY_INTERNAL_DEPS  scai_common scai_logging ) # 6
-set ( SCAI_BLASKERNEL_INTERNAL_DEPS scai_common scai_logging scai_tracing scai_tasking scai_hmemo scai_kregistry ) # 7
-set ( SCAI_DMEMO_INTERNAL_DEPS      scai_common scai_logging scai_tracing scai_tasking scai_hmemo ) # 8
-set ( SCAI_LAMA_INTERNAL_DEPS       scai_common scai_logging scai_tracing scai_tasking scai_hmemo scai_kregistry scai_dmemo scai_blaskernel ) # 9
-set ( SCAI_SOLVER_INTERNAL_DEPS     scai_common scai_logging scai_tracing scai_tasking scai_hmemo scai_kregistry scai_dmemo scai_blaskernel scai_lama ) #10
+set ( SCAI_LOGGING_INTERNAL_DEPS      scai_common ) # 2
+set ( SCAI_TRACING_INTERNAL_DEPS      scai_common scai_logging ) # 3
+set ( SCAI_TASKING_INTERNAL_DEPS      scai_common scai_logging scai_tracing ) # 4
+set ( SCAI_HMEMO_INTERNAL_DEPS        scai_common scai_logging scai_tracing scai_tasking ) # 5
+set ( SCAI_KREGISTRY_INTERNAL_DEPS    scai_common scai_logging ) # 6
+set ( SCAI_BLASKERNEL_INTERNAL_DEPS   scai_common scai_logging scai_tracing scai_tasking scai_hmemo scai_kregistry ) # 7
+set ( SCAI_UTILSKERNEL_INTERNAL_DEPS  scai_common scai_logging scai_tracing scai_tasking scai_hmemo scai_kregistry ) # 8
+set ( SCAI_SPARSEKERNEL_INTERNAL_DEPS scai_common scai_logging scai_tracing scai_tasking scai_hmemo scai_kregistry scai_utilskernel ) # 9
+set ( SCAI_DMEMO_INTERNAL_DEPS        scai_common scai_logging scai_tracing scai_tasking scai_hmemo ) # 10
+set ( SCAI_LAMA_INTERNAL_DEPS         scai_common scai_logging scai_tracing scai_tasking scai_hmemo scai_kregistry scai_dmemo scai_blaskernel scai_utilskernel scai_sparsekernel ) # 11
+set ( SCAI_SOLVER_INTERNAL_DEPS     scai_common scai_logging scai_tracing scai_tasking scai_hmemo scai_kregistry scai_dmemo scai_blaskernel scai_utilskernel scai_sparsekernel scai_lama ) #12

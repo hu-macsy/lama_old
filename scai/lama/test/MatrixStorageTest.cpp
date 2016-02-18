@@ -51,6 +51,7 @@
 
 using namespace scai;
 using namespace lama;
+using namespace utilskernel;
 using namespace hmemo;
 
 /* ------------------------------------------------------------------------- */
