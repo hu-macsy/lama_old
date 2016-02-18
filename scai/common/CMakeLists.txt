@@ -86,7 +86,8 @@ if    ( WIN32 )
 endif ( WIN32 )
 
 ### Project System-Include
-include_directories ( ../.. ${CMAKE_CURRENT_BINARY_DIR}/include )
+set( CONFIGURE_INCLUDE_DIR ${CMAKE_BINARY_DIR}/include )
+include_directories ( ../.. ${CONFIGURE_INCLUDE_DIR} )
 addInternalAndExternalIncludes()
 
 ### Add classes/headers to source files CXX_SOURCES, CXX_HEADERS, ...
@@ -119,7 +120,7 @@ scai_project (
 )
 
 ## configure c++11/boost dependent sources
-set ( CONFIGURE_DIR "${CMAKE_CURRENT_BINARY_DIR}/include/scai/${PROJECT_SURNAME}" )
+set ( CONFIGURE_DIR "${CONFIGURE_INCLUDE_DIR}/scai/${PROJECT_SURNAME}" )
 
 if    ( NOT CXX_SUPPORTS_C11 )
     configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/boost_check.hpp.in" "${CONFIGURE_DIR}/boost_check.hpp" )
