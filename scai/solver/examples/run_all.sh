@@ -20,7 +20,7 @@ function RUN ( ) {
 
 echo ""
 echo "======================================================="
-echo "==  Building and executing all scai common examples  =="
+echo "==  Building and executing all scai solver examples  =="
 echo "======================================================="
 echo ""
 
