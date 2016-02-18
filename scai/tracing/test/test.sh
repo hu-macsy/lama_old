@@ -166,6 +166,45 @@ else
     # SCAI_TRACE=ct
     
     
+    # Test 3
+    # now lets test if the use of SCAI_TRACE=ct produces the correct result
+    echo "+ Running tests with SCAI_TRACE=ct"
+    
+    # clean old tracing files
+    rm -rf *.ct *.time
+    
+    export SCAI_TRACE=ct
+    ./simpleTracing.exe &> /dev/null
+    if [ $? -ne 0 ]; then
+        echo "Error while runtime execution!"
+        errors=$(($errors + 1))
+    else
+        # Test 3.1
+        # as we use SCAI_TRACE=ct there should be no .time created
+        count=`ls -l -la *.time 2> /dev/null | wc -l`
+        if [ $count -ne 0 ]; then
+            echo "Test failed. A .time has been generated but only SCAI_TRACE=ct was set."
+            errors=$(($errors + 1))
+        fi
+        
+                
+        # Test 3.2
+        # we have to check whether the a correct .ct file was generated
+        content=`cat simpleTracing.exe.ct 2> /dev/null`
+        if [ $? -ne 0 ]; then
+            echo "Test failed. No valid .ct file has been generated or a wrong name was used."
+            errors=$(($errors + 1))
+        else
+            # TODO
+            echo ""
+        fi
+    fi
+    
+    
+    
+    
+    
+    
     # Test 4
     # TODO!
     # SCAI_TRACE=time:PREFIX=xxx
