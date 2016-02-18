@@ -85,9 +85,9 @@ message ( STATUS "" )
 scai_status_message ( HEADLINE "LIBRARIES:" )
   
 set ( REQUIRED_FOUND FALSE )
-if    ( MPI_FOUND OR GPI_FOUND )
+if    ( ( MPI_FOUND AND USE_MPI ) OR ( GPI_FOUND AND USE_GPI ) )
   set ( REQUIRED_FOUND TRUE )
-endif ( MPI_FOUND OR GPI_FOUND )
+endif ( ( MPI_FOUND AND USE_MPI ) OR ( GPI_FOUND AND USE_GPI ) )
 
 # LAMA MPI
 message ( STATUS "" )
@@ -109,11 +109,16 @@ scai_summary_message ( "USE"
                            "at ${SCAI_GPI_INCLUDE_DIR}" )
 
 # Graph Partitioning
+set ( REQUIRED_FOUND FALSE )
+if    ( METIS_FOUND AND USE_GRAPHPARTITIONING )
+  set ( REQUIRED_FOUND TRUE )
+endif ( METIS_FOUND AND USE_GRAPHPARTITIONING )
+
 message ( STATUS "" )
 scai_summary_message ( "USE"
-                       "USE_GRAPHPARTITIONING"
+                       "REQUIRED_FOUND"
                        "Graph Partitioning"
-                       "" )                   
+                       "" )                  
   # Metis
     scai_summary_message ( "FOUND"
                            "METIS_FOUND"
@@ -164,8 +169,15 @@ scai_summary_message ( "STATIC"
                            
 # LAMA TEST
 message ( STATUS "" )
+scai_status_message ( HEADLINE "TESTING:" )
+
+set ( REQUIRED_FOUND FALSE )
+if    ( Boost_UNIT_TEST_FRAMEWORK_FOUND AND Boost_REGEX_FOUND AND BUILD_TEST )
+  set ( REQUIRED_FOUND TRUE )
+endif ( Boost_UNIT_TEST_FRAMEWORK_FOUND AND Boost_REGEX_FOUND AND BUILD_TEST )
+
 scai_summary_message ( "USE"
-                       "BUILD_TEST"
+                       "REQUIRED_FOUND"
                        "TEST"
                        "" )
 

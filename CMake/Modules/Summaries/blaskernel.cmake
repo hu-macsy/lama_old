@@ -75,13 +75,12 @@ endif ( NOT CXX_SUPPORTS_C11 )
 message ( STATUS "" )
 scai_status_message ( HEADLINE "LIBRARIES:" )
 
+set ( REQUIRED_FOUND FALSE )
 if    ( SCAI_BLAS_FOUND )
     set( REQUIRED_FOUND TRUE )
     if ( SCAI_BLAS_NAME MATCHES "BLAS" AND NOT LAPACK_FOUND )
         set( REQUIRED_FOUND FALSE )
     endif ( SCAI_BLAS_NAME MATCHES "BLAS" AND NOT LAPACK_FOUND )
-else  ( SCAI_BLAS_FOUND )
-    set( REQUIRED_FOUND FALSE )
 endif ( SCAI_BLAS_FOUND )
 
 scai_summary_message ( "STATIC"
@@ -103,9 +102,14 @@ scai_summary_message ( "STATIC"
     endif ( SCAI_BLAS_NAME MATCHES "BLAS" )
 
 # LAMA CUDA
+set ( REQUIRED_FOUND FALSE )
+if    ( CUDA_FOUND AND USE_CUDA )
+  set ( REQUIRED_FOUND TRUE )
+endif ( CUDA_FOUND AND USE_CUDA )
+
 message ( STATUS "" )
 scai_summary_message ( "USE"
-                       "USE_CUDA"
+                       "REQUIRED_FOUND"
                        "CUDA"
                        "" )
 
@@ -113,7 +117,7 @@ scai_summary_message ( "USE"
     scai_summary_message ( "FOUND"
                            "CUDA_FOUND"
                            "CUDA"
-                           "${CUDA_VERSION} at ${SCAI_CUDA_INCLUDE_DIRS}" )
+                           "${CUDA_VERSION} at ${SCAI_CUDA_INCLUDE_DIR}" )
                            
     # CUDA Compute Capability
     scai_summary_message ( "FOUND"
@@ -168,8 +172,13 @@ scai_summary_message ( "STATIC"
 message ( STATUS "" )
 scai_status_message ( HEADLINE "TESTING:" )
 
+set ( REQUIRED_FOUND FALSE )
+if    ( Boost_UNIT_TEST_FRAMEWORK_FOUND AND Boost_REGEX_FOUND AND BUILD_TEST )
+  set ( REQUIRED_FOUND TRUE )
+endif ( Boost_UNIT_TEST_FRAMEWORK_FOUND AND Boost_REGEX_FOUND AND BUILD_TEST )
+
 scai_summary_message ( "USE"
-                       "BUILD_TEST"
+                       "REQUIRED_FOUND"
                        "TEST"
                        "" )
 
