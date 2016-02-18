@@ -1,4 +1,4 @@
-.. _main-page:
+.. _main-page_hmemo:
 
 SCAI HMemo
 ===========
@@ -67,7 +67,7 @@ Context
 
 Here is the class hierarchy of the class Context:
 
-.. image:: ContextClass.png
+.. image:: _images/ContextClass.png
 
 In nearly all operations where a context appears as an argument a shared pointer for this context is used.
 This guarantees that the device will be freed only if it is no more used for any heterogeneous array.
@@ -135,7 +135,7 @@ Memory
  * Allocated data of a certain memory cannot be used everywhere
  * Generally it is not possible to identify by the address the memory on which it has been allocated
 
-.. image:: MemoryClass.png
+.. image:: _images/MemoryClass.png
 
 In the first LAMA release, context and memory were used synonymously as one context class.
 Due to the pinned memory that might be used for faster memory transfer between Host and CUDA devices and

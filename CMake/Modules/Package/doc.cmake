@@ -1,8 +1,8 @@
 ###
- # @file Distclean.cmake
+ # @file doc.cmake
  #
  # @license
- # Copyright (c) 2009-2015
+ # Copyright (c) 2009-2013
  # Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  # for Fraunhofer-Gesellschaft
  #
@@ -25,25 +25,23 @@
  # SOFTWARE.
  # @endlicense
  #
- # @brief Add custom target distclean
- # @author Fraunhofer SCAI
- # @date 09.06.2015
+ # @brief everthing for building sphinx and doxygen documentation
+ # @author Lauretta Schubert
+ # @date 12.02.2016
+ # @since 2.0.0
 ###
 
-if ( TARGET distclean )
-    # Target already available, do no create it then anymore
-else ( TARGET distclean )
-    add_custom_target ( distclean )
-    add_custom_command (
-        TARGET distclean
-        DEPENDS clean
-        # make docclean (not command itself becaue it depends on clean --> doubled cmake call)
-		COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_CURRENT_BINARY_DIR}/sphinx/
-		COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/sphinx/
-		# make doxygendocclean
-		COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_CURRENT_BINARY_DIR}/doxygen/
-		COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/doxygen/
-        COMMAND cd ${CMAKE_CURRENT_BINARY_DIR}
-        COMMAND sh ${CMAKE_MODULE_PATH}/distclean.sh
-    )
-endif ( TARGET distclean )
+include ( Package/Sphinx )
+include ( Package/Doxygen)
+
+if    ( SPHINX_FOUND OR DOXYGEN_FOUND )
+	set ( DOC_FOUND TRUE )
+else  ( SPHINX_FOUND OR DOXYGEN_FOUND )
+	set ( DOC_FOUND FALSE )
+endif ( SPHINX_FOUND OR DOXYGEN_FOUND )
+
+set ( BUILD_DOC ${DOC_FOUND} CACHE BOOL "Enable / Disable building of doc" )
+
+if    ( BUILD_DOC AND NOT DOC_FOUND )
+    message( FATAL_ERROR "Build of documentation enabled, but configuration is incomplete!")
+endif ( BUILD_DOC AND NOT DOC_FOUND )

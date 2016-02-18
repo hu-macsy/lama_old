@@ -401,7 +401,7 @@ Logging and Output
 ------------------
 
 - We do not use the standard output or standard error streams. Instead we use the logging mechanism
-  described in :ref:`logging <scailogging:main-page>`.
+  described in :ref:`logging <scailogging:main-page_logging>`.
 
 - Please keep in mind, that good logging messages are also explaining the source code.
 

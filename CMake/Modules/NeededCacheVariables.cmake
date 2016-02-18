@@ -45,7 +45,9 @@ set ( WHITELIST
 		# DOC
 		BUILD_DOC
 		SCAI_DOC_TYPE
+		Sphinx-apidoc_EXECUTABLE
 		Sphinx-build_EXECUTABLE
+		Sphinx_DIR
 		# CMAKE
 		CMAKE_BUILD_TYPE
         CMAKE_INSTALL_PREFIX
