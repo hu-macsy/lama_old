@@ -24,6 +24,8 @@ echo "==  Building and executing all scai dmemo examples  =="
 echo "======================================================"
 echo ""
 
+cd $MYDIR
+
 # build examples
 make
 
