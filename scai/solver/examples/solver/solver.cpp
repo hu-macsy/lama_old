@@ -157,6 +157,8 @@ int main( int argc, char* argv[] )
 
     int numRows = inMatrix.getNumRows();
 
+    solution.resize( inMatrix.getColDistributionPtr() );
+
     solution = 0.0;   // intialize of a vector
 
     // distribute data (trivial block partitioning)

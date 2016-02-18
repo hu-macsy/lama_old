@@ -66,14 +66,10 @@ RUN 1 solver/matrix_convert.exe -mm example.frv example.mtx
 RUN 1 solver/vector_generator.exe example2.mtx 1000 1
 RUN 1 solver/cg_solver.exe example
 RUN 1 solver/gmres_solver.exe example
-
-RUN 1 solver/jacobi_solver.exe example
-i=$((i+$1))
-
-#RUN 1 solver/amg_solver.exe example
-i=$((i+$1))
-
-RUN 1 solver/lama_info.exe
+RUN 1 solver/amg_solver.exe example 3
+RUN 1 solver/lama_info.exe 
+RUN 0 solver/lama_info.exe SpecializedJacobi 10
+RUN 0 solver/lama_info.exe GMRES 3
 
 # check if there are unkown examples
 count=`ls -l -la $MYDIR/solver/*.exe | wc -l`

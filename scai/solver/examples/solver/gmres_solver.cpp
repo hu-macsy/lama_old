@@ -144,12 +144,14 @@ int main( int argc, char* argv[] )
         SCAI_ASSERT_EQUAL( inMatrix.getNumRows(), rhs.size(), "size mismatch" )
     }
 
-    // for solutin create vector with same format/type as rhs, size = numRows, init = 0.0
+    // for solution create vector with same format/type as rhs, size = numColumns, init = 0.0
 
     unique_ptr<Vector> solutionPtr( Vector::create( rhs.getCreateValue() ) );
     Vector& solution = *solutionPtr;
 
     int numRows = inMatrix.getNumRows();
+
+    solution.resize( inMatrix.getColDistributionPtr() );
 
     solution = 0.0;   // intialize of a vector
 
