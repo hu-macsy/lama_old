@@ -54,7 +54,7 @@ if ( ${SCAI_ASSERT_LEVEL} STREQUAL "OFF" )
 endif ( ${SCAI_ASSERT_LEVEL} STREQUAL "OFF" )
 
 ### set include directories ###
-include_directories ( ${CUDA_INCLUDE_DIRS} )
+include_directories ( ${SCAI_CUDA_INCLUDE_DIR} )
 
 ### set link directories ###
 if ( WIN32 )

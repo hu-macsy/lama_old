@@ -66,9 +66,9 @@ scai_summary_message ( "FOUND"
 
 if    ( NOT CXX_SUPPORTS_C11 )
     scai_summary_message ( "FOUND"
-                           "BOOST_INCLUDE_DIR"
+                           "SCAI_BOOST_INCLUDE_DIR"
                            "Boost"
-                           "Version ${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}, add include dir ${BOOST_INCLUDE_DIR} to compile your sources" )
+                           "Version ${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}, add include dir ${SCAI_BOOST_INCLUDE_DIR} to compile your sources" )
 endif ( NOT CXX_SUPPORTS_C11 )
 
 message ( STATUS "" )
@@ -84,10 +84,15 @@ scai_summary_message ( "USE"
 message ( STATUS "" )
 scai_status_message ( HEADLINE "LIBRARIES:" )
   
+set ( REQUIRED_FOUND FALSE )
+if    ( ( MPI_FOUND AND USE_MPI ) OR ( GPI_FOUND AND USE_GPI ) )
+  set ( REQUIRED_FOUND TRUE )
+endif ( ( MPI_FOUND AND USE_MPI ) OR ( GPI_FOUND AND USE_GPI ) )
+
 # LAMA MPI
 message ( STATUS "" )
 scai_summary_message ( "USE"
-                       "USE_MPI"
+                       "REQUIRED_FOUND"
                        "Distributed"
                        "" )
 
@@ -104,11 +109,16 @@ scai_summary_message ( "USE"
                            "at ${SCAI_GPI_INCLUDE_DIR}" )
 
 # Graph Partitioning
+set ( REQUIRED_FOUND FALSE )
+if    ( METIS_FOUND AND USE_GRAPHPARTITIONING )
+  set ( REQUIRED_FOUND TRUE )
+endif ( METIS_FOUND AND USE_GRAPHPARTITIONING )
+
 message ( STATUS "" )
 scai_summary_message ( "USE"
-                       "USE_GRAPHPARTITIONING"
+                       "REQUIRED_FOUND"
                        "Graph Partitioning"
-                       "" )                   
+                       "" )                  
   # Metis
     scai_summary_message ( "FOUND"
                            "METIS_FOUND"
@@ -122,11 +132,9 @@ scai_summary_message ( "USE"
                            "at ${PARMETIS_INCLUDE_DIR}" )
 
 set ( REQUIRED_FOUND FALSE )
-if    ( SCAI_COMMON_FOUND AND SCAI_LOGGING_FOUND AND SCAI_TRACING_FOUND AND SCAI_TASKING_FOUND AND SCAI_HMEMO_FOUND
-            AND SCAI_KREGISTRY_FOUND )
+if    ( SCAI_COMMON_FOUND AND SCAI_LOGGING_FOUND AND SCAI_TRACING_FOUND AND SCAI_TASKING_FOUND AND SCAI_HMEMO_FOUND )
   set ( REQUIRED_FOUND TRUE )
-endif ( SCAI_COMMON_FOUND AND SCAI_LOGGING_FOUND AND SCAI_TRACING_FOUND AND SCAI_TASKING_FOUND AND SCAI_HMEMO_FOUND
-            AND SCAI_KREGISTRY_FOUND )
+endif ( SCAI_COMMON_FOUND AND SCAI_LOGGING_FOUND AND SCAI_TRACING_FOUND AND SCAI_TASKING_FOUND AND SCAI_HMEMO_FOUND )
 
 message ( STATUS "" )
 scai_summary_message ( "STATIC"
@@ -159,15 +167,17 @@ scai_summary_message ( "STATIC"
                            "SCAI Hmemo"
                            "" )
                            
-    scai_summary_message ( "FOUND"
-                           "SCAI_KREGISTRY_FOUND"
-                           "SCAI Kregistry"
-                           "" )
-
 # LAMA TEST
 message ( STATUS "" )
+scai_status_message ( HEADLINE "TESTING:" )
+
+set ( REQUIRED_FOUND FALSE )
+if    ( Boost_UNIT_TEST_FRAMEWORK_FOUND AND Boost_REGEX_FOUND AND BUILD_TEST )
+  set ( REQUIRED_FOUND TRUE )
+endif ( Boost_UNIT_TEST_FRAMEWORK_FOUND AND Boost_REGEX_FOUND AND BUILD_TEST )
+
 scai_summary_message ( "USE"
-                       "BUILD_TEST"
+                       "REQUIRED_FOUND"
                        "TEST"
                        "" )
 

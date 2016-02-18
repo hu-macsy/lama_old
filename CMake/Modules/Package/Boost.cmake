@@ -66,11 +66,13 @@ endif ( SCAI_CMAKE_VERBOSE )
 
 # Find Boost 
 
-find_package ( Boost ${SCAI_FIND_PACKAGE_FLAGS} COMPONENTS ${Boost_COMPONENTS} )
+find_package ( Boost ${SCAI_FIND_PACKAGE_FLAGS} OPTIONAL_COMPONENTS ${Boost_COMPONENTS} )
 
 if    ( Boost_INCLUDE_DIR )
 	set ( BOOST_INCLUDE_DIR "${Boost_INCLUDE_DIR}" ) # for getting the module names straight
-    set ( SCAI_INCLUDE_DIR ${BOOST_INCLUDE_DIR})
+    set ( SCAI_BOOST_INCLUDE_DIR ${BOOST_INCLUDE_DIR})
+else  ( Boost_INCLUDE_DIR )
+    message ( FATAL_ERROR "No Boost_INCLUDE_DIR found, need boost header libraries.")
 endif ( Boost_INCLUDE_DIR )
 
 endif ( NOT DEFINED BOOST_INCLUDE_DIR )

@@ -100,8 +100,13 @@ scai_summary_message ( "STATIC"
 message ( STATUS "" )
 scai_status_message ( HEADLINE "TESTING:" )
 
+set ( REQUIRED_FOUND FALSE )
+if    ( Boost_UNIT_TEST_FRAMEWORK_FOUND AND Boost_REGEX_FOUND AND BUILD_TEST )
+  set ( REQUIRED_FOUND TRUE )
+endif ( Boost_UNIT_TEST_FRAMEWORK_FOUND AND Boost_REGEX_FOUND AND BUILD_TEST )
+
 scai_summary_message ( "USE"
-                       "BUILD_TEST"
+                       "REQUIRED_FOUND"
                        "TEST"
                        "" )
 
