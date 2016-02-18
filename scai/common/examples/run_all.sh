@@ -24,6 +24,8 @@ echo "==  Building and executing all scai common examples  =="
 echo "======================================================="
 echo ""
 
+cd $MYDIR
+
 # build examples
 make
 

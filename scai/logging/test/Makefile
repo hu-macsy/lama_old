@@ -33,9 +33,9 @@
 
 include make.inc
 
-INCLUDE_FLAGS = -I${CMAKE_INSTALL_PREFIX}/include
+INCLUDE_FLAGS = -I${INCLUDE_DIR}
 
-LD_FLAGS = -L${CMAKE_INSTALL_PREFIX}/lib -Wl,-rpath=${CMAKE_INSTALL_PREFIX}/lib -lscai_logging
+LD_FLAGS = -L.. -Wl,-rpath=.. -lscai_logging
 
 DEFINES =
 

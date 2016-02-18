@@ -24,6 +24,8 @@ echo "==  Building and executing all scai hmemo examples  =="
 echo "======================================================"
 echo ""
 
+cd $MYDIR
+
 # build examples
 make
 
@@ -45,12 +47,16 @@ if [ $count -ne $i ]; then
     exit 1
 fi
 
+cd $MYDIR/cuda
+
+# build examples
+make
+
 
 # reset counter for CUDA examples
 i=0
 
 # run CUDA examples
-
 RUN 1 cuda/AliasProblem.exe
 RUN 1 cuda/Allocate.exe
 RUN 1 cuda/CUBlasExample.exe
