@@ -45,15 +45,11 @@
 // tracing
 #include <scai/tracing.hpp>
 
-using namespace scai::hmemo;
 
 namespace scai
 {
 
-namespace solver
-{
-
-SCAI_LOG_DEF_LOGGER( SOR::logger, "Solver.IterativeSolver.OmegaSolver.SOR" )
+using namespace hmemo;
 
 using lama::Matrix;
 using lama::SparseMatrix;
@@ -62,6 +58,11 @@ using lama::Vector;
 using lama::DenseVector;
 using lama::Scalar;
 using lama::CSRStorage;
+
+namespace solver
+{
+
+SCAI_LOG_DEF_LOGGER( SOR::logger, "Solver.IterativeSolver.OmegaSolver.SOR" )
 
 SOR::SOR( const std::string& id )
     :

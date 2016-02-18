@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief DenseVector.hpp
+ * @brief Definition of template class that stands for a dense vector of a certain type.
  * @author Jiri Kraus
  * @date 22.02.2011
  */

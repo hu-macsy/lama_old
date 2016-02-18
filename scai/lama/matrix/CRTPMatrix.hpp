@@ -193,7 +193,7 @@ public:
     /** @brief Get the row of a matrix 
      *
      *  @param[out] row will contain the values of the queried row of this matrix
-     *  @param[in]  i is the (global) index of the row to access
+     *  @param[in]  globalRowIndex is the (global) index of the row to access
      */
 
     void getRow( Vector& row, const IndexType globalRowIndex ) const

@@ -89,7 +89,7 @@ if ( WIN32 )
 	add_definitions ( -DCOMMON_COMPILING_DLL )
 endif ( WIN32 )
 
-### Project System-Include
+### Project System-Include ( also configured files )
 set( CONFIGURE_INCLUDE_DIR ${CMAKE_BINARY_DIR}/include )
 include_directories ( ../.. ${CONFIGURE_INCLUDE_DIR} )
 addInternalAndExternalIncludes()
@@ -117,7 +117,7 @@ scai_project (
 
         LAMAKernel
         LArray
-        LAMAArrayRef
+        LArrayRef
 
         Scalar
     )

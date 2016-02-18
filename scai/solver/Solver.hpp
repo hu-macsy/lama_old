@@ -58,6 +58,8 @@
 namespace scai
 {
 
+/** @brief Namespace for all solver classes, used for all stuff of project solver */
+
 namespace solver
 {
 
