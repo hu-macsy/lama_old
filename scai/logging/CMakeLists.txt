@@ -114,7 +114,6 @@ add_subdirectory ( doc )
 add_subdirectory ( examples )
 ## begin subdir test
 # prepare test
-set ( TEST_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../.." )
 configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/test/make.inc.in" "${CMAKE_CURRENT_BINARY_DIR}/test/make.inc" )
 file ( COPY ${CMAKE_CURRENT_SOURCE_DIR}/test DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
 # add test
