@@ -33,17 +33,19 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/mpl/list.hpp>
 
-#include <scai/lama/LAMAKernel.hpp>
-#include <scai/lama/UtilKernelTrait.hpp>
-#include <scai/lama/CSRKernelTrait.hpp>
-#include <scai/lama/ELLKernelTrait.hpp>
-#include <scai/lama/COOKernelTrait.hpp>
-#include <scai/lama/DIAKernelTrait.hpp>
-#include <scai/lama/JDSKernelTrait.hpp>
+#include <scai/utilskernel/LAMAKernel.hpp>
+#include <scai/utilskernel/UtilKernelTrait.hpp>
+#include <scai/sparsekernel/CSRKernelTrait.hpp>
+#include <scai/sparsekernel/ELLKernelTrait.hpp>
+#include <scai/sparsekernel/COOKernelTrait.hpp>
+#include <scai/sparsekernel/DIAKernelTrait.hpp>
+#include <scai/sparsekernel/JDSKernelTrait.hpp>
 
 #include <scai/hmemo/Context.hpp>
 
-using namespace scai::lama;
+//using namespace scai::lama;
+using namespace scai::sparsekernel;
+using namespace scai::utilskernel;
 using namespace scai::hmemo;
 
 typedef boost::mpl::list<double, float> test_types;

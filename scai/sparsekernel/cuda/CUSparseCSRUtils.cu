@@ -32,14 +32,14 @@
  */
 
 // hpp
-#include <scai/lama/cuda/CUSparseCSRUtils.hpp>
+#include <scai/sparsekernel/cuda/CUSparseCSRUtils.hpp>
 
 // local library
-#include <scai/lama/cuda/CUSPARSEWrapper.hpp>
-#include <scai/lama/UtilKernelTrait.hpp>
-#include <scai/lama/CSRKernelTrait.hpp>
+#include <scai/sparsekernel/cuda/CUSPARSEWrapper.hpp>
+#include <scai/sparsekernel/CSRKernelTrait.hpp>
 
 // internal scai libraries
+#include <scai/utilskernel/UtilKernelTrait.hpp>
 #include <scai/hmemo/cuda/CUDAStreamSyncToken.hpp>
 #include <scai/kregistry/KernelRegistry.hpp>
 

@@ -32,12 +32,11 @@
  */
 
 // hpp
-#include <scai/lama/cuda/CUDADIAUtils.hpp>
+#include <scai/sparsekernel/cuda/CUDADIAUtils.hpp>
 
 // local library
-#include <scai/lama/DIAKernelTrait.hpp>
+#include <scai/sparsekernel/DIAKernelTrait.hpp>
 
-#include <scai/lama/cuda/CUDASettings.hpp>
 
 // internal scai library
 #include <scai/hmemo/cuda/CUDAStreamSyncToken.hpp>
@@ -45,10 +44,12 @@
 #include <scai/kregistry/KernelRegistry.hpp>
 #include <scai/tracing.hpp>
 
-#include <scai/common/macros/assert.hpp>
-#include <scai/common/bind.hpp>
+#include <scai/common/cuda/CUDASettings.hpp>
 #include <scai/common/cuda/CUDAError.hpp>
 #include <scai/common/cuda/launchHelper.hpp>
+#include <scai/common/cuda/CUDATexVector.hpp>
+#include <scai/common/macros/assert.hpp>
+#include <scai/common/bind.hpp>
 #include <scai/common/Constants.hpp>
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/preprocessor.hpp>
@@ -64,15 +65,12 @@ namespace scai
 {
 
 using common::TypeTraits;
+using common::CUDASettings;
 
 namespace sparsekernel
 {
 
 SCAI_LOG_DEF_LOGGER( CUDADIAUtils::logger, "CUDA.DIAUtils" )
-
-/* --------------------------------------------------------------------------- */
-
-#include <scai/lama/cuda/CUDATexVector.hpp>
 
 /* --------------------------------------------------------------------------- */
 

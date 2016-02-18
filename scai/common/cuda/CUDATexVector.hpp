@@ -33,7 +33,7 @@
 
 #pragma once
 
-#include <scai/common/CUDAError.hpp>
+#include <scai/common/cuda/CUDAError.hpp>
 
 /* --------------------------------------------------------------------------- */
 

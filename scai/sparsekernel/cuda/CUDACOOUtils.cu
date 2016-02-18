@@ -48,6 +48,7 @@
 #include <scai/common/bind.hpp>
 #include <scai/common/preprocessor.hpp>
 
+#include <scai/common/cuda/CUDATexVector.hpp>
 #include <scai/common/cuda/CUDASettings.hpp>
 #include <scai/common/cuda/CUDAError.hpp>
 #include <scai/common/cuda/launchHelper.hpp>
@@ -64,15 +65,13 @@ namespace scai
 {
 
 using common::TypeTraits;
+using common::CUDASettings;
+using utilskernel::CUDAUtils;
 
 namespace sparsekernel
 {
 
 SCAI_LOG_DEF_LOGGER( CUDACOOUtils::logger, "CUDA.COOUtils" )
-
-/* --------------------------------------------------------------------------- */
-
-#include <scai/lama/cuda/CUDATexVector.hpp>
 
 /* --------------------------------------------------------------------------- */
 

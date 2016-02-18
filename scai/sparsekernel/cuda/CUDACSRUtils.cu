@@ -32,18 +32,16 @@
  */
 
 // hpp
-#include <scai/lama/cuda/CUDACSRUtils.hpp>
+#include <scai/sparsekernel/cuda/CUDACSRUtils.hpp>
 
 // local library
-#include <scai/lama/cuda/CUDAUtils.hpp>
-#include <scai/lama/cuda/CUDACSRUtils.hpp>
-#include <scai/lama/cuda/CUDACOOUtils.hpp>
-#include <scai/lama/cuda/CUDATexture.hpp>
-#include <scai/lama/cuda/CUDASettings.hpp>
-
-#include <scai/lama/CSRKernelTrait.hpp>
+#include <scai/sparsekernel/cuda/CUDACSRUtils.hpp>
+#include <scai/sparsekernel/cuda/CUDACOOUtils.hpp>
+#include <scai/sparsekernel/CSRKernelTrait.hpp>
 
 // internal scai library
+#include <scai/utilskernel/cuda/CUDAUtils.hpp>
+
 #include <scai/hmemo/Memory.hpp>
 #include <scai/kregistry/KernelRegistry.hpp>
 
@@ -51,6 +49,9 @@
 
 #include <scai/tracing.hpp>
 
+#include <scai/common/cuda/CUDATexture.hpp>
+#include <scai/common/cuda/CUDATexVector.hpp>
+#include <scai/common/cuda/CUDASettings.hpp>
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/bind.hpp>
 #include <scai/common/Constants.hpp>
@@ -101,8 +102,13 @@ using namespace scai::hmemo;
 namespace scai
 {
 
+using utilskernel::CUDAUtils;
+
 using tasking::SyncToken;
 using tasking::CUDAStreamSyncToken;
+
+using common::CUDASettings;
+
 
 namespace sparsekernel
 {
@@ -285,10 +291,6 @@ void CUDACSRUtils::convertCSR2CSC(
 
     SCAI_CUDA_RT_CALL( cudaFree( cooIA ), "free tmp cooIA" )
 }
-
-/* --------------------------------------------------------------------------- */
-
-#include <scai/lama/cuda/CUDATexVector.hpp>
 
 /* --------------------------------------------------------------------------- */
 

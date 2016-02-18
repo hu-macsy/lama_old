@@ -8,7 +8,7 @@
 #pragma once
 
 // internal scai libraries
-#include <scai/lama/cuda/CUSPARSETrait.hpp>
+#include <scai/sparsekernel/cuda/CUSPARSETrait.hpp>
 
 #include <scai/common/cuda/CUDAError.hpp>
 #include <scai/common/TypeTraits.hpp>

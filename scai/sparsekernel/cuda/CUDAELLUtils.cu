@@ -32,23 +32,23 @@
  */
 
 // hpp
-#include <scai/lama/cuda/CUDAELLUtils.hpp>
+#include <scai/sparsekernel/cuda/CUDAELLUtils.hpp>
 
 // local library
-#include <scai/lama/cuda/CUDAUtils.hpp>
-#include <scai/lama/cuda/CUDASettings.hpp>
-
-#include <scai/lama/ELLKernelTrait.hpp>
+#include <scai/sparsekernel/ELLKernelTrait.hpp>
 
 // internal scai library
+#include <scai/utilskernel/cuda/CUDAUtils.hpp>
 #include <scai/hmemo/cuda/CUDAStreamSyncToken.hpp>
 #include <scai/kregistry/KernelRegistry.hpp>
 #include <scai/tracing.hpp>
 
-#include <scai/common/bind.hpp>
-#include <scai/common/macros/unused.hpp>
+#include <scai/common/cuda/CUDATexVector.hpp>
+#include <scai/common/cuda/CUDASettings.hpp>
 #include <scai/common/cuda/CUDAError.hpp>
 #include <scai/common/cuda/launchHelper.hpp>
+#include <scai/common/bind.hpp>
+#include <scai/common/macros/unused.hpp>
 #include <scai/common/Constants.hpp>
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/preprocessor.hpp>
@@ -80,16 +80,15 @@ namespace scai
 {
 
 using common::TypeTraits;
+using common::CUDASettings;
 using tasking::CUDAStreamSyncToken;
+using utilskernel::CUDAUtils;
+
 
 namespace sparsekernel
 {
 
 SCAI_LOG_DEF_LOGGER( CUDAELLUtils::logger, "CUDA.ELLUtils" )
-
-/* ------------------------------------------------------------------------------------------------------------------ */
-
-#include <scai/lama/cuda/CUDATexVector.hpp>
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 /*                                                  thrust functors                                                   */

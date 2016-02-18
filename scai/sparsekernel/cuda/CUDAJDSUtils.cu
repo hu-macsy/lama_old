@@ -32,24 +32,25 @@
  */
 
 // hpp
-#include <scai/lama/cuda/CUDAJDSUtils.hpp>
+#include <scai/sparsekernel/cuda/CUDAJDSUtils.hpp>
 
 // local library
-#include <scai/lama/cuda/CUDAUtils.hpp>
-#include <scai/lama/cuda/CUDASettings.hpp>
+#include <scai/sparsekernel/JDSKernelTrait.hpp>
 
-#include <scai/lama/JDSKernelTrait.hpp>
 
 // internal scai library
+#include <scai/utilskernel/cuda/CUDAUtils.hpp>
 #include <scai/hmemo/cuda/CUDAStreamSyncToken.hpp>
 #include <scai/kregistry/KernelRegistry.hpp>
 
 #include <scai/tracing.hpp>
 
-#include <scai/common/bind.hpp>
-#include <scai/common/macros/assert.hpp>
+#include <scai/common/cuda/CUDATexVector.hpp>
+#include <scai/common/cuda/CUDASettings.hpp>
 #include <scai/common/cuda/CUDAError.hpp>
 #include <scai/common/cuda/launchHelper.hpp>
+#include <scai/common/macros/assert.hpp>
+#include <scai/common/bind.hpp>
 #include <scai/common/Constants.hpp>
 #include <scai/common/TypeTraits.hpp>
 
@@ -77,15 +78,13 @@ namespace scai
 {
 
 using common::TypeTraits;
+using common::CUDASettings;
+using utilskernel::CUDAUtils;
 
 namespace sparsekernel
 {
 
 SCAI_LOG_DEF_LOGGER( CUDAJDSUtils::logger, "CUDA.JDSUtils" )
-
-/* ------------------------------------------------------------------------------------------------------------------ */
-
-#include <scai/lama/cuda/CUDATexVector.hpp>
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 /*                                                  thrust functors                                                   */
