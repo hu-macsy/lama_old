@@ -1,4 +1,4 @@
-.. _main-page:
+.. _main-page_tracing:
 
 Tracing
 =======
@@ -146,7 +146,7 @@ program the inclusive time is always 100%, but in the routine only 77.21% of the
 spent. The other time has been spent in the routines A and B. All exclusive times sum always up
 to 100% ( 77.21 + 13.82 + 13.97 = 100 ).
 
-.. figure:: /_images/CallTreeEvent.png
+.. figure:: _images/CallTreeEvent.png
     :width: 500px
     :align: center
     :alt: Event Costs
@@ -154,21 +154,21 @@ to 100% ( 77.21 + 13.82 + 13.97 = 100 ).
 The property window allows to set many options for the output image. Now we select
 MetricCosts, where ticks are scaled to milliseconds.
 
-.. figure:: /_images/CallTreeProps.png
+.. figure:: _images/CallTreeProps.png
     :width: 500px
     :align: center
     :alt: Event Costs
 
 After pushing the Apply buttion a new image is generated.
 
-.. figure:: /_images/CallTreeTime.png
+.. figure:: _images/CallTreeTime.png
     :width: 500px
     :align: center
     :alt: Event Costs
 
 Runtime calls show how often a subroutine has been called.
 
-.. figure:: /_images/CallTreeCalls.png
+.. figure:: _images/CallTreeCalls.png
     :width: 500px
     :align: center
     :alt: Runtime Calls
@@ -198,7 +198,7 @@ By default, tracing is enabled. It can be disabled by the boolean CMake variable
 ``SCAI_TRACING``. All macros used for instrumentation will be ignored if tracing
 is disabled at compile time.
 
-The tracing library itself uses also the :ref:`SCAI logging library <scailogging:main-page>`. This logging is only intended
+The tracing library itself uses also the :ref:`SCAI logging library <scailogging:main-page_logging>`. This logging is only intended
 for code development. But by setting corresponding levels of the used loggers it is possible
 to see which instrumented regions are entered and left.
 

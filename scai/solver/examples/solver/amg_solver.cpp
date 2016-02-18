@@ -179,11 +179,12 @@ int main( int argc, char* argv[] )
 
     int numRows = matrix.getNumRows();
 
-    // for solutin create vector with same format/type as rhs, size = numRows, init = 0.0
+    // for solution create vector with same format/type as rhs, size = numRows, init = 0.0
 
     unique_ptr<Vector> solutionPtr( rhs.newVector() );
     Vector& solution = *solutionPtr;
 
+    solution.resize( rhs.getDistributionPtr() );
     solution = 0.0;   // intialize of a vector
 
     double stop = Walltime::get();  // stop timing for reading

@@ -38,6 +38,7 @@
 #include <scai/common/shared_ptr.hpp>
 
 #include <scai/common/macros/throw.hpp>
+#include <scai/common/macros/assert.hpp>
 
 // std
 #include <typeinfo>
@@ -129,9 +130,11 @@ private:
 
     typedef std::map<InputType, CreateFn> CreatorMap;
 
-    /** Map container to get for the key the create function. */
+    /** Map container to get for the key the create function.
+     *  (if the pointer is NULL, destructor has been called)
+     */
 
-    static CreatorMap& getFactory();
+    static CreatorMap* getFactory();
 };
 
 /* -----------------------------------------------------------------------------*/
@@ -186,11 +189,13 @@ OutputType Factory<InputType, OutputType>::create( const InputType type )
 {
     OutputType value;
 
-    const CreatorMap& factory = getFactory();
+    const CreatorMap* factory = getFactory();
 
-    typename CreatorMap::const_iterator fn = factory.find( type );
+    SCAI_ASSERT( factory != NULL, "create on destroyed factory" )
 
-    if ( fn  != factory.end() )
+    typename CreatorMap::const_iterator fn = factory->find( type );
+
+    if ( fn  != factory->end() )
     {
         value = fn->second();
     }
@@ -205,7 +210,7 @@ OutputType Factory<InputType, OutputType>::create( const InputType type )
 }
 
 template<typename InputType, typename OutputType>
-std::map<InputType, OutputType(* )() >& Factory<InputType, OutputType>::getFactory()
+std::map<InputType, OutputType(* )() >* Factory<InputType, OutputType>::getFactory()
 {
     static scai::common::shared_ptr<CreatorMap> factory;
     static bool initialized = false;
@@ -220,53 +225,71 @@ std::map<InputType, OutputType(* )() >& Factory<InputType, OutputType>::getFacto
         // destructor on factory has already been called
         // Note: test factory.get() == NULL does not work with boost::shared_ptr, boost::auto_ptr
 
-        factory.reset( new CreatorMap() );   // make sure that we do not work on invalid references
+        return NULL;
     }
 
-    return *factory;
+    return factory.get();
 }
 
 template<typename InputType, typename OutputType>
 void Factory<InputType, OutputType>::addCreator( const InputType type, CreateFn create )
 {
-    CreatorMap& factory = getFactory();
+    CreatorMap* factory = getFactory();
+
+    SCAI_ASSERT( factory != NULL, "addCreator on destroyed factory" )
 
     // checks for multiple entries is not really necessary here, so just add entry in map container.
 
-    factory.insert( std::pair<InputType, CreateFn>( type, create ) );
+    factory->insert( std::pair<InputType, CreateFn>( type, create ) );
 }
 
 template<typename InputType, typename OutputType>
 void Factory<InputType, OutputType>::removeCreator( const InputType type )
 {
-    CreatorMap& factory = getFactory();
+    CreatorMap* factory = getFactory();
+
+    if ( factory == NULL )
+    {
+        return;   // factory is already destroyed, remove not needed
+    }
 
     // the following call is also safe if factory does not contain the creator for type
 
-    factory.erase( type );
+    factory->erase( type );
 }
 
 template<typename InputType, typename OutputType>
 bool Factory<InputType, OutputType>::canCreate( InputType value )
 {
-    CreatorMap& factory = getFactory();
+    CreatorMap* factory = getFactory();
 
-    typename CreatorMap::const_iterator it = factory.find( value );
+    if ( factory == NULL )
+    {
+        return false;
+    }
 
-    return it != factory.end();
+    typename CreatorMap::const_iterator it = factory->find( value );
+
+    return it != factory->end();
 }
 
 template<typename InputType, typename OutputType>
 void Factory<InputType, OutputType>::getCreateValues( std::vector<InputType>& values )
 {
-    CreatorMap& factory = getFactory();
+    CreatorMap* factory = getFactory();
 
     values.clear();
-    values.reserve( factory.size() );
+
+    if ( factory == NULL )
+    {
+        return;
+    }
+
+    values.reserve( factory->size() );
 
     typename CreatorMap::const_iterator it;
 
-    for ( it = factory.begin(); it != factory.end(); ++it )
+    for ( it = factory->begin(); it != factory->end(); ++it )
     {
         values.push_back( it->first );
     }

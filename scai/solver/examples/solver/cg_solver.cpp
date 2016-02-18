@@ -146,13 +146,14 @@ int main( int argc, char* argv[] )
         SCAI_ASSERT_EQUAL( matrix.getNumRows(), rhs.size(), "" )
     }
 
-    // for solutin create vector with same format/type as rhs, size = numRows, init = 0.0
+    // for solution create vector with same format/type as rhs, size = numRows, init = 0.0
 
     unique_ptr<Vector> solutionPtr( Vector::create( rhs.getCreateValue() ) );
     Vector& solution = *solutionPtr;
 
     int numRows = matrix.getNumRows();
 
+    solution.resize( matrix.getColDistributionPtr() );
     solution = 0.0;   // intialize of a vector
 
     // distribute data (trivial block partitioning)

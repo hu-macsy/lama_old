@@ -1,7 +1,13 @@
-.. _main-page:
+.. _main-page_dmemo:
 
 SCAI DMemo
 ===========
+
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+   
+   distributions
 
 Motivation
 ----------

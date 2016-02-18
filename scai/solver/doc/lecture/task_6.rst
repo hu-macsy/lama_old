@@ -23,4 +23,4 @@ for it with "Solver.IterativeSolver.CG = INFO".
    :header: "previous", "Solution", "next"
    :widths: 330, 340, 330
 
-   ":doc:`task_5`", ":doc:`solution_task_6`", ":doc:`task_7`"
+   ":doc:`task_5`", ":doc:`solution_task_6`", "-"

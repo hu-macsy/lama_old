@@ -64,7 +64,7 @@ if ( ${SCAI_ASSERT_LEVEL} STREQUAL "OFF" )
 endif ( ${SCAI_ASSERT_LEVEL} STREQUAL "OFF" )
 
 ### set include directories ###
-include_directories ( ${Boost_INCLUDE_DIR} )
+include_directories ( ${SCAI_BOOST_INCLUDE_DIR} )
 
 ### add link directories ###
 if ( WIN32 )
