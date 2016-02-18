@@ -36,7 +36,7 @@ set ( CXX_SOURCES
       SettingsTest.cpp  
 )
 
-include_directories ( ${Boost_INCLUDE_DIR} )
+include_directories ( ${SCAI_BOOST_INCLUDE_DIR} )
 
 add_executable ( CommonTest ${CXX_SOURCES} )
 

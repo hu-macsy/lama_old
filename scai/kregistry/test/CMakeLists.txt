@@ -38,7 +38,7 @@ set ( CXX_SOURCES
       TraitTest.cpp  
 )
 
-include_directories ( ${Boost_INCLUDE_DIR} )
+include_directories ( ${SCAI_BOOST_INCLUDE_DIR} )
 
 add_executable ( KernelInterfaceTest ${CXX_SOURCES} )
 

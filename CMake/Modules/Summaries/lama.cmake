@@ -83,59 +83,7 @@ scai_summary_message ( "USE"
 # LAMA (core)
 message ( STATUS "" )
 scai_status_message ( HEADLINE "LIBRARIES:" )
-
-if    ( SCAI_BLAS_FOUND )
-    set( REQUIRED_FOUND TRUE )
-    if ( SCAI_BLAS_NAME MATCHES "BLAS" AND NOT LAPACK_FOUND )
-        set( REQUIRED_FOUND FALSE )
-    endif ( SCAI_BLAS_NAME MATCHES "BLAS" AND NOT LAPACK_FOUND )
-else  ( SCAI_BLAS_FOUND )
-    set( REQUIRED_FOUND FALSE )
-endif ( SCAI_BLAS_FOUND ) 
-
-scai_summary_message ( "STATIC"
-                       "REQUIRED_FOUND"
-                       "LAMA (core)"
-                       "" )
-   # BLAS
-    scai_summary_message ( "FOUND"
-                           "SCAI_BLAS_FOUND"
-                           "BLAS"
-                           "(${SCAI_BLAS_NAME}) with libraries: ${SCAI_SCAI_BLAS_LIBRARIES}" )
-    if    ( SCAI_BLAS_NAME MATCHES "BLAS" )
-        message ( STATUS "" )
-    	  scai_summary_message ( "FOUND"
-                       	       "LAPACK_FOUND"
-                      	       "LAPACK"
-                         		   "" )
-    endif ( SCAI_BLAS_NAME MATCHES "BLAS" )
-    
-# LAMA CUDA
-message ( STATUS "" )
-scai_summary_message ( "USE"
-                       "USE_CUDA"
-                       "CUDA"
-                       "" )
-
-    # CUDA
-    scai_summary_message ( "FOUND"
-                           "CUDA_FOUND"
-                           "CUDA"
-                           "${CUDA_VERSION} at ${CUDA_INCLUDE_DIRS}" )
-                           
-    # CUDA Compute Capability
-    scai_summary_message ( "FOUND"
-                           "CUDA_HAVE_GPU"
-                           "Compute Capability"
-                           "${CUDA_COMPUTE_CAPABILITY}" )
-                           
-# LAMA MIC
-message ( STATUS "" )
-scai_summary_message ( "USE"
-                       "USE_MIC"
-                       "MIC"
-                       "" )
-
+   
 set ( REQUIRED_FOUND FALSE )
 if    ( SCAI_COMMON_FOUND AND SCAI_LOGGING_FOUND AND SCAI_TRACING_FOUND AND SCAI_TASKING_FOUND AND SCAI_HMEMO_FOUND
             AND SCAI_KREGISTRY_FOUND AND SCAI_BLASKERNEL_FOUND AND SCAI_DMEMO_FOUND )
@@ -191,8 +139,15 @@ scai_summary_message ( "STATIC"
 
 # LAMA TEST
 message ( STATUS "" )
+scai_status_message ( HEADLINE "TESTING:" )
+
+set ( REQUIRED_FOUND FALSE )
+if    ( Boost_UNIT_TEST_FRAMEWORK_FOUND AND Boost_REGEX_FOUND AND BUILD_TEST )
+  set ( REQUIRED_FOUND TRUE )
+endif ( Boost_UNIT_TEST_FRAMEWORK_FOUND AND Boost_REGEX_FOUND AND BUILD_TEST )
+
 scai_summary_message ( "USE"
-                       "BUILD_TEST"
+                       "REQUIRED_FOUND"
                        "TEST"
                        "" )
 

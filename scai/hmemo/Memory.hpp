@@ -72,6 +72,7 @@ enum MemoryType
     CUDAMemory,       //!< CUDA GPU memory on a device
     CUDAHostMemory,   //!< pinned memory that allows faster transfer to a certain CUDA Device
     MICMemory,        //!< Memory on Intel MIC
+    GPIMemory,        //!< Pinned memory for GPI communication
     UserMemory        //!< can be used for a new derived Context class
 };
 

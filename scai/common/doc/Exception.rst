@@ -8,7 +8,7 @@ Within LAMA one base class is provided for all LAMA relevant exceptions.
   class Exception
   {
       ...
-  }
+  };
 
 This exception class is the base class for all exceptions defined in any SCAI project.
 One major feature is that this exception prints the call stack from the place where

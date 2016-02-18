@@ -64,11 +64,10 @@ else  ( NOT SCAI_COMPLETE_BUILD )
     CheckValueAtCompleteBuild ( ${PROJECT_SURNAME} )
 endif ( NOT SCAI_COMPLETE_BUILD )
 
-## C++11 or Boost
-include ( CheckC++11 )
-if    ( NOT CXX_SUPPORTS_C11 OR BUILD_TEST )
+## Use Boost if BUILD_TEST is enabled
+if ( BUILD_TEST )
     include( Package/Boost )
-endif ( NOT CXX_SUPPORTS_C11 OR BUILD_TEST )
+endif ( BUILD_TEST )
 
 ### include all search packages
 addInternalAndExternalPackages()
@@ -91,7 +90,8 @@ if ( WIN32 )
 endif ( WIN32 )
 
 ### Project System-Include
-include_directories ( ../.. )
+set( CONFIGURE_INCLUDE_DIR ${CMAKE_BINARY_DIR}/include )
+include_directories ( ../.. ${CONFIGURE_INCLUDE_DIR} )
 addInternalAndExternalIncludes()
 
 ### Add classes/headers to source files CXX_SOURCES, CXX_HEADERS, ...
@@ -186,8 +186,8 @@ install ( TARGETS ${PROJECT_NAME} DESTINATION lib )
 relative_install( FILES ${CXX_HEADERS} DESTINATION ${${UPPER_PROJECT_NAME}_INCLUDE_DIR} )
 
 ## install library.hpp
-configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/lama.hpp.in" "${CMAKE_CURRENT_BINARY_DIR}/include/scai/lama.hpp" )
-install ( FILES "${CMAKE_CURRENT_BINARY_DIR}/include/scai/lama.hpp" DESTINATION include/scai )
+configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/lama.hpp.in" "${CONFIGURE_INCLUDE_DIR}/scai/lama.hpp" )
+install ( FILES "${CONFIGURE_INCLUDE_DIR}/scai/lama.hpp" DESTINATION include/scai )
 
 # generate file make.inc + install it
 #configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/examples/make.inc.in" "${CMAKE_CURRENT_BINARY_DIR}/examples/make.inc" )

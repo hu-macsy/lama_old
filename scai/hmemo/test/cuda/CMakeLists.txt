@@ -42,7 +42,7 @@ scai_project (
         LAMAArrayTest
 )
 
-include_directories ( ${Boost_INCLUDE_DIR} )
+include_directories ( ${SCAI_BOOST_INCLUDE_DIR} )
 
 cuda_add_executable ( CUDATest ${CUDA_SOURCES} ${CXX_SOURCES} )
 

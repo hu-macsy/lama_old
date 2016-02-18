@@ -1,6 +1,6 @@
 include make.inc
 
-INCLUDE_FLAGS = -I${BOOST_INCLUDE_DIR} -I${SCAI_ROOT}/include
+INCLUDE_FLAGS = -I${SCAI_BOOST_INCLUDE_DIR} -I${SCAI_ROOT}/include
 
 LD_FLAGS = ${SCAI_LD_FLAGS} -Wl,-rpath=${SCAI_ROOT}/lib 
 
@@ -16,7 +16,7 @@ EXECUTABLE: ${EXECUTABLES} Module.so DummyModule.so
 	${CXX} -o $*.exe $*.o ${LD_FLAGS}
 
 .o.so:
-	${CXX} -o $*.so $*.o ${LD_FLAGS} -shared
+	${CXX} -o lib$*.so $*.o ${LD_FLAGS} -shared
 	
 .cpp.o:
 	${CXX} -fPIC ${CXX_FLAGS} ${INCLUDE_FLAGS} -c $*.cpp

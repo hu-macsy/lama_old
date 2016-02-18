@@ -1047,7 +1047,7 @@ MPICommunicator::MPIGuard::~MPIGuard()
 
 // create a guard whose destructor at program exit takes care of MPI exit call
 
-// MPICommunicator::MPIGuard MPICommunicator::guard =
+MPICommunicator::MPIGuard MPICommunicator::guard;
 
 CommunicatorPtr MPICommunicator::create()
 {

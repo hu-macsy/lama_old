@@ -30,15 +30,13 @@ endmacro ( addInternalIncludes )
 macro    ( addExternalIncludes )
 	foreach    ( module ${${UPPER_PROJECT_NAME}_EXTERNAL_DEPS} )
 		string ( TOUPPER ${module} upper_module )
-    	include_directories( ${${upper_module}_INCLUDE_DIR} )
+    	include_directories( ${SCAI_${upper_module}_INCLUDE_DIR} )
 	endforeach ( module ${${UPPER_PROJECT_NAME}_EXTERNAL_DEPS} )
 endmacro ( addExternalIncludes )
 
 macro    ( addInternalAndExternalIncludes )
-	foreach    ( module ${${UPPER_PROJECT_NAME}_INTERNAL_DEPS} ${${UPPER_PROJECT_NAME}_EXTERNAL_DEPS} )
-		string ( TOUPPER ${module} upper_module )
-    	include_directories( ${${upper_module}_INCLUDE_DIR} )
-	endforeach ( module ${${UPPER_PROJECT_NAME}_INTERNAL_DEPS} ${${UPPER_PROJECT_NAME}_EXTERNAL_DEPS} )
+	addInternalIncludes()
+	addExternalIncludes()
 endmacro ( addInternalAndExternalIncludes )
 
 ## adding link libraries of packages

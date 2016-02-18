@@ -38,7 +38,7 @@ set ( CXX_SOURCES
       LAPACKTest
 ) 
 
-include_directories ( ${Boost_INCLUDE_DIR} )
+include_directories ( ${SCAI_BOOST_INCLUDE_DIR} )
 
 add_executable ( BLASKernelTest ${CXX_SOURCES} )
 

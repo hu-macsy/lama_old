@@ -167,8 +167,10 @@ private:
 
 // Register guard instantiation, does also template instantiation
 
-template Base::Register<Derived<int> >::RegisterGuard Base::Register<Derived<int> >::registerGuard;
-template Base::Register<Derived<float> >::RegisterGuard Base::Register<Derived<float> >::registerGuard;
+template Base::Register<Derived<int> >::RegisterGuard
+        Base::Register<Derived<int> >::registerGuard;
+template Base::Register<Derived<float> >::RegisterGuard
+        Base::Register<Derived<float> >::registerGuard;
 
 using namespace std;
 

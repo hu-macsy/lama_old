@@ -31,10 +31,11 @@
  # @since 1.0.0
 ###
 
-### BOOST_<lib>_FOUND    - if Boost component is found
-### BOOST_INCLUDE_DIR    - Boost include directory
-### Boost_<lib>_LIBRARY  - Boost component library
-### SCAI_BOOST_LIBRARIES - all found BOOST libraries out of the searched component
+### BOOST_<lib>_FOUND      - if Boost component is found
+### BOOST_INCLUDE_DIR      - Boost include directory
+### SCAI_BOOST_INCLUDE_DIR - Boost include directory
+### Boost_<lib>_LIBRARY    - Boost component library
+### SCAI_BOOST_LIBRARIES   - all found BOOST libraries out of the searched component
 
 ### Boost_USE_STATIC_LIBS  ( default is OFF )
 ### 
@@ -55,7 +56,7 @@ endif ( WIN32 )
 
 # Finds packages with custom search options 
 
-set ( Boost_COMPONENTS unit_test_framework regex thread system )
+set ( Boost_COMPONENTS unit_test_framework regex )
 
 # FindBoost Debug options comment
 if    ( SCAI_CMAKE_VERBOSE )
@@ -65,10 +66,13 @@ endif ( SCAI_CMAKE_VERBOSE )
 
 # Find Boost 
 
-find_package ( Boost ${SCAI_FIND_PACKAGE_FLAGS} COMPONENTS ${Boost_COMPONENTS} )
+find_package ( Boost ${SCAI_FIND_PACKAGE_FLAGS} OPTIONAL_COMPONENTS ${Boost_COMPONENTS} )
 
 if    ( Boost_INCLUDE_DIR )
 	set ( BOOST_INCLUDE_DIR "${Boost_INCLUDE_DIR}" ) # for getting the module names straight
+    set ( SCAI_BOOST_INCLUDE_DIR ${BOOST_INCLUDE_DIR})
+else  ( Boost_INCLUDE_DIR )
+    message ( FATAL_ERROR "No Boost_INCLUDE_DIR found, need boost header libraries.")
 endif ( Boost_INCLUDE_DIR )
 
 endif ( NOT DEFINED BOOST_INCLUDE_DIR )
@@ -86,4 +90,3 @@ endif ( NOT Boost_REGEX_FOUND AND ${BUILD_TEST} )
 if    ( Boost_UNIT_TEST_FRAMEWORK_FOUND AND Boost_REGEX_FOUND )
     set ( FOUND_BOOST_TEST TRUE )
 endif ( Boost_UNIT_TEST_FRAMEWORK_FOUND AND Boost_REGEX_FOUND ) 
- 
