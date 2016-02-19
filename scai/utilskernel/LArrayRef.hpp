@@ -36,12 +36,12 @@
 #pragma once
 
 // base classes
-#include <scai/utilskernel/LArray.hpp>
+#include <scai/lama/LArray.hpp>
 
 namespace scai
 {
 
-namespace utilskernel
+namespace lama
 {
 
 /**
@@ -125,6 +125,6 @@ LArrayRef<ValueType>::LArrayRef( IndexType size, const ValueType* pointer )
     mSize = size;
 }
 
-} /* end namespace utilskernel */
+} /* end namespace lama */
 
 } /* end namespace scai */

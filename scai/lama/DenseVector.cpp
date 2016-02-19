@@ -1,5 +1,5 @@
 /**
- * @file DenseVector.hpp
+ * @file DenseVector.cpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief DenseVector.hpp
+ * @brief Implementations and instantiations for class DenseVector.
  * @author Jiri Kraus
  * @date 22.02.2011
  * @since 1.0.0
@@ -85,14 +85,16 @@ namespace lama
 SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, DenseVector<ValueType>::logger, "Vector.DenseVector" )
 
 template<typename ValueType>
-DenseVector<ValueType>::DenseVector()
-                : Vector( 0 ), mLocalValues()
+DenseVector<ValueType>::DenseVector() : 
+    Vector( 0 ), 
+    mLocalValues()
 {
 }
 
 template<typename ValueType>
-DenseVector<ValueType>::DenseVector( ContextPtr context )
-                : Vector( 0, context ), mLocalValues()
+DenseVector<ValueType>::DenseVector( ContextPtr context ) : 
+    Vector( 0, context ), 
+    mLocalValues()
 {
 }
 

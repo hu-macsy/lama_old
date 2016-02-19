@@ -1,4 +1,4 @@
-/*
+/**
  * @file Complex.hpp
  *
  * @license
@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Complex.hpp
+ * @brief Definition of template class Complex
  * @author Eric Schricker
  * @date 22.01.2014
  * @since 1.1.0

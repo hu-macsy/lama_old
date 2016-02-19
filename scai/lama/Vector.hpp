@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Vector.hpp
+ * @brief Definition of an abstract class for distributed vectors.
  * @author Jiri Kraus
  * @date 22.02.2011
  * $Id$

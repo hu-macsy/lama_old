@@ -25,12 +25,13 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief SCAITypes.cpp
+ * @brief Setting of some global constants defined by function calls.
  * @author Jiri Kraus
  * @date 23.02.2011
  */
 
 // local library
+
 #include <scai/common/SCAITypes.hpp>
 
 MIC_CALLABLE_MEMBER const IndexType nIndex = std::numeric_limits<IndexType>::max();

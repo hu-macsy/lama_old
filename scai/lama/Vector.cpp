@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Vector.cpp
+ * @brief Implementations of methods for class Vector.
  * @author Jiri Kraus
  * @date 22.02.2011
  * $Id$
