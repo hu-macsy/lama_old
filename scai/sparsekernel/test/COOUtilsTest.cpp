@@ -36,15 +36,14 @@
 
 // others
 #include <scai/hmemo.hpp>
+#include <scai/kregistry/KernelContextFunction.hpp>
 #include <scai/sparsekernel/COOKernelTrait.hpp>
-#include <scai/utilskernel/LAMAKernel.hpp>
-#include <scai/utilskernel/LArray.hpp>
 
 #include <scai/sparsekernel/test/TestMacros.hpp>
 
 using namespace scai::hmemo;
 
-using namespace scai::utilskernel;
+using namespace scai::kregistry;
 
 using namespace scai::sparsekernel;
 
@@ -67,7 +66,7 @@ namespace COOUtilsTest
 template<typename NoType>
 void offsets2iaTest( ContextPtr loc )
 {
-    LAMAKernel<COOKernelTrait::offsets2ia> offsets2ia;
+    KernelTraitContextFunction<COOKernelTrait::offsets2ia > offsets2ia;
 
     // Test without diagonal property
     {
@@ -80,14 +79,17 @@ void offsets2iaTest( ContextPtr loc )
         const IndexType numValues = sizeof( ia_values ) / sizeof( IndexType );
         // verify that offsets and ia fit
         BOOST_REQUIRE_EQUAL( numValues, offsets_values[numRows] );
-        LArray<IndexType> offsets( numOffsets, offsets_values );
-        LArray<IndexType> ia;
+        HArray<IndexType> offsets( numOffsets );
+
+        initArray( offsets, offsets_values, numOffsets );
+
+        HArray<IndexType> ia;
         ReadAccess<IndexType> rOffsets( offsets, loc );
         const IndexType numDiagonals = 0;
         {
             WriteOnlyAccess<IndexType> wIA( ia, loc, numValues );
             SCAI_CONTEXT_ACCESS( loc );
-            offsets2ia[loc]( wIA.get(), numValues, rOffsets.get(), numRows, numDiagonals );
+            offsets2ia[loc->getType()]( wIA.get(), numValues, rOffsets.get(), numRows, numDiagonals );
         }
         ReadAccess<IndexType> rIA( ia );
 
@@ -109,14 +111,17 @@ void offsets2iaTest( ContextPtr loc )
         const IndexType numValues = sizeof( ia_values ) / sizeof( IndexType );
         // verify that offsets and ia fit
         BOOST_REQUIRE_EQUAL( numValues, offsets_values[numRows] );
-        LArray<IndexType> offsets( numOffsets, offsets_values );
-        LArray<IndexType> ia;
+        HArray<IndexType> offsets( numOffsets );
+
+        initArray( offsets, offsets_values, numOffsets );
+
+        HArray<IndexType> ia;
         ReadAccess<IndexType> rOffsets( offsets, loc );
         const IndexType numDiagonals = 3;
         {
             WriteOnlyAccess<IndexType> wIA( ia, loc, numValues );
             SCAI_CONTEXT_ACCESS( loc );
-            offsets2ia[loc]( wIA.get(), numValues, rOffsets.get(), numRows, numDiagonals );
+            offsets2ia[loc->getType()]( wIA.get(), numValues, rOffsets.get(), numRows, numDiagonals );
         }
         ReadAccess<IndexType> rIA( ia );
 
@@ -131,7 +136,7 @@ void offsets2iaTest( ContextPtr loc )
 template<typename NoType>
 void setCSRDataTest( ContextPtr loc )
 {
-    LAMAKernel<COOKernelTrait::setCSRData<IndexType, IndexType> > setCSRData;
+    KernelTraitContextFunction<COOKernelTrait::setCSRData<IndexType, IndexType> > setCSRData;
 
     // setCSRData is for conversion of CSR storage to COO storage
     // is usually just a copy but has some reordering if diagonal property is required
@@ -150,15 +155,21 @@ void setCSRDataTest( ContextPtr loc )
         // verify that offsets and ia fit
         BOOST_REQUIRE_EQUAL( numValues, offsets_values[numRows] );
         BOOST_REQUIRE( numDiagonals <= numRows );
-        LArray<IndexType> offsets( numOffsets, offsets_values );
-        LArray<IndexType> csrJA( numValues, csrja_values );
-        LArray<IndexType> cooJA;
+        HArray<IndexType> offsets( numOffsets );
+
+        initArray( offsets, offsets_values, numOffsets );
+
+        HArray<IndexType> csrJA( numValues );
+
+        initArray( csrJA, csrja_values, numValues );
+
+        HArray<IndexType> cooJA;
         ReadAccess<IndexType> rOffsets( offsets, loc );
         ReadAccess<IndexType> rCSRJA( csrJA, loc );
         {
             WriteOnlyAccess<IndexType> wCOOJA( cooJA, loc, numValues );
             SCAI_CONTEXT_ACCESS( loc );
-            setCSRData[loc]( wCOOJA.get(), rCSRJA.get(), numValues, rOffsets.get(), numRows, numDiagonals );
+            setCSRData[loc->getType()]( wCOOJA.get(), rCSRJA.get(), numValues, rOffsets.get(), numRows, numDiagonals );
         }
         ReadAccess<IndexType> rCOOJA( cooJA );
 

@@ -36,17 +36,16 @@
 
 // others
 #include <scai/hmemo.hpp>
+#include <scai/kregistry.hpp>
 #include <scai/sparsekernel/CSRKernelTrait.hpp>
-#include <scai/utilskernel/LAMAKernel.hpp>
-#include <scai/utilskernel/LArray.hpp>
 
 #include <scai/sparsekernel/openmp/OpenMPCSRUtils.hpp>
 
 #include <scai/sparsekernel/test/TestMacros.hpp>
 
 using namespace scai::hmemo;
+using namespace scai::kregistry;
 using namespace scai::sparsekernel;
-using namespace scai::utilskernel;
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 namespace scai
@@ -63,7 +62,7 @@ namespace CSRUtilsTest
 template<typename ValueType, typename OtherValueType>
 void absMaxDiffValTest( ContextPtr loc )
 {
-    LAMAKernel<CSRKernelTrait::absMaxDiffVal<ValueType> > absMaxDiffVal;
+    KernelTraitContextFunction<CSRKernelTrait::absMaxDiffVal<ValueType> > absMaxDiffVal;
 
     // input arrays
     //    Array1             Array2
@@ -86,12 +85,21 @@ void absMaxDiffValTest( ContextPtr loc )
     // const IndexType numColumns = 5;
     const IndexType numValues1 = sizeof( ja1 ) / sizeof( IndexType );
     const IndexType numValues2 = sizeof( ja2 ) / sizeof( IndexType );
-    LArray<IndexType> csrIA1( numRows + 1, ia1 );
-    LArray<IndexType> csrJA1( numValues1, ja1 );
-    LArray<ValueType> csrValues1( numValues1, values1 );
-    LArray<IndexType> csrIA2( numRows + 1, ia2 );
-    LArray<IndexType> csrJA2( numValues2, ja2 );
-    LArray<ValueType> csrValues2( numValues2, values2 );
+
+    HArray<IndexType> csrIA1( numRows + 1 );
+    HArray<IndexType> csrJA1( numValues1 );
+    HArray<ValueType> csrValues1( numValues1 );
+    HArray<IndexType> csrIA2( numRows + 1 );
+    HArray<IndexType> csrJA2( numValues2 );
+    HArray<ValueType> csrValues2( numValues2 );
+
+    initArray( csrIA1, ia1, numRows + 1);
+    initArray( csrJA1, ja1, numValues1);
+    initArray( csrValues1, values1, numValues1);
+    initArray( csrIA2, ia2, numRows + 1);
+    initArray( csrJA2, ja2, numValues2);
+    initArray( csrValues2, values2, numValues2);
+
     ReadAccess<IndexType> rCSRIA1( csrIA1, loc );
     ReadAccess<IndexType> rCSRJA1( csrJA1, loc );
     ReadAccess<ValueType> rCSRValues1( csrValues1, loc );
@@ -99,11 +107,11 @@ void absMaxDiffValTest( ContextPtr loc )
     ReadAccess<IndexType> rCSRJA2( csrJA2, loc );
     ReadAccess<ValueType> rCSRValues2( csrValues2, loc );
     SCAI_CONTEXT_ACCESS( loc );
-    ValueType maxVal = absMaxDiffVal[loc]( numRows, false, rCSRIA1.get(), rCSRJA1.get(), rCSRValues1.get(), rCSRIA2.get(),
+    ValueType maxVal = absMaxDiffVal[loc->getType()]( numRows, false, rCSRIA1.get(), rCSRJA1.get(), rCSRValues1.get(), rCSRIA2.get(),
                                            rCSRJA2.get(), rCSRValues2.get() );
     BOOST_CHECK_EQUAL( 3, maxVal );
     // rows are sorted, so we can also apply sortFlag = true
-    maxVal = absMaxDiffVal[loc]( numRows, true, rCSRIA1.get(), rCSRJA1.get(), rCSRValues1.get(), rCSRIA2.get(),
+    maxVal = absMaxDiffVal[loc->getType()]( numRows, true, rCSRIA1.get(), rCSRJA1.get(), rCSRValues1.get(), rCSRIA2.get(),
                                 rCSRJA2.get(), rCSRValues2.get() );
     BOOST_CHECK_EQUAL( 3, maxVal );
 }
@@ -111,7 +119,7 @@ void absMaxDiffValTest( ContextPtr loc )
 template<typename ValueType>
 void transposeTestSquare( ContextPtr loc )
 {
-    LAMAKernel<CSRKernelTrait::convertCSR2CSC<ValueType> > convertCSR2CSC;
+    KernelTraitContextFunction<CSRKernelTrait::convertCSR2CSC<ValueType> > convertCSR2CSC;
 
     //  input array           transpose
     //    1.0   -   2.0       1.0  0.5   -
@@ -132,12 +140,17 @@ void transposeTestSquare( ContextPtr loc )
     const IndexType numRows = 3;
     const IndexType numColumns = 3;
     const IndexType numValues = 5;
-    LArray<IndexType> csrIA( numRows + 1, ia1 );
-    LArray<IndexType> csrJA( numValues, ja1 );
-    LArray<ValueType> csrValues( numValues, values1 );
-    LArray<IndexType> cscIA;
-    LArray<IndexType> cscJA;
-    LArray<ValueType> cscValues;
+
+    HArray<IndexType> csrIA( numRows + 1 );
+    HArray<IndexType> csrJA( numValues );
+    HArray<ValueType> csrValues( numValues );
+    HArray<IndexType> cscIA;
+    HArray<IndexType> cscJA;
+    HArray<ValueType> cscValues;
+
+    initArray( csrIA, ia1, numRows + 1 );
+    initArray( csrJA, ja1, numValues );
+    initArray( csrValues, values1, numValues );
   
     {
         ReadAccess<IndexType> rCSRIA( csrIA, loc );
@@ -147,7 +160,7 @@ void transposeTestSquare( ContextPtr loc )
         WriteOnlyAccess<IndexType> wCSCJA( cscJA, loc, numValues );
         WriteOnlyAccess<ValueType> wCSCValues( cscValues, loc, numValues );
         SCAI_CONTEXT_ACCESS( loc );
-        convertCSR2CSC[loc]( wCSCIA.get(), wCSCJA.get(), wCSCValues.get(), rCSRIA.get(), rCSRJA.get(), rCSRValues.get(), numRows,
+        convertCSR2CSC[loc->getType()]( wCSCIA.get(), wCSCJA.get(), wCSCValues.get(), rCSRIA.get(), rCSRJA.get(), rCSRValues.get(), numRows,
                              numColumns, numValues );
     }
     {
@@ -179,7 +192,7 @@ void transposeTestSquare( ContextPtr loc )
 template<typename ValueType>
 void transposeTestNonSquare( ContextPtr loc )
 {
-    LAMAKernel<CSRKernelTrait::convertCSR2CSC<ValueType> > convertCSR2CSC;
+    KernelTraitContextFunction<CSRKernelTrait::convertCSR2CSC<ValueType> > convertCSR2CSC;
     //  input array           transpose
     //    1.0   -   2.0       1.0  0.5   -    4.0
     //    0.5  0.3   -         -   0.3   -    1.5
@@ -200,12 +213,17 @@ void transposeTestNonSquare( ContextPtr loc )
     const IndexType numRows = 4;
     const IndexType numColumns = 3;
     const IndexType numValues = 7;
-    LArray<IndexType> csrIA( numRows + 1, ia1 );
-    LArray<IndexType> csrJA( numValues, ja1 );
-    LArray<ValueType> csrValues( numValues, values1 );
-    LArray<IndexType> cscIA;
-    LArray<IndexType> cscJA;
-    LArray<ValueType> cscValues;
+
+    HArray<IndexType> csrIA( numRows + 1 );
+    HArray<IndexType> csrJA( numValues );
+    HArray<ValueType> csrValues( numValues );
+    HArray<IndexType> cscIA;
+    HArray<IndexType> cscJA;
+    HArray<ValueType> cscValues;
+
+    initArray( csrIA, ia1, numRows + 1 );
+    initArray( csrJA, ja1, numValues );
+    initArray( csrValues, values1, numValues );
 
     // CSC <- transpose CSR
 
@@ -217,7 +235,7 @@ void transposeTestNonSquare( ContextPtr loc )
         WriteOnlyAccess<IndexType> wCSCJA( cscJA, loc, numValues );
         WriteOnlyAccess<ValueType> wCSCValues( cscValues, loc, numValues );
         SCAI_CONTEXT_ACCESS( loc );
-        convertCSR2CSC[loc]( wCSCIA.get(), wCSCJA.get(), wCSCValues.get(), rCSRIA.get(), rCSRJA.get(), rCSRValues.get(), numRows,
+        convertCSR2CSC[loc->getType()]( wCSCIA.get(), wCSCJA.get(), wCSCValues.get(), rCSRIA.get(), rCSRJA.get(), rCSRValues.get(), numRows,
                              numColumns, numValues );
     }
   
