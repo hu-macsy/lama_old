@@ -32,15 +32,13 @@
  */
 
 // hpp
-#include <scai/lama/mic/MICCOOUtils.hpp>
+#include <scai/sparsekernel/mic/MICCOOUtils.hpp>
 
 // local library
-#include <scai/lama/mic/MICUtils.hpp>
-
-#include <scai/common/OpenMP.hpp>
-#include <scai/lama/COOKernelTrait.hpp>
+#include <scai/sparsekernel/COOKernelTrait.hpp>
 
 // internal scai libraries
+#include <scai/utilskernel/mic/MICUtils.hpp>
 #include <scai/hmemo/mic/MICSyncToken.hpp>
 #include <scai/hmemo/mic/MICContext.hpp>
 #include <scai/kregistry/KernelRegistry.hpp>
@@ -49,6 +47,7 @@
 
 #include <scai/common/macros/assert.hpp>
 #include <scai/common/TypeTraits.hpp>
+#include <scai/common/OpenMP.hpp>
 
 // std
 #include <cmath>
@@ -59,6 +58,7 @@ namespace scai
 using tasking::MICSyncToken;
 using hmemo::MICContext;
 using common::TypeTraits;
+using utilskernel::MICUtils;
 
 namespace sparsekernel
 {

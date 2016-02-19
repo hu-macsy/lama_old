@@ -32,14 +32,13 @@
  */
 
 // hpp
-#include <scai/lama/mic/MICDIAUtils.hpp>
-
+#include <scai/sparsekernel/mic/MICDIAUtils.hpp>
 
 // local library
-#include <scai/lama/mic/MICUtils.hpp>
-#include <scai/lama/DIAKernelTrait.hpp>
+#include <scai/sparsekernel/DIAKernelTrait.hpp>
 
 // internal scai libraries
+#include <scai/utilskernel/mic/MICUtils.hpp>
 #include <scai/hmemo/mic/MICSyncToken.hpp>
 #include <scai/kregistry/KernelRegistry.hpp>
 #include <scai/common/TypeTraits.hpp>
@@ -57,6 +56,7 @@ namespace scai
 using namespace hmemo;
 using tasking::MICSyncToken;
 using common::TypeTraits;
+using utilskernel::MICUtils;
 
 namespace sparsekernel
 {

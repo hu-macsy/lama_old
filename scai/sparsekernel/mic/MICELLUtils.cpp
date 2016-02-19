@@ -32,10 +32,10 @@
  */
 
 // hpp
-#include <scai/lama/mic/MICELLUtils.hpp>
+#include <scai/sparsekernel/mic/MICELLUtils.hpp>
 
 // local project
-#include <scai/lama/ELLKernelTrait.hpp>
+#include <scai/sparsekernel/ELLKernelTrait.hpp>
 
 // internal scai projects
 #include <scai/hmemo/mic/MICSyncToken.hpp>

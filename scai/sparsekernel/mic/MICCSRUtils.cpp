@@ -32,10 +32,10 @@
  */
 
 // for dll_import
-#include <scai/lama/mic/MICCSRUtils.hpp>
+#include <scai/sparsekernel/mic/MICCSRUtils.hpp>
 
 // local libray
-#include <scai/lama/CSRKernelTrait.hpp>
+#include <scai/sparsekernel/CSRKernelTrait.hpp>
 
 // internal scai libraries
 #include <scai/hmemo/mic/MICSyncToken.hpp>

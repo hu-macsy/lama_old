@@ -31,13 +31,13 @@
  */
 
 // hpp
-#include <scai/lama/mic/MICMKLCSRUtils.hpp>
+#include <scai/sparsekernel/mic/MICMKLCSRUtils.hpp>
 
 // local library
-#include <scai/lama/mic/MICUtils.hpp>
-#include <scai/lama/CSRKernelTrait.hpp>
+#include <scai/sparsekernel/CSRKernelTrait.hpp>
 
 // internal scai libraries
+#include <scai/utilskernel/mic/MICUtils.hpp>
 #include <scai/tracing.hpp>
 #include <scai/kregistry/KernelRegistry.hpp>
 #include <scai/hmemo/mic/MICSyncToken.hpp>
@@ -47,13 +47,14 @@
 #include <scai/common/Constants.hpp>
 
 // external
-#include <mkl.h>
+#include <mkl_spblas.h>
 
 namespace scai
 {
 
 using namespace hmemo;
 using tasking::MICSyncToken;
+using utilskernel::MICUtils;
 
 namespace sparsekernel
 {

@@ -32,15 +32,13 @@
  */
 
 // hpp
-#include <scai/lama/mic/MICJDSUtils.hpp>
+#include <scai/sparsekernel/mic/MICJDSUtils.hpp>
 
 // local project
-#include <scai/lama/mic/MICUtils.hpp>
-
-#include <scai/lama/JDSKernelTrait.hpp>
-#include <scai/lama/Scalar.hpp>
+#include <scai/sparsekernel/JDSKernelTrait.hpp>
 
 // other scai libraries
+#include <scai/utilskernel/mic/MICUtils.hpp>
 #include <scai/hmemo/mic/MICContext.hpp>
 #include <scai/hmemo/mic/MICSyncToken.hpp>
 #include <scai/kregistry/KernelRegistry.hpp>
@@ -52,6 +50,8 @@
 
 namespace scai
 {
+
+using utilskernel::MICUtils;
 
 using tasking::SyncToken;
 using tasking::MICSyncToken;
