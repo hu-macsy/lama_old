@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Scalar.hpp
+ * @brief Definition of dummy class whose objects stand for arbitrary arithmetic types.
  * @author Jiri Kraus
  * @date 22.02.2011
  */

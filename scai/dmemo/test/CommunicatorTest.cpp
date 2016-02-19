@@ -420,29 +420,34 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( shiftTest, ValueType, test_types )
     // - allocate on each processor an array with one element for each processor
     // - shift this array around all processors and each processor writes one value at its rank
     // - verify that each processor has written the right value
+
     if ( size > 1 )
     {
         const IndexType vectorSize = size;
-        HArray<ValueType> sendBuffer( vectorSize, static_cast<ValueType>( rank ) );
-        HArray<ValueType> recvBuffer;
+
+        HArray<ValueType> sendBuffer( vectorSize, static_cast<ValueType>( -1 ) );
+        HArray<ValueType> recvBuffer( vectorSize );
 
         for ( PartitionId rounds = 0; rounds < size; ++rounds )
         {
-            comm->shiftArray( recvBuffer, sendBuffer, 1 );
             {
-                WriteAccess<ValueType> recvBufferAccess( recvBuffer );
-                recvBufferAccess[rank] = static_cast<ValueType>( rank );
+                WriteAccess<ValueType> sendBufferAccess( sendBuffer );
+                sendBufferAccess[rank] = static_cast<ValueType>( rank );
             }
+
+            // Note: recvBuffer will be allocated with same size as sendBuffer
+
+            comm->shiftArray( recvBuffer, sendBuffer, 1 );
             sendBuffer.swap( recvBuffer );
         }
 
         {
-            ReadAccess<ValueType> recvBufferAccess( recvBuffer );
+            ReadAccess<ValueType> sendBufferAccess( sendBuffer );
 
             for ( IndexType i = 0; i < size; ++i )
             {
                 ValueType value = static_cast<ValueType>( i );
-                BOOST_CHECK_EQUAL( value, recvBufferAccess[i] );
+                BOOST_CHECK_EQUAL( value, sendBufferAccess[i] );
             }
         }
     }

@@ -148,7 +148,7 @@ struct UtilKernelTrait
     template<typename ValueType1, typename ValueType2>
     struct set
     {
-        /** Set out[i] <op>= in[i],  0 <= i < n , op = +, -, *, /, min, max, ... */
+        /** Set out[i] _op= in[i],  0 <= i < n , op = +, -, *, /, min, max, ... */
 
         typedef void ( *FuncType ) ( ValueType1 out[], const ValueType2 in[], const IndexType n, const common::reduction::ReductionOp op );
         static const char* getId() { return "Util.set"; }

@@ -68,6 +68,8 @@ namespace hmemo
 template<typename ValueType> class HArray;
 }
 
+/** @brief The namespace dmemo contains all stuff belonging to project dmemo (distributed memory). */
+
 namespace dmemo
 {
 
@@ -81,15 +83,17 @@ class Communicator;
 
 typedef common::shared_ptr<const Communicator> CommunicatorPtr;
 
+/** @brief Own namespace for the enum type CommunicatorKind and its values */
+
 namespace communicator
 {
 
 typedef enum
 {
-    NO,
-    MPI,
-    GPI,
-    MAX_COMMUNICATOR
+    NO,                  //!< No communicator 
+    MPI,                 //!< MPI communicator
+    GPI,                 //!< GPI communicator
+    MAX_COMMUNICATOR     //!< dummy value for number of communicators
 } CommunicatorKind;
 
 COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const CommunicatorKind& kind );

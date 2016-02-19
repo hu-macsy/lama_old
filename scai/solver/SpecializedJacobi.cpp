@@ -50,10 +50,7 @@ namespace scai
 
 using tasking::SyncToken;
 
-using lama::Matrix;
-using lama::Vector;
-using lama::DenseVector;
-using lama::Scalar;
+using namespace lama;
 
 namespace solver
 {
@@ -73,7 +70,7 @@ SpecializedJacobi::SpecializedJacobi( const std::string & id, Scalar omega )
 {
 }
 
-SpecializedJacobi::SpecializedJacobi( const std::string& id, Scalar omega, LoggerPtr logger )
+SpecializedJacobi::SpecializedJacobi( const std::string& id, lama::Scalar omega, LoggerPtr logger )
     : OmegaSolver( id, omega, logger )
 {
 }

@@ -560,6 +560,7 @@ INPUT                  = ${CMAKE_SOURCE_DIR}/common  \
                          ${CMAKE_SOURCE_DIR}/hmemo  \
                          ${CMAKE_SOURCE_DIR}/kregistry  \
                          ${CMAKE_SOURCE_DIR}/blaskernel  \
+                         ${CMAKE_SOURCE_DIR}/dmemo  \
                          ${CMAKE_SOURCE_DIR}/lama  \
                          ${CMAKE_SOURCE_DIR}/solver
 
@@ -598,10 +599,25 @@ RECURSIVE              = YES
 # subdirectory from a directory tree whose root is specified with the INPUT tag.
 
 EXCLUDE                =  ${CMAKE_SOURCE_DIR}/lama/test \
+                          ${CMAKE_SOURCE_DIR}/lama/examples \
+                          ${CMAKE_SOURCE_DIR}/lama/matrix/XXXSparseMatrix.hpp  \
+                          ${CMAKE_SOURCE_DIR}/lama/matrix/XXXSparseMatrix.cpp  \
                           ${CMAKE_SOURCE_DIR}/common/examples \
                           ${CMAKE_SOURCE_DIR}/common/test \
+                          ${CMAKE_SOURCE_DIR}/logging/examples \
+                          ${CMAKE_SOURCE_DIR}/logging/test \
+                          ${CMAKE_SOURCE_DIR}/tracing/examples \
+                          ${CMAKE_SOURCE_DIR}/tracing/test \
+                          ${CMAKE_SOURCE_DIR}/tasking/examples \
+                          ${CMAKE_SOURCE_DIR}/tasking/test \
+                          ${CMAKE_SOURCE_DIR}/kregistry/examples \
+                          ${CMAKE_SOURCE_DIR}/kregistry/test \
                           ${CMAKE_SOURCE_DIR}/hmemo/examples \
                           ${CMAKE_SOURCE_DIR}/hmemo/test     \
+                          ${CMAKE_SOURCE_DIR}/dmemo/examples \
+                          ${CMAKE_SOURCE_DIR}/dmemo/test     \
+                          ${CMAKE_SOURCE_DIR}/solver/examples \
+                          ${CMAKE_SOURCE_DIR}/solver/test     \
                           ${CMAKE_SOURCE_DIR}/blaskernel/examples \
                           ${CMAKE_SOURCE_DIR}/blaskernel/test
 

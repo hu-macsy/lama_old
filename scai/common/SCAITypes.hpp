@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief SCAITypes.hpp
+ * @brief Define all arithmetic types for which SCAI template classes will be instantiated
  * @author Jiri Kraus
  * @date 23.02.2011
  */
