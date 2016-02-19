@@ -35,7 +35,7 @@
 #include <scai/solver/SpecializedJacobi.hpp>
 
 // local library
-#include <scai/lama/HArrayUtils.hpp>
+#include <scai/utilskernel/HArrayUtils.hpp>
 
 // internal scai libraries
 #include <scai/tasking/NoSyncToken.hpp>
@@ -50,7 +50,11 @@ namespace scai
 
 using tasking::SyncToken;
 
-using namespace lama;
+using utilskernel::HArrayUtils;
+using lama::Matrix;
+using lama::Vector;
+using lama::DenseVector;
+using lama::Scalar;
 
 namespace solver
 {

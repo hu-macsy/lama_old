@@ -39,15 +39,14 @@
 #include <scai/lama/Vector.hpp>
 
 // local library
-#include <scai/lama/LArray.hpp>
-#include <scai/dmemo/Distribution.hpp>
-#include <scai/dmemo/Halo.hpp>
-
 #include <scai/lama/io/mmio.hpp>
 #include <scai/lama/io/FileType.hpp>
 #include <scai/lama/io/XDRFileStream.hpp>
 
 // internal scai libraries
+#include <scai/utilskernel/LArray.hpp>
+#include <scai/dmemo/Distribution.hpp>
+#include <scai/dmemo/Halo.hpp>
 #include <scai/hmemo.hpp>
 
 #include <scai/tasking/SyncToken.hpp>
@@ -293,7 +292,7 @@ public:
      * @return  a non constant reference to the local values of this.
      */
 
-    LArray<ValueType>& getLocalValues()
+    utilskernel::LArray<ValueType>& getLocalValues()
     {
         return mLocalValues;
     }
@@ -303,7 +302,7 @@ public:
      *
      * @return  a constant reference to the local values of this.
      */
-    const LArray<ValueType>& getLocalValues() const
+    const utilskernel::LArray<ValueType>& getLocalValues() const
     {
         return mLocalValues;
     }
@@ -315,7 +314,7 @@ public:
      *
      * Note: halo of a vector can also be used for writes in case of const vectors.
      */
-    LArray<ValueType>& getHaloValues() const
+    utilskernel::LArray<ValueType>& getHaloValues() const
     {
         return mHaloValues;
     }
@@ -457,9 +456,9 @@ private    :
                     std::fstream &inFile,
                     const common::scalar::ScalarType dataType );
 
-    LArray<ValueType> mLocalValues; //!< my local values of vector
+    utilskernel::LArray<ValueType> mLocalValues; //!< my local values of vector
 
-    mutable LArray<ValueType> mHaloValues;//!< my halo values of vector
+    mutable utilskernel::LArray<ValueType> mHaloValues;//!< my halo values of vector
 
 public:
 
@@ -487,7 +486,7 @@ DenseVector<ValueType>::DenseVector( const IndexType size, const OtherValueType*
 
     // use mContext instead of context to avoid NULL pointer
 
-    HArrayUtils::assign( mLocalValues, valuesArrayRef, mContext );
+    utilskernel::HArrayUtils::assign( mLocalValues, valuesArrayRef, mContext );
 
     // Halo is not used yet
 

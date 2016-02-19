@@ -38,15 +38,3 @@
 
 #include <scai/hmemo.hpp>
 
-template<typename ValueType>
-void initArray( scai::hmemo::HArray<ValueType>& dst, const ValueType src[], const IndexType size)
-{
-	scai::hmemo::ContextPtr loc = scai::hmemo::Context::getHostPtr();
-
-	scai::hmemo::WriteAccess<ValueType> wDst( dst );
-
-	for( IndexType i = 0; i < size; ++i)
-	{
-		wDst[i] = src[i];
-	}
-}

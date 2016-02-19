@@ -38,7 +38,8 @@
 // base classes
 #include <scai/lama/storage/CRTPMatrixStorage.hpp>
 
-#include <scai/lama/LArray.hpp>
+// scai libraries
+#include <scai/utilskernel/LArray.hpp>
 #include <scai/dmemo/Redistributor.hpp>
 
 namespace scai
@@ -217,27 +218,27 @@ public:
 
     /** Getter routine for member variable IA. */
 
-    LArray<IndexType>& getIA();
+    utilskernel::LArray<IndexType>& getIA();
 
     /** Getter routine for member variable JA. */
 
-    LArray<IndexType>& getJA();
+    utilskernel::LArray<IndexType>& getJA();
 
     /** Getter routine for member variable values. */
 
-    LArray<ValueType>& getValues();
+    utilskernel::LArray<ValueType>& getValues();
 
     /** Getter routine for member variable IA (read-only). */
 
-    const LArray<IndexType>& getIA() const;
+    const utilskernel::LArray<IndexType>& getIA() const;
 
     /** Getter routine for member variable JA (read-only). */
 
-    const LArray<IndexType>& getJA() const;
+    const utilskernel::LArray<IndexType>& getJA() const;
 
     /** Getter routine for member variable values (read-only). */
 
-    const LArray<ValueType>& getValues() const;
+    const utilskernel::LArray<ValueType>& getValues() const;
 
     /** Getter routine for the number of stored values. */
 
@@ -548,9 +549,9 @@ protected:
 
     IndexType mNumValues; //!< number of stored elements
 
-    LArray<IndexType> mIa; //!< offsets for ja and data, size is numRows+1
-    LArray<IndexType> mJa; //!< column indexes, size is mIa[ numRows ]
-    LArray<ValueType> mValues; //!< non-zero values, size is equal to mJa
+    utilskernel::LArray<IndexType> mIa; //!< offsets for ja and data, size is numRows+1
+    utilskernel::LArray<IndexType> mJa; //!< column indexes, size is mIa[ numRows ]
+    utilskernel::LArray<ValueType> mValues; //!< non-zero values, size is equal to mJa
 
 private:
 

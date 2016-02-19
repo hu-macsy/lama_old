@@ -55,10 +55,8 @@ scai_project (
 
         COOSparseMatrixTest
         COOStorageTest
-        COOUtilsTest
         CSRSparseMatrixTest
         CSRStorageTest
-        CSRUtilsTest
         DenseMatrixTest
         DenseMatrixTest1
         DenseStorageTest
@@ -67,11 +65,8 @@ scai_project (
         DIAStorageTest
         ELLSparseMatrixTest
         ELLStorageTest
-        ELLUtilsTest
-        HArrayUtilsTest
         JDSSparseMatrixTest
         JDSStorageTest
-        JDSUtilsTest
         L1NormTest
         L2NormTest
         MatrixNormTest
@@ -82,7 +77,6 @@ scai_project (
         SparseAssemblyStorageTest
         StorageIOTest
         TaskSyncTokenTest
-        UtilsTest
         VectorTest
     )
 

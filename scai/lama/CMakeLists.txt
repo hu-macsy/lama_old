@@ -101,36 +101,17 @@ scai_project (
     CLASSES                  # .cpp, .hpp
 
         DenseVector
-        HArrayUtils
         StorageIO
         Vector
 
     HEADERS                  # .hpp only
 
-        UtilKernelTrait
-        CSRKernelTrait
-        DenseKernelTrait
-        DIAKernelTrait
-        ELLKernelTrait
-        COOKernelTrait
-        JDSKernelTrait
-
-        LAMAKernel
-        LArray
-        LArrayRef
-
         Scalar
     )
 
 ### add subdirectories
-if ( CUDA_FOUND AND USE_CUDA AND CUDA_HAVE_GPU )
-    add_subdirectory ( cuda )
-    cuda_compile ( CUDA_FILES ${CUDA_SOURCES} )
-    set ( CXX_SOURCES ${CXX_SOURCES} ${CUDA_FILES} )
-endif ( CUDA_FOUND AND USE_CUDA AND CUDA_HAVE_GPU )
-
 add_subdirectory ( doc )
-add_subdirectory( examples )
+add_subdirectory ( examples )
 add_subdirectory ( expression )
 
 if ( GPI2_FOUND AND IBVERBS_FOUND AND USE_GPI2 )
@@ -141,12 +122,7 @@ add_subdirectory ( io )
 add_subdirectory ( matrix )
 add_subdirectory ( matutils )
 
-if ( USE_MIC )
-    add_subdirectory ( mic )
-endif ( USE_MIC )
-
 add_subdirectory ( norm )
-add_subdirectory ( openmp )
 add_subdirectory ( storage )
 
 if ( FOUND_BOOST_TEST AND BUILD_TEST )
@@ -170,12 +146,6 @@ addInternalAndExternalLinkLibraries()
 if    ( GPI2_FOUND AND IBVERBS_FOUND AND USE_GPI2 )
     target_link_libraries ( ${PROJECT_NAME} ${GPI2_LIBRARIES} ${IBVERBS_LIBRARIES} )
 endif ( GPI2_FOUND AND IBVERBS_FOUND AND USE_GPI2 )
-
-if ( USE_MIC )
-    set ( MKLROOT $ENV{MKLROOT} )
-    set_target_properties( ${PROJECT_NAME} PROPERTIES LINK_FLAGS
-        "-offload-option,mic,compiler,\"-L${MKLROOT}/lib/mic -Wl,--start-group -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_core -Wl,--end-group\"" )
-endif ( USE_MIC )
 
 ### install ###
 

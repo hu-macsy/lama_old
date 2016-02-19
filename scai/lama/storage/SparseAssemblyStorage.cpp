@@ -34,11 +34,9 @@
 // hpp
 #include <scai/lama/storage/SparseAssemblyStorage.hpp>
 
-// local library
-#include <scai/lama/openmp/OpenMPUtils.hpp>
-#include <scai/lama/openmp/OpenMPCSRUtils.hpp>
-
 // internal scai libraries
+#include <scai/sparsekernel/openmp/OpenMPCSRUtils.hpp>
+#include <scai/utilskernel/openmp/OpenMPUtils.hpp>
 #include <scai/hmemo.hpp>
 #include <scai/common/macros/print_string.hpp>
 #include <scai/common/TypeTraits.hpp>
@@ -49,6 +47,9 @@ namespace scai
 {
 
 using namespace hmemo;
+
+using utilskernel::OpenMPUtils;
+using sparsekernel::OpenMPCSRUtils;
 
 namespace lama
 {

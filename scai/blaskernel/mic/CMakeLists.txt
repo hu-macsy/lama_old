@@ -40,6 +40,11 @@ scai_project (
           MICBLAS1
           MICBLAS2
           MICBLAS3
+          
+    HEADERS
+    
+          MICBLASTrait
+          MICBLASWrapper
 
     ADD_PARENT_SCOPE
 )

@@ -31,7 +31,8 @@
 ###
 
 if    ( CUDA_FOUND AND USE_CUDA )
-    set ( CUDACLASSES CUDAError )
+    set ( CUDACLASSES CUDAError CUDASettings CUDATexture )
+    set ( CUDAHEADERS CUDATexVector )
 endif ( CUDA_FOUND AND USE_CUDA )
 
 # add source and header files to the current project
@@ -40,12 +41,14 @@ scai_project (
 
     CLASSES
 
-        ${CUDACLASSES}
+        ${CUDACLASSES}        
 
     HEADERS
 
         launchHelper
         CUDACallable
+        
+        ${CUDAHEADERS}
 
     ADD_PARENT_SCOPE
 )

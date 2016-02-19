@@ -35,15 +35,6 @@
 #include <scai/lama/DenseVector.hpp>
 
 // local library
-#include <scai/lama/HArrayUtils.hpp>
-#include <scai/lama/UtilKernelTrait.hpp>
-#include <scai/blaskernel/BLASKernelTrait.hpp>
-#include <scai/lama/LAMAKernel.hpp>
-
-#include <scai/dmemo/NoDistribution.hpp>
-#include <scai/dmemo/CyclicDistribution.hpp>
-#include <scai/dmemo/Redistributor.hpp>
-
 #include <scai/lama/matrix/Matrix.hpp>
 
 #include <scai/lama/expression/Expression.hpp>
@@ -53,6 +44,14 @@
 #include <scai/lama/io/FileType.hpp>
 
 // internal scai libraries
+#include <scai/utilskernel/HArrayUtils.hpp>
+#include <scai/utilskernel/UtilKernelTrait.hpp>
+#include <scai/utilskernel/LAMAKernel.hpp>
+#include <scai/blaskernel/BLASKernelTrait.hpp>
+
+#include <scai/dmemo/NoDistribution.hpp>
+#include <scai/dmemo/CyclicDistribution.hpp>
+#include <scai/dmemo/Redistributor.hpp>
 #include <scai/hmemo/ContextAccess.hpp>
 
 #include <scai/tracing.hpp>
@@ -70,6 +69,10 @@ namespace scai
 
 using common::scoped_array;
 using common::TypeTraits;
+using utilskernel::HArrayUtils;
+using utilskernel::LArray;
+using utilskernel::LAMAKernel;
+using utilskernel::UtilKernelTrait;
 
 namespace context = scai::common::context;
 
@@ -929,7 +932,7 @@ void DenseVector<ValueType>::assign( const Scalar value )
 
     // assign the scalar value on the home of this dense vector.
 
-    HArrayUtils::setScalar( mLocalValues, value, common::reduction::COPY, mContext );
+    HArrayUtils::setScalar( mLocalValues, value.getValue<ValueType>(), common::reduction::COPY, mContext );
 }
 
 template<typename ValueType>

@@ -37,10 +37,11 @@
 #include <scai/lama/test/MatrixStorageTest.hpp>
 #include <scai/lama/test/TestMacros.hpp>
 
-#include <scai/lama/HArrayUtils.hpp>
+#include <scai/utilskernel/HArrayUtils.hpp>
 #include <scai/lama/storage/ELLStorage.hpp>
 
 using namespace scai::lama;
+using namespace scai::utilskernel;
 using namespace scai::hmemo;
 using scai::common::Exception;
 

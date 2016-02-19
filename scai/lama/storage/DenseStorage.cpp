@@ -34,14 +34,12 @@
 // hpp
 #include <scai/lama/storage/DenseStorage.hpp>
 
-// local library
-#include <scai/lama/UtilKernelTrait.hpp>
-#include <scai/lama/DenseKernelTrait.hpp>
-#include <scai/lama/CSRKernelTrait.hpp>
-#include <scai/lama/LAMAKernel.hpp>
-#include <scai/lama/HArrayUtils.hpp>
-
 // internal scai libraries
+#include <scai/sparsekernel/DenseKernelTrait.hpp>
+#include <scai/sparsekernel/CSRKernelTrait.hpp>
+#include <scai/utilskernel/HArrayUtils.hpp>
+#include <scai/utilskernel/UtilKernelTrait.hpp>
+#include <scai/utilskernel/LAMAKernel.hpp>
 #include <scai/blaskernel/BLASKernelTrait.hpp>
 #include <scai/hmemo/ContextAccess.hpp>
 #include <scai/common/Constants.hpp>
@@ -60,6 +58,14 @@ namespace scai
 
 using common::shared_ptr;
 using common::TypeTraits;
+
+using utilskernel::LAMAKernel;
+using utilskernel::HArrayUtils;
+using utilskernel::UtilKernelTrait;
+
+using sparsekernel::DenseKernelTrait;
+using sparsekernel::CSRKernelTrait;
+
 
 namespace lama
 {

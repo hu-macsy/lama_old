@@ -40,6 +40,7 @@
 #include <scai/lama/test/TestMacros.hpp>
 
 using namespace scai::lama;
+using namespace scai::utilskernel;
 using namespace scai::hmemo;
 
 extern bool base_test_case;

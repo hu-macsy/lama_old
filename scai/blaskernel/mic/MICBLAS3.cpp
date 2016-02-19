@@ -48,7 +48,7 @@
 #include <scai/common/preprocessor.hpp>
 
 // external
-#include <mkl.h>
+#include <mkl_blas.h>
 
 namespace scai
 {

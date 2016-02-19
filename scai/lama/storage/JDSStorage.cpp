@@ -34,16 +34,16 @@
 // hpp
 #include <scai/lama/storage/JDSStorage.hpp>
 
-// local library
-#include <scai/lama/UtilKernelTrait.hpp>
-#include <scai/lama/JDSKernelTrait.hpp>
-#include <scai/lama/CSRKernelTrait.hpp>
-#include <scai/blaskernel/BLASKernelTrait.hpp>
-#include <scai/lama/LAMAKernel.hpp>
-
-#include <scai/lama/HArrayUtils.hpp>
-
 // local scai libraries
+#include <scai/sparsekernel/JDSKernelTrait.hpp>
+#include <scai/sparsekernel/CSRKernelTrait.hpp>
+
+#include <scai/utilskernel/HArrayUtils.hpp>
+#include <scai/utilskernel/UtilKernelTrait.hpp>
+#include <scai/utilskernel/LAMAKernel.hpp>
+
+#include <scai/blaskernel/BLASKernelTrait.hpp>
+
 #include <scai/tasking/TaskSyncToken.hpp>
 
 #include <scai/tracing.hpp>
@@ -62,6 +62,13 @@ namespace scai
 {
 
 using common::shared_ptr;
+
+using utilskernel::LAMAKernel;
+using utilskernel::UtilKernelTrait;
+using utilskernel::HArrayUtils;
+
+using sparsekernel::CSRKernelTrait;
+using sparsekernel::JDSKernelTrait;
 
 namespace lama
 {
