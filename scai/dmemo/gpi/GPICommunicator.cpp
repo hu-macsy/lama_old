@@ -44,16 +44,13 @@
 #include <scai/common/macros/assert.hpp>
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/unique_ptr.hpp>
+#include <scai/common/bind.hpp>
 
 // tracing
 #include <scai/tracing.hpp>
 
 // logging
 #include <scai/logging.hpp>
-#include <scai/logging.hpp>
-
-#include <scai/common/unique_ptr.hpp>
-#include <scai/common/bind.hpp>
 
 #include <iostream>
 #include <algorithm>
@@ -67,6 +64,8 @@ namespace scai
 {
 
 using common::TypeTraits;
+using common::shared_ptr;
+using common::unique_ptr;
 
 namespace dmemo
 {
@@ -92,7 +91,7 @@ CommunicatorPtr GPICommunicator::create()
 
         // create a new instance of GPICommunicator, will call GPI_Init
 
-        theGPICommunicator = common::shared_ptr<const GPICommunicator>( new GPICommunicator() );
+        theGPICommunicator = shared_ptr<const GPICommunicator>( new GPICommunicator() );
     }
 
     return theGPICommunicator;
@@ -699,10 +698,10 @@ IndexType GPICommunicator::shiftImpl(
 
     SCAI_ASSERT_ERROR( sendSize <= recvSize, "too large send" )
 
-    SCAI_LOG_DEBUG( logger,
-                      *this << ": shift<" << TypeTraits<T>::id() 
-                            << ">, recv from " << source << " max " << recvSize << " values " 
-                            << ", send to " << dest << " " << sendSize << " values." )
+    SCAI_LOG_INFO( logger,
+                    *this << ": shift<" << TypeTraits<T>::id() 
+                          << ">, recv from " << source << " max " << recvSize << " values " 
+                          << ", send to " << dest << " " << sendSize << " values." )
 
     SegmentData<T> srcDataSegment( this, recvSize, const_cast<T*>( sendVals ) );
     SegmentData<T> dstDataSegment( this, recvSize, recvVals );
@@ -772,8 +771,8 @@ tasking::SyncToken* GPICommunicator::shiftAsyncImpl(
     SCAI_ASSERT_ERROR( source != mRank, "source must not be this partition" )
     SCAI_ASSERT_ERROR( dest != mRank, "dest must not be this partition" )
 
-    common::shared_ptr<SegmentData<T> > srcSegment( new SegmentData<T>( this, size ) );
-    common::shared_ptr<SegmentData<T> > dstSegment( new SegmentData<T>( this, size ) );
+    shared_ptr<SegmentData<T> > srcSegment( new SegmentData<T>( this, size ) );
+    shared_ptr<SegmentData<T> > dstSegment( new SegmentData<T>( this, size ) );
 
     {
         const IndexType offset = dstSegment->getOffset();
