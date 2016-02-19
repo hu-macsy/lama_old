@@ -134,7 +134,7 @@ static inline void testSameMatrix( const scai::lama::Matrix& m1,
 template<typename ValueType1, typename ValueType2>
 void testSameMatrixStorage( const scai::lama::MatrixStorage<ValueType1>& m1, 
                             const scai::lama::MatrixStorage<ValueType2>& m2,
-                            const scai::lama::Scalar small = 0,
+                            const scai::lama::Scalar small = 0.0,
                             const scai::lama::Scalar tolerance = 0.01 )
 {
     const IndexType m = m1.getNumRows();
