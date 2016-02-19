@@ -570,7 +570,7 @@ template<typename ValueType>
 IndexType HArray<ValueType>::capacity( ContextDataIndex index ) const
 {
     const ContextData& entry = mContextDataManager[index];
-    return entry.capacity();
+    return entry.capacity() / mValueSize;
 }
 
 /* ---------------------------------------------------------------------------------*/
