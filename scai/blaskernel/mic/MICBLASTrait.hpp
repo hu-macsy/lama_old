@@ -40,7 +40,7 @@
 		SCAI_MIC_CALL( CUBLAS_BLAS_NAME( name, prefix ), __VAR_ARGS__ )
 
 // external
-#include <mkl.h>
+#include <mkl_blas.h>
 
 namespace scai {
 

@@ -41,7 +41,7 @@
 #include <scai/common/mic/MICCallable.hpp>
 
 // external
-#include <mkl.h>
+#include <mkl_blas.h>
 
 namespace scai {
 
