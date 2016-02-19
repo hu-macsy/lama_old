@@ -1,0 +1,2 @@
+For the test execution simply execute the test.sh bash script. The
+required executables will be build by the test script itself.
