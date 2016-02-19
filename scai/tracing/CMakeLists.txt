@@ -59,7 +59,6 @@ if    ( NOT SCAI_COMPLETE_BUILD )
     include ( CompilerVersion )
     include ( SCAIAssert )
     include ( SetCPPFlags )
-    include ( Package/Sphinx )
 else  ( NOT SCAI_COMPLETE_BUILD )
     include ( Functions/CheckValueAtCompleteBuild )
     CheckValueAtCompleteBuild ( ${PROJECT_SURNAME} )
@@ -113,6 +112,14 @@ scai_project (
 ## add subdirectories
 add_subdirectory( doc )
 add_subdirectory ( examples )
+## begin subdir test
+# prepare test
+configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/test/make.inc.in" "${CMAKE_CURRENT_BINARY_DIR}/test/make.inc" )
+file ( COPY ${CMAKE_CURRENT_SOURCE_DIR}/test DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
+# add test
+enable_testing()
+add_test ( tracing_test test/test.sh )
+## end subdir test
 
 if    ( CMAKE_VERSION VERSION_GREATER 2.8.11 ) 
     add_subdirectory( gui )

@@ -58,7 +58,6 @@ if    ( NOT SCAI_COMPLETE_BUILD )
     include ( CompilerVersion )
     include ( SCAIAssert )
     include ( SetCPPFlags )
-    include ( Package/Sphinx )
 else  ( NOT SCAI_COMPLETE_BUILD )
     include ( Functions/CheckValueAtCompleteBuild )
     CheckValueAtCompleteBuild ( ${PROJECT_SURNAME} )
@@ -93,11 +92,9 @@ endif ( WIN32 )
 include_directories ( ../.. ${CMAKE_BINARY_DIR}/include )
 addInternalAndExternalIncludes()
 
-if ( METIS_FOUND OR PARMETIS_FOUND )
-    set ( MetisDistribution MetisDistribution )
-else ( METIS_FOUND OR PARMETIS_FOUND )
-    set ( MetisDistribution  )
-endif ( METIS_FOUND OR PARMETIS_FOUND )
+if    ( ( METIS_FOUND OR PARMETIS_FOUND ) AND USE_GRAPHPARTITIONING )
+    set ( METISDISTRIBUTION MetisDistribution )
+endif ( ( METIS_FOUND OR PARMETIS_FOUND ) AND USE_GRAPHPARTITIONING )
 
 ### Add classes/headers to source files CXX_SOURCES, CXX_HEADERS, ...
 
@@ -120,7 +117,7 @@ scai_project (
         NoDistribution
         Redistributor
 
-        ${MetisDistribution}
+        ${METISDISTRIBUTION}
 
     HEADERS                  # .hpp only
 
@@ -130,7 +127,7 @@ scai_project (
 ### add subdirectories
 
 add_subdirectory ( doc )
-add_subdirectory( examples )
+add_subdirectory ( examples )
 
 if ( GPI_FOUND AND USE_GPI )
     add_subdirectory( gpi )

@@ -66,9 +66,9 @@ scai_summary_message ( "FOUND"
 				
 if    ( NOT CXX_SUPPORTS_C11 )
     scai_summary_message ( "FOUND"
-                           "BOOST_INCLUDE_DIR"
+                           "SCAI_BOOST_INCLUDE_DIR"
                            "Boost"
-                           "Version ${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}, add include dir ${BOOST_INCLUDE_DIR} to compile your sources" )
+                           "Version ${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}, add include dir ${SCAI_BOOST_INCLUDE_DIR} to compile your sources" )
 endif ( NOT CXX_SUPPORTS_C11 )
 
 # LAMA (core)
@@ -105,8 +105,13 @@ scai_summary_message ( "STATIC"
 #message ( STATUS "" )
 #scai_status_message ( HEADLINE "TESTING:" )
 #
+#set ( REQUIRED_FOUND FALSE )
+#if    ( Boost_UNIT_TEST_FRAMEWORK_FOUND AND Boost_REGEX_FOUND AND BUILD_TEST )
+#  set ( REQUIRED_FOUND TRUE )
+#endif ( Boost_UNIT_TEST_FRAMEWORK_FOUND AND Boost_REGEX_FOUND AND BUILD_TEST )
+#
 #scai_summary_message ( "USE"
-#                       "BUILD_TEST"
+#                       "REQUIRED_FOUND"
 #                       "TEST"
 #                       "" )
 #

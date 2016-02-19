@@ -61,13 +61,32 @@ void add( ValueType array[], const IndexType n )
 
 int main()
 {
-    std::cout << "try to get " << context::CUDA << " context from factory" << std::endl;
-    ContextPtr cudaContext1 = Context::getContextPtr( context::CUDA, 0 );
-    std::cout << "cudaContext1 = " << *cudaContext1 << std::endl;
+    ContextPtr cudaContext1;
+    ContextPtr cudaContext2;
 
-    std::cout << "try to get " << context::CUDA << " context from factory" << std::endl;
-    ContextPtr cudaContext2 = Context::getContextPtr( context::CUDA, 1 );
-    std::cout << "cudaContext2 = " << *cudaContext2 << std::endl;
+    try
+    {
+        std::cout << "try to get " << context::CUDA << " context from factory" << std::endl;
+        cudaContext1 = Context::getContextPtr( context::CUDA, 0 );
+        std::cout << "cudaContext1 = " << *cudaContext1 << std::endl;
+    }
+    catch ( scai::common::Exception& ex )
+    {
+        std::cout << "could not get CUDA device 0" << std::endl;
+        return 0;
+    }
+
+    try
+    {
+        std::cout << "try to get " << context::CUDA << " context from factory" << std::endl;
+        cudaContext2 = Context::getContextPtr( context::CUDA, 1 );
+        std::cout << "cudaContext2 = " << *cudaContext2 << std::endl;
+    }
+    catch ( scai::common::Exception& ex )
+    {
+        std::cout << "could not get CUDA device 1" << std::endl;
+        return 0;
+    }
 
     std::cout << "try to get " << context::Host << " context from factory" << std::endl;
     ContextPtr hostContext = Context::getContextPtr( context::Host, 1 );

@@ -32,38 +32,3 @@
 ###
 
 find_package ( Doxygen ${SCAI_FIND_PACKAGE_FLAGS} )
-
-### DOXYGEN DOCUMENTATION ###
-
-if    ( DOXYGEN_FOUND )
-    ### install ###
-    set ( LAMA_DOC_DIR "${CMAKE_SOURCE_DIR}/doc" )
-    set ( DOXYGEN_BUILD_ROOT "${CMAKE_CURRENT_BINARY_DIR}/doc" )
-    set ( DOXYGEN_INSTALL_ROOT ${CMAKE_INSTALL_PREFIX})
-    file ( MAKE_DIRECTORY ${DOXYGEN_BUILD_ROOT} )
-    
-    configure_file ( "${LAMA_DOC_DIR}/LAMA.Doxyfile.in" "${CMAKE_CURRENT_BINARY_DIR}/doc/LAMA.Doxyfile" )
-
-   # The initial rm command gets rid of everything previously built by this
-   # custom command.
-
-    add_custom_command (
-        OUTPUT ${DOXYGEN_BUILD_ROOT}/html/index.html
-        #COMMAND rm -rf ${DOXYGEN_BUILD_ROOT}
-        #COMMAND mkdir ${DOXYGEN_BUILD_ROOT}
-        COMMAND ${DOXYGEN_EXECUTABLE} LAMA.Doxyfile
-        DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/doc/LAMA.Doxyfile
-        WORKING_DIRECTORY ${DOXYGEN_BUILD_ROOT}
-    )
-
-    add_custom_target (
-        doxygendoc
-        DEPENDS
-        ${DOXYGEN_BUILD_ROOT}/html/index.html
-    )
-
-else  ( DOXYGEN_FOUND )
-    if    ( SCAI_CMAKE_VERBOSE )
-        message ( STATUS "Not building system documentation because Doxygen not found." )
-    endif ( SCAI_CMAKE_VERBOSE )
-endif ( DOXYGEN_FOUND )
