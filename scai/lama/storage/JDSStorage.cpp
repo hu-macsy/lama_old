@@ -267,7 +267,7 @@ JDSStorage<ValueType>::JDSStorage()
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
-MatrixStorageFormat JDSStorage<ValueType>::getFormat() const
+Format::MatrixStorageFormat JDSStorage<ValueType>::getFormat() const
 {
     return Format::JDS;
 }

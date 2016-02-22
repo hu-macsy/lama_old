@@ -69,19 +69,24 @@ typedef common::shared_ptr<class Vector> VectorPtr;
 
 class Vector;
 
+namespace vectorformat
+{
+
 /**
- * @brief VectorKind describes if a vector is dense or sparse.
+ * @brief VectorFormat describes if a vector is dense or sparse.
  */
 typedef enum
 {
-    DENSE, //!< vector kind for a dense vector
-    SPARSE //!< vector kind for a sparse vector, not supported yet
+    DENSE, //!< vector format for a dense vector
+    SPARSE //!< vector format for a sparse vector, not supported yet
 
-} VectorKind;
+} VectorFormat;
+
+}  // namespace vectorformat
 
 /** For convenience: add the key type used for the Vector factory. */
 
-typedef std::pair<VectorKind, common::scalar::ScalarType> VectorCreateKeyType;
+typedef std::pair<vectorformat::VectorFormat, common::scalar::ScalarType> VectorCreateKeyType;
 
 /**
  * @brief The class Vector is a abstract type that represents a distributed 1D real or complex vector.
@@ -368,7 +373,7 @@ public:
      *
      * @param[in,out] other   the Vector to swap the contents with.
      *
-     * Swap is only possible if both vectors are of the same kind (DENSE) and
+     * Swap is only possible if both vectors are of the same format (DENSE) and
      * have the same value type.
      */
     virtual void swap( Vector& other ) = 0;
@@ -527,14 +532,6 @@ IndexType Vector::size() const
 hmemo::ContextPtr Vector::getContextPtr() const
 {
     return mContext;
-}
-
-/** @brief  stream output for key values of creator  */
-
-inline std::ostream& operator<<( std::ostream& stream, const scai::lama::VectorCreateKeyType& key )
-{
-    stream << "<" << key.first << ", " << key.second << ">";
-    return stream;
 }
 
 } /* end namespace lama */

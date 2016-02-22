@@ -196,7 +196,7 @@ void DIAStorage<ValueType>::clear()
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-MatrixStorageFormat DIAStorage<ValueType>::getFormat() const
+Format::MatrixStorageFormat DIAStorage<ValueType>::getFormat() const
 {
     return Format::DIA;
 }

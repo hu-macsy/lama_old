@@ -67,7 +67,7 @@ SCAI_LOG_DEF_LOGGER( Vector::logger, "Vector" )
 
 Vector* Vector::createVector( const common::scalar::ScalarType valueType, DistributionPtr distribution )
 {
-    VectorCreateKeyType vectype( DENSE, valueType );
+    VectorCreateKeyType vectype( vectorformat::DENSE, valueType );
     Vector* v = Vector::create( vectype );
 
     v->resize( distribution );

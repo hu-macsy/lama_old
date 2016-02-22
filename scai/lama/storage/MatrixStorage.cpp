@@ -221,7 +221,7 @@ IndexType _MatrixStorage::getNumValues() const
 
 /* ---------------------------------------------------------------------------------- */
 
-const char* format2Str( const MatrixStorageFormat storageFormat )
+const char* format2Str( const Format::MatrixStorageFormat storageFormat )
 {
     switch ( storageFormat )
     {
@@ -238,13 +238,13 @@ const char* format2Str( const MatrixStorageFormat storageFormat )
     return "UNDEFINED";
 }
 
-MatrixStorageFormat str2Format( const char* str )
+Format::MatrixStorageFormat str2Format( const char* str )
 {
     for ( int format = Format::CSR; format < Format::UNDEFINED; ++format )
     {
-        if ( strcmp( format2Str( MatrixStorageFormat( format ) ), str ) == 0 )
+        if ( strcmp( format2Str( Format::MatrixStorageFormat( format ) ), str ) == 0 )
         {
-            return MatrixStorageFormat( format );
+            return Format::MatrixStorageFormat( format );
         }
     }
 
@@ -1411,7 +1411,7 @@ BOOST_PP_REPEAT( ARITHMETIC_HOST_TYPE_CNT, LAMA_MATRIX_STORAGE_INSTANTIATE, _ )
 namespace Format
 {
 
-std::ostream& operator<<( std::ostream& stream, const scai::lama::MatrixStorageFormat storageFormat )
+std::ostream& operator<<( std::ostream& stream, const MatrixStorageFormat& storageFormat )
 {
     stream << scai::lama::format2Str( storageFormat );
     return stream;

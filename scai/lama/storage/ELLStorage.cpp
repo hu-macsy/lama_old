@@ -216,7 +216,7 @@ void ELLStorage<ValueType>::print() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-MatrixStorageFormat ELLStorage<ValueType>::getFormat() const
+Format::MatrixStorageFormat ELLStorage<ValueType>::getFormat() const
 {
     return Format::ELL;
 }

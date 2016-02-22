@@ -145,7 +145,7 @@ public:
 
     /** Getter routine for the enum value that stands for this format. */
 
-    virtual MatrixStorageFormat getFormat() const;
+    virtual Format::MatrixStorageFormat getFormat() const;
 
     /** Resize of a zero matrix.
      *
