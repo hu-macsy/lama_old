@@ -37,8 +37,8 @@
 #include <scai/common/config.hpp>
 
 // base classes
-#include <scai/lama/solver/Solver.hpp>
-#include <scai/lama/solver/IterativeSolver.hpp>
+#include <scai/solver/Solver.hpp>
+#include <scai/solver/IterativeSolver.hpp>
 
 // logging
 #include <scai/logging/Logger.hpp>
@@ -46,7 +46,7 @@
 namespace scai
 {
 
-namespace lama
+namespace solver
 {
 
 /**
@@ -147,6 +147,6 @@ protected:
     BiCGstabRuntime    mBiCGstabRuntime;
 };
 
-} /* end namespace lama */
+} /* end namespace solver */
 
 } /* end namespace scai */

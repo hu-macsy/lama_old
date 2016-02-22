@@ -32,7 +32,7 @@
  */
 
 // hpp
-#include <scai/lama/solver/BiCGstab.hpp>
+#include <scai/solver/BiCGstab.hpp>
 
 // local library
 #include <scai/lama/expression/VectorExpressions.hpp>
@@ -50,7 +50,7 @@
 namespace scai
 {
 
-namespace lama
+namespace solver
 {
 
 SCAI_LOG_DEF_LOGGER( BiCGstab::logger, "Solver.BiCGstab" )
@@ -292,6 +292,6 @@ void BiCGstab::writeAt( std::ostream& stream ) const
     stream << "BiCGstab ( id = " << mId << ", #iter = " << getConstRuntime().mIterations << " )";
 }
 
-} /* end namespace lama */
+} /* end namespace sovler */
 
 } /* end namespace scai */
