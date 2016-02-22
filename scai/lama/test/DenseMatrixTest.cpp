@@ -44,11 +44,23 @@
 #include <scai/lama/expression/MatrixExpressions.hpp>
 #include <scai/lama/expression/all.hpp>
 
+//-------------------------
+#include <scai/dmemo/BlockDistribution.hpp>
+#include <scai/dmemo/CyclicDistribution.hpp>
+#include <scai/dmemo/GenBlockDistribution.hpp> 
+#include <scai/common/shared_ptr.hpp>   
+//-------------------------
+#include <scai/lama/matutils/MatrixCreator.hpp> 
+
+
+
+
 using namespace scai::lama;
 using namespace scai::hmemo;
+using namespace scai::dmemo;
 using scai::common::unique_ptr;
 using scai::common::scoped_array;
-
+using scai::common::shared_ptr;
 namespace scai
 {
 namespace lama
@@ -711,7 +723,6 @@ void gemmTest( ContextPtr loc )
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
-
 template<typename ValueType>
 void swapTest( )
 {
@@ -726,6 +737,120 @@ void swapTest( )
     matrixA1.swap( matrixB1 );
     verifySameMatrix<ValueType>( matrixA1, matrixB2 );
     verifySameMatrix<ValueType>( matrixB1, matrixA2 );
+}
+
+
+
+template<typename ValueType>
+void transposeTest( )
+{
+    CommunicatorPtr comm = Communicator::getCommunicator(scai::dmemo::communicator::MPI);  // MPI
+    CSRSparseMatrix<ValueType> testMatrixA = TestSparseMatrices::n6m4MatrixD1<ValueType>();
+    CSRSparseMatrix<ValueType> testMatrixB = TestSparseMatrices::n6m6Full<ValueType>();
+    DenseMatrix<ValueType> matrixA(testMatrixA);
+    DenseMatrix<ValueType> matrixB(testMatrixB);
+   
+    // Block Distribution
+/*    
+    DistributionPtr rowsBlock( new BlockDistribution( matrixA.getNumRows(), comm ) );
+    DistributionPtr columnsBlock(new BlockDistribution( matrixA.getNumColumns(), comm ) );
+    matrixA.redistribute(rowsBlock,columnsBlock);
+    
+    DistributionPtr rowBlock( new BlockDistribution( matrixB.getNumRows(), comm ) );
+    DistributionPtr columnBlock(new BlockDistribution( matrixB.getNumColumns(), comm ) );
+    matrixB.redistribute(rowBlock,columnBlock);
+*/
+
+    //Cyclic Distribution
+/*    
+    IndexType chunkSize  = 1;
+    DistributionPtr rowsCyclic( new CyclicDistribution( matrixA.getNumRows(), chunkSize, comm ) );
+    DistributionPtr columnsCyclic( new CyclicDistribution( matrixA.getNumColumns(), chunkSize, comm ) );
+    matrixA.redistribute(rowsCyclic,columnsCyclic);
+
+    DistributionPtr rowCyclic( new CyclicDistribution( matrixB.getNumRows(), chunkSize, comm ) );
+    DistributionPtr columnCyclic( new CyclicDistribution( matrixB.getNumColumns(), chunkSize, comm ) );
+    matrixB.redistribute(rowCyclic,columnCyclic);
+*/
+
+    //General Block Distribution
+/*    
+    IndexType numProcesses = 4;
+
+    std::vector<IndexType> localRowsSizes;
+    IndexType rowsSizes[] = { 1, 1, 3, 1};
+    localRowsSizes.assign( rowsSizes, rowsSizes + numProcesses );
+    DistributionPtr rowsGenBlock( new GenBlockDistribution( matrixA.getNumRows(), localRowsSizes, comm ) );
+    std::vector<IndexType> localColumnsSizes;
+    IndexType columnsSizes[] = { 1, 1, 1, 1};
+    localColumnsSizes.assign( columnsSizes, columnsSizes + numProcesses );
+    DistributionPtr columnsGenBlock( new GenBlockDistribution( matrixA.getNumColumns(), localColumnsSizes, comm ) );
+    matrixA.redistribute(rowsGenBlock,columnsGenBlock);
+
+    std::vector<IndexType> localRowSizes;
+    IndexType rowSizes[] = { 2, 2, 1, 1};
+    localRowSizes.assign( rowSizes, rowSizes + numProcesses );
+    DistributionPtr rowGenBlock( new GenBlockDistribution( matrixB.getNumRows(), localRowSizes, comm ) );
+    std::vector<IndexType> localColumnSizes;
+    IndexType columnSizes[] = { 1, 3, 1, 1};
+    localColumnSizes.assign( columnSizes, columnSizes + numProcesses );
+    DistributionPtr columnGenBlock( new GenBlockDistribution( matrixB.getNumColumns(), localColumnSizes, comm ) );
+    matrixB.redistribute(rowGenBlock,columnGenBlock);
+*/
+
+    //GeneralDistribution
+    // 4 processes
+    IndexType distRows[] = { 0,1,3,0,2,2};
+    std::vector<IndexType> row2partRows;
+    row2partRows.assign( distRows, distRows + matrixA.getNumRows() );
+    DistributionPtr rowsGen( new GeneralDistribution( row2partRows, matrixA.getNumRows(), comm ) );
+    IndexType distColumns[] = {0,1,0,2};
+    std::vector<IndexType> row2partColumns;
+    row2partColumns.assign( distColumns, distColumns + matrixA.getNumColumns() );
+    DistributionPtr columnsGen( new GeneralDistribution( row2partColumns, matrixA.getNumColumns(), comm ) );
+    matrixA.redistribute(rowsGen,columnsGen);
+
+    IndexType distRow[] = { 0,1,3,0,2,2};
+    std::vector<IndexType> row2partRow;
+    row2partRow.assign( distRow, distRow + matrixB.getNumRows() );
+    DistributionPtr rowGen( new GeneralDistribution( row2partRow, matrixB.getNumRows(), comm ) );
+    IndexType distColumn[] = {0,1,0,2,0,3};
+    std::vector<IndexType> row2partColumn;
+    row2partColumn.assign( distColumn, distColumn + matrixB.getNumColumns() );
+    DistributionPtr columnGen( new GeneralDistribution( row2partColumn, matrixB.getNumColumns(), comm ) );
+    matrixB.redistribute(rowGen,columnGen);
+
+
+    //Transpose
+    matrixA.assignTranspose(matrixA);
+    matrixB.assignTranspose(matrixB);
+    matrixA.assignTranspose(matrixB);
+
+
+    //Printings
+/*
+    std::cout<<"matrix A\n";
+    for ( int i = 0; i < matrixA.getNumRows(); i++ ){
+        for ( int j = 0; j < matrixA.getNumColumns(); j++ ){
+           std::cout<< matrixA.getValue(i,j)<<" ";
+        }
+        std::cout<<"\n";
+    }
+    std::cout<<"\n\n";
+
+    std::cout<<"matrix B\n";
+    for ( int i = 0; i < matrixB.getNumRows(); i++ ){
+        for ( int j = 0; j < matrixB.getNumColumns(); j++ ){
+           std::cout<< matrixB.getValue(i,j)<<" ";
+        }
+        std::cout<<"\n";
+    }
+    std::cout<<"\n\n";
+*/
+
+
+    //some test
+    BOOST_CHECK_EQUAL( 9.0, 9.0 );
 }
 
 } /* end namespace DenseMatrixTest */
@@ -754,6 +879,7 @@ LAMA_AUTO_TEST_CASE_T( scaleTest, DenseMatrixTest )
 LAMA_AUTO_TEST_CASE_T( setDiagonalTest, DenseMatrixTest )
 LAMA_AUTO_TEST_CASE_T( setIdentityTest, DenseMatrixTest )
 LAMA_AUTO_TEST_CASE_T( swapTest, DenseMatrixTest )
+LAMA_AUTO_TEST_CASE_T( transposeTest, DenseMatrixTest )
 LAMA_AUTO_TEST_CASE_T( typeNameTest, DenseMatrixTest )
 /* ------------------------------------------------------------------------------------------------------------------ */
 

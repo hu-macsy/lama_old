@@ -1,5 +1,5 @@
 /**
- * @file CGS.cpp
+ * @file CGNE.cpp
  *
  * @license
  * Copyright (c) 2009-2013
@@ -25,89 +25,80 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief CGS.cpp
+ * @brief CGNE.cpp
  * @author David schissler
- * @date 18.05.2015
+ * @date 27.05.2015
  * @since
  */
 
 // hpp
-#include <scai/solver/CGS.hpp>
+#include <scai/solver/CGNE.hpp>
 
 // local library
 #include <scai/lama/expression/VectorExpressions.hpp>
 #include <scai/lama/expression/MatrixExpressions.hpp>
 #include <scai/lama/expression/MatrixVectorExpressions.hpp>
-
-#include <scai/lama/norm/MaxNorm.hpp>
-
+#include <scai/common/Constants.hpp>
 #include <scai/lama/DenseVector.hpp>
 
-// std
+// std 
 #include <limits>
 
 namespace scai
 {
 
 namespace solver
-{ 
+{
 
-SCAI_LOG_DEF_LOGGER( CGS::logger, "Solver.CGS" )
+SCAI_LOG_DEF_LOGGER( CGNE::logger, "Solver.CGNE" )
 
 using lama::Matrix;
 using lama::Vector;
 using lama::Scalar;
 
-CGS::CGS( const std::string& id )
+CGNE::CGNE( const std::string& id )
     : IterativeSolver(id){}
 
 
-CGS::CGS( const std::string& id, LoggerPtr logger )
+CGNE::CGNE( const std::string& id, LoggerPtr logger )
     : IterativeSolver(id ,logger){}
 
-CGS::CGS( const CGS& other )
+CGNE::CGNE( const CGNE& other )
     : IterativeSolver( other ){}
 
-
-
-CGS::CGSRuntime::CGSRuntime()
+CGNE::CGNERuntime::CGNERuntime()
     : IterativeSolverRuntime(){}
 
-CGS::~CGS(){}
+CGNE::~CGNE(){}
 
-CGS::CGSRuntime::~CGSRuntime(){}
+CGNE::CGNERuntime::~CGNERuntime(){}
 
-void CGS::initialize( const Matrix& coefficients ){
+
+void CGNE::initialize( const Matrix& coefficients ){
     SCAI_LOG_DEBUG(logger, "Initialization started for coefficients = "<< coefficients)
 
-    IterativeSolver::initialize( coefficients );
- 	CGSRuntime& runtime = getRuntime();
-
-    runtime.mNormRes = 1.0;
-    runtime.mEps = std::numeric_limits<double>::epsilon()*3;            //CAREFUL: No abstract type
+    IterativeSolver::initialize(coefficients);
+    CGNERuntime& runtime = getRuntime();
 
     common::scalar::ScalarType type = coefficients.getValueType();
+    runtime.mEps = std::numeric_limits<double>::epsilon()*3;                  //CAREFUL: No abstract type
 
-    runtime.mRes0.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
-    runtime.mVecT.reset(Vector::createVector( type, coefficients.getDistributionPtr() ));
+    runtime.mTransposedMat.reset( coefficients.newMatrix() );
+    runtime.mTransposedMat->assignTranspose( coefficients );
+    runtime.mTransposedMat->conj();
+    
     runtime.mVecP.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
-    runtime.mVecQ.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
-    runtime.mVecU.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
 
-
-    runtime.mRes0->setContextPtr( coefficients.getContextPtr() );
     runtime.mVecP->setContextPtr( coefficients.getContextPtr() );
-    runtime.mVecQ->setContextPtr( coefficients.getContextPtr() );
-    runtime.mVecU->setContextPtr( coefficients.getContextPtr() );
-    runtime.mVecT->setContextPtr( coefficients.getContextPtr() );
 }
 
 
-void CGS::solveInit( Vector& solution, const Vector& rhs ){
-    CGSRuntime& runtime = getRuntime();
+void CGNE::solveInit( Vector& solution, const Vector& rhs ){
+    CGNERuntime& runtime = getRuntime();
 
     runtime.mRhs = &rhs;
     runtime.mSolution = &solution;
+
 
     if ( runtime.mCoefficients->getNumRows() != runtime.mRhs->size() ){
         COMMON_THROWEXCEPTION(
@@ -132,95 +123,69 @@ void CGS::solveInit( Vector& solution, const Vector& rhs ){
 
     // Initialize
     this->getResidual();   
-
-    *runtime.mRes0 = *runtime.mResidual;
-    *runtime.mVecP = *runtime.mResidual;
-    *runtime.mVecU = *runtime.mResidual;
-
-    //initial <res,res> inner product;
-    runtime.mInnerProdRes = (*runtime.mRes0).dotProduct(*runtime.mRes0);
-
+   
+    const Matrix& transposedA = *runtime.mTransposedMat;
+    const Vector& residual = *runtime.mResidual;
+    Vector& vecP = *runtime.mVecP;
+    vecP = transposedA*residual;
+  
+    runtime.mScalarProductResidual = residual.dotProduct(residual);
     runtime.mSolveInit = true;
 }
 
-void CGS::iterate(){
-    CGSRuntime& runtime	= getRuntime();
-    
+void CGNE::iterate(){
+    CGNERuntime& runtime = getRuntime();
+   
     const Matrix& A = *runtime.mCoefficients;
-    
-    const Vector& res0 = *runtime.mRes0;
-    Vector& res = *runtime.mResidual;
-    Vector& vecP = *runtime.mVecP;
-    Vector& vecQ = *runtime.mVecQ;
-    Vector& vecU = *runtime.mVecU;
-    Vector& vecT = *runtime.mVecT;
-    Vector& solution = *runtime.mSolution;
-    Scalar& innerProdRes = runtime.mInnerProdRes;
+    const Matrix& transposedA = *runtime.mTransposedMat;
 
+    Vector& vecP= *runtime.mVecP;
+    Vector& residual = *runtime.mResidual;
+    Vector& solution = *runtime.mSolution;
+    Scalar& ScalarProductResidual = runtime.mScalarProductResidual;
     Scalar alpha;
     Scalar beta;
+    Scalar eps = runtime.mEps;
 
-    const Scalar& eps = runtime.mEps;
-    Scalar& normRes = runtime.mNormRes;
-	lama::MaxNorm norm;
+    Scalar scalarProductP = vecP.dotProduct(vecP);
 
-    vecT= A *vecP;         
+    if(scalarProductP < eps)    alpha=0.0;     //norm is small 
+    else    alpha = ScalarProductResidual/scalarProductP;
+    
+    solution= solution + alpha*vecP;
+    residual = residual - alpha*A*vecP;
 
-    Scalar innerProduct = res0.dotProduct(vecT);
-    if(normRes< eps || innerProduct < eps)    //innerProduct is small
-        alpha=0.0;
-    else alpha= innerProdRes/innerProduct;
+    Scalar scalarProductResidualNew=residual.dotProduct(residual);
 
-    vecQ= vecU - alpha*vecT;
-    solution = solution + alpha*vecU;
-    solution = solution + alpha*vecQ;
+    if(scalarProductResidualNew < eps)     beta=0.0;   //norm is small
+    else    beta = scalarProductResidualNew/ScalarProductResidual;
 
-    Scalar innerProdResOld = innerProdRes;
-
-    res = res - alpha*A*vecU;
-    res = res - alpha*A*vecQ; 
-    innerProdRes = res0.dotProduct(res);
-
-    normRes = norm.apply(res);
-
-    if(normRes < eps || innerProdResOld < eps)               // innerProdResOld is small
-        beta=0.0;
-    else beta = innerProdRes/ innerProdResOld ;
-
-    vecU = res + beta*vecQ;
-    vecP = vecU + beta*beta*vecP;
-    vecP = vecP + beta*vecQ;
-
-    //End Implementation
-    mCGSRuntime.mSolution.setDirty( false );
+    vecP = transposedA*residual + beta * vecP;
+    ScalarProductResidual = scalarProductResidualNew;
+    //CGNE Implementation End
+    mCGNERuntime.mSolution.setDirty(false);
 }
 
-
-SolverPtr CGS::copy(){
-    return SolverPtr( new CGS( *this ) );
+SolverPtr CGNE::copy(){
+    return SolverPtr( new CGNE( *this ) );
 }
 
-CGS::CGSRuntime& CGS::getRuntime(){
-    return mCGSRuntime;
+CGNE::CGNERuntime& CGNE::getRuntime(){
+    return mCGNERuntime;
 }
 
-const CGS::CGSRuntime& CGS::getConstRuntime() const{
-    return mCGSRuntime;
+const CGNE::CGNERuntime& CGNE::getConstRuntime() const{
+    return mCGNERuntime;
 }
 
-std::string CGS::createValue()
+std::string CGNE::createValue()
 {
-	return "CGS";
+    return "CGNE";
 }
 
-Solver* CGS::create( const std::string name )
+Solver* CGNE::create( const std::string name )
 {
-	return new CGS( name );
-}
-
-void CGS::writeAt( std::ostream& stream ) const
-{
-    stream << "CGS ( id = " << mId << ", #iter = " << getConstRuntime().mIterations << " )";
+    return new CGNE( name );
 }
 
 } /* end namespace solver */

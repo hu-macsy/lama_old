@@ -1,5 +1,5 @@
 /**
- * @file CGNR.hpp
+ * @file CGNE.hpp
  *
  * @license
  * Copyright (c) 2009-2013
@@ -25,10 +25,10 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief CGNR.hpp
+ * @brief CGNE.hpp
  * @author David Schissler
- * @date 27.05.2015
- * @since
+ * @date 30.10.2015
+ * @since 
  */
 
 #pragma once
@@ -49,47 +49,46 @@ namespace scai
 namespace solver
 {
 /**
- * @brief The class CGNR represents an IterativeSolver which uses the krylov subspace Conjugate
- * Gradients for Normal Residuals (CGNR) method to solve a system of linear equations of type
+ * @brief The class CGNE represents an IterativeSolver which uses the krylov subspace Conjugate
+ * Gradients for Normal Equations (CGNE) method to solve a system of linear equations of type  
  * 
- *                             (A^t * A) * x = A^t * b
+ *                             (A * A^t) * x = b
  * iteratively 
  * where 
  * A  .............. is some matrix (not necessary square) 
  * A^t.............. is the transposed of A
  * x  .............. solution vector
  * b  .............. rhs vector
- * *  .............. multiplication operator.
  * Remark:
  * The scalars in the algorithm are set to zero if they are smaller then machine
  * precision to avoid division by zero. In this case the solution doesn't change anymore.
  *
  */
-class COMMON_DLL_IMPORTEXPORT CGNR:
-    public IterativeSolver,
-    public Solver::Register<CGNR>
+class COMMON_DLL_IMPORTEXPORT CGNE:
+		public IterativeSolver,
+		public Solver::Register<CGNE>
 {
 public:
     /**
-    * @brief Creates a CGNR solver with a given ID.
+    * @brief Creates a CGNE solver with a given ID.
     *
     * @param id The ID for the solver.
     */
-    CGNR( const std::string& id );
+    CGNE( const std::string& id );
     /**
-    * @brief Create a CGNR solver with a given ID and a given logger.
+    * @brief Create a CGNE solver with a given ID and a given logger.
     *
     * @param id        The ID of the solver.
     * @param logger    The logger which shall be used by the solver
     */
-    CGNR( const std::string& id, LoggerPtr logger );
+    CGNE( const std::string& id, LoggerPtr logger );
 
     /**
     * @brief Copy constructor that copies the status independent solver information
     */
-    CGNR( const CGNR& other );
+    CGNE( const CGNE& other );
 
-    virtual ~CGNR();
+    virtual ~CGNE();
 
     virtual void initialize( const lama::Matrix& coefficients );
 
@@ -101,24 +100,22 @@ public:
     */
     virtual SolverPtr copy();
 
-    struct CGNRRuntime: IterativeSolverRuntime
+    struct CGNERuntime: IterativeSolverRuntime
     {
-        CGNRRuntime();
-        virtual ~CGNRRuntime();
+        CGNERuntime();
+        virtual ~CGNERuntime();
 
-        common::shared_ptr<lama::Matrix> mTransposedMat;
-        common::shared_ptr<lama::Vector> mVecD;
-        common::shared_ptr<lama::Vector> mVecW;
-        common::shared_ptr<lama::Vector> mVecZ;
+    common::shared_ptr<lama::Matrix> mTransposedMat;
+	common::shared_ptr<lama::Vector> mVecP;
 
-        lama::Scalar mEps;
-        lama::Scalar mNormVecZ;
+    lama::Scalar mEps;
+    lama::Scalar mScalarProductResidual;
     };
     /**
     * @brief Returns the complete configuration of the derived class
     */
-    virtual CGNRRuntime& getRuntime();
-    /**
+    virtual CGNERuntime& getRuntime();
+    /** 
     * @brief Initializes vectors and values of the runtime
     */
     virtual void solveInit( lama::Vector& solution, const lama::Vector& rhs );
@@ -126,21 +123,16 @@ public:
     /**
     * @brief Returns the complete const configuration of the derived class
     */
-    virtual const CGNRRuntime& getConstRuntime() const;
-
+    virtual const CGNERuntime& getConstRuntime() const;
+    
     static std::string createValue();
     static Solver* create( const std::string name );
 
 protected:
 
+    CGNERuntime mCGNERuntime;
     /**
-     *  @brief own implementation of Printable::writeAt
-     */
-    virtual void writeAt( std::ostream& stream ) const;
-
-    CGNRRuntime mCGNRRuntime;
-    /**
-     * @brief Performs one CGNR iteration based on Matrix/Vector operations.
+     * @brief Performs one CGNE iteration based on Matrix/Vector operations. 
      */
     virtual void iterate();
 

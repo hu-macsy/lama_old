@@ -139,13 +139,9 @@ void TFQMR::solveInit( Vector& solution, const Vector& rhs ){
 
     const Matrix& A = *runtime.mCoefficients;
 
-    Vector* initialR = (*runtime.mResidual).copy();
-    Vector* mVecVEven = (*runtime.mResidual).copy();
-    Vector* mVecW = (*runtime.mResidual).copy();
-
-    runtime.mInitialR.reset( initialR );
-    runtime.mVecVEven.reset( mVecVEven );
-    runtime.mVecW.reset( mVecW );
+    *runtime.mInitialR = *runtime.mResidual;
+    *runtime.mVecVEven = *runtime.mResidual;
+    *runtime.mVecW = *runtime.mResidual;
 
     *runtime.mVecZ = A * (*runtime.mResidual);
     *runtime.mVecD = Scalar(0.0);                   

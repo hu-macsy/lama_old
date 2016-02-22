@@ -44,7 +44,7 @@
 
 #include <scai/lama/DenseVector.hpp>
 
-// std
+// std 
 #include <limits>
 
 namespace scai
@@ -56,6 +56,10 @@ namespace solver
 {
 
 SCAI_LOG_DEF_LOGGER( BiCGstab::logger, "Solver.BiCGstab" )
+
+using lama::Matrix;
+using lama::Vector;
+using lama::Scalar;
 
 BiCGstab::BiCGstab( const std::string& id )
     : IterativeSolver( id ) {}
@@ -149,13 +153,8 @@ void BiCGstab::solveInit( Vector& solution, const Vector& rhs )
 
     // Initialize
     this->getResidual();
-    // print(*runtime.mResidual,4);
 
     *runtime.mRes0 = *runtime.mResidual;
-
-    // Vector* res0 = ( *runtime.mResidual ).copy();
-    // runtime.mRes0.reset( res0 );
-
 
     *runtime.mVecV = Scalar( 0.0 );
     *runtime.mVecP = Scalar( 0.0 );
@@ -188,7 +187,7 @@ void BiCGstab::iterate()
 
     const Scalar& eps = runtime.mEps;
     Scalar& resNorm = runtime.mResNorm;
-    L2Norm norm;
+    lama::L2Norm norm;
 
     rhoNew = res0.dotProduct( res );
 

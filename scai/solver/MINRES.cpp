@@ -139,13 +139,11 @@ void MINRES::solveInit( Vector& solution, const Vector& rhs ){
 
 
     this->getResidual();   
+    *runtime.mVecVNew = *runtime.mResidual; 
 
-    Vector* vecVNew = (*runtime.mResidual).copy();
-    runtime.mVecVNew.reset(vecVNew);    
-
-    *runtime.mVecV *= (0.0);
-    *runtime.mVecP *= (0.0);
-    *runtime.mVecPNew *= (0.0);
+    *runtime.mVecV *= Scalar(0.0);
+    *runtime.mVecP *= Scalar(0.0);
+    *runtime.mVecPNew *= Scalar(0.0);
 
     lama::L2Norm norm;
     runtime.mZeta = norm.apply(*runtime.mResidual);
