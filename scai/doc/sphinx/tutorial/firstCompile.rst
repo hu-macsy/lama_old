@@ -7,12 +7,12 @@ The environment variable LAMA_ROOT refers the directory of your LAMA installatio
 
 The following command compiles and links your example program simple.cpp::
 
-    g++ -o simple simple.cpp -I${LAMA_ROOT}/include -L${LAMA_ROOT}/lib -lama 
+    g++ -o simple simple.cpp -I${LAMA_ROOT}/include -L${LAMA_ROOT}/lib -lscai_lama 
 
 If you have an own Boost installation, you have to add also the corresponding
 include directory to the include paths::
 
-    g++ -o simple simple.cpp -I${LAMA_ROOT}/include -I${BOOST_ROOT}/include -L${LAMA_ROOT}/lib -lama 
+    g++ -o simple simple.cpp -I${LAMA_ROOT}/include -I${BOOST_ROOT}/include -L${LAMA_ROOT}/lib -lscai_lama 
 
 If this step was successful, you can run the executable::
 
@@ -22,14 +22,14 @@ Due to the dynamic linking of libraries, the executable **simple** will not cont
 Instead, it contains a reference to the LAMA library and references will be resolved when the executable
 is started. Here, it is very likely that you get the following error message::
 
-    simple: error while loading shared libraries: liblama.so: cannot open shared object file: No such file or directory
+    simple: error while loading shared libraries: libscai_lama.so: cannot open shared object file: No such file or directory
 
 Information about dynamically linked libraries is available by the following command::
 
     ldd ./simple
 
     linux-vdso.so.1 =>  (0x00007fff303ff000)                                                                                                    
-    liblama.so => not found                                                                                                                     
+    libscai_lama.so => not found                                                                                                                     
     ...
     /lib64/ld-linux-x86-64.so.2 (0x00002b2c0871e000)
 
@@ -49,7 +49,7 @@ There are two solutions to solve this problem.
    You generate a link to the LAMA lib directory within the executable. This solution is the
    preferred solution if you want to share the executable with other users::
 
-      g++ -o simple simple.cpp -I${LAMA_ROOT}/include -L${LAMA_ROOT}/lib -lama -Wl,-rpath=${LAMA_ROOT}/lib
+      g++ -o simple simple.cpp -I${LAMA_ROOT}/include -L${LAMA_ROOT}/lib -lscai_lama -Wl,-rpath=${LAMA_ROOT}/lib
 
 Now it should be possible to run the executable. Beside the output it is very likely that you get
 the following warning message::
