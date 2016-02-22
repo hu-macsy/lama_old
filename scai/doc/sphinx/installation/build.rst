@@ -25,17 +25,22 @@ To build LAMAs doxygen API documentation call
 
 .. code-block:: bash 
 
-   make doc
+   make doxygendoc
 
-in your build directory and find it in doc/system/html/index.html.
+in your build directory and find it in doc/doxygen/html/index.html or
+in the installation dir in share/doc/system/index.html.
 
 User Documentation
 ------------------
 
+If Sphinx is found by CMake the documentation will be automatically built. 
+If you don't want CMake to do this you have to pass -DBUILD_DOC=OFF to cmake.
+  
 To build LAMAs user documentation call
 
 .. code-block:: bash 
 
-   make userdoc
+   make doc
 
-in your build directory and find it in doc/user/html/index.html.
+in your build directory and find it in doc/sphinx/html/index.html or 
+in the installation dir in share/doc/user/html/scai-<verion>/index.html.

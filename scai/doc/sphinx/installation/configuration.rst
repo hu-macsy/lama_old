@@ -16,6 +16,7 @@ packages or which one to choose. For a specific package please refer to the belo
    configuration/boost
    configuration/blas
    CUDA <configuration/cuda>
+   MIC <configuration/mic>
    MPI <configuration/mpi>
    Tracing <configuration/tracing>
 
@@ -30,13 +31,15 @@ builds are supported we recommend an out-of-source build. So create a build dire
    mkdir build
    cd build
 
-To configure LAMA, call cmake in your build directory and specify the path to the LAMA source (**<project-root>/src**).
+To configure LAMA, call cmake in your build directory and specify the path to the LAMA source (**<project-root>/scai**).
+It is highly recommended to set the CMAKE_INSTALL_PREFIX. Due to the use of ExternalProjects inside LAMA the sublibraries
+will be automatically installed after compilation. If no CMAKE_INSTALL_PREFIX is set, it is tried to install LAMA in /usr/local. 
 There are a couple of advanced options for defining special build-types or to switch on/off particular features.
 The general cmake-call looks like this:
 
 .. code-block:: bash
 
-   cmake [options] <project-root>/src
+   cmake [options] <project-root>/scai -DCMAKE_INSTALL_PREFIX=<path/to/install/dir>
 
 For defining the options you need to write ''-D <VARIABLE_NAME>=value''.
 
@@ -46,7 +49,8 @@ If you have not installed CMake in the system path you need to specify to CMake 
 
    cmake [-D CMAKE_INCLUDE_PATH=<install/dir/cmake>/include \]
          [-D CMAKE_LIBRARY_PATH=<install/dir/cmake>/lib \]
-         <project-root>/src
+         <project-root>/scai
+         -DCMAKE_INSTALL_PREFIX=<path/to/install/dir>
   
 All relevant LAMA options and their significations are listed in the table below.
 
@@ -62,6 +66,7 @@ All relevant LAMA options and their significations are listed in the table below
    "SCAI_LOG", "INFO recommended, alternatively DEBUG or even more detailed TRACE"
    "USE_CODE_COVERAGE", "ON or OFF, explicitly enable/disable use of Code Coverage"
    "USE_CUDA", "ON or OFF, explicitly enable/disable use of CUDA"
+   "USE_MIC", "ON or OFF, explicitly enable/disable use of MICI"
    "USE_MPI", "ON or OFF, explicitly enable/disable use of MPI"
    "USE_SCALAPACK", "ON or OFF, explicitly enable/disable use of SCALAPACK"
 ..   "SCAI_ADDITIONAL_LINK_LIBRARIES", "Paths to libraries that should be linked to lama, separated by ;"
@@ -71,7 +76,7 @@ For an optimized installation of LAMA call
 
 .. code-block:: bash
 
-   cmake -D CMAKE_INSTALL_PREFIX=<path/to/install/dir> -D CMAKE_BUILD_TYPE=Release <project-root>/src
+   cmake -D CMAKE_INSTALL_PREFIX=<path/to/install/dir> -D CMAKE_BUILD_TYPE=Release <project-root>/scai
 
 If all packages are installed in the system path, Cmake should find them automatically if they are available. If they are
 located at different paths or you have additional packages installed on your system and want to use the alternative, you
@@ -88,9 +93,9 @@ following table. For advanced help refer to the separate section.
    "DOXYGEN", "DOXYGEN_EXECUTABLE", "path to doxygen binary dir"
    "MKL (for BLAS and LAPack and ScaLAPack)", "MKL_ROOT or MKL_INCLUDE_DIR and MKL_LIBRARY_PATH", "path to MKL root dir or paths to MKL include and library dir"
    "MPI", "MPI_ROOT", "path to MPI root dir"
-   "experimental", ,
    "Metis", "METIS_ROOT or METIS_INCLUDE_DIR and METIS_LIBRARY_PATH", "path to Metis root dir or paths to Metis include and library dir"
    "ParMetis", "PARMETIS_ROOT or PARMETIS_INCLUDE_DIR and PARMETIS_LIBRARY_PATH", "path to ParMetis root dir or paths to ParMetis include and library dir"
+..   "experimental", ,
 ..   "OpenCL", "OPENCL_ROOT or OPENCL_INCLUDE_DIR and OPENCL_LIBRARY_PATH", "path to OpenCL root dir or paths to OpenCL include and library dir"
 
 For changing the C compiler there is a different way for telling cmake. Please see :doc:`here <configuration/c++>`. 
@@ -128,4 +133,4 @@ In short:
    mkdir build
    cd build
    #Call cmake
-   cmake [-D MKL_ROOT=/opt/intel/mkl] [-D ... ] -D CMAKE_INSTALL_PREFIX=<path/to/install/dir> [-D CMAKE_BUILD_TYPE=Release] <project-root>/src
+   cmake [-D MKL_ROOT=/opt/intel/mkl] [-D ... ] -D CMAKE_INSTALL_PREFIX=<path/to/install/dir> [-D CMAKE_BUILD_TYPE=Release] <project-root>/scai
