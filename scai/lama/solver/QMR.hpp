@@ -135,7 +135,6 @@ public:
     */
     virtual void solveInit( Vector& solution, const Vector& rhs );
     
-    void print(Vector& f, size_t i);
     /**
      * @brief Returns the complete configuration of the derived class
      */

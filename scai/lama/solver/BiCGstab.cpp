@@ -78,7 +78,7 @@ void BiCGstab::initialize( const Matrix& coefficients )
 {
     SCAI_LOG_DEBUG( logger, "Initialization started for coefficients = " << coefficients )
 
-    Solver::initialize( coefficients );
+    IterativeSolver::initialize( coefficients );
     BiCGstabRuntime& runtime = getRuntime();
 
     runtime.mAlpha  = 1.0;
@@ -94,6 +94,9 @@ void BiCGstab::initialize( const Matrix& coefficients )
     runtime.mVecP.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
     runtime.mVecS.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
     runtime.mVecT.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
+    runtime.mVecPT.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
+    runtime.mVecST.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
+    runtime.mVecTT.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
 
 
     runtime.mRes0->setContextPtr( coefficients.getContextPtr() );
@@ -101,6 +104,12 @@ void BiCGstab::initialize( const Matrix& coefficients )
     runtime.mVecP->setContextPtr( coefficients.getContextPtr() );
     runtime.mVecS->setContextPtr( coefficients.getContextPtr() );
     runtime.mVecT->setContextPtr( coefficients.getContextPtr() );
+    runtime.mVecPT->setContextPtr( coefficients.getContextPtr() );
+
+    runtime.mVecST->setContextPtr( coefficients.getContextPtr() );
+    runtime.mVecTT->setContextPtr( coefficients.getContextPtr() );
+
+
 }
 
 
@@ -138,12 +147,16 @@ void BiCGstab::solveInit( Vector& solution, const Vector& rhs )
 
     // Initialize
     this->getResidual();
+    print(*runtime.mResidual,4);
 
-    Vector* initialR = ( *runtime.mResidual ).copy();
-    runtime.mRes0.reset( initialR );
+    *runtime.mRes0 = *runtime.mResidual;
 
-    *runtime.mVecV = Scalar( 0 );
-    *runtime.mVecP = Scalar( 0 );
+    // Vector* res0 = ( *runtime.mResidual ).copy();
+    // runtime.mRes0.reset( res0 );
+
+
+    *runtime.mVecV = Scalar( 0.0 );
+    *runtime.mVecP = Scalar( 0.0 );
 
     runtime.mSolveInit = true;
 }
@@ -161,6 +174,9 @@ void BiCGstab::iterate()
     Vector& vecS = *runtime.mVecS;
     Vector& vecT = *runtime.mVecT;
     Vector& solution = *runtime.mSolution;
+    Vector& vecPT = *runtime.mVecPT;
+    Vector& vecST = *runtime.mVecST;
+    Vector& vecTT = *runtime.mVecTT;
 
     Scalar& alpha = runtime.mAlpha;
     Scalar& beta = runtime.mBeta;
@@ -180,7 +196,6 @@ void BiCGstab::iterate()
     }
     else
     {
-        //std::cout << "rhoNew = " << rhoNew << ", rhoOld = " << rhoOld << ", alpha = " << alpha << ", omega = " << omega << std::endl;
         beta = rhoNew / rhoOld * ( alpha / omega );
     }
 
@@ -188,7 +203,15 @@ void BiCGstab::iterate()
 
     vecP = vecP - omega * vecV;
     vecP = res + beta * vecP;
-    vecV = A * vecP;
+
+    // PRECONDITIONING
+    if(mPreconditioner != NULL){
+        vecPT = Scalar(0.0);
+        mPreconditioner->solve( vecPT, vecP );      
+    } 
+    else    vecPT = vecP;
+
+    vecV = A * vecPT;
 
     Scalar innerProd = res0.dotProduct( vecV );
 
@@ -202,9 +225,22 @@ void BiCGstab::iterate()
     }
 
     vecS = res - alpha * vecV;
-    vecT = A * vecS;
+    // PRECONDITIONING
+    if(mPreconditioner != NULL){
+        vecST = Scalar(0.0);
+        mPreconditioner->solve( vecST, vecS );      
 
-    innerProd = vecT.dotProduct( vecT );
+        vecT = A * vecST;
+        vecTT = Scalar(0.0);
+        mPreconditioner->solve(vecTT,vecT);    
+    } 
+    else{
+        vecST = vecS;
+        vecT = A * vecST;
+        vecTT = vecT;
+    }   
+
+    innerProd = vecTT.dotProduct( vecTT );
 
     if ( resNorm < eps || innerProd < eps ) //scalar is small
     {
@@ -212,7 +248,7 @@ void BiCGstab::iterate()
     }
     else
     {
-        omega = vecT.dotProduct( vecS ) / innerProd;
+        omega = vecTT.dotProduct( vecST ) / innerProd;
     }
 
     solution = solution + alpha * vecP;
@@ -224,6 +260,12 @@ void BiCGstab::iterate()
 
     //BiCGStab implementation end
     mBiCGstabRuntime.mSolution.setDirty( false );
+}
+
+void BiCGstab::print(Vector& vec, size_t size){
+    for(size_t i=0;i<size;++i)
+        std::cout<< vec(i)<<" ";
+    std::cout<<std::endl<<std::endl;
 }
 
 SolverPtr BiCGstab::copy()

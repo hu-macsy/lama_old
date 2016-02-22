@@ -104,6 +104,9 @@ public:
         common::shared_ptr<Vector> mVecP;
         common::shared_ptr<Vector> mVecS;
         common::shared_ptr<Vector> mVecT;
+        common::shared_ptr<Vector> mVecPT;
+        common::shared_ptr<Vector> mVecST;
+        common::shared_ptr<Vector> mVecTT;
 
         Scalar mEps;
         Scalar mResNorm;
@@ -134,7 +137,6 @@ public:
 protected:
 
     virtual void iterate();
-
     /**
      *  @brief own implementation of Printable::writeAt
      */

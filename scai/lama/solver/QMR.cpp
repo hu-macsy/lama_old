@@ -198,7 +198,11 @@ void QMR::iterate(){
 
     if(this->getIterationCount() == 0){
     /*PRECONDITIONING*/
-        if(mPreconditioner != NULL) mPreconditioner->solve( vecY, vecVT );      
+        if(mPreconditioner != NULL)
+        {
+            vecY = Scalar(0.0);
+            mPreconditioner->solve( vecY, vecVT );      
+        } 
         else    vecY = vecVT;
         vecZ = vecWT;
         rho = norm(vecY);
@@ -218,7 +222,10 @@ void QMR::iterate(){
         return;
     /*PRECONDITIONING*/
     vecYT = vecY;
-    if(mPreconditioner != NULL) mPreconditioner->solve( vecZT, vecZ );      
+    if(mPreconditioner != NULL){
+        vecZT = Scalar(0.0);
+        mPreconditioner->solve( vecZT, vecZ );      
+    } 
     else vecZT = vecZ;
 
     if(this->getIterationCount() == 0){
@@ -245,7 +252,11 @@ void QMR::iterate(){
     vecVT = vecPT - beta *vecV;
 
     /*PRECONDITIONING*/
-    if(mPreconditioner != NULL) mPreconditioner->solve( vecY, vecVT );      
+    if(mPreconditioner != NULL)
+    {
+        vecY = Scalar(0.0);
+        mPreconditioner->solve( vecY, vecVT );      
+    }
     else    vecY = vecVT; 
  
     rho1= rho;
@@ -284,14 +295,6 @@ void QMR::iterate(){
 SolverPtr QMR::copy()
 {
     return SolverPtr( new QMR( *this ) );
-}
-
-
-
-void QMR::print(Vector& vec, size_t size){
-    for(size_t i=0;i<size;++i)
-        std::cout<< vec(i)<<" ";
-    std::cout<<std::endl<<std::endl;
 }
 
 QMR::QMRRuntime& QMR::getRuntime()
