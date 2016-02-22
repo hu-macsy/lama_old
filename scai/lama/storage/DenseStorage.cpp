@@ -346,7 +346,7 @@ common::scalar::ScalarType DenseStorageView<ValueType>::getValueType() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-MatrixStorageFormat DenseStorageView<ValueType>::getFormat() const
+Format::MatrixStorageFormat DenseStorageView<ValueType>::getFormat() const
 {
     return Format::DENSE;
 }

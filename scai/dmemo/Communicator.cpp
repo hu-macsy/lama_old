@@ -95,8 +95,30 @@ CommunicatorPtr Communicator::getCommunicator( const communicator::CommunicatorK
     else
     {
         SCAI_LOG_WARN( logger, "could not get communicator " << type << ", take default one" )
-        return getCommunicator();
+
+        return getDefaultCommunicator();
     }
+}
+
+CommunicatorPtr Communicator::getDefaultCommunicator()
+{
+    // try MPI communicator for default
+
+    if ( canCreate( communicator::MPI ) )
+    {
+        return create( communicator::MPI );
+    }
+
+    // no MPI, try GPI communicator for default
+
+    if ( canCreate( communicator::GPI ) )
+    {
+        return create( communicator::GPI );
+    }
+
+    // if even NO is not availabe an exception is thrown
+
+    return create( communicator::NO );
 }
 
 CommunicatorPtr Communicator::getCommunicator()
@@ -129,23 +151,7 @@ CommunicatorPtr Communicator::getCommunicator()
         COMMON_THROWEXCEPTION( "SCAI_COMMUNICATOR=" << comm << ", unknown communicator type" )
     }
 
-    // try MPI communicator for default
-
-    if ( canCreate( communicator::MPI ) )
-    {
-        return create( communicator::MPI );
-    }
-
-    // no MPI, try GPI communicator for default
-
-    if ( canCreate( communicator::GPI ) )
-    {
-        return create( communicator::GPI );
-    }
-
-    // if even NO is not availabe an exception is thrown
-
-    return create( communicator::NO );
+    return getDefaultCommunicator();
 }
 
 Communicator::Communicator( const communicator::CommunicatorKind& type )
@@ -424,7 +430,7 @@ void Communicator::shiftArray(
     const HArray<ValueType>& sendArray,
     const int direction ) const
 {
-    SCAI_ASSERT_ERROR( &recvArray != &sendArray, "send and receive array are same, not allowed for shift" )
+    SCAI_ASSERT_UNEQUAL( &recvArray, &sendArray, "send and receive array are same, not allowed for shift" )
 
     if ( direction % getSize() == 0 )
     {
@@ -436,8 +442,9 @@ void Communicator::shiftArray(
 
     ContextPtr commContext = getCommunicationContext( sendArray );
 
-    SCAI_LOG_DEBUG( logger,
-                    "shiftArray at this context " << *commContext << ", sendArray = " << sendArray << ", recvArray = " << recvArray )
+    SCAI_LOG_INFO( logger,
+                   "shiftArray at this context " << *commContext << ", sendArray = " << sendArray 
+                    << ", recvArray = " << recvArray )
 
     ReadAccess<ValueType> sendData( sendArray, commContext );
 
@@ -455,8 +462,9 @@ void Communicator::shiftArray(
 
     IndexType numRecvElems = shiftData( recvData.get(), maxNumRecvElems, sendData.get(), numSendElems, direction );
 
-    SCAI_LOG_INFO( logger,
-                   "shift, direction = " << direction << ", sent " << numSendElems << ", recvd " << numRecvElems << "( max was " << maxNumRecvElems << ")" )
+    SCAI_LOG_DEBUG( logger,
+                   "shift, direction = " << direction << ", sent " << numSendElems 
+                    << ", recvd " << numRecvElems << "( max was " << maxNumRecvElems << ")" )
 
     recvData.resize( numRecvElems ); // take over the size
 }

@@ -86,8 +86,8 @@ static inline void testSameMatrix( const scai::lama::Matrix& m1,
 
     // create dense vectors for the rows with the same value type
 
-    VectorCreateKeyType vectorType1( DENSE, m1.getValueType() );
-    VectorCreateKeyType vectorType2( DENSE, m2.getValueType() );
+    VectorCreateKeyType vectorType1( vectorformat::DENSE, m1.getValueType() );
+    VectorCreateKeyType vectorType2( vectorformat::DENSE, m2.getValueType() );
 
     common::unique_ptr<Vector> ptrRow1( Vector::create( vectorType1 ) );
     common::unique_ptr<Vector> ptrRow2( Vector::create( vectorType2 ) );

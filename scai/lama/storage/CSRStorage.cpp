@@ -163,7 +163,7 @@ void CSRStorage<ValueType>::clear()
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-MatrixStorageFormat CSRStorage<ValueType>::getFormat() const
+Format::MatrixStorageFormat CSRStorage<ValueType>::getFormat() const
 {
     return Format::CSR;
 }

@@ -141,7 +141,7 @@ COOStorage<ValueType>::COOStorage()
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-MatrixStorageFormat COOStorage<ValueType>::getFormat() const
+Format::MatrixStorageFormat COOStorage<ValueType>::getFormat() const
 {
     return Format::COO;
 }

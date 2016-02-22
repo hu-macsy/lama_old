@@ -19,6 +19,8 @@ export SCAI_LOG=ERROR
 export SCAI_TRACE=NONE
 export SCAI_UNSUPPORTED=IGNORE
 
+MPI_FOUND=$(which mpirun > /dev/null 2> /dev/null)
+
 # Common tests
 
 (
@@ -74,11 +76,14 @@ export SCAI_UNSUPPORTED=IGNORE
     cd build/dmemo/test
     export SCAI_COMMUNICATOR=NO
     ./dmemoTest
-    export SCAI_COMMUNICATOR=MPI
-    mpirun -np 1 ./dmemoTest
-    mpirun -np 2 ./dmemoTest
-    mpirun -np 3 ./dmemoTest
-    mpirun -np 4 ./dmemoTest
+    if [ "${MPI_FOUND}" != "" ]
+    then
+        export SCAI_COMMUNICATOR=MPI
+        mpirun -np 1 ./dmemoTest
+        mpirun -np 2 ./dmemoTest
+        mpirun -np 3 ./dmemoTest
+        mpirun -np 4 ./dmemoTest
+    fi
 )
 
 # LAMA tests
@@ -89,11 +94,14 @@ export SCAI_UNSUPPORTED=IGNORE
     cd distributed
     export SCAI_COMMUNICATOR=NO
     ./lama_dist_test
-    export SCAI_COMMUNICATOR=MPI
-    mpirun -np 1 ./lama_dist_test
-    mpirun -np 2 ./lama_dist_test
-    mpirun -np 3 ./lama_dist_test
-    mpirun -np 4 ./lama_dist_test
+    if [ "${MPI_FOUND}" != "" ]
+    then
+        export SCAI_COMMUNICATOR=MPI
+        mpirun -np 1 ./lama_dist_test
+        mpirun -np 2 ./lama_dist_test
+        mpirun -np 3 ./lama_dist_test
+        mpirun -np 4 ./lama_dist_test
+    fi
 )
 
 # Solver tests
@@ -105,9 +113,12 @@ export SCAI_UNSUPPORTED=IGNORE
     cd distributed
     export SCAI_COMMUNICATOR=NO
     ./SolverDistTest
-    export SCAI_COMMUNICATOR=MPI
-    mpirun -np 1 ./SolverDistTest
-    mpirun -np 2 ./SolverDistTest
-    mpirun -np 3 ./SolverDistTest
-    mpirun -np 4 ./SolverDistTest
+    if [ "${MPI_FOUND}" != "" ]
+    then
+        export SCAI_COMMUNICATOR=MPI
+        mpirun -np 1 ./SolverDistTest
+        mpirun -np 2 ./SolverDistTest
+        mpirun -np 3 ./SolverDistTest
+        mpirun -np 4 ./SolverDistTest
+    fi
 )

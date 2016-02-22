@@ -112,7 +112,7 @@ public:
 
     /** Getter routine for the enum value that stands for this format. */
 
-    virtual MatrixStorageFormat getFormat() const;
+    virtual Format::MatrixStorageFormat getFormat() const;
 
     /**
      * @brief sets data for identity matrix.

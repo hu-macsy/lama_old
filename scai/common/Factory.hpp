@@ -45,12 +45,22 @@
 #include <memory>
 #include <map>
 #include <vector>
+#include <iostream>
+#include <utility>
+
+template<typename T1, typename T2>
+inline std::ostream& operator<<( std::ostream& stream, const std::pair<T1, T2>& object )
+{
+    stream << object.first << object.second;
+    return stream;
+}
 
 namespace scai
 {
 
 namespace common
 {
+
 
 /** @brief Templatate class for a Factory where objects of OutputType
  *         are created by a specific creator routine for different values
@@ -187,6 +197,8 @@ Factory<InputType, OutputType>::Register<Derived>::registerGuard;
 template<typename InputType, typename OutputType> 
 OutputType Factory<InputType, OutputType>::create( const InputType type )
 {
+    using ::operator<<;
+
     OutputType value;
 
     const CreatorMap* factory = getFactory();

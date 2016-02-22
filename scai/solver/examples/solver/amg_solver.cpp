@@ -51,11 +51,12 @@
 #include <scai/common/Walltime.hpp>
 #include <scai/common/unique_ptr.hpp>
 
-using namespace std;
 using namespace scai;
 using namespace dmemo;
 using namespace lama;
 using namespace solver;
+
+using namespace std;
 
 using common::Walltime;
 using common::unique_ptr;

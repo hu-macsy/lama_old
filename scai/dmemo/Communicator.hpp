@@ -137,16 +137,26 @@ public:
 
     static CommunicatorPtr getCommunicator( const communicator::CommunicatorKind& type );
 
+    /** Get communicator from the factory.
+     *
+     *  @returns shared pointer to the default communicator.
+     *
+     *  The rules for choosing the default communicator are as follows:
+     *   - take the one specified by environment/argument SCAI_COMMUNICATOR
+     *   - if not specified take the default one
+     */
+
+    static CommunicatorPtr getCommunicator();
+
     /** Get a default communicator from the factory.
      *
      *  @returns shared pointer to the default communicator.
      *
      *  The rules for choosing the default communicator are as follows:
-     *   - take the one specified by environment/argument SCAI_COMM
      *   - take if available in this order: MPI, GPI, NO
      */
 
-    static CommunicatorPtr getCommunicator();
+    static CommunicatorPtr getDefaultCommunicator();
 
     /** Enumeration type for supported thread safety levels. */
 

@@ -76,62 +76,30 @@ namespace Format
 
 typedef enum
 {
+    DENSE, //!< Dense, all elements are stored
     CSR, //!< Compressed Sparse Row
     ELL, //!< ELLPack
     DIA, //!< Diagonal
     JDS, //!< Jagged Diagonal Storage
     COO, //!< Coordinate list
-    DENSE, //!< Dense, all elements are stored
     ASSEMBLY, //!<  Matrix storage used for assembling of values
     UNDEFINED //!<  Default value
 } MatrixStorageFormat;
 
-COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const MatrixStorageFormat storageFormat );
+COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const MatrixStorageFormat& storageFormat );
 
 } /* end namespace Format */
 
-using Format::MatrixStorageFormat; //!< useful abbreviation
+COMMON_DLL_IMPORTEXPORT const char* format2Str( const Format::MatrixStorageFormat storageFormat );
 
-COMMON_DLL_IMPORTEXPORT const char* format2Str( const MatrixStorageFormat storageFormat );
-
-COMMON_DLL_IMPORTEXPORT MatrixStorageFormat str2Format( const char* str );
+COMMON_DLL_IMPORTEXPORT Format::MatrixStorageFormat str2Format( const char* str );
 
 /** Key type used for the Matrix factory.
  *
  *  Note: own struct instead of std::pair to allow definition of operator <<
  */
 
-struct MatrixStorageCreateKeyType
-{
-    Format::MatrixStorageFormat first;
-    common::scalar::ScalarType second;
-
-    MatrixStorageCreateKeyType( Format::MatrixStorageFormat arg1, common::scalar::ScalarType arg2 )
-    {
-        first = arg1;
-        second = arg2;
-    }
-
-    bool operator< ( const MatrixStorageCreateKeyType& other ) const
-    {
-        if ( first < other.first )
-        {
-            return true;
-        }
-        else if ( first == other.first )
-        {
-            return second < other.second;
-        }
-
-        return false;
-    }
-};
-
-inline std::ostream& operator<<( std::ostream& stream, const MatrixStorageCreateKeyType& object )
-{
-    stream << object.first << object.second;
-    return stream;
-}
+typedef std::pair<Format::MatrixStorageFormat, common::scalar::ScalarType> MatrixStorageCreateKeyType;
 
 /** The class _MatrixStorage is the base class for all matrix storage classes
  supported by LAMA.
@@ -254,7 +222,7 @@ public:
 
     inline bool hasDiagonalProperty() const;
 
-    virtual MatrixStorageFormat getFormat() const = 0;
+    virtual Format::MatrixStorageFormat getFormat() const = 0;
 
     /** This method sets storage for the identity matrix
      *

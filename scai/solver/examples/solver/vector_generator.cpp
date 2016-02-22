@@ -264,7 +264,7 @@ int main( int argc, char* argv[] )
 
     common::shared_ptr<Matrix> matrix;
 
-    VectorCreateKeyType vectorType( DENSE, options.outDataType );
+    VectorCreateKeyType vectorType( vectorformat::DENSE, options.outDataType );
     common::shared_ptr<Vector> v ( Vector::create( vectorType ) );
 
     if ( options.matFileName != "" )
@@ -323,7 +323,7 @@ int main( int argc, char* argv[] )
 
     if ( matrix.get() )
     { 
-        VectorCreateKeyType vectorType( DENSE, options.outDataType );
+        VectorCreateKeyType vectorType( vectorformat::DENSE, options.outDataType );
         common::shared_ptr<Vector> rhs ( Vector::create( vectorType ) );
         *rhs = *matrix * *v;
         v = rhs;

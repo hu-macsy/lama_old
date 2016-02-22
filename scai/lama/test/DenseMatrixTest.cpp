@@ -751,7 +751,7 @@ void transposeTest( )
     DenseMatrix<ValueType> matrixB(testMatrixB);
    
     // Block Distribution
-/*    
+    
     DistributionPtr rowsBlock( new BlockDistribution( matrixA.getNumRows(), comm ) );
     DistributionPtr columnsBlock(new BlockDistribution( matrixA.getNumColumns(), comm ) );
     matrixA.redistribute(rowsBlock,columnsBlock);
@@ -759,10 +759,18 @@ void transposeTest( )
     DistributionPtr rowBlock( new BlockDistribution( matrixB.getNumRows(), comm ) );
     DistributionPtr columnBlock(new BlockDistribution( matrixB.getNumColumns(), comm ) );
     matrixB.redistribute(rowBlock,columnBlock);
-*/
+
+    //Transpose
+    matrixA.assignTranspose(matrixA);
+    matrixB.assignTranspose(matrixB);
+    matrixA.assignTranspose(matrixB);
+
+    testSameMatrix ( testMatrixB, matrixA );
 
     //Cyclic Distribution
-/*    
+    matrixA = testMatrixA;
+    matrixB = testMatrixB;
+   
     IndexType chunkSize  = 1;
     DistributionPtr rowsCyclic( new CyclicDistribution( matrixA.getNumRows(), chunkSize, comm ) );
     DistributionPtr columnsCyclic( new CyclicDistribution( matrixA.getNumColumns(), chunkSize, comm ) );
@@ -771,7 +779,13 @@ void transposeTest( )
     DistributionPtr rowCyclic( new CyclicDistribution( matrixB.getNumRows(), chunkSize, comm ) );
     DistributionPtr columnCyclic( new CyclicDistribution( matrixB.getNumColumns(), chunkSize, comm ) );
     matrixB.redistribute(rowCyclic,columnCyclic);
-*/
+
+    //Transpose
+    matrixA.assignTranspose(matrixA);
+    matrixB.assignTranspose(matrixB);
+    matrixA.assignTranspose(matrixB);
+
+    testSameMatrix ( testMatrixB, matrixA );
 
     //General Block Distribution
 /*    
@@ -799,8 +813,9 @@ void transposeTest( )
 */
 
     //GeneralDistribution
+    // TODO: need a more general test method for working with an arbitrary number of processes
     // 4 processes
-    IndexType distRows[] = { 0,1,3,0,2,2};
+/*    IndexType distRows[] = { 0,1,3,0,2,2};
     std::vector<IndexType> row2partRows;
     row2partRows.assign( distRows, distRows + matrixA.getNumRows() );
     DistributionPtr rowsGen( new GeneralDistribution( row2partRows, matrixA.getNumRows(), comm ) );
@@ -825,6 +840,7 @@ void transposeTest( )
     matrixA.assignTranspose(matrixA);
     matrixB.assignTranspose(matrixB);
     matrixA.assignTranspose(matrixB);
+    */
 
 
     //Printings
@@ -848,9 +864,6 @@ void transposeTest( )
     std::cout<<"\n\n";
 */
 
-
-    //some test
-    BOOST_CHECK_EQUAL( 9.0, 9.0 );
 }
 
 } /* end namespace DenseMatrixTest */
