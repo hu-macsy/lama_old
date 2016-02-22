@@ -38,13 +38,13 @@
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 
 #include <scai/lama/DenseVector.hpp>
-#include <scai/lama/LAMAKernel.hpp>
+#include <scai/utilskernel/LAMAKernel.hpp>
 #include <scai/blaskernel/BLASKernelTrait.hpp>
 
-#include <scai/lama/distribution/NoDistribution.hpp>
-#include <scai/lama/distribution/BlockDistribution.hpp>
-#include <scai/lama/distribution/CyclicDistribution.hpp>
-#include <scai/lama/distribution/Redistributor.hpp>
+#include <scai/dmemo/NoDistribution.hpp>
+#include <scai/dmemo/BlockDistribution.hpp>
+#include <scai/dmemo/CyclicDistribution.hpp>
+#include <scai/dmemo/Redistributor.hpp>
 
 // internal scai libraries
 #include <scai/tasking/NoSyncToken.hpp>
@@ -59,6 +59,7 @@
 #include <scai/common/preprocessor.hpp>
 
 using namespace scai::hmemo;
+using namespace scai::dmemo;
 
 namespace scai
 {
@@ -66,6 +67,7 @@ namespace scai
 using common::unique_ptr;
 using common::TypeTraits;
 using common::scoped_array;
+using utilskernel::LAMAKernel;
 
 namespace lama
 {
@@ -2305,13 +2307,30 @@ size_t DenseMatrix<ValueType>::getMemoryUsage() const
     return getDistribution().getCommunicator().sum( memoryUsage );
 }
 
-/* -------------------------------------------------------------------------- */
+/* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-DenseMatrix<ValueType>* DenseMatrix<ValueType>::clone() const
+DenseMatrix<ValueType>* DenseMatrix<ValueType>::newMatrix() const
 {
-    return new DenseMatrix<ValueType>();
+    SCAI_LOG_INFO( logger, "SparseMatrix<ValueType>::newMatrix" )
+
+    // use auto pointer for new sparse matrix to get data freed in case of Exception
+
+    common::unique_ptr<DenseMatrix<ValueType> > newDenseMatrix( new DenseMatrix<ValueType>() );
+
+    // inherit the context for local and halo storage
+
+    newDenseMatrix->setContextPtr( this->getContextPtr() );
+
+    newDenseMatrix->setCommunicationKind( this->getCommunicationKind() );
+
+    SCAI_LOG_INFO( logger,
+                   *this << ": create -> " << *newDenseMatrix << " @ " << *(newDenseMatrix->getContextPtr()) << ", kind = " << newDenseMatrix->getCommunicationKind() );
+
+    return newDenseMatrix.release();
 }
+
+/* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
 DenseMatrix<ValueType>* DenseMatrix<ValueType>::copy() const
@@ -2330,6 +2349,12 @@ MatrixCreateKeyType DenseMatrix<ValueType>::createValue()
 {
     common::scalar::ScalarType skind = common::getScalarType<ValueType>();
     return MatrixCreateKeyType ( Format::DENSE, skind );
+}
+
+template<typename ValueType>
+MatrixCreateKeyType DenseMatrix<ValueType>::getCreateValue() const
+{
+    return createValue();
 }
 
 /* ========================================================================= */

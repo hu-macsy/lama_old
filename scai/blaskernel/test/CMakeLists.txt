@@ -38,14 +38,11 @@ set ( CXX_SOURCES
       LAPACKTest
 ) 
 
-include_directories ( ${Boost_INCLUDE_DIR} )
+include_directories ( ${SCAI_BOOST_INCLUDE_DIR} )
 
 add_executable ( BLASKernelTest ${CXX_SOURCES} )
 
-target_link_libraries ( BLASKernelTest 
-    ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}
-        scai_blaskernel
-    )
+target_link_libraries ( BLASKernelTest ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} ${PROJECT_NAME} )
 
 #if    ( CUDA_FOUND AND USE_CUDA )
 #    add_subdirectory ( cuda )

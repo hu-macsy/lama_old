@@ -34,16 +34,16 @@
 // hpp
 #include <scai/lama/storage/JDSStorage.hpp>
 
-// local library
-#include <scai/lama/UtilKernelTrait.hpp>
-#include <scai/lama/JDSKernelTrait.hpp>
-#include <scai/lama/CSRKernelTrait.hpp>
-#include <scai/blaskernel/BLASKernelTrait.hpp>
-#include <scai/lama/LAMAKernel.hpp>
-
-#include <scai/lama/HArrayUtils.hpp>
-
 // local scai libraries
+#include <scai/sparsekernel/JDSKernelTrait.hpp>
+#include <scai/sparsekernel/CSRKernelTrait.hpp>
+
+#include <scai/utilskernel/HArrayUtils.hpp>
+#include <scai/utilskernel/UtilKernelTrait.hpp>
+#include <scai/utilskernel/LAMAKernel.hpp>
+
+#include <scai/blaskernel/BLASKernelTrait.hpp>
+
 #include <scai/tasking/TaskSyncToken.hpp>
 
 #include <scai/tracing.hpp>
@@ -52,6 +52,7 @@
 #include <scai/common/unique_ptr.hpp>
 #include <scai/common/Constants.hpp>
 #include <scai/common/TypeTraits.hpp>
+#include <scai/common/Math.hpp>
 #include <scai/common/macros/print_string.hpp>
 #include <scai/common/preprocessor.hpp>
 
@@ -61,6 +62,13 @@ namespace scai
 {
 
 using common::shared_ptr;
+
+using utilskernel::LAMAKernel;
+using utilskernel::UtilKernelTrait;
+using utilskernel::HArrayUtils;
+
+using sparsekernel::CSRKernelTrait;
+using sparsekernel::JDSKernelTrait;
 
 namespace lama
 {
@@ -1502,7 +1510,7 @@ ValueType JDSStorage<ValueType>::l2Norm() const
 
 	SCAI_CONTEXT_ACCESS( loc )
 
-	return common::TypeTraits<ValueType>::sqrt(dot[loc]( n, data.get(), 1, data.get(), 1 ));
+	return common::Math::sqrt(dot[loc]( n, data.get(), 1, data.get(), 1 ));
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -1675,17 +1683,35 @@ size_t JDSStorage<ValueType>::getMemoryUsageImpl() const
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
-JDSStorage<ValueType>* JDSStorage<ValueType>::clone() const
+JDSStorage<ValueType>* JDSStorage<ValueType>::copy() const
 {
-    return new JDSStorage();
+    return new JDSStorage( *this );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+JDSStorage<ValueType>* JDSStorage<ValueType>::newMatrixStorage() const
+{
+   common::unique_ptr<JDSStorage<ValueType> > storage( new JDSStorage<ValueType>() ); 
+   storage->setContextPtr( this->getContextPtr() );
+   return storage.release();
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
-JDSStorage<ValueType>* JDSStorage<ValueType>::copy() const
+_MatrixStorage* JDSStorage<ValueType>::create()
 {
-    return new JDSStorage( *this );
+    return new JDSStorage<ValueType>();
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+template<typename ValueType>
+MatrixStorageCreateKeyType JDSStorage<ValueType>::createValue()
+{
+    return MatrixStorageCreateKeyType( Format::JDS, common::getScalarType<ValueType>() );
 }
 
 /* ========================================================================= */

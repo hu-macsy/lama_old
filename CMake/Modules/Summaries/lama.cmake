@@ -73,11 +73,7 @@ endif ( NOT CXX_SUPPORTS_C11 )
 
 message ( STATUS "" )
 
-if    ( SCAI_COMPLETE_BUILD )
-	set ( OPENMP_INFO_TEXT "OpenMP schedule set to \"${SCAI_OMP_SCHEDULE}\"" )
-else  ( SCAI_COMPLETE_BUILD )
-	set ( OPENMP_INFO_TEXT "compile your sources with -DSCAI_OMP_SCHEDULE=<schedule-type>" )
-endif ( SCAI_COMPLETE_BUILD )
+set ( OPENMP_INFO_TEXT "OpenMP schedule type is set to \"${SCAI_OMP_SCHEDULE}\"" )
 
 scai_summary_message ( "USE"
                        "USE_OPENMP"
@@ -87,130 +83,71 @@ scai_summary_message ( "USE"
 # LAMA (core)
 message ( STATUS "" )
 scai_status_message ( HEADLINE "LIBRARIES:" )
+   
+set ( REQUIRED_FOUND FALSE )
+if    ( SCAI_COMMON_FOUND AND SCAI_LOGGING_FOUND AND SCAI_TRACING_FOUND AND SCAI_TASKING_FOUND AND SCAI_HMEMO_FOUND
+            AND SCAI_KREGISTRY_FOUND AND SCAI_BLASKERNEL_FOUND AND SCAI_DMEMO_FOUND )
+  set ( REQUIRED_FOUND TRUE )
+endif ( SCAI_COMMON_FOUND AND SCAI_LOGGING_FOUND AND SCAI_TRACING_FOUND AND SCAI_TASKING_FOUND AND SCAI_HMEMO_FOUND
+            AND SCAI_KREGISTRY_FOUND AND SCAI_BLASKERNEL_FOUND AND SCAI_DMEMO_FOUND )
 
-if    ( SCAI_BLAS_FOUND )
-    set( REQUIRED_FOUND TRUE )
-    if ( SCAI_BLAS_NAME MATCHES "BLAS" AND NOT LAPACK_FOUND )
-        set( REQUIRED_FOUND FALSE )
-    endif ( SCAI_BLAS_NAME MATCHES "BLAS" AND NOT LAPACK_FOUND )
-else  ( SCAI_BLAS_FOUND )
-    set( REQUIRED_FOUND FALSE )
-endif ( SCAI_BLAS_FOUND ) 
-
+message ( STATUS "" )
 scai_summary_message ( "STATIC"
                        "REQUIRED_FOUND"
-                       "LAMA (core)"
-                       "" )
-   # BLAS
-    scai_summary_message ( "FOUND"
-                           "SCAI_BLAS_FOUND"
-                           "BLAS"
-                           "(${SCAI_BLAS_NAME}) with libraries: ${SCAI_SCAI_BLAS_LIBRARIES}" )
-    if    ( SCAI_BLAS_NAME MATCHES "BLAS" )
-        message ( STATUS "" )
-    	  scai_summary_message ( "FOUND"
-                       	       "LAPACK_FOUND"
-                      	       "LAPACK"
-                         		   "" )
-    endif ( SCAI_BLAS_NAME MATCHES "BLAS" )
-    
-# LAMA MPI
-message ( STATUS "" )
-scai_summary_message ( "USE"
-                       "USE_MPI"
-                       "Distributed"
+                       "Internal Libraries (core)"
                        "" )
 
-    # MPI
     scai_summary_message ( "FOUND"
-                           "MPI_FOUND"
-                           "MPI"
-                           "at ${MPI_INCLUDE_PATH}" )
-
-# Graph Partitioning
-message ( STATUS "" )
-scai_summary_message ( "USE"
-                       "USE_GRAPHPARTITIONING"
-                       "Graph Partitioning"
-                       "" )                   
-	# Metis
-    scai_summary_message ( "FOUND"
-                           "METIS_FOUND"
-                           "Metis"
-                           "at ${METIS_INCLUDE_DIR}" )
-
-	# ParMetis
-    scai_summary_message ( "FOUND"
-                           "PARMETIS_FOUND"
-                           "ParMetis"
-                           "at ${PARMETIS_INCLUDE_DIR}" )
-
-# LAMA CUDA
-message ( STATUS "" )
-scai_summary_message ( "USE"
-                       "USE_CUDA"
-                       "CUDA"
-                       "" )
-
-    # CUDA
-    scai_summary_message ( "FOUND"
-                           "CUDA_FOUND"
-                           "CUDA"
-                           "${CUDA_VERSION} at ${CUDA_INCLUDE_DIRS}" )
+                           "SCAI_COMMON_FOUND"
+                           "SCAI Common"
+                           "" )
                            
-    # CUDA Compute Capability
     scai_summary_message ( "FOUND"
-                           "CUDA_HAVE_GPU"
-                           "Compute Capability"
-                           "${CUDA_COMPUTE_CAPABILITY}" )
+                           "SCAI_LOGGING_FOUND"
+                           "SCAI Logging"
+                           "" )
                            
-# LAMA MIC
-message ( STATUS "" )
-scai_summary_message ( "USE"
-                       "USE_MIC"
-                       "MIC"
-                       "" )
+    scai_summary_message ( "FOUND"
+                           "SCAI_TRACING_FOUND"
+                           "SCAI Tracing"
+                           "" )
+                           
+    scai_summary_message ( "FOUND"
+                           "SCAI_TASKING_FOUND"
+                           "SCAI Tasking"
+                           "" )
 
-message ( STATUS "" )
-scai_summary_message ( "FOUND"
-                       "SCAI_COMMON_FOUND"
-                       "SCAI Common"
-                       "" )
-                       
-scai_summary_message ( "FOUND"
-                       "SCAI_LOGGING_FOUND"
-                       "SCAI Logging"
-                       "" )
-                       
-scai_summary_message ( "FOUND"
-                       "SCAI_TRACING_FOUND"
-                       "SCAI Tracing"
-                       "" )
-                       
-scai_summary_message ( "FOUND"
-                       "SCAI_TASKING_FOUND"
-                       "SCAI Tasking"
-                       "" )
+    scai_summary_message ( "FOUND"
+                           "SCAI_HMEMO_FOUND"
+                           "SCAI Hmemo"
+                           "" )
+                           
+    scai_summary_message ( "FOUND"
+                           "SCAI_KREGISTRY_FOUND"
+                           "SCAI Kregistry"
+                           "" )
 
-scai_summary_message ( "FOUND"
-                       "SCAI_HMEMO_FOUND"
-                       "SCAI Hmemo"
-                       "" )
-                       
-scai_summary_message ( "FOUND"
-                       "SCAI_KREGISTRY_FOUND"
-                       "SCAI Kregistry"
-                       "" )
+    scai_summary_message ( "FOUND"
+                           "SCAI_BLASKERNEL_FOUND"
+                           "SCAI Blaskernel"
+                           "" )
 
-scai_summary_message ( "FOUND"
-                       "SCAI_BLASKERNEL_FOUND"
-                       "SCAI Blaskernel"
-                       "" )
+    scai_summary_message ( "FOUND"
+                           "SCAI_DMEMO_FOUND"
+                           "SCAI Dmemo"
+                           "" )
 
 # LAMA TEST
 message ( STATUS "" )
+scai_status_message ( HEADLINE "TESTING:" )
+
+set ( REQUIRED_FOUND FALSE )
+if    ( Boost_UNIT_TEST_FRAMEWORK_FOUND AND Boost_REGEX_FOUND AND BUILD_TEST )
+  set ( REQUIRED_FOUND TRUE )
+endif ( Boost_UNIT_TEST_FRAMEWORK_FOUND AND Boost_REGEX_FOUND AND BUILD_TEST )
+
 scai_summary_message ( "USE"
-                       "BUILD_TEST"
+                       "REQUIRED_FOUND"
                        "TEST"
                        "" )
 
@@ -229,7 +166,7 @@ scai_summary_message ( "USE"
 message ( STATUS "" )
 
 scai_status_message ( HEADLINE "INFO:" )
-message ( STATUS "LAMA Version : ${LAMA_VERSION} ${LAMA_VERSION_NAME}" )
+message ( STATUS "LAMA Version : ${SCAI_LAMA_VERSION} ${SCAI_VERSION_NAME}" )
 message ( STATUS "Build Type   : ${CMAKE_BUILD_TYPE}" )
 message ( STATUS "Library Type : ${SCAI_LIBRARY_TYPE}" )
 message ( STATUS "ASSERT Level : ${SCAI_ASSERT_LEVEL} ( -DSCAI_ASSERT_LEVEL_${SCAI_ASSERT_LEVEL} )" )
@@ -239,26 +176,3 @@ if    ( USE_CODE_COVERAGE )
 	message ( STATUS "CODE COVERAGE: ${USE_CODE_COVERAGE}" )
 endif ( USE_CODE_COVERAGE )
 message ( STATUS "" )
-
-
-# Check if all required packages are found
-# LAMA (core)
-
-if    ( NOT SCAI_BLAS_FOUND OR ( (SCAI_BLAS_NAME MATCHES "BLAS") AND NOT LAPACK_FOUND ) OR ( NOT CXX_SUPPORTS_C11 AND NOT BOOST_INCLUDE_DIR ) )
-    message( FATAL_ERROR "Configuration for LAMA (core) incomplete!")
-endif ( NOT SCAI_BLAS_FOUND OR ( (SCAI_BLAS_NAME MATCHES "BLAS") AND NOT LAPACK_FOUND ) OR ( NOT CXX_SUPPORTS_C11 AND NOT BOOST_INCLUDE_DIR ) )
-
-# LAMA MPI
-if    ( USE_MPI AND NOT MPI_FOUND )
-    message( FATAL_ERROR "Build of LAMA MPI enabled, but configuration is incomplete!")
-endif ( USE_MPI AND NOT MPI_FOUND )
-
-# LAMA Cuda
-if    ( USE_CUDA AND NOT CUDA_FOUND )
-    message( FATAL_ERROR "Build of LAMA Cuda enabled, but configuration is incomplete!")
-endif ( USE_CUDA AND NOT CUDA_FOUND )
-
-# LAMA Test
-if    ( LAMA_BUILD_TEST AND NOT ( Boost_UNIT_TEST_FRAMEWORK_FOUND AND Boost_REGEX_FOUND ) )
-    message( FATAL_ERROR "Build of LAMA Test enabled, but configuration is incomplete!")
-endif ( LAMA_BUILD_TEST AND NOT ( Boost_UNIT_TEST_FRAMEWORK_FOUND AND Boost_REGEX_FOUND ) )

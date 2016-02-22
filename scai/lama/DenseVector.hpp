@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief DenseVector.hpp
+ * @brief Definition of template class that stands for a dense vector of a certain type.
  * @author Jiri Kraus
  * @date 22.02.2011
  */
@@ -39,15 +39,14 @@
 #include <scai/lama/Vector.hpp>
 
 // local library
-#include <scai/lama/LArray.hpp>
-#include <scai/lama/distribution/Distribution.hpp>
-#include <scai/lama/distribution/Halo.hpp>
-
 #include <scai/lama/io/mmio.hpp>
 #include <scai/lama/io/FileType.hpp>
 #include <scai/lama/io/XDRFileStream.hpp>
 
 // internal scai libraries
+#include <scai/utilskernel/LArray.hpp>
+#include <scai/dmemo/Distribution.hpp>
+#include <scai/dmemo/Halo.hpp>
 #include <scai/hmemo.hpp>
 
 #include <scai/tasking/SyncToken.hpp>
@@ -89,7 +88,7 @@ public:
      *
      * @param[in] distribution  the distribution to use for the new vector.
      */
-    explicit DenseVector( DistributionPtr distribution );
+    explicit DenseVector( dmemo::DistributionPtr distribution );
 
     /**
      * @brief creates a replicated DenseVector of the passed size initialized to the passed value.
@@ -107,7 +106,7 @@ public:
      * @param[in] value         the value to assign to all elements of the new DenseVector.
      * @param[in] context   specifies optionally the context where dense vector should reside
      */
-    DenseVector( DistributionPtr distribution, const ValueType value, hmemo::ContextPtr context = hmemo::ContextPtr() );
+    DenseVector( dmemo::DistributionPtr distribution, const ValueType value, hmemo::ContextPtr context = hmemo::ContextPtr() );
 
     /** Constructor of a replicated vector by replicated C++ array. */
 
@@ -144,7 +143,7 @@ public:
      *
      * Must be valid: other.size() == distribution.getGlobalSize()
      */
-    DenseVector( const Vector& other, DistributionPtr distribution );
+    DenseVector( const Vector& other, dmemo::DistributionPtr distribution );
 
     /**
      * @brief creates a distributed DenseVector with given local values.
@@ -152,7 +151,7 @@ public:
      * @param[in] localValues   the local values to initialize the new DenseVector with.
      * @param[in] distribution  the distribution the
      */
-    DenseVector( const hmemo::_HArray& localValues, DistributionPtr distribution );
+    DenseVector( const hmemo::_HArray& localValues, dmemo::DistributionPtr distribution );
 
     /**
      * @brief This constructor creates a vector with the size and values stored
@@ -232,7 +231,7 @@ public:
 
     /** Allocate a dense vector with a certain distribution, values are undefined. */
 
-    void allocate( DistributionPtr distribution );
+    void allocate( dmemo::DistributionPtr distribution );
 
     /** Override the default assignment operator.
      *
@@ -268,21 +267,14 @@ public:
     virtual void setValues( const hmemo::_HArray& values );
 
     /**
-     * Implementation of Vector::clone with covariant return type.
-     */
-
-    virtual DenseVector* clone() const;
-
-    /**
-     * Implementation of Vector::clone with covariant return type.
-     */
-    virtual DenseVector* clone( DistributionPtr distribution ) const;
-
-    /**
      * Implementation of Vector::copy with covariant return type.
      */
-
     virtual DenseVector* copy() const;
+
+    /**
+     * Implementation of Vector::newVector with covariant return type.
+     */
+    virtual DenseVector* newVector() const;
 
     //TODO: We either need a none const getLocalValues()
     // or an operator[] with local sematics or both
@@ -300,7 +292,7 @@ public:
      * @return  a non constant reference to the local values of this.
      */
 
-    LArray<ValueType>& getLocalValues()
+    utilskernel::LArray<ValueType>& getLocalValues()
     {
         return mLocalValues;
     }
@@ -310,7 +302,7 @@ public:
      *
      * @return  a constant reference to the local values of this.
      */
-    const LArray<ValueType>& getLocalValues() const
+    const utilskernel::LArray<ValueType>& getLocalValues() const
     {
         return mLocalValues;
     }
@@ -322,7 +314,7 @@ public:
      *
      * Note: halo of a vector can also be used for writes in case of const vectors.
      */
-    LArray<ValueType>& getHaloValues() const
+    utilskernel::LArray<ValueType>& getHaloValues() const
     {
         return mHaloValues;
     }
@@ -332,7 +324,7 @@ public:
      *
      * @param[in] halo  the halo which describes which remote values should be put into the halo cache.
      */
-    void updateHalo( const Halo& halo ) const;
+    void updateHalo( const dmemo::Halo& halo ) const;
 
     /**
      * @brief update the halo values according to the passed Halo asynchronously.
@@ -340,7 +332,7 @@ public:
      * @param[in] halo  the halo which describes which remote values should be put into the halo cache.
      * @return          a SyncToken which can be used to synchronize to the asynchronous update.
      */
-    tasking::SyncToken* updateHaloAsync( const Halo& halo ) const;
+    tasking::SyncToken* updateHaloAsync( const dmemo::Halo& halo ) const;
 
     virtual Scalar getValue( IndexType globalIndex ) const;
 
@@ -386,7 +378,7 @@ public:
 
     virtual void assign( const Vector& other );
 
-    virtual void assign( const hmemo::_HArray& localValues, DistributionPtr dist );
+    virtual void assign( const hmemo::_HArray& localValues, dmemo::DistributionPtr dist );
 
     virtual void buildLocalValues( hmemo::_HArray& localValues ) const;
 
@@ -402,7 +394,7 @@ public:
 
     virtual size_t getMemoryUsage() const;
 
-    virtual void redistribute( DistributionPtr distribution );
+    virtual void redistribute( dmemo::DistributionPtr distribution );
 
     /**
      * @brief Implementatio of pure method, see Vector::writeToFile 
@@ -464,9 +456,9 @@ private    :
                     std::fstream &inFile,
                     const common::scalar::ScalarType dataType );
 
-    LArray<ValueType> mLocalValues; //!< my local values of vector
+    utilskernel::LArray<ValueType> mLocalValues; //!< my local values of vector
 
-    mutable LArray<ValueType> mHaloValues;//!< my halo values of vector
+    mutable utilskernel::LArray<ValueType> mHaloValues;//!< my halo values of vector
 
 public:
 
@@ -476,7 +468,9 @@ public:
 
     // key for factory 
 
-    static std::pair<VectorKind, common::scalar::ScalarType> createValue();
+    static VectorCreateKeyType createValue();
+
+    virtual VectorCreateKeyType getCreateValue() const;
 };
 
 /* ------------------------------------------------------------------------- */
@@ -492,7 +486,7 @@ DenseVector<ValueType>::DenseVector( const IndexType size, const OtherValueType*
 
     // use mContext instead of context to avoid NULL pointer
 
-    HArrayUtils::assign( mLocalValues, valuesArrayRef, mContext );
+    utilskernel::HArrayUtils::assign( mLocalValues, valuesArrayRef, mContext );
 
     // Halo is not used yet
 

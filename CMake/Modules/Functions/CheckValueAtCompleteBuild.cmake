@@ -59,12 +59,16 @@ if    ( ${test_var} GREATER -1 )
 	checkValue( ${SCAI_BLAS_LIBRARY} "${LIBRARY_CHOICES}" )
 endif ( ${test_var} GREATER -1 )
 
-## from SetNVCCFlags
-list ( FIND ${VAR_NAME} CUDA test_var )
-#message ( STATUS "test_var CUDA ${test_var}" )
-if    ( ${test_var} GREATER -1 )
-	list ( APPEND CC_CHOICES "not-found" "13" "20" "21" "30" "32" "35" "50" )
-	checkValue( ${CUDA_COMPUTE_CAPABILITY} "${CC_CHOICES}" )
-endif ( ${test_var} GREATER -1 )
+if    ( CUDA_FOUND AND USE_CUDA )
+	## from SetNVCCFlags
+	list ( FIND ${VAR_NAME} CUDA test_var )
+	#message ( STATUS "test_var CUDA ${test_var}" )
+	if    ( ${test_var} GREATER -1 )
+		list ( APPEND CC_CHOICES "not-found" "13" "20" "21" "30" "32" "35" "50" )
+		message ( STATUS "CUDA_COMPUTE_CAPABILITY ${CUDA_COMPUTE_CAPABILITY}" )
+		message ( STATUS "CC_CHOICES ${CC_CHOICES}" )
+		checkValue( ${CUDA_COMPUTE_CAPABILITY} "${CC_CHOICES}" )
+	endif ( ${test_var} GREATER -1 )
+endif ( CUDA_FOUND AND USE_CUDA )
 
 endfunction ( checkValueAtCompleteBuild LIBRARY )

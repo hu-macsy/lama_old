@@ -35,7 +35,7 @@
 // for dll_import
 #include <scai/common/config.hpp>
 
-#include <scai/lama/LArray.hpp>
+#include <scai/utilskernel/LArray.hpp>
 
 // base classes
 #include <scai/lama/storage/CRTPMatrixStorage.hpp>
@@ -66,7 +66,9 @@ namespace lama
  *  @tparam ValueType is the value type of the matrix values.
  */
 template<typename ValueType>
-class COMMON_DLL_IMPORTEXPORT ELLStorage: public CRTPMatrixStorage<ELLStorage<ValueType>,ValueType>
+class COMMON_DLL_IMPORTEXPORT ELLStorage:
+    public CRTPMatrixStorage<ELLStorage<ValueType>,ValueType>,
+    public _MatrixStorage::Register<ELLStorage<ValueType> >    // register at factory
 {
 public:
 
@@ -145,13 +147,13 @@ public:
 
     ELLStorage<ValueType>& operator=( const _MatrixStorage& other );
 
+    /** Implementation of MatrixStorage::newMatrixStorage for derived class. */
+
+    virtual ELLStorage* newMatrixStorage() const;
+
     /** Implementation of MatrixStorage::copy for derived class. */
 
     virtual ELLStorage* copy() const;
-
-    /** Implementation of MatrixStorage::create for derived class. */
-
-    virtual ELLStorage* clone() const;
 
     /**
      *  Implementation of pure method of _MatrixStorage::clear
@@ -230,11 +232,11 @@ public:
 
     /** getter for member variables IA, JA, Data, only const reference */
 
-    const LArray<IndexType>& getIA() const;
+    const utilskernel::LArray<IndexType>& getIA() const;
 
-    const LArray<IndexType>& getJA() const;
+    const utilskernel::LArray<IndexType>& getJA() const;
 
-    const LArray<ValueType>& getValues() const;
+    const utilskernel::LArray<ValueType>& getValues() const;
 
     /** Getter routine for the number of stored values*/
 
@@ -447,9 +449,9 @@ private:
 
     IndexType mNumValuesPerRow; //!< number of values in each row
 
-    LArray<IndexType> mIA; //!< size is numRows
-    LArray<IndexType> mJA; //!< size is numRows x numValuesPerRow
-    LArray<ValueType> mValues; //!< size is numRows x numValuesPerRow
+    utilskernel::LArray<IndexType> mIA; //!< size is numRows
+    utilskernel::LArray<IndexType> mJA; //!< size is numRows x numValuesPerRow
+    utilskernel::LArray<ValueType> mValues; //!< size is numRows x numValuesPerRow
 
     /** Addressing function for the arrays ia and ja: column-wise */
 
@@ -521,6 +523,16 @@ private:
         const ValueType beta,
         const hmemo::HArray<ValueType>& y,
         bool async ) const;
+
+public:
+
+    // static create method that will be used to register at MatrixStorage factory
+
+    static _MatrixStorage* create();
+
+    // key for factory
+
+    static MatrixStorageCreateKeyType createValue();
 };
 
 } /* end namespace lama */

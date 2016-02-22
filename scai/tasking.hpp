@@ -35,4 +35,4 @@
 #include <scai/tasking/SyncToken.hpp>
 #include <scai/tasking/Task.hpp>
 #include <scai/tasking/TaskSyncToken.hpp>
-#include <scai/tasking/TreadPool.hpp>
+#include <scai/tasking/ThreadPool.hpp>

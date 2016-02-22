@@ -35,23 +35,24 @@
 #include <scai/lama/matrix/SparseMatrix.hpp>
 
 // local library
-#include <scai/lama/HArrayUtils.hpp>
 
-#include <scai/lama/LAMAKernel.hpp>
 #include <scai/lama/matrix/DenseMatrix.hpp>
 
 #include <scai/lama/storage/MatrixStorage.hpp>
 #include <scai/lama/storage/CSRStorage.hpp>
 
-#include <scai/lama/distribution/NoDistribution.hpp>
-#include <scai/lama/distribution/CyclicDistribution.hpp>
-#include <scai/lama/distribution/Redistributor.hpp>
 
-#include <scai/lama/UtilKernelTrait.hpp>
-#include <scai/lama/CSRKernelTrait.hpp>
-#include <scai/lama/openmp/OpenMPCSRUtils.hpp>
+// scai internal libraries
+#include <scai/dmemo/NoDistribution.hpp>
+#include <scai/dmemo/CyclicDistribution.hpp>
+#include <scai/dmemo/Redistributor.hpp>
 
-// internal libraries
+#include <scai/sparsekernel/CSRKernelTrait.hpp>
+#include <scai/sparsekernel/openmp/OpenMPCSRUtils.hpp>
+
+#include <scai/utilskernel/UtilKernelTrait.hpp>
+#include <scai/utilskernel/LAMAKernel.hpp>
+#include <scai/utilskernel/HArrayUtils.hpp>
  
 #include <scai/tasking/NoSyncToken.hpp>
 
@@ -63,12 +64,14 @@
 #include <scai/common/macros/print_string.hpp>
 #include <scai/common/Constants.hpp>
 #include <scai/common/TypeTraits.hpp>
+#include <scai/common/Math.hpp>
 #include <scai/common/preprocessor.hpp>
 
 // std
 #include <cmath>
 
 using namespace scai::hmemo;
+using namespace scai::dmemo;
 
 namespace scai
 {
@@ -77,6 +80,9 @@ namespace lama
 {
 
 using common::shared_ptr;
+using utilskernel::LAMAKernel;
+using utilskernel::HArrayUtils;
+using sparsekernel::CSRKernelTrait;
 
 SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, SparseMatrix<ValueType>::logger, "Matrix.SparseMatrix" )
 
@@ -90,7 +96,7 @@ SparseMatrix<ValueType>::SparseMatrix( common::shared_ptr<MatrixStorage<ValueTyp
 {
     mLocalData = storage;
     // create empty halo with same storage format
-    mHaloData = shared_ptr<MatrixStorage<ValueType> >( storage->clone() );
+    mHaloData = shared_ptr<MatrixStorage<ValueType> >( storage->newMatrixStorage() );
 }
 
 /* ---------------------------------------------------------------------------------------*/
@@ -104,7 +110,7 @@ SparseMatrix<ValueType>::SparseMatrix( common::shared_ptr<MatrixStorage<ValueTyp
 {
     mLocalData = storage;
     // create empty halo with same storage format
-    mHaloData = shared_ptr<MatrixStorage<ValueType> >( storage->clone() );
+    mHaloData = shared_ptr<MatrixStorage<ValueType> >( storage->newMatrixStorage() );
 
     if( storage->getNumRows() == rowDist->getLocalSize() )
     {
@@ -137,7 +143,7 @@ SparseMatrix<ValueType>::SparseMatrix(
 
     mLocalData = localData;
     // create empty halo with same storage format
-    mHaloData = shared_ptr<MatrixStorage<ValueType> >( localData->clone() );
+    mHaloData = shared_ptr<MatrixStorage<ValueType> >( localData->newMatrixStorage() );
 
     if( localData->getNumRows() == rowDist->getLocalSize() )
     {
@@ -671,7 +677,7 @@ void SparseMatrix<ValueType>::buildLocalStorage( _MatrixStorage& storage ) const
 
         bool keepDiagonalProperty = true;
 
-        common::shared_ptr<MatrixStorage<ValueType> > tmp( mLocalData->clone() );
+        common::shared_ptr<MatrixStorage<ValueType> > tmp( mLocalData->newMatrixStorage() );
         tmp->joinHalo( *mLocalData, *mHaloData, mHalo, getColDistribution(), keepDiagonalProperty );
         storage = *tmp;
     }
@@ -2017,7 +2023,7 @@ Scalar SparseMatrix<ValueType>::l2Norm() const
 
 	// allValue = ::sqrt( allValue );
 
-	allValue = common::TypeTraits<ValueType>::sqrt( allValue );
+	allValue = common::Math::sqrt( allValue );
 
     SCAI_LOG_INFO( logger, "max norm: local value = " << myValue << ", global value = " << allValue )
 
@@ -2259,26 +2265,9 @@ size_t SparseMatrix<ValueType>::getValueTypeSize() const
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-SparseMatrix<ValueType>* SparseMatrix<ValueType>::clone() const
+SparseMatrix<ValueType>* SparseMatrix<ValueType>::newMatrix() const
 {
-    SCAI_LOG_INFO( logger, "SparseMatrix<ValueType>::create" )
-
-    shared_ptr<MatrixStorage<ValueType> > newLocalData( mLocalData->clone() );
-
-    // use auto pointer for new sparse matrix to get data freed in case of Exception
-
-    common::unique_ptr<SparseMatrix<ValueType> > newSparseMatrix( new SparseMatrix<ValueType>( newLocalData ) );
-
-    // inherit the context for local and halo storage
-
-    newSparseMatrix->setContextPtr( mLocalData->getContextPtr(), mHaloData->getContextPtr() );
-
-    newSparseMatrix->setCommunicationKind( this->getCommunicationKind() );
-
-    SCAI_LOG_INFO( logger,
-                   *this << ": create -> " << *newSparseMatrix << " @ " << *(newSparseMatrix->getContextPtr()) << ", kind = " << newSparseMatrix->getCommunicationKind() );
-
-    return newSparseMatrix.release();
+    COMMON_THROWEXCEPTION( "Can not create a new SparseMatrix with no SparseMatrix format specified" )
 }
 
 /* ------------------------------------------------------------------------- */

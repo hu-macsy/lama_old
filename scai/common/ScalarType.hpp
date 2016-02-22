@@ -98,7 +98,7 @@ namespace scalar
  *
  */
 
-const char* scalar2str( const scalar::ScalarType stype );
+MIC_CALLABLE_MEMBER const char* scalar2str( const scalar::ScalarType stype );
 
 } /* end namespace common */
 

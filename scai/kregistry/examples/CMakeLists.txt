@@ -31,12 +31,14 @@
 ###
 
 foreach ( executable DemoKernelInterface BenchInterface )
-    add_executable( ${executable} ${executable}.cpp )
-    target_link_libraries( ${executable} scai_kregistry )
+    add_executable( ${executable}.exe ${executable}.cpp )
+    target_link_libraries( ${executable}.exe ${PROJECT_NAME} )
     set ( EXAMPLE_EXECUTABLES "${EXAMPLE_EXECUTABLES} ${executable}.exe" )
 endforeach ( executable )
 
 ## install examples
 configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/make.inc.in" "${CMAKE_CURRENT_BINARY_DIR}/make.inc" )
-install ( DIRECTORY ./ DESTINATION share/examples/scai-kregistry-${SCAI_KREGISTRY_VERSION} FILES_MATCHING REGEX "^.*.(c|h)pp$" )
-install ( FILES Makefile ${CMAKE_CURRENT_BINARY_DIR}/make.inc DESTINATION share/examples/scai-kregistry-${SCAI_KREGISTRY_VERSION} )
+file( COPY run_all.sh DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
+install ( DIRECTORY ./ DESTINATION ${PROJECT_EXAMPLE_DIR} FILES_MATCHING REGEX "^.*.(c|h)pp$" )
+install ( FILES Makefile ${CMAKE_CURRENT_BINARY_DIR}/make.inc DESTINATION ${PROJECT_EXAMPLE_DIR} )
+install ( PROGRAMS run_all.sh DESTINATION ${PROJECT_EXAMPLE_DIR} )

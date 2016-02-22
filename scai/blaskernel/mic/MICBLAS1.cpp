@@ -48,12 +48,11 @@
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/ScalarType.hpp>
 #include <scai/common/TypeTraits.hpp>
-
-// external
-#include <omp.h>
+#include <scai/common/Math.hpp>
+#include <scai/common/preprocessor.hpp>
+#include <scai/common/OpenMP.hpp>
 
 // std
-#include <cmath>
 #include <cstdlib>
 
 namespace scai
@@ -153,7 +152,7 @@ ValueType MICBLAS1::asum( const IndexType n, const ValueType* x, const IndexType
 		#pragma omp for
 	        for( int i = 0; i < n; ++i )
 	        {
-	            local_asum += ::fabs( x[i * incX] );
+	            local_asum += common::Math::abs( x[i * incX] );
         	}
 
 		#pragma omp critical
@@ -327,7 +326,7 @@ ValueType MICBLAS1::nrm2( const IndexType n, const ValueType* x, const IndexType
 	}
     }
 
-    return sqrt( sum );
+    return common::Math::sqrt( sum );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -482,7 +481,7 @@ ValueType MICBLAS1::dot(
 		#pragma omp for
         	for( IndexType i = 0; i < n; ++i )
         	{
-	            local_val += x[i * incX] * y[i * incY];
+	            local_val += common::Math::conj( x[i * incX] ) * y[i * incY];
 	        }
 
 		#pragma omp critical

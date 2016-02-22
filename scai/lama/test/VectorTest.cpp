@@ -49,13 +49,13 @@
 #include <scai/lama/expression/VectorExpressions.hpp>
 #include <scai/lama/expression/MatrixExpressions.hpp>
 
-#include <scai/lama/distribution/NoDistribution.hpp>
+#include <scai/dmemo/NoDistribution.hpp>
 
-#include <scai/lama/test/Configuration.hpp>
 #include <scai/lama/test/TestSparseMatrices.hpp>
 #include <scai/lama/test/EquationHelper.hpp>
 
 #include <scai/common/SCAITypes.hpp>
+
 #include <scai/lama/test/TestMacros.hpp>
 
 #include <scai/hmemo.hpp>
@@ -63,6 +63,7 @@
 using namespace scai::common;
 using namespace scai::lama;
 using namespace scai::hmemo;
+using namespace scai::dmemo;
 using scai::common::Exception;
 
 #if ARITHMETIC_HOST_TYPE_CNT == 1
@@ -79,7 +80,7 @@ struct VectorTestConfig
 {
     VectorTestConfig()
     {
-        m_inputVectorBaseName = Configuration::getInstance().getPath() + "/testVector";
+        m_inputVectorBaseName = scai::test::Configuration::getPath() + "/testVector";
         m_formattedInputVectorBaseName = m_inputVectorBaseName + "Formatted";
         m_xdrDoubleInputVectorBaseName = m_inputVectorBaseName + "XDRDouble";
     }
@@ -155,7 +156,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( cTorTest, ValueType, test_types )
 
 void cleanupfiles( std::string filename )
 {
-    std::string prefix = Configuration::getInstance().getPath();
+    std::string prefix = scai::test::Configuration::getPath();
     std::string s = prefix + "/" + filename;
     SCAI_LOG_INFO( logger, "Deleting " << s << " .vec/.frv ." );
     std::remove( ( s + ".vec" ).c_str() );
@@ -169,7 +170,7 @@ BOOST_AUTO_TEST_CASE( ReadAndWriteVectorTest )
     IndexType n = 4;
     DenseVector<double> result( n, 5.0 );
     DenseVector<double> vector( n, 5.0 );
-    std::string prefix = Configuration::getInstance().getPath();
+    std::string prefix = scai::test::Configuration::getPath();
     std::string testfilename = "ReadAndWriteVectorTestFile";
     //Write and read FORMATTED
     vector.writeToFile( prefix + "/" + testfilename, File::FORMATTED, scai::common::scalar::DOUBLE );

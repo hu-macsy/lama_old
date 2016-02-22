@@ -33,18 +33,14 @@
 // hpp
 #include <scai/lama/storage/ELLStorage.hpp>
 
-// local library
-
-#include <scai/lama/LAMAKernel.hpp>
-
-#include <scai/lama/UtilKernelTrait.hpp>
-#include <scai/lama/ELLKernelTrait.hpp>
-#include <scai/lama/CSRKernelTrait.hpp>
-
-#include <scai/lama/HArrayUtils.hpp>
-
 // internal scai libraries
+#include <scai/sparsekernel/CSRKernelTrait.hpp>
+#include <scai/sparsekernel/ELLKernelTrait.hpp>
 #include <scai/blaskernel/BLASKernelTrait.hpp>
+
+#include <scai/utilskernel/LAMAKernel.hpp>
+#include <scai/utilskernel/UtilKernelTrait.hpp>
+#include <scai/utilskernel/HArrayUtils.hpp>
 
 #include <scai/hmemo.hpp>
 
@@ -57,6 +53,7 @@
 #include <scai/common/unique_ptr.hpp>
 #include <scai/common/Constants.hpp>
 #include <scai/common/TypeTraits.hpp>
+#include <scai/common/Math.hpp>
 #include <scai/common/macros/print_string.hpp>
 #include <scai/common/exception/UnsupportedException.hpp>
 #include <scai/common/preprocessor.hpp>
@@ -67,6 +64,14 @@ namespace scai
 using common::shared_ptr;
 using common::unique_ptr;
 using tasking::SyncToken;
+
+using utilskernel::LAMAKernel;
+using utilskernel::UtilKernelTrait;
+using utilskernel::HArrayUtils;
+using utilskernel::LArray;
+
+using sparsekernel::ELLKernelTrait;
+using sparsekernel::CSRKernelTrait;
 
 using namespace tasking;
 using namespace hmemo;
@@ -1739,7 +1744,7 @@ ValueType ELLStorage<ValueType>::l2Norm() const
 
 	SCAI_CONTEXT_ACCESS( loc );
 
-	return common::TypeTraits<ValueType>::sqrt(dot[loc]( mValues.size(), data.get(), 1, data.get(), 1 ));
+	return common::Math::sqrt(dot[loc]( mValues.size(), data.get(), 1, data.get(), 1 ));
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1977,21 +1982,37 @@ void ELLStorage<ValueType>::matrixAddMatrixELL(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ELLStorage<ValueType>* ELLStorage<ValueType>::clone() const
-{
-    SCAI_LOG_INFO( logger, "create" )
-
-    return new ELLStorage<ValueType>();
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
 ELLStorage<ValueType>* ELLStorage<ValueType>::copy() const
 {
     SCAI_LOG_INFO( logger, "copy" )
 
     return new ELLStorage<ValueType>( *this );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+ELLStorage<ValueType>* ELLStorage<ValueType>::newMatrixStorage() const
+{
+   common::unique_ptr<ELLStorage<ValueType> > storage( new ELLStorage<ValueType>() ); 
+   storage->setContextPtr( this->getContextPtr() );
+   return storage.release();
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+template<typename ValueType>
+_MatrixStorage* ELLStorage<ValueType>::create()
+{
+    return new ELLStorage<ValueType>();
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+template<typename ValueType>
+MatrixStorageCreateKeyType ELLStorage<ValueType>::createValue()
+{
+    return MatrixStorageCreateKeyType( Format::ELL, common::getScalarType<ValueType>() );
 }
 
 /* ========================================================================= */

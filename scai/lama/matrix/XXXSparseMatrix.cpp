@@ -40,6 +40,7 @@ namespace scai
 {
 
 using common::shared_ptr;
+using namespace dmemo;
 
 namespace lama
 {
@@ -328,18 +329,21 @@ void XXXSparseMatrix<ValueType>::swapLocalStorage( StorageType& localStorage )
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-XXXSparseMatrix<ValueType>* XXXSparseMatrix<ValueType>::clone() const
+XXXSparseMatrix<ValueType>* XXXSparseMatrix<ValueType>::newMatrix() const
 {
-    XXXSparseMatrix* newSparseMatrix = new XXXSparseMatrix<ValueType>();
+    common::unique_ptr<XXXSparseMatrix<ValueType> > newSparseMatrix( new XXXSparseMatrix<ValueType>() );
 
     // inherit the context, communication kind of this matrix for the new matrix
 
     newSparseMatrix->setContextPtr( this->getContextPtr() );
+
     newSparseMatrix->setCommunicationKind( this->getCommunicationKind() );
 
-    SCAI_LOG_INFO( logger, "create is " << *newSparseMatrix )
+    SCAI_LOG_INFO( logger,
+                   *this << ": create -> " << *newSparseMatrix << " @ " << *(newSparseMatrix->getContextPtr())
+                   << ", kind = " << newSparseMatrix->getCommunicationKind() );
 
-    return newSparseMatrix;
+    return newSparseMatrix.release();
 }
 
 /* -------------------------------------------------------------------------- */
@@ -375,8 +379,7 @@ Matrix* XXXSparseMatrix<ValueType>::create()
 template<typename ValueType>
 MatrixCreateKeyType XXXSparseMatrix<ValueType>::createValue()
 {
-    common::scalar::ScalarType skind = common::getScalarType<ValueType>();
-    return MatrixCreateKeyType( Format::XXX, skind );
+    return MatrixCreateKeyType( Format::XXX, common::getScalarType<ValueType>() );
 }
 
 /* ========================================================================= */

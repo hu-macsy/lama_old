@@ -73,11 +73,7 @@ endif ( NOT CXX_SUPPORTS_C11 )
 
 message ( STATUS "" )
 
-if    ( SCAI_COMPLETE_BUILD )
-  set ( OPENMP_INFO_TEXT "OpenMP schedule set to \"${SCAI_OMP_SCHEDULE}\"" )
-else  ( SCAI_COMPLETE_BUILD )
-  set ( OPENMP_INFO_TEXT "compile your sources with -DSCAI_OMP_SCHEDULE=<schedule-type>" )
-endif ( SCAI_COMPLETE_BUILD )
+set ( OPENMP_INFO_TEXT "OpenMP schedule type is set to \"${SCAI_OMP_SCHEDULE}\"" )
 
 scai_summary_message ( "USE"
                        "USE_OPENMP"
@@ -89,9 +85,14 @@ message ( STATUS "" )
 scai_status_message ( HEADLINE "LIBRARIES:" )
 
 # LAMA CUDA
+set ( REQUIRED_FOUND FALSE )
+if    ( CUDA_FOUND AND USE_CUDA )
+  set ( REQUIRED_FOUND TRUE )
+endif ( CUDA_FOUND AND USE_CUDA )
+
 message ( STATUS "" )
 scai_summary_message ( "USE"
-                       "USE_CUDA"
+                       "REQUIRED_FOUND"
                        "CUDA"
                        "" )
 
@@ -99,7 +100,7 @@ scai_summary_message ( "USE"
     scai_summary_message ( "FOUND"
                            "CUDA_FOUND"
                            "CUDA"
-                           "Version ${CUDA_VERSION} at ${CUDA_INCLUDE_DIRS}" )
+                           "Version ${CUDA_VERSION} at ${SCAI_CUDA_INCLUDE_DIR}" )
                            
     # CUDA Compute Capability
     scai_summary_message ( "FOUND"
@@ -114,33 +115,48 @@ scai_summary_message ( "USE"
                        "MIC"
                        "" )
 
+set ( REQUIRED_FOUND FALSE )
+if    ( SCAI_COMMON_FOUND AND SCAI_LOGGING_FOUND AND SCAI_TRACING_FOUND AND SCAI_TASKING_FOUND )
+  set ( REQUIRED_FOUND TRUE )
+endif ( SCAI_COMMON_FOUND AND SCAI_LOGGING_FOUND AND SCAI_TRACING_FOUND AND SCAI_TASKING_FOUND )
+
 message ( STATUS "" )
-scai_summary_message ( "FOUND"
-                       "SCAI_COMMON_FOUND"
-                       "SCAI Common"
+scai_summary_message ( "STATIC"
+                       "REQUIRED_FOUND"
+                       "Internal Libraries (core)"
                        "" )
-                       
-scai_summary_message ( "FOUND"
-                       "SCAI_LOGGING_FOUND"
-                       "SCAI Logging"
-                       "" )
-                       
-scai_summary_message ( "FOUND"
-                       "SCAI_TRACING_FOUND"
-                       "SCAI Tracing"
-                       "" )
-                       
-scai_summary_message ( "FOUND"
-                       "SCAI_TASKING_FOUND"
-                       "SCAI Tasking"
-                       "" )
+
+    scai_summary_message ( "FOUND"
+                           "SCAI_COMMON_FOUND"
+                           "SCAI Common"
+                           "" )
+                           
+    scai_summary_message ( "FOUND"
+                           "SCAI_LOGGING_FOUND"
+                           "SCAI Logging"
+                           "" )
+                           
+    scai_summary_message ( "FOUND"
+                           "SCAI_TRACING_FOUND"
+                           "SCAI Tracing"
+                           "" )
+                           
+    scai_summary_message ( "FOUND"
+                           "SCAI_TASKING_FOUND"
+                           "SCAI Tasking"
+                           "" )
 
 # LAMA TEST
 message ( STATUS "" )
 scai_status_message ( HEADLINE "TESTING:" )
 
+set ( REQUIRED_FOUND FALSE )
+if    ( Boost_UNIT_TEST_FRAMEWORK_FOUND AND Boost_REGEX_FOUND AND BUILD_TEST )
+  set ( REQUIRED_FOUND TRUE )
+endif ( Boost_UNIT_TEST_FRAMEWORK_FOUND AND Boost_REGEX_FOUND AND BUILD_TEST )
+
 scai_summary_message ( "USE"
-                       "BUILD_TEST"
+                       "REQUIRED_FOUND"
                        "TEST"
                        "" )
 
@@ -160,7 +176,7 @@ message ( STATUS "" )
 
 scai_status_message ( HEADLINE "INFO:" )
 
-message ( STATUS "LAMA Version : ${LAMA_VERSION} ${LAMA_VERSION_NAME}" )
+message ( STATUS "hmemo Version : ${SCAI_HMEMO_VERSION} ${SCAI_VERSION_NAME}" )
 message ( STATUS "Build Type   : ${CMAKE_BUILD_TYPE}" )
 message ( STATUS "Library Type : ${SCAI_LIBRARY_TYPE}" )
 message ( STATUS "ASSERT Level : ${SCAI_ASSERT_LEVEL} ( -DSCAI_ASSERT_LEVEL_${SCAI_ASSERT_LEVEL} )" )
@@ -170,7 +186,3 @@ if    ( USE_CODE_COVERAGE )
 	message ( STATUS "CODE COVERAGE: ${USE_CODE_COVERAGE}" )
 endif ( USE_CODE_COVERAGE )
 message ( STATUS "" )
-
-if    ( USE_CUDA AND NOT CUDA_FOUND )
-    message( FATAL_ERROR "Build of LAMA Cuda enabled, but configuration is incomplete!")
-endif ( USE_CUDA AND NOT CUDA_FOUND )

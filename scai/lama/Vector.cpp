@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Vector.cpp
+ * @brief Implementations of methods for class Vector.
  * @author Jiri Kraus
  * @date 22.02.2011
  * $Id$
@@ -37,7 +37,7 @@
 // local library
 #include <scai/lama/DenseVector.hpp>
 
-#include <scai/lama/distribution/NoDistribution.hpp>
+#include <scai/dmemo/NoDistribution.hpp>
 
 #include <scai/lama/matrix/Matrix.hpp>
 
@@ -51,6 +51,7 @@
 
 using namespace scai::common;
 using namespace scai::hmemo;
+using namespace scai::dmemo;
 
 namespace scai
 {
@@ -64,22 +65,10 @@ SCAI_LOG_DEF_LOGGER( Vector::logger, "Vector" )
 /*    Factory to create a vector                                                          */
 /* ---------------------------------------------------------------------------------------*/
 
-Vector* Vector::getVector( const VectorKind kind, common::scalar::ScalarType type )
-{
-	using ::operator<<;
-
-    VectorCreateKeyType key( kind, type );
-
-    SCAI_LOG_INFO( logger, "getVector uses Factory::create " << key )
-
-    // get it from the factory by building a pair as key the creator fn
-
-    return create( key );
-}
-
 Vector* Vector::createVector( const common::scalar::ScalarType valueType, DistributionPtr distribution )
 {
-    Vector* v = getVector( DENSE, valueType );
+    VectorCreateKeyType vectype( DENSE, valueType );
+    Vector* v = Vector::create( vectype );
 
     v->resize( distribution );
     return v;
@@ -177,7 +166,7 @@ Vector& Vector::operator=( const Expression_SV_SV& expression )
     const Vector& x = expression.getArg1().getArg2();
     const Vector& y = expression.getArg2().getArg2();
 
-    SCAI_ASSERT_EQUAL_ERROR( x.size(), y.size() );
+    SCAI_ASSERT_EQ_ERROR( x.size(), y.size(), "size mismatch for the two vectors in a * x + b * y" );
 
     assign( expression );
 
@@ -267,7 +256,7 @@ Vector& Vector::operator=( const Expression_SMV_SV& expression )
     if( &vectorX == this )
     {
         SCAI_LOG_DEBUG( logger, "Temporary for X required" )
-        tmpResult = common::shared_ptr<Vector>( this->clone( getDistributionPtr() ) );
+        tmpResult = common::shared_ptr<Vector>( Vector::create( this->getCreateValue() ) );
         resultPtr = tmpResult.get();
     }
 
@@ -304,7 +293,7 @@ Vector& Vector::operator=( const Expression_SVM_SV& expression )
     if( &vectorX == this )
     {
         SCAI_LOG_DEBUG( logger, "Temporary for X required" )
-        tmpResult = common::shared_ptr<Vector>( this->clone( getDistributionPtr() ) );
+        tmpResult = common::shared_ptr<Vector>( Vector::create( this->getCreateValue() ) );
         resultPtr = tmpResult.get();
     }
 

@@ -31,8 +31,8 @@
 ###
 
 foreach ( executable labelrank )
-    add_executable( ${executable} ${executable}.cpp )
-    target_link_libraries( ${executable} ama )
+    add_executable( ${executable}.exe ${executable}.cpp )
+    target_link_libraries( ${executable}.exe ${PROJECT_NAME} )
     set ( EXAMPLE_EXECUTABLES_LABELRANK "${EXAMPLE_EXECUTABLES_LABELRANK} ${executable}.exe" )
 endforeach ( executable )
 

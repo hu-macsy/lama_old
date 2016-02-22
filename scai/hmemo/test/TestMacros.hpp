@@ -34,12 +34,46 @@
 #pragma once
 
 #include <scai/hmemo/Context.hpp>
+#include <scai/hmemo/HArray.hpp>
 
 #include <scai/common/ContextType.hpp>
 #include <scai/common/macros/print_string.hpp>
 #include <scai/common/test/TestMacros.hpp>
 
 #include <boost/assign/list_of.hpp>
+
+
+/*
+ * @brief initializes a HArray with an array
+ */
+template<typename ValueType>
+void initArray( scai::hmemo::HArray<ValueType>& dst, const ValueType src[], const IndexType size)
+{
+    scai::hmemo::ContextPtr loc = scai::hmemo::Context::getHostPtr();
+
+    scai::hmemo::WriteAccess<ValueType> wDst( dst );
+
+    for( IndexType i = 0; i < size; ++i)
+    {
+        wDst[i] = src[i];
+    }
+}
+
+/*
+ * @brief initializes a HArray with an scalar
+ */
+template<typename ValueType>
+void initArray( scai::hmemo::HArray<ValueType>& dst, const ValueType value, const IndexType size)
+{
+    scai::hmemo::ContextPtr loc = scai::hmemo::Context::getHostPtr();
+
+    scai::hmemo::WriteAccess<ValueType> wDst( dst );
+
+    for( IndexType i = 0; i < size; ++i)
+    {
+        wDst[i] = value;
+    }
+}
 
 /**
  * @brief getEnvContext() returns the current context from enviroment variable LAMA_TEST_CONTEXT

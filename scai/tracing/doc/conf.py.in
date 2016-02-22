@@ -6,7 +6,10 @@ import sys, os
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = ['sphinx.ext.intersphinx']
 
-intersphinx_mapping = {'scailogging': ('${SCAI_LOGGING_DOC_DIR}', None)}
+intersphinx_mapping = {
+    'scaicommon': ('${SCAI_COMMON_DOC_DIR}', None),
+    'scailogging': ('${SCAI_LOGGING_DOC_DIR}', None)
+}
 
 # The suffix of source filenames.
 source_suffix = '.rst'
@@ -15,17 +18,17 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'SCAI Tracing'
-copyright = u'2009-${SCAI_TRACING_COPYRIGHT_YEAR} Fraunhofer Institute for Algorithms and Scientific Computing SCAI for Fraunhofer-Gesellschaft'
+project = u'SCAI ${PROJECT_SURNAME}'
+copyright = u'2009-${SCAI_COPYRIGHT_YEAR} Fraunhofer Institute for Algorithms and Scientific Computing SCAI for Fraunhofer-Gesellschaft'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
 # built documents.
 #
 # The short X.Y version.
-version = '${SCAI_TRACING_VERSION}'
+version = '${${UPPER_PROJECT_NAME}_VERSION}'
 # The full version, including alpha/beta/rc tags.
-release = '${SCAI_TRACING_VERSION} (${SCAI_TRACING_VERSION_NAME})'
+release = '${${UPPER_PROJECT_NAME}_VERSION} (${SCAI_VERSION_NAME})'
 
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = 'tango'
@@ -39,13 +42,13 @@ highlight_language = 'c++'
 html_theme = 'sphinxdoc'
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'SCAI_LOG_DOC'
+htmlhelp_basename = '${UPPER_PROJECT_NAME}_DOC'
 
 # -- Options for manual page output --------------------------------------------
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'SCAI_LOG', u'SCAI Tracing Documentation',
+    ('index', '${UPPER_PROJECT_NAME}', u'SCAI ${PROJECT_SURNAME} Documentation',
      [u'Fraunhofer Institute for Algorithms and Scientific Computing SCAI for Fraunhofer-Gesellschaft'], 1)
 ]

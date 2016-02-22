@@ -44,8 +44,11 @@
 
 #include <scai/kregistry/KernelRegistry.hpp>
 
+#include <scai/common/TypeTraits.hpp>
+#include <scai/common/preprocessor.hpp>
+
 // external
-#include <mkl.h>
+#include <mkl_blas.h>
 
 namespace scai
 {
@@ -125,7 +128,7 @@ void MICBLAS3::gemm(
             COMMON_THROWEXCEPTION( "Illegal order setting " << order )
     }
 
-    SCAI_LOG_INFO( logger, "gemm, ta = " << ta << ", tb = " << tb << ", a has shape " << m << " x " << n )
+    SCAI_LOG_INFO( logger, "gemm<" << common::TypeTraits<ValueType>::id() << ">, ta = " << ta << ", tb = " << tb << ", a has shape " << m << " x " << n )
 
     int device = MICContext::getCurrentDevice();
 
@@ -138,7 +141,7 @@ void MICBLAS3::gemm(
         const ValueType* b = static_cast<const ValueType*>( bPtr );
         ValueType* c = static_cast<ValueType*>( cPtr );
 
-	MICBLASWrapper::gemm( ta, tb, m, n, k, *alphaPtr, a, lda, b, ldb, *betaPtr, c, ldc );
+        MICBLASWrapper<ValueType>::gemm( ta, tb, m, n, k, *alphaPtr, a, lda, b, ldb, *betaPtr, c, ldc );
     }
 }
 

@@ -1,5 +1,5 @@
 /**
- * @file DenseVector.hpp
+ * @file DenseVector.cpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief DenseVector.hpp
+ * @brief Implementations and instantiations for class DenseVector.
  * @author Jiri Kraus
  * @date 22.02.2011
  * @since 1.0.0
@@ -35,15 +35,6 @@
 #include <scai/lama/DenseVector.hpp>
 
 // local library
-#include <scai/lama/HArrayUtils.hpp>
-#include <scai/lama/UtilKernelTrait.hpp>
-#include <scai/blaskernel/BLASKernelTrait.hpp>
-#include <scai/lama/LAMAKernel.hpp>
-
-#include <scai/lama/distribution/NoDistribution.hpp>
-#include <scai/lama/distribution/CyclicDistribution.hpp>
-#include <scai/lama/distribution/Redistributor.hpp>
-
 #include <scai/lama/matrix/Matrix.hpp>
 
 #include <scai/lama/expression/Expression.hpp>
@@ -53,6 +44,14 @@
 #include <scai/lama/io/FileType.hpp>
 
 // internal scai libraries
+#include <scai/utilskernel/HArrayUtils.hpp>
+#include <scai/utilskernel/UtilKernelTrait.hpp>
+#include <scai/utilskernel/LAMAKernel.hpp>
+#include <scai/blaskernel/BLASKernelTrait.hpp>
+
+#include <scai/dmemo/NoDistribution.hpp>
+#include <scai/dmemo/CyclicDistribution.hpp>
+#include <scai/dmemo/Redistributor.hpp>
 #include <scai/hmemo/ContextAccess.hpp>
 
 #include <scai/tracing.hpp>
@@ -70,10 +69,15 @@ namespace scai
 
 using common::scoped_array;
 using common::TypeTraits;
+using utilskernel::HArrayUtils;
+using utilskernel::LArray;
+using utilskernel::LAMAKernel;
+using utilskernel::UtilKernelTrait;
 
 namespace context = scai::common::context;
 
 using namespace hmemo;
+using namespace dmemo;
 
 namespace lama
 {
@@ -81,14 +85,16 @@ namespace lama
 SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, DenseVector<ValueType>::logger, "Vector.DenseVector" )
 
 template<typename ValueType>
-DenseVector<ValueType>::DenseVector()
-                : Vector( 0 ), mLocalValues()
+DenseVector<ValueType>::DenseVector() : 
+    Vector( 0 ), 
+    mLocalValues()
 {
 }
 
 template<typename ValueType>
-DenseVector<ValueType>::DenseVector( ContextPtr context )
-                : Vector( 0, context ), mLocalValues()
+DenseVector<ValueType>::DenseVector( ContextPtr context ) : 
+    Vector( 0, context ), 
+    mLocalValues()
 {
 }
 
@@ -151,7 +157,7 @@ void DenseVector<ValueType>::readFromFile( const std::string& filename )
     SCAI_LOG_INFO( logger, "read dense vector from file " << filename )
 
     // Take the current default communicator
-    CommunicatorPtr comm = Communicator::getCommunicator();
+    dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicator();
 
     IndexType myRank = comm->getRank();
     IndexType host = 0; // reading processor
@@ -236,7 +242,7 @@ template<typename ValueType>
 DenseVector<ValueType>::DenseVector( const _HArray& localValues, DistributionPtr distribution )
                 : Vector( distribution )
 {
-    SCAI_ASSERT_EQUAL_ERROR( localValues.size(), distribution->getLocalSize() )
+    SCAI_ASSERT_EQ_ERROR( localValues.size(), distribution->getLocalSize(), "size mismatch" )
 
     HArrayUtils::assign( mLocalValues, localValues ); // can deal with type conversions
 }
@@ -394,32 +400,6 @@ void DenseVector<ValueType>::setValues( const _HArray& values )
 }
 
 template<typename ValueType>
-DenseVector<ValueType>* DenseVector<ValueType>::clone() const
-{
-    SCAI_LOG_INFO( logger, "DenseVector<ValueType>::clone" )
-
-    DenseVector<ValueType>* newDenseVector = new DenseVector<ValueType>();
-
-    newDenseVector->setContextPtr( mContext );
-
-    return newDenseVector;
-}
-
-template<typename ValueType>
-DenseVector<ValueType>* DenseVector<ValueType>::clone( DistributionPtr distribution ) const
-{
-    SCAI_LOG_INFO( logger, "DenseVector<ValueType>::create" )
-
-    DenseVector<ValueType>* newDenseVector = new DenseVector<ValueType>( distribution );
-
-    newDenseVector->setContextPtr( mContext );
-
-    // give back the new vector and its ownership
-
-    return newDenseVector;
-}
-
-template<typename ValueType>
 DenseVector<ValueType>* DenseVector<ValueType>::copy() const
 {
     // create a new dense vector with the copy constructor
@@ -428,7 +408,15 @@ DenseVector<ValueType>* DenseVector<ValueType>::copy() const
 }
 
 template<typename ValueType>
-void DenseVector<ValueType>::updateHalo( const Halo& halo ) const
+DenseVector<ValueType>* DenseVector<ValueType>::newVector() const
+{
+   common::unique_ptr<DenseVector<ValueType> > vector( new DenseVector<ValueType>() ); 
+   vector->setContextPtr( this->getContextPtr() );
+   return vector.release();
+}
+
+template<typename ValueType>
+void DenseVector<ValueType>::updateHalo( const dmemo::Halo& halo ) const
 {
     const IndexType haloSize = halo.getHaloSize();
 
@@ -444,7 +432,7 @@ void DenseVector<ValueType>::updateHalo( const Halo& halo ) const
 }
 
 template<typename ValueType>
-tasking::SyncToken* DenseVector<ValueType>::updateHaloAsync( const Halo& halo ) const
+tasking::SyncToken* DenseVector<ValueType>::updateHaloAsync( const dmemo::Halo& halo ) const
 {
     const IndexType haloSize = halo.getHaloSize();
 
@@ -898,7 +886,7 @@ SCAI_REGION( "Vector.Dense.dotP" )
 
         const IndexType localSize = mLocalValues.size();
 
-        SCAI_ASSERT_EQUAL_DEBUG( localSize, getDistribution().getLocalSize() )
+        SCAI_ASSERT_EQ_DEBUG( localSize, getDistribution().getLocalSize(), "size mismatch" )
 
         const ValueType localDotProduct = dot[loc]( localSize, localRead.get(), 1, otherRead.get(), 1 );
 
@@ -944,7 +932,7 @@ void DenseVector<ValueType>::assign( const Scalar value )
 
     // assign the scalar value on the home of this dense vector.
 
-    HArrayUtils::setScalar( mLocalValues, value, common::reduction::COPY, mContext );
+    HArrayUtils::setScalar( mLocalValues, value.getValue<ValueType>(), common::reduction::COPY, mContext );
 }
 
 template<typename ValueType>
@@ -952,7 +940,7 @@ void DenseVector<ValueType>::assign( const _HArray& localValues, DistributionPtr
 {
     SCAI_LOG_INFO( logger, "assign vector with localValues = " << localValues << ", dist = " << *dist )
 
-    SCAI_ASSERT_EQUAL_ERROR( localValues.size(), dist->getLocalSize() )
+    SCAI_ASSERT_EQ_ERROR( localValues.size(), dist->getLocalSize(), "size mismatch" )
 
     setDistributionPtr( dist );
     HArrayUtils::assign( mLocalValues, localValues );
@@ -1006,7 +994,7 @@ size_t DenseVector<ValueType>::getMemoryUsage() const
 template<typename ValueType>
 void DenseVector<ValueType>::redistribute( DistributionPtr distribution )
 {
-    SCAI_ASSERT_EQUAL_ERROR( size(), distribution->getGlobalSize() )
+    SCAI_ASSERT_EQ_ERROR( size(), distribution->getGlobalSize(), "global size mismatch between old/new distribution" )
 
     if( getDistribution() == *distribution )
     {
@@ -1502,7 +1490,7 @@ void DenseVector<ValueType>::readVectorFromMMFile( const std::string& fileName )
 
     _StorageIO::readMMHeader( numRows, numColumns, numValues, isPattern, isSymmetric, fileName );
 
-    SCAI_ASSERT_EQUAL_ERROR( numColumns, 1 )
+    SCAI_ASSERT_EQ_ERROR( numColumns, 1, "vector must have exact one column in MatrixMarket file" )
 
     std::ifstream ifile;
     ifile.open( fileName.c_str(), std::ios::in );
@@ -1690,10 +1678,15 @@ Vector* DenseVector<ValueType>::create()
 }
 
 template<typename ValueType>
-std::pair<VectorKind, common::scalar::ScalarType> DenseVector<ValueType>::createValue()
+VectorCreateKeyType DenseVector<ValueType>::createValue()
 {
-    common::scalar::ScalarType skind = common::getScalarType<ValueType>();
-    return std::pair<VectorKind, common::scalar::ScalarType> ( DENSE, skind );
+    return VectorCreateKeyType( DENSE, common::getScalarType<ValueType>() );
+}
+
+template<typename ValueType>
+VectorCreateKeyType DenseVector<ValueType>::getCreateValue() const
+{
+    return createValue();
 }
 
 /* ---------------------------------------------------------------------------------*/

@@ -35,29 +35,22 @@
 #include <scai/blaskernel/external/BLAS_BLAS1.hpp>
 
 // local library
-#include <scai/blaskernel/external/BLASHelper.hpp>
 #include <scai/blaskernel/external/BLASWrapper.hpp>
 #include <scai/blaskernel/BLASKernelTrait.hpp>
 #include <scai/blaskernel/cblas.hpp>
 
-//Intel MPI need mpi.h to be included before stdio.h so this header comes first
-
+// internal scai libraries
 #include <scai/tasking/TaskSyncToken.hpp>
 
 #include <scai/tracing.hpp>
+
+#include <scai/kregistry/KernelRegistry.hpp>
 
 #include <scai/common/Settings.hpp>
 #include <scai/common/macros/unused.hpp>
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/bind.hpp>
-
-#include <scai/kregistry/KernelRegistry.hpp>
-
-// boost
-#include <boost/preprocessor.hpp>
-
-// std
-#include <cmath>
+#include <scai/common/preprocessor.hpp>
 
 namespace scai
 {
@@ -98,8 +91,8 @@ void BLAS_BLAS1::scal(
         SCAI_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
 
-	BLASWrapper::scal( static_cast<BLASWrapper::BLASIndexType>( n ), alpha, x,
-			static_cast<BLASWrapper::BLASIndexType>( incX ));
+	BLASWrapper<ValueType>::scal( static_cast<BLASTrait::BLASIndexType>( n ), alpha, x,
+			static_cast<BLASTrait::BLASIndexType>( incX ));
 }
 
 /* ---------------------------------------------------------------------------------------*/
@@ -126,7 +119,7 @@ ValueType BLAS_BLAS1::nrm2( const IndexType n, const ValueType* x, const IndexTy
         SCAI_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
 
-    return BLASWrapper::nrm2( static_cast<BLASWrapper::BLASIndexType>( n ), x, static_cast<BLASWrapper::BLASIndexType>( incX ));
+    return BLASWrapper<ValueType>::nrm2( static_cast<BLASTrait::BLASIndexType>( n ), x, static_cast<BLASTrait::BLASIndexType>( incX ));
 }
 
 /* ---------------------------------------------------------------------------------------*/
@@ -153,7 +146,7 @@ ValueType BLAS_BLAS1::asum( const IndexType n, const ValueType* x, const IndexTy
         return static_cast<ValueType>(0.0);
     }
 
-    return BLASWrapper::asum( static_cast<BLASWrapper::BLASIndexType>( n ), x, static_cast<BLASWrapper::BLASIndexType>( incX ));
+    return BLASWrapper<ValueType>::asum( static_cast<BLASTrait::BLASIndexType>( n ), x, static_cast<BLASTrait::BLASIndexType>( incX ));
 }
 
 /* ---------------------------------------------------------------------------------------*/
@@ -175,7 +168,7 @@ IndexType BLAS_BLAS1::iamax( const IndexType n, const ValueType* x, const IndexT
         SCAI_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
 
-    return BLASWrapper::iamax( static_cast<BLASWrapper::BLASIndexType>( n ), x, static_cast<BLASWrapper::BLASIndexType>( incX ));
+    return BLASWrapper<ValueType>::iamax( static_cast<BLASTrait::BLASIndexType>( n ), x, static_cast<BLASTrait::BLASIndexType>( incX ));
 }
 
 /* ---------------------------------------------------------------------------------------*/
@@ -207,7 +200,7 @@ void BLAS_BLAS1::swap(
         SCAI_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
 
-    BLASWrapper::swap( static_cast<BLASWrapper::BLASIndexType>( n ), x, static_cast<BLASWrapper::BLASIndexType>( incX ), y, static_cast<BLASWrapper::BLASIndexType>( incY ));
+    BLASWrapper<ValueType>::swap( static_cast<BLASTrait::BLASIndexType>( n ), x, static_cast<BLASTrait::BLASIndexType>( incX ), y, static_cast<BLASTrait::BLASIndexType>( incY ));
 }
 
 /* ---------------------------------------------------------------------------------------*/
@@ -241,7 +234,7 @@ void BLAS_BLAS1::copy(
 
     // wrapper: uses overloading and converts arguments if required
 
-    BLASWrapper::copy( static_cast<BLASWrapper::BLASIndexType>( n ), x, static_cast<BLASWrapper::BLASIndexType>( incX ), y, static_cast<BLASWrapper::BLASIndexType>( incY ));
+    BLASWrapper<ValueType>::copy( static_cast<BLASTrait::BLASIndexType>( n ), x, static_cast<BLASTrait::BLASIndexType>( incX ), y, static_cast<BLASTrait::BLASIndexType>( incY ));
 }
 
 /* ---------------------------------------------------------------------------------------*/
@@ -273,11 +266,11 @@ void BLAS_BLAS1::axpy(
     {
         // just set call to this routine as task to be executed; new thread will have syncToken == NULL
 
-        syncToken->run( common::bind( BLASWrapper::axpy<ValueType>, n, alpha, x, incX, y, incY ) );
+        syncToken->run( common::bind( BLASWrapper<ValueType>::axpy, n, alpha, x, incX, y, incY ) );
     }
     else
     {
-        BLASWrapper::axpy( static_cast<BLASWrapper::BLASIndexType>( n ), alpha, x, static_cast<BLASWrapper::BLASIndexType>( incX ), y, static_cast<BLASWrapper::BLASIndexType>( incY ));
+        BLASWrapper<ValueType>::axpy( static_cast<BLASTrait::BLASIndexType>( n ), alpha, x, static_cast<BLASTrait::BLASIndexType>( incX ), y, static_cast<BLASTrait::BLASIndexType>( incY ));
     }
 }
 
@@ -310,9 +303,9 @@ ValueType BLAS_BLAS1::dot(
         SCAI_LOG_WARN( logger, "no asynchronous execution for openmp possible at this level." )
     }
 
-    ValueType res = BLASWrapper::dot( static_cast<BLASWrapper::BLASIndexType>( n ), x, 
-                                      static_cast<BLASWrapper::BLASIndexType>( incX ), y, 
-                                      static_cast<BLASWrapper::BLASIndexType>( incY ));
+    ValueType res = BLASWrapper<ValueType>::dot( static_cast<BLASTrait::BLASIndexType>( n ), x,
+                                      static_cast<BLASTrait::BLASIndexType>( incX ), y,
+                                      static_cast<BLASTrait::BLASIndexType>( incY ));
     return res;
 }
 

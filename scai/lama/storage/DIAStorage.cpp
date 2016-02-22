@@ -34,15 +34,14 @@
 // hpp
 #include <scai/lama/storage/DIAStorage.hpp>
 
-// local library
-
-#include <scai/lama/LAMAKernel.hpp>
-#include <scai/lama/UtilKernelTrait.hpp>
-#include <scai/lama/DIAKernelTrait.hpp>
-#include <scai/lama/CSRKernelTrait.hpp>
-#include <scai/lama/HArrayUtils.hpp>
-
 // internal scai libraries
+#include <scai/sparsekernel/DIAKernelTrait.hpp>
+#include <scai/sparsekernel/CSRKernelTrait.hpp>
+
+#include <scai/utilskernel/LAMAKernel.hpp>
+#include <scai/utilskernel/HArrayUtils.hpp>
+#include <scai/utilskernel/UtilKernelTrait.hpp>
+
 #include <scai/blaskernel/BLASKernelTrait.hpp>
 
 #include <scai/hmemo/ContextAccess.hpp>
@@ -57,6 +56,7 @@
 #include <scai/common/unique_ptr.hpp>
 #include <scai/common/Constants.hpp>
 #include <scai/common/TypeTraits.hpp>
+#include <scai/common/Math.hpp>
 
 using namespace scai::hmemo;
 
@@ -67,6 +67,13 @@ using common::scoped_array;
 using common::shared_ptr;
 
 using tasking::SyncToken;
+
+using utilskernel::LAMAKernel;
+using utilskernel::UtilKernelTrait;
+using utilskernel::HArrayUtils;
+
+using sparsekernel::CSRKernelTrait;
+using sparsekernel::DIAKernelTrait;
 
 namespace lama
 {
@@ -774,7 +781,7 @@ ValueType DIAStorage<ValueType>::l2Norm() const
 
 	SCAI_CONTEXT_ACCESS( loc );
 
-	return common::TypeTraits<ValueType>::sqrt(dot[loc]( mValues.size(), data.get(), 1, data.get(), 1 ));
+	return common::Math::sqrt(dot[loc]( mValues.size(), data.get(), 1, data.get(), 1 ));
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1191,17 +1198,35 @@ void DIAStorage<ValueType>::jacobiIterate(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-DIAStorage<ValueType>* DIAStorage<ValueType>::clone() const
+DIAStorage<ValueType>* DIAStorage<ValueType>::copy() const
 {
-    return new DIAStorage<ValueType>();
+    return new DIAStorage<ValueType>( *this );
 }
 
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-DIAStorage<ValueType>* DIAStorage<ValueType>::copy() const
+DIAStorage<ValueType>* DIAStorage<ValueType>::newMatrixStorage() const
 {
-    return new DIAStorage<ValueType>( *this );
+   common::unique_ptr<DIAStorage<ValueType> > storage( new DIAStorage<ValueType>() ); 
+   storage->setContextPtr( this->getContextPtr() );
+   return storage.release();
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+template<typename ValueType>
+_MatrixStorage* DIAStorage<ValueType>::create()
+{
+    return new DIAStorage<ValueType>();
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+template<typename ValueType>
+MatrixStorageCreateKeyType DIAStorage<ValueType>::createValue()
+{
+    return MatrixStorageCreateKeyType( Format::DIA, common::getScalarType<ValueType>() );
 }
 
 /* ========================================================================= */

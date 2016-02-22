@@ -37,7 +37,7 @@
 #include <scai/common/config.hpp>
 
 // local library
-#include <scai/blaskernel/external/BLASHelper.hpp>
+#include <scai/blaskernel/cblas.hpp>
 
 // internal scai library
 #include <scai/common/SCAITypes.hpp>

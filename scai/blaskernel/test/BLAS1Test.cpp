@@ -31,9 +31,6 @@
  * @since 1.0.0
  **/
 
-// math for sqrt
-#include <cmath>
-
 // boost
 #include <boost/test/unit_test.hpp>
 
@@ -44,6 +41,7 @@
 #include <scai/kregistry/KernelContextFunction.hpp>
 
 #include <scai/blaskernel/test/TestMacros.hpp>
+#include <scai/common/Math.hpp>
 
 using namespace scai::hmemo;
 
@@ -381,9 +379,9 @@ void nrm2Test( ContextPtr loc )
             BOOST_CHECK_EQUAL( euclideanNorm, 0.0 );
             // n > 0 and incX > 0
             euclideanNorm = nrm2[loc->getType()]( nValues / incX1, rAValues.get(), incX1 );
-            SCAI_CHECK_CLOSE( euclideanNorm, ::sqrt( result1 ), 1e-4 );
+            SCAI_CHECK_CLOSE( euclideanNorm, scai::common::Math::sqrt( result1 ), 1e-4 );
             euclideanNorm = nrm2[loc->getType()]( nValues / incX2, rAValues.get(), incX2 );
-            SCAI_CHECK_CLOSE( euclideanNorm, ::sqrt( result2 ), 1e-4 );
+            SCAI_CHECK_CLOSE( euclideanNorm, scai::common::Math::sqrt( result2 ), 1e-4 );
         }
     }
 } // nrm2Test

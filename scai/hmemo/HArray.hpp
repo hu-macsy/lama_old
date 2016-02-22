@@ -139,15 +139,9 @@ public:
     virtual ~HArray();
 
     /**
-     *  The method clone is a function that returns a new object of the
-     *  same class as the object for which it is called. The default 
-     *  constructor is always called.
-     */
-
-    HArray<ValueType>* clone();
-
-    /**
-     *  Similiar to clone but here the copy constructor is called.
+     *  The method copy is a function that returns a new object of the
+     *  same class as the object for which it is called. The copy
+     *  constructor is called.
      */
 
     HArray<ValueType>* copy();
@@ -221,6 +215,8 @@ public:
     {
         return common::TypeTraits<ValueType>::stype;
     }
+
+    static HArray<ValueType>* create( common::scalar::ScalarType key );
 
     using _HArray::resize;
 
@@ -361,14 +357,6 @@ HArray<ValueType>::~HArray()
 
 template<typename ValueType>
 _HArray* HArray<ValueType>::create()
-{
-    return new HArray<ValueType>();
-}
-
-/* ---------------------------------------------------------------------------------*/
-
-template<typename ValueType>
-HArray<ValueType>* HArray<ValueType>::clone()
 {
     return new HArray<ValueType>();
 }
@@ -582,7 +570,7 @@ template<typename ValueType>
 IndexType HArray<ValueType>::capacity( ContextDataIndex index ) const
 {
     const ContextData& entry = mContextDataManager[index];
-    return entry.capacity();
+    return entry.capacity() / mValueSize;
 }
 
 /* ---------------------------------------------------------------------------------*/
@@ -597,6 +585,19 @@ void HArray<ValueType>::writeAt( std::ostream& stream ) const
 }
 
 /* ---------------------------------------------------------------------------------*/
+
+template<typename ValueType>
+HArray<ValueType>* HArray<ValueType>::create( common::scalar::ScalarType key )
+{
+    if( key == createValue() )
+    {
+        return reinterpret_cast<HArray<ValueType>* >( _HArray::create( key ));
+    }
+    else
+    {
+        COMMON_THROWEXCEPTION( "creation not possible here" )
+    }
+}
 
 } /* end namespace hmemo */
 

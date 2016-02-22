@@ -40,7 +40,6 @@
 #include <scai/blaskernel/cblas.hpp>
 
 // internal scai libraries
-
 #include <scai/tasking/TaskSyncToken.hpp>
 #include <scai/kregistry/KernelRegistry.hpp>
 
@@ -49,9 +48,7 @@
 #include <scai/common/Settings.hpp>
 #include <scai/common/macros/unused.hpp>
 #include <scai/common/TypeTraits.hpp>
-
-// boost
-#include <boost/preprocessor.hpp>
+#include <scai/common/preprocessor.hpp>
 
 namespace scai
 {
@@ -105,7 +102,51 @@ void BLAS_BLAS2::gemv(
 
     // ToDo: error handling
 
-    BLASWrapper::gemv( order, transA, static_cast<BLASWrapper::BLASIndexType>( m ), static_cast<BLASWrapper::BLASIndexType>( n ), alpha, a, static_cast<BLASWrapper::BLASIndexType>( lda ), x, static_cast<BLASWrapper::BLASIndexType>( incX ), beta, y, static_cast<BLASWrapper::BLASIndexType>( incY ));
+//    BLASWrapper<ValueType>::gemv( order, transA, static_cast<BLASTrait::BLASIndexType>( m ), static_cast<BLASTrait::BLASIndexType>( n ), alpha, a, static_cast<BLASTrait::BLASIndexType>( lda ), x, static_cast<BLASTrait::BLASIndexType>( incX ), beta, y, static_cast<BLASTrait::BLASIndexType>( incY ));
+
+    if( order == CblasColMajor )
+    {
+    	BLASTrait::BLASTrans ta = '-';
+
+    	switch( transA )
+    	{
+    		case CblasNoTrans:
+				ta = 'N';
+				break;
+    		case CblasTrans:
+				ta = 'T';
+				break;
+    		case CblasConjTrans:
+				ta = 'C';
+				break;
+    	}
+
+    	BLASWrapper<ValueType>::gemv( ta, static_cast<BLASTrait::BLASIndexType>( m ), static_cast<BLASTrait::BLASIndexType>( n ), alpha, a, static_cast<BLASTrait::BLASIndexType>( lda ), x, static_cast<BLASTrait::BLASIndexType>( incX ), beta, y, static_cast<BLASTrait::BLASIndexType>( incY ));
+    }
+    else if( order == CblasRowMajor )
+    {
+        BLASTrait::BLASTrans ta = '-';
+
+		switch( transA )
+		{
+			case CblasNoTrans:
+				ta = 'T';
+				break;
+			case CblasTrans:
+				ta = 'N';
+				break;
+			case CblasConjTrans:
+				ta = 'N';
+				break;
+		}
+
+		if( common::scalar::isComplex( TypeTraits<ValueType>::stype ) && transA == CblasConjTrans )
+		{
+			COMMON_THROWEXCEPTION( "conj matrix vector multiply on complex numbers currently not supported" )
+		}
+
+		BLASWrapper<ValueType>::gemv( ta, static_cast<BLASTrait::BLASIndexType>( n ), static_cast<BLASTrait::BLASIndexType>( m ), alpha, a, static_cast<BLASTrait::BLASIndexType>( lda ), x, static_cast<BLASTrait::BLASIndexType>( incX ), beta, y, static_cast<BLASTrait::BLASIndexType>( incY ));
+    }
 
     return;
 }

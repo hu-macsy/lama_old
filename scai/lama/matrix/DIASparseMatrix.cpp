@@ -40,6 +40,7 @@ namespace scai
 {
 
 using common::shared_ptr;
+using namespace dmemo;
 
 namespace lama
 {
@@ -328,18 +329,21 @@ void DIASparseMatrix<ValueType>::swapLocalStorage( StorageType& localStorage )
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-DIASparseMatrix<ValueType>* DIASparseMatrix<ValueType>::clone() const
+DIASparseMatrix<ValueType>* DIASparseMatrix<ValueType>::newMatrix() const
 {
-    DIASparseMatrix* newSparseMatrix = new DIASparseMatrix<ValueType>();
+    common::unique_ptr<DIASparseMatrix<ValueType> > newSparseMatrix( new DIASparseMatrix<ValueType>() );
 
     // inherit the context, communication kind of this matrix for the new matrix
 
     newSparseMatrix->setContextPtr( this->getContextPtr() );
+
     newSparseMatrix->setCommunicationKind( this->getCommunicationKind() );
 
-    SCAI_LOG_INFO( logger, "create is " << *newSparseMatrix )
+    SCAI_LOG_INFO( logger,
+                   *this << ": create -> " << *newSparseMatrix << " @ " << *(newSparseMatrix->getContextPtr())
+                   << ", kind = " << newSparseMatrix->getCommunicationKind() );
 
-    return newSparseMatrix;
+    return newSparseMatrix.release();
 }
 
 /* -------------------------------------------------------------------------- */
@@ -375,8 +379,7 @@ Matrix* DIASparseMatrix<ValueType>::create()
 template<typename ValueType>
 MatrixCreateKeyType DIASparseMatrix<ValueType>::createValue()
 {
-    common::scalar::ScalarType skind = common::getScalarType<ValueType>();
-    return MatrixCreateKeyType( Format::DIA, skind );
+    return MatrixCreateKeyType( Format::DIA, common::getScalarType<ValueType>() );
 }
 
 /* ========================================================================= */

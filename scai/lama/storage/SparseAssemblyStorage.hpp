@@ -58,7 +58,8 @@ namespace lama
 template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT SparseAssemblyStorage:
 
-    public CRTPMatrixStorage<SparseAssemblyStorage<ValueType>,ValueType>
+    public CRTPMatrixStorage<SparseAssemblyStorage<ValueType>,ValueType>,
+    public _MatrixStorage::Register<SparseAssemblyStorage<ValueType> >    // register at factory
 {
 public:
 
@@ -352,16 +353,13 @@ public:
      */
     void check( const char* msg ) const;
 
+    /** Implementation of MatrixStorage::newMatrixStorage for derived class. */
+    virtual SparseAssemblyStorage* newMatrixStorage() const;
+
+    /** Implementation of MatrixStorage::copy for derived class. */
     virtual SparseAssemblyStorage* copy() const
     {
         return new SparseAssemblyStorage( *this );
-    }
-
-    /** Implementation of MatrixStorage::create for derived class. */
-
-    virtual SparseAssemblyStorage* clone() const
-    {
-        return new SparseAssemblyStorage();
     }
 
     using MatrixStorage<ValueType>::assign;
@@ -400,6 +398,16 @@ private:
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
     static    std::string theTypeName;
+
+public:
+
+    // static create method that will be used to register at MatrixStorage factory
+
+    static _MatrixStorage* create();
+
+    // key for factory
+
+    static MatrixStorageCreateKeyType createValue();
 };
 
 } /* end namespace lama */

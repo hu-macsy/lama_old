@@ -37,11 +37,11 @@
 #include <scai/common/config.hpp>
 
 // local library
-#include <scai/logging.hpp>
-#include <scai/blaskernel/external/BLASHelper.hpp>
+#include <scai/blaskernel/cblas.hpp>
 
 // internal scai libraries
 #include <scai/common/SCAITypes.hpp>
+#include <scai/logging.hpp>
 
 namespace scai
 {

@@ -38,9 +38,10 @@
 
 #include <scai/lama/test/MatrixStorageTest.hpp>
 #include <scai/lama/test/TestMacros.hpp>
-#include <scai/lama/HArrayUtils.hpp>
-#include <scai/lama/LArray.hpp>
+#include <scai/utilskernel/HArrayUtils.hpp>
+#include <scai/utilskernel/LArray.hpp>
 
+using namespace scai::utilskernel;
 using namespace scai::lama;
 using namespace scai::hmemo;
 using scai::common::Exception;

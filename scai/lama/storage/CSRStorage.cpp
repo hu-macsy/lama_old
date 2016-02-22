@@ -35,20 +35,20 @@
 #include <scai/lama/storage/CSRStorage.hpp>
 
 // local library
-#include <scai/lama/UtilKernelTrait.hpp>
-#include <scai/lama/CSRKernelTrait.hpp>
+#include <scai/utilskernel/UtilKernelTrait.hpp>
+#include <scai/sparsekernel/CSRKernelTrait.hpp>
 
-#include <scai/lama/HArrayUtils.hpp>
-#include <scai/lama/LAMAKernel.hpp>
 
 #include <scai/lama/storage/StorageMethods.hpp>
 
-#include <scai/lama/distribution/Redistributor.hpp>
+#include <scai/dmemo/Redistributor.hpp>
 
-#include <scai/lama/openmp/OpenMPUtils.hpp>
-#include <scai/lama/openmp/OpenMPCSRUtils.hpp>
 
 // internal scai libraries
+#include <scai/sparsekernel/openmp/OpenMPCSRUtils.hpp>
+#include <scai/utilskernel/openmp/OpenMPUtils.hpp>
+#include <scai/utilskernel/HArrayUtils.hpp>
+#include <scai/utilskernel/LAMAKernel.hpp>
 #include <scai/blaskernel/BLASKernelTrait.hpp>
 
 #include <scai/hmemo.hpp>
@@ -62,15 +62,25 @@
 #include <scai/common/exception/UnsupportedException.hpp>
 #include <scai/tasking/NoSyncToken.hpp>
 #include <scai/common/TypeTraits.hpp>
+#include <scai/common/Math.hpp>
 #include <scai/common/preprocessor.hpp>
 
 namespace scai
 {
 
 using namespace hmemo;
+using namespace dmemo;
 using common::unique_ptr;
 using common::shared_ptr;
 using common::TypeTraits;
+using utilskernel::OpenMPUtils;
+using utilskernel::UtilKernelTrait;
+using utilskernel::HArrayUtils;
+using utilskernel::LAMAKernel;
+using utilskernel::LArray;
+using sparsekernel::CSRKernelTrait;
+using sparsekernel::OpenMPCSRUtils;
+
 
 using tasking::SyncToken;
 
@@ -524,12 +534,12 @@ void CSRStorage<ValueType>::buildRowIndexes()
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void CSRStorage<ValueType>::redistributeCSR( const CSRStorage<ValueType>& other, const Redistributor& redistributor )
+void CSRStorage<ValueType>::redistributeCSR( const CSRStorage<ValueType>& other, const dmemo::Redistributor& redistributor )
 {
     SCAI_REGION( "Storage.redistributeCSR" )
 
-    const Distribution& sourceDistribution = *redistributor.getSourceDistributionPtr();
-    const Distribution& targetDistribution = *redistributor.getTargetDistributionPtr();
+    const dmemo::Distribution& sourceDistribution = *redistributor.getSourceDistributionPtr();
+    const dmemo::Distribution& targetDistribution = *redistributor.getTargetDistributionPtr();
 
     SCAI_LOG_INFO( logger,
                    other << ": redistribute of CSR<" << other.getValueType() << "> to CSR<" << this->getValueType() << " via " << redistributor )
@@ -1154,6 +1164,16 @@ void CSRStorage<ValueType>::copyTo( _MatrixStorage& other ) const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
+CSRStorage<ValueType>* CSRStorage<ValueType>::newMatrixStorage() const
+{
+   common::unique_ptr<CSRStorage<ValueType> > storage( new CSRStorage<ValueType>() ); 
+   storage->setContextPtr( this->getContextPtr() );
+   return storage.release();
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
 template<typename OtherValueType>
 void CSRStorage<ValueType>::buildCSR(
     HArray<IndexType>& ia,
@@ -1233,9 +1253,9 @@ template<typename ValueType>
 void CSRStorage<ValueType>::splitHalo(
     MatrixStorage<ValueType>& localData,
     MatrixStorage<ValueType>& haloData,
-    Halo& halo,
-    const Distribution& colDist,
-    const Distribution* rowDist ) const
+    dmemo::Halo& halo,
+    const dmemo::Distribution& colDist,
+    const dmemo::Distribution* rowDist ) const
 {
     SCAI_REGION( "Storage.splitHalo" )
 
@@ -2330,7 +2350,7 @@ ValueType CSRStorage<ValueType>::l2Norm() const
 
     SCAI_CONTEXT_ACCESS( loc );
 
-    return TypeTraits<ValueType>::sqrt(dot[loc]( mNumValues, data.get(), 1, data.get(), 1 ));
+    return common::Math::sqrt(dot[loc]( mNumValues, data.get(), 1, data.get(), 1 ));
 }
 
 /* --------------------------------------------------------------------------- */
@@ -2430,18 +2450,12 @@ ValueType CSRStorage<ValueType>::maxDiffNormImpl( const CSRStorage<ValueType>& o
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-CSRStorage<ValueType>* CSRStorage<ValueType>::clone() const
-{
-    return new CSRStorage<ValueType>();
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
 CSRStorage<ValueType>* CSRStorage<ValueType>::copy() const
 {
     return new CSRStorage<ValueType>( *this );
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
 void CSRStorage<ValueType>::buildSparseRowSizes( HArray<IndexType>& rowSizes ) const
@@ -2467,6 +2481,22 @@ void CSRStorage<ValueType>::buildSparseRowData(
 
     sparseJA = mJa;
     sparseValues = mValues;
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+template<typename ValueType>
+_MatrixStorage* CSRStorage<ValueType>::create()
+{
+    return new CSRStorage<ValueType>();
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+template<typename ValueType>
+MatrixStorageCreateKeyType CSRStorage<ValueType>::createValue()
+{
+    return MatrixStorageCreateKeyType( Format::CSR, common::getScalarType<ValueType>() );
 }
 
 /* ========================================================================= */

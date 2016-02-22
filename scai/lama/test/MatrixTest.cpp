@@ -49,7 +49,6 @@
 
 #include <scai/lama/test/TestMacros.hpp>
 #include <scai/lama/test/SparseMatrixHelper.hpp>
-#include <scai/lama/test/Configuration.hpp>
 #include <scai/lama/test/SameMatrixHelper.hpp>
 #include <scai/lama/test/TestSparseMatrices.hpp>
 
@@ -57,6 +56,7 @@
 
 using namespace scai::lama;
 using namespace scai::hmemo;
+using namespace scai::dmemo;
 
 BOOST_AUTO_TEST_SUITE( MatrixTest )
 
@@ -118,7 +118,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ReadWriteTest, MatrixType, MatrixTypes )
 {
     CommunicatorPtr comm = Communicator::getCommunicator(); // get default, MPI or serial
     SCAI_LOG_INFO( logger, "ReadWriteTest for MatrixType = " << typeid( MatrixType ).name() );
-    std::string prefix = Configuration::getInstance().getPath();
+    std::string prefix = scai::test::Configuration::getPath();
     SCAI_LOG_INFO( logger, "prefix = " << prefix );
     SCAI_LOG_INFO( logger, "readWriteTest: check loading float matrix" );
 // load an available testfile matrix.

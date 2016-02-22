@@ -38,11 +38,11 @@ set ( CXX_SOURCES
       TraitTest.cpp  
 )
 
-include_directories ( ${Boost_INCLUDE_DIR} )
+include_directories ( ${SCAI_BOOST_INCLUDE_DIR} )
 
 add_executable ( KernelInterfaceTest ${CXX_SOURCES} )
 
-target_link_libraries ( KernelInterfaceTest ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} scai_kregistry )
+target_link_libraries ( KernelInterfaceTest ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} ${PROJECT_NAME} )
         
 if ( USE_CODE_COVERAGE )
     configure_file( "${CMAKE_CURRENT_SOURCE_DIR}/code_coverage.sh.in" "${CMAKE_CURRENT_BINARY_DIR}/code_coverage.sh" @ONLY)

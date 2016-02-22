@@ -36,6 +36,7 @@
 
 // local library
 #include <scai/blaskernel/BLASKernelTrait.hpp>
+#include <scai/blaskernel/openmp/OpenMPBLAS1.hpp>
 
 // internal scai libraries
 #include <scai/kregistry/KernelRegistry.hpp>
@@ -45,13 +46,11 @@
 #include <scai/common/unique_ptr.hpp>
 #include <scai/common/macros/unused.hpp>
 #include <scai/common/TypeTraits.hpp>
-
-// boost
-#include <boost/preprocessor.hpp>
+#include <scai/common/Math.hpp>
+#include <scai/common/preprocessor.hpp>
 
 // std
 #include <cmath>
-#include "../../blaskernel/openmp/OpenMPBLAS1.hpp"
 
 namespace scai
 {
@@ -104,7 +103,7 @@ IndexType OpenMPLAPACK::getrf(
 
             for( int j = i; j < lda; j++ )
             {
-                if( TypeTraits<ValueType>::abs( a[lda * ipiv[i] + j] ) > TypeTraits<ValueType>::abs( a[lda * ipiv[i] + index] ) )
+                if( common::Math::abs( a[lda * ipiv[i] + j] ) > common::Math::abs( a[lda * ipiv[i] + index] ) )
                 {
                     index = j;
                 }
@@ -140,7 +139,7 @@ IndexType OpenMPLAPACK::getrf(
 
             for( int j = i; j < lda; j++ )
             {
-                if( TypeTraits<ValueType>::abs( a[lda * ipiv[j] + i] ) > TypeTraits<ValueType>::abs( a[lda * ipiv[index] + i] ) )
+                if( common::Math::abs( a[lda * ipiv[j] + i] ) > common::Math::abs( a[lda * ipiv[index] + i] ) )
                 {
                     index = j;
                 }
@@ -528,7 +527,7 @@ void OpenMPLAPACK::laswp(
     }
     else
     {
-        BLASHelper::XERBLA_cpu( 0, 1, "cblas_slaswp", "Illegal order setting, %d\n", order );
+    	COMMON_THROWEXCEPTION( "illegal order setting " << order )
     }
 }
 

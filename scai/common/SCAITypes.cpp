@@ -25,22 +25,17 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief SCAITypes.cpp
+ * @brief Setting of some global constants defined by function calls.
  * @author Jiri Kraus
  * @date 23.02.2011
  */
 
 // local library
+
 #include <scai/common/SCAITypes.hpp>
 
-#ifdef __INTEL_OFFLOAD
-__declspec( target(mic) )
-#endif
-const IndexType nIndex = std::numeric_limits<IndexType>::max();
+MIC_CALLABLE_MEMBER const IndexType nIndex = std::numeric_limits<IndexType>::max();
 
-#ifdef __INTEL_OFFLOAD
-__declspec( target(mic) )
-#endif
-const PartitionId nPartition = std::numeric_limits<PartitionId>::max();
+MIC_CALLABLE_MEMBER const PartitionId nPartition = std::numeric_limits<PartitionId>::max();
 
 

@@ -74,6 +74,12 @@ if ( NOT SCAI_DOC_TYPE )
         "Choose the type of documentation, options are: ${SCAI_DOC_TYPE_OPTIONS}." FORCE )
     checkValue ( ${SCAI_DOC_TYPE} "${SCAI_DOC_TYPE_OPTIONS}" )
     message ( STATUS "Doc type is set to " ${CMAKE_BUILD_TYPE} )
+
+    if    ( SCAI_DOC_TYPE STREQUAL json )
+        set ( DOC_EXTENTSION "fjson" )
+    else  ( SCAI_DOC_TYPE STREQUAL json )
+        set ( DOC_EXTENTSION "html" )
+    endif ( SCAI_DOC_TYPE STREQUAL json )
 endif ( NOT SCAI_DOC_TYPE )
 
 ## Check if lama should be build static or shared

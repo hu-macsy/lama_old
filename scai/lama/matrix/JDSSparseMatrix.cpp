@@ -40,6 +40,7 @@ namespace scai
 {
 
 using common::shared_ptr;
+using namespace dmemo;
 
 namespace lama
 {
@@ -328,18 +329,21 @@ void JDSSparseMatrix<ValueType>::swapLocalStorage( StorageType& localStorage )
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-JDSSparseMatrix<ValueType>* JDSSparseMatrix<ValueType>::clone() const
+JDSSparseMatrix<ValueType>* JDSSparseMatrix<ValueType>::newMatrix() const
 {
-    JDSSparseMatrix* newSparseMatrix = new JDSSparseMatrix<ValueType>();
+    common::unique_ptr<JDSSparseMatrix<ValueType> > newSparseMatrix( new JDSSparseMatrix<ValueType>() );
 
     // inherit the context, communication kind of this matrix for the new matrix
 
     newSparseMatrix->setContextPtr( this->getContextPtr() );
+
     newSparseMatrix->setCommunicationKind( this->getCommunicationKind() );
 
-    SCAI_LOG_INFO( logger, "create is " << *newSparseMatrix )
+    SCAI_LOG_INFO( logger,
+                   *this << ": create -> " << *newSparseMatrix << " @ " << *(newSparseMatrix->getContextPtr())
+                   << ", kind = " << newSparseMatrix->getCommunicationKind() );
 
-    return newSparseMatrix;
+    return newSparseMatrix.release();
 }
 
 /* -------------------------------------------------------------------------- */
@@ -375,8 +379,7 @@ Matrix* JDSSparseMatrix<ValueType>::create()
 template<typename ValueType>
 MatrixCreateKeyType JDSSparseMatrix<ValueType>::createValue()
 {
-    common::scalar::ScalarType skind = common::getScalarType<ValueType>();
-    return MatrixCreateKeyType( Format::JDS, skind );
+    return MatrixCreateKeyType( Format::JDS, common::getScalarType<ValueType>() );
 }
 
 /* ========================================================================= */

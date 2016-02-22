@@ -41,7 +41,6 @@
 
 #include <scai/lama/test/TestMacros.hpp>
 
-#include <scai/lama/test/Configuration.hpp>
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 #include <scai/lama/DenseVector.hpp>
 
@@ -52,6 +51,7 @@
 
 using namespace scai;
 using namespace lama;
+using namespace utilskernel;
 using namespace hmemo;
 
 /* ------------------------------------------------------------------------- */
@@ -724,7 +724,7 @@ LAMA_COMMON_TEST_CASE_TEMPLATE_END()
 
 LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, ValueType, numericalTest )
 
-std::string prefix = Configuration::getInstance().getPath();
+std::string prefix = scai::test::Configuration::getPath();
 CSRSparseMatrix<ValueType> symA( prefix + "/" + "nos6.mtx" );
 mMatrixStorage = symA.getLocalStorage();
 
@@ -1036,7 +1036,7 @@ SCAI_LOG_INFO( logger, "jacobiHaloTest: matrix = " << mMatrixStorage
 
 setDenseHalo( mMatrixStorage );
 
-common::shared_ptr<MatrixStorage<ValueType> > local( mMatrixStorage.clone() );
+common::shared_ptr<MatrixStorage<ValueType> > local( MatrixStorage<ValueType>::create( mMatrixStorage.getCreateValue() ) );
 
 setDenseLocal( *local );
 
@@ -1100,12 +1100,12 @@ LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, ValueType, inverseTest )
 SCAI_LOG_INFO( logger, "inverseTest for " << mMatrixStorage.getTypeName() )
 
 setDenseRandom( mMatrixStorage );
-common::shared_ptr<MatrixStorage<ValueType> > identity( mMatrixStorage.clone() );
+common::shared_ptr<MatrixStorage<ValueType> > identity( MatrixStorage<ValueType>::create( mMatrixStorage.getCreateValue() ) );
 identity->setIdentity( mMatrixStorage.getNumRows() );
 
 // 1. check: use the inverse of the identity, which is expected to be the identity again
 {
-    common::shared_ptr<MatrixStorage<ValueType> > identity2( mMatrixStorage.clone() );
+    common::shared_ptr<MatrixStorage<ValueType> > identity2( MatrixStorage<ValueType>::create( mMatrixStorage.getCreateValue() ) );
     identity2->setIdentity( mMatrixStorage.getNumRows() );
     identity2->invert( mMatrixStorage );
     // testSameMatrixStorage( *identity, *identity2, Scalar( common::TypeTraits<ValueType>::small() ) );
@@ -1114,8 +1114,8 @@ identity->setIdentity( mMatrixStorage.getNumRows() );
 // 2. check: check invert on matrix ( multiply inverted matrix with original matrix and check whether the result is the
 // identity
 {
-    common::shared_ptr<MatrixStorage<ValueType> > inverse( mMatrixStorage.clone() );
-    common::shared_ptr<MatrixStorage<ValueType> > result( mMatrixStorage.clone() );
+    common::shared_ptr<MatrixStorage<ValueType> > inverse( MatrixStorage<ValueType>::create( mMatrixStorage.getCreateValue() ) );
+    common::shared_ptr<MatrixStorage<ValueType> > result( MatrixStorage<ValueType>::create( mMatrixStorage.getCreateValue() ) );
     inverse->invert( mMatrixStorage );
     result->matrixTimesMatrix( static_cast<ValueType>(1.0), mMatrixStorage, *inverse, static_cast<ValueType>(0.0), *inverse );
     testSameMatrixStorage( *identity, *result, Scalar( common::TypeTraits<ValueType>::small() ) );
@@ -1125,7 +1125,7 @@ identity->setIdentity( mMatrixStorage.getNumRows() );
 // result is the identity
 {
     common::shared_ptr<MatrixStorage<ValueType> > inverse( mMatrixStorage.copy() );
-    common::shared_ptr<MatrixStorage<ValueType> > result( mMatrixStorage.clone() );
+    common::shared_ptr<MatrixStorage<ValueType> > result( MatrixStorage<ValueType>::create( mMatrixStorage.getCreateValue() ) );
     inverse->invert( mMatrixStorage );
     result->matrixTimesMatrix( ValueType( 1 ), mMatrixStorage, *inverse, ValueType( 0 ), *inverse);
     testSameMatrixStorage( *identity, *result, Scalar( common::TypeTraits<ValueType>::small() ) );
@@ -1137,7 +1137,7 @@ LAMA_COMMON_TEST_CASE_TEMPLATE_END()
 
 LAMA_COMMON_TEST_CASE_TEMPLATE( MatrixStorageTest, ValueType, symmetryTest )
 
-std::string prefix = Configuration::getInstance().getPath();
+std::string prefix = scai::test::Configuration::getPath();
 CSRSparseMatrix<ValueType> sym( prefix + "/" + "nos6.mtx" );
 mMatrixStorage = sym.getLocalStorage();
 

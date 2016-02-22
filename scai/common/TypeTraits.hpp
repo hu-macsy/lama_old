@@ -33,6 +33,7 @@
 #pragma once
 
 #include <scai/common/ScalarType.hpp>
+#include <scai/common/Math.hpp>
 
 #include <cmath>
 #include <cstdlib>
@@ -53,37 +54,9 @@ class TypeTraits
 {
 public:
 
-    /** Square root function for ValueType
-     *
-     *  In contrary to the routine of cmath it will be possible to
-     *  use always the same name for the routine. 
-     *
-     *  \code
-     *    ValueType x = sqrt ( y );                          // might not work always correctly
-     *    ValueType x = TypeTraits<ValueType>::sqrt ( y );   // this is guaranteed to work
-     *  \endcode
-     */
-    static inline ValueType sqrt( ValueType val )
-    {
-        // this is a good default but might be different for some value types
+    /** Return type of function abs( ValueType ) */
 
-        return sqrt( val );
-    }
-
-    /** Absolute value function for ValueType
-     *
-     *  In contrary to the routine of cmath it will be possible to
-     *  use always the same name for the routine. 
-     */
-    static inline ValueType abs( ValueType val )
-    {
-        return abs( val );
-    }
-
-    static inline ValueType conj( ValueType val )
-    {
-        return val;   
-    }
+	typedef ValueType AbsType;
 
     /** Get value-specific epsilon for comparison. */
 
@@ -135,16 +108,7 @@ template<>
 class TypeTraits<IndexType>
 {
 public:
-
-    static inline IndexType abs( IndexType x )
-    {
-        return ::abs( x );
-    }
-
-    static inline IndexType conj( IndexType x )
-    {
-        return x;
-    }
+	typedef IndexType AbsType;
 
     static inline IndexType getEps()
     {
@@ -180,20 +144,7 @@ template<>
 class TypeTraits<long double>
 {
 public:
-
-    static inline long double sqrt( long double x )
-    {
-        return ::sqrtl( x );
-    }
-    static inline long double abs( long double x )
-    {
-        return ::fabsl( x );
-    }
-
-    static inline long double conj( long double x )
-    {
-        return x;
-    }
+	typedef long double AbsType;
 
     static inline long double getEps()
     {
@@ -229,19 +180,8 @@ template<>
 class TypeTraits<double>
 {
 public:
+	typedef double AbsType;
 
-    static inline double sqrt( double x )
-    {
-        return ::sqrt( x );
-    }
-    static inline double abs( double x )
-    {
-        return ::fabs( x );
-    }
-    static inline double conj( double x )
-    {
-        return x;
-    }
     static inline double getEps()
     {
         return std::numeric_limits<double>::epsilon();
@@ -275,19 +215,8 @@ template<>
 class TypeTraits<float>
 {
 public:
+	typedef float AbsType;
 
-    static inline float sqrt( float x )
-    {
-        return ::sqrtf( x );
-    }
-    static inline float abs( float x )
-    {
-        return ::fabsf( x );
-    }
-    static inline float conj( float x )
-    {
-        return x;
-    }
     static inline float getEps()
     {
         return std::numeric_limits<float>::epsilon();
@@ -323,20 +252,8 @@ template<>
 class TypeTraits<ComplexFloat>
 {
 public:
+	typedef float AbsType;
 
-    static inline ComplexFloat sqrt( ComplexFloat x )
-    {
-        return scai::common::sqrt( x );
-    }
-    static inline ComplexFloat abs( ComplexFloat x )
-    {
-        return scai::common::abs( x );
-    }
-
-    static inline ComplexFloat conj( ComplexFloat x )
-    {
-        return ComplexFloat( x.real(), -x.imag() );
-    }
     static inline ComplexFloat getEps()
     {
         return std::numeric_limits<float>::epsilon();
@@ -370,21 +287,7 @@ template<>
 class TypeTraits<ComplexDouble>
 {
 public:
-
-    static inline ComplexDouble sqrt( ComplexDouble x )
-    {
-        return scai::common::sqrt( x );
-    }
-
-    static inline ComplexDouble conj( ComplexDouble x )
-    {
-        return ComplexDouble( x.real(), -x.imag() );
-    }
-
-    static inline ComplexDouble abs( ComplexDouble x )
-    {
-        return scai::common::abs( x );
-    }
+	typedef double AbsType;
 
     static inline ComplexDouble getEps()
     {
@@ -420,21 +323,7 @@ template<>
 class TypeTraits<ComplexLongDouble>
 {
 public:
-
-    static inline ComplexLongDouble sqrt( ComplexLongDouble x )
-    {
-        return scai::common::sqrt( x );
-    }
-
-    static inline ComplexLongDouble abs( ComplexLongDouble x )
-    {
-        return scai::common::abs( x );
-    }
-
-    static inline ComplexLongDouble conj( ComplexLongDouble x )
-    {
-        return ComplexLongDouble( x.real(), -x.imag() );
-    }
+	typedef long double AbsType;
 
     static inline ComplexLongDouble getEps()
     {

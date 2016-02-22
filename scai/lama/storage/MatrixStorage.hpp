@@ -35,10 +35,12 @@
 
 // local library
 #include <scai/lama/io/FileType.hpp>
-#include <scai/lama/Communicator.hpp>
+#include <scai/dmemo/Communicator.hpp>
 
 // internal scai libraries
 #include <scai/hmemo.hpp>
+
+#include <scai/common/Factory.hpp>
 
 // std
 #include <ostream>
@@ -46,17 +48,22 @@
 namespace scai
 {
 
+// Forward declarations
+
 namespace tasking
 {
 	class SyncToken;
 }
 
+namespace dmemo
+{
+    class Distribution;
+    class Halo;
+    class Redistributor;
+}
+
 namespace lama
 {
-
-// Forward declaration
-
-class Distribution;
 
 template<typename ValueType> class CSRStorage;
 
@@ -89,6 +96,43 @@ COMMON_DLL_IMPORTEXPORT const char* format2Str( const MatrixStorageFormat storag
 
 COMMON_DLL_IMPORTEXPORT MatrixStorageFormat str2Format( const char* str );
 
+/** Key type used for the Matrix factory.
+ *
+ *  Note: own struct instead of std::pair to allow definition of operator <<
+ */
+
+struct MatrixStorageCreateKeyType
+{
+    Format::MatrixStorageFormat first;
+    common::scalar::ScalarType second;
+
+    MatrixStorageCreateKeyType( Format::MatrixStorageFormat arg1, common::scalar::ScalarType arg2 )
+    {
+        first = arg1;
+        second = arg2;
+    }
+
+    bool operator< ( const MatrixStorageCreateKeyType& other ) const
+    {
+        if ( first < other.first )
+        {
+            return true;
+        }
+        else if ( first == other.first )
+        {
+            return second < other.second;
+        }
+
+        return false;
+    }
+};
+
+inline std::ostream& operator<<( std::ostream& stream, const MatrixStorageCreateKeyType& object )
+{
+    stream << object.first << object.second;
+    return stream;
+}
+
 /** The class _MatrixStorage is the base class for all matrix storage classes
  supported by LAMA.
 
@@ -105,7 +149,9 @@ COMMON_DLL_IMPORTEXPORT MatrixStorageFormat str2Format( const char* str );
  storage should take place.
  */
 
-class COMMON_DLL_IMPORTEXPORT _MatrixStorage: public common::Printable
+class COMMON_DLL_IMPORTEXPORT _MatrixStorage:
+    public common::Factory<MatrixStorageCreateKeyType, _MatrixStorage*>,
+    public common::Printable
 {
 public:
 
@@ -268,7 +314,7 @@ public:
      *    * this routine is the same as an assign in case of a replicated distribution
      */
 
-    virtual void localize( const _MatrixStorage& global, const Distribution& rowDist );
+    virtual void localize( const _MatrixStorage& global, const dmemo::Distribution& rowDist );
 
     /** Get the total number of non-zero values in the matrix.
      *
@@ -402,19 +448,6 @@ public:
 
     virtual void check( const char* msg ) const = 0;
 
-    /** Each matrix storage must provide a routine that creates a new object
-     *  of the same matrix type (same format and same value type).
-     *
-     *  The implementations in derived classes should use covariant
-     *  return types to allow polymorphic creation of objects.
-     *
-     *  Note: as shared_ptr cannot be used for for covariant return types
-     *        this routine returns directly a new created object that should
-     *        be wrapped as a shared pointer at calling site.
-     */
-
-    virtual _MatrixStorage* clone() const = 0;
-
     /** Each matrix storage must provide a routine that makes a new copy
      *  of the input matrix (same format and same value type).
      *
@@ -428,6 +461,18 @@ public:
 
     virtual _MatrixStorage* copy() const = 0;
 
+    /**  Each matrix storage must provide a routine that creates a new matrix storage
+      *  of the same type (same format, same value type, same context)
+      */
+
+    virtual _MatrixStorage* newMatrixStorage() const = 0;
+
+    /**  Returning a pair of storage format and value type for using with
+      *  the factory
+      */
+
+    virtual MatrixStorageCreateKeyType getCreateValue() const = 0;
+
     /**
      * @brief transformation from matrix type to a csr graph
      *
@@ -437,18 +482,14 @@ public:
      * @param[out]  adjIA   the ia array of the csr graph
      * @param[out]  adjJA   the ja array of the csr graph
      * @param[out]  vwgt    ToDo
-     * @param[in]   comm    Communicator is used to determine number of partitions
-     * @param[in]   globalRowIndexes ToDo
-     * @param[out]  vtxdist ToDo
+     * @param[in]   globalRowIndexes are the global indexes of the local rows ( can be NULL for identity )
      * @since 1.1.0
      */
     virtual void buildCSRGraph(
-        IndexType* adjIA,
-        IndexType* adjJA,
-        IndexType* vwgt,
-        CommunicatorPtr comm,
-        const IndexType* globalRowIndexes = NULL,
-        IndexType* vtxdist = NULL ) const;
+        IndexType adjIA[],
+        IndexType adjJA[],
+        IndexType vwgt[],
+        const IndexType* globalRowIndexes ) const;
 
     /******************************************************************
      *   File I/O for MatrixStorage                                    *
@@ -512,8 +553,6 @@ protected:
     virtual bool checkDiagonalProperty() const = 0;
 };
 
-class Distribution;
-
 /** The template class MatrixStorage<ValueType> is the base
  *  class for all matrix storage classes of a given ValueType.
  *
@@ -538,13 +577,13 @@ public:
 
     virtual ~MatrixStorage();
 
-    /** Override _MatrixStorage::create with routine that uses covariant return type. */
-
-    virtual MatrixStorage* clone() const = 0;
-
     /** Override _MatrixStorage::copy with routine that uses covariant return type. */
 
     virtual MatrixStorage* copy() const = 0;
+
+    /** Override _MatrixStorage::newMatrixStorage with routine that uses covariant return type. */
+
+    virtual MatrixStorage* newMatrixStorage() const = 0;
 
     /** Implementation of pure method. */
 
@@ -622,8 +661,8 @@ public:
     virtual void joinHalo(
         const _MatrixStorage& localData,
         const _MatrixStorage& haloData,
-        const class Halo& halo,
-        const class Distribution& colDist,
+        const dmemo:: Halo& halo,
+        const dmemo::Distribution& colDist,
         const bool keepDiagonalProperty );
 
     /** Splitting of matrix storage for halo
@@ -638,9 +677,9 @@ public:
     virtual void splitHalo(
         MatrixStorage<ValueType>& localData,
         MatrixStorage<ValueType>& haloData,
-        class Halo& halo,
-        const class Distribution& colDist,
-        const class Distribution* rowDist ) const;
+        dmemo::Halo& halo,
+        const dmemo::Distribution& colDist,
+        const dmemo::Distribution* rowDist ) const;
 
     /** Special version of splitHalo where this matrix contains no local
      *  data and where haloData is aliased to this matrix.
@@ -650,7 +689,7 @@ public:
      *  exchange schedule.
      */
 
-    virtual void buildHalo( class Halo& halo, const class Distribution& colDist );
+    virtual void buildHalo( dmemo::Halo& halo, const dmemo::Distribution& colDist );
 
     /** This method build for this matrix the local part of a global matrix.
      *
@@ -660,7 +699,7 @@ public:
      *  Attention: globalMatrix might be aliased to this storage.
      */
 
-    virtual void localize( const _MatrixStorage& globalData, const class Distribution& rowDist );
+    virtual void localize( const _MatrixStorage& globalData, const dmemo::Distribution& rowDist );
 
     /** This routine builds the full matrix storage for a distributed matrix.
      *
@@ -669,7 +708,7 @@ public:
      *  the global matrix data.
      */
 
-    virtual void replicate( const _MatrixStorage& localData, const class Distribution& rowDist );
+    virtual void replicate( const _MatrixStorage& localData, const dmemo::Distribution& rowDist );
 
     /** Get a value of the matrix.
      *
@@ -714,18 +753,18 @@ public:
      *
      */
 
-    virtual void redistribute( const _MatrixStorage& other, const class Redistributor& redistributor );
+    virtual void redistribute( const _MatrixStorage& other, const dmemo::Redistributor& redistributor );
 
     /** Special case where other storage is CSR of same type avoids temporary CSR conversion. */
 
-    virtual void redistributeCSR( const CSRStorage<ValueType>& other, const class Redistributor& redistributor );
+    virtual void redistributeCSR( const CSRStorage<ValueType>& other, const dmemo::Redistributor& redistributor );
 
     /** Build a halo matrix with all rows of required indexes */
 
     virtual void exchangeHalo(
-        const class Halo& halo,
+        const dmemo::Halo& halo,
         const MatrixStorage<ValueType>& matrix,
-        const class Communicator& comm );
+        const dmemo::Communicator& comm );
 
     /** Conversion routine of Compressed Sparse Row data to Compressed Sparse Column.  */
 
@@ -1043,6 +1082,9 @@ protected:
      */
 
     void swap( MatrixStorage<ValueType>& other );
+
+public:
+    static MatrixStorage<ValueType>* create( const MatrixStorageCreateKeyType key );
 };
 
 /* ------------------------------------------------------------------------- */
@@ -1095,6 +1137,12 @@ void MatrixStorage<ValueType>::setRawCSRData(
     // now set the data on the context of this storage via virtual method
 
     setCSRData( numRows, numColumns, numValues, csrIA, csrJA, csrValues );
+}
+
+template<typename ValueType>
+MatrixStorage<ValueType>* MatrixStorage<ValueType>::create( const MatrixStorageCreateKeyType key )
+{
+    return reinterpret_cast<MatrixStorage<ValueType>* >( _MatrixStorage::create( key ) );
 }
 
 } /* end namespace lama */

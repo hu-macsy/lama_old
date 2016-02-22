@@ -66,18 +66,14 @@ scai_summary_message ( "FOUND"
 				
 if    ( NOT CXX_SUPPORTS_C11 )
     scai_summary_message ( "FOUND"
-                           "BOOST_INCLUDE_DIR"
+                           "SCAI_BOOST_INCLUDE_DIR"
                            "Boost"
-                           "Version ${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}, add include dir ${BOOST_INCLUDE_DIR} to compile your sources" )
+                           "Version ${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}, add include dir ${SCAI_BOOST_INCLUDE_DIR} to compile your sources" )
 endif ( NOT CXX_SUPPORTS_C11 )
 
 message ( STATUS "" )
 
-if    ( SCAI_COMPLETE_BUILD )
-	set ( OPENMP_INFO_TEXT "OpenMP schedule set to \"${SCAI_OMP_SCHEDULE}\"" )
-else  ( SCAI_COMPLETE_BUILD )
-	set ( OPENMP_INFO_TEXT "compile your sources with -DSCAI_OMP_SCHEDULE=<schedule-type>" )
-endif ( SCAI_COMPLETE_BUILD )
+set ( OPENMP_INFO_TEXT "OpenMP schedule type is set to \"${SCAI_OMP_SCHEDULE}\"" )
 
 scai_summary_message ( "USE"
                        "USE_OPENMP"
@@ -88,11 +84,10 @@ scai_summary_message ( "USE"
 message ( STATUS "" )
 scai_status_message ( HEADLINE "LIBRARIES:" )
 
-if    ( SCAI_THREAD_LIBRARIES )
+set ( REQUIRED_FOUND FALSE )
+if    ( SCAI_THREAD_LIBRARIES AND SCAI_BOOST_INCLUDE_DIR )
     set ( REQUIRED_FOUND TRUE )
-else  ( SCAI_THREAD_LIBRARIES )
-    set ( REQUIRED_FOUND FALSE )
-endif ( SCAI_THREAD_LIBRARIES )
+endif ( SCAI_THREAD_LIBRARIES AND SCAI_BOOST_INCLUDE_DIR )
 
 scai_summary_message ( "STATIC"
                        "REQUIRED_FOUND"
@@ -105,10 +100,22 @@ scai_summary_message ( "STATIC"
                            "pThreads"
                            "" )
     
+    # boost
+    message ( STATUS "" )
+    scai_summary_message ( "FOUND"
+                           "SCAI_BOOST_INCLUDE_DIR"
+                           "Boost"
+                           "Version ${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}, add include dir ${BOOST_INCLUDE_DIR} to compile your sources" )
+
 # LAMA CUDA
+set ( REQUIRED_FOUND FALSE )
+if    ( CUDA_FOUND AND USE_CUDA )
+  set ( REQUIRED_FOUND TRUE )
+endif ( CUDA_FOUND AND USE_CUDA )
+
 message ( STATUS "" )
 scai_summary_message ( "USE"
-                       "USE_CUDA"
+                       "REQUIRED_FOUND"
                        "CUDA"
                        "" )
 
@@ -116,7 +123,7 @@ scai_summary_message ( "USE"
     scai_summary_message ( "FOUND"
                            "CUDA_FOUND"
                            "CUDA"
-                           "Version ${CUDA_VERSION} at ${CUDA_INCLUDE_DIRS}" )
+                           "Version ${CUDA_VERSION} at ${SCAI_CUDA_INCLUDE_DIR}" )
                            
     # CUDA Compute Capability
     scai_summary_message ( "FOUND"
@@ -135,8 +142,13 @@ scai_summary_message ( "USE"
 message ( STATUS "" )
 scai_status_message ( HEADLINE "TESTING:" )
 
+set ( REQUIRED_FOUND FALSE )
+if    ( Boost_UNIT_TEST_FRAMEWORK_FOUND AND Boost_REGEX_FOUND AND BUILD_TEST )
+  set ( REQUIRED_FOUND TRUE )
+endif ( Boost_UNIT_TEST_FRAMEWORK_FOUND AND Boost_REGEX_FOUND AND BUILD_TEST )
+
 scai_summary_message ( "USE"
-                       "BUILD_TEST"
+                       "REQUIRED_FOUND"
                        "TEST"
                        "" )
 
@@ -156,7 +168,7 @@ message ( STATUS "" )
 
 scai_status_message ( HEADLINE "INFO:" )
 
-message ( STATUS "LAMA Version : ${LAMA_VERSION} ${LAMA_VERSION_NAME}" )
+message ( STATUS "Common Version : ${SCAI_COMMON_VERSION} ${SCAI_VERSION_NAME}" )
 message ( STATUS "Build Type   : ${CMAKE_BUILD_TYPE}" )
 message ( STATUS "Library Type : ${SCAI_LIBRARY_TYPE}" )
 message ( STATUS "ASSERT Level : ${SCAI_ASSERT_LEVEL} ( -DSCAI_ASSERT_LEVEL_${SCAI_ASSERT_LEVEL} )" )
@@ -164,13 +176,3 @@ if    ( USE_CODE_COVERAGE )
 	message ( STATUS "CODE COVERAGE: ${USE_CODE_COVERAGE}" )
 endif ( USE_CODE_COVERAGE )
 message ( STATUS "" )
-
-# LAMA Cuda
-if    ( USE_CUDA AND NOT CUDA_FOUND )
-    message( FATAL_ERROR "Build of LAMA Cuda enabled, but configuration is incomplete!")
-endif ( USE_CUDA AND NOT CUDA_FOUND )
-
-# LAMA Test
-if    ( BUILD_TEST AND NOT ( Boost_UNIT_TEST_FRAMEWORK_FOUND AND Boost_REGEX_FOUND ) )
-    message( FATAL_ERROR "Build of LAMA Test enabled, but configuration is incomplete!")
-endif ( BUILD_TEST AND NOT ( Boost_UNIT_TEST_FRAMEWORK_FOUND AND Boost_REGEX_FOUND ) )

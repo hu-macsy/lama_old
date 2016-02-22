@@ -39,11 +39,10 @@
 // internal scai libraries
 #include <scai/tasking/TaskSyncToken.hpp>
 #include <scai/kregistry/KernelRegistry.hpp>
+
 #include <scai/common/macros/unused.hpp>
 #include <scai/common/TypeTraits.hpp>
-
-// boost
-#include <boost/preprocessor.hpp>
+#include <scai/common/preprocessor.hpp>
 
 namespace scai
 {
@@ -136,8 +135,7 @@ void OpenMPBLAS3::gemm(
             }
             else
             {
-                BLASHelper::XERBLA_cpu( 0, 2, "cblas_sgemm", "Illegal TransA setting, %d\n", TransA );
-                return;
+            	COMMON_THROWEXCEPTION( "illegal transA setting " << TransA )
             }
         }
         else if( TransA == CblasConjTrans )
@@ -159,8 +157,7 @@ void OpenMPBLAS3::gemm(
             }
             else
             {
-                BLASHelper::XERBLA_cpu( 0, 2, "cblas_sgemm", "Illegal TransA setting, %d\n", TransA );
-                return;
+            	COMMON_THROWEXCEPTION( "illegal transA setting " << TransA )
             }
         }
         else if( TransA == CblasNoTrans )
@@ -211,13 +208,13 @@ void OpenMPBLAS3::gemm(
             }
             else
             {
-                BLASHelper::XERBLA_cpu( 0, 2, "cblas_sgemm", "Illegal TransA setting, %d\n", TransA );
+            	COMMON_THROWEXCEPTION( "illegal transA setting " << TransA )
                 return;
             }
         }
         else
         {
-            BLASHelper::XERBLA_cpu( 0, 2, "cblas_sgemm", "Illegal TransA setting, %d\n", TransA );
+        	COMMON_THROWEXCEPTION( "illegal transA setting " << TransA )
             return;
         }
     }
@@ -271,8 +268,7 @@ void OpenMPBLAS3::gemm(
             }
             else
             {
-                BLASHelper::XERBLA_cpu( 1, 2, "cblas_sgemm", "Illegal TransA setting, %d\n", TransA );
-                return;
+            	COMMON_THROWEXCEPTION( "illegal transA setting " << TransA )
             }
         }
         else if( TransA == CblasNoTrans )
@@ -326,8 +322,7 @@ void OpenMPBLAS3::gemm(
             }
             else
             {
-                BLASHelper::XERBLA_cpu( 1, 2, "cblas_sgemm", "Illegal TransA setting, %d\n", TransA );
-                return;
+            	COMMON_THROWEXCEPTION( "illegal transA setting " << TransA )
             }
         }
         else if( TransA == CblasConjTrans )
@@ -348,14 +343,13 @@ void OpenMPBLAS3::gemm(
             }
             else
             {
-                BLASHelper::XERBLA_cpu( 1, 2, "cblas_sgemm", "Illegal TransA setting, %d\n", TransA );
-                return;
+            	COMMON_THROWEXCEPTION( "illegal transA setting " << TransA )
             }
         }
     }
     else
     {
-        BLASHelper::XERBLA_cpu( 0, 1, "cblas_sgemm", "Illegal order setting, %d\n", order );
+    	COMMON_THROWEXCEPTION( "illegal order setting " << order )
     }
 
     return;

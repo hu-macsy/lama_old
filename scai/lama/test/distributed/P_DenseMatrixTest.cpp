@@ -39,10 +39,10 @@
 
 #include <scai/lama/matrix/DenseMatrix.hpp>
 
-#include <scai/lama/distribution/BlockDistribution.hpp>
-#include <scai/lama/distribution/GeneralDistribution.hpp>
-#include <scai/lama/distribution/CyclicDistribution.hpp>
-#include <scai/lama/distribution/NoDistribution.hpp>
+#include <scai/dmemo/BlockDistribution.hpp>
+#include <scai/dmemo/GeneralDistribution.hpp>
+#include <scai/dmemo/CyclicDistribution.hpp>
+#include <scai/dmemo/NoDistribution.hpp>
 
 #include <scai/lama/expression/MatrixVectorExpressions.hpp>
 #include <scai/lama/expression/MatrixExpressions.hpp>
@@ -53,6 +53,7 @@
 using namespace scai::common;
 using namespace scai::lama;
 using namespace scai::hmemo;
+using namespace scai::dmemo;
 
 typedef boost::mpl::list<double, float> test_types;
 
@@ -64,7 +65,7 @@ struct P_DenseMatrixTestConfig
 {
     P_DenseMatrixTestConfig()
     {
-        comm = Communicator::getCommunicator( scai::lama::communicator::MPI );
+        comm = Communicator::getCommunicator();
     }
 
     ~P_DenseMatrixTestConfig()

@@ -40,24 +40,16 @@
 #include <scai/lama/Scalar.hpp>
 #include <scai/lama/norm/MaxNorm.hpp>
 
-#include <scai/lama/matrix/CSRSparseMatrix.hpp>
-#include <scai/lama/matrix/ELLSparseMatrix.hpp>
-#include <scai/lama/matrix/DIASparseMatrix.hpp>
-#include <scai/lama/matrix/COOSparseMatrix.hpp>
-#include <scai/lama/matrix/JDSSparseMatrix.hpp>
-#include <scai/lama/matrix/DenseMatrix.hpp>
-
-#include <scai/lama/distribution/BlockDistribution.hpp>
-#include <scai/lama/distribution/CyclicDistribution.hpp>
-#include <scai/lama/distribution/Distribution.hpp>
+#include <scai/dmemo.hpp>
+#include <scai/dmemo/BlockDistribution.hpp>
+#include <scai/dmemo/CyclicDistribution.hpp>
 
 #include <scai/lama/expression/MatrixVectorExpressions.hpp>
 #include <scai/lama/expression/VectorExpressions.hpp>
 #include <scai/lama/expression/MatrixExpressions.hpp>
 
-#include <scai/lama/distribution/NoDistribution.hpp>
+#include <scai/dmemo/NoDistribution.hpp>
 
-#include <scai/lama/test/Configuration.hpp>
 #include <scai/lama/test/TestSparseMatrices.hpp>
 #include <scai/lama/test/EquationHelper.hpp>
 
@@ -65,6 +57,7 @@
 
 using namespace scai::lama;
 using namespace scai::hmemo;
+using namespace scai::dmemo;
 using scai::common::unique_ptr;
 using scai::common::scoped_array;
 using scai::common::shared_ptr;
@@ -80,8 +73,8 @@ struct P_VectorTestConfig
 {
     P_VectorTestConfig()
     {
-        comm = Communicator::getCommunicator( scai::lama::communicator::MPI ); // default communicator
-        m_inputVectorBaseName = Configuration::getInstance().getPath() + "/testVector";
+        comm = Communicator::getCommunicator();   // default communicator
+        m_inputVectorBaseName = scai::test::Configuration::getPath() + "/testVector";
         m_formattedInputVectorBaseName = m_inputVectorBaseName + "Formatted";
         m_xdrDoubleInputVectorBaseName = m_inputVectorBaseName + "XDRDouble";
     }

@@ -34,18 +34,17 @@
 // hpp
 #include <scai/lama/storage/DenseStorage.hpp>
 
-// local library
-#include <scai/lama/UtilKernelTrait.hpp>
-#include <scai/lama/DenseKernelTrait.hpp>
-#include <scai/lama/CSRKernelTrait.hpp>
-#include <scai/lama/LAMAKernel.hpp>
-#include <scai/lama/HArrayUtils.hpp>
-
 // internal scai libraries
+#include <scai/sparsekernel/DenseKernelTrait.hpp>
+#include <scai/sparsekernel/CSRKernelTrait.hpp>
+#include <scai/utilskernel/HArrayUtils.hpp>
+#include <scai/utilskernel/UtilKernelTrait.hpp>
+#include <scai/utilskernel/LAMAKernel.hpp>
 #include <scai/blaskernel/BLASKernelTrait.hpp>
 #include <scai/hmemo/ContextAccess.hpp>
 #include <scai/common/Constants.hpp>
 #include <scai/common/TypeTraits.hpp>
+#include <scai/common/Math.hpp>
 #include <scai/common/macros/print_string.hpp>
 #include <scai/common/exception/UnsupportedException.hpp>
 
@@ -59,6 +58,14 @@ namespace scai
 
 using common::shared_ptr;
 using common::TypeTraits;
+
+using utilskernel::LAMAKernel;
+using utilskernel::HArrayUtils;
+using utilskernel::UtilKernelTrait;
+
+using sparsekernel::DenseKernelTrait;
+using sparsekernel::CSRKernelTrait;
+
 
 namespace lama
 {
@@ -1036,7 +1043,7 @@ ValueType DenseStorageView<ValueType>::l2Norm() const
 
     SCAI_CONTEXT_ACCESS( loc );
 
-    return TypeTraits<ValueType>::sqrt( dot[loc]( n, data.get(), 1, data.get(), 1 ) );
+    return common::Math::sqrt( dot[loc]( n, data.get(), 1, data.get(), 1 ) );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1375,18 +1382,59 @@ const char* DenseStorage<ValueType>::getTypeName() const
 
 template<typename ValueType>
 DenseStorageView<ValueType>*
-DenseStorageView<ValueType>::clone() const
+DenseStorageView<ValueType>::copy() const
+{
+    return new DenseStorage<ValueType>( *this );
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+template<typename ValueType>
+_MatrixStorage* DenseStorageView<ValueType>::create()
+{
+    COMMON_THROWEXCEPTION( "creation currently not possible")
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+template<typename ValueType>
+MatrixStorageCreateKeyType DenseStorageView<ValueType>::createValue()
+{
+    return MatrixStorageCreateKeyType( Format::DENSE, common::getScalarType<ValueType>() );
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+template<typename ValueType>
+DenseStorageView<ValueType>* DenseStorageView<ValueType>::newMatrixStorage() const
+{
+    COMMON_THROWEXCEPTION( "DenseStorageView<ValueType>::newMatrixStorage() not implemented yet" )
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+template<typename ValueType>
+_MatrixStorage* DenseStorage<ValueType>::create()
 {
     return new DenseStorage<ValueType>();
 }
 
-/* --------------------------------------------------------------------------- */
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
-DenseStorageView<ValueType>*
-DenseStorageView<ValueType>::copy() const
+MatrixStorageCreateKeyType DenseStorage<ValueType>::createValue()
 {
-    return new DenseStorage<ValueType>( *this );
+    return MatrixStorageCreateKeyType( Format::DENSE, common::getScalarType<ValueType>() );
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+template<typename ValueType>
+DenseStorage<ValueType>* DenseStorage<ValueType>::newMatrixStorage() const
+{
+   common::unique_ptr<DenseStorage<ValueType> > storage( new DenseStorage<ValueType>() ); 
+   storage->setContextPtr( this->getContextPtr() );
+   return storage.release();
 }
 
 /* ========================================================================= */

@@ -32,18 +32,19 @@
 
 set ( CXX_SOURCES
       CommonTest.cpp
+      FactoryTest.cpp  
       SettingsTest.cpp  
 )
 
-include_directories ( ${Boost_INCLUDE_DIR} )
+include_directories ( ${SCAI_BOOST_INCLUDE_DIR} )
 
 add_executable ( CommonTest ${CXX_SOURCES} )
 
-target_link_libraries ( CommonTest ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} scai_common )
+target_link_libraries ( CommonTest ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} ${PROJECT_NAME} )
 
 file ( GLOB LOCAL_HEADERS "*.hpp" )
 
-install ( FILES ${LOCAL_HEADERS} DESTINATION include/scai/common/test )
+install ( FILES ${LOCAL_HEADERS} DESTINATION ${${UPPER_PROJECT_NAME}_INCLUDE_DIR}/test )
 
 ### Copy the xmltest.sh file in build directory ### 
 file ( COPY xmltest.sh DESTINATION ${CMAKE_CURRENT_BINARY_DIR} ) 

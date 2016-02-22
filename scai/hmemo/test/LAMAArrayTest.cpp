@@ -156,6 +156,31 @@ BOOST_AUTO_TEST_CASE( resizeTest )
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE( capacityTest )
+{
+    ContextPtr contextPtr = Context::getHostPtr();
+
+    static IndexType N = 10;
+
+    HArray<IndexType> lamaArray; // default, not allocated at all
+
+    lamaArray.reserve( contextPtr, N );
+
+    BOOST_CHECK_EQUAL( lamaArray.size(), 0 );
+    BOOST_CHECK_EQUAL( lamaArray.capacity( contextPtr ), N );
+
+    {
+        WriteAccess<IndexType> access( lamaArray, contextPtr );
+        BOOST_CHECK_EQUAL( access.capacity(), N );
+        access.reserve( 2 * N );
+    }
+
+    BOOST_CHECK_EQUAL( lamaArray.size(), 0 );
+    BOOST_CHECK_EQUAL( lamaArray.capacity( contextPtr ), 2 * N );
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE( swapTest )
 {
     const IndexType n1 = 10;

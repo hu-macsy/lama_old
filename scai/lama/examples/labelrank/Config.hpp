@@ -9,10 +9,11 @@
 
 #include <scai/lama.hpp>
 
-#include <scai/hmemo/Context.hpp>
-#include <scai/common/Printable.hpp>
 #include <scai/lama/matrix/Matrix.hpp>
-#include <scai/lama/Communicator.hpp>
+
+#include <scai/hmemo/Context.hpp>
+#include <scai/dmemo/Communicator.hpp>
+#include <scai/common/Printable.hpp>
 
 #include <cstring>
 
@@ -28,7 +29,7 @@ public:
         // overlap communication with local computation
 
         mCommunicationKind = scai::lama::Matrix::SYNCHRONOUS;
-        mComm              = scai::lama::Communicator::getCommunicator();
+        mComm              = scai::dmemo::Communicator::getCommunicator();
         mContext           = scai::hmemo::Context::getContextPtr( scai::common::context::Host );
         mMaxIters          = 1000;
     }
@@ -117,12 +118,12 @@ public:
         return *mContext;
     }
 
-    scai::lama::CommunicatorPtr getCommunicatorPtr() const
+    scai::dmemo::CommunicatorPtr getCommunicatorPtr() const
     {
         return mComm;
     }
 
-    const scai::lama::Communicator& getCommunicator() const
+    const scai::dmemo::Communicator& getCommunicator() const
     {
         return *mComm;
     }
@@ -144,7 +145,7 @@ public:
 
 private:
 
-    scai::lama::CommunicatorPtr  mComm;
+    scai::dmemo::CommunicatorPtr  mComm;
 
     inline bool isNumber( const char* arg )
     {

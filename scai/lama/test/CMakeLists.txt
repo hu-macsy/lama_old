@@ -37,7 +37,7 @@ scai_project (
 
     CLASSES
 
-        Configuration
+       # Configuration
         MatrixStorageTest
         NormTest
         SparseMatrixHelper
@@ -53,22 +53,10 @@ scai_project (
 
     SOURCES
 
-        BiCGstabTest
-       # BiCGTest  : disabled as long as MatrixTranspose for DenseMatrix is
-       # not supported
-        CGTest
-       # not yet: CGNETest
-        CGNRTest
-       # CGSTest: This test fails: testSolve, result not < 1E-4
-        CommonLoggerTest
-        CommunicatorTest
         COOSparseMatrixTest
         COOStorageTest
-        COOUtilsTest
-        CriterionTest
         CSRSparseMatrixTest
         CSRStorageTest
-        CSRUtilsTest
         DenseMatrixTest
         DenseMatrixTest1
         DenseStorageTest
@@ -77,40 +65,18 @@ scai_project (
         DIAStorageTest
         ELLSparseMatrixTest
         ELLStorageTest
-        ELLUtilsTest
-        FileLoggerTest
-        GMRESTest
-        HArrayUtilsTest
-        InverseSolverTest
-        IterationCountTest
-        JacobiTest
         JDSSparseMatrixTest
         JDSStorageTest
-        JDSUtilsTest
         L1NormTest
         L2NormTest
-#        LAPACKTest
         MatrixNormTest
         MatrixStorageConversionTest
         MatrixTest
         MaxNormTest
-        MINRESTest
-        NoCommunicatorTest
-        QMRTest
-        ResidualStagnationTest
-        ResidualThresholdTest
-        RichardsonTest
         ScalarTest
-        SimpleAMGTest
-        SolutionProxyTest
-        SORTest
         SparseAssemblyStorageTest
-        SpecializedJacobiTest
         StorageIOTest
         TaskSyncTokenTest
-        TFQMRTest
-        TimerTest
-        UtilsTest
         VectorTest
     )
 
@@ -120,7 +86,7 @@ if ( ${SCAI_ASSERT_LEVEL} STREQUAL "OFF" )
 endif ( ${SCAI_ASSERT_LEVEL} STREQUAL "OFF" )
 
 ### set include directories ###
-include_directories ( .. ../lama ${Boost_INCLUDE_DIRS} )
+include_directories ( ${SCAI_BOOST_INCLUDE_DIR} )
 
 if ( SCAI_BLAS_NAME STREQUAL "MKL" )
     include_directories ( ${MKL_INCLUDE_DIRS} )
@@ -148,9 +114,9 @@ add_executable ( lama_test lama_test.cpp ${CXX_SOURCES} )
 
 ### target link libraries ###
 if ( WIN32 )
-    target_link_libraries ( lama_test ama )
+    target_link_libraries ( lama_test ${PROJECT_NAME} )
 else ( WIN32 )
-    target_link_libraries ( lama_test ama ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} ${Boost_REGEX_LIBRARY} )
+    target_link_libraries ( lama_test ${PROJECT_NAME} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} ${Boost_REGEX_LIBRARY} )
 endif ( WIN32 )
 
 ### Copy the README and xmltest.sh file in build directory ### 

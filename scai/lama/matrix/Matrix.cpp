@@ -36,33 +36,23 @@
 
 // local library
 #include <scai/lama/DenseVector.hpp>
-#include <scai/lama/distribution/NoDistribution.hpp>
+#include <scai/dmemo/NoDistribution.hpp>
 
 // internal scai libraries
 #include <scai/common/macros/assert.hpp>
 #include <scai/common/Constants.hpp>
 #include <scai/common/unique_ptr.hpp>
 
-using namespace scai::common;
-
 namespace scai
 {
+
+using namespace common;
+using namespace dmemo;
 
 namespace lama
 {
 
 SCAI_LOG_DEF_LOGGER( Matrix::logger, "Matrix" )
-
-/* ---------------------------------------------------------------------------------------*/
-/*    Factory to create a matrix                                                          */
-/* ---------------------------------------------------------------------------------------*/
-
-Matrix* Matrix::getMatrix( const MatrixStorageFormat format, common::scalar::ScalarType type )
-{
-    MatrixCreateKeyType val( format, type );
-    SCAI_LOG_INFO( logger, "getMatrix uses Factory::create " << val )
-    return create( val );
-}
 
 /* ----------------------------------------------------------------------- */
 
@@ -182,6 +172,26 @@ Matrix::~Matrix()
 void Matrix::setDefaultKind()
 {
     mCommunicationKind = ASYNCHRONOUS;
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+void Matrix::buildCSRGraph( IndexType ia[], IndexType ja[], IndexType vwgt[], const IndexType* globalIndexes ) const
+{
+    getLocalStorage().buildCSRGraph( ia, ja, vwgt, globalIndexes );
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+IndexType Matrix::getCSRGraphSize() const
+{
+    // Currently only supported if column distribution is replicated
+
+    SCAI_ASSERT_EQ_ERROR( getNumColumns(), getLocalStorage().getNumColumns(), "getCSRGraphSize only for replicated column distribution" )
+
+    // diagonal elements will not be used
+
+    return getLocalNumValues() - getDistribution().getLocalSize();
 }
 
 /* ---------------------------------------------------------------------------------*/
@@ -606,6 +616,11 @@ Matrix* Matrix::copy( DistributionPtr rowDistribution, DistributionPtr colDistri
     rep->redistribute( rowDistribution, colDistribution );
 
     return rep.release();
+}
+
+MatrixCreateKeyType Matrix::getCreateValue() const
+{
+    return MatrixCreateKeyType( getFormatType(), getValueType() );
 }
 
 } /* end namespace lama */

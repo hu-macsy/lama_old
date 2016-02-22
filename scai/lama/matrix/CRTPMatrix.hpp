@@ -91,7 +91,7 @@ public:
 
     /** Constructor for a distributed matrix. */
 
-    CRTPMatrix( DistributionPtr rowDistribution, DistributionPtr colDistribution )
+    CRTPMatrix( dmemo::DistributionPtr rowDistribution, dmemo::DistributionPtr colDistribution )
         : Matrix( rowDistribution, colDistribution )
     {
     }
@@ -124,8 +124,8 @@ public:
             // no more to check: result.size() == mNumRows, getDistirubtion() == result.getDistribution()
         }
 
-        SCAI_ASSERT_EQUAL_ERROR( x.getDistribution(), getColDistribution() )
-        SCAI_ASSERT_EQUAL_ERROR( y.getDistribution(), getDistribution() )
+        SCAI_ASSERT_EQ_ERROR( x.getDistribution(), getColDistribution(), "mismatch distribution" )
+        SCAI_ASSERT_EQ_ERROR( y.getDistribution(), getDistribution(), "mismatch distribution" )
 
         const DenseVector<ValueType>* denseX = dynamic_cast<const DenseVector<ValueType>*>( &x );
         const DenseVector<ValueType>* denseY = dynamic_cast<const DenseVector<ValueType>*>( &y );
@@ -171,8 +171,8 @@ public:
             // no more to check: result.size() == mNumRows, getDistirubtion() == result.getDistribution()
         }
 
-        SCAI_ASSERT_EQUAL_ERROR( x.getDistribution(), getDistribution() )
-        SCAI_ASSERT_EQUAL_ERROR( y.getDistribution(), getColDistribution() )
+        SCAI_ASSERT_EQ_ERROR( x.getDistribution(), getDistribution(), "" )
+        SCAI_ASSERT_EQ_ERROR( y.getDistribution(), getColDistribution(), "" )
 
         const DenseVector<ValueType>* denseX = dynamic_cast<const DenseVector<ValueType>*>( &x );
         const DenseVector<ValueType>* denseY = dynamic_cast<const DenseVector<ValueType>*>( &y );
@@ -193,7 +193,7 @@ public:
     /** @brief Get the row of a matrix 
      *
      *  @param[out] row will contain the values of the queried row of this matrix
-     *  @param[in]  i is the (global) index of the row to access
+     *  @param[in]  globalRowIndex is the (global) index of the row to access
      */
 
     void getRow( Vector& row, const IndexType globalRowIndex ) const
@@ -222,7 +222,7 @@ public:
 
         if ( !typedRow->getDistribution().isReplicated() || typedRow->size() != getNumColumns() )
         {
-            DistributionPtr dist( new NoDistribution( getNumColumns() ) );
+            dmemo::DistributionPtr dist( new dmemo::NoDistribution( getNumColumns() ) );
 
             typedRow->resize( dist );
 
@@ -240,7 +240,7 @@ public:
         {
             // on a distributed matrix, owner fills row and broadcasts it
 
-            const Communicator& comm = getDistribution().getCommunicator();
+            const dmemo::Communicator& comm = getDistribution().getCommunicator();
 
             // owner fills the row
 
@@ -266,7 +266,7 @@ public:
 
             owner = comm.sum( owner );
 
-            SCAI_ASSERT_UNEQUAL_ERROR( owner, 0, "Could not find owner of row " << globalRowIndex )
+            SCAI_ASSERT_GT_ERROR( owner, 0, "Could not find owner of row " << globalRowIndex )
 
             owner -= 1;  // back to range 0, ..., size-1
 
@@ -277,7 +277,7 @@ public:
 
                 WriteAccess<ValueType> rowAccess( typedRow->getLocalValues(), contextPtr, keep );
 
-                SCAI_ASSERT_EQUAL_DEBUG( rowAccess.size(), getNumColumns() );
+                SCAI_ASSERT_EQ_DEBUG( rowAccess.size(), getNumColumns(), "mismatch" );
 
                 comm.bcast( rowAccess.get(), getNumColumns(), owner ); // bcast the row
 

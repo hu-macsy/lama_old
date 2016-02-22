@@ -34,9 +34,9 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/mpl/list.hpp>
 
-#include <scai/lama/distribution/Halo.hpp>
-#include <scai/lama/distribution/HaloBuilder.hpp>
-#include <scai/lama/distribution/Redistributor.hpp>
+#include <scai/dmemo/Halo.hpp>
+#include <scai/dmemo/HaloBuilder.hpp>
+#include <scai/dmemo/Redistributor.hpp>
 
 #include <scai/lama/storage/DenseStorage.hpp>
 #include <scai/lama/storage/CSRStorage.hpp>
@@ -45,8 +45,8 @@
 #include <scai/lama/storage/DIAStorage.hpp>
 #include <scai/lama/storage/ELLStorage.hpp>
 
-#include <scai/lama/distribution/BlockDistribution.hpp>
-#include <scai/lama/distribution/CyclicDistribution.hpp>
+#include <scai/dmemo/BlockDistribution.hpp>
+#include <scai/dmemo/CyclicDistribution.hpp>
 
 #include <scai/lama/test/TestMacros.hpp>
 
@@ -54,6 +54,7 @@
 
 using namespace scai::lama;
 using namespace scai::hmemo;
+using namespace scai::dmemo;
 
 /* ------------------------------------------------------------------------- */
 
@@ -109,8 +110,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( buildHaloTest, StorageType, StorageTypes )
     const IndexType numColumns = matrixStorage.getNumColumns();
     DistributionPtr colDist = DistributionPtr( new BlockDistribution( numColumns, comm ) );
     // create matrix storage for local and halo part of same type as matrixStorage
-    shared_ptr<MatrixStorage<ValueType> > localStorage ( matrixStorage.clone() );
-    shared_ptr<MatrixStorage<ValueType> > haloStorage ( matrixStorage.clone() );
+    shared_ptr<MatrixStorage<ValueType> > localStorage ( MatrixStorage<ValueType>::create( matrixStorage.getCreateValue() ) );
+    shared_ptr<MatrixStorage<ValueType> > haloStorage ( MatrixStorage<ValueType>::create( matrixStorage.getCreateValue() ) );
     Halo halo;
     SCAI_LOG_INFO( logger, *comm << ", split halo : " << matrixStorage )
     matrixStorage.splitHalo( *localStorage, *haloStorage, halo, *colDist, NULL );

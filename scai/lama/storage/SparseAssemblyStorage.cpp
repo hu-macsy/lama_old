@@ -34,31 +34,25 @@
 // hpp
 #include <scai/lama/storage/SparseAssemblyStorage.hpp>
 
-// local library
-#include <scai/lama/openmp/OpenMPUtils.hpp>
-#include <scai/lama/openmp/OpenMPCSRUtils.hpp>
-
 // internal scai libraries
+#include <scai/sparsekernel/openmp/OpenMPCSRUtils.hpp>
+#include <scai/utilskernel/openmp/OpenMPUtils.hpp>
 #include <scai/hmemo.hpp>
 #include <scai/common/macros/print_string.hpp>
 #include <scai/common/TypeTraits.hpp>
+#include <scai/common/Math.hpp>
 #include <scai/common/preprocessor.hpp>
-
-// std
-#include <cmath>
 
 namespace scai
 {
 
 using namespace hmemo;
 
+using utilskernel::OpenMPUtils;
+using sparsekernel::OpenMPCSRUtils;
+
 namespace lama
 {
-
-// abs should be put in this namespace so Scalar::abs will not rule it out
-// The use of ::abs is not recommended as not supported in C++11
-
-using std::abs;
 
 /* --------------------------------------------------------------------------- */
 
@@ -245,6 +239,16 @@ void SparseAssemblyStorage<ValueType>::check( const char* msg ) const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
+SparseAssemblyStorage<ValueType>* SparseAssemblyStorage<ValueType>::newMatrixStorage() const
+{
+   common::unique_ptr<SparseAssemblyStorage<ValueType> > storage( new SparseAssemblyStorage<ValueType>() ); 
+   storage->setContextPtr( this->getContextPtr() );
+   return storage.release();
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
 ValueType SparseAssemblyStorage<ValueType>::l1Norm() const
 {
     ValueType val = static_cast<ValueType>(0.0);
@@ -253,7 +257,7 @@ ValueType SparseAssemblyStorage<ValueType>::l1Norm() const
     {
         for( size_t jj = 0; jj < mRows[i].values.size(); ++jj )
         {
-            val += abs( mRows[i].values[jj] );
+            val += common::Math::abs( mRows[i].values[jj] );
         }
     }
 
@@ -271,12 +275,12 @@ ValueType SparseAssemblyStorage<ValueType>::l2Norm() const
     {
         for( size_t jj = 0; jj < mRows[i].values.size(); ++jj )
         {
-			tmp = abs( mRows[i].values[jj] );
+			tmp = common::Math::abs( mRows[i].values[jj] );
             val += tmp * tmp;
         }
     }
 
-    return common::TypeTraits<ValueType>::sqrt(val);
+    return common::Math::sqrt(val);
 }
 
 
@@ -296,7 +300,7 @@ ValueType SparseAssemblyStorage<ValueType>::maxNorm() const
         for( size_t jj = 0; jj < values.size(); ++jj )
         {
             ValueType val = mRows[i].values[jj];
-            val = abs( val );
+            val = common::Math::abs( val );
 
             if( val > maxval )
             {
@@ -400,7 +404,7 @@ void SparseAssemblyStorage<ValueType>::Row::conj()
 {
     for( size_t i = 0; i < values.size(); i++ )
     {
-        values[i] = common::TypeTraits<ValueType>::conj( values[i] );
+        values[i] = common::Math::conj( values[i] );
     }
 }
 
@@ -868,6 +872,18 @@ void SparseAssemblyStorage<ValueType>::writeAt( std::ostream& stream ) const
     stream << "SparseAssemblyStorage<" << common::getScalarType<ValueType>() << ">(" 
            << " size = " << mNumRows << " x " << mNumColumns
            << ", #values = " << mNumValues << ", diag = " << mDiagonalProperty << " )";
+}
+
+template<typename ValueType>
+_MatrixStorage* SparseAssemblyStorage<ValueType>::create()
+{
+    return new SparseAssemblyStorage<ValueType>();
+}
+
+template<typename ValueType>
+MatrixStorageCreateKeyType SparseAssemblyStorage<ValueType>::createValue()
+{
+    return MatrixStorageCreateKeyType( Format::ASSEMBLY, common::getScalarType<ValueType>() );
 }
 
 /* ========================================================================= */

@@ -38,7 +38,9 @@
 // base classes
 #include <scai/lama/storage/CRTPMatrixStorage.hpp>
 
-#include <scai/lama/LArray.hpp>
+// scai libraries
+#include <scai/utilskernel/LArray.hpp>
+#include <scai/dmemo/Redistributor.hpp>
 
 namespace scai
 {
@@ -78,7 +80,9 @@ namespace lama
  *  @tparam ValueType is the value type of the matrix values.
  */
 template<typename ValueType>
-class COMMON_DLL_IMPORTEXPORT CSRStorage: public CRTPMatrixStorage<CSRStorage<ValueType>,ValueType>
+class COMMON_DLL_IMPORTEXPORT CSRStorage:
+    public CRTPMatrixStorage<CSRStorage<ValueType>,ValueType>,
+    public _MatrixStorage::Register<CSRStorage<ValueType> >    // register at factory
 {
 public:
 
@@ -139,9 +143,9 @@ public:
 
     virtual CSRStorage* copy() const;
 
-    /** Implementation of MatrixStorage::create for derived class. */
+    /** Implementation of MatrixStorage::newMatrixStorage for derived class. */
 
-    virtual CSRStorage* clone() const;
+    virtual CSRStorage* newMatrixStorage() const;
 
     /** Destructor of CSR sparse storage. */
 
@@ -214,27 +218,27 @@ public:
 
     /** Getter routine for member variable IA. */
 
-    LArray<IndexType>& getIA();
+    utilskernel::LArray<IndexType>& getIA();
 
     /** Getter routine for member variable JA. */
 
-    LArray<IndexType>& getJA();
+    utilskernel::LArray<IndexType>& getJA();
 
     /** Getter routine for member variable values. */
 
-    LArray<ValueType>& getValues();
+    utilskernel::LArray<ValueType>& getValues();
 
     /** Getter routine for member variable IA (read-only). */
 
-    const LArray<IndexType>& getIA() const;
+    const utilskernel::LArray<IndexType>& getIA() const;
 
     /** Getter routine for member variable JA (read-only). */
 
-    const LArray<IndexType>& getJA() const;
+    const utilskernel::LArray<IndexType>& getJA() const;
 
     /** Getter routine for member variable values (read-only). */
 
-    const LArray<ValueType>& getValues() const;
+    const utilskernel::LArray<ValueType>& getValues() const;
 
     /** Getter routine for the number of stored values. */
 
@@ -369,16 +373,16 @@ public:
 
     /** Redistribution of CSR avoids unnecessary conversions. */
 
-    virtual void redistributeCSR( const CSRStorage<ValueType>& other, const class Redistributor& redistributor );
+    virtual void redistributeCSR( const CSRStorage<ValueType>& other, const dmemo::Redistributor& redistributor );
 
     /** Override splitHalo with version that avoids unnecessary conversions. */
 
     virtual void splitHalo(
         MatrixStorage<ValueType>& localData,
         MatrixStorage<ValueType>& haloData,
-        Halo& halo,
-        const Distribution& colDist,
-        const Distribution* rowDist ) const;
+        dmemo::Halo& halo,
+        const dmemo::Distribution& colDist,
+        const dmemo::Distribution* rowDist ) const;
 
     /** General routine to build any kind of CSR storage.
      *
@@ -545,9 +549,9 @@ protected:
 
     IndexType mNumValues; //!< number of stored elements
 
-    LArray<IndexType> mIa; //!< offsets for ja and data, size is numRows+1
-    LArray<IndexType> mJa; //!< column indexes, size is mIa[ numRows ]
-    LArray<ValueType> mValues; //!< non-zero values, size is equal to mJa
+    utilskernel::LArray<IndexType> mIa; //!< offsets for ja and data, size is numRows+1
+    utilskernel::LArray<IndexType> mJa; //!< column indexes, size is mIa[ numRows ]
+    utilskernel::LArray<ValueType> mValues; //!< non-zero values, size is equal to mJa
 
 private:
 
@@ -616,6 +620,16 @@ private:
         const ValueType beta,
         const hmemo::HArray<ValueType>& y,
         bool async ) const;
+
+public:
+
+    // static create method that will be used to register at MatrixStorage factory
+
+    static _MatrixStorage* create();
+
+    // key for factory
+
+    static MatrixStorageCreateKeyType createValue();
 };
 
 /* --------------------------------------------------------------------------- */

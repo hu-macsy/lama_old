@@ -35,14 +35,15 @@
 
 #include <scai/lama/matrix/Matrix.hpp>
 
-#include <scai/lama/distribution/Distribution.hpp>
-#include <scai/lama/distribution/NoDistribution.hpp>
+#include <scai/dmemo/Distribution.hpp>
+#include <scai/dmemo/NoDistribution.hpp>
 
 #include <scai/lama/DenseVector.hpp>
 
 #include <scai/lama/test/TestMacros.hpp>
 
 #include <scai/hmemo/HArray.hpp>
+#include <scai/common/Math.hpp>
 
 #include <boost/test/unit_test.hpp>
 
@@ -85,8 +86,11 @@ static inline void testSameMatrix( const scai::lama::Matrix& m1,
 
     // create dense vectors for the rows with the same value type
 
-    common::unique_ptr<Vector> ptrRow1( Vector::getVector( DENSE, m1.getValueType() ) );
-    common::unique_ptr<Vector> ptrRow2( Vector::getVector( DENSE, m2.getValueType() ) );
+    VectorCreateKeyType vectorType1( DENSE, m1.getValueType() );
+    VectorCreateKeyType vectorType2( DENSE, m2.getValueType() );
+
+    common::unique_ptr<Vector> ptrRow1( Vector::create( vectorType1 ) );
+    common::unique_ptr<Vector> ptrRow2( Vector::create( vectorType2 ) );
 
     typedef double CompareType;  // complex type does not work
 
@@ -130,7 +134,7 @@ static inline void testSameMatrix( const scai::lama::Matrix& m1,
 template<typename ValueType1, typename ValueType2>
 void testSameMatrixStorage( const scai::lama::MatrixStorage<ValueType1>& m1, 
                             const scai::lama::MatrixStorage<ValueType2>& m2,
-                            const scai::lama::Scalar small = 0,
+                            const scai::lama::Scalar small = 0.0,
                             const scai::lama::Scalar tolerance = 0.01 )
 {
     const IndexType m = m1.getNumRows();
@@ -162,7 +166,7 @@ void testSameMatrixStorage( const scai::lama::MatrixStorage<ValueType1>& m1,
             CompareType elem1 = static_cast<CompareType>( readRow1[j] );
             CompareType elem2 = static_cast<CompareType>( readRow2[j] );
        
-            CompareType diff = scai::common::TypeTraits<CompareType>::abs( elem1 - elem2 );
+            CompareType diff = scai::common::Math::abs( elem1 - elem2 );
 
             if ( diff >= smallV )
             {
