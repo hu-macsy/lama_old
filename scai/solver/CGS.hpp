@@ -53,7 +53,7 @@ namespace solver
  * method to solve a system of linear equations iteratively. Keep in mind that this method is not stable.
  *
  * Remarks:
- * 1. This method is not numerically stable. This effect gets a bit annulled by 2.
+ * 1. This method is numerically unstable. This effect gets a bit annulled by (2.).
  * 2. The scalars in the algorithm are set to zero if they are smaller than machine precision
  * (3*eps) to avoid devision by zero. In this case the solution doesn't change anymore.
  */
@@ -104,6 +104,9 @@ public:
         common::shared_ptr<lama::Vector> mVecQ;
         common::shared_ptr<lama::Vector> mVecU;
         common::shared_ptr<lama::Vector> mVecT;
+        common::shared_ptr<lama::Vector> mVecPT;
+        common::shared_ptr<lama::Vector> mVecUT;
+        common::shared_ptr<lama::Vector> mVecTemp;
 
         lama::Scalar mEps;
         lama::Scalar mNormRes;

@@ -105,7 +105,7 @@ scai_project (
         BiCG
         BiCGstab
         CG
-    #   CGNE
+        CGNE
         CGNR
         CGS
         DefaultJacobi

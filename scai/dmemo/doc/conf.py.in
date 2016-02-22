@@ -12,6 +12,7 @@ intersphinx_mapping = {
     'scaitracing': ('${SCAI_TRACING_DOC_DIR}', None),
     'scaitasking': ('${SCAI_TASKING_DOC_DIR}', None),
     'scaihmemo': ('${SCAI_HMEMO_DOC_DIR}', None),
+    'scaiutilskernel': ('${SCAI_UTILSKERNEL_DOC_DIR}', None),
 }
 
 # The suffix of source filenames.

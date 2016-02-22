@@ -38,7 +38,7 @@
 
 set ( CUDA_HOST_COMPILER ${CMAKE_CXX_COMPILER} CACHE FILEPATH "Host side compiler used by NVCC" )
 
-find_package ( CUDA ${SCAI_FIND_PACKAGE_FLAGS} )
+find_package ( CUDA ${SCAI_FIND_PACKAGE_FLAGS} HINTS /usr/lib/nvidia/ /usr/lib32/nvidia/ /usr/lib64/nvidia/ )
 
 # LAMA irrelevant entries will be marked as advanced ( Remove them from default cmake GUI )
 mark_as_advanced ( CUDA_TOOLKIT_ROOT_DIR CUDA_BUILD_CUBIN CUDA_BUILD_EMULATION CUDA_SDK_ROOT_DIR

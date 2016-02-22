@@ -41,7 +41,7 @@
 
 #include <scai/lama/DenseVector.hpp>
 
-namespace scai
+namespace scai 
 {
 
 namespace solver

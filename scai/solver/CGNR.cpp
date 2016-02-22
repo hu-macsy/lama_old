@@ -143,8 +143,7 @@ void CGNR::solveInit( Vector& solution, const Vector& rhs )
     Vector& vecZ = *runtime.mVecZ;
     vecZ = transposedA * residual;
 
-    Vector* vecD = ( *runtime.mVecZ ).copy();
-    runtime.mVecD.reset( vecD );
+    *runtime.mVecD = *runtime.mVecZ;
 
     lama::L2Norm norm;
     runtime.mNormVecZ = norm.apply( vecZ );

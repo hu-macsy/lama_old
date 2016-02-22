@@ -15,6 +15,8 @@ Contents:
 * :ref:`SCAI Hmemo <scaihmemo:main-page_hmemo>`
 * :ref:`SCAI Kregistry <scaikregistry:main-page_kregistry>`
 * :ref:`SCAI BLASKernel <scaiblaskernel:main-page_blaskernel>`
+* :ref:`SCAI UtilsKernel <scaiutilskernel:main-page_utilskernel>`
+* :ref:`SCAI SparseKernel <scaisparsekernel:main-page_sparsekernel>`
 * :ref:`SCAI Dmemo <scaidmemo:main-page_dmemo>`
 * :ref:`SCAI LAMA <scailama:main-page_lama>`
 * :ref:`SCAI Solver <scaisolver:main-page_solver>`

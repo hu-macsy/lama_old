@@ -60,9 +60,7 @@ The supported features of the actual release are listed below:
 
     - CPU (OpenMP optimized)
 
-    - GPU
-
-      - CUDA
+    - GPU (CUDA optimized)
       
     - MIC (OpenMP optimized)
 
