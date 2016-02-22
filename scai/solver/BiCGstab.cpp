@@ -34,7 +34,7 @@
 // hpp
 #include <scai/solver/BiCGstab.hpp>
 
-// internal scai libraries
+// local library
 #include <scai/lama/expression/VectorExpressions.hpp>
 #include <scai/lama/expression/MatrixExpressions.hpp>
 #include <scai/lama/expression/MatrixVectorExpressions.hpp>
@@ -54,10 +54,6 @@ namespace solver
 {
 
 SCAI_LOG_DEF_LOGGER( BiCGstab::logger, "Solver.BiCGstab" )
-
-using lama::Matrix;
-using lama::Vector;
-using lama::Scalar;
 
 BiCGstab::BiCGstab( const std::string& id )
     : IterativeSolver( id ) {}
@@ -98,6 +94,9 @@ void BiCGstab::initialize( const Matrix& coefficients )
     runtime.mVecP.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
     runtime.mVecS.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
     runtime.mVecT.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
+    runtime.mVecPT.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
+    runtime.mVecST.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
+    runtime.mVecTT.reset( Vector::createVector( type, coefficients.getDistributionPtr() ) );
 
 
     runtime.mRes0->setContextPtr( coefficients.getContextPtr() );
@@ -105,6 +104,12 @@ void BiCGstab::initialize( const Matrix& coefficients )
     runtime.mVecP->setContextPtr( coefficients.getContextPtr() );
     runtime.mVecS->setContextPtr( coefficients.getContextPtr() );
     runtime.mVecT->setContextPtr( coefficients.getContextPtr() );
+    runtime.mVecPT->setContextPtr( coefficients.getContextPtr() );
+
+    runtime.mVecST->setContextPtr( coefficients.getContextPtr() );
+    runtime.mVecTT->setContextPtr( coefficients.getContextPtr() );
+
+
 }
 
 
@@ -142,12 +147,16 @@ void BiCGstab::solveInit( Vector& solution, const Vector& rhs )
 
     // Initialize
     this->getResidual();
+    print(*runtime.mResidual,4);
 
-    Vector* initialR = ( *runtime.mResidual ).copy();
-    runtime.mRes0.reset( initialR );
+    *runtime.mRes0 = *runtime.mResidual;
 
-    *runtime.mVecV = Scalar( 0 );
-    *runtime.mVecP = Scalar( 0 );
+    // Vector* res0 = ( *runtime.mResidual ).copy();
+    // runtime.mRes0.reset( res0 );
+
+
+    *runtime.mVecV = Scalar( 0.0 );
+    *runtime.mVecP = Scalar( 0.0 );
 
     runtime.mSolveInit = true;
 }
@@ -165,6 +174,9 @@ void BiCGstab::iterate()
     Vector& vecS = *runtime.mVecS;
     Vector& vecT = *runtime.mVecT;
     Vector& solution = *runtime.mSolution;
+    Vector& vecPT = *runtime.mVecPT;
+    Vector& vecST = *runtime.mVecST;
+    Vector& vecTT = *runtime.mVecTT;
 
     Scalar& alpha = runtime.mAlpha;
     Scalar& beta = runtime.mBeta;
@@ -174,7 +186,7 @@ void BiCGstab::iterate()
 
     const Scalar& eps = runtime.mEps;
     Scalar& resNorm = runtime.mResNorm;
-    lama::L2Norm norm;
+    L2Norm norm;
 
     rhoNew = res0.dotProduct( res );
 
@@ -184,7 +196,6 @@ void BiCGstab::iterate()
     }
     else
     {
-        //std::cout << "rhoNew = " << rhoNew << ", rhoOld = " << rhoOld << ", alpha = " << alpha << ", omega = " << omega << std::endl;
         beta = rhoNew / rhoOld * ( alpha / omega );
     }
 
@@ -192,7 +203,15 @@ void BiCGstab::iterate()
 
     vecP = vecP - omega * vecV;
     vecP = res + beta * vecP;
-    vecV = A * vecP;
+
+    // PRECONDITIONING
+    if(mPreconditioner != NULL){
+        vecPT = Scalar(0.0);
+        mPreconditioner->solve( vecPT, vecP );      
+    } 
+    else    vecPT = vecP;
+
+    vecV = A * vecPT;
 
     Scalar innerProd = res0.dotProduct( vecV );
 
@@ -206,9 +225,22 @@ void BiCGstab::iterate()
     }
 
     vecS = res - alpha * vecV;
-    vecT = A * vecS;
+    // PRECONDITIONING
+    if(mPreconditioner != NULL){
+        vecST = Scalar(0.0);
+        mPreconditioner->solve( vecST, vecS );      
 
-    innerProd = vecT.dotProduct( vecT );
+        vecT = A * vecST;
+        vecTT = Scalar(0.0);
+        mPreconditioner->solve(vecTT,vecT);    
+    } 
+    else{
+        vecST = vecS;
+        vecT = A * vecST;
+        vecTT = vecT;
+    }   
+
+    innerProd = vecTT.dotProduct( vecTT );
 
     if ( resNorm < eps || innerProd < eps ) //scalar is small
     {
@@ -216,7 +248,7 @@ void BiCGstab::iterate()
     }
     else
     {
-        omega = vecT.dotProduct( vecS ) / innerProd;
+        omega = vecTT.dotProduct( vecST ) / innerProd;
     }
 
     solution = solution + alpha * vecP;
@@ -260,6 +292,6 @@ void BiCGstab::writeAt( std::ostream& stream ) const
     stream << "BiCGstab ( id = " << mId << ", #iter = " << getConstRuntime().mIterations << " )";
 }
 
-} /* end namespace solver */
+} /* end namespace sovler */
 
 } /* end namespace scai */

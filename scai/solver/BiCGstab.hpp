@@ -84,7 +84,7 @@ public:
 
     virtual ~BiCGstab();
 
-    virtual void initialize( const lama::Matrix& coefficients );
+    virtual void initialize( const Matrix& coefficients );
 
     /**
      * @brief Copies the status independent solver informations to create a new instance of the same
@@ -99,19 +99,22 @@ public:
         BiCGstabRuntime();
         virtual ~BiCGstabRuntime();
 
-        common::shared_ptr<lama::Vector> mRes0;
-        common::shared_ptr<lama::Vector> mVecV;
-        common::shared_ptr<lama::Vector> mVecP;
-        common::shared_ptr<lama::Vector> mVecS;
-        common::shared_ptr<lama::Vector> mVecT;
+        common::shared_ptr<Vector> mRes0;
+        common::shared_ptr<Vector> mVecV;
+        common::shared_ptr<Vector> mVecP;
+        common::shared_ptr<Vector> mVecS;
+        common::shared_ptr<Vector> mVecT;
+        common::shared_ptr<Vector> mVecPT;
+        common::shared_ptr<Vector> mVecST;
+        common::shared_ptr<Vector> mVecTT;
 
-        lama::Scalar mEps;
-        lama::Scalar mResNorm;
-        lama::Scalar mOmega;
-        lama::Scalar mAlpha;
-        lama::Scalar mBeta;
-        lama::Scalar mRhoOld;
-        lama::Scalar mRhoNew;
+        Scalar mEps;
+        Scalar mResNorm;
+        Scalar mOmega;
+        Scalar mAlpha;
+        Scalar mBeta;
+        Scalar mRhoOld;
+        Scalar mRhoNew;
     };
 
     /**
@@ -121,7 +124,7 @@ public:
     /** 
     * @brief Initializes vectors and values of the runtime
     */
-    virtual void solveInit( lama::Vector& solution, const lama::Vector& rhs );
+    virtual void solveInit( Vector& solution, const Vector& rhs );
     
     /**
      * @brief Returns the complete configuration of the derived class
@@ -134,7 +137,6 @@ public:
 protected:
 
     virtual void iterate();
-
     /**
      *  @brief own implementation of Printable::writeAt
      */
